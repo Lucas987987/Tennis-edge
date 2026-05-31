@@ -1,0 +1,39 @@
+name: Capture Closing Lines
+
+on:
+  schedule:
+    - cron: '*/10 6-23 * * *'
+  workflow_dispatch:
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Capture closing lines
+        env:
+          ODDS_API_KEY_1: ${{ secrets.ODDS_API_KEY_1 }}
+          ODDS_API_KEY_2: ${{ secrets.ODDS_API_KEY_2 }}
+          ODDS_API_KEY_3: ${{ secrets.ODDS_API_KEY_3 }}
+          ODDS_API_KEY_4: ${{ secrets.ODDS_API_KEY_4 }}
+          ODDS_API_KEY_5: ${{ secrets.ODDS_API_KEY_5 }}
+        run: python scripts/capture_closing.py
+
+      - name: Commit closing lines
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add closing_lines.json
+          git diff --staged --quiet || git commit -m "Closing lines update"
+          git pull --rebase --autostash 2>/dev/null || true
+          git push
