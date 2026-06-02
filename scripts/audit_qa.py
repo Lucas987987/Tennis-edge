@@ -206,13 +206,18 @@ def send_telegram(token, chat_id, text):
         return False
 
 
+def _esc(s):
+    """Échappe les caractères spéciaux HTML pour parse_mode=HTML (évite Bad Request)."""
+    return str(s).replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+
+
 def format_report(problems):
     order = {'CRITIQUE': 0, 'ALERTE': 1, 'INFO': 2}
     icon = {'CRITIQUE': '🔴', 'ALERTE': '🟠', 'INFO': '🔵'}
     problems = sorted(problems, key=lambda p: order.get(p[0], 9))
     lines = ["🔍 <b>Audit QA — anomalies détectées</b>\n"]
     for sev, msg in problems:
-        lines.append(f"{icon.get(sev,'•')} <b>{sev}</b> — {msg}")
+        lines.append(f"{icon.get(sev,'•')} <b>{_esc(sev)}</b> — {_esc(msg)}")
     lines.append("\n<i>Audit automatique. Vérifie les points ci-dessus.</i>")
     return "\n".join(lines)
 
