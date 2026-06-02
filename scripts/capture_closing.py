@@ -1,8 +1,15 @@
 #!/usr/bin/env python3
 """
 Capture les closing lines Pinnacle pour les matchs qui commencent bientôt.
-Tourne toutes les 15-20 min entre 9h et 23h UTC.
-Capture à 60min ET 15min avant chaque match.
+
+Déclenché par le worker Cloudflare (repository_dispatch) au bon moment :
+- snapshot T-25 (marge de sécurité contre le délai GitHub)
+- snapshot T-10 (vrai dernier instant)
+Le cron horaire (minute 7) sert seulement à découvrir les matchs du jour.
+
+Le closing de référence pour le CLV = le snapshot le PLUS TARDIF disponible,
+à condition qu'il soit dans la fenêtre fiable (<= CLOSING_MAX_MINS avant le match).
+Sinon le match est marqué closing_reliable=False et doit être EXCLU du CLV.
 """
 import urllib.request, json, datetime, os
 
@@ -17,11 +24,14 @@ API_KEYS = [
 API_KEYS = [k for k in API_KEYS if k]
 
 CLOSING_FILE = 'closing_lines.json'
-# Fenêtres de capture (minutes avant le match)
+# Fenêtres de capture (minutes avant le match). Resserrées car le timing est
+# maintenant garanti par le worker Cloudflare (plus de boucle aveugle */10).
 CAPTURE_WINDOWS = [
-    (45, 75, '60min'),   # entre 45 et 75 min avant → snapshot "60min"
-    (5, 25, '15min'),    # entre 5 et 25 min avant → snapshot "15min"
+    (18, 32, 't25'),   # cible T-25 : marge contre le délai de démarrage GitHub
+    (4, 16, 't10'),    # cible T-10 : vrai dernier instant avant le coup d'envoi
 ]
+# Au-delà de ce délai, un snapshot n'est PAS considéré comme un closing fiable.
+CLOSING_MAX_MINS = 35
 
 def get_api_key():
     """Choisit une clé selon l'heure pour répartir la charge."""
@@ -179,14 +189,31 @@ def main():
         if len(hist) > 100:
             closing[uid]['history'] = hist[-100:]
 
-        # Garder aussi les snapshots de référence 60min et 15min pour le CLV closing
+        # Snapshots de référence T-25 et T-10
         for win_min, win_max, label in CAPTURE_WINDOWS:
             if win_min <= mins_until <= win_max:
                 closing[uid][f'pinnacle_{label}'] = {
                     'home': psH, 'away': psA,
+                    'mins_before': round(mins_until),
                     'captured_at': now.isoformat(),
                 }
-                print(f"  ✅ [{label}] {home} vs {away}: {psH}/{psA}")
+                print(f"  ✅ [{label}] {home} vs {away}: {psH}/{psA} (T-{round(mins_until)})")
+
+        # Déterminer le closing de référence = snapshot le PLUS TARDIF disponible.
+        # Marqué fiable seulement s'il a été capturé <= CLOSING_MAX_MINS avant le match.
+        snaps = []
+        for label in ('t25', 't10'):
+            s = closing[uid].get(f'pinnacle_{label}')
+            if s and 'mins_before' in s:
+                snaps.append(s)
+        if snaps:
+            best = min(snaps, key=lambda s: s['mins_before'])  # le plus proche du match
+            closing[uid]['closing'] = {
+                'home': best['home'], 'away': best['away'],
+                'mins_before': best['mins_before'],
+                'captured_at': best['captured_at'],
+                'reliable': best['mins_before'] <= CLOSING_MAX_MINS,
+            }
 
     # Nettoyer les vieilles entrées (> 30 jours)
     cutoff = (now - datetime.timedelta(days=30)).strftime('%Y-%m-%d')
