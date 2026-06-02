@@ -1,35 +1,37 @@
 #!/usr/bin/env python3
 """
-Détecteur de mouvement de cote (capteur défensif).
+Détecteur de mouvement de cote (capteur défensif) + journal d'étude.
 
-Analyse le history[] de chaque match dans closing_lines.json et envoie une
-alerte Telegram quand la cote Pinnacle a bougé de façon notable (>= SEUIL_PCT)
-entre le premier et le dernier point capturé.
+Deux mécanismes DISSOCIÉS :
 
-PHILOSOPHIE : c'est un capteur DÉFENSIF, pas un signal d'entrée. L'alerte
-informe ("le marché a bougé, réévalue"), elle ne dit jamais "parie maintenant".
-Le mouvement de cote n'est PAS prouvé rentable sur tes données — on observe.
+1. ALERTE Telegram (en direct) : envoyée quand l'amplitude >= ALERT_PCT.
+   But : te faire voir passer les mouvements notables. Défensif, jamais un
+   signal d'entrée. Anti-spam via odds_alerts_state.json.
 
-Anti-spam : on ne ré-alerte un match que si le mouvement s'est AGGRAVÉ d'au
-moins RE_ALERT_PCT depuis la dernière alerte (état mémorisé dans alerts_sent).
+2. LOG d'étude (permanent) : UNE ligne par match, écrite une seule fois quand
+   le match entre dans la fenêtre closing (<= LOG_AT_MINS avant le coup
+   d'envoi). On logge TOUS les matchs, même ceux qui n'ont pas bougé (amplitude
+   0%), car l'analyse a besoin des non-mouvements autant que des mouvements.
+   Fichier odds_alerts_log.jsonl, append-only, jamais effacé.
+   Clé de jointure 'uid' commune avec backtest_tennis.csv et le CLV.
 
-À appeler à la FIN de capture_closing.py (les history[] viennent d'être mis
-à jour). Lit TELEGRAM_TOKEN et TELEGRAM_CHAT_ID depuis les variables d'env.
+PHILOSOPHIE : on mesure tout, on ne conclut rien tant qu'on n'a pas de volume.
 """
 import os, json, urllib.request, urllib.parse, datetime
 
 CLOSING_FILE = 'closing_lines.json'
-ALERTS_FILE = 'odds_alerts_state.json'   # état anti-spam (éphémère, nettoyé)
-ALERTS_LOG = 'odds_alerts_log.jsonl'     # journal append-only (jamais effacé)
+ALERTS_FILE = 'odds_alerts_state.json'   # état anti-spam des alertes (éphémère)
+ALERTS_LOG = 'odds_alerts_log.jsonl'     # journal d'étude (append-only, permanent)
+LOGGED_FILE = 'odds_logged_state.json'   # mémorise quels matchs sont déjà loggés
 
-SEUIL_PCT = 10.0        # amplitude minimale pour une 1re alerte (%)
-RE_ALERT_PCT = 8.0      # ré-alerte seulement si ça bouge encore de +8 pts (%)
-MIN_POINTS = 2          # il faut au moins 2 points d'historique pour comparer
+ALERT_PCT = 5.0         # seuil d'ALERTE Telegram (%)
+RE_ALERT_PCT = 5.0      # ré-alerte si le mouvement s'aggrave encore de ce % 
+LOG_AT_MINS = 35        # on logge le match quand il est <= 35 min avant le coup d'envoi
+MIN_POINTS = 2          # au moins 2 points d'historique pour calculer un mouvement
 
 
 def _pct_move(first, last):
-    """Mouvement relatif de la cote 'home' entre premier et dernier point, en %.
-    Signe négatif = la cote home a baissé (home devient plus favori)."""
+    """Mouvement relatif d'une cote entre premier et dernier point, en %."""
     if not first or not last:
         return None
     try:
@@ -38,36 +40,34 @@ def _pct_move(first, last):
         return None
 
 
-def detect_movements(closing):
-    """Retourne la liste des matchs avec un mouvement >= SEUIL_PCT (sur home OU away)."""
-    moves = []
-    for uid, m in closing.items():
-        hist = m.get('history', [])
-        if len(hist) < MIN_POINTS:
-            continue
-        first, last = hist[0], hist[-1]
-        mv_home = _pct_move(first.get('home'), last.get('home'))
-        mv_away = _pct_move(first.get('away'), last.get('away'))
-        if mv_home is None or mv_away is None:
-            continue
-        amp = max(abs(mv_home), abs(mv_away))
-        if amp >= SEUIL_PCT:
-            moves.append({
-                'uid': uid,
-                'home': m.get('home', '?'),
-                'away': m.get('away', '?'),
-                'tournament': m.get('tournament', ''),
-                'commence_time': m.get('commence_time', ''),
-                'o_home_first': first.get('home'),
-                'o_home_last': last.get('home'),
-                'o_away_first': first.get('away'),
-                'o_away_last': last.get('away'),
-                'mv_home': round(mv_home, 1),
-                'mv_away': round(mv_away, 1),
-                'amp': round(amp, 1),
-                'mins_before': last.get('mins_before'),
-            })
-    return moves
+def _compute_move(uid, m):
+    """Calcule le mouvement complet d'un match (premier point -> dernier point).
+    Retourne None si pas assez de données."""
+    hist = m.get('history', [])
+    if len(hist) < MIN_POINTS:
+        return None
+    first, last = hist[0], hist[-1]
+    mv_home = _pct_move(first.get('home'), last.get('home'))
+    mv_away = _pct_move(first.get('away'), last.get('away'))
+    if mv_home is None or mv_away is None:
+        return None
+    amp = max(abs(mv_home), abs(mv_away))
+    return {
+        'uid': uid,
+        'home': m.get('home', '?'),
+        'away': m.get('away', '?'),
+        'tournament': m.get('tournament', ''),
+        'commence_time': m.get('commence_time', ''),
+        'n_points': len(hist),
+        'o_home_first': first.get('home'),
+        'o_home_last': last.get('home'),
+        'o_away_first': first.get('away'),
+        'o_away_last': last.get('away'),
+        'mv_home': round(mv_home, 1),
+        'mv_away': round(mv_away, 1),
+        'amp': round(amp, 1),
+        'mins_before': last.get('mins_before'),
+    }
 
 
 def send_telegram(token, chat_id, text):
@@ -89,7 +89,6 @@ def send_telegram(token, chat_id, text):
 
 def format_alert(mv):
     """Message défensif, neutre. N'incite jamais à parier."""
-    # Sens : qui devient plus favori (cote qui baisse)
     if mv['mv_home'] < 0:
         sens = f"📉 {mv['home']} se renforce ({mv['o_home_first']} → {mv['o_home_last']})"
     else:
@@ -108,17 +107,18 @@ def format_alert(mv):
     )
 
 
-def log_alert(mv):
-    """Append une ligne JSON dans le journal permanent (jamais effacé).
-    Conçu pour être croisé plus tard avec backtest_tennis.csv et le CLV via 'uid'."""
+def log_entry(mv):
+    """Append UNE ligne d'étude (un match). Permanent, jamais effacé.
+    Conçu pour être croisé avec backtest_tennis.csv et le CLV via 'uid'."""
     entry = {
         'logged_at': datetime.datetime.utcnow().isoformat(),
-        'uid': mv['uid'],                       # clé de jointure avec backtest / CLV
+        'uid': mv['uid'],
         'home': mv['home'],
         'away': mv['away'],
         'tournament': mv['tournament'],
         'commence_time': mv['commence_time'],
-        'mins_before': mv['mins_before'],       # à quel moment l'alerte est partie
+        'mins_before': mv['mins_before'],
+        'n_points': mv['n_points'],
         'o_home_first': mv['o_home_first'],
         'o_home_last': mv['o_home_last'],
         'o_away_first': mv['o_away_first'],
@@ -130,52 +130,70 @@ def log_alert(mv):
     try:
         with open(ALERTS_LOG, 'a', encoding='utf-8') as f:
             f.write(json.dumps(entry, ensure_ascii=False) + '\n')
+        return True
     except Exception as e:
-        print(f"  ⚠️ Écriture journal alertes: {e}")
+        print(f"  ⚠️ Écriture journal: {e}")
+        return False
+
+
+def _load_json(path, default):
+    if os.path.exists(path):
+        try:
+            with open(path, encoding='utf-8') as f:
+                return json.load(f)
+        except Exception:
+            return default
+    return default
 
 
 def run_movement_detector():
     token = os.environ.get('TELEGRAM_TOKEN', '')
     chat_id = os.environ.get('TELEGRAM_CHAT_ID', '')
-    if not token or not chat_id:
-        print("  ℹ️ Telegram non configuré (secrets absents) — détection sautée.")
+
+    closing = _load_json(CLOSING_FILE, None)
+    if not closing:
         return
 
-    if not os.path.exists(CLOSING_FILE):
-        return
-    with open(CLOSING_FILE, encoding='utf-8') as f:
-        closing = json.load(f)
+    sent = _load_json(ALERTS_FILE, {})      # {uid: amplitude dernière alerte}
+    logged = _load_json(LOGGED_FILE, {})    # {uid: True} matchs déjà loggés
 
-    # État des alertes déjà envoyées : { uid: amplitude_dernière_alerte }
-    sent = {}
-    if os.path.exists(ALERTS_FILE):
-        try:
-            with open(ALERTS_FILE, encoding='utf-8') as f:
-                sent = json.load(f)
-        except Exception:
-            sent = {}
-
-    moves = detect_movements(closing)
-    n_sent = 0
-    for mv in moves:
-        uid = mv['uid']
-        prev_amp = sent.get(uid)
-        # 1re alerte, ou aggravation significative depuis la dernière
-        if prev_amp is None or (mv['amp'] - prev_amp) >= RE_ALERT_PCT:
-            if send_telegram(token, chat_id, format_alert(mv)):
-                sent[uid] = mv['amp']
-                log_alert(mv)          # journal permanent pour analyse future
-                n_sent += 1
-                print(f"  📨 Alerte envoyée: {mv['home']} vs {mv['away']} ({mv['amp']}%)")
-
-    # Nettoyage : retirer de l'état les matchs déjà commencés (absents du closing récent)
+    n_alert, n_log = 0, 0
     live_uids = set(closing.keys())
+
+    for uid, m in closing.items():
+        mv = _compute_move(uid, m)
+        if mv is None:
+            continue
+
+        # ---- LOG d'étude : une seule fois, quand le match entre en fenêtre closing ----
+        mb = mv['mins_before']
+        if uid not in logged and mb is not None and mb <= LOG_AT_MINS:
+            if log_entry(mv):
+                logged[uid] = True
+                n_log += 1
+
+        # ---- ALERTE Telegram : si amplitude >= ALERT_PCT (et Telegram configuré) ----
+        if token and chat_id and mv['amp'] >= ALERT_PCT:
+            prev = sent.get(uid)
+            if prev is None or (mv['amp'] - prev) >= RE_ALERT_PCT:
+                if send_telegram(token, chat_id, format_alert(mv)):
+                    sent[uid] = mv['amp']
+                    n_alert += 1
+                    print(f"  📨 Alerte: {mv['home']} vs {mv['away']} ({mv['amp']}%)")
+
+    # Nettoyage des états éphémères (pas le log, lui est permanent)
     sent = {k: v for k, v in sent.items() if k in live_uids}
+    logged = {k: v for k, v in logged.items() if k in live_uids}
 
     with open(ALERTS_FILE, 'w', encoding='utf-8') as f:
         json.dump(sent, f, ensure_ascii=False, indent=2)
+    with open(LOGGED_FILE, 'w', encoding='utf-8') as f:
+        json.dump(logged, f, ensure_ascii=False, indent=2)
 
-    print(f"  ⚡ Détection mouvement: {len(moves)} match(s) au-dessus du seuil, {n_sent} alerte(s) envoyée(s).")
+    if not token or not chat_id:
+        print(f"  ℹ️ Telegram non configuré — {n_log} match(s) loggé(s), alertes désactivées.")
+    else:
+        print(f"  ⚡ {n_log} match(s) loggé(s), {n_alert} alerte(s) envoyée(s).")
 
 
 if __name__ == '__main__':
