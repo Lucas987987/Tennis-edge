@@ -61,6 +61,25 @@ def get_working_key():
             return key
     return None
 
+def deduce_niveau(sport_key, title):
+    """Déduit le niveau du tournoi à partir du sport_key et du titre.
+    The Odds API couvre : Grands Chelems, ATP/WTA 1000 et 500.
+    Retourne : 'grand_chelem' | '1000' | '500' | 'autre'.
+    Le sport_key brut est toujours conservé à part, donc une mauvaise
+    déduction reste corrigeable a posteriori sans perte d'info."""
+    s = (sport_key or '').lower() + ' ' + (title or '').lower()
+    grands_chelems = ['french_open', 'french open', 'wimbledon',
+                      'us_open', 'us open', 'australian_open', 'australian open',
+                      'roland', 'roland_garros']
+    if any(g in s for g in grands_chelems):
+        return 'grand_chelem'
+    if '1000' in s or 'masters' in s or 'master' in s:
+        return '1000'
+    if '500' in s:
+        return '500'
+    return 'autre'
+
+
 def fetch_odds(api_key):
     """Récupère les cotes de tous les tournois tennis en cours."""
     matches = []
@@ -88,6 +107,7 @@ def fetch_odds(api_key):
                 remaining = r.headers.get('x-requests-remaining', remaining)
                 for m in data:
                     m['_sport'] = sport['title']
+                    m['_sport_key'] = sport['key']
                     matches.append(m)
         except Exception as e:
             print(f"  ⚠️ {sport['key']}: {e}")
@@ -154,9 +174,17 @@ def main():
                 'date': ct[:10],
                 'home': home, 'away': away,
                 'tournament': m.get('_sport',''),
+                'sport_key': m.get('_sport_key',''),
+                'niveau': deduce_niveau(m.get('_sport_key',''), m.get('_sport','')),
                 'commence_time': ct,
                 'history': [],
             }
+        else:
+            # Compléter les entrées existantes qui n'auraient pas encore ces champs
+            if not closing[uid].get('sport_key'):
+                closing[uid]['sport_key'] = m.get('_sport_key','')
+            if not closing[uid].get('niveau'):
+                closing[uid]['niveau'] = deduce_niveau(m.get('_sport_key',''), m.get('_sport',''))
         # S'assurer que history existe (compat anciennes entrées)
         if 'history' not in closing[uid]:
             closing[uid]['history'] = []
