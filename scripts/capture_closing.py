@@ -224,5 +224,13 @@ def main():
 
     print(f"\n✅ {captured} captures · {len(closing)} matchs dans closing_lines.json")
 
+    # Détecteur de mouvement de cote (alerte Telegram défensive).
+    # Importé ici pour ne pas casser la capture si le module/secrets manquent.
+    try:
+        from odds_movement import run_movement_detector
+        run_movement_detector()
+    except Exception as e:
+        print(f"  ℹ️ Détecteur mouvement non exécuté: {e}")
+
 if __name__ == '__main__':
     main()
