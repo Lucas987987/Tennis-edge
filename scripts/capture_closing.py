@@ -27,8 +27,10 @@ CLOSING_FILE = 'closing_lines.json'
 # Fenêtres de capture (minutes avant le match). Resserrées car le timing est
 # maintenant garanti par le worker Cloudflare (plus de boucle aveugle */10).
 CAPTURE_WINDOWS = [
-    (18, 32, 't25'),   # cible T-25 : marge contre le délai de démarrage GitHub
-    (4, 16, 't10'),    # cible T-10 : vrai dernier instant avant le coup d'envoi
+    (20, 32, 't25'),   # cible T-25 : marge de sécurité, absorbe le délai GitHub
+    (12, 20, 't15'),   # cible T-15
+    (5, 12, 't7'),     # cible T-7
+    (0, 5, 't3'),      # cible T-3 : tout dernier instant
 ]
 # Au-delà de ce délai, un snapshot n'est PAS considéré comme un closing fiable.
 CLOSING_MAX_MINS = 35
@@ -94,7 +96,7 @@ def fetch_odds(api_key):
         print(f"❌ Liste sports: {e}")
         return [], '?'
 
-    tennis = [s for s in sports if s.get('key','').startswith('tennis')][:6]
+    tennis = [s for s in sports if s.get('key','').startswith('tennis')]
     print(f"  {len(tennis)} tournois tennis actifs")
 
     for sport in tennis:
@@ -230,7 +232,7 @@ def main():
         # Déterminer le closing de référence = snapshot le PLUS TARDIF disponible.
         # Marqué fiable seulement s'il a été capturé <= CLOSING_MAX_MINS avant le match.
         snaps = []
-        for label in ('t25', 't10'):
+        for label in ('t25', 't15', 't7', 't3'):
             s = closing[uid].get(f'pinnacle_{label}')
             if s and 'mins_before' in s:
                 snaps.append(s)
@@ -259,6 +261,13 @@ def main():
         run_movement_detector()
     except Exception as e:
         print(f"  ℹ️ Détecteur mouvement non exécuté: {e}")
+
+    # Collecte des marchés jeux (spreads+totals) pour étude — une fois par match proche.
+    try:
+        from games_markets import run_games_collector
+        run_games_collector(api_key)
+    except Exception as e:
+        print(f"  ℹ️ Collecte jeux non exécutée: {e}")
 
 if __name__ == '__main__':
     main()
