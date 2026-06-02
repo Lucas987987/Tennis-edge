@@ -19,7 +19,8 @@ moins RE_ALERT_PCT depuis la dernière alerte (état mémorisé dans alerts_sent
 import os, json, urllib.request, urllib.parse, datetime
 
 CLOSING_FILE = 'closing_lines.json'
-ALERTS_FILE = 'odds_alerts_state.json'   # mémorise ce qui a déjà été notifié
+ALERTS_FILE = 'odds_alerts_state.json'   # état anti-spam (éphémère, nettoyé)
+ALERTS_LOG = 'odds_alerts_log.jsonl'     # journal append-only (jamais effacé)
 
 SEUIL_PCT = 10.0        # amplitude minimale pour une 1re alerte (%)
 RE_ALERT_PCT = 8.0      # ré-alerte seulement si ça bouge encore de +8 pts (%)
@@ -107,6 +108,32 @@ def format_alert(mv):
     )
 
 
+def log_alert(mv):
+    """Append une ligne JSON dans le journal permanent (jamais effacé).
+    Conçu pour être croisé plus tard avec backtest_tennis.csv et le CLV via 'uid'."""
+    entry = {
+        'logged_at': datetime.datetime.utcnow().isoformat(),
+        'uid': mv['uid'],                       # clé de jointure avec backtest / CLV
+        'home': mv['home'],
+        'away': mv['away'],
+        'tournament': mv['tournament'],
+        'commence_time': mv['commence_time'],
+        'mins_before': mv['mins_before'],       # à quel moment l'alerte est partie
+        'o_home_first': mv['o_home_first'],
+        'o_home_last': mv['o_home_last'],
+        'o_away_first': mv['o_away_first'],
+        'o_away_last': mv['o_away_last'],
+        'mv_home_pct': mv['mv_home'],
+        'mv_away_pct': mv['mv_away'],
+        'amplitude_pct': mv['amp'],
+    }
+    try:
+        with open(ALERTS_LOG, 'a', encoding='utf-8') as f:
+            f.write(json.dumps(entry, ensure_ascii=False) + '\n')
+    except Exception as e:
+        print(f"  ⚠️ Écriture journal alertes: {e}")
+
+
 def run_movement_detector():
     token = os.environ.get('TELEGRAM_TOKEN', '')
     chat_id = os.environ.get('TELEGRAM_CHAT_ID', '')
@@ -137,6 +164,7 @@ def run_movement_detector():
         if prev_amp is None or (mv['amp'] - prev_amp) >= RE_ALERT_PCT:
             if send_telegram(token, chat_id, format_alert(mv)):
                 sent[uid] = mv['amp']
+                log_alert(mv)          # journal permanent pour analyse future
                 n_sent += 1
                 print(f"  📨 Alerte envoyée: {mv['home']} vs {mv['away']} ({mv['amp']}%)")
 
