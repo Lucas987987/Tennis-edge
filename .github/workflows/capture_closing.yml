@@ -1,9 +1,20 @@
 name: Capture Closing Lines
 
 on:
+  # Cron lâche : sert UNIQUEMENT à découvrir les matchs du jour
+  # (les ajouter à closing_lines.json pour que le worker connaisse leur commence_time).
+  # Le timing serré du closing est géré par le worker Cloudflare via repository_dispatch.
   schedule:
-    - cron: '*/10 6-23 * * *'
+    - cron: '7 6-22 * * *'        # 1×/h, minute 7 pour éviter la congestion de :00
+  # Déclenché par le worker Cloudflare quand un match approche (T-25 / T-10)
+  repository_dispatch:
+    types: [capture_closing]
   workflow_dispatch:
+
+# Évite que deux captures se marchent dessus (cron + worker en même temps)
+concurrency:
+  group: capture-closing
+  cancel-in-progress: false
 
 jobs:
   capture:
@@ -37,3 +48,4 @@ jobs:
           git diff --staged --quiet || git commit -m "Closing lines update"
           git pull --rebase --autostash 2>/dev/null || true
           git push
+
