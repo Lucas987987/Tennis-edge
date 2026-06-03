@@ -60,8 +60,28 @@ for f, max_h in FILES.items():
     else:
         infos.append(f"✅ {f} ({age:.0f}h)")
 
-# ── 2. Intégrité du backtest ─────────────────────────────
-if os.path.exists('backtest_tennis.csv'):
+# ── 1b. Contenu de resultats.json : le dernier match progresse-t-il ? ──
+# Sackmann publie avec ~10j de retard. Au-delà de 12j, c'est un vrai blocage.
+if os.path.exists('resultats.json'):
+    try:
+        with open('resultats.json') as fh:
+            rj = json.load(fh)
+        results = rj.get('results', [])
+        dates = [r.get('date','') for r in results if r.get('date')]
+        if dates:
+            last_date = max(dates)  # format YYYY-MM-DD, tri lexical OK
+            last_dt = datetime.datetime.strptime(last_date, '%Y-%m-%d')
+            days_old = (now - last_dt).days
+            if days_old > 12:
+                alerts.append(f"⚠️ resultats.json: dernier match il y a {days_old}j ({last_date}) — flux Sackmann bloqué ?")
+            else:
+                infos.append(f"✅ résultats à jour (dernier: {last_date}, {days_old}j)")
+        else:
+            infos.append("(resultats.json sans dates exploitables)")
+    except Exception as e:
+        alerts.append(f"❌ Erreur lecture resultats.json: {_esc(e)}")
+
+# ── 2. Intégrité du backtest ─────────────────────────────if os.path.exists('backtest_tennis.csv'):
     try:
         with open('backtest_tennis.csv') as fh:
             lines = [l for l in fh.read().split('\n') if l.strip()]
