@@ -1,273 +1,53 @@
-#!/usr/bin/env python3
-"""
-Capture les closing lines Pinnacle pour les matchs qui commencent bientôt.
+name: Capture Closing Lines
 
-Déclenché par le worker Cloudflare (repository_dispatch) au bon moment :
-- snapshot T-25 (marge de sécurité contre le délai GitHub)
-- snapshot T-10 (vrai dernier instant)
-Le cron horaire (minute 7) sert seulement à découvrir les matchs du jour.
+on:
+  # Cron lâche : sert UNIQUEMENT à découvrir les matchs du jour
+  # (les ajouter à closing_lines.json pour que le worker connaisse leur commence_time).
+  # Le timing serré du closing est géré par le worker Cloudflare via repository_dispatch.
+  schedule:
+    - cron: '7 6-22 * * *'        # 1×/h, minute 7 pour éviter la congestion de :00
+  # Déclenché par le worker Cloudflare quand un match approche (T-25 / T-10)
+  repository_dispatch:
+    types: [capture_closing]
+  workflow_dispatch:
 
-Le closing de référence pour le CLV = le snapshot le PLUS TARDIF disponible,
-à condition qu'il soit dans la fenêtre fiable (<= CLOSING_MAX_MINS avant le match).
-Sinon le match est marqué closing_reliable=False et doit être EXCLU du CLV.
-"""
-import urllib.request, json, datetime, os
+# Évite que deux captures se marchent dessus (cron + worker en même temps)
+concurrency:
+  group: capture-closing
+  cancel-in-progress: false
 
-# Clés API en rotation (stockées en secrets GitHub)
-API_KEYS = [
-    os.environ.get('ODDS_API_KEY_1', ''),
-    os.environ.get('ODDS_API_KEY_2', ''),
-    os.environ.get('ODDS_API_KEY_3', ''),
-    os.environ.get('ODDS_API_KEY_4', ''),
-    os.environ.get('ODDS_API_KEY_5', ''),
-]
-API_KEYS = [k for k in API_KEYS if k]
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
-CLOSING_FILE = 'closing_lines.json'
-# Fenêtres de capture (minutes avant le match). Resserrées car le timing est
-# maintenant garanti par le worker Cloudflare (plus de boucle aveugle */10).
-CAPTURE_WINDOWS = [
-    (20, 32, 't25'),   # cible T-25 : marge de sécurité, absorbe le délai GitHub
-    (12, 20, 't15'),   # cible T-15
-    (5, 12, 't7'),     # cible T-7
-    (0, 5, 't3'),      # cible T-3 : tout dernier instant
-]
-# Au-delà de ce délai, un snapshot n'est PAS considéré comme un closing fiable.
-CLOSING_MAX_MINS = 35
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-def get_api_key():
-    """Choisit une clé selon l'heure pour répartir la charge."""
-    if not API_KEYS: return None
-    hour = datetime.datetime.utcnow().hour
-    return API_KEYS[hour % len(API_KEYS)]
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
 
-def test_key(key):
-    """Teste si une clé fonctionne sur l'endpoint odds (validation réelle)."""
-    try:
-        url = f"https://api.the-odds-api.com/v4/sports/tennis_atp_french_open/odds/?apiKey={key}&regions=eu&markets=h2h&oddsFormat=decimal"
-        req = urllib.request.Request(url, headers={'User-Agent': 'tennis-edge/1.0'})
-        with urllib.request.urlopen(req, timeout=15) as r:
-            rem = r.headers.get('x-requests-remaining', '?')
-            return True, rem
-    except urllib.error.HTTPError as e:
-        return False, f"HTTP {e.code}"
-    except Exception as e:
-        return False, str(e)[:40]
+      - name: Capture closing lines
+        env:
+          ODDS_API_KEY_1: ${{ secrets.ODDS_API_KEY_1 }}
+          ODDS_API_KEY_2: ${{ secrets.ODDS_API_KEY_2 }}
+          ODDS_API_KEY_3: ${{ secrets.ODDS_API_KEY_3 }}
+          ODDS_API_KEY_4: ${{ secrets.ODDS_API_KEY_4 }}
+          ODDS_API_KEY_5: ${{ secrets.ODDS_API_KEY_5 }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python scripts/capture_closing.py
 
-def get_working_key():
-    """Trouve la première clé qui fonctionne réellement."""
-    for i, key in enumerate(API_KEYS):
-        ok, info = test_key(key)
-        print(f"  Clé {i+1} ({key[:4]}...): {'✅ OK, '+str(info)+' req' if ok else '❌ '+str(info)}")
-        if ok:
-            return key
-    return None
+      - name: Commit closing lines
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add closing_lines.json odds_alerts_state.json odds_alerts_log.jsonl odds_logged_state.json games_markets.json 2>/dev/null || true
+          git diff --staged --quiet || git commit -m "Closing lines update"
+          git pull --rebase --autostash 2>/dev/null || true
+          git push
 
-def deduce_niveau(sport_key, title):
-    """Déduit le niveau du tournoi à partir du sport_key et du titre.
-    The Odds API couvre : Grands Chelems, ATP/WTA 1000 et 500.
-    Retourne : 'grand_chelem' | '1000' | '500' | 'autre'.
-    Le sport_key brut est toujours conservé à part, donc une mauvaise
-    déduction reste corrigeable a posteriori sans perte d'info."""
-    s = (sport_key or '').lower() + ' ' + (title or '').lower()
-    grands_chelems = ['french_open', 'french open', 'wimbledon',
-                      'us_open', 'us open', 'australian_open', 'australian open',
-                      'roland', 'roland_garros']
-    if any(g in s for g in grands_chelems):
-        return 'grand_chelem'
-    if '1000' in s or 'masters' in s or 'master' in s:
-        return '1000'
-    if '500' in s:
-        return '500'
-    return 'autre'
-
-
-def fetch_odds(api_key):
-    """Récupère les cotes de tous les tournois tennis en cours."""
-    matches = []
-    # Récupérer la liste des sports tennis actifs
-    try:
-        url = f"https://api.the-odds-api.com/v4/sports/?apiKey={api_key}"
-        req = urllib.request.Request(url, headers={'User-Agent': 'tennis-edge/1.0'})
-        with urllib.request.urlopen(req, timeout=15) as r:
-            sports = json.loads(r.read())
-            remaining = r.headers.get('x-requests-remaining', '?')
-    except Exception as e:
-        print(f"❌ Liste sports: {e}")
-        return [], '?'
-
-    tennis = [s for s in sports if s.get('key','').startswith('tennis')]
-    print(f"  {len(tennis)} tournois tennis actifs")
-
-    for sport in tennis:
-        try:
-            url = (f"https://api.the-odds-api.com/v4/sports/{sport['key']}/odds/"
-                   f"?apiKey={api_key}&regions=eu&markets=h2h&oddsFormat=decimal")
-            req = urllib.request.Request(url, headers={'User-Agent': 'tennis-edge/1.0'})
-            with urllib.request.urlopen(req, timeout=15) as r:
-                data = json.loads(r.read())
-                remaining = r.headers.get('x-requests-remaining', remaining)
-                for m in data:
-                    m['_sport'] = sport['title']
-                    m['_sport_key'] = sport['key']
-                    matches.append(m)
-        except Exception as e:
-            print(f"  ⚠️ {sport['key']}: {e}")
-
-    return matches, remaining
-
-def get_pinnacle(match):
-    """Extrait la cote Pinnacle d'un match."""
-    home = match.get('home_team','')
-    away = match.get('away_team','')
-    for bkm in match.get('bookmakers', []):
-        if 'pinnacle' in bkm.get('key','').lower():
-            outs = bkm.get('markets',[{}])[0].get('outcomes',[])
-            oH = next((o for o in outs if o['name']==home), None)
-            oA = next((o for o in outs if o['name']==away), None)
-            if oH and oA:
-                return oH['price'], oA['price']
-    return None, None
-
-def main():
-    now = datetime.datetime.utcnow()
-    print(f"  Test des {len(API_KEYS)} clés disponibles...")
-    api_key = get_working_key()
-    if not api_key:
-        print("❌ Aucune clé API fonctionnelle (toutes épuisées ou invalides)")
-        return
-
-    print(f"Capture closing lines @ {now.isoformat()} UTC")
-
-    # Charger les closing lines existantes
-    closing = {}
-    if os.path.exists(CLOSING_FILE):
-        with open(CLOSING_FILE, encoding='utf-8') as f:
-            closing = json.load(f)
-
-    matches, remaining = fetch_odds(api_key)
-    print(f"  {len(matches)} matchs récupérés · {remaining} req restantes")
-
-    captured = 0
-    for m in matches:
-        ct = m.get('commence_time','')
-        if not ct: continue
-        try:
-            start = datetime.datetime.fromisoformat(ct.replace('Z','+00:00')).replace(tzinfo=None)
-        except:
-            continue
-
-        mins_until = (start - now).total_seconds() / 60
-
-        # Ne capturer que les matchs à venir dans les prochaines 72h (évite de capturer trop tôt)
-        if mins_until < 0 or mins_until > 72*60:
-            continue
-
-        home = m.get('home_team','')
-        away = m.get('away_team','')
-        uid = f"{ct[:10]}_{home}_{away}".replace(' ','_').lower()
-        psH, psA = get_pinnacle(m)
-        if not (psH and psA):
-            continue
-
-        # Initialiser l'entrée si nouvelle
-        if uid not in closing:
-            closing[uid] = {
-                'date': ct[:10],
-                'home': home, 'away': away,
-                'tournament': m.get('_sport',''),
-                'sport_key': m.get('_sport_key',''),
-                'niveau': deduce_niveau(m.get('_sport_key',''), m.get('_sport','')),
-                'commence_time': ct,
-                'history': [],
-            }
-        else:
-            # Compléter les entrées existantes qui n'auraient pas encore ces champs
-            if not closing[uid].get('sport_key'):
-                closing[uid]['sport_key'] = m.get('_sport_key','')
-            if not closing[uid].get('niveau'):
-                closing[uid]['niveau'] = deduce_niveau(m.get('_sport_key',''), m.get('_sport',''))
-        # S'assurer que history existe (compat anciennes entrées)
-        if 'history' not in closing[uid]:
-            closing[uid]['history'] = []
-
-        # Dédoublonnage intelligent : ne stocker que si la cote a bougé de façon
-        # significative (>1%) OU si >30 min depuis le dernier point.
-        # Évite d'accumuler des micro-variations insignifiantes.
-        hist = closing[uid]['history']
-        last = hist[-1] if hist else None
-        store = True
-        if last:
-            try:
-                dh = abs(psH - last['home']) / last['home']
-                da = abs(psA - last['away']) / last['away']
-                # Temps écoulé depuis le dernier point
-                t_last = datetime.datetime.fromisoformat(last['t'])
-                mins_since = (now - t_last).total_seconds() / 60
-                # Stocker si variation >1% OU si >30 min écoulées
-                store = (dh > 0.01 or da > 0.01 or mins_since > 30)
-            except:
-                store = True
-        if store:
-            hist.append({
-                't': now.isoformat(),
-                'mins_before': round(mins_until),
-                'home': psH, 'away': psA,
-            })
-            captured += 1
-        # Limiter à 100 points max par match (garde les plus récents)
-        if len(hist) > 100:
-            closing[uid]['history'] = hist[-100:]
-
-        # Snapshots de référence T-25 et T-10
-        for win_min, win_max, label in CAPTURE_WINDOWS:
-            if win_min <= mins_until <= win_max:
-                closing[uid][f'pinnacle_{label}'] = {
-                    'home': psH, 'away': psA,
-                    'mins_before': round(mins_until),
-                    'captured_at': now.isoformat(),
-                }
-                print(f"  ✅ [{label}] {home} vs {away}: {psH}/{psA} (T-{round(mins_until)})")
-
-        # Déterminer le closing de référence = snapshot le PLUS TARDIF disponible.
-        # Marqué fiable seulement s'il a été capturé <= CLOSING_MAX_MINS avant le match.
-        snaps = []
-        for label in ('t25', 't15', 't7', 't3'):
-            s = closing[uid].get(f'pinnacle_{label}')
-            if s and 'mins_before' in s:
-                snaps.append(s)
-        if snaps:
-            best = min(snaps, key=lambda s: s['mins_before'])  # le plus proche du match
-            closing[uid]['closing'] = {
-                'home': best['home'], 'away': best['away'],
-                'mins_before': best['mins_before'],
-                'captured_at': best['captured_at'],
-                'reliable': best['mins_before'] <= CLOSING_MAX_MINS,
-            }
-
-    # Nettoyer les vieilles entrées (> 30 jours)
-    cutoff = (now - datetime.timedelta(days=30)).strftime('%Y-%m-%d')
-    closing = {k:v for k,v in closing.items() if v.get('date','') >= cutoff}
-
-    with open(CLOSING_FILE, 'w', encoding='utf-8') as f:
-        json.dump(closing, f, ensure_ascii=False, indent=2)
-
-    print(f"\n✅ {captured} captures · {len(closing)} matchs dans closing_lines.json")
-
-    # Détecteur de mouvement de cote (alerte Telegram défensive).
-    # Importé ici pour ne pas casser la capture si le module/secrets manquent.
-    try:
-        from odds_movement import run_movement_detector
-        run_movement_detector()
-    except Exception as e:
-        print(f"  ℹ️ Détecteur mouvement non exécuté: {e}")
-
-    # Collecte des marchés jeux (spreads+totals) pour étude — une fois par match proche.
-    try:
-        from games_markets import run_games_collector
-        run_games_collector(api_key)
-    except Exception as e:
-        print(f"  ℹ️ Collecte jeux non exécutée: {e}")
-
-if __name__ == '__main__':
-    main()
