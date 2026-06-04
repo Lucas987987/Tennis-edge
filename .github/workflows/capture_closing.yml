@@ -50,3 +50,4 @@ jobs:
           git diff --staged --quiet || git commit -m "Closing lines update"
           git pull --rebase --autostash 2>/dev/null || true
           git push
+
