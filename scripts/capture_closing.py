@@ -1,8 +1,15 @@
 #!/usr/bin/env python3
 """
 Capture les closing lines Pinnacle pour les matchs qui commencent bientôt.
-Tourne toutes les 15-20 min entre 9h et 23h UTC.
-Capture à 60min ET 15min avant chaque match.
+
+Déclenché par le worker Cloudflare (repository_dispatch) au bon moment :
+- snapshot T-25 (marge de sécurité contre le délai GitHub)
+- snapshot T-10 (vrai dernier instant)
+Le cron horaire (minute 7) sert seulement à découvrir les matchs du jour.
+
+Le closing de référence pour le CLV = le snapshot le PLUS TARDIF disponible,
+à condition qu'il soit dans la fenêtre fiable (<= CLOSING_MAX_MINS avant le match).
+Sinon le match est marqué closing_reliable=False et doit être EXCLU du CLV.
 """
 import urllib.request, json, datetime, os
 
@@ -17,11 +24,16 @@ API_KEYS = [
 API_KEYS = [k for k in API_KEYS if k]
 
 CLOSING_FILE = 'closing_lines.json'
-# Fenêtres de capture (minutes avant le match)
+# Fenêtres de capture (minutes avant le match). Resserrées car le timing est
+# maintenant garanti par le worker Cloudflare (plus de boucle aveugle */10).
 CAPTURE_WINDOWS = [
-    (45, 75, '60min'),   # entre 45 et 75 min avant → snapshot "60min"
-    (5, 25, '15min'),    # entre 5 et 25 min avant → snapshot "15min"
+    (20, 32, 't25'),   # cible T-25 : marge de sécurité, absorbe le délai GitHub
+    (12, 20, 't15'),   # cible T-15
+    (5, 12, 't7'),     # cible T-7
+    (0, 5, 't3'),      # cible T-3 : tout dernier instant
 ]
+# Au-delà de ce délai, un snapshot n'est PAS considéré comme un closing fiable.
+CLOSING_MAX_MINS = 35
 
 def get_api_key():
     """Choisit une clé selon l'heure pour répartir la charge."""
@@ -51,6 +63,25 @@ def get_working_key():
             return key
     return None
 
+def deduce_niveau(sport_key, title):
+    """Déduit le niveau du tournoi à partir du sport_key et du titre.
+    The Odds API couvre : Grands Chelems, ATP/WTA 1000 et 500.
+    Retourne : 'grand_chelem' | '1000' | '500' | 'autre'.
+    Le sport_key brut est toujours conservé à part, donc une mauvaise
+    déduction reste corrigeable a posteriori sans perte d'info."""
+    s = (sport_key or '').lower() + ' ' + (title or '').lower()
+    grands_chelems = ['french_open', 'french open', 'wimbledon',
+                      'us_open', 'us open', 'australian_open', 'australian open',
+                      'roland', 'roland_garros']
+    if any(g in s for g in grands_chelems):
+        return 'grand_chelem'
+    if '1000' in s or 'masters' in s or 'master' in s:
+        return '1000'
+    if '500' in s:
+        return '500'
+    return 'autre'
+
+
 def fetch_odds(api_key):
     """Récupère les cotes de tous les tournois tennis en cours."""
     matches = []
@@ -65,7 +96,7 @@ def fetch_odds(api_key):
         print(f"❌ Liste sports: {e}")
         return [], '?'
 
-    tennis = [s for s in sports if s.get('key','').startswith('tennis')][:6]
+    tennis = [s for s in sports if s.get('key','').startswith('tennis')]
     print(f"  {len(tennis)} tournois tennis actifs")
 
     for sport in tennis:
@@ -78,6 +109,7 @@ def fetch_odds(api_key):
                 remaining = r.headers.get('x-requests-remaining', remaining)
                 for m in data:
                     m['_sport'] = sport['title']
+                    m['_sport_key'] = sport['key']
                     matches.append(m)
         except Exception as e:
             print(f"  ⚠️ {sport['key']}: {e}")
@@ -144,9 +176,17 @@ def main():
                 'date': ct[:10],
                 'home': home, 'away': away,
                 'tournament': m.get('_sport',''),
+                'sport_key': m.get('_sport_key',''),
+                'niveau': deduce_niveau(m.get('_sport_key',''), m.get('_sport','')),
                 'commence_time': ct,
                 'history': [],
             }
+        else:
+            # Compléter les entrées existantes qui n'auraient pas encore ces champs
+            if not closing[uid].get('sport_key'):
+                closing[uid]['sport_key'] = m.get('_sport_key','')
+            if not closing[uid].get('niveau'):
+                closing[uid]['niveau'] = deduce_niveau(m.get('_sport_key',''), m.get('_sport',''))
         # S'assurer que history existe (compat anciennes entrées)
         if 'history' not in closing[uid]:
             closing[uid]['history'] = []
@@ -179,25 +219,55 @@ def main():
         if len(hist) > 100:
             closing[uid]['history'] = hist[-100:]
 
-        # Garder aussi les snapshots de référence 60min et 15min pour le CLV closing
+        # Snapshots de référence T-25 et T-10
         for win_min, win_max, label in CAPTURE_WINDOWS:
             if win_min <= mins_until <= win_max:
                 closing[uid][f'pinnacle_{label}'] = {
                     'home': psH, 'away': psA,
+                    'mins_before': round(mins_until),
                     'captured_at': now.isoformat(),
                 }
-                print(f"  ✅ [{label}] {home} vs {away}: {psH}/{psA}")
+                print(f"  ✅ [{label}] {home} vs {away}: {psH}/{psA} (T-{round(mins_until)})")
 
-    # Nettoyer les vieilles entrées (> 90 jours)
-    # 90j (et non 30j) pour garantir que le CLV puisse être calculé même si le
-    # backtest est uploadé tardivement — les closing lines restent disponibles longtemps.
-    cutoff = (now - datetime.timedelta(days=90)).strftime('%Y-%m-%d')
+        # Déterminer le closing de référence = snapshot le PLUS TARDIF disponible.
+        # Marqué fiable seulement s'il a été capturé <= CLOSING_MAX_MINS avant le match.
+        snaps = []
+        for label in ('t25', 't15', 't7', 't3'):
+            s = closing[uid].get(f'pinnacle_{label}')
+            if s and 'mins_before' in s:
+                snaps.append(s)
+        if snaps:
+            best = min(snaps, key=lambda s: s['mins_before'])  # le plus proche du match
+            closing[uid]['closing'] = {
+                'home': best['home'], 'away': best['away'],
+                'mins_before': best['mins_before'],
+                'captured_at': best['captured_at'],
+                'reliable': best['mins_before'] <= CLOSING_MAX_MINS,
+            }
+
+    # Nettoyer les vieilles entrées (> 30 jours)
+    cutoff = (now - datetime.timedelta(days=30)).strftime('%Y-%m-%d')
     closing = {k:v for k,v in closing.items() if v.get('date','') >= cutoff}
 
     with open(CLOSING_FILE, 'w', encoding='utf-8') as f:
         json.dump(closing, f, ensure_ascii=False, indent=2)
 
     print(f"\n✅ {captured} captures · {len(closing)} matchs dans closing_lines.json")
+
+    # Détecteur de mouvement de cote (alerte Telegram défensive).
+    # Importé ici pour ne pas casser la capture si le module/secrets manquent.
+    try:
+        from odds_movement import run_movement_detector
+        run_movement_detector()
+    except Exception as e:
+        print(f"  ℹ️ Détecteur mouvement non exécuté: {e}")
+
+    # Collecte des marchés jeux (spreads+totals) pour étude — une fois par match proche.
+    try:
+        from games_markets import run_games_collector
+        run_games_collector(api_key)
+    except Exception as e:
+        print(f"  ℹ️ Collecte jeux non exécutée: {e}")
 
 if __name__ == '__main__':
     main()
