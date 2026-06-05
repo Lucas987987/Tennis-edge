@@ -338,9 +338,28 @@ def update_backtest_results(sackmann_results):
         jb = norm_name(cols[iJB] if iJB >= 0 and iJB < len(cols) else '')
         dt = cols[iDt].replace('-','') if iDt >= 0 and iDt < len(cols) else ''
 
+        best_match = None
+        best_gap = 99999
+        # Date du match backtest en objet date (pour calcul d'écart en JOURS réels)
+        dt_obj = None
+        if dt and len(dt) == 8:
+            try: dt_obj = datetime.datetime.strptime(dt, '%Y%m%d')
+            except: dt_obj = None
+
         for m in sackmann_results:
             mdt = m.get('date','').replace('-','')
-            if dt and mdt and abs(int(dt or 0) - int(mdt or 0)) > 5:
+            # Écart en JOURS réels entre les deux dates
+            gap = 0
+            if dt_obj and mdt and len(mdt) == 8:
+                try:
+                    mdt_obj = datetime.datetime.strptime(mdt, '%Y%m%d')
+                    gap = abs((dt_obj - mdt_obj).days)
+                except:
+                    gap = 0
+            # Tolérance 15 jours : Sackmann date tous les matchs d'un tournoi à la
+            # tourney_date (lundi de début). Un Grand Chelem dure ~13j. Le matching
+            # reste fiable car il s'appuie sur les noms des DEUX joueurs.
+            if dt_obj and mdt and gap > 15:
                 continue
             winner = norm_name(m.get('winner',''))
             mja = norm_name(m.get('home_team',''))
@@ -355,13 +374,20 @@ def update_backtest_results(sackmann_results):
                     (last_ja == last_mjb and last_jb == last_mja)
             if not match: continue
 
+            # Garder le résultat le plus proche en date (évite de confondre
+            # deux rencontres des mêmes joueurs dans des tournois différents)
+            if gap < best_gap:
+                best_gap = gap
+                best_match = m
+
+        if best_match is not None:
+            winner = norm_name(best_match.get('winner',''))
+            last_ja = ja.split(' ')[-1]
             last_winner = winner.split(' ')[-1]
             cols[iRes] = '1' if last_winner == last_ja else '0'
-            # Marquer l'anomalie (abandon/renversement)
-            if iAno >= 0 and m.get('anomalie'):
-                cols[iAno] = m['anomalie']
+            if iAno >= 0 and best_match.get('anomalie'):
+                cols[iAno] = best_match['anomalie']
             updated += 1
-            break
 
         new_lines.append(';'.join(cols))
 
@@ -502,60 +528,4 @@ def main():
                 pL = find_player(D, loser) if D else None
 
                 result = {
-                    'id': f"{date_str}_{norm_name(winner)}_{norm_name(loser)}".replace(' ','_'),
-                    'date': date_str,
-                    'tournament': tournament,
-                    'circuit': circuit,
-                    'surface': surface,
-                    'home_team': winner,
-                    'away_team': loser,
-                    'winner': winner,
-                    'winner_code': 1,
-                    'score': row.get('score', ''),
-                    'completed': True,
-                    # Stats Sackmann
-                    'aces_home': row.get('w_ace', ''),
-                    'aces_away': row.get('l_ace', ''),
-                    'df_home': row.get('w_df', ''),
-                    'df_away': row.get('l_df', ''),
-                    'first_serve_won_home': row.get('w_1stWon', ''),
-                    'first_serve_won_away': row.get('l_1stWon', ''),
-                    'rank_home': row.get('winner_rank', ''),
-                    'rank_away': row.get('loser_rank', ''),
-                    'anomalie': detect_anomalie(row.get('score', '')),
-                    # Elo/stats depuis players_data.json
-                    'elo_home': pW.get('elo', {}).get(ek) if pW else '',
-                    'elo_away': pL.get('elo', {}).get(ek) if pL else '',
-                    'spw_home': pW.get('serve', {}).get('spw', '') if pW else '',
-                    'spw_away': pL.get('serve', {}).get('spw', '') if pL else '',
-                    'rpw_home': pW.get('ret', {}).get('rpw', '') if pW else '',
-                    'rpw_away': pL.get('ret', {}).get('rpw', '') if pL else '',
-                }
-                results.append(result)
-
-        except Exception as e:
-            print(f"  Erreur: {e}")
-
-    print(f"\n{len(results)} résultats au total")
-
-    # Sauvegarder resultats.json
-    output = {
-        'updated': today.strftime('%Y-%m-%d'),
-        'generated_at': datetime.datetime.utcnow().isoformat(),
-        'source': 'JeffSackmann + players_data.json',
-        'count': len(results),
-        'results': results
-    }
-    with open('resultats.json', 'w', encoding='utf-8') as f:
-        json.dump(output, f, ensure_ascii=False, indent=2)
-    print(f"✅ resultats.json: {len(results)} résultats")
-
-    # Enrichir et mettre à jour le backtest
-    if D:
-        print("\nEnrichissement backtest...")
-        enrich_backtest(D)
-        update_backtest_results(results)
-        enrich_closing_lines()
-
-if __name__ == '__main__':
-    main()
+                    'id': f"{date_str}_{norm_name(winner)}_{norm_name(l
