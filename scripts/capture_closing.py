@@ -149,6 +149,7 @@ def main():
     print(f"  {len(matches)} matchs récupérés · {remaining} req restantes")
 
     captured = 0
+    seen_now = set()   # uid des matchs présents dans cette réponse API
     for m in matches:
         ct = m.get('commence_time','')
         if not ct: continue
@@ -159,8 +160,11 @@ def main():
 
         mins_until = (start - now).total_seconds() / 60
 
-        # Ne capturer que les matchs à venir dans les prochaines 72h (évite de capturer trop tôt)
-        if mins_until < 0 or mins_until > 72*60:
+        # On capture les matchs à venir dans les 72h ET ceux dont l'heure annoncée
+        # est dépassée mais qui sont TOUJOURS présents dans l'API (= pas encore commencés,
+        # ex: 1er tour décalé ou demi-finale mal datée). On tolère jusqu'à 6h de dépassement
+        # pour couvrir les gros décalages, au-delà c'est probablement une donnée périmée.
+        if mins_until > 72*60 or mins_until < -360:
             continue
 
         home = m.get('home_team','')
@@ -169,6 +173,7 @@ def main():
         psH, psA = get_pinnacle(m)
         if not (psH and psA):
             continue
+        seen_now.add(uid)
 
         # Initialiser l'entrée si nouvelle
         if uid not in closing:
@@ -187,9 +192,29 @@ def main():
                 closing[uid]['sport_key'] = m.get('_sport_key','')
             if not closing[uid].get('niveau'):
                 closing[uid]['niveau'] = deduce_niveau(m.get('_sport_key',''), m.get('_sport',''))
+            # Rafraîchir commence_time si l'API a corrigé l'heure (ex: demi-finale
+            # dont l'horaire provisoire était faux). On suit la valeur fraîche de l'API.
+            old_ct = closing[uid].get('commence_time','')
+            if ct and ct != old_ct and ct[:10] == old_ct[:10]:
+                # même jour, heure différente : on met à jour ET on recalcule
+                # les mins_before de l'historique (sinon ils restent faux).
+                print(f"  🕐 Heure corrigée: {home} vs {away} | {old_ct} -> {ct}")
+                closing[uid]['commence_time'] = ct
+                for p in closing[uid].get('history', []):
+                    pt = p.get('t')
+                    if pt:
+                        try:
+                            tp = datetime.datetime.fromisoformat(pt.replace('Z','+00:00')).replace(tzinfo=None)
+                            p['mins_before'] = round((start - tp).total_seconds() / 60)
+                        except Exception:
+                            pass
+                # Le closing reconstruit devient caduc : on le laissera se recréer
+                closing[uid].pop('closing', None)
         # S'assurer que history existe (compat anciennes entrées)
         if 'history' not in closing[uid]:
             closing[uid]['history'] = []
+        # Match présent dans l'API : remettre le compteur d'absence à zéro
+        closing[uid]['absent_count'] = 0
 
         # Dédoublonnage intelligent : ne stocker que si la cote a bougé de façon
         # significative (>1%) OU si >30 min depuis le dernier point.
@@ -245,8 +270,63 @@ def main():
                 'reliable': best['mins_before'] <= CLOSING_MAX_MINS,
             }
 
-    # Nettoyer les vieilles entrées (> 30 jours)
-    cutoff = (now - datetime.timedelta(days=30)).strftime('%Y-%m-%d')
+    # ===== Détection du closing par DISPARITION =====
+    # Un match qui était présent puis disparaît de l'API pendant ABSENT_THRESHOLD
+    # passages consécutifs est considéré comme COMMENCÉ. Son dernier point d'historique
+    # est alors le vrai closing — indépendamment de l'heure annoncée (qui peut être
+    # fausse pour les 1ers tours décalés ou les demi-finales mal datées).
+    ABSENT_THRESHOLD = 3   # ~15 min (3 passages de 5 min) avant de figer
+    for uid, m in closing.items():
+        if uid in seen_now:
+            continue  # présent, déjà remis à 0
+        # Absent : incrémenter le compteur
+        m['absent_count'] = m.get('absent_count', 0) + 1
+
+        # Déjà figé par disparition ? ne pas refaire
+        if m.get('closing', {}).get('closing_method') == 'disappearance':
+            continue
+
+        if m['absent_count'] < ABSENT_THRESHOLD:
+            continue
+
+        hist = m.get('history', [])
+        if not hist:
+            continue
+        last = hist[-1]
+
+        # Garde-fou "heure plausible" : un match ne commence quasi jamais bien AVANT
+        # son heure annoncée. Si le dernier point a été capturé largement avant l'heure
+        # annoncée, la disparition est probablement un raté d'API, pas un vrai départ.
+        ct = m.get('commence_time', '')
+        plausible = True
+        try:
+            start = datetime.datetime.fromisoformat(ct.replace('Z','+00:00')).replace(tzinfo=None)
+            t_last = datetime.datetime.fromisoformat(last['t'])
+            # mins entre le dernier point et l'heure annoncée (positif = avant l'heure)
+            before_announced = (start - t_last).total_seconds() / 60
+            # Si le dernier point est > 60 min AVANT l'heure annoncée, suspect
+            if before_announced > 60:
+                plausible = False
+        except Exception:
+            pass
+
+        if not plausible:
+            # On n'a pas confiance : on garde le match "en attente" sans figer,
+            # et on remet le compteur à 0 pour laisser une chance au retour de l'API.
+            m['absent_count'] = 0
+            continue
+
+        # Figer le closing sur le dernier point observé avant disparition
+        m['closing'] = {
+            'home': last['home'], 'away': last['away'],
+            'captured_at': last['t'],
+            'closing_method': 'disappearance',
+            'reliable': True,   # dernier point réel avant le départ = vrai closing
+        }
+        print(f"  🏁 Closing par disparition: {m.get('home','?')} vs {m.get('away','?')} "
+              f"(dernier point {last['t'][:16]})")
+
+
     closing = {k:v for k,v in closing.items() if v.get('date','') >= cutoff}
 
     with open(CLOSING_FILE, 'w', encoding='utf-8') as f:
