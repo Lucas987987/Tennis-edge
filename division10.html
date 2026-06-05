@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>L'Académie de la valeur — Le piège que 95% des parieurs ignorent</title>
+<meta name="description" content="Les cotes te taxent de 5% avant même que tu joues. 4 minutes pour comprendre ce que presque personne ne voit.">
+
+<!-- Aperçu social (Open Graph + Twitter) -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="Le piège que 95% des parieurs ignorent">
+<meta property="og:description" content="Les cotes te taxent de 5% avant même que tu joues. 4 minutes pour le comprendre — et venir te mesurer.">
+<meta property="og:url" content="https://lucas987987.github.io/Tennis-edge/division10.html">
+<meta property="og:locale" content="fr_FR">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Le piège que 95% des parieurs ignorent">
+<meta name="twitter:description" content="Les cotes te taxent de 5% avant même que tu joues. 4 minutes pour comprendre.">
+
+<!-- Analytics GoatCounter — compte tennis-edge -->
+<script data-goatcounter="https://tennis-edge.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,900;1,9..144,500&family=Spline+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0d0b08;
+    --bg2:#141009;
+    --ink:#f4ece0;
+    --muted:#9a9082;
+    --gold:#e7b24c;
+    --gold-dim:#a87f2e;
+    --green:#5fcf80;
+    --red:#e06a5a;
+    --line:rgba(231,178,76,.18);
+    --card:#181308;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{
+    background:
+      radial-gradient(120% 80% at 50% -10%, rgba(231,178,76,.10), transparent 60%),
+      radial-gradient(100% 60% at 50% 110%, rgba(95,207,128,.05), transparent 60%),
+      var(--bg);
+    color:var(--ink);
+    font-family:'Spline Sans',sans-serif;
+    line-height:1.5;
+    overflow:hidden;
+    position:fixed;width:100%;
+  }
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:9999;opacity:.035;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  #app{height:100%;display:flex;flex-direction:column;max-width:480px;margin:0 auto;position:relative}
+
+  /* progress */
+  .top{padding:18px 22px 0;display:flex;align-items:center;gap:12px}
+  .pill{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.12em;color:var(--gold);
+    border:1px solid var(--line);padding:5px 10px;border-radius:100px;text-transform:uppercase;white-space:nowrap}
+  .bar{flex:1;height:3px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden}
+  .bar i{display:block;height:100%;width:20%;background:linear-gradient(90deg,var(--gold-dim),var(--gold));
+    border-radius:2px;transition:width .6s cubic-bezier(.4,0,.2,1)}
+
+  /* screens */
+  .screen{flex:1;overflow-y:auto;padding:30px 22px 24px;display:none;flex-direction:column}
+  .screen.active{display:flex;animation:slide .5s cubic-bezier(.16,1,.3,1)}
+  @keyframes slide{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+
+  .kicker{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.2em;
+    text-transform:uppercase;color:var(--gold-dim);margin-bottom:16px}
+  h1{font-family:'Fraunces',serif;font-weight:900;font-size:30px;line-height:1.1;letter-spacing:-.01em;margin-bottom:8px}
+  h1 em{font-style:italic;font-weight:500;color:var(--gold)}
+  p.lead{font-size:16px;color:var(--muted);margin-bottom:8px}
+  p.body{font-size:15.5px;margin-bottom:14px}
+  .spacer{flex:1;min-height:14px}
+
+  /* match card */
+  .match{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;margin:8px 0 18px}
+  .match .vs{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .player{flex:1;text-align:center}
+  .player .nm{font-family:'Fraunces',serif;font-size:17px;font-weight:600}
+  .player .od{font-family:'JetBrains Mono',monospace;font-size:26px;font-weight:700;color:var(--gold);margin-top:4px}
+  .vs .x{font-family:'JetBrains Mono',monospace;color:var(--muted);font-size:13px}
+
+  /* choices */
+  .choices{display:flex;flex-direction:column;gap:10px;margin-top:6px}
+  .choice{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:15px 16px;
+    font-size:15px;font-weight:500;color:var(--ink);text-align:left;cursor:pointer;
+    transition:.18s;display:flex;align-items:center;gap:12px;width:100%;font-family:inherit}
+  .choice:active{transform:scale(.985)}
+  .choice .dot{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--gold-dim);flex-shrink:0;
+    display:grid;place-items:center;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--gold)}
+  .choice.correct{border-color:var(--green);background:rgba(95,207,128,.08)}
+  .choice.correct .dot{border-color:var(--green);background:var(--green);color:#08210f}
+  .choice.wrong{border-color:var(--red);background:rgba(224,106,90,.07);opacity:.75}
+  .choice.wrong .dot{border-color:var(--red);color:var(--red)}
+  .choice.locked{pointer-events:none}
+
+  /* reveal calc */
+  .calc{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;margin:6px 0 16px}
+  .calc .row{display:flex;justify-content:space-between;align-items:baseline;padding:7px 0;
+    font-family:'JetBrains Mono',monospace;font-size:14px}
+  .calc .row span:first-child{color:var(--muted)}
+  .calc .row b{font-weight:700;font-size:16px}
+  .calc .row.total{border-top:1px dashed var(--line);margin-top:6px;padding-top:12px}
+  .calc .row.total b{color:var(--gold);font-size:22px}
+  .pop{display:inline-block;animation:pop .45s cubic-bezier(.34,1.56,.64,1)}
+  @keyframes pop{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:none}}
+
+  .punch{font-family:'Fraunces',serif;font-style:italic;font-size:20px;line-height:1.3;
+    color:var(--gold);border-left:2px solid var(--gold);padding-left:16px;margin:4px 0 8px}
+
+  /* feedback */
+  .fb{border-radius:14px;padding:15px 16px;font-size:14.5px;margin-top:14px;display:none;animation:slide .4s}
+  .fb.show{display:block}
+  .fb.good{background:rgba(95,207,128,.09);border:1px solid rgba(95,207,128,.3)}
+  .fb.good b{color:var(--green)}
+  .fb .ttl{font-weight:600;margin-bottom:3px}
+
+  /* buttons */
+  .btn{background:linear-gradient(180deg,var(--gold),var(--gold-dim));color:#1a1304;border:none;
+    border-radius:100px;padding:16px;font-size:15px;font-weight:600;font-family:inherit;width:100%;
+    cursor:pointer;transition:.15s;letter-spacing:.01em;box-shadow:0 6px 20px rgba(231,178,76,.22)}
+  .btn:active{transform:translateY(1px)}
+  .btn.ghost{background:none;color:var(--muted);box-shadow:none;border:1px solid var(--line)}
+  .btn:disabled{opacity:.3;pointer-events:none}
+  .btn-wrap{margin-top:14px}
+
+  /* completion */
+  .seal{width:88px;height:88px;margin:6px auto 18px;border-radius:50%;display:grid;place-items:center;
+    border:2px solid var(--gold);position:relative;animation:pop .6s cubic-bezier(.34,1.56,.64,1)}
+  .seal::before{content:"";position:absolute;inset:-7px;border-radius:50%;border:1px solid var(--line)}
+  .seal b{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--gold);letter-spacing:.05em}
+  .seal small{display:block;font-size:9px;color:var(--muted);letter-spacing:.15em}
+  .promise{background:linear-gradient(180deg,rgba(231,178,76,.06),transparent);
+    border:1px solid var(--line);border-radius:16px;padding:18px;margin:8px 0;font-size:15px}
+  .promise b{font-family:'Fraunces',serif;color:var(--gold)}
+  .recall{text-align:center;font-family:'Fraunces',serif;font-style:italic;font-size:18px;
+    color:var(--ink);margin:18px 4px;line-height:1.35}
+  .recall span{color:var(--gold)}
+
+  .foot{text-align:center;font-size:11px;color:var(--muted);padding:10px 22px 16px;opacity:.7}
+
+  /* measure */
+  .measure{margin-top:22px;padding-top:18px;border-top:1px dashed var(--line);text-align:center}
+  .measure.done{opacity:.5}
+  .m-q{font-size:13px;color:var(--muted);margin-bottom:10px;letter-spacing:.02em}
+  .m-btns{display:flex;gap:8px}
+  .m-btns button{flex:1;background:none;border:1px solid var(--line);color:var(--muted);
+    border-radius:100px;padding:10px;font-size:13px;font-family:inherit;cursor:pointer;transition:.15s}
+  .m-btns button:active{transform:scale(.97)}
+  .m-btns button.sel{border-color:var(--gold);color:var(--gold);background:rgba(231,178,76,.06)}
+
+  /* toast */
+  #toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(20px);
+    background:var(--ink);color:var(--bg);padding:12px 20px;border-radius:100px;font-size:13.5px;
+    font-weight:600;opacity:0;transition:.3s;z-index:100;pointer-events:none;max-width:88%;text-align:center}
+  #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="top">
+    <span class="pill">Division 10</span>
+    <div class="bar"><i id="prog"></i></div>
+  </div>
+
+  <!-- SCREEN 1 — le piège -->
+  <section class="screen active" data-s="0">
+    <div class="kicker">Le premier réflexe</div>
+    <h1>Un pari <em>équitable</em> ?</h1>
+    <p class="lead">Tu vas voir un match. Avant de parier, pose-toi une question simple.</p>
+    <div class="match">
+      <div class="vs">
+        <div class="player"><div class="nm">Sinner</div><div class="od">1.90</div></div>
+        <div class="x">VS</div>
+        <div class="player"><div class="nm">Alcaraz</div><div class="od">1.90</div></div>
+      </div>
+    </div>
+    <p class="body">Mêmes cotes des deux côtés. On dirait du 50/50, parfaitement juste. Tu en penses quoi&nbsp;?</p>
+    <div class="choices" id="c1">
+      <button class="choice" data-ok="0"><span class="dot">A</span> Oui, c'est un pari équitable</button>
+      <button class="choice" data-ok="1"><span class="dot">B</span> Non, il y a un piège quelque part</button>
+    </div>
+    <div class="fb good" id="fb1">
+      <div class="ttl">Il y a bien un piège. 👀</div>
+      Et il est invisible pour 95&nbsp;% des parieurs. Regardons-le de près.
+    </div>
+    <div class="spacer"></div>
+    <div class="btn-wrap"><button class="btn" id="b1" disabled>Révéler le piège</button></div>
+  </section>
+
+  <!-- SCREEN 2 — la révélation -->
+  <section class="screen" data-s="1">
+    <div class="kicker">La révélation</div>
+    <h1>La cote <em>cache</em> une taxe</h1>
+    <p class="body">Une cote, c'est une probabilité déguisée. On la retrouve avec&nbsp;: <b style="font-family:'JetBrains Mono',monospace">1 ÷ cote</b>.</p>
+    <div class="calc" id="calc">
+      <div class="row"><span>Sinner &nbsp;→&nbsp; 1 ÷ 1.90</span><b id="p1">52,6 %</b></div>
+      <div class="row"><span>Alcaraz &nbsp;→&nbsp; 1 ÷ 1.90</span><b id="p2">52,6 %</b></div>
+      <div class="row total"><span>Total affiché par les cotes</span><b id="ptot">—</b></div>
+    </div>
+    <p class="body">Les <b>vrais</b> résultats possibles d'un match somment forcément à 100&nbsp;%. Mais les cotes, elles, affichent <b>105,2&nbsp;%</b>.</p>
+    <p class="punch">Ces 5,2&nbsp;% en trop, c'est la marge du bookmaker. Sa commission, planquée dans la cote.</p>
+    <p class="body">Tu la paies à <b>chaque</b> pari — que tu gagnes ou que tu perdes.</p>
+    <div class="spacer"></div>
+    <div class="btn-wrap"><button class="btn" id="b2">Tu ne paries pas contre Alcaraz…</button></div>
+  </section>
+
+  <!-- SCREEN 3 — la pratique -->
+  <section class="screen" data-s="2">
+    <div class="kicker">À toi de jouer</div>
+    <h1>Où perds-tu <em>le moins</em>&nbsp;?</h1>
+    <p class="body">Trois bookmakers proposent le même match, à des cotes différentes. Chez lequel la <b>marge</b> est-elle la plus petite — donc où perds-tu le moins&nbsp;? <span style="color:var(--muted)">(Indice&nbsp;: 1&nbsp;÷&nbsp;cote, comme tout à l'heure.)</span></p>
+    <div class="choices" id="c3">
+      <button class="choice" data-ok="0"><span class="dot">A</span> 1.90&nbsp;/&nbsp;1.90</button>
+      <button class="choice" data-ok="1"><span class="dot">B</span> 1.95&nbsp;/&nbsp;1.95</button>
+      <button class="choice" data-ok="0"><span class="dot">C</span> 1.83&nbsp;/&nbsp;1.83</button>
+    </div>
+    <div class="fb good" id="fb3">
+      <div class="ttl">La réponse&nbsp;: le <b>B</b>.</div>
+      1.95 → 51,3&nbsp;% chacun → total 102,6&nbsp;% → marge de seulement <b>2,6&nbsp;%</b>. Plus la cote est haute, plus la marge est petite. Les bons parieurs comparent pour <b>ça</b> — pas pour le plaisir.
+    </div>
+    <div class="spacer"></div>
+    <div class="btn-wrap"><button class="btn" id="b3" disabled>Et si le bookmaker se trompait&nbsp;?</button></div>
+  </section>
+
+  <!-- SCREEN 4 — pont vers la value -->
+  <section class="screen" data-s="3">
+    <div class="kicker">Un aperçu de la suite</div>
+    <h1>Quand le book <em>se trompe</em></h1>
+    <p class="body">Imagine&nbsp;: tu sais que Sinner a en réalité <b>60&nbsp;%</b> de chances de gagner.</p>
+    <div class="calc">
+      <div class="row"><span>Ta vraie estimation</span><b style="color:var(--green)">60 %</b></div>
+      <div class="row"><span>Ce que dit la cote 1.90</span><b>52,6 %</b></div>
+      <div class="row total"><span>Le book se trompe de</span><b>+7,4 %</b></div>
+    </div>
+    <p class="punch">Le bookmaker se trompe en ta faveur. Ça, c'est une « value bet ».</p>
+    <p class="body">C'est tout ce qu'on cherche&nbsp;: pas deviner le gagnant, mais repérer quand la cote ment dans le bon sens. Tu apprendras à les chasser dans les prochaines divisions.</p>
+    <div class="spacer"></div>
+    <div class="btn-wrap"><button class="btn" id="b4">Valider la Division 10</button></div>
+  </section>
+
+  <!-- SCREEN 5 — complétion + invitation -->
+  <section class="screen" data-s="4">
+    <div class="seal"><div><b>D10</b><small>VALIDÉE</small></div></div>
+    <h1 style="text-align:center">Tu comprends <em>la marge</em>.</h1>
+    <p class="lead" style="text-align:center">Tu en sais déjà plus que la plupart des parieurs.</p>
+    <div class="promise">
+      À partir de maintenant, on ne mesurera pas si tu <b>gagnes</b>. On mesurera si tu paries <b>mieux que le marché</b>. C'est très différent — et tu verras vite pourquoi.
+    </div>
+    <div class="recall">« Les cotes te <span>taxent de 5&nbsp;%</span><br>avant même que tu joues. »</div>
+    <p class="body" style="text-align:center;font-size:14px;color:var(--muted)">Tu veux continuer l'aventure&nbsp;?</p>
+    <div class="btn-wrap"><a class="btn" id="bTelegram" href="https://t.me/lacademiedelavaleur" target="_blank" rel="noopener" style="display:block;text-align:center;text-decoration:none">Rejoindre la communauté · Telegram</a></div>
+    <p class="body" style="text-align:center;font-size:13px;color:var(--muted);margin-top:4px">…ou fais découvrir le piège à quelqu'un&nbsp;:</p>
+    <div class="btn-wrap"><button class="btn ghost" id="bShare">Défier un ami avec ce fait</button></div>
+    <div class="btn-wrap"><button class="btn ghost" id="bRestart">Rejouer la division</button></div>
+    <div class="measure" id="measure">
+      <div class="m-q">Ça a fait tilt&nbsp;?</div>
+      <div class="m-btns">
+        <button data-r="oui">Oui, j'ai compris</button>
+        <button data-r="bof">Bof, pas clair</button>
+      </div>
+    </div>
+    <p class="foot">Académie de la valeur · Argent fictif uniquement, aucun pari réel · Jouer comporte des risques · +18</p>
+  </section>
+</div>
+
+<div id="toast"></div>
+
+<script>
+(function(){
+  var idx=0, screens=document.querySelectorAll('.screen'), prog=document.getElementById('prog');
+  function go(n){
+    screens[idx].classList.remove('active');
+    idx=n;
+    screens[idx].classList.add('active');
+    prog.style.width=((idx+1)/screens.length*100)+'%';
+    screens[idx].scrollTop=0;
+  }
+  function toast(msg){
+    var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+    clearTimeout(t._t);t._t=setTimeout(function(){t.classList.remove('show')},2600);
+  }
+
+  // generic single-choice handler
+  function wireChoice(wrapId, fbId, btnId){
+    var wrap=document.getElementById(wrapId), fb=document.getElementById(fbId), btn=document.getElementById(btnId);
+    wrap.querySelectorAll('.choice').forEach(function(ch){
+      ch.addEventListener('click',function(){
+        wrap.querySelectorAll('.choice').forEach(function(c){c.classList.add('locked')});
+        var ok=ch.getAttribute('data-ok')==='1';
+        // mark the correct one(s)
+        wrap.querySelectorAll('.choice').forEach(function(c){
+          if(c.getAttribute('data-ok')==='1') c.classList.add('correct');
+        });
+        if(!ok) ch.classList.add('wrong');
+        fb.classList.add('show');
+        btn.disabled=false;
+        btn.scrollIntoView({behavior:'smooth',block:'end'});
+      });
+    });
+  }
+  wireChoice('c1','fb1','b1');
+  wireChoice('c3','fb3','b3');
+
+  document.getElementById('b1').onclick=function(){go(1); setTimeout(animateCalc,250)};
+  document.getElementById('b2').onclick=function(){go(2)};
+  document.getElementById('b3').onclick=function(){go(3)};
+  document.getElementById('b4').onclick=function(){go(4); gcEvent('division10-terminee')};
+
+  // animate the 105.2% reveal
+  var calcDone=false;
+  function animateCalc(){
+    if(calcDone) return; calcDone=true;
+    var tot=document.getElementById('ptot'), v=0, target=105.2;
+    var iv=setInterval(function(){
+      v+=6.2; if(v>=target){v=target;clearInterval(iv);
+        tot.innerHTML='<span class="pop">105,2 %</span>';
+        tot.style.color='var(--gold)';
+      } else { tot.textContent=v.toFixed(1).replace('.',',')+' %'; }
+    },45);
+  }
+
+  // clic Telegram (mesure combien de convaincus rejoignent la communauté)
+  var bTg=document.getElementById('bTelegram');
+  if(bTg){ bTg.addEventListener('click',function(){ gcEvent('clic-telegram'); }); }
+
+  // share
+  document.getElementById('bShare').onclick=function(){
+    var msg="Je viens d'apprendre un truc dingue : les cotes des bookmakers te taxent de ~5% avant même que tu joues. Teste l'Académie de la valeur et viens te mesurer à moi 👉 [ton lien]";
+    if(navigator.share){
+      navigator.share({text:msg}).catch(function(){});
+    } else if(navigator.clipboard){
+      navigator.clipboard.writeText(msg).then(function(){toast("Message copié — colle-le à un ami 📋")});
+    } else { toast("Copie ce fait et défie un ami !"); }
+  };
+  document.getElementById('bRestart').onclick=function(){
+    document.querySelectorAll('.choice').forEach(function(c){c.classList.remove('locked','correct','wrong')});
+    document.querySelectorAll('.fb').forEach(function(f){f.classList.remove('show')});
+    document.getElementById('b1').disabled=true;document.getElementById('b3').disabled=true;
+    calcDone=false;document.getElementById('ptot').textContent='—';document.getElementById('ptot').style.color='var(--gold)';
+    go(0);
+  };
+
+  // helper : envoie un événement à GoatCounter (compté comme une "page" distincte)
+  function gcEvent(name){
+    try{
+      if(window.goatcounter && window.goatcounter.count){
+        window.goatcounter.count({path:name, title:name, event:true});
+      }
+    }catch(e){}
+  }
+
+  // micro-mesure (pour tes tests : remonte la réaction en console + GoatCounter)
+  var measure=document.getElementById('measure');
+  measure.querySelectorAll('button').forEach(function(b){
+    b.addEventListener('click',function(){
+      measure.querySelectorAll('button').forEach(function(x){x.classList.remove('sel')});
+      b.classList.add('sel');
+      measure.classList.add('done');
+      var r=b.getAttribute('data-r');
+      console.log('[mesure] réaction:', r, '@', new Date().toISOString());
+      gcEvent('tilt-'+r);
+      toast(r==='oui' ? "Parfait — merci !" : "Noté, merci du retour");
+    });
+  });
+})();
+</script>
+</body>
+</html>
