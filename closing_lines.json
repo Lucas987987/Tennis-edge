@@ -1,291 +1,840 @@
-#!/usr/bin/env python3
-"""
-Capture les closing lines Pinnacle pour les matchs qui commencent bientôt.
-
-Déclenché par le worker Cloudflare (repository_dispatch) au bon moment :
-- snapshot T-25 (marge de sécurité contre le délai GitHub)
-- snapshot T-10 (vrai dernier instant)
-Le cron horaire (minute 7) sert seulement à découvrir les matchs du jour.
-
-Le closing de référence pour le CLV = le snapshot le PLUS TARDIF disponible,
-à condition qu'il soit dans la fenêtre fiable (<= CLOSING_MAX_MINS avant le match).
-Sinon le match est marqué closing_reliable=False et doit être EXCLU du CLV.
-"""
-import urllib.request, json, datetime, os
-
-# Clés API en rotation (stockées en secrets GitHub)
-API_KEYS = [
-    os.environ.get('ODDS_API_KEY_1', ''),
-    os.environ.get('ODDS_API_KEY_2', ''),
-    os.environ.get('ODDS_API_KEY_3', ''),
-    os.environ.get('ODDS_API_KEY_4', ''),
-    os.environ.get('ODDS_API_KEY_5', ''),
-]
-API_KEYS = [k for k in API_KEYS if k]
-
-CLOSING_FILE = 'closing_lines.json'
-# Fenêtres de capture (minutes avant le match). Resserrées car le timing est
-# maintenant garanti par le worker Cloudflare (plus de boucle aveugle */10).
-CAPTURE_WINDOWS = [
-    (20, 32, 't25'),   # cible T-25 : marge de sécurité, absorbe le délai GitHub
-    (12, 20, 't15'),   # cible T-15
-    (5, 12, 't7'),     # cible T-7
-    (0, 5, 't3'),      # cible T-3 : tout dernier instant
-]
-# Au-delà de ce délai, un snapshot n'est PAS considéré comme un closing fiable.
-CLOSING_MAX_MINS = 35
-
-def get_api_key():
-    """Choisit une clé selon l'heure pour répartir la charge."""
-    if not API_KEYS: return None
-    hour = datetime.datetime.utcnow().hour
-    return API_KEYS[hour % len(API_KEYS)]
-
-def test_key(key):
-    """Teste si une clé fonctionne sur l'endpoint odds (validation réelle)."""
-    try:
-        url = f"https://api.the-odds-api.com/v4/sports/tennis_atp_french_open/odds/?apiKey={key}&regions=eu&markets=h2h&oddsFormat=decimal"
-        req = urllib.request.Request(url, headers={'User-Agent': 'tennis-edge/1.0'})
-        with urllib.request.urlopen(req, timeout=15) as r:
-            rem = r.headers.get('x-requests-remaining', '?')
-            return True, rem
-    except urllib.error.HTTPError as e:
-        return False, f"HTTP {e.code}"
-    except Exception as e:
-        return False, str(e)[:40]
-
-def get_working_key():
-    """Trouve la première clé qui fonctionne réellement."""
-    for i, key in enumerate(API_KEYS):
-        ok, info = test_key(key)
-        print(f"  Clé {i+1} ({key[:4]}...): {'✅ OK, '+str(info)+' req' if ok else '❌ '+str(info)}")
-        if ok:
-            return key
-    return None
-
-def deduce_niveau(sport_key, title):
-    """Déduit le niveau du tournoi à partir du sport_key et du titre.
-    The Odds API couvre : Grands Chelems, ATP/WTA 1000 et 500.
-    Retourne : 'grand_chelem' | '1000' | '500' | 'autre'.
-    Le sport_key brut est toujours conservé à part, donc une mauvaise
-    déduction reste corrigeable a posteriori sans perte d'info."""
-    s = (sport_key or '').lower() + ' ' + (title or '').lower()
-    grands_chelems = ['french_open', 'french open', 'wimbledon',
-                      'us_open', 'us open', 'australian_open', 'australian open',
-                      'roland', 'roland_garros']
-    if any(g in s for g in grands_chelems):
-        return 'grand_chelem'
-    if '1000' in s or 'masters' in s or 'master' in s:
-        return '1000'
-    if '500' in s:
-        return '500'
-    return 'autre'
-
-
-def fetch_odds(api_key):
-    """Récupère les cotes de tous les tournois tennis en cours."""
-    matches = []
-    # Récupérer la liste des sports tennis actifs
-    try:
-        url = f"https://api.the-odds-api.com/v4/sports/?apiKey={api_key}"
-        req = urllib.request.Request(url, headers={'User-Agent': 'tennis-edge/1.0'})
-        with urllib.request.urlopen(req, timeout=15) as r:
-            sports = json.loads(r.read())
-            remaining = r.headers.get('x-requests-remaining', '?')
-    except Exception as e:
-        print(f"❌ Liste sports: {e}")
-        return [], '?'
-
-    tennis = [s for s in sports if s.get('key','').startswith('tennis')]
-    print(f"  {len(tennis)} tournois tennis actifs")
-
-    for sport in tennis:
-        try:
-            url = (f"https://api.the-odds-api.com/v4/sports/{sport['key']}/odds/"
-                   f"?apiKey={api_key}&regions=eu&markets=h2h&oddsFormat=decimal")
-            req = urllib.request.Request(url, headers={'User-Agent': 'tennis-edge/1.0'})
-            with urllib.request.urlopen(req, timeout=15) as r:
-                data = json.loads(r.read())
-                remaining = r.headers.get('x-requests-remaining', remaining)
-                for m in data:
-                    m['_sport'] = sport['title']
-                    m['_sport_key'] = sport['key']
-                    matches.append(m)
-        except Exception as e:
-            print(f"  ⚠️ {sport['key']}: {e}")
-
-    return matches, remaining
-
-def get_pinnacle(match):
-    """Extrait la cote Pinnacle d'un match."""
-    home = match.get('home_team','')
-    away = match.get('away_team','')
-    for bkm in match.get('bookmakers', []):
-        if 'pinnacle' in bkm.get('key','').lower():
-            outs = bkm.get('markets',[{}])[0].get('outcomes',[])
-            oH = next((o for o in outs if o['name']==home), None)
-            oA = next((o for o in outs if o['name']==away), None)
-            if oH and oA:
-                return oH['price'], oA['price']
-    return None, None
-
-def main():
-    now = datetime.datetime.utcnow()
-    print(f"  Test des {len(API_KEYS)} clés disponibles...")
-    api_key = get_working_key()
-    if not api_key:
-        print("❌ Aucune clé API fonctionnelle (toutes épuisées ou invalides)")
-        return
-
-    print(f"Capture closing lines @ {now.isoformat()} UTC")
-
-    # Charger les closing lines existantes
-    closing = {}
-    if os.path.exists(CLOSING_FILE):
-        with open(CLOSING_FILE, encoding='utf-8') as f:
-            closing = json.load(f)
-
-    matches, remaining = fetch_odds(api_key)
-    print(f"  {len(matches)} matchs récupérés · {remaining} req restantes")
-
-    captured = 0
-    for m in matches:
-        ct = m.get('commence_time','')
-        if not ct: continue
-        try:
-            start = datetime.datetime.fromisoformat(ct.replace('Z','+00:00')).replace(tzinfo=None)
-        except:
-            continue
-
-        mins_until = (start - now).total_seconds() / 60
-
-        # Ne capturer que les matchs à venir dans les prochaines 72h (évite de capturer trop tôt)
-        if mins_until < 0 or mins_until > 72*60:
-            continue
-
-        home = m.get('home_team','')
-        away = m.get('away_team','')
-        uid = f"{ct[:10]}_{home}_{away}".replace(' ','_').lower()
-        psH, psA = get_pinnacle(m)
-        if not (psH and psA):
-            continue
-
-        # Initialiser l'entrée si nouvelle
-        if uid not in closing:
-            closing[uid] = {
-                'date': ct[:10],
-                'home': home, 'away': away,
-                'tournament': m.get('_sport',''),
-                'sport_key': m.get('_sport_key',''),
-                'niveau': deduce_niveau(m.get('_sport_key',''), m.get('_sport','')),
-                'commence_time': ct,
-                'history': [],
-            }
-        else:
-            # Compléter les entrées existantes qui n'auraient pas encore ces champs
-            if not closing[uid].get('sport_key'):
-                closing[uid]['sport_key'] = m.get('_sport_key','')
-            if not closing[uid].get('niveau'):
-                closing[uid]['niveau'] = deduce_niveau(m.get('_sport_key',''), m.get('_sport',''))
-            # Rafraîchir commence_time si l'API a corrigé l'heure (ex: demi-finale
-            # dont l'horaire provisoire était faux). On suit la valeur fraîche de l'API.
-            old_ct = closing[uid].get('commence_time','')
-            if ct and ct != old_ct and ct[:10] == old_ct[:10]:
-                # même jour, heure différente : on met à jour ET on recalcule
-                # les mins_before de l'historique (sinon ils restent faux).
-                print(f"  🕐 Heure corrigée: {home} vs {away} | {old_ct} -> {ct}")
-                closing[uid]['commence_time'] = ct
-                for p in closing[uid].get('history', []):
-                    pt = p.get('t')
-                    if pt:
-                        try:
-                            tp = datetime.datetime.fromisoformat(pt.replace('Z','+00:00')).replace(tzinfo=None)
-                            p['mins_before'] = round((start - tp).total_seconds() / 60)
-                        except Exception:
-                            pass
-                # Le closing reconstruit devient caduc : on le laissera se recréer
-                closing[uid].pop('closing', None)
-        # S'assurer que history existe (compat anciennes entrées)
-        if 'history' not in closing[uid]:
-            closing[uid]['history'] = []
-
-        # Dédoublonnage intelligent : ne stocker que si la cote a bougé de façon
-        # significative (>1%) OU si >30 min depuis le dernier point.
-        # Évite d'accumuler des micro-variations insignifiantes.
-        hist = closing[uid]['history']
-        last = hist[-1] if hist else None
-        store = True
-        if last:
-            try:
-                dh = abs(psH - last['home']) / last['home']
-                da = abs(psA - last['away']) / last['away']
-                # Temps écoulé depuis le dernier point
-                t_last = datetime.datetime.fromisoformat(last['t'])
-                mins_since = (now - t_last).total_seconds() / 60
-                # Stocker si variation >1% OU si >30 min écoulées
-                store = (dh > 0.01 or da > 0.01 or mins_since > 30)
-            except:
-                store = True
-        if store:
-            hist.append({
-                't': now.isoformat(),
-                'mins_before': round(mins_until),
-                'home': psH, 'away': psA,
-            })
-            captured += 1
-        # Limiter à 100 points max par match (garde les plus récents)
-        if len(hist) > 100:
-            closing[uid]['history'] = hist[-100:]
-
-        # Snapshots de référence T-25 et T-10
-        for win_min, win_max, label in CAPTURE_WINDOWS:
-            if win_min <= mins_until <= win_max:
-                closing[uid][f'pinnacle_{label}'] = {
-                    'home': psH, 'away': psA,
-                    'mins_before': round(mins_until),
-                    'captured_at': now.isoformat(),
-                }
-                print(f"  ✅ [{label}] {home} vs {away}: {psH}/{psA} (T-{round(mins_until)})")
-
-        # Déterminer le closing de référence = snapshot le PLUS TARDIF disponible.
-        # Marqué fiable seulement s'il a été capturé <= CLOSING_MAX_MINS avant le match.
-        snaps = []
-        for label in ('t25', 't15', 't7', 't3'):
-            s = closing[uid].get(f'pinnacle_{label}')
-            if s and 'mins_before' in s:
-                snaps.append(s)
-        if snaps:
-            best = min(snaps, key=lambda s: s['mins_before'])  # le plus proche du match
-            closing[uid]['closing'] = {
-                'home': best['home'], 'away': best['away'],
-                'mins_before': best['mins_before'],
-                'captured_at': best['captured_at'],
-                'reliable': best['mins_before'] <= CLOSING_MAX_MINS,
-            }
-
-    # Nettoyer les vieilles entrées (> 30 jours)
-    cutoff = (now - datetime.timedelta(days=30)).strftime('%Y-%m-%d')
-    closing = {k:v for k,v in closing.items() if v.get('date','') >= cutoff}
-
-    with open(CLOSING_FILE, 'w', encoding='utf-8') as f:
-        json.dump(closing, f, ensure_ascii=False, indent=2)
-
-    print(f"\n✅ {captured} captures · {len(closing)} matchs dans closing_lines.json")
-
-    # Détecteur de mouvement de cote (alerte Telegram défensive).
-    # Importé ici pour ne pas casser la capture si le module/secrets manquent.
-    try:
-        from odds_movement import run_movement_detector
-        run_movement_detector()
-    except Exception as e:
-        print(f"  ℹ️ Détecteur mouvement non exécuté: {e}")
-
-    # Collecte des marchés jeux (spreads+totals) pour étude — une fois par match proche.
-    try:
-        from games_markets import run_games_collector
-        run_games_collector(api_key)
-    except Exception as e:
-        print(f"  ℹ️ Collecte jeux non exécutée: {e}")
-
-if __name__ == '__main__':
-    main()
+{
+  "2026-05-29_alex_michelsen_rafael_jodar": {
+    "date": "2026-05-29",
+    "home": "Alex Michelsen",
+    "away": "Rafael Jodar",
+    "tournament": "ATP French Open",
+    "commence_time": "2026-05-29T10:50:00Z",
+    "pinnacle_15min": {
+      "home": 5.67,
+      "away": 1.18,
+      "captured_at": "2026-05-29T10:30:32.153408"
+    }
+  },
+  "2026-05-29_quentin_halys_alexander_zverev": {
+    "date": "2026-05-29",
+    "home": "Quentin Halys",
+    "away": "Alexander Zverev",
+    "tournament": "ATP French Open",
+    "commence_time": "2026-05-29T18:50:00Z",
+    "pinnacle_15min": {
+      "home": 11.92,
+      "away": 1.06,
+      "captured_at": "2026-05-29T18:41:07.170896"
+    }
+  },
+  "2026-05-29_peyton_stearns_belinda_bencic": {
+    "date": "2026-05-29",
+    "home": "Peyton Stearns",
+    "away": "Belinda Bencic",
+    "tournament": "WTA French Open",
+    "commence_time": "2026-05-29T18:46:26Z",
+    "pinnacle_15min": {
+      "home": 3.48,
+      "away": 1.36,
+      "captured_at": "2026-05-29T18:41:07.170896"
+    }
+  },
+  "2026-05-30_casper_ruud_joao_fonseca": {
+    "date": "2026-05-30",
+    "home": "Casper Ruud",
+    "away": "Joao Fonseca",
+    "tournament": "ATP French Open",
+    "commence_time": "2026-05-30T07:00:00Z",
+    "history": [
+      {
+        "t": "2026-05-30T06:56:06.895224",
+        "mins_before": 4,
+        "home": 1.68,
+        "away": 2.31
+      }
+    ],
+    "closing": {
+      "home": 1.68,
+      "away": 2.31,
+      "mins_before": 4,
+      "captured_at": "2026-05-30T06:56:06.895224",
+      "reliable": true,
+      "rebuilt": true
+    }
+  },
+  "2026-05-30_francisco_cerundolo_zachary_svajda": {
+    "date": "2026-05-30",
+    "home": "Francisco Cerundolo",
+    "away": "Zachary Svajda",
+    "tournament": "ATP French Open",
+    "commence_time": "2026-05-30T09:00:00Z",
+    "history": [
+      {
+        "t": "2026-05-30T06:56:06.895224",
+        "mins_before": 124,
+        "home": 1.09,
+        "away": 8.79
+      }
+    ],
+    "closing": {
+      "home": 1.09,
+      "away": 8.79,
+      "mins_before": 124,
+      "captured_at": "2026-05-30T06:56:06.895224",
+      "reliable": false,
+      "rebuilt": true
+    }
+  },
+  "2026-05-30_flavio_cobolli_learner_tien": {
+    "date": "2026-05-30",
+    "home": "Flavio Cobolli",
+    "away": "Learner Tien",
+    "tournament": "ATP French Open",
+    "commence_time": "2026-05-30T10:00:00Z",
+    "history": [
+      {
+        "t": "2026-05-30T06:56:06.895224",
+        "mins_before": 184,
+        "home": 1.57,
+        "away": 2.59
+      }
+    ],
+    "closing": {
+      "home": 1.57,
+      "away": 2.59,
+      "mins_before": 184,
+      "captured_at": "2026-05-30T06:56:06.895224",
+      "reliable": false,
+      "rebuilt": true
+    }
+  },
+  "2026-05-30_matteo_berrettini_francisco_comesana": {
+    "date": "2026-05-30",
+    "home": "Matteo Berrettini",
+    "away": "Francisco Comesana",
+    "tournament": "ATP French Open",
+    "commence_time": "2026-05-30T11:00:00Z",
+    "history": [
+      {
+        "t": "2026-05-30T06:56:06.895224",
+        "mins_before": 244,
+        "home": 1.49,
+        "away": 2.85
+      },
+      {
+        "t": "2026-05-30T10:00:24.006527",
+        "mins_before": 60,
+        "home": 1.51,
+        "away": 2.77
+      }
+    ],
+    "pinnacle_60min": {
+      "home": 1.51,
+      "away": 2.77,
+      "captured_at": "2026-05-30T10:00:24.006527"
+    },
+    "closing": {
+      "home": 1.51,
+      "away": 2.77,
+      "mins_before": 60,
+      "captured_at": "2026-05-30T10:00:24.006527",
+      "reliable": false,
+      "rebuilt": true
+    }
+  },
+  "2026-05-30_moise_kouame_alejandro_tabilo": {
+    "date": "2026-05-30",
+    "home": "Moise Kouame",
+    "away": "Alejandro Tabilo",
+    "tournament": "ATP French Open",
+    "commence_time": "2026-05-30T11:20:00Z",
+    "history": [
+      {
+        "t": "2026-05-30T06:56:06.895224",
+        "mins_before": 264,
+        "home": 4.61,
+        "away": 1.24
+      },
+      {
+        "t": "2026-05-30T10:00:24.006527",
+        "mins_before": 110,
+        "home": 4.65,
+        "away": 1.24
+      },
+      {
+        "t": "2026-05-30T12:02:28.972187",
+        "mins_before": 131,
+        "home": 4.62,
+        "away": 1.24
+      }
+    ],
+    "pinnacle_60min": {
+      "home": 4.62,
+      "away": 1.24,
+      "captured_at": "2026-05-30T12:50:16.107150"
+    },
+    "closing": {
+      "home": 4.65,
+      "away": 1.24,
+      "mins_before": 110,
+      "captured_at": "2026-05-30T10:00:24.006527",
+      "reliable": false,
+      "rebuilt": true
+    }
+  },
+  "2026-05-30_juan_manuel_cerundolo_martin_landaluce": {
+    "date": "2026-05-30",
+    "home": "Juan Manuel Cerundolo",
+    "away": "Martin Landaluce",
+    "tournament": "ATP French Open",
+    "commence_time": "2026-05-30T11:30:00Z",
+    "history": [
+      {
+        "t": "2026-05-30T06:56:06.895224",
+        "mins_before": 274,
+        "home": 1.74,
+        "away": 2.22
+      },
+      {
+        "t": "2026-05-30T10:00:24.006527",
+        "mins_before": 90,
+        "home": 1.65,
+        "away": 2.4
+      },
+      {
+        "t": "2026-05-30T12:02:28.972187",
+        "mins_before": 13,
+        "home": 1.66,
+        "away": 2.38
+      }
+    ],
+    "pinnacle_15min": {
+      "home": 1.66,
+      "away": 2.38,
+      "captured_at": "2026-05-30T12:02:28.972187"
+    },
+    "closing": {
+      "home": 1.66,
+      "away": 2.38,
+      "mins_before": 13,
+      "captured_at": "2026-05-30T12:02:28.972187",
+      "reliable": true,
+      "rebuilt": true
+    }
+  },
+  "2026-05-30_matteo_arnaldi_raphael_collignon": {
+    "date": "2026-05-30",
+    "home": "Matteo Arnaldi",
+    "away": "Raphael Collignon",
+    "tournament": "ATP French Open",
+    "commence_time": "2026-05-30T11:50:00Z",
+    "history": [
+      {
+        "t": "2026-05-30T06:56:06.895224",
+        "mins_before": 294,
+        "home": 2.82,
+        "away": 1.49
+      },
+      {
+        "t": "2026-05-30T10:00:24.006527",
+        "mins_before": 110,
+        "home": 2.86,
+        "away": 1.48
+      }
+    ],
+    "pinnacle_60min": {
+      "home": 2.86,
+      "away": 1.48,
+      "captured_at": "2026-05-30T12:50:16.107150"
+    },
+    "closing": {
+      "home": 2.86,
+      "away": 1.48,
+      "mins_before": 110,
+      "captured_at": "2026-05-30T10:00:24.006527",
+      "reliable": false,
+      "rebuilt": true
+    }
+  },
+  "2026-05-30_jaime_faria_frances_tiafoe": {
+    "date": "2026-05-30",
+    "home": "Jaime Faria",
+    "away": "Frances Tiafoe",
+    "tournament": "ATP French Open",
+    "commence_time": "2026-05-30T13:00:00Z",
+    "history": [
+      {
+        "t": "2026-05-30T06:56:06.895224",
+        "mins_before": 364,
+        "home": 2.54,
+        "away": 1.59
+      },
+      {
+        "t": "2026-05-30T10:00:24.006527",
+        "mins_before": 210,
+        "home": 2.51,
+        "away": 1.6
+      },
+      {
+        "t": "2026-05-30T12:02:28.972187",
+        "mins_before": 251,
+        "home": 2.5,
+        "away": 1.6
+      },
+      {
+        "t": "2026-05-30T12:50:16.107150",
+        "mins_before": 150,
+        "home": 2.54,
+        "away": 1.59
+      },
+      {
+        "t": "2026-05-30T15:53:20.724057",
+        "mins_before": 22,
+        "home": 2.62,
+        "away": 1.56
+      }
+    ],
+    "pinnacle_15min": {
+      "home": 2.62,
+      "away": 1.56,
+      "captured_at": "2026-05-30T16:37:47.578238"
+    },
+    "closing": {
+      "home": 2.62,
+      "away": 1.56,
+      "mins_before": 22,
+      "captured_at": "2026-05-30T15:53:20.724057",
+      "reliable": true,
+      "rebuilt": true
+    }
+  },
+  "2026-05-30_felix_auger-aliassime_brandon_nakashima": {
+    "date": "2026-05-30",
+    "home": "Felix Auger-Aliassime",
+    "away": "Brandon Nakashima",
+    "tournament": "ATP French Open",
+    "commence_time": "2026-05-30T18:15:00Z",
+    "history": [
+      {
+        "t": "2026-05-30T06:56:06.895224",
+        "mins_before": 679,
+        "home": 1.34,
+        "away": 3.59
+      },
+      {
+        "t": "2026-05-30T10:00:24.006527",
+        "mins_before": 495,
+        "home": 1.34,
+        "away": 3.58
+      },
+      {
+        "t": "2026-05-30T15:53:20.724057",
+        "mins_before": 142,
+        "home": 1.34,
+        "away": 3.6
+      }
+    ],
+    "closing": {
+      "home": 1.34,
+      "away": 3.6,
+      "mins_before": 142,
+      "captured_at": "2026-05-30T15:53:20.724057",
+      "reliable": false,
+      "rebuilt": true
+    }
+  },
+  "2026-05-31_jesper_de_jong_alexander_zverev": {
+    "date": "2026-05-31",
+    "home": "Jesper De Jong",
+    "away": "Alexander Zverev",
+    "tournament": "ATP French Open",
+    "commence_time": "2026-05-31T07:00:00Z",
+    "history": [
+      {
+        "t": "2026-05-30T06:56:06.895224",
+        "mins_before": 1444,
+        "home": 12.49,
+        "away": 1.05
+      },
+      {
+        "t": "2026-05-30T10:00:24.006527",
+        "mins_before": 1260,
+        "home": 12.6,
+        "away": 1.05
+      },
+      {
+        "t": "2026-05-30T15:53:20.724057",
+        "mins_before": 907,
+        "home": 13.0,
+        "away": 1.05
+      },
+      {
+        "t": "2026-05-30T20:18:33.208045",
+        "mins_before": 1031,
+        "home": 11.67,
+        "away": 1.06
+      },
+      {
+        "t": "2026-05-31T08:00:09.654238",
+        "mins_before": 330,
+        "home": 12.48,
+        "away": 1.05
+      },
+      {
+        "t": "2026-05-31T09:57:19.508873",
+        "mins_before": 213,
+        "home": 12.77,
+        "away": 1.05
+      }
+    ],
+    "closing": {
+      "home": 12.77,
+      "away": 1.05,
+      "mins_before": 213,
+      "captured_at": "2026-05-31T09:57:19.508873",
+      "reliable": false,
+      "rebuilt": true
+    }
+  },
+  "2026-05-31_rafael_jodar_pablo_carreno_busta": {
+    "date": "2026-05-31",
+    "home": "Rafael Jodar",
+    "away": "Pablo Carreno Busta",
+    "tournament": "ATP French Open",
+    "commence_time": "2026-05-31T07:00:00Z",
+    "history": [
+      {
+        "t": "2026-05-30T06:56:06.895224",
+        "mins_before": 1444,
+        "home": 1.21,
+        "away": 5.0
+      },
+      {
+        "t": "2026-05-30T10:00:24.006527",
+        "mins_before": 1260,
+        "home": 1.22,
+        "away": 4.84
+      },
+      {
+        "t": "2026-05-30T12:50:16.107150",
+        "mins_before": 1090,
+        "home": 1.22,
+        "away": 4.9
+      },
+      {
+        "t": "2026-05-30T15:53:20.724057",
+        "mins_before": 907,
+        "home": 1.22,
+        "away": 4.89
+      },
+      {
+        "t": "2026-05-30T20:18:33.208045",
+        "mins_before": 881,
+        "home": 1.22,
+        "away": 4.88
+      },
+      {
+        "t": "2026-05-30T22:11:39.210019",
+        "mins_before": 768,
+        "home": 1.22,
+        "away": 4.85
+      },
+      {
+        "t": "2026-05-31T08:00:09.654238",
+        "mins_before": 130,
+        "home": 1.24,
+        "away": 4.62
+      },
+      {
+        "t": "2026-05-31T08:47:41.280021",
+        "mins_before": 82,
+        "home": 1.25,
+        "away": 4.47
+      },
+      {
+        "t": "2026-05-31T09:57:19.508873",
+        "mins_before": 33,
+        "home": 1.24,
+        "away": 4.54
+      }
+    ],
+    "closing": {
+      "home": 1.24,
+      "away": 4.54,
+      "mins_before": 33,
+      "captured_at": "2026-05-31T09:57:19.508873",
+      "reliable": true,
+      "rebuilt": true
+    }
+  },
+  "2026-05-31_jakub_mensik_andrey_rublev": {
+    "date": "2026-05-31",
+    "home": "Jakub Mensik",
+    "away": "Andrey Rublev",
+    "tournament": "ATP French Open",
+    "commence_time": "2026-05-31T09:00:00Z",
+    "history": [
+      {
+        "t": "2026-05-30T06:56:06.895224",
+        "mins_before": 1564,
+        "home": 2.03,
+        "away": 1.87
+      },
+      {
+        "t": "2026-05-30T10:00:24.006527",
+        "mins_before": 1380,
+        "home": 2.04,
+        "away": 1.85
+      },
+      {
+        "t": "2026-05-30T12:50:16.107150",
+        "mins_before": 1450,
+        "home": 2.07,
+        "away": 1.83
+      },
+      {
+        "t": "2026-05-30T15:53:20.724057",
+        "mins_before": 1267,
+        "home": 2.09,
+        "away": 1.82
+      },
+      {
+        "t": "2026-05-30T20:18:33.208045",
+        "mins_before": 1001,
+        "home": 2.1,
+        "away": 1.83
+      },
+      {
+        "t": "2026-05-30T22:11:39.210019",
+        "mins_before": 888,
+        "home": 2.11,
+        "away": 1.81
+      },
+      {
+        "t": "2026-05-31T08:00:09.654238",
+        "mins_before": 300,
+        "home": 2.11,
+        "away": 1.82
+      },
+      {
+        "t": "2026-05-31T08:47:41.280021",
+        "mins_before": 252,
+        "home": 2.13,
+        "away": 1.8
+      },
+      {
+        "t": "2026-05-31T09:57:19.508873",
+        "mins_before": 203,
+        "home": 2.13,
+        "away": 1.8
+      },
+      {
+        "t": "2026-05-31T15:05:19.889577",
+        "mins_before": 134,
+        "home": 2.12,
+        "away": 1.81
+      }
+    ],
+    "closing": {
+      "home": 2.12,
+      "away": 1.81,
+      "mins_before": 134,
+      "captured_at": "2026-05-31T15:05:19.889577",
+      "reliable": false,
+      "rebuilt": true
+    }
+  },
+  "2026-05-30_iva_jović_naomi_osaka": {
+    "date": "2026-05-30",
+    "home": "Iva Jović",
+    "away": "Naomi Osaka",
+    "tournament": "WTA French Open",
+    "commence_time": "2026-05-30T09:00:00Z",
+    "history": [
+      {
+        "t": "2026-05-30T06:56:06.895224",
+        "mins_before": 124,
+        "home": 2.0,
+        "away": 1.91
+      }
+    ],
+    "closing": {
+      "home": 2.0,
+      "away": 1.91,
+      "mins_before": 124,
+      "captured_at": "2026-05-30T06:56:06.895224",
+      "reliable": false,
+      "rebuilt": true
+    }
+  },
+  "2026-05-30_maria_sakkari_maja_chwalinska": {
+    "date": "2026-05-30",
+    "home": "Maria Sakkari",
+    "away": "Maja Chwalinska",
+    "tournament": "WTA French Open",
+    "commence_time": "2026-05-30T09:00:00Z",
+    "history": [
+      {
+        "t": "2026-05-30T06:56:06.895224",
+        "mins_before": 124,
+        "home": 2.18,
+        "away": 1.76
+      }
+    ],
+    "closing": {
+      "home": 2.18,
+      "away": 1.76,
+      "mins_before": 124,
+      "captured_at": "2026-05-30T06:56:06.895224",
+      "reliable": false,
+      "rebuilt": true
+    }
+  },
+  "2026-05-30_diana_shnaider_oleksandra_oliynykova": {
+    "date": "2026-05-30",
+    "home": "Diana Shnaider",
+    "away": "Oleksandra Oliynykova",
+    "tournament": "WTA French Open",
+    "commence_time": "2026-05-30T10:00:00Z",
+    "history": [
+      {
+        "t": "2026-05-30T06:56:06.895224",
+        "mins_before": 184,
+        "home": 1.37,
+        "away": 3.39
+      }
+    ],
+    "closing": {
+      "home": 1.37,
+      "away": 3.39,
+      "mins_before": 184,
+      "captured_at": "2026-05-30T06:56:06.895224",
+      "reliable": false,
+      "rebuilt": true
+    }
+  },
+  "2026-05-30_aryna_sabalenka_daria_kasatkina": {
+    "date": "2026-05-30",
+    "home": "Aryna Sabalenka",
+    "away": "Daria Kasatkina",
+    "tournament": "WTA French Open",
+    "commence_time": "2026-05-30T10:10:00Z",
+    "history": [
+      {
+        "t": "2026-05-30T06:56:06.895224",
+        "mins_before": 194,
+        "home": 1.08,
+        "away": 9.44
+      },
+      {
+        "t": "2026-05-30T10:00:24.006527",
+        "mins_before": 40,
+        "home": 1.07,
+        "away": 9.86
+      },
+      {
+        "t": "2026-05-30T12:02:28.972187",
+        "mins_before": 11,
+        "home": 1.07,
+        "away": 9.95
+      }
+    ],
+    "pinnacle_15min": {
+      "home": 1.07,
+      "away": 9.95,
+      "captured_at": "2026-05-30T12:02:28.972187"
+    },
+    "closing": {
+      "home": 1.07,
+      "away": 9.95,
+      "mins_before": 11,
+      "captured_at": "2026-05-30T12:02:28.972187",
+      "reliable": true,
+      "rebuilt": true
+    }
+  },
+  "2026-05-30_anna_kalinskaya_maria_camila_osorio_serrano": {
+    "date": "2026-05-30",
+    "home": "Anna Kalinskaya",
+    "away": "Maria Camila Osorio Serrano",
+    "tournament": "WTA French Open",
+    "commence_time": "2026-05-30T10:40:00Z",
+    "history": [
+      {
+        "t": "2026-05-30T06:56:06.895224",
+        "mins_before": 224,
+        "home": 1.88,
+        "away": 2.02
+      },
+      {
+        "t": "2026-05-30T10:00:24.006527",
+        "mins_before": 40,
+        "home": 1.92,
+        "away": 1.99
+      },
+      {
+        "t": "2026-05-30T12:02:28.972187",
+        "mins_before": 8,
+        "home": 1.9,
+        "away": 2.0
+      }
+    ],
+    "pinnacle_15min": {
+      "home": 1.9,
+      "away": 2.0,
+      "captured_at": "2026-05-30T12:02:28.972187"
+    },
+    "closing": {
+      "home": 1.9,
+      "away": 2.0,
+      "mins_before": 8,
+      "captured_at": "2026-05-30T12:02:28.972187",
+      "reliable": true,
+      "rebuilt": true
+    }
+  },
+  "2026-05-30_diane_parry_amanda_anisimova": {
+    "date": "2026-05-30",
+    "home": "Diane Parry",
+    "away": "Amanda Anisimova",
+    "tournament": "WTA French Open",
+    "commence_time": "2026-05-30T11:40:00Z",
+    "history": [
+      {
+        "t": "2026-05-30T06:56:06.895224",
+        "mins_before": 284,
+        "home": 5.05,
+        "away": 1.21
+      },
+      {
+        "t": "2026-05-30T10:00:24.006527",
+        "mins_before": 118,
+        "home": 5.04,
+        "away": 1.21
+      }
+    ],
+    "pinnacle_15min": {
+      "home": 5.04,
+      "away": 1.21,
+      "captured_at": "2026-05-30T12:02:28.972187"
+    },
+    "closing": {
+      "home": 5.04,
+      "away": 1.21,
+      "mins_before": 118,
+      "captured_at": "2026-05-30T10:00:24.006527",
+      "reliable": false,
+      "rebuilt": true
+    }
+  },
+  "2026-05-30_victoria_mboko_madison_keys": {
+    "date": "2026-05-30",
+    "home": "Victoria Mboko",
+    "away": "Madison Keys",
+    "tournament": "WTA French Open",
+    "commence_time": "2026-05-30T12:40:00Z",
+    "history": [
+      {
+        "t": "2026-05-30T06:56:06.895224",
+        "mins_before": 344,
+        "home": 1.88,
+        "away": 2.03
+      },
+      {
+        "t": "2026-05-30T10:00:24.006527",
+        "mins_before": 160,
+        "home": 1.91,
+        "away": 2.0
+      },
+      {
+        "t": "2026-05-30T12:02:28.972187",
+        "mins_before": 78,
+        "home": 1.88,
+        "away": 2.04
+      },
+      {
+        "t": "2026-05-30T15:53:20.724057",
+        "mins_before": 11,
+        "home": 1.93,
+        "away": 1.97
+      }
+    ],
+    "pinnacle_60min": {
+      "home": 1.88,
+      "away": 2.04,
+      "captured_at": "2026-05-30T12:50:16.107150"
+    },
+    "pinnacle_15min": {
+      "home": 1.93,
+      "away": 1.97,
+      "captured_at": "2026-05-30T16:37:47.578238"
+    },
+    "closing": {
+      "home": 1.93,
+      "away": 1.97,
+      "mins_before": 11,
+      "captured_at": "2026-05-30T15:53:20.724057",
+      "reliable": true,
+      "rebuilt": true
+    }
+  },
+  "2026-05-30_coco_gauff_anastasia_potapova": {
+    "date": "2026-05-30",
+    "home": "Coco Gauff",
+    "away": "Anastasia Potapova",
+    "tournament": "WTA French Open",
+    "commence_time": "2026-05-30T14:00:00Z",
+    "history": [
+      {
+        "t": "2026-05-30T06:56:06.895224",
+        "mins_before": 424,
+        "home": 1.28,
+        "away": 4.11
+      },
+      {
+        "t": "2026-05-30T10:00:24.006527",
+        "mins_before": 240,
+        "home": 1.27,
+        "away": 4.2
+      },
+      {
+        "t": "2026-05-30T12:02:28.972187",
+        "mins_before": 118,
+        "home": 1.28,
+        "away": 4.15
+      }
+    ],
+    "pinnacle_60min": {
+      "home": 1.28,
+      "away": 4.15,
+      "captured_at": "2026-05-30T12:50:16.107150"
+    },
+    "closing": {
+      "home": 1.28,
+      "away": 4.15,
+      "mins_before": 118,
+      "captured_at": "2026-05-30T12:02:28.972187",
+      "reliable": false,
+      "rebuilt": true
+    }
+  },
+  "2026-05-31_elina_svitolina_belinda_bencic": {
+    "date": "2026-05-31",
+    "home": "Elina Svitolina",
+    "away": "Belinda Bencic",
+    "tournament": "WTA French Open",
+    "commence_time": "2026-05-31T09:00:00Z",
+    "history": [
+      {
+        "t": "2026-05-30T06:56:06.895224",
+        "mins_before": 1564,
+        "home": 1.64,
+        "away": 2.39
+      },
+      {
+        "t": "2026-05-30T10:00:24.006527",
+        "mins_before": 1380,
+        "home": 1.63,
+        "away": 2.4
+      },
+      {
+        "t": "2026-05-30T20:18:33.208045",
+        "mins_before": 831,
+        "home": 1.6,
+    
