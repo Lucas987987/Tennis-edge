@@ -327,6 +327,8 @@ def main():
               f"(dernier point {last['t'][:16]})")
 
 
+    # Nettoyer les vieilles entrées (> 30 jours)
+    cutoff = (now - datetime.timedelta(days=30)).strftime('%Y-%m-%d')
     closing = {k:v for k,v in closing.items() if v.get('date','') >= cutoff}
 
     with open(CLOSING_FILE, 'w', encoding='utf-8') as f:
