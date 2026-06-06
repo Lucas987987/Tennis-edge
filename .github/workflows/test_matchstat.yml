@@ -11,5 +11,5 @@ jobs:
           python-version: '3.11'
       - env:
           RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
-          TEST_DATE: '2026-06-04'
-        run: python scripts/test_matchstat.py
+          TEST_TOUR: 'atp'
+          TEST_YEAR: '2025'
