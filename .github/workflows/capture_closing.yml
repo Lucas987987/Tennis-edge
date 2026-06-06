@@ -1,0 +1,47 @@
+name: Capture Closing Lines
+
+on:
+  # Le worker Cloudflare pilote TOUTE la cadence (cron GitHub retiré car peu fiable).
+  # Le worker déclenche : suivi toutes les 3h + clôture rapprochée (T-40/T-5).
+  repository_dispatch:
+    types: [capture_closing]
+  workflow_dispatch:
+
+# Évite que deux captures se marchent dessus (cron + worker en même temps)
+concurrency:
+  group: capture-closing
+  cancel-in-progress: false
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Capture closing lines (OddsPapi)
+        env:
+          ODDSPAPI_KEY: ${{ secrets.ODDSPAPI_KEY }}
+          # Liste des tournois suivis (CSV d'IDs OddsPapi). Modifiable sans toucher au code.
+          # Si vide, le script utilise sa valeur par défaut (Stuttgart + s-Hertogenbosch ATP/WTA).
+          TENNIS_TOURNAMENT_IDS: ${{ vars.TENNIS_TOURNAMENT_IDS }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python scripts/capture_closing.py
+
+      - name: Commit closing lines
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add closing_lines.json players_oddspapi.json matches_oddspapi.json odds_alerts_state.json odds_alerts_log.jsonl odds_logged_state.json 2>/dev/null || true
+          git diff --staged --quiet || git commit -m "Closing lines update (OddsPapi)"
+          git pull --rebase --autostash 2>/dev/null || true
+          git push
