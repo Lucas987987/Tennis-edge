@@ -1,0 +1,34 @@
+name: value_journal
+
+# Journalise le score de value par match + jointure CLV (lecture seule, AUCUN appel API).
+# Tourne après fetch_clv (23:00) pour avoir le CLV le plus frais.
+on:
+  schedule:
+    - cron: '30 23 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: capture-closing
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  value-journal:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Calcul des candidats value + jointure CLV
+        run: python scripts/value_journal.py
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add value_candidates.jsonl value_clv_report.json
+          git pull --rebase --autostash || true
+          git commit -m "value journal $(date -u +%FT%TZ)" || echo "rien à commit"
+          git push || echo "push échoué"
