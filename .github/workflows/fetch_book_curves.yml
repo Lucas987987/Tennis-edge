@@ -1,0 +1,30 @@
+name: Fetch Book Curves
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '45 23 * * *'
+
+permissions:
+  contents: write
+
+jobs:
+  fetch-book:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Courbes book mou (Unibet) via historical-odds gratuit
+        env:
+          ODDSPAPI_KEY: ${{ secrets.ODDSPAPI_KEY }}
+          BOOK: unibet
+        run: python scripts/fetch_book_curves.py
+      - name: Commit
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add book_curves.jsonl || true
+          git diff --cached --quiet || git commit -m "book curves $(date -u +%FT%TZ)"
+          git push || true
