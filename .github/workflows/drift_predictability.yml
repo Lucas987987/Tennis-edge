@@ -1,0 +1,28 @@
+name: Drift Predictability
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  drift:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Analyse de la derive open->close
+        env:
+          CLV_HISTORY: clv_history.jsonl
+          DRIFT_REPORT: drift_report.json
+        run: python scripts/drift_predictability.py
+      - name: Commit du rapport
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add drift_report.json || true
+          git diff --cached --quiet || git commit -m "drift report $(date -u +%FT%TZ)"
+          git push || true
