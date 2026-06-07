@@ -1,0 +1,28 @@
+name: money_flow
+
+# Analyse « où va l'argent » à partir des courbes de clv_history.jsonl.
+# Pur calcul local, AUCUN appel API. Déclenchement manuel (mobile-friendly).
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  money-flow:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Analyse du flux d'argent
+        run: python scripts/money_flow.py
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add money_flow.jsonl money_flow_report.json
+          git pull --rebase --autostash || true
+          git commit -m "money flow $(date -u +%FT%TZ)" || echo "rien à commit"
+          git push || echo "push échoué"
