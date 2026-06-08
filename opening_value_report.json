@@ -2,10 +2,37 @@
   "status": "ok",
   "books": {
     "unibet": {
-      "flagged": 0,
-      "matchs_evalues": 18,
-      "ouvertures_molles": 3,
-      "sans_resultat": 3
+      "flagged": 3,
+      "roi_pct": -46.67,
+      "roi_ic95": [
+        -151.2,
+        57.87
+      ],
+      "taux_victoire": 0.333,
+      "ev_open_moy_pct": 2.84,
+      "cote_open_moy": 1.987
+    },
+    "bwin": {
+      "flagged": 2,
+      "roi_pct": 27.5,
+      "roi_ic95": [
+        -222.4,
+        277.4
+      ],
+      "taux_victoire": 0.5,
+      "ev_open_moy_pct": 3.65,
+      "cote_open_moy": 2.65
+    },
+    "betsson": {
+      "flagged": 4,
+      "roi_pct": -53.0,
+      "roi_ic95": [
+        -145.12,
+        39.12
+      ],
+      "taux_victoire": 0.25,
+      "ev_open_moy_pct": 3.78,
+      "cote_open_moy": 1.585
     }
   }
 }
