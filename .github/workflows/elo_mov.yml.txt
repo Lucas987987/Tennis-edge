@@ -1,0 +1,109 @@
+name: Elo MOV vs Pinnacle
+
+# Lancement MANUEL uniquement (onglet Actions -> Run workflow).
+# Télécharge les saisons tennis-data.co.uk (résultats + scores + cotes Pinnacle
+# de clôture PSW/PSL), les convertit en CSV, puis fait tourner scripts/elo_mov.py
+# qui compare le log-loss des variantes Elo au log-loss de Pinnacle dévigé.
+# Le rapport (elo_mov_report.json + le log) est publié en artefact.
+#
+# Pré-requis dans le repo : scripts/elo_mov.py
+# Aucun secret nécessaire.
+
+on:
+  workflow_dispatch:
+    inputs:
+      tour:
+        description: "Circuit"
+        type: choice
+        options: [ATP, WTA]
+        default: ATP
+      years:
+        description: "Années séparées par des espaces (>= 2013)"
+        default: "2018 2019 2020 2021 2022 2023 2024 2025"
+      surface_w:
+        description: "Poids du blend surface (0 = global pur, 1 = surface pur)"
+        default: "0.5"
+      min_matches:
+        description: "Burn-in : matchs mini joués par CHAQUE joueur pour compter"
+        default: "10"
+
+jobs:
+  elo:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Installer les dépendances
+        run: pip install pandas openpyxl
+
+      - name: Télécharger les saisons tennis-data.co.uk
+        run: |
+          mkdir -p data
+          TOUR="${{ github.event.inputs.tour }}"
+          for y in ${{ github.event.inputs.years }}; do
+            if [ "$TOUR" = "WTA" ]; then DIR="${y}w"; else DIR="$y"; fi
+            URL="http://www.tennis-data.co.uk/${DIR}/${y}.xlsx"
+            echo "GET $URL"
+            curl -fL -A "Mozilla/5.0" -o "data/${y}.xlsx" "$URL" \
+              || echo "  (année $y indisponible, on la saute)"
+          done
+          echo "--- contenu data/ ---"
+          ls -la data/ || true
+
+      - name: Convertir xlsx -> csv
+        run: |
+          python - <<'PY'
+          import glob, pandas as pd
+          n = 0
+          for x in sorted(glob.glob('data/*.xlsx')):
+              try:
+                  df = pd.read_excel(x)
+                  out = x[:-5] + '.csv'
+                  df.to_csv(out, index=False)
+                  print('converti', out, '->', len(df), 'lignes')
+                  n += 1
+              except Exception as e:
+                  print('echec', x, ':', e)
+          print('total CSV produits :', n)
+          PY
+
+      - name: Elo MOV vs Pinnacle
+        env:
+          ELO_SURFACE_W: ${{ github.event.inputs.surface_w }}
+          ELO_MIN_MATCHES: ${{ github.event.inputs.min_matches }}
+        run: |
+          shopt -s nullglob
+          files=(data/*.csv)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "::error::Aucun CSV téléchargé (vérifie le circuit / les années)."
+            exit 1
+          fi
+          python scripts/elo_mov.py "${files[@]}" | tee elo_mov_run.log
+
+      - name: First-set conditional (favori perd le set 1)
+        env:
+          FS_MIN_N: "30"
+        run: |
+          shopt -s nullglob
+          files=(data/*.csv)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "Aucun CSV — étape sautée."; exit 0
+          fi
+          python scripts/first_set_conditional.py "${files[@]}" | tee first_set.log
+
+      - name: Publier le rapport
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: elo-mov-report-${{ github.event.inputs.tour }}
+          path: |
+            elo_mov_report.json
+            elo_mov_run.log
+            first_set.log
+          if-no-files-found: warn
