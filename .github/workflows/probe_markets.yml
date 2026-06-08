@@ -12,8 +12,9 @@ on:
         description: "fixtureId OddsPapi (match terminé avec du live)"
         required: true
       commence:
-        description: "commence_time du match (ISO, ex. 2026-06-06T18:00:00Z) — depuis book_curves.jsonl"
-        required: true
+        description: "commence_time (ISO) — laisse vide : récupéré auto depuis book_curves.jsonl"
+        required: false
+        default: ""
       bookmakers:
         description: "Slugs (3 max)"
         default: "bwin,unibet,betsson"
