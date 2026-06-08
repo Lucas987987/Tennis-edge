@@ -1,0 +1,23 @@
+name: Inspect curves
+
+# Lancement MANUEL. Vérifie si book_curves.jsonl contient des points in-play
+# (postérieurs au coup d'envoi). Lis le résultat dans le log de l'exécution.
+# Pré-requis : scripts/inspect_curves.py + le fichier book_curves.jsonl committé.
+
+on:
+  workflow_dispatch:
+    inputs:
+      path:
+        description: "Chemin du book_curves.jsonl dans le repo"
+        default: "book_curves.jsonl"
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Inspecter
+        run: python scripts/inspect_curves.py "${{ github.event.inputs.path }}"
