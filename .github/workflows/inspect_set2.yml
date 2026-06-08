@@ -1,0 +1,23 @@
+name: Inspect set2
+
+# Lancement MANUEL. Valide le champ set2_open de book_curves.jsonl :
+# timing fin de set 1 plausible + accord des marqueurs 12542/12624.
+# Pré-requis : scripts/inspect_set2.py + book_curves.jsonl committé.
+
+on:
+  workflow_dispatch:
+    inputs:
+      path:
+        description: "Chemin du book_curves.jsonl"
+        default: "book_curves.jsonl"
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Inspecter set2_open
+        run: python scripts/inspect_set2.py "${{ github.event.inputs.path }}"
