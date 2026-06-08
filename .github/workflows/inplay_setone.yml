@@ -1,0 +1,33 @@
+name: Inplay set 1
+
+# Lancement MANUEL. Calibration in-play : pour les favoris battus au 1er set,
+# compare le prix live post-set-1 (pic de cote) au taux de victoire réalisé.
+# Lit book_curves.jsonl + resultats.json (+ resultats_fast.json) committés.
+# Résultat dans le log de l'exécution.
+
+on:
+  workflow_dispatch:
+    inputs:
+      curves:
+        description: "Chemin de book_curves.jsonl"
+        default: "book_curves.jsonl"
+      peak_window:
+        description: "Fenêtre (min) de recherche du pic post-set-1"
+        default: "75"
+      min_n:
+        description: "n minimum pour conclure"
+        default: "30"
+
+jobs:
+  inplay:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Calibration in-play
+        env:
+          IPS_PEAK_WINDOW_MIN: ${{ github.event.inputs.peak_window }}
+          IPS_MIN_N: ${{ github.event.inputs.min_n }}
+        run: python scripts/inplay_setone.py "${{ github.event.inputs.curves }}"
