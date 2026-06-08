@@ -40,9 +40,14 @@ def parse_date(s):
     try: return datetime.date.fromisoformat(s)
     except Exception: return None
 
-def load_results():
-    if not os.path.exists(RESULTS): return []
-    d = json.load(open(RESULTS, encoding='utf-8'))
+RESULTS_FAST = os.environ.get('RESULTS_FAST', 'resultats_fast.json')
+
+def _load_results_file(path, provisional):
+    if not os.path.exists(path): return []
+    try:
+        d = json.load(open(path, encoding='utf-8'))
+    except Exception:
+        return []
     res = d.get('results', d) if isinstance(d, dict) else d
     out = []
     for r in res:
@@ -50,8 +55,23 @@ def load_results():
         r['_H'] = norm_tokens(r.get('home_team', ''))
         r['_A'] = norm_tokens(r.get('away_team', ''))
         r['_d'] = parse_date(r.get('date'))
+        r['_prov'] = provisional
         out.append(r)
     return out
+
+def _same_match(p, a):
+    direct = player_match(p['_H'], a['_H']) and player_match(p['_A'], a['_A'])
+    swap   = player_match(p['_H'], a['_A']) and player_match(p['_A'], a['_H'])
+    if not (direct or swap): return False
+    if p['_d'] and a['_d'] and abs((p['_d'] - a['_d']).days) > DATE_TOL_DAYS: return False
+    return True
+
+def load_results():
+    """Sackmann (officiel) prioritaire ; provisoire rapide seulement pour les matchs absents."""
+    auth = _load_results_file(RESULTS, False)
+    prov = _load_results_file(RESULTS_FAST, True)
+    kept = [p for p in prov if not any(_same_match(p, a) for a in auth)]
+    return auth + kept
 
 def load_hist():
     rows = []
