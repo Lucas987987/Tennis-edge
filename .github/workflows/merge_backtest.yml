@@ -1,0 +1,58 @@
+name: Merge backtest
+
+# Se déclenche AUTOMATIQUEMENT quand tu déposes/mets à jour `tool_export.csv`
+# (l'export de l'outil) dans le repo. Fusionne sans perte dans backtest_tennis.csv
+# et committe. Aussi lançable à la main.
+#
+# Le SEUL geste manuel : uploader l'export de l'outil sous le nom tool_export.csv
+# (la donnée vit dans ton navigateur, un Action ne peut pas aller la chercher).
+#
+# Pré-requis : scripts/merge_backtest.py.
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "tool_export.csv"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: merge-backtest
+  cancel-in-progress: false
+
+jobs:
+  merge:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Fusionner l'export outil dans le backtest
+        run: |
+          if [ ! -f tool_export.csv ]; then
+            echo "Pas de tool_export.csv — rien à fusionner."; exit 0
+          fi
+          python scripts/merge_backtest.py tool_export.csv backtest_tennis.csv | tee merge_report.txt
+          {
+            echo "## Merge backtest"
+            echo ""
+            echo '```'
+            cat merge_report.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Committer le backtest fusionné
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add backtest_tennis.csv
+          if git diff --staged --quiet; then
+            echo "Aucun changement — rien à committer."
+          else
+            git commit -m "backtest: merge tool_export $(date -u +%Y-%m-%dT%H:%MZ)"
+            git push
+          fi
