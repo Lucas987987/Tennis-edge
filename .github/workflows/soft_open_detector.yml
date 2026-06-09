@@ -1,0 +1,53 @@
+name: Soft open detector
+
+# Le SEUL angle qui respire encore : l'ouverture molle (unibet vs bwin dévigé),
+# avec ouverture ROBUSTE (anti-artefact de tick). Recalcule tout depuis
+# book_curves.jsonl, écrit soft_openings.jsonl, et met le résumé (garde-fou n>=30)
+# dans le récap du run. Lancé chaque semaine + à la main.
+#
+# Pré-requis : scripts/soft_open_detector.py, book_curves.jsonl à la racine.
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * 1"          # tous les lundis 06:00 UTC
+
+permissions:
+  contents: write
+
+concurrency:
+  group: soft-open
+  cancel-in-progress: false
+
+jobs:
+  detect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Détecter les ouvertures molles
+        env:
+          SOFT_BOOK: unibet
+          SHARP_BOOK: bwin
+          OPEN_WINDOW_MIN: "90"
+          OPEN_MIN_POINTS: "3"
+        run: |
+          if [ ! -f book_curves.jsonl ]; then
+            echo "Pas de book_curves.jsonl — rien à analyser."; exit 0
+          fi
+          python scripts/soft_open_detector.py
+
+      - name: Committer le log des flags
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add soft_openings.jsonl
+          if git diff --staged --quiet; then
+            echo "Aucun changement."
+          else
+            git commit -m "soft-open: maj flags $(date -u +%Y-%m-%dT%H:%MZ)"
+            git push
+          fi
