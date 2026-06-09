@@ -1,0 +1,29 @@
+name: Drift vs outcome
+
+# Calibre la loi "réalisé ≈ clôture" sur tes données : drift du favori (bwin dévigé)
+# vs résultat réel (resultats_fast.json, repli resultats.json). Tableau dans le récap
+# du run. Garde-fou n>=30. Lecture seule (rien n'est commité).
+#
+# Pré-requis : scripts/drift_outcome.py, book_curves.jsonl + resultats_fast.json à la racine.
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "30 6 * * 1"        # lundi 06:30 UTC
+
+jobs:
+  calibrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Calibration drift -> résultat
+        env:
+          SHARP_BOOK: bwin
+          RESULTS_FILE: resultats_fast.json
+          RESULTS_FALLBACK: resultats.json
+        run: |
+          if [ ! -f book_curves.jsonl ]; then echo "Pas de book_curves.jsonl"; exit 0; fi
+          python scripts/drift_outcome.py
