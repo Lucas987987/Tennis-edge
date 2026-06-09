@@ -1,0 +1,51 @@
+name: Confidence v2
+
+# Recalibre le score de confiance (Venn-Abers) sur backtest_tennis.csv et écrit
+# confidence_calib.json (lu par l'outil). Se relance quand le backtest est mis à
+# jour (donc après un merge / un remplissage de résultats), + à la main + hebdo.
+#
+# Pré-requis : scripts/confidence_v2.py, backtest_tennis.csv à la racine.
+# Le JSON commité est servi par github.io et lu par confidence.js dans l'outil.
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 7 * * 1"
+  push:
+    paths:
+      - "backtest_tennis.csv"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: confidence-v2
+  cancel-in-progress: false
+
+jobs:
+  calibrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Calibrer + exporter
+        env:
+          BACKTEST_FILE: backtest_tennis.csv
+          OUT: confidence_calib.json
+          MIN_CAL: "20"
+        run: |
+          if [ ! -f backtest_tennis.csv ]; then echo "Pas de backtest"; exit 0; fi
+          python scripts/confidence_v2.py
+      - name: Committer la calibration
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add confidence_calib.json
+          if git diff --staged --quiet; then
+            echo "Aucun changement."
+          else
+            git commit -m "confidence: recalibrage $(date -u +%Y-%m-%dT%H:%MZ)"
+            git push
+          fi
