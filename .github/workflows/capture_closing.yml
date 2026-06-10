@@ -1,0 +1,48 @@
+name: Capture Closing Lines
+
+# ─────────────────────────────────────────────────────────────────────────────
+# DÉCLENCHEMENT 100% PAR LE WORKER CLOUDFLARE (repository_dispatch).
+#
+# Le cron "schedule" de GitHub est volontairement SUPPRIMÉ : il est trop peu fiable
+# (annoncé toutes les 10 min, exécuté parfois plusieurs heures plus tard). Le worker
+# Cloudflare envoie un repository_dispatch qui, lui, s'exécute immédiatement, et
+# pilote toute la cadence (serrée près d'un match, battement sinon).
+#
+# Le repo étant public, ces runs Actions sont illimités et gratuits.
+# ─────────────────────────────────────────────────────────────────────────────
+
+on:
+  repository_dispatch:
+    types: [capture_closing]
+  workflow_dispatch:        # lancement manuel possible
+
+permissions:
+  contents: write
+
+concurrency:
+  group: capture-closing
+  cancel-in-progress: false
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Capture des cotes (snapshot Pinnacle + détection closing + alertes)
+        env:
+          ODDSPAPI_KEY: ${{ secrets.ODDSPAPI_KEY }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        # Pas de --discover : la liste des tournois se rafraîchit seule au-delà de 18h.
+        run: python scripts/capture_closing.py
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add closing_lines.json capture_state.json players_oddspapi.json matches_oddspapi.json active_tournaments.json odds_alerts_state.json odds_alerts_log.jsonl odds_logged_state.json 2>/dev/null || true
+          git diff --staged --quiet || git commit -m "Capture cotes (OddsPapi $(date -u +%H:%MZ))"
+          git pull --rebase --autostash 2>/dev/null || true
+          git push
