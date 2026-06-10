@@ -1,0 +1,67 @@
+name: Capture Closing Lines
+
+# ─────────────────────────────────────────────────────────────────────────────
+# CADENCE DE CAPTURE (Pinnacle temps réel via OddsPapi)
+#   Jour  04h-22h UTC : toutes les 10 min   (build-up fin + closings frais)
+#   Nuit  23h-03h UTC : toutes les 20 min   (mouvements de nuit, moitié moins cher)
+#
+# ⚠️ COÛT EN MINUTES GITHUB ACTIONS (pas le quota OddsPapi — lui est large) :
+#   Chaque déclenchement = 1 run (~1,5 min). Cette cadence ≈ 130 runs/jour ≈
+#   ~5 800 min/mois. Or un repo PRIVÉ est plafonné : Free 2 000 / Pro 3 000.
+#
+#   => DEUX FAÇONS DE TENIR :
+#   (A) Passer le repo en PUBLIC : Actions devient ILLIMITÉ et gratuit. Aucun
+#       secret n'est dans le code (clés dans GitHub Secrets), donc rien à cacher.
+#       C'est l'option la plus simple pour garder le 10/20 min.
+#   (B) Rester PRIVÉ : utilise la cadence réduite (lignes commentées plus bas,
+#       ~1 900 min/mois) qui tient dans le palier Free.
+# ─────────────────────────────────────────────────────────────────────────────
+
+on:
+  schedule:
+    # --- Cadence fine (10/20 min) : nécessite repo PUBLIC ou GitHub payant ---
+    - cron: '*/10 4-22 * * *'     # jour : toutes les 10 min, 04h-22h UTC
+    - cron: '*/20 0-3,23 * * *'   # nuit : toutes les 20 min, 23h-03h UTC
+
+    # --- Cadence réduite (tient dans Free 2 000 min, repo privé) ---
+    #     Commente les deux lignes ci-dessus et décommente celles-ci :
+    # - cron: '*/30 4-22 * * *'   # jour : toutes les 30 min
+    # - cron: '0 0-3,23 * * *'    # nuit : 1×/heure
+
+  # Le worker Cloudflare peut aussi déclencher au moment précis (T-25/T-10) :
+  repository_dispatch:
+    types: [capture_closing]
+
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: capture-closing
+  cancel-in-progress: false
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Capture des cotes (snapshot Pinnacle + détection closing)
+        env:
+          ODDSPAPI_KEY: ${{ secrets.ODDSPAPI_KEY }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        # PAS de --discover sur les runs fréquents : la liste des tournois se
+        # rafraîchit toute seule quand elle dépasse 18h (garde-fou interne).
+        run: python scripts/capture_closing.py
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add closing_lines.json players_oddspapi.json matches_oddspapi.json active_tournaments.json odds_alerts_state.json odds_alerts_log.jsonl odds_logged_state.json 2>/dev/null || true
+          git diff --staged --quiet || git commit -m "Capture cotes (OddsPapi $(date -u +%H:%MZ))"
+          git pull --rebase --autostash 2>/dev/null || true
+          git push
