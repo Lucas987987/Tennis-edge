@@ -1,0 +1,30 @@
+name: Probe Settlement
+
+# Sonde ponctuelle : affiche la structure BRUTE de /fixtures/settlement pour un
+# match (par defaut Linette v Pohankova, fini 2-0 le 11/06). Sert a diagnostiquer
+# l'extraction set1/set2. Ne commite rien — tout est dans le log du run.
+
+on:
+  workflow_dispatch:
+    inputs:
+      fixture_id:
+        description: 'fixtureId a sonder (defaut: match fini du 11/06)'
+        required: false
+        default: 'id1200762571900838'
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Sonde settlement
+        env:
+          RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
+          FIXTURE_ID: ${{ github.event.inputs.fixture_id }}
+        run: python scripts/probe_settlement.py
