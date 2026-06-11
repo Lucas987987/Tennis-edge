@@ -1,0 +1,32 @@
+name: Identify set markets
+
+# Lancement MANUEL. Sonde plusieurs matchs terminés et identifie l'ID du marché
+# qui marque la FIN DU SET 1 (corrélation de l'instant d'apparition avec le
+# nombre de jeux du set 1). Résultat dans le log.
+# Pré-requis : scripts/identify_set_markets.py + book_curves.jsonl + resultats.json
+# committés + secret RAPIDAPI_KEY.
+
+on:
+  workflow_dispatch:
+    inputs:
+      n:
+        description: "Nombre de matchs à sonder (plus = corrélation plus fiable)"
+        default: "12"
+      min_offset:
+        description: "Seuil (min) de la 2e vague pour distinguer set 1 / set 2"
+        default: "25"
+
+jobs:
+  identify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Identifier le marché set 2
+        env:
+          RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
+          IDSM_N: ${{ github.event.inputs.n }}
+          IDSM_MIN_OFFSET: ${{ github.event.inputs.min_offset }}
+        run: python scripts/identify_set_markets.py
