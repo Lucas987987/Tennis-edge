@@ -1,0 +1,54 @@
+name: Etudes Mouvement (set1 + anatomie)
+
+# Lance les deux etudes offline sur les mouvements de cote :
+#   - move_vs_set1.py  : le move predit-il le gain du 1er set / du match
+#                        au-dela de la cloture ?
+#   - move_anatomy.py  : 6 angles (forme, timing, match court/abandon,
+#                        fakeout, crossover, volatilite/calibration).
+# Lecture seule (clv_history.jsonl + resultats_oddspapi.json), AUCUNE API.
+# Resultats visibles dans le log du run ET commites dans etudes_move_report.txt.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  etudes:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Move vs Set 1
+        env:
+          CLV_FILE: clv_history.jsonl
+          RESULTS: resultats_oddspapi.json
+        run: |
+          echo "=== RAPPORT ETUDES MOUVEMENT — $(date -u +%FT%TZ) ===" > etudes_move_report.txt
+          echo "" >> etudes_move_report.txt
+          python scripts/move_vs_set1.py | tee -a etudes_move_report.txt
+      - name: Anatomie des mouvements (6 angles)
+        env:
+          CLV_FILE: clv_history.jsonl
+          RESULTS: resultats_oddspapi.json
+        run: |
+          echo "" >> etudes_move_report.txt
+          python scripts/move_anatomy.py | tee -a etudes_move_report.txt
+      - name: Points de reference (snapshots, marge, micro-move)
+        env:
+          CLOSING: closing_lines.json
+          RESULTS: resultats_oddspapi.json
+        run: |
+          echo "" >> etudes_move_report.txt
+          python scripts/reference_points.py | tee -a etudes_move_report.txt
+      - name: Commit du rapport
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add etudes_move_report.txt || true
+          git diff --cached --quiet || git commit -m "etudes mouvement $(date -u +%FT%TZ)"
+          git pull --rebase --autostash 2>/dev/null || true
+          git push || true
