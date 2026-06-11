@@ -1,0 +1,26 @@
+name: List Books
+
+on:
+  workflow_dispatch:
+    inputs:
+      fixture_id:
+        description: "fixtureId à venir (laisser vide = auto depuis closing_lines)"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  list-books:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Découvrir les slugs des bookmakers (catalogue + match témoin)
+        env:
+          RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
+          FIXTURE_ID: ${{ github.event.inputs.fixture_id }}
+        run: python scripts/list_books.py
