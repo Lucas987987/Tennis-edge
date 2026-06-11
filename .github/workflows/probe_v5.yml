@@ -1,0 +1,25 @@
+name: Probe OddsPapi v5
+
+# Sonde de migration v5 — a lancer manuellement (Actions > Probe OddsPapi v5 > Run workflow).
+# Elle imprime les vraies reponses v5 (sports, marches, match tennis, cotes Pinnacle,
+# historique) dans les logs. Colle le log a Claude pour finaliser le client v5.
+
+on:
+  workflow_dispatch:
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Run probe
+        env:
+          RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
+        run: python scripts/probe_v5.py
