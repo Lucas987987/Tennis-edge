@@ -1,4 +1,4 @@
-=== RAPPORT ETUDES MOUVEMENT — 2026-06-11T13:36:51Z ===
+=== RAPPORT ETUDES MOUVEMENT — 2026-06-11T20:26:03Z ===
 
 === move_vs_set1 — 67 matchs joints (CLV ∩ settlement), 0 avec set1 connu ===
 (donnees provisoires settlement — exploration, pas de validation)
@@ -52,3 +52,31 @@ agite  (amp   9.6-22.6%) n=23  Brier 0.252 | realise 56.5% vs close 44.0% (resid
 
 Rappel : 6 angles testes en parallele => des cases 'interessantes' par hasard
 sont attendues. Ne retenir que ce qui persiste quand n grandit (Sackmann + RG).
+
+=== reference_points — 156 matchs dans closing_lines.json, 67 avec resultat ===
+(exploration pre-enregistree 2026-06-11 — [DIR] = n<30)
+
+── R1 DERIVE FINALE — mouvement de proba entre T-25 et T-3 ───────
+n=12 matchs avec t25 ET t3 [DIR]
+|delta p| moyen 0.78% | mediane 0.71% | max 2.16%
+matchs ou la ligne bouge encore >=1pt entre T-25 et T-3 : 3/12 (25%)
+
+── R2 CALIBRATION — Brier de la proba du vainqueur par snapshot ──
+aucun match avec les 4 snapshots + resultat.
+
+── R3 MARGE PINNACLE — par anciennete du point (history) ─────────
+  >24h      n_pts=123   marge moyenne 3.28%
+  24-6h     n_pts=389   marge moyenne 3.53%
+  6-1h      n_pts=303   marge moyenne 3.66%
+  60-25min  n_pts=30    marge moyenne 3.00%
+  25-0min   n_pts=34    marge moyenne 2.89%
+  marge a la cloture vs agitation des cotes (terciles de marge) :
+    serree   marge 2.45% -> range cotes 5.5% (n=35)
+    moyenne  marge 3.10% -> range cotes 6.1% (n=35)
+    large    marge 3.96% -> range cotes 3.3% (n=36)
+
+── R4 MICRO-MOVE T-25 -> T-3 — late-steam >= 1pt vs resultat ─────
+matchs t25+t3+resultat : 0 | late-steam : 0 | stables : 0
+
+Rappel : plusieurs questions sur les memes matchs => cases 'interessantes'
+par hasard attendues. Seule la persistance quand n grandit compte.
