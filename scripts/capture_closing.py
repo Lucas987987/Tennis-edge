@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+m#!/usr/bin/env python3
 """
 Capture les closing lines Pinnacle pour les matchs qui commencent bientôt.
 
