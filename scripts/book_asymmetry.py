@@ -1,0 +1,224 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+book_asymmetry.py — Asymetrie des books mous face aux moves Pinnacle.
+
+PRE-ENREGISTREMENT (2026-06-12) : seuils fixes avant lecture des chiffres.
+
+Intuition observee (Cirstea, Dart, Sonmez...) : les books mous SUIVENT VITE les
+raccourcissements (steam) et TRAINENT sur les allongements (drift) — monter une
+cote augmente leur exposition, la baisser ne coute rien. Consequence attendue :
+le cote qui DERIVE est tres en-dessous du juste prix chez le book mou, le cote
+STEAME est "presque correct".
+
+Etude 100% MECANIQUE (pas besoin de resultats de matchs => n solide vite) :
+pour chaque COTE de match dont le move Pinnacle open->close est >= MOVE_MIN
+(3%), dans chaque book mou disponible :
+
+  B1 EDGE RESIDUEL A LA CLOTURE : cote du book a sa cloture vs juste prix
+     Pinnacle devige. Moyenne par sens du move (steam vs drift).
+     -> chiffre exactement "ou la porte est la moins fermee".
+
+  B2 TAUX DE SUIVI : move du book / move de Pinnacle (meme cote, open->close).
+     ~1 = suit entierement, ~0 = ignore. Par sens du move.
+     -> asymetrie de mise a jour confirmee si suivi(steam) >> suivi(drift).
+
+  B3 RETARD TEMPOREL (matchs avec courbes des deux cotes) : minutes entre le
+     moment ou Pinnacle a fait 50% de son move et celui ou le book l'a fait.
+     Mediane par sens.
+
+Garde-fou n >= MIN_N (30) par case ; [DIR] en dessous.
+Sources (lecture seule, AUCUNE API) :
+  CLV_FILE=clv_history.jsonl (Pinnacle)   BOOK_FILE=book_curves.jsonl (mous)
+"""
+import json, os, sys, datetime, statistics as st
+
+CLV_FILE  = os.environ.get('CLV_FILE', 'clv_history.jsonl')
+BOOK_FILE = os.environ.get('BOOK_FILE', 'book_curves.jsonl')
+MIN_N     = int(os.environ.get('MIN_N', '30'))
+MOVE_MIN  = float(os.environ.get('MOVE_MIN', '3.0'))   # % move Pinnacle minimal
+
+
+def parse_dt(s):
+    try:
+        return datetime.datetime.fromisoformat(str(s).replace('Z', '+00:00')).replace(tzinfo=None)
+    except Exception:
+        return None
+
+
+def load_jsonl(path, key):
+    """Charge un jsonl en dict key->entry (la DERNIERE occurrence fait foi :
+    courbe la plus complete)."""
+    out = {}
+    if not os.path.exists(path):
+        return out
+    with open(path, encoding='utf-8') as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                e = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            k = key(e)
+            if k:
+                out[k] = e
+    return out
+
+
+def t50(curve_raw, start, open_p, close_p):
+    """Premier instant ou la courbe a parcouru 50% du chemin open->close
+    (points pre-match uniquement). None si introuvable."""
+    if not curve_raw or open_p is None or close_p is None:
+        return None
+    total = close_p - open_p
+    if total == 0:
+        return None
+    mid = open_p + total / 2.0
+    for t, p in curve_raw:
+        dt = parse_dt(t)
+        if dt is None or (start is not None and dt > start):
+            continue
+        if (total > 0 and p >= mid) or (total < 0 and p <= mid):
+            return dt
+    return None
+
+
+def curve_oc(curve_raw, start):
+    """(open, close, move_pct) PRE-MATCH depuis une courbe brute [(iso, prix)].
+    Coupe strictement au coup d'envoi : si aucun point pre-match -> (None,)*3.
+    On NE fait PAS confiance aux metrics stockees (close potentiellement in-play
+    dans les anciens book_curves, et move_pct absent) — on recalcule tout."""
+    if not curve_raw:
+        return None, None, None
+    pts = []
+    for t, p in curve_raw:
+        dt = parse_dt(t)
+        if dt is None:
+            continue
+        if start is not None and dt > start:
+            continue
+        pts.append((dt, float(p)))
+    if len(pts) < 2:
+        return None, None, None
+    pts.sort(key=lambda x: x[0])
+    op, cl = pts[0][1], pts[-1][1]
+    return op, cl, (cl - op) / op * 100.0
+
+
+
+
+def book_curves_aligned(be, ref_home, ref_away):
+    """Retourne (home_curve, away_curve) du book ALIGNES sur l'ordre de reference.
+    Certaines vieilles lignes de book_curves ont home/away INVERSES (ecrites avant
+    le correctif "canonique") : on detecte par les noms et on re-swappe."""
+    hc, ac = be.get('home_curve'), be.get('away_curve')
+    bh = (be.get('home') or '').strip().lower()
+    ba = (be.get('away') or '').strip().lower()
+    rh = (ref_home or '').strip().lower()
+    ra = (ref_away or '').strip().lower()
+    if bh and rh and bh == ra and ba == rh:
+        return ac, hc        # swap detecte -> on inverse
+    return hc, ac
+
+def main():
+    pinn = load_jsonl(CLV_FILE, lambda e: str(e.get('fixture_id') or ''))
+    books_raw = {}
+    if os.path.exists(BOOK_FILE):
+        with open(BOOK_FILE, encoding='utf-8') as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    e = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                fid, book = str(e.get('fixture_id') or ''), e.get('book')
+                if fid and book:
+                    books_raw[(fid, book)] = e
+    if not pinn or not books_raw:
+        print(f"❌ donnees manquantes ({CLV_FILE}: {len(pinn)} | {BOOK_FILE}: {len(books_raw)})")
+        sys.exit(0)
+
+    book_names = sorted(set(b for _, b in books_raw.keys()))
+    print(f"=== book_asymmetry — {len(pinn)} matchs Pinnacle, books: {', '.join(book_names)} ===")
+    print(f"(exploration pre-enregistree 2026-06-12 — mecanique, [DIR] = n<{MIN_N})")
+    print(f"unite = un COTE de match avec |move Pinnacle| >= {MOVE_MIN:.0f}%\n")
+
+    for book in book_names:
+        rows = []   # un par côté éligible
+        for (fid, b), be in books_raw.items():
+            if b != book:
+                continue
+            pe = pinn.get(fid)
+            if not pe:
+                continue
+            start = parse_dt(pe.get('commence_time'))
+            b_hc, b_ac = book_curves_aligned(be, pe.get('home'), pe.get('away'))
+            b_by_side = {'home': b_hc, 'away': b_ac}
+            for side, other in (('home', 'away'), ('away', 'home')):
+                # Tout est recalcule DEPUIS LES COURBES, coupees au pre-match.
+                p_op, p_cl, p_mv = curve_oc(pe.get(f'{side}_curve'), start)
+                _, po_cl, _ = curve_oc(pe.get(f'{other}_curve'), start)
+                b_op, b_cl, b_mv = curve_oc(b_by_side[side], start)
+                if p_mv is None or p_op is None or p_cl is None:
+                    continue
+                if abs(p_mv) < MOVE_MIN:
+                    continue
+                direction = 'steam' if p_mv < 0 else 'drift'
+                # B1 : edge résiduel du book à SA clôture vs juste prix Pinnacle
+                edge = None
+                try:
+                    a = 1.0 / float(p_cl); c = 1.0 / float(po_cl)
+                    p_fair = a / (a + c)                      # proba dévigée du côté
+                    fair_odds = 1.0 / p_fair
+                    if b_cl:
+                        edge = float(b_cl) / fair_odds - 1.0
+                except (TypeError, ValueError, ZeroDivisionError):
+                    pass
+                # B2 : taux de suivi (move book / move Pinnacle, même côté)
+                follow = None
+                if b_mv is not None and p_mv != 0:
+                    follow = b_mv / p_mv
+                    follow = max(-1.0, min(2.0, follow))      # bornes anti-aberration
+                # B3 : retard temporel à 50% du move
+                lag_min = None
+                tp = t50(pe.get(f'{side}_curve'), start, p_op, p_cl)
+                tb = t50(b_by_side[side], start, b_op, b_cl) \
+                    if b_op and b_cl else None
+                if tp and tb:
+                    lag_min = (tb - tp).total_seconds() / 60.0
+                rows.append({'dir': direction, 'edge': edge, 'follow': follow, 'lag': lag_min})
+
+        print(f"── {book} " + '─' * max(0, 58 - len(book)))
+        if not rows:
+            print("  aucun côté éligible (pas de recouvrement de matchs ?)\n")
+            continue
+        for d in ('steam', 'drift'):
+            g = [r for r in rows if r['dir'] == d]
+            n = len(g)
+            if n == 0:
+                print(f"  {d:<6} n=0")
+                continue
+            edges = [r['edge'] for r in g if r['edge'] is not None]
+            follows = [r['follow'] for r in g if r['follow'] is not None]
+            lags = [r['lag'] for r in g if r['lag'] is not None]
+            tag = '' if n >= MIN_N else ' [DIR]'
+            e_s = f"{st.mean(edges):+.1%} (med {st.median(edges):+.1%}, n={len(edges)})" if edges else '-'
+            f_s = f"{st.mean(follows):.0%} (med {st.median(follows):.0%}, n={len(follows)})" if follows else '-'
+            l_s = f"{st.median(lags):+.0f} min (n={len(lags)})" if lags else '-'
+            print(f"  {d:<6} n={n:<4} edge vs juste prix: {e_s}{tag}")
+            print(f"         suivi du move: {f_s} | retard median a 50%: {l_s}")
+        print()
+
+    print("Lecture :")
+    print(" - edge(steam) >> edge(drift) (moins negatif) = l'asymetrie observee est structurelle.")
+    print(" - suivi(steam) > suivi(drift) = le book met a jour plus vite vers le bas.")
+    print(" - un edge moyen steam proche de 0 dirait OU regarder pendant les gros moves —")
+    print("   mais seul un edge POSITIF persistant sur du frais justifierait d'aller plus loin.")
+
+
+if __name__ == '__main__':
+    main()
