@@ -1,4 +1,4 @@
-=== RAPPORT ETUDES MOUVEMENT — 2026-06-12T10:37:41Z ===
+=== RAPPORT ETUDES MOUVEMENT — 2026-06-12T10:56:01Z ===
 
 === move_vs_set1 — 80 matchs joints (CLV ∩ settlement), 67 avec set1 connu ===
 (donnees provisoires settlement — exploration, pas de validation)
@@ -8,6 +8,9 @@ tranche                   n p_close moy match realise   residu  n_s1 set1 realis
 quasi stable (0-2%)      25      58.8%        60.0%   +1.2%    22       54.5%    20.0%  [DIRECTIONNEL n<30]
 move modere (2-5%)       19      55.8%        42.1%  -13.7%    16       56.2%     0.0%  [DIRECTIONNEL n<30]
 gros move (>5%)          36      49.0%        63.9%  +14.9%    29       51.7%    57.1%
+
+── OUT-OF-SAMPLE (matchs >= 2026-06-12) — 0 matchs ──
+(seul terrain de test legitime de l'hypothese 'gros move' ; tout le reste est in-sample)
 
 Lecture :
  - residu (match realise - p_close) ~ 0 => la cloture dit deja tout, le move n'ajoute rien.
@@ -50,6 +53,9 @@ calme  (amp    0.0-5.5%) n=26  Brier 0.227 | realise 65.4% vs close 62.2% (resid
 moyen  (amp    5.5-9.3%) n=26  Brier 0.190 | realise 57.7% vs close 56.8% (residu +0.9%) [DIR]
 agite  (amp   9.6-23.3%) n=28  Brier 0.243 | realise 50.0% vs close 42.9% (residu +7.1%) [DIR]
 
+── OOS — gros move (>5%) sur les matchs >= 2026-06-12 uniquement 
+aucun match frais dans cette tranche pour l'instant — patience.
+
 Rappel : 6 angles testes en parallele => des cases 'interessantes' par hasard
 sont attendues. Ne retenir que ce qui persiste quand n grandit (Sackmann + RG).
 
@@ -58,7 +64,7 @@ sont attendues. Ne retenir que ce qui persiste quand n grandit (Sackmann + RG).
 
 ── R1 DERIVE FINALE — mouvement de proba entre T-25 et T-3 ───────
 n=17 matchs avec t25 ET t3 [DIR]
-|delta p| moyen 0.63% | mediane 0.39% | max 2.16%
+|delta p| moyen 0.67% | mediane 0.64% | max 2.16%
 matchs ou la ligne bouge encore >=1pt entre T-25 et T-3 : 3/17 (18%)
 
 ── R2 CALIBRATION — Brier de la proba du vainqueur par snapshot ──
@@ -72,10 +78,16 @@ sous-ensemble commun (4 snapshots + resultat) : n=3 [DIR]
 
 ── R3 MARGE PINNACLE — par anciennete du point (history) ─────────
   >24h      n_pts=124   marge moyenne 3.28%
-  24-6h     n_pts=466   marge moyenne 3.44%
-  6-1h      n_pts=421   marge moyenne 3.43%
-  60-25min  n_pts=40    marge moyenne 2.91%
+  24-6h     n_pts=467   marge moyenne 3.44%
+  6-1h      n_pts=426   marge moyenne 3.42%
+  60-25min  n_pts=41    marge moyenne 2.91%
   25-0min   n_pts=37    marge moyenne 2.89%
+  marge de cloture (<=60min) par segment :
+    genre ATP            n=28   marge 2.97% [DIR]
+    genre WTA            n=27   marge 3.07% [DIR]
+    niveau ?              n=13   marge 2.64% [DIR]
+    niveau autre          n=35   marge 3.25%
+    niveau grand_chelem   n=7    marge 2.59% [DIR]
   marge a la cloture vs agitation des cotes (terciles de marge) :
     serree   marge 2.43% -> range cotes 4.7% (n=38)
     moyenne  marge 3.04% -> range cotes 6.8% (n=38)
@@ -166,6 +178,48 @@ TOUTES                57% (n=44 )       61% (n=23 )     +4%
   LW perd      6  (9%)
 
 Rappel : provisoire + petits n par case -> directions seulement.
+
+=== opening_efficiency — 86 matchs (open+close des 2 cotes) ===
+(exploration pre-enregistree 2026-06-12 — [DIR] = n<30)
+
+── O1 CLV DE L'OUVERTURE vs cloture devigee (mecanique) ─────
+  TOUS               n=86   favori: -4.9% (med -3.6%) | outsider: -1.1% (med -3.3%)
+  open >24h avant    n=36   favori: -4.4% (med -2.6%) | outsider: -1.9% (med -4.3%)
+  open 6-24h avant   n=49   favori: -5.3% (med -4.6%) | outsider: -0.4% (med -2.0%)
+  open <6h avant     n=1    favori: -3.8% (med -3.8%) | outsider: -3.8% (med -3.8%) [DIR]
+  >0 = parier ce cote a l'ouverture battait la cloture (CLV positif systematique
+  = biais de l'ouvreur). ~0 des deux cotes = l'ouvreur est deja efficient.
+
+── O2 CALIBRATION favori a la cloture (n=80 avec resultat) ──
+  favori 50-60%  n=25   realise 56.0% vs close 55.6% (residu +0.4%) [DIR]
+  favori 60-75%  n=46   realise 65.2% vs close 66.3% (residu -1.1%)
+  favori >75%    n=4    realise 100.0% vs close 76.9% (residu +23.1%) [DIR]
+  residu >0 sur les gros favoris + <0 sur les petits = favorite-longshot bias
+  (les outsiders sont sur-payes) ; ~0 partout = cloture bien calibree.
+
+=== night_moves — 53 cotes steamed (|move|>=3%, nuit=22h-6h UTC) ===
+(exploration pre-enregistree 2026-06-12 — [DIR] = n<30)
+
+type          n  fakeout | n_res  realise vs close   residu
+nocturne     10      10% |    10    50.0%    49.0%    +1.0% [DIR]
+mixte         8       0% |     6    33.3%    46.5%   -13.2% [DIR]
+diurne       35       9% |    32    62.5%    52.2%   +10.3%
+
+Lecture : fakeout(nocturne) >> fakeout(diurne) et/ou residu nocturne plus
+faible = les moves de nuit portent moins d'information (liquidite).
+
+=== player_steam — 172 apparitions, 129 joueurs, 43 transitions match k->k+1 ===
+(exploration pre-enregistree 2026-06-12 — [DIR] = n<30)
+
+taux de base 'steamed' : 31% des cotes
+P(steamed k+1 | steamed k)     = 33%  (n=15) [DIR]
+P(steamed k+1 | NON steamed k) = 46%  (n=28) [DIR]
+
+joueurs steamed 2 matchs de suite : realise 60% vs close 58% (residu +1.9%, n=5) [DIR]
+
+Lecture : recurrence >> base = l'argent informe SUIT des joueurs ; un residu
+positif sur les doubles-steams dirait que meme la cloture sous-ajuste ces series.
+NB : couverture partielle (seuls NOS matchs suivis comptent comme 'apparitions').
 
 === capture_quality — 156 entrees, 146 matchs commences ===
 
