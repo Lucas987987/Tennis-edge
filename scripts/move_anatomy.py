@@ -30,6 +30,7 @@ import json, os, sys, datetime
 CLV_FILE = os.environ.get('CLV_FILE', 'clv_history.jsonl')
 RESULTS  = os.environ.get('RESULTS', 'resultats_oddspapi.json')
 MIN_N    = int(os.environ.get('MIN_N', '30'))
+SPLIT_DATE = os.environ.get('SPLIT_DATE', '2026-06-12')   # frontiere out-of-sample
 
 # ---- seuils PRE-ENREGISTRES (ne pas retoucher apres lecture des resultats) ----
 JUMP_WINDOW_MIN   = 30    # fenetre du "saut"
@@ -135,7 +136,8 @@ def load_rows():
             void = bool(r.get('void'))
             abandon = void and (r.get('status_name') in ABANDON_STATUSES)
             row = {
-                'fid': fid, 'home': e.get('home'), 'away': e.get('away'),
+                'fid': fid, 'ct': str(e.get('commence_time') or '')[:10],
+                'home': e.get('home'), 'away': e.get('away'),
                 'steam_side': side,
                 'steam_move': abs(min(ms['move_pct'], 0.0)),
                 'amp': ms.get('amplitude_pct'),
@@ -274,6 +276,18 @@ def main():
             pc = sum(r['p_close'] for r in g) / n
             print(f"{lab:<6} (amp {amp_rng:>11}) n={n:<3} Brier {brier:.3f}"
                   f" | realise {pct(wm)} vs close {pct(pc)} (residu {wm-pc:+.1%}){tag(n)}")
+
+    # ── OUT-OF-SAMPLE : la SEULE case pre-enregistree comme hypothese (gros move) ──
+    section(f"OOS — gros move (>5%) sur les matchs >= {SPLIT_DATE} uniquement")
+    fresh = [r for r in decided if r['ct'] >= SPLIT_DATE and bucket_of(r['steam_move']) == BUCKETS[-1][2]]
+    if fresh:
+        n = len(fresh)
+        wm = sum(r['won_match'] for r in fresh) / n
+        pc = sum(r['p_close'] for r in fresh) / n
+        print(f"n={n} | match {wm:.1%} vs close {pc:.1%} (residu {wm - pc:+.1%}){tag(n)}")
+        print(f"(in-sample de reference au {SPLIT_DATE} : residu +14.9% sur n=36)")
+    else:
+        print("aucun match frais dans cette tranche pour l'instant — patience.")
 
     print("\nRappel : 6 angles testes en parallele => des cases 'interessantes' par hasard")
     print("sont attendues. Ne retenir que ce qui persiste quand n grandit (Sackmann + RG).")
