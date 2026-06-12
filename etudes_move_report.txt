@@ -1,4 +1,4 @@
-=== RAPPORT ETUDES MOUVEMENT — 2026-06-12T09:34:00Z ===
+=== RAPPORT ETUDES MOUVEMENT — 2026-06-12T10:01:11Z ===
 
 === move_vs_set1 — 80 matchs joints (CLV ∩ settlement), 67 avec set1 connu ===
 (donnees provisoires settlement — exploration, pas de validation)
@@ -57,9 +57,9 @@ sont attendues. Ne retenir que ce qui persiste quand n grandit (Sackmann + RG).
 (exploration pre-enregistree 2026-06-11 — [DIR] = n<30)
 
 ── R1 DERIVE FINALE — mouvement de proba entre T-25 et T-3 ───────
-n=15 matchs avec t25 ET t3 [DIR]
-|delta p| moyen 0.70% | mediane 0.64% | max 2.16%
-matchs ou la ligne bouge encore >=1pt entre T-25 et T-3 : 4/15 (27%)
+n=17 matchs avec t25 ET t3 [DIR]
+|delta p| moyen 0.62% | mediane 0.39% | max 2.16%
+matchs ou la ligne bouge encore >=1pt entre T-25 et T-3 : 3/17 (18%)
 
 ── R2 CALIBRATION — Brier de la proba du vainqueur par snapshot ──
 sous-ensemble commun (4 snapshots + resultat) : n=3 [DIR]
@@ -72,14 +72,14 @@ sous-ensemble commun (4 snapshots + resultat) : n=3 [DIR]
 
 ── R3 MARGE PINNACLE — par anciennete du point (history) ─────────
   >24h      n_pts=124   marge moyenne 3.28%
-  24-6h     n_pts=459   marge moyenne 3.45%
-  6-1h      n_pts=406   marge moyenne 3.46%
-  60-25min  n_pts=37    marge moyenne 2.91%
-  25-0min   n_pts=35    marge moyenne 2.86%
+  24-6h     n_pts=460   marge moyenne 3.45%
+  6-1h      n_pts=419   marge moyenne 3.43%
+  60-25min  n_pts=36    marge moyenne 2.92%
+  25-0min   n_pts=37    marge moyenne 2.89%
   marge a la cloture vs agitation des cotes (terciles de marge) :
-    serree   marge 2.45% -> range cotes 4.9% (n=38)
-    moyenne  marge 3.06% -> range cotes 6.4% (n=38)
-    large    marge 3.91% -> range cotes 3.3% (n=40)
+    serree   marge 2.43% -> range cotes 4.7% (n=38)
+    moyenne  marge 3.04% -> range cotes 6.8% (n=38)
+    large    marge 3.91% -> range cotes 3.2% (n=40)
 
 ── R4 MICRO-MOVE T-25 -> T-3 — late-steam >= 1pt vs resultat ─────
 matchs t25+t3+resultat : 5 | late-steam : 1 | stables : 4
@@ -123,3 +123,81 @@ Lecture :
  - suivi(steam) > suivi(drift) = le book met a jour plus vite vers le bas.
  - un edge moyen steam proche de 0 dirait OU regarder pendant les gros moves —
    mais seul un edge POSITIF persistant sur du frais justifierait d'aller plus loin.
+
+=== alert_continuation — 54 matchs logges, 27 cotes avec |move|>= 3% au log ===
+(exploration pre-enregistree 2026-06-12 — mecanique, [DIR] = n<30)
+
+steam  n=14   continuation 29% | stable 43% | retour 29% | post median 0.7% | post/pre median -0% [DIR]
+drift  n=13   continuation 31% | stable 38% | retour 31% | post median 1.3% | post/pre median +0% [DIR]
+TOUS   n=27   continuation 30% | stable 41% | retour 30% | post median 0.9% | post/pre median -0% [DIR]
+
+Lecture :
+ - post/pre ~ 0 et stable majoritaire = le move est FINI quand le log tombe (T-35) :
+   l'alerte decrit le passe, elle ne precede rien.
+ - continuation >> retour avec post median consequent = l'info arrive encore apres
+   T-35 -> seul cas qui justifierait (un jour, sur du frais) d'en faire un declencheur.
+
+=== bo3_momentum — 67 matchs (favori de cloture, set1 connu) ===
+(donnees provisoires settlement — exploration, [DIR] = n<30)
+
+── M1 P(match) du favori selon le set 1, par force ──────────
+tranche            n p_fav moy |  set1 gagne -> match |  set1 perdu -> match
+favori 50-60%     26      55% |          72% (n=18 ) |          38% (n=8  ) [DIR]
+favori 60-70%     32      65% |          78% (n=18 ) |          21% (n=14 )
+favori >70%        9      74% |         100% (n=6  ) |          67% (n=3  ) [DIR]
+TOUTES            67      62% |          79% (n=42 ) |          32% (n=25 )
+  (reference Sackmann BO3 : favori ~87% apres set 1 gagne, ~33% apres set 1 perdu)
+
+── M2 MOMENTUM — P(set 2) du favori selon l'issue du set 1 ──
+tranche          P(s2|s1 gagne)  P(s2|s1 perdu)   ecart
+favori 50-60%         56% (n=18 )       62% (n=8  )     +7% [DIR]
+favori 60-70%         56% (n=18 )       57% (n=14 )     +2%
+favori >70%           83% (n=6  )      100% (n=3  )    +17% [DIR]
+TOUTES                60% (n=42 )       64% (n=25 )     +4%
+  ecart ~0 = les sets sont independants a force donnee ; tres negatif = 
+  decouragement reel (et les comebacks live sont structurellement sur-payes).
+
+── M3 TRAJECTOIRES (sets 1-2 du favori, puis issue) ─────────
+  WW gagne    25  (37%)
+  LL perd      9  (13%)
+  WL perd      9  (13%)
+  LW perd      8  (12%)
+  LW gagne     8  (12%)
+  WL gagne     8  (12%)
+
+Rappel : provisoire + petits n par case -> directions seulement.
+
+=== capture_quality — 156 entrees, 147 matchs commences ===
+
+── Q1 COUVERTURE DES FENETRES (matchs commences) ────────────
+  t25  25/147 (17%)
+  t15  20/147 (14%)
+  t7   30/147 (20%)
+  t3   16/147 (11%)
+  closing present : 88/147 (60%) | fiable : 67/147 (46%) | par disparition : 61
+  les 4 snapshots : 13/147 (9%)
+
+── Q2 CHAOS DE PROGRAMMATION (schedule_changes) ─────────────
+  horaire change  n=6    >=1 snapshot 100% | closing fiable 100%
+  horaire stable  n=141  >=1 snapshot 21% | closing fiable 43%
+  distribution : 1 chg: 1, 2 chg: 1, 3 chg: 1, 5 chg: 2, 17 chg: 1
+
+── Q3 TRIANGULATION DES CLOSINGS (A=clv, B=snapshot, C=book_curves pinnacle) ──
+  clv vs snapshot          n=0 (pas de recouvrement)
+  clv vs book_curves       n=40   ecart median 7.47% | moyen 28.10% | max 264.99%
+  snapshot vs book_curves  n=0 (pas de recouvrement)
+  ⚠️ 34 ecarts > 3% (a inspecter) :
+    [A-C] atp_stuttgart_gauthier_onclin_vs_marc-andrea_huesler: 2.18 vs 1.666 (23.6%)
+    [A-C] atp_s-hertogenbosch_juan_pablo_ficovich_vs_martin_damm_jr: 1.289 vs 1.207 (6.4%)
+    [A-C] wta_s-hertogenbosch_ella_seidel_vs_greet_minnen: 1.649 vs 2.45 (48.6%)
+    [A-C] wta_s-hertogenbosch_joanna_garland_vs_robin_montgomery: 1.689 vs 1.632 (3.4%)
+    [A-C] wta_s-hertogenbosch_katie_volynets_vs_lin_zhu: 1.458 vs 1.362 (6.6%)
+    [A-C] atp_stuttgart_mert_alkaya_vs_pierre-hugues_herbert: 2.96 vs 3.72 (25.7%)
+    [A-C] atp_stuttgart_alexis_galarneau_vs_roman_safiullin: 1.373 vs 1.275 (7.1%)
+    [A-C] atp_s-hertogenbosch_elias_ymer_vs_niels_visker: 1.52 vs 2.99 (96.7%)
+
+Lecture :
+ - Q3 : la mediane des ecarts = la precision de mesure du CLV. Tout CLV sous
+   cette barre est indistinguable du bruit de mesure.
+ - un ecart A-C systematique explique l'anomalie du controle pinnacle de
+   book_asymmetry (les deux sources ne voient pas le meme closing).
