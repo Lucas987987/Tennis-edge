@@ -1,0 +1,36 @@
+name: Repair Curve Sides (one-shot)
+
+# Reparation ponctuelle du bug d'orientation v4 (12/06) : courbes home/away
+# inversees dans clv_history.jsonl et book_curves.jsonl pour les matchs de
+# l'ere The Odds API. Realigne contre l'history de closing_lines.json.
+# A lancer UNE fois. Idempotent (les lignes traitees sont marquees side_check).
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: tennis-results
+  cancel-in-progress: false
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Reparation orientation des courbes
+        run: python scripts/repair_curve_sides.py
+      - name: Commit
+        run: |
+          rm -f clv_history.jsonl.bak book_curves.jsonl.bak
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add clv_history.jsonl book_curves.jsonl
+          git diff --staged --quiet || git commit -m "repair: orientation courbes v4 (swap home/away)"
+          git pull --rebase --autostash 2>/dev/null || true
+          git push
