@@ -1,4 +1,4 @@
-=== RAPPORT ETUDES MOUVEMENT — 2026-06-12T09:25:58Z ===
+=== RAPPORT ETUDES MOUVEMENT — 2026-06-12T09:34:00Z ===
 
 === move_vs_set1 — 80 matchs joints (CLV ∩ settlement), 67 avec set1 connu ===
 (donnees provisoires settlement — exploration, pas de validation)
@@ -71,15 +71,15 @@ sous-ensemble commun (4 snapshots + resultat) : n=3 [DIR]
   affinent le prix ; plat = t25 suffit deja.
 
 ── R3 MARGE PINNACLE — par anciennete du point (history) ─────────
-  >24h      n_pts=123   marge moyenne 3.28%
-  24-6h     n_pts=449   marge moyenne 3.46%
-  6-1h      n_pts=414   marge moyenne 3.45%
-  60-25min  n_pts=38    marge moyenne 2.91%
-  25-0min   n_pts=36    marge moyenne 2.87%
+  >24h      n_pts=124   marge moyenne 3.28%
+  24-6h     n_pts=459   marge moyenne 3.45%
+  6-1h      n_pts=406   marge moyenne 3.46%
+  60-25min  n_pts=37    marge moyenne 2.91%
+  25-0min   n_pts=35    marge moyenne 2.86%
   marge a la cloture vs agitation des cotes (terciles de marge) :
     serree   marge 2.45% -> range cotes 4.9% (n=38)
-    moyenne  marge 3.05% -> range cotes 6.5% (n=38)
-    large    marge 3.91% -> range cotes 3.1% (n=40)
+    moyenne  marge 3.06% -> range cotes 6.4% (n=38)
+    large    marge 3.91% -> range cotes 3.3% (n=40)
 
 ── R4 MICRO-MOVE T-25 -> T-3 — late-steam >= 1pt vs resultat ─────
 matchs t25+t3+resultat : 5 | late-steam : 1 | stables : 4
@@ -95,28 +95,28 @@ par hasard attendues. Seule la persistance quand n grandit compte.
 unite = un COTE de match avec |move Pinnacle| >= 3%
 
 ── betsson ───────────────────────────────────────────────────
-  steam  n=44   edge vs juste prix: +6.9% (med -7.5%, n=44)
-         suivi du move: - | retard median a 50%: +9 min (n=42)
-  drift  n=49   edge vs juste prix: -7.1% (med -7.2%, n=49)
-         suivi du move: - | retard median a 50%: +6 min (n=48)
+  steam  n=44   edge vs juste prix: +7.4% (med -7.5%, n=44)
+         suivi du move: 37% (med 49%, n=44) | retard median a 50%: +8 min (n=43)
+  drift  n=49   edge vs juste prix: -7.5% (med -7.2%, n=49)
+         suivi du move: 53% (med 55%, n=49) | retard median a 50%: +6 min (n=49)
 
 ── bwin ──────────────────────────────────────────────────────
-  steam  n=45   edge vs juste prix: +1.0% (med -5.3%, n=45)
-         suivi du move: - | retard median a 50%: +195 min (n=34)
-  drift  n=51   edge vs juste prix: +12.6% (med -7.6%, n=51)
-         suivi du move: - | retard median a 50%: +51 min (n=36)
+  steam  n=45   edge vs juste prix: +2.6% (med -5.1%, n=37)
+         suivi du move: 40% (med 44%, n=37) | retard median a 50%: +177 min (n=34)
+  drift  n=51   edge vs juste prix: -5.7% (med -7.2%, n=42)
+         suivi du move: 51% (med 37%, n=42) | retard median a 50%: +44 min (n=37)
 
 ── pinnacle ──────────────────────────────────────────────────
-  steam  n=24   edge vs juste prix: +20.0% (med +3.2%, n=24) [DIR]
-         suivi du move: - | retard median a 50%: +0 min (n=24)
-  drift  n=26   edge vs juste prix: +5.0% (med +3.3%, n=26) [DIR]
-         suivi du move: - | retard median a 50%: -0 min (n=26)
+  steam  n=24   edge vs juste prix: +20.1% (med +3.2%, n=24) [DIR]
+         suivi du move: 68% (med 121%, n=24) | retard median a 50%: +0 min (n=24)
+  drift  n=26   edge vs juste prix: +4.2% (med +3.3%, n=26) [DIR]
+         suivi du move: 75% (med 122%, n=26) | retard median a 50%: -0 min (n=26)
 
 ── unibet ────────────────────────────────────────────────────
-  steam  n=45   edge vs juste prix: +1.2% (med -4.7%, n=45)
-         suivi du move: - | retard median a 50%: +60 min (n=40)
-  drift  n=51   edge vs juste prix: -5.7% (med -5.9%, n=51)
-         suivi du move: - | retard median a 50%: +19 min (n=45)
+  steam  n=45   edge vs juste prix: +1.8% (med -5.0%, n=42)
+         suivi du move: 50% (med 62%, n=42) | retard median a 50%: +47 min (n=41)
+  drift  n=51   edge vs juste prix: -6.4% (med -5.9%, n=47)
+         suivi du move: 57% (med 67%, n=47) | retard median a 50%: +16 min (n=46)
 
 Lecture :
  - edge(steam) >> edge(drift) (moins negatif) = l'asymetrie observee est structurelle.
