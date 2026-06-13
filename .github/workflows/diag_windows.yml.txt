@@ -1,0 +1,30 @@
+name: Diag Windows (couverture snapshots)
+
+# Diagnostic ponctuel : pourquoi si peu de snapshots t25->t3 sur les matchs
+# recents ? Reconstruit, depuis closing_lines.json, a quel point la capture
+# s'est approchee du coup d'envoi de chaque match recent. Ne commite rien.
+
+on:
+  workflow_dispatch:
+    inputs:
+      recent_h:
+        description: 'Fenetre d analyse en heures (matchs commences dans les X dernieres heures)'
+        required: false
+        default: '48'
+
+permissions:
+  contents: read
+
+jobs:
+  diag:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Diagnostic des fenetres de capture
+        env:
+          CLOSING: closing_lines.json
+          RECENT_H: ${{ github.event.inputs.recent_h || '48' }}
+        run: python scripts/diag_windows.py
