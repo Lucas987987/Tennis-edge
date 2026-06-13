@@ -1,4 +1,4 @@
-=== RAPPORT ETUDES MOUVEMENT — 2026-06-12T18:01:46Z ===
+=== RAPPORT ETUDES MOUVEMENT — 2026-06-13T09:12:08Z ===
 
 === move_vs_set1 — 95 matchs joints (CLV ∩ settlement), 82 avec set1 connu ===
 (donnees provisoires settlement — exploration, pas de validation)
@@ -64,13 +64,13 @@ n=4 | match 50.0% vs close 54.5% (residu -4.5%) [DIR]
 Rappel : 6 angles testes en parallele => des cases 'interessantes' par hasard
 sont attendues. Ne retenir que ce qui persiste quand n grandit (Sackmann + RG).
 
-=== reference_points — 162 matchs dans closing_lines.json, 95 avec resultat ===
+=== reference_points — 166 matchs dans closing_lines.json, 95 avec resultat ===
 (exploration pre-enregistree 2026-06-11 — [DIR] = n<30)
 
 ── R1 DERIVE FINALE — mouvement de proba entre T-25 et T-3 ───────
-n=28 matchs avec t25 ET t3 [DIR]
-|delta p| moyen 0.68% | mediane 0.59% | max 3.26%
-matchs ou la ligne bouge encore >=1pt entre T-25 et T-3 : 5/28 (18%)
+n=29 matchs avec t25 ET t3 [DIR]
+|delta p| moyen 0.64% | mediane 0.43% | max 3.26%
+matchs ou la ligne bouge encore >=1pt entre T-25 et T-3 : 5/29 (17%)
 
 ── R2 CALIBRATION — Brier de la proba du vainqueur par snapshot ──
 sous-ensemble commun (4 snapshots + resultat) : n=14 [DIR]
@@ -83,19 +83,19 @@ sous-ensemble commun (4 snapshots + resultat) : n=14 [DIR]
 
 ── R3 MARGE PINNACLE — par anciennete du point (history) ─────────
   >24h      n_pts=139   marge moyenne 3.25%
-  24-6h     n_pts=495   marge moyenne 3.41%
-  6-1h      n_pts=460   marge moyenne 3.38%
-  60-25min  n_pts=54    marge moyenne 2.92%
-  25-0min   n_pts=57    marge moyenne 2.93%
+  24-6h     n_pts=543   marge moyenne 3.39%
+  6-1h      n_pts=490   marge moyenne 3.34%
+  60-25min  n_pts=54    marge moyenne 2.89%
+  25-0min   n_pts=55    marge moyenne 2.92%
   marge de cloture (<=60min) par segment :
     genre ATP            n=32   marge 2.93%
-    genre WTA            n=34   marge 3.10%
+    genre WTA            n=34   marge 3.07%
     niveau ?              n=13   marge 2.64% [DIR]
-    niveau autre          n=46   marge 3.18%
+    niveau autre          n=46   marge 3.17%
     niveau grand_chelem   n=7    marge 2.59% [DIR]
   marge a la cloture vs agitation des cotes (terciles de marge) :
-    serree   marge 2.44% -> range cotes 5.0% (n=40)
-    moyenne  marge 3.06% -> range cotes 6.7% (n=40)
+    serree   marge 2.44% -> range cotes 4.9% (n=42)
+    moyenne  marge 3.05% -> range cotes 6.9% (n=42)
     large    marge 3.89% -> range cotes 3.2% (n=42)
 
 ── R4 MICRO-MOVE T-25 -> T-3 — late-steam >= 1pt vs resultat ─────
@@ -141,7 +141,7 @@ Lecture :
  - un edge moyen steam proche de 0 dirait OU regarder pendant les gros moves —
    mais seul un edge POSITIF persistant sur du frais justifierait d'aller plus loin.
 
-=== alert_continuation — 67 matchs logges, 40 cotes avec |move|>= 3% au log ===
+=== alert_continuation — 68 matchs logges, 40 cotes avec |move|>= 3% au log ===
 (exploration pre-enregistree 2026-06-12 — mecanique, [DIR] = n<30)
 
 steam  n=19   continuation 42% | stable 26% | retour 32% | post median 0.9% | post/pre median -0% [DIR]
@@ -256,20 +256,20 @@ n=45 matchs | marge(pendant le move) - marge(mediane du match) : moyenne -0.05% 
   Brier croissant avec la marge = la marge large SIGNALE un match mal price —
   le book le sait et se protege ; sa marge est un aveu lisible.
 
-=== capture_quality — 162 entrees, 161 matchs commences ===
+=== capture_quality — 166 entrees, 162 matchs commences ===
 
 ── Q1 COUVERTURE DES FENETRES (matchs commences) ────────────
-  t25  39/161 (24%)
-  t15  34/161 (21%)
-  t7   44/161 (27%)
-  t3   28/161 (17%)
-  closing present : 102/161 (63%) | fiable : 81/161 (50%) | par disparition : 76
-  les 4 snapshots : 25/161 (16%)
+  t25  40/162 (25%)
+  t15  35/162 (22%)
+  t7   45/162 (28%)
+  t3   29/162 (18%)
+  closing present : 103/162 (64%) | fiable : 82/162 (51%) | par disparition : 79
+  les 4 snapshots : 26/162 (16%)
 
 ── Q2 CHAOS DE PROGRAMMATION (schedule_changes) ─────────────
   horaire change  n=20   >=1 snapshot 100% | closing fiable 100%
-  horaire stable  n=141  >=1 snapshot 21% | closing fiable 43%
-  distribution : 1 chg: 1, 2 chg: 2, 3 chg: 2, 4 chg: 1, 5 chg: 4, 6 chg: 1, 7 chg: 3, 8 chg: 2, 9 chg: 1, 12 chg: 1, 13 chg: 1, 18 chg: 1
+  horaire stable  n=142  >=1 snapshot 21% | closing fiable 44%
+  distribution : 1 chg: 1, 2 chg: 2, 3 chg: 1, 4 chg: 2, 5 chg: 4, 6 chg: 1, 7 chg: 3, 8 chg: 2, 9 chg: 1, 12 chg: 1, 13 chg: 1, 18 chg: 1
 
 ── Q3 TRIANGULATION DES CLOSINGS (A=clv, B=snapshot, C=book_curves pinnacle) ──
   clv vs snapshot          n=2    ecart median 34.09% | moyen 34.09% | max 43.51%
