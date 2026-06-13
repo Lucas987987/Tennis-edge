@@ -1,48 +1,49 @@
-=== RAPPORT ETUDES MOUVEMENT — 2026-06-13T09:12:08Z ===
+=== RAPPORT ETUDES MOUVEMENT — 2026-06-13T14:53:49Z ===
 
-=== move_vs_set1 — 95 matchs joints (CLV ∩ settlement), 82 avec set1 connu ===
+=== move_vs_set1 — 108 matchs joints (CLV ∩ settlement), 95 avec set1 connu ===
 (donnees provisoires settlement — exploration, pas de validation)
 
 tranche                   n p_close moy match realise   residu  n_s1 set1 realise  comeback
 -------------------------------------------------------------------------------------------
-quasi stable (0-2%)      27      58.4%        55.6%   -2.8%    24       54.2%    18.2%  [DIRECTIONNEL n<30]
-move modere (2-5%)       23      57.6%        43.5%  -14.1%    20       50.0%    10.0%  [DIRECTIONNEL n<30]
-gros move (>5%)          45      49.5%        55.6%   +6.1%    38       55.3%    47.1%
+quasi stable (0-2%)      33      57.2%        60.6%   +3.4%    30       56.7%    23.1%
+move modere (2-5%)       24      57.6%        41.7%  -16.0%    21       47.6%     9.1%  [DIRECTIONNEL n<30]
+gros move (>5%)          51      47.7%        56.9%   +9.2%    44       59.1%    44.4%
 
-── OUT-OF-SAMPLE (matchs >= 2026-06-12) — 6 matchs ──
+── OUT-OF-SAMPLE (matchs >= 2026-06-12) — 19 matchs ──
 (seul terrain de test legitime de l'hypothese 'gros move' ; tout le reste est in-sample)
-  move modere (2-5%)   n=2   match 50.0% vs close 59.0% (residu -9.0%) | set1 0.0% (n=2)  [DIRECTIONNEL n<30]
-  gros move (>5%)      n=4   match 50.0% vs close 54.5% (residu -4.5%) | set1 50.0% (n=4)  [DIRECTIONNEL n<30]
+  quasi stable (0-2%)  n=6   match 83.3% vs close 52.0% (residu +31.3%) | set1 66.7% (n=6)  [DIRECTIONNEL n<30]
+  move modere (2-5%)   n=3   match 33.3% vs close 58.7% (residu -25.4%) | set1 0.0% (n=3)  [DIRECTIONNEL n<30]
+  gros move (>5%)      n=10  match 60.0% vs close 42.4% (residu +17.6%) | set1 70.0% (n=10)  [DIRECTIONNEL n<30]
 
 Lecture :
  - residu (match realise - p_close) ~ 0 => la cloture dit deja tout, le move n'ajoute rien.
  - set1 realise croissant avec la taille du move => le move encode le debut de match.
  - tout ecart sous n>=30 est du bruit. Sackmann confirmera les resultats provisoires.
 
-=== move_anatomy — 97 matchs joints (95 decides, 2 void) ===
+=== move_anatomy — 110 matchs joints (108 decides, 2 void) ===
 (exploration pre-enregistree 2026-06-11 — provisoire settlement, [DIR] = n<30)
-courbes exploitables (move>=3.0%) : 60
+courbes exploitables (move>=3.0%) : 67
 
 ── A1 FORME — saut (<=30min) vs derive lente (matchs avec move>=3%) 
-saut     n=49  match 42.9% vs close 50.2% (residu -7.4%) | set1 50.0% (n=44)
-derive   n=9   match 88.9% vs close 52.8% (residu +36.1%) | set1 60.0% (n=5) [DIR]
+saut     n=54  match 44.4% vs close 48.6% (residu -4.1%) | set1 53.1% (n=49)
+derive   n=11  match 81.8% vs close 52.6% (residu +29.2%) | set1 57.1% (n=7) [DIR]
 
 ── A2 TIMING — part du move faite a T-60 (early>=70%, late<=30%) 
-early      n=51  match 47.1% vs close 50.9% (residu -3.8%) | set1 53.3% (n=45)
-progressif n=6   match 83.3% vs close 49.3% (residu +34.0%) | set1 33.3% (n=3) [DIR]
+early      n=57  match 49.1% vs close 49.1% (residu +0.0%) | set1 56.9% (n=51)
+progressif n=7   match 71.4% vs close 50.5% (residu +20.9%) | set1 25.0% (n=4) [DIR]
 late       n=1   match 0.0% vs close 47.2% (residu -47.2%) | set1 0.0% (n=1) [DIR]
 
 ── A3 GROS MOVE -> MATCH COURT / ABANDON (par tranche de move) ─
-0-2% stable  n=27  straight-sets 63.0% (n=27) | abandons 0.0% (0/27) [DIR]
-2-5% modere  n=25  straight-sets 56.5% (n=23) | abandons 0.0% (0/25) [DIR]
->5% gros     n=45  straight-sets 46.7% (n=45) | abandons 0.0% (0/45)
+0-2% stable  n=33  straight-sets 66.7% (n=33) | abandons 0.0% (0/33)
+2-5% modere  n=26  straight-sets 54.2% (n=24) | abandons 0.0% (0/26) [DIR]
+>5% gros     n=51  straight-sets 45.1% (n=51) | abandons 0.0% (0/51)
 
 ── A4 RETOURNEMENT — fakeout (amplitude>=2x|move| et >=3%) vs move net 
-fakeout   n=24  match 41.7% vs close 49.8% (residu -8.1%) | set1 52.4% (n=21) [DIR]
-move net  n=53  match 52.8% vs close 51.7% (residu +1.1%) | set1 52.3% (n=44)
+fakeout   n=27  match 44.4% vs close 48.4% (residu -3.9%) | set1 54.2% (n=24) [DIR]
+move net  n=60  match 53.3% vs close 50.1% (residu +3.3%) | set1 54.9% (n=51)
 
 ── A5 CROSSOVER — le favori change entre ouverture et cloture ──
-crossovers : 7 / 97 matchs
+crossovers : 7 / 110 matchs
   Marc-Andrea Huesler vs Gauthier Onclin | move 12.6% p_open 48.7% -> p_close 56.0% | steamed perd, set1 non
   Elsa Jacquemot vs Hanyu Guo | move 22.6% p_open 48.6% -> p_close 61.9% | steamed perd, set1 non
   Daria Snigur vs Paula Badosa | move 15.3% p_open 44.5% -> p_close 52.3% | steamed GAGNE, set1 oui
@@ -53,87 +54,88 @@ crossovers : 7 / 97 matchs
   => bilan : match 28.6% vs close 54.1% (n=7) [DIR]
 
 ── A6 VOLATILITE — calibration de la cloture par tercile d'amplitude 
-calme  (amp    0.0-5.8%) n=31  Brier 0.219 | realise 67.7% vs close 64.2% (residu +3.5%)
-moyen  (amp    6.0-9.8%) n=31  Brier 0.208 | realise 48.4% vs close 55.0% (residu -6.6%)
-agite  (amp  10.0-23.3%) n=33  Brier 0.217 | realise 42.4% vs close 43.4% (residu -1.0%)
+calme  (amp    0.0-6.0%) n=36  Brier 0.211 | realise 69.4% vs close 64.4% (residu +5.1%)
+moyen  (amp   6.0-10.5%) n=36  Brier 0.206 | realise 41.7% vs close 51.5% (residu -9.9%)
+agite  (amp  11.0-36.1%) n=36  Brier 0.246 | realise 52.8% vs close 42.5% (residu +10.2%)
 
 ── OOS — gros move (>5%) sur les matchs >= 2026-06-12 uniquement 
-n=4 | match 50.0% vs close 54.5% (residu -4.5%) [DIR]
+n=10 | match 60.0% vs close 42.4% (residu +17.6%) [DIR]
 (in-sample de reference au 2026-06-12 : residu +14.9% sur n=36)
 
 Rappel : 6 angles testes en parallele => des cases 'interessantes' par hasard
 sont attendues. Ne retenir que ce qui persiste quand n grandit (Sackmann + RG).
 
-=== reference_points — 166 matchs dans closing_lines.json, 95 avec resultat ===
+=== reference_points — 204 matchs dans closing_lines.json, 108 avec resultat ===
 (exploration pre-enregistree 2026-06-11 — [DIR] = n<30)
 
 ── R1 DERIVE FINALE — mouvement de proba entre T-25 et T-3 ───────
-n=29 matchs avec t25 ET t3 [DIR]
-|delta p| moyen 0.64% | mediane 0.43% | max 3.26%
-matchs ou la ligne bouge encore >=1pt entre T-25 et T-3 : 5/29 (17%)
+n=37 matchs avec t25 ET t3
+|delta p| moyen 0.61% | mediane 0.39% | max 3.26%
+matchs ou la ligne bouge encore >=1pt entre T-25 et T-3 : 7/37 (19%)
 
 ── R2 CALIBRATION — Brier de la proba du vainqueur par snapshot ──
-sous-ensemble commun (4 snapshots + resultat) : n=14 [DIR]
-  t25  Brier 0.1650 (n=14)
-  t15  Brier 0.1646 (n=14)
-  t7   Brier 0.1644 (n=14)
-  t3   Brier 0.1637 (n=14)
+sous-ensemble commun (4 snapshots + resultat) : n=25 [DIR]
+  t25  Brier 0.2020 (n=25)
+  t15  Brier 0.2025 (n=25)
+  t7   Brier 0.2009 (n=25)
+  t3   Brier 0.2007 (n=25)
   lecture : Brier qui BAISSE de t25 a t3 = les dernieres minutes
   affinent le prix ; plat = t25 suffit deja.
 
 ── R3 MARGE PINNACLE — par anciennete du point (history) ─────────
   >24h      n_pts=139   marge moyenne 3.25%
-  24-6h     n_pts=543   marge moyenne 3.39%
-  6-1h      n_pts=490   marge moyenne 3.34%
-  60-25min  n_pts=54    marge moyenne 2.89%
-  25-0min   n_pts=55    marge moyenne 2.92%
+  24-6h     n_pts=558   marge moyenne 3.37%
+  6-1h      n_pts=553   marge moyenne 3.40%
+  60-25min  n_pts=68    marge moyenne 3.09%
+  25-0min   n_pts=72    marge moyenne 3.07%
   marge de cloture (<=60min) par segment :
-    genre ATP            n=32   marge 2.93%
-    genre WTA            n=34   marge 3.07%
+    genre ATP            n=43   marge 3.12%
+    genre WTA            n=38   marge 3.11%
+    genre autre          n=3    marge 3.82% [DIR]
     niveau ?              n=13   marge 2.64% [DIR]
-    niveau autre          n=46   marge 3.17%
+    niveau autre          n=64   marge 3.30%
     niveau grand_chelem   n=7    marge 2.59% [DIR]
   marge a la cloture vs agitation des cotes (terciles de marge) :
-    serree   marge 2.44% -> range cotes 4.9% (n=42)
-    moyenne  marge 3.05% -> range cotes 6.9% (n=42)
-    large    marge 3.89% -> range cotes 3.2% (n=42)
+    serree   marge 2.46% -> range cotes 5.1% (n=46)
+    moyenne  marge 3.12% -> range cotes 6.5% (n=46)
+    large    marge 3.98% -> range cotes 2.8% (n=46)
 
 ── R4 MICRO-MOVE T-25 -> T-3 — late-steam >= 1pt vs resultat ─────
-matchs t25+t3+resultat : 16 | late-steam : 3 | stables : 13
-  late-steamed : gagne 66.7% vs proba t3 55.3% (residu +11.4%, n=3) [DIR]
+matchs t25+t3+resultat : 27 | late-steam : 5 | stables : 22
+  late-steamed : gagne 60.0% vs proba t3 60.3% (residu -0.3%, n=5) [DIR]
   residu ~0 = le prix t3 integre deja le micro-move ; residu >0 net et
   persistant = l'info de derniere minute n'est pas totalement pricee.
 
 Rappel : plusieurs questions sur les memes matchs => cases 'interessantes'
 par hasard attendues. Seule la persistance quand n grandit compte.
 
-=== book_asymmetry — 97 matchs Pinnacle, books: betsson, bwin, pinnacle, unibet ===
+=== book_asymmetry — 110 matchs Pinnacle, books: betsson, bwin, pinnacle, unibet ===
 (exploration pre-enregistree 2026-06-12 — mecanique, [DIR] = n<30)
 unite = un COTE de match avec |move Pinnacle| >= 3%
 
 ── betsson ───────────────────────────────────────────────────
-  steam  n=58   edge vs juste prix: -2.7% (med -6.1%, n=58)
-         suivi du move: 67% (med 85%, n=58) | retard median a 50%: +7 min (n=56)
-  drift  n=66   edge vs juste prix: -6.6% (med -7.9%, n=66)
-         suivi du move: 64% (med 69%, n=66) | retard median a 50%: +7 min (n=64)
+  steam  n=66   edge vs juste prix: -3.3% (med -6.3%, n=66)
+         suivi du move: 64% (med 78%, n=66) | retard median a 50%: +11 min (n=63)
+  drift  n=75   edge vs juste prix: -6.6% (med -7.8%, n=75)
+         suivi du move: 61% (med 60%, n=75) | retard median a 50%: +8 min (n=71)
 
 ── bwin ──────────────────────────────────────────────────────
-  steam  n=59   edge vs juste prix: -4.8% (med -5.1%, n=51)
-         suivi du move: 56% (med 49%, n=51) | retard median a 50%: +238 min (n=46)
-  drift  n=67   edge vs juste prix: -5.8% (med -7.6%, n=58)
-         suivi du move: 61% (med 51%, n=58) | retard median a 50%: +80 min (n=51)
+  steam  n=67   edge vs juste prix: -5.5% (med -5.3%, n=59)
+         suivi du move: 55% (med 49%, n=59) | retard median a 50%: +210 min (n=51)
+  drift  n=76   edge vs juste prix: -5.8% (med -7.4%, n=67)
+         suivi du move: 58% (med 40%, n=67) | retard median a 50%: +82 min (n=56)
 
 ── pinnacle ──────────────────────────────────────────────────
-  steam  n=47   edge vs juste prix: +6.5% (med -2.8%, n=47)
-         suivi du move: 115% (med 126%, n=47) | retard median a 50%: +0 min (n=47)
-  drift  n=52   edge vs juste prix: +3.3% (med -1.8%, n=52)
-         suivi du move: 111% (med 123%, n=52) | retard median a 50%: +0 min (n=52)
+  steam  n=67   edge vs juste prix: +3.7% (med -2.8%, n=67)
+         suivi du move: 108% (med 100%, n=67) | retard median a 50%: +0 min (n=67)
+  drift  n=76   edge vs juste prix: +1.4% (med -2.8%, n=76)
+         suivi du move: 105% (med 100%, n=76) | retard median a 50%: +0 min (n=76)
 
 ── unibet ────────────────────────────────────────────────────
-  steam  n=59   edge vs juste prix: -3.8% (med -4.1%, n=55)
-         suivi du move: 71% (med 70%, n=55) | retard median a 50%: +21 min (n=54)
-  drift  n=67   edge vs juste prix: -4.9% (med -6.8%, n=62)
-         suivi du move: 69% (med 74%, n=62) | retard median a 50%: +5 min (n=59)
+  steam  n=67   edge vs juste prix: -4.2% (med -4.6%, n=61)
+         suivi du move: 68% (med 68%, n=61) | retard median a 50%: +54 min (n=60)
+  drift  n=76   edge vs juste prix: -4.9% (med -6.5%, n=69)
+         suivi du move: 70% (med 71%, n=69) | retard median a 50%: +7 min (n=65)
 
 Lecture :
  - edge(steam) >> edge(drift) (moins negatif) = l'asymetrie observee est structurelle.
@@ -141,12 +143,12 @@ Lecture :
  - un edge moyen steam proche de 0 dirait OU regarder pendant les gros moves —
    mais seul un edge POSITIF persistant sur du frais justifierait d'aller plus loin.
 
-=== alert_continuation — 68 matchs logges, 40 cotes avec |move|>= 3% au log ===
+=== alert_continuation — 86 matchs logges, 50 cotes avec |move|>= 3% au log ===
 (exploration pre-enregistree 2026-06-12 — mecanique, [DIR] = n<30)
 
-steam  n=19   continuation 42% | stable 26% | retour 32% | post median 0.9% | post/pre median -0% [DIR]
-drift  n=21   continuation 43% | stable 24% | retour 33% | post median 1.8% | post/pre median +0% [DIR]
-TOUS   n=40   continuation 42% | stable 25% | retour 32% | post median 1.7% | post/pre median +0%
+steam  n=23   continuation 48% | stable 22% | retour 30% | post median 1.9% | post/pre median -0% [DIR]
+drift  n=27   continuation 44% | stable 26% | retour 30% | post median 1.7% | post/pre median +0% [DIR]
+TOUS   n=50   continuation 46% | stable 24% | retour 30% | post median 1.8% | post/pre median +0%
 
 Lecture :
  - post/pre ~ 0 et stable majoritaire = le move est FINI quand le log tombe (T-35) :
@@ -154,130 +156,130 @@ Lecture :
  - continuation >> retour avec post median consequent = l'info arrive encore apres
    T-35 -> seul cas qui justifierait (un jour, sur du frais) d'en faire un declencheur.
 
-=== bo3_momentum — 82 matchs (favori de cloture, set1 connu) ===
+=== bo3_momentum — 95 matchs (favori de cloture, set1 connu) ===
 (donnees provisoires settlement — exploration, [DIR] = n<30)
 
 ── M1 P(match) du favori selon le set 1, par force ──────────
 tranche            n p_fav moy |  set1 gagne -> match |  set1 perdu -> match
-favori 50-60%     32      55% |          62% (n=21 ) |          27% (n=11 )
-favori 60-70%     35      65% |          83% (n=23 ) |          33% (n=12 )
-favori >70%       15      76% |         100% (n=9  ) |          67% (n=6  ) [DIR]
-TOUTES            82      63% |          77% (n=53 ) |          38% (n=29 )
+favori 50-60%     37      55% |          64% (n=22 ) |          20% (n=15 )
+favori 60-70%     38      65% |          84% (n=25 ) |          31% (n=13 )
+favori >70%       20      76% |         100% (n=10 ) |          60% (n=10 ) [DIR]
+TOUTES            95      63% |          79% (n=57 ) |          34% (n=38 )
   (reference Sackmann BO3 : favori ~87% apres set 1 gagne, ~33% apres set 1 perdu)
 
 ── M2 MOMENTUM — P(set 2) du favori selon l'issue du set 1 ──
 tranche          P(s2|s1 gagne)  P(s2|s1 perdu)   ecart
-favori 50-60%         48% (n=21 )       45% (n=11 )     -2%
-favori 60-70%         57% (n=23 )       58% (n=12 )     +2%
-favori >70%           78% (n=9  )       83% (n=6  )     +6% [DIR]
-TOUTES                57% (n=53 )       59% (n=29 )     +2%
+favori 50-60%         50% (n=22 )       47% (n=15 )     -3%
+favori 60-70%         56% (n=25 )       54% (n=13 )     -2%
+favori >70%           80% (n=10 )       80% (n=10 )     +0% [DIR]
+TOUTES                58% (n=57 )       58% (n=38 )     +0%
   ecart ~0 = les sets sont independants a force donnee ; tres negatif = 
   decouragement reel (et les comebacks live sont structurellement sur-payes).
 
 ── M3 TRAJECTOIRES (sets 1-2 du favori, puis issue) ─────────
-  WW gagne    30  (37%)
-  LL perd     12  (15%)
-  WL perd     12  (15%)
-  WL gagne    11  (13%)
-  LW gagne    11  (13%)
-  LW perd      6  (7%)
+  WW gagne    33  (35%)
+  LL perd     16  (17%)
+  LW gagne    13  (14%)
+  WL gagne    12  (13%)
+  WL perd     12  (13%)
+  LW perd      9  (9%)
 
 Rappel : provisoire + petits n par case -> directions seulement.
 
-=== opening_efficiency — 97 matchs (open+close des 2 cotes) ===
+=== opening_efficiency — 110 matchs (open+close des 2 cotes) ===
 (exploration pre-enregistree 2026-06-12 — [DIR] = n<30)
 
 ── O1 CLV DE L'OUVERTURE vs cloture devigee (mecanique) ─────
-  TOUS               n=97   favori: -4.5% (med -3.8%) | outsider: -1.8% (med -3.3%)
-  open >24h avant    n=42   favori: -3.5% (med -2.6%) | outsider: -3.7% (med -4.3%)
-  open 6-24h avant   n=54   favori: -5.3% (med -4.7%) | outsider: -0.2% (med -1.7%)
-  open <6h avant     n=1    favori: -3.8% (med -3.8%) | outsider: -3.8% (med -3.8%) [DIR]
+  TOUS               n=110  favori: -4.6% (med -3.8%) | outsider: -1.0% (med -2.1%)
+  open >24h avant    n=44   favori: -3.3% (med -2.6%) | outsider: -3.8% (med -4.3%)
+  open 6-24h avant   n=60   favori: -5.1% (med -4.6%) | outsider: -0.4% (med -1.7%)
+  open <6h avant     n=6    favori: -8.4% (med -8.7%) | outsider: +13.6% (med +10.7%) [DIR]
   >0 = parier ce cote a l'ouverture battait la cloture (CLV positif systematique
   = biais de l'ouvreur). ~0 des deux cotes = l'ouvreur est deja efficient.
 
-── O2 CALIBRATION favori a la cloture (n=95 avec resultat) ──
-  favori 50-60%  n=29   realise 55.2% vs close 55.7% (residu -0.5%) [DIR]
-  favori 60-75%  n=50   realise 68.0% vs close 66.4% (residu +1.6%)
-  favori >75%    n=9    realise 88.9% vs close 79.9% (residu +9.0%) [DIR]
+── O2 CALIBRATION favori a la cloture (n=108 avec resultat) ──
+  favori 50-60%  n=34   realise 50.0% vs close 55.7% (residu -5.7%)
+  favori 60-75%  n=57   realise 68.4% vs close 66.8% (residu +1.6%)
+  favori >75%    n=10   realise 80.0% vs close 79.6% (residu +0.4%) [DIR]
   residu >0 sur les gros favoris + <0 sur les petits = favorite-longshot bias
   (les outsiders sont sur-payes) ; ~0 partout = cloture bien calibree.
 
-=== night_moves — 60 cotes steamed (|move|>=3%, nuit=22h-6h UTC) ===
+=== night_moves — 67 cotes steamed (|move|>=3%, nuit=22h-6h UTC) ===
 (exploration pre-enregistree 2026-06-12 — [DIR] = n<30)
 
 type          n  fakeout | n_res  realise vs close   residu
 nocturne     11      18% |    11    45.5%    47.2%    -1.8% [DIR]
-mixte         8       0% |     7    28.6%    48.1%   -19.6% [DIR]
-diurne       41       7% |    40    55.0%    52.0%    +3.0%
+mixte         9       0% |     8    25.0%    49.4%   -24.4% [DIR]
+diurne       47       6% |    46    56.5%    49.7%    +6.8%
 
 Lecture : fakeout(nocturne) >> fakeout(diurne) et/ou residu nocturne plus
 faible = les moves de nuit portent moins d'information (liquidite).
 
-=== player_steam — 194 apparitions, 133 joueurs, 61 transitions match k->k+1 ===
+=== player_steam — 220 apparitions, 133 joueurs, 87 transitions match k->k+1 ===
 (exploration pre-enregistree 2026-06-12 — [DIR] = n<30)
 
-taux de base 'steamed' : 31% des cotes
-P(steamed k+1 | steamed k)     = 25%  (n=20) [DIR]
-P(steamed k+1 | NON steamed k) = 49%  (n=41)
+taux de base 'steamed' : 30% des cotes
+P(steamed k+1 | steamed k)     = 22%  (n=27) [DIR]
+P(steamed k+1 | NON steamed k) = 43%  (n=60)
 
-joueurs steamed 2 matchs de suite : realise 60% vs close 58% (residu +1.9%, n=5) [DIR]
+joueurs steamed 2 matchs de suite : realise 67% vs close 52% (residu +14.4%, n=6) [DIR]
 
 Lecture : recurrence >> base = l'argent informe SUIT des joueurs ; un residu
 positif sur les doubles-steams dirait que meme la cloture sous-ajuste ces series.
 NB : couverture partielle (seuls NOS matchs suivis comptent comme 'apparitions').
 
-=== margin_dynamics — clv:97 | book_curves:367 lignes ===
+=== margin_dynamics — clv:110 | book_curves:439 lignes ===
 (exploration pre-enregistree 2026-06-12 — mecanique sauf G3, [DIR] = n<30)
 
 ── G1 COMPRESSION DE MARGE PAR BOOK (par anciennete du point) ─
 book                    >24h       24-6h        6-1h         <1h
-betsson              6.22%      6.80%      6.39%      6.72% 
-bwin                 6.28%      6.89%      6.59%      6.89% 
-pinnacle(clv)        3.66%      3.69%      3.45%      3.27% 
-unibet               5.51%      5.77%      5.73%      5.58% 
+betsson              6.21%      6.75%      6.35%      6.65% 
+bwin                 6.28%      6.84%      6.46%      6.79% 
+pinnacle(clv)        3.63%      3.62%      3.31%      3.19% 
+unibet               5.50%      5.73%      5.66%      5.54% 
   (* = n_pts < 30 ; lecture : compression vers la droite = le book gagne en confiance)
 
 ── G2 MARGE PENDANT LE MOVE (Pinnacle, |move|>=5%) ──────────
-n=45 matchs | marge(pendant le move) - marge(mediane du match) : moyenne -0.05% | mediane -0.01%
+n=51 matchs | marge(pendant le move) - marge(mediane du match) : moyenne -0.04% | mediane -0.01%
   >0 = le book ELARGIT pendant le move (il hesite) ; <0 = il resserre (l'info le rassure).
 
 ── G4 CROISEMENT MOVE x MARGE (gros moves, cote steamed) ────
   marge ELARGIE  (>=+0.10pt)   n=2   fakeout 0% | realise 100% vs close 40% (residu +59.9%, n=2) [DIR]
-  marge stable   (+-0.10pt)    n=34  fakeout 0% | realise 59% vs close 51% (residu +8.3%, n=34)
+  marge stable   (+-0.10pt)    n=40  fakeout 0% | realise 60% vs close 48% (residu +11.9%, n=40)
   marge RESSERREE (<=-0.10pt)  n=9   fakeout 11% | realise 33% vs close 48% (residu -14.2%, n=9) [DIR]
   hypothese : marge elargie pendant le move = book qui SUIT en hesitant ->
   plus de fakeouts, residu plus faible ; resserree = info incorporee avec confiance.
 
 ── G3 MARGE DE CLOTURE RELATIVE vs SURPRISE (Brier) ─────────
-  marge serree   (1.80%-3.28%) n=31   Brier 0.218
-  marge moyenne  (3.30%-3.43%) n=31   Brier 0.203
-  marge large    (3.44%-4.46%) n=33   Brier 0.222
-  (marge de cloture mediane : 3.39%)
+  marge serree   (1.80%-3.02%) n=36   Brier 0.218
+  marge moyenne  (3.02%-3.43%) n=36   Brier 0.215
+  marge large    (3.43%-4.46%) n=36   Brier 0.230
+  (marge de cloture mediane : 3.37%)
   Brier croissant avec la marge = la marge large SIGNALE un match mal price —
   le book le sait et se protege ; sa marge est un aveu lisible.
 
-=== capture_quality — 166 entrees, 162 matchs commences ===
+=== capture_quality — 204 entrees, 193 matchs commences ===
 
 ── Q1 COUVERTURE DES FENETRES (matchs commences) ────────────
-  t25  40/162 (25%)
-  t15  35/162 (22%)
-  t7   45/162 (28%)
-  t3   29/162 (18%)
-  closing present : 103/162 (64%) | fiable : 82/162 (51%) | par disparition : 79
-  les 4 snapshots : 26/162 (16%)
+  t25  53/193 (27%)
+  t15  47/193 (24%)
+  t7   55/193 (28%)
+  t3   37/193 (19%)
+  closing present : 118/193 (61%) | fiable : 97/193 (50%) | par disparition : 78
+  les 4 snapshots : 28/193 (15%)
 
 ── Q2 CHAOS DE PROGRAMMATION (schedule_changes) ─────────────
-  horaire change  n=20   >=1 snapshot 100% | closing fiable 100%
-  horaire stable  n=142  >=1 snapshot 21% | closing fiable 44%
-  distribution : 1 chg: 1, 2 chg: 2, 3 chg: 1, 4 chg: 2, 5 chg: 4, 6 chg: 1, 7 chg: 3, 8 chg: 2, 9 chg: 1, 12 chg: 1, 13 chg: 1, 18 chg: 1
+  horaire change  n=29   >=1 snapshot 100% | closing fiable 100%
+  horaire stable  n=164  >=1 snapshot 22% | closing fiable 41%
+  distribution : 1 chg: 8, 2 chg: 2, 3 chg: 2, 4 chg: 1, 5 chg: 5, 6 chg: 1, 7 chg: 3, 8 chg: 2, 9 chg: 1, 10 chg: 1, 12 chg: 1, 13 chg: 1, 18 chg: 1
 
 ── Q3 TRIANGULATION DES CLOSINGS (A=clv, B=snapshot, C=book_curves pinnacle) ──
-  clv vs snapshot          n=2    ecart median 34.09% | moyen 34.09% | max 43.51%
-  clv vs book_curves       n=80   ecart median 6.05% | moyen 12.17% | max 130.18%
-  snapshot vs book_curves  n=1    ecart median 77.02% | moyen 77.02% | max 77.02%
-  age du dernier point pre-match (clv_history) : median 38 min avant le match | p90 563 min (n=97)
-  age du dernier point pre-match (book_curves pinnacle) : median 25 min avant le match | p90 175 min (n=80)
-  ⚠️ 63 ecarts > 3% (a inspecter) :
+  clv vs snapshot          n=4    ecart median 34.09% | moyen 28.76% | max 46.88%
+  clv vs book_curves       n=110  ecart median 3.76% | moyen 8.90% | max 130.18%
+  snapshot vs book_curves  n=4    ecart median 48.40% | moyen 46.26% | max 88.24%
+  age du dernier point pre-match (clv_history) : median 34 min avant le match | p90 563 min (n=110)
+  age du dernier point pre-match (book_curves pinnacle) : median 24 min avant le match | p90 207 min (n=110)
+  ⚠️ 67 ecarts > 3% (a inspecter) :
     [A-C] atp_s-hertogenbosch_juan_pablo_ficovich_vs_martin_damm_jr: 1.289 vs 1.207 (6.4%)
     [A-C] wta_s-hertogenbosch_ella_seidel_vs_greet_minnen: 2.29 vs 2.45 (7.0%)
     [A-C] wta_s-hertogenbosch_joanna_garland_vs_robin_montgomery: 1.689 vs 1.632 (3.4%)
