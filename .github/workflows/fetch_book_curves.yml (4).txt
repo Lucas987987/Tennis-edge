@@ -1,0 +1,40 @@
+name: Fetch Book Curves
+
+# ──────────────────────────────────────────────────────────────────────────
+# MODIF : fetch_book_curves.py patché produit aussi set1_curves.jsonl et
+# set2_curves.jsonl (même appel, zéro requête de plus). Le git add les inclut
+# pour qu'ils PERSISTENT (sinon perdus à chaque run).
+# BOOKS : tu peux élargir à la même liste FR ; pinnacle DOIT rester (référence sharp).
+# Rappel : ce workflow ne traite que les matchs TERMINÉS -> alimente le track
+# record / backtest / journal, pas les alertes forward.
+# ──────────────────────────────────────────────────────────────────────────
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '45 23 * * *'
+
+permissions:
+  contents: write
+
+jobs:
+  fetch-book:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Courbes books (match + set1 + set2) via historical v5
+        env:
+          RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
+          BOOKS: pinnacle,unibet,bwin,betsson   # pinnacle requis (sharp de référence)
+        run: python scripts/fetch_book_curves.py
+      - name: Commit
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add book_curves.jsonl set1_curves.jsonl set2_curves.jsonl 2>/dev/null || true
+          git diff --cached --quiet || git commit -m "book+set curves v6 $(date -u +%FT%TZ)"
+          git pull --rebase --autostash 2>/dev/null || true
+          git push || true
