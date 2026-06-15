@@ -1,0 +1,34 @@
+name: Steam Diag (pourquoi pas d'alerte ?)
+
+# Lancement MANUEL : explique l'état des courbes live et, par match à venir,
+# pourquoi ça alerte ou non — sur les 3 surfaces. Coche test_ping pour vérifier
+# le tuyau Telegram (envoie un message de test).
+
+on:
+  workflow_dispatch:
+    inputs:
+      test_ping:
+        description: "1 = envoyer un message Telegram de test"
+        default: "0"
+
+permissions:
+  contents: read
+
+jobs:
+  diag:
+    runs-on: ubuntu-latest
+    env:
+      TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      TEST_PING: ${{ github.event.inputs.test_ping || '0' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Diag match
+        run: CURVES=book_curves_live.jsonl MARKET=match python scripts/steam_diag.py
+      - name: Diag set 1
+        run: TEST_PING=0 CURVES=set1_curves_live.jsonl MARKET=set1 python scripts/steam_diag.py
+      - name: Diag set 2
+        run: TEST_PING=0 CURVES=set2_curves_live.jsonl MARKET=set2 python scripts/steam_diag.py
