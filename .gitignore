@@ -1,0 +1,3 @@
+git rm -r --cached scripts/__pycache__
+git commit -m "Ignore le bytecode Python"
+git push
