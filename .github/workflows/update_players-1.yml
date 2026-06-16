@@ -1,0 +1,40 @@
+name: Update Players Data
+
+# CORRECTIF : ajout de GITHUB_TOKEN à l'étape (sinon api.github.com est appelé
+# sans auth -> 60 req/h partagées -> rate limit 403 -> fetches Sackmann qui échouent
+# en silence -> pas de diff -> pas de commit -> "rien depuis 18 jours").
+# Le token (fourni automatiquement par Actions) monte la limite à 5000 req/h.
+
+on:
+  schedule:
+    - cron: '0 3 * * 1'          # chaque lundi 3h UTC
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Update players Elo and stats
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}   # <── le correctif
+        run: python scripts/update_players.py
+
+      - name: Commit and push players data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add players_data.json
+          git diff --staged --quiet || git commit -m "🎾 Mise à jour joueurs Elo $(date -u '+%Y-%m-%d')"
+          git pull --rebase --autostash 2>/dev/null || true
+          git push
