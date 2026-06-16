@@ -1,0 +1,55 @@
+name: Update Players Data
+
+# ──────────────────────────────────────────────────────────────────────────
+# ⚠️ DÉPRIORITISÉ. Ce workflow alimente l'Elo / modèle joueurs depuis Sackmann.
+#  - Le modèle (pa_elo) a été diagnostiqué SANS edge (la clôture Pinnacle le bat) ;
+#    ta stratégie steam n'en dépend pas.
+#  - Sackmann est INJOIGNABLE sur ce runner (egress : raw/api 404, clone anonyme
+#    refusé). Il faut un PAT (secret SACKMANN_PAT, scope public_repo / read-only)
+#    pour cloner les repos publics tiers.
+# Donc : passé en MANUEL uniquement (plus de cron -> plus d'échec hebdo inutile).
+# Ne le lance que si tu as ajouté SACKMANN_PAT et que tu veux rafraîchir l'Elo.
+# Sans le secret, l'étape clone échouera proprement (aucune donnée écrasée : le
+# script conserve players_data.json intact si 0 joueur récupéré).
+# ──────────────────────────────────────────────────────────────────────────
+
+on:
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Cloner les données Sackmann (nécessite le secret SACKMANN_PAT)
+        env:
+          PAT: ${{ secrets.SACKMANN_PAT }}
+        run: |
+          git clone --depth 1 "https://x-access-token:${PAT}@github.com/JeffSackmann/tennis_atp.git" /tmp/satp
+          git clone --depth 1 "https://x-access-token:${PAT}@github.com/JeffSackmann/tennis_wta.git" /tmp/swta
+          echo "--- fichiers ATP récupérés ---"; ls /tmp/satp/*.csv | head
+
+      - name: Update players Elo and stats
+        env:
+          SACKMANN_ATP: /tmp/satp
+          SACKMANN_WTA: /tmp/swta
+        run: python scripts/update_players.py
+
+      - name: Commit and push players data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add players_data.json
+          git diff --staged --quiet || git commit -m "🎾 Mise à jour joueurs Elo $(date -u '+%Y-%m-%d')"
+          git pull --rebase --autostash 2>/dev/null || true
+          git push
