@@ -1,0 +1,65 @@
+name: Steam Pipeline (résultats set + journal CLV/ROI)
+
+# ──────────────────────────────────────────────────────────────────────────
+# Les ALERTES forward (match/set1/set2) sont gérées à chaque cycle par
+# capture_closing.yml (sur les courbes live). Ce workflow quotidien s'occupe de :
+#   1. fetch_set_results.py -> set_results.json (vainqueurs de set)
+#   2. paper_journal.py x3  -> journaux forward CLV+ROI sur les COURBES LIVE
+#      (ouvre les signaux des matchs à venir, dénoue ceux finis).
+# Puis commit des résultats + journaux (les courbes live sont commitées par la capture).
+# Lancement manuel BACKFILL=1 = estimation historique (sur book_curves.jsonl etc.).
+# ──────────────────────────────────────────────────────────────────────────
+
+on:
+  workflow_dispatch:
+    inputs:
+      backfill:
+        description: "1 = rejouer l'historique (estimation, ne persiste pas)"
+        default: "0"
+  schedule:
+    - cron: '15 0 * * *'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: steam-pipeline
+  cancel-in-progress: false
+
+jobs:
+  journal:
+    runs-on: ubuntu-latest
+    env:
+      RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
+      BACKFILL: ${{ github.event.inputs.backfill || '0' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Résultats de set (set1/set2)
+        run: python scripts/fetch_set_results.py || true
+
+      # En forward (BACKFILL=0) : journaux sur les COURBES LIVE.
+      # En BACKFILL=1 : laisser les valeurs par défaut (book_curves.jsonl, set*_curves.jsonl)
+      #   -> retirer les CURVES=*_live ci-dessous pour rejouer l'historique complet.
+      - name: Journal — match
+        run: CURVES=book_curves_live.jsonl TRACK_CURVES=book_curves.jsonl MARKET=match python scripts/paper_journal.py || true
+      - name: Journal — set 1
+        run: CURVES=set1_curves_live.jsonl TRACK_CURVES=set1_curves.jsonl MARKET=set1 python scripts/paper_journal.py || true
+      - name: Journal — set 2
+        run: CURVES=set2_curves_live.jsonl TRACK_CURVES=set2_curves.jsonl MARKET=set2 python scripts/paper_journal.py || true
+
+      - name: Tableau de validation forward (CLV/ROI + IC95)
+        run: python scripts/validation_report.py || true
+
+      - name: Commit résultats + journaux
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add set_results.json \
+                  paper_trades_match.jsonl paper_trades_set1.jsonl paper_trades_set2.jsonl 2>/dev/null || true
+          git diff --cached --quiet || git commit -m "steam journal $(date -u +%FT%TZ)"
+          git pull --rebase --autostash 2>/dev/null || true
+          git push || true
