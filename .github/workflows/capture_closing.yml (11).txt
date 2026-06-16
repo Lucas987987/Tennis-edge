@@ -1,0 +1,56 @@
+name: Capture Closing Lines
+
+# MODIFS : CAPTURE_BOOKS=auto + étape Courbes live/alertes + COMMIT ROBUSTE (git add -A).
+# Le git add -A garantit que book_curves_live.jsonl / set*_curves_live.jsonl /
+# live_odds.json / steam_alert_state_*.json sont TOUJOURS persistés — c'est la
+# persistance qui permet d'accumuler ≥2 points par courbe (donc de détecter un move).
+
+on:
+  repository_dispatch:
+    types: [capture_closing]
+  schedule:
+    - cron: '30 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: capture-closing
+  cancel-in-progress: false
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Capture des cotes (OddsPapi v5)
+        env:
+          RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          CAPTURE_BOOKS: auto
+        run: python scripts/capture_closing.py ${{ github.event_name == 'schedule' && '--discover' || github.event_name == 'workflow_dispatch' && '--extended' || '' }}
+      - name: Courbes live + alertes forward (match + set1 + set2)
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          python scripts/build_live_curves.py
+          # TRACK_CURVES = historique riche pour calibrer les seuils par book (sinon "indicatif")
+          CURVES=book_curves_live.jsonl TRACK_CURVES=book_curves.jsonl MARKET=match python scripts/steam_alert.py || true
+          CURVES=set1_curves_live.jsonl TRACK_CURVES=set1_curves.jsonl MARKET=set1 python scripts/steam_alert.py || true
+          CURVES=set2_curves_live.jsonl TRACK_CURVES=set2_curves.jsonl MARKET=set2 python scripts/steam_alert.py || true
+      - name: Commit (robuste — persiste TOUTES les données du pipeline)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          echo "--- fichiers en attente de commit ---"
+          git status --short
+          git diff --staged --quiet || git commit -m "Capture cotes (OddsPapi $(date -u +%H:%MZ))"
+          git pull --rebase --autostash 2>/dev/null || true
+          git push
