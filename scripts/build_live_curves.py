@@ -17,7 +17,7 @@ Env : LIVE_ODDS (def live_odds.json), LIVE_IN (def matches_oddspapi.json, repli)
       OUT_MATCH (book_curves_live.jsonl), OUT_SET1 (set1_curves_live.jsonl),
       OUT_SET2 (set2_curves_live.jsonl), RETAIN_DAYS (10), DEDUP_MIN (4).
 """
-import os, json, re, unicodedata
+import os, json, curves_parts, re, unicodedata
 from datetime import datetime, timezone, timedelta
 
 LIVE_ODDS = os.environ.get('LIVE_ODDS', 'live_odds.json')
@@ -60,6 +60,7 @@ def accumulate(out_file, rows, now, now_iso):
             except Exception:
                 continue
     added = 0
+    new_events = []
     for r in rows:
         if not r['ho'] or not r['ao'] or r['ho'] <= 1 or r['ao'] <= 1:
             continue
@@ -76,12 +77,23 @@ def accumulate(out_file, rows, now, now_iso):
                 continue
         e['home_curve'].append([now_iso, r['ho']])
         e['away_curve'].append([now_iso, r['ao']])
+        # PARTITION append-only : le point part aussi dans parts/live_<market>_<jour>.jsonl
+        # (git n'a alors qu'un petit ajout a stocker, au lieu de reecrire tout le fichier)
+        new_events.append({'t': now_iso, 'uid': r['uid'], 'book': r['book'],
+                           'ho': r['ho'], 'ao': r['ao'], 'commence_time': r['commence'],
+                           'home': r['home'], 'away': r['away'],
+                           'tournament': r['tournament']})
         added += 1
     cutoff = now - timedelta(days=RETAIN_DAYS)
     kept = {k: e for k, e in curves.items() if (_dt(e.get('commence_time')) or now) >= cutoff}
     with open(out_file, 'w', encoding='utf-8') as f:
         for e in kept.values():
             f.write(json.dumps(e, ensure_ascii=False) + '\n')
+    market = ('set1' if 'set1' in out_file else 'set2' if 'set2' in out_file else 'match')
+    try:
+        curves_parts.append(market, new_events)
+    except Exception as _e:
+        print(f"  ⚠️ partition non ecrite ({_e}) — le fichier plat reste la source")
     upcoming = len(set(e['uid'] for e in kept.values() if (_dt(e['commence_time']) or now) >= now))
     print(f"  {out_file}: {len(kept)} courbes | +{added} pts | {upcoming} matchs a venir")
     return added
