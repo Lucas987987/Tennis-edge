@@ -1,3 +1,9 @@
 git rm -r --cached scripts/__pycache__
 git commit -m "Ignore le bytecode Python"
 git push
+# Fichiers plats de courbes live : RÉGÉNÉRÉS à chaque run depuis parts/.
+# Ne plus les commiter (ils étaient réécrits entièrement toutes les 8 min,
+# ce qui faisait exploser l'historique git). Les données vivent dans parts/.
+book_curves_live.jsonl
+set1_curves_live.jsonl
+set2_curves_live.jsonl
