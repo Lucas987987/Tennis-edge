@@ -62,8 +62,14 @@ def main():
     # plusieurs alertes (paliers successifs) × plusieurs opérateurs ; les
     # compter séparément gonfle n et présente un seul match comme plusieurs
     # observations indépendantes (constaté : 1 joueur = 33 % du total).
+    # Exchanges exclus : sans marge intégrée, leur prix est structurellement
+    # plus haut, donc ils ressortent en permanence comme « en retard » sans
+    # l'être (CLV médian -1,7 %, 14 % de refermeture). canal_public.py ne les
+    # signale plus depuis le 06/08/2026. Les lignes restent au registre.
     par_match = {}
     for r in ledger.values():
+        if r.get('exclu'):
+            continue
         t = _clv._dt(r.get('date'))
         if not t or t < cut:
             continue
