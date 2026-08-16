@@ -1,0 +1,36 @@
+name: Update Tennis Results
+
+on:
+  schedule:
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Fetch tennis results and enrich backtest
+        run: python scripts/fetch_results.py
+
+      - name: Commit and push results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          for f in resultats.json backtest_tennis.csv; do
+            [ -f "$f" ] && git add -- "$f"
+          done
+          git diff --staged --quiet || git commit -m "🎾 Mise à jour résultats $(date -u '+%Y-%m-%d %H:%M UTC')"
+          git fetch origin main 2>&1 || echo "⚠️ fetch échoué"
+          git merge origin/main --no-edit 2>&1 || echo "⚠️ merge en conflit -- le commit local n'est pas perdu"
+          git push 2>&1 || echo "❌ PUSH ÉCHOUÉ -- voir message ci-dessus"
