@@ -1,0 +1,97 @@
+{
+  "run_termine": "2026-08-16T13:04:08",
+  "run_demarre": "2026-08-16T12:58:04",
+  "verdict_global": "2 livrable(s) à vérifier",
+  "livrables": [
+    {
+      "fichier": "set_results.json",
+      "libellé": "Résultats match + set",
+      "verdict": "✅ OK",
+      "octets": 183523,
+      "lignes": 1824,
+      "ecrit_ce_run": true,
+      "modifie": "2026-08-16T13:02:28"
+    },
+    {
+      "fichier": "resultats_derived.json",
+      "libellé": "Pont résultats (études)",
+      "verdict": "❌ ABSENT",
+      "octets": 0,
+      "lignes": 0,
+      "ecrit_ce_run": false
+    },
+    {
+      "fichier": "paper_trades_match.jsonl",
+      "libellé": "Journal forward — match",
+      "verdict": "✅ OK",
+      "octets": 6156,
+      "lignes": 16,
+      "ecrit_ce_run": true,
+      "modifie": "2026-08-16T13:02:45"
+    },
+    {
+      "fichier": "paper_trades_set1.jsonl",
+      "libellé": "Journal forward — set 1",
+      "verdict": "✅ OK",
+      "octets": 2333,
+      "lignes": 6,
+      "ecrit_ce_run": true,
+      "modifie": "2026-08-16T13:02:52"
+    },
+    {
+      "fichier": "paper_trades_set2.jsonl",
+      "libellé": "Journal forward — set 2",
+      "verdict": "⚠️ VIDE",
+      "octets": 0,
+      "lignes": 0,
+      "ecrit_ce_run": true,
+      "modifie": "2026-08-16T13:02:53"
+    },
+    {
+      "fichier": "moves_detail.csv",
+      "libellé": "Audit des moves (live)",
+      "verdict": "✅ OK",
+      "octets": 9375,
+      "lignes": 60,
+      "ecrit_ce_run": true,
+      "modifie": "2026-08-16T13:04:01"
+    },
+    {
+      "fichier": "moves_detail_hist.csv",
+      "libellé": "Audit des moves (historique)",
+      "verdict": "✅ OK",
+      "octets": 133742,
+      "lignes": 831,
+      "ecrit_ce_run": true,
+      "modifie": "2026-08-16T13:04:08"
+    },
+    {
+      "fichier": "canal_clv_detail.csv",
+      "libellé": "CLV réalisé du canal public",
+      "verdict": "✅ OK",
+      "octets": 1148,
+      "lignes": 19,
+      "ecrit_ce_run": true,
+      "modifie": "2026-08-16T13:03:58"
+    },
+    {
+      "fichier": "book_curves_live.jsonl",
+      "libellé": "Courbes live reconstruites",
+      "verdict": "✅ OK",
+      "octets": 28373082,
+      "lignes": 3910,
+      "ecrit_ce_run": true,
+      "modifie": "2026-08-16T13:00:13"
+    }
+  ],
+  "partitions": {
+    "total_mo": 637.3,
+    "zone_rouge": [
+      {
+        "fichier": "parts/hist_book_2026-W33.jsonl",
+        "mo": 97.7
+      }
+    ],
+    "n_partitions": 25
+  }
+}
