@@ -34,11 +34,29 @@ PALIERS  = [float(x)/100 for x in os.environ.get('PALIERS', '5,8,12').split(',')
 MIN_LEAD = float(os.environ.get('MIN_LEAD_MIN', '45'))     # trop tard = bruit d'avant-match
 MAX_LEAD = float(os.environ.get('MAX_LEAD_MIN', '2880'))   # > 48h = pas encore pertinent
 MAX_MAG  = float(os.environ.get('MAX_MAG_PTS', '20')) / 100   # au-dela = in-play probable
-# Seuil de « retard » : mesure sur les ecarts REELLEMENT publies (canal_clv.py) ->
-# sous 5%, l'ecart ne se referme pas (CLV median 0%, 38% de refermeture) ;
-# a partir de 5% : CLV median +4,2%, 53% de refermeture. On ne signale donc que
-# les ecarts >= GAP_MIN.
-GAP_MIN  = float(os.environ.get('GAP_MIN_PCT', '5')) / 100
+# Seuil de « retard ». ABAISSE DE 5% A 3% le 16/08/2026.
+#
+# Le calibrage precedent (5%) reposait sur une mesure faussee a trois titres :
+#   1. les EXCHANGES etaient dans l'echantillon, alors qu'ils n'ont pas de marge
+#      a rattraper et tiraient les petits ecarts vers le bas ;
+#   2. 208 uid designaient un match DEJA compte (deux conventions d'uid ont
+#      coexiste du 11/06 au 09/08) -- voir match_key.py ;
+#   3. le ROI etait calcule sur le prix de PINNACLE au lieu du prix du book
+#      signale, soit ~20% de cote en moins sur chaque pari.
+#
+# Rejeu de la detection sur tout l'historique, alerte reconstituee a son instant
+# reel de declenchement, CLV et ROI mesures sur LE MEME prix (celui du book
+# signale), 1 observation par match canonique :
+#      seuil   matchs   CLV median   ROI      IC95 ROI
+#        2%      156      +10,2%     +9,7%   [-13,1 ; +32,6]
+#        3%      136      +12,0%     +9,7%   [-15,7 ; +35,1]   <- retenu
+#        5%      104      +13,6%     +6,1%   [-24,1 ; +36,2]   (ancien)
+#        8%       74      +18,0%    +11,4%   [-28,1 ; +50,9]
+# 3% et 5% sont statistiquement indiscernables, mais 3% apporte 31% d'observations
+# en plus : l'intervalle de confiance se resserre donc plus vite. C'est le but,
+# le ROI n'etant a ce jour demontre a AUCUN seuil (tous les IC traversent zero).
+# Repasser a 5% : GAP_MIN_PCT=5 dans le workflow, aucun code a modifier.
+GAP_MIN  = float(os.environ.get('GAP_MIN_PCT', '3')) / 100
 # Les EXCHANGES ne sont pas des operateurs « en retard » : sans marge integree,
 # leur prix est structurellement plus haut. Les signaler fausse la mesure
 # (CLV median -1,6% sur l'echantillon). On les exclut de la ligne des retards.
