@@ -22,6 +22,13 @@ CURVES   = [c.strip() for c in os.environ.get(
     'CURVES', 'book_curves_live.jsonl,book_curves.jsonl').split(',') if c.strip()]
 DAYS     = int(os.environ.get('DAYS', '1'))
 MIN_ROWS = int(os.environ.get('MIN_ROWS', '3'))
+# Exchanges : sans marge intégrée, leur prix est structurellement plus haut,
+# donc ils ressortent en permanence comme « en retard » sans l'être
+# (CLV médian -1,7 %, 14 % de refermeture sur les alertes publiées).
+# canal_public.py ne les signale plus depuis le 06/08/2026 ; on filtre ici
+# aussi, au cas où d'anciennes alertes remonteraient dans la fenêtre.
+EXCHANGES = set(b.strip() for b in os.environ.get(
+    'EXCHANGES', 'betfair-ex,betfair,matchbook,smarkets,betdaq').split(',') if b.strip())
 REPO_URL = os.environ.get('REPO_URL', '')
 TOKEN    = os.environ.get('TELEGRAM_TOKEN', '')
 CHAT     = os.environ.get('TELEGRAM_PUBLIC_CHAT_ID', '')
@@ -102,6 +109,8 @@ def main():
                 book, prix = entry[0], float(entry[1])
             except Exception:
                 continue
+            if book in EXCHANGES:
+                continue      # cf. note EXCHANGES en tête
             cl = closes.get((m.get('uid'), book, joueur))
             if not cl:
                 continue
@@ -111,14 +120,23 @@ def main():
         print(f"suivi : seulement {len(rows)} écart(s) mesurable(s) pour le {day} — pas de publication")
         return
 
-    clv = [r['clv'] for r in rows]
+    # DÉDUPLICATION : un match ne compte qu'UNE fois (moyenne de ses lignes).
+    # Un même match génère plusieurs alertes (paliers successifs) et chaque
+    # alerte plusieurs opérateurs ; les compter séparément gonfle le "n"
+    # affiché et présente un seul match comme plusieurs observations
+    # indépendantes. Le détail par opérateur reste affiché en dessous
+    # (plus net / moins bon), mais le comptage porte sur les MATCHS.
+    par_match = {}
+    for r in rows:
+        par_match.setdefault(r['joueur'], []).append(r['clv'])
+    clv = [st.mean(v) for v in par_match.values()]
     refermes = sum(1 for x in clv if x > 0)
     best = max(rows, key=lambda r: r['clv'])
     worst = min(rows, key=lambda r: r['clv'])
     L = [f"📋 SUIVI DES ÉCARTS SIGNALÉS — {day.strftime('%d/%m')}", "",
-         f"{len(rows)} écarts publiés · {refermes} se sont refermés "
-         f"({100*refermes/len(rows):.0f}%)",
-         f"Refermement médian : {st.median(clv):+.1f}%", "",
+         f"{len(clv)} matchs signalés ({len(rows)} écarts) · {refermes} se sont "
+         f"refermés ({100*refermes/len(clv):.0f}%)",
+         f"Refermement médian par match : {st.median(clv):+.1f}%", "",
          f"Le plus net : {best['book']} {best['prix']:.2f} → {best['close']:.2f} "
          f"sur {best['joueur']} ({best['clv']:+.0f}%)",
          f"Le moins bon : {worst['book']} {worst['prix']:.2f} → {worst['close']:.2f} "
@@ -128,7 +146,8 @@ def main():
     if REPO_URL:
         L.append(f"Historique complet : {REPO_URL}")
     tg("\n".join(L) + FOOTER)
-    print(f"suivi publié : {len(rows)} écarts, {refermes} refermés, médian {st.median(clv):+.1f}%")
+    print(f"suivi publié : {len(clv)} matchs / {len(rows)} écarts, "
+          f"{refermes} refermés, médian {st.median(clv):+.1f}%")
 
 
 if __name__ == '__main__':
