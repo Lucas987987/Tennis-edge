@@ -1,0 +1,37 @@
+name: Fetch CLV
+
+on:
+  schedule:
+    - cron: '0 23 * * *'     # 1×/jour, 23h UTC (après la journée de matchs)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: capture-closing      # même groupe (écrit aussi dans closing_lines.json)
+  cancel-in-progress: false
+
+jobs:
+  clv:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Calcul du CLV via historique (OddsPapi v5)
+        env:
+          RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
+        run: python scripts/fetch_clv.py
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          for f in closing_lines.json clv_history.jsonl; do
+            [ -f "$f" ] && git add -- "$f"
+          done
+          git diff --staged --quiet || git commit -m "CLV historique (v5)"
+          git fetch origin main 2>&1 || echo "⚠️ fetch échoué"
+          git merge origin/main --no-edit 2>&1 || echo "⚠️ merge en conflit -- le commit local n'est pas perdu"
+          git push 2>&1 || echo "❌ PUSH ÉCHOUÉ -- voir message ci-dessus"
