@@ -2,13 +2,34 @@
 # -*- coding: utf-8 -*-
 """
 opening_value.py — Les ouvertures molles GAGNENT-elles vraiment ? (par bookmaker)
-Pour chaque book : prend la COTE D'OUVERTURE (1er point pré-match), repère le côté
-dont l'EV vs la clôture juste de Pinnacle dépasse le seuil ("ouverture molle"),
-joint le VAINQUEUR (resultats.json) et calcule le ROI RÉEL de l'avoir misé.
-Multi-books : groupe par le champ 'book' de book_curves.jsonl. Lecture seule.
 
-EV>0 dit "bat la clôture" ; ROI réel dit "gagne vraiment". C'est le ROI qui tranche.
+BIAIS DE SÉLECTION CORRIGÉ (16/08/2026) — lire avant d'interpréter tout chiffre.
+La version précédente comparait la cote d'OUVERTURE d'un book au juste prix de
+CLÔTURE de Pinnacle (pf[-1]), puis ne gardait que les ouvertures dont l'EV
+dépassait 2%. Autrement dit : elle sélectionnait les prix qui ont bougé
+favorablement EN LE SACHANT APRÈS COUP. Aucune de ces mises n'est plaçable à
+l'ouverture : au moment de miser, la clôture n'existe pas encore. Le symptôme
+qui a permis de le détecter : PINNACLE lui-même ressortait "ouverture molle
+rentable" à +30,1% de ROI (IC95 +12,6;+47,5) — impossible pour un book sharp
+contre son propre closing, et signature nette d'une sélection sur le futur.
+C'est le biais de look-ahead sous une autre forme (cf. fil épinglé).
+
+MODE = 'prospective' (défaut) : le juste prix de référence est celui de Pinnacle
+  À L'INSTANT OÙ LE BOOK OUVRE (dernier point Pinnacle <= t_ouverture du book).
+  Toute l'information utilisée est disponible au moment de miser -> le ROI
+  affiché est réellement traçable. Les matchs où Pinnacle n'a pas encore ouvert
+  sont EXCLUS (aucune référence disponible) : ce sous-ensemble est précisément
+  l'objet de l'hypothèse gelée n°6 ("book ouvert avant Pinnacle"), à traiter là-bas.
+MODE = 'close' : ancien comportement, CONSERVÉ pour diagnostic uniquement.
+  Ne mesure PAS un edge misable, seulement l'amplitude du mouvement à venir.
+  Ne jamais publier un ROI issu de ce mode.
+
+Multi-books : groupe par le champ 'book' de book_curves.jsonl. Lecture seule.
+EV>0 dit "bat la référence" ; ROI réel dit "gagne vraiment". C'est le ROI qui tranche.
 """
+import os, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import oddspapi_v5 as ov
 import json, os, sys, math, re, unicodedata, datetime
 from statistics import mean
 
@@ -18,6 +39,9 @@ RESULTS = os.environ.get('RESULTS', 'resultats.json')
 OUT     = os.environ.get('OPENING_VALUE_REPORT', 'opening_value_report.json')
 EV_TH   = 0.02
 DATE_TOL = 3
+# 'prospective' = référence Pinnacle à l'instant de l'ouverture (misable).
+# 'close'       = référence = clôture Pinnacle (look-ahead, diagnostic seul).
+MODE    = os.environ.get('OPENING_VALUE_MODE', 'prospective').strip().lower()
 
 def norm_tokens(s):
     s = unicodedata.normalize('NFKD', s or '').encode('ascii', 'ignore').decode()
@@ -50,8 +74,13 @@ def fav_dog(c0, c1):
 
 def load_jsonl(path):
     rows = []
-    if not os.path.exists(path): return rows
-    for line in open(path, encoding='utf-8'):
+    # open_curves : legacy monolithique -> partitions hist ; plat live absent
+    # -> rebuild depuis parts/ ; sinon lecture directe (cf. oddspapi_v5).
+    try:
+        src = ov.open_curves(path, verbose=False)
+    except FileNotFoundError as e:
+        print(f"⚠️ {e}"); return rows
+    for line in src:
         line = line.strip()
         if not line: continue
         try: rows.append(json.loads(line))
@@ -131,14 +160,20 @@ def main():
     for r in book_rows:
         by_book.setdefault(r.get('book', '?'), []).append(r)
 
-    report = {'status': 'ok', 'books': {}}
+    report = {'status': 'ok', 'mode': MODE, 'books': {}}
     print("="*66)
     print("OPENING VALUE — ouverture molle : gagne-t-on vraiment ? (par book)")
+    if MODE == 'prospective':
+        print("MODE prospective : référence = Pinnacle À L'INSTANT de l'ouverture.")
+        print("Toute l'info utilisée est disponible au moment de miser -> ROI misable.")
+    else:
+        print("⚠️ MODE close : référence = CLÔTURE Pinnacle. Sélection sur le futur,")
+        print("⚠️ chiffres NON misables (look-ahead). Diagnostic seul — ne pas publier.")
     print("="*66)
 
     for book, rows in by_book.items():
         flagged = []   # (profit, ev_open, odds, won)
-        soft_found = 0; no_result = 0; n_eval = 0; n_stale = 0
+        soft_found = 0; no_result = 0; n_eval = 0; n_stale = 0; n_no_ref = 0
         for br in rows:
             uid = br.get('uid')
             if uid not in pin: continue
@@ -150,15 +185,30 @@ def main():
             pf, pd = fav_dog(trunc(pin[uid].get('home_curve')), trunc(pin[uid].get('away_curve')))
             bf, bd = fav_dog(trunc(br.get('home_curve')), trunc(br.get('away_curve')))
             if not pf or not pd or not bf or not bd: continue
-            if abs(bf[-1][1]-pf[-1][1]) > abs(bd[-1][1]-pf[-1][1]): continue  # désaccord favori
-            # Récence du closing Pinnacle : dernier point pré-match -> coup d'envoi. Trop ancien = exclu.
-            if (start - max(pf[-1][0], pd[-1][0])).total_seconds() / 60 > CLV_CLOSE_MAX_MINS:
-                n_stale += 1; continue
-            n_eval += 1
-            p_close = (1/pf[-1][1]) / ((1/pf[-1][1]) + (1/pd[-1][1]))
             o_fav, o_dog = bf[0][1], bd[0][1]   # cotes d'OUVERTURE du book
-            ev_fav = o_fav * p_close - 1
-            ev_dog = o_dog * (1 - p_close) - 1
+            t_open = min(bf[0][0], bd[0][0])    # instant où CE book ouvre
+
+            if MODE == 'prospective':
+                # Pinnacle TEL QU'IL ÉTAIT à t_open : aucune information future.
+                pf_at = [x for x in pf if x[0] <= t_open]
+                pd_at = [x for x in pd if x[0] <= t_open]
+                if not pf_at or not pd_at:
+                    n_no_ref += 1; continue     # Pinnacle pas encore ouvert -> cf. hypothèse 6
+                ref_f, ref_d = pf_at[-1][1], pd_at[-1][1]
+                # Désaccord sur le favori évalué AU MÊME INSTANT (jamais sur la clôture).
+                if abs(bf[0][1]-ref_f) > abs(bd[0][1]-ref_f): continue
+            else:
+                # DIAGNOSTIC SEUL : référence = clôture (information non disponible
+                # au moment de miser). Chiffres non misables, ne pas publier.
+                if abs(bf[-1][1]-pf[-1][1]) > abs(bd[-1][1]-pf[-1][1]): continue
+                if (start - max(pf[-1][0], pd[-1][0])).total_seconds() / 60 > CLV_CLOSE_MAX_MINS:
+                    n_stale += 1; continue
+                ref_f, ref_d = pf[-1][1], pd[-1][1]
+
+            n_eval += 1
+            p_ref = (1/ref_f) / ((1/ref_f) + (1/ref_d))   # dévigage 2 voies
+            ev_fav = o_fav * p_ref - 1
+            ev_dog = o_dog * (1 - p_ref) - 1
             if max(ev_fav, ev_dog) <= EV_TH:    # pas d'ouverture molle
                 continue
             soft_found += 1
@@ -177,7 +227,8 @@ def main():
 
         n = len(flagged)
         if n == 0:
-            report['books'][book] = {'flagged': 0, 'closings_perimes_exclus': n_stale, 'matchs_evalues': n_eval,
+            report['books'][book] = {'flagged': 0, 'mode': MODE, 'closings_perimes_exclus': n_stale,
+                                     'sans_reference_pinnacle': n_no_ref, 'matchs_evalues': n_eval,
                                      'ouvertures_molles': soft_found, 'sans_resultat': no_result}
             print(f"\n[{book}] 0 ouverture molle misable. "
                   f"(matchs évalués: {n_eval} | ouvertures molles détectées: {soft_found} | "

@@ -23,8 +23,10 @@ Env : CURVES (def book_curves_live.jsonl ; sinon book_curves.jsonl),
   SHARP (pinnacle), SOFTS (unibet,bwin,betsson), THR (0.02 = seuil de détection,
   en points de proba), MIN_LEAD (5 min), MIN_PTS (2), OUT (moves_detail.csv).
 """
-import os, json, csv, datetime, unicodedata, re, statistics as st
+import os, sys, json, csv, datetime, unicodedata, re, statistics as st
 from collections import defaultdict
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import oddspapi_v5 as ov
 
 CURVES      = os.environ.get('CURVES', 'book_curves_live.jsonl')
 SET_RESULTS = os.environ.get('SET_RESULTS', 'set_results.json')
@@ -83,9 +85,13 @@ def load_results():
 
 def load_curves():
     games = {}
-    if not os.path.exists(CURVES):
-        print(f"❌ {CURVES} introuvable"); return games
-    for line in open(CURVES, encoding='utf-8'):
+    # open_curves() : résout legacy monolithique -> partitions hist, et plat
+    # live absent -> rebuild depuis parts/ (cf. oddspapi_v5.open_curves).
+    try:
+        lines = ov.open_curves(CURVES)
+    except FileNotFoundError as e:
+        print(f"❌ {e}"); return games
+    for line in lines:
         line = line.strip()
         if not line: continue
         r = json.loads(line)
