@@ -31,6 +31,9 @@ Garde-fou n >= MIN_N (30) par case ; [DIR] en dessous.
 Sources (lecture seule, AUCUNE API) :
   CLV_FILE=clv_history.jsonl (Pinnacle)   BOOK_FILE=book_curves.jsonl (mous)
 """
+import os, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import oddspapi_v5 as ov
 import json, os, sys, datetime, statistics as st
 
 CLV_FILE  = os.environ.get('CLV_FILE', 'clv_history.jsonl')
@@ -76,7 +79,7 @@ def t50(curve_raw, start, open_p, close_p):
     if total == 0:
         return None
     mid = open_p + total / 2.0
-    for t, p in curve_raw:
+    for t, p in [(x[0], x[1]) for x in (curve_raw or [])]:
         dt = parse_dt(t)
         if dt is None or (start is not None and dt > start):
             continue
@@ -93,7 +96,7 @@ def curve_oc(curve_raw, start):
     if not curve_raw:
         return None, None, None
     pts = []
-    for t, p in curve_raw:
+    for t, p in [(x[0], x[1]) for x in (curve_raw or [])]:
         dt = parse_dt(t)
         if dt is None:
             continue
@@ -125,9 +128,13 @@ def book_curves_aligned(be, ref_home, ref_away):
 def main():
     pinn = load_jsonl(CLV_FILE, lambda e: str(e.get('fixture_id') or ''))
     books_raw = {}
-    if os.path.exists(BOOK_FILE):
-        with open(BOOK_FILE, encoding='utf-8') as f:
-            for line in f:
+    try:
+        _blines = list(ov.open_curves(BOOK_FILE))
+    except FileNotFoundError as e:
+        print(f"❌ courbes indisponibles : {e}"); _blines = []
+    if _blines:
+        if True:
+            for line in _blines:
                 line = line.strip()
                 if not line:
                     continue
