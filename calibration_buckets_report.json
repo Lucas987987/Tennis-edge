@@ -1,237 +1,2093 @@
 {
   "status": "ok",
   "books": {
-    "betsson": {
-      "n_joints": 17,
-      "n_total": 18,
+    "1xbet": {
+      "n_joints": 309,
+      "n_total": 320,
       "tranches": {
-        "1.20-1.40": {
-          "n": 3,
-          "cote_moy": 1.333,
-          "implicite_pct": 69.57,
-          "reel_pct": 66.67,
-          "ecart_pts": -2.9,
-          "roi_pct": -12.0,
+        "1.01-1.20": {
+          "n": 22,
+          "cote_moy": 1.118,
+          "implicite_pct": 85.19,
+          "reel_pct": 90.91,
+          "ecart_pts": 5.72,
+          "roi_pct": 1.63,
           "ic95": [
-            -98.43,
-            74.43
-          ]
+            -12.22,
+            15.48
+          ],
+          "fiable": false
+        },
+        "1.20-1.40": {
+          "n": 74,
+          "cote_moy": 1.317,
+          "implicite_pct": 72.49,
+          "reel_pct": 70.27,
+          "ecart_pts": -2.22,
+          "roi_pct": -7.65,
+          "ic95": [
+            -21.46,
+            6.17
+          ],
+          "fiable": true
         },
         "1.40-1.60": {
-          "n": 9,
-          "cote_moy": 1.513,
-          "implicite_pct": 61.23,
-          "reel_pct": 55.56,
-          "ecart_pts": -5.68,
-          "roi_pct": -15.11,
+          "n": 93,
+          "cote_moy": 1.499,
+          "implicite_pct": 63.61,
+          "reel_pct": 68.82,
+          "ecart_pts": 5.21,
+          "roi_pct": 3.31,
           "ic95": [
-            -67.8,
-            37.58
-          ]
+            -10.94,
+            17.56
+          ],
+          "fiable": true
         },
         "1.60-1.90": {
-          "n": 6,
-          "cote_moy": 1.713,
-          "implicite_pct": 54.23,
-          "reel_pct": 50.0,
-          "ecart_pts": -4.23,
-          "roi_pct": -12.33,
+          "n": 118,
+          "cote_moy": 1.725,
+          "implicite_pct": 55.36,
+          "reel_pct": 53.39,
+          "ecart_pts": -1.97,
+          "roi_pct": -7.85,
           "ic95": [
-            -89.4,
-            64.74
-          ]
+            -23.5,
+            7.8
+          ],
+          "fiable": true
         },
         "1.90-2.30": {
-          "n": 7,
-          "cote_moy": 2.184,
-          "implicite_pct": 42.47,
-          "reel_pct": 42.86,
-          "ecart_pts": 0.38,
-          "roi_pct": -4.43,
+          "n": 102,
+          "cote_moy": 2.093,
+          "implicite_pct": 45.63,
+          "reel_pct": 49.02,
+          "ecart_pts": 3.39,
+          "roi_pct": 2.74,
           "ic95": [
-            -92.76,
-            83.9
-          ]
+            -17.75,
+            23.24
+          ],
+          "fiable": true
         },
         "2.30-3.00": {
-          "n": 8,
-          "cote_moy": 2.565,
-          "implicite_pct": 36.32,
-          "reel_pct": 50.0,
-          "ecart_pts": 13.68,
-          "roi_pct": 29.88,
+          "n": 111,
+          "cote_moy": 2.571,
+          "implicite_pct": 37.3,
+          "reel_pct": 31.53,
+          "ecart_pts": -5.77,
+          "roi_pct": -18.47,
           "ic95": [
-            -66.99,
-            126.74
-          ]
+            -41.03,
+            4.09
+          ],
+          "fiable": true
         },
         "3.00-5.00": {
-          "n": 1,
-          "cote_moy": 3.45,
-          "implicite_pct": 26.91,
-          "reel_pct": 0.0,
-          "ecart_pts": -26.91,
-          "roi_pct": -100.0,
+          "n": 79,
+          "cote_moy": 3.577,
+          "implicite_pct": 27.26,
+          "reel_pct": 29.11,
+          "ecart_pts": 1.86,
+          "roi_pct": 1.41,
           "ic95": [
-            -100.0,
-            -100.0
-          ]
+            -34.27,
+            37.09
+          ],
+          "fiable": true
+        },
+        "5.00+": {
+          "n": 19,
+          "cote_moy": 7.235,
+          "implicite_pct": 13.96,
+          "reel_pct": 10.53,
+          "ecart_pts": -3.43,
+          "roi_pct": -27.32,
+          "ic95": [
+            -126.71,
+            72.07
+          ],
+          "fiable": false
+        }
+      }
+    },
+    "22bet": {
+      "n_joints": 309,
+      "n_total": 320,
+      "tranches": {
+        "1.01-1.20": {
+          "n": 24,
+          "cote_moy": 1.12,
+          "implicite_pct": 84.43,
+          "reel_pct": 87.5,
+          "ecart_pts": 3.07,
+          "roi_pct": -2.21,
+          "ic95": [
+            -17.42,
+            13.0
+          ],
+          "fiable": false
+        },
+        "1.20-1.40": {
+          "n": 79,
+          "cote_moy": 1.312,
+          "implicite_pct": 72.0,
+          "reel_pct": 68.35,
+          "ecart_pts": -3.65,
+          "roi_pct": -10.73,
+          "ic95": [
+            -24.24,
+            2.79
+          ],
+          "fiable": true
+        },
+        "1.40-1.60": {
+          "n": 95,
+          "cote_moy": 1.496,
+          "implicite_pct": 63.08,
+          "reel_pct": 71.58,
+          "ecart_pts": 8.5,
+          "roi_pct": 7.15,
+          "ic95": [
+            -6.54,
+            20.83
+          ],
+          "fiable": true
+        },
+        "1.60-1.90": {
+          "n": 111,
+          "cote_moy": 1.715,
+          "implicite_pct": 54.96,
+          "reel_pct": 50.45,
+          "ecart_pts": -4.51,
+          "roi_pct": -13.41,
+          "ic95": [
+            -29.49,
+            2.66
+          ],
+          "fiable": true
+        },
+        "1.90-2.30": {
+          "n": 105,
+          "cote_moy": 2.084,
+          "implicite_pct": 45.3,
+          "reel_pct": 48.57,
+          "ecart_pts": 3.27,
+          "roi_pct": 0.87,
+          "ic95": [
+            -19.14,
+            20.88
+          ],
+          "fiable": true
+        },
+        "2.30-3.00": {
+          "n": 115,
+          "cote_moy": 2.599,
+          "implicite_pct": 36.52,
+          "reel_pct": 33.91,
+          "ecart_pts": -2.61,
+          "roi_pct": -10.64,
+          "ic95": [
+            -33.69,
+            12.41
+          ],
+          "fiable": true
+        },
+        "3.00-5.00": {
+          "n": 69,
+          "cote_moy": 3.578,
+          "implicite_pct": 26.78,
+          "reel_pct": 26.09,
+          "ecart_pts": -0.69,
+          "roi_pct": -7.38,
+          "ic95": [
+            -44.95,
+            30.2
+          ],
+          "fiable": true
+        },
+        "5.00+": {
+          "n": 20,
+          "cote_moy": 6.967,
+          "implicite_pct": 14.39,
+          "reel_pct": 10.0,
+          "ecart_pts": -4.39,
+          "roi_pct": -31.5,
+          "ic95": [
+            -125.34,
+            62.34
+          ],
+          "fiable": false
+        }
+      }
+    },
+    "888sport": {
+      "n_joints": 307,
+      "n_total": 318,
+      "tranches": {
+        "1.01-1.20": {
+          "n": 21,
+          "cote_moy": 1.099,
+          "implicite_pct": 86.07,
+          "reel_pct": 85.71,
+          "ecart_pts": -0.36,
+          "roi_pct": -6.01,
+          "ic95": [
+            -22.93,
+            10.91
+          ],
+          "fiable": false
+        },
+        "1.20-1.40": {
+          "n": 70,
+          "cote_moy": 1.302,
+          "implicite_pct": 72.91,
+          "reel_pct": 75.71,
+          "ecart_pts": 2.8,
+          "roi_pct": -1.44,
+          "ic95": [
+            -14.66,
+            11.77
+          ],
+          "fiable": true
+        },
+        "1.40-1.60": {
+          "n": 106,
+          "cote_moy": 1.486,
+          "implicite_pct": 63.54,
+          "reel_pct": 66.98,
+          "ecart_pts": 3.44,
+          "roi_pct": -0.28,
+          "ic95": [
+            -13.71,
+            13.15
+          ],
+          "fiable": true
+        },
+        "1.60-1.90": {
+          "n": 108,
+          "cote_moy": 1.72,
+          "implicite_pct": 54.89,
+          "reel_pct": 51.85,
+          "ecart_pts": -3.03,
+          "roi_pct": -10.97,
+          "ic95": [
+            -27.27,
+            5.33
+          ],
+          "fiable": true
+        },
+        "1.90-2.30": {
+          "n": 104,
+          "cote_moy": 2.075,
+          "implicite_pct": 45.59,
+          "reel_pct": 50.96,
+          "ecart_pts": 5.37,
+          "roi_pct": 5.64,
+          "ic95": [
+            -14.44,
+            25.71
+          ],
+          "fiable": true
+        },
+        "2.30-3.00": {
+          "n": 114,
+          "cote_moy": 2.581,
+          "implicite_pct": 36.81,
+          "reel_pct": 31.58,
+          "ecart_pts": -5.23,
+          "roi_pct": -17.3,
+          "ic95": [
+            -39.85,
+            5.25
+          ],
+          "fiable": true
+        },
+        "3.00-5.00": {
+          "n": 72,
+          "cote_moy": 3.574,
+          "implicite_pct": 26.91,
+          "reel_pct": 23.61,
+          "ecart_pts": -3.3,
+          "roi_pct": -16.11,
+          "ic95": [
+            -51.58,
+            19.36
+          ],
+          "fiable": true
+        },
+        "5.00+": {
+          "n": 19,
+          "cote_moy": 7.763,
+          "implicite_pct": 13.23,
+          "reel_pct": 15.79,
+          "ecart_pts": 2.56,
+          "roi_pct": 0.0,
+          "ic95": [
+            -108.86,
+            108.86
+          ],
+          "fiable": false
+        }
+      }
+    },
+    "bet365": {
+      "n_joints": 303,
+      "n_total": 314,
+      "tranches": {
+        "1.01-1.20": {
+          "n": 21,
+          "cote_moy": 1.111,
+          "implicite_pct": 85.6,
+          "reel_pct": 85.71,
+          "ecart_pts": 0.12,
+          "roi_pct": -5.15,
+          "ic95": [
+            -22.15,
+            11.86
+          ],
+          "fiable": false
+        },
+        "1.20-1.40": {
+          "n": 69,
+          "cote_moy": 1.298,
+          "implicite_pct": 73.42,
+          "reel_pct": 75.36,
+          "ecart_pts": 1.95,
+          "roi_pct": -2.11,
+          "ic95": [
+            -15.45,
+            11.23
+          ],
+          "fiable": true
+        },
+        "1.40-1.60": {
+          "n": 105,
+          "cote_moy": 1.485,
+          "implicite_pct": 63.79,
+          "reel_pct": 67.62,
+          "ecart_pts": 3.83,
+          "roi_pct": 0.57,
+          "ic95": [
+            -12.84,
+            13.99
+          ],
+          "fiable": true
+        },
+        "1.60-1.90": {
+          "n": 102,
+          "cote_moy": 1.713,
+          "implicite_pct": 55.03,
+          "reel_pct": 51.96,
+          "ecart_pts": -3.07,
+          "roi_pct": -10.41,
+          "ic95": [
+            -27.24,
+            6.42
+          ],
+          "fiable": true
+        },
+        "1.90-2.30": {
+          "n": 109,
+          "cote_moy": 2.069,
+          "implicite_pct": 45.69,
+          "reel_pct": 45.87,
+          "ecart_pts": 0.18,
+          "roi_pct": -5.06,
+          "ic95": [
+            -24.56,
+            14.45
+          ],
+          "fiable": true
+        },
+        "2.30-3.00": {
+          "n": 90,
+          "cote_moy": 2.532,
+          "implicite_pct": 37.48,
+          "reel_pct": 35.56,
+          "ecart_pts": -1.92,
+          "roi_pct": -10.28,
+          "ic95": [
+            -35.47,
+            14.9
+          ],
+          "fiable": true
+        },
+        "3.00-5.00": {
+          "n": 89,
+          "cote_moy": 3.482,
+          "implicite_pct": 27.76,
+          "reel_pct": 26.97,
+          "ecart_pts": -0.79,
+          "roi_pct": -6.56,
+          "ic95": [
+            -39.09,
+            25.98
+          ],
+          "fiable": true
+        },
+        "5.00+": {
+          "n": 21,
+          "cote_moy": 6.833,
+          "implicite_pct": 14.4,
+          "reel_pct": 14.29,
+          "ecart_pts": -0.12,
+          "roi_pct": -16.67,
+          "ic95": [
+            -107.23,
+            73.9
+          ],
+          "fiable": false
+        }
+      }
+    },
+    "bet365.fr": {
+      "n_joints": 268,
+      "n_total": 278,
+      "tranches": {
+        "1.01-1.20": {
+          "n": 27,
+          "cote_moy": 1.096,
+          "implicite_pct": 82.86,
+          "reel_pct": 77.78,
+          "ecart_pts": -5.08,
+          "roi_pct": -15.34,
+          "ic95": [
+            -32.78,
+            2.09
+          ],
+          "fiable": false
+        },
+        "1.20-1.40": {
+          "n": 92,
+          "cote_moy": 1.31,
+          "implicite_pct": 69.85,
+          "reel_pct": 73.91,
+          "ecart_pts": 4.06,
+          "roi_pct": -3.4,
+          "ic95": [
+            -15.25,
+            8.44
+          ],
+          "fiable": true
+        },
+        "1.40-1.60": {
+          "n": 67,
+          "cote_moy": 1.493,
+          "implicite_pct": 60.88,
+          "reel_pct": 62.69,
+          "ecart_pts": 1.8,
+          "roi_pct": -6.67,
+          "ic95": [
+            -24.06,
+            10.71
+          ],
+          "fiable": true
+        },
+        "1.60-1.90": {
+          "n": 96,
+          "cote_moy": 1.707,
+          "implicite_pct": 53.4,
+          "reel_pct": 53.12,
+          "ecart_pts": -0.28,
+          "roi_pct": -9.23,
+          "ic95": [
+            -26.42,
+            7.96
+          ],
+          "fiable": true
+        },
+        "1.90-2.30": {
+          "n": 88,
+          "cote_moy": 2.053,
+          "implicite_pct": 44.34,
+          "reel_pct": 45.45,
+          "ecart_pts": 1.12,
+          "roi_pct": -6.69,
+          "ic95": [
+            -28.21,
+            14.82
+          ],
+          "fiable": true
+        },
+        "2.30-3.00": {
+          "n": 93,
+          "cote_moy": 2.575,
+          "implicite_pct": 35.65,
+          "reel_pct": 32.26,
+          "ecart_pts": -3.39,
+          "roi_pct": -17.08,
+          "ic95": [
+            -41.76,
+            7.6
+          ],
+          "fiable": true
+        },
+        "3.00-5.00": {
+          "n": 55,
+          "cote_moy": 3.528,
+          "implicite_pct": 26.18,
+          "reel_pct": 25.45,
+          "ecart_pts": -0.73,
+          "roi_pct": -7.35,
+          "ic95": [
+            -50.18,
+            35.49
+          ],
+          "fiable": true
+        },
+        "5.00+": {
+          "n": 18,
+          "cote_moy": 6.089,
+          "implicite_pct": 15.19,
+          "reel_pct": 11.11,
+          "ecart_pts": -4.08,
+          "roi_pct": -36.11,
+          "ic95": [
+            -122.45,
+            50.23
+          ],
+          "fiable": false
+        }
+      }
+    },
+    "betfair-ex": {
+      "n_joints": 304,
+      "n_total": 315,
+      "tranches": {
+        "1.01-1.20": {
+          "n": 358,
+          "cote_moy": 1.075,
+          "implicite_pct": 52.55,
+          "reel_pct": 48.04,
+          "ecart_pts": -4.5,
+          "roi_pct": -48.3,
+          "ic95": [
+            -53.88,
+            -42.73
+          ],
+          "fiable": true
+        },
+        "1.20-1.40": {
+          "n": 45,
+          "cote_moy": 1.306,
+          "implicite_pct": 62.03,
+          "reel_pct": 73.33,
+          "ecart_pts": 11.3,
+          "roi_pct": -4.53,
+          "ic95": [
+            -21.59,
+            12.52
+          ],
+          "fiable": true
+        },
+        "1.40-1.60": {
+          "n": 46,
+          "cote_moy": 1.48,
+          "implicite_pct": 54.53,
+          "reel_pct": 73.91,
+          "ecart_pts": 19.38,
+          "roi_pct": 9.17,
+          "ic95": [
+            -9.84,
+            28.19
+          ],
+          "fiable": true
+        },
+        "1.60-1.90": {
+          "n": 52,
+          "cote_moy": 1.734,
+          "implicite_pct": 49.38,
+          "reel_pct": 67.31,
+          "ecart_pts": 17.93,
+          "roi_pct": 16.58,
+          "ic95": [
+            -5.79,
+            38.95
+          ],
+          "fiable": true
+        },
+        "1.90-2.30": {
+          "n": 49,
+          "cote_moy": 2.066,
+          "implicite_pct": 41.32,
+          "reel_pct": 36.73,
+          "ecart_pts": -4.58,
+          "roi_pct": -24.08,
+          "ic95": [
+            -52.31,
+            4.14
+          ],
+          "fiable": true
+        },
+        "2.30-3.00": {
+          "n": 30,
+          "cote_moy": 2.614,
+          "implicite_pct": 34.16,
+          "reel_pct": 16.67,
+          "ecart_pts": -17.49,
+          "roi_pct": -55.67,
+          "ic95": [
+            -91.85,
+            -19.48
+          ],
+          "fiable": true
+        },
+        "3.00-5.00": {
+          "n": 24,
+          "cote_moy": 3.688,
+          "implicite_pct": 26.16,
+          "reel_pct": 25.0,
+          "ecart_pts": -1.16,
+          "roi_pct": -9.79,
+          "ic95": [
+            -74.92,
+            55.34
+          ],
+          "fiable": false
+        },
+        "5.00+": {
+          "n": 4,
+          "cote_moy": 10.25,
+          "implicite_pct": 10.66,
+          "reel_pct": 25.0,
+          "ecart_pts": 14.34,
+          "roi_pct": 47.5,
+          "ic95": [
+            -241.6,
+            336.6
+          ],
+          "fiable": false
+        }
+      }
+    },
+    "betsson": {
+      "n_joints": 526,
+      "n_total": 567,
+      "tranches": {
+        "1.01-1.20": {
+          "n": 43,
+          "cote_moy": 1.124,
+          "implicite_pct": 83.58,
+          "reel_pct": 90.7,
+          "ecart_pts": 7.12,
+          "roi_pct": 1.84,
+          "ic95": [
+            -8.1,
+            11.78
+          ],
+          "fiable": true
+        },
+        "1.20-1.40": {
+          "n": 146,
+          "cote_moy": 1.305,
+          "implicite_pct": 72.23,
+          "reel_pct": 71.92,
+          "ecart_pts": -0.31,
+          "roi_pct": -6.15,
+          "ic95": [
+            -15.73,
+            3.43
+          ],
+          "fiable": true
+        },
+        "1.40-1.60": {
+          "n": 154,
+          "cote_moy": 1.497,
+          "implicite_pct": 62.96,
+          "reel_pct": 62.99,
+          "ecart_pts": 0.02,
+          "roi_pct": -5.36,
+          "ic95": [
+            -16.88,
+            6.15
+          ],
+          "fiable": true
+        },
+        "1.60-1.90": {
+          "n": 197,
+          "cote_moy": 1.724,
+          "implicite_pct": 54.66,
+          "reel_pct": 52.28,
+          "ecart_pts": -2.37,
+          "roi_pct": -9.85,
+          "ic95": [
+            -21.95,
+            2.24
+          ],
+          "fiable": true
+        },
+        "1.90-2.30": {
+          "n": 166,
+          "cote_moy": 2.112,
+          "implicite_pct": 44.65,
+          "reel_pct": 46.39,
+          "ecart_pts": 1.74,
+          "roi_pct": -2.13,
+          "ic95": [
+            -18.23,
+            13.97
+          ],
+          "fiable": true
+        },
+        "2.30-3.00": {
+          "n": 181,
+          "cote_moy": 2.6,
+          "implicite_pct": 36.45,
+          "reel_pct": 37.57,
+          "ecart_pts": 1.12,
+          "roi_pct": -1.68,
+          "ic95": [
+            -20.31,
+            16.96
+          ],
+          "fiable": true
+        },
+        "3.00-5.00": {
+          "n": 134,
+          "cote_moy": 3.652,
+          "implicite_pct": 26.27,
+          "reel_pct": 26.12,
+          "ecart_pts": -0.15,
+          "roi_pct": -5.12,
+          "ic95": [
+            -32.62,
+            22.38
+          ],
+          "fiable": true
+        },
+        "5.00+": {
+          "n": 31,
+          "cote_moy": 6.469,
+          "implicite_pct": 15.07,
+          "reel_pct": 6.45,
+          "ecart_pts": -8.61,
+          "roi_pct": -60.0,
+          "ic95": [
+            -114.78,
+            -5.22
+          ],
+          "fiable": true
+        }
+      }
+    },
+    "betway": {
+      "n_joints": 305,
+      "n_total": 316,
+      "tranches": {
+        "1.01-1.20": {
+          "n": 23,
+          "cote_moy": 1.115,
+          "implicite_pct": 85.19,
+          "reel_pct": 82.61,
+          "ecart_pts": -2.58,
+          "roi_pct": -8.66,
+          "ic95": [
+            -26.22,
+            8.91
+          ],
+          "fiable": false
+        },
+        "1.20-1.40": {
+          "n": 78,
+          "cote_moy": 1.31,
+          "implicite_pct": 72.49,
+          "reel_pct": 73.08,
+          "ecart_pts": 0.58,
+          "roi_pct": -4.58,
+          "ic95": [
+            -17.55,
+            8.4
+          ],
+          "fiable": true
+        },
+        "1.40-1.60": {
+          "n": 87,
+          "cote_moy": 1.479,
+          "implicite_pct": 64.04,
+          "reel_pct": 68.97,
+          "ecart_pts": 4.93,
+          "roi_pct": 1.95,
+          "ic95": [
+            -12.54,
+            16.43
+          ],
+          "fiable": true
+        },
+        "1.60-1.90": {
+          "n": 115,
+          "cote_moy": 1.706,
+          "implicite_pct": 55.58,
+          "reel_pct": 53.91,
+          "ecart_pts": -1.67,
+          "roi_pct": -7.99,
+          "ic95": [
+            -23.65,
+            7.66
+          ],
+          "fiable": true
+        },
+        "1.90-2.30": {
+          "n": 107,
+          "cote_moy": 2.11,
+          "implicite_pct": 45.01,
+          "reel_pct": 47.66,
+          "ecart_pts": 2.66,
+          "roi_pct": 1.03,
+          "ic95": [
+            -19.18,
+            21.23
+          ],
+          "fiable": true
+        },
+        "2.30-3.00": {
+          "n": 94,
+          "cote_moy": 2.581,
+          "implicite_pct": 36.83,
+          "reel_pct": 31.91,
+          "ecart_pts": -4.91,
+          "roi_pct": -17.85,
+          "ic95": [
+            -42.33,
+            6.64
+          ],
+          "fiable": true
+        },
+        "3.00-5.00": {
+          "n": 86,
+          "cote_moy": 3.509,
+          "implicite_pct": 27.49,
+          "reel_pct": 27.91,
+          "ecart_pts": 0.41,
+          "roi_pct": -1.8,
+          "ic95": [
+            -35.94,
+            32.34
+          ],
+          "fiable": true
+        },
+        "5.00+": {
+          "n": 20,
+          "cote_moy": 6.963,
+          "implicite_pct": 14.04,
+          "reel_pct": 10.0,
+          "ecart_pts": -4.04,
+          "roi_pct": -40.0,
+          "ic95": [
+            -121.25,
+            41.25
+          ],
+          "fiable": false
         }
       }
     },
     "bwin": {
-      "n_joints": 17,
-      "n_total": 18,
+      "n_joints": 763,
+      "n_total": 1027,
       "tranches": {
-        "1.20-1.40": {
-          "n": 3,
-          "cote_moy": 1.303,
-          "implicite_pct": 71.19,
-          "reel_pct": 100.0,
-          "ecart_pts": 28.81,
-          "roi_pct": 30.33,
+        "1.01-1.20": {
+          "n": 75,
+          "cote_moy": 1.116,
+          "implicite_pct": 84.2,
+          "reel_pct": 86.67,
+          "ecart_pts": 2.47,
+          "roi_pct": -3.52,
           "ic95": [
-            25.23,
-            35.44
-          ]
+            -12.19,
+            5.15
+          ],
+          "fiable": true
+        },
+        "1.20-1.40": {
+          "n": 193,
+          "cote_moy": 1.288,
+          "implicite_pct": 73.08,
+          "reel_pct": 71.5,
+          "ecart_pts": -1.58,
+          "roi_pct": -7.92,
+          "ic95": [
+            -16.16,
+            0.33
+          ],
+          "fiable": true
         },
         "1.40-1.60": {
-          "n": 10,
-          "cote_moy": 1.476,
-          "implicite_pct": 62.83,
-          "reel_pct": 50.0,
-          "ecart_pts": -12.83,
-          "roi_pct": -24.8,
+          "n": 238,
+          "cote_moy": 1.484,
+          "implicite_pct": 63.44,
+          "reel_pct": 62.18,
+          "ecart_pts": -1.26,
+          "roi_pct": -7.68,
           "ic95": [
-            -74.01,
-            24.41
-          ]
+            -16.86,
+            1.51
+          ],
+          "fiable": true
         },
         "1.60-1.90": {
-          "n": 4,
-          "cote_moy": 1.68,
-          "implicite_pct": 55.27,
-          "reel_pct": 75.0,
-          "ecart_pts": 19.73,
-          "roi_pct": 27.5,
+          "n": 262,
+          "cote_moy": 1.72,
+          "implicite_pct": 54.72,
+          "reel_pct": 51.91,
+          "ecart_pts": -2.81,
+          "roi_pct": -11.22,
           "ic95": [
-            -56.18,
-            111.18
-          ]
+            -21.62,
+            -0.83
+          ],
+          "fiable": true
         },
         "1.90-2.30": {
-          "n": 6,
-          "cote_moy": 2.135,
-          "implicite_pct": 43.52,
-          "reel_pct": 33.33,
-          "ecart_pts": -10.19,
-          "roi_pct": -26.67,
+          "n": 238,
+          "cote_moy": 2.08,
+          "implicite_pct": 45.34,
+          "reel_pct": 49.58,
+          "ecart_pts": 4.24,
+          "roi_pct": 2.72,
           "ic95": [
-            -117.61,
-            64.27
-          ]
+            -10.51,
+            15.95
+          ],
+          "fiable": true
         },
         "2.30-3.00": {
-          "n": 9,
-          "cote_moy": 2.611,
-          "implicite_pct": 35.66,
-          "reel_pct": 44.44,
-          "ecart_pts": 8.79,
-          "roi_pct": 18.89,
+          "n": 258,
+          "cote_moy": 2.579,
+          "implicite_pct": 36.68,
+          "reel_pct": 36.82,
+          "ecart_pts": 0.14,
+          "roi_pct": -4.68,
           "ic95": [
-            -73.3,
-            111.08
-          ]
+            -20.02,
+            10.66
+          ],
+          "fiable": true
         },
         "3.00-5.00": {
-          "n": 2,
-          "cote_moy": 3.375,
-          "implicite_pct": 27.52,
+          "n": 198,
+          "cote_moy": 3.609,
+          "implicite_pct": 26.41,
+          "reel_pct": 28.28,
+          "ecart_pts": 1.87,
+          "roi_pct": 1.77,
+          "ic95": [
+            -21.1,
+            24.64
+          ],
+          "fiable": true
+        },
+        "5.00+": {
+          "n": 64,
+          "cote_moy": 6.492,
+          "implicite_pct": 15.05,
+          "reel_pct": 10.94,
+          "ecart_pts": -4.11,
+          "roi_pct": -33.98,
+          "ic95": [
+            -82.02,
+            14.05
+          ],
+          "fiable": true
+        }
+      }
+    },
+    "coolbet": {
+      "n_joints": 263,
+      "n_total": 272,
+      "tranches": {
+        "1.01-1.20": {
+          "n": 18,
+          "cote_moy": 1.13,
+          "implicite_pct": 85.67,
+          "reel_pct": 83.33,
+          "ecart_pts": -2.33,
+          "roi_pct": -6.33,
+          "ic95": [
+            -26.32,
+            13.65
+          ],
+          "fiable": false
+        },
+        "1.20-1.40": {
+          "n": 51,
+          "cote_moy": 1.313,
+          "implicite_pct": 73.85,
+          "reel_pct": 76.47,
+          "ecart_pts": 2.62,
+          "roi_pct": 0.51,
+          "ic95": [
+            -15.0,
+            16.02
+          ],
+          "fiable": true
+        },
+        "1.40-1.60": {
+          "n": 87,
+          "cote_moy": 1.495,
+          "implicite_pct": 64.71,
+          "reel_pct": 66.67,
+          "ecart_pts": 1.96,
+          "roi_pct": -0.29,
+          "ic95": [
+            -15.23,
+            14.66
+          ],
+          "fiable": true
+        },
+        "1.60-1.90": {
+          "n": 94,
+          "cote_moy": 1.73,
+          "implicite_pct": 55.87,
+          "reel_pct": 52.13,
+          "ecart_pts": -3.74,
+          "roi_pct": -10.36,
+          "ic95": [
+            -27.86,
+            7.13
+          ],
+          "fiable": true
+        },
+        "1.90-2.30": {
+          "n": 96,
+          "cote_moy": 2.083,
+          "implicite_pct": 46.47,
+          "reel_pct": 52.08,
+          "ecart_pts": 5.61,
+          "roi_pct": 8.22,
+          "ic95": [
+            -12.73,
+            29.17
+          ],
+          "fiable": true
+        },
+        "2.30-3.00": {
+          "n": 91,
+          "cote_moy": 2.578,
+          "implicite_pct": 37.65,
+          "reel_pct": 32.97,
+          "ecart_pts": -4.68,
+          "roi_pct": -14.9,
+          "ic95": [
+            -40.1,
+            10.3
+          ],
+          "fiable": true
+        },
+        "3.00-5.00": {
+          "n": 74,
+          "cote_moy": 3.625,
+          "implicite_pct": 27.35,
+          "reel_pct": 25.68,
+          "ecart_pts": -1.67,
+          "roi_pct": -8.74,
+          "ic95": [
+            -45.07,
+            27.58
+          ],
+          "fiable": true
+        },
+        "5.00+": {
+          "n": 15,
+          "cote_moy": 7.597,
+          "implicite_pct": 13.29,
+          "reel_pct": 20.0,
+          "ecart_pts": 6.71,
+          "roi_pct": 21.67,
+          "ic95": [
+            -106.9,
+            150.23
+          ],
+          "fiable": false
+        }
+      }
+    },
+    "leovegas": {
+      "n_joints": 299,
+      "n_total": 309,
+      "tranches": {
+        "1.01-1.20": {
+          "n": 20,
+          "cote_moy": 1.12,
+          "implicite_pct": 84.59,
+          "reel_pct": 90.0,
+          "ecart_pts": 5.41,
+          "roi_pct": 0.9,
+          "ic95": [
+            -14.31,
+            16.11
+          ],
+          "fiable": false
+        },
+        "1.20-1.40": {
+          "n": 79,
+          "cote_moy": 1.309,
+          "implicite_pct": 72.39,
+          "reel_pct": 69.62,
+          "ecart_pts": -2.76,
+          "roi_pct": -8.75,
+          "ic95": [
+            -22.16,
+            4.67
+          ],
+          "fiable": true
+        },
+        "1.40-1.60": {
+          "n": 94,
+          "cote_moy": 1.493,
+          "implicite_pct": 63.4,
+          "reel_pct": 69.15,
+          "ecart_pts": 5.75,
+          "roi_pct": 3.0,
+          "ic95": [
+            -11.02,
+            17.02
+          ],
+          "fiable": true
+        },
+        "1.60-1.90": {
+          "n": 103,
+          "cote_moy": 1.73,
+          "implicite_pct": 54.75,
+          "reel_pct": 53.4,
+          "ecart_pts": -1.36,
+          "roi_pct": -7.68,
+          "ic95": [
+            -24.47,
+            9.11
+          ],
+          "fiable": true
+        },
+        "1.90-2.30": {
+          "n": 109,
+          "cote_moy": 2.085,
+          "implicite_pct": 45.51,
+          "reel_pct": 48.62,
+          "ecart_pts": 3.12,
+          "roi_pct": 1.43,
+          "ic95": [
+            -18.29,
+            21.16
+          ],
+          "fiable": true
+        },
+        "2.30-3.00": {
+          "n": 97,
+          "cote_moy": 2.606,
+          "implicite_pct": 36.46,
+          "reel_pct": 29.9,
+          "ecart_pts": -6.56,
+          "roi_pct": -21.77,
+          "ic95": [
+            -45.83,
+            2.29
+          ],
+          "fiable": true
+        },
+        "3.00-5.00": {
+          "n": 77,
+          "cote_moy": 3.506,
+          "implicite_pct": 27.35,
+          "reel_pct": 28.57,
+          "ecart_pts": 1.22,
+          "roi_pct": 1.56,
+          "ic95": [
+            -34.9,
+            38.02
+          ],
+          "fiable": true
+        },
+        "5.00+": {
+          "n": 19,
+          "cote_moy": 6.484,
+          "implicite_pct": 15.12,
+          "reel_pct": 10.53,
+          "ecart_pts": -4.6,
+          "roi_pct": -27.37,
+          "ic95": [
+            -126.57,
+            71.84
+          ],
+          "fiable": false
+        }
+      }
+    },
+    "netbet": {
+      "n_joints": 203,
+      "n_total": 211,
+      "tranches": {
+        "1.01-1.20": {
+          "n": 8,
+          "cote_moy": 1.117,
+          "implicite_pct": 83.35,
+          "reel_pct": 87.5,
+          "ecart_pts": 4.15,
+          "roi_pct": -2.75,
+          "ic95": [
+            -30.16,
+            24.66
+          ],
+          "fiable": false
+        },
+        "1.20-1.40": {
+          "n": 54,
+          "cote_moy": 1.316,
+          "implicite_pct": 70.78,
+          "reel_pct": 74.07,
+          "ecart_pts": 3.29,
+          "roi_pct": -2.72,
+          "ic95": [
+            -18.27,
+            12.82
+          ],
+          "fiable": true
+        },
+        "1.40-1.60": {
+          "n": 64,
+          "cote_moy": 1.491,
+          "implicite_pct": 62.46,
+          "reel_pct": 67.19,
+          "ecart_pts": 4.73,
+          "roi_pct": 0.5,
+          "ic95": [
+            -16.89,
+            17.89
+          ],
+          "fiable": true
+        },
+        "1.60-1.90": {
+          "n": 83,
+          "cote_moy": 1.717,
+          "implicite_pct": 54.29,
+          "reel_pct": 51.81,
+          "ecart_pts": -2.49,
+          "roi_pct": -11.54,
+          "ic95": [
+            -30.05,
+            6.97
+          ],
+          "fiable": true
+        },
+        "1.90-2.30": {
+          "n": 80,
+          "cote_moy": 2.093,
+          "implicite_pct": 44.55,
+          "reel_pct": 43.75,
+          "ecart_pts": -0.8,
+          "roi_pct": -9.81,
+          "ic95": [
+            -32.41,
+            12.78
+          ],
+          "fiable": true
+        },
+        "2.30-3.00": {
+          "n": 73,
+          "cote_moy": 2.616,
+          "implicite_pct": 35.79,
+          "reel_pct": 35.62,
+          "ecart_pts": -0.18,
+          "roi_pct": -7.4,
+          "ic95": [
+            -36.29,
+            21.5
+          ],
+          "fiable": true
+        },
+        "3.00-5.00": {
+          "n": 38,
+          "cote_moy": 3.444,
+          "implicite_pct": 27.33,
+          "reel_pct": 23.68,
+          "ecart_pts": -3.64,
+          "roi_pct": -15.53,
+          "ic95": [
+            -65.21,
+            34.16
+          ],
+          "fiable": true
+        },
+        "5.00+": {
+          "n": 6,
+          "cote_moy": 6.312,
+          "implicite_pct": 15.28,
           "reel_pct": 0.0,
-          "ecart_pts": -27.52,
+          "ecart_pts": -15.28,
           "roi_pct": -100.0,
           "ic95": [
             -100.0,
             -100.0
-          ]
+          ],
+          "fiable": false
+        }
+      }
+    },
+    "pinnacle": {
+      "n_joints": 995,
+      "n_total": 1280,
+      "tranches": {
+        "1.01-1.20": {
+          "n": 121,
+          "cote_moy": 1.122,
+          "implicite_pct": 86.09,
+          "reel_pct": 86.78,
+          "ecart_pts": 0.69,
+          "roi_pct": -2.79,
+          "ic95": [
+            -9.63,
+            4.04
+          ],
+          "fiable": true
+        },
+        "1.20-1.40": {
+          "n": 258,
+          "cote_moy": 1.311,
+          "implicite_pct": 73.93,
+          "reel_pct": 68.6,
+          "ecart_pts": -5.32,
+          "roi_pct": -9.89,
+          "ic95": [
+            -17.37,
+            -2.42
+          ],
+          "fiable": true
+        },
+        "1.40-1.60": {
+          "n": 261,
+          "cote_moy": 1.495,
+          "implicite_pct": 64.8,
+          "reel_pct": 62.45,
+          "ecart_pts": -2.34,
+          "roi_pct": -6.39,
+          "ic95": [
+            -15.23,
+            2.46
+          ],
+          "fiable": true
+        },
+        "1.60-1.90": {
+          "n": 324,
+          "cote_moy": 1.719,
+          "implicite_pct": 56.42,
+          "reel_pct": 53.7,
+          "ecart_pts": -2.71,
+          "roi_pct": -7.94,
+          "ic95": [
+            -17.29,
+            1.41
+          ],
+          "fiable": true
+        },
+        "1.90-2.30": {
+          "n": 273,
+          "cote_moy": 2.099,
+          "implicite_pct": 46.24,
+          "reel_pct": 52.01,
+          "ecart_pts": 5.78,
+          "roi_pct": 9.7,
+          "ic95": [
+            -2.87,
+            22.26
+          ],
+          "fiable": true
+        },
+        "2.30-3.00": {
+          "n": 333,
+          "cote_moy": 2.596,
+          "implicite_pct": 37.49,
+          "reel_pct": 36.34,
+          "ecart_pts": -1.16,
+          "roi_pct": -4.77,
+          "ic95": [
+            -18.4,
+            8.86
+          ],
+          "fiable": true
+        },
+        "3.00-5.00": {
+          "n": 297,
+          "cote_moy": 3.664,
+          "implicite_pct": 26.91,
+          "reel_pct": 31.99,
+          "ecart_pts": 5.08,
+          "roi_pct": 16.94,
+          "ic95": [
+            -2.77,
+            36.66
+          ],
+          "fiable": true
+        },
+        "5.00+": {
+          "n": 123,
+          "cote_moy": 7.819,
+          "implicite_pct": 13.98,
+          "reel_pct": 14.63,
+          "ecart_pts": 0.66,
+          "roi_pct": -2.0,
+          "ic95": [
+            -45.6,
+            41.6
+          ],
+          "fiable": true
+        }
+      }
+    },
+    "pmu": {
+      "n_joints": 201,
+      "n_total": 209,
+      "tranches": {
+        "1.01-1.20": {
+          "n": 7,
+          "cote_moy": 1.119,
+          "implicite_pct": 83.25,
+          "reel_pct": 85.71,
+          "ecart_pts": 2.47,
+          "roi_pct": -5.0,
+          "ic95": [
+            -36.29,
+            26.29
+          ],
+          "fiable": false
+        },
+        "1.20-1.40": {
+          "n": 53,
+          "cote_moy": 1.305,
+          "implicite_pct": 71.6,
+          "reel_pct": 69.81,
+          "ecart_pts": -1.79,
+          "roi_pct": -9.11,
+          "ic95": [
+            -25.4,
+            7.17
+          ],
+          "fiable": true
+        },
+        "1.40-1.60": {
+          "n": 67,
+          "cote_moy": 1.481,
+          "implicite_pct": 63.01,
+          "reel_pct": 70.15,
+          "ecart_pts": 7.14,
+          "roi_pct": 3.79,
+          "ic95": [
+            -12.59,
+            20.17
+          ],
+          "fiable": true
+        },
+        "1.60-1.90": {
+          "n": 85,
+          "cote_moy": 1.734,
+          "implicite_pct": 53.75,
+          "reel_pct": 49.41,
+          "ecart_pts": -4.34,
+          "roi_pct": -14.64,
+          "ic95": [
+            -33.16,
+            3.89
+          ],
+          "fiable": true
+        },
+        "1.90-2.30": {
+          "n": 72,
+          "cote_moy": 2.096,
+          "implicite_pct": 44.44,
+          "reel_pct": 48.61,
+          "ecart_pts": 4.17,
+          "roi_pct": 1.06,
+          "ic95": [
+            -23.18,
+            25.29
+          ],
+          "fiable": true
+        },
+        "2.30-3.00": {
+          "n": 66,
+          "cote_moy": 2.611,
+          "implicite_pct": 35.88,
+          "reel_pct": 30.3,
+          "ecart_pts": -5.58,
+          "roi_pct": -20.44,
+          "ic95": [
+            -49.89,
+            9.01
+          ],
+          "fiable": true
+        },
+        "3.00-5.00": {
+          "n": 49,
+          "cote_moy": 3.495,
+          "implicite_pct": 27.12,
+          "reel_pct": 28.57,
+          "ecart_pts": 1.46,
+          "roi_pct": -1.84,
+          "ic95": [
+            -46.19,
+            42.52
+          ],
+          "fiable": true
+        },
+        "5.00+": {
+          "n": 3,
+          "cote_moy": 8.0,
+          "implicite_pct": 11.83,
+          "reel_pct": 0.0,
+          "ecart_pts": -11.83,
+          "roi_pct": -100.0,
+          "ic95": [
+            -100.0,
+            -100.0
+          ],
+          "fiable": false
+        }
+      }
+    },
+    "tipico": {
+      "n_joints": 207,
+      "n_total": 215,
+      "tranches": {
+        "1.01-1.20": {
+          "n": 12,
+          "cote_moy": 1.127,
+          "implicite_pct": 81.94,
+          "reel_pct": 91.67,
+          "ecart_pts": 9.73,
+          "roi_pct": 2.92,
+          "ic95": [
+            -15.64,
+            21.47
+          ],
+          "fiable": false
+        },
+        "1.20-1.40": {
+          "n": 60,
+          "cote_moy": 1.301,
+          "implicite_pct": 71.07,
+          "reel_pct": 66.67,
+          "ecart_pts": -4.41,
+          "roi_pct": -13.52,
+          "ic95": [
+            -29.15,
+            2.12
+          ],
+          "fiable": true
+        },
+        "1.40-1.60": {
+          "n": 60,
+          "cote_moy": 1.48,
+          "implicite_pct": 62.46,
+          "reel_pct": 65.0,
+          "ecart_pts": 2.54,
+          "roi_pct": -3.98,
+          "ic95": [
+            -21.99,
+            14.03
+          ],
+          "fiable": true
+        },
+        "1.60-1.90": {
+          "n": 83,
+          "cote_moy": 1.717,
+          "implicite_pct": 53.9,
+          "reel_pct": 50.6,
+          "ecart_pts": -3.3,
+          "roi_pct": -12.95,
+          "ic95": [
+            -31.62,
+            5.72
+          ],
+          "fiable": true
+        },
+        "1.90-2.30": {
+          "n": 73,
+          "cote_moy": 2.064,
+          "implicite_pct": 44.86,
+          "reel_pct": 53.42,
+          "ecart_pts": 8.57,
+          "roi_pct": 10.74,
+          "ic95": [
+            -13.22,
+            34.7
+          ],
+          "fiable": true
+        },
+        "2.30-3.00": {
+          "n": 72,
+          "cote_moy": 2.601,
+          "implicite_pct": 35.8,
+          "reel_pct": 33.33,
+          "ecart_pts": -2.47,
+          "roi_pct": -10.42,
+          "ic95": [
+            -40.03,
+            19.2
+          ],
+          "fiable": true
+        },
+        "3.00-5.00": {
+          "n": 49,
+          "cote_moy": 3.508,
+          "implicite_pct": 26.69,
+          "reel_pct": 24.49,
+          "ecart_pts": -2.2,
+          "roi_pct": -14.69,
+          "ic95": [
+            -57.42,
+            28.03
+          ],
+          "fiable": true
+        },
+        "5.00+": {
+          "n": 5,
+          "cote_moy": 6.7,
+          "implicite_pct": 14.15,
+          "reel_pct": 0.0,
+          "ecart_pts": -14.15,
+          "roi_pct": -100.0,
+          "ic95": [
+            -100.0,
+            -100.0
+          ],
+          "fiable": false
         }
       }
     },
     "unibet": {
-      "n_joints": 18,
-      "n_total": 19,
+      "n_joints": 946,
+      "n_total": 1222,
       "tranches": {
-        "1.20-1.40": {
-          "n": 4,
-          "cote_moy": 1.333,
-          "implicite_pct": 70.19,
-          "reel_pct": 100.0,
-          "ecart_pts": 29.81,
-          "roi_pct": 33.25,
+        "1.01-1.20": {
+          "n": 91,
+          "cote_moy": 1.114,
+          "implicite_pct": 85.09,
+          "reel_pct": 86.81,
+          "ecart_pts": 1.72,
+          "roi_pct": -3.54,
           "ic95": [
-            29.14,
-            37.36
-          ]
+            -11.35,
+            4.27
+          ],
+          "fiable": true
+        },
+        "1.20-1.40": {
+          "n": 253,
+          "cote_moy": 1.3,
+          "implicite_pct": 72.91,
+          "reel_pct": 68.38,
+          "ecart_pts": -4.53,
+          "roi_pct": -11.19,
+          "ic95": [
+            -18.66,
+            -3.71
+          ],
+          "fiable": true
         },
         "1.40-1.60": {
-          "n": 8,
-          "cote_moy": 1.52,
-          "implicite_pct": 61.57,
-          "reel_pct": 62.5,
-          "ecart_pts": 0.93,
-          "roi_pct": -5.5,
+          "n": 283,
+          "cote_moy": 1.495,
+          "implicite_pct": 63.36,
+          "reel_pct": 63.96,
+          "ecart_pts": 0.6,
+          "roi_pct": -4.27,
           "ic95": [
-            -59.83,
-            48.83
-          ]
+            -12.67,
+            4.14
+          ],
+          "fiable": true
         },
         "1.60-1.90": {
-          "n": 6,
-          "cote_moy": 1.645,
-          "implicite_pct": 56.83,
-          "reel_pct": 66.67,
-          "ecart_pts": 9.83,
-          "roi_pct": 10.17,
+          "n": 317,
+          "cote_moy": 1.722,
+          "implicite_pct": 55.06,
+          "reel_pct": 54.57,
+          "ecart_pts": -0.49,
+          "roi_pct": -6.25,
           "ic95": [
-            -58.16,
-            78.49
-          ]
+            -15.7,
+            3.21
+          ],
+          "fiable": true
         },
         "1.90-2.30": {
-          "n": 6,
-          "cote_moy": 2.167,
-          "implicite_pct": 43.17,
-          "reel_pct": 33.33,
-          "ecart_pts": -9.83,
-          "roi_pct": -26.83,
+          "n": 300,
+          "cote_moy": 2.097,
+          "implicite_pct": 45.28,
+          "reel_pct": 47.0,
+          "ecart_pts": 1.72,
+          "roi_pct": -1.47,
           "ic95": [
-            -117.57,
-            63.91
-          ]
+            -13.37,
+            10.43
+          ],
+          "fiable": true
         },
         "2.30-3.00": {
-          "n": 8,
-          "cote_moy": 2.44,
-          "implicite_pct": 38.43,
-          "reel_pct": 37.5,
-          "ecart_pts": -0.93,
-          "roi_pct": -10.0,
+          "n": 302,
+          "cote_moy": 2.572,
+          "implicite_pct": 36.98,
+          "reel_pct": 34.77,
+          "ecart_pts": -2.21,
+          "roi_pct": -10.11,
           "ic95": [
-            -96.13,
-            76.13
-          ]
+            -24.08,
+            3.85
+          ],
+          "fiable": true
         },
         "3.00-5.00": {
+          "n": 263,
+          "cote_moy": 3.57,
+          "implicite_pct": 26.92,
+          "reel_pct": 32.32,
+          "ecart_pts": 5.4,
+          "roi_pct": 14.43,
+          "ic95": [
+            -5.88,
+            34.74
+          ],
+          "fiable": true
+        },
+        "5.00+": {
+          "n": 83,
+          "cote_moy": 7.037,
+          "implicite_pct": 14.4,
+          "reel_pct": 10.84,
+          "ecart_pts": -3.56,
+          "roi_pct": -29.76,
+          "ic95": [
+            -74.25,
+            14.73
+          ],
+          "fiable": true
+        }
+      }
+    },
+    "unibet.fr": {
+      "n_joints": 201,
+      "n_total": 209,
+      "tranches": {
+        "1.01-1.20": {
+          "n": 13,
+          "cote_moy": 1.133,
+          "implicite_pct": 79.2,
+          "reel_pct": 92.31,
+          "ecart_pts": 13.11,
+          "roi_pct": 4.38,
+          "ic95": [
+            -12.94,
+            21.71
+          ],
+          "fiable": false
+        },
+        "1.20-1.40": {
+          "n": 63,
+          "cote_moy": 1.308,
+          "implicite_pct": 68.78,
+          "reel_pct": 66.67,
+          "ecart_pts": -2.12,
+          "roi_pct": -12.97,
+          "ic95": [
+            -28.33,
+            2.39
+          ],
+          "fiable": true
+        },
+        "1.40-1.60": {
+          "n": 71,
+          "cote_moy": 1.508,
+          "implicite_pct": 59.91,
+          "reel_pct": 64.79,
+          "ecart_pts": 4.88,
+          "roi_pct": -2.75,
+          "ic95": [
+            -19.58,
+            14.08
+          ],
+          "fiable": true
+        },
+        "1.60-1.90": {
+          "n": 75,
+          "cote_moy": 1.733,
+          "implicite_pct": 52.1,
+          "reel_pct": 49.33,
+          "ecart_pts": -2.77,
+          "roi_pct": -14.56,
+          "ic95": [
+            -34.34,
+            5.22
+          ],
+          "fiable": true
+        },
+        "1.90-2.30": {
+          "n": 77,
+          "cote_moy": 2.078,
+          "implicite_pct": 43.34,
+          "reel_pct": 42.86,
+          "ecart_pts": -0.48,
+          "roi_pct": -11.44,
+          "ic95": [
+            -34.47,
+            11.59
+          ],
+          "fiable": true
+        },
+        "2.30-3.00": {
+          "n": 67,
+          "cote_moy": 2.62,
+          "implicite_pct": 34.65,
+          "reel_pct": 38.81,
+          "ecart_pts": 4.15,
+          "roi_pct": 2.99,
+          "ic95": [
+            -28.36,
+            34.33
+          ],
+          "fiable": true
+        },
+        "3.00-5.00": {
+          "n": 32,
+          "cote_moy": 3.398,
+          "implicite_pct": 26.75,
+          "reel_pct": 15.62,
+          "ecart_pts": -11.12,
+          "roi_pct": -45.78,
+          "ic95": [
+            -90.31,
+            -1.25
+          ],
+          "fiable": true
+        },
+        "5.00+": {
           "n": 4,
-          "cote_moy": 3.15,
-          "implicite_pct": 29.81,
+          "cote_moy": 5.875,
+          "implicite_pct": 15.29,
           "reel_pct": 0.0,
-          "ecart_pts": -29.81,
+          "ecart_pts": -15.29,
           "roi_pct": -100.0,
           "ic95": [
             -100.0,
             -100.0
-          ]
+          ],
+          "fiable": false
+        }
+      }
+    },
+    "williamhill": {
+      "n_joints": 305,
+      "n_total": 316,
+      "tranches": {
+        "1.01-1.20": {
+          "n": 25,
+          "cote_moy": 1.109,
+          "implicite_pct": 84.52,
+          "reel_pct": 84.0,
+          "ecart_pts": -0.52,
+          "roi_pct": -7.24,
+          "ic95": [
+            -23.51,
+            9.02
+          ],
+          "fiable": false
+        },
+        "1.20-1.40": {
+          "n": 87,
+          "cote_moy": 1.308,
+          "implicite_pct": 71.66,
+          "reel_pct": 75.86,
+          "ecart_pts": 4.2,
+          "roi_pct": -0.6,
+          "ic95": [
+            -12.5,
+            11.3
+          ],
+          "fiable": true
+        },
+        "1.40-1.60": {
+          "n": 81,
+          "cote_moy": 1.489,
+          "implicite_pct": 62.97,
+          "reel_pct": 66.67,
+          "ecart_pts": 3.7,
+          "roi_pct": -0.46,
+          "ic95": [
+            -15.91,
+            14.99
+          ],
+          "fiable": true
+        },
+        "1.60-1.90": {
+          "n": 123,
+          "cote_moy": 1.739,
+          "implicite_pct": 54.27,
+          "reel_pct": 50.41,
+          "ecart_pts": -3.86,
+          "roi_pct": -12.64,
+          "ic95": [
+            -28.05,
+            2.77
+          ],
+          "fiable": true
+        },
+        "1.90-2.30": {
+          "n": 101,
+          "cote_moy": 2.109,
+          "implicite_pct": 44.8,
+          "reel_pct": 49.5,
+          "ecart_pts": 4.7,
+          "roi_pct": 3.78,
+          "ic95": [
+            -16.8,
+            24.37
+          ],
+          "fiable": true
+        },
+        "2.30-3.00": {
+          "n": 97,
+          "cote_moy": 2.597,
+          "implicite_pct": 36.25,
+          "reel_pct": 30.93,
+          "ecart_pts": -5.33,
+          "roi_pct": -19.74,
+          "ic95": [
+            -43.82,
+            4.33
+          ],
+          "fiable": true
+        },
+        "3.00-5.00": {
+          "n": 75,
+          "cote_moy": 3.508,
+          "implicite_pct": 27.08,
+          "reel_pct": 25.33,
+          "ecart_pts": -1.75,
+          "roi_pct": -10.8,
+          "ic95": [
+            -46.11,
+            24.51
+          ],
+          "fiable": true
+        },
+        "5.00+": {
+          "n": 21,
+          "cote_moy": 6.738,
+          "implicite_pct": 14.47,
+          "reel_pct": 14.29,
+          "ecart_pts": -0.18,
+          "roi_pct": -16.67,
+          "ic95": [
+            -108.23,
+            74.9
+          ],
+          "fiable": false
+        }
+      }
+    },
+    "winamax.fr": {
+      "n_joints": 194,
+      "n_total": 200,
+      "tranches": {
+        "1.01-1.20": {
+          "n": 9,
+          "cote_moy": 1.112,
+          "implicite_pct": 83.39,
+          "reel_pct": 100.0,
+          "ecart_pts": 16.61,
+          "roi_pct": 11.22,
+          "ic95": [
+            7.24,
+            15.21
+          ],
+          "fiable": false
+        },
+        "1.20-1.40": {
+          "n": 56,
+          "cote_moy": 1.305,
+          "implicite_pct": 70.09,
+          "reel_pct": 64.29,
+          "ecart_pts": -5.81,
+          "roi_pct": -16.43,
+          "ic95": [
+            -32.92,
+            0.06
+          ],
+          "fiable": true
+        },
+        "1.40-1.60": {
+          "n": 67,
+          "cote_moy": 1.495,
+          "implicite_pct": 61.47,
+          "reel_pct": 62.69,
+          "ecart_pts": 1.22,
+          "roi_pct": -6.67,
+          "ic95": [
+            -24.08,
+            10.73
+          ],
+          "fiable": true
+        },
+        "1.60-1.90": {
+          "n": 71,
+          "cote_moy": 1.724,
+          "implicite_pct": 53.09,
+          "reel_pct": 50.7,
+          "ecart_pts": -2.39,
+          "roi_pct": -12.42,
+          "ic95": [
+            -32.71,
+            7.86
+          ],
+          "fiable": true
+        },
+        "1.90-2.30": {
+          "n": 73,
+          "cote_moy": 2.057,
+          "implicite_pct": 44.8,
+          "reel_pct": 49.32,
+          "ecart_pts": 4.51,
+          "roi_pct": 1.19,
+          "ic95": [
+            -22.57,
+            24.95
+          ],
+          "fiable": true
+        },
+        "2.30-3.00": {
+          "n": 71,
+          "cote_moy": 2.594,
+          "implicite_pct": 35.6,
+          "reel_pct": 39.44,
+          "ecart_pts": 3.84,
+          "roi_pct": 2.68,
+          "ic95": [
+            -27.25,
+            32.61
+          ],
+          "fiable": true
+        },
+        "3.00-5.00": {
+          "n": 36,
+          "cote_moy": 3.419,
+          "implicite_pct": 27.22,
+          "reel_pct": 19.44,
+          "ecart_pts": -7.78,
+          "roi_pct": -30.97,
+          "ic95": [
+            -77.97,
+            16.03
+          ],
+          "fiable": true
+        },
+        "5.00+": {
+          "n": 5,
+          "cote_moy": 8.64,
+          "implicite_pct": 11.62,
+          "reel_pct": 0.0,
+          "ecart_pts": -11.62,
+          "roi_pct": -100.0,
+          "ic95": [
+            -100.0,
+            -100.0
+          ],
+          "fiable": false
         }
       }
     }
