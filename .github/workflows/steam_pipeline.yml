@@ -138,7 +138,7 @@ jobs:
           git config user.email "actions@github.com"
           echo "── DIAGNOSTIC avant commit ──────────────────────────────"
           echo "set_results.json : $(wc -l < set_results.json 2>/dev/null || echo absent) lignes, $(python3 -c "import json; print(len(json.load(open('set_results.json'))))" 2>/dev/null || echo '?') entrées, $(stat -c%s set_results.json 2>/dev/null || echo '?') octets"
-          for f in set_results.json paper_trades_match.jsonl paper_trades_set1.jsonl paper_trades_set2.jsonl moves_detail.csv moves_detail_hist.csv barometre_hebdo.md barometre_mensuel.md canal_clv_detail.csv; do
+          for f in set_results.json paper_trades_match.jsonl paper_trades_set1.jsonl paper_trades_set2.jsonl moves_detail.csv moves_detail_hist.csv barometre_hebdo.md barometre_mensuel.md canal_clv_detail.csv canal_clv_exclus.csv; do
             [ -f "$f" ] || echo "  ⚠️ absent ce run : $f"
           done
           echo "───────────────────────────────────────────────────────"
@@ -155,6 +155,7 @@ jobs:
           for f in set_results.json paper_trades_match.jsonl paper_trades_set1.jsonl paper_trades_set2.jsonl \
                    moves_detail.csv moves_detail_hist.csv \
                    barometre_hebdo.md barometre_mensuel.md canal_clv_detail.csv \
+                   canal_clv_exclus.csv \
                    pipeline_status.json pipeline_status.md; do
             [ -f "$f" ] && git add -- "$f"
           done
