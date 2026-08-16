@@ -1,0 +1,42 @@
+name: Drift vs outcome
+
+# Calibre la loi "réalisé ≈ clôture" sur tes données : drift du favori (bwin dévigé)
+# vs résultat réel (resultats_fast.json, repli resultats.json). Tableau dans le récap
+# du run. Garde-fou n>=30. Lecture seule (rien n'est commité).
+#
+# Pré-requis : scripts/drift_outcome.py, book_curves.jsonl + resultats_fast.json à la racine.
+#
+# ⚠️ book_curves.jsonl n'existe plus depuis la migration en partitions du
+# 14/08/2026 (remplacé par parts/hist_book_*.jsonl). La garde ci-dessous
+# vérifie maintenant aussi parts/, mais scripts/drift_outcome.py doit lui
+# aussi être adapté (lire via iter_hist_lines('book') d'oddspapi_v5.py) --
+# sinon ce workflow tournera sans erreur mais sans rien trouver, comme
+# c'était probablement le cas chaque lundi depuis 5 semaines.
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "30 6 * * 1"        # lundi 06:30 UTC
+
+jobs:
+  calibrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Calibration drift -> résultat
+        env:
+          SHARP_BOOK: bwin
+          RESULTS_FILE: resultats_derived.json
+          RESULTS_FALLBACK: resultats_derived.json
+        run: |
+          if [ ! -f book_curves.jsonl ] && [ ! -d parts ]; then
+            echo "Ni book_curves.jsonl ni parts/ -- rien à analyser."; exit 0
+          fi
+          # resultats_fast.json et resultats.json valent "count": 0 depuis des
+          # semaines : sans ce pont, l'étude tourne sur un fichier VIDE et ne
+          # produit rien, en silence.
+          python scripts/results_bridge.py || true
+          python scripts/drift_outcome.py
