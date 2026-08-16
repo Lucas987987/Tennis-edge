@@ -309,7 +309,10 @@ def main():
         print(f"  {b:14} n={len(v):3} | CLV médian {st.median(v):+5.1f}% | refermés {p:3.0f}%")
 
     print("\nPar ampleur de l'écart annoncé :")
-    for lo_, hi_, lab in [(0, 5, '2-5%'), (5, 10, '5-10%'), (10, 20, '10-20%'), (20, 999, '20%+')]:
+    # Tranches alignées sur GAP_MIN=3% (abaissé de 5% le 16/08/2026) : la borne
+    # basse doit permettre de suivre séparément les écarts nouvellement publiés.
+    for lo_, hi_, lab in [(0, 3, '<3%'), (3, 5, '3-5%'), (5, 10, '5-10%'),
+                          (10, 20, '10-20%'), (20, 999, '20%+')]:
         g = [r['clv'] for r in retenus if lo_ <= r['ecart_annonce'] < hi_]
         if len(g) < 3:
             continue
