@@ -661,10 +661,28 @@ def extract_markets(events: Iterable[Dict[str, Any]], use_match_filter: bool = T
 
 
 def save_markets(markets: List[Dict[str, Any]]) -> None:
+    """Registre des marchés. FUSION, pas écrasement.
+
+    Les ticks ne portent plus que market_id : si ce fichier était réécrit à
+    chaque run avec les seuls marchés du moment, les métadonnées des matchs
+    passés (question, titre, joueurs) seraient perdues et les ticks anciens
+    deviendraient inexploitables. On conserve donc l'historique des marchés
+    déjà vus.
+    """
+    anciens: Dict[str, Dict[str, Any]] = {}
+    for m in load_markets():
+        mid = str(m.get("market_id") or "")
+        if mid:
+            anciens[mid] = m
+    for m in markets:
+        mid = str(m.get("market_id") or "")
+        if mid:
+            anciens[mid] = m
     payload = {
         "updated_at": iso_now(),
-        "count": len(markets),
-        "markets": markets,
+        "count": len(anciens),
+        "actifs": len(markets),
+        "markets": list(anciens.values()),
     }
     atomic_json_write(MARKETS_FILE, payload)
 
@@ -795,8 +813,19 @@ class Collector:
             if not asset_id or asset_id not in self.by_token:
                 return
             meta = self.by_token[asset_id]
+            # LA MISE, pas seulement le prix. Un mouvement de prix sur un carnet
+            # mince ne vaut rien : c'est le montant échangé qui dit si le marché
+            # « croit » vraiment au mouvement. Sans size, impossible de
+            # distinguer un ordre de 5 $ d'un ordre de 5 000 $ -- et donc
+            # impossible de juger si un mouvement Polymarket est significatif.
             price = safe_float(msg.get("price"))
-            self._write_tick(meta, "last_trade_price", msg, {"last_trade": price})
+            size = safe_float(msg.get("size"))
+            self._write_tick(meta, "last_trade_price", msg, {
+                "last_trade": price,
+                "trade_size": size,
+                "trade_side": msg.get("side"),
+                "trade_notional": (price * size) if (price is not None and size is not None) else None,
+            })
             return
 
         if event_type in {"tick_size_change", "market_resolved", "new_market"}:
@@ -829,26 +858,25 @@ class Collector:
 
     def _write_tick(self, meta: Dict[str, Any], event_type: str, raw: Dict[str, Any], values: Dict[str, Any]) -> None:
         m = meta["market"]
+        # Tick VOLONTAIREMENT MAIGRE. La version précédente répétait à chaque
+        # ligne event_title, question, slug, start_time et le dict local_match
+        # complet -- des métadonnées FIXES par marché, déjà stockées une fois
+        # dans polymarket_markets.json. À ~7700 ticks par run de 15 min, soit
+        # de l'ordre de 700 000 lignes par jour, ces champs représentaient plus
+        # de la moitié du volume écrit et poussé dans git à chaque cycle.
+        # market_id suffit à retrouver le reste ; local_uid, local_side et
+        # market_type sont conservés car ce sont les clés de jointure de
+        # l'analyse.
         row = {
             "ts": iso_now(),
             "exchange_ts": raw.get("timestamp"),
             "event_type": event_type,
             "market_id": m.get("market_id"),
-            "condition_id": m.get("condition_id"),
-            "event_id": m.get("event_id"),
-            "event_slug": m.get("event_slug"),
-            "event_title": m.get("event_title"),
-            "question": m.get("question"),
-            "slug": m.get("slug"),
-            "start_time": m.get("start_time"),
-            "game_id": m.get("game_id"),
-            "asset_id": meta.get("market", {}).get("token_ids", [None, None])[meta["outcome_index"]],
+            "asset_id": (m.get("token_ids") or [None, None])[meta["outcome_index"]],
             "outcome_index": meta["outcome_index"],
-            "outcome": meta["outcome"],
             "market_type": m.get("market_type"),
             "local_side": (m.get("outcome_sides") or [None, None])[meta["outcome_index"]],
             "local_uid": (m.get("local_match") or {}).get("uid"),
-            "local_match": m.get("local_match"),
             **values,
         }
         append_jsonl(ticks_path(), row)
