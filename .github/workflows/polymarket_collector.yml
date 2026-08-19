@@ -82,6 +82,14 @@ jobs:
           for t, n in list((d.get('inventaire_evenements') or {}).items())[:30]:
               print(f'   {n:5}  {t}')
           print()
+          print('=== POURQUOI CES MATCHS SONT-ILS ÉCARTÉS ? ===')
+          for r in (d.get('refus_joueur_vs_joueur') or [])[:12]:
+              print(f"--- {r['outcomes'][0]}  /  {r['outcomes'][1]}")
+              print(f"    horaire Polymarket : {r['event_start_pm']}")
+              print(f"    seuil exigé        : {r['seuil']}  ·  fenêtre {r['fenetre_heures']} h")
+              for sc, dh, lib in r['top_candidats_locaux']:
+                  print(f"      score {sc:<5} écart {str(dh)+' h':<8} {lib}")
+          print()
           print('=== ÉCHANTILLON PAR MOTIF ===')
           for e in d['echantillon']:
               print('---', e['motif'])
