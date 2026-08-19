@@ -40,6 +40,8 @@ Variables d'environnement :
   PM_HTTP_TIMEOUT          20
   PM_MAX_EVENTS_PER_TAG    100
   PM_MATCH_LOOKAHEAD_HOURS 72
+  PM_MATCH_WINDOW_HOURS    36   (écart max entre horaire Polymarket et local)
+  PM_MATCH_MIN_SCORE       0.62
   PM_NO_MATCH_FILTER       0/1
   PM_DIAG                  0/1 (écrit polymarket_diag.json : motifs de rejet + échantillon brut)
 
@@ -92,6 +94,13 @@ LOOKAHEAD_HOURS = float(os.environ.get("PM_MATCH_LOOKAHEAD_HOURS", "72"))
 NO_MATCH_FILTER = os.environ.get("PM_NO_MATCH_FILTER", "0") == "1"
 # Score minimum exigé de CHAQUE joueur (pas de la moyenne des deux).
 MATCH_MIN_SCORE = float(os.environ.get("PM_MATCH_MIN_SCORE", "0.62"))
+# Fenêtre horaire entre l'horaire Polymarket et l'horaire local. 8 h était trop
+# serré : Polymarket affiche parfois un horaire approximatif ou l'ouverture de
+# session, et un décalage de plus de 8 h suffisait à écarter un match dont les
+# DEUX noms correspondaient parfaitement. À 36 h le risque de confusion reste
+# nul : deux mêmes joueurs ne se rencontrent pas deux fois dans cet intervalle,
+# et à score égal on départage désormais par le plus petit écart de temps.
+MATCH_WINDOW_H = float(os.environ.get("PM_MATCH_WINDOW_HOURS", "36"))
 
 STOP = threading.Event()
 WRITE_LOCK = threading.Lock()
@@ -338,6 +347,22 @@ def pair_similarity(a: str, b: str) -> float:
         return 1.0
     tok_a, tok_b = name_tokens(a), name_tokens(b)
     shared = tok_a & tok_b
+
+    # NOM DE FAMILLE SEUL. Polymarket libelle souvent ses marchés en nom de
+    # famille (« Tirante / Mensik ») alors que matches_oddspapi.json porte le
+    # nom complet (« Thiago Agustin Tirante »). difflib donne 0,48 à ce couple,
+    # sous le seuil de 0,62 : tous ces marchés étaient écartés.
+    # Règle : un libellé à UN SEUL jeton qui est exactement le nom de famille de
+    # l'autre (dernier jeton) vaut correspondance. Le risque d'homonymie (les
+    # frères Zverev) est neutralisé en amont : match_local_players exige que
+    # LES DEUX joueurs correspondent, et deux frères ne jouent pas le même
+    # adversaire le même jour.
+    last_a = norm_name(a).split()[-1] if norm_name(a) else ""
+    last_b = norm_name(b).split()[-1] if norm_name(b) else ""
+    if len(tok_a) == 1 or len(tok_b) == 1:
+        if last_a and last_a == last_b:
+            return 0.95
+        return 0.30 if not shared else 0.60
     # GARDE-FOU PRÉNOM. difflib donne 0,63 à « Tallon Griekspoor » vs « Tallon
     # Tien » -- au-dessus du seuil d'acceptation de 0,62. C'est le bug corrigé
     # le 16/08/2026 dans player_key.py : un seul jeton commun, donc un prénom,
@@ -354,12 +379,13 @@ def match_local_players(pm_a: str, pm_b: str, event_start: Optional[datetime], l
     if not locals_:
         return None
     best = None
-    best_score = 0.0
+    best_key = (0.0, 0.0)          # (score, proximité temporelle) — score d'abord
     for row in locals_:
         dt = parse_dt(row.get("commence"))
+        delta_h = None
         if event_start and dt:
             delta_h = abs((dt - event_start).total_seconds()) / 3600.0
-            if delta_h > 8:
+            if delta_h > MATCH_WINDOW_H:
                 continue
         # Chaque joueur doit correspondre INDIVIDUELLEMENT. Une moyenne laisse
         # passer un faux appariement quand un seul côté est parfait :
@@ -371,14 +397,38 @@ def match_local_players(pm_a: str, pm_b: str, event_start: Optional[datetime], l
         s1 = min(a_h, b_a)          # sens direct  : le plus faible des deux
         s2 = min(a_a, b_h)          # sens inversé : idem
         score = max(s1, s2)
-        if score > best_score:
-            best_score = score
+        # Départage : à score égal, le match le plus proche dans le temps.
+        proximite = 1.0 / (1.0 + (delta_h if delta_h is not None else 12.0))
+        key = (score, proximite)
+        if key > best_key:
+            best_key = key
             best = row
-    return best if best_score >= MATCH_MIN_SCORE else None
+    return best if best_key[0] >= MATCH_MIN_SCORE else None
 
 
 DIAG = os.environ.get("PM_DIAG", "0") == "1"
 DIAG_FILE = Path(os.environ.get("PM_DIAG_FILE", "polymarket_diag.json"))
+
+
+_OVER_UNDER = ("over", "under", "yes", "no", "oui", "non")
+
+
+def est_joueur_vs_joueur(a: str, b: str) -> bool:
+    """Vrai si les deux outcomes sont des NOMS DE JOUEURS.
+
+    La sonde a montré que le décompte « joueur-vs-joueur » était pollué par les
+    marchés de TOTAL de jeux/sets (« Over 2.5 / Under 2.5 »), binaires et
+    non-Yes/No mais sans intérêt pour un lead/lag sur le vainqueur du match.
+    """
+    na, nb = norm_name(a), norm_name(b)
+    for x in (na, nb):
+        if not x:
+            return False
+        if any(x.startswith(k) for k in _OVER_UNDER):
+            return False
+        if re.search(r"\d", x):          # « Over 2.5 », « 3-0 », scores exacts
+            return False
+    return True
 
 
 def extract_markets(events: Iterable[Dict[str, Any]], use_match_filter: bool = True) -> List[Dict[str, Any]]:
@@ -394,7 +444,8 @@ def extract_markets(events: Iterable[Dict[str, Any]], use_match_filter: bool = T
     results: Dict[str, Dict[str, Any]] = {}
     rej: Dict[str, int] = {}
     echantillon: List[Dict[str, Any]] = []
-    joueur_vs_joueur: List[str] = []      # marchés binaires non-Yes/No
+    joueur_vs_joueur: List[str] = []      # marchés binaires entre deux joueurs
+    refus_jvj: List[Dict[str, Any]] = []  # pourquoi un jvj a-t-il été écarté ?
     titres: Dict[str, int] = {}           # inventaire des événements reçus
 
     def drop(motif: str, ev: Dict[str, Any] = None, mk: Dict[str, Any] = None) -> None:
@@ -466,11 +517,39 @@ def extract_markets(events: Iterable[Dict[str, Any]], use_match_filter: bool = T
             if {norm_name(a), norm_name(b)} == {"yes", "no"}:
                 drop("futures_yes_no", ev, market)
                 continue
-            joueur_vs_joueur.append(f'{a} / {b}  ({market.get("question")})')
+            if est_joueur_vs_joueur(a, b):
+                joueur_vs_joueur.append(f'{a} / {b}  ({market.get("question")})')
+            else:
+                drop("marche_total_over_under", ev, market)
+                continue
 
             local = match_local_players(a, b, event_start, locals_) if use_match_filter else None
             if use_match_filter and not local:
                 drop("aucun_match_local_correspondant", ev, market)
+                # Journal CIBLÉ : pourquoi CE marché joueur-vs-joueur est-il
+                # écarté ? On enregistre l'horaire vu côté Polymarket et les
+                # trois meilleurs candidats locaux avec leur score, pour
+                # distinguer un problème de NOMS d'un problème d'HORAIRE.
+                if DIAG and len(refus_jvj) < 12:
+                    cands = []
+                    for row in locals_:
+                        dt_l = parse_dt(row.get("commence"))
+                        dh = (abs((dt_l - event_start).total_seconds()) / 3600.0
+                              if (event_start and dt_l) else None)
+                        sc = max(min(pair_similarity(a, row["home"]), pair_similarity(b, row["away"])),
+                                 min(pair_similarity(a, row["away"]), pair_similarity(b, row["home"])))
+                        cands.append((round(sc, 2), dh if dh is None else round(dh, 1),
+                                      f'{row["home"]} vs {row["away"]}'))
+                    cands.sort(key=lambda x: -x[0])
+                    refus_jvj.append({
+                        "outcomes": [a, b],
+                        "question": market.get("question"),
+                        "event_title": ev.get("title"),
+                        "event_start_pm": str(event_start) if event_start else None,
+                        "seuil": MATCH_MIN_SCORE,
+                        "fenetre_heures": MATCH_WINDOW_H,
+                        "top_candidats_locaux": cands[:3],
+                    })
                 continue
 
             market_id = str(market.get("id") or market.get("conditionId") or "")
@@ -529,6 +608,7 @@ def extract_markets(events: Iterable[Dict[str, Any]], use_match_filter: bool = T
             "marches_retenus": len(results),
             "rejets": rej,
             "marches_joueur_vs_joueur": joueur_vs_joueur,
+            "refus_joueur_vs_joueur": refus_jvj,
             "inventaire_evenements": dict(sorted(titres.items(), key=lambda x: -x[1])),
             "echantillon": echantillon,
             "matchs_locaux": locals_[:10],
