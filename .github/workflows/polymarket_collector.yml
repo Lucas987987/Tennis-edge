@@ -1,0 +1,153 @@
+name: Polymarket Collector
+
+on:
+  repository_dispatch:
+    types: [polymarket_collector]
+  workflow_dispatch:
+    inputs:
+      diag:
+        description: "Diagnostic : découverte seule + polymarket_diag.json (aucun WebSocket)"
+        type: boolean
+        default: false
+      probe:
+        description: "Sonde : où sont les marchés par match ? (teste plusieurs voies, n'écrit rien)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+# PYTHONDONTWRITEBYTECODE : aucun .pyc généré. Des .pyc régénérés à chaque run
+# faisaient avorter le merge puis rejeter le push (panne du 16/08/2026). Les 22
+# autres workflows qui commitent portent déjà cette variable.
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+
+concurrency:
+  group: polymarket-collector
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    # 240 s de collecte + installation pip + git : 7 min laissait peu de marge
+    # si PyPI est lent. Le collecteur s'arrête seul via --duration-seconds.
+    timeout-minutes: 12
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests websocket-client
+
+      # Mode diagnostic : découverte seule, écrit polymarket_diag.json avec le
+      # décompte des motifs de rejet et un échantillon BRUT des marchés écartés.
+      # Indispensable tant que le collecteur retient 0 marché : le filtre écarte
+      # à sept endroits différents, impossible de savoir lequel sans ça.
+      # Sonde : teste plusieurs voies de découverte et dit laquelle ramène des
+      # marchés joueur-contre-joueur. N'écrit aucun fichier.
+      - name: Polymarket — sonde de découverte
+        if: inputs.probe
+        run: python scripts/polymarket_collector_scripts.py --probe
+
+      - name: Polymarket — diagnostic
+        if: inputs.diag && !inputs.probe
+        env:
+          PM_DIAG: '1'
+        run: |
+          python scripts/polymarket_collector_scripts.py --once
+          echo '================ polymarket_diag.json ================'
+          python - <<'PY'
+          import json
+          d = json.load(open('polymarket_diag.json', encoding='utf-8'))
+          print('marchés retenus :', d['marches_retenus'])
+          print('rejets          :', json.dumps(d['rejets'], ensure_ascii=False))
+          jvj = d.get('marches_joueur_vs_joueur') or []
+          print()
+          print('=== MARCHÉS JOUEUR-VS-JOUEUR (hors futures Yes/No) :', len(jvj), '===')
+          for q in jvj[:25]:
+              print('   ·', q)
+          print()
+          print('=== INVENTAIRE DES ÉVÉNEMENTS (titre -> nb de marchés) ===')
+          for t, n in list((d.get('inventaire_evenements') or {}).items())[:30]:
+              print(f'   {n:5}  {t}')
+          print()
+          print('=== ÉCHANTILLON PAR MOTIF ===')
+          for e in d['echantillon']:
+              print('---', e['motif'])
+              for k in ('event_title', 'question', 'outcomes', 'sportsMarketType', 'gameId'):
+                  print(f'    {k:18}: {str(e.get(k))[:160]}')
+          PY
+
+      - name: Polymarket collector
+        if: '!inputs.diag && !inputs.probe'
+        run: |
+          python scripts/polymarket_collector_scripts.py \
+            --duration-seconds 240 \
+            --refresh-seconds 180
+
+      - name: Commit Polymarket data (robuste)
+        shell: bash
+        run: |
+          set -u
+
+          find . -name '__pycache__' -type d -prune -exec rm -rf {} + 2>/dev/null || true
+          find . -name '*.pyc' -delete 2>/dev/null || true
+
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+
+          # git add EN BLOC : si UN SEUL chemin n'existe pas, git sort en
+          # "fatal: pathspec ... did not match any files" et n'ajoute RIEN --
+          # pas même les fichiers présents. C'est la panne du 15/08/2026, et
+          # elle se produirait ici dès le premier run (aucun des trois fichiers
+          # n'existe encore) ou dès qu'une collecte ne reçoit aucun tick.
+          # On ajoute donc chaque chemin séparément, en tolérant l'absence.
+          for f in polymarket_markets.json polymarket_collector_state.json polymarket_diag.json; do
+            [ -f "$f" ] && git add -- "$f" || echo "  (absent : $f)"
+          done
+          # Ticks partitionnés par jour (parts/pm_ticks_<date>.jsonl) : un
+          # fichier unique aurait fini par dépasser le mur GitHub de 100 Mo.
+          git add -A -- parts/ 2>/dev/null || true
+
+          echo '--- fichiers en attente de commit ---'
+          git status --short
+
+          if git diff --staged --quiet; then
+            echo 'Aucune nouvelle donnée Polymarket à commit.'
+            exit 0
+          fi
+
+          git commit -m "Polymarket collector ($(date -u +%H:%MZ))"
+
+          # Même logique robuste que le pipeline capture_closing : on récupère
+          # les commits arrivés pendant la collecte avant de pousser.
+          for attempt in 1 2 3; do
+            echo "--- synchronisation Git (tentative $attempt/3) ---"
+            git fetch origin main || true
+
+            if git merge origin/main --no-edit; then
+              if git push origin HEAD:main; then
+                echo 'Push Polymarket OK.'
+                exit 0
+              fi
+            else
+              echo 'Merge non automatique. Abandon du run pour éviter d écraser main.'
+              exit 1
+            fi
+
+            sleep 3
+          done
+
+          echo 'ERREUR: impossible de pousser les données Polymarket après 3 tentatives.'
+          exit 1
