@@ -22,6 +22,11 @@ permissions:
 # autres workflows qui commitent portent déjà cette variable.
 env:
   PYTHONDONTWRITEBYTECODE: '1'
+  # Sans ceci, tout le stdout du collecteur est bufferisé et n'apparaît qu'à la
+  # FIN du step : sur un run de 15 min qui plante à la minute 10, le log est
+  # vide et le diagnostic impossible. Constaté le 19/08 : les 70 lignes du
+  # collecteur horodatées à la même seconde, en fin de step.
+  PYTHONUNBUFFERED: '1'
 
 concurrency:
   group: polymarket-collector
