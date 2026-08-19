@@ -84,6 +84,23 @@ MARKETS_FILE = Path(os.environ.get("PM_MARKETS_FILE", "polymarket_markets.json")
 # parts/pm_ticks_<YYYY-MM-DD>.jsonl, une partition par jour, que
 # compress_hist_partitions.py pourra gzipper une fois close (~85 % de gain).
 # PM_TICKS_FILE reste accepté pour forcer un fichier unique (tests locaux).
+# LIMITATION DE DÉBIT — sans elle, le collecteur est ingérable.
+# Mesuré le 19/08/2026 sur un run de 15 min en soirée (matchs en cours) :
+# 312 683 lignes, soit 101 Mo. À ce rythme : 404 Mo/heure, 9,7 Go/jour, et le
+# mur GitHub de 100 Mo PAR FICHIER atteint en 15 MINUTES de collecte.
+# Cause : chaque delta du carnet d'ordres produit une ligne. Sur un carnet
+# actif c'est plusieurs écritures par seconde et par jeton -- alors que
+# l'analyse travaille sur une grille de 5 MINUTES. Sur-échantillonnage d'un
+# facteur mille, sans le moindre gain d'information.
+#
+# Règle : au plus une écriture par jeton et par type d'événement toutes les
+# PM_MIN_INTERVAL_S secondes, SAUF si le prix a bougé d'au moins PM_MIN_DELTA
+# -- un vrai mouvement passe donc toujours, immédiatement, sans latence.
+# Les échanges (last_trade_price) ne sont JAMAIS filtrés : ils sont rares et
+# portent les mises, c'est-à-dire ce que l'étude de flux exploite.
+MIN_INTERVAL_S = float(os.environ.get("PM_MIN_INTERVAL_S", "10"))
+MIN_DELTA = float(os.environ.get("PM_MIN_DELTA", "0.002"))
+
 TICKS_DIR = Path(os.environ.get("PM_TICKS_DIR", "parts"))
 TICKS_FILE_OVERRIDE = os.environ.get("PM_TICKS_FILE", "").strip()
 STATE_FILE = Path(os.environ.get("PM_STATE_FILE", "polymarket_collector_state.json"))
@@ -755,6 +772,10 @@ class Collector:
         self.by_token: Dict[str, Dict[str, Any]] = {}
         self.by_market: Dict[str, Dict[str, Any]] = {}
         self.last_state: Dict[str, Dict[str, Any]] = {}
+        # état du limiteur de débit : (asset_id, event_type) -> (t, dernier prix)
+        self._last_write: Dict[Any, Any] = {}
+        self.ecrits = 0
+        self.filtres = 0
         for m in markets:
             self.by_market[str(m["market_id"])] = m
             for idx, token in enumerate(m.get("token_ids", [])):
@@ -856,8 +877,35 @@ class Collector:
             "side": change.get("side"),
         })
 
+    def _throttle(self, asset_id, event_type, values) -> bool:
+        """Faut-il ÉCRIRE ce tick ? (cf. note MIN_INTERVAL_S en tête de fichier)"""
+        if event_type == "last_trade_price":
+            return True                       # jamais filtré : ce sont les mises
+        cle = (asset_id, event_type)
+        maintenant = time.monotonic()
+        prix = values.get("mid")
+        if prix is None:
+            prix = values.get("price")
+        prec = self._last_write.get(cle)
+        if prec is not None:
+            t_prec, p_prec = prec
+            try:
+                bouge = (prix is not None and p_prec is not None
+                         and abs(float(prix) - float(p_prec)) >= MIN_DELTA)
+            except (TypeError, ValueError):
+                bouge = True
+            if not bouge and (maintenant - t_prec) < MIN_INTERVAL_S:
+                self.filtres += 1
+                return False
+        self._last_write[cle] = (maintenant, prix)
+        self.ecrits += 1
+        return True
+
     def _write_tick(self, meta: Dict[str, Any], event_type: str, raw: Dict[str, Any], values: Dict[str, Any]) -> None:
         m = meta["market"]
+        asset_id = (m.get("token_ids") or [None, None])[meta["outcome_index"]]
+        if not self._throttle(str(asset_id), event_type, values):
+            return
         # Tick VOLONTAIREMENT MAIGRE. La version précédente répétait à chaque
         # ligne event_title, question, slug, start_time et le dict local_match
         # complet -- des métadonnées FIXES par marché, déjà stockées une fois
@@ -963,6 +1011,15 @@ def websocket_loop(markets: List[Dict[str, Any]], max_seconds: Optional[int] = N
                     ws.close()
                 except Exception:
                     pass
+            # Bilan du limiteur : rend visible le sur-échantillonnage évité.
+            # Sans ce chiffre, on ne saurait pas si le filtre est trop agressif
+            # (signal perdu) ou trop laxiste (dépôt qui explose).
+            try:
+                print(f"   débit : {collector.ecrits} tick(s) écrit(s), "
+                      f"{collector.filtres} filtré(s) "
+                      f"({100 * collector.filtres / max(1, collector.ecrits + collector.filtres):.0f} %)")
+            except Exception:
+                pass
 
 
 def refresh_markets(session: requests.Session, use_match_filter: bool) -> List[Dict[str, Any]]:
