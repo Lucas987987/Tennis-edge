@@ -6,7 +6,11 @@ on:
   workflow_dispatch:
     inputs:
       diag:
-        description: "Mode diagnostic : découverte seule + polymarket_diag.json (aucun WebSocket)"
+        description: "Diagnostic : découverte seule + polymarket_diag.json (aucun WebSocket)"
+        type: boolean
+        default: false
+      probe:
+        description: "Sonde : où sont les marchés par match ? (teste plusieurs voies, n'écrit rien)"
         type: boolean
         default: false
 
@@ -50,8 +54,14 @@ jobs:
       # décompte des motifs de rejet et un échantillon BRUT des marchés écartés.
       # Indispensable tant que le collecteur retient 0 marché : le filtre écarte
       # à sept endroits différents, impossible de savoir lequel sans ça.
+      # Sonde : teste plusieurs voies de découverte et dit laquelle ramène des
+      # marchés joueur-contre-joueur. N'écrit aucun fichier.
+      - name: Polymarket — sonde de découverte
+        if: inputs.probe
+        run: python scripts/polymarket_collector_scripts.py --probe
+
       - name: Polymarket — diagnostic
-        if: inputs.diag
+        if: inputs.diag && !inputs.probe
         env:
           PM_DIAG: '1'
         run: |
@@ -80,7 +90,7 @@ jobs:
           PY
 
       - name: Polymarket collector
-        if: '!inputs.diag'
+        if: '!inputs.diag && !inputs.probe'
         run: |
           python scripts/polymarket_collector_scripts.py \
             --duration-seconds 240 \
