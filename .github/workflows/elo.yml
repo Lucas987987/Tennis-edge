@@ -1,4 +1,4 @@
-name: Elo — référence et modèle
+name: Signaux indépendants — Elo, fatigue, forme
 
 # ──────────────────────────────────────────────────────────────────────────
 # Deux étapes.
@@ -62,6 +62,13 @@ jobs:
           python scripts/curves_parts.py rebuild || true
           python scripts/elo_model.py --eval
 
+      # Même famille que l'Elo : des signaux qui ne regardent AUCUNE cote, et la
+      # même cadence hebdomadaire. Plutôt qu'un 44e workflow pour un script qui
+      # tourne en 30 s, on le rattache ici — la charge de maintenance d'un dépôt
+      # à 43 workflows et 93 scripts est déjà le vrai facteur limitant.
+      - name: Fatigue et forme récente
+        run: python scripts/player_form.py --eval || true
+
       - name: Commit
         if: always()
         run: |
@@ -70,13 +77,14 @@ jobs:
           git config user.email 'github-actions[bot]@users.noreply.github.com'
           # Fichier par fichier : un git add en bloc échoue ENTIÈREMENT si un
           # seul chemin manque, et n'ajoute alors rien (panne du 15/08/2026).
-          for f in elo_reference.json elo_ratings.json elo_fetch_diag.json; do
+          for f in elo_reference.json elo_ratings.json elo_fetch_diag.json \
+                   player_form.json; do
             [ -f "$f" ] && git add -- "$f" || echo "  (absent : $f)"
           done
           if git diff --staged --quiet; then
             echo 'Rien à commit.'; exit 0
           fi
-          git commit -m "Elo ($(date -u +%Y-%m-%d))"
+          git commit -m "Signaux independants ($(date -u +%Y-%m-%d))"
           for attempt in 1 2 3; do
             git fetch origin main || true
             if git merge origin/main --no-edit; then
