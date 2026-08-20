@@ -201,10 +201,27 @@ def entier(m, *cles):
 
 
 # ── Matchs locaux ─────────────────────────────────────────────────────────
+def uid_nom(nom):
+    """Normalisation IDENTIQUE à celle du collecteur Polymarket et de
+    book_curves : tout caractère non alphanumérique devient un séparateur.
+
+    DIVERGENCE CORRIGÉE (20/08/2026). norm() conservait les tirets, d'où
+    « felix_auger-aliassime » côté Kalshi contre « felix_auger_aliassime »
+    partout ailleurs. Les deux sources décrivaient le MÊME match sous deux uid
+    différents : toute jointure Kalshi <-> book_curves échouait, et elle
+    échouait EN SILENCE — aucune erreur, juste zéro correspondance.
+    C'est le même piège que les deux conventions d'uid de juin-août, qui avait
+    coûté 208 doublons (cf. match_key.py).
+    """
+    s = unicodedata.normalize('NFKD', str(nom or '')).encode('ascii', 'ignore').decode()
+    s = re.sub(r'[^a-z0-9]+', ' ', s.lower()).strip()
+    return re.sub(r'\s+', '_', s)
+
+
 def make_uid(commence, home, away):
     """Même convention que book_curves : <date>_<home>_<away>, pour que les
     ticks se joignent directement aux courbes des bookmakers."""
-    return f"{str(commence or '')[:10]}_{norm(home).replace(' ', '_')}_{norm(away).replace(' ', '_')}"
+    return f"{str(commence or '')[:10]}_{uid_nom(home)}_{uid_nom(away)}"
 
 
 def matchs_locaux():
@@ -250,12 +267,21 @@ def series_tennis():
     tennis = [s for s in series if any(k in norm(txt(s)) for k in TENNIS_KW)]
     gardees = [s for s in tennis if not any(k in norm(txt(s)) for k in HORS_SUJET)]
 
-    def rang(s):
-        tk = norm(s.get('ticker'))
-        return 0 if tk.endswith('match') else 1 if 'match' in tk else 2
-    gardees.sort(key=rang)
+    # EXIGENCE STRICTE : le ticker doit se terminer par MATCH.
+    # Le premier run a collecté KXATP-26CINCIN (vainqueur du TOURNOI de
+    # Cincinnati) et KXATPGRANDSLAM-26 (vainqueur d'un Grand Chelem). Leurs
+    # outcomes sont des noms de joueurs, ils s'apparient donc parfaitement à
+    # nos matchs — mais leur prix est une probabilité de gagner un TOURNOI,
+    # pas une rencontre. Mélangés aux vrais marchés de match, ils rendaient
+    # l'incohérence des deux jetons à 45,5 points au lieu de ~0.
+    # C'est le même piège que les futures Yes/No de Polymarket, sous une forme
+    # plus sournoise : ici rien ne les distingue au niveau du libellé.
+    gardees = [s for s in gardees if norm(s.get('ticker')).endswith('match')]
+    gardees.sort(key=lambda s: norm(s.get('ticker')))
     print(f'/series : {len(series)} séries · {len(tennis)} tennis · '
-          f'{len(gardees)} retenues (vainqueur de match)')
+          f'{len(gardees)} retenues (ticker se terminant par MATCH)')
+    if gardees:
+        print(f"   {', '.join(sorted(str(s.get('ticker')) for s in gardees)[:12])}")
     return gardees
 
 
