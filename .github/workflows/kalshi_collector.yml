@@ -81,7 +81,15 @@ jobs:
           # fichiers du commit perdus. Un fichier trop gros est écarté de
           # l'index, le reste passe. Le collecteur bascule normalement de
           # partition à 60 Mo ; ceci est le filet.
-          for f in $(git status --porcelain parts/ | awk '{print $2}'); do
+          # CHACUN SES PARTITIONS. Ce workflow ne commite QUE ses propres
+          # fichiers kx_ticks_*. Auparavant il balayait tout parts/ et
+          # embarquait les ticks des AUTRES collecteurs tels qu'ils étaient à
+          # son checkout : quand l'autre workflow y ajoutait des lignes en
+          # parallèle, les deux modifiaient le même fichier en fin de fichier
+          # et le merge partait en conflit — donc run perdu. Constaté : le run
+          # Kalshi du 20/08 a commité 12 427 lignes de l'autre collecteur.
+          # Le .gitattributes (merge=union) reste le filet si ça arrive quand même.
+          for f in $(git status --porcelain 'parts/kx_ticks_*' | awk '{print $2}'); do
             [ -f "$f" ] || continue
             mo=$(du -m "$f" | cut -f1)
             if [ "$mo" -ge 95 ]; then
