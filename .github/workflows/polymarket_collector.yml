@@ -1,0 +1,214 @@
+name: Polymarket Collector
+
+on:
+  repository_dispatch:
+    types: [polymarket_collector]
+  workflow_dispatch:
+    inputs:
+      diag:
+        description: "Diagnostic : découverte seule + polymarket_diag.json (aucun WebSocket)"
+        type: boolean
+        default: false
+      probe:
+        description: "Sonde : où sont les marchés par match ? (teste plusieurs voies, n'écrit rien)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+# PYTHONDONTWRITEBYTECODE : aucun .pyc généré. Des .pyc régénérés à chaque run
+# faisaient avorter le merge puis rejeter le push (panne du 16/08/2026). Les 22
+# autres workflows qui commitent portent déjà cette variable.
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+  # Sans ceci, tout le stdout du collecteur est bufferisé et n'apparaît qu'à la
+  # FIN du step : sur un run de 15 min qui plante à la minute 10, le log est
+  # vide et le diagnostic impossible. Constaté le 19/08 : les 70 lignes du
+  # collecteur horodatées à la même seconde, en fin de step.
+  PYTHONUNBUFFERED: '1'
+
+concurrency:
+  group: polymarket-collector
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    # 240 s de collecte + installation pip + git : 7 min laissait peu de marge
+    # si PyPI est lent. Le collecteur s'arrête seul via --duration-seconds.
+    # 900 s de collecte + checkout + commit. Marge large : le collecteur
+    # s'arrête seul via --duration-seconds, le timeout n'est qu'un filet.
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # fetch-depth: 0 est nécessaire : l'étape de commit fait un
+          # `git merge origin/main`, qui exige une base commune dans
+          # l'historique. Un clone superficiel ferait échouer le merge.
+          # MAIS le dépôt pèse 273 Mo et le checkout prenait 178 s, soit
+          # 3 minutes de runner pour 4 minutes de collecte utile.
+          # filter: blob:none = clone PARTIEL : tout le graphe de commits est
+          # récupéré (le merge fonctionne), mais les contenus de fichiers ne
+          # sont téléchargés qu'à la demande. Seuls les fichiers réellement
+          # touchés sont rapatriés.
+          fetch-depth: 0
+          filter: blob:none
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests websocket-client
+
+      # Mode diagnostic : découverte seule, écrit polymarket_diag.json avec le
+      # décompte des motifs de rejet et un échantillon BRUT des marchés écartés.
+      # Indispensable tant que le collecteur retient 0 marché : le filtre écarte
+      # à sept endroits différents, impossible de savoir lequel sans ça.
+      # Sonde : teste plusieurs voies de découverte et dit laquelle ramène des
+      # marchés joueur-contre-joueur. N'écrit aucun fichier.
+      - name: Polymarket — sonde de découverte
+        if: inputs.probe
+        run: python scripts/polymarket_collector_scripts.py --probe
+
+      - name: Polymarket — diagnostic
+        if: inputs.diag && !inputs.probe
+        env:
+          PM_DIAG: '1'
+        run: |
+          python scripts/polymarket_collector_scripts.py --once
+          echo '================ polymarket_diag.json ================'
+          python - <<'PY'
+          import json
+          d = json.load(open('polymarket_diag.json', encoding='utf-8'))
+          print('marchés retenus :', d['marches_retenus'])
+          print('rejets          :', json.dumps(d['rejets'], ensure_ascii=False))
+          jvj = d.get('marches_joueur_vs_joueur') or []
+          print()
+          print('=== MARCHÉS JOUEUR-VS-JOUEUR (hors futures Yes/No) :', len(jvj), '===')
+          for q in jvj[:25]:
+              print('   ·', q)
+          print()
+          print('=== INVENTAIRE DES ÉVÉNEMENTS (titre -> nb de marchés) ===')
+          for t, n in list((d.get('inventaire_evenements') or {}).items())[:30]:
+              print(f'   {n:5}  {t}')
+          print()
+          print('=== POURQUOI CES MATCHS SONT-ILS ÉCARTÉS ? ===')
+          for r in (d.get('refus_joueur_vs_joueur') or [])[:12]:
+              print(f"--- {r['outcomes'][0]}  /  {r['outcomes'][1]}")
+              print(f"    horaire Polymarket : {r['event_start_pm']}")
+              print(f"    seuil exigé        : {r['seuil']}  ·  fenêtre {r['fenetre_heures']} h")
+              for sc, dh, lib in r['top_candidats_locaux']:
+                  print(f"      score {sc:<5} écart {str(dh)+' h':<8} {lib}")
+          print()
+          print('=== ÉCHANTILLON PAR MOTIF ===')
+          for e in d['echantillon']:
+              print('---', e['motif'])
+              for k in ('event_title', 'question', 'outcomes', 'sportsMarketType', 'gameId'):
+                  print(f'    {k:18}: {str(e.get(k))[:160]}')
+          PY
+
+      # COUVERTURE TEMPORELLE — le paramètre qui décide de la faisabilité.
+      # Le Worker déclenche toutes les 5 min, mais un run complet durait 7-8 min
+      # dont seulement 4 de collecte : la couverture réelle plafonnait à ~53 %,
+      # avec des trous de plusieurs minutes. Or l'analyse lead/lag exige des
+      # séries CONTINUES : il faut ~1 h de recouvrement par match (12 points de
+      # grille à 5 min). Des fenêtres courtes et espacées ne le donnent jamais,
+      # quel que soit le volume total collecté.
+      # 900 s de collecte pour ~16 min de run -> couverture ~93 %.
+      # La concurrence (group polymarket-collector) met les déclenchements
+      # excédentaires en file : ils ne se chevauchent pas, ils s'enchaînent.
+      # refresh 450 s = 2 sessions WebSocket par run, donc peu de reconnexions,
+      # tout en redécouvrant les nouveaux matchs deux fois par run.
+      - name: Polymarket collector
+        if: '!inputs.diag && !inputs.probe'
+        run: |
+          python scripts/polymarket_collector_scripts.py \
+            --duration-seconds ${PM_DURATION:-900} \
+            --refresh-seconds ${PM_REFRESH:-450}
+
+      - name: Commit Polymarket data (robuste)
+        shell: bash
+        run: |
+          set -u
+
+          find . -name '__pycache__' -type d -prune -exec rm -rf {} + 2>/dev/null || true
+          find . -name '*.pyc' -delete 2>/dev/null || true
+
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+
+          # git add EN BLOC : si UN SEUL chemin n'existe pas, git sort en
+          # "fatal: pathspec ... did not match any files" et n'ajoute RIEN --
+          # pas même les fichiers présents. C'est la panne du 15/08/2026, et
+          # elle se produirait ici dès le premier run (aucun des trois fichiers
+          # n'existe encore) ou dès qu'une collecte ne reçoit aucun tick.
+          # On ajoute donc chaque chemin séparément, en tolérant l'absence.
+          for f in polymarket_markets.json polymarket_collector_state.json polymarket_diag.json; do
+            [ -f "$f" ] && git add -- "$f" || echo "  (absent : $f)"
+          done
+          # GARDE-FOU TAILLE, avant tout git add.
+          # Le 19/08/2026, parts/pm_ticks_2026-08-19.jsonl a atteint 221 Mo et
+          # GitHub a rejeté le push entier ("pre-receive hook declined") : les
+          # 15 minutes de collecte ET les autres fichiers du commit ont été
+          # perdus. Un fichier trop gros ne doit donc JAMAIS entrer dans
+          # l'index : on l'écarte et on pousse le reste, plutôt que de tout
+          # perdre. Le collecteur bascule normalement de partition à 60 Mo
+          # (PM_TICKS_MAX_MB) ; ceci est le filet en cas de défaillance.
+          # CHACUN SES PARTITIONS. Ce workflow ne commite QUE ses propres
+          # fichiers pm_ticks_*. Auparavant il balayait tout parts/ et
+          # embarquait les ticks des AUTRES collecteurs tels qu'ils étaient à
+          # son checkout : quand l'autre workflow y ajoutait des lignes en
+          # parallèle, les deux modifiaient le même fichier en fin de fichier
+          # et le merge partait en conflit — donc run perdu. Constaté : le run
+          # Polymarket du 20/08 a commité 12 427 lignes de l'autre collecteur.
+          # Le .gitattributes (merge=union) reste le filet si ça arrive quand même.
+          for f in $(git status --porcelain 'parts/pm_ticks_*' | awk '{print $2}'); do
+            [ -f "$f" ] || continue
+            mo=$(du -m "$f" | cut -f1)
+            if [ "$mo" -ge 95 ]; then
+              echo "⛔ $f fait ${mo} Mo (mur GitHub 100 Mo) — ÉCARTÉ du commit."
+              echo "   Les données restent sur le runner mais seront perdues."
+              echo "   Vérifier PM_TICKS_MAX_MB et la limitation de débit."
+            else
+              git add -- "$f" || true
+            fi
+          done
+
+          echo '--- fichiers en attente de commit ---'
+          git status --short
+
+          if git diff --staged --quiet; then
+            echo 'Aucune nouvelle donnée Polymarket à commit.'
+            exit 0
+          fi
+
+          git commit -m "Polymarket collector ($(date -u +%H:%MZ))"
+
+          # Même logique robuste que le pipeline capture_closing : on récupère
+          # les commits arrivés pendant la collecte avant de pousser.
+          for attempt in 1 2 3; do
+            echo "--- synchronisation Git (tentative $attempt/3) ---"
+            git fetch origin main || true
+
+            if git merge origin/main --no-edit; then
+              if git push origin HEAD:main; then
+                echo 'Push Polymarket OK.'
+                exit 0
+              fi
+            else
+              echo 'Merge non automatique. Abandon du run pour éviter d écraser main.'
+              exit 1
+            fi
+
+            sleep 3
+          done
+
+          echo 'ERREUR: impossible de pousser les données Polymarket après 3 tentatives.'
+          exit 1
