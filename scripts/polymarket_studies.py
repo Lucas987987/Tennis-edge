@@ -82,16 +82,25 @@ def etude_devig(pm, books):
     # un écart moyen PAR MATCH, puis l'intervalle sur ces moyennes.
     par_tranche = collections.defaultdict(lambda: collections.defaultdict(list))
     par_match = collections.defaultdict(list)
+    par_match_prop = collections.defaultdict(list)
     n_points = 0
     for uid, serie_pm in pm.items():
         b = books.get(uid, {}).get(pc.SHARP)
         if not b:
             continue
+        # Les DEUX méthodes sont comparées au même prix Polymarket, sur les
+        # mêmes instants : c'est la seule façon de savoir laquelle est la plus
+        # juste, et l'écart entre elles atteint 1,6 pt sur les cotes
+        # déséquilibrées.
+        prop = {t: v for t, v in b.get('serie_prop', [])}
         for t, p_pm, p_pin in pc.instants_communs(
                 [(x[0], x[1]) for x in serie_pm], b['serie'], b['ct']):
             ecart = (p_pin - p_pm) * 100.0
             n_points += 1
             par_match[uid].append(ecart)
+            pp = pc.valeur_a(b.get('serie_prop', []), t)
+            if pp is not None:
+                par_match_prop[uid].append((pp - p_pm) * 100.0)
             # tranche par probabilité du favori : c'est là que les méthodes de
             # dévigage divergent le plus (favori très marqué)
             pf = max(p_pin, 1 - p_pin)
@@ -114,6 +123,22 @@ def etude_devig(pm, books):
     print(f"  n = {len(tous)} matchs ({n_points} instants, grille 5 min)")
     print(f"  écart moyen Shin - Polymarket : {m:+.2f} pts  IC95 [{lo:+.2f} ; {hi:+.2f}]")
     print(f"  écart médian par match : {st.median(tous):+.2f} pts")
+
+    # ── Comparaison des deux dévigages ───────────────────────────────────
+    prop_v = [st.mean(v) for v in par_match_prop.values() if v]
+    if len(prop_v) >= 3:
+        mp, lp, hp = ic_moy(prop_v)
+        print()
+        print(f"  {'méthode':<16}{'matchs':>7}{'écart moyen':>13}{'IC95':>20}")
+        print("  " + "-" * 56)
+        print(f"  {'Shin':<16}{len(tous):>7}{m:>+12.2f}  [{lo:>+5.2f} ; {hi:>+5.2f}]")
+        print(f"  {'proportionnel':<16}{len(prop_v):>7}{mp:>+12.2f}  [{lp:>+5.2f} ; {hp:>+5.2f}]")
+        gagnant = 'Shin' if abs(m) <= abs(mp) else 'proportionnel'
+        print(f"  → plus proche de Polymarket : {gagnant} "
+              f"(écart {min(abs(m), abs(mp)):.2f} contre {max(abs(m), abs(mp)):.2f} pt)")
+        if abs(abs(m) - abs(mp)) < 0.1:
+            print("    mais la différence entre les deux est elle-même négligeable :")
+            print("    sur cet échantillon, le choix de méthode ne change rien.")
     print()
     print(f"  {'tranche favori':>15} | {'matchs':>5} | {'écart moyen':>12} | {'IC95':>18}")
     print("  " + "-" * 60)
