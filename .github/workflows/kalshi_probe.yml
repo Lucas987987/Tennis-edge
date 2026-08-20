@@ -1,0 +1,78 @@
+name: Kalshi — sonde de couverture
+
+# ──────────────────────────────────────────────────────────────────────────
+# Mesure AVANT de construire. Le collecteur Polymarket a coûté une journée et
+# cinq allers-retours de correctifs pour découvrir à la fin que la couverture
+# se limitait à Cincinnati, soit 13 matchs appariables. On inverse l'ordre :
+# cette sonde répond d'abord à « Kalshi couvre-t-il nos matchs, et avec quelle
+# liquidité ? », et on ne code un collecteur que si la réponse est oui.
+#
+# Aucune authentification : les endpoints /markets, /events, /series et les
+# carnets sont publics chez Kalshi. Pas de secret à configurer.
+#
+# N'écrit qu'un rapport ; ne touche à aucune donnée de production.
+# ──────────────────────────────────────────────────────────────────────────
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: kalshi-probe
+  cancel-in-progress: false
+
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+  # Sortie en direct : sur un échec en cours de route, le log doit être
+  # exploitable au lieu d'être vide (leçon du collecteur Polymarket).
+  PYTHONUNBUFFERED: '1'
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # Clone partiel : le dépôt pèse plusieurs centaines de Mo et la sonde
+          # n'a besoin que de matches_oddspapi.json.
+          fetch-depth: 1
+          filter: blob:none
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      # urllib de la bibliothèque standard suffit : aucune dépendance à
+      # installer, donc rien qui puisse casser au prochain run.
+      - name: Sonde Kalshi
+        run: python scripts/kalshi_probe.py
+
+      - name: Commit du rapport
+        if: always()
+        run: |
+          find . -name '__pycache__' -type d -prune -exec rm -rf {} + 2>/dev/null || true
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          # Ajout fichier par fichier : un git add en bloc échoue entièrement
+          # si UN seul chemin manque (panne du 15/08/2026).
+          [ -f kalshi_probe_report.json ] && git add -- kalshi_probe_report.json \
+            || echo '  (rapport absent : la sonde a échoué avant écriture)'
+          if git diff --staged --quiet; then
+            echo 'Rien à commit.'; exit 0
+          fi
+          git commit -m "Sonde Kalshi ($(date -u +%H:%MZ))"
+          for attempt in 1 2 3; do
+            git fetch origin main || true
+            if git merge origin/main --no-edit; then
+              if git push origin HEAD:main; then echo 'Push OK.'; exit 0; fi
+            else
+              echo 'Merge non automatique — abandon.'; exit 1
+            fi
+            sleep 3
+          done
+          echo 'ERREUR: push impossible après 3 tentatives.'; exit 1
