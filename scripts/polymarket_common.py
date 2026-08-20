@@ -27,7 +27,16 @@ import collections
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import oddspapi_v5 as ov  # noqa: E402
 
+# SOURCES DE MARCHÉ DE PRÉDICTION. Kalshi est mesuré meilleur que Polymarket
+# sur tous les critères : 40x moins de volume écrit pour une couverture plus
+# large (Challengers et ITF, que Polymarket ignore), fourchettes de 1 point,
+# volumes jusqu'à 7 M par match, et aucune authentification.
+# SOURCE=kalshi|polymarket|auto — « auto » prend Kalshi s'il y a des ticks,
+# sinon Polymarket, et le DIT. Jamais de repli muet : une étude qui tourne sur
+# une source qu'on croit être l'autre est pire qu'une étude qui échoue.
+SOURCE      = os.environ.get('PM_SOURCE', 'auto').strip().lower()
 PM_GLOB     = os.environ.get('PM_TICKS_GLOB', 'parts/pm_ticks_*.jsonl')
+KX_GLOB     = os.environ.get('KX_TICKS_GLOB', 'parts/kx_ticks_*.jsonl')
 CURVES      = os.environ.get('CURVES', 'book_curves_live.jsonl')
 MARKET_TYPE = os.environ.get('MARKET_TYPE', 'match')
 SHARP       = os.environ.get('SHARP_BOOK', 'pinnacle')
@@ -94,6 +103,45 @@ def shin_ph(oh, oa):
     return ph / (ph + pa) if (ph and pa) else None
 
 
+def _sources():
+    """(libellé, motif, lecteur) de la source retenue."""
+    def dispo(g):
+        return bool(glob.glob(g) or glob.glob(g + '.gz'))
+    if SOURCE == 'kalshi':
+        return [('kalshi', KX_GLOB)]
+    if SOURCE == 'polymarket':
+        return [('polymarket', PM_GLOB)]
+    if SOURCE in ('les_deux', 'both'):
+        return [('kalshi', KX_GLOB), ('polymarket', PM_GLOB)]
+    # auto
+    if dispo(KX_GLOB):
+        return [('kalshi', KX_GLOB)]
+    return [('polymarket', PM_GLOB)]
+
+
+def _lire_tick(r, source):
+    """Ramène un tick Kalshi ou Polymarket à une forme commune.
+
+    Kalshi : yes_bid/yes_ask/mid en dollars, un marché = UN joueur, donc
+    local_side dit déjà lequel. Pas de market_type : le collecteur ne suit que
+    les séries « vainqueur du match ».
+    Polymarket : mid/bid/ask, market_type match/set1/set2.
+    """
+    if source == 'kalshi':
+        if r.get('status') not in (None, 'active', 'open'):
+            return None
+        if MARKET_TYPE != 'match':
+            return None          # Kalshi ne fournit que le vainqueur du match
+        mid = r.get('mid')
+        sp = r.get('spread')
+    else:
+        if r.get('market_type') != MARKET_TYPE:
+            return None
+        mid = r.get('mid')
+        sp = r.get('spread')
+    return mid, sp
+
+
 def charger_pm():
     """{uid: [(t, p_home, spread)]} reconstruit à partir des DEUX jetons.
 
@@ -104,42 +152,46 @@ def charger_pm():
     """
     brut = collections.defaultdict(lambda: {'home': [], 'away': []})
     n = 0
-    for p in sorted(set(glob.glob(PM_GLOB) + glob.glob(PM_GLOB + '.gz'))):
-        try:
-            f = _open(p)
-        except Exception:
-            continue
-        for line in f:
-            line = line.strip()
-            if not line:
-                continue
+    libelles = []
+    for source, motif in _sources():
+        fichiers = sorted(set(glob.glob(motif) + glob.glob(motif + '.gz')))
+        libelles.append(f"{source} ({len(fichiers)} partition(s))")
+        for p in fichiers:
             try:
-                r = json.loads(line)
+                f = _open(p)
             except Exception:
                 continue
-            n += 1
-            if r.get('market_type') != MARKET_TYPE:
-                continue
-            uid, side, t = r.get('local_uid'), r.get('local_side'), dt(r.get('ts'))
-            if not uid or side not in ('home', 'away') or t is None:
-                continue
-            m = r.get('mid')
-            if m is None:
-                continue
-            try:
-                m = float(m)
-            except Exception:
-                continue
-            if not (0.0 < m < 1.0):
-                continue
-            sp = r.get('spread')
-            try:
-                sp = float(sp) if sp is not None else None
-            except Exception:
-                sp = None
-            if sp is not None and sp > MAX_SPREAD:
-                continue
-            brut[uid][side].append((t, m, sp))
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    r = json.loads(line)
+                except Exception:
+                    continue
+                n += 1
+                lu = _lire_tick(r, source)
+                if lu is None:
+                    continue
+                m, sp = lu
+                uid, side, t = r.get('local_uid'), r.get('local_side'), dt(r.get('ts'))
+                if not uid or side not in ('home', 'away') or t is None:
+                    continue
+                if m is None:
+                    continue
+                try:
+                    m = float(m)
+                except Exception:
+                    continue
+                if not (0.0 < m < 1.0):
+                    continue
+                try:
+                    sp = float(sp) if sp is not None else None
+                except Exception:
+                    sp = None
+                if sp is not None and sp > MAX_SPREAD:
+                    continue
+                brut[uid][side].append((t, m, sp))
 
     out = {}
     for uid, d in brut.items():
@@ -159,7 +211,8 @@ def charger_pm():
                 serie.append((t, ch, sh))
         if len(serie) >= 2:
             out[uid] = serie
-    print(f"Polymarket : {n} ticks · {len(out)} match(s) exploitables "
+    print(f"Source(s) : {' + '.join(libelles)}")
+    print(f"  {n} ticks lus · {len(out)} match(s) exploitables "
           f"(fourchette max {MAX_SPREAD*100:.0f} pts)")
     return out
 
