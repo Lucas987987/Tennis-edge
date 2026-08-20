@@ -187,18 +187,66 @@ def attendu(ra, rb):
     return 1.0 / (1.0 + 10 ** ((rb - ra) / 400.0))
 
 
+REFERENCE = os.environ.get('ELO_REFERENCE', 'elo_reference.json')
+
+
+def charger_reference():
+    """Elo publiés par Tennis Abstract, s'ils ont été récupérés.
+
+    PRIORITAIRES sur notre Elo maison : ils sont calculés sur l'historique
+    COMPLET du circuit, quand le nôtre ne dispose que de deux mois et demi et
+    d'une médiane d'un match par joueur (53,7 % de précision contre 66,9 %
+    pour Pinnacle). Voir elo_fetch.py.
+    """
+    if not os.path.exists(REFERENCE):
+        return {}
+    try:
+        d = json.load(open(REFERENCE, encoding='utf-8'))
+    except Exception as e:
+        print(f"⚠️ {REFERENCE} illisible : {e}")
+        return {}
+    j = d.get('joueurs') or {}
+    if j:
+        print(f"Référence Tennis Abstract : {len(j)} joueurs "
+              f"(généré {str(d.get('genere_le'))[:10]})")
+    return j
+
+
 class Elo:
-    def __init__(self):
+    def __init__(self, reference=None):
+        # clé joueur -> {elo, dur, terre, gazon}
+        self.ref = reference or {}
         self.g = collections.defaultdict(lambda: ELO_INIT)          # global
         self.s = collections.defaultdict(lambda: ELO_INIT)          # (joueur, surface)
         self.n = collections.Counter()                              # matchs joués
         self.ns = collections.Counter()                             # par surface
         self.dernier = {}
 
+    def _ref_elo(self, j, surf):
+        r = self.ref.get(j)
+        if not r:
+            return None
+        v = r.get(surf) if surf else None
+        base = r.get('elo')
+        if base is None:
+            return None
+        if v is None:
+            return float(base)
+        # Les Elo de surface de Tennis Abstract sont DÉJÀ un mélange de l'Elo
+        # global et de l'Elo de surface : on les prend tels quels, sans
+        # remélanger, sous peine de diluer deux fois.
+        return float(v)
+
     def proba(self, a, b, surf=None):
-        """Probabilité que A batte B, ou None si l'un des deux est trop peu
-        connu. Renvoyer un chiffre pour un joueur vu une fois serait pire que
-        ne rien renvoyer : ce serait un faux signal."""
+        """Probabilité que A batte B, ou None si l'on ne sait rien de fiable.
+
+        Ordre de préférence : Elo publié (historique complet du circuit), puis
+        Elo maison. Renvoyer un chiffre pour un joueur vu une fois serait pire
+        que ne rien renvoyer : ce serait un faux signal.
+        """
+        ra, rb = self._ref_elo(a, surf), self._ref_elo(b, surf)
+        if ra is not None and rb is not None:
+            return attendu(ra, rb)
         if self.n[a] < MIN_MATCHS or self.n[b] < MIN_MATCHS:
             return None
         pg = attendu(self.g[a], self.g[b])
@@ -275,7 +323,7 @@ def comparer_au_marche(matchs):
             ih, ia = 1 / oh, 1 / oa
             ref[(frozenset((ka, kb)), ct.date())] = (ka, ih / (ih + ia))
 
-    elo = Elo()
+    elo = Elo(charger_reference())
     e_n = e_ok = m_ok = 0
     e_br = m_br = 0.0
     for d, a, b, a_gagne, surf in matchs:
@@ -323,7 +371,8 @@ def main():
         print("❌ aucun match exploitable.")
         return
 
-    elo = Elo()
+    ref = charger_reference()
+    elo = Elo(ref)
     # Évaluation HORS ÉCHANTILLON par construction : chaque match est prédit
     # AVANT d'être appris. Aucun risque de look-ahead.
     predits, justes, brier = 0, 0, 0.0
