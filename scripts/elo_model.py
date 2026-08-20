@@ -199,23 +199,48 @@ def charger_reference():
     pour Pinnacle). Voir elo_fetch.py.
     """
     if not os.path.exists(REFERENCE):
-        return {}
+        return {}, None
     try:
         d = json.load(open(REFERENCE, encoding='utf-8'))
     except Exception as e:
         print(f"⚠️ {REFERENCE} illisible : {e}")
-        return {}
+        return {}, None
     j = d.get('joueurs') or {}
+    # DATE DE VALIDITÉ. Les Elo publiés sont calculés sur l'historique COMPLET
+    # du circuit : ceux du 10/08 intègrent déjà le résultat de tous les matchs
+    # antérieurs. Les utiliser pour « prédire » un match de juin, c'est du
+    # look-ahead pur — et ça se voyait : l'Elo ressortait à 70,7 % contre
+    # 65,7 % pour Pinnacle, soit un modèle amateur battant le book le plus
+    # sharp du marché. 77 % des matchs évalués étaient dans ce cas.
+    # On ne s'autorise donc la référence que pour les matchs POSTÉRIEURS.
+    maj = None
+    for m in (d.get('meta') or {}).values():
+        v = m.get('derniere_maj')
+        if v:
+            try:
+                x = datetime.datetime.fromisoformat(v)
+                maj = x if maj is None else max(maj, x)
+            except ValueError:
+                pass
+    if maj is None:
+        try:
+            maj = datetime.datetime.fromisoformat(str(d.get('genere_le'))[:19])
+        except Exception:
+            maj = None
     if j:
-        print(f"Référence Tennis Abstract : {len(j)} joueurs "
-              f"(généré {str(d.get('genere_le'))[:10]})")
-    return j
+        print(f"Référence Tennis Abstract : {len(j)} joueurs · valable à partir du "
+              f"{maj.date() if maj else 'inconnu'}")
+    return j, maj
 
 
 class Elo:
-    def __init__(self, reference=None):
+    def __init__(self, reference=None, ref_depuis=None):
         # clé joueur -> {elo, dur, terre, gazon}
         self.ref = reference or {}
+        # Date à partir de laquelle la référence est utilisable sans look-ahead.
+        self.ref_depuis = ref_depuis
+        self.n_ref = 0          # prédictions issues de la référence
+        self.n_maison = 0       # prédictions issues de l'Elo maison
         self.g = collections.defaultdict(lambda: ELO_INIT)          # global
         self.s = collections.defaultdict(lambda: ELO_INIT)          # (joueur, surface)
         self.n = collections.Counter()                              # matchs joués
@@ -237,18 +262,23 @@ class Elo:
         # remélanger, sous peine de diluer deux fois.
         return float(v)
 
-    def proba(self, a, b, surf=None):
+    def proba(self, a, b, surf=None, quand=None):
         """Probabilité que A batte B, ou None si l'on ne sait rien de fiable.
 
         Ordre de préférence : Elo publié (historique complet du circuit), puis
         Elo maison. Renvoyer un chiffre pour un joueur vu une fois serait pire
         que ne rien renvoyer : ce serait un faux signal.
         """
-        ra, rb = self._ref_elo(a, surf), self._ref_elo(b, surf)
-        if ra is not None and rb is not None:
-            return attendu(ra, rb)
+        utilisable = (self.ref_depuis is None or quand is None
+                      or quand >= self.ref_depuis)
+        if utilisable:
+            ra, rb = self._ref_elo(a, surf), self._ref_elo(b, surf)
+            if ra is not None and rb is not None:
+                self.n_ref += 1
+                return attendu(ra, rb)
         if self.n[a] < MIN_MATCHS or self.n[b] < MIN_MATCHS:
             return None
+        self.n_maison += 1
         pg = attendu(self.g[a], self.g[b])
         if surf is None:
             return pg
@@ -323,11 +353,12 @@ def comparer_au_marche(matchs):
             ih, ia = 1 / oh, 1 / oa
             ref[(frozenset((ka, kb)), ct.date())] = (ka, ih / (ih + ia))
 
-    elo = Elo(charger_reference())
+    _r, _d = charger_reference()
+    elo = Elo(_r, _d)
     e_n = e_ok = m_ok = 0
     e_br = m_br = 0.0
     for d, a, b, a_gagne, surf in matchs:
-        p = elo.proba(a, b, surf)
+        p = elo.proba(a, b, surf, d)
         mk = ref.get((frozenset((a, b)), d.date()))
         if p is not None and mk:
             joueur_ref, p_mk = mk
@@ -371,14 +402,14 @@ def main():
         print("❌ aucun match exploitable.")
         return
 
-    ref = charger_reference()
-    elo = Elo(ref)
+    ref, ref_depuis = charger_reference()
+    elo = Elo(ref, ref_depuis)
     # Évaluation HORS ÉCHANTILLON par construction : chaque match est prédit
     # AVANT d'être appris. Aucun risque de look-ahead.
     predits, justes, brier = 0, 0, 0.0
     couverts_par_mois = collections.defaultdict(lambda: [0, 0])
     for d, a, b, a_gagne, surf in matchs:
-        p = elo.proba(a, b, surf)
+        p = elo.proba(a, b, surf, d)
         mois = d.strftime('%Y-%m')
         couverts_par_mois[mois][1] += 1
         if p is not None:
@@ -400,6 +431,9 @@ def main():
     print("-" * 68)
     print(f"{'TOTAL':>9} | {predits:>8} | {len(matchs):>7} | "
           f"{100*predits/max(1,len(matchs)):>10.0f}%")
+
+    print(f"\n  origine des prédictions : {elo.n_ref} par la référence externe "
+          f"(matchs postérieurs à sa date), {elo.n_maison} par l'Elo maison")
 
     if predits >= 20:
         prec = 100.0 * justes / predits
