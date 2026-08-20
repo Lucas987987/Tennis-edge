@@ -1,576 +1,273 @@
 {
-  "genere_le": "2026-08-20T01:54:29",
-  "pagination_tronquee": true,
-  "cles_marche": [
-    "can_close_early",
-    "close_time",
-    "created_time",
-    "custom_strike",
-    "event_ticker",
-    "exchange_index",
-    "expected_expiration_time",
-    "expiration_time",
-    "expiration_value",
-    "is_provisional",
-    "last_price_dollars",
-    "latest_expiration_time",
-    "liquidity_dollars",
-    "market_type",
-    "mve_collection_ticker",
-    "mve_selected_legs",
-    "no_ask_dollars",
-    "no_bid_dollars",
-    "no_sub_title",
-    "notional_value_dollars",
-    "open_interest_fp",
-    "open_time",
-    "previous_price_dollars",
-    "previous_yes_ask_dollars",
-    "previous_yes_bid_dollars",
-    "price_level_structure",
-    "price_ranges",
-    "result",
-    "rules_primary",
-    "rules_secondary",
-    "settlement_timer_seconds",
-    "status",
-    "strike_type",
-    "ticker",
-    "title",
-    "updated_time",
-    "volume_24h_fp",
-    "volume_fp",
-    "yes_ask_dollars",
-    "yes_ask_size_fp",
-    "yes_bid_dollars",
-    "yes_bid_size_fp",
-    "yes_sub_title"
-  ],
-  "prefixes_ticker": {
-    "KXMVECROSSCATEGORY": 199319,
-    "KXLIGAMXSCORE": 60,
-    "KXNKY": 60,
-    "KXPLATINUMH": 54,
-    "KXPALLADIUMH": 47,
-    "KXSILVERH": 40,
-    "KXGOLDH": 40,
-    "KXWTIH": 40,
-    "KXWNBASPREAD": 29,
-    "KXWNBATOTAL": 27,
-    "KXUFCVICROUND": 25,
-    "KXUFCMOV": 21,
-    "KXLIGAEXPTOTAL": 18,
-    "KXUFCMOF": 12,
-    "KXASEANTOTAL": 12,
-    "KXUSLTOTAL": 12,
-    "KXLIGAMXTEAMTOTAL": 12,
-    "KXLIGAEXPSPREAD": 12,
-    "KXUFCROUNDS": 8,
-    "KXASEANSPREAD": 8,
-    "KXUSLSPREAD": 8,
-    "KXMLBSPREAD": 6,
-    "KXLIGAMX1HTOTAL": 6,
-    "KXLIGAMX1H": 6,
-    "KXLEAGUESCUPTOTAL": 6,
-    "KXLIGAEXP1HTOTAL": 6,
-    "KXLIGAEXP1H": 6,
-    "KXLIGAMXFTTS": 6,
-    "KXATPGTOTAL": 6,
-    "KXATPGSPREAD": 6,
-    "KXITFDOUBLES": 4,
-    "KXLIGAMX1HSPREAD": 4,
-    "KXLEAGUESCUPSPREAD": 4,
-    "KXLIGAEXP1HSPREAD": 4,
-    "KXITFWDOUBLES": 4,
-    "KXUFCDISTANCE": 3,
-    "KXWNBA2HWINNER": 3,
-    "KXWNBA1HWINNER": 3,
-    "KXLIGAEXPBTTS": 3,
-    "KXCONMEBOLSUD1HTOTAL": 3,
-    "KXCONMEBOLSUD1H": 3,
-    "KXCONMEBOLLIB1HTOTAL": 3,
-    "KXCONMEBOLLIB1H": 3,
-    "KXWTAGTOTAL": 3,
-    "KXMLSTEAMTOTAL": 2,
-    "KXCS2GAME": 2,
-    "KXATPCHALLENGERDOUBLES": 2,
-    "KXASEANBTTS": 2,
-    "KXUSLBTTS": 2,
-    "KXLIGAMX1HBTTS": 2,
-    "KXLIGAEXP1HBTTS": 2,
-    "KXCONMEBOLSUD1HSPREAD": 2,
-    "KXCONMEBOLLIB1HSPREAD": 2,
-    "KXWNBAGAME": 2,
-    "KXMLBGAME": 2,
-    "KXCONMEBOLLIBTOTAL": 1,
-    "KXCOLLEGEGAMEDAY": 1,
-    "KXMLSTOTAL": 1,
-    "KXCONMEBOLSUDTOTAL": 1,
-    "KXCONMEBOLLIBSPREAD": 1
-  },
-  "autres_endpoints": {
-    "/events?status=open&limit=200": {
-      "total": 200,
-      "tennis": 0,
-      "exemples": []
-    },
-    "/series": {
-      "total": 13305,
-      "tennis": 178,
-      "exemples": [
-        "Djokovic major",
-        "US Challenger job cuts",
-        "Wimbledon Championship Men's",
-        "Six Kings Slam Semifinals",
-        "ATP Monte Carlo"
-      ]
-    },
-    "/series?category=Sports": {
-      "total": 3472,
-      "tennis": 150,
-      "exemples": [
-        "ATP set 4 game winner",
-        "WTA Italian Open",
-        "Indian Wells Women's Singles",
-        "Madrid Open Winner (Women's)",
-        "ATP #1 Ranked Player"
-      ]
-    }
-  },
-  "echantillon_brut": [
-    {
-      "can_close_early": true,
-      "close_time": "2026-08-23T00:10:00Z",
-      "created_time": "2026-08-20T01:51:58.317339Z",
-      "custom_strike": {
-        "Associated Events": "KXMLBGAME-26AUG191940ATHKC,KXMLBGAME-26AUG191940SEAMIL,KXMLBTEAMTOTAL-26AUG191940SEAMIL,KXMLBTOTAL-26AUG192010LAAHOU",
-        "Associated Market Sides": "yes,yes,yes,no",
-        "Associated Markets": "KXMLBGAME-26AUG191940ATHKC-ATH,KXMLBGAME-26AUG191940SEAMIL-SEA,KXMLBTEAMTOTAL-26AUG191940SEAMIL-SEA8,KXMLBTOTAL-26AUG192010LAAHOU-9",
-        "Multivariate Event Ticker": "KXMVECROSSCATEGORY-SHARD1-S202601889BDAFA6"
-      },
-      "event_ticker": "KXMVECROSSCATEGORY-SHARD1-S202601889BDAFA6",
-      "exchange_index": 1,
-      "expected_expiration_time": "2026-08-20T06:10:00Z",
-      "expiration_time": "2026-08-23T00:10:00Z",
-      "expiration_value": "",
-      "is_provisional": true,
-      "last_price_dollars": "0.0000",
-      "latest_expiration_time": "2026-08-23T00:10:00Z",
-      "liquidity_dollars": "0.0000",
-      "market_type": "binary",
-      "mve_collection_ticker": "KXMVECROSSCATEGORY-SHARD1-R",
-      "mve_selected_legs": [
-        {
-          "event_ticker": "KXMLBGAME-26AUG191940ATHKC",
-          "market_ticker": "KXMLBGAME-26AUG191940ATHKC-ATH",
-          "side": "yes"
-        },
-        {
-          "event_ticker": "KXMLBGAME-26AUG191940SEAMIL",
-          "market_ticker": "KXMLBGAME-26AUG191940SEAMIL-SEA",
-          "side": "yes"
-        },
-        {
-          "event_ticker": "KXMLBTEAMTOTAL-26AUG191940SEAMIL",
-          "market_ticker": "KXMLBTEAMTOTAL-26AUG191940SEAMIL-SEA8",
-          "side": "yes"
-        },
-        {
-          "event_ticker": "KXMLBTOTAL-26AUG192010LAAHOU",
-          "market_ticker": "KXMLBTOTAL-26AUG192010LAAHOU-9",
-          "side": "no"
-        }
-      ],
-      "no_ask_dollars": "1.0000",
-      "no_bid_dollars": "1.0000",
-      "no_sub_title": "yes A's,yes Seattle,yes Seattle over 7.5 runs scored,no Over 8.5 runs scored",
-      "notional_value_dollars": "1.0000",
-      "open_interest_fp": "0.00",
-      "open_time": "2026-08-20T01:51:58Z",
-      "previous_price_dollars": "0.0000",
-      "previous_yes_ask_dollars": "0.0000",
-      "previous_yes_bid_dollars": "0.0000",
-      "price_level_structure": "deci_cent",
-      "price_ranges": [
-        {
-          "end": "1.0000",
-          "start": "0.0000",
-          "step": "0.0010"
-        }
-      ],
-      "result": "",
-      "rules_primary": "",
-      "rules_secondary": "Kalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Governing League. All trademarks, logos, and brand names are the property of their respective owners.",
-      "settlement_timer_seconds": 5,
-      "status": "active",
-      "strike_type": "custom",
-      "ticker": "KXMVECROSSCATEGORY-SHARD1-S202601889BDAFA6-7C456F2EAD5",
-      "title": "yes A's,yes Seattle,yes Seattle over 7.5 runs scored,no Over 8.5 runs scored",
-      "updated_time": "2026-08-20T01:51:58.440935Z",
-      "volume_24h_fp": "0.00",
-      "volume_fp": "0.00",
-      "yes_ask_dollars": "0.0000",
-      "yes_ask_size_fp": "0.00",
-      "yes_bid_dollars": "0.0000",
-      "yes_bid_size_fp": "0.00",
-      "yes_sub_title": "yes A's,yes Seattle,yes Seattle over 7.5 runs scored,no Over 8.5 runs scored"
-    },
-    {
-      "can_close_early": true,
-      "close_time": "2026-08-22T02:00:00Z",
-      "created_time": "2026-08-20T01:51:58.302325Z",
-      "custom_strike": {
-        "Associated Events": "KXWNBAPTS-26AUG19MINGS,KXWNBAPTS-26AUG19MINGS,KXWNBAREB-26AUG19MINGS,KXWNBASPREAD-26AUG19MINGS",
-        "Associated Market Sides": "yes,yes,yes,yes",
-        "Associated Markets": "KXWNBAPTS-26AUG19MINGS-GSGWILLIAMS1-10,KXWNBAPTS-26AUG19MINGS-MINOMILES5-15,KXWNBAREB-26AUG19MINGS-MINNHOWARD1-4,KXWNBASPREAD-26AUG19MINGS-MIN2",
-        "Multivariate Event Ticker": "KXMVECROSSCATEGORY-SHARD1-S2026FB6F616B869"
-      },
-      "event_ticker": "KXMVECROSSCATEGORY-SHARD1-S2026FB6F616B869",
-      "exchange_index": 1,
-      "expected_expiration_time": "2026-08-20T08:00:00Z",
-      "expiration_time": "2026-08-22T02:00:00Z",
-      "expiration_value": "",
-      "is_provisional": true,
-      "last_price_dollars": "0.0000",
-      "latest_expiration_time": "2026-08-22T02:00:00Z",
-      "liquidity_dollars": "0.0000",
-      "market_type": "binary",
-      "mve_collection_ticker": "KXMVECROSSCATEGORY-SHARD1-R",
-      "mve_selected_legs": [
-        {
-          "event_ticker": "KXWNBAPTS-26AUG19MINGS",
-          "market_ticker": "KXWNBAPTS-26AUG19MINGS-GSGWILLIAMS1-10",
-          "side": "yes"
-        },
-        {
-          "event_ticker": "KXWNBAPTS-26AUG19MINGS",
-          "market_ticker": "KXWNBAPTS-26AUG19MINGS-MINOMILES5-15",
-          "side": "yes"
-        },
-        {
-          "event_ticker": "KXWNBAREB-26AUG19MINGS",
-          "market_ticker": "KXWNBAREB-26AUG19MINGS-MINNHOWARD1-4",
-          "side": "yes"
-        },
-        {
-          "event_ticker": "KXWNBASPREAD-26AUG19MINGS",
-          "market_ticker": "KXWNBASPREAD-26AUG19MINGS-MIN2",
-          "side": "yes"
-        }
-      ],
-      "no_ask_dollars": "1.0000",
-      "no_bid_dollars": "1.0000",
-      "no_sub_title": "yes Gabby Williams: 10+,yes Olivia Miles: 15+,yes Natasha Howard: 4+,yes Minnesota wins by over 1.5 points",
-      "notional_value_dollars": "1.0000",
-      "open_interest_fp": "0.00",
-      "open_time": "2026-08-20T01:51:58Z",
-      "previous_price_dollars": "0.0000",
-      "previous_yes_ask_dollars": "0.0000",
-      "previous_yes_bid_dollars": "0.0000",
-      "price_level_structure": "deci_cent",
-      "price_ranges": [
-        {
-          "end": "1.0000",
-          "start": "0.0000",
-          "step": "0.0010"
-        }
-      ],
-      "result": "",
-      "rules_primary": "",
-      "rules_secondary": "Kalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Governing League. All trademarks, logos, and brand names are the property of their respective owners.",
-      "settlement_timer_seconds": 5,
-      "status": "active",
-      "strike_type": "custom",
-      "ticker": "KXMVECROSSCATEGORY-SHARD1-S2026FB6F616B869-33D578A5713",
-      "title": "yes Gabby Williams: 10+,yes Olivia Miles: 15+,yes Natasha Howard: 4+,yes Minnesota wins by over 1.5 points",
-      "updated_time": "2026-08-20T01:51:58.440935Z",
-      "volume_24h_fp": "0.00",
-      "volume_fp": "0.00",
-      "yes_ask_dollars": "0.0000",
-      "yes_ask_size_fp": "0.00",
-      "yes_bid_dollars": "0.0000",
-      "yes_bid_size_fp": "0.00",
-      "yes_sub_title": "yes Gabby Williams: 10+,yes Olivia Miles: 15+,yes Natasha Howard: 4+,yes Minnesota wins by over 1.5 points"
-    },
-    {
-      "can_close_early": true,
-      "close_time": "2026-09-03T00:30:00Z",
-      "created_time": "2026-08-20T01:51:58.277808Z",
-      "custom_strike": {
-        "Associated Events": "KXWNBAREB-26AUG19MINGS,KXWTAMATCH-26AUG19SABBEJ",
-        "Associated Market Sides": "yes,yes",
-        "Associated Markets": "KXWNBAREB-26AUG19MINGS-MINNCOLLIER24-6,KXWTAMATCH-26AUG19SABBEJ-SAB",
-        "Multivariate Event Ticker": "KXMVECROSSCATEGORY-SHARD1-S2026C884CE74087"
-      },
-      "event_ticker": "KXMVECROSSCATEGORY-SHARD1-S2026C884CE74087",
-      "exchange_index": 1,
-      "expected_expiration_time": "2026-08-20T08:00:00Z",
-      "expiration_time": "2026-09-03T00:30:00Z",
-      "expiration_value": "",
-      "is_provisional": true,
-      "last_price_dollars": "0.0000",
-      "latest_expiration_time": "2026-09-03T00:30:00Z",
-      "liquidity_dollars": "0.0000",
-      "market_type": "binary",
-      "mve_collection_ticker": "KXMVECROSSCATEGORY-SHARD1-R",
-      "mve_selected_legs": [
-        {
-          "event_ticker": "KXWNBAREB-26AUG19MINGS",
-          "market_ticker": "KXWNBAREB-26AUG19MINGS-MINNCOLLIER24-6",
-          "side": "yes"
-        },
-        {
-          "event_ticker": "KXWTAMATCH-26AUG19SABBEJ",
-          "market_ticker": "KXWTAMATCH-26AUG19SABBEJ-SAB",
-          "side": "yes"
-        }
-      ],
-      "no_ask_dollars": "1.0000",
-      "no_bid_dollars": "1.0000",
-      "no_sub_title": "yes Napheesa Collier: 6+,yes Aryna Sabalenka",
-      "notional_value_dollars": "1.0000",
-      "open_interest_fp": "0.00",
-      "open_time": "2026-08-20T01:51:58Z",
-      "previous_price_dollars": "0.0000",
-      "previous_yes_ask_dollars": "0.0000",
-      "previous_yes_bid_dollars": "0.0000",
-      "price_level_structure": "deci_cent",
-      "price_ranges": [
-        {
-          "end": "1.0000",
-          "start": "0.0000",
-          "step": "0.0010"
-        }
-      ],
-      "result": "",
-      "rules_primary": "",
-      "rules_secondary": "Kalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Governing League. All trademarks, logos, and brand names are the property of their respective owners.",
-      "settlement_timer_seconds": 5,
-      "status": "active",
-      "strike_type": "custom",
-      "ticker": "KXMVECROSSCATEGORY-SHARD1-S2026C884CE74087-3E47EB0C114",
-      "title": "yes Napheesa Collier: 6+,yes Aryna Sabalenka",
-      "updated_time": "2026-08-20T01:51:58.440935Z",
-      "volume_24h_fp": "0.00",
-      "volume_fp": "0.00",
-      "yes_ask_dollars": "0.0000",
-      "yes_ask_size_fp": "0.00",
-      "yes_bid_dollars": "0.0000",
-      "yes_bid_size_fp": "0.00",
-      "yes_sub_title": "yes Napheesa Collier: 6+,yes Aryna Sabalenka"
-    },
-    {
-      "can_close_early": true,
-      "close_time": "2026-09-02T23:20:00Z",
-      "created_time": "2026-08-20T01:51:58.262856Z",
-      "custom_strike": {
-        "Associated Events": "KXATPCHALLENGERMATCH-26AUG19BLAHAR,KXATPCHALLENGERMATCH-26AUG19MAGHER,KXITFMATCH-26AUG18MOROGU",
-        "Associated Market Sides": "yes,yes,yes",
-        "Associated Markets": "KXATPCHALLENGERMATCH-26AUG19BLAHAR-HAR,KXATPCHALLENGERMATCH-26AUG19MAGHER-MAG,KXITFMATCH-26AUG18MOROGU-MOR",
-        "Multivariate Event Ticker": "KXMVECROSSCATEGORY-SHARD1-S20269C95065AC23"
-      },
-      "event_ticker": "KXMVECROSSCATEGORY-SHARD1-S20269C95065AC23",
-      "exchange_index": 1,
-      "expected_expiration_time": "2026-08-20T07:35:00Z",
-      "expiration_time": "2026-09-02T23:20:00Z",
-      "expiration_value": "",
-      "is_provisional": true,
-      "last_price_dollars": "0.0000",
-      "latest_expiration_time": "2026-09-02T23:20:00Z",
-      "liquidity_dollars": "0.0000",
-      "market_type": "binary",
-      "mve_collection_ticker": "KXMVECROSSCATEGORY-SHARD1-R",
-      "mve_selected_legs": [
-        {
-          "event_ticker": "KXATPCHALLENGERMATCH-26AUG19BLAHAR",
-          "market_ticker": "KXATPCHALLENGERMATCH-26AUG19BLAHAR-HAR",
-          "side": "yes"
-        },
-        {
-          "event_ticker": "KXATPCHALLENGERMATCH-26AUG19MAGHER",
-          "market_ticker": "KXATPCHALLENGERMATCH-26AUG19MAGHER-MAG",
-          "side": "yes"
-        },
-        {
-          "event_ticker": "KXITFMATCH-26AUG18MOROGU",
-          "market_ticker": "KXITFMATCH-26AUG18MOROGU-MOR",
-          "side": "yes"
-        }
-      ],
-      "no_ask_dollars": "1.0000",
-      "no_bid_dollars": "1.0000",
-      "no_sub_title": "yes Lloyd Harris,yes Alan Magadan,yes Hiroki Moriya",
-      "notional_value_dollars": "1.0000",
-      "open_interest_fp": "0.00",
-      "open_time": "2026-08-20T01:51:58Z",
-      "previous_price_dollars": "0.0000",
-      "previous_yes_ask_dollars": "0.0000",
-      "previous_yes_bid_dollars": "0.0000",
-      "price_level_structure": "deci_cent",
-      "price_ranges": [
-        {
-          "end": "1.0000",
-          "start": "0.0000",
-          "step": "0.0010"
-        }
-      ],
-      "result": "",
-      "rules_primary": "",
-      "rules_secondary": "Kalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Governing League. All trademarks, logos, and brand names are the property of their respective owners.",
-      "settlement_timer_seconds": 5,
-      "status": "active",
-      "strike_type": "custom",
-      "ticker": "KXMVECROSSCATEGORY-SHARD1-S20269C95065AC23-5012E188BDE",
-      "title": "yes Lloyd Harris,yes Alan Magadan,yes Hiroki Moriya",
-      "updated_time": "2026-08-20T01:51:58.440935Z",
-      "volume_24h_fp": "0.00",
-      "volume_fp": "0.00",
-      "yes_ask_dollars": "0.0000",
-      "yes_ask_size_fp": "0.00",
-      "yes_bid_dollars": "0.0000",
-      "yes_bid_size_fp": "0.00",
-      "yes_sub_title": "yes Lloyd Harris,yes Alan Magadan,yes Hiroki Moriya"
-    },
-    {
-      "can_close_early": true,
-      "close_time": "2026-08-23T00:10:00Z",
-      "created_time": "2026-08-20T01:51:58.250281Z",
-      "custom_strike": {
-        "Associated Events": "KXMLBGAME-26AUG191940ATHKC,KXMLBGAME-26AUG192005WSHTEX,KXMLBGAME-26AUG192010LAAHOU,KXWNBAGAME-26AUG19MINGS,KXWNBAPTS-26AUG19MINGS,KXWNBAPTS-26AUG19MINGS,KXWNBAPTS-26AUG19MINGS,KXWNBAPTS-26AUG19MINGS",
-        "Associated Market Sides": "yes,yes,yes,yes,yes,yes,yes,yes",
-        "Associated Markets": "KXMLBGAME-26AUG191940ATHKC-ATH,KXMLBGAME-26AUG192005WSHTEX-TEX,KXMLBGAME-26AUG192010LAAHOU-LAA,KXWNBAGAME-26AUG19MINGS-MIN,KXWNBAPTS-26AUG19MINGS-GSGWILLIAMS1-10,KXWNBAPTS-26AUG19MINGS-GSJSALAN13-10,KXWNBAPTS-26AUG19MINGS-MINKMCBRIDE21-10,KXWNBAPTS-26AUG19MINGS-MINNHOWARD1-10",
-        "Multivariate Event Ticker": "KXMVECROSSCATEGORY-SHARD1-S2026B03A12B4762"
-      },
-      "event_ticker": "KXMVECROSSCATEGORY-SHARD1-S2026B03A12B4762",
-      "exchange_index": 1,
-      "expected_expiration_time": "2026-08-20T08:00:00Z",
-      "expiration_time": "2026-08-23T00:10:00Z",
-      "expiration_value": "",
-      "is_provisional": true,
-      "last_price_dollars": "0.0000",
-      "latest_expiration_time": "2026-08-23T00:10:00Z",
-      "liquidity_dollars": "0.0000",
-      "market_type": "binary",
-      "mve_collection_ticker": "KXMVECROSSCATEGORY-SHARD1-R",
-      "mve_selected_legs": [
-        {
-          "event_ticker": "KXMLBGAME-26AUG191940ATHKC",
-          "market_ticker": "KXMLBGAME-26AUG191940ATHKC-ATH",
-          "side": "yes"
-        },
-        {
-          "event_ticker": "KXMLBGAME-26AUG192005WSHTEX",
-          "market_ticker": "KXMLBGAME-26AUG192005WSHTEX-TEX",
-          "side": "yes"
-        },
-        {
-          "event_ticker": "KXMLBGAME-26AUG192010LAAHOU",
-          "market_ticker": "KXMLBGAME-26AUG192010LAAHOU-LAA",
-          "side": "yes"
-        },
-        {
-          "event_ticker": "KXWNBAGAME-26AUG19MINGS",
-          "market_ticker": "KXWNBAGAME-26AUG19MINGS-MIN",
-          "side": "yes"
-        },
-        {
-          "event_ticker": "KXWNBAPTS-26AUG19MINGS",
-          "market_ticker": "KXWNBAPTS-26AUG19MINGS-GSGWILLIAMS1-10",
-          "side": "yes"
-        },
-        {
-          "event_ticker": "KXWNBAPTS-26AUG19MINGS",
-          "market_ticker": "KXWNBAPTS-26AUG19MINGS-GSJSALAN13-10",
-          "side": "yes"
-        },
-        {
-          "event_ticker": "KXWNBAPTS-26AUG19MINGS",
-          "market_ticker": "KXWNBAPTS-26AUG19MINGS-MINKMCBRIDE21-10",
-          "side": "yes"
-        },
-        {
-          "event_ticker": "KXWNBAPTS-26AUG19MINGS",
-          "market_ticker": "KXWNBAPTS-26AUG19MINGS-MINNHOWARD1-10",
-          "side": "yes"
-        }
-      ],
-      "no_ask_dollars": "1.0000",
-      "no_bid_dollars": "1.0000",
-      "no_sub_title": "yes A's,yes Texas,yes Los Angeles A,yes Minnesota,yes Gabby Williams: 10+,yes Janelle Salaün: 10+,yes Kayla McBride: 10+,yes Natasha Howard: 10+",
-      "notional_value_dollars": "1.0000",
-      "open_interest_fp": "0.00",
-      "open_time": "2026-08-20T01:51:58Z",
-      "previous_price_dollars": "0.0000",
-      "previous_yes_ask_dollars": "0.0000",
-      "previous_yes_bid_dollars": "0.0000",
-      "price_level_structure": "deci_cent",
-      "price_ranges": [
-        {
-          "end": "1.0000",
-          "start": "0.0000",
-          "step": "0.0010"
-        }
-      ],
-      "result": "",
-      "rules_primary": "",
-      "rules_secondary": "Kalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Governing League. All trademarks, logos, and brand names are the property of their respective owners.",
-      "settlement_timer_seconds": 5,
-      "status": "active",
-      "strike_type": "custom",
-      "ticker": "KXMVECROSSCATEGORY-SHARD1-S2026B03A12B4762-A39ED8F5883",
-      "title": "yes A's,yes Texas,yes Los Angeles A,yes Minnesota,yes Gabby Williams: 10+,yes Janelle Salaün: 10+,yes Kayla McBride: 10+,yes Natasha Howard: 10+",
-      "updated_time": "2026-08-20T01:51:58.440935Z",
-      "volume_24h_fp": "0.00",
-      "volume_fp": "0.00",
-      "yes_ask_dollars": "0.0000",
-      "yes_ask_size_fp": "0.00",
-      "yes_bid_dollars": "0.0000",
-      "yes_bid_size_fp": "0.00",
-      "yes_sub_title": "yes A's,yes Texas,yes Los Angeles A,yes Minnesota,yes Gabby Williams: 10+,yes Janelle Salaün: 10+,yes Kayla McBride: 10+,yes Natasha Howard: 10+"
-    }
-  ],
-  "marches_ouverts": 200000,
-  "marches_tennis": 25,
-  "locaux_total": 17,
+  "genere_le": "2026-08-20T02:10:59",
+  "n_series": 13305,
+  "n_series_tennis": 167,
+  "n_series_simple": 116,
+  "n_marches": 574,
   "locaux_nommes": 7,
-  "apparies": 0,
-  "series": {
-    "KXATPGTOTAL": 6,
-    "KXATPGSPREAD": 6,
-    "KXITFDOUBLES": 4,
-    "KXITFWDOUBLES": 4,
-    "KXWTAGTOTAL": 3,
-    "KXATPCHALLENGERDOUBLES": 2
-  },
-  "circuits": {
-    "itf": 8,
-    "challenger": 2,
-    "wta": 3,
-    "atp": 12
-  },
-  "detail_apparies": [],
-  "tronque": true,
+  "apparies": 4,
+  "series_simple": [
+    {
+      "ticker": "KXITTFWOMENMATCH",
+      "title": "ITTF Women Match"
+    },
+    {
+      "ticker": "KXSIXKINGSMATCH",
+      "title": "Six Kings Slam Match"
+    },
+    {
+      "ticker": "KXWTAEXACTMATCH",
+      "title": "WTA Exact Match Score"
+    },
+    {
+      "ticker": "KXWTAMATCH",
+      "title": "WTA Tennis Match"
+    },
+    {
+      "ticker": "KXATPEXACTMATCH",
+      "title": "ATP Exact Match Score"
+    },
+    {
+      "ticker": "KXWTACHALLENGERMATCH",
+      "title": "Challenger WTA"
+    },
+    {
+      "ticker": "KXDAVISCUPMATCH",
+      "title": "Davis Cup Match"
+    },
+    {
+      "ticker": "KXITFWMATCH",
+      "title": "ITF Women's Match"
+    },
+    {
+      "ticker": "KXUNITEDCUPMATCH",
+      "title": "United Cup Match"
+    },
+    {
+      "ticker": "KXITFMATCH",
+      "title": "ITF Men's Match"
+    },
+    {
+      "ticker": "KXCHALLENGERMATCH",
+      "title": "Challenger ATP "
+    },
+    {
+      "ticker": "KXSIXKINGSSLAMMATCH",
+      "title": "Six Kings Slam Match"
+    },
+    {
+      "ticker": "KXATPCHALLENGERMATCH",
+      "title": "Challenger ATP "
+    },
+    {
+      "ticker": "KXATPMATCH",
+      "title": "ATP Tennis Match"
+    },
+    {
+      "ticker": "KXBATTLEOFSEXES",
+      "title": "Battle of the Sexes Tennis Match"
+    },
+    {
+      "ticker": "KXTENNISEXHIBITION",
+      "title": "Tennis Exhibition Match"
+    },
+    {
+      "ticker": "KXEXHIBITIONWOMEN",
+      "title": "Women's Tennis Exhibition Match"
+    },
+    {
+      "ticker": "KXATPTIEBREAK",
+      "title": "Tiebreak to occur in Match"
+    },
+    {
+      "ticker": "KXEXHIBITIONMEN",
+      "title": "Men's Tennis Exhibition Match"
+    },
+    {
+      "ticker": "KXATPROUND",
+      "title": "Will player reach round?"
+    },
+    {
+      "ticker": "KXNEWTARIFFS",
+      "title": "New tariffs this month?"
+    },
+    {
+      "ticker": "KXBEZELRDJ41WIM",
+      "title": "Rolex Datejust 41 \"Wimbledon\" / Fluted / Jubilee"
+    },
+    {
+      "ticker": "KXATPIWO",
+      "title": "Indian Wells Open"
+    },
+    {
+      "ticker": "KXATPRETIRE",
+      "title": "Will Djokovic Retire?"
+    },
+    {
+      "ticker": "KXWTAMAD",
+      "title": "WTA Madrid"
+    },
+    {
+      "ticker": "KXTENNISGRANDSLAM",
+      "title": "Tennis Grand Slam"
+    },
+    {
+      "ticker": "KXUNITEDCUP",
+      "title": "United Cup Champions"
+    },
+    {
+      "ticker": "KXWTAIWO",
+      "title": "Indian Wells Open"
+    },
+    {
+      "ticker": "KXUSOPENCUPGAME",
+      "title": "US Open Cup Game"
+    },
+    {
+      "ticker": "KXSCOTTIESLAM",
+      "title": "Scottie grand slam"
+    },
+    {
+      "ticker": "KXWTAACES",
+      "title": "WTA Tennis Aces"
+    },
+    {
+      "ticker": "KXWTASERENA",
+      "title": "Serena Williams WTA"
+    },
+    {
+      "ticker": "KXFOMEN",
+      "title": "French Open Men's"
+    },
+    {
+      "ticker": "KXWTAMIA",
+      "title": "WTA Miami"
+    },
+    {
+      "ticker": "KXWTAROE",
+      "title": "WTA Round of Elimination"
+    },
+    {
+      "ticker": "KXATPADVANCE",
+      "title": "ATP Stage Qualifiers"
+    },
+    {
+      "ticker": "KXPPICPI",
+      "title": "PPI YoY exceeds CPI YoY for [time period]"
+    },
+    {
+      "ticker": "NEWTAYLOR",
+      "title": "Taylor Swift album"
+    },
+    {
+      "ticker": "KXUSOPENCUP",
+      "title": "US Open Cup Soccer"
+    },
+    {
+      "ticker": "KXATPIT",
+      "title": "ATP Italian Open"
+    },
+    {
+      "ticker": "KXMUSKCHALLENGERS",
+      "title": "Musk challengers"
+    },
+    {
+      "ticker": "WTAX",
+      "title": "Wealth tax"
+    },
+    {
+      "ticker": "KXAOWOMEN",
+      "title": "Australian Open Womens"
+    },
+    {
+      "ticker": "KXATPGRANDSLAM",
+      "title": "ATP Grand Slam"
+    },
+    {
+      "ticker": "KXUSOMENSINGLES",
+      "title": "US Open men's singles"
+    },
+    {
+      "ticker": "KXWTAADVANCE",
+      "title": "WTA Stage Qualifiers"
+    },
+    {
+      "ticker": "KXJUSTATEST",
+      "title": "Just a test"
+    },
+    {
+      "ticker": "KXLOWTATL",
+      "title": "Low Temperature Atlanta"
+    },
+    {
+      "ticker": "KXUSOPENPRICE",
+      "title": "US Open Ticket Prices"
+    },
+    {
+      "ticker": "KXATPMENTION",
+      "title": "ATP Mentions"
+    },
+    {
+      "ticker": "KXWARSHNOM",
+      "title": "When will the Senate receive Warsh's nomination?"
+    },
+    {
+      "ticker": "KXWTADDF",
+      "title": "WTA Tour Dubai Duty Free"
+    },
+    {
+      "ticker": "KXESPYTENNIS",
+      "title": "BEST TENNIS PLAYER‬"
+    },
+    {
+      "ticker": "KXMCMMEN",
+      "title": "ATP Monte-Carlo Masters Winner"
+    },
+    {
+      "ticker": "KXWTATOURNWIN",
+      "title": "Will player win tournament"
+    },
+    {
+      "ticker": "KXWTAFINALS",
+      "title": "WTA Finals Champion"
+    },
+    {
+      "ticker": "KXSINNERFINISH",
+      "title": "Jannik Sinner to Complete Tennis"
+    },
+    {
+      "ticker": "KXFOWOMEN",
+      "title": "French Open Women's"
+    },
+    {
+      "ticker": "KXTESLAMOTORCADE",
+      "title": "Tesla presidential motorcade"
+    },
+    {
+      "ticker": "KXATPMEN",
+      "title": "Mens ATP Tournament Winner"
+    }
+  ],
   "schema_cles": [
     "can_close_early",
     "close_time",
     "created_time",
     "custom_strike",
+    "early_close_condition",
     "event_ticker",
     "exchange_index",
     "expected_expiration_time",
     "expiration_time",
     "expiration_value",
-    "is_provisional",
     "last_price_dollars",
     "latest_expiration_time",
     "liquidity_dollars",
     "market_type",
-    "mve_collection_ticker",
-    "mve_selected_legs",
     "no_ask_dollars",
     "no_bid_dollars",
     "no_sub_title",
     "notional_value_dollars",
+    "occurrence_datetime",
     "open_interest_fp",
     "open_time",
     "previous_price_dollars",
@@ -595,410 +292,328 @@
     "yes_bid_size_fp",
     "yes_sub_title"
   ],
-  "prefixes_tickers": {
-    "KXMVECROSSCATEGORY": 199319,
-    "KXLIGAMXSCORE": 60,
-    "KXNKY": 60,
-    "KXPLATINUMH": 54,
-    "KXPALLADIUMH": 47,
-    "KXSILVERH": 40,
-    "KXGOLDH": 40,
-    "KXWTIH": 40,
-    "KXWNBASPREAD": 29,
-    "KXWNBATOTAL": 27,
-    "KXUFCVICROUND": 25,
-    "KXUFCMOV": 21,
-    "KXLIGAEXPTOTAL": 18,
-    "KXUFCMOF": 12,
-    "KXASEANTOTAL": 12,
-    "KXUSLTOTAL": 12,
-    "KXLIGAMXTEAMTOTAL": 12,
-    "KXLIGAEXPSPREAD": 12,
-    "KXUFCROUNDS": 8,
-    "KXASEANSPREAD": 8,
-    "KXUSLSPREAD": 8,
-    "KXMLBSPREAD": 6,
-    "KXLIGAMX1HTOTAL": 6,
-    "KXLIGAMX1H": 6,
-    "KXLEAGUESCUPTOTAL": 6,
-    "KXLIGAEXP1HTOTAL": 6,
-    "KXLIGAEXP1H": 6,
-    "KXLIGAMXFTTS": 6,
-    "KXATPGTOTAL": 6,
-    "KXATPGSPREAD": 6,
-    "KXITFDOUBLES": 4,
-    "KXLIGAMX1HSPREAD": 4,
-    "KXLEAGUESCUPSPREAD": 4,
-    "KXLIGAEXP1HSPREAD": 4,
-    "KXITFWDOUBLES": 4,
-    "KXUFCDISTANCE": 3,
-    "KXWNBA2HWINNER": 3,
-    "KXWNBA1HWINNER": 3,
-    "KXLIGAEXPBTTS": 3,
-    "KXCONMEBOLSUD1HTOTAL": 3,
-    "KXCONMEBOLSUD1H": 3,
-    "KXCONMEBOLLIB1HTOTAL": 3,
-    "KXCONMEBOLLIB1H": 3,
-    "KXWTAGTOTAL": 3,
-    "KXMLSTEAMTOTAL": 2,
-    "KXCS2GAME": 2,
-    "KXATPCHALLENGERDOUBLES": 2,
-    "KXASEANBTTS": 2,
-    "KXUSLBTTS": 2,
-    "KXLIGAMX1HBTTS": 2,
-    "KXLIGAEXP1HBTTS": 2,
-    "KXCONMEBOLSUD1HSPREAD": 2,
-    "KXCONMEBOLLIB1HSPREAD": 2,
-    "KXWNBAGAME": 2,
-    "KXMLBGAME": 2,
-    "KXCONMEBOLLIBTOTAL": 1,
-    "KXCOLLEGEGAMEDAY": 1,
-    "KXMLSTOTAL": 1,
-    "KXCONMEBOLSUDTOTAL": 1,
-    "KXCONMEBOLLIBSPREAD": 1
-  },
-  "trouves_par_patronyme": [
+  "echantillon_marches": [
     {
-      "ticker": "KXMVECROSSCATEGORY-SHARD1-S2026C884CE74087-3E47EB0C114",
-      "event_ticker": "KXMVECROSSCATEGORY-SHARD1-S2026C884CE74087",
-      "title": "yes Napheesa Collier: 6+,yes Aryna Sabalenka",
-      "subtitle": null,
-      "yes_sub_title": "yes Napheesa Collier: 6+,yes Aryna Sabalenka",
-      "volume": null
+      "can_close_early": true,
+      "close_time": "2026-09-03T17:00:00Z",
+      "created_time": "2026-08-19T22:30:46.633523Z",
+      "custom_strike": {
+        "tennis_competitor": "3887631b-0004-412f-bfc0-7579bd31467c"
+      },
+      "early_close_condition": "This market will close and expire after a winner is declared.",
+      "event_ticker": "KXWTAMATCH-26AUG20SWIRYB",
+      "exchange_index": 0,
+      "expected_expiration_time": "2026-08-20T20:00:00Z",
+      "expiration_time": "2026-09-03T17:00:00Z",
+      "expiration_value": "",
+      "last_price_dollars": "0.6400",
+      "latest_expiration_time": "2026-09-03T17:00:00Z",
+      "liquidity_dollars": "0.0000",
+      "market_type": "binary",
+      "no_ask_dollars": "0.3900",
+      "no_bid_dollars": "0.3600",
+      "no_sub_title": "Iga Swiatek",
+      "notional_value_dollars": "1.0000",
+      "occurrence_datetime": "2026-08-20T20:00:00Z",
+      "open_interest_fp": "2470.06",
+      "open_time": "2026-08-19T22:35:00Z",
+      "previous_price_dollars": "0.0000",
+      "previous_yes_ask_dollars": "0.0000",
+      "previous_yes_bid_dollars": "0.0000",
+      "price_level_structure": "linear_cent",
+      "price_ranges": [
+        {
+          "end": "1.0000",
+          "start": "0.0000",
+          "step": "0.0100"
+        }
+      ],
+      "result": "",
+      "rules_primary": "If Iga Swiatek wins the Swiatek vs Rybakina professional tennis match in the 2026 WTA Cincinnati Quarterfinal after a ball has been played, then the market resolves to Yes.",
+      "rules_secondary": "The following market refers to the Swiatek vs Rybakina professional tennis match in the 2026 WTA Cincinnati Quarterfinal after a ball has been played. If the match does not occur (signaled by a ball being played) due to a player injury, walkover, forfeiture, or any other cancellation (all before the match starts), the market will resolve to a fair price in accordance with the rules. If this match is postponed or delayed, the market will remain open and close after the rescheduled match has finished (within two weeks).\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Governing League. All trademarks, logos, and brand names are the property of their respective owners.",
+      "settlement_timer_seconds": 60,
+      "status": "active",
+      "strike_type": "structured",
+      "ticker": "KXWTAMATCH-26AUG20SWIRYB-SWI",
+      "title": "Iga Swiatek wins",
+      "updated_time": "2026-08-19T23:45:49.091333Z",
+      "volume_24h_fp": "3024.48",
+      "volume_fp": "3024.48",
+      "yes_ask_dollars": "0.6400",
+      "yes_ask_size_fp": "738.00",
+      "yes_bid_dollars": "0.6100",
+      "yes_bid_size_fp": "118.00",
+      "yes_sub_title": "Iga Swiatek"
     },
     {
-      "ticker": "KXMVECROSSCATEGORY-SHARD1-S2026214E9D98A99-28F657B839A",
-      "event_ticker": "KXMVECROSSCATEGORY-SHARD1-S2026214E9D98A99",
-      "title": "yes Lorenzo Musetti,yes Target Price: $69,588.09,yes Reg Time: Montevideo City,yes Guyana Amazon Warriors,yes Target Price: $0.0752911,yes Target Price: $2,263.71,yes A's,yes Seattle,yes Washington,yes Houston,yes Los Angeles D,yes Chicago Fire,yes Target Price: $1.1105",
-      "subtitle": null,
-      "yes_sub_title": "yes Lorenzo Musetti,yes Target Price: $69,588.09,yes Reg Time: Montevideo City,yes Guyana Amazon Warriors,yes Target Price: $0.0752911,yes Target Price: $2,263.71,yes A's,yes Seattle,yes Washington,yes Houston,yes Los Angeles D,yes Chicago Fire,yes Target Price: $1.1105",
-      "volume": null
+      "can_close_early": true,
+      "close_time": "2026-09-03T17:00:00Z",
+      "created_time": "2026-08-19T22:30:46.633523Z",
+      "custom_strike": {
+        "tennis_competitor": "1716723d-87c5-4c73-b242-835dae00f4cd"
+      },
+      "early_close_condition": "This market will close and expire after a winner is declared.",
+      "event_ticker": "KXWTAMATCH-26AUG20SWIRYB",
+      "exchange_index": 0,
+      "expected_expiration_time": "2026-08-20T20:00:00Z",
+      "expiration_time": "2026-09-03T17:00:00Z",
+      "expiration_value": "",
+      "last_price_dollars": "0.3900",
+      "latest_expiration_time": "2026-09-03T17:00:00Z",
+      "liquidity_dollars": "0.0000",
+      "market_type": "binary",
+      "no_ask_dollars": "0.6300",
+      "no_bid_dollars": "0.6100",
+      "no_sub_title": "Elena Rybakina",
+      "notional_value_dollars": "1.0000",
+      "occurrence_datetime": "2026-08-20T20:00:00Z",
+      "open_interest_fp": "1407.02",
+      "open_time": "2026-08-19T22:35:00Z",
+      "previous_price_dollars": "0.0000",
+      "previous_yes_ask_dollars": "0.0000",
+      "previous_yes_bid_dollars": "0.0000",
+      "price_level_structure": "linear_cent",
+      "price_ranges": [
+        {
+          "end": "1.0000",
+          "start": "0.0000",
+          "step": "0.0100"
+        }
+      ],
+      "result": "",
+      "rules_primary": "If Elena Rybakina wins the Swiatek vs Rybakina professional tennis match in the 2026 WTA Cincinnati Quarterfinal after a ball has been played, then the market resolves to Yes.",
+      "rules_secondary": "The following market refers to the Swiatek vs Rybakina professional tennis match in the 2026 WTA Cincinnati Quarterfinal after a ball has been played. If the match does not occur (signaled by a ball being played) due to a player injury, walkover, forfeiture, or any other cancellation (all before the match starts), the market will resolve to a fair price in accordance with the rules. If this match is postponed or delayed, the market will remain open and close after the rescheduled match has finished (within two weeks).\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Governing League. All trademarks, logos, and brand names are the property of their respective owners.",
+      "settlement_timer_seconds": 60,
+      "status": "active",
+      "strike_type": "structured",
+      "ticker": "KXWTAMATCH-26AUG20SWIRYB-RYB",
+      "title": "Elena Rybakina wins",
+      "updated_time": "2026-08-19T23:45:49.091333Z",
+      "volume_24h_fp": "1439.80",
+      "volume_fp": "1473.02",
+      "yes_ask_dollars": "0.3900",
+      "yes_ask_size_fp": "2046.78",
+      "yes_bid_dollars": "0.3700",
+      "yes_bid_size_fp": "451.00",
+      "yes_sub_title": "Elena Rybakina"
     },
     {
-      "ticker": "KXMVECROSSCATEGORY-SHARD1-S2026C0F1D3FF7EF-48385BC8432",
-      "event_ticker": "KXMVECROSSCATEGORY-SHARD1-S2026C0F1D3FF7EF",
-      "title": "yes Lloyd Harris,yes Alan Magadan,yes Lorenzo Musetti,yes Taylor Fritz,yes Dorados de Chihuahua,yes Freseros de Irapuato,yes Fuerza Regia,yes A's,yes Seattle,yes Washington,yes Houston,yes Los Angeles D,yes Colorado,yes Chicago Fire,yes Salt Lake,yes Seattle,yes Houston,yes Aryna Sabalenka",
-      "subtitle": null,
-      "yes_sub_title": "yes Lloyd Harris,yes Alan Magadan,yes Lorenzo Musetti,yes Taylor Fritz,yes Dorados de Chihuahua,yes Freseros de Irapuato,yes Fuerza Regia,yes A's,yes Seattle,yes Washington,yes Houston,yes Los Angeles D,yes Colorado,yes Chicago Fire,yes Salt Lake,yes Seattle,yes Houston,yes Aryna Sabalenka",
-      "volume": null
+      "can_close_early": true,
+      "close_time": "2026-09-03T17:00:00Z",
+      "created_time": "2026-08-19T21:40:50.113114Z",
+      "custom_strike": {
+        "tennis_competitor": "a48ac25f-b930-4065-bd81-8c65430d5f8e"
+      },
+      "early_close_condition": "This market will close and expire after a winner is declared.",
+      "event_ticker": "KXWTAMATCH-26AUG20ANIPEG",
+      "exchange_index": 0,
+      "expected_expiration_time": "2026-08-20T20:00:00Z",
+      "expiration_time": "2026-09-03T17:00:00Z",
+      "expiration_value": "",
+      "last_price_dollars": "0.5900",
+      "latest_expiration_time": "2026-09-03T17:00:00Z",
+      "liquidity_dollars": "0.0000",
+      "market_type": "binary",
+      "no_ask_dollars": "0.4200",
+      "no_bid_dollars": "0.4100",
+      "no_sub_title": "Jessica Pegula",
+      "notional_value_dollars": "1.0000",
+      "occurrence_datetime": "2026-08-20T20:00:00Z",
+      "open_interest_fp": "3076.61",
+      "open_time": "2026-08-19T21:45:00Z",
+      "previous_price_dollars": "0.0000",
+      "previous_yes_ask_dollars": "0.0000",
+      "previous_yes_bid_dollars": "0.0000",
+      "price_level_structure": "linear_cent",
+      "price_ranges": [
+        {
+          "end": "1.0000",
+          "start": "0.0000",
+          "step": "0.0100"
+        }
+      ],
+      "result": "",
+      "rules_primary": "If Jessica Pegula wins the Anisimova vs Pegula professional tennis match in the 2026 WTA Cincinnati Quarterfinal after a ball has been played, then the market resolves to Yes.",
+      "rules_secondary": "The following market refers to the Anisimova vs Pegula professional tennis match in the 2026 WTA Cincinnati Quarterfinal after a ball has been played. If the match does not occur (signaled by a ball being played) due to a player injury, walkover, forfeiture, or any other cancellation (all before the match starts), the market will resolve to a fair price in accordance with the rules. If this match is postponed or delayed, the market will remain open and close after the rescheduled match has finished (within two weeks).\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Governing League. All trademarks, logos, and brand names are the property of their respective owners.",
+      "settlement_timer_seconds": 60,
+      "status": "active",
+      "strike_type": "structured",
+      "ticker": "KXWTAMATCH-26AUG20ANIPEG-PEG",
+      "title": "Jessica Pegula wins",
+      "updated_time": "2026-08-19T21:45:00.441706Z",
+      "volume_24h_fp": "3127.93",
+      "volume_fp": "3210.31",
+      "yes_ask_dollars": "0.5900",
+      "yes_ask_size_fp": "1593.00",
+      "yes_bid_dollars": "0.5800",
+      "yes_bid_size_fp": "1029.50",
+      "yes_sub_title": "Jessica Pegula"
     },
     {
-      "ticker": "KXMVECROSSCATEGORY-SHARD1-S20261409F49CA5B-F54617093A6",
-      "event_ticker": "KXMVECROSSCATEGORY-SHARD1-S20261409F49CA5B",
-      "title": "yes Chicago Fire,yes Aryna Sabalenka,yes Jessica Pegula",
-      "subtitle": null,
-      "yes_sub_title": "yes Chicago Fire,yes Aryna Sabalenka,yes Jessica Pegula",
-      "volume": null
+      "can_close_early": true,
+      "close_time": "2026-09-03T17:00:00Z",
+      "created_time": "2026-08-19T21:40:50.113114Z",
+      "custom_strike": {
+        "tennis_competitor": "98f47d8a-b793-4ffb-942e-20d2109eb016"
+      },
+      "early_close_condition": "This market will close and expire after a winner is declared.",
+      "event_ticker": "KXWTAMATCH-26AUG20ANIPEG",
+      "exchange_index": 0,
+      "expected_expiration_time": "2026-08-20T20:00:00Z",
+      "expiration_time": "2026-09-03T17:00:00Z",
+      "expiration_value": "",
+      "last_price_dollars": "0.4200",
+      "latest_expiration_time": "2026-09-03T17:00:00Z",
+      "liquidity_dollars": "0.0000",
+      "market_type": "binary",
+      "no_ask_dollars": "0.5900",
+      "no_bid_dollars": "0.5800",
+      "no_sub_title": "Amanda Anisimova",
+      "notional_value_dollars": "1.0000",
+      "occurrence_datetime": "2026-08-20T20:00:00Z",
+      "open_interest_fp": "1944.00",
+      "open_time": "2026-08-19T21:45:00Z",
+      "previous_price_dollars": "0.0000",
+      "previous_yes_ask_dollars": "0.0000",
+      "previous_yes_bid_dollars": "0.0000",
+      "price_level_structure": "linear_cent",
+      "price_ranges": [
+        {
+          "end": "1.0000",
+          "start": "0.0000",
+          "step": "0.0100"
+        }
+      ],
+      "result": "",
+      "rules_primary": "If Amanda Anisimova wins the Anisimova vs Pegula professional tennis match in the 2026 WTA Cincinnati Quarterfinal after a ball has been played, then the market resolves to Yes.",
+      "rules_secondary": "The following market refers to the Anisimova vs Pegula professional tennis match in the 2026 WTA Cincinnati Quarterfinal after a ball has been played. If the match does not occur (signaled by a ball being played) due to a player injury, walkover, forfeiture, or any other cancellation (all before the match starts), the market will resolve to a fair price in accordance with the rules. If this match is postponed or delayed, the market will remain open and close after the rescheduled match has finished (within two weeks).\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Governing League. All trademarks, logos, and brand names are the property of their respective owners.",
+      "settlement_timer_seconds": 60,
+      "status": "active",
+      "strike_type": "structured",
+      "ticker": "KXWTAMATCH-26AUG20ANIPEG-ANI",
+      "title": "Amanda Anisimova wins",
+      "updated_time": "2026-08-19T21:45:00.441706Z",
+      "volume_24h_fp": "2026.90",
+      "volume_fp": "2040.18",
+      "yes_ask_dollars": "0.4200",
+      "yes_ask_size_fp": "51068.52",
+      "yes_bid_dollars": "0.4100",
+      "yes_bid_size_fp": "204.00",
+      "yes_sub_title": "Amanda Anisimova"
     },
     {
-      "ticker": "KXMVECROSSCATEGORY-SHARD1-S202617FB7F62495-545284C93E9",
-      "event_ticker": "KXMVECROSSCATEGORY-SHARD1-S202617FB7F62495",
-      "title": "yes Lorenzo Musetti,yes Frances Tiafoe,yes A's,yes Washington,yes Houston,yes Over 6.5 runs scored,yes Both Teams To Score,yes Both Teams To Score,yes Over 1.5 goals scored",
-      "subtitle": null,
-      "yes_sub_title": "yes Lorenzo Musetti,yes Frances Tiafoe,yes A's,yes Washington,yes Houston,yes Over 6.5 runs scored,yes Both Teams To Score,yes Both Teams To Score,yes Over 1.5 goals scored",
-      "volume": null
-    },
-    {
-      "ticker": "KXMVECROSSCATEGORY-SHARD1-S2026D291701D3EF-B6C764B7060",
-      "event_ticker": "KXMVECROSSCATEGORY-SHARD1-S2026D291701D3EF",
-      "title": "yes Lloyd Harris,yes Felipe Meligeni Alves,yes Jaime Faria,yes Frances Tiafoe,yes Flavio Cobolli,yes Thiago Agustin Tirante,yes Aryna Sabalenka,yes Amanda Anisimova",
-      "subtitle": null,
-      "yes_sub_title": "yes Lloyd Harris,yes Felipe Meligeni Alves,yes Jaime Faria,yes Frances Tiafoe,yes Flavio Cobolli,yes Thiago Agustin Tirante,yes Aryna Sabalenka,yes Amanda Anisimova",
-      "volume": null
-    },
-    {
-      "ticker": "KXMVECROSSCATEGORY-SHARD1-S2026189C675EC23-6D1E78BCCD7",
-      "event_ticker": "KXMVECROSSCATEGORY-SHARD1-S2026189C675EC23",
-      "title": "yes Frances Tiafoe,yes Tie,yes A's,yes Seattle,yes Washington,yes Houston,yes Los Angeles D,yes Chicago Fire,yes Tie,yes Minnesota,yes Gabby Williams: 10+,yes Veronica Burton: 10+,yes Kayla McBride: 10+,yes Napheesa Collier: 15+,yes Olivia Miles: 15+,yes Over 151.5 points scored,yes Aryna Sabalenka",
-      "subtitle": null,
-      "yes_sub_title": "yes Frances Tiafoe,yes Tie,yes A's,yes Seattle,yes Washington,yes Houston,yes Los Angeles D,yes Chicago Fire,yes Tie,yes Minnesota,yes Gabby Williams: 10+,yes Veronica Burton: 10+,yes Kayla McBride: 10+,yes Napheesa Collier: 15+,yes Olivia Miles: 15+,yes Over 151.5 points scored,yes Aryna Sabalenka",
-      "volume": null
-    },
-    {
-      "ticker": "KXMVECROSSCATEGORY-SHARD1-S2026DBBF56219B5-C52DCD7FCB4",
-      "event_ticker": "KXMVECROSSCATEGORY-SHARD1-S2026DBBF56219B5",
-      "title": "yes Alan Magadan,yes Moise Kouame,yes A's,yes Seattle,yes Washington,yes Los Angeles D,yes Over 6.5 runs scored,yes Tie,yes Aryna Sabalenka",
-      "subtitle": null,
-      "yes_sub_title": "yes Alan Magadan,yes Moise Kouame,yes A's,yes Seattle,yes Washington,yes Los Angeles D,yes Over 6.5 runs scored,yes Tie,yes Aryna Sabalenka",
-      "volume": null
-    },
-    {
-      "ticker": "KXMVECROSSCATEGORY-SHARD1-S20267288E44D09D-BA656379B92",
-      "event_ticker": "KXMVECROSSCATEGORY-SHARD1-S20267288E44D09D",
-      "title": "yes Lloyd Harris,yes Alan Magadan,yes Jaime Faria,yes Felix Auger-Aliassime",
-      "subtitle": null,
-      "yes_sub_title": "yes Lloyd Harris,yes Alan Magadan,yes Jaime Faria,yes Felix Auger-Aliassime",
-      "volume": null
-    },
-    {
-      "ticker": "KXMVECROSSCATEGORY-SHARD1-S2026CC9CE08718B-D56AA44AA23",
-      "event_ticker": "KXMVECROSSCATEGORY-SHARD1-S2026CC9CE08718B",
-      "title": "yes Darwin Blanch,yes Alan Magadan,yes Moise Kouame,yes Lorenzo Musetti,yes Felix Auger-Aliassime,yes Houston,yes Dallas,yes Seattle",
-      "subtitle": null,
-      "yes_sub_title": "yes Darwin Blanch,yes Alan Magadan,yes Moise Kouame,yes Lorenzo Musetti,yes Felix Auger-Aliassime,yes Houston,yes Dallas,yes Seattle",
-      "volume": null
-    },
-    {
-      "ticker": "KXMVECROSSCATEGORY-SHARD1-S20265941DA95582-C69D81D8DF1",
-      "event_ticker": "KXMVECROSSCATEGORY-SHARD1-S20265941DA95582",
-      "title": "yes Taylor Fritz,yes Reg Time: Montevideo City,yes Over 0.5 goals scored,yes Dorados de Chihuahua,yes Los Angeles D -2.5 first 5 innings,yes Seattle wins by over 1.5 runs,no Over 12.5 runs scored,no Over 11.5 runs scored,yes Over 5.5 runs scored,no Over 15.5 runs scored,yes Over 3.5 runs scored,yes Over 2.5 runs scored,yes Over 2.5 runs scored,yes Over 2.5 runs scored,yes Over 2.5 runs scored,yes Over 1.5 goals scored,yes Over 1.5 goals scored,no Over 4.5 goals scored,no Over 4.5 goals scored,yes Over 1.5 goals scored,yes Over 1.5 goals scored,yes Over 1.5 goals scored,no Over 4.5 goals scored,yes Over 1.5 goals scored,yes Courtney Williams: 2+",
-      "subtitle": null,
-      "yes_sub_title": "yes Taylor Fritz,yes Reg Time: Montevideo City,yes Over 0.5 goals scored,yes Dorados de Chihuahua,yes Los Angeles D -2.5 first 5 innings,yes Seattle wins by over 1.5 runs,no Over 12.5 runs scored,no Over 11.5 runs scored,yes Over 5.5 runs scored,no Over 15.5 runs scored,yes Over 3.5 runs scored,yes Over 2.5 runs scored,yes Over 2.5 runs scored,yes Over 2.5 runs scored,yes Over 2.5 runs scored,yes Over 1.5 goals scored,yes Over 1.5 goals scored,no Over 4.5 goals scored,no Over 4.5 goals scored,yes Over 1.5 goals scored,yes Over 1.5 goals scored,yes Over 1.5 goals scored,no Over 4.5 goals scored,yes Over 1.5 goals scored,yes Courtney Williams: 2+",
-      "volume": null
-    },
-    {
-      "ticker": "KXMVECROSSCATEGORY-SHARD1-S2026D75382FA51A-54464866F12",
-      "event_ticker": "KXMVECROSSCATEGORY-SHARD1-S2026D75382FA51A",
-      "title": "yes Jacob Fearnley,yes Lorenzo Musetti,yes A's,yes Seattle,yes Washington,yes Houston,yes Los Angeles D,no Over 13.5 runs scored,no Over 10.5 runs scored,no Over 9.5 runs scored,yes Aryna Sabalenka",
-      "subtitle": null,
-      "yes_sub_title": "yes Jacob Fearnley,yes Lorenzo Musetti,yes A's,yes Seattle,yes Washington,yes Houston,yes Los Angeles D,no Over 13.5 runs scored,no Over 10.5 runs scored,no Over 9.5 runs scored,yes Aryna Sabalenka",
-      "volume": null
-    },
-    {
-      "ticker": "KXMVECROSSCATEGORY-SHARD1-S2026212F18709CD-A76CC50E6F3",
-      "event_ticker": "KXMVECROSSCATEGORY-SHARD1-S2026212F18709CD",
-      "title": "yes Alan Magadan,yes Frances Tiafoe,yes A's,yes Seattle,yes Washington,yes Houston,yes Los Angeles D,yes Los Angeles F,yes Atlanta,yes Chicago Fire,yes Tie,yes Houston",
-      "subtitle": null,
-      "yes_sub_title": "yes Alan Magadan,yes Frances Tiafoe,yes A's,yes Seattle,yes Washington,yes Houston,yes Los Angeles D,yes Los Angeles F,yes Atlanta,yes Chicago Fire,yes Tie,yes Houston",
-      "volume": null
-    },
-    {
-      "ticker": "KXMVECROSSCATEGORY-SHARD1-S202642ACC736B7A-AC3CFF39AD9",
-      "event_ticker": "KXMVECROSSCATEGORY-SHARD1-S202642ACC736B7A",
-      "title": "yes Darwin Blanch,yes Mackenzie McDonald,yes Alex Hernandez,yes Filip Cristian Jianu,yes Jaime Faria,yes Frances Tiafoe,yes Tommy Paul,yes Jeffrey Hsu",
-      "subtitle": null,
-      "yes_sub_title": "yes Darwin Blanch,yes Mackenzie McDonald,yes Alex Hernandez,yes Filip Cristian Jianu,yes Jaime Faria,yes Frances Tiafoe,yes Tommy Paul,yes Jeffrey Hsu",
-      "volume": null
-    },
-    {
-      "ticker": "KXMVECROSSCATEGORY-SHARD1-S2026CFAE7B8BCD1-91C4618A9C7",
-      "event_ticker": "KXMVECROSSCATEGORY-SHARD1-S2026CFAE7B8BCD1",
-      "title": "yes Taylor Fritz,yes A's,yes Seattle,yes Washington,yes Houston,yes Los Angeles D,yes Portland,yes Salt Lake,yes Seattle,yes Aryna Sabalenka",
-      "subtitle": null,
-      "yes_sub_title": "yes Taylor Fritz,yes A's,yes Seattle,yes Washington,yes Houston,yes Los Angeles D,yes Portland,yes Salt Lake,yes Seattle,yes Aryna Sabalenka",
-      "volume": null
-    },
-    {
-      "ticker": "KXMVECROSSCATEGORY-SHARD1-S2026C79D4B743D4-983944E6770",
-      "event_ticker": "KXMVECROSSCATEGORY-SHARD1-S2026C79D4B743D4",
-      "title": "yes Lorenzo Musetti,yes Christopher O'Connell,yes Felix Auger-Aliassime,yes Flavio Cobolli,yes Arthur Fils,yes Seattle,yes Aryna Sabalenka,yes Iga Swiatek",
-      "subtitle": null,
-      "yes_sub_title": "yes Lorenzo Musetti,yes Christopher O'Connell,yes Felix Auger-Aliassime,yes Flavio Cobolli,yes Arthur Fils,yes Seattle,yes Aryna Sabalenka,yes Iga Swiatek",
-      "volume": null
-    },
-    {
-      "ticker": "KXMVECROSSCATEGORY-SHARD1-S202697F3C628AF0-27C6F4F05A5",
-      "event_ticker": "KXMVECROSSCATEGORY-SHARD1-S202697F3C628AF0",
-      "title": "yes Lloyd Harris,yes Jacob Fearnley,yes Alan Magadan,yes Lorenzo Musetti,yes Frances Tiafoe,yes A's,yes Seattle,yes Washington,yes Los Angeles D",
-      "subtitle": null,
-      "yes_sub_title": "yes Lloyd Harris,yes Jacob Fearnley,yes Alan Magadan,yes Lorenzo Musetti,yes Frances Tiafoe,yes A's,yes Seattle,yes Washington,yes Los Angeles D",
-      "volume": null
-    },
-    {
-      "ticker": "KXMVECROSSCATEGORY-SHARD1-S20262D4C3F949FD-D497D8ED7F1",
-      "event_ticker": "KXMVECROSSCATEGORY-SHARD1-S20262D4C3F949FD",
-      "title": "yes Lorenzo Musetti,no Target Price: $69,588.09,yes A's,yes Seattle,yes Washington,yes Los Angeles D",
-      "subtitle": null,
-      "yes_sub_title": "yes Lorenzo Musetti,no Target Price: $69,588.09,yes A's,yes Seattle,yes Washington,yes Los Angeles D",
-      "volume": null
-    },
-    {
-      "ticker": "KXMVECROSSCATEGORY-SHARD1-S2026CCD68600414-A20C5BB59F0",
-      "event_ticker": "KXMVECROSSCATEGORY-SHARD1-S2026CCD68600414",
-      "title": "yes Jacob Fearnley,yes Jan Kumstat,yes Frances Tiafoe,yes Tommy Paul,yes Arthur Fils,yes Shunsuke Mitsui,yes Matthew Dellavedova,yes Hiroki Moriya,yes Petr Bar Biryukov,yes Tai Leonard Sach,yes Kokoro Isomura,yes M Rifqi Fitriadi,yes Yun Seong Chung,yes Yusuke Takahashi,yes Tianhui Zhang,yes Anchisa Chanta,yes Dabin Kim,yes Rinko Matsuda,yes Ya Yi Yang,yes Yidi Yang,yes Natsuki Yoshimoto,yes Dorados de Chihuahua,yes Freseros de Irapuato,yes Fuerza Regia,yes Los Angeles D,yes Golden State,yes Aryna Sabalenka,yes Jessica Pegula,yes Iga Swiatek",
-      "subtitle": null,
-      "yes_sub_title": "yes Jacob Fearnley,yes Jan Kumstat,yes Frances Tiafoe,yes Tommy Paul,yes Arthur Fils,yes Shunsuke Mitsui,yes Matthew Dellavedova,yes Hiroki Moriya,yes Petr Bar Biryukov,yes Tai Leonard Sach,yes Kokoro Isomura,yes M Rifqi Fitriadi,yes Yun Seong Chung,yes Yusuke Takahashi,yes Tianhui Zhang,yes Anchisa Chanta,yes Dabin Kim,yes Rinko Matsuda,yes Ya Yi Yang,yes Yidi Yang,yes Natsuki Yoshimoto,yes Dorados de Chihuahua,yes Freseros de Irapuato,yes Fuerza Regia,yes Los Angeles D,yes Golden State,yes Aryna Sabalenka,yes Jessica Pegula,yes Iga Swiatek",
-      "volume": null
-    },
-    {
-      "ticker": "KXMVECROSSCATEGORY-SHARD1-S2026AB9CF8FA41B-CC6B16739F7",
-      "event_ticker": "KXMVECROSSCATEGORY-SHARD1-S2026AB9CF8FA41B",
-      "title": "yes Lloyd Harris,yes Alan Magadan,yes Moise Kouame,yes Lorenzo Musetti,yes Taylor Fritz,yes Frances Tiafoe,yes Chicago Fire,yes Houston,yes Washington",
-      "subtitle": null,
-      "yes_sub_title": "yes Lloyd Harris,yes Alan Magadan,yes Moise Kouame,yes Lorenzo Musetti,yes Taylor Fritz,yes Frances Tiafoe,yes Chicago Fire,yes Houston,yes Washington",
-      "volume": null
+      "can_close_early": true,
+      "close_time": "2026-09-03T00:30:00Z",
+      "created_time": "2026-08-19T00:30:52.498368Z",
+      "custom_strike": {
+        "tennis_competitor": "ab190640-8df5-460e-b1fb-b9659ed6a96f"
+      },
+      "early_close_condition": "This market will close and expire after a winner is declared.",
+      "event_ticker": "KXWTAMATCH-26AUG19SABBEJ",
+      "exchange_index": 0,
+      "expected_expiration_time": "2026-08-20T03:30:00Z",
+      "expiration_time": "2026-09-03T00:30:00Z",
+      "expiration_value": "",
+      "last_price_dollars": "0.8800",
+      "latest_expiration_time": "2026-09-03T00:30:00Z",
+      "liquidity_dollars": "0.0000",
+      "market_type": "binary",
+      "no_ask_dollars": "0.1300",
+      "no_bid_dollars": "0.1200",
+      "no_sub_title": "Aryna Sabalenka",
+      "notional_value_dollars": "1.0000",
+      "occurrence_datetime": "2026-08-20T03:30:00Z",
+      "open_interest_fp": "205508.46",
+      "open_time": "2026-08-19T00:35:00Z",
+      "previous_price_dollars": "0.9100",
+      "previous_yes_ask_dollars": "0.9100",
+      "previous_yes_bid_dollars": "0.8100",
+      "price_level_structure": "linear_cent",
+      "price_ranges": [
+        {
+          "end": "1.0000",
+          "start": "0.0000",
+          "step": "0.0100"
+        }
+      ],
+      "result": "",
+      "rules_primary": "If Aryna Sabalenka wins the Sabalenka vs Bejlek professional tennis match in the 2026 WTA Cincinnati Round Of 16 after a ball has been played, then the market resolves to Yes.",
+      "rules_secondary": "The following market refers to the Sabalenka vs Bejlek professional tennis match in the 2026 WTA Cincinnati Round Of 16 after a ball has been played. If the match does not occur (signaled by a ball being played) due to a player injury, walkover, forfeiture, or any other cancellation (all before the match starts), the market will resolve to a fair price in accordance with the rules. If this match is postponed or delayed, the market will remain open and close after the rescheduled match has finished (within two weeks).\n\nKalshi is not affiliated, associated, authorized, endorsed by, or in any way officially connected with the Governing League. All trademarks, logos, and brand names are the property of their respective owners.",
+      "settlement_timer_seconds": 60,
+      "status": "active",
+      "strike_type": "structured",
+      "ticker": "KXWTAMATCH-26AUG19SABBEJ-SAB",
+      "title": "Will Aryna Sabalenka win the Sabalenka vs Bejlek: Round Of 16 match?",
+      "updated_time": "2026-08-20T02:01:08.906137Z",
+      "volume_24h_fp": "142791.05",
+      "volume_fp": "218029.80",
+      "yes_ask_dollars": "0.8800",
+      "yes_ask_size_fp": "128141.00",
+      "yes_bid_dollars": "0.8700",
+      "yes_bid_size_fp": "14937.30",
+      "yes_sub_title": "Aryna Sabalenka"
     }
   ],
-  "echantillon_tennis": [
-    {
-      "ticker": "KXITFDOUBLES-26AUG20BAEHAMGIAANT-GIAANT",
-      "event_ticker": "KXITFDOUBLES-26AUG20BAEHAMGIAANT",
-      "title": "Giamichelle / Antonio Vergara del Puerto wins",
-      "subtitle": null,
-      "yes_sub_title": "Giamichelle / Antonio Vergara del Puerto",
-      "yes_bid": null,
-      "yes_ask": null,
-      "volume": null,
-      "open_interest": null,
-      "close_time": "2026-09-03T17:30:00Z"
+  "detail": {
+    "Taylor Fritz vs Christopher O'Connell": {
+      "tournoi": "ATP Cincinnati",
+      "n_marches": 12,
+      "volume": 185717,
+      "open_interest": 165441,
+      "spread_min_pts": 1.0,
+      "tickers": [
+        "KXATP-26CINCIN-TIA",
+        "KXATP-26CINCIN-MUS",
+        "KXATP-26CINCIN-NAK",
+        "KXATP-26CINCIN-AUG",
+        "KXATP-26CINCIN-OCO",
+        "KXATP-26CINCIN-FRI"
+      ]
     },
-    {
-      "ticker": "KXITFDOUBLES-26AUG20BAEHAMGIAANT-BAEHAM",
-      "event_ticker": "KXITFDOUBLES-26AUG20BAEHAMGIAANT",
-      "title": "Baez / Hammoud wins",
-      "subtitle": null,
-      "yes_sub_title": "Baez / Hammoud",
-      "yes_bid": null,
-      "yes_ask": null,
-      "volume": null,
-      "open_interest": null,
-      "close_time": "2026-09-03T17:30:00Z"
+    "Frances Tiafoe vs Felix Auger-Aliassime": {
+      "tournoi": "ATP Cincinnati",
+      "n_marches": 64,
+      "volume": 6631160,
+      "open_interest": 5795306,
+      "spread_min_pts": 1.0,
+      "tickers": [
+        "KXATPEXACTMATCH-26AUG19TIAAUG-TIA21",
+        "KXATPEXACTMATCH-26AUG19TIAAUG-TIA20",
+        "KXATPEXACTMATCH-26AUG19TIAAUG-AUG21",
+        "KXATPEXACTMATCH-26AUG19TIAAUG-AUG20",
+        "KXATPMATCH-26AUG19TIAAUG-TIA",
+        "KXATPMATCH-26AUG19TIAAUG-AUG"
+      ]
     },
-    {
-      "ticker": "KXITFDOUBLES-26AUG20ARISANMARMON-MARMON",
-      "event_ticker": "KXITFDOUBLES-26AUG20ARISANMARMON",
-      "title": "Martinez / Monferrer wins",
-      "subtitle": null,
-      "yes_sub_title": "Martinez / Monferrer",
-      "yes_bid": null,
-      "yes_ask": null,
-      "volume": null,
-      "open_interest": null,
-      "close_time": "2026-09-03T17:30:00Z"
+    "Jaime Faria vs Lorenzo Musetti": {
+      "tournoi": "ATP Cincinnati",
+      "n_marches": 18,
+      "volume": 1781574,
+      "open_interest": 1428136,
+      "spread_min_pts": 1.0,
+      "tickers": [
+        "KXATPEXACTMATCH-26AUG19FARMUS-MUS21",
+        "KXATPEXACTMATCH-26AUG19FARMUS-MUS20",
+        "KXATPEXACTMATCH-26AUG19FARMUS-FAR21",
+        "KXATPEXACTMATCH-26AUG19FARMUS-FAR20",
+        "KXATPMATCH-26AUG19FARMUS-MUS",
+        "KXATPMATCH-26AUG19FARMUS-FAR"
+      ]
     },
-    {
-      "ticker": "KXITFDOUBLES-26AUG20ARISANMARMON-ARISAN",
-      "event_ticker": "KXITFDOUBLES-26AUG20ARISANMARMON",
-      "title": "Ariel Frutos Alonso / Santino Nunez Vera wins",
-      "subtitle": null,
-      "yes_sub_title": "Ariel Frutos Alonso / Santino Nunez Vera",
-      "yes_bid": null,
-      "yes_ask": null,
-      "volume": null,
-      "open_interest": null,
-      "close_time": "2026-09-03T17:30:00Z"
-    },
-    {
-      "ticker": "KXATPCHALLENGERDOUBLES-26AUG20BLAHERDEVMEN-DEVMEN",
-      "event_ticker": "KXATPCHALLENGERDOUBLES-26AUG20BLAHERDEVMEN",
-      "title": "Murkel Dellien / Facundo Mena wins",
-      "subtitle": null,
-      "yes_sub_title": "Murkel Dellien / Facundo Mena",
-      "yes_bid": null,
-      "yes_ask": null,
-      "volume": null,
-      "open_interest": null,
-      "close_time": "2026-09-03T13:20:00Z"
-    },
-    {
-      "ticker": "KXATPCHALLENGERDOUBLES-26AUG20BLAHERDEVMEN-BLAHER",
-      "event_ticker": "KXATPCHALLENGERDOUBLES-26AUG20BLAHERDEVMEN",
-      "title": "Geoffrey Blancaneaux / Mats Hermans wins",
-      "subtitle": null,
-      "yes_sub_title": "Geoffrey Blancaneaux / Mats Hermans",
-      "yes_bid": null,
-      "yes_ask": null,
-      "volume": null,
-      "open_interest": null,
-      "close_time": "2026-09-03T13:20:00Z"
-    },
-    {
-      "ticker": "KXITFWDOUBLES-26AUG20BOHGARAYASOU-BOHGAR",
-      "event_ticker": "KXITFWDOUBLES-26AUG20BOHGARAYASOU",
-      "title": "Bohrer Martins / Garcia Vidal wins",
-      "subtitle": null,
-      "yes_sub_title": "Bohrer Martins / Garcia Vidal",
-      "yes_bid": null,
-      "yes_ask": null,
-      "volume": null,
-      "open_interest": null,
-      "close_time": "2026-09-03T17:00:00Z"
-    },
-    {
-      "ticker": "KXITFWDOUBLES-26AUG20BOHGARAYASOU-AYASOU",
-      "event_ticker": "KXITFWDOUBLES-26AUG20BOHGARAYASOU",
-      "title": "Ayala / Sousa Salazar wins",
-      "subtitle": null,
-      "yes_sub_title": "Ayala / Sousa Salazar",
-      "yes_bid": null,
-      "yes_ask": null,
-      "volume": null,
-      "open_interest": null,
-      "close_time": "2026-09-03T17:00:00Z"
-    },
-    {
-      "ticker": "KXITFWDOUBLES-26AUG20CANMIXCOHKAW-COHKAW",
-      "event_ticker": "KXITFWDOUBLES-26AUG20CANMIXCOHKAW",
-      "title": "Cohen Perovani / Kawano Cho wins",
-      "subtitle": null,
-      "yes_sub_title": "Cohen Perovani / Kawano Cho",
-      "yes_bid": null,
-      "yes_ask": null,
-      "volume": null,
-      "open_interest": null,
-      "close_time": "2026-09-03T17:00:00Z"
-    },
-    {
-      "ticker": "KXITFWDOUBLES-26AUG20CANMIXCOHKAW-CANMIX",
-      "event_ticker": "KXITFWDOUBLES-26AUG20CANMIXCOHKAW",
-      "title": "Candiotto / Mi wins",
-      "subtitle": null,
-      "yes_sub_title": "Candiotto / Mi",
-      "yes_bid": null,
-      "yes_ask": null,
-      "volume": null,
-      "open_interest": null,
-      "close_time": "2026-09-03T17:00:00Z"
-    },
-    {
-      "ticker": "KXWTAGTOTAL-26AUG20SWIRYB-26",
-      "event_ticker": "KXWTAGTOTAL-26AUG20SWIRYB",
-      "title": "Over 25.5 games",
-      "subtitle": null,
-      "yes_sub_title": "Over 25.5 games",
-      "yes_bid": null,
-      "yes_ask": null,
-      "volume": null,
-      "open_interest": null,
-      "close_time": "2026-09-03T23:00:00Z"
-    },
-    {
-      "ticker": "KXWTAGTOTAL-26AUG20SWIRYB-21",
-      "event_ticker": "KXWTAGTOTAL-26AUG20SWIRYB",
-      "title": "Over 20.5 games",
-      "subtitle": null,
-      "yes_sub_title": "Over 20.5 games",
-      "yes_bid": null,
-      "yes_ask": null,
-      "volume": null,
-      "open_interest": null,
-      "close_time": "2026-09-03T23:00:00Z"
-    },
-    {
-      "ticker": "KXWTAGTOTAL-26AUG20SWIRYB-16",
-      "event_ticker": "KXWTAGTOTAL-26AUG20SWIRYB",
-      "title": "Over 15.5 games",
-      "subtitle": null,
-      "yes_sub_title": "Over 15.5 games",
-      "yes_bid": null,
-      "yes_ask": null,
-      "volume": null,
-      "open_interest": null,
-      "close_time": "2026-09-03T23:00:00Z"
-    },
-    {
-      "ticker": "KXATPGTOTAL-26AUG20TIRFIL-28",
-      "event_ticker": "KXATPGTOTAL-26AUG20TIRFIL",
-      "title": "Over 27.5 games",
-      "subtitle": null,
-      "yes_sub_title": "Over 27.5 games",
-      "yes_bid": null,
-      "yes_ask": null,
-      "volume": null,
-      "open_interest": null,
-      "close_time": "2026-09-04T00:30:00Z"
-    },
-    {
-      "ticker": "KXATPGTOTAL-26AUG20TIRFIL-23",
-      "event_ticker": "KXATPGTOTAL-26AUG20TIRFIL",
-      "title": "Over 22.5 games",
-      "subtitle": null,
-      "yes_sub_title": "Over 22.5 games",
-      "yes_bid": null,
-      "yes_ask": null,
-      "volume": null,
-      "open_interest": null,
-      "close_time": "2026-09-04T00:30:00Z"
+    "Aryna Sabalenka vs Sara Bejlek": {
+      "tournoi": "WTA Cincinnati",
+      "n_marches": 11,
+      "volume": 451604,
+      "open_interest": 410252,
+      "spread_min_pts": 1.0,
+      "tickers": [
+        "KXWTAMATCH-26AUG19SABBEJ-SAB",
+        "KXWTAMATCH-26AUG19SABBEJ-BEJ",
+        "KXWTA-26CINCIN-GAU",
+        "KXWTA-26CINCIN-KEY",
+        "KXWTA-26CINCIN-BEJ",
+        "KXWTA-26CINCIN-SAB"
+      ]
     }
-  ]
+  }
 }
