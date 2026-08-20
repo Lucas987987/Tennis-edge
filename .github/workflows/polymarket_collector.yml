@@ -161,7 +161,15 @@ jobs:
           # l'index : on l'écarte et on pousse le reste, plutôt que de tout
           # perdre. Le collecteur bascule normalement de partition à 60 Mo
           # (PM_TICKS_MAX_MB) ; ceci est le filet en cas de défaillance.
-          for f in $(git status --porcelain parts/ | awk '{print $2}'); do
+          # CHACUN SES PARTITIONS. Ce workflow ne commite QUE ses propres
+          # fichiers pm_ticks_*. Auparavant il balayait tout parts/ et
+          # embarquait les ticks des AUTRES collecteurs tels qu'ils étaient à
+          # son checkout : quand l'autre workflow y ajoutait des lignes en
+          # parallèle, les deux modifiaient le même fichier en fin de fichier
+          # et le merge partait en conflit — donc run perdu. Constaté : le run
+          # Polymarket du 20/08 a commité 12 427 lignes de l'autre collecteur.
+          # Le .gitattributes (merge=union) reste le filet si ça arrive quand même.
+          for f in $(git status --porcelain 'parts/pm_ticks_*' | awk '{print $2}'); do
             [ -f "$f" ] || continue
             mo=$(du -m "$f" | cut -f1)
             if [ "$mo" -ge 95 ]; then
