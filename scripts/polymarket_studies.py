@@ -72,7 +72,7 @@ def etude_devig(pm, books):
     """1. Le dévigage Shin colle-t-il à la probabilité Polymarket ?"""
     print()
     print("=" * 74)
-    print("1. VALIDATION DU DÉVIGAGE — Shin(Pinnacle) vs probabilité Polymarket")
+    print("1. VALIDATION DU DÉVIGAGE — Shin(Pinnacle) vs marché de prédiction")
     print("=" * 74)
 
     # UNITÉ = LE MATCH, pas l'instant. Les points d'un même match, échantillonnés
@@ -121,7 +121,7 @@ def etude_devig(pm, books):
         print(f"  {len(tous)} match(s) seulement — trop peu pour un intervalle.")
         return {'n_matchs': len(tous)}
     print(f"  n = {len(tous)} matchs ({n_points} instants, grille 5 min)")
-    print(f"  écart moyen Shin - Polymarket : {m:+.2f} pts  IC95 [{lo:+.2f} ; {hi:+.2f}]")
+    print(f"  écart moyen Shin - marché      : {m:+.2f} pts  IC95 [{lo:+.2f} ; {hi:+.2f}]")
     print(f"  écart médian par match : {st.median(tous):+.2f} pts")
 
     # ── Comparaison des deux dévigages ───────────────────────────────────
@@ -160,7 +160,7 @@ def etude_devig(pm, books):
     signif = not (lo <= 0 <= hi)
     materiel = abs(m) >= BIAIS_MATERIEL
     if not signif:
-        print("  → Shin est INDISCERNABLE du prix Polymarket : le dévigage utilisé")
+        print("  → Shin est INDISCERNABLE du prix du marché de prédiction : le dévigage")
         print("    partout dans le projet est validé.")
     elif not materiel:
         print(f"  → biais détectable ({m:+.2f} pts) mais SOUS le seuil de matérialité")
@@ -186,8 +186,8 @@ def etude_confirmateur(pm, books):
     """2. Polymarket confirme-t-il utilement un mouvement Pinnacle ?"""
     print()
     print("=" * 74)
-    print("2. POLYMARKET COMME CONFIRMATEUR — l'écart chez un book mou se")
-    print(f"   referme-t-il mieux quand Polymarket confirme ? (mouvement ≥ {MOVE_MIN*100:.0f} pts)")
+    print("2. LE MARCHÉ DE PRÉDICTION COMME CONFIRMATEUR — l'écart chez un book mou")
+    print(f"   se referme-t-il mieux quand il confirme ? (mouvement ≥ {MOVE_MIN*100:.0f} pts)")
     print("=" * 74)
 
     confirme, infirme, muet = [], [], []
@@ -211,7 +211,7 @@ def etude_confirmateur(pm, books):
             continue                      # trop tard = bruit d'avant-match
         cote_side = 'home' if shift > 0 else 'away'
 
-        # Polymarket a-t-il bougé dans le même sens sur la même fenêtre ?
+        # Le marché de prédiction a-t-il bougé dans le même sens ?
         pm_serie = [(x[0], x[1]) for x in serie_pm]
         p_pm_t = pc.valeur_a(pm_serie, t)
         p_pm_0 = pc.valeur_a(pm_serie, t - datetime.timedelta(minutes=LOOKBACK))
@@ -283,7 +283,7 @@ def etude_divergence(pm, books, resultats):
     """3. En cas de désaccord, qui prédit le mieux ?"""
     print()
     print("=" * 74)
-    print(f"3. DIVERGENCE ≥ {DIVERG_MIN*100:.0f} PTS — qui a raison, Polymarket ou {pc.SHARP} ?")
+    print(f"3. DIVERGENCE ≥ {DIVERG_MIN*100:.0f} PTS — qui a raison, le marché ou {pc.SHARP} ?")
     print("=" * 74)
     if not resultats:
         print("  set_results.json introuvable ou vide.")
@@ -319,15 +319,15 @@ def etude_divergence(pm, books, resultats):
     a, alo, ahi = ic_prop(pm_ok)
     c, clo, chi = ic_prop(pin_ok)
     print(f"  n = {len(pm_ok)} matchs où les deux s'écartent de ≥ {DIVERG_MIN*100:.0f} pts")
-    print(f"  écart médian : {st.median(ecarts):+.1f} pts (Polymarket - {pc.SHARP})")
+    print(f"  écart médian : {st.median(ecarts):+.1f} pts (marché - {pc.SHARP})")
     print()
-    print(f"  {'Polymarket a raison':>22} : {a*100:5.1f}%  IC95 [{alo*100:5.1f} ; {ahi*100:5.1f}]")
+    print(f"  {'marché prédiction':>22} : {a*100:5.1f}%  IC95 [{alo*100:5.1f} ; {ahi*100:5.1f}]")
     print(f"  {pc.SHARP + ' a raison':>22} : {c*100:5.1f}%  IC95 [{clo*100:5.1f} ; {chi*100:5.1f}]")
     print()
     if alo > chi:
-        print("  → Polymarket devance nettement. À confirmer hors échantillon.")
+        print("  → le marché de prédiction devance nettement. À confirmer hors échantillon.")
     elif clo > ahi:
-        print(f"  → {pc.SHARP} devance nettement : Polymarket n'apporte rien ici.")
+        print(f"  → {pc.SHARP} devance nettement : le marché de prédiction n'apporte rien ici.")
     else:
         print("  → intervalles chevauchants : AUCUN des deux ne devance l'autre.")
     return {'n': len(pm_ok), 'pm': round(a, 3), 'sharp': round(c, 3),
@@ -339,16 +339,16 @@ def main():
     quoi = (sys.argv[1] if len(sys.argv) > 1 else 'all').lower()
     pm = pc.charger_pm()
     if not pm:
-        print("\n❌ aucune série Polymarket. Le collecteur a-t-il tourné ?")
+        print("\n❌ aucune série de marché de prédiction. Un collecteur a-t-il tourné ?")
         return
     books = pc.charger_books(set(pm))
     n_pin = sum(1 for u in books if pc.SHARP in books[u])
     print(f"Books      : {len(books)} match(s), dont {n_pin} avec {pc.SHARP}")
     if not n_pin:
-        print("\n❌ aucun match commun entre ticks Polymarket et courbes.")
+        print("\n❌ aucun match commun entre les ticks et les courbes.")
         return
 
-    rapport = {'genere_le': datetime.datetime.utcnow().isoformat(timespec='seconds')}
+    rapport = {'genere_le': datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None).isoformat(timespec='seconds')}
     if quoi in ('devig', 'all'):
         rapport['devigage'] = etude_devig(pm, books)
     if quoi in ('confirm', 'all'):

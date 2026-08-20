@@ -52,7 +52,12 @@ import collections
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import oddspapi_v5 as ov  # noqa: E402
 
-PM_GLOB     = os.environ.get('PM_TICKS_GLOB', 'parts/pm_ticks_*.jsonl')
+# Kalshi d'abord si des ticks existent : couverture plus large (Challengers,
+# ITF) et 40x moins de volume. PM_TICKS_GLOB force une source précise.
+PM_GLOB      = os.environ.get(
+    'PM_TICKS_GLOB',
+    'parts/kx_ticks_*.jsonl' if glob.glob('parts/kx_ticks_*.jsonl')
+    else 'parts/pm_ticks_*.jsonl')
 CURVES      = os.environ.get('CURVES', 'book_curves_live.jsonl')
 MARKET_TYPE = os.environ.get('MARKET_TYPE', 'match')
 GRID_MIN    = float(os.environ.get('GRID_MIN', '5'))
@@ -96,7 +101,14 @@ def load_pm():
             except Exception:
                 continue
             n_lignes += 1
-            if r.get('market_type') != MARKET_TYPE:
+            # Kalshi n'écrit PAS market_type : son collecteur ne suit que les
+            # séries « vainqueur du match », donc tout tick est déjà du bon
+            # type. Exiger le champ rejetait 100 % des ticks Kalshi — et en
+            # silence, ce qui est le pire cas.
+            mt = r.get('market_type')
+            if mt is not None and mt != MARKET_TYPE:
+                continue
+            if mt is None and MARKET_TYPE != 'match':
                 continue
             uid = r.get('local_uid')
             side = r.get('local_side')
@@ -332,7 +344,7 @@ def main():
         print("  de cet ordre est INDISCERNABLE de zéro, quelle que soit la corrélation.")
 
     json.dump({
-        'genere_le': datetime.datetime.utcnow().isoformat(timespec='seconds'),
+        'genere_le': datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None).isoformat(timespec='seconds'),
         'market_type': MARKET_TYPE, 'sharp': SHARP,
         'grille_min': GRID_MIN, 'n_matchs': n,
         'profil': {str(k * GRID_MIN): round(v, 4) for k, v in profil.items()},
