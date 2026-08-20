@@ -1,0 +1,33 @@
+# Fusion des fichiers APPEND-ONLY
+#
+# PROBLÈME. Plusieurs workflows écrivent en parallèle dans parts/ :
+# capture_closing (live_*), fetch_book_curves (hist_*), polymarket_collector
+# (pm_ticks_*), kalshi_collector (kx_ticks_*). Tous AJOUTENT des lignes EN FIN
+# DE FICHIER — et c'est précisément le cas où git échoue le plus souvent.
+# Reproduit en bac à sable : deux workflows ajoutant chacun des lignes au même
+# .jsonl donnent « CONFLICT (content): Merge conflict ». Or l'étape de commit
+# fait « Merge non automatique — abandon » et sort en erreur : tout le run est
+# perdu, y compris les fichiers qui n'avaient rien à voir avec le conflit.
+#
+# SOLUTION. Le pilote « union », intégré à git, concatène les deux versions au
+# lieu de refuser la fusion. Vérifié : les lignes des deux côtés sont TOUTES
+# conservées, aucune perte. C'est le comportement correct pour un journal
+# append-only, où l'ordre exact des lignes n'a aucune importance — chaque ligne
+# porte son propre horodatage.
+#
+# LIMITE ASSUMÉE. « union » peut dupliquer une ligne présente des deux côtés.
+# Sans conséquence ici : les analyses dédupliquent déjà (match_key.py côté
+# courbes, clé ticker+ts côté ticks), et une ligne en double vaut infiniment
+# mieux qu'un run perdu.
+#
+# Ceci reste un FILET. La vraie protection est que chaque workflow ne commite
+# QUE ses propres partitions — voir la note dans chaque fichier .yml.
+parts/*.jsonl merge=union
+
+# Journaux et registres append-only à la racine, même raisonnement.
+*_log.jsonl merge=union
+clv_history.jsonl merge=union
+paper_trades_*.jsonl merge=union
+
+# Les partitions compressées sont binaires : jamais de fusion ligne à ligne.
+parts/*.jsonl.gz binary
