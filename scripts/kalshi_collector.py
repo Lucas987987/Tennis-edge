@@ -68,13 +68,23 @@ TIMEOUT    = float(os.environ.get('HTTP_TIMEOUT', '25'))
 # 0,06 s (16 req/s) provoquait 55 rejets 429 sur 134 séries. 0,3 s = ~3 req/s.
 PAUSE      = float(os.environ.get('KX_PAUSE_S', '0.3'))
 # Une écriture par marché au plus toutes les N secondes, SAUF mouvement réel.
+# Doit rester SOUS la période de sondage, sinon le limiteur annulerait le gain
+# de résolution qu'on vient de payer : à 30 s de sondage, un seuil de 30 s
+# filtrerait un cycle sur deux.
 MIN_INTERVAL_S = float(os.environ.get('KX_MIN_INTERVAL_S', '20'))
 MIN_DELTA      = float(os.environ.get('KX_MIN_DELTA', '0.002'))
 # Au-delà, nouvelle partition : le mur GitHub est à 100 Mo PAR FICHIER.
 TICKS_MAX_MB   = float(os.environ.get('KX_TICKS_MAX_MB', '60'))
 # Les séries changent rarement ; les marchés, souvent.
 SERIES_REFRESH = float(os.environ.get('KX_SERIES_REFRESH_S', '1800'))
-POLL_S         = float(os.environ.get('KX_POLL_S', '60'))
+# 30 s devient possible GRÂCE aux cycles ciblés : tant qu'un cycle coûtait 49 s
+# d'appels API, viser moins de 60 s n'avait aucun sens. Avec 2,7 s par cycle
+# ciblé, on passe de 9 à ~29 points de mesure par run de 15 min, soit trois fois
+# plus de résolution pour l'analyse lead/lag.
+POLL_S         = float(os.environ.get('KX_POLL_S', '30'))
+# Périodicité du BALAYAGE COMPLET des séries. Entre deux balayages, seules les
+# séries qui ont effectivement fourni un de nos matchs sont interrogées.
+SCAN_REFRESH   = float(os.environ.get('KX_SCAN_REFRESH_S', '600'))
 
 TENNIS_KW = ('tennis', 'atp', 'wta', 'itf', 'challenger', 'wimbledon',
              'us open', 'roland garros', 'australian open', 'slam')
@@ -249,16 +259,27 @@ def series_tennis():
     return gardees
 
 
-def collecter_marches(series):
+def collecter_marches(series, tickers=None):
+    """Interroge les séries. `tickers` restreint à un sous-ensemble.
+
+    Sur 109 séries tennis, 5 ou 6 seulement contiennent nos matchs : les
+    interroger toutes coûtait 46 s par cycle (109 x 0,3 s de pause + réseau),
+    d'où un cycle réel de 106 s au lieu des 60 s visées. On mesure donc une
+    fois quelles séries sont PRODUCTIVES, puis on n'interroge plus qu'elles.
+    """
     marches, rejets = [], collections.Counter()
     for s in series:
         tk = s.get('ticker')
         if not tk:
             continue
+        if tickers is not None and tk not in tickers:
+            continue
         try:
             r = http_get('/markets', {'series_ticker': tk,
                                       'status': 'open', 'limit': 200})
-            marches.extend(r.get('markets') or [])
+            for m in (r.get('markets') or []):
+                m['_serie'] = tk          # trace : quelle série a fourni quoi
+                marches.append(m)
         except urllib.error.HTTPError as e:
             rejets[f'http_{e.code}'] += 1
         except Exception:
@@ -421,10 +442,12 @@ def main():
     fin = time.monotonic() + args.duration_seconds
     ecrivain = Ecrivain()
     series, t_series, suivis = [], 0.0, []
+    productives, t_scan = None, 0.0
     sauver_etat(running=True, last_run_at=iso_now())
 
     try:
         while True:
+            t_cycle = time.monotonic()
             if time.monotonic() - t_series > SERIES_REFRESH or not series:
                 series = series_tennis()
                 t_series = time.monotonic()
@@ -432,11 +455,34 @@ def main():
                     print('❌ aucune série tennis exploitable.')
                     break
 
-            marches = collecter_marches(series)
+            # BALAYAGE COMPLET vs CYCLE CIBLÉ.
+            # Le balayage complet (109 séries) sert à DÉCOUVRIR quelles séries
+            # portent nos matchs. Une fois connues, les cycles suivants ne
+            # visent qu'elles : ~6 appels au lieu de 109, soit un cycle de
+            # quelques secondes au lieu de 106 -- donc bien plus de points de
+            # mesure par heure, ce qui est tout l'enjeu du lead/lag.
+            # On refait un balayage complet à chaque rafraîchissement des
+            # séries, pour capter les matchs d'un tournoi nouvellement ouvert.
+            complet = productives is None or (time.monotonic() - t_scan) > SCAN_REFRESH
+            marches = collecter_marches(series, None if complet else productives)
             suivis = apparier(marches, locaux)
             par_uid = len({s['local_uid'] for s in suivis})
-            print(f'{len(marches)} marché(s) · {len(suivis)} suivi(s) '
-                  f'sur {par_uid} match(s) de notre univers')
+
+            if complet:
+                t_scan = time.monotonic()
+                trouvees = {m.get('_serie') for m in marches
+                            if m.get('ticker') in {x['ticker'] for x in suivis}}
+                trouvees.discard(None)
+                productives = trouvees or None
+                print(f'{len(marches)} marché(s) · {len(suivis)} suivi(s) '
+                      f'sur {par_uid} match(s) — balayage complet '
+                      f'({len(series)} séries) -> {len(trouvees)} série(s) productive(s)')
+                if trouvees:
+                    print(f'   séries retenues : {sorted(trouvees)}')
+            else:
+                print(f'{len(marches)} marché(s) · {len(suivis)} suivi(s) '
+                      f'sur {par_uid} match(s) — cycle ciblé '
+                      f'({len(productives)} série(s))')
 
             if not args.dry_run:
                 index = {s['ticker']: s for s in suivis}
@@ -454,7 +500,11 @@ def main():
             if reste < POLL_S / 2:
                 print(f'⏹️ {reste:.0f}s restantes — cycle trop court, arrêt propre.')
                 break
-            time.sleep(min(POLL_S, reste))
+            # La pause déduit le temps DÉJÀ passé à interroger l'API : sans ça,
+            # un cycle de 46 s suivi d'une pause de 60 s donne 106 s réelles au
+            # lieu des 60 s visées.
+            ecoule = time.monotonic() - t_cycle
+            time.sleep(max(0.0, min(POLL_S - ecoule, reste)))
     finally:
         sauver_etat(running=False, stopped_at=iso_now(),
                     derniers_suivis=len(suivis),
