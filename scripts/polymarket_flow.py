@@ -50,7 +50,12 @@ import collections
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import oddspapi_v5 as ov  # noqa: E402
 
-PM_GLOB      = os.environ.get('PM_TICKS_GLOB', 'parts/pm_ticks_*.jsonl')
+# Kalshi d'abord si des ticks existent : couverture plus large (Challengers,
+# ITF) et 40x moins de volume. PM_TICKS_GLOB force une source précise.
+PM_GLOB      = os.environ.get(
+    'PM_TICKS_GLOB',
+    'parts/kx_ticks_*.jsonl' if glob.glob('parts/kx_ticks_*.jsonl')
+    else 'parts/pm_ticks_*.jsonl')
 CURVES       = os.environ.get('CURVES', 'book_curves_live.jsonl')
 MARKET_TYPE  = os.environ.get('MARKET_TYPE', 'match')
 SHARP        = os.environ.get('SHARP_BOOK', 'pinnacle')
@@ -93,7 +98,14 @@ def charger_ticks():
             except Exception:
                 continue
             n += 1
-            if r.get('market_type') != MARKET_TYPE:
+            # Kalshi n'écrit PAS market_type : son collecteur ne suit que les
+            # séries « vainqueur du match », donc tout tick est déjà du bon
+            # type. Exiger le champ rejetait 100 % des ticks Kalshi — et en
+            # silence, ce qui est le pire cas.
+            mt = r.get('market_type')
+            if mt is not None and mt != MARKET_TYPE:
+                continue
+            if mt is None and MARKET_TYPE != 'match':
                 continue
             uid, side, t = r.get('local_uid'), r.get('local_side'), _dt(r.get('ts'))
             if not uid or side not in ('home', 'away') or t is None:
@@ -374,7 +386,7 @@ def main():
         print("\n→ NON CONCLUANT à ce stade. Aucune anticipation démontrée.")
 
     json.dump({
-        'genere_le': datetime.datetime.utcnow().isoformat(timespec='seconds'),
+        'genere_le': datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None).isoformat(timespec='seconds'),
         'market_type': MARKET_TYPE, 'move_min_pts': MOVE_MIN * 100,
         'lookback_min': LOOKBACK, 'min_notional': MIN_NOTIONAL,
         'n_evenements': n_ev,
