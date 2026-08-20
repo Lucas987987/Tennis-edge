@@ -98,7 +98,11 @@ MARKETS_FILE = Path(os.environ.get("PM_MARKETS_FILE", "polymarket_markets.json")
 # -- un vrai mouvement passe donc toujours, immédiatement, sans latence.
 # Les échanges (last_trade_price) ne sont JAMAIS filtrés : ils sont rares et
 # portent les mises, c'est-à-dire ce que l'étude de flux exploite.
-MIN_INTERVAL_S = float(os.environ.get("PM_MIN_INTERVAL_S", "10"))
+# 10 s laissait passer ~410 000 lignes par jour (210 Mo). La grille d'analyse
+# étant de 5 minutes, 30 s donne encore 10 points par intervalle : largement
+# assez, pour trois fois moins de volume. Un vrai mouvement (PM_MIN_DELTA)
+# passe toujours immédiatement, quelle que soit cette valeur.
+MIN_INTERVAL_S = float(os.environ.get("PM_MIN_INTERVAL_S", "30"))
 MIN_DELTA = float(os.environ.get("PM_MIN_DELTA", "0.002"))
 
 TICKS_DIR = Path(os.environ.get("PM_TICKS_DIR", "parts"))
@@ -938,17 +942,24 @@ class Collector:
         # market_id suffit à retrouver le reste ; local_uid, local_side et
         # market_type sont conservés car ce sont les clés de jointure de
         # l'analyse.
+        # ALLÈGEMENT (20/08/2026). Mesuré sur 40 000 ticks réels : 504 o par
+        # ligne, dont 78 o pour le seul asset_id — un identifiant de jeton à
+        # 78 chiffres, alors que market_id + outcome_index le désignent déjà
+        # sans ambiguïté. S'y ajoutait le bruit de virgule flottante :
+        # « spread: 0.020000000000000018 » occupe 20 o au lieu de 4.
+        # Résultat : 431 -> 297 o par ligne, soit -31 % sans perte d'information.
+        # À ~410 000 lignes par jour, cela représente une soixantaine de Mo
+        # quotidiens en moins dans le dépôt.
         row = {
             "ts": iso_now(),
-            "exchange_ts": raw.get("timestamp"),
             "event_type": event_type,
             "market_id": m.get("market_id"),
-            "asset_id": (m.get("token_ids") or [None, None])[meta["outcome_index"]],
             "outcome_index": meta["outcome_index"],
             "market_type": m.get("market_type"),
             "local_side": (m.get("outcome_sides") or [None, None])[meta["outcome_index"]],
             "local_uid": (m.get("local_match") or {}).get("uid"),
-            **values,
+            **{k: (round(v, 4) if isinstance(v, float) else v)
+               for k, v in values.items()},
         }
         append_jsonl(ticks_path(), row)
 
