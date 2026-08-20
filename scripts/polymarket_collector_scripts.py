@@ -799,6 +799,8 @@ class Collector:
         self.last_state: Dict[str, Dict[str, Any]] = {}
         # état du limiteur de débit : (asset_id, event_type) -> (t, dernier prix)
         self._last_write: Dict[Any, Any] = {}
+        # événements de service déjà journalisés (type, market_id)
+        self._services_vus = set()
         self.ecrits = 0
         self.filtres = 0
         for m in markets:
@@ -875,13 +877,25 @@ class Collector:
             return
 
         if event_type in {"tick_size_change", "market_resolved", "new_market"}:
-            self.ecrits += 1              # écrit hors _write_tick : à compter ici
+            # ÉVÉNEMENTS DE SERVICE — mesurés le 20/08/2026 sur une partition
+            # réelle : 5 532 lignes pour 18,2 Mo, soit 3 284 o par ligne et
+            # 67 % du VOLUME TOTAL du fichier, alors qu'ils ne portent aucune
+            # information de prix. La cause est le champ "raw", qui recopie le
+            # message brut intégral. Sans les événements de service, la même
+            # partition tombe de 27,2 à 9,0 Mo.
+            # « new_market » est de surcroît répété en boucle : 5 532 occurrences
+            # pour quelques dizaines de marchés réellement suivis. On ne garde
+            # donc que l'essentiel, et une seule fois par marché et par type.
+            cle = (event_type, str(msg.get("market") or msg.get("condition_id") or ""))
+            if cle in self._services_vus:
+                self.filtres += 1
+                return
+            self._services_vus.add(cle)
+            self.ecrits += 1
             append_jsonl(ticks_path(), {
                 "ts": iso_now(),
                 "event_type": event_type,
                 "market_id": msg.get("market") or msg.get("condition_id"),
-                "asset_id": asset_id or None,
-                "raw": msg,
             })
 
     def _write_price_change(self, parent: Dict[str, Any], change: Dict[str, Any]) -> None:
