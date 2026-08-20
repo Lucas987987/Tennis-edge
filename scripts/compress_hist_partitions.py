@@ -38,10 +38,12 @@ MIN_MB  = float(os.environ.get('MIN_MB', '5'))
 DRY     = os.environ.get('DRY_RUN', '0') == '1'
 MARKETS = [m.strip() for m in os.environ.get('MARKETS', 'book,set1,set2').split(',') if m.strip()]
 # Partitions supplémentaires, hors marchés historiques : ticks Polymarket
-# (parts/pm_ticks_<date>.jsonl, une par jour). Même traitement, mêmes garde-fous :
+# (parts/pm_ticks_*, parts/kx_ticks_*). Kalshi manquait à cette liste : ses
+# partitions n'auraient JAMAIS été compressées. Même traitement, mêmes garde-fous :
 # jamais la partition du jour, suppression de l'original après vérification.
 EXTRA_GLOBS = [g.strip() for g in os.environ.get(
-    'EXTRA_GLOBS', 'parts/pm_ticks_*.jsonl').split(',') if g.strip()]
+    'EXTRA_GLOBS',
+    'parts/pm_ticks_*.jsonl,parts/kx_ticks_*.jsonl').split(',') if g.strip()]
 
 
 def verifie(src, dst):
