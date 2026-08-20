@@ -20,6 +20,7 @@ import sys
 import json
 import glob
 import gzip
+import math
 import datetime
 import collections
 
@@ -48,14 +49,49 @@ def _open(p):
     return gzip.open(p, 'rt', encoding='utf-8') if p.endswith('.gz') else open(p, encoding='utf-8')
 
 
-def shin_ph(oh, oa):
-    """Probabilité du home, marge retirée. Normalisation 2 voies."""
+def prop_ph(oh, oa):
+    """Dévigage PROPORTIONNEL : on retire la marge au prorata des cotes."""
     try:
         ih, ia = 1.0 / float(oh), 1.0 / float(oa)
     except Exception:
         return None
     s = ih + ia
     return (ih / s) if s > 0 else None
+
+
+def shin_ph(oh, oa):
+    """Dévigage de SHIN, résolu par itération sur z.
+
+    ATTENTION — PIÈGE CORRIGÉ LE 20/08/2026.
+    Ce fichier définissait une fonction nommée `shin_ph` qui implémentait en
+    réalité une simple normalisation proportionnelle. Or canal_public.py, lui,
+    applique le vrai Shin. Deux fonctions de même nom, deux calculs différents :
+    la première étude de dévigage a donc validé une méthode que le projet
+    n'utilise PAS.
+    L'écart entre les deux atteint 1,6 point sur les cotes déséquilibrées
+    (8.00/1.09 : 12,0 % en proportionnel contre 10,4 % en Shin), et s'annule
+    quand le match est équilibré. C'est précisément sur les favoris marqués que
+    le choix de méthode compte.
+    """
+    try:
+        ih, ia = 1.0 / float(oh), 1.0 / float(oa)
+    except Exception:
+        return None
+    s = ih + ia
+    if s <= 0:
+        return None
+    if s <= 1:
+        return ih / s
+    z = 0.02
+    ph = pa = None
+    for _ in range(50):
+        ph = (math.sqrt(z * z + 4 * (1 - z) * ih * ih / s) - z) / (2 * (1 - z))
+        pa = (math.sqrt(z * z + 4 * (1 - z) * ia * ia / s) - z) / (2 * (1 - z))
+        t = ph + pa
+        if abs(t - 1) < 1e-9:
+            break
+        z = min(max(z + (t - 1), 0.0), 0.3)
+    return ph / (ph + pa) if (ph and pa) else None
 
 
 def charger_pm():
@@ -160,17 +196,21 @@ def charger_books(uids, books=None):
             if len(h) < 2 or len(a) < 2:
                 continue
             ad, serie, last = dict(a), [], None
+            serie_prop = []
             cotes = []
             for t, ph in h:
                 last = ad.get(t, last)
                 if last is None:
                     continue
                 p = shin_ph(ph, last)
+                q = prop_ph(ph, last)
                 if p is not None:
                     serie.append((t, p))
                     cotes.append((t, ph, last))
+                    serie_prop.append((t, q))
             if len(serie) >= 2:
-                out[uid][bk] = {'serie': serie, 'cotes': cotes, 'ct': ct}
+                out[uid][bk] = {'serie': serie, 'serie_prop': serie_prop,
+                               'cotes': cotes, 'ct': ct}
     return out
 
 
