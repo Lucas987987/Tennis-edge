@@ -72,16 +72,37 @@ jobs:
           git config user.name "github-actions"
           git config user.email "actions@github.com"
           git rm --cached book_curves.jsonl set1_curves.jsonl set2_curves.jsonl 2>/dev/null || true
-          # -A sur parts/ : indispensable pour que la SUPPRESSION des .jsonl
-          # remplacés par leur .gz soit enregistrée. Un "git add parts/*.jsonl"
-          # seul ajouterait les .gz sans jamais retirer les originaux du dépôt,
-          # et le gain de place ne serait jamais effectif côté GitHub.
-          git add -A parts/ 2>/dev/null || true
+          # CHACUN SES PARTITIONS. « git add -A parts/ » balayait TOUT le
+          # dossier et embarquait pm_ticks_* et kx_ticks_* tels qu'ils étaient
+          # au checkout. Or les collecteurs Polymarket et Kalshi y AJOUTENT des
+          # lignes en parallèle : deux workflows modifiaient donc le même
+          # fichier en fin de fichier, le merge partait en conflit, et le push
+          # était rejeté. C'est très probablement la cause des 54 h sans
+          # régénération de hist_curves_meta.json signalées par l'audit.
+          # -A reste indispensable ICI pour enregistrer la SUPPRESSION des
+          # .jsonl remplacés par leur .gz — mais restreint à parts/hist_*.
+          git add -A -- 'parts/hist_*' 2>/dev/null || true
           [ -f hist_curves_meta.json ] && git add -- hist_curves_meta.json
           git diff --cached --quiet || git commit -m "book+set curves partitionnées $(date -u +%FT%TZ)"
           # "merge" et non "rebase" : un rebase en conflit après un commit
           # peut écarter ce commit en silence -- exactement le bug qui a
           # figé set_results.json pendant 1 semaine sur steam_pipeline.yml.
-          git fetch origin main 2>&1 || echo "⚠️ fetch échoué"
-          git merge origin/main --no-edit 2>&1 || echo "⚠️ merge en conflit -- le commit local n'est pas perdu"
-          git push 2>&1 || echo "❌ PUSH ÉCHOUÉ -- voir message ci-dessus"
+          # UN PUSH QUI ÉCHOUE DOIT FAIRE ÉCHOUER LE RUN.
+          # « git push || echo » rendait le job VERT alors que rien n'était
+          # poussé : le dépôt est resté figé 54 h sans que rien ne le signale,
+          # jusqu'à ce que audit_qa le détecte par l'âge du fichier. Un échec
+          # silencieux est le pire mode de panne de ce projet.
+          # On réessaie 3 fois — un merge peut échouer parce qu'un autre
+          # workflow a poussé entre-temps — puis on sort en erreur.
+          for essai in 1 2 3; do
+            git fetch origin main || true
+            if git merge origin/main --no-edit; then
+              if git push; then echo "✅ PUSH OK"; exit 0; fi
+            else
+              echo "⚠️ merge en conflit — tentative $essai"
+              git merge --abort 2>/dev/null || true
+            fi
+            sleep 5
+          done
+          echo "❌ PUSH ÉCHOUÉ après 3 tentatives — le commit local est perdu avec le runner."
+          exit 1
