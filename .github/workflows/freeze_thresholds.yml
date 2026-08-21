@@ -70,4 +70,12 @@ jobs:
           git diff --cached --quiet || git commit -m "gel seuils adaptatifs (9e hypothèse) $(date -u +%FT%TZ)"
           git fetch origin main 2>&1 || echo "⚠️ fetch échoué"
           git merge origin/main --no-edit 2>&1 || echo "⚠️ merge en conflit -- le commit local n'est pas perdu"
-          git push 2>&1 || echo "❌ PUSH ÉCHOUÉ -- voir message ci-dessus"
+          # UN PUSH QUI ÉCHOUE DOIT FAIRE ÉCHOUER LE RUN. « git push || echo »
+          # rendait le job VERT alors que rien n'était poussé — c'est ainsi que
+          # hist_curves_meta.json est resté figé 54 h sans alerte (20/08/2026).
+          if git push 2>&1; then
+            echo "✅ PUSH OK"
+          else
+            echo "❌ PUSH ÉCHOUÉ — le commit local sera perdu avec le runner."
+            exit 1
+          fi
