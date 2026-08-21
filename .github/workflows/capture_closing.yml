@@ -41,31 +41,20 @@ jobs:
       # La relancer coûterait 2 requêtes API toutes les 5-10 minutes pour une
       # question déjà tranchée. Le script reste disponible :
       #     python scripts/tournaments_probe.py
-      # ── SONDE TEMPORAIRE — à RETIRER une fois le résultat lu ────────────
-      # Nos 19 books actifs sont TOUS européens ou français. Or Pinnacle n'est
-      # qu'un des trois books du trio sharp : Singbet (Crown) et SBOBet
-      # encaissent le flux des syndicats asiatiques avec des limites bien
-      # supérieures. Si quelque chose anticipe Pinnacle, c'est plus
-      # probablement eux qu'un marché de prédiction — et notre « juste prix »,
-      # calculé sur Pinnacle seul, s'en trouverait amélioré.
-      # Singbet n'a pas de site public (accès par agent uniquement) : passer
-      # par l'agrégateur évite tout compte chez un opérateur non agréé en
-      # France, ce qui rendait cette piste inenvisageable jusqu'ici.
-      # La sonde vérifie 1) les slugs au catalogue, 2) qu'ils cotent NOS
-      # matchs, 3) leur marge et leur écart à Pinnacle. 2 requêtes, aucune
-      # écriture de production, `|| true` pour ne jamais bloquer la capture.
-      - name: Sonde books sharp asiatiques
-        env:
-          RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
-        run: python scripts/asian_books_probe.py || true
-
+      # Sonde books asiatiques RETIRÉE le 22/08/2026 : question tranchée.
+      # Catalogue = 352 bookmakers. singbet FIGURE au catalogue mais ne cote
+      # AUCUN de nos matchs — le principal sharp asiatique est donc hors de
+      # portée en pratique. sbobet, sharpbet et 4casters répondent : ajoutés
+      # ci-dessous à CAPTURE_BOOKS (coût nul, les books sont un paramètre de
+      # la MÊME requête, pas une requête de plus).
+      # Script conservé : python scripts/asian_books_probe.py
       - name: Capture des cotes (OddsPapi v5)
         env:
           RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           TELEGRAM_PUBLIC_CHAT_ID: ${{ secrets.TELEGRAM_PUBLIC_CHAT_ID }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-          CAPTURE_BOOKS: "pinnacle,betfair-ex,winamax.fr,unibet.fr,bet365.fr,pmu,zebet.fr,netbet.fr,bwin.fr,genybet.fr,vbet.fr,circusbet.fr,feelingbet.fr,unibet,bwin,betsson,bet365,williamhill,betway,1xbet,888sport,leovegas,tipico,netbet,betsafe,nordicbet,coolbet,interwetten,vbet,marathonbet,22bet"
+          CAPTURE_BOOKS: "pinnacle,sbobet,sharpbet,4casters,betfair-ex,winamax.fr,unibet.fr,bet365.fr,pmu,zebet.fr,netbet.fr,bwin.fr,genybet.fr,vbet.fr,circusbet.fr,feelingbet.fr,unibet,bwin,betsson,bet365,williamhill,betway,1xbet,888sport,leovegas,tipico,netbet,betsafe,nordicbet,coolbet,interwetten,vbet,marathonbet,22bet"
           # ^ betfair-ex (Betfair Exchange) ajoute pour la question R&D "l'edge
           #   survit-il sur l'exchange (pas de limitation de compte) ?". Meme appel
           #   API -> 0 requete en plus. Ses trajectoires s'accumulent dans les
