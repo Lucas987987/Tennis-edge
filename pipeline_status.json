@@ -1,16 +1,16 @@
 {
-  "run_termine": "2026-08-20T01:58:06",
-  "run_demarre": "2026-08-20T01:50:50",
+  "run_termine": "2026-08-21T05:58:53",
+  "run_demarre": "2026-08-21T05:51:59",
   "verdict_global": "2 livrable(s) à vérifier",
   "livrables": [
     {
       "fichier": "set_results.json",
       "libellé": "Résultats match + set",
       "verdict": "✅ OK",
-      "octets": 191179,
-      "lignes": 1903,
+      "octets": 191857,
+      "lignes": 1910,
       "ecrit_ce_run": true,
-      "modifie": "2026-08-20T01:55:41"
+      "modifie": "2026-08-21T05:55:55"
     },
     {
       "fichier": "resultats_derived.json",
@@ -27,7 +27,7 @@
       "octets": 6650,
       "lignes": 17,
       "ecrit_ce_run": true,
-      "modifie": "2026-08-20T01:56:01"
+      "modifie": "2026-08-21T05:56:20"
     },
     {
       "fichier": "paper_trades_set1.jsonl",
@@ -36,7 +36,7 @@
       "octets": 2333,
       "lignes": 6,
       "ecrit_ce_run": true,
-      "modifie": "2026-08-20T01:56:07"
+      "modifie": "2026-08-21T05:56:27"
     },
     {
       "fichier": "paper_trades_set2.jsonl",
@@ -45,16 +45,16 @@
       "octets": 0,
       "lignes": 0,
       "ecrit_ce_run": true,
-      "modifie": "2026-08-20T01:56:09"
+      "modifie": "2026-08-21T05:56:29"
     },
     {
       "fichier": "moves_detail.csv",
       "libellé": "Audit des moves (live)",
       "verdict": "✅ OK",
-      "octets": 2495,
-      "lignes": 16,
+      "octets": 1863,
+      "lignes": 12,
       "ecrit_ce_run": true,
-      "modifie": "2026-08-20T01:57:52"
+      "modifie": "2026-08-21T05:58:35"
     },
     {
       "fichier": "moves_detail_hist.csv",
@@ -63,7 +63,7 @@
       "octets": 122462,
       "lignes": 758,
       "ecrit_ce_run": true,
-      "modifie": "2026-08-20T01:58:06"
+      "modifie": "2026-08-21T05:58:53"
     },
     {
       "fichier": "canal_clv_detail.csv",
@@ -72,26 +72,26 @@
       "octets": 7604,
       "lignes": 53,
       "ecrit_ce_run": true,
-      "modifie": "2026-08-20T01:57:51"
+      "modifie": "2026-08-21T05:58:35"
     },
     {
       "fichier": "book_curves_live.jsonl",
       "libellé": "Courbes live reconstruites",
       "verdict": "✅ OK",
-      "octets": 11545646,
-      "lignes": 1072,
+      "octets": 7213381,
+      "lignes": 957,
       "ecrit_ce_run": true,
-      "modifie": "2026-08-20T01:52:11"
+      "modifie": "2026-08-21T05:53:12"
     }
   ],
   "partitions": {
-    "total_mo": 332.2,
+    "total_mo": 394.0,
     "zone_rouge": [
       {
         "fichier": "parts/pm_ticks_2026-08-19.jsonl",
         "mo": 97.8
       }
     ],
-    "n_partitions": 18
+    "n_partitions": 22
   }
 }
