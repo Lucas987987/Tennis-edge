@@ -1,0 +1,95 @@
+name: Fetch Results (settlement, fast)
+
+# PYTHONDONTWRITEBYTECODE : aucun .pyc n'est plus genere. Les .pyc
+# regeneres a chaque run faisaient echouer le merge puis le push
+# (panne du 16/08/2026). Portee workflow = toutes les etapes.
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+
+on:
+  schedule:
+    - cron: '30 22 * * *'   # 22h30 UTC : après la journée de matchs (et après Fetch CLV)
+    - cron: '0 16 * * *'    # 16h UTC : récupère les matchs du matin/début d'aprem déjà finis
+  workflow_dispatch:
+    inputs:
+      retry_false:
+        description: 'Re-tenter les set1/set2 marques indispo (apres correction de bug)'
+        required: false
+        default: '0'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: tennis-results       # sérialise avec les autres écritures de résultats
+  cancel-in-progress: false
+
+jobs:
+  settlement:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Résultats rapides via /settlement (OddsPapi v5)
+        env:
+          RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
+          RETRY_FALSE: ${{ github.event.inputs.retry_false || '0' }}
+          # FINISHED_AFTER_H: '4'        # marge avant de considérer un match fini
+          # MAX_SETTLEMENT_CALLS: '60'   # plafond d'appels par run
+        run: python scripts/fetch_results_settlement.py
+      - name: Commit
+        run: |
+          # PANNE DU 16/08/2026 -- cause exacte, tracee par pipeline_status.
+          # Les .pyc sont SUIVIS par git (ajoutes avant le .gitignore, qui ne
+          # s'applique plus une fois un fichier suivi). capture_closing tourne
+          # toutes les 5-10 min avec "git add -A" et republie donc des .pyc
+          # neufs en continu. Quand un autre workflow tourne, il regenere les
+          # siens localement -> "git merge" ABANDONNE ("Your local changes to
+          # the following files would be overwritten") -> branche en retard ->
+          # push rejete en non-fast-forward. Resultat observe : 7 fichiers
+          # commites localement (dont 830 lignes de moves_detail_hist), jamais
+          # pousses. On efface donc les .pyc du disque avant toute action git.
+          find . -name '__pycache__' -type d -prune -exec rm -rf {} + 2>/dev/null || true
+          find . -name '*.pyc' -delete 2>/dev/null || true
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          for f in resultats_oddspapi.json backtest_tennis.csv; do
+            [ -f "$f" ] && git add -- "$f"
+          done
+          git diff --staged --quiet || git commit -m "Résultats rapides (settlement v5)"
+          # COMMIT D'ABORD (ci-dessus), puis "merge" et non "rebase" : un
+          # rebase en conflit après un commit peut écarter ce commit en
+          # silence (avalé par "2>/dev/null || true") -- exactement le bug
+          # constaté sur steam_pipeline.yml (set_results.json figé 1 semaine
+          # malgré des écritures locales réussies chaque jour). Un merge en
+          # conflit échoue bruyamment, sans perdre le commit local.
+          # BOUCLE DE REPRISE AVEC FUSION DES CONFLITS JSON.
+          # Ce workflow tourne toutes les 5-10 min : deux exécutions se
+          # chevauchent régulièrement, et git tombe en conflit sur les JSON
+          # d'état (closing_lines, capture_state, matches_oddspapi...). Le run
+          # entier était alors perdu, y compris les partitions live qui,
+          # elles, avaient fusionné sans problème via merge=union.
+          # merge_json_state.py fusionne ces objets JSON clé par clé, sans rien
+          # perdre : closing_lines est un ACCUMULATEUR, prendre une version au
+          # hasard effacerait les matchs ajoutés par l'autre exécution.
+          for essai in 1 2 3; do
+            git fetch origin main || true
+            if git merge origin/main --no-edit; then
+              :
+            else
+              echo "⚠️ conflit — tentative de fusion JSON (essai $essai)"
+              if python scripts/merge_json_state.py; then
+                git commit --no-edit || true
+              else
+                git merge --abort 2>/dev/null || true
+                sleep 5
+                continue
+              fi
+            fi
+            if git push; then echo "✅ PUSH OK"; exit 0; fi
+            sleep 5
+          done
+          echo "❌ PUSH ÉCHOUÉ après 3 tentatives — commit local perdu avec le runner."
+          exit 1
