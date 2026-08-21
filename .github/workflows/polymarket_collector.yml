@@ -133,6 +133,16 @@ jobs:
             --duration-seconds ${PM_DURATION:-900} \
             --refresh-seconds ${PM_REFRESH:-450}
 
+      # Compresse les partitions pm_ticks_* CLOSES (jamais celle du jour).
+      # Fait ICI et non dans fetch_book_curves : ce workflow est le seul à
+      # commiter parts/pm_ticks_*, donc le seul où le .gz survit au run.
+      # Gain mesuré : ~95 % (97,8 Mo -> 5,4 Mo sur une partition réelle).
+      - name: Compresser les partitions pm_ticks closes
+        env:
+          MARKETS: ''
+          EXTRA_GLOBS: 'parts/pm_ticks_*.jsonl'
+        run: python scripts/compress_hist_partitions.py || true
+
       - name: Commit Polymarket data (robuste)
         shell: bash
         run: |
