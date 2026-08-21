@@ -43,14 +43,31 @@ jobs:
           git config user.email "actions@github.com"
           [ -f drift_report.json ] && git add -- drift_report.json
           git diff --cached --quiet || git commit -m "drift report $(date -u +%FT%TZ)"
-          git fetch origin main 2>&1 || echo "⚠️ fetch échoué"
-          git merge origin/main --no-edit 2>&1 || echo "⚠️ merge en conflit -- le commit local n'est pas perdu"
-          # UN PUSH QUI ÉCHOUE DOIT FAIRE ÉCHOUER LE RUN. « git push || echo »
-          # rendait le job VERT alors que rien n'était poussé — c'est ainsi que
-          # hist_curves_meta.json est resté figé 54 h sans alerte (20/08/2026).
-          if git push 2>&1; then
-            echo "✅ PUSH OK"
-          else
-            echo "❌ PUSH ÉCHOUÉ — le commit local sera perdu avec le runner."
-            exit 1
-          fi
+          # BOUCLE DE REPRISE AVEC FUSION DES CONFLITS JSON.
+          # Ce workflow tourne toutes les 5-10 min : deux exécutions se
+          # chevauchent régulièrement, et git tombe en conflit sur les JSON
+          # d'état (closing_lines, capture_state, matches_oddspapi...). Le run
+          # entier était alors perdu, y compris les partitions live qui,
+          # elles, avaient fusionné sans problème via merge=union.
+          # merge_json_state.py fusionne ces objets JSON clé par clé, sans rien
+          # perdre : closing_lines est un ACCUMULATEUR, prendre une version au
+          # hasard effacerait les matchs ajoutés par l'autre exécution.
+          for essai in 1 2 3; do
+            git fetch origin main || true
+            if git merge origin/main --no-edit; then
+              :
+            else
+              echo "⚠️ conflit — tentative de fusion JSON (essai $essai)"
+              if python scripts/merge_json_state.py; then
+                git commit --no-edit || true
+              else
+                git merge --abort 2>/dev/null || true
+                sleep 5
+                continue
+              fi
+            fi
+            if git push; then echo "✅ PUSH OK"; exit 0; fi
+            sleep 5
+          done
+          echo "❌ PUSH ÉCHOUÉ après 3 tentatives — commit local perdu avec le runner."
+          exit 1
