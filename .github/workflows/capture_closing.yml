@@ -41,6 +41,24 @@ jobs:
       # La relancer coûterait 2 requêtes API toutes les 5-10 minutes pour une
       # question déjà tranchée. Le script reste disponible :
       #     python scripts/tournaments_probe.py
+      # ── SONDE TEMPORAIRE — à RETIRER une fois le résultat lu ────────────
+      # Nos 19 books actifs sont TOUS européens ou français. Or Pinnacle n'est
+      # qu'un des trois books du trio sharp : Singbet (Crown) et SBOBet
+      # encaissent le flux des syndicats asiatiques avec des limites bien
+      # supérieures. Si quelque chose anticipe Pinnacle, c'est plus
+      # probablement eux qu'un marché de prédiction — et notre « juste prix »,
+      # calculé sur Pinnacle seul, s'en trouverait amélioré.
+      # Singbet n'a pas de site public (accès par agent uniquement) : passer
+      # par l'agrégateur évite tout compte chez un opérateur non agréé en
+      # France, ce qui rendait cette piste inenvisageable jusqu'ici.
+      # La sonde vérifie 1) les slugs au catalogue, 2) qu'ils cotent NOS
+      # matchs, 3) leur marge et leur écart à Pinnacle. 2 requêtes, aucune
+      # écriture de production, `|| true` pour ne jamais bloquer la capture.
+      - name: Sonde books sharp asiatiques
+        env:
+          RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
+        run: python scripts/asian_books_probe.py || true
+
       - name: Capture des cotes (OddsPapi v5)
         env:
           RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
