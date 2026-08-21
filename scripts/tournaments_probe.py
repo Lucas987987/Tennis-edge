@@ -89,7 +89,13 @@ def main():
         if ov.is_srl(f):
             srl += 1
             continue
-        tid = str(f.get('tournamentId') or '')
+        # L'id de tournoi est IMBRIQUÉ dans les fixtures : f['tournament']
+        # ['tournamentId'], et non à la racine. Le lire à plat renvoyait None
+        # pour les 203 fixtures, d'où « 0 match » dans toutes les catégories
+        # alors que les slugs étaient correctement trouvés. Même accès que
+        # capture_closing.discover_active_tournaments().
+        tid = str((f.get('tournament') or {}).get('tournamentId')
+                  or f.get('tournamentId') or '')
         cs = tid2slug.get(tid)
         if cs:
             actifs[cs] += 1
