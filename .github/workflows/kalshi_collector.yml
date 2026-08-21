@@ -63,6 +63,16 @@ jobs:
             --duration-seconds ${KX_DURATION:-900} \
             ${{ inputs.dry_run && '--dry-run' || '' }}
 
+      # Compresse les partitions kx_ticks_* CLOSES (jamais celle du jour).
+      # Fait ICI et non dans fetch_book_curves : ce workflow est le seul à
+      # commiter parts/kx_ticks_*, donc le seul où le .gz survit au run.
+      # Gain mesuré : ~95 % (97,8 Mo -> 5,4 Mo sur une partition réelle).
+      - name: Compresser les partitions kx_ticks closes
+        env:
+          MARKETS: ''
+          EXTRA_GLOBS: 'parts/kx_ticks_*.jsonl'
+        run: python scripts/compress_hist_partitions.py || true
+
       - name: Commit Kalshi data
         if: always()
         run: |
