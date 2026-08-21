@@ -28,9 +28,38 @@ CAPTURE_BOOKS = os.environ.get('CAPTURE_BOOKS', 'pinnacle,unibet,bwin,betsson')
 # Filtre circuit principal : on suit les tournois dont le categorySlug ∈ cette liste
 # ET dont le nom contient "singles" (exclut doubles / challenger / itf / utr / wta-125k).
 # Élargissable via env (ex "atp,wta,wta-125k,challenger") pour gonfler le volume CLV.
+# CATÉGORIES SUIVIES — liste BLANCHE, jamais une liste noire.
+# Le catalogue OddsPapi contient 9 670 tournois répartis en 25 categorySlug,
+# dont « simulated-reality », « virtual-tennis » et « electronic-leagues » :
+# des matchs SIMULÉS, plus de 340 tournois. Une liste noire finirait par en
+# laisser passer un au premier slug ajouté côté fournisseur.
+#
+# Élargi à « challenger » le 21/08/2026. Mesuré ce jour-là sur les fixtures
+# réelles (203 fixtures, 4 SRL écartées) :
+#     itf-men   49 · utr-men 46 · challenger 34 · itf-women 32
+#     utr-women 28 · atp       6 · wta         4   <- seuls suivis
+# Soit 10 matchs suivis sur 199. Tout élargir multiplierait le volume par 20.
+# « challenger » seul fait passer à 44 matchs/jour, facteur 4,4 :
+#   • Kalshi les cote (KXATPCHALLENGERMATCH, KXWTACHALLENGERMATCH) ;
+#   • les books mous y sont bien plus lents qu'en ATP — là où le canal a le
+#     plus de valeur ;
+#   • les joueurs restent classés, donc présents dans les Elo Tennis Abstract.
+# ÉCARTÉS volontairement : l'ITF (81 matchs/jour, marchés minces des deux
+# côtés, joueurs souvent absents des classements) et UTR (74 matchs/jour,
+# circuit privé qu'aucun de nos books de référence ne cote sérieusement).
 TRACK_CATEGORY_SLUGS = set(
-    s.strip().lower() for s in os.environ.get('TRACK_CATEGORY_SLUGS', 'atp,wta').split(',') if s.strip()
+    s.strip().lower() for s in os.environ.get('TRACK_CATEGORY_SLUGS', 'atp,wta,challenger').split(',') if s.strip()
 )
+# Catégories INTERDITES quoi qu'il arrive : matchs simulés ou virtuels. Elles
+# ne doivent jamais entrer, même si quelqu'un les ajoute par erreur à la
+# variable d'environnement.
+SLUGS_INTERDITS = {'simulated-reality', 'simulated-reality-women',
+                   'virtual-tennis', 'virtual-tennis-in-play',
+                   'electronic-leagues'}
+# Garde-fou de volume : au-delà, on ALERTE sans bloquer. Découvrir une
+# surcharge après coup (requêtes API, closing_lines.json, courbes) coûte cher ;
+# la voir dans le log au moment où elle arrive coûte une ligne.
+MAX_TOURNOIS_ATTENDUS = int(os.environ.get('MAX_TOURNOIS_ATTENDUS', '25'))
 REQUIRE_SINGLES = os.environ.get('REQUIRE_SINGLES', '1') not in ('0', 'false', 'False')
 
 # Nb max de fixtureIds par requête odds/main (batch). Marge large sous la limite d'URL.
@@ -163,6 +192,8 @@ def discover_active_tournaments():
         cs = str(t.get('categorySlug') or '').lower()
         name = str(t.get('tournamentName') or '')
         nlow = name.lower()
+        if cs in SLUGS_INTERDITS:
+            continue                     # matchs simulés : jamais, sous aucun prétexte
         if cs not in TRACK_CATEGORY_SLUGS:
             continue
         if REQUIRE_SINGLES and 'singles' not in nlow:
@@ -191,6 +222,18 @@ def discover_active_tournaments():
         print(f"  ⚠️ écriture {ACTIVE_TOURNAMENTS_FILE}: {e}")
     real = {k: v for k, v in active.items() if not k.startswith('_')}
     print(f"  🔭 Découverte: {len(real)} tournois {sorted(TRACK_CATEGORY_SLUGS)} actifs (singles={REQUIRE_SINGLES})")
+    # Ventilation par catégorie : sans elle, on ne voit pas d'où vient une
+    # éventuelle explosion du nombre de tournois.
+    par_cat = {}
+    for info in real.values():
+        par_cat[info['cat']] = par_cat.get(info['cat'], 0) + 1
+    if par_cat:
+        print(f"      par catégorie : {dict(sorted(par_cat.items(), key=lambda x: -x[1]))}")
+    if len(real) > MAX_TOURNOIS_ATTENDUS:
+        print(f"  ⚠️ {len(real)} tournois actifs — au-dessus du seuil "
+              f"{MAX_TOURNOIS_ATTENDUS}. Vérifier TRACK_CATEGORY_SLUGS : chaque "
+              f"tournoi en plus alourdit les requêtes API, closing_lines.json "
+              f"et les courbes historiques.")
     for tid, info in real.items():
         print(f"      {tid} | {info['name']} [{info['cat']}]")
     return active
