@@ -34,22 +34,13 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      # ── SONDE TEMPORAIRE — à RETIRER une fois le résultat lu ────────────
-      # capture_closing ne découvre que les tournois dont le categorySlug vaut
-      # « atp » ou « wta » (TRACK_CATEGORY_SLUGS). Challengers et ITF ont leurs
-      # propres slugs et sont donc écartés : d'où « 2 tournois actifs » alors
-      # que Kalshi cote les Challengers (KXATPCHALLENGERMATCH) et l'ITF
-      # (KXITFMATCH) — précisément le circuit où les books mous sont les plus
-      # lents, mais qu'on ne peut pas apparier faute de matchs locaux.
-      # La sonde liste les slugs RÉELS et chiffre ce que chacun ajouterait :
-      # deviner les libellés donnerait un filtre qui ne capte rien, en silence.
-      # Elle coûte 2 requêtes, n'écrit aucune donnée de production, et
-      # `|| true` garantit qu'un échec ne fait pas tomber la capture.
-      - name: Sonde catégories de tournois
-        env:
-          RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
-        run: python scripts/tournaments_probe.py || true
-
+      # Sonde catégories RETIRÉE le 21/08/2026 : sa mission est faite.
+      # Elle a établi les slugs réels (challenger, itf-men, itf-women,
+      # wta-125k, utr-men, utr-women) et le volume par catégorie. Résultat
+      # câblé dans TRACK_CATEGORY_SLUGS de capture_closing.py.
+      # La relancer coûterait 2 requêtes API toutes les 5-10 minutes pour une
+      # question déjà tranchée. Le script reste disponible :
+      #     python scripts/tournaments_probe.py
       - name: Capture des cotes (OddsPapi v5)
         env:
           RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
