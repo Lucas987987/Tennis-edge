@@ -53,6 +53,15 @@ jobs:
       # et ov.iter_hist_lines lit .jsonl et .jsonl.gz indifféremment : aucun
       # script consommateur n'a à changer. Mesuré : 396 Mo -> 64 Mo.
       - name: Compresser les partitions historiques closes
+        env:
+          # Ce workflow ne commite que parts/hist_* (règle « chacun ses
+          # partitions »). Compresser pm_ticks_* / kx_ticks_* ici revenait donc
+          # à créer les .gz sur le runner et à les JETER : le commit ne les
+          # prenait pas, et le checkout suivant restaurait les .jsonl.
+          # Constaté le 21/08 : « 320,5 Mo -> 17,3 Mo » affiché à chaque run,
+          # pour un dépôt qui restait à 579 Mo. La compression des ticks est
+          # désormais faite par chaque collecteur, sur ses propres partitions.
+          EXTRA_GLOBS: ''
         run: python scripts/compress_hist_partitions.py || true
 
       - name: Commit
