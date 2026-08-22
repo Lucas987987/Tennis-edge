@@ -85,7 +85,7 @@ def _open(path):
 def load_pm():
     """{uid: [(t, proba_home)]} depuis les ticks Polymarket."""
     series = collections.defaultdict(list)
-    paths = sorted(set(glob.glob(PM_GLOB) + glob.glob(PM_GLOB + '.gz')))
+    paths = ov.load_partitions(PM_GLOB)
     n_lignes = 0
     for p in paths:
         try:

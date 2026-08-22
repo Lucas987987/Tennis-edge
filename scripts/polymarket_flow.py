@@ -84,7 +84,7 @@ def charger_ticks():
     prix = collections.defaultdict(lambda: {'home': [], 'away': []})
     trades = collections.defaultdict(list)
     n = 0
-    for p in sorted(set(glob.glob(PM_GLOB) + glob.glob(PM_GLOB + '.gz'))):
+    for p in ov.load_partitions(PM_GLOB):
         try:
             f = _open(p)
         except Exception:
@@ -130,7 +130,13 @@ def charger_ticks():
                 trades[uid].append((t, side, notional))
     for uid in prix:
         for s in ('home', 'away'):
-            prix[uid][s].sort()
+            # TRI EXPLICITE PAR HORODATAGE. Un sort() nu compare les champs
+            # suivants quand deux horodatages sont identiques — et `spread`
+            # vaut parfois None, d'où :
+            #   TypeError: '<' not supported between 'float' and 'NoneType'
+            # Le script plantait donc dès qu'un carnet renvoyait deux points
+            # à la même milliseconde avec un spread manquant.
+            prix[uid][s].sort(key=lambda x: x[0])
     print(f"Ticks : {n} lus · {len(prix)} match(s) '{MARKET_TYPE}' · "
           f"{sum(len(v) for v in trades.values())} échange(s) horodaté(s)")
     return prix, trades
@@ -148,7 +154,9 @@ def proba_home(d):
         ev.append((t, 'home', m, sp))
     for t, m, sp, bs, asz in d['away']:
         ev.append((t, 'away', m, sp))
-    ev.sort()
+    # Même piège : tri explicite sur (horodatage, côté), jamais sur le tuple
+    # entier qui contient un spread éventuellement None.
+    ev.sort(key=lambda x: (x[0], x[1]))
     serie, incoh = [], []
     ch = ca = None
     for t, s, m, sp in ev:
