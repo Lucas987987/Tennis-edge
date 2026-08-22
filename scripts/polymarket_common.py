@@ -106,7 +106,7 @@ def shin_ph(oh, oa):
 def _sources():
     """(libellé, motif, lecteur) de la source retenue."""
     def dispo(g):
-        return bool(glob.glob(g) or glob.glob(g + '.gz'))
+        return bool(ov.load_partitions(g))
     if SOURCE == 'kalshi':
         return [('kalshi', KX_GLOB)]
     if SOURCE == 'polymarket':
@@ -154,7 +154,10 @@ def charger_pm():
     n = 0
     libelles = []
     for source, motif in _sources():
-        fichiers = sorted(set(glob.glob(motif) + glob.glob(motif + '.gz')))
+        # ov.load_partitions : écarte le .gz quand le .jsonl existe. La
+        # version précédente chargeait les DEUX, doublant les ticks (mesuré :
+        # 1 602 270 au lieu de 800 472 sur 8 paires en double).
+        fichiers = ov.load_partitions(motif)
         libelles.append(f"{source} ({len(fichiers)} partition(s))")
         for p in fichiers:
             try:
