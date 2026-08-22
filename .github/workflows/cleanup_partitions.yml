@@ -1,0 +1,106 @@
+name: Nettoyer les partitions en double (à lancer UNE FOIS)
+
+# ──────────────────────────────────────────────────────────────────────────
+# À QUOI ÇA SERT
+# 8 partitions existent à la fois en .jsonl et en .jsonl.gz : 362 Mo, soit
+# 55 % d'un dépôt remonté à 654 Mo.
+#
+# Origine : compress_hist_partitions.py supprime bien le .jsonl après
+# compression, mais fetch_book_curves ne commitait que parts/hist_* alors
+# qu'il compressait aussi pm_ticks_* et kx_ticks_*. La suppression n'était
+# donc jamais enregistrée, et le checkout suivant restaurait le .jsonl.
+# Corrigé depuis (chaque collecteur compresse et commite ses propres
+# partitions), mais les paires héritées restent dans le dépôt.
+#
+# Conséquence mesurée : les scripts d'analyse lisaient 1 602 270 ticks au lieu
+# de 800 472, un facteur 2 exact. ov.load_partitions() ignore désormais le
+# doublon à la lecture ; ce workflow règle l'autre moitié — la place occupée,
+# et le risque qu'un futur script recompte double en oubliant le résolveur.
+#
+# SÉCURITÉ : trois vérifications par paire (gz lisible, au moins aussi
+# complet, mêmes 200 premières lignes). Une paire douteuse est CONSERVÉE et
+# fait sortir le run en erreur. Perdre des ticks pour gagner de la place
+# serait un très mauvais échange.
+#
+# UTILISATION : Actions -> ce workflow -> Run workflow. Cocher « essai à
+# blanc » d'abord pour voir la liste sans rien supprimer.
+# Une fois réussi, ce fichier peut être supprimé du dépôt.
+# ──────────────────────────────────────────────────────────────────────────
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Essai à blanc : liste les paires sans rien supprimer"
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: cleanup-partitions
+  cancel-in-progress: false
+
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+  PYTHONUNBUFFERED: '1'
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # PAS de filter blob:none ici : ce workflow doit LIRE le contenu des
+          # partitions pour vérifier l'intégrité des .gz. Un clone partiel
+          # téléchargerait les blobs à la demande, plus lentement encore.
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Nettoyer
+        env:
+          DRY_RUN: ${{ inputs.dry_run && '1' || '0' }}
+        run: python scripts/cleanup_duplicate_partitions.py
+
+      - name: Commit
+        if: ${{ !inputs.dry_run }}
+        run: |
+          find . -name '__pycache__' -type d -prune -exec rm -rf {} + 2>/dev/null || true
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+
+          # -A : ce sont des SUPPRESSIONS qu'il faut enregistrer. Un `git add`
+          # simple ne les verrait pas, et le gain de place ne serait jamais
+          # effectif côté GitHub — l'erreur exacte qui a créé ces doublons.
+          git add -A -- parts/
+          if git diff --staged --quiet; then
+            echo 'Rien à commit.'; exit 0
+          fi
+          echo '--- en attente de commit ---'
+          git status --short | head -20
+          git commit -m "Nettoyage : suppression des .jsonl doublonnés par leur .gz"
+
+          # Le dépôt est très actif (capture toutes les 16 min) : on réessaie.
+          for essai in 1 2 3; do
+            git fetch origin main || true
+            if git merge origin/main --no-edit; then
+              if git push origin HEAD:main; then echo '✅ PUSH OK'; exit 0; fi
+            else
+              echo "⚠️ conflit — tentative de fusion JSON (essai $essai)"
+              if python scripts/merge_json_state.py; then
+                git commit --no-edit || true
+              else
+                git merge --abort 2>/dev/null || true
+              fi
+            fi
+            sleep 5
+          done
+          echo '❌ PUSH ÉCHOUÉ après 3 tentatives.'
+          exit 1
