@@ -146,6 +146,37 @@ def iter_hist_lines(market='book'):
 # code d'erreur. Symptôme concret constaté : moves_detail.csv et
 # moves_detail_hist.csv réduits à leur seule ligne d'en-tête (154 octets).
 # open_curves() encapsule les deux cas : à utiliser PARTOUT à la place de open().
+def load_partitions(motif):
+    """Chemins des partitions correspondant à un motif, SANS DOUBLON.
+
+    BUG CORRIGÉ (22/08/2026) — chaque script d'analyse avait sa propre logique
+    de lecture, du type :
+        sorted(set(glob.glob(motif) + glob.glob(motif + '.gz')))
+    Cette écriture charge la partition ET sa copie compressée quand les deux
+    coexistent. Constaté sur le dépôt : 8 paires en double, et les études
+    lisaient 1 602 270 ticks au lieu de 800 472 — un facteur 2 exact.
+    Conséquences : points comptés deux fois, poids doublé pour certains matchs,
+    corrélations et volumes faussés.
+
+    Les deux formes coexistent parce que compress_hist_partitions.py supprime
+    bien le .jsonl sur le runner, mais que la suppression n'a pas toujours été
+    enregistrée dans git (corrigé depuis avec `git add -A`). Le dépôt garde
+    donc des paires héritées de cette période.
+
+    Règle : si les deux existent, on garde le .jsonl (source d'origine, non
+    recompressée). Le .gz n'est retenu que seul.
+
+    Fonction CENTRALE : tout script lisant des partitions doit passer par ici.
+    Trois logiques de lecture divergentes, c'est exactement ce qui a produit
+    les bugs historiques du projet (cf. les trois copies de player_match).
+    """
+    plain = glob.glob(motif)
+    gz = glob.glob(motif + '.gz')
+    vus = set(plain)
+    gz = [g for g in gz if g[:-3] not in vus]
+    return sorted(set(plain + gz), key=lambda p: p.replace('.gz', ''))
+
+
 def open_any(path):
     """Ouvre un .jsonl OU son .jsonl.gz, indifféremment.
 
