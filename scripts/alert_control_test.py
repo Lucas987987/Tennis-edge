@@ -77,6 +77,7 @@ OUT = os.environ.get('OUT', 'alert_control_report.json')
 EXCHANGES = set(b.strip() for b in os.environ.get(
     'EXCHANGES', 'betfair-ex,betfair,matchbook,smarkets,betdaq').split(',') if b.strip())
 PM_GLOB = os.environ.get('PM_TICKS_GLOB', '')
+INDEX_CANONIQUE = None      # rempli par charger()
 
 
 def _dt(x):
@@ -148,6 +149,12 @@ def charger():
             brut[r['uid']]['_ct'] = ct
 
     idx = mk.build_index(recs)
+    # L'index est exposé au niveau du module : les autres scripts en ont besoin
+    # pour traduire leurs propres uid en clés canoniques. Sans ça, la jointure
+    # avec set_results.json échoue silencieusement — 0 pari simulé sur 1230
+    # matchs, constaté le 22/08/2026.
+    global INDEX_CANONIQUE
+    INDEX_CANONIQUE = idx
     out = {}
     for uid, d in brut.items():
         k = idx.key_of(uid)
