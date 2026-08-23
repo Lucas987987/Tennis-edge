@@ -1,16 +1,16 @@
 {
-  "run_termine": "2026-08-22T01:57:28",
-  "run_demarre": "2026-08-22T01:47:09",
+  "run_termine": "2026-08-23T02:08:20",
+  "run_demarre": "2026-08-23T01:56:46",
   "verdict_global": "2 livrable(s) à vérifier",
   "livrables": [
     {
       "fichier": "set_results.json",
       "libellé": "Résultats match + set",
       "verdict": "✅ OK",
-      "octets": 193120,
-      "lignes": 1923,
+      "octets": 195940,
+      "lignes": 1952,
       "ecrit_ce_run": true,
-      "modifie": "2026-08-22T01:53:49"
+      "modifie": "2026-08-23T02:04:19"
     },
     {
       "fichier": "resultats_derived.json",
@@ -24,19 +24,19 @@
       "fichier": "paper_trades_match.jsonl",
       "libellé": "Journal forward — match",
       "verdict": "✅ OK",
-      "octets": 6650,
-      "lignes": 17,
+      "octets": 7750,
+      "lignes": 20,
       "ecrit_ce_run": true,
-      "modifie": "2026-08-22T01:54:19"
+      "modifie": "2026-08-23T02:04:52"
     },
     {
       "fichier": "paper_trades_set1.jsonl",
       "libellé": "Journal forward — set 1",
       "verdict": "✅ OK",
-      "octets": 2333,
-      "lignes": 6,
+      "octets": 3068,
+      "lignes": 8,
       "ecrit_ce_run": true,
-      "modifie": "2026-08-22T01:54:27"
+      "modifie": "2026-08-23T02:05:00"
     },
     {
       "fichier": "paper_trades_set2.jsonl",
@@ -45,53 +45,48 @@
       "octets": 0,
       "lignes": 0,
       "ecrit_ce_run": true,
-      "modifie": "2026-08-22T01:54:30"
+      "modifie": "2026-08-23T02:05:03"
     },
     {
       "fichier": "moves_detail.csv",
       "libellé": "Audit des moves (live)",
       "verdict": "✅ OK",
-      "octets": 1517,
-      "lignes": 10,
+      "octets": 3342,
+      "lignes": 21,
       "ecrit_ce_run": true,
-      "modifie": "2026-08-22T01:57:06"
+      "modifie": "2026-08-23T02:07:57"
     },
     {
       "fichier": "moves_detail_hist.csv",
       "libellé": "Audit des moves (historique)",
       "verdict": "✅ OK",
-      "octets": 126542,
-      "lignes": 784,
+      "octets": 129685,
+      "lignes": 804,
       "ecrit_ce_run": true,
-      "modifie": "2026-08-22T01:57:28"
+      "modifie": "2026-08-23T02:08:20"
     },
     {
       "fichier": "canal_clv_detail.csv",
       "libellé": "CLV réalisé du canal public",
       "verdict": "✅ OK",
-      "octets": 7764,
-      "lignes": 54,
+      "octets": 9278,
+      "lignes": 64,
       "ecrit_ce_run": true,
-      "modifie": "2026-08-22T01:57:06"
+      "modifie": "2026-08-23T02:07:56"
     },
     {
       "fichier": "book_curves_live.jsonl",
       "libellé": "Courbes live reconstruites",
       "verdict": "✅ OK",
-      "octets": 4665318,
-      "lignes": 880,
+      "octets": 3952485,
+      "lignes": 1210,
       "ecrit_ce_run": true,
-      "modifie": "2026-08-22T01:51:01"
+      "modifie": "2026-08-23T02:00:44"
     }
   ],
   "partitions": {
-    "total_mo": 475.1,
-    "zone_rouge": [
-      {
-        "fichier": "parts/pm_ticks_2026-08-19.jsonl",
-        "mo": 97.8
-      }
-    ],
-    "n_partitions": 25
+    "total_mo": 396.6,
+    "zone_rouge": [],
+    "n_partitions": 22
   }
 }
