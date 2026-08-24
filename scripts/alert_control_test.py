@@ -155,6 +155,10 @@ def charger():
             # ramène le taux de réussite vers 50 %, ce qui paraît normal.
             brut[r['uid']]['_home'] = r.get('home_team') or r.get('home')
             brut[r['uid']]['_away'] = r.get('away_team') or r.get('away')
+            # Tournoi conservé : sans lui, impossible de ventiler par niveau
+            # (Challenger, Grand Chelem, ATP...) — or c'est le découpage le
+            # plus discriminant depuis l'élargissement aux Challengers.
+            brut[r['uid']]['_tour'] = r.get('tournament') or ''
 
     idx = mk.build_index(recs)
     # L'index est exposé au niveau du module : les autres scripts en ont besoin
