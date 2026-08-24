@@ -105,6 +105,20 @@ jobs:
           CURVES=book_curves_live.jsonl TRACK_CURVES=book_curves.jsonl MARKET=match python scripts/paper_journal.py || true
           CURVES=set1_curves_live.jsonl TRACK_CURVES=set1_curves.jsonl MARKET=set1 python scripts/paper_journal.py || true
           CURVES=set2_curves_live.jsonl TRACK_CURVES=set2_curves.jsonl MARKET=set2 python scripts/paper_journal.py || true
+          # JOURNAL ALIGNÉ SUR LE CANAL.
+          # paper_journal.py ci-dessus enregistre selon les seuils ADAPTATIFS
+          # par book de steam_alert. canal_public, lui, publie sur des paliers
+          # FIXES (3/5/8/12) avec un écart >= GAP_MIN. Résultat mesuré le
+          # 24/08 : 68 matchs alertés sur le canal, 17 seulement dans le
+          # journal forward — un sous-ensemble à 25 %.
+          # Le track record ne mesurait donc PAS ce que reçoivent les abonnés,
+          # ce qui le rend inutilisable pour justifier quoi que ce soit.
+          # paper_journal_canal.py lit canal_public_log.jsonl : par
+          # construction, il ne peut plus diverger de la publication.
+          # Les DEUX tournent — les seuils adaptatifs restent une stratégie
+          # légitime, simplement différente. Deux fichiers, aucune confusion.
+          python scripts/results_bridge.py || true
+          python scripts/paper_journal_canal.py || true
           # Canal PUBLIC « Évolution des cotes » : messages d'information neutres
           # (mouvements Pinnacle + juste prix + retards d'ajustement). 0 requête API.
           PALIERS="3,5,8,12" python scripts/canal_public.py || true
