@@ -1,0 +1,91 @@
+name: Indice des opérateurs
+
+# ──────────────────────────────────────────────────────────────────────────
+# Publie chaque semaine un comparatif des opérateurs sur le tennis : marge,
+# réactivité, fréquence du meilleur prix.
+#
+# POURQUOI CE PRODUIT
+# Les tests ont établi que le CLV net est proche de zéro une fois la marge
+# retirée, et que cinq pistes d'anticipation sont fermées (Polymarket, Kalshi,
+# Elo, fatigue, momentum, limites). Il n'y a donc pas d'edge à vendre.
+# Mais les mêmes données répondent à une question plus utile au lecteur :
+# OÙ placer son pari plutôt que QUEL pari placer. Un opérateur à 4,75 % de
+# marge coûte deux fois moins cher qu'un à 9,13 %, et c'est vérifiable.
+#
+# Ne demande AUCUNE requête API : tout est calculé sur les courbes déjà
+# collectées. Le cron du lundi laisse le temps aux résultats du week-end
+# d'arriver.
+# ──────────────────────────────────────────────────────────────────────────
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Lundi 07:00 UTC, après la mise à jour Elo de 05:10.
+    - cron: '0 7 * * 1'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: book-index
+  cancel-in-progress: false
+
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+  PYTHONUNBUFFERED: '1'
+
+jobs:
+  index:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # fetch-depth 0 requis par le merge du commit ; filter blob:none
+          # évite de rapatrier les centaines de Mo de parts/ (les partitions
+          # nécessaires sont téléchargées à la demande).
+          fetch-depth: 0
+          filter: blob:none
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Construire l'indice
+        run: |
+          python scripts/curves_parts.py rebuild || true
+          python scripts/book_index.py
+
+      - name: Commit
+        if: always()
+        run: |
+          find . -name '__pycache__' -type d -prune -exec rm -rf {} + 2>/dev/null || true
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          # Fichier par fichier : un git add en bloc échoue ENTIÈREMENT si un
+          # seul chemin manque, et n'ajoute alors rien (panne du 15/08/2026).
+          for f in book_index.json book_index.md; do
+            [ -f "$f" ] && git add -- "$f" || echo "  (absent : $f)"
+          done
+          if git diff --staged --quiet; then
+            echo 'Rien à commit.'; exit 0
+          fi
+          git commit -m "Indice des opérateurs ($(date -u +%Y-%m-%d))"
+          for essai in 1 2 3; do
+            git fetch origin main || true
+            if git merge origin/main --no-edit; then
+              if git push origin HEAD:main; then echo '✅ PUSH OK'; exit 0; fi
+            else
+              echo "⚠️ conflit — fusion JSON (essai $essai)"
+              if python scripts/merge_json_state.py; then
+                git commit --no-edit || true
+              else
+                git merge --abort 2>/dev/null || true
+              fi
+            fi
+            sleep 5
+          done
+          echo '❌ PUSH ÉCHOUÉ après 3 tentatives.'
+          exit 1
