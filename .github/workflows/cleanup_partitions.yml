@@ -1,0 +1,102 @@
+name: Nettoyer les partitions en double
+
+# ──────────────────────────────────────────────────────────────────────────
+# POURQUOI CE WORKFLOW EST PERMANENT
+# Une première version avait été créée le 22/08 « à lancer une fois », puis
+# supprimée après usage. Mauvaise idée : les doublons sont revenus dès le
+# lendemain — 12 paires, 574 Mo, dépôt remonté à 1,1 Go.
+#
+# Cause : l'étape de compression supprime le .jsonl sur le runner, mais le
+# bloc de commit des collecteurs contenait « [ -f "$f" ] || continue », qui
+# IGNORE les fichiers supprimés. Le .gz s'ajoutait à côté, et le checkout
+# suivant restaurait le .jsonl. Corrigé depuis (git add -A avant la boucle),
+# mais un filet reste utile : ce genre de régression est passé inaperçu deux
+# fois, et seule la taille du dépôt l'a révélé.
+#
+# On le garde donc, en manuel. Le lancer coûte quelques minutes et ne peut
+# rien casser : trois vérifications par paire, et toute paire douteuse est
+# CONSERVÉE avec sortie en erreur.
+#
+# UTILISATION : Actions -> ce workflow -> Run workflow.
+# Cocher « essai à blanc » d'abord pour voir la liste sans rien supprimer.
+# ──────────────────────────────────────────────────────────────────────────
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Essai à blanc : liste les paires sans rien supprimer"
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: cleanup-partitions
+  cancel-in-progress: false
+
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+  PYTHONUNBUFFERED: '1'
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # PAS de filter blob:none : ce workflow doit LIRE le contenu des
+          # partitions pour vérifier l'intégrité de chaque .gz avant de
+          # supprimer son .jsonl. Un clone partiel les téléchargerait à la
+          # demande, plus lentement encore.
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Nettoyer
+        env:
+          DRY_RUN: ${{ inputs.dry_run && '1' || '0' }}
+        run: python scripts/cleanup_duplicate_partitions.py
+
+      - name: Commit
+        if: ${{ !inputs.dry_run }}
+        run: |
+          find . -name '__pycache__' -type d -prune -exec rm -rf {} + 2>/dev/null || true
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+
+          # -A : ce sont des SUPPRESSIONS. Un `git add` simple ne les verrait
+          # pas et le gain de place ne serait jamais effectif côté GitHub —
+          # exactement l'erreur qui a recréé ces doublons.
+          git add -A -- parts/
+          if git diff --staged --quiet; then
+            echo 'Rien à commit.'; exit 0
+          fi
+          echo '--- en attente de commit ---'
+          git status --short | head -20
+          git commit -m "Nettoyage : suppression des .jsonl doublonnés par leur .gz"
+
+          # Dépôt très actif (capture toutes les 20 min, deux collecteurs) :
+          # on réessaie, avec fusion JSON en cas de conflit sur les états.
+          for essai in 1 2 3; do
+            git fetch origin main || true
+            if git merge origin/main --no-edit; then
+              if git push origin HEAD:main; then echo '✅ PUSH OK'; exit 0; fi
+            else
+              echo "⚠️ conflit — tentative de fusion JSON (essai $essai)"
+              if python scripts/merge_json_state.py; then
+                git commit --no-edit || true
+              else
+                git merge --abort 2>/dev/null || true
+              fi
+            fi
+            sleep 5
+          done
+          echo '❌ PUSH ÉCHOUÉ après 3 tentatives.'
+          exit 1
