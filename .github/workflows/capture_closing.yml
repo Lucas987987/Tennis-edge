@@ -54,7 +54,19 @@ jobs:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           TELEGRAM_PUBLIC_CHAT_ID: ${{ secrets.TELEGRAM_PUBLIC_CHAT_ID }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-          CAPTURE_BOOKS: "pinnacle,sbobet,sharpbet,4casters,betfair-ex,winamax.fr,unibet.fr,bet365.fr,pmu,zebet.fr,netbet.fr,bwin.fr,genybet.fr,vbet.fr,circusbet.fr,feelingbet.fr,unibet,bwin,betsson,bet365,williamhill,betway,1xbet,888sport,leovegas,tipico,netbet,betsafe,nordicbet,coolbet,interwetten,vbet,marathonbet,22bet"
+          # LOT DE FIXTURES PAR REQUÊTE — 40 -> 80.
+          # L'US Open a fait passer l'univers de 36 à 276 matchs : à 40 par
+          # requête, capture_closing consommait 1 008 requêtes/jour pour un
+          # budget de 938. À 80, on tombe à 792.
+          # La contrainte est la LONGUEUR D'URL, pas l'API : 80 ids de 18
+          # caractères + la liste des books donnent 1 775 caractères, sous la
+          # limite prudente de 2 048 que certains proxys retiennent. À 100 on
+          # dépasserait (2 155).
+          # CAPTURE_BOOKS a par ailleurs été allégé de 13 books qui ne
+          # renvoient JAMAIS de cotes tennis (zebet.fr, genybet.fr, betsafe,
+          # marathonbet...) : 132 caractères d'URL gagnés, aucune donnée perdue.
+          FIDS_PER_REQUEST: '80'
+          CAPTURE_BOOKS: "pinnacle,sbobet,sharpbet,4casters,betfair-ex,winamax.fr,unibet.fr,bet365.fr,pmu,unibet,bwin,betsson,bet365,betway,1xbet,888sport,leovegas,tipico,netbet,coolbet,22bet"
           # ^ betfair-ex (Betfair Exchange) ajoute pour la question R&D "l'edge
           #   survit-il sur l'exchange (pas de limitation de compte) ?". Meme appel
           #   API -> 0 requete en plus. Ses trajectoires s'accumulent dans les
