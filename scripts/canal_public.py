@@ -185,7 +185,18 @@ def load_games(now):
         if lead < MIN_LEAD or lead > MAX_LEAD:
             continue
         def pre(seq):
-            pts = [(_dt(p[0]), p[1]) for p in (seq or []) if _dt(p[0]) and p[1] and p[1] > 1]
+            # 3e élément = LIMITE DE MISE quand le book l'expose (Pinnacle, sur
+            # ~10 % des points). Elle était jetée ici : un tuple à 2 valeurs.
+            # C'est un proxy direct de la confiance du book dans son prix, et
+            # elle n'est PAS reconstructible après coup — les partitions sont
+            # compressées et purgées. On la conserve donc dès la détection.
+            pts = []
+            for p in (seq or []):
+                t_ = _dt(p[0])
+                if not t_ or not p[1] or p[1] <= 1:
+                    continue
+                lim = p[2] if len(p) > 2 and p[2] is not None else None
+                pts.append((t_, p[1], lim))
             return sorted(x for x in pts if x[0] < ct)
         h, a = pre(r.get('home_curve')), pre(r.get('away_curve'))
         if len(h) < 2 or len(a) < 2:
@@ -313,12 +324,58 @@ def main():
             sent += 1
             state[uid] = palier
             with open(LOG, 'a', encoding='utf-8') as f:
+                # JOURNAL ENRICHI — « on filtrera plus tard » ne fonctionne que
+                # si les variables sont figées MAINTENANT. Six champs ajoutés le
+                # 24/08/2026, tous indisponibles rétroactivement une fois les
+                # partitions compressées puis purgées :
+                #   tournoi/categorie : les Challengers produisent l'essentiel
+                #     des alertes (23 sur 13 matchs le 24/08) et ne se
+                #     comportent pas comme un Grand Chelem. L'uid ne le dit pas.
+                #   limite_pinnacle   : proxy de confiance du book sharp.
+                #   n_books           : un écart vu sur 3 books n'a pas le même
+                #     sens que sur 19.
+                #   rang_palier       : 1re alerte ou republication ? 23 alertes
+                #     pour 13 matchs — sans ce champ, pas de déduplication.
+                #   lead_min          : dérivable, mais figé pour éviter toute
+                #     ambiguïté de fuseau au retraitement.
+                #   retards_tous      : on gardait les 3 premiers ; on garde
+                #     tout, le tri se fera à l'analyse.
+                # DERNIÈRE limite connue, pas seulement celle du dernier point.
+                # ATTENTION : book_curves_live.jsonl, que lit ce script, ne
+                # porte PAS la limite — elle vient de fetch_book_curves, qui
+                # appelle historical_curves(with_limit=True) et alimente les
+                # partitions hist. Ce champ vaut donc null aujourd'hui, et se
+                # remplira si la capture live expose un jour la limite.
+                # Mesuré dans l'historique : 16 % des courbes Pinnacle en juin,
+                # 74 % en août — la couverture progresse nettement.
+                lim_pin = None
+                pinn = g.get('pinnacle')
+                if pinn:
+                    for q in reversed(pinn['h'] if side == 'h' else pinn['a']):
+                        if len(q) > 2 and q[2] is not None:
+                            lim_pin = q[2]
+                            break
+                cat = 'challenger' if 'challenger' in (g['_tour'] or '').lower() else (
+                      'wta' if 'wta' in (g['_tour'] or '').lower() else 'atp')
                 f.write(json.dumps({
                     't': now.isoformat(), 'uid': uid, 'palier': palier,
                     'cote_ref_avant': o_open, 'cote_ref_apres': o_now,
                     'joueur': name, 'juste_prix': round(fair, 3) if fair else None,
                     'retards': [[b, c, round(g_, 1)] for b, c, g_ in lags[:3]],
                     'commence': g['_ct'].isoformat(),
+                    # ── champs ajoutés ──
+                    'tournoi': g['_tour'],
+                    'categorie': cat,
+                    'lead_min': round(g['_lead'], 1),
+                    'ampleur_pts': round(mag * 100, 2),
+                    'cote_adverse': round(oa1 if side == 'h' else oh1, 3),
+                    'limite_pinnacle': lim_pin,
+                    'n_books': sum(1 for b in g if not b.startswith('_')
+                                   and b != 'pinnacle' and b not in EXCHANGES),
+                    'n_retards': len(lags),
+                    'rang_palier': PALIERS.index(palier) + 1 if palier in PALIERS else None,
+                    'deja_signale': round(state.get(uid, 0), 3),
+                    'retards_tous': [[b, c, round(g_, 1)] for b, c, g_ in lags],
                 }, ensure_ascii=False) + "\n")
     json.dump(state, open(STATE, 'w', encoding='utf-8'))
     print(f"canal public : {sent} évolution(s) publiée(s) · {len(games)} matchs en fenêtre")
