@@ -179,6 +179,17 @@ jobs:
           # et le merge partait en conflit — donc run perdu. Constaté : le run
           # Polymarket du 20/08 a commité 12 427 lignes de l'autre collecteur.
           # Le .gitattributes (merge=union) reste le filet si ça arrive quand même.
+          # ENREGISTRER D'ABORD LES SUPPRESSIONS.
+          # La boucle ci-dessous fait « [ -f "$f" ] || continue » : elle IGNORE
+          # donc les fichiers supprimés. Or l'étape de compression supprime le
+          # .jsonl après avoir écrit le .gz — la suppression n'était jamais
+          # enregistrée, le .gz s'ajoutait À CÔTÉ, et le checkout suivant
+          # restaurait le .jsonl. Résultat mesuré le 23/08 : 12 paires en
+          # double, 574 Mo, dépôt remonté à 1,1 Go.
+          # « git add -A » enregistre créations ET suppressions ; le garde-fou
+          # de taille ci-dessous ne concerne que les fichiers PRÉSENTS.
+          git add -A -- 'parts/pm_ticks_*' 2>/dev/null || true
+
           for f in $(git status --porcelain 'parts/pm_ticks_*' | awk '{print $2}'); do
             [ -f "$f" ] || continue
             mo=$(du -m "$f" | cut -f1)
