@@ -147,6 +147,14 @@ def charger():
                 continue
             brut[r['uid']][bk] = {'h': h, 'a': a}
             brut[r['uid']]['_ct'] = ct
+            # NOMS RÉELS de la courbe. La clé canonique (match_key) TRIE les
+            # joueurs par ordre alphabétique : son premier joueur n'est donc
+            # PAS le 'home' des courbes. Interroger les résultats avec la clé
+            # revient à tirer l'orientation à pile ou face — et le contrôle de
+            # calibration ne le détecte pas, puisqu'une orientation aléatoire
+            # ramène le taux de réussite vers 50 %, ce qui paraît normal.
+            brut[r['uid']]['_home'] = r.get('home_team') or r.get('home')
+            brut[r['uid']]['_away'] = r.get('away_team') or r.get('away')
 
     idx = mk.build_index(recs)
     # L'index est exposé au niveau du module : les autres scripts en ont besoin
