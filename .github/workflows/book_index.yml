@@ -57,6 +57,11 @@ jobs:
         run: |
           python scripts/curves_parts.py rebuild || true
           python scripts/book_index.py
+          # Calibration + Brier par opérateur (réécrit le 25/08/2026 après la
+          # corruption du fichier d'origine). Non bloquant : une étude qui
+          # rate ne doit pas empêcher la publication du baromètre — mais
+          # l'échec reste VISIBLE dans les logs, jamais avalé sans trace.
+          python scripts/calibration_books.py || echo "⚠️ calibration_books en échec (non bloquant)"
 
       - name: Commit
         if: always()
@@ -66,7 +71,7 @@ jobs:
           git config user.email 'github-actions[bot]@users.noreply.github.com'
           # Fichier par fichier : un git add en bloc échoue ENTIÈREMENT si un
           # seul chemin manque, et n'ajoute alors rien (panne du 15/08/2026).
-          for f in book_index.json book_index.md; do
+          for f in book_index.json book_index.md calibration_books.md; do
             [ -f "$f" ] && git add -- "$f" || echo "  (absent : $f)"
           done
           if git diff --staged --quiet; then
