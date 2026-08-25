@@ -103,7 +103,8 @@ def inspect(started):
         path, label, min_bytes = art[0], art[1], art[2]
         drapeaux = set(art[3:])
         externe = 'externe' in drapeaux
-        r = {'fichier': path, 'libellé': label, 'optionnel': 'optionnel' in drapeaux}
+        r = {'fichier': path, 'libellé': label,
+             'optionnel': 'optionnel' in drapeaux, 'externe': externe}
         if not os.path.exists(path):
             r.update(verdict='❌ ABSENT', octets=0, lignes=0, ecrit_ce_run=False)
             rows.append(r); continue
@@ -206,14 +207,27 @@ def main():
     # ABSENT ou VIDE. FIGÉ est toléré : un script peut légitimement n'avoir
     # rien produit de neuf pendant un run donné.
     if '--strict' in sys.argv:
-        ko_dur = [r for r in rows
-                  if r['verdict'].startswith(('❌', '⚠️')) and not r.get('optionnel')]
+        # La ligne de partage n'est PAS « ABSENT/VIDE vs FIGÉ », c'est
+        # « interne vs externe » (audit du 25/08 après-midi) :
+        #   interne + FIGÉ  = normal, le script n'a rien produit CE run ;
+        #   externe + FIGÉ  = le PRODUCTEUR est mort — la fraîcheur interne
+        #                     est le SEUL signal dont on dispose sur lui, et
+        #                     c'était précisément celui que strict ignorait.
+        # « FIGÉ (fraîcheur inconnue) » compte aussi : ne plus pouvoir lire
+        # l'horodatage d'un externe est en soi une casse silencieuse.
+        def _ko(r):
+            if r.get('optionnel'):
+                return False
+            if r['verdict'].startswith(('❌', '⚠️')):
+                return True
+            return bool(r.get('externe')) and r['verdict'].startswith('⏳')
+        ko_dur = [r for r in rows if _ko(r)]
         if ko_dur:
-            print(f"\n🔒 STRICT : {len(ko_dur)} livrable(s) ABSENT/VIDE -> exit 1")
+            print(f"\n🔒 STRICT : {len(ko_dur)} livrable(s) critique(s) en défaut -> exit 1")
             for r in ko_dur:
                 print(f"   {r['verdict']} {r['fichier']}")
             sys.exit(1)
-        print("\n🔒 STRICT : tous les livrables critiques sont présents et non vides.")
+        print("\n🔒 STRICT : tous les livrables critiques sont présents, non vides, et leurs producteurs externes sont vivants.")
 
 
 if __name__ == '__main__':

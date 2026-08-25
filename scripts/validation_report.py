@@ -1193,6 +1193,28 @@ def _p_binomial_unilateral(k, n):
     return sum(math.comb(n, i) for i in range(k, n + 1)) / (2 ** n)
 
 
+def holm(pvals, alpha=0.05):
+    """Correction de Holm (step-down). pvals -> liste de booléens alignée :
+    True = rejet de H0 en contrôlant le risque global à alpha.
+
+    Principe : on trie les p-values ; la plus petite doit battre alpha/m, la
+    suivante alpha/(m-1), etc. Dès qu'une échoue, toutes les suivantes
+    échouent (procédure séquentielle). Moins brutal que Bonferroni, aucune
+    hypothèse d'indépendance requise — valide même sur nos tests corrélés.
+    Fonction pure, couverte par tests/test_pure_functions.py."""
+    m = len(pvals)
+    if m == 0:
+        return []
+    ordre = sorted(range(m), key=lambda i: pvals[i])
+    rejets = [False] * m
+    for rang, i in enumerate(ordre):
+        if pvals[i] <= alpha / (m - rang):
+            rejets[i] = True
+        else:
+            break                      # step-down : le premier échec arrête tout
+    return rejets
+
+
 # Les hypothèses GELÉES suivies par ce rapport. Compter est le préalable à
 # toute correction : le nombre doit être AFFICHÉ, pas reconstitué de tête.
 HYPOTHESES_GELEES = [
@@ -1239,6 +1261,11 @@ def bilan_tests_multiples():
                  if _p_binomial_unilateral(k, n) >= alpha1) + 1
         print(f"    n={n:<4} -> il faut >= {k}/{n} refermés ({100 * k / n:.0f}%) "
               f"pour survivre au 1er palier de Holm")
+    print("  Verdict CONFIRMATOIRE = hypothèse gelée AVANT ses données de "
+          "test, jugée ici out-of-sample : alpha=0,05 plein par test, puis "
+          "holm() sur la famille.")
+    print("  Tout angle exploré in-sample reste EXPLORATOIRE : il peut "
+          "motiver un nouveau gel daté, jamais justifier une décision.")
     print("  Un « survivant » in-sample non répliqué out-of-sample sous ce "
           "filtre doit être lu comme du bruit.")
 
@@ -1261,17 +1288,18 @@ def main():
                 except Exception: pass
         report_group(name, trades)
     print(f"\n{'='*60}\nRappel : CLV+ = prix battu ; le ROI net subit encore marge + gubbing.")
-    calibration_watch()
-    hour_watch()
-    margin_watch()
-    round_watch()
-    bigmove_watch()
-    earlyopen_watch()
-    reinforce_watch()
-    reactive_watch()
-    adaptive_threshold_watch()
-    betfair_confirm_watch()
-    move_age_watch()
+    # Chaque verdict porte son rang : « hypothèse 7/11 » change la lecture —
+    # un suivi isolé qui « passe » n'a pas le même poids quand on sait qu'il
+    # est un tirage parmi onze (audit du 25/08).
+    watchers = [calibration_watch, hour_watch, margin_watch, round_watch,
+                bigmove_watch, earlyopen_watch, reinforce_watch,
+                reactive_watch, adaptive_threshold_watch,
+                betfair_confirm_watch, move_age_watch]
+    assert len(watchers) == len(HYPOTHESES_GELEES), \
+        "watchers et HYPOTHESES_GELEES désynchronisés — corriger avant de publier"
+    for i, (w, (nom, gel)) in enumerate(zip(watchers, HYPOTHESES_GELEES), 1):
+        print(f"\n─── hypothèse {i}/{len(watchers)} : {nom} (gel {gel}) ───")
+        w()
     bilan_tests_multiples()
 
 
