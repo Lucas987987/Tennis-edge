@@ -275,6 +275,14 @@ def profil_lag(series_pm, series_pin, apparier_a=None):
 
 
 def main():
+    # Fenêtre tronquée par l'archivage (pm_ticks ET kx_ticks) ? Le dire (25/08).
+    try:
+        _ai = json.load(open('parts/ARCHIVE_INDEX.json', encoding='utf-8'))
+        _d = sorted(a.get('date','') for a in _ai.get('archives') or [])
+        if _d:
+            print(f"⚠️ historique tronqué : {len(_d)} partition(s) du {_d[0]} au {_d[-1]} archivée(s) hors git (voir parts/ARCHIVE_INDEX.json)")
+    except OSError:
+        pass                              # pas d'index = rien archivé
     pm = load_pm()
     if not pm:
         print("\n❌ aucune série Polymarket exploitable.")
