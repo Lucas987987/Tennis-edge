@@ -1,0 +1,13 @@
+{
+  "gel": "2026-08-25",
+  "regles_communes": "aucun point in-play ; Wilson ; n>=30 ; temoin = taux de base de la population etudiee ; univarie seulement ; toute promotion en hypothese de la famille principale exige un NOUVEAU gel date",
+  "pistes": {
+    "P1_limites_pinnacle": {"script": "limites_study.py", "test": "CLV>0 par tercile de limite au moment du move vs temoin de la population appariee, binomial exact, n>=30 par tercile", "statut_gel": "explore le 25/08 : tercile moyen 83% vs temoin 74.9% — PAS un verdict, la coupe en terciles est post-hoc ; verdict sur donnees POSTERIEURES au gel"},
+    "P2_leadlag_polymarket": {"script": "leadlag_pin_study.py", "test": "mediane des decalages de pic de correlation (grille -30..+30 min, |r|>0.15) sur n>=30 matchs ; negatif = Polymarket precede", "statut_gel": "6/30 matchs au gel — verdict automatique quand n atteint"},
+    "P3_decroissance": {"script": "decay_study.py", "test": "mesure descriptive : CLV atteignable a T+0/2/10/30/60 par tranche d'avance ; sert de decote de latence au ROI papier", "statut_gel": "constat du 25/08 : TOUTES les alertes actuelles tombent a <1h du match — piste operationnelle : alerter plus tot"},
+    "P4_cascade_books": {"script": "cascade_study.py", "test": "classement des delais medians a 50% du move, n>=10 par book ; hypothese a geler si stable 2 semaines : entree sur le tiers le plus lent bat le temoin", "statut_gel": "premier classement le 25/08 (888sport 13min -> pmu 48min) ; stabilite a verifier avant gel en H"},
+    "P5_retournements": {"script": "retournement_study.py", "test": "taux de retournement par bucket univarie vs IC global ; un filtre d'exclusion n'est adopte que si son bucket sort de l'IC a n>=30 sur donnees posterieures au gel", "statut_gel": "explore le 25/08 : moves 2-3% -> 46% retournes, moves <1h -> 69%, moves 6-12% -> 15% — buckets pre-specifies ici, verdict sur donnees futures"},
+    "P6_cross_market_set1": {"script": "cross_market_study.py", "test": "v1 CONFONDUE (fenetre temoin plus loin du match) — protocole v2 requis : temoin apparie a distance egale du coup d'envoi sur matchs sans alerte", "statut_gel": "resultat v1 inverse (19%) NON interpretable en l'etat"},
+    "P7_segments": {"script": "segments_study.py", "test": "IC95 du segment doit se separer du temoin global a n>=30 ; temoin PAR segment pour toute future hypothese contextuelle", "statut_gel": "ATP 75 / WTA 70 (IC recouvrants) ; Challengers n=22, en attente"}
+  }
+}
