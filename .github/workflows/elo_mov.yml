@@ -40,7 +40,9 @@ jobs:
           python-version: "3.11"
 
       - name: Installer les dépendances
-        run: pip install pandas openpyxl
+        # Épinglé le 25/08/2026 (requirements.txt) — merge_backtest.py validé
+        # sous pandas 3.0.2 : run complet, 252 résultats protégés, CSV réécrit.
+        run: pip install -r requirements.txt
 
       - name: Télécharger les saisons tennis-data.co.uk
         run: |
