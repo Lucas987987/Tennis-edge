@@ -1,0 +1,62 @@
+name: Pistes hebdo (etudes exploratoires)
+
+# CRÉÉ LE 25/08/2026. Les 7 pistes gelées (frozen_pistes.json) tournent chaque
+# semaine ; leurs sorties sont concaténées dans pistes_report.md et commitées.
+# Étapes tolérantes MAIS échecs visibles (jamais avalés sans trace), et le
+# rapport est un livrable : s'il manque, le run est rouge.
+
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+
+on:
+  schedule:
+    - cron: '40 6 * * 0'      # dimanche matin, avant le bilan hebdo
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pistes-weekly
+  cancel-in-progress: false
+
+jobs:
+  pistes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          filter: blob:none
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Exécuter les 7 pistes
+        run: |
+          {
+            echo "# Pistes exploratoires — rapport du $(date -u +%F)"
+            echo
+            echo '```'
+            for s in limites segments retournement decay cascade cross_market leadlag_pin; do
+              PYTHONPATH=scripts timeout 600 python scripts/${s}_study.py \
+                || echo "⚠️ ${s}_study.py EN ÉCHEC (code $?)"
+              echo
+            done
+            echo '```'
+          } > pistes_report.md
+          test -s pistes_report.md
+      - name: Committer le rapport
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -- pistes_report.md frozen_pistes.json
+          git diff --staged --quiet && { echo "rien de neuf"; exit 0; }
+          git commit -m "Pistes hebdo ($(date -u +%F))"
+          for essai in 1 2 3; do
+            git fetch origin main || true
+            git merge origin/main --no-edit || { git merge --abort 2>/dev/null || true; sleep 8; continue; }
+            git push && exit 0
+            sleep 8
+          done
+          exit 1
