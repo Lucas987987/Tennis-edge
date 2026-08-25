@@ -371,7 +371,7 @@ def margin_watch():
     print("  (si 'élargie' ne se distingue plus de 'stable', l'effet était du bruit)")
     g = groups['élargie']
     if g:
-        return sum(1 for x in g if x > 0), len(g), 0.5
+        return sum(1 for x in g if x > 0), len(g), 'temoin'
 
 
 def round_watch():
@@ -472,7 +472,7 @@ def round_watch():
     print("  (si le gradient premiers tours > phases finales disparaît, l'effet était du bruit)")
     g = buckets['premiers tours']
     if g:
-        return sum(1 for x in g if x > 0), len(g), 0.5
+        return sum(1 for x in g if x > 0), len(g), 'temoin'
 
 
 def bigmove_watch():
@@ -566,7 +566,7 @@ def bigmove_watch():
             print(f"  {lab:32} n={n_all:3} (aucun prix mou loggé pour mesurer le CLV)")
     g = [x for vals in buckets.values() for x in vals if x is not None]
     if g:
-        return sum(1 for x in g if x > 0), len(g), 0.5
+        return sum(1 for x in g if x > 0), len(g), 'temoin'
 
 
 def earlyopen_watch():
@@ -633,7 +633,7 @@ def earlyopen_watch():
     print(f"  n={len(rows)} | CLV médian {st.median(rows):+.1f}% | refermés {pos:.0f}%")
     print("  (si ces chiffres tiennent près des références in-sample, l'hypothèse est confirmée ;")
     print("   s'ils s'effondrent vers 0%/50%, c'était du bruit -- comme la marge et l'heure du match)")
-    return sum(1 for x in rows if x > 0), len(rows), 0.5
+    return sum(1 for x in rows if x > 0), len(rows), 'temoin'
 
 
 def reinforce_watch():
@@ -719,7 +719,14 @@ def reinforce_watch():
             p = 100 * sum(1 for x in g if x) / len(g)
             print(f"    {lab:10} n={len(g):4} | renforcé {p:.0f}%")
     print("  (si le gradient disparaît ou repasse sous 50% partout, c'était du bruit)")
-    return n_reinf, len(rows), 0.5
+    # HORS FAMILLE binomiale (audit du 25/08 soir) : ce comptage mesure
+    # la DÉRIVE OUTSIDER (un phénomène de marché), pas un CLV — le tester
+    # contre 0,5 OU contre le témoin CLV n'a pas de sens. L'hypothèse
+    # gelée porte sur le GRADIENT par écart d'ouverture : un test dédié
+    # (tendance sur les 4 tranches) reste à définir avant réintégration.
+    print('  (hors famille Holm : comptage de dérive, pas de CLV — '
+          'test de gradient à définir)')
+    return None
 
 
 def reactive_watch():
@@ -823,7 +830,7 @@ def reactive_watch():
     g = [x for lab, vals in groups.items() if lab.startswith('rapide')
          for x in vals]
     if g:
-        return sum(1 for x in g if x > 0), len(g), 0.5
+        return sum(1 for x in g if x > 0), len(g), 'temoin'
 
 
 def adaptive_threshold_watch():
@@ -919,7 +926,7 @@ def adaptive_threshold_watch():
     print("   en partie du sur-ajustement -- si ça tient, la méthode est validée)")
     if _pool_adaptatif:
         return (sum(1 for x in _pool_adaptatif if x > 0),
-                len(_pool_adaptatif), 0.5)
+                len(_pool_adaptatif), 'temoin')
 
 
 def betfair_confirm_watch():
@@ -1064,7 +1071,7 @@ def betfair_confirm_watch():
     print("  (si 'confirme' ne bat plus 'ne confirme pas', c'était du bruit malgré la cohérence in-sample)")
     g = [r[1] for r in rows if r[0]]
     if g:
-        return sum(1 for x in g if x > 0), len(g), 0.5
+        return sum(1 for x in g if x > 0), len(g), 'temoin'
 
 
 def move_age_watch():
@@ -1222,7 +1229,7 @@ def move_age_watch():
     print("  (si <5min ne bat plus >2h, c'était du bruit malgré l'écart in-sample)")
     g = grid.get(AGE_BUCKETS[0][2], [])
     if g:
-        return sum(1 for x in g if x > 0), len(g), 0.5
+        return sum(1 for x in g if x > 0), len(g), 'temoin'
 
 
 def _p_binomial_unilateral(k, n, p0=0.5):
@@ -1247,6 +1254,48 @@ def _p_binomial_unilateral(k, n, p0=0.5):
     return min(total, 1.0)
 
 
+_P0_TEMOIN_CACHE = None
+
+
+def p0_temoin(chemin='moves_detail_hist.csv'):
+    """Taux de base de CLV>0 sur la POPULATION des moves détectés.
+
+    (audit du 25/08 soir) : « sans edge, 50 % de CLV>0 » est faux — la
+    dérive asymétrique des outsiders déplace le point d'équilibre, et le
+    dispositif POSSÈDE son étalon : les 800+ moves de moves_detail_hist.
+    Chaque hypothèse sélectionne un sous-groupe de cette activité ; son
+    H0 honnête est « pas mieux que le move moyen », pas « pas mieux
+    qu'une pièce ». Mesuré le 25/08 : 593/821 = 0,722 — contre 0,5 en
+    dur, les verdicts changent du tout au tout.
+    Réserve assumée : les sous-groupes issus d'autres détecteurs
+    (ouverture précoce, seuils par book) sont comparés au même étalon —
+    l'hypothèse de comparabilité est « tout ceci est du steam-following ».
+    Renvoie (p0, n) ; repli (0.5, 0) SIGNALÉ si le fichier manque.
+    """
+    global _P0_TEMOIN_CACHE
+    if _P0_TEMOIN_CACHE is not None:
+        return _P0_TEMOIN_CACHE
+    import csv
+    vals = []
+    try:
+        for r in csv.DictReader(open(chemin, encoding='utf-8')):
+            try:
+                vals.append(float(r['clv_book_pct']))
+            except (TypeError, ValueError, KeyError):
+                continue
+    except OSError:
+        pass
+    if len(vals) < 100:
+        print(f"⚠️ p0_temoin : {chemin} absent ou trop maigre "
+              f"({len(vals)} CLV) — repli p0=0,5, verdicts à lire avec "
+              f"prudence.")
+        _P0_TEMOIN_CACHE = (0.5, 0)
+    else:
+        pos = sum(1 for v in vals if v > 0)
+        _P0_TEMOIN_CACHE = (pos / len(vals), len(vals))
+    return _P0_TEMOIN_CACHE
+
+
 def holm(pvals, alpha=0.05):
     """Correction de Holm (step-down). pvals -> liste de booléens alignée :
     True = rejet de H0 en contrôlant le risque global à alpha.
@@ -1269,59 +1318,60 @@ def holm(pvals, alpha=0.05):
     return rejets
 
 
-# Les hypothèses GELÉES suivies par ce rapport. Compter est le préalable à
-# toute correction : le nombre doit être AFFICHÉ, pas reconstitué de tête.
-HYPOTHESES_GELEES = [
-    ('calibration 2,20-3,50', FREEZE_DATE),
-    ('heure du match',        FREEZE_DATE),
-    ('variation de marge',    FREEZE_DATE_MARGIN),
-    ('round',                 FREEZE_DATE_ROUND),
-    ('gros move',             FREEZE_DATE_BIGMOVE),
-    ('ouverture précoce',     FREEZE_DATE_EARLYOPEN),
-    ('renforcement outsider', FREEZE_DATE_REINFORCE),
-    ('book réactif',          FREEZE_DATE_REACTIVE),
-    ('seuil adaptatif',       FREEZE_DATE),
-    ('confirmation Betfair',  FREEZE_DATE_BETFAIR),
-    ('âge du mouvement',      FREEZE_DATE_MOVEAGE),
-]
 
 
 def bilan_tests_multiples(resultats):
-    """LE CHAÎNON (25/08 soir) : les p-values réelles traversent holm().
+    """Le filtre opérationnel : comptages OOS -> p-values -> Holm.
 
-    resultats = [(nom, gel, (k, n, p0) | None)]. Chaque watcher renvoie
-    son comptage out-of-sample ; ici on calcule la p-value binomiale
-    exacte, on applique Holm sur la famille des hypothèses TESTABLES, et
-    on imprime un verdict par ligne. Plus de correspondance à faire de
-    tête : le filtre est opérationnel, pas documentaire. Le critère
-    PRIMAIRE est jugé SEUL à 0,05, hors famille (voir report_group).
+    resultats = [(nom, gel, (k, n, p0) | None)] ; p0 vaut un nombre
+    (attendu Shin) ou 'temoin' (taux de base CLV>0 de la population de
+    moves). Plancher n>=30 EN AMONT de la famille : la règle maison est
+    pré-enregistrée et indépendante du résultat, donc l'exclure avant
+    Holm est légitime — une hypothèse à n=6 ne peut jamais rejeter mais
+    durcirait le seuil de toutes les autres.
     """
     m = len(resultats)
+    p0t, nt = p0_temoin()
     print(f"\n{'=' * 60}")
     print(f"BILAN TESTS MULTIPLES — {m} hypothèses gelées suivies "
-          f"(Holm, alpha=0,05)")
+          f"(Holm, alpha=0,05, plancher n>=30)")
+    print(f"  p0 témoin = {100 * p0t:.1f}% de CLV>0 sur la population "
+          f"de moves (n={nt}) — l'étalon des hypothèses CLV.")
     print(f"  Critère PRIMAIRE hors famille : CLV alerté vs témoin, "
           f"gel {FREEZE_DATE_PRIMAIRE}.")
-    testables = [(idx, r[2]) for idx, r in enumerate(resultats) if r[2]]
-    pvals = [_p_binomial_unilateral(k, n, p0)
-             for _, (k, n, p0) in testables]
-    rejets = holm(pvals, alpha=0.05)
-    verdicts = {}
-    for (idx, (k, n, p0)), p, rej in zip(testables, pvals, rejets):
-        verdicts[idx] = (k, n, p0, p, rej)
-    for idx, (nom, gel, _) in enumerate(resultats):
-        if idx not in verdicts:
-            print(f"  {nom:24} gel {str(gel)[:10]} | — pas encore "
-                  f"testable (n insuffisant ou pas de comptage OOS)")
+    resolus = []
+    for idx, (nom, gel, r) in enumerate(resultats):
+        if not r:
+            resolus.append((idx, None))
             continue
-        k, n, p0, p, rej = verdicts[idx]
-        v = 'REJETTE H0 sous Holm ✅' if rej else 'ne rejette pas H0'
-        if rej and n < 30:
-            # La règle maison (« refus de conclure sous n=30 ») prime sur la
-            # significativité : un 13/13 est réel mais reste une promesse.
-            v = 'passe Holm MAIS n<30 : sous le seuil maison, à confirmer ⏳'
-        print(f"  {nom:24} gel {str(gel)[:10]} | {k}/{n} vs "
-              f"p0={p0:.2f} | p={p:.4f} -> {v}")
+        k, n, p0 = r
+        resolus.append((idx, (k, n, p0t if p0 == 'temoin' else p0)))
+    testables = [(idx, r) for idx, r in resolus
+                 if r is not None and r[1] >= 30]
+    pvals = [_p_binomial_unilateral(k, n, p0) for _, (k, n, p0) in testables]
+    rejets = holm(pvals, alpha=0.05)
+    verdicts = {idx: (k, n, p0, p, rej)
+                for (idx, (k, n, p0)), p, rej in zip(testables, pvals, rejets)}
+    petits = {idx: r for idx, r in resolus
+              if r is not None and r[1] < 30}
+    for idx, (nom, gel, _) in enumerate(resultats):
+        if idx in verdicts:
+            k, n, p0, p, rej = verdicts[idx]
+            if rej:
+                v = 'REJETTE H0 sous Holm ✅'
+            elif k / n < p0:
+                v = 'ne rejette pas H0 (SOUS le taux de base témoin ⚠️)'
+            else:
+                v = 'ne rejette pas H0'
+            print(f"  {nom:24} gel {str(gel)[:10]} | {k}/{n} vs "
+                  f"p0={p0:.3f} | p={p:.4f} -> {v}")
+        elif idx in petits:
+            k, n, p0 = petits[idx]
+            print(f"  {nom:24} gel {str(gel)[:10]} | {k}/{n} — n<30 : "
+                  f"suivi, HORS famille (seuil maison pré-enregistré)")
+        else:
+            print(f"  {nom:24} gel {str(gel)[:10]} | — pas de comptage "
+                  f"OOS (n insuffisant, hors périmètre binomial, ou trop tôt)")
     n_rej = sum(1 for *_, r in verdicts.values() if r)
     print(f"  Famille : {len(pvals)} testable(s) sur {m}, {n_rej} "
           f"rejet(s) au risque global 5 %.")
@@ -1332,13 +1382,33 @@ def bilan_tests_multiples(resultats):
     print('  Un « survivant » in-sample non répliqué out-of-sample sous '
           'ce filtre doit être lu comme du bruit.')
 
+# Une SEULE source de vérité (audit du 25/08 soir, consolidée le soir
+# même : la première version vivait dans main() pendant que l'ancienne
+# liste parallèle servait encore l'en-tête — la duplication supprimée
+# était revenue par la fenêtre). Nom, date de gel et fonction voyagent
+# ENSEMBLE, au niveau module, lus par l'en-tête ET par la boucle.
+HYPOTHESES = [
+    ('calibration 2,20-3,50', FREEZE_DATE,           calibration_watch),
+    ('heure du match',        FREEZE_DATE,           hour_watch),
+    ('variation de marge',    FREEZE_DATE_MARGIN,    margin_watch),
+    ('round',                 FREEZE_DATE_ROUND,     round_watch),
+    ('gros move',             FREEZE_DATE_BIGMOVE,   bigmove_watch),
+    ('ouverture précoce',     FREEZE_DATE_EARLYOPEN, earlyopen_watch),
+    ('renforcement outsider', FREEZE_DATE_REINFORCE, reinforce_watch),
+    ('book réactif',          FREEZE_DATE_REACTIVE,  reactive_watch),
+    ('seuil adaptatif',       FREEZE_DATE,           adaptive_threshold_watch),
+    ('confirmation Betfair',  FREEZE_DATE_BETFAIR,   betfair_confirm_watch),
+    ('âge du mouvement',      FREEZE_DATE_MOVEAGE,   move_age_watch),
+]
+
+
 def main():
     files = sorted(glob.glob(JOURNALS))
     if not files:
         print(f"Aucun journal trouve ({JOURNALS}). Le pipeline n'a pas encore ouvert/denoue de pari.")
         return
     print("TABLEAU DE VALIDATION FORWARD — steam-following")
-    print(f"{len(HYPOTHESES_GELEES)} hypothèses gelées suivies — verdicts individuels à lire à travers le filtre Holm-Bonferroni (bilan en fin de rapport).")
+    print(f"{len(HYPOTHESES)} hypothèses gelées suivies — verdicts individuels à lire à travers le filtre Holm-Bonferroni (bilan en fin de rapport).")
     print("Regle : un edge n'est CONFIRME que si la borne basse de l'IC95 exclut 0 (ROI) / 50% (CLV+).")
     for f in files:
         name = os.path.basename(f).replace('paper_trades_', 'surface ').replace('.jsonl', '')
@@ -1350,27 +1420,9 @@ def main():
                 except Exception: pass
         report_group(name, trades)
     print(f"\n{'='*60}\nRappel : CLV+ = prix battu ; le ROI net subit encore marge + gubbing.")
-    # Une SEULE source de vérité (audit du 25/08 soir) : le nom, la date
-    # de gel et la fonction voyagent ENSEMBLE. L'ancien zip de deux
-    # listes parallèles ne protégeait que contre un ajout oublié, pas
-    # contre un réordonnancement — qui aurait publié chaque verdict sous
-    # le nom du voisin, dans le document qui sert à décider.
-    hypotheses = [
-        ('calibration 2,20-3,50', FREEZE_DATE,           calibration_watch),
-        ('heure du match',        FREEZE_DATE,           hour_watch),
-        ('variation de marge',    FREEZE_DATE_MARGIN,    margin_watch),
-        ('round',                 FREEZE_DATE_ROUND,     round_watch),
-        ('gros move',             FREEZE_DATE_BIGMOVE,   bigmove_watch),
-        ('ouverture précoce',     FREEZE_DATE_EARLYOPEN, earlyopen_watch),
-        ('renforcement outsider', FREEZE_DATE_REINFORCE, reinforce_watch),
-        ('book réactif',          FREEZE_DATE_REACTIVE,  reactive_watch),
-        ('seuil adaptatif',       FREEZE_DATE,           adaptive_threshold_watch),
-        ('confirmation Betfair',  FREEZE_DATE_BETFAIR,   betfair_confirm_watch),
-        ('âge du mouvement',      FREEZE_DATE_MOVEAGE,   move_age_watch),
-    ]
     resultats = []
-    for i, (nom, gel, w) in enumerate(hypotheses, 1):
-        print(f"\n─── hypothèse {i}/{len(hypotheses)} : {nom} (gel {gel}) ───")
+    for i, (nom, gel, w) in enumerate(HYPOTHESES, 1):
+        print(f"\n─── hypothèse {i}/{len(HYPOTHESES)} : {nom} (gel {gel}) ───")
         resultats.append((nom, gel, w()))
     bilan_tests_multiples(resultats)
 
