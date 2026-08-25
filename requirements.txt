@@ -1,0 +1,13 @@
+# Dépendances ÉPINGLÉES — 25/08/2026.
+# Avant : « pip install pandas openpyxl » non épinglé dans les workflows.
+# Une release cassante de pandas aurait arrêté le pipeline sans préavis
+# (celui-ci tourne ~150 fois/jour : la fenêtre d'exposition est permanente).
+# Versions vérifiées fonctionnelles avec le code du dépôt sous Python 3.11.
+# Montée de version = changement DÉLIBÉRÉ, testé, commité — plus jamais subi.
+pandas==3.0.2
+openpyxl==3.1.5
+requests==2.33.1
+websocket-client==1.8.0
+
+# Outillage (CI tests) — pas requis par le pipeline lui-même
+pytest==8.3.4

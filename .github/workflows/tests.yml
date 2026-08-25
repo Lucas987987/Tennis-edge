@@ -1,0 +1,36 @@
+name: Tests unitaires
+
+# CRÉÉ LE 25/08/2026 — la protection contre les régressions silencieuses des
+# fonctions pures (wilson, dévig Shin, trim_history, clés de jointure, fusion
+# JSON, formule CLV). Une inversion de côté a déjà coûté un mois de données :
+# ces invariants l'auraient attrapée au commit, pas un mois plus tard.
+# AUCUN « || true » ici : un test rouge doit se voir.
+
+on:
+  push:
+    paths:
+      - 'scripts/**.py'
+      - 'tests/**.py'
+      - 'requirements.txt'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Les tests n'ont besoin QUE du code — pas des 600 Mo de partitions.
+          sparse-checkout: |
+            /*
+            !/parts
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements.txt
+      - run: pytest tests/ -v

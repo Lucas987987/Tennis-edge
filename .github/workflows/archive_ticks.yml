@@ -1,0 +1,77 @@
+name: Archive Ticks (Releases)
+
+# CRÉÉ LE 25/08/2026 — rétention des partitions pm_ticks/kx_ticks.
+# Constat : aucune rétention n'existait pour ces partitions (purge_data ne
+# couvre que live_*). Mesure du 25/08 : +115 Mo/jour, en accélération depuis
+# l'extension aux challengers. 96 % du dépôt est de la donnée.
+# Principe : archiver AVANT de supprimer. Les .gz de plus de 7 jours partent
+# dans une GitHub Release mensuelle (ticks-YYYY-MM, hors historique git,
+# 2 Go max PAR FICHIER), puis SEULEMENT sont retirés du dépôt.
+# NB : retirer un fichier n'efface pas ses blobs de l'HISTORIQUE — le dépôt
+# distant ne maigrit pas rétroactivement. Le gain est sur le working tree,
+# donc sur chaque checkout de chaque workflow, et sur la croissance future.
+# Purger l'historique (git filter-repo) reste une opération manuelle, à froid.
+
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+
+on:
+  schedule:
+    - cron: '15 5 * * *'    # 1x/jour, avant le gros du trafic des collecteurs
+  workflow_dispatch:
+
+permissions:
+  contents: write            # couvre push ET création/upload de releases
+
+concurrency:
+  group: archive-ticks
+  cancel-in-progress: false
+
+jobs:
+  archive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # fetch-depth 0 requis par le merge de l'étape de commit ;
+          # filter blob:none évite de rapatrier l'historique (178 s -> 22 s,
+          # mesuré sur le collecteur Polymarket).
+          fetch-depth: 0
+          filter: blob:none
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Archiver les ticks de plus de 7 jours
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RETENTION_DAYS: '7'
+        # PAS de "|| true" : un échec d'upload doit rendre ce run ROUGE.
+        # Les fichiers en échec restent dans git — rien n'est jamais perdu.
+        run: python scripts/archive_ticks.py
+
+      - name: Committer les suppressions
+        run: |
+          find . -name '__pycache__' -type d -prune -exec rm -rf {} + 2>/dev/null || true
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          # Portée RESTREINTE aux partitions : ce workflow ne touche rien d'autre.
+          git add -A -- 'parts/'
+          git diff --staged --quiet && { echo "rien à committer"; exit 0; }
+          git commit -m "Archivage ticks -> Releases ($(date -u +%F))"
+          for essai in 1 2 3; do
+            git fetch origin main || true
+            if git merge origin/main --no-edit; then :; else
+              # Ce workflow ne fait QUE des suppressions de vieux fichiers :
+              # un conflit signifie qu'un autre run a touché les mêmes chemins.
+              # On abandonne proprement, le prochain run quotidien reprendra.
+              git merge --abort 2>/dev/null || true
+              sleep 10
+              continue
+            fi
+            if git push; then echo "✅ PUSH OK"; exit 0; fi
+            sleep 10
+          done
+          echo "❌ PUSH ÉCHOUÉ après 3 tentatives (les archives Releases, elles, sont en place)"
+          exit 1

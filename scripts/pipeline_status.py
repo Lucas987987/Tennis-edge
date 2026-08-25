@@ -27,18 +27,27 @@ SORTIES : pipeline_status.json (machine) + pipeline_status.md (lisible sur GitHu
 Env : RUN_STARTED (ISO 8601, injecté par le workflow — sert à distinguer
       "réécrit pendant ce run" de "figé depuis un run précédent"), OUT_JSON, OUT_MD.
 """
-import os, json, glob, datetime
+import os, sys, json, glob, datetime
 
 OUT_JSON = os.environ.get('OUT_JSON', 'pipeline_status.json')
 OUT_MD   = os.environ.get('OUT_MD', 'pipeline_status.md')
 
-# (chemin, libellé, seuil d'octets sous lequel on considère le fichier vide)
+# (chemin, libellé, seuil d'octets sous lequel on considère le fichier vide
+#  [, 'externe' si le fichier est produit par un AUTRE workflow])
+# 'externe' — CORRIGÉ LE 25/08/2026 : resultats_derived.json est produit par
+# results_bridge.py dans capture_closing (toutes les 5-10 min), PAS par le
+# steam pipeline. Le juger sur « écrit pendant CE run » produisait un
+# ❌/⏳ permanent — une fausse alerte qui polluait le monitoring, soit
+# précisément le mode de panne que ce script existe pour éviter. Un livrable
+# externe est jugé sur présence + taille + fraîcheur < 24 h, rien d'autre.
 ARTIFACTS = [
     ('set_results.json',          'Résultats match + set',              200),
-    ('resultats_derived.json',    'Pont résultats (études)',            200),
+    ('resultats_derived.json',    'Pont résultats (études)',            200, 'externe'),
     ('paper_trades_match.jsonl',  'Journal forward — match',             50),
     ('paper_trades_set1.jsonl',   'Journal forward — set 1',             50),
-    ('paper_trades_set2.jsonl',   'Journal forward — set 2',              0),
+    # 'optionnel' : peut être légitimement vide (peu d'alertes set 2) —
+    # --strict ne doit pas rendre le pipeline rouge en permanence pour ça.
+    ('paper_trades_set2.jsonl',   'Journal forward — set 2',              0, 'optionnel'),
     ('moves_detail.csv',          'Audit des moves (live)',             200),
     ('moves_detail_hist.csv',     'Audit des moves (historique)',       200),
     ('canal_clv_detail.csv',      'CLV réalisé du canal public',        100),
@@ -70,8 +79,11 @@ def _lines(path):
 
 def inspect(started):
     rows = []
-    for path, label, min_bytes in ARTIFACTS:
-        r = {'fichier': path, 'libellé': label}
+    for art in ARTIFACTS:
+        path, label, min_bytes = art[0], art[1], art[2]
+        drapeaux = set(art[3:])
+        externe = 'externe' in drapeaux
+        r = {'fichier': path, 'libellé': label, 'optionnel': 'optionnel' in drapeaux}
         if not os.path.exists(path):
             r.update(verdict='❌ ABSENT', octets=0, lignes=0, ecrit_ce_run=False)
             rows.append(r); continue
@@ -81,6 +93,10 @@ def inspect(started):
         n = _lines(path)
         if size <= min_bytes or not n:
             verdict = '⚠️ VIDE'
+        elif externe:
+            # Produit ailleurs : « pas réécrit pendant CE run » est NORMAL.
+            age_h = (datetime.datetime.utcnow() - mtime).total_seconds() / 3600
+            verdict = '✅ OK' if age_h <= 24 else '⏳ FIGÉ'
         elif not fresh:
             verdict = '⏳ FIGÉ'
         else:
@@ -96,7 +112,9 @@ def partitions_health():
     les push pendant 5 jours en août. Une partition >90 Mo est en zone rouge
     (mur dur GitHub : 100 Mo par fichier)."""
     out = {'total_mo': 0.0, 'zone_rouge': [], 'n_partitions': 0}
-    for p in sorted(glob.glob('parts/*.jsonl')):
+    # 25/08/2026 : les .gz n'étaient pas comptés — le total affiché (663 Mo
+    # de .jsonl) masquait la vraie trajectoire du dépôt. On compte TOUT.
+    for p in sorted(glob.glob('parts/*.jsonl') + glob.glob('parts/*.jsonl.gz')):
         mo = os.path.getsize(p) / 1e6
         out['total_mo'] += mo
         out['n_partitions'] += 1
@@ -149,6 +167,23 @@ def main():
     print(f"  partitions : {parts['n_partitions']} fichiers, {parts['total_mo']} Mo")
     for z in parts['zone_rouge']:
         print(f"  ⛔ ZONE ROUGE : {z['fichier']} = {z['mo']} Mo (mur GitHub 100 Mo)")
+
+    # MODE --strict (25/08/2026) — le verrou qui manquait.
+    # 166 « || true » rendaient tous les jobs verts quoi qu'il arrive : le
+    # pire mode de panne de ce projet (voir l'en-tête). Placé en DERNIÈRE
+    # étape d'un workflow, APRÈS le commit/push (les données sont donc déjà
+    # persistées), ce mode rend le run ROUGE si un livrable critique est
+    # ABSENT ou VIDE. FIGÉ est toléré : un script peut légitimement n'avoir
+    # rien produit de neuf pendant un run donné.
+    if '--strict' in sys.argv:
+        ko_dur = [r for r in rows
+                  if r['verdict'].startswith(('❌', '⚠️')) and not r.get('optionnel')]
+        if ko_dur:
+            print(f"\n🔒 STRICT : {len(ko_dur)} livrable(s) ABSENT/VIDE -> exit 1")
+            for r in ko_dur:
+                print(f"   {r['verdict']} {r['fichier']}")
+            sys.exit(1)
+        print("\n🔒 STRICT : tous les livrables critiques sont présents et non vides.")
 
 
 if __name__ == '__main__':

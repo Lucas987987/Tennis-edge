@@ -1186,12 +1186,70 @@ def move_age_watch():
     print("  (si <5min ne bat plus >2h, c'était du bruit malgré l'écart in-sample)")
 
 
+def _p_binomial_unilateral(k, n):
+    """P(X >= k) sous H0 p=0,5 — test de signe exact, sans dépendance."""
+    if n <= 0:
+        return 1.0
+    return sum(math.comb(n, i) for i in range(k, n + 1)) / (2 ** n)
+
+
+# Les hypothèses GELÉES suivies par ce rapport. Compter est le préalable à
+# toute correction : le nombre doit être AFFICHÉ, pas reconstitué de tête.
+HYPOTHESES_GELEES = [
+    ('calibration 2,20-3,50', FREEZE_DATE),
+    ('heure du match',        FREEZE_DATE),
+    ('variation de marge',    FREEZE_DATE_MARGIN),
+    ('round',                 FREEZE_DATE_ROUND),
+    ('gros move',             FREEZE_DATE_BIGMOVE),
+    ('ouverture précoce',     FREEZE_DATE_EARLYOPEN),
+    ('renforcement outsider', FREEZE_DATE_REINFORCE),
+    ('book réactif',          FREEZE_DATE_REACTIVE),
+    ('seuil adaptatif',       FREEZE_DATE),
+    ('confirmation Betfair',  FREEZE_DATE_BETFAIR),
+    ('âge du mouvement',      FREEZE_DATE_MOVEAGE),
+]
+
+
+def bilan_tests_multiples():
+    """AJOUT DU 25/08/2026 — le filtre qui manquait au verdict final.
+
+    Avec m hypothèses testées à alpha=0,05 chacune, la probabilité qu'AU MOINS
+    une « passe » par pur hasard est 1-(0,95^m) — sous indépendance ; nos
+    hypothèses partagent le même échantillon, le vrai taux est un peu plus
+    bas, mais l'ordre de grandeur tient. Correction de Holm (step-down) : le
+    p le plus faible de la famille doit battre alpha/m, le suivant alpha/(m-1),
+    etc. Le tableau ci-dessous traduit ce seuil en « refermés k/n » (test de
+    signe exact vs 50 %) pour lire directement les verdicts des suivis.
+    La règle CLV du groupe alerté vs témoin n'appartient PAS à cette famille :
+    c'est le critère PRIMAIRE, pré-spécifié avant le gel, jugé seul à 0,05.
+    """
+    m = len(HYPOTHESES_GELEES)
+    fam = 1 - 0.95 ** m
+    print(f"\n{'=' * 60}")
+    print(f"BILAN TESTS MULTIPLES — {m} hypothèses gelées suivies")
+    for nom, gel in HYPOTHESES_GELEES:
+        print(f"  - {nom} (gel {gel})")
+    print(f"  À alpha=0,05 par test, P(>=1 faux positif) ~ {fam * 100:.0f}% "
+          f"(borne haute, tests corrélés).")
+    alpha1 = 0.05 / m
+    print(f"  Holm : le MEILLEUR p de la famille doit être < 0,05/{m} = {alpha1:.4f}.")
+    print(f"  Traduction en « refermés » (test de signe vs 50%) :")
+    for n in (30, 50, 100, 150):
+        k = next(k for k in range(n, 0, -1)
+                 if _p_binomial_unilateral(k, n) >= alpha1) + 1
+        print(f"    n={n:<4} -> il faut >= {k}/{n} refermés ({100 * k / n:.0f}%) "
+              f"pour survivre au 1er palier de Holm")
+    print("  Un « survivant » in-sample non répliqué out-of-sample sous ce "
+          "filtre doit être lu comme du bruit.")
+
+
 def main():
     files = sorted(glob.glob(JOURNALS))
     if not files:
         print(f"Aucun journal trouve ({JOURNALS}). Le pipeline n'a pas encore ouvert/denoue de pari.")
         return
     print("TABLEAU DE VALIDATION FORWARD — steam-following")
+    print(f"{len(HYPOTHESES_GELEES)} hypothèses gelées suivies — verdicts individuels à lire à travers le filtre Holm-Bonferroni (bilan en fin de rapport).")
     print("Regle : un edge n'est CONFIRME que si la borne basse de l'IC95 exclut 0 (ROI) / 50% (CLV+).")
     for f in files:
         name = os.path.basename(f).replace('paper_trades_', 'surface ').replace('.jsonl', '')
@@ -1214,6 +1272,7 @@ def main():
     adaptive_threshold_watch()
     betfair_confirm_watch()
     move_age_watch()
+    bilan_tests_multiples()
 
 
 if __name__ == '__main__':
