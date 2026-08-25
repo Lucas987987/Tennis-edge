@@ -65,7 +65,10 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install requests websocket-client
+          # Épinglé le 25/08/2026 : c'est le workflow le plus continu du
+          # projet et websocket-client est sa dépendance vitale — une release
+          # cassante l'aurait arrêté sans préavis.
+          pip install -r requirements.txt
 
       # Mode diagnostic : découverte seule, écrit polymarket_diag.json avec le
       # décompte des motifs de rejet et un échantillon BRUT des marchés écartés.
