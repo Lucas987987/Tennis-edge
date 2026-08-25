@@ -103,6 +103,28 @@ def shin_ph(oh, oa):
     return ph / (ph + pa) if (ph and pa) else None
 
 
+def avertir_troncature():
+    """Signale une fenêtre tronquée par l'archivage (archive_ticks.py).
+    Sans ce message, la sortie des .gz vers les Releases rétrécirait
+    silencieusement la fenêtre des études à RETENTION_DAYS — le mode de panne
+    « lecture vide silencieuse » qui a déjà frappé les 15/08 et 25/08."""
+    try:
+        idx = json.load(open('parts/ARCHIVE_INDEX.json', encoding='utf-8'))
+    except OSError:
+        return                                   # pas d'index = rien archivé
+    except ValueError as e:
+        print(f"⚠️ parts/ARCHIVE_INDEX.json illisible : {e}")
+        return
+    arcs = idx.get('archives') or []
+    if not arcs:
+        return
+    dates = sorted(a.get('date', '') for a in arcs)
+    tags = sorted({a.get('release', '?') for a in arcs})
+    print(f"⚠️ historique tronqué : {len(arcs)} partition(s) du {dates[0]} au "
+          f"{dates[-1]} archivée(s) hors git ({', '.join(tags)}). "
+          f"Récupération : gh release download <tag>")
+
+
 def _sources():
     """(libellé, motif, lecteur) de la source retenue."""
     def dispo(g):
@@ -150,6 +172,7 @@ def charger_pm():
     dépasse MAX_SPREAD sont écartés : sur un carnet trop large, le milieu de
     fourchette n'est pas une probabilité, c'est une interpolation.
     """
+    avertir_troncature()
     brut = collections.defaultdict(lambda: {'home': [], 'away': []})
     n = 0
     libelles = []
