@@ -195,4 +195,12 @@ jobs:
       # marqué « optionnel » dans pipeline_status.py et ne déclenche pas.
       - name: Verrou qualité (échec si livrable critique manquant)
         if: always()
+        env:
+          # Le verrou tourne APRÈS le commit : il écrit son état dans /tmp
+          # pour ne pas réécrire pipeline_status.json/.md post-commit (la
+          # version réécrite ne serait jamais poussée — divergence garantie
+          # le jour où un champ dépend de l'heure). Le fichier COMMITÉ reste
+          # celui de l'étape « État du run ».
+          OUT_JSON: /tmp/pipeline_status.json
+          OUT_MD: /tmp/pipeline_status.md
         run: python scripts/pipeline_status.py --strict
