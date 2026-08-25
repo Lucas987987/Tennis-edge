@@ -144,6 +144,34 @@ def test_fusion_ne_perd_jamais_rien():
     assert r == [{'id': 'a', 'x': 1, 'y': 7}]
 
 
+# ------------------------------------------------------------- holm ----
+def test_holm_correction():
+    vr = _module('validation_report')
+    # exemple canonique : m=4, alpha=0,05 -> seuils 0.0125, 0.0167, 0.025, 0.05
+    r = vr.holm([0.001, 0.01, 0.03, 0.04], alpha=0.05)
+    assert r == [True, True, False, False]          # 0.03 > 0.025 stoppe tout
+    # ordre d'entrée indifférent : le résultat suit les valeurs, pas les rangs
+    r = vr.holm([0.04, 0.001], alpha=0.05)
+    assert r == [True, True]                        # 0.001<=0.025 puis 0.04<=0.05
+    r = vr.holm([0.06, 0.001], alpha=0.05)
+    assert r == [False, True]                       # 2e palier : 0.06 > 0.05/1
+
+
+def test_holm_proprietes():
+    vr = _module('validation_report')
+    assert vr.holm([]) == []
+    # une seule hypothèse = alpha plein (aucune pénalité)
+    assert vr.holm([0.049]) == [True] and vr.holm([0.051]) == [False]
+    # plus sévère que le test naïf, jamais plus laxiste
+    pv = [0.02, 0.03, 0.04, 0.045]
+    naif = [p <= 0.05 for p in pv]
+    corr = vr.holm(pv)
+    assert all((not c) or n for c, n in zip(corr, naif))
+    # la plus petite p-value affronte alpha/m exactement
+    assert vr.holm([0.05 / 11 + 1e-9] + [1.0] * 10)[0] is False
+    assert vr.holm([0.05 / 11 - 1e-9] + [1.0] * 10)[0] is True
+
+
 # ------------------------------------------------------------- runner ----
 if __name__ == '__main__':
     fonctions = [(n, f) for n, f in sorted(globals().items())
