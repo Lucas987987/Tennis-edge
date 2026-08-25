@@ -31,6 +31,7 @@ Env : RETENTION_DAYS (déf 7), GH_TOKEN (injecté par le workflow),
 import datetime
 import glob
 import os
+import json
 import re
 import subprocess
 import sys
@@ -71,6 +72,29 @@ def assurer_release(tag):
     return code == 0
 
 
+INDEX = 'parts/ARCHIVE_INDEX.json'
+
+
+def _indexer(path, d, tag, octets):
+    """Trace CHAQUE partition sortie de git : sans cet index, les études
+    (charger_pm, pm_observations, pm_calibration_track) verraient leur fenêtre
+    se rétrécir à 7 jours SANS ERREUR — une lecture vide silencieuse de plus.
+    L'index leur permet d'imprimer « historique tronqué » avec le tag exact."""
+    try:
+        idx = json.load(open(INDEX, encoding='utf-8'))
+    except (OSError, ValueError):
+        idx = {'archives': []}
+    idx['archives'] = [a for a in idx.get('archives', [])
+                       if a.get('fichier') != os.path.basename(path)]
+    idx['archives'].append({'fichier': os.path.basename(path),
+                            'date': d.isoformat(), 'release': tag,
+                            'octets': octets,
+                            'archive_le': datetime.date.today().isoformat()})
+    idx['archives'].sort(key=lambda a: (a['date'], a['fichier']))
+    json.dump(idx, open(INDEX, 'w', encoding='utf-8'),
+              ensure_ascii=False, indent=1)
+
+
 def main():
     cutoff = datetime.date.today() - datetime.timedelta(days=RETENTION_DAYS)
     candidats = []
@@ -106,6 +130,7 @@ def main():
             echecs += 1
             continue                      # le fichier RESTE dans git
         os.remove(path)                   # suppression APRÈS succès seulement
+        _indexer(path, d, tag, taille)
         archives += 1
         octets += taille
         print(f'  ✅ {path} ({taille/1e6:.1f} Mo) -> release {tag}, supprimé de git')
