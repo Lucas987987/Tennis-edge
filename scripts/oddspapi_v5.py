@@ -27,6 +27,7 @@ import json
 import glob
 import gzip
 import subprocess
+import time
 import datetime
 
 RAPIDAPI_HOST = "odds-api1.p.rapidapi.com"
@@ -286,7 +287,42 @@ _MARKER = "HTTPSTATUS:"
 # Transport
 # --------------------------------------------------------------------------
 def api_get(path, params=None, timeout=40, verbose=False):
-    """GET RapidAPI via curl. Renvoie (data|None, status:int|None)."""
+    """GET RapidAPI avec retry + backoff. Renvoie (data|None, status:int|None).
+
+    AJOUT DU 25/08/2026 — retry 2/4/8 s.
+    Un snapshot raté (502, timeout réseau, réponse tronquée) n'est PAS
+    récupérable au cycle suivant : le point T-3 est perdu et le match bascule
+    en closing_reliable=False. C'était le maillon faible direct de la métrique
+    de validation. On rejoue donc les échecs de TRANSPORT :
+      - exception curl / timeout / status None (réseau coupé)
+      - 5xx (panne côté serveur)
+      - réponse non-JSON avec status 200 (proxy qui renvoie une page d'erreur)
+    On ne rejoue JAMAIS :
+      - 429 ou 403-quota : QUOTA_HIT est levé, rejouer brûlerait le budget
+        (938 requêtes/jour) pour rien — exactement la boucle à éviter ;
+      - les autres 4xx : erreur de requête, le retry donnerait le même résultat.
+    Env : ODDS_RETRIES (défaut 3) pour couper le retry dans les sondes.
+    """
+    retries = int(os.environ.get('ODDS_RETRIES', '3'))
+    delais = (2, 4, 8)
+    for tentative in range(retries + 1):
+        data, status = _api_get_once(path, params, timeout, verbose)
+        if data is not None:
+            return data, status
+        if QUOTA_HIT:
+            return None, status                    # quota : on n'insiste pas
+        if status is not None and 400 <= status < 500:
+            return None, status                    # 4xx : rejouer est inutile
+        if tentative < retries:
+            d = delais[min(tentative, len(delais) - 1)]
+            print(f"  🔁 retry {tentative + 1}/{retries} sur {path} dans {d}s "
+                  f"(status={status})")
+            time.sleep(d)
+    return None, status
+
+
+def _api_get_once(path, params=None, timeout=40, verbose=False):
+    """Une tentative GET via curl — logique historique inchangée."""
     params = params or {}
     qs = "&".join(f"{k}={v}" for k, v in params.items() if v is not None)
     url = f"{BASE}{path}" + (f"?{qs}" if qs else "")
