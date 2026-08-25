@@ -31,6 +31,29 @@ jobs:
     timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4
+        with:
+          # CORRIGÉ LE 25/08/2026 — ce workflow était le SEUL à faire un
+          # `git merge origin/main` (boucle de reprise) sur un clone
+          # SUPERFICIEL (profondeur 1 par défaut) : sans base commune dans
+          # l'historique, le merge est structurellement fragile.
+          # fetch-depth 0 donne le graphe complet (le merge fonctionne) ;
+          # filter blob:none n'en télécharge pas les contenus (178 s -> 22 s,
+          # mesuré sur le collecteur Polymarket).
+          fetch-depth: 0
+          filter: blob:none
+          # sparse-checkout : ce workflow ne lit et n'écrit QUE parts/live_*
+          # (vérifié script par script le 25/08). Les ~400 Mo de pm_ticks/
+          # kx_ticks/hist_ ne sont plus matérialisés — à 150 runs/jour, c'est
+          # le principal poste de temps de runner du projet. Effet de bord
+          # assumé : pipeline_status ne « voit » ici que les partitions live ;
+          # le décompte complet reste visible dans les runs à checkout total.
+          # ROLLBACK si un script se met à lire une autre partition :
+          # supprimer les 3 lignes sparse-* ci-dessous, rien d'autre.
+          sparse-checkout: |
+            /*
+            !/parts
+            /parts/live_*
+          sparse-checkout-cone-mode: false
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
