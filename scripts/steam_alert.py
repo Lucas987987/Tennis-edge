@@ -171,8 +171,15 @@ def load_curves(path=None):
                     del data[uid]                 # plus a venir => commence/termine
                 else:
                     data[uid]['_commence'] = official
+    if not data and src in LEGACY_MARKET:
+        # GARDE-FOU SUR LA BRANCHE EFFECTIVE (audit du 25/08 après-midi : le
+        # précédent était dans la branche morte — le chemin legacy passe par
+        # iter_hist_lines et ne l'atteignait jamais). Un historique legacy
+        # demandé qui produit ZÉRO courbe = partitions absentes ou illisibles.
+        print(f"⚠️ load_curves('{src}') : 0 courbe chargée depuis "
+              f"parts/hist_{LEGACY_MARKET[src]}_* — track record VIDE. "
+              f"Checkout sparse incomplet ?")
     return data
-
 def _at(s, t):
     v = None
     for tt, o in s:
