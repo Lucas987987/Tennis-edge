@@ -82,6 +82,25 @@ def _cle(element):
     return None
 
 
+def _empreinte(element):
+    """Identifiant d'un élément de liste, avec repli sur l'empreinte.
+
+    - dict porteur d'une clé métier -> ('id', clé) : fusion récursive possible ;
+    - tout le reste (point de courbe, scalaire, liste) -> ('emp', JSON
+      canonique) : l'union déduplique les éléments strictement identiques et
+      conserve tous les autres. Jamais de None : ne rien savoir fusionner
+      finement n'autorise pas à PERDRE des données.
+    """
+    if isinstance(element, dict):
+        k = _cle(element)
+        if k is not None:
+            return ('id', k)
+    try:
+        return ('emp', json.dumps(element, sort_keys=True, ensure_ascii=False))
+    except (TypeError, ValueError):
+        return ('emp', repr(element))
+
+
 def fusion(nous, eux):
     """Union des deux versions.
 
@@ -103,11 +122,18 @@ def fusion(nous, eux):
         return out
 
     if isinstance(nous, list) and isinstance(eux, list):
-        idx_nous = [(_cle(x), x) for x in nous]
-        idx_eux = [(_cle(x), x) for x in eux]
-        # Sans identifiant sur AUCUN élément, on ne sait pas fusionner.
-        if any(k is None for k, _ in idx_nous + idx_eux):
-            return None
+        # CORRECTIF DU 25/08/2026 — perte silencieuse des listes sans clé.
+        # Avant : un seul élément sans identifiant -> fusion() renvoyait None,
+        # et l'appelant (branche dict, out[k] = v) gardait « nous » en jetant
+        # les éléments propres à « eux ». Les listes de POINTS DE TRAJECTOIRE
+        # ({ts, odds}...) n'ont aucune clé dans CLES_ID : à chaque conflit,
+        # les points de l'autre exécution disparaissaient sans trace.
+        # Maintenant : les éléments sans identifiant sont indexés par leur
+        # EMPREINTE (JSON canonique). Deux points identiques fusionnent en un,
+        # deux points différents sont TOUS conservés — c'est exactement la
+        # sémantique d'une liste append-only. Aucune donnée n'est perdue.
+        idx_nous = [(_empreinte(x), x) for x in nous]
+        idx_eux = [(_empreinte(x), x) for x in eux]
         vus = {}
         ordre = []
         for k, x in idx_nous:
@@ -121,7 +147,20 @@ def fusion(nous, eux):
             else:
                 vus[k] = x
                 ordre.append(k)
-        return [vus[k] for k in ordre]
+        out = [vus[k] for k in ordre]
+        # Deux runs entrelacés produisent une union « nous puis restes d'eux »,
+        # donc potentiellement désordonnée dans le temps. Si TOUS les éléments
+        # portent le même champ d'horodatage, on retrie chronologiquement —
+        # sinon on préserve l'ordre d'union (tri stable, jamais destructif).
+        for champ in ('ts', 't', 'time', 'timestamp'):
+            if out and all(isinstance(x, dict) and x.get(champ) is not None
+                           for x in out):
+                try:
+                    out.sort(key=lambda x: str(x[champ]))
+                except Exception:
+                    pass
+                break
+        return out
 
     return nous
 

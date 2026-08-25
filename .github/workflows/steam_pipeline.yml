@@ -185,3 +185,14 @@ jobs:
             echo "   terminé, c'est ICI que ça bloque (et nulle part ailleurs)."
             exit 1
           fi
+
+      # VERROU QUALITÉ (25/08/2026) — le contrepoids aux 17 « || true » de ce
+      # job. Chaque étape reste tolérante (une étude qui rate ne doit pas
+      # empêcher les suivantes ni le commit), mais le RUN, lui, n'a plus le
+      # droit d'être vert si un livrable critique est ABSENT ou VIDE.
+      # Placé APRÈS le commit/push : les données sont déjà persistées quand le
+      # job rougit. paper_trades_set2 (souvent vide, peu d'alertes set 2) est
+      # marqué « optionnel » dans pipeline_status.py et ne déclenche pas.
+      - name: Verrou qualité (échec si livrable critique manquant)
+        if: always()
+        run: python scripts/pipeline_status.py --strict
