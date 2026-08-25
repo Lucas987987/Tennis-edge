@@ -172,6 +172,25 @@ def test_holm_proprietes():
     assert vr.holm([0.05 / 11 - 1e-9] + [1.0] * 10)[0] is True
 
 
+
+
+
+def test_binomial_p0_generalise():
+    vr = _module('validation_report')
+    f = vr._p_binomial_unilateral
+    # p0=0,5 : identique au test de signe historique (2^-n)
+    assert abs(f(30, 30) - 0.5 ** 30) < 1e-15
+    assert abs(f(0, 10) - 1.0) < 1e-12
+    # asymétrie contrôlée : battre un p0 élevé est plus dur
+    assert f(60, 100, 0.5) < f(60, 100, 0.6)
+    # stabilité aux grands n (l'OverflowError du 25/08 : n=1287)
+    p = f(700, 1287, 0.5)
+    assert 0.0 <= p <= 1.0 and p < 0.01
+    # exactitude sur un cas calculable à la main : P(X>=2 | n=3, p=0,4)
+    attendu = 3 * 0.4**2 * 0.6 + 0.4**3
+    assert abs(f(2, 3, 0.4) - attendu) < 1e-12
+
+
 # ------------------------------------------------------------- runner ----
 if __name__ == '__main__':
     fonctions = [(n, f) for n, f in sorted(globals().items())
