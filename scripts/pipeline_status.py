@@ -77,6 +77,26 @@ def _lines(path):
         return None
 
 
+def _age_interne_h(path):
+    """Âge en heures d'après l'horodatage ÉCRIT DANS le fichier, ou None."""
+    try:
+        d = json.load(open(path, encoding='utf-8'))
+    except (ValueError, OSError):
+        return None
+    if not isinstance(d, dict):
+        return None
+    for champ in ('generated_at', 'updated', 'run_termine', 'ts'):
+        v = d.get(champ)
+        if not v:
+            continue
+        try:
+            t = datetime.datetime.fromisoformat(str(v).replace('Z', ''))
+            return (datetime.datetime.utcnow() - t).total_seconds() / 3600
+        except ValueError:
+            continue
+    return None
+
+
 def inspect(started):
     rows = []
     for art in ARTIFACTS:
@@ -95,8 +115,18 @@ def inspect(started):
             verdict = '⚠️ VIDE'
         elif externe:
             # Produit ailleurs : « pas réécrit pendant CE run » est NORMAL.
-            age_h = (datetime.datetime.utcnow() - mtime).total_seconds() / 3600
-            verdict = '✅ OK' if age_h <= 24 else '⏳ FIGÉ'
+            # CORRIGÉ LE 25/08/2026 : le mtime d'un fichier fraîchement
+            # checkouté est l'heure du checkout — un test d'âge sur mtime est
+            # donc TOUJOURS vrai en CI, et une panne du producteur (ex :
+            # results_bridge cassé par un checkout sparse) resterait ✅ pour
+            # toujours. On lit la fraîcheur DANS le fichier (generated_at /
+            # updated), la seule horloge qui survit au checkout. Sans champ
+            # lisible, on l'avoue : verdict dégradé, jamais un faux ✅.
+            age_h = _age_interne_h(path)
+            if age_h is None:
+                verdict = '⏳ FIGÉ (fraîcheur inconnue)'
+            else:
+                verdict = '✅ OK' if age_h <= 24 else '⏳ FIGÉ'
         elif not fresh:
             verdict = '⏳ FIGÉ'
         else:

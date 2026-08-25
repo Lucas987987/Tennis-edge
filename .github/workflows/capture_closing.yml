@@ -41,18 +41,24 @@ jobs:
           # mesuré sur le collecteur Polymarket).
           fetch-depth: 0
           filter: blob:none
-          # sparse-checkout : ce workflow ne lit et n'écrit QUE parts/live_*
-          # (vérifié script par script le 25/08). Les ~400 Mo de pm_ticks/
-          # kx_ticks/hist_ ne sont plus matérialisés — à 150 runs/jour, c'est
-          # le principal poste de temps de runner du projet. Effet de bord
-          # assumé : pipeline_status ne « voit » ici que les partitions live ;
-          # le décompte complet reste visible dans les runs à checkout total.
-          # ROLLBACK si un script se met à lire une autre partition :
-          # supprimer les 3 lignes sparse-* ci-dessous, rien d'autre.
+          # sparse-checkout : parts/live_* (écrites ici) ET parts/hist_*
+          # (LUES ici — régression du 25/08 matin, corrigée le jour même).
+          # La leçon : mon inventaire « script par script » cherchait le
+          # littéral parts/ et a raté l'INDIRECTION steam_alert.load_curves()
+          # -> ov.iter_hist_lines('book') -> glob parts/hist_book_*. Résultat
+          # entre 09:01 et le correctif : track record 0, seuils DEFAULT_THR
+          # partout, journal forward sur seuils dégradés — la panne du 15/08
+          # réintroduite à l'identique par un autre chemin. Seuls pm_ticks et
+          # kx_ticks restent exclus : eux ne sont lus par AUCUN script de ce
+          # workflow, ni directement ni via oddspapi_v5 (revérifié en suivant
+          # les indirections cette fois). Garde-fou ajouté : load_curves()
+          # hurle désormais si l'historique demandé revient vide.
+          # ROLLBACK : supprimer les 4 lignes sparse-* ci-dessous.
           sparse-checkout: |
             /*
             !/parts
             /parts/live_*
+            /parts/hist_*
           sparse-checkout-cone-mode: false
       - uses: actions/setup-python@v5
         with:
