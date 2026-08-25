@@ -118,6 +118,15 @@ def load_curves(path=None):
     elif os.path.exists(src):
         lines_iter = open(src, encoding='utf-8')
     else:
+        # GARDE-FOU (25/08/2026) : un historique demandé explicitement qui
+        # revient vide n'est JAMAIS normal. Ce mode de panne (lecture vide
+        # silencieuse) a déjà frappé deux fois : le 15/08 (migration en
+        # partitions) et le 25/08 au matin (sparse-checkout qui excluait
+        # parts/hist_*). Une ligne de log coûte rien ; trois semaines de
+        # seuils dégradés ont un prix.
+        print(f"⚠️ load_curves('{src}') : fichier absent et pas de "
+              f"correspondance legacy -> track record VIDE. Vérifier le "
+              f"checkout (sparse ?) ou le chemin.")
         return data
     for line in lines_iter:
         line = line.strip()

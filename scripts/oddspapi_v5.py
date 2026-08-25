@@ -112,6 +112,17 @@ def iter_hist_lines(market='book'):
     seul le .jsonl est lu, pour ne jamais servir deux fois les mêmes lignes."""
     plain = sorted(glob.glob(f'parts/hist_{market}_*.jsonl'))
     gz = sorted(glob.glob(f'parts/hist_{market}_*.jsonl.gz'))
+    if not plain and not gz:
+        # GARDE-FOU (25/08/2026). Zéro partition pour un marché suivi n'est
+        # JAMAIS normal en production : soit le checkout est incomplet
+        # (sparse-checkout qui exclut parts/hist_* — la panne du 25/08 matin,
+        # 2h30 de seuils DEFAULT_THR silencieux), soit le répertoire a été
+        # déplacé. Tous les appelants (steam_alert, results_bridge via
+        # open_curves, validation_report...) hériteraient d'un historique
+        # vide SANS ERREUR. Une ligne suffit à rendre la panne visible.
+        print(f"⚠️ iter_hist_lines('{market}') : AUCUNE partition "
+              f"parts/hist_{market}_* trouvée — historique vide. "
+              f"Checkout sparse incomplet ?")
     plain_set = set(plain)
     gz = [g for g in gz if g[:-3] not in plain_set]     # doublon -> on garde le .jsonl
     paths = sorted(plain + gz, key=lambda p: p.replace('.gz', ''))
@@ -272,6 +283,7 @@ DEFAULT_BOOKS = "pinnacle,unibet,bwin,betsson"
 # Passe à True dès qu'un appel renvoie un statut "quota épuisé" (429 / 403 quota).
 # Permet aux appelants de distinguer "pas de données" de "API bloquée".
 QUOTA_HIT = False
+_RETRY_SPENT = 0.0   # secondes déjà perdues en échecs+backoff (deadline globale)
 
 def _resolve_books(bookmakers):
     b = (bookmakers or "").strip().lower()
@@ -305,19 +317,34 @@ def api_get(path, params=None, timeout=40, verbose=False):
     """
     retries = int(os.environ.get('ODDS_RETRIES', '3'))
     delais = (2, 4, 8)
+    deadline = float(os.environ.get('ODDS_DEADLINE_S', '300'))
+    global _RETRY_SPENT
     for tentative in range(retries + 1):
+        t0 = time.monotonic()
         data, status = _api_get_once(path, params, timeout, verbose)
         if data is not None:
             return data, status
+        _RETRY_SPENT += time.monotonic() - t0      # le temps perdu compte aussi
         if QUOTA_HIT:
             return None, status                    # quota : on n'insiste pas
         if status is not None and 400 <= status < 500:
             return None, status                    # 4xx : rejouer est inutile
+        # DEADLINE GLOBALE (25/08/2026). 3 retries x (40 s de timeout + 14 s
+        # de backoff) = jusqu'à ~174 s pour UN appel. capture_closing enchaîne
+        # plusieurs appels sous timeout-minutes: 12 : si l'API est morte, on
+        # perdait le RUN ENTIER (commit compris) au lieu d'un point. Le budget
+        # de retry est donc PARTAGÉ par tout le process : une fois épuisé,
+        # chaque appel garde SA tentative unique, mais plus aucun ne rejoue.
+        if _RETRY_SPENT >= deadline:
+            print(f"  ⏱️ budget retry épuisé ({_RETRY_SPENT:.0f}s >= "
+                  f"{deadline:.0f}s) — plus de rejeu, tentatives uniques.")
+            return None, status
         if tentative < retries:
             d = delais[min(tentative, len(delais) - 1)]
             print(f"  🔁 retry {tentative + 1}/{retries} sur {path} dans {d}s "
                   f"(status={status})")
             time.sleep(d)
+            _RETRY_SPENT += d
     return None, status
 
 
