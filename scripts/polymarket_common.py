@@ -35,8 +35,10 @@ import oddspapi_v5 as ov  # noqa: E402
 # sinon Polymarket, et le DIT. Jamais de repli muet : une étude qui tourne sur
 # une source qu'on croit être l'autre est pire qu'une étude qui échoue.
 SOURCE      = os.environ.get('PM_SOURCE', 'auto').strip().lower()
-PM_GLOB     = os.environ.get('PM_TICKS_GLOB', 'parts/pm_ticks_*.jsonl')
-KX_GLOB     = os.environ.get('KX_TICKS_GLOB', 'parts/kx_ticks_*.jsonl')
+# 26/08/2026 : les collecteurs écrivent en .jsonl.gz — chaque motif couvre
+# les deux formats (l'ouverture passe déjà par _open, qui gère le gz).
+PM_GLOB     = os.environ.get('PM_TICKS_GLOB', 'parts/pm_ticks_*.jsonl*')
+KX_GLOB     = os.environ.get('KX_TICKS_GLOB', 'parts/kx_ticks_*.jsonl*')
 CURVES      = os.environ.get('CURVES', 'book_curves_live.jsonl')
 MARKET_TYPE = os.environ.get('MARKET_TYPE', 'match')
 SHARP       = os.environ.get('SHARP_BOOK', 'pinnacle')

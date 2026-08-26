@@ -46,6 +46,14 @@ jobs:
             echo '```'
           } > pistes_report.md
           test -s pistes_report.md
+      - name: Sentinelle taille du dépôt
+        env:
+          GH_TOKEN: ${{ github.token }}
+        # Rouge si l'historique dépasse 4 Go : le filter-repo se PLANIFIE,
+        # il ne se découvre pas.
+        run: |
+          python scripts/repo_sentinel.py --strict | tee -a pistes_report.md
+
       - name: Committer le rapport
         run: |
           git config user.name "github-actions[bot]"

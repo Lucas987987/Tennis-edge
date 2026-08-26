@@ -56,6 +56,7 @@ import argparse
 import ast
 import difflib
 import json
+import gz_append
 import os
 import re
 import signal
@@ -153,11 +154,15 @@ def ticks_path() -> Path:
     if TICKS_FILE_OVERRIDE:
         return Path(TICKS_FILE_OVERRIDE)
     jour = utc_now().strftime('%Y-%m-%d')
-    p = TICKS_DIR / f"pm_ticks_{jour}.jsonl"
+    # 26/08/2026 : partitions écrites DIRECTEMENT en .jsonl.gz (gz_append) —
+    # l'historique git ne stocke plus le brut. Le cap de taille s'applique au
+    # gz : à compression ~7:1, une partition contient ~7x plus de lignes,
+    # c'est voulu (moins de fichiers, mêmes garanties).
+    p = TICKS_DIR / f"pm_ticks_{jour}.jsonl.gz"
     seq = 1
     while p.exists() and p.stat().st_size / 1e6 >= TICKS_MAX_MB:
         seq += 1
-        p = TICKS_DIR / f"pm_ticks_{jour}_{seq}.jsonl"
+        p = TICKS_DIR / f"pm_ticks_{jour}_{seq}.jsonl.gz"
     return p
 
 
@@ -227,11 +232,12 @@ def atomic_json_write(path: Path, obj: Any) -> None:
 
 
 def append_jsonl(path: Path, row: Dict[str, Any]) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
+    # 26/08/2026 : gzip-append par lots (gz_append.py) — le WRITE_LOCK
+    # historique est conservé par ceinture, gz_append a le sien.
     with WRITE_LOCK:
-        with open(path, "a", encoding="utf-8") as f:
-            f.write(json.dumps(row, ensure_ascii=False, separators=(",", ":")) + "\n")
-            f.flush()
+        gz_append.append_ligne(
+            str(path),
+            json.dumps(row, ensure_ascii=False, separators=(",", ":")))
 
 
 def http_get(session: requests.Session, path: str, params: Dict[str, Any]) -> Any:
