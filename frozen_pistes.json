@@ -41,6 +41,11 @@
    "script": "confirmation_pinnacle_study.py",
    "test": "signaux early_open POSTERIEURS au 26/08 uniquement ; Pinnacle bouge-t-elle >=0.5pt de proba implicite dans le sens du signal en 60min -> CLV/refermeture (Wilson) compare aux deux groupes, n>=30 chacun",
    "statut_gel": "protocole ecrit le 26/08 SANS verdict prealable -- un essai rapide sur les 62 signaux existants (pre-gel, hors protocole) donnait CLV et refermeture quasi identiques dans les deux groupes sur n=29, avec un taux de refermeture (100%) trop net pour etre credible : sous-echantillon biaise, pas un resultat. Rythme d'accumulation ~5.6 signaux/jour -> n=30 attendu vers debut septembre."
+  },
+  "P9_note_fiabilite": {
+   "script": "shadow_sizing_study.py (+ fiabilite_score.py journalisé par paper_journal.py)",
+   "test": "note additive -3..+3 (ampleur, timing, book en retard) journalisee EN OMBRE a chaque nouveau pari depuis le 26/08 ; ROI mise-variable (0.5/1/1.5u selon note) vs ROI mise-plate, IC95, n>=30 des DEUX cotes de la comparaison",
+   "statut_gel": "0 paris notes au 26/08 (le score vient d'etre active) -- AUCUNE mise reelle n'est pilotee par cette note tant que le verdict n'est pas rendu. Verdict attendu quand n>=30 paris dénoués auront un score (depend du rythme de paper_journal, generalement plusieurs semaines)."
   }
  }
 }

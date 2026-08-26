@@ -31,7 +31,8 @@ MARKET = os.environ.get('MARKET', 'match').lower()
 _DEF_CURVES = {'match': 'book_curves.jsonl', 'set1': 'set1_curves.jsonl', 'set2': 'set2_curves.jsonl'}
 os.environ.setdefault('CURVES', _DEF_CURVES.get(MARKET, 'book_curves.jsonl'))
 
-import steam_alert as sa   # reutilise detection, seuils par book, helpers
+import steam_alert as sa
+import fiabilite_score as fs   # reutilise detection, seuils par book, helpers
 import match_key as mk
 
 JOURNAL = os.environ.get('JOURNAL', f'paper_trades_{MARKET}.jsonl')
@@ -269,6 +270,21 @@ def main():
                  'home': bk.get('_home'), 'away': bk.get('_away'), 'side': sig['side'],
                  'book': sig['book'], 'palier': int(sig['thr'] * 100),
                  'entry_odds': round(sig['odds'], 2), 'status': 'OPEN'}
+            # NOTE DE FIABILITÉ (26/08/2026) — MODE OMBRE STRICT. Calculée à
+            # l'entrée, journalisée, JAMAIS lue pour sizer la mise réelle
+            # (pnl reste en 1 unité plus bas, inchangé). Sert uniquement au
+            # suivi de shadow_sizing_study.py, qui juge SI cette note mérite
+            # un jour de piloter une mise — verdict séparé, à sa propre date.
+            try:
+                lead_min = (bk.get('_commence', 0) - sig['t_e'].timestamp()) / 60 \
+                    if bk.get('_commence') and hasattr(sig['t_e'], 'timestamp') else None
+                edge_pct = (sig['odds'] * (sig.get('pct') or 0) - 1) * 100 \
+                    if sig.get('pct') else None
+                t['fiabilite_score'], t['fiabilite_detail'] = fs.explique(
+                    mag_pct=sig['thr'] * 100, lead_min=lead_min,
+                    book_en_retard=bool(edge_pct and edge_pct >= 3))
+            except Exception as e:
+                t['fiabilite_score'], t['fiabilite_detail'] = None, f'erreur: {e}'
             settle_trade(t, data, result_side)
             trades[t['id']] = t
         summary(trades)
