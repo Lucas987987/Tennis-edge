@@ -1,0 +1,98 @@
+# .github/workflows/pages.yml
+#
+# Prérequis (déjà fait) : Settings > Pages > Source = "GitHub Actions".
+#
+# Contenu vérifié directement dans le repo :
+#   site    -> index.html, division10.html, confidence.js
+#   données -> les 8 fichiers lus par le front en relatif
+#              (window.location.origin + pathname + '<fichier>?t=' + Date.now())
+# Tout le reste (parts/ 244 Mo, clv_history 26 Mo, closing_lines 6 Mo,
+# scripts/, tests/, les .md, les .zip) n'est PAS publié : le front ne le
+# lit jamais. C'est ce qui rend le déploiement rapide.
+
+name: Deploy Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'division10.html'
+      - 'confidence.js'
+      - '.github/workflows/pages.yml'
+  # Rafraîchit les données publiées sans dépendre des pushs de capture.
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          filter: blob:none
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            index.html
+            division10.html
+            confidence.js
+            matches_oddspapi.json
+            resultats.json
+            resultats_fast.json
+            players_data.json
+            elo_ratings_atp.json
+            elo_ratings_wta.json
+            confidence_calib.json
+            backtest_tennis.csv
+
+      - name: Construire _site
+        run: |
+          set -e
+          mkdir -p _site
+          touch _site/.nojekyll
+
+          # --- Pages et script ---
+          for f in index.html division10.html confidence.js; do
+            cp -f "$f" _site/ || echo "❌ MANQUANT (fichier de site) : $f"
+          done
+
+          # --- Données lues par le front (relevées dans index.html/confidence.js) ---
+          for f in \
+            matches_oddspapi.json \
+            resultats.json \
+            resultats_fast.json \
+            players_data.json \
+            elo_ratings_atp.json \
+            elo_ratings_wta.json \
+            confidence_calib.json \
+            backtest_tennis.csv \
+          ; do
+            cp -f "$f" _site/ || echo "⚠️ absent : $f"
+          done
+
+          echo "--- contenu publié ---"
+          du -sh _site
+          ls -la _site
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - id: deployment
+        uses: actions/deploy-pages@v4
