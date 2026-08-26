@@ -105,7 +105,7 @@ def charger(pre):
                        r.get('away_team') or r.get('away'))
 
     dernier = {}
-    for p in ov.load_partitions(f'parts/{pre}_*.jsonl'):
+    for p in ov.load_partitions(f'parts/{pre}_*.jsonl*'):
         o = gzip.open if p.endswith('.gz') else open
         try:
             f = o(p, 'rt', encoding='utf-8', errors='replace')

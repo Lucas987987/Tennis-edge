@@ -154,7 +154,7 @@ def main():
         # Dernier tick pré-match par (match, côté), plus les agrégats du carnet.
         dernier, compte, spreads, volumes = {}, collections.Counter(), {}, {}
         n_lus = 0
-        for p in ov.load_partitions(f'parts/{pre}_*.jsonl'):
+        for p in ov.load_partitions(f'parts/{pre}_*.jsonl*'):
             o = gzip.open if p.endswith('.gz') else open
             try:
                 f = o(p, 'rt', encoding='utf-8', errors='replace')
