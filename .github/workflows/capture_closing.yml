@@ -16,6 +16,12 @@ on:
 
 permissions:
   contents: write
+  # actions: write requis pour que le watchdog puisse relancer kalshi/polymarket
+  # via l'API (gh workflow run) — ajouté le 26/08/2026, voir l'étape en fin
+  # de job. AUCUN cron GitHub ajouté (décision explicite : redondant avec
+  # le Worker Cloudflare et moins réactif) — le watchdog réagit à un vrai
+  # signal (last_run_at en retard), pas à un calendrier de plus.
+  actions: write
 
 # ============================================================
 # AJOUT — c'est la seule vraie modification du fichier.
@@ -173,3 +179,13 @@ jobs:
           done
           echo "❌ PUSH ÉCHOUÉ après 3 tentatives — commit local perdu avec le runner."
           exit 1
+
+      - name: Watchdog collecteurs (relance Kalshi/Polymarket si en retard)
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SEUIL_MIN: '20'
+        # Non-bloquant : capture_closing vient de pousser des données réelles,
+        # rien ici ne doit faire échouer CE job. Le script lui-même log tout
+        # échec de relance sans jamais l'avaler (voir watchdog_collecteurs.py).
+        run: python scripts/watchdog_collecteurs.py || true
