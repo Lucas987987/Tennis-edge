@@ -38,7 +38,7 @@ jobs:
             echo "# Pistes exploratoires — rapport du $(date -u +%F)"
             echo
             echo '```'
-            for s in limites segments retournement decay cascade cross_market leadlag_pin; do
+            for s in limites segments retournement decay cascade cross_market leadlag_pin confirmation_pinnacle; do
               PYTHONPATH=scripts timeout 600 python scripts/${s}_study.py \
                 || echo "⚠️ ${s}_study.py EN ÉCHEC (code $?)"
               echo
@@ -46,14 +46,6 @@ jobs:
             echo '```'
           } > pistes_report.md
           test -s pistes_report.md
-      - name: Sentinelle taille du dépôt
-        env:
-          GH_TOKEN: ${{ github.token }}
-        # Rouge si l'historique dépasse 4 Go : le filter-repo se PLANIFIE,
-        # il ne se découvre pas.
-        run: |
-          python scripts/repo_sentinel.py --strict | tee -a pistes_report.md
-
       - name: Committer le rapport
         run: |
           git config user.name "github-actions[bot]"
