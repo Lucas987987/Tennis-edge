@@ -1,0 +1,88 @@
+# .github/workflows/pages.yml
+#
+# REMPLACE le "pages build and deployment" automatique (github-pages Bot).
+# Prérequis : Settings > Pages > Source = "GitHub Actions".
+#
+# Pourquoi : en mode "Deploy from a branch", CHAQUE push sur main déclenche
+# un build Pages. capture_closing pousse toutes les 5-10 min -> 14 000+ builds,
+# qui republient 244 Mo de parts/ à chaque fois et saturent le pool de runners.
+#
+# Ici : on ne déclenche que sur les fichiers du SITE, on publie un dossier
+# _site allégé, et concurrency/cancel-in-progress écrase les runs empilés.
+
+name: Deploy Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      # >>> À AJUSTER : les fichiers qui composent réellement le site <<<
+      - '*.html'
+      - '*.css'
+      - '*.js'
+      - 'assets/**'
+      - '.github/workflows/pages.yml'
+  # Rafraîchit les données publiées sans dépendre des pushs de capture.
+  # 30 min = 6x moins de builds qu'aujourd'hui. Monter à '*/15' si besoin.
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Un seul déploiement à la fois ; les runs en attente sont annulés
+# au lieu de s'empiler dans la file.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1          # pas d'historique : le repo est lourd
+          filter: blob:none
+
+      - name: Construire _site (site + données consommées par le front)
+        run: |
+          set -e
+          mkdir -p _site
+          touch _site/.nojekyll
+
+          # --- Fichiers du site ---
+          cp -f  *.html *.css *.js  _site/ 2>/dev/null || true
+          [ -d assets ] && cp -r assets _site/ || true
+
+          # --- Données lues par le front <<< À AJUSTER >>> ---
+          # Ne lister QUE ce que la page fetch() réellement.
+          # NE JAMAIS inclure parts/ (244 Mo) ni les historiques complets.
+          for f in \
+            live_odds.json \
+            matches_oddspapi.json \
+            closing_lines.json \
+            paper_canal_report.json \
+            resultats_derived.json \
+          ; do
+            [ -f "$f" ] && cp -f "$f" _site/ || echo "absent (ignoré) : $f"
+          done
+
+          echo "--- contenu publié ---"
+          du -sh _site
+          ls -la _site
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - id: deployment
+        uses: actions/deploy-pages@v4
