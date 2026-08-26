@@ -56,8 +56,8 @@ import oddspapi_v5 as ov  # noqa: E402
 # ITF) et 40x moins de volume. PM_TICKS_GLOB force une source précise.
 PM_GLOB      = os.environ.get(
     'PM_TICKS_GLOB',
-    'parts/kx_ticks_*.jsonl' if glob.glob('parts/kx_ticks_*.jsonl')
-    else 'parts/pm_ticks_*.jsonl')
+    'parts/kx_ticks_*.jsonl*' if glob.glob('parts/kx_ticks_*.jsonl*')
+    else 'parts/pm_ticks_*.jsonl*')
 CURVES      = os.environ.get('CURVES', 'book_curves_live.jsonl')
 MARKET_TYPE = os.environ.get('MARKET_TYPE', 'match')
 GRID_MIN    = float(os.environ.get('GRID_MIN', '5'))
