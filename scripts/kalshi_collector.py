@@ -47,6 +47,7 @@ Args : --duration-seconds, --once, --dry-run.
 import os
 import sys
 import json
+import gz_append
 import time
 import re
 import argparse
@@ -131,18 +132,19 @@ def ticks_path():
     """Partition courante. Recalculée à chaque écriture, donc bascule seule à
     minuit ET quand la partition atteint TICKS_MAX_MB."""
     jour = utc_now().strftime('%Y-%m-%d')
-    p = TICKS_DIR / f'kx_ticks_{jour}.jsonl'
+    # 26/08/2026 : .jsonl.gz direct via gz_append — voir polymarket_collector.
+    p = TICKS_DIR / f'kx_ticks_{jour}.jsonl.gz'
     seq = 1
     while p.exists() and p.stat().st_size / 1e6 >= TICKS_MAX_MB:
         seq += 1
-        p = TICKS_DIR / f'kx_ticks_{jour}_{seq}.jsonl'
+        p = TICKS_DIR / f'kx_ticks_{jour}_{seq}.jsonl.gz'
     return p
 
 
 def append_jsonl(path, row):
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with open(path, 'a', encoding='utf-8') as f:
-        f.write(json.dumps(row, ensure_ascii=False, separators=(',', ':')) + '\n')
+    # 26/08/2026 : gzip-append par lots (gz_append.py).
+    gz_append.append_ligne(
+        str(path), json.dumps(row, ensure_ascii=False, separators=(',', ':')))
 
 
 def atomic_json_write(path, obj):
