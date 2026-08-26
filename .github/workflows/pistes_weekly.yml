@@ -38,7 +38,7 @@ jobs:
             echo "# Pistes exploratoires — rapport du $(date -u +%F)"
             echo
             echo '```'
-            for s in limites segments retournement decay cascade cross_market leadlag_pin confirmation_pinnacle; do
+            for s in limites segments retournement decay cascade cross_market leadlag_pin confirmation_pinnacle shadow_sizing; do
               PYTHONPATH=scripts timeout 600 python scripts/${s}_study.py \
                 || echo "⚠️ ${s}_study.py EN ÉCHEC (code $?)"
               echo
