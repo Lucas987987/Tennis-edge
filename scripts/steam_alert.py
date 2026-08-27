@@ -128,11 +128,28 @@ def load_curves(path=None):
               f"correspondance legacy -> track record VIDE. Vérifier le "
               f"checkout (sparse ?) ou le chemin.")
         return data
+    # AJOUTÉ LE 27/08/2026 (audit v2 §M) : commence_time diverge entre les
+    # sources sur 6,9 % des matchs (écart médian 50 min, jusqu'à 24h40) --
+    # un commence_time trop TARDIF laisse du in-play passer le filtre
+    # pré-match de _pre() ci-dessous. closing_lines.json est croisé via un
+    # mécanisme de snapshots indépendant (T-25/T-15/T-7/T-3) ; on prend le
+    # MIN des deux commence_time disponibles -- jamais celui qui repousse
+    # la coupure le plus tard, qui est précisément le sens du risque.
+    try:
+        _closing_lines = json.load(open('closing_lines.json', encoding='utf-8'))
+    except (OSError, ValueError):
+        _closing_lines = {}
     for line in lines_iter:
         line = line.strip()
         if not line: continue
         r = json.loads(line)
         ct = _dt(r.get('commence_time'))
+        # AJOUTÉ LE 27/08/2026 (audit v2 §M) : MIN avec le commence_time de
+        # closing_lines.json quand il existe -- jamais le plus tardif des
+        # deux, qui est le sens dans lequel le in-play peut fuir.
+        ct_croise = _dt((_closing_lines.get(r['uid']) or {}).get('commence_time'))
+        if ct_croise and (ct is None or ct_croise < ct):
+            ct = ct_croise
         # PRÉ-MATCH UNIQUEMENT. book_curves.jsonl contient ~90% de points IN-PLAY
         # (après le coup d'envoi). Les garder fausse la calibration : le "close"
         # (ser[-1]) devient un prix in-play qui encode le résultat -> look-ahead.
