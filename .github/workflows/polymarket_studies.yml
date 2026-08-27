@@ -25,29 +25,43 @@ concurrency:
 jobs:
   etudes:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # CORRIGÉ LE 27/08/2026 (audit v2 §H) : 5 scripts x 600s pouvaient
+    # atteindre 50 min sous un budget de 30 -- mathématiquement intenable,
+    # le job se faisait tuer avant la fin, rapport tronqué, commit jamais
+    # atteint. 300s/script x 5 = 25 min max, large marge sous 60.
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
           filter: blob:none
+          # AJOUTÉ (audit v2 §H) : dépôt à 675+ Mo, ces études ne lisent que
+          # les scripts et les ticks pm/kx -- inutile de rapatrier le reste.
+          sparse-checkout: |
+            /*
+            !/parts
+            /parts/pm_ticks_*
+            /parts/kx_ticks_*
+          sparse-checkout-cone-mode: false
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
       - name: Exécuter les 5 études
         run: |
-          {
-            echo "# Études Polymarket/Kalshi — rapport du $(date -u +%F)"
-            echo
-            echo '```'
-            for s in polymarket_flow polymarket_leadlag polymarket_studies pm_calibration_track pm_observations; do
-              echo "--- $s ---"
-              PYTHONPATH=scripts timeout 600 python scripts/${s}.py \
-                || echo "⚠️ ${s}.py EN ÉCHEC (code $?)"
-              echo
-            done
-            echo '```'
-          } > polymarket_studies_report.md
+          # CORRIGÉ (audit v2 §H) : écriture INCRÉMENTALE (>> après chaque
+          # script), pas un seul bloc redirigé à la fin -- si le job est
+          # tué en cours de route, ce qui est déjà sur disque reste
+          # committable, au lieu d'un fichier vide ou tronqué en mémoire.
+          echo "# Études Polymarket/Kalshi — rapport du $(date -u +%F)" > polymarket_studies_report.md
+          echo >> polymarket_studies_report.md
+          echo '```' >> polymarket_studies_report.md
+          for s in polymarket_flow polymarket_leadlag polymarket_studies pm_calibration_track pm_observations; do
+            echo "--- $s ---" >> polymarket_studies_report.md
+            PYTHONPATH=scripts timeout 300 python scripts/${s}.py >> polymarket_studies_report.md 2>&1 \
+              || echo "⚠️ ${s}.py EN ÉCHEC (code $?)" >> polymarket_studies_report.md
+            echo >> polymarket_studies_report.md
+          done
+          echo '```' >> polymarket_studies_report.md
           test -s polymarket_studies_report.md
       - name: Committer le rapport
         run: |

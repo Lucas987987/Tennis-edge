@@ -83,6 +83,26 @@ jobs:
       - name: Tableau de validation forward (CLV/ROI + IC95)
         run: python scripts/validation_report.py || true
 
+      - name: Pont CLV -> P&L (le postulat central, mesuré en continu)
+        # AJOUTÉ LE 27/08/2026 (audit v2 §I) : pnl_vs_clv_study.py teste la
+        # prémisse qui justifie le CLV comme juge de tout ce dispositif --
+        # jusqu'ici jamais exécuté qu'à la main.
+        run: python scripts/pnl_vs_clv_study.py || true
+
+      - name: Qualité de la mesure de clôture (Q3 triangulation)
+        # AJOUTÉ LE 27/08/2026 (audit v2 §L) : capture_quality.py contient
+        # ce diagnostic depuis le 14 juin, tournait seulement en
+        # workflow_dispatch manuel -- le rapport committé annonçait encore
+        # "75 écarts > 3%" deux mois et demi après que le vrai chiffre ait
+        # doublé. Seuil d'alerte : le compte d'écarts, pas juste la médiane
+        # (une médiane à 0% ne dit rien de la queue, qui porte le signal).
+        run: |
+          python scripts/capture_quality.py | tee /tmp/capture_quality.txt || true
+          n=$(grep -oP '\d+(?= ecarts > 3%)' /tmp/capture_quality.txt | head -1)
+          if [ -n "$n" ] && [ "$n" -ge 200 ]; then
+            echo "⚠️⚠️ $n écarts > 3% entre les sources de clôture (seuil 200) -- la précision de mesure du CLV s'est dégradée, à inspecter."
+          fi
+
       - name: Baromètre des opérateurs (hebdo dimanche · mensuel le 1er)
         env:
           FOCUS: "winamax.fr,zebet.fr,unibet.fr,netbet.fr,bet365.fr,bwin.fr,genybet.fr,pmu,vbet.fr"
@@ -138,7 +158,7 @@ jobs:
           git config user.email "actions@github.com"
           echo "── DIAGNOSTIC avant commit ──────────────────────────────"
           echo "set_results.json : $(wc -l < set_results.json 2>/dev/null || echo absent) lignes, $(python3 -c "import json; print(len(json.load(open('set_results.json'))))" 2>/dev/null || echo '?') entrées, $(stat -c%s set_results.json 2>/dev/null || echo '?') octets"
-          for f in set_results.json paper_trades_match.jsonl paper_trades_set1.jsonl paper_trades_set2.jsonl moves_detail.csv moves_detail_hist.csv barometre_hebdo.md barometre_mensuel.md canal_clv_detail.csv canal_clv_exclus.csv; do
+          for f in set_results.json paper_trades_match.jsonl paper_trades_set1.jsonl paper_trades_set2.jsonl moves_detail.csv moves_detail_hist.csv barometre_hebdo.md barometre_mensuel.md canal_clv_detail.csv canal_clv_exclus.csv verdicts_geles.json; do
             [ -f "$f" ] || echo "  ⚠️ absent ce run : $f"
           done
           echo "───────────────────────────────────────────────────────"
@@ -156,7 +176,12 @@ jobs:
                    moves_detail.csv moves_detail_hist.csv \
                    barometre_hebdo.md barometre_mensuel.md canal_clv_detail.csv \
                    canal_clv_exclus.csv \
-                   pipeline_status.json pipeline_status.md; do
+                   pipeline_status.json pipeline_status.md \
+                   verdicts_geles.json; do
+            # CORRIGÉ LE 27/08/2026 (audit v2 §B) : verdicts_geles.json
+            # n'était committé par AUCUN workflow -- le mécanisme de lecture
+            # unique par hypothèse (audit 1, §3.3) ne servait donc à rien :
+            # le fichier ne survivait jamais à la fin du runner.
             [ -f "$f" ] && git add -- "$f"
           done
           echo "état git APRÈS add (diff --cached) :"
