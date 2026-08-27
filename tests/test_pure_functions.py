@@ -191,6 +191,39 @@ def test_binomial_p0_generalise():
     assert abs(f(2, 3, 0.4) - attendu) < 1e-12
 
 
+def test_match_key_inclusion_prenoms_abreges():
+    """AJOUTÉ LE 27/08/2026 (audit §4.3.3). « T. Griekspoor » et « Tallon
+    Griekspoor » doivent fusionner (même tournoi, même journée) ; deux
+    joueurs à noms courts (Wu/Li/Xu/An) ou un seul joueur partagé sur deux
+    ne doivent JAMAIS fusionner à tort. Couvre aussi le bug de la première
+    version (comparaison de la paire comme un bloc plutôt qu'un
+    appariement joueur par joueur)."""
+    mk = _module('match_key')
+    fusion = mk.build_index([
+        dict(uid='m1', home='T. Griekspoor', away='Adam Walton',
+             commence_time='2026-08-20T14:00:00Z', tournament='ATP Winston-Salem'),
+        dict(uid='m2', home='Tallon Griekspoor', away='Adam Walton',
+             commence_time='2026-08-20T14:07:00Z', tournament='ATP Winston-Salem'),
+    ])
+    assert fusion.key_of('m1') == fusion.key_of('m2')
+
+    noms_courts = mk.build_index([
+        dict(uid='m1', home='Wu Yibing', away='An Jinson',
+             commence_time='2026-08-20T14:00:00Z', tournament='ATP Shanghai'),
+        dict(uid='m2', home='Li Ming', away='Xu Chen',
+             commence_time='2026-08-20T14:00:00Z', tournament='ATP Shanghai'),
+    ])
+    assert noms_courts.key_of('m1') != noms_courts.key_of('m2')
+
+    un_seul_partage = mk.build_index([
+        dict(uid='m1', home='Novak Djokovic', away='Adam Walton',
+             commence_time='2026-08-20T14:00:00Z', tournament='ATP Cincinnati'),
+        dict(uid='m2', home='Novak Djokovic', away='Carlos Alcaraz',
+             commence_time='2026-08-20T15:00:00Z', tournament='ATP Cincinnati'),
+    ])
+    assert un_seul_partage.key_of('m1') != un_seul_partage.key_of('m2')
+
+
 # ------------------------------------------------------------- runner ----
 if __name__ == '__main__':
     fonctions = [(n, f) for n, f in sorted(globals().items())
