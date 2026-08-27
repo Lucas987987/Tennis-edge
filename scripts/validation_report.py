@@ -105,6 +105,13 @@ def report_group(name, trades):
         print("  (pas encore de pari denoue — rien a juger)"); return
 
     clv = [t['clv_book'] for t in settled if 'clv_book' in t]
+    # AJOUTÉ LE 27/08/2026 (audit v2 §E) : clv_pin (contre le juste-prix
+    # Pinnacle) à côté de clv_book (contre la clôture du book qui a SERVI À
+    # SÉLECTIONNER l'entrée -- pick_signal() prend le max sur ~20 books).
+    # Si clv_pin s'effondre pendant que clv_book reste haut, c'est la
+    # sélection qui gonfle le chiffre, pas un edge. Coût nul, la colonne
+    # existe déjà dans chaque trade.
+    clv_pin = [t['clv_pin'] for t in settled if 'clv_pin' in t]
     pnl = [t['pnl'] for t in settled if 'pnl' in t]
     won = [1 if t.get('won') else 0 for t in settled if 'won' in t]
 
@@ -114,8 +121,18 @@ def report_group(name, trades):
         p, lo, hi = wilson(kpos, len(clv))
         verdict = ("✅ CONFIRME (>50%)" if lo > 0.50 else
                    "⚠ tendance +" if p > 0.50 else "❌ non positif")
-        print(f"  CLV vs cloture : mediane {st.median(clv):+.1f}% | moyenne {st.mean(clv):+.1f}% "
+        print(f"  CLV vs cloture book : mediane {st.median(clv):+.1f}% | moyenne {st.mean(clv):+.1f}% "
               f"| %positif {p*100:.0f}% (IC95 {lo*100:.0f}-{hi*100:.0f}%)  -> {verdict}")
+    if clv_pin:
+        kpos = sum(1 for x in clv_pin if x > 0)
+        p, lo, hi = wilson(kpos, len(clv_pin))
+        print(f"  CLV vs juste-prix Pinnacle : mediane {st.median(clv_pin):+.1f}% | "
+              f"moyenne {st.mean(clv_pin):+.1f}% | %positif {p*100:.0f}% "
+              f"(IC95 {lo*100:.0f}-{hi*100:.0f}%)")
+        if clv and abs(st.median(clv) - st.median(clv_pin)) > 5:
+            print(f"  ⚠️ écart >5 pts entre les deux références -- la mesure "
+                  f"'vs cloture book' peut être gonflée par la sélection du "
+                  f"book (max sur ~20), pas par un edge réel.")
     # ROI
     if pnl:
         m, lo, hi, s = mean_ci(pnl)
@@ -191,6 +208,18 @@ FREEZE_DATE_MOVEAGE = '2026-08-16'  # hypothèse 'âge du mouvement à ampleur f
 # d'août (+11,2 pts) reste une observation descriptive utile, mais n'est
 # plus cité comme preuve confirmatoire tant qu'il n'est pas revalidé sur des
 # données POSTÉRIEURES à cette date, avec un protocole écrit avant lecture.
+# N_CIBLE : gel à un n PRÉ-ENREGISTRÉ, pas au premier franchissement du
+# plancher (audit v2 §C, 27/08/2026). Le seuil maison n>=30 est un plancher
+# de PUISSANCE MINIMALE, pas une cible -- geler dès qu'il est franchi fige
+# le verdict au point où l'échantillon est le plus faible et jette toute
+# l'information accumulée ensuite. Constaté sur "ouverture précoce" : gelé
+# à n=34 le jour même du gel, alors que n=75 le lendemain matin -- le
+# rapport affichait deux pourcentages contradictoires dans le même run
+# (97,1 % gelé vs 88,0 % mesuré). 100 est un nombre rond, choisi maintenant,
+# identique pour toutes les hypothèses -- pas un choix a posteriori par
+# hypothèse (qui serait une resucée du même biais à un cran au-dessus).
+N_CIBLE = 100
+
 FREEZE_DATE_PRIMAIRE = '2026-08-27 (requalifié exploratoire, ex-hors-famille)'
 
 def _shin_ph(oh, oa):
@@ -765,14 +794,16 @@ def reinforce_watch():
             p = 100 * sum(1 for x in g if x) / len(g)
             print(f"    {lab:10} n={len(g):4} | renforcé {p:.0f}%")
     print("  (si le gradient disparaît ou repasse sous 50% partout, c'était du bruit)")
-    # HORS FAMILLE binomiale (audit du 25/08 soir) : ce comptage mesure
-    # la DÉRIVE OUTSIDER (un phénomène de marché), pas un CLV — le tester
-    # contre 0,5 OU contre le témoin CLV n'a pas de sens. L'hypothèse
-    # gelée porte sur le GRADIENT par écart d'ouverture : un test dédié
-    # (tendance sur les 4 tranches) reste à définir avant réintégration.
-    print('  (hors famille Holm : comptage de dérive, pas de CLV — '
-          'test de gradient à définir)')
-    return None
+    # CORRIGÉ LE 27/08/2026 (audit v2 §D) : le commentaire du 25/08 disait
+    # « hors famille, pas testable contre p0 témoin ni 0,5 » -- confusion
+    # entre deux choses différentes. p0_temoin (le taux de base CLV>0) n'a
+    # effectivement aucun sens ici, CE N'EST PAS UN CLV. Mais un événement
+    # BINAIRE (renforcé / pas renforcé) a bien un null naturel à 50% par
+    # symétrie -- exactement comme round ou marge, qui utilisent aussi 0,5
+    # sans que ce soit leur "témoin CLV". Sans ce retour, reinforce_watch ne
+    # pouvait JAMAIS entrer dans Holm : une réfutation à n=324 (52,2% contre
+    # une référence in-sample de 56,1%) n'était jamais formellement actée.
+    return n_reinf, len(rows), 0.5
 
 
 def reactive_watch():
@@ -1365,7 +1396,12 @@ def _p_deux_proportions(k1, n1, k2, n2):
     p1, p2 = k1 / n1, k2 / n2
     p_pool = (k1 + k2) / (n1 + n2)
     if p_pool in (0, 1):
-        return 1.0 if p1 > p2 else 1.0
+        # CORRIGÉ LE 27/08/2026 (audit v2 §K) : les deux branches valaient
+        # 1.0, ternaire mort. p_pool ne vaut 0 ou 1 QUE si k1=n1=k2=n2 (100%
+        # des deux côtés) ou k1=k2=0 (0% des deux côtés) -- p1=p2 dans les
+        # deux cas, donc p=1,0 est le résultat correct, pas un repli faute
+        # de mieux.
+        return 1.0
     se = math.sqrt(p_pool * (1 - p_pool) * (1 / n1 + 1 / n2))
     if se == 0:
         return 1.0
@@ -1419,12 +1455,9 @@ def bilan_tests_multiples(resultats):
           f"gel {FREEZE_DATE_PRIMAIRE}) : le +11,2 pts d'août est descriptif, "
           f"non confirmatoire tant qu'il n'est pas revalidé sur données "
           f"postérieures à ce gel.")
-    # LECTURE UNIQUE PAR HYPOTHÈSE (audit §3.3) : validation_report tourne
-    # chaque jour ; sans verrou, une même hypothèse repasse dans Holm des
-    # dizaines de fois à mesure que n grandit -- le FWER réel dérive
-    # largement au-dessus de 5 %. Dès qu'une hypothèse franchit n>=30 pour
-    # la PREMIÈRE fois, son verdict est GELÉ dans verdicts_geles.json et
-    # plus jamais recalculé, même si n continue de grandir ensuite.
+    # LECTURE UNIQUE PAR HYPOTHÈSE (audit §3.3), CORRIGÉ LE 27/08/2026
+    # (audit v2 §C) : geler à N_CIBLE (n pré-enregistré), pas au premier
+    # n>=30 -- voir la constante N_CIBLE pour le raisonnement complet.
     GELES_FICHIER = 'verdicts_geles.json'
     try:
         geles = json.load(open(GELES_FICHIER, encoding='utf-8'))
@@ -1442,7 +1475,7 @@ def bilan_tests_multiples(resultats):
         nom = resultats[idx][0]
         if nom in geles:
             continue                              # déjà gelé, jamais recalculé
-        if r is not None and r[1] >= 30:
+        if r is not None and r[1] >= N_CIBLE:
             a_geler.append((idx, r))
     for idx, (k, n, p0, n_ref) in a_geler:
         nom = resultats[idx][0]
@@ -1481,13 +1514,22 @@ def bilan_tests_multiples(resultats):
             k, n = r[0], r[1]
             print(f"  {nom:24} gel {str(gel)[:10]} | {k}/{n} — n<30 : "
                   f"suivi, HORS famille (seuil maison pré-enregistré)")
+        elif r is not None and r[1] < N_CIBLE:
+            # AJOUTÉ LE 27/08/2026 (audit v2 §C) : entre le plancher (30) et
+            # la cible de gel (N_CIBLE), la puissance existe déjà mais la
+            # lecture N'EST PAS ENCORE ACTÉE -- distinct du cas n<30
+            # (aucune conclusion possible) et du cas gelé (verdict figé).
+            k, n = r[0], r[1]
+            print(f"  {nom:24} gel {str(gel)[:10]} | {k}/{n} — en "
+                  f"accumulation (cible n>={N_CIBLE}, {N_CIBLE - n} restants "
+                  f"avant lecture)")
         else:
             print(f"  {nom:24} gel {str(gel)[:10]} | — pas de comptage "
                   f"OOS (n insuffisant, hors périmètre binomial, ou trop tôt)")
     n_rej = sum(1 for v in verdicts.values() if v)
     print(f"  Famille : {len(pvals)} verdict(s) gelé(s) au total, {n_rej} "
           f"rejet(s) au risque global 5 % (chaque verdict lu UNE SEULE FOIS, "
-          f"à sa première qualification n>=30).")
+          f"à sa qualification n>={N_CIBLE} pré-enregistrée).")
     print('  Verdict CONFIRMATOIRE = hypothèse gelée AVANT ses données '
           'de test, jugée out-of-sample puis passée dans holm().')
     print('  Tout angle exploré in-sample reste EXPLORATOIRE : il peut '
@@ -1585,16 +1627,18 @@ def report_canal(fichier='paper_trades_canal.jsonl',
               f"du fichier de calibration)")
     if pnl:
         n = len(pnl)
-        roi = 100 * sum(pnl) / n
-        sd = st.stdev(pnl) if n > 1 else 0.0
-        # ic doit être sur la même échelle que roi (pourcentage) -- sd est
-        # en unités de mise brutes, d'où le x100 (bug trouvé et corrigé en
-        # écrivant cette fonction : IC95 [+20.2, +21.0] pour n=77 était
-        # invraisemblablement étroit, la vérification l'a immédiatement montré).
-        ic = 1.96 * sd / math.sqrt(n) * 100 if n > 1 else 0.0
+        # CORRIGÉ LE 27/08/2026 (audit v2 §F) : cette fonction recalculait
+        # son IC à la main (approximation normale) alors que mean_ci() a été
+        # réécrite en bootstrap précisément pour ce cas -- un P&L de pari
+        # bimodal/asymétrique à cote moyenne ~2,9, sur LE journal qui a de
+        # vrais résultats. L'ancien calcul manuel n'était pas faux (le x100
+        # était correct), juste redondant avec un outil déjà construit pour
+        # être plus fiable ici.
+        m, lo, hi, _sd = mean_ci(pnl)
+        roi, ic_lo, ic_hi = 100 * m, 100 * lo, 100 * hi
         wr = 100 * sum(won) / len(won) if won else 0
-        print(f"  ROI RÉEL : n={n} | {roi:+.1f}% [IC95 {roi - ic:+.1f}%, "
-              f"{roi + ic:+.1f}%] | {wr:.0f}% gagnés")
+        print(f"  ROI RÉEL : n={n} | {roi:+.1f}% [IC95 {ic_lo:+.1f}%, "
+              f"{ic_hi:+.1f}%] | {wr:.0f}% gagnés")
 
 
 def main():

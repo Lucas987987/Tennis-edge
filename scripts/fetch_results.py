@@ -669,8 +669,23 @@ def main():
     # Champs Sackmann-only (aces, elo, rang, 1er service) restent absents en
     # repli, exactement comme pour toute ligne où Sackmann manquait déjà
     # partiellement -- rien de nouveau côté site à ce niveau.
-    if not results:
-        print("⚠️ 0 résultat Sackmann -- repli sur resultats_derived.json.")
+    # SEUIL DE QUALITÉ, pas seulement "vide" (audit v2 §J, 27/08/2026) :
+    # le cas couvert jusqu'ici était Sackmann TOTALEMENT injoignable (0
+    # résultat). Un Sackmann qui répond partiellement (ex. 3 lignes sur les
+    # ~400 attendues sur 30 jours -- CSV tronqué, redémarrage en cours de
+    # fenêtre) ne déclenchait PAS le repli : la liste n'est pas vide, le
+    # site publie 3 résultats sans que rien ne le signale. 50 est un seuil
+    # bas et volontairement rond -- même une mauvaise journée Sackmann
+    # dépasse largement ça en temps normal.
+    SEUIL_QUALITE = 50
+    if len(results) < SEUIL_QUALITE:
+        print(f"⚠️ {len(results)} résultat(s) Sackmann (< seuil {SEUIL_QUALITE}) "
+              f"-- repli sur resultats_derived.json.")
+        # Remplacement COMPLET, pas un ajout (audit v2 §J, suite) : avec un
+        # seuil > 0, `results` peut déjà contenir quelques vraies lignes
+        # Sackmann -- les mélanger au repli créerait des doublons (formats
+        # d'id différents pour le même match, aucune dédup entre les deux).
+        results = []
         try:
             derive = json.load(open('resultats_derived.json', encoding='utf-8'))
             for r in derive.get('results', []):
