@@ -35,10 +35,15 @@ import oddspapi_v5 as ov  # noqa: E402
 # sinon Polymarket, et le DIT. Jamais de repli muet : une étude qui tourne sur
 # une source qu'on croit être l'autre est pire qu'une étude qui échoue.
 SOURCE      = os.environ.get('PM_SOURCE', 'auto').strip().lower()
-# 26/08/2026 : les collecteurs écrivent en .jsonl.gz — chaque motif couvre
-# les deux formats (l'ouverture passe déjà par _open, qui gère le gz).
-PM_GLOB     = os.environ.get('PM_TICKS_GLOB', 'parts/pm_ticks_*.jsonl*')
-KX_GLOB     = os.environ.get('KX_TICKS_GLOB', 'parts/kx_ticks_*.jsonl*')
+# CORRIGÉ LE 27/08/2026 (audit §2.1) : le motif '*.jsonl*' du 26/08 avale
+# AUSSI les .gz (fnmatch('...jsonl.gz','*.jsonl*') = True), ce qui casse la
+# convention de load_partitions()/open_any() (paths SANS suffixe .gz) et
+# leur fait renvoyer un chemin déjà-.gz que open_any() tente de lire comme
+# texte brut. Résultat mesuré : deux moitiés disjointes de la même journée,
+# 0 ligne commune, l'une des deux invisible. Motif '.jsonl' nu : c'est
+# load_partitions() qui gère la résolution .jsonl/.gz, comme prévu.
+PM_GLOB     = os.environ.get('PM_TICKS_GLOB', 'parts/pm_ticks_*.jsonl')
+KX_GLOB     = os.environ.get('KX_TICKS_GLOB', 'parts/kx_ticks_*.jsonl')
 CURVES      = os.environ.get('CURVES', 'book_curves_live.jsonl')
 MARKET_TYPE = os.environ.get('MARKET_TYPE', 'match')
 SHARP       = os.environ.get('SHARP_BOOK', 'pinnacle')
