@@ -18,7 +18,10 @@ Pourquoi une simple comparaison de chaînes ne suffit pas : dans 2634 cas sur
 l'enregistrement. L'ordre des noms dans l'identifiant ne suit pas home/away.
 
 MÉTHODE
-  1. clé naturelle = { joueurs normalisés } + horaire à l'heure près
+  1. clé naturelle = { joueurs normalisés } + JOURNÉE (pas l'heure -- corrigé
+     le 27/08/2026, ce docstring n'avait pas suivi le changement documenté
+     dans natural_key() : commence_time varie jusqu'à 4h selon la source,
+     une clé à l'heure près faisait changer 27 uid d'identifiant)
      (insensible à l'ordre home/away, aux accents, à la casse, au tournoi)
   2. fusion par `fixture_id` via union-find : deux enregistrements partageant
      un fixture_id sont le même match, même si horaire ou noms diffèrent
@@ -50,8 +53,21 @@ import re, unicodedata, collections
 
 
 def _toks(s):
+    # CORRIGÉ LE 27/08/2026 (audit §4.3.2) : seuil abaissé à 2 lettres --
+    # à 3, les noms courts (Wu, Li, Xu, An) produisaient un frozenset VIDE ;
+    # si les DEUX joueurs y tombaient, la clé s'effondrait à un seul élément
+    # et deux matchs différents pouvaient partager la même clé. Un jeton de
+    # 1 lettre (initiale isolée : "T." de "T. Griekspoor") reste rejeté --
+    # c'est voulu, il n'identifie rien.
     s = unicodedata.normalize('NFKD', s or '').encode('ascii', 'ignore').decode().lower()
-    return frozenset(t for t in re.split(r'[^a-z]+', s) if len(t) >= 3)
+    toks = frozenset(t for t in re.split(r'[^a-z]+', s) if len(t) >= 2)
+    if toks:
+        return toks
+    # Filet : même à 2 lettres, un nom pourrait ne rien produire (chiffres,
+    # caractères hors a-z après normalisation). Mieux vaut une clé moins
+    # discriminante que silencieusement vide.
+    brut = re.sub(r'[^a-z]', '', s)
+    return frozenset({brut}) if brut else frozenset()
 
 
 def natural_key(home, away, commence):
@@ -134,6 +150,29 @@ def _ts(s):
         return None
 
 
+def _joueurs_compatibles(n1, n2):
+    """n1, n2 : nat[0], un frozenset de 1 ou 2 frozensets de tokens (un par
+    joueur). True si chaque joueur de n1 correspond -- par inclusion ou
+    égalité, DANS UN SENS OU L'AUTRE -- à un joueur DISTINCT de n2.
+    Appariement BIPARTITE explicite (pas une comparaison de la paire comme
+    un bloc, qui échoue systématiquement -- voir le commentaire à l'appel)."""
+    l1, l2 = list(n1), list(n2)
+    if len(l1) != len(l2) or not l1:
+        return False
+
+    def couvre(a, b):
+        return bool(a) and bool(b) and (a <= b or b <= a)
+
+    if len(l1) == 1:
+        return couvre(l1[0], l2[0])
+    if len(l1) == 2:
+        a1, a2 = l1
+        b1, b2 = l2
+        return ((couvre(a1, b1) and couvre(a2, b2)) or
+                (couvre(a1, b2) and couvre(a2, b1)))
+    return False   # cas dégénéré (>2 "joueurs"), on n'y touche pas
+
+
 def build_index(records):
     """records : itérable de dicts ayant uid, home/home_team, away/away_team,
     commence_time et éventuellement fixture_id."""
@@ -177,6 +216,40 @@ def build_index(records):
             if f1 and f2 and f1 != f2:
                 continue        # deux fixture_id connus et différents = 2 matchs
             uf.union(('uid', u1), ('uid', u2))
+
+    # ── Étape 4 : fusion par INCLUSION d'ensembles, même tournoi + proximité
+    # (audit §4.3.3, 27/08/2026). « T. Griekspoor » -> {griekspoor} et
+    # « Tallon Griekspoor » -> {tallon, griekspoor} ne fusionnent jamais par
+    # égalité exacte (l'étape 3 l'exige aussi) -- seul un fixture_id partagé
+    # les rattrapait. Mêmes garde-fous que l'étape 3 (tournoi identique,
+    # fenêtre PROXI_H, jamais si fixture_id connus et disjoints).
+    #
+    # BUG CORRIGÉ EN ÉCRIVANT CE CORRECTIF : une première version comparait
+    # n1 <= n2 sur les PAIRES entières (l'ensemble à 2 éléments, un par
+    # joueur) -- or {griekspoor} n'est jamais un ÉLÉMENT de
+    # {tallon+griekspoor} en tant que tel (ce sont deux frozensets
+    # DIFFÉRENTS), donc l'inclusion plate échouait systématiquement, y
+    # compris sur le cas exact qu'elle devait couvrir. Il faut apparier
+    # JOUEUR PAR JOUEUR (bipartite, 2 éléments), pas comparer les paires
+    # comme un bloc.
+    par_tournoi = collections.defaultdict(list)
+    for nat, tour, when, uid, fx in nat_rows:
+        if when is None or not nat[0]:
+            continue
+        par_tournoi[tour].append((nat[0], when, uid, fx))
+    for tour, items in par_tournoi.items():
+        for i in range(len(items)):
+            n1, t1, u1, f1 = items[i]
+            for j in range(i + 1, len(items)):
+                n2, t2, u2, f2 = items[j]
+                if n1 == n2:
+                    continue                      # égalité déjà gérée à l'étape 3
+                if abs((t2 - t1).total_seconds()) / 3600.0 > PROXI_H:
+                    continue
+                if f1 and f2 and f1 != f2:
+                    continue
+                if _joueurs_compatibles(n1, n2):
+                    uf.union(('uid', u1), ('uid', u2))
 
     groups = collections.defaultdict(set)
     uid2canon = {}
