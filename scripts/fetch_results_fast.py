@@ -280,7 +280,15 @@ def run():
     # trompeur quand resultats_derived.json a des résultats à jour.
     source_label = 'api_fast'
     provisional = True
-    if not fast_results:
+    # SEUIL DE QUALITÉ (audit v2 §J, 27/08/2026) : même correctif que
+    # fetch_results.py -- api_fast avec quelques résultats seulement (quota
+    # presque épuisé, peu de candidats appariés) ne déclenchait pas le
+    # repli. Remplacement COMPLET (pas un ajout) pour éviter le mélange
+    # avec des doublons potentiels de resultats_derived.json.
+    SEUIL_QUALITE = 50
+    if len(fast_results) < SEUIL_QUALITE:
+        n_avant = len(fast_results)
+        fast_results = []
         try:
             derive = json.load(open('resultats_derived.json', encoding='utf-8'))
             for r in derive.get('results', []):
@@ -290,9 +298,10 @@ def run():
                     'winner': r.get('winner', ''), 'winner_code': r.get('winner_code', 1),
                 })
             if fast_results:
-                source_label = 'repli resultats_derived.json (api_fast vide)'
+                source_label = 'repli resultats_derived.json (api_fast insuffisant)'
                 provisional = False   # resultats_derived.json n'est pas provisoire
-                print(f"  ⚠️ api_fast vide -> {len(fast_results)} résultats repris de resultats_derived.json")
+                print(f"  ⚠️ api_fast : {n_avant} résultat(s) (< seuil {SEUIL_QUALITE}) "
+                      f"-> {len(fast_results)} repris de resultats_derived.json")
         except (OSError, ValueError) as e:
             print(f"  repli resultats_derived.json indisponible ({e})")
 
