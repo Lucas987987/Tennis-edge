@@ -185,8 +185,33 @@ def load_partitions(motif):
     plain = glob.glob(motif)
     gz = glob.glob(motif + '.gz')
     vus = set(plain)
-    gz = [g for g in gz if g[:-3] not in vus]
-    return sorted(set(plain + gz), key=lambda p: p.replace('.gz', ''))
+    # CORRIGÉ LE 27/08/2026 (audit §2.1) : l'hypothèse "si les deux existent,
+    # .jsonl et .gz sont des doublons" datait du 22/08 et est devenue FAUSSE
+    # le 26/08 (gzip-append écrit désormais directement en .gz -- un .jsonl
+    # qui coexiste est un reliquat D'AVANT le switch, avec un contenu
+    # DIFFÉRENT, pas une recompression). Comparaison de taille en repli :
+    # si le .gz est cohérent avec le .jsonl (grossièrement, compression
+    # ~3-10x), on garde le comportement historique. Sinon, avertissement
+    # bruyant et LES DEUX sont retournés -- aucune ligne perdue en silence.
+    gz_retenus = []
+    for g in gz:
+        base = g[:-3]
+        if base not in vus:
+            gz_retenus.append(g)
+            continue
+        try:
+            taille_jsonl = os.path.getsize(base)
+            taille_gz = os.path.getsize(g)
+            ratio = taille_jsonl / taille_gz if taille_gz else 0
+            if not (2 <= ratio <= 15):
+                print(f"⚠️ load_partitions : {base} ET {g} coexistent avec un "
+                      f"ratio de taille suspect ({ratio:.1f}x, attendu 2-15x) "
+                      f"-> probable scission (v. audit du 27/08), LES DEUX "
+                      f"sont lus.")
+                gz_retenus.append(g)
+        except OSError:
+            gz_retenus.append(g)
+    return sorted(set(plain + gz_retenus), key=lambda p: p.replace('.gz', ''))
 
 
 def open_any(path):
@@ -196,13 +221,21 @@ def open_any(path):
     que sous forme .gz. Tout code faisant open(path) sur un chemin issu d'un
     glob '*.jsonl' ne trouvait alors PLUS RIEN -- silencieusement, puisque les
     scripts sautent les fichiers absents. À utiliser partout où un chemin de
-    partition est ouvert directement."""
+    partition est ouvert directement.
+
+    CORRIGÉ LE 27/08/2026 (audit §2.1) : le test .gz doit passer EN PREMIER.
+    Avant, un chemin DÉJÀ suffixé .gz (ex. renvoyé par le garde-fou ajouté à
+    load_partitions()) tombait dans la branche os.path.exists(path) et était
+    ouvert comme texte brut -- un binaire gzip lu en UTF-8, données corrompues
+    ou UnicodeDecodeError selon le contenu."""
+    if path.endswith('.gz'):
+        if os.path.exists(path):
+            return gzip.open(path, 'rt', encoding='utf-8')
+        raise FileNotFoundError(path)
     if os.path.exists(path):
         return open(path, encoding='utf-8')
     if os.path.exists(path + '.gz'):
         return gzip.open(path + '.gz', 'rt', encoding='utf-8')
-    if path.endswith('.gz') and os.path.exists(path):
-        return gzip.open(path, 'rt', encoding='utf-8')
     raise FileNotFoundError(path)
 
 

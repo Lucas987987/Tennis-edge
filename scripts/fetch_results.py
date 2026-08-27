@@ -657,12 +657,50 @@ def main():
             print(f"  Erreur: {e}")
 
     print(f"\n{len(results)} résultats au total")
+    source_label = 'JeffSackmann + players_data.json'
+
+    # CORRIGÉ LE 27/08/2026 (audit §1.3) : Sackmann est injoignable depuis ce
+    # runner (egress bloqué), documenté dans 6 endroits différents du dépôt
+    # -- resultats.json valait "count": 0 depuis des semaines, publié tel
+    # quel sur le site (index.html le lit 7 fois). resultats_derived.json
+    # (results_bridge.py, alimenté par set_results.json) a un schéma quasi
+    # compatible et 1400+ résultats à jour -- on s'en sert de repli plutôt
+    # que de laisser le site afficher zéro alors que la donnée existe.
+    # Champs Sackmann-only (aces, elo, rang, 1er service) restent absents en
+    # repli, exactement comme pour toute ligne où Sackmann manquait déjà
+    # partiellement -- rien de nouveau côté site à ce niveau.
+    if not results:
+        print("⚠️ 0 résultat Sackmann -- repli sur resultats_derived.json.")
+        try:
+            derive = json.load(open('resultats_derived.json', encoding='utf-8'))
+            for r in derive.get('results', []):
+                d = r.get('date', '')
+                w = norm_name(r.get('winner', ''))
+                results.append({
+                    'id': f"{d}_{w}_repli".replace(' ', '_'),
+                    'date': d,
+                    'tournament': r.get('tournament', ''),
+                    'circuit': '',
+                    'surface': '',
+                    'home_team': r.get('home_team', ''),
+                    'away_team': r.get('away_team', ''),
+                    'winner': r.get('winner', ''),
+                    'winner_code': r.get('winner_code', 1),
+                    'score': '',
+                    'completed': True,
+                })
+            if results:
+                source_label = ('repli resultats_derived.json — Sackmann '
+                                'injoignable sur ce runner (egress bloqué)')
+                print(f"  -> {len(results)} résultats repris en repli.")
+        except (OSError, ValueError) as e:
+            print(f"  repli resultats_derived.json indisponible ({e})")
 
     # Sauvegarder resultats.json
     output = {
         'updated': today.strftime('%Y-%m-%d'),
         'generated_at': datetime.datetime.utcnow().isoformat(),
-        'source': 'JeffSackmann + players_data.json',
+        'source': source_label,
         'count': len(results),
         'results': results
     }
