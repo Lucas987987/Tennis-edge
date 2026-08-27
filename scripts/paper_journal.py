@@ -150,6 +150,31 @@ def pick_signal(bk, softbooks, thr_by_book, entry_at='now'):
     return max(cands, key=lambda c: (c['pct'], c['odds']))
 
 
+def cloture_fiable(uid, side, curve, _cache={}):
+    """Clôture de référence pour le CLV -- AJOUTÉ LE 27/08/2026 (audit v2 §L).
+
+    Deux définitions de « clôture » coexistaient : closing_lines.json (daté,
+    tracé, drapeau `reliable`, 1079/1193 matchs fiables) et le dernier point
+    de courbe (aucun garde-fou, lu par 100% des scripts qui calculent un
+    CLV -- validation_report, paper_journal, canal_public...). Écart mesuré
+    par l'audit : >3% sur 7,9% des matchs, >10% sur 1,3%. On préfère
+    désormais closing_lines[uid]['closing'] quand reliable=True ; repli sur
+    le dernier point de courbe SEULEMENT à défaut -- jamais l'inverse.
+    Cache module-level : closing_lines.json ne change qu'une fois par jour,
+    pas la peine de le relire à chaque trade."""
+    if 'd' not in _cache:
+        try:
+            _cache['d'] = json.load(open('closing_lines.json', encoding='utf-8'))
+        except (OSError, ValueError):
+            _cache['d'] = {}
+    c = (_cache['d'].get(uid) or {}).get('closing') or {}
+    if c.get('reliable') and c.get(side):
+        return c[side], 'closing_lines'
+    if curve:
+        return curve[-1][1], 'dernier_point'
+    return None, None
+
+
 def settle_trade(t, data, result_side):
     """Renseigne cloture + resultat d'un pari ouvert si le match est dispo."""
     bk = data.get(t['uid'])
@@ -159,8 +184,11 @@ def settle_trade(t, data, result_side):
     sb = t['book']
     if sb in bk:
         ser = bk[sb]['h'] if side == 'home' else bk[sb]['a']
-        if ser:
-            t['close_book'] = ser[-1][1]
+        # CORRIGÉ LE 27/08/2026 (audit v2 §L) : cloture_fiable() en premier.
+        prix, source = cloture_fiable(t['uid'], side, ser)
+        if prix:
+            t['close_book'] = prix
+            t['close_source'] = source   # traçabilité -- jamais deviner après coup
     ptimes = sorted(set(x for x, _ in bk[sa.SHARP]['h']))
     fc = sa._fair(bk[sa.SHARP], ptimes[-1])
     if fc is not None:
@@ -175,10 +203,17 @@ def settle_trade(t, data, result_side):
         won = (side == ws)
         t['won'] = bool(won)
         t['pnl'] = round((t['entry_odds'] - 1) if won else -1.0, 3)
-    if 'clv_book' in t or 'clv_pin' in t:
+    # CORRIGÉ LE 27/08/2026 (audit v2 §A -- REFAIT après une divergence entre
+    # ma copie de travail et le fichier réellement livré ce matin : le
+    # correctif n'avait jamais atterri). SETTLED seulement avec un pnl réel.
+    if 'pnl' in t:
         t['status'] = 'SETTLED'
         return True
+    if 'clv_book' in t or 'clv_pin' in t:
+        t['status'] = 'CLOSED_NO_RESULT'
+        return True
     return False
+
 
 
 def summary(trades):
@@ -266,7 +301,10 @@ def main():
             if not sig:
                 continue
             pser = bk[sa.SHARP]['h'] if sig['side'] == 'home' else bk[sa.SHARP]['a']
-            t = {'id': f"{uid}|{sig['book']}|{int(sig['thr']*100)}", 'uid': uid,
+            # CORRIGÉ LE 27/08/2026 (audit §4.4) : clé CANONIQUE (_k), pas
+            # l'uid brut -- deux uid du même match sur deux cycles
+            # différents ouvraient deux trades séparés.
+            t = {'id': f"{_k}|{sig['book']}|{int(sig['thr']*100)}", 'uid': uid,
                  'home': bk.get('_home'), 'away': bk.get('_away'), 'side': sig['side'],
                  'book': sig['book'], 'palier': int(sig['thr'] * 100),
                  'entry_odds': round(sig['odds'], 2), 'status': 'OPEN'}
@@ -293,12 +331,25 @@ def main():
     # --- mode normal : forward ---
     trades = load_journal()
     n_settled = 0
+    n_reste_a_regler = 0
+    # CORRIGÉ LE 27/08/2026 (audit v2 §A) : OPEN *et* CLOSED_NO_RESULT sont
+    # retraités à chaque cycle -- avant, un trade sorti de OPEN sans pnl
+    # n'était plus jamais revisité. Repli sur `track` (committé, recul plus
+    # large) si le match n'est plus dans `data` (fenêtre plus courte).
     for t in trades.values():
-        if t.get('status') == 'OPEN':
-            bk = data.get(t['uid'])
+        if t.get('status') in ('OPEN', 'CLOSED_NO_RESULT'):
+            bk = data.get(t['uid']) or track.get(t['uid'])
             if bk and bk.get('_commence') and bk['_commence'] < now:
-                if settle_trade(t, data, result_side):
+                src = data if t['uid'] in data else track
+                if settle_trade(t, src, result_side):
                     n_settled += 1
+                    if t.get('status') == 'CLOSED_NO_RESULT':
+                        n_reste_a_regler += 1
+            elif not bk:
+                n_reste_a_regler += 1
+    if n_reste_a_regler:
+        print(f"  {n_reste_a_regler} trade(s) toujours sans résultat "
+              f"-- relecture au prochain cycle.")
     upcoming = {u: bk for u, bk in data.items()
                 if bk.get('_commence') and bk['_commence'] >= now}
     n_open = 0
@@ -324,7 +375,8 @@ def main():
         sig = pick_signal(tbk, softbooks, thr_by_book, entry_at='now')
         if not sig:
             continue
-        tid = f"{uid}|{sig['book']}|{int(sig['thr']*100)}"
+        # CORRIGÉ LE 27/08/2026 (audit §4.4) : _k au lieu de uid brut.
+        tid = f"{_k}|{sig['book']}|{int(sig['thr']*100)}"
         if tid in trades:
             continue
         trades[tid] = {'id': tid, 'uid': uid, 'home': bk.get('_home'),
