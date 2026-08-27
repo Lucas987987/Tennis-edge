@@ -53,17 +53,24 @@ import re, unicodedata, collections
 
 
 def _toks(s):
-    # CORRIGÉ LE 27/08/2026 (audit §4.3.2) : seuil abaissé à 2 lettres --
-    # à 3, les noms courts (Wu, Li, Xu, An) produisaient un frozenset VIDE ;
-    # si les DEUX joueurs y tombaient, la clé s'effondrait à un seul élément
-    # et deux matchs différents pouvaient partager la même clé. Un jeton de
-    # 1 lettre (initiale isolée : "T." de "T. Griekspoor") reste rejeté --
-    # c'est voulu, il n'identifie rien.
+    # CORRIGÉ LE 27/08/2026, deux fois le même jour.
+    # v1 (audit 1, §4.3.2) : seuil abaissé à 3 -> 2 lettres, pour que les
+    # noms courts (Wu, Li, Xu, An) ne s'effondrent plus en ensemble vide.
+    # v2 (découvert en écrivant le test de non-régression de l'audit v2
+    # §G) : le commentaire ci-dessus disait qu'une initiale isolée
+    # "n'identifie rien", mais c'est FAUX quand elle sert à DISTINGUER --
+    # "A. Zverev" et "M. Zverev" réduisaient tous deux à {zverev}
+    # STRICTEMENT IDENTIQUE, donc fusionnaient dès l'égalité de base
+    # (avant même la moindre étape de proximité). Garder l'initiale ajoute
+    # de l'info, ne peut jamais en retirer -- le risque en sens inverse
+    # (deux tokens à 1 lettre qui matcheraient à tort) n'existe pas : un
+    # ensemble AVEC initiale est un sur-ensemble strict de la version sans,
+    # donc au pire aussi précis, jamais moins. Seuil : aucun (>=1).
     s = unicodedata.normalize('NFKD', s or '').encode('ascii', 'ignore').decode().lower()
-    toks = frozenset(t for t in re.split(r'[^a-z]+', s) if len(t) >= 2)
+    toks = frozenset(t for t in re.split(r'[^a-z]+', s) if len(t) >= 1)
     if toks:
         return toks
-    # Filet : même à 2 lettres, un nom pourrait ne rien produire (chiffres,
+    # Filet : même à 1 lettre, un nom pourrait ne rien produire (chiffres,
     # caractères hors a-z après normalisation). Mieux vaut une clé moins
     # discriminante que silencieusement vide.
     brut = re.sub(r'[^a-z]', '', s)
@@ -217,39 +224,24 @@ def build_index(records):
                 continue        # deux fixture_id connus et différents = 2 matchs
             uf.union(('uid', u1), ('uid', u2))
 
-    # ── Étape 4 : fusion par INCLUSION d'ensembles, même tournoi + proximité
-    # (audit §4.3.3, 27/08/2026). « T. Griekspoor » -> {griekspoor} et
-    # « Tallon Griekspoor » -> {tallon, griekspoor} ne fusionnent jamais par
-    # égalité exacte (l'étape 3 l'exige aussi) -- seul un fixture_id partagé
-    # les rattrapait. Mêmes garde-fous que l'étape 3 (tournoi identique,
-    # fenêtre PROXI_H, jamais si fixture_id connus et disjoints).
-    #
-    # BUG CORRIGÉ EN ÉCRIVANT CE CORRECTIF : une première version comparait
-    # n1 <= n2 sur les PAIRES entières (l'ensemble à 2 éléments, un par
-    # joueur) -- or {griekspoor} n'est jamais un ÉLÉMENT de
-    # {tallon+griekspoor} en tant que tel (ce sont deux frozensets
-    # DIFFÉRENTS), donc l'inclusion plate échouait systématiquement, y
-    # compris sur le cas exact qu'elle devait couvrir. Il faut apparier
-    # JOUEUR PAR JOUEUR (bipartite, 2 éléments), pas comparer les paires
-    # comme un bloc.
-    par_tournoi = collections.defaultdict(list)
-    for nat, tour, when, uid, fx in nat_rows:
-        if when is None or not nat[0]:
-            continue
-        par_tournoi[tour].append((nat[0], when, uid, fx))
-    for tour, items in par_tournoi.items():
-        for i in range(len(items)):
-            n1, t1, u1, f1 = items[i]
-            for j in range(i + 1, len(items)):
-                n2, t2, u2, f2 = items[j]
-                if n1 == n2:
-                    continue                      # égalité déjà gérée à l'étape 3
-                if abs((t2 - t1).total_seconds()) / 3600.0 > PROXI_H:
-                    continue
-                if f1 and f2 and f1 != f2:
-                    continue
-                if _joueurs_compatibles(n1, n2):
-                    uf.union(('uid', u1), ('uid', u2))
+    # ── Étape 4 : RETIRÉE LE 27/08/2026 (audit v2 §G). Une version de fusion
+    # par inclusion d'ensembles vivait ici (prénoms abrégés), corrigée le
+    # jour même d'un bug de comparaison plate -- mais l'audit a montré que
+    # ses garde-fous (tournoi + fenêtre 36h) n'empêchent PAS de fusionner
+    # deux HOMONYMES réels : « A. Zverev » et « M. Zverev » (Alexander et
+    # Mischa, deux joueurs distincts) contre le même adversaire, même
+    # tournoi, même jour -> fusionnés à tort (vérifié : True). Et le
+    # bénéfice mesuré sur clv_history.jsonl était NUL (1405 matchs
+    # canoniques identiques avec ou sans cette étape, 0 fusion
+    # supplémentaire). Risque réel, gain nul sur les données actuelles :
+    # retirée plutôt que rapiécée une troisième fois sous pression -- le
+    # même empressement qui l'a produite la première fois.
+    # Piste pour une VRAIE réintroduction, si le besoin se confirme un jour :
+    # exiger que le token en plus (le prénom) ne soit pas déjà un nom de
+    # famille présent ailleurs dans l'index (distinguerait Zverev de
+    # Griekspoor), ou refuser l'inclusion quand le côté court n'a qu'un
+    # seul token. Non implémenté ce soir -- demande un index de fréquence
+    # des noms qui n'existe pas encore, pas une correction de trois lignes.
 
     groups = collections.defaultdict(set)
     uid2canon = {}
