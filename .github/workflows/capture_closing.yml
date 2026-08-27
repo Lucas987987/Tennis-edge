@@ -141,9 +141,26 @@ jobs:
           find . -name '*.pyc' -delete 2>/dev/null || true
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add -A
+          # CORRIGÉ LE 27/08/2026 (audit §2.2/§2.3) : « git add -A » nu
+          # contredisait l'invariant de .gitattributes (« chaque workflow ne
+          # commite QUE ses propres partitions ») -- ce workflow, le plus
+          # fréquent (150x/jour), était le seul à ne pas le respecter.
+          # Exclusion par pathspec des partitions des collecteurs (jamais
+          # écrites ici), sans énumérer positivement chaque fichier que ce
+          # job produit (nombreux : capture_state, courbes live, journaux
+          # d'alertes, journal forward...).
+          git add -A -- ':!parts/pm_ticks_*' ':!parts/kx_ticks_*'
           echo "--- fichiers en attente de commit ---"
           git status --short
+          # GARDE-FOU TAILLE (même principe que kalshi/polymarket).
+          for f in $(git status --porcelain | awk '{print $2}'); do
+            [ -f "$f" ] || continue
+            mo=$(du -m "$f" 2>/dev/null | cut -f1)
+            if [ -n "$mo" ] && [ "$mo" -ge 95 ]; then
+              echo "⛔ $f fait ${mo} Mo (mur GitHub 100 Mo) — ÉCARTÉ du commit."
+              git restore --staged -- "$f" 2>/dev/null || true
+            fi
+          done
           git diff --staged --quiet || git commit -m "Capture cotes (OddsPapi $(date -u +%H:%MZ))"
           # "merge" et non "rebase" : un rebase en conflit après un commit
           # peut écarter ce commit en silence (avalé par "2>/dev/null ||

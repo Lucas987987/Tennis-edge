@@ -16,7 +16,7 @@ Pour chaque surface (match/set1/set2) et par book :
 
 Env : JOURNALS (glob, def 'paper_trades_*.jsonl'). Aucune dependance externe.
 """
-import os, sys, glob, json, math, statistics as st
+import os, sys, glob, json, math, datetime, random, statistics as st
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import oddspapi_v5 as ov
 import match_key as mk
@@ -48,18 +48,50 @@ def wilson(k, n):
     return (p, max(0, c - h), min(1, c + h))
 
 
-def mean_ci(xs):
-    """IC95 de la moyenne (approx normale)."""
+def mean_ci(xs, bootstrap=True, n_boot=3000, graine=1234567):
+    """IC95 de la moyenne.
+
+    CORRIGÉ LE 27/08/2026 (audit §3.4), deux défauts cumulés :
+    1. pstdev() (écart-type de POPULATION) sous-estimait l'écart-type
+       d'échantillon d'un facteur sqrt(n/(n-1)) -- 3,4 % d'erreur à n=30 ;
+       remplacé par stdev() (non biaisé).
+    2. L'approximation normale donne des IC trop ÉTROITS quand la
+       distribution est asymétrique/bimodale -- exactement le profil d'un
+       P&L de pari (-1 ou +cote-1, cote moyenne ~2,9) à n<100, le régime où
+       ce dispositif se trouve. Le bootstrap percentile (3000 tirages,
+       graine FIXE pour la reproductibilité -- deux lectures du même
+       fichier doivent donner le même IC) n'a besoin d'aucune hypothèse de
+       forme. Défaut : bootstrap=True. Repli sur l'approximation normale UNIQUEMENT
+       si bootstrap=False ou n<8 (le bootstrap n'est pas fiable en dessous).
+    """
     n = len(xs)
     if n < 2:
         return (xs[0] if xs else 0.0, None, None, 0.0)
-    m = st.mean(xs); s = st.pstdev(xs)
-    half = Z * s / math.sqrt(n)
-    return (m, m - half, m + half, s)
+    m = st.mean(xs)
+    s = st.stdev(xs)
+    if not bootstrap or n < 8:
+        half = Z * s / math.sqrt(n)
+        return (m, m - half, m + half, s)
+    rng = random.Random(graine)
+    moyennes = []
+    for _ in range(n_boot):
+        tirage = [xs[rng.randrange(n)] for _ in range(n)]
+        moyennes.append(sum(tirage) / n)
+    moyennes.sort()
+    lo = moyennes[int(0.025 * n_boot)]
+    hi = moyennes[int(0.975 * n_boot) - 1]
+    return (m, lo, hi, s)
 
 
 def n_needed(mean, s):
-    """Taille d'echantillon estimee pour que l'IC95 de la moyenne exclue 0."""
+    """Taille d'echantillon estimee pour que l'IC95 de la moyenne exclue 0.
+
+    ORDRE DE GRANDEUR SEULEMENT (audit §3.4) : calcul de puissance POST-HOC
+    à partir de la moyenne OBSERVÉE -- répond « combien faudrait-il si
+    l'effet observé était le vrai effet », optimiste par construction quand
+    l'effet observé n'est pas significatif. À afficher comme repère, jamais
+    comme objectif à atteindre.
+    """
     if not mean or s == 0:
         return None
     return int(math.ceil((Z * s / abs(mean)) ** 2))
@@ -97,17 +129,28 @@ def report_group(name, trades):
             if lo <= 0 < m:
                 nn = n_needed(m, s)
                 if nn:
-                    print(f"                   ~{nn} paris denoues estimes pour confirmer (actuel {len(pnl)})")
+                    print(f"                   ordre de grandeur (optimiste, non un objectif) : "
+                          f"~{nn} paris pour confirmer SI l'effet observé est le vrai effet "
+                          f"(actuel {len(pnl)})")
     # win rate
     if won:
         p, lo, hi = wilson(sum(won), len(won))
         print(f"  Reussite       : {p*100:.0f}% (IC95 {lo*100:.0f}-{hi*100:.0f}%, n={len(won)})")
     # par book
+    # CORRIGÉ LE 27/08/2026 (audit §3.6) : ce découpage n'est PAS dans la
+    # famille Holm et n'importe quel run donnait un « meilleur book » lu à
+    # tort comme un résultat (vu en test : leovegas n=2 -> ROI +137,5 %,
+    # williamhill n=2 -> -20,5 %). Un book sous n=30 est affiché SANS ses
+    # statistiques -- juste son effectif, pour qu'on voie qu'il accumule
+    # sans jamais publier un chiffre invendable.
     books = sorted(set(t['book'] for t in settled if t.get('book')))
     if len(books) > 1:
-        print("  -- par book --")
+        print("  -- par book (n>=30 seulement pour CLV/ROI -- audit §3.6) --")
         for b in books:
             sub = [t for t in settled if t.get('book') == b]
+            if len(sub) < 30:
+                print(f"     {b:10} n={len(sub):3d} — sous 30, en accumulation")
+                continue
             c = [t['clv_book'] for t in sub if 'clv_book' in t]
             pl = [t['pnl'] for t in sub if 'pnl' in t]
             cm = f"{st.median(c):+.1f}%" if c else "n/a"
@@ -139,13 +182,16 @@ FREEZE_DATE_REINFORCE = '2026-08-14'  # hypothèse 'renforcement de l'outsider d
 FREEZE_DATE_REACTIVE = '2026-08-14'  # hypothèse 'book rapide en anomalie > book lent chronique' gelée ce jour
 FREEZE_DATE_BETFAIR = '2026-08-16'  # hypothèse 'confirmation Betfair Exchange' gelée ce jour
 FREEZE_DATE_MOVEAGE = '2026-08-16'  # hypothèse 'âge du mouvement à ampleur fixée (5%)' gelée ce jour
-# Critère PRIMAIRE : CLV du groupe alerté vs groupe témoin, IC de Wilson
-# disjoints, jugé SEUL à alpha=0,05, hors famille Holm. CONSIGNÉ
-# RÉTROACTIVEMENT le 25/08/2026 (audit : « un primaire sans date de gel
-# est une exemption infalsifiable ») — le critère est en usage depuis le
-# test de contrôle d'août, mais sa première date FALSIFIABLE est
-# celle-ci. Toute modification ultérieure exige une nouvelle date.
-FREEZE_DATE_PRIMAIRE = '2026-08-25 (consigné rétroactivement)'
+# Critère PRIMAIRE : CLV du groupe alerté vs groupe témoin.
+# REQUALIFIÉ LE 27/08/2026 (audit §3.1) : un gel rétroactif n'est PAS un
+# pré-enregistrement -- le 25/08, ce critère avait déjà été vu sur les
+# données d'août, donc son statut « hors famille, jugé seul » n'était pas
+# défendable. Choix retenu (2 options proposées par l'audit) : requalifié
+# EXPLORATOIRE à partir d'aujourd'hui. Le résultat du test de contrôle
+# d'août (+11,2 pts) reste une observation descriptive utile, mais n'est
+# plus cité comme preuve confirmatoire tant qu'il n'est pas revalidé sur des
+# données POSTÉRIEURES à cette date, avec un protocole écrit avant lecture.
+FREEZE_DATE_PRIMAIRE = '2026-08-27 (requalifié exploratoire, ex-hors-famille)'
 
 def _shin_ph(oh, oa):
     ih, ia = 1/oh, 1/oa; ssum = ih + ia
@@ -1296,6 +1342,38 @@ def p0_temoin(chemin='moves_detail_hist.csv'):
     return _P0_TEMOIN_CACHE
 
 
+def _p_deux_proportions(k1, n1, k2, n2):
+    """Test à DEUX échantillons (Wald, variance groupée), unilatéral :
+    H1 = la proportion 1 (sous-groupe) DÉPASSE la proportion 2 (référence).
+
+    AJOUTÉ LE 27/08/2026 (audit §3.2) : p0_temoin() traite le taux de base
+    comme une CONSTANTE connue, alors que c'est une estimation à erreur-type
+    ~1,5 pt (n=891). Un test à un échantillon (binomial vs p0 fixe) sous-
+    estime l'incertitude -- à n=30-60 pour le sous-groupe, ça peut faire
+    basculer un verdict. Ce test à deux échantillons propage l'incertitude
+    des DEUX proportions. Repli sur une approximation normale (pas de
+    scipy) ; n1,n2 >= 30 dans tous les cas d'usage ici, la normale tient.
+    RÉSERVE ASSUMÉE (non résolue ce soir) : la référence (k2,n2) INCLUT le
+    sous-groupe testé -- l'auto-référencement partiel décrit par l'audit
+    reste présent. L'exclusion complète demanderait de retracer, pour
+    CHAQUE hypothèse, quelles lignes de moves_detail_hist.csv composent son
+    sous-groupe -- pas toutes ne sourcent de ce fichier. Amélioration
+    future, documentée plutôt que cachée.
+    """
+    if n1 <= 0 or n2 <= 0:
+        return 1.0
+    p1, p2 = k1 / n1, k2 / n2
+    p_pool = (k1 + k2) / (n1 + n2)
+    if p_pool in (0, 1):
+        return 1.0 if p1 > p2 else 1.0
+    se = math.sqrt(p_pool * (1 - p_pool) * (1 / n1 + 1 / n2))
+    if se == 0:
+        return 1.0
+    z = (p1 - p2) / se
+    # queue supérieure de la normale standard, sans scipy (erf de math)
+    return 0.5 * math.erfc(z / math.sqrt(2))
+
+
 def holm(pvals, alpha=0.05):
     """Correction de Holm (step-down). pvals -> liste de booléens alignée :
     True = rejet de H0 en contrôlant le risque global à alpha.
@@ -1337,44 +1415,79 @@ def bilan_tests_multiples(resultats):
           f"(Holm, alpha=0,05, plancher n>=30)")
     print(f"  p0 témoin = {100 * p0t:.1f}% de CLV>0 sur la population "
           f"de moves (n={nt}) — l'étalon des hypothèses CLV.")
-    print(f"  Critère PRIMAIRE hors famille : CLV alerté vs témoin, "
-          f"gel {FREEZE_DATE_PRIMAIRE}.")
+    print(f"  Critère PRIMAIRE (EXPLORATOIRE depuis le 27/08, requalifié — "
+          f"gel {FREEZE_DATE_PRIMAIRE}) : le +11,2 pts d'août est descriptif, "
+          f"non confirmatoire tant qu'il n'est pas revalidé sur données "
+          f"postérieures à ce gel.")
+    # LECTURE UNIQUE PAR HYPOTHÈSE (audit §3.3) : validation_report tourne
+    # chaque jour ; sans verrou, une même hypothèse repasse dans Holm des
+    # dizaines de fois à mesure que n grandit -- le FWER réel dérive
+    # largement au-dessus de 5 %. Dès qu'une hypothèse franchit n>=30 pour
+    # la PREMIÈRE fois, son verdict est GELÉ dans verdicts_geles.json et
+    # plus jamais recalculé, même si n continue de grandir ensuite.
+    GELES_FICHIER = 'verdicts_geles.json'
+    try:
+        geles = json.load(open(GELES_FICHIER, encoding='utf-8'))
+    except (OSError, ValueError):
+        geles = {}
     resolus = []
     for idx, (nom, gel, r) in enumerate(resultats):
         if not r:
             resolus.append((idx, None))
             continue
         k, n, p0 = r
-        resolus.append((idx, (k, n, p0t if p0 == 'temoin' else p0)))
-    testables = [(idx, r) for idx, r in resolus
-                 if r is not None and r[1] >= 30]
-    pvals = [_p_binomial_unilateral(k, n, p0) for _, (k, n, p0) in testables]
+        resolus.append((idx, (k, n, p0t if p0 == 'temoin' else p0, nt if p0 == 'temoin' else None)))
+    a_geler = []
+    for idx, r in resolus:
+        nom = resultats[idx][0]
+        if nom in geles:
+            continue                              # déjà gelé, jamais recalculé
+        if r is not None and r[1] >= 30:
+            a_geler.append((idx, r))
+    for idx, (k, n, p0, n_ref) in a_geler:
+        nom = resultats[idx][0]
+        if n_ref is not None:
+            k_ref = round(p0 * n_ref)
+            p = _p_deux_proportions(k, n, k_ref, n_ref)
+        else:
+            p = _p_binomial_unilateral(k, n, p0)
+        geles[nom] = {'k': k, 'n': n, 'p0': p0, 'p_value': p,
+                     'date_lecture': datetime.date.today().isoformat()}
+    if a_geler:
+        json.dump(geles, open(GELES_FICHIER, 'w', encoding='utf-8'),
+                  ensure_ascii=False, indent=1)
+    # Holm s'applique à TOUTES les hypothèses gelées à ce jour (anciennes
+    # et nouvelles) -- la famille grandit au fil des gels, jamais un même
+    # verdict individuel n'est recalculé.
+    noms_geles = [nom for nom, _, _ in resultats if nom in geles]
+    pvals = [geles[nom]['p_value'] for nom in noms_geles]
     rejets = holm(pvals, alpha=0.05)
-    verdicts = {idx: (k, n, p0, p, rej)
-                for (idx, (k, n, p0)), p, rej in zip(testables, pvals, rejets)}
-    petits = {idx: r for idx, r in resolus
-              if r is not None and r[1] < 30}
-    for idx, (nom, gel, _) in enumerate(resultats):
-        if idx in verdicts:
-            k, n, p0, p, rej = verdicts[idx]
+    verdicts = dict(zip(noms_geles, rejets))
+    for idx, (nom, gel, r) in enumerate(resultats):
+        if nom in geles:
+            g = geles[nom]
+            k, n, p0, p = g['k'], g['n'], g['p0'], g['p_value']
+            rej = verdicts[nom]
             if rej:
                 v = 'REJETTE H0 sous Holm ✅'
             elif k / n < p0:
                 v = 'ne rejette pas H0 (SOUS le taux de base témoin ⚠️)'
             else:
                 v = 'ne rejette pas H0'
-            print(f"  {nom:24} gel {str(gel)[:10]} | {k}/{n} vs "
+            print(f"  {nom:24} gel {str(gel)[:10]} | lu le "
+                  f"{g['date_lecture']} (verrouillé) | {k}/{n} vs "
                   f"p0={p0:.3f} | p={p:.4f} -> {v}")
-        elif idx in petits:
-            k, n, p0 = petits[idx]
+        elif r is not None and r[1] < 30:
+            k, n = r[0], r[1]
             print(f"  {nom:24} gel {str(gel)[:10]} | {k}/{n} — n<30 : "
                   f"suivi, HORS famille (seuil maison pré-enregistré)")
         else:
             print(f"  {nom:24} gel {str(gel)[:10]} | — pas de comptage "
                   f"OOS (n insuffisant, hors périmètre binomial, ou trop tôt)")
-    n_rej = sum(1 for *_, r in verdicts.values() if r)
-    print(f"  Famille : {len(pvals)} testable(s) sur {m}, {n_rej} "
-          f"rejet(s) au risque global 5 %.")
+    n_rej = sum(1 for v in verdicts.values() if v)
+    print(f"  Famille : {len(pvals)} verdict(s) gelé(s) au total, {n_rej} "
+          f"rejet(s) au risque global 5 % (chaque verdict lu UNE SEULE FOIS, "
+          f"à sa première qualification n>=30).")
     print('  Verdict CONFIRMATOIRE = hypothèse gelée AVANT ses données '
           'de test, jugée out-of-sample puis passée dans holm().')
     print('  Tout angle exploré in-sample reste EXPLORATOIRE : il peut '
@@ -1402,6 +1515,88 @@ HYPOTHESES = [
 ]
 
 
+def rappel_value_clv(fichier='value_clv_report.json'):
+    """AJOUTÉ LE 27/08/2026 (audit §3.7) : une réfutation propre mérite
+    autant de visibilité qu'un signal qui survit -- sinon le rapport ne
+    montre que ce qui a marché, ce qui est exactement le biais que tout ce
+    dispositif existe pour combattre. Le détecteur de « value » sélectionne
+    des paris dont le CLV est MOINS bon que celui des matchs non
+    sélectionnés (corrélation score/CLV légèrement négative, n=374)."""
+    if not os.path.exists(fichier):
+        return
+    try:
+        d = json.load(open(fichier, encoding='utf-8'))
+    except (OSError, ValueError):
+        return
+    print(f"\n{'=' * 60}\nRÉFUTATION (à garder visible, pas seulement les signaux qui "
+          f"survivent) — détecteur de value")
+    print(f"  candidats     : CLV moyen {d.get('candidats_clv_moyen', 0):+.2f}% | "
+          f"%positif {d.get('candidats_clv_pct_positif', 0):.1f}% "
+          f"(n={d.get('n_candidats_avec_clv', '?')})")
+    print(f"  non-candidats : CLV moyen {d.get('non_candidats_clv_moyen', 0):+.2f}%")
+    print(f"  corr(score, CLV) = {d.get('corr_score_clv', 0):+.3f}")
+    print("  Le détecteur sélectionne des paris au CLV MOINS bon que le "
+          "tout-venant -- réfutation propre, à ne pas retester sous une "
+          "autre forme sans nouveau protocole daté.")
+
+
+def report_canal(fichier='paper_trades_canal.jsonl',
+                 clv_fichier='canal_clv_detail.csv'):
+    """Lecteur DÉDIÉ pour le journal canal (audit §1.2, 27/08/2026).
+
+    Schéma différent du journal forward : statut='REGLE' (pas status=
+    'SETTLED'), gagne (pas won), pas de clv_book natif -- le CLV est joint
+    depuis canal_clv_detail.csv (indexé uid+book) plutôt que reconstruit
+    approximativement. C'est le SEUL journal avec de vrais résultats ET,
+    avant ce correctif, le SEUL sans CLV dans le verdict -- la règle « le
+    CLV est la métrique de validation » ne s'appliquait nulle part où il y
+    avait de quoi la vérifier.
+    """
+    if not os.path.exists(fichier):
+        return
+    trades = [json.loads(l) for l in open(fichier, encoding='utf-8') if l.strip()]
+    regles = [t for t in trades if t.get('statut') == 'REGLE']
+    ouverts = [t for t in trades if t.get('statut') != 'REGLE']
+    print(f"\n{'=' * 60}\nJOURNAL CANAL (produit réellement publié aux abonnés) "
+          f"— {len(regles)} réglés | {len(ouverts)} ouverts")
+    if not regles:
+        print("  (pas encore de pari réglé)")
+        return
+    clv_par_cle = {}
+    if os.path.exists(clv_fichier):
+        import csv
+        for r in csv.DictReader(open(clv_fichier, encoding='utf-8')):
+            try:
+                clv_par_cle[(r['uid'], r['book'])] = float(r['clv'])
+            except (KeyError, ValueError):
+                continue
+    clv = [clv_par_cle[(t['uid'], t['book'])] for t in regles
+           if (t['uid'], t['book']) in clv_par_cle]
+    pnl = [t['pnl'] for t in regles if 'pnl' in t]
+    won = [1 if t.get('gagne') else 0 for t in regles]
+    if clv:
+        pos = sum(1 for x in clv if x > 0)
+        p, lo, hi = wilson(pos, len(clv))
+        print(f"  CLV (joint via {clv_fichier}) : n={len(clv)} | moyen "
+              f"{st.mean(clv):+.2f}% | médian {st.median(clv):+.2f}% | "
+              f"positif {100 * p:.0f}% (IC95 {100 * lo:.0f}-{100 * hi:.0f}%)")
+    else:
+        print(f"  ⚠️ aucun CLV apparié via {clv_fichier} (uid+book absents "
+              f"du fichier de calibration)")
+    if pnl:
+        n = len(pnl)
+        roi = 100 * sum(pnl) / n
+        sd = st.stdev(pnl) if n > 1 else 0.0
+        # ic doit être sur la même échelle que roi (pourcentage) -- sd est
+        # en unités de mise brutes, d'où le x100 (bug trouvé et corrigé en
+        # écrivant cette fonction : IC95 [+20.2, +21.0] pour n=77 était
+        # invraisemblablement étroit, la vérification l'a immédiatement montré).
+        ic = 1.96 * sd / math.sqrt(n) * 100 if n > 1 else 0.0
+        wr = 100 * sum(won) / len(won) if won else 0
+        print(f"  ROI RÉEL : n={n} | {roi:+.1f}% [IC95 {roi - ic:+.1f}%, "
+              f"{roi + ic:+.1f}%] | {wr:.0f}% gagnés")
+
+
 def main():
     files = sorted(glob.glob(JOURNALS))
     if not files:
@@ -1411,6 +1606,16 @@ def main():
     print(f"{len(HYPOTHESES)} hypothèses gelées suivies — verdicts individuels à lire à travers le filtre Holm-Bonferroni (bilan en fin de rapport).")
     print("Regle : un edge n'est CONFIRME que si la borne basse de l'IC95 exclut 0 (ROI) / 50% (CLV+).")
     for f in files:
+        # CORRIGÉ LE 27/08/2026 (audit §1.2) : paper_trades_canal.jsonl a un
+        # schéma différent (statut/gagne vs status/won) — report_group() le
+        # filtrait sur 'status' == 'SETTLED', qui n'existe jamais dans ce
+        # fichier, donc affichait silencieusement « pas encore dénoué » alors
+        # que 77 paris y sont réglés. C'est le SEUL journal qui reflète ce
+        # que reçoivent vraiment les abonnés (68 alertes canal vs 17 au
+        # journal forward le 24/08) -- il a désormais son lecteur dédié,
+        # appelé séparément plus bas.
+        if os.path.basename(f) == 'paper_trades_canal.jsonl':
+            continue
         name = os.path.basename(f).replace('paper_trades_', 'surface ').replace('.jsonl', '')
         trades = []
         for line in open(f, encoding='utf-8'):
@@ -1419,6 +1624,8 @@ def main():
                 try: trades.append(json.loads(line))
                 except Exception: pass
         report_group(name, trades)
+    report_canal()
+    rappel_value_clv()
     print(f"\n{'='*60}\nRappel : CLV+ = prix battu ; le ROI net subit encore marge + gubbing.")
     resultats = []
     for i, (nom, gel, w) in enumerate(HYPOTHESES, 1):
