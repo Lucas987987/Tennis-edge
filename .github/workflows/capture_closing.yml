@@ -153,7 +153,13 @@ jobs:
           echo "--- fichiers en attente de commit ---"
           git status --short
           # GARDE-FOU TAILLE (même principe que kalshi/polymarket).
-          for f in $(git status --porcelain | awk '{print $2}'); do
+          # CORRIGÉ LE 27/08/2026 (audit v2 §K) : `git status --porcelain`
+          # + awk '{print $2}' casse sur une ligne de renommage
+          # (`R  ancien -> nouveau` -> $2 vaut "ancien", le mauvais chemin)
+          # et sur tout chemin contenant une espace. `git diff --cached
+          # --name-only` ne liste QUE ce qui est réellement indexé, un
+          # chemin par ligne, sans ce risque.
+          for f in $(git diff --cached --name-only); do
             [ -f "$f" ] || continue
             mo=$(du -m "$f" 2>/dev/null | cut -f1)
             if [ -n "$mo" ] && [ "$mo" -ge 95 ]; then
