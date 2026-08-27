@@ -191,21 +191,37 @@ def test_binomial_p0_generalise():
     assert abs(f(2, 3, 0.4) - attendu) < 1e-12
 
 
-def test_match_key_inclusion_prenoms_abreges():
-    """AJOUTÉ LE 27/08/2026 (audit §4.3.3). « T. Griekspoor » et « Tallon
-    Griekspoor » doivent fusionner (même tournoi, même journée) ; deux
-    joueurs à noms courts (Wu/Li/Xu/An) ou un seul joueur partagé sur deux
-    ne doivent JAMAIS fusionner à tort. Couvre aussi le bug de la première
-    version (comparaison de la paire comme un bloc plutôt qu'un
-    appariement joueur par joueur)."""
+def test_match_key_pas_de_fusion_par_inclusion():
+    """CORRIGÉ LE 27/08/2026 (audit v2 §G) : l'étape de fusion par inclusion
+    d'ensembles (prénoms abrégés) a été RETIRÉE -- ses garde-fous
+    n'empêchaient pas de fusionner deux homonymes réels (Alexander Zverev
+    et Mischa Zverev, contre le même adversaire, même tournoi, même jour),
+    pour un gain mesuré NUL sur les données réelles (clv_history.jsonl :
+    1405 matchs canoniques identiques avec ou sans cette étape). Ce test
+    remplace celui d'hier (qui exigeait la fusion des prénoms abrégés,
+    perte de rappel désormais assumée) : il vérifie que le cas dangereux ne
+    fusionne PLUS, et que les cas déjà sûrs (noms courts, joueur unique
+    partagé) le restent."""
     mk = _module('match_key')
-    fusion = mk.build_index([
+
+    # Le cas qui fusionnait à tort avant le retrait de l'étape 4 :
+    zverev = mk.build_index([
+        dict(uid='m1', home='A. Zverev', away='Jannik Sinner',
+             commence_time='2026-08-20T14:00:00Z', tournament='ATP Cincinnati'),
+        dict(uid='m2', home='M. Zverev', away='Jannik Sinner',
+             commence_time='2026-08-20T18:00:00Z', tournament='ATP Cincinnati'),
+    ])
+    assert zverev.key_of('m1') != zverev.key_of('m2'), \
+        "Alexander et Mischa Zverev ne doivent JAMAIS fusionner"
+
+    # Prénom abrégé : ne fusionne plus (perte de rappel assumée, pas un bug)
+    abrege = mk.build_index([
         dict(uid='m1', home='T. Griekspoor', away='Adam Walton',
              commence_time='2026-08-20T14:00:00Z', tournament='ATP Winston-Salem'),
         dict(uid='m2', home='Tallon Griekspoor', away='Adam Walton',
              commence_time='2026-08-20T14:07:00Z', tournament='ATP Winston-Salem'),
     ])
-    assert fusion.key_of('m1') == fusion.key_of('m2')
+    assert abrege.key_of('m1') != abrege.key_of('m2')
 
     noms_courts = mk.build_index([
         dict(uid='m1', home='Wu Yibing', away='An Jinson',
