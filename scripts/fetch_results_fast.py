@@ -274,11 +274,33 @@ def run():
             updated += 1; csv_changed = True
         print(f"\n✅ CSV (matching par joueurs) : {updated} mis à jour" + (f" | ⚠️ {ambigus} ambigus" if ambigus else ""))
 
+    # CORRIGÉ LE 27/08/2026 (audit §1.3) : même repli que resultats.json --
+    # api_fast peut revenir vide (quota, aucun candidat apparié) sans que ce
+    # soit un vrai problème de fond, mais publier count:0 sur le site est
+    # trompeur quand resultats_derived.json a des résultats à jour.
+    source_label = 'api_fast'
+    provisional = True
+    if not fast_results:
+        try:
+            derive = json.load(open('resultats_derived.json', encoding='utf-8'))
+            for r in derive.get('results', []):
+                fast_results.append({
+                    'date': r.get('date', ''), 'tournament': r.get('tournament', ''),
+                    'home_team': r.get('home_team', ''), 'away_team': r.get('away_team', ''),
+                    'winner': r.get('winner', ''), 'winner_code': r.get('winner_code', 1),
+                })
+            if fast_results:
+                source_label = 'repli resultats_derived.json (api_fast vide)'
+                provisional = False   # resultats_derived.json n'est pas provisoire
+                print(f"  ⚠️ api_fast vide -> {len(fast_results)} résultats repris de resultats_derived.json")
+        except (OSError, ValueError) as e:
+            print(f"  repli resultats_derived.json indisponible ({e})")
+
     # Écrire resultats_fast.json (provisoire — Sackmann reste prioritaire à la lecture)
     payload = {
         'updated': datetime.datetime.utcnow().isoformat(),
         'generated_at': datetime.datetime.utcnow().isoformat(),
-        'source': 'api_fast', 'provisional': True,
+        'source': source_label, 'provisional': provisional,
         'count': len(fast_results), 'results': fast_results,
     }
     with open(RESULTATS_FAST, 'w', encoding='utf-8') as f:
