@@ -1,0 +1,65 @@
+name: Etudes Polymarket/Kalshi (analyse des ticks collectes)
+
+# CRÉÉ LE 27/08/2026 suite à l'audit du 27/08 (§4.1) : les collecteurs
+# tournent (~105 Mo/jour de tickets pm_ticks+kx_ticks) mais AUCUN workflow
+# n'appelait les 5 scripts d'analyse écrits pour les lire — le plus gros
+# poste de dépense (stockage + temps de runner) du dépôt pour zéro sortie.
+# Quotidien plutôt qu'à chaque cycle : ces études lisent des journées
+# entières de ticks, coûteux en I/O, pas besoin de fraîcheur à 5 minutes.
+
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+
+on:
+  schedule:
+    - cron: '20 4 * * *'      # tôt le matin, avant la compression nocturne
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: polymarket-studies
+  cancel-in-progress: false
+
+jobs:
+  etudes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          filter: blob:none
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Exécuter les 5 études
+        run: |
+          {
+            echo "# Études Polymarket/Kalshi — rapport du $(date -u +%F)"
+            echo
+            echo '```'
+            for s in polymarket_flow polymarket_leadlag polymarket_studies pm_calibration_track pm_observations; do
+              echo "--- $s ---"
+              PYTHONPATH=scripts timeout 600 python scripts/${s}.py \
+                || echo "⚠️ ${s}.py EN ÉCHEC (code $?)"
+              echo
+            done
+            echo '```'
+          } > polymarket_studies_report.md
+          test -s polymarket_studies_report.md
+      - name: Committer le rapport
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -- polymarket_studies_report.md
+          git diff --staged --quiet && { echo "rien de neuf"; exit 0; }
+          git commit -m "Études Polymarket/Kalshi ($(date -u +%F))"
+          for essai in 1 2 3; do
+            git fetch origin main || true
+            git merge origin/main --no-edit || { git merge --abort 2>/dev/null || true; sleep 8; continue; }
+            git push && exit 0
+            sleep 8
+          done
+          exit 1
