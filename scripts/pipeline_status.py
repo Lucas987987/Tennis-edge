@@ -170,6 +170,16 @@ def main():
     except (OSError, ValueError):
         pass
 
+    # AJOUTÉ LE 28/08/2026 (audit v6 §AE, même motif que Q3 ci-dessus) :
+    # clv_vs_median_report.json rendu visible ici -- sinon le rapport de
+    # décomposition prime/dérive (la réponse au §E) risque de rester non lu
+    # exactement comme Q3 l'a été deux mois et demi.
+    clv_median = None
+    try:
+        clv_median = json.load(open('clv_vs_median_report.json', encoding='utf-8'))
+    except (OSError, ValueError):
+        pass
+
     payload = {
         'run_termine': datetime.datetime.utcnow().isoformat(timespec='seconds'),
         'run_demarre': started.isoformat(timespec='seconds'),
@@ -177,6 +187,7 @@ def main():
         'livrables': rows,
         'partitions': parts,
         'q3_qualite_cloture': q3,
+        'clv_vs_median': clv_median,
     }
     json.dump(payload, open(OUT_JSON, 'w', encoding='utf-8'),
               ensure_ascii=False, indent=2)
