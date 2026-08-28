@@ -144,8 +144,11 @@ def load_curves(path=None):
     for _k, _v in _closing_lines.items():
         _nat = mk.natural_key(_v.get('home', ''), _v.get('away', ''),
                               _v.get('commence_time'))
+        # CORRIGÉ LE 28/08/2026 (audit v4 §W) : _nat[0] seul jetait la date
+        # -- même correctif que paper_journal.cloture_fiable(), voir son
+        # commentaire. `_nat` complet au lieu de `_nat[0]`.
         if _nat[0]:
-            _cl_idx[_nat[0]] = _k
+            _cl_idx[_nat] = _k
     _croises_resolus = 0
     _croises_tentes = 0
     for line in lines_iter:
@@ -157,7 +160,7 @@ def load_curves(path=None):
         _croises_tentes += 1
         _nat_r = mk.natural_key(r.get('home', ''), r.get('away', ''),
                                 r.get('commence_time'))
-        _cl_uid = _cl_idx.get(_nat_r[0]) if _nat_r[0] else None
+        _cl_uid = _cl_idx.get(_nat_r) if _nat_r[0] else None
         ct_croise = _dt((_closing_lines.get(_cl_uid) or {}).get('commence_time')) \
             if _cl_uid else None
         if ct_croise:
