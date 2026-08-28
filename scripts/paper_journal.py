@@ -187,7 +187,26 @@ def cloture_fiable(home, away, commence_time, tournament, side, curve, _cache={}
     prix restent deux axes séparés, comme demandé.
 
     Compteur de résolutions exposé via cloture_fiable_stats() -- "un
-    correctif qui échoue à 100% en silence est pire que pas de correctif"."""
+    correctif qui échoue à 100% en silence est pire que pas de correctif".
+
+    VÉRIFIÉ LE 28/08/2026 (audit v4 §T) : une fois le pont réellement
+    branché (97,4% de résolution), l'effet mesuré est NUL -- 1364/1364
+    prix strictement identiques à curve[-1] sur les partitions testées.
+    Raison mécanique : steam_alert._pre() tronque déjà la courbe à
+    commence_time avant qu'elle arrive ici, et captured_at (le snapshot
+    fiable) est par construction antérieur au coup d'envoi -- il n'y a
+    jamais rien APRÈS le dernier point de la courbe déjà tronquée pour que
+    _dernier_avant() puisse trouver. L'écart de 7,9% que l'audit avait
+    mesuré dans son addendum opposait deux sources PINNACLE entre elles
+    (le snapshot vs le close de clv_history), pas la courbe du book à quoi
+    que ce soit -- une divergence réelle, mais mesurée sur le mauvais
+    objet, extrapolée à tort jusqu'ici.
+    CE QUE CETTE FONCTION FAIT DONC RÉELLEMENT : elle n'a pas retiré de
+    biais (il n'y en avait pas à cet endroit) -- elle a transformé une
+    HYPOTHÈSE non vérifiée ("le dernier point est peut-être trop tardif")
+    en INVARIANT MESURÉ, avec compteur et garde-fou. Conservée pour cette
+    raison : filet de sécurité si un jour un book publie un point après
+    captured_at, et preuve vivante que ce n'est actuellement pas le cas."""
     if 'd' not in _cache:
         try:
             _cache['d'] = json.load(open('closing_lines.json', encoding='utf-8'))
@@ -197,13 +216,23 @@ def cloture_fiable(home, away, commence_time, tournament, side, curve, _cache={}
         for k, v in _cache['d'].items():
             nat = mk.natural_key(v.get('home', ''), v.get('away', ''),
                                  v.get('commence_time'))
+            # CORRIGÉ LE 28/08/2026 (audit v4 §W) : nat[0] SEUL (sans la
+            # date) jette exactement la garantie que natural_key() ajoute
+            # la date pour donner -- sa propre docstring : "deux rencontres
+            # entre les mêmes joueurs le même jour n'existent pas en
+            # pratique". Deux mêmes joueurs à des dates DIFFÉRENTES
+            # (fréquent : deux tournois dans la saison) s'écrasaient l'un
+            # l'autre dans l'index -- 14 collisions mesurées sur
+            # closing_lines.json, latentes tant que la fenêtre testée est
+            # courte, actives dès qu'elle s'élargit. `nat` (le tuple
+            # complet) au lieu de `nat[0]`.
             if nat[0]:
-                _cache['idx'][nat[0]] = k
+                _cache['idx'][nat] = k
         _cache['resolus'] = 0
         _cache['tentes'] = 0
     _cache['tentes'] += 1
     nat = mk.natural_key(home, away, commence_time)
-    cl_uid = _cache['idx'].get(nat[0]) if nat[0] else None
+    cl_uid = _cache['idx'].get(nat) if nat[0] else None
     entree = _cache['d'].get(cl_uid) if cl_uid else None
     c = (entree or {}).get('closing') or {}
     if c.get('reliable') and c.get('captured_at') and curve:
@@ -297,6 +326,13 @@ def settle_trade(t, data, result_side):
         return True
     if 'clv_book' in t or 'clv_pin' in t:
         t['status'] = 'CLOSED_NO_RESULT'
+        # AJOUTÉ LE 28/08/2026 (audit v4 §Z) : sans horodatage, un trade qui
+        # n'obtient jamais de résultat (match jamais couvert par
+        # set_results.json NI backtest_tennis.csv) reste CLOSED_NO_RESULT
+        # indéfiniment, retraité à chaque cycle pour rien. Ne pose la date
+        # qu'à la PREMIÈRE fois -- les cycles suivants ne l'écrasent pas.
+        if 'closed_no_result_depuis' not in t:
+            t['closed_no_result_depuis'] = datetime.date.today().isoformat()
         return True
     return False
 
@@ -418,6 +454,29 @@ def main():
     trades = load_journal()
     n_settled = 0
     n_reste_a_regler = 0
+    n_abandonnes = 0
+    # AJOUTÉ LE 28/08/2026 (audit v4 §Z) : au-delà de 7 jours en
+    # CLOSED_NO_RESULT, le match n'aura vraisemblablement JAMAIS de
+    # résultat couvert (ni set_results.json ni backtest_tennis.csv) --
+    # basculé en ABANDONNED avec la raison, sorti de la boucle de relecture
+    # (sinon il tourne indéfiniment pour rien à chaque cycle). Rend aussi
+    # visible un taux de perte de résultats qui est une mesure utile en soi.
+    SEUIL_ABANDON_JOURS = 7
+    aujourdhui = datetime.date.today()
+    for t in trades.values():
+        if t.get('status') == 'CLOSED_NO_RESULT' and t.get('closed_no_result_depuis'):
+            try:
+                depuis = datetime.date.fromisoformat(t['closed_no_result_depuis'])
+                if (aujourdhui - depuis).days >= SEUIL_ABANDON_JOURS:
+                    t['status'] = 'ABANDONNED'
+                    t['abandon_raison'] = (f'aucun résultat après '
+                                          f'{SEUIL_ABANDON_JOURS}j en CLOSED_NO_RESULT')
+                    n_abandonnes += 1
+            except ValueError:
+                pass
+    if n_abandonnes:
+        print(f"  {n_abandonnes} trade(s) basculé(s) en ABANDONNED "
+              f"(>{SEUIL_ABANDON_JOURS}j sans résultat).")
     # CORRIGÉ LE 27/08/2026 (audit v2 §A) : OPEN *et* CLOSED_NO_RESULT sont
     # retraités à chaque cycle -- avant, un trade sorti de OPEN sans pnl
     # n'était plus jamais revisité. Repli sur `track` (committé, recul plus
