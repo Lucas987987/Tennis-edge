@@ -89,6 +89,19 @@ jobs:
         # jusqu'ici jamais exécuté qu'à la main.
         run: python scripts/pnl_vs_clv_study.py || true
 
+      - name: CLV vs book médian, hors ligne sur l'historique (répond au §E)
+        # AJOUTÉ LE 28/08/2026 (audit v5 §AC), APRÈS les correctifs §AB
+        # (côté par les noms, troncature pré-match sur toutes les courbes)
+        # -- "un script qui publie une conclusion non soutenue à chaque run
+        # est pire qu'un script qui ne tourne pas" (l'audit lui-même).
+        # QUOTIDIEN, pas à chaque cycle : charge 10 partitions de courbes
+        # complètes (~2-3 min), moves_detail_hist.csv ne grossit pas assez
+        # vite pour justifier plus fréquent.
+        run: |
+          if [ "$(date -u +%H)" = "05" ]; then
+            python scripts/clv_vs_median_offline.py || true
+          fi
+
       - name: Qualité de la mesure de clôture (Q3 triangulation)
         # AJOUTÉ LE 27/08/2026 (audit v2 §L) : capture_quality.py contient
         # ce diagnostic depuis le 14 juin, tournait seulement en

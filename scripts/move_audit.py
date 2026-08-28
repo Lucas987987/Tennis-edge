@@ -28,6 +28,7 @@ from collections import defaultdict
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import oddspapi_v5 as ov
 import match_key as mk
+import curves_common as cc
 
 CURVES      = os.environ.get('CURVES', 'book_curves_live.jsonl')
 SET_RESULTS = os.environ.get('SET_RESULTS', 'set_results.json')
@@ -93,25 +94,12 @@ def load_curves():
         lines = ov.open_curves(CURVES)
     except FileNotFoundError as e:
         print(f"❌ {e}"); return games, mk.build_index([])
-    # AJOUTÉ LE 28/08/2026 (audit v4 §U) : le garde-fou anti-in-play (croiser
-    # commence_time avec closing_lines.json, prendre le MIN) n'existait que
-    # dans steam_alert.load_curves() -- ce fichier a sa PROPRE copie de la
-    # même logique de troncature (pre(), ligne suivante) et en était
-    # dépourvu. Or move_audit.py alimente moves_detail_hist.csv, qui fixe
-    # p0_temoin (0,725) -- l'étalon contre lequel LES 11 HYPOTHÈSES GELÉES
-    # sont testées. Un in-play qui fuit ici biaise tout le dispositif Holm,
-    # pas seulement 54 paris. Même pont, même code, copié depuis
-    # steam_alert.py (aucune raison de diverger).
-    try:
-        _closing_lines = json.load(open('closing_lines.json', encoding='utf-8'))
-    except (OSError, ValueError):
-        _closing_lines = {}
-    _cl_idx = {}
-    for _k, _v in _closing_lines.items():
-        _nat = mk.natural_key(_v.get('home', ''), _v.get('away', ''),
-                              _v.get('commence_time'))
-        if _nat[0]:
-            _cl_idx[_nat] = _k
+    # AJOUTÉ LE 28/08/2026 (audit v4 §U), CORRIGÉ LE 28/08/2026 (audit v5
+    # §AA -- voir curves_common.cherche_avec_tolerance()) : pont commun
+    # avec steam_alert/paper_journal/canal_clv, une seule copie. Ce fichier
+    # alimente moves_detail_hist.csv -> p0_temoin -- l'étalon de TOUTES
+    # les hypothèses gelées, le fichier où ce pont compte le plus.
+    _closing_lines, _cl_idx = cc.build_closing_index()
     _croises_resolus, _croises_tentes = 0, 0
     for line in lines:
         line = line.strip()
@@ -122,7 +110,7 @@ def load_curves():
         _croises_tentes += 1
         _nat_r = mk.natural_key(r.get('home', ''), r.get('away', ''),
                                 r.get('commence_time'))
-        _cl_uid = _cl_idx.get(_nat_r) if _nat_r[0] else None
+        _cl_uid = cc.cherche_avec_tolerance(_cl_idx, _nat_r)
         ct_croise = _dt((_closing_lines.get(_cl_uid) or {}).get('commence_time')) \
             if _cl_uid else None
         if ct_croise:

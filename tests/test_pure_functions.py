@@ -240,6 +240,37 @@ def test_match_key_pas_de_fusion_par_inclusion():
     assert un_seul_partage.key_of('m1') != un_seul_partage.key_of('m2')
 
 
+def test_curves_common_tolerance_date():
+    """AJOUTÉ LE 28/08/2026 (audit v5 §AA), test suggéré par l'audit
+    lui-même : « deux enregistrements du même match à cheval sur minuit
+    doivent résoudre l'un vers l'autre ; deux rencontres à quatre jours
+    d'écart ne doivent pas. » Le §W (clé complète avec date) et le §M
+    (commence_time croisé car la date diverge parfois) se neutralisaient
+    sans ce garde-fou -- corrigé dans curves_common.cherche_avec_tolerance()."""
+    cc = _module('curves_common')
+    mk = _module('match_key')
+
+    idx = {}
+    idx[mk.natural_key('Bianca Andreescu', 'Eva Vedder',
+                       '2026-08-24T23:50:00Z')] = 'uid_minuit'
+    # Même match, commence_time de l'AUTRE source tombe le lendemain civil
+    r = cc.cherche_avec_tolerance(
+        idx, mk.natural_key('Bianca Andreescu', 'Eva Vedder', '2026-08-25T00:10:00Z'))
+    assert r == 'uid_minuit'
+
+    # Deux VRAIES rencontres à 4 jours d'écart (le minimum mesuré sur
+    # closing_lines.json) -- ne doivent jamais fusionner
+    idx2 = {}
+    idx2[mk.natural_key('Joueur A', 'Joueur B', '2026-08-01')] = 'match_1'
+    idx2[mk.natural_key('Joueur A', 'Joueur B', '2026-08-05')] = 'match_2'
+    r2 = cc.cherche_avec_tolerance(
+        idx2, mk.natural_key('Joueur A', 'Joueur B', '2026-08-01'))
+    assert r2 == 'match_1'
+    r3 = cc.cherche_avec_tolerance(
+        idx2, mk.natural_key('Joueur A', 'Joueur B', '2026-08-05'))
+    assert r3 == 'match_2'
+
+
 # ------------------------------------------------------------- runner ----
 if __name__ == '__main__':
     fonctions = [(n, f) for n, f in sorted(globals().items())
