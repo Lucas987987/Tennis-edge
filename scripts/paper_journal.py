@@ -22,7 +22,7 @@ Env : JOURNAL (def paper_trades.jsonl), RESULTS_CSV (def backtest_tennis.csv),
   + tous les reglages de steam_alert (GRID, MIN_N, WINDOW_DAYS, MIN_LEAD, DEFAULT_THR,
   EV_MIN_NOW, SOFT_BOOKS, NOW_OVERRIDE, BACKFILL).
 """
-import os, sys, json, csv, statistics as st
+import os, sys, json, csv, datetime, statistics as st
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 # MARKET pilote la surface : match / set1 / set2. Choisit le fichier de courbes
@@ -150,29 +150,77 @@ def pick_signal(bk, softbooks, thr_by_book, entry_at='now'):
     return max(cands, key=lambda c: (c['pct'], c['odds']))
 
 
-def cloture_fiable(uid, side, curve, _cache={}):
-    """Clôture de référence pour le CLV -- AJOUTÉ LE 27/08/2026 (audit v2 §L).
+def _dernier_avant(curve, ts_limite):
+    """Dernier point de `curve` (liste de (ts, prix,...)) daté <= ts_limite."""
+    ts_limite = str(ts_limite)[:19]
+    meilleur = None
+    for pt in curve:
+        t = str(pt[0])[:19]
+        if t <= ts_limite:
+            if meilleur is None or t > str(meilleur[0])[:19]:
+                meilleur = pt
+    return meilleur[1] if meilleur else None
 
-    Deux définitions de « clôture » coexistaient : closing_lines.json (daté,
-    tracé, drapeau `reliable`, 1079/1193 matchs fiables) et le dernier point
-    de courbe (aucun garde-fou, lu par 100% des scripts qui calculent un
-    CLV -- validation_report, paper_journal, canal_public...). Écart mesuré
-    par l'audit : >3% sur 7,9% des matchs, >10% sur 1,3%. On préfère
-    désormais closing_lines[uid]['closing'] quand reliable=True ; repli sur
-    le dernier point de courbe SEULEMENT à défaut -- jamais l'inverse.
-    Cache module-level : closing_lines.json ne change qu'une fois par jour,
-    pas la peine de le relire à chaque trade."""
+
+def cloture_fiable(home, away, commence_time, tournament, side, curve, _cache={}):
+    """Clôture de référence pour le CLV -- AJOUTÉ LE 27/08/2026 (audit v2
+    §L), RÉÉCRIT LE 27/08/2026 (audit v3 §P + §P-sémantique) après deux
+    bugs successifs sur la même fonction :
+
+    BUG 1 (§P) : `closing_lines.json` utilise une convention d'uid
+    (circuit_tournoi_joueurs) totalement disjointe de celle des courbes/
+    journaux (date_joueurs) -- intersection directe mesurée à 0/25. La
+    version précédente faisait `.get(uid)` en direct : elle ne s'est JAMAIS
+    déclenchée, un vrai no-op silencieux malgré des tests qui passaient
+    (mes tests utilisaient un uid PRIS DANS closing_lines.json lui-même,
+    donc auto-cohérents -- jamais un vrai uid de production). Corrigé ici
+    par une clé NATURELLE (match_key.natural_key, agnostique au format
+    d'uid) construite une fois pour tout closing_lines.json, mise en cache.
+
+    BUG 2 (§P, sémantique) : closing_lines[uid]['closing'] est un prix
+    PINNACLE (snapshots t25/t15/t7/t3), pas celui du book qui a servi à
+    parier -- l'utiliser directement aurait redéfini clv_book en clv_pin
+    SANS changer son nom, mélangé avec les anciennes valeurs dans le même
+    fichier. Corrigé : on n'emprunte à closing_lines QUE son TIMESTAMP fiable
+    (captured_at du dernier snapshot avant le départ), et on s'en sert pour
+    trancher la courbe DU BOOK lui-même -- la fraîcheur et la référence de
+    prix restent deux axes séparés, comme demandé.
+
+    Compteur de résolutions exposé via cloture_fiable_stats() -- "un
+    correctif qui échoue à 100% en silence est pire que pas de correctif"."""
     if 'd' not in _cache:
         try:
             _cache['d'] = json.load(open('closing_lines.json', encoding='utf-8'))
         except (OSError, ValueError):
             _cache['d'] = {}
-    c = (_cache['d'].get(uid) or {}).get('closing') or {}
-    if c.get('reliable') and c.get(side):
-        return c[side], 'closing_lines'
+        _cache['idx'] = {}
+        for k, v in _cache['d'].items():
+            nat = mk.natural_key(v.get('home', ''), v.get('away', ''),
+                                 v.get('commence_time'))
+            if nat[0]:
+                _cache['idx'][nat[0]] = k
+        _cache['resolus'] = 0
+        _cache['tentes'] = 0
+    _cache['tentes'] += 1
+    nat = mk.natural_key(home, away, commence_time)
+    cl_uid = _cache['idx'].get(nat[0]) if nat[0] else None
+    entree = _cache['d'].get(cl_uid) if cl_uid else None
+    c = (entree or {}).get('closing') or {}
+    if c.get('reliable') and c.get('captured_at') and curve:
+        prix = _dernier_avant(curve, c['captured_at'])
+        if prix:
+            _cache['resolus'] += 1
+            return prix, 'book_a_snapshot_fiable'
     if curve:
         return curve[-1][1], 'dernier_point'
     return None, None
+
+
+def cloture_fiable_stats():
+    """Compteur de résolutions -- appelé en fin de run, jamais silencieux."""
+    c = cloture_fiable.__defaults__[0]
+    t, r = c.get('tentes', 0), c.get('resolus', 0)
+    return r, t
 
 
 def settle_trade(t, data, result_side):
@@ -184,8 +232,19 @@ def settle_trade(t, data, result_side):
     sb = t['book']
     if sb in bk:
         ser = bk[sb]['h'] if side == 'home' else bk[sb]['a']
-        # CORRIGÉ LE 27/08/2026 (audit v2 §L) : cloture_fiable() en premier.
-        prix, source = cloture_fiable(t['uid'], side, ser)
+        # CORRIGÉ LE 27/08/2026 (audit v3 §P) : signature complète (home,
+        # away, commence, tournoi) -- l'ancienne version passait uid seul,
+        # inutilisable pour retrouver l'entrée closing_lines (voir docstring
+        # de cloture_fiable). bk['_commence'] est un EPOCH FLOAT (voir
+        # steam_alert._dt) -- natural_key() attend une chaîne ISO pour en
+        # extraire les 10 premiers caractères (YYYY-MM-DD) ; str(float)[:10]
+        # aurait donné les premiers chiffres du nombre, pas une date.
+        _ct = bk.get('_commence')
+        _ct_iso = (datetime.datetime.utcfromtimestamp(_ct).isoformat()
+                  if _ct else None)
+        prix, source = cloture_fiable(bk.get('_home', ''), bk.get('_away', ''),
+                                      _ct_iso, bk.get('_tour', ''),
+                                      side, ser)
         if prix:
             t['close_book'] = prix
             t['close_source'] = source   # traçabilité -- jamais deviner après coup
@@ -195,7 +254,34 @@ def settle_trade(t, data, result_side):
         t['pin_fair_close'] = round(fc if side == 'home' else 1 - fc, 4)
     if t.get('close_book') and t['close_book'] > 1:
         t['clv_book'] = round((t['entry_odds'] / t['close_book'] - 1) * 100, 2)
+    # AJOUTÉ LE 27/08/2026 (audit v3 §Q) : le VRAI test du biais de
+    # sélection -- pick_signal() prend le MAX sur ~20 books pour choisir
+    # l'entrée. clv_pin (ci-dessous) ne le teste PAS : même formule à
+    # l'entrée et à la clôture, corrélation quasi mécanique (l'audit a
+    # mesuré corr(clv_pin, pnl)=+0,178 sur n=45, et un %positif de 100% qui
+    # est la signature d'une métrique qui reproduit son propre filtre).
+    # clv_vs_median compare au book MÉDIAN parmi ceux actifs sur ce match --
+    # si clv_vs_median s'effondre pendant que clv_book reste haut, c'est la
+    # sélection du max qui gonfle le chiffre, pas un edge de marché.
+    cloture_autres = []
+    for _bkname, _bkval in bk.items():
+        if _bkname in (sa.SHARP, sb) or _bkname.startswith('_'):
+            continue
+        _ser = _bkval.get('h') if side == 'home' else _bkval.get('a')
+        if _ser:
+            cloture_autres.append(_ser[-1][1])
+    if cloture_autres and t.get('close_book'):
+        cloture_autres.append(t['close_book'])   # le book d'entrée compte aussi dans la médiane
+        med = st.median(cloture_autres)
+        if med > 1:
+            t['clv_vs_median'] = round((t['entry_odds'] / med - 1) * 100, 2)
+            t['n_books_median'] = len(cloture_autres)
     if t.get('pin_fair_close'):
+        # RENOMMÉ implicitement en pratique (audit v3 §Q) : ce champ reste
+        # nommé clv_pin pour ne pas casser l'historique déjà committé, mais
+        # ce N'EST PAS un CLV -- c'est l'EV au filtre d'entrée (EV_MIN_NOW),
+        # relue avec le même pin_fair à la clôture. Voir report_group() pour
+        # le libellé honnête affiché dans le rapport.
         t['clv_pin'] = round((t['entry_odds'] * t['pin_fair_close'] - 1) * 100, 2)
     # resultat + P&L (1 unite) selon le MARKET (match / set1 / set2)
     ws = result_side.get(t['uid'])
@@ -342,8 +428,13 @@ def main():
             if bk and bk.get('_commence') and bk['_commence'] < now:
                 src = data if t['uid'] in data else track
                 if settle_trade(t, src, result_side):
-                    n_settled += 1
-                    if t.get('status') == 'CLOSED_NO_RESULT':
+                    # CORRIGÉ LE 27/08/2026 (audit v3 §S) : settle_trade()
+                    # renvoie True pour SETTLED *et* CLOSED_NO_RESULT --
+                    # n_settled comptait donc des trades sans résultat, le
+                    # chiffre même qui sert à vérifier que le §A fonctionne.
+                    if t.get('status') == 'SETTLED':
+                        n_settled += 1
+                    else:
                         n_reste_a_regler += 1
             elif not bk:
                 n_reste_a_regler += 1
