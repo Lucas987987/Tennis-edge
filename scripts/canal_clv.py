@@ -50,6 +50,7 @@ import os, sys, json, csv, datetime, statistics as st, collections
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import oddspapi_v5 as ov
 import match_key as mk
+import curves_common as cc
 
 LOG     = os.environ.get('LOG', 'canal_public_log.jsonl')
 OUT     = os.environ.get('OUT', 'canal_clv_detail.csv')
@@ -109,20 +110,12 @@ def load_closes():
     records = []          # sert à construire l'index canonique des matchs
     sources = [('live', 'book_curves_live.jsonl'),
                ('hist', 'book_curves.jsonl')]   # nom legacy -> partitions via open_curves
-    # AJOUTÉ LE 28/08/2026 (audit v4 §U) : même pont anti-in-play que
-    # steam_alert.py et move_audit.py -- ce fichier alimente
-    # canal_clv_detail.csv, le CLV du produit RÉELLEMENT publié aux
-    # abonnés. En était dépourvu.
-    try:
-        _closing_lines = json.load(open('closing_lines.json', encoding='utf-8'))
-    except (OSError, ValueError):
-        _closing_lines = {}
-    _cl_idx = {}
-    for _k, _v in _closing_lines.items():
-        _nat = mk.natural_key(_v.get('home', ''), _v.get('away', ''),
-                              _v.get('commence_time'))
-        if _nat[0]:
-            _cl_idx[_nat] = _k
+    # AJOUTÉ LE 28/08/2026 (audit v4 §U), CORRIGÉ LE 28/08/2026 (audit v5
+    # §AA -- voir curves_common.cherche_avec_tolerance()) : pont commun
+    # avec steam_alert/paper_journal/move_audit, une seule copie. Ce
+    # fichier alimente canal_clv_detail.csv, le CLV du produit RÉELLEMENT
+    # publié aux abonnés.
+    _closing_lines, _cl_idx = cc.build_closing_index()
     _croises_resolus, _croises_tentes = 0, 0
     for origine, p in sources:
         try:
@@ -140,7 +133,7 @@ def load_closes():
             _croises_tentes += 1
             _nat_r = mk.natural_key(r.get('home', ''), r.get('away', ''),
                                     r.get('commence_time'))
-            _cl_uid = _cl_idx.get(_nat_r) if _nat_r[0] else None
+            _cl_uid = cc.cherche_avec_tolerance(_cl_idx, _nat_r)
             ct_croise = _dt((_closing_lines.get(_cl_uid) or {}).get('commence_time')) \
                 if _cl_uid else None
             if ct_croise:
