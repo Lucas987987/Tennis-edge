@@ -42,6 +42,15 @@ jobs:
             !/parts
             /parts/pm_ticks_*
             /parts/kx_ticks_*
+            /parts/hist_book_*
+          # CORRIGÉ LE 28/08/2026 (audit v7 §AJ) : /parts/hist_book_* manquait
+          # -- les 5 études croisent les ticks Polymarket/Kalshi avec les
+          # courbes Pinnacle, c'est tout leur objet, et sans ces partitions
+          # elles chargent 2,3 millions de ticks pour les comparer à zéro
+          # courbe. Ironie assumée : c'est ma propre recommandation de la
+          # passe 2 (réduire le sparse-checkout pour tenir le budget temps)
+          # qui a cassé les études qu'elle devait rendre exécutables --
+          # ~300 Mo ajoutés, large marge sous les 60 minutes.
           sparse-checkout-cone-mode: false
       - uses: actions/setup-python@v5
         with:
@@ -63,11 +72,21 @@ jobs:
           done
           echo '```' >> polymarket_studies_report.md
           test -s polymarket_studies_report.md
+          # AJOUTÉ LE 28/08/2026 (audit v7 §AJ) : `test -s` vérifie que le
+          # fichier n'est pas vide -- un rapport avec 5 ❌ le passe sans
+          # problème, et le commit part silencieusement. Même motif que Q3
+          # avant son propre correctif, sauf qu'ici l'info est déjà écrite
+          # en clair dans le rapport ; il manquait juste quelqu'un pour la
+          # compter. Écrit dans un fichier committé, relu par
+          # pipeline_status.py -- même schéma que q3_status.json.
+          n_echecs=$(grep -c "❌" polymarket_studies_report.md || true)
+          alerte=$(python3 -c "print($n_echecs > 0)")
+          python3 -c "import json; json.dump({'n_echecs': $n_echecs, 'alerte': $alerte}, open('polymarket_studies_status.json', 'w'), ensure_ascii=False, indent=1)"
       - name: Committer le rapport
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add -- polymarket_studies_report.md
+          git add -- polymarket_studies_report.md polymarket_studies_status.json
           git diff --staged --quiet && { echo "rien de neuf"; exit 0; }
           git commit -m "Études Polymarket/Kalshi ($(date -u +%F))"
           for essai in 1 2 3; do
