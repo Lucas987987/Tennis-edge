@@ -1,46 +1,49 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""clv_vs_median_offline.py — Répond au §E MAINTENANT, sur les moves
-historiques au lieu d'attendre des semaines le journal forward (audit v4
-§Y, RÉÉCRIT LE 28/08/2026 après l'audit v5 §AB qui a trouvé deux défauts
-graves dans la version d'hier).
+"""clv_vs_median_offline.py — Répond au §E : la sélection du meilleur book
+explique-t-elle le CLV mesuré, ou le marché bouge-t-il vraiment ? (v1 audit
+v4 §Y, réécrit v2 audit v5 §AB, réécrit v3 audit v6 §AF/§AG/§AE.)
 
-Le §E posait la question : pick_signal() choisit le book au prix le PLUS
-HAUT parmi ~20 -- le CLV mesuré est-il gonflé par cette sélection, ou
-reflète-t-il un vrai edge de marché ? clv_vs_median (ajouté dans
-paper_journal.py) répond à ça, mais n'existe que sur les paris du journal
-forward -- il faudra n>=30 nouveaux paris pour dire quoi que ce soit.
-moves_detail_hist.csv a la même info sur ~900 lignes.
+CE QUE LA VERSION D'HIER (§AF) COMPARAIT MAL : clv_book (entrée vs clôture
+du book CHOISI, le max) contre clv_median (entrée vs clôture MÉDIANE).
+L'entrée est un maximum sur ~20 books ; la médiane à la clôture est donc
+mécaniquement inférieure à la clôture du meilleur book, indépendamment de
+tout mouvement de marché -- l'écart mesuré mélangeait deux effets sans les
+séparer.
 
-CE QUI ÉTAIT CASSÉ HIER (audit v5 §AB), et pourquoi la réécriture :
-1. Le côté (home/away) était DEVINÉ en comparant le dernier point BRUT du
-   book d'entrée au clv_book_pct déjà calculé (lui-même sur courbe
-   TRONQUÉE au pré-match) -- un move n'était gardé QUE si le marché n'avait
-   pas bougé après le coup d'envoi. Conséquence : 44/923 appariés (4,8%),
-   un échantillon sélectionné par un critère CORRÉLÉ au phénomène étudié
-   (la liquidité/couverture in-play), pas un échantillon aléatoire.
-   Corrigé : côté identifié par les NOMS (mk._toks, comme partout ailleurs
-   dans le dépôt), indépendant de ce qui s'est passé après le coup d'envoi.
-2. La médiane des AUTRES books utilisait leur dernier point BRUT (in-play
-   compris), pendant que le numérateur (entry) est pré-match -- comparaison
-   non homogène. Corrigé : troncature pré-match sur TOUTES les courbes,
-   via curves_common (même pont commence_time croisé que les 4 autres
-   fichiers du dépôt).
+LA DÉCOMPOSITION QUI RÉPOND VRAIMENT AU §E (audit v6 §AG) :
+  PRIME DE SÉLECTION = entry / médiane À L'ENTRÉE (même instant, isole le
+                        choix du meilleur book)
+  DÉRIVE DU MARCHÉ    = médiane À L'ENTRÉE / médiane À LA CLÔTURE (isole
+                        le mouvement du marché, book identique des 2 côtés)
+  TOTAL = PRIME x DÉRIVE (approximativement, en %) = ce que clv_book mesure
+
+L'instant d'entrée est reconstruit via `commence_time - lead_min` (les deux
+sont dans moves_detail_hist.csv / la partition source).
+
+Écrit clv_vs_median_report.json (audit v6 §AE : un rapport en stdout non
+committé, c'est la situation exacte de Q3 avant son correctif -- resté non
+lu deux mois et demi).
 
 Usage : python scripts/clv_vs_median_offline.py
 """
 import csv
+import datetime
 import glob
 import gzip
 import json
 import math
 import os
+import random
 import statistics as st
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import match_key as mk
 import curves_common as cc
+
+SEUIL_PERTINENCE_PTS = 1.0   # audit v6 §AF.2 : un écart <1pt n'est pas actionnable
+                             # même si l'IC l'exclut de zéro -- il faut les DEUX.
 
 
 def _ouvrir(p):
@@ -49,31 +52,71 @@ def _ouvrir(p):
 
 
 def _dt(s):
-    """Conversion ISO -> epoch float. Copie locale volontaire (comme
-    steam_alert/move_audit/canal_clv en ont chacune une) -- curves_common
-    ne réimplémente pas le parsing de date, voir sa docstring."""
+    """Copie locale volontaire, voir curves_common.py."""
     if not s:
         return None
     try:
         from datetime import datetime
-        s2 = str(s).replace('Z', '').replace('+00:00', '')
-        return datetime.fromisoformat(s2).timestamp()
+        return datetime.fromisoformat(str(s).replace('Z', '').replace('+00:00', '')).timestamp()
     except (ValueError, TypeError):
         return None
 
 
-def charge_courbes_par_cle(closing_lines, cl_idx):
-    """{clé_naturelle: {'_home':, '_away':, book: dernier_prix_PRÉ-MATCH}}
+def _cote_par_noms(steame, home, away):
+    """Identifie le côté PAR LES NOMS -- CORRIGÉ LE 28/08/2026 (audit v6
+    §AH) : la version d'hier renvoyait 'h' dès que th matchait, SANS
+    vérifier que ta ne matchait pas AUSSI -- exactement l'ambiguïté
+    (Zverev/Zverev, Wu/Wu) que l'étape 4 de match_key.py avait pour raison
+    d'être retirée en passe 3. Risque plus faible ici (comparaison intra-
+    match, pas inter-matchs) mais le principe est le même partout dans ce
+    dépôt : tester LES DEUX côtés, ne renvoyer que si un seul correspond."""
+    ts = mk._toks(steame)
+    th, ta = mk._toks(home), mk._toks(away)
+    ih = bool(ts and th and (ts <= th or th <= ts))
+    ia = bool(ts and ta and (ts <= ta or ta <= ts))
+    if ih and not ia:
+        return 'h'
+    if ia and not ih:
+        return 'a'
+    return None   # ambigu (ou aucun match) -> on refuse, comme partout ailleurs
 
-    Un seul point par book (pas la courbe entière -- mémoire), mais ce
-    point est maintenant le dernier AVANT commence_time (croisé via
-    curves_common, comme steam_alert/move_audit/canal_clv), pas le dernier
-    point brut. C'est le correctif §AB.2 : numérateur et dénominateur
-    doivent obéir à la même règle de troncature."""
+
+def _point_a_ou_avant(points, ts_limite):
+    """Dernier point de `points` (liste de (epoch, prix)) daté <= ts_limite."""
+    meilleur = None
+    for t, prix in points:
+        if t <= ts_limite and (meilleur is None or t > meilleur[0]):
+            meilleur = (t, prix)
+    return meilleur[1] if meilleur else None
+
+
+def charge_moves():
+    moves = []
+    for r in csv.DictReader(open('moves_detail_hist.csv', encoding='utf-8')):
+        try:
+            entry = float(r['entry'])
+            lead_min = float(r['lead_min'])
+        except (ValueError, KeyError, TypeError):
+            continue
+        nat = mk.natural_key(r.get('steame', ''), r.get('opp', ''), r.get('date'))
+        if not nat[0]:
+            continue
+        moves.append({'nat': nat, 'entry': entry, 'lead_min': lead_min,
+                      'steame': r.get('steame', ''), 'opp': r.get('opp', '')})
+    return moves
+
+
+def charge_courbes(besoins, closing_lines, cl_idx):
+    """Ne charge QUE les matchs présents dans `besoins` (les clés naturelles
+    des moves) -- pas toute la base, pour rester léger en mémoire tout en
+    gardant les courbes complètes (pas juste le dernier point, il faut
+    pouvoir chercher le prix À L'INSTANT DE L'ENTRÉE, pas seulement à la
+    clôture)."""
     out = {}
     fichiers = sorted(glob.glob('parts/hist_book_*.jsonl') +
                       glob.glob('parts/hist_book_*.jsonl.gz'))
-    print(f'  {len(fichiers)} partitions à charger...')
+    print(f'  {len(fichiers)} partitions à charger (filtrées aux {len(besoins)} '
+         f'matchs nécessaires)...')
     n_croises_tentes, n_croises_resolus = 0, 0
     for f in fichiers:
         with _ouvrir(f) as fh:
@@ -85,12 +128,12 @@ def charge_courbes_par_cle(closing_lines, cl_idx):
                 hc, ac = r.get('home_curve'), r.get('away_curve')
                 if not hc or not ac:
                     continue
-                ct = _dt(r.get('commence_time'))
-                if ct is None:
-                    continue
                 nat = mk.natural_key(r.get('home', ''), r.get('away', ''),
                                      r.get('commence_time'))
-                if not nat[0]:
+                if nat not in besoins:
+                    continue
+                ct = _dt(r.get('commence_time'))
+                if ct is None:
                     continue
                 n_croises_tentes += 1
                 cl_uid = cc.cherche_avec_tolerance(cl_idx, nat)
@@ -104,128 +147,154 @@ def charge_courbes_par_cle(closing_lines, cl_idx):
                 a_pre = cc.tronque_prematch(ac, ct, _dt)
                 if not h_pre or not a_pre:
                     continue
-                try:
-                    ph, pa = float(h_pre[-1][1]), float(a_pre[-1][1])
-                except (TypeError, ValueError, IndexError):
+                h_pts = [(_dt(p[0]), float(p[1])) for p in h_pre
+                        if _dt(p[0]) is not None]
+                a_pts = [(_dt(p[0]), float(p[1])) for p in a_pre
+                        if _dt(p[0]) is not None]
+                if not h_pts or not a_pts:
                     continue
                 m = out.setdefault(nat, {'_home': r.get('home', ''),
-                                         '_away': r.get('away', '')})
-                m[r.get('book')] = {'h': ph, 'a': pa}
+                                         '_away': r.get('away', ''), '_ct': ct})
+                m[r.get('book')] = {'h': h_pts, 'a': a_pts}
     if n_croises_tentes:
         print(f'  commence_time croisé sur {n_croises_resolus}/{n_croises_tentes} '
              f'lignes ({100*n_croises_resolus/n_croises_tentes:.0f}%)')
     return out
 
 
-def _cote_par_noms(steame, home, away):
-    """Identifie le côté (home/away) PAR LES NOMS -- audit v5 §AB.1. La
-    version d'hier devinait le côté via un test numérique corrélé au
-    phénomène étudié (voir docstring du module). Même comparaison tolérante
-    que match_key.py (inclusion d'ensembles) pour couvrir les prénoms
-    abrégés d'un côté du CSV et pas de l'autre."""
-    ts = mk._toks(steame)
-    th, ta = mk._toks(home), mk._toks(away)
-    if ts and th and (ts <= th or th <= ts):
-        return 'h'
-    if ts and ta and (ts <= ta or ta <= ts):
-        return 'a'
-    return None
+def _ic_bootstrap(valeurs, n_boot=3000, graine=2026828):
+    n = len(valeurs)
+    if n < 8:
+        return st.median(valeurs) if valeurs else 0.0, None, None
+    rng = random.Random(graine)
+    tirages = []
+    for _ in range(n_boot):
+        sel = [valeurs[rng.randrange(n)] for _ in range(n)]
+        tirages.append(st.median(sel))
+    tirages.sort()
+    return st.median(valeurs), tirages[int(0.025 * n_boot)], tirages[int(0.975 * n_boot) - 1]
+
+
+def _verdict(label, med, lo, hi):
+    """CORRIGÉ (audit v6 §AF.2) : IC qui exclut 0 ET taille d'effet >= seuil
+    de pertinence -- l'un sans l'autre ne suffit pas. À n=661 sur une
+    quantité quasi déterministe, un écart de 0,05 pt sortait déjà de l'IC
+    hier ; ça ne le rendait pas actionnable."""
+    if lo is None:
+        return f'{label} : médiane {med:+.2f}% (n trop petit pour un IC)'
+    pertinent = abs(med) >= SEUIL_PERTINENCE_PTS
+    exclut_zero = lo > 0 or hi < 0
+    if pertinent and exclut_zero:
+        tag = '✅ effet réel et pertinent'
+    elif exclut_zero:
+        tag = f'⚠️ IC exclut 0 mais |médiane|<{SEUIL_PERTINENCE_PTS}pt -- pas actionnable'
+    else:
+        tag = '— IC traverse 0, non démontré'
+    return f'{label} : médiane {med:+.2f}% [IC95 {lo:+.2f}, {hi:+.2f}] -> {tag}'
 
 
 def main():
-    print('PONT CLV -> P&L : clv_vs_median calculé hors ligne (§Y, réécrit §AB)')
+    print('PONT CLV -> P&L : décomposition prime de sélection / dérive du marché (§E, §AG)')
     closing_lines, cl_idx = cc.build_closing_index()
-    print('  chargement des courbes multi-books par clé naturelle...')
-    courbes = charge_courbes_par_cle(closing_lines, cl_idx)
-    print(f'  {len(courbes)} matchs indexés')
+    moves = charge_moves()
+    besoins = {mv['nat'] for mv in moves}
+    print(f'  {len(moves)} moves | {len(besoins)} matchs distincts à charger')
+    courbes = charge_courbes(besoins, closing_lines, cl_idx)
+    print(f'  {len(courbes)} matchs trouvés dans les partitions')
 
     lignes = []
-    n_lignes, n_apparies, n_cote_inconnu, n_moins_de_3_books = 0, 0, 0, 0
-    for r in csv.DictReader(open('moves_detail_hist.csv', encoding='utf-8')):
-        n_lignes += 1
-        try:
-            entry = float(r['entry'])
-            clv_book_pct = float(r['clv_book_pct'])
-        except (ValueError, KeyError):
-            continue
-        nat = mk.natural_key(r.get('steame', ''), r.get('opp', ''), r.get('date'))
-        m = courbes.get(nat)
+    n_cote_inconnu, n_incomplet = 0, 0
+    for mv in moves:
+        m = courbes.get(mv['nat'])
         if not m:
+            n_incomplet += 1
             continue
-        side = _cote_par_noms(r.get('steame', ''), m.get('_home', ''), m.get('_away', ''))
+        side = _cote_par_noms(mv['steame'], m.get('_home', ''), m.get('_away', ''))
         if side is None:
             n_cote_inconnu += 1
             continue
-        clotures = []
+        ct = m['_ct']
+        instant_entree = ct - mv['lead_min'] * 60
+
+        prix_entree, prix_cloture = [], []
         for bkname, bkval in m.items():
             if bkname.startswith('_') or bkname == 'pinnacle':
                 continue
-            prix = bkval.get(side)
-            if prix and prix > 1:
-                clotures.append(prix)
-        if len(clotures) < 3:
-            n_moins_de_3_books += 1
+            pts = bkval.get(side)
+            if not pts:
+                continue
+            pe = _point_a_ou_avant(pts, instant_entree)
+            pc = pts[-1][1]   # déjà tronqué au pré-match (clôture)
+            if pe and pe > 1:
+                prix_entree.append(pe)
+            if pc and pc > 1:
+                prix_cloture.append(pc)
+        if len(prix_entree) < 3 or len(prix_cloture) < 3:
+            n_incomplet += 1
             continue
-        med = st.median(clotures)
-        if med <= 1:
-            continue
-        n_apparies += 1
-        clv_median = (entry / med - 1) * 100
-        lignes.append({'clv_book': clv_book_pct, 'clv_median': clv_median,
-                       'n_books': len(clotures)})
 
-    print(f'\n  {n_lignes} moves | côté résolu par les noms : '
-         f'{n_lignes - n_cote_inconnu}/{n_lignes}')
-    print(f'  côté non résolu (noms) : {n_cote_inconnu} | <3 books : {n_moins_de_3_books} '
-         f'| appariés au final : {n_apparies}')
-    if n_apparies < 30:
-        print('\n  trop tôt pour conclure (<30 appariés).')
+        med_entree = st.median(prix_entree)
+        med_cloture = st.median(prix_cloture)
+        if med_entree <= 1 or med_cloture <= 1:
+            continue
+
+        prime = (mv['entry'] / med_entree - 1) * 100
+        derive = (med_entree / med_cloture - 1) * 100
+        lignes.append({'prime': prime, 'derive': derive,
+                       'n_entree': len(prix_entree), 'n_cloture': len(prix_cloture)})
+
+    n = len(lignes)
+    print(f'\n  {n_cote_inconnu} côté(s) ambigu(s)/inconnu(s) (audit v6 §AH) | '
+         f'{n_incomplet} match(s) incomplet(s) (<3 books à l\'entrée ET/ou à la clôture)')
+    print(f'  {n} moves exploitables (>= 3 books à l\'entrée ET à la clôture)')
+
+    rapport = {
+        'genere_le': datetime.datetime.now(datetime.timezone.utc).isoformat(),
+        'n_moves_total': len(moves), 'n_cote_ambigu': n_cote_inconnu,
+        'n_incomplet': n_incomplet, 'n_exploitables': n,
+    }
+
+    if n < 30:
+        print('\n  trop tôt pour conclure (<30 exploitables).')
+        rapport['verdict'] = 'trop_tot'
+        json.dump(rapport, open('clv_vs_median_report.json', 'w', encoding='utf-8'),
+                  ensure_ascii=False, indent=1)
         return
 
-    cb = [x['clv_book'] for x in lignes]
-    cm = [x['clv_median'] for x in lignes]
-    n = len(lignes)
-    ecarts = [b - m_ for b, m_ in zip(cb, cm)]
-    ecart_median = st.median(ecarts)
-    # IC bootstrap sur l'écart (même discipline que validation_report.py --
-    # une approximation normale sur un échantillon possiblement asymétrique
-    # a déjà produit un faux résultat une fois aujourd'hui, ailleurs dans
-    # ce dépôt -- pas la peine de répéter l'erreur ici).
-    import random
-    rng = random.Random(2026828)
-    tirages = []
-    for _ in range(3000):
-        sel = [ecarts[rng.randrange(n)] for _ in range(n)]
-        tirages.append(st.median(sel))
-    tirages.sort()
-    ic_lo, ic_hi = tirages[int(0.025 * 3000)], tirages[int(0.975 * 3000) - 1]
+    primes = [x['prime'] for x in lignes]
+    derives = [x['derive'] for x in lignes]
 
-    print(f'\n  clv_book  (vs clôture du book d\'entrée) : médiane {st.median(cb):+.2f}% '
-         f'| %positif {100*sum(1 for x in cb if x>0)/n:.0f}%')
-    print(f'  clv_median(vs book MÉDIAN pré-match, n>=3): médiane {st.median(cm):+.2f}% '
-         f'| %positif {100*sum(1 for x in cm if x>0)/n:.0f}%')
-    print(f'\n  écart médian (clv_book - clv_median) : {ecart_median:+.2f} pts '
-         f'[IC95 bootstrap {ic_lo:+.2f}, {ic_hi:+.2f}] (n={n})')
-    # CORRIGÉ (audit v5 §AB.4) : plus d'affirmation catégorique "pas de
-    # signature" -- l'IC dit ce qu'il dit, on le rapporte sans conclure à
-    # sa place.
-    if ic_lo > 0:
-        print('  IC95 exclut 0, entièrement positif -- clv_book semble '
-             'systématiquement gonflé par la sélection du book max.')
-    elif ic_hi < 0:
-        print('  IC95 exclut 0, entièrement négatif (inattendu, à creuser).')
-    else:
-        print('  IC95 traverse 0 -- pas encore démontré à ce n, ni dans un '
-             'sens ni dans l\'autre.')
+    mp, lop, hip = _ic_bootstrap(primes)
+    md, lod, hid = _ic_bootstrap(derives)
+    total_med = ((1 + mp / 100) * (1 + md / 100) - 1) * 100
 
-    par_n = {}
-    for x in lignes:
-        par_n.setdefault(min(x['n_books'], 10), []).append(x['clv_median'])
-    print('\n  Répartition par nombre de books dans la médiane :')
-    for nb in sorted(par_n):
-        v = par_n[nb]
-        print(f'    n_books={nb}{"+" if nb==10 else ""} : {len(v)} moves | '
-             f'clv_median médian {st.median(v):+.1f}%')
+    ligne_prime = _verdict('PRIME DE SELECTION (entry / mediane a entree)', mp, lop, hip)
+    ligne_derive = _verdict('DERIVE DU MARCHE (mediane entree / mediane cloture)', md, lod, hid)
+    print(f'\n  {ligne_prime}')
+    print(f'  {ligne_derive}')
+    print(f'\n  TOTAL (prime x dérive, ce que clv_book mesure) : {total_med:+.2f}%')
+    if abs(mp) > 1e-9:
+        part_prime = 100 * mp / (mp + md) if (mp + md) else 0
+        print(f'  part de la prime de sélection dans le total : ~{part_prime:.0f}%')
+
+    print(f'  %positif prime : {100*sum(1 for x in primes if x>0)/n:.0f}% | '
+         f'%positif dérive : {100*sum(1 for x in derives if x>0)/n:.0f}%')
+    print('\n  Rappel : ceci mesure la VALIDITÉ du CLV, pas le profit -- le '
+         'journal forward reste la seule mesure directe du ROI.')
+
+    rapport.update({
+        'verdict': 'calcule',
+        'prime_selection_pct': round(mp, 3), 'prime_ic95': [round(lop, 3), round(hip, 3)],
+        'derive_marche_pct': round(md, 3), 'derive_ic95': [round(lod, 3), round(hid, 3)],
+        'total_pct': round(total_med, 3),
+        'part_prime_pct': round(part_prime, 1) if abs(mp) > 1e-9 else None,
+        'pct_positif_prime': round(100*sum(1 for x in primes if x>0)/n, 1),
+        'pct_positif_derive': round(100*sum(1 for x in derives if x>0)/n, 1),
+    })
+    json.dump(rapport, open('clv_vs_median_report.json', 'w', encoding='utf-8'),
+              ensure_ascii=False, indent=1)
+    print('\n  -> clv_vs_median_report.json écrit (audit v6 §AE : plus de '
+         'rapport perdu en stdout).')
 
 
 if __name__ == '__main__':
