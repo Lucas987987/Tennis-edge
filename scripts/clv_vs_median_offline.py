@@ -311,12 +311,23 @@ def main():
     print(f'\n  TOTAL = clv_vs_median (entry / mediane cloture, mediane des '
          f'totaux par move) : {mt:+.2f}% [IC95 {lot:+.2f}, {hit:+.2f}]')
     med_clv_book = st.median(clv_books)
-    ecart_book_median = med_clv_book - mt
     print(f'  clv_book_pct (entry / cloture du book D\'ENTRÉE, pour comparaison) : '
          f'{med_clv_book:+.2f}%')
-    print(f'  écart clv_book - clv_vs_median : {ecart_book_median:+.2f}pt -- ce '
-         f'que coûte (ou rapporte) de rester au book d\'entrée plutôt que d\'être '
-         f'au médian jusqu\'à la clôture.')
+    # CORRIGÉ LE 28/08/2026 (audit v8 §AN) : cette ligne répétait EXACTEMENT
+    # l'erreur que le §AK.1 venait de corriger trois lignes plus haut --
+    # médiane(a) - médiane(b) au lieu de médiane(a - b). La question posée
+    # ("que coûte de rester au book d'entrée ?") est une quantité PAR PARI,
+    # donc appariée par construction -- une différence de deux médianes
+    # agrégées séparément ne répond pas à cette question. Mesuré : l'écart
+    # affiché était 7x trop grand (différence de médianes -0,36pt contre
+    # médiane des différences -0,05pt, IC [-0,32, -0,01]).
+    ecarts_pairs = [cb - x['total'] for cb, x in zip(clv_books, lignes)]
+    ecart_book_median, lo_e, hi_e = _ic_bootstrap(ecarts_pairs)
+    ligne_ecart = _verdict('écart clv_book - clv_vs_median (par pari, apparié)',
+                           ecart_book_median, lo_e, hi_e)
+    print(f'  {ligne_ecart}')
+    print(f'  (ce que coûte, ou rapporte, de rester au book d\'entrée plutôt '
+         f'que d\'être au médian jusqu\'à la clôture)')
     # CORRIGÉ (audit v7 §AK.3) : dénominateur = le total RÉEL affiché
     # (mt), pas mp+md qui n'est ni le total multiplicatif d'hier ni celui-ci.
     part_prime = 100 * mp / mt if abs(mt) > 1e-9 else None
@@ -354,6 +365,7 @@ def main():
         'total_clv_vs_median_pct': round(mt, 3), 'total_ic95': [round(lot, 3), round(hit, 3)],
         'clv_book_pct_median': round(med_clv_book, 3),
         'ecart_book_vs_median_pct': round(ecart_book_median, 3),
+        'ecart_book_vs_median_ic95': [round(lo_e, 3), round(hi_e, 3)],
         'part_prime_pct': round(part_prime, 1) if part_prime is not None else None,
         'pct_positif_prime': round(100*sum(1 for x in primes if x>0)/n, 1),
         'pct_positif_derive': round(100*sum(1 for x in derives if x>0)/n, 1),
