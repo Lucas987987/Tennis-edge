@@ -188,6 +188,26 @@ def main():
         pm_studies = json.load(open('polymarket_studies_status.json', encoding='utf-8'))
     except (OSError, ValueError):
         pass
+    # AJOUTÉ LE 28/08/2026 (audit v8 §AO) : ce statut est écrit par un AUTRE
+    # workflow (polymarket_studies.yml, 04h20 UTC), pas celui-ci -- s'il
+    # s'arrête de tourner, ce fichier reste sur disque tel quel et
+    # afficherait indéfiniment le dernier statut connu comme s'il était
+    # frais. Le concept existe déjà dans ce script pour les livrables
+    # "externe" (fraîcheur inconnue = casse silencieuse en soi) ; appliqué
+    # ici à la main faute de pouvoir facilement transformer pm_studies en
+    # entrée de `rows`. Seuil 36h : le cycle normal est ~20h entre les deux
+    # workflows, marge pour un jour manqué sans fausse alerte.
+    if pm_studies and pm_studies.get('genere_le'):
+        try:
+            genere = datetime.datetime.fromisoformat(
+                pm_studies['genere_le'].replace('Z', '+00:00'))
+            age_h = (datetime.datetime.now(datetime.timezone.utc) - genere).total_seconds() / 3600
+            pm_studies['age_heures'] = round(age_h, 1)
+            pm_studies['fraicheur_inconnue_ou_perimee'] = age_h > 36
+        except (ValueError, TypeError):
+            pm_studies['fraicheur_inconnue_ou_perimee'] = True
+    elif pm_studies:
+        pm_studies['fraicheur_inconnue_ou_perimee'] = True   # pas de genere_le -> ancien format, méfiance
 
     payload = {
         'run_termine': datetime.datetime.utcnow().isoformat(timespec='seconds'),
@@ -218,6 +238,37 @@ def main():
         L.append('> ⛔ **Zone rouge** — une partition approche le mur GitHub de 100 Mo :')
         for z in parts['zone_rouge']:
             L.append(f"> - `{z['fichier']}` : {z['mo']} Mo")
+    # AJOUTÉ LE 28/08/2026 (audit v8 §AP, le correctif au meilleur rapport
+    # effort/valeur des huit passes selon l'audit lui-même) : q3, clv_median
+    # et pm_studies étaient chargés dans `payload` (le JSON) mais JAMAIS
+    # ajoutés à `L` (le Markdown) -- l'alerte remontait jusqu'au fichier
+    # committé et s'arrêtait UNE case avant le fichier que Lucas regarde
+    # réellement sur GitHub. Quatre correctifs différents (§S, §AE, §AJ)
+    # avaient fait remonter une alerte d'un log vers un JSON ; aucun n'avait
+    # fait le dernier pas jusqu'au .md. Défensif sur les clés (.get partout)
+    # : un JSON d'un format antérieur ne doit jamais faire planter ce script.
+    L.append('')
+    if q3:
+        etat = '⚠️' if q3.get('alerte') else '✅'
+        pct = q3.get('pct_ecarts')
+        L.append(f"{etat} **Qualité de clôture (Q3)** : "
+                 f"{pct if pct is not None else '?'} % d'écarts > 3 % "
+                 f"({q3.get('ecarts_gt_3pct', '?')}/{q3.get('n_total', '?')}), "
+                 f"seuil {q3.get('seuil_pct', '?')} %")
+    if clv_median and clv_median.get('verdict') == 'calcule':
+        L.append(f"**CLV décomposé** : prime {clv_median.get('prime_selection_pct', 0):+.2f} % · "
+                 f"dérive {clv_median.get('derive_marche_pct', 0):+.2f} % · "
+                 f"part de la sélection {clv_median.get('part_prime_pct', '?')} % "
+                 f"(n={clv_median.get('n_exploitables', '?')})")
+    if pm_studies:
+        if pm_studies.get('fraicheur_inconnue_ou_perimee'):
+            L.append(f"⏳ **Études Polymarket** : statut périmé ou sans date "
+                     f"(âge {pm_studies.get('age_heures', '?')}h) -- le "
+                     f"producteur (polymarket_studies.yml) tourne-t-il encore ?")
+        else:
+            etat = '⚠️' if pm_studies.get('alerte') else '✅'
+            L.append(f"{etat} **Études Polymarket** : {pm_studies.get('n_echecs', '?')} échec(s) "
+                     f"(il y a {pm_studies.get('age_heures', '?')}h)")
     L.append('')
     L.append('Légende : ✅ produit pendant ce run · ⏳ présent mais non réécrit '
              '(le script n\'a rien produit) · ⚠️ vide ou réduit à son en-tête · ❌ absent.')
@@ -253,10 +304,28 @@ def main():
                 return True
             return bool(r.get('externe')) and r['verdict'].startswith('⏳')
         ko_dur = [r for r in rows if _ko(r)]
-        if ko_dur:
-            print(f"\n🔒 STRICT : {len(ko_dur)} livrable(s) critique(s) en défaut -> exit 1")
+        # AJOUTÉ LE 28/08/2026 (audit v8 §AP) : q3['alerte'] et
+        # pm_studies['alerte'] existaient précisément pour signaler un
+        # problème et n'étaient lus par AUCUN script ni workflow -- écrits
+        # trois fois, lus zéro fois. --strict est le seul mécanisme du
+        # dépôt qui rend un run rouge ; il ne regardait jusqu'ici que la
+        # présence/fraîcheur des fichiers, jamais leur contenu.
+        alertes_contenu = []
+        if q3 and q3.get('alerte'):
+            alertes_contenu.append(f"Q3 : {q3.get('pct_ecarts', '?')}% d'écarts "
+                                   f"(seuil {q3.get('seuil_pct', '?')}%)")
+        if pm_studies and pm_studies.get('fraicheur_inconnue_ou_perimee'):
+            alertes_contenu.append("Polymarket : statut périmé ou sans date -- "
+                                   "le producteur tourne-t-il encore ?")
+        elif pm_studies and pm_studies.get('alerte'):
+            alertes_contenu.append(f"Polymarket : {pm_studies.get('n_echecs', '?')} échec(s)")
+        if ko_dur or alertes_contenu:
+            print(f"\n🔒 STRICT : {len(ko_dur)} livrable(s) critique(s) en défaut, "
+                 f"{len(alertes_contenu)} alerte(s) de contenu -> exit 1")
             for r in ko_dur:
                 print(f"   {r['verdict']} {r['fichier']}")
+            for a in alertes_contenu:
+                print(f"   ⚠️ {a}")
             sys.exit(1)
         print("\n🔒 STRICT : tous les livrables critiques sont présents, non vides, et leurs producteurs externes sont vivants.")
 
