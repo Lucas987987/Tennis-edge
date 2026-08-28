@@ -180,6 +180,15 @@ def main():
     except (OSError, ValueError):
         pass
 
+    # AJOUTÉ LE 28/08/2026 (audit v7 §AJ) : polymarket_studies.yml commite
+    # son rapport dès que `test -s` passe -- un rapport avec 5 échecs sur 5
+    # le passait sans que rien ne le signale. Même motif Q3/CLV.
+    pm_studies = None
+    try:
+        pm_studies = json.load(open('polymarket_studies_status.json', encoding='utf-8'))
+    except (OSError, ValueError):
+        pass
+
     payload = {
         'run_termine': datetime.datetime.utcnow().isoformat(timespec='seconds'),
         'run_demarre': started.isoformat(timespec='seconds'),
@@ -188,6 +197,7 @@ def main():
         'partitions': parts,
         'q3_qualite_cloture': q3,
         'clv_vs_median': clv_median,
+        'polymarket_studies': pm_studies,
     }
     json.dump(payload, open(OUT_JSON, 'w', encoding='utf-8'),
               ensure_ascii=False, indent=2)
