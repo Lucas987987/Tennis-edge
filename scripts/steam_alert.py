@@ -22,6 +22,7 @@ Env : TELEGRAM_TOKEN, TELEGRAM_CHAT_ID (sinon DRY_RUN auto), CURVES, STATE,
 import json, os, urllib.request, urllib.parse, statistics as st, re, unicodedata
 import oddspapi_v5 as ov
 import match_key as mk
+import curves_common as cc
 from datetime import datetime, timezone
 
 MARKET = os.environ.get('MARKET', 'match').lower()
@@ -130,25 +131,11 @@ def load_curves(path=None):
               f"checkout (sparse ?) ou le chemin.")
         return data
     # AJOUTÉ LE 27/08/2026 (audit v2 §M), CORRIGÉ LE 27/08/2026 (audit v3
-    # §P) : `_closing_lines.get(r['uid'])` ne s'est JAMAIS déclenché --
-    # closing_lines.json utilise la convention circuit_tournoi_joueurs,
-    # book_curves utilise date_joueurs, intersection directe mesurée à
-    # 0/40. Même correctif que paper_journal.cloture_fiable() : un index
-    # par CLÉ NATURELLE (match_key.natural_key, agnostique au format
-    # d'uid), construit UNE FOIS avant la boucle (pas à chaque ligne).
-    try:
-        _closing_lines = json.load(open('closing_lines.json', encoding='utf-8'))
-    except (OSError, ValueError):
-        _closing_lines = {}
-    _cl_idx = {}
-    for _k, _v in _closing_lines.items():
-        _nat = mk.natural_key(_v.get('home', ''), _v.get('away', ''),
-                              _v.get('commence_time'))
-        # CORRIGÉ LE 28/08/2026 (audit v4 §W) : _nat[0] seul jetait la date
-        # -- même correctif que paper_journal.cloture_fiable(), voir son
-        # commentaire. `_nat` complet au lieu de `_nat[0]`.
-        if _nat[0]:
-            _cl_idx[_nat] = _k
+    # §P), CORRIGÉ LE 28/08/2026 (audit v5 §AA -- le durcissement du §W
+    # d'hier neutralisait ce croisement exactement sur les matchs qui en
+    # ont besoin, voir curves_common.cherche_avec_tolerance()) : pont
+    # commun avec paper_journal/move_audit/canal_clv, une seule copie.
+    _closing_lines, _cl_idx = cc.build_closing_index()
     _croises_resolus = 0
     _croises_tentes = 0
     for line in lines_iter:
@@ -156,11 +143,10 @@ def load_curves(path=None):
         if not line: continue
         r = json.loads(line)
         ct = _dt(r.get('commence_time'))
-        # CORRIGÉ (audit v3 §P) : lookup par clé naturelle, pas par uid brut.
         _croises_tentes += 1
         _nat_r = mk.natural_key(r.get('home', ''), r.get('away', ''),
                                 r.get('commence_time'))
-        _cl_uid = _cl_idx.get(_nat_r) if _nat_r[0] else None
+        _cl_uid = cc.cherche_avec_tolerance(_cl_idx, _nat_r)
         ct_croise = _dt((_closing_lines.get(_cl_uid) or {}).get('commence_time')) \
             if _cl_uid else None
         if ct_croise:
