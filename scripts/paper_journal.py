@@ -34,6 +34,7 @@ os.environ.setdefault('CURVES', _DEF_CURVES.get(MARKET, 'book_curves.jsonl'))
 import steam_alert as sa
 import fiabilite_score as fs   # reutilise detection, seuils par book, helpers
 import match_key as mk
+import curves_common as cc
 
 JOURNAL = os.environ.get('JOURNAL', f'paper_trades_{MARKET}.jsonl')
 RESULTS_CSV = os.environ.get('RESULTS_CSV', 'backtest_tennis.csv')
@@ -206,33 +207,22 @@ def cloture_fiable(home, away, commence_time, tournament, side, curve, _cache={}
     HYPOTHÈSE non vérifiée ("le dernier point est peut-être trop tardif")
     en INVARIANT MESURÉ, avec compteur et garde-fou. Conservée pour cette
     raison : filet de sécurité si un jour un book publie un point après
-    captured_at, et preuve vivante que ce n'est actuellement pas le cas."""
+    captured_at, et preuve vivante que ce n'est actuellement pas le cas.
+
+    CORRIGÉ LE 28/08/2026 (audit v5 §AA) : la clé complète posée hier
+    (audit v4 §W, avec la date) neutralisait le pont exactement sur les
+    matchs pour lesquels il sert -- 4 matchs perdus sur 160 (US Open, fin
+    de soirée, commence_time à cheval sur minuit entre les deux sources).
+    Délégué à curves_common.cherche_avec_tolerance() (±1 jour, un seul
+    candidat accepté) -- fonction PARTAGÉE avec steam_alert/move_audit/
+    canal_clv, pas une cinquième copie divergente."""
     if 'd' not in _cache:
-        try:
-            _cache['d'] = json.load(open('closing_lines.json', encoding='utf-8'))
-        except (OSError, ValueError):
-            _cache['d'] = {}
-        _cache['idx'] = {}
-        for k, v in _cache['d'].items():
-            nat = mk.natural_key(v.get('home', ''), v.get('away', ''),
-                                 v.get('commence_time'))
-            # CORRIGÉ LE 28/08/2026 (audit v4 §W) : nat[0] SEUL (sans la
-            # date) jette exactement la garantie que natural_key() ajoute
-            # la date pour donner -- sa propre docstring : "deux rencontres
-            # entre les mêmes joueurs le même jour n'existent pas en
-            # pratique". Deux mêmes joueurs à des dates DIFFÉRENTES
-            # (fréquent : deux tournois dans la saison) s'écrasaient l'un
-            # l'autre dans l'index -- 14 collisions mesurées sur
-            # closing_lines.json, latentes tant que la fenêtre testée est
-            # courte, actives dès qu'elle s'élargit. `nat` (le tuple
-            # complet) au lieu de `nat[0]`.
-            if nat[0]:
-                _cache['idx'][nat] = k
+        _cache['d'], _cache['idx'] = cc.build_closing_index()
         _cache['resolus'] = 0
         _cache['tentes'] = 0
     _cache['tentes'] += 1
     nat = mk.natural_key(home, away, commence_time)
-    cl_uid = _cache['idx'].get(nat) if nat[0] else None
+    cl_uid = cc.cherche_avec_tolerance(_cache['idx'], nat)
     entree = _cache['d'].get(cl_uid) if cl_uid else None
     c = (entree or {}).get('closing') or {}
     if c.get('reliable') and c.get('captured_at') and curve:
