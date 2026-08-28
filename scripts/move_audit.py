@@ -93,12 +93,42 @@ def load_curves():
         lines = ov.open_curves(CURVES)
     except FileNotFoundError as e:
         print(f"❌ {e}"); return games, mk.build_index([])
+    # AJOUTÉ LE 28/08/2026 (audit v4 §U) : le garde-fou anti-in-play (croiser
+    # commence_time avec closing_lines.json, prendre le MIN) n'existait que
+    # dans steam_alert.load_curves() -- ce fichier a sa PROPRE copie de la
+    # même logique de troncature (pre(), ligne suivante) et en était
+    # dépourvu. Or move_audit.py alimente moves_detail_hist.csv, qui fixe
+    # p0_temoin (0,725) -- l'étalon contre lequel LES 11 HYPOTHÈSES GELÉES
+    # sont testées. Un in-play qui fuit ici biaise tout le dispositif Holm,
+    # pas seulement 54 paris. Même pont, même code, copié depuis
+    # steam_alert.py (aucune raison de diverger).
+    try:
+        _closing_lines = json.load(open('closing_lines.json', encoding='utf-8'))
+    except (OSError, ValueError):
+        _closing_lines = {}
+    _cl_idx = {}
+    for _k, _v in _closing_lines.items():
+        _nat = mk.natural_key(_v.get('home', ''), _v.get('away', ''),
+                              _v.get('commence_time'))
+        if _nat[0]:
+            _cl_idx[_nat] = _k
+    _croises_resolus, _croises_tentes = 0, 0
     for line in lines:
         line = line.strip()
         if not line: continue
         r = json.loads(line)
         ct = _dt(r.get('commence_time'))
         if ct is None: continue
+        _croises_tentes += 1
+        _nat_r = mk.natural_key(r.get('home', ''), r.get('away', ''),
+                                r.get('commence_time'))
+        _cl_uid = _cl_idx.get(_nat_r) if _nat_r[0] else None
+        ct_croise = _dt((_closing_lines.get(_cl_uid) or {}).get('commence_time')) \
+            if _cl_uid else None
+        if ct_croise:
+            _croises_resolus += 1
+            if ct_croise < ct:
+                ct = ct_croise
         _records.append(r)
         def pre(seq):
             pts = [(_dt(p[0]), p[1]) for p in (seq or []) if _dt(p[0]) and p[1]]
@@ -111,6 +141,12 @@ def load_curves():
                                    '_away': r.get('away_team') or r.get('away') or '',
                                    '_tour': r.get('tournament') or ''})
         g[r['book']] = {'h': h, 'a': a}
+    if _croises_tentes >= 10:
+        taux = 100 * _croises_resolus / _croises_tentes
+        niveau = "⚠️ " if taux < 30 else ""
+        print(f"{niveau}move_audit.load_curves() : commence_time croisé via "
+              f"closing_lines sur {_croises_resolus}/{_croises_tentes} "
+              f"lignes ({taux:.0f}%).")
     return games, mk.build_index(_records)
 
 

@@ -109,6 +109,21 @@ def load_closes():
     records = []          # sert à construire l'index canonique des matchs
     sources = [('live', 'book_curves_live.jsonl'),
                ('hist', 'book_curves.jsonl')]   # nom legacy -> partitions via open_curves
+    # AJOUTÉ LE 28/08/2026 (audit v4 §U) : même pont anti-in-play que
+    # steam_alert.py et move_audit.py -- ce fichier alimente
+    # canal_clv_detail.csv, le CLV du produit RÉELLEMENT publié aux
+    # abonnés. En était dépourvu.
+    try:
+        _closing_lines = json.load(open('closing_lines.json', encoding='utf-8'))
+    except (OSError, ValueError):
+        _closing_lines = {}
+    _cl_idx = {}
+    for _k, _v in _closing_lines.items():
+        _nat = mk.natural_key(_v.get('home', ''), _v.get('away', ''),
+                              _v.get('commence_time'))
+        if _nat[0]:
+            _cl_idx[_nat] = _k
+    _croises_resolus, _croises_tentes = 0, 0
     for origine, p in sources:
         try:
             lines = ov.open_curves(p, verbose=False)
@@ -122,6 +137,16 @@ def load_closes():
             ct = _dt(r.get('commence_time'))
             if not ct:
                 continue
+            _croises_tentes += 1
+            _nat_r = mk.natural_key(r.get('home', ''), r.get('away', ''),
+                                    r.get('commence_time'))
+            _cl_uid = _cl_idx.get(_nat_r) if _nat_r[0] else None
+            ct_croise = _dt((_closing_lines.get(_cl_uid) or {}).get('commence_time')) \
+                if _cl_uid else None
+            if ct_croise:
+                _croises_resolus += 1
+                if ct_croise < ct:
+                    ct = ct_croise
             records.append(r)
             home = r.get('home_team') or r.get('home') or ''
             away = r.get('away_team') or r.get('away') or ''
@@ -133,6 +158,12 @@ def load_closes():
                     k = (r.get('uid'), r.get('book'), name)
                     if k not in closes:                     # priorité à la 1re source
                         closes[k] = (pts[-1][1], origine)
+    if _croises_tentes >= 10:
+        taux = 100 * _croises_resolus / _croises_tentes
+        niveau = "⚠️ " if taux < 30 else ""
+        print(f"{niveau}canal_clv.load_closes() : commence_time croisé via "
+              f"closing_lines sur {_croises_resolus}/{_croises_tentes} "
+              f"lignes ({taux:.0f}%).")
     return closes, mk.build_index(records)
 
 
