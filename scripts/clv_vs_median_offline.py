@@ -96,12 +96,14 @@ def charge_moves():
         try:
             entry = float(r['entry'])
             lead_min = float(r['lead_min'])
+            clv_book_pct = float(r['clv_book_pct'])
         except (ValueError, KeyError, TypeError):
             continue
         nat = mk.natural_key(r.get('steame', ''), r.get('opp', ''), r.get('date'))
         if not nat[0]:
             continue
         moves.append({'nat': nat, 'entry': entry, 'lead_min': lead_min,
+                      'clv_book_pct': clv_book_pct,
                       'steame': r.get('steame', ''), 'opp': r.get('opp', '')})
     return moves
 
@@ -130,6 +132,16 @@ def charge_courbes(besoins, closing_lines, cl_idx):
                     continue
                 nat = mk.natural_key(r.get('home', ''), r.get('away', ''),
                                      r.get('commence_time'))
+                # AUDIT v7 §AM.2 : seul join du dépôt SANS
+                # cc.cherche_avec_tolerance() -- c'est volontaire, pas un
+                # oubli. moves_detail_hist.csv et les partitions hist_book_*
+                # tirent leur date de la MÊME source (le pipeline qui écrit
+                # les deux), elles ne peuvent pas diverger comme
+                # closing_lines.json (convention d'uid indépendante)
+                # divergeait des courbes. Vérifié : 949/949 moves joints,
+                # 0 perdu. Ne pas "corriger" en ajoutant la tolérance ici
+                # sans revérifier -- ce serait un affaiblissement inutile
+                # d'une clé qui n'a jamais eu besoin d'être assouplie.
                 if nat not in besoins:
                     continue
                 ct = _dt(r.get('commence_time'))
@@ -224,7 +236,13 @@ def main():
             if not pts:
                 continue
             pe = _point_a_ou_avant(pts, instant_entree)
-            pc = pts[-1][1]   # déjà tronqué au pré-match (clôture)
+            # CORRIGÉ LE 28/08/2026 (audit v7 §AM.1) : pts[-1][1] suppose la
+            # courbe triée, _point_a_ou_avant() scanne sans le supposer --
+            # même fonction que pour l'entrée, une seule convention.
+            # Vérifié à part : 0 courbe désordonnée sur 8474 aujourd'hui,
+            # mais si l'ordre casse un jour, seule une moitié du calcul
+            # aurait suivi sans cette uniformisation.
+            pc = _point_a_ou_avant(pts, ct)
             if pe and pe > 1:
                 prix_entree.append(pe)
             if pc and pc > 1:
@@ -240,7 +258,16 @@ def main():
 
         prime = (mv['entry'] / med_entree - 1) * 100
         derive = (med_entree / med_cloture - 1) * 100
-        lignes.append({'prime': prime, 'derive': derive,
+        # AJOUTÉ (audit v7 §AK.1) : le TOTAL calculé directement par move
+        # (entry/med_cloture), pas reconstruit via (1+prime)*(1+derive)-1
+        # appliqué aux MÉDIANES agrégées -- médiane(a)*médiane(b) !=
+        # médiane(a*b). Écart mesuré par l'audit : 0,35 pt, au-dessus du
+        # seuil de pertinence déclaré (1 pt). Ici chaque LIGNE a son propre
+        # total, cohérent par construction avec sa propre prime et dérive ;
+        # la médiane du total se prend sur ces lignes, pas sur les médianes.
+        total = (mv['entry'] / med_cloture - 1) * 100
+        lignes.append({'prime': prime, 'derive': derive, 'total': total,
+                       'clv_book_pct': mv['clv_book_pct'], 'lead_min': mv['lead_min'],
                        'n_entree': len(prix_entree), 'n_cloture': len(prix_cloture)})
 
     n = len(lignes)
@@ -263,22 +290,60 @@ def main():
 
     primes = [x['prime'] for x in lignes]
     derives = [x['derive'] for x in lignes]
+    totaux = [x['total'] for x in lignes]
+    clv_books = [x['clv_book_pct'] for x in lignes]
 
     mp, lop, hip = _ic_bootstrap(primes)
     md, lod, hid = _ic_bootstrap(derives)
-    total_med = ((1 + mp / 100) * (1 + md / 100) - 1) * 100
+    # CORRIGÉ LE 28/08/2026 (audit v7 §AK.1) : médiane des totaux PAR MOVE,
+    # pas composition des deux médianes agrégées séparément -- voir le
+    # commentaire à la construction de `total` plus haut.
+    mt, lot, hit = _ic_bootstrap(totaux)
 
     ligne_prime = _verdict('PRIME DE SELECTION (entry / mediane a entree)', mp, lop, hip)
     ligne_derive = _verdict('DERIVE DU MARCHE (mediane entree / mediane cloture)', md, lod, hid)
     print(f'\n  {ligne_prime}')
     print(f'  {ligne_derive}')
-    print(f'\n  TOTAL (prime x dérive, ce que clv_book mesure) : {total_med:+.2f}%')
-    if abs(mp) > 1e-9:
-        part_prime = 100 * mp / (mp + md) if (mp + md) else 0
+    # CORRIGÉ (audit v7 §AK.2) : cette quantité EST clv_vs_median (entry vs
+    # book médian), pas clv_book (entry vs book D'ENTRÉE, le meilleur des
+    # ~20) -- les deux ont un nom différent parce que ce ne sont pas la
+    # même chose. L'étiquette d'hier ("ce que clv_book mesure") était fausse.
+    print(f'\n  TOTAL = clv_vs_median (entry / mediane cloture, mediane des '
+         f'totaux par move) : {mt:+.2f}% [IC95 {lot:+.2f}, {hit:+.2f}]')
+    med_clv_book = st.median(clv_books)
+    ecart_book_median = med_clv_book - mt
+    print(f'  clv_book_pct (entry / cloture du book D\'ENTRÉE, pour comparaison) : '
+         f'{med_clv_book:+.2f}%')
+    print(f'  écart clv_book - clv_vs_median : {ecart_book_median:+.2f}pt -- ce '
+         f'que coûte (ou rapporte) de rester au book d\'entrée plutôt que d\'être '
+         f'au médian jusqu\'à la clôture.')
+    # CORRIGÉ (audit v7 §AK.3) : dénominateur = le total RÉEL affiché
+    # (mt), pas mp+md qui n'est ni le total multiplicatif d'hier ni celui-ci.
+    part_prime = 100 * mp / mt if abs(mt) > 1e-9 else None
+    if part_prime is not None:
         print(f'  part de la prime de sélection dans le total : ~{part_prime:.0f}%')
 
     print(f'  %positif prime : {100*sum(1 for x in primes if x>0)/n:.0f}% | '
          f'%positif dérive : {100*sum(1 for x in derives if x>0)/n:.0f}%')
+
+    # AJOUTÉ (audit v7 §AL) : ventilation par délai détection -> départ.
+    # L'audit a testé et RÉFUTÉ l'hypothèse que les moves exclus (< 3 books)
+    # auraient une prime plus forte -- la prime est stable ±0,2pt sur toutes
+    # les tranches. En revanche la DÉRIVE varie d'un facteur 3 : un signal
+    # détecté à moins de 6h du départ n'apporte presque que la prime, pas
+    # la dérive -- actionnable sur MIN_LEAD (actuellement 15 min).
+    tranches = [(0, 360, '<6h'), (360, 720, '6-12h'),
+               (720, 1440, '12-24h'), (1440, float('inf'), '>24h')]
+    print('\n  Ventilation par délai détection -> départ (audit v7 §AL) :')
+    for lo, hi, label in tranches:
+        sel = [x for x in lignes if lo <= x['lead_min'] < hi]
+        if len(sel) < 10:
+            print(f'    {label:8} n={len(sel):3} -- trop peu pour une médiane fiable')
+            continue
+        p_sel = st.median(x['prime'] for x in sel)
+        d_sel = st.median(x['derive'] for x in sel)
+        print(f'    {label:8} n={len(sel):3} | PRIME {p_sel:+.2f}% | DÉRIVE {d_sel:+.2f}%')
+
     print('\n  Rappel : ceci mesure la VALIDITÉ du CLV, pas le profit -- le '
          'journal forward reste la seule mesure directe du ROI.')
 
@@ -286,8 +351,10 @@ def main():
         'verdict': 'calcule',
         'prime_selection_pct': round(mp, 3), 'prime_ic95': [round(lop, 3), round(hip, 3)],
         'derive_marche_pct': round(md, 3), 'derive_ic95': [round(lod, 3), round(hid, 3)],
-        'total_pct': round(total_med, 3),
-        'part_prime_pct': round(part_prime, 1) if abs(mp) > 1e-9 else None,
+        'total_clv_vs_median_pct': round(mt, 3), 'total_ic95': [round(lot, 3), round(hit, 3)],
+        'clv_book_pct_median': round(med_clv_book, 3),
+        'ecart_book_vs_median_pct': round(ecart_book_median, 3),
+        'part_prime_pct': round(part_prime, 1) if part_prime is not None else None,
         'pct_positif_prime': round(100*sum(1 for x in primes if x>0)/n, 1),
         'pct_positif_derive': round(100*sum(1 for x in derives if x>0)/n, 1),
     })
