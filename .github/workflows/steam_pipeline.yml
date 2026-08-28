@@ -94,13 +94,17 @@ jobs:
         # (côté par les noms, troncature pré-match sur toutes les courbes)
         # -- "un script qui publie une conclusion non soutenue à chaque run
         # est pire qu'un script qui ne tourne pas" (l'audit lui-même).
-        # QUOTIDIEN, pas à chaque cycle : charge 10 partitions de courbes
-        # complètes (~2-3 min), moves_detail_hist.csv ne grossit pas assez
-        # vite pour justifier plus fréquent.
-        run: |
-          if [ "$(date -u +%H)" = "05" ]; then
-            python scripts/clv_vs_median_offline.py || true
-          fi
+        # CORRIGÉ LE 28/08/2026 (audit v6 §AE) : le garde-fou "if date -u
+        # +%H = 05" ne pouvait JAMAIS se déclencher -- steam_pipeline.yml
+        # n'a qu'UN SEUL cron, à 00h15 UTC (ligne 31), jamais 05h. Le
+        # commentaire d'hier ("QUOTIDIEN, pas à chaque cycle") était déjà
+        # satisfait par le cron lui-même -- le garde-fou était à la fois
+        # inutile (le fichier tourne déjà une fois par jour) et faux
+        # (l'heure ne correspondait à rien). 5e occurrence du même motif
+        # aujourd'hui : un correctif écrit, commenté, jamais exécuté --
+        # voir §AE de l'audit pour la liste complète et pipeline_status.py
+        # plus bas, qui ferme maintenant ce trou pour de bon.
+        run: python scripts/clv_vs_median_offline.py || true
 
       - name: Qualité de la mesure de clôture (Q3 triangulation)
         # AJOUTÉ LE 27/08/2026 (audit v2 §L) : capture_quality.py contient
@@ -116,11 +120,19 @@ jobs:
         # visible dans pipeline_status.md sur GitHub).
         run: |
           python scripts/capture_quality.py | tee /tmp/capture_quality.txt || true
-          n=$(grep -oP '\d+(?= ecarts > 3%)' /tmp/capture_quality.txt | head -1)
-          n=${n:-0}
-          seuil=200
-          alerte=$([ "$n" -ge "$seuil" ] && echo True || echo False)
-          python3 -c "import json; json.dump({'ecarts_gt_3pct': $n, 'seuil': $seuil, 'alerte': $alerte}, open('q3_status.json', 'w'), ensure_ascii=False, indent=1)"
+          n_ecarts=$(grep -oP '\d+(?= ecarts > 3%)' /tmp/capture_quality.txt | head -1)
+          n_ecarts=${n_ecarts:-0}
+          # CORRIGÉ LE 28/08/2026 (audit v6 §AI) : seuil ABSOLU (200) choisi
+          # quand le compte était à 150 -- à +5/jour, franchi dans quelques
+          # semaines par simple croissance de la population comparée, sans
+          # que la qualité se dégrade. Seuil RELATIF : proportion des
+          # comparaisons qui divergent, stable même si le dépôt grossit.
+          n_total=$(grep -oP 'clv vs snapshot\s+n=\K\d+' /tmp/capture_quality.txt | head -1)
+          n_total=${n_total:-1}
+          pct_ecarts=$(python3 -c "print(round(100*$n_ecarts/$n_total, 1))")
+          seuil_pct=30.0
+          alerte=$(python3 -c "print($pct_ecarts >= $seuil_pct)")
+          python3 -c "import json; json.dump({'ecarts_gt_3pct': $n_ecarts, 'n_total': $n_total, 'pct_ecarts': $pct_ecarts, 'seuil_pct': $seuil_pct, 'alerte': $alerte}, open('q3_status.json', 'w'), ensure_ascii=False, indent=1)"
           # CORRIGÉ LE 28/08/2026 (audit v4 §V) : "True" (littéral Python,
           # nécessaire pour que l'injection dans python3 -c produise du JSON
           # valide) comparé à "true" (minuscule) -- ne matchait JAMAIS. Le
@@ -187,7 +199,7 @@ jobs:
           git config user.email "actions@github.com"
           echo "── DIAGNOSTIC avant commit ──────────────────────────────"
           echo "set_results.json : $(wc -l < set_results.json 2>/dev/null || echo absent) lignes, $(python3 -c "import json; print(len(json.load(open('set_results.json'))))" 2>/dev/null || echo '?') entrées, $(stat -c%s set_results.json 2>/dev/null || echo '?') octets"
-          for f in set_results.json paper_trades_match.jsonl paper_trades_set1.jsonl paper_trades_set2.jsonl moves_detail.csv moves_detail_hist.csv barometre_hebdo.md barometre_mensuel.md canal_clv_detail.csv canal_clv_exclus.csv verdicts_geles.json q3_status.json; do
+          for f in set_results.json paper_trades_match.jsonl paper_trades_set1.jsonl paper_trades_set2.jsonl moves_detail.csv moves_detail_hist.csv barometre_hebdo.md barometre_mensuel.md canal_clv_detail.csv canal_clv_exclus.csv verdicts_geles.json q3_status.json clv_vs_median_report.json; do
             [ -f "$f" ] || echo "  ⚠️ absent ce run : $f"
           done
           echo "───────────────────────────────────────────────────────"
@@ -206,7 +218,7 @@ jobs:
                    barometre_hebdo.md barometre_mensuel.md canal_clv_detail.csv \
                    canal_clv_exclus.csv \
                    pipeline_status.json pipeline_status.md \
-                   verdicts_geles.json q3_status.json; do
+                   verdicts_geles.json q3_status.json clv_vs_median_report.json; do
             # CORRIGÉ LE 27/08/2026 (audit v2 §B) : verdicts_geles.json
             # n'était committé par AUCUN workflow -- le mécanisme de lecture
             # unique par hypothèse (audit 1, §3.3) ne servait donc à rien :
