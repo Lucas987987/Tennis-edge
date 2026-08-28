@@ -108,7 +108,14 @@ jobs:
           seuil=200
           alerte=$([ "$n" -ge "$seuil" ] && echo True || echo False)
           python3 -c "import json; json.dump({'ecarts_gt_3pct': $n, 'seuil': $seuil, 'alerte': $alerte}, open('q3_status.json', 'w'), ensure_ascii=False, indent=1)"
-          if [ "$alerte" = "true" ]; then
+          # CORRIGÉ LE 28/08/2026 (audit v4 §V) : "True" (littéral Python,
+          # nécessaire pour que l'injection dans python3 -c produise du JSON
+          # valide) comparé à "true" (minuscule) -- ne matchait JAMAIS. Le
+          # bloc écrit ce matin même pour corriger "un echo dans un log
+          # n'alerte personne" produisait un echo qui ne s'affichait jamais.
+          # q3_status.json restait correct (c'est lui qui compte), seul le
+          # log du run était mort.
+          if [ "$alerte" = "True" ]; then
             echo "⚠️⚠️ $n écarts > 3% entre les sources de clôture (seuil $seuil) -- la précision de mesure du CLV s'est dégradée, à inspecter."
           fi
 
