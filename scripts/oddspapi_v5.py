@@ -211,7 +211,32 @@ def load_partitions(motif):
                 gz_retenus.append(g)
         except OSError:
             gz_retenus.append(g)
-    return sorted(set(plain + gz_retenus), key=lambda p: p.replace('.gz', ''))
+    resultat = sorted(set(plain + gz_retenus), key=lambda p: p.replace('.gz', ''))
+    # AJOUTÉ LE 27/08/2026 (audit v3 §S) : quand des dates sont indexées
+    # dans parts/ARCHIVE_INDEX.json (archivées vers une Release par
+    # archive_ticks.py) mais absentes du motif demandé, le distinguer d'un
+    # vrai trou de collecte -- sinon la prochaine étude qui globe
+    # parts/pm_ticks_* découvre un historique tronqué sans savoir que c'est
+    # voulu (voir archive_ticks.py). Défensif : n'importe quel format
+    # inattendu du fichier est ignoré silencieusement (ce garde-fou est un
+    # bonus, pas une dépendance critique).
+    try:
+        idx = json.load(open('parts/ARCHIVE_INDEX.json', encoding='utf-8'))
+        base_motif = os.path.basename(motif).split('*')[0]   # ex: 'pm_ticks_'
+        if base_motif:
+            dates_archivees = sorted({a.get('date', '')[:7] for a in idx.get('archives', [])
+                                      if base_motif in a.get('fichier', '')})
+            dates_presentes = {os.path.basename(p)[len(base_motif):len(base_motif) + 7]
+                               for p in resultat}
+            manquantes = [d for d in dates_archivees if d and d not in dates_presentes]
+            if manquantes:
+                print(f"ℹ️ load_partitions('{motif}') : {len(manquantes)} mois "
+                      f"archivé(s) intentionnellement hors disque (voir "
+                      f"parts/ARCHIVE_INDEX.json) -- historique tronqué, pas "
+                      f"un trou de collecte.")
+    except (OSError, ValueError, KeyError, TypeError):
+        pass
+    return resultat
 
 
 def open_any(path):
