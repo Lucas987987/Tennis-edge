@@ -21,6 +21,7 @@ Env : TELEGRAM_TOKEN, TELEGRAM_CHAT_ID (sinon DRY_RUN auto), CURVES, STATE,
 """
 import json, os, urllib.request, urllib.parse, statistics as st, re, unicodedata
 import oddspapi_v5 as ov
+import match_key as mk
 from datetime import datetime, timezone
 
 MARKET = os.environ.get('MARKET', 'match').lower()
@@ -128,28 +129,41 @@ def load_curves(path=None):
               f"correspondance legacy -> track record VIDE. Vérifier le "
               f"checkout (sparse ?) ou le chemin.")
         return data
-    # AJOUTÉ LE 27/08/2026 (audit v2 §M) : commence_time diverge entre les
-    # sources sur 6,9 % des matchs (écart médian 50 min, jusqu'à 24h40) --
-    # un commence_time trop TARDIF laisse du in-play passer le filtre
-    # pré-match de _pre() ci-dessous. closing_lines.json est croisé via un
-    # mécanisme de snapshots indépendant (T-25/T-15/T-7/T-3) ; on prend le
-    # MIN des deux commence_time disponibles -- jamais celui qui repousse
-    # la coupure le plus tard, qui est précisément le sens du risque.
+    # AJOUTÉ LE 27/08/2026 (audit v2 §M), CORRIGÉ LE 27/08/2026 (audit v3
+    # §P) : `_closing_lines.get(r['uid'])` ne s'est JAMAIS déclenché --
+    # closing_lines.json utilise la convention circuit_tournoi_joueurs,
+    # book_curves utilise date_joueurs, intersection directe mesurée à
+    # 0/40. Même correctif que paper_journal.cloture_fiable() : un index
+    # par CLÉ NATURELLE (match_key.natural_key, agnostique au format
+    # d'uid), construit UNE FOIS avant la boucle (pas à chaque ligne).
     try:
         _closing_lines = json.load(open('closing_lines.json', encoding='utf-8'))
     except (OSError, ValueError):
         _closing_lines = {}
+    _cl_idx = {}
+    for _k, _v in _closing_lines.items():
+        _nat = mk.natural_key(_v.get('home', ''), _v.get('away', ''),
+                              _v.get('commence_time'))
+        if _nat[0]:
+            _cl_idx[_nat[0]] = _k
+    _croises_resolus = 0
+    _croises_tentes = 0
     for line in lines_iter:
         line = line.strip()
         if not line: continue
         r = json.loads(line)
         ct = _dt(r.get('commence_time'))
-        # AJOUTÉ LE 27/08/2026 (audit v2 §M) : MIN avec le commence_time de
-        # closing_lines.json quand il existe -- jamais le plus tardif des
-        # deux, qui est le sens dans lequel le in-play peut fuir.
-        ct_croise = _dt((_closing_lines.get(r['uid']) or {}).get('commence_time'))
-        if ct_croise and (ct is None or ct_croise < ct):
-            ct = ct_croise
+        # CORRIGÉ (audit v3 §P) : lookup par clé naturelle, pas par uid brut.
+        _croises_tentes += 1
+        _nat_r = mk.natural_key(r.get('home', ''), r.get('away', ''),
+                                r.get('commence_time'))
+        _cl_uid = _cl_idx.get(_nat_r[0]) if _nat_r[0] else None
+        ct_croise = _dt((_closing_lines.get(_cl_uid) or {}).get('commence_time')) \
+            if _cl_uid else None
+        if ct_croise:
+            _croises_resolus += 1
+            if ct is None or ct_croise < ct:
+                ct = ct_croise
         # PRÉ-MATCH UNIQUEMENT. book_curves.jsonl contient ~90% de points IN-PLAY
         # (après le coup d'envoi). Les garder fausse la calibration : le "close"
         # (ser[-1]) devient un prix in-play qui encode le résultat -> look-ahead.
@@ -167,6 +181,18 @@ def load_curves(path=None):
         d['_home'] = r.get('home_team') or r.get('home') or r['uid']
         d['_away'] = r.get('away_team') or r.get('away') or ''
         d['_tour'] = r.get('tournament') or ''
+    # AJOUTÉ LE 27/08/2026 (audit v3 "un correctif qui échoue en silence
+    # est pire que pas de correctif") : le pont vers closing_lines.json
+    # n'affiche RIEN s'il ne se déclenche jamais -- exactement le mode de
+    # panne qui a rendu le §M inerte toute la journée sans que rien ne le
+    # signale. Seuil bas (10 lignes) pour ne pas polluer les tout petits
+    # chargements (courbes live avec 1-2 matchs).
+    if _croises_tentes >= 10:
+        taux = 100 * _croises_resolus / _croises_tentes
+        niveau = "⚠️ " if taux < 30 else ""
+        print(f"{niveau}load_curves('{src}') : commence_time croisé via "
+              f"closing_lines sur {_croises_resolus}/{_croises_tentes} "
+              f"lignes ({taux:.0f}%).")
     # Le recalage sur le planning "à venir" (load_upcoming) corrige les
     # commence_time PÉRIMÉS -- utile UNIQUEMENT pour les courbes LIVE
     # (path=None, donc src=CURVES). Appliqué aussi au chargement de
