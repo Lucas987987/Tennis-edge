@@ -161,12 +161,22 @@ def main():
     parts = partitions_health()
     ko = [r for r in rows if r['verdict'] != '✅ OK']
 
+    # AJOUTÉ LE 27/08/2026 (audit v3 §S) : le compte d'écarts Q3 (fraîcheur
+    # des clôtures, capture_quality.py) rejoint le fichier committé et
+    # lisible depuis GitHub, plutôt qu'un simple echo dans un log de run.
+    q3 = None
+    try:
+        q3 = json.load(open('q3_status.json', encoding='utf-8'))
+    except (OSError, ValueError):
+        pass
+
     payload = {
         'run_termine': datetime.datetime.utcnow().isoformat(timespec='seconds'),
         'run_demarre': started.isoformat(timespec='seconds'),
         'verdict_global': 'OK' if not ko else f'{len(ko)} livrable(s) à vérifier',
         'livrables': rows,
         'partitions': parts,
+        'q3_qualite_cloture': q3,
     }
     json.dump(payload, open(OUT_JSON, 'w', encoding='utf-8'),
               ensure_ascii=False, indent=2)
