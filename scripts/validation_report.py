@@ -23,15 +23,26 @@ import match_key as mk
 
 
 def _hist_sources():
-    """Sources historiques a scanner : live (nom fixe) + toutes les partitions
-    mensuelles. book_curves.jsonl (monolithique) a ete retire le 14/08/2026
+    """Sources historiques a scanner : partitions mensuelles VERSIONNÉES
+    uniquement -- book_curves.jsonl (monolithique) a ete retire le 14/08/2026
     (140,73 Mo -> GitHub rejetait tout push > 100 Mo) et remplace par
-    parts/hist_book_<YYYY-MM>.jsonl -- voir migrate_hist_partitions.py."""
+    parts/hist_book_<YYYY-MM>.jsonl -- voir migrate_hist_partitions.py.
+
+    CORRIGÉ LE 27/08/2026 (audit v3 §R) : book_curves_live.jsonl (gitignore,
+    reconstruit à chaque cycle, purgé à 5 jours de recul) faisait partie de
+    cette liste -- le n de chaque hypothèse variait alors d'un facteur 2 à 9
+    selon l'heure du run (mesuré : "ouverture précoce" 75 avec le fichier
+    présent, 34 sans). Or N_CIBLE gèle un verdict DÉFINITIVEMENT dès que
+    n>=100 : si n dépend d'un fichier éphémère, le MOMENT du gel -- donc le
+    k/n figé pour toujours -- dépend de l'heure à laquelle le run est tombé.
+    Ce fichier ne sert plus qu'aux alertes temps réel (steam_alert), jamais
+    aux verdicts gelés : un n reproductible est une précondition d'un gel
+    qui a du sens."""
     # ov.hist_partitions() couvre .jsonl ET .jsonl.gz : depuis la compression
     # du 16/08/2026 un glob sur '*.jsonl' seul ne renvoie plus rien, et les
     # scripts sautant les fichiers absents perdaient TOUT l'historique en
     # silence. Les chemins sont renvoyés sans suffixe .gz, ov.open_any() résout.
-    return ['book_curves_live.jsonl'] + ov.hist_partitions('book')
+    return ov.hist_partitions('book')
 
 JOURNALS = os.environ.get('JOURNALS', 'paper_trades_*.jsonl')
 Z = 1.96  # 95%
@@ -105,13 +116,16 @@ def report_group(name, trades):
         print("  (pas encore de pari denoue — rien a juger)"); return
 
     clv = [t['clv_book'] for t in settled if 'clv_book' in t]
-    # AJOUTÉ LE 27/08/2026 (audit v2 §E) : clv_pin (contre le juste-prix
-    # Pinnacle) à côté de clv_book (contre la clôture du book qui a SERVI À
-    # SÉLECTIONNER l'entrée -- pick_signal() prend le max sur ~20 books).
-    # Si clv_pin s'effondre pendant que clv_book reste haut, c'est la
-    # sélection qui gonfle le chiffre, pas un edge. Coût nul, la colonne
-    # existe déjà dans chaque trade.
+    # CORRIGÉ LE 27/08/2026 (audit v3 §Q) : clv_pin n'est PAS un CLV -- même
+    # formule à l'entrée (le filtre EV_MIN_NOW de pick_signal) et à la
+    # clôture, corrélation quasi mécanique. Mesuré par l'audit :
+    # corr(clv_pin, pnl)=+0,178 sur n=45, %positif à 100% (la signature d'une
+    # métrique qui reproduit son propre critère de sélection). Gardé au
+    # rapport mais RELABÉLISÉ honnêtement, jamais présenté comme un CLV.
     clv_pin = [t['clv_pin'] for t in settled if 'clv_pin' in t]
+    # AJOUTÉ (audit v3 §Q) : le VRAI test du biais de sélection -- contre le
+    # book MÉDIAN parmi ceux actifs sur le match, pas contre Pinnacle.
+    clv_median = [t['clv_vs_median'] for t in settled if 'clv_vs_median' in t]
     pnl = [t['pnl'] for t in settled if 'pnl' in t]
     won = [1 if t.get('won') else 0 for t in settled if 'won' in t]
 
@@ -123,16 +137,21 @@ def report_group(name, trades):
                    "⚠ tendance +" if p > 0.50 else "❌ non positif")
         print(f"  CLV vs cloture book : mediane {st.median(clv):+.1f}% | moyenne {st.mean(clv):+.1f}% "
               f"| %positif {p*100:.0f}% (IC95 {lo*100:.0f}-{hi*100:.0f}%)  -> {verdict}")
-    if clv_pin:
-        kpos = sum(1 for x in clv_pin if x > 0)
-        p, lo, hi = wilson(kpos, len(clv_pin))
-        print(f"  CLV vs juste-prix Pinnacle : mediane {st.median(clv_pin):+.1f}% | "
-              f"moyenne {st.mean(clv_pin):+.1f}% | %positif {p*100:.0f}% "
+    if clv_median:
+        kpos = sum(1 for x in clv_median if x > 0)
+        p, lo, hi = wilson(kpos, len(clv_median))
+        print(f"  CLV vs book MEDIAN (test du biais de sélection) : mediane "
+              f"{st.median(clv_median):+.1f}% | %positif {p*100:.0f}% "
               f"(IC95 {lo*100:.0f}-{hi*100:.0f}%)")
-        if clv and abs(st.median(clv) - st.median(clv_pin)) > 5:
-            print(f"  ⚠️ écart >5 pts entre les deux références -- la mesure "
-                  f"'vs cloture book' peut être gonflée par la sélection du "
-                  f"book (max sur ~20), pas par un edge réel.")
+        if clv and abs(st.median(clv) - st.median(clv_median)) > 5:
+            print(f"  ⚠️ écart >5 pts entre clôture book (max) et clôture "
+                  f"médiane -- la mesure 'vs cloture book' peut être gonflée "
+                  f"par la sélection du book (max sur ~20), pas par un edge réel.")
+    if clv_pin:
+        p_ = sum(1 for x in clv_pin if x > 0) / len(clv_pin)
+        print(f"  EV au filtre d'entrée, relue à la clôture (PAS un CLV -- "
+              f"même formule qu'à l'ouverture, corr. quasi mécanique) : "
+              f"mediane {st.median(clv_pin):+.1f}% | %positif {p_*100:.0f}%")
     # ROI
     if pnl:
         m, lo, hi, s = mean_ci(pnl)
