@@ -1,7 +1,7 @@
 {
-  "updated_at": "2026-08-29T07:33:33.267Z",
-  "count": 1030,
-  "actifs": 3,
+  "updated_at": "2026-08-29T07:53:40.331Z",
+  "count": 1033,
+  "actifs": 6,
   "markets": [
     {
       "market_id": "3689368",
@@ -34941,7 +34941,7 @@
       "sports_market_type": "moneyline",
       "market_type": "match",
       "game_id": 6115482,
-      "liquidity": 111960.394,
+      "liquidity": 120394.5043,
       "volume": 15283.027637,
       "local_match": {
         "home": "Facundo Mena",
@@ -34953,7 +34953,7 @@
         "home",
         "away"
       ],
-      "discovered_at": "2026-08-29T07:33:33.179Z"
+      "discovered_at": "2026-08-29T07:53:40.233Z"
     },
     {
       "market_id": "3955085",
@@ -34987,7 +34987,7 @@
         "home",
         "away"
       ],
-      "discovered_at": "2026-08-29T07:33:33.179Z"
+      "discovered_at": "2026-08-29T07:53:40.233Z"
     },
     {
       "market_id": "3955091",
@@ -35009,7 +35009,7 @@
       "sports_market_type": "tennis_first_set_winner",
       "market_type": "set1",
       "game_id": 6115482,
-      "liquidity": 8754.3409,
+      "liquidity": 8502.6298,
       "volume": null,
       "local_match": {
         "home": "Facundo Mena",
@@ -35021,7 +35021,109 @@
         "home",
         "away"
       ],
-      "discovered_at": "2026-08-29T07:33:33.180Z"
+      "discovered_at": "2026-08-29T07:53:40.234Z"
+    },
+    {
+      "market_id": "3954613",
+      "condition_id": "0x90b8353420c39178734dd4b342a8efb1aef1e4fbc90e8c73cd465f82c1a6f698",
+      "event_id": "926540",
+      "event_slug": "atp-broom-loffhag-2026-08-29",
+      "event_title": "Roehampton 2: Charles Broom vs George Loffhagen",
+      "question": "Roehampton 2: Charles Broom vs George Loffhagen",
+      "slug": "atp-broom-loffhag-2026-08-29",
+      "start_time": "2026-08-28T17:05:17Z",
+      "outcomes": [
+        "Charles Broom",
+        "George Loffhagen"
+      ],
+      "token_ids": [
+        "2949698101478262506698033121265155548566541884206319517749011264339508484261",
+        "23197665272194458071537435020446650091904811013185875798990382981598628270021"
+      ],
+      "sports_market_type": "moneyline",
+      "market_type": "match",
+      "game_id": 6115130,
+      "liquidity": 35447.6386,
+      "volume": 2393.411443,
+      "local_match": {
+        "home": "Charles Broom",
+        "away": "George Loffhagen",
+        "commence": "2026-08-29T11:10:00Z",
+        "uid": "2026-08-29_charles_broom_george_loffhagen"
+      },
+      "outcome_sides": [
+        "home",
+        "away"
+      ],
+      "discovered_at": "2026-08-29T07:53:40.257Z"
+    },
+    {
+      "market_id": "3955080",
+      "condition_id": "0x92b0a7c4306e8a82225e5111c3589bb1ddacfa06aed9e6b5e63b110493791567",
+      "event_id": "926540",
+      "event_slug": "atp-broom-loffhag-2026-08-29",
+      "event_title": "Roehampton 2: Charles Broom vs George Loffhagen",
+      "question": "Set 2 Winner: Broom vs Loffhagen",
+      "slug": "atp-broom-loffhag-2026-08-29-set-2-winner-Broom-vs-Loffhagen",
+      "start_time": "2026-08-28T17:44:37Z",
+      "outcomes": [
+        "Broom",
+        "Loffhagen"
+      ],
+      "token_ids": [
+        "58725523301603243880672951005442645235840771720790325807401325367449079582657",
+        "42152948590734860728441675200309758733477725792002760784634840130423731691269"
+      ],
+      "sports_market_type": "tennis_set_winner",
+      "market_type": "set2",
+      "game_id": 6115130,
+      "liquidity": 0.36,
+      "volume": null,
+      "local_match": {
+        "home": "Charles Broom",
+        "away": "George Loffhagen",
+        "commence": "2026-08-29T11:10:00Z",
+        "uid": "2026-08-29_charles_broom_george_loffhagen"
+      },
+      "outcome_sides": [
+        "home",
+        "away"
+      ],
+      "discovered_at": "2026-08-29T07:53:40.257Z"
+    },
+    {
+      "market_id": "3955081",
+      "condition_id": "0xeaa161ee30b16abcd39722eb98cdb59a07eb5443d3f06982f4c61d209df707c9",
+      "event_id": "926540",
+      "event_slug": "atp-broom-loffhag-2026-08-29",
+      "event_title": "Roehampton 2: Charles Broom vs George Loffhagen",
+      "question": "Set 1 Winner: Broom vs Loffhagen",
+      "slug": "atp-broom-loffhag-2026-08-29-first-set-winner-Broom-vs-Loffhagen",
+      "start_time": "2026-08-28T17:44:37Z",
+      "outcomes": [
+        "Broom",
+        "Loffhagen"
+      ],
+      "token_ids": [
+        "82031483745447216986366344780091809396567905593551986549440127445242284956642",
+        "41536127838990637288796110151801230388406697593292534066537725557083257894662"
+      ],
+      "sports_market_type": "tennis_first_set_winner",
+      "market_type": "set1",
+      "game_id": 6115130,
+      "liquidity": 5169.9349,
+      "volume": null,
+      "local_match": {
+        "home": "Charles Broom",
+        "away": "George Loffhagen",
+        "commence": "2026-08-29T11:10:00Z",
+        "uid": "2026-08-29_charles_broom_george_loffhagen"
+      },
+      "outcome_sides": [
+        "home",
+        "away"
+      ],
+      "discovered_at": "2026-08-29T07:53:40.258Z"
     }
   ]
 }
