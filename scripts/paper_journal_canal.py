@@ -49,6 +49,7 @@ import math
 import datetime
 import statistics as st
 import collections
+import oddspapi_v5 as ov   # AJOUTÉ 29/08/2026 : ov.ecriture_atomique_texte()
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from results_join import ResultIndex  # noqa: E402
@@ -158,9 +159,13 @@ def main():
         tr['gagne'] = gagne
         tr['pnl'] = (tr['cote'] - 1) if gagne else -1.0
 
-    with open(OUT, 'w', encoding='utf-8') as f:
-        for tr in trades.values():
-            f.write(json.dumps(tr, ensure_ascii=False) + '\n')
+    # CORRIGÉ LE 29/08/2026 (validation externe, périmètre resserré) : même
+    # motif que paper_journal.py:save_journal(), même raisonnement -- voir
+    # sa docstring et celle de ov.ecriture_atomique_texte(). Ce fichier est
+    # le record de ce qui a été RÉELLEMENT PUBLIÉ sur le canal, 97 lignes,
+    # le plus gros des deux journaux touchés par ce correctif.
+    contenu = ''.join(json.dumps(tr, ensure_ascii=False) + '\n' for tr in trades.values())
+    ov.ecriture_atomique_texte(OUT, contenu)
 
     regles = [t for t in trades.values() if t['statut'] == 'REGLE']
     print()
