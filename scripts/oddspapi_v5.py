@@ -804,3 +804,49 @@ def discover_tennis_tournaments(exclude_srl=True):
             out[k] = {"name": tr.get("tournamentName") or f"tournoi_{k}", "count": 0}
         out[k]["count"] += 1
     return out
+
+
+def ecriture_atomique(chemin, payload, **kwargs):
+    """Écrit `payload` en JSON de façon atomique (fichier temporaire +
+    os.replace()) -- AJOUTÉ LE 29/08/2026 (audit v13 §BF).
+
+    `open(chemin, 'w')` TRONQUE le fichier AVANT la première écriture --
+    toute exception survenant entre l'ouverture et la fin du json.dump()
+    (ex. un NameError sur une variable référencée dans le payload) laisse
+    un fichier VIDE sur disque, que `git add -A` committe tel quel.
+    Reproduit exactement sur capture_state.json le 28/08 : 55 octets ->
+    NameError avalé par un except générique -> 0 octet -> committé, avec
+    pour seule trace un message commençant par "ℹ️".
+
+    os.replace() est atomique au niveau du système de fichiers (POSIX,
+    et Windows depuis Python 3.3+) : soit l'ancien fichier complet reste
+    en place, soit le nouveau complet le remplace -- jamais un état
+    intermédiaire tronqué visible depuis l'extérieur, y compris si le
+    processus est tué en plein milieu de l'écriture.
+
+    Kwargs transmis tels quels à json.dump (ensure_ascii, indent, ...).
+
+    RÉSERVE ASSUMÉE : appliqué ce soir aux fichiers d'état les plus
+    critiques nommés par l'audit (capture_state.json, closing_lines.json,
+    extended_state.json, active_tournaments.json, early_open_state.json).
+    ~35 autres scripts du dépôt utilisent encore le motif non atomique --
+    non convertis ce soir (risque de rewrite à grande échelle sous
+    pression), mais cet utilitaire est prêt pour eux."""
+    chemin_tmp = f'{chemin}.tmp'
+    try:
+        with open(chemin_tmp, 'w', encoding='utf-8') as f:
+            json.dump(payload, f, **kwargs)
+        os.replace(chemin_tmp, chemin)
+    except Exception:
+        # AJOUTÉ EN TESTANT ce correctif : sans ce nettoyage, un échec de
+        # json.dump() (ex. objet non sérialisable) laisse le .tmp sur
+        # disque -- et un .tmp qui traîne est exactement le même risque
+        # qu'un fichier d'état vide : un `git add -A` non filtré peut
+        # l'embarquer. os.replace() n'est jamais atteint dans ce cas, donc
+        # le fichier ORIGINAL reste intact (c'est le but premier), mais il
+        # ne faut pas laisser de résidu à côté.
+        try:
+            os.remove(chemin_tmp)
+        except OSError:
+            pass
+        raise
