@@ -79,21 +79,25 @@ jobs:
           # en clair dans le rapport ; il manquait juste quelqu'un pour la
           # compter. Écrit dans un fichier committé, relu par
           # pipeline_status.py -- même schéma que q3_status.json.
-          # CORRIGÉ LE 28/08/2026 (audit v8 §AO) : "grep -c ❌" seul renvoyait
-          # 3 alors que les 5 études étaient en défaut -- 2 des 5 émettent
-          # ⚠️ plutôt que ❌ (ex. pm_calibration_track quand parts/hist_book_*
-          # est absent). grep -cE compte les DEUX. Reste fragile (un grep sur
-          # des émojis dans du texte libre casse au premier changement de
-          # formulation -- un futur "STATUS: ok|degraded|failed" émis par
-          # chaque script serait plus robuste, pas fait ce soir).
           # genere_le ajouté : ce statut est écrit par CE workflow (04h20
           # UTC), relu par steam_pipeline.yml (00h15 UTC) -- sans date,
           # pipeline_status.py ne peut pas savoir si le statut affiché a
           # 20 minutes ou 20 jours si ce workflow s'arrête de tourner.
-          n_echecs=$(grep -cE "❌|⚠️" polymarket_studies_report.md || true)
+          # CORRIGÉ LE 28/08/2026 (audit v9 §AR, URGENT avant le run de
+          # 04h20) : ❌|⚠️ compte AUSSI les avertissements de fonctionnement
+          # normal ("historique tronqué", émis par 4 des 5 scripts dès que
+          # parts/ARCHIVE_INDEX.json est non vide -- 6 partitions désormais,
+          # donc DÉSORMAIS TOUJOURS). Branché sur --strict hier soir, ça
+          # aurait rendu steam_pipeline rouge à CHAQUE run à partir de
+          # demain matin -- simulé sur un rapport à 0 échec réel : n_echecs
+          # comptait 7. Deux compteurs distincts maintenant : n_echecs
+          # (❌ seul, bloquant) et n_avertissements (⚠️ en plus, affiché
+          # seulement -- jamais passé à alerte).
+          n_echecs=$(grep -c "❌" polymarket_studies_report.md || true)
+          n_avertissements=$(grep -c "⚠️" polymarket_studies_report.md || true)
           alerte=$(python3 -c "print($n_echecs > 0)")
           genere_le=$(date -u +%Y-%m-%dT%H:%M:%SZ)
-          python3 -c "import json; json.dump({'n_echecs': $n_echecs, 'alerte': $alerte, 'genere_le': '$genere_le'}, open('polymarket_studies_status.json', 'w'), ensure_ascii=False, indent=1)"
+          python3 -c "import json; json.dump({'n_echecs': $n_echecs, 'n_avertissements': $n_avertissements, 'alerte': $alerte, 'genere_le': '$genere_le'}, open('polymarket_studies_status.json', 'w'), ensure_ascii=False, indent=1)"
       - name: Committer le rapport
         run: |
           git config user.name "github-actions[bot]"
