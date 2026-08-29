@@ -35,6 +35,7 @@ import steam_alert as sa
 import fiabilite_score as fs   # reutilise detection, seuils par book, helpers
 import match_key as mk
 import curves_common as cc
+import oddspapi_v5 as ov   # AJOUTÉ 29/08/2026 : ov.ecriture_atomique_texte() pour save_journal()
 
 JOURNAL = os.environ.get('JOURNAL', f'paper_trades_{MARKET}.jsonl')
 RESULTS_CSV = os.environ.get('RESULTS_CSV', 'backtest_tennis.csv')
@@ -115,9 +116,15 @@ def load_journal():
 
 
 def save_journal(trades):
-    with open(JOURNAL, 'w', encoding='utf-8') as f:
-        for t in trades.values():
-            f.write(json.dumps(t, ensure_ascii=False) + "\n")
+    # CORRIGÉ LE 29/08/2026 (validation externe, périmètre resserré) :
+    # open(JOURNAL, 'w') non atomique -- appelé 6x/cycle (3 marchés x 2
+    # workflows), et steam_pipeline.yml a timeout-minutes: 45. Un timeout
+    # en pleine écriture laisse un JSONL tronqué mais SYNTAXIQUEMENT
+    # VALIDE, committé sans alerte -- voir la docstring de
+    # ov.ecriture_atomique_texte() pour le raisonnement complet. Ce que ça
+    # perd (les cotes d'entrée au moment de la détection) est irrécupérable.
+    contenu = ''.join(json.dumps(t, ensure_ascii=False) + "\n" for t in trades.values())
+    ov.ecriture_atomique_texte(JOURNAL, contenu)
 
 
 def pick_signal(bk, softbooks, thr_by_book, entry_at='now'):
