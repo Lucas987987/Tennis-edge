@@ -658,6 +658,34 @@ def main():
         print("❌ RAPIDAPI_KEY absente (secret GitHub manquant)")
         return
 
+    # AJOUTÉ LE 29/08/2026 (demande explicite de Lucas -- filet de sécurité
+    # si le worker Cloudflare tombe, sans doubler le budget de requêtes
+    # quand il fonctionne). Le cron de secours (schedule, toutes les 15
+    # min -- voir capture_closing.yml) ne doit faire un VRAI passage que si
+    # aucune capture n'a réussi depuis un moment : sinon il concurrence le
+    # worker pour rien, ~96 passages/jour au lieu de 24, en grande partie
+    # gaspillés. Seuil à 15 min (pas 20, la demande d'origine) pour garder
+    # de la marge sous le plafond de 20 min même si ce run de cron démarre
+    # en retard (schedule GitHub est du best-effort, documenté comme tel).
+    # Jamais actif pour repository_dispatch (le worker) ni workflow_dispatch
+    # (manuel) -- seul un déclenchement schedule peut être court-circuité.
+    SEUIL_CRON_SECOURS_MIN = 15
+    if os.environ.get('GITHUB_EVENT_NAME') == 'schedule':
+        try:
+            _etat = json.load(open('capture_state.json', encoding='utf-8'))
+            _derniere = datetime.datetime.fromisoformat(_etat['last_capture_at'])
+            _age_min = (now - _derniere).total_seconds() / 60
+            if _age_min < SEUIL_CRON_SECOURS_MIN:
+                print(f"  ⏭️  cron de secours : dernière capture il y a "
+                     f"{_age_min:.0f} min (< {SEUIL_CRON_SECOURS_MIN}) -- "
+                     f"le worker semble actif, rien à faire.")
+                return
+            print(f"  🆘 cron de secours DÉCLENCHÉ : dernière capture il y a "
+                 f"{_age_min:.0f} min (>= {SEUIL_CRON_SECOURS_MIN}) -- le "
+                 f"worker semble silencieux, passage réel.")
+        except (OSError, ValueError, KeyError, TypeError):
+            pass   # état absent/illisible -> mieux vaut capturer que rater un trou réel
+
     # Mode découverte (lancé 1×/jour par un workflow dédié) : rafraîchit la liste
     # des tournois ATP/WTA actifs, puis continue normalement avec le suivi.
     if '--discover' in sys.argv:
