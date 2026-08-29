@@ -1,6 +1,6 @@
 {
-  "run_termine": "2026-08-29T06:18:01",
-  "run_demarre": "2026-08-29T06:05:17",
+  "run_termine": "2026-08-29T07:17:32",
+  "run_demarre": "2026-08-29T07:03:54",
   "verdict_global": "1 livrable(s) à vérifier",
   "livrables": [
     {
@@ -9,10 +9,10 @@
       "optionnel": false,
       "externe": false,
       "verdict": "✅ OK",
-      "octets": 235050,
-      "lignes": 2350,
+      "octets": 238310,
+      "lignes": 2383,
       "ecrit_ce_run": true,
-      "modifie": "2026-08-29T06:11:02"
+      "modifie": "2026-08-29T07:10:28"
     },
     {
       "fichier": "resultats_derived.json",
@@ -20,10 +20,10 @@
       "optionnel": false,
       "externe": true,
       "verdict": "✅ OK",
-      "octets": 407396,
-      "lignes": 1537,
+      "octets": 415069,
+      "lignes": 1568,
       "ecrit_ce_run": true,
-      "modifie": "2026-08-29T06:06:40"
+      "modifie": "2026-08-29T07:06:04"
     },
     {
       "fichier": "paper_trades_match.jsonl",
@@ -34,7 +34,7 @@
       "octets": 15267,
       "lignes": 37,
       "ecrit_ce_run": true,
-      "modifie": "2026-08-29T06:11:56"
+      "modifie": "2026-08-29T07:11:23"
     },
     {
       "fichier": "paper_trades_set1.jsonl",
@@ -45,7 +45,7 @@
       "octets": 6949,
       "lignes": 17,
       "ecrit_ce_run": true,
-      "modifie": "2026-08-29T06:12:10"
+      "modifie": "2026-08-29T07:11:36"
     },
     {
       "fichier": "paper_trades_set2.jsonl",
@@ -56,7 +56,7 @@
       "octets": 0,
       "lignes": 0,
       "ecrit_ce_run": true,
-      "modifie": "2026-08-29T06:12:15"
+      "modifie": "2026-08-29T07:11:41"
     },
     {
       "fichier": "moves_detail.csv",
@@ -67,7 +67,7 @@
       "octets": 15542,
       "lignes": 96,
       "ecrit_ce_run": true,
-      "modifie": "2026-08-29T06:17:29"
+      "modifie": "2026-08-29T07:16:59"
     },
     {
       "fichier": "moves_detail_hist.csv",
@@ -78,7 +78,7 @@
       "octets": 157718,
       "lignes": 976,
       "ecrit_ce_run": true,
-      "modifie": "2026-08-29T06:18:01"
+      "modifie": "2026-08-29T07:17:32"
     },
     {
       "fichier": "canal_clv_detail.csv",
@@ -89,7 +89,7 @@
       "octets": 23971,
       "lignes": 155,
       "ecrit_ce_run": true,
-      "modifie": "2026-08-29T06:17:26"
+      "modifie": "2026-08-29T07:16:56"
     },
     {
       "fichier": "book_curves_live.jsonl",
@@ -97,14 +97,14 @@
       "optionnel": false,
       "externe": false,
       "verdict": "✅ OK",
-      "octets": 22412443,
-      "lignes": 6529,
+      "octets": 22879814,
+      "lignes": 6535,
       "ecrit_ce_run": true,
-      "modifie": "2026-08-29T06:06:42"
+      "modifie": "2026-08-29T07:06:07"
     }
   ],
   "partitions": {
-    "total_mo": 640.3,
+    "total_mo": 645.1,
     "zone_rouge": [],
     "n_partitions": 80
   },
@@ -116,36 +116,43 @@
     "alerte": false
   },
   "clv_vs_median": {
-    "genere_le": "2026-08-29T06:16:35.495158+00:00",
-    "n_moves_total": 949,
+    "genere_le": "2026-08-29T07:16:05.843358+00:00",
+    "n_moves_total": 975,
     "n_cote_ambigu": 1,
-    "n_incomplet": 363,
-    "n_exploitables": 585,
+    "n_incomplet": 364,
+    "n_exploitables": 610,
     "verdict": "calcule",
-    "prime_selection_pct": 1.351,
+    "prime_selection_pct": 1.342,
     "prime_ic95": [
-      1.173,
-      1.471
+      1.19,
+      1.449
     ],
-    "derive_marche_pct": 3.509,
+    "derive_marche_pct": 3.621,
     "derive_ic95": [
-      3.189,
-      3.929
+      3.198,
+      4.0
     ],
-    "total_clv_vs_median_pct": 5.263,
+    "total_clv_vs_median_pct": 5.455,
     "total_ic95": [
-      4.636,
-      5.797
+      4.828,
+      5.904
     ],
-    "clv_book_pct_median": 4.9,
-    "ecart_book_vs_median_pct": -0.049,
+    "clv_book_pct_median": 5.1,
+    "ecart_book_vs_median_pct": -0.05,
     "ecart_book_vs_median_ic95": [
-      -0.325,
+      -0.328,
       -0.013
     ],
-    "part_prime_pct": 25.7,
-    "pct_positif_prime": 76.9,
-    "pct_positif_derive": 81.0
+    "part_prime_pct": 24.6,
+    "pct_positif_prime": 77.5,
+    "pct_positif_derive": 81.3
   },
-  "polymarket_studies": null
+  "polymarket_studies": {
+    "n_echecs": 0,
+    "n_avertissements": 3,
+    "alerte": false,
+    "genere_le": "2026-08-29T06:15:26Z",
+    "age_heures": 1.0,
+    "fraicheur_inconnue_ou_perimee": false
+  }
 }
