@@ -11,7 +11,7 @@ Le closing de référence pour le CLV = le snapshot le PLUS TARDIF disponible,
 à condition qu'il soit dans la fenêtre fiable (<= CLOSING_MAX_MINS avant le match).
 Sinon le match est marqué closing_reliable=False et doit être EXCLU du CLV.
 """
-import json, datetime, os, sys
+import json, datetime, os, re, sys
 import oddspapi_v5 as ov  # client commun OddsPapi v5 (RapidAPI, appels curl)
 
 # ─────────────────────────────────────────────────────────────────────────
@@ -334,18 +334,36 @@ def fetch_odds(now=None):
         print("  Aucun tournoi actif à suivre")
         return [], '0 (aucun tournoi)'
 
-    # AJOUTÉ LE 29/08/2026 (piste B) : lecture de capture_state.json --
-    # jusqu'ici write-only, jamais relu par ce script. dernier_extended
-    # alimente _is_extended_pass() (voir sa docstring pour le raisonnement).
+    # CORRIGÉ LE 29/08/2026 (audit v12 §BC, URGENT) : `extended` et
+    # `dernier_extended` étaient calculés ICI puis utilisés dans main()
+    # (l'écriture de capture_state.json) -- deux PORTÉES DIFFÉRENTES.
+    # fetch_odds() renvoie (matches, remaining), jamais ce couple. Résultat
+    # réel : NameError avalé par le `except Exception` de main(), qui ne
+    # loggait qu'un message anodin ("capture_state non écrit: ..."). Effet
+    # de bord grave : capture_state.json n'était plus jamais réécrit, donc
+    # last_extended_at jamais posé, donc dernier_extended toujours None au
+    # run suivant, donc _is_extended_pass() renvoie TOUJOURS True -- 139
+    # runs/jour en passe étendue au lieu de 12, +38% du budget API au lieu
+    # de -9% visé. Corrigé en gardant tout le mécanisme DANS cette
+    # fonction, un fichier dédié plutôt que de coupler fetch_odds() et
+    # main() via des variables partagées -- aucun `return` à modifier,
+    # aucun risque d'en oublier un parmi les 5 sorties de cette fonction.
+    EXTENDED_STATE_FILE = 'extended_state.json'
     dernier_extended = None
     try:
-        _etat_prec = json.load(open('capture_state.json', encoding='utf-8'))
+        _etat_prec = json.load(open(EXTENDED_STATE_FILE, encoding='utf-8'))
         _le = _etat_prec.get('last_extended_at')
         if _le:
             dernier_extended = datetime.datetime.fromisoformat(_le)
     except (OSError, ValueError, TypeError):
         pass   # 1er run, fichier absent, ou format inattendu -> dernier_extended reste None
     extended = _is_extended_pass(now, dernier_extended)
+    if extended:
+        try:
+            json.dump({'last_extended_at': now.isoformat()},
+                     open(EXTENDED_STATE_FILE, 'w', encoding='utf-8'))
+        except OSError as e:
+            print(f"  ℹ️ extended_state non écrit: {e}")
     horizon = now + datetime.timedelta(days=FUTURE_DAYS)
 
     if extended:
@@ -379,12 +397,31 @@ def fetch_odds(now=None):
         # PASSE STANDARD : fixtures du jour (hors SRL) + cotes batchées.
         nreq = 1
         keep = []
+        # AJOUTÉ LE 29/08/2026 (audit v12 §BD.1) : fixtures_today() renvoie
+        # TOUS les matchs du jour, y compris ceux commencés il y a des
+        # heures -- la passe étendue filtre déjà sur l'horizon futur (plus
+        # bas), la passe standard ne filtrait RIEN. Mesuré : ~33% des
+        # fixtures du jour déjà commencées à une heure prise au hasard,
+        # ~19 fixtures inutiles batchées sur ~58 -> 1,45 lot en moyenne au
+        # lieu de 0,98. Même marge de 2h que le filtre équivalent de
+        # write_matches_json (ligne ~519) : un commence_time approximatif
+        # peut être en avance, et c'est justement la fenêtre où la clôture
+        # se capture -- mieux vaut une marge large qu'un match manqué.
+        cutoff_standard = now - datetime.timedelta(hours=2)
         for f in fixtures_today_cached(TENNIS_SPORT_ID, now):
             if ov.is_srl(f):
                 continue
             tid = str((f.get('tournament') or {}).get('tournamentId'))
-            if tid in tids:
-                keep.append(f)
+            if tid not in tids:
+                continue
+            _st_iso = ov.fixture_meta(f).get('startTime_iso') or ''
+            try:
+                _st = datetime.datetime.fromisoformat(_st_iso.replace('Z', '+00:00')).replace(tzinfo=None)
+            except (ValueError, TypeError):
+                _st = None   # heure inconnue -> on garde par prudence, jamais on n'écarte sur un doute
+            if _st is not None and _st < cutoff_standard:
+                continue
+            keep.append(f)
         if not keep:
             print("  Aucun match aujourd'hui pour les tournois suivis")
             return [], f'{nreq} req (aucun match)'
@@ -621,6 +658,25 @@ def main():
 
     matches, remaining = fetch_odds(now)
     print(f"  {len(matches)} matchs exploitables · quota {remaining}")
+
+    # AJOUTÉ LE 29/08/2026 (audit v12 §BE) : "une optimisation qui vise à
+    # diviser un compteur par deux devrait commencer par afficher ce
+    # compteur." nreq est déjà calculé par fetch_odds() et déjà imprimé
+    # dans `remaining` (ex. "3 req (OddsPapi v5)") -- il manquait juste de
+    # le PERSISTER. Extrait par regex plutôt que de changer la signature
+    # de fetch_odds() (5 `return` différents, risque d'en oublier un -- le
+    # bug même de cette passe, cf. §BC). Lu AVANT l'écrasement de
+    # capture_state.json plus bas, pour cumuler sur la même journée UTC.
+    _m_nreq = re.match(r'^(\d+)', remaining)
+    nreq_ce_run = int(_m_nreq.group(1)) if _m_nreq else 0
+    requetes_cumul_jour = nreq_ce_run
+    try:
+        _prec = json.load(open('capture_state.json', encoding='utf-8'))
+        _prec_ts = datetime.datetime.fromisoformat(_prec.get('last_capture_at', ''))
+        if _prec_ts.date() == now.date():
+            requetes_cumul_jour += _prec.get('requetes_cumul_jour', 0)
+    except (OSError, ValueError, KeyError, TypeError):
+        pass   # 1er run du jour, fichier absent, ou format inattendu -> repart de nreq_ce_run seul
 
     # Générer le fichier pour l'outil HTML (tous les bookmakers, format Odds API)
     write_matches_for_tool(matches)
@@ -876,20 +932,20 @@ def main():
     # Marqueur de heartbeat pour le worker Cloudflare : instant du dernier run de
     # capture, INDÉPENDANT du fait qu'un point d'historique ait été stocké (l'history
     # a sa propre dé-dup >1%/>30min). Le worker s'en sert pour piloter sa cadence.
+    # CORRIGÉ LE 29/08/2026 (audit v12 §BC) : `extended`/`dernier_extended`
+    # référençaient des variables locales à fetch_odds(), hors de portée
+    # ici -- NameError avalé par le except ci-dessous, capture_state.json
+    # plus jamais réécrit (voir le commentaire dans fetch_odds() pour la
+    # chaîne de conséquences complète). Ce fichier redevient un heartbeat
+    # pur ; last_extended_at vit maintenant dans extended_state.json,
+    # entièrement à l'intérieur de fetch_odds().
     try:
         with open('capture_state.json', 'w', encoding='utf-8') as f:
-            # AJOUTÉ LE 29/08/2026 (piste B) : last_extended_at -- ne se met
-            # à jour QUE si cette passe était effectivement étendue, jamais
-            # écrasé par une passe standard entre-temps (sinon la mémoire de
-            # "dernière passe étendue" se perdrait à chaque cycle standard).
-            _payload = {'last_capture_at': now.isoformat(),
+            json.dump({'last_capture_at': now.isoformat(),
                        'captured': captured,
-                       'matches': len(closing)}
-            if extended:
-                _payload['last_extended_at'] = now.isoformat()
-            elif dernier_extended is not None:
-                _payload['last_extended_at'] = dernier_extended.isoformat()
-            json.dump(_payload, f, ensure_ascii=False, indent=2)
+                       'matches': len(closing),
+                       'requetes_ce_run': nreq_ce_run,
+                       'requetes_cumul_jour': requetes_cumul_jour}, f, ensure_ascii=False, indent=2)
     except Exception as e:
         print(f"  ℹ️ capture_state non écrit: {e}")
 
