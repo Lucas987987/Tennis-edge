@@ -113,12 +113,26 @@ EXTENDED_EVERY_H = int(os.environ.get('EXTENDED_EVERY_H', '2'))
 FUTURE_DAYS      = int(os.environ.get('FUTURE_DAYS', '4'))
 
 
-def _is_extended_pass(now):
-    """Vraie ~1x toutes les EXTENDED_EVERY_H heures (la 1re capture de l'heure),
-    ou si --extended est passe en argument (ou lors d'une decouverte --discover)."""
+def _is_extended_pass(now, dernier_extended=None):
+    """Vraie tous les EXTENDED_EVERY_H heures ÉCOULÉES depuis la dernière passe
+    étendue effective (état persisté), ou si --extended est passe en argument
+    (ou lors d'une decouverte --discover).
+
+    CORRIGÉ LE 29/08/2026 (piste B, optimisation des requêtes) : la version
+    précédente se basait sur l'horloge (heure paire, minute<12) -- les
+    dispatch T-25/T-10 arrivent à des minutes arbitraires, ~10% d'entre eux
+    tombaient dans cette fenêtre et déclenchaient une passe étendue NON
+    voulue (7 requêtes au lieu de 3, ~10/jour, -9% du budget). Défaut
+    symétrique plus grave : si le cron d'une heure paire glissait après la
+    minute 12, la passe étendue de ce créneau était perdue, SANS rattrapage.
+    Basé sur `dernier_extended` (capture_state.json['last_extended_at']) :
+    exactement EXTENDED_EVERY_H heures entre deux passes, quel que soit le
+    calendrier réel des déclenchements, avec rattrapage automatique."""
     if '--extended' in sys.argv or '--discover' in sys.argv:
         return True
-    return (now.hour % EXTENDED_EVERY_H == 0) and (now.minute < 12)
+    if dernier_extended is None:
+        return True   # jamais vu de passe étendue -- état absent/1er run : forcer
+    return (now - dernier_extended) >= datetime.timedelta(hours=EXTENDED_EVERY_H)
 
 # (l'ancien _api_get v4 est remplacé par oddspapi_v5.api_get — appels RapidAPI/curl)
 
@@ -173,6 +187,39 @@ def _tournaments_stale(active, max_age_h=18):
     except Exception:
         return True
     return (datetime.datetime.utcnow() - disc).total_seconds() > max_age_h * 3600
+
+
+# AJOUTÉ LE 29/08/2026 (optimisation, piste A) : fixtures_today() était
+# appelée sans cache à CHAQUE passe standard (~99 requêtes/jour) pour une
+# liste qui ne change qu'aux ajouts de programme -- quelques fois par jour.
+# Même motif que _tournaments_stale ci-dessus (horodatage + seuil), mais
+# vit délibérément dans /tmp (voir capture_closing.yml, actions/cache) :
+# committer ce fichier ajouterait une écriture au git add de CHAQUE run
+# (120/jour) pour un cache qui n'a de sens que dans le runner, jamais dans
+# l'historique.
+FIXTURES_TODAY_CACHE = os.environ.get('FIXTURES_TODAY_CACHE', '/tmp/fixtures_today_cache.json')
+FIXTURES_TODAY_TTL_MIN = int(os.environ.get('FIXTURES_TODAY_TTL_MIN', '30'))
+
+
+def fixtures_today_cached(sport_id, now=None):
+    """fixtures_today() avec cache fichier -- 30 min par défaut, plus court
+    que la fenêtre T-25→T-10 (un match ajouté au programme est vu au plus
+    tard une demi-heure après, largement avant sa capture de clôture)."""
+    now = now or datetime.datetime.utcnow()
+    try:
+        c = json.load(open(FIXTURES_TODAY_CACHE, encoding='utf-8'))
+        t = datetime.datetime.fromisoformat(c['t'])
+        if (now - t).total_seconds() < FIXTURES_TODAY_TTL_MIN * 60:
+            return c['fixtures']
+    except (OSError, ValueError, KeyError, TypeError):
+        pass   # absent, corrompu, ou périmé -> on retombe sur un appel réel
+    fixtures = ov.fixtures_today(sport_id)
+    try:
+        json.dump({'t': now.isoformat(), 'fixtures': fixtures},
+                  open(FIXTURES_TODAY_CACHE, 'w', encoding='utf-8'))
+    except OSError as e:
+        print(f"  ℹ️ cache fixtures/today non écrit: {e}")
+    return fixtures
 
 
 def discover_active_tournaments():
@@ -287,7 +334,18 @@ def fetch_odds(now=None):
         print("  Aucun tournoi actif à suivre")
         return [], '0 (aucun tournoi)'
 
-    extended = _is_extended_pass(now)
+    # AJOUTÉ LE 29/08/2026 (piste B) : lecture de capture_state.json --
+    # jusqu'ici write-only, jamais relu par ce script. dernier_extended
+    # alimente _is_extended_pass() (voir sa docstring pour le raisonnement).
+    dernier_extended = None
+    try:
+        _etat_prec = json.load(open('capture_state.json', encoding='utf-8'))
+        _le = _etat_prec.get('last_extended_at')
+        if _le:
+            dernier_extended = datetime.datetime.fromisoformat(_le)
+    except (OSError, ValueError, TypeError):
+        pass   # 1er run, fichier absent, ou format inattendu -> dernier_extended reste None
+    extended = _is_extended_pass(now, dernier_extended)
     horizon = now + datetime.timedelta(days=FUTURE_DAYS)
 
     if extended:
@@ -321,7 +379,7 @@ def fetch_odds(now=None):
         # PASSE STANDARD : fixtures du jour (hors SRL) + cotes batchées.
         nreq = 1
         keep = []
-        for f in ov.fixtures_today(TENNIS_SPORT_ID):
+        for f in fixtures_today_cached(TENNIS_SPORT_ID, now):
             if ov.is_srl(f):
                 continue
             tid = str((f.get('tournament') or {}).get('tournamentId'))
@@ -820,9 +878,18 @@ def main():
     # a sa propre dé-dup >1%/>30min). Le worker s'en sert pour piloter sa cadence.
     try:
         with open('capture_state.json', 'w', encoding='utf-8') as f:
-            json.dump({'last_capture_at': now.isoformat(),
+            # AJOUTÉ LE 29/08/2026 (piste B) : last_extended_at -- ne se met
+            # à jour QUE si cette passe était effectivement étendue, jamais
+            # écrasé par une passe standard entre-temps (sinon la mémoire de
+            # "dernière passe étendue" se perdrait à chaque cycle standard).
+            _payload = {'last_capture_at': now.isoformat(),
                        'captured': captured,
-                       'matches': len(closing)}, f, ensure_ascii=False, indent=2)
+                       'matches': len(closing)}
+            if extended:
+                _payload['last_extended_at'] = now.isoformat()
+            elif dernier_extended is not None:
+                _payload['last_extended_at'] = dernier_extended.isoformat()
+            json.dump(_payload, f, ensure_ascii=False, indent=2)
     except Exception as e:
         print(f"  ℹ️ capture_state non écrit: {e}")
 

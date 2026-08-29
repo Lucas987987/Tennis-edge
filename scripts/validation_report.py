@@ -757,10 +757,20 @@ def reinforce_watch():
 
     rows = []
     for src in _hist_sources():
-        if not os.path.exists(src): continue
+        # CORRIGÉ LE 29/08/2026 (trouvé en construisant l'optimisation des
+        # requêtes) : os.path.exists(src) + open(src) ignore SILENCIEUSEMENT
+        # toute partition n'existant qu'en .gz -- vérifié, les 10 partitions
+        # actuelles le sont TOUTES. Ce watcher lisait zéro donnée à chaque
+        # appel, masqué par le gel de verdict (un verdict gelé n'est plus
+        # jamais recalculé). ov.open_any() résout .gz comme les 8 autres
+        # watchers le font déjà.
+        try:
+            _fsrc = ov.open_any(src)
+        except FileNotFoundError:
+            continue
         games = {}
         _recs = []
-        for line in open(src, encoding='utf-8'):
+        for line in _fsrc:
             line = line.strip()
             if not line: continue
             try: r = json.loads(line)
@@ -1079,9 +1089,15 @@ def betfair_confirm_watch():
     games = {}
     _recs = []
     for src in _hist_sources():
-        if not os.path.exists(src):
+        # CORRIGÉ LE 29/08/2026 (trouvé en construisant l'optimisation des
+        # requêtes) : os.path.exists(src) + open(src) ignore SILENCIEUSEMENT
+        # toute partition n'existant qu'en .gz -- vérifié, les 10 partitions
+        # actuelles le sont TOUTES. Même correctif que reinforce_watch.
+        try:
+            _fsrc = ov.open_any(src)
+        except FileNotFoundError:
             continue
-        for line in open(src, encoding='utf-8'):
+        for line in _fsrc:
             line = line.strip()
             if not line:
                 continue
@@ -1227,9 +1243,17 @@ def move_age_watch():
     games = {}
     _recs = []
     for src in _hist_sources():
-        if not os.path.exists(src):
+        # CORRIGÉ LE 29/08/2026 (trouvé en construisant l'optimisation des
+        # requêtes) : os.path.exists(src) + open(src) ignore SILENCIEUSEMENT
+        # toute partition n'existant qu'en .gz -- vérifié, les 10 partitions
+        # actuelles le sont TOUTES. Même correctif que reinforce_watch et
+        # betfair_confirm_watch -- les 3 derniers watchers non alignés sur
+        # ov.open_any(), maintenant tous les 11 le sont.
+        try:
+            _fsrc = ov.open_any(src)
+        except FileNotFoundError:
             continue
-        for line in open(src, encoding='utf-8'):
+        for line in _fsrc:
             line = line.strip()
             if not line:
                 continue
