@@ -40,6 +40,12 @@ concurrency:
 jobs:
   journal:
     runs-on: ubuntu-latest
+    # AJOUTÉ LE 29/08/2026 (optimisation des requêtes, §7) : seul workflow
+    # lourd du dépôt sans timeout-minutes -- défaut GitHub Actions 6h. Le
+    # run tourne 12-13 min ; 45 laisse toute la marge nécessaire et évite
+    # qu'un blocage réseau consomme des heures de runner sans que personne
+    # ne le remarque (l'observateur externe ne le verrait qu'après 30h).
+    timeout-minutes: 45
     env:
       RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
       TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
@@ -50,6 +56,13 @@ jobs:
       RUN_STARTED: ${{ github.event.repository.updated_at }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          # AJOUTÉ LE 29/08/2026 (§7) : seul workflow lourd sans ce filtre
+          # (10 autres l'ont déjà) -- ce job lit trop de fichiers dispersés
+          # à la racine pour restreindre le sparse-checkout sans risque
+          # sous pression ce soir, mais blob:none reste sûr seul : les
+          # objets sont récupérés à la demande plutôt que tous d'un coup.
+          filter: blob:none
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
