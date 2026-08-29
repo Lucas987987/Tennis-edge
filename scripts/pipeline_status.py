@@ -267,12 +267,31 @@ def main():
                      f"producteur (polymarket_studies.yml) tourne-t-il encore ?")
         else:
             etat = '⚠️' if pm_studies.get('alerte') else '✅'
-            L.append(f"{etat} **Études Polymarket** : {pm_studies.get('n_echecs', '?')} échec(s) "
-                     f"(il y a {pm_studies.get('age_heures', '?')}h)")
+            # AJOUTÉ LE 28/08/2026 (audit v9 §AR) : n_avertissements affiché
+            # à part, JAMAIS bloquant -- ce sont les "historique tronqué"
+            # émis en fonctionnement normal dès que l'archivage a joué son
+            # rôle (parts/ARCHIVE_INDEX.json non vide, désormais le cas en
+            # permanence). Seul n_echecs (❌) compte pour l'état ✅/⚠️ et
+            # pour --strict plus bas.
+            n_av = pm_studies.get('n_avertissements')
+            av_txt = f" · {n_av} avertissement(s) (info)" if n_av else ''
+            L.append(f"{etat} **Études Polymarket** : {pm_studies.get('n_echecs', '?')} échec(s)"
+                     f"{av_txt} (il y a {pm_studies.get('age_heures', '?')}h)")
     L.append('')
     L.append('Légende : ✅ produit pendant ce run · ⏳ présent mais non réécrit '
              '(le script n\'a rien produit) · ⚠️ vide ou réduit à son en-tête · ❌ absent.')
     open(OUT_MD, 'w', encoding='utf-8').write('\n'.join(L) + '\n')
+    # AJOUTÉ LE 28/08/2026 (audit v9 §AS) : pipeline_status.json/.md ont
+    # disparu du dépôt entre deux runs (transitoire, très probablement des
+    # commandes de nettoyage locales, pas un bug du pipeline -- ils sont
+    # déjà dans le git add de steam_pipeline.yml). Pas de mécanisme
+    # inter-run construit ce soir (hors scope, priorité la plus basse de
+    # la passe) -- juste une vérification immédiate que ce run a bien écrit
+    # quelque chose de non vide, pour ne pas committer silencieusement un
+    # fichier tronqué si l'écriture elle-même échouait à moitié.
+    for _f in (OUT_JSON, OUT_MD):
+        if not os.path.exists(_f) or os.path.getsize(_f) == 0:
+            print(f"⚠️ {_f} : écriture de ce run absente ou vide -- à vérifier.")
 
     print(f"PIPELINE STATUS -> {OUT_JSON} + {OUT_MD}")
     for r in rows:
