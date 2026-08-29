@@ -119,6 +119,13 @@ jobs:
         # q3_status.json (committé, lu par pipeline_status.py juste après,
         # visible dans pipeline_status.md sur GitHub).
         run: |
+          # AJOUTÉ LE 29/08/2026 (audit v10 §AV) : plusieurs affectations
+          # plus bas (pct_ecarts, alerte, le json.dump) n'avaient pas de
+          # `|| true` -- sous bash -e (le défaut GitHub Actions), n'importe
+          # laquelle qui échoue tue CETTE ÉTAPE, ce qui arrête tout le job
+          # avant le commit plus bas. `set +e` protège tout le bloc d'un
+          # coup, plus sûr qu'un `|| true` oublié sur une ligne future.
+          set +e
           python scripts/capture_quality.py | tee /tmp/capture_quality.txt || true
           n_ecarts=$(grep -oP '\d+(?= ecarts > 3%)' /tmp/capture_quality.txt | head -1)
           n_ecarts=${n_ecarts:-0}
@@ -129,6 +136,15 @@ jobs:
           # comparaisons qui divergent, stable même si le dépôt grossit.
           n_total=$(grep -oP 'clv vs snapshot\s+n=\K\d+' /tmp/capture_quality.txt | head -1)
           n_total=${n_total:-1}
+          # CORRIGÉ LE 29/08/2026 (audit v10 §AV) : ${n_total:-1} protège
+          # contre une chaîne VIDE, pas contre le littéral "0" -- or
+          # capture_quality.py imprime "n=0 (pas de recouvrement)" quand
+          # une comparaison n'a aucun chevauchement, ce que grep capture
+          # tel quel. Reproduit : n_ecarts=0 n_total=0 -> ZeroDivisionError
+          # -> bash -e (le défaut GitHub Actions) tue l'étape -> tout le
+          # travail des étapes précédentes (résultats, journaux,
+          # moves_detail_hist.csv) est perdu, jamais committé.
+          [ "$n_total" -gt 0 ] 2>/dev/null || n_total=1
           pct_ecarts=$(python3 -c "print(round(100*$n_ecarts/$n_total, 1))")
           seuil_pct=30.0
           alerte=$(python3 -c "print($pct_ecarts >= $seuil_pct)")
@@ -141,7 +157,11 @@ jobs:
           # q3_status.json restait correct (c'est lui qui compte), seul le
           # log du run était mort.
           if [ "$alerte" = "True" ]; then
-            echo "⚠️⚠️ $n écarts > 3% entre les sources de clôture (seuil $seuil) -- la précision de mesure du CLV s'est dégradée, à inspecter."
+            # CORRIGÉ LE 29/08/2026 (audit v10, remarqué en repassant sur ce
+            # bloc) : $n et $seuil n'existent dans aucune portée ici --
+            # variables non définies, le message sortait vide/tronqué. Les
+            # bons noms sont $n_ecarts, $pct_ecarts, $seuil_pct.
+            echo "⚠️⚠️ $n_ecarts écarts > 3% (${pct_ecarts}%, seuil ${seuil_pct}%) entre les sources de clôture -- la précision de mesure du CLV s'est dégradée, à inspecter."
           fi
 
       - name: Baromètre des opérateurs (hebdo dimanche · mensuel le 1er)
