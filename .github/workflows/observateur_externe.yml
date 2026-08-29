@@ -1,0 +1,87 @@
+name: Observateur externe (fraicheur des livrables critiques)
+
+# CRÉÉ LE 29/08/2026 (audit v10, remarque finale) : "la limite structurelle
+# d'un moniteur qui est aussi le processus qu'il surveille". pipeline_status.py
+# détecte les producteurs FIGÉS -- mais il tourne À L'INTÉRIEUR de
+# steam_pipeline.yml, donc si CE workflow meurt avant d'atteindre l'étape
+# pipeline_status (exactement ce qui s'est produit le 28/08 : une division
+# par zéro dans le bloc Q3 a tué le job avant le commit, silencieusement,
+# pendant ~18h), rien dans le dépôt ne peut le constater -- c'est lui qui
+# écrit le constat.
+#
+# Ce workflow est volontairement séparé, minimal, et sans dépendance sur la
+# structure interne de steam_pipeline.yml : il vérifie juste l'âge du
+# dernier COMMIT touchant chacun des fichiers témoins, via `git log`, pas
+# via mtime de checkout (qui ne reflète que l'heure du clone, pas la
+# fraîcheur du contenu). Un run ROUGE ici EST l'alerte -- ce workflow ne
+# répare rien, il constate.
+
+on:
+  schedule:
+    - cron: '30 9 * * *'   # 09h30 UTC -- après les deux runs qu'il surveille
+                            # (steam_pipeline 00h15, polymarket_studies 04h20),
+                            # avec large marge, à une heure DIFFÉRENTE d'eux
+                            # pour ne pas partager leur éventuelle panne
+                            # d'infrastructure.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  observer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # historique complet requis pour `git log` par fichier
+
+      - name: Vérifier la fraîcheur des livrables critiques
+        run: |
+          SEUIL_H=36
+          MAINTENANT=$(date -u +%s)
+          ECHECS=0
+
+          verifier() {
+            local fichier="$1"
+            if [ ! -f "$fichier" ]; then
+              echo "❌ $fichier : ABSENT du dépôt"
+              ECHECS=$((ECHECS+1))
+              return
+            fi
+            local ts
+            ts=$(git log -1 --format=%ct -- "$fichier" 2>/dev/null)
+            if [ -z "$ts" ]; then
+              echo "❌ $fichier : présent mais AUCUN historique git (jamais committé ?)"
+              ECHECS=$((ECHECS+1))
+              return
+            fi
+            local age_h=$(( (MAINTENANT - ts) / 3600 ))
+            if [ "$age_h" -gt "$SEUIL_H" ]; then
+              echo "❌ $fichier : dernier commit il y a ${age_h}h (seuil ${SEUIL_H}h)"
+              ECHECS=$((ECHECS+1))
+            else
+              echo "✅ $fichier : dernier commit il y a ${age_h}h"
+            fi
+          }
+
+          # Les quatre témoins suggérés : deux couvrent steam_pipeline
+          # (pipeline_status.md = le moniteur lui-même ; moves_detail_hist.csv
+          # = ce que la validation produit réellement), un couvre
+          # set_results.json (alimente le journal forward), un couvre
+          # polymarket_studies.yml séparément.
+          verifier "pipeline_status.md"
+          verifier "moves_detail_hist.csv"
+          verifier "set_results.json"
+          verifier "polymarket_studies_report.md"
+
+          echo
+          if [ "$ECHECS" -gt 0 ]; then
+            echo "🔴 $ECHECS livrable(s) périmé(s) ou absent(s) -- steam_pipeline.yml"
+            echo "   et/ou polymarket_studies.yml ne tournent probablement plus."
+            echo "   Ce workflow ne répare rien : va voir l'onglet Actions pour"
+            echo "   trouver où le run en cause s'est arrêté."
+            exit 1
+          fi
+          echo "🟢 tous les livrables critiques sont frais (< ${SEUIL_H}h)."
