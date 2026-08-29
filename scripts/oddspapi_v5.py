@@ -850,3 +850,42 @@ def ecriture_atomique(chemin, payload, **kwargs):
         except OSError:
             pass
         raise
+
+
+def ecriture_atomique_texte(chemin, contenu):
+    """Variante de ecriture_atomique() pour du texte déjà sérialisé (JSONL
+    -- une ligne par enregistrement, pas un seul objet JSON) -- AJOUTÉ LE
+    29/08/2026 (validation externe, périmètre resserré à 2 sites).
+
+    Même mécanisme (fichier .tmp + os.replace(), nettoyage en cas
+    d'échec), mais json.dump() ne convient pas à des enregistrements
+    sérialisés un par un puis joints -- ecriture_atomique() empaquette un
+    objet PYTHON unique en JSON, ici `contenu` est déjà la chaîne de
+    caractères finale (les appelants construisent leurs lignes eux-mêmes,
+    comme ils le faisaient avant ce correctif).
+
+    Trouvé par validation externe : save_journal() (paper_journal.py) et
+    son équivalent canal (paper_journal_canal.py) réécrivent leur fichier
+    ENTIER à chaque appel (6x/cycle pour le premier) via open(...,'w') non
+    atomique -- si le processus est tué en plein milieu (ex. le job
+    steam_pipeline.yml a timeout-minutes: 45 ; un timeout en pleine
+    écriture produit exactement ça), le JSONL résultant reste
+    SYNTAXIQUEMENT VALIDE mais tronqué -- contrairement au cas
+    capture_state.json du 28/08 (0 octet, détectable), ici rien ne le
+    signale : pas d'exception, pas de code de retour non nul, `git add -A`
+    committe un historique de paris amputé sans laisser de trace. Ce que
+    ça perd est irrécupérable (les cotes d'entrée au moment de la
+    détection) -- exactement le track record forward sur lequel repose le
+    reste de la validation."""
+    chemin_tmp = f'{chemin}.tmp'
+    try:
+        with open(chemin_tmp, 'w', encoding='utf-8') as f:
+            f.write(contenu)
+        os.replace(chemin_tmp, chemin)
+    except Exception:
+        try:
+            os.remove(chemin_tmp)
+        except OSError:
+            pass
+        raise
+
