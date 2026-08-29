@@ -32,3 +32,26 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: python scripts/health_check.py
 
+      # AJOUTÉ LE 29/08/2026 (validation externe). scripts/repo_sentinel.py
+      # était ORPHELIN depuis sa création le 26/08 : aucun workflow ne
+      # l'appelait, alors que sa docstring affirmait qu'il tournait chaque
+      # semaine. Mesure réelle du 29/08 : 3,48 Go pour un seuil à 4,0 Go et
+      # une zone d'intervention GitHub vers 5 Go -- 0,52 Go de marge.
+      #
+      # Hébergé ici plutôt que dans pistes_weekly.yml (l'hôte que suggérait
+      # la docstring) : à ~0,1-0,2 Go/jour, un cron dominical laisserait
+      # franchir le seuil un lundi sans le signaler avant six jours.
+      # health_check tourne tous les jours à 7h37 UTC et dispose déjà du
+      # GH_TOKEN dont `gh api` a besoin.
+      #
+      # `|| true` : la sentinelle est une SURVEILLANCE, pas un livrable.
+      # Elle ne doit jamais faire échouer le health check lui-même -- sinon
+      # une panne de `gh` masquerait les vrais résultats de santé du
+      # pipeline. Le franchissement de seuil se lit dans le journal du run
+      # (🔴 SEUIL FRANCHI), pas dans son code retour.
+      - name: Sentinelle taille du dépôt
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          REPO: Lucas987987/Tennis-edge
+        run: python scripts/repo_sentinel.py || true
+
