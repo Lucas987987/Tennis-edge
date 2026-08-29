@@ -66,6 +66,26 @@ jobs:
             fi
           }
 
+          # AJOUTÉ LE 29/08/2026 (audit v12 §BE) : verifier() teste la
+          # FRAÎCHEUR (seuil 36h) -- ne convient PAS à verdicts_geles.json,
+          # qui ne se met à jour QUE quand une hypothèse franchit N_CIBLE
+          # pour la première fois -- ça peut légitimement prendre plusieurs
+          # jours sans rien signifier d'anormal. Contrôle séparé, sur la
+          # seule EXISTENCE : ce fichier a disparu du dépôt deux fois déjà
+          # (28/08, 29/08), toujours sans que validation_report.py en soit
+          # la cause (vérifié : il l'écrit correctement à chaque run). S'il
+          # disparaît, le mécanisme "lu une seule fois" (N_CIBLE) perd tout
+          # effet -- chaque run regèle au n du jour, silencieusement.
+          verifier_existence() {
+            local fichier="$1"
+            if [ ! -f "$fichier" ]; then
+              echo "❌ $fichier : ABSENT du dépôt (contrôle d'existence seul, pas de fraîcheur)"
+              ECHECS=$((ECHECS+1))
+            else
+              echo "✅ $fichier : présent"
+            fi
+          }
+
           # Les quatre témoins suggérés : deux couvrent steam_pipeline
           # (pipeline_status.md = le moniteur lui-même ; moves_detail_hist.csv
           # = ce que la validation produit réellement), un couvre
@@ -75,6 +95,7 @@ jobs:
           verifier "moves_detail_hist.csv"
           verifier "set_results.json"
           verifier "polymarket_studies_report.md"
+          verifier_existence "verdicts_geles.json"
 
           echo
           if [ "$ECHECS" -gt 0 ]; then
