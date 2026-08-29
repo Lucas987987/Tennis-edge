@@ -57,6 +57,26 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: Fenêtre de cache (30 min)
+        id: bucket
+        run: echo "value=$(( $(date -u +%s) / 1800 ))" >> "$GITHUB_OUTPUT"
+
+      - name: Cache fixtures/today (piste A, optimisation des requêtes)
+        # AJOUTÉ LE 29/08/2026 : fixtures_today() était appelée sans cache à
+        # chaque passe standard (~99 requêtes/jour) pour une liste qui ne
+        # change qu'aux ajouts de programme -- quelques fois par jour au
+        # plus. actions/cache n'a pas de TTL natif -- la clé encode une
+        # fenêtre de 30 minutes (l'entier ci-dessus change toutes les
+        # 1800s) : une nouvelle fenêtre = cache MISS = appel frais ; dans la
+        # même fenêtre, tous les runs partagent le HIT. Le fichier vit dans
+        # /tmp, jamais committé (voir capture_closing.py,
+        # fixtures_today_cached()) -- un fichier de plus dans git add à
+        # 120 runs/jour serait de la croissance d'historique pour rien.
+        uses: actions/cache@v4
+        with:
+          path: /tmp/fixtures_today_cache.json
+          key: fixtures-today-${{ steps.bucket.outputs.value }}
+
       - name: Capture des cotes (OddsPapi v5)
         env:
           RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
