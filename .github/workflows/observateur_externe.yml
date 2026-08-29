@@ -31,15 +31,31 @@ permissions:
 jobs:
   observer:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    # CORRIGÉ LE 29/08/2026 (audit v13 §BH, recommandation de la passe 11
+    # non appliquée) : 5 min pour un job qui ne fait que checkout + git log
+    # était déjà généreux, mais 10 laisse une vraie marge sans coût -- ce
+    # job est trop léger pour que ça change quoi que ce soit en pratique.
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0   # historique complet requis pour `git log` par fichier
+          # AJOUTÉ (audit v13 §BH) : dépôt à 672+ Mo, dix autres workflows
+          # utilisent déjà ce filtre. git log --format=%ct ne lit jamais
+          # de contenu de fichier -- aucune perte de fonctionnalité, juste
+          # moins de données rapatriées pour rien sur CE workflow précis,
+          # celui dont la seule sortie utile est sa couleur.
+          filter: blob:none
 
       - name: Vérifier la fraîcheur des livrables critiques
         run: |
-          SEUIL_H=36
+          # CORRIGÉ LE 29/08/2026 (audit v13 §BH) : à 36h, un run quotidien
+          # manqué (~33,2h d'écart mesuré, cron observateur 09h30 / cron
+          # steam_pipeline 00h15) ne déclenchait AUCUNE alerte -- il fallait
+          # DEUX runs manqués d'affilée (~57,2h) pour que ce seuil soit
+          # dépassé. 30h détecte un seul run manqué, avec de la marge sur
+          # le cas sain (écart normal ~9h15 entre les deux crons).
+          SEUIL_H=30
           MAINTENANT=$(date -u +%s)
           ECHECS=0
 

@@ -225,8 +225,8 @@ def run():
         state[uid] = True
 
     state = {k: v for k, v in state.items() if k in games}
-    with open(STATE_FILE, 'w', encoding='utf-8') as f:
-        json.dump(state, f, ensure_ascii=False, indent=2)
+    # CORRIGÉ LE 29/08/2026 (audit v13 §BF) : écriture atomique.
+    ov.ecriture_atomique(STATE_FILE, state, ensure_ascii=False, indent=2)
 
     print(f"  🆕 early_open_signal : {n_log} nouveau(x) signal(aux) loggé(s), {n_sig} alerte(s) envoyée(s) "
           f"sur {len(games)} matchs pré-match examinés")
