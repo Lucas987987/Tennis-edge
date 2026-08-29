@@ -5,7 +5,7 @@
 ⚠️ polymarket_flow.py EN ÉCHEC (code 124)
 
 --- polymarket_leadlag ---
-Polymarket : 16 partition(s), 2577167 ticks lus, 767 match(s) avec série 'match'
+Polymarket : 16 partition(s), 2675375 ticks lus, 767 match(s) avec série 'match'
 Pinnacle   : 275 match(s) avec courbe exploitable
 
 ========================================================================
@@ -51,7 +51,7 @@ Rapport écrit dans polymarket_leadlag_report.json
 
 --- polymarket_studies ---
 Source(s) : kalshi (16 partition(s))
-  2577167 ticks lus · 761 match(s) exploitables (fourchette max 10 pts)
+  2675375 ticks lus · 761 match(s) exploitables (fourchette max 10 pts)
 Books      : 280 match(s), dont 275 avec pinnacle
 
 ==========================================================================
@@ -106,7 +106,7 @@ Books      : 280 match(s), dont 275 avec pinnacle
 Rapport écrit dans polymarket_studies_report.json
 
 --- pm_calibration_track ---
-ResultIndex : 1537 résultats · 1513 paires · fenêtre ±3 j
+ResultIndex : 1568 résultats · 1544 paires · fenêtre ±3 j
 
 ==============================================================================
 HYPOTHÈSE GELÉE N°12 — calibration des marchés de prédiction
@@ -119,13 +119,13 @@ Gelée le 2026-08-24 · tranches et sens FIXÉS, non modifiables
 POLYMARKET
 ==============================================================================
 
-  HORS ÉCHANTILLON (décisif) — 142 observation(s)
+  HORS ÉCHANTILLON (décisif) — 194 observation(s)
   tranche           n   annoncé   observé    écart          IC95 écart
   --------------------------------------------------------------------
-  30 – 45 %        48     37.8%     39.6%    +1.8  [ -10.7 ;  +15.9]
-                        il faudrait ~2717 obs pour trancher à cet écart (2669 manquantes)
-  55 – 70 %        48     62.2%     60.4%    -1.8  [ -15.9 ;  +10.7]
-                        il faudrait ~2717 obs pour trancher à cet écart (2669 manquantes)
+  30 – 45 %        65     38.1%     44.6%    +6.5  [  -4.9 ;  +18.6]
+                        il faudrait ~212 obs pour trancher à cet écart (147 manquantes)
+  55 – 70 %        65     61.9%     55.4%    -6.5  [ -18.6 ;   +4.9]
+                        il faudrait ~212 obs pour trancher à cet écart (147 manquantes)
 
   origine (pour mémoire) — 146 observation(s)
   tranche           n   annoncé   observé    écart          IC95 écart
@@ -137,13 +137,13 @@ POLYMARKET
 KALSHI
 ==============================================================================
 
-  HORS ÉCHANTILLON (décisif) — 212 observation(s)
+  HORS ÉCHANTILLON (décisif) — 276 observation(s)
   tranche           n   annoncé   observé    écart          IC95 écart
   --------------------------------------------------------------------
-  30 – 45 %        63     37.2%     39.7%    +2.5  [  -8.7 ;  +14.8]
-                        il faudrait ~1445 obs pour trancher à cet écart (1382 manquantes)
-  55 – 70 %        63     62.6%     58.7%    -3.9  [ -16.2 ;   +7.4]
-                        il faudrait ~598 obs pour trancher à cet écart (535 manquantes)
+  30 – 45 %        84     37.7%     42.9%    +5.1  [  -4.9 ;  +15.8]
+                        il faudrait ~343 obs pour trancher à cet écart (259 manquantes)
+  55 – 70 %        85     62.1%     55.3%    -6.8  [ -17.4 ;   +3.3]
+                        il faudrait ~194 obs pour trancher à cet écart (109 manquantes)
 
   origine (pour mémoire) — 182 observation(s)
   tranche           n   annoncé   observé    écart          IC95 écart
@@ -158,31 +158,31 @@ KALSHI
 Rapport écrit dans pm_calibration_track.json
 
 --- pm_observations ---
-ResultIndex : 1537 résultats · 1513 paires · fenêtre ±3 j
+ResultIndex : 1568 résultats · 1544 paires · fenêtre ±3 j
 1846 match(s) en contexte · 1846 avec courbe pinnacle
-polymarket : 7,094,772 ticks lus · 408 observation(s)
-kalshi : 2,577,167 ticks lus · 554 observation(s)
+polymarket : 7,098,862 ticks lus · 408 observation(s)
+kalshi : 2,675,375 ticks lus · 554 observation(s)
 
 ==========================================================================
 TABLE CONSOLIDÉE — 962 observation(s)
 ==========================================================================
-  avec résultat connu     : 682
-  postérieures au gel     : 354
+  avec résultat connu     : 798
+  postérieures au gel     : 470
   avec prix pinnacle    : 956
 
-  par marché (avec résultat) : kalshi 394 · polymarket 288
+  par marché (avec résultat) : kalshi 458 · polymarket 340
 
-  par niveau (avec résultat) : challenger 214 · grand_chelem 200 · atp 160 · wta 108
+  par niveau (avec résultat) : grand_chelem 284 · challenger 234 · atp 164 · wta 116
 
   tranche de prix      n  dont après gel
   ----------------------------------------
   0 – 15 %            18               3
-  15 – 30 %           70              35
-  30 – 45 %          201             111
-  45 – 55 %          100              55
-  55 – 70 %          203             111
-  70 – 85 %           73              36
-  85 – 100 %          17               3
+  15 – 30 %           79              44
+  30 – 45 %          239             149
+  45 – 55 %          121              76
+  55 – 70 %          242             150
+  70 – 85 %           80              43
+  85 – 100 %          19               5
 
 pm_observations.jsonl
   Les études lisent désormais ce fichier au lieu de reparcourir
