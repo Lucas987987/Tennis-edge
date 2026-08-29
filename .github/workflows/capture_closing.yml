@@ -11,7 +11,17 @@ on:
   repository_dispatch:
     types: [capture_closing]
   schedule:
-    - cron: '7 * * * *'
+    # CORRIGÉ LE 29/08/2026 (demande explicite de Lucas) : resserré de
+    # '7 * * * *' (horaire, jusqu'à 60 min de trou possible si le worker
+    # Cloudflare tombe) à toutes les 15 min -- un filet de sécurité, pas un
+    # deuxième déclencheur principal. Voir le garde-fou dans
+    # scripts/capture_closing.py (main()) : ce cron ne fait un VRAI passage
+    # de capture que si aucune capture n'a eu lieu depuis 15 min -- sinon
+    # il se termine immédiatement, sans consommer une seule requête API.
+    # Sans ce garde-fou, resserrer le cron aurait fait passer son coût de
+    # 24 passages/jour (déjà compté dans le budget de 235 req/jour) à ~96,
+    # en grande partie redondants avec un worker en bonne santé.
+    - cron: '*/15 * * * *'
   workflow_dispatch:
 
 permissions:
@@ -85,6 +95,12 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           FIDS_PER_REQUEST: 80
           CAPTURE_BOOKS: pinnacle,sbobet,sharpbet,4casters,betfair-ex,winamax.fr,unibet.fr,bet365.fr,pmu,unibet,bwin,betsson,bet365,betway,1xbet,888sport,leovegas,tipico,netbet,coolbet,22bet
+          # AJOUTÉ : permet à capture_closing.py de savoir s'il a été
+          # déclenché par le cron de secours (schedule) ou par le worker
+          # Cloudflare (repository_dispatch) / une exécution manuelle
+          # (workflow_dispatch) -- seul 'schedule' déclenche le
+          # court-circuit de fraîcheur, jamais les deux autres.
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
         run: python scripts/capture_closing.py
 
       - name: Courbes live + alertes forward (0 requête API)
