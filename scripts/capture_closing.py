@@ -204,22 +204,29 @@ FIXTURES_TODAY_TTL_MIN = int(os.environ.get('FIXTURES_TODAY_TTL_MIN', '30'))
 def fixtures_today_cached(sport_id, now=None):
     """fixtures_today() avec cache fichier -- 30 min par défaut, plus court
     que la fenêtre T-25→T-10 (un match ajouté au programme est vu au plus
-    tard une demi-heure après, largement avant sa capture de clôture)."""
+    tard une demi-heure après, largement avant sa capture de clôture).
+
+    CORRIGÉ LE 29/08/2026 (audit v13 §BG) : renvoie désormais (fixtures,
+    appel_reel) -- avant, l'appelant comptait 1 requête à chaque passage,
+    cache HIT ou pas, ce qui masquait EXACTEMENT le gain que ce cache est
+    censé produire (~79 requêtes/jour sur 235, mesuré). Un compteur qui ne
+    compte pas ce qu'il annonce mesurer est pire qu'utile : il aurait fait
+    conclure à tort que le cache ne sert à rien."""
     now = now or datetime.datetime.utcnow()
     try:
         c = json.load(open(FIXTURES_TODAY_CACHE, encoding='utf-8'))
         t = datetime.datetime.fromisoformat(c['t'])
         if (now - t).total_seconds() < FIXTURES_TODAY_TTL_MIN * 60:
-            return c['fixtures']
+            return c['fixtures'], False   # cache HIT -- pas d'appel réseau
     except (OSError, ValueError, KeyError, TypeError):
         pass   # absent, corrompu, ou périmé -> on retombe sur un appel réel
     fixtures = ov.fixtures_today(sport_id)
     try:
-        json.dump({'t': now.isoformat(), 'fixtures': fixtures},
-                  open(FIXTURES_TODAY_CACHE, 'w', encoding='utf-8'))
+        # CORRIGÉ LE 29/08/2026 (audit v13 §BF) : écriture atomique.
+        ov.ecriture_atomique(FIXTURES_TODAY_CACHE, {'t': now.isoformat(), 'fixtures': fixtures})
     except OSError as e:
         print(f"  ℹ️ cache fixtures/today non écrit: {e}")
-    return fixtures
+    return fixtures, True   # appel réseau réel
 
 
 def discover_active_tournaments():
@@ -262,9 +269,9 @@ def discover_active_tournaments():
 
     active = {tid: info for tid, info in tracked.items() if tid in today}
     active['_discovered_at'] = now.isoformat()
+    # CORRIGÉ LE 29/08/2026 (audit v13 §BF) : écriture atomique.
     try:
-        with open(ACTIVE_TOURNAMENTS_FILE, 'w', encoding='utf-8') as f:
-            json.dump(active, f, ensure_ascii=False, indent=2)
+        ov.ecriture_atomique(ACTIVE_TOURNAMENTS_FILE, active, ensure_ascii=False, indent=2)
     except Exception as e:
         print(f"  ⚠️ écriture {ACTIVE_TOURNAMENTS_FILE}: {e}")
     real = {k: v for k, v in active.items() if not k.startswith('_')}
@@ -359,9 +366,10 @@ def fetch_odds(now=None):
         pass   # 1er run, fichier absent, ou format inattendu -> dernier_extended reste None
     extended = _is_extended_pass(now, dernier_extended)
     if extended:
+        # CORRIGÉ LE 29/08/2026 (audit v13 §BF) : écriture atomique, même
+        # raisonnement que capture_state.json ci-dessous.
         try:
-            json.dump({'last_extended_at': now.isoformat()},
-                     open(EXTENDED_STATE_FILE, 'w', encoding='utf-8'))
+            ov.ecriture_atomique(EXTENDED_STATE_FILE, {'last_extended_at': now.isoformat()})
         except OSError as e:
             print(f"  ℹ️ extended_state non écrit: {e}")
     horizon = now + datetime.timedelta(days=FUTURE_DAYS)
@@ -395,7 +403,12 @@ def fetch_odds(now=None):
             return [], f'{nreq} req (aucun match)'
     else:
         # PASSE STANDARD : fixtures du jour (hors SRL) + cotes batchées.
-        nreq = 1
+        # CORRIGÉ LE 29/08/2026 (audit v13 §BG) : nreq=1 était posé ici
+        # AVANT l'appel à fixtures_today_cached() -- comptait la requête
+        # même sur un cache HIT, masquant ~79 requêtes/jour du gain que
+        # la piste A est censée produire. nreq part maintenant de 0, et
+        # +1 seulement si l'appel était réellement réseau.
+        nreq = 0
         keep = []
         # AJOUTÉ LE 29/08/2026 (audit v12 §BD.1) : fixtures_today() renvoie
         # TOUS les matchs du jour, y compris ceux commencés il y a des
@@ -408,7 +421,10 @@ def fetch_odds(now=None):
         # peut être en avance, et c'est justement la fenêtre où la clôture
         # se capture -- mieux vaut une marge large qu'un match manqué.
         cutoff_standard = now - datetime.timedelta(hours=2)
-        for f in fixtures_today_cached(TENNIS_SPORT_ID, now):
+        _fixtures, _appel_reel = fixtures_today_cached(TENNIS_SPORT_ID, now)
+        if _appel_reel:
+            nreq += 1
+        for f in _fixtures:
             if ov.is_srl(f):
                 continue
             tid = str((f.get('tournament') or {}).get('tournamentId'))
@@ -922,8 +938,13 @@ def main():
     cutoff = (now - datetime.timedelta(days=PURGE_DAYS)).strftime('%Y-%m-%d')
     closing = {k: v for k, v in closing.items() if v.get('date', '') >= cutoff}
 
-    with open(CLOSING_FILE, 'w', encoding='utf-8') as f:
-        json.dump(closing, f, ensure_ascii=False, indent=2)
+    # CORRIGÉ LE 29/08/2026 (audit v13 §BF) : écriture atomique -- l'audit
+    # nomme explicitement ce fichier comme la cible la plus coûteuse d'un
+    # écrasement accidentel (1255+ matchs, l'accumulateur central de tout
+    # le dispositif). Une exception au milieu de l'écriture non-atomique
+    # aurait le MÊME effet que capture_state.json le 28/08, avec des
+    # conséquences bien plus lourdes qu'un heartbeat perdu.
+    ov.ecriture_atomique(CLOSING_FILE, closing, ensure_ascii=False, indent=2)
 
     n_s1 = sum(1 for m in matches if m.get('_s1_home') and m.get('_s1_away'))
     print(f"\n✅ {captured} captures · {len(closing)} matchs dans closing_lines.json"
@@ -932,20 +953,21 @@ def main():
     # Marqueur de heartbeat pour le worker Cloudflare : instant du dernier run de
     # capture, INDÉPENDANT du fait qu'un point d'historique ait été stocké (l'history
     # a sa propre dé-dup >1%/>30min). Le worker s'en sert pour piloter sa cadence.
-    # CORRIGÉ LE 29/08/2026 (audit v12 §BC) : `extended`/`dernier_extended`
-    # référençaient des variables locales à fetch_odds(), hors de portée
-    # ici -- NameError avalé par le except ci-dessous, capture_state.json
-    # plus jamais réécrit (voir le commentaire dans fetch_odds() pour la
-    # chaîne de conséquences complète). Ce fichier redevient un heartbeat
-    # pur ; last_extended_at vit maintenant dans extended_state.json,
-    # entièrement à l'intérieur de fetch_odds().
+    # CORRIGÉ LE 29/08/2026 (audit v13 §BF) : open(...,'w') tronque le
+    # fichier AVANT la première écriture -- exactement ce qui a laissé
+    # capture_state.json à 0 octet la nuit dernière (le NameError du §BC
+    # a explosé APRÈS la troncature, le fichier vide a été committé tel
+    # quel). ov.ecriture_atomique() écrit dans un .tmp puis os.replace()
+    # -- soit l'ancien fichier complet reste, soit le nouveau complet le
+    # remplace, jamais un état intermédiaire.
     try:
-        with open('capture_state.json', 'w', encoding='utf-8') as f:
-            json.dump({'last_capture_at': now.isoformat(),
-                       'captured': captured,
-                       'matches': len(closing),
-                       'requetes_ce_run': nreq_ce_run,
-                       'requetes_cumul_jour': requetes_cumul_jour}, f, ensure_ascii=False, indent=2)
+        ov.ecriture_atomique('capture_state.json', {
+            'last_capture_at': now.isoformat(),
+            'captured': captured,
+            'matches': len(closing),
+            'requetes_ce_run': nreq_ce_run,
+            'requetes_cumul_jour': requetes_cumul_jour,
+        }, ensure_ascii=False, indent=2)
     except Exception as e:
         print(f"  ℹ️ capture_state non écrit: {e}")
 
