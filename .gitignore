@@ -10,3 +10,12 @@ book_curves_live.jsonl
 set1_curves_live.jsonl
 set2_curves_live.jsonl
 /*.zip
+
+# AJOUTÉ LE 29/08/2026 (validation externe) : filet pour le cas SIGKILL --
+# ov.ecriture_atomique()/ecriture_atomique_texte() nettoient le .tmp
+# résiduel via un bloc except en cas d'échec, mais un processus tué
+# brutalement (timeout GitHub Actions, OOM) ne laisse jamais ce bloc
+# s'exécuter. Sans cette règle, un .tmp orphelin serait embarqué par le
+# prochain `git add -A` -- exactement le même risque que celui que
+# l'écriture atomique corrige, un niveau plus bas.
+*.tmp
