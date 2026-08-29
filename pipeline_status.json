@@ -1,0 +1,151 @@
+{
+  "run_termine": "2026-08-29T06:18:01",
+  "run_demarre": "2026-08-29T06:05:17",
+  "verdict_global": "1 livrable(s) à vérifier",
+  "livrables": [
+    {
+      "fichier": "set_results.json",
+      "libellé": "Résultats match + set",
+      "optionnel": false,
+      "externe": false,
+      "verdict": "✅ OK",
+      "octets": 235050,
+      "lignes": 2350,
+      "ecrit_ce_run": true,
+      "modifie": "2026-08-29T06:11:02"
+    },
+    {
+      "fichier": "resultats_derived.json",
+      "libellé": "Pont résultats (études)",
+      "optionnel": false,
+      "externe": true,
+      "verdict": "✅ OK",
+      "octets": 407396,
+      "lignes": 1537,
+      "ecrit_ce_run": true,
+      "modifie": "2026-08-29T06:06:40"
+    },
+    {
+      "fichier": "paper_trades_match.jsonl",
+      "libellé": "Journal forward — match",
+      "optionnel": false,
+      "externe": false,
+      "verdict": "✅ OK",
+      "octets": 15267,
+      "lignes": 37,
+      "ecrit_ce_run": true,
+      "modifie": "2026-08-29T06:11:56"
+    },
+    {
+      "fichier": "paper_trades_set1.jsonl",
+      "libellé": "Journal forward — set 1",
+      "optionnel": false,
+      "externe": false,
+      "verdict": "✅ OK",
+      "octets": 6949,
+      "lignes": 17,
+      "ecrit_ce_run": true,
+      "modifie": "2026-08-29T06:12:10"
+    },
+    {
+      "fichier": "paper_trades_set2.jsonl",
+      "libellé": "Journal forward — set 2",
+      "optionnel": true,
+      "externe": false,
+      "verdict": "⚠️ VIDE",
+      "octets": 0,
+      "lignes": 0,
+      "ecrit_ce_run": true,
+      "modifie": "2026-08-29T06:12:15"
+    },
+    {
+      "fichier": "moves_detail.csv",
+      "libellé": "Audit des moves (live)",
+      "optionnel": false,
+      "externe": false,
+      "verdict": "✅ OK",
+      "octets": 15542,
+      "lignes": 96,
+      "ecrit_ce_run": true,
+      "modifie": "2026-08-29T06:17:29"
+    },
+    {
+      "fichier": "moves_detail_hist.csv",
+      "libellé": "Audit des moves (historique)",
+      "optionnel": false,
+      "externe": false,
+      "verdict": "✅ OK",
+      "octets": 157718,
+      "lignes": 976,
+      "ecrit_ce_run": true,
+      "modifie": "2026-08-29T06:18:01"
+    },
+    {
+      "fichier": "canal_clv_detail.csv",
+      "libellé": "CLV réalisé du canal public",
+      "optionnel": false,
+      "externe": false,
+      "verdict": "✅ OK",
+      "octets": 23971,
+      "lignes": 155,
+      "ecrit_ce_run": true,
+      "modifie": "2026-08-29T06:17:26"
+    },
+    {
+      "fichier": "book_curves_live.jsonl",
+      "libellé": "Courbes live reconstruites",
+      "optionnel": false,
+      "externe": false,
+      "verdict": "✅ OK",
+      "octets": 22412443,
+      "lignes": 6529,
+      "ecrit_ce_run": true,
+      "modifie": "2026-08-29T06:06:42"
+    }
+  ],
+  "partitions": {
+    "total_mo": 640.3,
+    "zone_rouge": [],
+    "n_partitions": 80
+  },
+  "q3_qualite_cloture": {
+    "ecarts_gt_3pct": 162,
+    "n_total": 980,
+    "pct_ecarts": 16.5,
+    "seuil_pct": 30.0,
+    "alerte": false
+  },
+  "clv_vs_median": {
+    "genere_le": "2026-08-29T06:16:35.495158+00:00",
+    "n_moves_total": 949,
+    "n_cote_ambigu": 1,
+    "n_incomplet": 363,
+    "n_exploitables": 585,
+    "verdict": "calcule",
+    "prime_selection_pct": 1.351,
+    "prime_ic95": [
+      1.173,
+      1.471
+    ],
+    "derive_marche_pct": 3.509,
+    "derive_ic95": [
+      3.189,
+      3.929
+    ],
+    "total_clv_vs_median_pct": 5.263,
+    "total_ic95": [
+      4.636,
+      5.797
+    ],
+    "clv_book_pct_median": 4.9,
+    "ecart_book_vs_median_pct": -0.049,
+    "ecart_book_vs_median_ic95": [
+      -0.325,
+      -0.013
+    ],
+    "part_prime_pct": 25.7,
+    "pct_positif_prime": 76.9,
+    "pct_positif_derive": 81.0
+  },
+  "polymarket_studies": null
+}
