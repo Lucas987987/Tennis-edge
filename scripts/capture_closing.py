@@ -12,6 +12,7 @@ Le closing de référence pour le CLV = le snapshot le PLUS TARDIF disponible,
 Sinon le match est marqué closing_reliable=False et doit être EXCLU du CLV.
 """
 import json, datetime, os, re, sys
+import urllib.request, urllib.parse
 import oddspapi_v5 as ov  # client commun OddsPapi v5 (RapidAPI, appels curl)
 
 # ─────────────────────────────────────────────────────────────────────────
@@ -651,6 +652,41 @@ def trim_history(hist, cap):
         sampled = [older[i] for i in idxs]
     return sampled + recent
 
+
+def _envoyer_rapport_quotidien_telegram(date_veille, total_veille):
+    """AJOUTÉ LE 29/08/2026 (demande explicite de Lucas) : un message par
+    jour, sur le canal ADMIN (TELEGRAM_CHAT_ID -- jamais
+    TELEGRAM_PUBLIC_CHAT_ID, ce message n'a rien à faire sur @EvoCoteTennis),
+    donnant le total RÉEL de requêtes OddsPapi consommées la veille.
+
+    Appelé une seule fois, au run qui détecte le changement de journée UTC
+    (voir l'appelant) -- jamais par un workflow séparé sur un cron à
+    minuit, qui pourrait manquer la fenêtre ou lire un compteur déjà remis
+    à zéro par un autre run entre-temps.
+
+    Remplace l'estimation par un fait mesuré chaque jour -- le budget
+    théorique (~540 req/j selon le modèle de decide() dans le Worker) et le
+    budget réellement observé (~150 req/j le 29/08) divergent d'un facteur
+    ~3,5x, l'inconnue précise étant la fréquence propre du cron Cloudflare.
+    Ce rapport tranche la question avec des faits plutôt que des hypothèses,
+    jour après jour."""
+    token = os.environ.get('TELEGRAM_TOKEN')
+    chat_id = os.environ.get('TELEGRAM_CHAT_ID')
+    if not token or not chat_id:
+        print("  ℹ️ rapport quotidien non envoyé (TELEGRAM_TOKEN/TELEGRAM_CHAT_ID absent)")
+        return
+    texte = (f"📊 Requêtes OddsPapi le {date_veille.isoformat()} : "
+            f"{total_veille} requête(s).")
+    try:
+        req = urllib.request.Request(
+            f"https://api.telegram.org/bot{token}/sendMessage",
+            data=urllib.parse.urlencode({'chat_id': chat_id, 'text': texte}).encode())
+        urllib.request.urlopen(req, timeout=15)
+        print(f"  ✅ rapport quotidien envoyé : {texte}")
+    except Exception as e:
+        print(f"  ⚠️ envoi du rapport quotidien Telegram: {e}")
+
+
 def main():
     import sys
     now = datetime.datetime.utcnow()
@@ -719,6 +755,19 @@ def main():
         _prec_ts = datetime.datetime.fromisoformat(_prec.get('last_capture_at', ''))
         if _prec_ts.date() == now.date():
             requetes_cumul_jour += _prec.get('requetes_cumul_jour', 0)
+        else:
+            # AJOUTÉ LE 29/08/2026 (demande explicite de Lucas) : changement
+            # de journée UTC détecté -- _prec porte le TOTAL FINAL de la
+            # journée qui vient de se terminer, jamais revu après cet
+            # instant (le compteur repart de nreq_ce_run juste au-dessus).
+            # C'est le SEUL moment qui garantit d'envoyer ce total sans
+            # risquer qu'une capture concurrente ne l'écrase avant -- pas
+            # un workflow séparé sur un cron à minuit, qui pourrait rater
+            # la fenêtre ou lire un fichier déjà remis à zéro par un autre
+            # run. Le rapport part du run qui, par construction, est le
+            # premier de la nouvelle journée à passer par ce code.
+            _envoyer_rapport_quotidien_telegram(
+                _prec_ts.date(), _prec.get('requetes_cumul_jour', 0))
     except (OSError, ValueError, KeyError, TypeError):
         pass   # 1er run du jour, fichier absent, ou format inattendu -> repart de nreq_ce_run seul
 
