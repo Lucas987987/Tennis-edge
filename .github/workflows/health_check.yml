@@ -55,3 +55,23 @@ jobs:
           REPO: Lucas987987/Tennis-edge
         run: python scripts/repo_sentinel.py || true
 
+      # AJOUTÉ LE 30/08/2026 (validation externe, point 1) : health_check.yml
+      # n'avait AUCUNE étape de commit -- repo_size_status.json aurait été
+      # écrit sur le runner puis perdu à la fin du job, jamais poussé.
+      # Même motif de commit que polymarket_studies.yml (retry avec
+      # fetch/merge, jamais de push forcé qui écraserait un autre run).
+      - name: Committer le statut de taille du dépôt
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -- repo_size_status.json
+          git diff --staged --quiet && { echo "rien de neuf"; exit 0; }
+          git commit -m "Sentinelle taille du dépôt ($(date -u +%F))"
+          for essai in 1 2 3; do
+            git fetch origin main || true
+            git merge origin/main --no-edit || { git merge --abort 2>/dev/null || true; sleep 8; continue; }
+            git push && exit 0
+            sleep 8
+          done
+          exit 1
+
