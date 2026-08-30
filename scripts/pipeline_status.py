@@ -209,6 +209,31 @@ def main():
     elif pm_studies:
         pm_studies['fraicheur_inconnue_ou_perimee'] = True   # pas de genere_le -> ancien format, méfiance
 
+    # AJOUTÉ LE 30/08/2026 (validation externe, point 1) : repo_sentinel.py
+    # mesure la taille du dépôt tous les jours (health_check.yml, 7h37 UTC)
+    # depuis le 29/08, mais son verdict -- y compris un dépassement de seuil
+    # -- ne vivait que dans un log de run, derrière un `|| true`. "L'alerte
+    # la plus urgente du projet" (l'historique git grossit de ~0,15 Go/jour
+    # vers un mur GitHub à ~5 Go) était aussi la moins visible. Même motif
+    # de fraîcheur que pm_studies : écrit par un AUTRE workflow, seuil 36h
+    # (le cycle normal est ~16-17h entre les deux crons).
+    repo_size = None
+    try:
+        repo_size = json.load(open('repo_size_status.json', encoding='utf-8'))
+    except (OSError, ValueError):
+        pass
+    if repo_size and repo_size.get('genere_le'):
+        try:
+            genere = datetime.datetime.fromisoformat(
+                repo_size['genere_le'].replace('Z', '+00:00'))
+            age_h = (datetime.datetime.now(datetime.timezone.utc) - genere).total_seconds() / 3600
+            repo_size['age_heures'] = round(age_h, 1)
+            repo_size['fraicheur_inconnue_ou_perimee'] = age_h > 36
+        except (ValueError, TypeError):
+            repo_size['fraicheur_inconnue_ou_perimee'] = True
+    elif repo_size:
+        repo_size['fraicheur_inconnue_ou_perimee'] = True
+
     payload = {
         'run_termine': datetime.datetime.utcnow().isoformat(timespec='seconds'),
         'run_demarre': started.isoformat(timespec='seconds'),
@@ -218,6 +243,7 @@ def main():
         'q3_qualite_cloture': q3,
         'clv_vs_median': clv_median,
         'polymarket_studies': pm_studies,
+        'repo_size': repo_size,
     }
     json.dump(payload, open(OUT_JSON, 'w', encoding='utf-8'),
               ensure_ascii=False, indent=2)
@@ -277,6 +303,27 @@ def main():
             av_txt = f" · {n_av} avertissement(s) (info)" if n_av else ''
             L.append(f"{etat} **Études Polymarket** : {pm_studies.get('n_echecs', '?')} échec(s)"
                      f"{av_txt} (il y a {pm_studies.get('age_heures', '?')}h)")
+    # AJOUTÉ LE 30/08/2026 (validation externe, point 1) : "l'alerte la plus
+    # urgente du projet" rendue visible ici plutôt que dans un log de run.
+    if repo_size:
+        if repo_size.get('fraicheur_inconnue_ou_perimee'):
+            L.append(f"⏳ **Taille du dépôt** : statut périmé ou sans date "
+                     f"(âge {repo_size.get('age_heures', '?')}h) -- le "
+                     f"producteur (health_check.yml) tourne-t-il encore ?")
+        elif repo_size.get('zone') == 'alarme':
+            L.append(f"🔴 **Taille du dépôt** : {repo_size.get('taille_go', '?')} Go "
+                     f"-- SEUIL FRANCHI (alarme {repo_size.get('seuil_alarme_go', '?')} Go, "
+                     f"zone GitHub ~5 Go) -- {repo_size.get('message', '')}")
+        elif repo_size.get('zone') == 'vigilance':
+            L.append(f"🟠 **Taille du dépôt** : {repo_size.get('taille_go', '?')} Go "
+                     f"-- zone de vigilance, marge {repo_size.get('marge_go', '?')} Go "
+                     f"avant le seuil de {repo_size.get('seuil_alarme_go', '?')} Go")
+        elif repo_size.get('zone') == 'indisponible':
+            L.append(f"⚠️ **Taille du dépôt** : mesure indisponible ce run "
+                     f"({repo_size.get('message', '')})")
+        else:
+            L.append(f"✅ **Taille du dépôt** : {repo_size.get('taille_go', '?')} Go "
+                     f"(marge {repo_size.get('marge_go', '?')} Go)")
     L.append('')
     L.append('Légende : ✅ produit pendant ce run · ⏳ présent mais non réécrit '
              '(le script n\'a rien produit) · ⚠️ vide ou réduit à son en-tête · ❌ absent.')
@@ -338,6 +385,18 @@ def main():
                                    "le producteur tourne-t-il encore ?")
         elif pm_studies and pm_studies.get('alerte'):
             alertes_contenu.append(f"Polymarket : {pm_studies.get('n_echecs', '?')} échec(s)")
+        # AJOUTÉ LE 30/08/2026 (validation externe, point 1) : la zone
+        # ALARME (dépôt au-dessus du seuil, mur GitHub ~5 Go tout proche)
+        # bloque --strict -- une taille de dépôt hors contrôle est une
+        # urgence au moins aussi réelle que les autres alertes de contenu
+        # ci-dessus. La zone VIGILANCE, elle, ne bloque PAS (même logique
+        # que Q3/CLV : signaler tôt sans rendre le run rouge trop tôt).
+        if repo_size and repo_size.get('fraicheur_inconnue_ou_perimee'):
+            alertes_contenu.append("Taille du dépôt : statut périmé ou sans date -- "
+                                   "le producteur (health_check.yml) tourne-t-il encore ?")
+        elif repo_size and repo_size.get('zone') == 'alarme':
+            alertes_contenu.append(f"Taille du dépôt : {repo_size.get('taille_go', '?')} Go, "
+                                   f"seuil franchi ({repo_size.get('seuil_alarme_go', '?')} Go)")
         if ko_dur or alertes_contenu:
             print(f"\n🔒 STRICT : {len(ko_dur)} livrable(s) critique(s) en défaut, "
                  f"{len(alertes_contenu)} alerte(s) de contenu -> exit 1")
