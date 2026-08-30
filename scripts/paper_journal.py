@@ -493,6 +493,20 @@ def main():
                     else:
                         n_reste_a_regler += 1
             elif not bk:
+                # CORRIGÉ LE 30/08/2026 (validation externe, point 7) : un
+                # trade déjà en CLOSED_NO_RESULT dont la courbe est sortie
+                # des DEUX fenêtres (data ET track) ne repasse plus jamais
+                # par settle_trade() -- donc closed_no_result_depuis (posé
+                # par settle_trade(), ligne ~331) ne se pose JAMAIS pour lui,
+                # donc la bascule ABANDONNED après 7j (audit v4 §Z, plus
+                # haut dans cette fonction) ne se déclenche JAMAIS non plus.
+                # Trouvé sur les vraies données : 7 trades bloqués, le plus
+                # ancien depuis 22 jours -- 5 sur 7 sans closed_no_result_depuis
+                # du tout. Le bookkeeping de CETTE date ne nécessite pas `bk`
+                # (contrairement au règlement lui-même) ; le poser ici
+                # n'attend plus un retour de courbe qui ne reviendra jamais.
+                if t.get('status') == 'CLOSED_NO_RESULT' and 'closed_no_result_depuis' not in t:
+                    t['closed_no_result_depuis'] = datetime.date.today().isoformat()
                 n_reste_a_regler += 1
     if n_reste_a_regler:
         print(f"  {n_reste_a_regler} trade(s) toujours sans résultat "
