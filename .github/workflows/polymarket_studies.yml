@@ -66,8 +66,17 @@ jobs:
           echo '```' >> polymarket_studies_report.md
           for s in polymarket_flow polymarket_leadlag polymarket_studies pm_calibration_track pm_observations; do
             echo "--- $s ---" >> polymarket_studies_report.md
+            # CORRIGÉ LE 30/08/2026 (validation externe, point 2) : ⚠️ pour
+            # un ÉCHEC RÉEL (code 124 = timeout, ou toute autre sortie non
+            # nulle) -- avant le correctif d'hier (audit v9-v10) qui a
+            # séparé n_echecs (❌, bloquant) de n_avertissements (⚠️, info),
+            # les deux symboles étaient comptés ensemble et cette erreur ne
+            # portait pas à conséquence. Une fois séparés, un script qui
+            # timeout TOUS LES JOURS (mesuré : polymarket_flow > 8 min
+            # contre un timeout de 300s) tombait dans le compteur qui ne
+            # bloque JAMAIS --strict, vert en continu.
             PYTHONPATH=scripts timeout 300 python scripts/${s}.py >> polymarket_studies_report.md 2>&1 \
-              || echo "⚠️ ${s}.py EN ÉCHEC (code $?)" >> polymarket_studies_report.md
+              || echo "❌ ${s}.py EN ÉCHEC (code $?)" >> polymarket_studies_report.md
             echo >> polymarket_studies_report.md
           done
           echo '```' >> polymarket_studies_report.md
