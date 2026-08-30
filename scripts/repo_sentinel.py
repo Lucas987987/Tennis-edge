@@ -26,10 +26,35 @@ import json
 import os
 import subprocess
 import sys
+import datetime
+import oddspapi_v5 as ov   # AJOUTÉ 29/08/2026 (validation externe, point 1) : ov.ecriture_atomique()
 
 REPO = os.environ.get('REPO', 'Lucas987987/Tennis-edge')
 SEUIL_GO = float(os.environ.get('SEUIL_GO', '4.0'))
 SEUIL_VIGILANCE_GO = float(os.environ.get('SEUIL_VIGILANCE_GO', '3.0'))
+
+
+def _ecrire_statut(zone, taille_go=None, marge_go=None, message=''):
+    """AJOUTÉ LE 29/08/2026 (validation externe, point 1) : jusqu'ici cette
+    sentinelle n'écrivait RIEN -- son verdict, y compris un dépassement de
+    seuil, ne vivait que dans le log du run (health_check.yml), derrière un
+    `|| true`. C'était, mot pour mot, "l'alerte la plus urgente du projet"
+    et la moins visible. Écrit dans repo_size_status.json, lu par
+    pipeline_status.py (même motif que q3_status.json/
+    polymarket_studies_status.json) -- rendu dans pipeline_status.md, visible
+    sans ouvrir un seul log de run."""
+    try:
+        ov.ecriture_atomique('repo_size_status.json', {
+            'zone': zone,   # 'ok' | 'vigilance' | 'alarme' | 'indisponible'
+            'taille_go': round(taille_go, 2) if taille_go is not None else None,
+            'marge_go': round(marge_go, 2) if marge_go is not None else None,
+            'seuil_vigilance_go': SEUIL_VIGILANCE_GO,
+            'seuil_alarme_go': SEUIL_GO,
+            'message': message,
+            'genere_le': datetime.datetime.now(datetime.timezone.utc).isoformat(),
+        }, ensure_ascii=False, indent=1)
+    except OSError as e:
+        print(f"  ℹ️ repo_size_status non écrit: {e}")
 
 
 def main():
@@ -45,16 +70,20 @@ def main():
         # `gh` aurait rendu health_check rouge tous les jours, et le rouge
         # aurait cessé d'être un signal. L'indisponibilité est un
         # AVERTISSEMENT, pas un échec.
-        print(f"⚠️ sentinelle : gh api indisponible ({r.stderr.strip()[:120]}) "
-              f"— taille NON vérifiée ce run. Ce n'est PAS un dépassement de "
-              f"seuil ; mais si ce message revient plusieurs jours d'affilée, "
-              f"la surveillance est AVEUGLE et il faut traiter la cause.")
+        msg = (f"gh api indisponible ({r.stderr.strip()[:120]}) — taille NON "
+              f"vérifiée ce run.")
+        print(f"⚠️ sentinelle : {msg} Ce n'est PAS un dépassement de seuil ; "
+             f"mais si ce message revient plusieurs jours d'affilée, la "
+             f"surveillance est AVEUGLE et il faut traiter la cause.")
+        _ecrire_statut('indisponible', message=msg)
         return 0
 
     try:
         taille_go = json.loads(r.stdout).get('size', 0) / 1e6   # l'API renvoie des Ko
     except (ValueError, AttributeError) as e:
-        print(f"⚠️ sentinelle : réponse gh illisible ({e}) — taille NON vérifiée.")
+        msg = f"réponse gh illisible ({e}) — taille NON vérifiée."
+        print(f"⚠️ sentinelle : {msg}")
+        _ecrire_statut('indisponible', message=msg)
         return 0
 
     print(f"SENTINELLE DÉPÔT : {taille_go:.2f} Go côté serveur "
@@ -65,8 +94,9 @@ def main():
     # SOUS-estimer. À lire comme un plancher, pas comme une mesure exacte.
 
     if taille_go >= SEUIL_GO:
-        print("  🔴 SEUIL FRANCHI — lancer le git filter-repo "
-              "(RUNBOOK_FILTER_REPO.md) sans attendre.")
+        msg = "SEUIL FRANCHI — lancer le git filter-repo (RUNBOOK_FILTER_REPO.md) sans attendre."
+        print(f"  🔴 {msg}")
+        _ecrire_statut('alarme', taille_go=taille_go, marge_go=SEUIL_GO - taille_go, message=msg)
         return 1 if strict else 0
 
     marge = SEUIL_GO - taille_go
@@ -75,11 +105,13 @@ def main():
         # « ✅ marge restante » était trompeusement rassurant. La bande de
         # vigilance rend l'approche du seuil visible AVANT le franchissement,
         # sans rendre le run rouge (ce n'est pas encore une urgence).
-        print(f"  🟠 ZONE DE VIGILANCE — marge restante : {marge:.2f} Go. "
-              f"Planifier la purge, ne pas attendre le rouge.")
+        msg = f"ZONE DE VIGILANCE — marge restante : {marge:.2f} Go. Planifier la purge, ne pas attendre le rouge."
+        print(f"  🟠 {msg}")
+        _ecrire_statut('vigilance', taille_go=taille_go, marge_go=marge, message=msg)
         return 0
 
     print(f"  ✅ marge restante : {marge:.2f} Go.")
+    _ecrire_statut('ok', taille_go=taille_go, marge_go=marge, message=f"marge restante : {marge:.2f} Go.")
     return 0
 
 
