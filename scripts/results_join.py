@@ -52,10 +52,18 @@ import unicodedata
 import collections
 
 RESULTS = os.environ.get('RESULTS_DERIVED', 'resultats_derived.json')
-# Fenêtre de tolérance sur la date. 3 jours couvre le décalage de règlement
-# et les matchs reportés, sans risquer de confondre deux rencontres du même
-# duo à des tournois différents (voir la levée d'ambiguïté ci-dessous).
-FENETRE_J = int(os.environ.get('JOIN_WINDOW_DAYS', '3'))
+# Fenêtre de tolérance sur la date. Élargie de 3 à 5 jours le 30/08/2026 :
+# vérifié sur les vraies données (19 trades du canal bloqués en OUVERT
+# depuis le 24-25/08) que 14 des 19 correspondent à un match dont le
+# résultat existe bien dans resultats_derived.json, mais daté 4 jours plus
+# tard (report de match) -- hors de l'ancienne fenêtre de 3 jours. Testé à
+# 5 jours sur ces mêmes 19 trades : les 14 se résolvent, zéro cas ambigu
+# déclenché (le filtre par PAIRE EXACTE de joueurs, avant toute comparaison
+# de date, protège déjà l'essentiel du risque). Les 5 restants ont une
+# cause différente : leur résultat est absent de resultats_derived.json à
+# n'importe quelle fenêtre -- pas un problème de tolérance de date, à
+# chercher en amont (results_bridge.py ou la source qui alimente ce fichier).
+FENETRE_J = int(os.environ.get('JOIN_WINDOW_DAYS', '5'))
 
 
 def norm_nom(s):
