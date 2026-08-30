@@ -315,39 +315,64 @@ def check_hist_partition_sizes(problems):
 
 
 def check_joins(problems):
-    """Cohérence des clés uid entre backtest et resultats.json (info, non bloquant)."""
-    bt = _csv_uids(BACKTEST_FILE)
-    if not bt:
+    """Cohérence entre backtest et résultats connus (info, non bloquant).
+
+    CORRIGÉ LE 30/08/2026 : comparait les uid du backtest (format
+    `date_joueurA_joueurB`) aux id de resultats.json -- mais resultats.json
+    est, depuis le 27/08/2026 (audit §1.3), PERMANENTMENT en mode repli
+    (Sackmann injoignable depuis ce runner, egress bloqué -- documenté dans
+    fetch_results.py). En repli, ses id prennent le format
+    `date_gagnant_repli` (UN SEUL joueur, suffixe littéral) -- structurellement
+    incompatible avec le format à deux joueurs du backtest. Résultat : 98/98
+    (100%) de « désaccords » à chaque run, aucune information utile, juste
+    le bruit d'une comparaison entre deux conventions qui ne se recoupent
+    plus depuis 3 jours.
+
+    resultats_derived.json (la source du repli lui-même, format
+    `date_joueurA_joueurB` natif) est le fichier réellement compatible --
+    et results_join.ResultIndex sait déjà l'interroger correctement (même
+    outil que paper_journal_canal.py, testé aujourd'hui à 90/99 sur les
+    trades canal). Réutilisé ici plutôt que réimplémenté."""
+    try:
+        with open(BACKTEST_FILE, encoding='utf-8') as f:
+            lignes = list(csv.DictReader(f, delimiter=CSV_SEP))
+    except Exception:
         return
-    res_ids = set()
-    if os.path.exists(RESULTS_FILE):
-        try:
-            with open(RESULTS_FILE, encoding='utf-8') as f:
-                data = json.load(f)
-            for item in data.get('results', []):
-                if item.get('id'):
-                    res_ids.add(item['id'])
-        except Exception:
-            return
-    # Combien de matchs du backtest AVEC résultat attendu trouvent leur id ?
-    # On ne compte que ceux dont la date est passée (sinon normal qu'il manque).
-    if not res_ids:
+    if not lignes:
         return
+    try:
+        from results_join import ResultIndex, FENETRE_J
+        idx = ResultIndex()
+    except Exception as e:
+        problems.append(('INFO', f"check_joins : ResultIndex indisponible ({e})."))
+        return
+    if idx.n == 0:
+        return   # resultats_derived.json absent/vide -- rien à comparer, pas une anomalie en soi
+    # Plage de dates réellement couverte -- même logique que l'ancien code
+    # (qui la lisait sur resultats.json), relue ici sur la VRAIE source. Un
+    # match du backtest hors de cette plage n'a jamais eu de résultat à
+    # trouver ; ce n'est pas une anomalie, juste une question de couverture.
+    try:
+        derive = json.load(open('resultats_derived.json', encoding='utf-8'))
+        res_dates = sorted(r.get('date', '') for r in derive.get('results', []) if r.get('date'))
+    except (OSError, ValueError):
+        res_dates = []
+    if not res_dates:
+        return
+    res_min_date, res_max_date = res_dates[0], res_dates[-1]
     today = _utcnow().date().isoformat()
-    res_dates = {r[:10] for r in res_ids}
-    # On ne juge la jointure QUE sur la plage de dates couverte par resultats.json.
-    # Si un match du backtest est plus récent que tout resultats.json, c'est normal
-    # qu'il n'ait pas encore de résultat (resultats.json pas régénéré) -> pas une anomalie.
-    res_max_date = max(res_dates)
-    # matchs passés ET dans la plage temporelle des résultats disponibles
-    checkable = {u for u in bt if u[:10] < today and u[:10] <= res_max_date}
+    checkable = [r for r in lignes
+                if r.get('date_match') and r['date_match'] < today
+                and res_min_date <= r['date_match'] <= res_max_date
+                and r.get('joueurA') and r.get('joueurB')]
     if len(checkable) >= 5:
-        matched = sum(1 for u in checkable if u in res_ids)
-        miss = len(checkable) - matched
+        miss = sum(1 for r in checkable
+                   if idx.winner(r['joueurA'], r['joueurB'], r['date_match']) is None)
         if miss / len(checkable) > 0.3:
             problems.append(('INFO', f"{miss}/{len(checkable)} matchs du backtest (dans la plage "
-                                     f"de resultats.json) n'ont pas de résultat correspondant. "
-                                     f"Jointure uid/id à vérifier (ordre des joueurs ?)."))
+                                     f"{res_min_date}..{res_max_date} de resultats_derived.json) "
+                                     f"sans résultat trouvé (fenêtre ±{FENETRE_J} j). Vérifier "
+                                     f"l'orthographe des noms."))
 
 
 def send_telegram(token, chat_id, text):
