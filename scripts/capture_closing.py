@@ -687,12 +687,51 @@ def _envoyer_rapport_quotidien_telegram(date_veille, total_veille):
         print(f"  ⚠️ envoi du rapport quotidien Telegram: {e}")
 
 
+def _verifier_et_envoyer_rapport_si_besoin(now):
+    """AJOUTÉ LE 30/08/2026 (validation externe, point 5) : la détection du
+    changement de journée UTC (et l'envoi du rapport qui va avec) vivait
+    plus bas dans main(), APRÈS le court-circuit du cron de secours -- un
+    `return` prématuré (worker actif, rien à faire) sautait cette détection
+    entièrement. Le rapport n'était alors envoyé qu'au prochain vrai
+    dispatch du worker, pas nécessairement juste après minuit UTC.
+
+    Extrait en fonction indépendante, appelée AVANT toute décision de
+    court-circuiter -- la détection de changement de jour ne coûte rien
+    (une lecture de fichier), elle n'a aucune raison de dépendre du fait
+    que CE run fasse ou non une vraie capture. Idempotent via
+    rapport_envoye_pour (voir _envoyer_rapport_quotidien_telegram) : si le
+    run normal plus bas dans main() détecte le même changement de jour, il
+    ne renverra pas -- protection déjà en place, pas dupliquée ici."""
+    try:
+        _etat = json.load(open('capture_state.json', encoding='utf-8'))
+        _ts = datetime.datetime.fromisoformat(_etat.get('last_capture_at', ''))
+        if _ts.date() == now.date():
+            return   # pas de changement de jour, rien à faire ici
+        _date_veille_iso = _ts.date().isoformat()
+        if _etat.get('rapport_envoye_pour') == _date_veille_iso:
+            return   # déjà envoyé (par ce run-ci ou un précédent)
+        _envoyer_rapport_quotidien_telegram(_ts.date(), _etat.get('requetes_cumul_jour', 0))
+        # Écriture immédiate du marqueur SEUL -- pas tout capture_state.json
+        # (les autres champs restent la responsabilité du run qui capture
+        # réellement, plus bas dans main() ou dans un run normal). Préserve
+        # tous les autres champs existants, ne touche que le marqueur.
+        _etat['rapport_envoye_pour'] = _date_veille_iso
+        ov.ecriture_atomique('capture_state.json', _etat, ensure_ascii=False, indent=2)
+    except (OSError, ValueError, KeyError, TypeError):
+        pass   # état absent/illisible -> le run normal plus bas gérera si besoin
+
+
 def main():
     import sys
     now = datetime.datetime.utcnow()
     if not ov.KEY:
         print("❌ RAPIDAPI_KEY absente (secret GitHub manquant)")
         return
+
+    # AJOUTÉ LE 30/08/2026 (point 5) : appelé ICI, avant toute décision de
+    # court-circuiter -- voir la docstring de la fonction pour le
+    # raisonnement complet.
+    _verifier_et_envoyer_rapport_si_besoin(now)
 
     # AJOUTÉ LE 29/08/2026 (demande explicite de Lucas -- filet de sécurité
     # si le worker Cloudflare tombe, sans doubler le budget de requêtes
@@ -750,9 +789,14 @@ def main():
     _m_nreq = re.match(r'^(\d+)', remaining)
     nreq_ce_run = int(_m_nreq.group(1)) if _m_nreq else 0
     requetes_cumul_jour = nreq_ce_run
+    # AJOUTÉ LE 30/08/2026 (validation externe, point 5) : rapport_envoye_pour
+    # -- par défaut, on préserve la valeur précédente (si ce run ne touche
+    # pas au rapport, rien ne doit changer sur ce champ).
+    rapport_envoye_pour = None
     try:
         _prec = json.load(open('capture_state.json', encoding='utf-8'))
         _prec_ts = datetime.datetime.fromisoformat(_prec.get('last_capture_at', ''))
+        rapport_envoye_pour = _prec.get('rapport_envoye_pour')
         if _prec_ts.date() == now.date():
             requetes_cumul_jour += _prec.get('requetes_cumul_jour', 0)
         else:
@@ -766,8 +810,25 @@ def main():
             # la fenêtre ou lire un fichier déjà remis à zéro par un autre
             # run. Le rapport part du run qui, par construction, est le
             # premier de la nouvelle journée à passer par ce code.
-            _envoyer_rapport_quotidien_telegram(
-                _prec_ts.date(), _prec.get('requetes_cumul_jour', 0))
+            #
+            # CORRIGÉ LE 30/08/2026 (validation externe, point 5) : ce point
+            # unique dans le code ne protège PAS contre deux runs
+            # authentiquement CONCURRENTS lisant le même capture_state.json
+            # non encore réécrit (ce pipeline tolère des chevauchements --
+            # cancel-in-progress: false). rapport_envoye_pour marque la
+            # date pour laquelle l'envoi a eu lieu, relu ici : un rejeu sur
+            # le même état périmé ne renvoie pas. Ne ferme pas la fenêtre de
+            # course la plus étroite (deux runs strictement simultanés lisant
+            # l'état AVANT que l'un ou l'autre n'écrive), mais couvre le cas
+            # courant (rejeu séquentiel, retry manuel, etc.).
+            _date_veille_iso = _prec_ts.date().isoformat()
+            if rapport_envoye_pour == _date_veille_iso:
+                print(f"  ⏭️ rapport quotidien déjà envoyé pour {_date_veille_iso} "
+                     f"-- pas de renvoi (rejeu détecté).")
+            else:
+                _envoyer_rapport_quotidien_telegram(
+                    _prec_ts.date(), _prec.get('requetes_cumul_jour', 0))
+                rapport_envoye_pour = _date_veille_iso
     except (OSError, ValueError, KeyError, TypeError):
         pass   # 1er run du jour, fichier absent, ou format inattendu -> repart de nreq_ce_run seul
 
@@ -1044,6 +1105,7 @@ def main():
             'matches': len(closing),
             'requetes_ce_run': nreq_ce_run,
             'requetes_cumul_jour': requetes_cumul_jour,
+            'rapport_envoye_pour': rapport_envoye_pour,
         }, ensure_ascii=False, indent=2)
     except Exception as e:
         print(f"  ℹ️ capture_state non écrit: {e}")
