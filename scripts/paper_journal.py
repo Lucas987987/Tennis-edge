@@ -129,7 +129,26 @@ def save_journal(trades):
 
 def pick_signal(bk, softbooks, thr_by_book, entry_at='now'):
     """Meilleur book actif. entry_at='detection' (t_e, pour backfill) ou 'now'
-    (dernier point dispo, pour le live forward). Retourne le signal ou None."""
+    (dernier point dispo, pour le live forward). Retourne le signal ou None.
+
+    CORRIGÉ LE 30/08/2026 (point 8 du document d'analyse) : triait par
+    (pct, odds) -- taux de réussite historique d'abord, cote ensuite --
+    `ev` n'apparaissait même pas dans le tri, seulement comme filtre de
+    seuil. steam_alert.py (l'alerte RÉELLEMENT envoyée) trie par
+    (ev, pct) : « EV d'abord, c'est elle qui paie » (son propre
+    commentaire). Ce script existe pour VALIDER ce signal réel -- tester un
+    critère de sélection différent, sans justification écrite nulle part,
+    revient à valider une stratégie que personne ne déploie. Harmonisé sur
+    le critère de steam_alert.py, la seule des deux versions à avoir une
+    justification explicite.
+
+    Au passage : l'ancien filtre `if pfair and (...) < EV_MIN_NOW` laissait
+    passer un candidat SANS AUCUN contrôle d'EV quand pfair était None/0
+    (pfair falsy -> tout le "and" est False -> pas de `continue`) --
+    steam_alert.py, lui, exige `pfair_side` AVANT même de calculer l'EV
+    (`if not pfair_side: continue`). Repris ici pour la même raison :
+    mieux vaut écarter un candidat au fair-price incalculable que
+    l'admettre sans le filtre censé le qualifier."""
     if sa.SHARP not in bk:
         return None
     ptimes = sorted(set(t for t, _ in bk[sa.SHARP]['h']))
@@ -145,17 +164,23 @@ def pick_signal(bk, softbooks, thr_by_book, entry_at='now'):
         et = t_e if entry_at == 'detection' else ptimes[-1]
         pf = sa._fair(bk[sa.SHARP], et)
         pfair = (pf if side == 'home' else 1 - pf) if pf else None
+        if not pfair:
+            continue
         ser = bk[sb]['h'] if side == 'home' else bk[sb]['a']
         cur = sa._at(ser, et)
         if not cur or cur <= 1:
             continue
-        if pfair and (cur * pfair - 1) < sa.EV_MIN_NOW:
+        ev = cur * pfair - 1
+        if ev < sa.EV_MIN_NOW:
             continue
         pct = sdat['pct'] if sdat else 0
-        cands.append({'book': sb, 'thr': mv, 'side': side, 'odds': cur, 'pct': pct, 't_e': t_e})
+        cands.append({'book': sb, 'thr': mv, 'side': side, 'odds': cur,
+                      'pct': pct, 'ev': ev, 't_e': t_e})
     if not cands:
         return None
-    return max(cands, key=lambda c: (c['pct'], c['odds']))
+    # meilleur : EV d'abord (c'est elle qui paie), reussite historique ensuite
+    # -- même critère, même ordre, même commentaire que steam_alert.py.
+    return max(cands, key=lambda c: (c['ev'], c['pct']))
 
 
 def _dernier_avant(curve, ts_limite):
