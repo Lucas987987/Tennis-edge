@@ -1,46 +1,46 @@
-# Études Polymarket/Kalshi — rapport du 2026-08-31
+# Études Polymarket/Kalshi — rapport du 2026-09-01
 
 ```
 --- polymarket_flow ---
 ❌ polymarket_flow.py EN ÉCHEC (code 124)
 
 --- polymarket_leadlag ---
-Polymarket : 16 partition(s), 3175182 ticks lus, 726 match(s) avec série 'match'
-Pinnacle   : 276 match(s) avec courbe exploitable
+Polymarket : 15 partition(s), 3000602 ticks lus, 654 match(s) avec série 'match'
+Pinnacle   : 240 match(s) avec courbe exploitable
 
 ========================================================================
 LEAD/LAG POLYMARKET vs PINNACLE — marché 'match'
-262 match(s) · grille 5 min · variations, pas niveaux
+233 match(s) · grille 5 min · variations, pas niveaux
 ========================================================================
   décalage |  corrélation | qui mène
 ------------------------------------------------------------------------
-    -60min |       +0.008 | Polymarket devant
+    -60min |       +0.007 | Polymarket devant
     -55min |       -0.007 | Polymarket devant
-    -50min |       +0.009 | Polymarket devant
+    -50min |       +0.008 | Polymarket devant
     -45min |       -0.011 | Polymarket devant
-    -40min |       +0.009 | Polymarket devant
-    -35min |       +0.001 | Polymarket devant
-    -30min |       -0.010 | Polymarket devant
-    -25min |       -0.004 | Polymarket devant
-    -20min |       +0.013 | Polymarket devant
-    -15min |       +0.006 | Polymarket devant
-    -10min |       +0.008 | Polymarket devant
-     -5min |       -0.007 | Polymarket devant
-     +0min |       +0.118 | simultané  <<<
+    -40min |       +0.008 | Polymarket devant
+    -35min |       +0.006 | Polymarket devant
+    -30min |       -0.012 | Polymarket devant
+    -25min |       +0.000 | Polymarket devant
+    -20min |       +0.014 | Polymarket devant
+    -15min |       +0.009 | Polymarket devant
+    -10min |       +0.003 | Polymarket devant
+     -5min |       -0.004 | Polymarket devant
+     +0min |       +0.113 | simultané  <<<
      +5min |       +0.085 | Pinnacle devant
-    +10min |       +0.038 | Pinnacle devant
-    +15min |       +0.018 | Pinnacle devant
-    +20min |       +0.024 | Pinnacle devant
-    +25min |       +0.012 | Pinnacle devant
-    +30min |       +0.010 | Pinnacle devant
-    +35min |       +0.002 | Pinnacle devant
-    +40min |       +0.002 | Pinnacle devant
-    +45min |       +0.009 | Pinnacle devant
+    +10min |       +0.031 | Pinnacle devant
+    +15min |       +0.013 | Pinnacle devant
+    +20min |       +0.026 | Pinnacle devant
+    +25min |       +0.015 | Pinnacle devant
+    +30min |       +0.011 | Pinnacle devant
+    +35min |       +0.005 | Pinnacle devant
+    +40min |       -0.001 | Pinnacle devant
+    +45min |       +0.010 | Pinnacle devant
     +50min |       +0.002 | Pinnacle devant
     +55min |       -0.006 | Pinnacle devant
-    +60min |       +0.001 | Pinnacle devant
+    +60min |       -0.004 | Pinnacle devant
 
-Maximum à +0 min (corrélation +0.118)
+Maximum à +0 min (corrélation +0.113)
 Seuil de bruit (95e centile sur 200 appariements factices) : +0.041
 → Le maximum dépasse la distribution nulle. Signal à confirmer
   sur davantage de matchs avant toute conclusion.
@@ -50,31 +50,31 @@ Seuil de bruit (95e centile sur 200 appariements factices) : +0.041
 Rapport écrit dans polymarket_leadlag_report.json
 
 --- polymarket_studies ---
-Source(s) : kalshi (16 partition(s))
-  3175182 ticks lus · 720 match(s) exploitables (fourchette max 10 pts)
-Books      : 281 match(s), dont 276 avec pinnacle
+Source(s) : kalshi (15 partition(s))
+  3000602 ticks lus · 648 match(s) exploitables (fourchette max 10 pts)
+Books      : 240 match(s), dont 240 avec pinnacle
 
 ==========================================================================
 1. VALIDATION DU DÉVIGAGE — Shin(Pinnacle) vs marché de prédiction
 ==========================================================================
-  n = 267 matchs (41363 instants, grille 5 min)
-  écart moyen Shin - marché      : +0.01 pts  IC95 [-0.07 ; +0.09]
+  n = 233 matchs (38782 instants, grille 5 min)
+  écart moyen Shin - marché      : -0.00 pts  IC95 [-0.08 ; +0.08]
   écart médian par match : -0.04 pts
 
   méthode          matchs  écart moyen                IC95
   --------------------------------------------------------
-  Shin                267       +0.01  [-0.07 ; +0.09]
-  proportionnel       267       -0.04  [-0.17 ; +0.09]
-  → plus proche de Polymarket : Shin (écart 0.01 contre 0.04 pt)
+  Shin                233       -0.00  [-0.08 ; +0.08]
+  proportionnel       233       -0.04  [-0.17 ; +0.08]
+  → plus proche de Polymarket : Shin (écart 0.00 contre 0.04 pt)
     mais la différence entre les deux est elle-même négligeable :
     sur cet échantillon, le choix de méthode ne change rien.
 
    tranche favori | matchs |  écart moyen |               IC95
   ------------------------------------------------------------
-           50-60% |   122 |       +0.04 | [ -0.12 ;  +0.20]
-           60-70% |   124 |       -0.09 | [ -0.28 ;  +0.10]
-           70-80% |    66 |       -0.13 | [ -0.50 ;  +0.25]
-           80-90% |    35 |       -0.05 | [ -0.43 ;  +0.32]
+           50-60% |   111 |       +0.05 | [ -0.13 ;  +0.22]
+           60-70% |   112 |       -0.10 | [ -0.30 ;  +0.11]
+           70-80% |    60 |       -0.10 | [ -0.48 ;  +0.28]
+           80-90% |    28 |       +0.01 | [ -0.40 ;  +0.42]
 
   → Shin est INDISCERNABLE du prix du marché de prédiction : le dévigage
     partout dans le projet est validé.
@@ -91,7 +91,7 @@ Books      : 281 match(s), dont 276 avec pinnacle
   --------------------------------------------------------------------
       confirme |        61 |      +10.0% |     +12.5% | [ +10.5 ;  +14.5]
        infirme |         9 |       +2.8% |      +4.1% | [  -1.8 ;  +10.0]
-          muet |       174 |      +10.7% |     +17.0% | [ +14.3 ;  +19.6]
+          muet |       173 |      +10.7% |     +17.0% | [ +14.3 ;  +19.7]
 
   différentiel confirme - infirme : +8.4 pts de CLV
   → intervalles disjoints. Piste à geler et valider hors échantillon.
@@ -126,11 +126,11 @@ POLYMARKET
   55 – 70 %        71     61.9%     56.3%    -5.5  [ -17.1 ;   +5.4]
                         il faudrait ~296 obs pour trancher à cet écart (225 manquantes)
 
-  origine (pour mémoire) — 118 observation(s)
+  origine (pour mémoire) — 64 observation(s)
   tranche           n   annoncé   observé    écart          IC95 écart
   --------------------------------------------------------------------
-  30 – 45 %        35     38.2%     37.1%    -1.1  [ -15.1 ;  +15.4]
-  55 – 70 %        36     61.6%     63.9%    +2.3  [ -14.0 ;  +16.0]
+  30 – 45 %        20     39.0%     35.0%    -4.0  [ -20.8 ;  +17.8]
+  55 – 70 %        20     61.1%     65.0%    +3.9  [ -17.8 ;  +20.8]
 
 ==============================================================================
 KALSHI
@@ -144,11 +144,11 @@ KALSHI
   55 – 70 %       109     62.1%     56.9%    -5.3  [ -14.6 ;   +3.7]
                         il faudrait ~328 obs pour trancher à cet écart (219 manquantes)
 
-  origine (pour mémoire) — 144 observation(s)
+  origine (pour mémoire) — 72 observation(s)
   tranche           n   annoncé   observé    écart          IC95 écart
   --------------------------------------------------------------------
-  30 – 45 %        38     37.7%     39.5%    +1.8  [ -12.1 ;  +17.6]
-  55 – 70 %        38     62.5%     60.5%    -2.0  [ -17.8 ;  +11.9]
+  30 – 45 %        20     38.2%     35.0%    -3.2  [ -20.1 ;  +18.5]
+  55 – 70 %        20     61.9%     65.0%    +3.1  [ -18.6 ;  +20.0]
 
 ==============================================================================
 → rien de concluant hors échantillon. Laisser l'échantillon grossir.
@@ -159,29 +159,29 @@ Rapport écrit dans pm_calibration_track.json
 --- pm_observations ---
 ResultIndex : 1582 résultats · 1558 paires · fenêtre ±5 j
 1886 match(s) en contexte · 1886 avec courbe pinnacle
-polymarket : 6,364,236 ticks lus · 358 observation(s)
-kalshi : 3,175,182 ticks lus · 548 observation(s)
+polymarket : 5,445,603 ticks lus · 298 observation(s)
+kalshi : 3,000,602 ticks lus · 470 observation(s)
 
 ==========================================================================
-TABLE CONSOLIDÉE — 906 observation(s)
+TABLE CONSOLIDÉE — 768 observation(s)
 ==========================================================================
-  avec résultat connu     : 850
+  avec résultat connu     : 724
   postérieures au gel     : 588
-  avec prix pinnacle    : 900
+  avec prix pinnacle    : 762
 
-  par marché (avec résultat) : kalshi 518 · polymarket 332
+  par marché (avec résultat) : kalshi 446 · polymarket 278
 
-  par niveau (avec résultat) : grand_chelem 452 · challenger 186 · atp 130 · wta 82
+  par niveau (avec résultat) : grand_chelem 452 · challenger 118 · atp 92 · wta 62
 
   tranche de prix      n  dont après gel
   ----------------------------------------
-  0 – 15 %            16               6
-  15 – 30 %           94              63
-  30 – 45 %          251             178
-  45 – 55 %          124              91
-  55 – 70 %          254             180
-  70 – 85 %           94              62
-  85 – 100 %          17               8
+  0 – 15 %             9               6
+  15 – 30 %           79              63
+  30 – 45 %          218             178
+  45 – 55 %          109              91
+  55 – 70 %          220             180
+  70 – 85 %           78              62
+  85 – 100 %          11               8
 
 pm_observations.jsonl
   Les études lisent désormais ce fichier au lieu de reparcourir
