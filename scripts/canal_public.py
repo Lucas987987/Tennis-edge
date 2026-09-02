@@ -377,7 +377,12 @@ def main():
                     'deja_signale': round(state.get(uid, 0), 3),
                     'retards_tous': [[b, c, round(g_, 1)] for b, c, g_ in lags],
                 }, ensure_ascii=False) + "\n")
-    json.dump(state, open(STATE, 'w', encoding='utf-8'))
+    # CORRIGÉ LE 30/08/2026 : open(STATE, 'w') non atomique -- si ce write est
+    # interrompu (timeout, coupure), TOUT le fichier de déduplication se vide
+    # d'un coup (pas juste la dernière entrée) -- les mêmes matchs seraient
+    # RE-SIGNALÉS aux abonnés au run suivant. Même motif que
+    # save_journal()/paper_journal.py (audit du 29/08).
+    ov.ecriture_atomique(STATE, state)
     print(f"canal public : {sent} évolution(s) publiée(s) · {len(games)} matchs en fenêtre")
 
 
