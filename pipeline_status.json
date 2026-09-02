@@ -1,7 +1,7 @@
 {
-  "run_termine": "2026-09-01T05:21:35",
-  "run_demarre": "2026-09-01T04:57:31",
-  "verdict_global": "1 livrable(s) à vérifier",
+  "run_termine": "2026-09-02T04:47:03",
+  "run_demarre": "2026-09-02T04:34:20",
+  "verdict_global": "2 livrable(s) à vérifier",
   "livrables": [
     {
       "fichier": "set_results.json",
@@ -12,7 +12,7 @@
       "octets": 238505,
       "lignes": 2385,
       "ecrit_ce_run": true,
-      "modifie": "2026-09-01T05:13:20"
+      "modifie": "2026-09-02T04:38:55"
     },
     {
       "fichier": "resultats_derived.json",
@@ -23,7 +23,7 @@
       "octets": 419517,
       "lignes": 1582,
       "ecrit_ce_run": true,
-      "modifie": "2026-09-01T05:10:26"
+      "modifie": "2026-09-02T04:36:01"
     },
     {
       "fichier": "paper_trades_match.jsonl",
@@ -34,7 +34,7 @@
       "octets": 16001,
       "lignes": 38,
       "ecrit_ce_run": true,
-      "modifie": "2026-09-01T05:14:10"
+      "modifie": "2026-09-02T04:39:46"
     },
     {
       "fichier": "paper_trades_set1.jsonl",
@@ -45,7 +45,7 @@
       "octets": 7009,
       "lignes": 17,
       "ecrit_ce_run": true,
-      "modifie": "2026-09-01T05:14:22"
+      "modifie": "2026-09-02T04:39:57"
     },
     {
       "fichier": "paper_trades_set2.jsonl",
@@ -56,18 +56,18 @@
       "octets": 0,
       "lignes": 0,
       "ecrit_ce_run": true,
-      "modifie": "2026-09-01T05:14:27"
+      "modifie": "2026-09-02T04:40:02"
     },
     {
       "fichier": "moves_detail.csv",
       "libellé": "Audit des moves (live)",
       "optionnel": false,
       "externe": false,
-      "verdict": "✅ OK",
-      "octets": 601,
-      "lignes": 4,
+      "verdict": "⚠️ VIDE",
+      "octets": 154,
+      "lignes": 1,
       "ecrit_ce_run": true,
-      "modifie": "2026-09-01T05:21:03"
+      "modifie": "2026-09-02T04:46:30"
     },
     {
       "fichier": "moves_detail_hist.csv",
@@ -78,7 +78,7 @@
       "octets": 157718,
       "lignes": 976,
       "ecrit_ce_run": true,
-      "modifie": "2026-09-01T05:21:35"
+      "modifie": "2026-09-02T04:47:03"
     },
     {
       "fichier": "canal_clv_detail.csv",
@@ -89,7 +89,7 @@
       "octets": 24898,
       "lignes": 161,
       "ecrit_ce_run": true,
-      "modifie": "2026-09-01T05:20:59"
+      "modifie": "2026-09-02T04:46:28"
     },
     {
       "fichier": "book_curves_live.jsonl",
@@ -97,16 +97,16 @@
       "optionnel": false,
       "externe": false,
       "verdict": "✅ OK",
-      "octets": 42422899,
-      "lignes": 2980,
+      "octets": 24011896,
+      "lignes": 1962,
       "ecrit_ce_run": true,
-      "modifie": "2026-09-01T05:10:30"
+      "modifie": "2026-09-02T04:36:04"
     }
   ],
   "partitions": {
-    "total_mo": 734.4,
+    "total_mo": 530.1,
     "zone_rouge": [],
-    "n_partitions": 73
+    "n_partitions": 55
   },
   "q3_qualite_cloture": {
     "ecarts_gt_3pct": 167,
@@ -116,7 +116,7 @@
     "alerte": false
   },
   "clv_vs_median": {
-    "genere_le": "2026-09-01T05:20:05.298281+00:00",
+    "genere_le": "2026-09-02T04:45:36.189728+00:00",
     "n_moves_total": 975,
     "n_cote_ambigu": 1,
     "n_incomplet": 364,
@@ -151,8 +151,8 @@
     "n_echecs": 1,
     "n_avertissements": 2,
     "alerte": true,
-    "genere_le": "2026-08-31T11:08:07Z",
-    "age_heures": 18.2,
+    "genere_le": "2026-09-01T09:39:36Z",
+    "age_heures": 19.1,
     "fraicheur_inconnue_ou_perimee": false
   },
   "repo_size": {
@@ -162,8 +162,8 @@
     "seuil_vigilance_go": 3.0,
     "seuil_alarme_go": 4.0,
     "message": "gh api indisponible (gh: To use GitHub CLI in a GitHub Actions workflow, set the GH_TOKEN environment variable. Example:\n  env:\n    GH_TOKEN:) — taille NON vérifiée ce run.",
-    "genere_le": "2026-08-31T15:21:50.909803+00:00",
-    "age_heures": 14.0,
+    "genere_le": "2026-09-01T12:43:28.363147+00:00",
+    "age_heures": 16.1,
     "fraicheur_inconnue_ou_perimee": false
   }
 }
