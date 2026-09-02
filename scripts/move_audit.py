@@ -117,7 +117,21 @@ def load_curves():
             _croises_resolus += 1
             if ct_croise < ct:
                 ct = ct_croise
-        _records.append(r)
+        # CORRIGÉ LE 30/08/2026 : `_records.append(r)` gardait l'ENREGISTREMENT
+        # COMPLET en mémoire -- courbes de prix incluses, l'essentiel du volume --
+        # alors que mk.build_index() n'utilise que 5 champs légers (uid,
+        # home/home_team, away/away_team, commence_time, fixture_id ; voir sa
+        # docstring). Sur les 12 partitions actuelles, l'accumulation faisait
+        # tuer le script par l'OOM killer du noyau (« Killed », pas une
+        # exception Python -- donc rien à intercepter, et le `|| true` du
+        # workflow rendait l'échec totalement silencieux : moves_detail_hist.csv
+        # figé à 32h, détecté par l'observateur externe le 30/08).
+        _records.append({'uid': r.get('uid'),
+                         'home_team': r.get('home_team'), 'home': r.get('home'),
+                         'away_team': r.get('away_team'), 'away': r.get('away'),
+                         'commence_time': r.get('commence_time'),
+                         'fixture_id': r.get('fixture_id'),
+                         'tournament': r.get('tournament')})
         def pre(seq):
             pts = [(_dt(p[0]), p[1]) for p in (seq or []) if _dt(p[0]) and p[1]]
             return sorted((t, o) for t, o in pts if t < ct)   # PRÉ-MATCH

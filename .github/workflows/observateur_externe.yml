@@ -115,10 +115,19 @@ jobs:
 
           echo
           if [ "$ECHECS" -gt 0 ]; then
-            echo "🔴 $ECHECS livrable(s) périmé(s) ou absent(s) -- steam_pipeline.yml"
-            echo "   et/ou polymarket_studies.yml ne tournent probablement plus."
-            echo "   Ce workflow ne répare rien : va voir l'onglet Actions pour"
-            echo "   trouver où le run en cause s'est arrêté."
+            echo "🔴 $ECHECS livrable(s) périmé(s) ou absent(s)."
+            echo "   Deux causes possibles -- les distinguer AVANT de conclure :"
+            echo "   1) TOUS les témoins sont périmés -> steam_pipeline.yml et/ou"
+            echo "      polymarket_studies.yml ne tournent probablement plus du tout."
+            echo "   2) CERTAINS témoins sont frais et d'autres non -> les workflows"
+            echo "      TOURNENT, mais une étape à l'intérieur échoue en silence"
+            echo "      (la plupart sont derrière un || true). Regarder le log du"
+            echo "      dernier run pour l'étape qui produit le fichier périmé."
+            echo "      Cas réel du 30/08/2026 : pipeline_status.md frais (8h) mais"
+            echo "      moves_detail_hist.csv à 32h -- move_audit.py se faisait tuer"
+            echo "      par l'OOM killer (« Killed », pas une exception), le || true"
+            echo "      rendait l'échec invisible."
+            echo "   Ce workflow ne répare rien : va voir l'onglet Actions."
             exit 1
           fi
           echo "🟢 tous les livrables critiques sont frais (< ${SEUIL_H}h)."
