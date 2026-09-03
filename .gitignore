@@ -19,3 +19,9 @@ set2_curves_live.jsonl
 # prochain `git add -A` -- exactement le même risque que celui que
 # l'écriture atomique corrige, un niveau plus bas.
 *.tmp
+
+# AJOUTÉ LE 03/09/2026 : cache de calibration (steam_alert.stats_avec_cache).
+# Régénérable à tout instant depuis les partitions, réécrit à chaque expiration
+# du TTL -- le committer gonflerait l'historique git à chaque cycle de capture
+# pour une donnée dérivée, exactement ce que la sentinelle de taille surveille.
+calib_cache.json
