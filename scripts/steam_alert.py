@@ -299,6 +299,72 @@ def compute_stats(past, softbooks):
                                  'n': len(lst)}
     return stats
 
+
+# ── Cache de calibration ────────────────────────────────────────────────────
+# AJOUTÉ LE 03/09/2026. Mesuré en production : charger l'historique complet
+# (load_curves(TRACK_CURVES), 12 partitions, 1882 matchs) prend 43 s, contre
+# 0,4 s pour les courbes live. Or cet historique ne sert QU'À compute_stats()
+# (vérifié : seuls usages de `past` dans steam_alert.py et paper_journal.py).
+# Il était rechargé 6 fois par cycle -- 3 marchés x 2 scripts -- soit ~5 min,
+# alors qu'un cycle de capture ne dure que 5 min. Résultat : chaque run
+# débordait de sa fenêtre, le `concurrency: capture-closing` mettait le
+# dispatch suivant en file, et la cadence réelle retombait à 10 min.
+#
+# La calibration (seuils par book sur 90 jours) bouge très lentement : la
+# recalculer une fois par heure au lieu de 6 fois par cycle est sans effet
+# mesurable sur les seuils, et divise le temps par ~12 sur l'heure.
+CALIB_CACHE = os.environ.get('CALIB_CACHE', 'calib_cache.json')
+CALIB_TTL_MIN = int(os.environ.get('CALIB_TTL_MIN', '60'))
+
+
+def stats_avec_cache(market, charge_past_et_books):
+    """Renvoie (stats, softbooks) depuis le cache s'il est frais, sinon les
+    recalcule et les persiste.
+
+    `charge_past_et_books` est un callable SANS argument qui renvoie
+    (past, softbooks) -- il n'est appelé QUE si le cache est absent ou
+    périmé, ce qui évite le load_curves() de 43 s dans le cas nominal.
+
+    Le cache est indexé par marché (match/set1/set2) : les trois n'ont ni le
+    même historique ni les mêmes seuils.
+
+    Volontairement PAS d'écriture atomique ici : ce fichier est un cache pur,
+    régénérable à tout instant, et il est dans .gitignore -- une écriture
+    interrompue le rend illisible, donc simplement recalculé au run suivant.
+    """
+    cle = f'{market}'
+    try:
+        c = json.load(open(CALIB_CACHE, encoding='utf-8'))
+        e = c.get(cle)
+        if e:
+            age = (datetime.utcnow()
+                   - datetime.fromisoformat(e['t'])).total_seconds() / 60
+            if age < CALIB_TTL_MIN:
+                # Les clés de GRID sont des float, JSON les rend en str : on restaure.
+                stats = {float(k): v for k, v in e['stats'].items()}
+                print(f"  calibration : cache ({age:.0f} min, TTL {CALIB_TTL_MIN}) "
+                      f"-- historique non rechargé")
+                return stats, e['softbooks']
+    except (OSError, ValueError, KeyError, TypeError):
+        pass   # absent, corrompu ou périmé -> recalcul complet
+
+    past, softbooks = charge_past_et_books()
+    stats = compute_stats(past, softbooks)
+    try:
+        c = {}
+        try:
+            c = json.load(open(CALIB_CACHE, encoding='utf-8'))
+        except (OSError, ValueError):
+            pass
+        c[cle] = {'t': datetime.utcnow().isoformat(),
+                  'stats': {str(k): v for k, v in stats.items()},
+                  'softbooks': softbooks}
+        json.dump(c, open(CALIB_CACHE, 'w', encoding='utf-8'))
+    except OSError as e:
+        print(f"  ℹ️ cache de calibration non écrit : {e}")
+    return stats, softbooks
+
+
 def best_threshold(stats, sb):
     """Palier maximisant la reussite (pct) avec n>=MIN_N. Repli DEFAULT_THR (indicatif)."""
     cands = [(mv, stats[mv][sb]) for mv in GRID
@@ -338,25 +404,31 @@ def send(text):
 
 def main():
     data = load_curves(); now = _now()
-    # track record : fichier historique dedie si fourni, sinon les passes du live
-    track = load_curves(TRACK_CURVES) if TRACK_CURVES else data
-    win_start = now - WINDOW_DAYS*86400 if WINDOW_DAYS > 0 else 0
-    past = {u: bk for u, bk in track.items()
-            if bk.get('_commence') and win_start <= bk['_commence'] < now}
     upcoming = {u: bk for u, bk in data.items()
             if bk.get('_commence') and bk['_commence'] >= now}
-    # books mous : union (track passe + a venir), hors sharp
-    softbooks = sorted({b for m in list(past.values()) + list(upcoming.values())
-                        for b in m if not b.startswith('_') and b != SHARP})
-    if SOFT_PREF:
-        keep = set(s.strip() for s in SOFT_PREF.split(','))
-        softbooks = [b for b in softbooks if b in keep]
-    fen = f"{WINDOW_DAYS:.0f}j glissants" if WINDOW_DAYS > 0 else "tout l'historique"
-    src = f" | track<-{TRACK_CURVES}" if TRACK_CURVES else ""
-    print(f"{CURVES}: {len(data)} matchs | track record {len(past)}{src} ({fen}) | a venir {len(upcoming)} | books {softbooks}")
+
+    # CORRIGÉ LE 03/09/2026 : le chargement de l'historique (43 s mesurées)
+    # est désormais PARESSEUX -- il n'a lieu que si le cache de calibration
+    # est absent ou périmé. Voir stats_avec_cache() pour le raisonnement.
+    def _charger():
+        track = load_curves(TRACK_CURVES) if TRACK_CURVES else data
+        win_start = now - WINDOW_DAYS*86400 if WINDOW_DAYS > 0 else 0
+        past = {u: bk for u, bk in track.items()
+                if bk.get('_commence') and win_start <= bk['_commence'] < now}
+        sb = sorted({b for m in list(past.values()) + list(upcoming.values())
+                     for b in m if not b.startswith('_') and b != SHARP})
+        if SOFT_PREF:
+            keep = set(s.strip() for s in SOFT_PREF.split(','))
+            sb = [b for b in sb if b in keep]
+        fen = f"{WINDOW_DAYS:.0f}j glissants" if WINDOW_DAYS > 0 else "tout l'historique"
+        src = f" | track<-{TRACK_CURVES}" if TRACK_CURVES else ""
+        print(f"  track record {len(past)}{src} ({fen})")
+        return past, sb
+
+    stats, softbooks = stats_avec_cache(MARKET, _charger)
+    print(f"{CURVES}: {len(data)} matchs | a venir {len(upcoming)} | books {softbooks}")
     if not softbooks:
         print("Aucun book mou — rien a faire."); return
-    stats = compute_stats(past, softbooks)
 
     # seuil optimal par book
     thr_by_book = {sb: best_threshold(stats, sb) for sb in softbooks}
