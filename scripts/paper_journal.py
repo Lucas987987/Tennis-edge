@@ -405,21 +405,28 @@ def main():
     data = sa.load_curves()
     now = sa._now()
     result_side = build_result_side(data)
-    # track record pour les seuils : historique dedie (TRACK_CURVES) sinon les passes des donnees
-    track = sa.load_curves(sa.TRACK_CURVES) if sa.TRACK_CURVES else data
-    win_start = now - sa.WINDOW_DAYS * 86400 if sa.WINDOW_DAYS > 0 else 0
-    past = {u: bk for u, bk in track.items()
-            if bk.get('_commence') and win_start <= bk['_commence'] < now}
-    # books mous : union (track passe + donnees a traiter), hors sharp
-    softbooks = sorted({b for m in list(past.values()) + list(data.values())
-                        for b in m if not b.startswith('_') and b != sa.SHARP})
-    if sa.SOFT_PREF:
-        keep = set(s.strip() for s in sa.SOFT_PREF.split(','))
-        softbooks = [b for b in softbooks if b in keep]
+
+    # CORRIGÉ LE 03/09/2026 : même cache de calibration que steam_alert.py --
+    # l'historique (43 s) n'est rechargé que si le cache est périmé. Les deux
+    # scripts PARTAGENT le même fichier de cache et la même clé de marché :
+    # sur un cycle, le premier des six à tourner paie le chargement, les cinq
+    # autres le lisent. Voir sa.stats_avec_cache() pour le raisonnement.
+    def _charger():
+        track = sa.load_curves(sa.TRACK_CURVES) if sa.TRACK_CURVES else data
+        win_start = now - sa.WINDOW_DAYS * 86400 if sa.WINDOW_DAYS > 0 else 0
+        past = {u: bk for u, bk in track.items()
+                if bk.get('_commence') and win_start <= bk['_commence'] < now}
+        sb = sorted({b for m in list(past.values()) + list(data.values())
+                     for b in m if not b.startswith('_') and b != sa.SHARP})
+        if sa.SOFT_PREF:
+            keep = set(s.strip() for s in sa.SOFT_PREF.split(','))
+            sb = [b for b in sb if b in keep]
+        return past, sb
+
+    stats, softbooks = sa.stats_avec_cache(sa.MARKET, _charger)
     if not softbooks:
         print("Aucun book mou — rien a journaliser."); return
 
-    stats = sa.compute_stats(past, softbooks)
     thr_by_book = {sb: sa.best_threshold(stats, sb) for sb in softbooks}
 
     if BACKFILL:
@@ -503,11 +510,29 @@ def main():
     # retraités à chaque cycle -- avant, un trade sorti de OPEN sans pnl
     # n'était plus jamais revisité. Repli sur `track` (committé, recul plus
     # large) si le match n'est plus dans `data` (fenêtre plus courte).
+    #
+    # CORRIGÉ LE 03/09/2026 : `track` (43 s de chargement) n'est plus chargé
+    # d'office -- il ne sert QUE de repli pour les trades dont le match est
+    # sorti de `data`. Chargé PARESSEUSEMENT, au premier trade qui en a
+    # réellement besoin, et une seule fois grâce au cache local. Dans le cas
+    # nominal (tous les trades encore dans `data`), il n'est jamais chargé.
+    _track_cache = {}
+
+    def _track():
+        if 'v' not in _track_cache:
+            _track_cache['v'] = (sa.load_curves(sa.TRACK_CURVES)
+                                 if sa.TRACK_CURVES else data)
+        return _track_cache['v']
+
     for t in trades.values():
         if t.get('status') in ('OPEN', 'CLOSED_NO_RESULT'):
-            bk = data.get(t['uid']) or track.get(t['uid'])
+            bk = data.get(t['uid'])
+            src = data
+            if not bk:
+                tr = _track()
+                bk = tr.get(t['uid'])
+                src = tr
             if bk and bk.get('_commence') and bk['_commence'] < now:
-                src = data if t['uid'] in data else track
                 if settle_trade(t, src, result_side):
                     # CORRIGÉ LE 27/08/2026 (audit v3 §S) : settle_trade()
                     # renvoie True pour SETTLED *et* CLOSED_NO_RESULT --
