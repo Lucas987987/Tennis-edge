@@ -1,0 +1,157 @@
+name: Purge 2/3 — LISTE des chemins (lecture seule)
+
+# ÉTAPE 2 SUR 3. NE MODIFIE PAS L'HISTORIQUE.
+#
+# Produit la liste EXACTE des chemins que l'étape 3 supprimera, et la commite
+# dans le dépôt (`purge_chemins.txt`) pour que vous puissiez la relire dans
+# l'interface web avant de rien lancer. L'étape 3 lit CE fichier : ce que vous
+# validez est exactement ce qui sera purgé.
+#
+# CRITÈRE : un chemin n'est retenu que s'il est DÉJÀ ABSENT de HEAD. On ne
+# purge que ce qui n'existe plus dans le répertoire de travail — donc aucune
+# donnée en usage n'est touchée, et il n'y a aucun arbitrage à faire sur ce
+# qu'on garde.
+#
+# Le critère « absent de HEAD » est vérifié DEUX FOIS, par deux moyens
+# indépendants : la colonne « date deleted » de filter-repo, puis un
+# `git cat-file -e HEAD:<chemin>` sur chaque ligne. Si les deux ne sont pas
+# d'accord, le chemin est écarté et signalé. Une liste de purge est
+# irréversible une fois appliquée : mieux vaut purger trop peu.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: purge-historique
+  cancel-in-progress: false
+
+jobs:
+  lister:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Installer git-filter-repo
+        run: |
+          python3 -m pip install --quiet git-filter-repo
+          git filter-repo --version
+
+      - name: Analyser
+        run: |
+          set -euo pipefail
+          # --analyze est en lecture seule. Pas de --force ici : c'est lui qui
+          # autoriserait une réécriture, il n'a rien à faire dans une mesure.
+          git filter-repo --analyze
+          ls -la .git/filter-repo/analysis/
+
+      - name: Construire et vérifier la liste
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import subprocess, os
+
+          SRC = '.git/filter-repo/analysis/path-deleted-sizes.txt'
+          retenus, ecartes, total = [], [], 0
+
+          for ligne in open(SRC, encoding='utf-8'):
+              champs = ligne.split(None, 3)
+              if len(champs) < 4 or not champs[0].isdigit():
+                  continue                      # en-tête et lignes de format
+              packe, date, chemin = int(champs[1]), champs[2], champs[3].strip()
+              if date == '<present>':
+                  continue                      # encore utilisé : on n'y touche pas
+
+              # Seconde vérification, indépendante de filter-repo : le chemin
+              # est-il RÉELLEMENT absent de HEAD ? Si `cat-file -e` réussit,
+              # le fichier existe encore et ne doit surtout pas être purgé.
+              existe = subprocess.run(['git', 'cat-file', '-e', f'HEAD:{chemin}'],
+                                      capture_output=True).returncode == 0
+              if existe:
+                  ecartes.append((chemin, 'PRÉSENT dans HEAD malgré la date de suppression'))
+                  continue
+              # Et qu'il a bien existé un jour : une ligne mal découpée
+              # (chemin avec espaces, format inattendu) ne doit pas passer.
+              connu = subprocess.run(['git', 'log', '--all', '-1', '--format=%H',
+                                      '--', chemin],
+                                     capture_output=True, text=True).stdout.strip()
+              if not connu:
+                  ecartes.append((chemin, 'introuvable dans l\'historique — ligne suspecte'))
+                  continue
+
+              retenus.append((packe, chemin))
+              total += packe
+
+          retenus.sort(reverse=True)
+
+          with open('purge_chemins.txt', 'w', encoding='utf-8') as f:
+              f.write("# Chemins à purger de l'historique — généré par Purge 2/3.\n")
+              f.write("# Tous sont DÉJÀ absents du répertoire de travail (vérifié\n")
+              f.write("# deux fois : date de suppression filter-repo + cat-file HEAD).\n")
+              f.write("# Les purger ne fait perdre aucune donnée en usage.\n")
+              f.write(f"# {len(retenus)} chemins, {total/1048576:.0f} Mo packés récupérables.\n")
+              f.write("#\n")
+              f.write("# L'étape 3 lit ce fichier tel quel. Retirer une ligne la\n")
+              f.write("# préserve ; ajouter un chemin encore utilisé le DÉTRUIRAIT.\n")
+              for _, c in retenus:
+                  f.write(c + "\n")
+
+          print(f"─── {len(retenus)} chemins retenus ───")
+          for p, c in retenus[:40]:
+              print(f"  {p/1048576:9.1f} Mo  {c}")
+          if len(retenus) > 40:
+              print(f"  ... et {len(retenus)-40} autres (liste complète dans purge_chemins.txt)")
+          print()
+          print(f"═══ RÉCUPÉRABLE : {total/1048576:.0f} Mo packés "
+                f"({total/1073741824:.2f} Go) ═══")
+          if ecartes:
+              print()
+              print(f"─── {len(ecartes)} chemins ÉCARTÉS par prudence ───")
+              for c, r in ecartes[:20]:
+                  print(f"  {c} : {r}")
+          PY
+
+      - name: Taille actuelle, pour comparaison
+        run: |
+          echo "=== .git aujourd'hui ==="
+          du -sh .git
+          echo "=== total packé selon filter-repo ==="
+          grep -i "packed size" .git/filter-repo/analysis/README | head -2
+
+      - name: Committer la liste
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -- purge_chemins.txt
+          git diff --staged --quiet && { echo "liste inchangée"; exit 0; }
+          git commit -m "Liste des chemins à purger de l'historique (étape 2/3)"
+          for essai in 1 2 3; do
+            git fetch origin main || true
+            git merge origin/main --no-edit || { git merge --abort 2>/dev/null || true; sleep 8; continue; }
+            git push && exit 0
+            sleep 8
+          done
+          exit 1
+
+      - name: Suite
+        run: |
+          echo "═══════════════════════════════════════════════════"
+          echo " Étape 2/3 terminée. RIEN n'a été modifié dans"
+          echo " l'historique."
+          echo
+          echo " 1. Ouvrir purge_chemins.txt à la racine du dépôt et"
+          echo "    relire la liste."
+          echo " 2. Vérifier que l'étape 1/3 a bien tourné et que"
+          echo "    l'artefact bundle est téléchargé hors GitHub."
+          echo " 3. Alors seulement : « Purge 3/3 — EXÉCUTER »."
+          echo "═══════════════════════════════════════════════════"
