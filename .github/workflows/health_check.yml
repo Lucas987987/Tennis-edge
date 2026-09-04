@@ -9,7 +9,7 @@ on:
 # aussi `metadata: read` -- clé INVALIDE dans un bloc permissions de workflow
 # (le scope metadata est toujours accordé en lecture et ne se déclare pas).
 # GitHub rejette le fichier à la validation : health_check n'aurait plus tourné
-# du tout. `contents: read` suffit à `gh api repos/{owner}/{repo}` ; ce
+# du tout. `contents: write` suffit à `gh api repos/{owner}/{repo}` ; ce
 # workflow ne committe rien.
 permissions:
   # CORRIGÉ LE 04/09/2026 AU SOIR : `contents: read` posé le matin même, avec
