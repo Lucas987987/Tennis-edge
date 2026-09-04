@@ -1,7 +1,7 @@
 {
-  "run_termine": "2026-09-03T04:45:45",
-  "run_demarre": "2026-09-03T04:29:18",
-  "verdict_global": "2 livrable(s) à vérifier",
+  "run_termine": "2026-09-04T04:50:23",
+  "run_demarre": "2026-09-04T04:28:40",
+  "verdict_global": "1 livrable(s) à vérifier",
   "livrables": [
     {
       "fichier": "set_results.json",
@@ -9,10 +9,10 @@
       "optionnel": false,
       "externe": false,
       "verdict": "✅ OK",
-      "octets": 238505,
-      "lignes": 2385,
+      "octets": 245697,
+      "lignes": 2458,
       "ecrit_ce_run": true,
-      "modifie": "2026-09-03T04:37:23"
+      "modifie": "2026-09-04T04:40:07"
     },
     {
       "fichier": "resultats_derived.json",
@@ -20,10 +20,10 @@
       "optionnel": false,
       "externe": true,
       "verdict": "✅ OK",
-      "octets": 419517,
-      "lignes": 1582,
+      "octets": 426254,
+      "lignes": 1605,
       "ecrit_ce_run": true,
-      "modifie": "2026-09-03T04:34:32"
+      "modifie": "2026-09-04T04:35:22"
     },
     {
       "fichier": "paper_trades_match.jsonl",
@@ -31,10 +31,10 @@
       "optionnel": false,
       "externe": false,
       "verdict": "✅ OK",
-      "octets": 16001,
+      "octets": 16062,
       "lignes": 38,
       "ecrit_ce_run": true,
-      "modifie": "2026-09-03T04:38:13"
+      "modifie": "2026-09-04T04:41:53"
     },
     {
       "fichier": "paper_trades_set1.jsonl",
@@ -45,7 +45,7 @@
       "octets": 7009,
       "lignes": 17,
       "ecrit_ce_run": true,
-      "modifie": "2026-09-03T04:38:24"
+      "modifie": "2026-09-04T04:42:10"
     },
     {
       "fichier": "paper_trades_set2.jsonl",
@@ -56,18 +56,18 @@
       "octets": 0,
       "lignes": 0,
       "ecrit_ce_run": true,
-      "modifie": "2026-09-03T04:38:29"
+      "modifie": "2026-09-04T04:42:15"
     },
     {
       "fichier": "moves_detail.csv",
       "libellé": "Audit des moves (live)",
       "optionnel": false,
       "externe": false,
-      "verdict": "⚠️ VIDE",
-      "octets": 154,
-      "lignes": 1,
+      "verdict": "✅ OK",
+      "octets": 1793,
+      "lignes": 11,
       "ecrit_ce_run": true,
-      "modifie": "2026-09-03T04:45:07"
+      "modifie": "2026-09-04T04:49:39"
     },
     {
       "fichier": "moves_detail_hist.csv",
@@ -75,10 +75,10 @@
       "optionnel": false,
       "externe": false,
       "verdict": "✅ OK",
-      "octets": 157718,
-      "lignes": 976,
+      "octets": 167283,
+      "lignes": 1034,
       "ecrit_ce_run": true,
-      "modifie": "2026-09-03T04:45:45"
+      "modifie": "2026-09-04T04:50:23"
     },
     {
       "fichier": "canal_clv_detail.csv",
@@ -89,7 +89,7 @@
       "octets": 24898,
       "lignes": 161,
       "ecrit_ce_run": true,
-      "modifie": "2026-09-03T04:45:06"
+      "modifie": "2026-09-04T04:49:38"
     },
     {
       "fichier": "book_curves_live.jsonl",
@@ -97,26 +97,26 @@
       "optionnel": false,
       "externe": false,
       "verdict": "✅ OK",
-      "octets": 6327425,
-      "lignes": 902,
+      "octets": 4566620,
+      "lignes": 1111,
       "ecrit_ce_run": true,
-      "modifie": "2026-09-03T04:34:33"
+      "modifie": "2026-09-04T04:35:23"
     }
   ],
   "partitions": {
-    "total_mo": 359.1,
+    "total_mo": 425.0,
     "zone_rouge": [],
-    "n_partitions": 45
+    "n_partitions": 51
   },
   "q3_qualite_cloture": {
-    "ecarts_gt_3pct": 167,
-    "n_total": 1016,
-    "pct_ecarts": 16.4,
+    "ecarts_gt_3pct": 177,
+    "n_total": 1053,
+    "pct_ecarts": 16.8,
     "seuil_pct": 30.0,
     "alerte": false
   },
   "clv_vs_median": {
-    "genere_le": "2026-09-03T04:44:15.267040+00:00",
+    "genere_le": "2026-09-04T04:48:41.648108+00:00",
     "n_moves_total": 975,
     "n_cote_ambigu": 1,
     "n_incomplet": 364,
@@ -151,7 +151,7 @@
     "n_echecs": 1,
     "n_avertissements": 2,
     "alerte": true,
-    "genere_le": "2026-09-02T09:00:58Z",
+    "genere_le": "2026-09-03T09:08:48Z",
     "age_heures": 19.7,
     "fraicheur_inconnue_ou_perimee": false
   },
@@ -162,8 +162,8 @@
     "seuil_vigilance_go": 3.0,
     "seuil_alarme_go": 4.0,
     "message": "gh api indisponible (gh: To use GitHub CLI in a GitHub Actions workflow, set the GH_TOKEN environment variable. Example:\n  env:\n    GH_TOKEN:) — taille NON vérifiée ce run.",
-    "genere_le": "2026-09-02T12:16:03.886484+00:00",
-    "age_heures": 16.5,
+    "genere_le": "2026-09-03T12:13:46.953428+00:00",
+    "age_heures": 16.6,
     "fraicheur_inconnue_ou_perimee": false
   }
 }
