@@ -1,62 +1,63 @@
-# Correctifs bis — 04/09/2026
+# Correctifs ter — 04/09/2026
 
-## Ce qui n'allait pas dans ce que je vous ai fait poser ce matin
+## Ce que je NE peux pas faire
 
-### `metadata: read` dans health_check.yml — À CORRIGER EN PRIORITÉ
-Clé INVALIDE dans un bloc `permissions:` de workflow. Le scope metadata est
-toujours accordé en lecture et ne se déclare pas. GitHub rejette le fichier à
-la validation : **health_check ne tournerait plus du tout** — donc la
-sentinelle de taille non plus, celle-là même qu'on venait de réparer.
-`contents: read` seul suffit à `gh api repos/{owner}/{repo}`.
-Audit fait sur les 50 workflows : aucune autre clé invalide.
+`scripts/canal_public.py` doit être restauré depuis votre historique git.
+Je n'ai jamais vu son code : le réécrire produirait un script qui ressemble
+au bon sans en être un — paliers, juste prix, anti-doublon, formulation
+neutre exigée par le cadrage du canal. Sur un canal Telegram qui a des
+abonnés, ce n'est pas un risque acceptable.
 
-### bump_actions_node24.yml — deux défauts
-1. **GITHUB_TOKEN ne peut pas pousser un fichier de workflow.** Structurel :
-   il n'existe aucune clé `workflows` dans le bloc permissions. Le run
-   91880753053 a tout édité, tout validé, puis s'est fait rejeter au push.
-   Un PAT fine-grained à scope *Workflows* est obligatoire — mode d'emploi
-   en tête du fichier corrigé.
-2. **Le sed réécrivait sa propre liste `PAIRES`.** Log : « actions/cache@v4
-   -> v5 : 2 fichier(s) » pour une occurrence réelle. La liste vit maintenant
-   hors du dépôt et le workflow s'exclut du balayage.
+  Onglet Code -> un commit d'avant aujourd'hui -> scripts/canal_public.py
+  -> « Copy raw file » -> recréer le fichier.
 
-La vérification pré-commit contrôle désormais aussi les **clés du bloc
-permissions** : elle aurait attrapé `metadata: read`. `yaml.safe_load` ne
-voyait rien — c'est du YAML parfaitement valide, refusé par GitHub seul.
+Envoyez-le moi ensuite, je vérifie qu'il est complet avant que vous le posiez.
 
-## Capture closing : mesure plutôt que supposition
+## Ce que je corrige : ce qui a laissé la panne invisible
 
-Cadence RÉELLE, mesurée sur `parts/live_match_*` :
+### `scripts_manquants()` — contrôle d'intégrité, bloquant sous --strict
 
-| jour  | passages | écart médian | par heure |
-|-------|----------|--------------|-----------|
-| 03/09 | 86       | 10,0 min     | 6 à 9     |
-| 04/09 | 62       | 10,0 min     | 6 à 9     |
+Vérifie que tout `scripts/X.py` cité par un workflow existe. Sur votre dépôt,
+il retourne aujourd'hui exactement `['canal_public.py']`.
 
-Attendu à 5 min : 12/heure, 288/jour. Vous en avez la moitié.
+Pourquoi ceci bloque `--strict` alors que l'alerte Polymarket en a été
+retirée ce matin : ce n'est pas le résultat d'exécution d'un autre workflow,
+c'est un défaut STRUCTUREL du dépôt, vérifiable sans rien lancer et réparable
+par la personne qui lit le rapport.
 
-La configuration est pourtant juste : cron `*/5`, `SEUIL_CRON_SECOURS_MIN=4`,
-bloc `concurrency` retiré. Rien à corriger dans le dépôt — le goulot est en
-amont, et rien n'enregistrait lequel des deux déclencheurs manque.
+**Angle mort corrigé dans la foulée.** Ma première version cherchait
+`scripts/X.py` par expression régulière. Or `polymarket_studies.yml` lance
+ses quatre études par `for s in a b c d; do python scripts/${s}.py; done` :
+la regex n'y voit que `scripts/${s}.py`. Le contrôle aurait été aveugle
+exactement là où le dépôt utilise une indirection. Les boucles sont
+maintenant résolues, et un test le vérifie (14/14).
 
-`capture_closing.py` compte maintenant les passages par déclencheur dans
-`capture_state.json` (`passages_par_declencheur`, remis à zéro chaque
-journée UTC). Lecture dans 24 h :
+### `canal_public_log.jsonl` entre dans les livrables surveillés
 
-- `repository_dispatch` ≈ 288 → le worker tient la cadence
-- `repository_dispatch` < 150 → le worker est le problème (côté Cloudflare)
-- `schedule` dominant, total < 200 → GitHub étale le cron `*/5`. Il n'est
-  pas garanti : sous charge il est livré toutes les 8-12 min. Dans ce cas
-  seul le worker peut tenir 5 min, et il faut cesser de compter sur le cron.
+Il n'était surveillé par RIEN, alors que c'est la seule trace de ce que
+reçoivent les abonnés et la source du track record aligné sur la publication
+(`paper_journal_canal.py`). Classé 'externe' : jugé sur présence, taille et
+fraîcheur < 24 h, comme `resultats_derived.json`. Un producteur mort se voit
+désormais en une journée au lieu de jamais.
 
-L'hypothèse la plus probable au vu des 6-9 passages/heure, très réguliers,
-est la troisième — mais je préfère que la donnée tranche.
+## Ce que je ne touche pas, volontairement
+
+**Les 23 scripts orphelins.** La moitié sont des études exploratoires
+légitimes (`cascade_study`, `segments_study`, `shadow_sizing_study`...) :
+supprimer du code de recherche que vous êtes seul à pouvoir juger n'est pas
+une correction, c'est une décision. Un `scripts/etudes/` séparé serait plus
+propre, mais c'est 23 déplacements de fichiers depuis mobile pour un gain
+d'hygiène — à faire quand vous serez devant un clavier, pas maintenant.
+
+**L'historique git (3,48 Go le 29/08, alarme à 4,0).** La sentinelle vient de
+recouvrer la vue ; sa première mesure tombe demain matin. Si elle dépasse le
+seuil, la seule issue est un `git filter-repo`, opération à froid impossible
+depuis mobile. À préparer avant d'y être contraint, pas à improviser.
 
 ## Vérifications
 
-- 50 workflows : YAML valide, aucune clé permissions invalide
-- `capture_closing.py` compile ; cumul journalier et remise à zéro testés
-- nouveau bump rejoué sur un dépôt jouet : comptes exacts, liste `PAIRES`
-  intacte après passage
-- garde-fou permissions testé sur un fichier piégé contenant `metadata: read`
-  → refus, code de sortie 1
+- détecteur testé sur le dépôt réel : `['canal_public.py']`, rien d'autre
+- testé sur un dépôt jouet : trouve l'absent direct ET l'absent en boucle,
+  ignore les scripts présents, ignore les boucles sans `scripts/$var.py`
+- `--strict` bloque quand le script manque, se tait dès qu'il est restauré
+- 14/14 tests ; le nouveau échoue si l'on revient à la version naïve
