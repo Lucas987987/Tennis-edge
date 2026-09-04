@@ -103,14 +103,36 @@ def _age_heures(iso):
 
 
 def _age_interne_h(path):
-    """Âge en heures d'après l'horodatage ÉCRIT DANS le fichier, ou None."""
+    """Âge en heures d'après l'horodatage ÉCRIT DANS le fichier, ou None.
+
+    CORRIGÉ LE 04/09/2026 AU SOIR : cette fonction ne savait lire qu'un objet
+    JSON. Le premier livrable 'externe' au format JSONL ajouté à ARTIFACTS
+    (canal_public_log.jsonl) tombait donc systématiquement en « FIGÉ
+    (fraîcheur inconnue) » -- donc bloquant sous --strict EN PERMANENCE, y
+    compris une fois son producteur restauré. Une surveillance qui ne peut
+    jamais passer au vert n'est pas une surveillance stricte, c'est une
+    alarme cassée : au bout de trois jours on cesse de la lire, et on
+    retombe exactement sur le mode de panne que --strict combat.
+    Pour un .jsonl on lit la DERNIÈRE ligne : c'est l'événement le plus
+    récent, donc la vraie fraîcheur du flux.
+    """
+    d = None
     try:
-        d = json.load(open(path, encoding='utf-8'))
+        if path.endswith('.jsonl'):
+            derniere = None
+            with open(path, encoding='utf-8') as f:
+                for ligne in f:
+                    if ligne.strip():
+                        derniere = ligne
+            d = json.loads(derniere) if derniere else None
+        else:
+            d = json.load(open(path, encoding='utf-8'))
     except (ValueError, OSError):
         return None
     if not isinstance(d, dict):
         return None
-    for champ in ('generated_at', 'updated', 'run_termine', 'ts'):
+    # 't' : convention des journaux de ce dépôt (canal_public_log.jsonl).
+    for champ in ('generated_at', 'updated', 'run_termine', 'ts', 't'):
         v = d.get(champ)
         if not v:
             continue
@@ -529,14 +551,39 @@ def main():
             # alarme à 4,0 et le mur GitHub vers 5), zone 'indisponible' en
             # continu depuis, et rien ne l'attrapait -- `genere_le` restait
             # frais parce que le fichier, lui, était bien réécrit chaque jour.
+            #
+            # CORRIGÉ LE 04/09/2026 AU SOIR : la première version traitait un
+            # champ ABSENT comme « jamais mesuré » et bloquait. Or le champ
+            # vient d'être introduit : tout repo_size_status.json écrit par
+            # la version PRÉCÉDENTE de repo_sentinel.py en est dépourvu, sans
+            # que cela dise quoi que ce soit sur la surveillance. Résultat
+            # constaté sur le run de 18h43 : steam_pipeline rouge à cause du
+            # correctif censé le rendre fiable, sur un fichier de 12h14
+            # parfaitement normal pour son époque. Un contrôle qui déclenche
+            # sur sa propre migration est un faux positif, exactement ce que
+            # `|| true` produisait en négatif.
+            # Règle : champ absent = ANCIEN FORMAT, on ne bloque que si le
+            # fichier lui-même n'a pas été réécrit depuis 72 h -- auquel cas
+            # le producteur n'a pas tourné avec le nouveau code en trois
+            # jours, et c'est un vrai problème. Dès que repo_sentinel repasse,
+            # le champ apparaît et la règle des 72 h s'applique normalement.
             _dm = repo_size.get('derniere_mesure_reussie_le')
             _age_dm = _age_heures(_dm) if _dm else None
-            if _age_dm is None or _age_dm > 72:
+            _ancien_format = _dm is None
+            _age_fichier = _age_heures(repo_size.get('genere_le'))
+            if _ancien_format:
+                _aveugle = _age_fichier is None or _age_fichier > 72
+                _depuis = ('date de génération illisible' if _age_fichier is None
+                           else f'{_age_fichier:.0f} h (format antérieur au '
+                                f'suivi des mesures réussies)')
+            else:
+                _aveugle = _age_dm > 72
+                _depuis = f'{_age_dm:.0f} h'
+            if _aveugle:
                 alertes_contenu.append(
                     f"Taille du dépôt : AUCUNE mesure réussie depuis "
-                    f"{'jamais' if _age_dm is None else f'{_age_dm:.0f} h'} "
-                    f"({repo_size.get('message', 'cause inconnue')}) -- la "
-                    f"sentinelle est aveugle, pas rassurante.")
+                    f"{_depuis} ({repo_size.get('message', 'cause inconnue')}) "
+                    f"-- la sentinelle est aveugle, pas rassurante.")
         if ko_dur or alertes_contenu:
             print(f"\n🔒 STRICT : {len(ko_dur)} livrable(s) critique(s) en défaut, "
                  f"{len(alertes_contenu)} alerte(s) de contenu -> exit 1")
