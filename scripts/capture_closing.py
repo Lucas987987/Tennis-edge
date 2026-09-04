@@ -795,12 +795,30 @@ def main():
     # -- par défaut, on préserve la valeur précédente (si ce run ne touche
     # pas au rapport, rien ne doit changer sur ce champ).
     rapport_envoye_pour = None
+    # AJOUTÉ LE 04/09/2026 : cadence RÉELLE mesurée sur parts/live_match_* =
+    # 7 à 9 passages/heure (médiane 10 min entre deux captures), là où le
+    # worker Cloudflare à 5 min ET le cron '*/5' devraient en donner 12.
+    # La configuration est pourtant correcte (cron */5, seuil anti-doublon à
+    # 4 min, bloc concurrency retiré) : le goulot est EN AMONT du dépôt, et
+    # rien ici ne permettait de dire lequel des deux déclencheurs manque.
+    # capture_state.json n'enregistrait pas d'où venait le passage.
+    # Ces trois compteurs tranchent en 24 h :
+    #   dispatch ~288 -> le worker tient la cadence, le cron est superflu
+    #   dispatch <150 -> le worker est le problème (à voir côté Cloudflare)
+    #   schedule dominant + total <200 -> GitHub étale le cron '*/5', qui
+    #     n'est PAS garanti : sous charge il est livré toutes les 8-12 min.
+    #     Dans ce cas seul le worker peut tenir 5 min, le cron ne le pourra
+    #     jamais et il faut cesser de compter dessus.
+    declencheur = os.environ.get('GITHUB_EVENT_NAME', 'local')
+    passages_par_declencheur = {}
     try:
         _prec = json.load(open('capture_state.json', encoding='utf-8'))
         _prec_ts = datetime.datetime.fromisoformat(_prec.get('last_capture_at', ''))
         rapport_envoye_pour = _prec.get('rapport_envoye_pour')
         if _prec_ts.date() == now.date():
             requetes_cumul_jour += _prec.get('requetes_cumul_jour', 0)
+            passages_par_declencheur = dict(
+                _prec.get('passages_par_declencheur') or {})
         else:
             # AJOUTÉ LE 29/08/2026 (demande explicite de Lucas) : changement
             # de journée UTC détecté -- _prec porte le TOTAL FINAL de la
@@ -1100,6 +1118,8 @@ def main():
     # quel). ov.ecriture_atomique() écrit dans un .tmp puis os.replace()
     # -- soit l'ancien fichier complet reste, soit le nouveau complet le
     # remplace, jamais un état intermédiaire.
+    passages_par_declencheur[declencheur] = \
+        passages_par_declencheur.get(declencheur, 0) + 1
     try:
         ov.ecriture_atomique('capture_state.json', {
             'last_capture_at': now.isoformat(),
@@ -1108,6 +1128,8 @@ def main():
             'requetes_ce_run': nreq_ce_run,
             'requetes_cumul_jour': requetes_cumul_jour,
             'rapport_envoye_pour': rapport_envoye_pour,
+            'declencheur': declencheur,
+            'passages_par_declencheur': passages_par_declencheur,
         }, ensure_ascii=False, indent=2)
     except Exception as e:
         print(f"  ℹ️ capture_state non écrit: {e}")
