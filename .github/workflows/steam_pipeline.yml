@@ -55,7 +55,7 @@ jobs:
       # d'un livrable simplement PRÉSENT depuis un run précédent.
       RUN_STARTED: ${{ github.event.repository.updated_at }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           # AJOUTÉ LE 29/08/2026 (§7) : seul workflow lourd sans ce filtre
           # (10 autres l'ont déjà) -- ce job lit trop de fichiers dispersés
@@ -63,7 +63,29 @@ jobs:
           # sous pression ce soir, mais blob:none reste sûr seul : les
           # objets sont récupérés à la demande plutôt que tous d'un coup.
           filter: blob:none
-      - uses: actions/setup-python@v5
+          fetch-depth: 0
+          # COMPLÉTÉ LE 04/09/2026 (audit) : le checkout du run 91710599493
+          # a pris 37 s pour rapatrier 426 Mo de partitions dont ce job ne
+          # lit qu'une partie. Inventaire fait script par script avant de
+          # restreindre -- c'est l'inventaire qui manquait le 29/08 :
+          #   curves_parts.py          parts/live_*
+          #   canal_clv.py             parts/live_*, parts/hist_*
+          #   clv_vs_median_offline.py parts/hist_book_*
+          #   validation_report.py     parts/hist_book_* (via iter_hist_lines)
+          #   paper_journal.py         parts/hist_{book,set1,set2}_*
+          #                            (TRACK_CURVES=*_curves.jsonl -> legacy)
+          # AUCUN ne lit pm_ticks/kx_ticks : ce sont eux qu'on laisse au
+          # vestiaire. Précédent à ne pas répéter : le 25/08, un sparse
+          # oubliant parts/hist_* avait vidé le track record en silence et
+          # fait retomber tous les seuils en « indicatif ».
+          sparse-checkout: |
+            /*
+            !/parts
+            /parts/live_*
+            /parts/hist_*
+            /parts/ARCHIVE_INDEX.json
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.11'
 
