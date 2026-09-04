@@ -1,9 +1,10 @@
 {
- "zone": "indisponible",
- "taille_go": null,
- "marge_go": null,
+ "zone": "vigilance",
+ "taille_go": 3.99,
+ "marge_go": 0.01,
  "seuil_vigilance_go": 3.0,
  "seuil_alarme_go": 4.0,
- "message": "gh api indisponible (gh: To use GitHub CLI in a GitHub Actions workflow, set the GH_TOKEN environment variable. Example:\n  env:\n    GH_TOKEN:) — taille NON vérifiée ce run.",
- "genere_le": "2026-09-04T12:14:42.320362+00:00"
+ "message": "ZONE DE VIGILANCE — marge restante : 0.01 Go. Planifier la purge, ne pas attendre le rouge.",
+ "derniere_mesure_reussie_le": "2026-09-04T19:32:19.955326+00:00",
+ "genere_le": "2026-09-04T19:32:19.955326+00:00"
 }
