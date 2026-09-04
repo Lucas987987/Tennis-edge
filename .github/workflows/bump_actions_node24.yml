@@ -1,0 +1,182 @@
+name: Bump actions vers Node 24 (one-shot)
+
+# ═══════════════════════════════════════════════════════════════════════════
+# PRÉREQUIS OBLIGATOIRE — sans lui ce workflow ÉCHOUERA au push.
+#
+# GITHUB_TOKEN ne peut PAS modifier un fichier sous .github/workflows/.
+# Ce n'est pas un réglage manquant : il n'existe aucune clé `workflows` dans
+# le bloc permissions d'un workflow. Constaté sur le run 91880753053 :
+#   ! [remote rejected] main -> main (refusing to allow a GitHub App to
+#     create or update workflow .github/workflows/archive_ticks.yml
+#     without `workflows` permission)
+# Les permissions accordées étaient Contents: write / Metadata: read, et il
+# n'y avait rien de plus à demander : la restriction est structurelle.
+#
+# À FAIRE UNE FOIS, depuis le téléphone :
+#   1. github.com/settings/personal-access-tokens  ->  jeton FINE-GRAINED
+#      - Repository access : Only select repositories -> Tennis-edge
+#      - Repository permissions : Contents = Read and write
+#                                 Workflows = Read and write   <-- la clé
+#      - Expiration : 7 jours suffisent, ce workflow est jetable
+#   2. Dépôt -> Settings -> Secrets and variables -> Actions -> New secret
+#      Nom : GH_PAT_WORKFLOW      Valeur : le jeton
+#   3. Lancer ce workflow avec appliquer=false, lire le diff
+#   4. Relancer avec appliquer=true
+#   5. SUPPRIMER le jeton et le secret, puis ce fichier
+# ═══════════════════════════════════════════════════════════════════════════
+#
+# Pourquoi ce workflow existe : GitHub RETIRE Node 20 des runners le
+# 16/09/2026. Après cette date, tout workflow encore sur checkout@v4 ou
+# setup-python@v5 s'arrête — c'est-à-dire tous ceux du dépôt. 48 fichiers à
+# éditer à la main depuis l'interface web mobile : non.
+
+on:
+  workflow_dispatch:
+    inputs:
+      appliquer:
+        description: "false = simulation seule ; true = édite et committe"
+        required: true
+        default: "false"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: bump-actions-node24
+  cancel-in-progress: false
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Vérifier le jeton AVANT tout travail
+        run: |
+          if [ -z "${{ secrets.GH_PAT_WORKFLOW }}" ]; then
+            echo "❌ secret GH_PAT_WORKFLOW absent."
+            echo "   GITHUB_TOKEN ne peut pas pousser des fichiers de workflow :"
+            echo "   sans PAT à scope Workflows, ce run échouerait au push après"
+            echo "   avoir tout édité pour rien. Voir l'en-tête de ce fichier."
+            exit 1
+          fi
+          echo "✅ jeton présent."
+
+      - uses: actions/checkout@v5
+        with:
+          token: ${{ secrets.GH_PAT_WORKFLOW }}
+          filter: blob:none
+          sparse-checkout: |
+            /*
+            !/parts
+          sparse-checkout-cone-mode: false
+
+      - name: Remplacer les majeures
+        id: bump
+        run: |
+          set -euo pipefail
+          # CORRIGÉ LE 04/09/2026 : la version précédente portait ses paires
+          # « source|cible » dans le script lui-même, et le `sed` balayait
+          # .github/workflows/*.yml -- CE fichier compris. Il réécrivait donc
+          # sa propre liste : après un passage elle contenait
+          # « actions/cache@v5|actions/cache@v5 ». Visible dans le log du run
+          # 91880753053 : « actions/cache@v4 -> v5 : 2 fichier(s) » alors
+          # qu'une seule occurrence existait dans le dépôt.
+          # Deux protections : la liste vit dans un fichier temporaire HORS
+          # du dépôt, et ce workflow est exclu du balayage.
+          MOI=".github/workflows/bump_actions_node24.yml"
+          mapfile -t CIBLES < <(ls .github/workflows/*.yml | grep -v -F "$MOI")
+          echo "${#CIBLES[@]} fichier(s) balayé(s) (ce workflow exclu)"
+
+          cat > /tmp/paires.txt <<'PAIRES'
+          actions/checkout@v4|actions/checkout@v5
+          actions/setup-python@v5|actions/setup-python@v6
+          actions/cache@v4|actions/cache@v5
+          actions/upload-artifact@v4|actions/upload-artifact@v5
+          actions/configure-pages@v5|actions/configure-pages@v6
+          actions/deploy-pages@v4|actions/deploy-pages@v5
+          actions/upload-pages-artifact@v3|actions/upload-pages-artifact@v5
+          PAIRES
+
+          total=0
+          while IFS='|' read -r src dst; do
+            src="$(echo "$src" | xargs)"; dst="$(echo "$dst" | xargs)"
+            [ -z "$src" ] && continue
+            n=$(grep -l -F -- "$src" "${CIBLES[@]}" 2>/dev/null | wc -l)
+            if [ "$n" -gt 0 ]; then
+              echo "  $src -> $dst : $n fichier(s)"
+              sed -i "s|$src|$dst|g" "${CIBLES[@]}"
+              total=$((total + n))
+            fi
+          done < /tmp/paires.txt
+
+          echo "total=$total" >> "$GITHUB_OUTPUT"
+          [ "$total" -eq 0 ] && echo "✅ rien à changer — déjà sur Node 24." || true
+
+      - name: Vérifier que tous les YAML parsent toujours
+        run: |
+          python3 -m pip install -q pyyaml
+          python3 - <<'PY'
+          import glob, sys, yaml
+          # Un sed maladroit casserait TOUS les workflows d'un coup. On refuse
+          # de committer si un seul fichier ne parse plus.
+          # AJOUTÉ LE 04/09/2026 : on vérifie AUSSI les clés du bloc
+          # permissions. `metadata: read`, posé par erreur dans health_check
+          # le matin même, est INVALIDE (le scope metadata est toujours
+          # accordé en lecture et ne se déclare pas) : GitHub rejette le
+          # fichier à la validation et le workflow ne tourne plus du tout.
+          # yaml.safe_load ne voit rien, c'est du YAML parfaitement valide.
+          VALIDES = {
+              'actions', 'artifact-metadata', 'attestations', 'checks',
+              'code-quality', 'contents', 'deployments', 'discussions',
+              'id-token', 'issues', 'models', 'packages', 'pages',
+              'pull-requests', 'repository-projects', 'security-events',
+              'statuses',
+          }
+          mauvais = []
+          fichiers = sorted(glob.glob('.github/workflows/*.yml'))
+          for f in fichiers:
+              try:
+                  d = yaml.safe_load(open(f, encoding='utf-8'))
+              except Exception as e:
+                  mauvais.append(f"{f}: YAML illisible — {e}")
+                  continue
+              blocs = [d.get('permissions')]
+              blocs += [j.get('permissions')
+                        for j in (d.get('jobs') or {}).values()
+                        if isinstance(j, dict)]
+              for b in blocs:
+                  if isinstance(b, dict) and set(b) - VALIDES:
+                      mauvais.append(f"{f}: clé(s) permissions invalide(s) "
+                                     f"{sorted(set(b) - VALIDES)}")
+          if mauvais:
+              print("❌ AUCUN commit :")
+              for m in mauvais:
+                  print("  ", m)
+              sys.exit(1)
+          print(f"✅ {len(fichiers)} workflows : YAML valide, permissions valides")
+          PY
+
+      - name: Rapport (simulation)
+        if: ${{ github.event.inputs.appliquer != 'true' }}
+        run: |
+          echo "=== SIMULATION — rien n'a été committé ==="
+          git --no-pager diff --stat
+          echo
+          echo "Relancer avec appliquer=true pour committer."
+
+      - name: Committer
+        if: ${{ github.event.inputs.appliquer == 'true' && steps.bump.outputs.total != '0' }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -- .github/workflows/
+          git diff --staged --quiet && { echo "rien de neuf"; exit 0; }
+          git commit -m "Bump actions vers les majeures Node 24 (retrait de Node 20 le 16/09/2026)"
+          for essai in 1 2 3; do
+            git fetch origin main || true
+            git merge origin/main --no-edit || { git merge --abort 2>/dev/null || true; sleep 8; continue; }
+            git push && exit 0
+            sleep 8
+          done
+          echo "❌ PUSH ÉCHOUÉ — le commit local reste récupérable au prochain run."
+          exit 1
