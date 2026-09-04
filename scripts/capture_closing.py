@@ -756,6 +756,27 @@ def main():
                 print(f"  ⏭️  cron de secours : dernière capture il y a "
                      f"{_age_min:.0f} min (< {SEUIL_CRON_SECOURS_MIN}) -- "
                      f"le worker semble actif, rien à faire.")
+                # AJOUTÉ LE 04/09/2026 AU SOIR : ce `return` sort AVANT
+                # l'écriture de capture_state.json, donc les passages du cron
+                # court-circuités n'apparaissaient nulle part. Le compteur
+                # passages_par_declencheur posé le matin même ne pouvait donc
+                # PAS distinguer « GitHub ne délivre pas le cron */5 » de
+                # « le cron passe et se range » -- or c'est précisément la
+                # question qu'il devait trancher. Un instrument qui ne peut
+                # pas départager les deux hypothèses qu'il vise ne sert à
+                # rien. On incrémente un compteur séparé, sans toucher aux
+                # autres champs (même précaution que le marqueur de rapport
+                # quotidien : ce run n'a rien capturé, il n'a pas à réécrire
+                # ce qui appartient au run qui capture).
+                try:
+                    _p = dict(_etat.get('passages_par_declencheur') or {})
+                    _p['schedule_court_circuite'] = \
+                        _p.get('schedule_court_circuite', 0) + 1
+                    _etat['passages_par_declencheur'] = _p
+                    ov.ecriture_atomique('capture_state.json', _etat,
+                                         ensure_ascii=False, indent=2)
+                except Exception as _e:
+                    print(f"  ℹ️ compteur cron non écrit: {_e}")
                 return
             print(f"  🆘 cron de secours DÉCLENCHÉ : dernière capture il y a "
                  f"{_age_min:.0f} min (>= {SEUIL_CRON_SECOURS_MIN}) -- le "
