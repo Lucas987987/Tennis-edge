@@ -64,7 +64,23 @@ jobs:
           echo "# Études Polymarket/Kalshi — rapport du $(date -u +%F)" > polymarket_studies_report.md
           echo >> polymarket_studies_report.md
           echo '```' >> polymarket_studies_report.md
-          for s in polymarket_flow polymarket_leadlag polymarket_studies pm_calibration_track pm_observations; do
+          # RETIRÉ LE 03/09/2026 : polymarket_flow. Ce script mesure le flux
+          # d'ARGENT (trade_notional / trade_size) avant un mouvement Pinnacle.
+          # Or le collecteur n'enregistre AUCUN volume -- mesuré : 0 échange
+          # horodaté sur 2,4 millions de ticks. Le script ne peut donc rien
+          # produire, quelle que soit la durée qu'on lui accorde : il consommait
+          # 300 s pour finir en timeout (code 124) chaque jour.
+          #
+          # Sans conséquence tant que l'échec était noté ⚠️. Depuis que les
+          # timeouts sont correctement comptés comme des échecs (❌) et que
+          # `alerte` bloque --strict, ce script cassait TOUT steam_pipeline --
+          # dont les 9 autres livrables étaient pourtant tous ✅ OK.
+          #
+          # À REMETTRE le jour où le collecteur Polymarket enregistrera les
+          # volumes (champs trade_notional / trade_size dans les ticks). D'ici
+          # là, le garder dans la boucle revient à faire échouer un pipeline
+          # sain pour une question qu'on ne peut pas encore poser.
+          for s in polymarket_leadlag polymarket_studies pm_calibration_track pm_observations; do
             echo "--- $s ---" >> polymarket_studies_report.md
             # CORRIGÉ LE 30/08/2026 (validation externe, point 2) : ⚠️ pour
             # un ÉCHEC RÉEL (code 124 = timeout, ou toute autre sortie non
