@@ -1,22 +1,24 @@
 name: Capture Closing Lines
 
-# Déclencheurs.
-# - repository_dispatch : envoyé par le worker Cloudflare toutes les 5 min.
-#   Le type suit la convention des autres collecteurs du repo
-#   (kalshi_collector, polymarket_collector) = nom du workflow.
-# - schedule '*/5' : second déclencheur à la même cadence, couvre les
-#   ticks que le worker rate ou que GitHub retarde.
+# Déclencheur UNIQUE : repository_dispatch, envoyé par le worker Cloudflare
+# toutes les 5 min. Le type suit la convention des autres collecteurs du repo
+# (kalshi_collector, polymarket_collector) = nom du workflow.
+# Filet de sécurité : capture_watchdog.yml (cron horaire) relance ce workflow
+# par workflow_dispatch si aucune capture depuis SEUIL_MIN minutes.
 on:
   repository_dispatch:
     types: [capture_closing]
-  schedule:
-    # MODIFIÉ LE 04/09/2026 (demande explicite de Lucas) : resserré de
-    # '*/15' à '*/5'. Le cron n'est plus un filet de secours horaire mais
-    # un second déclencheur à la même cadence que le worker Cloudflare.
-    # Le garde-fou de fraîcheur de scripts/capture_closing.py (main(),
-    # SEUIL_CRON_SECOURS_MIN) doit être abaissé de 15 à 4 en même temps,
-    # sinon il court-circuite 2 passages sur 3 et ce cron ne sert à rien.
-    - cron: '*/5 * * * *'
+  # RETIRÉ LE 04/09/2026 AU SOIR : le cron '*/5' ne se déclenchait JAMAIS.
+  # Mesuré par le compteur passages_par_declencheur posé le matin même :
+  # sur toute la période d'observation, `repository_dispatch` uniquement,
+  # pas un seul `schedule`. GitHub ne garantit pas les crons sub-horaires
+  # et ne les délivre pas ici. Ce n'était pas un second déclencheur, c'était
+  # un ornement -- et surtout un faux filet de sécurité : on croyait avoir
+  # une redondance là où il n'y avait qu'un seul déclencheur réel.
+  # Le vrai filet est maintenant capture_watchdog.yml, qui vérifie une fois
+  # par heure que la capture tourne encore et relance ce workflow sinon.
+  # Un cron horaire, lui, tolère très bien d'être délivré avec 20 minutes de
+  # retard : c'est le seul usage où l'irrégularité de GitHub est acceptable.
   workflow_dispatch:
 
 permissions:
