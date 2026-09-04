@@ -37,7 +37,7 @@ jobs:
     # job est trop léger pour que ça change quoi que ce soit en pratique.
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0   # historique complet requis pour `git log` par fichier
           # AJOUTÉ (audit v13 §BH) : dépôt à 672+ Mo, dix autres workflows
