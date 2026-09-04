@@ -5,15 +5,23 @@ on:
     - cron: '37 7 * * *'        # 1×/jour, minute 37 pour éviter la congestion
   workflow_dispatch:
 
+# AJOUTÉ LE 04/09/2026 : `github.token` n'a de droit de lecture sur les
+# métadonnées du dépôt que si le scope est déclaré. Sans cette clé, le jeton
+# automatique aurait échoué exactement comme le secret vide qu'il remplace --
+# lecture seule, ce workflow ne committe rien.
+permissions:
+  contents: read
+  metadata: read
+
 jobs:
   health:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.11'
 
@@ -29,7 +37,15 @@ jobs:
           ODDS_API_KEY_6: ${{ secrets.ODDS_API_KEY_6 }}
           GH_OWNER: Lucas987987
           GH_REPO: Tennis-edge
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          # CORRIGÉ LE 04/09/2026 : `secrets.GH_TOKEN` n'existe PAS dans ce
+          # dépôt (ce n'est pas un secret fourni par GitHub, il faut le créer
+          # soi-même). Il arrivait vide, `gh api` refusait, repo_sentinel
+          # écrivait zone='indisponible' et `|| true` avalait le reste : la
+          # sentinelle de taille était muette depuis le 03/09 sans que rien
+          # ne l'attrape. `github.token` est le jeton automatique du run, il
+          # suffit largement pour `gh api repos/{owner}/{repo}` (lecture).
+          # secrets.GH_TOKEN reste prioritaire s'il est créé un jour.
+          GH_TOKEN: ${{ secrets.GH_TOKEN || github.token }}
         run: python scripts/health_check.py
 
       # AJOUTÉ LE 29/08/2026 (validation externe). scripts/repo_sentinel.py
@@ -51,7 +67,7 @@ jobs:
       # (🔴 SEUIL FRANCHI), pas dans son code retour.
       - name: Sentinelle taille du dépôt
         env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN || github.token }}
           REPO: Lucas987987/Tennis-edge
         run: python scripts/repo_sentinel.py || true
 
