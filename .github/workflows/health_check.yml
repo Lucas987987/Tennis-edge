@@ -1,0 +1,93 @@
+name: Health Check
+
+on:
+  schedule:
+    - cron: '37 7 * * *'        # 1×/jour, minute 37 pour éviter la congestion
+  workflow_dispatch:
+
+# AJOUTÉ LE 04/09/2026 : `github.token` n'a de droit de lecture sur les
+# métadonnées du dépôt que si le scope est déclaré. Sans cette clé, le jeton
+# automatique aurait échoué exactement comme le secret vide qu'il remplace --
+# lecture seule, ce workflow ne committe rien.
+permissions:
+  contents: read
+  metadata: read
+
+jobs:
+  health:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Run health check
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          ODDS_API_KEY_1: ${{ secrets.ODDS_API_KEY_1 }}
+          ODDS_API_KEY_2: ${{ secrets.ODDS_API_KEY_2 }}
+          ODDS_API_KEY_3: ${{ secrets.ODDS_API_KEY_3 }}
+          ODDS_API_KEY_4: ${{ secrets.ODDS_API_KEY_4 }}
+          ODDS_API_KEY_5: ${{ secrets.ODDS_API_KEY_5 }}
+          ODDS_API_KEY_6: ${{ secrets.ODDS_API_KEY_6 }}
+          GH_OWNER: Lucas987987
+          GH_REPO: Tennis-edge
+          # CORRIGÉ LE 04/09/2026 : `secrets.GH_TOKEN` n'existe PAS dans ce
+          # dépôt (ce n'est pas un secret fourni par GitHub, il faut le créer
+          # soi-même). Il arrivait vide, `gh api` refusait, repo_sentinel
+          # écrivait zone='indisponible' et `|| true` avalait le reste : la
+          # sentinelle de taille était muette depuis le 03/09 sans que rien
+          # ne l'attrape. `github.token` est le jeton automatique du run, il
+          # suffit largement pour `gh api repos/{owner}/{repo}` (lecture).
+          # secrets.GH_TOKEN reste prioritaire s'il est créé un jour.
+          GH_TOKEN: ${{ secrets.GH_TOKEN || github.token }}
+        run: python scripts/health_check.py
+
+      # AJOUTÉ LE 29/08/2026 (validation externe). scripts/repo_sentinel.py
+      # était ORPHELIN depuis sa création le 26/08 : aucun workflow ne
+      # l'appelait, alors que sa docstring affirmait qu'il tournait chaque
+      # semaine. Mesure réelle du 29/08 : 3,48 Go pour un seuil à 4,0 Go et
+      # une zone d'intervention GitHub vers 5 Go -- 0,52 Go de marge.
+      #
+      # Hébergé ici plutôt que dans pistes_weekly.yml (l'hôte que suggérait
+      # la docstring) : à ~0,1-0,2 Go/jour, un cron dominical laisserait
+      # franchir le seuil un lundi sans le signaler avant six jours.
+      # health_check tourne tous les jours à 7h37 UTC et dispose déjà du
+      # GH_TOKEN dont `gh api` a besoin.
+      #
+      # `|| true` : la sentinelle est une SURVEILLANCE, pas un livrable.
+      # Elle ne doit jamais faire échouer le health check lui-même -- sinon
+      # une panne de `gh` masquerait les vrais résultats de santé du
+      # pipeline. Le franchissement de seuil se lit dans le journal du run
+      # (🔴 SEUIL FRANCHI), pas dans son code retour.
+      - name: Sentinelle taille du dépôt
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN || github.token }}
+          REPO: Lucas987987/Tennis-edge
+        run: python scripts/repo_sentinel.py || true
+
+      # AJOUTÉ LE 30/08/2026 (validation externe, point 1) : health_check.yml
+      # n'avait AUCUNE étape de commit -- repo_size_status.json aurait été
+      # écrit sur le runner puis perdu à la fin du job, jamais poussé.
+      # Même motif de commit que polymarket_studies.yml (retry avec
+      # fetch/merge, jamais de push forcé qui écraserait un autre run).
+      - name: Committer le statut de taille du dépôt
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -- repo_size_status.json
+          git diff --staged --quiet && { echo "rien de neuf"; exit 0; }
+          git commit -m "Sentinelle taille du dépôt ($(date -u +%F))"
+          for essai in 1 2 3; do
+            git fetch origin main || true
+            git merge origin/main --no-edit || { git merge --abort 2>/dev/null || true; sleep 8; continue; }
+            git push && exit 0
+            sleep 8
+          done
+          exit 1
+
