@@ -1,6 +1,6 @@
 {
-  "run_termine": "2026-09-04T04:50:23",
-  "run_demarre": "2026-09-04T04:28:40",
+  "run_termine": "2026-09-04T05:35:20",
+  "run_demarre": "2026-09-04T05:21:06",
   "verdict_global": "1 livrable(s) à vérifier",
   "livrables": [
     {
@@ -9,10 +9,10 @@
       "optionnel": false,
       "externe": false,
       "verdict": "✅ OK",
-      "octets": 245697,
-      "lignes": 2458,
+      "octets": 252784,
+      "lignes": 2530,
       "ecrit_ce_run": true,
-      "modifie": "2026-09-04T04:40:07"
+      "modifie": "2026-09-04T05:26:47"
     },
     {
       "fichier": "resultats_derived.json",
@@ -20,10 +20,10 @@
       "optionnel": false,
       "externe": true,
       "verdict": "✅ OK",
-      "octets": 426254,
-      "lignes": 1605,
+      "octets": 443560,
+      "lignes": 1674,
       "ecrit_ce_run": true,
-      "modifie": "2026-09-04T04:35:22"
+      "modifie": "2026-09-04T05:22:04"
     },
     {
       "fichier": "paper_trades_match.jsonl",
@@ -34,7 +34,7 @@
       "octets": 16062,
       "lignes": 38,
       "ecrit_ce_run": true,
-      "modifie": "2026-09-04T04:41:53"
+      "modifie": "2026-09-04T05:28:16"
     },
     {
       "fichier": "paper_trades_set1.jsonl",
@@ -45,7 +45,7 @@
       "octets": 7009,
       "lignes": 17,
       "ecrit_ce_run": true,
-      "modifie": "2026-09-04T04:42:10"
+      "modifie": "2026-09-04T05:28:29"
     },
     {
       "fichier": "paper_trades_set2.jsonl",
@@ -56,7 +56,7 @@
       "octets": 0,
       "lignes": 0,
       "ecrit_ce_run": true,
-      "modifie": "2026-09-04T04:42:15"
+      "modifie": "2026-09-04T05:28:32"
     },
     {
       "fichier": "moves_detail.csv",
@@ -67,7 +67,7 @@
       "octets": 1793,
       "lignes": 11,
       "ecrit_ce_run": true,
-      "modifie": "2026-09-04T04:49:39"
+      "modifie": "2026-09-04T05:34:42"
     },
     {
       "fichier": "moves_detail_hist.csv",
@@ -75,10 +75,10 @@
       "optionnel": false,
       "externe": false,
       "verdict": "✅ OK",
-      "octets": 167283,
+      "octets": 167322,
       "lignes": 1034,
       "ecrit_ce_run": true,
-      "modifie": "2026-09-04T04:50:23"
+      "modifie": "2026-09-04T05:35:20"
     },
     {
       "fichier": "canal_clv_detail.csv",
@@ -89,7 +89,7 @@
       "octets": 24898,
       "lignes": 161,
       "ecrit_ce_run": true,
-      "modifie": "2026-09-04T04:49:38"
+      "modifie": "2026-09-04T05:34:41"
     },
     {
       "fichier": "book_curves_live.jsonl",
@@ -97,14 +97,14 @@
       "optionnel": false,
       "externe": false,
       "verdict": "✅ OK",
-      "octets": 4566620,
+      "octets": 4618426,
       "lignes": 1111,
       "ecrit_ce_run": true,
-      "modifie": "2026-09-04T04:35:23"
+      "modifie": "2026-09-04T05:22:04"
     }
   ],
   "partitions": {
-    "total_mo": 425.0,
+    "total_mo": 426.0,
     "zone_rouge": [],
     "n_partitions": 51
   },
@@ -116,43 +116,43 @@
     "alerte": false
   },
   "clv_vs_median": {
-    "genere_le": "2026-09-04T04:48:41.648108+00:00",
-    "n_moves_total": 975,
+    "genere_le": "2026-09-04T05:33:53.510442+00:00",
+    "n_moves_total": 1033,
     "n_cote_ambigu": 1,
     "n_incomplet": 364,
-    "n_exploitables": 610,
+    "n_exploitables": 668,
     "verdict": "calcule",
-    "prime_selection_pct": 1.342,
+    "prime_selection_pct": 1.282,
     "prime_ic95": [
-      1.19,
-      1.449
+      1.129,
+      1.429
     ],
-    "derive_marche_pct": 3.621,
+    "derive_marche_pct": 3.563,
     "derive_ic95": [
       3.198,
       4.0
     ],
-    "total_clv_vs_median_pct": 5.455,
+    "total_clv_vs_median_pct": 5.354,
     "total_ic95": [
-      4.828,
-      5.904
+      4.732,
+      5.802
     ],
     "clv_book_pct_median": 5.1,
-    "ecart_book_vs_median_pct": -0.05,
+    "ecart_book_vs_median_pct": -0.042,
     "ecart_book_vs_median_ic95": [
-      -0.328,
-      -0.013
+      -0.283,
+      -0.011
     ],
-    "part_prime_pct": 24.6,
-    "pct_positif_prime": 77.5,
-    "pct_positif_derive": 81.3
+    "part_prime_pct": 23.9,
+    "pct_positif_prime": 76.3,
+    "pct_positif_derive": 81.1
   },
   "polymarket_studies": {
     "n_echecs": 1,
     "n_avertissements": 2,
     "alerte": true,
     "genere_le": "2026-09-03T09:08:48Z",
-    "age_heures": 19.7,
+    "age_heures": 20.4,
     "fraicheur_inconnue_ou_perimee": false
   },
   "repo_size": {
@@ -163,7 +163,7 @@
     "seuil_alarme_go": 4.0,
     "message": "gh api indisponible (gh: To use GitHub CLI in a GitHub Actions workflow, set the GH_TOKEN environment variable. Example:\n  env:\n    GH_TOKEN:) — taille NON vérifiée ce run.",
     "genere_le": "2026-09-03T12:13:46.953428+00:00",
-    "age_heures": 16.6,
+    "age_heures": 17.4,
     "fraicheur_inconnue_ou_perimee": false
   }
 }
