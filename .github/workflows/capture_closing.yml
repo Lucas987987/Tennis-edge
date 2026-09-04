@@ -1,27 +1,22 @@
 name: Capture Closing Lines
 
 # Déclencheurs.
-# - repository_dispatch : envoyé par le worker Cloudflare aux instants
-#   T-25 et T-10 avant chaque match (cf. entête de scripts/capture_closing.py).
+# - repository_dispatch : envoyé par le worker Cloudflare toutes les 5 min.
 #   Le type suit la convention des autres collecteurs du repo
 #   (kalshi_collector, polymarket_collector) = nom du workflow.
-# - schedule minute 7 : découverte des matchs du jour, filet de sécurité
-#   si le worker est muet.
+# - schedule '*/5' : second déclencheur à la même cadence, couvre les
+#   ticks que le worker rate ou que GitHub retarde.
 on:
   repository_dispatch:
     types: [capture_closing]
   schedule:
-    # CORRIGÉ LE 29/08/2026 (demande explicite de Lucas) : resserré de
-    # '7 * * * *' (horaire, jusqu'à 60 min de trou possible si le worker
-    # Cloudflare tombe) à toutes les 15 min -- un filet de sécurité, pas un
-    # deuxième déclencheur principal. Voir le garde-fou dans
-    # scripts/capture_closing.py (main()) : ce cron ne fait un VRAI passage
-    # de capture que si aucune capture n'a eu lieu depuis 15 min -- sinon
-    # il se termine immédiatement, sans consommer une seule requête API.
-    # Sans ce garde-fou, resserrer le cron aurait fait passer son coût de
-    # 24 passages/jour (déjà compté dans le budget de 235 req/jour) à ~96,
-    # en grande partie redondants avec un worker en bonne santé.
-    - cron: '*/15 * * * *'
+    # MODIFIÉ LE 04/09/2026 (demande explicite de Lucas) : resserré de
+    # '*/15' à '*/5'. Le cron n'est plus un filet de secours horaire mais
+    # un second déclencheur à la même cadence que le worker Cloudflare.
+    # Le garde-fou de fraîcheur de scripts/capture_closing.py (main(),
+    # SEUIL_CRON_SECOURS_MIN) doit être abaissé de 15 à 4 en même temps,
+    # sinon il court-circuite 2 passages sur 3 et ce cron ne sert à rien.
+    - cron: '*/5 * * * *'
   workflow_dispatch:
 
 permissions:
@@ -34,16 +29,16 @@ permissions:
   actions: write
 
 # ============================================================
-# AJOUT — c'est la seule vraie modification du fichier.
-# Deux runs de ce workflow ne peuvent plus se chevaucher.
-# cancel-in-progress: false -> le run en cours va au bout (il pousse
-# des données réelles, on ne l'interrompt jamais) ; le suivant attend.
-# Effet de bord bienvenu : supprime la majorité des conflits git que
-# la boucle de reprise à 3 essais rattrape aujourd'hui.
+# RETIRÉ LE 04/09/2026 : le bloc `concurrency: group: capture-closing`
+# plafonnait la cadence réelle à la DURÉE du job, pas à 5 minutes.
+# GitHub ne garde qu'UN seul run en attente par groupe : dès qu'un run
+# dépasse 5 min, le tick suivant se met en file et celui d'après annule
+# le premier en file. Avec un cron */5 et un worker à 5 min, ce bloc
+# aurait annulé la majorité des passages.
+# Les collisions git que ce verrou supprimait sont déjà traitées en aval
+# par la boucle de reprise à 3 essais + merge_json_state.py de l'étape
+# de commit -- c'est exactement ce pour quoi elle a été écrite.
 # ============================================================
-concurrency:
-  group: capture-closing
-  cancel-in-progress: false
 
 env:
   PYTHONDONTWRITEBYTECODE: 1
