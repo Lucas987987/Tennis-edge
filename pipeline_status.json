@@ -1,6 +1,9 @@
 {
-  "run_termine": "2026-09-04T18:43:51",
-  "run_demarre": "2026-09-04T18:25:30",
+  "scripts_manquants": [
+    "canal_public.py"
+  ],
+  "run_termine": "2026-09-04T19:14:34",
+  "run_demarre": "2026-09-04T19:00:05",
   "verdict_global": "1 livrable(s) à vérifier",
   "livrables": [
     {
@@ -9,10 +12,10 @@
       "optionnel": false,
       "externe": false,
       "verdict": "✅ OK",
-      "octets": 256908,
-      "lignes": 2572,
+      "octets": 257010,
+      "lignes": 2573,
       "ecrit_ce_run": true,
-      "modifie": "2026-09-04T18:32:54"
+      "modifie": "2026-09-04T19:05:24"
     },
     {
       "fichier": "resultats_derived.json",
@@ -20,10 +23,10 @@
       "optionnel": false,
       "externe": true,
       "verdict": "✅ OK",
-      "octets": 446843,
-      "lignes": 1687,
+      "octets": 456797,
+      "lignes": 1723,
       "ecrit_ce_run": true,
-      "modifie": "2026-09-04T18:28:29"
+      "modifie": "2026-09-04T19:01:18"
     },
     {
       "fichier": "paper_trades_match.jsonl",
@@ -34,7 +37,7 @@
       "octets": 16079,
       "lignes": 38,
       "ecrit_ce_run": true,
-      "modifie": "2026-09-04T18:34:47"
+      "modifie": "2026-09-04T19:06:59"
     },
     {
       "fichier": "paper_trades_set1.jsonl",
@@ -45,7 +48,7 @@
       "octets": 7009,
       "lignes": 17,
       "ecrit_ce_run": true,
-      "modifie": "2026-09-04T18:35:03"
+      "modifie": "2026-09-04T19:07:13"
     },
     {
       "fichier": "paper_trades_set2.jsonl",
@@ -56,7 +59,7 @@
       "octets": 0,
       "lignes": 0,
       "ecrit_ce_run": true,
-      "modifie": "2026-09-04T18:35:08"
+      "modifie": "2026-09-04T19:07:17"
     },
     {
       "fichier": "moves_detail.csv",
@@ -67,7 +70,7 @@
       "octets": 3158,
       "lignes": 19,
       "ecrit_ce_run": true,
-      "modifie": "2026-09-04T18:43:04"
+      "modifie": "2026-09-04T19:13:55"
     },
     {
       "fichier": "moves_detail_hist.csv",
@@ -78,7 +81,7 @@
       "octets": 167322,
       "lignes": 1034,
       "ecrit_ce_run": true,
-      "modifie": "2026-09-04T18:43:51"
+      "modifie": "2026-09-04T19:14:34"
     },
     {
       "fichier": "canal_clv_detail.csv",
@@ -89,7 +92,18 @@
       "octets": 25547,
       "lignes": 165,
       "ecrit_ce_run": true,
-      "modifie": "2026-09-04T18:43:03"
+      "modifie": "2026-09-04T19:13:54"
+    },
+    {
+      "fichier": "canal_public_log.jsonl",
+      "libellé": "Journal du canal public",
+      "optionnel": false,
+      "externe": true,
+      "verdict": "✅ OK",
+      "octets": 68058,
+      "lignes": 175,
+      "ecrit_ce_run": true,
+      "modifie": "2026-09-04T19:01:17"
     },
     {
       "fichier": "book_curves_live.jsonl",
@@ -97,14 +111,14 @@
       "optionnel": false,
       "externe": false,
       "verdict": "✅ OK",
-      "octets": 7020206,
+      "octets": 7106814,
       "lignes": 1365,
       "ecrit_ce_run": true,
-      "modifie": "2026-09-04T18:28:31"
+      "modifie": "2026-09-04T19:01:19"
     }
   ],
   "partitions": {
-    "total_mo": 327.0,
+    "total_mo": 327.6,
     "zone_rouge": [],
     "n_partitions": 37,
     "vue_partielle": true
@@ -117,7 +131,7 @@
     "alerte": false
   },
   "clv_vs_median": {
-    "genere_le": "2026-09-04T18:42:02.742314+00:00",
+    "genere_le": "2026-09-04T19:13:00.985392+00:00",
     "n_moves_total": 1033,
     "n_cote_ambigu": 1,
     "n_incomplet": 364,
@@ -153,7 +167,7 @@
     "n_avertissements": 2,
     "alerte": false,
     "genere_le": "2026-09-04T08:58:23Z",
-    "age_heures": 9.8,
+    "age_heures": 10.3,
     "fraicheur_inconnue_ou_perimee": false
   },
   "repo_size": {
@@ -164,7 +178,7 @@
     "seuil_alarme_go": 4.0,
     "message": "gh api indisponible (gh: To use GitHub CLI in a GitHub Actions workflow, set the GH_TOKEN environment variable. Example:\n  env:\n    GH_TOKEN:) — taille NON vérifiée ce run.",
     "genere_le": "2026-09-04T12:14:42.320362+00:00",
-    "age_heures": 6.5,
+    "age_heures": 7.0,
     "fraicheur_inconnue_ou_perimee": false
   }
 }

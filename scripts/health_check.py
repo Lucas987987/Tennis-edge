@@ -45,8 +45,20 @@ def file_age_hours(path):
     mtime = datetime.datetime.utcfromtimestamp(os.path.getmtime(path))
     return (now - mtime).total_seconds() / 3600
 
+# CORRIGÉ LE 04/09/2026 (audit) : `closing_lines.json` était surveillé par
+# son MTIME. En CI, le mtime de tout fichier suivi par git est celui du
+# CHECKOUT -- 18h43:52 pour les deux fichiers ci-dessous lors du run de
+# 18h43, alors que la dernière capture réelle datait de 18h40:17. Cette
+# section répondait donc ✅ quoi qu'il arrive, y compris si la capture
+# s'était arrêtée une semaine plus tôt : le filet quotidien du projet ne
+# retenait rien. Même diagnostic que pour pipeline_status le 04/09 au
+# matin, d'où était née _age_interne_h().
+# `closing_lines.json` passe donc sous surveillance par HORODATAGE INTERNE
+# (capture_state.json['last_capture_at'], écrit par le run qui capture) et
+# sort de FILES. `backtest_tennis.csv` y reste : il est chargé à la main,
+# son mtime git est un signal acceptable faute de mieux, et son seuil de
+# 48 h tolère le décalage.
 FILES = {
-    'closing_lines.json': 6,      # capture live (cœur du steam) — DOIT bouger
     'backtest_tennis.csv': 48,    # bouge quand tu charges des matchs
 }
 # players_data.json / resultats.json retirés des alertes : branche Sackmann/modèle
@@ -60,6 +72,39 @@ for f, max_h in FILES.items():
         alerts.append(f"⚠️ {f} pas mis à jour depuis {age:.0f}h (seuil {max_h}h)")
     else:
         infos.append(f"✅ {f} ({age:.0f}h)")
+
+# ── 1a. Capture : fraîcheur RÉELLE + budget de requêtes ──────────────────
+# AJOUTÉ LE 04/09/2026. Deux signaux que rien ne surveillait :
+#   - la capture a-t-elle tourné récemment ? (seul last_capture_at le dit)
+#   - combien de requêtes OddsPapi consommées aujourd'hui, sur 938/jour ?
+# Coût : 0 requête API, tout est déjà écrit dans capture_state.json.
+CAPTURE_MAX_H = float(os.environ.get('CAPTURE_MAX_H', '6'))
+BUDGET_REQ_JOUR = int(os.environ.get('BUDGET_REQ_JOUR', '938'))
+try:
+    _cs = json.load(open('capture_state.json', encoding='utf-8'))
+    _lc = datetime.datetime.fromisoformat(str(_cs['last_capture_at']).replace('Z', ''))
+    _age_cap = (now - _lc).total_seconds() / 3600
+    if _age_cap > CAPTURE_MAX_H:
+        alerts.append(f"❌ Aucune capture depuis {_age_cap:.1f}h "
+                      f"(seuil {CAPTURE_MAX_H:.0f}h) — worker Cloudflare et "
+                      f"cron */5 tous deux muets ?")
+    else:
+        infos.append(f"✅ dernière capture il y a {_age_cap:.1f}h")
+    _req = _cs.get('requetes_cumul_jour')
+    if isinstance(_req, int):
+        _pct = 100.0 * _req / BUDGET_REQ_JOUR if BUDGET_REQ_JOUR else 0
+        _ligne = f"requêtes OddsPapi aujourd'hui : {_req}/{BUDGET_REQ_JOUR} ({_pct:.0f}%)"
+        # 90 % : il reste de quoi finir la journée, mais c'est le moment de
+        # le savoir -- pas une fois le 429 tombé et les closings perdus.
+        (alerts if _pct >= 90 else infos).append(
+            ("❌ " if _pct >= 90 else "✅ ") + _ligne)
+    _ppd = _cs.get('passages_par_declencheur')
+    if isinstance(_ppd, dict) and _ppd:
+        infos.append("ℹ️ passages : " +
+                     ", ".join(f"{k}={v}" for k, v in sorted(_ppd.items())))
+except (OSError, ValueError, KeyError, TypeError) as _e:
+    alerts.append(f"❌ capture_state.json illisible ({_esc(_e)}) — "
+                  f"fraîcheur de la capture NON vérifiée.")
 
 # players_data.json : info seulement (non bloquant — Elo/Sackmann déprioritisé)
 _pa = file_age_hours('players_data.json')
