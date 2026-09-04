@@ -41,7 +41,7 @@ jobs:
     timeout-minutes: 20
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           # fetch-depth 0 requis par le merge de l'étape de commit ;
           # filter blob:none évite de télécharger les centaines de Mo de parts/.
@@ -49,7 +49,7 @@ jobs:
           filter: blob:none
 
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.11'
 
