@@ -1,0 +1,222 @@
+name: Purge 3/3 — EXECUTER (DESTRUCTIF, force-push)
+
+# ═══════════════════════════════════════════════════════════════════════════
+#  ÉTAPE 3 SUR 3 — LA SEULE QUI DÉTRUIT QUELQUE CHOSE.
+#
+#  Réécrit les 18 854 commits et force-push sur main. Irréversible sans la
+#  sauvegarde de l'étape 1. Tous les clones existants deviennent inutilisables.
+#
+#  NE PAS LANCER SANS :
+#    1. « Purge 1/3 — SAUVEGARDE » passée au vert, artefact bundle
+#       TÉLÉCHARGÉ HORS DE GITHUB (téléphone, Drive, disque) ;
+#    2. « Purge 2/3 — LISTE » passée, et purge_chemins.txt RELU à la racine ;
+#    3. le secret GH_PAT_WORKFLOW recréé (voir plus bas).
+#
+#  POURQUOI UN PAT : la réécriture change le SHA de TOUS les commits, y
+#  compris ceux qui touchent .github/workflows/. GITHUB_TOKEN n'a pas le
+#  droit de pousser des fichiers de workflow — c'est ce qui a fait échouer
+#  le bump du 04/09. Jeton fine-grained sur Tennis-edge, permissions
+#  Contents = Read and write ET Workflows = Read and write, secret nommé
+#  GH_PAT_WORKFLOW. À révoquer juste après.
+#
+#  SI main EST PROTÉGÉE (Settings > Branches), le force-push sera refusé.
+#  Il faut lever la protection le temps de l'opération, puis la remettre.
+#
+#  APRÈS LA PURGE, LA TAILLE NE BAISSERA PAS TOUT DE SUITE. GitHub conserve
+#  les objets devenus inatteignables jusqu'à son propre ramasse-miettes, qui
+#  n'est pas déclenchable par l'utilisateur. Le dépôt peut afficher 4 Go
+#  encore plusieurs jours. Pour accélérer, ouvrir un ticket au support
+#  GitHub en demandant un `gc` sur le dépôt. Ne concluez pas à un échec sur
+#  la mesure du lendemain.
+# ═══════════════════════════════════════════════════════════════════════════
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: "Taper exactement : JE CONFIRME LA PURGE"
+        required: true
+        default: ""
+
+permissions:
+  contents: write
+  actions: write      # pour suspendre puis réactiver les autres workflows
+
+concurrency:
+  group: purge-historique
+  cancel-in-progress: false
+
+jobs:
+  purger:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - name: Vérifier la confirmation et le jeton
+        run: |
+          if [ "${{ github.event.inputs.confirmation }}" != "JE CONFIRME LA PURGE" ]; then
+            echo "❌ Confirmation absente ou incorrecte. Rien n'a été fait."
+            echo "   Attendu, exactement : JE CONFIRME LA PURGE"
+            exit 1
+          fi
+          if [ -z "${{ secrets.GH_PAT_WORKFLOW }}" ]; then
+            echo "❌ secret GH_PAT_WORKFLOW absent."
+            echo "   La réécriture change le SHA des commits touchant"
+            echo "   .github/workflows/ ; GITHUB_TOKEN ne peut pas les pousser."
+            echo "   Le force-push échouerait APRÈS la réécriture locale."
+            exit 1
+          fi
+          echo "✅ confirmation et jeton présents."
+
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GH_PAT_WORKFLOW }}
+
+      - name: Vérifier que la SAUVEGARDE existe
+        run: |
+          set -euo pipefail
+          # Refuser de purger si l'étape 1 n'a pas laissé de branche de
+          # sauvegarde. C'est la garde la plus importante du fichier : sans
+          # elle, une erreur ici est définitive.
+          git fetch origin '+refs/heads/backup-avant-purge-*:refs/remotes/origin/backup-avant-purge-*' || true
+          BR=$(git branch -r | grep -c 'backup-avant-purge-' || true)
+          if [ "$BR" -eq 0 ]; then
+            echo "❌ Aucune branche backup-avant-purge-* sur le dépôt."
+            echo "   Lancer « Purge 1/3 — SAUVEGARDE » d'abord."
+            exit 1
+          fi
+          echo "✅ $BR branche(s) de sauvegarde trouvée(s) :"
+          git branch -r | grep 'backup-avant-purge-'
+
+      - name: Vérifier la LISTE
+        id: liste
+        run: |
+          set -euo pipefail
+          if [ ! -s purge_chemins.txt ]; then
+            echo "❌ purge_chemins.txt absent ou vide."
+            echo "   Lancer « Purge 2/3 — LISTE » d'abord."
+            exit 1
+          fi
+          N=$(grep -vc '^#' purge_chemins.txt || true)
+          [ "$N" -gt 0 ] || { echo "❌ liste sans aucun chemin."; exit 1; }
+          echo "✅ $N chemins à purger."
+          echo
+          echo "─── rappel des 15 premiers ───"
+          grep -v '^#' purge_chemins.txt | head -15
+
+          # Dernière vérification avant l'irréversible : AUCUN chemin de la
+          # liste ne doit exister dans HEAD. L'étape 2 l'a déjà contrôlé,
+          # mais le dépôt a pu bouger entre-temps — un fichier restauré
+          # depuis, par exemple, comme canal_public.py l'a été aujourd'hui.
+          ERR=0
+          while IFS= read -r c; do
+            case "$c" in \#*|'') continue ;; esac
+            if git cat-file -e "HEAD:$c" 2>/dev/null; then
+              echo "❌ $c EXISTE dans HEAD — la liste est périmée."
+              ERR=1
+            fi
+          done < purge_chemins.txt
+          [ "$ERR" -eq 0 ] || { echo "Relancer l'étape 2/3."; exit 1; }
+          echo "✅ aucun chemin de la liste n'existe dans HEAD."
+
+      - name: Suspendre tous les autres workflows
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT_WORKFLOW }}
+        run: |
+          set -euo pipefail
+          # capture_closing tourne toutes les 5-10 min. Un commit qui arrive
+          # pendant la réécriture serait écrasé par le force-push, sans trace.
+          gh workflow list --all --limit 200 --json name,id,state \
+            > /tmp/workflows.json
+          python3 - <<'PY' > /tmp/a_suspendre.txt
+          import json
+          moi = "Purge 3/3"
+          for w in json.load(open('/tmp/workflows.json')):
+              if w['state'] == 'active' and not w['name'].startswith(moi):
+                  print(w['id'])
+          PY
+          wc -l < /tmp/a_suspendre.txt
+          while read -r id; do
+            gh workflow disable "$id" && echo "  suspendu $id" || echo "  ⚠️ $id"
+          done < /tmp/a_suspendre.txt
+          echo "✅ workflows suspendus. Ils seront réactivés en fin de job."
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Installer git-filter-repo
+        run: |
+          python3 -m pip install --quiet git-filter-repo
+          git filter-repo --version
+
+      - name: Mesurer AVANT
+        run: du -sh .git
+
+      - name: RÉÉCRIRE l'historique
+        run: |
+          set -euo pipefail
+          grep -v '^#' purge_chemins.txt | grep . > /tmp/chemins.txt
+          cp /tmp/chemins.txt /tmp/chemins-sauvegarde.txt
+          echo "$(wc -l < /tmp/chemins.txt) chemins."
+          # --force : filter-repo refuse un dépôt non fraîchement cloné.
+          # C'est ici, et ici seulement, qu'il est légitime.
+          git filter-repo --invert-paths --paths-from-file /tmp/chemins.txt --force
+          echo "✅ réécriture terminée."
+
+      - name: Mesurer APRÈS
+        run: |
+          git reflog expire --expire=now --all || true
+          git gc --prune=now --aggressive || git gc --prune=now
+          echo "=== .git après purge et gc ==="
+          du -sh .git
+          echo "=== commits conservés ==="
+          git rev-list --count --all
+
+      - name: Force-push
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT_WORKFLOW }}
+        run: |
+          set -euo pipefail
+          # filter-repo supprime le remote origin par sécurité : il faut le
+          # remettre explicitement, ce qui est une garde de plus (aucun push
+          # accidentel pendant la réécriture).
+          git remote remove origin 2>/dev/null || true
+          git remote add origin \
+            "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git push --force origin HEAD:main
+          echo "✅ force-push effectué."
+
+      - name: Réactiver les workflows
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT_WORKFLOW }}
+        run: |
+          # `always()` : même si la purge a échoué, le dépôt ne doit pas
+          # rester figé. Un pipeline suspendu qu'on a oublié de rallumer est
+          # une panne silencieuse de plus.
+          if [ -f /tmp/a_suspendre.txt ]; then
+            while read -r id; do
+              gh workflow enable "$id" && echo "  réactivé $id" || echo "  ⚠️ $id"
+            done < /tmp/a_suspendre.txt
+          else
+            echo "rien à réactiver (échec avant la suspension)."
+          fi
+
+      - name: Suite
+        if: success()
+        run: |
+          echo "═══════════════════════════════════════════════════"
+          echo " PURGE TERMINÉE."
+          echo
+          echo " 1. La taille affichée par GitHub NE BAISSERA PAS tout"
+          echo "    de suite : les objets devenus inatteignables restent"
+          echo "    jusqu'au ramasse-miettes de GitHub, non déclenchable"
+          echo "    par l'utilisateur. Ouvrir un ticket au support en"
+          echo "    demandant un gc pour accélérer."
+          echo " 2. Vérifier qu'un run de capture_closing repart bien."
+          echo " 3. Révoquer le PAT et supprimer le secret."
+          echo " 4. GARDER la branche backup-avant-purge-* et le bundle"
+          echo "    au moins quelques semaines."
+          echo " 5. Supprimer les 3 workflows de purge."
+          echo "═══════════════════════════════════════════════════"

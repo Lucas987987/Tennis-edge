@@ -1,0 +1,131 @@
+name: Purge 1/3 — SAUVEGARDE de l'historique complet
+
+# ÉTAPE 1 SUR 3. À lancer AVANT toute réécriture, et à ne pas sauter.
+#
+# `git filter-repo` réécrit les 18 854 commits et exige un force-push :
+# l'ancien historique n'est alors plus joignable. Ce workflow en fabrique une
+# copie intégrale et vérifiable, sous deux formes indépendantes :
+#
+#   1. un `git bundle` — un fichier unique contenant TOUT l'historique, dont
+#      on peut re-cloner un dépôt identique. Déposé en artefact de run,
+#      conservé 90 jours.
+#   2. une branche `backup-avant-purge-<date>` poussée sur le dépôt. Elle
+#      survit au force-push de main puisque c'est une autre référence.
+#
+# Deux formes parce qu'elles échouent différemment : l'artefact disparaît au
+# bout de 90 jours mais est insensible à tout ce qui arrive au dépôt ; la
+# branche est permanente mais partagerait le sort du dépôt.
+#
+# Le bundle est VÉRIFIÉ avant d'être publié : un bundle corrompu qu'on croit
+# bon est pire que pas de sauvegarde du tout — on prendrait le risque de la
+# purge en se croyant couvert.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: purge-historique
+  cancel-in-progress: false
+
+jobs:
+  sauvegarder:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0    # tout l'historique : c'est l'objet de la sauvegarde
+
+      - name: Récupérer TOUTES les références
+        run: |
+          set -euo pipefail
+          # actions/checkout ne rapatrie que la branche courante. Un bundle
+          # partiel serait une sauvegarde partielle.
+          git fetch --prune --tags origin '+refs/heads/*:refs/remotes/origin/*'
+          echo "=== branches distantes ==="
+          git branch -r
+          echo "=== tags ==="
+          git tag | head -20
+          echo "=== commits atteignables ==="
+          git rev-list --count --all
+
+      - name: Fabriquer le bundle
+        id: bundle
+        run: |
+          set -euo pipefail
+          NOM="tennis-edge-historique-$(date -u +%Y%m%d-%H%M).bundle"
+          git bundle create "/tmp/$NOM" --all
+          echo "nom=$NOM" >> "$GITHUB_OUTPUT"
+          ls -lh "/tmp/$NOM"
+
+      - name: VÉRIFIER le bundle
+        run: |
+          set -euo pipefail
+          NOM="${{ steps.bundle.outputs.nom }}"
+
+          echo "─── git bundle verify ───"
+          git bundle verify "/tmp/$NOM"
+
+          # Vérification indépendante : on re-clone réellement depuis le
+          # bundle et on compare le nombre de commits. `verify` contrôle
+          # l'intégrité du format, pas qu'on puisse en ressortir le dépôt.
+          echo
+          echo "─── re-clone d'essai depuis le bundle ───"
+          git clone --quiet --bare "/tmp/$NOM" /tmp/verif.git
+          ATTENDU=$(git rev-list --count --all)
+          OBTENU=$(git --git-dir=/tmp/verif.git rev-list --count --all)
+          echo "commits dans le dépôt  : $ATTENDU"
+          echo "commits dans le bundle : $OBTENU"
+          if [ "$ATTENDU" != "$OBTENU" ]; then
+            echo "❌ ÉCART — la sauvegarde est incomplète, NE PAS purger."
+            exit 1
+          fi
+
+          # Et que le contenu de main est bien identique, pas seulement le compte.
+          SHA_LOCAL=$(git rev-parse HEAD)
+          SHA_BUNDLE=$(git --git-dir=/tmp/verif.git rev-parse refs/heads/main 2>/dev/null \
+                       || git --git-dir=/tmp/verif.git rev-parse HEAD)
+          echo "HEAD local  : $SHA_LOCAL"
+          echo "HEAD bundle : $SHA_BUNDLE"
+          [ "$SHA_LOCAL" = "$SHA_BUNDLE" ] || { echo "❌ HEAD différent"; exit 1; }
+
+          echo
+          echo "✅ Sauvegarde vérifiée : $ATTENDU commits, HEAD identique."
+
+      - name: Publier le bundle en artefact
+        uses: actions/upload-artifact@v5
+        with:
+          name: ${{ steps.bundle.outputs.nom }}
+          path: /tmp/${{ steps.bundle.outputs.nom }}
+          retention-days: 90
+          compression-level: 0   # un bundle est déjà compressé
+
+      - name: Pousser une branche de sauvegarde
+        run: |
+          set -euo pipefail
+          BRANCHE="backup-avant-purge-$(date -u +%Y%m%d)"
+          # Une branche, pas un tag : un tag peut être écrasé par mégarde,
+          # une branche apparaît dans la liste et se remarque.
+          git push origin "HEAD:refs/heads/$BRANCHE"
+          echo "✅ branche $BRANCHE poussée."
+          echo
+          echo "POUR RESTAURER, si la purge tourne mal :"
+          echo "  git push --force origin $BRANCHE:main"
+          echo "ou, depuis le bundle téléchargé :"
+          echo "  git clone tennis-edge-historique-*.bundle depot-restaure"
+
+      - name: Récapitulatif
+        run: |
+          echo "═══════════════════════════════════════════════════"
+          echo " SAUVEGARDE FAITE — étape 1/3 terminée."
+          echo
+          echo " Télécharger l'artefact MAINTENANT et le garder hors GitHub"
+          echo " (téléphone, Drive, disque). Une sauvegarde qui ne vit que"
+          echo " dans le dépôt qu'elle protège n'en est pas une."
+          echo
+          echo " Étape suivante : « Purge 2/3 — LISTE ». Elle ne modifie"
+          echo " toujours rien."
+          echo "═══════════════════════════════════════════════════"
