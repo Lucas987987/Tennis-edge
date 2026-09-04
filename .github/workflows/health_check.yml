@@ -5,13 +5,14 @@ on:
     - cron: '37 7 * * *'        # 1×/jour, minute 37 pour éviter la congestion
   workflow_dispatch:
 
-# AJOUTÉ LE 04/09/2026 : `github.token` n'a de droit de lecture sur les
-# métadonnées du dépôt que si le scope est déclaré. Sans cette clé, le jeton
-# automatique aurait échoué exactement comme le secret vide qu'il remplace --
-# lecture seule, ce workflow ne committe rien.
+# AJOUTÉ LE 04/09/2026, CORRIGÉ LE MÊME JOUR : la version précédente déclarait
+# aussi `metadata: read` -- clé INVALIDE dans un bloc permissions de workflow
+# (le scope metadata est toujours accordé en lecture et ne se déclare pas).
+# GitHub rejette le fichier à la validation : health_check n'aurait plus tourné
+# du tout. `contents: read` suffit à `gh api repos/{owner}/{repo}` ; ce
+# workflow ne committe rien.
 permissions:
   contents: read
-  metadata: read
 
 jobs:
   health:
