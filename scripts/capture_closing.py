@@ -2,10 +2,9 @@
 """
 Capture les closing lines Pinnacle pour les matchs qui commencent bientôt.
 
-Déclenché par le worker Cloudflare (repository_dispatch) au bon moment :
-- snapshot T-25 (marge de sécurité contre le délai GitHub)
-- snapshot T-10 (vrai dernier instant)
-Le cron horaire (minute 7) sert seulement à découvrir les matchs du jour.
+Déclenché par le worker Cloudflare (repository_dispatch) toutes les 5 min,
+et par un cron GitHub '*/5' qui rattrape les ticks manqués ou retardés
+(voir SEUIL_CRON_SECOURS_MIN dans main() pour l'anti-doublon).
 
 Le closing de référence pour le CLV = le snapshot le PLUS TARDIF disponible,
 à condition qu'il soit dans la fenêtre fiable (<= CLOSING_MAX_MINS avant le match).
@@ -733,18 +732,21 @@ def main():
     # raisonnement complet.
     _verifier_et_envoyer_rapport_si_besoin(now)
 
-    # AJOUTÉ LE 29/08/2026 (demande explicite de Lucas -- filet de sécurité
-    # si le worker Cloudflare tombe, sans doubler le budget de requêtes
-    # quand il fonctionne). Le cron de secours (schedule, toutes les 15
-    # min -- voir capture_closing.yml) ne doit faire un VRAI passage que si
-    # aucune capture n'a réussi depuis un moment : sinon il concurrence le
-    # worker pour rien, ~96 passages/jour au lieu de 24, en grande partie
-    # gaspillés. Seuil à 15 min (pas 20, la demande d'origine) pour garder
-    # de la marge sous le plafond de 20 min même si ce run de cron démarre
-    # en retard (schedule GitHub est du best-effort, documenté comme tel).
+    # MODIFIÉ LE 04/09/2026 (demande explicite de Lucas) : seuil abaissé de
+    # 15 à 4 minutes, en même temps que le passage du cron de '*/15' à
+    # '*/5' dans capture_closing.yml. Le cron n'est plus un filet de
+    # secours : c'est un second déclencheur à la même cadence que le
+    # worker Cloudflare, qui rattrape les ticks que le worker rate ou que
+    # GitHub retarde. À 15 min, ce garde-fou aurait court-circuité 2
+    # passages de cron sur 3 et rendu le '*/5' sans effet.
+    # 4 min (et non 5) : un run de cron qui démarre avec 30-60 s de retard
+    # -- best-effort documenté côté GitHub -- doit quand même passer.
     # Jamais actif pour repository_dispatch (le worker) ni workflow_dispatch
     # (manuel) -- seul un déclenchement schedule peut être court-circuité.
-    SEUIL_CRON_SECOURS_MIN = 15
+    # Conséquence budget : jusqu'à 288 passages/jour au lieu de ~230
+    # requêtes actuelles, au-dessus du budget de 235 req/jour noté plus
+    # haut. Le cache fixtures 30 min en amortit une partie, pas tout.
+    SEUIL_CRON_SECOURS_MIN = 4
     if os.environ.get('GITHUB_EVENT_NAME') == 'schedule':
         try:
             _etat = json.load(open('capture_state.json', encoding='utf-8'))
