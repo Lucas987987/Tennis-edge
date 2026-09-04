@@ -27,7 +27,7 @@ SORTIES : pipeline_status.json (machine) + pipeline_status.md (lisible sur GitHu
 Env : RUN_STARTED (ISO 8601, injecté par le workflow — sert à distinguer
       "réécrit pendant ce run" de "figé depuis un run précédent"), OUT_JSON, OUT_MD.
 """
-import os, sys, json, glob, datetime
+import os, sys, json, glob, datetime, subprocess
 
 OUT_JSON = os.environ.get('OUT_JSON', 'pipeline_status.json')
 OUT_MD   = os.environ.get('OUT_MD', 'pipeline_status.md')
@@ -74,6 +74,21 @@ def _lines(path):
         with open(path, encoding='utf-8', errors='replace') as f:
             return sum(1 for l in f if l.strip())
     except Exception:
+        return None
+
+
+def _age_heures(iso):
+    """Âge en heures d'un horodatage ISO, ou None s'il est absent/illisible.
+    AJOUTÉ LE 04/09/2026 : le calcul était copié-collé trois fois dans main()
+    et il en fallait une quatrième pour derniere_mesure_reussie_le."""
+    if not iso:
+        return None
+    try:
+        t = datetime.datetime.fromisoformat(str(iso).replace('Z', '+00:00'))
+        if t.tzinfo is None:
+            t = t.replace(tzinfo=datetime.timezone.utc)
+        return (datetime.datetime.now(datetime.timezone.utc) - t).total_seconds() / 3600
+    except (ValueError, TypeError):
         return None
 
 
@@ -138,11 +153,29 @@ def inspect(started):
     return rows
 
 
+def _checkout_partiel():
+    """Ce run tourne-t-il sous sparse-checkout ? AJOUTÉ LE 04/09/2026.
+
+    steam_pipeline.yml restreint désormais son checkout (pm_ticks/kx_ticks
+    laissés au vestiaire). Sans ce drapeau, partitions_health() compterait
+    ce qu'il voit -- une fraction -- et l'afficherait comme le total : le
+    compteur qui surveille la trajectoire du dépôt deviendrait une source de
+    FAUSSE RÉASSURANCE, exactement ce que la sentinelle de taille vient de
+    subir. Une vue partielle doit se déclarer partielle."""
+    try:
+        r = subprocess.run(['git', 'config', '--get', 'core.sparseCheckout'],
+                           capture_output=True, text=True, timeout=10)
+        return r.stdout.strip().lower() == 'true'
+    except (OSError, subprocess.SubprocessError):
+        return False
+
+
 def partitions_health():
     """Surveille la trajectoire de taille du repo : c'est ce qui a bloqué tous
     les push pendant 5 jours en août. Une partition >90 Mo est en zone rouge
     (mur dur GitHub : 100 Mo par fichier)."""
-    out = {'total_mo': 0.0, 'zone_rouge': [], 'n_partitions': 0}
+    out = {'total_mo': 0.0, 'zone_rouge': [], 'n_partitions': 0,
+           'vue_partielle': _checkout_partiel()}
     # 25/08/2026 : les .gz n'étaient pas comptés — le total affiché (663 Mo
     # de .jsonl) masquait la vraie trajectoire du dépôt. On compte TOUT.
     for p in sorted(glob.glob('parts/*.jsonl') + glob.glob('parts/*.jsonl.gz')):
@@ -258,7 +291,14 @@ def main():
         L.append(f"| {r['libellé']} | `{r['fichier']}` | {r.get('lignes') or 0} | "
                  f"{r.get('octets') or 0} | {r['verdict']} |")
     L.append('')
-    L.append(f"**Partitions** : {parts['n_partitions']} fichiers, {parts['total_mo']} Mo au total.")
+    if parts.get('vue_partielle'):
+        L.append(f"**Partitions** : {parts['n_partitions']} fichiers, "
+                 f"{parts['total_mo']} Mo — ⚠️ **vue partielle** "
+                 f"(sparse-checkout : pm_ticks/kx_ticks absents de ce run). "
+                 f"La taille réelle du dépôt est celle de la sentinelle "
+                 f"ci-dessous, pas celle-ci.")
+    else:
+        L.append(f"**Partitions** : {parts['n_partitions']} fichiers, {parts['total_mo']} Mo au total.")
     if parts['zone_rouge']:
         L.append('')
         L.append('> ⛔ **Zone rouge** — une partition approche le mur GitHub de 100 Mo :')
@@ -343,7 +383,8 @@ def main():
     print(f"PIPELINE STATUS -> {OUT_JSON} + {OUT_MD}")
     for r in rows:
         print(f"  {r['verdict']:<10} {r['fichier']:<28} {r.get('lignes') or 0} lignes")
-    print(f"  partitions : {parts['n_partitions']} fichiers, {parts['total_mo']} Mo")
+    _vp = ' (VUE PARTIELLE — sparse-checkout)' if parts.get('vue_partielle') else ''
+    print(f"  partitions : {parts['n_partitions']} fichiers, {parts['total_mo']} Mo{_vp}")
     for z in parts['zone_rouge']:
         print(f"  ⛔ ZONE ROUGE : {z['fichier']} = {z['mo']} Mo (mur GitHub 100 Mo)")
 
@@ -380,11 +421,19 @@ def main():
         if q3 and q3.get('alerte'):
             alertes_contenu.append(f"Q3 : {q3.get('pct_ecarts', '?')}% d'écarts "
                                    f"(seuil {q3.get('seuil_pct', '?')}%)")
+        # DÉCOUPLÉ LE 04/09/2026 (panne du run 91710599493). Le run avait ses
+        # 10 livrables ✅ et son push réussi ; il est mort sur « Polymarket :
+        # 1 échec(s) », importé d'un AUTRE workflow. Les quatre scripts de
+        # cette boucle sont des ÉTUDES EXPLORATOIRES, pas des livrables de
+        # production : steam_pipeline ne les produit pas, ne les contrôle pas
+        # et ne peut pas les réparer. Leur verrou vit maintenant dans
+        # polymarket_studies.yml, là où quelqu'un peut agir.
+        # La fraîcheur, elle, RESTE bloquante : un producteur externe mort est
+        # exactement ce que --strict a été écrit pour attraper (audit 25/08).
+        # L'état ✅/⚠️ des études reste affiché dans le Markdown, non bloquant.
         if pm_studies and pm_studies.get('fraicheur_inconnue_ou_perimee'):
             alertes_contenu.append("Polymarket : statut périmé ou sans date -- "
                                    "le producteur tourne-t-il encore ?")
-        elif pm_studies and pm_studies.get('alerte'):
-            alertes_contenu.append(f"Polymarket : {pm_studies.get('n_echecs', '?')} échec(s)")
         # AJOUTÉ LE 30/08/2026 (validation externe, point 1) : la zone
         # ALARME (dépôt au-dessus du seuil, mur GitHub ~5 Go tout proche)
         # bloque --strict -- une taille de dépôt hors contrôle est une
@@ -397,6 +446,33 @@ def main():
         elif repo_size and repo_size.get('zone') == 'alarme':
             alertes_contenu.append(f"Taille du dépôt : {repo_size.get('taille_go', '?')} Go, "
                                    f"seuil franchi ({repo_size.get('seuil_alarme_go', '?')} Go)")
+        # AJOUTÉ LE 04/09/2026 (audit) : zone 'indisponible' = `gh api` a
+        # échoué, taille_go vaut null, RIEN n'a été mesuré. Le fichier étant
+        # tout de même réécrit chaque jour, fraicheur_inconnue_ou_perimee est
+        # FAUX et zone != 'alarme' : la sentinelle était donc silencieusement
+        # muette depuis le 03/09 12h13 (secrets.GH_TOKEN inexistant), avec
+        # 3,48 Go mesurés le 29/08 pour une alarme à 4,0 Go et le mur GitHub
+        # vers 5 Go. Une sentinelle qui ne peut pas mesurer est une sentinelle
+        # EN PANNE, pas une sentinelle rassurante -- même raisonnement que
+        # « externe + FIGÉ » plus haut.
+        elif repo_size and repo_size.get('zone') == 'indisponible':
+            # Une indisponibilité PASSAGÈRE de `gh` ne doit pas rendre le run
+            # rouge (repo_sentinel a raison sur ce point : « je n'ai pas pu
+            # mesurer » n'est pas « le dépôt est trop gros », et un rouge
+            # quotidien cesse d'être un signal). Ce qui doit bloquer, c'est
+            # une CÉCITÉ DURABLE : plus aucune mesure réussie depuis 72 h.
+            # Le 04/09 : dernière valeur réelle le 29/08 (3,48 Go pour une
+            # alarme à 4,0 et le mur GitHub vers 5), zone 'indisponible' en
+            # continu depuis, et rien ne l'attrapait -- `genere_le` restait
+            # frais parce que le fichier, lui, était bien réécrit chaque jour.
+            _dm = repo_size.get('derniere_mesure_reussie_le')
+            _age_dm = _age_heures(_dm) if _dm else None
+            if _age_dm is None or _age_dm > 72:
+                alertes_contenu.append(
+                    f"Taille du dépôt : AUCUNE mesure réussie depuis "
+                    f"{'jamais' if _age_dm is None else f'{_age_dm:.0f} h'} "
+                    f"({repo_size.get('message', 'cause inconnue')}) -- la "
+                    f"sentinelle est aveugle, pas rassurante.")
         if ko_dur or alertes_contenu:
             print(f"\n🔒 STRICT : {len(ko_dur)} livrable(s) critique(s) en défaut, "
                  f"{len(alertes_contenu)} alerte(s) de contenu -> exit 1")

@@ -43,6 +43,21 @@ def _ecrire_statut(zone, taille_go=None, marge_go=None, message=''):
     pipeline_status.py (même motif que q3_status.json/
     polymarket_studies_status.json) -- rendu dans pipeline_status.md, visible
     sans ouvrir un seul log de run."""
+    maintenant = datetime.datetime.now(datetime.timezone.utc).isoformat()
+    # AJOUTÉ LE 04/09/2026 (audit) : la date de la dernière mesure RÉUSSIE
+    # survit aux runs indisponibles. Sans elle, `genere_le` est frais chaque
+    # jour même quand rien n'a été mesuré : pipeline_status voyait un statut
+    # récent, zone != 'alarme', et concluait que tout allait bien alors que
+    # la sentinelle était muette depuis six jours (secrets.GH_TOKEN
+    # inexistant, taille_go = null en continu). C'est ce champ, et non
+    # `genere_le`, qui dit si la surveillance fonctionne encore.
+    derniere_reussie = maintenant if taille_go is not None else None
+    if derniere_reussie is None:
+        try:
+            _prec = json.load(open('repo_size_status.json', encoding='utf-8'))
+            derniere_reussie = _prec.get('derniere_mesure_reussie_le')
+        except (OSError, ValueError):
+            derniere_reussie = None
     try:
         ov.ecriture_atomique('repo_size_status.json', {
             'zone': zone,   # 'ok' | 'vigilance' | 'alarme' | 'indisponible'
@@ -51,7 +66,8 @@ def _ecrire_statut(zone, taille_go=None, marge_go=None, message=''):
             'seuil_vigilance_go': SEUIL_VIGILANCE_GO,
             'seuil_alarme_go': SEUIL_GO,
             'message': message,
-            'genere_le': datetime.datetime.now(datetime.timezone.utc).isoformat(),
+            'derniere_mesure_reussie_le': derniere_reussie,
+            'genere_le': maintenant,
         }, ensure_ascii=False, indent=1)
     except OSError as e:
         print(f"  ℹ️ repo_size_status non écrit: {e}")
