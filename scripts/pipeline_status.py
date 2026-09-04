@@ -27,7 +27,7 @@ SORTIES : pipeline_status.json (machine) + pipeline_status.md (lisible sur GitHu
 Env : RUN_STARTED (ISO 8601, injecté par le workflow — sert à distinguer
       "réécrit pendant ce run" de "figé depuis un run précédent"), OUT_JSON, OUT_MD.
 """
-import os, sys, json, glob, datetime, subprocess
+import os, sys, json, glob, re, datetime, subprocess
 
 OUT_JSON = os.environ.get('OUT_JSON', 'pipeline_status.json')
 OUT_MD   = os.environ.get('OUT_MD', 'pipeline_status.md')
@@ -51,6 +51,16 @@ ARTIFACTS = [
     ('moves_detail.csv',          'Audit des moves (live)',             200),
     ('moves_detail_hist.csv',     'Audit des moves (historique)',       200),
     ('canal_clv_detail.csv',      'CLV réalisé du canal public',        100),
+    # AJOUTÉ LE 04/09/2026 : canal_public_log.jsonl n'était surveillé par
+    # RIEN, alors que c'est la SEULE trace de ce que reçoivent réellement les
+    # abonnés du canal Telegram -- et la source dont paper_journal_canal.py
+    # tire le track record aligné sur la publication. Quand son producteur
+    # (scripts/canal_public.py) a disparu du dépôt, le canal a cessé de
+    # publier sans qu'aucun run ne devienne rouge : `|| true` avalait
+    # l'erreur, ce fichier se figeait, et personne ne regardait sa date.
+    # 'externe' : écrit par capture_closing (toutes les 5-10 min), pas par
+    # le steam pipeline -- même traitement que resultats_derived.json.
+    ('canal_public_log.jsonl',    'Journal du canal public',            100, 'externe'),
     ('book_curves_live.jsonl',    'Courbes live reconstruites',        1000),
 ]
 
@@ -153,6 +163,45 @@ def inspect(started):
     return rows
 
 
+def scripts_manquants():
+    """Tout `scripts/X.py` cité par un workflow existe-t-il vraiment ?
+
+    AJOUTÉ LE 04/09/2026. `capture_closing.yml` appelait
+    `scripts/canal_public.py`, absent du dépôt, derrière un `|| true` : le
+    canal public a cessé de publier en silence, et avec lui le track record
+    qui lui est aligné. Aucun mécanisme du dépôt ne pouvait le voir.
+
+    Pourquoi ceci BLOQUE --strict alors que l'alerte Polymarket, elle, en a
+    été retirée le même jour : ce n'est pas le résultat d'exécution d'un
+    autre workflow, c'est un défaut STRUCTUREL du dépôt, vérifiable sans
+    rien lancer et réparable par la personne qui lit le rapport.
+    """
+    refs = set()
+    for f in sorted(glob.glob('.github/workflows/*.yml')):
+        try:
+            txt = open(f, encoding='utf-8').read()
+        except OSError:
+            continue
+        # Appels directs : `python scripts/foo.py`
+        refs |= set(re.findall(r'scripts/([A-Za-z_0-9]+\.py)', txt))
+        # Appels INDIRECTS : polymarket_studies.yml lance ses études par
+        #   for s in a b c d; do ... python scripts/${s}.py ... done
+        # La regex ci-dessus ne voit que « scripts/${s}.py » et rate les
+        # quatre noms réels : le contrôle aurait eu un angle mort exactement
+        # là où le dépôt utilise une indirection. On résout la boucle.
+        for var, noms in re.findall(r'for\s+([A-Za-z_]\w*)\s+in\s+([^;\n]+?)\s*;\s*do',
+                                    txt):
+            if ('scripts/${%s}.py' % var) not in txt and \
+               ('scripts/$%s.py' % var) not in txt:
+                continue
+            for n in noms.split():
+                # on écarte les globs et substitutions : seuls les noms
+                # littéraux sont vérifiables
+                if re.fullmatch(r'[A-Za-z_][\w-]*', n):
+                    refs.add(n + '.py')
+    return sorted(r for r in refs if not os.path.exists(os.path.join('scripts', r)))
+
+
 def _checkout_partiel():
     """Ce run tourne-t-il sous sparse-checkout ? AJOUTÉ LE 04/09/2026.
 
@@ -192,6 +241,7 @@ def main():
     started = _run_started()
     rows = inspect(started)
     parts = partitions_health()
+    manquants = scripts_manquants()
     ko = [r for r in rows if r['verdict'] != '✅ OK']
 
     # AJOUTÉ LE 27/08/2026 (audit v3 §S) : le compte d'écarts Q3 (fraîcheur
@@ -268,6 +318,7 @@ def main():
         repo_size['fraicheur_inconnue_ou_perimee'] = True
 
     payload = {
+        'scripts_manquants': manquants,
         'run_termine': datetime.datetime.utcnow().isoformat(timespec='seconds'),
         'run_demarre': started.isoformat(timespec='seconds'),
         'verdict_global': 'OK' if not ko else f'{len(ko)} livrable(s) à vérifier',
@@ -291,6 +342,12 @@ def main():
         L.append(f"| {r['libellé']} | `{r['fichier']}` | {r.get('lignes') or 0} | "
                  f"{r.get('octets') or 0} | {r['verdict']} |")
     L.append('')
+    if manquants:
+        L.append('')
+        L.append('> ⛔ **Script(s) appelé(s) par un workflow et ABSENT(S) du dépôt** — '
+                 'l\'appel échoue derrière un `|| true`, sans run rouge :')
+        for m in manquants:
+            L.append(f'> - `scripts/{m}`')
     if parts.get('vue_partielle'):
         L.append(f"**Partitions** : {parts['n_partitions']} fichiers, "
                  f"{parts['total_mo']} Mo — ⚠️ **vue partielle** "
@@ -383,6 +440,9 @@ def main():
     print(f"PIPELINE STATUS -> {OUT_JSON} + {OUT_MD}")
     for r in rows:
         print(f"  {r['verdict']:<10} {r['fichier']:<28} {r.get('lignes') or 0} lignes")
+    for _m in manquants:
+        print(f"  ⛔ SCRIPT MANQUANT : scripts/{_m} est appelé par un workflow "
+              f"et n'existe pas dans le dépôt.")
     _vp = ' (VUE PARTIELLE — sparse-checkout)' if parts.get('vue_partielle') else ''
     print(f"  partitions : {parts['n_partitions']} fichiers, {parts['total_mo']} Mo{_vp}")
     for z in parts['zone_rouge']:
@@ -418,6 +478,10 @@ def main():
         # dépôt qui rend un run rouge ; il ne regardait jusqu'ici que la
         # présence/fraîcheur des fichiers, jamais leur contenu.
         alertes_contenu = []
+        for m in manquants:
+            alertes_contenu.append(
+                f"Script manquant : scripts/{m} est appelé par un workflow et "
+                f"n'existe pas -- l'appel échoue derrière un `|| true`.")
         if q3 and q3.get('alerte'):
             alertes_contenu.append(f"Q3 : {q3.get('pct_ecarts', '?')}% d'écarts "
                                    f"(seuil {q3.get('seuil_pct', '?')}%)")

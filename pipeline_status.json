@@ -1,6 +1,6 @@
 {
-  "run_termine": "2026-09-04T05:35:20",
-  "run_demarre": "2026-09-04T05:21:06",
+  "run_termine": "2026-09-04T18:43:51",
+  "run_demarre": "2026-09-04T18:25:30",
   "verdict_global": "1 livrable(s) à vérifier",
   "livrables": [
     {
@@ -9,10 +9,10 @@
       "optionnel": false,
       "externe": false,
       "verdict": "✅ OK",
-      "octets": 252784,
-      "lignes": 2530,
+      "octets": 256908,
+      "lignes": 2572,
       "ecrit_ce_run": true,
-      "modifie": "2026-09-04T05:26:47"
+      "modifie": "2026-09-04T18:32:54"
     },
     {
       "fichier": "resultats_derived.json",
@@ -20,10 +20,10 @@
       "optionnel": false,
       "externe": true,
       "verdict": "✅ OK",
-      "octets": 443560,
-      "lignes": 1674,
+      "octets": 446843,
+      "lignes": 1687,
       "ecrit_ce_run": true,
-      "modifie": "2026-09-04T05:22:04"
+      "modifie": "2026-09-04T18:28:29"
     },
     {
       "fichier": "paper_trades_match.jsonl",
@@ -31,10 +31,10 @@
       "optionnel": false,
       "externe": false,
       "verdict": "✅ OK",
-      "octets": 16062,
+      "octets": 16079,
       "lignes": 38,
       "ecrit_ce_run": true,
-      "modifie": "2026-09-04T05:28:16"
+      "modifie": "2026-09-04T18:34:47"
     },
     {
       "fichier": "paper_trades_set1.jsonl",
@@ -45,7 +45,7 @@
       "octets": 7009,
       "lignes": 17,
       "ecrit_ce_run": true,
-      "modifie": "2026-09-04T05:28:29"
+      "modifie": "2026-09-04T18:35:03"
     },
     {
       "fichier": "paper_trades_set2.jsonl",
@@ -56,7 +56,7 @@
       "octets": 0,
       "lignes": 0,
       "ecrit_ce_run": true,
-      "modifie": "2026-09-04T05:28:32"
+      "modifie": "2026-09-04T18:35:08"
     },
     {
       "fichier": "moves_detail.csv",
@@ -64,10 +64,10 @@
       "optionnel": false,
       "externe": false,
       "verdict": "✅ OK",
-      "octets": 1793,
-      "lignes": 11,
+      "octets": 3158,
+      "lignes": 19,
       "ecrit_ce_run": true,
-      "modifie": "2026-09-04T05:34:42"
+      "modifie": "2026-09-04T18:43:04"
     },
     {
       "fichier": "moves_detail_hist.csv",
@@ -78,7 +78,7 @@
       "octets": 167322,
       "lignes": 1034,
       "ecrit_ce_run": true,
-      "modifie": "2026-09-04T05:35:20"
+      "modifie": "2026-09-04T18:43:51"
     },
     {
       "fichier": "canal_clv_detail.csv",
@@ -86,10 +86,10 @@
       "optionnel": false,
       "externe": false,
       "verdict": "✅ OK",
-      "octets": 24898,
-      "lignes": 161,
+      "octets": 25547,
+      "lignes": 165,
       "ecrit_ce_run": true,
-      "modifie": "2026-09-04T05:34:41"
+      "modifie": "2026-09-04T18:43:03"
     },
     {
       "fichier": "book_curves_live.jsonl",
@@ -97,16 +97,17 @@
       "optionnel": false,
       "externe": false,
       "verdict": "✅ OK",
-      "octets": 4618426,
-      "lignes": 1111,
+      "octets": 7020206,
+      "lignes": 1365,
       "ecrit_ce_run": true,
-      "modifie": "2026-09-04T05:22:04"
+      "modifie": "2026-09-04T18:28:31"
     }
   ],
   "partitions": {
-    "total_mo": 426.0,
+    "total_mo": 327.0,
     "zone_rouge": [],
-    "n_partitions": 51
+    "n_partitions": 37,
+    "vue_partielle": true
   },
   "q3_qualite_cloture": {
     "ecarts_gt_3pct": 177,
@@ -116,7 +117,7 @@
     "alerte": false
   },
   "clv_vs_median": {
-    "genere_le": "2026-09-04T05:33:53.510442+00:00",
+    "genere_le": "2026-09-04T18:42:02.742314+00:00",
     "n_moves_total": 1033,
     "n_cote_ambigu": 1,
     "n_incomplet": 364,
@@ -148,11 +149,11 @@
     "pct_positif_derive": 81.1
   },
   "polymarket_studies": {
-    "n_echecs": 1,
+    "n_echecs": 0,
     "n_avertissements": 2,
-    "alerte": true,
-    "genere_le": "2026-09-03T09:08:48Z",
-    "age_heures": 20.4,
+    "alerte": false,
+    "genere_le": "2026-09-04T08:58:23Z",
+    "age_heures": 9.8,
     "fraicheur_inconnue_ou_perimee": false
   },
   "repo_size": {
@@ -162,8 +163,8 @@
     "seuil_vigilance_go": 3.0,
     "seuil_alarme_go": 4.0,
     "message": "gh api indisponible (gh: To use GitHub CLI in a GitHub Actions workflow, set the GH_TOKEN environment variable. Example:\n  env:\n    GH_TOKEN:) — taille NON vérifiée ce run.",
-    "genere_le": "2026-09-03T12:13:46.953428+00:00",
-    "age_heures": 17.4,
+    "genere_le": "2026-09-04T12:14:42.320362+00:00",
+    "age_heures": 6.5,
     "fraicheur_inconnue_ou_perimee": false
   }
 }
