@@ -1,70 +1,83 @@
-# Correctifs quater — 04/09/2026 au soir
+# Audit complémentaire — 04/09/2026, soir
 
-## Pourquoi steam_pipeline était rouge : mon correctif de ce matin
+Deux angles morts structurels, plus le mien.
 
-```
-🔒 STRICT : 1 livrable(s) en défaut, 1 alerte(s) de contenu -> exit 1
-   ⚠️ Taille du dépôt : AUCUNE mesure réussie depuis jamais
-```
+## 1. health_check surveillait la fraîcheur par MTIME
 
-`repo_size_status.json` date du 04/09 12h14 : il a été écrit par l'ANCIEN
-`repo_sentinel.py`, qui ne connaissait pas encore `derniere_mesure_reussie_le`.
-Mon code lisait un champ absent, concluait « jamais mesuré », et bloquait.
+`closing_lines.json` était contrôlé avec un seuil de 6 h... sur son mtime.
+En CI, le mtime de tout fichier suivi par git est celui du **checkout**.
+Mesuré sur votre dépôt au run de 18h43 :
 
-J'ai confondu **ancien format** et **jamais mesuré**. Un contrôle qui se
-déclenche sur sa propre migration est un faux positif — exactement le défaut
-symétrique de `|| true`.
+    closing_lines.json   mtime = 18:43:52   <- date du checkout
+    capture_state.json   last_capture_at = 18:40:17   <- la vraie capture
 
-Règle corrigée :
-- champ absent + fichier réécrit il y a moins de 72 h -> ancien format, PASSE
-- champ absent + fichier de plus de 72 h -> le producteur n'a pas tourné avec
-  le nouveau code en trois jours, BLOQUE
-- champ présent -> règle des 72 h sur la dernière mesure réussie, inchangée
+Cette section répondait donc ✅ quoi qu'il arrive — y compris si la capture
+s'était arrêtée une semaine plus tôt. Le filet quotidien du projet ne
+retenait rien. C'est le diagnostic qui avait donné `_age_interne_h()` dans
+pipeline_status ce matin ; health_check était resté sur l'ancien mode.
 
-Dès que health_check repassera (cron 07h37, ou lancement manuel maintenant),
-le champ apparaîtra et le comportement normal reprendra.
+`closing_lines.json` passe sous surveillance par **horodatage interne**
+(`capture_state.json['last_capture_at']`). `backtest_tennis.csv` reste au
+mtime : chargé à la main, seuil de 48 h, le décalage est absorbé.
 
-## Deuxième bug de ma part, dans le correctif « ter »
+## 2. Il ne surveillait pas l'API dont tout dépend
 
-`canal_public_log.jsonl` ajouté aux livrables surveillés serait resté en
-« FIGÉ (fraîcheur inconnue) » **en permanence**, donc bloquant même après
-restauration de son producteur : `_age_interne_h()` faisait un `json.load`,
-or c'est du JSONL. C'était le premier livrable 'externe' à ce format.
+Section « Quota des clés API » : six clés `ODDS_API_KEY_1..6` de
+**the-odds-api**, que plus aucun script de production n'utilise (reste
+`games_markets.py`, orphelin). Si ces secrets n'existent pas, `check_key`
+renvoie `None` et la section est vide en silence.
 
-Une alarme qui ne peut jamais passer au vert n'est pas une surveillance
-stricte : au bout de trois jours on cesse de la lire, et on retombe sur le
-mode de panne que `--strict` combat. Pour un `.jsonl` on lit désormais la
-DERNIÈRE ligne — l'événement le plus récent, donc la vraie fraîcheur du flux.
-Vérifié : 7,6 h sur votre fichier, cohérent avec sa dernière entrée (10h48).
+Pendant ce temps, **rien** ne surveillait OddsPapi/RapidAPI — l'API sur
+laquelle repose toute la capture. Ajouté, pour 0 requête supplémentaire
+(tout est déjà dans `capture_state.json`) :
 
-## Ce fichier contient AUSSI le correctif « ter »
+- alerte si aucune capture depuis 6 h (`CAPTURE_MAX_H`)
+- consommation du jour sur le budget de 938 req/jour, alerte à 90 %
+- rappel des passages par déclencheur
 
-Contrôle d'intégrité `scripts_manquants()` inclus, avec résolution des appels
-en boucle (`for s in ...; do python scripts/${s}.py`). Inutile de poser les
-deux : celui-ci les contient tous.
+Sortie sur vos données réelles :
 
-## État après correctifs, rejoué sur votre dépôt réel
+    ✅ dernière capture il y a 0.4h
+    ✅ requêtes OddsPapi aujourd'hui : 194/938 (21%)
+    ℹ️ passages : repository_dispatch=4
 
-```
-🔒 STRICT : 0 livrable(s) critique(s) en défaut, 1 alerte(s) de contenu -> exit 1
-   ⚠️ Script manquant : scripts/canal_public.py ...
-```
+Testé aussi en dégradé : capture vieille de 9 h -> ❌ ; quota à 93 % -> ❌.
 
-Un seul signal restant, et c'est le vrai. Avec `scripts/canal_public.py`
-restauré : « tous les livrables critiques sont présents », code de sortie 0.
+## 3. Mon instrumentation du déclencheur ne pouvait pas conclure
 
-## Il reste UNE chose à faire de votre côté
+Le compteur `passages_par_declencheur` posé ce matin s'incrémente juste
+avant l'écriture de `capture_state.json`. Or un passage du cron `*/5` qui
+trouve une capture de moins de 4 minutes fait `return` **avant** cette
+écriture. Les passages du cron court-circuités n'apparaissaient donc nulle
+part, et le compteur ne pouvait pas distinguer :
 
-`scripts/canal_public.py` est toujours absent. Le canal public ne publie
-plus depuis le 04/09 10h48. Restaurez-le depuis l'historique git — je ne
-peux pas le réécrire sans l'avoir vu.
+- « GitHub ne délivre pas le cron `*/5` »   (le vrai suspect)
+- « le cron passe et se range poliment »
 
-## Vérifications
+c'est-à-dire exactement les deux hypothèses qu'il devait départager.
+Nouveau compteur `schedule_court_circuite`, écrit sans toucher aux champs
+qui appartiennent au run qui capture.
 
-- 5 cas de migration testés (ancien format 6 h / 80 h / date illisible,
-  nouveau format 12 h / 144 h) : seuls les trois derniers cas légitimes
-  bloquent
-- `_age_interne_h` relit correctement un JSONL et un objet JSON
-- `--strict` rejoué sur l'état réel du dépôt : 1 alerte avant restauration,
-  0 et code 0 après
-- 14/14 tests
+État actuel de vos compteurs : `repository_dispatch: 4`, aucun `schedule`.
+Demain matin, la lecture devient univoque :
+
+- `schedule_court_circuite` proche de 288 -> le cron passe, le worker
+  aussi, tout va bien et la cadence de 10 min vient d'ailleurs
+- `schedule_court_circuite` autour de 100-150 -> GitHub étale le cron ;
+  seul le worker peut tenir 5 min
+- presque zéro -> le cron n'est pas délivré du tout
+
+## Ce que j'ai vérifié sans rien trouver
+
+- aucun autre livrable `.jsonl` surveillé (le piège `json.load` du soir ne
+  concernait que `canal_public_log.jsonl`)
+- aucun autre `json.load` sur un `.jsonl` dans les scripts
+- budget API : 194/938 à 18h40, aucune tension
+- `requirements.txt` bien utilisé par les 3 workflows qui installent
+- 50 workflows sur les majeures Node 24, YAML et permissions valides
+- aucune partition en zone rouge
+
+## Toujours en attente de vous
+
+`scripts/canal_public.py` reste absent. Le canal n'a rien publié depuis
+10h48 ce matin. Je ne peux pas le réécrire sans l'avoir vu.
