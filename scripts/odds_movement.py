@@ -53,10 +53,18 @@ def _compute_move(uid, m):
     ct = m.get('commence_time', '')
     if ct:
         try:
-            start = datetime.datetime.fromisoformat(str(ct).replace('Z', '+00:00')).replace(tzinfo=None)
-            if start <= datetime.datetime.utcnow():
+            # Comparaison en AWARE des deux côtés. La version précédente
+            # forçait .replace(tzinfo=None) puis comparait à utcnow() : juste,
+            # mais reposant sur deux conventions implicites qui devaient rester
+            # d'accord, et sur utcnow() qui disparaîtra. Ce garde-fou empêche
+            # d'alerter sur un match DÉJÀ EN COURS (+394% observé) : il ne doit
+            # pas casser en silence le jour d'une montée de version.
+            start = datetime.datetime.fromisoformat(str(ct).replace('Z', '+00:00'))
+            if start.tzinfo is None:
+                start = start.replace(tzinfo=datetime.timezone.utc)
+            if start <= datetime.datetime.now(datetime.timezone.utc):
                 return None
-        except Exception:
+        except (ValueError, TypeError):
             pass
     hist = [p for p in (m.get('history') or [])
             if p.get('mins_before') is None or p.get('mins_before') >= 0]
@@ -157,13 +165,56 @@ def format_alert(mv):
         f"⚡ <b>Mouvement de cote</b> ({mv['amp']}%)\n"
         f"{mv['tournament']}{t}\n"
         f"<b>{mv['home']}</b> vs <b>{mv['away']}</b>\n"
-        f"{sens}\n"
+        f"{sens}"
+        f"{hashtags_x(mv['tournament'])}\n"
         f"{traj}"
         f"\n"
         f"🔎 Posts X sur ce match : {x_search_url(mv['home'], mv['away'])}\n"
         f"<i>Le marché a réagi à quelque chose. Si tu avais un pari prévu ici, "
         f"réévalue avant de jouer. Ceci n'est pas un signal d'entrée.</i>"
     )
+
+
+# ── Hashtags X ───────────────────────────────────────────────────────────
+# AJOUTÉ LE 05/09/2026. Ces messages sont copiés-collés vers X, mais SEUL le
+# bloc d'entête l'est (mouvement + joueurs) — pas le tableau de trajectoire ni
+# le lien de recherche. Des hashtags en pied de message ne suivraient donc
+# jamais le copier-coller : ils sont placés juste après les lignes de joueurs,
+# à la fin de ce qui est réellement repris.
+#
+# DEUX hashtags, pas plus : au-delà X dégrade la portée et le post lit comme
+# du spam. Volontairement PAS de #pronostic / #value / #pari — ils rangeraient
+# le canal dans une catégorie qu'il refuse d'être, et attireraient un public
+# qui cherche un pronostic là où on publie une observation de marché.
+#
+# `18+` est ajouté ici et pas seulement en pied de page : sur Telegram la
+# mention vit dans la description du canal, sur X chaque post est autonome et
+# peut être vu par n'importe qui, hors de tout contexte.
+#
+# Classement sur le NOM DU TOURNOI et non sur sport_key (identifiants
+# opaques : oddspapi_2591...) ni sur niveau (deux valeurs seulement :
+# 'grand_chelem' / 'autre', ce qui ne distingue ni ATP de WTA ni les
+# Challengers).
+HASHTAGS_ACTIFS = os.environ.get('HASHTAGS_X', '1') != '0'
+
+def hashtags_x(tournoi):
+    """Deux hashtags + mention 18+, choisis d'après le nom du tournoi."""
+    if not HASHTAGS_ACTIFS:
+        return ""
+    t = (tournoi or '').lower()
+    if 'challenger' in t:
+        premier = '#ATPChallenger'      # communauté active et bien ciblée
+    elif t.startswith('wta') or ' women' in t:
+        premier = '#WTA'
+    elif 'itf' in t:
+        premier = '#ITF'
+    elif t.startswith('atp') or ' men' in t:
+        premier = '#ATPTour'
+    else:
+        premier = '#Tennis'             # repli : mieux que rien, mais générique
+    # #TennisOdds : niche paris/trading anglophone, nettement plus large que
+    # la francophone, et sans connotation d'incitation.
+    return f"\n{premier} #TennisOdds · 18+"
 
 
 def format_trajectory(hist, home, away):
@@ -189,7 +240,11 @@ def log_entry(mv):
     """Append UNE ligne d'étude (un match). Permanent, jamais effacé.
     Conçu pour être croisé avec backtest_tennis.csv et le CLV via 'uid'."""
     entry = {
-        'logged_at': datetime.datetime.utcnow().isoformat(),
+        # utcnow() est déprécié depuis Python 3.12 et sera retiré ; les
+        # workflows sont sur 3.11, donc pas d'urgence, mais autant ne pas
+        # laisser une bombe à retardement dans un journal PERMANENT.
+        'logged_at': datetime.datetime.now(datetime.timezone.utc)
+                             .isoformat(timespec='seconds'),
         'uid': mv['uid'],
         'home': mv['home'],
         'away': mv['away'],
