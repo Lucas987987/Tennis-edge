@@ -2,7 +2,7 @@
 # Tous sont DÉJÀ absents du répertoire de travail (vérifié
 # deux fois : date de suppression filter-repo + cat-file HEAD).
 # Les purger ne fait perdre aucune donnée en usage.
-# 301 chemins, 3188 Mo packés récupérables.
+# 305 chemins, 3201 Mo packés récupérables.
 #
 # L'étape 3 lit ce fichier tel quel. Retirer une ligne la
 # préserve ; ajouter un chemin encore utilisé le DÉTRUIRAIT.
@@ -16,8 +16,8 @@ parts/live_match_2026-08-12.jsonl
 parts/live_set1_2026-08-24.jsonl
 parts/live_match_2026-08-24.jsonl
 parts/pm_ticks_2026-08-27.jsonl.gz
-parts/live_set2_2026-08-30.jsonl
 parts/pm_ticks_2026-08-20_2.jsonl
+parts/live_set2_2026-08-30.jsonl
 parts/live_match_2026-08-14.jsonl
 parts/kx_ticks_2026-08-24_2.jsonl
 parts/pm_ticks_2026-08-24.jsonl
@@ -79,13 +79,13 @@ parts/live_set1_2026-08-23.jsonl
 parts/hist_book_2026-06.jsonl
 parts/live_set1_2026-08-19.jsonl
 parts/hist_book_2026-W35_3.jsonl
+parts/hist_book_2026-W36_2.jsonl
 parts/live_set2_2026-08-07.jsonl
 parts/kx_ticks_2026-08-26.jsonl
 parts/pm_ticks_2026-08-24_4.jsonl
 parts/live_set1_2026-08-08.jsonl
 parts/live_set1_2026-08-27.jsonl
 parts/live_set1_2026-08-09.jsonl
-parts/pm_ticks_2026-08-21.jsonl
 parts/live_set2_2026-08-26.jsonl
 parts/live_set2_2026-08-18.jsonl
 parts/kx_ticks_2026-08-25_3.jsonl.gz
@@ -97,6 +97,7 @@ parts/kx_ticks_2026-08-25_2.jsonl.gz
 parts/kx_ticks_2026-08-25_4.jsonl
 parts/kx_ticks_2026-08-25.jsonl.gz
 parts/kx_ticks_2026-08-24.jsonl.gz
+parts/pm_ticks_2026-08-21.jsonl
 parts/hist_book_2026-W34.jsonl
 parts/hist_book_2026-W35.jsonl
 parts/live_set2_2026-08-11.jsonl
@@ -188,8 +189,8 @@ parts/pm_ticks_2026-08-22_4.jsonl.gz
 parts/kx_ticks_2026-08-21.jsonl
 parts/live_match_2026-08-27.jsonl
 parts/live_set2_2026-08-06.jsonl
-parts/kx_ticks_2026-08-21.jsonl.gz
 parts/kx_ticks_2026-08-20.jsonl
+parts/kx_ticks_2026-08-21.jsonl.gz
 scripts/__pycache__/odds_movement.cpython-311.pyc
 scripts/__pycache__/oddspapi_v5.cpython-311.pyc
 parts/live_match_2026-08-19.jsonl
@@ -257,16 +258,19 @@ audit_qa_join.zip
 parts/live_set2_2026-07-30.jsonl
 move_audit_oom.zip
 parts/live_set2_2026-07-31.jsonl
+parts/live_set1_2026-09-01.jsonl
 watchdog_v11.zip
 calibration_fix.zip
 fenetre_resultats.zip
 pistes_p8.zip
 move_audit_oom/scripts/move_audit.py
+parts/live_set2_2026-09-01.jsonl
 .github/workflows/bump_actions_node24.yml
 scripts/probe_markets.py
 scripts/book_reactivity.py
 scripts/test_matchstat-2.py
 move_audit_oom/.github/workflows/observateur_externe.yml
+parts/live_match_2026-09-01.jsonl
 CORRECTIF_PUSH.md
 .github/workflows/detach_pyc.yml
 update_players.py
