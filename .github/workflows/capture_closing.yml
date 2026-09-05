@@ -1,64 +1,67 @@
 name: Capture Closing Lines
 
-# Déclencheur UNIQUE : repository_dispatch, envoyé par le worker Cloudflare
-# toutes les 5 min. Le type suit la convention des autres collecteurs du repo
-# (kalshi_collector, polymarket_collector) = nom du workflow.
-# Filet de sécurité : capture_watchdog.yml (cron horaire) relance ce workflow
-# par workflow_dispatch si aucune capture depuis SEUIL_MIN minutes.
+# DÉCOUPÉ LE 05/09/2026. Ce workflow ne fait plus QUE capturer les cotes.
+#
+# Mesure qui a motivé la découpe (runs 92048513174 et 92049080809) :
+#     checkout                    8,5 s
+#     CAPTURE DES COTES           1,9 s   <- 1 requête API, le seul travail
+#                                            qui doit être fait À L'HEURE
+#     courbes live + alertes    129-159 s <- 0 requête API, recalcul LOCAL
+#     rétention + commit          8   s
+#
+# 85 % du temps était du post-traitement qui ne touche aucune cote. Or la
+# garde API du Worker bloque tant qu'un run est en cours : avec des runs de
+# 3 min 20, la cadence réelle restait à 5 min quelle que soit la grille du
+# cron — et passer le cron à 3 min l'aurait DÉGRADÉE à 6 min, le tick de
+# T+3 tombant systématiquement pendant le run précédent.
+#
+# CE QUE ÇA CHANGE POUR LE CLV. Mesuré sur les 1 464 matchs de
+# closing_lines.json, le dernier point capté avant le coup d'envoi :
+#     T-0 à T-3    3,8 %      <- la fenêtre t3, la plus proche du closing
+#     T-3 à T-7    8,9 %
+#     T-7 à T-12  13,2 %
+#     T-12 à T-20 20,4 %
+#     T-20 à T-35 22,4 %
+#     > T-35      31,2 %      <- closing NON fiable, un match sur trois
+# Médiane T-23,5. Une fenêtre de 5 minutes ne peut pas être attrapée de
+# façon fiable par une cadence de 5 minutes : c'est un pur tirage. Le CLV,
+# métrique de validation UNIQUE du projet, est amputé d'un tiers des matchs
+# pour une raison purement mécanique.
+#
+# Le post-traitement vit maintenant dans courbes_alertes.yml, qui tourne
+# moins souvent : il travaille sur des données déjà capturées, le retarder
+# de quelques minutes ne coûte rien.
+
 on:
   repository_dispatch:
     types: [capture_closing]
-  # RETIRÉ LE 04/09/2026 AU SOIR : le cron '*/5' ne se déclenchait JAMAIS.
-  # Mesuré par le compteur passages_par_declencheur posé le matin même :
-  # sur toute la période d'observation, `repository_dispatch` uniquement,
-  # pas un seul `schedule`. GitHub ne garantit pas les crons sub-horaires
-  # et ne les délivre pas ici. Ce n'était pas un second déclencheur, c'était
-  # un ornement -- et surtout un faux filet de sécurité : on croyait avoir
-  # une redondance là où il n'y avait qu'un seul déclencheur réel.
-  # Le vrai filet est maintenant capture_watchdog.yml, qui vérifie une fois
-  # par heure que la capture tourne encore et relance ce workflow sinon.
-  # Un cron horaire, lui, tolère très bien d'être délivré avec 20 minutes de
-  # retard : c'est le seul usage où l'irrégularité de GitHub est acceptable.
+  # Pas de cron : mesuré le 04/09, GitHub ne délivrait JAMAIS le '*/5'.
+  # Filet de sécurité : capture_watchdog.yml (cron horaire).
   workflow_dispatch:
 
 permissions:
   contents: write
-  # actions: write requis pour que le watchdog puisse relancer kalshi/polymarket
-  # via l'API (gh workflow run) — ajouté le 26/08/2026, voir l'étape en fin
-  # de job. AUCUN cron GitHub ajouté (décision explicite : redondant avec
-  # le Worker Cloudflare et moins réactif) — le watchdog réagit à un vrai
-  # signal (last_run_at en retard), pas à un calendrier de plus.
-  actions: write
-
-# ============================================================
-# RETIRÉ LE 04/09/2026 : le bloc `concurrency: group: capture-closing`
-# plafonnait la cadence réelle à la DURÉE du job, pas à 5 minutes.
-# GitHub ne garde qu'UN seul run en attente par groupe : dès qu'un run
-# dépasse 5 min, le tick suivant se met en file et celui d'après annule
-# le premier en file. Avec un cron */5 et un worker à 5 min, ce bloc
-# aurait annulé la majorité des passages.
-# Les collisions git que ce verrou supprimait sont déjà traitées en aval
-# par la boucle de reprise à 3 essais + merge_json_state.py de l'étape
-# de commit -- c'est exactement ce pour quoi elle a été écrite.
-# ============================================================
-
-env:
-  PYTHONDONTWRITEBYTECODE: 1
 
 jobs:
   capture:
     runs-on: ubuntu-latest
+    timeout-minutes: 12
     steps:
       - uses: actions/checkout@v5
         with:
           fetch-depth: 0
           filter: blob:none
           sparse-checkout-cone-mode: false
+          # ALLÉGÉ LE 05/09/2026 : parts/hist_* (~130 Mo) retiré. Il n'est lu
+          # QUE par steam_alert/paper_journal via TRACK_CURVES, partis dans
+          # courbes_alertes.yml ; capture_closing.py n'y touche pas.
+          # NE PAS retirer parts/live_* : purge_data.py en dépend, et un
+          # sparse qui les oublierait viderait des données en silence — le
+          # sparse du 25/08 avait déjà vidé le track record de cette façon.
           sparse-checkout: |
             /*
             !/parts
             /parts/live_*
-            /parts/hist_*
 
       - uses: actions/setup-python@v6
         with:
@@ -100,63 +103,9 @@ jobs:
           GITHUB_EVENT_NAME: ${{ github.event_name }}
         run: python scripts/capture_closing.py
 
-      - name: Courbes live + alertes forward (0 requête API)
-        env:
-          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
-          TELEGRAM_PUBLIC_CHAT_ID: ${{ secrets.TELEGRAM_PUBLIC_CHAT_ID }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        run: |
-          # MIGRATION AUTOMATIQUE (une seule fois) : si parts/ n'existe pas encore,
-          # on convertit les fichiers plats existants en partitions, puis on retire
-          # ces fichiers du suivi git (ils deviennent régénérables). Aucune donnée
-          # perdue : la migration est vérifiée point par point.
-          if [ ! -d parts ]; then
-            echo "--- migration initiale vers les partitions ---"
-            python scripts/curves_parts.py migrate || true
-            git rm --cached book_curves_live.jsonl set1_curves_live.jsonl set2_curves_live.jsonl 2>/dev/null || true
-          fi
-          # Les fichiers plats ne sont plus commités : on les reconstruit depuis
-          # les partitions append-only (parts/). Reconstruction identique au point près.
-          python scripts/curves_parts.py rebuild
-          python scripts/build_live_curves.py
-          # TRACK_CURVES = historique riche pour calibrer les seuils par book (sinon "indicatif")
-          CURVES=book_curves_live.jsonl TRACK_CURVES=book_curves.jsonl MARKET=match python scripts/steam_alert.py || true
-          CURVES=set1_curves_live.jsonl TRACK_CURVES=set1_curves.jsonl MARKET=set1 python scripts/steam_alert.py || true
-          CURVES=set2_curves_live.jsonl TRACK_CURVES=set2_curves.jsonl MARKET=set2 python scripts/steam_alert.py || true
-          # Journal forward : OUVRIR les signaux MAINTENANT, pendant que le match est
-          # encore à venir. Le pipeline nocturne (00:15) ne suffit pas : les moves
-          # naissent en journée, quelques heures avant les matchs — à 00:15 le signal
-          # n'existe pas encore, et le lendemain le match est passé (= journal vide).
-          # Dédup par id (uid|book|palier) -> pas de doublon d'un cycle à l'autre.
-          # 0 requête API (fichiers locaux). Le dénouement reste au pipeline nocturne.
-          CURVES=book_curves_live.jsonl TRACK_CURVES=book_curves.jsonl MARKET=match python scripts/paper_journal.py || true
-          CURVES=set1_curves_live.jsonl TRACK_CURVES=set1_curves.jsonl MARKET=set1 python scripts/paper_journal.py || true
-          CURVES=set2_curves_live.jsonl TRACK_CURVES=set2_curves.jsonl MARKET=set2 python scripts/paper_journal.py || true
-          # JOURNAL ALIGNÉ SUR LE CANAL.
-          # paper_journal.py ci-dessus enregistre selon les seuils ADAPTATIFS
-          # par book de steam_alert. canal_public, lui, publie sur des paliers
-          # FIXES (3/5/8/12) avec un écart >= GAP_MIN. Résultat mesuré le
-          # 24/08 : 68 matchs alertés sur le canal, 17 seulement dans le
-          # journal forward — un sous-ensemble à 25 %.
-          # Le track record ne mesurait donc PAS ce que reçoivent les abonnés,
-          # ce qui le rend inutilisable pour justifier quoi que ce soit.
-          # paper_journal_canal.py lit canal_public_log.jsonl : par
-          # construction, il ne peut plus diverger de la publication.
-          # Les DEUX tournent — les seuils adaptatifs restent une stratégie
-          # légitime, simplement différente. Deux fichiers, aucune confusion.
-          python scripts/results_bridge.py || true
-          python scripts/paper_journal_canal.py || true
-          # Canal PUBLIC « Évolution des cotes » : messages d'information neutres
-          # (mouvements Pinnacle + juste prix + retards d'ajustement). 0 requête API.
-          PALIERS="3,5,8,12" python scripts/canal_public.py || true
-          # Signal EXPÉRIMENTAL (non validé) : book déjà ouvert avant Pinnacle,
-          # écart au moment où Pinnacle publie son 1er prix. Canal PRIVÉ
-          # uniquement (jamais le canal public) -- voir validation_report pour
-          # le suivi out-of-sample avant toute exploitation. 0 requête API.
-          CURVES=book_curves_live.jsonl python scripts/early_open_signal.py || true
-
       - name: Rétention (allège les fichiers live — historique conservé)
         run: python scripts/purge_data.py || true
+
 
       - name: Commit (robuste — persiste TOUTE la capture)
         run: |
