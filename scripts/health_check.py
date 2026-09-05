@@ -76,10 +76,32 @@ for f, max_h in FILES.items():
 # ── 1a. Capture : fraîcheur RÉELLE + budget de requêtes ──────────────────
 # AJOUTÉ LE 04/09/2026. Deux signaux que rien ne surveillait :
 #   - la capture a-t-elle tourné récemment ? (seul last_capture_at le dit)
-#   - combien de requêtes OddsPapi consommées aujourd'hui, sur 938/jour ?
+#   - combien de requêtes OddsPapi consommées aujourd'hui ?
 # Coût : 0 requête API, tout est déjà écrit dans capture_state.json.
 CAPTURE_MAX_H = float(os.environ.get('CAPTURE_MAX_H', '6'))
-BUDGET_REQ_JOUR = int(os.environ.get('BUDGET_REQ_JOUR', '938'))
+
+# RELEVÉ DE 938 À 1400 LE 05/09/2026, après la découpe de capture_closing.
+#
+# 938 était calibré sur une cadence de capture de 5-10 min. La découpe du
+# workflow (la capture prend 1,9 s, le post-traitement est parti dans
+# courbes_alertes.yml) a permis de passer le cron Cloudflare à 3 min :
+# ~20 captures/heure au lieu de 6, soit une consommation attendue autour de
+# 840 req/jour contre 250 auparavant.
+#
+# Laisser 938 aurait fait sonner cette alerte à ~90 % TOUS LES MATINS, pour
+# une consommation parfaitement nominale. Une alarme qui se déclenche chaque
+# jour sans qu'il y ait rien à faire cesse d'être lue — et le jour où la
+# consommation dérive vraiment, personne ne la voit. C'est le même mode de
+# panne que les `|| true` avalés, par excès de bruit plutôt que de silence.
+#
+# 1400 vient du quota réel : 50 000 requêtes/mois, soit 1 613/jour sur un
+# mois de 31 jours. 1400 laisse ~13 % de marge pour les passes étendues et
+# les pics de calendrier (Grand Chelem : plus de tournois actifs, donc plus
+# de requêtes par passe). 1400 x 31 = 43 400, sous le quota.
+#
+# Si la cadence change encore, c'est CETTE valeur qu'il faut revoir — pas le
+# seuil de 90 % plus bas, qui reste le bon avertissement.
+BUDGET_REQ_JOUR = int(os.environ.get('BUDGET_REQ_JOUR', '1400'))
 try:
     _cs = json.load(open('capture_state.json', encoding='utf-8'))
     _lc = datetime.datetime.fromisoformat(str(_cs['last_capture_at']).replace('Z', ''))
