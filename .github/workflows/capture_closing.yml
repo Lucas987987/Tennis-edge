@@ -1,0 +1,196 @@
+name: Capture Closing Lines
+
+# DÉCOUPÉ LE 05/09/2026. Ce workflow ne fait plus QUE capturer les cotes.
+#
+# Mesure qui a motivé la découpe (runs 92048513174 et 92049080809) :
+#     checkout                    8,5 s
+#     CAPTURE DES COTES           1,9 s   <- 1 requête API, le seul travail
+#                                            qui doit être fait À L'HEURE
+#     courbes live + alertes    129-159 s <- 0 requête API, recalcul LOCAL
+#     rétention + commit          8   s
+#
+# 85 % du temps était du post-traitement qui ne touche aucune cote. Or la
+# garde API du Worker bloque tant qu'un run est en cours : avec des runs de
+# 3 min 20, la cadence réelle restait à 5 min quelle que soit la grille du
+# cron — et passer le cron à 3 min l'aurait DÉGRADÉE à 6 min, le tick de
+# T+3 tombant systématiquement pendant le run précédent.
+#
+# CE QUE ÇA CHANGE POUR LE CLV. Mesuré sur les 1 464 matchs de
+# closing_lines.json, le dernier point capté avant le coup d'envoi :
+#     T-0 à T-3    3,8 %      <- la fenêtre t3, la plus proche du closing
+#     T-3 à T-7    8,9 %
+#     T-7 à T-12  13,2 %
+#     T-12 à T-20 20,4 %
+#     T-20 à T-35 22,4 %
+#     > T-35      31,2 %      <- closing NON fiable, un match sur trois
+# Médiane T-23,5. Une fenêtre de 5 minutes ne peut pas être attrapée de
+# façon fiable par une cadence de 5 minutes : c'est un pur tirage. Le CLV,
+# métrique de validation UNIQUE du projet, est amputé d'un tiers des matchs
+# pour une raison purement mécanique.
+#
+# Le post-traitement vit maintenant dans courbes_alertes.yml, qui tourne
+# moins souvent : il travaille sur des données déjà capturées, le retarder
+# de quelques minutes ne coûte rien.
+
+on:
+  repository_dispatch:
+    types: [capture_closing]
+  # Pas de cron : mesuré le 04/09, GitHub ne délivrait JAMAIS le '*/5'.
+  # Filet de sécurité : capture_watchdog.yml (cron horaire).
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          filter: blob:none
+          sparse-checkout-cone-mode: false
+          # ALLÉGÉ LE 05/09/2026 : parts/hist_* (~130 Mo) retiré. Il n'est lu
+          # QUE par steam_alert/paper_journal via TRACK_CURVES, partis dans
+          # courbes_alertes.yml ; capture_closing.py n'y touche pas.
+          # NE PAS retirer parts/live_* : purge_data.py en dépend, et un
+          # sparse qui les oublierait viderait des données en silence — le
+          # sparse du 25/08 avait déjà vidé le track record de cette façon.
+          sparse-checkout: |
+            /*
+            !/parts
+            /parts/live_*
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Fenêtre de cache (30 min)
+        id: bucket
+        run: echo "value=$(( $(date -u +%s) / 1800 ))" >> "$GITHUB_OUTPUT"
+
+      - name: Cache fixtures/today (piste A, optimisation des requêtes)
+        # AJOUTÉ LE 29/08/2026 : fixtures_today() était appelée sans cache à
+        # chaque passe standard (~99 requêtes/jour) pour une liste qui ne
+        # change qu'aux ajouts de programme -- quelques fois par jour au
+        # plus. actions/cache n'a pas de TTL natif -- la clé encode une
+        # fenêtre de 30 minutes (l'entier ci-dessus change toutes les
+        # 1800s) : une nouvelle fenêtre = cache MISS = appel frais ; dans la
+        # même fenêtre, tous les runs partagent le HIT. Le fichier vit dans
+        # /tmp, jamais committé (voir capture_closing.py,
+        # fixtures_today_cached()) -- un fichier de plus dans git add à
+        # 120 runs/jour serait de la croissance d'historique pour rien.
+        uses: actions/cache@v5
+        with:
+          path: /tmp/fixtures_today_cache.json
+          key: fixtures-today-${{ steps.bucket.outputs.value }}
+
+      - name: Capture des cotes (OddsPapi v5)
+        env:
+          RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_PUBLIC_CHAT_ID: ${{ secrets.TELEGRAM_PUBLIC_CHAT_ID }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          FIDS_PER_REQUEST: 80
+          CAPTURE_BOOKS: pinnacle,sbobet,sharpbet,4casters,betfair-ex,winamax.fr,unibet.fr,bet365.fr,pmu,unibet,bwin,betsson,bet365,betway,1xbet,888sport,leovegas,tipico,netbet,coolbet,22bet
+          # AJOUTÉ : permet à capture_closing.py de savoir s'il a été
+          # déclenché par le cron de secours (schedule) ou par le worker
+          # Cloudflare (repository_dispatch) / une exécution manuelle
+          # (workflow_dispatch) -- seul 'schedule' déclenche le
+          # court-circuit de fraîcheur, jamais les deux autres.
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+        run: python scripts/capture_closing.py
+
+      - name: Rétention (allège les fichiers live — historique conservé)
+        run: python scripts/purge_data.py || true
+
+
+      - name: Commit (robuste — persiste TOUTE la capture)
+        run: |
+          # PANNE DU 16/08/2026 -- cause exacte, tracee par pipeline_status.
+          # Les .pyc sont SUIVIS par git (ajoutes avant le .gitignore, qui ne
+          # s'applique plus une fois un fichier suivi). capture_closing tourne
+          # toutes les 5-10 min avec "git add -A" et republie donc des .pyc
+          # neufs en continu. Quand un autre workflow tourne, il regenere les
+          # siens localement -> "git merge" ABANDONNE ("Your local changes to
+          # the following files would be overwritten") -> branche en retard ->
+          # push rejete en non-fast-forward. Resultat observe : 7 fichiers
+          # commites localement (dont 830 lignes de moves_detail_hist), jamais
+          # pousses. On efface donc les .pyc du disque avant toute action git.
+          find . -name '__pycache__' -type d -prune -exec rm -rf {} + 2>/dev/null || true
+          find . -name '*.pyc' -delete 2>/dev/null || true
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          # CORRIGÉ LE 27/08/2026 (audit §2.2/§2.3) : « git add -A » nu
+          # contredisait l'invariant de .gitattributes (« chaque workflow ne
+          # commite QUE ses propres partitions ») -- ce workflow, le plus
+          # fréquent (150x/jour), était le seul à ne pas le respecter.
+          # Exclusion par pathspec des partitions des collecteurs (jamais
+          # écrites ici), sans énumérer positivement chaque fichier que ce
+          # job produit (nombreux : capture_state, courbes live, journaux
+          # d'alertes, journal forward...).
+          git add -A -- ':!parts/pm_ticks_*' ':!parts/kx_ticks_*'
+          echo "--- fichiers en attente de commit ---"
+          git status --short
+          # GARDE-FOU TAILLE (même principe que kalshi/polymarket).
+          # CORRIGÉ LE 27/08/2026 (audit v2 §K) : `git status --porcelain`
+          # + awk '{print $2}' casse sur une ligne de renommage
+          # (`R  ancien -> nouveau` -> $2 vaut "ancien", le mauvais chemin)
+          # et sur tout chemin contenant une espace. `git diff --cached
+          # --name-only` ne liste QUE ce qui est réellement indexé, un
+          # chemin par ligne, sans ce risque.
+          for f in $(git diff --cached --name-only); do
+            [ -f "$f" ] || continue
+            mo=$(du -m "$f" 2>/dev/null | cut -f1)
+            if [ -n "$mo" ] && [ "$mo" -ge 95 ]; then
+              echo "⛔ $f fait ${mo} Mo (mur GitHub 100 Mo) — ÉCARTÉ du commit."
+              git restore --staged -- "$f" 2>/dev/null || true
+            fi
+          done
+          git diff --staged --quiet || git commit -m "Capture cotes (OddsPapi $(date -u +%H:%MZ))"
+          # "merge" et non "rebase" : un rebase en conflit après un commit
+          # peut écarter ce commit en silence (avalé par "2>/dev/null ||
+          # true") -- exactement le bug qui a figé set_results.json pendant
+          # 1 semaine sur steam_pipeline.yml. Ce workflow tourne toutes les
+          # 5-10 minutes : le risque de collision avec un autre run est
+          # bien plus élevé ici qu'ailleurs.
+          # BOUCLE DE REPRISE AVEC FUSION DES CONFLITS JSON.
+          # Ce workflow tourne toutes les 5-10 min : deux exécutions se
+          # chevauchent régulièrement, et git tombe en conflit sur les JSON
+          # d'état (closing_lines, capture_state, matches_oddspapi...). Le run
+          # entier était alors perdu, y compris les partitions live qui,
+          # elles, avaient fusionné sans problème via merge=union.
+          # merge_json_state.py fusionne ces objets JSON clé par clé, sans rien
+          # perdre : closing_lines est un ACCUMULATEUR, prendre une version au
+          # hasard effacerait les matchs ajoutés par l'autre exécution.
+          for essai in 1 2 3; do
+            git fetch origin main || true
+            if git merge origin/main --no-edit; then
+              :
+            else
+              echo "⚠️ conflit — tentative de fusion JSON (essai $essai)"
+              if python scripts/merge_json_state.py; then
+                git commit --no-edit || true
+              else
+                git merge --abort 2>/dev/null || true
+                sleep 5
+                continue
+              fi
+            fi
+            if git push; then echo "✅ PUSH OK"; exit 0; fi
+            sleep 5
+          done
+          echo "❌ PUSH ÉCHOUÉ après 3 tentatives — commit local perdu avec le runner."
+          exit 1
+
+      - name: Watchdog collecteurs (relance Kalshi/Polymarket si en retard)
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SEUIL_MIN: '20'
+        # Non-bloquant : capture_closing vient de pousser des données réelles,
+        # rien ici ne doit faire échouer CE job. Le script lui-même log tout
+        # échec de relance sans jamais l'avaler (voir watchdog_collecteurs.py).
+        run: python scripts/watchdog_collecteurs.py || true
