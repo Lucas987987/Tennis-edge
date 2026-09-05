@@ -80,7 +80,12 @@ jobs:
           # volumes (champs trade_notional / trade_size dans les ticks). D'ici
           # là, le garder dans la boucle revient à faire échouer un pipeline
           # sain pour une question qu'on ne peut pas encore poser.
-          for s in polymarket_leadlag polymarket_studies pm_calibration_track pm_observations; do
+          # kalshi_lead_track AJOUTÉ LE 05/09/2026 : collecteur de la 13e
+          # hypothèse gelée (« Kalshi mène Pinnacle à +45 min »). Il DOIT
+          # tourner avant archive_ticks.yml (cron 05h15), qui sort les
+          # partitions de plus de 7 jours vers les Releases -- ce cron de
+          # 04h20 lui laisse 55 minutes de marge.
+          for s in polymarket_leadlag polymarket_studies pm_calibration_track pm_observations kalshi_lead_track; do
             echo "--- $s ---" >> polymarket_studies_report.md
             # CORRIGÉ LE 30/08/2026 (validation externe, point 2) : ⚠️ pour
             # un ÉCHEC RÉEL (code 124 = timeout, ou toute autre sortie non
@@ -144,7 +149,13 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add -- polymarket_studies_report.md polymarket_studies_status.json
+          # kalshi_lead_obs.jsonl : journal PERMANENT de la 13e hypothèse.
+          # Les partitions de ticks sont purgées puis archivées ; ce
+          # fichier est la seule trace durable des observations. Non
+          # committé, il disparaîtrait avec le runner et l'hypothèse
+          # n'atteindrait jamais ses 30 observations out-of-sample.
+          git add -- polymarket_studies_report.md polymarket_studies_status.json \
+                     kalshi_lead_obs.jsonl
           git diff --staged --quiet && { echo "rien de neuf"; exit 0; }
           git commit -m "Études Polymarket/Kalshi ($(date -u +%F))"
           for essai in 1 2 3; do

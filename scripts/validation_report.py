@@ -218,6 +218,7 @@ FREEZE_DATE_REINFORCE = '2026-08-14'  # hypothèse 'renforcement de l'outsider d
 FREEZE_DATE_REACTIVE = '2026-08-14'  # hypothèse 'book rapide en anomalie > book lent chronique' gelée ce jour
 FREEZE_DATE_BETFAIR = '2026-08-16'  # hypothèse 'confirmation Betfair Exchange' gelée ce jour
 FREEZE_DATE_MOVEAGE = '2026-08-16'  # hypothèse 'âge du mouvement à ampleur fixée (5%)' gelée ce jour
+FREEZE_DATE_KXLEAD = '2026-09-05'   # hypothèse 'Kalshi mène Pinnacle (+45 min)' gelée ce jour
 # Critère PRIMAIRE : CLV du groupe alerté vs groupe témoin.
 # REQUALIFIÉ LE 27/08/2026 (audit §3.1) : un gel rétroactif n'est PAS un
 # pré-enregistrement -- le 25/08, ce critère avait déjà été vu sur les
@@ -1585,6 +1586,111 @@ def bilan_tests_multiples(resultats):
 # liste parallèle servait encore l'en-tête — la duplication supprimée
 # était revenue par la fenêtre). Nom, date de gel et fonction voyagent
 # ENSEMBLE, au niveau module, lus par l'en-tête ET par la boucle.
+def kalshi_lead_watch():
+    """13e hypothèse gelée : l'écart Kalshi − Pinnacle dévigé prédit-il le
+    SENS du mouvement de Pinnacle dans les 45 minutes suivantes ?
+
+    Gelée le 2026-09-05. Le collecteur scripts/kalshi_lead_track.py porte la
+    spécification complète et le raisonnement du gel ; ici on ne fait que
+    juger.
+
+    POURQUOI ELLE SEULE. L'exploration du 05/09/2026 sur 7 jours de ticks
+    (3,3 M de points, 730 matchs Kalshi) a écarté tout le reste :
+      - Kalshi et Pinnacle affichent LE MÊME PRIX : écart moyen +0,00 pt,
+        écart-type 0,89 pt sur 21 000 instants liquides. Un aller-retour
+        Kalshi coûte ~2,2 pts (0,5 de demi-fourchette + ~1,7 de frais) :
+        l'écart dépasse ce seuil dans 1,3 % des instants. Aucun arbitrage.
+      - Aucune découverte de prix : entre T-240 et T-10, dérive médiane
+        0,00 pt, |dérive| > 5 pts dans 0 % des 177 matchs, et log-loss
+        identique aux deux bouts (0,5511 vs 0,5518).
+      - 33 tests de calibration par zone sur observations indépendantes,
+        Holm-Bonferroni : ZÉRO survivant (plus petit p = 0,063 pour un
+        seuil à 0,0015).
+    Seule la corrélation écart -> mouvement futur a dépassé le bruit :
+    +0,163, IC95 [+0,012 ; +0,306], n=170. Borne basse frôlant zéro et
+    gradient plat par tranche : le profil d'un artefact autant que celui
+    d'un signal. D'où le gel, et non l'exploitation.
+
+    H0 N'EST PAS 50 %. Le groupe témoin (|écart| < 1 pt) affiche déjà
+    57,3 % de succès : il existe une tendance de fond à ce que le mouvement
+    suive le signe de l'écart, même minuscule. Tester contre une pièce
+    rejetterait H0 pour cette seule raison. p0 est donc le taux du groupe
+    témoin, recalculé à chaque lecture sur les données out-of-sample —
+    même parti pris que p0_temoin() pour les hypothèses CLV.
+
+    Retourne (k, n, p0) ou None si pas encore testable.
+    """
+    import datetime as _dtm
+
+    OBS = 'kalshi_lead_obs.jsonl'
+    SEUIL = 1.0        # GELÉ. Voir kalshi_lead_track.py : 1,5 pt donnait
+                       # 86,7 % mais sur n=15, et aurait été choisi APRÈS
+                       # avoir vu le résultat. 1,0 pt vaut ~1 écart-type de
+                       # la divergence Kalshi-Pinnacle (0,89 pt), mesurée
+                       # indépendamment et AVANT ce test.
+
+    def _ts(x):
+        try:
+            return _dtm.datetime.fromisoformat(
+                str(x).replace('Z', '').replace('+00:00', ''))
+        except (ValueError, TypeError):
+            return None
+
+    freeze = _ts(FREEZE_DATE_KXLEAD)
+    lignes = []
+    try:
+        for ligne in open(OBS, encoding='utf-8'):
+            ligne = ligne.strip()
+            if not ligne:
+                continue
+            try:
+                lignes.append(json.loads(ligne))
+            except ValueError:
+                continue
+    except OSError:
+        print(f"  {OBS} absent — scripts/kalshi_lead_track.py a-t-il tourné ?")
+        return None
+
+    signal, temoin, n_in = [], [], 0
+    for r in lignes:
+        t = _ts(r.get('t'))
+        if not t or t < freeze:
+            n_in += 1
+            continue                      # OUT-OF-SAMPLE STRICT
+        e, m = r.get('ecart_pts'), r.get('mvt_pts')
+        if not isinstance(e, (int, float)) or not isinstance(m, (int, float)):
+            continue
+        # Un mouvement Pinnacle NUL n'a pas de signe : ni succès ni échec.
+        # L'écarter des DEUX groupes, sans quoi il gonflerait le
+        # dénominateur du seul groupe où il est fréquent.
+        if m == 0:
+            continue
+        succes = (m > 0) == (e > 0)
+        (signal if abs(e) >= SEUIL else temoin).append(succes)
+
+    print(f"  journal : {len(lignes)} observation(s), dont {n_in} in-sample "
+          f"(écartée(s))")
+    if not signal or not temoin:
+        print(f"  out-of-sample : signal n={len(signal)} · témoin n={len(temoin)}"
+              f" — les deux groupes ne sont pas encore peuplés.")
+        return None
+
+    k, n = sum(signal), len(signal)
+    kt, nt = sum(temoin), len(temoin)
+    p0 = kt / nt
+    _, lo, hi = wilson(k, n)
+    print(f"  SIGNAL |écart| >= {SEUIL:.1f} pt : {k}/{n} = {100 * k / n:.1f} % "
+          f"IC95 [{100 * lo:.1f} ; {100 * hi:.1f}]")
+    print(f"  TÉMOIN |écart| <  {SEUIL:.1f} pt : {kt}/{nt} = {100 * p0:.1f} %  (= p0)")
+    print(f"  référence in-sample au gel, NON confirmatoire : "
+          f"signal 60,8 % (n=51) · témoin 57,3 % (n=117)")
+    if n < 30:
+        print(f"  n={n} < 30 — trop tôt pour juger (règle maison). Il faut "
+              f"~600 observations pour distinguer une corrélation de 0,16 de "
+              f"zéro ; à 64 matchs Kalshi/jour, compter un mois.")
+    return (k, n, p0)
+
+
 HYPOTHESES = [
     ('calibration 2,20-3,50', FREEZE_DATE,           calibration_watch),
     ('heure du match',        FREEZE_DATE,           hour_watch),
@@ -1597,6 +1703,11 @@ HYPOTHESES = [
     ('seuil adaptatif',       FREEZE_DATE,           adaptive_threshold_watch),
     ('confirmation Betfair',  FREEZE_DATE_BETFAIR,   betfair_confirm_watch),
     ('âge du mouvement',      FREEZE_DATE_MOVEAGE,   move_age_watch),
+    # AJOUTÉE LE 05/09/2026. Tant qu'elle n'a pas 30 observations
+    # out-of-sample, le filtre `testables` de bilan_tests_multiples
+    # l'exclut : elle ne consomme pas de créneau Holm et ne durcit
+    # donc pas le seuil des douze autres.
+    ('Kalshi mène Pinnacle',  FREEZE_DATE_KXLEAD,    kalshi_lead_watch),
 ]
 
 
