@@ -1,0 +1,184 @@
+name: Etudes Polymarket/Kalshi (analyse des ticks collectes)
+
+# CRÉÉ LE 27/08/2026 suite à l'audit du 27/08 (§4.1) : les collecteurs
+# tournent (~105 Mo/jour de tickets pm_ticks+kx_ticks) mais AUCUN workflow
+# n'appelait les 5 scripts d'analyse écrits pour les lire — le plus gros
+# poste de dépense (stockage + temps de runner) du dépôt pour zéro sortie.
+# Quotidien plutôt qu'à chaque cycle : ces études lisent des journées
+# entières de ticks, coûteux en I/O, pas besoin de fraîcheur à 5 minutes.
+
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+
+on:
+  schedule:
+    - cron: '20 4 * * *'      # tôt le matin, avant la compression nocturne
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: polymarket-studies
+  cancel-in-progress: false
+
+jobs:
+  etudes:
+    runs-on: ubuntu-latest
+    # CORRIGÉ LE 27/08/2026 (audit v2 §H) : 5 scripts x 600s pouvaient
+    # atteindre 50 min sous un budget de 30 -- mathématiquement intenable,
+    # le job se faisait tuer avant la fin, rapport tronqué, commit jamais
+    # atteint. 300s/script x 5 = 25 min max, large marge sous 60.
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          filter: blob:none
+          # AJOUTÉ (audit v2 §H) : dépôt à 675+ Mo, ces études ne lisent que
+          # les scripts et les ticks pm/kx -- inutile de rapatrier le reste.
+          sparse-checkout: |
+            /*
+            !/parts
+            /parts/pm_ticks_*
+            /parts/kx_ticks_*
+            /parts/hist_book_*
+          # CORRIGÉ LE 28/08/2026 (audit v7 §AJ) : /parts/hist_book_* manquait
+          # -- les 5 études croisent les ticks Polymarket/Kalshi avec les
+          # courbes Pinnacle, c'est tout leur objet, et sans ces partitions
+          # elles chargent 2,3 millions de ticks pour les comparer à zéro
+          # courbe. Ironie assumée : c'est ma propre recommandation de la
+          # passe 2 (réduire le sparse-checkout pour tenir le budget temps)
+          # qui a cassé les études qu'elle devait rendre exécutables --
+          # ~300 Mo ajoutés, large marge sous les 60 minutes.
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - name: Exécuter les 5 études
+        run: |
+          # CORRIGÉ (audit v2 §H) : écriture INCRÉMENTALE (>> après chaque
+          # script), pas un seul bloc redirigé à la fin -- si le job est
+          # tué en cours de route, ce qui est déjà sur disque reste
+          # committable, au lieu d'un fichier vide ou tronqué en mémoire.
+          echo "# Études Polymarket/Kalshi — rapport du $(date -u +%F)" > polymarket_studies_report.md
+          echo >> polymarket_studies_report.md
+          echo '```' >> polymarket_studies_report.md
+          # RETIRÉ LE 03/09/2026 : polymarket_flow. Ce script mesure le flux
+          # d'ARGENT (trade_notional / trade_size) avant un mouvement Pinnacle.
+          # Or le collecteur n'enregistre AUCUN volume -- mesuré : 0 échange
+          # horodaté sur 2,4 millions de ticks. Le script ne peut donc rien
+          # produire, quelle que soit la durée qu'on lui accorde : il consommait
+          # 300 s pour finir en timeout (code 124) chaque jour.
+          #
+          # Sans conséquence tant que l'échec était noté ⚠️. Depuis que les
+          # timeouts sont correctement comptés comme des échecs (❌) et que
+          # `alerte` bloque --strict, ce script cassait TOUT steam_pipeline --
+          # dont les 9 autres livrables étaient pourtant tous ✅ OK.
+          #
+          # À REMETTRE le jour où le collecteur Polymarket enregistrera les
+          # volumes (champs trade_notional / trade_size dans les ticks). D'ici
+          # là, le garder dans la boucle revient à faire échouer un pipeline
+          # sain pour une question qu'on ne peut pas encore poser.
+          # kalshi_lead_track AJOUTÉ LE 05/09/2026 : collecteur de la 13e
+          # hypothèse gelée (« Kalshi mène Pinnacle à +45 min »). Il DOIT
+          # tourner avant archive_ticks.yml (cron 05h15), qui sort les
+          # partitions de plus de 7 jours vers les Releases -- ce cron de
+          # 04h20 lui laisse 55 minutes de marge.
+          for s in polymarket_leadlag polymarket_studies pm_calibration_track pm_observations kalshi_lead_track; do
+            echo "--- $s ---" >> polymarket_studies_report.md
+            # CORRIGÉ LE 30/08/2026 (validation externe, point 2) : ⚠️ pour
+            # un ÉCHEC RÉEL (code 124 = timeout, ou toute autre sortie non
+            # nulle) -- avant le correctif d'hier (audit v9-v10) qui a
+            # séparé n_echecs (❌, bloquant) de n_avertissements (⚠️, info),
+            # les deux symboles étaient comptés ensemble et cette erreur ne
+            # portait pas à conséquence. Une fois séparés, un script qui
+            # timeout TOUS LES JOURS (mesuré : polymarket_flow > 8 min
+            # contre un timeout de 300s) tombait dans le compteur qui ne
+            # bloque JAMAIS --strict, vert en continu.
+            PYTHONPATH=scripts timeout 300 python scripts/${s}.py >> polymarket_studies_report.md 2>&1 \
+              || echo "PMSTUDY_FAIL: ${s}.py EN ÉCHEC (code $?)" >> polymarket_studies_report.md
+            echo >> polymarket_studies_report.md
+          done
+          echo '```' >> polymarket_studies_report.md
+          test -s polymarket_studies_report.md
+          # AJOUTÉ LE 28/08/2026 (audit v7 §AJ) : `test -s` vérifie que le
+          # fichier n'est pas vide -- un rapport avec 5 ❌ le passe sans
+          # problème, et le commit part silencieusement. Même motif que Q3
+          # avant son propre correctif, sauf qu'ici l'info est déjà écrite
+          # en clair dans le rapport ; il manquait juste quelqu'un pour la
+          # compter. Écrit dans un fichier committé, relu par
+          # pipeline_status.py -- même schéma que q3_status.json.
+          # genere_le ajouté : ce statut est écrit par CE workflow (04h20
+          # UTC), relu par steam_pipeline.yml (00h15 UTC) -- sans date,
+          # pipeline_status.py ne peut pas savoir si le statut affiché a
+          # 20 minutes ou 20 jours si ce workflow s'arrête de tourner.
+          # CORRIGÉ LE 28/08/2026 (audit v9 §AR, URGENT avant le run de
+          # 04h20) : ❌|⚠️ compte AUSSI les avertissements de fonctionnement
+          # normal ("historique tronqué", émis par 4 des 5 scripts dès que
+          # parts/ARCHIVE_INDEX.json est non vide -- 6 partitions désormais,
+          # donc DÉSORMAIS TOUJOURS). Branché sur --strict hier soir, ça
+          # aurait rendu steam_pipeline rouge à CHAQUE run à partir de
+          # demain matin -- simulé sur un rapport à 0 échec réel : n_echecs
+          # comptait 7. Deux compteurs distincts maintenant : n_echecs
+          # (❌ seul, bloquant) et n_avertissements (⚠️ en plus, affiché
+          # seulement -- jamais passé à alerte).
+          # CORRIGÉ LE 04/09/2026 (panne du run 91710599493) : `grep -c "❌"`
+          # comptait les LIGNES contenant ❌ sans distinguer le marqueur écrit
+          # par CE workflow de celles que les scripts impriment en sortie
+          # NORMALE, code de retour 0 -- il y en a cinq dans la boucle :
+          #   polymarket_studies.py   « aucune série de marché de prédiction »
+          #                           « aucun match commun entre les ticks... »
+          #   polymarket_leadlag.py   « aucune série Polymarket exploitable »
+          #                           « aucun match commun... »
+          #   pm_calibration_track.py « resultats_derived.json absent »
+          # Ce sont des constats d'absence de données appariables, normaux à
+          # 04h20 UTC en creux de calendrier. Le 04/09 l'un d'eux a suffi :
+          # n_echecs=1 -> alerte=true -> steam_pipeline rouge à 05h21 avec ses
+          # 10 livrables ✅ et son push réussi. Le fichier régénéré à 08h58
+          # disait 0 échec sans qu'aucun correctif n'ait été appliqué -- il y
+          # avait juste des matchs. Le compteur ne mesurait pas ce qu'il
+          # croyait mesurer.
+          # Marqueur PMSTUDY_FAIL: qu'AUCUN script ne peut imprimer.
+          n_echecs=$(grep -c "^PMSTUDY_FAIL:" polymarket_studies_report.md || true)
+          n_avertissements=$(grep -c "⚠️" polymarket_studies_report.md || true)
+          alerte=$(python3 -c "print($n_echecs > 0)")
+          genere_le=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          python3 -c "import json; json.dump({'n_echecs': $n_echecs, 'n_avertissements': $n_avertissements, 'alerte': $alerte, 'genere_le': '$genere_le'}, open('polymarket_studies_status.json', 'w'), ensure_ascii=False, indent=1)"
+      - name: Committer le rapport
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          # kalshi_lead_obs.jsonl : journal PERMANENT de la 13e hypothèse.
+          # Les partitions de ticks sont purgées puis archivées ; ce
+          # fichier est la seule trace durable des observations. Non
+          # committé, il disparaîtrait avec le runner et l'hypothèse
+          # n'atteindrait jamais ses 30 observations out-of-sample.
+          git add -- polymarket_studies_report.md polymarket_studies_status.json \
+                     kalshi_lead_obs.jsonl
+          git diff --staged --quiet && { echo "rien de neuf"; exit 0; }
+          git commit -m "Études Polymarket/Kalshi ($(date -u +%F))"
+          for essai in 1 2 3; do
+            git fetch origin main || true
+            git merge origin/main --no-edit || { git merge --abort 2>/dev/null || true; sleep 8; continue; }
+            git push && exit 0
+            sleep 8
+          done
+          exit 1
+
+      # AJOUTÉ LE 04/09/2026 (panne du run 91710599493) : l'alerte d'échec de
+      # ces études vit désormais ICI, dans le workflow qui les produit et où
+      # quelqu'un peut agir -- au lieu de rendre steam_pipeline rouge pour une
+      # cause qu'il ne produit pas, ne contrôle pas et ne peut pas réparer.
+      # APRÈS le commit : le rapport est persisté quoi qu'il arrive, comme
+      # partout ailleurs dans le dépôt (même schéma que pipeline_status
+      # --strict placé en dernière étape de steam_pipeline).
+      - name: Verrou — un échec réel rend CE run rouge
+        run: |
+          n=$(python3 -c "import json;print(json.load(open('polymarket_studies_status.json'))['n_echecs'])")
+          if [ "$n" -gt 0 ]; then
+            echo "🔒 $n étude(s) en échec réel :"
+            grep "^PMSTUDY_FAIL:" polymarket_studies_report.md
+            exit 1
+          fi
+          echo "🔒 aucune étude en échec réel."
