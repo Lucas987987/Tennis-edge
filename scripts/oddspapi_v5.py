@@ -369,7 +369,7 @@ def api_get(path, params=None, timeout=40, verbose=False):
       - réponse non-JSON avec status 200 (proxy qui renvoie une page d'erreur)
     On ne rejoue JAMAIS :
       - 429 ou 403-quota : QUOTA_HIT est levé, rejouer brûlerait le budget
-        (938 requêtes/jour) pour rien — exactement la boucle à éviter ;
+        (1400 requêtes/jour) pour rien — exactement la boucle à éviter ;
       - les autres 4xx : erreur de requête, le retry donnerait le même résultat.
     Env : ODDS_RETRIES (défaut 3) pour couper le retry dans les sondes.
     """
