@@ -121,13 +121,18 @@ jobs:
 
       - name: Suspendre tous les autres workflows
         env:
-          GH_TOKEN: ${{ secrets.GH_PAT_WORKFLOW }}
+          # CORRIGÉ LE 05/09/2026 : la version précédente passait ici
+          # GH_PAT_WORKFLOW. Un jeton fine-grained avec Contents + Workflows
+          # n'a PAS la permission Actions : les 50 appels ont répondu
+          # « HTTP 403: Resource not accessible by personal access token »
+          # et AUCUN workflow n'a été suspendu. capture_closing a continué de
+          # committer, main a bougé, le force-push a été rejeté après une
+          # heure de travail. C'est GITHUB_TOKEN qu'il faut : le bloc
+          # `permissions: actions: write` en tête de fichier est pour lui.
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          # capture_closing tourne toutes les 5-10 min. Un commit qui arrive
-          # pendant la réécriture serait écrasé par le force-push, sans trace.
-          gh workflow list --all --limit 200 --json name,id,state \
-            > /tmp/workflows.json
+          gh workflow list --all --limit 200 --json name,id,state > /tmp/workflows.json
           python3 - <<'PY' > /tmp/a_suspendre.txt
           import json
           moi = "Purge 3/3"
@@ -135,11 +140,44 @@ jobs:
               if w['state'] == 'active' and not w['name'].startswith(moi):
                   print(w['id'])
           PY
-          wc -l < /tmp/a_suspendre.txt
+          echo "$(wc -l < /tmp/a_suspendre.txt) workflow(s) à suspendre."
+
+          # CORRIGÉ LE 05/09/2026 : l'échec n'est plus avalé. La version
+          # précédente faisait `|| echo "⚠️"` puis affichait « ✅ workflows
+          # suspendus » quoi qu'il arrive -- un message qui ment est pire que
+          # pas de message, on lance l'irréversible en se croyant protégé.
+          ECHECS=0
           while read -r id; do
-            gh workflow disable "$id" && echo "  suspendu $id" || echo "  ⚠️ $id"
+            if gh workflow disable "$id"; then
+              echo "  suspendu $id"
+            else
+              echo "  ❌ ÉCHEC sur $id"
+              ECHECS=$((ECHECS + 1))
+            fi
           done < /tmp/a_suspendre.txt
-          echo "✅ workflows suspendus. Ils seront réactivés en fin de job."
+          if [ "$ECHECS" -gt 0 ]; then
+            echo "❌ $ECHECS suspension(s) en échec — ON ARRÊTE ICI."
+            echo "   Purger sans suspendre, c'est laisser capture_closing"
+            echo "   committer pendant la réécriture : soit le push est"
+            echo "   rejeté, soit il écrase des commits."
+            exit 1
+          fi
+          echo "✅ tous les workflows sont suspendus (vérifié, pas supposé)."
+
+      - name: Attendre la fin des runs déjà lancés
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          # Suspendre empêche les NOUVEAUX déclenchements ; un run déjà en vol
+          # continue et committera. On attend qu'il n'en reste aucun.
+          for i in $(seq 1 30); do
+            N=$(gh run list --status in_progress --limit 100 --json databaseId,name \
+                | python3 -c "import json,sys; print(sum(1 for r in json.load(sys.stdin) if not r['name'].startswith('Purge 3/3')))")
+            [ "$N" -eq 0 ] && { echo "✅ aucun run en cours."; break; }
+            echo "  $N run(s) encore en cours, attente 20 s ($i/30)..."
+            sleep 20
+          done
 
       - uses: actions/setup-python@v6
         with:
@@ -167,7 +205,13 @@ jobs:
       - name: Mesurer APRÈS
         run: |
           git reflog expire --expire=now --all || true
-          git gc --prune=now --aggressive || git gc --prune=now
+          # CORRIGÉ LE 05/09/2026 : `--aggressive` a pris 52 MINUTES sur les
+          # 19 000 commits (06:34 -> 07:26), pendant lesquelles main a bougé.
+          # Il est de toute façon redondant : filter-repo repacke déjà lui-
+          # même (« Repacking your repo... finished after 29.38 seconds »).
+          # Le gain de compression ne valait pas une heure de fenêtre de
+          # course sur un dépôt qui commite toutes les 5 minutes.
+          git gc --prune=now
           echo "=== .git après purge et gc ==="
           du -sh .git
           echo "=== commits conservés ==="
@@ -184,24 +228,58 @@ jobs:
           git remote remove origin 2>/dev/null || true
           git remote add origin \
             "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
-          git push --force origin HEAD:main
-          echo "✅ force-push effectué."
+          # AJOUTÉ LE 05/09/2026 : le push a été rejeté par « cannot lock
+          # ref » -- une mise à jour concurrente de main. Avec la suspension
+          # réparée la fenêtre est réduite à ~2 min, mais un réessai coûte
+          # trois lignes et évite de refaire une heure de travail.
+          for essai in 1 2 3; do
+            if git push --force origin HEAD:main; then
+              echo "✅ force-push effectué (essai $essai)."
+              exit 0
+            fi
+            echo "  ⚠️ essai $essai rejeté, nouvelle tentative dans 15 s..."
+            sleep 15
+          done
+          echo "❌ FORCE-PUSH ÉCHOUÉ après 3 essais."
+          echo "   Le dépôt distant est INTACT — rien n'a été détruit."
+          echo "   Vérifier qu'aucun workflow ne pousse encore, puis relancer"
+          echo "   l'étape 2/3 (la liste a pu se périmer) et cette étape."
+          exit 1"
 
       - name: Réactiver les workflows
         if: always()
         env:
-          GH_TOKEN: ${{ secrets.GH_PAT_WORKFLOW }}
+          # CORRIGÉ LE 05/09/2026, même cause que la suspension : le PAT
+          # n'a pas la permission Actions. Cette étape aurait donc échoué
+          # elle aussi -- et APRÈS une purge réussie, elle aurait laissé les
+          # 50 workflows éteints. Panne totale et silencieuse du pipeline,
+          # au moment précis où on croit avoir fini.
+          GH_TOKEN: ${{ github.token }}
         run: |
           # `always()` : même si la purge a échoué, le dépôt ne doit pas
           # rester figé. Un pipeline suspendu qu'on a oublié de rallumer est
           # une panne silencieuse de plus.
-          if [ -f /tmp/a_suspendre.txt ]; then
-            while read -r id; do
-              gh workflow enable "$id" && echo "  réactivé $id" || echo "  ⚠️ $id"
-            done < /tmp/a_suspendre.txt
-          else
+          if [ ! -f /tmp/a_suspendre.txt ]; then
             echo "rien à réactiver (échec avant la suspension)."
+            exit 0
           fi
+          ECHECS=0
+          while read -r id; do
+            if gh workflow enable "$id"; then
+              echo "  réactivé $id"
+            else
+              echo "  ❌ ÉCHEC de réactivation : $id"
+              ECHECS=$((ECHECS + 1))
+            fi
+          done < /tmp/a_suspendre.txt
+          if [ "$ECHECS" -gt 0 ]; then
+            echo
+            echo "🆘 $ECHECS workflow(s) SONT RESTÉS SUSPENDUS."
+            echo "   Les réactiver à la main : onglet Actions, sélectionner"
+            echo "   chaque workflow désactivé, menu ··· > Enable workflow."
+            exit 1
+          fi
+          echo "✅ tous les workflows sont réactivés (vérifié).".
 
       - name: Suite
         if: success()
