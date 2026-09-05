@@ -66,6 +66,36 @@ jobs:
           python-version: '3.11'
 
 
+      - name: Cache de calibration (le gain principal)
+        # AJOUTÉ LE 05/09/2026. steam_alert.stats_avec_cache() a été écrit le
+        # 03/09 pour éviter de recharger l'historique complet — 43 s par
+        # appel, six appels par cycle (3 marchés x steam_alert + paper_journal).
+        # Il a un TTL de 60 min... mais calib_cache.json est dans .gitignore
+        # et n'existe donc QUE sur le runner, détruit à la fin du job.
+        # Chaque exécution repartait sur un cache FROID : le TTL n'a jamais
+        # été atteint une seule fois depuis sa création.
+        #
+        # Constaté dans le log du run 92055634625 : deux blocs de 52,8 s et
+        # 47,9 s juste après build_live_curves, soit ~100 s sur 129.
+        #
+        # actions/cache le fait survivre d'un run à l'autre sans le committer
+        # (il est régénérable, il n'a rien à faire dans l'historique git —
+        # qu'on vient justement de purger de 3,4 Go).
+        #
+        # La clé est unique par run, donc jamais touchée exactement : le
+        # cache est TOUJOURS réécrit en fin de job. restore-keys récupère le
+        # plus récent par préfixe. C'est le motif « rolling cache ».
+        # La fraîcheur reste gouvernée par le TTL applicatif de 60 min, qui
+        # lit les horodatages DANS le fichier : restaurer un cache trop vieux
+        # est sans danger, stats_avec_cache() le recalculera. Et un cache
+        # absent fait simplement retomber sur le comportement actuel.
+        uses: actions/cache@v5
+        with:
+          path: calib_cache.json
+          key: calib-${{ github.run_id }}
+          restore-keys: |
+            calib-
+
       - name: Courbes live + alertes forward (0 requête API)
         env:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
@@ -85,10 +115,35 @@ jobs:
           # les partitions append-only (parts/). Reconstruction identique au point près.
           python scripts/curves_parts.py rebuild
           python scripts/build_live_curves.py
+
+          # ══ ORDRE REVU LE 05/09/2026 : CE QUI ALERTE D'ABORD ══════════
+          # Tout ce qui suit coûte le même temps total, mais l'ORDRE décide
+          # de la latence du message. canal_public.py ne dépend que de
+          # build_live_curves : le passer en premier fait partir la
+          # publication vers ~15 s de run au lieu de ~120 s.
+          # Sur des paliers de 3 à 12 %, 100 secondes de moins sur un
+          # mouvement de cote, c'est du signal conservé pour les abonnés.
+          # Les journaux (paper_journal, results_bridge) sont de la
+          # comptabilité : ils peuvent attendre la fin du job, personne ne
+          # les lit en direct.
+
+          # Canal PUBLIC « Évolution des cotes » : messages d'information
+          # neutres (mouvements Pinnacle + juste prix + retards
+          # d'ajustement). 0 requête API. EN PREMIER, volontairement.
+          PALIERS="3,5,8,12" python scripts/canal_public.py || true
+
           # TRACK_CURVES = historique riche pour calibrer les seuils par book (sinon "indicatif")
           CURVES=book_curves_live.jsonl TRACK_CURVES=book_curves.jsonl MARKET=match python scripts/steam_alert.py || true
           CURVES=set1_curves_live.jsonl TRACK_CURVES=set1_curves.jsonl MARKET=set1 python scripts/steam_alert.py || true
           CURVES=set2_curves_live.jsonl TRACK_CURVES=set2_curves.jsonl MARKET=set2 python scripts/steam_alert.py || true
+
+          # Signal EXPÉRIMENTAL (non validé) : book déjà ouvert avant Pinnacle,
+          # écart au moment où Pinnacle publie son 1er prix. Canal PRIVÉ
+          # uniquement (jamais le canal public) -- voir validation_report pour
+          # le suivi out-of-sample avant toute exploitation. 0 requête API.
+          CURVES=book_curves_live.jsonl python scripts/early_open_signal.py || true
+
+          # ── à partir d'ici : comptabilité, plus aucune alerte ──────────
           # Journal forward : OUVRIR les signaux MAINTENANT, pendant que le match est
           # encore à venir. Le pipeline nocturne (00:15) ne suffit pas : les moves
           # naissent en journée, quelques heures avant les matchs — à 00:15 le signal
@@ -112,14 +167,6 @@ jobs:
           # légitime, simplement différente. Deux fichiers, aucune confusion.
           python scripts/results_bridge.py || true
           python scripts/paper_journal_canal.py || true
-          # Canal PUBLIC « Évolution des cotes » : messages d'information neutres
-          # (mouvements Pinnacle + juste prix + retards d'ajustement). 0 requête API.
-          PALIERS="3,5,8,12" python scripts/canal_public.py || true
-          # Signal EXPÉRIMENTAL (non validé) : book déjà ouvert avant Pinnacle,
-          # écart au moment où Pinnacle publie son 1er prix. Canal PRIVÉ
-          # uniquement (jamais le canal public) -- voir validation_report pour
-          # le suivi out-of-sample avant toute exploitation. 0 requête API.
-          CURVES=book_curves_live.jsonl python scripts/early_open_signal.py || true
 
       - name: Écrire l'état (pour la planification par le Worker)
         # planifierCollecteur() dans le Worker lit `last_run_at` de ce fichier
