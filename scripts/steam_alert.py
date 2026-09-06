@@ -365,16 +365,53 @@ def stats_avec_cache(market, charge_past_et_books):
     return stats, softbooks
 
 
+# NEUTRALISÉ LE 06/09/2026 — décision fondée sur la 9e hypothèse gelée.
+#
+# Le verdict figé le 2026-08-29 est un REJET NET, pas un « pas concluant » :
+#     seuil adaptatif : 2387/3737 = 63,9 % de CLV>0
+#     attendu sur sa référence  : 72,8 %
+#     p = 1,0000  ->  8,9 points SOUS son témoin, sur 3737 observations
+#
+# Sélectionner le palier par book DÉGRADE la qualité des alertes par rapport
+# au seuil fixe qu'il remplace. Ce n'est pas surprenant : `max(cands,
+# key=pct)` prend le maximum d'une grille de 4 paliers par book sur des
+# données passées, et un maximum sur grille est un sur-ajustement par
+# construction. C'est le risque que freeze_thresholds.py avait été écrit
+# pour surveiller ; il l'a mesuré, et la mesure est sans appel.
+#
+# Le dispositif ne sert que si ses verdicts changent quelque chose. Laisser
+# tourner un mécanisme que sa propre validation rejette transforme le
+# tableau de validation en décoration.
+#
+# La signature est conservée : steam_alert, paper_journal et steam_diag
+# appellent tous les trois cette fonction, et l'affichage
+# « confirmé / indicatif / n/a » continue de fonctionner.
+#
+# Pour rejouer l'ancien comportement (comparaison, étude) :
+#     SEUIL_ADAPTATIF=1 python scripts/steam_alert.py
+# Hors production uniquement : le canal ne doit pas y repasser sans un
+# nouveau verdict.
+SEUIL_ADAPTATIF = os.environ.get('SEUIL_ADAPTATIF', '0') == '1'
+
+
 def best_threshold(stats, sb):
-    """Palier maximisant la reussite (pct) avec n>=MIN_N. Repli DEFAULT_THR (indicatif)."""
-    cands = [(mv, stats[mv][sb]) for mv in GRID
-             if stats[mv][sb] and stats[mv][sb]['n'] >= MIN_N]
-    if cands:
-        mv, sdat = max(cands, key=lambda c: (c[1]['pct'], c[1]['med']))
-        return mv, sdat, True
-    # repli : seuil par defaut, on rattache la stat dispo (faible n) si elle existe
+    """Palier de déclenchement pour le book `sb` -> (seuil, stat, confiance).
+
+    Seuil FIXE (DEFAULT_THR) depuis le 06/09/2026 : la sélection adaptative
+    était rejetée par sa propre hypothèse gelée. Voir ci-dessus.
+    """
+    if SEUIL_ADAPTATIF:
+        cands = [(mv, stats[mv][sb]) for mv in GRID
+                 if stats[mv][sb] and stats[mv][sb]['n'] >= MIN_N]
+        if cands:
+            mv, sdat = max(cands, key=lambda c: (c[1]['pct'], c[1]['med']))
+            return mv, sdat, True
     sdat = stats.get(DEFAULT_THR, {}).get(sb) if DEFAULT_THR in stats else None
-    return DEFAULT_THR, sdat, False
+    # `confiance` reste True quand la stat existe avec n>=MIN_N : le seuil
+    # n'est plus choisi, mais on sait toujours ce qu'il vaut sur ce book —
+    # et c'est cette information que l'affichage rend.
+    conf = bool(sdat and sdat.get('n', 0) >= MIN_N)
+    return DEFAULT_THR, sdat, conf
 
 def fmt_lead(sec):
     m = int(sec // 60)
