@@ -137,6 +137,15 @@ jobs:
           CURVES=set1_curves_live.jsonl TRACK_CURVES=set1_curves.jsonl MARKET=set1 python scripts/steam_alert.py || true
           CURVES=set2_curves_live.jsonl TRACK_CURVES=set2_curves.jsonl MARKET=set2 python scripts/steam_alert.py || true
 
+          # Signal PRIVÉ de l'hypothèse gelée n°13 (bande de cote 2,00-3,00).
+          # Canal PRIVÉ uniquement : l'hypothèse n'est pas validée (ROI
+          # in-sample +13,7 %, IC95 [+0,3 ; +27,0], verdict attendu vers
+          # décembre 2026), et le recouvrement avec le canal public n'est que
+          # de 16 matchs sur 359 — ce serait un SECOND flux, pas une
+          # amélioration du premier. 0 requête API.
+          # h13_signal.py ne lit PAS TELEGRAM_PUBLIC_CHAT_ID, par construction.
+          python scripts/h13_signal.py || true
+
           # Signal EXPÉRIMENTAL (non validé) : book déjà ouvert avant Pinnacle,
           # écart au moment où Pinnacle publie son 1er prix. Canal PRIVÉ
           # uniquement (jamais le canal public) -- voir validation_report pour
