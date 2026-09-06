@@ -234,6 +234,15 @@ jobs:
       # canal_clv_recap.py n'ajoutent la ligne QUE si REPO_URL est
       # renseignée -- la retirer suffit, aucun script à modifier.
       # Pour la réactiver un jour : remettre le bloc env ci-dessous.
+      # Suivi QUOTIDIEN de l'hypothèse gelée n°13, canal PRIVÉ.
+      # move_audit (qui régénère moves_detail_hist.csv) est déjà passé plus
+      # haut depuis le correctif d'ordre du 06/09 : ce suivi lit donc des
+      # données du jour, pas de la veille.
+      # Le script n'a AUCUNE constante propre : il importe la bande depuis
+      # validation_report, source unique. 0 requête API.
+      - name: Suivi quotidien H13 (canal privé)
+        run: python scripts/h13_recap.py || true
+
       - name: Suivi quotidien des écarts publiés (canal public)
         run: python scripts/canal_suivi.py || true
 

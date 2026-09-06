@@ -219,7 +219,14 @@ FREEZE_DATE_REACTIVE = '2026-08-14'  # hypothèse 'book rapide en anomalie > boo
 FREEZE_DATE_BETFAIR = '2026-08-16'  # hypothèse 'confirmation Betfair Exchange' gelée ce jour
 FREEZE_DATE_MOVEAGE = '2026-08-16'  # hypothèse 'âge du mouvement à ampleur fixée (5%)' gelée ce jour
 FREEZE_DATE_KXLEAD = '2026-09-05'   # hypothèse 'Kalshi mène Pinnacle (+45 min)' gelée ce jour
-FREEZE_DATE_ROIBANDE = '2026-09-06'  # hypothèse 'ROI, bande de cote 2,0-5,0' gelée ce jour
+FREEZE_DATE_ROIBANDE = '2026-09-06'  # hypothèse 'ROI, bande de cote 2,0-3,0' gelée ce jour
+# BANDE GELÉE — source de vérité UNIQUE.
+# h13_signal.py (canal privé) et h13_recap.py (suivi quotidien) importent
+# ces constantes plutôt que de les redéfinir. Sans ça, un COTE_MAX=3.5
+# posé un jour "pour voir" ferait diverger silencieusement ce qu'on suit
+# de ce qu'on valide — et rien ne le signalerait.
+H13_COTE_MIN = 2.0
+H13_COTE_MAX = 3.0
 # Critère PRIMAIRE : CLV du groupe alerté vs groupe témoin.
 # REQUALIFIÉ LE 27/08/2026 (audit §3.1) : un gel rétroactif n'est PAS un
 # pré-enregistrement -- le 25/08, ce critère avait déjà été vu sur les
@@ -1765,7 +1772,7 @@ def roi_bande_watch():
     import datetime as _dtm
 
     SRC = 'moves_detail_hist.csv'
-    COTE_MIN, COTE_MAX = 2.0, 3.0      # GELÉES
+    COTE_MIN, COTE_MAX = H13_COTE_MIN, H13_COTE_MAX   # GELÉES (module)
 
     lignes = []
     try:
