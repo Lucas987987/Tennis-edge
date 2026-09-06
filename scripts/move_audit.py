@@ -176,27 +176,65 @@ def analyse():
         p_open = prob_home(_at(pin['h'], topen), _at(pin['a'], topen))
         p_close = prob_home(_at(pin['h'], tclose), _at(pin['a'], tclose))
         if p_open is None or p_close is None: continue
-        shift = p_close - p_open                      # >0 : home se renforce
-        if abs(shift) < 1e-9: continue
-        steam = 'h' if shift > 0 else 'a'             # côté raccourci (steamé)
+
+        # ══ CORRIGÉ LE 06/09/2026 — BIAIS DE LOOK-AHEAD SUR LE CÔTÉ JOUÉ ══
+        #
+        # La version précédente déterminait le côté parié AVEC LA CLÔTURE :
+        #     shift = p_close - p_open
+        #     steam = 'h' if shift > 0 else 'a'
+        # puis remontait au premier instant où la proba avait bougé de THR
+        # DANS CE SENS-LÀ. Elle regardait donc où la cote avait FINI par
+        # aller avant de décider quoi parier — information qui n'existe pas
+        # à l'instant du pari.
+        #
+        # Effet : un mouvement qui part dans un sens puis se retourne ne
+        # produit JAMAIS de pari perdant, il est reclassé du côté final. Le
+        # biais gonfle mécaniquement le ROI, et il est présent de façon
+        # identique sur toute période — d'où le fait qu'un découpage
+        # temporel (ROI +13,8 % puis +13,1 % sur deux moitiés, écart de
+        # 0,7 point) ne pouvait PAS le détecter. Une réplication stable
+        # confirme la stabilité d'un artefact aussi bien que celle d'un
+        # signal.
+        #
+        # Le reste de la chaîne était pourtant propre : _at() est
+        # strictement causal (tt <= t, sans interpolation), le prix
+        # d'entrée est bien le meilleur prix MOU disponible à t_det, et
+        # t_det est bien un premier franchissement. Seul le choix du côté
+        # trichait — mais c'est lui qui décide du résultat.
+        #
+        # Version causale : on balaie les instants dans l'ordre et on
+        # s'arrête au PREMIER franchissement de THR, quel que soit son
+        # sens. Le côté est celui du mouvement OBSERVÉ À CET INSTANT.
+        # C'est exactement ce qu'un détecteur temps réel peut savoir.
+        t_det, steam = None, None
+        for t, _ in pin['h']:
+            ph = prob_home(_at(pin['h'], t), _at(pin['a'], t))
+            if ph is None:
+                continue
+            delta = ph - p_open
+            if abs(delta) >= THR:
+                t_det = t
+                steam = 'h' if delta > 0 else 'a'
+                break
+        if t_det is None:
+            continue
+        lead = (ct - t_det).total_seconds() / 60.0
+        if lead < MIN_LEAD: continue
+
         steam_name = home if steam == 'h' else away
         opp_name = away if steam == 'h' else home
         o_open = _at(pin['h'] if steam == 'h' else pin['a'], topen)
         o_close = _at(pin['h'] if steam == 'h' else pin['a'], tclose)
         mag_odds = (o_open - o_close) / o_open if o_open else 0.0   # % raccourcissement cote
-        mag_prob = abs(shift) * 100                                  # points de proba
-
-        # instant de DÉTECTION : 1er point où la proba du côté steamé a bougé de THR
-        t_det = None
-        for t, _ in pin['h']:
-            ph = prob_home(_at(pin['h'], t), _at(pin['a'], t))
-            if ph is None: continue
-            moved = (ph - p_open) if steam == 'h' else (p_open - ph)
-            if moved >= THR:
-                t_det = t; break
-        if t_det is None: continue
-        lead = (ct - t_det).total_seconds() / 60.0
-        if lead < MIN_LEAD: continue
+        # AMPLEUR À LA DÉTECTION, plus |p_close - p_open| : cette colonne
+        # sert de critère dans les études (« ampleur < 5 pts »...). La
+        # renseigner avec l'amplitude finale y réintroduirait le même
+        # look-ahead par la porte de derrière.
+        p_det = prob_home(_at(pin['h'], t_det), _at(pin['a'], t_det))
+        mag_prob = abs(p_det - p_open) * 100 if p_det is not None else 0.0
+        # Conservée pour l'analyse rétrospective, JAMAIS comme critère
+        # d'entrée : elle contient la clôture.
+        mag_prob_final = abs(p_close - p_open) * 100
 
         # meilleur prix MOU dispo sur le côté steamé à la détection (le lag)
         entry, entry_book = None, None
@@ -226,6 +264,10 @@ def analyse():
             uid=uid, tour=g['_tour'], date=ct.date().isoformat(),
             steame=steam_name, opp=opp_name,
             mag_cote_pct=round(mag_odds * 100, 1), mag_proba_pts=round(mag_prob, 1),
+            # Suffixe _POSTHOC volontairement criard : cette colonne contient
+            # la clôture Pinnacle et ne peut PAS servir de critère d'entrée.
+            # Un `mag_proba_finale` anodin finirait un jour dans un filtre.
+            mag_proba_pts_POSTHOC=round(mag_prob_final, 1),
             pin_open=round(o_open, 2), pin_close=round(pin_close, 2),
             lead_min=round(lead, 0), entry_book=entry_book, entry=round(entry, 2),
             soft_close=round(soft_close, 2) if soft_close else None,
@@ -239,7 +281,11 @@ def analyse():
 def report(rows):
     rows.sort(key=lambda r: -r['mag_cote_pct'])
     # CSV détail
-    cols = ['date','tour','steame','opp','mag_cote_pct','mag_proba_pts','pin_open','pin_close',
+    # `mag_proba_pts`      = ampleur À LA DÉTECTION, utilisable comme critère
+    # `mag_proba_pts_POSTHOC` = ampleur finale, rétrospective, JAMAIS en critère
+    # `clv_vs_pin_pct`     = utilise pin_close -> rétrospective elle aussi
+    cols = ['date','tour','steame','opp','mag_cote_pct','mag_proba_pts',
+            'mag_proba_pts_POSTHOC','pin_open','pin_close',
             'lead_min','entry_book','entry','soft_close','clv_book_pct','clv_vs_pin_pct',
             'steame_gagne','pnl','uid']
     with open(OUT, 'w', newline='', encoding='utf-8') as f:
