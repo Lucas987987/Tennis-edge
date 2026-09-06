@@ -300,7 +300,25 @@ def closing_health(jours=7):
 
 
 CLOSING_CHUTE_PTS = 20.0     # points de pourcentage sous la référence 30 j
-CLOSING_N_MIN = 50           # sous ce volume, la fenêtre 7 j est trop bruitée
+CLOSING_N_MIN = 50           # sous ce volume, la fenêtre courte est trop bruitée
+
+# FENÊTRE RAMENÉE DE 7 À 3 JOURS LE 06/09/2026.
+#
+# Défaut constaté sur le run du 06/09 : « 50 % sur 7 j contre 83 % sur 30 j,
+# 33 pts de chute » -> steam_pipeline en échec. L'alerte disait vrai, mais
+# elle décrivait la panne de quota du 30/08 au 03/09, DÉJÀ RÉPARÉE. Une
+# fenêtre de 7 jours traîne un incident ancien pendant une semaine entière :
+# le verrou serait resté rouge quatre jours de plus sans qu'il y ait quoi que
+# ce soit à faire.
+#
+# Un verrou qui reste rouge alors que rien n'est réparable cesse d'être lu —
+# et c'est exactement le mode de panne que ce contrôle devait empêcher. Le
+# problème n'est pas le seuil, c'est l'inertie de la fenêtre.
+#
+# 3 jours : réagit en 24 h à une vraie dégradation, et se rétablit en 3 jours
+# au lieu de 7. Avec ~35 matchs terminés par jour, la fenêtre contient ~105
+# observations, très au-dessus du plancher de 50 — le bruit reste maîtrisé.
+CLOSING_JOURS_RECENT = 3
 
 
 def closing_degrade(recent, reference):
@@ -328,7 +346,8 @@ def closing_degrade(recent, reference):
     if chute < CLOSING_CHUTE_PTS:
         return (False, None)
     return (True,
-            f"Closings exploitables : {recent['closing_pct']:.0f} % sur 7 j "
+            f"Closings exploitables : {recent['closing_pct']:.0f} % sur "
+            f"{recent['jours']} j "
             f"contre {reference['closing_pct']:.0f} % sur 30 j "
             f"({chute:.0f} pts de chute, n={recent['n']}) -- la capture ne "
             f"suit plus, le CLV perd sa matière première.")
@@ -374,7 +393,7 @@ def main():
     rows = inspect(started)
     parts = partitions_health()
     manquants = scripts_manquants()
-    clos7, clos30 = closing_health(7), closing_health(30)
+    clos7, clos30 = closing_health(CLOSING_JOURS_RECENT), closing_health(30)
     clos_ko, clos_msg = closing_degrade(clos7, clos30)
     ko = [r for r in rows if r['verdict'] != '✅ OK']
 
@@ -481,7 +500,7 @@ def main():
     if clos7 and clos30:
         L.append('')
         L.append(f"**Closings exploitables** : {clos7['closing_pct']:.0f} % "
-                 f"sur 7 jours (fenêtre t3 : {clos7['t3_pct']:.0f} %, "
+                 f"sur {clos7['jours']} jours (fenêtre t3 : {clos7['t3_pct']:.0f} %, "
                  f"n={clos7['n']}) — référence 30 jours "
                  f"{clos30['closing_pct']:.0f} % (t3 {clos30['t3_pct']:.0f} %). "
                  f"C'est le dénominateur du CLV : un match sans closing "
@@ -588,7 +607,7 @@ def main():
         print(f"  ⛔ SCRIPT MANQUANT : scripts/{_m} est appelé par un workflow "
               f"et n'existe pas dans le dépôt.")
     if clos7 and clos30:
-        print(f"  closings   : {clos7['closing_pct']:.0f} % sur 7 j "
+        print(f"  closings   : {clos7['closing_pct']:.0f} % sur {clos7['jours']} j "
               f"(t3 {clos7['t3_pct']:.0f} %, n={clos7['n']}) · "
               f"référence 30 j {clos30['closing_pct']:.0f} % "
               f"(t3 {clos30['t3_pct']:.0f} %, n={clos30['n']})")
