@@ -115,6 +115,23 @@ jobs:
       - name: Journal — set 2
         run: CURVES=set2_curves_live.jsonl TRACK_CURVES=set2_curves.jsonl MARKET=set2 python scripts/paper_journal.py || true
 
+      # DÉPLACÉ ICI LE 06/09/2026, depuis l'APRÈS-validation.
+      #
+      # move_audit.py ÉCRIT moves_detail_hist.csv ; validation_report.py le
+      # LIT — c'est la population de p0_temoin(), l'étalon de toutes les
+      # hypothèses CLV gelées. L'ordre était inversé : le rapport jugeait
+      # contre le fichier de la VEILLE.
+      #
+      # Sans effet visible tant que la population évoluait lentement.
+      # Constaté le 06/09 : move_audit corrigé du look-ahead a produit 1141
+      # moves, mais le rapport du même run affichait encore « p0 = 73,7 %
+      # sur n=1085 » — l'ancienne population biaisée. Il aurait fallu deux
+      # runs pour voir l'effet d'un correctif appliqué dans le premier.
+      - name: Audit des moves (détail par move + agrégats par ampleur)
+        run: |
+          python scripts/move_audit.py || true
+          CURVES=book_curves.jsonl OUT=moves_detail_hist.csv python scripts/move_audit.py || true
+
       - name: Tableau de validation forward (CLV/ROI + IC95)
         run: python scripts/validation_report.py || true
 
@@ -223,11 +240,6 @@ jobs:
       - name: Bilan hebdo du CLV réalisé (dimanche)
         run: |
           if [ "$(date -u +%u)" = "7" ]; then python scripts/canal_clv_recap.py || true; fi
-
-      - name: Audit des moves (détail par move + agrégats par ampleur)
-        run: |
-          python scripts/move_audit.py || true
-          CURVES=book_curves.jsonl OUT=moves_detail_hist.csv python scripts/move_audit.py || true
 
       # Écrit l'état de CHAQUE livrable dans un fichier commité : l'état du
       # pipeline devient lisible depuis GitHub, sans ouvrir un seul log.
