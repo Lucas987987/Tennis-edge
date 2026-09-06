@@ -16,7 +16,7 @@ Pour chaque surface (match/set1/set2) et par book :
 
 Env : JOURNALS (glob, def 'paper_trades_*.jsonl'). Aucune dependance externe.
 """
-import os, sys, glob, json, math, datetime, random, statistics as st
+import os, sys, glob, json, csv, math, datetime, random, statistics as st
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import oddspapi_v5 as ov
 import match_key as mk
@@ -219,6 +219,7 @@ FREEZE_DATE_REACTIVE = '2026-08-14'  # hypothèse 'book rapide en anomalie > boo
 FREEZE_DATE_BETFAIR = '2026-08-16'  # hypothèse 'confirmation Betfair Exchange' gelée ce jour
 FREEZE_DATE_MOVEAGE = '2026-08-16'  # hypothèse 'âge du mouvement à ampleur fixée (5%)' gelée ce jour
 FREEZE_DATE_KXLEAD = '2026-09-05'   # hypothèse 'Kalshi mène Pinnacle (+45 min)' gelée ce jour
+FREEZE_DATE_ROIBANDE = '2026-09-06'  # hypothèse 'ROI, bande de cote 2,0-5,0' gelée ce jour
 # Critère PRIMAIRE : CLV du groupe alerté vs groupe témoin.
 # REQUALIFIÉ LE 27/08/2026 (audit §3.1) : un gel rétroactif n'est PAS un
 # pré-enregistrement -- le 25/08, ce critère avait déjà été vu sur les
@@ -1691,6 +1692,127 @@ def kalshi_lead_watch():
     return (k, n, p0)
 
 
+def roi_bande_watch():
+    """13e hypothèse gelée : les mouvements joués dans la bande de cote
+    2,00-5,00 dégagent-ils un ROI POSITIF ?
+
+        « Parier le côté steamé au book d'entrée, cote comprise entre 2,00
+          et 5,00, SANS aucun autre filtre. »
+
+    Gelée le 2026-09-06. PREMIÈRE hypothèse du projet portant sur le ROI et
+    non sur le CLV.
+
+    ── POURQUOI CETTE BANDE, ET POURQUOI SANS FILTRE ────────────────────
+    Exploration du 06/09/2026 sur moves_detail_hist.csv, 973 paris du
+    07/06 au 06/09. ROI global +3,1 %, IC95 [-4,3 ; +10,5] : rien.
+    Mais la structure par cote est nette :
+        cote < 1,50    n=215  ROI  +2,0 %
+        cote 1,50-2,00 n=283  ROI  -3,2 %
+        cote 2,00-3,00 n=296  ROI +10,1 %
+        cote 3,00-5,00 n=129  ROI +15,3 %
+        cote 5,00-10   n= 45  ROI -21,7 %
+    Ce ne sont donc pas seulement les grosses cotes qui plombent : les
+    favoris aussi. La zone utile est encadrée des deux côtés.
+
+    VALIDATION PAR DÉCOUPAGE TEMPOREL — c'est ce qui distingue cette bande
+    d'un ajustement au bruit. Sur deux moitiés indépendantes :
+        1re moitié (07/06 -> 01/08)  ROI +13,8 %  n=228
+        2e  moitié (01/08 -> 06/09)  ROI +13,1 %  n=199
+    0,7 point d'écart. Aucune autre découpe testée ne réplique ainsi.
+
+    AUCUN CRITÈRE SUPPLÉMENTAIRE N'EST RETENU, et ce n'est pas faute d'avoir
+    cherché. Douze critères testés SUR LA PREMIÈRE MOITIÉ SEULEMENT, puis
+    contrôlés sur la seconde :
+        cote 3,00-5,00     exploration +35,0 %  ->  contrôle  +6,2 %   ÉCHEC
+        ampleur < 5 pts    exploration +12,6 %  ->  contrôle  +2,7 %   ÉCHEC
+        lead >= 12 h       exploration +16,8 %  ->  contrôle +18,1 %   ≈ référence
+        référence (aucun)  exploration +15,4 %  ->  contrôle +11,6 %
+    `cote 3,00-5,00` est l'exemple parfait du piège : optimisée sur
+    l'ensemble, elle aurait été retenue ; sur une période indépendante elle
+    s'effondre.
+
+    Le SEUL critère qui améliorait vraiment — CLV vs Pinnacle > +5 %,
+    +26,0 % puis +32,8 % avec un IC de contrôle excluant zéro — est
+    INUTILISABLE : clv_vs_pin_pct se calcule sur `pin_close`, la clôture
+    Pinnacle, connue seulement APRÈS le coup d'envoi. Biais de
+    look-ahead. Son analogue actionnable (prix d'entrée contre juste prix
+    Pinnacle AU MOMENT DU PARI) existe côté canal via `juste_prix` : c'est
+    une piste pour plus tard, pas pour ce gel.
+
+    ── LE ROI DANS LE CADRE BINOMIAL ────────────────────────────────────
+    ROI > 0  <=>  taux de gain > taux d'équilibre implicite des cotes.
+    Donc k = paris gagnés, n = paris, p0 = moyenne de 1/cote sur la
+    sélection. Aucune adaptation du dispositif n'est nécessaire : Holm et
+    le plancher n>=30 s'appliquent tels quels.
+
+    Référence in-sample au gel, NON confirmatoire :
+        n=427 · 177 gains · taux 41,5 % · p0 37,6 % · ROI +13,5 %
+
+    ATTENTION : N_CIBLE est déjà atteint sur l'historique. Le filtre
+    out-of-sample est donc la SEULE chose qui empêche cette hypothèse de se
+    valider elle-même sur les données qui l'ont fait naître.
+
+    Retourne (k, n, p0) ou None si pas encore testable.
+    """
+    import datetime as _dtm
+
+    SRC = 'moves_detail_hist.csv'
+    COTE_MIN, COTE_MAX = 2.0, 5.0      # GELÉES
+
+    lignes = []
+    try:
+        with open(SRC, encoding='utf-8') as fh:
+            for r in csv.DictReader(fh):
+                lignes.append(r)
+    except OSError:
+        print(f"  {SRC} absent.")
+        return None
+
+    freeze = FREEZE_DATE_ROIBANDE
+    retenus, n_in, n_bande = [], 0, 0
+    for r in lignes:
+        try:
+            cote = float(r['entry'])
+        except (ValueError, TypeError, KeyError):
+            continue
+        if not (COTE_MIN <= cote <= COTE_MAX):
+            continue
+        n_bande += 1
+        # OUT-OF-SAMPLE STRICT sur la date du match. Comparaison de chaînes
+        # ISO : sûre et sans dépendance au fuseau.
+        d = str(r.get('date') or '')[:10]
+        if not d or d < freeze:
+            n_in += 1
+            continue
+        g = r.get('steame_gagne')
+        if g not in ('oui', 'non'):
+            continue                     # pari non dénoué : ni gain ni perte
+        retenus.append((1 if g == 'oui' else 0, cote))
+
+    print(f"  {SRC} : {len(lignes)} lignes · {n_bande} dans la bande "
+          f"{COTE_MIN:.1f}-{COTE_MAX:.1f} · {n_in} in-sample (écartés)")
+    if not retenus:
+        print("  aucun pari out-of-sample dénoué — trop tôt.")
+        return None
+
+    k = sum(w for w, _ in retenus)
+    n = len(retenus)
+    p0 = sum(1.0 / c for _, c in retenus) / n     # seuil de rentabilité
+    _, lo, hi = wilson(k, n)
+    roi = 100.0 * ((k / n) / p0 - 1) if p0 else 0.0
+    print(f"  OUT-OF-SAMPLE : {k}/{n} = {100 * k / n:.1f} % de gains "
+          f"IC95 [{100 * lo:.1f} ; {100 * hi:.1f}]")
+    print(f"  seuil de rentabilité p0 = {100 * p0:.1f} % "
+          f"(moyenne de 1/cote) -> ROI implicite {roi:+.1f} %")
+    print(f"  référence in-sample au gel, NON confirmatoire : "
+          f"177/427 = 41,5 % · p0 37,6 % · ROI +13,5 %")
+    if n < 30:
+        print(f"  n={n} < 30 — trop tôt pour juger (règle maison). "
+              f"Débit observé : ~140 paris/mois dans la bande, "
+              f"~3 mois pour atteindre les 426 paris qui excluraient zéro.")
+    return (k, n, p0)
+
+
 HYPOTHESES = [
     ('calibration 2,20-3,50', FREEZE_DATE,           calibration_watch),
     ('heure du match',        FREEZE_DATE,           hour_watch),
@@ -1708,6 +1830,11 @@ HYPOTHESES = [
     # l'exclut : elle ne consomme pas de créneau Holm et ne durcit
     # donc pas le seuil des douze autres.
     ('Kalshi mène Pinnacle',  FREEZE_DATE_KXLEAD,    kalshi_lead_watch),
+    # AJOUTÉE LE 06/09/2026. PREMIÈRE hypothèse portant sur le ROI et non
+    # sur le CLV. N_CIBLE est déjà atteint sur l'historique : le filtre
+    # out-of-sample est la SEULE chose qui l'empêche de se valider sur
+    # les données qui l'ont fait naître.
+    ('ROI bande cote 2-5',    FREEZE_DATE_ROIBANDE,  roi_bande_watch),
 ]
 
 
