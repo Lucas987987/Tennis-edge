@@ -309,6 +309,45 @@ def test_scripts_manquants_resout_les_boucles():
     assert trouve == ['absent_boucle.py', 'absent_direct.py'], trouve
 
 
+def test_closing_degrade_seuil_relatif():
+    """Le contrôle de dégradation des closings, ajouté le 06/09/2026.
+
+    Le taux de closings exploitables est le DÉNOMINATEUR du CLV : un match
+    sans closing fiable ne valide ni ne réfute rien. Il n'était rapporté
+    nulle part — ni pipeline_status, ni health_check, ni validation_report.
+
+    Le seuil est RELATIF (7 j comparés à 30 j) et non absolu, parce que la
+    référence dépend du calendrier et de la cadence de capture, qui vient de
+    passer de 5 à 3 min. Un seuil fixe serait à re-régler à chaque
+    changement, donc jamais re-réglé, donc faux.
+
+    Cas réel vérifié : 34,9 % sur 7 j contre 80,8 % sur 30 j le 04/09 — la
+    fenêtre courte contenait la panne de quota du 30/08 au 03/09, cinq jours
+    sans capture que RIEN n'avait signalé à l'époque.
+    """
+    ps = _module('pipeline_status')
+    # la panne réelle du 30/08 : doit alerter
+    ko, msg = ps.closing_degrade({'n': 218, 'closing_pct': 34.9},
+                                 {'closing_pct': 80.8})
+    assert ko and 'capture ne suit plus' in msg
+    # fonctionnement nominal : ne doit PAS alerter
+    ko, _ = ps.closing_degrade({'n': 200, 'closing_pct': 82.0},
+                               {'closing_pct': 85.0})
+    assert not ko
+    # juste sous le seuil de 20 pts : ne doit PAS alerter
+    ko, _ = ps.closing_degrade({'n': 200, 'closing_pct': 66.0},
+                               {'closing_pct': 85.0})
+    assert not ko
+    # chute réelle mais trop peu de matchs pour conclure : silence
+    ko, _ = ps.closing_degrade({'n': 20, 'closing_pct': 10.0},
+                               {'closing_pct': 85.0})
+    assert not ko
+    # données absentes : silence, jamais d'exception
+    assert ps.closing_degrade(None, {'closing_pct': 85.0}) == (False, None)
+    assert ps.closing_degrade({'n': 99, 'closing_pct': 10.0}, None) == (False, None)
+
+
+
 if __name__ == '__main__':
     fonctions = [(n, f) for n, f in sorted(globals().items())
                  if n.startswith('test_') and callable(f)]

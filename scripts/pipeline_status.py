@@ -224,6 +224,116 @@ def scripts_manquants():
     return sorted(r for r in refs if not os.path.exists(os.path.join('scripts', r)))
 
 
+def closing_health(jours=7):
+    """Quelle proportion des matchs a un closing EXPLOITABLE ?
+
+    AJOUTÉ LE 06/09/2026. C'est la métrique la plus structurante du projet, et
+    elle n'était rapportée NULLE PART — ni ici, ni dans health_check, ni dans
+    validation_report.
+
+    Pourquoi elle compte plus que les autres : le CLV est le juge UNIQUE du
+    dispositif, et `closing_reliable` en est le filtre d'entrée. La docstring
+    de capture_closing.py le dit sans détour — « sinon le match est marqué
+    closing_reliable=False et doit être EXCLU du CLV ». Un match sans closing
+    fiable ne compte pour rien : ni validation, ni réfutation. Ce taux est
+    donc le dénominateur de tout ce que le projet sait de lui-même.
+
+    Mesuré le 05/09/2026 sur les 1 479 matchs de closing_lines.json :
+        closing présent            85,3 %
+        pinnacle_t7 (T-3 à T-7)    54,2 %
+        pinnacle_t3 (T-0 à T-3)    43,5 %
+    Et sur le dernier point capté avant le coup d'envoi, 31,2 % des matchs
+    étaient au-delà de T-35, donc hors fenêtre fiable : près d'un tiers du
+    volume perdu pour une raison purement mécanique — la cadence de capture.
+
+    C'est précisément ce qui a motivé le passage de 5 à 3 minutes (découpe de
+    capture_closing le 05/09). Sans ce compteur, l'effet de cette découpe
+    n'était mesurable qu'en exportant le dépôt et en recalculant à la main.
+    Une optimisation dont on ne peut pas lire le résultat n'est pas une
+    optimisation, c'est un pari.
+
+    FENÊTRE GLISSANTE de `jours` jours sur commence_time, et non le cumul
+    historique : le cumul dilue tout changement de cadence dans des mois
+    d'anciennes données. C'est la lecture récente qui doit réagir.
+
+    Retourne un dict, ou None si closing_lines.json est illisible.
+    """
+    try:
+        cl = json.load(open('closing_lines.json', encoding='utf-8'))
+    except (OSError, ValueError):
+        return None
+    items = cl.values() if isinstance(cl, dict) else cl
+
+    limite = (datetime.datetime.now(datetime.timezone.utc)
+              - datetime.timedelta(days=jours))
+    n = t3 = t7 = clos = 0
+    for m in items:
+        if not isinstance(m, dict):
+            continue
+        ct = m.get('commence_time')
+        if not ct:
+            continue
+        try:
+            t = datetime.datetime.fromisoformat(str(ct).replace('Z', '+00:00'))
+        except (ValueError, TypeError):
+            continue
+        if t.tzinfo is None:
+            t = t.replace(tzinfo=datetime.timezone.utc)
+        # Matchs à venir exclus : leur closing n'existe pas encore, les
+        # compter écraserait le taux et ferait clignoter l'alerte chaque
+        # matin sans qu'il y ait quoi que ce soit à corriger.
+        if t > datetime.datetime.now(datetime.timezone.utc) or t < limite:
+            continue
+        n += 1
+        if m.get('closing'):
+            clos += 1
+        if m.get('pinnacle_t7'):
+            t7 += 1
+        if m.get('pinnacle_t3'):
+            t3 += 1
+    if not n:
+        return None
+    return {'jours': jours, 'n': n,
+            'closing_pct': round(100.0 * clos / n, 1),
+            't7_pct': round(100.0 * t7 / n, 1),
+            't3_pct': round(100.0 * t3 / n, 1)}
+
+
+CLOSING_CHUTE_PTS = 20.0     # points de pourcentage sous la référence 30 j
+CLOSING_N_MIN = 50           # sous ce volume, la fenêtre 7 j est trop bruitée
+
+
+def closing_degrade(recent, reference):
+    """La capture s'est-elle dégradée récemment ?
+
+    SEUIL RELATIF et non absolu : la référence dépend du calendrier (un
+    Grand Chelem n'a pas le même profil horaire qu'une semaine de
+    Challengers) et de la cadence de capture, qui vient de passer de 5 à
+    3 min. Un seuil fixe serait à re-régler à chaque changement — donc
+    jamais re-réglé, donc faux. On compare la fenêtre 7 j à la référence
+    30 j : le dispositif se calibre sur lui-même.
+
+    Vérifié sur les données du 04/09 : 34,9 % sur 7 j contre 80,8 % sur
+    30 j, soit 45,9 points de chute. La fenêtre courte contenait la panne
+    de quota du 30/08 au 03/09 — cinq jours sans capture, que RIEN n'avait
+    signalé à l'époque. Ce contrôle l'aurait rendue impossible à manquer.
+
+    Retourne (True, message) ou (False, None).
+    """
+    if not recent or not reference:
+        return (False, None)
+    if recent['n'] < CLOSING_N_MIN:
+        return (False, None)          # trop peu de matchs : on ne conclut pas
+    chute = reference['closing_pct'] - recent['closing_pct']
+    if chute < CLOSING_CHUTE_PTS:
+        return (False, None)
+    return (True,
+            f"Closings exploitables : {recent['closing_pct']:.0f} % sur 7 j "
+            f"contre {reference['closing_pct']:.0f} % sur 30 j "
+            f"({chute:.0f} pts de chute, n={recent['n']}) -- la capture ne "
+            f"suit plus, le CLV perd sa matière première.")
+
+
 def _checkout_partiel():
     """Ce run tourne-t-il sous sparse-checkout ? AJOUTÉ LE 04/09/2026.
 
@@ -264,6 +374,8 @@ def main():
     rows = inspect(started)
     parts = partitions_health()
     manquants = scripts_manquants()
+    clos7, clos30 = closing_health(7), closing_health(30)
+    clos_ko, clos_msg = closing_degrade(clos7, clos30)
     ko = [r for r in rows if r['verdict'] != '✅ OK']
 
     # AJOUTÉ LE 27/08/2026 (audit v3 §S) : le compte d'écarts Q3 (fraîcheur
@@ -341,6 +453,8 @@ def main():
 
     payload = {
         'scripts_manquants': manquants,
+        'closing_7j': clos7,
+        'closing_30j': clos30,
         'run_termine': datetime.datetime.utcnow().isoformat(timespec='seconds'),
         'run_demarre': started.isoformat(timespec='seconds'),
         'verdict_global': 'OK' if not ko else f'{len(ko)} livrable(s) à vérifier',
@@ -364,6 +478,14 @@ def main():
         L.append(f"| {r['libellé']} | `{r['fichier']}` | {r.get('lignes') or 0} | "
                  f"{r.get('octets') or 0} | {r['verdict']} |")
     L.append('')
+    if clos7 and clos30:
+        L.append('')
+        L.append(f"**Closings exploitables** : {clos7['closing_pct']:.0f} % "
+                 f"sur 7 jours (fenêtre t3 : {clos7['t3_pct']:.0f} %, "
+                 f"n={clos7['n']}) — référence 30 jours "
+                 f"{clos30['closing_pct']:.0f} % (t3 {clos30['t3_pct']:.0f} %). "
+                 f"C'est le dénominateur du CLV : un match sans closing "
+                 f"fiable ne valide ni ne réfute rien.")
     if manquants:
         L.append('')
         L.append('> ⛔ **Script(s) appelé(s) par un workflow et ABSENT(S) du dépôt** — '
@@ -465,6 +587,11 @@ def main():
     for _m in manquants:
         print(f"  ⛔ SCRIPT MANQUANT : scripts/{_m} est appelé par un workflow "
               f"et n'existe pas dans le dépôt.")
+    if clos7 and clos30:
+        print(f"  closings   : {clos7['closing_pct']:.0f} % sur 7 j "
+              f"(t3 {clos7['t3_pct']:.0f} %, n={clos7['n']}) · "
+              f"référence 30 j {clos30['closing_pct']:.0f} % "
+              f"(t3 {clos30['t3_pct']:.0f} %, n={clos30['n']})")
     _vp = ' (VUE PARTIELLE — sparse-checkout)' if parts.get('vue_partielle') else ''
     print(f"  partitions : {parts['n_partitions']} fichiers, {parts['total_mo']} Mo{_vp}")
     for z in parts['zone_rouge']:
@@ -500,6 +627,8 @@ def main():
         # dépôt qui rend un run rouge ; il ne regardait jusqu'ici que la
         # présence/fraîcheur des fichiers, jamais leur contenu.
         alertes_contenu = []
+        if clos_ko:
+            alertes_contenu.append(clos_msg)
         for m in manquants:
             alertes_contenu.append(
                 f"Script manquant : scripts/{m} est appelé par un workflow et "
