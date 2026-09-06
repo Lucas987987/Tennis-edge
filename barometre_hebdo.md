@@ -1,21 +1,21 @@
 📊 BAROMÈTRE DES OPÉRATEURS — SEMAINE
-Tennis · 141 matchs analysés · 7 derniers jours
+Tennis · 150 matchs analysés · 7 derniers jours
 
 Opérateurs agréés ANJ — marge moyenne (plus bas = prix rendu plus élevé) :
   winamax.fr : 4.8% · meilleure cote 0% des cas (24 matchs)
   unibet.fr : 5.3% (35 matchs)
   pmu : 7.3% (48 matchs)
-  bet365.fr : 10.3% (107 matchs)
+  bet365.fr : 10.3% (115 matchs)
 
 Références de marché (servent au calcul du juste prix, non promues) :
-  betfair-ex : marge 1.0% (139 matchs)
-  pinnacle : marge 3.3% (135 matchs)
+  betfair-ex : marge 1.1% (148 matchs)
+  pinnacle : marge 3.3% (143 matchs)
 
 Écart moyen au juste prix estimé (0% = prix fair) :
   winamax.fr : -6.5% · suivi serré
   unibet.fr : -7.8% · suivi plus lâche
   pmu : -9.7% · suivi plus lâche
-  bet365.fr : -12.0% · suivi plus lâche
+  bet365.fr : -11.9% · suivi plus lâche
 
 Méthode : dernier prix pré-match de chaque opérateur, juste prix par dévig Shin sur la référence de marché. Chiffres bruts, sans classement éditorial : à chacun d'en tirer ses conclusions. Calcul rejouable.
 —
