@@ -1694,62 +1694,70 @@ def kalshi_lead_watch():
 
 def roi_bande_watch():
     """13e hypothèse gelée : les mouvements joués dans la bande de cote
-    2,00-5,00 dégagent-ils un ROI POSITIF ?
+    2,00-3,00 dégagent-ils un ROI POSITIF ?
 
         « Parier le côté steamé au book d'entrée, cote comprise entre 2,00
-          et 5,00, SANS aucun autre filtre. »
+          et 3,00, SANS aucun autre filtre. »
 
     Gelée le 2026-09-06. PREMIÈRE hypothèse du projet portant sur le ROI et
     non sur le CLV.
 
-    ── POURQUOI CETTE BANDE, ET POURQUOI SANS FILTRE ────────────────────
-    Exploration du 06/09/2026 sur moves_detail_hist.csv, 973 paris du
-    07/06 au 06/09. ROI global +3,1 %, IC95 [-4,3 ; +10,5] : rien.
-    Mais la structure par cote est nette :
-        cote < 1,50    n=215  ROI  +2,0 %
-        cote 1,50-2,00 n=283  ROI  -3,2 %
-        cote 2,00-3,00 n=296  ROI +10,1 %
-        cote 3,00-5,00 n=129  ROI +15,3 %
-        cote 5,00-10   n= 45  ROI -21,7 %
-    Ce ne sont donc pas seulement les grosses cotes qui plombent : les
-    favoris aussi. La zone utile est encadrée des deux côtés.
+    ── BANDE RESSERRÉE DE 2,00-5,00 À 2,00-3,00, LE JOUR MÊME ───────────
+    La première formulation reposait sur un moves_detail_hist.csv produit
+    AVANT le correctif de look-ahead de move_audit.py (le côté parié y était
+    choisi avec la clôture Pinnacle : 96,7 % des paris portaient sur un côté
+    dont la cote avait baissé -- par construction, pas par performance).
+    Sur les données causales, ce taux tombe à 82,1 %, ce qui est le
+    comportement attendu d'un détecteur temps réel : ~18 % des mouvements se
+    retournent après détection.
 
-    VALIDATION PAR DÉCOUPAGE TEMPOREL — c'est ce qui distingue cette bande
-    d'un ajustement au bruit. Sur deux moitiés indépendantes :
-        1re moitié (07/06 -> 01/08)  ROI +13,8 %  n=228
-        2e  moitié (01/08 -> 06/09)  ROI +13,1 %  n=199
-    0,7 point d'écart. Aucune autre découpe testée ne réplique ainsi.
+    Aucune donnée out-of-sample n'avait encore été accumulée : resserrer la
+    bande le jour du gel n'a donc aucun coût méthodologique. La laisser à
+    5,00 en aurait eu un.
 
-    AUCUN CRITÈRE SUPPLÉMENTAIRE N'EST RETENU, et ce n'est pas faute d'avoir
-    cherché. Douze critères testés SUR LA PREMIÈRE MOITIÉ SEULEMENT, puis
-    contrôlés sur la seconde :
-        cote 3,00-5,00     exploration +35,0 %  ->  contrôle  +6,2 %   ÉCHEC
-        ampleur < 5 pts    exploration +12,6 %  ->  contrôle  +2,7 %   ÉCHEC
-        lead >= 12 h       exploration +16,8 %  ->  contrôle +18,1 %   ≈ référence
-        référence (aucun)  exploration +15,4 %  ->  contrôle +11,6 %
-    `cote 3,00-5,00` est l'exemple parfait du piège : optimisée sur
-    l'ensemble, elle aurait été retenue ; sur une période indépendante elle
-    s'effondre.
+    ── CE QUE LES DONNÉES CORRIGÉES DISENT ──────────────────────────────
+    1032 paris dénoués, 07/06 -> 06/09. ROI global +2,1 %,
+    IC95 [-5,0 ; +9,3]. Par cote :
+        < 1,50      n=221  ROI  +1,6 %
+        1,50-2,00   n=291  ROI  -3,0 %
+        2,00-3,00   n=316  ROI +13,7 %  IC95 [+0,3 ; +27,0]  <- exclut zéro
+        3,00-5,00   n=145  ROI  +5,2 %  IC95 [-22,4 ; +32,9]
+        5,00-10     n= 52  ROI -32,2 %
+    La zone utile est encadrée des DEUX côtés : les favoris sous 2,00 sont
+    négatifs, les outsiders au-delà de 5,00 le sont franchement.
 
-    Le SEUL critère qui améliorait vraiment — CLV vs Pinnacle > +5 %,
-    +26,0 % puis +32,8 % avec un IC de contrôle excluant zéro — est
-    INUTILISABLE : clv_vs_pin_pct se calcule sur `pin_close`, la clôture
-    Pinnacle, connue seulement APRÈS le coup d'envoi. Biais de
-    look-ahead. Son analogue actionnable (prix d'entrée contre juste prix
-    Pinnacle AU MOMENT DU PARI) existe côté canal via `juste_prix` : c'est
-    une piste pour plus tard, pas pour ce gel.
+    ── POURQUOI 3,00 ET NON 5,00 : LA RÉPLICATION, PAS L'OPTIMISATION ───
+    Découpage temporel en deux moitiés indépendantes :
+        cote 2,00-3,00   1re +11,3 %   2e +16,6 %   <- réplique
+        cote 3,00-5,00   1re +17,5 %   2e  +0,6 %   <- s'effondre
+    La tranche 3,00-5,00 était celle que le look-ahead gonflait le plus :
+    plus la cote est haute, plus choisir le côté après coup rapporte. C'est
+    exactement l'artefact que le correctif a retiré.
+
+    La borne de 3,00 reste issue de l'exploration, comme l'était celle de
+    5,00. Ce qui la rend crédible n'est pas sa valeur mais le fait qu'elle
+    survive à un test qu'elle ne pouvait pas anticiper.
+
+    ── AUCUN CRITÈRE SUPPLÉMENTAIRE ─────────────────────────────────────
+    Douze critères testés sur la PREMIÈRE moitié seulement, puis contrôlés
+    sur la seconde. Aucun ne bat la règle simple de façon réplicable. Le
+    seul qui améliorait vraiment -- CLV vs Pinnacle > +5 % -- se calcule sur
+    `pin_close`, connue APRÈS le coup d'envoi : look-ahead, inutilisable en
+    filtre d'entrée. Son analogue actionnable (prix d'entrée contre juste
+    prix Pinnacle AU MOMENT DU PARI, déjà calculé par canal_public.py sous
+    le nom `juste_prix`) est une piste pour un gel ultérieur.
 
     ── LE ROI DANS LE CADRE BINOMIAL ────────────────────────────────────
     ROI > 0  <=>  taux de gain > taux d'équilibre implicite des cotes.
     Donc k = paris gagnés, n = paris, p0 = moyenne de 1/cote sur la
-    sélection. Aucune adaptation du dispositif n'est nécessaire : Holm et
-    le plancher n>=30 s'appliquent tels quels.
+    sélection. Aucune adaptation du dispositif : Holm et le plancher n>=30
+    s'appliquent tels quels.
 
     Référence in-sample au gel, NON confirmatoire :
-        n=427 · 177 gains · taux 41,5 % · p0 37,6 % · ROI +13,5 %
+        n=316 · 150 gains · taux 47,5 % · p0 42,2 % · ROI +13,7 %
 
     ATTENTION : N_CIBLE est déjà atteint sur l'historique. Le filtre
-    out-of-sample est donc la SEULE chose qui empêche cette hypothèse de se
+    out-of-sample est la SEULE chose qui empêche cette hypothèse de se
     valider elle-même sur les données qui l'ont fait naître.
 
     Retourne (k, n, p0) ou None si pas encore testable.
@@ -1757,7 +1765,7 @@ def roi_bande_watch():
     import datetime as _dtm
 
     SRC = 'moves_detail_hist.csv'
-    COTE_MIN, COTE_MAX = 2.0, 5.0      # GELÉES
+    COTE_MIN, COTE_MAX = 2.0, 3.0      # GELÉES
 
     lignes = []
     try:
@@ -1805,11 +1813,12 @@ def roi_bande_watch():
     print(f"  seuil de rentabilité p0 = {100 * p0:.1f} % "
           f"(moyenne de 1/cote) -> ROI implicite {roi:+.1f} %")
     print(f"  référence in-sample au gel, NON confirmatoire : "
-          f"177/427 = 41,5 % · p0 37,6 % · ROI +13,5 %")
+          f"150/316 = 47,5 % · p0 42,2 % · ROI +13,7 %")
     if n < 30:
         print(f"  n={n} < 30 — trop tôt pour juger (règle maison). "
-              f"Débit observé : ~140 paris/mois dans la bande, "
-              f"~3 mois pour atteindre les 426 paris qui excluraient zéro.")
+              f"Débit observé : ~105 paris/mois dans la bande, "
+              f"~300 paris pour que l'intervalle exclue franchement "
+              f"zéro, soit environ 3 mois.")
     return (k, n, p0)
 
 
@@ -1834,7 +1843,7 @@ HYPOTHESES = [
     # sur le CLV. N_CIBLE est déjà atteint sur l'historique : le filtre
     # out-of-sample est la SEULE chose qui l'empêche de se valider sur
     # les données qui l'ont fait naître.
-    ('ROI bande cote 2-5',    FREEZE_DATE_ROIBANDE,  roi_bande_watch),
+    ('ROI bande cote 2-3',    FREEZE_DATE_ROIBANDE,  roi_bande_watch),
 ]
 
 
