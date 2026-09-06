@@ -54,7 +54,8 @@ modifiez l'un, modifiez l'autre.
 
 ──────────────────────────────────────────────────────────────────────────
 Env : CURVES (déf. book_curves_live.jsonl), SHARP, SOFTS, THR, MIN_LEAD,
-      COTE_MIN, COTE_MAX, TELEGRAM_TOKEN, TELEGRAM_CHAT_ID, DRY_RUN=1.
+      TELEGRAM_TOKEN, TELEGRAM_CHAT_ID, DRY_RUN=1.
+      La BANDE n'est PAS paramétrable : elle vient de validation_report.
 """
 import os
 import sys
@@ -72,13 +73,18 @@ SOFTS = [b.strip() for b in os.environ.get(
     'SOFTS', 'unibet,bwin,betsson').split(',') if b.strip()]
 THR = float(os.environ.get('THR', '0.02'))
 MIN_LEAD = float(os.environ.get('MIN_LEAD', '5'))
-COTE_MIN = float(os.environ.get('COTE_MIN', '2.0'))
-COTE_MAX = float(os.environ.get('COTE_MAX', '3.0'))
+# BANDE : importée de validation_report, JAMAIS redéfinie ici.
+# La version précédente la lisait dans l'environnement, ce qui permettait à
+# un COTE_MAX=3.5 posé "pour voir" de faire diverger silencieusement ce
+# canal de ce que roi_bande_watch() valide. Une seule source de vérité.
+import validation_report as _vr      # noqa: E402
+COTE_MIN = _vr.H13_COTE_MIN
+COTE_MAX = _vr.H13_COTE_MAX
 DRY_RUN = os.environ.get('DRY_RUN', '') == '1'
 
 ETAT = 'h13_signal_state.json'      # anti-doublon, un signal par match
 LOG = 'h13_signal_log.jsonl'        # journal PERMANENT, append-only
-FREEZE = '2026-09-06'
+FREEZE = _vr.FREEZE_DATE_ROIBANDE
 
 
 def _dt(s):
