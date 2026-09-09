@@ -1,6 +1,6 @@
 {
-  "updated_at": "2026-09-09T22:38:43.101Z",
-  "count": 1591,
+  "updated_at": "2026-09-09T23:05:02.547Z",
+  "count": 1593,
   "actifs": 6,
   "markets": [
     {
@@ -53675,7 +53675,7 @@
       "sports_market_type": "moneyline",
       "market_type": "match",
       "game_id": 6190637,
-      "liquidity": 162203.17501,
+      "liquidity": 157459.6815,
       "volume": 198275.75985600002,
       "local_match": {
         "home": "Valerio Aboian",
@@ -53687,7 +53687,7 @@
         "home",
         "away"
       ],
-      "discovered_at": "2026-09-09T22:38:42.835Z"
+      "discovered_at": "2026-09-09T22:49:39.883Z"
     },
     {
       "market_id": "4373346",
@@ -53743,7 +53743,7 @@
       "sports_market_type": "tennis_set_winner",
       "market_type": "set2",
       "game_id": 6190637,
-      "liquidity": 4004.678,
+      "liquidity": 3992.358,
       "volume": null,
       "local_match": {
         "home": "Valerio Aboian",
@@ -53755,7 +53755,7 @@
         "home",
         "away"
       ],
-      "discovered_at": "2026-09-09T22:38:42.836Z"
+      "discovered_at": "2026-09-09T22:49:39.885Z"
     },
     {
       "market_id": "4372167",
@@ -53981,7 +53981,7 @@
       "sports_market_type": "moneyline",
       "market_type": "match",
       "game_id": 6194143,
-      "liquidity": 48600.0956,
+      "liquidity": 40144.7513,
       "volume": 1496.574755,
       "local_match": {
         "home": "Enzo Aguiard",
@@ -53993,7 +53993,7 @@
         "home",
         "away"
       ],
-      "discovered_at": "2026-09-09T22:38:43.016Z"
+      "discovered_at": "2026-09-09T23:05:02.421Z"
     },
     {
       "market_id": "4400793",
@@ -54015,7 +54015,7 @@
       "sports_market_type": "tennis_first_set_winner",
       "market_type": "set1",
       "game_id": 6194143,
-      "liquidity": 5564.6932,
+      "liquidity": 5426.8932,
       "volume": null,
       "local_match": {
         "home": "Enzo Aguiard",
@@ -54027,7 +54027,7 @@
         "home",
         "away"
       ],
-      "discovered_at": "2026-09-09T22:38:43.019Z"
+      "discovered_at": "2026-09-09T23:05:02.424Z"
     },
     {
       "market_id": "4400796",
@@ -54061,7 +54061,7 @@
         "home",
         "away"
       ],
-      "discovered_at": "2026-09-09T22:38:43.022Z"
+      "discovered_at": "2026-09-09T23:05:02.427Z"
     },
     {
       "market_id": "4425483",
@@ -54083,8 +54083,8 @@
       "sports_market_type": "moneyline",
       "market_type": "match",
       "game_id": 6210626,
-      "liquidity": 14070.2118,
-      "volume": 39.470589000000004,
+      "liquidity": 12092.3867,
+      "volume": 41.598249,
       "local_match": {
         "home": "Coco Gauff",
         "away": "Elena Rybakina",
@@ -54095,7 +54095,75 @@
         "home",
         "away"
       ],
-      "discovered_at": "2026-09-09T22:38:43.091Z"
+      "discovered_at": "2026-09-09T23:05:02.525Z"
+    },
+    {
+      "market_id": "4425796",
+      "condition_id": "0x38a70efe82801e5bc12c022dd6c00b175faa10547d710a5b38646deceb5c43f0",
+      "event_id": "996216",
+      "event_slug": "wta-gauff-rybakin-2026-09-10",
+      "event_title": "US Open WTA: Coco Gauff vs Elena Rybakina",
+      "question": "Set 1 Winner: Gauff vs Rybakina",
+      "slug": "wta-gauff-rybakin-2026-09-10-first-set-winner-Gauff-vs-Rybakina",
+      "start_time": "2026-09-09T22:44:43Z",
+      "outcomes": [
+        "Gauff",
+        "Rybakina"
+      ],
+      "token_ids": [
+        "74023146942468837284284857131350301384788485883039020142711060533728860497629",
+        "87822997510791617680551288671603838890351469890738800295124729703442286061657"
+      ],
+      "sports_market_type": "tennis_first_set_winner",
+      "market_type": "set1",
+      "game_id": 6210626,
+      "liquidity": 5476.751,
+      "volume": null,
+      "local_match": {
+        "home": "Coco Gauff",
+        "away": "Elena Rybakina",
+        "commence": "2026-09-10T23:00:00Z",
+        "uid": "2026-09-10_coco_gauff_elena_rybakina"
+      },
+      "outcome_sides": [
+        "home",
+        "away"
+      ],
+      "discovered_at": "2026-09-09T23:05:02.531Z"
+    },
+    {
+      "market_id": "4425802",
+      "condition_id": "0x8a6a998fa7f61e702c6846f0c7cbdb8c2ae0c2d4a4d64fc4c3c1cb80b3ab1991",
+      "event_id": "996216",
+      "event_slug": "wta-gauff-rybakin-2026-09-10",
+      "event_title": "US Open WTA: Coco Gauff vs Elena Rybakina",
+      "question": "Set 2 Winner: Gauff vs Rybakina",
+      "slug": "wta-gauff-rybakin-2026-09-10-set-2-winner-Gauff-vs-Rybakina",
+      "start_time": "2026-09-09T22:44:54Z",
+      "outcomes": [
+        "Gauff",
+        "Rybakina"
+      ],
+      "token_ids": [
+        "290052547931059516379075502987298834277949009121602911292445814442227945575",
+        "68503881182829203962639950172989336541469126688641095892586309172184193518234"
+      ],
+      "sports_market_type": "tennis_set_winner",
+      "market_type": "set2",
+      "game_id": 6210626,
+      "liquidity": 64.71,
+      "volume": null,
+      "local_match": {
+        "home": "Coco Gauff",
+        "away": "Elena Rybakina",
+        "commence": "2026-09-10T23:00:00Z",
+        "uid": "2026-09-10_coco_gauff_elena_rybakina"
+      },
+      "outcome_sides": [
+        "home",
+        "away"
+      ],
+      "discovered_at": "2026-09-09T23:05:02.537Z"
     }
   ]
 }
