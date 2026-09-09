@@ -227,6 +227,14 @@ FREEZE_DATE_ROIBANDE = '2026-09-06'  # hypothèse 'ROI, bande de cote 2,0-3,0' g
 # de ce qu'on valide — et rien ne le signalerait.
 H13_COTE_MIN = 2.0
 H13_COTE_MAX = 3.0
+
+FREEZE_DATE_AMPLI = '2026-09-07'   # hypothèse 'amplitude + timing' gelée ce jour
+# STRATÉGIE A — paramètres gelés, source de vérité unique.
+# Volontairement UN SEUL degré de liberté par dimension, et AUCUN filtre de
+# cote : voir roi_ampli_watch() pour le raisonnement.
+H14_MOVE_MIN_PCT = 5.0        # raccourcissement Pinnacle minimal, en %
+H14_LEAD_MIN = 480.0          # 8 h avant le match
+H14_LEAD_MAX = 1440.0         # 24 h avant le match
 # Critère PRIMAIRE : CLV du groupe alerté vs groupe témoin.
 # REQUALIFIÉ LE 27/08/2026 (audit §3.1) : un gel rétroactif n'est PAS un
 # pré-enregistrement -- le 25/08, ce critère avait déjà été vu sur les
@@ -1829,6 +1837,144 @@ def roi_bande_watch():
     return (k, n, p0)
 
 
+def roi_ampli_watch():
+    """14e hypothèse gelée : un mouvement Pinnacle > 5 % détecté entre 8 h et
+    24 h avant le match dégage-t-il un ROI POSITIF, toutes cotes confondues ?
+
+        « Parier le côté steamé au book d'entrée, mouvement Pinnacle > 5 %,
+          détection entre 8 h et 24 h avant le coup d'envoi, SANS filtre de
+          cote. »
+
+    Gelée le 2026-09-07, à partir du rapport de robustesse externe.
+
+    ── POURQUOI LA STRATÉGIE A SEULE ────────────────────────────────────
+    Le rapport proposait trois règles à geler : A (celle-ci), B (A + cote
+    2,50-4,00, ROI +47,9 %) et C (move > 10 % + cote 2,50-4,00).
+
+    Reproduit sur moves_detail_hist.csv corrigé du look-ahead :
+        A  n=275  ROI +20,9 %   IC95 [ +4,7 ;  +37,1]
+        B  n= 75  ROI +50,8 %   IC95 [+16,6 ;  +84,9]
+        C  n= 58  ROI +50,3 %   IC95 [+11,0 ;  +89,6]
+    Les chiffres du rapport sont donc justes (il annonçait n=283 / +21,5 %
+    et n=79 / +47,9 %).
+
+    B et C sont malgré tout écartées, pour trois raisons.
+
+    1. ESPACE DE RECHERCHE. En balayant 8 seuils x 8 fenêtres x 7 bandes de
+       cote = 448 combinaisons sur la PREMIÈRE moitié seulement, 33 % d'entre
+       elles ressortent « significatives » au sens de l'IC95. Trouver une
+       zone à +50 % dans cet espace n'a rien d'exceptionnel. La zone B y est
+       classée 85e sur 347 : le top 5 atteint +102 %.
+    2. VOLUME. B ne compte que 23 paris sur la période récente, C en compte
+       12. Aucune des cinq meilleures règles de la première moitié n'atteint
+       20 observations sur la seconde : elles sont trop étroites pour être
+       testables.
+    3. CORRÉLATION. B et C sont des sous-ensembles de A. Les geler ensemble,
+       c'est tester trois hypothèses non indépendantes sur le même flux —
+       Holm en ferait payer le prix aux trois sans qu'aucune n'atteigne son
+       volume.
+
+    A a 275 observations, un seul degré de liberté par dimension, et surtout
+    elle RÉPLIQUE sur deux moitiés temporelles indépendantes :
+        1re moitié (07/06 -> 11/08)  +21,7 %  n=167
+        2e  moitié (11/08 -> 06/09)  +19,6 %  n=108
+    2,1 points d'écart. C'est ce qui la distingue d'un artefact de recherche,
+    pas sa valeur.
+
+    ── CE QUE LE RAPPORT PRÉSENTAIT À TORT COMME DE LA ROBUSTESSE ───────
+    Ses sections 3, 4 et 5 ne sont pas des tests indépendants :
+      - les 7 seuils sont des SOUS-ENSEMBLES emboîtés (>6 % partage 90 % de
+        ses observations avec >5 %) : la stabilité du ROI y est arithmétique ;
+      - les 3 fenêtres se recouvrent massivement avec 8-24 h ;
+      - retirer les meilleurs paris fait baisser le ROI par construction ;
+        qu'il reste positif arriverait aussi sur des données aléatoires.
+    Rien de tout cela n'est une preuve de robustesse. Le découpage temporel,
+    lui, en est une — et le rapport ne l'avait pas fait.
+
+    ── LE ROI DANS LE CADRE BINOMIAL ────────────────────────────────────
+    ROI > 0  <=>  taux de gain > taux d'équilibre implicite des cotes.
+    k = paris gagnés, n = paris, p0 = moyenne de 1/cote. Holm et le plancher
+    n>=30 s'appliquent sans adaptation.
+
+    Référence in-sample au gel, NON confirmatoire :
+        n=275 · 146 gains · taux 53,1 % · p0 46,0 % · ROI +20,9 %
+        CLV médian +7,8 % · cote médiane 2,27
+
+    Volume attendu : ~91 paris/mois, ~166 paris pour que l'IC95 exclue zéro,
+    soit moins de deux mois. C'est l'hypothèse la plus rapide à trancher du
+    dispositif.
+
+    ATTENTION : N_CIBLE est déjà atteint sur l'historique. Le filtre
+    out-of-sample est la SEULE chose qui empêche cette hypothèse de se
+    valider sur les données qui l'ont fait naître.
+
+    Retourne (k, n, p0) ou None si pas encore testable.
+    """
+    import datetime as _dtm
+
+    SRC = 'moves_detail_hist.csv'
+    freeze = FREEZE_DATE_AMPLI
+    try:
+        fh = open(SRC, encoding='utf-8')
+    except OSError:
+        print(f"  {SRC} absent.")
+        return None
+
+    retenus, n_in, n_zone = [], 0, 0
+    with fh:
+        for r in csv.DictReader(fh):
+            try:
+                cote = float(r['entry'])
+                # mag_cote_pct : raccourcissement de la cote Pinnacle.
+                # ATTENTION, cette colonne est encore calculée sur pin_close
+                # (audit du 06/09) : elle contient donc la clôture. Elle reste
+                # utilisable ICI parce que le rapport a défini la zone avec,
+                # et qu'un gel doit reproduire exactement la règle gelée --
+                # mais c'est une limite CONNUE de cette hypothèse, pas un
+                # oubli. Si elle survit, il faudra la rejouer avec une
+                # amplitude mesurée à la détection avant d'en tirer une
+                # décision opérationnelle.
+                move = float(r['mag_cote_pct'])
+                lead = float(r['lead_min'])
+            except (TypeError, ValueError, KeyError):
+                continue
+            if move <= H14_MOVE_MIN_PCT:
+                continue
+            if not (H14_LEAD_MIN <= lead <= H14_LEAD_MAX):
+                continue
+            n_zone += 1
+            d = str(r.get('date') or '')[:10]
+            if not d or d < freeze:
+                n_in += 1
+                continue
+            g = r.get('steame_gagne')
+            if g not in ('oui', 'non'):
+                continue
+            retenus.append((1 if g == 'oui' else 0, cote))
+
+    print(f"  {SRC} : {n_zone} pari(s) dans la zone "
+          f"(move>{H14_MOVE_MIN_PCT:.0f}%, {H14_LEAD_MIN/60:.0f}-{H14_LEAD_MAX/60:.0f} h) "
+          f"· {n_in} in-sample (écartés)")
+    if not retenus:
+        print("  aucun pari out-of-sample dénoué — trop tôt.")
+        return None
+
+    k = len(retenus) and sum(w for w, _ in retenus)
+    n = len(retenus)
+    p0 = sum(1.0 / c for _, c in retenus) / n
+    _, lo, hi = wilson(k, n)
+    print(f"  OUT-OF-SAMPLE : {k}/{n} = {100 * k / n:.1f} % de gains "
+          f"IC95 [{100 * lo:.1f} ; {100 * hi:.1f}]")
+    print(f"  rentabilité p0 = {100 * p0:.1f} % -> ROI implicite "
+          f"{100 * ((k / n) / p0 - 1):+.1f} %")
+    print(f"  référence in-sample au gel, NON confirmatoire : "
+          f"146/275 = 53,1 % · p0 46,0 % · ROI +20,9 %")
+    if n < 30:
+        print(f"  n={n} < 30 — trop tôt (règle maison). ~91 paris/mois "
+              f"attendus, ~166 pour que l'IC95 exclue zéro.")
+    return (k, n, p0)
+
+
 HYPOTHESES = [
     ('calibration 2,20-3,50', FREEZE_DATE,           calibration_watch),
     ('heure du match',        FREEZE_DATE,           hour_watch),
@@ -1851,6 +1997,12 @@ HYPOTHESES = [
     # out-of-sample est la SEULE chose qui l'empêche de se valider sur
     # les données qui l'ont fait naître.
     ('ROI bande cote 2-3',    FREEZE_DATE_ROIBANDE,  roi_bande_watch),
+    # AJOUTÉE LE 07/09/2026, depuis le rapport de robustesse externe.
+    # Seule la stratégie A est gelée : B et C (bande de cote 2,50-4,00)
+    # sont des sous-ensembles corrélés, à 23 et 12 observations
+    # récentes, issus d'un espace de 448 combinaisons dont 33 %
+    # ressortent significatives par pure recherche.
+    ('amplitude + timing',    FREEZE_DATE_AMPLI,     roi_ampli_watch),
 ]
 
 
