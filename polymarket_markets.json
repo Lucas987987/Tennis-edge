@@ -1,7 +1,7 @@
 {
-  "updated_at": "2026-09-10T14:33:07.592Z",
-  "count": 1593,
-  "actifs": 3,
+  "updated_at": "2026-09-10T17:05:57.508Z",
+  "count": 1596,
+  "actifs": 6,
   "markets": [
     {
       "market_id": "3689368",
@@ -54083,8 +54083,8 @@
       "sports_market_type": "moneyline",
       "market_type": "match",
       "game_id": 6210626,
-      "liquidity": 264424.8505,
-      "volume": 62027.79348100002,
+      "liquidity": 298705.0663,
+      "volume": 101806.17996100003,
       "local_match": {
         "home": "Coco Gauff",
         "away": "Elena Rybakina",
@@ -54095,7 +54095,7 @@
         "home",
         "away"
       ],
-      "discovered_at": "2026-09-10T14:33:07.388Z"
+      "discovered_at": "2026-09-10T17:05:57.178Z"
     },
     {
       "market_id": "4425796",
@@ -54117,7 +54117,7 @@
       "sports_market_type": "tennis_first_set_winner",
       "market_type": "set1",
       "game_id": 6210626,
-      "liquidity": 92017.9627,
+      "liquidity": 80254.3945,
       "volume": null,
       "local_match": {
         "home": "Coco Gauff",
@@ -54129,7 +54129,7 @@
         "home",
         "away"
       ],
-      "discovered_at": "2026-09-10T14:33:07.391Z"
+      "discovered_at": "2026-09-10T17:05:57.181Z"
     },
     {
       "market_id": "4425802",
@@ -54151,7 +54151,7 @@
       "sports_market_type": "tennis_set_winner",
       "market_type": "set2",
       "game_id": 6210626,
-      "liquidity": 1468.9269,
+      "liquidity": 2987.1048,
       "volume": 28.96,
       "local_match": {
         "home": "Coco Gauff",
@@ -54163,7 +54163,109 @@
         "home",
         "away"
       ],
-      "discovered_at": "2026-09-10T14:33:07.394Z"
+      "discovered_at": "2026-09-10T17:05:57.185Z"
+    },
+    {
+      "market_id": "4426209",
+      "condition_id": "0xf901ee0da3b6d64f6cc6c49ed377f0e9b8309776eb383a69b5dfa9087e01ea38",
+      "event_id": "996405",
+      "event_slug": "atp-munar-brancac-2026-09-11",
+      "event_title": "Seville: Jaume Munar vs Raul Brancaccio",
+      "question": "Seville: Jaume Munar vs Raul Brancaccio",
+      "slug": "atp-munar-brancac-2026-09-11",
+      "start_time": "2026-09-09T23:05:21Z",
+      "outcomes": [
+        "Jaume Munar",
+        "Raul Brancaccio"
+      ],
+      "token_ids": [
+        "58151842813991454272854469298379221666822037155596915575224434631225715729543",
+        "4335511870510366831066338070946225359962175906671989317528377438733647466059"
+      ],
+      "sports_market_type": "moneyline",
+      "market_type": "match",
+      "game_id": 6210628,
+      "liquidity": 7546.3659,
+      "volume": 3950.5631889999995,
+      "local_match": {
+        "home": "Jaume Munar",
+        "away": "Raul Brancaccio",
+        "commence": "2026-09-11T09:00:00Z",
+        "uid": "2026-09-11_jaume_munar_raul_brancaccio"
+      },
+      "outcome_sides": [
+        "home",
+        "away"
+      ],
+      "discovered_at": "2026-09-10T17:05:57.284Z"
+    },
+    {
+      "market_id": "4426604",
+      "condition_id": "0xea451bcfcda6959f5d7047ffc63a594ed59209d644f7ccd0553c52c1e3cef4d6",
+      "event_id": "996405",
+      "event_slug": "atp-munar-brancac-2026-09-11",
+      "event_title": "Seville: Jaume Munar vs Raul Brancaccio",
+      "question": "Set 1 Winner: Munar vs Brancaccio",
+      "slug": "atp-munar-brancac-2026-09-11-first-set-winner-Munar-vs-Brancaccio",
+      "start_time": "2026-09-09T23:45:05Z",
+      "outcomes": [
+        "Munar",
+        "Brancaccio"
+      ],
+      "token_ids": [
+        "87014921504110952946069616977193958688583446343216731555750934749696427095271",
+        "73207313761160075730986486901934194990148488302858187298564969949220056569515"
+      ],
+      "sports_market_type": "tennis_first_set_winner",
+      "market_type": "set1",
+      "game_id": 6210628,
+      "liquidity": 71.3597,
+      "volume": null,
+      "local_match": {
+        "home": "Jaume Munar",
+        "away": "Raul Brancaccio",
+        "commence": "2026-09-11T09:00:00Z",
+        "uid": "2026-09-11_jaume_munar_raul_brancaccio"
+      },
+      "outcome_sides": [
+        "home",
+        "away"
+      ],
+      "discovered_at": "2026-09-10T17:05:57.288Z"
+    },
+    {
+      "market_id": "4426611",
+      "condition_id": "0x9c11dce7d482ad5202f326281649cc02f76c0c46bb0e54b01e6d4cd6f0306d0f",
+      "event_id": "996405",
+      "event_slug": "atp-munar-brancac-2026-09-11",
+      "event_title": "Seville: Jaume Munar vs Raul Brancaccio",
+      "question": "Set 2 Winner: Munar vs Brancaccio",
+      "slug": "atp-munar-brancac-2026-09-11-set-2-winner-Munar-vs-Brancaccio",
+      "start_time": "2026-09-09T23:44:34Z",
+      "outcomes": [
+        "Munar",
+        "Brancaccio"
+      ],
+      "token_ids": [
+        "14263273253971396831761468283351986721690318958568429241641532814819934172340",
+        "54155284741766927935978487719396868924878257030814922614276767006145162977256"
+      ],
+      "sports_market_type": "tennis_set_winner",
+      "market_type": "set2",
+      "game_id": 6210628,
+      "liquidity": 60.36,
+      "volume": null,
+      "local_match": {
+        "home": "Jaume Munar",
+        "away": "Raul Brancaccio",
+        "commence": "2026-09-11T09:00:00Z",
+        "uid": "2026-09-11_jaume_munar_raul_brancaccio"
+      },
+      "outcome_sides": [
+        "home",
+        "away"
+      ],
+      "discovered_at": "2026-09-10T17:05:57.291Z"
     }
   ]
 }
