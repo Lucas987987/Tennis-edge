@@ -248,6 +248,15 @@ jobs:
       # la clôture — elle n'existe pas encore au moment de l'alerte. Sans
       # elle, le seul indicateur était le ROI, qui ne dira rien avant ~300
       # paris, soit trois mois. Le CLV se stabilise bien plus vite.
+      # Suivi de la piste « books précoces, bande 2,60-3,50 ».
+      # OBSERVATION, pas une hypothèse gelée : rien n'entre dans
+      # validation_report ni dans Holm. Écrit le 09/09 pour voir converger
+      # un signal (r=+0,242 sur 244 matchs historiques) plutôt que
+      # d'attendre deux mois — sa seconde moitié ne réplique déjà pas la
+      # significativité, et le ROI encore moins (+15,5 % puis -2,1 %).
+      - name: Suivi piste books précoces (canal privé)
+        run: CURVES=book_curves.jsonl python scripts/early_band_track.py || true
+
       - name: CLV des signaux H13
         run: CURVES=book_curves.jsonl python scripts/h13_clv.py || true
 
