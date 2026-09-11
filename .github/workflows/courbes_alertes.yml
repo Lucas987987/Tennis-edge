@@ -146,6 +146,13 @@ jobs:
           # h13_signal.py ne lit PAS TELEGRAM_PUBLIC_CHAT_ID, par construction.
           python scripts/h13_signal.py || true
 
+          # ZONE 2,50-3,20 — observation depuis le 11/09/2026, NON gelée.
+          # 81 % de cette zone recoupe la bande de h13_signal : le script
+          # logue tous les matchs (la mesure doit être complète) mais
+          # n'envoie un message que pour ceux que h13 n'a pas couverts.
+          # Doit tourner APRÈS h13_signal, qui écrit l'état qu'il consulte.
+          python scripts/zone_signal.py || true
+
           # Signal EXPÉRIMENTAL (non validé) : book déjà ouvert avant Pinnacle,
           # écart au moment où Pinnacle publie son 1er prix. Canal PRIVÉ
           # uniquement (jamais le canal public) -- voir validation_report pour
