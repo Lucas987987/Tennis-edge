@@ -21,6 +21,12 @@ concurrency:
 jobs:
   clv:
     runs-on: ubuntu-latest
+    # AJOUTÉ LE 11/09/2026 avec CLV_MAX_PER_RUN=150. Aucun timeout n'était
+    # défini : si l'API historical-odds se bloquait, le job aurait tourné
+    # jusqu'à la limite GitHub de 6 h. À 150 matchs et 3 s de cooldown, un
+    # run normal fait ~18 min ; 40 laisse une marge large sans permettre
+    # qu'un blocage passe inaperçu.
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-python@v6
@@ -29,6 +35,34 @@ jobs:
       - name: Calcul du CLV via historique (OddsPapi v5)
         env:
           RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
+          # RELEVÉ DE 40 À 150 LE 11/09/2026.
+          #
+          # Le défaut du script est 40 matchs par run, et ce workflow ne
+          # passait aucune variable CLV_*. Or la cadence de capture est
+          # passée à 3 min le 05/09 : closing_lines.json se remplit
+          # maintenant de 50 à 80 matchs par jour. Le débit d'entrée
+          # dépassait le débit de traitement d'environ 30 matchs/jour.
+          #
+          # Constaté le 11/09 : « 378 matchs à traiter (max 40/run) »,
+          # 40 traités, 0 échec. La file est traitée dans l'ordre du
+          # dictionnaire, donc les matchs récents attendent derrière les
+          # anciens -> clv_history.jsonl semblait ARRÊTÉ au 01/09 alors que
+          # closing_lines allait jusqu'au 11/09. Ce n'était pas une panne,
+          # c'était un embouteillage.
+          #
+          # Effet de bord non anticipé de l'amélioration de la capture :
+          # améliorer un producteur sature son consommateur en aval.
+          #
+          # 150 absorbe 80 matchs/jour et résorbe les 378 en retard en
+          # ~3 jours. Coût : 150 x COOLDOWN 3 s = 7,5 min de pause, soit un
+          # job d'environ 18 min contre 11,7 aujourd'hui.
+          #
+          # À VÉRIFIER APRÈS LE PREMIER RUN : historical-odds est décrite
+          # comme gratuite dans la docstring de fetch_clv.py, mais si
+          # requetes_cumul_jour (capture_state.json) bondit de ~110, c'est
+          # qu'elle est comptée dans le budget de 1 400/jour. La marge
+          # existe (~640 consommées aujourd'hui), mais il faudra l'intégrer.
+          CLV_MAX_PER_RUN: '150'
         run: python scripts/fetch_clv.py
       - name: Commit
         run: |
