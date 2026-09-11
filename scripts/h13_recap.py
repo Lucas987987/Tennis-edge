@@ -215,6 +215,19 @@ def message(outs, ins, hier):
             L.append(f"<i>({sig['deduits']} signal(aux) d'avant le 09/09 : "
                      f"côté déduit du uid)</i>")
 
+    zone = bloc_signaux('zone_clv_detail.csv')
+    if zone and zone['clv']:
+        k = sum(1 for v in zone['clv'] if v > 0)
+        L.append(f"\n🔭 <b>Zone 2,50-3,20</b> (observation) : {zone['n']} match(s)")
+        L.append(f"CLV médian {st.median(zone['clv']):+.1f} % · "
+                 f"positif {k}/{len(zone['clv'])} = {100 * k / len(zone['clv']):.0f} %")
+        if zone['pnl']:
+            L.append(f"ROI {100 * st.mean(zone['pnl']):+.1f} % sur "
+                     f"{zone['n_res']} dénoué(s)")
+        L.append(f"<i>référence historique : +12,7 % puis +15,3 % sur deux "
+                 f"moitiés (n=117 et 79). NON gelée — 81 % de cette zone "
+                 f"recoupe l'hypothèse 13.</i>")
+
     bi = bloc(ins)
     if bi:
         L.append(f"\n<i>Référence in-sample au gel, NON confirmatoire : "
