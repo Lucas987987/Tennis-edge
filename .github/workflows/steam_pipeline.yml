@@ -260,6 +260,13 @@ jobs:
       - name: CLV des signaux H13
         run: CURVES=book_curves.jsonl python scripts/h13_clv.py || true
 
+      # Même script, autre journal : la zone 2,50-3,20 observée depuis le
+      # 11/09. h13_clv.py est paramétré par LOG/OUT, donc rien à dupliquer.
+      - name: CLV de la zone 2,50-3,20
+        run: |
+          CURVES=book_curves.jsonl LOG=zone_signal_log.jsonl \
+            OUT=zone_clv_detail.csv python scripts/h13_clv.py || true
+
       - name: Suivi quotidien H13 (canal privé)
         run: python scripts/h13_recap.py || true
 
