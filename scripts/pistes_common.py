@@ -127,15 +127,55 @@ def charge_moves():
     return out
 
 
+# CORRIGÉ LE 12/09/2026. Les Grands Chelems ne portent aucun préfixe
+# ATP/WTA dans les libellés du fournisseur ('US Open Men Singles',
+# 'Wimbledon Men Singles', 'French Open Men Singles') : ils tombaient tous
+# dans 'autre'. Le trou existe depuis l'origine ; il est devenu visible
+# quand l'US Open a dominé la population -- 167 moves sur 180 en 'autre'
+# après le 26/08, soit une piste entière illisible.
+#
+# Ils prennent leur PROPRE segment plutôt que d'être versés dans ATP/WTA :
+# un Grand Chelem est structurellement différent d'un ATP 250 (profondeur
+# de marché, format), et les mélanger recréerait l'hétérogénéité silencieuse
+# que cette piste cherche justement à mesurer. Hommes et femmes sont ici
+# regroupés pour tenir le n>=30 ; à séparer si le volume le permet.
+#
+# CE CORRECTIF NE TOUCHE PAS LE PROTOCOLE GELÉ le 25/08 : la règle
+# 'Challenger' est inchangée, et le témoin global porte sur TOUS les moves.
+# L'hypothèse pré-spécifiée (Challengers moins efficients vs témoin global)
+# se teste exactement comme avant. Seule la ventilation descriptive gagne
+# un segment. Pas de nouveau gel nécessaire.
+GRANDS_CHELEMS = ('US Open', 'Wimbledon', 'French Open', 'Australian Open')
+
+
 def segment_circuit(tour):
     t = tour or ''
     if 'Challenger' in t or t.startswith('CH'):
         return 'Challenger'
+    if any(gc in t for gc in GRANDS_CHELEMS):
+        return 'Grand Chelem'
     if 'WTA' in t:
         return 'WTA'
     if 'ATP' in t:
         return 'ATP'
     return 'autre'
+
+
+def libelles_non_classes(moves):
+    """Libellés tombant dans 'autre', avec leur effectif.
+
+    'autre' est un fourre-tout muet : tant que personne ne regarde ce qu'il
+    contient, un libellé non reconnu y dort sans que rien ne le signale --
+    c'est exactement ce qui est arrivé aux Grands Chelems. Les études qui
+    segmentent affichent désormais ce contenu, pour que le prochain libellé
+    inconnu se voie au premier rapport hebdo et pas trois semaines plus tard.
+    """
+    compte = {}
+    for m in moves:
+        if segment_circuit(m.get('tour')) == 'autre':
+            lab = m.get('tour') or '(vide)'
+            compte[lab] = compte.get(lab, 0) + 1
+    return sorted(compte.items(), key=lambda kv: -kv[1])
 
 
 def temoin(moves):

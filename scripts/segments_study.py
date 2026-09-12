@@ -22,7 +22,7 @@ def main():
     seg = {}
     for m in moves:
         seg.setdefault(pc.segment_circuit(m['tour']), []).append(m)
-    for lab in ('ATP', 'WTA', 'Challenger', 'autre'):
+    for lab in ('ATP', 'WTA', 'Challenger', 'Grand Chelem', 'autre'):
         sel = seg.get(lab, [])
         if not sel:
             continue
@@ -32,6 +32,14 @@ def main():
         print(f'    {lab:11} n={len(sel):4} | CLV>0 : {100 * p:.0f}% '
               f'(IC95 {100 * lo:.0f}-{100 * hi:.0f}%) | CLV méd '
               f'{st.median(m["clv"] for m in sel):+.1f}%{marque}')
+    inconnus = pc.libelles_non_classes(moves)
+    if inconnus:
+        total = sum(n for _, n in inconnus)
+        print(f'  Contenu de "autre" ({total} moves, {len(inconnus)} libellé(s)) :')
+        for lab, n in inconnus[:10]:
+            print(f'    {n:5} | {lab}')
+        print('    -> si un libellé ci-dessus désigne un circuit connu, '
+              'l\'ajouter à segment_circuit().')
     print('  Lecture : un segment ne devient hypothèse gelée que si son IC95')
     print('  se sépare du témoin global avec n>=30.')
 
