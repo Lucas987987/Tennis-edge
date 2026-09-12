@@ -96,11 +96,27 @@ def charge_moves():
     if not os.path.exists('moves_detail_hist.csv'):
         print('⚠️ moves_detail_hist.csv absent — études sur moves vides.')
         return out
-    for r in csv.DictReader(open('moves_detail_hist.csv', encoding='utf-8')):
+    lecteur = csv.DictReader(open('moves_detail_hist.csv', encoding='utf-8'))
+    # GARDE DE VERSION (12/09/2026). Avant ce jour, `mag_cote_pct` était
+    # calculée sur pin_close : elle contenait la clôture. Les pistes qui
+    # segmentent par ampleur (P5 retournements, P1 limites) tournaient donc
+    # sur un critère indisponible à l'instant du pari, ce qui produisait des
+    # écarts spectaculaires (45 % vs 82 % de CLV>0) qui s'effondrent une fois
+    # l'ampleur mesurée à la détection. Un CSV sans la colonne _POSTHOC est
+    # antérieur au correctif : on REFUSE de le lire plutôt que d'en tirer les
+    # anciens chiffres sans que personne ne le voie.
+    if 'mag_cote_pct_POSTHOC' not in (lecteur.fieldnames or []):
+        print('❌ moves_detail_hist.csv antérieur au correctif du 12/09/2026 '
+              '(colonne mag_cote_pct_POSTHOC absente) : `mag_cote_pct` y '
+              'contient la clôture. Relancer move_audit.py avant toute étude.')
+        return out
+    for r in lecteur:
         try:
             out.append({
                 'uid': r['uid'], 'tour': r.get('tour', ''),
                 'date': r.get('date', ''),
+                # ampleur À LA DÉTECTION depuis le 12/09/2026 (la garde
+                # ci-dessus certifie qu'on lit bien la version causale)
                 'mag': float(r['mag_cote_pct']),
                 'lead_min': float(r['lead_min']),
                 'clv': float(r['clv_book_pct']),

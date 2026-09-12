@@ -467,11 +467,16 @@ def main():
             try:
                 lead_min = (bk.get('_commence', 0) - sig['t_e'].timestamp()) / 60 \
                     if bk.get('_commence') and hasattr(sig['t_e'], 'timestamp') else None
-                edge_pct = (sig['odds'] * (sig.get('pct') or 0) - 1) * 100 \
-                    if sig.get('pct') else None
+                # CORRIGÉ LE 12/09/2026 : `pct` est un pourcentage ENTIER de
+                # réussite historique (80), pas une probabilité (0,80) --
+                # `odds * pct - 1` valait donc toujours >> 3 % et le
+                # composant « book en retard » était +1 pour TOUS les paris.
+                # sig['ev'] est la vraie EV (cote x fair - 1), déjà calculée
+                # par pick_signal.
                 t['fiabilite_score'], t['fiabilite_detail'] = fs.explique(
                     mag_pct=sig['thr'] * 100, lead_min=lead_min,
-                    book_en_retard=bool(edge_pct and edge_pct >= 3))
+                    book_en_retard=bool(sig.get('ev') is not None
+                                        and sig['ev'] >= 0.03))
             except Exception as e:
                 t['fiabilite_score'], t['fiabilite_detail'] = None, f'erreur: {e}'
             settle_trade(t, data, result_side)
@@ -595,6 +600,37 @@ def main():
                        'palier': int(sig['thr'] * 100), 'entry_odds': round(sig['odds'], 2),
                        'entry_pct_hist': sig['pct'], 'commence': bk['_commence'],
                        'status': 'OPEN'}
+        # NOTE DE FIABILITÉ — MODE OMBRE (P9). AJOUTÉE ICI LE 12/09/2026.
+        #
+        # Elle n'existait que dans la branche BACKFILL (plus haut), qui ne
+        # persiste rien : la branche forward, seule à écrire le journal, ne
+        # l'écrivait pas. Constaté sur les vraies données : 0 trade sur 69
+        # portait un score, 17 jours après l'activation du 26/08. La piste ne
+        # pouvait pas atteindre son n=30, et rien ne le signalait puisque
+        # shadow_sizing_study.py se contente d'annoncer « trop tôt ».
+        #
+        # `lead_min` est mesuré par rapport à MAINTENANT, pas à t_e : en
+        # forward le pari est pris au dernier point disponible (entry_at=
+        # 'now'), donc c'est bien `now` l'instant du pari. En backfill, où
+        # l'entrée est à la détection, t_e était le bon choix. Les deux
+        # branches mesurent la même chose : le délai réel avant le match au
+        # moment où l'on prend le prix.
+        #
+        # `book_en_retard` utilise sig['ev'], la vraie EV (cote x fair - 1).
+        # La branche BACKFILL calculait `sig['odds'] * sig['pct'] - 1` alors
+        # que `pct` est un POURCENTAGE ENTIER de réussite historique (80, pas
+        # 0,80) : le produit dépassait 3 % dans tous les cas, le composant
+        # valait donc +1 pour chaque pari. Corrigé des deux côtés.
+        try:
+            lead_min = (bk['_commence'] - now) / 60.0
+            t = trades[tid]
+            t['fiabilite_score'], t['fiabilite_detail'] = fs.explique(
+                mag_pct=sig['thr'] * 100, lead_min=lead_min,
+                book_en_retard=bool(sig.get('ev') is not None
+                                    and sig['ev'] >= 0.03))
+        except Exception as e:
+            trades[tid]['fiabilite_score'] = None
+            trades[tid]['fiabilite_detail'] = f'erreur: {e}'
         n_open += 1
     save_journal(trades)
     print(f"ouverts ce cycle : {n_open} | denoues ce cycle : {n_settled}")
