@@ -238,7 +238,27 @@ def analyse():
         opp_name = away if steam == 'h' else home
         o_open = _at(pin['h'] if steam == 'h' else pin['a'], topen)
         o_close = _at(pin['h'] if steam == 'h' else pin['a'], tclose)
-        mag_odds = (o_open - o_close) / o_open if o_open else 0.0   # % raccourcissement cote
+        # AMPLEUR EN % DE COTE — DEUX MESURES, NE JAMAIS LES CONFONDRE
+        # (corrigé le 12/09/2026).
+        #
+        # `mag_odds` est calculée sur o_close : elle contient la CLÔTURE
+        # Pinnacle, information qui n'existe pas à l'instant du pari. Elle
+        # était pourtant exportée sous le nom neutre `mag_cote_pct` et servait
+        # de critère d'entrée dans H14 (validation_report.py) et dans les
+        # pistes (pistes_common.py) -- exactement le look-ahead que le
+        # suffixe _POSTHOC de `mag_proba_pts_POSTHOC` était censé rendre
+        # impossible, mais par une colonne qui, elle, n'avait pas de suffixe.
+        # Mesuré sur l'historique : corr(ampleur détection, ampleur finale)
+        # = 0,21. Ce ne sont pas deux mesures de la même grandeur.
+        #
+        # `mag_odds_det` est la MÊME grandeur mesurée à t_det : le
+        # raccourcissement déjà réalisé au moment où un détecteur temps réel
+        # peut le voir. C'est elle qui sort désormais sous le nom
+        # `mag_cote_pct` ; la rétrospective prend le suffixe criard.
+        o_det = _at(pin['h'] if steam == 'h' else pin['a'], t_det)
+        mag_odds = (o_open - o_close) / o_open if o_open else 0.0   # POSTHOC
+        mag_odds_det = ((o_open - o_det) / o_open
+                        if (o_open and o_det) else 0.0)             # causale
         # AMPLEUR À LA DÉTECTION, plus |p_close - p_open| : cette colonne
         # sert de critère dans les études (« ampleur < 5 pts »...). La
         # renseigner avec l'amplitude finale y réintroduirait le même
@@ -276,7 +296,9 @@ def analyse():
         rows.append(dict(
             uid=uid, tour=g['_tour'], date=ct.date().isoformat(),
             steame=steam_name, opp=opp_name,
-            mag_cote_pct=round(mag_odds * 100, 1), mag_proba_pts=round(mag_prob, 1),
+            mag_cote_pct=round(mag_odds_det * 100, 1),
+            mag_cote_pct_POSTHOC=round(mag_odds * 100, 1),
+            mag_proba_pts=round(mag_prob, 1),
             # Suffixe _POSTHOC volontairement criard : cette colonne contient
             # la clôture Pinnacle et ne peut PAS servir de critère d'entrée.
             # Un `mag_proba_finale` anodin finirait un jour dans un filtre.
@@ -294,10 +316,20 @@ def analyse():
 def report(rows):
     rows.sort(key=lambda r: -r['mag_cote_pct'])
     # CSV détail
+    # `mag_cote_pct`       = ampleur en % de cote À LA DÉTECTION (causale)
+    # `mag_cote_pct_POSTHOC` = ampleur finale en % de cote, contient la
+    #                        clôture Pinnacle, JAMAIS en critère d'entrée
     # `mag_proba_pts`      = ampleur À LA DÉTECTION, utilisable comme critère
     # `mag_proba_pts_POSTHOC` = ampleur finale, rétrospective, JAMAIS en critère
     # `clv_vs_pin_pct`     = utilise pin_close -> rétrospective elle aussi
-    cols = ['date','tour','steame','opp','mag_cote_pct','mag_proba_pts',
+    #
+    # La présence de `mag_cote_pct_POSTHOC` dans l'en-tête est le MARQUEUR de
+    # version du CSV : les lecteurs (pistes_common.charge_moves,
+    # validation_report.roi_ampli_watch) refusent de tourner sans elle plutôt
+    # que de relire un ancien fichier où `mag_cote_pct` valait la valeur
+    # rétrospective. Un fallback silencieux redonnerait les chiffres gonflés.
+    cols = ['date','tour','steame','opp','mag_cote_pct','mag_cote_pct_POSTHOC',
+            'mag_proba_pts',
             'mag_proba_pts_POSTHOC','pin_open','pin_close',
             'lead_min','entry_book','entry','soft_close','clv_book_pct','clv_vs_pin_pct',
             'steame_gagne','pnl','uid']
@@ -306,7 +338,14 @@ def report(rows):
         for r in rows: w.writerow({k: r.get(k, '') for k in cols})
 
     print(f"\n=== {len(rows)} moves analysés (pré-match, {CURVES}) -> {OUT} ===")
-    bins = [(0,.10,'0-10%'),(.10,.20,'10-20%'),(.20,.35,'20-35%'),(.35,.50,'35-50%'),(.50,9,'50%+')]
+    # BINS D'AFFICHAGE SEULEMENT — aucune hypothèse n'est définie ici.
+    # Redécoupés le 12/09/2026 : ils portaient sur l'ampleur rétrospective
+    # (0-10/10-20/.../50%+) ; l'ampleur à la détection vit dans une plage
+    # bien plus resserrée, où l'ancien découpage mettait tout dans la
+    # première tranche. Ce tableau est descriptif, il ne sert de critère
+    # nulle part.
+    bins = [(0,.03,'0-3%'),(.03,.06,'3-6%'),(.06,.10,'6-10%'),
+            (.10,.20,'10-20%'),(.20,9,'20%+')]
     print("\nTranche move | n | CLV mou médian | %battent clôture | %côté steamé gagne | ROI suivi")
     for lo, hi, lab in bins:
         grp = [r for r in rows if lo <= r['mag_cote_pct']/100 < hi]
