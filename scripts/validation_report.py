@@ -228,7 +228,24 @@ FREEZE_DATE_ROIBANDE = '2026-09-06'  # hypothèse 'ROI, bande de cote 2,0-3,0' g
 H13_COTE_MIN = 2.0
 H13_COTE_MAX = 3.0
 
-FREEZE_DATE_AMPLI = '2026-09-07'   # hypothèse 'amplitude + timing' gelée ce jour
+# REGELÉE LE 12/09/2026. Le gel du 07/09 portait sur `mag_cote_pct`, colonne
+# alors calculée sur pin_close : le critère « mouvement > 5 % » n'était pas
+# connaissable à l'instant du pari. Une hypothèse qu'aucun détecteur temps
+# réel ne peut appliquer ne se valide pas -- même si elle sort à 87 % de
+# CLV>0. Les chiffres fondateurs (A n=275 ROI +20,9 %, B et C) sont issus de
+# cette colonne et ne sont PLUS des références, ni in-sample ni ailleurs.
+#
+# La règle est reprise à l'identique -- même seuil 5 %, même fenêtre 8-24 h,
+# aucun paramètre retouché -- sur l'ampleur mesurée à la détection. Ne rien
+# réoptimiser est délibéré : réajuster le seuil « pour retrouver le volume »
+# rouvrirait l'espace de recherche que le gel du 07/09 avait fermé. Le volume
+# baisse, c'est une conséquence de la correction, pas un choix.
+#
+# Mesuré sur l'historique avant regel (donc in-sample, cité comme repère et
+# pas comme preuve) : la règle propre donne 71 % de CLV>0 [57 ; 82] contre
+# 66 % [61 ; 71] pour le témoin -- IC recouvrants, pas de séparation.
+FREEZE_DATE_AMPLI_V1 = '2026-09-07'  # gel INVALIDÉ (critère look-ahead)
+FREEZE_DATE_AMPLI = '2026-09-12'   # hypothèse 'amplitude + timing' regelée ce jour
 # STRATÉGIE A — paramètres gelés, source de vérité unique.
 # Volontairement UN SEUL degré de liberté par dimension, et AUCUN filtre de
 # cote : voir roi_ampli_watch() pour le raisonnement.
@@ -1883,6 +1900,11 @@ def roi_ampli_watch():
           cote. »
 
     Gelée le 2026-09-07, à partir du rapport de robustesse externe.
+    REGELÉE LE 2026-09-12 sur l'ampleur mesurée à la détection : le critère
+    du 07/09 lisait une colonne calculée sur la clôture Pinnacle. TOUS les
+    chiffres cités plus bas dans cette docstring (A/B/C, ROI +20,9 % etc.)
+    viennent de ce critère contaminé -- ils sont conservés pour mémoire du
+    raisonnement de sélection A vs B vs C, ils ne valent plus comme mesures.
 
     ── POURQUOI LA STRATÉGIE A SEULE ────────────────────────────────────
     Le rapport proposait trois règles à geler : A (celle-ci), B (A + cote
@@ -1959,18 +1981,24 @@ def roi_ampli_watch():
 
     retenus, n_in, n_zone = [], 0, 0
     with fh:
-        for r in csv.DictReader(fh):
+        lecteur = csv.DictReader(fh)
+        # GARDE DE VERSION (12/09/2026) — voir FREEZE_DATE_AMPLI plus haut.
+        # Sans elle, un CSV antérieur au correctif ferait tourner
+        # l'hypothèse regelée sur l'ancien critère contaminé, et le rapport
+        # afficherait un verdict apparemment propre sur des chiffres qui ne
+        # le sont pas. On préfère ne rien afficher.
+        if 'mag_cote_pct_POSTHOC' not in (lecteur.fieldnames or []):
+            print(f"  {SRC} antérieur au correctif du 12/09/2026 "
+                  f"(colonne mag_cote_pct_POSTHOC absente) : `mag_cote_pct` y "
+                  f"contient la clôture. Relancer move_audit.py.")
+            return None
+        for r in lecteur:
             try:
                 cote = float(r['entry'])
-                # mag_cote_pct : raccourcissement de la cote Pinnacle.
-                # ATTENTION, cette colonne est encore calculée sur pin_close
-                # (audit du 06/09) : elle contient donc la clôture. Elle reste
-                # utilisable ICI parce que le rapport a défini la zone avec,
-                # et qu'un gel doit reproduire exactement la règle gelée --
-                # mais c'est une limite CONNUE de cette hypothèse, pas un
-                # oubli. Si elle survit, il faudra la rejouer avec une
-                # amplitude mesurée à la détection avant d'en tirer une
-                # décision opérationnelle.
+                # mag_cote_pct : raccourcissement de la cote Pinnacle À LA
+                # DÉTECTION depuis le correctif du 12/09/2026 (la garde de
+                # version plus haut refuse tout CSV antérieur, où cette même
+                # colonne contenait la clôture).
                 move = float(r['mag_cote_pct'])
                 lead = float(r['lead_min'])
             except (TypeError, ValueError, KeyError):
