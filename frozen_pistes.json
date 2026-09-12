@@ -35,7 +35,8 @@
   "P7_segments": {
    "script": "segments_study.py",
    "test": "IC95 du segment doit se separer du temoin global a n>=30 ; temoin PAR segment pour toute future hypothese contextuelle",
-   "statut_gel": "ATP 75 / WTA 70 (IC recouvrants) ; Challengers n=22, en attente"
+   "statut_gel": "CONSTAT 12/09/2026 (metrique du protocole : clv_book_pct). Correctif prealable : les Grands Chelems n'ont aucun prefixe ATP/WTA et tombaient tous dans 'autre' (167 moves sur 180 apres le 26/08) ; segment 'Grand Chelem' ajoute, regle Challenger et temoin global INCHANGES, donc le protocole gele le 25/08 n'est pas modifie. | Historique complet (n=1296, temoin 67.1%) : ATP 69.9% [65;74] n=399 ; WTA 65.3% [61;70] n=401 ; Challenger 59.8% [53;66] n=199 ; Grand Chelem 70.6% [65;76] n=269 ; autre 28 (Berlin seul, circuit indeterminable depuis le libelle). | HORS ECHANTILLON, post-gel >=26/08 (n=353, temoin 67.4%) : Challenger 60.1% [53;67] n=173 ; Grand Chelem 73.1% [66;79] n=167 ; ATP n=9 et WTA n=4, sous le seuil. | LECTURE : l'hypothese pre-specifiee disait Challengers moins efficients donc CLV SUPERIEUR au temoin. On observe l'inverse dans les deux fenetres -- direction contredite. Mais la separation n'est PAS franche hors echantillon : la borne haute du Challenger (67) touche le temoin (67.4). Le critere gele (IC95 separe du temoin a n>=30) n'est donc pas rempli proprement. Statut : DIRECTION CONTREDITE, separation limite, pas de verdict. Aucun segment ne se separe du temoin. | SUITE : laisser courir sans reoptimiser. Si le Challenger confirme sous le temoin sur une fenetre supplementaire, la piste devient 'Challengers PLUS efficients', qui est une hypothese NOUVELLE et exige son propre gel date -- elle ne peut pas heriter du gel du 25/08, dont elle est la negation.",
+   "statut_gel_precedent": "ATP 75 / WTA 70 (IC recouvrants) ; Challengers n=22, en attente"
   },
   "P8_confirmation_pinnacle": {
    "script": "confirmation_pinnacle_study.py",
