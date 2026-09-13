@@ -1,0 +1,40 @@
+name: Delete Stuck Run
+
+on:
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: "run_id complet (ex: 34748882042)"
+        required: true
+        type: string
+
+jobs:
+  delete:
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+    steps:
+      - name: Supprimer le run bloqué
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          RID: ${{ inputs.run_id }}
+        run: |
+          set +e
+
+          echo "=== Runs en file d'attente ==="
+          gh api "repos/$REPO/actions/runs?status=queued&per_page=100" \
+            --jq '.workflow_runs[] | "#\(.run_number)  id=\(.id)  \(.created_at)  \(.name)"'
+
+          echo ""
+          echo "=== État du run $RID ==="
+          gh api "repos/$REPO/actions/runs/$RID" \
+            --jq '{run_number, status, conclusion, created_at}'
+
+          echo ""
+          echo "=== Suppression ==="
+          gh api -X DELETE "repos/$REPO/actions/runs/$RID" -i 2>&1 | head -8
+
+          echo ""
+          echo "=== Vérification ==="
+          gh api "repos/$REPO/actions/runs/$RID" --jq '{run_number, status}' 2>&1 | head -3
