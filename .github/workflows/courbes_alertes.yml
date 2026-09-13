@@ -195,12 +195,33 @@ jobs:
         # Écrit APRÈS le calcul et AVANT le commit, pour être poussé avec.
         if: always()
         run: |
+          # CORRIGÉ LE 13/09/2026 — FORMAT ALIGNÉ SUR POLYMARKET.
+          #
+          # Constaté ce jour : ce workflow repartait toutes les 3 MINUTES au
+          # lieu de 10, saturait les runners, et laissait capture_closing en
+          # file d'attente 4 h 17 (run #16631, 11:04 -> jamais démarré). Les
+          # closings sortaient de la fenêtre de 35 min : l'audit QA est tombé
+          # à 0 % de closings fiables. C'est exactement le scénario décrit
+          # dans le commentaire de cette étape -- « minsDepuis vaudrait
+          # Infinity et ce job repartirait à chaque réveil du Worker ».
+          #
+          # Les trois collecteurs n'écrivaient pas le même format :
+          #   kalshi     "2026-09-13T12:07:28.795"      (naïf)
+          #   polymarket "2026-09-13T12:16:41.712Z"     (suffixe Z)
+          #   courbes    "2026-09-13T12:31:03+00:00"    (décalage explicite)
+          # et celui-ci était le seul à n'écrire QUE last_run_at, sans
+          # `running` ni `updated_at`. On s'aligne sur polymarket, dont la
+          # cadence tient : même suffixe Z, mêmes champs, mêmes millisecondes.
+          #
+          # Si la cadence reste à 3 min après ce correctif, le format n'est
+          # pas en cause : c'est le champ lu par planifierCollecteur() qu'il
+          # faut vérifier dans le Worker.
           python3 - <<'PY'
           import json, datetime
-          json.dump(
-              {'last_run_at': datetime.datetime.now(datetime.timezone.utc)
-                                      .isoformat(timespec='seconds')},
-              open('courbes_alertes_state.json', 'w'), indent=1)
+          now = datetime.datetime.now(datetime.timezone.utc)
+          h = now.isoformat(timespec='milliseconds').replace('+00:00', 'Z')
+          json.dump({'running': False, 'last_run_at': h, 'updated_at': h},
+                    open('courbes_alertes_state.json', 'w'), indent=1)
           PY
           cat courbes_alertes_state.json
 
