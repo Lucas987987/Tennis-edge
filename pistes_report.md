@@ -58,15 +58,15 @@ PISTE 3 — DÉCROISSANCE DU PRIX APRÈS ALERTE
 (exploratoire, protocole gelé le 2026-08-25 — voir frozen_pistes.json ;
  n<30 = suivi sans conclusion ; témoin = population concernée)
 ==============================================================
-  339 alertes appariées à au moins un book soft
+  336 alertes appariées à au moins un book soft
   — alertes à >6h du coup d'envoi —
   — alertes à 1-6h du coup d'envoi —
   — alertes à <1h du coup d'envoi —
-    T+ 0min : CLV atteignable médian +0.0% | 24% positifs | n=4168
-    T+ 2min : CLV atteignable médian +0.0% | 24% positifs | n=4171
-    T+10min : CLV atteignable médian +0.0% | 21% positifs | n=4178
-    T+30min : CLV atteignable médian +0.0% | 15% positifs | n=4197
-    T+60min : CLV atteignable médian +0.0% | 9% positifs | n=4201
+    T+ 0min : CLV atteignable médian +0.0% | 24% positifs | n=4129
+    T+ 2min : CLV atteignable médian +0.0% | 24% positifs | n=4132
+    T+10min : CLV atteignable médian +0.0% | 21% positifs | n=4139
+    T+30min : CLV atteignable médian +0.0% | 15% positifs | n=4158
+    T+60min : CLV atteignable médian +0.0% | 9% positifs | n=4162
   Lecture : la différence T+0 vs T+30 est le prix de la lenteur —
   c'est la fenêtre à annoncer aux abonnés et la décote du ROI papier.
 
@@ -77,22 +77,22 @@ PISTE 4 — LA CASCADE DES BOOKS
 ==============================================================
   délai médian pour parcourir 50 % du move (n>=10 alertes) :
     888sport           16 min (n=36)
-    1xbet              17 min (n=118)
+    1xbet              17 min (n=116)
     tipico             18 min (n=49)
-    22bet              19 min (n=113)
+    22bet              20 min (n=112)
     winamax.fr         20 min (n=26)
     marathonbet        21 min (n=85)
     betway             22 min (n=38)
     netbet             33 min (n=60)
-    betsson            34 min (n=109)
+    betsson            34 min (n=108)
     coolbet            34 min (n=68)
     unibet             43 min (n=47)
     unibet.fr          44 min (n=11)
-    bet365             46 min (n=38)
-    leovegas           51 min (n=71)
-    bet365.fr          53 min (n=22)
+    bet365             45 min (n=37)
+    bet365.fr          48 min (n=21)
+    leovegas           50 min (n=70)
     bwin               53 min (n=63)
-    pmu                58 min (n=39)
+    pmu                55 min (n=38)
   Lecture : le bas du classement = les books où le CLV vit le plus
   longtemps. Stabilité à vérifier avant tout gel en hypothèse.
 
@@ -101,8 +101,8 @@ PISTE 6 — PROPAGATION ML -> MARCHÉ SET1
 (exploratoire, protocole gelé le 2026-08-25 — voir frozen_pistes.json ;
  n<30 = suivi sans conclusion ; témoin = population concernée)
 ==============================================================
-  3529 paires (fenêtre alerte / fenêtre témoin même match, set1)
-  fenêtre alerte plus baissière que sa fenêtre témoin : 723/3529 = 20% (IC95 19-22%)
+  3494 paires (fenêtre alerte / fenêtre témoin même match, set1)
+  fenêtre alerte plus baissière que sa fenêtre témoin : 718/3494 = 21% (IC95 19-22%)
   IC95 entièrement > 50 % ET n>=30 -> propagation confirmée, à
   geler alors en hypothèse de la famille principale.
   ⚠️ RÉSULTAT INVERSE — lire avec le CONFONDEUR en tête : la
@@ -116,17 +116,17 @@ PISTE 2 — LEAD-LAG POLYMARKET vs PINNACLE
 (exploratoire, protocole gelé le 2026-08-25 — voir frozen_pistes.json ;
  n<30 = suivi sans conclusion ; témoin = population concernée)
 ==============================================================
-  246 marchés Polymarket avec ticks (fenêtre récente)
-  34 matchs appariés avec corrélation exploitable (|r|>0,15)
-  décalage médian du pic de corrélation : +0 min
-  (négatif = Polymarket PRÉCÈDE Pinnacle = signal en amont du steam)
+  266 marchés Polymarket avec ticks (fenêtre récente)
+  28 matchs appariés avec corrélation exploitable (|r|>0,15)
+  TROP TÔT : verdict à n>=30 matchs — le protocole est gelé,
+  la donnée s'accumule toute seule. Relance hebdomadaire.
 
 ==============================================================
 CONFIRMATION PINNACLE — hypothèse ouverture précoce
 (exploratoire, protocole gelé le 2026-08-26 — voir frozen_pistes.json ;
  n<30 = suivi sans conclusion ; témoin = population concernée)
 ==============================================================
-  45 signaux POSTÉRIEURS au gel (les 62 signaux du 13-26/08 ayant servi à formuler le protocole sont exclus).
+  49 signaux POSTÉRIEURS au gel (les 62 signaux du 13-26/08 ayant servi à formuler le protocole sont exclus).
   23 signaux appariés (Pinnacle + book, fenêtre 60min)
     Pinnacle CONFIRME (>= 0.5pt en 60min)      n=  5 — sous 30, suivi sans verdict
     Pinnacle ne confirme pas                   n= 18 — sous 30, suivi sans verdict
