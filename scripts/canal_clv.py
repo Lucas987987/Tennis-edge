@@ -78,6 +78,27 @@ EXCHANGES = set(b.strip() for b in os.environ.get(
     'EXCHANGES', 'betfair-ex,betfair,matchbook,smarkets,betdaq').split(',') if b.strip())
 
 ARCHIVE = os.environ.get('ARCHIVE', 'canal_clv_exclus.csv')
+# MARGE DE COMPLÉTUDE (13/09/2026) — minutes après le coup d'envoi avant de
+# GELER une ligne. Le gel est définitif : mesurer trop tôt inscrit une valeur
+# fausse pour toujours. Voir la note dans main().
+MARGE_MIN = int(os.environ.get('MARGE_MIN', '60'))
+
+
+def _maintenant():
+    """Heure courante, surchargeable par NOW_OVERRIDE.
+
+    Ajouté le 13/09/2026 avec la condition de complétude : une règle qui
+    dépend de l'heure ne se teste pas si l'heure n'est pas injectable. Même
+    convention que paper_journal.py.
+    """
+    v = os.environ.get('NOW_OVERRIDE', '')
+    if v:
+        try:
+            return datetime.datetime.fromisoformat(
+                v.replace('Z', '').replace('+00:00', ''))
+        except Exception:
+            pass
+    return datetime.datetime.utcnow()
 
 FIELDS = ['date', 'uid', 'joueur', 'book', 'prix_signale', 'cloture',
           'ecart_annonce', 'clv', 'source', 'exclu', 'match_id', 'gele_le']
@@ -149,8 +170,25 @@ def load_closes():
                 pts = sorted(q for q in pts if q[0] < ct)   # PRÉ-MATCH uniquement
                 if pts and name:
                     k = (r.get('uid'), r.get('book'), name)
-                    if k not in closes:                     # priorité à la 1re source
-                        closes[k] = (pts[-1][1], origine)
+                    # DERNIER POINT LE PLUS TARDIF — CORRIGÉ LE 13/09/2026.
+                    #
+                    # Avant : « priorité à la 1re source », donc `live`
+                    # gagnait toujours contre `hist`. Or book_curves_live.jsonl
+                    # est une fenêtre GLISSANTE reconstruite à chaque cycle :
+                    # quand elle ne couvre pas la fin de la fenêtre pré-match
+                    # d'un match, son dernier point est plus ANCIEN que celui
+                    # de hist, et c'est pourtant lui qui était retenu.
+                    #
+                    # Cas réel : écart 22bet sur Arthur Weber (11/09). Retenu
+                    # 2.694 → 2.694, soit 0 %. Les partitions de ticks
+                    # montrent le prix à 2.32 avant le coup d'envoi, soit
+                    # +16 %. Le canal a publié 0 % sur une mesure tronquée.
+                    #
+                    # La fraîcheur d'une source ne dit rien de sa COMPLÉTUDE.
+                    # On garde donc le point pré-match le plus tardif, quelle
+                    # que soit la source qui le fournit.
+                    if k not in closes or pts[-1][0] > closes[k][2]:
+                        closes[k] = (pts[-1][1], origine, pts[-1][0])
     if _croises_tentes >= 10:
         taux = 100 * _croises_resolus / _croises_tentes
         niveau = "⚠️ " if taux < 30 else ""
@@ -206,10 +244,11 @@ def main():
     ledger = load_ledger()
     n_avant = len(ledger)
     closes, idx = load_closes()
-    today = datetime.datetime.utcnow().strftime('%Y-%m-%d')
+    today = _maintenant().strftime('%Y-%m-%d')
 
     nouveaux = 0
     non_mesurables = 0
+    en_attente = 0
     for line in open(LOG, encoding='utf-8'):
         line = line.strip()
         if not line:
@@ -221,6 +260,7 @@ def main():
         date = str(m.get('t'))[:16]
         uid = m.get('uid') or ''
         joueur = m.get('joueur')
+        commence = _dt(m.get('commence'))
         for entry in (m.get('retards') or []):
             try:
                 book, prix, ecart = entry[0], float(entry[1]), float(entry[2])
@@ -235,11 +275,30 @@ def main():
                 if not ledger[k].get('match_id'):
                     ledger[k]['match_id'] = _canon(idx, uid)
                 continue                       # sinon : on n'y retouche JAMAIS
+            # COMPLÉTUDE AVANT GEL — AJOUTÉ LE 13/09/2026.
+            #
+            # Ce registre ne se retouche JAMAIS (cf. le `continue` juste
+            # au-dessus) : une ligne gelée trop tôt porte une valeur fausse
+            # pour toujours. Or rien n'imposait que le match ait eu lieu.
+            #
+            # Cas réel du 11/09/2026 : l'écart 22bet sur Arthur Weber (match
+            # le 12/09 à 03h00 UTC) a été gelé à 2.694 → 2.694, soit 0 %,
+            # alors que le prix a fini à 2.32 (+16 %). Sur les 226 lignes du
+            # registre, 71 sont à exactement 0 % ; une part d'entre elles est
+            # de cette nature, pas des prix réellement figés.
+            #
+            # Une ligne en attente n'entre pas au registre et sera reprise au
+            # passage suivant : ne rien geler coûte un jour, geler faux coûte
+            # définitivement.
+            if commence and (_maintenant() - commence).total_seconds() \
+                    < MARGE_MIN * 60:
+                en_attente += 1
+                continue
             got = closes.get((uid, book, joueur))
             if not got:
                 non_mesurables += 1
                 continue
-            cl, origine = got
+            cl, origine = got[0], got[1]
             ledger[k] = dict(
                 date=date, uid=uid, joueur=joueur, book=book,
                 prix_signale=prix, cloture=cl, ecart_annonce=round(ecart, 1),
@@ -308,7 +367,8 @@ def main():
 
     print("=== CLV RÉALISÉ DES ÉCARTS PUBLIÉS ===")
     print(f"registre : {n_avant} lignes gelées + {nouveaux} nouvelles = {len(rows)}"
-          f"  ({non_mesurables} pas encore mesurables)")
+          f"  ({non_mesurables} pas encore mesurables, "
+          f"{en_attente} en attente du coup d'envoi)")
     print()
     print("CHIFFRE DE TÊTE — une observation par MATCH (déduplication) :")
     print(f"  n = {len(match_clv)} matchs | CLV médian {st.median(match_clv):+.1f}% "
