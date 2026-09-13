@@ -1,45 +1,45 @@
-# Études Polymarket/Kalshi — rapport du 2026-09-12
+# Études Polymarket/Kalshi — rapport du 2026-09-13
 
 ```
 --- polymarket_leadlag ---
-Polymarket : 9 partition(s), 1239838 ticks lus, 432 match(s) avec série 'match'
+Polymarket : 9 partition(s), 1250936 ticks lus, 499 match(s) avec série 'match'
   book_curves_live.jsonl: 0 courbes reconstruites | 0 points | 0 partitions
-Pinnacle   : 309 match(s) avec courbe exploitable
+Pinnacle   : 306 match(s) avec courbe exploitable
 
 ========================================================================
 LEAD/LAG POLYMARKET vs PINNACLE — marché 'match'
-274 match(s) · grille 5 min · variations, pas niveaux
+276 match(s) · grille 5 min · variations, pas niveaux
 ========================================================================
   décalage |  corrélation | qui mène
 ------------------------------------------------------------------------
-    -60min |       +0.002 | Polymarket devant
+    -60min |       +0.009 | Polymarket devant
     -55min |       -0.004 | Polymarket devant
-    -50min |       +0.001 | Polymarket devant
-    -45min |       -0.009 | Polymarket devant
-    -40min |       -0.003 | Polymarket devant
-    -35min |       -0.002 | Polymarket devant
-    -30min |       -0.001 | Polymarket devant
-    -25min |       -0.010 | Polymarket devant
-    -20min |       -0.000 | Polymarket devant
-    -15min |       +0.014 | Polymarket devant
-    -10min |       -0.003 | Polymarket devant
-     -5min |       +0.008 | Polymarket devant
-     +0min |       +0.041 | simultané
-     +5min |       +0.045 | Pinnacle devant  <<<
-    +10min |       +0.041 | Pinnacle devant
-    +15min |       +0.017 | Pinnacle devant
-    +20min |       +0.011 | Pinnacle devant
-    +25min |       +0.016 | Pinnacle devant
-    +30min |       +0.001 | Pinnacle devant
-    +35min |       +0.007 | Pinnacle devant
-    +40min |       +0.007 | Pinnacle devant
-    +45min |       +0.000 | Pinnacle devant
-    +50min |       +0.007 | Pinnacle devant
-    +55min |       +0.008 | Pinnacle devant
-    +60min |       +0.001 | Pinnacle devant
+    -50min |       -0.002 | Polymarket devant
+    -45min |       -0.007 | Polymarket devant
+    -40min |       +0.000 | Polymarket devant
+    -35min |       -0.005 | Polymarket devant
+    -30min |       +0.001 | Polymarket devant
+    -25min |       -0.008 | Polymarket devant
+    -20min |       +0.001 | Polymarket devant
+    -15min |       +0.011 | Polymarket devant
+    -10min |       -0.011 | Polymarket devant
+     -5min |       +0.005 | Polymarket devant
+     +0min |       +0.048 | simultané  <<<
+     +5min |       +0.037 | Pinnacle devant
+    +10min |       +0.036 | Pinnacle devant
+    +15min |       +0.019 | Pinnacle devant
+    +20min |       +0.006 | Pinnacle devant
+    +25min |       +0.018 | Pinnacle devant
+    +30min |       +0.002 | Pinnacle devant
+    +35min |       +0.008 | Pinnacle devant
+    +40min |       +0.006 | Pinnacle devant
+    +45min |       +0.002 | Pinnacle devant
+    +50min |       +0.005 | Pinnacle devant
+    +55min |       +0.006 | Pinnacle devant
+    +60min |       +0.006 | Pinnacle devant
 
-Maximum à +5 min (corrélation +0.045)
-Seuil de bruit (95e centile sur 200 appariements factices) : +0.060
+Maximum à +0 min (corrélation +0.048)
+Seuil de bruit (95e centile sur 200 appariements factices) : +0.058
 → NON CONCLUANT : le maximum ne dépasse pas ce que produisent
   des paires de matchs sans rapport. Aucun lead/lag démontré.
 ⚠️ |décalage| <= 5 min = pas de la grille. Les courbes pinnacle sont échantillonnées toutes les 5-10 min : un décalage
@@ -49,34 +49,35 @@ Rapport écrit dans polymarket_leadlag_report.json
 
 --- polymarket_studies ---
 Source(s) : kalshi (9 partition(s))
-  1239838 ticks lus · 427 match(s) exploitables (fourchette max 10 pts)
-Books      : 310 match(s), dont 308 avec pinnacle
+  1250936 ticks lus · 493 match(s) exploitables (fourchette max 10 pts)
+Books      : 307 match(s), dont 305 avec pinnacle
 
 ==========================================================================
 1. VALIDATION DU DÉVIGAGE — Shin(Pinnacle) vs marché de prédiction
 ==========================================================================
-  n = 282 matchs (47326 instants, grille 5 min)
-  écart moyen Shin - marché      : -0.04 pts  IC95 [-0.11 ; +0.04]
-  écart médian par match : -0.02 pts
+  n = 285 matchs (43627 instants, grille 5 min)
+  écart moyen Shin - marché      : -0.08 pts  IC95 [-0.16 ; -0.00]
+  écart médian par match : -0.09 pts
 
   méthode          matchs  écart moyen                IC95
   --------------------------------------------------------
-  Shin                282       -0.04  [-0.11 ; +0.04]
-  proportionnel       282       -0.01  [-0.13 ; +0.12]
-  → plus proche de Polymarket : proportionnel (écart 0.01 contre 0.04 pt)
+  Shin                285       -0.08  [-0.16 ; -0.00]
+  proportionnel       285       -0.07  [-0.20 ; +0.06]
+  → plus proche de Polymarket : proportionnel (écart 0.07 contre 0.08 pt)
     mais la différence entre les deux est elle-même négligeable :
     sur cet échantillon, le choix de méthode ne change rien.
 
    tranche favori | matchs |  écart moyen |               IC95
   ------------------------------------------------------------
-           50-60% |    90 |       -0.23 | [ -0.63 ;  +0.18]
-           60-70% |    98 |       +0.11 | [ -0.10 ;  +0.33]
-           70-80% |    90 |       -0.13 | [ -0.37 ;  +0.10]
-           80-90% |    52 |       -0.12 | [ -0.56 ;  +0.31]
-             90%+ |    18 |       +0.05 | [ -0.41 ;  +0.51]
+           50-60% |    91 |       -0.39 | [ -0.79 ;  +0.01]
+           60-70% |    99 |       +0.06 | [ -0.16 ;  +0.27]
+           70-80% |    85 |       -0.11 | [ -0.37 ;  +0.14]
+           80-90% |    51 |       -0.13 | [ -0.61 ;  +0.35]
+             90%+ |    21 |       +0.05 | [ -0.40 ;  +0.50]
 
-  → Shin est INDISCERNABLE du prix du marché de prédiction : le dévigage
-    partout dans le projet est validé.
+  → biais détectable (-0.08 pts) mais SOUS le seuil de matérialité
+    de 0.5 pt. Statistiquement réel, pratiquement sans effet :
+    aucune décision du projet ne change pour un tel décalage.
   ⚠️ ceci suppose que le milieu de fourchette Polymarket est non biaisé.
     Une fourchette large le rend imprécis, pas forcément faux — mais si
     l'écart varie fortement selon la tranche, suspecter Polymarket autant
@@ -88,22 +89,22 @@ Books      : 310 match(s), dont 308 avec pinnacle
 ==========================================================================
     Polymarket |  n écarts |  CLV médian |  CLV moyen |               IC95
   --------------------------------------------------------------------
-      confirme |         0 | trop peu
+      confirme |         2 | trop peu
        infirme |         0 | trop peu
-          muet |       236 |      +16.9% |     +25.4% | [ +20.8 ;  +29.9]
+          muet |       213 |      +17.1% |     +26.2% | [ +21.3 ;  +31.0]
 
   → pas encore assez d'écarts dans les deux groupes pour comparer.
 
 ==========================================================================
 3. DIVERGENCE ≥ 5 PTS — qui a raison, le marché ou pinnacle ?
 ==========================================================================
-  0 match(s) divergent(s) avec résultat connu — trop peu.
+  1 match(s) divergent(s) avec résultat connu — trop peu.
   Il en faut plusieurs centaines : compter quelques semaines.
 
 Rapport écrit dans polymarket_studies_report.json
 
 --- pm_calibration_track ---
-ResultIndex : 2036 résultats · 1997 paires · fenêtre ±5 j
+ResultIndex : 2118 résultats · 2075 paires · fenêtre ±5 j
 
 ==============================================================================
 HYPOTHÈSE GELÉE N°12 — calibration des marchés de prédiction
@@ -116,13 +117,13 @@ Gelée le 2026-08-24 · tranches et sens FIXÉS, non modifiables
 POLYMARKET
 ==============================================================================
 
-  HORS ÉCHANTILLON (décisif) — 120 observation(s)
+  HORS ÉCHANTILLON (décisif) — 152 observation(s)
   tranche           n   annoncé   observé    écart          IC95 écart
   --------------------------------------------------------------------
-  30 – 45 %        29     37.9%     41.4%    +3.5  [ -12.4 ;  +21.3]
-                        il faudrait ~753 obs pour trancher à cet écart (724 manquantes)
-  55 – 70 %        28     61.8%     57.1%    -4.7  [ -22.7 ;  +11.7]
-                        il faudrait ~418 obs pour trancher à cet écart (390 manquantes)
+  30 – 45 %        38     37.6%     34.2%    -3.4  [ -16.4 ;  +12.5]
+                        il faudrait ~801 obs pour trancher à cet écart (763 manquantes)
+  55 – 70 %        37     62.2%     64.9%    +2.6  [ -13.5 ;  +15.9]
+                        il faudrait ~1301 obs pour trancher à cet écart (1264 manquantes)
 
   origine (pour mémoire) — 0 observation(s)
 
@@ -130,13 +131,13 @@ POLYMARKET
 KALSHI
 ==============================================================================
 
-  HORS ÉCHANTILLON (décisif) — 420 observation(s)
+  HORS ÉCHANTILLON (décisif) — 500 observation(s)
   tranche           n   annoncé   observé    écart          IC95 écart
   --------------------------------------------------------------------
-  30 – 45 %        88     37.2%     35.2%    -1.9  [ -11.1 ;   +8.5]
-                        il faudrait ~2363 obs pour trancher à cet écart (2275 manquantes)
-  55 – 70 %        84     62.6%     64.3%    +1.6  [  -9.0 ;  +11.1]
-                        il faudrait ~3331 obs pour trancher à cet écart (3247 manquantes)
+  30 – 45 %       112     37.1%     34.8%    -2.3  [ -10.5 ;   +6.9]
+                        il faudrait ~1717 obs pour trancher à cet écart (1605 manquantes)
+  55 – 70 %       107     62.7%     64.5%    +1.7  [  -7.7 ;  +10.2]
+                        il faudrait ~2956 obs pour trancher à cet écart (2849 manquantes)
 
   origine (pour mémoire) — 0 observation(s)
 
@@ -147,31 +148,31 @@ KALSHI
 Rapport écrit dans pm_calibration_track.json
 
 --- pm_observations ---
-ResultIndex : 2036 résultats · 1997 paires · fenêtre ±5 j
-2286 match(s) en contexte · 2286 avec courbe pinnacle
-polymarket : 1,745,679 ticks lus · 188 observation(s)
-kalshi : 1,239,838 ticks lus · 588 observation(s)
+ResultIndex : 2118 résultats · 2075 paires · fenêtre ±5 j
+2326 match(s) en contexte · 2326 avec courbe pinnacle
+polymarket : 1,950,150 ticks lus · 196 observation(s)
+kalshi : 1,250,936 ticks lus · 594 observation(s)
 
 ==========================================================================
-TABLE CONSOLIDÉE — 776 observation(s)
+TABLE CONSOLIDÉE — 790 observation(s)
 ==========================================================================
-  avec résultat connu     : 540
-  postérieures au gel     : 540
-  avec prix pinnacle    : 772
+  avec résultat connu     : 652
+  postérieures au gel     : 652
+  avec prix pinnacle    : 786
 
-  par marché (avec résultat) : kalshi 420 · polymarket 120
+  par marché (avec résultat) : kalshi 500 · polymarket 152
 
-  par niveau (avec résultat) : challenger 458 · grand_chelem 82
+  par niveau (avec résultat) : challenger 568 · grand_chelem 42 · wta 42
 
   tranche de prix      n  dont après gel
   ----------------------------------------
-  0 – 15 %            29              29
-  15 – 30 %           95              95
-  30 – 45 %          117             117
-  45 – 55 %           58              58
-  55 – 70 %          112             112
-  70 – 85 %          100             100
-  85 – 100 %          29              29
+  0 – 15 %            32              32
+  15 – 30 %          100             100
+  30 – 45 %          150             150
+  45 – 55 %           88              88
+  55 – 70 %          144             144
+  70 – 85 %          106             106
+  85 – 100 %          32              32
 
 pm_observations.jsonl
   Les études lisent désormais ce fichier au lieu de reparcourir
@@ -180,6 +181,6 @@ pm_observations.jsonl
 --- kalshi_lead_track ---
 HYPOTHÈSE GELÉE N°13 — Kalshi mène-t-il Pinnacle ? (gel 2026-09-05)
   horizon 45 min · seuil signal 1.0 pt · fourchette <= 2 pts
-  683 observation(s) construite(s) · 222 nouvelle(s) · 2398 au journal kalshi_lead_obs.jsonl
+  718 observation(s) construite(s) · 278 nouvelle(s) · 2676 au journal kalshi_lead_obs.jsonl
 
 ```
