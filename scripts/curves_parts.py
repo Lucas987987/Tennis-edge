@@ -64,9 +64,37 @@ def append(market, events):
 
 
 def rebuild(market, out_file=None, retain_days=None):
-    """Reconstitue le fichier plat depuis toutes les partitions du marché."""
+    """Reconstitue le fichier plat depuis toutes les partitions du marché.
+
+    ÉCHEC BRUYANT SI AUCUNE PARTITION — AJOUTÉ LE 13/09/2026.
+
+    Jusqu'ici, zéro partition produisait un fichier plat VIDE, un retour 0,
+    et aucune erreur. Le pipeline enchaînait sur des courbes vides : pas
+    d'alerte émise, pas de CLV mesurable, et rien dans les logs pour dire
+    que la fenêtre d'entrée avait disparu. C'est le mode de panne le plus
+    coûteux du projet -- le même que le canal, où une source tronquée
+    donnait un « 0 % » qui ressemblait à un résultat.
+
+    Un fichier plat vide n'est jamais un état légitime en production : les
+    partitions sont écrites à chaque cycle de capture. Zéro partition veut
+    dire que quelque chose a disparu (purge trop agressive, checkout
+    incomplet, cache non restauré), pas que le marché est calme.
+
+    AUTORISER_VIDE=1 pour les cas légitimes : premier démarrage, tests,
+    rejeu sur un dépôt neuf.
+    """
     out_file = out_file or MARKETS.get(market, f"{market}_curves_live.jsonl")
     retain = RETAIN_DAYS if retain_days is None else retain_days
+    motif = os.path.join(PARTS_DIR, f"live_{market}_*.jsonl")
+    n_parts = len(glob.glob(motif))
+    if n_parts == 0 and os.environ.get('AUTORISER_VIDE', '') != '1':
+        raise SystemExit(
+            f"❌ rebuild({market}) : AUCUNE partition {motif}.\n"
+            f"   Le fichier plat serait vide et le pipeline tournerait sur\n"
+            f"   des courbes inexistantes sans le signaler. Arrêt.\n"
+            f"   Causes usuelles : cache non restauré, checkout partiel,\n"
+            f"   purge trop agressive (LIVE_DAYS).\n"
+            f"   Si le vide est légitime (1er démarrage) : AUTORISER_VIDE=1.")
     now = datetime.utcnow()
     cutoff = now - timedelta(days=retain)
     curves, n_pts = {}, 0
@@ -106,7 +134,14 @@ def rebuild(market, out_file=None, retain_days=None):
         for c in curves.values():
             f.write(json.dumps(c, ensure_ascii=False) + '\n')
     print(f"  {out_file}: {len(curves)} courbes reconstruites | {n_pts} points "
-          f"| {len(glob.glob(os.path.join(PARTS_DIR, f'live_{market}_*.jsonl')))} partitions")
+          f"| {n_parts} partitions")
+    # Des partitions présentes mais aucun point exploitable : autre symptôme
+    # du même mal (partitions tronquées, format inattendu). On refuse aussi.
+    if n_pts == 0 and n_parts > 0 and os.environ.get('AUTORISER_VIDE', '') != '1':
+        raise SystemExit(
+            f"❌ rebuild({market}) : {n_parts} partition(s) lue(s), 0 point "
+            f"retenu.\n   Partitions tronquées ou hors fenêtre de rétention "
+            f"({retain} j). Arrêt.")
     return len(curves)
 
 
