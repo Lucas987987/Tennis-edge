@@ -1,8 +1,8 @@
-# Études Polymarket/Kalshi — rapport du 2026-09-17
+# Études Polymarket/Kalshi — rapport du 2026-09-18
 
 ```
 --- polymarket_leadlag ---
-Polymarket : 9 partition(s), 1405861 ticks lus, 488 match(s) avec série 'match'
+Polymarket : 9 partition(s), 1392651 ticks lus, 482 match(s) avec série 'match'
 ❌ rebuild(match) : AUCUNE partition parts/live_match_*.jsonl.
    Le fichier plat serait vide et le pipeline tournerait sur
    des courbes inexistantes sans le signaler. Arrêt.
@@ -13,7 +13,7 @@ PMSTUDY_FAIL: polymarket_leadlag.py EN ÉCHEC (code 1)
 
 --- polymarket_studies ---
 Source(s) : kalshi (9 partition(s))
-  1405861 ticks lus · 488 match(s) exploitables (fourchette max 10 pts)
+  1392651 ticks lus · 482 match(s) exploitables (fourchette max 10 pts)
 ❌ rebuild(match) : AUCUNE partition parts/live_match_*.jsonl.
    Le fichier plat serait vide et le pipeline tournerait sur
    des courbes inexistantes sans le signaler. Arrêt.
@@ -23,7 +23,7 @@ Source(s) : kalshi (9 partition(s))
 PMSTUDY_FAIL: polymarket_studies.py EN ÉCHEC (code 1)
 
 --- pm_calibration_track ---
-ResultIndex : 2368 résultats · 2320 paires · fenêtre ±5 j
+ResultIndex : 2409 résultats · 2361 paires · fenêtre ±5 j
 
 ==============================================================================
 HYPOTHÈSE GELÉE N°12 — calibration des marchés de prédiction
@@ -36,13 +36,13 @@ Gelée le 2026-08-24 · tranches et sens FIXÉS, non modifiables
 POLYMARKET
 ==============================================================================
 
-  HORS ÉCHANTILLON (décisif) — 180 observation(s)
+  HORS ÉCHANTILLON (décisif) — 224 observation(s)
   tranche           n   annoncé   observé    écart          IC95 écart
   --------------------------------------------------------------------
-  30 – 45 %        38     37.4%     31.6%    -5.8  [ -18.3 ;  +10.1]
-                        il faudrait ~266 obs pour trancher à cet écart (228 manquantes)
-  55 – 70 %        38     62.6%     68.4%    +5.8  [ -10.1 ;  +18.3]
-                        il faudrait ~266 obs pour trancher à cet écart (228 manquantes)
+  30 – 45 %        52     37.2%     30.8%    -6.4  [ -17.2 ;   +7.1]
+                        il faudrait ~220 obs pour trancher à cet écart (168 manquantes)
+  55 – 70 %        52     62.8%     69.2%    +6.4  [  -7.1 ;  +17.2]
+                        il faudrait ~220 obs pour trancher à cet écart (168 manquantes)
 
   origine (pour mémoire) — 0 observation(s)
 
@@ -50,13 +50,13 @@ POLYMARKET
 KALSHI
 ==============================================================================
 
-  HORS ÉCHANTILLON (décisif) — 424 observation(s)
+  HORS ÉCHANTILLON (décisif) — 492 observation(s)
   tranche           n   annoncé   observé    écart          IC95 écart
   --------------------------------------------------------------------
-  30 – 45 %        98     37.4%     35.7%    -1.7  [ -10.5 ;   +8.1]
-                        il faudrait ~3008 obs pour trancher à cet écart (2910 manquantes)
-  55 – 70 %        99     62.5%     63.6%    +1.2  [  -8.7 ;  +10.0]
-                        il faudrait ~6618 obs pour trancher à cet écart (6519 manquantes)
+  30 – 45 %       118     37.5%     36.4%    -1.1  [  -9.2 ;   +7.9]
+                        il faudrait ~7714 obs pour trancher à cet écart (7596 manquantes)
+  55 – 70 %       118     62.4%     62.7%    +0.3  [  -8.7 ;   +8.5]
+                        il faudrait ~91676 obs pour trancher à cet écart (91558 manquantes)
 
   origine (pour mémoire) — 0 observation(s)
 
@@ -67,7 +67,7 @@ KALSHI
 Rapport écrit dans pm_calibration_track.json
 
 --- pm_observations ---
-ResultIndex : 2368 résultats · 2320 paires · fenêtre ±5 j
+ResultIndex : 2409 résultats · 2361 paires · fenêtre ±5 j
 ❌ rebuild(match) : AUCUNE partition parts/live_match_*.jsonl.
    Le fichier plat serait vide et le pipeline tournerait sur
    des courbes inexistantes sans le signaler. Arrêt.
@@ -79,6 +79,6 @@ PMSTUDY_FAIL: pm_observations.py EN ÉCHEC (code 1)
 --- kalshi_lead_track ---
 HYPOTHÈSE GELÉE N°13 — Kalshi mène-t-il Pinnacle ? (gel 2026-09-05)
   horizon 45 min · seuil signal 1.0 pt · fourchette <= 2 pts
-  750 observation(s) construite(s) · 203 nouvelle(s) · 4372 au journal kalshi_lead_obs.jsonl
+  1234 observation(s) construite(s) · 545 nouvelle(s) · 4917 au journal kalshi_lead_obs.jsonl
 
 ```
