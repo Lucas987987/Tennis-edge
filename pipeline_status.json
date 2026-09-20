@@ -2,20 +2,20 @@
   "scripts_manquants": [],
   "closing_7j": {
     "jours": 3,
-    "n": 120,
-    "closing_pct": 95.8,
-    "t7_pct": 91.7,
-    "t3_pct": 88.3
+    "n": 100,
+    "closing_pct": 92.0,
+    "t7_pct": 87.0,
+    "t3_pct": 82.0
   },
   "closing_30j": {
     "jours": 30,
-    "n": 1382,
-    "closing_pct": 83.2,
-    "t7_pct": 66.0,
-    "t3_pct": 55.8
+    "n": 1404,
+    "closing_pct": 83.1,
+    "t7_pct": 66.2,
+    "t3_pct": 56.0
   },
-  "run_termine": "2026-09-19T05:06:12",
-  "run_demarre": "2026-09-19T04:39:54",
+  "run_termine": "2026-09-20T05:22:45",
+  "run_demarre": "2026-09-20T04:56:45",
   "verdict_global": "1 livrable(s) à vérifier",
   "livrables": [
     {
@@ -24,10 +24,10 @@
       "optionnel": false,
       "externe": false,
       "verdict": "✅ OK",
-      "octets": 324063,
-      "lignes": 3255,
+      "octets": 326971,
+      "lignes": 3285,
       "ecrit_ce_run": true,
-      "modifie": "2026-09-19T04:46:20"
+      "modifie": "2026-09-20T05:02:04"
     },
     {
       "fichier": "resultats_derived.json",
@@ -35,10 +35,10 @@
       "optionnel": false,
       "externe": true,
       "verdict": "✅ OK",
-      "octets": 651612,
-      "lignes": 2424,
+      "octets": 664351,
+      "lignes": 2468,
       "ecrit_ce_run": true,
-      "modifie": "2026-09-19T04:41:52"
+      "modifie": "2026-09-20T04:57:43"
     },
     {
       "fichier": "paper_trades_match.jsonl",
@@ -46,10 +46,10 @@
       "optionnel": false,
       "externe": false,
       "verdict": "✅ OK",
-      "octets": 67636,
-      "lignes": 127,
+      "octets": 68256,
+      "lignes": 128,
       "ecrit_ce_run": true,
-      "modifie": "2026-09-19T04:49:26"
+      "modifie": "2026-09-20T05:05:22"
     },
     {
       "fichier": "paper_trades_set1.jsonl",
@@ -60,7 +60,7 @@
       "octets": 23335,
       "lignes": 44,
       "ecrit_ce_run": true,
-      "modifie": "2026-09-19T04:49:43"
+      "modifie": "2026-09-20T05:05:38"
     },
     {
       "fichier": "paper_trades_set2.jsonl",
@@ -71,7 +71,7 @@
       "octets": 0,
       "lignes": 0,
       "ecrit_ce_run": true,
-      "modifie": "2026-09-19T04:49:52"
+      "modifie": "2026-09-20T05:05:47"
     },
     {
       "fichier": "moves_detail.csv",
@@ -79,10 +79,10 @@
       "optionnel": false,
       "externe": false,
       "verdict": "✅ OK",
-      "octets": 7934,
-      "lignes": 46,
+      "octets": 7264,
+      "lignes": 42,
       "ecrit_ce_run": true,
-      "modifie": "2026-09-19T04:49:53"
+      "modifie": "2026-09-20T05:05:48"
     },
     {
       "fichier": "moves_detail_hist.csv",
@@ -90,10 +90,10 @@
       "optionnel": false,
       "externe": false,
       "verdict": "✅ OK",
-      "octets": 263490,
-      "lignes": 1537,
+      "octets": 266420,
+      "lignes": 1554,
       "ecrit_ce_run": true,
-      "modifie": "2026-09-19T04:51:11"
+      "modifie": "2026-09-20T05:07:11"
     },
     {
       "fichier": "canal_clv_detail.csv",
@@ -101,10 +101,10 @@
       "optionnel": false,
       "externe": false,
       "verdict": "✅ OK",
-      "octets": 49258,
-      "lignes": 310,
+      "octets": 49941,
+      "lignes": 314,
       "ecrit_ce_run": true,
-      "modifie": "2026-09-19T05:04:13"
+      "modifie": "2026-09-20T05:20:43"
     },
     {
       "fichier": "canal_public_log.jsonl",
@@ -112,10 +112,10 @@
       "optionnel": false,
       "externe": true,
       "verdict": "✅ OK",
-      "octets": 130441,
-      "lignes": 285,
+      "octets": 132129,
+      "lignes": 288,
       "ecrit_ce_run": true,
-      "modifie": "2026-09-19T04:41:50"
+      "modifie": "2026-09-20T04:57:42"
     },
     {
       "fichier": "book_curves_live.jsonl",
@@ -123,75 +123,75 @@
       "optionnel": false,
       "externe": false,
       "verdict": "✅ OK",
-      "octets": 27628547,
-      "lignes": 2410,
+      "octets": 20728817,
+      "lignes": 2092,
       "ecrit_ce_run": true,
-      "modifie": "2026-09-19T04:41:54"
+      "modifie": "2026-09-20T04:57:45"
     }
   ],
   "partitions": {
-    "total_mo": 598.7,
+    "total_mo": 585.9,
     "zone_rouge": [],
     "n_partitions": 52,
     "vue_partielle": true
   },
   "q3_qualite_cloture": {
-    "ecarts_gt_3pct": 232,
-    "n_total": 1823,
-    "pct_ecarts": 12.7,
+    "ecarts_gt_3pct": 235,
+    "n_total": 1817,
+    "pct_ecarts": 12.9,
     "seuil_pct": 30.0,
     "alerte": false
   },
   "clv_vs_median": {
-    "genere_le": "2026-09-19T05:02:41.566301+00:00",
-    "n_moves_total": 1536,
+    "genere_le": "2026-09-20T05:19:01.330363+00:00",
+    "n_moves_total": 1553,
     "n_cote_ambigu": 1,
     "n_incomplet": 394,
-    "n_exploitables": 1141,
+    "n_exploitables": 1158,
     "verdict": "calcule",
-    "prime_selection_pct": 2.026,
+    "prime_selection_pct": 2.041,
     "prime_ic95": [
-      1.907,
-      2.186
+      1.911,
+      2.221
     ],
-    "derive_marche_pct": 2.797,
+    "derive_marche_pct": 2.776,
     "derive_ic95": [
-      2.406,
-      3.198
+      2.376,
+      3.148
     ],
-    "total_clv_vs_median_pct": 5.455,
+    "total_clv_vs_median_pct": 5.427,
     "total_ic95": [
-      4.899,
-      5.847
+      4.846,
+      5.851
     ],
     "clv_book_pct_median": 4.7,
-    "ecart_book_vs_median_pct": -0.196,
+    "ecart_book_vs_median_pct": -0.212,
     "ecart_book_vs_median_ic95": [
-      -0.363,
-      -0.031
+      -0.445,
+      -0.033
     ],
-    "part_prime_pct": 37.1,
-    "pct_positif_prime": 86.2,
-    "pct_positif_derive": 70.3
+    "part_prime_pct": 37.6,
+    "pct_positif_prime": 86.4,
+    "pct_positif_derive": 70.0
   },
   "polymarket_studies": {
     "n_echecs": 3,
     "n_avertissements": 0,
     "alerte": true,
-    "genere_le": "2026-09-18T09:05:24Z",
-    "age_heures": 20.0,
+    "genere_le": "2026-09-19T08:53:12Z",
+    "age_heures": 20.5,
     "fraicheur_inconnue_ou_perimee": false
   },
   "repo_size": {
     "zone": "vigilance",
-    "taille_go": 3.29,
-    "marge_go": 0.71,
+    "taille_go": 3.51,
+    "marge_go": 0.49,
     "seuil_vigilance_go": 3.0,
     "seuil_alarme_go": 4.0,
-    "message": "ZONE DE VIGILANCE — marge restante : 0.71 Go. Planifier la purge, ne pas attendre le rouge.",
-    "derniere_mesure_reussie_le": "2026-09-18T12:21:41.832296+00:00",
-    "genere_le": "2026-09-18T12:21:41.832296+00:00",
-    "age_heures": 16.7,
+    "message": "ZONE DE VIGILANCE — marge restante : 0.49 Go. Planifier la purge, ne pas attendre le rouge.",
+    "derniere_mesure_reussie_le": "2026-09-19T12:02:35.086425+00:00",
+    "genere_le": "2026-09-19T12:02:35.086425+00:00",
+    "age_heures": 17.3,
     "fraicheur_inconnue_ou_perimee": false
   }
 }
