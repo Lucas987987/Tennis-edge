@@ -2,20 +2,20 @@
   "scripts_manquants": [],
   "closing_7j": {
     "jours": 3,
-    "n": 109,
-    "closing_pct": 93.6,
-    "t7_pct": 85.3,
-    "t3_pct": 78.9
+    "n": 173,
+    "closing_pct": 91.9,
+    "t7_pct": 87.3,
+    "t3_pct": 81.5
   },
   "closing_30j": {
     "jours": 30,
-    "n": 1439,
-    "closing_pct": 83.6,
-    "t7_pct": 68.5,
-    "t3_pct": 57.9
+    "n": 1488,
+    "closing_pct": 83.8,
+    "t7_pct": 70.3,
+    "t3_pct": 59.5
   },
-  "run_termine": "2026-09-22T05:28:40",
-  "run_demarre": "2026-09-22T05:01:14",
+  "run_termine": "2026-09-22T22:27:23",
+  "run_demarre": "2026-09-22T22:03:32",
   "verdict_global": "1 livrable(s) à vérifier",
   "livrables": [
     {
@@ -24,10 +24,10 @@
       "optionnel": false,
       "externe": false,
       "verdict": "✅ OK",
-      "octets": 334699,
-      "lignes": 3364,
+      "octets": 341797,
+      "lignes": 3436,
       "ecrit_ce_run": true,
-      "modifie": "2026-09-22T05:06:52"
+      "modifie": "2026-09-22T22:09:33"
     },
     {
       "fichier": "resultats_derived.json",
@@ -35,10 +35,10 @@
       "optionnel": false,
       "externe": true,
       "verdict": "✅ OK",
-      "octets": 683359,
-      "lignes": 2532,
+      "octets": 696515,
+      "lignes": 2581,
       "ecrit_ce_run": true,
-      "modifie": "2026-09-22T05:02:31"
+      "modifie": "2026-09-22T22:04:40"
     },
     {
       "fichier": "paper_trades_match.jsonl",
@@ -46,10 +46,10 @@
       "optionnel": false,
       "externe": false,
       "verdict": "✅ OK",
-      "octets": 78389,
-      "lignes": 141,
+      "octets": 88249,
+      "lignes": 158,
       "ecrit_ce_run": true,
-      "modifie": "2026-09-22T05:10:22"
+      "modifie": "2026-09-22T22:12:29"
     },
     {
       "fichier": "paper_trades_set1.jsonl",
@@ -60,7 +60,7 @@
       "octets": 26446,
       "lignes": 49,
       "ecrit_ce_run": true,
-      "modifie": "2026-09-22T05:10:51"
+      "modifie": "2026-09-22T22:12:44"
     },
     {
       "fichier": "paper_trades_set2.jsonl",
@@ -71,7 +71,7 @@
       "octets": 0,
       "lignes": 0,
       "ecrit_ce_run": true,
-      "modifie": "2026-09-22T05:11:01"
+      "modifie": "2026-09-22T22:12:51"
     },
     {
       "fichier": "moves_detail.csv",
@@ -79,10 +79,10 @@
       "optionnel": false,
       "externe": false,
       "verdict": "✅ OK",
-      "octets": 10310,
-      "lignes": 60,
+      "octets": 13534,
+      "lignes": 79,
       "ecrit_ce_run": true,
-      "modifie": "2026-09-22T05:11:02"
+      "modifie": "2026-09-22T22:12:53"
     },
     {
       "fichier": "moves_detail_hist.csv",
@@ -93,7 +93,7 @@
       "octets": 275743,
       "lignes": 1607,
       "ecrit_ce_run": true,
-      "modifie": "2026-09-22T05:12:28"
+      "modifie": "2026-09-22T22:14:09"
     },
     {
       "fichier": "canal_clv_detail.csv",
@@ -101,10 +101,10 @@
       "optionnel": false,
       "externe": false,
       "verdict": "✅ OK",
-      "octets": 55787,
-      "lignes": 348,
+      "octets": 57304,
+      "lignes": 357,
       "ecrit_ce_run": true,
-      "modifie": "2026-09-22T05:26:32"
+      "modifie": "2026-09-22T22:25:47"
     },
     {
       "fichier": "canal_public_log.jsonl",
@@ -112,10 +112,10 @@
       "optionnel": false,
       "externe": true,
       "verdict": "✅ OK",
-      "octets": 146358,
-      "lignes": 313,
+      "octets": 151288,
+      "lignes": 322,
       "ecrit_ce_run": true,
-      "modifie": "2026-09-22T05:02:29"
+      "modifie": "2026-09-22T22:04:38"
     },
     {
       "fichier": "book_curves_live.jsonl",
@@ -123,27 +123,27 @@
       "optionnel": false,
       "externe": false,
       "verdict": "✅ OK",
-      "octets": 37803905,
-      "lignes": 3428,
+      "octets": 52133281,
+      "lignes": 4806,
       "ecrit_ce_run": true,
-      "modifie": "2026-09-22T05:02:35"
+      "modifie": "2026-09-22T22:04:44"
     }
   ],
   "partitions": {
-    "total_mo": 655.1,
+    "total_mo": 755.2,
     "zone_rouge": [],
     "n_partitions": 55,
     "vue_partielle": true
   },
   "q3_qualite_cloture": {
     "ecarts_gt_3pct": 231,
-    "n_total": 1848,
-    "pct_ecarts": 12.5,
+    "n_total": 1835,
+    "pct_ecarts": 12.6,
     "seuil_pct": 30.0,
     "alerte": false
   },
   "clv_vs_median": {
-    "genere_le": "2026-09-22T05:24:55.657966+00:00",
+    "genere_le": "2026-09-22T22:24:27.350322+00:00",
     "n_moves_total": 1606,
     "n_cote_ambigu": 1,
     "n_incomplet": 395,
@@ -178,20 +178,20 @@
     "n_echecs": 3,
     "n_avertissements": 0,
     "alerte": true,
-    "genere_le": "2026-09-21T10:04:05Z",
-    "age_heures": 19.4,
+    "genere_le": "2026-09-22T09:23:45Z",
+    "age_heures": 13.1,
     "fraicheur_inconnue_ou_perimee": false
   },
   "repo_size": {
     "zone": "alarme",
-    "taille_go": 4.01,
-    "marge_go": -0.01,
+    "taille_go": 4.45,
+    "marge_go": -0.45,
     "seuil_vigilance_go": 3.0,
     "seuil_alarme_go": 4.0,
     "message": "SEUIL FRANCHI — lancer le git filter-repo (RUNBOOK_FILTER_REPO.md) sans attendre.",
-    "derniere_mesure_reussie_le": "2026-09-21T14:31:20.274210+00:00",
-    "genere_le": "2026-09-21T14:31:20.274210+00:00",
-    "age_heures": 15.0,
+    "derniere_mesure_reussie_le": "2026-09-22T12:49:11.915452+00:00",
+    "genere_le": "2026-09-22T12:49:11.915452+00:00",
+    "age_heures": 9.6,
     "fraicheur_inconnue_ou_perimee": false
   }
 }
