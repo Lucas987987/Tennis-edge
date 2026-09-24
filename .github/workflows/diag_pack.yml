@@ -44,30 +44,41 @@ permissions:
 jobs:
   diag:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
-      # Un repack agressif regroupe tout en un seul packfile et applique la
-      # deltification au mieux. Sans ça, la mesure dépendrait de l'état de
-      # fragmentation du clone, pas du contenu réel.
-      - name: Repack (mesure stable)
+      # PAS DE `git gc --aggressive` ICI.
+      #
+      # La première version de ce workflow en faisait un. Sur 5,44 Go, le
+      # runner a été tué (« The runner has received a shutdown signal ») :
+      # un repack agressif recompresse tout l'historique et sature la
+      # mémoire. C'est une commande qui marche sur un dépôt jouet et pas
+      # sur celui-ci.
+      #
+      # Elle n'est de toute façon pas nécessaire : le clone arrive déjà
+      # packé (GitHub repacke côté serveur), donc verify-pack mesure un
+      # état représentatif.
+      - name: Taille du pack
         run: |
-          echo "=== AVANT REPACK ==="
-          git count-objects -vH | grep -E 'size-pack|count'
-          git gc --aggressive --prune=now -q || git gc --prune=now -q
-          echo
-          echo "=== APRÈS REPACK — c'est ce chiffre qui compte ==="
+          echo "=== TAILLE ==="
           git count-objects -vH | grep -E 'size-pack|count'
           echo "commits : $(git rev-list --all --count)"
+          echo "packfiles : $(ls .git/objects/pack/*.idx 2>/dev/null | wc -l)"
 
       - name: Poids REEL par chemin
         run: |
-          IDX=$(ls .git/objects/pack/*.idx | head -1)
-          echo "packfile : $IDX"
-          git verify-pack -v "$IDX" | awk '$2=="blob"{print $1, $4}' | sort > /tmp/sz.txt
+          # TOUS les packfiles : sans gc, le clone peut en contenir
+          # plusieurs, et n'en lire qu'un fausserait la mesure.
+          : > /tmp/sz_raw.txt
+          for IDX in .git/objects/pack/*.idx; do
+            echo "  lecture $IDX"
+            git verify-pack -v "$IDX" | awk '$2=="blob"{print $1, $4}' >> /tmp/sz_raw.txt
+          done
+          sort -u /tmp/sz_raw.txt > /tmp/sz.txt
+          echo "  $(wc -l < /tmp/sz.txt) blob(s) mesuré(s)"
           git rev-list --objects --all | awk 'NF>1{print $1, $2}' | sort > /tmp/pa.txt
           echo
           echo "=== POIDS REEL DANS LE PACK, PAR CHEMIN (top 30) ==="
