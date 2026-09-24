@@ -21,11 +21,37 @@ C'est la raison d'être de ce script : sans lui, on purgerait sur la foi
 d'un index JSON, c'est-à-dire sur la foi d'une écriture passée.
 
 ──────────────────────────────────────────────────────────────────────────
+DEUX SOURCES DE CHEMINS PURGEABLES
+
+A. Les partitions ARCHIVÉES en release (hist_book, hist_set*, ticks).
+   Vérifiées une par une via `gh release view`.
+
+B. Les partitions live_* ABSENTES DU WORKING TREE.
+   purge_old_partitions() les supprime après RETAIN_DAYS ; elles ne sont
+   plus référencées par rien, leur contenu utile a été consolidé dans les
+   hist_*. Leur historique Git est du poids mort pur.
+
+   C'est là qu'est l'essentiel du gain. Mesuré sur le pack le 24/09 :
+
+       live_set1_2026-09-15   361 Mo   (supprimé du dépôt)
+       live_set1_2026-09-14   305 Mo   (supprimé)
+       live_set1_2026-09-23   343 Mo   (encore présent -> NON purgé)
+
+   La première purge ne visait que la source A et n'a libéré que 300 Mo
+   sur 5,36 Go : les hist_* sont écrits une fois et se deltaifient très
+   bien. La source B pèse dix fois plus.
+
+   Vérification : le fichier est-il présent dans parts/ ? S'il y est, il
+   sert encore — on n'y touche pas. S'il n'y est pas, son historique ne
+   sert à personne.
+
+──────────────────────────────────────────────────────────────────────────
 CE QUI N'EST JAMAIS PURGÉ
 
   - les fichiers hors parts/ ;
-  - les partitions encore présentes dans le working tree (donc actives) ;
-  - tout fichier absent de sa release.
+  - les partitions ENCORE PRÉSENTES dans le working tree (donc actives) —
+    y compris les live_* des derniers jours, que le pipeline relit ;
+  - tout fichier archivé mais absent de sa release.
 
 Env : INDEX, OUT (purge_paths.txt), PREFIXES.
 """
@@ -71,16 +97,19 @@ def main():
     try:
         idx = json.load(open(INDEX, encoding='utf-8'))
     except (OSError, ValueError) as e:
-        print(f"❌ {INDEX} illisible ({e}) — rien à purger, et c'est la "
-              f"bonne décision : sans index on ne sait pas ce qui est "
-              f"récupérable.")
-        return 1
+        # L'index ne conditionne que la source A. La source B s'en passe.
+        print(f"⚠️ {INDEX} illisible ({e}) — source A ignorée, "
+              f"on continue sur les partitions live_* supprimées.")
+        idx = {'archives': []}
 
     archives = [a for a in idx.get('archives', [])
                 if str(a.get('fichier', '')).startswith(PREFIXES)]
     if not archives:
-        print("Aucune partition archivée — rien à purger.")
-        return 0
+        # PAS de return ici : la source B (partitions live_* supprimées) est
+        # indépendante de l'archivage et pèse dix fois plus lourd. Sortir
+        # maintenant, c'était le défaut de la première version.
+        print("Aucune partition archivée — on passe directement aux "
+              "partitions live_* supprimées.")
 
     presents = {os.path.basename(p) for p in glob.glob('parts/*')}
     retenus, ecartes, octets = [], [], 0
@@ -88,8 +117,9 @@ def main():
     for a in archives:
         par_tag[a['release']].append(a)
 
-    print(f"Vérification de {len(archives)} partition(s) indexée(s) "
-          f"dans {len(par_tag)} release(s)\n")
+    if archives:
+        print(f"Vérification de {len(archives)} partition(s) indexée(s) "
+              f"dans {len(par_tag)} release(s)\n")
     for tag in sorted(par_tag):
         dispo = fichiers_de_release(tag)
         for a in par_tag[tag]:
@@ -106,11 +136,38 @@ def main():
             retenus.append(f'parts/{f}')
             octets += int(a.get('octets') or 0)
 
+    # ── SOURCE B : partitions live_* absentes du working tree ──
+    # Aucune vérification en release n'est possible ni nécessaire : ces
+    # fichiers ont été supprimés par purge_old_partitions() après leur
+    # rétention, leur contenu est consolidé dans les hist_*. Leur seule
+    # trace est l'historique Git, et c'est précisément ce qu'on retire.
+    vus = set()
+    code, out = gh('log', '--all', '--pretty=format:', '--name-only',
+                   '--diff-filter=A', '--', 'parts/live_*')
+    chemins_live = set()
+    if code != 0:
+        # gh n'est pas git : on passe par git directement.
+        r = subprocess.run(['git', 'log', '--all', '--pretty=format:',
+                            '--name-only', '--diff-filter=A', '--',
+                            'parts/'], capture_output=True, text=True)
+        out = r.stdout if r.returncode == 0 else ''
+    for ligne in out.split('\n'):
+        ligne = ligne.strip()
+        if ligne.startswith('parts/live_') and ligne.endswith('.jsonl'):
+            chemins_live.add(ligne)
+    live_morts = sorted(c for c in chemins_live
+                        if os.path.basename(c) not in presents)
+    live_vivants = len(chemins_live) - len(live_morts)
+    print(f"\nPartitions live_* : {len(chemins_live)} vue(s) dans l'historique, "
+          f"{live_vivants} encore présente(s) (gardée(s)), "
+          f"{len(live_morts)} supprimée(s) -> purgeables")
+    retenus += live_morts
+
     with open(OUT, 'w', encoding='utf-8') as fh:
-        for p in sorted(retenus):
+        for p in sorted(set(retenus)):
             fh.write(p + '\n')
 
-    print(f"\n✅ {len(retenus)} chemin(s) retenu(s) — {octets/1e6:.0f} Mo "
+    print(f"\n✅ {len(set(retenus))} chemin(s) retenu(s) — {octets/1e6:.0f} Mo "
           f"de contenu courant (l'historique pèse bien plus lourd)")
     print(f"   liste écrite dans {OUT}")
     if ecartes:
