@@ -1,0 +1,110 @@
+name: Diagnostic poids historique
+
+# LECTURE SEULE — n'écrit rien, ne pousse rien, ne modifie rien.
+#
+# ─────────────────────────────────────────────────────────────────────────
+# POURQUOI
+#
+# La purge du 24/09/2026 a retiré les 98 partitions archivées de
+# l'historique. Résultat mesuré dans le runner :
+#
+#     avant  : 5,36 GiB
+#     après  : 5,06 GiB
+#
+# 300 Mo sur 5,36 Go. Les partitions n'étaient PAS le problème. Et le
+# force-push a échoué (HTTP 500) — pousser 5 Go d'un coup dépasse ce que
+# l'API GitHub encaisse.
+#
+# Avant de retenter quoi que ce soit, il faut savoir ce qui pèse. Le log de
+# la purge donne un indice : 21 286 commits parcourus. L'hypothèse la plus
+# probable est l'accumulation de versions de fichiers commités à chaque run
+# — closing_lines.json affichait 4 772 lignes modifiées sur un seul commit.
+#
+# Purger à l'aveugle une seconde fois serait une erreur de méthode : c'est
+# exactement ce qui a été fait le 05/09, et le dépôt a regonflé en trois
+# semaines.
+#
+# ─────────────────────────────────────────────────────────────────────────
+# CE QUE CE WORKFLOW PRODUIT
+#
+#   1. les 25 plus gros objets (blobs) de tout l'historique, avec leur
+#      chemin — ce qui coûte le plus cher en une seule version ;
+#   2. le poids CUMULÉ par chemin — ce qui coûte cher par répétition,
+#      c'est-à-dire les fichiers réécrits à chaque run ;
+#   3. le nombre de versions distinctes par chemin ;
+#   4. le total du pack, pour situer.
+#
+# Le point 2 est le plus important : un fichier de 5 Mo commité 2 000 fois
+# pèse plus lourd qu'une partition de 15 Mo commitée une fois.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diag:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      # fetch-depth: 0 — il faut TOUT l'historique pour le mesurer.
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Taille du pack
+        run: |
+          echo "=== TAILLE GLOBALE ==="
+          git count-objects -vH
+          echo
+          echo "commits : $(git rev-list --all --count)"
+
+      - name: Les 25 plus gros objets de l'historique
+        run: |
+          echo "=== PLUS GROS BLOBS (une seule version) ==="
+          git rev-list --objects --all \
+            | git cat-file --batch-check='%(objecttype) %(objectname) %(objectsize) %(rest)' \
+            | awk '$1=="blob"{print $3, $4}' \
+            | sort -rn | head -25 \
+            | awk '{printf "%8.1f Mo  %s\n", $1/1048576, $2}'
+
+      # LE calcul qui compte : somme des tailles de TOUTES les versions de
+      # chaque chemin. Un fichier réécrit à chaque run apparaît ici même si
+      # chaque version est petite.
+      - name: Poids cumulé par chemin (toutes versions)
+        run: |
+          echo "=== POIDS CUMULÉ PAR CHEMIN — le vrai coût ==="
+          git rev-list --objects --all \
+            | git cat-file --batch-check='%(objecttype) %(objectname) %(objectsize) %(rest)' \
+            | awk '$1=="blob" && $4!="" {somme[$4]+=$3; n[$4]++}
+                   END {for (p in somme) printf "%12.1f %8d %s\n", somme[p]/1048576, n[p], p}' \
+            | sort -rn | head -30 \
+            | awk '{printf "%8.1f Mo  %6d versions  %s\n", $1, $2, $3}'
+
+      - name: Poids cumulé par dossier
+        run: |
+          echo "=== PAR DOSSIER ==="
+          git rev-list --objects --all \
+            | git cat-file --batch-check='%(objecttype) %(objectname) %(objectsize) %(rest)' \
+            | awk '$1=="blob" && $4!="" {
+                     d=$4; sub(/\/[^\/]*$/, "", d); if (d==$4) d="(racine)";
+                     somme[d]+=$3; n[d]++ }
+                   END {for (p in somme) printf "%12.1f %8d %s\n", somme[p]/1048576, n[p], p}' \
+            | sort -rn | head -20 \
+            | awk '{printf "%8.1f Mo  %6d blobs  %s\n", $1, $2, $3}'
+
+      - name: Lecture
+        run: |
+          echo "COMMENT LIRE CE RAPPORT"
+          echo
+          echo "  Section 2 : ce qui coûte cher en UNE version."
+          echo "    -> candidats à l'archivage (comme les partitions)."
+          echo
+          echo "  Section 3 : ce qui coûte cher PAR RÉPÉTITION."
+          echo "    -> candidats à un changement de méthode : cesser de"
+          echo "       commiter à chaque run, compacter, ou sortir du dépôt."
+          echo "       Purger ne suffira pas : ils reviendront."
+          echo
+          echo "  Un fichier de 5 Mo commité 2 000 fois pèse 10 Go."
+          echo "  Une partition de 15 Mo commitée une fois pèse 15 Mo."
