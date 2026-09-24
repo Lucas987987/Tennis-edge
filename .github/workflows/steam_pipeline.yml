@@ -127,6 +127,27 @@ jobs:
       # moves, mais le rapport du même run affichait encore « p0 = 73,7 %
       # sur n=1085 » — l'ancienne population biaisée. Il aurait fallu deux
       # runs pour voir l'effet d'un correctif appliqué dans le premier.
+      # RESTAURATION DES PARTITIONS ARCHIVÉES — AJOUTÉE LE 24/09/2026.
+      #
+      # move_audit.py (étape suivante) RECONSTRUIT INTÉGRALEMENT
+      # moves_detail_hist.csv depuis parts/hist_book_*. Ce fichier porte
+      # p0_temoin() et les références in-sample des 14 hypothèses gelées :
+      # 326 paris pour H13, 370 pour H14.
+      #
+      # Depuis que archive_curves.py sort les partitions de plus de 28 jours
+      # vers des releases, juin et juillet ne sont plus dans le dépôt. Sans
+      # cette étape, move_audit les reconstruirait SANS ELLES : le fichier
+      # rétrécirait, les références in-sample disparaîtraient, et aucune
+      # erreur ne serait levée. Les 14 gels deviendraient injugeables en un
+      # seul run.
+      #
+      # Le script sort en ERREUR si un téléchargement échoue — mieux vaut un
+      # run rouge qu'un verdict calculé sur une population tronquée.
+      - name: Restaurer les partitions de courbes archivées
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python scripts/restore_curves.py
+
       - name: Audit des moves (détail par move + agrégats par ampleur)
         run: |
           python scripts/move_audit.py || true
