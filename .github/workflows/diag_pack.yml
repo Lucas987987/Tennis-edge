@@ -44,7 +44,7 @@ permissions:
 jobs:
   diag:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v5
         with:
@@ -68,19 +68,31 @@ jobs:
           echo "commits : $(git rev-list --all --count)"
           echo "packfiles : $(ls .git/objects/pack/*.idx 2>/dev/null | wc -l)"
 
+      # `git verify-pack -v` a été essayé et ABANDONNÉ : sur un pack de
+      # 5,44 Go et 66 217 commits, il dépasse les 30 min de timeout (run
+      # annulé le 24/09). Il décompresse chaque objet pour le vérifier.
+      #
+      # `cat-file --batch-all-objects` avec %(objectsize:disk) lit la même
+      # information — la taille réellement occupée dans le pack — en un
+      # seul passage sans décompression. Vérifié sur un dépôt jouet : les
+      # deux méthodes donnent des chiffres IDENTIQUES au blob près.
+      - name: Tailles des blobs
+        run: |
+          echo "lecture des objets (sans décompression)..."
+          git cat-file --batch-all-objects --batch-check='%(objectname) %(objecttype) %(objectsize:disk)' \
+            | awk '$2=="blob"{print $1, $3}' | sort > /tmp/sz.txt
+          echo "  $(wc -l < /tmp/sz.txt) blob(s) mesuré(s)"
+
+      # rev-list --objects parcourt tous les arbres de tous les commits.
+      # Sur 66 217 commits c'est le point lent ; on lui laisse de la marge.
+      - name: Association sha -> chemin
+        run: |
+          echo "parcours de l'historique (66 000+ commits, comptez plusieurs minutes)..."
+          git rev-list --objects --all | awk 'NF>1{print $1, $2}' | sort > /tmp/pa.txt
+          echo "  $(wc -l < /tmp/pa.txt) association(s)"
+
       - name: Poids REEL par chemin
         run: |
-          # TOUS les packfiles : sans gc, le clone peut en contenir
-          # plusieurs, et n'en lire qu'un fausserait la mesure.
-          : > /tmp/sz_raw.txt
-          for IDX in .git/objects/pack/*.idx; do
-            echo "  lecture $IDX"
-            git verify-pack -v "$IDX" | awk '$2=="blob"{print $1, $4}' >> /tmp/sz_raw.txt
-          done
-          sort -u /tmp/sz_raw.txt > /tmp/sz.txt
-          echo "  $(wc -l < /tmp/sz.txt) blob(s) mesuré(s)"
-          git rev-list --objects --all | awk 'NF>1{print $1, $2}' | sort > /tmp/pa.txt
-          echo
           echo "=== POIDS REEL DANS LE PACK, PAR CHEMIN (top 30) ==="
           echo "     Mo   versions  chemin"
           join /tmp/sz.txt /tmp/pa.txt \
