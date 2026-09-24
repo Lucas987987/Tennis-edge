@@ -111,14 +111,56 @@ jobs:
           du -sh .git 2>/dev/null || true
           git count-objects -vH | grep -E 'size-pack|count'
 
-      - name: Force-push
+      # PUSH PAR TRANCHES — indispensable ici.
+      #
+      # Deux force-push d'un coup ont échoué de la même façon :
+      #     5,06 Go -> error: RPC failed; HTTP 500
+      #     3,10 Go -> error: RPC failed; HTTP 500
+      #
+      # Ce n'est donc PAS une question de volume total : un force-push après
+      # réécriture envoie tous les objets en UNE requête, sans reprise
+      # possible, et GitHub coupe. Le gain de la purge (5,49 -> 3,10 GiB)
+      # était pourtant bien là — seul l'envoi manquait.
+      #
+      # On pousse donc des commits intermédiaires successifs. Chaque push
+      # n'envoie que le delta depuis le précédent, ce qui ramène chaque
+      # requête à une taille qu'GitHub accepte.
+      #
+      # `git push` sur un sha vers refs/heads/main déplace la branche à ce
+      # point : l'état final est identique à un push unique.
+      - name: Force-push par tranches
         if: ${{ inputs.confirmer == 'PURGER' }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          set -e
+          # postBuffer généreux + pas de recompression à la volée : les
+          # objets du pack sont déjà compressés, les recompresser coûte du
+          # temps et aggrave les timeouts.
+          git config http.postBuffer 524288000
+          git config http.lowSpeedLimit 0
+          git config http.lowSpeedTime 999999
+          git config pack.compression 0
           git remote add origin \
             "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
-          git push --force origin main
+
+          TOTAL=$(git rev-list --count HEAD)
+          echo "$TOTAL commits à pousser, par tranches de 10 %"
+
+          # 10 paliers : 10 %, 20 % ... 90 %, puis HEAD.
+          for PCT in 10 20 30 40 50 60 70 80 90; do
+            N=$(( TOTAL - TOTAL * PCT / 100 ))
+            SHA=$(git rev-list HEAD | sed -n "${N}p")
+            [ -z "$SHA" ] && continue
+            echo "--- palier ${PCT} % (commit $SHA)"
+            git push --force origin "$SHA:refs/heads/main"
+          done
+
+          # HEAD:refs/heads/main plutôt que `main` : après filter-repo le
+          # nom de la branche locale peut différer, et un refspec court
+          # échouerait avec « src refspec main does not match any ».
+          echo "--- dernier palier : HEAD"
+          git push --force origin HEAD:refs/heads/main
           echo "✅ PUSH OK — historique réécrit."
 
       - name: Rappel
