@@ -1,7 +1,7 @@
 {
-  "updated_at": "2026-09-24T16:00:40.002Z",
-  "count": 2709,
-  "actifs": 3,
+  "updated_at": "2026-09-24T16:18:05.071Z",
+  "count": 2712,
+  "actifs": 6,
   "markets": [
     {
       "market_id": "3689368",
@@ -92027,8 +92027,8 @@
       "sports_market_type": "moneyline",
       "market_type": "match",
       "game_id": 6309624,
-      "liquidity": 26213.3991,
-      "volume": 613.2941189999998,
+      "liquidity": 19733.926,
+      "volume": 613.2941189999999,
       "local_match": {
         "home": "Darwin Blanch",
         "away": "Andres Andrade",
@@ -92039,7 +92039,7 @@
         "home",
         "away"
       ],
-      "discovered_at": "2026-09-24T16:00:39.835Z"
+      "discovered_at": "2026-09-24T16:18:04.834Z"
     },
     {
       "market_id": "4895294",
@@ -92061,7 +92061,7 @@
       "sports_market_type": "tennis_first_set_winner",
       "market_type": "set1",
       "game_id": 6309624,
-      "liquidity": 7077.8114,
+      "liquidity": 5799.5475,
       "volume": null,
       "local_match": {
         "home": "Darwin Blanch",
@@ -92073,7 +92073,7 @@
         "home",
         "away"
       ],
-      "discovered_at": "2026-09-24T16:00:39.839Z"
+      "discovered_at": "2026-09-24T16:18:04.838Z"
     },
     {
       "market_id": "4895301",
@@ -92107,7 +92107,109 @@
         "home",
         "away"
       ],
-      "discovered_at": "2026-09-24T16:00:39.843Z"
+      "discovered_at": "2026-09-24T16:18:04.842Z"
+    },
+    {
+      "market_id": "4905242",
+      "condition_id": "0x071b93629cb5c1fba9d2d2b7bf7909843e4b3bdc67368448762f2ab510f66037",
+      "event_id": "1073682",
+      "event_slug": "atp-tabilo-mannari-2026-09-24",
+      "event_title": "Chengdu Open: Alejandro Tabilo vs Adrian Mannarino",
+      "question": "Chengdu Open: Alejandro Tabilo vs Adrian Mannarino",
+      "slug": "atp-tabilo-mannari-2026-09-24",
+      "start_time": "2026-09-24T11:05:30Z",
+      "outcomes": [
+        "Alejandro Tabilo",
+        "Adrian Mannarino"
+      ],
+      "token_ids": [
+        "19857630342682194361706119332713058225621015839337697391307636271123231350397",
+        "37122560126612685958039057409970899690408120245358391283622651010007021089548"
+      ],
+      "sports_market_type": "moneyline",
+      "market_type": "match",
+      "game_id": 6313891,
+      "liquidity": 11270.9755,
+      "volume": 2411.764745,
+      "local_match": {
+        "home": "Alejandro Tabilo",
+        "away": "Adrian Mannarino",
+        "commence": "2026-09-25T06:10:00Z",
+        "uid": "2026-09-25_alejandro_tabilo_adrian_mannarino"
+      },
+      "outcome_sides": [
+        "home",
+        "away"
+      ],
+      "discovered_at": "2026-09-24T16:18:05.031Z"
+    },
+    {
+      "market_id": "4905488",
+      "condition_id": "0xc7c3f54ef8891c660890c774ae06124a75cab10623efa27c6601979486efc55a",
+      "event_id": "1073682",
+      "event_slug": "atp-tabilo-mannari-2026-09-24",
+      "event_title": "Chengdu Open: Alejandro Tabilo vs Adrian Mannarino",
+      "question": "Set 1 Winner: Alejandro Tabilo vs Adrian Mannarino",
+      "slug": "atp-tabilo-mannari-2026-09-24-first-set-winner-Tabilo-vs-Mannarino",
+      "start_time": "2026-09-24T11:44:25Z",
+      "outcomes": [
+        "Alejandro Tabilo",
+        "Adrian Mannarino"
+      ],
+      "token_ids": [
+        "93018426122824728399860777227318956003430936934580229783923187007721575936026",
+        "57982263976732647427425637642544040588536248807156876060776171635823611090886"
+      ],
+      "sports_market_type": "tennis_first_set_winner",
+      "market_type": "set1",
+      "game_id": 6313891,
+      "liquidity": 5849.6513,
+      "volume": null,
+      "local_match": {
+        "home": "Alejandro Tabilo",
+        "away": "Adrian Mannarino",
+        "commence": "2026-09-25T06:10:00Z",
+        "uid": "2026-09-25_alejandro_tabilo_adrian_mannarino"
+      },
+      "outcome_sides": [
+        "home",
+        "away"
+      ],
+      "discovered_at": "2026-09-24T16:18:05.036Z"
+    },
+    {
+      "market_id": "4905494",
+      "condition_id": "0x4b63c4268365277760fa0e6ed00b77fd74fb8d22d8f6aeed75f82d45eb1aa949",
+      "event_id": "1073682",
+      "event_slug": "atp-tabilo-mannari-2026-09-24",
+      "event_title": "Chengdu Open: Alejandro Tabilo vs Adrian Mannarino",
+      "question": "Set 2 Winner: Alejandro Tabilo vs Adrian Mannarino",
+      "slug": "atp-tabilo-mannari-2026-09-24-set-2-winner-Tabilo-vs-Mannarino",
+      "start_time": "2026-09-24T11:44:15Z",
+      "outcomes": [
+        "Alejandro Tabilo",
+        "Adrian Mannarino"
+      ],
+      "token_ids": [
+        "75514894337882438971577524694979506614784222678543996958522776441954477125096",
+        "57591772457624915505144402904643586589150085770102257640819870187632206301326"
+      ],
+      "sports_market_type": "tennis_set_winner",
+      "market_type": "set2",
+      "game_id": 6313891,
+      "liquidity": 1900.2991,
+      "volume": null,
+      "local_match": {
+        "home": "Alejandro Tabilo",
+        "away": "Adrian Mannarino",
+        "commence": "2026-09-25T06:10:00Z",
+        "uid": "2026-09-25_alejandro_tabilo_adrian_mannarino"
+      },
+      "outcome_sides": [
+        "home",
+        "away"
+      ],
+      "discovered_at": "2026-09-24T16:18:05.042Z"
     }
   ]
 }
