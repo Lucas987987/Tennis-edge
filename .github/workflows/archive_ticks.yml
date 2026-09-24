@@ -51,6 +51,21 @@ jobs:
         # Les fichiers en échec restent dans git — rien n'est jamais perdu.
         run: python scripts/archive_ticks.py
 
+      # AJOUTÉ LE 24/09/2026 : même mécanisme pour les partitions de
+      # COURBES, avec une rétention plus longue (28 j contre 7).
+      #
+      # Motif : le dépôt a franchi 5,09 Go le 24/09 et le garde-fou de fin
+      # de steam_pipeline sortait en erreur (seuil 4,0 Go), quatre runs de
+      # suite. Les partitions pèsent 826 Mo en vue partielle.
+      #
+      # ATTENTION : ces partitions sont LUES chaque nuit par move_audit.
+      # restore_curves.py les rapatrie dans le runner avant l'audit — voir
+      # steam_pipeline.yml. Ne jamais activer l'un sans l'autre.
+      - name: Archiver les partitions de courbes (> 28 j)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python scripts/archive_curves.py
+
       - name: Committer les suppressions
         run: |
           find . -name '__pycache__' -type d -prune -exec rm -rf {} + 2>/dev/null || true
