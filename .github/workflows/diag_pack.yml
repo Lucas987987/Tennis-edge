@@ -1,0 +1,112 @@
+name: Diagnostic poids reel (pack)
+
+# LECTURE SEULE — n'écrit rien, ne pousse rien, ne modifie rien.
+#
+# ─────────────────────────────────────────────────────────────────────────
+# POURQUOI UN SECOND DIAGNOSTIC
+#
+# Le premier (diag_poids.yml) sommait les tailles NON COMPRESSÉES de toutes
+# les versions de chaque fichier. Il annonçait 114 Go pour
+# closing_lines.json et 250 Go cumulés pour les partitions live_*.
+#
+# Ces chiffres classent correctement les contributeurs, mais ils ne
+# mesurent PAS le coût réel : le pack fait 5,36 Go, pas 300. Git compresse,
+# et surtout il DELTA-COMPRESSE les versions successives d'un même fichier.
+# Un append en fin de fichier ne coûte que l'ajout.
+#
+# Mesuré sur un dépôt jouet (120 commits, append de 200 lignes à chaque
+# fois) : fichier final 4,56 Mo, pack 343 KiB. Et en gzippant les appends,
+# le pack passe à 349 KiB — LÉGÈREMENT PIRE, parce que la compression casse
+# la deltification.
+#
+# Conclusion : on ne peut pas décider quoi corriger sur des sommes brutes.
+# Ce workflow mesure la taille RÉELLE occupée dans le packfile, par chemin.
+#
+# ─────────────────────────────────────────────────────────────────────────
+# MÉTHODE
+#
+#   git verify-pack -v   -> (sha, taille dans le pack) pour chaque blob
+#   git rev-list --objects --all -> (sha, chemin)
+#   jointure, somme par chemin
+#
+# La colonne 4 de verify-pack est la taille COMPRESSÉE ET DELTIFIÉE dans le
+# packfile. C'est exactement ce qui pèse sur disque et au push.
+#
+# Un chemin qui ressort ici est un vrai problème. Un chemin qui ressortait
+# dans le premier diagnostic mais pas ici était un faux positif.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diag:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      # Un repack agressif regroupe tout en un seul packfile et applique la
+      # deltification au mieux. Sans ça, la mesure dépendrait de l'état de
+      # fragmentation du clone, pas du contenu réel.
+      - name: Repack (mesure stable)
+        run: |
+          echo "=== AVANT REPACK ==="
+          git count-objects -vH | grep -E 'size-pack|count'
+          git gc --aggressive --prune=now -q || git gc --prune=now -q
+          echo
+          echo "=== APRÈS REPACK — c'est ce chiffre qui compte ==="
+          git count-objects -vH | grep -E 'size-pack|count'
+          echo "commits : $(git rev-list --all --count)"
+
+      - name: Poids REEL par chemin
+        run: |
+          IDX=$(ls .git/objects/pack/*.idx | head -1)
+          echo "packfile : $IDX"
+          git verify-pack -v "$IDX" | awk '$2=="blob"{print $1, $4}' | sort > /tmp/sz.txt
+          git rev-list --objects --all | awk 'NF>1{print $1, $2}' | sort > /tmp/pa.txt
+          echo
+          echo "=== POIDS REEL DANS LE PACK, PAR CHEMIN (top 30) ==="
+          echo "     Mo   versions  chemin"
+          join /tmp/sz.txt /tmp/pa.txt \
+            | awk '{s[$3]+=$2; n[$3]++} END {for(p in s) printf "%12.3f %7d %s\n", s[p]/1048576, n[p], p}' \
+            | sort -rn | head -30 \
+            | awk '{printf "%9.2f Mo %7d  %s\n", $1, $2, $3}'
+
+      - name: Poids REEL par dossier
+        run: |
+          echo "=== PAR DOSSIER ==="
+          join /tmp/sz.txt /tmp/pa.txt \
+            | awk '{d=$3; sub(/\/[^\/]*$/,"",d); if(d==$3) d="(racine)"; s[d]+=$2; n[d]++}
+                   END {for(p in s) printf "%12.3f %7d %s\n", s[p]/1048576, n[p], p}' \
+            | sort -rn | head -20 \
+            | awk '{printf "%9.2f Mo %7d  %s\n", $1, $2, $3}'
+
+      - name: Total blobs vs pack
+        run: |
+          echo "=== CONTRÔLE ==="
+          TOT=$(join /tmp/sz.txt /tmp/pa.txt | awk '{s+=$2} END {print s}')
+          echo "somme des blobs dans le pack : $(echo "scale=2; $TOT/1048576" | bc) Mo"
+          echo "(le reste du pack = commits + arbres ; si l'écart est gros,"
+          echo " ce sont les ARBRES qui pèsent — 21 000 commits × un dossier"
+          echo " parts/ à 56 fichiers, ça compte.)"
+
+      - name: Lecture
+        run: |
+          echo "COMMENT DECIDER A PARTIR DE CE RAPPORT"
+          echo
+          echo "  Un chemin > 200 Mo REEL  -> vraie cible, à traiter."
+          echo "  Un chemin < 50 Mo REEL   -> ignorer, quel que soit son"
+          echo "                              classement dans le 1er diag."
+          echo
+          echo "  Fichier REECRIT en entier (JSON indenté, trié différemment"
+          echo "  à chaque fois) : le delta ne marche pas, il pèse."
+          echo "    -> corriger l'ECRITURE (ordre stable, format compact),"
+          echo "       pas compresser."
+          echo
+          echo "  Fichier en APPEND pur : Git le gère déjà très bien."
+          echo "    -> ne rien faire. Le compresser EMPIRERAIT les choses."
