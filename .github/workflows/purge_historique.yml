@@ -1,0 +1,175 @@
+name: Purge historique (partitions archivées)
+
+# PURGE IRRÉVERSIBLE DE L'HISTORIQUE GIT.
+#
+# Retire de TOUT l'historique les partitions déjà déposées en release, puis
+# force-push. Ramène le dépôt de ~5,1 Go à ~1,5 Go attendu.
+#
+# ─────────────────────────────────────────────────────────────────────────
+# POURQUOI CE WORKFLOW EXISTE
+#
+# Le 24/09/2026, le dépôt a franchi 5,09 Go et le verrou qualité de
+# steam_pipeline sort en erreur (seuil 4,0 Go) à chaque run. archive_curves
+# a sorti 114 Mo du working tree, mais toutes les versions ANTÉRIEURES de
+# ces fichiers restent dans l'historique : c'est là que sont les 5 Go.
+#
+# Une purge manuelle avait été faite le 05/09 (3,9 Go -> 520 Mo sur le
+# runner). Elle n'avait pas été outillée, et le dépôt a regonflé en trois
+# semaines. D'où ce workflow.
+#
+# ─────────────────────────────────────────────────────────────────────────
+# GARDE-FOUS
+#
+#   1. workflow_dispatch UNIQUEMENT — jamais de cron, jamais sur push.
+#   2. Saisie `confirmer` qui doit valoir exactement PURGER.
+#   3. Mode simulation par défaut : sans confirmation explicite, le job
+#      affiche ce qu'il ferait et s'arrête.
+#   4. purge_prepare.py vérifie CHAQUE fichier dans sa release avant de
+#      l'inclure. Un fichier non vérifié n'est pas purgé.
+#   5. AUCUNE branche de sauvegarde n'est créée. C'est délibéré : la purge
+#      du 05/09 avait été neutralisée par la branche
+#      `backup-avant-purge-20260904`, qui maintenait tous les anciens
+#      objets atteignables. Une sauvegarde ici ANNULE la purge.
+#
+# ─────────────────────────────────────────────────────────────────────────
+# APRÈS LE PASSAGE
+#
+# GitHub ne libère l'espace qu'après son ramasse-miettes, ce qui peut
+# prendre plusieurs jours. Si la taille ne bouge pas au bout d'une semaine,
+# ouvrir un ticket au support en citant ce run.
+#
+# Et vérifier qu'aucune autre branche ne maintient les objets : la purge ne
+# porte que sur les branches poussées.
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmer:
+        description: 'Taper PURGER pour exécuter réellement (sinon simulation)'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+
+concurrency:
+  group: purge-historique      # jamais deux réécritures en parallèle
+  cancel-in-progress: false
+
+jobs:
+  purge:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      # fetch-depth: 0 est INDISPENSABLE : filter-repo réécrit l'historique
+      # complet. Un checkout superficiel produirait une réécriture partielle
+      # et un push refusé.
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Taille avant
+        run: |
+          echo "--- avant purge ---"
+          du -sh .git 2>/dev/null || true
+          git count-objects -vH | grep -E 'size-pack|count'
+
+      - name: Établir la liste des chemins purgeables
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python scripts/purge_prepare.py
+
+      - name: Simulation (ce qui serait retiré)
+        run: |
+          echo "--- chemins retenus ---"
+          cat purge_paths.txt
+          echo
+          echo "$(wc -l < purge_paths.txt) chemin(s)"
+          if [ "${{ inputs.confirmer }}" != "PURGER" ]; then
+            echo
+            echo "🛑 SIMULATION — rien n'a été modifié."
+            echo "   Pour exécuter réellement : relancer ce workflow en"
+            echo "   tapant PURGER dans le champ de confirmation."
+          fi
+
+      - name: Installer git-filter-repo
+        if: ${{ inputs.confirmer == 'PURGER' }}
+        run: pip install git-filter-repo
+
+      # filter-repo retire le remote `origin` par sécurité (il refuse de
+      # pousser sur un dépôt qu'il vient de réécrire sans action explicite).
+      # On le remet juste après.
+      - name: Réécrire l'historique
+        if: ${{ inputs.confirmer == 'PURGER' }}
+        run: |
+          git filter-repo --force --invert-paths --paths-from-file purge_paths.txt
+          echo "--- après réécriture, avant push ---"
+          du -sh .git 2>/dev/null || true
+          git count-objects -vH | grep -E 'size-pack|count'
+
+      # PUSH PAR TRANCHES — indispensable ici.
+      #
+      # Deux force-push d'un coup ont échoué de la même façon :
+      #     5,06 Go -> error: RPC failed; HTTP 500
+      #     3,10 Go -> error: RPC failed; HTTP 500
+      #
+      # Ce n'est donc PAS une question de volume total : un force-push après
+      # réécriture envoie tous les objets en UNE requête, sans reprise
+      # possible, et GitHub coupe. Le gain de la purge (5,49 -> 3,10 GiB)
+      # était pourtant bien là — seul l'envoi manquait.
+      #
+      # On pousse donc des commits intermédiaires successifs. Chaque push
+      # n'envoie que le delta depuis le précédent, ce qui ramène chaque
+      # requête à une taille qu'GitHub accepte.
+      #
+      # `git push` sur un sha vers refs/heads/main déplace la branche à ce
+      # point : l'état final est identique à un push unique.
+      - name: Force-push par tranches
+        if: ${{ inputs.confirmer == 'PURGER' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          # postBuffer généreux + pas de recompression à la volée : les
+          # objets du pack sont déjà compressés, les recompresser coûte du
+          # temps et aggrave les timeouts.
+          git config http.postBuffer 524288000
+          git config http.lowSpeedLimit 0
+          git config http.lowSpeedTime 999999
+          git config pack.compression 0
+          git remote add origin \
+            "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+
+          TOTAL=$(git rev-list --count HEAD)
+          echo "$TOTAL commits à pousser, par tranches de 10 %"
+
+          # 10 paliers : 10 %, 20 % ... 90 %, puis HEAD.
+          for PCT in 10 20 30 40 50 60 70 80 90; do
+            N=$(( TOTAL - TOTAL * PCT / 100 ))
+            SHA=$(git rev-list HEAD | sed -n "${N}p")
+            [ -z "$SHA" ] && continue
+            echo "--- palier ${PCT} % (commit $SHA)"
+            git push --force origin "$SHA:refs/heads/main"
+          done
+
+          # HEAD:refs/heads/main plutôt que `main` : après filter-repo le
+          # nom de la branche locale peut différer, et un refspec court
+          # échouerait avec « src refspec main does not match any ».
+          echo "--- dernier palier : HEAD"
+          git push --force origin HEAD:refs/heads/main
+          echo "✅ PUSH OK — historique réécrit."
+
+      - name: Rappel
+        if: ${{ inputs.confirmer == 'PURGER' }}
+        run: |
+          echo "L'espace n'est PAS libéré immédiatement : GitHub attend son"
+          echo "ramasse-miettes (plusieurs jours). Si la taille ne bouge pas"
+          echo "au bout d'une semaine, ouvrir un ticket au support."
+          echo
+          echo "Vérifier aussi qu'aucune branche ou tag ne maintient les"
+          echo "anciens objets atteignables — c'est ce qui avait neutralisé"
+          echo "la purge du 05/09."
