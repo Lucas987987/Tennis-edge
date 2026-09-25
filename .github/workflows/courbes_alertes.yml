@@ -161,6 +161,13 @@ jobs:
           # `doublon` pour tracer la distinction.
           python scripts/h15_signal.py || true
 
+          # H16 — favori net (pin_open < 1,80), gelée le 25/09/2026.
+          # DISJOINTE de H15 : recouvrement 0/580 (H15 porte sur les cotes
+          # d'entrée 2,40-3,10, H16 sur des favoris à cote médiane 1,44).
+          # Elle recoupe en revanche H13/H14 ; comme les autres, elle logue
+          # tout et n'envoie que si aucun signal ne l'a précédée.
+          python scripts/h16_signal.py || true
+
           # Signal EXPÉRIMENTAL (non validé) : book déjà ouvert avant Pinnacle,
           # écart au moment où Pinnacle publie son 1er prix. Canal PRIVÉ
           # uniquement (jamais le canal public) -- voir validation_report pour

@@ -309,6 +309,12 @@ FREEZE_DATE_H15 = '2026-09-25'
 # BANDE DE COTE H15 — source de vérité unique, partagée avec h15_signal.py.
 H15_COTE_MIN = 2.40
 H15_COTE_MAX = 3.10
+
+FREEZE_DATE_H16 = '2026-09-25'
+# H16 — seuil sur le PRIX PINNACLE À L'OUVERTURE du côté steamé, pas sur
+# la cote d'entrée. Les deux sont causaux, mais ce sont deux filtres
+# différents : voir bande_favori_watch() pour pourquoi celui-ci.
+H16_PIN_OPEN_MAX = 1.80
 # Critère PRIMAIRE : CLV du groupe alerté vs groupe témoin.
 # REQUALIFIÉ LE 27/08/2026 (audit §3.1) : un gel rétroactif n'est PAS un
 # pré-enregistrement -- le 25/08, ce critère avait déjà été vu sur les
@@ -2200,6 +2206,135 @@ def bande_240_310_watch():
     return (k, n, p0)
 
 
+def bande_favori_watch():
+    """16e hypothèse gelée : le côté steamé partait-il favori net ?
+
+        « Parier le côté steamé au book d'entrée quand le prix PINNACLE
+          À L'OUVERTURE de ce côté est inférieur à 1,80. »
+
+    Gelée le 2026-09-25.
+
+    ── CE QUI L'A FAIT RETENIR ─────────────────────────────────────────
+    Référence in-sample : n=580 · 429 gains = 74,0 % contre 70,2 % de
+    seuil · écart +3,8 · ROI +5,5 % · P&L +31,8 u.
+
+    Quatre tests indépendants :
+        IC95 du taux   [70,2 ; 77,4]   exclut le seuil
+        IC95 du ROI    [+0,2 ; +10,8]  exclut zéro
+        binomial exact p = 0,0246
+        placebo 500 tirages : plage [-4,31 ; +4,64], observé +5,48 %
+
+    RÉPLICATION à effectifs rigoureusement égaux :
+        1re moitié  écart +3,0  ROI +4,3 %  (n=290)
+        2e  moitié  écart +4,6  ROI +6,6 %  (n=290)
+    L'effet AUGMENTE sur la période récente. Aucune autre hypothèse du
+    dispositif n'a une réplication à 290 contre 290.
+
+    ── POURQUOI 1,80 ET PAS 1,65 ───────────────────────────────────────
+    Le balayage donne :
+        < 1,60   n=387  écart +3,7  p=0,0491
+        < 1,65   n=437  écart +4,6  p=0,0149   <- meilleur
+        < 1,70   n=480  écart +3,9  p=0,0286
+        < 1,75   n=532  écart +2,8  p=0,0801
+        < 1,80   n=580  écart +3,8  p=0,0246
+
+    1,65 a le meilleur p ET le meilleur écart — c'est précisément pour
+    cela qu'il est écarté : c'est le maximum d'un balayage. 1,80 est le
+    seuil de DÉPART, choisi avant tout découpage, avec le plus gros
+    volume et le meilleur P&L.
+
+    Point rassurant : l'effet ne dépend PAS du seuil. Il reste entre
+    +2,8 et +4,6 sur toute la plage 1,60-1,80. C'est ce qui distingue
+    cette hypothèse de la zone 1,50-1,65 (cote d'entrée), écartée le même
+    jour : celle-là passait de +5,7 à +1,0 en décalant une borne de 0,05.
+
+    ── OÙ EST L'EFFET, ET OÙ IL N'EST PAS ──────────────────────────────
+    Par cote d'entrée, à l'intérieur du groupe :
+        < 1,20       n= 63  écart +2,4
+        1,20-1,35    n=116  écart +3,2
+        1,35-1,50    n=140  écart +2,6
+        1,50-1,65    n=150  écart +7,6
+        1,65-1,80    n= 96  écart -0,6
+
+    L'effet est présent PARTOUT sous 1,65, plus fort sur 1,50-1,65, et
+    absent au-delà. En retirant 1,50-1,65, les 430 paris restants gardent
+    +2,5 d'écart — non significatif faute d'effectif, mais pas nul.
+
+    ── RÉSERVES ────────────────────────────────────────────────────────
+    L'effet est MODESTE : +3,8 points, et l'IC du ROI frôle zéro (+0,2 %).
+    La concentration est forte : les 25 meilleurs paris font 63 % du P&L.
+    À cote médiane 1,44, un gain rapporte 0,44 u et une perte coûte 1,00 —
+    le résultat tient à quelques dizaines de gros outsiders battus.
+
+    ATTENTION au filtre : il porte sur pin_open, le prix PINNACLE à
+    l'ouverture, PAS sur la cote d'entrée. Un filtre sur la cote d'entrée
+    < 1,80 donne n=608 et p=0,0933, soit un résultat NON significatif. Ne
+    pas confondre les deux.
+
+    Volume : ~161 paris/mois. L'IC95 franchit le seuil vers n=600, soit
+    environ 3,7 mois. C'est l'hypothèse la plus exigeante du dispositif —
+    effet faible, donc volume élevé.
+
+    Retourne (k, n, p0) ou None si pas encore testable.
+    """
+    SRC = 'moves_detail_hist.csv'
+    try:
+        fh = open(SRC, encoding='utf-8')
+    except OSError:
+        print(f"  {SRC} absent.")
+        return None
+
+    retenus, n_in, n_zone = [], 0, 0
+    with fh:
+        for r in csv.DictReader(fh):
+            try:
+                cote = float(r['entry'])
+                pin_open = float(r['pin_open'])
+            except (TypeError, ValueError, KeyError):
+                continue
+            if pin_open >= H16_PIN_OPEN_MAX:
+                continue
+            n_zone += 1
+            d = str(r.get('date') or '')[:10]
+            if not d or d < FREEZE_DATE_H16:
+                n_in += 1
+                continue
+            g = r.get('steame_gagne')
+            if g not in ('oui', 'non'):
+                continue
+            try:
+                pnl = float(r['pnl'])
+            except (TypeError, ValueError, KeyError):
+                pnl = (cote - 1.0) if g == 'oui' else -1.0
+            retenus.append((1 if g == 'oui' else 0, cote, pnl))
+
+    print(f"  {SRC} : {n_zone} pari(s) avec pin_open < {H16_PIN_OPEN_MAX:.2f} "
+          f"· {n_in} in-sample (écartés)")
+    if not retenus:
+        print("  aucun pari out-of-sample dénoué — trop tôt.")
+        return None
+
+    k = sum(w for w, _, _ in retenus)
+    n = len(retenus)
+    p0 = sum(1.0 / c for _, c, _ in retenus) / n
+    _, lo, hi = wilson(k, n)
+    pnls = [p for _, _, p in retenus]
+    roi = 100.0 * (sum(pnls) / n)
+    ic = 196.0 * _ecart_type(pnls) / math.sqrt(n) if n > 1 else 0.0
+    print(f"  OUT-OF-SAMPLE : {k}/{n} = {100 * k / n:.1f} % de gains "
+          f"IC95 [{100 * lo:.1f} ; {100 * hi:.1f}]")
+    print(f"  seuil de rentabilité p0 = {100 * p0:.1f} % · "
+          f"écart {100 * k / n - 100 * p0:+.1f} points")
+    print(f"  ROI RÉEL {roi:+.1f} % [{roi - ic:+.1f} ; {roi + ic:+.1f}] "
+          f"· P&L {sum(pnls):+.1f} u")
+    print(f"  référence in-sample au gel, NON confirmatoire : "
+          f"429/580 = 74,0 % · seuil 70,2 % · ROI +5,5 %")
+    if n < 30:
+        print(f"  n={n} < 30 — trop tôt (règle maison). ~161 paris/mois "
+              f"attendus, l'IC95 franchit le seuil vers n=600.")
+    return (k, n, p0)
+
+
 HYPOTHESES = [
     ('calibration 2,20-3,50', FREEZE_DATE,           calibration_watch),
     ('heure du match',        FREEZE_DATE,           hour_watch),
@@ -2232,6 +2367,11 @@ HYPOTHESES = [
     # 2,70-2,90 fait mieux (+16,3 d'écart, p=0,0021) mais c'est le
     # maximum d'un balayage de ~20 découpages, sur 29 paris récents.
     ('bande cote 2,40-3,10',  FREEZE_DATE_H15,       bande_240_310_watch),
+    # AJOUTÉE LE 25/09/2026. Filtre sur pin_open (prix PINNACLE à
+    # l'ouverture), PAS sur la cote d'entrée : le même seuil sur la
+    # cote d'entrée donne p=0,0933, soit rien. Disjointe de H15 :
+    # recouvrement 0/580.
+    ('favori net (pin<1,80)', FREEZE_DATE_H16,       bande_favori_watch),
 ]
 
 
