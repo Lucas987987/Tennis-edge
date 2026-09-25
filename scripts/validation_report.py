@@ -304,6 +304,11 @@ H14_LEAD_MAX = 1440.0         # 24 h avant le match
 #                 marge, soit le double des versions internationales.
 H14_SOFTS = ['unibet', 'bwin', 'betsson', 'bet365', '888sport',
              'betway', 'leovegas']
+
+FREEZE_DATE_H15 = '2026-09-25'
+# BANDE DE COTE H15 — source de vérité unique, partagée avec h15_signal.py.
+H15_COTE_MIN = 2.40
+H15_COTE_MAX = 3.10
 # Critère PRIMAIRE : CLV du groupe alerté vs groupe témoin.
 # REQUALIFIÉ LE 27/08/2026 (audit §3.1) : un gel rétroactif n'est PAS un
 # pré-enregistrement -- le 25/08, ce critère avait déjà été vu sur les
@@ -2076,6 +2081,125 @@ def roi_ampli_watch():
     return (k, n, p0)
 
 
+def bande_240_310_watch():
+    """15e hypothèse gelée : parier le côté steamé quand sa cote d'entrée
+    se situe entre 2,40 et 3,10.
+
+        « Parier le côté steamé au book d'entrée, cote comprise entre
+          2,40 et 3,10, sans autre filtre. »
+
+    Gelée le 2026-09-25.
+
+    ── CE QUI L'A FAIT RETENIR ─────────────────────────────────────────
+    Découpage du portefeuille par tranche de cote, 1 543 paris :
+
+        cote        n     gains   seuil   écart     ROI
+        < 1,50     321    80,4 %  77,4 %   +3,0    +3,9 %
+        1,50-2,00  421    59,6 %  58,8 %   +0,8    +0,9 %
+        2,00-2,50  280    47,1 %  45,2 %   +1,9    +4,1 %
+        2,50-3,00  166    45,2 %  37,1 %   +8,1   +22,8 %
+        3,00-4,00  164    31,1 %  29,7 %   +1,4    +5,6 %
+        4,00-6,00  117    22,2 %  21,9 %   +0,3    +1,0 %
+        > 6,00      63     7,9 %  11,5 %   -4,1   -34,1 %
+
+    Six tranches entre -4,1 et +3,0, une seule à +8,1. Un balayage en
+    bandes glissantes montre un gradient net : +1,8 sur 2,30-2,80, +7,0
+    sur 2,40-2,90, +8,1 sur 2,50-3,00, +10,9 sur 2,70-3,20, puis
+    redescente à +1,4 sur 3,00-3,50.
+
+    RÉPLICATION TEMPORELLE (deux moitiés sans recouvrement) :
+        2,40-3,10   +24,7 % (n=121)  ->  +21,8 % (n=104)
+    Trois points d'écart, effectifs corrects des deux côtés.
+
+    ── POURQUOI CETTE BANDE ET PAS UNE AUTRE ───────────────────────────
+    L'effet est porté par un noyau de 80 paris sur 2,70-2,90 : écart
+    +16,3, ROI +45,2 %, p exact 0,0021. Le reste de la bande 2,50-3,00
+    fait +0,4 point d'écart, soit rien.
+
+    Geler le noyau serait geler le maximum d'un balayage — la façon la
+    plus sûre de figer du bruit. La bande LARGE 2,40-3,10 est retenue
+    parce qu'elle n'a pas été choisie pour maximiser l'effet, qu'elle
+    compte 104 paris sur la période récente contre 29 pour le noyau, et
+    qu'elle réplique à trois points près.
+
+    ATTENTION : les bandes 2,40-3,10 / 2,45-3,05 / 2,50-3,00 / 2,55-2,95
+    / 2,60-2,90 contiennent TOUTES les mêmes 80 paris du noyau. Ce ne
+    sont pas cinq confirmations mais une mesure vue cinq fois — le piège
+    des sous-ensembles emboîtés déjà relevé le 07/09. Ne pas les citer
+    comme cinq preuves.
+
+    ── RÉSERVE HONNÊTE ─────────────────────────────────────────────────
+    La bande a été trouvée APRÈS avoir vu les résultats, sur une
+    vingtaine de découpages testés. Le p de 0,0065 devient ~0,13 après
+    Bonferroni. C'est la réplication, pas la significativité, qui
+    justifie ce gel — et elle ne vaut que sur 121 puis 104 paris.
+
+    Référence in-sample au gel, NON confirmatoire :
+        n=225 · 103 gains · 45,8 % · seuil 37,5 % · écart +8,3
+        ROI +23,4 % · P&L +52,6 u · CLV médian +5,3 % · cote médiane 2,70
+
+    Volume : ~63 paris/mois. L'IC95 franchit le seuil dès n=150, soit
+    environ 2,5 mois.
+
+    Retourne (k, n, p0) ou None si pas encore testable.
+    """
+    SRC = 'moves_detail_hist.csv'
+    try:
+        fh = open(SRC, encoding='utf-8')
+    except OSError:
+        print(f"  {SRC} absent.")
+        return None
+
+    retenus, n_in, n_bande = [], 0, 0
+    with fh:
+        for r in csv.DictReader(fh):
+            try:
+                cote = float(r['entry'])
+            except (TypeError, ValueError, KeyError):
+                continue
+            if not (H15_COTE_MIN <= cote < H15_COTE_MAX):
+                continue
+            n_bande += 1
+            d = str(r.get('date') or '')[:10]
+            if not d or d < FREEZE_DATE_H15:
+                n_in += 1
+                continue
+            g = r.get('steame_gagne')
+            if g not in ('oui', 'non'):
+                continue
+            try:
+                pnl = float(r['pnl'])
+            except (TypeError, ValueError, KeyError):
+                pnl = (cote - 1.0) if g == 'oui' else -1.0
+            retenus.append((1 if g == 'oui' else 0, cote, pnl))
+
+    print(f"  {SRC} : {n_bande} pari(s) dans la bande "
+          f"{H15_COTE_MIN:.2f}-{H15_COTE_MAX:.2f} · {n_in} in-sample (écartés)")
+    if not retenus:
+        print("  aucun pari out-of-sample dénoué — trop tôt.")
+        return None
+
+    k = sum(w for w, _, _ in retenus)
+    n = len(retenus)
+    p0 = sum(1.0 / c for _, c, _ in retenus) / n
+    _, lo, hi = wilson(k, n)
+    pnls = [p for _, _, p in retenus]
+    roi = 100.0 * (sum(pnls) / n)
+    ic = 196.0 * _ecart_type(pnls) / math.sqrt(n) if n > 1 else 0.0
+    print(f"  OUT-OF-SAMPLE : {k}/{n} = {100 * k / n:.1f} % de gains "
+          f"IC95 [{100 * lo:.1f} ; {100 * hi:.1f}]")
+    print(f"  seuil de rentabilité p0 = {100 * p0:.1f} % · "
+          f"écart {100 * k / n - 100 * p0:+.1f} points")
+    print(f"  ROI RÉEL {roi:+.1f} % [{roi - ic:+.1f} ; {roi + ic:+.1f}] "
+          f"· P&L {sum(pnls):+.1f} u")
+    print(f"  référence in-sample au gel, NON confirmatoire : "
+          f"103/225 = 45,8 % · seuil 37,5 % · ROI +23,4 %")
+    if n < 30:
+        print(f"  n={n} < 30 — trop tôt (règle maison). ~63 paris/mois "
+              f"attendus, l'IC95 franchit le seuil vers n=150.")
+    return (k, n, p0)
+
+
 HYPOTHESES = [
     ('calibration 2,20-3,50', FREEZE_DATE,           calibration_watch),
     ('heure du match',        FREEZE_DATE,           hour_watch),
@@ -2104,6 +2228,10 @@ HYPOTHESES = [
     # récentes, issus d'un espace de 448 combinaisons dont 33 %
     # ressortent significatives par pure recherche.
     ('amplitude + timing',    FREEZE_DATE_AMPLI,     roi_ampli_watch),
+    # AJOUTÉE LE 25/09/2026. Bande LARGE volontairement : le noyau
+    # 2,70-2,90 fait mieux (+16,3 d'écart, p=0,0021) mais c'est le
+    # maximum d'un balayage de ~20 découpages, sur 29 paris récents.
+    ('bande cote 2,40-3,10',  FREEZE_DATE_H15,       bande_240_310_watch),
 ]
 
 
