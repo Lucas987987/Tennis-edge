@@ -315,6 +315,14 @@ FREEZE_DATE_H16 = '2026-09-25'
 # la cote d'entrée. Les deux sont causaux, mais ce sont deux filtres
 # différents : voir bande_favori_watch() pour pourquoi celui-ci.
 H16_PIN_OPEN_MAX = 1.80
+
+FREEZE_DATE_H17 = '2026-09-25'
+# H17 — écart entre le prix d'ENTRÉE et le prix PINNACLE À L'OUVERTURE,
+# en pourcentage. Strictement causal : les deux termes sont connus au
+# moment du pari. NE PAS confondre avec clv_vs_pin_pct, qui utilise
+# pin_close et n'existe qu'après le coup d'envoi.
+H17_ECART_MIN = 0.0
+H17_ECART_MAX = 3.0
 # Critère PRIMAIRE : CLV du groupe alerté vs groupe témoin.
 # REQUALIFIÉ LE 27/08/2026 (audit §3.1) : un gel rétroactif n'est PAS un
 # pré-enregistrement -- le 25/08, ce critère avait déjà été vu sur les
@@ -2335,6 +2343,139 @@ def bande_favori_watch():
     return (k, n, p0)
 
 
+def ecart_entree_watch():
+    """17e hypothèse gelée : l'écart du prix d'entrée au prix Pinnacle
+    d'ouverture, entre 0 et 3 %.
+
+        « Parier le côté steamé au book d'entrée quand son prix dépasse
+          de 0 à 3 % le prix PINNACLE À L'OUVERTURE du même côté. »
+
+    Gelée le 2026-09-25.
+
+    ── L'ORIGINE : UNE VARIABLE QUI PRÉDIT LE CLV ──────────────────────
+    L'écart à l'entrée est, de loin, le meilleur prédicteur du CLV jamais
+    mesuré sur ces données :
+
+        corrélation(écart entrée ; CLV vs clôture Pinnacle)
+            r = +0,5866   IC95 [+0,5529 ; +0,6184]   n=1543
+
+    À comparer aux 0,06 à 0,24 de tout le reste. Et le gradient est
+    parfaitement monotone :
+
+        écart      n      CLV vs Pin médian   CLV>0
+        < 0 %    1108           +0,90 %       54,9 %
+        0-3 %     255           +4,30 %       83,9 %
+        3-6 %      87           +8,50 %       93,1 %
+        6-10 %     49          +13,40 %       89,8 %
+        > 10 %     42          +28,90 %       97,6 %
+
+    C'est mécanique : un prix très au-dessus du marché sharp a peu de
+    chances d'être rattrapé. LE CLV EST DONC LARGEMENT PRÉVISIBLE.
+
+    ── MAIS LE ROI, LUI, NE SUIT PAS LE GRADIENT ───────────────────────
+        < 0 %    ROI  -2,4 %      3-6 %   ROI  +4,3 %
+        -3 à 0   ROI  +3,3 %      6-10 %  ROI -19,5 %
+        0-3 %    ROI +12,4 %      > 10 %  ROI +74,6 %
+
+    Aucune monotonie. C'est la dissociation CLV/ROI, déjà démontrée par
+    la tranche de cote > 6,00 (+23 % de CLV, -34 % de ROI).
+
+    ── POURQUOI 0-3 % ET PAS > 10 % ────────────────────────────────────
+    > 10 % affiche +74,6 % de ROI et p=0,0222, avec une réplication
+    apparente (+93,0 % puis +56,2 %). Mais sur 42 paris, soit 21 par
+    moitié : à ce volume, +93 % signifie « deux ou trois gros outsiders
+    sont passés ». Écartée.
+
+    0-3 % est retenue pour sa RÉPLICATION :
+        1re moitié  ROI +10,6 %
+        2e  moitié  ROI +14,1 %
+    3,5 points d'écart — la meilleure réplication du dispositif, devant
+    H15 (+24,7 -> +21,8) et H16 (+4,3 -> +6,6).
+
+    Et son mécanisme est intelligible : un prix 0 à 3 % au-dessus de
+    Pinnacle est un décalage réel mais modéré. Au-delà, on entre dans les
+    situations où le marché a probablement raison d'offrir mieux.
+
+    ── RÉSERVES ────────────────────────────────────────────────────────
+    p = 0,0439, juste sous le seuil, sur SIX tranches testées. Après
+    Bonferroni il remonte à 0,26. C'est la réplication qui justifie ce
+    gel, pas la significativité — comme pour H15 et H16.
+
+    Le croisement avec la cote ne donne rien de net : quatre sous-groupes
+    entre +5,7 % et +22,1 %, tous avec p > 0,20 sur 36 à 75 paris.
+
+    Référence in-sample, NON confirmatoire :
+        n=255 · 152 gains · 59,6 % · seuil 54,1 % · écart +5,5
+        ROI +12,4 % · P&L +31,6 u · CLV médian +6,1 % · cote médiane 1,85
+
+    Volume : ~71 paris/mois. L'IC95 franchit le seuil vers n=350, soit
+    environ 5 mois.
+
+    Retourne (k, n, p0) ou None si pas encore testable.
+    """
+    SRC = 'moves_detail_hist.csv'
+    try:
+        fh = open(SRC, encoding='utf-8')
+    except OSError:
+        print(f"  {SRC} absent.")
+        return None
+
+    retenus, n_in, n_zone = [], 0, 0
+    with fh:
+        for r in csv.DictReader(fh):
+            try:
+                cote = float(r['entry'])
+                pin_open = float(r['pin_open'])
+            except (TypeError, ValueError, KeyError):
+                continue
+            if not pin_open:
+                continue
+            # ÉCART CAUSAL : prix payé vs prix Pinnacle à l'OUVERTURE.
+            # pin_open, pas pin_close — voir la note sur H17 plus haut.
+            ecart = 100.0 * (cote / pin_open - 1.0)
+            if not (H17_ECART_MIN <= ecart < H17_ECART_MAX):
+                continue
+            n_zone += 1
+            d = str(r.get('date') or '')[:10]
+            if not d or d < FREEZE_DATE_H17:
+                n_in += 1
+                continue
+            g = r.get('steame_gagne')
+            if g not in ('oui', 'non'):
+                continue
+            try:
+                pnl = float(r['pnl'])
+            except (TypeError, ValueError, KeyError):
+                pnl = (cote - 1.0) if g == 'oui' else -1.0
+            retenus.append((1 if g == 'oui' else 0, cote, pnl))
+
+    print(f"  {SRC} : {n_zone} pari(s) avec écart "
+          f"{H17_ECART_MIN:.0f}-{H17_ECART_MAX:.0f} % · {n_in} in-sample (écartés)")
+    if not retenus:
+        print("  aucun pari out-of-sample dénoué — trop tôt.")
+        return None
+
+    k = sum(w for w, _, _ in retenus)
+    n = len(retenus)
+    p0 = sum(1.0 / c for _, c, _ in retenus) / n
+    _, lo, hi = wilson(k, n)
+    pnls = [p for _, _, p in retenus]
+    roi = 100.0 * (sum(pnls) / n)
+    ic = 196.0 * _ecart_type(pnls) / math.sqrt(n) if n > 1 else 0.0
+    print(f"  OUT-OF-SAMPLE : {k}/{n} = {100 * k / n:.1f} % de gains "
+          f"IC95 [{100 * lo:.1f} ; {100 * hi:.1f}]")
+    print(f"  seuil de rentabilité p0 = {100 * p0:.1f} % · "
+          f"écart {100 * k / n - 100 * p0:+.1f} points")
+    print(f"  ROI RÉEL {roi:+.1f} % [{roi - ic:+.1f} ; {roi + ic:+.1f}] "
+          f"· P&L {sum(pnls):+.1f} u")
+    print(f"  référence in-sample au gel, NON confirmatoire : "
+          f"152/255 = 59,6 % · seuil 54,1 % · ROI +12,4 %")
+    if n < 30:
+        print(f"  n={n} < 30 — trop tôt (règle maison). ~71 paris/mois "
+              f"attendus, l'IC95 franchit le seuil vers n=350.")
+    return (k, n, p0)
+
+
 HYPOTHESES = [
     ('calibration 2,20-3,50', FREEZE_DATE,           calibration_watch),
     ('heure du match',        FREEZE_DATE,           hour_watch),
@@ -2372,6 +2513,10 @@ HYPOTHESES = [
     # cote d'entrée donne p=0,0933, soit rien. Disjointe de H15 :
     # recouvrement 0/580.
     ('favori net (pin<1,80)', FREEZE_DATE_H16,       bande_favori_watch),
+    # AJOUTÉE LE 25/09/2026. Écart CAUSAL entrée/Pinnacle ouverture.
+    # Ne pas confondre avec clv_vs_pin_pct, qui utilise pin_close et
+    # n'existe qu'après le coup d'envoi — ce serait du look-ahead.
+    ('écart entrée 0-3 %',    FREEZE_DATE_H17,       ecart_entree_watch),
 ]
 
 

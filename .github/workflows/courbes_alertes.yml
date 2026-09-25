@@ -168,6 +168,13 @@ jobs:
           # tout et n'envoie que si aucun signal ne l'a précédée.
           python scripts/h16_signal.py || true
 
+          # H17 — écart d'entrée 0-3 %, gelée le 25/09/2026.
+          # L'écart est CAUSAL : prix d'entrée vs Pinnacle à l'OUVERTURE. Ne
+          # pas confondre avec clv_vs_pin_pct (pin_close), qui serait du
+          # look-ahead. Logue tout, n'envoie que si aucun signal ne l'a
+          # précédée.
+          python scripts/h17_signal.py || true
+
           # Signal EXPÉRIMENTAL (non validé) : book déjà ouvert avant Pinnacle,
           # écart au moment où Pinnacle publie son 1er prix. Canal PRIVÉ
           # uniquement (jamais le canal public) -- voir validation_report pour
