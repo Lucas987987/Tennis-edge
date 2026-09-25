@@ -153,6 +153,14 @@ jobs:
           # Doit tourner APRÈS h13_signal, qui écrit l'état qu'il consulte.
           python scripts/zone_signal.py || true
 
+          # H15 — bande de cote 2,40-3,10, gelée le 25/09/2026.
+          # Doit tourner APRÈS h13_signal et zone_signal : la bande les
+          # recoupe, et h15_signal lit leur état pour ne pas envoyer trois
+          # messages sur le même match. Il LOGUE tout de même chaque match
+          # de la bande — la mesure doit être complète — avec le champ
+          # `doublon` pour tracer la distinction.
+          python scripts/h15_signal.py || true
+
           # Signal EXPÉRIMENTAL (non validé) : book déjà ouvert avant Pinnacle,
           # écart au moment où Pinnacle publie son 1er prix. Canal PRIVÉ
           # uniquement (jamais le canal public) -- voir validation_report pour
