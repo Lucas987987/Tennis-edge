@@ -127,27 +127,6 @@ jobs:
       # moves, mais le rapport du même run affichait encore « p0 = 73,7 %
       # sur n=1085 » — l'ancienne population biaisée. Il aurait fallu deux
       # runs pour voir l'effet d'un correctif appliqué dans le premier.
-      # RESTAURATION DES PARTITIONS ARCHIVÉES — AJOUTÉE LE 24/09/2026.
-      #
-      # move_audit.py (étape suivante) RECONSTRUIT INTÉGRALEMENT
-      # moves_detail_hist.csv depuis parts/hist_book_*. Ce fichier porte
-      # p0_temoin() et les références in-sample des 14 hypothèses gelées :
-      # 326 paris pour H13, 370 pour H14.
-      #
-      # Depuis que archive_curves.py sort les partitions de plus de 28 jours
-      # vers des releases, juin et juillet ne sont plus dans le dépôt. Sans
-      # cette étape, move_audit les reconstruirait SANS ELLES : le fichier
-      # rétrécirait, les références in-sample disparaîtraient, et aucune
-      # erreur ne serait levée. Les 14 gels deviendraient injugeables en un
-      # seul run.
-      #
-      # Le script sort en ERREUR si un téléchargement échoue — mieux vaut un
-      # run rouge qu'un verdict calculé sur une population tronquée.
-      - name: Restaurer les partitions de courbes archivées
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: python scripts/restore_curves.py
-
       - name: Audit des moves (détail par move + agrégats par ampleur)
         run: |
           python scripts/move_audit.py || true
@@ -155,6 +134,25 @@ jobs:
 
       - name: Tableau de validation forward (CLV/ROI + IC95)
         run: python scripts/validation_report.py || true
+
+      # AJOUTÉ LE 25/09/2026 — mesure SÉPARÉMENT les deux populations H13.
+      #
+      # Le ROI « H13 out-of-sample » du rapport décrit la RECONSTRUCTION
+      # move_audit, pas le flux Telegram. Mesuré sur 75 matchs communs :
+      #   côté steamé différent      23/75 = 31 %
+      #   book d'entrée différent    51/75 = 68 %
+      #   détection >30 min plus tôt         91 %
+      #   lead médian : alerte 391 min · reconstruction 759 min
+      #
+      # Et les deux donnent des résultats différents :
+      #   alertes envoyées   n=105  ROI  +0,2 %
+      #   reconstruction     n=137  ROI  +7,5 %
+      #
+      # Les confondre attribue au canal un rendement qu'il n'a pas produit.
+      # Ce script les affiche côte à côte pour que la confusion ne puisse
+      # plus se reproduire.
+      - name: H13 — populations séparées (envoyé vs reconstruit)
+        run: python scripts/h13_populations.py || true
 
       - name: Pont CLV -> P&L (le postulat central, mesuré en continu)
         # AJOUTÉ LE 27/08/2026 (audit v2 §I) : pnl_vs_clv_study.py teste la

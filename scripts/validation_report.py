@@ -16,6 +16,7 @@ Pour chaque surface (match/set1/set2) et par book :
 
 Env : JOURNALS (glob, def 'paper_trades_*.jsonl'). Aucune dependance externe.
 """
+import math
 import os, sys, glob, json, csv, math, datetime, random, statistics as st
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import oddspapi_v5 as ov
@@ -46,6 +47,20 @@ def _hist_sources():
 
 JOURNALS = os.environ.get('JOURNALS', 'paper_trades_*.jsonl')
 Z = 1.96  # 95%
+
+
+def _ecart_type(valeurs):
+    """Écart-type de population, sans dépendance externe.
+
+    Sert à l'intervalle du ROI. AJOUTÉ LE 25/09/2026 avec le passage au
+    ROI réel : l'ancien affichage « ROI implicite » ne donnait aucun
+    intervalle, ce qui laissait croire à une précision qu'il n'avait pas.
+    """
+    n = len(valeurs)
+    if n < 2:
+        return 0.0
+    m = sum(valeurs) / n
+    return (sum((v - m) ** 2 for v in valeurs) / n) ** 0.5
 
 
 def wilson(k, n):
@@ -1864,7 +1879,13 @@ def roi_bande_watch():
         g = r.get('steame_gagne')
         if g not in ('oui', 'non'):
             continue                     # pari non dénoué : ni gain ni perte
-        retenus.append((1 if g == 'oui' else 0, cote))
+        # Le P&L RÉEL est lu dans le fichier, pas recalculé : c'est lui qui
+        # porte le rendement effectif, cote par cote.
+        try:
+            pnl = float(r.get('pnl'))
+        except (TypeError, ValueError):
+            pnl = (cote - 1.0) if g == 'oui' else -1.0
+        retenus.append((1 if g == 'oui' else 0, cote, pnl))
 
     print(f"  {SRC} : {len(lignes)} lignes · {n_bande} dans la bande "
           f"{COTE_MIN:.1f}-{COTE_MAX:.1f} · {n_in} in-sample (écartés)")
@@ -1872,15 +1893,22 @@ def roi_bande_watch():
         print("  aucun pari out-of-sample dénoué — trop tôt.")
         return None
 
-    k = sum(w for w, _ in retenus)
+    k = sum(w for w, _, _ in retenus)
     n = len(retenus)
-    p0 = sum(1.0 / c for _, c in retenus) / n     # seuil de rentabilité
+    p0 = sum(1.0 / c for _, c, _ in retenus) / n   # seuil de rentabilité
     _, lo, hi = wilson(k, n)
-    roi = 100.0 * ((k / n) / p0 - 1) if p0 else 0.0
+    pnls = [p for _, _, p in retenus]
+    roi = 100.0 * (sum(pnls) / n)                  # ROI RÉEL, pari par pari
+    ic = 196.0 * _ecart_type(pnls) / math.sqrt(n) if n > 1 else 0.0
     print(f"  OUT-OF-SAMPLE : {k}/{n} = {100 * k / n:.1f} % de gains "
           f"IC95 [{100 * lo:.1f} ; {100 * hi:.1f}]")
-    print(f"  seuil de rentabilité p0 = {100 * p0:.1f} % "
-          f"(moyenne de 1/cote) -> ROI implicite {roi:+.1f} %")
+    print(f"  seuil de rentabilité p0 = {100 * p0:.1f} % (moyenne de 1/cote)")
+    # LE VERDICT se lit sur le TAUX DE GAIN contre p0 (cadre binomial, c'est
+    # lui qui porte Holm). Le ROI est affiché à part, comme grandeur
+    # économique — les deux ne coïncident QUE si toutes les cotes sont
+    # égales, ce qui n'est jamais le cas.
+    print(f"  ROI RÉEL {roi:+.1f} % [{roi - ic:+.1f} ; {roi + ic:+.1f}] "
+          f"· P&L {sum(pnls):+.1f} u")
     print(f"  référence in-sample au gel, NON confirmatoire : "
           f"150/316 = 47,5 % · p0 42,2 % · ROI +13,7 %")
     if n < 30:
@@ -2015,7 +2043,11 @@ def roi_ampli_watch():
             g = r.get('steame_gagne')
             if g not in ('oui', 'non'):
                 continue
-            retenus.append((1 if g == 'oui' else 0, cote))
+            try:
+                pnl = float(r.get('pnl'))
+            except (TypeError, ValueError):
+                pnl = (cote - 1.0) if g == 'oui' else -1.0
+            retenus.append((1 if g == 'oui' else 0, cote, pnl))
 
     print(f"  {SRC} : {n_zone} pari(s) dans la zone "
           f"(move>{H14_MOVE_MIN_PCT:.0f}%, {H14_LEAD_MIN/60:.0f}-{H14_LEAD_MAX/60:.0f} h) "
@@ -2024,14 +2056,18 @@ def roi_ampli_watch():
         print("  aucun pari out-of-sample dénoué — trop tôt.")
         return None
 
-    k = len(retenus) and sum(w for w, _ in retenus)
+    k = sum(w for w, _, _ in retenus)
     n = len(retenus)
-    p0 = sum(1.0 / c for _, c in retenus) / n
+    p0 = sum(1.0 / c for _, c, _ in retenus) / n
     _, lo, hi = wilson(k, n)
+    pnls = [p for _, _, p in retenus]
+    roi = 100.0 * (sum(pnls) / n)
+    ic = 196.0 * _ecart_type(pnls) / math.sqrt(n) if n > 1 else 0.0
     print(f"  OUT-OF-SAMPLE : {k}/{n} = {100 * k / n:.1f} % de gains "
           f"IC95 [{100 * lo:.1f} ; {100 * hi:.1f}]")
-    print(f"  rentabilité p0 = {100 * p0:.1f} % -> ROI implicite "
-          f"{100 * ((k / n) / p0 - 1):+.1f} %")
+    print(f"  seuil de rentabilité p0 = {100 * p0:.1f} %")
+    print(f"  ROI RÉEL {roi:+.1f} % [{roi - ic:+.1f} ; {roi + ic:+.1f}] "
+          f"· P&L {sum(pnls):+.1f} u")
     print(f"  référence in-sample au gel, NON confirmatoire : "
           f"146/275 = 53,1 % · p0 46,0 % · ROI +20,9 %")
     if n < 30:
