@@ -1,0 +1,197 @@
+{
+  "scripts_manquants": [],
+  "closing_7j": {
+    "jours": 3,
+    "n": 119,
+    "closing_pct": 88.2,
+    "t7_pct": 69.7,
+    "t3_pct": 68.9
+  },
+  "closing_30j": {
+    "jours": 30,
+    "n": 1060,
+    "closing_pct": 82.6,
+    "t7_pct": 53.4,
+    "t3_pct": 45.0
+  },
+  "run_termine": "2026-09-07T04:52:31",
+  "run_demarre": "2026-09-07T04:34:30",
+  "verdict_global": "1 livrable(s) à vérifier",
+  "livrables": [
+    {
+      "fichier": "set_results.json",
+      "libellé": "Résultats match + set",
+      "optionnel": false,
+      "externe": false,
+      "verdict": "✅ OK",
+      "octets": 265773,
+      "lignes": 2662,
+      "ecrit_ce_run": true,
+      "modifie": "2026-09-07T04:40:26"
+    },
+    {
+      "fichier": "resultats_derived.json",
+      "libellé": "Pont résultats (études)",
+      "optionnel": false,
+      "externe": true,
+      "verdict": "✅ OK",
+      "octets": 472213,
+      "lignes": 1777,
+      "ecrit_ce_run": true,
+      "modifie": "2026-09-07T04:36:08"
+    },
+    {
+      "fichier": "paper_trades_match.jsonl",
+      "libellé": "Journal forward — match",
+      "optionnel": false,
+      "externe": false,
+      "verdict": "✅ OK",
+      "octets": 16665,
+      "lignes": 39,
+      "ecrit_ce_run": true,
+      "modifie": "2026-09-07T04:41:48"
+    },
+    {
+      "fichier": "paper_trades_set1.jsonl",
+      "libellé": "Journal forward — set 1",
+      "optionnel": false,
+      "externe": false,
+      "verdict": "✅ OK",
+      "octets": 7726,
+      "lignes": 19,
+      "ecrit_ce_run": true,
+      "modifie": "2026-09-07T04:42:04"
+    },
+    {
+      "fichier": "paper_trades_set2.jsonl",
+      "libellé": "Journal forward — set 2",
+      "optionnel": true,
+      "externe": false,
+      "verdict": "⚠️ VIDE",
+      "octets": 0,
+      "lignes": 0,
+      "ecrit_ce_run": true,
+      "modifie": "2026-09-07T04:42:10"
+    },
+    {
+      "fichier": "moves_detail.csv",
+      "libellé": "Audit des moves (live)",
+      "optionnel": false,
+      "externe": false,
+      "verdict": "✅ OK",
+      "octets": 7723,
+      "lignes": 46,
+      "ecrit_ce_run": true,
+      "modifie": "2026-09-07T04:42:12"
+    },
+    {
+      "fichier": "moves_detail_hist.csv",
+      "libellé": "Audit des moves (historique)",
+      "optionnel": false,
+      "externe": false,
+      "verdict": "✅ OK",
+      "octets": 195239,
+      "lignes": 1172,
+      "ecrit_ce_run": true,
+      "modifie": "2026-09-07T04:43:08"
+    },
+    {
+      "fichier": "canal_clv_detail.csv",
+      "libellé": "CLV réalisé du canal public",
+      "optionnel": false,
+      "externe": false,
+      "verdict": "✅ OK",
+      "octets": 27929,
+      "lignes": 179,
+      "ecrit_ce_run": true,
+      "modifie": "2026-09-07T04:52:29"
+    },
+    {
+      "fichier": "canal_public_log.jsonl",
+      "libellé": "Journal du canal public",
+      "optionnel": false,
+      "externe": true,
+      "verdict": "✅ OK",
+      "octets": 76659,
+      "lignes": 191,
+      "ecrit_ce_run": true,
+      "modifie": "2026-09-07T04:36:07"
+    },
+    {
+      "fichier": "book_curves_live.jsonl",
+      "libellé": "Courbes live reconstruites",
+      "optionnel": false,
+      "externe": false,
+      "verdict": "✅ OK",
+      "octets": 32960791,
+      "lignes": 3880,
+      "ecrit_ce_run": true,
+      "modifie": "2026-09-07T04:36:12"
+    }
+  ],
+  "partitions": {
+    "total_mo": 472.0,
+    "zone_rouge": [],
+    "n_partitions": 44,
+    "vue_partielle": true
+  },
+  "q3_qualite_cloture": {
+    "ecarts_gt_3pct": 188,
+    "n_total": 1168,
+    "pct_ecarts": 16.1,
+    "seuil_pct": 30.0,
+    "alerte": false
+  },
+  "clv_vs_median": {
+    "genere_le": "2026-09-07T04:51:20.925520+00:00",
+    "n_moves_total": 1171,
+    "n_cote_ambigu": 1,
+    "n_incomplet": 394,
+    "n_exploitables": 776,
+    "verdict": "calcule",
+    "prime_selection_pct": 1.169,
+    "prime_ic95": [
+      1.029,
+      1.326
+    ],
+    "derive_marche_pct": 2.857,
+    "derive_ic95": [
+      2.395,
+      3.234
+    ],
+    "total_clv_vs_median_pct": 4.147,
+    "total_ic95": [
+      3.643,
+      4.772
+    ],
+    "clv_book_pct_median": 3.8,
+    "ecart_book_vs_median_pct": -0.02,
+    "ecart_book_vs_median_ic95": [
+      -0.136,
+      0.0
+    ],
+    "part_prime_pct": 28.2,
+    "pct_positif_prime": 74.9,
+    "pct_positif_derive": 72.3
+  },
+  "polymarket_studies": {
+    "n_echecs": 0,
+    "n_avertissements": 2,
+    "alerte": false,
+    "genere_le": "2026-09-06T08:45:29Z",
+    "age_heures": 20.1,
+    "fraicheur_inconnue_ou_perimee": false
+  },
+  "repo_size": {
+    "zone": "alarme",
+    "taille_go": 4.16,
+    "marge_go": -0.16,
+    "seuil_vigilance_go": 3.0,
+    "seuil_alarme_go": 4.0,
+    "message": "SEUIL FRANCHI — lancer le git filter-repo (RUNBOOK_FILTER_REPO.md) sans attendre.",
+    "derniere_mesure_reussie_le": "2026-09-06T11:44:11.875086+00:00",
+    "genere_le": "2026-09-06T11:44:11.875086+00:00",
+    "age_heures": 17.1,
+    "fraicheur_inconnue_ou_perimee": false
+  }
+}

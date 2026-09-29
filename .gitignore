@@ -1,0 +1,27 @@
+# Bytecode Python
+__pycache__/
+*.pyc
+
+# Fichiers plats de courbes live : RÉGÉNÉRÉS à chaque run par
+# scripts/curves_parts.py rebuild, à partir des partitions du dossier parts/.
+# Ne plus les commiter : ils étaient réécrits entièrement toutes les 8 minutes,
+# ce qui faisait exploser l'historique git (runs lents, file d'attente, échecs).
+book_curves_live.jsonl
+set1_curves_live.jsonl
+set2_curves_live.jsonl
+/*.zip
+
+# AJOUTÉ LE 29/08/2026 (validation externe) : filet pour le cas SIGKILL --
+# ov.ecriture_atomique()/ecriture_atomique_texte() nettoient le .tmp
+# résiduel via un bloc except en cas d'échec, mais un processus tué
+# brutalement (timeout GitHub Actions, OOM) ne laisse jamais ce bloc
+# s'exécuter. Sans cette règle, un .tmp orphelin serait embarqué par le
+# prochain `git add -A` -- exactement le même risque que celui que
+# l'écriture atomique corrige, un niveau plus bas.
+*.tmp
+
+# AJOUTÉ LE 03/09/2026 : cache de calibration (steam_alert.stats_avec_cache).
+# Régénérable à tout instant depuis les partitions, réécrit à chaque expiration
+# du TTL -- le committer gonflerait l'historique git à chaque cycle de capture
+# pour une donnée dérivée, exactement ce que la sentinelle de taille surveille.
+calib_cache.json

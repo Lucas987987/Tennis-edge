@@ -1,0 +1,69 @@
+name: Watchdog capture (le worker Cloudflare tourne-t-il encore ?)
+
+# CRÉÉ LE 04/09/2026, en remplacement du cron '*/5' retiré de
+# capture_closing.yml — lequel ne s'est JAMAIS déclenché (mesuré :
+# passages_par_declencheur ne contient que `repository_dispatch`).
+#
+# Le worker Cloudflare est désormais le déclencheur UNIQUE de la capture.
+# Assumé, mais à condition d'avoir un vrai filet : watchdog_collecteurs.py
+# surveille Kalshi et Polymarket, personne ne surveillait capture_closing,
+# qui est pourtant le cœur du dispositif — sans lui, pas de closing lines,
+# donc pas de CLV, donc plus rien à valider.
+#
+# Un cron HORAIRE est acceptable là où le '*/5' ne l'était pas : un watchdog
+# livré avec 20 minutes de retard fait toujours son travail, une capture
+# livrée avec 20 minutes de retard a perdu son closing.
+
+on:
+  schedule:
+    - cron: '23 * * * *'      # minute 23 : hors des pics d'heure ronde
+  workflow_dispatch:
+    inputs:
+      seuil_min:
+        description: "Retard toléré, en minutes"
+        required: false
+        default: "30"
+      dry_run:
+        description: "1 = ne relance rien, affiche seulement"
+        required: false
+        default: "0"
+
+permissions:
+  contents: read
+  # `gh workflow run` déclenche capture_closing.yml par workflow_dispatch.
+  actions: write
+
+concurrency:
+  group: watchdog-capture
+  cancel-in-progress: false
+
+jobs:
+  veiller:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          filter: blob:none
+          # Ce job ne lit que capture_state.json et un script : inutile de
+          # rapatrier 330 Mo de partitions pour poser une question de date.
+          sparse-checkout: |
+            /*
+            !/parts
+          sparse-checkout-cone-mode: false
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Vérifier la fraîcheur de la capture
+        env:
+          SEUIL_MIN: ${{ github.event.inputs.seuil_min || '30' }}
+          DRY_RUN: ${{ github.event.inputs.dry_run || '0' }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          GH_TOKEN: ${{ github.token }}
+        # PAS de `|| true` : si ce script sort en 1, c'est que la capture est
+        # à l'arrêt. C'est exactement ce qu'on veut voir en rouge dans
+        # l'onglet Actions, sans avoir à ouvrir un log.
+        run: python scripts/watchdog_capture.py
