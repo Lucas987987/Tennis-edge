@@ -2,20 +2,20 @@
   "scripts_manquants": [],
   "closing_7j": {
     "jours": 3,
-    "n": 96,
-    "closing_pct": 85.4,
-    "t7_pct": 81.2,
-    "t3_pct": 76.0
+    "n": 101,
+    "closing_pct": 86.1,
+    "t7_pct": 82.2,
+    "t3_pct": 80.2
   },
   "closing_30j": {
     "jours": 30,
-    "n": 452,
-    "closing_pct": 65.7,
-    "t7_pct": 54.9,
-    "t3_pct": 52.7
+    "n": 457,
+    "closing_pct": 66.1,
+    "t7_pct": 55.4,
+    "t3_pct": 53.8
   },
-  "run_termine": "2026-09-30T08:45:41",
-  "run_demarre": "2026-09-30T08:22:28",
+  "run_termine": "2026-09-30T10:15:00",
+  "run_demarre": "2026-09-30T09:50:55",
   "verdict_global": "1 livrable(s) à vérifier",
   "livrables": [
     {
@@ -24,10 +24,10 @@
       "optionnel": false,
       "externe": false,
       "verdict": "✅ OK",
-      "octets": 287288,
-      "lignes": 2880,
+      "octets": 287683,
+      "lignes": 2884,
       "ecrit_ce_run": true,
-      "modifie": "2026-09-30T08:27:06"
+      "modifie": "2026-09-30T09:56:34"
     },
     {
       "fichier": "resultats_derived.json",
@@ -35,10 +35,10 @@
       "optionnel": false,
       "externe": true,
       "verdict": "✅ OK",
-      "octets": 766401,
-      "lignes": 2839,
+      "octets": 767858,
+      "lignes": 2845,
       "ecrit_ce_run": true,
-      "modifie": "2026-09-30T08:23:04"
+      "modifie": "2026-09-30T09:51:59"
     },
     {
       "fichier": "paper_trades_match.jsonl",
@@ -49,7 +49,7 @@
       "octets": 96878,
       "lignes": 172,
       "ecrit_ce_run": true,
-      "modifie": "2026-09-30T08:28:35"
+      "modifie": "2026-09-30T09:58:04"
     },
     {
       "fichier": "paper_trades_set1.jsonl",
@@ -60,7 +60,7 @@
       "octets": 21300,
       "lignes": 49,
       "ecrit_ce_run": true,
-      "modifie": "2026-09-30T08:28:52"
+      "modifie": "2026-09-30T09:58:19"
     },
     {
       "fichier": "paper_trades_set2.jsonl",
@@ -71,7 +71,7 @@
       "octets": 0,
       "lignes": 0,
       "ecrit_ce_run": true,
-      "modifie": "2026-09-30T08:28:59"
+      "modifie": "2026-09-30T09:58:25"
     },
     {
       "fichier": "moves_detail.csv",
@@ -79,10 +79,10 @@
       "optionnel": false,
       "externe": false,
       "verdict": "✅ OK",
-      "octets": 4746,
-      "lignes": 29,
+      "octets": 5438,
+      "lignes": 33,
       "ecrit_ce_run": true,
-      "modifie": "2026-09-30T08:29:09"
+      "modifie": "2026-09-30T09:58:37"
     },
     {
       "fichier": "moves_detail_hist.csv",
@@ -93,7 +93,7 @@
       "octets": 258707,
       "lignes": 1559,
       "ecrit_ce_run": true,
-      "modifie": "2026-09-30T08:30:34"
+      "modifie": "2026-09-30T10:00:04"
     },
     {
       "fichier": "canal_clv_detail.csv",
@@ -101,10 +101,10 @@
       "optionnel": false,
       "externe": false,
       "verdict": "✅ OK",
-      "octets": 61815,
-      "lignes": 384,
+      "octets": 61968,
+      "lignes": 385,
       "ecrit_ce_run": true,
-      "modifie": "2026-09-30T08:44:30"
+      "modifie": "2026-09-30T10:13:48"
     },
     {
       "fichier": "canal_public_log.jsonl",
@@ -112,10 +112,10 @@
       "optionnel": false,
       "externe": true,
       "verdict": "✅ OK",
-      "octets": 167157,
-      "lignes": 352,
+      "octets": 167676,
+      "lignes": 353,
       "ecrit_ce_run": true,
-      "modifie": "2026-09-30T08:23:02"
+      "modifie": "2026-09-30T09:51:58"
     },
     {
       "fichier": "book_curves_live.jsonl",
@@ -123,14 +123,14 @@
       "optionnel": false,
       "externe": false,
       "verdict": "✅ OK",
-      "octets": 30604284,
-      "lignes": 3620,
+      "octets": 32305044,
+      "lignes": 3723,
       "ecrit_ce_run": true,
-      "modifie": "2026-09-30T08:23:07"
+      "modifie": "2026-09-30T09:52:02"
     }
   ],
   "partitions": {
-    "total_mo": 621.0,
+    "total_mo": 633.9,
     "zone_rouge": [],
     "n_partitions": 53,
     "vue_partielle": true
@@ -143,7 +143,7 @@
     "alerte": false
   },
   "clv_vs_median": {
-    "genere_le": "2026-09-30T08:42:55.706776+00:00",
+    "genere_le": "2026-09-30T10:12:14.015013+00:00",
     "n_moves_total": 1558,
     "n_cote_ambigu": 1,
     "n_incomplet": 396,
@@ -179,7 +179,7 @@
     "n_avertissements": 0,
     "alerte": false,
     "genere_le": "2026-09-29T14:52:04Z",
-    "age_heures": 17.9,
+    "age_heures": 19.4,
     "fraicheur_inconnue_ou_perimee": false
   },
   "repo_size": {
@@ -191,7 +191,7 @@
     "message": "marge restante : 3.82 Go.",
     "derniere_mesure_reussie_le": "2026-09-29T14:18:20.080752+00:00",
     "genere_le": "2026-09-29T14:18:20.080752+00:00",
-    "age_heures": 18.5,
+    "age_heures": 19.9,
     "fraicheur_inconnue_ou_perimee": false
   }
 }
