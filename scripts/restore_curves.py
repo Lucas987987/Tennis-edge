@@ -35,8 +35,28 @@ laisser le pipeline continuer sur un historique tronqué. Mieux vaut un run
 rouge qu'un moves_detail_hist.csv silencieusement amputé — c'est la même
 règle que pour les livrables critiques.
 
+DEUX SOURCES, ET C'EST VOLONTAIRE
+
+  A. parts/ARCHIVE_INDEX.json — la liste tenue par archive_curves.
+  B. les releases `curves-*` elles-mêmes, interrogées directement.
+
+La source B a été ajoutée le 30/09/2026 après cet incident : le
+force-push de la purge a ramené ARCHIVE_INDEX.json à une version
+antérieure, SANS les 16 entrées de courbes — alors que les releases
+curves-2026-06/07/W33/W34 existaient toujours.
+
+restore_curves annonçait alors « aucune partition de courbes archivée »
+et move_audit reconstruisait moves_detail_hist.csv à 302 lignes au lieu
+de 1 748. Aucune erreur n'était levée : l'index disait la vérité de son
+point de vue, il était simplement périmé.
+
+Les releases, elles, ne peuvent pas être ramenées en arrière par un
+force-push : elles ne font pas partie de l'historique Git. C'est donc la
+source la plus fiable, et elle sert de filet quand l'index est
+incomplet.
+
 Env : DRY_RUN=1, SKIP_RESTORE=1 (saute entièrement, pour les jobs qui
-      n'ont pas besoin de l'historique), INDEX.
+      n'ont pas besoin de l'historique), INDEX, TAGS_PREFIX.
 """
 import os
 import sys
@@ -49,6 +69,7 @@ DRY_RUN = os.environ.get('DRY_RUN', '') == '1'
 SKIP = os.environ.get('SKIP_RESTORE', '') == '1'
 INDEX = os.environ.get('INDEX', 'parts/ARCHIVE_INDEX.json')
 PREFIXES = ('hist_book_', 'hist_set1_', 'hist_set2_')
+TAGS_PREFIX = os.environ.get('TAGS_PREFIX', 'curves-')
 
 
 def gh(*args):
@@ -68,8 +89,35 @@ def main():
 
     archives = [a for a in idx.get('archives', [])
                 if str(a.get('fichier', '')).startswith(PREFIXES)]
+
+    # SOURCE B — les releases elles-mêmes. On les interroge TOUJOURS, pas
+    # seulement quand l'index est vide : il peut être partiellement
+    # périmé, ce qui est pire qu'un index absent (on croit avoir tout).
+    connus = {a['fichier'] for a in archives}
+    code, out = gh('release', 'list', '--limit', '200',
+                   '--json', 'tagName', '--jq', '.[].tagName')
+    tags = [t for t in out.split() if t.startswith(TAGS_PREFIX)] if code == 0 else []
+    if code != 0:
+        print(f'  ⚠️ liste des releases illisible : {out[:120]}')
+    ajouts = 0
+    for tag in sorted(tags):
+        c2, o2 = gh('release', 'view', tag, '--json', 'assets',
+                    '--jq', '.assets[].name')
+        if c2 != 0:
+            print(f'  ⚠️ release {tag} illisible : {o2[:120]}')
+            continue
+        for nom in o2.split():
+            if nom.startswith(PREFIXES) and nom not in connus:
+                archives.append({'fichier': nom, 'release': tag})
+                connus.add(nom)
+                ajouts += 1
+    if ajouts:
+        print(f'  + {ajouts} partition(s) trouvée(s) directement dans les '
+              f'releases (absentes de l\'index)')
+
     if not archives:
-        print('restore_curves — aucune partition de courbes archivée.')
+        print('restore_curves — aucune partition de courbes archivée, '
+              'ni dans l\'index ni dans les releases.')
         return 0
 
     presents = {os.path.basename(p) for p in glob.glob('parts/*')}
