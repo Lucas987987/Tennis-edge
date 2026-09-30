@@ -146,6 +146,39 @@ jobs:
           # h13_signal.py ne lit PAS TELEGRAM_PUBLIC_CHAT_ID, par construction.
           python scripts/h13_signal.py || true
 
+          # LES SIX SIGNAUX CI-DESSOUS ONT ÉTÉ PERDUS et sont RÉTABLIS le
+          # 30/09/2026. Ce fichier ne lançait plus que h13_signal : aucune
+          # alerte H15/H16/H17 n'est partie depuis le 27/09, et H18 comme
+          # H16-B n'ont jamais tourné.
+          #
+          # ORDRE IMPORTANT : chacun lit l'état des précédents pour ne pas
+          # envoyer plusieurs messages sur le même match. Ils LOGUENT tout —
+          # la mesure doit être complète — mais n'envoient que si aucun
+          # signal ne les a précédés. Le champ `doublon` trace la distinction.
+
+          # Zone 2,50-3,20 — observation, non gelée.
+          python scripts/zone_signal.py || true
+
+          # H15 — bande de cote 2,40-3,10, gelée le 25/09.
+          python scripts/h15_signal.py || true
+
+          # H16 — favori net (pin_open < 1,80), gelée le 25/09.
+          python scripts/h16_signal.py || true
+
+          # H17 — écart d'entrée 0-3 %, gelée le 25/09. L'écart est CAUSAL
+          # (prix d'entrée vs Pinnacle à l'OUVERTURE), à ne pas confondre
+          # avec clv_vs_pin_pct qui utilise pin_close.
+          python scripts/h17_signal.py || true
+
+          # H18 — Favorite Steam Value, intersection stricte de H16 et H17,
+          # gelée le 27/09. Meilleure réplication et meilleure robustesse du
+          # dispositif.
+          python scripts/h18_signal.py || true
+
+          # H16-B — H16 privée des ultra-favoris (pin_open 1,30-1,80), gelée
+          # le 27/09. ATTENTION : ce retrait vaut pour H16 SEULE. Dans H18
+          # les ultra-favoris sont parmi les meilleurs. Ne pas transposer.
+          python scripts/h16b_signal.py || true
           # Signal EXPÉRIMENTAL (non validé) : book déjà ouvert avant Pinnacle,
           # écart au moment où Pinnacle publie son 1er prix. Canal PRIVÉ
           # uniquement (jamais le canal public) -- voir validation_report pour
