@@ -127,6 +127,31 @@ jobs:
       # moves, mais le rapport du même run affichait encore « p0 = 73,7 %
       # sur n=1085 » — l'ancienne population biaisée. Il aurait fallu deux
       # runs pour voir l'effet d'un correctif appliqué dans le premier.
+      # RESTAURATION DES PARTITIONS ARCHIVÉES — RÉTABLIE LE 28/09/2026.
+      #
+      # Cette étape avait été posée le 24/09 puis PERDUE : les livraisons
+      # suivantes de ce fichier (h13_clv, early_band_track,
+      # h13_populations) repartaient du dépôt d'origine et l'ont écrasée.
+      #
+      # Conséquence mesurée le 28/09 : moves_detail_hist.csv est tombé de
+      # 1 665 à 1 011 lignes — 654 paris perdus, 39 % de l'historique.
+      # archive_curves.py avait sorti juin, juillet et les semaines 33-34
+      # vers les releases curves-2026-* ; sans restauration, move_audit
+      # reconstruit le fichier SANS ces périodes.
+      #
+      # Ce fichier porte p0_temoin() et les références in-sample des 19
+      # hypothèses gelées. Amputé, il les rend toutes injugeables — et
+      # aucune erreur n'est levée : seul le verrou qualité de fin de job
+      # a détecté la chute.
+      #
+      # restore_curves.py sort en ERREUR si un téléchargement échoue.
+      # Mieux vaut un run rouge qu'un verdict calculé sur une population
+      # tronquée.
+      - name: Restaurer les partitions de courbes archivées
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python scripts/restore_curves.py
+
       - name: Audit des moves (détail par move + agrégats par ampleur)
         run: |
           python scripts/move_audit.py || true
@@ -134,6 +159,25 @@ jobs:
 
       - name: Tableau de validation forward (CLV/ROI + IC95)
         run: python scripts/validation_report.py || true
+
+      # AJOUTÉ LE 25/09/2026 — mesure SÉPARÉMENT les deux populations H13.
+      #
+      # Le ROI « H13 out-of-sample » du rapport décrit la RECONSTRUCTION
+      # move_audit, pas le flux Telegram. Mesuré sur 75 matchs communs :
+      #   côté steamé différent      23/75 = 31 %
+      #   book d'entrée différent    51/75 = 68 %
+      #   détection >30 min plus tôt         91 %
+      #   lead médian : alerte 391 min · reconstruction 759 min
+      #
+      # Et les deux donnent des résultats différents :
+      #   alertes envoyées   n=105  ROI  +0,2 %
+      #   reconstruction     n=137  ROI  +7,5 %
+      #
+      # Les confondre attribue au canal un rendement qu'il n'a pas produit.
+      # Ce script les affiche côte à côte pour que la confusion ne puisse
+      # plus se reproduire.
+      - name: H13 — populations séparées (envoyé vs reconstruit)
+        run: python scripts/h13_populations.py || true
 
       - name: Pont CLV -> P&L (le postulat central, mesuré en continu)
         # AJOUTÉ LE 27/08/2026 (audit v2 §I) : pnl_vs_clv_study.py teste la
@@ -240,6 +284,33 @@ jobs:
       # données du jour, pas de la veille.
       # Le script n'a AUCUNE constante propre : il importe la bande depuis
       # validation_report, source unique. 0 requête API.
+      # CLV des alertes réellement envoyées par h13_signal.py.
+      # Placé APRÈS l'audit des moves (qui reconstruit book_curves) et AVANT
+      # le récapitulatif, qui lit le CSV produit ici.
+      #
+      # Pourquoi ce script : h13_signal enregistre la cote d'ENTRÉE, jamais
+      # la clôture — elle n'existe pas encore au moment de l'alerte. Sans
+      # elle, le seul indicateur était le ROI, qui ne dira rien avant ~300
+      # paris, soit trois mois. Le CLV se stabilise bien plus vite.
+      # Suivi de la piste « books précoces, bande 2,60-3,50 ».
+      # OBSERVATION, pas une hypothèse gelée : rien n'entre dans
+      # validation_report ni dans Holm. Écrit le 09/09 pour voir converger
+      # un signal (r=+0,242 sur 244 matchs historiques) plutôt que
+      # d'attendre deux mois — sa seconde moitié ne réplique déjà pas la
+      # significativité, et le ROI encore moins (+15,5 % puis -2,1 %).
+      - name: Suivi piste books précoces (canal privé)
+        run: CURVES=book_curves.jsonl python scripts/early_band_track.py || true
+
+      - name: CLV des signaux H13
+        run: CURVES=book_curves.jsonl python scripts/h13_clv.py || true
+
+      # Même script, autre journal : la zone 2,50-3,20 observée depuis le
+      # 11/09. h13_clv.py est paramétré par LOG/OUT, donc rien à dupliquer.
+      - name: CLV de la zone 2,50-3,20
+        run: |
+          CURVES=book_curves.jsonl LOG=zone_signal_log.jsonl \
+            OUT=zone_clv_detail.csv python scripts/h13_clv.py || true
+
       - name: Suivi quotidien H13 (canal privé)
         run: python scripts/h13_recap.py || true
 
