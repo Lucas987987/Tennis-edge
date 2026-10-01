@@ -1,7 +1,7 @@
 {
-  "updated_at": "2026-10-01T00:44:49.963Z",
-  "count": 1561,
-  "actifs": 3,
+  "updated_at": "2026-10-01T01:02:53.384Z",
+  "count": 1564,
+  "actifs": 6,
   "markets": [
     {
       "market_id": "3689368",
@@ -51669,8 +51669,8 @@
       "sports_market_type": "moneyline",
       "market_type": "match",
       "game_id": 6365174,
-      "liquidity": 252000.7742,
-      "volume": 12765.942571000001,
+      "liquidity": 234407.2298,
+      "volume": 12777.982571000002,
       "local_match": {
         "home": "Jaime Faria",
         "away": "Arthur Fery",
@@ -51681,7 +51681,7 @@
         "home",
         "away"
       ],
-      "discovered_at": "2026-10-01T00:44:49.622Z"
+      "discovered_at": "2026-10-01T01:02:52.987Z"
     },
     {
       "market_id": "5121594",
@@ -51907,7 +51907,7 @@
       "sports_market_type": "tennis_first_set_winner",
       "market_type": "set1",
       "game_id": 6365174,
-      "liquidity": 36570.8256,
+      "liquidity": 29426.5097,
       "volume": 1.923077,
       "local_match": {
         "home": "Jaime Faria",
@@ -51919,7 +51919,7 @@
         "home",
         "away"
       ],
-      "discovered_at": "2026-10-01T00:44:49.627Z"
+      "discovered_at": "2026-10-01T01:02:52.993Z"
     },
     {
       "market_id": "5153388",
@@ -51941,7 +51941,7 @@
       "sports_market_type": "tennis_set_winner",
       "market_type": "set2",
       "game_id": 6365174,
-      "liquidity": 4854.1608,
+      "liquidity": 4855.1608,
       "volume": null,
       "local_match": {
         "home": "Jaime Faria",
@@ -51953,7 +51953,7 @@
         "home",
         "away"
       ],
-      "discovered_at": "2026-10-01T00:44:49.633Z"
+      "discovered_at": "2026-10-01T01:02:52.999Z"
     },
     {
       "market_id": "5116733",
@@ -53076,6 +53076,108 @@
         "away"
       ],
       "discovered_at": "2026-09-30T23:40:13.904Z"
+    },
+    {
+      "market_id": "5130748",
+      "condition_id": "0xe99a41e27638802392777c2c516f8403c6b7012136d9d064180f5e4ed85f9c48",
+      "event_id": "1104056",
+      "event_slug": "wta-volynet-montgom-2026-09-30",
+      "event_title": "China Open: Katie Volynets vs Robin Montgomery",
+      "question": "China Open: Katie Volynets vs Robin Montgomery",
+      "slug": "wta-volynet-montgom-2026-09-30",
+      "start_time": "2026-09-29T16:15:05Z",
+      "outcomes": [
+        "Katie Volynets",
+        "Robin Montgomery"
+      ],
+      "token_ids": [
+        "113264441659558057905291742770575175012649803714948508282307334529131343914754",
+        "72541707518146887602584787836408808227453363360567094899931811530722241032743"
+      ],
+      "sports_market_type": "moneyline",
+      "market_type": "match",
+      "game_id": 6361094,
+      "liquidity": 218632.3314,
+      "volume": 8633.232531,
+      "local_match": {
+        "home": "Katie Volynets",
+        "away": "Robin Montgomery",
+        "commence": "2026-10-01T03:00:00Z",
+        "uid": "2026-10-01_katie_volynets_robin_montgomery"
+      },
+      "outcome_sides": [
+        "home",
+        "away"
+      ],
+      "discovered_at": "2026-10-01T01:02:53.362Z"
+    },
+    {
+      "market_id": "5131569",
+      "condition_id": "0x9c2f349555c8360f1356dbe9cc14b45fd6f068d3c8c5e83f584dcc64374919c6",
+      "event_id": "1104056",
+      "event_slug": "wta-volynet-montgom-2026-09-30",
+      "event_title": "China Open: Katie Volynets vs Robin Montgomery",
+      "question": "Set 1 Winner: Katie Volynets vs Robin Montgomery",
+      "slug": "wta-volynet-montgom-2026-09-30-first-set-winner-Volynets-vs-Montgomery",
+      "start_time": "2026-09-29T16:44:19Z",
+      "outcomes": [
+        "Katie Volynets",
+        "Robin Montgomery"
+      ],
+      "token_ids": [
+        "28194160804891436633378866888567348928101002188495081814072020332414745650943",
+        "15614220546566616101413725466247544939826091829054214368684457678163400094749"
+      ],
+      "sports_market_type": "tennis_first_set_winner",
+      "market_type": "set1",
+      "game_id": 6361094,
+      "liquidity": 41715.4292,
+      "volume": null,
+      "local_match": {
+        "home": "Katie Volynets",
+        "away": "Robin Montgomery",
+        "commence": "2026-10-01T03:00:00Z",
+        "uid": "2026-10-01_katie_volynets_robin_montgomery"
+      },
+      "outcome_sides": [
+        "home",
+        "away"
+      ],
+      "discovered_at": "2026-10-01T01:02:53.365Z"
+    },
+    {
+      "market_id": "5131575",
+      "condition_id": "0x336f948c2a316e10f8c3c465921e0d8d237470b54228909e713e1edf0227d1a9",
+      "event_id": "1104056",
+      "event_slug": "wta-volynet-montgom-2026-09-30",
+      "event_title": "China Open: Katie Volynets vs Robin Montgomery",
+      "question": "Set 2 Winner: Katie Volynets vs Robin Montgomery",
+      "slug": "wta-volynet-montgom-2026-09-30-set-2-winner-Volynets-vs-Montgomery",
+      "start_time": "2026-09-29T16:44:19Z",
+      "outcomes": [
+        "Katie Volynets",
+        "Robin Montgomery"
+      ],
+      "token_ids": [
+        "88507235027627441304026686011955286812914455217217218885157657745851705292568",
+        "11508238113635868265860700057069560939747846216485927077255646309876358686659"
+      ],
+      "sports_market_type": "tennis_set_winner",
+      "market_type": "set2",
+      "game_id": 6361094,
+      "liquidity": 3336.579,
+      "volume": null,
+      "local_match": {
+        "home": "Katie Volynets",
+        "away": "Robin Montgomery",
+        "commence": "2026-10-01T03:00:00Z",
+        "uid": "2026-10-01_katie_volynets_robin_montgomery"
+      },
+      "outcome_sides": [
+        "home",
+        "away"
+      ],
+      "discovered_at": "2026-10-01T01:02:53.367Z"
     }
   ]
 }
