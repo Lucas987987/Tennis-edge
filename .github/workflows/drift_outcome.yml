@@ -26,6 +26,25 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: "3.11"
+      # RESTAURATION DES PARTITIONS ARCHIVEES — AJOUTEE LE 02/10/2026.
+      #
+      # Ce workflow lit les partitions hist_* (via curves_parts ou
+      # iter_hist_lines). Depuis que archive_curves sort celles de plus de
+      # 28 jours vers les releases curves-2026-*, elles ne sont plus dans le
+      # depot : sans cette etape, le job travaille sur un historique tronque
+      # SANS lever d'erreur.
+      #
+      # Constate le 02/10 sur book_index : 1 251 matchs et 351 mouvements au
+      # lieu de 1 863 et 650, et une reactivite devenue negative partout. Les
+      # chiffres changeaient sans que rien ne le signale.
+      #
+      # restore_curves interroge l'index ET les releases directement : un
+      # ARCHIVE_INDEX.json perime ne peut plus masquer de partitions.
+      - name: Restaurer les partitions de courbes archivees
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python scripts/restore_curves.py || true
+
       - name: Calibration drift -> résultat
         env:
           SHARP_BOOK: bwin
