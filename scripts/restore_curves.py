@@ -81,11 +81,29 @@ def main():
     if SKIP:
         print('restore_curves — SKIP_RESTORE=1, rien à faire.')
         return 0
+    # L'INDEX N'EST PLUS BLOQUANT — corrige le 02/10/2026.
+    #
+    # La version precedente sortait ici des que parts/ARCHIVE_INDEX.json
+    # etait illisible, SANS jamais atteindre l'interrogation directe des
+    # releases ajoutee le 30/09. Resultat, dans courbes_alertes :
+    #
+    #     restore_curves — parts/ARCHIVE_INDEX.json illisible :
+    #                      rien a restaurer.
+    #
+    # et steam_alert a recalcule ses seuils par book sur un historique
+    # tronque — d'ou des 0 % et des 100 % sur des effectifs minuscules,
+    # alors que ces seuils declenchent les sept signaux.
+    #
+    # L'index n'est qu'un RACCOURCI. Les releases sont la source de
+    # verite : elles ne peuvent pas etre ramenees en arriere par un
+    # force-push, et elles survivent a la suppression de n'importe quel
+    # fichier du depot.
     try:
         idx = json.load(open(INDEX, encoding='utf-8'))
     except (OSError, ValueError) as e:
-        print(f'restore_curves — {INDEX} illisible ({e}) : rien à restaurer.')
-        return 0
+        print(f'restore_curves — {INDEX} illisible ({e}) : on interroge '
+              f'les releases directement.')
+        idx = {'archives': []}
 
     archives = [a for a in idx.get('archives', [])
                 if str(a.get('fichier', '')).startswith(PREFIXES)]
