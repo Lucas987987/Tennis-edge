@@ -260,7 +260,32 @@ H13_COTE_MAX = 3.0
 # pas comme preuve) : la règle propre donne 71 % de CLV>0 [57 ; 82] contre
 # 66 % [61 ; 71] pour le témoin -- IC recouvrants, pas de séparation.
 FREEZE_DATE_AMPLI_V1 = '2026-09-07'  # gel INVALIDÉ (critère look-ahead)
-FREEZE_DATE_AMPLI = '2026-09-12'   # hypothèse 'amplitude + timing' regelée ce jour
+FREEZE_DATE_AMPLI_V2 = '2026-09-12'  # gel INVALIDÉ lui aussi — voir ci-dessous
+FREEZE_DATE_AMPLI = '2026-10-02'     # 3e gel : mag_cote_pct enfin causale
+#
+# POURQUOI UN TROISIÈME GEL
+#
+# Le gel du 12/09 corrigeait le look-ahead de `mag_proba_pts`. Il a OUBLIÉ
+# `mag_cote_pct`, qui est pourtant le critère de H14 (`mag_cote_pct > 5`)
+# et qui contenait toujours le raccourcissement jusqu'à la CLÔTURE.
+#
+# Mesuré le 02/10 sur 1 648 lignes, avant correction de move_audit :
+#     corr(mag_cote_pct          ; amplitude de clôture) = +0,593
+#     corr(mag_proba_pts         ; idem, causale)        = +0,213
+#     corr(mag_proba_pts_POSTHOC ; idem, rétrospective)  = +0,716
+#
+# mag_cote_pct se rangeait du côté rétrospectif, et sa médiane (5,10)
+# collait à l'amplitude de clôture (6,07) plutôt qu'à la détection (2,50).
+#
+# H14 selectionnait donc ses paris sur une grandeur inconnue au moment du
+# pari. Les chiffres accumules depuis le 12/09 — in-sample +22,0 %,
+# hors-echantillon -4,5 % — portent sur une population biaisee et ne
+# valent rien. Le hors-echantillon ne corrige pas ce biais : il le
+# partage.
+#
+# L'accumulation repart donc de zero. C'est le prix d'un critere qui
+# n'etait pas causal, et c'est exactement ce que la methode est censee
+# detecter — elle l'a fait, avec trois semaines de retard.
 # STRATÉGIE A — paramètres gelés, source de vérité unique.
 # Volontairement UN SEUL degré de liberté par dimension, et AUCUN filtre de
 # cote : voir roi_ampli_watch() pour le raisonnement.

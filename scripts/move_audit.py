@@ -225,7 +225,25 @@ def analyse():
         opp_name = away if steam == 'h' else home
         o_open = _at(pin['h'] if steam == 'h' else pin['a'], topen)
         o_close = _at(pin['h'] if steam == 'h' else pin['a'], tclose)
-        mag_odds = (o_open - o_close) / o_open if o_open else 0.0   # % raccourcissement cote
+        # AMPLEUR DE COTE À LA DÉTECTION — corrigé le 02/10/2026.
+        #
+        # Cette ligne utilisait o_close : `mag_cote_pct` contenait donc le
+        # raccourcissement jusqu'à la CLÔTURE, pas jusqu'à la détection.
+        # Le correctif du 12/09 avait traité mag_proba_pts et oublié
+        # celle-ci — or H14 filtre dessus (`mag_cote_pct > 5`).
+        #
+        # Mesuré sur 1 648 lignes avant correction :
+        #     corr(mag_cote_pct          ; amplitude de clôture) = +0,593
+        #     corr(mag_proba_pts         ; idem, causale)        = +0,213
+        #     corr(mag_proba_pts_POSTHOC ; idem, rétrospective)  = +0,716
+        # mag_cote_pct était du côté rétrospectif, et sa médiane (5,10)
+        # collait à l'amplitude de clôture (6,07) plutôt qu'à la détection.
+        o_det = _at(pin['h'] if steam == 'h' else pin['a'], t_det)
+        mag_odds = (o_open - o_det) / o_open if (o_open and o_det) else 0.0
+        # Version rétrospective, conservée pour l'analyse. Suffixe _POSTHOC
+        # volontairement criard : un `mag_cote_finale` anodin finirait un
+        # jour dans un filtre, exactement comme celle-ci y a fini.
+        mag_odds_final = (o_open - o_close) / o_open if o_open else 0.0
         # AMPLEUR À LA DÉTECTION, plus |p_close - p_open| : cette colonne
         # sert de critère dans les études (« ampleur < 5 pts »...). La
         # renseigner avec l'amplitude finale y réintroduirait le même
@@ -264,6 +282,7 @@ def analyse():
             uid=uid, tour=g['_tour'], date=ct.date().isoformat(),
             steame=steam_name, opp=opp_name,
             mag_cote_pct=round(mag_odds * 100, 1), mag_proba_pts=round(mag_prob, 1),
+            mag_cote_pct_POSTHOC=round(mag_odds_final * 100, 1),
             # Suffixe _POSTHOC volontairement criard : cette colonne contient
             # la clôture Pinnacle et ne peut PAS servir de critère d'entrée.
             # Un `mag_proba_finale` anodin finirait un jour dans un filtre.
@@ -281,11 +300,12 @@ def analyse():
 def report(rows):
     rows.sort(key=lambda r: -r['mag_cote_pct'])
     # CSV détail
-    # `mag_proba_pts`      = ampleur À LA DÉTECTION, utilisable comme critère
-    # `mag_proba_pts_POSTHOC` = ampleur finale, rétrospective, JAMAIS en critère
+    # `mag_cote_pct`  et `mag_proba_pts`  = À LA DÉTECTION, utilisables
+    # `mag_cote_pct_POSTHOC` et `mag_proba_pts_POSTHOC` = finales,
+    # rétrospectives, JAMAIS en critère d'entrée
     # `clv_vs_pin_pct`     = utilise pin_close -> rétrospective elle aussi
-    cols = ['date','tour','steame','opp','mag_cote_pct','mag_proba_pts',
-            'mag_proba_pts_POSTHOC','pin_open','pin_close',
+    cols = ['date','tour','steame','opp','mag_cote_pct','mag_cote_pct_POSTHOC',
+            'mag_proba_pts','mag_proba_pts_POSTHOC','pin_open','pin_close',
             'lead_min','entry_book','entry','soft_close','clv_book_pct','clv_vs_pin_pct',
             'steame_gagne','pnl','uid']
     with open(OUT, 'w', newline='', encoding='utf-8') as f:
