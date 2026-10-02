@@ -1,448 +1,2768 @@
 {
   "status": "ok",
   "books": {
+    "1xbet": {
+      "book": "1xbet",
+      "n": 0,
+      "communs": 0
+    },
+    "22bet": {
+      "book": "22bet",
+      "n": 0,
+      "communs": 0
+    },
+    "888sport": {
+      "book": "888sport",
+      "n": 0,
+      "communs": 0
+    },
+    "bet365": {
+      "book": "bet365",
+      "n": 0,
+      "communs": 0
+    },
+    "bet365.fr": {
+      "book": "bet365.fr",
+      "n": 0,
+      "communs": 0
+    },
+    "betfair-ex": {
+      "book": "betfair-ex",
+      "n": 0,
+      "communs": 0
+    },
     "betsson": {
       "book": "betsson",
-      "n": 17,
-      "late_matches": 0,
-      "open_matches": 4,
+      "n": 0,
+      "communs": 0
+    },
+    "betway": {
+      "book": "betway",
+      "n": 0,
+      "communs": 0
+    },
+    "bwin": {
+      "book": "bwin",
+      "n": 0,
+      "communs": 0
+    },
+    "coolbet": {
+      "book": "coolbet",
+      "n": 0,
+      "communs": 0
+    },
+    "leovegas": {
+      "book": "leovegas",
+      "n": 0,
+      "communs": 0
+    },
+    "marathonbet": {
+      "book": "marathonbet",
+      "n": 0,
+      "communs": 0
+    },
+    "netbet": {
+      "book": "netbet",
+      "n": 0,
+      "communs": 0
+    },
+    "pinnacle": {
+      "book": "pinnacle",
+      "n": 216,
+      "late_matches": 24,
+      "open_matches": 141,
       "par_tranche": {
         "<30min": {
-          "points": 28,
-          "value": 0,
-          "ev_moyen_pct": -5.3
+          "points": 655,
+          "value": 34,
+          "ev_moyen_pct": -1.39
         },
         "30min-2h": {
-          "points": 3,
-          "value": 0,
-          "ev_moyen_pct": -6.82
+          "points": 797,
+          "value": 49,
+          "ev_moyen_pct": -1.3
         },
         "2-6h": {
-          "points": 24,
-          "value": 0,
-          "ev_moyen_pct": -5.39
+          "points": 1806,
+          "value": 248,
+          "ev_moyen_pct": -0.15
         },
         "6-24h": {
-          "points": 126,
-          "value": 8,
-          "ev_moyen_pct": -3.79
+          "points": 3703,
+          "value": 1092,
+          "ev_moyen_pct": 1.45
         },
         "1-2j": {
-          "points": 25,
-          "value": 4,
-          "ev_moyen_pct": -2.04
+          "points": 1429,
+          "value": 601,
+          "ev_moyen_pct": 2.98
         },
         "2-3j": {
-          "points": 0,
-          "value": 0,
-          "ev_moyen_pct": null
+          "points": 535,
+          "value": 139,
+          "ev_moyen_pct": 1.06
         },
         ">3j": {
-          "points": 0,
-          "value": 0,
-          "ev_moyen_pct": null
+          "points": 116,
+          "value": 83,
+          "ev_moyen_pct": 5.14
         }
       },
       "detail": [
         {
-          "match": "Sho Shimabukuro vs Jurij Rodionov",
-          "best_ev_pct": -2.1,
-          "best_mins_avant": 929.0,
+          "match": "Alejandro Tabilo vs Ben Shelton",
+          "best_ev_pct": 2.1,
+          "best_mins_avant": 332.0,
+          "bucket": "2-6h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Coleman Wong vs Arthur Gea",
+          "best_ev_pct": 4.0,
+          "best_mins_avant": 998.0,
           "bucket": "6-24h",
           "fenetre_tardive": false
         },
         {
-          "match": "Marc-Andrea Huesler vs Gauthier Onclin",
-          "best_ev_pct": 5.2,
-          "best_mins_avant": 1037.0,
+          "match": "Darja Vidmanova vs Katie Volynets",
+          "best_ev_pct": 2.1,
+          "best_mins_avant": 999.0,
           "bucket": "6-24h",
           "fenetre_tardive": false
         },
         {
-          "match": "Martin Damm Jr vs Juan Pablo Ficovich",
-          "best_ev_pct": -3.4,
-          "best_mins_avant": 0.0,
-          "bucket": "<30min",
-          "fenetre_tardive": false
-        },
-        {
-          "match": "Hanne Vandewinkel vs Anouk Koevermans",
-          "best_ev_pct": -3.1,
-          "best_mins_avant": 881.0,
+          "match": "Cameron Norrie vs Denis Shapovalov",
+          "best_ev_pct": 10.3,
+          "best_mins_avant": 1163.0,
           "bucket": "6-24h",
           "fenetre_tardive": false
         },
         {
-          "match": "Ella Seidel vs Greet Minnen",
-          "best_ev_pct": -5.8,
-          "best_mins_avant": 0.0,
-          "bucket": "<30min",
+          "match": "Brandon Nakashima vs Taylor Fritz",
+          "best_ev_pct": 2.5,
+          "best_mins_avant": 331.0,
+          "bucket": "2-6h",
           "fenetre_tardive": false
         },
         {
-          "match": "Robin Montgomery vs Joanna Garland",
-          "best_ev_pct": -6.5,
+          "match": "Kristina Liutova vs Elvina Kalieva",
+          "best_ev_pct": 9.0,
+          "best_mins_avant": 933.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": true
+        },
+        {
+          "match": "Jessica Pegula vs Diana Shnaider",
+          "best_ev_pct": -0.2,
+          "best_mins_avant": 860.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Rafael Jodar vs Alejandro Tabilo",
+          "best_ev_pct": 0.1,
+          "best_mins_avant": 237.0,
+          "bucket": "2-6h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Naomi Osaka vs Alexandra Eala",
+          "best_ev_pct": 16.7,
           "best_mins_avant": 841.0,
           "bucket": "6-24h",
           "fenetre_tardive": false
         },
         {
-          "match": "Katie Volynets vs Lin Zhu",
-          "best_ev_pct": 1.3,
-          "best_mins_avant": 692.0,
-          "bucket": "6-24h",
-          "fenetre_tardive": false
-        },
-        {
-          "match": "Mert Alkaya vs Pierre-Hugues Herbert",
-          "best_ev_pct": -5.3,
-          "best_mins_avant": 829.0,
-          "bucket": "6-24h",
-          "fenetre_tardive": false
-        },
-        {
-          "match": "Roman Safiullin vs Alexis Galarneau",
-          "best_ev_pct": 4.7,
-          "best_mins_avant": 828.0,
-          "bucket": "6-24h",
-          "fenetre_tardive": false
-        },
-        {
-          "match": "Niels Visker vs Elias Ymer",
-          "best_ev_pct": 1.5,
-          "best_mins_avant": 692.0,
-          "bucket": "6-24h",
-          "fenetre_tardive": false
-        },
-        {
-          "match": "Benjamin Bonzi vs Bernard Tomic",
-          "best_ev_pct": -1.7,
-          "best_mins_avant": 828.0,
-          "bucket": "6-24h",
-          "fenetre_tardive": false
-        },
-        {
-          "match": "James McCabe vs Sander Jong",
+          "match": "Darja Vidmanova vs Renata Zarazua",
           "best_ev_pct": 0.8,
+          "best_mins_avant": 497.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Victoria Jimenez Kasintseva vs Marina Bassols Ribera",
+          "best_ev_pct": -1.1,
+          "best_mins_avant": 325.0,
+          "bucket": "2-6h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Leolia Jeanjean vs Lin Zhu",
+          "best_ev_pct": -1.5,
+          "best_mins_avant": 17.0,
+          "bucket": "<30min",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Oksana Selekhmeteva vs Aoi Ito",
+          "best_ev_pct": 15.3,
+          "best_mins_avant": 400.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Emiliana Arango vs Lois Boisson",
+          "best_ev_pct": 13.0,
+          "best_mins_avant": 403.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Moyuka Uchijima vs Himeno Sakatsume",
+          "best_ev_pct": 2.5,
+          "best_mins_avant": 549.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Alina Korneeva vs Mary Stoiana",
+          "best_ev_pct": 5.6,
+          "best_mins_avant": 569.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Tatjana Maria vs Isabella Marton",
+          "best_ev_pct": -0.1,
+          "best_mins_avant": 133.0,
+          "bucket": "2-6h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Lanlana Tararudee vs Qinwen Zheng",
+          "best_ev_pct": 0.0,
+          "best_mins_avant": 2.0,
+          "bucket": "<30min",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Sofia Kenin vs Lucrezia Stefanini",
+          "best_ev_pct": 1.8,
+          "best_mins_avant": 480.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Polina Kudermetova vs Avery Alexander",
+          "best_ev_pct": 49.8,
+          "best_mins_avant": 596.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Taylah Preston vs Emerson Jones",
+          "best_ev_pct": -3.8,
+          "best_mins_avant": 634.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Mananchaya Sawangkaew vs Rebecca Sramkova",
+          "best_ev_pct": 18.3,
+          "best_mins_avant": 772.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": true
+        },
+        {
+          "match": "Maya Joint vs Ana Grubor",
+          "best_ev_pct": 36.8,
+          "best_mins_avant": 372.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": true
+        },
+        {
+          "match": "Michael Zheng vs Kei Nishikori",
+          "best_ev_pct": 5.2,
+          "best_mins_avant": 331.0,
+          "bucket": "2-6h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Martin Damm Jr vs Henrique Rocha",
+          "best_ev_pct": 3.0,
+          "best_mins_avant": 311.0,
+          "bucket": "2-6h",
+          "fenetre_tardive": true
+        },
+        {
+          "match": "Marco Trungelliti vs Nicolas Mejia",
+          "best_ev_pct": 10.8,
+          "best_mins_avant": 331.0,
+          "bucket": "2-6h",
+          "fenetre_tardive": true
+        },
+        {
+          "match": "Marcos Giron vs Pablo Llamas Ruiz",
+          "best_ev_pct": 19.6,
+          "best_mins_avant": 376.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": true
+        },
+        {
+          "match": "Jacob Fearnley vs Sebastian Ofner",
+          "best_ev_pct": 3.4,
+          "best_mins_avant": 475.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Aleksandar Vukic vs Marcelo Tomas Barrios Vera",
+          "best_ev_pct": 6.5,
+          "best_mins_avant": 480.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Alexei Popyrin vs Thanasi Kokkinakis",
+          "best_ev_pct": 1.5,
+          "best_mins_avant": 286.0,
+          "bucket": "2-6h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Adam Walton vs Justin Boulais",
+          "best_ev_pct": 13.4,
+          "best_mins_avant": 450.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Sho Shimabukuro vs Nicolai Budkov Kjaer",
+          "best_ev_pct": 2.3,
+          "best_mins_avant": 158.0,
+          "bucket": "2-6h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Shintaro Mochizuki vs Dane Sweeny",
+          "best_ev_pct": 9.0,
+          "best_mins_avant": 612.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Benjamin Bonzi vs Hugo Dellien",
+          "best_ev_pct": 4.1,
+          "best_mins_avant": 573.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Hugo Gaston vs Duncan Chan",
+          "best_ev_pct": -0.2,
+          "best_mins_avant": 524.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Jaime Faria vs Christopher O'Connell",
+          "best_ev_pct": 2.1,
+          "best_mins_avant": 397.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Anna Blinkova vs Elvina Kalieva",
+          "best_ev_pct": -1.5,
+          "best_mins_avant": 449.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Darja Vidmanova vs Kayla Day",
+          "best_ev_pct": 10.0,
+          "best_mins_avant": 682.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Aleksandr Shevchenko vs Kyrian Jacquet",
+          "best_ev_pct": 16.5,
+          "best_mins_avant": 309.0,
+          "bucket": "2-6h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Katie Volynets vs Sloane Stephens",
+          "best_ev_pct": 10.4,
+          "best_mins_avant": 561.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Arthur Gea vs Denis Shapovalov",
+          "best_ev_pct": 3.0,
+          "best_mins_avant": 827.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Dalibor Svrcina vs Titouan Droguet",
+          "best_ev_pct": 13.0,
+          "best_mins_avant": 690.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Harriet Dart vs Sloane Stephens",
+          "best_ev_pct": 5.1,
+          "best_mins_avant": 66.0,
+          "bucket": "30min-2h",
+          "fenetre_tardive": true
+        },
+        {
+          "match": "Varvara Lepchenko vs Emerson Jones",
+          "best_ev_pct": 7.2,
+          "best_mins_avant": 214.0,
+          "bucket": "2-6h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Xiyu Wang vs Sara Bejlek",
+          "best_ev_pct": 1.4,
+          "best_mins_avant": 246.0,
+          "bucket": "2-6h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Kimberly Birrell vs Viktorija Golubic",
+          "best_ev_pct": 1.8,
+          "best_mins_avant": 1651.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Kamilla Rakhimova vs Venus Williams",
+          "best_ev_pct": 9.5,
+          "best_mins_avant": 1611.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Nikola Bartunkova vs Bianca Andreescu",
+          "best_ev_pct": 9.7,
+          "best_mins_avant": 1879.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Jessica Bouzas Maneiro vs Ariana Arseneault",
+          "best_ev_pct": 0.5,
+          "best_mins_avant": 1629.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Adolfo Daniel Vallejo vs Juncheng Shang",
+          "best_ev_pct": 9.0,
+          "best_mins_avant": 1536.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Aleksandar Kovacevic vs Nuno Borges",
+          "best_ev_pct": 9.6,
+          "best_mins_avant": 1317.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Matteo Berrettini vs Mariano Navone",
+          "best_ev_pct": 3.4,
+          "best_mins_avant": 1961.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Jaume Munar vs Rinky Hijikata",
+          "best_ev_pct": 1.3,
+          "best_mins_avant": 1489.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Hanyu Guo vs Kayla Day",
+          "best_ev_pct": 3.5,
+          "best_mins_avant": 63.0,
+          "bucket": "30min-2h",
+          "fenetre_tardive": true
+        },
+        {
+          "match": "Stefanos Tsitsipas vs Keegan Rice",
+          "best_ev_pct": -2.6,
+          "best_mins_avant": 8.0,
+          "bucket": "<30min",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Anna Blinkova vs Heather Watson",
+          "best_ev_pct": 4.6,
+          "best_mins_avant": 58.0,
+          "bucket": "30min-2h",
+          "fenetre_tardive": true
+        },
+        {
+          "match": "Jessica Pegula vs Alexandra Eala",
+          "best_ev_pct": 13.0,
+          "best_mins_avant": 1159.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Kristina Liutova vs Darja Vidmanova",
+          "best_ev_pct": 9.6,
+          "best_mins_avant": 914.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Taylor Fritz vs Rafael Jodar",
+          "best_ev_pct": 11.1,
+          "best_mins_avant": 1073.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Michael Zheng vs Miomir Kecmanovic",
+          "best_ev_pct": 2.3,
+          "best_mins_avant": 413.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "James Duckworth vs Christopher O'Connell",
+          "best_ev_pct": 9.0,
+          "best_mins_avant": 734.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Aleksandar Vukic vs Daniel Altmaier",
+          "best_ev_pct": 4.2,
+          "best_mins_avant": 913.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Luca Van Assche vs Titouan Droguet",
+          "best_ev_pct": 3.4,
+          "best_mins_avant": 785.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Sho Shimabukuro vs Marin Cilic",
+          "best_ev_pct": 14.7,
+          "best_mins_avant": 835.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Gabriel Diallo vs Kyrian Jacquet",
+          "best_ev_pct": 6.3,
+          "best_mins_avant": 870.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Benjamin Bonzi vs Yannick Hanfmann",
+          "best_ev_pct": 9.7,
+          "best_mins_avant": 879.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Nicolas Mejia vs Martin Landaluce",
+          "best_ev_pct": 18.7,
+          "best_mins_avant": 731.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Moyuka Uchijima vs Cristina Bucsa",
+          "best_ev_pct": 3.2,
+          "best_mins_avant": 607.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Aoi Ito vs Katherine Sebov",
+          "best_ev_pct": -0.8,
+          "best_mins_avant": 591.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Lucrezia Stefanini vs Camila Osorio",
+          "best_ev_pct": 7.2,
+          "best_mins_avant": 624.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "McCartney Kessler vs Cadence Brace",
+          "best_ev_pct": 1.5,
+          "best_mins_avant": 784.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Magdalena Frech vs Leolia Jeanjean",
+          "best_ev_pct": 1.7,
+          "best_mins_avant": 678.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Lois Boisson vs Antonia Ruzic",
+          "best_ev_pct": 8.5,
+          "best_mins_avant": 705.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Emerson Jones vs Lanlana Tararudee",
+          "best_ev_pct": 8.2,
+          "best_mins_avant": 715.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Rebecca Sramkova vs Anna Blinkova",
+          "best_ev_pct": 8.7,
+          "best_mins_avant": 755.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Janice Tjen vs Liudmila Samsonova",
+          "best_ev_pct": -2.9,
+          "best_mins_avant": 2036.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Panna Udvardy vs Eva Lys",
+          "best_ev_pct": 2.3,
+          "best_mins_avant": 3281.0,
+          "bucket": "2-3j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Anhelina Kalinina vs Anna Bondar",
+          "best_ev_pct": 4.6,
+          "best_mins_avant": 1746.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Renata Zarazua vs Tamara Korpatsch",
+          "best_ev_pct": 11.4,
+          "best_mins_avant": 3246.0,
+          "bucket": "2-3j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Oleksandra Oliynykova vs Karolina Pliskova",
+          "best_ev_pct": 5.9,
+          "best_mins_avant": 2831.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Rebecca Marino vs Zeynep Sonmez",
+          "best_ev_pct": -0.8,
+          "best_mins_avant": 275.0,
+          "bucket": "2-6h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Carol Zhao vs Magda Linette",
+          "best_ev_pct": 5.9,
+          "best_mins_avant": 353.0,
+          "bucket": "2-6h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Tereza Valentova vs Taylor Townsend",
+          "best_ev_pct": 3.4,
+          "best_mins_avant": 2171.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Elena-Gabriela Ruse vs Peyton Stearns",
+          "best_ev_pct": 8.3,
+          "best_mins_avant": 2986.0,
+          "bucket": "2-3j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Talia Gibson vs Elisabetta Cocciaretto",
+          "best_ev_pct": 1.5,
+          "best_mins_avant": 2939.0,
+          "bucket": "2-3j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Yulia Putintseva vs Shuai Zhang",
+          "best_ev_pct": 3.2,
+          "best_mins_avant": 3005.0,
+          "bucket": "2-3j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Alexis Galarneau vs Vit Kopriva",
+          "best_ev_pct": 5.2,
+          "best_mins_avant": 3092.0,
+          "bucket": "2-3j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Alex Michelsen vs Jan-Lennard Struff",
+          "best_ev_pct": 1.5,
+          "best_mins_avant": 3101.0,
+          "bucket": "2-3j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Yuliia Starodubtseva vs Maya Joint",
+          "best_ev_pct": 8.1,
+          "best_mins_avant": 2104.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": true
+        },
+        {
+          "match": "Alina Korneeva vs Polina Kudermetova",
+          "best_ev_pct": 2.0,
+          "best_mins_avant": 1673.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Victoria Jimenez Kasintseva vs Alycia Parks",
+          "best_ev_pct": 3.6,
+          "best_mins_avant": 2018.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Tatjana Maria vs Caty McNally",
+          "best_ev_pct": 7.9,
+          "best_mins_avant": 2145.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Katie Boulter vs Kayla Cross",
+          "best_ev_pct": 40.1,
+          "best_mins_avant": 1869.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Diane Parry vs Kayla Day",
+          "best_ev_pct": 2.5,
+          "best_mins_avant": 360.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Solana Sierra vs Sloane Stephens",
+          "best_ev_pct": 8.8,
+          "best_mins_avant": 949.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Camilo Ugo Carabelli vs Cameron Norrie",
+          "best_ev_pct": 5.1,
+          "best_mins_avant": 3605.0,
+          "bucket": "2-3j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Zachary Svajda vs Denis Shapovalov",
+          "best_ev_pct": 2.3,
+          "best_mins_avant": 4430.0,
+          "bucket": ">3j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Marton Fucsovics vs Corentin Moutet",
+          "best_ev_pct": 10.5,
+          "best_mins_avant": 3513.0,
+          "bucket": "2-3j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Sebastian Baez vs Mattia Bellucci",
+          "best_ev_pct": 6.4,
+          "best_mins_avant": 4304.0,
+          "bucket": "2-3j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Juan Manuel Cerundolo vs Hamad Medjedovic",
+          "best_ev_pct": 5.0,
+          "best_mins_avant": 4532.0,
+          "bucket": ">3j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Terence Atmane vs Jack Draper",
+          "best_ev_pct": 12.3,
+          "best_mins_avant": 4543.0,
+          "bucket": ">3j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Giovanni Mpetshi Perricard vs Botic Van de Zandschulp",
+          "best_ev_pct": 17.4,
+          "best_mins_avant": 4639.0,
+          "bucket": ">3j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Pablo Carreno Busta vs Valentin Royer",
+          "best_ev_pct": 0.8,
+          "best_mins_avant": 197.0,
+          "bucket": "2-6h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Kamil Majchrzak vs Gael Monfils",
+          "best_ev_pct": 12.0,
+          "best_mins_avant": 3522.0,
+          "bucket": "2-3j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Daniel Merida vs Liam Draxl",
+          "best_ev_pct": 15.7,
+          "best_mins_avant": 4521.0,
+          "bucket": ">3j",
+          "fenetre_tardive": true
+        },
+        {
+          "match": "Lorenzo Sonego vs Tallon Griekspoor",
+          "best_ev_pct": 15.9,
+          "best_mins_avant": 6.0,
+          "bucket": "<30min",
+          "fenetre_tardive": true
+        },
+        {
+          "match": "Shintaro Mochizuki vs Fabian Marozsan",
+          "best_ev_pct": 2.4,
+          "best_mins_avant": 3602.0,
+          "bucket": "2-3j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Xinyu Wang vs Daria Kasatkina",
+          "best_ev_pct": 3.9,
+          "best_mins_avant": 2381.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Duncan Chan vs Thiago Agustin Tirante",
+          "best_ev_pct": 18.1,
+          "best_mins_avant": 3251.0,
+          "bucket": "2-3j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Adam Walton vs Jenson Brooksby",
+          "best_ev_pct": 2.6,
+          "best_mins_avant": 3247.0,
+          "bucket": "2-3j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Martin Damm Jr vs Stefanos Tsitsipas",
+          "best_ev_pct": 2.1,
+          "best_mins_avant": 3248.0,
+          "bucket": "2-3j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Jacob Fearnley vs Adrian Mannarino",
+          "best_ev_pct": 1.1,
+          "best_mins_avant": 213.0,
+          "bucket": "2-6h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Hubert Hurkacz vs Marcos Giron",
+          "best_ev_pct": 30.1,
+          "best_mins_avant": 3241.0,
+          "bucket": "2-3j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Alexei Popyrin vs Roman Andres Burruchaga",
+          "best_ev_pct": 7.5,
+          "best_mins_avant": 3343.0,
+          "bucket": "2-3j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Elina Svitolina vs Jessica Bouzas Maneiro",
+          "best_ev_pct": 1.2,
+          "best_mins_avant": 18.0,
+          "bucket": "<30min",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Aryna Sabalenka vs Moyuka Uchijima",
+          "best_ev_pct": 44.0,
+          "best_mins_avant": 1987.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Marta Kostyuk vs Katherine Sebov",
+          "best_ev_pct": 28.8,
+          "best_mins_avant": 1678.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": true
+        },
+        {
+          "match": "Sara Bejlek vs Iga Swiatek",
+          "best_ev_pct": 5.0,
+          "best_mins_avant": 6.0,
+          "bucket": "<30min",
+          "fenetre_tardive": true
+        },
+        {
+          "match": "Jaume Munar vs Alexander Blockx",
+          "best_ev_pct": 0.6,
+          "best_mins_avant": 678.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Juncheng Shang vs Andrey Rublev",
+          "best_ev_pct": 8.7,
+          "best_mins_avant": 1911.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Camila Osorio vs Ekaterina Alexandrova",
+          "best_ev_pct": 16.2,
+          "best_mins_avant": 1595.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Donna Vekic vs Viktorija Golubic",
+          "best_ev_pct": 9.8,
+          "best_mins_avant": 1573.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Kamilla Rakhimova vs Katerina Siniakova",
+          "best_ev_pct": 13.1,
+          "best_mins_avant": 1880.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": true
+        },
+        {
+          "match": "Brandon Nakashima vs Daniel Altmaier",
+          "best_ev_pct": 0.2,
+          "best_mins_avant": 66.0,
+          "bucket": "30min-2h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "James Duckworth vs Alex de Minaur",
+          "best_ev_pct": 21.3,
+          "best_mins_avant": 961.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Frances Tiafoe vs Marin Cilic",
+          "best_ev_pct": 6.8,
+          "best_mins_avant": 935.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Flavio Cobolli vs Yannick Hanfmann",
+          "best_ev_pct": 0.4,
+          "best_mins_avant": 944.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Jiri Lehecka vs Vit Kopriva",
+          "best_ev_pct": 21.5,
+          "best_mins_avant": 843.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": true
+        },
+        {
+          "match": "Rebecca Sramkova vs Diana Shnaider",
+          "best_ev_pct": -0.3,
+          "best_mins_avant": 471.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Antonia Ruzic vs Madison Keys",
+          "best_ev_pct": 2.6,
+          "best_mins_avant": 169.0,
+          "bucket": "2-6h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Maja Chwalinska vs Talia Gibson",
+          "best_ev_pct": -0.2,
+          "best_mins_avant": 263.0,
+          "bucket": "2-6h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Shuai Zhang vs Jelena Ostapenko",
+          "best_ev_pct": 8.5,
           "best_mins_avant": 540.0,
           "bucket": "6-24h",
           "fenetre_tardive": false
         },
         {
-          "match": "Jodie Burrage vs Anna Blinkova",
-          "best_ev_pct": -1.3,
-          "best_mins_avant": 1500.0,
+          "match": "Elena-Gabriela Ruse vs Anastasia Potapova",
+          "best_ev_pct": 1.6,
+          "best_mins_avant": 355.0,
+          "bucket": "2-6h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Anna Kalinskaya vs McCartney Kessler",
+          "best_ev_pct": 0.6,
+          "best_mins_avant": 396.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Clara Tauson vs Nikola Bartunkova",
+          "best_ev_pct": 8.5,
+          "best_mins_avant": 725.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Luciano Darderi vs Gabriel Diallo",
+          "best_ev_pct": 21.6,
+          "best_mins_avant": 1089.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Iva Jovic vs Magda Linette",
+          "best_ev_pct": -0.2,
+          "best_mins_avant": 958.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Alina Korneeva vs Emma Navarro",
+          "best_ev_pct": 19.4,
+          "best_mins_avant": 2081.0,
           "bucket": "1-2j",
           "fenetre_tardive": false
         },
         {
-          "match": "Priscilla Hon vs Polina Kudermetova",
-          "best_ev_pct": -5.4,
-          "best_mins_avant": 1868.0,
+          "match": "Maria Sakkari vs Zeynep Sonmez",
+          "best_ev_pct": 14.6,
+          "best_mins_avant": 2153.0,
           "bucket": "1-2j",
           "fenetre_tardive": false
         },
         {
-          "match": "Talia Gibson vs Alina Charaeva",
+          "match": "Mirra Andreeva vs Karolina Pliskova",
+          "best_ev_pct": 3.4,
+          "best_mins_avant": 2087.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Nicolas Mejia vs Lorenzo Musetti",
+          "best_ev_pct": 17.4,
+          "best_mins_avant": 1511.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Valentin Vacherot vs Mariano Navone",
+          "best_ev_pct": 8.6,
+          "best_mins_avant": 639.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Ignacio Buse vs Cameron Norrie",
+          "best_ev_pct": 4.9,
+          "best_mins_avant": 607.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Rafael Jodar vs Corentin Moutet",
+          "best_ev_pct": 27.2,
+          "best_mins_avant": 2110.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Miomir Kecmanovic vs Arthur Rinderknech",
+          "best_ev_pct": 2.2,
+          "best_mins_avant": 1970.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Nuno Borges vs Tomas Martin Etcheverry",
+          "best_ev_pct": 6.4,
+          "best_mins_avant": 460.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Alex Michelsen vs Francisco Cerundolo",
+          "best_ev_pct": 16.0,
+          "best_mins_avant": 2204.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Titouan Droguet vs Felix Auger-Aliassime",
+          "best_ev_pct": 41.2,
+          "best_mins_avant": 2330.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Lanlana Tararudee vs Amanda Anisimova",
+          "best_ev_pct": 6.8,
+          "best_mins_avant": 745.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Linda Noskova vs Caty McNally",
+          "best_ev_pct": 11.7,
+          "best_mins_avant": 2163.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Daria Kasatkina vs Elena Rybakina",
+          "best_ev_pct": 7.7,
+          "best_mins_avant": 1803.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": true
+        },
+        {
+          "match": "Stefanos Tsitsipas vs Joao Fonseca",
           "best_ev_pct": 3.0,
-          "best_mins_avant": 1872.0,
-          "bucket": "1-2j",
-          "fenetre_tardive": false
-        },
-        {
-          "match": "Maddison Inglis vs Alycia Parks",
-          "best_ev_pct": 0.3,
-          "best_mins_avant": 1945.0,
-          "bucket": "1-2j",
-          "fenetre_tardive": false
-        },
-        {
-          "match": "Tatjana Maria vs Yuriko Lily Miyazaki",
-          "best_ev_pct": 2.9,
-          "best_mins_avant": 1855.0,
-          "bucket": "1-2j",
-          "fenetre_tardive": false
-        }
-      ]
-    },
-    "bwin": {
-      "book": "bwin",
-      "n": 15,
-      "late_matches": 0,
-      "open_matches": 2,
-      "par_tranche": {
-        "<30min": {
-          "points": 8,
-          "value": 0,
-          "ev_moyen_pct": -6.22
-        },
-        "30min-2h": {
-          "points": 0,
-          "value": 0,
-          "ev_moyen_pct": null
-        },
-        "2-6h": {
-          "points": 11,
-          "value": 0,
-          "ev_moyen_pct": -4.67
-        },
-        "6-24h": {
-          "points": 21,
-          "value": 1,
-          "ev_moyen_pct": -4.41
-        },
-        "1-2j": {
-          "points": 17,
-          "value": 1,
-          "ev_moyen_pct": -3.98
-        },
-        "2-3j": {
-          "points": 0,
-          "value": 0,
-          "ev_moyen_pct": null
-        },
-        ">3j": {
-          "points": 0,
-          "value": 0,
-          "ev_moyen_pct": null
-        }
-      },
-      "detail": [
-        {
-          "match": "Marc-Andrea Huesler vs Gauthier Onclin",
-          "best_ev_pct": -4.8,
-          "best_mins_avant": 885.0,
-          "bucket": "6-24h",
-          "fenetre_tardive": false
-        },
-        {
-          "match": "Hanne Vandewinkel vs Anouk Koevermans",
-          "best_ev_pct": -6.1,
-          "best_mins_avant": 755.0,
-          "bucket": "6-24h",
-          "fenetre_tardive": false
-        },
-        {
-          "match": "Ella Seidel vs Greet Minnen",
-          "best_ev_pct": -5.8,
-          "best_mins_avant": 755.0,
-          "bucket": "6-24h",
-          "fenetre_tardive": false
-        },
-        {
-          "match": "Robin Montgomery vs Joanna Garland",
-          "best_ev_pct": -2.5,
-          "best_mins_avant": 615.0,
-          "bucket": "6-24h",
-          "fenetre_tardive": false
-        },
-        {
-          "match": "Katie Volynets vs Lin Zhu",
-          "best_ev_pct": -5.3,
-          "best_mins_avant": 267.0,
+          "best_mins_avant": 198.0,
           "bucket": "2-6h",
           "fenetre_tardive": false
         },
         {
-          "match": "Mert Alkaya vs Pierre-Hugues Herbert",
-          "best_ev_pct": -4.5,
-          "best_mins_avant": 433.0,
+          "match": "Zachary Svajda vs Arthur Fils",
+          "best_ev_pct": 7.3,
+          "best_mins_avant": 590.0,
           "bucket": "6-24h",
           "fenetre_tardive": false
         },
         {
-          "match": "Niels Visker vs Elias Ymer",
+          "match": "Jenson Brooksby vs Ben Shelton",
+          "best_ev_pct": -0.4,
+          "best_mins_avant": 580.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Raphael Collignon vs Alexei Popyrin",
+          "best_ev_pct": 5.2,
+          "best_mins_avant": 709.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Alexander Zverev vs Tallon Griekspoor",
+          "best_ev_pct": 37.6,
+          "best_mins_avant": 484.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Thiago Agustin Tirante vs Taylor Fritz",
+          "best_ev_pct": 14.1,
+          "best_mins_avant": 673.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Fabian Marozsan vs Matteo Arnaldi",
+          "best_ev_pct": 2.1,
+          "best_mins_avant": 654.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Ugo Humbert vs Daniel Merida",
+          "best_ev_pct": 15.7,
+          "best_mins_avant": 907.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Daniil Medvedev vs Botic Van de Zandschulp",
+          "best_ev_pct": 10.9,
+          "best_mins_avant": 923.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Jessica Pegula vs Magdalena Frech",
+          "best_ev_pct": 2.6,
+          "best_mins_avant": 520.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Sloane Stephens vs Belinda Bencic",
+          "best_ev_pct": 4.9,
+          "best_mins_avant": 524.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Kayla Day vs Coco Gauff",
           "best_ev_pct": 1.5,
-          "best_mins_avant": 318.0,
+          "best_mins_avant": 180.0,
           "bucket": "2-6h",
           "fenetre_tardive": false
         },
         {
-          "match": "Benjamin Bonzi vs Bernard Tomic",
-          "best_ev_pct": -0.5,
-          "best_mins_avant": 376.0,
+          "match": "Liudmila Samsonova vs Barbora Krejcikova",
+          "best_ev_pct": 3.4,
+          "best_mins_avant": 852.0,
           "bucket": "6-24h",
           "fenetre_tardive": false
         },
         {
-          "match": "James McCabe vs Sander Jong",
-          "best_ev_pct": 4.6,
+          "match": "Panna Udvardy vs Naomi Osaka",
+          "best_ev_pct": 7.3,
+          "best_mins_avant": 104.0,
+          "bucket": "30min-2h",
+          "fenetre_tardive": true
+        },
+        {
+          "match": "Casper Ruud vs Juan Manuel Cerundolo",
+          "best_ev_pct": 2.2,
+          "best_mins_avant": 570.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Hubert Hurkacz vs Alejandro Tabilo",
+          "best_ev_pct": 9.6,
+          "best_mins_avant": 627.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Karen Khachanov vs Terence Atmane",
+          "best_ev_pct": 9.6,
+          "best_mins_avant": 804.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Zizou Bergs vs Sebastian Baez",
+          "best_ev_pct": 10.5,
+          "best_mins_avant": 400.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": true
+        },
+        {
+          "match": "Marie Bouzkova vs Taylor Townsend",
+          "best_ev_pct": 1.8,
+          "best_mins_avant": 450.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Valentin Royer vs Tommy Paul",
+          "best_ev_pct": 0.5,
+          "best_mins_avant": 883.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Elise Mertens vs Anna Bondar",
+          "best_ev_pct": 7.3,
+          "best_mins_avant": 697.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Sorana Cirstea vs Maya Joint",
+          "best_ev_pct": 23.9,
+          "best_mins_avant": 851.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Jacob Fearnley vs Jakub Mensik",
+          "best_ev_pct": 5.9,
+          "best_mins_avant": 801.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Ann Li vs Kayla Cross",
+          "best_ev_pct": 9.9,
+          "best_mins_avant": 336.0,
+          "bucket": "2-6h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Learner Tien vs Gael Monfils",
+          "best_ev_pct": 1.8,
+          "best_mins_avant": 1931.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Alycia Parks vs Alexandra Eala",
+          "best_ev_pct": 20.3,
+          "best_mins_avant": 1011.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Renata Zarazua vs Leylah Fernandez",
+          "best_ev_pct": 1.7,
+          "best_mins_avant": 833.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Anna Kalinskaya vs Diana Shnaider",
+          "best_ev_pct": 0.8,
+          "best_mins_avant": 389.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Marta Kostyuk vs Madison Keys",
+          "best_ev_pct": 0.3,
+          "best_mins_avant": 1994.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Aryna Sabalenka vs Shuai Zhang",
+          "best_ev_pct": -0.7,
           "best_mins_avant": 487.0,
           "bucket": "6-24h",
           "fenetre_tardive": false
         },
         {
-          "match": "Jodie Burrage vs Anna Blinkova",
-          "best_ev_pct": 2.7,
-          "best_mins_avant": 1505.0,
+          "match": "Talia Gibson vs Ekaterina Alexandrova",
+          "best_ev_pct": 17.4,
+          "best_mins_avant": 1752.0,
           "bucket": "1-2j",
           "fenetre_tardive": false
         },
         {
-          "match": "Priscilla Hon vs Polina Kudermetova",
-          "best_ev_pct": -5.4,
-          "best_mins_avant": 1496.0,
-          "bucket": "1-2j",
-          "fenetre_tardive": false
-        },
-        {
-          "match": "Talia Gibson vs Alina Charaeva",
-          "best_ev_pct": -3.4,
-          "best_mins_avant": 1507.0,
-          "bucket": "1-2j",
-          "fenetre_tardive": false
-        },
-        {
-          "match": "Elsa Jacquemot vs Hanyu Guo",
-          "best_ev_pct": 0.3,
-          "best_mins_avant": 1624.0,
-          "bucket": "1-2j",
-          "fenetre_tardive": false
-        },
-        {
-          "match": "Maddison Inglis vs Alycia Parks",
-          "best_ev_pct": -4.9,
-          "best_mins_avant": 1636.0,
-          "bucket": "1-2j",
-          "fenetre_tardive": false
-        },
-        {
-          "match": "Tatjana Maria vs Yuriko Lily Miyazaki",
-          "best_ev_pct": -2.3,
-          "best_mins_avant": 1644.0,
-          "bucket": "1-2j",
-          "fenetre_tardive": false
-        }
-      ]
-    },
-    "unibet": {
-      "book": "unibet",
-      "n": 12,
-      "late_matches": 1,
-      "open_matches": 3,
-      "par_tranche": {
-        "<30min": {
-          "points": 1,
-          "value": 0,
-          "ev_moyen_pct": -4.04
-        },
-        "30min-2h": {
-          "points": 4,
-          "value": 1,
-          "ev_moyen_pct": -1.3
-        },
-        "2-6h": {
-          "points": 5,
-          "value": 0,
-          "ev_moyen_pct": -2.73
-        },
-        "6-24h": {
-          "points": 21,
-          "value": 2,
-          "ev_moyen_pct": -1.49
-        },
-        "1-2j": {
-          "points": 12,
-          "value": 3,
-          "ev_moyen_pct": -0.76
-        },
-        "2-3j": {
-          "points": 0,
-          "value": 0,
-          "ev_moyen_pct": null
-        },
-        ">3j": {
-          "points": 0,
-          "value": 0,
-          "ev_moyen_pct": null
-        }
-      },
-      "detail": [
-        {
-          "match": "Sho Shimabukuro vs Jurij Rodionov",
-          "best_ev_pct": 10.0,
-          "best_mins_avant": 899.0,
+          "match": "Elina Svitolina vs Anastasia Potapova",
+          "best_ev_pct": 2.3,
+          "best_mins_avant": 1090.0,
           "bucket": "6-24h",
           "fenetre_tardive": false
         },
         {
-          "match": "Marc-Andrea Huesler vs Gauthier Onclin",
-          "best_ev_pct": 2.6,
-          "best_mins_avant": 55.0,
-          "bucket": "30min-2h",
+          "match": "Nikola Bartunkova vs Amanda Anisimova",
+          "best_ev_pct": 23.9,
+          "best_mins_avant": 2191.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Luciano Darderi vs Juncheng Shang",
+          "best_ev_pct": 2.4,
+          "best_mins_avant": 597.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Viktorija Golubic vs Iga Swiatek",
+          "best_ev_pct": 15.0,
+          "best_mins_avant": 557.0,
+          "bucket": "6-24h",
           "fenetre_tardive": true
         },
         {
-          "match": "Martin Damm Jr vs Juan Pablo Ficovich",
-          "best_ev_pct": -1.1,
-          "best_mins_avant": 120.0,
+          "match": "Jessica Pegula vs Kamilla Rakhimova",
+          "best_ev_pct": 3.9,
+          "best_mins_avant": 639.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": true
+        },
+        {
+          "match": "Mariano Navone vs Arthur Fils",
+          "best_ev_pct": -0.4,
+          "best_mins_avant": 168.0,
           "bucket": "2-6h",
           "fenetre_tardive": false
         },
         {
-          "match": "Robin Montgomery vs Joanna Garland",
-          "best_ev_pct": -3.4,
-          "best_mins_avant": 589.0,
+          "match": "Jiri Lehecka vs Alexander Blockx",
+          "best_ev_pct": 10.2,
+          "best_mins_avant": 805.0,
           "bucket": "6-24h",
           "fenetre_tardive": false
         },
         {
-          "match": "Katie Volynets vs Lin Zhu",
-          "best_ev_pct": 1.9,
+          "match": "Rafael Jodar vs Lorenzo Musetti",
+          "best_ev_pct": 3.9,
+          "best_mins_avant": 865.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Yannick Hanfmann vs Nuno Borges",
+          "best_ev_pct": 7.4,
+          "best_mins_avant": 645.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Cameron Norrie vs Alex de Minaur",
+          "best_ev_pct": 12.9,
+          "best_mins_avant": 604.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Brandon Nakashima vs Titouan Droguet",
+          "best_ev_pct": 7.6,
+          "best_mins_avant": 890.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Frances Tiafoe vs Arthur Rinderknech",
+          "best_ev_pct": 3.7,
+          "best_mins_avant": 910.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Casper Ruud vs Joao Fonseca",
+          "best_ev_pct": 6.8,
+          "best_mins_avant": 423.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Alexei Popyrin vs Thiago Agustin Tirante",
+          "best_ev_pct": 9.5,
+          "best_mins_avant": 1924.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Terence Atmane vs Jakub Mensik",
+          "best_ev_pct": 12.6,
+          "best_mins_avant": 2207.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Zizou Bergs vs Ben Shelton",
+          "best_ev_pct": 2.7,
+          "best_mins_avant": 1979.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Ann Li vs Elena Rybakina",
+          "best_ev_pct": 4.4,
+          "best_mins_avant": 1815.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": true
+        },
+        {
+          "match": "Taylor Townsend vs Belinda Bencic",
+          "best_ev_pct": 1.0,
+          "best_mins_avant": 878.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Iva Jovic vs Alina Korneeva",
+          "best_ev_pct": 11.2,
+          "best_mins_avant": 1728.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": true
+        },
+        {
+          "match": "Botic Van de Zandschulp vs Hubert Hurkacz",
+          "best_ev_pct": 20.2,
+          "best_mins_avant": 1931.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Tallon Griekspoor vs Matteo Arnaldi",
+          "best_ev_pct": 16.3,
+          "best_mins_avant": 1774.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Daniel Merida vs Alex Michelsen",
+          "best_ev_pct": 2.9,
+          "best_mins_avant": 1773.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Elise Mertens vs Naomi Osaka",
+          "best_ev_pct": 0.1,
+          "best_mins_avant": 591.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Maria Sakkari vs Coco Gauff",
+          "best_ev_pct": 2.9,
+          "best_mins_avant": 901.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Mirra Andreeva vs Leylah Fernandez",
+          "best_ev_pct": 6.4,
+          "best_mins_avant": 620.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Maya Joint vs Liudmila Samsonova",
+          "best_ev_pct": 4.1,
           "best_mins_avant": 646.0,
           "bucket": "6-24h",
           "fenetre_tardive": false
         },
         {
-          "match": "Roman Safiullin vs Alexis Galarneau",
-          "best_ev_pct": -1.8,
-          "best_mins_avant": 193.0,
+          "match": "Caty McNally vs Alexandra Eala",
+          "best_ev_pct": 18.8,
+          "best_mins_avant": 2541.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Learner Tien vs Tommy Paul",
+          "best_ev_pct": 1.9,
+          "best_mins_avant": 459.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Jessica Pegula vs Diana Shnaider",
+          "best_ev_pct": 4.8,
+          "best_mins_avant": 2054.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Jiri Lehecka vs Rafael Jodar",
+          "best_ev_pct": 7.2,
+          "best_mins_avant": 2184.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Arthur Rinderknech vs Brandon Nakashima",
+          "best_ev_pct": 9.5,
+          "best_mins_avant": 1947.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Aryna Sabalenka vs Ekaterina Alexandrova",
+          "best_ev_pct": 1.1,
+          "best_mins_avant": 1907.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Marta Kostyuk vs Iga Swiatek",
+          "best_ev_pct": 4.5,
+          "best_mins_avant": 1526.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": true
+        },
+        {
+          "match": "Nuno Borges vs Luciano Darderi",
+          "best_ev_pct": 1.7,
+          "best_mins_avant": 396.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        }
+      ]
+    },
+    "pmu": {
+      "book": "pmu",
+      "n": 0,
+      "communs": 0
+    },
+    "tipico": {
+      "book": "tipico",
+      "n": 0,
+      "communs": 0
+    },
+    "unibet": {
+      "book": "unibet",
+      "n": 153,
+      "late_matches": 7,
+      "open_matches": 71,
+      "par_tranche": {
+        "<30min": {
+          "points": 122,
+          "value": 19,
+          "ev_moyen_pct": -0.99
+        },
+        "30min-2h": {
+          "points": 21,
+          "value": 2,
+          "ev_moyen_pct": -2.14
+        },
+        "2-6h": {
+          "points": 99,
+          "value": 20,
+          "ev_moyen_pct": -0.45
+        },
+        "6-24h": {
+          "points": 288,
+          "value": 76,
+          "ev_moyen_pct": 0.45
+        },
+        "1-2j": {
+          "points": 112,
+          "value": 33,
+          "ev_moyen_pct": 1.24
+        },
+        "2-3j": {
+          "points": 28,
+          "value": 1,
+          "ev_moyen_pct": -1.97
+        },
+        ">3j": {
+          "points": 7,
+          "value": 5,
+          "ev_moyen_pct": 5.15
+        }
+      },
+      "detail": [
+        {
+          "match": "Alejandro Tabilo vs Ben Shelton",
+          "best_ev_pct": 0.8,
+          "best_mins_avant": 266.0,
           "bucket": "2-6h",
           "fenetre_tardive": false
         },
         {
-          "match": "Niels Visker vs Elias Ymer",
-          "best_ev_pct": -3.4,
+          "match": "Coleman Wong vs Arthur Gea",
+          "best_ev_pct": 1.7,
+          "best_mins_avant": 918.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Darja Vidmanova vs Katie Volynets",
+          "best_ev_pct": 4.2,
+          "best_mins_avant": 1147.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Cameron Norrie vs Denis Shapovalov",
+          "best_ev_pct": 7.1,
+          "best_mins_avant": 1145.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Brandon Nakashima vs Taylor Fritz",
+          "best_ev_pct": -2.5,
+          "best_mins_avant": 922.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Kristina Liutova vs Elvina Kalieva",
+          "best_ev_pct": 4.1,
+          "best_mins_avant": 705.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Rafael Jodar vs Alejandro Tabilo",
+          "best_ev_pct": -2.4,
+          "best_mins_avant": 246.0,
+          "bucket": "2-6h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Naomi Osaka vs Alexandra Eala",
+          "best_ev_pct": 3.7,
+          "best_mins_avant": 731.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Darja Vidmanova vs Renata Zarazua",
+          "best_ev_pct": 0.8,
+          "best_mins_avant": 289.0,
+          "bucket": "2-6h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Leolia Jeanjean vs Lin Zhu",
+          "best_ev_pct": -2.2,
+          "best_mins_avant": 461.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Oksana Selekhmeteva vs Aoi Ito",
+          "best_ev_pct": 13.9,
+          "best_mins_avant": 396.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Emiliana Arango vs Lois Boisson",
+          "best_ev_pct": 10.3,
+          "best_mins_avant": 396.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Alina Korneeva vs Mary Stoiana",
+          "best_ev_pct": 1.8,
+          "best_mins_avant": 566.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Tatjana Maria vs Isabella Marton",
+          "best_ev_pct": -1.0,
+          "best_mins_avant": 521.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Sofia Kenin vs Lucrezia Stefanini",
+          "best_ev_pct": -0.1,
+          "best_mins_avant": 3.0,
+          "bucket": "<30min",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Polina Kudermetova vs Avery Alexander",
+          "best_ev_pct": 12.9,
+          "best_mins_avant": 633.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Taylah Preston vs Emerson Jones",
+          "best_ev_pct": -1.8,
+          "best_mins_avant": 636.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Mananchaya Sawangkaew vs Rebecca Sramkova",
+          "best_ev_pct": 19.2,
+          "best_mins_avant": 781.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": true
+        },
+        {
+          "match": "Maya Joint vs Ana Grubor",
+          "best_ev_pct": 42.4,
+          "best_mins_avant": 3.0,
+          "bucket": "<30min",
+          "fenetre_tardive": true
+        },
+        {
+          "match": "Martin Damm Jr vs Henrique Rocha",
+          "best_ev_pct": -1.2,
+          "best_mins_avant": 316.0,
+          "bucket": "2-6h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Marco Trungelliti vs Nicolas Mejia",
+          "best_ev_pct": 12.2,
+          "best_mins_avant": 366.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Marcos Giron vs Pablo Llamas Ruiz",
+          "best_ev_pct": 7.2,
+          "best_mins_avant": 272.0,
+          "bucket": "2-6h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Jacob Fearnley vs Sebastian Ofner",
+          "best_ev_pct": 3.2,
+          "best_mins_avant": 511.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Aleksandar Vukic vs Marcelo Tomas Barrios Vera",
+          "best_ev_pct": 8.0,
           "best_mins_avant": 516.0,
           "bucket": "6-24h",
           "fenetre_tardive": false
         },
         {
-          "match": "Jodie Burrage vs Anna Blinkova",
+          "match": "Adam Walton vs Justin Boulais",
+          "best_ev_pct": 13.5,
+          "best_mins_avant": 2.0,
+          "bucket": "<30min",
+          "fenetre_tardive": true
+        },
+        {
+          "match": "Shintaro Mochizuki vs Dane Sweeny",
+          "best_ev_pct": 4.1,
+          "best_mins_avant": 651.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Benjamin Bonzi vs Hugo Dellien",
+          "best_ev_pct": -0.2,
+          "best_mins_avant": 611.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Hugo Gaston vs Duncan Chan",
           "best_ev_pct": -0.1,
-          "best_mins_avant": 1565.0,
-          "bucket": "1-2j",
+          "best_mins_avant": 566.0,
+          "bucket": "6-24h",
           "fenetre_tardive": false
         },
         {
-          "match": "Talia Gibson vs Alina Charaeva",
-          "best_ev_pct": 3.0,
-          "best_mins_avant": 1565.0,
-          "bucket": "1-2j",
-          "fenetre_tardive": false
-        },
-        {
-          "match": "Elsa Jacquemot vs Hanyu Guo",
-          "best_ev_pct": 2.8,
-          "best_mins_avant": 1690.0,
-          "bucket": "1-2j",
-          "fenetre_tardive": false
-        },
-        {
-          "match": "Maddison Inglis vs Alycia Parks",
+          "match": "Jaime Faria vs Christopher O'Connell",
           "best_ev_pct": 0.3,
-          "best_mins_avant": 1725.0,
+          "best_mins_avant": 616.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Aleksandr Shevchenko vs Kyrian Jacquet",
+          "best_ev_pct": 3.5,
+          "best_mins_avant": 324.0,
+          "bucket": "2-6h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Katie Volynets vs Sloane Stephens",
+          "best_ev_pct": 4.0,
+          "best_mins_avant": 636.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Arthur Gea vs Denis Shapovalov",
+          "best_ev_pct": 4.1,
+          "best_mins_avant": 6.0,
+          "bucket": "<30min",
+          "fenetre_tardive": true
+        },
+        {
+          "match": "Harriet Dart vs Sloane Stephens",
+          "best_ev_pct": -1.2,
+          "best_mins_avant": 150.0,
+          "bucket": "2-6h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Varvara Lepchenko vs Emerson Jones",
+          "best_ev_pct": 0.8,
+          "best_mins_avant": 281.0,
+          "bucket": "2-6h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Kamilla Rakhimova vs Venus Williams",
+          "best_ev_pct": 1.9,
+          "best_mins_avant": 1511.0,
           "bucket": "1-2j",
           "fenetre_tardive": false
         },
         {
-          "match": "Tatjana Maria vs Yuriko Lily Miyazaki",
+          "match": "Nikola Bartunkova vs Bianca Andreescu",
+          "best_ev_pct": -2.3,
+          "best_mins_avant": 1806.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Jessica Bouzas Maneiro vs Ariana Arseneault",
+          "best_ev_pct": -2.6,
+          "best_mins_avant": 4.0,
+          "bucket": "<30min",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Adolfo Daniel Vallejo vs Juncheng Shang",
+          "best_ev_pct": -3.6,
+          "best_mins_avant": 1485.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Aleksandar Kovacevic vs Nuno Borges",
+          "best_ev_pct": 1.7,
+          "best_mins_avant": 9.0,
+          "bucket": "<30min",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Matteo Berrettini vs Mariano Navone",
+          "best_ev_pct": -1.4,
+          "best_mins_avant": 1717.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Jaume Munar vs Rinky Hijikata",
+          "best_ev_pct": 2.2,
+          "best_mins_avant": 404.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Hanyu Guo vs Kayla Day",
+          "best_ev_pct": -3.4,
+          "best_mins_avant": 30.0,
+          "bucket": "<30min",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Stefanos Tsitsipas vs Keegan Rice",
+          "best_ev_pct": -1.5,
+          "best_mins_avant": 171.0,
+          "bucket": "2-6h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Anna Blinkova vs Heather Watson",
+          "best_ev_pct": 1.0,
+          "best_mins_avant": 166.0,
+          "bucket": "2-6h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Jessica Pegula vs Alexandra Eala",
+          "best_ev_pct": 8.4,
+          "best_mins_avant": 230.0,
+          "bucket": "2-6h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Kristina Liutova vs Darja Vidmanova",
+          "best_ev_pct": 7.0,
+          "best_mins_avant": 147.0,
+          "bucket": "2-6h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Taylor Fritz vs Rafael Jodar",
+          "best_ev_pct": 9.4,
+          "best_mins_avant": 1033.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Michael Zheng vs Miomir Kecmanovic",
+          "best_ev_pct": -2.4,
+          "best_mins_avant": 500.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "James Duckworth vs Christopher O'Connell",
+          "best_ev_pct": 7.3,
+          "best_mins_avant": 835.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Aleksandar Vukic vs Daniel Altmaier",
+          "best_ev_pct": 4.2,
+          "best_mins_avant": 1006.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Luca Van Assche vs Titouan Droguet",
+          "best_ev_pct": -2.8,
+          "best_mins_avant": 754.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Sho Shimabukuro vs Marin Cilic",
+          "best_ev_pct": 13.8,
+          "best_mins_avant": 931.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Gabriel Diallo vs Kyrian Jacquet",
+          "best_ev_pct": 13.4,
+          "best_mins_avant": 966.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Benjamin Bonzi vs Yannick Hanfmann",
+          "best_ev_pct": 8.8,
+          "best_mins_avant": 976.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Nicolas Mejia vs Martin Landaluce",
+          "best_ev_pct": 14.3,
+          "best_mins_avant": 820.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Moyuka Uchijima vs Cristina Bucsa",
+          "best_ev_pct": -3.1,
+          "best_mins_avant": 549.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Aoi Ito vs Katherine Sebov",
+          "best_ev_pct": -2.5,
+          "best_mins_avant": 801.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Lucrezia Stefanini vs Camila Osorio",
+          "best_ev_pct": 4.3,
+          "best_mins_avant": 846.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "McCartney Kessler vs Cadence Brace",
+          "best_ev_pct": 11.0,
+          "best_mins_avant": 1446.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Magdalena Frech vs Leolia Jeanjean",
+          "best_ev_pct": 1.1,
+          "best_mins_avant": 916.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Emerson Jones vs Lanlana Tararudee",
+          "best_ev_pct": 5.8,
+          "best_mins_avant": 956.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Rebecca Sramkova vs Anna Blinkova",
+          "best_ev_pct": 7.4,
+          "best_mins_avant": 996.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Janice Tjen vs Liudmila Samsonova",
+          "best_ev_pct": -4.8,
+          "best_mins_avant": 3016.0,
+          "bucket": "2-3j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Panna Udvardy vs Eva Lys",
+          "best_ev_pct": 0.7,
+          "best_mins_avant": 1.0,
+          "bucket": "<30min",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Anhelina Kalinina vs Anna Bondar",
+          "best_ev_pct": -0.4,
+          "best_mins_avant": 2756.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Rebecca Marino vs Zeynep Sonmez",
+          "best_ev_pct": -1.6,
+          "best_mins_avant": 3231.0,
+          "bucket": "2-3j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Tereza Valentova vs Taylor Townsend",
+          "best_ev_pct": 6.4,
+          "best_mins_avant": 2287.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Yulia Putintseva vs Shuai Zhang",
+          "best_ev_pct": 0.7,
+          "best_mins_avant": 2931.0,
+          "bucket": "2-3j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Alexis Galarneau vs Vit Kopriva",
+          "best_ev_pct": 4.8,
+          "best_mins_avant": 1119.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Alex Michelsen vs Jan-Lennard Struff",
+          "best_ev_pct": 0.1,
+          "best_mins_avant": 311.0,
+          "bucket": "2-6h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Yuliia Starodubtseva vs Maya Joint",
+          "best_ev_pct": 10.1,
+          "best_mins_avant": 2246.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Alina Korneeva vs Polina Kudermetova",
+          "best_ev_pct": -0.2,
+          "best_mins_avant": 1083.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Victoria Jimenez Kasintseva vs Alycia Parks",
+          "best_ev_pct": -1.5,
+          "best_mins_avant": 2125.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Tatjana Maria vs Caty McNally",
+          "best_ev_pct": 1.3,
+          "best_mins_avant": 2255.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Katie Boulter vs Kayla Cross",
+          "best_ev_pct": 24.1,
+          "best_mins_avant": 2471.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Diane Parry vs Kayla Day",
+          "best_ev_pct": 1.6,
+          "best_mins_avant": 4.0,
+          "bucket": "<30min",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Solana Sierra vs Sloane Stephens",
+          "best_ev_pct": 7.8,
+          "best_mins_avant": 2046.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Camilo Ugo Carabelli vs Cameron Norrie",
+          "best_ev_pct": -1.3,
+          "best_mins_avant": 3511.0,
+          "bucket": "2-3j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Zachary Svajda vs Denis Shapovalov",
+          "best_ev_pct": 2.7,
+          "best_mins_avant": 284.0,
+          "bucket": "2-6h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Marton Fucsovics vs Corentin Moutet",
+          "best_ev_pct": -1.4,
+          "best_mins_avant": 3356.0,
+          "bucket": "2-3j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Sebastian Baez vs Mattia Bellucci",
+          "best_ev_pct": -3.3,
+          "best_mins_avant": 1235.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Juan Manuel Cerundolo vs Hamad Medjedovic",
+          "best_ev_pct": 1.9,
+          "best_mins_avant": 4396.0,
+          "bucket": ">3j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Terence Atmane vs Jack Draper",
+          "best_ev_pct": 14.7,
+          "best_mins_avant": 4430.0,
+          "bucket": ">3j",
+          "fenetre_tardive": true
+        },
+        {
+          "match": "Giovanni Mpetshi Perricard vs Botic Van de Zandschulp",
+          "best_ev_pct": 5.7,
+          "best_mins_avant": 4536.0,
+          "bucket": ">3j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Pablo Carreno Busta vs Valentin Royer",
+          "best_ev_pct": 4.9,
+          "best_mins_avant": 284.0,
+          "bucket": "2-6h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Kamil Majchrzak vs Gael Monfils",
           "best_ev_pct": 1.4,
-          "best_mins_avant": 1700.0,
+          "best_mins_avant": 3396.0,
+          "bucket": "2-3j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Daniel Merida vs Liam Draxl",
+          "best_ev_pct": 2.9,
+          "best_mins_avant": 4406.0,
+          "bucket": ">3j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Lorenzo Sonego vs Tallon Griekspoor",
+          "best_ev_pct": 10.7,
+          "best_mins_avant": 7.0,
+          "bucket": "<30min",
+          "fenetre_tardive": true
+        },
+        {
+          "match": "Shintaro Mochizuki vs Fabian Marozsan",
+          "best_ev_pct": -1.4,
+          "best_mins_avant": 3291.0,
+          "bucket": "2-3j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Xinyu Wang vs Daria Kasatkina",
+          "best_ev_pct": -1.8,
+          "best_mins_avant": 2981.0,
+          "bucket": "2-3j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Duncan Chan vs Thiago Agustin Tirante",
+          "best_ev_pct": -1.7,
+          "best_mins_avant": 233.0,
+          "bucket": "2-6h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Adam Walton vs Jenson Brooksby",
+          "best_ev_pct": -2.0,
+          "best_mins_avant": 2956.0,
+          "bucket": "2-3j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Martin Damm Jr vs Stefanos Tsitsipas",
+          "best_ev_pct": 3.3,
+          "best_mins_avant": 1399.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Jacob Fearnley vs Adrian Mannarino",
+          "best_ev_pct": -2.4,
+          "best_mins_avant": 1.0,
+          "bucket": "<30min",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Hubert Hurkacz vs Marcos Giron",
+          "best_ev_pct": 7.1,
+          "best_mins_avant": 2862.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Alexei Popyrin vs Roman Andres Burruchaga",
+          "best_ev_pct": 0.1,
+          "best_mins_avant": 3081.0,
+          "bucket": "2-3j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Marta Kostyuk vs Katherine Sebov",
+          "best_ev_pct": -1.9,
+          "best_mins_avant": 565.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Jaume Munar vs Alexander Blockx",
+          "best_ev_pct": -2.8,
+          "best_mins_avant": 695.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Juncheng Shang vs Andrey Rublev",
+          "best_ev_pct": -0.6,
+          "best_mins_avant": 3.0,
+          "bucket": "<30min",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Camila Osorio vs Ekaterina Alexandrova",
+          "best_ev_pct": 7.1,
+          "best_mins_avant": 219.0,
+          "bucket": "2-6h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Brandon Nakashima vs Daniel Altmaier",
+          "best_ev_pct": 0.2,
+          "best_mins_avant": 575.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Frances Tiafoe vs Marin Cilic",
+          "best_ev_pct": 8.2,
+          "best_mins_avant": 875.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Flavio Cobolli vs Yannick Hanfmann",
+          "best_ev_pct": 0.3,
+          "best_mins_avant": 736.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Jiri Lehecka vs Vit Kopriva",
+          "best_ev_pct": 27.1,
+          "best_mins_avant": 659.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": true
+        },
+        {
+          "match": "Antonia Ruzic vs Madison Keys",
+          "best_ev_pct": 1.7,
+          "best_mins_avant": 715.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Maja Chwalinska vs Talia Gibson",
+          "best_ev_pct": -4.4,
+          "best_mins_avant": 466.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Shuai Zhang vs Jelena Ostapenko",
+          "best_ev_pct": 12.2,
+          "best_mins_avant": 725.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Elena-Gabriela Ruse vs Anastasia Potapova",
+          "best_ev_pct": 9.5,
+          "best_mins_avant": 555.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Anna Kalinskaya vs McCartney Kessler",
+          "best_ev_pct": -3.4,
+          "best_mins_avant": 815.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Clara Tauson vs Nikola Bartunkova",
+          "best_ev_pct": 3.0,
+          "best_mins_avant": 925.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Luciano Darderi vs Gabriel Diallo",
+          "best_ev_pct": 12.2,
+          "best_mins_avant": 1030.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Maria Sakkari vs Zeynep Sonmez",
+          "best_ev_pct": 3.1,
+          "best_mins_avant": 2020.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Mirra Andreeva vs Karolina Pliskova",
+          "best_ev_pct": 7.2,
+          "best_mins_avant": 2090.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Valentin Vacherot vs Mariano Navone",
+          "best_ev_pct": 3.2,
+          "best_mins_avant": 1710.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Ignacio Buse vs Cameron Norrie",
+          "best_ev_pct": 6.6,
+          "best_mins_avant": 1960.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Rafael Jodar vs Corentin Moutet",
+          "best_ev_pct": 5.6,
+          "best_mins_avant": 1970.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Miomir Kecmanovic vs Arthur Rinderknech",
+          "best_ev_pct": 6.7,
+          "best_mins_avant": 1955.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Nuno Borges vs Tomas Martin Etcheverry",
+          "best_ev_pct": -1.7,
+          "best_mins_avant": 376.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Alex Michelsen vs Francisco Cerundolo",
+          "best_ev_pct": 2.6,
+          "best_mins_avant": 419.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Titouan Droguet vs Felix Auger-Aliassime",
+          "best_ev_pct": 18.8,
+          "best_mins_avant": 2315.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Lanlana Tararudee vs Amanda Anisimova",
+          "best_ev_pct": 7.8,
+          "best_mins_avant": 844.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Linda Noskova vs Caty McNally",
+          "best_ev_pct": 3.1,
+          "best_mins_avant": 2158.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Daria Kasatkina vs Elena Rybakina",
+          "best_ev_pct": 0.0,
+          "best_mins_avant": 1794.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Stefanos Tsitsipas vs Joao Fonseca",
+          "best_ev_pct": 0.8,
+          "best_mins_avant": 515.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Zachary Svajda vs Arthur Fils",
+          "best_ev_pct": 10.3,
+          "best_mins_avant": 794.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Jenson Brooksby vs Ben Shelton",
+          "best_ev_pct": 6.4,
+          "best_mins_avant": 1245.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Raphael Collignon vs Alexei Popyrin",
+          "best_ev_pct": 2.0,
+          "best_mins_avant": 964.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Alexander Zverev vs Tallon Griekspoor",
+          "best_ev_pct": 28.0,
+          "best_mins_avant": 655.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Thiago Agustin Tirante vs Taylor Fritz",
+          "best_ev_pct": 4.9,
+          "best_mins_avant": 879.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Fabian Marozsan vs Matteo Arnaldi",
+          "best_ev_pct": -3.6,
+          "best_mins_avant": 810.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Ugo Humbert vs Daniel Merida",
+          "best_ev_pct": 4.1,
+          "best_mins_avant": 1080.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Daniil Medvedev vs Botic Van de Zandschulp",
+          "best_ev_pct": -2.3,
+          "best_mins_avant": 536.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Jessica Pegula vs Magdalena Frech",
+          "best_ev_pct": -2.1,
+          "best_mins_avant": 1940.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Kayla Day vs Coco Gauff",
+          "best_ev_pct": -0.7,
+          "best_mins_avant": 2105.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Liudmila Samsonova vs Barbora Krejcikova",
+          "best_ev_pct": 25.6,
+          "best_mins_avant": 2255.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Panna Udvardy vs Naomi Osaka",
+          "best_ev_pct": 7.4,
+          "best_mins_avant": 789.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Hubert Hurkacz vs Alejandro Tabilo",
+          "best_ev_pct": 4.9,
+          "best_mins_avant": 611.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Karen Khachanov vs Terence Atmane",
+          "best_ev_pct": 2.3,
+          "best_mins_avant": 825.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Zizou Bergs vs Sebastian Baez",
+          "best_ev_pct": 3.2,
+          "best_mins_avant": 318.0,
+          "bucket": "2-6h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Marie Bouzkova vs Taylor Townsend",
+          "best_ev_pct": 6.9,
+          "best_mins_avant": 1925.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Valentin Royer vs Tommy Paul",
+          "best_ev_pct": -2.3,
+          "best_mins_avant": 1125.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Elise Mertens vs Anna Bondar",
+          "best_ev_pct": -0.3,
+          "best_mins_avant": 9.0,
+          "bucket": "<30min",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Sorana Cirstea vs Maya Joint",
+          "best_ev_pct": 7.8,
+          "best_mins_avant": 2330.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Jacob Fearnley vs Jakub Mensik",
+          "best_ev_pct": 4.0,
+          "best_mins_avant": 1035.0,
+          "bucket": "6-24h",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Ann Li vs Kayla Cross",
+          "best_ev_pct": -3.6,
+          "best_mins_avant": 1835.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Learner Tien vs Gael Monfils",
+          "best_ev_pct": 3.0,
+          "best_mins_avant": 2046.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Alycia Parks vs Alexandra Eala",
+          "best_ev_pct": 13.7,
+          "best_mins_avant": 1782.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Renata Zarazua vs Leylah Fernandez",
+          "best_ev_pct": 0.6,
+          "best_mins_avant": 1730.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Anna Kalinskaya vs Diana Shnaider",
+          "best_ev_pct": 0.5,
+          "best_mins_avant": 1980.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Marta Kostyuk vs Madison Keys",
+          "best_ev_pct": 1.7,
+          "best_mins_avant": 2085.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Aryna Sabalenka vs Shuai Zhang",
+          "best_ev_pct": 1.4,
+          "best_mins_avant": 1963.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Talia Gibson vs Ekaterina Alexandrova",
+          "best_ev_pct": 11.7,
+          "best_mins_avant": 1845.0,
+          "bucket": "1-2j",
+          "fenetre_tardive": false
+        },
+        {
+          "match": "Elina Svitolina vs Anastasia Potapova",
+          "best_ev_pct": 1.3,
+          "best_mins_avant": 2485.0,
           "bucket": "1-2j",
           "fenetre_tardive": false
         }
       ]
+    },
+    "unibet.fr": {
+      "book": "unibet.fr",
+      "n": 0,
+      "communs": 0
+    },
+    "williamhill": {
+      "book": "williamhill",
+      "n": 0,
+      "communs": 0
+    },
+    "winamax.fr": {
+      "book": "winamax.fr",
+      "n": 0,
+      "communs": 0
     }
   }
 }
