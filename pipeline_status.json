@@ -2,20 +2,20 @@
   "scripts_manquants": [],
   "closing_7j": {
     "jours": 3,
-    "n": 172,
+    "n": 171,
     "closing_pct": 97.1,
     "t7_pct": 96.5,
     "t3_pct": 96.5
   },
   "closing_30j": {
     "jours": 30,
-    "n": 561,
-    "closing_pct": 80.6,
-    "t7_pct": 71.7,
-    "t3_pct": 70.4
+    "n": 565,
+    "closing_pct": 80.7,
+    "t7_pct": 71.9,
+    "t3_pct": 70.6
   },
-  "run_termine": "2026-10-03T06:46:14",
-  "run_demarre": "2026-10-03T06:17:11",
+  "run_termine": "2026-10-03T08:07:50",
+  "run_demarre": "2026-10-03T07:40:40",
   "verdict_global": "1 livrable(s) à vérifier",
   "livrables": [
     {
@@ -24,10 +24,10 @@
       "optionnel": false,
       "externe": false,
       "verdict": "✅ OK",
-      "octets": 303651,
-      "lignes": 3047,
+      "octets": 303845,
+      "lignes": 3049,
       "ecrit_ce_run": true,
-      "modifie": "2026-10-03T06:23:20"
+      "modifie": "2026-10-03T07:45:35"
     },
     {
       "fichier": "resultats_derived.json",
@@ -35,10 +35,10 @@
       "optionnel": false,
       "externe": true,
       "verdict": "✅ OK",
-      "octets": 810610,
-      "lignes": 3016,
+      "octets": 811312,
+      "lignes": 3019,
       "ecrit_ce_run": true,
-      "modifie": "2026-10-03T06:19:15"
+      "modifie": "2026-10-03T07:41:39"
     },
     {
       "fichier": "paper_trades_match.jsonl",
@@ -49,7 +49,7 @@
       "octets": 100479,
       "lignes": 180,
       "ecrit_ce_run": true,
-      "modifie": "2026-10-03T06:27:09"
+      "modifie": "2026-10-03T07:49:14"
     },
     {
       "fichier": "paper_trades_set1.jsonl",
@@ -60,7 +60,7 @@
       "octets": 21300,
       "lignes": 49,
       "ecrit_ce_run": true,
-      "modifie": "2026-10-03T06:27:40"
+      "modifie": "2026-10-03T07:49:44"
     },
     {
       "fichier": "paper_trades_set2.jsonl",
@@ -71,7 +71,7 @@
       "octets": 0,
       "lignes": 0,
       "ecrit_ce_run": true,
-      "modifie": "2026-10-03T06:27:53"
+      "modifie": "2026-10-03T07:49:56"
     },
     {
       "fichier": "moves_detail.csv",
@@ -79,10 +79,10 @@
       "optionnel": false,
       "externe": false,
       "verdict": "✅ OK",
-      "octets": 8948,
+      "octets": 8953,
       "lignes": 53,
       "ecrit_ce_run": true,
-      "modifie": "2026-10-03T06:27:59"
+      "modifie": "2026-10-03T07:50:02"
     },
     {
       "fichier": "moves_detail_hist.csv",
@@ -93,7 +93,7 @@
       "octets": 284744,
       "lignes": 1672,
       "ecrit_ce_run": true,
-      "modifie": "2026-10-03T06:29:35"
+      "modifie": "2026-10-03T07:51:33"
     },
     {
       "fichier": "canal_clv_detail.csv",
@@ -104,7 +104,7 @@
       "octets": 68376,
       "lignes": 425,
       "ecrit_ce_run": true,
-      "modifie": "2026-10-03T06:44:53"
+      "modifie": "2026-10-03T08:06:29"
     },
     {
       "fichier": "canal_public_log.jsonl",
@@ -115,7 +115,7 @@
       "octets": 181617,
       "lignes": 377,
       "ecrit_ce_run": true,
-      "modifie": "2026-10-03T06:19:12"
+      "modifie": "2026-10-03T07:41:37"
     },
     {
       "fichier": "book_curves_live.jsonl",
@@ -123,14 +123,14 @@
       "optionnel": false,
       "externe": false,
       "verdict": "✅ OK",
-      "octets": 63761280,
-      "lignes": 4349,
+      "octets": 64366916,
+      "lignes": 4352,
       "ecrit_ce_run": true,
-      "modifie": "2026-10-03T06:19:20"
+      "modifie": "2026-10-03T07:41:45"
     }
   ],
   "partitions": {
-    "total_mo": 931.7,
+    "total_mo": 936.3,
     "zone_rouge": [
       {
         "fichier": "parts/live_match_2026-09-30.jsonl",
@@ -148,7 +148,7 @@
     "alerte": false
   },
   "clv_vs_median": {
-    "genere_le": "2026-10-03T06:43:12.009553+00:00",
+    "genere_le": "2026-10-03T08:04:47.371667+00:00",
     "n_moves_total": 1671,
     "n_cote_ambigu": 1,
     "n_incomplet": 396,
@@ -184,7 +184,7 @@
     "n_avertissements": 2,
     "alerte": false,
     "genere_le": "2026-10-02T10:38:31Z",
-    "age_heures": 20.1,
+    "age_heures": 21.5,
     "fraicheur_inconnue_ou_perimee": false
   },
   "repo_size": {
@@ -196,7 +196,7 @@
     "message": "ZONE DE VIGILANCE — marge restante : 0.37 Go. Planifier la purge, ne pas attendre le rouge.",
     "derniere_mesure_reussie_le": "2026-10-02T14:06:17.424165+00:00",
     "genere_le": "2026-10-02T14:06:17.424165+00:00",
-    "age_heures": 16.7,
+    "age_heures": 18.0,
     "fraicheur_inconnue_ou_perimee": false
   }
 }
