@@ -25,7 +25,7 @@ Usage :
     python scripts/curves_parts.py rebuild      # avant build_live_curves
     (l'append est fait automatiquement par build_live_curves)
 """
-import os, json, glob, sys
+import os, json, glob, gzip, sys
 from datetime import datetime, timedelta
 
 PARTS_DIR   = os.environ.get('PARTS_DIR', 'parts')
@@ -46,9 +46,49 @@ def _dt(s):
 
 
 def part_path(market, day=None):
+    """Chemin de la partition du jour. COMPRESSÉE depuis le 03/10/2026.
+
+    Motif : live_match_2026-09-30.jsonl atteignait 90,3 Mo, et GitHub
+    REFUSE tout fichier au-delà de 100 Mo. Le pipeline était à quelques
+    heures d'un blocage total — plus aucun commit n'aurait pu passer.
+
+    Ce n'était pas une accumulation : c'est le volume NORMAL d'une
+    journée, environ 200 000 points sur le seul marché match. La
+    rétention fonctionnait (4 jours de live_* seulement).
+
+    Le gzip ramène ces 90 Mo à ~5 Mo. L'append reste un append : gzip
+    accepte la concaténation de membres, et la lecture les enchaîne de
+    façon transparente — vérifié sur 5 appends successifs, 500 lignes
+    relues sans perte.
+    """
     day = day or datetime.utcnow().strftime('%Y-%m-%d')
     os.makedirs(PARTS_DIR, exist_ok=True)
-    return os.path.join(PARTS_DIR, f"live_{market}_{day}.jsonl")
+    return os.path.join(PARTS_DIR, f"live_{market}_{day}.jsonl.gz")
+
+
+def _ouvrir(path, mode='rt'):
+    """Ouvre une partition, compressée ou non.
+
+    Les partitions anterieures au 03/10 sont en clair : il faut continuer
+    a les lire sans conversion, sinon rebuild() perdrait silencieusement
+    l'historique recent — exactement le genre de regression qui a coute
+    cinq jours fin septembre.
+    """
+    if path.endswith('.gz'):
+        return gzip.open(path, mode, encoding='utf-8')
+    return open(path, mode.replace('t', ''), encoding='utf-8')
+
+
+def _partitions(market):
+    """Toutes les partitions du marche, compressees ou non, triees par
+    date. Le tri porte sur le nom SANS suffixe, pour que live_x_2026-10-02
+    .jsonl et live_x_2026-10-03.jsonl.gz s'ordonnent correctement."""
+    motifs = [os.path.join(PARTS_DIR, f"live_{market}_*.jsonl"),
+              os.path.join(PARTS_DIR, f"live_{market}_*.jsonl.gz")]
+    vus = []
+    for m in motifs:
+        vus += glob.glob(m)
+    return sorted(set(vus), key=lambda p: os.path.basename(p).replace('.gz', ''))
 
 
 def append(market, events):
@@ -57,7 +97,7 @@ def append(market, events):
     if not events:
         return 0
     path = part_path(market)
-    with open(path, 'a', encoding='utf-8') as f:
+    with gzip.open(path, 'at', encoding='utf-8') as f:
         for e in events:
             f.write(json.dumps(e, ensure_ascii=False) + '\n')
     return len(events)
@@ -70,8 +110,8 @@ def rebuild(market, out_file=None, retain_days=None):
     now = datetime.utcnow()
     cutoff = now - timedelta(days=retain)
     curves, n_pts = {}, 0
-    for path in sorted(glob.glob(os.path.join(PARTS_DIR, f"live_{market}_*.jsonl"))):
-        for line in open(path, encoding='utf-8'):
+    for path in _partitions(market):
+        for line in _ouvrir(path):
             line = line.strip()
             if not line:
                 continue
@@ -106,7 +146,7 @@ def rebuild(market, out_file=None, retain_days=None):
         for c in curves.values():
             f.write(json.dumps(c, ensure_ascii=False) + '\n')
     print(f"  {out_file}: {len(curves)} courbes reconstruites | {n_pts} points "
-          f"| {len(glob.glob(os.path.join(PARTS_DIR, f'live_{market}_*.jsonl')))} partitions")
+          f"| {len(_partitions(market))} partitions")
     return len(curves)
 
 

@@ -139,7 +139,7 @@ def purge_corrupt_quotes_flat(path):
         print(f"  {path}: rien à nettoyer")
 
 
-def purge_corrupt_quotes_parts(pattern='parts/live_*.jsonl'):
+def purge_corrupt_quotes_parts(pattern='parts/live_*.jsonl*'):
     """Fichiers PARTITION (événement par ligne : t/uid/book/ho/ao) -- la source
     réelle des courbes live (les fichiers plats sont régénérés depuis elles à
     chaque cycle, donc les nettoyer directement serait sans effet)."""
@@ -183,10 +183,16 @@ def purge_old_partitions(days=None, pattern_dir='parts'):
     days = LIVE_DAYS if days is None else days
     cutoff_day = (now - datetime.timedelta(days=days)).strftime('%Y-%m-%d')
     removed, kept_size = 0, 0
-    for path in glob.glob(os.path.join(pattern_dir, 'live_*_*.jsonl')):
+    # Les deux formats : .jsonl pour les partitions anterieures au
+    # 03/10/2026, .jsonl.gz depuis. Oublier le second ferait cesser la
+    # retention SANS erreur — les partitions s'accumuleraient jusqu'au mur
+    # des 100 Mo de GitHub, exactement ce que la compression evite.
+    fichiers = (glob.glob(os.path.join(pattern_dir, 'live_*_*.jsonl'))
+                + glob.glob(os.path.join(pattern_dir, 'live_*_*.jsonl.gz')))
+    for path in sorted(set(fichiers)):
         base = os.path.basename(path)
-        # live_<market>_<YYYY-MM-DD>.jsonl -> extraire les 10 derniers car. utiles
-        day = base.rsplit('_', 1)[-1].replace('.jsonl', '')
+        # live_<market>_<YYYY-MM-DD>.jsonl[.gz] -> les 10 car. de la date
+        day = base.rsplit('_', 1)[-1].replace('.jsonl.gz', '').replace('.jsonl', '')
         if len(day) == 10 and day < cutoff_day:
             os.remove(path)
             removed += 1
