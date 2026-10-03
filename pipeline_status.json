@@ -2,20 +2,20 @@
   "scripts_manquants": [],
   "closing_7j": {
     "jours": 3,
-    "n": 164,
-    "closing_pct": 97.6,
-    "t7_pct": 97.0,
-    "t3_pct": 97.0
+    "n": 160,
+    "closing_pct": 97.5,
+    "t7_pct": 96.9,
+    "t3_pct": 97.5
   },
   "closing_30j": {
     "jours": 30,
-    "n": 567,
-    "closing_pct": 81.3,
-    "t7_pct": 73.7,
-    "t3_pct": 71.8
+    "n": 556,
+    "closing_pct": 80.9,
+    "t7_pct": 73.2,
+    "t3_pct": 73.0
   },
-  "run_termine": "2026-10-03T14:03:18",
-  "run_demarre": "2026-10-03T13:35:16",
+  "run_termine": "2026-10-03T15:45:21",
+  "run_demarre": "2026-10-03T15:20:18",
   "verdict_global": "1 livrable(s) à vérifier",
   "livrables": [
     {
@@ -24,10 +24,10 @@
       "optionnel": false,
       "externe": false,
       "verdict": "✅ OK",
-      "octets": 305693,
-      "lignes": 3068,
+      "octets": 306015,
+      "lignes": 3071,
       "ecrit_ce_run": true,
-      "modifie": "2026-10-03T13:40:39"
+      "modifie": "2026-10-03T15:26:59"
     },
     {
       "fichier": "resultats_derived.json",
@@ -35,10 +35,10 @@
       "optionnel": false,
       "externe": true,
       "verdict": "✅ OK",
-      "octets": 813004,
-      "lignes": 3026,
+      "octets": 815910,
+      "lignes": 3038,
       "ecrit_ce_run": true,
-      "modifie": "2026-10-03T13:36:20"
+      "modifie": "2026-10-03T15:23:01"
     },
     {
       "fichier": "paper_trades_match.jsonl",
@@ -49,7 +49,7 @@
       "octets": 101145,
       "lignes": 180,
       "ecrit_ce_run": true,
-      "modifie": "2026-10-03T13:44:23"
+      "modifie": "2026-10-03T15:30:00"
     },
     {
       "fichier": "paper_trades_set1.jsonl",
@@ -60,7 +60,7 @@
       "octets": 21300,
       "lignes": 49,
       "ecrit_ce_run": true,
-      "modifie": "2026-10-03T13:44:54"
+      "modifie": "2026-10-03T15:30:22"
     },
     {
       "fichier": "paper_trades_set2.jsonl",
@@ -71,7 +71,7 @@
       "octets": 0,
       "lignes": 0,
       "ecrit_ce_run": true,
-      "modifie": "2026-10-03T13:45:06"
+      "modifie": "2026-10-03T15:30:31"
     },
     {
       "fichier": "moves_detail.csv",
@@ -79,10 +79,10 @@
       "optionnel": false,
       "externe": false,
       "verdict": "✅ OK",
-      "octets": 9639,
+      "octets": 9644,
       "lignes": 57,
       "ecrit_ce_run": true,
-      "modifie": "2026-10-03T13:45:12"
+      "modifie": "2026-10-03T15:30:37"
     },
     {
       "fichier": "moves_detail_hist.csv",
@@ -93,7 +93,7 @@
       "octets": 284744,
       "lignes": 1672,
       "ecrit_ce_run": true,
-      "modifie": "2026-10-03T13:46:45"
+      "modifie": "2026-10-03T15:31:55"
     },
     {
       "fichier": "canal_clv_detail.csv",
@@ -104,7 +104,7 @@
       "octets": 68376,
       "lignes": 425,
       "ecrit_ce_run": true,
-      "modifie": "2026-10-03T14:01:57"
+      "modifie": "2026-10-03T15:44:15"
     },
     {
       "fichier": "canal_public_log.jsonl",
@@ -115,7 +115,7 @@
       "octets": 181617,
       "lignes": 377,
       "ecrit_ce_run": true,
-      "modifie": "2026-10-03T13:36:18"
+      "modifie": "2026-10-03T15:22:58"
     },
     {
       "fichier": "book_curves_live.jsonl",
@@ -123,14 +123,14 @@
       "optionnel": false,
       "externe": false,
       "verdict": "✅ OK",
-      "octets": 66547105,
-      "lignes": 4477,
+      "octets": 67018474,
+      "lignes": 4488,
       "ecrit_ce_run": true,
-      "modifie": "2026-10-03T13:36:27"
+      "modifie": "2026-10-03T15:23:05"
     }
   ],
   "partitions": {
-    "total_mo": 953.0,
+    "total_mo": 956.7,
     "zone_rouge": [
       {
         "fichier": "parts/live_match_2026-09-30.jsonl",
@@ -141,14 +141,14 @@
     "vue_partielle": true
   },
   "q3_qualite_cloture": {
-    "ecarts_gt_3pct": 147,
-    "n_total": 1031,
-    "pct_ecarts": 14.3,
+    "ecarts_gt_3pct": 145,
+    "n_total": 1025,
+    "pct_ecarts": 14.1,
     "seuil_pct": 30.0,
     "alerte": false
   },
   "clv_vs_median": {
-    "genere_le": "2026-10-03T14:00:13.755799+00:00",
+    "genere_le": "2026-10-03T15:42:46.878656+00:00",
     "n_moves_total": 1671,
     "n_cote_ambigu": 1,
     "n_incomplet": 396,
@@ -184,7 +184,7 @@
     "n_avertissements": 2,
     "alerte": false,
     "genere_le": "2026-10-03T10:00:50Z",
-    "age_heures": 4.0,
+    "age_heures": 5.7,
     "fraicheur_inconnue_ou_perimee": false
   },
   "repo_size": {
@@ -196,7 +196,7 @@
     "message": "SEUIL FRANCHI — lancer le git filter-repo (RUNBOOK_FILTER_REPO.md) sans attendre.",
     "derniere_mesure_reussie_le": "2026-10-03T12:42:44.979809+00:00",
     "genere_le": "2026-10-03T12:42:44.979809+00:00",
-    "age_heures": 1.3,
+    "age_heures": 3.0,
     "fraicheur_inconnue_ou_perimee": false
   }
 }
