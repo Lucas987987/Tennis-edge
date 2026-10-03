@@ -1,10 +1,10 @@
 {
- "zone": "vigilance",
- "taille_go": 3.63,
- "marge_go": 0.37,
+ "zone": "alarme",
+ "taille_go": 4.2,
+ "marge_go": -0.2,
  "seuil_vigilance_go": 3.0,
  "seuil_alarme_go": 4.0,
- "message": "ZONE DE VIGILANCE — marge restante : 0.37 Go. Planifier la purge, ne pas attendre le rouge.",
- "derniere_mesure_reussie_le": "2026-10-02T14:06:17.424165+00:00",
- "genere_le": "2026-10-02T14:06:17.424165+00:00"
+ "message": "SEUIL FRANCHI — lancer le git filter-repo (RUNBOOK_FILTER_REPO.md) sans attendre.",
+ "derniere_mesure_reussie_le": "2026-10-03T12:42:44.979809+00:00",
+ "genere_le": "2026-10-03T12:42:44.979809+00:00"
 }
