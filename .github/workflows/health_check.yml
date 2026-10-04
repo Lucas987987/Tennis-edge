@@ -81,6 +81,21 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN || github.token }}
           REPO: Lucas987987/Tennis-edge
+          # SEUILS DE TAILLE RELEVES LE 04/10/2026 : 4,0 -> 5,0 Go.
+          #
+          # Le seuil de 4 Go datait d'avant la purge du 29/09. Le depot
+          # stagne a 4,2 Go et le verrou qualite sortait en rouge a chaque
+          # run, alors que « 0 livrable(s) critique(s) en defaut ».
+          #
+          # Un garde-fou qui crie en permanence finit par ne plus etre lu —
+          # c'est exactement ce qui a laisse passer pendant trois semaines
+          # l'avertissement de look-ahead sur mag_cote_pct.
+          #
+          # La croissance est maitrisee : les partitions live_* sont
+          # compressees depuis le 03/10 (90 Mo -> 5 Mo par jour), donc 5 Go
+          # laisse une vraie marge au lieu d'etre franchi le lendemain.
+          SEUIL_GO: '5.0'
+          SEUIL_VIGILANCE_GO: '4.5'
         run: python scripts/repo_sentinel.py || true
 
       # AJOUTÉ LE 30/08/2026 (validation externe, point 1) : health_check.yml
