@@ -1,7 +1,7 @@
 {
-  "updated_at": "2026-10-04T11:32:53.649Z",
-  "count": 1781,
-  "actifs": 3,
+  "updated_at": "2026-10-04T11:50:57.279Z",
+  "count": 1786,
+  "actifs": 8,
   "markets": [
     {
       "market_id": "3689368",
@@ -59931,8 +59931,8 @@
       "sports_market_type": "moneyline",
       "market_type": "match",
       "game_id": 6375181,
-      "liquidity": 109990.7308,
-      "volume": 154720.10218900006,
+      "liquidity": 80617.9432,
+      "volume": 171539.09101099995,
       "local_match": {
         "home": "Henrique Rocha",
         "away": "Inaki Montes-de la Torre",
@@ -59943,7 +59943,7 @@
         "home",
         "away"
       ],
-      "discovered_at": "2026-10-04T11:32:53.520Z"
+      "discovered_at": "2026-10-04T11:50:57.026Z"
     },
     {
       "market_id": "5242394",
@@ -59999,7 +59999,7 @@
       "sports_market_type": "tennis_set_winner",
       "market_type": "set2",
       "game_id": 6375181,
-      "liquidity": null,
+      "liquidity": 4155.589,
       "volume": null,
       "local_match": {
         "home": "Henrique Rocha",
@@ -60011,7 +60011,7 @@
         "home",
         "away"
       ],
-      "discovered_at": "2026-10-04T11:32:53.521Z"
+      "discovered_at": "2026-10-04T11:50:57.028Z"
     },
     {
       "market_id": "5239706",
@@ -60543,7 +60543,7 @@
       "sports_market_type": "moneyline",
       "market_type": "match",
       "game_id": 6379982,
-      "liquidity": 9227.2986,
+      "liquidity": 9503.9978,
       "volume": null,
       "local_match": {
         "home": "Carlos Alcaraz",
@@ -60555,7 +60555,177 @@
         "home",
         "away"
       ],
-      "discovered_at": "2026-10-04T11:32:53.516Z"
+      "discovered_at": "2026-10-04T11:50:57.013Z"
+    },
+    {
+      "market_id": "5276822",
+      "condition_id": "0x567b8bd0f88f73bb2bf2b0a7010f05ffc3375b742d894c263028e2a71980029e",
+      "event_id": "1130298",
+      "event_slug": "atp-lehecka-vachero-2026-10-05",
+      "event_title": "Japan Open Tennis Championships: Jiri Lehecka vs Valentin Vacherot",
+      "question": "Japan Open Tennis Championships: Jiri Lehecka vs Valentin Vacherot",
+      "slug": "atp-lehecka-vachero-2026-10-05",
+      "start_time": "2026-10-04T11:06:28Z",
+      "outcomes": [
+        "Jiri Lehecka",
+        "Valentin Vacherot"
+      ],
+      "token_ids": [
+        "42972643943476596697756224208895704934749551693096867548595508795901853127857",
+        "106171382130830330857962435325237653408741094754427097025770467228593884816441"
+      ],
+      "sports_market_type": "moneyline",
+      "market_type": "match",
+      "game_id": 6380268,
+      "liquidity": 2356.8928,
+      "volume": null,
+      "local_match": {
+        "home": "Jiri Lehecka",
+        "away": "Valentin Vacherot",
+        "commence": "2026-10-05T09:00:00Z",
+        "uid": "2026-10-05_jiri_lehecka_valentin_vacherot"
+      },
+      "outcome_sides": [
+        "home",
+        "away"
+      ],
+      "discovered_at": "2026-10-04T11:50:57.001Z"
+    },
+    {
+      "market_id": "5277182",
+      "condition_id": "0x290faa3c62092ed0fc6049daab7556719287cbfe24d9fd6c541c1b1e9db76b8e",
+      "event_id": "1130298",
+      "event_slug": "atp-lehecka-vachero-2026-10-05",
+      "event_title": "Japan Open Tennis Championships: Jiri Lehecka vs Valentin Vacherot",
+      "question": "Set 1 Winner: Jiri Lehecka vs Valentin Vacherot",
+      "slug": "atp-lehecka-vachero-2026-10-05-first-set-winner-Lehecka-vs-Vacherot",
+      "start_time": "2026-10-04T11:44:20Z",
+      "outcomes": [
+        "Jiri Lehecka",
+        "Valentin Vacherot"
+      ],
+      "token_ids": [
+        "4785708172337056283814800070996116996708034741488820924582277823823254794241",
+        "4038740890200775868290668622595880005675023973509292266992511942652089199615"
+      ],
+      "sports_market_type": "tennis_first_set_winner",
+      "market_type": "set1",
+      "game_id": 6380268,
+      "liquidity": 60.0,
+      "volume": null,
+      "local_match": {
+        "home": "Jiri Lehecka",
+        "away": "Valentin Vacherot",
+        "commence": "2026-10-05T09:00:00Z",
+        "uid": "2026-10-05_jiri_lehecka_valentin_vacherot"
+      },
+      "outcome_sides": [
+        "home",
+        "away"
+      ],
+      "discovered_at": "2026-10-04T11:50:57.005Z"
+    },
+    {
+      "market_id": "5277188",
+      "condition_id": "0x0dfdd5963620905427e0a43a19e17fe601091a6c29f9299a388cee012470210e",
+      "event_id": "1130298",
+      "event_slug": "atp-lehecka-vachero-2026-10-05",
+      "event_title": "Japan Open Tennis Championships: Jiri Lehecka vs Valentin Vacherot",
+      "question": "Set 2 Winner: Jiri Lehecka vs Valentin Vacherot",
+      "slug": "atp-lehecka-vachero-2026-10-05-set-2-winner-Lehecka-vs-Vacherot",
+      "start_time": "2026-10-04T11:44:20Z",
+      "outcomes": [
+        "Jiri Lehecka",
+        "Valentin Vacherot"
+      ],
+      "token_ids": [
+        "16829683792542571111278414510906672165171818298460095329634190109726384451866",
+        "46300991285873841652771171750275231476579600739828499052045556927105443096782"
+      ],
+      "sports_market_type": "tennis_set_winner",
+      "market_type": "set2",
+      "game_id": 6380268,
+      "liquidity": 60.0,
+      "volume": null,
+      "local_match": {
+        "home": "Jiri Lehecka",
+        "away": "Valentin Vacherot",
+        "commence": "2026-10-05T09:00:00Z",
+        "uid": "2026-10-05_jiri_lehecka_valentin_vacherot"
+      },
+      "outcome_sides": [
+        "home",
+        "away"
+      ],
+      "discovered_at": "2026-10-04T11:50:57.009Z"
+    },
+    {
+      "market_id": "5277511",
+      "condition_id": "0x93dac54efd0a43fd12dc83b7cfaf730474cd8cf399cc6710567cdfac189206a4",
+      "event_id": "1130271",
+      "event_slug": "atp-alcaraz-munar-2026-10-05",
+      "event_title": "Japan Open Tennis Championships: Carlos Alcaraz vs Jaume Munar",
+      "question": "Set 1 Winner: Carlos Alcaraz vs Jaume Munar",
+      "slug": "atp-alcaraz-munar-2026-10-05-first-set-winner-Alcaraz-vs-Munar",
+      "start_time": "2026-10-04T11:44:32Z",
+      "outcomes": [
+        "Carlos Alcaraz",
+        "Jaume Munar"
+      ],
+      "token_ids": [
+        "47860824744482191010230282503433826759873245605428574675920089420533823446336",
+        "35594889877219459211318998003643243530829072126860778469522189507959415256551"
+      ],
+      "sports_market_type": "tennis_first_set_winner",
+      "market_type": "set1",
+      "game_id": 6379982,
+      "liquidity": 551.6898,
+      "volume": null,
+      "local_match": {
+        "home": "Carlos Alcaraz",
+        "away": "Jaume Munar",
+        "commence": "2026-10-05T07:00:00Z",
+        "uid": "2026-10-05_carlos_alcaraz_jaume_munar"
+      },
+      "outcome_sides": [
+        "home",
+        "away"
+      ],
+      "discovered_at": "2026-10-04T11:50:57.016Z"
+    },
+    {
+      "market_id": "5277516",
+      "condition_id": "0x45791023d35ad9a8d9222372266fc2f9e160980daa2a834dbadcb7dec1dbec44",
+      "event_id": "1130271",
+      "event_slug": "atp-alcaraz-munar-2026-10-05",
+      "event_title": "Japan Open Tennis Championships: Carlos Alcaraz vs Jaume Munar",
+      "question": "Set 2 Winner: Carlos Alcaraz vs Jaume Munar",
+      "slug": "atp-alcaraz-munar-2026-10-05-set-2-winner-Alcaraz-vs-Munar",
+      "start_time": "2026-10-04T11:44:32Z",
+      "outcomes": [
+        "Carlos Alcaraz",
+        "Jaume Munar"
+      ],
+      "token_ids": [
+        "10837273440861738721741006204289754215516299427302257519648383057454475475595",
+        "75266918980633437829800175820499586258596654857267526657421754734187996496572"
+      ],
+      "sports_market_type": "tennis_set_winner",
+      "market_type": "set2",
+      "game_id": 6379982,
+      "liquidity": 67.4,
+      "volume": null,
+      "local_match": {
+        "home": "Carlos Alcaraz",
+        "away": "Jaume Munar",
+        "commence": "2026-10-05T07:00:00Z",
+        "uid": "2026-10-05_carlos_alcaraz_jaume_munar"
+      },
+      "outcome_sides": [
+        "home",
+        "away"
+      ],
+      "discovered_at": "2026-10-04T11:50:57.020Z"
     }
   ]
 }
