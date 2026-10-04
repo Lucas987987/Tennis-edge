@@ -60,18 +60,24 @@ jobs:
           git add -A -- 'parts/'
           git diff --staged --quiet && { echo "rien à committer"; exit 0; }
           git commit -m "Archivage ticks -> Releases ($(date -u +%F))"
-          for essai in 1 2 3; do
+          # RETRY RENFORCE — 6 tentatives, attente croissante (03/10/2026).
+          # 3 tentatives ne suffisaient plus : une douzaine de workflows
+          # commitent en continu, courbes_alertes pousse toutes les 3 min.
+          # 2+4+8+16+32 = 62 s cumulees, soit deux cycles de capture.
+          attente=2
+          for essai in 1 2 3 4 5 6; do
             git fetch origin main || true
             if git merge origin/main --no-edit; then :; else
               # Ce workflow ne fait QUE des suppressions de vieux fichiers :
               # un conflit signifie qu'un autre run a touché les mêmes chemins.
               # On abandonne proprement, le prochain run quotidien reprendra.
               git merge --abort 2>/dev/null || true
-              sleep 10
+              sleep "$attente"; attente=$((attente*2))
               continue
             fi
-            if git push; then echo "✅ PUSH OK"; exit 0; fi
-            sleep 10
+            if git push; then echo "✅ PUSH OK (tentative $essai)"; exit 0; fi
+            echo "⚠️ push refuse · tentative $essai/6"
+            [ "$essai" -lt 6 ] && { sleep "$attente"; attente=$((attente*2)); }
           done
-          echo "❌ PUSH ÉCHOUÉ après 3 tentatives (les archives Releases, elles, sont en place)"
+          echo "❌ PUSH ÉCHOUÉ après 6 tentatives (62 s cumulées) (les archives Releases, elles, sont en place)"
           exit 1
