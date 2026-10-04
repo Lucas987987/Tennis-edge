@@ -74,22 +74,32 @@ jobs:
           # merge_json_state.py fusionne ces objets JSON clé par clé, sans rien
           # perdre : closing_lines est un ACCUMULATEUR, prendre une version au
           # hasard effacerait les matchs ajoutés par l'autre exécution.
-          for essai in 1 2 3; do
+          # RETRY RENFORCE — 6 tentatives, attente croissante (03/10/2026).
+          #
+          # 3 tentatives a 5 s ne suffisaient plus. Message observe sur
+          # fetch_book_curves : cannot lock ref 'refs/heads/main' — un autre
+          # workflow avait pousse entre le fetch et le push, TROIS fois de suite.
+          # Resultat : hist_curves_meta.json fige 538 h, detecte seulement par
+          # audit_qa a l'age du fichier.
+          #
+          # La contention a augmente : une douzaine de workflows commitent en
+          # continu, courbes_alertes pousse toutes les 3 min. L'attente doit
+          # couvrir la duree d'un push concurrent, pas 5 secondes.
+          # 2+4+8+16+32 = 62 s cumulees, soit deux cycles de capture complets.
+          attente=2
+          for essai in 1 2 3 4 5 6; do
             git fetch origin main || true
             if git merge origin/main --no-edit; then
-              :
-            else
-              echo "⚠️ conflit — tentative de fusion JSON (essai $essai)"
-              if python scripts/merge_json_state.py; then
-                git commit --no-edit || true
-              else
-                git merge --abort 2>/dev/null || true
-                sleep 5
-                continue
+              if git push; then
+                echo "✅ PUSH OK (tentative $essai)"
+                exit 0
               fi
+              echo "⚠️ push refuse · tentative $essai/6"
+            else
+              echo "⚠️ merge en conflit · tentative $essai/6"
+              git merge --abort 2>/dev/null || true
             fi
-            if git push; then echo "✅ PUSH OK"; exit 0; fi
-            sleep 5
+            [ "$essai" -lt 6 ] && { echo "   nouvelle tentative dans ${attente}s"; sleep "$attente"; attente=$((attente*2)); }
           done
-          echo "❌ PUSH ÉCHOUÉ après 3 tentatives — commit local perdu avec le runner."
+          echo "❌ PUSH ÉCHOUÉ après 6 tentatives (62 s cumulées) — commit local perdu avec le runner."
           exit 1
