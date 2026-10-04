@@ -1,8 +1,8 @@
-# Études Polymarket/Kalshi — rapport du 2026-10-03
+# Études Polymarket/Kalshi — rapport du 2026-10-04
 
 ```
 --- polymarket_leadlag ---
-Polymarket : 5 partition(s), 1238357 ticks lus, 370 match(s) avec série 'match'
+Polymarket : 6 partition(s), 1383441 ticks lus, 400 match(s) avec série 'match'
   book_curves_live.jsonl: 0 courbes reconstruites | 0 points | 0 partitions
 Pinnacle   : 199 match(s) avec courbe exploitable
 
@@ -48,8 +48,8 @@ Seuil de bruit (95e centile sur 200 appariements factices) : +0.043
 Rapport écrit dans polymarket_leadlag_report.json
 
 --- polymarket_studies ---
-Source(s) : kalshi (5 partition(s))
-  1238357 ticks lus · 367 match(s) exploitables (fourchette max 10 pts)
+Source(s) : kalshi (6 partition(s))
+  1383441 ticks lus · 398 match(s) exploitables (fourchette max 10 pts)
 Books      : 200 match(s), dont 199 avec pinnacle
 
 ==========================================================================
@@ -102,7 +102,7 @@ Books      : 200 match(s), dont 199 avec pinnacle
 Rapport écrit dans polymarket_studies_report.json
 
 --- pm_calibration_track ---
-ResultIndex : 3026 résultats · 2955 paires · fenêtre ±5 j
+ResultIndex : 3054 résultats · 2983 paires · fenêtre ±5 j
 
 ==============================================================================
 HYPOTHÈSE GELÉE N°12 — calibration des marchés de prédiction
@@ -144,10 +144,10 @@ KALSHI
 Rapport écrit dans pm_calibration_track.json
 
 --- pm_observations ---
-ResultIndex : 3026 résultats · 2955 paires · fenêtre ±5 j
+ResultIndex : 3054 résultats · 2983 paires · fenêtre ±5 j
 2817 match(s) en contexte · 2806 avec courbe pinnacle
-polymarket : 1,076,160 ticks lus · 46 observation(s)
-kalshi : 1,238,357 ticks lus · 398 observation(s)
+polymarket : 1,427,078 ticks lus · 46 observation(s)
+kalshi : 1,383,441 ticks lus · 398 observation(s)
 
 ==========================================================================
 TABLE CONSOLIDÉE — 444 observation(s)
@@ -177,6 +177,6 @@ pm_observations.jsonl
 --- kalshi_lead_track ---
 HYPOTHÈSE GELÉE N°13 — Kalshi mène-t-il Pinnacle ? (gel 2026-09-05)
   horizon 45 min · seuil signal 1.0 pt · fourchette <= 2 pts
-  612 observation(s) construite(s) · 368 nouvelle(s) · 10695 au journal kalshi_lead_obs.jsonl
+  547 observation(s) construite(s) · 238 nouvelle(s) · 10933 au journal kalshi_lead_obs.jsonl
 
 ```
