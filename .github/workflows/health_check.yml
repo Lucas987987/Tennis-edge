@@ -95,11 +95,17 @@ jobs:
           git add -- repo_size_status.json
           git diff --staged --quiet && { echo "rien de neuf"; exit 0; }
           git commit -m "Sentinelle taille du dépôt ($(date -u +%F))"
-          for essai in 1 2 3; do
+          # RETRY RENFORCE — 6 tentatives, attente croissante (03/10/2026).
+          # 3 tentatives ne suffisaient plus : une douzaine de workflows
+          # commitent en continu, courbes_alertes pousse toutes les 3 min.
+          # 2+4+8+16+32 = 62 s cumulees, soit deux cycles de capture.
+          attente=2
+          for essai in 1 2 3 4 5 6; do
             git fetch origin main || true
-            git merge origin/main --no-edit || { git merge --abort 2>/dev/null || true; sleep 8; continue; }
-            git push && exit 0
-            sleep 8
+            git merge origin/main --no-edit || { git merge --abort 2>/dev/null || true; sleep "$attente"; attente=$((attente*2)); continue; }
+            git push && { echo "✅ PUSH OK (tentative $essai)"; exit 0; }
+            echo "⚠️ push refuse · tentative $essai/6"
+            [ "$essai" -lt 6 ] && { sleep "$attente"; attente=$((attente*2)); }
           done
           exit 1
 
