@@ -1,7 +1,7 @@
 {
-  "updated_at": "2026-10-05T16:49:36.139Z",
-  "count": 1900,
-  "actifs": 5,
+  "updated_at": "2026-10-05T17:07:44.823Z",
+  "count": 1904,
+  "actifs": 9,
   "markets": [
     {
       "market_id": "3689368",
@@ -61971,8 +61971,8 @@
       "sports_market_type": "moneyline",
       "market_type": "match",
       "game_id": 6379968,
-      "liquidity": 73835.697,
-      "volume": 8822.087689000002,
+      "liquidity": 55662.661,
+      "volume": 8937.466572000001,
       "local_match": {
         "home": "Gonzalo Villanueva",
         "away": "Nick Hardt",
@@ -61983,7 +61983,7 @@
         "home",
         "away"
       ],
-      "discovered_at": "2026-10-05T16:49:35.999Z"
+      "discovered_at": "2026-10-05T17:07:44.678Z"
     },
     {
       "market_id": "5268636",
@@ -62005,8 +62005,8 @@
       "sports_market_type": "tennis_first_set_winner",
       "market_type": "set1",
       "game_id": 6379968,
-      "liquidity": 10758.0824,
-      "volume": 5.0,
+      "liquidity": 5.78,
+      "volume": 243.0,
       "local_match": {
         "home": "Gonzalo Villanueva",
         "away": "Nick Hardt",
@@ -62017,7 +62017,7 @@
         "home",
         "away"
       ],
-      "discovered_at": "2026-10-05T16:49:36.000Z"
+      "discovered_at": "2026-10-05T17:07:44.679Z"
     },
     {
       "market_id": "5268640",
@@ -62039,7 +62039,7 @@
       "sports_market_type": "tennis_set_winner",
       "market_type": "set2",
       "game_id": 6379968,
-      "liquidity": 938.41,
+      "liquidity": null,
       "volume": null,
       "local_match": {
         "home": "Gonzalo Villanueva",
@@ -62051,7 +62051,7 @@
         "home",
         "away"
       ],
-      "discovered_at": "2026-10-05T16:49:36.001Z"
+      "discovered_at": "2026-10-05T17:07:44.681Z"
     },
     {
       "market_id": "5276826",
@@ -64555,8 +64555,8 @@
       "sports_market_type": "moneyline",
       "market_type": "match",
       "game_id": 1168777,
-      "liquidity": 188273.1361,
-      "volume": 28088.400534000008,
+      "liquidity": 70092.0565,
+      "volume": 41233.34645099999,
       "local_match": {
         "home": "Lucio Ratti",
         "away": "Maximo Zeitune",
@@ -64567,7 +64567,7 @@
         "home",
         "away"
       ],
-      "discovered_at": "2026-10-05T16:49:35.703Z"
+      "discovered_at": "2026-10-05T17:07:44.312Z"
     },
     {
       "market_id": "5314941",
@@ -64589,8 +64589,8 @@
       "sports_market_type": "moneyline",
       "market_type": "match",
       "game_id": 1168703,
-      "liquidity": 94250.63593,
-      "volume": 24084.701444,
+      "liquidity": 87873.17724,
+      "volume": 39511.535205999986,
       "local_match": {
         "home": "Nicolas Kicker",
         "away": "Thiago Cigarran",
@@ -64601,7 +64601,143 @@
         "home",
         "away"
       ],
-      "discovered_at": "2026-10-05T16:49:35.712Z"
+      "discovered_at": "2026-10-05T17:07:44.272Z"
+    },
+    {
+      "market_id": "5320311",
+      "condition_id": "0x5097b7d654b8933eb519ee24ac889ba675f7a9eb1c48de22f300bbeb9c127df6",
+      "event_id": "1136508",
+      "event_slug": "atp-jacquet-sakamot-2026-10-06",
+      "event_title": "Shanghai Rolex Masters, Qualification: Kyrian Jacquet vs Rei Sakamoto",
+      "question": "Shanghai Rolex Masters, Qualification: Kyrian Jacquet vs Rei Sakamoto",
+      "slug": "atp-jacquet-sakamot-2026-10-06",
+      "start_time": "2026-10-05T11:05:32Z",
+      "outcomes": [
+        "Kyrian Jacquet",
+        "Rei Sakamoto"
+      ],
+      "token_ids": [
+        "91338543700547699927855580045116699734575597264285363078042947457220154083018",
+        "44855159226775076001567432596440704761772051708385899355209895683111023533633"
+      ],
+      "sports_market_type": "moneyline",
+      "market_type": "match",
+      "game_id": 6384733,
+      "liquidity": 31480.0335,
+      "volume": 1697.4813869999998,
+      "local_match": {
+        "home": "Kyrian Jacquet",
+        "away": "Rei Sakamoto",
+        "commence": "2026-10-06T05:30:00Z",
+        "uid": "2026-10-06_kyrian_jacquet_rei_sakamoto"
+      },
+      "outcome_sides": [
+        "home",
+        "away"
+      ],
+      "discovered_at": "2026-10-05T17:07:44.783Z"
+    },
+    {
+      "market_id": "5321264",
+      "condition_id": "0xa644de9faaa482bec34916a8441d2eb709555eeacc628a71f49e50893463fedc",
+      "event_id": "1136508",
+      "event_slug": "atp-jacquet-sakamot-2026-10-06",
+      "event_title": "Shanghai Rolex Masters, Qualification: Kyrian Jacquet vs Rei Sakamoto",
+      "question": "Set 1 Winner: Kyrian Jacquet vs Rei Sakamoto",
+      "slug": "atp-jacquet-sakamot-2026-10-06-first-set-winner-Jacquet-vs-Sakamoto",
+      "start_time": "2026-10-05T11:44:36Z",
+      "outcomes": [
+        "Kyrian Jacquet",
+        "Rei Sakamoto"
+      ],
+      "token_ids": [
+        "76894351531334631199541069771255684288791783954266827180709333741240655838107",
+        "49323449232238309198013069086293369942447159145545074432378392066705781100524"
+      ],
+      "sports_market_type": "tennis_first_set_winner",
+      "market_type": "set1",
+      "game_id": 6384733,
+      "liquidity": 15054.2402,
+      "volume": null,
+      "local_match": {
+        "home": "Kyrian Jacquet",
+        "away": "Rei Sakamoto",
+        "commence": "2026-10-06T05:30:00Z",
+        "uid": "2026-10-06_kyrian_jacquet_rei_sakamoto"
+      },
+      "outcome_sides": [
+        "home",
+        "away"
+      ],
+      "discovered_at": "2026-10-05T17:07:44.793Z"
+    },
+    {
+      "market_id": "5321269",
+      "condition_id": "0x32aece964a0c7b1fbdbe2137ef1f8f339011d9b2ee6c7c7d322a222dece0b994",
+      "event_id": "1136508",
+      "event_slug": "atp-jacquet-sakamot-2026-10-06",
+      "event_title": "Shanghai Rolex Masters, Qualification: Kyrian Jacquet vs Rei Sakamoto",
+      "question": "Set 2 Winner: Kyrian Jacquet vs Rei Sakamoto",
+      "slug": "atp-jacquet-sakamot-2026-10-06-set-2-winner-Jacquet-vs-Sakamoto",
+      "start_time": "2026-10-05T11:44:39Z",
+      "outcomes": [
+        "Kyrian Jacquet",
+        "Rei Sakamoto"
+      ],
+      "token_ids": [
+        "115552647942971000777826279068109567905475462939393433977060608332848683406876",
+        "104262929324049818488276780323022025239817758774478876739157226340695250332596"
+      ],
+      "sports_market_type": "tennis_set_winner",
+      "market_type": "set2",
+      "game_id": 6384733,
+      "liquidity": 3687.8238,
+      "volume": null,
+      "local_match": {
+        "home": "Kyrian Jacquet",
+        "away": "Rei Sakamoto",
+        "commence": "2026-10-06T05:30:00Z",
+        "uid": "2026-10-06_kyrian_jacquet_rei_sakamoto"
+      },
+      "outcome_sides": [
+        "home",
+        "away"
+      ],
+      "discovered_at": "2026-10-05T17:07:44.803Z"
+    },
+    {
+      "market_id": "5331891",
+      "condition_id": "0xfa9ca02800f3a9acd4529e6674996b5c4fb41965a62e3806ba22e57700be5eab",
+      "event_id": "1138090",
+      "event_slug": "atp-alcaraz-lehecka-2026-10-06",
+      "event_title": "Japan Open Tennis Championships: Carlos Alcaraz vs Jiri Lehecka",
+      "question": "Japan Open Tennis Championships: Carlos Alcaraz vs Jiri Lehecka",
+      "slug": "atp-alcaraz-lehecka-2026-10-06",
+      "start_time": "2026-10-05T17:05:41Z",
+      "outcomes": [
+        "Carlos Alcaraz",
+        "Jiri Lehecka"
+      ],
+      "token_ids": [
+        "59791273036174101360183860729606854340253861416658543852397645719377650215056",
+        "62696612460557505542079321233720481764650625643287514718252677267742142053852"
+      ],
+      "sports_market_type": "moneyline",
+      "market_type": "match",
+      "game_id": 6384918,
+      "liquidity": 60.0,
+      "volume": null,
+      "local_match": {
+        "home": "Carlos Alcaraz",
+        "away": "Jiri Lehecka",
+        "commence": "2026-10-06T09:00:00Z",
+        "uid": "2026-10-06_carlos_alcaraz_jiri_lehecka"
+      },
+      "outcome_sides": [
+        "home",
+        "away"
+      ],
+      "discovered_at": "2026-10-05T17:07:44.260Z"
     }
   ]
 }
