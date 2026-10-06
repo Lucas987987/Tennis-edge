@@ -60,10 +60,6 @@ jobs:
           git add -A -- 'parts/'
           git diff --staged --quiet && { echo "rien à committer"; exit 0; }
           git commit -m "Archivage ticks -> Releases ($(date -u +%F))"
-          # RETRY RENFORCE — 6 tentatives, attente croissante (03/10/2026).
-          # 3 tentatives ne suffisaient plus : une douzaine de workflows
-          # commitent en continu, courbes_alertes pousse toutes les 3 min.
-          # 2+4+8+16+32 = 62 s cumulees, soit deux cycles de capture.
           attente=2
           for essai in 1 2 3 4 5 6; do
             git fetch origin main || true
@@ -71,13 +67,25 @@ jobs:
               # Ce workflow ne fait QUE des suppressions de vieux fichiers :
               # un conflit signifie qu'un autre run a touché les mêmes chemins.
               # On abandonne proprement, le prochain run quotidien reprendra.
-              git merge --abort 2>/dev/null || true
+              # RESOLUTION DU CONFLIT JSON — ajoutee le 26/10/2026.
+              #
+              # Un conflit de CONTENU sur closing_lines.json se reproduit a
+              # chaque tentative : relancer ne sert a rien. Observe sur
+              # fetch_clv, bloque 2 jours avec « tentative 6/6 ».
+              #
+              # merge_json_state.py fusionne les objets JSON cle par cle.
+              # closing_lines est un ACCUMULATEUR : prendre une version au
+              # hasard effacerait les matchs ajoutes par l'autre execution.
+              if python scripts/merge_json_state.py; then
+                git commit --no-edit || true
+              else
+                git merge --abort 2>/dev/null || true
+              fi
               sleep "$attente"; attente=$((attente*2))
               continue
             fi
-            if git push; then echo "✅ PUSH OK (tentative $essai)"; exit 0; fi
-            echo "⚠️ push refuse · tentative $essai/6"
-            [ "$essai" -lt 6 ] && { sleep "$attente"; attente=$((attente*2)); }
+            if git push; then echo "✅ PUSH OK"; exit 0; fi
+            sleep "$attente"; attente=$((attente*2))
           done
           echo "❌ PUSH ÉCHOUÉ après 6 tentatives (62 s cumulées) (les archives Releases, elles, sont en place)"
           exit 1
