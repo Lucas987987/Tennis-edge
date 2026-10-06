@@ -81,21 +81,6 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN || github.token }}
           REPO: Lucas987987/Tennis-edge
-          # SEUILS DE TAILLE RELEVES LE 04/10/2026 : 4,0 -> 5,0 Go.
-          #
-          # Le seuil de 4 Go datait d'avant la purge du 29/09. Le depot
-          # stagne a 4,2 Go et le verrou qualite sortait en rouge a chaque
-          # run, alors que « 0 livrable(s) critique(s) en defaut ».
-          #
-          # Un garde-fou qui crie en permanence finit par ne plus etre lu —
-          # c'est exactement ce qui a laisse passer pendant trois semaines
-          # l'avertissement de look-ahead sur mag_cote_pct.
-          #
-          # La croissance est maitrisee : les partitions live_* sont
-          # compressees depuis le 03/10 (90 Mo -> 5 Mo par jour), donc 5 Go
-          # laisse une vraie marge au lieu d'etre franchi le lendemain.
-          SEUIL_GO: '5.0'
-          SEUIL_VIGILANCE_GO: '4.5'
         run: python scripts/repo_sentinel.py || true
 
       # AJOUTÉ LE 30/08/2026 (validation externe, point 1) : health_check.yml
@@ -110,17 +95,15 @@ jobs:
           git add -- repo_size_status.json
           git diff --staged --quiet && { echo "rien de neuf"; exit 0; }
           git commit -m "Sentinelle taille du dépôt ($(date -u +%F))"
-          # RETRY RENFORCE — 6 tentatives, attente croissante (03/10/2026).
-          # 3 tentatives ne suffisaient plus : une douzaine de workflows
-          # commitent en continu, courbes_alertes pousse toutes les 3 min.
-          # 2+4+8+16+32 = 62 s cumulees, soit deux cycles de capture.
           attente=2
           for essai in 1 2 3 4 5 6; do
             git fetch origin main || true
-            git merge origin/main --no-edit || { git merge --abort 2>/dev/null || true; sleep "$attente"; attente=$((attente*2)); continue; }
-            git push && { echo "✅ PUSH OK (tentative $essai)"; exit 0; }
-            echo "⚠️ push refuse · tentative $essai/6"
-            [ "$essai" -lt 6 ] && { sleep "$attente"; attente=$((attente*2)); }
+            # RESOLUTION DU CONFLIT JSON — ajoutee le 26/10/2026. Un conflit
+            # de CONTENU se reproduit a chaque tentative : relancer ne sert a
+            # rien. merge_json_state.py fusionne cle par cle, sans rien perdre.
+            git merge origin/main --no-edit || python scripts/merge_json_state.py && git commit --no-edit 2>/dev/null || { git merge --abort 2>/dev/null || true; sleep 8; continue; }
+            git push && exit 0
+            sleep "$attente"; attente=$((attente*2))
           done
           exit 1
 
