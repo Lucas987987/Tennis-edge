@@ -131,7 +131,36 @@ def _is_extended_pass(now, dernier_extended=None):
     if '--extended' in sys.argv or '--discover' in sys.argv:
         return True
     if dernier_extended is None:
-        return True   # jamais vu de passe étendue -- état absent/1er run : forcer
+        # GARDE-FOU AJOUTÉ LE 26/10/2026 — le `return True` nu coûtait cher.
+        #
+        # Si extended_state.json n'est pas relu — fichier absent, JSON
+        # corrompu, ou PUSH PERDU au run précédent — cette branche renvoie
+        # True à CHAQUE cycle. Avec 480 cycles/jour, c'est 480 passes
+        # étendues au lieu de 12.
+        #
+        # Constaté : 25 000 requêtes en 10 jours, soit 5,2 appels par cycle
+        # là où la passe standard en coûte 2. Les pushs de capture_closing
+        # échouaient depuis deux jours sur un conflit JSON non résolu, donc
+        # extended_state.json n'était jamais republié.
+        #
+        # C'est la RÉCIDIVE du défaut du 29/08 (139 passes/jour au lieu de
+        # 12) : le mécanisme avait été corrigé, mais sa dépendance à un
+        # fichier commité restait un point de rupture silencieux.
+        #
+        # Repli : une passe étendue au plus toutes les EXTENDED_EVERY_H
+        # heures sur l'horloge. Moins précis que l'état persisté — pas de
+        # rattrapage si un créneau est manqué — mais BORNÉ. Mieux vaut une
+        # passe étendue perdue qu'un budget API consommé en dix jours.
+        #
+        # Fenêtre de 3 min, pas 10 : à 480 cycles/jour il en passe un toutes
+        # les 3 min, donc une fenêtre de 10 min en attraperait QUATRE. 3 min
+        # garantit un seul cycle par créneau, soit 12 passes/jour — la
+        # cadence visée.
+        creneau = (now.hour % EXTENDED_EVERY_H == 0) and (now.minute < 3)
+        if not creneau:
+            print(f"  ℹ️ état étendu absent — repli horloge, hors créneau "
+                  f"({now.hour:02d}h{now.minute:02d}), passe standard")
+        return creneau
     return (now - dernier_extended) >= datetime.timedelta(hours=EXTENDED_EVERY_H)
 
 # (l'ancien _api_get v4 est remplacé par oddspapi_v5.api_get — appels RapidAPI/curl)
