@@ -41,6 +41,20 @@ on:
 
 permissions:
   contents: write
+  # AJOUTE LE 06/10/2026 : ce workflow relance les collecteurs via
+  # watchdog_collecteurs.py quand ils prennent du retard. Sans cette
+  # permission, l'appel echoue :
+  #   HTTP 403: Resource not accessible by integration
+  #   .../actions/workflows/338267434/dispatches
+  #
+  # Le filet ne servait donc a rien. Les collecteurs tournent bien
+  # aujourd'hui, mais un avertissement affiche a chaque run finit par ne
+  # plus etre lu — c'est exactement ce qui a laisse passer trois semaines
+  # d'alerte look-ahead sur mag_cote_pct.
+  #
+  # capture_watchdog.yml a deja cette permission ; c'etait le seul
+  # workflow de relance a ne pas l'avoir.
+  actions: write
 
 jobs:
   capture:
