@@ -17,6 +17,25 @@ jobs:
         with:
           python-version: '3.11'
 
+      # RESTAURATION DES PARTITIONS ARCHIVEES.
+      #
+      # Ce workflow lance un script dont le resultat depend de
+      # l'historique COMPLET. Depuis que archive_curves sort les
+      # partitions de plus de 28 jours vers les releases curves-2026-*,
+      # elles ne sont plus dans le depot : sans cette etape, le job
+      # travaille sur un historique tronque SANS lever d'erreur.
+      #
+      # Constate le 02/10 sur book_index : 1 251 matchs au lieu de 1 863,
+      # et une reactivite devenue negative partout. Les chiffres
+      # changeaient sans que rien ne le signale.
+      #
+      # `|| true` : une panne de release ne doit pas bloquer le job.
+      # restore_curves interroge l'index ET les releases directement.
+      - name: Restaurer les partitions de courbes archivees
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python scripts/restore_curves.py || true
+
       - name: Run QA audit
         env:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
