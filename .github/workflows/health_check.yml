@@ -101,7 +101,27 @@ jobs:
             # RESOLUTION DU CONFLIT JSON — ajoutee le 26/10/2026. Un conflit
             # de CONTENU se reproduit a chaque tentative : relancer ne sert a
             # rien. merge_json_state.py fusionne cle par cle, sans rien perdre.
-            git merge origin/main --no-edit || python scripts/merge_json_state.py && git commit --no-edit 2>/dev/null || { git merge --abort 2>/dev/null || true; sleep 8; continue; }
+                      # CORRIGE LE 07/10/2026 — la version compacte de la veille etait
+          # FAUSSE. En shell, A || B && C || D s'evalue ((A||B) && C) || D :
+          # quand le merge REUSSISSAIT, le git commit s'executait quand meme,
+          # echouait avec « nothing to commit », et la branche d'echec
+          # declenchait un `continue` SANS JAMAIS POUSSER.
+          #
+          # Observe sur health_check :
+          #   Already up to date. / nothing to commit, working tree clean
+          #   -> 3 tentatives, exit 1, commit perdu.
+          #
+          # Structure explicite : pas d'enchainement d'operateurs.
+          if ! git merge origin/main --no-edit; then
+            echo "⚠️ conflit — fusion JSON (essai $essai)"
+            if python scripts/merge_json_state.py; then
+              git commit --no-edit || true
+            else
+              git merge --abort 2>/dev/null || true
+              [ "$essai" -lt 6 ] && { sleep "$attente"; attente=$((attente*2)); }
+              continue
+            fi
+          fi
             git push && exit 0
             sleep "$attente"; attente=$((attente*2))
           done
