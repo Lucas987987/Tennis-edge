@@ -17,7 +17,8 @@ Pour chaque surface (match/set1/set2) et par book :
 Env : JOURNALS (glob, def 'paper_trades_*.jsonl'). Aucune dependance externe.
 """
 import math
-import os, sys, glob, json, csv, math, datetime, random, statistics as st
+import os
+import json, sys, glob, json, csv, math, datetime, random, statistics as st
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import oddspapi_v5 as ov
 import match_key as mk
@@ -2724,6 +2725,97 @@ def favori_sans_ultra_watch():
         cible=400, debit=129)
 
 
+FREEZE_DATE_CANAL = '2026-10-26'   # 20e hypothèse : les alertes MISER elles-mêmes
+CANAL_JOURNAL = 'paper_trades_canal.jsonl'
+
+
+def canal_miser_watch():
+    """20e hypothèse gelée : les ALERTES MISER du canal public.
+
+        « Parier ce que le canal envoie, tel qu'il l'envoie : EV >= 5 %
+          contre le fair Shin-Pinnacle, palier 5 points, au book retenu
+          par le dispositif. »
+
+    Gelée le 2026-10-26. AUCUN seuil nouveau — on gèle la règle TELLE
+    QU'ELLE TOURNE, sans retoucher l'EV ni le palier.
+
+    ── POURQUOI UNE HYPOTHÈSE SÉPARÉE ──────────────────────────────────
+    Les 19 autres portent sur moves_detail_hist, la RECONSTRUCTION des
+    mouvements. Les alertes envoyées sont une population DISTINCTE —
+    mesuré le 25/09 sur 77 matchs communs :
+
+        côtés steamés différents   31 %
+        books différents           68 %
+        lead médian  alerte 391 min  vs  reconstruction 759 min
+
+    Aucune des 19 ne décrit donc ce que le canal envoie réellement.
+
+    ── RÉFÉRENCE AU GEL (04/08 -> 02/10) ───────────────────────────────
+        239 alertes · 176 dénouées
+        gains   86/176 = 48,9 %   (seuil 41,1 %)
+        écart   +7,7 pts · IC95 du taux [41,6 ; 56,2]
+        ROI     +24,3 % [+0,7 ; +48,0] · P&L +42,83 u
+        binomial p = 0,0229 · cote médiane 2,50
+
+    NON CONFIRMATOIRE : le seuil d'EV, le palier et les filtres ont été
+    ajustés PENDANT que ces 176 paris s'accumulaient.
+
+    ── DEUX RÉSERVES, INSCRITES AU GEL ─────────────────────────────────
+    CONCENTRATION — 72 % du P&L sur CINQ paris, tous au-dessus de 2,50.
+    C'est la pire du dispositif (H16-B 15 %, H18 27 %). Sans eux, la
+    tranche > 2,50 tombe à -1,0 % de ROI sur 85 paris, et l'ensemble à
+    +7,0 %.
+
+    RÉPLICATION QUI MONTE — +15,0 % puis +33,7 %, écart +1,0 puis +14,5.
+    Une seconde moitié bien meilleure que la première est le profil d'un
+    résultat porté par quelques coups récents, pas d'un effet régulier.
+    On attend l'inverse d'une hypothèse solide : deux moitiés proches.
+
+    ── CE QU'ON NE FAIT PAS ────────────────────────────────────────────
+    On NE retire PAS les cotes > 2,50, alors même qu'on vient de voir
+    que tout le résultat vient de là. Choisir la borne APRÈS avoir vu
+    le résultat, c'est exactement le biais que le gel existe pour
+    empêcher. Si la zone doit tomber, elle tombera hors échantillon.
+
+    Cible 400 (et non 300) : avec une concentration pareille il faut du
+    volume pour que cinq paris cessent de dominer. Débit ~89 dénouées
+    par mois, soit un verdict vers janvier 2027.
+
+    Retourne (k, n, p0) ou None si pas encore testable.
+    """
+    try:
+        lignes = [json.loads(x) for x in open(CANAL_JOURNAL, encoding='utf-8')
+                  if x.strip()]
+    except (OSError, ValueError):
+        print('  H20 : journal du canal illisible.')
+        return None
+
+    oos = []
+    for r in lignes:
+        if r.get('gagne') is None or r.get('pnl') is None:
+            continue
+        t = str(r.get('alerte_t') or '')[:10]
+        if t < FREEZE_DATE_CANAL:
+            continue
+        try:
+            oos.append((float(r['cote']), 1 if r['gagne'] else 0, float(r['pnl'])))
+        except (TypeError, ValueError):
+            continue
+
+    n = len(oos)
+    k = sum(g for _, g, _ in oos)
+    print(f"\n  H20 — alertes MISER du canal (gel {FREEZE_DATE_CANAL})")
+    print(f"     référence : 86/176 = 48,9 % · seuil 41,1 % · ROI +24,3 %")
+    if n < 30:
+        print(f"     hors échantillon {n}/400 — pas encore testable (n<30)")
+        return None
+    p0 = sum(1.0 / c for c, _, _ in oos) / n
+    roi = 100 * sum(p for _, _, p in oos) / n
+    print(f"     hors échantillon {n}/400 ({100*n/400:.0f} %) · "
+          f"{k}/{n} = {100*k/n:.1f} % · seuil {100*p0:.1f} % · ROI {roi:+.1f} %")
+    return (k, n, p0)
+
+
 HYPOTHESES = [
     ('calibration 2,20-3,50', FREEZE_DATE,           calibration_watch),
     ('heure du match',        FREEZE_DATE,           hour_watch),
@@ -2770,6 +2862,11 @@ HYPOTHESES = [
     # H16. Holm doit en tenir compte — quatre hypothèses corrélées.
     ('favorite steam value',  FREEZE_DATE_H18,       favorite_steam_value_watch),
     ('favori sans ultra',     FREEZE_DATE_H16B,      favori_sans_ultra_watch),
+    # AJOUTÉE LE 26/10/2026 — 20e hypothèse. Les 19 autres mesurent la
+    # RECONSTRUCTION des mouvements ; celle-ci mesure ce que le canal
+    # ENVOIE. Deux populations distinctes (31 % de côtés différents,
+    # 68 % de books différents, T-391 contre T-759 min).
+    ('alertes MISER canal',  FREEZE_DATE_CANAL,     canal_miser_watch),
 ]
 
 
