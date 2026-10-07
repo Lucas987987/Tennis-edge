@@ -216,6 +216,10 @@ GESTIONNAIRES = {
     'migrate_hist_partitions',      # renomme
     'archive_curves',               # sort vers les releases
     'restore_curves',               # rapatrie — ne peut pas s'appeler lui-même
+    'scan_coherence',               # CE script : il NOMME les marqueurs
+                                    # hist_* pour les chercher ailleurs, il
+                                    # ne lit aucune partition. Sans cette
+                                    # ligne il se signale lui-même.
 }
 
 
