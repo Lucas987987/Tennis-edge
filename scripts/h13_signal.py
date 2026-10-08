@@ -65,6 +65,7 @@ import urllib.request
 import urllib.parse
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import lien_joueur                   # noqa: E402 — liens vers les fiches
 import validation_report as _vr      # noqa: E402
 import oddspapi_v5 as ov      # noqa: E402
 
@@ -229,7 +230,7 @@ def message(g, steam, cote, book, ampleur, lead):
     lead_txt = f"{int(lead)} min" if lead < 60 else f"{hh}h{int(lead % 60):02d}"
     return (f"🧪 <b>H13 — signal privé</b> (cote {cote:.2f})\n"
             f"{g.get('_tour') or '?'} · T-{lead_txt}\n"
-            f"<b>{joueur}</b> vs {adv}\n"
+            f"{lien_joueur.duo_html(joueur, adv)}\n"
             f"📉 mouvement Pinnacle {ampleur:.1f} pts · entrée {book} @ {cote:.2f}\n"
             f"\n"
             f"<i>Hypothèse gelée le {FREEZE}, NON VALIDÉE. ROI in-sample "

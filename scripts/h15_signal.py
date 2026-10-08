@@ -57,6 +57,7 @@ import urllib.request
 import urllib.parse
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import lien_joueur                   # noqa: E402 — liens vers les fiches
 import oddspapi_v5 as ov      # noqa: E402
 
 CURVES = os.environ.get('CURVES', 'book_curves_live.jsonl')
@@ -267,7 +268,7 @@ def message(g, steam, cote, book, ampleur, lead):
     lead_txt = f"{int(lead)} min" if lead < 60 else f"{hh}h{int(lead % 60):02d}"
     L = [f"🧪 <b>H15 — bande {COTE_MIN:.2f}-{COTE_MAX:.2f}</b> (cote {cote:.2f})",
          f"{g.get('_tour') or '?'} · T-{lead_txt}",
-         f"<b>{joueur}</b> vs {adv}",
+         f"{lien_joueur.duo_html(joueur, adv)}",
          f"📉 mouvement Pinnacle {ampleur:.1f} pts · entrée {book} @ {cote:.2f}"]
     s = _suivi()
     if s and s.get('n'):
