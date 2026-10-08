@@ -26,6 +26,7 @@ Env : CURVES (book_curves_live.jsonl), PALIERS ("5,8,12"), MIN_LEAD_MIN (45),
 """
 import os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import lien_joueur                   # noqa: E402 — liens vers les fiches
 import oddspapi_v5 as ov
 import os, json, math, datetime, urllib.request, urllib.parse, re, unicodedata
 
@@ -310,7 +311,8 @@ def main():
         lag_line = (" · ".join(_fmt(b, c, g_) for b, c, g_ in top)
                     if lags else "tous les opérateurs suivis ont déjà ajusté")
         msg = (f"📊 ÉVOLUTION DE COTE · {g['_home']} vs {g['_away']}"
-               + (f" ({g['_tour']})" if g['_tour'] else "") + "\n"
+               + (f" ({g['_tour']})" if g['_tour'] else "")
+               + lien_joueur.ligne_texte(g['_home'], g['_away']) + "\n"
                f"📉 {name} : {o_open:.2f} → {o_now:.2f} chez Pinnacle "
                f"({mag*100:.0f} pts de probabilité en sa faveur)\n"
                f"⚖️ Juste prix estimé (dévig Shin) : {fair:.2f}\n"
