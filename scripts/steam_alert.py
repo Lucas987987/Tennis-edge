@@ -23,6 +23,7 @@ import json, os, urllib.request, urllib.parse, statistics as st, re, unicodedata
 import oddspapi_v5 as ov
 import match_key as mk
 import curves_common as cc
+import lien_joueur                   # noqa: E402 — liens vers les fiches
 from datetime import datetime, timezone
 
 MARKET = os.environ.get('MARKET', 'match').lower()
@@ -569,7 +570,8 @@ def main():
         except Exception:
             pass
         msg = (f"🎯 MISER{_MKT_LABEL.get(MARKET, '')} · {bk['_home']} vs {bk['_away']}"
-               + (f" ({bk['_tour']})" if bk['_tour'] else "") + "\n"
+               + (f" ({bk['_tour']})" if bk['_tour'] else "")
+               + lien_joueur.ligne_texte(bk['_home'], bk['_away']) + "\n"
                f"→ {who} {verb} @ {best['odds']:.2f} ({best['sb']})\n"
                f"💰 EV {best['ev']*100:+.1f}% vs fair {best['fair']:.2f} (Shin Pinnacle, seuil {EV_MIN_NOW*100:.0f}%)\n"
                f"Palier {int(best['thr']*100)}pt · Pinnacle {o_open:.2f}→{o_now:.2f} · depart dans {fmt_lead(lead)}\n"

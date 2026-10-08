@@ -35,6 +35,7 @@ SOURCE DE DONNÉES -- point important, corrigé après une première tentative :
 """
 import os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import lien_joueur                   # noqa: E402 — liens vers les fiches
 import oddspapi_v5 as ov
 import os, json, math, datetime, urllib.request, urllib.parse
 
@@ -179,7 +180,7 @@ def format_alert(g, sig):
     return (
         f"🆕 <b>SIGNAL EXPÉRIMENTAL — non validé</b>\n"
         f"{g['_tour']}\n"
-        f"<b>{home}</b> vs <b>{away}</b>\n"
+        f"{lien_joueur.duo_html(home, away)}\n"
         f"{sig['book']} était ouvert {sig['lead_min']:.0f} min avant Pinnacle.\n"
         f"À l'apparition de Pinnacle : <b>{joueur}</b> encore à {sig['price']:.2f} "
         f"chez {sig['book']} (juste prix estimé {sig['fair']:.2f}, écart {sig['gap']:+.1f}%)\n"
