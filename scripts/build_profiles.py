@@ -57,9 +57,21 @@ FORM = os.environ.get('FORM', 'player_form.json')
 OUT = os.environ.get('OUT', 'players_profile.json')
 
 # Nombre minimal d'observations pour publier une médiane de cote. En
-# dessous, la fiche affiche le compte mais pas le classement : une
-# médiane sur 2 cotes n'est pas une médiane.
+# dessous, la fiche affiche le compte mais pas la médiane : une médiane
+# sur 2 cotes n'est pas une médiane.
 MIN_COTES = int(os.environ.get('MIN_COTES', '4'))
+
+# Nombre minimal pour entrer au CLASSEMENT, plus exigeant que pour
+# afficher une médiane. À 4 cotes, un joueur de challenger favori quatre
+# fois d'affilée sortait devant Zverev et Sabalenka : la médiane était
+# juste, le rang trompeur. À 8, les 145 classés sont ceux que le marché
+# a réellement cotés assez souvent pour qu'un rang veuille dire quelque
+# chose. Les autres gardent leur médiane, sans rang.
+MIN_RANG = int(os.environ.get('MIN_RANG', '8'))
+
+# Profondeur de l'historique conservé par joueur. À 8, neuf fiches
+# étaient tronquées ; à 16 aucune ne l'est, pour quelques ko de plus.
+N_DERNIERS = int(os.environ.get('N_DERNIERS', '16'))
 
 
 def cle(nom):
@@ -244,10 +256,12 @@ def main():
                 'gagnes': sum(1 for m in s1 if m['set1']),
             }
         if ms:
+            # adv_cle permet la confrontation directe : deux fiches se
+            # croisent sans retraverser set_results.json côté client.
             fiche['derniers'] = [
                 {'date': m['date'], 'adv': m['adv'], 'gagne': m['match'],
-                 'set1': m['set1']}
-                for m in ms[:8]
+                 'set1': m['set1'], 'adv_cle': cle(m['adv'])}
+                for m in ms[:N_DERNIERS]
             ]
 
         if f:
@@ -263,21 +277,23 @@ def main():
     #
     # La médiane de la cote d'ouverture EST un classement, et c'est le
     # plus pertinent ici : il intègre la forme, la surface et le contexte,
-    # ce qu'un classement ATP ne fait pas. Rang publié seulement pour les
-    # joueurs ayant assez de cotes — sinon il ferait croire à une précision
-    # qui n'existe pas.
+    # ce qu'un classement ATP ne fait pas. Rang publié seulement au-delà
+    # de MIN_RANG cotes — sinon il ferait croire à une précision qui
+    # n'existe pas.
     cl = sorted([(k, v['cote_mediane']) for k, v in out.items()
-                 if 'cote_mediane' in v], key=lambda x: x[1])
+                 if v.get('n_cotes', 0) >= MIN_RANG], key=lambda x: x[1])
     for rang, (k, _) in enumerate(cl, 1):
         out[k]['rang_marche'] = rang
         out[k]['rang_sur'] = len(cl)
 
+    import datetime as _dt
     meta = {
-        'genere_le': __import__('datetime').datetime.utcnow().isoformat(
+        'genere_le': _dt.datetime.now(_dt.timezone.utc).isoformat(
             timespec='seconds'),
         'n_joueurs': len(out),
         'n_classes': len(cl),
         'min_cotes': MIN_COTES,
+        'min_rang': MIN_RANG,
         'sources': ['moves_detail_hist.csv', 'set_results.json',
                     'player_form.json'],
         'avertissement': (
@@ -288,8 +304,9 @@ def main():
     json.dump({'meta': meta, 'joueurs': out},
               open(OUT, 'w', encoding='utf-8'),
               ensure_ascii=False, indent=1)
-    print(f"{OUT} : {len(out)} joueurs, {len(cl)} classes "
-          f"(>= {MIN_COTES} cotes)")
+    n_med = sum(1 for v in out.values() if 'cote_mediane' in v)
+    print(f"{OUT} : {len(out)} joueurs, {n_med} avec mediane "
+          f"(>= {MIN_COTES} cotes), {len(cl)} classes (>= {MIN_RANG})")
     return 0
 
 
