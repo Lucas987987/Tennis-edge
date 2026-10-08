@@ -101,21 +101,34 @@ def nom_html(nom, gras=False):
 
 
 def duo_html(joueur, adv):
-    """La ligne « X vs Y » des alertes Telegram, les deux noms cliquables.
+    """La ligne « X vs Y » des alertes Telegram.
+
+    LES DEUX NOMS MÈNENT À LA MÊME PAGE : leur COMPARAISON.
+
+    La première version envoyait chaque nom vers sa fiche solo. Mais une
+    alerte parle d'un match, pas d'un joueur : la question qu'on se pose en
+    la lisant est « que valent ces deux-là l'un contre l'autre », et c'est
+    la page de comparaison qui y répond — les deux prix sur la même
+    échelle, le face-à-face, et un lien vers chaque fiche complète pour qui
+    veut aller plus loin. Quel que soit le nom touché, on arrive au bon
+    endroit du premier coup.
 
     LIEN MASQUÉ ASSUMÉ. Telegram affiche « Ouvrir ce lien ? » avant
-    d'ouvrir, parce que le texte visible — le nom — diffère de l'URL.
-    C'est sa protection contre l'hameçonnage et elle ne se désactive pas
-    côté bot. La seule façon de l'éviter serait d'écrire l'URL en clair
-    dans le message, ce qui l'encombre : un clic de confirmation est un
-    meilleur marché qu'une ligne d'adresse dans chaque alerte.
+    d'ouvrir, parce que le texte visible diffère de l'URL. C'est sa
+    protection contre l'hameçonnage et elle ne se désactive pas côté bot.
+    L'éviter imposerait d'écrire l'adresse en clair dans chaque alerte :
+    un clic de confirmation est un meilleur marché qu'une ligne d'URL.
 
     Pour X, voir ligne_x() : là-bas l'URL nue est la seule forme possible.
 
     Sans FICHES_BASE, rend exactement la chaîne d'avant, au caractère près.
     """
-    return f'{nom_html(joueur, gras=True)} vs {nom_html(adv)}'
-
+    a = html.escape(str(joueur), quote=False)
+    b = html.escape(str(adv), quote=False)
+    u = lien_duo(joueur, adv)
+    if not u:
+        return f'<b>{a}</b> vs {b}'
+    return f'<a href="{u}"><b>{a}</b></a> vs <a href="{u}">{b}</a>'
 
 def ligne_x(joueur, adv=None):
     """La même information pour un post sur X, où le HTML n'existe pas.
