@@ -23,6 +23,22 @@ jobs:
         with:
           python-version: '3.11'
 
+      # AJOUTÉ LE 08/10/2026. player_form.py n'était lancé par aucun
+      # workflow : player_form.json datait du 05/10 et une fiche annonçait
+      # « dernier match : hier » pour un match du 04/10.
+      #
+      # Ici et pas ailleurs : build_profiles.py LIT ce fichier à l'étape
+      # suivante. Producteur et consommateur dans le même job, dans cet
+      # ordre — aucun décalage d'âge possible entre les deux.
+      #
+      # rebuild d'abord : les courbes plates ne sont plus commitées, et
+      # player_form les lit pour ses résidus de marché. Sans elles il tourne
+      # quand même, en perdant cette seule section.
+      - name: Forme et fatigue des joueurs
+        run: |
+          python scripts/curves_parts.py rebuild || true
+          python scripts/player_form.py || true
+
       # build_profiles ne lit QUE des fichiers plats a la racine : ni
       # partitions, ni releases. Pas de restore_curves a prevoir.
       - name: Construire les fiches
@@ -32,7 +48,7 @@ jobs:
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add players_profile.json
+          git add players_profile.json player_form.json
           git diff --cached --quiet && { echo "fiches inchangees"; exit 0; }
           git commit -m "Fiches joueurs ($(date -u +%Y-%m-%d))"
           attente=2
