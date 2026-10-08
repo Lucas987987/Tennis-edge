@@ -101,13 +101,35 @@ def nom_html(nom, gras=False):
 
 
 def duo_html(joueur, adv):
-    """La ligne « X vs Y » des alertes, les deux noms cliquables.
+    """La ligne « X vs Y » des alertes Telegram, les deux noms cliquables.
 
-    Remplace exactement f"<b>{joueur}</b> vs {adv}" et rend la même chose
-    au caractère près quand FICHES_BASE n'est pas réglée.
+    LIEN MASQUÉ ASSUMÉ. Telegram affiche « Ouvrir ce lien ? » avant
+    d'ouvrir, parce que le texte visible — le nom — diffère de l'URL.
+    C'est sa protection contre l'hameçonnage et elle ne se désactive pas
+    côté bot. La seule façon de l'éviter serait d'écrire l'URL en clair
+    dans le message, ce qui l'encombre : un clic de confirmation est un
+    meilleur marché qu'une ligne d'adresse dans chaque alerte.
+
+    Pour X, voir ligne_x() : là-bas l'URL nue est la seule forme possible.
+
+    Sans FICHES_BASE, rend exactement la chaîne d'avant, au caractère près.
     """
     return f'{nom_html(joueur, gras=True)} vs {nom_html(adv)}'
 
+
+def ligne_x(joueur, adv=None):
+    """La même information pour un post sur X, où le HTML n'existe pas.
+
+    X ne connaît pas le lien masqué : une URL devient cliquable parce
+    qu'elle est écrite. On la met donc en clair, sur sa propre ligne, et
+    X l'affiche en carte si la page porte ses balises Open Graph — ce que
+    worker-joueurs.js fait pour la fiche comme pour la comparaison.
+
+    Rend une chaîne vide si FICHES_BASE n'est pas réglée : mieux vaut un
+    post sans lien qu'un post avec un lien mort.
+    """
+    u = lien_duo(joueur, adv) if adv else lien(joueur)
+    return u or ''
 
 def ligne_fiches(a, b=None, prefixe='Fiches'):
     """Une ligne à part, pour un message qui n'est pas en HTML (X)."""
