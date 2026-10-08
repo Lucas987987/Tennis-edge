@@ -45,7 +45,7 @@ direct une population et valideriez l'autre.
   - détection : premier instant où |p(t) - p_open| >= THR, et le côté est
     celui du mouvement OBSERVÉ À CET INSTANT (correctif du look-ahead du
     06/09 : l'ancien code choisissait le côté avec la clôture).
-  - entrée : meilleur prix parmi SOFTS sur le côté steamé, AU MOMENT de la
+  - entrée : meilleur prix parmi _vr.H14_SOFTS sur le côté steamé, AU MOMENT de la
     détection.
   - bande : 2,00 <= entrée <= 3,00.
 
@@ -53,7 +53,7 @@ Toute divergence avec move_audit.py invaliderait la comparaison. Si vous
 modifiez l'un, modifiez l'autre.
 
 ──────────────────────────────────────────────────────────────────────────
-Env : CURVES (déf. book_curves_live.jsonl), SHARP, SOFTS, THR, MIN_LEAD,
+Env : CURVES (déf. book_curves_live.jsonl), SHARP, THR, MIN_LEAD,
       TELEGRAM_TOKEN, TELEGRAM_CHAT_ID, DRY_RUN=1.
       La BANDE n'est PAS paramétrable : elle vient de validation_report.
 """
@@ -65,19 +65,22 @@ import urllib.request
 import urllib.parse
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import validation_report as _vr      # noqa: E402
 import oddspapi_v5 as ov      # noqa: E402
 
 CURVES = os.environ.get('CURVES', 'book_curves_live.jsonl')
 SHARP = os.environ.get('SHARP', 'pinnacle')
-SOFTS = [b.strip() for b in os.environ.get(
-    'SOFTS', 'unibet,bwin,betsson').split(',') if b.strip()]
+# BOOKS D'ENTRÉE : importés de validation_report, jamais relus dans
+# l'environnement. La variable SOFTS n'était posée dans aucun workflow :
+# ce script retombait sur trois books pendant que six détecteurs en
+# utilisaient sept. Une constante importée ne peut pas diverger.
+SOFTS = list(_vr.H14_SOFTS)
 THR = float(os.environ.get('THR', '0.02'))
 MIN_LEAD = float(os.environ.get('MIN_LEAD', '5'))
 # BANDE : importée de validation_report, JAMAIS redéfinie ici.
 # La version précédente la lisait dans l'environnement, ce qui permettait à
 # un COTE_MAX=3.5 posé "pour voir" de faire diverger silencieusement ce
 # canal de ce que roi_bande_watch() valide. Une seule source de vérité.
-import validation_report as _vr      # noqa: E402
 COTE_MIN = _vr.H13_COTE_MIN
 COTE_MAX = _vr.H13_COTE_MAX
 DRY_RUN = os.environ.get('DRY_RUN', '') == '1'
