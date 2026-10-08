@@ -1,47 +1,67 @@
 #!/usr/bin/env python3
 """lien_joueur.py — transforme un nom de joueur en lien vers sa fiche.
 
-À IMPORTER depuis les scripts d'alerte (Telegram, X). Aucun appel réseau,
-aucune table de correspondance : le lien se calcule à partir du nom seul.
+À IMPORTER depuis les scripts d'alerte. Aucun appel réseau, aucune table
+de correspondance : le lien se calcule à partir du nom seul.
 
-    from lien_joueur import ligne_fiches, lien, slug
+    import lien_joueur
+    ...
+    lien_joueur.duo_html(joueur, adv)   # remplace f"<b>{joueur}</b> vs {adv}"
 
-    msg += "\\n" + ligne_fiches(steame, opp)
+L'ADRESSE DU WORKER N'A PAS DE VALEUR PAR DÉFAUT, ET C'EST VOULU
+----------------------------------------------------------------
+FICHES_BASE non renseignée → duo_html() rend exactement le texte
+d'avant, sans lien. Pas d'URL inventée, pas de 404 dans une alerte.
+
+Une mauvaise adresse par défaut serait la pire des pannes : le message
+part, le lien est là, il ne mène nulle part, et rien dans les logs ne le
+signale. Mieux vaut un message identique à celui d'hier.
+
+Pour activer les liens, une seule ligne au niveau `env:` du workflow qui
+lance les alertes :
+
+    env:
+      FICHES_BASE: https://<le-worker>.workers.dev
 
 POURQUOI LES TOKENS SONT TRIÉS
 ------------------------------
-Le slug doit être identique des deux côtés — ici, dans worker-joueurs.js,
-et dans la clé de players_profile.json. Les trois sources de noms du dépôt
-n'écrivent pas dans le même ordre :
+Le slug doit être identique ici, dans worker-joueurs.js, et dans la clé
+de players_profile.json. Les sources de noms du dépôt n'écrivent pas dans
+le même ordre :
 
     moves_detail_hist  « Mattia Bellucci »
     player_form        « bellucci mattia »
 
 Trier les tokens absorbe l'inversion. Sans le tri, un lien sur deux
-pointait dans le vide, et c'est exactement le genre de panne qu'on ne voit
-pas : le message part, le lien existe, il tombe sur « joueur inconnu ».
+pointait dans le vide — vérifié sur les 1 030 fiches, zéro écart avec
+le tri, et c'est le genre de panne qu'on ne voit pas.
 
 La contrepartie est que le slug ne se lit pas comme un nom
-(`bellucci-mattia`, pas `mattia-bellucci`). C'est le prix d'un lien qui
-marche à tous les coups, et personne ne lit les URL d'une alerte.
+(`bellucci-mattia`). Personne ne lit l'URL d'une alerte.
 
-UNE SEULE LIGNE, PAS UN LIEN PAR NOM
-------------------------------------
-L'alerte nomme deux joueurs. Plutôt que deux liens dans le texte — qui
-coûtent des caractères sur X et alourdissent Telegram — on ajoute une
-ligne qui pointe vers leur COMPARAISON. La page porte les deux fiches, le
-face-à-face, et un lien vers chaque fiche complète. Un lien au lieu de
-deux, et il en dit plus que les deux.
+LE HTML
+-------
+Les sept scripts envoient en `parse_mode: HTML`, où `<a href>` est admis :
+le nom lui-même devient le lien. Pas un caractère de plus dans le message
+visible, et c'est le geste attendu — on clique sur le nom.
+
+Les noms sont échappés ici (`&`, `<`, `>`). Ils ne l'étaient pas dans la
+version précédente de la ligne : un joueur dont le nom contient une
+esperluette faisait répondre 400 à Telegram et l'alerte ne partait pas.
+Le cas ne s'est pas produit, mais il coûtait une alerte entière.
 """
 
+import html
 import os
 import re
 import unicodedata
 
-# Domaine du worker public. À régler une fois dans les variables
-# d'environnement du workflow, pas dans chaque script.
-BASE = os.environ.get('FICHES_BASE',
-                      'https://tennis-edge-index.antoine-galopinpro.workers.dev')
+
+def _base():
+    """Lue à chaque appel, pas au chargement : un test peut ainsi régler
+    la variable après l'import, et un workflow qui l'oublie ne fige pas
+    une valeur vide dans un module importé tôt."""
+    return (os.environ.get('FICHES_BASE') or '').rstrip('/')
 
 
 def slug(nom):
@@ -56,35 +76,56 @@ def slug(nom):
 
 
 def lien(nom):
-    """Lien vers la fiche d'un joueur."""
-    s = slug(nom)
-    return f'{BASE}/j/{s}' if s else BASE + '/j'
+    """Lien vers la fiche d'un joueur, ou None si rien n'est configuré."""
+    b, s = _base(), slug(nom)
+    return f'{b}/j/{s}' if b and s else None
 
 
 def lien_duo(a, b):
     """Lien vers la comparaison de deux joueurs, sur la même échelle."""
-    sa, sb = slug(a), slug(b)
-    if not sa:
-        return lien(b)
-    if not sb:
-        return lien(a)
-    return f'{BASE}/j/{sa}/{sb}'
+    base, sa, sb = _base(), slug(a), slug(b)
+    if not base:
+        return None
+    if sa and sb:
+        return f'{base}/j/{sa}/{sb}'
+    return f'{base}/j/{sa or sb}' if (sa or sb) else None
+
+
+def nom_html(nom, gras=False):
+    """Le nom, cliquable s'il y a une base, en texte sinon."""
+    t = html.escape(str(nom), quote=False)
+    if gras:
+        t = f'<b>{t}</b>'
+    u = lien(nom)
+    return f'<a href="{u}">{t}</a>' if u else t
+
+
+def duo_html(joueur, adv):
+    """La ligne « X vs Y » des alertes, les deux noms cliquables.
+
+    Remplace exactement f"<b>{joueur}</b> vs {adv}" et rend la même chose
+    au caractère près quand FICHES_BASE n'est pas réglée.
+    """
+    return f'{nom_html(joueur, gras=True)} vs {nom_html(adv)}'
 
 
 def ligne_fiches(a, b=None, prefixe='Fiches'):
-    """La ligne à coller en bas d'une alerte.
-
-    Telegram et X affichent tous deux le lien nu correctement ; pas de
-    balisage, donc rien à échapper et aucun risque d'erreur de parse_mode.
-    """
-    return f'{prefixe} : {lien_duo(a, b) if b else lien(a)}'
+    """Une ligne à part, pour un message qui n'est pas en HTML (X)."""
+    u = lien_duo(a, b) if b else lien(a)
+    return f'{prefixe} : {u}' if u else ''
 
 
 if __name__ == '__main__':
-    # Vérification croisée : les deux ordres doivent donner le même slug.
     for a, b in (('Mattia Bellucci', 'bellucci mattia'),
                  ('Félix Auger-Aliassime', 'auger aliassime felix'),
                  ('Aryna Sabalenka', 'sabalenka aryna')):
         assert slug(a) == slug(b), (a, b, slug(a), slug(b))
-    print(slug('Mattia Bellucci'))
-    print(ligne_fiches('Aryna Sabalenka', 'Linda Noskova'))
+
+    os.environ.pop('FICHES_BASE', None)
+    nu = duo_html('Aryna Sabalenka', 'Linda Noskova')
+    assert nu == '<b>Aryna Sabalenka</b> vs Linda Noskova', nu
+    print('sans FICHES_BASE :', nu)
+
+    os.environ['FICHES_BASE'] = 'https://exemple.workers.dev/'
+    print('avec FICHES_BASE :', duo_html('Aryna Sabalenka', 'Linda Noskova'))
+    print('nom piégé        :', duo_html('A & B', 'C <D>'))
