@@ -1,8 +1,11 @@
 {
  "meta": {
-  "genere_le": "2026-10-08T21:27:44+00:00",
+  "genere_le": "2026-10-08T21:52:23+00:00",
   "n_joueurs": 1032,
   "n_classes": 151,
+  "n_classes_atp": 86,
+  "n_classes_wta": 65,
+  "n_circuits_connus": 886,
   "min_cotes": 4,
   "min_rang": 8,
   "sources": [
@@ -28,6 +31,7 @@
     "WTA Bad Homburg Women Singles",
     "WTA Washington"
    ],
+   "circuit": "wta",
    "cote_mediane": 2.06,
    "cote_min": 1.51,
    "cote_max": 49.55,
@@ -129,8 +133,8 @@
      "pin_open": 3.89
     }
    ],
-   "rang_marche": 95,
-   "rang_sur": 151
+   "rang_marche": 41,
+   "rang_sur": 65
   },
   "aryna sabalenka": {
    "nom": "Aryna Sabalenka",
@@ -144,6 +148,7 @@
     "WTA Cincinnati",
     "Berlin"
    ],
+   "circuit": "wta",
    "cote_mediane": 1.19,
    "cote_min": 1.02,
    "cote_max": 1.72,
@@ -284,8 +289,8 @@
      "pin_open": 1.12
     }
    ],
-   "rang_marche": 2,
-   "rang_sur": 151
+   "rang_marche": 1,
+   "rang_sur": 65
   },
   "hamza reguig samir": {
    "nom": "Samir Hamza Reguig",
@@ -297,6 +302,7 @@
    "circuits": [
     "ATP Challenger Istanbul 3"
    ],
+   "circuit": "atp",
    "forme": {
     "n": 3,
     "victoires": 2,
@@ -334,6 +340,7 @@
     "ATP Challenger Manacor",
     "ATP Challenger Wuning 3"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.49,
    "cote_min": 1.03,
    "cote_max": 1.99,
@@ -415,6 +422,7 @@
    "circuits": [
     "ATP Chengdu"
    ],
+   "circuit": "atp",
    "meilleur_prix": "bwin",
    "alertes": [
     {
@@ -440,6 +448,7 @@
     "ATP Halle",
     "Wimbledon Men Singles"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.64,
    "cote_min": 1.05,
    "cote_max": 3.05,
@@ -530,6 +539,7 @@
    "circuits": [
     "ATP Challenger Istanbul 3"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -569,6 +579,7 @@
    "circuits": [
     "ATP Challenger Istanbul 3"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 1
@@ -621,6 +632,7 @@
    "circuits": [
     "ATP Challenger Buenos Aires II"
    ],
+   "circuit": "atp",
    "meilleur_prix": "betsson",
    "alertes": [
     {
@@ -646,6 +658,7 @@
     "ATP Challenger Antofagasta",
     "ATP Challenger Biella"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.5,
    "cote_min": 1.05,
    "cote_max": 2.2,
@@ -725,6 +738,7 @@
     "US Open Women Singles",
     "WTA Sao Paulo"
    ],
+   "circuit": "wta",
    "cote_mediane": 3.11,
    "cote_min": 2.56,
    "cote_max": 36.18,
@@ -826,6 +840,7 @@
     "US Open Women Singles",
     "WTA Cincinnati"
    ],
+   "circuit": "wta",
    "cote_mediane": 1.35,
    "cote_min": 1.03,
    "cote_max": 1.76,
@@ -945,6 +960,7 @@
    "circuits": [
     "ATP Los Cabos"
    ],
+   "circuit": "atp",
    "meilleur_prix": "bwin",
    "alertes": [
     {
@@ -969,6 +985,7 @@
     "Wimbledon Men Singles",
     "ATP Cincinnati"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.2,
    "cote_min": 1.03,
    "cote_max": 2.22,
@@ -1027,6 +1044,7 @@
    "circuits": [
     "ATP Challenger Tulln"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -1068,6 +1086,7 @@
     "ATP Stuttgart",
     "ATP Challenger Szczecin"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.72,
    "cote_min": 1.05,
    "cote_max": 3.78,
@@ -1153,6 +1172,7 @@
    "circuits": [
     "ATP Challenger Wuning 3"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -1205,6 +1225,7 @@
    "circuits": [
     "ATP Challenger Wuning 3"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 2,
     "victoires": 2
@@ -1264,6 +1285,7 @@
    "circuits": [
     "ATP Challenger Istanbul 3"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 1
@@ -1318,6 +1340,7 @@
     "ATP Challenger Porto",
     "ATP Challenger Bari"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.09,
    "cote_min": 1.14,
    "cote_max": 2.85,
@@ -1400,6 +1423,7 @@
    "circuits": [
     "ATP Challenger Szczecin"
    ],
+   "circuit": "atp",
    "meilleur_prix": "unibet",
    "alertes": [
     {
@@ -1425,6 +1449,7 @@
     "ATP Challenger Palermo",
     "ATP Challenger Augsburg"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.58,
    "cote_min": 1.06,
    "cote_max": 1.83,
@@ -1538,6 +1563,7 @@
    "circuits": [
     "WTA Memphis"
    ],
+   "circuit": "wta",
    "forme": {
     "n": 4,
     "victoires": 2,
@@ -1582,6 +1608,7 @@
     "WTA Memphis",
     "WTA Singapore"
    ],
+   "circuit": "wta",
    "forme": {
     "n": 10,
     "victoires": 7,
@@ -1630,6 +1657,7 @@
     "WTA Beijing",
     "WTA Monterrey"
    ],
+   "circuit": "wta",
    "cote_mediane": 2.21,
    "cote_min": 1.49,
    "cote_max": 25.4,
@@ -1754,8 +1782,8 @@
      "pin_open": 2.18
     }
    ],
-   "rang_marche": 114,
-   "rang_sur": 151
+   "rang_marche": 51,
+   "rang_sur": 65
   },
   "sun xinran": {
    "nom": "Xinran Sun",
@@ -1767,6 +1795,7 @@
    "circuits": [
     "WTA Beijing"
    ],
+   "circuit": "wta",
    "bilan": {
     "n": 3,
     "victoires": 2
@@ -1844,6 +1873,7 @@
     "US Open Women Singles",
     "Berlin"
    ],
+   "circuit": "wta",
    "cote_mediane": 1.29,
    "cote_min": 1.06,
    "cote_max": 2.04,
@@ -1998,8 +2028,8 @@
      "pin_open": 1.08
     }
    ],
-   "rang_marche": 4,
-   "rang_sur": 151
+   "rang_marche": 3,
+   "rang_sur": 65
   },
   "brouwer gijs": {
    "nom": "Gijs Brouwer",
@@ -2011,6 +2041,7 @@
    "circuits": [
     "ATP Challenger Cassis"
    ],
+   "circuit": "atp",
    "forme": {
     "n": 4,
     "victoires": 1,
@@ -2058,6 +2089,7 @@
     "ATP Challenger Cassis",
     "ATP Cincinnati"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.99,
    "cote_min": 1.09,
    "cote_max": 5.91,
@@ -2146,8 +2178,8 @@
      "pin_open": 2.14
     }
    ],
-   "rang_marche": 91,
-   "rang_sur": 151
+   "rang_marche": 53,
+   "rang_sur": 86
   },
   "oleksandra oliynykova": {
    "nom": "Oleksandra Oliynykova",
@@ -2162,6 +2194,7 @@
     "WTA Hamburg",
     "WTA Beijing"
    ],
+   "circuit": "wta",
    "cote_mediane": 2.34,
    "cote_min": 1.29,
    "cote_max": 13.31,
@@ -2288,8 +2321,8 @@
      "pin_open": 1.29
     }
    ],
-   "rang_marche": 129,
-   "rang_sur": 151
+   "rang_marche": 56,
+   "rang_sur": 65
   },
   "andreeva mirra": {
    "nom": "Mirra Andreeva",
@@ -2303,6 +2336,7 @@
     "US Open Women Singles",
     "WTA Toronto"
    ],
+   "circuit": "wta",
    "cote_mediane": 1.25,
    "cote_min": 1.08,
    "cote_max": 2.67,
@@ -2417,6 +2451,7 @@
    "circuits": [
     "ATP Challenger Antofagasta"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -2471,6 +2506,7 @@
     "ATP Challenger Curitiba",
     "Wimbledon Men Singles"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 2,
     "victoires": 2
@@ -2540,6 +2576,7 @@
    "circuits": [
     "ATP Challenger Buenos Aires II"
    ],
+   "circuit": "atp",
    "meilleur_prix": "bwin",
    "alertes": [
     {
@@ -2573,6 +2610,7 @@
     "ATP Challenger Como",
     "ATP Challenger Antofagasta"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.61,
    "cote_min": 1.06,
    "cote_max": 3.05,
@@ -2671,6 +2709,7 @@
    "circuits": [
     "ATP Challenger Wuning 3"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -2712,6 +2751,7 @@
     "ATP Challenger Wuning 3",
     "ATP Challenger Kingston 2"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.15,
    "cote_min": 1.06,
    "cote_max": 1.87,
@@ -2802,6 +2842,7 @@
     "WTA Monterrey",
     "WTA Guadalajara"
    ],
+   "circuit": "wta",
    "cote_mediane": 2.08,
    "cote_min": 1.5,
    "cote_max": 14.73,
@@ -2924,8 +2965,8 @@
      "pin_open": 2.3
     }
    ],
-   "rang_marche": 99,
-   "rang_sur": 151
+   "rang_marche": 44,
+   "rang_sur": 65
   },
   "jan kobierski": {
    "nom": "Jan Kobierski",
@@ -2937,6 +2978,7 @@
    "circuits": [
     "ATP Challenger San Diego 2"
    ],
+   "circuit": "atp",
    "meilleur_prix": "bwin",
    "alertes": [
     {
@@ -2960,6 +3002,7 @@
     "ATP Challenger San Diego 2",
     "ATP Challenger Tiburon"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.2,
    "cote_min": 1.06,
    "cote_max": 1.91,
@@ -3012,6 +3055,7 @@
     "ATP Challenger Kingston 2",
     "ATP Los Cabos"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -3083,6 +3127,7 @@
     "WTA Nottingham",
     "WTA Eastbourne"
    ],
+   "circuit": "wta",
    "cote_mediane": 6.7,
    "cote_min": 5.2,
    "cote_max": 8.21,
@@ -3161,6 +3206,7 @@
     "WTA S-Hertogenbosch",
     "WTA Memphis"
    ],
+   "circuit": "wta",
    "cote_mediane": 1.5,
    "cote_min": 1.14,
    "cote_max": 2.85,
@@ -3258,8 +3304,8 @@
      "pin_open": 1.55
     }
    ],
-   "rang_marche": 21,
-   "rang_sur": 151
+   "rang_marche": 12,
+   "rang_sur": 65
   },
   "rodriguez victoria": {
    "nom": "Victoria Rodriguez",
@@ -3272,6 +3318,7 @@
     "WTA Monterrey",
     "WTA Sao Paulo"
    ],
+   "circuit": "wta",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -3336,6 +3383,7 @@
     "US Open Women Singles",
     "WTA Nottingham"
    ],
+   "circuit": "wta",
    "cote_mediane": 1.65,
    "cote_min": 1.06,
    "cote_max": 5.17,
@@ -3430,8 +3478,8 @@
      "pin_open": 1.12
     }
    ],
-   "rang_marche": 35,
-   "rang_sur": 151
+   "rang_marche": 16,
+   "rang_sur": 65
   },
   "yang zijiang": {
    "nom": "Zijiang Yang",
@@ -3491,6 +3539,7 @@
     "ATP Challenger Wuning 3",
     "ATP Challenger Phan Thiet 4"
    ],
+   "circuit": "atp",
    "cote_mediane": 7.4,
    "cote_min": 1.79,
    "cote_max": 12.41,
@@ -3577,6 +3626,7 @@
     "ATP Challenger Curitiba",
     "ATP Challenger Genoa"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.51,
    "cote_min": 1.42,
    "cote_max": 11.58,
@@ -3692,6 +3742,7 @@
     "ATP Challenger Porto 2",
     "ATP Washington"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.84,
    "cote_min": 1.09,
    "cote_max": 3.58,
@@ -3817,8 +3868,8 @@
      "pin_open": 3.13
     }
    ],
-   "rang_marche": 67,
-   "rang_sur": 151
+   "rang_marche": 38,
+   "rang_sur": 86
   },
   "dinev dinko": {
    "nom": "Dinko Dinev",
@@ -3830,6 +3881,7 @@
    "circuits": [
     "ATP Challenger San Diego 2"
    ],
+   "circuit": "atp",
    "meilleur_prix": "bwin",
    "alertes": [
     {
@@ -3853,6 +3905,7 @@
     "ATP Challenger San Diego 2",
     "ATP Challenger Columbus"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.75,
    "cote_min": 1.08,
    "cote_max": 2.82,
@@ -3961,6 +4014,7 @@
     "ATP Challenger Cancun",
     "ATP Cincinnati"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.4,
    "cote_min": 1.4,
    "cote_max": 9.73,
@@ -4079,8 +4133,8 @@
      "pin_open": 6.69
     }
    ],
-   "rang_marche": 132,
-   "rang_sur": 151
+   "rang_marche": 74,
+   "rang_sur": 86
   },
   "hubert hurkacz": {
    "nom": "Hubert Hurkacz",
@@ -4095,6 +4149,7 @@
     "ATP Challenger Cancun",
     "ATP Chengdu"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.54,
    "cote_min": 1.11,
    "cote_max": 2.31,
@@ -4203,8 +4258,8 @@
      "pin_open": 1.43
     }
    ],
-   "rang_marche": 23,
-   "rang_sur": 151
+   "rang_marche": 11,
+   "rang_sur": 86
   },
   "jakub vrba": {
    "nom": "Jakub Vrba",
@@ -4216,6 +4271,7 @@
    "circuits": [
     "ATP Challenger San Diego 2"
    ],
+   "circuit": "atp",
    "meilleur_prix": "betsson",
    "alertes": [
     {
@@ -4241,6 +4297,7 @@
     "ATP Challenger Cassis",
     "US Open Men Singles"
    ],
+   "circuit": "atp",
    "cote_mediane": 5.5,
    "cote_min": 1.69,
    "cote_max": 7.25,
@@ -4335,6 +4392,7 @@
     "ATP Challenger Rennes",
     "ATP London"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.3,
    "cote_min": 1.17,
    "cote_max": 4.23,
@@ -4423,8 +4481,8 @@
      "pin_open": 2.18
     }
    ],
-   "rang_marche": 125,
-   "rang_sur": 151
+   "rang_marche": 71,
+   "rang_sur": 86
   },
   "ana candiotto": {
    "nom": "Ana Candiotto",
@@ -4436,6 +4494,7 @@
    "circuits": [
     "WTA Sao Paulo"
    ],
+   "circuit": "wta",
    "meilleur_prix": "bwin",
    "elo": {
     "valeur": 1201,
@@ -4468,6 +4527,7 @@
    "circuits": [
     "WTA Sao Paulo"
    ],
+   "circuit": "wta",
    "forme": {
     "n": 6,
     "victoires": 2,
@@ -4516,6 +4576,7 @@
     "ATP Challenger Buenos Aires II",
     "ATP Challenger Curitiba"
    ],
+   "circuit": "atp",
    "cote_mediane": 3.33,
    "cote_min": 2.19,
    "cote_max": 7.01,
@@ -4606,6 +4667,7 @@
     "ATP Challenger Antofagasta",
     "US Open Men Singles"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.55,
    "cote_min": 1.17,
    "cote_max": 2.67,
@@ -4689,6 +4751,7 @@
    "circuits": [
     "ATP Challenger Saint Tropez"
    ],
+   "circuit": "atp",
    "forme": {
     "n": 4,
     "victoires": 0,
@@ -4745,6 +4808,7 @@
     "WTA Singapore",
     "WTA Memphis"
    ],
+   "circuit": "wta",
    "cote_mediane": 2.0,
    "cote_min": 1.66,
    "cote_max": 4.54,
@@ -4841,6 +4905,7 @@
     "WTA Eastbourne",
     "WTA Cincinnati"
    ],
+   "circuit": "wta",
    "cote_mediane": 1.82,
    "cote_min": 1.28,
    "cote_max": 2.44,
@@ -4916,6 +4981,7 @@
    "circuits": [
     "ATP Challenger Szczecin"
    ],
+   "circuit": "atp",
    "meilleur_prix": "unibet",
    "alertes": [
     {
@@ -4939,6 +5005,7 @@
     "US Open Men Singles",
     "ATP Challenger Szczecin"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 2,
     "victoires": 1
@@ -5000,6 +5067,7 @@
     "ATP Challenger Phan Thiet 3",
     "ATP Shanghai"
    ],
+   "circuit": "atp",
    "cote_mediane": 4.9,
    "cote_min": 1.26,
    "cote_max": 12.22,
@@ -5111,8 +5179,8 @@
      "pin_open": 10.01
     }
    ],
-   "rang_marche": 151,
-   "rang_sur": 151
+   "rang_marche": 86,
+   "rang_sur": 86
   },
   "giron marcos": {
    "nom": "Marcos Giron",
@@ -5127,6 +5195,7 @@
     "ATP Eastbourne",
     "ATP Cincinnati"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.77,
    "cote_min": 1.09,
    "cote_max": 4.03,
@@ -5202,6 +5271,7 @@
    "circuits": [
     "US Open Women Singles"
    ],
+   "circuit": "wta",
    "bilan": {
     "n": 2,
     "victoires": 1
@@ -5283,6 +5353,7 @@
     "WTA s-Hertogenbosch",
     "WTA Beijing"
    ],
+   "circuit": "wta",
    "cote_mediane": 2.08,
    "cote_min": 1.14,
    "cote_max": 3.0,
@@ -5358,6 +5429,7 @@
     "Berlin",
     "WTA Cincinnati"
    ],
+   "circuit": "wta",
    "cote_mediane": 2.18,
    "cote_min": 1.12,
    "cote_max": 3.53,
@@ -5484,8 +5556,8 @@
      "pin_open": 3.53
     }
    ],
-   "rang_marche": 112,
-   "rang_sur": 151
+   "rang_marche": 50,
+   "rang_sur": 65
   },
   "edward winter": {
    "nom": "Edward Winter",
@@ -5499,6 +5571,7 @@
     "ATP Challenger Tiburon",
     "ATP Challenger San Diego 2"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.74,
    "cote_min": 1.73,
    "cote_max": 6.01,
@@ -5568,6 +5641,7 @@
     "ATP Challenger Phan Thiet 3",
     "ATP Winston Salem"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 2,
     "victoires": 1
@@ -5637,6 +5711,7 @@
    "circuits": [
     "ATP Challenger Rennes"
    ],
+   "circuit": "atp",
    "meilleur_prix": "betsson",
    "alertes": [
     {
@@ -5660,6 +5735,7 @@
     "ATP Challenger Rennes",
     "ATP Challenger Cassis"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.88,
    "cote_min": 1.13,
    "cote_max": 7.61,
@@ -5728,6 +5804,7 @@
     "ATP S-Hertogenbosch",
     "ATP Montreal"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.39,
    "cote_min": 1.2,
    "cote_max": 1.76,
@@ -5830,8 +5907,8 @@
      "pin_open": 1.39
     }
    ],
-   "rang_marche": 10,
-   "rang_sur": 151
+   "rang_marche": 6,
+   "rang_sur": 86
   },
   "griekspoor tallon": {
    "nom": "Tallon Griekspoor",
@@ -5846,6 +5923,7 @@
     "ATP Cincinnati",
     "ATP Washington"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.95,
    "cote_min": 1.47,
    "cote_max": 7.94,
@@ -5941,8 +6019,8 @@
      "pin_open": 1.67
     }
    ],
-   "rang_marche": 84,
-   "rang_sur": 151
+   "rang_marche": 48,
+   "rang_sur": 86
   },
   "alexander zverev": {
    "nom": "Alexander Zverev",
@@ -5957,6 +6035,7 @@
     "ATP Halle",
     "ATP Montreal"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.18,
    "cote_min": 1.08,
    "cote_max": 1.42,
@@ -6097,7 +6176,7 @@
     }
    ],
    "rang_marche": 1,
-   "rang_sur": 151
+   "rang_sur": 86
   },
   "gibson talia": {
    "nom": "Talia Gibson",
@@ -6112,6 +6191,7 @@
     "WTA Toronto",
     "WTA Memphis"
    ],
+   "circuit": "wta",
    "cote_mediane": 2.11,
    "cote_min": 1.11,
    "cote_max": 7.84,
@@ -6223,8 +6303,8 @@
      "pin_open": 1.42
     }
    ],
-   "rang_marche": 105,
-   "rang_sur": 151
+   "rang_marche": 47,
+   "rang_sur": 65
   },
   "adil kalyanpur": {
    "nom": "Adil Kalyanpur",
@@ -6236,6 +6316,7 @@
    "circuits": [
     "ATP Challenger Cassis"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -6275,6 +6356,7 @@
    "circuits": [
     "Wimbledon Men Singles"
    ],
+   "circuit": "atp",
    "forme": {
     "n": 3,
     "victoires": 0,
@@ -6311,6 +6393,7 @@
     "Wimbledon Men Singles",
     "ATP Challenger Seville"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -6363,6 +6446,7 @@
     "ATP Challenger Genoa",
     "ATP Challenger Palermo"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 1
@@ -6436,6 +6520,7 @@
     "Wimbledon Men Singles",
     "US Open Men Singles"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.47,
    "cote_min": 1.16,
    "cote_max": 1.74,
@@ -6512,6 +6597,7 @@
    "circuits": [
     "ATP Challenger Kingston 2"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -6554,6 +6640,7 @@
     "ATP Challenger San Diego 2",
     "ATP Challenger Columbus"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.82,
    "cote_min": 1.12,
    "cote_max": 3.13,
@@ -6633,8 +6720,8 @@
      "pin_open": 3.13
     }
    ],
-   "rang_marche": 63,
-   "rang_sur": 151
+   "rang_marche": 35,
+   "rang_sur": 86
   },
   "jurij rodionov": {
    "nom": "Jurij Rodionov",
@@ -6649,6 +6736,7 @@
     "ATP Kitzbuhel",
     "Wimbledon Men Singles"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.9,
    "cote_min": 1.15,
    "cote_max": 3.39,
@@ -6751,8 +6839,8 @@
      "pin_open": 2.05
     }
    ],
-   "rang_marche": 76,
-   "rang_sur": 151
+   "rang_marche": 44,
+   "rang_sur": 86
   },
   "lamens suzan": {
    "nom": "Suzan Lamens",
@@ -6765,6 +6853,7 @@
     "WTA S-Hertogenbosch",
     "US Open Women Singles"
    ],
+   "circuit": "wta",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -6830,6 +6919,7 @@
     "WTA Washington",
     "Berlin"
    ],
+   "circuit": "wta",
    "cote_mediane": 1.54,
    "cote_min": 1.15,
    "cote_max": 3.38,
@@ -6919,8 +7009,8 @@
      "pin_open": 1.92
     }
    ],
-   "rang_marche": 24,
-   "rang_sur": 151
+   "rang_marche": 13,
+   "rang_sur": 65
   },
   "agustin thiago tirante": {
    "nom": "Thiago Agustin Tirante",
@@ -6935,6 +7025,7 @@
     "ATP Beijing",
     "ATP Eastbourne"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.72,
    "cote_min": 1.56,
    "cote_max": 6.31,
@@ -7067,8 +7158,8 @@
      "pin_open": 3.47
     }
    ],
-   "rang_marche": 145,
-   "rang_sur": 151
+   "rang_marche": 83,
+   "rang_sur": 86
   },
   "fritz taylor": {
    "nom": "Taylor Fritz",
@@ -7083,6 +7174,7 @@
     "US Open Men Singles",
     "ATP Cincinnati"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.31,
    "cote_min": 1.16,
    "cote_max": 1.86,
@@ -7208,8 +7300,8 @@
      "pin_open": 1.27
     }
    ],
-   "rang_marche": 5,
-   "rang_sur": 151
+   "rang_marche": 2,
+   "rang_sur": 86
   },
   "luca sanchez": {
    "nom": "Luca Sanchez",
@@ -7221,6 +7313,7 @@
    "circuits": [
     "ATP Challenger Rennes"
    ],
+   "circuit": "atp",
    "meilleur_prix": "betsson",
    "alertes": [
     {
@@ -7242,7 +7335,8 @@
    ],
    "circuits": [
     "ATP Challenger Rennes"
-   ]
+   ],
+   "circuit": "atp"
   },
   "assche luca van": {
    "nom": "Luca Van Assche",
@@ -7257,6 +7351,7 @@
     "ATP Estoril",
     "ATP Tokyo"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.66,
    "cote_min": 1.24,
    "cote_max": 6.83,
@@ -7396,8 +7491,8 @@
      "pin_open": 1.41
     }
    ],
-   "rang_marche": 37,
-   "rang_sur": 151
+   "rang_marche": 20,
+   "rang_sur": 86
   },
   "arthur fils": {
    "nom": "Arthur Fils",
@@ -7412,6 +7507,7 @@
     "ATP Tokyo",
     "US Open Men Singles"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.42,
    "cote_min": 1.17,
    "cote_max": 2.03,
@@ -7551,8 +7647,8 @@
      "pin_open": 1.45
     }
    ],
-   "rang_marche": 16,
-   "rang_sur": 151
+   "rang_marche": 8,
+   "rang_sur": 86
   },
   "da joao lucas reis silva": {
    "nom": "Joao Lucas Reis Da Silva",
@@ -7567,6 +7663,7 @@
     "ATP Challenger Antofagasta",
     "Wimbledon Men Singles"
    ],
+   "circuit": "atp",
    "cote_mediane": 3.17,
    "cote_min": 1.35,
    "cote_max": 6.88,
@@ -7699,6 +7796,7 @@
     "ATP Challenger Tulln",
     "US Open Men Singles"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.78,
    "cote_min": 1.18,
    "cote_max": 3.44,
@@ -7782,6 +7880,7 @@
    "circuits": [
     "ATP Challenger Plovdiv 4"
    ],
+   "circuit": "atp",
    "meilleur_prix": "unibet",
    "elo": {
     "valeur": 1320,
@@ -7817,6 +7916,7 @@
     "US Open Men Singles",
     "ATP Challenger Seville"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.81,
    "cote_min": 1.31,
    "cote_max": 2.14,
@@ -7873,6 +7973,7 @@
    "circuits": [
     "US Open Women Singles"
    ],
+   "circuit": "wta",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -7923,6 +8024,7 @@
    "circuits": [
     "US Open Women Singles"
    ],
+   "circuit": "wta",
    "bilan": {
     "n": 2,
     "victoires": 1
@@ -7993,6 +8095,7 @@
     "ATP Challenger Szczecin",
     "ATP Challenger Como"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 1
@@ -8072,6 +8175,7 @@
     "ATP Challenger Genoa",
     "ATP Challenger Plovdiv 3"
    ],
+   "circuit": "atp",
    "cote_mediane": 3.83,
    "cote_min": 1.93,
    "cote_max": 7.2,
@@ -8174,6 +8278,7 @@
     "ATP Estoril",
     "ATP Challenger Como"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.98,
    "cote_min": 1.16,
    "cote_max": 6.26,
@@ -8254,8 +8359,8 @@
      "pin_open": 3.98
     }
    ],
-   "rang_marche": 90,
-   "rang_sur": 151
+   "rang_marche": 52,
+   "rang_sur": 86
   },
   "coria federico": {
    "nom": "Federico Coria",
@@ -8267,6 +8372,7 @@
    "circuits": [
     "Wimbledon Men Singles"
    ],
+   "circuit": "atp",
    "forme": {
     "n": 5,
     "victoires": 3,
@@ -8313,6 +8419,7 @@
    "circuits": [
     "Wimbledon Men Singles"
    ],
+   "circuit": "atp",
    "forme": {
     "n": 5,
     "victoires": 2,
@@ -8340,6 +8447,7 @@
     "US Open Men Singles",
     "ATP Cincinnati"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.88,
    "cote_min": 1.23,
    "cote_max": 9.33,
@@ -8463,8 +8571,8 @@
      "pin_open": 5.61
     }
    ],
-   "rang_marche": 73,
-   "rang_sur": 151
+   "rang_marche": 42,
+   "rang_sur": 86
   },
   "shimabukuro sho": {
    "nom": "Sho Shimabukuro",
@@ -8479,6 +8587,7 @@
     "ATP Tokyo",
     "ATP Winston Salem"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.68,
    "cote_min": 1.22,
    "cote_max": 5.29,
@@ -8598,8 +8707,8 @@
      "pin_open": 3.38
     }
    ],
-   "rang_marche": 144,
-   "rang_sur": 151
+   "rang_marche": 82,
+   "rang_sur": 86
   },
   "alejandro juan mano": {
    "nom": "Alejandro Juan Mano",
@@ -8611,6 +8720,7 @@
    "circuits": [
     "ATP Challenger Genoa 2"
    ],
+   "circuit": "atp",
    "forme": {
     "n": 3,
     "victoires": 2,
@@ -8656,6 +8766,7 @@
     "ATP Challenger Genoa",
     "ATP Challenger Genoa 2"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.96,
    "cote_min": 1.2,
    "cote_max": 2.61,
@@ -8755,6 +8866,7 @@
     "ATP Halle",
     "ATP Challenger Como"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -8828,6 +8940,7 @@
     "ATP Beijing",
     "ATP Cincinnati"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.51,
    "cote_min": 1.21,
    "cote_max": 2.61,
@@ -8937,8 +9050,8 @@
      "pin_open": 2.61
     }
    ],
-   "rang_marche": 22,
-   "rang_sur": 151
+   "rang_marche": 10,
+   "rang_sur": 86
   },
   "alex de minaur": {
    "nom": "Alex de Minaur",
@@ -8953,6 +9066,7 @@
     "ATP Cincinnati",
     "US Open Men Singles"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.33,
    "cote_min": 1.11,
    "cote_max": 2.47,
@@ -9032,8 +9146,8 @@
      "pin_open": 1.4
     }
    ],
-   "rang_marche": 6,
-   "rang_sur": 151
+   "rang_marche": 3,
+   "rang_sur": 86
   },
   "arribage theo": {
    "nom": "Theo Arribage",
@@ -9045,6 +9159,7 @@
    "circuits": [
     "ATP Challenger Rennes"
    ],
+   "circuit": "atp",
    "meilleur_prix": "bwin",
    "alertes": [
     {
@@ -9068,6 +9183,7 @@
     "ATP Challenger Rennes",
     "ATP Montreal"
    ],
+   "circuit": "atp",
    "forme": {
     "n": 9,
     "victoires": 3,
@@ -9124,6 +9240,7 @@
     "WTA Beijing",
     "WTA Washington"
    ],
+   "circuit": "wta",
    "cote_mediane": 2.11,
    "cote_min": 1.27,
    "cote_max": 8.5,
@@ -9250,8 +9367,8 @@
      "pin_open": 8.5
     }
    ],
-   "rang_marche": 106,
-   "rang_sur": 151
+   "rang_marche": 48,
+   "rang_sur": 65
   },
   "jessica pegula": {
    "nom": "Jessica Pegula",
@@ -9266,6 +9383,7 @@
     "US Open Women Singles",
     "WTA Washington"
    ],
+   "circuit": "wta",
    "cote_mediane": 1.4,
    "cote_min": 1.07,
    "cote_max": 2.95,
@@ -9383,8 +9501,8 @@
      "pin_open": 2.95
     }
    ],
-   "rang_marche": 12,
-   "rang_sur": 151
+   "rang_marche": 6,
+   "rang_sur": 65
   },
   "kudermetova polina": {
    "nom": "Polina Kudermetova",
@@ -9399,6 +9517,7 @@
     "WTA Beijing",
     "WTA Cincinnati"
    ],
+   "circuit": "wta",
    "cote_mediane": 2.25,
    "cote_min": 1.51,
    "cote_max": 5.27,
@@ -9516,8 +9635,8 @@
      "pin_open": 3.09
     }
    ],
-   "rang_marche": 118,
-   "rang_sur": 151
+   "rang_marche": 52,
+   "rang_sur": 65
   },
   "elina svitolina": {
    "nom": "Elina Svitolina",
@@ -9532,6 +9651,7 @@
     "WTA Washington",
     "WTA Cincinnati"
    ],
+   "circuit": "wta",
    "cote_mediane": 1.39,
    "cote_min": 1.23,
    "cote_max": 3.05,
@@ -9656,8 +9776,8 @@
      "pin_open": 1.28
     }
    ],
-   "rang_marche": 11,
-   "rang_sur": 151
+   "rang_marche": 5,
+   "rang_sur": 65
   },
   "bellucci mattia": {
    "nom": "Mattia Bellucci",
@@ -9672,6 +9792,7 @@
     "ATP Cincinnati",
     "ATP Stuttgart"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.29,
    "cote_min": 1.19,
    "cote_max": 7.1,
@@ -9825,8 +9946,8 @@
      "pin_open": 4.06
     }
    ],
-   "rang_marche": 122,
-   "rang_sur": 151
+   "rang_marche": 69,
+   "rang_sur": 86
   },
   "atmane terence": {
    "nom": "Terence Atmane",
@@ -9841,6 +9962,7 @@
     "ATP Montreal",
     "ATP Eastbourne"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.95,
    "cote_min": 1.25,
    "cote_max": 7.05,
@@ -9936,8 +10058,8 @@
      "pin_open": 2.55
     }
    ],
-   "rang_marche": 85,
-   "rang_sur": 151
+   "rang_marche": 49,
+   "rang_sur": 86
   },
   "lucas poullain": {
    "nom": "Lucas Poullain",
@@ -9950,6 +10072,7 @@
     "ATP Challenger Mouilleron-Le-Captif",
     "ATP Challenger Rennes"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 2,
     "victoires": 1
@@ -10030,6 +10153,7 @@
     "ATP Challenger Saint Tropez",
     "ATP Challenger Mouilleron-Le-Captif"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.35,
    "cote_min": 1.19,
    "cote_max": 2.22,
@@ -10162,8 +10286,8 @@
      "pin_open": 2.05
     }
    ],
-   "rang_marche": 7,
-   "rang_sur": 151
+   "rang_marche": 4,
+   "rang_sur": 86
   },
   "cross kayla": {
    "nom": "Kayla Cross",
@@ -10175,6 +10299,7 @@
    "circuits": [
     "WTA Toronto"
    ],
+   "circuit": "wta",
    "forme": {
     "n": 5,
     "victoires": 2,
@@ -10223,6 +10348,7 @@
     "WTA Beijing",
     "WTA Toronto"
    ],
+   "circuit": "wta",
    "cote_mediane": 1.77,
    "cote_min": 1.25,
    "cote_max": 7.67,
@@ -10341,8 +10467,8 @@
      "pin_open": 2.27
     }
    ],
-   "rang_marche": 52,
-   "rang_sur": 151
+   "rang_marche": 23,
+   "rang_sur": 65
   },
   "anastasia zakharova": {
    "nom": "Anastasia Zakharova",
@@ -10357,6 +10483,7 @@
     "WTA Eastbourne",
     "WTA Cincinnati"
    ],
+   "circuit": "wta",
    "cote_mediane": 1.48,
    "cote_min": 1.17,
    "cote_max": 2.98,
@@ -10443,6 +10570,7 @@
     "ATP Challenger Antofagasta",
     "ATP Challenger Curitiba"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 2,
     "victoires": 1
@@ -10516,6 +10644,7 @@
     "WTA Seoul",
     "WTA Monterrey"
    ],
+   "circuit": "wta",
    "cote_mediane": 1.74,
    "cote_min": 1.33,
    "cote_max": 7.91,
@@ -10635,8 +10764,8 @@
      "pin_open": 1.6
     }
    ],
-   "rang_marche": 48,
-   "rang_sur": 151
+   "rang_marche": 21,
+   "rang_sur": 65
   },
   "keys madison": {
    "nom": "Madison Keys",
@@ -10651,6 +10780,7 @@
     "US Open Women Singles",
     "WTA Toronto"
    ],
+   "circuit": "wta",
    "cote_mediane": 1.4,
    "cote_min": 1.14,
    "cote_max": 2.38,
@@ -10760,8 +10890,8 @@
      "pin_open": 2.02
     }
    ],
-   "rang_marche": 13,
-   "rang_sur": 151
+   "rang_marche": 7,
+   "rang_sur": 65
   },
   "leite wilson": {
    "nom": "Wilson Leite",
@@ -10773,6 +10903,7 @@
    "circuits": [
     "ATP Challenger Antofagasta"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -10814,6 +10945,7 @@
     "ATP Challenger Curitiba",
     "ATP Challenger Buenos Aires II"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 2,
     "victoires": 1
@@ -10885,6 +11017,7 @@
     "ATP Challenger Seville",
     "Wimbledon Men Singles"
    ],
+   "circuit": "atp",
    "cote_mediane": 4.82,
    "cote_min": 1.41,
    "cote_max": 5.5,
@@ -10980,6 +11113,7 @@
     "Wimbledon Men Singles",
     "ATP Challenger Porto 2"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.4,
    "cote_min": 1.16,
    "cote_max": 2.15,
@@ -11071,6 +11205,7 @@
     "US Open Men Singles",
     "ATP Beijing"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.24,
    "cote_min": 1.36,
    "cote_max": 3.03,
@@ -11203,8 +11338,8 @@
      "pin_open": 2.59
     }
    ],
-   "rang_marche": 117,
-   "rang_sur": 151
+   "rang_marche": 66,
+   "rang_sur": 86
   },
   "cerundolo francisco": {
    "nom": "Francisco Cerundolo",
@@ -11219,6 +11354,7 @@
     "ATP London",
     "ATP Cincinnati"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.56,
    "cote_min": 1.36,
    "cote_max": 5.76,
@@ -11297,8 +11433,8 @@
      "pin_open": 2.24
     }
    ],
-   "rang_marche": 27,
-   "rang_sur": 151
+   "rang_marche": 13,
+   "rang_sur": 86
   },
   "roman safiullin": {
    "nom": "Roman Safiullin",
@@ -11313,6 +11449,7 @@
     "Wimbledon Men Singles",
     "ATP Hangzhou"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.41,
    "cote_min": 1.24,
    "cote_max": 7.38,
@@ -11397,6 +11534,7 @@
     "US Open Men Singles",
     "ATP Tokyo"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 3,
     "victoires": 3
@@ -11475,6 +11613,7 @@
     "US Open Women Singles",
     "WTA Hamburg"
    ],
+   "circuit": "wta",
    "cote_mediane": 2.91,
    "cote_min": 1.68,
    "cote_max": 7.48,
@@ -11560,6 +11699,7 @@
     "WTA Bad Homburg Women Singles",
     "Berlin"
    ],
+   "circuit": "wta",
    "cote_mediane": 1.68,
    "cote_min": 1.15,
    "cote_max": 4.81,
@@ -11639,6 +11779,7 @@
     "ATP Halle",
     "ATP Stuttgart"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.4,
    "cote_min": 1.18,
    "cote_max": 2.16,
@@ -11785,8 +11926,8 @@
      "pin_open": 1.9
     }
    ],
-   "rang_marche": 14,
-   "rang_sur": 151
+   "rang_marche": 7,
+   "rang_sur": 86
   },
   "brockmann johanna tessa": {
    "nom": "Tessa Johanna Brockmann",
@@ -11799,6 +11940,7 @@
     "Berlin",
     "WTA Hamburg"
    ],
+   "circuit": "wta",
    "forme": {
     "n": 4,
     "victoires": 2,
@@ -11855,6 +11997,7 @@
     "WTA Monterrey",
     "Berlin"
    ],
+   "circuit": "wta",
    "cote_mediane": 1.93,
    "cote_min": 1.14,
    "cote_max": 6.61,
@@ -11974,8 +12117,8 @@
      "pin_open": 2.66
     }
    ],
-   "rang_marche": 81,
-   "rang_sur": 151
+   "rang_marche": 36,
+   "rang_sur": 65
   },
   "bartunkova nikola": {
    "nom": "Nikola Bartunkova",
@@ -11990,6 +12133,7 @@
     "WTA Prague",
     "WTA Toronto"
    ],
+   "circuit": "wta",
    "cote_mediane": 1.67,
    "cote_min": 1.23,
    "cote_max": 6.53,
@@ -12108,8 +12252,8 @@
      "pin_open": 3.5
     }
    ],
-   "rang_marche": 40,
-   "rang_sur": 151
+   "rang_marche": 18,
+   "rang_sur": 65
   },
   "ma yexin": {
    "nom": "Yexin Ma",
@@ -12122,6 +12266,7 @@
     "WTA Memphis",
     "WTA Seoul"
    ],
+   "circuit": "wta",
    "forme": {
     "n": 10,
     "victoires": 6,
@@ -12168,6 +12313,7 @@
     "WTA Cincinnati",
     "WTA S-Hertogenbosch"
    ],
+   "circuit": "wta",
    "cote_mediane": 1.77,
    "cote_min": 1.15,
    "cote_max": 4.66,
@@ -12270,8 +12416,8 @@
      "pin_open": 1.44
     }
    ],
-   "rang_marche": 53,
-   "rang_sur": 151
+   "rang_marche": 24,
+   "rang_sur": 65
   },
   "butvilas edas": {
    "nom": "Edas Butvilas",
@@ -12286,6 +12432,7 @@
     "ATP Challenger Saint Tropez",
     "ATP Challenger Manacor"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.4,
    "cote_min": 1.19,
    "cote_max": 3.21,
@@ -12403,6 +12550,7 @@
     "WTA Toronto",
     "WTA Monterrey"
    ],
+   "circuit": "wta",
    "cote_mediane": 2.39,
    "cote_min": 1.45,
    "cote_max": 8.86,
@@ -12503,6 +12651,7 @@
     "WTA Toronto",
     "WTA London"
    ],
+   "circuit": "wta",
    "cote_mediane": 1.43,
    "cote_min": 1.13,
    "cote_max": 2.78,
@@ -12657,8 +12806,8 @@
      "pin_open": 1.17
     }
    ],
-   "rang_marche": 17,
-   "rang_sur": 151
+   "rang_marche": 9,
+   "rang_sur": 65
   },
   "pavlos tsitsipas": {
    "nom": "Pavlos Tsitsipas",
@@ -12671,6 +12820,7 @@
     "ATP Challenger Plovdiv 4",
     "ATP Challenger Szczecin"
    ],
+   "circuit": "atp",
    "meilleur_prix": "betsson",
    "alertes": [
     {
@@ -12702,6 +12852,7 @@
     "ATP Challenger Plovdiv 4",
     "ATP Challenger Plovdiv 3"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -12746,6 +12897,7 @@
     "US Open Men Singles",
     "ATP Challenger Mouilleron-Le-Captif"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.48,
    "cote_min": 1.57,
    "cote_max": 3.6,
@@ -12863,6 +13015,7 @@
     "ATP Challenger Tiburon",
     "ATP Challenger San Diego 2"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.82,
    "cote_min": 1.27,
    "cote_max": 2.39,
@@ -12956,8 +13109,8 @@
      "pin_open": 2.27
     }
    ],
-   "rang_marche": 64,
-   "rang_sur": 151
+   "rang_marche": 36,
+   "rang_sur": 86
   },
   "andrew johnson": {
    "nom": "Andrew Johnson",
@@ -12970,6 +13123,7 @@
     "US Open Men Singles",
     "ATP Challenger San Diego 2"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 2,
     "victoires": 1
@@ -13047,6 +13201,7 @@
     "ATP Winston Salem",
     "ATP Challenger Tiburon"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.62,
    "cote_min": 1.39,
    "cote_max": 2.17,
@@ -13154,6 +13309,7 @@
    "circuits": [
     "WTA Eastbourne"
    ],
+   "circuit": "wta",
    "meilleur_prix": "unibet",
    "elo": {
     "valeur": 1309,
@@ -13188,6 +13344,7 @@
     "WTA Cincinnati",
     "WTA Memphis"
    ],
+   "circuit": "wta",
    "cote_mediane": 1.63,
    "cote_min": 1.27,
    "cote_max": 2.14,
@@ -13267,6 +13424,7 @@
     "ATP Tokyo",
     "ATP Montreal"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.08,
    "cote_min": 1.22,
    "cote_max": 5.52,
@@ -13398,8 +13556,8 @@
      "pin_open": 1.26
     }
    ],
-   "rang_marche": 100,
-   "rang_sur": 151
+   "rang_marche": 56,
+   "rang_sur": 86
   },
   "renata zarazua": {
    "nom": "Renata Zarazua",
@@ -13414,6 +13572,7 @@
     "WTA S-Hertogenbosch",
     "Berlin"
    ],
+   "circuit": "wta",
    "cote_mediane": 2.53,
    "cote_min": 1.41,
    "cote_max": 6.39,
@@ -13503,8 +13662,8 @@
      "pin_open": 6.39
     }
    ],
-   "rang_marche": 141,
-   "rang_sur": 151
+   "rang_marche": 61,
+   "rang_sur": 65
   },
   "barbora krejcikova": {
    "nom": "Barbora Krejcikova",
@@ -13519,6 +13678,7 @@
     "WTA Toronto",
     "WTA Eastbourne"
    ],
+   "circuit": "wta",
    "cote_mediane": 1.28,
    "cote_min": 1.11,
    "cote_max": 1.66,
@@ -13601,8 +13761,8 @@
      "pin_open": 1.31
     }
    ],
-   "rang_marche": 3,
-   "rang_sur": 151
+   "rang_marche": 2,
+   "rang_sur": 65
   },
   "hanfmann yannick": {
    "nom": "Yannick Hanfmann",
@@ -13617,6 +13777,7 @@
     "ATP Stuttgart",
     "ATP Cincinnati"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.81,
    "cote_min": 1.34,
    "cote_max": 8.1,
@@ -13728,8 +13889,8 @@
      "pin_open": 1.59
     }
    ],
-   "rang_marche": 61,
-   "rang_sur": 151
+   "rang_marche": 33,
+   "rang_sur": 86
   },
   "ankita raina": {
    "nom": "Ankita Raina",
@@ -13741,6 +13902,7 @@
    "circuits": [
     "WTA Memphis"
    ],
+   "circuit": "wta",
    "forme": {
     "n": 4,
     "victoires": 2,
@@ -13795,6 +13957,7 @@
     "WTA Memphis",
     "WTA Guadalajara"
    ],
+   "circuit": "wta",
    "cote_mediane": 1.76,
    "cote_min": 1.25,
    "cote_max": 4.43,
@@ -13861,6 +14024,7 @@
    "circuits": [
     "ATP Challenger Tiburon"
    ],
+   "circuit": "atp",
    "meilleur_prix": "unibet",
    "alertes": [
     {
@@ -13884,6 +14048,7 @@
     "ATP Challenger Tiburon",
     "Wimbledon Men Singles"
    ],
+   "circuit": "atp",
    "forme": {
     "n": 10,
     "victoires": 4,
@@ -13921,6 +14086,7 @@
     "US Open Women Singles",
     "WTA Toronto"
    ],
+   "circuit": "wta",
    "cote_mediane": 1.45,
    "cote_min": 1.17,
    "cote_max": 3.16,
@@ -14037,8 +14203,8 @@
      "pin_open": 2.54
     }
    ],
-   "rang_marche": 18,
-   "rang_sur": 151
+   "rang_marche": 10,
+   "rang_sur": 65
   },
   "havlickova lucie": {
    "nom": "Lucie Havlickova",
@@ -14051,6 +14217,7 @@
     "WTA Prague",
     "US Open Women Singles"
    ],
+   "circuit": "wta",
    "cote_mediane": 2.88,
    "cote_min": 2.08,
    "cote_max": 7.95,
@@ -14137,6 +14304,7 @@
     "WTA Cincinnati",
     "WTA Washington"
    ],
+   "circuit": "wta",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -14189,6 +14357,7 @@
    "circuits": [
     "WTA Bad Homburg Women Singles"
    ],
+   "circuit": "wta",
    "forme": {
     "n": 6,
     "victoires": 6,
@@ -14227,6 +14396,7 @@
     "WTA Beijing",
     "WTA Bad Homburg Women Singles"
    ],
+   "circuit": "wta",
    "cote_mediane": 1.97,
    "cote_min": 1.35,
    "cote_max": 6.46,
@@ -14352,8 +14522,8 @@
      "pin_open": 2.38
     }
    ],
-   "rang_marche": 89,
-   "rang_sur": 151
+   "rang_marche": 38,
+   "rang_sur": 65
   },
   "arutiunian erik": {
    "nom": "Erik Arutiunian",
@@ -14366,6 +14536,7 @@
     "ATP Challenger Tiburon",
     "ATP Challenger San Diego 2"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.89,
    "cote_min": 1.38,
    "cote_max": 5.12,
@@ -14439,6 +14610,7 @@
    "circuits": [
     "ATP Challenger Antofagasta"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -14494,6 +14666,7 @@
     "ATP Challenger Istanbul 3",
     "ATP Challenger Curitiba"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.54,
    "cote_min": 1.26,
    "cote_max": 4.12,
@@ -14579,6 +14752,7 @@
     "ATP Washington",
     "ATP Challenger Villena"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.94,
    "cote_min": 1.3,
    "cote_max": 4.1,
@@ -14692,8 +14866,8 @@
      "pin_open": 4.1
     }
    ],
-   "rang_marche": 82,
-   "rang_sur": 151
+   "rang_marche": 46,
+   "rang_sur": 86
   },
   "damm jr martin": {
    "nom": "Martin Damm Jr",
@@ -14708,6 +14882,7 @@
     "ATP S-Hertogenbosch",
     "ATP Chengdu"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.08,
    "cote_min": 1.24,
    "cote_max": 4.8,
@@ -14815,8 +14990,8 @@
      "pin_open": 1.24
     }
    ],
-   "rang_marche": 101,
-   "rang_sur": 151
+   "rang_marche": 57,
+   "rang_sur": 86
   },
   "jordan lee": {
    "nom": "Jordan Lee",
@@ -14828,6 +15003,7 @@
    "circuits": [
     "ATP Challenger San Diego 2"
    ],
+   "circuit": "atp",
    "forme": {
     "n": 6,
     "victoires": 1,
@@ -14863,6 +15039,7 @@
    "circuits": [
     "ATP Challenger Tiburon"
    ],
+   "circuit": "atp",
    "meilleur_prix": "bwin",
    "alertes": [
     {
@@ -14887,6 +15064,7 @@
     "ATP Challenger Columbus",
     "ATP Challenger San Diego 2"
    ],
+   "circuit": "atp",
    "cote_mediane": 3.49,
    "cote_min": 1.24,
    "cote_max": 4.7,
@@ -14962,6 +15140,7 @@
     "ATP Challenger Genoa 2",
     "ATP Challenger Szczecin"
    ],
+   "circuit": "atp",
    "forme": {
     "n": 10,
     "victoires": 6,
@@ -15025,6 +15204,7 @@
     "ATP Los Cabos",
     "ATP Challenger Tiburon"
    ],
+   "circuit": "atp",
    "forme": {
     "n": 3,
     "victoires": 0,
@@ -15063,6 +15243,7 @@
     "ATP Challenger Braga",
     "ATP Challenger San Diego 2"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.57,
    "cote_min": 1.19,
    "cote_max": 3.74,
@@ -15147,6 +15328,7 @@
    "circuits": [
     "ATP Challenger Columbus"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -15189,6 +15371,7 @@
     "ATP Estoril",
     "US Open Men Singles"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.15,
    "cote_min": 1.44,
    "cote_max": 5.03,
@@ -15311,8 +15494,8 @@
      "pin_open": 2.15
     }
    ],
-   "rang_marche": 109,
-   "rang_sur": 151
+   "rang_marche": 61,
+   "rang_sur": 86
   },
   "royer valentin": {
    "nom": "Valentin Royer",
@@ -15327,6 +15510,7 @@
     "ATP Mallorca",
     "ATP Challenger Kingston"
    ],
+   "circuit": "atp",
    "cote_mediane": 3.78,
    "cote_min": 1.77,
    "cote_max": 4.9,
@@ -15428,6 +15612,7 @@
     "US Open Men Singles",
     "ATP Beijing"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.37,
    "cote_min": 1.17,
    "cote_max": 1.89,
@@ -15574,8 +15759,8 @@
      "pin_open": 1.89
     }
    ],
-   "rang_marche": 9,
-   "rang_sur": 151
+   "rang_marche": 5,
+   "rang_sur": 86
   },
   "benjamin torrealba": {
    "nom": "Benjamin Torrealba",
@@ -15587,6 +15772,7 @@
    "circuits": [
     "ATP Challenger Antofagasta"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -15627,6 +15813,7 @@
     "ATP Challenger Antofagasta",
     "ATP Challenger Curitiba"
    ],
+   "circuit": "atp",
    "cote_mediane": 3.18,
    "cote_min": 1.4,
    "cote_max": 5.55,
@@ -15725,6 +15912,7 @@
     "ATP Challenger Antofagasta",
     "ATP Challenger Curitiba"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 2,
     "victoires": 0
@@ -15784,6 +15972,7 @@
     "ATP Cincinnati",
     "ATP Montreal"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.43,
    "cote_min": 1.9,
    "cote_max": 6.56,
@@ -15872,8 +16061,8 @@
      "pin_open": 6.56
     }
    ],
-   "rang_marche": 134,
-   "rang_sur": 151
+   "rang_marche": 76,
+   "rang_sur": 86
   },
   "tiago torres": {
    "nom": "Tiago Torres",
@@ -15887,6 +16076,7 @@
     "ATP Challenger Braga",
     "ATP Challenger Istanbul 3"
    ],
+   "circuit": "atp",
    "cote_mediane": 3.43,
    "cote_min": 2.29,
    "cote_max": 4.14,
@@ -15986,6 +16176,7 @@
    "circuits": [
     "ATP Winston Salem"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -16028,6 +16219,7 @@
     "ATP Winston Salem",
     "ATP Challenger Cassis"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.81,
    "cote_min": 1.34,
    "cote_max": 2.49,
@@ -16141,8 +16333,8 @@
      "pin_open": 2.0
     }
    ],
-   "rang_marche": 62,
-   "rang_sur": 151
+   "rang_marche": 34,
+   "rang_sur": 86
   },
   "antoine pierre tailleu": {
    "nom": "Pierre Antoine Tailleu",
@@ -16256,6 +16448,7 @@
     "WTA Nottingham",
     "WTA Eastbourne"
    ],
+   "circuit": "wta",
    "forme": {
     "n": 5,
     "victoires": 0,
@@ -16303,6 +16496,7 @@
     "WTA S-Hertogenbosch",
     "WTA Monterrey"
    ],
+   "circuit": "wta",
    "cote_mediane": 2.24,
    "cote_min": 1.24,
    "cote_max": 3.17,
@@ -16412,6 +16606,7 @@
     "ATP Challenger Szczecin",
     "ATP Challenger Tulln"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -16478,6 +16673,7 @@
     "ATP Cincinnati",
     "ATP Eastbourne"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.32,
    "cote_min": 1.4,
    "cote_max": 3.44,
@@ -16552,6 +16748,7 @@
     "ATP s-Hertogenbosch",
     "ATP Challenger Shanghai"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.57,
    "cote_min": 1.37,
    "cote_max": 6.26,
@@ -16652,6 +16849,7 @@
     "WTA London",
     "WTA Cincinnati"
    ],
+   "circuit": "wta",
    "cote_mediane": 1.65,
    "cote_min": 1.18,
    "cote_max": 6.26,
@@ -16738,8 +16936,8 @@
      "pin_open": 1.71
     }
    ],
-   "rang_marche": 36,
-   "rang_sur": 151
+   "rang_marche": 17,
+   "rang_sur": 65
   },
   "marco trungelliti": {
    "nom": "Marco Trungelliti",
@@ -16754,6 +16952,7 @@
     "ATP Montreal",
     "ATP Challenger Szczecin"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.47,
    "cote_min": 1.48,
    "cote_max": 6.93,
@@ -16856,8 +17055,8 @@
      "pin_open": 2.18
     }
    ],
-   "rang_marche": 139,
-   "rang_sur": 151
+   "rang_marche": 79,
+   "rang_sur": 86
   },
   "jong sander": {
    "nom": "Sander Jong",
@@ -16869,6 +17068,7 @@
    "circuits": [
     "ATP s-Hertogenbosch"
    ],
+   "circuit": "atp",
    "meilleur_prix": "betsson",
    "alertes": [
     {
@@ -16893,6 +17093,7 @@
     "ATP s-Hertogenbosch",
     "Wimbledon Men Singles"
    ],
+   "circuit": "atp",
    "cote_mediane": 3.39,
    "cote_min": 1.34,
    "cote_max": 3.59,
@@ -16956,6 +17157,7 @@
     "WTA Cincinnati",
     "WTA Beijing"
    ],
+   "circuit": "wta",
    "cote_mediane": 2.04,
    "cote_min": 1.34,
    "cote_max": 5.11,
@@ -17075,8 +17277,8 @@
      "pin_open": 2.38
     }
    ],
-   "rang_marche": 93,
-   "rang_sur": 151
+   "rang_marche": 40,
+   "rang_sur": 65
   },
   "tereza valentova": {
    "nom": "Tereza Valentova",
@@ -17091,6 +17293,7 @@
     "WTA Cincinnati",
     "WTA Nottingham"
    ],
+   "circuit": "wta",
    "cote_mediane": 1.81,
    "cote_min": 1.13,
    "cote_max": 3.68,
@@ -17191,6 +17394,7 @@
    "circuits": [
     "ATP Challenger Tulln"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -17231,6 +17435,7 @@
     "ATP Challenger Palermo",
     "ATP Challenger Tulln"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 2,
     "victoires": 1
@@ -17310,6 +17515,7 @@
     "WTA Beijing",
     "WTA Singapore"
    ],
+   "circuit": "wta",
    "cote_mediane": 3.62,
    "cote_min": 2.49,
    "cote_max": 5.14,
@@ -17396,6 +17602,7 @@
     "ATP Los Cabos",
     "ATP Stuttgart"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.49,
    "cote_min": 2.11,
    "cote_max": 4.06,
@@ -17498,6 +17705,7 @@
     "ATP Washington",
     "ATP Eastbourne"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.12,
    "cote_min": 1.32,
    "cote_max": 3.5,
@@ -17630,8 +17838,8 @@
      "pin_open": 1.93
     }
    ],
-   "rang_marche": 107,
-   "rang_sur": 151
+   "rang_marche": 59,
+   "rang_sur": 86
   },
   "svajda trevor": {
    "nom": "Trevor Svajda",
@@ -17646,6 +17854,7 @@
     "ATP Washington",
     "ATP Challenger Columbus"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.64,
    "cote_min": 1.29,
    "cote_max": 3.08,
@@ -17730,6 +17939,7 @@
     "ATP Challenger San Diego 2",
     "ATP Challenger Tiburon"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -17785,6 +17995,7 @@
     "ATP Challenger Shanghai",
     "ATP Challenger Quebec City"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.98,
    "cote_min": 1.17,
    "cote_max": 3.1,
@@ -17868,6 +18079,7 @@
    "circuits": [
     "ATP Challenger Shanghai"
    ],
+   "circuit": "atp",
    "forme": {
     "n": 6,
     "victoires": 4,
@@ -17903,6 +18115,7 @@
    "circuits": [
     "ATP Challenger Shanghai"
    ],
+   "circuit": "atp",
    "elo": {
     "valeur": 1393,
     "tour": "atp",
@@ -17924,6 +18137,7 @@
    "circuits": [
     "ATP Challenger Seville"
    ],
+   "circuit": "atp",
    "forme": {
     "n": 5,
     "victoires": 0,
@@ -17970,6 +18184,7 @@
     "ATP Tokyo",
     "ATP Eastbourne"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.64,
    "cote_min": 1.19,
    "cote_max": 4.45,
@@ -18071,6 +18286,7 @@
     "ATP Challenger Curitiba",
     "ATP Challenger Antofagasta"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -18137,6 +18353,7 @@
     "ATP Cincinnati",
     "ATP Tokyo"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.9,
    "cote_min": 1.18,
    "cote_max": 4.57,
@@ -18254,8 +18471,8 @@
      "pin_open": 2.17
     }
    ],
-   "rang_marche": 77,
-   "rang_sur": 151
+   "rang_marche": 45,
+   "rang_sur": 86
   },
   "heather watson": {
    "nom": "Heather Watson",
@@ -18268,6 +18485,7 @@
     "US Open Women Singles",
     "WTA Washington"
    ],
+   "circuit": "wta",
    "bilan": {
     "n": 2,
     "victoires": 1
@@ -18330,6 +18548,7 @@
     "WTA Cincinnati",
     "WTA Bad Homburg Women Singles"
    ],
+   "circuit": "wta",
    "cote_mediane": 1.72,
    "cote_min": 1.41,
    "cote_max": 5.0,
@@ -18440,8 +18659,8 @@
      "pin_open": 1.72
     }
    ],
-   "rang_marche": 45,
-   "rang_sur": 151
+   "rang_marche": 19,
+   "rang_sur": 65
   },
   "astakhova darya": {
    "nom": "Darya Astakhova",
@@ -18453,6 +18672,7 @@
    "circuits": [
     "WTA Seoul"
    ],
+   "circuit": "wta",
    "forme": {
     "n": 5,
     "victoires": 3,
@@ -18500,6 +18720,7 @@
     "WTA Seoul",
     "WTA Cincinnati"
    ],
+   "circuit": "wta",
    "cote_mediane": 1.68,
    "cote_min": 1.41,
    "cote_max": 2.33,
@@ -18571,6 +18792,7 @@
     "WTA Nottingham",
     "WTA Guadalajara"
    ],
+   "circuit": "wta",
    "cote_mediane": 3.0,
    "cote_min": 1.44,
    "cote_max": 4.6,
@@ -18666,8 +18888,8 @@
      "pin_open": 2.03
     }
    ],
-   "rang_marche": 147,
-   "rang_sur": 151
+   "rang_marche": 63,
+   "rang_sur": 65
   },
   "kenin sofia": {
    "nom": "Sofia Kenin",
@@ -18681,6 +18903,7 @@
     "WTA Toronto",
     "WTA Eastbourne"
    ],
+   "circuit": "wta",
    "cote_mediane": 2.27,
    "cote_min": 1.52,
    "cote_max": 2.79,
@@ -18734,6 +18957,7 @@
     "ATP Challenger Palermo",
     "ATP Challenger Augsburg"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 2,
     "victoires": 1
@@ -18794,6 +19018,7 @@
     "ATP Halle",
     "ATP Stuttgart"
    ],
+   "circuit": "atp",
    "forme": {
     "n": 6,
     "victoires": 2,
@@ -18841,6 +19066,7 @@
     "ATP Los Cabos",
     "Wimbledon Men Singles"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.66,
    "cote_min": 1.07,
    "cote_max": 2.61,
@@ -18973,8 +19199,8 @@
      "pin_open": 1.58
     }
    ],
-   "rang_marche": 38,
-   "rang_sur": 151
+   "rang_marche": 21,
+   "rang_sur": 86
   },
   "hijikata rinky": {
    "nom": "Rinky Hijikata",
@@ -18989,6 +19215,7 @@
     "ATP Hangzhou",
     "ATP London"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.46,
    "cote_min": 1.98,
    "cote_max": 4.37,
@@ -19106,8 +19333,8 @@
      "pin_open": 2.27
     }
    ],
-   "rang_marche": 137,
-   "rang_sur": 151
+   "rang_marche": 78,
+   "rang_sur": 86
   },
   "andrey rublev": {
    "nom": "Andrey Rublev",
@@ -19122,6 +19349,7 @@
     "ATP Beijing",
     "ATP Estoril"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.48,
    "cote_min": 1.11,
    "cote_max": 2.89,
@@ -19230,6 +19458,7 @@
     "ATP Challenger Tulln",
     "ATP Challenger Szczecin"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.83,
    "cote_min": 1.48,
    "cote_max": 2.47,
@@ -19298,6 +19527,7 @@
    "circuits": [
     "US Open Women Singles"
    ],
+   "circuit": "wta",
    "set1": {
     "n": 1,
     "gagnes": 0
@@ -19344,6 +19574,7 @@
    "circuits": [
     "US Open Women Singles"
    ],
+   "circuit": "wta",
    "set1": {
     "n": 1,
     "gagnes": 1
@@ -19381,6 +19612,7 @@
     "ATP Montreal",
     "ATP Mallorca"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.7,
    "cote_min": 1.19,
    "cote_max": 2.41,
@@ -19466,6 +19698,7 @@
     "US Open Men Singles",
     "Wimbledon Men Singles"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.84,
    "cote_min": 1.25,
    "cote_max": 4.3,
@@ -19572,8 +19805,8 @@
      "pin_open": 2.73
     }
    ],
-   "rang_marche": 68,
-   "rang_sur": 151
+   "rang_marche": 39,
+   "rang_sur": 86
   },
   "casper ruud": {
    "nom": "Casper Ruud",
@@ -19587,6 +19820,7 @@
     "US Open Men Singles",
     "ATP Tokyo"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 2,
     "victoires": 0
@@ -19646,6 +19880,7 @@
    "circuits": [
     "US Open Women Singles"
    ],
+   "circuit": "wta",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -19701,6 +19936,7 @@
     "WTA Beijing",
     "WTA Nottingham"
    ],
+   "circuit": "wta",
    "cote_mediane": 3.13,
    "cote_min": 1.07,
    "cote_max": 11.0,
@@ -19827,8 +20063,8 @@
      "pin_open": 3.5
     }
    ],
-   "rang_marche": 149,
-   "rang_sur": 151
+   "rang_marche": 65,
+   "rang_sur": 65
   },
   "alberto genaro olivieri": {
    "nom": "Genaro Alberto Olivieri",
@@ -19843,6 +20079,7 @@
     "ATP Challenger Curitiba",
     "Wimbledon Men Singles"
    ],
+   "circuit": "atp",
    "cote_mediane": 3.11,
    "cote_min": 1.75,
    "cote_max": 6.26,
@@ -19936,6 +20173,7 @@
     "ATP Challenger Curitiba",
     "ATP Challenger Buenos Aires II"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.91,
    "cote_min": 1.4,
    "cote_max": 2.96,
@@ -20027,6 +20265,7 @@
     "WTA Nottingham",
     "WTA Eastbourne"
    ],
+   "circuit": "wta",
    "forme": {
     "n": 6,
     "victoires": 2,
@@ -20091,6 +20330,7 @@
     "US Open Women Singles",
     "WTA Bad Homburg Women Singles"
    ],
+   "circuit": "wta",
    "cote_mediane": 1.79,
    "cote_min": 1.31,
    "cote_max": 4.41,
@@ -20193,8 +20433,8 @@
      "pin_open": 3.32
     }
    ],
-   "rang_marche": 58,
-   "rang_sur": 151
+   "rang_marche": 27,
+   "rang_sur": 65
   },
   "elise mertens": {
    "nom": "Elise Mertens",
@@ -20209,6 +20449,7 @@
     "WTA S-Hertogenbosch",
     "Berlin"
    ],
+   "circuit": "wta",
    "cote_mediane": 1.46,
    "cote_min": 1.29,
    "cote_max": 3.7,
@@ -20293,6 +20534,7 @@
     "US Open Men Singles",
     "ATP Halle"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -20358,6 +20600,7 @@
     "US Open Men Singles",
     "ATP Challenger Kingston"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.57,
    "cote_min": 1.42,
    "cote_max": 3.13,
@@ -20457,6 +20700,7 @@
     "US Open Women Singles",
     "WTA Prague"
    ],
+   "circuit": "wta",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -20530,6 +20774,7 @@
     "WTA S-Hertogenbosch",
     "WTA Beijing"
    ],
+   "circuit": "wta",
    "cote_mediane": 1.87,
    "cote_min": 1.4,
    "cote_max": 3.22,
@@ -20625,8 +20870,8 @@
      "pin_open": 2.79
     }
    ],
-   "rang_marche": 71,
-   "rang_sur": 151
+   "rang_marche": 31,
+   "rang_sur": 65
   },
   "kyrgios nick": {
    "nom": "Nick Kyrgios",
@@ -20639,6 +20884,7 @@
     "ATP Stuttgart",
     "ATP Mallorca"
    ],
+   "circuit": "atp",
    "forme": {
     "n": 5,
     "victoires": 2,
@@ -20685,6 +20931,7 @@
     "ATP Cincinnati",
     "ATP Los Cabos"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.09,
    "cote_min": 1.46,
    "cote_max": 3.42,
@@ -20755,6 +21002,7 @@
     "ATP Cincinnati",
     "ATP Shanghai"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.77,
    "cote_min": 1.43,
    "cote_max": 4.39,
@@ -20858,8 +21106,8 @@
      "pin_open": 2.37
     }
    ],
-   "rang_marche": 146,
-   "rang_sur": 151
+   "rang_marche": 84,
+   "rang_sur": 86
   },
   "djokovic novak": {
    "nom": "Novak Djokovic",
@@ -20872,6 +21120,7 @@
     "ATP Beijing",
     "ATP Cincinnati"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.38,
    "cote_min": 1.24,
    "cote_max": 2.35,
@@ -20952,6 +21201,7 @@
     "ATP Challenger Tiburon",
     "ATP Winston Salem"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.22,
    "cote_min": 1.46,
    "cote_max": 4.28,
@@ -21042,6 +21292,7 @@
    "circuits": [
     "ATP Winston Salem"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 3,
     "victoires": 1
@@ -21130,6 +21381,7 @@
     "ATP Eastbourne",
     "ATP Challenger Villena"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.66,
    "cote_min": 1.48,
    "cote_max": 4.57,
@@ -21223,6 +21475,7 @@
     "ATP Washington",
     "ATP Cincinnati"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.43,
    "cote_min": 1.61,
    "cote_max": 6.09,
@@ -21362,8 +21615,8 @@
      "pin_open": 1.61
     }
    ],
-   "rang_marche": 135,
-   "rang_sur": 151
+   "rang_marche": 77,
+   "rang_sur": 86
   },
   "matias soto": {
    "nom": "Matias Soto",
@@ -21376,6 +21629,7 @@
     "ATP Challenger Tulln",
     "ATP Challenger Curitiba"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -21449,6 +21703,7 @@
     "US Open Men Singles",
     "ATP Chengdu"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.49,
    "cote_min": 1.41,
    "cote_max": 5.17,
@@ -21589,8 +21844,8 @@
      "pin_open": 1.46
     }
    ],
-   "rang_marche": 140,
-   "rang_sur": 151
+   "rang_marche": 80,
+   "rang_sur": 86
   },
   "andrea pellegrino": {
    "nom": "Andrea Pellegrino",
@@ -21605,6 +21860,7 @@
     "ATP Challenger Braga",
     "Wimbledon Men Singles"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.3,
    "cote_min": 1.22,
    "cote_max": 3.7,
@@ -21687,6 +21943,7 @@
    "circuits": [
     "ATP Challenger Cassis"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 1
@@ -21757,6 +22014,7 @@
    "circuits": [
     "ATP Challenger Plovdiv 4"
    ],
+   "circuit": "atp",
    "forme": {
     "n": 3,
     "victoires": 1,
@@ -21804,6 +22062,7 @@
     "ATP Challenger Seville",
     "ATP Challenger Plovdiv 4"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.18,
    "cote_min": 1.24,
    "cote_max": 3.13,
@@ -21870,6 +22129,7 @@
     "ATP Challenger Mouilleron-Le-Captif",
     "ATP s-Hertogenbosch"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -21943,6 +22203,7 @@
     "ATP Challenger Rennes",
     "Wimbledon Men Singles"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.62,
    "cote_min": 1.32,
    "cote_max": 2.06,
@@ -22044,6 +22305,7 @@
     "WTA Nottingham",
     "WTA Cincinnati"
    ],
+   "circuit": "wta",
    "cote_mediane": 1.79,
    "cote_min": 1.22,
    "cote_max": 3.08,
@@ -22133,6 +22395,7 @@
    "circuits": [
     "Wimbledon Men Singles"
    ],
+   "circuit": "atp",
    "forme": {
     "n": 7,
     "victoires": 3,
@@ -22179,6 +22442,7 @@
     "ATP Challenger Rennes",
     "ATP Challenger Villena"
    ],
+   "circuit": "atp",
    "cote_mediane": 3.44,
    "cote_min": 2.75,
    "cote_max": 5.14,
@@ -22287,6 +22551,7 @@
     "ATP Challenger Saint Tropez",
     "ATP Challenger Quebec City"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 2,
     "victoires": 0
@@ -22360,6 +22625,7 @@
     "ATP Cincinnati",
     "ATP Los Cabos"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.41,
    "cote_min": 1.36,
    "cote_max": 4.47,
@@ -22484,8 +22750,8 @@
      "pin_open": 4.47
     }
    ],
-   "rang_marche": 133,
-   "rang_sur": 151
+   "rang_marche": 75,
+   "rang_sur": 86
   },
   "benjamin bonzi": {
    "nom": "Benjamin Bonzi",
@@ -22500,6 +22766,7 @@
     "ATP Winston Salem",
     "ATP S-Hertogenbosch"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.33,
    "cote_min": 1.3,
    "cote_max": 5.63,
@@ -22640,8 +22907,8 @@
      "pin_open": 1.3
     }
    ],
-   "rang_marche": 127,
-   "rang_sur": 151
+   "rang_marche": 72,
+   "rang_sur": 86
   },
   "marc polmans": {
    "nom": "Marc Polmans",
@@ -22654,6 +22921,7 @@
     "ATP Mallorca",
     "ATP Winston Salem"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -22719,6 +22987,7 @@
     "ATP Challenger Saint Tropez",
     "ATP Cincinnati"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.45,
    "cote_min": 1.19,
    "cote_max": 1.73,
@@ -22792,6 +23061,7 @@
     "WTA Eastbourne",
     "US Open Women Singles"
    ],
+   "circuit": "wta",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -22858,6 +23128,7 @@
     "US Open Women Singles",
     "WTA Bad Homburg Women Singles"
    ],
+   "circuit": "wta",
    "cote_mediane": 1.35,
    "cote_min": 1.19,
    "cote_max": 1.43,
@@ -22944,8 +23215,8 @@
      "pin_open": 1.37
     }
    ],
-   "rang_marche": 8,
-   "rang_sur": 151
+   "rang_marche": 4,
+   "rang_sur": 65
   },
   "despina papamichail": {
    "nom": "Despina Papamichail",
@@ -22957,6 +23228,7 @@
    "circuits": [
     "US Open Women Singles"
    ],
+   "circuit": "wta",
    "bilan": {
     "n": 1,
     "victoires": 1
@@ -23018,6 +23290,7 @@
    "circuits": [
     "US Open Women Singles"
    ],
+   "circuit": "wta",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -23070,6 +23343,7 @@
    "circuits": [
     "US Open Women Singles"
    ],
+   "circuit": "wta",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -23134,6 +23408,7 @@
     "US Open Men Singles",
     "ATP Montreal"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.81,
    "cote_min": 1.55,
    "cote_max": 5.27,
@@ -23247,6 +23522,7 @@
     "ATP Tokyo",
     "ATP Cincinnati"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.71,
    "cote_min": 1.23,
    "cote_max": 2.59,
@@ -23365,8 +23641,8 @@
      "pin_open": 1.65
     }
    ],
-   "rang_marche": 42,
-   "rang_sur": 151
+   "rang_marche": 24,
+   "rang_sur": 86
   },
   "dane sweeny": {
    "nom": "Dane Sweeny",
@@ -23381,6 +23657,7 @@
     "ATP Cincinnati",
     "ATP Challenger Jingshan"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.55,
    "cote_min": 1.08,
    "cote_max": 5.18,
@@ -23498,6 +23775,7 @@
     "ATP Tokyo",
     "ATP Los Cabos"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.64,
    "cote_min": 1.24,
    "cote_max": 3.54,
@@ -23614,8 +23892,8 @@
      "pin_open": 1.64
     }
    ],
-   "rang_marche": 34,
-   "rang_sur": 151
+   "rang_marche": 19,
+   "rang_sur": 86
   },
   "contri perez sergi": {
    "nom": "Sergi Perez Contri",
@@ -23627,6 +23905,7 @@
    "circuits": [
     "ATP Challenger Seville"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -23679,6 +23958,7 @@
    "circuits": [
     "ATP Challenger Seville"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 2,
     "victoires": 2
@@ -23749,6 +24029,7 @@
     "ATP Shanghai",
     "US Open Men Singles"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.94,
    "cote_min": 1.19,
    "cote_max": 4.47,
@@ -23881,8 +24162,8 @@
      "pin_open": 4.47
     }
    ],
-   "rang_marche": 83,
-   "rang_sur": 151
+   "rang_marche": 47,
+   "rang_sur": 86
   },
   "ivanovski kalin": {
    "nom": "Kalin Ivanovski",
@@ -23894,6 +24175,7 @@
    "circuits": [
     "ATP Challenger Palermo"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 2,
     "victoires": 1
@@ -23956,6 +24238,7 @@
     "ATP Challenger Biella",
     "ATP Challenger Seville"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.61,
    "cote_min": 1.26,
    "cote_max": 3.71,
@@ -24065,8 +24348,8 @@
      "pin_open": 2.19
     }
    ],
-   "rang_marche": 31,
-   "rang_sur": 151
+   "rang_marche": 16,
+   "rang_sur": 86
   },
   "anna kalinskaya": {
    "nom": "Anna Kalinskaya",
@@ -24081,6 +24364,7 @@
     "WTA Bad Homburg Women Singles",
     "Berlin"
    ],
+   "circuit": "wta",
    "cote_mediane": 1.91,
    "cote_min": 1.48,
    "cote_max": 3.7,
@@ -24169,8 +24453,8 @@
      "pin_open": 2.99
     }
    ],
-   "rang_marche": 80,
-   "rang_sur": 151
+   "rang_marche": 35,
+   "rang_sur": 65
   },
   "rebecca sramkova": {
    "nom": "Rebecca Sramkova",
@@ -24184,6 +24468,7 @@
     "WTA Toronto",
     "WTA Washington"
    ],
+   "circuit": "wta",
    "cote_mediane": 2.47,
    "cote_min": 1.5,
    "cote_max": 3.0,
@@ -24278,6 +24563,7 @@
     "WTA S-Hertogenbosch",
     "WTA Eastbourne"
    ],
+   "circuit": "wta",
    "cote_mediane": 1.79,
    "cote_min": 1.36,
    "cote_max": 4.23,
@@ -24364,6 +24650,7 @@
     "ATP Montreal",
     "ATP Beijing"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.78,
    "cote_min": 1.36,
    "cote_max": 9.33,
@@ -24458,8 +24745,8 @@
      "pin_open": 1.85
     }
    ],
-   "rang_marche": 56,
-   "rang_sur": 151
+   "rang_marche": 31,
+   "rang_sur": 86
   },
   "alex bolt": {
    "nom": "Alex Bolt",
@@ -24473,6 +24760,7 @@
     "Wimbledon Men Singles",
     "ATP Washington"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -24546,6 +24834,7 @@
     "ATP Shanghai",
     "ATP Chengdu"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.77,
    "cote_min": 1.21,
    "cote_max": 2.21,
@@ -24668,6 +24957,7 @@
     "WTA S-Hertogenbosch",
     "Berlin"
    ],
+   "circuit": "wta",
    "forme": {
     "n": 7,
     "victoires": 4,
@@ -24732,6 +25022,7 @@
     "WTA Memphis",
     "WTA Beijing"
    ],
+   "circuit": "wta",
    "cote_mediane": 2.0,
    "cote_min": 1.22,
    "cote_max": 6.18,
@@ -24841,8 +25132,8 @@
      "pin_open": 1.22
     }
    ],
-   "rang_marche": 92,
-   "rang_sur": 151
+   "rang_marche": 39,
+   "rang_sur": 65
   },
   "collignon raphael": {
    "nom": "Raphael Collignon",
@@ -24857,6 +25148,7 @@
     "ATP Kitzbuhel",
     "ATP Winston Salem"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.66,
    "cote_min": 1.08,
    "cote_max": 5.89,
@@ -24954,8 +25246,8 @@
      "pin_open": 1.08
     }
    ],
-   "rang_marche": 39,
-   "rang_sur": 151
+   "rang_marche": 22,
+   "rang_sur": 86
   },
   "maria timofeeva": {
    "nom": "Maria Timofeeva",
@@ -24970,6 +25262,7 @@
     "WTA Beijing",
     "Berlin"
    ],
+   "circuit": "wta",
    "cote_mediane": 2.34,
    "cote_min": 1.51,
    "cote_max": 4.75,
@@ -25102,8 +25395,8 @@
      "pin_open": 2.1
     }
    ],
-   "rang_marche": 130,
-   "rang_sur": 151
+   "rang_marche": 57,
+   "rang_sur": 65
   },
   "bejlek sara": {
    "nom": "Sara Bejlek",
@@ -25118,6 +25411,7 @@
     "WTA Guadalajara",
     "WTA Beijing"
    ],
+   "circuit": "wta",
    "cote_mediane": 2.08,
    "cote_min": 1.25,
    "cote_max": 9.33,
@@ -25258,8 +25552,8 @@
      "pin_open": 1.62
     }
    ],
-   "rang_marche": 102,
-   "rang_sur": 151
+   "rang_marche": 45,
+   "rang_sur": 65
   },
   "jakub mensik": {
    "nom": "Jakub Mensik",
@@ -25274,6 +25568,7 @@
     "ATP Beijing",
     "ATP Washington"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.55,
    "cote_min": 1.3,
    "cote_max": 2.1,
@@ -25382,8 +25677,8 @@
      "pin_open": 1.83
     }
    ],
-   "rang_marche": 26,
-   "rang_sur": 151
+   "rang_marche": 12,
+   "rang_sur": 86
   },
   "abdelaziz ahmed mayar sherif": {
    "nom": "Mayar Sherif Ahmed Abdelaziz",
@@ -25397,6 +25692,7 @@
     "WTA Hamburg",
     "WTA Beijing"
    ],
+   "circuit": "wta",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -25460,6 +25756,7 @@
     "ATP Cincinnati",
     "ATP Stuttgart"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.22,
    "cote_min": 1.34,
    "cote_max": 2.95,
@@ -25552,8 +25849,8 @@
      "pin_open": 2.95
     }
    ],
-   "rang_marche": 115,
-   "rang_sur": 151
+   "rang_marche": 64,
+   "rang_sur": 86
   },
   "pedro sakamoto": {
    "nom": "Pedro Sakamoto",
@@ -25565,6 +25862,7 @@
    "circuits": [
     "ATP Challenger Curitiba"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 2,
     "victoires": 1
@@ -25624,6 +25922,7 @@
     "Wimbledon Men Singles",
     "ATP Cincinnati"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.68,
    "cote_min": 1.12,
    "cote_max": 4.46,
@@ -25763,8 +26062,8 @@
      "pin_open": 1.32
     }
    ],
-   "rang_marche": 41,
-   "rang_sur": 151
+   "rang_marche": 23,
+   "rang_sur": 86
   },
   "schoolkate tristan": {
    "nom": "Tristan Schoolkate",
@@ -25778,6 +26077,7 @@
     "ATP Challenger Mouilleron-Le-Captif",
     "Wimbledon Men Singles"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.68,
    "cote_min": 1.08,
    "cote_max": 5.21,
@@ -25916,6 +26216,7 @@
     "ATP Halle",
     "ATP Montreal"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.96,
    "cote_min": 1.24,
    "cote_max": 4.7,
@@ -26025,8 +26326,8 @@
      "pin_open": 2.24
     }
    ],
-   "rang_marche": 88,
-   "rang_sur": 151
+   "rang_marche": 51,
+   "rang_sur": 86
   },
   "garland joanna": {
    "nom": "Joanna Garland",
@@ -26039,6 +26340,7 @@
     "WTA Singapore",
     "US Open Women Singles"
    ],
+   "circuit": "wta",
    "cote_mediane": 1.88,
    "cote_min": 1.5,
    "cote_max": 3.0,
@@ -26114,6 +26416,7 @@
    "circuits": [
     "WTA Singapore"
    ],
+   "circuit": "wta",
    "forme": {
     "n": 3,
     "victoires": 1,
@@ -26152,6 +26455,7 @@
     "ATP Challenger Tiburon",
     "ATP Challenger Columbus"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.72,
    "cote_min": 1.41,
    "cote_max": 2.23,
@@ -26251,6 +26555,7 @@
     "ATP Challenger Mouilleron-Le-Captif",
     "ATP Challenger Tulln"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.22,
    "cote_min": 1.3,
    "cote_max": 3.14,
@@ -26372,6 +26677,7 @@
     "ATP Challenger Mouilleron-Le-Captif",
     "ATP Challenger Sion"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.34,
    "cote_min": 1.29,
    "cote_max": 1.47,
@@ -26463,6 +26769,7 @@
     "ATP Stuttgart",
     "ATP Montreal"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.56,
    "cote_min": 1.23,
    "cote_max": 4.39,
@@ -26587,8 +26894,8 @@
      "pin_open": 1.64
     }
    ],
-   "rang_marche": 28,
-   "rang_sur": 151
+   "rang_marche": 14,
+   "rang_sur": 86
   },
   "panna udvardy": {
    "nom": "Panna Udvardy",
@@ -26603,6 +26910,7 @@
     "WTA Hamburg",
     "WTA Nottingham"
    ],
+   "circuit": "wta",
    "cote_mediane": 3.09,
    "cote_min": 1.54,
    "cote_max": 5.55,
@@ -26729,8 +27037,8 @@
      "pin_open": 2.47
     }
    ],
-   "rang_marche": 148,
-   "rang_sur": 151
+   "rang_marche": 64,
+   "rang_sur": 65
   },
   "arango emiliana": {
    "nom": "Emiliana Arango",
@@ -26745,6 +27053,7 @@
     "WTA Monterrey",
     "WTA Guadalajara"
    ],
+   "circuit": "wta",
    "cote_mediane": 2.07,
    "cote_min": 1.37,
    "cote_max": 3.22,
@@ -26831,8 +27140,8 @@
      "pin_open": 1.39
     }
    ],
-   "rang_marche": 98,
-   "rang_sur": 151
+   "rang_marche": 43,
+   "rang_sur": 65
   },
   "barros luiza victoria": {
    "nom": "Victoria Luiza Barros",
@@ -26844,6 +27153,7 @@
    "circuits": [
     "WTA Sao Paulo"
    ],
+   "circuit": "wta",
    "meilleur_prix": "betsson",
    "alertes": [
     {
@@ -26866,6 +27176,7 @@
    "circuits": [
     "WTA Sao Paulo"
    ],
+   "circuit": "wta",
    "forme": {
     "n": 4,
     "victoires": 2,
@@ -26900,6 +27211,7 @@
     "ATP Challenger San Diego 2",
     "ATP Challenger Tiburon"
    ],
+   "circuit": "atp",
    "forme": {
     "n": 4,
     "victoires": 2,
@@ -26954,6 +27266,7 @@
     "ATP Challenger San Diego 2",
     "ATP Challenger Tiburon"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.59,
    "cote_min": 1.25,
    "cote_max": 1.66,
@@ -26996,6 +27309,7 @@
     "US Open Women Singles",
     "WTA Seoul"
    ],
+   "circuit": "wta",
    "bilan": {
     "n": 2,
     "victoires": 1
@@ -27069,6 +27383,7 @@
     "WTA S-Hertogenbosch",
     "WTA Cincinnati"
    ],
+   "circuit": "wta",
    "cote_mediane": 1.77,
    "cote_min": 1.3,
    "cote_max": 3.08,
@@ -27179,8 +27494,8 @@
      "pin_open": 2.76
     }
    ],
-   "rang_marche": 54,
-   "rang_sur": 151
+   "rang_marche": 25,
+   "rang_sur": 65
   },
   "iva jovic": {
    "nom": "Iva Jovic",
@@ -27195,6 +27510,7 @@
     "WTA Bad Homburg Women Singles",
     "WTA Beijing"
    ],
+   "circuit": "wta",
    "cote_mediane": 1.41,
    "cote_min": 1.1,
    "cote_max": 2.14,
@@ -27305,8 +27621,8 @@
      "pin_open": 2.14
     }
    ],
-   "rang_marche": 15,
-   "rang_sur": 151
+   "rang_marche": 8,
+   "rang_sur": 65
   },
   "llamas pablo ruiz": {
    "nom": "Pablo Llamas Ruiz",
@@ -27321,6 +27637,7 @@
     "ATP Challenger Villena",
     "ATP Cincinnati"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.67,
    "cote_min": 1.31,
    "cote_max": 2.45,
@@ -27411,6 +27728,7 @@
     "ATP Eastbourne",
     "ATP Cincinnati"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -27465,6 +27783,7 @@
     "ATP Cincinnati",
     "ATP Challenger Porto 2"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.51,
    "cote_min": 1.34,
    "cote_max": 3.25,
@@ -27562,6 +27881,7 @@
    "circuits": [
     "ATP Challenger Phan Thiet 4"
    ],
+   "circuit": "atp",
    "forme": {
     "n": 3,
     "victoires": 0,
@@ -27609,6 +27929,7 @@
     "ATP Challenger Phan Thiet 4",
     "ATP Challenger Phan Thiet 3"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.57,
    "cote_min": 1.36,
    "cote_max": 2.1,
@@ -27684,6 +28005,7 @@
     "WTA Beijing",
     "WTA Sao Paulo"
    ],
+   "circuit": "wta",
    "cote_mediane": 2.45,
    "cote_min": 1.51,
    "cote_max": 4.41,
@@ -27786,8 +28108,8 @@
      "pin_open": 1.79
     }
    ],
-   "rang_marche": 136,
-   "rang_sur": 151
+   "rang_marche": 59,
+   "rang_sur": 65
   },
   "qinwen zheng": {
    "nom": "Qinwen Zheng",
@@ -27802,6 +28124,7 @@
     "WTA Beijing",
     "WTA London"
    ],
+   "circuit": "wta",
    "cote_mediane": 1.45,
    "cote_min": 1.24,
    "cote_max": 3.33,
@@ -27905,8 +28228,8 @@
      "pin_open": 1.6
     }
    ],
-   "rang_marche": 19,
-   "rang_sur": 151
+   "rang_marche": 11,
+   "rang_sur": 65
   },
   "cristian jaqueline": {
    "nom": "Jaqueline Cristian",
@@ -27918,6 +28241,7 @@
    "circuits": [
     "WTA London"
    ],
+   "circuit": "wta",
    "forme": {
     "n": 3,
     "victoires": 2,
@@ -27964,6 +28288,7 @@
    "circuits": [
     "ATP Challenger Kingston 2"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 2,
     "victoires": 1
@@ -28031,6 +28356,7 @@
    "circuits": [
     "ATP Challenger Genoa 2"
    ],
+   "circuit": "atp",
    "meilleur_prix": "betsson",
    "alertes": [
     {
@@ -28054,6 +28380,7 @@
     "ATP Challenger Palermo",
     "ATP Challenger Genoa 2"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 2,
     "victoires": 1
@@ -28116,6 +28443,7 @@
     "ATP Challenger Jingshan",
     "ATP Challenger Shanghai"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.84,
    "cote_min": 1.51,
    "cote_max": 4.12,
@@ -28218,6 +28546,7 @@
     "WTA Cincinnati",
     "WTA Toronto"
    ],
+   "circuit": "wta",
    "cote_mediane": 2.14,
    "cote_min": 1.66,
    "cote_max": 4.45,
@@ -28302,6 +28631,7 @@
    "circuits": [
     "WTA London"
    ],
+   "circuit": "wta",
    "elo": {
     "valeur": 1886,
     "tour": "wta",
@@ -28327,6 +28657,7 @@
     "ATP Challenger Villena",
     "ATP Kitzbuhel"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.29,
    "cote_min": 1.29,
    "cote_max": 5.07,
@@ -28451,8 +28782,8 @@
      "pin_open": 2.35
     }
    ],
-   "rang_marche": 123,
-   "rang_sur": 151
+   "rang_marche": 70,
+   "rang_sur": 86
   },
   "aleksandr shevchenko": {
    "nom": "Aleksandr Shevchenko",
@@ -28466,6 +28797,7 @@
     "ATP Kitzbuhel",
     "ATP Montreal"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.21,
    "cote_min": 1.84,
    "cote_max": 2.52,
@@ -28548,6 +28880,7 @@
     "ATP Challenger Curitiba",
     "ATP Challenger Buenos Aires II"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -28608,6 +28941,7 @@
     "ATP Los Cabos",
     "Wimbledon Men Singles"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.8,
    "cote_min": 1.27,
    "cote_max": 3.95,
@@ -28714,6 +29048,7 @@
    "circuits": [
     "WTA Cincinnati"
    ],
+   "circuit": "wta",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -28779,6 +29114,7 @@
     "WTA Cincinnati",
     "US Open Women Singles"
    ],
+   "circuit": "wta",
    "cote_mediane": 2.35,
    "cote_min": 1.36,
    "cote_max": 3.58,
@@ -28886,6 +29222,7 @@
    "circuits": [
     "ATP Challenger Genoa 2"
    ],
+   "circuit": "atp",
    "forme": {
     "n": 4,
     "victoires": 2,
@@ -28923,6 +29260,7 @@
     "ATP Challenger Genoa 2",
     "ATP Challenger Bari"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.55,
    "cote_min": 1.47,
    "cote_max": 2.39,
@@ -28982,6 +29320,7 @@
     "ATP Challenger Wuning 3",
     "ATP Challenger Guangzhou"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 1
@@ -29045,6 +29384,7 @@
     "ATP Challenger Wuning 3",
     "ATP Challenger Jingshan"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 2,
     "victoires": 0
@@ -29106,6 +29446,7 @@
     "WTA Toronto",
     "WTA Monterrey"
    ],
+   "circuit": "wta",
    "cote_mediane": 1.78,
    "cote_min": 1.3,
    "cote_max": 3.17,
@@ -29200,8 +29541,8 @@
      "pin_open": 2.39
     }
    ],
-   "rang_marche": 57,
-   "rang_sur": 151
+   "rang_marche": 26,
+   "rang_sur": 65
   },
   "juvan kaja": {
    "nom": "Kaja Juvan",
@@ -29213,6 +29554,7 @@
    "circuits": [
     "WTA Nottingham"
    ],
+   "circuit": "wta",
    "meilleur_prix": "betsson",
    "elo": {
     "valeur": 1696,
@@ -29248,6 +29590,7 @@
     "WTA Prague",
     "WTA Eastbourne"
    ],
+   "circuit": "wta",
    "cote_mediane": 1.82,
    "cote_min": 1.66,
    "cote_max": 5.76,
@@ -29312,8 +29655,8 @@
      "pin_open": 1.7
     }
    ],
-   "rang_marche": 65,
-   "rang_sur": 151
+   "rang_marche": 29,
+   "rang_sur": 65
   },
   "astra sharma": {
    "nom": "Astra Sharma",
@@ -29325,6 +29668,7 @@
    "circuits": [
     "US Open Women Singles"
    ],
+   "circuit": "wta",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -29380,6 +29724,7 @@
     "US Open Men Singles",
     "ATP Chengdu"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.71,
    "cote_min": 1.29,
    "cote_max": 4.41,
@@ -29483,8 +29828,8 @@
      "pin_open": 1.71
     }
    ],
-   "rang_marche": 43,
-   "rang_sur": 151
+   "rang_marche": 25,
+   "rang_sur": 86
   },
   "callejon hernando sergio": {
    "nom": "Sergio Callejon Hernando",
@@ -29496,6 +29841,7 @@
    "circuits": [
     "ATP Challenger Phan Thiet 3"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -29558,6 +29904,7 @@
    "circuits": [
     "ATP Challenger Phan Thiet 3"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 1
@@ -29613,6 +29960,7 @@
     "Berlin",
     "WTA Prague"
    ],
+   "circuit": "wta",
    "cote_mediane": 2.29,
    "cote_min": 1.43,
    "cote_max": 4.26,
@@ -29746,8 +30094,8 @@
      "pin_open": 2.2
     }
    ],
-   "rang_marche": 124,
-   "rang_sur": 151
+   "rang_marche": 54,
+   "rang_sur": 65
   },
   "kamilla rakhimova": {
    "nom": "Kamilla Rakhimova",
@@ -29762,6 +30110,7 @@
     "WTA Monterrey",
     "WTA Beijing"
    ],
+   "circuit": "wta",
    "cote_mediane": 2.16,
    "cote_min": 1.44,
    "cote_max": 17.67,
@@ -29886,8 +30235,8 @@
      "pin_open": 1.44
     }
    ],
-   "rang_marche": 110,
-   "rang_sur": 151
+   "rang_marche": 49,
+   "rang_sur": 65
   },
   "maria sakkari": {
    "nom": "Maria Sakkari",
@@ -29902,6 +30251,7 @@
     "US Open Women Singles",
     "WTA Singapore"
    ],
+   "circuit": "wta",
    "cote_mediane": 1.54,
    "cote_min": 1.28,
    "cote_max": 2.67,
@@ -29988,6 +30338,7 @@
     "ATP Challenger Mouilleron-Le-Captif",
     "ATP London"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -30059,6 +30410,7 @@
     "ATP Challenger Porto 2",
     "ATP Challenger Villena"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 2,
     "victoires": 1
@@ -30130,6 +30482,7 @@
     "WTA Toronto",
     "US Open Women Singles"
    ],
+   "circuit": "wta",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -30210,6 +30563,7 @@
     "WTA Cincinnati",
     "US Open Women Singles"
    ],
+   "circuit": "wta",
    "bilan": {
     "n": 2,
     "victoires": 0
@@ -30287,6 +30641,7 @@
    "circuits": [
     "ATP Winston Salem"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -30341,6 +30696,7 @@
     "ATP Challenger Columbus",
     "ATP Challenger San Diego 2"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.97,
    "cote_min": 1.25,
    "cote_max": 3.5,
@@ -30464,6 +30820,7 @@
     "WTA Guadalajara",
     "US Open Women Singles"
    ],
+   "circuit": "wta",
    "cote_mediane": 2.0,
    "cote_min": 1.19,
    "cote_max": 3.97,
@@ -30559,6 +30916,7 @@
     "WTA Washington",
     "US Open Women Singles"
    ],
+   "circuit": "wta",
    "cote_mediane": 1.99,
    "cote_min": 1.39,
    "cote_max": 2.6,
@@ -30646,6 +31004,7 @@
     "Wimbledon Men Singles",
     "US Open Men Singles"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.74,
    "cote_min": 1.21,
    "cote_max": 3.94,
@@ -30728,8 +31087,8 @@
      "pin_open": 2.97
     }
    ],
-   "rang_marche": 49,
-   "rang_sur": 151
+   "rang_marche": 28,
+   "rang_sur": 86
   },
   "bouzas jessica maneiro": {
    "nom": "Jessica Bouzas Maneiro",
@@ -30744,6 +31103,7 @@
     "WTA Eastbourne",
     "WTA Nottingham"
    ],
+   "circuit": "wta",
    "cote_mediane": 2.16,
    "cote_min": 1.45,
    "cote_max": 6.56,
@@ -30841,6 +31201,7 @@
    "circuits": [
     "WTA Prague"
    ],
+   "circuit": "wta",
    "meilleur_prix": "unibet",
    "elo": {
     "valeur": 1518,
@@ -30874,6 +31235,7 @@
     "US Open Women Singles",
     "WTA Cincinnati"
    ],
+   "circuit": "wta",
    "cote_mediane": 1.94,
    "cote_min": 1.39,
    "cote_max": 7.67,
@@ -30960,6 +31322,7 @@
     "ATP s-Hertogenbosch",
     "ATP Challenger Shanghai"
    ],
+   "circuit": "atp",
    "cote_mediane": 3.3,
    "cote_min": 1.44,
    "cote_max": 4.47,
@@ -31063,6 +31426,7 @@
     "ATP Los Cabos",
     "ATP Cincinnati"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.71,
    "cote_min": 1.29,
    "cote_max": 4.9,
@@ -31172,8 +31536,8 @@
      "pin_open": 1.53
     }
    ],
-   "rang_marche": 44,
-   "rang_sur": 151
+   "rang_marche": 26,
+   "rang_sur": 86
   },
   "leo raquillet": {
    "nom": "Leo Raquillet",
@@ -31185,6 +31549,7 @@
    "circuits": [
     "ATP Challenger Rennes"
    ],
+   "circuit": "atp",
    "meilleur_prix": "betsson",
    "alertes": [
     {
@@ -31209,6 +31574,7 @@
     "ATP Challenger Cassis",
     "ATP Challenger Mouilleron-Le-Captif"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 2,
     "victoires": 1
@@ -31258,6 +31624,7 @@
     "ATP Challenger Genoa 2",
     "ATP Challenger Braga"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.02,
    "cote_min": 1.42,
    "cote_max": 2.27,
@@ -31344,6 +31711,7 @@
     "ATP Cincinnati",
     "US Open Men Singles"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.57,
    "cote_min": 1.39,
    "cote_max": 2.08,
@@ -31439,6 +31807,7 @@
     "ATP Kitzbuhel",
     "ATP Mallorca"
    ],
+   "circuit": "atp",
    "cote_mediane": 3.37,
    "cote_min": 1.65,
    "cote_max": 5.34,
@@ -31540,8 +31909,8 @@
      "pin_open": 5.11
     }
    ],
-   "rang_marche": 150,
-   "rang_sur": 151
+   "rang_marche": 85,
+   "rang_sur": 86
   },
   "jodar rafael": {
    "nom": "Rafael Jodar",
@@ -31556,6 +31925,7 @@
     "ATP Tokyo",
     "ATP Cincinnati"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.36,
    "cote_min": 1.14,
    "cote_max": 2.33,
@@ -31656,6 +32026,7 @@
     "ATP Challenger Quebec City",
     "ATP Cincinnati"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.86,
    "cote_min": 1.27,
    "cote_max": 2.74,
@@ -31781,8 +32152,8 @@
      "pin_open": 2.21
     }
    ],
-   "rang_marche": 70,
-   "rang_sur": 151
+   "rang_marche": 40,
+   "rang_sur": 86
   },
   "cherie edoardo ligniere": {
    "nom": "Edoardo Cherie Ligniere",
@@ -31794,6 +32165,7 @@
    "circuits": [
     "ATP Challenger Genoa"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -31835,6 +32207,7 @@
     "ATP Challenger Bari",
     "ATP Challenger Genoa 2"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 2,
     "victoires": 1
@@ -31914,6 +32287,7 @@
     "US Open Men Singles",
     "Wimbledon Men Singles"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.89,
    "cote_min": 1.33,
    "cote_max": 3.17,
@@ -32003,8 +32377,8 @@
      "pin_open": 1.92
     }
    ],
-   "rang_marche": 74,
-   "rang_sur": 151
+   "rang_marche": 43,
+   "rang_sur": 86
   },
   "crawford oliver": {
    "nom": "Oliver Crawford",
@@ -32017,6 +32391,7 @@
     "US Open Men Singles",
     "Wimbledon Men Singles"
    ],
+   "circuit": "atp",
    "elo": {
     "valeur": 1462,
     "tour": "atp",
@@ -32038,6 +32413,7 @@
    "circuits": [
     "ATP Challenger Cassis"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 2,
     "victoires": 1
@@ -32097,6 +32473,7 @@
    "circuits": [
     "ATP Challenger Cassis"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -32125,6 +32502,7 @@
    "circuits": [
     "ATP Challenger Tulln"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 1
@@ -32167,6 +32545,7 @@
     "ATP Challenger Curitiba",
     "ATP Challenger Kingston 2"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 3,
     "victoires": 2
@@ -32251,6 +32630,7 @@
    "circuits": [
     "WTA Prague"
    ],
+   "circuit": "wta",
    "meilleur_prix": "bwin",
    "elo": {
     "valeur": 1614,
@@ -32286,6 +32666,7 @@
     "ATP Kitzbuhel",
     "ATP Mallorca"
    ],
+   "circuit": "atp",
    "cote_mediane": 3.56,
    "cote_min": 1.86,
    "cote_max": 5.43,
@@ -32356,6 +32737,7 @@
     "WTA Seoul",
     "WTA Beijing"
    ],
+   "circuit": "wta",
    "cote_mediane": 1.49,
    "cote_min": 1.17,
    "cote_max": 5.22,
@@ -32455,6 +32837,7 @@
     "ATP Challenger Plovdiv 4",
     "ATP Challenger Plovdiv 3"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 1
@@ -32515,6 +32898,7 @@
    "circuits": [
     "ATP Challenger Plovdiv 4"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.16,
    "cote_min": 1.54,
    "cote_max": 2.27,
@@ -32569,6 +32953,7 @@
     "ATP Winston Salem",
     "ATP Chengdu"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.27,
    "cote_min": 1.33,
    "cote_max": 8.14,
@@ -32702,8 +33087,8 @@
      "pin_open": 3.35
     }
    ],
-   "rang_marche": 119,
-   "rang_sur": 151
+   "rang_marche": 67,
+   "rang_sur": 86
   },
   "perot raphael": {
    "nom": "Raphael Perot",
@@ -32716,6 +33101,7 @@
     "ATP Challenger Cassis",
     "ATP Challenger Columbus"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 2,
     "victoires": 1
@@ -32796,6 +33182,7 @@
     "WTA London",
     "WTA Guadalajara"
    ],
+   "circuit": "wta",
    "cote_mediane": 2.46,
    "cote_min": 1.28,
    "cote_max": 4.12,
@@ -32914,8 +33301,8 @@
      "pin_open": 3.06
     }
    ],
-   "rang_marche": 138,
-   "rang_sur": 151
+   "rang_marche": 60,
+   "rang_sur": 65
   },
   "diana shnaider": {
    "nom": "Diana Shnaider",
@@ -32930,6 +33317,7 @@
     "Berlin",
     "WTA Beijing"
    ],
+   "circuit": "wta",
    "cote_mediane": 1.58,
    "cote_min": 1.29,
    "cote_max": 3.86,
@@ -33038,8 +33426,8 @@
      "pin_open": 1.76
     }
    ],
-   "rang_marche": 30,
-   "rang_sur": 151
+   "rang_marche": 15,
+   "rang_sur": 65
   },
   "mochizuki shintaro": {
    "nom": "Shintaro Mochizuki",
@@ -33054,6 +33442,7 @@
     "ATP Cincinnati",
     "Wimbledon Men Singles"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.77,
    "cote_min": 1.33,
    "cote_max": 2.68,
@@ -33163,6 +33552,7 @@
     "ATP Montreal",
     "ATP Los Cabos"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.1,
    "cote_min": 1.38,
    "cote_max": 3.69,
@@ -33256,8 +33646,8 @@
      "pin_open": 3.17
     }
    ],
-   "rang_marche": 103,
-   "rang_sur": 151
+   "rang_marche": 58,
+   "rang_sur": 86
   },
   "comesana francisco": {
    "nom": "Francisco Comesana",
@@ -33272,6 +33662,7 @@
     "ATP Cincinnati",
     "Wimbledon Men Singles"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.1,
    "cote_min": 1.5,
    "cote_max": 4.45,
@@ -33379,6 +33770,7 @@
     "ATP Challenger Seville",
     "ATP Challenger Bari"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 2,
     "victoires": 0
@@ -33439,6 +33831,7 @@
     "ATP Challenger Porto",
     "ATP Challenger Seville"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 3,
     "victoires": 2
@@ -33508,6 +33901,7 @@
     "US Open Men Singles",
     "ATP Challenger San Diego 2"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.98,
    "cote_min": 1.46,
    "cote_max": 2.43,
@@ -33584,6 +33978,7 @@
    "circuits": [
     "ATP Challenger Plovdiv 4"
    ],
+   "circuit": "atp",
    "meilleur_prix": "unibet",
    "elo": {
     "valeur": 1151,
@@ -33619,6 +34014,7 @@
     "ATP Challenger Biella",
     "ATP Challenger Seville"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.75,
    "cote_min": 1.22,
    "cote_max": 2.35,
@@ -33713,6 +34109,7 @@
     "ATP Challenger Tulln",
     "Wimbledon Men Singles"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.57,
    "cote_min": 1.3,
    "cote_max": 3.44,
@@ -33805,8 +34202,8 @@
      "pin_open": 1.3
     }
    ],
-   "rang_marche": 29,
-   "rang_sur": 151
+   "rang_marche": 15,
+   "rang_sur": 86
   },
   "de inaki la montes torre": {
    "nom": "Inaki Montes-de la Torre",
@@ -33821,6 +34218,7 @@
     "ATP Challenger Roehampton 2",
     "ATP Challenger Rennes"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.12,
    "cote_min": 1.37,
    "cote_max": 3.81,
@@ -33974,8 +34372,8 @@
      "pin_open": 2.51
     }
    ],
-   "rang_marche": 108,
-   "rang_sur": 151
+   "rang_marche": 60,
+   "rang_sur": 86
   },
   "bella payne": {
    "nom": "Bella Payne",
@@ -33986,7 +34384,8 @@
    ],
    "circuits": [
     "WTA Memphis"
-   ]
+   ],
+   "circuit": "wta"
   },
   "kei nishikori": {
    "nom": "Kei Nishikori",
@@ -34000,6 +34399,7 @@
     "US Open Men Singles",
     "ATP Cincinnati"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.17,
    "cote_min": 1.7,
    "cote_max": 5.08,
@@ -34114,6 +34514,7 @@
     "ATP Montreal",
     "ATP Cincinnati"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 2,
     "victoires": 1
@@ -34187,6 +34588,7 @@
     "US Open Men Singles",
     "ATP Tokyo"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.47,
    "cote_min": 1.24,
    "cote_max": 4.57,
@@ -34287,8 +34689,8 @@
      "pin_open": 1.32
     }
    ],
-   "rang_marche": 20,
-   "rang_sur": 151
+   "rang_marche": 9,
+   "rang_sur": 86
   },
   "garcia julia": {
    "nom": "Julia Garcia",
@@ -34300,6 +34702,7 @@
    "circuits": [
     "WTA Guadalajara"
    ],
+   "circuit": "wta",
    "meilleur_prix": "unibet",
    "alertes": [
     {
@@ -34322,6 +34725,7 @@
    "circuits": [
     "WTA Guadalajara"
    ],
+   "circuit": "wta",
    "forme": {
     "n": 4,
     "victoires": 2,
@@ -34369,6 +34773,7 @@
     "WTA Eastbourne",
     "WTA Memphis"
    ],
+   "circuit": "wta",
    "forme": {
     "n": 8,
     "victoires": 4,
@@ -34422,6 +34827,7 @@
     "ATP Los Cabos",
     "ATP Challenger Istanbul 3"
    ],
+   "circuit": "atp",
    "forme": {
     "n": 8,
     "victoires": 5,
@@ -34468,6 +34874,7 @@
     "WTA Cincinnati",
     "WTA Toronto"
    ],
+   "circuit": "wta",
    "cote_mediane": 1.54,
    "cote_min": 1.29,
    "cote_max": 1.86,
@@ -34557,8 +34964,8 @@
      "pin_open": 1.5
     }
    ],
-   "rang_marche": 25,
-   "rang_sur": 151
+   "rang_marche": 14,
+   "rang_sur": 65
   },
   "svajda zachary": {
    "nom": "Zachary Svajda",
@@ -34573,6 +34980,7 @@
     "ATP Montreal",
     "ATP Cincinnati"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.79,
    "cote_min": 1.13,
    "cote_max": 3.89,
@@ -34690,6 +35098,7 @@
     "ATP Challenger Braga",
     "ATP Challenger Bari"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 3,
     "victoires": 1
@@ -34785,6 +35194,7 @@
     "ATP S-Hertogenbosch",
     "Wimbledon Men Singles"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.57,
    "cote_min": 1.15,
    "cote_max": 3.46,
@@ -34900,6 +35310,7 @@
     "ATP Winston Salem",
     "Wimbledon Men Singles"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.89,
    "cote_min": 1.34,
    "cote_max": 2.65,
@@ -34968,6 +35379,7 @@
     "WTA Prague",
     "WTA Cincinnati"
    ],
+   "circuit": "wta",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -35077,6 +35489,7 @@
    "circuits": [
     "WTA Cincinnati"
    ],
+   "circuit": "wta",
    "cote_mediane": 2.05,
    "cote_min": 1.6,
    "cote_max": 4.26,
@@ -35184,6 +35597,7 @@
     "ATP Challenger Biella",
     "ATP Challenger Genoa"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.96,
    "cote_min": 1.69,
    "cote_max": 3.78,
@@ -35250,6 +35664,7 @@
     "ATP Challenger Braga",
     "ATP Challenger Szczecin"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.4,
    "cote_min": 2.24,
    "cote_max": 3.19,
@@ -35328,6 +35743,7 @@
     "ATP Challenger Braga",
     "ATP Challenger Plovdiv 4"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.52,
    "cote_min": 1.46,
    "cote_max": 2.72,
@@ -35407,6 +35823,7 @@
     "Berlin",
     "WTA Cincinnati"
    ],
+   "circuit": "wta",
    "cote_mediane": 2.39,
    "cote_min": 1.81,
    "cote_max": 2.47,
@@ -35493,6 +35910,7 @@
     "WTA Beijing",
     "Berlin"
    ],
+   "circuit": "wta",
    "cote_mediane": 1.82,
    "cote_min": 1.06,
    "cote_max": 11.0,
@@ -35601,6 +36019,7 @@
     "WTA Cincinnati",
     "WTA Sao Paulo"
    ],
+   "circuit": "wta",
    "cote_mediane": 1.95,
    "cote_min": 1.36,
    "cote_max": 3.27,
@@ -35682,8 +36101,8 @@
      "pin_open": 1.5
     }
    ],
-   "rang_marche": 86,
-   "rang_sur": 151
+   "rang_marche": 37,
+   "rang_sur": 65
   },
   "marino rebecca": {
    "nom": "Rebecca Marino",
@@ -35695,6 +36114,7 @@
    "circuits": [
     "WTA Cincinnati"
    ],
+   "circuit": "wta",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -35760,6 +36180,7 @@
     "ATP Challenger Augsburg",
     "ATP Challenger Genoa"
    ],
+   "circuit": "atp",
    "cote_mediane": 3.29,
    "cote_min": 1.57,
    "cote_max": 3.86,
@@ -35844,6 +36265,7 @@
    "circuits": [
     "ATP Challenger Buenos Aires II"
    ],
+   "circuit": "atp",
    "forme": {
     "n": 8,
     "victoires": 7,
@@ -35893,6 +36315,7 @@
     "US Open Men Singles",
     "ATP Eastbourne"
    ],
+   "circuit": "atp",
    "cote_mediane": 3.08,
    "cote_min": 2.01,
    "cote_max": 4.93,
@@ -35996,6 +36419,7 @@
     "ATP Chengdu",
     "ATP Beijing"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.83,
    "cote_min": 1.02,
    "cote_max": 3.56,
@@ -36121,8 +36545,8 @@
      "pin_open": 1.68
     }
    ],
-   "rang_marche": 66,
-   "rang_sur": 151
+   "rang_marche": 37,
+   "rang_sur": 86
   },
   "christian langmo": {
    "nom": "Christian Langmo",
@@ -36134,6 +36558,7 @@
    "circuits": [
     "ATP Challenger Palermo"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 2,
     "victoires": 1
@@ -36214,6 +36639,7 @@
     "ATP Challenger Bari",
     "Wimbledon Men Singles"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 1
@@ -36274,6 +36700,7 @@
     "ATP Challenger Porto 2",
     "Wimbledon Men Singles"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.82,
    "cote_min": 1.27,
    "cote_max": 5.17,
@@ -36404,6 +36831,7 @@
     "ATP Cincinnati",
     "ATP Montreal"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.2,
    "cote_min": 1.29,
    "cote_max": 2.45,
@@ -36529,8 +36957,8 @@
      "pin_open": 2.22
     }
    ],
-   "rang_marche": 113,
-   "rang_sur": 151
+   "rang_marche": 63,
+   "rang_sur": 86
   },
   "legout timo": {
    "nom": "Timo Legout",
@@ -36543,6 +36971,7 @@
     "ATP Challenger Tiburon",
     "ATP Challenger San Diego 2"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.51,
    "cote_min": 1.27,
    "cote_max": 2.03,
@@ -36614,6 +37043,7 @@
     "ATP London",
     "ATP Chengdu"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.79,
    "cote_min": 1.59,
    "cote_max": 3.28,
@@ -36701,8 +37131,8 @@
      "pin_open": 3.28
     }
    ],
-   "rang_marche": 59,
-   "rang_sur": 151
+   "rang_marche": 32,
+   "rang_sur": 86
   },
   "draxl liam": {
    "nom": "Liam Draxl",
@@ -36715,6 +37145,7 @@
     "US Open Men Singles",
     "Wimbledon Men Singles"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 2,
     "victoires": 1
@@ -36794,6 +37225,7 @@
     "Wimbledon Men Singles",
     "ATP Challenger Manacor"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -36844,6 +37276,7 @@
    "circuits": [
     "US Open Women Singles"
    ],
+   "circuit": "wta",
    "bilan": {
     "n": 2,
     "victoires": 1
@@ -36915,6 +37348,7 @@
     "WTA Prague",
     "WTA Cincinnati"
    ],
+   "circuit": "wta",
    "cote_mediane": 1.73,
    "cote_min": 1.16,
    "cote_max": 3.5,
@@ -37033,8 +37467,8 @@
      "pin_open": 1.58
     }
    ],
-   "rang_marche": 46,
-   "rang_sur": 151
+   "rang_marche": 20,
+   "rang_sur": 65
   },
   "fucsovics marton": {
    "nom": "Marton Fucsovics",
@@ -37048,6 +37482,7 @@
     "ATP Mallorca",
     "ATP Cincinnati"
    ],
+   "circuit": "atp",
    "cote_mediane": 3.1,
    "cote_min": 2.08,
    "cote_max": 3.81,
@@ -37122,6 +37557,7 @@
     "ATP Challenger Kingston 2",
     "ATP s-Hertogenbosch"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.84,
    "cote_min": 2.25,
    "cote_max": 5.17,
@@ -37200,6 +37636,7 @@
     "ATP Challenger Tiburon",
     "ATP Challenger San Diego 2"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.72,
    "cote_min": 1.53,
    "cote_max": 2.64,
@@ -37297,6 +37734,7 @@
    "circuits": [
     "ATP Eastbourne"
    ],
+   "circuit": "atp",
    "forme": {
     "n": 6,
     "victoires": 6,
@@ -37352,6 +37790,7 @@
     "ATP Cincinnati",
     "ATP Tokyo"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.02,
    "cote_min": 1.34,
    "cote_max": 2.2,
@@ -37420,6 +37859,7 @@
     "WTA Seoul",
     "WTA Prague"
    ],
+   "circuit": "wta",
    "cote_mediane": 2.28,
    "cote_min": 1.45,
    "cote_max": 4.31,
@@ -37524,8 +37964,8 @@
      "pin_open": 1.65
     }
    ],
-   "rang_marche": 120,
-   "rang_sur": 151
+   "rang_marche": 53,
+   "rang_sur": 65
   },
   "cirstea sorana": {
    "nom": "Sorana Cirstea",
@@ -37540,6 +37980,7 @@
     "WTA Toronto",
     "WTA London"
    ],
+   "circuit": "wta",
    "cote_mediane": 1.85,
    "cote_min": 1.3,
    "cote_max": 3.64,
@@ -37641,6 +38082,7 @@
     "WTA Guadalajara",
     "WTA Toronto"
    ],
+   "circuit": "wta",
    "cote_mediane": 2.32,
    "cote_min": 1.43,
    "cote_max": 4.45,
@@ -37755,6 +38197,7 @@
    "circuits": [
     "ATP Challenger Sion"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -37820,6 +38263,7 @@
     "ATP Challenger Porto",
     "ATP Challenger Braga"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.88,
    "cote_min": 1.37,
    "cote_max": 2.41,
@@ -37903,6 +38347,7 @@
     "ATP Challenger Columbus",
     "ATP Montreal"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -37968,6 +38413,7 @@
     "ATP Los Cabos",
     "ATP Challenger San Diego 2"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.5,
    "cote_min": 1.27,
    "cote_max": 2.72,
@@ -38068,6 +38514,7 @@
     "WTA Nottingham",
     "WTA Toronto"
    ],
+   "circuit": "wta",
    "cote_mediane": 2.3,
    "cote_min": 1.04,
    "cote_max": 4.55,
@@ -38179,8 +38626,8 @@
      "pin_open": 4.55
     }
    ],
-   "rang_marche": 126,
-   "rang_sur": 151
+   "rang_marche": 55,
+   "rang_sur": 65
   },
   "alejo quilez sanchez": {
    "nom": "Alejo Sanchez Quilez",
@@ -38193,6 +38640,7 @@
     "ATP Challenger Manacor",
     "ATP Challenger Villena"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 3,
     "victoires": 1
@@ -38277,6 +38725,7 @@
    "circuits": [
     "ATP Challenger Cassis"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -38317,6 +38766,7 @@
     "ATP Challenger Mouilleron-Le-Captif",
     "ATP Challenger Cassis"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.66,
    "cote_min": 1.36,
    "cote_max": 1.76,
@@ -38414,6 +38864,7 @@
    "circuits": [
     "ATP Challenger Genoa 2"
    ],
+   "circuit": "atp",
    "forme": {
     "n": 3,
     "victoires": 1,
@@ -38450,6 +38901,7 @@
     "ATP Challenger Genoa 2",
     "ATP Challenger Braga"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -38502,6 +38954,7 @@
     "US Open Men Singles",
     "ATP Beijing"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.5,
    "cote_min": 2.14,
    "cote_max": 3.78,
@@ -38579,6 +39032,7 @@
     "ATP Cincinnati",
     "ATP Washington"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.62,
    "cote_min": 1.37,
    "cote_max": 2.53,
@@ -38685,6 +39139,7 @@
     "ATP Challenger Mouilleron-Le-Captif",
     "ATP Challenger Plovdiv 3"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 2,
     "victoires": 0
@@ -38757,6 +39212,7 @@
     "ATP Challenger Rennes",
     "Wimbledon Men Singles"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.72,
    "cote_min": 1.44,
    "cote_max": 2.32,
@@ -38842,6 +39298,7 @@
     "ATP Challenger Genoa 2",
     "ATP Challenger Genoa"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.25,
    "cote_min": 1.93,
    "cote_max": 3.49,
@@ -38948,6 +39405,7 @@
     "ATP Challenger Bari",
     "ATP Challenger Genoa 2"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -39018,6 +39476,7 @@
     "WTA Cincinnati",
     "US Open Women Singles"
    ],
+   "circuit": "wta",
    "cote_mediane": 1.97,
    "cote_min": 1.46,
    "cote_max": 3.22,
@@ -39095,6 +39554,7 @@
     "WTA Washington",
     "WTA Toronto"
    ],
+   "circuit": "wta",
    "cote_mediane": 2.31,
    "cote_min": 1.43,
    "cote_max": 3.24,
@@ -39194,6 +39654,7 @@
     "ATP Challenger Szczecin",
     "ATP Challenger Tulln"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -39267,6 +39728,7 @@
     "WTA Cincinnati",
     "WTA Memphis"
    ],
+   "circuit": "wta",
    "cote_mediane": 2.1,
    "cote_min": 1.31,
    "cote_max": 6.88,
@@ -39369,8 +39831,8 @@
      "pin_open": 1.31
     }
    ],
-   "rang_marche": 104,
-   "rang_sur": 151
+   "rang_marche": 46,
+   "rang_sur": 65
   },
   "lulu sun": {
    "nom": "Lulu Sun",
@@ -39382,6 +39844,7 @@
    "circuits": [
     "Berlin"
    ],
+   "circuit": "wta",
    "meilleur_prix": "bwin",
    "elo": {
     "valeur": 1629,
@@ -39417,6 +39880,7 @@
     "Berlin",
     "WTA Hamburg"
    ],
+   "circuit": "wta",
    "cote_mediane": 1.71,
    "cote_min": 1.35,
    "cote_max": 2.85,
@@ -39495,6 +39959,7 @@
     "WTA Cincinnati",
     "WTA Nottingham"
    ],
+   "circuit": "wta",
    "bilan": {
     "n": 1,
     "victoires": 1
@@ -39558,6 +40023,7 @@
    "circuits": [
     "Wimbledon Men Singles"
    ],
+   "circuit": "atp",
    "forme": {
     "n": 3,
     "victoires": 0,
@@ -39605,6 +40071,7 @@
     "ATP Challenger Shanghai",
     "Wimbledon Men Singles"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 1
@@ -39671,6 +40138,7 @@
     "ATP Winston Salem",
     "US Open Men Singles"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.16,
    "cote_min": 1.51,
    "cote_max": 2.43,
@@ -39739,8 +40207,8 @@
     "meilleure_surface": "terre",
     "pire_surface": "gazon"
    },
-   "rang_marche": 111,
-   "rang_sur": 151
+   "rang_marche": 62,
+   "rang_sur": 86
   },
   "elvina kalieva": {
    "nom": "Elvina Kalieva",
@@ -39755,6 +40223,7 @@
     "WTA Guadalajara",
     "WTA Cincinnati"
    ],
+   "circuit": "wta",
    "cote_mediane": 2.34,
    "cote_min": 1.12,
    "cote_max": 3.05,
@@ -39865,8 +40334,8 @@
      "pin_open": 3.05
     }
    ],
-   "rang_marche": 131,
-   "rang_sur": 151
+   "rang_marche": 58,
+   "rang_sur": 65
   },
   "sloane stephens": {
    "nom": "Sloane Stephens",
@@ -39880,6 +40349,7 @@
     "WTA Cincinnati",
     "WTA Guadalajara"
    ],
+   "circuit": "wta",
    "cote_mediane": 2.37,
    "cote_min": 1.95,
    "cote_max": 3.78,
@@ -39963,6 +40433,7 @@
    "circuits": [
     "WTA Cincinnati"
    ],
+   "circuit": "wta",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -40027,6 +40498,7 @@
     "ATP Challenger Saint Tropez",
     "ATP Cincinnati"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.2,
    "cote_min": 1.35,
    "cote_max": 4.12,
@@ -40114,6 +40586,7 @@
     "Wimbledon Men Singles",
     "ATP Challenger Roehampton 2"
    ],
+   "circuit": "atp",
    "cote_mediane": 3.0,
    "cote_min": 1.66,
    "cote_max": 3.13,
@@ -40172,6 +40645,7 @@
    "circuits": [
     "ATP Los Cabos"
    ],
+   "circuit": "atp",
    "forme": {
     "n": 6,
     "victoires": 3,
@@ -40207,6 +40681,7 @@
     "WTA London",
     "US Open Women Singles"
    ],
+   "circuit": "wta",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -40271,6 +40746,7 @@
     "WTA Cincinnati",
     "WTA Guadalajara"
    ],
+   "circuit": "wta",
    "cote_mediane": 1.81,
    "cote_min": 1.6,
    "cote_max": 13.5,
@@ -40363,6 +40839,7 @@
     "ATP Challenger Columbus",
     "ATP Challenger Tiburon"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 2,
     "victoires": 0
@@ -40431,6 +40908,7 @@
     "ATP Challenger Tiburon",
     "ATP Winston Salem"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 1
@@ -40505,6 +40983,7 @@
     "ATP Challenger Saint Tropez",
     "ATP Challenger Augsburg"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.28,
    "cote_min": 1.27,
    "cote_max": 4.29,
@@ -40584,8 +41063,8 @@
      "pin_open": 4.29
     }
    ],
-   "rang_marche": 121,
-   "rang_sur": 151
+   "rang_marche": 68,
+   "rang_sur": 86
   },
   "evan zhu": {
    "nom": "Evan Zhu",
@@ -40599,6 +41078,7 @@
     "ATP Challenger San Diego 2",
     "ATP Challenger Kingston 2"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.34,
    "cote_min": 1.39,
    "cote_max": 15.29,
@@ -40683,6 +41163,7 @@
     "ATP Challenger Biella",
     "ATP Challenger Palermo"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -40753,6 +41234,7 @@
     "WTA London",
     "US Open Women Singles"
    ],
+   "circuit": "wta",
    "bilan": {
     "n": 2,
     "victoires": 1
@@ -40833,6 +41315,7 @@
     "ATP Cincinnati",
     "ATP Winston Salem"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.67,
    "cote_min": 1.48,
    "cote_max": 3.15,
@@ -40922,6 +41405,7 @@
    "circuits": [
     "WTA Memphis"
    ],
+   "circuit": "wta",
    "elo": {
     "valeur": 1307,
     "tour": "wta",
@@ -40945,6 +41429,7 @@
     "ATP S-Hertogenbosch",
     "ATP Shanghai"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.55,
    "cote_min": 1.27,
    "cote_max": 1.86,
@@ -41038,6 +41523,7 @@
     "ATP Challenger Augsburg",
     "ATP Challenger Buenos Aires II"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 2,
     "victoires": 2
@@ -41126,6 +41612,7 @@
     "ATP Challenger Buenos Aires II",
     "ATP Challenger Antofagasta"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.81,
    "cote_min": 1.56,
    "cote_max": 2.79,
@@ -41218,6 +41705,7 @@
     "ATP Challenger Antofagasta",
     "Wimbledon Men Singles"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.16,
    "cote_min": 1.77,
    "cote_max": 8.14,
@@ -41303,6 +41791,7 @@
     "ATP Cincinnati",
     "ATP Hangzhou"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.08,
    "cote_min": 1.52,
    "cote_max": 3.68,
@@ -41410,6 +41899,7 @@
     "WTA Hamburg",
     "WTA Sao Paulo"
    ],
+   "circuit": "wta",
    "cote_mediane": 2.37,
    "cote_min": 1.83,
    "cote_max": 2.93,
@@ -41472,6 +41962,7 @@
     "ATP Montreal",
     "ATP Kitzbuhel"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.87,
    "cote_min": 1.37,
    "cote_max": 2.64,
@@ -41551,8 +42042,8 @@
      "pin_open": 2.64
     }
    ],
-   "rang_marche": 72,
-   "rang_sur": 151
+   "rang_marche": 41,
+   "rang_sur": 86
   },
   "noguchi rio": {
    "nom": "Rio Noguchi",
@@ -41567,6 +42058,7 @@
     "ATP Shanghai",
     "ATP Challenger Shanghai"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.58,
    "cote_min": 1.2,
    "cote_max": 3.91,
@@ -41669,6 +42161,7 @@
     "Wimbledon Men Singles",
     "ATP Tokyo"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.82,
    "cote_min": 1.47,
    "cote_max": 1.88,
@@ -41776,6 +42269,7 @@
     "ATP Challenger Plovdiv 3",
     "ATP Challenger Plovdiv 4"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 1
@@ -41836,6 +42330,7 @@
    "circuits": [
     "ATP Challenger Plovdiv 3"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -41864,6 +42359,7 @@
    "circuits": [
     "WTA Sao Paulo"
    ],
+   "circuit": "wta",
    "forme": {
     "n": 3,
     "victoires": 1,
@@ -41916,6 +42412,7 @@
    "circuits": [
     "WTA Sao Paulo"
    ],
+   "circuit": "wta",
    "forme": {
     "n": 5,
     "victoires": 2,
@@ -41962,6 +42459,7 @@
     "ATP Challenger Biella",
     "ATP Challenger Mouilleron-Le-Captif"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -42033,6 +42531,7 @@
    "circuits": [
     "ATP Challenger Biella"
    ],
+   "circuit": "atp",
    "forme": {
     "n": 4,
     "victoires": 1,
@@ -42070,6 +42569,7 @@
     "ATP Challenger Tiburon",
     "ATP Shanghai"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.47,
    "cote_min": 1.15,
    "cote_max": 2.3,
@@ -42178,6 +42678,7 @@
     "US Open Women Singles",
     "WTA Washington"
    ],
+   "circuit": "wta",
    "bilan": {
     "n": 2,
     "victoires": 2
@@ -42247,6 +42748,7 @@
     "ATP Tokyo",
     "US Open Men Singles"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.69,
    "cote_min": 1.31,
    "cote_max": 2.56,
@@ -42346,6 +42848,7 @@
     "ATP Montreal",
     "ATP Mallorca"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.33,
    "cote_min": 1.08,
    "cote_max": 4.85,
@@ -42463,8 +42966,8 @@
      "pin_open": 1.08
     }
    ],
-   "rang_marche": 128,
-   "rang_sur": 151
+   "rang_marche": 73,
+   "rang_sur": 86
   },
   "amanda anisimova": {
    "nom": "Amanda Anisimova",
@@ -42479,6 +42982,7 @@
     "WTA London",
     "US Open Women Singles"
    ],
+   "circuit": "wta",
    "cote_mediane": 1.79,
    "cote_min": 1.2,
    "cote_max": 2.34,
@@ -42595,8 +43099,8 @@
      "pin_open": 1.34
     }
    ],
-   "rang_marche": 60,
-   "rang_sur": 151
+   "rang_marche": 28,
+   "rang_sur": 65
   },
   "darja vidmanova": {
    "nom": "Darja Vidmanova",
@@ -42611,6 +43115,7 @@
     "WTA Beijing",
     "WTA Cincinnati"
    ],
+   "circuit": "wta",
    "cote_mediane": 1.9,
    "cote_min": 1.17,
    "cote_max": 2.85,
@@ -42720,8 +43225,8 @@
      "pin_open": 2.11
     }
    ],
-   "rang_marche": 78,
-   "rang_sur": 151
+   "rang_marche": 33,
+   "rang_sur": 65
   },
   "koki matsuda": {
    "nom": "Koki Matsuda",
@@ -42734,6 +43239,7 @@
     "ATP Challenger Phan Thiet 3",
     "ATP Challenger Phan Thiet 4"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 1
@@ -42804,6 +43310,7 @@
    "circuits": [
     "ATP Challenger Phan Thiet 3"
    ],
+   "circuit": "atp",
    "forme": {
     "n": 8,
     "victoires": 5,
@@ -42838,6 +43345,7 @@
    "circuits": [
     "ATP Challenger Tiburon"
    ],
+   "circuit": "atp",
    "meilleur_prix": "bwin",
    "alertes": [
     {
@@ -42863,6 +43371,7 @@
     "ATP Challenger Szczecin",
     "Wimbledon Men Singles"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.09,
    "cote_min": 1.54,
    "cote_max": 3.44,
@@ -42946,6 +43455,7 @@
    "circuits": [
     "WTA Sao Paulo"
    ],
+   "circuit": "wta",
    "forme": {
     "n": 4,
     "victoires": 2,
@@ -43001,6 +43511,7 @@
     "ATP Challenger Buenos Aires II",
     "ATP Challenger Antofagasta"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.44,
    "cote_min": 2.03,
    "cote_max": 3.17,
@@ -43084,6 +43595,7 @@
    "circuits": [
     "ATP Challenger Curitiba"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -43136,6 +43648,7 @@
    "circuits": [
     "WTA London"
    ],
+   "circuit": "wta",
    "forme": {
     "n": 3,
     "victoires": 0,
@@ -43174,6 +43687,7 @@
     "WTA Prague",
     "WTA Bad Homburg Women Singles"
    ],
+   "circuit": "wta",
    "cote_mediane": 2.06,
    "cote_min": 1.53,
    "cote_max": 4.23,
@@ -43276,8 +43790,8 @@
      "pin_open": 1.77
     }
    ],
-   "rang_marche": 96,
-   "rang_sur": 151
+   "rang_marche": 42,
+   "rang_sur": 65
   },
   "abdelaziz ahmed maiar sherif": {
    "nom": "Maiar Sherif Ahmed Abdelaziz",
@@ -43289,6 +43803,7 @@
    "circuits": [
     "WTA Hamburg"
    ],
+   "circuit": "wta",
    "forme": {
     "n": 5,
     "victoires": 5,
@@ -43316,6 +43831,7 @@
     "Wimbledon Men Singles",
     "ATP Challenger Rennes"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.47,
    "cote_min": 1.27,
    "cote_max": 2.45,
@@ -43402,6 +43918,7 @@
     "ATP Cincinnati",
     "US Open Men Singles"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.91,
    "cote_min": 1.62,
    "cote_max": 3.78,
@@ -43480,6 +43997,7 @@
     "ATP Challenger San Diego 2",
     "ATP Challenger Tiburon"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 1
@@ -43532,6 +44050,7 @@
    "circuits": [
     "ATP Challenger Kingston 2"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -43574,6 +44093,7 @@
     "ATP Challenger Istanbul 3",
     "ATP Challenger San Diego 2"
    ],
+   "circuit": "atp",
    "forme": {
     "n": 6,
     "victoires": 2,
@@ -43609,6 +44129,7 @@
    "circuits": [
     "ATP Challenger Phan Thiet 3"
    ],
+   "circuit": "atp",
    "forme": {
     "n": 6,
     "victoires": 3,
@@ -43655,6 +44176,7 @@
    "circuits": [
     "ATP Challenger Phan Thiet 3"
    ],
+   "circuit": "atp",
    "forme": {
     "n": 6,
     "victoires": 4,
@@ -43708,6 +44230,7 @@
    "circuits": [
     "WTA Sao Paulo"
    ],
+   "circuit": "wta",
    "meilleur_prix": "bwin",
    "alertes": [
     {
@@ -43730,6 +44253,7 @@
    "circuits": [
     "ATP Challenger Tiburon"
    ],
+   "circuit": "atp",
    "meilleur_prix": "bwin",
    "alertes": [
     {
@@ -43753,6 +44277,7 @@
     "ATP Challenger Tiburon",
     "ATP Challenger Columbus"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.49,
    "cote_min": 1.6,
    "cote_max": 3.22,
@@ -43801,6 +44326,7 @@
     "US Open Men Singles",
     "ATP Challenger Mouilleron-Le-Captif"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.81,
    "cote_min": 1.58,
    "cote_max": 3.83,
@@ -43907,6 +44433,7 @@
     "WTA Memphis",
     "US Open Women Singles"
    ],
+   "circuit": "wta",
    "cote_mediane": 1.9,
    "cote_min": 1.18,
    "cote_max": 3.42,
@@ -44004,8 +44531,8 @@
      "pin_open": 1.18
     }
    ],
-   "rang_marche": 79,
-   "rang_sur": 151
+   "rang_marche": 34,
+   "rang_sur": 65
   },
   "dalibor svrcina": {
    "nom": "Dalibor Svrcina",
@@ -44020,6 +44547,7 @@
     "ATP Montreal",
     "ATP Cincinnati"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.05,
    "cote_min": 1.3,
    "cote_max": 2.88,
@@ -44138,8 +44666,8 @@
      "pin_open": 2.85
     }
    ],
-   "rang_marche": 94,
-   "rang_sur": 151
+   "rang_marche": 54,
+   "rang_sur": 86
   },
   "dalmasso guillaume": {
    "nom": "Guillaume Dalmasso",
@@ -44232,6 +44760,7 @@
     "ATP Challenger Istanbul 3",
     "ATP Stuttgart"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 1
@@ -44305,6 +44834,7 @@
     "ATP Eastbourne",
     "ATP Tokyo"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.95,
    "cote_min": 1.39,
    "cote_max": 4.45,
@@ -44382,8 +44912,8 @@
      "pin_open": 1.48
     }
    ],
-   "rang_marche": 87,
-   "rang_sur": 151
+   "rang_marche": 50,
+   "rang_sur": 86
   },
   "julieta pareja": {
    "nom": "Julieta Pareja",
@@ -44396,6 +44926,7 @@
     "WTA Washington",
     "US Open Women Singles"
    ],
+   "circuit": "wta",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -44477,6 +45008,7 @@
     "ATP Challenger Szczecin",
     "ATP Challenger Braga"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 2,
     "victoires": 0
@@ -44557,6 +45089,7 @@
     "ATP Challenger Plovdiv 4",
     "ATP Challenger Tulln"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.89,
    "cote_min": 1.35,
    "cote_max": 6.56,
@@ -44642,6 +45175,7 @@
     "ATP Challenger Saint Tropez",
     "ATP Challenger Rennes"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.14,
    "cote_min": 1.37,
    "cote_max": 3.86,
@@ -44741,6 +45275,7 @@
    "circuits": [
     "ATP Challenger Phan Thiet 3"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -44805,6 +45340,7 @@
     "ATP Challenger Phan Thiet 3",
     "ATP Challenger Zhangjiagang"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 2,
     "victoires": 2
@@ -44876,6 +45412,7 @@
     "WTA Seoul",
     "WTA Cincinnati"
    ],
+   "circuit": "wta",
    "cote_mediane": 2.44,
    "cote_min": 1.89,
    "cote_max": 3.98,
@@ -44986,6 +45523,7 @@
     "US Open Men Singles",
     "ATP Mallorca"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.06,
    "cote_min": 1.58,
    "cote_max": 2.92,
@@ -45072,8 +45610,8 @@
      "pin_open": 2.35
     }
    ],
-   "rang_marche": 97,
-   "rang_sur": 151
+   "rang_marche": 55,
+   "rang_sur": 86
   },
   "hipfl nico": {
    "nom": "Nico Hipfl",
@@ -45085,6 +45623,7 @@
    "circuits": [
     "ATP Challenger Tulln"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 1
@@ -45138,6 +45677,7 @@
     "ATP Challenger San Diego 2",
     "ATP Challenger Tiburon"
    ],
+   "circuit": "atp",
    "forme": {
     "n": 7,
     "victoires": 4,
@@ -45174,6 +45714,7 @@
     "ATP Challenger Palermo",
     "ATP Challenger Genoa 2"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.99,
    "cote_min": 1.67,
    "cote_max": 2.33,
@@ -45260,6 +45801,7 @@
     "ATP Chengdu",
     "ATP Tokyo"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.67,
    "cote_min": 1.43,
    "cote_max": 3.25,
@@ -45346,6 +45888,7 @@
     "ATP Challenger Zhangjiagang",
     "ATP Challenger Prague"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 2,
     "victoires": 1
@@ -45415,7 +45958,8 @@
    ],
    "circuits": [
     "ATP Los Cabos"
-   ]
+   ],
+   "circuit": "atp"
   },
   "henrique rocha": {
    "nom": "Henrique Rocha",
@@ -45430,6 +45974,7 @@
     "ATP Cincinnati",
     "US Open Men Singles"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.61,
    "cote_min": 1.1,
    "cote_max": 3.01,
@@ -45563,8 +46108,8 @@
      "pin_open": 1.54
     }
    ],
-   "rang_marche": 32,
-   "rang_sur": 151
+   "rang_marche": 17,
+   "rang_sur": 86
   },
   "jimenez kasintseva victoria": {
    "nom": "Victoria Jimenez Kasintseva",
@@ -45578,6 +46123,7 @@
     "WTA Toronto",
     "WTA Hamburg"
    ],
+   "circuit": "wta",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -45649,6 +46195,7 @@
     "WTA Cincinnati",
     "WTA Toronto"
    ],
+   "circuit": "wta",
    "cote_mediane": 1.77,
    "cote_min": 1.52,
    "cote_max": 2.47,
@@ -45734,6 +46281,7 @@
     "ATP Cincinnati",
     "ATP Stuttgart"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.77,
    "cote_min": 1.29,
    "cote_max": 3.7,
@@ -45880,8 +46428,8 @@
      "pin_open": 1.38
     }
    ],
-   "rang_marche": 55,
-   "rang_sur": 151
+   "rang_marche": 30,
+   "rang_sur": 86
   },
   "jack kennedy": {
    "nom": "Jack Kennedy",
@@ -45893,6 +46441,7 @@
    "circuits": [
     "ATP Challenger Columbus"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -45943,6 +46492,7 @@
    "circuits": [
     "ATP Challenger Columbus"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 2,
     "victoires": 1
@@ -45981,6 +46531,7 @@
     "Wimbledon Men Singles",
     "ATP Challenger Antofagasta"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.41,
    "cote_min": 1.22,
    "cote_max": 4.03,
@@ -46058,6 +46609,7 @@
     "WTA Eastbourne",
     "WTA S-Hertogenbosch"
    ],
+   "circuit": "wta",
    "cote_mediane": 1.92,
    "cote_min": 1.3,
    "cote_max": 2.3,
@@ -46136,6 +46688,7 @@
     "WTA Cincinnati",
     "WTA Hamburg"
    ],
+   "circuit": "wta",
    "cote_mediane": 3.35,
    "cote_min": 1.89,
    "cote_max": 4.33,
@@ -46207,6 +46760,7 @@
     "WTA Toronto",
     "WTA Guadalajara"
    ],
+   "circuit": "wta",
    "cote_mediane": 2.73,
    "cote_min": 1.95,
    "cote_max": 6.88,
@@ -46292,6 +46846,7 @@
     "ATP Challenger Como",
     "ATP Challenger Braga"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.77,
    "cote_min": 1.35,
    "cote_max": 2.14,
@@ -46415,6 +46970,7 @@
     "ATP Challenger Biella",
     "ATP Challenger Palermo"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.93,
    "cote_min": 1.88,
    "cote_max": 2.75,
@@ -46494,6 +47050,7 @@
     "Wimbledon Men Singles",
     "ATP Challenger Palermo"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.05,
    "cote_min": 1.34,
    "cote_max": 3.0,
@@ -46571,6 +47128,7 @@
     "ATP Challenger Columbus",
     "ATP Challenger Tiburon"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.46,
    "cote_min": 1.81,
    "cote_max": 6.0,
@@ -46637,6 +47195,7 @@
    "circuits": [
     "ATP Challenger Plovdiv 4"
    ],
+   "circuit": "atp",
    "elo": {
     "valeur": 1305,
     "tour": "atp",
@@ -46661,6 +47220,7 @@
     "ATP Chengdu",
     "ATP Montreal"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.93,
    "cote_min": 1.36,
    "cote_max": 2.82,
@@ -46783,6 +47343,7 @@
     "ATP Challenger Palermo",
     "ATP Challenger Roehampton 2"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 2,
     "victoires": 1
@@ -46843,6 +47404,7 @@
     "ATP Challenger Palermo",
     "ATP Challenger Szczecin"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 1
@@ -46885,6 +47447,7 @@
     "ATP Mallorca",
     "ATP Halle"
    ],
+   "circuit": "atp",
    "forme": {
     "n": 3,
     "victoires": 2,
@@ -46919,6 +47482,7 @@
    "circuits": [
     "Wimbledon Men Singles"
    ],
+   "circuit": "atp",
    "meilleur_prix": "bwin",
    "elo": {
     "valeur": 1495,
@@ -46954,6 +47518,7 @@
     "ATP Challenger Villena",
     "US Open Men Singles"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 2,
     "victoires": 0
@@ -47025,6 +47590,7 @@
     "ATP Cincinnati",
     "ATP Eastbourne"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.31,
    "cote_min": 1.45,
    "cote_max": 4.33,
@@ -47110,6 +47676,7 @@
     "WTA Toronto",
     "WTA Cincinnati"
    ],
+   "circuit": "wta",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -47184,6 +47751,7 @@
     "US Open Men Singles",
     "ATP Stuttgart"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.58,
    "cote_min": 1.34,
    "cote_max": 6.56,
@@ -47303,8 +47871,8 @@
      "pin_open": 2.87
     }
    ],
-   "rang_marche": 142,
-   "rang_sur": 151
+   "rang_marche": 81,
+   "rang_sur": 86
   },
   "kasra rahmani": {
    "nom": "Kasra Rahmani",
@@ -47316,6 +47884,7 @@
    "circuits": [
     "ATP Challenger Augsburg"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -47356,6 +47925,7 @@
     "ATP Challenger Augsburg",
     "ATP Challenger Braga"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 2,
     "victoires": 2
@@ -47425,6 +47995,7 @@
     "ATP Challenger Kingston 2",
     "ATP Challenger San Diego 2"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -47479,6 +48050,7 @@
     "ATP Montreal",
     "ATP Cincinnati"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.92,
    "cote_min": 1.44,
    "cote_max": 4.7,
@@ -47578,6 +48150,7 @@
    "circuits": [
     "WTA Singapore"
    ],
+   "circuit": "wta",
    "meilleur_prix": "unibet",
    "elo": {
     "valeur": 1490,
@@ -47610,6 +48183,7 @@
    "circuits": [
     "WTA Singapore"
    ],
+   "circuit": "wta",
    "forme": {
     "n": 3,
     "victoires": 2,
@@ -47646,6 +48220,7 @@
     "ATP Kitzbuhel",
     "Wimbledon Men Singles"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.6,
    "cote_min": 1.31,
    "cote_max": 2.47,
@@ -47755,6 +48330,7 @@
     "ATP Montreal",
     "ATP Kitzbuhel"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.21,
    "cote_min": 1.68,
    "cote_max": 2.73,
@@ -47840,6 +48416,7 @@
     "ATP Challenger Biella",
     "ATP Challenger Palermo"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.57,
    "cote_min": 1.3,
    "cote_max": 2.22,
@@ -47920,6 +48497,7 @@
     "ATP Challenger Jingshan",
     "ATP Challenger Manacor"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.6,
    "cote_min": 1.46,
    "cote_max": 3.42,
@@ -48042,6 +48620,7 @@
     "WTA Beijing",
     "WTA Prague"
    ],
+   "circuit": "wta",
    "cote_mediane": 1.87,
    "cote_min": 1.57,
    "cote_max": 2.17,
@@ -48165,6 +48744,7 @@
     "ATP Challenger Saint Tropez",
     "ATP Challenger Villena"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -48239,6 +48819,7 @@
     "WTA Sao Paulo",
     "US Open Women Singles"
    ],
+   "circuit": "wta",
    "cote_mediane": 2.35,
    "cote_min": 1.49,
    "cote_max": 4.33,
@@ -48347,6 +48928,7 @@
     "WTA Bad Homburg Women Singles",
     "WTA Cincinnati"
    ],
+   "circuit": "wta",
    "cote_mediane": 1.77,
    "cote_min": 1.32,
    "cote_max": 3.33,
@@ -48441,6 +49023,7 @@
     "US Open Men Singles",
     "ATP Challenger Manacor"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.0,
    "cote_min": 1.39,
    "cote_max": 2.68,
@@ -48584,6 +49167,7 @@
    "circuits": [
     "ATP Challenger Rennes"
    ],
+   "circuit": "atp",
    "forme": {
     "n": 3,
     "victoires": 2,
@@ -48619,6 +49203,7 @@
    "circuits": [
     "ATP Challenger Rennes"
    ],
+   "circuit": "atp",
    "meilleur_prix": "betsson",
    "alertes": [
     {
@@ -48643,6 +49228,7 @@
     "ATP Challenger Tiburon",
     "ATP Challenger San Diego 2"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.93,
    "cote_min": 1.82,
    "cote_max": 3.14,
@@ -48750,6 +49336,7 @@
     "ATP Challenger Bari",
     "ATP Challenger Genoa"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.17,
    "cote_min": 1.4,
    "cote_max": 2.54,
@@ -48816,6 +49403,7 @@
     "ATP Challenger Mouilleron-Le-Captif",
     "ATP Challenger Cassis"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.13,
    "cote_min": 1.17,
    "cote_max": 3.26,
@@ -48916,6 +49504,7 @@
     "ATP Cincinnati",
     "ATP Chengdu"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.74,
    "cote_min": 1.18,
    "cote_max": 13.5,
@@ -49041,8 +49630,8 @@
      "pin_open": 1.7
     }
    ],
-   "rang_marche": 50,
-   "rang_sur": 151
+   "rang_marche": 29,
+   "rang_sur": 86
   },
   "oliver tarvet": {
    "nom": "Oliver Tarvet",
@@ -49055,6 +49644,7 @@
     "ATP Challenger Roehampton 2",
     "Wimbledon Men Singles"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 2,
     "victoires": 1
@@ -49124,6 +49714,7 @@
     "Wimbledon Men Singles",
     "ATP Challenger Porto"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -49189,6 +49780,7 @@
     "ATP Challenger Bari",
     "ATP Challenger Plovdiv 4"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.05,
    "cote_min": 1.57,
    "cote_max": 2.69,
@@ -49289,6 +49881,7 @@
     "US Open Men Singles",
     "ATP Challenger Seville"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.27,
    "cote_min": 1.47,
    "cote_max": 3.39,
@@ -49389,6 +49982,7 @@
     "ATP Estoril",
     "ATP Beijing"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.5,
    "cote_min": 1.42,
    "cote_max": 5.0,
@@ -49482,6 +50076,7 @@
     "WTA Memphis",
     "WTA Eastbourne"
    ],
+   "circuit": "wta",
    "cote_mediane": 2.03,
    "cote_min": 1.51,
    "cote_max": 11.0,
@@ -49571,6 +50166,7 @@
    "circuits": [
     "ATP Challenger Roehampton 2"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 1
@@ -49623,6 +50219,7 @@
    "circuits": [
     "ATP Challenger Columbus"
    ],
+   "circuit": "atp",
    "forme": {
     "n": 4,
     "victoires": 3,
@@ -49648,6 +50245,7 @@
     "US Open Women Singles",
     "WTA Toronto"
    ],
+   "circuit": "wta",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -49710,6 +50308,7 @@
    "circuits": [
     "US Open Women Singles"
    ],
+   "circuit": "wta",
    "bilan": {
     "n": 2,
     "victoires": 1
@@ -49769,6 +50368,7 @@
     "ATP Challenger Kingston 2",
     "ATP Challenger Seville"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 2,
     "victoires": 1
@@ -49831,6 +50431,7 @@
     "ATP Challenger Tiburon",
     "ATP Challenger San Diego 2"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.22,
    "cote_min": 1.47,
    "cote_max": 2.85,
@@ -49913,6 +50514,7 @@
     "ATP Challenger Tiburon",
     "ATP Winston Salem"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.27,
    "cote_min": 1.77,
    "cote_max": 3.0,
@@ -49970,7 +50572,8 @@
    ],
    "circuits": [
     "WTA London"
-   ]
+   ],
+   "circuit": "wta"
   },
   "diallo gabriel": {
    "nom": "Gabriel Diallo",
@@ -49984,6 +50587,7 @@
     "ATP Eastbourne",
     "ATP Montreal"
    ],
+   "circuit": "atp",
    "forme": {
     "n": 10,
     "victoires": 4,
@@ -50036,6 +50640,7 @@
    "circuits": [
     "ATP Challenger Plovdiv 3"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 1
@@ -50098,6 +50703,7 @@
     "ATP Challenger Plovdiv 3",
     "ATP Challenger Palermo"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 2,
     "victoires": 1
@@ -50146,6 +50752,7 @@
    "circuits": [
     "ATP Challenger Tulln"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 1
@@ -50199,6 +50806,7 @@
     "ATP Challenger Tulln",
     "ATP Challenger Antofagasta"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 2,
     "victoires": 0
@@ -50271,6 +50879,7 @@
     "ATP Challenger Buenos Aires II",
     "ATP Challenger Antofagasta"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.92,
    "cote_min": 1.43,
    "cote_max": 4.33,
@@ -50376,6 +50985,7 @@
     "ATP Challenger Genoa 2",
     "ATP Challenger Braga"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -50414,6 +51024,7 @@
     "WTA Toronto",
     "WTA Cincinnati"
    ],
+   "circuit": "wta",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -50465,6 +51076,7 @@
     "US Open Women Singles",
     "WTA Cincinnati"
    ],
+   "circuit": "wta",
    "bilan": {
     "n": 2,
     "victoires": 0
@@ -50542,6 +51154,7 @@
    "circuits": [
     "US Open Women Singles"
    ],
+   "circuit": "wta",
    "bilan": {
     "n": 2,
     "victoires": 1
@@ -50601,6 +51214,7 @@
     "ATP Challenger Roehampton 2",
     "ATP Challenger Wuning 3"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 3,
     "victoires": 2
@@ -50689,6 +51303,7 @@
     "ATP Challenger Saint Tropez",
     "ATP Cincinnati"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.61,
    "cote_min": 1.17,
    "cote_max": 2.19,
@@ -50813,8 +51428,8 @@
      "pin_open": 1.17
     }
    ],
-   "rang_marche": 33,
-   "rang_sur": 151
+   "rang_marche": 18,
+   "rang_sur": 86
   },
   "alex marti pujolras": {
    "nom": "Alex Marti Pujolras",
@@ -50826,6 +51441,7 @@
    "circuits": [
     "ATP Challenger Biella"
    ],
+   "circuit": "atp",
    "forme": {
     "n": 3,
     "victoires": 2,
@@ -50864,6 +51480,7 @@
     "US Open Men Singles",
     "Wimbledon Men Singles"
    ],
+   "circuit": "atp",
    "cote_mediane": 3.09,
    "cote_min": 1.56,
    "cote_max": 5.0,
@@ -50930,6 +51547,7 @@
     "ATP Challenger Villena",
     "Wimbledon Men Singles"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.05,
    "cote_min": 1.76,
    "cote_max": 3.18,
@@ -51028,6 +51646,7 @@
    "circuits": [
     "ATP Challenger Palermo"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -51057,6 +51676,7 @@
     "WTA s-Hertogenbosch",
     "US Open Women Singles"
    ],
+   "circuit": "wta",
    "bilan": {
     "n": 1,
     "victoires": 1
@@ -51160,6 +51780,7 @@
     "US Open Women Singles",
     "WTA Cincinnati"
    ],
+   "circuit": "wta",
    "cote_mediane": 1.63,
    "cote_min": 1.39,
    "cote_max": 1.72,
@@ -51249,6 +51870,7 @@
    "circuits": [
     "ATP Challenger Shanghai"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -51313,6 +51935,7 @@
     "ATP Challenger Tiburon",
     "Wimbledon Men Singles"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.05,
    "cote_min": 1.71,
    "cote_max": 3.27,
@@ -51372,6 +51995,7 @@
    "circuits": [
     "ATP Challenger Columbus"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -51414,6 +52038,7 @@
     "ATP Challenger Braga",
     "Wimbledon Men Singles"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.65,
    "cote_min": 1.38,
    "cote_max": 2.47,
@@ -51522,6 +52147,7 @@
     "WTA S-Hertogenbosch",
     "WTA Monterrey"
    ],
+   "circuit": "wta",
    "cote_mediane": 1.89,
    "cote_min": 1.28,
    "cote_max": 2.71,
@@ -51640,8 +52266,8 @@
      "pin_open": 1.77
     }
    ],
-   "rang_marche": 75,
-   "rang_sur": 151
+   "rang_marche": 32,
+   "rang_sur": 65
   },
   "kessler mccartney": {
    "nom": "McCartney Kessler",
@@ -51656,6 +52282,7 @@
     "WTA Eastbourne",
     "WTA Cincinnati"
    ],
+   "circuit": "wta",
    "cote_mediane": 2.14,
    "cote_min": 1.32,
    "cote_max": 2.57,
@@ -51741,6 +52368,7 @@
     "ATP Winston Salem",
     "ATP Cincinnati"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 2,
     "victoires": 0
@@ -51799,6 +52427,7 @@
    "circuits": [
     "ATP Challenger Istanbul 3"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -51841,6 +52470,7 @@
     "Wimbledon Men Singles",
     "US Open Men Singles"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.75,
    "cote_min": 1.43,
    "cote_max": 4.03,
@@ -51926,6 +52556,7 @@
     "ATP Challenger Kingston 2",
     "Wimbledon Men Singles"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 2,
     "victoires": 2
@@ -52004,6 +52635,7 @@
     "ATP Mallorca",
     "ATP Estoril"
    ],
+   "circuit": "atp",
    "forme": {
     "n": 10,
     "victoires": 5,
@@ -52050,6 +52682,7 @@
     "WTA London",
     "WTA Eastbourne"
    ],
+   "circuit": "wta",
    "forme": {
     "n": 6,
     "victoires": 2,
@@ -52098,6 +52731,7 @@
     "Berlin",
     "WTA Bad Homburg Women Singles"
    ],
+   "circuit": "wta",
    "cote_mediane": 2.61,
    "cote_min": 1.61,
    "cote_max": 11.0,
@@ -52179,8 +52813,8 @@
      "pin_open": 1.61
     }
    ],
-   "rang_marche": 143,
-   "rang_sur": 151
+   "rang_marche": 62,
+   "rang_sur": 65
   },
   "jeffrey john wolf": {
    "nom": "Jeffrey John Wolf",
@@ -52194,6 +52828,7 @@
     "ATP Challenger San Diego 2",
     "ATP Challenger Columbus"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.76,
    "cote_min": 1.57,
    "cote_max": 2.43,
@@ -52267,6 +52902,7 @@
     "WTA Sao Paulo",
     "US Open Women Singles"
    ],
+   "circuit": "wta",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -52346,6 +52982,7 @@
     "ATP Challenger Saint Tropez",
     "ATP Challenger Rennes"
    ],
+   "circuit": "atp",
    "forme": {
     "n": 9,
     "victoires": 7,
@@ -52409,6 +53046,7 @@
     "ATP Challenger Bari",
     "ATP Challenger Cassis"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 2,
     "victoires": 1
@@ -52469,6 +53107,7 @@
     "WTA Cincinnati",
     "US Open Women Singles"
    ],
+   "circuit": "wta",
    "bilan": {
     "n": 2,
     "victoires": 1
@@ -52546,6 +53185,7 @@
    "circuits": [
     "US Open Women Singles"
    ],
+   "circuit": "wta",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -52611,6 +53251,7 @@
     "ATP Beijing",
     "ATP Cincinnati"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.58,
    "cote_min": 1.51,
    "cote_max": 1.85,
@@ -52692,6 +53333,7 @@
    "circuits": [
     "ATP Challenger Shanghai"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 1
@@ -52755,6 +53397,7 @@
     "WTA Guadalajara",
     "WTA Washington"
    ],
+   "circuit": "wta",
    "forme": {
     "n": 4,
     "victoires": 1,
@@ -52811,6 +53454,7 @@
     "ATP Stuttgart",
     "US Open Men Singles"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.66,
    "cote_min": 1.52,
    "cote_max": 2.72,
@@ -52896,6 +53540,7 @@
     "ATP Challenger Biella",
     "ATP Challenger Genoa 2"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.88,
    "cote_min": 1.37,
    "cote_max": 2.52,
@@ -52995,6 +53640,7 @@
     "ATP Cincinnati",
     "US Open Men Singles"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 2,
     "victoires": 0
@@ -53056,6 +53702,7 @@
     "WTA S-Hertogenbosch",
     "WTA Nottingham"
    ],
+   "circuit": "wta",
    "cote_mediane": 3.16,
    "cote_min": 2.02,
    "cote_max": 4.57,
@@ -53148,6 +53795,7 @@
     "ATP Challenger Tulln",
     "ATP Challenger Biella"
    ],
+   "circuit": "atp",
    "forme": {
     "n": 10,
     "victoires": 9,
@@ -53208,6 +53856,7 @@
    "circuits": [
     "ATP Challenger Biella"
    ],
+   "circuit": "atp",
    "meilleur_prix": "bwin",
    "alertes": [
     {
@@ -53230,6 +53879,7 @@
    "circuits": [
     "ATP Challenger Plovdiv 4"
    ],
+   "circuit": "atp",
    "meilleur_prix": "bwin",
    "elo": {
     "valeur": 1452,
@@ -53264,6 +53914,7 @@
     "ATP Challenger Plovdiv 4",
     "ATP Challenger Seville"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.63,
    "cote_min": 1.33,
    "cote_max": 2.85,
@@ -53360,7 +54011,8 @@
    ],
    "circuits": [
     "WTA Memphis"
-   ]
+   ],
+   "circuit": "wta"
   },
   "aleksandar vukic": {
    "nom": "Aleksandar Vukic",
@@ -53375,6 +54027,7 @@
     "ATP Cincinnati",
     "ATP Montreal"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.73,
    "cote_min": 1.62,
    "cote_max": 2.44,
@@ -53480,8 +54133,8 @@
      "pin_open": 2.44
     }
    ],
-   "rang_marche": 47,
-   "rang_sur": 151
+   "rang_marche": 27,
+   "rang_sur": 86
   },
   "akasha urhobo": {
    "nom": "Akasha Urhobo",
@@ -53494,6 +54147,7 @@
     "US Open Women Singles",
     "WTA Cincinnati"
    ],
+   "circuit": "wta",
    "bilan": {
     "n": 2,
     "victoires": 0
@@ -53563,6 +54217,7 @@
    "circuits": [
     "US Open Women Singles"
    ],
+   "circuit": "wta",
    "bilan": {
     "n": 1,
     "victoires": 1
@@ -53627,6 +54282,7 @@
     "US Open Women Singles",
     "WTA S-Hertogenbosch"
    ],
+   "circuit": "wta",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -53679,6 +54335,7 @@
     "ATP Challenger Istanbul 3",
     "ATP Challenger Manacor"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -53732,6 +54389,7 @@
     "ATP Challenger Palermo",
     "ATP Challenger Roehampton 2"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 3,
     "victoires": 2
@@ -53816,6 +54474,7 @@
    "circuits": [
     "ATP Challenger Porto"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 2,
     "victoires": 1
@@ -53875,6 +54534,7 @@
     "US Open Women Singles",
     "WTA Singapore"
    ],
+   "circuit": "wta",
    "bilan": {
     "n": 2,
     "victoires": 2
@@ -54045,6 +54705,7 @@
    "circuits": [
     "ATP Eastbourne"
    ],
+   "circuit": "atp",
    "forme": {
     "n": 5,
     "victoires": 3,
@@ -54081,6 +54742,7 @@
     "US Open Women Singles",
     "WTA Washington"
    ],
+   "circuit": "wta",
    "bilan": {
     "n": 2,
     "victoires": 1
@@ -54153,6 +54815,7 @@
     "ATP Cincinnati",
     "Wimbledon Men Singles"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.23,
    "cote_min": 1.14,
    "cote_max": 3.27,
@@ -54271,8 +54934,8 @@
      "pin_open": 1.66
     }
    ],
-   "rang_marche": 116,
-   "rang_sur": 151
+   "rang_marche": 65,
+   "rang_sur": 86
   },
   "andre ilagan": {
    "nom": "Andre Ilagan",
@@ -54284,6 +54947,7 @@
    "circuits": [
     "US Open Men Singles"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -54349,6 +55013,7 @@
     "ATP Montreal",
     "ATP Cincinnati"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.45,
    "cote_min": 1.74,
    "cote_max": 2.68,
@@ -54449,6 +55114,7 @@
     "ATP Challenger Phan Thiet 3",
     "ATP Los Cabos"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -54519,6 +55185,7 @@
    "circuits": [
     "ATP Challenger Curitiba"
    ],
+   "circuit": "atp",
    "meilleur_prix": "unibet",
    "elo": {
     "valeur": 1181,
@@ -54554,6 +55221,7 @@
     "US Open Men Singles",
     "Wimbledon Men Singles"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.95,
    "cote_min": 1.83,
    "cote_max": 2.52,
@@ -54638,6 +55306,7 @@
     "ATP Challenger Como",
     "ATP Challenger Genoa"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 2,
     "victoires": 2
@@ -54715,6 +55384,7 @@
    "circuits": [
     "ATP Kitzbuhel"
    ],
+   "circuit": "atp",
    "forme": {
     "n": 10,
     "victoires": 3,
@@ -54761,6 +55431,7 @@
    "circuits": [
     "WTA Cincinnati"
    ],
+   "circuit": "wta",
    "bilan": {
     "n": 1,
     "victoires": 1
@@ -54811,6 +55482,7 @@
    "circuits": [
     "US Open Women Singles"
    ],
+   "circuit": "wta",
    "bilan": {
     "n": 1,
     "victoires": 1
@@ -54873,6 +55545,7 @@
    "circuits": [
     "ATP Challenger Tulln"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 1
@@ -54926,6 +55599,7 @@
     "ATP Challenger Augsburg",
     "ATP Challenger Plovdiv 3"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 2,
     "victoires": 1
@@ -54997,6 +55671,7 @@
     "WTA Monterrey",
     "WTA Singapore"
    ],
+   "circuit": "wta",
    "cote_mediane": 2.5,
    "cote_min": 1.62,
    "cote_max": 4.12,
@@ -55081,6 +55756,7 @@
     "US Open Women Singles",
     "WTA Seoul"
    ],
+   "circuit": "wta",
    "bilan": {
     "n": 2,
     "victoires": 1
@@ -55158,6 +55834,7 @@
    "circuits": [
     "US Open Women Singles"
    ],
+   "circuit": "wta",
    "bilan": {
     "n": 2,
     "victoires": 1
@@ -55236,6 +55913,7 @@
     "ATP Challenger Phan Thiet 3",
     "ATP Challenger Zhangjiagang"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -55298,7 +55976,8 @@
    ],
    "circuits": [
     "ATP Challenger Phan Thiet 3"
-   ]
+   ],
+   "circuit": "atp"
   },
   "eunhye lee": {
    "nom": "Eunhye (2000) Lee",
@@ -55310,6 +55989,7 @@
    "circuits": [
     "WTA Seoul"
    ],
+   "circuit": "wta",
    "elo": {
     "valeur": 1388,
     "tour": "wta",
@@ -55331,6 +56011,7 @@
    "circuits": [
     "ATP Challenger Braga"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 1
@@ -55370,6 +56051,7 @@
    "circuits": [
     "ATP Challenger Braga"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -55421,6 +56103,7 @@
     "Wimbledon Men Singles",
     "ATP Shanghai"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 1
@@ -55473,6 +56156,7 @@
     "WTA Washington",
     "US Open Women Singles"
    ],
+   "circuit": "wta",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -55545,6 +56229,7 @@
     "WTA Guadalajara",
     "WTA Eastbourne"
    ],
+   "circuit": "wta",
    "cote_mediane": 1.74,
    "cote_min": 1.5,
    "cote_max": 6.0,
@@ -55655,8 +56340,8 @@
      "pin_open": 1.5
     }
    ],
-   "rang_marche": 51,
-   "rang_sur": 151
+   "rang_marche": 22,
+   "rang_sur": 65
   },
   "fajing sun": {
    "nom": "Fajing Sun",
@@ -55668,6 +56353,7 @@
    "circuits": [
     "ATP Challenger Zhangjiagang"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -55730,6 +56416,7 @@
    "circuits": [
     "ATP Challenger Shanghai"
    ],
+   "circuit": "atp",
    "forme": {
     "n": 9,
     "victoires": 4,
@@ -55776,6 +56463,7 @@
     "ATP Challenger Wuning 3",
     "ATP Challenger Jingshan"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.75,
    "cote_min": 1.77,
    "cote_max": 2.82,
@@ -55850,6 +56538,7 @@
    "circuits": [
     "ATP Challenger Tiburon"
    ],
+   "circuit": "atp",
    "forme": {
     "n": 4,
     "victoires": 3,
@@ -55888,6 +56577,7 @@
     "WTA Beijing",
     "US Open Women Singles"
    ],
+   "circuit": "wta",
    "cote_mediane": 1.84,
    "cote_min": 1.46,
    "cote_max": 5.76,
@@ -56014,8 +56704,8 @@
      "pin_open": 1.57
     }
    ],
-   "rang_marche": 69,
-   "rang_sur": 151
+   "rang_marche": 30,
+   "rang_sur": 65
   },
   "jasmine paolini": {
    "nom": "Jasmine Paolini",
@@ -56029,6 +56719,7 @@
     "WTA Eastbourne",
     "US Open Women Singles"
    ],
+   "circuit": "wta",
    "bilan": {
     "n": 2,
     "victoires": 0
@@ -56098,6 +56789,7 @@
    "circuits": [
     "ATP Challenger Palermo"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -56151,6 +56843,7 @@
     "Wimbledon Men Singles",
     "ATP Challenger Roehampton 2"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -56224,6 +56917,7 @@
     "ATP Montreal",
     "US Open Men Singles"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.89,
    "cote_min": 1.67,
    "cote_max": 3.56,
@@ -56299,6 +56993,7 @@
     "US Open Women Singles",
     "WTA Guadalajara"
    ],
+   "circuit": "wta",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -56364,6 +57059,7 @@
     "WTA Nottingham",
     "WTA London"
    ],
+   "circuit": "wta",
    "cote_mediane": 3.33,
    "cote_min": 1.5,
    "cote_max": 6.56,
@@ -56440,6 +57136,7 @@
     "ATP Challenger Cassis",
     "ATP Challenger Rennes"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -56502,6 +57199,7 @@
    "circuits": [
     "ATP Challenger Istanbul 3"
    ],
+   "circuit": "atp",
    "meilleur_prix": "bwin",
    "alertes": [
     {
@@ -56525,6 +57223,7 @@
     "ATP Challenger Curitiba",
     "Wimbledon Men Singles"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -56588,6 +57287,7 @@
     "WTA Prague",
     "US Open Women Singles"
    ],
+   "circuit": "wta",
    "bilan": {
     "n": 1,
     "victoires": 1
@@ -56650,6 +57350,7 @@
    "circuits": [
     "ATP Challenger Kingston 2"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -56713,6 +57414,7 @@
     "ATP Challenger Kingston 2",
     "ATP Challenger Villena"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 3,
     "victoires": 2
@@ -56778,6 +57480,7 @@
    "circuits": [
     "ATP Challenger Kingston 2"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -56806,6 +57509,7 @@
    "circuits": [
     "ATP Challenger Tulln"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -56867,6 +57571,7 @@
    "circuits": [
     "ATP Challenger Tulln"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 2,
     "victoires": 1
@@ -56926,6 +57631,7 @@
     "ATP Challenger Istanbul 3",
     "ATP Estoril"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -56988,6 +57694,7 @@
     "ATP Challenger Istanbul 3",
     "ATP Challenger Jingshan"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 2,
     "victoires": 1
@@ -57047,6 +57754,7 @@
     "ATP Challenger Shanghai",
     "ATP Challenger Jingshan"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 1
@@ -57118,6 +57826,7 @@
     "ATP Challenger Braga",
     "ATP Challenger Sion"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 2,
     "victoires": 0
@@ -57188,6 +57897,7 @@
     "ATP Challenger Genoa 2",
     "ATP Challenger Bari"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 2,
     "victoires": 1
@@ -57257,6 +57967,7 @@
    "circuits": [
     "WTA London"
    ],
+   "circuit": "wta",
    "cote_mediane": 2.0,
    "cote_min": 1.34,
    "cote_max": 3.13,
@@ -57315,6 +58026,7 @@
    "circuits": [
     "US Open Women Singles"
    ],
+   "circuit": "wta",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -57378,6 +58090,7 @@
     "ATP Challenger Seville",
     "ATP Challenger Palermo"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 2,
     "victoires": 1
@@ -57455,6 +58168,7 @@
    "circuits": [
     "ATP Challenger Shanghai"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 1
@@ -57516,6 +58230,7 @@
    "circuits": [
     "ATP Challenger Shanghai"
    ],
+   "circuit": "atp",
    "forme": {
     "n": 5,
     "victoires": 2,
@@ -57561,7 +58276,8 @@
    ],
    "circuits": [
     "ATP Challenger Tiburon"
-   ]
+   ],
+   "circuit": "atp"
   },
   "hamad medjedovic": {
    "nom": "Hamad Medjedovic",
@@ -57573,6 +58289,7 @@
    "circuits": [
     "ATP Mallorca"
    ],
+   "circuit": "atp",
    "forme": {
     "n": 9,
     "victoires": 2,
@@ -57611,6 +58328,7 @@
     "ATP Challenger Braga",
     "Wimbledon Men Singles"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.21,
    "cote_min": 1.36,
    "cote_max": 3.22,
@@ -57687,6 +58405,7 @@
    "circuits": [
     "WTA Sao Paulo"
    ],
+   "circuit": "wta",
    "forme": {
     "n": 5,
     "victoires": 2,
@@ -57732,6 +58451,7 @@
    "circuits": [
     "WTA Sao Paulo"
    ],
+   "circuit": "wta",
    "elo": {
     "valeur": 1334,
     "tour": "wta",
@@ -57753,6 +58473,7 @@
    "circuits": [
     "ATP Challenger Buenos Aires II"
    ],
+   "circuit": "atp",
    "forme": {
     "n": 4,
     "victoires": 2,
@@ -57787,6 +58508,7 @@
    "circuits": [
     "ATP Stuttgart"
    ],
+   "circuit": "atp",
    "forme": {
     "n": 6,
     "victoires": 0,
@@ -57831,6 +58553,7 @@
    "circuits": [
     "US Open Women Singles"
    ],
+   "circuit": "wta",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -57884,6 +58607,7 @@
     "Wimbledon Men Singles",
     "ATP Challenger Manacor"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -57949,6 +58673,7 @@
     "Berlin",
     "US Open Women Singles"
    ],
+   "circuit": "wta",
    "cote_mediane": 1.32,
    "cote_min": 1.15,
    "cote_max": 1.98,
@@ -58048,6 +58773,7 @@
     "ATP Challenger Szczecin",
     "ATP Challenger Seville"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.57,
    "cote_min": 1.05,
    "cote_max": 11.0,
@@ -58169,6 +58895,7 @@
     "ATP Challenger Villena",
     "ATP Challenger Rennes"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -58221,6 +58948,7 @@
    "circuits": [
     "ATP Challenger Antofagasta"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 2,
     "victoires": 1
@@ -58290,6 +59018,7 @@
     "ATP Washington",
     "ATP Challenger Kingston 2"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -58354,6 +59083,7 @@
     "ATP Cincinnati",
     "US Open Men Singles"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.34,
    "cote_min": 1.28,
    "cote_max": 1.62,
@@ -58469,6 +59199,7 @@
     "US Open Men Singles",
     "ATP Cincinnati"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 3,
     "victoires": 1
@@ -58524,6 +59255,7 @@
    "circuits": [
     "WTA Sao Paulo"
    ],
+   "circuit": "wta",
    "elo": {
     "valeur": 1374,
     "tour": "wta",
@@ -58546,6 +59278,7 @@
     "ATP Challenger Phan Thiet 3",
     "ATP Los Cabos"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -58599,6 +59332,7 @@
     "ATP Challenger Tiburon",
     "ATP Challenger San Diego 2"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -58662,6 +59396,7 @@
    "circuits": [
     "ATP Challenger Antofagasta"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -58716,6 +59451,7 @@
     "WTA Toronto",
     "US Open Women Singles"
    ],
+   "circuit": "wta",
    "cote_mediane": 2.69,
    "cote_min": 1.48,
    "cote_max": 4.12,
@@ -58806,6 +59542,7 @@
     "ATP Cincinnati",
     "US Open Men Singles"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 3,
     "victoires": 0
@@ -58872,6 +59609,7 @@
     "ATP Challenger Tulln",
     "ATP Challenger Plovdiv 3"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 2,
     "victoires": 2
@@ -58941,6 +59679,7 @@
    "circuits": [
     "ATP Challenger Tulln"
    ],
+   "circuit": "atp",
    "forme": {
     "n": 4,
     "victoires": 1,
@@ -58985,6 +59724,7 @@
    "circuits": [
     "ATP Challenger Phan Thiet 3"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 1
@@ -59047,6 +59787,7 @@
    "circuits": [
     "ATP Challenger Phan Thiet 3"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -59088,6 +59829,7 @@
    "circuits": [
     "ATP Challenger Plovdiv 4"
    ],
+   "circuit": "atp",
    "forme": {
     "n": 9,
     "victoires": 6,
@@ -59133,6 +59875,7 @@
    "circuits": [
     "ATP Challenger Columbus"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -59174,6 +59917,7 @@
    "circuits": [
     "ATP Challenger Mouilleron-Le-Captif"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -59226,6 +59970,7 @@
     "Wimbledon Men Singles",
     "ATP Challenger Shanghai"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -59299,6 +60044,7 @@
     "ATP Cincinnati",
     "ATP Challenger Genoa"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.47,
    "cote_min": 1.35,
    "cote_max": 3.78,
@@ -59398,6 +60144,7 @@
     "US Open Women Singles",
     "WTA Cincinnati"
    ],
+   "circuit": "wta",
    "cote_mediane": 1.32,
    "cote_min": 1.18,
    "cote_max": 2.61,
@@ -59504,6 +60251,7 @@
    "circuits": [
     "ATP Challenger Roehampton 2"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -59615,6 +60363,7 @@
    "circuits": [
     "ATP Challenger Rennes"
    ],
+   "circuit": "atp",
    "forme": {
     "n": 4,
     "victoires": 1,
@@ -59669,6 +60418,7 @@
    "circuits": [
     "ATP Challenger Szczecin"
    ],
+   "circuit": "atp",
    "meilleur_prix": "unibet",
    "elo": {
     "valeur": 1393,
@@ -59703,6 +60453,7 @@
     "ATP Challenger Phan Thiet 3",
     "ATP Challenger Phan Thiet 4"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.36,
    "cote_min": 1.08,
    "cote_max": 3.0,
@@ -59788,6 +60539,7 @@
     "WTA Hamburg",
     "WTA Guadalajara"
    ],
+   "circuit": "wta",
    "forme": {
     "n": 4,
     "victoires": 1,
@@ -59823,6 +60575,7 @@
    "circuits": [
     "WTA Hamburg"
    ],
+   "circuit": "wta",
    "forme": {
     "n": 5,
     "victoires": 2,
@@ -59870,6 +60623,7 @@
     "WTA Cincinnati",
     "WTA Hamburg"
    ],
+   "circuit": "wta",
    "bilan": {
     "n": 2,
     "victoires": 1
@@ -59948,6 +60702,7 @@
    "circuits": [
     "ATP Challenger Kingston 2"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -59999,6 +60754,7 @@
    "circuits": [
     "ATP Challenger Seville"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 1
@@ -60061,6 +60817,7 @@
    "circuits": [
     "ATP Challenger Seville"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -60099,6 +60856,7 @@
    "circuits": [
     "ATP Challenger Tulln"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -60162,6 +60920,7 @@
    "circuits": [
     "ATP Challenger Genoa"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -60212,6 +60971,7 @@
    "circuits": [
     "ATP Challenger Szczecin"
    ],
+   "circuit": "atp",
    "forme": {
     "n": 6,
     "victoires": 4,
@@ -60250,6 +61010,7 @@
     "ATP Estoril",
     "ATP Challenger Seville"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.35,
    "cote_min": 1.88,
    "cote_max": 3.44,
@@ -60313,7 +61074,8 @@
    ],
    "circuits": [
     "WTA Bad Homburg Women Singles"
-   ]
+   ],
+   "circuit": "wta"
   },
   "alboran de moreno nicolas": {
    "nom": "Nicolas Moreno de Alboran",
@@ -60325,6 +61087,7 @@
    "circuits": [
     "Wimbledon Men Singles"
    ],
+   "circuit": "atp",
    "elo": {
     "valeur": 1557,
     "tour": "atp",
@@ -60347,6 +61110,7 @@
     "ATP Challenger Augsburg",
     "ATP Challenger Porto 2"
    ],
+   "circuit": "atp",
    "forme": {
     "n": 10,
     "victoires": 8,
@@ -60380,6 +61144,7 @@
    "circuits": [
     "ATP Challenger Shanghai"
    ],
+   "circuit": "atp",
    "forme": {
     "n": 4,
     "victoires": 3,
@@ -60416,6 +61181,7 @@
     "ATP Challenger Phan Thiet 4",
     "ATP Challenger Phan Thiet 3"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 1
@@ -60468,6 +61234,7 @@
    "circuits": [
     "ATP Challenger Palermo"
    ],
+   "circuit": "atp",
    "set1": {
     "n": 1,
     "gagnes": 0
@@ -60494,6 +61261,7 @@
     "ATP Challenger Tulln",
     "ATP Challenger Szczecin"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -60556,6 +61324,7 @@
    "circuits": [
     "Wimbledon Men Singles"
    ],
+   "circuit": "atp",
    "forme": {
     "n": 7,
     "victoires": 2,
@@ -60601,6 +61370,7 @@
     "Wimbledon Men Singles",
     "ATP Challenger Saint Tropez"
    ],
+   "circuit": "atp",
    "forme": {
     "n": 4,
     "victoires": 0,
@@ -60645,6 +61415,7 @@
    "circuits": [
     "Wimbledon Men Singles"
    ],
+   "circuit": "atp",
    "forme": {
     "n": 3,
     "victoires": 2,
@@ -60691,6 +61462,7 @@
    "circuits": [
     "US Open Women Singles"
    ],
+   "circuit": "wta",
    "bilan": {
     "n": 3,
     "victoires": 2
@@ -60778,6 +61550,7 @@
     "US Open Women Singles",
     "WTA Singapore"
    ],
+   "circuit": "wta",
    "cote_mediane": 1.96,
    "cote_min": 1.07,
    "cote_max": 4.7,
@@ -60877,6 +61650,7 @@
    "circuits": [
     "ATP Challenger Cassis"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -60916,6 +61690,7 @@
    "circuits": [
     "ATP Challenger Cassis"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 2,
     "victoires": 1
@@ -60964,6 +61739,7 @@
    "circuits": [
     "WTA Guadalajara"
    ],
+   "circuit": "wta",
    "elo": {
     "valeur": 1301,
     "tour": "wta",
@@ -60984,6 +61760,7 @@
    "circuits": [
     "WTA Sao Paulo"
    ],
+   "circuit": "wta",
    "meilleur_prix": "bwin",
    "elo": {
     "valeur": 1585,
@@ -61016,6 +61793,7 @@
    "circuits": [
     "ATP Challenger Buenos Aires II"
    ],
+   "circuit": "atp",
    "forme": {
     "n": 3,
     "victoires": 0,
@@ -61050,6 +61828,7 @@
    "circuits": [
     "WTA Hamburg"
    ],
+   "circuit": "wta",
    "elo": {
     "valeur": 1529,
     "tour": "wta",
@@ -61071,6 +61850,7 @@
    "circuits": [
     "US Open Women Singles"
    ],
+   "circuit": "wta",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -61121,6 +61901,7 @@
    "circuits": [
     "US Open Women Singles"
    ],
+   "circuit": "wta",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -61173,6 +61954,7 @@
    "circuits": [
     "ATP Challenger Roehampton 2"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -61217,6 +61999,7 @@
     "ATP Challenger Genoa 2",
     "Wimbledon Men Singles"
    ],
+   "circuit": "atp",
    "cote_mediane": 1.68,
    "cote_min": 1.45,
    "cote_max": 2.72,
@@ -61315,6 +62098,7 @@
    "circuits": [
     "ATP Challenger Phan Thiet 3"
    ],
+   "circuit": "atp",
    "forme": {
     "n": 9,
     "victoires": 7,
@@ -61338,7 +62122,8 @@
    ],
    "circuits": [
     "ATP Challenger Tiburon"
-   ]
+   ],
+   "circuit": "atp"
   },
   "hontama mai": {
    "nom": "Mai Hontama",
@@ -61351,6 +62136,7 @@
     "WTA Prague",
     "WTA Beijing"
    ],
+   "circuit": "wta",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -61401,6 +62187,7 @@
    "circuits": [
     "US Open Women Singles"
    ],
+   "circuit": "wta",
    "bilan": {
     "n": 1,
     "victoires": 1
@@ -61463,6 +62250,7 @@
    "circuits": [
     "US Open Women Singles"
    ],
+   "circuit": "wta",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -61501,6 +62289,7 @@
    "circuits": [
     "US Open Women Singles"
    ],
+   "circuit": "wta",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -61540,6 +62329,7 @@
     "US Open Women Singles",
     "WTA Memphis"
    ],
+   "circuit": "wta",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -61603,6 +62393,7 @@
    "circuits": [
     "ATP Challenger Phan Thiet 3"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 1
@@ -61665,6 +62456,7 @@
    "circuits": [
     "ATP Challenger Phan Thiet 3"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -61716,6 +62508,7 @@
     "WTA Beijing",
     "WTA Prague"
    ],
+   "circuit": "wta",
    "bilan": {
     "n": 1,
     "victoires": 1
@@ -61768,6 +62561,7 @@
    "circuits": [
     "ATP Challenger Villena"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -61820,6 +62614,7 @@
    "circuits": [
     "ATP Challenger Villena"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 1
@@ -61872,6 +62667,7 @@
    "circuits": [
     "ATP Challenger Palermo"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -61900,6 +62696,7 @@
    "circuits": [
     "ATP S-Hertogenbosch"
    ],
+   "circuit": "atp",
    "forme": {
     "n": 5,
     "victoires": 2,
@@ -61924,6 +62721,7 @@
    "circuits": [
     "US Open Women Singles"
    ],
+   "circuit": "wta",
    "bilan": {
     "n": 1,
     "victoires": 1
@@ -61986,6 +62784,7 @@
    "circuits": [
     "US Open Women Singles"
    ],
+   "circuit": "wta",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -62036,6 +62835,7 @@
    "circuits": [
     "ATP Challenger Palermo"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -62065,6 +62865,7 @@
     "WTA Cincinnati",
     "US Open Women Singles"
    ],
+   "circuit": "wta",
    "cote_mediane": 1.95,
    "cote_min": 1.36,
    "cote_max": 2.32,
@@ -62162,6 +62963,7 @@
    "circuits": [
     "US Open Women Singles"
    ],
+   "circuit": "wta",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -62203,6 +63005,7 @@
    "circuits": [
     "US Open Women Singles"
    ],
+   "circuit": "wta",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -62252,6 +63055,7 @@
    "circuits": [
     "US Open Women Singles"
    ],
+   "circuit": "wta",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -62305,6 +63109,7 @@
     "ATP Challenger Tulln",
     "ATP Challenger Braga"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 2,
     "victoires": 1
@@ -62375,6 +63180,7 @@
     "US Open Men Singles",
     "ATP Challenger Palermo"
    ],
+   "circuit": "atp",
    "cote_mediane": 2.05,
    "cote_min": 1.18,
    "cote_max": 4.7,
@@ -62464,6 +63270,7 @@
    "circuits": [
     "WTA Seoul"
    ],
+   "circuit": "wta",
    "forme": {
     "n": 6,
     "victoires": 3,
@@ -62510,6 +63317,7 @@
    "circuits": [
     "WTA Seoul"
    ],
+   "circuit": "wta",
    "elo": {
     "valeur": 1445,
     "tour": "wta",
@@ -62532,6 +63340,7 @@
    "circuits": [
     "ATP Challenger Kingston 2"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -62560,6 +63369,7 @@
    "circuits": [
     "US Open Women Singles"
    ],
+   "circuit": "wta",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -62589,6 +63399,7 @@
     "ATP Challenger Augsburg",
     "ATP Challenger Tulln"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 2,
     "victoires": 0
@@ -62664,7 +63475,8 @@
    ],
    "circuits": [
     "ATP Challenger Rennes"
-   ]
+   ],
+   "circuit": "atp"
   },
   "caroline dolehide": {
    "nom": "Caroline Dolehide",
@@ -62677,6 +63489,7 @@
     "WTA Guadalajara",
     "US Open Women Singles"
    ],
+   "circuit": "wta",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -62748,6 +63561,7 @@
     "ATP Challenger Plovdiv 4",
     "ATP Challenger Tulln"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -62789,6 +63603,7 @@
    "circuits": [
     "ATP Challenger Porto 2"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -62849,6 +63664,7 @@
    "circuits": [
     "ATP Challenger Shanghai"
    ],
+   "circuit": "atp",
    "forme": {
     "n": 4,
     "victoires": 2,
@@ -62883,6 +63699,7 @@
    "circuits": [
     "ATP Challenger Tiburon"
    ],
+   "circuit": "atp",
    "forme": {
     "n": 4,
     "victoires": 0,
@@ -62928,6 +63745,7 @@
    "circuits": [
     "Wimbledon Men Singles"
    ],
+   "circuit": "atp",
    "forme": {
     "n": 4,
     "victoires": 2,
@@ -62964,6 +63782,7 @@
     "ATP Challenger Shanghai",
     "ATP Challenger Jingshan"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 1
@@ -63035,6 +63854,7 @@
     "ATP Cincinnati",
     "US Open Men Singles"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -63087,6 +63907,7 @@
    "circuits": [
     "ATP Challenger Prague"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 1
@@ -63126,6 +63947,7 @@
    "circuits": [
     "WTA Monterrey"
    ],
+   "circuit": "wta",
    "bilan": {
     "n": 2,
     "victoires": 1
@@ -63184,6 +64006,7 @@
    "circuits": [
     "US Open Men Singles"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -63224,7 +64047,8 @@
    ],
    "circuits": [
     "WTA Guadalajara"
-   ]
+   ],
+   "circuit": "wta"
   },
   "digvijay pratap singh": {
    "nom": "Digvijay Pratap Singh",
@@ -63235,7 +64059,8 @@
    ],
    "circuits": [
     "ATP Challenger Phan Thiet 4"
-   ]
+   ],
+   "circuit": "atp"
   },
   "bai zhuoxuan": {
    "nom": "Zhuoxuan Bai",
@@ -63247,6 +64072,7 @@
    "circuits": [
     "WTA Beijing"
    ],
+   "circuit": "wta",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -63296,6 +64122,7 @@
    "circuits": [
     "ATP Challenger Antofagasta"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 1
@@ -63338,6 +64165,7 @@
     "ATP Challenger Antofagasta",
     "ATP Challenger Genoa"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 1
@@ -63390,6 +64218,7 @@
    "circuits": [
     "WTA Monterrey"
    ],
+   "circuit": "wta",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -63419,6 +64248,7 @@
     "ATP Challenger Manacor",
     "ATP Challenger Porto 2"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 3,
     "victoires": 1
@@ -63484,6 +64314,7 @@
    "circuits": [
     "WTA Sao Paulo"
    ],
+   "circuit": "wta",
    "elo": {
     "valeur": 1279,
     "tour": "wta",
@@ -63506,6 +64337,7 @@
     "ATP Challenger Rennes",
     "ATP Challenger Seville"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -63547,6 +64379,7 @@
    "circuits": [
     "US Open Women Singles"
    ],
+   "circuit": "wta",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -63599,6 +64432,7 @@
     "ATP Challenger Plovdiv 4",
     "ATP Challenger Biella"
    ],
+   "circuit": "atp",
    "forme": {
     "n": 4,
     "victoires": 1,
@@ -63633,6 +64467,7 @@
    "circuits": [
     "WTA Prague"
    ],
+   "circuit": "wta",
    "forme": {
     "n": 3,
     "victoires": 0,
@@ -63667,6 +64502,7 @@
    "circuits": [
     "ATP Challenger Porto 2"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -63718,6 +64554,7 @@
     "WTA Cincinnati",
     "WTA Beijing"
    ],
+   "circuit": "wta",
    "bilan": {
     "n": 2,
     "victoires": 0
@@ -63777,6 +64614,7 @@
    "circuits": [
     "ATP Challenger Shanghai"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -63827,6 +64665,7 @@
    "circuits": [
     "ATP Challenger Biella"
    ],
+   "circuit": "atp",
    "elo": {
     "valeur": 1345,
     "tour": "atp",
@@ -63847,6 +64686,7 @@
    "circuits": [
     "ATP Challenger Braga"
    ],
+   "circuit": "atp",
    "elo": {
     "valeur": 1506,
     "tour": "atp",
@@ -63870,6 +64710,7 @@
     "ATP Estoril",
     "US Open Men Singles"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -63921,6 +64762,7 @@
    "circuits": [
     "ATP Challenger Cassis"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -63971,7 +64813,8 @@
    ],
    "circuits": [
     "ATP Challenger Szczecin"
-   ]
+   ],
+   "circuit": "atp"
   },
   "neil oberleitner": {
    "nom": "Neil Oberleitner",
@@ -63983,6 +64826,7 @@
    "circuits": [
     "ATP Winston Salem"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -64021,6 +64865,7 @@
    "circuits": [
     "US Open Men Singles"
    ],
+   "circuit": "atp",
    "set1": {
     "n": 1,
     "gagnes": 1
@@ -64067,6 +64912,7 @@
    "circuits": [
     "ATP Challenger Cassis"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 1
@@ -64128,6 +64974,7 @@
    "circuits": [
     "US Open Women Singles"
    ],
+   "circuit": "wta",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -64178,7 +65025,8 @@
    ],
    "circuits": [
     "WTA Guadalajara"
-   ]
+   ],
+   "circuit": "wta"
   },
   "bosio victoria": {
    "nom": "Victoria Bosio",
@@ -64190,6 +65038,7 @@
    "circuits": [
     "WTA Sao Paulo"
    ],
+   "circuit": "wta",
    "elo": {
     "valeur": 1249,
     "tour": "wta",
@@ -64211,6 +65060,7 @@
    "circuits": [
     "WTA Memphis"
    ],
+   "circuit": "wta",
    "forme": {
     "n": 4,
     "victoires": 2,
@@ -64235,6 +65085,7 @@
    "circuits": [
     "ATP Challenger Palermo"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -64286,6 +65137,7 @@
    "circuits": [
     "ATP Estoril"
    ],
+   "circuit": "atp",
    "forme": {
     "n": 7,
     "victoires": 1,
@@ -64320,6 +65172,7 @@
    "circuits": [
     "ATP Challenger Phan Thiet 3"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -64361,6 +65214,7 @@
    "circuits": [
     "WTA Sao Paulo"
    ],
+   "circuit": "wta",
    "elo": {
     "valeur": 1316,
     "tour": "wta",
@@ -64382,6 +65236,7 @@
    "circuits": [
     "US Open Women Singles"
    ],
+   "circuit": "wta",
    "forme": {
     "n": 3,
     "victoires": 0,
@@ -64416,6 +65271,7 @@
    "circuits": [
     "ATP Cincinnati"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -64457,6 +65313,7 @@
    "circuits": [
     "US Open Women Singles"
    ],
+   "circuit": "wta",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -64507,6 +65364,7 @@
    "circuits": [
     "ATP Challenger Szczecin"
    ],
+   "circuit": "atp",
    "forme": {
     "n": 3,
     "victoires": 1,
@@ -64540,6 +65398,7 @@
    "circuits": [
     "WTA Hamburg"
    ],
+   "circuit": "wta",
    "forme": {
     "n": 7,
     "victoires": 3,
@@ -64574,6 +65433,7 @@
    "circuits": [
     "ATP Montreal"
    ],
+   "circuit": "atp",
    "elo": {
     "valeur": 1452,
     "tour": "atp",
@@ -64595,6 +65455,7 @@
    "circuits": [
     "ATP Challenger Phan Thiet 3"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -64623,6 +65484,7 @@
    "circuits": [
     "ATP Challenger Wuning 3"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -64664,6 +65526,7 @@
    "circuits": [
     "US Open Men Singles"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -64692,6 +65555,7 @@
    "circuits": [
     "ATP Challenger Seville"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -64720,6 +65584,7 @@
    "circuits": [
     "WTA Beijing"
    ],
+   "circuit": "wta",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -64747,7 +65612,8 @@
    ],
    "circuits": [
     "WTA Toronto"
-   ]
+   ],
+   "circuit": "wta"
   },
   "luz orlando": {
    "nom": "Orlando Luz",
@@ -64758,7 +65624,8 @@
    ],
    "circuits": [
     "ATP Estoril"
-   ]
+   ],
+   "circuit": "atp"
   },
   "jumpei yamasaki": {
    "nom": "Jumpei Yamasaki",
@@ -64770,6 +65637,7 @@
    "circuits": [
     "ATP Challenger Wuning 3"
    ],
+   "circuit": "atp",
    "bilan": {
     "n": 1,
     "victoires": 0
@@ -64799,6 +65667,7 @@
    "n_matchs_vus": 0,
    "periode": null,
    "circuits": [],
+   "circuit": "wta",
    "forme": {
     "n": 4,
     "victoires": 0,
@@ -64834,6 +65703,7 @@
    "n_matchs_vus": 0,
    "periode": null,
    "circuits": [],
+   "circuit": "atp",
    "forme": {
     "n": 4,
     "victoires": 0,
@@ -64882,6 +65752,7 @@
    "n_matchs_vus": 0,
    "periode": null,
    "circuits": [],
+   "circuit": "atp",
    "forme": {
     "n": 4,
     "victoires": 0,
@@ -64946,6 +65817,7 @@
    "n_matchs_vus": 0,
    "periode": null,
    "circuits": [],
+   "circuit": "wta",
    "forme": {
     "n": 3,
     "victoires": 2,
@@ -65064,6 +65936,7 @@
    "n_matchs_vus": 0,
    "periode": null,
    "circuits": [],
+   "circuit": "atp",
    "elo": {
     "valeur": 1465,
     "tour": "atp",
@@ -65081,6 +65954,7 @@
    "n_matchs_vus": 0,
    "periode": null,
    "circuits": [],
+   "circuit": "atp",
    "elo": {
     "valeur": 1696,
     "tour": "atp",
@@ -65110,6 +65984,7 @@
    "n_matchs_vus": 0,
    "periode": null,
    "circuits": [],
+   "circuit": "wta",
    "elo": {
     "valeur": 1273,
     "tour": "wta",
@@ -65137,6 +66012,7 @@
    "n_matchs_vus": 0,
    "periode": null,
    "circuits": [],
+   "circuit": "wta",
    "elo": {
     "valeur": 1589,
     "tour": "wta",
@@ -65171,6 +66047,7 @@
    "n_matchs_vus": 0,
    "periode": null,
    "circuits": [],
+   "circuit": "atp",
    "forme": {
     "n": 4,
     "victoires": 0,
@@ -65649,6 +66526,7 @@
    "n_matchs_vus": 0,
    "periode": null,
    "circuits": [],
+   "circuit": "wta",
    "forme": {
     "n": 7,
     "victoires": 4,
@@ -65678,6 +66556,7 @@
    "n_matchs_vus": 0,
    "periode": null,
    "circuits": [],
+   "circuit": "wta",
    "forme": {
     "n": 5,
     "victoires": 2,
@@ -65707,6 +66586,7 @@
    "n_matchs_vus": 0,
    "periode": null,
    "circuits": [],
+   "circuit": "wta",
    "forme": {
     "n": 4,
     "victoires": 2,
@@ -65735,6 +66615,7 @@
    "n_matchs_vus": 0,
    "periode": null,
    "circuits": [],
+   "circuit": "wta",
    "forme": {
     "n": 4,
     "victoires": 2,
@@ -65764,6 +66645,7 @@
    "n_matchs_vus": 0,
    "periode": null,
    "circuits": [],
+   "circuit": "wta",
    "elo": {
     "valeur": 1449,
     "tour": "wta",
@@ -65779,6 +66661,7 @@
    "n_matchs_vus": 0,
    "periode": null,
    "circuits": [],
+   "circuit": "wta",
    "elo": {
     "valeur": 1444,
     "tour": "wta",
@@ -65794,6 +66677,7 @@
    "n_matchs_vus": 0,
    "periode": null,
    "circuits": [],
+   "circuit": "wta",
    "forme": {
     "n": 5,
     "victoires": 1,
@@ -65823,6 +66707,7 @@
    "n_matchs_vus": 0,
    "periode": null,
    "circuits": [],
+   "circuit": "wta",
    "elo": {
     "valeur": 1310,
     "tour": "wta",
@@ -65845,6 +66730,7 @@
    "n_matchs_vus": 0,
    "periode": null,
    "circuits": [],
+   "circuit": "atp",
    "elo": {
     "valeur": 1232,
     "tour": "atp",
@@ -65861,6 +66747,7 @@
    "n_matchs_vus": 0,
    "periode": null,
    "circuits": [],
+   "circuit": "wta",
    "forme": {
     "n": 4,
     "victoires": 2,
@@ -66016,6 +66903,7 @@
    "n_matchs_vus": 0,
    "periode": null,
    "circuits": [],
+   "circuit": "wta",
    "elo": {
     "valeur": 1128,
     "tour": "wta",
@@ -66032,6 +66920,7 @@
    "n_matchs_vus": 0,
    "periode": null,
    "circuits": [],
+   "circuit": "wta",
    "elo": {
     "valeur": 1266,
     "tour": "wta",
