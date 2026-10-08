@@ -54,6 +54,11 @@ from collections import defaultdict
 MOVES = os.environ.get('MOVES', 'moves_detail_hist.csv')
 SETRES = os.environ.get('SETRES', 'set_results.json')
 FORM = os.environ.get('FORM', 'player_form.json')
+# Elo PUBLIÉ (tennisabstract.com), récupéré chaque lundi par elo_fetch.py
+# dans elo.yml. On ne prend QUE celui-là : l'Elo maison s'auto-évalue à
+# brier 0,235 quand les books sont à 0,209 — il prédit moins bien que le
+# marché, il n'a rien à faire sur une fiche publique.
+ELO = os.environ.get('ELO', 'elo_reference.json')
 OUT = os.environ.get('OUT', 'players_profile.json')
 
 # Nombre minimal d'observations pour publier une médiane de cote. En
@@ -72,6 +77,17 @@ MIN_RANG = int(os.environ.get('MIN_RANG', '8'))
 # Profondeur de l'historique conservé par joueur. À 8, neuf fiches
 # étaient tronquées ; à 16 aucune ne l'est, pour quelques ko de plus.
 N_DERNIERS = int(os.environ.get('N_DERNIERS', '16'))
+
+# Profondeur du journal des mouvements détectés affiché sur la fiche.
+N_ALERTES = int(os.environ.get('N_ALERTES', '6'))
+
+# Avance minimale, en points d'Elo, pour qu'une surface soit déclarée
+# PRIVILÉGIÉE. Mesuré sur les 1 078 joueurs de la référence : l'écart
+# médian entre meilleure et pire surface vaut 94 points, le 10e centile
+# 41. À 40 points d'avance sur la deuxième, une surface est nommée pour
+# 52 % des joueurs ; en dessous, la page affiche les trois chiffres et se
+# tait. Nommer une préférence sur 10 points d'écart serait du bruit.
+ELO_ECART_SURFACE = int(os.environ.get('ELO_ECART_SURFACE', '40'))
 
 
 def cle(nom):
@@ -157,11 +173,23 @@ def main():
     forme = json.load(open(FORM, encoding='utf-8')).get('joueurs', {})
     form_k = {cle(k): v for k, v in forme.items()}
 
+    # L'Elo est indexé par son propre `nom`, pas par sa clé : les deux
+    # conventions ne coïncident pas toujours, et c'est le nom affiché qui
+    # fait foi. Absent ou illisible, on continue sans — l'Elo enrichit la
+    # fiche, il ne la conditionne pas.
+    elo_k = {}
+    try:
+        for k, v in json.load(open(ELO, encoding='utf-8')).get('joueurs', {}).items():
+            if isinstance(v, dict) and v.get('elo'):
+                elo_k[cle(v.get('nom') or k)] = v
+    except (OSError, ValueError) as e:
+        print(f"  {ELO} illisible ({e}) — fiches sans Elo")
+
     res = charger_resultats(setres, moves)
 
     P = defaultdict(lambda: {
         'nom': None, 'cotes': [], 'cotes_adv': [], 'circuits': defaultdict(int),
-        'books': defaultdict(int), 'matchs': [], 'dates': [],
+        'books': defaultdict(int), 'matchs': [], 'dates': [], 'alertes': [],
     })
 
     # ── Le marché : cote d'ouverture Pinnacle ───────────────────────────
@@ -185,6 +213,15 @@ def main():
             b = r.get('entry_book')
             if b:
                 P[k]['books'][b] += 1
+            # Le mouvement a été détecté SUR ce joueur : c'est vers lui que
+            # le marché est allé. Il n'est journalisé que de son côté.
+            e = num(r.get('entry'))
+            if d and e:
+                P[k]['alertes'].append({
+                    'date': d, 'tour': t or None, 'entry': round(e, 2),
+                    'book': b or None, 'adv': o or None,
+                    'pin_open': round(po, 2) if po else None,
+                })
             if po:
                 P[k]['cotes_adv'].append(1 / max(0.02, 1 - 1 / po))
         if o:
@@ -271,6 +308,51 @@ def main():
         if p['books']:
             fiche['meilleur_prix'] = max(p['books'].items(), key=lambda x: x[1])[0]
 
+        # ── Elo publié ──────────────────────────────────────────────────
+        #
+        # Le SEUL avis de la fiche qui ne vienne pas du marché. Quand il
+        # diverge de la cote médiane, c'est l'information la plus
+        # intéressante de la page.
+        e = elo_k.get(k)
+        if e:
+            surf = {n: round(e[n]) for n in ('dur', 'terre', 'gazon')
+                    if isinstance(e.get(n), (int, float))}
+            bloc = {'valeur': round(e['elo'])}
+            if e.get('tour'):
+                bloc['tour'] = e['tour']
+            if surf:
+                bloc['surfaces'] = surf
+            # Surface privilégiée : nommée seulement si elle devance
+            # nettement la deuxième (voir ELO_ECART_SURFACE).
+            # Deux faits distincts, et les deux comptent. Un joueur peut
+            # n'avoir aucune surface de prédilection tout en étant nettement
+            # mauvais sur une : Baez est à 1725 sur terre, 1702 sur dur —
+            # 23 points, rien à dire — mais 1535 sur gazon, 190 plus bas.
+            # Ne regarder que la meilleure faisait écrire « aucune surface
+            # ne se détache » sous trois chiffres qui criaient le contraire.
+            if len(surf) >= 3:
+                ordre = sorted(surf.items(), key=lambda x: -x[1])
+                if ordre[0][1] - ordre[1][1] >= ELO_ECART_SURFACE:
+                    bloc['meilleure_surface'] = ordre[0][0]
+                if ordre[-2][1] - ordre[-1][1] >= ELO_ECART_SURFACE:
+                    bloc['pire_surface'] = ordre[-1][0]
+            fiche['elo'] = bloc
+
+        # ── Ce que le dispositif a vu ───────────────────────────────────
+        #
+        # Le journal des mouvements détectés sur ce joueur : date, tournoi,
+        # prix d'entrée retenu, book. PAS de résultat, PAS de taux : ce
+        # serait le biais de sélection décrit en tête de fichier.
+        #
+        # C'est un relevé, pas une performance. Il montre au lecteur qu'un
+        # dispositif tourne derrière la page — ce qu'aucune statistique ne
+        # dit aussi bien — et il sert de contrôle : une alerte qui apparaît
+        # ici sans correspondre à rien signale un défaut dans la chaîne.
+        if p['alertes']:
+            fiche['alertes'] = sorted(p['alertes'],
+                                      key=lambda a: a['date'],
+                                      reverse=True)[:N_ALERTES]
+
         out[k] = fiche
 
     # ── Classement marché ───────────────────────────────────────────────
@@ -295,7 +377,8 @@ def main():
         'min_cotes': MIN_COTES,
         'min_rang': MIN_RANG,
         'sources': ['moves_detail_hist.csv', 'set_results.json',
-                    'player_form.json'],
+                    'player_form.json', 'elo_reference.json'],
+        'elo_ecart_surface': ELO_ECART_SURFACE,
         'avertissement': (
             "Aucun CLV ni taux de reussite par joueur : moves_detail_hist "
             "ne contient que des mouvements detectes, donc tout taux calcule "
