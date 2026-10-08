@@ -167,6 +167,76 @@ def charger_resultats(setres, moves):
     return out
 
 
+def circuits_joueurs(moves, elo_k):
+    """clé -> 'atp' ou 'wta', par l'Elo puis par le GRAPHE DES ADVERSAIRES.
+
+    POURQUOI PAS LE NOM DU TOURNOI
+    -------------------------------
+    Première idée : lire « ATP » ou « WTA » dans le champ `tour`. Mesuré :
+    49 contradictions avec l'Elo, toutes dans le même sens — des joueuses
+    rangées sous un tournoi ATP. Sabalenka apparaît dans six d'entre eux.
+
+    La cause est claire : Cincinnati, Montréal/Toronto, Washington, Pékin
+    sont des tournois COMBINÉS. Le collecteur garde un seul libellé par
+    épreuve et c'est parfois le mauvais. Le libellé est donc inutilisable.
+
+    LE GRAPHE
+    ---------
+    Un homme ne joue pas contre une femme. Deux joueurs reliés par un match
+    sont donc du même circuit, et la propriété se propage de proche en
+    proche. On construit le graphe des adversaires, on prend ses composantes
+    connexes, et une composante dont tous les membres connus de l'Elo
+    s'accordent transmet son circuit aux autres.
+
+    Mesuré sur moves_detail_hist : 881 joueurs, 28 composantes, dont deux
+    géantes de 569 et 254. ZÉRO composante ne mélange atp et wta.
+
+    Cette dernière mesure est aussi un CONTRÔLE D'INTÉGRITÉ, et c'est la
+    raison de la renvoyer : une composante mixte ne peut vouloir dire qu'une
+    chose, deux joueurs différents réduits à la même clé de tokens. Le jour
+    où ça arrive, on veut le lire dans le journal, pas le découvrir sur une
+    fiche.
+
+    Couverture : 701 par l'Elo, 185 de plus par le graphe, 146 sans circuit.
+    """
+    adj = defaultdict(set)
+    for r in moves:
+        a, b = cle(r.get('steame')), cle(r.get('opp'))
+        if a and b:
+            adj[a].add(b)
+            adj[b].add(a)
+
+    circ = {k: v['tour'] for k, v in elo_k.items()
+            if v.get('tour') in ('atp', 'wta')}
+
+    vus = set()
+    mixtes = []
+    for depart in adj:
+        if depart in vus:
+            continue
+        pile, comp = [depart], set()
+        while pile:
+            x = pile.pop()
+            if x in vus:
+                continue
+            vus.add(x)
+            comp.add(x)
+            pile.extend(adj[x] - vus)
+        connus = {circ[x] for x in comp if x in circ}
+        if len(connus) > 1:
+            # On ne propage RIEN dans une composante contradictoire : ses
+            # membres gardent leur circuit Elo s'ils en ont un, et les
+            # autres restent sans circuit. Mieux vaut pas de rang qu'un
+            # rang dans le mauvais classement.
+            mixtes.append(sorted(comp)[:6])
+            continue
+        if len(connus) == 1:
+            s = connus.pop()
+            for x in comp:
+                circ.setdefault(x, s)
+    return circ, mixtes
+
+
 def main():
     moves = [r for r in csv.DictReader(open(MOVES, encoding='utf-8'))]
     setres = json.load(open(SETRES, encoding='utf-8'))
@@ -184,6 +254,13 @@ def main():
                 elo_k[cle(v.get('nom') or k)] = v
     except (OSError, ValueError) as e:
         print(f"  {ELO} illisible ({e}) — fiches sans Elo")
+
+    circ_k, mixtes = circuits_joueurs(moves, elo_k)
+    if mixtes:
+        print(f"  ALERTE : {len(mixtes)} composante(s) mélangent atp et wta "
+              f"— collision de clés probable")
+        for c in mixtes[:3]:
+            print(f"    {', '.join(c)}")
 
     res = charger_resultats(setres, moves)
 
@@ -269,6 +346,10 @@ def main():
             'circuits': [c for c, _ in sorted(p['circuits'].items(),
                                               key=lambda x: -x[1])[:4]],
         }
+        # 'atp' ou 'wta'. Absent quand ni l'Elo ni le graphe ne tranchent :
+        # la fiche existe alors sans circuit et sans rang.
+        if circ_k.get(k):
+            fiche['circuit'] = circ_k[k]
 
         if len(p['cotes']) >= MIN_COTES:
             fiche['cote_mediane'] = round(st.median(p['cotes']), 2)
@@ -355,25 +436,47 @@ def main():
 
         out[k] = fiche
 
-    # ── Classement marché ───────────────────────────────────────────────
+    # ── Classement marché, UN PAR CIRCUIT ───────────────────────────────
     #
     # La médiane de la cote d'ouverture EST un classement, et c'est le
     # plus pertinent ici : il intègre la forme, la surface et le contexte,
     # ce qu'un classement ATP ne fait pas. Rang publié seulement au-delà
     # de MIN_RANG cotes — sinon il ferait croire à une précision qui
     # n'existe pas.
-    cl = sorted([(k, v['cote_mediane']) for k, v in out.items()
-                 if v.get('n_cotes', 0) >= MIN_RANG], key=lambda x: x[1])
-    for rang, (k, _) in enumerate(cl, 1):
-        out[k]['rang_marche'] = rang
-        out[k]['rang_sur'] = len(cl)
+    #
+    # DEUX CLASSEMENTS, PAS UN
+    # ------------------------
+    # Un classement unique mettait les 86 hommes et les 65 femmes dans la
+    # même colonne. Les deux circuits ne se rencontrent jamais : aucun
+    # match ne les relie, donc aucune cote ne les compare. Le rang croisé
+    # ne mesurait pas « qui est le meilleur », il mesurait de quel côté le
+    # marché cote le plus serré — autre chose, et personne ne le lisait
+    # comme ça.
+    #
+    # Un joueur sans circuit n'entre dans aucun des deux. Il garde sa
+    # médiane, comme ceux qui n'ont pas assez de cotes.
+    classes = {}
+    for cir in ('atp', 'wta'):
+        cl = sorted([(k, v['cote_mediane']) for k, v in out.items()
+                     if v.get('n_cotes', 0) >= MIN_RANG
+                     and v.get('circuit') == cir], key=lambda x: x[1])
+        for rang, (k, _) in enumerate(cl, 1):
+            out[k]['rang_marche'] = rang
+            out[k]['rang_sur'] = len(cl)
+        classes[cir] = len(cl)
+
+    n_sans = sum(1 for v in out.values()
+                 if v.get('n_cotes', 0) >= MIN_RANG and not v.get('circuit'))
 
     import datetime as _dt
     meta = {
         'genere_le': _dt.datetime.now(_dt.timezone.utc).isoformat(
             timespec='seconds'),
         'n_joueurs': len(out),
-        'n_classes': len(cl),
+        'n_classes': classes['atp'] + classes['wta'],
+        'n_classes_atp': classes['atp'],
+        'n_classes_wta': classes['wta'],
+        'n_circuits_connus': sum(1 for v in out.values() if v.get('circuit')),
         'min_cotes': MIN_COTES,
         'min_rang': MIN_RANG,
         'sources': ['moves_detail_hist.csv', 'set_results.json',
@@ -389,7 +492,16 @@ def main():
               ensure_ascii=False, indent=1)
     n_med = sum(1 for v in out.values() if 'cote_mediane' in v)
     print(f"{OUT} : {len(out)} joueurs, {n_med} avec mediane "
-          f"(>= {MIN_COTES} cotes), {len(cl)} classes (>= {MIN_RANG})")
+          f"(>= {MIN_COTES} cotes)")
+    par_elo = sum(1 for k, v in out.items()
+                  if v.get('circuit') and elo_k.get(k, {}).get('tour'))
+    print(f"  circuit connu : {meta['n_circuits_connus']} joueurs "
+          f"({par_elo} par l'Elo, "
+          f"{meta['n_circuits_connus'] - par_elo} par le graphe)")
+    print(f"  classement ATP : {classes['atp']} joueurs (>= {MIN_RANG} cotes)")
+    print(f"  classement WTA : {classes['wta']} joueurs")
+    if n_sans:
+        print(f"  {n_sans} joueur(s) assez cotes mais sans circuit : pas de rang")
     return 0
 
 
