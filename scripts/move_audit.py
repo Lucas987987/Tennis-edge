@@ -20,12 +20,13 @@ Sorties :
 
 Env : CURVES (def book_curves_live.jsonl ; sinon book_curves.jsonl),
   SET_RESULTS (set_results.json), RESULTS_CSV (backtest_tennis.csv, fallback),
-  SHARP (pinnacle), SOFTS (unibet,bwin,betsson), THR (0.02 = seuil de détection,
+  SHARP (pinnacle), THR (0.02 = seuil de détection,
   en points de proba), MIN_LEAD (5 min), MIN_PTS (2), OUT (moves_detail.csv).
 """
 import os, sys, json, csv, datetime, unicodedata, re, statistics as st
 from collections import defaultdict
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import validation_report as _vr      # noqa: E402 — constantes gelées
 import oddspapi_v5 as ov
 import match_key as mk
 import curves_common as cc
@@ -34,7 +35,11 @@ CURVES      = os.environ.get('CURVES', 'book_curves_live.jsonl')
 SET_RESULTS = os.environ.get('SET_RESULTS', 'set_results.json')
 RESULTS_CSV = os.environ.get('RESULTS_CSV', 'backtest_tennis.csv')
 SHARP       = os.environ.get('SHARP', 'pinnacle')
-SOFTS       = [b.strip() for b in os.environ.get('SOFTS', 'unibet,bwin,betsson').split(',') if b.strip()]
+# BOOKS D'ENTRÉE : importés de validation_report, jamais relus dans
+# l'environnement. La variable SOFTS n'était posée dans aucun workflow :
+# ce script retombait sur trois books pendant que six détecteurs en
+# utilisaient sept. Une constante importée ne peut pas diverger.
+SOFTS = list(_vr.H14_SOFTS)
 THR         = float(os.environ.get('THR', '0.02'))      # détection : décalage de proba mini
 MIN_LEAD    = float(os.environ.get('MIN_LEAD', '5'))    # minutes avant départ mini
 MIN_PTS     = int(os.environ.get('MIN_PTS', '2'))
