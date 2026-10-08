@@ -18,6 +18,7 @@ Deux mécanismes DISSOCIÉS :
 PHILOSOPHIE : on mesure tout, on ne conclut rien tant qu'on n'a pas de volume.
 """
 import os, json, urllib.request, urllib.parse, datetime
+import lien_joueur                   # noqa: E402 — liens vers les fiches
 
 CLOSING_FILE = 'closing_lines.json'
 ALERTS_FILE = 'odds_alerts_state.json'   # état anti-spam des alertes (éphémère)
@@ -164,7 +165,7 @@ def format_alert(mv):
     return (
         f"⚡ <b>Mouvement de cote</b> ({mv['amp']}%)\n"
         f"{mv['tournament']}{t}\n"
-        f"<b>{mv['home']}</b> vs <b>{mv['away']}</b>\n"
+        f"{lien_joueur.duo_html(mv['home'], mv['away'])}\n"
         f"{sens}"
         f"{hashtags_x(mv['tournament'])}\n"
         f"{traj}"
