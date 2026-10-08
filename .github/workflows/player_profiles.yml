@@ -1,0 +1,54 @@
+name: Fiches joueurs
+
+# Quotidien, apres steam_pipeline : build_profiles lit moves_detail_hist.csv,
+# qui est reconstruit par move_audit. Le lancer avant produirait une fiche
+# sur l'historique de la veille.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '20 6 * * *'
+
+permissions:
+  contents: write
+
+jobs:
+  profils:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      # build_profiles ne lit QUE des fichiers plats a la racine : ni
+      # partitions, ni releases. Pas de restore_curves a prevoir.
+      - name: Construire les fiches
+        run: python scripts/build_profiles.py
+
+      - name: Commit
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add players_profile.json
+          git diff --cached --quiet && { echo "fiches inchangees"; exit 0; }
+          git commit -m "Fiches joueurs ($(date -u +%Y-%m-%d))"
+          attente=2
+          for essai in 1 2 3 4 5 6; do
+            git fetch origin main || true
+            if ! git merge origin/main --no-edit; then
+              if python scripts/merge_json_state.py; then
+                git commit --no-edit || true
+              else
+                git merge --abort 2>/dev/null || true
+                [ "$essai" -lt 6 ] && { sleep "$attente"; attente=$((attente*2)); }
+                continue
+              fi
+            fi
+            if git push; then echo "✅ PUSH OK (tentative $essai)"; exit 0; fi
+            [ "$essai" -lt 6 ] && { sleep "$attente"; attente=$((attente*2)); }
+          done
+          echo "❌ PUSH ÉCHOUÉ après 6 tentatives (62 s cumulées)"
+          exit 1
