@@ -130,6 +130,23 @@ def duo_html(joueur, adv):
         return f'<b>{a}</b> vs {b}'
     return f'<a href="{u}"><b>{a}</b></a> vs <a href="{u}">{b}</a>'
 
+def ligne_texte(joueur, adv=None):
+    """Le lien pour un message SANS parse_mode, prêt à concaténer.
+
+    canal_public.py et steam_alert.py envoient en texte brut : ils ne
+    passent aucun parse_mode à l'API Telegram. Un <a href> y apparaîtrait
+    littéralement, balises comprises. Seule une URL écrite en clair y
+    devient cliquable — et elle s'ouvre sans confirmation, puisqu'il n'y
+    a rien à masquer.
+
+    Rend une chaîne COMMENÇANT par un saut de ligne, pour se coller à la
+    fin d'une ligne existante sans la réécrire. Vide si FICHES_BASE n'est
+    pas réglée : le message part alors exactement comme avant.
+    """
+    u = lien_duo(joueur, adv) if adv else lien(joueur)
+    return f'\n{u}' if u else ''
+
+
 def ligne_x(joueur, adv=None):
     """La même information pour un post sur X, où le HTML n'existe pas.
 
