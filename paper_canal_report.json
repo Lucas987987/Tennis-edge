@@ -1,40 +1,40 @@
 {
- "genere_le": "2026-10-08T23:57:44",
+ "genere_le": "2026-10-09T00:16:02",
  "source": "canal_public_log.jsonl",
  "n_alertes": 410,
  "n_sans_ecart": 132,
  "n_paris": 265,
- "n_regles": 200,
- "n_sans_resultat": 65,
+ "n_regles": 196,
+ "n_sans_resultat": 69,
  "resume": {
   "par ALERTE": {
-   "n": 200,
-   "roi_pct": 28.65,
+   "n": 196,
+   "roi_pct": 27.86,
    "ic": [
-    6.81,
-    50.49
+    5.67,
+    50.05
    ],
-   "hit_pct": 51.0,
-   "cote_moy": 3.116,
+   "hit_pct": 50.5,
+   "cote_moy": 3.138,
    "significatif": true
   },
   "par MATCH (1re alerte)": {
-   "n": 168,
-   "roi_pct": 23.24,
+   "n": 166,
+   "roi_pct": 23.37,
    "ic": [
-    0.11,
-    46.36
+    0.04,
+    46.7
    ],
    "hit_pct": 50.0,
-   "cote_moy": 2.983,
+   "cote_moy": 2.997,
    "significatif": true
   },
   "cat:challenger": {
-   "n": 81,
-   "roi_pct": 39.33,
+   "n": 78,
+   "roi_pct": 36.1,
    "ic": [
-    8.79,
-    69.88
+    4.6,
+    67.61
    ]
   },
   "cat:inconnu": {
@@ -46,11 +46,11 @@
    ]
   },
   "cat:wta": {
-   "n": 30,
-   "roi_pct": -18.32,
+   "n": 29,
+   "roi_pct": -15.5,
    "ic": [
-    -56.33,
-    19.69
+    -54.43,
+    23.43
    ]
   },
   "cat:atp": {
