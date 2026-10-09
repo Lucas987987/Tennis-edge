@@ -309,7 +309,7 @@ const FICHES = (() => {
         headers: {
           'content-type': 'application/json; charset=utf-8',
           'access-control-allow-origin': '*',
-          'cache-control': 'public, max-age=900',
+          'cache-control': 'public, max-age=60',
         },
       });
     }
@@ -340,7 +340,7 @@ const FICHES = (() => {
     status: st,
     headers: {
       'content-type': 'text/html; charset=utf-8',
-      'cache-control': 'public, max-age=900',
+      'cache-control': 'public, max-age=60',
     },
   });
 
@@ -551,27 +551,34 @@ const FICHES = (() => {
     baisse: '<span class="tdc b">↘ en baisse</span>',
     stable: '<span class="tdc">→ stable</span>',
   };
+  // MÊME STRUCTURE POUR TOUS LES JOUEURS (09/10). Avant, un joueur avec
+  // moins de 20 matchs dans un statut (souvent en Challenger, sans
+  // historique tennis-data) n'avait ni ligne « derniers » ni tendance :
+  // deux fiches côte à côte ne se ressemblaient pas. Désormais la ligne
+  // existe toujours (« 7 derniers » s'il n'y en a que 7) et la tendance dit
+  // « trop peu de matchs » au lieu de disparaître.
+  const recentDe = (b) => b.recent || b;
+  const tendance = (b) => (b.tendance && TEND[b.tendance])
+    ? TEND[b.tendance] : '<span class="tdc">tendance : trop peu de matchs</span>';
+  const tendanceCourte = (b) => (b.tendance && TEND[b.tendance])
+    ? TEND[b.tendance] : '<span class="tdc">trop tôt</span>';
   function bilanStatut(b) {
-    let h = `${pctS(b)}&nbsp;% · ${b.victoires} sur ${b.n}`
+    const r = recentDe(b);
+    return `${pctS(b)}&nbsp;% · ${b.victoires} sur ${b.n}`
       + `<br><span class="att">le marché prévoyait ${pctM(b)}&nbsp;%</span>`
-      + (b.depuis ? `<br><span class="att">depuis ${esc(b.depuis)}</span>` : '');
-    if (b.recent) {
-      h += `<br><span class="rec nw">${b.recent.n} derniers : ${pctS(b.recent)}&nbsp;%</span>`
-        + `<br><span class="att nw">le marché prévoyait ${pctM(b.recent)}&nbsp;%</span>`;
-      if (b.tendance && TEND[b.tendance]) h += `<br>${TEND[b.tendance]}`;
-    }
-    return h;
+      + (b.depuis ? `<br><span class="att">depuis ${esc(b.depuis)}</span>` : '')
+      + `<br><span class="rec nw">${r.n} derniers : ${pctS(r)}&nbsp;%</span>`
+      + `<br><span class="att nw">le marché prévoyait ${pctM(r)}&nbsp;%</span>`
+      + `<br>${tendance(b)}`;
   }
   function bilanStatutCourt(b) {
     if (!b) return null;
-    let h = `<span class="nw">${pctS(b)}&nbsp;% · ${b.victoires}/${b.n}</span>`
-      + `<br><span class="att nw">prévu ${pctM(b)}&nbsp;%</span>`;
-    if (b.recent) {
-      h += `<br><span class="rec nw">${b.recent.n} derniers ${pctS(b.recent)}&nbsp;%</span>`
-        + `<br><span class="att nw">prévu ${pctM(b.recent)}&nbsp;%</span>`;
-      if (b.tendance && TEND[b.tendance]) h += `<br>${TEND[b.tendance]}`;
-    }
-    return h;
+    const r = recentDe(b);
+    return `<span class="nw">${pctS(b)}&nbsp;% · ${b.victoires}/${b.n}</span>`
+      + `<br><span class="att nw">prévu ${pctM(b)}&nbsp;%</span>`
+      + `<br><span class="rec nw">${r.n} derniers ${pctS(r)}&nbsp;%</span>`
+      + `<br><span class="att nw">prévu ${pctM(r)}&nbsp;%</span>`
+      + `<br>${tendanceCourte(b)}`;
   }
 
   function corpsFiche(p, d) {
