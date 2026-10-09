@@ -64,6 +64,25 @@ exclue zéro à 95 % :
 Les effets attendus sont volontairement plus bas que ceux de la recherche :
 un effet trouvé en cherchant est presque toujours surestimé.
 
+R3 — AJOUTÉE LE 09/10/2026 À 18:22 (même gel)
+--------------------------------------------
+Source : odds_alerts_log.jsonl, TOUS les matchs (pas besoin de fiche).
+Recherche : etude_mouvements_grille.py, grille cote × mouvement, 108 cases ;
+3 gagnantes contre 0 à 2 pour le témoin (p ≈ 4 %).
+
+  R3  le joueur qui se renforce est coté 1,60 ≤ cote < 2,00 au relevé
+      (~30 min avant) et sa cote a baissé de 3 % à moins de 6 % depuis
+      le premier relevé -> jouer L'AUTRE joueur, à sa cote Pinnacle de
+      clôture.
+
+  Recherche : 138 matchs, +23 % [+4 ; +43]
+              06 +43 %  07 +46 %  08 +34 %  09 −1 %  10 −4 %
+  ÉTEINTE DEPUIS SEPTEMBRE dans la recherche : c'est précisément ce que
+  le suivi doit trancher.
+
+  Cible : effet attendu +15 % (contre +23 % trouvé), écart-type ~1,1
+  à cote ~2,2 -> n ≈ (1,96 × 1,1 / 0,15)² ≈ 210.
+
 VERDICT, une fois la cible atteinte
 -----------------------------------
   VALIDÉE        IC95 du ROI entièrement au-dessus de zéro
@@ -84,6 +103,7 @@ import player_form as pf                                    # noqa: E402
 import etude_difficulte_tous as edt                         # noqa: E402
 import etude_tous_angles as eta                             # noqa: E402
 import etude_alertes_mouvement as eam                       # noqa: E402
+import etude_mouvements_grille as emg                       # noqa: E402
 
 # ── PRÉ-ENREGISTREMENT DU 09/10/2026 — NE PAS MODIFIER ──────────────────
 GEL = datetime.date(2026, 10, 9)        # jugé : matchs joués APRÈS cette date
@@ -92,6 +112,10 @@ AMPLEUR_MAX_R2 = 2.0                    # points de probabilité
 N_CIBLE_R1 = 335
 N_CIBLE_R2 = 190
 SOURCES = ('COURBES', 'MOUVEMENT')
+# R3, gelée le 09/10/2026 18:22
+R3_COTE_MIN, R3_COTE_MAX = 1.60, 2.00
+R3_MOUV_MIN, R3_MOUV_MAX = 3.0, 6.0     # baisse de cote, en %
+N_CIBLE_R3 = 210
 # ────────────────────────────────────────────────────────────────────────
 
 
@@ -114,6 +138,21 @@ def paris():
             vus.add(cle)
             P.append(dict(x))
     return [p for p in P if COTE_MIN <= p['pin'] < COTE_MAX]
+
+
+def paris_r3():
+    """Le joueur d'en face de celui qui se renforce, au format de paris()."""
+    out = []
+    for x in emg.charger():
+        if not (R3_COTE_MIN <= x['releve'] < R3_COTE_MAX
+                and R3_MOUV_MIN <= x['mv'] < R3_MOUV_MAX):
+            continue
+        if not x['pin_o']:
+            continue
+        out.append({'d': x['d'], 'j': x['o'], 'o': x['j'],
+                    'pin': x['pin_o'], 'y': not x['y'],
+                    'p': 1 / x['pin_o'] / 1.03})   # juste approchée (marge ~3 %)
+    return out
 
 
 def bilan(g):
@@ -163,9 +202,10 @@ def main():
     print('=' * 78)
     print(f'SUIVI PRÉ-ENREGISTRÉ — gelé le {GEL}, jugé sur les matchs après cette date')
     print('=' * 78)
-    print(f'  Règle : alerte courbes ou « Mouvement de cote », joueur coté '
+    print(f'  R1/R2 : alerte courbes ou « Mouvement de cote », joueur coté '
           f'{COTE_MIN:.2f}–{COTE_MAX:.2f}')
     print('  chez Pinnacle avant le match, joué au prix Pinnacle de clôture.')
+    print('  R3 : journal des mouvements, voir l\'en-tête du script.')
 
     print('\n' + '-' * 78)
     print('LE VERDICT — matchs APRÈS le gel (les seuls qui comptent)')
@@ -174,11 +214,17 @@ def main():
     afficher(f'R2  mouvement < {AMPLEUR_MAX_R2:.0f} pts',
              [p for p in apres if p['amp'] < AMPLEUR_MAX_R2], N_CIBLE_R2)
 
+    R3 = paris_r3()
+    afficher(f'R3  cote {R3_COTE_MIN:.2f}–{R3_COTE_MAX:.2f} qui baisse de '
+             f'{R3_MOUV_MIN:.0f} à {R3_MOUV_MAX:.0f} % -> jouer l\'AUTRE',
+             [p for p in R3 if p['d'] > GEL], N_CIBLE_R3)
+
     print('\n' + '-' * 78)
     print('POUR MÉMOIRE — la période qui a servi à CHOISIR la règle (ne compte pas)')
     print('-' * 78)
     for nom, g in (('R1', avant),
-                   ('R2', [p for p in avant if p['amp'] < AMPLEUR_MAX_R2])):
+                   ('R2', [p for p in avant if p['amp'] < AMPLEUR_MAX_R2]),
+                   ('R3', [p for p in R3 if p['d'] <= GEL])):
         n, m, lo, hi = bilan(g)
         if m is not None:
             print(f'  {nom}  n={n}   ROI {100*m:+.1f} %  IC95 [{100*lo:+.1f} ; {100*hi:+.1f}]')
