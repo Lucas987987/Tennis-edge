@@ -122,7 +122,7 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           # Base des fiches joueurs. Non renseignee, lien_joueur.duo_html()
           # rend le texte sans lien : les alertes partent inchangees.
-          FICHES_BASE: https://tennis-edge-joueurs.antoine-galopinpro.workers.dev
+          FICHES_BASE: https://joueurs.tennis-edge.workers.dev
         run: |
           # MIGRATION AUTOMATIQUE (une seule fois) : si parts/ n'existe pas encore,
           # on convertit les fichiers plats existants en partitions, puis on retire
