@@ -632,6 +632,21 @@ def main():
                     'set1_n': len(s1),
                     'set1_gagnes': sum(1 for m in s1 if m['set1']),
                 }
+                # BILAN EN FAVORI / EN OUTSIDER, sur TOUS les matchs joués qui
+                # ont une cote (pas seulement les alertes, pas seulement les 10
+                # derniers). « attendu » = somme des probabilités du marché
+                # (1 / cote juste) : ce que le joueur aurait gagné s'il faisait
+                # exactement ce que le marché prévoyait. Gagner 7 sur 10 en
+                # favori n'est un exploit que si le marché en attendait 5.
+                for cle_f, garder in (('en_favori', lambda c: c < 2),
+                                      ('en_outsider', lambda c: c >= 2)):
+                    ms = [m for m in tous if m['cote'] and garder(m['cote'])]
+                    if ms:
+                        fiche[cle_f] = {
+                            'n': len(ms),
+                            'victoires': sum(1 for m in ms if m['gagne']),
+                            'attendu': round(sum(1 / m['cote'] for m in ms), 1),
+                        }
                 ds = sorted(H['dates'].get(k, set()) | {m['date'] for m in tous})
                 fiche['periode'] = [ds[0], ds[-1]]
                 fiche['n_matchs_vus'] = len(tous)
