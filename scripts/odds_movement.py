@@ -173,6 +173,10 @@ def format_alert(mv):
         f"🔎 Posts X sur ce match : {x_search_url(mv['home'], mv['away'])}\n"
         f"<i>Le marché a réagi à quelque chose. Si tu avais un pari prévu ici, "
         f"réévalue avant de jouer. Ceci n'est pas un signal d'entrée.</i>"
+        # L'adresse de la fiche en spoiler, en DERNIÈRE ligne : floutée dans
+        # Telegram, recopiée en clair vers X où elle devient cliquable et
+        # produit la carte d'aperçu. Voir lien_joueur.ligne_x_masquee().
+        f"{lien_joueur.ligne_x_masquee(mv['home'], mv['away'])}"
     )
 
 
