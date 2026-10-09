@@ -182,14 +182,17 @@ def construire(ref, matchs, s1ref, alertes):
     look-ahead possible — c'est la mécanique d'etude_forme_alertes.py.
     """
     # 1. L'historique des prix, toutes dates confondues, résultat ou non.
+    #    Pour chaque joueur on retient DEUX choses : son propre prix, et
+    #    celui de l'adversaire qu'il affrontait. La seconde est ce qui
+    #    permet l'écart d'adversaire du bloc 4.
     par_jour = defaultdict(list)
     for (paire, d), (joueur, p) in ref.items():
         duo = sorted(paire)
         if len(duo) != 2:
             continue
         autre = duo[0] if duo[1] == joueur else duo[1]
-        par_jour[d].append((joueur, p))
-        par_jour[d].append((autre, 1 - p))
+        par_jour[d].append((joueur, p, 1 - p))
+        par_jour[d].append((autre, 1 - p, p))
 
     # 2. Les matchs à mesurer, par jour eux aussi.
     a_mesurer = defaultdict(list)
@@ -198,7 +201,8 @@ def construire(ref, matchs, s1ref, alertes):
             continue
         a_mesurer[d.date()].append((a, b, a_gagne, tour))
 
-    hist = defaultdict(list)
+    hist = defaultdict(list)        # ses propres prix
+    hist_adv = defaultdict(list)    # les prix des adversaires qu'il a eus
     L = []
     for jour in sorted(set(par_jour) | set(a_mesurer)):
         # Mesurer AVANT d'apprendre le jour courant.
@@ -210,11 +214,25 @@ def construire(ref, matchs, s1ref, alertes):
             # Le côté mesuré : l'ordre alphabétique des clés. Arbitraire,
             # donc indépendant du résultat.
             cote = min(a, b)
+            face = max(a, b)
             p_cote = p_ref if joueur_ref == cote else 1 - p_ref
             if len(hist[cote]) < MIN_COTES:
                 continue
             med = st.median(hist[cote])
             gagne = a_gagne if cote == a else (not a_gagne)
+
+            # L'ÉCART D'ADVERSAIRE. Il faut trois historiques de plus :
+            # le niveau habituel des adversaires du joueur mesuré, et le
+            # niveau habituel de celui d'en face. Sans les deux, la
+            # variable n'existe pas — on la laisse à None plutôt que de
+            # la bricoler sur un historique court.
+            ec_adv = None
+            if (len(hist_adv[cote]) >= MIN_COTES
+                    and len(hist[face]) >= MIN_COTES):
+                # Positif : l'adversaire du jour est PLUS FAIBLE que ceux
+                # qu'il affronte d'habitude.
+                ec_adv = (st.median(hist_adv[cote])
+                          - st.median(hist[face])) * 100
 
             s1 = None
             mk1 = s1ref.get((frozenset((a, b)), jour))
@@ -233,11 +251,19 @@ def construire(ref, matchs, s1ref, alertes):
                 # termes sont déjà des probabilités dévigées, donc la
                 # soustraction est directe.
                 'ec': (p_cote - med) * 100,
+                'ec_adv': ec_adv,
+                # Le DÉSACCORD entre les deux façons de juger la
+                # difficulté : par mon prix, et par l'identité de
+                # l'adversaire. Négatif = le marché me donne ce match
+                # plus dur que l'adversaire seul ne le justifie.
+                'des': None if ec_adv is None
+                else (p_cote - med) * 100 - ec_adv,
                 'n_hist': len(hist[cote]),
                 'alerte': (frozenset((a, b)), jour) in alertes,
             })
-        for joueur, p in par_jour.get(jour, []):
+        for joueur, p, p_adv in par_jour.get(jour, []):
             hist[joueur].append(p)
+            hist_adv[joueur].append(p_adv)
     return L
 
 
@@ -403,6 +429,96 @@ def main():
                 print(f'   {b:13}{len(v):6}{100*pm:8.1f}%{100*ps:10.1f}%'
                       f'{100*att:9.1f}%{100*(ps-att):+9.1f}'
                       + ('   hors IC' if att < lo or att > hi else ''))
+
+    # ── 4. L'ÉCART D'ADVERSAIRE ─────────────────────────────────────────
+    V = [x for x in L if x['ec_adv'] is not None]
+    if len(V) >= 90:
+        print('\n' + '=' * 78)
+        print('4. L\'ÉCART D\'ADVERSAIRE — l\'autre façon de juger la difficulté')
+        print('=' * 78)
+        print("""
+  Un match peut être « plus dur que son ordinaire » au PRIX et pourtant
+  l'opposer à quelqu'un de plus faible que ses adversaires habituels.
+
+      Mannarino      ordinaire 2,30   ses adversaires 1,77   coté 2,59
+      son adversaire ordinaire 1,96   ses adversaires 2,04   coté 1,55
+
+  Le prix dit « plus dur » à Mannarino (−4,9 pts). Mais son adversaire du
+  jour vaut 1,96 quand il en affronte à 1,77 d'habitude : par l'identité
+  de l'adversaire, le match est au contraire PLUS FACILE (+5,5 pts).
+
+  Les deux lectures se contredisent de 10,3 points. C'est le DÉSACCORD, et
+  il isole ce que le marché sait du joueur AUJOURD'HUI qui ne tient pas à
+  l'adversaire : surface, forme, blessure, fatigue, public.
+
+  Convention : écart d'adversaire POSITIF = adversaire plus faible que son
+  ordinaire. Désaccord NÉGATIF = le prix est plus dur que l'adversaire
+  seul ne le justifie.
+""")
+        print(f'  mesurable sur {len(V)} matchs sur {len(L)} '
+              f'(il faut QUATRE historiques, pas deux)')
+        e = sorted(x['ec_adv'] for x in V)
+        print(f'  écart d\'adversaire : médiane {e[len(e)//2]:+.1f}, '
+              f'décile {e[len(e)//10]:+.1f} à {e[9*len(e)//10]:+.1f} pts')
+
+        for f, lib in (('ec_adv', 'écart d\'adversaire'),
+                       ('des', 'désaccord')):
+            s = sorted(V, key=lambda x: x[f])
+            q = len(s) // 3
+            print(f'\n  TERCILES — {lib}')
+            for i in range(3):
+                g = s[i*q:(i+1)*q if i < 2 else len(s)]
+                p, _, _ = wilson(sum(x['y'] for x in g), len(g))
+                m, lo, hi = ic([x['y'] - x['p'] for x in g])
+                v = 'EXCLUT ZÉRO' if (lo > 0 or hi < 0) else ''
+                print(f'    T{i+1} [{g[0][f]:+6.1f};{g[-1][f]:+6.1f}] '
+                      f'n={len(g):5}  gagne {100*p:5.1f}%  '
+                      f'résidu {100*m:+6.2f} [{100*lo:+6.2f};{100*hi:+6.2f}] {v}')
+
+        print('\n  TÉMOIN — à prix du match constant')
+        print('    (l\'écart d\'adversaire ne doit pas être qu\'un déguisement')
+        print('     du niveau de prix ; mesuré sur les alertes : corrélation')
+        print('     entre les deux +0,03, donc ce n\'en est pas un)')
+        s = sorted(V, key=lambda x: x['p'])
+        q = len(s) // 3
+        for i in range(3):
+            g = s[i*q:(i+1)*q if i < 2 else len(s)]
+            a = [x['ec_adv'] for x in g]
+            b = [x['y'] - x['p'] for x in g]
+            n = len(a)
+            ma, mb = st.mean(a), st.mean(b)
+            sa, sb = st.stdev(a), st.stdev(b)
+            c = sum((u - ma) * (w - mb) for u, w in zip(a, b)) / (n-1) / (sa*sb)
+            t = c * math.sqrt((n - 2) / max(1e-9, 1 - c * c))
+            print(f'    prix {1/max(.01,g[-1]["p"]):5.2f}–{1/max(.01,g[0]["p"]):5.2f}'
+                  f'  n={n:5}  corr(écart adv, résidu) {c:+.4f}  t={t:+5.2f}')
+
+        print('\n  LE FILTRE CANDIDAT — écarter les adversaires trop forts')
+        tout, _, _ = ic([x['y'] - x['p'] for x in V])
+        print(f'    sans filtre            n={len(V):5}  '
+              f'résidu {100*tout:+6.2f}')
+        for s_ in (-10, -20, -25):
+            g = [x for x in V if x['ec_adv'] >= s_]
+            if len(g) < 30:
+                continue
+            m, lo, hi = ic([x['y'] - x['p'] for x in g])
+            print(f'    en écartant ec_adv < {s_:+4}  n={len(g):5} '
+                  f'({100*len(g)/len(V):3.0f} %)  '
+                  f'résidu {100*m:+6.2f} [{100*lo:+6.2f};{100*hi:+6.2f}]')
+
+        print('\n  STABILITÉ DANS LE TEMPS')
+        V.sort(key=lambda x: x['d'])
+        mid = len(V) // 2
+        for g, lib in ((V[:mid], '1re moitié'), (V[mid:], '2e moitié')):
+            a = [x['ec_adv'] for x in g]
+            b = [x['y'] - x['p'] for x in g]
+            n = len(a)
+            ma, mb = st.mean(a), st.mean(b)
+            sa, sb = st.stdev(a), st.stdev(b)
+            c = sum((u - ma) * (w - mb) for u, w in zip(a, b)) / (n-1) / (sa*sb)
+            t = c * math.sqrt((n - 2) / max(1e-9, 1 - c * c))
+            print(f'    {lib:12} {g[0]["d"]} -> {g[-1]["d"]}  n={n:5}  '
+                  f'corr {c:+.4f}  t={t:+5.2f}')
 
     print("""
 ================================================================================
