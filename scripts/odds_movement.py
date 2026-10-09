@@ -111,21 +111,101 @@ def _compute_move(uid, m):
     }
 
 
-def send_telegram(token, chat_id, text):
+def send_telegram(token, chat_id, text, copie_x=None):
+    """Envoie l'alerte. `copie_x` : texte prêt pour X, mis derrière un bouton
+    « Copier pour X » sous le message.
+
+    POURQUOI UN BOUTON (09/10/2026)
+    -------------------------------
+    Sur X, un nom ne peut pas être un lien : seule une adresse écrite en
+    entier est cliquable. Or dans Telegram on ne veut PAS d'adresse visible
+    (les noms y sont cliquables). Essayé d'abord : l'adresse en spoiler en
+    fin de message. Ça ne marche pas — Telegram Android ne copie pas le
+    texte des spoilers.
+
+    Le bouton à copie (copy_text, Bot API 7.11) règle les deux : le message
+    reste propre, et un appui met dans le presse-papiers un texte COURT,
+    écrit pour X, qui se termine par l'adresse de la fiche. X en fait un
+    lien cliquable et affiche la carte d'aperçu de la page.
+
+    REPLI : si Telegram refuse le message à cause du bouton (client ou API
+    trop ancien, texte trop long), on renvoie le même message SANS bouton.
+    Une alerte ne doit jamais être perdue pour un bouton.
+    """
     url = f"https://api.telegram.org/bot{token}/sendMessage"
-    data = urllib.parse.urlencode({
-        'chat_id': chat_id,
-        'text': text,
-        'parse_mode': 'HTML',
-        'disable_web_page_preview': 'true',
-    }).encode()
-    req = urllib.request.Request(url, data=data, headers={'User-Agent': 'tennis-edge/1.0'})
-    try:
+
+    def _envoi(avec_bouton):
+        champs = {
+            'chat_id': chat_id,
+            'text': text,
+            'parse_mode': 'HTML',
+            'disable_web_page_preview': 'true',
+        }
+        if avec_bouton:
+            champs['reply_markup'] = json.dumps({'inline_keyboard': [[{
+                'text': '📋 Copier pour X',
+                'copy_text': {'text': copie_x},
+            }]]}, ensure_ascii=False)
+        data = urllib.parse.urlencode(champs).encode()
+        req = urllib.request.Request(
+            url, data=data, headers={'User-Agent': 'tennis-edge/1.0'})
         with urllib.request.urlopen(req, timeout=15) as r:
             return r.status == 200
+
+    if copie_x:
+        try:
+            return _envoi(True)
+        except Exception as e:
+            print(f"  ⚠️ Telegram a refusé le bouton ({e}) — renvoi sans bouton")
+    try:
+        return _envoi(False)
     except Exception as e:
         print(f"  ⚠️ Telegram: {e}")
         return False
+
+
+# Telegram limite le texte d'un bouton à copie à 256 caractères, comptés en
+# unités UTF-16 : un emoji en vaut deux. On mesure donc comme Telegram.
+COPIE_X_MAX = 256
+
+
+def _longueur_tg(t):
+    return len(t.encode('utf-16-le')) // 2
+
+
+def texte_pour_x(mv):
+    """Version COURTE de l'alerte, pour X, terminée par l'adresse de la fiche.
+
+    Tient dans 256 caractères. Si ça déborde, on retire d'abord le détail
+    des cotes, puis le nom du tournoi — jamais l'adresse ni la mention 18+.
+    Sans adresse de fiche (FICHES_BASE vide), pas de bouton du tout.
+    """
+    u = lien_joueur.lien_duo(mv['home'], mv['away'])
+    if not u:
+        return None
+
+    def cote(nom, first, last, pct):
+        if pct is None or not pct:
+            return None
+        return f"{'📉' if pct < 0 else '📈'} {nom} {first} → {last}"
+
+    tete = f"⚡ Mouvement de cote · {mv['home']} vs {mv['away']}"
+    tournoi = f"({mv['tournament']})" if mv.get('tournament') else ''
+    cotes = [x for x in (
+        cote(mv['home'], mv['o_home_first'], mv['o_home_last'], mv['mv_home']),
+        cote(mv['away'], mv['o_away_first'], mv['o_away_last'], mv['mv_away']),
+    ) if x]
+    tags = hashtags_x(mv.get('tournament')).strip() or '18+'
+
+    for avec_cotes, avec_tournoi in ((True, True), (False, True), (False, False)):
+        lignes = [tete + (f" {tournoi}" if avec_tournoi and tournoi else '')]
+        if avec_cotes:
+            lignes += cotes
+        lignes += [tags, u]
+        t = "\n".join(lignes)
+        if _longueur_tg(t) <= COPIE_X_MAX:
+            return t
+    return None
 
 
 def x_search_url(home, away):
@@ -173,10 +253,6 @@ def format_alert(mv):
         f"🔎 Posts X sur ce match : {x_search_url(mv['home'], mv['away'])}\n"
         f"<i>Le marché a réagi à quelque chose. Si tu avais un pari prévu ici, "
         f"réévalue avant de jouer. Ceci n'est pas un signal d'entrée.</i>"
-        # L'adresse de la fiche en spoiler, en DERNIÈRE ligne : floutée dans
-        # Telegram, recopiée en clair vers X où elle devient cliquable et
-        # produit la carte d'aperçu. Voir lien_joueur.ligne_x_masquee().
-        f"{lien_joueur.ligne_x_masquee(mv['home'], mv['away'])}"
     )
 
 
@@ -316,7 +392,8 @@ def run_movement_detector():
         if token and chat_id and mv['amp'] >= ALERT_PCT:
             prev = sent.get(uid)
             if prev is None or (mv['amp'] - prev) >= RE_ALERT_PCT:
-                if send_telegram(token, chat_id, format_alert(mv)):
+                if send_telegram(token, chat_id, format_alert(mv),
+                                 copie_x=texte_pour_x(mv)):
                     sent[uid] = mv['amp']
                     n_alert += 1
                     print(f"  📨 Alerte: {mv['home']} vs {mv['away']} ({mv['amp']}%)")
