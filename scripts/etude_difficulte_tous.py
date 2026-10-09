@@ -130,35 +130,94 @@ def set_attendu(p_match):
     return (lo + hi) / 2
 
 
-def charger_set1():
-    """{(paire, date): (joueur, a_gagne_le_set1)} ou {} si indisponible.
+# Fenêtre de rattachement d'un résultat à un prix. Mesuré le 09/10 sur les
+# vraies courbes : resolved_at tombe le jour même du match dans 85 cas, le
+# lendemain dans 749, et jusqu'à cinq jours après dans 124 (règlements
+# « provisional » repris plus tard). Au-delà, une revanche entre les deux
+# mêmes joueurs devient possible ; à cinq jours elle ne l'est pas.
+FENETRE_JOURS = int(os.environ.get('FENETRE_JOURS', '5'))
 
-    Bloc facultatif : si resultats_oddspapi.json manque ou ne porte pas de
-    champ set1, le script le dit et saute la partie 1er set au lieu de
-    s'arrêter.
+
+def charger_resultats(matchs):
+    """paire -> [(date, vainqueur)] — tous les résultats connus.
+
+    POURQUOI PAS LA JOINTURE DE player_form.py
+    ------------------------------------------
+    player_form joint un prix et un résultat sur (paire, MÊME date). Mais le
+    prix est daté par commence_time et le résultat par resolved_at. Mesuré :
+    sur 2 801 matchs cotés, 738 n'étaient retrouvés qu'à la veille, et
+    1 981 pas du tout. Pire, le même match peut exister deux fois dans
+    charger_matchs() sous deux dates (Shimabukuro–Rodionov : joué le 07/06,
+    réglé le 11/06), parce que la déduplication se fait sur la date.
+
+    Ici on part du PRIX — une ligne par match coté, sans doublon possible —
+    et on cherche son résultat dans les jours qui suivent. 2 532 matchs
+    résolus sur 2 801, contre environ 1 500 par la jointure d'origine.
     """
-    out = {}
-    if not os.path.exists(ODDS_RESULTS):
-        return out
-    try:
-        brut = json.load(open(ODDS_RESULTS, encoding='utf-8'))
-    except (OSError, ValueError):
-        return out
-    for v in brut.values():
-        if not isinstance(v, dict) or v.get('set1') not in ('home', 'away'):
+    R = defaultdict(list)
+    for d, a, b, a_gagne, sa, sb, tour in matchs:
+        if d:
+            R[frozenset((a, b))].append((d.date(), a if a_gagne else b, tour))
+    return R
+
+
+def charger_set1():
+    """{(paire, date du match): vainqueur du 1er set}.
+
+    Deux sources, dans l'ordre de fiabilité :
+      1. set_results.json, rattaché par son uid à la courbe du match, qui
+         donne la date de COUP D'ENVOI — la même que le prix ;
+      2. resultats_oddspapi.json, daté par resolved_at, rattaché avec la
+         même fenêtre que le vainqueur.
+    """
+    par_uid = {}
+    for src in ('book_curves.jsonl', 'book_curves_live.jsonl'):
+        try:
+            for ligne in pf.ov.open_curves(src, verbose=False):
+                try:
+                    r = json.loads(ligne)
+                except ValueError:
+                    continue
+                u = r.get('uid')
+                if u and u not in par_uid:
+                    par_uid[u] = (pf._dt(r.get('commence_time')),
+                                  pf.cle_joueur(r.get('home_team') or r.get('home')),
+                                  pf.cle_joueur(r.get('away_team') or r.get('away')))
+        except Exception:
             continue
-        a, b = pf.cle_joueur(v.get('home')), pf.cle_joueur(v.get('away'))
-        d = pf._dt(v.get('resolved_at'))
-        if not a or not b or a == b or not d:
-            continue
-        out.setdefault((frozenset((a, b)), d.date()),
-                       (a, v['set1'] == 'home'))
-    return out
+
+    exact, fenetre = {}, defaultdict(list)
+    sr = os.environ.get('SET_RESULTS', 'set_results.json')
+    if os.path.exists(sr):
+        for u, v in json.load(open(sr, encoding='utf-8')).items():
+            m = par_uid.get(u)
+            if not m or not m[0] or not isinstance(v, dict):
+                continue
+            if v.get('set1') not in ('home', 'away'):
+                continue
+            d, h, a = m
+            if h and a and h != a:
+                exact[(frozenset((h, a)), d.date())] = h if v['set1'] == 'home' else a
+    if os.path.exists(ODDS_RESULTS):
+        for v in json.load(open(ODDS_RESULTS, encoding='utf-8')).values():
+            if not isinstance(v, dict) or v.get('set1') not in ('home', 'away'):
+                continue
+            h, a = pf.cle_joueur(v.get('home')), pf.cle_joueur(v.get('away'))
+            d = pf._dt(v.get('resolved_at'))
+            if h and a and h != a and d:
+                fenetre[frozenset((h, a))].append(
+                    (d.date(), h if v['set1'] == 'home' else a))
+    return exact, fenetre
 
 
 def charger_alertes():
-    """{(paire, date)} — les matchs sur lesquels une alerte est partie."""
-    out = set()
+    """{(paire, date)} -> clé du joueur STEAMÉ.
+
+    La date d'une alerte est celle du match ; on l'enregistre aussi à la
+    veille et au lendemain pour absorber le même décalage de fuseau qui
+    sépare commence_time de la date affichée.
+    """
+    out = {}
     if not os.path.exists(MOVES):
         return out
     for r in csv.DictReader(open(MOVES, encoding='utf-8')):
@@ -169,102 +228,99 @@ def charger_alertes():
             d = datetime.date.fromisoformat(r['date'])
         except ValueError:
             continue
-        out.add((frozenset((a, b)), d))
+        for k in (-1, 0, 1):
+            out.setdefault((frozenset((a, b)), d + datetime.timedelta(days=k)), a)
     return out
 
 
-def construire(ref, matchs, s1ref, alertes):
-    """Une ligne par match dénoué, avec la médiane point-in-time du côté mesuré.
+def construire(ref, R, set1, alertes):
+    """Une ligne par MATCH COTÉ et dénoué, médiane point-in-time.
 
-    L'historique des prix est injecté par DATE, avant toute mesure du jour :
-    la médiane lue à la date d'un match ne contient que des matchs
-    strictement antérieurs. Pas de jointure, pas de tolérance, pas de
-    look-ahead possible — c'est la mécanique d'etude_forme_alertes.py.
+    L'univers part des prix, pas des résultats : un match coté apparaît une
+    fois et une seule. Son résultat est cherché dans les FENETRE_JOURS
+    suivants ; s'il est ambigu (deux vainqueurs différents), le match est
+    écarté plutôt que deviné.
+
+    L'historique est injecté par DATE, après la mesure du jour : la médiane
+    lue à la date d'un match ne contient que des matchs strictement
+    antérieurs. C'est la mécanique d'etude_forme_alertes.py.
     """
-    # 1. L'historique des prix, toutes dates confondues, résultat ou non.
-    #    Pour chaque joueur on retient DEUX choses : son propre prix, et
-    #    celui de l'adversaire qu'il affrontait. La seconde est ce qui
-    #    permet l'écart d'adversaire du bloc 4.
+    exact, fenetre = set1
     par_jour = defaultdict(list)
     for (paire, d), (joueur, p) in ref.items():
         duo = sorted(paire)
         if len(duo) != 2:
             continue
         autre = duo[0] if duo[1] == joueur else duo[1]
-        par_jour[d].append((joueur, p, 1 - p))
-        par_jour[d].append((autre, 1 - p, p))
-
-    # 2. Les matchs à mesurer, par jour eux aussi.
-    a_mesurer = defaultdict(list)
-    for d, a, b, a_gagne, sa, sb, tour in matchs:
-        if not d:
-            continue
-        a_mesurer[d.date()].append((a, b, a_gagne, tour))
+        par_jour[d].append((paire, joueur, p, autre))
 
     hist = defaultdict(list)        # ses propres prix
     hist_adv = defaultdict(list)    # les prix des adversaires qu'il a eus
     L = []
-    for jour in sorted(set(par_jour) | set(a_mesurer)):
-        # Mesurer AVANT d'apprendre le jour courant.
-        for a, b, a_gagne, tour in a_mesurer.get(jour, []):
-            mk = ref.get((frozenset((a, b)), jour))
-            if not mk:
+    sans_res = ambigus = 0
+    for jour in sorted(par_jour):
+        for paire, joueur, p, autre in par_jour[jour]:
+            c = [r for r in R.get(paire, [])
+                 if 0 <= (r[0] - jour).days <= FENETRE_JOURS]
+            if not c:
+                sans_res += 1
                 continue
-            joueur_ref, p_ref = mk
+            if len({r[1] for r in c}) > 1:
+                ambigus += 1
+                continue
+            vainqueur, tour = c[0][1], c[0][2]
+
             # Le côté mesuré : l'ordre alphabétique des clés. Arbitraire,
             # donc indépendant du résultat.
-            cote = min(a, b)
-            face = max(a, b)
-            p_cote = p_ref if joueur_ref == cote else 1 - p_ref
+            cote, face = min(paire), max(paire)
+            p_cote = p if joueur == cote else 1 - p
             if len(hist[cote]) < MIN_COTES:
                 continue
             med = st.median(hist[cote])
-            gagne = a_gagne if cote == a else (not a_gagne)
 
-            # L'ÉCART D'ADVERSAIRE. Il faut trois historiques de plus :
-            # le niveau habituel des adversaires du joueur mesuré, et le
-            # niveau habituel de celui d'en face. Sans les deux, la
-            # variable n'existe pas — on la laisse à None plutôt que de
-            # la bricoler sur un historique court.
+            # L'ÉCART D'ADVERSAIRE : niveau habituel de mes adversaires
+            # moins niveau habituel de celui d'en face. Positif = il est
+            # plus faible que ceux que j'affronte d'habitude.
             ec_adv = None
             if (len(hist_adv[cote]) >= MIN_COTES
                     and len(hist[face]) >= MIN_COTES):
-                # Positif : l'adversaire du jour est PLUS FAIBLE que ceux
-                # qu'il affronte d'habitude.
                 ec_adv = (st.median(hist_adv[cote])
                           - st.median(hist[face])) * 100
 
-            s1 = None
-            mk1 = s1ref.get((frozenset((a, b)), jour))
-            if mk1:
-                j1, g1 = mk1
-                s1 = float(g1 if j1 == cote else not g1)
+            v1 = exact.get((paire, jour))
+            if v1 is None:
+                c1 = [r for r in fenetre.get(paire, [])
+                      if 0 <= (r[0] - jour).days <= FENETRE_JOURS]
+                if c1 and len({r[1] for r in c1}) == 1:
+                    v1 = c1[0][1]
 
+            steame = alertes.get((paire, jour))
             L.append({
                 'd': jour,
                 'tour': tour,
-                'y': 1.0 if gagne else 0.0,
-                's1': s1,
+                'cote': cote,
+                'y': 1.0 if vainqueur == cote else 0.0,
+                's1': None if v1 is None else float(v1 == cote),
                 'p': p_cote,
                 'med': med,
-                # L'écart de la fiche, en points de probabilité. Les deux
-                # termes sont déjà des probabilités dévigées, donc la
-                # soustraction est directe.
                 'ec': (p_cote - med) * 100,
                 'ec_adv': ec_adv,
-                # Le DÉSACCORD entre les deux façons de juger la
-                # difficulté : par mon prix, et par l'identité de
-                # l'adversaire. Négatif = le marché me donne ce match
-                # plus dur que l'adversaire seul ne le justifie.
                 'des': None if ec_adv is None
                 else (p_cote - med) * 100 - ec_adv,
                 'n_hist': len(hist[cote]),
-                'alerte': (frozenset((a, b)), jour) in alertes,
+                'alerte': steame is not None,
+                # Pour les alertes : le résidu du côté STEAMÉ, mesuré
+                # contre la clôture sharp des courbes.
+                'res_steame': None if steame is None
+                else ((1.0 if vainqueur == steame else 0.0)
+                      - (p_cote if steame == cote else 1 - p_cote)),
             })
-        for joueur, p, p_adv in par_jour.get(jour, []):
+        for paire, joueur, p, autre in par_jour[jour]:
             hist[joueur].append(p)
-            hist_adv[joueur].append(p_adv)
-    return L
+            hist_adv[joueur].append(1 - p)
+            hist[autre].append(1 - p)
+            hist_adv[autre].append(p)
+    return L, sans_res, ambigus
 
 
 def groupes(L, seuil):
@@ -304,6 +360,7 @@ def main():
         print('  Lancer depuis la racine du dépôt, où player_form.py tourne.')
         return 1
 
+    R = charger_resultats(matchs)
     s1ref = charger_set1()
     alertes = charger_alertes()
     print(f'  matchs dénoués connus        : {len(matchs)}')
@@ -314,10 +371,14 @@ def main():
     # jointure de player_form.py, reprise telle quelle pour que les deux
     # fichiers mesurent la même population — mais elle explique une partie
     # de l'écart entre les deux comptes ci-dessus.
-    print(f'  1ers sets disponibles         : {len(s1ref) or "aucun"}')
-    print(f'  matchs ayant déclenché une alerte : {len(alertes)}')
+    print(f'  1ers sets (par uid / par fenêtre) : {len(s1ref[0])} / '
+          f'{sum(len(v) for v in s1ref[1].values())}')
+    print(f'  alertes connues               : '
+          f'{len(set(alertes.values())) and len(alertes)//3}')
 
-    L = construire(ref, matchs, s1ref, alertes)
+    L, sans_res, ambigus = construire(ref, R, s1ref, alertes)
+    print(f'  prix sans résultat dans les {FENETRE_JOURS} jours : {sans_res}'
+          f'   ambigus écartés : {ambigus}')
     if not L:
         print('\nAucun match mesurable — vérifier que les courbes sont lisibles.')
         return 0
@@ -388,11 +449,17 @@ def main():
         print(f'  {"différence":20}{"":6}{100*m:+10.2f} '
               f'[{100*(m-1.96*se):+6.2f};{100*(m+1.96*se):+6.2f}]   '
               f't={m/se:+.2f}')
-        print('\n  Attention au sens : ici le côté mesuré est choisi par')
-        print('  ordre alphabétique, pas « le côté steamé ». Un résidu nul')
-        print('  sur les alertes ne dit donc pas que l\'alerte ne vaut rien,')
-        print('  il dit que le MATCH n\'est pas mieux prédit. Le côté steamé')
-        print('  est mesuré dans etude_ecart_mediane.py.')
+        print('\n  Le côté mesuré ci-dessus est ARBITRAIRE (ordre alphabétique) :')
+        print('  son résidu doit valoir zéro si le marché est calibré, alerte ou')
+        print('  pas. Ce qui juge le système, c\'est le côté STEAMÉ :')
+        rs = [x['res_steame'] for x in A if x['res_steame'] is not None]
+        if len(rs) >= 30:
+            m, lo, hi = ic(rs)
+            print(f'\n  {"côté steamé, alertes":24}{len(rs):6}{100*m:+10.2f} '
+                  f'[{100*lo:+6.2f};{100*hi:+6.2f}]'
+                  + ('   EXCLUT ZÉRO' if lo > 0 or hi < 0 else ''))
+            print('  (contre la clôture sharp DÉVIGÉE des courbes, coupe')
+            print('   pré-match incluse — pas le pin_close de moves_detail_hist)')
         for s in SEUILS[1:2]:
             print(f'\n  Les mêmes, par difficulté (seuil ±{s}) :')
             for g, lib in ((A, 'alertes'), (N, 'hors alertes')):
