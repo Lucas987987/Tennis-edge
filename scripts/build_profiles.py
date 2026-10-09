@@ -167,7 +167,7 @@ def charger_resultats(setres, moves):
     return out
 
 
-def circuits_joueurs(moves, elo_k):
+def circuits_joueurs(moves, elo_k, paires=()):
     """clé -> 'atp' ou 'wta', par l'Elo puis par le GRAPHE DES ADVERSAIRES.
 
     POURQUOI PAS LE NOM DU TOURNOI
@@ -205,6 +205,12 @@ def circuits_joueurs(moves, elo_k):
         if a and b:
             adj[a].add(b)
             adj[b].add(a)
+    # Les matchs cotés hors alertes densifient le graphe (09/10/2026) : plus
+    # de joueurs reliés, donc plus de circuits connus.
+    for paire in paires:
+        a, b = sorted(paire)
+        adj[a].add(b)
+        adj[b].add(a)
 
     circ = {k: v['tour'] for k, v in elo_k.items()
             if v.get('tour') in ('atp', 'wta')}
@@ -237,6 +243,210 @@ def circuits_joueurs(moves, elo_k):
     return circ, mixtes
 
 
+# Fenêtre de rattachement d'un résultat à son prix. Mesuré le 09/10 : la
+# date de règlement (resolved_at) tombe le jour du match dans 85 cas, le
+# lendemain dans 749, et jusqu'à cinq jours après dans 124.
+FENETRE_JOURS = int(os.environ.get('FENETRE_JOURS', '5'))
+
+
+def historique_tous_matchs(res):
+    """Prix et résultats de TOUS les matchs cotés, pas seulement des alertes.
+
+    POURQUOI (09/10/2026)
+    ---------------------
+    La cote du marché et le bilan ne portaient que sur moves_detail_hist :
+    les matchs où une ALERTE est partie. Deux défauts mesurés :
+      - couverture : 388 joueurs avec une médiane, 151 classés. Sur tous les
+        matchs cotés : 533 et 293. Hynek Barton n'avait pas de cote ; il en
+        a une sur 8 prix.
+      - biais : un joueur n'entre dans les alertes que si le marché bouge
+        vers lui. Laslo Djere : 1,47 sur ses alertes, 1,64 sur tous ses
+        matchs. La fiche montrait le joueur tel que le marché le voit quand
+        il le soutient, pas en général.
+    Et la fiche se contredisait : « Matchs gagnés 0/2 » (alertes) à côté de
+    « Sur ses 10 derniers 5/10 » (tous les matchs).
+
+    LES SOURCES
+    -----------
+    Celles de player_form.py, réutilisées telles quelles :
+      cotes_sharp()     clôture Pinnacle PRÉ-MATCH, marge retirée, lue dans
+                        les courbes — avec la coupe qui écarte les points
+                        in-play (piège qui a produit quatre faux positifs).
+      charger_matchs()  tous les résultats connus, avec les sets gagnés.
+
+    Le prix est rattaché au résultat dans les FENETRE_JOURS qui le précèdent :
+    les deux sources ne datent pas pareil (coup d'envoi / règlement), et une
+    jointure sur le même jour en perdait un tiers.
+
+    Renvoie None si les courbes sont illisibles : la fiche retombe alors sur
+    les alertes, comme avant, et le journal le dit.
+    """
+    import datetime as _dt
+    try:
+        import player_form as pf
+        ref = pf.cotes_sharp()
+        bruts = pf.charger_matchs()
+    except Exception as e:                          # noqa: BLE001
+        print(f"  TOUS LES MATCHS INDISPONIBLES ({type(e).__name__}: {e})")
+        print("  -> repli sur les seules alertes (moves_detail_hist)")
+        return None
+    if not ref:
+        print("  AUCUN PRIX dans les courbes -> repli sur les seules alertes")
+        return None
+
+    # Clés repassées dans cle() : player_form garde les chiffres dans les
+    # noms, build_profiles non. Sans ça, un même joueur aurait deux clés.
+    def k_(x):
+        return cle(x) if x else ''
+
+    # 1. Les prix : un par match coté, daté du coup d'envoi.
+    prix = defaultdict(list)                       # paire -> [(date, {cle: proba})]
+    for (paire, d), (j, p) in ref.items():
+        duo = sorted(paire)
+        if len(duo) != 2 or not (0.0 < p < 1.0):
+            continue
+        autre = duo[0] if duo[1] == j else duo[1]
+        cj, ca = k_(j), k_(autre)
+        if not cj or not ca or cj == ca:
+            continue
+        prix[frozenset((cj, ca))].append((d, {cj: p, ca: 1.0 - p}))
+
+    # 2. Les résultats, chacun rattaché à son prix d'avant-match.
+    resultats = []
+    for d, a, b, a_gagne, sa, sb, tour in bruts:
+        ca, cb = k_(a), k_(b)
+        if not d or not ca or not cb or ca == cb:
+            continue
+        paire = frozenset((ca, cb))
+        d_res = d.date()
+        cand = [(dp, pr) for dp, pr in prix.get(paire, [])
+                if 0 <= (d_res - dp).days <= FENETRE_JOURS]
+        d_match, p_match = max(cand, key=lambda x: x[0]) if cand else (d_res, None)
+        resultats.append((paire, d_res, d_match, p_match,
+                          ca if a_gagne else cb, {ca: sa, cb: sb}, tour or ''))
+
+    # Dédoublonnage. Un même match revient parfois 6 à 13, voire 28 à 32
+    # jours plus tard : règlement provisoire puis définitif, ou seconde
+    # source datée de son propre passage. Mesuré le 09/10 : 1 076 doublons
+    # sur 7 301 lignes de fiches (15 %) avec une fenêtre de 5 jours seule.
+    #
+    # Même paire, même vainqueur, et MÊME TOURNOI à moins de 35 jours : un
+    # joueur éliminé ne rejoue pas le même adversaire dans le même tournoi.
+    # Sans tournoi commun, on garde la fenêtre courte. On conserve la ligne
+    # qui porte une cote : sa date est celle du coup d'envoi, la plus sûre.
+    resultats.sort(key=lambda x: (x[2], x[3] is None))
+    garde = defaultdict(list)                       # (paire, gagnant) -> [idx]
+    retenus = []
+    for r in resultats:
+        paire, d_res, d_match, p_match, gagnant, sets, tour = r
+        doublon = None
+        for i in garde[(paire, gagnant)]:
+            q = retenus[i]
+            jours = abs((d_match - q[2]).days)
+            if jours <= FENETRE_JOURS or (tour and tour == q[6] and jours <= 35):
+                doublon = i
+                break
+        if doublon is None:
+            garde[(paire, gagnant)].append(len(retenus))
+            retenus.append(r)
+        elif retenus[doublon][3] is None and p_match is not None:
+            retenus[doublon] = r                    # la version avec cote gagne
+    resultats = retenus
+
+    # 3. Le vainqueur du 1er set : set_results (déjà chargé, via `res`) et
+    # resultats_oddspapi.json. Rattaché dans la même fenêtre.
+    set1 = defaultdict(list)                       # paire -> [(date, cle gagnante)]
+    for uid, (h, a, v) in res.items():
+        m = re.match(r'^(\d{4}-\d{2}-\d{2})', uid)
+        if not m or v.get('set1') not in ('home', 'away'):
+            continue
+        ch, ca = k_(h), k_(a)
+        if ch and ca and ch != ca:
+            set1[frozenset((ch, ca))].append(
+                (_dt.date.fromisoformat(m.group(1)),
+                 ch if v['set1'] == 'home' else ca))
+    try:
+        for v in json.load(open(os.environ.get(
+                'ODDSPAPI_RESULTS', 'resultats_oddspapi.json'),
+                encoding='utf-8')).values():
+            if not isinstance(v, dict) or v.get('set1') not in ('home', 'away'):
+                continue
+            ch, ca = k_(v.get('home')), k_(v.get('away'))
+            d = str(v.get('resolved_at') or '')[:10]
+            if ch and ca and ch != ca and len(d) == 10:
+                set1[frozenset((ch, ca))].append(
+                    (_dt.date.fromisoformat(d), ch if v['set1'] == 'home' else ca))
+    except (OSError, ValueError):
+        pass
+
+    # 4. Assemblage par joueur.
+    par_joueur = defaultdict(list)
+    for paire, d_res, d_match, p_match, gagnant, sets, tour in resultats:
+        s1 = [g for d, g in set1.get(paire, [])
+              if abs((d - d_res).days) <= FENETRE_JOURS
+              or abs((d - d_match).days) <= FENETRE_JOURS]
+        s1 = s1[0] if s1 and len(set(s1)) == 1 else None
+        for moi in paire:
+            adv = next(x for x in paire if x != moi)
+            pm = p_match.get(moi) if p_match else None
+            # Un 2-0 (ou 3-0) dit qui a pris le 1er set : inutile de le
+            # chercher ailleurs. Seuls les matchs en trois sets en ont besoin.
+            sm, sa_ = sets.get(moi, 0), sets.get(adv, 0)
+            if s1 is not None:
+                set1_moi = (s1 == moi)
+            elif sm >= 2 and sa_ == 0:
+                set1_moi = True
+            elif sa_ >= 2 and sm == 0:
+                set1_moi = False
+            else:
+                set1_moi = None
+            par_joueur[moi].append({
+                'date': d_match.isoformat(),
+                'adv_cle': adv,
+                'gagne': gagnant == moi,
+                'sets': f"{sets.get(moi, 0)}-{sets.get(adv, 0)}",
+                'set1': set1_moi,
+                # Cote JUSTE (marge retirée) d'avant le match.
+                'cote': round(1.0 / pm, 2) if pm else None,
+                'tour': tour or None,
+            })
+
+    # Les prix seuls, y compris des matchs sans résultat : la médiane n'a
+    # pas besoin du vainqueur.
+    cotes, cotes_adv, dates = defaultdict(list), defaultdict(list), defaultdict(set)
+    for paire, L in prix.items():
+        for d, pr in L:
+            for moi in paire:
+                adv = next(x for x in paire if x != moi)
+                cotes[moi].append(1.0 / pr[moi])
+                cotes_adv[moi].append(1.0 / pr[adv])
+                dates[moi].add(d.isoformat())
+
+    # Les noms tels que les écrivent les courbes. Les prix et résultats ne
+    # portent que des clés (jetons triés) : sans cette passe, un joueur vu
+    # seulement dans les courbes s'afficherait « Latinovic Stefan ».
+    noms_courbes = {}
+    for src in ('book_curves.jsonl', 'book_curves_live.jsonl'):
+        try:
+            for ligne in pf.ov.open_curves(src, verbose=False):
+                try:
+                    r = json.loads(ligne)
+                except ValueError:
+                    continue
+                for n in (r.get('home_team') or r.get('home'),
+                          r.get('away_team') or r.get('away')):
+                    if n:
+                        noms_courbes.setdefault(k_(n), n)
+        except Exception:                           # noqa: BLE001
+            continue
+
+    print(f"  tous les matchs : {sum(len(v) for v in prix.values())} prix, "
+          f"{len(resultats)} résultats, {len(par_joueur)} joueurs avec un résultat")
+    return {'matchs': par_joueur, 'cotes': cotes, 'cotes_adv': cotes_adv,
+            'dates': dates, 'paires': list(prix.keys()),
+            'noms': noms_courbes}
+
+
 def main():
     moves = [r for r in csv.DictReader(open(MOVES, encoding='utf-8'))]
     setres = json.load(open(SETRES, encoding='utf-8'))
@@ -255,14 +465,15 @@ def main():
     except (OSError, ValueError) as e:
         print(f"  {ELO} illisible ({e}) — fiches sans Elo")
 
-    circ_k, mixtes = circuits_joueurs(moves, elo_k)
+    res = charger_resultats(setres, moves)
+    H = historique_tous_matchs(res)
+
+    circ_k, mixtes = circuits_joueurs(moves, elo_k, H['paires'] if H else ())
     if mixtes:
         print(f"  ALERTE : {len(mixtes)} composante(s) mélangent atp et wta "
               f"— collision de clés probable")
         for c in mixtes[:3]:
             print(f"    {', '.join(c)}")
-
-    res = charger_resultats(setres, moves)
 
     P = defaultdict(lambda: {
         'nom': None, 'cotes': [], 'cotes_adv': [], 'circuits': defaultdict(int),
@@ -328,9 +539,42 @@ def main():
                 'set2': v.get('set2') == cote if v.get('set2') else None,
             })
 
+    # ── Noms des joueurs vus seulement hors alertes ─────────────────────
+    #
+    # Les prix et résultats de tous les matchs ne portent que des CLÉS. Le
+    # nom affiché vient, par ordre de fiabilité : des alertes (déjà dans P),
+    # de l'Elo publié, puis des résultats OddsPapi.
+    if H:
+        noms = {}
+        try:
+            for v in json.load(open(os.environ.get(
+                    'ODDSPAPI_RESULTS', 'resultats_oddspapi.json'),
+                    encoding='utf-8')).values():
+                if isinstance(v, dict):
+                    for n in (v.get('home'), v.get('away')):
+                        if n:
+                            noms.setdefault(cle(n), n)
+        except (OSError, ValueError):
+            pass
+        # set_results donne l'ordre réel prénom-nom, en minuscules : on le
+        # garde en dernier recours, mis en capitales.
+        for h, a, _v in res.values():
+            for n in (h, a):
+                if n:
+                    noms.setdefault(cle(n), ' '.join(
+                        t[:1].upper() + t[1:] for t in str(n).split()))
+        for kk, n in H.get('noms', {}).items():
+            noms.setdefault(kk, n)
+        for kk, v in elo_k.items():
+            if v.get('nom'):
+                noms[kk] = v['nom']
+        for kk in set(H['matchs']) | set(H['cotes']):
+            if not P[kk]['nom'] and noms.get(kk):
+                P[kk]['nom'] = noms[kk]
+
     # ── Assemblage ──────────────────────────────────────────────────────
     out = {}
-    for k, p in P.items():
+    for k, p in list(P.items()):
         if not p['nom']:
             continue
         f = form_k.get(k, {})
@@ -342,6 +586,7 @@ def main():
         fiche = {
             'nom': p['nom'],
             'n_matchs_vus': len(set(p['dates'])),
+            # Écrasés plus bas par tous les matchs quand ils sont disponibles.
             'periode': [min(p['dates']), max(p['dates'])] if p['dates'] else None,
             'circuits': [c for c, _ in sorted(p['circuits'].items(),
                                               key=lambda x: -x[1])[:4]],
@@ -351,36 +596,62 @@ def main():
         if circ_k.get(k):
             fiche['circuit'] = circ_k[k]
 
-        if len(p['cotes']) >= MIN_COTES:
-            fiche['cote_mediane'] = round(st.median(p['cotes']), 2)
-            fiche['cote_min'] = round(min(p['cotes']), 2)
-            fiche['cote_max'] = round(max(p['cotes']), 2)
-            fiche['n_cotes'] = len(p['cotes'])
+        # La cote du marché : sur TOUS les matchs cotés quand les courbes
+        # sont lisibles (clôture Pinnacle pré-match, marge retirée) ; sinon
+        # sur les alertes seules (ouverture Pinnacle, marge comprise).
+        cotes = H['cotes'].get(k, []) if H else p['cotes']
+        cotes_adv = H['cotes_adv'].get(k, []) if H else p['cotes_adv']
+        if len(cotes) >= MIN_COTES:
+            fiche['cote_mediane'] = round(st.median(cotes), 2)
+            fiche['cote_min'] = round(min(cotes), 2)
+            fiche['cote_max'] = round(max(cotes), 2)
+            fiche['n_cotes'] = len(cotes)
             fiche['pct_favori'] = round(
-                100 * sum(1 for c in p['cotes'] if c < 2) / len(p['cotes']))
-        if len(p['cotes_adv']) >= MIN_COTES:
-            fiche['cote_adversaires'] = round(st.median(p['cotes_adv']), 2)
+                100 * sum(1 for c in cotes if c < 2) / len(cotes))
+        if len(cotes_adv) >= MIN_COTES:
+            fiche['cote_adversaires'] = round(st.median(cotes_adv), 2)
 
-        if joues:
-            fiche['bilan'] = {
-                'n': len(joues),
-                'victoires': sum(1 for m in joues if m['match']),
-            }
-        if s1:
-            # Gagner le 1er set est une information que presque personne
-            # ne publie, et elle est disponible sur 100 % des matchs joués.
-            fiche['set1'] = {
-                'n': len(s1),
-                'gagnes': sum(1 for m in s1 if m['set1']),
-            }
-        if ms:
-            # adv_cle permet la confrontation directe : deux fiches se
-            # croisent sans retraverser set_results.json côté client.
-            fiche['derniers'] = [
-                {'date': m['date'], 'adv': m['adv'], 'gagne': m['match'],
-                 'set1': m['set1'], 'adv_cle': cle(m['adv'])}
-                for m in ms[:N_DERNIERS]
-            ]
+        if H:
+            # TOUS les matchs joués, du plus récent au plus ancien, avec le
+            # score en sets et la cote juste d'avant le match.
+            tous = sorted(H['matchs'].get(k, []), key=lambda m: m['date'],
+                          reverse=True)
+            if tous:
+                fiche['derniers'] = [
+                    dict(m, adv=(P[m['adv_cle']]['nom']
+                                 if m['adv_cle'] in P else None)
+                         or m['adv_cle'].title())
+                    for m in tous[:N_DERNIERS]]
+                # UNE seule ligne de bilan, calculée sur les mêmes matchs que
+                # la liste affichée : elle ne peut plus la contredire.
+                dix = tous[:10]
+                s1 = [m for m in dix if m['set1'] is not None]
+                fiche['recent'] = {
+                    'n': len(dix),
+                    'victoires': sum(1 for m in dix if m['gagne']),
+                    'set1_n': len(s1),
+                    'set1_gagnes': sum(1 for m in s1 if m['set1']),
+                }
+                ds = sorted(H['dates'].get(k, set()) | {m['date'] for m in tous})
+                fiche['periode'] = [ds[0], ds[-1]]
+                fiche['n_matchs_vus'] = len(tous)
+        else:
+            if joues:
+                fiche['bilan'] = {
+                    'n': len(joues),
+                    'victoires': sum(1 for m in joues if m['match']),
+                }
+            if s1:
+                fiche['set1'] = {
+                    'n': len(s1),
+                    'gagnes': sum(1 for m in s1 if m['set1']),
+                }
+            if ms:
+                fiche['derniers'] = [
+                    {'date': m['date'], 'adv': m['adv'], 'gagne': m['match'],
+                     'set1': m['set1'], 'adv_cle': cle(m['adv'])}
+                    for m in ms[:N_DERNIERS]
+                ]
 
         if f:
             fiche['forme'] = f.get('forme')
@@ -477,6 +748,9 @@ def main():
         'n_classes_atp': classes['atp'],
         'n_classes_wta': classes['wta'],
         'n_circuits_connus': sum(1 for v in out.values() if v.get('circuit')),
+        'source_cotes': ('cloture Pinnacle pre-match, marge retiree, tous les '
+                         'matchs cotes') if H else
+                        'ouverture Pinnacle, alertes seules (repli)',
         'min_cotes': MIN_COTES,
         'min_rang': MIN_RANG,
         'sources': ['moves_detail_hist.csv', 'set_results.json',
