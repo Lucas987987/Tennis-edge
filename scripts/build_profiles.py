@@ -46,6 +46,9 @@ nom — 76 % des matchs de moves. Le second se parse sur « _vs_ ».
 import csv
 import json
 import os
+import math
+import datetime
+import gzip
 import re
 import statistics as st
 import unicodedata
@@ -447,6 +450,145 @@ def historique_tous_matchs(res):
             'noms': noms_courbes}
 
 
+# ── HISTORIQUE tennis-data.co.uk (ajouté le 09/10/2026) ──────────────────
+#
+# Clôtures Pinnacle du circuit principal : ATP 2010-2026, WTA 2018-2026,
+# 56 461 matchs terminés. Vérifié le 09/10 : ce sont des cotes de CLÔTURE
+# (leur bet365 2026 colle à notre clôture bet365, écart médian 0,2 %, et
+# pas à notre ouverture, 4 %). Produit une fois par
+# scripts/convertir_tennis_data.py ; Pinnacle disparaît de tennis-data fin
+# janvier 2026, nos courbes prennent le relais en juin.
+#
+# N'entre QUE dans le bilan en favori / en outsider. Le classement marché
+# reste calculé sur nos seules cotes : le niveau d'un joueur en 2019 ne dit
+# rien de son niveau aujourd'hui.
+HISTO_TD = os.environ.get('HISTO_TD', 'historique/tennis_data.csv.gz')
+# « Récent » = ses N_RECENT derniers matchs DANS CE STATUT, pas les 12
+# derniers mois : Pinnacle manque partout de février à mai 2026 (fin de
+# tennis-data, début de nos courbes en juin), un bilan sur 12 mois aurait
+# eu 4 mois de trou et des tailles incomparables d'un joueur à l'autre.
+N_RECENT = int(os.environ.get('N_RECENT', '20'))
+TENDANCE_MIN_ANCIEN = int(os.environ.get('TENDANCE_MIN_ANCIEN', '20'))
+TENDANCE_Z = float(os.environ.get('TENDANCE_Z', '1.96'))
+
+
+def _jetons(nom):
+    s = unicodedata.normalize('NFKD', str(nom)).encode('ascii', 'ignore').decode().lower()
+    return re.sub(r'[^a-z. ]+', ' ', s.replace('-', ' ')).split()
+
+
+def relier_tennis_data(fiches):
+    """Nom tennis-data (« Bublik A. », « Fernandez L.A. », « Wang Xiy. »)
+    -> clé de fiche, par circuit.
+
+    fiches : {clé: (nom affiché, circuit 'atp'/'wta'/None, nb de cotes)}.
+    Le nom de famille doit correspondre exactement à la fin du nom de la
+    fiche, et l'abréviation au début du prénom (« xiy » distingue Xiyu de
+    Xinyu). Plusieurs candidats : on garde celui qui a le plus de cotes,
+    seulement s'il en a au moins trois fois plus que le suivant — sinon
+    on ne relie pas (les frères Nakashima restent sans historique plutôt
+    qu'avec celui de l'autre).
+    """
+    idx = defaultdict(list)
+    for k, (nom, circ, n) in fiches.items():
+        t = [x.replace('.', '') for x in _jetons(nom)]
+        t = [x for x in t if x]
+        for i in range(1, len(t)):
+            idx[' '.join(t[i:])].append((k, t[0], circ, n))
+    cache = {}
+
+    def relier(nom_td, circuit):
+        cle_c = (nom_td, circuit)
+        if cle_c in cache:
+            return cache[cle_c]
+        t = _jetons(nom_td)
+        res = None
+        if len(t) >= 2:
+            abr = t[-1]
+            nom = ' '.join(x.replace('.', '') for x in t[:-1])
+            # « l.a. » -> la première lettre ; « xiy. » -> le préfixe entier
+            pre = abr.split('.')[0] if abr.count('.') > 1 else abr.replace('.', '')
+            c = [(k, n) for k, prenom, circ, n in idx.get(nom, [])
+                 if pre and prenom.startswith(pre)
+                 and (circ is None or circ == circuit)]
+            c = sorted(set(c), key=lambda x: -x[1])
+            if len(c) == 1 or (len(c) > 1 and c[0][1] >= 3 * max(1, c[1][1])):
+                res = c[0][0]
+        cache[cle_c] = res
+        return res
+    return relier
+
+
+def historique_tennis_data(fiches):
+    """{clé: [{'date', 'cote' (juste), 'gagne'}]} depuis HISTO_TD."""
+    if not os.path.exists(HISTO_TD):
+        print(f"  {HISTO_TD} absent — bilans sur nos seules données")
+        return {}
+    relier = relier_tennis_data(fiches)
+    out, n, relies, noms, noms_ok = defaultdict(list), 0, 0, set(), set()
+    with gzip.open(HISTO_TD, 'rt', encoding='utf-8') as g:
+        for r in csv.DictReader(g):
+            try:
+                pw, pl = float(r['psw']), float(r['psl'])
+            except (TypeError, ValueError):
+                continue
+            n += 1
+            circ = (r.get('circuit') or '').lower()
+            iw, il = 1 / pw, 1 / pl
+            qw = iw / (iw + il)
+            for nom, q, y in ((r['vainqueur'], qw, True), (r['perdant'], 1 - qw, False)):
+                noms.add((nom, circ))
+                k = relier(nom, circ)
+                if k:
+                    noms_ok.add((nom, circ))
+                    relies += 1
+                    out[k].append({'date': r['date'], 'cote': round(1 / q, 3), 'gagne': y})
+    print(f"  historique tennis-data : {n} matchs, {len(noms_ok)}/{len(noms)} joueurs "
+          f"reliés à une fiche, {relies} bilans ajoutés à {len(out)} fiches")
+    return out
+
+
+def bilan_statut(ms, aujourdhui=None):
+    """Bilan sur une liste de matchs {date, cote juste, gagne} d'UN statut :
+    global, N_RECENT derniers, et tendance.
+
+    TENDANCE : l'écart au marché par match (victoires − attendu) / n sur
+    les N_RECENT derniers matchs, comparé à celui des matchs d'avant.
+    « hausse » ou « baisse » seulement si la différence dépasse ce que le
+    hasard explique (z ≥ 1,96, variance binomiale p(1−p) de chaque match) ;
+    sinon « stable ». Il faut N_RECENT matchs récents et au moins
+    TENDANCE_MIN_ANCIEN avant, sinon pas de tendance.
+
+    Ce n'est PAS une prévision : testé le 09/10 sur 16 saisons, un bilan
+    au-dessus du marché ne se prolonge pas. C'est une description de
+    l'évolution du joueur.
+    """
+    if not ms:
+        return None
+    ms = sorted(ms, key=lambda m: m['date'])
+
+    def agr(L):
+        return {'n': len(L), 'victoires': sum(1 for m in L if m['gagne']),
+                'attendu': round(sum(1 / m['cote'] for m in L), 1)}
+    rec, anc = ms[-N_RECENT:], ms[:-N_RECENT]
+    b = agr(ms)
+    b['depuis'] = ms[0]['date'][:4]
+    if anc:                      # sinon « récent » = « global », inutile
+        b['recent'] = agr(rec)
+    tend = None
+    if len(rec) >= N_RECENT and len(anc) >= TENDANCE_MIN_ANCIEN:
+        def taux(L):
+            r = sum((1 if m['gagne'] else 0) - 1 / m['cote'] for m in L) / len(L)
+            v = sum((1 / m['cote']) * (1 - 1 / m['cote']) for m in L) / len(L) ** 2
+            return r, v
+        r1, v1 = taux(rec)
+        r0, v0 = taux(anc)
+        z = (r1 - r0) / math.sqrt(v1 + v0) if v1 + v0 > 0 else 0
+        tend = 'hausse' if z >= TENDANCE_Z else ('baisse' if z <= -TENDANCE_Z else 'stable')
+    b['tendance'] = tend
+    return b
+
+
 def main():
     moves = [r for r in csv.DictReader(open(MOVES, encoding='utf-8'))]
     setres = json.load(open(SETRES, encoding='utf-8'))
@@ -572,6 +714,12 @@ def main():
             if not P[kk]['nom'] and noms.get(kk):
                 P[kk]['nom'] = noms[kk]
 
+    # ── Historique tennis-data : relié aux fiches par le nom ────────────
+    TD = historique_tennis_data({
+        kk: (pp['nom'], circ_k.get(kk), len(H['cotes'].get(kk, [])) if H else 0)
+        for kk, pp in P.items() if pp['nom']})
+    aujourdhui = datetime.datetime.now(datetime.timezone.utc).date()
+
     # ── Assemblage ──────────────────────────────────────────────────────
     out = {}
     for k, p in list(P.items()):
@@ -638,19 +786,27 @@ def main():
                 # (1 / cote juste) : ce que le joueur aurait gagné s'il faisait
                 # exactement ce que le marché prévoyait. Gagner 7 sur 10 en
                 # favori n'est un exploit que si le marché en attendait 5.
-                for cle_f, garder in (('en_favori', lambda c: c < 2),
-                                      ('en_outsider', lambda c: c >= 2)):
-                    ms = [m for m in tous if m['cote'] and garder(m['cote'])]
-                    if ms:
-                        fiche[cle_f] = {
-                            'n': len(ms),
-                            'victoires': sum(1 for m in ms if m['gagne']),
-                            'attendu': round(sum(1 / m['cote'] for m in ms), 1),
-                        }
+                pass
                 ds = sorted(H['dates'].get(k, set()) | {m['date'] for m in tous})
                 fiche['periode'] = [ds[0], ds[-1]]
                 fiche['n_matchs_vus'] = len(tous)
-        else:
+        # BILAN EN FAVORI / EN OUTSIDER — nos matchs cotés (depuis juin 2026)
+        # PLUS l'historique tennis-data (circuit principal, 2010/2018 ->
+        # janvier 2026). Les deux ne se chevauchent pas : tennis-data n'a
+        # plus de Pinnacle après janvier, nos courbes commencent en juin.
+        # Par sécurité, un match tennis-data postérieur à notre premier
+        # match pour ce joueur est ignoré.
+        nos = [m for m in (H['matchs'].get(k, []) if H else []) if m.get('cote')]
+        debut = min((m['date'] for m in nos), default='9999')
+        tout = [{'date': m['date'], 'cote': m['cote'], 'gagne': bool(m['gagne'])}
+                for m in nos] + [m for m in TD.get(k, []) if m['date'] < debut]
+        for cle_f, garder in (('en_favori', lambda c: c < 2),
+                              ('en_outsider', lambda c: c >= 2)):
+            b = bilan_statut([m for m in tout if garder(m['cote'])], aujourdhui)
+            if b:
+                fiche[cle_f] = b
+
+        if not H:
             if joues:
                 fiche['bilan'] = {
                     'n': len(joues),
