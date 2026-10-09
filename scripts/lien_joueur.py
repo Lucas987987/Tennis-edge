@@ -8,20 +8,29 @@ de correspondance : le lien se calcule à partir du nom seul.
     ...
     lien_joueur.duo_html(joueur, adv)   # remplace f"<b>{joueur}</b> vs {adv}"
 
-L'ADRESSE DU WORKER N'A PAS DE VALEUR PAR DÉFAUT, ET C'EST VOULU
+L'ADRESSE DU WORKER A UNE VALEUR PAR DÉFAUT DEPUIS LE 09/10/2026
 ----------------------------------------------------------------
-FICHES_BASE non renseignée → duo_html() rend exactement le texte
-d'avant, sans lien. Pas d'URL inventée, pas de 404 dans une alerte.
+Elle n'en avait pas, volontairement, tant que l'adresse n'était pas
+connue : une adresse devinée aurait produit des liens morts sans que
+rien ne le signale. L'adresse est désormais connue et vérifiée :
 
-Une mauvaise adresse par défaut serait la pire des pannes : le message
-part, le lien est là, il ne mène nulle part, et rien dans les logs ne le
-signale. Mieux vaut un message identique à celui d'hier.
+    https://joueurs.tennis-edge.workers.dev
 
-Pour activer les liens, une seule ligne au niveau `env:` du workflow qui
-lance les alertes :
+Et l'absence de défaut a produit, elle aussi, la panne silencieuse
+qu'elle devait éviter. La variable n'était réglée que dans
+courbes_alertes.yml ; or odds_movement.py est lancé par
+capture_closing.py, dans capture_closing.yml. Les alertes « Mouvement
+de cote » sont donc parties avec des noms non cliquables, sans erreur.
+Une adresse par défaut ici couvre tous les workflows d'un coup, y
+compris ceux qu'on ajoutera.
 
-    env:
-      FICHES_BASE: https://<le-worker>.workers.dev
+    FICHES_BASE absente  -> adresse par défaut
+    FICHES_BASE=""       -> aucun lien, texte d'avant au caractère près
+    FICHES_BASE=<autre>  -> cette adresse
+
+Si l'adresse change un jour (nouveau sous-domaine, nom de domaine),
+c'est ici qu'on la change — et dans courbes_alertes.yml, qui la fixe
+encore explicitement.
 
 POURQUOI LES TOKENS SONT TRIÉS
 ------------------------------
@@ -57,11 +66,19 @@ import re
 import unicodedata
 
 
+DEFAUT = 'https://joueurs.tennis-edge.workers.dev'
+
+
 def _base():
     """Lue à chaque appel, pas au chargement : un test peut ainsi régler
-    la variable après l'import, et un workflow qui l'oublie ne fige pas
-    une valeur vide dans un module importé tôt."""
-    return (os.environ.get('FICHES_BASE') or '').rstrip('/')
+    la variable après l'import.
+
+    Absente -> DEFAUT. Vide -> pas de lien (moyen de couper sans toucher
+    au code). La distinction entre « absente » et « vide » est voulue."""
+    v = os.environ.get('FICHES_BASE')
+    if v is None:
+        v = DEFAUT
+    return v.strip().rstrip('/')
 
 
 def slug(nom):
@@ -161,6 +178,26 @@ def ligne_x(joueur, adv=None):
     u = lien_duo(joueur, adv) if adv else lien(joueur)
     return u or ''
 
+def ligne_x_masquee(joueur, adv=None):
+    """L'adresse de la fiche EN SPOILER, pour un message HTML recopié vers X.
+
+    AJOUTÉ LE 09/10/2026. Deux contraintes qui se contredisent :
+      - dans Telegram, pas d'adresse visible (seuls les noms sont cliquables) ;
+      - sur X, un nom ne peut PAS être un lien : seule une adresse écrite en
+        entier devient cliquable. Un lien masqué sur un nom redevient du texte
+        simple au copier-coller.
+
+    Le spoiler (<tg-spoiler>) les concilie : Telegram l'affiche flouté, sans
+    adresse lisible, et le copier-coller en reprend le texte en clair. Placée
+    en DERNIÈRE ligne, l'adresse est aussi celle dont X tire la carte
+    d'aperçu — le titre et la description viennent des balises og: de la page.
+
+    Vide sans FICHES_BASE (même règle que les autres fonctions).
+    """
+    u = lien_duo(joueur, adv) if adv else lien(joueur)
+    return f'\n<tg-spoiler>{html.escape(u)}</tg-spoiler>' if u else ''
+
+
 def ligne_fiches(a, b=None, prefixe='Fiches'):
     """Une ligne à part, pour un message qui n'est pas en HTML (X)."""
     u = lien_duo(a, b) if b else lien(a)
@@ -173,11 +210,17 @@ if __name__ == '__main__':
                  ('Aryna Sabalenka', 'sabalenka aryna')):
         assert slug(a) == slug(b), (a, b, slug(a), slug(b))
 
-    os.environ.pop('FICHES_BASE', None)
+    os.environ['FICHES_BASE'] = ''
     nu = duo_html('Aryna Sabalenka', 'Linda Noskova')
     assert nu == '<b>Aryna Sabalenka</b> vs Linda Noskova', nu
-    print('sans FICHES_BASE :', nu)
+    print('FICHES_BASE vide :', nu)
+
+    os.environ.pop('FICHES_BASE', None)
+    defaut = duo_html('Aryna Sabalenka', 'Linda Noskova')
+    assert DEFAUT + '/j/' in defaut, defaut
+    print('sans FICHES_BASE :', defaut)
 
     os.environ['FICHES_BASE'] = 'https://exemple.workers.dev/'
     print('avec FICHES_BASE :', duo_html('Aryna Sabalenka', 'Linda Noskova'))
     print('nom piégé        :', duo_html('A & B', 'C <D>'))
+    print('spoiler pour X   :', repr(ligne_x_masquee('Elmer Moller', 'Tiago Pereira')))
