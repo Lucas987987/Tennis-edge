@@ -114,6 +114,13 @@ const FICHES = (() => {
   const CL = (p) => (p && p.cote_classement != null) ? p.cote_classement
     : (p ? p.cote_mediane : null);
 
+  // Classement OFFICIEL ATP/WTA (fichiers tennis-data, depuis le 10/10) :
+  // celui du dernier match du joueur dans le fichier, avec sa date — ce
+  // n'est pas un classement en direct, la date le dit.
+  const jjmm = (iso) => iso ? iso.slice(8, 10) + '/' + iso.slice(5, 7) : '';
+  const officiel = (p) => p && p.rang_officiel
+    ? `${ord(p.rang_officiel.rang, FEM(p))}` : null;
+
   function ecart_mediane(cote, mediane) {
     if (!cote || !mediane || cote <= 1 || mediane <= 1) return null;
     return (1 / cote - 1 / mediane) * 100;
@@ -592,6 +599,9 @@ const FICHES = (() => {
 
   function corpsFiche(p, d) {
     const L = [];
+    if (p.rang_officiel)
+      L.push(ligne(`Classement ${CIRC(p) || 'officiel'}`,
+        `${officiel(p)}<br><span class="att">au ${jjmm(p.rang_officiel.date)}</span>`, true));
     if (p.cote_adversaires != null)
       L.push(ligne('Cote de ses adversaires', fr(p.cote_adversaires)));
     if (p.pct_favori != null)
@@ -775,7 +785,7 @@ const FICHES = (() => {
     // celui de SON circuit — nommé, sans quoi « 12e sur 86 » ne dit pas
     // de quoi.
     const legende = p.rang_marche
-      ? `${ord(p.rang_marche, FEM(p))} sur ${p.rang_sur}`
+      ? `Rang marché : ${ord(p.rang_marche, FEM(p))} sur ${p.rang_sur}`
         + ` ${joueurs(p, p.rang_sur)} ${CIRC(p)} ${classes(p, p.rang_sur)}`
         + ` · ${pl(p.n_cotes, 'cote')} relevée${p.n_cotes > 1 ? 's' : ''}`
       : `${pl(p.n_cotes, 'cote')} relevée${p.n_cotes > 1 ? 's' : ''}`
@@ -832,7 +842,12 @@ const FICHES = (() => {
     // Deux circuits différents en vis-à-vis n'arrive que si on compare la
     // main : les rangs ne se comparent alors pas, donc on les nomme.
     r(a.circuit && a.circuit === b.circuit
-      ? `Rang ${CIRC(a)}` : 'Rang',
+      ? `Classement ${CIRC(a)}` : 'Classement officiel',
+      (p) => p.rang_officiel
+        ? `${officiel(p)}<br><span class="att">au ${jjmm(p.rang_officiel.date)}</span>`
+        : null);
+    r(a.circuit && a.circuit === b.circuit
+      ? `Rang marché ${CIRC(a)}` : 'Rang marché',
       (p) => p.rang_marche
         ? ord(p.rang_marche, FEM(p))
           + (a.circuit === b.circuit ? '' : ` <span class="n">${CIRC(p)}</span>`)
