@@ -3,7 +3,8 @@ name: Suivi outsiders (pré-enregistré)
 # CRÉÉ LE 09/10/2026. Lance chaque lundi scripts/etude_outsiders_alertes.py —
 # les règles gelées le 09/10 : R1 et R2 (alertes sur les outsiders cotés
 # 2,40–4,00), R3 (cote 1,60–2,00 qui baisse de 3 à 6 % -> jouer l'autre) —
-# et envoie le résultat sur Telegram.
+# et R4 (gelée le 10/10 : outsider du 75-90e centile de % de victoires
+# sur 365 jours, favori coté 1,60–2,00), et envoie le résultat sur Telegram.
 #
 # LECTURE SEULE : ne commite rien, n'ajoute pas un octet au dépôt. La sortie
 # complète reste 30 jours dans les « artifacts » du run.
@@ -72,7 +73,7 @@ jobs:
           if 'LE VERDICT' in t:
               # Seulement le verdict et le rappel : pas l'en-tête.
               corps = t[t.index('LE VERDICT'):].replace('-' * 78 + '\n', '')
-              texte = ('📊 <b>Suivi des règles gelées le 09/10 (R1, R2, R3)</b>\n'
+              texte = ('📊 <b>Suivi des règles gelées (R1, R2, R3 le 09/10 · R4 le 10/10)</b>\n'
                        f'<pre>{html.escape(corps.strip())[:3500]}</pre>')
           else:
               texte = ('❌ <b>Suivi outsiders : le script a échoué</b>\n'
