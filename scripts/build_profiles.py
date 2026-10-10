@@ -622,7 +622,9 @@ K_CLASSEMENT = float(os.environ.get('K_CLASSEMENT', '0.3'))
 
 # ── CLASSEMENT OFFICIEL ATP / WTA (10/10/2026) ──────────────────────────
 #
-# Source : les fichiers de la saison en cours de tennis-data.co.uk, déposés
+# SOURCE PRINCIPALE : la page Elo de Tennis Abstract, lue chaque lundi par
+# elo_fetch.py (colonne « ATP Rank » / « WTA Rank »), voir l'assemblage.
+# SECOURS ci-dessous : les fichiers de la saison en cours de tennis-data.co.uk, déposés
 # tels quels dans historique/ (un pour l'ATP, un pour la WTA, noms au choix
 # tant qu'ils diffèrent : le circuit est lu dans la cellule A1). Chaque
 # match y porte le classement officiel des deux joueurs ce jour-là ; on
@@ -714,9 +716,13 @@ def main():
     # conventions ne coïncident pas toujours, et c'est le nom affiché qui
     # fait foi. Absent ou illisible, on continue sans — l'Elo enrichit la
     # fiche, il ne la conditionne pas.
-    elo_k = {}
+    elo_k, elo_maj = {}, {}
     try:
-        for k, v in json.load(open(ELO, encoding='utf-8')).get('joueurs', {}).items():
+        _elo = json.load(open(ELO, encoding='utf-8'))
+        for t, m in (_elo.get('meta') or {}).items():
+            if isinstance(m, dict) and m.get('derniere_maj'):
+                elo_maj[t] = m['derniere_maj']
+        for k, v in _elo.get('joueurs', {}).items():
             if isinstance(v, dict) and v.get('elo'):
                 elo_k[cle(v.get('nom') or k)] = v
     except (OSError, ValueError) as e:
@@ -861,8 +867,18 @@ def main():
         # la fiche existe alors sans circuit et sans rang.
         if circ_k.get(k):
             fiche['circuit'] = circ_k[k]
+        # Classement officiel : la page Elo de Tennis Abstract (hebdomadaire,
+        # automatique, Challengers compris) d'abord ; les fichiers tennis-data
+        # en secours. Si les deux existent, le plus récent gagne.
+        cands = []
+        e_ = elo_k.get(k) or {}
+        if e_.get('rang_officiel') and elo_maj.get(e_.get('tour')):
+            cands.append({'rang': int(e_['rang_officiel']),
+                          'date': elo_maj[e_['tour']], 'source': 'tennisabstract'})
         if k in OFFICIEL:
-            fiche['rang_officiel'] = OFFICIEL[k]
+            cands.append(dict(OFFICIEL[k], source='tennis-data'))
+        if cands:
+            fiche['rang_officiel'] = max(cands, key=lambda c: c['date'])
 
         # La cote du marché : sur TOUS les matchs cotés quand les courbes
         # sont lisibles (clôture Pinnacle pré-match, marge retirée) ; sinon
