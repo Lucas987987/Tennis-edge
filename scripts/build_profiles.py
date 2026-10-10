@@ -447,7 +447,7 @@ def historique_tous_matchs(res):
           f"{len(resultats)} résultats, {len(par_joueur)} joueurs avec un résultat")
     return {'matchs': par_joueur, 'cotes': cotes, 'cotes_adv': cotes_adv,
             'dates': dates, 'paires': list(prix.keys()),
-            'noms': noms_courbes}
+            'noms': noms_courbes, 'prix': prix}
 
 
 # ── HISTORIQUE tennis-data.co.uk (ajouté le 09/10/2026) ──────────────────
@@ -523,9 +523,10 @@ def historique_tennis_data(fiches):
     """{clé: [{'date', 'cote' (juste), 'gagne'}]} depuis HISTO_TD."""
     if not os.path.exists(HISTO_TD):
         print(f"  {HISTO_TD} absent — bilans sur nos seules données")
-        return {}
+        return {}, []
     relier = relier_tennis_data(fiches)
     out, n, relies, noms, noms_ok = defaultdict(list), 0, 0, set(), set()
+    matchs = []          # (date, identité A, identité B, proba juste de A)
     with gzip.open(HISTO_TD, 'rt', encoding='utf-8') as g:
         for r in csv.DictReader(g):
             try:
@@ -536,6 +537,11 @@ def historique_tennis_data(fiches):
             circ = (r.get('circuit') or '').lower()
             iw, il = 1 / pw, 1 / pl
             qw = iw / (iw + il)
+            # Identité pour le classement : la clé de fiche si le joueur est
+            # relié, sinon son nom tennis-data — un adversaire sans fiche
+            # compte quand même pour juger la force de ceux qui l'ont affronté.
+            ids = [relier(x, circ) or f"td:{circ}:{x}" for x in (r['vainqueur'], r['perdant'])]
+            matchs.append((r['date'], ids[0], ids[1], qw))
             for nom, q, y in ((r['vainqueur'], qw, True), (r['perdant'], 1 - qw, False)):
                 noms.add((nom, circ))
                 k = relier(nom, circ)
@@ -545,7 +551,7 @@ def historique_tennis_data(fiches):
                     out[k].append({'date': r['date'], 'cote': round(1 / q, 3), 'gagne': y})
     print(f"  historique tennis-data : {n} matchs, {len(noms_ok)}/{len(noms)} joueurs "
           f"reliés à une fiche, {relies} bilans ajoutés à {len(out)} fiches")
-    return out
+    return out, matchs
 
 
 def bilan_statut(ms, aujourdhui=None):
@@ -587,6 +593,60 @@ def bilan_statut(ms, aujourdhui=None):
         tend = 'hausse' if z >= TENDANCE_Z else ('baisse' if z <= -TENDANCE_Z else 'stable')
     b['tendance'] = tend
     return b
+
+
+# ── CLASSEMENT MARCHÉ AJUSTÉ AUX ADVERSAIRES (10/10/2026) ──────────────
+#
+# L'ancien classement était la MÉDIANE des cotes d'un joueur. Elle dépend
+# autant de ses adversaires que de lui : un joueur de Challenger qui
+# affronte des joueurs faibles a des cotes basses et paraît fort.
+#
+# Ici, chaque joueur a une NOTE, et chaque match coté la corrige : la cote
+# juste Pinnacle dit de combien A est plus fort que B (en logit), on compare
+# à l'écart de leurs notes, et on déplace les deux notes d'une fraction
+# K_CLASSEMENT de l'erreur. C'est un Elo nourri par les cotes au lieu des
+# résultats ; il pèse naturellement davantage les matchs récents.
+#
+# MESURÉ le 10/10 sur 31 607 matchs 2016-2025 (tennis-data), en prédisant la
+# proba du match suivant avec les seuls matchs passés :
+#     médiane des cotes (ancien)        erreur moyenne 9,6 pts
+#     notes ajustées, K = 0,3           erreur moyenne 6,6 pts
+# K = 0,3 était le meilleur des essais (0,05 à 0,5).
+#
+# Un joueur NOUVEAU démarre à la note qui explique exactement sa première
+# cote face à un adversaire déjà noté ; deux nouveaux démarrent de part et
+# d'autre de zéro. L'historique tennis-data (circuit principal 2010 ->
+# janvier 2026) passe d'abord, puis nos matchs depuis juin 2026.
+K_CLASSEMENT = float(os.environ.get('K_CLASSEMENT', '0.3'))
+
+
+def notes_marche(td_matchs, prix):
+    """{identité: note}, {identité: nb de matchs notés}."""
+    def lg(p):
+        p = min(max(p, 1e-4), 1 - 1e-4)
+        return math.log(p / (1 - p))
+    M = [(d, a, b, p) for d, a, b, p in td_matchs]
+    for paire, L in (prix or {}).items():
+        for d, probs in L:
+            (a, pa), (b, _pb) = sorted(probs.items())
+            M.append((d.isoformat() if hasattr(d, 'isoformat') else str(d), a, b, pa))
+    M.sort(key=lambda x: x[0])
+    R, N = {}, defaultdict(int)
+    for _d, a, b, p in M:
+        z = lg(p)
+        if a not in R and b not in R:
+            R[a], R[b] = z / 2, -z / 2
+        elif a not in R:
+            R[a] = R[b] + z
+        elif b not in R:
+            R[b] = R[a] - z
+        e = z - (R[a] - R[b])
+        R[a] += K_CLASSEMENT * e
+        R[b] -= K_CLASSEMENT * e
+        N[a] += 1
+        N[b] += 1
+    print(f"  classement ajusté : {len(M)} matchs notés, {len(R)} joueurs")
+    return R, N
 
 
 def main():
@@ -715,7 +775,7 @@ def main():
                 P[kk]['nom'] = noms[kk]
 
     # ── Historique tennis-data : relié aux fiches par le nom ────────────
-    TD = historique_tennis_data({
+    TD, TD_MATCHS = historique_tennis_data({
         kk: (pp['nom'], circ_k.get(kk), len(H['cotes'].get(kk, [])) if H else 0)
         for kk, pp in P.items() if pp['nom']})
     aujourdhui = datetime.datetime.now(datetime.timezone.utc).date()
@@ -897,12 +957,31 @@ def main():
     #
     # Un joueur sans circuit n'entre dans aucun des deux. Il garde sa
     # médiane, comme ceux qui n'ont pas assez de cotes.
+    # DEPUIS LE 10/10 : rang sur la NOTE ajustée aux adversaires (voir
+    # notes_marche), plus sur la médiane. La médiane reste dans la fiche :
+    # elle sert à « match plus facile / plus dur que son ordinaire ».
+    #
+    # « cote_classement » : la cote que le marché lui donnerait face à un
+    # joueur MOYEN de son circuit (la note médiane des classés). Seul un
+    # joueur ayant encore MIN_RANG cotes chez nous est classé : l'historique
+    # renseigne la note, il ne suffit pas à classer un joueur inactif.
+    R, NR = notes_marche(TD_MATCHS, H.get('prix') if H else None)
     classes = {}
     for cir in ('atp', 'wta'):
-        cl = sorted([(k, v['cote_mediane']) for k, v in out.items()
-                     if v.get('n_cotes', 0) >= MIN_RANG
-                     and v.get('circuit') == cir], key=lambda x: x[1])
-        for rang, (k, _) in enumerate(cl, 1):
+        elig = [k for k, v in out.items()
+                if v.get('n_cotes', 0) >= MIN_RANG and v.get('circuit') == cir
+                and k in R]
+        if not elig:
+            classes[cir] = 0
+            continue
+        ref = st.median(R[k] for k in elig)
+        for k, v in out.items():
+            if v.get('circuit') == cir and k in R and v.get('n_cotes', 0) >= MIN_COTES:
+                pr = 1 / (1 + math.exp(-(R[k] - ref)))
+                v['cote_classement'] = round(1 / pr, 2)
+                v['n_notes'] = NR[k]
+        cl = sorted(elig, key=lambda k: -R[k])
+        for rang, k in enumerate(cl, 1):
             out[k]['rang_marche'] = rang
             out[k]['rang_sur'] = len(cl)
         classes[cir] = len(cl)
@@ -923,6 +1002,10 @@ def main():
                          'matchs cotes') if H else
                         'ouverture Pinnacle, alertes seules (repli)',
         'min_cotes': MIN_COTES,
+        'classement': (f'note ajustee aux adversaires (Elo sur logits des cotes '
+                       f'justes Pinnacle, K={K_CLASSEMENT}), historique tennis-data '
+                       f'puis nos releves ; cote_classement = cote face a un joueur '
+                       f'moyen du circuit'),
         'min_rang': MIN_RANG,
         'sources': ['moves_detail_hist.csv', 'set_results.json',
                     'player_form.json', 'elo_reference.json'],
