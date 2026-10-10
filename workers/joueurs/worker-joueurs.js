@@ -393,6 +393,8 @@ const FICHES = (() => {
   .retour:hover{color:var(--texte)}
 
   h1{font-size:28px;line-height:1.15;margin:0;font-weight:600;letter-spacing:-.01em}
+  a.nomlien{color:inherit;text-decoration:underline;text-decoration-thickness:1px;
+    text-underline-offset:4px;text-decoration-color:var(--accent)}
   .sous{color:var(--faible);font-size:13.5px;margin-top:5px}
 
   /* La cote : le seul endroit ou la page hausse la voix. */
@@ -934,12 +936,17 @@ const FICHES = (() => {
         + ` suivis ici.</p></div>`;
 
     return enveloppe(`${a.nom} / ${b.nom} — Tennis Edge`,
-      `<h1>${esc(a.nom)}<br>${esc(b.nom)}</h1>`
+      // Chaque nom mène à la fiche individuelle du joueur (10/10) : depuis
+      // une alerte on arrive ici, et c'est d'ici qu'on va voir l'un ou l'autre.
+      `<h1><a class="nomlien" href="/j/${slug(a.nom)}">${esc(a.nom)}</a><br>`
+      + `<a class="nomlien" href="/j/${slug(b.nom)}">${esc(b.nom)}</a></h1>`
       + `<div class="sous">Les deux sur la même échelle de prix</div>`
       + bandeau(av, a.nom, d)
       + (marq.length ? axe(marq) : '')
-      + `<table class="duo"><tr><th>&nbsp;</th><th>${esc(a.nom)}</th>`
-      + `<th>${esc(b.nom)}</th></tr>${L.join('')}</table>`
+      + `<table class="duo"><tr><th>&nbsp;</th>`
+      + `<th><a class="nomlien" href="/j/${slug(a.nom)}">${esc(a.nom)}</a></th>`
+      + `<th><a class="nomlien" href="/j/${slug(b.nom)}">${esc(b.nom)}</a></th></tr>`
+      + `${L.join('')}</table>`
       + ((a.en_favori || b.en_favori || a.en_outsider || b.en_outsider)
         ? `<p class="note" style="border:0;margin-top:10px">Gagne quand favori /`
           + ` outsider : son pourcentage de victoires, sur tous ses matchs cotés`
