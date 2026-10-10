@@ -620,6 +620,61 @@ def bilan_statut(ms, aujourdhui=None):
 K_CLASSEMENT = float(os.environ.get('K_CLASSEMENT', '0.3'))
 
 
+# ── CLASSEMENT OFFICIEL ATP / WTA (10/10/2026) ──────────────────────────
+#
+# Source : les fichiers de la saison en cours de tennis-data.co.uk, déposés
+# tels quels dans historique/ (un pour l'ATP, un pour la WTA, noms au choix
+# tant qu'ils diffèrent : le circuit est lu dans la cellule A1). Chaque
+# match y porte le classement officiel des deux joueurs ce jour-là ; on
+# garde celui de son DERNIER match, avec sa date.
+#
+# Ce n'est pas un classement en direct : il a l'âge du dernier match du
+# joueur dans le fichier, et du fichier lui-même. D'où la date affichée.
+# Pour le rafraîchir : retélécharger les deux fichiers et les remplacer.
+CLASSEMENTS_XLSX = os.environ.get('CLASSEMENTS_XLSX', 'historique/*.xlsx')
+
+
+def classements_officiels(fiches):
+    """{clé de fiche: {'rang': int, 'date': 'AAAA-MM-JJ'}}"""
+    import glob
+    fichiers = sorted(glob.glob(CLASSEMENTS_XLSX))
+    if not fichiers:
+        print("  classement officiel : aucun fichier dans historique/ — ligne absente")
+        return {}
+    try:
+        import openpyxl
+    except ImportError:
+        print("  classement officiel : openpyxl absent — ligne absente")
+        return {}
+    relier = relier_tennis_data(fiches)
+    dernier = {}
+    for f in fichiers:
+        try:
+            wb = openpyxl.load_workbook(f, read_only=True, data_only=True)
+        except Exception as e:                      # noqa: BLE001
+            print(f"  {f} illisible ({e})")
+            continue
+        it = wb.worksheets[0].iter_rows(values_only=True)
+        h = [str(c).strip() if c is not None else '' for c in next(it)]
+        circ = h[0].lower()
+        for row in it:
+            r = dict(zip(h, row))
+            d = r.get('Date')
+            if not hasattr(d, 'date'):
+                continue
+            for nom, rk in ((r.get('Winner'), r.get('WRank')), (r.get('Loser'), r.get('LRank'))):
+                try:
+                    rk = int(float(rk))
+                except (TypeError, ValueError):
+                    continue
+                k = relier(str(nom or ''), circ)
+                if k and (k not in dernier or d > dernier[k][0]):
+                    dernier[k] = (d, rk)
+    out = {k: {'rang': rk, 'date': d.date().isoformat()} for k, (d, rk) in dernier.items()}
+    print(f"  classement officiel : {len(out)} fiches ({len(fichiers)} fichier(s))")
+    return out
+
+
 def notes_marche(td_matchs, prix):
     """{identité: note}, {identité: nb de matchs notés}."""
     def lg(p):
@@ -779,6 +834,9 @@ def main():
         kk: (pp['nom'], circ_k.get(kk), len(H['cotes'].get(kk, [])) if H else 0)
         for kk, pp in P.items() if pp['nom']})
     aujourdhui = datetime.datetime.now(datetime.timezone.utc).date()
+    OFFICIEL = classements_officiels({
+        kk: (pp['nom'], circ_k.get(kk), len(H['cotes'].get(kk, [])) if H else 0)
+        for kk, pp in P.items() if pp['nom']})
 
     # ── Assemblage ──────────────────────────────────────────────────────
     out = {}
@@ -803,6 +861,8 @@ def main():
         # la fiche existe alors sans circuit et sans rang.
         if circ_k.get(k):
             fiche['circuit'] = circ_k[k]
+        if k in OFFICIEL:
+            fiche['rang_officiel'] = OFFICIEL[k]
 
         # La cote du marché : sur TOUS les matchs cotés quand les courbes
         # sont lisibles (clôture Pinnacle pré-match, marge retirée) ; sinon

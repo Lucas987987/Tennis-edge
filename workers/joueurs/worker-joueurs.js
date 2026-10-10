@@ -107,6 +107,13 @@ const FICHES = (() => {
   // meme +8 % de cote, mais le premier coute 6 points de probabilite et le
   // second seulement 2,6. Le point de probabilite se compare d'un joueur a
   // l'autre, le pourcentage de cote non.
+  // Le classement marché (depuis le 10/10) : la cote face à un joueur moyen
+  // du circuit, ajustée à la force des adversaires (build_profiles,
+  // notes_marche). La médiane brute reste pour « plus facile / plus dur que
+  // son ordinaire ». Repli sur la médiane si le fichier est d'avant le 10/10.
+  const CL = (p) => (p && p.cote_classement != null) ? p.cote_classement
+    : (p ? p.cote_mediane : null);
+
   function ecart_mediane(cote, mediane) {
     if (!cote || !mediane || cote <= 1 || mediane <= 1) return null;
     return (1 / cote - 1 / mediane) * 100;
@@ -498,9 +505,11 @@ const FICHES = (() => {
   <style>${CSS}</style></head><body>
   <a class="retour" href="/j">Tennis Edge · classement marché</a>
   ${corps}
-  <p class="note">Le classement marché est la médiane des cotes Pinnacle
-  d’avant-match, marge retirée, sur tous les matchs cotés du joueur. C’est
-  une mesure de ce que le marché pense de lui, pas une prévision.<br><br>
+  <p class="note">Le classement marché est la cote que Pinnacle donnerait au
+  joueur face à un joueur moyen de son circuit. Il est calculé sur tous ses
+  matchs cotés, marge retirée, en tenant compte de la force de chaque
+  adversaire : battre le marché contre un 300e compte moins que contre un
+  20e. C’est une mesure de ce que le marché pense de lui, pas une prévision.<br><br>
   18+ · Jouer comporte des risques ·
   <a href="https://www.joueurs-info-service.fr">joueurs-info-service.fr</a></p>
   ${extra}</body></html>`;
@@ -776,13 +785,13 @@ const FICHES = (() => {
           // plutôt que laisser croire au seuil de cotes.
           : ` · circuit inconnu, pas de classement`);
 
-    const prix = p.cote_mediane != null
-      ? `<div class="prix">${fr(p.cote_mediane)}</div>`
+    const prix = CL(p) != null
+      ? `<div class="prix">${fr(CL(p))}</div>`
         + `<div class="rang">${legende}</div>`
-        + axe([{ cote: p.cote_mediane, court: court(p.nom) }])
+        + axe([{ cote: CL(p), court: court(p.nom) }])
       : `<div class="bloc"><h2>Classement marché</h2>`
         + `<p style="margin:0;color:var(--faible)">Moins de ${d.meta.min_cotes}`
-        + ` cotes relevées : une médiane n’aurait pas de sens.</p></div>`;
+        + ` cotes relevées : pas encore de classement.</p></div>`;
 
     const circ = (p.circuits || []).length
       // Pas « où il joue » : la base melange ATP et WTA, et rien dans les
@@ -799,7 +808,7 @@ const FICHES = (() => {
       + `<input id="q" placeholder="Nom d’un autre joueur" autocomplete="off">`
       + `<div class="liste" id="res"></div></div>`,
       scriptRecherche(d, p.nom),
-      [p.cote_mediane != null ? `Cote médiane ${fr(p.cote_mediane)}` : null,
+      [CL(p) != null ? `Classement marché ${fr(CL(p))}` : null,
        p.rang_marche
          ? `${p.rang_marche}/${p.rang_sur} au classement ${CIRC(p)}` : null,
        p.recent ? `${p.recent.victoires} victoires sur ses ${p.recent.n} derniers matchs`
@@ -808,8 +817,8 @@ const FICHES = (() => {
   }
 
   function pageDuo(a, b, d, av) {
-    const marq = [a, b].filter((p) => p.cote_mediane != null)
-      .map((p) => ({ cote: p.cote_mediane, court: court(p.nom) }));
+    const marq = [a, b].filter((p) => CL(p) != null)
+      .map((p) => ({ cote: CL(p), court: court(p.nom) }));
 
     const L = [];
     const r = (lib, fa, fb) => {
@@ -818,8 +827,8 @@ const FICHES = (() => {
       L.push(`<tr><td>${lib}</td><td>${va == null ? '—' : va}</td>`
            + `<td>${vb == null ? '—' : vb}</td></tr>`);
     };
-    r('Classement marché', (p) => p.cote_mediane == null ? null
-      : `<span class="v">${fr(p.cote_mediane)}</span>`);
+    r('Classement marché', (p) => CL(p) == null ? null
+      : `<span class="v">${fr(CL(p))}</span>`);
     // Deux circuits différents en vis-à-vis n'arrive que si on compare la
     // main : les rangs ne se comparent alors pas, donc on les nomme.
     r(a.circuit && a.circuit === b.circuit
@@ -924,12 +933,12 @@ const FICHES = (() => {
       + blocH2H
       + `<div class="bloc"><h2>Fiches complètes</h2><div class="liste">`
       + `<a href="/j/${slug(a.nom)}"><span>${esc(a.nom)}</span>`
-      + `<span class="c">${fr(a.cote_mediane)}</span></a>`
+      + `<span class="c">${fr(CL(a))}</span></a>`
       + `<a href="/j/${slug(b.nom)}"><span>${esc(b.nom)}</span>`
-      + `<span class="c">${fr(b.cote_mediane)}</span></a></div></div>`,
+      + `<span class="c">${fr(CL(b))}</span></a></div></div>`,
       '',
-      `${a.nom} ${fr(a.cote_mediane)} contre ${b.nom} ${fr(b.cote_mediane)}`
-      + ` — cotes médianes d’avant-match`);
+      `${a.nom} ${fr(CL(a))} contre ${b.nom} ${fr(CL(b))}`
+      + ` — classement marché, cote face à un joueur moyen du circuit`);
   }
 
   function pageIndex(d) {
@@ -950,7 +959,7 @@ const FICHES = (() => {
     const liste = (cl) => cl.slice(0, 25).map((p) =>
       `<a href="/j/${slug(p.nom)}">`
       + `<span><span class="r">${p.rang_marche}</span>${esc(p.nom)}</span>`
-      + `<span><span class="c">${fr(p.cote_mediane)}</span>`
+      + `<span><span class="c">${fr(CL(p))}</span>`
       + `<span class="n">${p.n_cotes}</span></span></a>`).join('');
 
     const bloc = (cir, titre) => {
@@ -967,7 +976,8 @@ const FICHES = (() => {
     return enveloppe('Classement marché — Tennis Edge',
       `<h1>Classement marché</h1>`
       + `<div class="sous">${na} joueurs et ${nw} joueuses classés par la`
-      + ` médiane de leur cote Pinnacle d’avant-match, sur`
+      + ` cote que Pinnacle leur donnerait face à un joueur moyen de leur`
+      + ` circuit, en tenant compte de la force de leurs adversaires, sur`
       + ` ${d.meta.n_joueurs} fiches.`
       + ` Mis à jour le ${esc((d.meta.genere_le || '').slice(0, 10))}.</div>`
       + `<div class="bloc"><h2>Chercher</h2>`
@@ -981,9 +991,9 @@ const FICHES = (() => {
       + ` circuit contre l’autre, donc rien ne met les cotes sur la même`
       + ` échelle.</p>`,
       scriptRecherche(d),
-      `${na} joueurs et ${nw} joueuses classés par la médiane de leur cote`
-      + ` Pinnacle d’avant-match — le classement que fait le marché, pas la`
-      + ` fédération.`);
+      `${na} joueurs et ${nw} joueuses classés par le marché : la cote`
+      + ` Pinnacle face à un joueur moyen du circuit, ajustée à la force des`
+      + ` adversaires — le classement que fait le marché, pas la fédération.`);
   }
 
   function pageInconnu(s, d) {
@@ -1011,9 +1021,9 @@ const FICHES = (() => {
   // difference entre instantane et poussif.
   function scriptRecherche(d, exclu) {
     const idx = Object.values(d.joueurs)
-      .filter((p) => p.cote_mediane != null && p.nom !== exclu)
-      .sort((a, b) => a.cote_mediane - b.cote_mediane)
-      .map((p) => [p.nom, p.cote_mediane]);
+      .filter((p) => CL(p) != null && p.nom !== exclu)
+      .sort((a, b) => CL(a) - CL(b))
+      .map((p) => [p.nom, CL(p)]);
     const base = exclu ? `/j/${slug(exclu)}/` : '/j/';
     return `<script>
   const IDX=${JSON.stringify(idx)},BASE=${JSON.stringify(base)};
