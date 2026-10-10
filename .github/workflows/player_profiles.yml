@@ -23,6 +23,12 @@ jobs:
         with:
           python-version: '3.11'
 
+      # AJOUTÉ LE 10/10/2026. build_profiles lit le classement officiel
+      # ATP/WTA dans les fichiers Excel tennis-data de historique/. Sans
+      # openpyxl il tourne quand même, sans la ligne « Classement ATP ».
+      - name: Installer openpyxl
+        run: pip install --quiet openpyxl || true
+
       # AJOUTÉ LE 08/10/2026. player_form.py n'était lancé par aucun
       # workflow : player_form.json datait du 05/10 et une fiche annonçait
       # « dernier match : hier » pour un match du 04/10.
