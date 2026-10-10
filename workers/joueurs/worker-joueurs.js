@@ -785,8 +785,8 @@ const FICHES = (() => {
     // celui de SON circuit — nommé, sans quoi « 12e sur 86 » ne dit pas
     // de quoi.
     const legende = p.rang_marche
-      ? `Rang marché : ${ord(p.rang_marche, FEM(p))} sur ${p.rang_sur}`
-        + ` ${joueurs(p, p.rang_sur)} ${CIRC(p)} ${classes(p, p.rang_sur)}`
+      ? `Rang marché opérateur : ${ord(p.rang_marche, FEM(p))} sur ${p.rang_sur}`
+        + ` ${joueurs(p, p.rang_sur)} ${classes(p, p.rang_sur)}`
         + ` · ${pl(p.n_cotes, 'cote')} relevée${p.n_cotes > 1 ? 's' : ''}`
       : `${pl(p.n_cotes, 'cote')} relevée${p.n_cotes > 1 ? 's' : ''}`
         + (p.circuit
@@ -846,8 +846,9 @@ const FICHES = (() => {
       (p) => p.rang_officiel
         ? `${officiel(p)}<br><span class="att">au ${jjmm(p.rang_officiel.date)}</span>`
         : null);
-    r(a.circuit && a.circuit === b.circuit
-      ? `Rang marché ${CIRC(a)}` : 'Rang marché',
+    // « Rang marché opérateur » (10/10) : NOTRE rang, tiré des cotes — pas
+    // le classement ATP/WTA, affiché sur la ligne du dessus.
+    r('Rang marché opérateur',
       (p) => p.rang_marche
         ? ord(p.rang_marche, FEM(p))
           + (a.circuit === b.circuit ? '' : ` <span class="n">${CIRC(p)}</span>`)
@@ -998,7 +999,7 @@ const FICHES = (() => {
       + `<div class="bloc"><h2>Chercher</h2>`
       + `<input id="q" placeholder="Nom d’un joueur" autocomplete="off">`
       + `<div class="liste" id="res"></div></div>`
-      + bloc('atp', 'ATP') + bloc('wta', 'WTA')
+      + bloc('atp', 'Hommes') + bloc('wta', 'Femmes')
       + `<p class="note">Le second chiffre est le nombre de cotes relevées.`
       + ` Un rang demande au moins ${d.meta.min_rang || 8} cotes et un`
       + ` circuit connu ; sans l’un des deux la fiche existe, le rang non.`
