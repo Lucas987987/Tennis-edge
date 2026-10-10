@@ -101,10 +101,22 @@ def parser(page, tour):
     Kalshi, où trois runs ont été perdus faute d'échantillon exploitable.
     """
     joueurs = {}
+    # CLASSEMENT OFFICIEL (ajouté le 10/10/2026). La page porte, en regard
+    # des Elo, une colonne « ATP Rank » / « WTA Rank » : le classement
+    # officiel de la semaine. On repère son INDEX dans la ligne d'en-tête,
+    # sur les cellules BRUTES (vides comprises) — les cellules filtrées plus
+    # bas décaleraient les colonnes. Colonne introuvable : pas de rang,
+    # rien d'autre ne change.
+    idx_rang = None
     for tr in re.findall(r'<tr[^>]*>(.*?)</tr>', page, re.S | re.I):
-        cells = [html.unescape(re.sub(r'<[^>]+>', ' ', c)).strip()
-                 for c in re.findall(r'<t[dh][^>]*>(.*?)</t[dh]>', tr, re.S | re.I)]
-        cells = [re.sub(r'\s+', ' ', c) for c in cells if c != '']
+        brutes = [re.sub(r'\s+', ' ', html.unescape(re.sub(r'<[^>]+>', ' ', c))).strip()
+                  for c in re.findall(r'<t[dh][^>]*>(.*?)</t[dh]>', tr, re.S | re.I)]
+        if idx_rang is None:
+            for i, c in enumerate(brutes):
+                if re.fullmatch(r'(atp|wta)\s*rank', c, re.I):
+                    idx_rang = i
+                    break
+        cells = [c for c in brutes if c != '']
         if len(cells) < 5:
             continue
         # 1re cellule numérique = rang ; 2e alphabétique = joueur
@@ -127,8 +139,14 @@ def parser(page, tour):
         cle = cle_joueur(nom)
         if not cle or cle in joueurs:
             continue
+        rang = None
+        if idx_rang is not None and idx_rang < len(brutes):
+            try:
+                rang = int(float(brutes[idx_rang].replace(',', '')))
+            except ValueError:
+                rang = None                      # « - » : non classé
         joueurs[cle] = {
-            'nom': nom, 'tour': tour, 'elo': elos[0],
+            'nom': nom, 'tour': tour, 'elo': elos[0], 'rang_officiel': rang,
             'dur': elos[1] if len(elos) > 1 else None,
             'terre': elos[2] if len(elos) > 2 else None,
             'gazon': elos[3] if len(elos) > 3 else None,
@@ -149,9 +167,12 @@ def main():
         d = date_maj(page)
         lot = parser(page, tour)
         meta[tour] = {'url': url, 'joueurs': len(lot),
-                      'derniere_maj': d.isoformat() if d else None}
+                      'derniere_maj': d.isoformat() if d else None,
+                      'avec_rang_officiel': sum(1 for v in lot.values()
+                                                if v.get('rang_officiel'))}
         print(f'{tour.upper()} : {len(lot)} joueurs · dernière mise à jour '
-              f'{d.isoformat() if d else "inconnue"}')
+              f'{d.isoformat() if d else "inconnue"} · classement officiel pour '
+              f'{meta[tour]["avec_rang_officiel"]}')
         if not lot:
             # Sans échantillon, un « 0 joueur » est indiagnostiquable.
             echantillon[tour] = page[:2500]
