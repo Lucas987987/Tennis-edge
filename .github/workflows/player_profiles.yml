@@ -29,6 +29,18 @@ jobs:
       - name: Installer openpyxl
         run: pip install --quiet openpyxl || true
 
+      # AJOUTÉ LE 10/10/2026. Les partitions de courbes anciennes sont
+      # archivées en Releases pour alléger le dépôt ; sans les restaurer,
+      # player_form ne retrouve pas la date d'un résultat (set_results ne se
+      # date que par sa courbe) et le match disparaît des fiches. Constaté :
+      # Buse – Halys du 01/10 absent, « dernier match il y a 32 jours » ; sur
+      # la semaine du 28/09, jusqu'à 25 matchs sur 38 par jour sans courbe.
+      # Même étape que dans courbes_alertes.yml.
+      - name: Restaurer les partitions de courbes archivées
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python scripts/restore_curves.py || true
+
       # AJOUTÉ LE 08/10/2026. player_form.py n'était lancé par aucun
       # workflow : player_form.json datait du 05/10 et une fiche annonçait
       # « dernier match : hier » pour un match du 04/10.

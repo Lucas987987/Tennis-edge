@@ -8,7 +8,14 @@ env:
 
 on:
   schedule:
-    - cron: '0 23 * * *'     # 1×/jour, 23h UTC (après la journée de matchs)
+    # 10/10/2026 : 4 passages par jour au lieu d'un. À 40 matchs par jour
+    # pour 60 à 100 matchs suivis, le retard grossissait sans fin (583 en
+    # attente le 10/10) : plus aucun résultat récupéré après le 01/10, car
+    # la récupération des résultats ne cherche que les matchs passés ici.
+    - cron: '0 23 * * *'     # après la journée de matchs
+    - cron: '40 5 * * *'
+    - cron: '40 11 * * *'
+    - cron: '40 17 * * *'
   workflow_dispatch:
 
 permissions:
@@ -21,6 +28,7 @@ concurrency:
 jobs:
   clv:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-python@v6
@@ -29,6 +37,12 @@ jobs:
       - name: Calcul du CLV via historique (OddsPapi v5)
         env:
           RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
+          # 120 matchs par passage, 1,5 s entre deux appels : ~5 min par
+          # passage. Ce workflow partage son groupe de concurrence avec la
+          # capture des cotes (tous deux écrivent closing_lines.json) : un
+          # passage trop long retarderait les captures, d'où la limite.
+          CLV_MAX_PER_RUN: '120'
+          CLV_COOLDOWN: '1.5'
         run: python scripts/fetch_clv.py
       - name: Commit
         run: |
