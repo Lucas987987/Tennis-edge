@@ -599,6 +599,20 @@ const FICHES = (() => {
       + `<br>${tendanceCourte(b)}`;
   }
 
+  // « Favori avant le match » sur les MÊMES matchs que « Gagne quand
+  // favori / outsider » (10/10). Avant, il ne portait que sur nos relevés
+  // depuis juin : Sabalenka affichait « favorite 100 % » juste au-dessus de
+  // « 36 sur 64 en outsider » depuis 2018 — deux périodes, deux réponses.
+  function favori(p) {
+    const f = p.en_favori, o = p.en_outsider;
+    const nf = f ? f.n : 0, no = o ? o.n : 0;
+    if (nf + no > 0) {
+      const dep = [f && f.depuis, o && o.depuis].filter(Boolean).sort()[0];
+      return { pct: Math.round(100 * nf / (nf + no)), n: nf + no, depuis: dep };
+    }
+    return p.pct_favori != null ? { pct: p.pct_favori } : null;
+  }
+
   function corpsFiche(p, d) {
     const L = [];
     if (p.rang_officiel)
@@ -606,8 +620,12 @@ const FICHES = (() => {
         `${officiel(p)}<br><span class="att">au ${jjmm(p.rang_officiel.date)}</span>`, true));
     if (p.cote_adversaires != null)
       L.push(ligne('Cote de ses adversaires', fr(p.cote_adversaires)));
-    if (p.pct_favori != null)
-      L.push(ligne('Favori avant le match', `${p.pct_favori} %`));
+    if (favori(p))
+      L.push(ligne('Favori avant le match', (() => {
+        const v = favori(p);
+        return `${v.pct}&nbsp;%` + (v.n ? `<br><span class="att">sur ${v.n} matchs`
+          + (v.depuis ? ` depuis ${esc(v.depuis)}` : '') + '</span>' : '');
+      })()));
     // Ce qu'il fait de ce statut, sur tous ses matchs cotés, à côté de ce
     // que le marché attendait (somme des probabilités d'avant-match).
     if (p.en_favori)
@@ -881,7 +899,10 @@ const FICHES = (() => {
           ? `<b>${p.elo.surfaces[n]}</b>` : `${p.elo.surfaces[n]}`)
         : null);
     }
-    r('Favori avant le match', (p) => p.pct_favori == null ? null : `${p.pct_favori} %`);
+    r('Favori avant le match', (p) => {
+      const v = favori(p);
+      return v ? `${v.pct}&nbsp;%` + (v.n ? `<br><span class="att">sur ${v.n}</span>` : '') : null;
+    });
     r('Gagne quand favori', (p) => bilanStatutCourt(p.en_favori));
     r('Gagne quand outsider', (p) => bilanStatutCourt(p.en_outsider));
     r('Sur ses 10 derniers', (p) => p.recent
