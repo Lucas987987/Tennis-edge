@@ -9,13 +9,13 @@ Opérateurs agréés ANJ — marge moyenne (plus bas = prix rendu plus élevé) 
 
 Références de marché (servent au calcul du juste prix, non promues) :
   betfair-ex : marge 0.9% (125 matchs)
-  pinnacle : marge 3.4% (120 matchs)
+  pinnacle : marge 3.4% (122 matchs)
 
 Écart moyen au juste prix estimé (0% = prix fair) :
-  winamax.fr : -7.5% · suivi serré
-  unibet.fr : -10.5% · suivi plus lâche
-  pmu : -10.5% · suivi serré
-  bet365.fr : -11.8% · suivi plus lâche
+  winamax.fr : -7.4% · suivi serré
+  unibet.fr : -10.4% · suivi plus lâche
+  pmu : -10.4% · suivi serré
+  bet365.fr : -11.7% · suivi plus lâche
 
 Méthode : dernier prix pré-match de chaque opérateur, juste prix par dévig Shin sur la référence de marché. Chiffres bruts, sans classement éditorial : à chacun d'en tirer ses conclusions. Calcul rejouable.
 —
