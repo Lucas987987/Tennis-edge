@@ -135,6 +135,54 @@ class V61Tests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "Nombre de segments"):
                 watch.discover(self.root, self.freeze_time, self.ledger)
 
+    def test_main_writes_outputs_after_audit_segments_are_removed_once(self):
+        class PopTrackingPayload(dict):
+            def __init__(self, *args, **kwargs):
+                super().__init__(*args, **kwargs)
+                self.pop_calls = []
+
+            def pop(self, key, *args):
+                self.pop_calls.append(key)
+                return super().pop(key, *args)
+
+        payload = PopTrackingPayload({
+            "source_coverage": {"source_hashes": {}},
+            "summary": {
+                "unique_market_book_matches": 0,
+                "settled_snapshots": 0,
+                "tested_segments": 0,
+                "audit_segments": 1,
+            },
+            "audit_summary": {"synthetic": True},
+            "audit_segments": [{"market": "match", "synthetic": True}],
+        })
+        output = self.root / "bookmakers_sets.json"
+        audit_report = self.lab / "live/bookmakers_sets_audit.json"
+
+        with (
+            mock.patch.object(engine, "build", return_value=payload),
+            mock.patch.object(engine.subprocess, "run", return_value=mock.Mock(
+                stdout="synthetic-source-commit\n",
+            )),
+            mock.patch.object(sys, "argv", [
+                "bookmakers_sets_v5.py", str(self.root), "--output", str(output),
+            ]),
+        ):
+            engine.main()
+
+        self.assertEqual(payload.pop_calls, ["audit_segments"])
+        self.assertNotIn("audit_segments", payload)
+        public_json = json.loads(output.read_text(encoding="utf-8"))
+        report_json = json.loads(audit_report.read_text(encoding="utf-8"))
+        self.assertNotIn("audit_segments", public_json)
+        self.assertEqual(public_json["summary"], payload["summary"])
+        self.assertEqual(public_json["audit_summary"], report_json)
+        self.assertTrue(report_json["synthetic"])
+        manifest_path = self.lab / report_json["archive"]["manifest"]
+        self.assertTrue(manifest_path.is_file())
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        self.assertEqual(manifest["markets"]["match"]["segment_count"], 1)
+
     def test_historical_results_never_become_prospective_and_deadlines_are_fixed(self):
         self.write_archive([self.segment()])
         with mock.patch.object(watch.subprocess, "run", return_value=mock.Mock(
