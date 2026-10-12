@@ -11,14 +11,20 @@ import argparse
 import collections
 import csv
 import datetime as dt
+import gzip
 import hashlib
 import importlib.util
+import io
 import itertools
 import json
 import math
+import os
 import pathlib
+import random
 import statistics
+import subprocess
 import sys
+import tempfile
 from typing import Any
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -29,12 +35,17 @@ HORIZONS = {
     "10m": (10, 50),
 }
 MARKET_PREFIXES = {"book": "match", "set1": "set1", "set2": "set2"}
-MAX_CROSS_DIMENSIONS = 2
+MAX_CROSS_DIMENSIONS = 3
+MIN_HIERARCHICAL_SUPPORT = 60
 FAMILYWISE_ALPHA = 0.05
 MIN_SIGNAL_MATCHES = 50
+MIN_CANDIDATE_MATCHES = 60
+MIN_CANDIDATE_DAYS = 12
+BOOTSTRAP_ITERATIONS = 400
 MIN_ODDS = 1.01
 MAX_ODDS = 1000.0
 MODEL_VERSION = "bookmakers-sets-v6.1"
+CRITERIA_VERSION = "segments-explicit-intervals-2"
 FEATURE_BUCKETS = {
     "tranche_cote": {"edges": [1.5, 1.8, 2.3, 3, 4, 8]},
     "amplitude_mouvement": {"edges": [1, 3, 5, 10, 20], "unit": "%"},
@@ -328,13 +339,28 @@ def _circuit(tournament: str, fallback: str = "") -> str:
     return "Autre / non renseigné"
 
 
-def _bucket(value: float | None, edges: tuple[float, ...], suffix: str = "") -> str:
+def _display_number(value: float) -> str:
+    return f"{value:.2f}".replace(".", ",")
+
+
+def _bucket(
+    value: float | None,
+    edges: tuple[float, ...],
+    suffix: str = "",
+    label: str = "valeur",
+) -> str:
     if value is None:
         return "indisponible"
-    for edge in edges:
+    for index, edge in enumerate(edges):
         if value < edge:
-            return f"<{edge:g}{suffix}"
-    return f">={edges[-1]:g}{suffix}"
+            lower = edges[index - 1] if index else None
+            if lower is None:
+                return f"{label} < {_display_number(edge)}{suffix}"
+            return (
+                f"{_display_number(lower)} ≤ {label} < "
+                f"{_display_number(edge)}{suffix}"
+            )
+    return f"{label} ≥ {_display_number(edges[-1])}{suffix}"
 
 
 def make_observations(records: dict, results: dict, conflicted: set[str],
@@ -371,7 +397,12 @@ def make_observations(records: dict, results: dict, conflicted: set[str],
                     quote = record["curves"][side]["horizons"].get(horizon)
                     opening = record["curves"][side]["open"]
                     closing = record["curves"][side]["close"]
-                    if quote is None or opening is None:
+                    opposing = record["curves"]["away" if side == "home" else "home"][
+                        "horizons"
+                    ].get(horizon)
+                    if (quote is None or opening is None or opposing is None
+                            or quote[0] > decision_ts or opposing[0] > decision_ts
+                            or opening[0] > decision_ts):
                         continue
                     is_favorite = home[1] <= away[1] if side == "home" else away[1] < home[1]
                     won = side == result_side
@@ -407,6 +438,20 @@ def make_observations(records: dict, results: dict, conflicted: set[str],
                         "pinnacle_gap_pct": pinnacle_gap, "clv_pct": clv,
                         "decision_ts": decision_ts.isoformat(),
                         "quote_age_min": (decision_ts - quote[0]).total_seconds() / 60,
+                        "feature_timestamps": {
+                            "decision": decision_ts.isoformat(),
+                            "selection_quote": quote[0].isoformat(),
+                            "opposing_quote": opposing[0].isoformat(),
+                            "opening_quote": opening[0].isoformat(),
+                            "pinnacle_quote": (
+                                pinnacle["curves"][side]["horizons"][horizon][0].isoformat()
+                                if pinnacle is not None
+                                and pinnacle["curves"][side]["horizons"].get(horizon)
+                                and pinnacle["curves"][side]["horizons"][horizon][0] <= decision_ts
+                                else None
+                            ),
+                        },
+                        "feature_available_by_decision": True,
                     })
     return rows, coverage
 
@@ -436,24 +481,64 @@ def load_observations(root: pathlib.Path):
     return rows, coverage, source_coverage
 
 
+def _bootstrap_roi_ci(rows: list[dict], seed: int) -> list[float] | None:
+    dates = sorted({row["date"] for row in rows})
+    fixtures = sorted({row.get("fixture_id") or row["uid"] for row in rows})
+    if len(dates) < 4 or len(fixtures) < 4:
+        return None
+    by_date = collections.Counter()
+    by_fixture = collections.Counter()
+    rng = random.Random(seed)
+    samples = []
+    for _ in range(BOOTSTRAP_ITERATIONS):
+        by_date.clear()
+        by_fixture.clear()
+        by_date.update(rng.choices(dates, k=len(dates)))
+        by_fixture.update(rng.choices(fixtures, k=len(fixtures)))
+        pnl_total = 0.0
+        weight_total = 0
+        for row in rows:
+            weight = by_date[row["date"]] * by_fixture[row.get("fixture_id") or row["uid"]]
+            pnl_total += row["pnl"] * weight
+            weight_total += weight
+        if weight_total:
+            samples.append(pnl_total / weight_total * 100)
+    if len(samples) < BOOTSTRAP_ITERATIONS // 2:
+        return None
+    samples.sort()
+    return [
+        round(samples[int(.025 * (len(samples) - 1))], 2),
+        round(samples[int(.975 * (len(samples) - 1))], 2),
+    ]
+
+
 def _stats(rows: list[dict], shared_stats) -> dict:
     n = len(rows)
     if not n:
         return {"n": 0, "unique_matches": 0, "wins": 0, "roi_pct": None, "pnl_units": 0,
                 "roi_ci95": None, "clv_n": 0, "clv_mean_pct": None, "clv_ci95": None,
                 "first_half": {"n": 0, "roi_pct": None}, "second_half": {"n": 0, "roi_pct": None},
-                "start_date": None, "end_date": None, "cluster_unit": "match unique (fixture_id)",
-                "p_fair": None}
+                "start_date": None, "end_date": None, "distinct_days": 0,
+                "cluster_unit": "bootstrap à deux dimensions: date et match unique (fixture_id)",
+                "p_fair": None, "p_fair_valid": False}
     shared = shared_stats([
         {**row, "win": row["won"], "clv": row["clv_pct"]}
         for row in rows
     ], bootstrap=0)
     pnl = [row["pnl"] for row in rows]
-    roi = shared["roi"]
-    roi_ci = shared["ci95"]
+    roi = statistics.mean(pnl) * 100
+    seed = int(hashlib.sha256("|".join(sorted(
+        str(row.get("fixture_id") or row["uid"]) for row in rows
+    )).encode()).hexdigest()[:8], 16)
+    roi_ci = _bootstrap_roi_ci(rows, seed)
+    if roi_ci is None:
+        roi_ci = shared["ci95"]
     ordered = sorted(rows, key=lambda row: (row["date"], row["uid"]))
-    split = (n + 1) // 2
-    first, second = ordered[:split], ordered[split:]
+    ordered_dates = sorted({row["date"] for row in ordered})
+    split_date = (len(ordered_dates) + 1) // 2
+    first_dates = set(ordered_dates[:split_date])
+    first = [row for row in ordered if row["date"] in first_dates]
+    second = [row for row in ordered if row["date"] not in first_dates]
     clvs = [row["clv_pct"] for row in rows if row["clv_pct"] is not None]
     clv_sd = statistics.stdev(clvs) if len(clvs) > 1 else None
     clv_mean = statistics.mean(clvs) if clvs else None
@@ -461,20 +546,49 @@ def _stats(rows: list[dict], shared_stats) -> dict:
     clv_ci = ([round(clv_mean - 1.96 * clv_sd / math.sqrt(len(clvs)), 2),
                round(clv_mean + 1.96 * clv_sd / math.sqrt(len(clvs)), 2)]
               if clv_sd is not None else None)
+    expected_wins = sum(1 / row["odds"] for row in rows)
+    expected_losses = n - expected_wins
     fair_variance = sum(max(0, row["odds"] - 1) for row in rows)
-    z = sum(pnl) / math.sqrt(fair_variance) if fair_variance > 0 else 0
-    p_fair = 0.5 * math.erfc(z / math.sqrt(2))
+    p_fair_valid = n >= 30 and expected_wins >= 5 and expected_losses >= 5 \
+        and fair_variance > 0
+    z = sum(pnl) / math.sqrt(fair_variance) if p_fair_valid else 0
+    p_fair = 0.5 * math.erfc(z / math.sqrt(2)) if p_fair_valid else None
+    positive_pnl = sum(max(0, value) for value in pnl)
+    top_five = sorted(pnl, reverse=True)[:5]
+    pnl_without_top_five = sum(pnl) - sum(value for value in top_five if value > 0)
+    winsor_limit = sorted(pnl)[max(0, math.ceil(.95 * n) - 1)]
+    winsorized_roi = statistics.mean(min(value, winsor_limit) for value in pnl) * 100
+    missing_clv = n - len(clvs)
     return {
-        "n": n, "unique_matches": shared["unique_matches"],
-        "wins": shared["wins"], "roi_pct": roi,
-        "pnl_units": shared["pnl"], "roi_ci95": roi_ci,
+        "n": n, "unique_matches": len({row.get("fixture_id") or row["uid"] for row in rows}),
+        "wins": sum(bool(row["won"]) for row in rows), "mean_odds": round(statistics.mean(
+            row["odds"] for row in rows), 4), "roi_pct": round(roi, 2),
+        "pnl_units": round(sum(pnl), 2), "roi_ci95": roi_ci,
         "clv_n": len(clvs), "clv_mean_pct": round(clv_mean, 2) if clv_mean is not None else None,
         "clv_ci95": clv_ci, "quote_age_mean_min": round(quote_age_mean, 2),
-        "first_half": {"n": len(first), "roi_pct": round(statistics.mean([r["pnl"] for r in first]) * 100, 2) if first else None},
-        "second_half": {"n": len(second), "roi_pct": round(statistics.mean([r["pnl"] for r in second]) * 100, 2) if second else None},
-        "start_date": ordered[0]["date"], "end_date": ordered[-1]["date"],
-        "cluster_unit": "match unique (fixture_id)",
-        "p_fair": round(p_fair, 6) if n >= 30 else None,
+        "missing_clv": missing_clv,
+        "first_half": {"n": len(first), "roi_pct": round(statistics.mean(
+            [r["pnl"] for r in first]) * 100, 2) if first else None},
+        "second_half": {"n": len(second), "roi_pct": round(statistics.mean(
+            [r["pnl"] for r in second]) * 100, 2) if second else None},
+        "half_split_date": ordered_dates[split_date] if split_date < len(ordered_dates) else None,
+        "start_date": ordered_dates[0], "end_date": ordered_dates[-1],
+        "distinct_days": len(ordered_dates),
+        "cluster_unit": "bootstrap à deux dimensions: date et match unique (fixture_id)",
+        "p_fair": p_fair, "p_nominal": p_fair, "p_holm": None,
+        "p_fair_valid": p_fair_valid,
+        "p_fair_assumption": (
+            "Approximation normale unilatérale sous P(victoire)=1/cote; indépendance des matchs, "
+            "prix équitables sans marge, au moins cinq gains et pertes attendus."
+        ),
+        "top_five_pnl_units": round(sum(value for value in top_five if value > 0), 2),
+        "top_five_positive_pnl_share_pct": round(
+            100 * sum(value for value in top_five if value > 0) / positive_pnl, 2
+        ) if positive_pnl > 0 else None,
+        "roi_without_top_five_positive_pct": round(
+            pnl_without_top_five / n * 100, 2
+        ),
+        "winsorized_roi_95_pct": round(winsorized_roi, 2),
     }
 
 
@@ -484,24 +598,133 @@ def _criteria(row: dict) -> list[tuple[str, str]]:
     movement = row["movement_pct"]
     criteria = [
         ("circuit", row["circuit"]),
-        ("tranche_cote", _bucket(row["odds"], tuple(buckets["tranche_cote"]["edges"]))),
+        ("tranche_cote", _bucket(
+            row["odds"], tuple(buckets["tranche_cote"]["edges"]), label="cote",
+        )),
         ("amplitude_mouvement", _bucket(
             row["movement_abs_pct"], tuple(buckets["amplitude_mouvement"]["edges"]),
-            buckets["amplitude_mouvement"]["unit"],
+            f" {buckets['amplitude_mouvement']['unit']}", label="amplitude",
         )),
         ("sens_mouvement", "cote en hausse" if movement > direction_epsilon else
          "cote en baisse" if movement < -direction_epsilon else "stable"),
-        ("avance", _bucket(row["lead_min"], tuple(buckets["avance"]["edges_minutes"]), "min")),
-        ("fraîcheur_cote", _bucket(
-            row["quote_age_min"], tuple(buckets["fraîcheur_cote"]["edges_minutes"]), "min",
+        ("avance", _bucket(
+            row["lead_min"], tuple(buckets["avance"]["edges_minutes"]), " min",
+            label="délai avant match",
         )),
-        ("marge", _bucket(row["margin_pct"], tuple(buckets["marge"]["edges_pct"]), "%")),
-        ("limite", _bucket(row["limit"], tuple(buckets["limite"]["edges"]))),
+        ("fraîcheur_cote", _bucket(
+            row["quote_age_min"], tuple(buckets["fraîcheur_cote"]["edges_minutes"]), " min",
+            label="fraîcheur de cote",
+        )),
+        ("marge", _bucket(
+            row["margin_pct"], tuple(buckets["marge"]["edges_pct"]), " %",
+            label="marge",
+        )),
+        ("limite", _bucket(
+            row["limit"], tuple(buckets["limite"]["edges"]), label="limite",
+        )),
         ("ecart_pinnacle", _bucket(
-            row["pinnacle_gap_pct"], tuple(buckets["ecart_pinnacle"]["edges_pct"]), "%",
+            row["pinnacle_gap_pct"], tuple(buckets["ecart_pinnacle"]["edges_pct"]), " %",
+            label="écart Pinnacle",
         )),
     ]
     return criteria
+
+
+def _legacy_bucket(value: float | None, edges: tuple[float, ...], suffix: str = "") -> str:
+    if value is None:
+        return "indisponible"
+    for edge in edges:
+        if value < edge:
+            return f"<{edge:g}{suffix}"
+    return f">={edges[-1]:g}{suffix}"
+
+
+def legacy_criteria(row: dict) -> list[tuple[str, str]]:
+    """Version antérieure des libellés, pour évaluer sans changer les gels V6."""
+    buckets = FEATURE_BUCKETS
+    epsilon = buckets["sens_mouvement"]["stable_abs_pct"]
+    movement = row["movement_pct"]
+    return [
+        ("circuit", row["circuit"]),
+        ("tranche_cote", _legacy_bucket(
+            row["odds"], tuple(buckets["tranche_cote"]["edges"]),
+        )),
+        ("amplitude_mouvement", _legacy_bucket(
+            row["movement_abs_pct"], tuple(buckets["amplitude_mouvement"]["edges"]),
+            buckets["amplitude_mouvement"]["unit"],
+        )),
+        ("sens_mouvement", "cote en hausse" if movement > epsilon else
+         "cote en baisse" if movement < -epsilon else "stable"),
+        ("avance", _legacy_bucket(
+            row["lead_min"], tuple(buckets["avance"]["edges_minutes"]), "min",
+        )),
+        ("fraîcheur_cote", _legacy_bucket(
+            row["quote_age_min"], tuple(buckets["fraîcheur_cote"]["edges_minutes"]), "min",
+        )),
+        ("marge", _legacy_bucket(
+            row["margin_pct"], tuple(buckets["marge"]["edges_pct"]), "%",
+        )),
+        ("limite", _legacy_bucket(row["limit"], tuple(buckets["limite"]["edges"]))),
+        ("ecart_pinnacle", _legacy_bucket(
+            row["pinnacle_gap_pct"], tuple(buckets["ecart_pinnacle"]["edges_pct"]), "%",
+        )),
+    ]
+
+
+def _predicate(dimension: str, value: str) -> dict:
+    edge_sets = {
+        "tranche_cote": (tuple(FEATURE_BUCKETS["tranche_cote"]["edges"]), "", "cote"),
+        "amplitude_mouvement": (
+            tuple(FEATURE_BUCKETS["amplitude_mouvement"]["edges"]),
+            f" {FEATURE_BUCKETS['amplitude_mouvement']['unit']}", "amplitude",
+        ),
+        "avance": (tuple(FEATURE_BUCKETS["avance"]["edges_minutes"]), " min", "délai avant match"),
+        "fraîcheur_cote": (
+            tuple(FEATURE_BUCKETS["fraîcheur_cote"]["edges_minutes"]), " min",
+            "fraîcheur de cote",
+        ),
+        "marge": (tuple(FEATURE_BUCKETS["marge"]["edges_pct"]), " %", "marge"),
+        "limite": (tuple(FEATURE_BUCKETS["limite"]["edges"]), "", "limite"),
+        "ecart_pinnacle": (
+            tuple(FEATURE_BUCKETS["ecart_pinnacle"]["edges_pct"]), " %",
+            "écart Pinnacle",
+        ),
+    }
+    if dimension not in edge_sets:
+        return {"dimension": dimension, "operator": "eq", "value": value}
+    edges, suffix, _ = edge_sets[dimension]
+    interval = None
+    if value.endswith(f" ≥ {_display_number(edges[-1])}{suffix}"):
+        interval = {
+            "lower": edges[-1], "lower_inclusive": True,
+            "upper": None, "upper_inclusive": False,
+        }
+    elif " < " in value:
+        pieces = value.split(" < ")
+        upper_text = pieces[-1].removesuffix(suffix).replace(",", ".")
+        upper = float(upper_text)
+        lower = None
+        if " ≤ " in value:
+            lower_text = value.split(" ≤ ", 1)[0].replace(",", ".")
+            lower = float(lower_text)
+        interval = {
+            "lower": lower, "lower_inclusive": lower is not None,
+            "upper": upper, "upper_inclusive": False,
+        }
+    return {
+        "dimension": dimension, "operator": "range" if interval else "eq",
+        "value": value, "interval": interval,
+    }
+
+
+def holm_adjust(p_values: list[float]) -> list[float]:
+    """Holm step-down adjustment, preserving unrounded input p-values."""
+    adjusted = [1.0] * len(p_values)
+    maximum = 0.0
+    for rank, index in enumerate(sorted(range(len(p_values)), key=p_values.__getitem__)):
+        maximum = max(maximum, min(1.0, (len(p_values) - rank) * p_values[index]))
+        adjusted[index] = maximum
+    return adjusted
 
 
 def analyze(rows: list[dict]) -> tuple[list[dict], int]:
@@ -509,42 +732,149 @@ def analyze(rows: list[dict]) -> tuple[list[dict], int]:
     groups = collections.defaultdict(list)
     for row in rows:
         base = (row["market"], row["book"], row["horizon"], row["side_type"])
-        criteria = _criteria(row)
-        for dimension, value in criteria:
-            if value != "indisponible":
-                groups[base + ((dimension, value),)].append(row)
-        available = tuple(item for item in criteria if item[1] != "indisponible")
-        for count in range(2, min(MAX_CROSS_DIMENSIONS, len(available)) + 1):
-            for selected in itertools.combinations(available, count):
+        # Lead-time is already constrained by the chosen horizon, so including
+        # it as another predicate would create tautological/redundant filters.
+        criteria = tuple(
+            item for item in _criteria(row)
+            if item[0] != "avance" and item[1] != "indisponible"
+        )
+        for count in (1, 2):
+            if count > len(criteria):
+                continue
+            for selected in itertools.combinations(criteria, count):
+                groups[base + selected].append(row)
+
+    # Apriori-style extension: only add a three-way interaction when each of
+    # its two-way parents has adequate support.
+    pair_support = {
+        key for key, group in groups.items()
+        if len(key) > 4 and len(key[4:]) == 2
+        and len({row.get("fixture_id") or row["uid"] for row in group})
+        >= MIN_HIERARCHICAL_SUPPORT
+    }
+    by_base: dict[tuple, list[tuple[tuple[str, str], ...]]] = collections.defaultdict(list)
+    for key in pair_support:
+        by_base[key[:4]].append(key[4:])
+    for row in rows:
+        base = (row["market"], row["book"], row["horizon"], row["side_type"])
+        criteria = tuple(
+            item for item in _criteria(row)
+            if item[0] != "avance" and item[1] != "indisponible"
+        )
+        for selected in itertools.combinations(criteria, 3):
+            parents = tuple(tuple(pair) for pair in itertools.combinations(selected, 2))
+            if all(base + parent in pair_support for parent in parents):
                 groups[base + selected].append(row)
 
     results = []
-    analysis_keys = []
-    for key, group in groups.items():
+    for key, group in sorted(groups.items(), key=lambda item: (len(item[0][4:]), item[0])):
         if len({row.get("fixture_id") or row["uid"] for row in group}) != len(group):
             raise AssertionError(f"Double comptage détecté dans le groupe {key}")
         stats = _stats(group, shared_stats)
-        results.append({
-            "market": key[0], "book": key[1], "horizon": key[2], "selection": key[3],
-            "criteria": [{"dimension": name, "value": value} for name, value in key[4:]],
-            **stats, "status": "piste non confirmée", "freeze_automatic": False,
+        fixture_hashes = sorted({
+            hashlib.sha256(
+                str(row.get("fixture_id") or row["uid"]).encode("utf-8")
+            ).hexdigest()
+            for row in group
         })
-        analysis_keys.append(key)
-    tested = [(index, item["p_fair"]) for index, item in enumerate(results) if item["p_fair"] is not None]
-    maximum = 0.0
-    for rank, (index, p_value) in enumerate(sorted(tested, key=lambda value: value[1])):
-        adjusted = min(1.0, p_value * (len(tested) - rank))
-        maximum = max(maximum, adjusted)
-        results[index]["p_holm"] = round(maximum, 6)
+        predicates = [_predicate(name, value) for name, value in key[4:]]
+        item = {
+            "market": key[0], "book": key[1], "horizon": key[2], "selection": key[3],
+            "criteria_version": CRITERIA_VERSION,
+            "circuit": next(
+                (value for name, value in key[4:] if name == "circuit"),
+                "tous circuits",
+            ),
+            "criteria": [{"dimension": name, "value": value} for name, value in key[4:]],
+            "predicates": predicates,
+            "discovery_fixture_hashes": fixture_hashes,
+            "feature_availability": {
+                "verified": True,
+                "rule": "Chaque cote exploitée a un horodatage strictement antérieur ou égal à la décision.",
+                "availability_timestamps": [
+                    "decision_ts", "quote_ts", "opposing_quote_ts", "opening_quote_ts",
+                    "pinnacle_quote_ts",
+                ],
+                "static_metadata": ["book", "market", "circuit", "fixture_id"],
+            },
+            **stats, "status": "observation exploratoire", "freeze_automatic": False,
+        }
+        item["filter_signature_sha256"] = hashlib.sha256(json.dumps({
+            key_name: item[key_name]
+            for key_name in ("market", "book", "circuit", "horizon", "selection", "criteria")
+        }, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+        results.append(item)
+
+    # Prefer the simplest exact population. Hashing the sorted match set keeps
+    # this linear in the number of segments and exposes duplicate filters.
+    population_owner = {}
+    for item in results:
+        population_hash = hashlib.sha256(json.dumps(
+            [
+                item["market"], item["book"], item["horizon"], item["selection"],
+                item["discovery_fixture_hashes"],
+            ], separators=(",", ":"),
+        ).encode()).hexdigest()
+        item["population_sha256"] = population_hash
+        previous = population_owner.get(population_hash)
+        if previous is not None:
+            item["duplicate_of"] = previous
+        else:
+            population_owner[population_hash] = hashlib.sha256(
+                json.dumps(
+                    {
+                        "market": item["market"], "book": item["book"],
+                        "horizon": item["horizon"], "selection": item["selection"],
+                        "criteria": item["criteria"],
+                    }, ensure_ascii=False, sort_keys=True, separators=(",", ":"),
+                ).encode()
+            ).hexdigest()
+
+    tested = [
+        (index, item["p_fair"])
+        for index, item in enumerate(results)
+        if item["p_fair"] is not None
+    ]
+    adjusted_values = holm_adjust([value for _, value in tested])
+    for (index, _), adjusted in zip(tested, adjusted_values):
+        results[index]["p_holm"] = adjusted
         if (results[index]["n"] >= MIN_SIGNAL_MATCHES and results[index]["roi_ci95"]
-                and results[index]["roi_ci95"][0] > 0 and maximum < FAMILYWISE_ALPHA):
+                and results[index]["roi_ci95"][0] > 0 and adjusted < FAMILYWISE_ALPHA):
             results[index]["status"] = "signal rétrospectif, validation prospective requise"
-            results[index]["discovery_fixture_hashes"] = sorted({
-                hashlib.sha256(
-                    str(row.get("fixture_id") or row["uid"]).encode("utf-8")
-                ).hexdigest()
-                for row in groups[analysis_keys[index]]
-            })
+    reason_order = (
+        "défaut de qualité", "doublon", "effectif", "données manquantes",
+        "instabilité", "IC95", "Holm",
+    )
+    for item in results:
+        reasons = []
+        if item["unique_matches"] != item["n"]:
+            reasons.append("défaut de qualité")
+        if item.get("duplicate_of"):
+            reasons.append("doublon")
+        if item["unique_matches"] < MIN_CANDIDATE_MATCHES \
+                or item["distinct_days"] < MIN_CANDIDATE_DAYS:
+            reasons.append("effectif")
+        if item["clv_n"] < math.ceil(item["n"] * .5) or not item["p_fair_valid"]:
+            reasons.append("données manquantes")
+        first_roi = item["first_half"]["roi_pct"]
+        second_roi = item["second_half"]["roi_pct"]
+        if first_roi is not None and second_roi is not None and (
+            abs(first_roi - second_roi) > 50
+            or (first_roi <= -5 and second_roi >= 5)
+            or (second_roi <= -5 and first_roi >= 5)
+        ):
+            reasons.append("instabilité")
+        if not item["roi_ci95"] or item["roi_ci95"][0] <= 0:
+            reasons.append("IC95")
+        if item.get("p_holm") is None or item["p_holm"] >= FAMILYWISE_ALPHA:
+            reasons.append("Holm")
+        item["rejection_reasons"] = reasons
+        item["primary_rejection_reason"] = next(
+            (reason for reason in reason_order if reason in reasons), None,
+        )
+        item["sample_size_warning"] = item["n"] < MIN_CANDIDATE_MATCHES \
+            or item["distinct_days"] < MIN_CANDIDATE_DAYS
+        item["chronological_warning"] = "instabilité" in reasons
     results.sort(key=lambda item: (
         item["p_holm"] if item.get("p_holm") is not None else 2,
         -(item["roi_pct"] or -1e9), -item["n"], item["market"], item["book"],
@@ -552,10 +882,221 @@ def analyze(rows: list[dict]) -> tuple[list[dict], int]:
     return results, len(tested)
 
 
+def _group_counts(segments: list[dict], key_fn) -> dict:
+    buckets = collections.defaultdict(collections.Counter)
+    for segment in segments:
+        bucket = key_fn(segment)
+        for reason in segment["rejection_reasons"]:
+            buckets[bucket][reason] += 1
+        if not segment["rejection_reasons"]:
+            buckets[bucket]["aucun"] += 1
+    return {
+        str(key): dict(sorted(counts.items()))
+        for key, counts in sorted(buckets.items(), key=lambda item: str(item[0]))
+    }
+
+
+def _audit_summary(segments: list[dict], source_coverage: dict) -> dict:
+    all_reasons = collections.Counter()
+    for segment in segments:
+        all_reasons.update(segment["rejection_reasons"])
+    markets = {}
+    for market in MARKET_PREFIXES.values():
+        rows = [segment for segment in segments if segment["market"] == market]
+        by_roi = lambda item: item["roi_pct"] if item["roi_pct"] is not None else -math.inf
+        markets[market] = {
+            "segments": len(rows),
+            "rejection_reasons": dict(sorted(collections.Counter(
+                reason for row in rows for reason in row["rejection_reasons"]
+            ).items())),
+            "best_positive": sorted(
+                (item for item in rows if (item["roi_pct"] or 0) > 0),
+                key=lambda item: (-by_roi(item), item["n"]),
+            )[:10],
+            "worst_negative": sorted(
+                (item for item in rows if (item["roi_pct"] or 0) < 0),
+                key=lambda item: (by_roi(item), -item["n"]),
+            )[:10],
+        }
+    return {
+        "schema_version": 1,
+        "model_version": MODEL_VERSION,
+        "criteria_version": CRITERIA_VERSION,
+        "generated_at": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
+        "segment_count": len(segments),
+        "tested_segments": sum(item["p_fair"] is not None for item in segments),
+        "thresholds": {
+            "candidate_minimum_matches": MIN_CANDIDATE_MATCHES,
+            "candidate_minimum_days": MIN_CANDIDATE_DAYS,
+            "minimum_hierarchical_parent_support": MIN_HIERARCHICAL_SUPPORT,
+            "multiple_testing_alpha": FAMILYWISE_ALPHA,
+        },
+        "rejection_counts_multiple_causes": dict(sorted(all_reasons.items())),
+        "rejection_counts_by_market": _group_counts(segments, lambda item: item["market"]),
+        "rejection_counts_by_bookmaker": _group_counts(segments, lambda item: item["book"]),
+        "rejection_counts_by_circuit": _group_counts(
+            segments, lambda item: item["circuit"],
+        ),
+        "rejection_counts_by_horizon": _group_counts(segments, lambda item: item["horizon"]),
+        "rejection_counts_by_primary_reason": _group_counts(
+            segments, lambda item: item["primary_rejection_reason"] or "aucun",
+        ),
+        "rejection_counts_by_market_detail": {
+            market: {
+                "bookmaker": _group_counts(rows, lambda item: item["book"]),
+                "circuit": _group_counts(
+                    rows, lambda item: item["circuit"],
+                ),
+                "horizon": _group_counts(rows, lambda item: item["horizon"]),
+                "primary_reason": _group_counts(
+                    rows, lambda item: item["primary_rejection_reason"] or "aucun",
+                ),
+            }
+            for market in MARKET_PREFIXES.values()
+            for rows in [[item for item in segments if item["market"] == market]]
+        },
+        "markets": markets,
+        "source_hashes": source_coverage["source_hashes"],
+        "source_hash_sha256": hashlib.sha256(json.dumps(
+            source_coverage["source_hashes"], sort_keys=True, separators=(",", ":"),
+        ).encode()).hexdigest(),
+        "source_counters": source_coverage["counters"],
+    }
+
+
+def _atomic_write(path: pathlib.Path, data: bytes) -> bool:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    if path.is_file() and path.read_bytes() == data:
+        return False
+    fd, temporary = tempfile.mkstemp(prefix=f".{path.name}.", suffix=".tmp", dir=path.parent)
+    try:
+        with os.fdopen(fd, "wb") as stream:
+            stream.write(data)
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.replace(temporary, path)
+    except BaseException:
+        if os.path.exists(temporary):
+            os.unlink(temporary)
+        raise
+    return True
+
+
+def _write_json(path: pathlib.Path, value: Any) -> bool:
+    data = json.dumps(value, ensure_ascii=False, separators=(",", ":"), allow_nan=False).encode()
+    return _atomic_write(path, data)
+
+
+def _write_gzip_jsonl(path: pathlib.Path, rows: list[dict]) -> str:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fd, temporary = tempfile.mkstemp(prefix=f".{path.name}.", suffix=".tmp", dir=path.parent)
+    digest = hashlib.sha256()
+    try:
+        with os.fdopen(fd, "wb") as raw:
+            with gzip.GzipFile(fileobj=raw, mode="wb", mtime=0) as compressed:
+                for row in rows:
+                    compressed.write(json.dumps(
+                        row, ensure_ascii=False, separators=(",", ":"), allow_nan=False,
+                    ).encode() + b"\n")
+            raw.flush()
+            os.fsync(raw.fileno())
+        with open(temporary, "rb") as stream:
+            for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+                digest.update(chunk)
+        temporary_hash = digest.hexdigest()
+        if path.is_file():
+            existing = hashlib.sha256()
+            with path.open("rb") as stream:
+                for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+                    existing.update(chunk)
+            if existing.hexdigest() == temporary_hash:
+                os.unlink(temporary)
+                return temporary_hash
+        os.replace(temporary, path)
+    except BaseException:
+        if os.path.exists(temporary):
+            os.unlink(temporary)
+        raise
+    return digest.hexdigest()
+
+
+def write_audit_exports(root: pathlib.Path, payload: dict) -> dict:
+    root = pathlib.Path(root).resolve()
+    segments = payload.pop("audit_segments")
+    source_hashes = payload["source_coverage"]["source_hashes"]
+    source_snapshot = hashlib.sha256(json.dumps(
+        source_hashes, sort_keys=True, separators=(",", ":"),
+    ).encode()).hexdigest()
+    archive_root = root / "Tennis_Edge_Lab/live/archive/bookmakers_sets_v61/current"
+    source_commit = subprocess.run(
+        ["git", "rev-parse", "HEAD"], cwd=root, capture_output=True,
+        text=True, check=True,
+    ).stdout.strip()
+    if not source_commit:
+        raise RuntimeError("Commit source absent pour tracer les archives V6.1")
+    page_size = 100
+    archive_markets = {}
+    for market in MARKET_PREFIXES.values():
+        rows = [item for item in segments if item["market"] == market]
+        archive_path = archive_root / f"{market}.jsonl.gz"
+        compressed_digest = _write_gzip_jsonl(archive_path, rows)
+
+        pages = []
+        for offset in range(0, len(rows), page_size):
+            page_number = offset // page_size + 1
+            page_path = archive_root / market / f"page-{page_number:05d}.json"
+            page_data = {
+                "schema_version": 1,
+                "market": market,
+                "page": page_number,
+                "page_size": page_size,
+                "total": len(rows),
+                "segments": rows[offset:offset + page_size],
+            }
+            _write_json(page_path, page_data)
+            pages.append(page_path.relative_to(root).as_posix())
+        expected_pages = {pathlib.Path(root / page) for page in pages}
+        page_directory = archive_root / market
+        if page_directory.exists():
+            for stale in page_directory.glob("page-*.json"):
+                if stale not in expected_pages:
+                    stale.unlink()
+        archive_markets[market] = {
+            "segment_count": len(rows),
+            "compressed_jsonl": archive_path.relative_to(root).as_posix(),
+            "compressed_sha256": compressed_digest,
+            "pages": pages,
+        }
+    manifest = {
+        "schema_version": 1,
+        "model_version": MODEL_VERSION,
+        "criteria_version": CRITERIA_VERSION,
+        "source_snapshot_sha256": source_snapshot,
+        "source_hashes": source_hashes,
+        "source_commit": source_commit,
+        "page_size": page_size,
+        "markets": archive_markets,
+    }
+    _write_json(archive_root / "manifest.json", manifest)
+    payload["audit_summary"]["archive"] = {
+        "manifest": (archive_root / "manifest.json").relative_to(
+            root / "Tennis_Edge_Lab"
+        ).as_posix(),
+        "source_snapshot_sha256": source_snapshot,
+        "markets": archive_markets,
+    }
+    return manifest
+
+
 def build(root: pathlib.Path) -> dict:
     root = pathlib.Path(root).resolve()
     rows, coverage, source_coverage = load_observations(root)
     analyses, tested_count = analyze(rows)
+    source_fingerprint = hashlib.sha256(json.dumps(
+        source_coverage["source_hashes"], sort_keys=True, separators=(",", ":"),
+    ).encode()).hexdigest()
+    for item in analyses:
+        item["source_fingerprint_sha256"] = source_fingerprint
 
     market_coverage = {}
     for market in ("match", "set1", "set2"):
@@ -569,7 +1110,7 @@ def build(root: pathlib.Path) -> dict:
             }
         market_coverage[market] = {"bookmakers": books, "bookmaker_count": len(books)}
 
-    signal_rows = [item for item in analyses if item["status"] != "piste non confirmée"]
+    signal_rows = [item for item in analyses if item["status"] != "observation exploratoire"]
     discoveries = sorted(signal_rows, key=lambda item: (
         item.get("p_holm", 1), -(item.get("roi_pct") if item.get("roi_pct") is not None else 0), -item["n"]
     ))
@@ -583,9 +1124,16 @@ def build(root: pathlib.Path) -> dict:
             for criterion in item["criteria"]
         ]
         discovery_candidates.append(candidate)
-    for item in discoveries:
+    discoveries = [dict(item) for item in discoveries[:300]]
+    unconfirmed = [
+        dict(item) for item in analyses
+        if item["status"] == "observation exploratoire"
+    ][:300]
+    for item in discoveries + unconfirmed:
         item.pop("discovery_fixture_hashes", None)
-    unconfirmed = [item for item in analyses if item["status"] == "piste non confirmée"][:300]
+        item.pop("population_sha256", None)
+        item.pop("duplicate_of", None)
+    audit_summary = _audit_summary(analyses, source_coverage)
     payload = {
         "schema_version": 1,
         "model_version": MODEL_VERSION,
@@ -602,10 +1150,13 @@ def build(root: pathlib.Path) -> dict:
             "signals": len(signal_rows),
             "unconfirmed_segments": len(analyses) - len(signal_rows),
             "discovery_candidates": len(discovery_candidates),
+            "audit_segments": len(analyses),
         },
         "discoveries": discoveries,
         "discovery_candidates": discovery_candidates,
         "unconfirmed": unconfirmed,
+        "audit_summary": audit_summary,
+        "audit_segments": analyses,
         "methodology": {
             "odds_source": "Courbes horodatées uniquement ; lignes live_* exclues.",
             "outcomes": "set_results.json joint exclusivement par UID exact et par marché.",
@@ -618,17 +1169,18 @@ def build(root: pathlib.Path) -> dict:
             "margin": "Surcote du marché : 100 × (1/cote home + 1/cote away − 1).",
             "prediction_features": ["cote et fraîcheur au cutoff", "amplitude et sens du mouvement antérieur", "circuit", "marge", "limite", "avance", "écart Pinnacle pré-match"],
             "clv": "Comparaison du prix au snapshot avec la dernière cote du même bookmaker, du même marché et du même côté, strictement avant le début ; mesure ex-post uniquement.",
-            "inference": "IC95 normal cluster-robuste par match unique ; un pari au plus par fixture et hypothèse. Correction de Holm globale, valide sous dépendance arbitraire entre les hypothèses testées.",
+            "inference": "IC95 bootstrap croisé par jour et match si assez de grappes, sinon IC normal par match; test nominal unilatéral approximatif sous prix équitables indépendant, valide seulement en régime asymptotique. Holm calculé sur les p-valeurs non arrondies.",
             "deduplication": "Un seul snapshot par UID, bookmaker, marché, horizon et type de sélection. UID ayant des fixture_id, horaire ou côtés contradictoires exclus.",
             "freeze_automatic": False,
             "freeze_note": "Le moteur d'analyse est sans effet de bord ; le workflow V6 gèle les candidats admissibles dans un registre chaîné distinct du registre V4.",
-            "crossing_rule": f"Toutes les combinaisons de 1 à {MAX_CROSS_DIMENSIONS} dimensions disponibles parmi les caractéristiques pré-match, pour chaque marché, bookmaker, horizon et favori/outsider.",
+            "crossing_rule": "Univariés et binaires, puis interactions triples Apriori uniquement si les trois parents binaires ont au moins 60 matchs distincts; avance exclue car définie par l'horizon.",
             "feature_buckets": FEATURE_BUCKETS,
             "warnings": [
                 "Les résultats et le CLV servent à évaluer les segments, jamais comme variable pré-match.",
                 "Un même match n'est compté qu'une fois par hypothèse ; Holm corrige les tests même lorsque les marchés sont corrélés.",
                 "Les dates historiques sans fuseau sont interprétées en UTC conformément au format des courbes du dépôt.",
                 "Les analyses rétrospectives sont exploratoires ; les intervalles normaux et les tests à prix équitables n'établissent pas un avantage exploitable.",
+                "Les dates de tests séquentiels V6.1 sont préenregistrées à J+30, J+60 et J+90; pas de lecture quotidienne pour déclarer un succès.",
             ],
         },
     }
@@ -643,8 +1195,19 @@ def main() -> None:
     root = pathlib.Path(args.root).resolve()
     output = pathlib.Path(args.output) if args.output else root / "Tennis_Edge_Lab/live/bookmakers_sets.json"
     payload = build(root)
-    output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(json.dumps(payload, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+    if output.is_file():
+        previous = json.loads(output.read_text(encoding="utf-8"))
+        if previous.get("source_coverage", {}).get("source_hashes") \
+                == payload["source_coverage"]["source_hashes"]:
+            payload["generated_at"] = previous.get("generated_at", payload["generated_at"])
+            payload["audit_summary"]["generated_at"] = previous.get(
+                "audit_summary", {},
+            ).get("generated_at", payload["audit_summary"]["generated_at"])
+    write_audit_exports(root, payload)
+    _write_json(root / "Tennis_Edge_Lab/live/bookmakers_sets_audit.json",
+                payload["audit_summary"])
+    payload.pop("audit_segments")
+    _write_json(output, payload)
     print(
         "V5 bookmakers & sets :",
         payload["summary"]["unique_market_book_matches"], "match-marché-bookmaker,",
