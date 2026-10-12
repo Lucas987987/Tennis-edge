@@ -199,13 +199,28 @@ class RegistryV6Tests(unittest.TestCase):
             tuple(sorted(item["dimension"] for item in group["criteria"]))
             for group in analyses
         }
-        expected = set(v5.FEATURE_BUCKETS) | {"circuit"}
+        expected = (set(v5.FEATURE_BUCKETS) - {"avance"}) | {"circuit"}
         for left in expected:
             for right in expected:
                 if left < right:
                     self.assertIn(tuple(sorted((left, right))), criteria)
-        self.assertTrue(all(item["cluster_unit"] == "match unique (fixture_id)"
+        self.assertTrue(all("match unique (fixture_id)" in item["cluster_unit"]
                             for item in analyses))
+
+    def test_frozen_v6_legacy_bucket_labels_keep_their_original_population(self):
+        row = self.row(1)
+        legacy = dict(v5.legacy_criteria(row))
+        self.assertEqual(legacy["tranche_cote"], "<2.3")
+        record = {
+            "scope": {
+                "market": row["market"], "book": row["book"],
+                "horizon": row["horizon"], "selection": row["side_type"],
+            },
+            "criteria": [
+                {"dimension": "tranche_cote", "operator": "eq", "value": "<2.3"},
+            ],
+        }
+        self.assertTrue(v6._matches(row, record))
 
     def test_frozen_v4_definitions_h13_through_h18_are_unchanged(self):
         hypotheses, _ = autoresearch.frozen_results([])

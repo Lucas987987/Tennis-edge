@@ -71,13 +71,17 @@ jobs:
             Tennis_Edge_Lab/research.html
             Tennis_Edge_Lab/research.css
             Tennis_Edge_Lab/research.js
+            Tennis_Edge_Lab/research_v61.js
             Tennis_Edge_Lab/v4.js
             Tennis_Edge_Lab/v6.js
             Tennis_Edge_Lab/candidate_registry.py
             Tennis_Edge_Lab/source_catalog.py
             Tennis_Edge_Lab/cache
             Tennis_Edge_Lab/live/bookmakers_sets.json
+            Tennis_Edge_Lab/live/bookmakers_sets_audit.json
             Tennis_Edge_Lab/live/bookmakers_sets_prospective.json
+            Tennis_Edge_Lab/live/candidate_watch_v61_prospective.json
+            Tennis_Edge_Lab/live/archive/bookmakers_sets_v61/current
             Tennis_Edge_Lab/registry
             scripts/validation_report.py
             set_results.json
@@ -168,7 +172,7 @@ jobs:
           for f in index.html style.css app.js data.js; do
             cp "Tennis_Edge_Lab/$f" "_site/Tennis_Edge_Lab/$f"
           done
-          for f in research.html research.js research.css v4.js v6.js; do
+          for f in research.html research.js research_v61.js research.css v4.js v6.js; do
             cp "Tennis_Edge_Lab/$f" "_site/Tennis_Edge_Lab/$f"
           done
           mkdir -p _site/Tennis_Edge_Lab/live
@@ -178,11 +182,26 @@ jobs:
           else
             printf '{"schema_version":1,"status":"pending"}\n' > _site/Tennis_Edge_Lab/live/bookmakers_sets.json
           fi
+          if [ -f Tennis_Edge_Lab/live/bookmakers_sets_audit.json ]; then
+            cp Tennis_Edge_Lab/live/bookmakers_sets_audit.json _site/Tennis_Edge_Lab/live/bookmakers_sets_audit.json
+          else
+            printf '{"schema_version":1,"status":"pending","segment_count":0}\n' > _site/Tennis_Edge_Lab/live/bookmakers_sets_audit.json
+          fi
           cp Tennis_Edge_Lab/live/prospective.json _site/Tennis_Edge_Lab/live/prospective.json
           if [ -f Tennis_Edge_Lab/live/bookmakers_sets_prospective.json ]; then
             cp Tennis_Edge_Lab/live/bookmakers_sets_prospective.json _site/Tennis_Edge_Lab/live/bookmakers_sets_prospective.json
           else
             printf '{"schema_version":1,"status":"pending","hypotheses":[]}\n' > _site/Tennis_Edge_Lab/live/bookmakers_sets_prospective.json
+          fi
+          if [ -f Tennis_Edge_Lab/live/candidate_watch_v61_prospective.json ]; then
+            cp Tennis_Edge_Lab/live/candidate_watch_v61_prospective.json _site/Tennis_Edge_Lab/live/candidate_watch_v61_prospective.json
+          else
+            printf '{"schema_version":1,"status":"pending","total_frozen":0,"candidates":[]}\n' > _site/Tennis_Edge_Lab/live/candidate_watch_v61_prospective.json
+          fi
+          if [ -d Tennis_Edge_Lab/live/archive/bookmakers_sets_v61/current ]; then
+            mkdir -p _site/Tennis_Edge_Lab/live/archive/bookmakers_sets_v61
+            cp -R Tennis_Edge_Lab/live/archive/bookmakers_sets_v61/current \
+              _site/Tennis_Edge_Lab/live/archive/bookmakers_sets_v61/current
           fi
           if [ -f Tennis_Edge_Lab/cache/source_catalog.json ]; then
             cp Tennis_Edge_Lab/cache/source_catalog.json _site/Tennis_Edge_Lab/live/source_catalog.json
