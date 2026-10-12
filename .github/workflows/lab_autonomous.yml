@@ -70,34 +70,32 @@ jobs:
           print('✅ Partitions indexées:',j['input_count'],'; fiches pré-signal:',j['eligible_matches'])
           PY
 
-      - name: Analyser les marchés pré-match V5 (sans API ni gel)
+      - name: Découvrir et valider les marchés pré-match V6 (sans API payante)
         run: |
           set -e
-          if python3 Tennis_Edge_Lab/bookmakers_sets_v5.py .; then
-            python3 - <<'PY'
+          python3 Tennis_Edge_Lab/bookmakers_sets_v5.py .
+          python3 - <<'PY'
           import json
           from pathlib import Path
           p=Path('Tennis_Edge_Lab/live/bookmakers_sets.json')
           data=json.loads(p.read_text())
           assert data['schema_version']==1
-          assert data['methodology']['freeze_automatic'] is False
           assert set(data['coverage'])=={'match','set1','set2'}
-          print('✅ V5:',data['summary']['settled_snapshots'],'snapshots pré-match ; gels désactivés')
+          assert isinstance(data['discovery_candidates'],list)
+          assert data['methodology']['freeze_automatic'] is False
+          print('✅ V5:',data['summary']['settled_snapshots'],'snapshots pré-match ;',
+                len(data['discovery_candidates']),'candidats V6 corrigés')
           PY
-          else
-            result=$?
-            mkdir -p Tennis_Edge_Lab/live
-            printf '{"schema_version":1,"status":"error","message":"Analyse V5 indisponible; code %s"}\n' "$result" > Tennis_Edge_Lab/live/bookmakers_sets.json
-            echo "⚠ Analyse V5 indisponible (code $result) ; la recherche et le registre V4 continuent."
-          fi
+          python3 Tennis_Edge_Lab/candidate_registry_v6.py run --root .
+          python3 Tennis_Edge_Lab/candidate_registry_v6.py verify --root .
 
-      - name: Rechercher les filtres et préparer le gel
+      - name: Évaluer V4 sans modifier ses gels historiques
         run: |
           set -e
           python3 Tennis_Edge_Lab/build_from_repo.py .
           python3 Tennis_Edge_Lab/autoresearch.py .
           python3 Tennis_Edge_Lab/candidate_registry.py verify --root .
-          python3 Tennis_Edge_Lab/candidate_registry.py freeze --root .
+          python3 Tennis_Edge_Lab/candidate_registry.py evaluate --root .
           python3 Tennis_Edge_Lab/candidate_registry.py verify --root .
 
       - name: Publier exclusivement le cache compact et le registre
@@ -113,6 +111,8 @@ jobs:
             Tennis_Edge_Lab/cache/source_catalog.json \
             Tennis_Edge_Lab/cache/archive \
             Tennis_Edge_Lab/live/bookmakers_sets.json \
+            Tennis_Edge_Lab/live/bookmakers_sets_prospective.json \
+            Tennis_Edge_Lab/registry/bookmakers_sets_v6.jsonl \
             Tennis_Edge_Lab/registry/candidates.jsonl
           git diff --cached --check
           if git diff --cached --quiet; then
