@@ -1206,7 +1206,6 @@ def main() -> None:
     write_audit_exports(root, payload)
     _write_json(root / "Tennis_Edge_Lab/live/bookmakers_sets_audit.json",
                 payload["audit_summary"])
-    payload.pop("audit_segments")
     _write_json(output, payload)
     print(
         "V5 bookmakers & sets :",
