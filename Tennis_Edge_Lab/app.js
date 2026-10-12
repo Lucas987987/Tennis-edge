@@ -9,7 +9,7 @@ const nf=(x,d=0)=>x===null||x===undefined?'—':new Intl.NumberFormat('fr-FR',{m
 const money=(x,d=2)=>x===null||x===undefined?'—':new Intl.NumberFormat('fr-FR',{minimumFractionDigits:d,maximumFractionDigits:d}).format(x);
 const styleVal=x=>num(x)===null?'':x>0?'positive':x<0?'negative':'';
 const sourceLabels={moves:'Mouvements historiques',moveslive:'Mouvements live',canal:'Canal public (papier)',match:'Paper match',clv:'Journal CLV seul',h13:'Hypothèse H13',h15:'Hypothèse H15',h16:'Hypothèse H16',h16b:'Hypothèse H16-B',h17:'Hypothèse H17',h18:'Hypothèse H18'};
-const sections={dashboard:['Centre de recherche','Analyser le marché sous tous les angles.','Vue d’ensemble des populations enregistrées dans l’archive.'],explorer:['Explorateur universel','Croisez les dimensions et retrouvez chaque observation.','Choisissez le circuit, la cote, le timing, le bookmaker ou les périodes ; exportez votre sélection.'],hypotheses:['Laboratoire d’hypothèses','Six hypothèses, des signaux gelés et leurs chevauchements.','Performances à mise constante avec le nombre de résultats réellement associés.'],clv:['Étude CLV × ROI','Les prix de clôture expliquent-ils réellement le rendement ?','Analyse de la relation CLV et profit réalisé, avec effectifs et incertitude.'],books:['Analyse par bookmaker','Comparer les prix, le CLV et les rendements par opérateur.','Les comparaisons sont descriptives : les profils de matchs diffèrent selon les bookmakers.'],matches:['Fiches matchs','Retrouver l’historique de cote et tous les signaux d’un match.','Courbes échantillonnées de clôture lorsqu’elles existent dans l’archive.'],quality:['Qualité & provenance','Contrôler les sources avant de conclure.','Couverture des résultats, hypothèses provisoires, règles de calcul et problèmes de collecte.']};
+const sections={d1audit:['Audit Worker D1','Comparer les deux sources sans confondre leurs paris.','Worker D1 (validation historique) face aux mouvements GitHub, et non aux messages Telegram.'],dashboard:['Centre de recherche','Analyser le marché sous tous les angles.','Vue d’ensemble des populations enregistrées dans l’archive.'],explorer:['Explorateur universel','Croisez les dimensions et retrouvez chaque observation.','Choisissez le circuit, la cote, le timing, le bookmaker ou les périodes ; exportez votre sélection.'],hypotheses:['Laboratoire d’hypothèses','Six hypothèses, des signaux gelés et leurs chevauchements.','Performances à mise constante avec le nombre de résultats réellement associés.'],clv:['Étude CLV × ROI','Les prix de clôture expliquent-ils réellement le rendement ?','Analyse de la relation CLV et profit réalisé, avec effectifs et incertitude.'],books:['Analyse par bookmaker','Comparer les prix, le CLV et les rendements par opérateur.','Les comparaisons sont descriptives : les profils de matchs diffèrent selon les bookmakers.'],matches:['Fiches matchs','Retrouver l’historique de cote et tous les signaux d’un match.','Courbes échantillonnées de clôture lorsqu’elles existent dans l’archive.'],quality:['Qualité & provenance','Contrôler les sources avant de conclure.','Couverture des résultats, hypothèses provisoires, règles de calcul et problèmes de collecte.']};
 const ids=['population','circuit','book','status','oddsMin','oddsMax','ampMin','lead','dateMin','dateMax','q','validation'];
 let view='dashboard',sortKey='date',sortDir=-1,page=0,pageSize=35,selectedRow=null;
 let cfg={population:'moves',circuit:'',book:'',status:'',oddsMin:'',oddsMax:'',ampMin:'',lead:'',dateMin:'',dateMax:'',q:'',validation:''};
@@ -71,6 +71,53 @@ return `<div class="table-wrap"><table class="data-table"><thead><tr>${th('date'
 function renderExplorer(s){return kpis(s)+`<section class="card panel"><div class="panel-head"><h3>Observations brutes et résultats</h3><span class="chip">Cliquez sur une ligne pour sa fiche</span></div><p class="subhead">Les variables d'amplitude sont pré-détection ; aucune amplitude posthoc n'entre dans les filtres. Les lignes sans résultat restent visibles.</p>${tableRows(s)}</section>`}
 function signalsOverlap(a,b){let aSet=new Set(a.filter(r=>r.sent).map(r=>r.uid));return new Set(b.filter(r=>r.sent).map(r=>r.uid)).size?[...new Set(b.filter(r=>r.sent).map(r=>r.uid))].filter(u=>aSet.has(u)).length:0}
 function hypFiltered(tag){let prev=cfg.population;cfg.population=tag;const out=sourceData();cfg.population=prev;return out}
+
+// Audit D1 : comparateur descriptif en lecture seule. Les règles GitHub ci-dessous
+// reproduisent les filtres gelés connus du validation_report.py au 12 octobre 2026.
+// Elles ne sont PAS les compteurs de messages Telegram.
+let workerSnapshot=null;
+const frozenRules={
+ H13:{freeze:'2026-09-06',label:'2,00 ≤ cote ≤ 3,00',test:r=>r.odds>=2&&r.odds<=3},
+ H14:{freeze:'2026-10-02',label:'amplitude > 5 % et 8–24 h',test:r=>num(r.amplitude)!==null&&r.amplitude>5&&num(r.lead)!==null&&r.lead>=480&&r.lead<=1440},
+ H15:{freeze:'2026-09-25',label:'2,40 ≤ cote < 3,10',test:r=>r.odds>=2.4&&r.odds<3.1},
+ H16:{freeze:'2026-09-25',label:'Pinnacle ouverture < 1,80',test:r=>r.pinnacle_open>0&&r.pinnacle_open<1.8},
+ H16B:{freeze:'2026-09-27',label:'1,30 ≤ Pinnacle ouverture < 1,80',test:r=>r.pinnacle_open>=1.3&&r.pinnacle_open<1.8},
+ H17:{freeze:'2026-09-25',label:'écart prix entrée / Pinnacle ouverture 0–3 %',test:r=>r.pinnacle_open>0&&r.odds>0&&100*(r.odds/r.pinnacle_open-1)>=0&&100*(r.odds/r.pinnacle_open-1)<3},
+ H18:{freeze:'2026-09-27',label:'intersection H16 et H17',test:r=>r.pinnacle_open>0&&r.pinnacle_open<1.8&&r.odds>0&&100*(r.odds/r.pinnacle_open-1)>=0&&100*(r.odds/r.pinnacle_open-1)<3}
+};
+function historicalStats(code){
+ const rule=frozenRules[code];if(!rule)return null;
+ const rows=D.rows.filter(r=>r.source==='moves'&&r.settled&&num(r.pnl)!==null&&r.date>=rule.freeze&&num(r.odds)!==null&&rule.test(r));
+ return {n:rows.length,roi:rows.length?rows.reduce((s,r)=>s+r.pnl,0)/rows.length*100:null,
+         wins:rows.filter(r=>r.won===true).length,freeze:rule.freeze,label:rule.label};
+}
+function renderWorkerAudit(){
+ if(!workerSnapshot)return `<section class="card panel"><h3>Worker D1</h3><div class="callout">En attente du premier snapshot D1. Cette page ne contacte pas directement Cloudflare : GitHub Pages publie une copie contrôlée toutes les 30 minutes environ.</div></section>`;
+ if(workerSnapshot.status!=='ok')return `<section class="card panel"><h3>Worker D1 indisponible</h3><div class="callout">La publication principale reste fonctionnelle. Dernier essai : ${esc(workerSnapshot.fetched_at||'inconnu')}. Aucun chiffre D1 non vérifié n'est présenté comme récent.</div></section>`;
+ const hs=workerSnapshot.hypotheses||[];
+ const workerTime=Date.parse(workerSnapshot.worker_generated_at||'');
+ const ageHours=Number.isFinite(workerTime)?Math.max(0,(Date.now()-workerTime)/3600000):null;
+ const stale=ageHours===null||ageHours>24;
+ const table=hs.map(h=>{
+   const code=String(h.code||'').toUpperCase(), w=h.out_of_sample||{}, v=historicalStats(code);
+   const mismatch=!!v && h.gele_le!==v.freeze;
+   const delta=(v&&Number.isFinite(w.n))?v.n-w.n:null;
+   const note=mismatch?'Dates de gel incompatibles':delta!==null&&delta!==0?'Population ou version différente':'Effectifs identiques';
+   const clv=Number.isFinite(w.clv_moyen)?pct(w.clv_moyen):'—';
+   return `<tr><td class="name">${esc(code)}</td><td class="num">${nf(w.n)}</td><td class="num">${pct(w.roi)}</td><td class="num">${clv}</td><td class="num">${v?nf(v.n):'—'}</td><td class="num">${v?pct(v.roi):'—'}</td><td class="num ${delta!==null&&delta!==0?'negative':''}">${delta===null?'—':(delta>0?'+':'')+nf(delta)}</td><td>${esc(note)}${mismatch?`<small style="display:block">Worker ${esc(h.gele_le)} · GitHub ${esc(v.freeze)}</small>`:''}</td></tr>`;
+ }).join('');
+ const ambiguous=hs.filter(h=>{const v=historicalStats(String(h.code||'').toUpperCase());return v&&(v.n!==h.out_of_sample?.n||v.freeze!==h.gele_le)}).length;
+ const quality=hs.some(h=>h.code==='H16B' && (Number(h.concentration_5_meilleurs)>1000000))?'La concentration H16-B est numériquement instable car le P&L est proche de zéro.':'';
+ return `<section class="card panel"><div class="panel-head"><h3>Worker D1 ↔ Historique GitHub</h3><span class="chip ${stale?'warn':'good'}">${stale?'Worker potentiellement périmé':'Snapshot récupéré'}</span></div>
+ <p class="subhead">D1 généré : ${esc(workerSnapshot.worker_generated_at||'—')} · capture GitHub Actions : ${esc(workerSnapshot.fetched_at||'—')} · données Lab : ${esc(D.meta?.generated_at||'—')}</p>
+ <div class="callout"><strong>Attention à l'unité :</strong> n Worker = paris hors échantillon selon D1. n GitHub = mouvements historiques réglés après le gel défini dans <code>validation_report.py</code>. Les signaux Telegram relèvent d'un troisième dénominateur. Une différence ne démontre pas une perte de données.</div>
+ <div class="table-wrap"><table class="data-table"><thead><tr><th>Hyp.</th><th class="num">n D1</th><th class="num">ROI D1</th><th class="num">CLV D1</th><th class="num">n GitHub</th><th class="num">ROI GitHub</th><th class="num">Δ n (GitHub−D1)</th><th>Diagnostic</th></tr></thead><tbody>${table}</tbody></table></div>
+ <p class="subhead">${nf(ambiguous)} hypothèse(s) présentent un écart de population ou de date de gel. Les ROI ne sont comparables qu'à périmètre identique. ${esc(quality)}</p>
+ </section><section class="card panel"><h3>Signaux Telegram : un autre référentiel</h3><p class="subhead">Journaux du dépôt, comptés séparément du ROI du Worker.</p>
+ <div class="table-wrap"><table class="data-table"><thead><tr><th>Hypothèse</th><th class="num">Détectés</th><th class="num">Envoyés</th><th class="num">Règlements associés (envoyés)</th></tr></thead><tbody>
+ ${['h13','h15','h16','h16b','h17','h18'].map(code=>{const s=D.rows.filter(r=>r.source===code);return `<tr><td class="name">${esc(code.toUpperCase())}</td><td class="num">${nf(s.length)}</td><td class="num">${nf(s.filter(r=>r.sent).length)}</td><td class="num">${nf(s.filter(r=>r.sent&&r.settled).length)}</td></tr>`}).join('')}</tbody></table></div></section>`;
+}
+
 function renderHyp(s){let hs=['h13','h15','h16','h16b','h17','h18'];let source=s[0]?.source;
  const cards=hs.map(h=>{let raw=hypFiltered(h),sent=raw.filter(r=>r.sent),ss=roiStats(sent),unmatched=sent.length-ss.settled;
  return `<article class="card hyp"><div class="hyp-header"><h3>${esc(h.toUpperCase().replace('B','-B'))}</h3><span class="chip ${ss.settled<30?'warn':'good'}">${ss.settled<30?'Échantillon réduit':'À contrôler'}</span></div><strong class="big ${styleVal(ss.roi)}">${pct(ss.roi)}</strong><span class="metric-sub">ROI indicatif des résultats retrouvés</span><div class="hyp-stats"><div><label>Signaux envoyés</label><b>${nf(sent.length)}</b></div><div><label>Résultats associés</label><b>${nf(ss.settled)}</b></div><div><label>Non réglés</label><b>${nf(unmatched)}</b></div><div><label>Profit unités</label><b>${nf(ss.profit,2)}</b></div></div><button class="small-btn" data-hyp="${h}">Explorer ${h.toUpperCase().replace('B','-B')} →</button></article>`}).join('');
@@ -98,7 +145,7 @@ $('#detailContent').innerHTML=`<div class="modal-content"><div class="modal-head
 function render(){const meta=sections[view];$('#breadcrumb').textContent=meta[0].toUpperCase();$('#title').textContent=meta[0];$('#sectionHeading').textContent=meta[1];$('#sectionDesc').textContent=meta[2];$('#scopeLabel').textContent=`Données ${D.meta.snapshot||'inconnues'} · ${nf(D.rows.length)} lignes`;
  $$('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.view===view));$('#sampleCount').textContent=nf(sourceData().length)+' observations';
  $('#filterNote').textContent=cfg.population.startsWith('h')?'Amplitude des hypothèses en points de probabilité.':cfg.population==='clv'?'CLV seulement : pas de ROI sur ce journal.':'Amplitude de mouvement en % de cote, sauf paper match (palier).';
- let s=sourceData();$('#view').innerHTML= view==='dashboard'?renderDashboard(s):view==='explorer'?renderExplorer(s):view==='hypotheses'?renderHyp(s):view==='clv'?renderCLV(s):view==='books'?renderBooks(s):view==='matches'?renderMatches(s):quality();renderSaved();}
+ let s=sourceData();$('#view').innerHTML= view==='dashboard'?renderDashboard(s):view==='explorer'?renderExplorer(s):view==='hypotheses'?renderHyp(s):view==='clv'?renderCLV(s):view==='books'?renderBooks(s):view==='matches'?renderMatches(s):view==='d1audit'?renderWorkerAudit():quality();renderSaved();}
 function navigate(n){view=n;page=0;render();window.scrollTo({top:0,behavior:'smooth'});$('#sidebar').classList.remove('open')}
 function store(){try{return JSON.parse(localStorage.getItem('tennis-edge-lab-views')||'[]')}catch{return []}}
 function renderSaved(){let saved=store();let p=$('#savedLine');p.classList.toggle('active',saved.length>0);p.innerHTML=saved.length?`<span class="smallgray">Vues enregistrées :</span>${saved.map((v,i)=>`<button data-apply="${i}" title="Appliquer cette sélection">${esc(v.name)}</button>`).join('')}<button data-delete="all" title="Supprimer les vues enregistrées">Effacer</button>`:''}
@@ -169,6 +216,12 @@ async function refreshData(manual=false){
      D=data;liveHash=manifest.dataset_sha256;reloadSelectors();render();
      if(manual)toast(`${nf(D.rows.length)} observations actualisées`);
    }else if(manual){toast('Les données sont déjà à jour')}
+   // Snapshot Worker D1 : indépendant du jeu principal, publication de secours si API en panne.
+   try {
+     const worker=await fetchJson('./live/worker_hypotheses.json?r='+Date.now(),10000);
+     if(worker&&worker.schema_version===1&&['ok','unavailable'].includes(worker.status)&&Array.isArray(worker.hypotheses))workerSnapshot=worker;
+     else workerSnapshot={schema_version:1,status:'unavailable',hypotheses:[]};
+   } catch(e){workerSnapshot={schema_version:1,status:'unavailable',hypotheses:[]};}
    liveMode='live';lastSync=Date.now();refreshUi();render();
  }catch(err){
    liveMode=lastSync?'live':'error';refreshUi();

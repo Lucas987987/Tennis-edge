@@ -66,6 +66,18 @@ jobs:
             Tennis_Edge_Lab/manifest.json
             Tennis_Edge_Lab/build_data.py
             Tennis_Edge_Lab/build_from_repo.py
+            Tennis_Edge_Lab/fetch_worker_snapshot.py
+            Tennis_Edge_Lab/autoresearch.py
+            Tennis_Edge_Lab/research.html
+            Tennis_Edge_Lab/research.css
+            Tennis_Edge_Lab/research.js
+            Tennis_Edge_Lab/v4.js
+            Tennis_Edge_Lab/candidate_registry.py
+            Tennis_Edge_Lab/source_catalog.py
+            Tennis_Edge_Lab/cache
+            Tennis_Edge_Lab/registry
+            scripts/validation_report.py
+            set_results.json
             moves_detail_hist.csv
             moves_detail.csv
             paper_trades_canal.jsonl
@@ -99,6 +111,30 @@ jobs:
           print('✅ Jeu vérifié:',manifest['row_count'],'observations, hash',manifest['dataset_sha256'][:12])
           PYCODE
 
+      - name: Recherche statistique autonome (lecture seule)
+        run: |
+          if python3 Tennis_Edge_Lab/autoresearch.py .; then
+            python3 -c "import json,pathlib; p=pathlib.Path('Tennis_Edge_Lab/live/research.json'); x=json.loads(p.read_text()); assert x['schema_version']==1 and x['row_counts']['settled_quality_ok']>=200 and len(x['frozen_hypotheses'])==7"
+          else
+            echo '⚠ Analyse autonome indisponible ; site principal préservé.'
+            mkdir -p Tennis_Edge_Lab/live
+            printf '{"schema_version":1,"status":"error","message":"Reconstruction autonome non disponible"}\n' > Tennis_Edge_Lab/live/research.json
+            printf '{"schema_version":1,"status":"error","matches":[]}\n' > Tennis_Edge_Lab/live/matches_index.json
+          fi
+
+      - name: Évaluer les pistes gelées uniquement sur les nouveaux matchs
+        run: |
+          python3 Tennis_Edge_Lab/candidate_registry.py evaluate --root .
+          python3 - <<'PY'
+          import json
+          o=json.load(open('Tennis_Edge_Lab/live/prospective.json'))
+          assert o['schema_version']==1 and isinstance(o['models'],list)
+          print('✅ Pistes prospectives:',len(o['models']))
+          PY
+
+      - name: Capturer le bilan public D1 (lecture seule, sans bloquer Pages)
+        run: python Tennis_Edge_Lab/fetch_worker_snapshot.py Tennis_Edge_Lab/worker_hypotheses.json
+
       - name: Construire _site
         run: |
           set -e
@@ -129,9 +165,23 @@ jobs:
           for f in index.html style.css app.js data.js; do
             cp "Tennis_Edge_Lab/$f" "_site/Tennis_Edge_Lab/$f"
           done
+          for f in research.html research.js research.css v4.js; do
+            cp "Tennis_Edge_Lab/$f" "_site/Tennis_Edge_Lab/$f"
+          done
           mkdir -p _site/Tennis_Edge_Lab/live
+          cp Tennis_Edge_Lab/live/research.json _site/Tennis_Edge_Lab/live/research.json
+          cp Tennis_Edge_Lab/live/prospective.json _site/Tennis_Edge_Lab/live/prospective.json
+          if [ -f Tennis_Edge_Lab/cache/source_catalog.json ]; then
+            cp Tennis_Edge_Lab/cache/source_catalog.json _site/Tennis_Edge_Lab/live/source_catalog.json
+          fi
+          if [ -d Tennis_Edge_Lab/cache/archive ]; then
+            mkdir -p _site/Tennis_Edge_Lab/live/archive
+            cp Tennis_Edge_Lab/cache/archive/*.json _site/Tennis_Edge_Lab/live/archive/
+          fi
+          cp Tennis_Edge_Lab/live/matches_index.json _site/Tennis_Edge_Lab/live/matches_index.json
           cp Tennis_Edge_Lab/data.json _site/Tennis_Edge_Lab/live/data.json
           cp Tennis_Edge_Lab/manifest.json _site/Tennis_Edge_Lab/live/manifest.json
+          cp Tennis_Edge_Lab/worker_hypotheses.json _site/Tennis_Edge_Lab/live/worker_hypotheses.json
 
           echo "--- contenu publié ---"
           du -sh _site
