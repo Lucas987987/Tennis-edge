@@ -76,6 +76,7 @@ class BookmakersSetsV5Tests(unittest.TestCase):
         self.assertAlmostEqual(sample["odds"], 1.7)
         self.assertAlmostEqual(sample["movement_pct"], (1.7 / 1.8 - 1) * 100)
         self.assertAlmostEqual(sample["clv_pct"], (1.7 / 1.6 - 1) * 100)
+        self.assertEqual(sample["lead_min"], 75)
         self.assertEqual(coverage["set2"]["acme"]["snapshots"]["1h"], 1)
         self.assertGreater(payload["source_coverage"]["counters"]["post_start_quotes_excluded"], 0)
         self.assertFalse(payload["methodology"]["freeze_automatic"])

@@ -11,7 +11,9 @@ import argparse
 import collections
 import csv
 import datetime as dt
+import hashlib
 import importlib.util
+import itertools
 import json
 import math
 import pathlib
@@ -27,8 +29,22 @@ HORIZONS = {
     "10m": (10, 50),
 }
 MARKET_PREFIXES = {"book": "match", "set1": "set1", "set2": "set2"}
+MAX_CROSS_DIMENSIONS = 2
+FAMILYWISE_ALPHA = 0.05
+MIN_SIGNAL_MATCHES = 50
 MIN_ODDS = 1.01
 MAX_ODDS = 1000.0
+MODEL_VERSION = "bookmakers-sets-v6.1"
+FEATURE_BUCKETS = {
+    "tranche_cote": {"edges": [1.5, 1.8, 2.3, 3, 4, 8]},
+    "amplitude_mouvement": {"edges": [1, 3, 5, 10, 20], "unit": "%"},
+    "sens_mouvement": {"stable_abs_pct": 0.05},
+    "avance": {"edges_minutes": [60, 360, 480, 1440, 2880]},
+    "fraîcheur_cote": {"edges_minutes": [5, 15, 30, 60, 180]},
+    "marge": {"edges_pct": [2, 4, 6, 10]},
+    "limite": {"edges": [100, 300, 1000]},
+    "ecart_pinnacle": {"edges_pct": [-10, -5, 0, 5, 10]},
+}
 _SOURCE_NUM = None
 
 
@@ -200,6 +216,7 @@ def _identity(row: dict, start: dt.datetime) -> tuple | None:
 
 
 def collect(root: pathlib.Path) -> tuple[dict, dict]:
+    root = pathlib.Path(root).resolve()
     open_any = load_oddspapi_reader()
     records: dict[tuple, dict] = {}
     uid_identity: dict[str, tuple] = {}
@@ -207,15 +224,18 @@ def collect(root: pathlib.Path) -> tuple[dict, dict]:
     fixture_uids: dict[str, set[str]] = collections.defaultdict(set)
     counters = collections.Counter()
     market_books = collections.defaultdict(lambda: collections.defaultdict(set))
+    source_hashes = {}
     paths = partition_paths(root)
     if not paths:
         raise RuntimeError("Aucune partition hist_book/hist_set1/hist_set2 trouvée dans parts/")
 
     for market, path in paths:
         counters["partition_files"] += 1
+        source_digest = hashlib.sha256()
         read_path = str(path)
         with open_any(read_path) as stream:
             for line in stream:
+                source_digest.update(line.encode("utf-8"))
                 if not line.strip():
                     continue
                 counters["partition_records"] += 1
@@ -268,12 +288,14 @@ def collect(root: pathlib.Path) -> tuple[dict, dict]:
                     }
                     if not previous["tournament"] and row.get("tournament"):
                         previous["tournament"] = str(row["tournament"])
+        source_hashes[path.relative_to(root).as_posix()] = source_digest.hexdigest()
 
     conflicted_fixtures = {fixture for fixture, uids in fixture_uids.items() if len(uids) > 1}
     counters["fixture_uid_conflicts"] = len(conflicted_fixtures)
     return records, {
         "partition_files": len(paths),
         "partition_records": counters["partition_records"],
+        "source_hashes": source_hashes,
         "market_book_record_uids": {
             market: {book: len(uids - {""}) for book, uids in books.items()}
             for market, books in sorted(market_books.items())
@@ -365,7 +387,7 @@ def make_observations(records: dict, results: dict, conflicted: set[str],
                         if (pin_quote is not None and pin_quote[0] <= quote[0]
                                 and (quote[0] - pin_quote[0]).total_seconds() <= 1800):
                             pinnacle_gap = (quote[1] / pin_quote[1] - 1) * 100
-                    lead = (record["start"] - decision_ts).total_seconds() / 60
+                    lead = (record["start"] - quote[0]).total_seconds() / 60
                     if lead <= 0:
                         continue
                     limit = quote[2]
@@ -389,13 +411,39 @@ def make_observations(records: dict, results: dict, conflicted: set[str],
     return rows, coverage
 
 
+def load_observations(root: pathlib.Path):
+    root = pathlib.Path(root).resolve()
+    results = load_results(root)
+    circuit_hints = load_circuit_hints(root)
+    records, source_coverage = collect(root)
+    source_coverage["results_uids"] = len(results)
+    source_coverage["unique_market_book_matches"] = len(records)
+    rows, coverage = make_observations(
+        records, results, set(source_coverage["conflicted_uids"]),
+        set(source_coverage["conflicted_fixtures"]), circuit_hints,
+    )
+    source_coverage["source_hashes"]["set_results.json"] = hashlib.sha256(
+        (root / "set_results.json").read_bytes()
+    ).hexdigest()
+    source_coverage["source_hash_basis"] = (
+        "SHA-256 des octets du fichier pour JSON/CSV; lignes UTF-8 décompressées pour les partitions .gz."
+    )
+    hints_path = root / "moves_detail_hist.csv"
+    if hints_path.is_file():
+        source_coverage["source_hashes"]["moves_detail_hist.csv"] = hashlib.sha256(
+            hints_path.read_bytes()
+        ).hexdigest()
+    return rows, coverage, source_coverage
+
+
 def _stats(rows: list[dict], shared_stats) -> dict:
     n = len(rows)
     if not n:
         return {"n": 0, "unique_matches": 0, "wins": 0, "roi_pct": None, "pnl_units": 0,
                 "roi_ci95": None, "clv_n": 0, "clv_mean_pct": None, "clv_ci95": None,
                 "first_half": {"n": 0, "roi_pct": None}, "second_half": {"n": 0, "roi_pct": None},
-                "start_date": None, "end_date": None, "p_fair": None}
+                "start_date": None, "end_date": None, "cluster_unit": "match unique (fixture_id)",
+                "p_fair": None}
     shared = shared_stats([
         {**row, "win": row["won"], "clv": row["clv_pct"]}
         for row in rows
@@ -425,21 +473,33 @@ def _stats(rows: list[dict], shared_stats) -> dict:
         "first_half": {"n": len(first), "roi_pct": round(statistics.mean([r["pnl"] for r in first]) * 100, 2) if first else None},
         "second_half": {"n": len(second), "roi_pct": round(statistics.mean([r["pnl"] for r in second]) * 100, 2) if second else None},
         "start_date": ordered[0]["date"], "end_date": ordered[-1]["date"],
+        "cluster_unit": "match unique (fixture_id)",
         "p_fair": round(p_fair, 6) if n >= 30 else None,
     }
 
 
 def _criteria(row: dict) -> list[tuple[str, str]]:
+    buckets = FEATURE_BUCKETS
+    direction_epsilon = buckets["sens_mouvement"]["stable_abs_pct"]
+    movement = row["movement_pct"]
     criteria = [
         ("circuit", row["circuit"]),
-        ("tranche_cote", _bucket(row["odds"], (1.5, 1.8, 2.3, 3, 4, 8))),
-        ("amplitude_mouvement", _bucket(row["movement_abs_pct"], (1, 3, 5, 10, 20), "%")),
-        ("sens_mouvement", row["movement_direction"]),
-        ("avance", _bucket(row["lead_min"], (60, 360, 480, 1440, 2880), "min")),
-        ("fraîcheur_cote", _bucket(row["quote_age_min"], (5, 15, 30, 60, 180), "min")),
-        ("marge", _bucket(row["margin_pct"], (2, 4, 6, 10), "%")),
-        ("limite", _bucket(row["limit"], (100, 300, 1000))),
-        ("ecart_pinnacle", _bucket(row["pinnacle_gap_pct"], (-10, -5, 0, 5, 10), "%")),
+        ("tranche_cote", _bucket(row["odds"], tuple(buckets["tranche_cote"]["edges"]))),
+        ("amplitude_mouvement", _bucket(
+            row["movement_abs_pct"], tuple(buckets["amplitude_mouvement"]["edges"]),
+            buckets["amplitude_mouvement"]["unit"],
+        )),
+        ("sens_mouvement", "cote en hausse" if movement > direction_epsilon else
+         "cote en baisse" if movement < -direction_epsilon else "stable"),
+        ("avance", _bucket(row["lead_min"], tuple(buckets["avance"]["edges_minutes"]), "min")),
+        ("fraîcheur_cote", _bucket(
+            row["quote_age_min"], tuple(buckets["fraîcheur_cote"]["edges_minutes"]), "min",
+        )),
+        ("marge", _bucket(row["margin_pct"], tuple(buckets["marge"]["edges_pct"]), "%")),
+        ("limite", _bucket(row["limit"], tuple(buckets["limite"]["edges"]))),
+        ("ecart_pinnacle", _bucket(
+            row["pinnacle_gap_pct"], tuple(buckets["ecart_pinnacle"]["edges_pct"]), "%",
+        )),
     ]
     return criteria
 
@@ -451,21 +511,17 @@ def analyze(rows: list[dict]) -> tuple[list[dict], int]:
         base = (row["market"], row["book"], row["horizon"], row["side_type"])
         criteria = _criteria(row)
         for dimension, value in criteria:
-            groups[base + ((dimension, value),)].append(row)
-        for dimensions in (
-            ("tranche_cote", "amplitude_mouvement"),
-            ("amplitude_mouvement", "sens_mouvement"),
-            ("avance", "marge"),
-            ("amplitude_mouvement", "ecart_pinnacle"),
-            ("circuit", "tranche_cote"),
-        ):
-            selected = tuple(item for item in criteria if item[0] in dimensions)
-            if len(selected) == 2 and all(value != "indisponible" for _, value in selected):
+            if value != "indisponible":
+                groups[base + ((dimension, value),)].append(row)
+        available = tuple(item for item in criteria if item[1] != "indisponible")
+        for count in range(2, min(MAX_CROSS_DIMENSIONS, len(available)) + 1):
+            for selected in itertools.combinations(available, count):
                 groups[base + selected].append(row)
 
     results = []
+    analysis_keys = []
     for key, group in groups.items():
-        if len({row["fixture_id"] for row in group}) != len(group):
+        if len({row.get("fixture_id") or row["uid"] for row in group}) != len(group):
             raise AssertionError(f"Double comptage détecté dans le groupe {key}")
         stats = _stats(group, shared_stats)
         results.append({
@@ -473,15 +529,22 @@ def analyze(rows: list[dict]) -> tuple[list[dict], int]:
             "criteria": [{"dimension": name, "value": value} for name, value in key[4:]],
             **stats, "status": "piste non confirmée", "freeze_automatic": False,
         })
+        analysis_keys.append(key)
     tested = [(index, item["p_fair"]) for index, item in enumerate(results) if item["p_fair"] is not None]
     maximum = 0.0
     for rank, (index, p_value) in enumerate(sorted(tested, key=lambda value: value[1])):
         adjusted = min(1.0, p_value * (len(tested) - rank))
         maximum = max(maximum, adjusted)
         results[index]["p_holm"] = round(maximum, 6)
-        if (results[index]["n"] >= 50 and results[index]["roi_ci95"]
-                and results[index]["roi_ci95"][0] > 0 and maximum < 0.05):
+        if (results[index]["n"] >= MIN_SIGNAL_MATCHES and results[index]["roi_ci95"]
+                and results[index]["roi_ci95"][0] > 0 and maximum < FAMILYWISE_ALPHA):
             results[index]["status"] = "signal rétrospectif, validation prospective requise"
+            results[index]["discovery_fixture_hashes"] = sorted({
+                hashlib.sha256(
+                    str(row.get("fixture_id") or row["uid"]).encode("utf-8")
+                ).hexdigest()
+                for row in groups[analysis_keys[index]]
+            })
     results.sort(key=lambda item: (
         item["p_holm"] if item.get("p_holm") is not None else 2,
         -(item["roi_pct"] or -1e9), -item["n"], item["market"], item["book"],
@@ -491,15 +554,7 @@ def analyze(rows: list[dict]) -> tuple[list[dict], int]:
 
 def build(root: pathlib.Path) -> dict:
     root = pathlib.Path(root).resolve()
-    results = load_results(root)
-    circuit_hints = load_circuit_hints(root)
-    records, source_coverage = collect(root)
-    source_coverage["results_uids"] = len(results)
-    rows, coverage = make_observations(
-        records, results, set(source_coverage["conflicted_uids"]),
-        set(source_coverage["conflicted_fixtures"]),
-        circuit_hints,
-    )
+    rows, coverage, source_coverage = load_observations(root)
     analyses, tested_count = analyze(rows)
 
     market_coverage = {}
@@ -517,10 +572,23 @@ def build(root: pathlib.Path) -> dict:
     signal_rows = [item for item in analyses if item["status"] != "piste non confirmée"]
     discoveries = sorted(signal_rows, key=lambda item: (
         item.get("p_holm", 1), -(item.get("roi_pct") if item.get("roi_pct") is not None else 0), -item["n"]
-    ))[:100]
+    ))
+    discovery_candidates = []
+    for item in discoveries:
+        if item["n"] < 60 or not item.get("discovery_fixture_hashes"):
+            continue
+        candidate = dict(item)
+        candidate["criteria"] = [
+            {"dimension": criterion["dimension"], "operator": "eq", "value": criterion["value"]}
+            for criterion in item["criteria"]
+        ]
+        discovery_candidates.append(candidate)
+    for item in discoveries:
+        item.pop("discovery_fixture_hashes", None)
     unconfirmed = [item for item in analyses if item["status"] == "piste non confirmée"][:300]
     payload = {
         "schema_version": 1,
+        "model_version": MODEL_VERSION,
         "generated_at": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
         "markets": list(MARKET_PREFIXES.values()),
         "horizons": {name: {"minimum_lead_minutes": lead, "maximum_quote_age_minutes": stale}
@@ -528,13 +596,15 @@ def build(root: pathlib.Path) -> dict:
         "coverage": market_coverage,
         "source_coverage": source_coverage,
         "summary": {
-            "unique_market_book_matches": len(records),
+            "unique_market_book_matches": source_coverage["unique_market_book_matches"],
             "settled_snapshots": len(rows),
             "tested_segments": tested_count,
             "signals": len(signal_rows),
             "unconfirmed_segments": len(analyses) - len(signal_rows),
+            "discovery_candidates": len(discovery_candidates),
         },
         "discoveries": discoveries,
+        "discovery_candidates": discovery_candidates,
         "unconfirmed": unconfirmed,
         "methodology": {
             "odds_source": "Courbes horodatées uniquement ; lignes live_* exclues.",
@@ -548,12 +618,15 @@ def build(root: pathlib.Path) -> dict:
             "margin": "Surcote du marché : 100 × (1/cote home + 1/cote away − 1).",
             "prediction_features": ["cote et fraîcheur au cutoff", "amplitude et sens du mouvement antérieur", "circuit", "marge", "limite", "avance", "écart Pinnacle pré-match"],
             "clv": "Comparaison du prix au snapshot avec la dernière cote du même bookmaker, du même marché et du même côté, strictement avant le début ; mesure ex-post uniquement.",
-            "inference": "IC95 normal par observation unique (UID) ; p nominale contre des prix équitables, puis correction de Holm globale sur tous les segments testables.",
+            "inference": "IC95 normal cluster-robuste par match unique ; un pari au plus par fixture et hypothèse. Correction de Holm globale, valide sous dépendance arbitraire entre les hypothèses testées.",
             "deduplication": "Un seul snapshot par UID, bookmaker, marché, horizon et type de sélection. UID ayant des fixture_id, horaire ou côtés contradictoires exclus.",
             "freeze_automatic": False,
-            "freeze_note": "Aucune piste V5 n'est enregistrée ou gelée automatiquement ; validation et tests dédiés requis.",
+            "freeze_note": "Le moteur d'analyse est sans effet de bord ; le workflow V6 gèle les candidats admissibles dans un registre chaîné distinct du registre V4.",
+            "crossing_rule": f"Toutes les combinaisons de 1 à {MAX_CROSS_DIMENSIONS} dimensions disponibles parmi les caractéristiques pré-match, pour chaque marché, bookmaker, horizon et favori/outsider.",
+            "feature_buckets": FEATURE_BUCKETS,
             "warnings": [
                 "Les résultats et le CLV servent à évaluer les segments, jamais comme variable pré-match.",
+                "Un même match n'est compté qu'une fois par hypothèse ; Holm corrige les tests même lorsque les marchés sont corrélés.",
                 "Les dates historiques sans fuseau sont interprétées en UTC conformément au format des courbes du dépôt.",
                 "Les analyses rétrospectives sont exploratoires ; les intervalles normaux et les tests à prix équitables n'établissent pas un avantage exploitable.",
             ],
