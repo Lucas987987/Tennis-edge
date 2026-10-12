@@ -20,6 +20,7 @@ on:
       - 'division10.html'
       - 'confidence.js'
       - '.github/workflows/pages.yml'
+      - 'Tennis_Edge_Lab/**'
   # Rafraîchit les données publiées sans dépendre des pushs de capture.
   schedule:
     - cron: '*/30 * * * *'
@@ -58,6 +59,45 @@ jobs:
             elo_ratings_wta.json
             confidence_calib.json
             backtest_tennis.csv
+            Tennis_Edge_Lab/index.html
+            Tennis_Edge_Lab/style.css
+            Tennis_Edge_Lab/app.js
+            Tennis_Edge_Lab/data.js
+            Tennis_Edge_Lab/manifest.json
+            Tennis_Edge_Lab/build_data.py
+            Tennis_Edge_Lab/build_from_repo.py
+            moves_detail_hist.csv
+            moves_detail.csv
+            paper_trades_canal.jsonl
+            paper_trades_match.jsonl
+            canal_clv_detail.csv
+            closing_lines.json
+            resultats_oddspapi.json
+            resultats_derived.json
+            pipeline_status.json
+            book_index.json
+            paper_canal_report.json
+            h13_signal_log.jsonl
+            h15_signal_log.jsonl
+            h16_signal_log.jsonl
+            h16b_signal_log.jsonl
+            h17_signal_log.jsonl
+            h18_signal_log.jsonl
+
+      - name: Reconstruire les données Tennis Edge Lab
+        env:
+          LAB_CHECK_PREVIOUS: '1'
+        run: |
+          python Tennis_Edge_Lab/build_from_repo.py .
+          python - <<'PYCODE'
+          import json, pathlib, hashlib
+          p=pathlib.Path('Tennis_Edge_Lab')
+          manifest=json.loads((p/'manifest.json').read_text(encoding='utf8'))
+          data=(p/'data.json').read_bytes()
+          assert hashlib.sha256(data).hexdigest()==manifest['dataset_sha256']
+          assert manifest['row_count']>=200
+          print('✅ Jeu vérifié:',manifest['row_count'],'observations, hash',manifest['dataset_sha256'][:12])
+          PYCODE
 
       - name: Construire _site
         run: |
@@ -83,6 +123,15 @@ jobs:
           ; do
             cp -f "$f" _site/ || echo "⚠️ absent : $f"
           done
+
+          # --- Analyse indépendante en sous-répertoire, sans écraser le site existant ---
+          mkdir -p _site/Tennis_Edge_Lab
+          for f in index.html style.css app.js data.js; do
+            cp "Tennis_Edge_Lab/$f" "_site/Tennis_Edge_Lab/$f"
+          done
+          mkdir -p _site/Tennis_Edge_Lab/live
+          cp Tennis_Edge_Lab/data.json _site/Tennis_Edge_Lab/live/data.json
+          cp Tennis_Edge_Lab/manifest.json _site/Tennis_Edge_Lab/live/manifest.json
 
           echo "--- contenu publié ---"
           du -sh _site
