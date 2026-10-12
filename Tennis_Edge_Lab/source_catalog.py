@@ -36,6 +36,8 @@ def family(path):
     p=path.lower();b=p.split('/')[-1]
     if p.startswith('parts/'):
         if b.startswith('hist_book_'):return 'historique bookmakers'
+        if b.startswith('hist_set1_'):return 'historique vainqueur set 1'
+        if b.startswith('hist_set2_'):return 'historique vainqueur set 2'
         if b.startswith(('pm_ticks','polymarket_')):return 'ticks Polymarket'
         if b.startswith(('kx_ticks','kalshi_')):return 'ticks Kalshi'
         return 'partition autre'

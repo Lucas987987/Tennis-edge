@@ -75,6 +75,7 @@ jobs:
             Tennis_Edge_Lab/candidate_registry.py
             Tennis_Edge_Lab/source_catalog.py
             Tennis_Edge_Lab/cache
+            Tennis_Edge_Lab/live/bookmakers_sets.json
             Tennis_Edge_Lab/registry
             scripts/validation_report.py
             set_results.json
@@ -170,6 +171,11 @@ jobs:
           done
           mkdir -p _site/Tennis_Edge_Lab/live
           cp Tennis_Edge_Lab/live/research.json _site/Tennis_Edge_Lab/live/research.json
+          if [ -f Tennis_Edge_Lab/live/bookmakers_sets.json ]; then
+            cp Tennis_Edge_Lab/live/bookmakers_sets.json _site/Tennis_Edge_Lab/live/bookmakers_sets.json
+          else
+            printf '{"schema_version":1,"status":"pending"}\n' > _site/Tennis_Edge_Lab/live/bookmakers_sets.json
+          fi
           cp Tennis_Edge_Lab/live/prospective.json _site/Tennis_Edge_Lab/live/prospective.json
           if [ -f Tennis_Edge_Lab/cache/source_catalog.json ]; then
             cp Tennis_Edge_Lab/cache/source_catalog.json _site/Tennis_Edge_Lab/live/source_catalog.json

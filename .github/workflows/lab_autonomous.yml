@@ -69,6 +69,27 @@ jobs:
           print('✅ Partitions indexées:',j['input_count'],'; fiches pré-signal:',j['eligible_matches'])
           PY
 
+      - name: Analyser les marchés pré-match V5 (sans API ni gel)
+        run: |
+          set -e
+          if python3 Tennis_Edge_Lab/bookmakers_sets_v5.py .; then
+            python3 - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('Tennis_Edge_Lab/live/bookmakers_sets.json')
+          data=json.loads(p.read_text())
+          assert data['schema_version']==1
+          assert data['methodology']['freeze_automatic'] is False
+          assert set(data['coverage'])=={'match','set1','set2'}
+          print('✅ V5:',data['summary']['settled_snapshots'],'snapshots pré-match ; gels désactivés')
+          PY
+          else
+            result=$?
+            mkdir -p Tennis_Edge_Lab/live
+            printf '{"schema_version":1,"status":"error","message":"Analyse V5 indisponible; code %s"}\n' "$result" > Tennis_Edge_Lab/live/bookmakers_sets.json
+            echo "⚠ Analyse V5 indisponible (code $result) ; la recherche et le registre V4 continuent."
+          fi
+
       - name: Rechercher les filtres et préparer le gel
         run: |
           set -e
@@ -90,6 +111,7 @@ jobs:
           git add -- Tennis_Edge_Lab/cache/parts_features.json \
             Tennis_Edge_Lab/cache/source_catalog.json \
             Tennis_Edge_Lab/cache/archive \
+            Tennis_Edge_Lab/live/bookmakers_sets.json \
             Tennis_Edge_Lab/registry/candidates.jsonl
           git diff --cached --check
           if git diff --cached --quiet; then
