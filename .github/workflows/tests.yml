@@ -11,6 +11,7 @@ on:
     paths:
       - 'scripts/**.py'
       - 'tests/**.py'
+      - 'Tennis_Edge_Lab/**'
       - 'requirements.txt'
   workflow_dispatch:
 
@@ -34,3 +35,6 @@ jobs:
           python-version: '3.11'
       - run: pip install -r requirements.txt
       - run: pytest tests/ -v
+      - run: python3 -m unittest discover -s Tennis_Edge_Lab/tests -v
+      - run: node --check Tennis_Edge_Lab/app.js && node --check Tennis_Edge_Lab/research.js && node --check Tennis_Edge_Lab/v4.js
+      - run: node --test Tennis_Edge_Lab/tests/test_v5_ui.js
