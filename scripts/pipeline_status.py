@@ -347,7 +347,7 @@ def closing_degrade(recent, reference):
         return (False, None)
     return (True,
             f"Closings exploitables : {recent['closing_pct']:.0f} % sur "
-            f"{recent['jours']} j "
+            f"{recent.get('jours', CLOSING_JOURS_RECENT)} j "
             f"contre {reference['closing_pct']:.0f} % sur 30 j "
             f"({chute:.0f} pts de chute, n={recent['n']}) -- la capture ne "
             f"suit plus, le CLV perd sa matière première.")
