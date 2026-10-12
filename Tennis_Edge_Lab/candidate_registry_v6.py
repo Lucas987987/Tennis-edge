@@ -12,10 +12,10 @@ import datetime as dt
 import hashlib
 import json
 import math
+import os
 import pathlib
-import random
-import statistics
 import subprocess
+import tempfile
 from typing import Any
 
 import bookmakers_sets_v5 as engine
@@ -30,6 +30,52 @@ MIN_PROSPECTIVE_MATCHES = 60
 MIN_PROSPECTIVE_DAYS = 12
 BOOTSTRAP_ITERATIONS = 2000
 FAMILYWISE_ALPHA = 0.05
+
+
+def _atomic_write(path: pathlib.Path, content: bytes) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    if path.is_file() and path.read_bytes() == content:
+        return
+    fd, temporary = tempfile.mkstemp(
+        prefix=f".{path.name}.", suffix=".tmp", dir=path.parent,
+    )
+    try:
+        with os.fdopen(fd, "wb") as stream:
+            stream.write(content)
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.replace(temporary, path)
+    except BaseException:
+        if os.path.exists(temporary):
+            os.unlink(temporary)
+        raise
+
+
+def _atomic_append(path: pathlib.Path, records: list[dict]) -> None:
+    if not records:
+        return
+    path.parent.mkdir(parents=True, exist_ok=True)
+    current = path.read_bytes() if path.exists() else b""
+    if current and not current.endswith(b"\n"):
+        raise ValueError("Refus d'ajouter à un registre V6 incomplet")
+    appended = b"".join(
+        json.dumps(record, ensure_ascii=False, separators=(",", ":")).encode() + b"\n"
+        for record in records
+    )
+    _atomic_write(path, current + appended)
+    after = path.read_bytes()
+    if not after.startswith(current) or after[len(current):] != appended:
+        raise AssertionError("Ajout atomique du registre V6 non vérifié")
+
+
+def _write_report(path: pathlib.Path, report: dict) -> None:
+    if path.is_file():
+        previous = json.loads(path.read_text(encoding="utf-8"))
+        if {k: v for k, v in previous.items() if k != "generated_at"} == {
+            k: v for k, v in report.items() if k != "generated_at"
+        }:
+            report["generated_at"] = previous.get("generated_at", report["generated_at"])
+    _atomic_write(path, _canonical(report))
 
 
 def _canonical(value: Any) -> bytes:
@@ -205,9 +251,11 @@ def freeze(payload: dict, when: dt.datetime | None = None,
             continue
         signature = {
             "model_version": engine.MODEL_VERSION,
+            "criteria_version": engine.CRITERIA_VERSION,
             "scope": dict(zip(("market", "book", "horizon", "selection"), scope)),
             "criteria": criteria,
             "parameters": {
+                "criteria_version": engine.CRITERIA_VERSION,
                 "horizons": engine.HORIZONS,
                 "feature_buckets": engine.FEATURE_BUCKETS,
                 "max_cross_dimensions": engine.MAX_CROSS_DIMENSIONS,
@@ -227,6 +275,7 @@ def freeze(payload: dict, when: dt.datetime | None = None,
             "eligible_after": (when.date() + dt.timedelta(days=1)).isoformat(),
             "candidate_type": "bookmakers_sets",
             "model_version": engine.MODEL_VERSION,
+            "criteria_version": engine.CRITERIA_VERSION,
             "label": candidate.get("market") + " · " + candidate.get("book") +
                      " · " + candidate.get("horizon") + " · " + candidate.get("selection"),
             "scope": signature["scope"],
@@ -273,9 +322,7 @@ def freeze(payload: dict, when: dt.datetime | None = None,
                 stream.seek(-1, 2)
                 if stream.read(1) != b"\n":
                     raise ValueError("Refus d'ajouter à un registre V6 incomplet")
-        with ledger.open("a", encoding="utf-8") as stream:
-            for record in recorded:
-                stream.write(json.dumps(record, ensure_ascii=False, separators=(",", ":")) + "\n")
+        _atomic_append(ledger, recorded)
         if len(read_ledger(ledger)) != len(prior):
             raise AssertionError("Vérification post-écriture du registre V6 échouée")
     return recorded
@@ -287,7 +334,14 @@ def _matches(row: dict, record: dict) -> bool:
         return False
     if row.get("side_type") != scope["selection"]:
         return False
-    features = dict(engine._criteria(row))
+    criteria_version = record.get("criteria_version") \
+        or record.get("parameters", {}).get("criteria_version")
+    if criteria_version == engine.CRITERIA_VERSION:
+        features = dict(engine._criteria(row))
+    elif criteria_version is None:
+        features = dict(engine.legacy_criteria(row))
+    else:
+        raise ValueError(f"Version des critères gelés V6 non prise en charge: {criteria_version}")
     return all(features.get(item["dimension"]) == item["value"]
                for item in record["criteria"])
 
@@ -302,45 +356,21 @@ def _cluster_metrics(rows: list[dict], seed: int) -> dict:
             raise ValueError("Observations corrélées du même match dans une hypothèse gelée")
         by_fixture[fixture] = row
     matches = list(by_fixture.values())
-    n = len(matches)
-    if not n:
-        return {
-            "n": 0, "unique_matches": 0, "wins": 0, "roi_pct": None,
-            "pnl_units": 0.0, "roi_ci95": None, "clv_n": 0,
-            "clv_mean_pct": None, "clv_ci95": None,
-        }
-    pnl = [row["pnl"] for row in matches]
-    roi = statistics.mean(pnl) * 100
-    rng = random.Random(seed)
-    samples = []
-    for _ in range(BOOTSTRAP_ITERATIONS):
-        sample = [pnl[rng.randrange(n)] for _ in range(n)]
-        samples.append(statistics.mean(sample) * 100)
-    samples.sort()
-    ci = [round(samples[int(.025 * (len(samples) - 1))], 2),
-          round(samples[int(.975 * (len(samples) - 1))], 2)]
-    clvs = [row["clv_pct"] for row in matches if row.get("clv_pct") is not None]
-    clv_mean = statistics.mean(clvs) if clvs else None
-    if len(clvs) > 1:
-        clv_se = statistics.stdev(clvs) / math.sqrt(len(clvs))
-        clv_ci = [round(clv_mean - 1.96 * clv_se, 2),
-                  round(clv_mean + 1.96 * clv_se, 2)]
-    else:
-        clv_ci = None
-    variance = sum(max(0.0, row["odds"] - 1) for row in matches)
-    p_value = (0.5 * math.erfc(sum(pnl) / math.sqrt(variance * 2))
-               if n >= 10 and variance > 0 else None)
+    metrics = engine._stats(matches, engine.load_autoresearch_stats())
     return {
-        "n": n,
-        "unique_matches": len(by_fixture),
-        "wins": sum(bool(row["won"]) for row in matches),
-        "roi_pct": round(roi, 2),
-        "pnl_units": round(sum(pnl), 2),
-        "roi_ci95": ci,
-        "clv_n": len(clvs),
-        "clv_mean_pct": round(clv_mean, 2) if clv_mean is not None else None,
-        "clv_ci95": clv_ci,
-        "p_nominal": round(p_value, 8) if p_value is not None else None,
+        "n": metrics["n"],
+        "unique_matches": metrics["unique_matches"],
+        "wins": metrics["wins"],
+        "roi_pct": metrics["roi_pct"],
+        "pnl_units": metrics["pnl_units"],
+        "roi_ci95": metrics["roi_ci95"],
+        "clv_n": metrics["clv_n"],
+        "clv_mean_pct": metrics["clv_mean_pct"],
+        "clv_ci95": metrics["clv_ci95"],
+        "distinct_days": metrics["distinct_days"],
+        "first_half": metrics["first_half"],
+        "second_half": metrics["second_half"],
+        "p_nominal": metrics["p_fair"],
     }
 
 
@@ -386,14 +416,12 @@ def evaluate(records: list[dict], rows: list[dict],
         (index for index, item in enumerate(output) if output[index]["p_nominal"] is not None),
         key=lambda index: output[index]["p_nominal"],
     )
-    adjusted_max = 0.0
     family_size = len(tested)
-    for rank, index in enumerate(tested):
-        adjusted_max = max(
-            adjusted_max,
-            min(1.0, output[index]["p_nominal"] * (family_size - rank)),
-        )
-        output[index]["p_holm"] = round(adjusted_max, 8)
+    adjusted_values = engine.holm_adjust(
+        [output[index]["p_nominal"] for index in tested],
+    )
+    for index, adjusted in zip(tested, adjusted_values):
+        output[index]["p_holm"] = adjusted
     for item in output:
         metrics = item["metrics"]
         if metrics["n"] < MIN_PROSPECTIVE_MATCHES or item["distinct_days"] < MIN_PROSPECTIVE_DAYS:
@@ -438,10 +466,7 @@ def run(root: pathlib.Path = ROOT, when: dt.datetime | None = None) -> dict:
     report = evaluate(records, rows, when=when)
     report_path = root / "Tennis_Edge_Lab/live/bookmakers_sets_prospective.json"
     report_path.parent.mkdir(parents=True, exist_ok=True)
-    report_path.write_text(
-        json.dumps(report, ensure_ascii=False, separators=(",", ":")),
-        encoding="utf-8",
-    )
+    _write_report(report_path, report)
     return report
 
 
@@ -475,8 +500,7 @@ def main() -> None:
     report = evaluate(records, rows, when=when)
     output = root / "Tennis_Edge_Lab/live/bookmakers_sets_prospective.json"
     output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(json.dumps(report, ensure_ascii=False, separators=(",", ":")),
-                      encoding="utf-8")
+    _write_report(output, report)
     print("Validation prospective V6 écrite :", len(records), "hypothèses.")
 
 

@@ -2,6 +2,12 @@ name: Tennis Edge Lab - découverte et gels automatiques
 
 on:
   workflow_dispatch:
+    inputs:
+      publish_v61:
+        description: Publier les rapports et le registre V6.1 après validation manuelle
+        type: boolean
+        required: true
+        default: false
   schedule:
     - cron: '20 4 * * *'
 
@@ -75,6 +81,8 @@ jobs:
           set -e
           python3 Tennis_Edge_Lab/bookmakers_sets_v5.py .
           python3 - <<'PY'
+          import gzip
+          import hashlib
           import json
           from pathlib import Path
           p=Path('Tennis_Edge_Lab/live/bookmakers_sets.json')
@@ -83,10 +91,41 @@ jobs:
           assert set(data['coverage'])=={'match','set1','set2'}
           assert isinstance(data['discovery_candidates'],list)
           assert data['methodology']['freeze_automatic'] is False
+          audit=json.loads(Path('Tennis_Edge_Lab/live/bookmakers_sets_audit.json').read_text())
+          assert audit['segment_count']==data['summary']['audit_segments']
+          assert set(audit['markets'])=={'match','set1','set2'}
+          assert audit['archive']['source_snapshot_sha256']
+          manifest_path=Path('Tennis_Edge_Lab')/audit['archive']['manifest']
+          manifest=json.loads(manifest_path.read_text())
+          assert manifest['source_snapshot_sha256']==audit['archive']['source_snapshot_sha256']
+          exported=0
+          for market,entry in manifest['markets'].items():
+            archive=Path(entry['compressed_jsonl'])
+            checksum=hashlib.sha256()
+            with archive.open('rb') as source:
+              for chunk in iter(lambda: source.read(1024*1024),b''):
+                checksum.update(chunk)
+            digest=checksum.hexdigest()
+            assert digest==entry['compressed_sha256'], f'Archive corrompue: {market}'
+            with gzip.open(archive,'rt',encoding='utf-8') as stream:
+              full_count=sum(1 for line in stream if line.strip())
+            page_count=sum(len(json.loads(Path(page).read_text())['segments'])
+                           for page in entry['pages'])
+            assert full_count==page_count==entry['segment_count'], f'Export incomplet: {market}'
+            exported+=full_count
+          assert exported==audit['segment_count']
           print('✅ V5:',data['summary']['settled_snapshots'],'snapshots pré-match ;',
-                len(data['discovery_candidates']),'candidats V6 corrigés')
+                audit['segment_count'],'segments audités exhaustivement ;',
+                len(data['discovery_candidates']),'candidats stricts V6')
           PY
-          python3 Tennis_Edge_Lab/candidate_registry_v6.py run --root .
+          python3 Tennis_Edge_Lab/candidate_registry_v6.py freeze --root .
+          python3 Tennis_Edge_Lab/candidate_watch_v61.py discover --root .
+
+      - name: Actualiser les mesures prospectives après les gels
+        run: |
+          set -e
+          python3 Tennis_Edge_Lab/candidate_registry_v6.py evaluate --root .
+          python3 Tennis_Edge_Lab/candidate_watch_v61.py evaluate --root .
           python3 Tennis_Edge_Lab/candidate_registry_v6.py verify --root .
 
       - name: Évaluer V4 sans modifier ses gels historiques
@@ -97,8 +136,19 @@ jobs:
           python3 Tennis_Edge_Lab/candidate_registry.py verify --root .
           python3 Tennis_Edge_Lab/candidate_registry.py evaluate --root .
           python3 Tennis_Edge_Lab/candidate_registry.py verify --root .
+          python3 Tennis_Edge_Lab/candidate_registry_v6.py verify --root .
+          python3 Tennis_Edge_Lab/candidate_watch_v61.py verify --root .
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          report=json.loads(Path('Tennis_Edge_Lab/live/candidate_watch_v61_prospective.json').read_text())
+          assert report['registry']=='registry/candidate_watch_v61.jsonl'
+          assert all(item['state'] in {'observation exploratoire','signal prospectif à auditer','non confirmé'}
+                     for item in report['candidates'])
+          print('✅ Suivi V6.1:',report['total_frozen'],'pistes,',len(report['candidates']),'états vérifiés')
+          PY
 
-      - name: Publier exclusivement le cache compact et le registre
+      - name: Publier les audits exhaustifs, archives et registres vérifiés
         run: |
           set -e
           git config user.name 'github-actions[bot]'
@@ -140,4 +190,40 @@ jobs:
             sleep $((i*4))
           done
           echo '⛔ Push bloqué ; aucune donnée existante écrasée.'
+          exit 1
+
+      - name: Publier les rapports et le registre V6.1 après validation explicite
+        if: github.event_name == 'workflow_dispatch' && inputs.publish_v61 == true
+        run: |
+          set -e
+          python3 Tennis_Edge_Lab/candidate_registry_v6.py verify --root .
+          python3 Tennis_Edge_Lab/candidate_watch_v61.py verify --root .
+          git add -- Tennis_Edge_Lab/live/bookmakers_sets_audit.json \
+            Tennis_Edge_Lab/live/candidate_watch_v61_prospective.json \
+            Tennis_Edge_Lab/live/archive/bookmakers_sets_v61/current \
+            Tennis_Edge_Lab/registry/candidate_watch_v61.jsonl
+          git diff --cached --check
+          if git diff --cached --quiet; then
+            echo 'Aucun artefact V6.1 modifié ; publication ignorée.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'Lab: publier les rapports vérifiés V6.1'
+          for i in 1 2 3 4 5; do
+            git fetch origin main
+            if ! git rebase origin/main; then
+              git rebase --abort || true
+              echo '⛔ Conflit V6.1 : publication arrêtée, registre distant préservé.'
+              exit 1
+            fi
+            python3 Tennis_Edge_Lab/candidate_registry_v6.py verify --root .
+            python3 Tennis_Edge_Lab/candidate_watch_v61.py verify --root .
+            if git push origin HEAD:main; then
+              echo '✅ Rapports et registre V6.1 publiés après validation explicite.'
+              exit 0
+            fi
+            sleep $((i*4))
+          done
+          echo '⛔ Push V6.1 bloqué ; aucune donnée existante écrasée.'
           exit 1
