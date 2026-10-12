@@ -93,7 +93,7 @@ def read_ledger(path=LEDGER):
         ids.add(rec['candidate_id']);previous=observed;out.append(rec)
     return out
 
-def candidate_from_research(research,max_generic=2,max_segments=1):
+def candidate_from_research(research):
     props=[]
     for c in research.get('candidates',[]):
         a=c['train'];b=c['test']
@@ -122,12 +122,10 @@ def candidate_from_research(research,max_generic=2,max_segments=1):
         if k not in seen:seen.add(k);uniq.append(x)
     return props+uniq
 
-def freeze(research,when=None,ledger=LEDGER,max_total_per_week=3):
+def freeze(research,when=None,ledger=LEDGER):
     when=when or dt.datetime.now(dt.timezone.utc)
     current=read_ledger(ledger)
     firstday=when.date().isoformat(); start=(when.date()+dt.timedelta(days=1)).isoformat()
-    weekly=[x for x in current if x['freeze_date']>=(when.date()-dt.timedelta(days=6)).isoformat()]
-    allowance=max(0,max_total_per_week-len(weekly))
     known=set(x['candidate_id'] for x in current)
     official={x['code']:{'freeze':x['freeze'],'rule':x['rule']} for x in research.get('frozen_hypotheses',[])}
     raw_path=ROOT/'moves_detail_hist.csv'
@@ -135,11 +133,8 @@ def freeze(research,when=None,ledger=LEDGER,max_total_per_week=3):
     try:commit=subprocess.run(['git','rev-parse','HEAD'],cwd=ROOT,capture_output=True,text=True,check=True).stdout.strip()
     except Exception:commit=os.environ.get('GITHUB_SHA')
     proposed=candidate_from_research(research)
-    recorded=[];n_gen=0;n_seg=0
+    recorded=[]
     for x in proposed:
-        if len(recorded)>=allowance:break
-        if x['kind']=='market' and n_gen>=2:continue
-        if x['kind']=='hypothesis_segment' and n_seg>=1:continue
         signature={'schema':1,'type':x['kind'],'hypothesis':x['base_hypothesis'],'criteria':x['criteria']}
         cid=dsha(signature)[:20]
         if cid in known:continue
@@ -155,8 +150,6 @@ def freeze(research,when=None,ledger=LEDGER,max_total_per_week=3):
            'previous_hash':oldhash}
         manifest['event_hash']=dsha(manifest)
         current.append(manifest);recorded.append(manifest);known.add(cid)
-        if x['kind']=='market':n_gen+=1
-        else:n_seg+=1
     if recorded:
         ledger=pathlib.Path(ledger);ledger.parent.mkdir(parents=True,exist_ok=True)
         # append only : aucune réécriture des événements passés

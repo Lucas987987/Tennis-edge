@@ -72,10 +72,12 @@ jobs:
             Tennis_Edge_Lab/research.css
             Tennis_Edge_Lab/research.js
             Tennis_Edge_Lab/v4.js
+            Tennis_Edge_Lab/v6.js
             Tennis_Edge_Lab/candidate_registry.py
             Tennis_Edge_Lab/source_catalog.py
             Tennis_Edge_Lab/cache
             Tennis_Edge_Lab/live/bookmakers_sets.json
+            Tennis_Edge_Lab/live/bookmakers_sets_prospective.json
             Tennis_Edge_Lab/registry
             scripts/validation_report.py
             set_results.json
@@ -166,7 +168,7 @@ jobs:
           for f in index.html style.css app.js data.js; do
             cp "Tennis_Edge_Lab/$f" "_site/Tennis_Edge_Lab/$f"
           done
-          for f in research.html research.js research.css v4.js; do
+          for f in research.html research.js research.css v4.js v6.js; do
             cp "Tennis_Edge_Lab/$f" "_site/Tennis_Edge_Lab/$f"
           done
           mkdir -p _site/Tennis_Edge_Lab/live
@@ -177,6 +179,11 @@ jobs:
             printf '{"schema_version":1,"status":"pending"}\n' > _site/Tennis_Edge_Lab/live/bookmakers_sets.json
           fi
           cp Tennis_Edge_Lab/live/prospective.json _site/Tennis_Edge_Lab/live/prospective.json
+          if [ -f Tennis_Edge_Lab/live/bookmakers_sets_prospective.json ]; then
+            cp Tennis_Edge_Lab/live/bookmakers_sets_prospective.json _site/Tennis_Edge_Lab/live/bookmakers_sets_prospective.json
+          else
+            printf '{"schema_version":1,"status":"pending","hypotheses":[]}\n' > _site/Tennis_Edge_Lab/live/bookmakers_sets_prospective.json
+          fi
           if [ -f Tennis_Edge_Lab/cache/source_catalog.json ]; then
             cp Tennis_Edge_Lab/cache/source_catalog.json _site/Tennis_Edge_Lab/live/source_catalog.json
           fi
