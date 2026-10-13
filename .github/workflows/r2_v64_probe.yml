@@ -21,7 +21,7 @@ concurrency:
 jobs:
   validate:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v5
         with:
@@ -31,6 +31,8 @@ jobs:
             /scripts/partitioned_store.py
             /scripts/r2_storage.py
             /scripts/r2_probe.py
+            /scripts/r2_replay_validation.py
+            /parts/pm_ticks_2026-10-12.jsonl.gz
       - name: Require explicit write confirmation
         if: inputs.confirm_isolated_r2_writes != true
         run: |
@@ -41,16 +43,24 @@ jobs:
           python-version: '3.11'
       - name: Install R2 client
         run: python -m pip install --disable-pip-version-check boto3
-      - name: Write synthetic data, simulate interruption, restore, and verify
+      - name: Replay frozen Polymarket partition into isolated R2 prefix
         env:
           R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
           R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
           R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
           R2_V64_VALIDATION_ID: ${{ github.run_id }}-${{ github.run_attempt }}
         run: >-
-          python scripts/r2_probe.py
+          python scripts/r2_replay_validation.py
+          --source parts/pm_ticks_2026-10-12.jsonl.gz
           --validation-id "$R2_V64_VALIDATION_ID"
+          --expected-sha256 7f88a1957ce2a47112ad1d2bad016e1ad469fdb5188f7db5f8c96f463b38d5be
+          --git-ref-path HEAD:parts/pm_ticks_2026-10-12.jsonl.gz
+          --expected-blob 1f048a9fe646c99b1d93b31030a6b376e40e5670
           --report-file r2-v64-validation-report.json
+      - name: Confirm main still holds the same Git blob
+        run: |
+          git fetch --depth 1 origin main
+          test "$(git rev-parse FETCH_HEAD:parts/pm_ticks_2026-10-12.jsonl.gz)" = 1f048a9fe646c99b1d93b31030a6b376e40e5670
       - name: Retain validation report
         if: always()
         uses: actions/upload-artifact@v4
