@@ -98,12 +98,22 @@ def main():
                 'parts', include_ticks=R2_RESTORE_TICKS,
             )
             v64 = r2.restore_v64_namespaces('.')
+            ticks = (
+                {
+                    provider: r2.restore_v64_tick_partitions(
+                        provider, 'parts', days=7,
+                    )
+                    for provider in ('polymarket', 'kalshi')
+                }
+                if R2_RESTORE_TICKS else {}
+            )
             print(
                 'restore_curves — R2 vérifié : '
                 f"{legacy['files']} archives restaurées "
                 f"({legacy['records']} lignes), "
                 f"{v64['namespaces']} namespaces V6.4 "
-                f"({v64['records']} enregistrements)."
+                f"({v64['records']} enregistrements), "
+                f"{sum(item['records'] for item in ticks.values())} ticks V6.4 exportés."
             )
         except Exception as e:
             print(f'restore_curves — échec R2 : {type(e).__name__}: {e}')

@@ -13,6 +13,7 @@ import os
 from pathlib import Path
 import shutil
 import tempfile
+import threading
 from typing import Iterable, Iterator
 
 
@@ -29,6 +30,126 @@ def canonical(value: object) -> bytes:
 
 def sha256(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
+
+
+def stable_tick_record(provider: str, record: dict) -> tuple[str, dict]:
+    if provider not in {"polymarket", "kalshi"}:
+        raise ValueError(f"Unsupported tick provider: {provider}")
+    tick = dict(record)
+    tick.pop("tick_id", None)
+    tick_id = sha256(canonical({"provider": provider, "tick": tick}))
+    tick["tick_id"] = tick_id
+    return tick_id, tick
+
+
+def pending_tick_path(namespace: str, root: str | Path = ".") -> Path:
+    store = LocalPartitionStore(root)
+    store._base(namespace)
+    filename = sha256(namespace.encode("utf-8")) + ".jsonl"
+    return store.root / "parts/v64-pending" / filename
+
+
+def flush_pending_ticks(
+    namespace: str,
+    root: str | Path = ".",
+) -> dict:
+    path = pending_tick_path(namespace, root)
+    if not path.is_file():
+        return {"written": 0, "records": 0}
+    grouped: dict[str, list[tuple[str, dict]]] = defaultdict(list)
+    with path.open(encoding="utf-8") as stream:
+        for line_number, line in enumerate(stream, 1):
+            if not line.strip():
+                continue
+            item = json.loads(line)
+            key, data, observed_at = item["key"], item["data"], item["observed_at"]
+            grouped[observed_at].append((key, data))
+    store = LocalPartitionStore(root)
+    written = 0
+    for observed_at, records in sorted(grouped.items()):
+        written += store.append(namespace, records, observed_at)["written"]
+    return {"written": written, "records": sum(map(len, grouped.values()))}
+
+
+def acknowledge_pending_ticks(namespace: str, root: str | Path = ".") -> None:
+    pending_tick_path(namespace, root).unlink(missing_ok=True)
+
+
+class TickPartitionWriter:
+    def __init__(
+        self,
+        provider: str,
+        root: str | Path = ".",
+        flush_records: int = 100,
+        namespace: str | None = None,
+    ):
+        if provider not in {"polymarket", "kalshi"}:
+            raise ValueError(f"Unsupported tick provider: {provider}")
+        if flush_records < 1:
+            raise ValueError("flush_records must be positive")
+        self.provider = provider
+        self.namespace = namespace or f"ticks/{provider}"
+        self.store = LocalPartitionStore(root)
+        self.store._base(self.namespace)
+        self.pending_path = pending_tick_path(self.namespace, root)
+        self.flush_records = flush_records
+        self._records: list[tuple[str, dict, str]] = []
+        self._lock = threading.RLock()
+
+    def append(self, record: dict) -> dict:
+        key, data = stable_tick_record(self.provider, record)
+        observed_at = str(data.get("ts") or _utc(None).isoformat())
+        item = {
+            "namespace": self.namespace,
+            "key": key,
+            "data": data,
+            "observed_at": observed_at,
+        }
+        payload = canonical(item) + b"\n"
+        with self._lock:
+            self.pending_path.parent.mkdir(parents=True, exist_ok=True)
+            fd = os.open(self.pending_path, os.O_WRONLY | os.O_CREAT | os.O_APPEND, 0o600)
+            try:
+                with os.fdopen(fd, "ab") as stream:
+                    stream.write(payload)
+                    stream.flush()
+                    os.fsync(stream.fileno())
+            except BaseException:
+                raise
+            self._records.append((key, data, observed_at))
+            if len(self._records) >= self.flush_records:
+                return {**self.flush(), "tick_id": key}
+        return {"written": 0, "pending": len(self._records), "tick_id": key}
+
+    def flush(self) -> dict:
+        with self._lock:
+            if not self._records:
+                return {"written": 0, "pending": 0}
+            grouped: dict[str, list[tuple[str, dict]]] = defaultdict(list)
+            for key, data, observed_at in self._records:
+                grouped[observed_at].append((key, data))
+            written = 0
+            for observed_at, records in sorted(grouped.items()):
+                written += self.store.append(
+                    self.namespace, records, observed_at,
+                )["written"]
+            self._records.clear()
+            return {"written": written, "pending": 0}
+
+
+_TICK_WRITERS: dict[tuple[str, str], TickPartitionWriter] = {}
+_TICK_WRITERS_LOCK = threading.Lock()
+
+
+def append_tick(provider: str, record: dict, root: str | Path = ".") -> dict:
+    root_path = str(Path(root).resolve())
+    key = (provider, root_path)
+    with _TICK_WRITERS_LOCK:
+        writer = _TICK_WRITERS.get(key)
+        if writer is None:
+            writer = TickPartitionWriter(provider, root_path)
+            _TICK_WRITERS[key] = writer
+    return writer.append(record)
 
 
 def _file_sha256(path: Path) -> str:
@@ -493,6 +614,7 @@ def append_bookmaker_curves(
     records: Iterable[dict],
     root: str | Path = ".",
     observed_at: str | dt.datetime | None = None,
+    namespace: str | None = None,
 ) -> dict:
     if market not in {"match", "set1", "set2"}:
         raise ValueError(f"Unsupported tennis market: {market}")
@@ -503,7 +625,7 @@ def append_bookmaker_curves(
             raise ValueError(f"Bookmaker curve requires uid and book: {record!r}")
         keyed.append((f"{uid}|{book}", record))
     return LocalPartitionStore(root).append(
-        f"bookmakers/{market}", keyed, observed_at,
+        namespace or f"bookmakers/{market}", keyed, observed_at,
     )
 
 

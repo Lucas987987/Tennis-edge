@@ -82,39 +82,48 @@ jobs:
           R2_RESTORE_TICKS: '1'
         run: pip install --quiet boto3 && python scripts/restore_curves.py
 
+      - name: Prepare Kalshi V6.4 tick namespace
+        if: '!inputs.dry_run'
+        continue-on-error: true
+        env:
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+        run: |
+          pip install --quiet boto3
+          python scripts/r2_v64.py prepare \
+            --namespace ticks/kalshi \
+            --baseline parts/ticks-kalshi-baseline.json
+
       - name: Kalshi collector
         run: |
           python scripts/kalshi_collector.py \
             --duration-seconds ${KX_DURATION:-900} \
             ${{ inputs.dry_run && '--dry-run' || '' }}
 
-      # Compresse les partitions kx_ticks_* CLOSES (jamais celle du jour).
-      # Compresse les ticks clos avant leur synchronisation vers R2. Ces
-      # partitions ne sont plus ajoutées aux commits Git.
-      # Gain mesuré : ~95 % (97,8 Mo -> 5,4 Mo sur une partition réelle).
-      - name: Compresser les partitions kx_ticks closes
-        env:
-          MARKETS: ''
-          EXTRA_GLOBS: 'parts/kx_ticks_*.jsonl'
-        run: python scripts/compress_hist_partitions.py || true
-
-      - name: Persister les partitions Kalshi vers R2
-        id: persist-r2
+      - name: Persist and verify Kalshi V6.4 ticks in R2
         if: success() && !inputs.dry_run
         env:
           R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
           R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
           R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
-          R2_INCLUDE: '^(kx_ticks_).+\.jsonl(\.gz)?$'
-          R2_ALLOW_EMPTY: '1'
-        run: pip install --quiet boto3 && python scripts/courbes_r2.py
+        run: python scripts/r2_v64.py push --namespace ticks/kalshi
 
-      - name: Sauvegarder les partitions Kalshi en attente
+      - name: Export unconfirmed Kalshi V6.4 ticks
+        if: failure() && !inputs.dry_run
+        run: |
+          python scripts/r2_v64.py export-outbox \
+            --namespace ticks/kalshi \
+            --baseline parts/ticks-kalshi-baseline.json
+
+      - name: Preserve unconfirmed Kalshi V6.4 ticks
         if: failure() && !inputs.dry_run
         uses: actions/upload-artifact@v4
         with:
           name: v64-outbox-${{ github.run_id }}-${{ github.run_attempt }}
-          path: parts/kx_ticks_*.jsonl*
+          path: |
+            parts/v64-outbox/
+            parts/v64-pending/
           if-no-files-found: warn
           retention-days: 90
 

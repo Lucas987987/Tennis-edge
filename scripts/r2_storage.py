@@ -4,11 +4,14 @@ from __future__ import annotations
 
 import gzip
 import hashlib
+import io
 import json
 import os
 from pathlib import Path
 import re
+import shutil
 import tempfile
+import time
 from datetime import date, timedelta
 from typing import Any
 
@@ -78,11 +81,50 @@ def create_client(environ: dict[str, str] | None = None):
 
 
 class R2Store:
-    def __init__(self, client: Any, bucket: str = BUCKET):
+    def __init__(
+        self,
+        client: Any,
+        bucket: str = BUCKET,
+        retry_attempts: int = 5,
+        retry_base_seconds: float = 0.5,
+    ):
         if not bucket:
             raise ValueError("R2 bucket is required")
+        if retry_attempts < 1 or retry_base_seconds < 0:
+            raise ValueError("R2 retry settings must be positive")
         self.client = client
         self.bucket = bucket
+        self.retry_attempts = retry_attempts
+        self.retry_base_seconds = retry_base_seconds
+
+    @staticmethod
+    def _retryable(exc: Exception) -> bool:
+        code = getattr(exc, "response", {}).get("Error", {}).get("Code")
+        if code in {
+            "RequestTimeout", "RequestTimeoutException", "SlowDown",
+            "InternalError", "ServiceUnavailable", "500", "502", "503", "504",
+        }:
+            return True
+        status = getattr(exc, "response", {}).get("ResponseMetadata", {}).get(
+            "HTTPStatusCode",
+        )
+        if status in {500, 502, 503, 504}:
+            return True
+        return isinstance(exc, (TimeoutError, ConnectionError, OSError))
+
+    def _retry(self, label: str, operation):
+        for attempt in range(self.retry_attempts):
+            try:
+                return operation()
+            except Exception as exc:
+                if not self._retryable(exc) or attempt + 1 >= self.retry_attempts:
+                    raise
+                delay = self.retry_base_seconds * (2 ** attempt)
+                print(
+                    f"R2 {label} failed ({type(exc).__name__}); "
+                    f"retry {attempt + 2}/{self.retry_attempts} in {delay:.1f}s"
+                )
+                time.sleep(delay)
 
     def _get(self, key: str) -> bytes:
         return self.client.get_object(Bucket=self.bucket, Key=key)["Body"].read()
@@ -351,6 +393,17 @@ class R2Store:
         root: str | Path = ".",
         replace_local: bool = False,
     ) -> dict:
+        return self._retry(
+            f"restore {namespace}",
+            lambda: self._pull_v64_namespace_once(namespace, root, replace_local),
+        )
+
+    def _pull_v64_namespace_once(
+        self,
+        namespace: str,
+        root: str | Path = ".",
+        replace_local: bool = False,
+    ) -> dict:
         store = LocalPartitionStore(root)
         base = store._base(namespace)
         index_key = f"{V64_PREFIX}{namespace}/index.json"
@@ -396,6 +449,50 @@ class R2Store:
         return {**report, "bytes": total_bytes}
 
     def push_v64_namespace(
+        self,
+        namespace: str,
+        root: str | Path = ".",
+    ) -> dict:
+        return self._retry(
+            f"push/verify {namespace}",
+            lambda: self._push_and_verify_v64_namespace(namespace, root),
+        )
+
+    def _push_and_verify_v64_namespace(
+        self,
+        namespace: str,
+        root: str | Path,
+    ) -> dict:
+        report = self._push_v64_namespace_once(namespace, root)
+        if not report.get("records"):
+            return report
+        source = LocalPartitionStore(root)
+        source_index = source._load_index(namespace)
+        with tempfile.TemporaryDirectory(prefix="tennis-r2-verify-") as temp:
+            restored = self._pull_v64_namespace_once(namespace, temp)
+            target = LocalPartitionStore(temp)
+            target_index = target._load_index(namespace)
+            for relative, meta in source_index["segments"].items():
+                if target_index["segments"].get(relative) != meta:
+                    raise IntegrityError(
+                        f"R2 read-back manifest mismatch: {relative}"
+                    )
+            remote_rows = {
+                row["record_id"]: canonical(row["data"])
+                for row in target.iter_records(namespace)
+            }
+            for row in source.iter_records(namespace):
+                if remote_rows.get(row["record_id"]) != canonical(row["data"]):
+                    raise IntegrityError(
+                        f"R2 read-back record mismatch: {row['record_id']}"
+                    )
+            if restored["records"] < report["records"]:
+                raise IntegrityError(
+                    f"R2 read-back record count mismatch: {namespace}"
+                )
+        return {**report, "read_back_verified": True}
+
+    def _push_v64_namespace_once(
         self,
         namespace: str,
         root: str | Path = ".",
@@ -492,6 +589,7 @@ class R2Store:
             key[len(V64_PREFIX):-len(index_suffix)]
             for key in keys
             if key.endswith(index_suffix) and key != V64_PREFIX + index_suffix
+            and not key[len(V64_PREFIX):-len(index_suffix)].startswith(("ticks/", "_"))
         })
         reports = {
             namespace: self.pull_v64_namespace(namespace, root)
@@ -503,3 +601,135 @@ class R2Store:
             "records": sum(report["records"] for report in reports.values()),
             "bytes": sum(report["bytes"] for report in reports.values()),
         }
+
+    def restore_v64_tick_partitions(
+        self,
+        provider: str,
+        parts_dir: str | Path = "parts",
+        days: int = 7,
+        namespace: str | None = None,
+    ) -> dict:
+        if provider not in {"polymarket", "kalshi"}:
+            raise ValueError(f"Unsupported tick provider: {provider}")
+        if days < 1:
+            raise ValueError("days must be positive")
+        namespace = namespace or f"ticks/{provider}"
+        if not namespace.endswith(f"ticks/{provider}"):
+            raise ValueError(f"Namespace does not match tick provider: {namespace}")
+        index_key = f"{V64_PREFIX}{namespace}/index.json"
+        try:
+            index = json.loads(self._retry(
+                f"read {namespace} index", lambda: self._get(index_key),
+            ))
+        except Exception as exc:
+            code = getattr(exc, "response", {}).get("Error", {}).get("Code")
+            if code in {"404", "NoSuchKey", "NotFound"}:
+                return {"files": 0, "records": 0, "bytes": 0}
+            raise
+        claimed = index.get("sha256")
+        unsigned = dict(index)
+        unsigned.pop("sha256", None)
+        if claimed != hashlib.sha256(canonical(unsigned)).hexdigest():
+            raise IntegrityError(f"R2 V6.4 index SHA-256 mismatch: {index_key}")
+
+        parts_dir = Path(parts_dir)
+        parts_dir.mkdir(parents=True, exist_ok=True)
+        cutoff = date.today() - timedelta(days=days - 1)
+        namespace_hash = hashlib.sha256(namespace.encode()).hexdigest()[:8]
+        with tempfile.TemporaryDirectory(
+            prefix="r2-v64-tick-export-", dir=parts_dir,
+        ) as temp:
+            temp_dir = Path(temp)
+            raw_paths: dict[date, Path] = {}
+            raw_streams = {}
+            record_counts: dict[date, int] = {}
+            total_records = 0
+            try:
+                for relative, meta in sorted(index.get("segments", {}).items()):
+                    parts = Path(relative).parts
+                    prefix = Path(V64_PREFIX.rstrip("/"), namespace).parts
+                    if parts[:len(prefix)] != prefix or len(parts) < len(prefix) + 4:
+                        raise IntegrityError(f"Invalid R2 tick segment path: {relative}")
+                    try:
+                        partition_day = date(
+                            int(parts[len(prefix)]),
+                            int(parts[len(prefix) + 1]),
+                            int(parts[len(prefix) + 2]),
+                        )
+                    except ValueError as exc:
+                        raise IntegrityError(
+                            f"Invalid R2 tick partition date: {relative}"
+                        ) from exc
+                    if partition_day < cutoff:
+                        continue
+                    body = self._retry(
+                        f"read {relative}", lambda key=relative: self._get(key),
+                    )
+                    digest = hashlib.sha256(body).hexdigest()
+                    if digest != meta.get("sha256"):
+                        raise IntegrityError(f"R2 V6.4 segment SHA-256 mismatch: {relative}")
+                    if partition_day not in raw_streams:
+                        raw_path = temp_dir / f"{partition_day.isoformat()}.jsonl"
+                        raw_paths[partition_day] = raw_path
+                        raw_streams[partition_day] = raw_path.open("ab")
+                        record_counts[partition_day] = 0
+                    count = 0
+                    try:
+                        with gzip.GzipFile(fileobj=io.BytesIO(body), mode="rb") as source:
+                            for line in source:
+                                if not line.strip():
+                                    continue
+                                row = json.loads(line)
+                                record_digest = hashlib.sha256(
+                                    canonical(row["data"]),
+                                ).hexdigest()
+                                if (
+                                    row.get("key_hash")
+                                    != hashlib.sha256(str(row["key"]).encode()).hexdigest()
+                                    or row.get("sha256") != record_digest
+                                    or row.get("record_id")
+                                    != f"{row['key_hash']}:{record_digest}"
+                                ):
+                                    raise IntegrityError(
+                                        f"R2 V6.4 tick record integrity mismatch: {relative}"
+                                    )
+                                raw_streams[partition_day].write(
+                                    canonical(row["data"]) + b"\n",
+                                )
+                                count += 1
+                    except (OSError, EOFError, json.JSONDecodeError, KeyError) as exc:
+                        if isinstance(exc, IntegrityError):
+                            raise
+                        raise IntegrityError(
+                            f"Invalid R2 V6.4 tick segment: {relative}"
+                        ) from exc
+                    if count != int(meta.get("record_count", -1)):
+                        raise IntegrityError(
+                            f"R2 V6.4 tick record count mismatch: {relative}"
+                        )
+                    record_counts[partition_day] += count
+                    total_records += count
+            finally:
+                for stream in raw_streams.values():
+                    stream.close()
+
+            total_bytes = 0
+            for partition_day, raw_path in raw_paths.items():
+                prefix = "pm" if provider == "polymarket" else "kx"
+                target = parts_dir / (
+                    f"{prefix}_ticks_{partition_day.isoformat()}_v64_"
+                    f"{namespace_hash}.jsonl.gz"
+                )
+                compressed_temp = temp_dir / (target.name + ".tmp")
+                with raw_path.open("rb") as source, compressed_temp.open("wb") as output:
+                    with gzip.GzipFile(fileobj=output, mode="wb", mtime=0) as compressed:
+                        shutil.copyfileobj(source, compressed)
+                    output.flush()
+                    os.fsync(output.fileno())
+                os.replace(compressed_temp, target)
+                total_bytes += target.stat().st_size
+            return {
+                "files": len(raw_paths),
+                "records": total_records,
+                "bytes": total_bytes,
+            }

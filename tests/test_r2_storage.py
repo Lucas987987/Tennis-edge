@@ -11,10 +11,17 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
-from partitioned_store import LocalPartitionStore, append_bookmaker_curves  # noqa: E402
+from partitioned_store import (  # noqa: E402
+    LocalPartitionStore,
+    TickPartitionWriter,
+    append_bookmaker_curves,
+    flush_pending_ticks,
+    pending_tick_path,
+)
 from r2_storage import IntegrityError, R2Store, count_jsonl, create_client  # noqa: E402
 import restore_curves  # noqa: E402
 from r2_probe import run_probe  # noqa: E402
+import r2_storage  # noqa: E402
 from r2_v64 import (  # noqa: E402
     _extract_v64,
     _extract_legacy_ticks,
@@ -79,6 +86,22 @@ class FakeS3:
         return FakePaginator(self)
 
 
+class FlakyFakeS3(FakeS3):
+    def __init__(self, key_suffix, persist_before_failure):
+        super().__init__()
+        self.key_suffix = key_suffix
+        self.persist_before_failure = persist_before_failure
+        self.failed = False
+
+    def put_object(self, Bucket, Key, Body, **kwargs):
+        if Key.endswith(self.key_suffix) and not self.failed:
+            self.failed = True
+            if self.persist_before_failure:
+                super().put_object(Bucket, Key, Body, **kwargs)
+            raise OSError("simulated R2 network interruption")
+        super().put_object(Bucket, Key, Body, **kwargs)
+
+
 def _write_jsonl(path: Path, rows: list[dict], compressed=False):
     payload = b"".join(
         json.dumps(row, separators=(",", ":")).encode() + b"\n" for row in rows
@@ -109,6 +132,148 @@ def test_limited_r2_probe_writes_unique_object_and_verifies_readback():
     assert first["records_restored"] == 1
     assert second["records_restored"] == 2
     assert len(client.objects) == 3
+
+
+@pytest.mark.parametrize(
+    ("key_suffix", "persist_before_failure"),
+    [(".jsonl.gz", False), ("/index.json", True)],
+)
+def test_r2_push_retries_network_failures_and_confirms_readback(
+    tmp_path, monkeypatch, key_suffix, persist_before_failure,
+):
+    monkeypatch.setattr(r2_storage.time, "sleep", lambda _seconds: None)
+    root = tmp_path / "source"
+    LocalPartitionStore(root).append(
+        "_retry-test/ticks/polymarket",
+        [("tick-1", {"tick_id": "tick-1", "price": 0.51})],
+        "2026-10-13T11:00:00Z",
+    )
+    client = FlakyFakeS3(key_suffix, persist_before_failure)
+    report = R2Store(client, retry_attempts=3).push_v64_namespace(
+        "_retry-test/ticks/polymarket", root,
+    )
+
+    assert client.failed
+    assert report["records"] == 1
+    assert report["read_back_verified"] is True
+    restored = tmp_path / "restored"
+    restored_report = R2Store(client).pull_v64_namespace(
+        "_retry-test/ticks/polymarket", restored,
+    )
+    assert restored_report["records"] == 1
+    assert LocalPartitionStore(restored).latest(
+        "_retry-test/ticks/polymarket",
+    ) == {"tick-1": {"tick_id": "tick-1", "price": 0.51}}
+
+
+def test_isolated_synthetic_collector_r2_roundtrips_verify_indexes_counts_and_hashes():
+    result = run_probe(R2Store(FakeS3()), include_e2e=True)
+
+    synthetic = result["synthetic_collectors"]
+    assert set(synthetic) == {"bookmakers", "polymarket", "kalshi"}
+    for report in synthetic.values():
+        assert report["records"] == report["jsonl_lines"] == 1
+        assert report["segments"] == 1
+        assert len(report["manifest_sha256"]) == 64
+        assert report["read_back_verified"] is True
+
+
+def test_unconfirmed_tick_spool_survives_artifact_replay_and_r2_confirmation(tmp_path):
+    namespace = "ticks/kalshi"
+    producer = tmp_path / "producer"
+    writer = TickPartitionWriter("kalshi", producer, flush_records=100)
+    writer.append({
+        "ts": "2026-10-13T11:00:00.000Z",
+        "ticker": "SYNTHETIC-TENNIS",
+        "yes_bid": 0.49,
+        "yes_ask": 0.52,
+    })
+    pending = pending_tick_path(namespace, producer)
+    assert pending.is_file()
+    assert not (producer / "parts/v64" / namespace / "index.json").exists()
+
+    archive_buffer = io.BytesIO()
+    with zipfile.ZipFile(archive_buffer, "w") as archive:
+        archive.write(
+            pending,
+            f"parts/v64-pending/{pending.name}",
+        )
+    artifact_root = tmp_path / "artifact"
+    namespaces = _extract_v64(archive_buffer.getvalue(), artifact_root)
+    assert namespace in namespaces
+
+    replay_root = tmp_path / "replay"
+    replay_pending = pending_tick_path(namespace, replay_root)
+    replay_pending.parent.mkdir(parents=True)
+    replay_pending.write_bytes(
+        pending_tick_path(namespace, artifact_root).read_bytes(),
+    )
+    assert flush_pending_ticks(namespace, replay_root)["written"] == 1
+    client = FakeS3()
+    report = R2Store(client).push_v64_namespace(namespace, replay_root)
+    assert report["read_back_verified"] is True
+    restored_root = tmp_path / "restored"
+    restored = R2Store(client).pull_v64_namespace(namespace, restored_root)
+    assert restored["records"] == 1
+    assert list(LocalPartitionStore(restored_root).latest(namespace).values())[0][
+        "ticker"
+    ] == "SYNTHETIC-TENNIS"
+
+
+def test_outbox_replay_confirms_tick_spool_before_acknowledging_artifact(
+    tmp_path, monkeypatch,
+):
+    namespace = "ticks/polymarket"
+    producer = tmp_path / "producer"
+    writer = TickPartitionWriter("polymarket", producer, flush_records=100)
+    writer.append({
+        "ts": "2026-10-13T11:00:00.000Z",
+        "market_id": "SYNTHETIC-PM",
+        "event_type": "price_change",
+        "mid": 0.51,
+    })
+    pending = pending_tick_path(namespace, producer)
+    archive_buffer = io.BytesIO()
+    with zipfile.ZipFile(archive_buffer, "w") as archive:
+        archive.write(pending, f"parts/v64-pending/{pending.name}")
+
+    client = FakeS3()
+    deleted = []
+    artifact = {
+        "id": 88,
+        "name": "v64-outbox-88-1",
+        "archive_download_url": "https://github.invalid/artifact/88",
+        "expired": False,
+    }
+
+    class Response:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_args):
+            return False
+
+    def fake_urlopen(request, timeout=0):
+        deleted.append(request.full_url)
+        return Response()
+
+    monkeypatch.setattr(r2_v64, "_artifacts", lambda *_args: [artifact])
+    monkeypatch.setattr(
+        r2_v64, "_github_request",
+        lambda *_args: io.BytesIO(archive_buffer.getvalue()),
+    )
+    monkeypatch.setattr(r2_v64.urllib.request, "urlopen", fake_urlopen)
+    monkeypatch.setattr(r2_v64, "create_client", lambda: client)
+
+    replay_root = tmp_path / "replay"
+    result = r2_v64.sync_outbox("owner/repo", "token", replay_root)
+
+    assert result == {
+        "artifacts": 1, "namespaces": 1, "legacy_files": 0, "records": 1,
+    }
+    assert deleted == ["https://api.github.com/repos/owner/repo/actions/artifacts/88"]
+    assert not pending_tick_path(namespace, replay_root).exists()
+    assert LocalPartitionStore(replay_root).verify(namespace)["records"] == 1
 
 
 def test_failed_r2_prepare_blocks_direct_publication(tmp_path):

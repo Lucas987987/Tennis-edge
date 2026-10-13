@@ -14,7 +14,15 @@ import tempfile
 import urllib.request
 import zipfile
 
-from partitioned_store import IntegrityError, LocalPartitionStore, canonical, sha256
+from partitioned_store import (
+    IntegrityError,
+    LocalPartitionStore,
+    acknowledge_pending_ticks,
+    canonical,
+    flush_pending_ticks,
+    pending_tick_path,
+    sha256,
+)
 from r2_storage import R2Store, count_jsonl, create_client, file_sha256
 
 
@@ -84,6 +92,29 @@ def _extract_v64(zip_bytes: bytes, destination: Path) -> set[str]:
             if info.is_dir():
                 continue
             parts = PurePosixPath(info.filename).parts
+            if "v64-pending" in parts:
+                position = parts.index("v64-pending")
+                relative_parts = parts[position + 1:]
+                if not relative_parts or ".." in relative_parts:
+                    raise IntegrityError(
+                        f"Invalid V6.4 pending archive path: {info.filename}"
+                    )
+                target = destination / "parts" / "v64-pending" / Path(*relative_parts)
+                target.resolve().relative_to(destination.resolve())
+                target.parent.mkdir(parents=True, exist_ok=True)
+                with archive.open(info) as source, target.open("wb") as output:
+                    output.write(source.read())
+                with target.open(encoding="utf-8") as stream:
+                    for line in stream:
+                        if line.strip():
+                            item = json.loads(line)
+                            namespace = item.get("namespace")
+                            if not isinstance(namespace, str):
+                                raise IntegrityError(
+                                    "V6.4 pending record has no namespace"
+                                )
+                            namespaces.add(namespace)
+                continue
             position = next(
                 (
                     i for i, part in enumerate(parts)
@@ -164,13 +195,16 @@ def prepare(namespaces: list[str], root: str | Path, baseline_path: str | Path) 
     result = {}
     failures = []
     for namespace in namespaces:
+        synced = False
         try:
             store.pull_v64_namespace(namespace, root)
+            synced = True
         except Exception as exc:
             print(f"R2 pull indisponible pour {namespace}: {type(exc).__name__}")
             failures.append(namespace)
+        flush_pending_ticks(namespace, root)
         index_path = LocalPartitionStore(root)._base(namespace) / "index.json"
-        if index_path.exists():
+        if synced and index_path.exists():
             index = LocalPartitionStore(root)._load_index(namespace)
             result[namespace] = sorted(index["segments"])
         else:
@@ -196,6 +230,7 @@ def export_outbox(
         baseline = json.loads(Path(baseline_path).read_text(encoding="utf-8"))
     output = {}
     for namespace in namespaces:
+        flush_pending_ticks(namespace, root)
         store = LocalPartitionStore(root)
         index = store._load_index(namespace)
         previous = set(baseline.get(namespace, []))
@@ -292,8 +327,17 @@ def sync_outbox(repository: str, token: str, root: str | Path = ".") -> dict:
                 code = getattr(exc, "response", {}).get("Error", {}).get("Code")
                 if code not in {"404", "NoSuchKey", "NotFound"}:
                     raise
+            pending = pending_tick_path(namespace, root)
+            for artifact_dir in queued_dirs:
+                source_pending = pending_tick_path(namespace, artifact_dir)
+                if source_pending.is_file():
+                    pending.parent.mkdir(parents=True, exist_ok=True)
+                    with source_pending.open("rb") as source, pending.open("ab") as output:
+                        output.write(source.read())
+            flush_pending_ticks(namespace, root)
             _merge_outbox_namespace(target_store, namespace, queued_dirs)
             r2.push_v64_namespace(namespace, root)
+            acknowledge_pending_ticks(namespace, root)
             # A read-back plus full local integrity check gates artifact deletion.
             verification_root = temp_root / f"verify-{namespace.replace('/', '-')}"
             restored = r2.pull_v64_namespace(namespace, verification_root)
@@ -363,12 +407,14 @@ def sync_outbox(repository: str, token: str, root: str | Path = ".") -> dict:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "operation", choices=("prepare", "pull", "push", "export-outbox", "sync-outbox"),
+        "operation",
+        choices=("prepare", "pull", "push", "export-outbox", "export-ticks", "sync-outbox"),
     )
     parser.add_argument("--namespace", action="append", default=[])
     parser.add_argument("--root", default=".")
     parser.add_argument("--baseline", default="parts/v64-baseline.json")
     parser.add_argument("--outdir", default="parts/v64-outbox")
+    parser.add_argument("--days", type=int, default=7)
     args = parser.parse_args()
     if args.operation == "sync-outbox":
         repository = os.environ.get("GITHUB_REPOSITORY")
@@ -390,6 +436,26 @@ def main() -> int:
             sort_keys=True,
         ))
         return 0
+    if args.operation == "export-ticks":
+        if not args.namespace:
+            parser.error("--namespace is required for export-ticks")
+        r2 = R2Store(create_client())
+        reports = []
+        for namespace in args.namespace:
+            if namespace not in {"ticks/polymarket", "ticks/kalshi"}:
+                parser.error(
+                    "--namespace for export-ticks must be ticks/polymarket "
+                    "or ticks/kalshi"
+                )
+            provider = namespace.split("/", 1)[1]
+            reports.append({
+                "namespace": namespace,
+                **r2.restore_v64_tick_partitions(
+                    provider, Path(args.root) / "parts", args.days,
+                ),
+            })
+        print(json.dumps({"operation": "export-ticks", "reports": reports}, sort_keys=True))
+        return 0
     if not args.namespace:
         parser.error("--namespace is required for pull and push")
     r2 = R2Store(create_client())
@@ -398,8 +464,11 @@ def main() -> int:
         if args.operation == "pull":
             reports.append(r2.pull_v64_namespace(namespace, args.root))
         else:
+            flush_pending_ticks(namespace, args.root)
             _assert_prepared(namespace, args.root)
-            reports.append(r2.push_v64_namespace(namespace, args.root))
+            report = r2.push_v64_namespace(namespace, args.root)
+            acknowledge_pending_ticks(namespace, args.root)
+            reports.append(report)
     print(json.dumps({"operation": args.operation, "reports": reports}, sort_keys=True))
     return 0
 

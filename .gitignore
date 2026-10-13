@@ -27,8 +27,11 @@ set2_curves_live.jsonl
 calib_cache.json
 *.zip
 
-# V6.4 partitions are local-only until durable external storage is configured.
+# V6.4 data, pending write-ahead logs, and regenerated legacy tick views are
+# stored externally and must never be added to Git.
 parts/v64/
 parts/v64-outbox/
+parts/v64-pending/
 parts/v64-baseline.json
 parts/v64-prepare-failed.json
+parts/*_v64_*.jsonl.gz

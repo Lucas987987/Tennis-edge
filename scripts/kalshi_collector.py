@@ -24,8 +24,7 @@ CE QUE LA SONDE A APPRIS, ET QUI EST CÂBLÉ ICI
      comptes authentifiés : 16 req/s donnaient 55 rejets 429 sur 134 séries.
 
 MÉCANIQUE REPRISE DU COLLECTEUR POLYMARKET (éprouvée en production)
-  • partitions journalières + bascule à 60 Mo (le mur GitHub est à 100 Mo par
-    fichier ; une partition de 221 Mo a fait rejeter un push entier le 19/08) ;
+  • segments V6.4 immuables, indexés par tick avec identifiants SHA-256 ;
   • limitation de débit d'écriture (un tick par marché toutes les N secondes,
     sauf mouvement réel) — sans elle, 9,7 Go/jour ;
   • ticks maigres : les métadonnées fixes vivent dans le registre, pas répétées
@@ -39,15 +38,14 @@ Kalshi exige une authentification RSA-PSS même pour les canaux publics. On
 interroge donc /markets en REST à intervalle régulier — ce qui suffit
 largement pour une analyse sur grille de 5 minutes.
 
-Env : KALSHI_BASE, MATCHES_FILE, KX_TICKS_DIR, KX_MARKETS_FILE, KX_STATE_FILE,
-      KX_MIN_INTERVAL_S, KX_MIN_DELTA, KX_TICKS_MAX_MB, KX_PAUSE_S,
+Env : KALSHI_BASE, MATCHES_FILE, KX_MARKETS_FILE, KX_STATE_FILE,
+      KX_MIN_INTERVAL_S, KX_MIN_DELTA, KX_PAUSE_S,
       KX_SERIES_REFRESH_S, KX_POLL_S.
 Args : --duration-seconds, --once, --dry-run.
 """
 import os
 import sys
 import json
-import gz_append
 import time
 import re
 import argparse
@@ -58,10 +56,10 @@ import urllib.request
 import urllib.parse
 import urllib.error
 from pathlib import Path
+from partitioned_store import append_tick
 
 BASE       = os.environ.get('KALSHI_BASE', 'https://api.elections.kalshi.com/trade-api/v2')
 MATCHES    = os.environ.get('MATCHES_FILE', 'matches_oddspapi.json')
-TICKS_DIR  = Path(os.environ.get('KX_TICKS_DIR', 'parts'))
 MARKETS_F  = Path(os.environ.get('KX_MARKETS_FILE', 'kalshi_markets.json'))
 STATE_F    = Path(os.environ.get('KX_STATE_FILE', 'kalshi_collector_state.json'))
 TIMEOUT    = float(os.environ.get('HTTP_TIMEOUT', '25'))
@@ -75,7 +73,6 @@ PAUSE      = float(os.environ.get('KX_PAUSE_S', '0.3'))
 MIN_INTERVAL_S = float(os.environ.get('KX_MIN_INTERVAL_S', '20'))
 MIN_DELTA      = float(os.environ.get('KX_MIN_DELTA', '0.002'))
 # Au-delà, nouvelle partition : le mur GitHub est à 100 Mo PAR FICHIER.
-TICKS_MAX_MB   = float(os.environ.get('KX_TICKS_MAX_MB', '60'))
 # Les séries changent rarement ; les marchés, souvent.
 SERIES_REFRESH = float(os.environ.get('KX_SERIES_REFRESH_S', '1800'))
 # 30 s devient possible GRÂCE aux cycles ciblés : tant qu'un cycle coûtait 49 s
@@ -128,23 +125,13 @@ def txt(m):
     return ' '.join(str(v) for v in m.values() if isinstance(v, str))
 
 
-def ticks_path():
-    """Partition courante. Recalculée à chaque écriture, donc bascule seule à
-    minuit ET quand la partition atteint TICKS_MAX_MB."""
-    jour = utc_now().strftime('%Y-%m-%d')
-    # 26/08/2026 : .jsonl.gz direct via gz_append — voir polymarket_collector.
-    p = TICKS_DIR / f'kx_ticks_{jour}.jsonl.gz'
-    seq = 1
-    while p.exists() and p.stat().st_size / 1e6 >= TICKS_MAX_MB:
-        seq += 1
-        p = TICKS_DIR / f'kx_ticks_{jour}_{seq}.jsonl.gz'
-    return p
-
-
-def append_jsonl(path, row):
-    # 26/08/2026 : gzip-append par lots (gz_append.py).
-    gz_append.append_ligne(
-        str(path), json.dumps(row, ensure_ascii=False, separators=(',', ':')))
+def append_jsonl(row):
+    result = append_tick("kalshi", row)
+    if result.get("written"):
+        print(
+            f"V6.4 ticks indexed locally; pending R2 confirmation: "
+            f"{result['written']} record(s)"
+        )
 
 
 def atomic_json_write(path, obj):
@@ -403,7 +390,7 @@ class Ecrivain:
         # Tick MAIGRE : les métadonnées fixes (joueurs, tournoi, horaire) vivent
         # dans kalshi_markets.json, pas répétées à chaque ligne. Sur Polymarket,
         # ces champs représentaient plus de la moitié du volume écrit.
-        append_jsonl(ticks_path(), {
+        append_jsonl({
             'ts': iso_now(),
             'ticker': suivi['ticker'],
             'event_ticker': suivi['event_ticker'],

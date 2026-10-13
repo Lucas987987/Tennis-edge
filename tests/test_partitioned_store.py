@@ -14,7 +14,9 @@ from partitioned_store import (  # noqa: E402
     R2ObjectAdapter,
     append_bookmaker_curves,
     append_closing_updates,
+    TickPartitionWriter,
     canonical,
+    flush_pending_ticks,
     iter_v64_bookmaker_lines,
     iter_bookmaker_lines,
     load_closing,
@@ -322,3 +324,28 @@ def test_r2_adapter_upload_is_immutable_and_hash_checked():
         adapter.get_verified("segments/one.gz", "0" * 64)
     with pytest.raises(IntegrityError, match="SHA-256 mismatch"):
         adapter.put_immutable("segments/two.gz", payload, "0" * 64)
+
+
+def test_tick_writer_uses_stable_ids_and_replays_pending_spool_after_restart(tmp_path):
+    namespace = "ticks/polymarket"
+    tick = {
+        "ts": "2026-10-13T11:00:00.000Z",
+        "event_type": "price_change",
+        "market_id": "market-1",
+        "outcome_index": 0,
+        "mid": 0.51,
+    }
+    first = TickPartitionWriter("polymarket", tmp_path, flush_records=1)
+    first_result = first.append(tick)
+    second = TickPartitionWriter("polymarket", tmp_path, flush_records=1)
+    second_result = second.append(tick)
+
+    assert first_result["tick_id"] == second_result["tick_id"]
+    assert first_result["written"] == 1
+    assert second_result["written"] == 0
+    assert flush_pending_ticks(namespace, tmp_path)["records"] == 2
+    store = LocalPartitionStore(tmp_path)
+    rows = list(store.iter_records(namespace))
+    assert len(rows) == 1
+    assert rows[0]["key"] == first_result["tick_id"] == rows[0]["data"]["tick_id"]
+    assert rows[0]["sha256"] == sha256(canonical(rows[0]["data"]))

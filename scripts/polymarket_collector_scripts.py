@@ -10,14 +10,15 @@ Architecture :
   2) Match local : fait le mapping avec matches_oddspapi.json quand disponible.
   3) CLOB WebSocket : reçoit en temps réel book / price_change / last_trade_price
      / best_bid_ask.
-  4) Ecrit un historique append-only dans polymarket_ticks.jsonl.
+  4) Persiste des ticks V6.4 indexés dans parts/v64/ticks/polymarket.
 
 Aucune clé API n'est nécessaire : les endpoints de lecture Gamma/CLOB sont publics.
 
 Fichiers par défaut :
   matches_oddspapi.json
   polymarket_markets.json       mapping des marchés suivis
-  parts/pm_ticks_<date>.jsonl   historique temps réel (1 partition/jour)
+  parts/v64/ticks/polymarket  index et segments immuables
+  parts/v64-pending/           spool durable, acquitté après confirmation R2
   polymarket_collector_state.json
 
 Dépendances : requests, websocket-client
@@ -34,7 +35,6 @@ Variables d'environnement :
   PM_CLOB_WS_URL           wss://ws-subscriptions-clob.polymarket.com/ws/market
   PM_MATCHES_FILE          matches_oddspapi.json
   PM_MARKETS_FILE          polymarket_markets.json
-  PM_TICKS_DIR             parts  (PM_TICKS_FILE force un fichier unique)
   PM_STATE_FILE            polymarket_collector_state.json
   PM_REFRESH_SECONDS       180
   PM_HTTP_TIMEOUT          20
@@ -56,7 +56,6 @@ import argparse
 import ast
 import difflib
 import json
-import gz_append
 import os
 import re
 import signal
@@ -69,6 +68,7 @@ from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 import requests
 import websocket
+from partitioned_store import append_tick
 
 
 GAMMA_URL = os.environ.get("PM_GAMMA_URL", "https://gamma-api.polymarket.com").rstrip("/")
@@ -78,13 +78,6 @@ CLOB_WS_URL = os.environ.get(
 
 MATCHES_FILE = Path(os.environ.get("PM_MATCHES_FILE", "matches_oddspapi.json"))
 MARKETS_FILE = Path(os.environ.get("PM_MARKETS_FILE", "polymarket_markets.json"))
-# PARTITIONNEMENT DES TICKS — indispensable, pas cosmétique.
-# Un fichier de ticks append-only commité toutes les quelques minutes est
-# exactement ce qui a porté ce dépôt à 637 Mo et bloqué tous les push pendant
-# 5 jours en août (mur GitHub : 100 Mo par fichier). Les ticks partent donc dans
-# parts/pm_ticks_<YYYY-MM-DD>.jsonl, une partition par jour, que
-# compress_hist_partitions.py pourra gzipper une fois close (~85 % de gain).
-# PM_TICKS_FILE reste accepté pour forcer un fichier unique (tests locaux).
 # LIMITATION DE DÉBIT — sans elle, le collecteur est ingérable.
 # Mesuré le 19/08/2026 sur un run de 15 min en soirée (matchs en cours) :
 # 312 683 lignes, soit 101 Mo. À ce rythme : 404 Mo/heure, 9,7 Go/jour, et le
@@ -106,8 +99,6 @@ MARKETS_FILE = Path(os.environ.get("PM_MARKETS_FILE", "polymarket_markets.json")
 MIN_INTERVAL_S = float(os.environ.get("PM_MIN_INTERVAL_S", "30"))
 MIN_DELTA = float(os.environ.get("PM_MIN_DELTA", "0.002"))
 
-TICKS_DIR = Path(os.environ.get("PM_TICKS_DIR", "parts"))
-TICKS_FILE_OVERRIDE = os.environ.get("PM_TICKS_FILE", "").strip()
 STATE_FILE = Path(os.environ.get("PM_STATE_FILE", "polymarket_collector_state.json"))
 
 REFRESH_SECONDS = int(os.environ.get("PM_REFRESH_SECONDS", "180"))
@@ -131,39 +122,6 @@ WRITE_LOCK = threading.Lock()
 
 def utc_now() -> datetime:
     return datetime.now(timezone.utc)
-
-
-# Au-delà de cette taille, on ouvre une nouvelle partition. Le mur GitHub est à
-# 100 Mo PAR FICHIER : un push contenant un fichier plus gros est rejeté, et la
-# totalité du commit est perdue. Constaté le 19/08/2026 :
-#   "File parts/pm_ticks_2026-08-19.jsonl is 221.29 MB; this exceeds GitHub's
-#    file size limit of 100.00 MB -> [remote rejected] (pre-receive hook declined)"
-# La limitation de débit rend ce cas improbable, mais une journée très chargée
-# pourrait encore l'atteindre. 60 Mo laisse une marge confortable : même en
-# ajoutant plusieurs dizaines de Mo avant le prochain contrôle, on reste sous
-# les 100 Mo. Même mécanique que current_hist_partition_path() pour les courbes.
-TICKS_MAX_MB = float(os.environ.get("PM_TICKS_MAX_MB", "60"))
-
-
-def ticks_path() -> Path:
-    """Partition courante. Recalculée à chaque écriture, donc :
-      - un collecteur à cheval sur minuit bascule seul sur le jour suivant ;
-      - une partition qui atteint TICKS_MAX_MB est close et remplacée par
-        <date>_2, puis _3, etc.
-    """
-    if TICKS_FILE_OVERRIDE:
-        return Path(TICKS_FILE_OVERRIDE)
-    jour = utc_now().strftime('%Y-%m-%d')
-    # 26/08/2026 : partitions écrites DIRECTEMENT en .jsonl.gz (gz_append) —
-    # l'historique git ne stocke plus le brut. Le cap de taille s'applique au
-    # gz : à compression ~7:1, une partition contient ~7x plus de lignes,
-    # c'est voulu (moins de fichiers, mêmes garanties).
-    p = TICKS_DIR / f"pm_ticks_{jour}.jsonl.gz"
-    seq = 1
-    while p.exists() and p.stat().st_size / 1e6 >= TICKS_MAX_MB:
-        seq += 1
-        p = TICKS_DIR / f"pm_ticks_{jour}_{seq}.jsonl.gz"
-    return p
 
 
 def iso_now() -> str:
@@ -231,13 +189,14 @@ def atomic_json_write(path: Path, obj: Any) -> None:
     os.replace(tmp, path)
 
 
-def append_jsonl(path: Path, row: Dict[str, Any]) -> None:
-    # 26/08/2026 : gzip-append par lots (gz_append.py) — le WRITE_LOCK
-    # historique est conservé par ceinture, gz_append a le sien.
+def append_jsonl(row: Dict[str, Any]) -> None:
     with WRITE_LOCK:
-        gz_append.append_ligne(
-            str(path),
-            json.dumps(row, ensure_ascii=False, separators=(",", ":")))
+        result = append_tick("polymarket", row)
+    if result.get("written"):
+        print(
+            f"V6.4 ticks indexed locally; pending R2 confirmation: "
+            f"{result['written']} record(s)"
+        )
 
 
 def http_get(session: requests.Session, path: str, params: Dict[str, Any]) -> Any:
@@ -898,7 +857,7 @@ class Collector:
                 return
             self._services_vus.add(cle)
             self.ecrits += 1
-            append_jsonl(ticks_path(), {
+            append_jsonl({
                 "ts": iso_now(),
                 "event_type": event_type,
                 "market_id": msg.get("market") or msg.get("condition_id"),
@@ -981,7 +940,7 @@ class Collector:
             **{k: (round(v, 4) if isinstance(v, float) else v)
                for k, v in values.items()},
         }
-        append_jsonl(ticks_path(), row)
+        append_jsonl(row)
 
 
 def websocket_loop(markets: List[Dict[str, Any]], max_seconds: Optional[int] = None) -> None:
@@ -1224,7 +1183,7 @@ def main() -> int:
     print(f"Gamma      : {GAMMA_URL}")
     print(f"WebSocket  : {CLOB_WS_URL}")
     print(f"Match file : {MATCHES_FILE}")
-    print(f"Ticks      : {ticks_path()}")
+    print("Ticks      : parts/v64/ticks/polymarket (pending R2 confirmation)")
     print(f"Filtre TE  : {'ON' if use_match_filter else 'OFF'}")
 
     session = requests.Session()
