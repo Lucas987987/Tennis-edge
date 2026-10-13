@@ -472,7 +472,10 @@ class IsolationTests(unittest.TestCase):
         self.assertNotIn("R2_PARTITION_WORKER_ENABLED", text)
         self.assertNotIn("confirm_sync", text)
         for path in (self.REPO / ".github/workflows").glob("*.yml"):
-            if path.name in {"r2_partition_worker.yml", "r2_partition_restore.yml"}:
+            if path.name in {
+                "r2_partition_worker.yml", "r2_partition_restore.yml",
+                "r2_polymarket_restore.yml",
+            }:
                 continue
             other = path.read_text()
             self.assertNotIn("r2-partition-worker", other, path.name)
@@ -502,6 +505,32 @@ class IsolationTests(unittest.TestCase):
         self.assertIn("r2-partition-restore-report.json", text)
         self.assertIn("actions/upload-artifact@v4", text)
         self.assertNotIn("scripts/kalshi_collector.py", text)
+
+    def test_polymarket_restore_workflow_is_manual_read_only_and_pinned(self):
+        import re
+        text = (self.REPO / ".github/workflows/r2_polymarket_restore.yml").read_text()
+        triggers = re.search(r"^on:\n((?:[ \t]+.*\n|\n)+)", text, re.M).group(1)
+        self.assertEqual(
+            re.findall(r"^  ([A-Za-z_]+):", triggers, re.M), ["workflow_dispatch"])
+        for forbidden in ("schedule", "cron", "workflow_run", "push", "pull_request"):
+            self.assertNotIn(forbidden, triggers, forbidden)
+        self.assertRegex(text, r"(?m)^permissions:\n  contents: read\n(?!  )")
+        self.assertIn("ref: main", text)
+        self.assertIn("GITHUB_REF\" = \"refs/heads/main", text)
+        self.assertIn("d9a71bc4cce3940867c2863ca0b79df6aada1719", text)
+        self.assertIn("e5b28f1c385fb6fb95838e49dcb94dcee96ff113", text)
+        self.assertIn('mktemp -d "$RUNNER_TEMP/r2-polymarket-restore.', text)
+        self.assertIn("--mode verify", text)
+        self.assertIn("--mode restore", text)
+        self.assertIn("--expected-duplicates 5", text)
+        self.assertNotIn("--mode sync", text)
+        self.assertNotIn("--confirm-write", text)
+        self.assertNotIn("IfNoneMatch", text)
+        self.assertNotIn("git push", text)
+        self.assertNotIn("git commit", text)
+        self.assertIn("r2-partition-restore-report.json", text)
+        self.assertIn("actions/upload-artifact@v4", text)
+        self.assertNotIn("scripts/polymarket_collector.py", text)
 
 
 class RestoreAuditTests(unittest.TestCase):
@@ -541,6 +570,22 @@ class RestoreAuditTests(unittest.TestCase):
         common["verify"] = {"success": False, "partitions": []}
         with self.assertRaises(ValueError):
             restore_audit.build_report(**common, restored=source)
+
+    def test_report_accepts_declared_historical_duplicates(self):
+        repeated = tick(0, "2026-01-05")
+        source = gz([repeated, repeated, tick(1, "2026-01-05")])
+        blob = w.git_blob_sha(source)
+        digest = hashlib.sha256(source).hexdigest()
+        report = restore_audit.build_report(
+            provider="polymarket", day="2026-01-05", blob=blob,
+            expected_lines=3, expected_unique=2, expected_duplicates=1,
+            source=source, restored=source,
+            verify={"success": True, "partitions": [{"blob": blob, "status": "verified"}]},
+            restore={"success": True, "sha256": digest, "lines": 3},
+        )
+        self.assertEqual(report["stats"]["lines"], 3)
+        self.assertEqual(report["stats"]["unique_ticks"], 2)
+        self.assertEqual(report["stats"]["duplicate_lines"], 1)
 
 
 

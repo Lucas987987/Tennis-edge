@@ -12,6 +12,7 @@ from r2_partition_worker import analyze, git_blob_sha
 
 def build_report(
     *, provider: str, day: str, blob: str, expected_lines: int,
+    expected_unique: int | None = None, expected_duplicates: int = 0,
     source: bytes, restored: bytes, verify: dict, restore: dict,
 ) -> dict:
     if source != restored:
@@ -27,10 +28,19 @@ def build_report(
         raise ValueError(
             f"expected {expected_lines} lines, got {source_stats['lines']}"
         )
-    if source_stats["malformed_lines"] or source_stats["duplicate_lines"]:
-        raise ValueError("source contains malformed or duplicate records")
-    if source_stats["unique_ticks"] != expected_lines:
-        raise ValueError("unique tick count differs from the expected line count")
+    if source_stats["malformed_lines"]:
+        raise ValueError("source contains malformed records")
+    if source_stats["duplicate_lines"] != expected_duplicates:
+        raise ValueError(
+            f"expected {expected_duplicates} duplicates, got "
+            f"{source_stats['duplicate_lines']}"
+        )
+    expected_unique = expected_lines if expected_unique is None else expected_unique
+    if source_stats["unique_ticks"] != expected_unique:
+        raise ValueError(
+            f"expected {expected_unique} unique ticks, got "
+            f"{source_stats['unique_ticks']}"
+        )
     if source_stats["ts_outside_day_lines"]:
         raise ValueError("source contains ticks outside the target day")
 
@@ -73,6 +83,8 @@ def main() -> int:
     parser.add_argument("--day", required=True)
     parser.add_argument("--blob", required=True)
     parser.add_argument("--expected-lines", type=int, required=True)
+    parser.add_argument("--expected-unique", type=int)
+    parser.add_argument("--expected-duplicates", type=int, default=0)
     parser.add_argument("--source", type=Path, required=True)
     parser.add_argument("--restored", type=Path, required=True)
     parser.add_argument("--verify-report", type=Path, required=True)
@@ -85,6 +97,8 @@ def main() -> int:
         day=args.day,
         blob=args.blob,
         expected_lines=args.expected_lines,
+        expected_unique=args.expected_unique,
+        expected_duplicates=args.expected_duplicates,
         source=args.source.read_bytes(),
         restored=args.restored.read_bytes(),
         verify=json.loads(args.verify_report.read_text(encoding="utf-8")),
