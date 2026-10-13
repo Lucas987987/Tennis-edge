@@ -21,16 +21,19 @@ concurrency:
 jobs:
   validate:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v5
         with:
           fetch-depth: 1
+          ref: main
+          filter: blob:none
           sparse-checkout-cone-mode: false
           sparse-checkout: |
             /scripts/partitioned_store.py
             /scripts/r2_storage.py
             /scripts/r2_probe.py
+            /scripts/r2_partition_worker.py
       - name: Require explicit write confirmation
         if: inputs.confirm_isolated_r2_writes != true
         run: |
@@ -41,21 +44,30 @@ jobs:
           python-version: '3.11'
       - name: Install R2 client
         run: python -m pip install --disable-pip-version-check boto3
-      - name: Write synthetic data, simulate interruption, restore, and verify
+      - name: Worker sandbox sequence (dry-run, sync, resync, verify, restore)
         env:
           R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
           R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
           R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
-          R2_V64_VALIDATION_ID: ${{ github.run_id }}-${{ github.run_attempt }}
-        run: >-
-          python scripts/r2_probe.py
-          --validation-id "$R2_V64_VALIDATION_ID"
-          --report-file r2-v64-validation-report.json
+          RID: ${{ github.run_id }}-${{ github.run_attempt }}
+        run: |
+          set -u
+          ROOT="parts/v64-archive-test/worker-$RID"
+          C="python scripts/r2_partition_worker.py --git-ref HEAD --root $ROOT --provider polymarket --max-partitions 2"
+          $C --mode dry-run --report-file r2-validation-1-dry.json > /dev/null
+          $C --mode sync --report-file r2-validation-2-sync.json > /dev/null
+          $C --mode sync --report-file r2-validation-3-resync.json > /dev/null
+          $C --mode verify --report-file r2-validation-4-verify.json > /dev/null
+          BLOB=$(git rev-parse HEAD:parts/pm_ticks_2026-10-12.jsonl.gz)
+          python scripts/r2_partition_worker.py --mode restore --root $ROOT --provider polymarket --day 2026-10-12 --blob $BLOB --destination /tmp/restore --report-file r2-validation-5-restore.json > /dev/null
+          git cat-file blob $BLOB | sha256sum
+          sha256sum /tmp/restore/pm_ticks_2026-10-12.jsonl.gz
+          cmp <(git cat-file blob $BLOB) /tmp/restore/pm_ticks_2026-10-12.jsonl.gz && echo BYTE_IDENTICAL
       - name: Retain validation report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: r2-v64-validation-${{ github.run_id }}-${{ github.run_attempt }}
-          path: r2-v64-validation-report.json
+          path: r2-validation-*.json
           if-no-files-found: warn
           retention-days: 30
