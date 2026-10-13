@@ -2,60 +2,81 @@
 
 V6.4 integration with the current collectors is deliberately **shadow-only**:
 the existing JSONL/Git history remains the read path and is still written. New
-R2 objects use isolated `parts/v64/shadow/collectors/...` namespaces; the
-historical archive under `parts/` and the normal V6.4 namespaces are not
-rewritten by this mode.
+collector data uses isolated `parts/v64/shadow/collectors/...` namespaces; the
+historical archive under `parts/` and canonical V6.4 namespaces are not
+rewritten.
 
-## Enable a canary
+## Isolated real-R2 validation
 
 Each collector workflow has a `workflow_dispatch` input named
-`r2_v64_shadow`, defaulting to `false`. Scheduled runs and repository-dispatch
-runs therefore keep their existing behavior. To test the shadow path:
+`r2_v64_shadow`, defaulting to `false`. Shadow writes also require the
+`R2_V64_SHADOW_ENABLED` repository variable to equal `true`; undefined or
+false keeps the feature off. Schedules and repository-dispatch runs therefore
+retain their existing collection behavior.
 
-1. Confirm the `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, and `R2_ENDPOINT`
-   Actions secrets exist and are scoped to the repository.
-2. Manually dispatch **one** collector with `r2_v64_shadow=true`. Start with a
-   short, explicitly supervised run; do not enable it on recurring schedules.
-3. Confirm that the collector's normal Git commit completed, then inspect its
-   `V6.4 shadow vérifié` report. The report covers segments produced or
-   recovered during that run; the sink checks the remote index SHA-256, each
-   segment SHA-256, JSONL decoding, and segment record counts.
-4. Restore the reported namespace into a temporary directory. Verify the
-   complete restored namespace with `LocalPartitionStore.verify()` and confirm
-   the report's segment checksums and line counts before considering a larger
-   canary.
+To validate R2 without starting a collector:
+
+1. In GitHub Actions on mobile or web, open **R2 V6.4 isolated validation**
+   on the reviewed PR branch and dispatch it with
+   `confirm_isolated_r2_writes=true`.
+2. The workflow writes synthetic records only beneath a unique
+   `parts/v64/shadow/validation/<run-id>/...` prefix. It uploads immutable
+   segments without an index to simulate runner interruption, recovers and
+   publishes the index, restores the namespace, and verifies SHA-256,
+   JSONL/record counts, loss/duplicate accounting, and tick compatibility.
+   The unique synthetic objects are retained; the workflow does not delete
+   R2 objects or access historical prefixes.
+3. Download the `r2-v64-validation-...` artifact and verify all three
+   collectors report `read_back_verified: true`, `missing_r2_records: 0`,
+   and one recovered orphan segment. The workflow never prints secret values.
+
+Each collector's `V6.4 shadow vérifié` report compares accepted collector
+calls, local writes, duplicate/no-op records, R2-verified records, duplicate
+record IDs in verified segments, and missing R2 records. It reports only
+segments produced during that collector run, not all prior namespace data.
 
 Every accepted record is appended locally and its R2 publication is attempted
 before the collector proceeds. Successful segment uploads are immutable and
 indexed with conditional manifest writes; retries are idempotent. If a runner
-stops after a segment upload but before its index update, the next enabled run
-scans the isolated namespace and reindexes valid orphan segments. If R2 is
-unavailable, the existing collector continues writing its legacy output,
-retries the shadow publication, and reports the shadow failure at shutdown.
-The workflow's final commit step runs even when the collector reports a shadow
-error, so the existing history path remains available. An external R2 outage
-can still delay V6.4 visibility until a later successful retry/run; the
-existing Git-backed path remains the fallback during this shadow phase.
+stops after a segment upload but before its index update, a later enabled run
+scans the isolated collector namespace and reindexes valid orphan segments.
+If R2 is unavailable, the existing collector continues writing its legacy
+output, retries shadow publication, and reports the failure at shutdown. The
+workflow's final commit step still runs after a shadow error. An R2 outage can
+delay V6.4 visibility until a later successful retry/run; the existing
+Git-backed path remains the fallback during this shadow phase.
 
-## Rollback and promotion gates
+## Progressive collector canary
 
-Rollback is immediate: stop selecting `r2_v64_shadow=true`. No collector,
-schedule, or legacy read path needs to be disabled or changed. Shadow objects
-are retained; do not delete them as part of rollback.
+After successful isolated R2 validation and review, keep shadow disabled until
+ready for a real collector canary. Do not change the existing collection
+frequencies:
 
-Do not promote these shadow namespaces to the canonical V6.4 namespaces or
-change analytics to read them until all of the following have been verified:
+1. From the default branch, dispatch **V6.4 shadow control** with
+   `state=enabled`.
+2. Dispatch exactly one existing collector workflow on the default branch,
+   select `r2_v64_shadow`, and leave its duration/frequency settings
+   unchanged. Wait for its normal Git persistence and review its
+   reconciliation report. Do not start overlapping canaries; existing
+   concurrency groups are unchanged.
+3. Repeat separately for bookmaker, Polymarket, then Kalshi, only after the
+   previous run's legacy persistence, R2 checksums, record counts, and latency
+   have been reviewed. Do not enable shadow on scheduled runs.
 
-- supervised canaries for bookmaker, Polymarket, and Kalshi each complete with
-  successful Git persistence and R2 read-back verification;
-- measured collection cadence and throughput remain acceptable under R2
-  latency, especially for WebSocket callbacks and the 30-second Kalshi poll;
-- a subsequent-run restore/replay check proves restart idempotence and reports
-  matching segment checksums and record counts;
-- readers have an explicit compatibility/migration policy for existing Git and
-  archived R2 history.
+## Immediate rollback and mobile procedure
 
-The shadow writer performs synchronous R2 requests on a newly accepted record.
-This is intentionally conservative for durability but can add latency. The
-mode is opt-in for supervised canaries only; it has not been enabled in this
-change on scheduled or repository-dispatch collector runs.
+From GitHub Actions on mobile or web, dispatch **V6.4 shadow control** with
+`state=disabled`. It sets `R2_V64_SHADOW_ENABLED=false`, blocking shadow on
+subsequent collector workflow runs even if the per-workflow checkbox is
+selected. Let any already-running collector finish; do not cancel it, because
+that would interrupt collection. The control switch does not remotely stop an
+in-progress collector process. All shadow objects are retained; never delete
+them as part of rollback.
+
+Do not promote shadow namespaces to canonical V6.4 namespaces or change
+analytics to read them until supervised canaries for all three providers
+complete, read-back and restart checks pass, collection throughput remains
+acceptable (especially for Polymarket callbacks and Kalshi polling), and
+readers have an explicit compatibility policy for existing Git and archived
+R2 history. Synchronous R2 writes may add latency and require measurement
+before promotion.

@@ -570,7 +570,8 @@ class R2Store:
             raise IntegrityError(f"R2 V6.4 index SHA-256 mismatch: {index_key}")
         local_index = LocalPartitionStore(root)._load_index(namespace)
 
-        records = total_bytes = 0
+        records = total_bytes = duplicate_records = 0
+        record_ids: set[str] = set()
         for relative in sorted(relatives):
             key = self._v64_key(relative)
             metadata = index.get("segments", {}).get(relative)
@@ -596,8 +597,21 @@ class R2Store:
             if len(rows) != metadata.get("record_count"):
                 raise IntegrityError(f"R2 V6.4 segment record count mismatch: {key}")
             records += len(rows)
+            for row in rows:
+                record_id = row.get("record_id")
+                if not isinstance(record_id, str) or not record_id:
+                    raise IntegrityError(f"Missing record ID in R2 V6.4 segment: {key}")
+                if record_id in record_ids:
+                    duplicate_records += 1
+                else:
+                    record_ids.add(record_id)
             total_bytes += len(body)
-        return {"segments": len(relatives), "records": records, "bytes": total_bytes}
+        return {
+            "segments": len(relatives),
+            "records": records,
+            "bytes": total_bytes,
+            "duplicate_records": duplicate_records,
+        }
 
     def _push_v64_namespace_once(
         self,

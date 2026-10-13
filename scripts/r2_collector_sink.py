@@ -24,9 +24,21 @@ class R2V64CollectorSink:
         self.namespaces: set[str] = set()
         self.segments: dict[str, set[str]] = {}
         self.published: dict[str, set[str]] = {}
+        self.counts: dict[str, dict[str, int]] = {}
         self.dirty: set[str] = set()
         self.recovered: set[str] = set()
         self._errors: dict[str, Exception] = {}
+
+    def _record_result(self, namespace: str, result: dict) -> None:
+        counts = self.counts.setdefault(
+            namespace,
+            {"collected": 0, "locally_persisted": 0, "duplicates": 0},
+        )
+        written = int(result.get("written", 0))
+        counts["collected"] += 1
+        counts["locally_persisted"] += written
+        counts["duplicates"] += 1 - written
+        self.segments.setdefault(namespace, set()).update(result.get("segments", []))
 
     def _publish(self, namespace: str) -> None:
         if namespace not in self.dirty:
@@ -51,9 +63,7 @@ class R2V64CollectorSink:
         except Exception as exc:
             self._errors[namespace] = exc
             return
-        if report.get("records"):
-            self.segments.setdefault(namespace, set()).update(relatives)
-            self.published[namespace].update(relatives)
+        self.published[namespace].update(relatives)
         self.dirty.discard(namespace)
         self._errors.pop(namespace, None)
 
@@ -66,6 +76,7 @@ class R2V64CollectorSink:
             namespace, [(key, data)], data.get("ts"),
         )
         self.namespaces.add(namespace)
+        self._record_result(namespace, result)
         if result.get("written"):
             self.dirty.add(namespace)
         if namespace in self.dirty:
@@ -81,6 +92,7 @@ class R2V64CollectorSink:
             market, [data], root=self.root, namespace=namespace,
         )
         self.namespaces.add(namespace)
+        self._record_result(namespace, result)
         if result.get("written"):
             self.dirty.add(namespace)
         if namespace in self.dirty:
@@ -95,9 +107,24 @@ class R2V64CollectorSink:
             self._publish(namespace)
             relatives = self.segments.get(namespace, set())
             try:
-                reports[namespace] = self.r2.verify_v64_writes(
+                verified = self.r2.verify_v64_writes(
                     namespace, self.root, relatives,
                 )
+                counts = self.counts.get(namespace, {})
+                verified["collected_records"] = counts.get("collected", 0)
+                verified["local_persisted_records"] = counts.get(
+                    "locally_persisted", 0,
+                )
+                verified["duplicate_records_skipped"] = counts.get(
+                    "duplicates", 0,
+                )
+                verified["r2_persisted_records"] = verified["records"]
+                verified["missing_r2_records"] = max(
+                    0,
+                    verified["local_persisted_records"]
+                    - verified["r2_persisted_records"],
+                )
+                reports[namespace] = verified
             except Exception as exc:
                 self._errors[namespace] = exc
         if self._errors:

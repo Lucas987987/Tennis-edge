@@ -37,7 +37,7 @@ jobs:
         with:
           python-version: '3.11'
       - name: Installer le client R2 facultatif
-        if: inputs.r2_v64_shadow == true
+        if: inputs.r2_v64_shadow == true && vars.R2_V64_SHADOW_ENABLED == 'true'
         run: pip install boto3
       # RESTAURATION DES PARTITIONS ARCHIVEES.
       #
@@ -61,10 +61,10 @@ jobs:
       - name: Courbes books (match + set1 + set2) via historical v5
         env:
           RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
-          R2_V64_SHADOW: ${{ inputs.r2_v64_shadow && '1' || '0' }}
-          R2_ACCESS_KEY_ID: ${{ inputs.r2_v64_shadow && secrets.R2_ACCESS_KEY_ID || '' }}
-          R2_SECRET_ACCESS_KEY: ${{ inputs.r2_v64_shadow && secrets.R2_SECRET_ACCESS_KEY || '' }}
-          R2_ENDPOINT: ${{ inputs.r2_v64_shadow && secrets.R2_ENDPOINT || '' }}
+          R2_V64_SHADOW: ${{ inputs.r2_v64_shadow && vars.R2_V64_SHADOW_ENABLED == 'true' && '1' || '0' }}
+          R2_ACCESS_KEY_ID: ${{ inputs.r2_v64_shadow && vars.R2_V64_SHADOW_ENABLED == 'true' && secrets.R2_ACCESS_KEY_ID || '' }}
+          R2_SECRET_ACCESS_KEY: ${{ inputs.r2_v64_shadow && vars.R2_V64_SHADOW_ENABLED == 'true' && secrets.R2_SECRET_ACCESS_KEY || '' }}
+          R2_ENDPOINT: ${{ inputs.r2_v64_shadow && vars.R2_V64_SHADOW_ENABLED == 'true' && secrets.R2_ENDPOINT || '' }}
           BOOKS: "pinnacle,betfair-ex,winamax.fr,unibet.fr,bet365.fr,pmu,zebet.fr,netbet.fr,bwin.fr,genybet.fr,vbet.fr,circusbet.fr,feelingbet.fr,unibet,bwin,betsson,bet365,williamhill,betway,1xbet,888sport,leovegas,tipico,netbet,betsafe,nordicbet,coolbet,interwetten,vbet,marathonbet,22bet"
         run: python scripts/fetch_book_curves.py
       - name: Migration ponctuelle vers partitions mensuelles (idempotent)

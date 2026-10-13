@@ -75,7 +75,7 @@ jobs:
           pip install -r requirements.txt
 
       - name: Install optional R2 client
-        if: inputs.r2_v64_shadow == true
+        if: inputs.r2_v64_shadow == true && vars.R2_V64_SHADOW_ENABLED == 'true'
         run: pip install boto3
 
       # Mode diagnostic : découverte seule, écrit polymarket_diag.json avec le
@@ -159,10 +159,10 @@ jobs:
       - name: Polymarket collector
         if: '!inputs.diag && !inputs.probe'
         env:
-          R2_V64_SHADOW: ${{ inputs.r2_v64_shadow && '1' || '0' }}
-          R2_ACCESS_KEY_ID: ${{ inputs.r2_v64_shadow && secrets.R2_ACCESS_KEY_ID || '' }}
-          R2_SECRET_ACCESS_KEY: ${{ inputs.r2_v64_shadow && secrets.R2_SECRET_ACCESS_KEY || '' }}
-          R2_ENDPOINT: ${{ inputs.r2_v64_shadow && secrets.R2_ENDPOINT || '' }}
+          R2_V64_SHADOW: ${{ inputs.r2_v64_shadow && vars.R2_V64_SHADOW_ENABLED == 'true' && '1' || '0' }}
+          R2_ACCESS_KEY_ID: ${{ inputs.r2_v64_shadow && vars.R2_V64_SHADOW_ENABLED == 'true' && secrets.R2_ACCESS_KEY_ID || '' }}
+          R2_SECRET_ACCESS_KEY: ${{ inputs.r2_v64_shadow && vars.R2_V64_SHADOW_ENABLED == 'true' && secrets.R2_SECRET_ACCESS_KEY || '' }}
+          R2_ENDPOINT: ${{ inputs.r2_v64_shadow && vars.R2_V64_SHADOW_ENABLED == 'true' && secrets.R2_ENDPOINT || '' }}
         run: |
           python scripts/polymarket_collector_scripts.py \
             --duration-seconds ${PM_DURATION:-900} \

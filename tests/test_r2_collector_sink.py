@@ -16,7 +16,8 @@ sys.path.insert(0, str(SCRIPTS))
 from partitioned_store import LocalPartitionStore  # noqa: E402
 import r2_collector_sink  # noqa: E402
 from r2_collector_sink import R2V64CollectorSink  # noqa: E402
-from r2_storage import IntegrityError  # noqa: E402
+from r2_probe import run_probe  # noqa: E402
+from r2_storage import IntegrityError, R2Store  # noqa: E402
 
 
 class FakeR2Client:
@@ -118,6 +119,10 @@ class R2CollectorSinkTests(unittest.TestCase):
         second_report = second.finish()
 
         self.assertEqual(second_report[namespace]["records"], 1)
+        self.assertEqual(second_report[namespace]["collected_records"], 1)
+        self.assertEqual(second_report[namespace]["local_persisted_records"], 1)
+        self.assertEqual(second_report[namespace]["duplicate_records_skipped"], 0)
+        self.assertEqual(second_report[namespace]["missing_r2_records"], 0)
         self.assertEqual(
             len(self.client.objects),
             2,
@@ -155,6 +160,11 @@ class R2CollectorSinkTests(unittest.TestCase):
 
         self.assertEqual(report[namespace]["records"], 1)
         self.assertEqual(report[namespace]["segments"], 1)
+        self.assertEqual(report[namespace]["collected_records"], 1)
+        self.assertEqual(report[namespace]["local_persisted_records"], 1)
+        self.assertEqual(report[namespace]["r2_persisted_records"], 1)
+        self.assertEqual(report[namespace]["missing_r2_records"], 0)
+        self.assertEqual(report[namespace]["duplicate_records"], 0)
 
     def test_manifest_failure_after_segment_upload_recovers_on_finish(self):
         self.client.fail_put_suffix = "/index.json"
@@ -228,6 +238,11 @@ class R2CollectorSinkTests(unittest.TestCase):
 
         self.assertEqual(reports["shadow/collectors/bookmakers/match"]["records"], 1)
         self.assertEqual(reports["shadow/collectors/bookmakers/set1"]["records"], 1)
+        self.assertTrue(all(
+            report["collected_records"] == report["r2_persisted_records"] == 1
+            and report["missing_r2_records"] == 0
+            for report in reports.values()
+        ))
 
     def test_corrupt_remote_segment_fails_final_checksum_verification(self):
         sink = R2V64CollectorSink("polymarket", self.root, self.client)
@@ -259,6 +274,33 @@ class R2CollectorSinkTests(unittest.TestCase):
             self.assertIsNone(r2_collector_sink.sink_for("kalshi"))
             with self.assertRaisesRegex(RuntimeError, "legacy collection output remains enabled"):
                 r2_collector_sink.finish_sink("kalshi")
+
+    def test_real_probe_flow_isolated_namespace_counts_and_orphan_recovery(self):
+        report = run_probe(
+            R2Store(self.client, retry_attempts=1),
+            include_e2e=True,
+            validation_id="test-run-1",
+        )
+
+        self.assertTrue(report["synthetic_only"])
+        self.assertEqual(set(report["results"]), {
+            "connectivity", "bookmakers", "polymarket", "kalshi",
+        })
+        for provider, result in report["results"].items():
+            self.assertTrue(
+                result["namespace"].startswith("shadow/validation/test-run-1/"),
+            )
+            self.assertEqual(result["missing_r2_records"], 0)
+            self.assertTrue(result["read_back_verified"])
+            self.assertEqual(result["interrupted_upload_recovered_segments"], 1)
+            if provider != "connectivity":
+                self.assertEqual(result["collected_records"], 2)
+                self.assertEqual(result["duplicate_records_skipped"], 1)
+                self.assertEqual(result["r2_persisted_records"], 1)
+                if provider == "bookmakers":
+                    self.assertIsNone(result["compatibility_records"])
+                else:
+                    self.assertEqual(result["compatibility_records"], 1)
 
 
 if __name__ == "__main__":
