@@ -15,6 +15,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
 import r2_partition_worker as w  # noqa: E402
+import r2_restore_audit as restore_audit  # noqa: E402
 
 NOW = dt.datetime(2026, 10, 13, 17, 0, tzinfo=dt.timezone.utc)
 ROOT = "parts/v64-archive-test"
@@ -471,11 +472,75 @@ class IsolationTests(unittest.TestCase):
         self.assertNotIn("R2_PARTITION_WORKER_ENABLED", text)
         self.assertNotIn("confirm_sync", text)
         for path in (self.REPO / ".github/workflows").glob("*.yml"):
-            if path.name == "r2_partition_worker.yml":
+            if path.name in {"r2_partition_worker.yml", "r2_partition_restore.yml"}:
                 continue
             other = path.read_text()
             self.assertNotIn("r2-partition-worker", other, path.name)
             self.assertNotIn("r2_partition_worker", other, path.name)
+
+    def test_restore_workflow_is_manual_read_only_and_pinned(self):
+        import re
+        text = (self.REPO / ".github/workflows/r2_partition_restore.yml").read_text()
+        triggers = re.search(r"^on:\n((?:[ \t]+.*\n|\n)+)", text, re.M).group(1)
+        self.assertEqual(
+            re.findall(r"^  ([A-Za-z_]+):", triggers, re.M), ["workflow_dispatch"])
+        for forbidden in ("schedule", "cron", "workflow_run", "push", "pull_request"):
+            self.assertNotIn(forbidden, triggers, forbidden)
+        self.assertRegex(text, r"(?m)^permissions:\n  contents: read\n(?!  )")
+        self.assertIn("ref: main", text)
+        self.assertIn('GITHUB_REF" = "refs/heads/main', text)
+        self.assertIn("24bc8640e0f7c0d707fce26ffce70f4666ed1186", text)
+        self.assertIn("d89ff3d14e2822568ac15afa6edecc82dd60d8be", text)
+        self.assertIn('mktemp -d "$RUNNER_TEMP/r2-kalshi-restore.', text)
+        self.assertIn("--mode verify", text)
+        self.assertIn("--mode restore", text)
+        self.assertNotIn("--mode sync", text)
+        self.assertNotIn("--confirm-write", text)
+        self.assertNotIn("IfNoneMatch", text)
+        self.assertNotIn("git push", text)
+        self.assertNotIn("git commit", text)
+        self.assertIn("r2-partition-restore-report.json", text)
+        self.assertIn("actions/upload-artifact@v4", text)
+        self.assertNotIn("scripts/kalshi_collector.py", text)
+
+
+class RestoreAuditTests(unittest.TestCase):
+    def test_report_requires_byte_identity_verified_manifest_and_matching_stats(self):
+        records = [tick(0, "2026-01-05"), tick(1, "2026-01-05")]
+        source = gz(records)
+        blob = w.git_blob_sha(source)
+        digest = hashlib.sha256(source).hexdigest()
+        verify = {"success": True, "partitions": [{"blob": blob, "status": "verified"}]}
+        restore = {"success": True, "sha256": digest, "lines": 2}
+
+        report = restore_audit.build_report(
+            provider="kalshi", day="2026-01-05", blob=blob,
+            expected_lines=2, source=source, restored=source,
+            verify=verify, restore=restore,
+        )
+
+        self.assertEqual(report["source_sha256"], digest)
+        self.assertEqual(report["restored_sha256"], digest)
+        self.assertTrue(report["byte_identical_to_git"])
+        self.assertEqual(report["stats"]["unique_ticks"], 2)
+        self.assertEqual(report["r2_writes"], 0)
+        self.assertEqual(report["r2_deletions"], 0)
+
+    def test_report_rejects_nonidentical_or_unverified_restore(self):
+        source = gz([tick(0, "2026-01-05")])
+        blob = w.git_blob_sha(source)
+        digest = hashlib.sha256(source).hexdigest()
+        common = {
+            "provider": "kalshi", "day": "2026-01-05", "blob": blob,
+            "expected_lines": 1, "source": source,
+            "verify": {"success": True, "partitions": [{"blob": blob, "status": "verified"}]},
+            "restore": {"success": True, "sha256": digest, "lines": 1},
+        }
+        with self.assertRaises(ValueError):
+            restore_audit.build_report(**common, restored=gz([tick(1, "2026-01-05")]))
+        common["verify"] = {"success": False, "partitions": []}
+        with self.assertRaises(ValueError):
+            restore_audit.build_report(**common, restored=source)
 
 
 
