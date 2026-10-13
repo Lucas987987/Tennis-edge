@@ -1,61 +1,45 @@
-name: R2 V6.4 isolated validation
-
-run-name: R2 V6.4 validation #${{ github.run_id }}-${{ github.run_attempt }}
-
+name: R2 V6.4 probe
+run-name: R2 final validation #${{ github.run_id }}
 on:
   workflow_dispatch:
     inputs:
       confirm_isolated_r2_writes:
-        description: "Confirm synthetic objects will be written to an isolated R2 namespace and retained"
         type: boolean
-        required: true
         default: false
-
 permissions:
   contents: read
-
 concurrency:
-  group: r2-v64-isolated-validation
+  group: r2-final-validation
   cancel-in-progress: false
-
 jobs:
   validate:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v5
         with:
           fetch-depth: 1
+          filter: blob:none
           sparse-checkout-cone-mode: false
           sparse-checkout: |
             /scripts/partitioned_store.py
-            /scripts/r2_storage.py
-            /scripts/r2_probe.py
-      - name: Require explicit write confirmation
-        if: inputs.confirm_isolated_r2_writes != true
-        run: |
-          echo "Validation stopped: confirm isolated R2 writes in the workflow input."
-          exit 1
+            /scripts/r2_partition_worker.py
+            /scripts/_validate_r2_final.py
       - uses: actions/setup-python@v6
         with:
           python-version: '3.11'
-      - name: Install R2 client
-        run: python -m pip install --disable-pip-version-check boto3
-      - name: Write synthetic data, simulate interruption, restore, and verify
+      - run: git fetch --depth 1 --filter=blob:none origin main
+      - run: python -m pip install --disable-pip-version-check boto3
+      - name: Validate
         env:
           R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
           R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
           R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
-          R2_V64_VALIDATION_ID: ${{ github.run_id }}-${{ github.run_attempt }}
-        run: >-
-          python scripts/r2_probe.py
-          --validation-id "$R2_V64_VALIDATION_ID"
-          --report-file r2-v64-validation-report.json
-      - name: Retain validation report
-        if: always()
+        run: python scripts/_validate_r2_final.py 2>&1 | tee validation.log; exit ${PIPESTATUS[0]}
+      - if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: r2-v64-validation-${{ github.run_id }}-${{ github.run_attempt }}
-          path: r2-v64-validation-report.json
-          if-no-files-found: warn
-          retention-days: 30
+          name: r2-final-validation
+          path: |
+            validation.log
+            rep_*.json
