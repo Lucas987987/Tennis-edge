@@ -26,7 +26,11 @@ real write is authorised **per run**, never by a persistent repository setting.
 * `dry-run` (default): no R2 write. Lists what is pending (queries R2 read-only when credentials exist).
 * `sync`: create-only archive of **one exact partition version** + read-back verification + manifest.
 * `verify`: read-only Git vs R2 comparison (SHA-256, normalized records, counts, timestamps).
-* `restore` (CLI): writes the verified bytes of one version to a directory; refuses to overwrite.
+* `restore` (CLI): writes one verified version to a directory and refuses to overwrite.
+* `r2_partition_restore.yml`: separate, manual, read-only restore audit for Kalshi 2026-10-06.
+  It pins the source commit and blob, verifies the R2 manifest/data, restores under `$RUNNER_TEMP`,
+  compares bytes and tick statistics with Git, and publishes JSON reports as a workflow artifact.
+  It has `contents: read`, no automatic trigger, and no R2 write or delete path.
 
 Report statuses: `uploaded`, `verified`, `pending` (deadline/limit/dry-run), `skipped_unfrozen`,
 `error` (retries exhausted; retried next run), `conflict` (differing object, permanent error;
