@@ -28,7 +28,7 @@ jobs:
           python-version: '3.11'
       - name: Install R2 client
         run: pip install --quiet boto3
-      - name: Write and verify one isolated R2 probe
+      - name: Append, upload, restore, and verify one isolated R2 partition
         env:
           R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
           R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}

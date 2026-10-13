@@ -101,11 +101,12 @@ def test_limited_r2_probe_writes_unique_object_and_verifies_readback():
     second = run_probe(store)
 
     assert first["read_back_verified"] is second["read_back_verified"] is True
-    assert first["bytes"] < 200 and second["bytes"] < 200
-    assert first["sha256"] == second["sha256"] or first["key"] != second["key"]
-    assert first["key"].startswith("parts/v64/_connectivity-check/")
-    assert second["key"] != first["key"]
-    assert len(client.objects) == 2
+    assert first["segment_bytes"] < 512 and second["segment_bytes"] < 512
+    assert first["record_sha256"] != second["record_sha256"]
+    assert first["namespace"] == second["namespace"] == "_connectivity-check"
+    assert first["records_restored"] == 1
+    assert second["records_restored"] == 2
+    assert len(client.objects) == 3
 
 
 def test_failed_r2_prepare_blocks_direct_publication(tmp_path):
