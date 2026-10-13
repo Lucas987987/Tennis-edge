@@ -19,6 +19,7 @@ Env : RAPIDAPI_KEY. BOOKS (def "pinnacle,unibet,bwin,betsson").
 """
 import os, json, datetime, time, re, unicodedata
 import oddspapi_v5 as ov
+from r2_collector_sink import finish_sink, sink_for
 
 
 def _norm(s):
@@ -168,17 +169,27 @@ def main():
                 ch = _curve_dt(curves.get(ov.OUT_HOME)); ca = _curve_dt(curves.get(ov.OUT_AWAY))
                 if not ch or not ca:
                     continue  # book ne cote pas ce match
-                f.write(json.dumps(build_entry(uid, fid, book, m, start, ch, ca), ensure_ascii=False) + '\n')
+                entry = build_entry(uid, fid, book, m, start, ch, ca)
+                f.write(json.dumps(entry, ensure_ascii=False) + '\n')
+                sink = sink_for('bookmakers')
+                if sink is not None:
+                    sink.write_bookmaker_curve('match', entry)
                 got['match'] += 1
                 # set 1 (123/124) — meme format, ecrit seulement si le book le cote
                 c1h = _curve_dt(curves.get(ov.SET1_HOME)); c1a = _curve_dt(curves.get(ov.SET1_AWAY))
                 if c1h and c1a:
-                    f1.write(json.dumps(build_entry(uid, fid, book, m, start, c1h, c1a), ensure_ascii=False) + '\n')
+                    entry = build_entry(uid, fid, book, m, start, c1h, c1a)
+                    f1.write(json.dumps(entry, ensure_ascii=False) + '\n')
+                    if sink is not None:
+                        sink.write_bookmaker_curve('set1', entry)
                     got['set1'] += 1
                 # set 2 (125/126)
                 c2h = _curve_dt(curves.get(ov.SET2_HOME)); c2a = _curve_dt(curves.get(ov.SET2_AWAY))
                 if c2h and c2a:
-                    f2.write(json.dumps(build_entry(uid, fid, book, m, start, c2h, c2a), ensure_ascii=False) + '\n')
+                    entry = build_entry(uid, fid, book, m, start, c2h, c2a)
+                    f2.write(json.dumps(entry, ensure_ascii=False) + '\n')
+                    if sink is not None:
+                        sink.write_bookmaker_curve('set2', entry)
                     got['set2'] += 1
             print(f"  ✅ {book}: {got['match']} match | {got['set1']} set1 | {got['set2']} set2")
             for k in total: total[k] += got[k]
@@ -202,6 +213,10 @@ def main():
                       'total': total, 'partition_sizes_mb': sizes}, f, ensure_ascii=False)
     except Exception as e:
         print(f"  ⚠️ Écriture hist_curves_meta.json: {e}")
+
+    report = finish_sink('bookmakers')
+    if report:
+        print(f"✅ V6.4 shadow vérifié: {report}")
 
 
 if __name__ == '__main__':

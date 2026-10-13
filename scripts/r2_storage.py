@@ -15,7 +15,12 @@ import time
 from datetime import date, timedelta
 from typing import Any
 
-from partitioned_store import IntegrityError, LocalPartitionStore, canonical
+from partitioned_store import (
+    IntegrityError,
+    LocalPartitionStore,
+    _atomic_write,
+    canonical,
+)
 
 
 BUCKET = "tennis-edge-courbes"
@@ -387,6 +392,53 @@ class R2Store:
             raise ValueError(f"Invalid V6.4 relative path: {relative}")
         return relative
 
+    def recover_v64_orphans(
+        self,
+        namespace: str,
+        root: str | Path = ".",
+    ) -> dict:
+        store = LocalPartitionStore(root)
+        index = store._load_index(namespace, allow_pending=True)
+        indexed = set(index["segments"])
+        index_key = f"{V64_PREFIX}{namespace}/index.json"
+        try:
+            remote_index = json.loads(self._get(index_key))
+        except Exception as exc:
+            code = getattr(exc, "response", {}).get("Error", {}).get("Code")
+            if code not in {"404", "NoSuchKey", "NotFound"}:
+                raise
+        else:
+            claimed = remote_index.get("sha256")
+            unsigned = dict(remote_index)
+            unsigned.pop("sha256", None)
+            if claimed != hashlib.sha256(canonical(unsigned)).hexdigest():
+                raise IntegrityError(f"R2 V6.4 index SHA-256 mismatch: {index_key}")
+            indexed.update(remote_index.get("segments", {}))
+        prefix = f"{V64_PREFIX}{namespace}/"
+        recovered = bytes_recovered = 0
+        for key in self.list_keys(prefix):
+            name = Path(key).name
+            if not (name.startswith("segment-") and name.endswith(".jsonl.gz")):
+                continue
+            relative = self._v64_key(key)
+            if relative in indexed:
+                continue
+            body = self._retry(f"recover {relative}", lambda: self._get(key))
+            digest = hashlib.sha256(body).hexdigest()
+            if name != f"segment-{digest}.jsonl.gz":
+                raise IntegrityError(f"Orphan segment SHA-256 mismatch: {key}")
+            target = Path(root).resolve() / relative
+            if target.exists() and file_sha256(target) != digest:
+                raise IntegrityError(f"Local orphan segment differs from R2: {relative}")
+            if not target.exists():
+                _atomic_write(target, body)
+            recovered += 1
+            bytes_recovered += len(body)
+        if recovered:
+            store._recover_orphans(namespace, index)
+            store._save_index(namespace, index)
+        return {"segments": recovered, "bytes": bytes_recovered}
+
     def pull_v64_namespace(
         self,
         namespace: str,
@@ -452,19 +504,27 @@ class R2Store:
         self,
         namespace: str,
         root: str | Path = ".",
+        verify_read_back: bool = True,
+        segments_to_upload: set[str] | None = None,
     ) -> dict:
         return self._retry(
             f"push/verify {namespace}",
-            lambda: self._push_and_verify_v64_namespace(namespace, root),
+            lambda: self._push_and_verify_v64_namespace(
+                namespace, root, verify_read_back, segments_to_upload,
+            ),
         )
 
     def _push_and_verify_v64_namespace(
         self,
         namespace: str,
         root: str | Path,
+        verify_read_back: bool = True,
+        segments_to_upload: set[str] | None = None,
     ) -> dict:
-        report = self._push_v64_namespace_once(namespace, root)
-        if not report.get("records"):
+        report = self._push_v64_namespace_once(
+            namespace, root, segments_to_upload,
+        )
+        if not report.get("records") or not verify_read_back:
             return report
         source = LocalPartitionStore(root)
         source_index = source._load_index(namespace)
@@ -492,10 +552,58 @@ class R2Store:
                 )
         return {**report, "read_back_verified": True}
 
+    def verify_v64_writes(
+        self,
+        namespace: str,
+        root: str | Path,
+        relatives: set[str],
+    ) -> dict:
+        if not relatives:
+            return {"segments": 0, "records": 0, "bytes": 0}
+        index_key = f"{V64_PREFIX}{namespace}/index.json"
+        index_bytes = self._retry(f"verify {namespace} index", lambda: self._get(index_key))
+        index = json.loads(index_bytes)
+        claimed = index.get("sha256")
+        unsigned = dict(index)
+        unsigned.pop("sha256", None)
+        if claimed != hashlib.sha256(canonical(unsigned)).hexdigest():
+            raise IntegrityError(f"R2 V6.4 index SHA-256 mismatch: {index_key}")
+        local_index = LocalPartitionStore(root)._load_index(namespace)
+
+        records = total_bytes = 0
+        for relative in sorted(relatives):
+            key = self._v64_key(relative)
+            metadata = index.get("segments", {}).get(relative)
+            if not isinstance(metadata, dict):
+                raise IntegrityError(f"R2 V6.4 index is missing segment: {relative}")
+            if metadata != local_index["segments"].get(relative):
+                raise IntegrityError(f"R2 V6.4 segment manifest mismatch: {relative}")
+            body = self._retry(f"verify {relative}", lambda: self._get(key))
+            digest = hashlib.sha256(body).hexdigest()
+            if digest != metadata.get("sha256"):
+                raise IntegrityError(f"R2 V6.4 segment SHA-256 mismatch: {key}")
+            local_path = Path(root).resolve() / relative
+            if file_sha256(local_path) != digest:
+                raise IntegrityError(f"Local/R2 V6.4 segment mismatch: {relative}")
+            try:
+                rows = [
+                    json.loads(line)
+                    for line in gzip.decompress(body).splitlines()
+                    if line.strip()
+                ]
+            except (OSError, EOFError, json.JSONDecodeError) as exc:
+                raise IntegrityError(f"Invalid R2 V6.4 segment: {key}") from exc
+            if len(rows) != metadata.get("record_count"):
+                raise IntegrityError(f"R2 V6.4 segment record count mismatch: {key}")
+            records += len(rows)
+            total_bytes += len(body)
+        return {"segments": len(relatives), "records": records, "bytes": total_bytes}
+
     def _push_v64_namespace_once(
         self,
         namespace: str,
         root: str | Path = ".",
+        segments_to_upload: set[str] | None = None,
     ) -> dict:
         store = LocalPartitionStore(root)
         report = store.verify(namespace)
@@ -507,6 +615,8 @@ class R2Store:
         index = store._load_index(namespace)
         uploaded = 0
         for relative, meta in index["segments"].items():
+            if segments_to_upload is not None and relative not in segments_to_upload:
+                continue
             path = Path(root).resolve() / relative
             if file_sha256(path) != meta["sha256"]:
                 raise IntegrityError(f"Local V6.4 segment SHA-256 mismatch: {relative}")

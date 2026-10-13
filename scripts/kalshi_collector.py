@@ -58,6 +58,7 @@ import urllib.request
 import urllib.parse
 import urllib.error
 from pathlib import Path
+from r2_collector_sink import finish_sink, sink_for
 
 BASE       = os.environ.get('KALSHI_BASE', 'https://api.elections.kalshi.com/trade-api/v2')
 MATCHES    = os.environ.get('MATCHES_FILE', 'matches_oddspapi.json')
@@ -403,7 +404,7 @@ class Ecrivain:
         # Tick MAIGRE : les métadonnées fixes (joueurs, tournoi, horaire) vivent
         # dans kalshi_markets.json, pas répétées à chaque ligne. Sur Polymarket,
         # ces champs représentaient plus de la moitié du volume écrit.
-        append_jsonl(ticks_path(), {
+        row = {
             'ts': iso_now(),
             'ticker': suivi['ticker'],
             'event_ticker': suivi['event_ticker'],
@@ -419,7 +420,11 @@ class Ecrivain:
             'open_interest': entier(m, 'open_interest_fp', 'open_interest'),
             'liquidity': prix(m, 'liquidity'),
             'status': m.get('status'),
-        })
+        }
+        append_jsonl(ticks_path(), row)
+        sink = sink_for('kalshi')
+        if sink is not None:
+            sink.write_tick(row)
 
 
 def sauver_registre(suivis):
@@ -537,6 +542,13 @@ def main():
         sauver_etat(running=False, stopped_at=iso_now(),
                     derniers_suivis=len(suivis),
                     ticks_ecrits=ecrivain.ecrits)
+        try:
+            report = finish_sink('kalshi')
+        except Exception as exc:
+            print(f'❌ échec de vérification V6.4 (shadow): {exc}')
+            raise
+        if report:
+            print(f'✅ V6.4 shadow vérifié: {report}')
         print('👋 Kalshi Collector arrêté')
     return 0
 
