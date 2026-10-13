@@ -67,7 +67,6 @@ jobs:
           fi
       - uses: actions/checkout@v5
         with:
-          ref: main
           fetch-depth: 1
           filter: blob:none
           sparse-checkout-cone-mode: false
@@ -77,8 +76,9 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: '3.11'
+      - name: Fetch published partitions (main, read-only snapshot)
+        run: git fetch --depth 1 --filter=blob:none origin main
       - name: Install R2 client
-        if: inputs.mode != 'dry-run' || vars.R2_PARTITION_WORKER_ENABLED == 'true'
         run: python -m pip install --disable-pip-version-check boto3
       - name: Run worker
         env:
@@ -90,7 +90,7 @@ jobs:
           MAXP: ${{ inputs.max_partitions }}
           PROVIDER: ${{ inputs.provider }}
         run: |
-          args=(--mode "$MODE" --git-ref HEAD --root "$ROOT" --max-partitions "$MAXP" \
+          args=(--mode "$MODE" --git-ref FETCH_HEAD --root "$ROOT" --max-partitions "$MAXP" \
                 --max-seconds 1200 --report-file r2-partition-worker-report.json)
           if [ -n "$PROVIDER" ]; then args+=(--provider "$PROVIDER"); fi
           python scripts/r2_partition_worker.py "${args[@]}"

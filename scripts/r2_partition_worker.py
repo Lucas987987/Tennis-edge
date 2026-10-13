@@ -615,12 +615,19 @@ def main(argv: list[str] | None = None) -> int:
     elif args.mode == "verify":
         report = run_verify(args.repo, args.git_ref, store, args.root, providers)
     else:
-        if not (providers and len(providers) == 1 and args.day and args.blob
-                and args.destination):
-            parser.error("restore needs --provider, --day, --blob, --destination")
+        if not (providers and len(providers) == 1 and args.day and args.destination):
+            parser.error("restore needs --provider, --day, --destination")
+        provider = next(iter(providers))
+        blob = args.blob
+        if blob is None:
+            short = "pm" if provider == "polymarket" else "kx"
+            blob = current_blob(
+                args.repo, args.git_ref, f"parts/{short}_ticks_{args.day}.jsonl.gz",
+            )
+            if blob is None:
+                parser.error(f"no published partition for {provider} {args.day} on {args.git_ref}")
         report = restore_partition(
-            store, args.root, next(iter(providers)), args.day,
-            args.destination, args.blob,
+            store, args.root, provider, args.day, args.destination, blob,
         )
         report["success"] = True
     text = json.dumps(report, sort_keys=True, indent=2)

@@ -351,5 +351,119 @@ class WorkerTests(Base):
         self.assertEqual(report["partitions"][0]["attempts_total"], 2)
 
 
+class LiveGitTests(Base):
+    def test_new_and_rewritten_partitions_during_run(self):
+        self.publish("pm_ticks_2026-10-10.jsonl.gz", gz([tick(1, "2026-10-10")]))
+        self.publish("pm_ticks_2026-10-12.jsonl.gz", gz([tick(i) for i in range(5)]))
+        original_put = self.client.put_object
+        state = {"done": False}
+
+        def put_and_publish(Bucket, Key, Body, **kw):
+            if not state["done"]:
+                state["done"] = True
+                # A collector/compressor publishes while the worker is running.
+                self.publish("pm_ticks_2026-10-11.jsonl.gz", gz([tick(1, "2026-10-11")]))
+                self.publish("pm_ticks_2026-10-12.jsonl.gz", gz([tick(i) for i in range(9)]))
+            return original_put(Bucket=Bucket, Key=Key, Body=Body, **kw)
+        self.client.put_object = put_and_publish
+        first = self.sync()
+        by_day = {p["key"].split("/")[1]: p for p in first["partitions"]}
+        self.assertEqual(set(by_day), {"2026-10-10", "2026-10-12"})  # snapshot only
+        self.assertIn("git_rewritten_since_listing", by_day["2026-10-12"])
+        self.assertTrue(first["success"])
+        second = self.sync()
+        statuses = {p["key"].split("/")[1] + p["blob"][:0]: p["status"]
+                    for p in second["partitions"]}
+        self.assertEqual(statuses["2026-10-11"], "uploaded")
+        keys12 = [p for p in second["partitions"] if "/2026-10-12/" in p["key"]]
+        self.assertEqual(keys12[0]["status"], "uploaded")  # new blob version
+        old = [k for k in self.keys() if "/2026-10-12/" in k and k.endswith("manifest.json")]
+        self.assertEqual(len(old), 2)  # both versions kept, none removed
+
+    def test_restore_resolves_blob_from_published_git(self):
+        data = gz([tick(i) for i in range(6)])
+        self.publish("pm_ticks_2026-10-12.jsonl.gz", data)
+        self.sync()
+        out = Path(self.tmp.name) / "restored"
+        from unittest import mock
+        argv = [
+            "--mode", "restore", "--repo", str(self.repo), "--git-ref", "main",
+            "--root", ROOT, "--provider", "polymarket", "--day", "2026-10-12",
+            "--destination", str(out),
+        ]
+        with mock.patch.object(w, "create_worker_client", return_value=self.client), \
+                mock.patch.dict("os.environ", {}, clear=False):
+            self.assertEqual(w.main(argv), 0)
+            self.assertEqual((out / "pm_ticks_2026-10-12.jsonl.gz").read_bytes(), data)
+            with self.assertRaises(FileExistsError):  # no overwrite via CLI either
+                w.main(argv)
+        out2 = Path(self.tmp.name) / "restored2"
+        blob = w.current_blob(self.repo, "main", "parts/pm_ticks_2026-10-12.jsonl.gz")
+        self.assertEqual(blob, w.git_blob_sha(data))
+        info = w.restore_partition(self.store, ROOT, "polymarket", "2026-10-12", out2, blob)
+        self.assertEqual(Path(info["restored"]).read_bytes(), data)
+
+    def test_git_history_untouched_by_worker(self):
+        self.publish("pm_ticks_2026-10-12.jsonl.gz", gz([tick(1)]))
+        head = subprocess.run(["git", "rev-parse", "HEAD"], cwd=self.repo,
+                              capture_output=True, text=True).stdout
+        self.sync()
+        self.sync(dry_run=True)
+        after = subprocess.run(["git", "rev-parse", "HEAD"], cwd=self.repo,
+                               capture_output=True, text=True).stdout
+        status = subprocess.run(["git", "status", "--porcelain"], cwd=self.repo,
+                                capture_output=True, text=True).stdout
+        self.assertEqual(head, after)
+        self.assertEqual(status, "")
+
+    def test_two_workers_race_same_root_no_duplicates(self):
+        import threading
+        for day in ("10", "11", "12"):
+            self.publish(f"pm_ticks_2026-10-{day}.jsonl.gz",
+                         gz([tick(i, f"2026-10-{day}") for i in range(5)]))
+        reports = []
+
+        def worker():
+            store = w.ArchiveStore(self.client, sleep=lambda s: None)
+            reports.append(w.run_sync(self.repo, "main", store, root=ROOT,
+                                      dry_run=False, now=NOW))
+        threads = [threading.Thread(target=worker) for _ in range(2)]
+        [t.start() for t in threads]
+        [t.join() for t in threads]
+        self.assertTrue(all(r["success"] for r in reports), reports)
+        self.assertEqual(len([k for k in self.keys() if k.endswith("manifest.json")]), 3)
+        self.assertEqual(len([k for k in self.keys() if k.endswith("data.jsonl.gz")]), 3)
+        self.assertTrue(w.run_verify(self.repo, "main", self.store, ROOT)["success"])
+
+
+class IsolationTests(unittest.TestCase):
+    REPO = Path(__file__).resolve().parents[1]
+
+    def test_worker_source_has_no_delete_or_git_write(self):
+        text = (self.REPO / "scripts/r2_partition_worker.py").read_text()
+        for forbidden in ("delete_object", "delete_objects", "remove(", "unlink(",
+                          "rmtree", '"push"', '"commit"', '"checkout"', '"reset"'):
+            self.assertNotIn(forbidden, text, forbidden)
+
+    def test_workflow_is_manual_and_isolated(self):
+        import yaml
+        flow = yaml.safe_load(
+            (self.REPO / ".github/workflows/r2_partition_worker.yml").read_text())
+        triggers = flow.get("on", flow.get(True))
+        self.assertEqual(list(triggers), ["workflow_dispatch"])
+        self.assertEqual(flow["permissions"], {"contents": "read"})
+        group = flow["concurrency"]["group"]
+        self.assertEqual(group, "r2-partition-worker")
+        self.assertFalse(flow["concurrency"]["cancel-in-progress"])
+        self.assertEqual(triggers["workflow_dispatch"]["inputs"]["mode"]["default"], "dry-run")
+        self.assertFalse(triggers["workflow_dispatch"]["inputs"]["confirm_sync"]["default"])
+        for path in (self.REPO / ".github/workflows").glob("*.yml"):
+            if path.name == "r2_partition_worker.yml":
+                continue
+            other = path.read_text()
+            self.assertNotIn("r2-partition-worker", other, path.name)
+            self.assertNotIn("r2_partition_worker", other, path.name)
+
+
 if __name__ == "__main__":
     unittest.main()
