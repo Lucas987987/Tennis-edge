@@ -34,6 +34,13 @@ real write is authorised **per run**, never by a persistent repository setting.
 * `r2_polymarket_restore.yml`: equivalent read-only restore audit for Polymarket 2026-10-08.
   It pins the published source version and explicitly checks its 152,161 lines, 152,156 unique ticks,
   and 5 historical duplicate lines before publishing the restore reports.
+* `r2_partition_batch.yml`: separate manual batch controller. `dry-run` is the default; a batch
+  contains at most 3 exact `{provider, day, blob}` targets and preflights every R2 prefix before
+  any sync. `sync` requires `confirm_write=true`, calls the existing worker once per exact target,
+  stops on the first anomaly, and re-verifies each completed version. `verify` and `restore-sample`
+  are read-only; sample restores use a temporary directory and compare bytes, SHA-256 and tick
+  statistics. All modes publish a JSON batch report. The workflow is `workflow_dispatch` only and
+  has `contents: read`.
 
 Report statuses: `uploaded`, `verified`, `pending` (deadline/limit/dry-run), `skipped_unfrozen`,
 `error` (retries exhausted; retried next run), `conflict` (differing object, permanent error;
@@ -80,6 +87,28 @@ point of failure:
 4. Review the artifact `r2-partition-*`: `uploaded: 1`, `r2_objects_created: 2`, `deletions_performed: 0`,
    `overwrites_performed: 0`, then the read-only verify report (`verified`).
 5. Nothing to switch back: the next dispatch is a dry-run unless `confirm_write=true` is typed again.
+
+## Progressive batches
+
+`.github/workflows/r2_partition_batch.yml` is a separate manual controller for up to three exact
+partition versions per run. Its default is `dry-run`; `targets_json` is a JSON array of
+`{"provider":"kalshi|polymarket","day":"YYYY-MM-DD","blob":"<40-hex Git blob>"}` objects.
+`max_partitions` is limited to 1–3, the batch deadline to 1,200 seconds, and each R2 operation to
+240 seconds. It reads R2 credentials only in the worker step and has `contents: read`.
+
+The batch report classifies every target as `verified`, `absent`, `incomplete`, `divergent`,
+`non_eligible` or `error`. In `sync`, all targets are preflighted before the first write; only
+`absent` and already `verified` targets proceed. A write requires `confirm_write=true`; the existing
+worker is called once per exact target with its own `max_partitions=1` gate. Any anomaly stops the
+batch. Re-running is idempotent: matching versions become `verified`; conflicts are never
+overwritten, and no code path deletes objects. `restore-sample` is read-only and restores selected
+versions to a temporary directory for byte/SHA/stat comparisons. JSON reports are uploaded as an
+Actions artifact.
+
+Historical GitHub Release entries in `parts/ARCHIVE_INDEX.json` are not automatically treated as
+R2 objects. The worker's retired-version source-commit path is bounded to an ancestor commit within
+30 days; older Release-only history needs a separately verified source procedure before it can be
+included in a batch.
 
 Stop: `gh run cancel <run-id>`. Objects are create-only and the manifest is written last, so a
 cancelled run leaves at most a manifest-less `data.jsonl.gz`, which the next run re-verifies.
