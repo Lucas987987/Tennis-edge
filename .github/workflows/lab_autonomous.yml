@@ -3,8 +3,13 @@ name: Tennis Edge Lab - découverte et gels automatiques
 on:
   workflow_dispatch:
     inputs:
-      publish_v61:
-        description: Publier les rapports et le registre V6.1 après validation manuelle
+      preview_v63:
+        description: Préparer et vérifier la sélection V6.3 sans publication durable
+        type: boolean
+        required: true
+        default: false
+      publish_v63:
+        description: Autoriser explicitement la publication des hypothèses sélectionnées V6.3
         type: boolean
         required: true
         default: false
@@ -68,6 +73,17 @@ jobs:
         run: |
           git fetch origin main
           git merge --ff-only origin/main
+
+      - name: Interdire les exécutions simultanées V6.2 et V6.3
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          V62_REQUESTED: ${{ inputs.preview_v62 || inputs.publish_v62 }}
+          V63_REQUESTED: ${{ inputs.preview_v63 || inputs.publish_v63 }}
+        run: |
+          if [[ "$V62_REQUESTED" == "true" && "$V63_REQUESTED" == "true" ]]; then
+            echo "V6.2 et V6.3 doivent être lancés séparément."
+            exit 1
+          fi
 
       - name: Vérifier les invariants avant toute écriture
         run: python3 -m unittest discover -s Tennis_Edge_Lab/tests -v
@@ -158,93 +174,104 @@ jobs:
           print('✅ Suivi V6.1:',report['total_frozen'],'pistes,',len(report['candidates']),'états vérifiés')
           PY
 
-      - name: Publier les audits exhaustifs, archives et registres vérifiés
+      - name: Vérifier les gels historiques sans publier les explorations
         run: |
           set -e
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          mkdir -p Tennis_Edge_Lab/registry
-          if [ ! -f Tennis_Edge_Lab/registry/candidates.jsonl ]; then
-            : > Tennis_Edge_Lab/registry/candidates.jsonl
-          fi
-          git add -- Tennis_Edge_Lab/cache/parts_features.json \
-            Tennis_Edge_Lab/cache/source_catalog.json \
-            Tennis_Edge_Lab/cache/archive \
-            Tennis_Edge_Lab/live/bookmakers_sets.json \
-            Tennis_Edge_Lab/live/bookmakers_sets_prospective.json \
-            Tennis_Edge_Lab/registry/bookmakers_sets_v6.jsonl \
-            Tennis_Edge_Lab/registry/candidates.jsonl
-          git diff --cached --check
-          if git diff --cached --quiet; then
-            echo 'Aucune donnée à publier : index et gels inchangés.'
-            exit 0
-          fi
-          git commit -m 'Lab: inventaire pré-signal et registre prospectif'
-          # Les snapshots transitoires ne sont pas committés. Nettoyage LOCAL
-          # du runner avant rebase, jamais des fichiers de la branche principale.
-          git restore -- Tennis_Edge_Lab/data.js Tennis_Edge_Lab/data.json Tennis_Edge_Lab/manifest.json || true
-          # main est mis à jour toutes les quelques minutes par les collecteurs.
-          # Rebase seulement si aucune divergence sur le registre (sinon arrêt).
-          for i in 1 2 3 4 5; do
-            git fetch origin main
-            if ! git rebase origin/main; then
-              git rebase --abort || true
-              echo '⛔ Conflit : registre inchangé. Contrôle humain requis.'
-              exit 1
-            fi
-            python3 Tennis_Edge_Lab/candidate_registry.py verify --root .
-            if git push origin HEAD:main; then
-              echo '✅ Registre et inventaire publiés sans réécriture'
-              exit 0
-            fi
-            sleep $((i*4))
-          done
-          echo '⛔ Push bloqué ; aucune donnée existante écrasée.'
-          exit 1
-
-      - name: Publier les rapports et le registre V6.1 après validation explicite
-        if: github.event_name == 'workflow_dispatch' && inputs.publish_v61 == true
-        run: |
-          set -e
+          python3 Tennis_Edge_Lab/candidate_registry.py verify --root .
           python3 Tennis_Edge_Lab/candidate_registry_v6.py verify --root .
           python3 Tennis_Edge_Lab/candidate_watch_v61.py verify --root .
-          git add -- Tennis_Edge_Lab/live/bookmakers_sets_audit.json \
-            Tennis_Edge_Lab/live/candidate_watch_v61_prospective.json \
-            Tennis_Edge_Lab/live/archive/bookmakers_sets_v61/current \
-            Tennis_Edge_Lab/registry/candidate_watch_v61.jsonl
-          git diff --cached --check
-          if git diff --cached --quiet; then
-            echo 'Aucun artefact V6.1 modifié ; publication ignorée.'
-            exit 0
-          fi
+
+      - name: Préenregistrer et construire l'archive complète V6.3
+        if: >-
+          github.event_name == 'schedule' ||
+          (github.event_name == 'workflow_dispatch' &&
+          (inputs.preview_v63 == true || inputs.publish_v63 == true))
+        run: |
+          set -euo pipefail
+          backup_dir="$RUNNER_TEMP/tennis-edge-v63-backup"
+          mkdir -p "$backup_dir"
+          python3 Tennis_Edge_Lab/candidate_selection_v63.py run --root .
+          python3 Tennis_Edge_Lab/candidate_selection_v63.py verify --root .
+          python3 Tennis_Edge_Lab/candidate_registry_v62.py verify --root .
+          python3 Tennis_Edge_Lab/backup_v63.py build --root . \
+            --bundle "$backup_dir/tennis-edge-v63.tar.gz" \
+            --checksum "$backup_dir/tennis-edge-v63.tar.gz.sha256"
+
+      - name: Sauvegarder l'audit complet V6.2/V6.3 pendant 90 jours
+        if: >-
+          github.event_name == 'schedule' ||
+          (github.event_name == 'workflow_dispatch' &&
+          (inputs.preview_v63 == true || inputs.publish_v63 == true))
+        uses: actions/upload-artifact@v4
+        with:
+          name: tennis-edge-full-audit-v63-${{ github.run_id }}
+          compression-level: 0
+          retention-days: 90
+          if-no-files-found: error
+          path: ${{ runner.temp }}/tennis-edge-v63-backup/
+
+      - name: Restaurer l'artifact dans un dossier isolé
+        if: >-
+          github.event_name == 'schedule' ||
+          (github.event_name == 'workflow_dispatch' &&
+          (inputs.preview_v63 == true || inputs.publish_v63 == true))
+        uses: actions/download-artifact@v4
+        with:
+          name: tennis-edge-full-audit-v63-${{ github.run_id }}
+          path: ${{ runner.temp }}/tennis-edge-v63-restore
+
+      - name: Vérifier l'intégrité de la sauvegarde restaurée
+        if: >-
+          github.event_name == 'schedule' ||
+          (github.event_name == 'workflow_dispatch' &&
+          (inputs.preview_v63 == true || inputs.publish_v63 == true))
+        run: |
+          set -euo pipefail
+          python3 Tennis_Edge_Lab/backup_v63.py verify \
+            --bundle "$RUNNER_TEMP/tennis-edge-v63-restore/tennis-edge-v63.tar.gz" \
+            --checksum "$RUNNER_TEMP/tennis-edge-v63-restore/tennis-edge-v63.tar.gz.sha256" \
+            --destination "$RUNNER_TEMP/tennis-edge-v63-restored"
+
+      - name: Publier uniquement les gels sélectionnés après autorisation explicite
+        if: github.event_name == 'workflow_dispatch' && inputs.publish_v63 == true
+        run: |
+          set -euo pipefail
+          python3 Tennis_Edge_Lab/candidate_selection_v63.py verify --root .
+          python3 Tennis_Edge_Lab/candidate_registry_v62.py verify --root .
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git commit -m 'Lab: publier les rapports vérifiés V6.1'
+          git add -- Tennis_Edge_Lab/registry/candidate_watch_v62.jsonl \
+            Tennis_Edge_Lab/registry/candidate_selection_v63.jsonl \
+            Tennis_Edge_Lab/registry/v62_evidence \
+            Tennis_Edge_Lab/live/candidate_watch_v62_prospective.json
+          git diff --cached --check
+          if git diff --cached --quiet; then
+            echo 'V6.3: aucun gel sélectionné à publier.'
+            exit 0
+          fi
+          git commit -m 'Lab: publier les hypothèses sélectionnées V6.3'
           for i in 1 2 3 4 5; do
             git fetch origin main
             if ! git rebase origin/main; then
               git rebase --abort || true
-              echo '⛔ Conflit V6.1 : publication arrêtée, registre distant préservé.'
+              echo 'Conflit V6.3 : registres distants préservés.'
               exit 1
             fi
-            python3 Tennis_Edge_Lab/candidate_registry_v6.py verify --root .
-            python3 Tennis_Edge_Lab/candidate_watch_v61.py verify --root .
+            python3 Tennis_Edge_Lab/candidate_selection_v63.py verify --root .
+            python3 Tennis_Edge_Lab/candidate_registry_v62.py verify --root .
             if git push origin HEAD:main; then
-              echo '✅ Rapports et registre V6.1 publiés après validation explicite.'
+              echo 'V6.3 publié après sauvegarde et restauration vérifiées.'
               exit 0
             fi
             sleep $((i*4))
           done
-          echo '⛔ Push V6.1 bloqué ; aucune donnée existante écrasée.'
+          echo 'Publication V6.3 bloquée ; aucun registre existant écrasé.'
           exit 1
 
-      # V6.2 est opt-in: les workflows V4/V6/V6.1 restent inchangés par défaut.
-      # Mettre LAB_V62_AUTOMATED=true seulement après audit de production.
       - name: Construire et vérifier le registre compact V6.2
         if: >-
           (github.event_name == 'workflow_dispatch' &&
-           (inputs.preview_v62 == true || inputs.publish_v62 == true)) ||
-          vars.LAB_V62_AUTOMATED == 'true'
+           (inputs.preview_v62 == true || inputs.publish_v62 == true))
         run: |
           set -e
           python3 Tennis_Edge_Lab/candidate_registry_v62.py compact --root .
@@ -254,8 +281,7 @@ jobs:
       - name: Archiver l'audit exhaustif V6.2 pour relecture (90 jours)
         if: >-
           (github.event_name == 'workflow_dispatch' &&
-           (inputs.preview_v62 == true || inputs.publish_v62 == true)) ||
-          vars.LAB_V62_AUTOMATED == 'true'
+           (inputs.preview_v62 == true || inputs.publish_v62 == true))
         uses: actions/upload-artifact@v4
         with:
           name: tennis-edge-full-audit-v62-${{ github.run_id }}
@@ -270,8 +296,7 @@ jobs:
 
       - name: Publier les gels compacts V6.2 après accord explicite
         if: >-
-          (github.event_name == 'workflow_dispatch' && inputs.publish_v62 == true) ||
-          vars.LAB_V62_AUTOMATED == 'true'
+          github.event_name == 'workflow_dispatch' && inputs.publish_v62 == true
         run: |
           set -e
           python3 Tennis_Edge_Lab/candidate_registry_v62.py verify --root .
