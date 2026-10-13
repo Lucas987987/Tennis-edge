@@ -45,6 +45,10 @@ PARTITION_RE = re.compile(
     r"^parts/(pm|kx)_ticks_(\d{4}-\d{2}-\d{2})\.jsonl\.gz$"
 )
 ROOT_RE = re.compile(r"^[A-Za-z0-9._/-]+$")
+# Real writes are only ever allowed under the worker's own namespaces.
+WRITE_ROOT_RE = re.compile(r"^parts/v64-archive(?:-test(?:/[A-Za-z0-9._-]+)*)?$")
+DAY_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+BLOB_RE = re.compile(r"^[0-9a-f]{40}$")
 PERMANENT_CODES = {
     "AccessDenied", "InvalidAccessKeyId", "SignatureDoesNotMatch",
     "NoSuchBucket", "403", "401",
@@ -55,6 +59,10 @@ CONFLICT_CODES = {"PreconditionFailed", "412", "ConditionalRequestConflict", "40
 
 class ConflictError(Exception):
     """An existing immutable object differs from what we would write."""
+
+
+class TargetError(Exception):
+    """The requested partition version is not what is published on the Git ref."""
 
 
 class PermanentError(Exception):
@@ -195,6 +203,55 @@ def validate_manifest_bytes(body: bytes) -> dict:
     return manifest
 
 
+def make_target(provider: str | None, day: str | None, blob: str | None) -> dict | None:
+    """Exact partition version (provider, day, Git blob id), or None if unset."""
+    if day is None and blob is None:
+        return None
+    if not (provider and day and blob):
+        raise ValueError("a targeted run needs --provider, --day and --blob together")
+    if provider not in PROVIDERS.values():
+        raise ValueError(f"unknown provider: {provider}")
+    if not DAY_RE.match(day):
+        raise ValueError(f"invalid day (YYYY-MM-DD): {day}")
+    if not BLOB_RE.match(blob):
+        raise ValueError("blob must be a full 40-character lowercase hex Git blob id")
+    return {"provider": provider, "day": day, "blob": blob}
+
+
+def select_target(partitions: list[dict], target: dict | None) -> list[dict]:
+    """Keep only the exact targeted version; never fall back to another one."""
+    if target is None:
+        return partitions
+    same_day = [p for p in partitions
+                if p["provider"] == target["provider"] and p["day"] == target["day"]]
+    hit = [p for p in same_day if p["blob"] == target["blob"]]
+    if not hit:
+        published = same_day[0]["blob"] if same_day else None
+        raise TargetError(
+            f"target {target['provider']}/{target['day']}/{target['blob']} is not "
+            f"published on the Git ref (published blob for that day: {published})"
+        )
+    return hit
+
+
+def write_authorization_problems(
+    confirm_write: bool, max_partitions: int | None, target: dict | None, root: str,
+) -> list[str]:
+    """Everything that must hold before a real (mode=sync) write is allowed."""
+    problems = []
+    if not confirm_write:
+        problems.append("confirm_write is not set: real writes are not authorised")
+    if max_partitions != 1:
+        problems.append("max_partitions must be exactly 1 for a real write")
+    if target is None:
+        problems.append("a real write needs an exact target (provider, day, blob)")
+    if not WRITE_ROOT_RE.match(root) or ".." in root:
+        problems.append(
+            "root must be parts/v64-archive or parts/v64-archive-test[/<name>]"
+        )
+    return problems
+
+
 def partition_prefix(root: str, item: dict) -> str:
     return f"{root.rstrip('/')}/{item['provider']}/{item['day']}/{item['blob']}/"
 
@@ -294,6 +351,21 @@ class ArchiveStore:
                 raise
         return self._retry(f"head {key}", op)
 
+    def list_keys(self, prefix: str) -> list[str]:
+        def op() -> list[str]:
+            keys: list[str] = []
+            token = None
+            while True:
+                kw = {"Bucket": self.bucket, "Prefix": prefix}
+                if token:
+                    kw["ContinuationToken"] = token
+                page = self.client.list_objects_v2(**kw)
+                keys += [obj["Key"] for obj in page.get("Contents", [])]
+                if not page.get("IsTruncated"):
+                    return keys
+                token = page["NextContinuationToken"]
+        return self._retry(f"list {prefix}", op)
+
     def put_if_absent(self, key: str, body: bytes, content_type: str) -> bool:
         """Create-only. Returns True if created, False if identical exists."""
         digest = sha256_hex(body)
@@ -366,6 +438,12 @@ def sync_partition(
         "prefix": prefix, "data_sha256": manifest["data_sha256"],
         "stats": manifest["stats"], "writes": [],
     }
+    expected_keys = {prefix + "data.jsonl.gz", prefix + "manifest.json"}
+    existing = sorted(store.list_keys(prefix))
+    result["destination_existing"] = [k[len(prefix):] for k in existing]
+    unexpected = [k for k in existing if k not in expected_keys]
+    if unexpected:
+        raise ConflictError(f"unexpected objects under destination prefix: {unexpected}")
     remote_manifest = store.get(prefix + "manifest.json")
     if remote_manifest is not None:
         try:
@@ -442,19 +520,23 @@ def run_sync(
     providers: set[str] | None = None,
     state: StateFile | None = None,
     clock: Callable[[], float] = time.monotonic,
+    target: dict | None = None,
 ) -> dict:
     if not ROOT_RE.match(root) or ".." in root:
         raise ValueError("invalid root prefix")
     if not dry_run and store is None:
         raise ValueError("an R2 store is required unless dry_run")
+    if not dry_run and (not WRITE_ROOT_RE.match(root)):
+        raise ValueError("real writes are restricted to parts/v64-archive[-test/...]")
     now = now or dt.datetime.now(dt.timezone.utc)
     state = state or StateFile(None)
     commit, partitions = list_published_partitions(repo, ref)
+    partitions = select_target(partitions, target)
     started = clock()
     global_deadline = started + max_seconds
     report: dict = {
         "mode": "dry-run" if dry_run else "sync",
-        "git_ref": ref, "git_commit": commit, "root": root,
+        "git_ref": ref, "git_commit": commit, "root": root, "target": target,
         "now": now.isoformat(), "grace_hours": grace_hours,
         "deletions_performed": 0, "overwrites_performed": 0,
         "partitions": [],
@@ -509,16 +591,22 @@ def run_sync(
         counts[entry["status"]] = counts.get(entry["status"], 0) + 1
     report["summary"] = counts
     report["success"] = not (counts.get("error") or counts.get("conflict"))
+    if target is not None:
+        # A targeted run only succeeds if that exact partition reached the goal.
+        goal = {"pending", "verified"} if dry_run else {"uploaded", "verified"}
+        report["success"] = report["success"] and all(
+            e["status"] in goal for e in report["partitions"])
     report["complete"] = report["success"] and not counts.get("pending")
     return report
 
 
 def run_verify(
     repo: Path, ref: str, store: ArchiveStore, root: str = DEFAULT_ROOT,
-    providers: set[str] | None = None,
+    providers: set[str] | None = None, target: dict | None = None,
 ) -> dict:
     """Compare every published partition that has an R2 manifest (read-only)."""
     commit, partitions = list_published_partitions(repo, ref)
+    partitions = select_target(partitions, target)
     rows = []
     for item in partitions:
         if providers and item["provider"] not in providers:
@@ -543,8 +631,10 @@ def run_verify(
             rows.append({"path": item["path"], "blob": item["blob"],
                          "status": "error", "error": f"{type(exc).__name__}: {exc}"})
     bad = [r for r in rows if r["status"] in {"mismatch", "error"}]
-    return {"mode": "verify", "git_commit": commit, "partitions": rows,
-            "success": not bad}
+    if target is not None:
+        bad += [r for r in rows if r["status"] != "verified"]
+    return {"mode": "verify", "git_commit": commit, "target": target,
+            "partitions": rows, "success": not bad}
 
 
 def restore_partition(
@@ -595,8 +685,25 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--day")
     parser.add_argument("--blob")
     parser.add_argument("--destination", type=Path)
+    parser.add_argument("--confirm-write", action="store_true",
+                        help="required for mode=sync; authorises real R2 writes")
     args = parser.parse_args(argv)
     providers = set(args.provider) if args.provider else None
+
+    target = None
+    if args.mode != "restore":
+        try:
+            target = make_target(
+                next(iter(providers)) if providers and len(providers) == 1 else None,
+                args.day, args.blob,
+            )
+        except ValueError as exc:
+            parser.error(str(exc))
+    if args.mode == "sync":
+        problems = write_authorization_problems(
+            args.confirm_write, args.max_partitions, target, args.root)
+        if problems:
+            parser.error("write refused: " + "; ".join(problems))
 
     store = None
     have_creds = all(os.environ.get(n) for n in (
@@ -604,16 +711,23 @@ def main(argv: list[str] | None = None) -> int:
     if args.mode != "dry-run" or have_creds:
         store = ArchiveStore(create_worker_client(), attempts=args.attempts)
 
-    if args.mode in {"dry-run", "sync"}:
-        report = run_sync(
-            args.repo, args.git_ref, store, root=args.root,
-            dry_run=args.mode == "dry-run", grace_hours=args.grace_hours,
-            max_seconds=args.max_seconds, partition_timeout=args.partition_timeout,
-            max_partitions=args.max_partitions, providers=providers,
-            state=StateFile(args.state_file),
-        )
-    elif args.mode == "verify":
-        report = run_verify(args.repo, args.git_ref, store, args.root, providers)
+    if args.mode in {"dry-run", "sync", "verify"}:
+        try:
+            if args.mode == "verify":
+                report = run_verify(
+                    args.repo, args.git_ref, store, args.root, providers, target)
+            else:
+                report = run_sync(
+                    args.repo, args.git_ref, store, root=args.root,
+                    dry_run=args.mode == "dry-run", grace_hours=args.grace_hours,
+                    max_seconds=args.max_seconds,
+                    partition_timeout=args.partition_timeout,
+                    max_partitions=args.max_partitions, providers=providers,
+                    state=StateFile(args.state_file), target=target,
+                )
+        except TargetError as exc:
+            report = {"mode": args.mode, "target": target, "success": False,
+                      "error": str(exc), "partitions": []}
     else:
         if not (providers and len(providers) == 1 and args.day and args.destination):
             parser.error("restore needs --provider, --day, --destination")

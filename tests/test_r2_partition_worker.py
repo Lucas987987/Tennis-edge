@@ -50,6 +50,11 @@ class FakeClient:
             raise self.err("NoSuchKey")
         return {"Body": BytesIO(self.objects[(Bucket, Key)])}
 
+    def list_objects_v2(self, Bucket, Prefix="", **kw):
+        self._maybe_fail("list", Prefix)
+        keys = sorted(k for b, k in self.objects if b == Bucket and k.startswith(Prefix))
+        return {"Contents": [{"Key": k} for k in keys], "IsTruncated": False}
+
     def put_object(self, Bucket, Key, Body, **kw):
         self._maybe_fail("put", Key)
         if kw.get("IfNoneMatch") == "*" and (Bucket, Key) in self.objects:
@@ -459,13 +464,414 @@ class IsolationTests(unittest.TestCase):
             text, r"(?m)^concurrency:\n  group: r2-partition-worker\n"
                   r"  cancel-in-progress: false\n")
         self.assertRegex(text, r"(?s)      mode:.*?default: dry-run")
-        self.assertRegex(text, r"(?s)      confirm_sync:.*?default: false")
+        self.assertRegex(text, r"(?s)      confirm_write:.*?default: false")
+        self.assertRegex(text, r"(?s)      max_partitions:.*?default: \"1\"")
+        # Authorisation is per run: no persistent GitHub variable, no old input.
+        self.assertNotIn("vars.", text)
+        self.assertNotIn("R2_PARTITION_WORKER_ENABLED", text)
+        self.assertNotIn("confirm_sync", text)
         for path in (self.REPO / ".github/workflows").glob("*.yml"):
             if path.name == "r2_partition_worker.yml":
                 continue
             other = path.read_text()
             self.assertNotIn("r2-partition-worker", other, path.name)
             self.assertNotIn("r2_partition_worker", other, path.name)
+
+
+
+DAY = "2026-01-05"  # long past: always frozen whatever the clock
+
+
+class TargetedWriteTests(Base):
+    def setUp(self):
+        super().setUp()
+        self.publish(f"pm_ticks_{DAY}.jsonl.gz", gz([tick(i, DAY) for i in range(30)]))
+        self.publish(f"kx_ticks_{DAY}.jsonl.gz", gz([tick(i, DAY) for i in range(8)]))
+        self.publish("pm_ticks_2026-01-06.jsonl.gz",
+                     gz([tick(i, "2026-01-06") for i in range(9)]))
+        self.pm_blob = self.blob(f"pm_ticks_{DAY}.jsonl.gz")
+        self.target = w.make_target("polymarket", DAY, self.pm_blob)
+
+    def blob(self, name):
+        out = subprocess.run(["git", "rev-parse", f"main:parts/{name}"], cwd=self.repo,
+                             check=True, capture_output=True, text=True)
+        return out.stdout.strip()
+
+    def test_only_the_exact_target_is_processed_and_written(self):
+        report = self.sync(target=self.target, max_partitions=1)
+        self.assertTrue(report["success"], report)
+        self.assertEqual([p["key"] for p in report["partitions"]],
+                         [f"polymarket/{DAY}/{self.pm_blob}"])
+        self.assertEqual(report["summary"], {"uploaded": 1})
+        self.assertEqual(self.keys(), sorted([
+            f"{ROOT}/polymarket/{DAY}/{self.pm_blob}/data.jsonl.gz",
+            f"{ROOT}/polymarket/{DAY}/{self.pm_blob}/manifest.json"]))
+
+    def test_without_target_the_oldest_would_be_picked_but_target_overrides(self):
+        report = self.sync(target=w.make_target(
+            "kalshi", DAY, self.blob(f"kx_ticks_{DAY}.jsonl.gz")), max_partitions=1)
+        self.assertEqual(report["summary"], {"uploaded": 1})
+        self.assertTrue(all("/kalshi/" in k for k in self.keys()))
+
+    def test_wrong_blob_selects_nothing_and_writes_nothing(self):
+        bad = w.make_target("polymarket", DAY, "0" * 40)
+        with self.assertRaises(w.TargetError) as ctx:
+            self.sync(target=bad, max_partitions=1)
+        self.assertIn(self.pm_blob, str(ctx.exception))
+        self.assertEqual(self.client.put_log, [])
+
+    def test_rewritten_file_does_not_fall_back_to_the_new_version(self):
+        self.publish(f"pm_ticks_{DAY}.jsonl.gz",
+                     gz([tick(i, DAY) for i in range(31)]))
+        with self.assertRaises(w.TargetError):
+            self.sync(target=self.target, max_partitions=1)
+        self.assertEqual(self.client.put_log, [])
+
+    def test_unknown_day_and_provider_are_refused(self):
+        with self.assertRaises(w.TargetError):
+            self.sync(target=w.make_target("polymarket", "2020-01-01", self.pm_blob))
+        with self.assertRaises(w.TargetError):
+            self.sync(target=w.make_target(
+                "kalshi", DAY, self.pm_blob))  # blob of another provider/day
+        self.assertEqual(self.client.put_log, [])
+
+    def test_unfrozen_target_fails_without_writing(self):
+        report = self.sync(target=self.target, max_partitions=1,
+                           now=dt.datetime(2026, 1, 5, 12, 0, tzinfo=dt.timezone.utc))
+        self.assertFalse(report["success"])
+        self.assertEqual(report["summary"], {"skipped_unfrozen": 1})
+        self.assertEqual(self.client.put_log, [])
+
+    def test_dry_run_with_target_never_writes_and_reports_destination(self):
+        report = self.sync(target=self.target, dry_run=True)
+        self.assertTrue(report["success"])
+        self.assertEqual(report["summary"], {"pending": 1})
+        self.assertEqual(report["partitions"][0]["destination_existing"], [])
+        self.assertEqual(self.client.put_log, [])
+        self.assertEqual(self.client.objects, {})
+
+    def test_existing_identical_target_is_verified_not_rewritten(self):
+        self.sync(target=self.target, max_partitions=1)
+        puts = list(self.client.put_log)
+        again = self.sync(target=self.target, max_partitions=1)
+        self.assertEqual(again["summary"], {"verified": 1})
+        self.assertEqual(self.client.put_log, puts)
+        self.assertEqual(again["partitions"][0]["destination_existing"],
+                         ["data.jsonl.gz", "manifest.json"])
+
+    def test_unexpected_object_under_destination_blocks_the_write(self):
+        prefix = f"{ROOT}/polymarket/{DAY}/{self.pm_blob}/"
+        self.client.objects[(w.BUCKET, prefix + "stray.txt")] = b"x"
+        report = self.sync(target=self.target, max_partitions=1)
+        self.assertFalse(report["success"])
+        self.assertEqual(report["summary"], {"conflict": 1})
+        self.assertEqual(self.client.put_log, [])
+
+    def test_existing_different_object_is_never_overwritten(self):
+        key = f"{ROOT}/polymarket/{DAY}/{self.pm_blob}/data.jsonl.gz"
+        self.client.objects[(w.BUCKET, key)] = b"someone else's bytes"
+        report = self.sync(target=self.target, max_partitions=1)
+        self.assertEqual(report["summary"], {"conflict": 1})
+        self.assertEqual(self.client.objects[(w.BUCKET, key)], b"someone else's bytes")
+        self.assertEqual(self.client.put_log, [])
+
+    def test_verify_with_target_checks_only_that_partition(self):
+        self.sync(target=self.target, max_partitions=1)
+        report = w.run_verify(self.repo, "main", self.store, ROOT, None, self.target)
+        self.assertTrue(report["success"], report)
+        self.assertEqual([r["status"] for r in report["partitions"]], ["verified"])
+        absent = w.run_verify(self.repo, "main", self.store, "parts/v64-archive-test/none",
+                              None, self.target)
+        self.assertFalse(absent["success"])
+
+    def test_real_writes_are_restricted_to_worker_namespaces(self):
+        for root in ("parts", "parts/hist", "parts/v64", "parts/v64-archive-other",
+                     "tennis", "parts/v64-archive-test/../x"):
+            with self.assertRaises(ValueError, msg=root):
+                self.sync(root=root, target=self.target, max_partitions=1)
+        self.assertEqual(self.client.put_log, [])
+        for root in ("parts/v64-archive", "parts/v64-archive-test",
+                     "parts/v64-archive-test/final-1"):
+            self.assertEqual(
+                self.sync(root=root, target=self.target, max_partitions=1)["summary"],
+                {"uploaded": 1}, root)
+
+
+class AuthorizationTests(unittest.TestCase):
+    T = {"provider": "polymarket", "day": DAY, "blob": "a" * 40}
+
+    def test_make_target_validation(self):
+        self.assertIsNone(w.make_target(None, None, None))
+        for args in (("polymarket", DAY, None), (None, DAY, "a" * 40),
+                     ("polymarket", None, "a" * 40), ("bitmex", DAY, "a" * 40),
+                     ("polymarket", "2026-1-5", "a" * 40),
+                     ("polymarket", DAY, "A" * 40), ("polymarket", DAY, "a" * 39),
+                     ("polymarket", DAY, "main")):
+            with self.assertRaises(ValueError, msg=str(args)):
+                w.make_target(*args)
+
+    def test_write_authorization_problems(self):
+        ok = w.write_authorization_problems(True, 1, self.T, "parts/v64-archive")
+        self.assertEqual(ok, [])
+        self.assertEqual(w.write_authorization_problems(
+            True, 1, self.T, "parts/v64-archive-test/x"), [])
+        for args in ((False, 1, self.T, "parts/v64-archive"),
+                     (True, 5, self.T, "parts/v64-archive"),
+                     (True, None, self.T, "parts/v64-archive"),
+                     (True, 1, None, "parts/v64-archive"),
+                     (True, 1, self.T, "parts"),
+                     (True, 1, self.T, "parts/v64-archive-test/../hist")):
+            self.assertTrue(w.write_authorization_problems(*args), str(args))
+
+
+class MainModesTests(Base):
+    """CLI behaviour with a fake R2 client: no production data is reachable."""
+
+    def setUp(self):
+        super().setUp()
+        self.publish(f"pm_ticks_{DAY}.jsonl.gz", gz([tick(i, DAY) for i in range(30)]))
+        self.publish(f"kx_ticks_{DAY}.jsonl.gz", gz([tick(i, DAY) for i in range(8)]))
+        out = subprocess.run(["git", "rev-parse", f"main:parts/pm_ticks_{DAY}.jsonl.gz"],
+                             cwd=self.repo, check=True, capture_output=True, text=True)
+        self.blob = out.stdout.strip()
+        self.fake = FakeClient()
+        self.created = 0
+        original = w.create_worker_client
+
+        def factory(*a, **k):
+            self.created += 1
+            return self.fake
+        w.create_worker_client = factory
+        self.addCleanup(setattr, w, "create_worker_client", original)
+        self.report = Path(self.tmp.name) / "report.json"
+
+    def run_main(self, *extra, mode="dry-run", root=ROOT + "/t1"):
+        argv = ["--mode", mode, "--repo", str(self.repo), "--git-ref", "main",
+                "--root", root, "--report-file", str(self.report), *extra]
+        import contextlib
+        import io
+        with contextlib.redirect_stdout(io.StringIO()):
+            return w.main(argv)
+
+    def target_args(self):
+        return ["--provider", "polymarket", "--day", DAY, "--blob", self.blob]
+
+    def test_dry_run_default_writes_nothing(self):
+        code = self.run_main("--max-partitions", "1", *self.target_args())
+        self.assertEqual(code, 0)
+        self.assertEqual(self.fake.put_log, [])
+        report = json.loads(self.report.read_text())
+        self.assertEqual(report["mode"], "dry-run")
+        self.assertEqual(report["summary"], {"pending": 1})
+
+    def test_sync_without_confirm_write_is_refused_before_any_r2_access(self):
+        with self.assertRaises(SystemExit) as ctx:
+            self.run_main("--max-partitions", "1", *self.target_args(), mode="sync")
+        self.assertEqual(ctx.exception.code, 2)
+        self.assertEqual(self.created, 0)
+        self.assertEqual(self.fake.put_log, [])
+
+    def test_sync_refused_without_target_or_with_wrong_limits_or_root(self):
+        cases = [
+            ["--confirm-write", "--max-partitions", "1"],
+            ["--confirm-write", "--max-partitions", "5", *self.target_args()],
+            ["--confirm-write", *self.target_args()],
+            ["--confirm-write", "--max-partitions", "1", "--provider", "polymarket"],
+            ["--confirm-write", "--max-partitions", "1", "--day", DAY,
+             "--blob", self.blob],
+            ["--confirm-write", "--max-partitions", "1", "--provider", "polymarket",
+             "--provider", "kalshi", "--day", DAY, "--blob", self.blob],
+        ]
+        for extra in cases:
+            with self.assertRaises(SystemExit, msg=str(extra)):
+                self.run_main(*extra, mode="sync")
+        with self.assertRaises(SystemExit):
+            self.run_main("--confirm-write", "--max-partitions", "1",
+                          *self.target_args(), mode="sync", root="parts")
+        self.assertEqual(self.created, 0)
+        self.assertEqual(self.fake.put_log, [])
+
+    def test_authorised_sync_writes_exactly_two_objects_then_verifies(self):
+        args = ["--confirm-write", "--max-partitions", "1", *self.target_args()]
+        self.assertEqual(self.run_main(*args, mode="sync"), 0)
+        report = json.loads(self.report.read_text())
+        self.assertEqual(report["summary"], {"uploaded": 1})
+        self.assertEqual(report["r2_objects_created"], 2)
+        self.assertEqual(report["deletions_performed"], 0)
+        self.assertEqual(report["overwrites_performed"], 0)
+        prefix = f"{ROOT}/t1/polymarket/{DAY}/{self.blob}/"
+        self.assertEqual(self.fake.put_log, [prefix + "data.jsonl.gz", prefix + "manifest.json"])
+        self.assertEqual(self.run_main(*self.target_args(), mode="verify"), 0)
+        # An authorisation is not reusable by omission: the next run needs the flag again.
+        with self.assertRaises(SystemExit):
+            self.run_main("--max-partitions", "1", *self.target_args(), mode="sync")
+
+    def test_target_that_is_not_published_exits_nonzero_and_reports(self):
+        args = ["--confirm-write", "--max-partitions", "1", "--provider", "polymarket",
+                "--day", DAY, "--blob", "f" * 40]
+        self.assertEqual(self.run_main(*args, mode="sync"), 1)
+        report = json.loads(self.report.read_text())
+        self.assertFalse(report["success"])
+        self.assertIn("not published", report["error"])
+        self.assertEqual(self.fake.put_log, [])
+
+    def test_confirm_write_has_no_effect_outside_sync(self):
+        self.assertEqual(
+            self.run_main("--confirm-write", "--max-partitions", "1",
+                          *self.target_args(), mode="dry-run"), 0)
+        self.assertEqual(self.fake.put_log, [])
+
+
+class GateScriptTests(unittest.TestCase):
+    """Runs the workflow's real gate script with bash, case by case."""
+    REPO = Path(__file__).resolve().parents[1]
+    GOOD = {"MODE": "sync", "CONFIRM": "true", "ROOT": "parts/v64-archive",
+            "MAXP": "1", "PROVIDER": "polymarket", "DAY": "2026-10-06",
+            "BLOB": "e49ed8b622b03d89ffc8a26914520a7a0849445c"}
+
+    @classmethod
+    def script(cls):
+        import re
+        import textwrap
+        text = (cls.REPO / ".github/workflows/r2_partition_worker.yml").read_text()
+        match = re.search(
+            r"- name: Write gate.*?\n        run: \|\n(.*?)\n      - uses:", text, re.S)
+        return textwrap.dedent(match.group(1))
+
+    def gate(self, **over):
+        import os
+        env = {"PATH": os.environ["PATH"], **self.GOOD, **over}
+        return subprocess.run(["bash", "-c", self.script()], env=env,
+                              capture_output=True, text=True)
+
+    def test_good_sync_passes(self):
+        self.assertEqual(self.gate().returncode, 0)
+        self.assertEqual(self.gate(ROOT="parts/v64-archive-test/final-1").returncode, 0)
+
+    def test_dry_run_and_verify_pass_without_any_confirmation(self):
+        for mode in ("dry-run", "verify"):
+            result = self.gate(MODE=mode, CONFIRM="false", MAXP="5", PROVIDER="",
+                               DAY="", BLOB="", ROOT="parts/anything")
+            self.assertEqual(result.returncode, 0, mode)
+            self.assertIn("no R2 write", result.stdout)
+
+    def test_sync_refusals(self):
+        bad = [
+            {"CONFIRM": "false"}, {"CONFIRM": ""}, {"MAXP": "5"}, {"MAXP": "0"},
+            {"MAXP": "1 "}, {"PROVIDER": ""}, {"PROVIDER": "both"},
+            {"DAY": ""}, {"DAY": "2026-1-6"}, {"BLOB": ""}, {"BLOB": "main"},
+            {"BLOB": "E49ED8B622B03D89FFC8A26914520A7A0849445C"},
+            {"BLOB": "e49ed8b622"}, {"ROOT": "parts"}, {"ROOT": "parts/hist"},
+            {"ROOT": "parts/v64"}, {"ROOT": "parts/v64-archive-other"},
+            {"ROOT": "parts/v64-archive-test/../hist"}, {"ROOT": ""},
+        ]
+        for over in bad:
+            result = self.gate(**over)
+            self.assertNotEqual(result.returncode, 0, str(over))
+            self.assertIn("Blocked", result.stdout, str(over))
+
+    def test_worker_step_passes_confirm_write_only_for_confirmed_sync(self):
+        text = (self.REPO / ".github/workflows/r2_partition_worker.yml").read_text()
+        self.assertIn(
+            'if [ "$MODE" = "sync" ] && [ "$CONFIRM" = "true" ]; then '
+            'args+=(--confirm-write); fi', text)
+        self.assertEqual(text.count("--confirm-write"), 1)
+        self.assertEqual(text.count("--mode sync"), 0)
+
+
+class SourceCommitStepTests(unittest.TestCase):
+    """Runs the workflow's real "Fetch published partitions" step against a local origin."""
+    REPO = Path(__file__).resolve().parents[1]
+
+    @classmethod
+    def script(cls):
+        import re
+        import textwrap
+        text = (cls.REPO / ".github/workflows/r2_partition_worker.yml").read_text()
+        match = re.search(
+            r"- name: Fetch published partitions.*?\n        run: \|\n(.*?)\n      - name: Install",
+            text, re.S)
+        return textwrap.dedent(match.group(1))
+
+    def git(self, *args, cwd=None):
+        return subprocess.run(["git", *args], cwd=cwd or self.origin, check=True,
+                              capture_output=True, text=True).stdout.strip()
+
+    def setUp(self):
+        import tempfile
+        self.tmp = tempfile.TemporaryDirectory()
+        base = Path(self.tmp.name)
+        self.origin = base / "origin"
+        self.origin.mkdir()
+        self.git("init", "-q", "-b", "main")
+        for key, val in (("user.name", "t"), ("user.email", "t@t"),
+                         ("uploadpack.allowFilter", "true"),
+                         ("uploadpack.allowAnySHA1InWant", "true")):
+            self.git("config", key, val)
+        (self.origin / "parts").mkdir()
+        self.name = "parts/pm_ticks_2026-01-05.jsonl.gz"
+        (self.origin / self.name).write_bytes(gz([tick(i, "2026-01-05") for i in range(5)]))
+        self.git("add", "-A")
+        self.git("commit", "-qm", "publish")
+        self.c1 = self.git("rev-parse", "HEAD")
+        self.blob = self.git("rev-parse", f"HEAD:{self.name}")
+        self.git("rm", "-q", self.name)
+        self.git("commit", "-qm", "retention removal")
+        self.git("checkout", "-q", "-b", "side", self.c1)
+        (self.origin / "x.txt").write_text("x")
+        self.git("add", "-A")
+        self.git("commit", "-qm", "side")
+        self.side = self.git("rev-parse", "HEAD")
+        self.git("checkout", "-q", "main")
+        self.work = base / "work"
+        subprocess.run(["git", "clone", "-q", "--depth", "1", "--no-checkout",
+                        self.origin.as_uri(), str(self.work)], check=True)
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def step(self, **over):
+        import os
+        env = {"PATH": os.environ["PATH"], "HOME": self.tmp.name,
+               "SOURCE": "", "DAY": "2026-01-05", "BLOB": self.blob, **over}
+        return subprocess.run(["bash", "-c", self.script()], cwd=self.work, env=env,
+                              capture_output=True, text=True)
+
+    def test_without_source_reads_main_where_partition_is_gone(self):
+        self.assertEqual(self.step().returncode, 0)
+        _, parts = w.list_published_partitions(self.work, "FETCH_HEAD")
+        self.assertEqual(parts, [])
+
+    def test_ancestor_commit_exposes_the_exact_blob(self):
+        result = self.step(SOURCE=self.c1)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        _, parts = w.list_published_partitions(self.work, "refs/r2-source")
+        self.assertEqual([p["blob"] for p in parts], [self.blob])
+        chosen = w.select_target(
+            parts, w.make_target("polymarket", "2026-01-05", self.blob))
+        self.assertEqual(chosen[0]["blob"], self.blob)
+        self.assertEqual(w.git_blob_sha(w.read_git_blob(self.work, self.blob)), self.blob)
+
+    def test_other_blob_never_selected_from_source_commit(self):
+        _, parts = (self.step(SOURCE=self.c1), w.list_published_partitions(
+            self.work, "refs/r2-source"))[1]
+        with self.assertRaises(w.TargetError):
+            w.select_target(parts, w.make_target("polymarket", "2026-01-05", "f" * 40))
+        with self.assertRaises(w.TargetError):
+            w.select_target(parts, w.make_target("polymarket", "2026-01-06", self.blob))
+
+    def test_refusals(self):
+        for over in ({"SOURCE": self.side}, {"SOURCE": "main"}, {"SOURCE": self.c1[:12]},
+                     {"SOURCE": "0" * 40}, {"SOURCE": self.c1, "DAY": ""},
+                     {"SOURCE": self.c1, "BLOB": ""}):
+            result = self.step(**over)
+            self.assertNotEqual(result.returncode, 0, str(over))
+            self.assertIn("Blocked", result.stdout, str(over))
+
+    def test_workflow_never_hardcodes_head_for_worker_when_source_set(self):
+        text = (self.REPO / ".github/workflows/r2_partition_worker.yml").read_text()
+        self.assertNotIn('--git-ref FETCH_HEAD', text)
+        self.assertRegex(text, r"(?s)      source_commit:.*?default: \"\"")
 
 
 if __name__ == "__main__":
