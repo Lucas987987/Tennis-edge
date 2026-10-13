@@ -1,0 +1,42 @@
+name: V6.4 shadow control
+
+run-name: V6.4 shadow ${{ inputs.state }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      state:
+        description: "Enable only for a planned one-collector canary, or disable new shadow starts"
+        type: choice
+        required: true
+        default: disabled
+        options:
+          - disabled
+          - enabled
+
+permissions:
+  actions: write
+
+concurrency:
+  group: r2-v64-shadow-control
+  cancel-in-progress: false
+
+jobs:
+  set-shadow-state:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Update repository kill switch
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHADOW_STATE: ${{ inputs.state }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          if [ "$SHADOW_STATE" = "enabled" ]; then
+            gh variable set R2_V64_SHADOW_ENABLED --body true
+            echo "V6.4 shadow enabled for explicitly opted-in collector dispatches."
+          else
+            gh variable set R2_V64_SHADOW_ENABLED --body false
+            echo "V6.4 shadow disabled for all subsequent collector dispatches."
+          fi
+          echo "An already-running collector is not cancelled; let it complete."

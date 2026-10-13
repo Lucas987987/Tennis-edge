@@ -26,3 +26,7 @@ set2_curves_live.jsonl
 # pour une donnée dérivée, exactement ce que la sentinelle de taille surveille.
 calib_cache.json
 *.zip
+
+# V6.4 data belongs in R2; never add local segments or retry journals to Git.
+/parts/v64/
+/parts/v64-pending/
