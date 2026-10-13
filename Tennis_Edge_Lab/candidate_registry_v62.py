@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
-"""Tennis Edge Lab V6.2: compact append-only discovery with separated evidence.
+"""Tennis Edge Lab V6.2/V6.3: compact append-only registry with separated evidence.
 
-Opt-in module. Does not change V4/V6/V6.1 frozen hypotheses, alert rules,
-or existing automatic publications.
+Does not change V4/V6/V6.1 frozen hypotheses, alert rules, or workers.
 """
 from __future__ import annotations
 
@@ -20,7 +19,9 @@ import candidate_watch_v61 as v61
 import bookmakers_sets_v5 as engine
 
 SCHEMA_VERSION = 2
-POLICY = "tennis-edge-compact-v62-1"
+POLICY = "tennis-edge-compact-v63-1"
+LEGACY_POLICY = "tennis-edge-compact-v62-1"
+SUPPORTED_POLICIES = {POLICY, LEGACY_POLICY}
 EVIDENCE_DIRECTORY = "Tennis_Edge_Lab/registry/v62_evidence"
 LEDGER = "Tennis_Edge_Lab/registry/candidate_watch_v62.jsonl"
 REPORT = "Tennis_Edge_Lab/live/candidate_watch_v62_prospective.json"
@@ -29,6 +30,16 @@ NEAR_DUPLICATE_JACCARD = 0.85
 ALPHA_TOTAL = 0.05
 CHECKPOINTS = (30, 60, 90)
 MARKETS = ("match", "set1", "set2")
+STATISTICAL_FAMILIES = (
+    "price", "movement", "execution", "pinnacle", "circuit", "combined",
+)
+CRITERION_FAMILIES = {
+    "price": frozenset({"tranche_cote", "marge"}),
+    "movement": frozenset({"amplitude_mouvement", "sens_mouvement"}),
+    "execution": frozenset({"limite", "fraîcheur_cote"}),
+    "pinnacle": frozenset({"ecart_pinnacle"}),
+    "circuit": frozenset({"circuit"}),
+}
 GENESIS = "GENESIS"
 
 
@@ -43,6 +54,16 @@ def sha(value: bytes) -> str:
 
 def digest(value) -> str:
     return sha(canonical(value))
+
+
+def classify_family(criteria):
+    dimensions = {item.get("dimension") for item in criteria}
+    if not dimensions:
+        return "combined"
+    for family, supported in CRITERION_FAMILIES.items():
+        if dimensions <= supported:
+            return family
+    return "combined"
 
 
 def atomic_write(path: Path, payload: bytes, immutable: bool = False):
@@ -94,7 +115,7 @@ def _load_ledger(root: Path):
         checksum = row.pop("event_hash", None)
         if (row.get("previous_hash") != previous or
             sha(canonical(row)) != checksum or
-            row.get("policy_v62") != POLICY or
+        row.get("policy_v62") not in SUPPORTED_POLICIES or
             row.get("schema_v62") != SCHEMA_VERSION or
             row.get("candidate_id") in seen):
             raise ValueError("Corrupted compact ledger at line " + str(number))
@@ -247,13 +268,15 @@ def compact(root: Path, candidates=None):
             "signature", "criteria", "predicates",
             "discovery_match_count", "discovery_day_count",
             "discovery_period", "historical_context", "validation_plan",
-            "admission_policy",
+            "admission_policy", "feature_availability", "source_hashes",
+            "model_version", "policy_version", "selection_v63",
         )
         row = {k: source[k] for k in keep if k in source}
         row["schema_v62"] = SCHEMA_VERSION
         row["policy_v62"] = POLICY
         row["evidence"] = archived[row["candidate_id"]]
         row["statistical_family"] = row["signature"]["scope"]["market"]
+        row["pre_registered_family"] = classify_family(row.get("criteria", []))
         row["previous_hash"] = previous
         row["event_hash"] = digest(row)
         previous = row["event_hash"]
@@ -267,35 +290,60 @@ def compact(root: Path, candidates=None):
     return {"new": len(new_rows), **outcome}
 
 
-def family_cohort_budget(cohort_number: int, market_count=3, looks=3):
-    """Lifetime-FWER spending across unbounded daily freeze cohorts.
+def family_cohort_budget(
+    cohort_number: int, market_count=3,
+    family_count=len(STATISTICAL_FAMILIES), looks=3,
+):
+    """Lifetime-FWER spending across fixed markets, test families, and looks.
 
-    sum(1/(k(k+1)), k>=1) == 1; 3 disjoint markets and 3 looks.
+    sum(1/(k(k+1)), k>=1) == 1; fixed markets, criteria families and looks.
     """
-    if cohort_number < 1 or market_count < 1 or looks < 1:
+    if cohort_number < 1 or market_count < 1 or family_count < 1 or looks < 1:
         raise ValueError("Invalid statistical budget")
-    return ALPHA_TOTAL / market_count / looks / (cohort_number * (cohort_number + 1))
+    return ALPHA_TOTAL / market_count / family_count / looks / (
+        cohort_number * (cohort_number + 1)
+    )
 
 
 def _apply_family_correction(report: dict):
     """No retroactive selection: prospective Holm by predeclared cohort/family."""
     candidates = report["candidates"]
-    cohorts = {market: sorted({row["freeze_date_utc"] for row in candidates
-                               if row["market"] == market}) for market in MARKETS}
+    cohort_keys = {
+        (row["market"], row.get(
+            "pre_registered_family", classify_family(row.get("criteria", [])),
+        ))
+        for row in candidates
+    }
+    cohorts = {
+        key: sorted({
+            row["freeze_date_utc"] for row in candidates
+            if (row["market"], row.get(
+                "pre_registered_family", classify_family(row.get("criteria", [])),
+            )) == key
+        })
+        for key in cohort_keys
+    }
     by_bucket = defaultdict(list)
     for row in candidates:
         market = row["market"]
-        seq = cohorts[market].index(row["freeze_date_utc"]) + 1
+        family = row.get(
+            "pre_registered_family", classify_family(row.get("criteria", [])),
+        )
+        seq = cohorts[(market, family)].index(row["freeze_date_utc"]) + 1
         for check in row["checkpoints"]:
             check["p_holm"] = None  # erase V6.1's unscoped adjustment
             check["state"] = "non confirmé"
             check["family"] = market
+            check["test_family"] = family
             check["freeze_cohort_index"] = seq
             check["alpha_family_cohort_look"] = family_cohort_budget(seq)
             if check["p_nominal"] is not None:
-                by_bucket[(market, row["freeze_date_utc"], check["checkpoint_utc"])].append(check)
-    for (market, freeze_date, checkpoint), checks in by_bucket.items():
-        seq = cohorts[market].index(freeze_date) + 1
+                by_bucket[(
+                    market, family, row["freeze_date_utc"], check["checkpoint_utc"],
+                )].append(check)
+
+    for (market, family, freeze_date, checkpoint), checks in by_bucket.items():
+        seq = cohorts[(market, family)].index(freeze_date) + 1
         adjusted = engine.holm_adjust([x["p_nominal"] for x in checks])
         for item, p_holm in zip(checks, adjusted):
             item["p_holm"] = p_holm
@@ -316,14 +364,29 @@ def _apply_family_correction(report: dict):
     report["schema_version"] = SCHEMA_VERSION
     report["registry"] = LEDGER.removeprefix("Tennis_Edge_Lab/")
     report["validation_method"] = (
-        "Holm within market/freeze-date/checkpoint, three predefined market families, "
-        "three prospective looks, lifetime alpha spending 1/[k(k+1)]. "
-        "No discovery ROI used for prospective validation."
+        "Holm within pre-registered market/criterion-family/freeze-cohort/checkpoint; "
+        "six fixed criterion families, three markets and three prospective looks; "
+        "lifetime alpha spending 1/[k(k+1)]. Candidate selection uses only data coverage, "
+        "sample size, distinct days, variable availability, rule simplicity and diversity. "
+        "The 17,023+ exploratory tests and historical screening are not independent "
+        "confirmatory evidence; only strictly post-freeze observations are evaluated."
     )
     report["alpha_lifetime_total"] = ALPHA_TOTAL
+    report["pre_registered_statistical_families"] = list(STATISTICAL_FAMILIES)
+    report["alpha_budget"] = {
+        "total": ALPHA_TOTAL,
+        "markets": len(MARKETS),
+        "criterion_families": len(STATISTICAL_FAMILIES),
+        "prospective_looks": len(CHECKPOINTS),
+        "cohort_spending": "1/[k(k+1)]",
+        "per_family_cohort_look": (
+            "0.05 / (3 markets * 6 criterion families * 3 looks * k(k+1))"
+        ),
+    }
     report["warning"] = (
-        "Exploratory freeze is not a profitable strategy. Signals require "
-        "independent verification; results strictly after original freeze."
+        "Exploratory screening and selection used historical data and cannot establish "
+        "profitability. Holm and lifetime alpha budgets apply only to the fixed, "
+        "pre-registered prospective families; signals require independent verification."
     )
     return report
 
