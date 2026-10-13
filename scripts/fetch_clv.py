@@ -6,6 +6,9 @@ v3 : ne grille plus les matchs sur échec, ré-ouvre les échecs précédents,
 """
 import json, os, datetime, time
 import oddspapi_v5 as ov   # client commun OddsPapi v5 (RapidAPI, curl)
+from partitioned_store import (
+    append_closing_updates, canonical, load_closing, sha256,
+)
 
 # Auth v4 (ODDSPAPI_KEY/BASE) supprimée : gérée par oddspapi_v5.
 MARKET = '121'             # marché vainqueur tennis en v5 (info ; le client gère l'extraction)
@@ -164,8 +167,8 @@ def main():
         print("❌ RAPIDAPI_KEY absente"); return
     if not os.path.exists(CLOSING_FILE):
         print("Pas de closing_lines.json"); return
-    with open(CLOSING_FILE, encoding='utf-8') as f:
-        closing = json.load(f)
+    closing = load_closing(CLOSING_FILE)
+    closing_before = {uid: sha256(canonical(record)) for uid, record in closing.items()}
 
     # ── self-heal : ré-ouvrir les 'done' sans courbe (échecs précédents) ──
     healed = 0
@@ -244,8 +247,12 @@ def main():
             done += 1
             print(f"  ✅ {m.get('home')} vs {m.get('away')} | home {ah['open']}→{ah['close']} ({ah['move_pct']:+.1f}%, {ah['n_points']}pts)")
 
-    with open(CLOSING_FILE, 'w', encoding='utf-8') as f:
-        json.dump(closing, f, ensure_ascii=False, indent=2)
+    changed = {
+        uid: record for uid, record in closing.items()
+        if uid not in closing_before or sha256(canonical(record)) != closing_before[uid]
+    }
+    result = append_closing_updates(changed)
+    print(f"Index closing V6.4 : {result['written']} mise(s) à jour partitionnée(s)")
     print(f"\n✅ {done} matchs analysés (courbe complète, gratuit hors quota)")
 
 if __name__ == '__main__':

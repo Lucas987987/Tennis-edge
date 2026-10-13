@@ -15,6 +15,7 @@ Env : RAPIDAPI_KEY. SET_RESULTS (def set_results.json),
 """
 import os, json, datetime, time
 import oddspapi_v5 as ov
+from partitioned_store import load_closing
 
 CLOSING = 'closing_lines.json'
 OUT = os.environ.get('SET_RESULTS', 'set_results.json')
@@ -42,7 +43,7 @@ def main():
         print("❌ RAPIDAPI_KEY absente"); return
     if not os.path.exists(CLOSING):
         print("Pas de closing_lines.json"); return
-    closing = json.load(open(CLOSING, encoding='utf-8'))
+    closing = load_closing(CLOSING)
 
     cache = {}
     if os.path.exists(OUT):

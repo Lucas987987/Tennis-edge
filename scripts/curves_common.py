@@ -19,6 +19,7 @@ import datetime
 import json
 
 import match_key as mk
+from partitioned_store import load_closing
 
 
 def build_closing_index(closing_lines=None):
@@ -31,7 +32,7 @@ def build_closing_index(closing_lines=None):
     doit être souple."""
     if closing_lines is None:
         try:
-            closing_lines = json.load(open('closing_lines.json', encoding='utf-8'))
+            closing_lines = load_closing()
         except (OSError, ValueError):
             closing_lines = {}
     idx = {}

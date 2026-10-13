@@ -1,0 +1,40 @@
+name: Restore V6.4 R2 outbox
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '7,22,37,52 * * * *'
+
+permissions:
+  actions: write
+  contents: read
+
+concurrency:
+  group: r2-v64-outbox
+  cancel-in-progress: false
+
+jobs:
+  replay:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /scripts/partitioned_store.py
+            /scripts/r2_storage.py
+            /scripts/r2_v64.py
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - name: Install R2 client
+        run: pip install --quiet boto3
+      - name: Replay durable outbox artifacts
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+        run: python scripts/r2_v64.py sync-outbox

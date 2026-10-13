@@ -31,6 +31,7 @@ Garde-fou n >= MIN_N (30). Sources : CLOSING, CLV_FILE, BOOK_FILE, RESULTS.
 import os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import oddspapi_v5 as ov
+from partitioned_store import load_closing
 import json, os, sys, datetime, statistics as st
 
 CLOSING   = os.environ.get('CLOSING', 'closing_lines.json')
@@ -91,10 +92,7 @@ def tag(n):
 
 
 def main():
-    closing = {}
-    if os.path.exists(CLOSING):
-        with open(CLOSING, encoding='utf-8') as f:
-            closing = json.load(f)
+    closing = load_closing(CLOSING)
     clv, books = {}, []
     if os.path.exists(CLV_FILE):
         with open(CLV_FILE, encoding='utf-8') as f:

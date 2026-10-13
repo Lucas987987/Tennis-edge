@@ -19,6 +19,10 @@ Env : RAPIDAPI_KEY. BOOKS (def "pinnacle,unibet,bwin,betsson").
 """
 import os, json, datetime, time, re, unicodedata
 import oddspapi_v5 as ov
+from partitioned_store import (
+    LocalPartitionStore,
+    append_bookmaker_curves, load_closing,
+)
 
 
 def _norm(s):
@@ -39,6 +43,30 @@ SET2_OUT = os.environ.get('SET2_CURVES', 'set2_curves.jsonl')
 BOOKS = [b.strip() for b in os.environ.get('BOOKS', os.environ.get('BOOK', 'pinnacle,unibet,bwin,betsson')).split(',') if b.strip()]
 MAX_PER_RUN = int(os.environ.get('CLV_MAX_PER_RUN', '40'))
 COOLDOWN = float(os.environ.get('CLV_COOLDOWN', '3.0'))
+MARKETS = ('match', 'set1', 'set2')
+HISTORY_MARKET = {'match': 'book', 'set1': 'set1', 'set2': 'set2'}
+
+
+def load_book_curve_coverage(root='.'):
+    done_by_market = {market: set() for market in MARKETS}
+    for market, history_market in HISTORY_MARKET.items():
+        for line in ov.iter_hist_lines(history_market):
+            try:
+                row = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            uid, book = row.get('uid'), row.get('book')
+            if uid and book:
+                done_by_market[market].add((uid, book))
+    completed = set(LocalPartitionStore(root).latest('bookmakers/completion'))
+    return done_by_market, completed
+
+
+def needs_book_curve_fetch(uid, book, done_by_market, completed):
+    key = (uid, book)
+    return f'{uid}|{book}' not in completed and not all(
+        key in done_by_market[market] for market in MARKETS
+    )
 
 
 def _curve_dt(pts):
@@ -98,17 +126,12 @@ def main():
         print("❌ RAPIDAPI_KEY absente"); return
     if not os.path.exists(CLOSING_FILE):
         print("Pas de closing_lines.json"); return
-    closing = json.load(open(CLOSING_FILE, encoding='utf-8'))
+    closing = load_closing(CLOSING_FILE)
 
-    done = set()
-    # LECTURE : couvrir tout l'historique (fichier legacy + partitions
-    # mensuelles), sinon le script re-traiterait des matchs déjà capturés
-    # avant la migration -- voir iter_hist_lines() dans oddspapi_v5.py.
-    for line in ov.iter_hist_lines('book'):
-        try:
-            d = json.loads(line); done.add((d.get('uid'), d.get('book')))
-        except json.JSONDecodeError:
-            pass
+    # Chaque marché a son propre état : match ne doit pas masquer une collecte
+    # set1/set2 interrompue. Les marqueurs enregistrent aussi les réponses
+    # valides où un marché de set n'était pas proposé.
+    done_by_market, completed = load_book_curve_coverage()
 
     now = datetime.datetime.utcnow()
     started = []
@@ -144,44 +167,55 @@ def main():
     total = {'match': 0, 'set1': 0, 'set2': 0}
     # un seul appel ramene match + set1 + set2
     OUTCOMES = (ov.OUT_HOME, ov.OUT_AWAY, ov.SET1_HOME, ov.SET1_AWAY, ov.SET2_HOME, ov.SET2_AWAY)
-    # ÉCRITURE : partition du MOIS COURANT, plus jamais le fichier monolithique
-    # (voir note au-dessus d'iter_hist_lines dans oddspapi_v5.py -- book_curves.
-    # jsonl a atteint 140,73 Mo et GitHub rejette tout push > 100 Mo).
-    out_path = ov.current_hist_partition_path('book')
-    set1_path = ov.current_hist_partition_path('set1')
-    set2_path = ov.current_hist_partition_path('set2')
-    with open(out_path, 'a', encoding='utf-8') as f, \
-         open(set1_path, 'a', encoding='utf-8') as f1, \
-         open(set2_path, 'a', encoding='utf-8') as f2:
-        for book in BOOKS:
-            todo = [x for x in started if (x[0], book) not in done][:MAX_PER_RUN]
-            print(f"[{book}] {len(todo)} matchs a traiter")
-            got = {'match': 0, 'set1': 0, 'set2': 0}; warned = False
-            for uid, m, fid, start in todo:
-                time.sleep(COOLDOWN)
-                try:
-                    curves = ov.historical_curves(fid, book, OUTCOMES, with_limit=True)
-                except Exception as e:
-                    if not warned:
-                        print(f"  ⚠️ {book} fixtureId={fid}: {e}"); warned = True
-                    continue
-                ch = _curve_dt(curves.get(ov.OUT_HOME)); ca = _curve_dt(curves.get(ov.OUT_AWAY))
-                if not ch or not ca:
-                    continue  # book ne cote pas ce match
-                f.write(json.dumps(build_entry(uid, fid, book, m, start, ch, ca), ensure_ascii=False) + '\n')
-                got['match'] += 1
-                # set 1 (123/124) — meme format, ecrit seulement si le book le cote
-                c1h = _curve_dt(curves.get(ov.SET1_HOME)); c1a = _curve_dt(curves.get(ov.SET1_AWAY))
-                if c1h and c1a:
-                    f1.write(json.dumps(build_entry(uid, fid, book, m, start, c1h, c1a), ensure_ascii=False) + '\n')
-                    got['set1'] += 1
-                # set 2 (125/126)
-                c2h = _curve_dt(curves.get(ov.SET2_HOME)); c2a = _curve_dt(curves.get(ov.SET2_AWAY))
-                if c2h and c2a:
-                    f2.write(json.dumps(build_entry(uid, fid, book, m, start, c2h, c2a), ensure_ascii=False) + '\n')
-                    got['set2'] += 1
-            print(f"  ✅ {book}: {got['match']} match | {got['set1']} set1 | {got['set2']} set2")
-            for k in total: total[k] += got[k]
+    market_records = {market: [] for market in MARKETS}
+    completion_records = []
+    for book in BOOKS:
+        todo = [
+            x for x in started
+            if needs_book_curve_fetch(x[0], book, done_by_market, completed)
+        ][:MAX_PER_RUN]
+        print(f"[{book}] {len(todo)} matchs a traiter")
+        got = {'match': 0, 'set1': 0, 'set2': 0}; warned = False
+        for uid, m, fid, start in todo:
+            time.sleep(COOLDOWN)
+            try:
+                curves = ov.historical_curves(fid, book, OUTCOMES, with_limit=True)
+            except Exception as e:
+                if not warned:
+                    print(f"  ⚠️ {book} fixtureId={fid}: {e}"); warned = True
+                continue
+            ch = _curve_dt(curves.get(ov.OUT_HOME)); ca = _curve_dt(curves.get(ov.OUT_AWAY))
+            if not ch or not ca:
+                continue
+            market_records['match'].append(build_entry(uid, fid, book, m, start, ch, ca))
+            got['match'] += 1
+            c1h = _curve_dt(curves.get(ov.SET1_HOME)); c1a = _curve_dt(curves.get(ov.SET1_AWAY))
+            if c1h and c1a:
+                market_records['set1'].append(build_entry(uid, fid, book, m, start, c1h, c1a))
+                got['set1'] += 1
+            c2h = _curve_dt(curves.get(ov.SET2_HOME)); c2a = _curve_dt(curves.get(ov.SET2_AWAY))
+            if c2h and c2a:
+                market_records['set2'].append(build_entry(uid, fid, book, m, start, c2h, c2a))
+                got['set2'] += 1
+            available = ['match']
+            if c1h and c1a:
+                available.append('set1')
+            if c2h and c2a:
+                available.append('set2')
+            completion_records.append((
+                f'{uid}|{book}',
+                {'available_markets': available},
+            ))
+        print(f"  ✅ {book}: {got['match']} match | {got['set1']} set1 | {got['set2']} set2")
+        for k in total:
+            total[k] += got[k]
+    storage = {}
+    observed_at = datetime.datetime.now(datetime.timezone.utc)
+    for market, records in market_records.items():
+        storage[market] = append_bookmaker_curves(market, records, observed_at=observed_at)
+    completion = LocalPartitionStore().append(
+        'bookmakers/completion', completion_records, observed_at=observed_at,
+    )
     print(f"\n✅ total — match {total['match']} | set1 {total['set1']} | set2 {total['set2']} ({', '.join(BOOKS)})")
 
     # Sidecar pour audit_qa.py : timestamp EMBARQUÉ DANS LE CONTENU (pas le
@@ -199,7 +233,9 @@ def main():
             sizes[p] = round(os.path.getsize(p) / 1e6, 1)
         with open('hist_curves_meta.json', 'w', encoding='utf-8') as f:
             json.dump({'last_write': datetime.datetime.utcnow().isoformat(),
-                      'total': total, 'partition_sizes_mb': sizes}, f, ensure_ascii=False)
+                      'total': total, 'partition_sizes_mb': sizes,
+                      'v64': storage, 'v64_completion': completion},
+                     f, ensure_ascii=False)
     except Exception as e:
         print(f"  ⚠️ Écriture hist_curves_meta.json: {e}")
 

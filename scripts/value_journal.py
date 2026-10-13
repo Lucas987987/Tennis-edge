@@ -20,6 +20,7 @@ Entrées : closing_lines.json, clv_history.jsonl, elo_ratings_atp.json, elo_rati
 Sorties : value_candidates.jsonl (1 ligne/match), value_clv_report.json (agrégats)
 """
 import json, os, math, datetime
+from partitioned_store import load_closing
 
 CLOSING_FILE = 'closing_lines.json'
 CLV_LOG      = 'clv_history.jsonl'
@@ -149,7 +150,7 @@ def close_mins_before(c, side):
 
 def main():
     elos = {t: load_json(f) for t, f in ELO_FILES.items()}
-    closing = load_json(CLOSING_FILE, {}) or {}
+    closing = load_closing(CLOSING_FILE)
 
     # CLV réalisé indexé par uid (dernière entrée gagne)
     clv = {}

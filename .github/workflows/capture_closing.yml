@@ -41,6 +41,10 @@ on:
 
 permissions:
   contents: write
+
+concurrency:
+  group: capture-closing
+  cancel-in-progress: false
   # AJOUTE LE 26/10/2026 : ce workflow relance les collecteurs via
   # watchdog_collecteurs.py. Sans cette permission :
   #   HTTP 403: Resource not accessible by integration
@@ -69,10 +73,22 @@ jobs:
             /*
             !/parts
             /parts/live_*
+            /parts/v64/closing/**
 
       - uses: actions/setup-python@v6
         with:
           python-version: '3.11'
+
+      - name: Prepare R2 state (continue collection if unavailable)
+        continue-on-error: true
+        env:
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+        run: |
+          pip install --quiet boto3
+          rm -rf parts/v64-outbox parts/v64-baseline.json
+          python scripts/r2_v64.py prepare --namespace closing
 
       - name: Fenêtre de cache (30 min)
         id: bucket
@@ -110,6 +126,27 @@ jobs:
           GITHUB_EVENT_NAME: ${{ github.event_name }}
         run: python scripts/capture_closing.py
 
+      - name: Persist closing partitions to R2
+        if: success()
+        env:
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+        run: python scripts/r2_v64.py push --namespace closing
+
+      - name: Export durable R2 outbox
+        if: failure()
+        run: python scripts/r2_v64.py export-outbox --namespace closing
+
+      - name: Preserve V6.4 outbox for retry
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v64-outbox-${{ github.run_id }}-${{ github.run_attempt }}
+          path: parts/v64-outbox/
+          if-no-files-found: error
+          retention-days: 90
+
       - name: Rétention (allège les fichiers live — historique conservé)
         run: python scripts/purge_data.py || true
 
@@ -138,7 +175,13 @@ jobs:
           # écrites ici), sans énumérer positivement chaque fichier que ce
           # job produit (nombreux : capture_state, courbes live, journaux
           # d'alertes, journal forward...).
-          git add -A -- ':!parts/pm_ticks_*' ':!parts/kx_ticks_*'
+          git add -A -- ':!parts/pm_ticks_*' ':!parts/kx_ticks_*' \
+            ':!parts/hist_*' ':!parts/v64' ':!parts/v64-outbox' \
+            ':!parts/v64-baseline.json'
+          if git diff --cached --name-only | grep -Eq '^parts/(v64|v64-outbox)/'; then
+            echo "V6.4 data and outbox must never be published to Git."
+            exit 1
+          fi
           echo "--- fichiers en attente de commit ---"
           git status --short
           # GARDE-FOU TAILLE (même principe que kalshi/polymarket).

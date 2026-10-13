@@ -39,6 +39,8 @@ jobs:
           # Pas les ticks pm/kx, déjà archivés en Releases.
           sparse-checkout: |
             /scripts/courbes_r2.py
+            /scripts/partitioned_store.py
+            /scripts/r2_storage.py
             /parts/live_match_*
             /parts/live_set1_*
             /parts/live_set2_*

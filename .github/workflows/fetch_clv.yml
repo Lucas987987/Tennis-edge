@@ -20,9 +20,10 @@ on:
 
 permissions:
   contents: write
+  actions: write
 
 concurrency:
-  group: capture-closing      # même groupe (écrit aussi dans closing_lines.json)
+  group: capture-closing      # même groupe : protège aussi l'état CLV local
   cancel-in-progress: false
 
 jobs:
@@ -34,6 +35,16 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: '3.11'
+      - name: Prepare R2 state (continue collection if unavailable)
+        continue-on-error: true
+        env:
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+        run: |
+          pip install --quiet boto3
+          rm -rf parts/v64-outbox parts/v64-baseline.json
+          python scripts/r2_v64.py prepare --namespace closing
       - name: Calcul du CLV via historique (OddsPapi v5)
         env:
           RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
@@ -44,6 +55,24 @@ jobs:
           CLV_MAX_PER_RUN: '120'
           CLV_COOLDOWN: '1.5'
         run: python scripts/fetch_clv.py
+      - name: Persist closing partitions to R2
+        if: success()
+        env:
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+        run: python scripts/r2_v64.py push --namespace closing
+      - name: Export durable R2 outbox
+        if: failure()
+        run: python scripts/r2_v64.py export-outbox --namespace closing
+      - name: Preserve V6.4 outbox for retry
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v64-outbox-${{ github.run_id }}-${{ github.run_attempt }}
+          path: parts/v64-outbox/
+          if-no-files-found: error
+          retention-days: 90
       - name: Commit
         run: |
           # PANNE DU 16/08/2026 -- cause exacte, tracee par pipeline_status.
@@ -60,7 +89,7 @@ jobs:
           find . -name '*.pyc' -delete 2>/dev/null || true
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          for f in closing_lines.json clv_history.jsonl; do
+          for f in clv_history.jsonl; do
             [ -f "$f" ] && git add -- "$f"
           done
           git diff --staged --quiet || git commit -m "CLV historique (v5)"

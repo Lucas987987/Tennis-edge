@@ -62,6 +62,7 @@ jobs:
       - name: Nettoyer
         env:
           DRY_RUN: ${{ inputs.dry_run && '1' || '0' }}
+          MOTIFS: parts/pm_ticks_*.jsonl,parts/kx_ticks_*.jsonl
         run: python scripts/cleanup_duplicate_partitions.py
 
       - name: Commit
@@ -74,7 +75,8 @@ jobs:
           # -A : ce sont des SUPPRESSIONS. Un `git add` simple ne les verrait
           # pas et le gain de place ne serait jamais effectif côté GitHub —
           # exactement l'erreur qui a recréé ces doublons.
-          git add -A -- parts/
+          git add -A -- \
+            'parts/pm_ticks_*' 'parts/kx_ticks_*'
           if git diff --staged --quiet; then
             echo 'Rien à commit.'; exit 0
           fi

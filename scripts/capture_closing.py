@@ -13,6 +13,9 @@ Sinon le match est marqué closing_reliable=False et doit être EXCLU du CLV.
 import json, datetime, os, re, sys
 import urllib.request, urllib.parse
 import oddspapi_v5 as ov  # client commun OddsPapi v5 (RapidAPI, appels curl)
+from partitioned_store import (
+    append_closing_updates, canonical, load_closing, sha256,
+)
 
 # ─────────────────────────────────────────────────────────────────────────
 # Source de cotes : OddsPapi v5 via RapidAPI (module oddspapi_v5).
@@ -81,13 +84,7 @@ STORE_MOVE_PCT    = float(os.environ.get('STORE_MOVE_PCT', '0.004'))   # 0,4 % (
 STORE_MAX_GAP_MIN = float(os.environ.get('STORE_MAX_GAP_MIN', '30'))   # plancher temporel
 HISTORY_CAP       = int(os.environ.get('HISTORY_CAP', '400'))          # points max/match (élagage intelligent, voir trim_history)
 
-# Hygiène du fichier closing_lines.json (qui grossit avec la capture dense) :
-# - un match TERMINÉ n'a plus besoin de sa trajectoire dense (son CLV est figé dans
-#   clv_history.jsonl) → on compresse son historique à FINISHED_HISTORY_CAP points
-#   (ouverture + closing + milieu échantillonné conservés).
-# - les entrées de plus de PURGE_DAYS jours sont retirées (CLV déjà permanent ailleurs).
-FINISHED_HISTORY_CAP = int(os.environ.get('FINISHED_HISTORY_CAP', '30'))
-PURGE_DAYS           = int(os.environ.get('PURGE_DAYS', '60'))
+# Le legacy et le journal V6.4 conservent l'historique sans compactage ni purge.
 
 # Fenêtres de capture (minutes avant le match). Resserrées car le timing est
 # maintenant garanti par le worker Cloudflare (plus de boucle aveugle */10).
@@ -822,10 +819,8 @@ def main():
     print(f"Capture closing lines (OddsPapi) @ {now.isoformat()} UTC")
 
     # Charger les closing lines existantes
-    closing = {}
-    if os.path.exists(CLOSING_FILE):
-        with open(CLOSING_FILE, encoding='utf-8') as f:
-            closing = json.load(f)
+    closing = load_closing(CLOSING_FILE)
+    closing_before = {uid: sha256(canonical(record)) for uid, record in closing.items()}
 
     matches, remaining = fetch_odds(now)
     print(f"  {len(matches)} matchs exploitables · quota {remaining}")
@@ -1121,41 +1116,18 @@ def main():
               f"(dernier point {last['t'][:16]})")
 
 
-    # Compresser l'historique des matchs TERMINÉS : leur CLV est figé dans
-    # clv_history.jsonl, ils n'ont plus besoin d'une trajectoire dense. On garde
-    # l'entrée et tous ses champs + une trajectoire échantillonnée (ouverture/closing
-    # préservés). C'est ce qui empêche closing_lines.json de gonfler indéfiniment.
-    finished_cutoff = now - datetime.timedelta(hours=24)
-    for uid, m in closing.items():
-        h = m.get('history') or []
-        if len(h) <= FINISHED_HISTORY_CAP:
-            continue
-        finished = bool(m.get('clv_hist_done'))
-        if not finished:
-            try:
-                st = datetime.datetime.fromisoformat(
-                    m.get('commence_time', '').replace('Z', '+00:00')).replace(tzinfo=None)
-                finished = st < finished_cutoff
-            except Exception:
-                finished = False
-        if finished:
-            m['history'] = trim_history(h, FINISHED_HISTORY_CAP)
-
-    # Nettoyer les vieilles entrées (> PURGE_DAYS jours) — leur CLV est déjà figé de
-    # façon permanente dans clv_history.jsonl, donc rien d'utile n'est perdu.
-    cutoff = (now - datetime.timedelta(days=PURGE_DAYS)).strftime('%Y-%m-%d')
-    closing = {k: v for k, v in closing.items() if v.get('date', '') >= cutoff}
-
-    # CORRIGÉ LE 29/08/2026 (audit v13 §BF) : écriture atomique -- l'audit
-    # nomme explicitement ce fichier comme la cible la plus coûteuse d'un
-    # écrasement accidentel (1255+ matchs, l'accumulateur central de tout
-    # le dispositif). Une exception au milieu de l'écriture non-atomique
-    # aurait le MÊME effet que capture_state.json le 28/08, avec des
-    # conséquences bien plus lourdes qu'un heartbeat perdu.
-    ov.ecriture_atomique(CLOSING_FILE, closing, ensure_ascii=False, indent=2)
+    # Le journal V6.4 conserve toutes les versions ; aucune rétention ne
+    # compacte ni ne supprime les enregistrements précédents.
+    changed = {
+        uid: record for uid, record in closing.items()
+        if uid not in closing_before or sha256(canonical(record)) != closing_before[uid]
+    }
+    changed.update({uid: None for uid in closing_before if uid not in closing})
+    storage_result = append_closing_updates(changed, observed_at=now)
 
     n_s1 = sum(1 for m in matches if m.get('_s1_home') and m.get('_s1_away'))
-    print(f"\n✅ {captured} captures · {len(closing)} matchs dans closing_lines.json"
+    print(f"\n✅ {captured} captures · {len(closing)} matchs dans l'index closing V6.4"
+          f" · {storage_result['written']} enregistrements partitionnés"
           f" · cotes set1 dispo: {n_s1}/{len(matches)}")
 
     # Marqueur de heartbeat pour le worker Cloudflare : instant du dernier run de

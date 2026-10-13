@@ -26,6 +26,8 @@ from pathlib import Path
 ROOT = Path(sys.argv[1]).resolve() if __name__ == '__main__' and len(sys.argv) > 1 else Path(__file__).resolve().parents[1]
 DEST = ROOT / 'Tennis_Edge_Lab' / 'live'
 NOW = dt.datetime.now(dt.timezone.utc).isoformat(timespec='seconds').replace('+00:00', 'Z')
+sys.path.insert(0, str(ROOT / 'scripts'))
+from partitioned_store import load_closing
 
 
 def readjson(name, default=None):
@@ -110,7 +112,7 @@ def create_match_index():
         for r in moves:
             k=put(r.get('date',''),r.get('steame',''),r.get('opp',''),None,'moves_detail_hist',True,r.get('tour',''))
             if k and r.get('uid') and r['uid'] not in out[k]['movement_ids']:out[k]['movement_ids'].append(r['uid'])
-    close=readjson('closing_lines.json',{})
+    close=load_closing(root=ROOT)
     fixtures=readjson('resultats_oddspapi.json',{})
     if not isinstance(close,dict):close={}
     if not isinstance(fixtures,dict):fixtures={}

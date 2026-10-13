@@ -35,6 +35,7 @@ exploration. Lecture seule, AUCUNE API.
 Sources : CLOSING=closing_lines.json  RESULTS=resultats_oddspapi.json
 """
 import json, os, sys, statistics as st
+from partitioned_store import load_closing
 
 CLOSING = os.environ.get('CLOSING', 'closing_lines.json')
 RESULTS = os.environ.get('RESULTS', 'resultats_oddspapi.json')
@@ -78,8 +79,7 @@ def section(t):
 def main():
     if not os.path.exists(CLOSING):
         print(f"❌ {CLOSING} manquant"); sys.exit(1)
-    with open(CLOSING, encoding='utf-8') as f:
-        closing = json.load(f)
+    closing = load_closing(CLOSING)
     results = {}
     if os.path.exists(RESULTS):
         with open(RESULTS, encoding='utf-8') as f:

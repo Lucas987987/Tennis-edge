@@ -26,6 +26,7 @@ BOOK_FILE=book_curves.jsonl
 import os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import oddspapi_v5 as ov
+from partitioned_store import load_closing
 import json, os, sys, datetime, statistics as st
 
 CLOSING   = os.environ.get('CLOSING', 'closing_lines.json')
@@ -76,8 +77,7 @@ def book_curves_aligned(be, ref_home, ref_away):
 def main():
     if not os.path.exists(CLOSING):
         print(f"❌ {CLOSING} manquant"); sys.exit(0)
-    with open(CLOSING, encoding='utf-8') as f:
-        closing = json.load(f)
+    closing = load_closing(CLOSING)
     now = datetime.datetime.utcnow()
 
     started = []

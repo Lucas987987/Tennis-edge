@@ -13,8 +13,8 @@ Politique (jours, réglables par env) :
   • *_curves_live.jsonl  -> LIVE_DAYS (5)   : ne servent qu'aux matchs à venir
   • book_curves.jsonl et set*_curves.jsonl -> HIST_DAYS (90) : = fenêtre de
     calibration des seuils, donc aucune perte analytique
-  • clv_history.jsonl    -> CLV_DAYS (60)
-  • closing_lines.json   -> CLOSING_DAYS (45), par commence_time
+  • closing_lines.json, clv_history.jsonl et historiques bookmakers : conservés
+    sans réécriture durant la phase 1 du store V6.4.
   • canal_public_log.jsonl, paper_trades_*.jsonl : JAMAIS purgés (track record)
 
 Usage : python scripts/purge_data.py   (une fois par jour dans le pipeline)
@@ -206,21 +206,11 @@ def main():
     print(f"Rétention @ {now.isoformat()}Z "
           f"(live {LIVE_DAYS}j · historique {HIST_DAYS}j · clv {CLV_DAYS}j · closing {CLOSING_DAYS}j)")
     purge_old_partitions()
-    if HIST_DAYS > 0:
-        for f in sorted(glob.glob('book_curves.jsonl') + glob.glob('set[12]_curves.jsonl')):
-            purge_jsonl(f, HIST_DAYS)
-    else:
-        print("  historique (book_curves/set*_curves) : conservé intégralement")
-    if CLV_DAYS > 0:
-        purge_jsonl('clv_history.jsonl', CLV_DAYS)
-    else:
-        print("  clv_history.jsonl : conservé intégralement")
-    purge_closing()
-    # Nettoyage des cotes corrompues (marge implicite >35%, ex. bug betfair-ex) :
-    # sur les PARTITIONS (source réelle des données live) + l'historique permanent.
+    print("  closing_lines.json et historiques legacy : conservés sans réécriture")
+    print("  clv_history.jsonl : conservé intégralement")
+    # Les données historiques legacy sont désormais la base immuable du store
+    # V6.4 ; toute purge/nettoyage les réécrirait et changerait leur empreinte.
     purge_corrupt_quotes_parts()
-    for f in sorted(glob.glob('book_curves.jsonl') + glob.glob('set[12]_curves.jsonl')):
-        purge_corrupt_quotes_flat(f)
     total = sum(os.path.getsize(f) for f in glob.glob('*.json*') if os.path.isfile(f))
     print(f"✅ total fichiers de données : {total/1e6:.1f} Mo")
 

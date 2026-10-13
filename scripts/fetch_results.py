@@ -5,6 +5,7 @@ et enrichit le CSV backtest avec Elo/stats depuis players_data.json.
 Tourne chaque nuit à 2h UTC.
 """
 import urllib.request, json, datetime, csv, io, os, re, unicodedata
+from partitioned_store import load_closing
 
 GITHUB_TOKEN = os.environ.get('GITHUB_TOKEN', '')
 
@@ -462,8 +463,7 @@ def enrich_closing_lines():
         print("  Pas de backtest ou closing_lines.json")
         return
 
-    with open(CLOSING_FILE, encoding='utf-8') as f:
-        closing = json.load(f)
+    closing = load_closing(CLOSING_FILE)
 
     with open(BACKTEST_FILE, encoding='utf-8') as f:
         raw = f.read()

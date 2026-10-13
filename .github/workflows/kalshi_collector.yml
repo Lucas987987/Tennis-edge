@@ -72,9 +72,14 @@ jobs:
       # restore_curves interroge l'index ET les releases directement : un
       # ARCHIVE_INDEX.json perime ne peut plus masquer de partitions.
       - name: Restaurer les partitions de courbes archivees
+        continue-on-error: true
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: python scripts/restore_curves.py || true
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          R2_REQUIRED: '1'
+        run: pip install --quiet boto3 && python scripts/restore_curves.py
 
       - name: Kalshi collector
         run: |

@@ -57,7 +57,9 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           # Portée RESTREINTE aux partitions : ce workflow ne touche rien d'autre.
-          git add -A -- 'parts/'
+          git add -A -- \
+            'parts/pm_ticks_*' 'parts/kx_ticks_*' \
+            'parts/ARCHIVE_INDEX.json'
           git diff --staged --quiet && { echo "rien à committer"; exit 0; }
           git commit -m "Archivage ticks -> Releases ($(date -u +%F))"
           attente=2

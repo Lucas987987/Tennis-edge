@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Analyse exploratoire V5 des cotes pré-match bookmakers et marchés de sets.
 
-Les observations utilisables viennent exclusivement des partitions hist_book,
-hist_set1 et hist_set2. Les résultats et les clôtures ne sont que des mesures
-de sortie ; aucune donnée postérieure au coup d'envoi n'est un prédicteur.
+Les observations utilisables viennent des partitions historiques hist_* et du
+journal immuable V6.4 pour match, set1 et set2. Les résultats et les clôtures
+ne sont que des mesures de sortie ; aucune donnée postérieure au coup d'envoi
+n'est un prédicteur.
 """
 from __future__ import annotations
 
@@ -154,6 +155,13 @@ def partition_paths(root: pathlib.Path) -> list[tuple[str, pathlib.Path]]:
         for path in sorted(parts.glob(f"hist_{source}_*.jsonl*")):
             if path.name.endswith(".jsonl") or path.name.endswith(".jsonl.gz"):
                 found.append((market, path))
+        v64_market = "match" if source == "book" else source
+        v64_dir = parts / "v64" / "bookmakers" / v64_market
+        if v64_dir.is_dir():
+            found.extend(
+                (market, path)
+                for path in sorted(v64_dir.rglob("segment-*.jsonl.gz"))
+            )
     return found
 
 
@@ -258,6 +266,8 @@ def collect(root: pathlib.Path) -> tuple[dict, dict]:
                 if not isinstance(row, dict):
                     counters["invalid_rows"] += 1
                     continue
+                if isinstance(row.get("data"), dict):
+                    row = row["data"]
                 uid = row.get("uid")
                 book = row.get("book")
                 if isinstance(book, str) and book.strip():

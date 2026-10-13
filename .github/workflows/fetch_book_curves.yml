@@ -1,9 +1,9 @@
 name: Fetch Book Curves
 
 # ──────────────────────────────────────────────────────────────────────────
-# MODIF : fetch_book_curves.py patché produit aussi set1_curves.jsonl et
-# set2_curves.jsonl (même appel, zéro requête de plus). Le git add les inclut
-# pour qu'ils PERSISTENT (sinon perdus à chaque run).
+# fetch_book_curves.py produit aussi les courbes set1 et set2 en un seul appel.
+# Les partitions V6.4 sont synchronisées avec R2; un artefact Actions de
+# 90 jours sert de file de reprise uniquement si R2 est indisponible.
 # BOOKS : tu peux élargir à la même liste FR ; pinnacle DOIT rester (référence sharp).
 # Rappel : ce workflow ne traite que les matchs TERMINÉS -> alimente le track
 # record / backtest / journal, pas les alertes forward.
@@ -22,6 +22,11 @@ on:
 
 permissions:
   contents: write
+  actions: write
+
+concurrency:
+  group: fetch-book-curves-v64
+  cancel-in-progress: false
 
 jobs:
   fetch-book:
@@ -46,42 +51,69 @@ jobs:
       # `|| true` : une panne de release ne doit pas bloquer le job.
       # restore_curves interroge l'index ET les releases directement.
       - name: Restaurer les partitions de courbes archivees
+        continue-on-error: true
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: python scripts/restore_curves.py || true
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          R2_REQUIRED: '1'
+        run: |
+          pip install --quiet boto3
+          python scripts/restore_curves.py
+
+      - name: Prepare R2 V6.4 state
+        continue-on-error: true
+        env:
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+        run: |
+          rm -rf parts/v64-outbox parts/v64-baseline.json
+          python scripts/r2_v64.py prepare \
+            --namespace bookmakers/match \
+            --namespace bookmakers/set1 \
+            --namespace bookmakers/set2 \
+            --namespace bookmakers/completion
 
       - name: Courbes books (match + set1 + set2) via historical v5
         env:
           RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
           BOOKS: "pinnacle,betfair-ex,winamax.fr,unibet.fr,bet365.fr,pmu,zebet.fr,netbet.fr,bwin.fr,genybet.fr,vbet.fr,circusbet.fr,feelingbet.fr,unibet,bwin,betsson,bet365,williamhill,betway,1xbet,888sport,leovegas,tipico,netbet,betsafe,nordicbet,coolbet,interwetten,vbet,marathonbet,22bet"
         run: python scripts/fetch_book_curves.py
-      - name: Migration ponctuelle vers partitions mensuelles (idempotent)
-        # book_curves.jsonl a atteint 140,73 Mo (14/08/2026) -> GitHub rejette
-        # tout push > 100 Mo, gelant le fichier distant SANS ERREUR VISIBLE
-        # ("git push || true" avalait l'échec chaque nuit). Ce script bascule
-        # vers parts/hist_<market>_<YYYY-MM>.jsonl (une partition par mois,
-        # largement < 100 Mo chacune) et supprime les fichiers monolithiques.
-        # Sans effet si déjà migré (fichiers legacy absents -> ignoré).
-        run: python scripts/migrate_hist_partitions.py || true
       - name: Score de fiabilité des books (persistance du retard + jumeaux)
         run: python scripts/book_reliability.py || true
-      # Compresse les partitions historiques CLOSES (jamais celle en cours
-      # d'écriture). parts/ grossissait de ~80 Mo/semaine sans jamais être purgé
-      # (purge_old_partitions ne filtre que parts/live_*, HIST_DAYS=0 par choix).
-      # gzip est SANS PERTE, l'intégrité est revérifiée avant toute suppression,
-      # et ov.iter_hist_lines lit .jsonl et .jsonl.gz indifféremment : aucun
-      # script consommateur n'a à changer. Mesuré : 396 Mo -> 64 Mo.
-      - name: Compresser les partitions historiques closes
+
+      - name: Persist bookmaker partitions to R2
+        if: success()
         env:
-          # Ce workflow ne commite que parts/hist_* (règle « chacun ses
-          # partitions »). Compresser pm_ticks_* / kx_ticks_* ici revenait donc
-          # à créer les .gz sur le runner et à les JETER : le commit ne les
-          # prenait pas, et le checkout suivant restaurait les .jsonl.
-          # Constaté le 21/08 : « 320,5 Mo -> 17,3 Mo » affiché à chaque run,
-          # pour un dépôt qui restait à 579 Mo. La compression des ticks est
-          # désormais faite par chaque collecteur, sur ses propres partitions.
-          EXTRA_GLOBS: ''
-        run: python scripts/compress_hist_partitions.py || true
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+        run: |
+          python scripts/r2_v64.py push \
+            --namespace bookmakers/match \
+            --namespace bookmakers/set1 \
+            --namespace bookmakers/set2 \
+            --namespace bookmakers/completion
+
+      - name: Export durable R2 outbox
+        if: failure()
+        run: |
+          python scripts/r2_v64.py export-outbox \
+            --namespace bookmakers/match \
+            --namespace bookmakers/set1 \
+            --namespace bookmakers/set2 \
+            --namespace bookmakers/completion
+
+      - name: Preserve V6.4 outbox for retry
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v64-outbox-${{ github.run_id }}-${{ github.run_attempt }}
+          path: parts/v64-outbox/
+          if-no-files-found: error
+          retention-days: 90
 
       - name: Commit
         run: |
@@ -107,9 +139,8 @@ jobs:
           # fichier en fin de fichier, le merge partait en conflit, et le push
           # était rejeté. C'est très probablement la cause des 54 h sans
           # régénération de hist_curves_meta.json signalées par l'audit.
-          # -A reste indispensable ICI pour enregistrer la SUPPRESSION des
-          # .jsonl remplacés par leur .gz — mais restreint à parts/hist_*.
-          git add -A -- 'parts/hist_*' 2>/dev/null || true
+          # Les gros historiques sont exclusivement servis par R2/les Releases.
+          # Ce workflow ne stage plus jamais parts/hist_*.
           [ -f hist_curves_meta.json ] && git add -- hist_curves_meta.json
           git diff --cached --quiet || git commit -m "book+set curves partitionnées $(date -u +%FT%TZ)"
           # "merge" et non "rebase" : un rebase en conflit après un commit

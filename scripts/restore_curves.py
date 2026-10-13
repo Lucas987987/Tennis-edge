@@ -70,6 +70,10 @@ SKIP = os.environ.get('SKIP_RESTORE', '') == '1'
 INDEX = os.environ.get('INDEX', 'parts/ARCHIVE_INDEX.json')
 PREFIXES = ('hist_book_', 'hist_set1_', 'hist_set2_')
 TAGS_PREFIX = os.environ.get('TAGS_PREFIX', 'curves-')
+R2_REQUIRED = os.environ.get('R2_REQUIRED', '') == '1'
+R2_CONFIGURED = any(os.environ.get(name) for name in (
+    'R2_ACCESS_KEY_ID', 'R2_SECRET_ACCESS_KEY', 'R2_ENDPOINT',
+))
 
 
 def gh(*args):
@@ -81,6 +85,26 @@ def main():
     if SKIP:
         print('restore_curves — SKIP_RESTORE=1, rien à faire.')
         return 0
+    if R2_REQUIRED and not R2_CONFIGURED:
+        print('restore_curves — configuration R2 requise absente.')
+        return 1
+    r2_failed = False
+    if R2_CONFIGURED:
+        try:
+            from r2_storage import R2Store, create_client
+            r2 = R2Store(create_client())
+            legacy = r2.restore_legacy_partitions('parts')
+            v64 = r2.restore_v64_namespaces('.')
+            print(
+                'restore_curves — R2 vérifié : '
+                f"{legacy['files']} archives restaurées "
+                f"({legacy['records']} lignes), "
+                f"{v64['namespaces']} namespaces V6.4 "
+                f"({v64['records']} enregistrements)."
+            )
+        except Exception as e:
+            print(f'restore_curves — échec R2 : {type(e).__name__}: {e}')
+            r2_failed = True
     # L'INDEX N'EST PLUS BLOQUANT — corrige le 02/10/2026.
     #
     # La version precedente sortait ici des que parts/ARCHIVE_INDEX.json
@@ -136,7 +160,7 @@ def main():
     if not archives:
         print('restore_curves — aucune partition de courbes archivée, '
               'ni dans l\'index ni dans les releases.')
-        return 0
+        return int(R2_REQUIRED and r2_failed)
 
     presents = {os.path.basename(p) for p in glob.glob('parts/*')}
     manquants = [a for a in archives if a['fichier'] not in presents]
@@ -145,7 +169,7 @@ def main():
           + (' [DRY RUN]' if DRY_RUN else ''))
     if not manquants:
         print('  tout est déjà présent.')
-        return 0
+        return int(R2_REQUIRED and r2_failed)
 
     os.makedirs('parts', exist_ok=True)
     # Groupé par release : un seul appel gh par tag, bien plus rapide que
@@ -185,7 +209,7 @@ def main():
         print('  Run ROUGE volontaire : mieux vaut interrompre que publier '
               'des verdicts calculés sur une population tronquée.')
         return 1
-    return 0
+    return int(R2_REQUIRED and r2_failed)
 
 
 if __name__ == '__main__':

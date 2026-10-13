@@ -35,6 +35,12 @@ KNOWN={
 def family(path):
     p=path.lower();b=p.split('/')[-1]
     if p.startswith('parts/'):
+        if p.startswith('parts/v64/bookmakers/'):
+            market=p.split('/')[3]
+            return {'match':'historique bookmakers',
+                    'set1':'historique vainqueur set 1',
+                    'set2':'historique vainqueur set 2'}.get(market,'partition autre')
+        if p.startswith('parts/v64/closing/'):return 'historique closing V6.4'
         if b.startswith('hist_book_'):return 'historique bookmakers'
         if b.startswith('hist_set1_'):return 'historique vainqueur set 1'
         if b.startswith('hist_set2_'):return 'historique vainqueur set 2'
@@ -53,7 +59,8 @@ def family(path):
 def main(root=ROOT,output=None):
     root=pathlib.Path(root)
     indexed=json.loads((root/'Tennis_Edge_Lab/cache/parts_features.json').read_text()) if (root/'Tennis_Edge_Lab/cache/parts_features.json').exists() else {}
-    indexed_files={p for p,v in indexed.get('files',{}).items() if v.get('category') in ('book','polymarket','kalshi')}
+    indexed_files={p for p,v in indexed.get('files',{}).items()
+                   if v.get('category') in ('book','set1','set2','polymarket','kalshi')}
     # Tout fichier de données versionné, y compris les partitions et historique.
     paths=[]
     try:

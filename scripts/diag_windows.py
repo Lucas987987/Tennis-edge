@@ -26,6 +26,7 @@ cadence/horaires), ou (b) elle voit bien mais ne RANGE pas en snapshot
 Lecture seule. Source : CLOSING=closing_lines.json
 """
 import json, os, sys, datetime
+from partitioned_store import load_closing
 
 CLOSING  = os.environ.get('CLOSING', 'closing_lines.json')
 RECENT_H = float(os.environ.get('RECENT_H', '48'))
@@ -43,8 +44,7 @@ def parse_dt(s):
 def main():
     if not os.path.exists(CLOSING):
         print(f"❌ {CLOSING} manquant"); sys.exit(0)
-    with open(CLOSING, encoding='utf-8') as f:
-        closing = json.load(f)
+    closing = load_closing(CLOSING)
     now = datetime.datetime.utcnow()
 
     recent = []

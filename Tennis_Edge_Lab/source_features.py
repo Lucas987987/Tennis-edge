@@ -33,8 +33,14 @@ def blob_oids(root):
     except Exception:return {}
 
 def category(path):
-    s=path.lower().split('/')[-1]
+    p=path.lower()
+    s=p.split('/')[-1]
+    if p.startswith('parts/v64/bookmakers/'):
+        market=p.split('/')[3]
+        return {'match':'book','set1':'set1','set2':'set2'}.get(market,'other')
     if s.startswith('hist_book_'):return 'book'
+    if s.startswith('hist_set1_'):return 'set1'
+    if s.startswith('hist_set2_'):return 'set2'
     if s.startswith(('pm_ticks_','polymarket_')):return 'polymarket'
     if s.startswith(('kx_ticks_','kalshi_')):return 'kalshi'
     return 'other'
@@ -87,6 +93,8 @@ def process_hist(path,moves,starts,conflicts=None):
         try:x=json.loads(line)
         except json.JSONDecodeError:invalid+=1;continue
         if not isinstance(x,dict):continue
+        if isinstance(x.get('data'),dict):
+            x=x['data']
         uid=x.get('uid')
         if uid not in moves:continue
         start=x.get('commence_time')
@@ -173,10 +181,10 @@ def build(root=ROOT, max_files=None):
     # Premier passage hist_book: donne le début du match et les quotes à l'instant d'entrée.
     for path in files:
         rel=str(path.relative_to(root));cat=category(rel)
-        if cat!='book':continue
+        if cat not in ('book','set1','set2'):continue
         oid=blob.get(rel) or f'{path.stat().st_size}:{path.stat().st_mtime_ns}'
         old=oldfiles.get(rel)
-        if old and old.get('oid')==oid:
+        if old and old.get('oid')==oid and old.get('category')==cat:
             obs=old['summary'];reused+=1
             for uid,start in old.get('starts',{}).items():starts.setdefault(uid,start)
         else:
@@ -191,7 +199,8 @@ def build(root=ROOT, max_files=None):
     make_anchor(moves,starts)
     side_maps={}
     for rec in cachefiles.values():
-        if rec['category']=='book':side_maps.update(rec['summary'].get('sides',{}))
+        if rec['category'] in ('book','set1','set2'):
+            side_maps.update(rec['summary'].get('sides',{}))
     # UID est stocké chronologiquement avec ordre alphabétique, mais pas un
     # indicateur home/away. La seule source autorisée ici est le fixture.
     if fixtures.is_file():
@@ -206,14 +215,15 @@ def build(root=ROOT, max_files=None):
     # Un fichier dépourvu de local_side vérifié reste catalogué, non joint.
     for path in files:
         rel=str(path.relative_to(root));cat=category(rel)
-        if cat in ('book','other'):
+        if cat in ('book','set1','set2','other'):
             if cat=='other':cachefiles[rel]={'oid':blob.get(rel),'category':cat,'summary':{'records':None,'matched':0,'invalid':0,'quotes':{}}}
             continue
         oid=blob.get(rel) or f'{path.stat().st_size}:{path.stat().st_mtime_ns}'
         old=oldfiles.get(rel)
         # Quand le mapping du côté peut changer, hash inputs exacts.
         sidesig=hashlib.sha256(json.dumps(side_maps,sort_keys=True).encode()).hexdigest()
-        if old and old.get('oid')==oid and old.get('sidesig')==sidesig:
+        if (old and old.get('oid')==oid and old.get('category')==cat
+                and old.get('sidesig')==sidesig):
             obs=old['summary'];reused+=1
         else:
             obs=process_ticks(path,moves,side_maps,cat);fresh+=1
@@ -226,8 +236,9 @@ def build(root=ROOT, max_files=None):
         complete[cat+'_matched_pre_signal_ticks']+=x.get('matched') or 0
         for obs in x.get('quotes',{}).values():
             uid=obs['uid'];m=permatch.setdefault(uid,{})
-            if cat=='book':
-                key='books';d=m.setdefault(key,{})
+            if cat in ('book','set1','set2'):
+                key={'book':'books','set1':'set1_books','set2':'set2_books'}[cat]
+                d=m.setdefault(key,{})
                 name=obs['book'];prev=d.get(name)
                 if prev is None or obs['time']>prev['time']:d[name]=obs
             else:
@@ -237,12 +248,19 @@ def build(root=ROOT, max_files=None):
     for uid,m in permatch.items():
         if uid in conflicts or 'decision_ts' not in moves[uid]:continue
         row={'uid':uid,'decision_ts':moves[uid]['decision_ts']}
-        books=m.get('books',{})
-        if books:
-            p=books.get('pinnacle');b=max((v for k,v in books.items() if k!='pinnacle'),key=lambda v:v['odds'],default=None)
-            if p:row.update({'pin_at_decision':p['odds'],'pin_limit_at_decision':p.get('limit')})
-            if p and b:row['soft_vs_pin_pre_pct']=round(100*(b['odds']/p['odds']-1),4)
-            row['books_quoted_pre_signal']=len(books)
+        for market,key in (('match','books'),('set1','set1_books'),('set2','set2_books')):
+            books=m.get(key,{})
+            if not books:continue
+            prefix='' if market=='match' else market+'_'
+            p=books.get('pinnacle')
+            b=max((v for k,v in books.items() if k!='pinnacle'),
+                  key=lambda v:v['odds'],default=None)
+            if p:
+                row[prefix+'pin_at_decision']=p['odds']
+                row[prefix+'pin_limit_at_decision']=p.get('limit')
+            if p and b:
+                row[prefix+'soft_vs_pin_pre_pct']=round(100*(b['odds']/p['odds']-1),4)
+            row[prefix+'books_quoted_pre_signal']=len(books)
         for cat in ('polymarket','kalshi'):
             if cat in m:
                 x=m[cat]

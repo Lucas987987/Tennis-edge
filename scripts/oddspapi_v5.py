@@ -112,7 +112,12 @@ def iter_hist_lines(market='book'):
     seul le .jsonl est lu, pour ne jamais servir deux fois les mêmes lignes."""
     plain = sorted(glob.glob(f'parts/hist_{market}_*.jsonl'))
     gz = sorted(glob.glob(f'parts/hist_{market}_*.jsonl.gz'))
-    if not plain and not gz:
+    v64_market = 'match' if market == 'book' else market
+    store_root = os.environ.get('TENNIS_EDGE_ROOT', '.')
+    v64_index = os.path.join(
+        store_root, 'parts', 'v64', 'bookmakers', v64_market, 'index.json',
+    )
+    if not plain and not gz and not os.path.isfile(v64_index):
         # GARDE-FOU (25/08/2026). Zéro partition pour un marché suivi n'est
         # JAMAIS normal en production : soit le checkout est incomplet
         # (sparse-checkout qui exclut parts/hist_* — la panne du 25/08 matin,
@@ -139,6 +144,11 @@ def iter_hist_lines(market='book'):
                         yield line
         except Exception:
             continue
+    # Les partitions v6.4 sont créées une fois et ne sont jamais modifiées.
+    # Elles sont lues après les partitions historiques afin de préserver leur
+    # ordre chronologique et le format de lignes attendu par les consommateurs.
+    from partitioned_store import iter_v64_bookmaker_lines
+    yield from iter_v64_bookmaker_lines(v64_market, store_root)
 
 
 # ── RÉSOLVEUR UNIVERSEL DE CHEMIN DE COURBES ───────────────────────────────
@@ -276,7 +286,7 @@ def hist_partitions(market='book'):
 def open_curves(path, verbose=True):
     """Itère sur les lignes JSONL d'un fichier de courbes, quel que soit son état.
 
-    - nom legacy monolithique (book_curves.jsonl, set1/set2)  -> partitions hist
+    - alias legacy monolithique (book_curves.jsonl, set1/set2) -> legacy + hist + V6.4
     - nom de fichier plat live absent (*_curves_live.jsonl)   -> rebuild depuis parts/
     - fichier réellement présent                              -> lecture directe
     - rien d'exploitable  -> lève FileNotFoundError (BRUYANT, jamais silencieux)
@@ -289,18 +299,27 @@ def open_curves(path, verbose=True):
                    'set2_curves_live.jsonl': 'set2'}
     base = os.path.basename(str(path))
 
-    if base in LEGACY_HIST and not os.path.exists(path):
+    if base in LEGACY_HIST and os.path.abspath(path) == os.path.abspath(base):
         market = LEGACY_HIST[base]
         # Compter aussi les partitions COMPRESSÉES (.jsonl.gz) : depuis la
         # compression du 16/08/2026, l'historique peut n'exister que sous
         # cette forme -- un glob sur '.jsonl' seul concluait à tort à l'absence
         # totale d'historique et faisait échouer tous les consommateurs.
+        v64_market = 'match' if market == 'book' else market
+        store_root = os.environ.get('TENNIS_EDGE_ROOT', '.')
+        v64_index = os.path.join(
+            store_root, 'parts', 'v64', 'bookmakers', v64_market, 'index.json',
+        )
         n = (len(glob.glob(f'parts/hist_{market}_*.jsonl'))
              + len(glob.glob(f'parts/hist_{market}_*.jsonl.gz')))
+        has_v64 = os.path.isfile(v64_index)
+        has_legacy = os.path.isfile(path)
         if verbose:
-            print(f"  [open_curves] {base} absent -> {n} partition(s) parts/hist_{market}_*")
-        if n == 0:
-            raise FileNotFoundError(f"{base} absent ET aucune partition parts/hist_{market}_*")
+            print(f"  [open_curves] {base} -> {n} partition(s) parts/hist_{market}_*"
+                  f" + V6.4={'oui' if has_v64 else 'non'}"
+                  f" + legacy={'oui' if has_legacy else 'non'}")
+        if n == 0 and not has_v64 and not has_legacy:
+            raise FileNotFoundError(f"{base} absent ET aucune partition exploitable")
         for line in iter_hist_lines(market):
             yield line
         return
@@ -888,4 +907,3 @@ def ecriture_atomique_texte(chemin, contenu):
         except OSError:
             pass
         raise
-

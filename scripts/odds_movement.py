@@ -19,6 +19,7 @@ PHILOSOPHIE : on mesure tout, on ne conclut rien tant qu'on n'a pas de volume.
 """
 import os, json, urllib.request, urllib.parse, datetime
 import lien_joueur                   # noqa: E402 — liens vers les fiches
+from partitioned_store import load_closing
 
 CLOSING_FILE = 'closing_lines.json'
 ALERTS_FILE = 'odds_alerts_state.json'   # état anti-spam des alertes (éphémère)
@@ -366,7 +367,7 @@ def run_movement_detector():
     token = os.environ.get('TELEGRAM_TOKEN', '')
     chat_id = os.environ.get('TELEGRAM_CHAT_ID', '')
 
-    closing = _load_json(CLOSING_FILE, None)
+    closing = load_closing(CLOSING_FILE)
     if not closing:
         return
 

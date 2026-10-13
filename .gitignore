@@ -26,3 +26,9 @@ set2_curves_live.jsonl
 # pour une donnée dérivée, exactement ce que la sentinelle de taille surveille.
 calib_cache.json
 *.zip
+
+# V6.4 partitions are local-only until durable external storage is configured.
+parts/v64/
+parts/v64-outbox/
+parts/v64-baseline.json
+parts/v64-prepare-failed.json

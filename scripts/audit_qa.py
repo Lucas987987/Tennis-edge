@@ -19,6 +19,7 @@ Déterministe, gratuit, pas de LLM. À lancer via un workflow GitHub dédié
 import os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import oddspapi_v5 as ov
+from partitioned_store import load_closing
 import os, json, csv, datetime
 
 CLOSING_FILE = 'closing_lines.json'
@@ -110,8 +111,7 @@ def check_closing_health(problems):
     if not os.path.exists(CLOSING_FILE):
         return
     try:
-        with open(CLOSING_FILE, encoding='utf-8') as f:
-            closing = json.load(f)
+        closing = load_closing(CLOSING_FILE)
     except Exception:
         return  # déjà signalé par check_files_exist
 
