@@ -123,6 +123,7 @@ class R2CollectorSinkTests(unittest.TestCase):
         self.assertEqual(second_report[namespace]["local_persisted_records"], 1)
         self.assertEqual(second_report[namespace]["duplicate_records_skipped"], 0)
         self.assertEqual(second_report[namespace]["missing_r2_records"], 0)
+        self.assertEqual(second_report[namespace]["duplicate_records"], 0)
         self.assertEqual(
             len(self.client.objects),
             2,
@@ -253,7 +254,10 @@ class R2CollectorSinkTests(unittest.TestCase):
         )
         self.client.objects[("tennis-edge-courbes", object_key)] = b"corrupt"
 
-        with self.assertRaisesRegex(RuntimeError, "shadow write/read-back failed"):
+        with self.assertRaisesRegex(
+            RuntimeError,
+            r"shadow write/read-back failed.*reconciliation=.*missing_r2_records",
+        ):
             sink.finish()
 
     def test_shadow_is_disabled_by_default_and_setup_errors_wait_until_finish(self):

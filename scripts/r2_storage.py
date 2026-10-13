@@ -559,7 +559,12 @@ class R2Store:
         relatives: set[str],
     ) -> dict:
         if not relatives:
-            return {"segments": 0, "records": 0, "bytes": 0}
+            return {
+                "segments": 0,
+                "records": 0,
+                "bytes": 0,
+                "duplicate_records": 0,
+            }
         index_key = f"{V64_PREFIX}{namespace}/index.json"
         index_bytes = self._retry(f"verify {namespace} index", lambda: self._get(index_key))
         index = json.loads(index_bytes)

@@ -2,6 +2,7 @@
 """Opt-in, write-through V6.4 shadow sink for the existing collectors."""
 from __future__ import annotations
 
+import json
 import os
 from pathlib import Path
 
@@ -127,12 +128,26 @@ class R2V64CollectorSink:
                 reports[namespace] = verified
             except Exception as exc:
                 self._errors[namespace] = exc
+                counts = self.counts.get(namespace, {})
+                reports[namespace] = {
+                    "collected_records": counts.get("collected", 0),
+                    "local_persisted_records": counts.get(
+                        "locally_persisted", 0,
+                    ),
+                    "duplicate_records_skipped": counts.get(
+                        "duplicates", 0,
+                    ),
+                    "r2_persisted_records": None,
+                    "missing_r2_records": None,
+                    "verification_error": type(exc).__name__,
+                }
         if self._errors:
             failed = ", ".join(sorted(self._errors))
             error = next(iter(self._errors.values()))
             raise RuntimeError(
                 f"V6.4 shadow write/read-back failed for {self.provider} "
-                f"({failed}); legacy collection output remains enabled"
+                f"({failed}); reconciliation={json.dumps(reports, sort_keys=True)}; "
+                "legacy collection output remains enabled"
             ) from error
         return reports
 
