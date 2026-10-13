@@ -90,6 +90,19 @@ class CompactTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "Corrupted compact ledger"):
             v62.verify(self.root)
 
+    def test_legacy_v62_freeze_remains_verifiable_without_rewriting_it(self):
+        v62.compact(self.root, [record("a", range(70))])
+        path = self.root / v62.LEDGER
+        row = json.loads(path.read_text())
+        row["policy_v62"] = v62.LEGACY_POLICY
+        row.pop("event_hash")
+        row["event_hash"] = v62.digest(row)
+        original = v62.canonical(row) + b"\n"
+        path.write_bytes(original)
+        before = path.read_bytes()
+        self.assertEqual(v62.verify(self.root)["frozen"], 1)
+        self.assertEqual(path.read_bytes(), before)
+
     def test_separate_evidence_has_exact_proof(self):
         v62.compact(self.root, [record("a", range(65))])
         rows = v62._load_ledger(self.root)
@@ -102,7 +115,7 @@ class CompactTests(unittest.TestCase):
         for market in v62.MARKETS:
             spent = sum(v62.family_cohort_budget(k)*3 for k in range(1, 1000))
             self.assertLess(spent, 0.05/3)
-        self.assertLess(sum(v62.family_cohort_budget(k)*3*3
+        self.assertLess(sum(v62.family_cohort_budget(k)*3*len(v62.STATISTICAL_FAMILIES)*3
                             for k in range(1, 1000)), 0.05)
 
     def test_holm_recalculated_by_market_and_cohort(self):
@@ -112,7 +125,8 @@ class CompactTests(unittest.TestCase):
                             "pnl_units": 4.0}
         report = {"candidates": [
             {"market": "match", "freeze_date_utc": "2026-10-12",
-             "checkpoints": [check(0.001)]},
+             "criteria": [{"dimension": "tranche_cote", "value": "2-3"}],
+             "checkpoints": [check(0.000001)]},
             {"market": "set1", "freeze_date_utc": "2026-10-12",
              "checkpoints": [check(0.20)]},
         ]}
@@ -121,6 +135,30 @@ class CompactTests(unittest.TestCase):
         self.assertEqual(outcome["candidates"][1]["state"], "non confirmé")
         self.assertTrue(all("alpha_family_cohort_look" in c["checkpoints"][0]
                             for c in outcome["candidates"]))
+
+    def test_holm_is_scoped_to_preregistered_criterion_families(self):
+        check = lambda p: {"checkpoint_utc": "2026-11-11",
+                           "p_nominal": p, "roi_ci95": [-1, 1],
+                           "unique_matches": 60, "distinct_days": 12,
+                           "pnl_units": 0}
+        report = {"candidates": [
+            {"market": "match", "freeze_date_utc": "2026-10-12",
+             "criteria": [{"dimension": "tranche_cote", "value": "2-3"}],
+             "checkpoints": [check(0.01)]},
+            {"market": "match", "freeze_date_utc": "2026-10-12",
+             "criteria": [{"dimension": "marge", "value": "2-4"}],
+             "checkpoints": [check(0.02)]},
+            {"market": "match", "freeze_date_utc": "2026-10-12",
+             "criteria": [{"dimension": "circuit", "value": "ATP"}],
+             "checkpoints": [check(0.01)]},
+        ]}
+        outcome = v62._apply_family_correction(report)
+        adjusted = [row["checkpoints"][0]["p_holm"] for row in outcome["candidates"]]
+        self.assertEqual(adjusted, [0.02, 0.02, 0.01])
+        self.assertEqual(
+            [row["checkpoints"][0]["test_family"] for row in outcome["candidates"]],
+            ["price", "price", "circuit"],
+        )
 
 if __name__ == "__main__":
     unittest.main()
