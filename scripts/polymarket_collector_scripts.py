@@ -69,6 +69,7 @@ from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 import requests
 import websocket
+from r2_collector_sink import finish_sink, sink_for
 
 
 GAMMA_URL = os.environ.get("PM_GAMMA_URL", "https://gamma-api.polymarket.com").rstrip("/")
@@ -898,11 +899,15 @@ class Collector:
                 return
             self._services_vus.add(cle)
             self.ecrits += 1
-            append_jsonl(ticks_path(), {
+            row = {
                 "ts": iso_now(),
                 "event_type": event_type,
                 "market_id": msg.get("market") or msg.get("condition_id"),
-            })
+            }
+            append_jsonl(ticks_path(), row)
+            sink = sink_for("polymarket")
+            if sink is not None:
+                sink.write_tick(row)
 
     def _write_price_change(self, parent: Dict[str, Any], change: Dict[str, Any]) -> None:
         asset_id = str(change.get("asset_id") or "")
@@ -982,6 +987,9 @@ class Collector:
                for k, v in values.items()},
         }
         append_jsonl(ticks_path(), row)
+        sink = sink_for("polymarket")
+        if sink is not None:
+            sink.write_tick(row)
 
 
 def websocket_loop(markets: List[Dict[str, Any]], max_seconds: Optional[int] = None) -> None:
@@ -1291,6 +1299,13 @@ def main() -> int:
             break
 
     save_state(connected=False, running=False, stopped_at=iso_now())
+    try:
+        report = finish_sink("polymarket")
+    except Exception as exc:
+        print(f"❌ échec de vérification V6.4 (shadow): {exc}")
+        return 1
+    if report:
+        print(f"✅ V6.4 shadow vérifié: {report}")
     print("👋 Polymarket Collector arrêté")
     return 0
 
