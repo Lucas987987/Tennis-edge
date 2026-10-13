@@ -9,6 +9,7 @@ import os
 from pathlib import Path
 import re
 import tempfile
+from datetime import date, timedelta
 from typing import Any
 
 from partitioned_store import IntegrityError, LocalPartitionStore, canonical
@@ -18,8 +19,20 @@ BUCKET = "tennis-edge-courbes"
 HISTORY_PREFIX = "parts/"
 V64_PREFIX = "parts/v64/"
 HISTORY_MATCH = re.compile(
-    r"^(?:hist_(?:book|set1|set2)_|live_(?:match|set1|set2)_).+\.jsonl(?:\.gz)?$"
+    r"^(?:hist_(?:book|set1|set2)_|live_(?:match|set1|set2)_|"
+    r"(?:pm|kx)_ticks_).+\.jsonl(?:\.gz)?$"
 )
+TICK_DATE = re.compile(r"_(\d{4}-\d{2}-\d{2})(?:_|\.|$)")
+
+
+def _recent_tick_partition(name: str, cutoff: date) -> bool:
+    match = TICK_DATE.search(name)
+    if not match:
+        return False
+    try:
+        return date.fromisoformat(match.group(1)) >= cutoff
+    except ValueError:
+        return False
 
 
 def file_sha256(path: str | Path) -> str:
@@ -133,13 +146,20 @@ class R2Store:
                 raise IntegrityError("R2 history manifest SHA-256 mismatch")
         return manifest
 
-    def sync_legacy_partitions(self, parts_dir: str | Path = "parts") -> dict:
+    def sync_legacy_partitions(
+        self,
+        parts_dir: str | Path = "parts",
+        names: set[str] | None = None,
+    ) -> dict:
         parts_dir = Path(parts_dir)
         manifest = self._get_history_manifest()
         entries = manifest.setdefault("fichiers", {})
-        uploaded = unchanged = 0
+        updates = {}
+        uploaded = unchanged = uploaded_bytes = 0
         for path in sorted(parts_dir.iterdir()):
             if not path.is_file() or not HISTORY_MATCH.fullmatch(path.name):
+                continue
+            if names is not None and path.name not in names:
                 continue
             digest = file_sha256(path)
             count = count_jsonl(path)
@@ -164,6 +184,7 @@ class R2Store:
                             "sha256": digest,
                             "object_key": legacy_key,
                         }
+                        updates[path.name] = entries[path.name]
                         unchanged += 1
                         continue
             suffix = ".jsonl.gz" if path.name.endswith(".jsonl.gz") else ".jsonl"
@@ -178,32 +199,85 @@ class R2Store:
                 "sha256": digest,
                 "object_key": object_key,
             }
+            updates[path.name] = entries[path.name]
             uploaded += int(created)
-        manifest["schema_version"] = 2
-        manifest["fichiers"] = entries
-        manifest.pop("sha256", None)
-        manifest["sha256"] = hashlib.sha256(canonical(manifest)).hexdigest()
-        self.client.put_object(
-            Bucket=self.bucket,
-            Key=HISTORY_PREFIX + "_manifest.json",
-            Body=canonical(manifest) + b"\n",
-            ContentType="application/json",
-        )
-        return {"uploaded": uploaded, "unchanged": unchanged, "files": len(entries)}
+            uploaded_bytes += path.stat().st_size if created else 0
+        manifest_key = HISTORY_PREFIX + "_manifest.json"
+        for _attempt in range(8):
+            current_head = self._head(manifest_key)
+            if current_head is None:
+                current = {"schema_version": 1, "fichiers": {}}
+            else:
+                current = self._get_history_manifest()
+            merged_entries = current.setdefault("fichiers", {})
+            for name, candidate in updates.items():
+                existing = merged_entries.get(name)
+                if existing is None or (
+                    int(candidate.get("lignes", 0)),
+                    int(candidate.get("octets", 0)),
+                    str(candidate.get("sha256", "")),
+                ) >= (
+                    int(existing.get("lignes", 0)),
+                    int(existing.get("octets", 0)),
+                    str(existing.get("sha256", "")),
+                ):
+                    merged_entries[name] = candidate
+            current["schema_version"] = 2
+            current.pop("sha256", None)
+            current["sha256"] = hashlib.sha256(canonical(current)).hexdigest()
+            manifest_body = canonical(current) + b"\n"
+            params = {
+                "Bucket": self.bucket,
+                "Key": manifest_key,
+                "Body": manifest_body,
+                "ContentType": "application/json",
+            }
+            if current_head is None:
+                params["IfNoneMatch"] = "*"
+            else:
+                params["IfMatch"] = current_head["ETag"]
+            try:
+                self.client.put_object(**params)
+                break
+            except Exception as exc:
+                code = getattr(exc, "response", {}).get("Error", {}).get("Code")
+                if code not in {
+                    "PreconditionFailed", "412", "ConditionalRequestConflict", "409",
+                }:
+                    raise
+        else:
+            raise RuntimeError("Concurrent R2 history manifest updates did not settle")
+        return {
+            "uploaded": uploaded,
+            "unchanged": unchanged,
+            "files": len(entries),
+            "uploaded_bytes": uploaded_bytes,
+        }
 
     def restore_legacy_partitions(
         self,
         parts_dir: str | Path = "parts",
         include_live: bool = False,
+        include_ticks: bool = False,
+        names: set[str] | None = None,
     ) -> dict:
         parts_dir = Path(parts_dir)
         parts_dir.mkdir(parents=True, exist_ok=True)
         manifest = self._get_history_manifest()
         entries = manifest.get("fichiers", {})
+        tick_cutoff = date.today() - timedelta(days=1)
         wanted = {
             name: entry for name, entry in entries.items()
-            if name.startswith(("hist_book_", "hist_set1_", "hist_set2_"))
+            if (names is None or name in names)
+            and (
+                name.startswith(("hist_book_", "hist_set1_", "hist_set2_"))
+            or (
+                include_ticks
+                and name.startswith(("pm_ticks_", "kx_ticks_"))
+                and _recent_tick_partition(name, tick_cutoff)
+            )
             or (include_live and name.startswith(("live_match_", "live_set1_", "live_set2_")))
+            )
         }
         if not wanted and manifest.get("schema_version") != 2:
             paginator = self.client.get_paginator("list_objects_v2")
@@ -211,8 +285,16 @@ class R2Store:
                 for obj in page.get("Contents", []):
                     name = obj["Key"][len(HISTORY_PREFIX):]
                     if HISTORY_MATCH.fullmatch(name) and (
-                        name.startswith(("hist_book_", "hist_set1_", "hist_set2_"))
+                        (names is None or name in names)
+                        and (
+                            name.startswith(("hist_book_", "hist_set1_", "hist_set2_"))
+                        or (
+                            include_ticks
+                            and name.startswith(("pm_ticks_", "kx_ticks_"))
+                            and _recent_tick_partition(name, tick_cutoff)
+                        )
                         or (include_live and name.startswith(("live_match_", "live_set1_", "live_set2_")))
+                        )
                     ):
                         wanted[name] = {"object_key": obj["Key"]}
         restored = bytes_restored = records = 0
@@ -220,16 +302,17 @@ class R2Store:
             target = parts_dir / name
             if target.exists():
                 expected = entry.get("sha256")
-                if expected and file_sha256(target) != expected:
-                    raise IntegrityError(
-                        f"Local R2 archive SHA-256 mismatch: {target}"
-                    )
                 expected_count = entry.get("lignes")
-                if expected_count is not None and count_jsonl(target) != int(expected_count):
-                    raise IntegrityError(
-                        f"Local R2 archive record count mismatch: {target}"
+                if not expected:
+                    continue
+                if (
+                    file_sha256(target) == expected
+                    and (
+                        expected_count is None
+                        or count_jsonl(target) == int(expected_count)
                     )
-                continue
+                ):
+                    continue
             key = entry.get("object_key", HISTORY_PREFIX + name)
             body = self._get(key)
             digest = hashlib.sha256(body).hexdigest()

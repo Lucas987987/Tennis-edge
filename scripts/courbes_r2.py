@@ -27,8 +27,8 @@ derniers jours) et `hist_{book,set1,set2}_*` (l'historique hebdomadaire). Les
 secondes comblent au premier passage le trou ouvert le 03/10 : les partitions
 live ne restent que trois jours dans le dépôt, l'historique, lui, reste.
 
-Les ticks Polymarket / Kalshi ne sont PAS envoyés : ce ne sont pas des courbes
-de cotes, et ils ont déjà leur archivage en Releases (archive_ticks.py).
+Les ticks Polymarket / Kalshi sont également pris en charge via R2_INCLUDE,
+pour que leurs workflows puissent les synchroniser sans les commiter dans Git.
 
 CE QUI DÉCIDE D'UN ENVOI
 ------------------------
@@ -69,6 +69,7 @@ BUCKET = os.environ.get('R2_BUCKET', 'tennis-edge-courbes')
 INCLUDE = re.compile(os.environ.get(
     'R2_INCLUDE',
     r'^(live_(match|set1|set2)_|hist_(book|set1|set2)_).+\.jsonl(\.gz)?$'))
+ALLOW_EMPTY = os.environ.get('R2_ALLOW_EMPTY', '') == '1'
 
 
 def lignes(chemin):
@@ -89,6 +90,9 @@ def main():
     locaux = sorted(f for f in os.listdir(PARTS) if INCLUDE.match(f))
     print(f'{len(locaux)} partition(s) de courbes dans {PARTS}/')
     if not locaux:
+        if ALLOW_EMPTY:
+            print('  aucune partition correspondante — rien à synchroniser.')
+            return 0
         print('  RIEN À ENVOYER — le checkout a-t-il bien ramené parts/ ?')
         return 1
 
@@ -100,12 +104,13 @@ def main():
         return 0
 
     store = R2Store(create_client(), BUCKET)
-    report = store.sync_legacy_partitions(PARTS)
+    report = store.sync_legacy_partitions(PARTS, names=set(locaux))
     print(
         f"\nR2 r2://{BUCKET}/parts/: "
         f"{report['uploaded']} version(s) immuable(s), "
         f"{report['unchanged']} déjà vérifiée(s), "
-        f"{report['files']} fichier(s) au manifeste."
+        f"{report['files']} fichier(s) au manifeste, "
+        f"{report['uploaded_bytes']} octet(s) envoyés."
     )
     return 0
 

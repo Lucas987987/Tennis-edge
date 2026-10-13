@@ -17,10 +17,12 @@ import restore_curves  # noqa: E402
 from r2_probe import run_probe  # noqa: E402
 from r2_v64 import (  # noqa: E402
     _extract_v64,
+    _extract_legacy_ticks,
     _assert_prepared,
     _merge_outbox_namespace,
     export_outbox,
 )
+import r2_v64  # noqa: E402
 
 
 class FakeClientError(RuntimeError):
@@ -130,7 +132,9 @@ def test_existing_legacy_object_is_verified_and_never_overwritten(tmp_path):
 
     report = store.sync_legacy_partitions(path)
 
-    assert report == {"uploaded": 0, "unchanged": 1, "files": 1}
+    assert report == {
+        "uploaded": 0, "unchanged": 1, "files": 1, "uploaded_bytes": 0,
+    }
     assert client.objects[("tennis-edge-courbes", "parts/hist_book_2026-W40.jsonl.gz")] == body
     manifest = json.loads(client.objects[("tennis-edge-courbes", "parts/_manifest.json")])
     assert manifest["fichiers"]["hist_book_2026-W40.jsonl.gz"]["sha256"] == hashlib.sha256(body).hexdigest()
@@ -158,6 +162,43 @@ def test_changed_legacy_partition_is_written_as_new_immutable_object(tmp_path):
     assert entry["object_key"] != "parts/" + name
     assert client.objects[("tennis-edge-courbes", "parts/" + name)] == old
     assert hashlib.sha256(client.objects[("tennis-edge-courbes", entry["object_key"])]).hexdigest() == entry["sha256"]
+
+
+def test_tick_partition_sync_and_recent_restore_use_r2_manifest(tmp_path):
+    client = FakeS3()
+    store = R2Store(client)
+    name = "pm_ticks_2026-10-13.jsonl.gz"
+    source = tmp_path / "source"
+    _write_jsonl(source / name, [{"event_id": "e-1", "price": 0.54}], compressed=True)
+    body = (source / name).read_bytes()
+
+    report = store.sync_legacy_partitions(source, names={name})
+    assert report["uploaded"] == 1
+    assert report["uploaded_bytes"] == len(body)
+
+    destination = tmp_path / "destination"
+    destination.mkdir()
+    stale = destination / name
+    _write_jsonl(stale, [{"event_id": "stale"}], compressed=True)
+    restored = store.restore_legacy_partitions(destination, include_ticks=True)
+
+    assert restored["files"] == 1
+    assert stale.read_bytes() == body
+    assert count_jsonl(stale) == 1
+
+
+def test_tick_partitions_are_not_restored_unless_requested(tmp_path):
+    client = FakeS3()
+    store = R2Store(client)
+    name = "kx_ticks_2026-10-13.jsonl"
+    source = tmp_path / "source"
+    _write_jsonl(source / name, [{"market_ticker": "TENNIS"}])
+    store.sync_legacy_partitions(source, names={name})
+
+    assert store.restore_legacy_partitions(tmp_path / "default")["files"] == 0
+    assert store.restore_legacy_partitions(
+        tmp_path / "with-ticks", include_ticks=True,
+    )["files"] == 1
 
 
 def test_restore_legacy_checks_hash_and_record_count(tmp_path):
@@ -207,12 +248,15 @@ def test_restore_rejects_corrupt_archive_without_replacing_existing_file(tmp_pat
     assert target.read_text(encoding="utf-8") == '{"uid":"kept"}\n'
 
 
-def test_restore_verifies_existing_local_archive_against_manifest(tmp_path):
+def test_restore_repairs_stale_local_archive_from_verified_r2_copy(tmp_path):
     client = FakeS3()
     store = R2Store(client)
     name = "hist_book_2026-W40.jsonl"
     target = tmp_path / name
     target.write_text('{"uid":"stale"}\n', encoding="utf-8")
+    client.objects[("tennis-edge-courbes", "parts/v64/history/current.jsonl")] = (
+        b'{"uid":"current"}\n'
+    )
     client.objects[("tennis-edge-courbes", "parts/_manifest.json")] = json.dumps({
         "schema_version": 2,
         "fichiers": {name: {
@@ -222,9 +266,9 @@ def test_restore_verifies_existing_local_archive_against_manifest(tmp_path):
         }},
     }).encode()
 
-    with pytest.raises(IntegrityError, match="Local R2 archive SHA-256 mismatch"):
-        store.restore_legacy_partitions(tmp_path)
-    assert target.read_text(encoding="utf-8") == '{"uid":"stale"}\n'
+    report = store.restore_legacy_partitions(tmp_path)
+    assert report == {"files": 1, "bytes": len(b'{"uid":"current"}\n'), "records": 1}
+    assert target.read_text(encoding="utf-8") == '{"uid":"current"}\n'
 
 
 def test_history_manifest_sha256_is_verified(tmp_path):
@@ -322,6 +366,74 @@ def test_outbox_artifact_archive_extracts_only_v64_tree(tmp_path):
     assert found == {"closing"}
     assert (tmp_path / "parts/v64/closing/index.json").read_bytes() == b"{}"
     assert (tmp_path / "parts/v64/closing/2026/10/13/segment-abc.jsonl.gz").read_bytes() == b"partition"
+
+
+def test_legacy_tick_outbox_extraction_is_scoped_to_tick_partitions(tmp_path):
+    archive_buffer = io.BytesIO()
+    with zipfile.ZipFile(archive_buffer, "w") as archive:
+        archive.writestr("parts/pm_ticks_2026-10-13.jsonl.gz", b"gzip-data")
+        archive.writestr("closing_lines.json", b"{}")
+        archive.writestr("parts/hist_book_2026-W40.jsonl.gz", b"book-data")
+
+    names = _extract_legacy_ticks(archive_buffer.getvalue(), tmp_path)
+
+    assert names == {"pm_ticks_2026-10-13.jsonl.gz"}
+    assert (
+        tmp_path / "legacy-parts/pm_ticks_2026-10-13.jsonl.gz"
+    ).read_bytes() == b"gzip-data"
+    assert _extract_v64(archive_buffer.getvalue(), tmp_path / "v64-only") == set()
+    assert not (
+        tmp_path / "v64-only/parts/v64/parts/pm_ticks_2026-10-13.jsonl.gz"
+    ).exists()
+
+
+def test_legacy_tick_outbox_replay_verifies_r2_restore_before_artifact_delete(
+    tmp_path, monkeypatch,
+):
+    name = "kx_ticks_2026-10-13.jsonl.gz"
+    payload = gzip.compress(b'{"ticker":"TENNIS-1","price":0.51}\n', mtime=0)
+    archive_buffer = io.BytesIO()
+    with zipfile.ZipFile(archive_buffer, "w") as archive:
+        archive.writestr("parts/" + name, payload)
+
+    client = FakeS3()
+    deleted = []
+    artifact = {
+        "id": 71,
+        "name": "v64-outbox-71-1",
+        "archive_download_url": "https://github.invalid/artifact/71",
+        "expired": False,
+    }
+
+    class Response:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_args):
+            return False
+
+    def fake_urlopen(request, timeout=0):
+        deleted.append(request.full_url)
+        return Response()
+
+    monkeypatch.setattr(r2_v64, "_artifacts", lambda *_args: [artifact])
+    monkeypatch.setattr(
+        r2_v64, "_github_request",
+        lambda *_args: io.BytesIO(archive_buffer.getvalue()),
+    )
+    monkeypatch.setattr(r2_v64.urllib.request, "urlopen", fake_urlopen)
+    monkeypatch.setattr(r2_v64, "create_client", lambda: client)
+
+    result = r2_v64.sync_outbox("owner/repo", "token", tmp_path)
+
+    assert result["legacy_files"] == 1
+    assert result["artifacts"] == 1
+    assert deleted == ["https://api.github.com/repos/owner/repo/actions/artifacts/71"]
+    manifest = json.loads(client.objects[("tennis-edge-courbes", "parts/_manifest.json")])
+    entry = manifest["fichiers"][name]
+    assert entry["lignes"] == 1
+    restored = client.objects[("tennis-edge-courbes", entry["object_key"])]
+    assert hashlib.sha256(restored).hexdigest() == entry["sha256"]
 
 
 def test_outbox_replay_merges_new_records_and_is_idempotent(tmp_path):

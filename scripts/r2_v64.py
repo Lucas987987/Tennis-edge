@@ -9,17 +9,19 @@ import io
 import json
 import os
 from pathlib import Path, PurePosixPath
+import re
 import tempfile
 import urllib.request
 import zipfile
 
 from partitioned_store import IntegrityError, LocalPartitionStore, canonical, sha256
-from r2_storage import R2Store, create_client
+from r2_storage import R2Store, count_jsonl, create_client, file_sha256
 
 
 OUTBOX_PREFIX = "v64-outbox-"
 API = "https://api.github.com"
 PREPARE_FAILURES = Path("parts/v64-prepare-failed.json")
+LEGACY_TICK = re.compile(r"^(?:pm|kx)_ticks_.+\.jsonl(?:\.gz)?$")
 
 
 def _assert_prepared(namespace: str, root: str | Path = ".") -> None:
@@ -92,6 +94,8 @@ def _extract_v64(zip_bytes: bytes, destination: Path) -> set[str]:
             if position is not None:
                 relative_parts = parts[position + 1:]
             else:
+                if LEGACY_TICK.fullmatch(PurePosixPath(info.filename).name):
+                    continue
                 relative_parts = parts
             if not relative_parts or ".." in relative_parts:
                 raise IntegrityError(f"Invalid V6.4 outbox archive path: {info.filename}")
@@ -104,6 +108,24 @@ def _extract_v64(zip_bytes: bytes, destination: Path) -> set[str]:
             if relative_path.name == "index.json":
                 namespaces.add(relative_path.parent.as_posix())
     return namespaces
+
+
+def _extract_legacy_ticks(zip_bytes: bytes, destination: Path) -> set[str]:
+    names = set()
+    target_dir = destination / "legacy-parts"
+    with zipfile.ZipFile(io.BytesIO(zip_bytes)) as archive:
+        for info in archive.infolist():
+            if info.is_dir():
+                continue
+            name = PurePosixPath(info.filename).name
+            if not LEGACY_TICK.fullmatch(name):
+                continue
+            target_dir.mkdir(parents=True, exist_ok=True)
+            target = target_dir / name
+            with archive.open(info) as source, target.open("wb") as output:
+                output.write(source.read())
+            names.add(name)
+    return names
 
 
 def _merge_outbox_namespace(
@@ -244,18 +266,21 @@ def sync_outbox(repository: str, token: str, root: str | Path = ".") -> dict:
     with tempfile.TemporaryDirectory(prefix="tennis-v64-outbox-") as temp:
         temp_root = Path(temp)
         namespace_names: set[str] = set()
+        legacy_names: set[str] = set()
         for artifact in sorted(artifacts, key=lambda item: item["id"]):
             with _github_request(artifact["archive_download_url"],
                                  token, "application/vnd.github+json") as response:
                 archive_bytes = response.read()
             artifact_dir = temp_root / str(artifact["id"])
             found = _extract_v64(archive_bytes, artifact_dir)
-            if not found:
+            legacy = _extract_legacy_ticks(archive_bytes, artifact_dir)
+            if not found and not legacy:
                 raise IntegrityError(
-                    f"Outbox artifact {artifact['id']} contains no V6.4 index"
+                    f"Outbox artifact {artifact['id']} contains no V6.4 data"
                 )
             queued_dirs.append(artifact_dir)
             namespace_names.update(found)
+            legacy_names.update(legacy)
             artifact_ids.append(artifact["id"])
 
         target_store = LocalPartitionStore(root)
@@ -277,6 +302,43 @@ def sync_outbox(repository: str, token: str, root: str | Path = ".") -> dict:
                 raise IntegrityError(f"R2 outbox restore count mismatch: {remote_index}")
             LocalPartitionStore(verification_root).latest(namespace)
 
+        if legacy_names:
+            legacy_root = temp_root / "legacy-merged"
+            legacy_parts = legacy_root / "parts"
+            legacy_parts.mkdir(parents=True)
+            for artifact_dir in queued_dirs:
+                source_dir = artifact_dir / "legacy-parts"
+                if source_dir.exists():
+                    for source in source_dir.iterdir():
+                        target = legacy_parts / source.name
+                        source_score = (
+                            count_jsonl(source),
+                            source.stat().st_size,
+                            file_sha256(source),
+                        )
+                        target_score = (
+                            count_jsonl(target),
+                            target.stat().st_size,
+                            file_sha256(target),
+                        ) if target.exists() else None
+                        if target_score is None or source_score > target_score:
+                            target.write_bytes(source.read_bytes())
+            r2.sync_legacy_partitions(legacy_parts)
+            restored_dir = temp_root / "legacy-restore"
+            restored = r2.restore_legacy_partitions(
+                restored_dir, include_ticks=True, names=legacy_names,
+            )
+            if restored["files"] < len(legacy_names):
+                raise IntegrityError("R2 legacy tick outbox restore count mismatch")
+            for name in legacy_names:
+                source = legacy_parts / name
+                restored_file = restored_dir / name
+                if (
+                    not restored_file.is_file()
+                    or file_sha256(source) != file_sha256(restored_file)
+                ):
+                    raise IntegrityError(f"R2 legacy tick read-back mismatch: {name}")
+
         for artifact_id in artifact_ids:
             url = f"{API}/repos/{repository}/actions/artifacts/{artifact_id}"
             request = urllib.request.Request(
@@ -293,6 +355,7 @@ def sync_outbox(repository: str, token: str, root: str | Path = ".") -> dict:
     return {
         "artifacts": len(artifact_ids),
         "namespaces": len(namespace_names),
+        "legacy_files": len(legacy_names),
         "records": sum(LocalPartitionStore(root).verify(n)["records"] for n in namespace_names),
     }
 

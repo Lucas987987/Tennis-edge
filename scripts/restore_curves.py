@@ -71,6 +71,7 @@ INDEX = os.environ.get('INDEX', 'parts/ARCHIVE_INDEX.json')
 PREFIXES = ('hist_book_', 'hist_set1_', 'hist_set2_')
 TAGS_PREFIX = os.environ.get('TAGS_PREFIX', 'curves-')
 R2_REQUIRED = os.environ.get('R2_REQUIRED', '') == '1'
+R2_RESTORE_TICKS = os.environ.get('R2_RESTORE_TICKS', '') == '1'
 R2_CONFIGURED = any(os.environ.get(name) for name in (
     'R2_ACCESS_KEY_ID', 'R2_SECRET_ACCESS_KEY', 'R2_ENDPOINT',
 ))
@@ -93,7 +94,9 @@ def main():
         try:
             from r2_storage import R2Store, create_client
             r2 = R2Store(create_client())
-            legacy = r2.restore_legacy_partitions('parts')
+            legacy = r2.restore_legacy_partitions(
+                'parts', include_ticks=R2_RESTORE_TICKS,
+            )
             v64 = r2.restore_v64_namespaces('.')
             print(
                 'restore_curves — R2 vérifié : '

@@ -98,6 +98,7 @@ jobs:
           R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
           R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
           R2_REQUIRED: '1'
+          R2_RESTORE_TICKS: '1'
         run: pip install --quiet boto3 && python scripts/restore_curves.py
 
       - name: Polymarket — sonde de découverte
@@ -161,14 +162,34 @@ jobs:
             --refresh-seconds ${PM_REFRESH:-450}
 
       # Compresse les partitions pm_ticks_* CLOSES (jamais celle du jour).
-      # Fait ICI et non dans fetch_book_curves : ce workflow est le seul à
-      # commiter parts/pm_ticks_*, donc le seul où le .gz survit au run.
+      # Compresse les ticks clos avant leur synchronisation vers R2. Ces
+      # partitions ne sont plus ajoutées aux commits Git.
       # Gain mesuré : ~95 % (97,8 Mo -> 5,4 Mo sur une partition réelle).
       - name: Compresser les partitions pm_ticks closes
         env:
           MARKETS: ''
           EXTRA_GLOBS: 'parts/pm_ticks_*.jsonl'
         run: python scripts/compress_hist_partitions.py || true
+
+      - name: Persister les partitions Polymarket vers R2
+        id: persist-r2
+        if: success() && !inputs.diag && !inputs.probe
+        env:
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          R2_INCLUDE: '^(pm_ticks_).+\.jsonl(\.gz)?$'
+          R2_ALLOW_EMPTY: '1'
+        run: pip install --quiet boto3 && python scripts/courbes_r2.py
+
+      - name: Sauvegarder les partitions Polymarket en attente
+        if: failure() && !inputs.diag && !inputs.probe
+        uses: actions/upload-artifact@v4
+        with:
+          name: v64-outbox-${{ github.run_id }}-${{ github.run_attempt }}
+          path: parts/pm_ticks_*.jsonl*
+          if-no-files-found: warn
+          retention-days: 90
 
       - name: Commit Polymarket data (robuste)
         shell: bash
@@ -190,45 +211,6 @@ jobs:
           for f in polymarket_markets.json polymarket_collector_state.json polymarket_diag.json; do
             [ -f "$f" ] && git add -- "$f" || echo "  (absent : $f)"
           done
-          # GARDE-FOU TAILLE, avant tout git add.
-          # Le 19/08/2026, parts/pm_ticks_2026-08-19.jsonl a atteint 221 Mo et
-          # GitHub a rejeté le push entier ("pre-receive hook declined") : les
-          # 15 minutes de collecte ET les autres fichiers du commit ont été
-          # perdus. Un fichier trop gros ne doit donc JAMAIS entrer dans
-          # l'index : on l'écarte et on pousse le reste, plutôt que de tout
-          # perdre. Le collecteur bascule normalement de partition à 60 Mo
-          # (PM_TICKS_MAX_MB) ; ceci est le filet en cas de défaillance.
-          # CHACUN SES PARTITIONS. Ce workflow ne commite QUE ses propres
-          # fichiers pm_ticks_*. Auparavant il balayait tout parts/ et
-          # embarquait les ticks des AUTRES collecteurs tels qu'ils étaient à
-          # son checkout : quand l'autre workflow y ajoutait des lignes en
-          # parallèle, les deux modifiaient le même fichier en fin de fichier
-          # et le merge partait en conflit — donc run perdu. Constaté : le run
-          # Polymarket du 20/08 a commité 12 427 lignes de l'autre collecteur.
-          # Le .gitattributes (merge=union) reste le filet si ça arrive quand même.
-          # ENREGISTRER D'ABORD LES SUPPRESSIONS.
-          # La boucle ci-dessous fait « [ -f "$f" ] || continue » : elle IGNORE
-          # donc les fichiers supprimés. Or l'étape de compression supprime le
-          # .jsonl après avoir écrit le .gz — la suppression n'était jamais
-          # enregistrée, le .gz s'ajoutait À CÔTÉ, et le checkout suivant
-          # restaurait le .jsonl. Résultat mesuré le 23/08 : 12 paires en
-          # double, 574 Mo, dépôt remonté à 1,1 Go.
-          # « git add -A » enregistre créations ET suppressions ; le garde-fou
-          # de taille ci-dessous ne concerne que les fichiers PRÉSENTS.
-          git add -A -- 'parts/pm_ticks_*' 2>/dev/null || true
-
-          for f in $(git status --porcelain 'parts/pm_ticks_*' | awk '{print $2}'); do
-            [ -f "$f" ] || continue
-            mo=$(du -m "$f" | cut -f1)
-            if [ "$mo" -ge 95 ]; then
-              echo "⛔ $f fait ${mo} Mo (mur GitHub 100 Mo) — ÉCARTÉ du commit."
-              echo "   Les données restent sur le runner mais seront perdues."
-              echo "   Vérifier PM_TICKS_MAX_MB et la limitation de débit."
-            else
-              git add -- "$f" || true
-            fi
-          done
-
           echo '--- fichiers en attente de commit ---'
           git status --short
 
