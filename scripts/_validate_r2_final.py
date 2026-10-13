@@ -206,6 +206,9 @@ def main():
 
     # Historical objects untouched
     after = list_keys("parts/", exclude=BASE + "/")
+    for k in sorted(set(before) | set(after)):
+        if before.get(k) != after.get(k):
+            print("DIFF", k, before.get(k), "->", after.get(k))
     check("historical R2 objects unchanged (keys, etags, sizes)", before == after,
           f"before={len(before)} after={len(after)}")
     written = list_keys(BASE + "/")
