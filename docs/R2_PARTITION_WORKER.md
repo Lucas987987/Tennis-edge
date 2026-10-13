@@ -31,6 +31,9 @@ real write is authorised **per run**, never by a persistent repository setting.
   It pins the source commit and blob, verifies the R2 manifest/data, restores under `$RUNNER_TEMP`,
   compares bytes and tick statistics with Git, and publishes JSON reports as a workflow artifact.
   It has `contents: read`, no automatic trigger, and no R2 write or delete path.
+* `r2_polymarket_restore.yml`: equivalent read-only restore audit for Polymarket 2026-10-08.
+  It pins the published source version and explicitly checks its 152,161 lines, 152,156 unique ticks,
+  and 5 historical duplicate lines before publishing the restore reports.
 
 Report statuses: `uploaded`, `verified`, `pending` (deadline/limit/dry-run), `skipped_unfrozen`,
 `error` (retries exhausted; retried next run), `conflict` (differing object, permanent error;
