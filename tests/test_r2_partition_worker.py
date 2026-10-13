@@ -779,5 +779,100 @@ class GateScriptTests(unittest.TestCase):
         self.assertEqual(text.count("--mode sync"), 0)
 
 
+class SourceCommitStepTests(unittest.TestCase):
+    """Runs the workflow's real "Fetch published partitions" step against a local origin."""
+    REPO = Path(__file__).resolve().parents[1]
+
+    @classmethod
+    def script(cls):
+        import re
+        import textwrap
+        text = (cls.REPO / ".github/workflows/r2_partition_worker.yml").read_text()
+        match = re.search(
+            r"- name: Fetch published partitions.*?\n        run: \|\n(.*?)\n      - name: Install",
+            text, re.S)
+        return textwrap.dedent(match.group(1))
+
+    def git(self, *args, cwd=None):
+        return subprocess.run(["git", *args], cwd=cwd or self.origin, check=True,
+                              capture_output=True, text=True).stdout.strip()
+
+    def setUp(self):
+        import tempfile
+        self.tmp = tempfile.TemporaryDirectory()
+        base = Path(self.tmp.name)
+        self.origin = base / "origin"
+        self.origin.mkdir()
+        self.git("init", "-q", "-b", "main")
+        for key, val in (("user.name", "t"), ("user.email", "t@t"),
+                         ("uploadpack.allowFilter", "true"),
+                         ("uploadpack.allowAnySHA1InWant", "true")):
+            self.git("config", key, val)
+        (self.origin / "parts").mkdir()
+        self.name = "parts/pm_ticks_2026-01-05.jsonl.gz"
+        (self.origin / self.name).write_bytes(gz([tick(i, "2026-01-05") for i in range(5)]))
+        self.git("add", "-A")
+        self.git("commit", "-qm", "publish")
+        self.c1 = self.git("rev-parse", "HEAD")
+        self.blob = self.git("rev-parse", f"HEAD:{self.name}")
+        self.git("rm", "-q", self.name)
+        self.git("commit", "-qm", "retention removal")
+        self.git("checkout", "-q", "-b", "side", self.c1)
+        (self.origin / "x.txt").write_text("x")
+        self.git("add", "-A")
+        self.git("commit", "-qm", "side")
+        self.side = self.git("rev-parse", "HEAD")
+        self.git("checkout", "-q", "main")
+        self.work = base / "work"
+        subprocess.run(["git", "clone", "-q", "--depth", "1", "--no-checkout",
+                        self.origin.as_uri(), str(self.work)], check=True)
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def step(self, **over):
+        import os
+        env = {"PATH": os.environ["PATH"], "HOME": self.tmp.name,
+               "SOURCE": "", "DAY": "2026-01-05", "BLOB": self.blob, **over}
+        return subprocess.run(["bash", "-c", self.script()], cwd=self.work, env=env,
+                              capture_output=True, text=True)
+
+    def test_without_source_reads_main_where_partition_is_gone(self):
+        self.assertEqual(self.step().returncode, 0)
+        _, parts = w.list_published_partitions(self.work, "FETCH_HEAD")
+        self.assertEqual(parts, [])
+
+    def test_ancestor_commit_exposes_the_exact_blob(self):
+        result = self.step(SOURCE=self.c1)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        _, parts = w.list_published_partitions(self.work, "refs/r2-source")
+        self.assertEqual([p["blob"] for p in parts], [self.blob])
+        chosen = w.select_target(
+            parts, w.make_target("polymarket", "2026-01-05", self.blob))
+        self.assertEqual(chosen[0]["blob"], self.blob)
+        self.assertEqual(w.git_blob_sha(w.read_git_blob(self.work, self.blob)), self.blob)
+
+    def test_other_blob_never_selected_from_source_commit(self):
+        _, parts = (self.step(SOURCE=self.c1), w.list_published_partitions(
+            self.work, "refs/r2-source"))[1]
+        with self.assertRaises(w.TargetError):
+            w.select_target(parts, w.make_target("polymarket", "2026-01-05", "f" * 40))
+        with self.assertRaises(w.TargetError):
+            w.select_target(parts, w.make_target("polymarket", "2026-01-06", self.blob))
+
+    def test_refusals(self):
+        for over in ({"SOURCE": self.side}, {"SOURCE": "main"}, {"SOURCE": self.c1[:12]},
+                     {"SOURCE": "0" * 40}, {"SOURCE": self.c1, "DAY": ""},
+                     {"SOURCE": self.c1, "BLOB": ""}):
+            result = self.step(**over)
+            self.assertNotEqual(result.returncode, 0, str(over))
+            self.assertIn("Blocked", result.stdout, str(over))
+
+    def test_workflow_never_hardcodes_head_for_worker_when_source_set(self):
+        text = (self.REPO / ".github/workflows/r2_partition_worker.yml").read_text()
+        self.assertNotIn('--git-ref FETCH_HEAD', text)
+        self.assertRegex(text, r"(?s)      source_commit:.*?default: \"\"")
+
+
 if __name__ == "__main__":
     unittest.main()

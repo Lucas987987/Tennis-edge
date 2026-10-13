@@ -42,6 +42,10 @@ on:
         description: "Target Git blob id, 40 hex (required for sync). Must match the file published on main."
         type: string
         default: ""
+      source_commit:
+        description: "Optional 40-hex commit of main to read the partition from (needed once the day left main's 7-day window). Must be an ancestor of main (<=30 days) and contain the exact blob."
+        type: string
+        default: ""
 
 permissions:
   contents: read
@@ -94,7 +98,24 @@ jobs:
         with:
           python-version: '3.11'
       - name: Fetch published partitions (main, read-only snapshot)
-        run: git fetch --depth 1 --filter=blob:none origin main
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SOURCE: ${{ inputs.source_commit }}
+          DAY: ${{ inputs.partition_day }}
+          BLOB: ${{ inputs.partition_blob }}
+        run: |
+          if [ -z "$SOURCE" ]; then
+            git fetch --depth 1 --filter=blob:none origin main
+            exit 0
+          fi
+          fail() { echo "Blocked: $1"; exit 1; }
+          [[ "$SOURCE" =~ ^[0-9a-f]{40}$ ]] || fail "source_commit must be a 40-hex commit id."
+          [ -n "$DAY" ] && [ -n "$BLOB" ] || fail "source_commit needs partition_day and partition_blob."
+          git fetch --filter=tree:0 --shallow-since="30 days ago" origin main
+          git rev-parse --verify "$SOURCE^{commit}" >/dev/null 2>&1 || fail "source_commit is not in the last 30 days of main."
+          git merge-base --is-ancestor "$SOURCE" FETCH_HEAD || fail "source_commit is not an ancestor of main."
+          git update-ref refs/r2-source "$SOURCE"
+          echo "Reading partitions from main commit $SOURCE (ancestor of main)."
       - name: Install R2 client
         run: python -m pip install --disable-pip-version-check boto3
       - name: Run worker
@@ -109,8 +130,10 @@ jobs:
           PROVIDER: ${{ inputs.provider }}
           DAY: ${{ inputs.partition_day }}
           BLOB: ${{ inputs.partition_blob }}
+          SOURCE: ${{ inputs.source_commit }}
         run: |
-          args=(--mode "$MODE" --git-ref FETCH_HEAD --root "$ROOT" --max-partitions "$MAXP" \
+          GITREF=FETCH_HEAD; if [ -n "$SOURCE" ]; then GITREF=refs/r2-source; fi
+          args=(--mode "$MODE" --git-ref "$GITREF" --root "$ROOT" --max-partitions "$MAXP" \
                 --max-seconds 1200 --report-file r2-partition-worker-report.json)
           if [ -n "$PROVIDER" ]; then args+=(--provider "$PROVIDER"); fi
           if [ -n "$DAY" ]; then args+=(--day "$DAY"); fi
@@ -127,9 +150,11 @@ jobs:
           PROVIDER: ${{ inputs.provider }}
           DAY: ${{ inputs.partition_day }}
           BLOB: ${{ inputs.partition_blob }}
+          SOURCE: ${{ inputs.source_commit }}
         run: |
-          git fetch --depth 1 --filter=blob:none origin main
-          python scripts/r2_partition_worker.py --mode verify --git-ref FETCH_HEAD \
+          if [ -n "$SOURCE" ]; then GITREF=refs/r2-source; else
+            git fetch --depth 1 --filter=blob:none origin main; GITREF=FETCH_HEAD; fi
+          python scripts/r2_partition_worker.py --mode verify --git-ref "$GITREF" \
             --root "$ROOT" --provider "$PROVIDER" --day "$DAY" --blob "$BLOB" \
             --report-file r2-partition-verify-report.json
       - name: Retain reports

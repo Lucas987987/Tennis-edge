@@ -48,6 +48,11 @@ point of failure:
 * The blob id must equal the file currently published on the Git ref. If the file was rewritten,
   retired from `main` (7-day retention by `archive_ticks`) or never existed, the run stops with
   `success=false` and **no write**; it never falls back to another partition.
+* Retired partitions: pass `source_commit=<40-hex commit>` (optional input, needs `partition_day`
+  and `partition_blob`). The commit must be an ancestor of `main` no older than 30 days; the
+  worker then reads the partition from that commit instead of `main`'s tip. The blob id must still
+  match exactly and the content is re-hashed against it. Find the commit with
+  `git log -1 --format=%H <last-commit-containing-the-file>` (e.g. `git log -1 --diff-filter=AM -- parts/pm_ticks_<day>.jsonl.gz`).
 * A targeted run succeeds only if that partition ends `uploaded` or `verified`. An unfrozen
   target (today) is refused.
 * Before writing, the worker lists the destination prefix (`destination_existing` in the report).
