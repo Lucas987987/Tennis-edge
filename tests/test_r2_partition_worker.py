@@ -446,17 +446,20 @@ class IsolationTests(unittest.TestCase):
             self.assertNotIn(forbidden, text, forbidden)
 
     def test_workflow_is_manual_and_isolated(self):
-        import yaml
-        flow = yaml.safe_load(
-            (self.REPO / ".github/workflows/r2_partition_worker.yml").read_text())
-        triggers = flow.get("on", flow.get(True))
-        self.assertEqual(list(triggers), ["workflow_dispatch"])
-        self.assertEqual(flow["permissions"], {"contents": "read"})
-        group = flow["concurrency"]["group"]
-        self.assertEqual(group, "r2-partition-worker")
-        self.assertFalse(flow["concurrency"]["cancel-in-progress"])
-        self.assertEqual(triggers["workflow_dispatch"]["inputs"]["mode"]["default"], "dry-run")
-        self.assertFalse(triggers["workflow_dispatch"]["inputs"]["confirm_sync"]["default"])
+        # Text-based on purpose: PyYAML is not installed in the CI test job.
+        import re
+        text = (self.REPO / ".github/workflows/r2_partition_worker.yml").read_text()
+        triggers = re.search(r"^on:\n((?:[ \t]+.*\n|\n)+)", text, re.M).group(1)
+        self.assertEqual(
+            re.findall(r"^  ([A-Za-z_]+):", triggers, re.M), ["workflow_dispatch"])
+        for forbidden in ("schedule", "cron", "workflow_run", "push", "pull_request"):
+            self.assertNotIn(forbidden, triggers, forbidden)
+        self.assertRegex(text, r"(?m)^permissions:\n  contents: read\n(?!  )")
+        self.assertRegex(
+            text, r"(?m)^concurrency:\n  group: r2-partition-worker\n"
+                  r"  cancel-in-progress: false\n")
+        self.assertRegex(text, r"(?s)      mode:.*?default: dry-run")
+        self.assertRegex(text, r"(?s)      confirm_sync:.*?default: false")
         for path in (self.REPO / ".github/workflows").glob("*.yml"):
             if path.name == "r2_partition_worker.yml":
                 continue
