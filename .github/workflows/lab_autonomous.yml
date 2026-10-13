@@ -74,6 +74,17 @@ jobs:
           git fetch origin main
           git merge --ff-only origin/main
 
+      - name: Interdire les exécutions simultanées V6.2 et V6.3
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          V62_REQUESTED: ${{ inputs.preview_v62 || inputs.publish_v62 }}
+          V63_REQUESTED: ${{ inputs.preview_v63 || inputs.publish_v63 }}
+        run: |
+          if [[ "$V62_REQUESTED" == "true" && "$V63_REQUESTED" == "true" ]]; then
+            echo "V6.2 et V6.3 doivent être lancés séparément."
+            exit 1
+          fi
+
       - name: Vérifier les invariants avant toute écriture
         run: python3 -m unittest discover -s Tennis_Edge_Lab/tests -v
 
@@ -257,13 +268,10 @@ jobs:
           echo 'Publication V6.3 bloquée ; aucun registre existant écrasé.'
           exit 1
 
-      # V6.2 est opt-in: les workflows V4/V6/V6.1 restent inchangés par défaut.
-      # Mettre LAB_V62_AUTOMATED=true seulement après audit de production.
       - name: Construire et vérifier le registre compact V6.2
         if: >-
           (github.event_name == 'workflow_dispatch' &&
-           (inputs.preview_v62 == true || inputs.publish_v62 == true)) ||
-          vars.LAB_V62_AUTOMATED == 'true'
+           (inputs.preview_v62 == true || inputs.publish_v62 == true))
         run: |
           set -e
           python3 Tennis_Edge_Lab/candidate_registry_v62.py compact --root .
@@ -273,8 +281,7 @@ jobs:
       - name: Archiver l'audit exhaustif V6.2 pour relecture (90 jours)
         if: >-
           (github.event_name == 'workflow_dispatch' &&
-           (inputs.preview_v62 == true || inputs.publish_v62 == true)) ||
-          vars.LAB_V62_AUTOMATED == 'true'
+           (inputs.preview_v62 == true || inputs.publish_v62 == true))
         uses: actions/upload-artifact@v4
         with:
           name: tennis-edge-full-audit-v62-${{ github.run_id }}
@@ -289,8 +296,7 @@ jobs:
 
       - name: Publier les gels compacts V6.2 après accord explicite
         if: >-
-          (github.event_name == 'workflow_dispatch' && inputs.publish_v62 == true) ||
-          vars.LAB_V62_AUTOMATED == 'true'
+          github.event_name == 'workflow_dispatch' && inputs.publish_v62 == true
         run: |
           set -e
           python3 Tennis_Edge_Lab/candidate_registry_v62.py verify --root .
