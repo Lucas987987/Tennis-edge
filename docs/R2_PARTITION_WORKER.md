@@ -4,13 +4,14 @@ Archives **frozen tick partitions already published on Git** (`parts/pm_ticks_*.
 `parts/kx_ticks_*.jsonl.gz`) into R2. It never runs inside, next to, or because of a
 collector, and it never writes to Git.
 
-Status: **prepared, not merged, not activated**. Default state is disabled.
+Status: merged, **disabled by default**. No schedule; every run is a manual dispatch, and a
+real write is authorised **per run**, never by a persistent repository setting.
 
 ## Guarantees
 
 | Property | Mechanism |
 |---|---|
-| Collectors untouched | New files only: `scripts/r2_partition_worker.py`, `.github/workflows/r2_partition_worker.yml`. Own concurrency group, `contents: read`, no `schedule`. |
+| Collectors untouched | Own files only: `scripts/r2_partition_worker.py`, `.github/workflows/r2_partition_worker.yml`. Own concurrency group, `contents: read`, no `schedule`. |
 | Only published data | Partitions are listed with `git ls-tree` on a Git ref (default `origin/main`) and read by blob id. Working-tree files are ignored. |
 | Only frozen data | UTC day closed + grace (default 6 h). Today's partition is never read. |
 | No shared index | One prefix per partition **version**: `<root>/<provider>/<YYYY-MM-DD>/<git-blob-sha>/{data.jsonl.gz,manifest.json}`. |
@@ -23,7 +24,7 @@ Status: **prepared, not merged, not activated**. Default state is disabled.
 ## Modes
 
 * `dry-run` (default): no R2 write. Lists what is pending (queries R2 read-only when credentials exist).
-* `sync`: create-only archive + read-back verification + manifest.
+* `sync`: create-only archive of **one exact partition version** + read-back verification + manifest.
 * `verify`: read-only Git vs R2 comparison (SHA-256, normalized records, counts, timestamps).
 * `restore` (CLI): writes the verified bytes of one version to a directory; refuses to overwrite.
 
@@ -31,13 +32,45 @@ Report statuses: `uploaded`, `verified`, `pending` (deadline/limit/dry-run), `sk
 `error` (retries exhausted; retried next run), `conflict` (differing object, permanent error;
 needs a human). `attempts_total` comes from the optional `--state-file`.
 
-## Activation (manual, off by default)
+## Per-run write authorisation (mode=sync)
 
-1. Dry run: `gh workflow run r2_partition_worker.yml -f mode=dry-run`.
-2. Sandbox sync (no activation needed): `-f mode=sync -f confirm_sync=true -f root_prefix=parts/v64-archive-test/<name> -f max_partitions=1`.
-3. Production sync requires **both** the repository variable `R2_PARTITION_WORKER_ENABLED=true`
-   (`gh variable set R2_PARTITION_WORKER_ENABLED --body true`) **and** `-f mode=sync -f confirm_sync=true`.
-4. Review the artifact `r2-partition-worker-*` (summary, `success`, `complete`, verify report).
+A real write needs **all** of the following in the same dispatch. The workflow gate checks them
+first, and the worker re-checks them (`write_authorization_problems`), so neither is the single
+point of failure:
+
+| Requirement | Input / flag |
+|---|---|
+| Explicit confirmation, off by default, not persisted | `confirm_write=true` / `--confirm-write` |
+| Exactly one partition processed | `max_partitions=1` |
+| One exact partition version | `provider` + `partition_day` + `partition_blob` (40-hex Git blob id) |
+| Worker-owned namespace only | `root_prefix` = `parts/v64-archive` or `parts/v64-archive-test/<name>` |
+
+* The blob id must equal the file currently published on the Git ref. If the file was rewritten,
+  retired from `main` (7-day retention by `archive_ticks`) or never existed, the run stops with
+  `success=false` and **no write**; it never falls back to another partition.
+* A targeted run succeeds only if that partition ends `uploaded` or `verified`. An unfrozen
+  target (today) is refused.
+* Before writing, the worker lists the destination prefix (`destination_existing` in the report).
+  Anything other than `data.jsonl.gz` / `manifest.json` is a `conflict`; existing objects are never
+  overwritten (`If-None-Match: *`).
+* `dry-run` and `verify` need no confirmation, and `confirm_write` has no effect outside `sync`.
+* The old `R2_PARTITION_WORKER_ENABLED` variable and `confirm_sync` input no longer exist. If the
+  variable is still set in the repository it is ignored and can be deleted.
+
+## First real write: exact procedure
+
+1. Pick the version from a dry-run on the current `main`:
+   `gh workflow run r2_partition_worker.yml -f mode=dry-run -f provider=polymarket -f partition_day=<YYYY-MM-DD> -f partition_blob=<blob> -f max_partitions=1`
+   (get `<blob>` with `git rev-parse origin/main:parts/pm_ticks_<YYYY-MM-DD>.jsonl.gz`).
+   Check the artifact: `summary: {"pending": 1}`, `destination_existing: []`.
+2. Optional rehearsal in a sandbox: same inputs plus `mode=sync -f confirm_write=true -f root_prefix=parts/v64-archive-test/<name>`.
+3. Real write: `gh workflow run r2_partition_worker.yml -f mode=sync -f confirm_write=true -f provider=polymarket -f partition_day=<YYYY-MM-DD> -f partition_blob=<blob> -f max_partitions=1 -f root_prefix=parts/v64-archive`.
+4. Review the artifact `r2-partition-*`: `uploaded: 1`, `r2_objects_created: 2`, `deletions_performed: 0`,
+   `overwrites_performed: 0`, then the read-only verify report (`verified`).
+5. Nothing to switch back: the next dispatch is a dry-run unless `confirm_write=true` is typed again.
+
+Stop: `gh run cancel <run-id>`. Objects are create-only and the manifest is written last, so a
+cancelled run leaves at most a manifest-less `data.jsonl.gz`, which the next run re-verifies.
 
 ## Restore
 
@@ -52,9 +85,7 @@ byte-identical to the Git blob (the worker checks `git hash-object` equivalence)
 
 ## Rollback
 
-* Stop: leave/unset `R2_PARTITION_WORKER_ENABLED` (`gh variable delete R2_PARTITION_WORKER_ENABLED`)
-  and do not dispatch. A running job can be cancelled; objects are create-only, so a partial
-  state is valid (manifest-less data is simply re-verified next run).
+* Stop: cancel the running job and do not dispatch again. There is no persistent switch to unset.
 * Remove the feature: revert the merge of the worker files. Collectors are unaffected.
 * R2 objects created by the worker live under `<root>/` only. They are not deleted by any
   code; removal, if ever wanted, is a separate, manually approved operation.
