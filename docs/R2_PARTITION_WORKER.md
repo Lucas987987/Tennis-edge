@@ -43,7 +43,7 @@ needs a human). `attempts_total` comes from the optional `--state-file`.
 
 ```
 python scripts/r2_partition_worker.py --mode restore --provider polymarket \
-  --day 2026-10-12 --blob <git-blob-sha> --destination /tmp/restore
+  --day 2026-10-12 --destination /tmp/restore
 ```
 
 Compare the printed SHA-256 with the manifest and with `git cat-file blob <blob> | sha256sum`.
