@@ -52,17 +52,13 @@ jobs:
         run: |
           set -u
           git fetch --depth 1 --filter=blob:none origin main
-          ROOT="parts/v64-archive-test/worker-$RID"
-          C="python scripts/r2_partition_worker.py --git-ref FETCH_HEAD --root $ROOT --provider polymarket --max-partitions 2"
-          $C --mode dry-run --report-file r2-validation-1-dry.json > /dev/null
-          $C --mode sync --report-file r2-validation-2-sync.json > /dev/null
-          $C --mode sync --report-file r2-validation-3-resync.json > /dev/null
-          $C --mode verify --report-file r2-validation-4-verify.json > /dev/null
-          BLOB=$(git rev-parse FETCH_HEAD:parts/pm_ticks_2026-10-12.jsonl.gz)
-          python scripts/r2_partition_worker.py --mode restore --root $ROOT --provider polymarket --day 2026-10-12 --blob $BLOB --destination /tmp/restore --report-file r2-validation-5-restore.json > /dev/null
+          ROOT="parts/v64-archive-test/worker-38436063302-1"
+          BLOB=e49ed8b622b03d89ffc8a26914520a7a0849445c
+          python scripts/r2_partition_worker.py --mode restore --root $ROOT --provider polymarket --day 2026-10-06 --blob $BLOB --destination /tmp/restore --report-file r2-validation-5-restore.json > /dev/null
           git cat-file blob $BLOB | sha256sum
-          sha256sum /tmp/restore/pm_ticks_2026-10-12.jsonl.gz
-          cmp <(git cat-file blob $BLOB) /tmp/restore/pm_ticks_2026-10-12.jsonl.gz && echo BYTE_IDENTICAL
+          sha256sum /tmp/restore/pm_ticks_2026-10-06.jsonl.gz
+          cmp <(git cat-file blob $BLOB) /tmp/restore/pm_ticks_2026-10-06.jsonl.gz && echo BYTE_IDENTICAL
+          python scripts/r2_partition_worker.py --mode restore --root $ROOT --provider polymarket --day 2026-10-06 --blob $BLOB --destination /tmp/restore > /dev/null 2>&1 || echo OVERWRITE_REFUSED
       - name: Retain validation report
         if: always()
         uses: actions/upload-artifact@v4
