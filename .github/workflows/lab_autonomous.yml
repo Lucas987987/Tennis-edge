@@ -45,6 +45,7 @@ jobs:
           sparse-checkout-cone-mode: false
           sparse-checkout: |
             .github/workflows/lab_autonomous.yml
+            .github/workflows/pages.yml
             Tennis_Edge_Lab
             parts
             historique
