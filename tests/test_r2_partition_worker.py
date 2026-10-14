@@ -15,6 +15,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
 import r2_partition_worker as w  # noqa: E402
+import r2_partition_batch as batch  # noqa: E402
 import r2_restore_audit as restore_audit  # noqa: E402
 
 NOW = dt.datetime(2026, 10, 13, 17, 0, tzinfo=dt.timezone.utc)
@@ -474,7 +475,7 @@ class IsolationTests(unittest.TestCase):
         for path in (self.REPO / ".github/workflows").glob("*.yml"):
             if path.name in {
                 "r2_partition_worker.yml", "r2_partition_restore.yml",
-                "r2_polymarket_restore.yml",
+                "r2_polymarket_restore.yml", "r2_partition_batch.yml",
             }:
                 continue
             other = path.read_text()
@@ -532,6 +533,28 @@ class IsolationTests(unittest.TestCase):
         self.assertIn("actions/upload-artifact@v4", text)
         self.assertNotIn("scripts/polymarket_collector.py", text)
 
+    def test_batch_workflow_is_manual_bounded_and_uses_existing_safe_worker(self):
+        import re
+        text = (self.REPO / ".github/workflows/r2_partition_batch.yml").read_text()
+        triggers = re.search(r"^on:\n((?:[ \t]+.*\n|\n)+)", text, re.M).group(1)
+        self.assertEqual(
+            re.findall(r"^  ([A-Za-z_]+):", triggers, re.M), ["workflow_dispatch"])
+        for forbidden in ("schedule", "cron", "workflow_run", "push", "pull_request"):
+            self.assertNotIn(forbidden, triggers, forbidden)
+        self.assertRegex(text, r"(?m)^permissions:\n  contents: read\n(?!  )")
+        self.assertRegex(text, r"(?s)      mode:.*?default: dry-run")
+        self.assertRegex(text, r"(?s)      confirm_write:.*?default: false")
+        self.assertRegex(text, r"(?s)      max_partitions:.*?default: 3")
+        self.assertIn("--max-seconds", text)
+        self.assertIn("--partition-timeout", text)
+        self.assertIn("r2_partition_batch.py", text)
+        self.assertIn("actions/upload-artifact@v4", text)
+        self.assertNotIn("delete_object", text)
+        self.assertNotIn("git push", text)
+        self.assertNotIn("git commit", text)
+        self.assertNotIn("scripts/kalshi_collector.py", text)
+        self.assertNotIn("scripts/polymarket_collector.py", text)
+
 
 class RestoreAuditTests(unittest.TestCase):
     def test_report_requires_byte_identity_verified_manifest_and_matching_stats(self):
@@ -586,6 +609,83 @@ class RestoreAuditTests(unittest.TestCase):
         self.assertEqual(report["stats"]["lines"], 3)
         self.assertEqual(report["stats"]["unique_ticks"], 2)
         self.assertEqual(report["stats"]["duplicate_lines"], 1)
+
+
+class BatchWorkflowTests(Base):
+    def setUp(self):
+        super().setUp()
+        rows = [tick(0, DAY), tick(0, DAY), tick(1, DAY)]
+        self.batch_data = gz(rows)
+        self.publish(f"pm_ticks_{DAY}.jsonl.gz", self.batch_data)
+        self.batch_blob = subprocess.run(
+            ["git", "rev-parse", f"main:parts/pm_ticks_{DAY}.jsonl.gz"],
+            cwd=self.repo, check=True, capture_output=True, text=True,
+        ).stdout.strip()
+        self.target = w.make_target("polymarket", DAY, self.batch_blob)
+
+    def run_batch(self, mode, *, confirm_write=False, max_seconds=1200,
+                  partition_timeout=240):
+        return batch.run_batch(
+            repo=self.repo, git_ref="main", mode=mode, root=w.DEFAULT_ROOT,
+            targets=[self.target], confirm_write=confirm_write,
+            max_partitions=3, max_seconds=max_seconds,
+            partition_timeout=partition_timeout,
+            store=self.store,
+        )
+
+    def test_targets_are_exact_and_limited_to_three(self):
+        valid = json.dumps([
+            {"provider": "polymarket", "day": DAY, "blob": self.batch_blob},
+        ])
+        self.assertEqual(batch.parse_targets(valid, 3), [self.target])
+        with self.assertRaises(ValueError):
+            batch.parse_targets(json.dumps([{"provider": "polymarket", "day": DAY, "blob": self.batch_blob}] * 4), 3)
+        with self.assertRaises(ValueError):
+            batch.parse_targets(json.dumps([{"provider": "polymarket", "day": DAY, "blob": self.batch_blob}] * 2), 3)
+        with self.assertRaises(ValueError):
+            batch.parse_targets(valid, 4)
+        with self.assertRaises(ValueError):
+            self.run_batch("dry-run", max_seconds=1201)
+        with self.assertRaises(ValueError):
+            self.run_batch("dry-run", partition_timeout=241)
+
+    def test_dry_run_classifies_empty_prefix_without_writes(self):
+        report = self.run_batch("dry-run")
+        self.assertTrue(report["success"], report)
+        self.assertTrue(report["complete"], report)
+        self.assertEqual(report["summary"], {"absent": 1})
+        self.assertEqual(report["r2_objects_created"], 0)
+        self.assertEqual(self.client.put_log, [])
+        self.assertEqual(self.client.delete_calls, 0)
+
+    def test_sync_requires_confirmation_and_incomplete_prefix_stops_before_write(self):
+        with self.assertRaises(ValueError):
+            self.run_batch("sync", confirm_write=False)
+        prefix = f"{w.DEFAULT_ROOT}/polymarket/{DAY}/{self.batch_blob}/"
+        self.client.objects[(w.BUCKET, prefix + "data.jsonl.gz")] = b"incomplete stale data"
+        report = self.run_batch("sync", confirm_write=True)
+        self.assertFalse(report["success"])
+        self.assertEqual(report["partitions"][0]["classification"], "incomplete")
+        self.assertEqual(self.client.put_log, [])
+        self.assertEqual(self.client.delete_calls, 0)
+
+    def test_restore_sample_is_byte_identical_and_read_only(self):
+        publish = w.run_sync(
+            self.repo, "main", self.store, root=w.DEFAULT_ROOT,
+            dry_run=False, now=NOW, max_partitions=1, target=self.target,
+        )
+        self.assertEqual(publish["summary"], {"uploaded": 1})
+        before = dict(self.client.objects)
+        report = self.run_batch("restore-sample")
+        self.assertTrue(report["success"], report)
+        self.assertTrue(report["complete"], report)
+        restored = report["partitions"][0]["restore"]
+        self.assertTrue(restored["byte_identical_to_git"])
+        self.assertEqual(restored["source_sha256"], restored["restored_sha256"])
+        self.assertEqual(restored["stats"]["lines"], 3)
+        self.assertEqual(restored["stats"]["duplicate_lines"], 1)
+        self.assertEqual(self.client.objects, before)
+        self.assertEqual(self.client.delete_calls, 0)
 
 
 
