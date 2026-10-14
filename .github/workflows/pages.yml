@@ -73,6 +73,7 @@ jobs:
             Tennis_Edge_Lab/research.js
             Tennis_Edge_Lab/research_v61.js
             Tennis_Edge_Lab/research_v63.js
+            Tennis_Edge_Lab/research_v632.css
             Tennis_Edge_Lab/freshness.js
             Tennis_Edge_Lab/publish_guard.py
             Tennis_Edge_Lab/v4.js
@@ -177,7 +178,7 @@ jobs:
           for f in index.html style.css app.js data.js; do
             cp "Tennis_Edge_Lab/$f" "_site/Tennis_Edge_Lab/$f"
           done
-          for f in research.html research.js research_v61.js research_v63.js freshness.js research.css v4.js v6.js; do
+          for f in research.html research.js research_v61.js research_v63.js freshness.js research.css research_v632.css v4.js v6.js; do
             cp "Tennis_Edge_Lab/$f" "_site/Tennis_Edge_Lab/$f"
           done
           # Rapports : copie fidèle, état de fraîcheur explicite, jamais de remplacement

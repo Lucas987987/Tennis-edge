@@ -39,7 +39,8 @@
       · publication du ${esc(status.checked_at)}</summary>
       <div class="table-wrap"><table><thead><tr><th>Onglet</th><th>Rapport</th><th>État</th><th>Généré le</th><th>Âge</th><th>Dernière donnée</th></tr></thead>
       <tbody>${lines}</tbody></table></div>
-      <p class="description">Un rapport « ancien conservé » est la dernière version valide ; il n'a pas été recalculé lors de cette publication.</p></details>`;
+      <p class="description">Un rapport « ancien conservé » est la dernière version valide ; il n'a pas été recalculé lors de cette publication.</p>
+      <p class="description"><strong>Limites connues :</strong> le suivi V6 historique (sans gel strict enregistré) peut être ancien ; le suivi exploratoire V6.1 et l’archive exhaustive V6.1 ne sont pas hébergés dans GitHub Pages. Leur absence est réelle et reste signalée, sans affecter les 60 gels V6.3. Les archives complètes sont à consulter dans les <a href="https://github.com/Lucas987987/Tennis-edge/actions/workflows/lab_autonomous.yml" target="_blank" rel="noopener noreferrer">artifacts des exécutions du Lab</a> tant qu’ils sont conservés (90 jours).</p></details>`;
   }
 
   async function load() {
