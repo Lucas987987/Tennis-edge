@@ -32,10 +32,11 @@ jobs:
         with:
           ref: main
           fetch-depth: 1
+          sparse-checkout-cone-mode: false
           sparse-checkout: |
             /scripts/suivi_collecteurs.py
-            /parts
-            /monitoring
+            /parts/
+            /monitoring/
       - name: Historique main (pour la dernière publication)
         run: git fetch -q --depth=400 --filter=blob:none origin main
       - name: Rapport
