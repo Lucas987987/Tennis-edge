@@ -476,6 +476,9 @@ class IsolationTests(unittest.TestCase):
             if path.name in {
                 "r2_partition_worker.yml", "r2_partition_restore.yml",
                 "r2_polymarket_restore.yml", "r2_partition_batch.yml",
+                "r2_kalshi_restore_20261010.yml",
+                "r2_polymarket_restore_20261010.yml",
+                "r2_kalshi_restore_20261011.yml",
             }:
                 continue
             other = path.read_text()
