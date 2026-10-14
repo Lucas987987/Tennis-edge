@@ -1,0 +1,27 @@
+name: Tennis Edge Lab V6.5.2 - Compatibility preview
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  diagnostic:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Tests de non attribution
+        run: python3 -m unittest discover -s Tennis_Edge_Lab/tests -p test_v652.py -v
+      - name: Diagnostic lecture seule
+        run: |
+          python3 Tennis_Edge_Lab/v65/compatibility_v652.py \
+            --snapshot Tennis_Edge_Lab/v65/selection_v64_frozen.json \
+            --alerts odds_alerts_log.jsonl \
+            --output "$RUNNER_TEMP/v652_compatibility.json"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: v652-compatibility-${{ github.run_id }}
+          path: ${{ runner.temp }}/v652_compatibility.json
+          retention-days: 30
