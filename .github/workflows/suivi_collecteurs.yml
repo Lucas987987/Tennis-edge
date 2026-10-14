@@ -1,0 +1,54 @@
+name: Suivi collecteurs (lecture seule)
+
+run-name: Suivi collecteurs ${{ github.run_id }}
+
+# Rapport de suivi Kalshi/Polymarket publié comme artifact (90 jours) : il
+# survit à l'arrêt du Codespace. Lecture seule : aucune écriture Git/R2, aucun
+# dispatch. Se déclenche à la main ou toutes les 4 h ; sans effet sur les
+# collecteurs (groupe de concurrence distinct, cadences inchangées).
+on:
+  workflow_dispatch:
+    inputs:
+      deploy:
+        description: Horodatage UTC du déploiement du watchdog (référence)
+        default: '2026-10-14T09:14:44Z'
+  schedule:
+    - cron: '17 */4 * * *'
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: suivi-collecteurs
+  cancel-in-progress: false
+
+jobs:
+  rapport:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+          fetch-depth: 1
+          sparse-checkout: |
+            /scripts/suivi_collecteurs.py
+            /parts
+            /monitoring
+      - name: Historique main (pour la dernière publication)
+        run: git fetch -q --depth=400 --filter=blob:none origin main
+      - name: Rapport
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DEPLOY: ${{ inputs.deploy || '2026-10-14T09:14:44Z' }}
+        run: |
+          set -euo pipefail
+          stamp=$(date -u +%Y%m%dT%H%MZ)
+          python scripts/suivi_collecteurs.py . --deploy "$DEPLOY" --json "suivi-$stamp.json"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: suivi-collecteurs-${{ github.run_id }}
+          path: suivi-*.json
+          retention-days: 90
+          if-no-files-found: error
