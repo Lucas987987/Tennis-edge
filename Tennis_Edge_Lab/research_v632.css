@@ -1,0 +1,18 @@
+/* Vue compacte des hypothèses V6.3 — chiffres de découverte vs suivi indépendant. */
+#v63Hypotheses .v63-metric-caption { font-size: 11px; font-weight: 650; color: #65738a; margin-bottom: 3px; white-space: normal; }
+#v63Hypotheses .v63-prospective { margin-top: 10px; padding-top: 9px; border-top: 1px dashed #d2dce8; }
+#v63Hypotheses td.num strong { display: block; font-size: 14px; }
+#v63Hypotheses td.num .detail { white-space: normal; }
+#v63Cards { display: none; }
+@media (max-width: 700px) {
+  #v63Hypotheses .table-wrap { display: none; }
+  #v63Cards { display: grid; grid-template-columns: 1fr; gap: 12px; }
+  #v63Hypotheses .v63-card { border: 1px solid #dfe6ef; border-radius: 12px; padding: 13px; background: white; overflow-wrap: anywhere; }
+  #v63Hypotheses .v63-card-title { display: flex; align-items: center; justify-content: space-between; gap: 9px; font-size: 14px; }
+  #v63Hypotheses .v63-card-title span { color: #087b65; font-size: 12px; }
+  #v63Hypotheses .v63-card p { margin: 7px 0; }
+  #v63Hypotheses .v63-card-metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 12px 0; }
+  #v63Hypotheses .v63-card-metrics > div { border-radius: 8px; background: #f3f6fa; padding: 9px; min-width: 0; }
+  #v63Hypotheses .v63-card-metrics strong { font-size: 18px; }
+  #v63Hypotheses .v63-card-metrics .detail { white-space: normal; }
+}
