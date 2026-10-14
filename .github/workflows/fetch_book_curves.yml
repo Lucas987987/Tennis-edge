@@ -66,7 +66,17 @@ jobs:
           R2_SECRET_ACCESS_KEY: ${{ inputs.r2_v64_shadow && vars.R2_V64_SHADOW_ENABLED == 'true' && secrets.R2_SECRET_ACCESS_KEY || '' }}
           R2_ENDPOINT: ${{ inputs.r2_v64_shadow && vars.R2_V64_SHADOW_ENABLED == 'true' && secrets.R2_ENDPOINT || '' }}
           BOOKS: "pinnacle,betfair-ex,winamax.fr,unibet.fr,bet365.fr,pmu,zebet.fr,netbet.fr,bwin.fr,genybet.fr,vbet.fr,circusbet.fr,feelingbet.fr,unibet,bwin,betsson,bet365,williamhill,betway,1xbet,888sport,leovegas,tipico,netbet,betsafe,nordicbet,coolbet,interwetten,vbet,marathonbet,22bet"
-        run: python scripts/fetch_book_curves.py
+        # ÉCONOMIE QUOTA RapidAPI (ajouté le 14/10/2026) : 31 books x 40
+        # matchs = jusqu'à 1 240 requêtes par nuit, la moitié du quota
+        # quotidien. EN PAUSE jusqu'au 27/10, reprise AUTOMATIQUE ensuite
+        # (rien à retoucher). Les courbes live des alertes viennent de la
+        # capture, pas d'ici : les alertes H13-H18 ne sont pas touchées.
+        run: |
+          if [ "$(date -u +%Y%m%d)" -lt 20261027 ]; then
+            echo "⏸️ économie quota RapidAPI jusqu'au 27/10 : courbes books en pause"
+            exit 0
+          fi
+          python scripts/fetch_book_curves.py
       - name: Migration ponctuelle vers partitions mensuelles (idempotent)
         # book_curves.jsonl a atteint 140,73 Mo (14/08/2026) -> GitHub rejette
         # tout push > 100 Mo, gelant le fichier distant SANS ERREUR VISIBLE
