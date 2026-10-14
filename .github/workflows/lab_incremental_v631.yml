@@ -1,0 +1,119 @@
+name: Tennis Edge Lab V6.3.1 - suivi prospectif incrémental
+
+# Les règles restent gelées. Le job recalcule uniquement les sorties
+# prospectives avec les partitions nouvelles/modifiées, pas les 160k segments.
+on:
+  schedule:
+    - cron: '20 4 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+# Même verrou que le Lab complet : aucun recouvrement avec un gel/publication.
+concurrency:
+  group: lab-automatic-registry
+  cancel-in-progress: false
+
+jobs:
+  evaluate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 65
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+          filter: blob:none
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            .github/workflows/lab_incremental_v631.yml
+            Tennis_Edge_Lab
+            scripts/oddspapi_v5.py
+            parts
+            set_results.json
+            moves_detail_hist.csv
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Restaurer le cache de partitions (facultatif et vérifié)
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ runner.temp }}/tennis-edge-incremental-v631
+          key: lab-v631-${{ runner.os }}-${{ hashFiles('Tennis_Edge_Lab/incremental_v631.py', 'Tennis_Edge_Lab/bookmakers_sets_v5.py', 'Tennis_Edge_Lab/source_features.py', 'scripts/oddspapi_v5.py') }}-${{ github.run_id }}
+          restore-keys: |
+            lab-v631-${{ runner.os }}-${{ hashFiles('Tennis_Edge_Lab/incremental_v631.py', 'Tennis_Edge_Lab/bookmakers_sets_v5.py', 'Tennis_Edge_Lab/source_features.py', 'scripts/oddspapi_v5.py') }}-
+
+      - name: Vérifier les invariants V6.3.1
+        run: python -m unittest discover -s Tennis_Edge_Lab/tests -p 'test_incremental_v631.py' -v
+
+      - name: Évaluer les 60 gels sur les données futures uniquement
+        run: |
+          set -euo pipefail
+          python Tennis_Edge_Lab/incremental_v631.py evaluate --root . \
+            --cache "$RUNNER_TEMP/tennis-edge-incremental-v631"
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p = Path('Tennis_Edge_Lab/live/candidate_watch_v62_prospective.json')
+          x = json.loads(p.read_text())
+          assert x['schema_version'] == 3
+          assert x['active_total'] <= 60
+          assert len(x['candidates']) >= x['active_total']
+          assert x['evaluated_future_period']['starts_after_freeze'] is True
+          print('Suivi prospectif:', x['active_total'], 'gels actifs')
+          PY
+
+      - name: Conserver le cache pour les prochains passages
+        if: success()
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ runner.temp }}/tennis-edge-incremental-v631
+          key: lab-v631-${{ runner.os }}-${{ hashFiles('Tennis_Edge_Lab/incremental_v631.py', 'Tennis_Edge_Lab/bookmakers_sets_v5.py', 'Tennis_Edge_Lab/source_features.py', 'scripts/oddspapi_v5.py') }}-${{ github.run_id }}
+
+      - name: Publier uniquement le rapport prospectif (pas les gels)
+        run: |
+          set -euo pipefail
+          FROZEN=(
+            Tennis_Edge_Lab/registry/candidate_selection_v63.jsonl
+            Tennis_Edge_Lab/registry/candidate_watch_v62.jsonl
+            Tennis_Edge_Lab/registry/v62_evidence
+          )
+          if ! git diff --quiet HEAD -- "${FROZEN[@]}" || \
+             [[ -n "$(git ls-files --others --exclude-standard -- "${FROZEN[@]}")" ]]; then
+            echo '::error::Registres modifiés dans un workflow de suivi : publication interdite.'
+            exit 1
+          fi
+          python Tennis_Edge_Lab/candidate_selection_v63.py verify --root .
+          python Tennis_Edge_Lab/candidate_registry_v62.py verify --root .
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- Tennis_Edge_Lab/live/candidate_watch_v62_prospective.json
+          git diff --cached --check
+          if git diff --cached --quiet; then
+            echo 'Aucune nouvelle information prospective à publier.'
+            exit 0
+          fi
+          git commit -m 'Lab V6.3.1: suivi prospectif incrémental'
+          for i in 1 2 3 4 5; do
+            git fetch origin main
+            if ! git rebase --autostash origin/main; then
+              git rebase --abort || true
+              echo '::error::Conflit avec main ; aucun registre écrasé.'
+              exit 1
+            fi
+            if [[ -n "$(git ls-files -u)" ]]; then
+              echo '::error::Conflit autostash ; publication interrompue.'
+              exit 1
+            fi
+            python Tennis_Edge_Lab/candidate_selection_v63.py verify --root .
+            python Tennis_Edge_Lab/candidate_registry_v62.py verify --root .
+            if git push origin HEAD:main; then
+              echo '✅ Suivi prospectif V6.3.1 publié sur main.'
+              exit 0
+            fi
+            sleep $((i * 5))
+          done
+          echo '::error::Publication refusée après cinq tentatives.'
+          exit 1
