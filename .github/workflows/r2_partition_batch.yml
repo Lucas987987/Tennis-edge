@@ -1,0 +1,160 @@
+name: R2 V6.4 historical partition batch
+
+run-name: R2 V6.4 batch ${{ inputs.mode }} #${{ github.run_id }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "dry-run (default, read-only) | verify | restore-sample | sync (writes require confirm_write=true)"
+        type: choice
+        options: [dry-run, verify, restore-sample, sync]
+        default: dry-run
+      targets_json:
+        description: 'JSON array of exact targets, each {"provider":"kalshi|polymarket","day":"YYYY-MM-DD","blob":"40-hex"}; maximum 3'
+        type: string
+        default: "[]"
+      max_partitions:
+        description: "Maximum exact targets for this run (1-3)"
+        type: number
+        default: 3
+      confirm_write:
+        description: "mode=sync only: explicitly authorize this batch; false otherwise"
+        type: boolean
+        default: false
+      source_commit:
+        description: "Optional exact ancestor commit of main to read retired versions from"
+        type: string
+        default: ""
+      max_seconds:
+        description: "Global batch deadline in seconds (maximum 1200)"
+        type: number
+        default: 1200
+      partition_timeout:
+        description: "Per-partition R2 deadline in seconds (maximum 240)"
+        type: number
+        default: 240
+
+permissions:
+  contents: read
+
+concurrency:
+  group: r2-partition-batch
+  cancel-in-progress: false
+
+jobs:
+  batch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Gate writes and manual dispatch
+        env:
+          MODE: ${{ inputs.mode }}
+          CONFIRM: ${{ inputs.confirm_write }}
+          MAXP: ${{ inputs.max_partitions }}
+          MAX_SECONDS: ${{ inputs.max_seconds }}
+          PARTITION_TIMEOUT: ${{ inputs.partition_timeout }}
+        run: |
+          set -euo pipefail
+          [ "$GITHUB_REF" = "refs/heads/main" ] || {
+            echo "Batch workflow must be dispatched from main." >&2
+            exit 1
+          }
+          [[ "$MAXP" =~ ^[1-3]$ ]] || {
+            echo "max_partitions must be 1, 2 or 3." >&2
+            exit 1
+          }
+          [[ "$MAX_SECONDS" =~ ^[1-9][0-9]*$ ]] && [ "$MAX_SECONDS" -le 1200 ] || {
+            echo "max_seconds must be between 1 and 1200." >&2
+            exit 1
+          }
+          [[ "$PARTITION_TIMEOUT" =~ ^[1-9][0-9]*$ ]] && [ "$PARTITION_TIMEOUT" -le 240 ] || {
+            echo "partition_timeout must be between 1 and 240." >&2
+            exit 1
+          }
+          if [ "$MODE" = "sync" ]; then
+            [ "$CONFIRM" = "true" ] || {
+              echo "confirm_write=true is required for mode=sync." >&2
+              exit 1
+            }
+          else
+            [ "$CONFIRM" = "false" ] || {
+              echo "confirm_write must be false outside mode=sync." >&2
+              exit 1
+            }
+            echo "mode=$MODE: R2 writes are disabled."
+          fi
+
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+          fetch-depth: 1
+          filter: blob:none
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /scripts/partitioned_store.py
+            /scripts/r2_partition_worker.py
+            /scripts/r2_restore_audit.py
+            /scripts/r2_partition_batch.py
+
+      - name: Fetch selected Git snapshot
+        env:
+          SOURCE: ${{ inputs.source_commit }}
+        run: |
+          set -euo pipefail
+          if [ -z "$SOURCE" ]; then
+            git fetch --depth 1 --filter=blob:none origin main
+            GITREF=FETCH_HEAD
+          else
+            [[ "$SOURCE" =~ ^[0-9a-f]{40}$ ]] || {
+              echo "source_commit must be a 40-character lowercase Git commit id." >&2
+              exit 1
+            }
+            git fetch --filter=tree:0 --shallow-since="30 days ago" origin main
+            git rev-parse --verify "$SOURCE^{commit}" >/dev/null
+            git merge-base --is-ancestor "$SOURCE" FETCH_HEAD || {
+              echo "source_commit is not an ancestor of main." >&2
+              exit 1
+            }
+            GITREF=$SOURCE
+          fi
+          echo "R2_BATCH_GITREF=$GITREF" >> "$GITHUB_ENV"
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Install R2 client
+        run: python -m pip install --disable-pip-version-check boto3
+
+      - name: Run bounded batch
+        env:
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          MODE: ${{ inputs.mode }}
+          TARGETS: ${{ inputs.targets_json }}
+          MAXP: ${{ inputs.max_partitions }}
+          MAX_SECONDS: ${{ inputs.max_seconds }}
+          PARTITION_TIMEOUT: ${{ inputs.partition_timeout }}
+          CONFIRM: ${{ inputs.confirm_write }}
+        run: |
+          set -euo pipefail
+          args=(--mode "$MODE" --targets-json "$TARGETS" \
+                --max-partitions "$MAXP" --max-seconds "$MAX_SECONDS" \
+                --partition-timeout "$PARTITION_TIMEOUT" \
+                --git-ref "$R2_BATCH_GITREF" \
+                --report-file r2-partition-batch-report.json)
+          if [ "$MODE" = "sync" ] && [ "$CONFIRM" = "true" ]; then
+            args+=(--confirm-write)
+          fi
+          python scripts/r2_partition_batch.py "${args[@]}"
+
+      - name: Publish batch reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: r2-partition-batch-${{ github.run_id }}-${{ github.run_attempt }}
+          path: r2-partition-batch-report.json
+          if-no-files-found: warn
+          retention-days: 30
