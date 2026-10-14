@@ -25,3 +25,12 @@ def test_trous():
     assert [x[2] for x in g] == [10]
     assert S.gaps(set(), A, b)[0][2] == 60
     assert S.gaps({A + i * M for i in range(60)}, A, b) == []
+
+
+def test_workflow_sparse_checkout_valide():
+    # Les motifs avec « / » initial exigent le mode non-cone (sinon git exit 128).
+    t = open(os.path.join(R, '.github', 'workflows', 'suivi_collecteurs.yml'), encoding='utf-8').read()
+    assert 'sparse-checkout-cone-mode: false' in t
+    for motif in ('/scripts/suivi_collecteurs.py', '/parts/', '/monitoring/'):
+        assert motif in t
+    assert 'contents: read' in t and 'actions: read' in t and 'contents: write' not in t
