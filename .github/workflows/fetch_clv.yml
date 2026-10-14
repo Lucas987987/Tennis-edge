@@ -43,7 +43,16 @@ jobs:
           # passage trop long retarderait les captures, d'où la limite.
           CLV_MAX_PER_RUN: '120'
           CLV_COOLDOWN: '1.5'
-        run: python scripts/fetch_clv.py
+        # ÉCONOMIE QUOTA RapidAPI (ajouté le 14/10/2026) : 20 matchs par run
+        # au lieu de 120 jusqu'au 27/10 (80/jour au lieu de 480), retour
+        # AUTOMATIQUE à 120 ensuite. Le retard pris se rattrape après :
+        # les plus récents passent en premier.
+        run: |
+          if [ "$(date -u +%Y%m%d)" -lt 20261027 ]; then
+            export CLV_MAX_PER_RUN=20
+            echo "💰 économie quota jusqu'au 27/10 : $CLV_MAX_PER_RUN matchs max"
+          fi
+          python scripts/fetch_clv.py
       - name: Commit
         run: |
           # PANNE DU 16/08/2026 -- cause exacte, tracee par pipeline_status.
