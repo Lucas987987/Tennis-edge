@@ -254,9 +254,15 @@ jobs:
           git commit -m 'Lab: publier les hypothèses sélectionnées V6.3'
           for i in 1 2 3 4 5; do
             git fetch origin main
-            if ! git rebase origin/main; then
+            # Les calculs modifient d'autres fichiers suivis : les préserver pendant le rebase.
+            if ! git rebase --autostash origin/main; then
               git rebase --abort || true
               echo 'Conflit V6.3 : registres distants préservés.'
+              exit 1
+            fi
+            # Un autostash peut signaler un conflit sans rendre le rebase lui-même rouge.
+            if [ -n "$(git ls-files -u)" ]; then
+              echo '::error::Conflit après restauration des changements locaux : push V6.3 annulé.'
               exit 1
             fi
             python3 Tennis_Edge_Lab/candidate_selection_v63.py verify --root .
@@ -315,9 +321,14 @@ jobs:
           git commit -m 'Lab: registre compact et preuves V6.2'
           for i in 1 2 3 4 5; do
             git fetch origin main
-            if ! git rebase origin/main; then
+            # Idem V6.2 : rebase sans perdre les sorties de calcul non commitées.
+            if ! git rebase --autostash origin/main; then
               git rebase --abort || true
               echo 'Conflit V6.2: publication bloquee pour proteger les registres.'
+              exit 1
+            fi
+            if [ -n "$(git ls-files -u)" ]; then
+              echo '::error::Conflit après restauration des changements locaux : push V6.2 annulé.'
               exit 1
             fi
             python3 Tennis_Edge_Lab/candidate_registry_v62.py verify --root .
