@@ -74,6 +74,8 @@ jobs:
             Tennis_Edge_Lab/research_v61.js
             Tennis_Edge_Lab/research_v63.js
             Tennis_Edge_Lab/research_v632.css
+            Tennis_Edge_Lab/research_v64.css
+            Tennis_Edge_Lab/research_v64.js
             Tennis_Edge_Lab/freshness.js
             Tennis_Edge_Lab/publish_guard.py
             Tennis_Edge_Lab/v4.js
@@ -86,6 +88,7 @@ jobs:
             Tennis_Edge_Lab/live/bookmakers_sets_prospective.json
             Tennis_Edge_Lab/live/candidate_watch_v61_prospective.json
             Tennis_Edge_Lab/live/candidate_watch_v62_prospective.json
+            Tennis_Edge_Lab/live/economic_v64.json
             Tennis_Edge_Lab/live/archive/bookmakers_sets_v61/current
             Tennis_Edge_Lab/registry
             scripts/validation_report.py
@@ -178,7 +181,7 @@ jobs:
           for f in index.html style.css app.js data.js; do
             cp "Tennis_Edge_Lab/$f" "_site/Tennis_Edge_Lab/$f"
           done
-          for f in research.html research.js research_v61.js research_v63.js freshness.js research.css research_v632.css v4.js v6.js; do
+          for f in research.html research.js research_v61.js research_v63.js research_v64.js freshness.js research.css research_v632.css research_v64.css v4.js v6.js; do
             cp "Tennis_Edge_Lab/$f" "_site/Tennis_Edge_Lab/$f"
           done
           # Rapports : copie fidèle, état de fraîcheur explicite, jamais de remplacement
@@ -186,6 +189,10 @@ jobs:
           python Tennis_Edge_Lab/publish_guard.py --root . --site _site \
             --previous-base "https://${GITHUB_REPOSITORY_OWNER}.github.io/${GITHUB_EVENT_REPO_NAME}/Tennis_Edge_Lab/live"
 
+          # Archive prospective V6.3 et sélection économique V6.4 sont indépendantes.
+          if [ -s Tennis_Edge_Lab/live/economic_v64.json ]; then
+            cp Tennis_Edge_Lab/live/economic_v64.json _site/Tennis_Edge_Lab/live/economic_v64.json
+          fi
           echo "--- contenu publié ---"
           du -sh _site
           ls -la _site
