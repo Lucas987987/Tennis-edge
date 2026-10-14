@@ -109,7 +109,19 @@ CLOSING_MAX_MINS = 35
 # Coût : n_tournois requêtes par passe étendue (~+25-50 req/jour), points de
 # courbe toutes les ~2h pour les matchs lointains (suffisant si loin du match).
 # Forçable à la main : python capture_closing.py --extended
-EXTENDED_EVERY_H = int(os.environ.get('EXTENDED_EVERY_H', '2'))
+# ÉCONOMIE QUOTA RapidAPI (ajoutée le 14/10/2026, demande de Lucas) :
+# 43 255 requêtes consommées sur 50 000 au 14/10, renouvellement le 27/10.
+# Jusqu'à cette date (exclue) : une capture au plus toutes les
+# ECO_INTERVALLE_MIN minutes, et une passe étendue toutes les 4 h au lieu
+# de 2. RETOUR AUTOMATIQUE à la normale le 27/10 : rien à retoucher.
+# CAPTURE_ECO_JUSQUA='' désactive l'économie tout de suite.
+ECO_JUSQUA = os.environ.get('CAPTURE_ECO_JUSQUA', '2026-10-27')
+ECO_INTERVALLE_MIN = float(os.environ.get('CAPTURE_ECO_INTERVALLE_MIN', '5'))
+try:
+    ECO = bool(ECO_JUSQUA) and datetime.datetime.utcnow().date() < datetime.date.fromisoformat(ECO_JUSQUA)
+except ValueError:
+    ECO = False
+EXTENDED_EVERY_H = int(os.environ.get('EXTENDED_EVERY_H', '4' if ECO else '2'))
 FUTURE_DAYS      = int(os.environ.get('FUTURE_DAYS', '4'))
 
 
@@ -812,6 +824,25 @@ def main():
                  f"worker semble silencieux, passage réel.")
         except (OSError, ValueError, KeyError, TypeError):
             pass   # état absent/illisible -> mieux vaut capturer que rater un trou réel
+
+    # ÉCONOMIE QUOTA (voir ECO_JUSQUA en tête) : vaut aussi pour le worker
+    # (repository_dispatch). Seul un lancement MANUEL passe toujours.
+    # Le worker tire toutes les 3 min : avec un seuil de 4,5 min, un tick
+    # sur deux est sauté -> une capture toutes les 6 min, ~240/jour au
+    # lieu de ~480. Sauter un tick ne coûte AUCUNE requête : on sort avant
+    # tout appel.
+    if ECO and os.environ.get('GITHUB_EVENT_NAME') != 'workflow_dispatch':
+        try:
+            _etat = json.load(open('capture_state.json', encoding='utf-8'))
+            _age_min = (now - datetime.datetime.fromisoformat(
+                _etat['last_capture_at'])).total_seconds() / 60
+            if _age_min < ECO_INTERVALLE_MIN - 0.5:
+                print(f"  💰 économie quota jusqu'au {ECO_JUSQUA} : dernière "
+                      f"capture il y a {_age_min:.1f} min (< {ECO_INTERVALLE_MIN:.0f}), "
+                      f"tick sauté, 0 requête.")
+                return
+        except (OSError, ValueError, KeyError, TypeError):
+            pass   # état illisible -> on capture, par prudence
 
     # Mode découverte (lancé 1×/jour par un workflow dédié) : rafraîchit la liste
     # des tournois ATP/WTA actifs, puis continue normalement avec le suivi.
