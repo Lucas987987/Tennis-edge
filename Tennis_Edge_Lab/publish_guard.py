@@ -35,6 +35,7 @@ REPORTS = {
     "bookmakers_sets_audit.json": ("Tennis_Edge_Lab/live/bookmakers_sets_audit.json", False, 24, {"segment_count": 0}, "Audit des segments V6.1"),
     "candidate_watch_v61_prospective.json": ("Tennis_Edge_Lab/live/candidate_watch_v61_prospective.json", False, 24, {"total_frozen": 0, "candidates": []}, "Pistes gelées V6.1"),
     "candidate_watch_v62_prospective.json": ("Tennis_Edge_Lab/live/candidate_watch_v62_prospective.json", False, 24, {"status": "not_published", "candidates": []}, "Hypothèses V6.3"),
+    "economic_v64.json": ("Tennis_Edge_Lab/live/economic_v64.json", False, 8760, {"status": "not_published", "candidates": [], "tops": {}}, "Sélection économique V6.4"),
     "source_catalog.json": ("Tennis_Edge_Lab/cache/source_catalog.json", False, 24, {}, "Sources"),
     "archive/index.json": ("Tennis_Edge_Lab/cache/archive/index.json", False, 24, {}, "Sources (archive historique)"),
 }
