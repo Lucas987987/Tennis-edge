@@ -1,0 +1,29 @@
+name: Tennis Edge Lab V6.5 - Observation preview
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  prospective-preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Tests V6.5
+        run: python -m unittest discover -s Tennis_Edge_Lab/tests -p 'test_v65.py' -v
+      - name: Preview sans écriture
+        run: |
+          python Tennis_Edge_Lab/v65/prospective.py \
+            --snapshot Tennis_Edge_Lab/v65/selection_v64_frozen.json \
+            --events Tennis_Edge_Lab/v65/events.jsonl \
+            --output "$RUNNER_TEMP/prospective_v65.json"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: lab-v65-observation-${{ github.run_id }}
+          path: ${{ runner.temp }}/prospective_v65.json
+          retention-days: 90
