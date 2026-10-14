@@ -24,6 +24,10 @@
       });
       if (!response.ok) throw new Error(`Rapport V6.3 : HTTP ${response.status}`);
       const report = await response.json();
+      if (['not_published', 'missing', 'pending', 'error'].includes(report.status)) {
+        $('v63Notice').textContent = 'Suivi V6.3 non publié : aucune hypothèse officielle n\'est affichée.';
+        return;
+      }
       if (!Array.isArray(report.candidates) || !report.active_by_market) {
         throw new Error('Schéma de suivi V6.3 invalide');
       }
