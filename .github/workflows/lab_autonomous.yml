@@ -340,3 +340,78 @@ jobs:
           done
           echo 'Publication V6.2 non effectuee.'
           exit 1
+
+      # Met à jour uniquement les rapports publics après la routine nocturne ou publication V6.3.
+      # Les sélections et preuves gelées sont des données immuables.
+      - name: Publier automatiquement les évaluations nocturnes (sans changer les gels)
+        if: >-
+          github.event_name == 'schedule' ||
+          (github.event_name == 'workflow_dispatch' && inputs.publish_v63 == true)
+        run: |
+          set -euo pipefail
+          # Une nouvelle sélection doit être autorisée explicitement par publish_v63.
+          # Ne jamais publier le rapport prospectif d'un gel non préenregistré.
+          FROZEN=(
+            Tennis_Edge_Lab/registry/candidate_selection_v63.jsonl
+            Tennis_Edge_Lab/registry/candidate_watch_v62.jsonl
+            Tennis_Edge_Lab/registry/v62_evidence
+          )
+          if ! git diff --quiet -- "${FROZEN[@]}" || \
+             [[ -n "$(git ls-files --others --exclude-standard -- "${FROZEN[@]}")" ]]; then
+            echo '::error::Nouveaux gels détectés : publication nocturne interdite ; lancer publish_v63 explicitement.'
+            exit 1
+          fi
+          python3 Tennis_Edge_Lab/candidate_selection_v63.py verify --root .
+          python3 Tennis_Edge_Lab/candidate_registry_v62.py verify --root .
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          base = Path('Tennis_Edge_Lab')
+          report = json.loads((base/'live/candidate_watch_v62_prospective.json').read_text())
+          events = [json.loads(line) for line in (base/'registry/candidate_selection_v63.jsonl').read_text().splitlines() if line.strip()]
+          authorized = {cid for event in events for cid in event['selected_candidate_ids']}
+          observed = {candidate['candidate_id'] for candidate in report['candidates']}
+          assert authorized and observed and observed <= authorized, 'Suivi non relié aux gels publiés'
+          assert report['active_total'] == sum(report['active_by_market'].values())
+          assert report['evaluated_future_period']['starts_after_freeze'] is True
+          assert report['registry'] == 'registry/candidate_watch_v62.jsonl'
+          print('✅ Suivi prospectif autorisé :', len(observed), 'hypothèses gelées')
+          PY
+
+          # Publics et légers : le corpus exhaustif 600+ Mo reste en artifact.
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -f -- \
+            Tennis_Edge_Lab/live/candidate_watch_v62_prospective.json \
+            Tennis_Edge_Lab/live/bookmakers_sets.json \
+            Tennis_Edge_Lab/live/bookmakers_sets_prospective.json \
+            Tennis_Edge_Lab/live/bookmakers_sets_audit.json \
+            Tennis_Edge_Lab/cache/source_catalog.json \
+            Tennis_Edge_Lab/cache/archive/index.json
+          git diff --cached --check
+          if git diff --cached --quiet; then
+            echo 'Rapports nocturnes : aucun changement à publier.'
+            exit 0
+          fi
+          git commit -m 'Lab: actualiser les rapports prospectifs et métadonnées publics'
+          for i in 1 2 3 4 5; do
+            git fetch origin main
+            if ! git rebase --autostash origin/main; then
+              git rebase --abort || true
+              echo '::error::Conflit de synchronisation ; aucun gel ni rapport distant écrasé.'
+              exit 1
+            fi
+            if [[ -n "$(git ls-files -u)" ]]; then
+              echo '::error::Conflit auto-stash ; publication bloquée.'
+              exit 1
+            fi
+            python3 Tennis_Edge_Lab/candidate_selection_v63.py verify --root .
+            python3 Tennis_Edge_Lab/candidate_registry_v62.py verify --root .
+            if git push origin HEAD:main; then
+              echo '✅ Rapports V6/V6.1/V6.3 et catalogue actualisés sur main.'
+              exit 0
+            fi
+            sleep $((i*4))
+          done
+          echo '::error::Impossible de publier les rapports après 5 tentatives.'
+          exit 1
