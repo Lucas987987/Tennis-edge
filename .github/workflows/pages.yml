@@ -76,6 +76,11 @@ jobs:
             Tennis_Edge_Lab/research_v632.css
             Tennis_Edge_Lab/research_v64.css
             Tennis_Edge_Lab/research_v64.js
+            Tennis_Edge_Lab/prospective_v64.py
+            Tennis_Edge_Lab/bookmakers_sets_v5.py
+            Tennis_Edge_Lab/source_features.py
+            scripts/oddspapi_v5.py
+            parts
             Tennis_Edge_Lab/freshness.js
             Tennis_Edge_Lab/publish_guard.py
             Tennis_Edge_Lab/v4.js
@@ -149,6 +154,12 @@ jobs:
       - name: Capturer le bilan public D1 (lecture seule, sans bloquer Pages)
         run: python Tennis_Edge_Lab/fetch_worker_snapshot.py Tennis_Edge_Lab/worker_hypotheses.json
 
+      - name: Suivi V6.4 sur la base existante
+        run: |
+          if [ -s Tennis_Edge_Lab/live/economic_v64.json ] && [ -d parts ]; then
+            python3 Tennis_Edge_Lab/prospective_v64.py || rm -f Tennis_Edge_Lab/live/prospective_v64.json
+          fi
+
       - name: Construire _site
         env:
           GITHUB_EVENT_REPO_NAME: ${{ github.event.repository.name }}
@@ -192,6 +203,9 @@ jobs:
           # Archive prospective V6.3 et sélection économique V6.4 sont indépendantes.
           if [ -s Tennis_Edge_Lab/live/economic_v64.json ]; then
             cp Tennis_Edge_Lab/live/economic_v64.json _site/Tennis_Edge_Lab/live/economic_v64.json
+          fi
+          if [ -s Tennis_Edge_Lab/live/prospective_v64.json ]; then
+            cp Tennis_Edge_Lab/live/prospective_v64.json _site/Tennis_Edge_Lab/live/prospective_v64.json
           fi
           echo "--- contenu publié ---"
           du -sh _site
