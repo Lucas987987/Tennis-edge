@@ -1,0 +1,27 @@
+name: Tennis Edge Lab V6.5.4 - Rule matcher preview
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  matcher:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Tester les huit dimensions et les gardes temporelles
+        run: python3 -m unittest discover -s Tennis_Edge_Lab/tests -p test_v654.py -v
+      - name: Prévisualiser les observations prouvées
+        run: |
+          python3 Tennis_Edge_Lab/v65/matcher_v654.py \
+            --snapshot Tennis_Edge_Lab/v65/selection_v64_frozen.json \
+            --observations Tennis_Edge_Lab/v65/observations_v654.jsonl \
+            --output "$RUNNER_TEMP/v654_matcher.json"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: v654-rule-matcher-${{ github.run_id }}
+          path: ${{ runner.temp }}/v654_matcher.json
+          retention-days: 30
