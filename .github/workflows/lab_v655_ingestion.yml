@@ -1,0 +1,28 @@
+name: Tennis Edge Lab V6.5.5 - Collector ingestion preview
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 */6 * * *'
+permissions:
+  contents: read
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Tests ingestion
+        run: python3 -m unittest discover -s Tennis_Edge_Lab/tests -p test_v655.py -v
+      - name: Scan read-only
+        run: |
+          python3 Tennis_Edge_Lab/v65/ingest_v655.py \
+            --root . \
+            --output "$RUNNER_TEMP/v655_ingestion.json"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: v655-ingestion-${{ github.run_id }}
+          path: ${{ runner.temp }}/v655_ingestion.json
+          retention-days: 90
