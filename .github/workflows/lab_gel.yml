@@ -1,0 +1,84 @@
+name: Lab - geler des pistes V6.6
+
+# Seul chemin pour geler une piste V6.6 : Lucas choisit des identifiants parmi
+# les « Propositions de la semaine » publiées sur la page Recherche, puis lance
+# ce workflow à la main. Aucun gel automatique, aucun appel à l'API de cotes payante.
+# Le suivi (lab_quotidien.yml) ne compte que les matchs à partir du jour UTC
+# suivant le gel, hors matchs ayant servi à la découverte.
+
+on:
+  workflow_dispatch:
+    inputs:
+      ids:
+        description: Identifiants à geler, séparés par des virgules (ex. a1b2c3d4e5f60718,0f1e2d3c4b5a6978)
+        type: string
+        required: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: lab-automatic-registry
+  cancel-in-progress: false
+
+jobs:
+  geler:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+          filter: blob:none
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            .github/workflows/lab_gel.yml
+            Tennis_Edge_Lab
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Tests des gels V6.6
+        run: python -m unittest discover -s Tennis_Edge_Lab/tests -p 'test_v66*.py' -v
+
+      - name: Geler les identifiants choisis
+        env:
+          IDS: ${{ inputs.ids }}
+        run: |
+          set -euo pipefail
+          python Tennis_Edge_Lab/selection_v66.py verify --root .
+          python Tennis_Edge_Lab/selection_v66.py freeze --root . --ids "$IDS"
+          python Tennis_Edge_Lab/selection_v66.py verify --root .
+
+      - name: Publier le registre (ajout seul, jamais de force push)
+        env:
+          IDS: ${{ inputs.ids }}
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          # Seul le registre des gels V6.6 peut changer ici.
+          if [[ -n "$(git status --porcelain -- . ':!Tennis_Edge_Lab/registry/gel_v66.jsonl' ':!**/__pycache__/**')" ]]; then
+            git status --porcelain
+            echo '::error::Fichiers inattendus modifiés : gel annulé.'
+            exit 1
+          fi
+          git add -- Tennis_Edge_Lab/registry/gel_v66.jsonl
+          git diff --cached --quiet && { echo 'Rien à geler.'; exit 0; }
+          git commit -m "Lab V6.6 : gel des pistes ${IDS}"
+          for i in 1 2 3 4 5; do
+            if ! git pull --rebase --autostash origin main; then
+              git rebase --abort || true
+              echo '::error::Conflit avec main : gel non publié, aucun registre écrasé.'
+              exit 1
+            fi
+            python Tennis_Edge_Lab/selection_v66.py verify --root .
+            if git push origin HEAD:main; then
+              echo '✅ Gel publié. Suivi à partir du jour UTC suivant.'
+              exit 0
+            fi
+            sleep $((i * 5))
+          done
+          echo '::error::Gel non publié après cinq tentatives.'
+          exit 1

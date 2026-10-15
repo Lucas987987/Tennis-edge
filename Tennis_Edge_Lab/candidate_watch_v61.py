@@ -431,6 +431,11 @@ def evaluate(
                 "clv_n": metrics.get("clv_n"),
                 "clv_mean_pct": metrics.get("clv_mean_pct"),
                 "clv_ci95": metrics.get("clv_ci95"),
+                # V6.6 : CLV Pinnacle sans marge affiché en plus (décision inchangée).
+                "clv_pin_n": metrics.get("clv_pin_n"),
+                "clv_pin_mean_pct": metrics.get("clv_pin_mean_pct"),
+                "clv_pin_ci95": metrics.get("clv_pin_ci95"),
+                "sans_cloture_pinnacle": metrics.get("sans_cloture_pinnacle"),
                 "first_half": metrics.get("first_half"),
                 "second_half": metrics.get("second_half"),
                 "p_nominal": metrics.get("p_fair"),
@@ -519,7 +524,16 @@ def run(root: pathlib.Path = ROOT, when: dt.datetime | None = None) -> dict:
 
 
 def _write_report(path: pathlib.Path, report: dict) -> None:
-    # Date du dernier calcul, même si les observations sont inchangées.
+    # V6.6 : generated_at conservé si seul l'horodatage change (pas de commit vide).
+    if path.is_file():
+        try:
+            existing = json.loads(path.read_text(encoding="utf-8"))
+        except ValueError:
+            existing = {}
+        old_without_time = {key: value for key, value in existing.items() if key != "generated_at"}
+        new_without_time = {key: value for key, value in report.items() if key != "generated_at"}
+        if old_without_time == new_without_time:
+            report["generated_at"] = existing.get("generated_at", report["generated_at"])
     content = canonical(report)
     if not path.is_file() or path.read_bytes() != content:
         _atomic_replace(path, content)

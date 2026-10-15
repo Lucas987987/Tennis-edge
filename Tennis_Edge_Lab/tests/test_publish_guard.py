@@ -115,7 +115,7 @@ class PagesWorkflowTest(unittest.TestCase):
             self.assertIn(script, workflow, f"{script} absent de pages.yml")
             self.assertTrue((LAB / script).exists())
         reports = set(re.findall(r"\./live/([a-z0-9_/]+\.json)", html))
-        for js in ("research.js", "research_v61.js", "research_v63.js", "v4.js", "v6.js"):
+        for js in ("research.js", "research_v61.js", "research_v63.js", "research_v66.js", "v4.js", "v6.js"):
             reports |= set(re.findall(r"\./live/([a-z0-9_/]+\.json)", (LAB / js).read_text(encoding="utf8")))
         reports = {r for r in reports if not r.startswith("archive/bookmakers_sets_v61/")}
         reports.discard("publication_status.json")
@@ -132,7 +132,9 @@ class PagesWorkflowTest(unittest.TestCase):
 
     def test_collectors_and_watchdog_untouched_by_triggers(self):
         workflow = (ROOT / ".github/workflows/pages.yml").read_text(encoding="utf8")
-        self.assertIn("cron: '*/30 * * * *'", workflow)
+        # V6.6 : déploiement horaire léger (plus toutes les 30 min).
+        self.assertIn("cron: '7 * * * *'", workflow)
+        self.assertNotIn("cron: '*/30 * * * *'", workflow)
         self.assertNotIn("actions: write", workflow)
 
 

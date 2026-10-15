@@ -400,7 +400,8 @@ def evaluate(root: Path):
         entry = dict(row)
         entry["discovery_fixture_hashes"] = evidence[row["candidate_id"]]
         expanded.append(entry)
-    rows, _, _ = engine.load_observations(root)
+    # Gels déjà enregistrés : définition d'origine (legacy), jamais modifiée a posteriori.
+    rows, _, _ = engine.load_observations(root, legacy=True)
     report = v61.evaluate(expanded, rows)
     report = _apply_family_correction(report)
     v61._write_report(root / REPORT, report)

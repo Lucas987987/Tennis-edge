@@ -69,8 +69,16 @@ def _atomic_append(path: pathlib.Path, records: list[dict]) -> None:
 
 
 def _write_report(path: pathlib.Path, report: dict) -> None:
-    # Date du dernier calcul, même si aucun gel ou résultat n'a changé.
-    # Le nombre de gels et les statistiques restent inchangés.
+    # V6.6 : generated_at conservé si seul l'horodatage change (pas de commit vide).
+    if path.is_file():
+        try:
+            previous = json.loads(path.read_text(encoding="utf-8"))
+        except ValueError:
+            previous = {}
+        if {k: v for k, v in previous.items() if k != "generated_at"} == {
+            k: v for k, v in report.items() if k != "generated_at"
+        }:
+            report["generated_at"] = previous.get("generated_at", report["generated_at"])
     _atomic_write(path, _canonical(report))
 
 

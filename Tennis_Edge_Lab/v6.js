@@ -70,7 +70,7 @@
     el('v6Hypotheses').innerHTML = rows.length
       ? `<div class="table-wrap"><table><thead><tr>
           <th>Marché</th><th>Bookmaker</th><th>Horizon / sélection</th><th>Règle gelée</th><th>Gel</th>
-          <th>Effectifs</th><th>ROI / IC95</th><th>CLV / IC95</th><th>Période prospective</th>
+          <th>Effectifs</th><th>ROI / IC95</th><th>CLV book (secondaire) / IC95</th><th>Période prospective</th>
           <th>p Holm / statut</th>
         </tr></thead><tbody>${rows.join('')}</tbody></table></div>`
       : '<p class="mini">Aucune hypothèse V6 gelée. Le registre est prêt; aucune piste ne satisfait actuellement les critères historiques corrigés.</p>';

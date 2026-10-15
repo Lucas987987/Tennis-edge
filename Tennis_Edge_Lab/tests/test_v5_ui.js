@@ -44,19 +44,21 @@ test('Bookmakers & Sets rendert couverture et pistes sans HTML injecté', async 
         unique_market_book_matches: 20, settled_snapshots: 24,
         tested_segments: 40, signals: 0,
       },
-      discoveries: [],
-      unconfirmed: [{
-        market: 'set2', book: 'test-book', horizon: '1h', selection: 'favori',
+      discoveries: [{
+        market: 'set2', book: 'winamax.fr', horizon: '1h', selection: 'favori',
+        clv_pin_mean_pct: 2.5, clv_pin_ci95: [0.4, 4.6], p_holm_clv_pin: 0.031,
         criteria: [{ dimension: 'amplitude', value: '3–5 %' }],
         unique_matches: 12, roi_pct: 4, roi_ci95: [-10, 18],
         clv_mean_pct: 1, clv_n: 8, p_holm: 1,
         first_half: { roi_pct: -2 }, second_half: { roi_pct: 10 },
-        status: 'piste non confirmée', freeze_automatic: false,
+        status: 'signal rétrospectif', freeze_automatic: false,
       }],
+      unconfirmed: [{ market: 'match', book: 'noise', roi_pct: 85, criteria: [] }],
       methodology: {
         temporal_rule: 'Strictement avant le match.',
         set2_rule: 'Jamais après le set 1.',
         clv: 'CLV descriptive.',
+        books: { 'winamax.fr': { jouable: true, jouable_fr: true } },
         inference: 'Tests corrigés.',
         warnings: ['Exploratoire.'],
       },
@@ -80,6 +82,11 @@ test('Bookmakers & Sets rendert couverture et pistes sans HTML injecté', async 
   assert.match(element('v5Coverage').innerHTML, /18/);
   assert.match(element('v5Coverage').innerHTML, /&lt;script&gt;/);
   assert.doesNotMatch(element('v5Coverage').innerHTML, /<script>alert/);
-  assert.match(element('v5Unconfirmed').innerHTML, /Vainqueur du set 2/);
-  assert.match(element('v5Unconfirmed').innerHTML, /gel automatique désactivé/);
+  // V6.6 : les « pistes non confirmées » (bruit multi-tests) ne sont plus affichées.
+  assert.equal(element('v5Unconfirmed').innerHTML, '');
+  assert.match(element('v5Discoveries').innerHTML, /Vainqueur du set 2/);
+  assert.match(element('v5Discoveries').innerHTML, /p Holm CLV Pinnacle/);
+  assert.match(element('v5Discoveries').innerHTML, /0,031/);
+  assert.match(element('v5Discoveries').innerHTML, />FR</);
+  assert.match(element('v5Discoveries').innerHTML, /gel automatique désactivé/);
 });
