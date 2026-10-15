@@ -519,12 +519,7 @@ def run(root: pathlib.Path = ROOT, when: dt.datetime | None = None) -> dict:
 
 
 def _write_report(path: pathlib.Path, report: dict) -> None:
-    if path.is_file():
-        existing = json.loads(path.read_text(encoding="utf-8"))
-        old_without_time = {key: value for key, value in existing.items() if key != "generated_at"}
-        new_without_time = {key: value for key, value in report.items() if key != "generated_at"}
-        if old_without_time == new_without_time:
-            report["generated_at"] = existing.get("generated_at", report["generated_at"])
+    # Date du dernier calcul, même si les observations sont inchangées.
     content = canonical(report)
     if not path.is_file() or path.read_bytes() != content:
         _atomic_replace(path, content)
