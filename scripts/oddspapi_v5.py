@@ -352,6 +352,48 @@ def _resolve_books(bookmakers):
 
 _MARKER = "HTTPSTATUS:"
 
+# COMPTEUR DE QUOTA RÉEL (ajouté le 15/10/2026). RapidAPI renvoie dans les
+# en-têtes de CHAQUE réponse le quota du mois : x-ratelimit-requests-limit,
+# -remaining et -reset (secondes avant renouvellement). C'est la seule
+# mesure qui compte TOUT (capture, CLV, courbes, résultats...) : les
+# compteurs internes ne voient que leur propre script.
+# QUOTA : dernier relevé lu ; REQUETES_RESEAU : appels réellement envoyés
+# par ce process (retries compris).
+QUOTA = {}
+REQUETES_RESEAU = 0
+
+
+def _lire_quota(chemin_entetes):
+    """Met à jour QUOTA depuis le fichier d'en-têtes écrit par curl -D."""
+    try:
+        lignes = open(chemin_entetes, encoding='utf-8', errors='replace').read().splitlines()
+    except OSError:
+        return
+    vus = {}
+    for l in lignes:
+        if ':' not in l:
+            continue
+        k, _, v = l.partition(':')
+        k = k.strip().lower()
+        if k.startswith('x-ratelimit-'):
+            vus[k] = v.strip()
+    if not vus:
+        return
+    def entier(*noms):
+        for n in noms:
+            try:
+                return int(float(vus[n]))
+            except (KeyError, ValueError):
+                pass
+        return None
+    QUOTA.clear()
+    QUOTA.update({
+        'limit': entier('x-ratelimit-requests-limit', 'x-ratelimit-limit'),
+        'remaining': entier('x-ratelimit-requests-remaining', 'x-ratelimit-remaining'),
+        'reset_s': entier('x-ratelimit-requests-reset', 'x-ratelimit-reset'),
+        'brut': vus,
+    })
+
 
 # --------------------------------------------------------------------------
 # Transport
@@ -411,8 +453,13 @@ def _api_get_once(path, params=None, timeout=40, verbose=False):
     params = params or {}
     qs = "&".join(f"{k}={v}" for k, v in params.items() if v is not None)
     url = f"{BASE}{path}" + (f"?{qs}" if qs else "")
+    global REQUETES_RESEAU
+    import tempfile
+    _fd, _entetes = tempfile.mkstemp(prefix='odds_hdr_')
+    os.close(_fd)
     cmd = [
         "curl", "-s", "-S", "-m", str(timeout),
+        "-D", _entetes,
         "-w", f"\n{_MARKER}%{{http_code}}",
         "-H", f"x-rapidapi-key: {KEY}",
         "-H", f"x-rapidapi-host: {RAPIDAPI_HOST}",
@@ -421,11 +468,21 @@ def _api_get_once(path, params=None, timeout=40, verbose=False):
         "--user-agent", UA,
         "--url", url,
     ]
+    REQUETES_RESEAU += 1
     try:
         out = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout + 10)
     except Exception as e:
         print(f"  ⚠️ curl {path}: {e}")
+        try:
+            os.remove(_entetes)
+        except OSError:
+            pass
         return None, None
+    _lire_quota(_entetes)
+    try:
+        os.remove(_entetes)
+    except OSError:
+        pass
     raw = out.stdout
     status, body = None, raw
     if _MARKER in raw:
