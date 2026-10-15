@@ -7,7 +7,7 @@ Vérifie l'état de chaque composant et envoie un récap Telegram.
 - Quota des clés API The Odds
 - Statut des derniers workflows GitHub
 """
-import urllib.request, urllib.parse, json, os, datetime
+import urllib.request, urllib.parse, json, os, sys, datetime
 
 # ── Config ───────────────────────────────────────────────
 TELEGRAM_TOKEN = os.environ.get('TELEGRAM_TOKEN', '')
@@ -101,7 +101,13 @@ CAPTURE_MAX_H = float(os.environ.get('CAPTURE_MAX_H', '6'))
 #
 # Si la cadence change encore, c'est CETTE valeur qu'il faut revoir — pas le
 # seuil de 90 % plus bas, qui reste le bon avertissement.
-BUDGET_REQ_JOUR = int(os.environ.get('BUDGET_REQ_JOUR', '1400'))
+# MODIFIÉ LE 15/10/2026 : ce compteur ne voit QUE capture_closing (il lit
+# capture_state.json). Fetch CLV, courbes des books, résultats... n'y sont
+# pas : le présenter comme « requêtes OddsPapi aujourd'hui » sur le quota
+# entier faisait croire à 12 % de consommation quand le vrai rythme était
+# de ~2 400/jour. Il devient « capture seule », avec un budget de capture.
+# Le VRAI total vient du bloc « Quota RapidAPI » plus bas (en-têtes API).
+BUDGET_REQ_JOUR = int(os.environ.get('BUDGET_REQ_JOUR', '700'))
 try:
     _cs = json.load(open('capture_state.json', encoding='utf-8'))
     _lc = datetime.datetime.fromisoformat(str(_cs['last_capture_at']).replace('Z', ''))
@@ -115,7 +121,8 @@ try:
     _req = _cs.get('requetes_cumul_jour')
     if isinstance(_req, int):
         _pct = 100.0 * _req / BUDGET_REQ_JOUR if BUDGET_REQ_JOUR else 0
-        _ligne = f"requêtes OddsPapi aujourd'hui : {_req}/{BUDGET_REQ_JOUR} ({_pct:.0f}%)"
+        _ligne = (f"capture seule aujourd'hui : {_req}/{BUDGET_REQ_JOUR} req "
+                  f"({_pct:.0f}%) — le total réel est dans « Quota RapidAPI »")
         # 90 % : il reste de quoi finir la journée, mais c'est le moment de
         # le savoir -- pas une fois le 429 tombé et les closings perdus.
         (alerts if _pct >= 90 else infos).append(
@@ -127,6 +134,67 @@ try:
 except (OSError, ValueError, KeyError, TypeError) as _e:
     alerts.append(f"❌ capture_state.json illisible ({_esc(_e)}) — "
                   f"fraîcheur de la capture NON vérifiée.")
+
+# ── 1b. Quota RapidAPI RÉEL (ajouté le 15/10/2026) ───────────────────────
+# Une requête légère (/sports) : RapidAPI renvoie dans ses en-têtes le quota
+# du MOIS pour TOUS les usages (capture, CLV, courbes, résultats, sondes).
+# Coût : 1 requête par health check. On compare au relevé précédent
+# (api_quota_state.json, commité par ce workflow) pour obtenir la
+# consommation réelle sur la période, et au rythme tenable jusqu'au
+# renouvellement.
+QUOTA_STATE = 'api_quota_state.json'
+quota_lines = []
+if os.environ.get('RAPIDAPI_KEY'):
+    try:
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        import oddspapi_v5 as _ov
+        _ov.get_sports()
+        _q = dict(_ov.QUOTA)
+        _lim, _rest, _reset = _q.get('limit'), _q.get('remaining'), _q.get('reset_s')
+        if _lim and _rest is not None:
+            _used = _lim - _rest
+            _ligne = (f"{_rest:,} restantes sur {_lim:,} "
+                      f"({100.0 * _used / _lim:.1f} % utilisé)").replace(',', ' ')
+            quota_lines.append(("✅ " if _rest > 0.10 * _lim else "❌ ") + _ligne)
+            _par_jour = None
+            if _reset:
+                _jours = _reset / 86400.0
+                _fin = now + datetime.timedelta(seconds=_reset)
+                _par_jour = _rest / max(_jours, 0.01)
+                quota_lines.append(f"ℹ️ renouvellement le {_fin:%d/%m %Hh%M} UTC "
+                                   f"(dans {_jours:.1f} j) → {_par_jour:.0f} req/jour tenables")
+            try:
+                _prev = json.load(open(QUOTA_STATE, encoding='utf-8'))
+                _dt_h = (now - datetime.datetime.fromisoformat(_prev['at'])).total_seconds() / 3600
+                _conso = _prev['remaining'] - _rest
+                if _conso >= 0 and _dt_h >= 1:
+                    _rythme = _conso * 24 / _dt_h
+                    _l = (f"consommé depuis le dernier relevé ({_dt_h:.0f} h) : "
+                          f"{_conso} req, soit {_rythme:.0f}/jour")
+                    if _par_jour is not None and _rythme > _par_jour:
+                        alerts.append(f"❌ Quota RapidAPI : rythme {_rythme:.0f}/jour au-dessus "
+                                      f"du tenable ({_par_jour:.0f}/jour) — épuisement avant le renouvellement")
+                        quota_lines.append("⚠️ " + _l)
+                    else:
+                        quota_lines.append("✅ " + _l)
+                elif _conso < 0:
+                    quota_lines.append("ℹ️ quota renouvelé depuis le dernier relevé")
+            except (OSError, ValueError, KeyError, TypeError):
+                quota_lines.append("ℹ️ premier relevé : le rythme sera calculé au prochain")
+            try:
+                json.dump({'at': now.isoformat(), 'remaining': _rest, 'limit': _lim,
+                           'reset_s': _reset}, open(QUOTA_STATE, 'w', encoding='utf-8'))
+            except OSError:
+                pass
+            if _rest <= 0.10 * _lim:
+                alerts.append(f"❌ Quota RapidAPI presque épuisé : {_rest} restantes")
+        else:
+            quota_lines.append("⚠️ en-têtes de quota absents de la réponse RapidAPI "
+                               f"({_esc(_q.get('brut') or 'aucun')})")
+    except Exception as _e:
+        quota_lines.append(f"⚠️ quota RapidAPI non lu ({_esc(_e)})")
+else:
+    quota_lines.append("⚠️ RAPIDAPI_KEY absente : quota réel non vérifié")
 
 # players_data.json : info seulement (non bloquant — Elo/Sackmann déprioritisé)
 _pa = file_age_hours('players_data.json')
@@ -220,8 +288,13 @@ if alerts:
     parts.extend(alerts)
     parts.append("")
 
+if quota_lines:
+    parts.append("<b>Quota RapidAPI (OddsPapi, tous scripts) :</b>")
+    parts.extend(quota_lines)
+    parts.append("")
+
 if key_lines:
-    parts.append("<b>Clés API :</b>")
+    parts.append("<b>Clés The Odds API (autre fournisseur, games_markets) :</b>")
     parts.extend(key_lines)
     parts.append("")
 
