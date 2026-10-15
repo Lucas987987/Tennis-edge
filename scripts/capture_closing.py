@@ -13,6 +13,7 @@ Sinon le match est marqué closing_reliable=False et doit être EXCLU du CLV.
 import json, datetime, os, re, sys
 import urllib.request, urllib.parse
 import oddspapi_v5 as ov  # client commun OddsPapi v5 (RapidAPI, appels curl)
+import closing_store   # closing_lines chaud + archives mensuelles (16/10/2026)
 
 # ─────────────────────────────────────────────────────────────────────────
 # Source de cotes : OddsPapi v5 via RapidAPI (module oddspapi_v5).
@@ -853,10 +854,9 @@ def main():
     print(f"Capture closing lines (OddsPapi) @ {now.isoformat()} UTC")
 
     # Charger les closing lines existantes
-    closing = {}
-    if os.path.exists(CLOSING_FILE):
-        with open(CLOSING_FILE, encoding='utf-8') as f:
-            closing = json.load(f)
+    # 16/10/2026 : seul le fichier CHAUD est chargé (closing_store) ; les
+    # matchs sortis de la fenêtre vivent dans closing_lines/*.jsonl.
+    closing = closing_store.load_hot(CLOSING_FILE)
 
     matches, remaining = fetch_odds(now)
     print(f"  {len(matches)} matchs exploitables · quota {remaining}")
@@ -1175,7 +1175,12 @@ def main():
     # Nettoyer les vieilles entrées (> PURGE_DAYS jours) — leur CLV est déjà figé de
     # façon permanente dans clv_history.jsonl, donc rien d'utile n'est perdu.
     cutoff = (now - datetime.timedelta(days=PURGE_DAYS)).strftime('%Y-%m-%d')
-    closing = {k: v for k, v in closing.items() if v.get('date', '') >= cutoff}
+    # 16/10/2026 : après la migration (dossier closing_lines/ présent), les
+    # matchs sortis de la fenêtre chaude PARTENT dans l'archive mensuelle au
+    # lieu d'être supprimés ; avant, purge à l'identique.
+    closing = closing_store.roll(
+        closing, CLOSING_FILE, now=now,
+        legacy_purge=lambda c: {k: v for k, v in c.items() if v.get('date', '') >= cutoff})
 
     # CORRIGÉ LE 29/08/2026 (audit v13 §BF) : écriture atomique -- l'audit
     # nomme explicitement ce fichier comme la cible la plus coûteuse d'un

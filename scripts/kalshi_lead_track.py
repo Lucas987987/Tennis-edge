@@ -93,6 +93,7 @@ import re
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import oddspapi_v5 as ov  # noqa: E402
+import closing_store   # closing_lines chaud + archives mensuelles (16/10/2026)
 
 FREEZE_DATE = '2026-09-05'
 HORIZON_MIN = float(os.environ.get('HORIZON_MIN', '45'))
@@ -142,7 +143,7 @@ def shin(oh, oa):
 def charger_pinnacle():
     """Courbes Pinnacle dévigées, indexées par (date, noms normalisés)."""
     try:
-        cl = json.load(open('closing_lines.json', encoding='utf-8'))
+        cl = closing_store.load_all('closing_lines.json')
     except (OSError, ValueError) as e:
         print(f"  ❌ closing_lines.json illisible ({e}) — rien à faire.")
         return {}

@@ -70,7 +70,8 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           # clv_history/ : partitions mensuelles (clv_store, 15/10/2026).
-          for f in closing_lines.json clv_history.jsonl clv_history/clv_history_*.jsonl; do
+          # closing_lines/ : archives mensuelles (closing_store, 16/10/2026).
+          for f in closing_lines.json clv_history.jsonl clv_history/clv_history_*.jsonl closing_lines/closing_lines_*.jsonl closing_lines/MIGRATION.json; do
             [ -f "$f" ] && git add -- "$f"
           done
           git diff --staged --quiet || git commit -m "CLV historique (v5)"

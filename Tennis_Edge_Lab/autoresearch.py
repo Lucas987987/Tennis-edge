@@ -110,7 +110,11 @@ def create_match_index():
         for r in moves:
             k=put(r.get('date',''),r.get('steame',''),r.get('opp',''),None,'moves_detail_hist',True,r.get('tour',''))
             if k and r.get('uid') and r['uid'] not in out[k]['movement_ids']:out[k]['movement_ids'].append(r['uid'])
-    close=readjson('closing_lines.json',{})
+    # 16/10/2026 : chaud + archives mensuelles (closing_source -> scripts/closing_store).
+    import importlib.util as _ilu
+    _sp=_ilu.spec_from_file_location('closing_source',Path(__file__).resolve().parent/'closing_source.py')
+    _cs=_ilu.module_from_spec(_sp);_sp.loader.exec_module(_cs)
+    close=_cs.load_all(ROOT,{})
     fixtures=readjson('resultats_oddspapi.json',{})
     if not isinstance(close,dict):close={}
     if not isinstance(fixtures,dict):fixtures={}

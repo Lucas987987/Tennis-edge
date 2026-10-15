@@ -22,6 +22,15 @@ for required in ['resultats_oddspapi.json','h16_signal_log.jsonl','closing_lines
 with tempfile.TemporaryDirectory() as tmp:
     archive=Path(tmp)/'tennis-edge-input.zip'
     with zipfile.ZipFile(archive,'w',zipfile.ZIP_DEFLATED,compresslevel=4) as out:
-        for name in found:out.write(repo/name,arcname='Tennis-edge-main/'+name)
+        for name in found:
+            if name=='closing_lines.json':
+                # 16/10/2026 : dict COMPLET (fichier chaud + archives closing_lines/),
+                # identique à celui des scripts (closing_source -> scripts/closing_store).
+                import importlib.util as _ilu, json as _json
+                _sp=_ilu.spec_from_file_location('closing_source',here/'closing_source.py')
+                _cs=_ilu.module_from_spec(_sp);_sp.loader.exec_module(_cs)
+                out.writestr('Tennis-edge-main/'+name,_json.dumps(_cs.load_all(repo,{}),ensure_ascii=False))
+            else:
+                out.write(repo/name,arcname='Tennis-edge-main/'+name)
     subprocess.run([sys.executable,str(here/'build_data.py'),str(archive)],check=True)
 print('Snapshot recalculé :',here/'data.js')
