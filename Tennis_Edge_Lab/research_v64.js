@@ -10,6 +10,7 @@
   const interval = v => Array.isArray(v) && v.length === 2
     ? pct(v[0]) + ' à ' + pct(v[1]) : 'Non disponible';
   let data = null;
+  let prospectiveData = null;
   let loading = false;
   let page = 0;
   const PAGE_SIZE = 30;
@@ -25,6 +26,8 @@
 
   function metricClass(v) {return v > 0 ? 'v64-positive' : 'v64-muted';}
   function card(x, i) {
+    const p = prospectiveData?.selection_id === data?.selection_id ? prospectiveData.hypotheses?.[x.id] : null;
+    const future = `<div class="v64-stats"><div><small>Paris depuis le gel</small><b>${p ? fmt(p.n) : 'En attente'}</b></div><div><small>ROI prospectif</small><b>${p ? pct(p.roi_pct) : 'En attente'}</b></div><div><small>CLV prospectif</small><b>${p ? pct(p.clv_mean_pct) : 'En attente'}</b><small>N CLV ${p ? fmt(p.clv_n) : '—'}</small></div></div>`;
     const rules = (x.criteria || []).map(c => `${c.dimension} : ${c.value}`).join(' · ');
     return `<article class="v64-card"><header><strong>#${i + 1} · ${esc(x.market)} · ${esc(x.book)}</strong><span>${esc(x.horizon)} · ${esc(x.selection)}</span></header>
       <p>${esc(rules)}</p>
@@ -32,6 +35,7 @@
       <div><small>CLV historique</small><b class="${metricClass(x.clv_mean_pct)}">${pct(x.clv_mean_pct)}</b><small>N CLV ${fmt(x.clv_n)}</small></div>
       <div><small>Matchs / jours</small><b>${fmt(x.unique_matches)} / ${fmt(x.distinct_days)}</b><small>Moitié 1 : ${pct(x.first_half_roi_pct)} · moitié 2 : ${pct(x.second_half_roi_pct)}</small></div>
       <div><small>Score économique</small><b>${fmt(x.score)} / 100</b><small>Score robustesse : ${fmt(x.robustness_score)}</small></div></div>
+      ${future}
       <small>Découverte ${esc(x.historical_start)} → ${esc(x.historical_end)} · IC, CLV et ROI historiques non prospectifs</small></article>`;
   }
 
@@ -63,6 +67,14 @@
         throw new Error('Rapport V6.4 incomplet ou de version incorrecte');
       }
       data = x;
+      try {
+        const resp = await fetch('./live/prospective_v64.json?t=' + Date.now(), {cache:'no-store'});
+        if (resp.ok) {
+          const p = await resp.json();
+          if (p.selection_id === x.selection_id && p.schema_version === 1) prospectiveData = p;
+        }
+      } catch (_) {}
+
       $('v64Notice').textContent = `Sélection V6.4 · ${fmt(x.selected_count)} ROI+ ET CLV+ · ${fmt(x.source_market_count)} segments explorés · match ${fmt(x.by_market?.match || 0)}, set 1 ${fmt(x.by_market?.set1 || 0)}, set 2 ${fmt(x.by_market?.set2 || 0)}. Source ${String(x.source_snapshot_sha256||'').slice(0,14)}. Critères : ≥80 matchs, ≥20 jours, ≥50 observations CLV.`;
       $('v64Metrics').innerHTML = [
         ['Éligibles sélectionnées',x.selected_count],
