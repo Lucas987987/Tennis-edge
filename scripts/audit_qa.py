@@ -20,6 +20,7 @@ import os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import oddspapi_v5 as ov
 import os, json, csv, datetime
+import closing_store   # closing_lines chaud + archives mensuelles (16/10/2026)
 
 CLOSING_FILE = 'closing_lines.json'
 BACKTEST_FILE = 'backtest_tennis.csv'
@@ -107,11 +108,10 @@ def check_csv_integrity(problems):
 
 def check_closing_health(problems):
     """Santé de la capture closing : assez de closings fiables récents ?"""
-    if not os.path.exists(CLOSING_FILE):
+    if not closing_store.exists(CLOSING_FILE):
         return
     try:
-        with open(CLOSING_FILE, encoding='utf-8') as f:
-            closing = json.load(f)
+        closing = closing_store.load_all(CLOSING_FILE)
     except Exception:
         return  # déjà signalé par check_files_exist
 

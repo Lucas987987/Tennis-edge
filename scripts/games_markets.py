@@ -18,6 +18,7 @@ NB : spreads/totals tennis en région EU sont parfois absents (couverture
 limitée hors US). Le point est alors enregistré avec available=false.
 """
 import os, json, datetime, urllib.request
+import closing_store   # closing_lines chaud + archives mensuelles (16/10/2026)
 
 CLOSING_FILE = 'closing_lines.json'
 GAMES_FILE = 'games_markets.json'         # un objet par uid avec un history[]
@@ -130,7 +131,7 @@ def run_games_collector(api_key):
     if not api_key:
         return
 
-    closing = _load_json(CLOSING_FILE, None)
+    closing = closing_store.load_all_or(CLOSING_FILE, None)
     if not closing:
         return
 

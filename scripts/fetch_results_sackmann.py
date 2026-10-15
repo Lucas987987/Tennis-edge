@@ -21,6 +21,7 @@ Env : SACKMANN_ATP, SACKMANN_WTA (dossiers clonés ; sinon tente le réseau via 
 """
 import os, csv, json, glob, re, unicodedata
 from datetime import datetime, timedelta
+import closing_store   # closing_lines chaud + archives mensuelles (16/10/2026)
 
 SACK = {'atp': os.environ.get('SACKMANN_ATP', ''), 'wta': os.environ.get('SACKMANN_WTA', '')}
 YEARS = [int(y) for y in os.environ.get('YEARS', '2023 2024 2025 2026').split()]
@@ -92,9 +93,9 @@ def load_system_matches():
                 d = _dt(r.get('commence_time'))
                 if uid and h and a and d and uid not in matches:
                     matches[uid] = (h, a, d)
-    if os.path.exists(CLOSING):
+    if closing_store.exists(CLOSING):
         try:
-            cl = json.load(open(CLOSING, encoding='utf-8'))
+            cl = closing_store.load_all(CLOSING)
             for uid, v in cl.items():
                 h, a = v.get('home'), v.get('away')
                 d = _dt(v.get('commence_time'))
