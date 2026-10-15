@@ -1,0 +1,98 @@
+name: Closing — alléger closing_lines (migration)
+
+# AJOUTÉ LE 16/10/2026. closing_lines.json (9,5 Mo) est réécrit ~275 fois
+# par jour : première source de croissance du dépôt. Ce workflow le scinde :
+#   closing_lines.json                 matchs CHAUDS (même format)
+#   closing_lines/closing_lines_YYYY-MM.jsonl   archives, une ligne par match
+# Voir scripts/closing_store.py et README_ETAPE2_STOCKAGE.md.
+#
+#   etape=migrer    scinde + vérifie que le dict complet (archives + chaud)
+#                   est IDENTIQUE à l'ancien, ordre des clés compris, puis
+#                   commit normal. Relançable : sans rien à archiver, ne
+#                   change rien.
+#   etape=verifier  contrôle seul, aucun commit.
+#   etape=annuler   RETOUR ARRIÈRE : réécrit closing_lines.json complet (60 j)
+#                   et retire closing_lines/ (son contenu reste dans
+#                   l'historique git). Commit normal.
+#
+# Après la migration, capture_closing / fetch_clv / purge_data font la
+# bascule eux-mêmes à chaque run. Push NORMAL, jamais forcé.
+
+on:
+  workflow_dispatch:
+    inputs:
+      etape:
+        description: "migrer | verifier | annuler (retour arrière)"
+        type: choice
+        default: verifier
+        options:
+          - migrer
+          - verifier
+          - annuler
+
+permissions:
+  contents: write
+
+concurrency:
+  group: capture-closing
+  cancel-in-progress: false
+
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+
+jobs:
+  migration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          filter: blob:none
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /*
+            !/parts
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Migrer (scission + vérification du dict complet)
+        if: inputs.etape == 'migrer'
+        run: python scripts/closing_store.py migrate
+
+      - name: Annuler (retour au fichier unique)
+        if: inputs.etape == 'annuler'
+        run: python scripts/closing_store.py restore
+
+      - name: Vérifier
+        if: inputs.etape != 'annuler'
+        run: python scripts/closing_store.py verify
+
+      - name: Commit (push normal, jamais forcé)
+        if: inputs.etape != 'verifier'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A -- closing_lines.json closing_lines/
+          git status --short
+          if git diff --staged --quiet; then echo "Rien à committer."; exit 0; fi
+          git commit -m "closing_lines : ${{ inputs.etape }} (fichier chaud + archives mensuelles)"
+          attente=2
+          for essai in 1 2 3 4 5 6; do
+            git fetch origin main || true
+            if git merge origin/main --no-edit; then :; else
+              echo "⚠️ conflit — fusion JSON (essai $essai)"
+              if python scripts/merge_json_state.py; then
+                git commit --no-edit || true
+              else
+                git merge --abort 2>/dev/null || true
+                sleep "$attente"; attente=$((attente*2)); continue
+              fi
+            fi
+            if git push origin HEAD:main; then echo "✅ PUSH OK"; exit 0; fi
+            sleep "$attente"; attente=$((attente*2))
+          done
+          echo "❌ push impossible — rien n'est perdu, relancer le workflow."
+          exit 1

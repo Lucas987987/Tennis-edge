@@ -587,11 +587,9 @@ def load_closing(
     legacy_path = Path(legacy_path)
     if not legacy_path.is_absolute():
         legacy_path = Path(root) / legacy_path
-    if legacy_path.is_file():
-        with legacy_path.open(encoding="utf-8") as stream:
-            closing = json.load(stream)
-    else:
-        closing = {}
+    # 16/10/2026 : closing_lines.json chaud + archives mensuelles (closing_store).
+    import closing_store
+    closing = closing_store.load_all(str(legacy_path)) if closing_store.exists(str(legacy_path)) else {}
     if not isinstance(closing, dict):
         raise ValueError(f"Closing legacy data must be a JSON object: {legacy_path}")
     store = LocalPartitionStore(root)

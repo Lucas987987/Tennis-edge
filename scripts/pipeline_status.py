@@ -28,6 +28,7 @@ Env : RUN_STARTED (ISO 8601, injecté par le workflow — sert à distinguer
       "réécrit pendant ce run" de "figé depuis un run précédent"), OUT_JSON, OUT_MD.
 """
 import os, sys, json, glob, re, datetime, subprocess
+import closing_store   # closing_lines chaud + archives mensuelles (16/10/2026)
 
 OUT_JSON = os.environ.get('OUT_JSON', 'pipeline_status.json')
 OUT_MD   = os.environ.get('OUT_MD', 'pipeline_status.md')
@@ -259,7 +260,7 @@ def closing_health(jours=7):
     Retourne un dict, ou None si closing_lines.json est illisible.
     """
     try:
-        cl = json.load(open('closing_lines.json', encoding='utf-8'))
+        cl = closing_store.load_all('closing_lines.json')
     except (OSError, ValueError):
         return None
     items = cl.values() if isinstance(cl, dict) else cl

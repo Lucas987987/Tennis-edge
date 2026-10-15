@@ -21,6 +21,7 @@ Sorties : value_candidates.jsonl (1 ligne/match), value_clv_report.json (agréga
 """
 import json, os, math, datetime
 import clv_store   # clv_history partitionné par mois (15/10/2026)
+import closing_store   # closing_lines chaud + archives mensuelles (16/10/2026)
 
 CLOSING_FILE = 'closing_lines.json'
 CLV_LOG      = 'clv_history.jsonl'
@@ -150,7 +151,7 @@ def close_mins_before(c, side):
 
 def main():
     elos = {t: load_json(f) for t, f in ELO_FILES.items()}
-    closing = load_json(CLOSING_FILE, {}) or {}
+    closing = closing_store.load_all_or(CLOSING_FILE, {}) or {}
 
     # CLV réalisé indexé par uid (dernière entrée gagne)
     clv = {}
