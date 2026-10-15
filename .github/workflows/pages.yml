@@ -80,6 +80,8 @@ jobs:
             Tennis_Edge_Lab/bookmakers_sets_v5.py
             Tennis_Edge_Lab/source_features.py
             scripts/oddspapi_v5.py
+            scripts/restore_curves.py
+            parts/ARCHIVE_INDEX.json
             parts
             Tennis_Edge_Lab/freshness.js
             Tennis_Edge_Lab/publish_guard.py
@@ -155,10 +157,30 @@ jobs:
         run: python Tennis_Edge_Lab/fetch_worker_snapshot.py Tennis_Edge_Lab/worker_hypotheses.json
 
       - name: Suivi V6.4 sur la base existante
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          if [ -s Tennis_Edge_Lab/live/economic_v64.json ] && [ -d parts ]; then
-            python3 Tennis_Edge_Lab/prospective_v64.py || rm -f Tennis_Edge_Lab/live/prospective_v64.json
-          fi
+          set -e
+          test -s Tennis_Edge_Lab/live/economic_v64.json || { echo "::error::Sélection V6.4 gelée introuvable"; exit 1; }
+          python3 - <<'PYCODE'
+          import json
+          p='Tennis_Edge_Lab/live/economic_v64.json'
+          x=json.load(open(p))
+          assert x['selected_count']==1627 and len(x['candidates'])==1627
+          assert x['policy_version']=='tennis-edge-economic-v64-1'
+          print('Sélection gelée V6.4 validée:',x['selection_id'])
+          PYCODE
+          python3 scripts/restore_curves.py
+          python3 - <<'PYCODE'
+          from pathlib import Path
+          p=Path('parts')
+          for prefix in ('hist_book_','hist_set1_','hist_set2_'):
+            count=sum(1 for f in p.glob(prefix+'*') if f.suffix in ('.gz','.jsonl'))
+            if count==0: raise SystemExit('::error::Partitions '+prefix+' absentes après restauration')
+            print(prefix,count,'partitions')
+          PYCODE
+          python3 Tennis_Edge_Lab/prospective_v64.py
+          test -s Tennis_Edge_Lab/live/prospective_v64.json
 
       - name: Construire _site
         env:
