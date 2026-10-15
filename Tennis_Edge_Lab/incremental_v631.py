@@ -276,6 +276,9 @@ def load_cached_observations(root: Path, cache_root: Path):
     rows, coverage = engine.make_observations(
         records, results, set(source['conflicted_uids']),
         set(source['conflicted_fixtures']), circuit_hints,
+        # Gels V6.3 : règle d'origine rejouée à l'identique (pas de plafond 30 min,
+        # P&L brut). Les champs CLV Pinnacle sont ajoutés à titre de mesure.
+        legacy=True,
     )
     result_path = root / 'set_results.json'
     source['source_hashes']['set_results.json'] = _hash_file(result_path)
@@ -366,7 +369,7 @@ def verify_full(root: Path, cache_root: Path) -> dict:
                                 ensure_ascii=False, allow_nan=False) for item in rows)
         return sha256(('\n'.join(sorted(canonical))).encode('utf8')).hexdigest()
     actual_rows, _, coverage, metrics = load_cached_observations(root, cache_root)
-    original_rows, _, native_source = engine.load_observations(root)
+    original_rows, _, native_source = engine.load_observations(root, legacy=True)
     if coverage != native_source or fingerprint(actual_rows) != fingerprint(original_rows):
         raise AssertionError('ALERTE : cache V6.3.1 divergent du lecteur V5 officiel')
     return {'parity': 'ok', 'rows': len(actual_rows), 'reused': metrics.get('reused', 0)}

@@ -55,11 +55,16 @@ def eligible(row, as_of):
         return 'matches_or_duplicate_count'
     if not isinstance(days, int) or days < MIN_DAYS:
         return 'days_insufficient'
+    # V6.6 : CLV Pinnacle prioritaire lorsque l'archive le fournit (sinon ancienne CLV book).
+    if 'clv_pin_mean_pct' in row:
+        clv_n, clv_value = row.get('clv_pin_n'), row.get('clv_pin_mean_pct')
+    else:
+        clv_value = row.get('clv_mean_pct')
     if not isinstance(clv_n, int) or clv_n < MIN_CLV_N:
         return 'clv_sample_insufficient'
     if not finite(row.get('roi_pct')) or row['roi_pct'] <= 0:
         return 'roi_not_positive'
-    if not finite(row.get('clv_mean_pct')) or row['clv_mean_pct'] <= 0:
+    if not finite(clv_value) or clv_value <= 0:
         return 'clv_not_positive'
     if row.get('duplicate_of'):
         return 'exact_population_duplicate'

@@ -15,6 +15,15 @@ import urllib.request
 from datetime import datetime, timezone
 
 BAD_STATUS = {"pending", "error", "missing", "not_published"}
+# V6.6 : rapports calculés par la tâche quotidienne (lab_quotidien.yml). Leur
+# generated_at ne change que si le contenu change (pas de commit vide) ; la
+# fraîcheur est donc jugée sur la dernière exécution réussie de la tâche.
+DAILY_REPORTS = frozenset({
+    "bookmakers_sets.json", "bookmakers_sets_prospective.json", "bookmakers_sets_audit.json",
+    "candidate_watch_v61_prospective.json", "candidate_watch_v62_prospective.json",
+    "history_stability.json", "propositions_v66.json", "gel_v66_prospective.json",
+    "source_catalog.json", "archive/index.json",
+})
 GENERATED_KEYS = ("generated_at", "fetched_at", "worker_generated_at")
 
 
@@ -35,8 +44,9 @@ REPORTS = {
     "bookmakers_sets_audit.json": ("Tennis_Edge_Lab/live/bookmakers_sets_audit.json", False, 24, {"segment_count": 0}, "Audit des segments V6.1"),
     "candidate_watch_v61_prospective.json": ("Tennis_Edge_Lab/live/candidate_watch_v61_prospective.json", False, 24, {"total_frozen": 0, "candidates": []}, "Pistes gelées V6.1"),
     "candidate_watch_v62_prospective.json": ("Tennis_Edge_Lab/live/candidate_watch_v62_prospective.json", False, 24, {"status": "not_published", "candidates": []}, "Hypothèses V6.3"),
-    "prospective_v64.json": ("Tennis_Edge_Lab/live/prospective_v64.json", False, 24, {"status": "not_published", "hypotheses": {}}, "Suivi prospectif V6.4"),
-    "economic_v64.json": ("Tennis_Edge_Lab/live/economic_v64.json", False, 8760, {"status": "not_published", "candidates": [], "tops": {}}, "Sélection économique V6.4"),
+    "history_stability.json": ("Tennis_Edge_Lab/live/history_stability.json", False, 48, {"cells": [], "passing": []}, "Stabilité 16 ans"),
+    "propositions_v66.json": ("Tennis_Edge_Lab/live/propositions_v66.json", False, 48, {"proposals": []}, "Propositions V6.6"),
+    "gel_v66_prospective.json": ("Tennis_Edge_Lab/live/gel_v66_prospective.json", False, 48, {"status": "not_published", "candidates": []}, "Pistes gelées V6.6"),
     "source_catalog.json": ("Tennis_Edge_Lab/cache/source_catalog.json", False, 24, {}, "Sources"),
     "archive/index.json": ("Tennis_Edge_Lab/cache/archive/index.json", False, 24, {}, "Sources (archive historique)"),
 }
@@ -95,10 +105,13 @@ def load_valid(path):
     return doc, "ok"
 
 
-def classify(doc, reason, max_age_hours, now):
+def classify(doc, reason, max_age_hours, now, verified_at=None):
     if reason != "ok":
         return reason
     stamp = parse_time(generated_at(doc))
+    verified = parse_time(verified_at)
+    if verified and (stamp is None or verified > stamp):
+        stamp = verified
     if stamp is None:
         return "ok_sans_date" if isinstance(doc, dict) else "ok"
     return "ancien" if (now - stamp).total_seconds() > max_age_hours * 3600 else "ok"
@@ -118,12 +131,13 @@ def fetch_previous(base_url, name):
     return None
 
 
-def stage(root, site, previous_base, now):
+def stage(root, site, previous_base, now, daily_run_at=None):
     root, live = pathlib.Path(root), pathlib.Path(site) / "Tennis_Edge_Lab" / "live"
     entries = []
     for name, (source, required, max_age, stub, tab) in REPORTS.items():
         doc, reason = load_valid(root / source)
-        state = classify(doc, reason, max_age, now)
+        verified_at = daily_run_at if name in DAILY_REPORTS else None
+        state = classify(doc, reason, max_age, now, verified_at)
         carried = False
         raw = (root / source).read_bytes() if reason == "ok" else b""
         if reason != "ok":
@@ -144,6 +158,7 @@ def stage(root, site, previous_base, now):
             "state": state,
             "generated_at": generated_at(doc) if state not in {"missing", "error", "pending", "not_published"} else None,
             "data_through": data_through(doc),
+            "verified_at": verified_at,
             "max_age_hours": max_age,
             "kept_previous_version": carried,
         })
@@ -179,9 +194,10 @@ def main(argv=None):
     parser.add_argument("--site", default="_site")
     parser.add_argument("--previous-base", default="")
     parser.add_argument("--strict", action="store_true", help="échoue si un rapport requis est absent/pending/error")
+    parser.add_argument("--daily-run-at", default="", help="fin de la dernière exécution réussie de lab_quotidien.yml (ISO)")
     args = parser.parse_args(argv)
     now = datetime.now(timezone.utc)
-    entries = stage(args.root, args.site, args.previous_base, now)
+    entries = stage(args.root, args.site, args.previous_base, now, args.daily_run_at or None)
     archive = stage_archive_dir(args.root, args.site)
     entries.append({
         "file": "archive/bookmakers_sets_v61/current", "tab": "Archive V6.1", "required": False,

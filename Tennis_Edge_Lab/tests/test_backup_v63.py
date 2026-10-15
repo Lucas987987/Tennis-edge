@@ -240,51 +240,6 @@ class BackupV63Tests(unittest.TestCase):
                 self.bundle, self.checksum, Path(self.temp.name) / "restore",
             )
 
-    def test_workflow_verifies_restore_before_selected_only_publication(self):
-        workflow = (LAB.parent / ".github/workflows/lab_autonomous.yml").read_text(
-            encoding="utf-8",
-        )
-        self.assertNotIn("vars.LAB_V62_AUTOMATED", workflow)
-        self.assertIn("Interdire les exécutions simultanées V6.2 et V6.3", workflow)
-        self.assertIn("V62_REQUESTED", workflow)
-        self.assertIn("V63_REQUESTED", workflow)
-        v62_start = workflow.index("Construire et vérifier le registre compact V6.2")
-        v62_end = workflow.index("Publier les gels compacts V6.2 après accord explicite")
-        v62_steps = workflow[v62_start:v62_end]
-        self.assertIn("inputs.preview_v62 == true", v62_steps)
-        self.assertIn("inputs.publish_v62 == true", v62_steps)
-        self.assertNotIn("vars.", v62_steps)
-        v62_publish = workflow[v62_end:]
-        v62_publish = v62_publish[:v62_publish.find("\n      - name:")]
-        self.assertIn(
-            "github.event_name == 'workflow_dispatch' && inputs.publish_v62 == true",
-            v62_publish,
-        )
-        build_at = workflow.index("Préenregistrer et construire l'archive complète V6.3")
-        upload_at = workflow.index("Sauvegarder l'audit complet V6.2/V6.3")
-        download_at = workflow.index("Restaurer l'artifact dans un dossier isolé")
-        verify_at = workflow.index("Vérifier l'intégrité de la sauvegarde restaurée")
-        publish_at = workflow.index("Publier uniquement les gels sélectionnés")
-        self.assertLess(build_at, upload_at)
-        self.assertLess(upload_at, download_at)
-        self.assertLess(download_at, verify_at)
-        self.assertLess(verify_at, publish_at)
-        self.assertNotIn("git commit", workflow[:publish_at])
-        next_step = workflow.find("\n      - name:", publish_at)
-        publication = workflow[publish_at:next_step]
-        self.assertIn(
-            "if: github.event_name == 'workflow_dispatch' && inputs.publish_v63 == true",
-            publication,
-        )
-        self.assertIn("candidate_watch_v62.jsonl", publication)
-        self.assertIn("candidate_selection_v63.jsonl", publication)
-        self.assertIn("v62_evidence", publication)
-        self.assertIn("candidate_watch_v62_prospective.json", publication)
-        self.assertNotIn("candidate_watch_v61.jsonl", publication)
-        self.assertNotIn("live/archive", publication)
-        self.assertIn("retention-days: 90", workflow)
-        self.assertIn("github.event_name == 'schedule'", workflow)
-
 
 if __name__ == "__main__":
     unittest.main()

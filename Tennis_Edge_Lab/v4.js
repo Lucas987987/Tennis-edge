@@ -33,30 +33,43 @@ async function sources(){try{
   '<p class="mini">Prix historiques de référence, pas des paris effectivement réalisés ni des promesses de rentabilité.</p>';
  }else{el('archiveSegments').innerHTML='<p>Archive non encore construite par la tâche quotidienne.</p>'}
  }catch(e){el('sourceTable').textContent='L’inventaire complet sera disponible après la première collecte nocturne : '+e.message;el('sourceMetrics').innerHTML='';}}
-function v5SegmentCard(x){
+// V6.6 : CLV Pinnacle en premier, p Holm bien visible, jamais de tri par ROI brut.
+const bookFilter=()=>{try{return (globalThis.TEL_BOOK_FILTER)||'jouable'}catch{return 'jouable'}};
+const pval=x=>x===null||x===undefined?'—':x<0.001?'< 0,001':new Intl.NumberFormat('fr-FR',{maximumFractionDigits:3}).format(x);
+const frBadge=f=>f&&f.jouable_fr?' <span class="badge fr" title="Opérateur agréé ANJ">FR</span>':'';
+const keepBook=f=>bookFilter()==='fr'?!!(f&&f.jouable_fr):!(f&&f.jouable===false);
+function v5SegmentCard(x,flags){
  const marketLabel={match:'Vainqueur du match',set1:'Vainqueur du set 1',set2:'Vainqueur du set 2'};
  const criteria=(x.criteria||[]).map(c=>`${c.dimension} : ${c.value}`).join(' · ')||'Segment complet';
- const ci=x.roi_ci95?`${pct(x.roi_ci95[0])} à ${pct(x.roi_ci95[1])}`:'—';
- return `<article class="candidate"><h3>${esc(marketLabel[x.market]||x.market)} · ${esc(x.book)} · ${esc(x.horizon)} · ${esc(x.selection)}</h3><p>${esc(criteria)}</p><div class="stats"><div><small>Paris uniques</small><strong>${number(x.unique_matches)}</strong></div><div><small>ROI</small><strong class="${x.roi_pct===null?'neutral':x.roi_pct>0?'good':'bad'}">${pct(x.roi_pct)}</strong></div><div><small>CLV même marché</small><strong>${pct(x.clv_mean_pct)}</strong></div></div><p class="detail">Âge moyen de la cote : ${number(x.quote_age_mean_min)} min · IC95 ROI ${ci} · p Holm ${number(x.p_holm)} · première / seconde moitié ${pct(x.first_half?.roi_pct)} / ${pct(x.second_half?.roi_pct)} · ${number(x.clv_n)} CLV</p><span class="chip">${esc(x.status)} · gel automatique désactivé</span></article>`;
+ const ci=a=>Array.isArray(a)?`${pct(a[0])} à ${pct(a[1])}`:'—';
+ const f=flags||{jouable:x.jouable,jouable_fr:x.jouable_fr};
+ return `<article class="candidate"><h3>${esc(marketLabel[x.market]||x.market)} · ${esc(x.book)}${frBadge(f)} · ${esc(x.horizon)} · ${esc(x.selection)}</h3><p>${esc(criteria)}</p><div class="stats"><div><small>p Holm CLV Pinnacle</small><strong>${pval(x.p_holm_clv_pin)}</strong></div><div><small>CLV Pinnacle · IC95</small><strong class="${x.clv_pin_mean_pct>0?'good':x.clv_pin_mean_pct<0?'bad':'neutral'}">${pct(x.clv_pin_mean_pct)}</strong><small>${ci(x.clv_pin_ci95)}</small></div><div><small>Paris uniques</small><strong>${number(x.unique_matches)}</strong></div></div><p class="detail">ROI (secondaire) ${pct(x.roi_pct)} · IC95 ${ci(x.roi_ci95)} · p Holm ROI ${pval(x.p_holm)} · CLV book (secondaire) ${pct(x.clv_book_mean_pct??x.clv_mean_pct)} · sans clôture Pinnacle : ${number(x.sans_cloture_pinnacle)} · âge moyen de la cote ${number(x.quote_age_mean_min)} min</p><span class="chip">${esc(x.status)} · gel automatique désactivé</span></article>`;
 }
-async function bookmakersSets(){try{
- const d=await load('./live/bookmakers_sets.json');
- if(d.schema_version!==1||!d.coverage||!d.summary)throw Error('Schéma V5 incompatible');
- el('v5Notice').innerHTML=`Généré le ${esc(new Date(d.generated_at).toLocaleString('fr-FR'))} · ${number(d.summary.tested_segments)} tests corrigés globalement par Holm · aucune nouvelle hypothèse n’est gelée.`;
- el('v5Metrics').innerHTML=kpi('Matchs-bookmakers-marchés',number(d.summary.unique_market_book_matches),'Après contrôle des identifiants')+kpi('Snapshots pré-match réglés',number(d.summary.settled_snapshots),'Match, set 1 et set 2')+kpi('Couvertures bookmaker-marché',number(Object.values(d.coverage).reduce((n,m)=>n+m.bookmaker_count,0)),'Un bookmaker peut couvrir plusieurs marchés')+kpi('Signaux rétrospectifs',number(d.summary.signals),'Validation prospective requise');
+let v5Data=null;
+function renderBookmakersSets(){const d=v5Data;if(!d)return;
+ const flagsOf=b=>(d.methodology?.books||{})[String(b).toLowerCase()]||null;
+ el('v5Notice').innerHTML=`Généré le ${esc(new Date(d.generated_at).toLocaleString('fr-FR'))} · ${number(d.summary.tested_segments)} tests corrigés globalement par Holm · <b>critère principal : CLV Pinnacle</b> · aucune nouvelle hypothèse n’est gelée.`;
+ el('v5Metrics').innerHTML=kpi('Matchs-bookmakers-marchés',number(d.summary.unique_market_book_matches),'Après contrôle des identifiants')+kpi('Snapshots pré-match réglés',number(d.summary.settled_snapshots),'Cote de moins de 30 min')+kpi('Couvertures bookmaker-marché',number(Object.values(d.coverage).reduce((n,m)=>n+m.bookmaker_count,0)),'Un bookmaker peut couvrir plusieurs marchés')+kpi('Signaux CLV Pinnacle',number(d.summary.signals),'Validation prospective requise');
  const labels={match:'Vainqueur du match',set1:'Vainqueur du set 1',set2:'Vainqueur du set 2'};
  const coverage=[];
  for(const [market,info] of Object.entries(d.coverage)){
   for(const [book,x] of Object.entries(info.bookmakers||{})){
-   coverage.push(`<tr><td>${esc(labels[market]||market)}</td><td><b>${esc(book)}</b></td><td>${number(x.partition_records)}</td><td>${number(x.matched_results)}</td>${['24h','6h','1h','10m'].map(h=>`<td>${number(x.snapshots?.[h])}</td>`).join('')}</tr>`);
+   const f=flagsOf(book);if(!keepBook(f))continue;
+   coverage.push(`<tr><td>${esc(labels[market]||market)}</td><td><b>${esc(book)}</b>${frBadge(f)}${f?.duplicate_of?` <span class="mini">(= ${esc(f.duplicate_of)})</span>`:''}</td><td>${number(x.partition_records)}</td><td>${number(x.matched_results)}</td>${['24h','6h','1h','10m'].map(h=>`<td>${number(x.snapshots?.[h])}</td>`).join('')}</tr>`);
   }
  }
- el('v5Coverage').innerHTML=coverage.length?`<div class="table-wrap"><table><thead><tr><th>Marché</th><th>Bookmaker</th><th>Matchs couverts</th><th>Avec résultat exact</th><th>24 h</th><th>6 h</th><th>1 h</th><th>10 min</th></tr></thead><tbody>${coverage.join('')}</tbody></table></div>`:'<p class="mini">Aucun bookmaker apparié avec résultats exacts.</p>';
- el('v5Discoveries').innerHTML=d.discoveries?.length?d.discoveries.slice(0,8).map(v5SegmentCard).join(''):'<p class="mini">Aucun signal rétrospectif n’atteint les seuils statistiques prédéfinis.</p>';
- el('v5Unconfirmed').innerHTML=d.unconfirmed?.length?d.unconfirmed.slice(0,20).map(v5SegmentCard).join(''):'<p class="mini">Aucune piste non confirmée disponible.</p>';
+ el('v5Coverage').innerHTML=coverage.length?`<div class="table-wrap"><table><thead><tr><th>Marché</th><th>Bookmaker</th><th>Matchs couverts</th><th>Avec résultat exact</th><th>24 h</th><th>6 h</th><th>1 h</th><th>10 min</th></tr></thead><tbody>${coverage.join('')}</tbody></table></div>`:'<p class="mini">Aucun bookmaker pour ce filtre.</p>';
+ const disc=(d.discoveries||[]).filter(x=>keepBook(flagsOf(x.book)||{jouable:x.jouable,jouable_fr:x.jouable_fr}));
+ el('v5Discoveries').innerHTML=disc.length?disc.slice(0,8).map(x=>v5SegmentCard(x,flagsOf(x.book))).join(''):'<p class="mini">Aucun signal CLV Pinnacle n’atteint les seuils corrigés (Holm) pour ce filtre.</p>';
  const w=d.methodology?.warnings||[];
  el('v5Methodology').innerHTML=`<b>Méthode :</b> ${esc(d.methodology?.temporal_rule)} ${esc(d.methodology?.set2_rule)}<br>${esc(d.methodology?.horizon_rule)}<br>${esc(d.methodology?.roi)}<br>${esc(d.methodology?.movement)}<br>${esc(d.methodology?.margin)}<br>${esc(d.methodology?.clv)}<br>${esc(d.methodology?.inference)}<br>${w.map(esc).join('<br>')}`;
- }catch(e){el('v5Notice').textContent='Analyse Bookmakers & Sets indisponible : '+e.message;el('v5Coverage').textContent='L’inventaire sera publié après le calcul V5 sans requête API.';}}
+}
+async function bookmakersSets(){try{
+ const d=await load('./live/bookmakers_sets.json');
+ if(d.schema_version!==1||!d.coverage||!d.summary)throw Error('Schéma V5 incompatible');
+ v5Data=d;renderBookmakersSets();
+ }catch(e){el('v5Notice').textContent='Analyse Bookmakers & Sets indisponible : '+e.message;el('v5Coverage').textContent='L’inventaire sera publié après le calcul quotidien, sans requête API.';}}
+try{globalThis.addEventListener&&globalThis.addEventListener('tel-book-filter',renderBookmakersSets)}catch{}
 el('archiveYear').addEventListener('change',selectArchive);
 el('archiveSearch').addEventListener('input',archiveTable);
 prospects();sources();bookmakersSets();

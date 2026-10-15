@@ -1,8 +1,8 @@
 name: Tennis Edge Lab V6.5.5 - Collector ingestion preview
+# V6.5 en pause (V6.6) : aucun collecteur ne produit encore de snapshots attestés,
+# l'ingestion tournait à vide toutes les 6 h. Lancement manuel uniquement.
 on:
   workflow_dispatch:
-  schedule:
-    - cron: '17 */6 * * *'
 permissions:
   contents: read
 jobs:

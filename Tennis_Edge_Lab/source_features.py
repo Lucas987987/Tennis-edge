@@ -10,6 +10,10 @@ import argparse, collections, csv, datetime as dt, gzip, hashlib, json, math, pa
 from source_catalog import main as source_catalog
 
 ROOT=pathlib.Path(__file__).resolve().parents[1]
+# V6.6 : version du cache par partition. 2 = ajoute la clôture Pinnacle des
+# deux côtés (mesure d'évaluation uniquement, jamais une variable d'entrée).
+CACHE_VERSION=2
+PIN_CLOSE_MAX_GAP_SEC=1800
 
 def num(v):
     try:
@@ -79,8 +83,17 @@ def get_part_files(root):
     p=root/'parts'
     return sorted((f for f in p.rglob('*') if f.is_file() and (str(f).endswith('.jsonl.gz') or str(f).endswith('.jsonl'))),key=str) if p.exists() else []
 
+def _last_before(points,limit):
+    best=None
+    for pt in points or []:
+        if not isinstance(pt,(list,tuple)) or len(pt)<2:continue
+        t=epoch(pt[0]);v=num(pt[1])
+        if t is None or v is None or v<=1 or t>=limit:continue
+        if best is None or t>best[0]:best=(t,v)
+    return best
+
 def process_hist(path,moves,starts,conflicts=None):
-    record=0;invalid=0;found=0;quotes={};sides={}
+    record=0;invalid=0;found=0;quotes={};sides={};pin_close={}
     if conflicts is None:conflicts=set()
     for line in readlines(path):
         record+=1
@@ -102,6 +115,15 @@ def process_hist(path,moves,starts,conflicts=None):
         side='home' if normalize_name(match['player'])==normalize_name(x.get('home')) else ('away' if normalize_name(match['player'])==normalize_name(x.get('away')) else None)
         if not side:continue
         sides[uid]=side
+        if str(x.get('book','')).lower()=='pinnacle':
+            # Clôture = dernier point strictement avant le début, deux côtés.
+            # Sert UNIQUEMENT à mesurer le CLV (après coup), jamais de filtre.
+            other='away' if side=='home' else 'home'
+            cs=_last_before(x.get(side+'_curve'),ts);co=_last_before(x.get(other+'_curve'),ts)
+            if cs and co and abs(cs[0]-co[0])<=PIN_CLOSE_MAX_GAP_SEC:
+                prev=pin_close.get(uid)
+                if prev is None or cs[0]>prev['time']:
+                    pin_close[uid]={'time':cs[0],'side_close':cs[1],'other_close':co[1],'deadline':deadline}
         pts=x.get(side+'_curve',[]) or []
         quote=None
         for pt in pts:
@@ -116,7 +138,7 @@ def process_hist(path,moves,starts,conflicts=None):
         if key not in quotes or quote[0]>quotes[key]['time']:
             quotes[key]={'time':quote[0],'odds':quote[1],'limit':quote[2],'book':book,'uid':uid}
         found+=1
-    return {'records':record,'invalid':invalid,'matched':found,'quotes':quotes,'sides':sides}
+    return {'records':record,'invalid':invalid,'matched':found,'quotes':quotes,'sides':sides,'pin_close':pin_close}
 
 def process_ticks(path,moves,side_maps,cat):
     record=0;invalid=0;found=0;quotes={}
@@ -146,6 +168,37 @@ def process_ticks(path,moves,side_maps,cat):
         found+=1
     return {'records':record,'invalid':invalid,'matched':found,'quotes':quotes}
 
+PUBLIC='Tennis_Edge_Lab/cache/parts_features_public.json.gz'
+
+_BOOKS=None
+def _books():
+    global _BOOKS
+    if _BOOKS is None:
+        import importlib.util
+        path=pathlib.Path(__file__).resolve().parent/'books.py'
+        spec=importlib.util.spec_from_file_location('tennis_edge_books_sf',path)
+        _BOOKS=importlib.util.module_from_spec(spec);spec.loader.exec_module(_BOOKS)
+    return _BOOKS
+
+def write_public(root,summary):
+    """Version légère committée chaque jour (sans le cache par partition, ~100 Ko).
+
+    Lue par autoresearch.py dans le déploiement horaire, qui n'a pas parts/.
+    Écrite seulement si le contenu change (mtime gzip fixé à 0).
+    """
+    public={k:summary[k] for k in ('schema_version','cache_version','movement_sha','features',
+            'eligible_matches','input_count','pinnacle_close_evaluation_only','causality','warning')
+            if k in summary}
+    raw=json.dumps(public,ensure_ascii=False,separators=(',',':'),sort_keys=True).encode('utf8')
+    path=pathlib.Path(root)/PUBLIC
+    try:
+        if gzip.decompress(path.read_bytes())==raw:return
+    except (OSError,EOFError):pass
+    import io
+    buffer=io.BytesIO()
+    with gzip.GzipFile(fileobj=buffer,mode='wb',mtime=0) as stream:stream.write(raw)
+    path.write_bytes(buffer.getvalue())
+
 def build(root=ROOT, max_files=None):
     root=pathlib.Path(root)
     moves=load_moves(root)
@@ -156,7 +209,8 @@ def build(root=ROOT, max_files=None):
     raw=(root/'moves_detail_hist.csv').read_bytes()
     movement_sha=hashlib.sha256(raw).hexdigest()
     reused=0;fresh=0
-    oldfiles=cache.get('files',{}) if cache.get('movement_sha')==movement_sha else {}
+    oldfiles=cache.get('files',{}) if (cache.get('movement_sha')==movement_sha
+                                      and cache.get('cache_version')==CACHE_VERSION) else {}
     files=get_part_files(root)
     if max_files is not None:files=files[:max_files]
     starts={}
@@ -220,6 +274,12 @@ def build(root=ROOT, max_files=None):
         cachefiles[rel]={'oid':oid,'category':cat,'summary':obs,'sidesig':sidesig}
     complete=collections.Counter()
     permatch={}
+    pin_close={}
+    for rec in cachefiles.values():
+        if rec['category']!='book':continue
+        for uid,obs in (rec['summary'].get('pin_close') or {}).items():
+            prev=pin_close.get(uid)
+            if prev is None or obs['time']>prev['time']:pin_close[uid]=obs
     for path,rec in cachefiles.items():
         x=rec['summary'];cat=rec['category'];complete[cat+'_files']+=1
         complete[cat+'_rows']+=x.get('records') or 0
@@ -252,14 +312,25 @@ def build(root=ROOT, max_files=None):
                 row[cat+'_age_min']=round(age,2)
                 row[cat+'_momentum_pts_pre']=round(100*(x['mid']-x['first_mid']),3)
         features[uid]=row
-    summary={'schema_version':1,'generated_at':dt.datetime.now(dt.timezone.utc).isoformat(),
+    evaluation_only={}
+    for uid,obs in pin_close.items():
+        if uid in conflicts or uid not in moves:continue
+        # La clôture doit être postérieure à la décision, sinon ce n'est pas une clôture.
+        if obs['time']<=obs['deadline']:continue
+        # Cote juste via le référentiel unique (méthode puissance).
+        evaluation_only[uid]={'pin_close_side':obs['side_close'],'pin_close_other':obs['other_close'],
+                              'pin_fair_close':round(_books().fair_close(obs['side_close'],obs['other_close']),5)}
+    summary={'schema_version':1,'cache_version':CACHE_VERSION,'generated_at':dt.datetime.now(dt.timezone.utc).isoformat(),
              'movement_sha':movement_sha,'files':cachefiles,'starts':starts,'start_time_conflicts':sorted(conflicts),
              'stats':dict(complete),'features':features,'eligible_matches':len(features),
+             # Mesures APRÈS coup (clôture) : jamais lues comme variables d'entrée.
+             'pinnacle_close_evaluation_only':evaluation_only,
              'input_count':len(files),'fresh_files':fresh,'reused_files':reused,
              'causality':'toutes les quotes retenues ont ts <= début du match - lead_min ; si heure/côté manquent, pas de feature',
              'warning':'Les sources sans UID + horodatage + côté vérifié ne sont pas exploitées comme prédicteurs. Les prix après signal sont exclus.'}
     fn=root/'Tennis_Edge_Lab/cache/parts_features.json';fn.parent.mkdir(parents=True,exist_ok=True)
     fn.write_text(json.dumps(summary,ensure_ascii=False,separators=(',',':')),encoding='utf8')
+    write_public(root,summary)
     source_catalog(root,root/'Tennis_Edge_Lab/cache/source_catalog.json')
     print(f"Partitions indexées {len(cachefiles)} · fraîches {fresh} · réutilisées {reused} · matches comparables avant signal {len(features)}")
     return summary

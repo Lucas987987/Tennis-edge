@@ -44,7 +44,13 @@ MIN_CANDIDATE_DAYS = 12
 BOOTSTRAP_ITERATIONS = 400
 MIN_ODDS = 1.01
 MAX_ODDS = 1000.0
-MODEL_VERSION = "bookmakers-sets-v6.1"
+# V6.6 : une cote plus vieille que 30 min au moment de la décision n'est pas
+# jouable (le prix a pu changer). Ne s'applique pas au mode « legacy » qui
+# rejoue exactement les 60 gels V6.3 déjà préenregistrés.
+MAX_QUOTE_AGE_MIN = 30
+PIN_CLOSE_MAX_GAP_SEC = 1800
+MODEL_VERSION = "bookmakers-sets-v6.1"  # inchangé : identifiant des gels V6.1–V6.3
+ENGINE_REVISION = "v6.6-clv-pinnacle"
 CRITERIA_VERSION = "segments-explicit-intervals-2"
 FEATURE_BUCKETS = {
     "tranche_cote": {"edges": [1.5, 1.8, 2.3, 3, 4, 8]},
@@ -57,6 +63,35 @@ FEATURE_BUCKETS = {
     "ecart_pinnacle": {"edges_pct": [-10, -5, 0, 5, 10]},
 }
 _SOURCE_NUM = None
+_BOOKS = None
+
+
+_CLV_STATS = None
+
+
+def clv_stats_module():
+    global _CLV_STATS
+    if _CLV_STATS is None:
+        path = pathlib.Path(__file__).resolve().parent / "clv_stats.py"
+        spec = importlib.util.spec_from_file_location("tennis_edge_clv_stats", path)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        _CLV_STATS = module
+    return _CLV_STATS
+
+
+def books_module():
+    """Charge Tennis_Edge_Lab/books.py (référentiel unique des bookmakers)."""
+    global _BOOKS
+    if _BOOKS is None:
+        path = pathlib.Path(__file__).resolve().parent / "books.py"
+        spec = importlib.util.spec_from_file_location("tennis_edge_books", path)
+        if spec is None or spec.loader is None:
+            raise ImportError(f"Référentiel bookmakers introuvable : {path}")
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        _BOOKS = module
+    return _BOOKS
 
 
 def parse_time(value: Any) -> dt.datetime | None:
@@ -363,9 +398,37 @@ def _bucket(
     return f"{label} ≥ {_display_number(edges[-1])}{suffix}"
 
 
+def _pinnacle_close_clv(pinnacle, side: str, decision_ts, book: str, odds: float):
+    """CLV vs clôture Pinnacle sans marge (dernier point avant le début, deux côtés)."""
+    if pinnacle is None:
+        return None, None
+    other = "away" if side == "home" else "home"
+    close_side = pinnacle["curves"][side]["close"]
+    close_other = pinnacle["curves"][other]["close"]
+    if close_side is None or close_other is None:
+        return None, None
+    if close_side[0] <= decision_ts or close_other[0] <= decision_ts:
+        return None, None
+    if abs((close_side[0] - close_other[0]).total_seconds()) > PIN_CLOSE_MAX_GAP_SEC:
+        return None, None
+    books = books_module()
+    fair = books.fair_close(close_side[1], close_other[1])
+    clv = books.clv_pin_pct(book, odds, close_side[1], close_other[1])
+    return clv, fair
+
+
 def make_observations(records: dict, results: dict, conflicted: set[str],
-                      conflicted_fixtures: set[str], circuit_hints: dict | None = None):
+                      conflicted_fixtures: set[str], circuit_hints: dict | None = None,
+                      legacy: bool = False):
+    """Construit les snapshots réglés.
+
+    legacy=True rejoue la définition historique (V6.1–V6.3) : P&L brut, pas de
+    plafond d'âge de cote. Utilisé UNIQUEMENT pour évaluer les gels V6.3 déjà
+    enregistrés, afin de ne jamais changer leur règle après coup. Les champs
+    CLV Pinnacle sont ajoutés dans les deux modes (mesure ex post).
+    """
     circuit_hints = circuit_hints or {}
+    books_ref = books_module()
     by_uid_market = collections.defaultdict(dict)
     for (market, uid, book), record in records.items():
         if uid in conflicted or record["fixture_id"] in conflicted_fixtures:
@@ -404,6 +467,12 @@ def make_observations(records: dict, results: dict, conflicted: set[str],
                             or quote[0] > decision_ts or opposing[0] > decision_ts
                             or opening[0] > decision_ts):
                         continue
+                    quote_age = (decision_ts - quote[0]).total_seconds() / 60
+                    opposing_age = (decision_ts - opposing[0]).total_seconds() / 60
+                    if not legacy and (quote_age > MAX_QUOTE_AGE_MIN
+                                       or opposing_age > MAX_QUOTE_AGE_MIN):
+                        cov["stale_quotes_excluded"] = cov.get("stale_quotes_excluded", 0) + 1
+                        continue
                     is_favorite = home[1] <= away[1] if side == "home" else away[1] < home[1]
                     won = side == result_side
                     market_margin = (1 / home[1]) + (1 / away[1]) - 1
@@ -413,7 +482,16 @@ def make_observations(records: dict, results: dict, conflicted: set[str],
                         clv = (quote[1] / closing[1] - 1) * 100
                     pinnacle_gap = None
                     pinnacle = books.get("pinnacle")
-                    if pinnacle is not None:
+                    clv_pin, pin_fair_close = _pinnacle_close_clv(
+                        pinnacle, side, decision_ts, book, quote[1],
+                    )
+                    flags = books_ref.flags(book)
+                    if legacy:
+                        pnl = quote[1] - 1 if won else -1
+                    else:
+                        pnl = books_ref.pnl(book, quote[1], won)
+                    # Pinnacle comparé à lui-même : écart toujours nul, filtre vide.
+                    if pinnacle is not None and (legacy or book != "pinnacle"):
                         pin_quote = pinnacle["curves"][side]["horizons"].get(horizon)
                         if (pin_quote is not None and pin_quote[0] <= quote[0]
                                 and (quote[0] - pin_quote[0]).total_seconds() <= 1800):
@@ -428,14 +506,21 @@ def make_observations(records: dict, results: dict, conflicted: set[str],
                     rows.append({
                         "uid": uid, "fixture_id": record["fixture_id"], "market": market,
                         "book": book, "horizon": horizon, "side_type": "favori" if is_favorite else "outsider",
-                        "side": side, "won": won, "odds": quote[1], "pnl": quote[1] - 1 if won else -1,
+                        "side": side, "won": won, "odds": quote[1], "pnl": pnl,
+                        "odds_effective": quote[1] if legacy else books_ref.effective_odds(book, quote[1]),
+                        "jouable": flags["jouable"], "jouable_fr": flags["jouable_fr"],
+                        "book_canonical": books_ref.canonical(book),
                         "date": record["start"].date().isoformat(), "tournament": record["tournament"],
                         "circuit": circuit, "lead_min": lead,
                         "movement_pct": movement, "movement_abs_pct": abs(movement),
                         "movement_direction": "cote en hausse" if movement > 0.05 else
                                               "cote en baisse" if movement < -0.05 else "stable",
                         "margin_pct": market_margin * 100, "limit": limit,
-                        "pinnacle_gap_pct": pinnacle_gap, "clv_pct": clv,
+                        "pinnacle_gap_pct": pinnacle_gap,
+                        # CLV principal : vs clôture Pinnacle sans marge.
+                        "clv_pin_pct": clv_pin, "pin_fair_close": pin_fair_close,
+                        # CLV secondaire : vs dernière cote du même book.
+                        "clv_pct": clv, "clv_book_pct": clv,
                         "decision_ts": decision_ts.isoformat(),
                         "quote_age_min": (decision_ts - quote[0]).total_seconds() / 60,
                         "feature_timestamps": {
@@ -456,7 +541,7 @@ def make_observations(records: dict, results: dict, conflicted: set[str],
     return rows, coverage
 
 
-def load_observations(root: pathlib.Path):
+def load_observations(root: pathlib.Path, legacy: bool = False):
     root = pathlib.Path(root).resolve()
     results = load_results(root)
     circuit_hints = load_circuit_hints(root)
@@ -465,7 +550,7 @@ def load_observations(root: pathlib.Path):
     source_coverage["unique_market_book_matches"] = len(records)
     rows, coverage = make_observations(
         records, results, set(source_coverage["conflicted_uids"]),
-        set(source_coverage["conflicted_fixtures"]), circuit_hints,
+        set(source_coverage["conflicted_fixtures"]), circuit_hints, legacy=legacy,
     )
     source_coverage["source_hashes"]["set_results.json"] = hashlib.sha256(
         (root / "set_results.json").read_bytes()
@@ -516,6 +601,9 @@ def _stats(rows: list[dict], shared_stats) -> dict:
     n = len(rows)
     if not n:
         return {"n": 0, "unique_matches": 0, "wins": 0, "roi_pct": None, "pnl_units": 0,
+                "clv_pin_n": 0, "clv_pin_mean_pct": None, "clv_pin_ci95": None,
+                "p_clv_pin": None, "p_holm_clv_pin": None, "sans_cloture_pinnacle": 0,
+                "clv_book_mean_pct": None,
                 "roi_ci95": None, "clv_n": 0, "clv_mean_pct": None, "clv_ci95": None,
                 "first_half": {"n": 0, "roi_pct": None}, "second_half": {"n": 0, "roi_pct": None},
                 "start_date": None, "end_date": None, "distinct_days": 0,
@@ -546,9 +634,11 @@ def _stats(rows: list[dict], shared_stats) -> dict:
     clv_ci = ([round(clv_mean - 1.96 * clv_sd / math.sqrt(len(clvs)), 2),
                round(clv_mean + 1.96 * clv_sd / math.sqrt(len(clvs)), 2)]
               if clv_sd is not None else None)
-    expected_wins = sum(1 / row["odds"] for row in rows)
+    # Cote effective (commission de bourse déduite) : H0 = rentabilité nulle au prix encaissé.
+    effective = [row.get("odds_effective") or row["odds"] for row in rows]
+    expected_wins = sum(1 / odds for odds in effective)
     expected_losses = n - expected_wins
-    fair_variance = sum(max(0, row["odds"] - 1) for row in rows)
+    fair_variance = sum(max(0, odds - 1) for odds in effective)
     p_fair_valid = n >= 30 and expected_wins >= 5 and expected_losses >= 5 \
         and fair_variance > 0
     z = sum(pnl) / math.sqrt(fair_variance) if p_fair_valid else 0
@@ -559,7 +649,15 @@ def _stats(rows: list[dict], shared_stats) -> dict:
     winsor_limit = sorted(pnl)[max(0, math.ceil(.95 * n) - 1)]
     winsorized_roi = statistics.mean(min(value, winsor_limit) for value in pnl) * 100
     missing_clv = n - len(clvs)
+    clv_pin = clv_stats_module().summary(
+        [row.get("clv_pin_pct") for row in rows], [row["date"] for row in rows],
+    )
     return {
+        # CLV Pinnacle (principal) : entrée nette vs clôture Pinnacle sans marge.
+        "clv_pin_n": clv_pin["n"], "clv_pin_mean_pct": clv_pin["mean_pct"],
+        "clv_pin_ci95": clv_pin["ci95"], "p_clv_pin": clv_pin["p_one_sided"],
+        "p_holm_clv_pin": None, "sans_cloture_pinnacle": n - clv_pin["n"],
+        "clv_book_mean_pct": round(clv_mean, 2) if clv_mean is not None else None,
         "n": n, "unique_matches": len({row.get("fixture_id") or row["uid"] for row in rows}),
         "wins": sum(bool(row["won"]) for row in rows), "mean_odds": round(statistics.mean(
             row["odds"] for row in rows), 4), "roi_pct": round(roi, 2),
@@ -799,6 +897,11 @@ def analyze(rows: list[dict]) -> tuple[list[dict], int]:
             },
             **stats, "status": "observation exploratoire", "freeze_automatic": False,
         }
+        book_flags = books_module().flags(key[1])
+        item["jouable"] = book_flags["jouable"]
+        item["jouable_fr"] = book_flags["jouable_fr"]
+        item["fr_incertain"] = book_flags["fr_incertain"]
+        item["book_duplicate_of"] = book_flags["duplicate_of"]
         item["filter_signature_sha256"] = hashlib.sha256(json.dumps({
             key_name: item[key_name]
             for key_name in ("market", "book", "circuit", "horizon", "selection", "criteria")
@@ -838,12 +941,21 @@ def analyze(rows: list[dict]) -> tuple[list[dict], int]:
     adjusted_values = holm_adjust([value for _, value in tested])
     for (index, _), adjusted in zip(tested, adjusted_values):
         results[index]["p_holm"] = adjusted
-        if (results[index]["n"] >= MIN_SIGNAL_MATCHES and results[index]["roi_ci95"]
-                and results[index]["roi_ci95"][0] > 0 and adjusted < FAMILYWISE_ALPHA):
-            results[index]["status"] = "signal rétrospectif, validation prospective requise"
+    # V6.6 : critère PRINCIPAL = CLV Pinnacle (Holm sur tous les segments testables).
+    clv_tested = [
+        (index, item["p_clv_pin"]) for index, item in enumerate(results)
+        if item.get("p_clv_pin") is not None and item.get("clv_pin_n", 0) >= 30
+    ]
+    clv_adjusted = holm_adjust([value for _, value in clv_tested])
+    for (index, _), adjusted in zip(clv_tested, clv_adjusted):
+        item = results[index]
+        item["p_holm_clv_pin"] = adjusted
+        if (item["n"] >= MIN_SIGNAL_MATCHES and item.get("clv_pin_ci95")
+                and item["clv_pin_ci95"][0] > 0 and adjusted < FAMILYWISE_ALPHA):
+            item["status"] = "signal rétrospectif, validation prospective requise"
     reason_order = (
         "défaut de qualité", "doublon", "effectif", "données manquantes",
-        "instabilité", "IC95", "Holm",
+        "instabilité", "IC95", "Holm", "CLV Pinnacle",
     )
     for item in results:
         reasons = []
@@ -868,6 +980,8 @@ def analyze(rows: list[dict]) -> tuple[list[dict], int]:
             reasons.append("IC95")
         if item.get("p_holm") is None or item["p_holm"] >= FAMILYWISE_ALPHA:
             reasons.append("Holm")
+        if item.get("p_holm_clv_pin") is None or item["p_holm_clv_pin"] >= FAMILYWISE_ALPHA:
+            reasons.append("CLV Pinnacle")
         item["rejection_reasons"] = reasons
         item["primary_rejection_reason"] = next(
             (reason for reason in reason_order if reason in reasons), None,
@@ -875,9 +989,12 @@ def analyze(rows: list[dict]) -> tuple[list[dict], int]:
         item["sample_size_warning"] = item["n"] < MIN_CANDIDATE_MATCHES \
             or item["distinct_days"] < MIN_CANDIDATE_DAYS
         item["chronological_warning"] = "instabilité" in reasons
+    # Jamais de tri par ROI brut : p Holm CLV Pinnacle, puis p nominale, puis effectif.
     results.sort(key=lambda item: (
+        item["p_holm_clv_pin"] if item.get("p_holm_clv_pin") is not None else 2,
+        item["p_clv_pin"] if item.get("p_clv_pin") is not None else 2,
         item["p_holm"] if item.get("p_holm") is not None else 2,
-        -(item["roi_pct"] or -1e9), -item["n"], item["market"], item["book"],
+        -item["n"], item["market"], item["book"],
     ))
     return results, len(tested)
 
@@ -903,19 +1020,20 @@ def _audit_summary(segments: list[dict], source_coverage: dict) -> dict:
     markets = {}
     for market in MARKET_PREFIXES.values():
         rows = [segment for segment in segments if segment["market"] == market]
-        by_roi = lambda item: item["roi_pct"] if item["roi_pct"] is not None else -math.inf
+        by_p = lambda item: item["p_clv_pin"] if item.get("p_clv_pin") is not None else 2
         markets[market] = {
             "segments": len(rows),
             "rejection_reasons": dict(sorted(collections.Counter(
                 reason for row in rows for reason in row["rejection_reasons"]
             ).items())),
+            # Triés par p CLV Pinnacle (jamais par ROI brut).
             "best_positive": sorted(
-                (item for item in rows if (item["roi_pct"] or 0) > 0),
-                key=lambda item: (-by_roi(item), item["n"]),
+                (item for item in rows if (item.get("clv_pin_mean_pct") or 0) > 0),
+                key=lambda item: (by_p(item), -item["n"]),
             )[:10],
             "worst_negative": sorted(
-                (item for item in rows if (item["roi_pct"] or 0) < 0),
-                key=lambda item: (by_roi(item), -item["n"]),
+                (item for item in rows if (item.get("clv_pin_mean_pct") or 0) < 0),
+                key=lambda item: (-by_p(item), -item["n"]),
             )[:10],
         }
     return {
@@ -1112,11 +1230,17 @@ def build(root: pathlib.Path) -> dict:
 
     signal_rows = [item for item in analyses if item["status"] != "observation exploratoire"]
     discoveries = sorted(signal_rows, key=lambda item: (
-        item.get("p_holm", 1), -(item.get("roi_pct") if item.get("roi_pct") is not None else 0), -item["n"]
+        item.get("p_holm_clv_pin") if item.get("p_holm_clv_pin") is not None else 2,
+        item.get("p_clv_pin") if item.get("p_clv_pin") is not None else 2, -item["n"],
     ))
     discovery_candidates = []
     for item in discoveries:
         if item["n"] < 60 or not item.get("discovery_fixture_hashes"):
+            continue
+        # Registre strict V6 (historique, plus alimenté automatiquement) :
+        # garde ses propres seuils ROI en plus du critère CLV Pinnacle.
+        if not (item.get("roi_ci95") and item["roi_ci95"][0] > 0
+                and item.get("p_holm") is not None and item["p_holm"] < FAMILYWISE_ALPHA):
             continue
         candidate = dict(item)
         candidate["criteria"] = [
@@ -1125,10 +1249,9 @@ def build(root: pathlib.Path) -> dict:
         ]
         discovery_candidates.append(candidate)
     discoveries = [dict(item) for item in discoveries[:300]]
-    unconfirmed = [
-        dict(item) for item in analyses
-        if item["status"] == "observation exploratoire"
-    ][:300]
+    # V6.6 : les segments non confirmés (faux positifs attendus) ne sont plus
+    # publiés dans le JSON public ; l'audit exhaustif reste dans l'archive.
+    unconfirmed = []
     for item in discoveries + unconfirmed:
         item.pop("discovery_fixture_hashes", None)
         item.pop("population_sha256", None)
@@ -1137,6 +1260,7 @@ def build(root: pathlib.Path) -> dict:
     payload = {
         "schema_version": 1,
         "model_version": MODEL_VERSION,
+        "engine_revision": ENGINE_REVISION,
         "generated_at": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
         "markets": list(MARKET_PREFIXES.values()),
         "horizons": {name: {"minimum_lead_minutes": lead, "maximum_quote_age_minutes": stale}
@@ -1163,12 +1287,18 @@ def build(root: pathlib.Path) -> dict:
             "circuit": "Circuit issu du tournoi de la partition ; complété depuis moves_detail_hist.csv uniquement lorsque l'UID est identique.",
             "temporal_rule": "Un point n'est retenu que si son horodatage est strictement antérieur au commence_time officiel.",
             "set2_rule": "Le marché set2 utilise seulement les cotations set2 horodatées avant le début officiel du match ; aucune cote après le set 1 n'est lue.",
-            "horizon_rule": "Décision virtuelle au cutoff T-24h, T-6h, T-1h ou T-10min ; seuls les points antérieurs ou égaux au cutoff sont utilisés. Fenêtres de fraîcheur maximales des cotes : 12h, 3h, 1h et 50min respectivement.",
+            "horizon_rule": "Décision virtuelle au cutoff T-24h, T-6h, T-1h ou T-10min ; seuls les points antérieurs ou égaux au cutoff sont utilisés. Une cote de plus de 30 min au moment de la décision est exclue (prix non garanti).",
             "roi": "Profit net à mise fixe d'une unité, calculé sur le résultat futur uniquement comme métrique d'évaluation.",
             "movement": "Variation signée en pourcentage entre la première cote pré-match observée et le snapshot sélectionné.",
             "margin": "Surcote du marché : 100 × (1/cote home + 1/cote away − 1).",
             "prediction_features": ["cote et fraîcheur au cutoff", "amplitude et sens du mouvement antérieur", "circuit", "marge", "limite", "avance", "écart Pinnacle pré-match"],
-            "clv": "Comparaison du prix au snapshot avec la dernière cote du même bookmaker, du même marché et du même côté, strictement avant le début ; mesure ex-post uniquement.",
+            "clv": "CLV Pinnacle (principal) : cote d'entrée nette de commission comparée à la clôture Pinnacle sans marge du même match et marché (dernier point avant le début, deux côtés à moins de 30 min d'écart). CLV book (secondaire) : comparaison avec la dernière cote du même bookmaker. Mesures ex post uniquement.",
+            "clv_primary": "clv_pin_pct",
+            "quote_age_cap_min": MAX_QUOTE_AGE_MIN,
+            "betfair_commission": books_module().BETFAIR_COMMISSION,
+            "books": books_module().table(
+                book for info in coverage.values() for book in info
+            ),
             "inference": "IC95 bootstrap croisé par jour et match si assez de grappes, sinon IC normal par match; test nominal unilatéral approximatif sous prix équitables indépendant, valide seulement en régime asymptotique. Holm calculé sur les p-valeurs non arrondies.",
             "deduplication": "Un seul snapshot par UID, bookmaker, marché, horizon et type de sélection. UID ayant des fixture_id, horaire ou côtés contradictoires exclus.",
             "freeze_automatic": False,

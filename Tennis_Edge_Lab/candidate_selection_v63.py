@@ -823,7 +823,8 @@ def run(root: Path, when: dt.datetime | None = None) -> dict:
         item = dict(row)
         item["discovery_fixture_hashes"] = evidence[row["candidate_id"]]
         expanded.append(item)
-    observations, _, _ = engine.load_observations(root)
+    # Gels déjà enregistrés : définition d'origine (legacy), jamais modifiée a posteriori.
+    observations, _, _ = engine.load_observations(root, legacy=True)
     report = compact._apply_family_correction(
         v61.evaluate(expanded, observations, now),
     )
