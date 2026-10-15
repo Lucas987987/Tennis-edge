@@ -25,7 +25,7 @@ def calculate(root,selection):
         rs=list(matched[c['id']].values());n=len(rs)
         clv=[r['clv_pct'] for r in rs if isinstance(r.get('clv_pct'),(int,float))]
         stats[c['id']]={'n':n,'roi_pct':round(sum(r['pnl'] for r in rs)/n*100,2) if n else None,'clv_n':len(clv),'clv_mean_pct':round(sum(clv)/len(clv),2) if clv else None}
-    return {'schema_version':1,'selection_id':selection['selection_id'],'hypotheses':stats}
+    return {'schema_version':1,'selection_id':selection['selection_id'],'generated_at':dt.datetime.now(dt.timezone.utc).isoformat(),'hypotheses':stats}
 if __name__=='__main__':
     root=pathlib.Path('.').resolve()
     sel=json.loads((root/'Tennis_Edge_Lab/live/economic_v64.json').read_text())
