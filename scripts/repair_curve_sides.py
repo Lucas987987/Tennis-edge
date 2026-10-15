@@ -25,6 +25,7 @@ pour ne JAMAIS re-traiter et pour permettre aux etudes d'exclure les ambigus.
 Sauvegardes .bak ecrites avant modification. A lancer UNE fois.
 """
 import json, os, datetime, shutil
+import clv_store   # clv_history partitionné par mois (15/10/2026)
 
 CLOSING  = os.environ.get('CLOSING', 'closing_lines.json')
 TARGETS  = [t for t in os.environ.get('TARGETS', 'clv_history.jsonl,book_curves.jsonl').split(',') if t.strip()]
@@ -112,10 +113,13 @@ def repair_file(path, ref):
             e['side_check'] = 'ambiguous'
             counts['ambiguous'] += 1
             print(f"  ⚠️ ambigu (non modifie): {uid}")
-    shutil.copy(path, path + '.bak')
-    with open(path, 'w', encoding='utf-8') as f:
-        for e in lines:
-            f.write(json.dumps(e, ensure_ascii=False) + '\n')
+    contenu = ''.join(json.dumps(e, ensure_ascii=False) + '\n' for e in lines)
+    with open(path, encoding='utf-8') as f:
+        inchange = f.read() == contenu
+    if not inchange:                 # un fichier intact ne crée aucun blob git
+        shutil.copy(path, path + '.bak')
+        with open(path, 'w', encoding='utf-8') as f:
+            f.write(contenu)
     print(f"  {path}: {counts['ok']} ok | {counts['repaired']} repares | "
           f"{counts['ambiguous']} ambigus | {counts['no_ref']} sans ref | {counts['already']} deja traites")
 
@@ -128,8 +132,11 @@ def main():
     ref = cap_reference(closing)
     print(f"Reference capture : {len(ref)} matchs avec history exploitable\n")
     for path in TARGETS:
-        print(f"── {path}")
-        repair_file(path.strip(), ref)
+        # 15/10/2026 : clv_history.jsonl -> ses partitions mensuelles
+        # (clv_store) ; tout autre chemin est traité tel quel.
+        for chemin in (clv_store.resolve(path.strip()) or [path.strip()]):
+            print(f"── {chemin}")
+            repair_file(chemin, ref)
     print("\nFait. Les .bak peuvent etre supprimes apres verification.")
     print("Relancer ensuite 'Etudes Mouvement' : les cases dependant du cote steame")
     print("(gros move, asymetrie, set1) vont BOUGER — c'est attendu et c'est la correction.")

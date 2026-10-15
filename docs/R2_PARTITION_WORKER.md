@@ -130,3 +130,23 @@ byte-identical to the Git blob (the worker checks `git hash-object` equivalence)
 * Remove the feature: revert the merge of the worker files. Collectors are unaffected.
 * R2 objects created by the worker live under `<root>/` only. They are not deleted by any
   code; removal, if ever wanted, is a separate, manually approved operation.
+
+## Production path since 15/10/2026: `scripts/r2_parts.py`
+
+The partition worker stays the manual, create-only **backfill** tool (one exact
+`{provider, day, blob}` per run, under `parts/v64-archive/`). Day-to-day storage of
+the high-churn partitions now goes through `scripts/r2_io.py` + `scripts/r2_parts.py`
+(see `README_MIGRATION_R2.md`):
+
+| Family | R2 key | Manifest | Writer workflow |
+|---|---|---|---|
+| `parts/pm_ticks_*.jsonl.gz` | `parts/ticks/<file>` | `parts/ticks/_manifest_pm.json` | `polymarket_collector.yml` |
+| `parts/kx_ticks_*.jsonl.gz` | `parts/ticks/<file>` | `parts/ticks/_manifest_kx.json` | `kalshi_collector.yml` |
+| `parts/live_{match,set1,set2}_*.jsonl.gz` | `parts/live/<file>` | `parts/live/_manifest.json` | `courbes_alertes.yml` |
+
+Repository variable `R2_PRIMARY` = `off | double | on` (workflows default to `double`).
+One PUT per changed partition per run plus one manifest PUT; conditional writes
+(If-Match / If-None-Match) with gzip-member grafting on conflict; `gate` removes a
+partition from the Git commit only when R2 holds the identical bytes. The V6.4
+per-tick shadow sink (`r2_collector_sink.py`) now publishes once per run in
+`finish()`, but it is superseded for ticks and should stay disabled.

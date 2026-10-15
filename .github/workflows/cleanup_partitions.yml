@@ -37,6 +37,12 @@ concurrency:
   cancel-in-progress: false
 
 env:
+  # R2 (15/10/2026) — voir README_MIGRATION_R2.md. off | double | on ;
+  # sans variable de dépôt : double (git fait foi, R2 reçoit une copie).
+  R2_PRIMARY: ${{ vars.R2_PRIMARY || 'double' }}
+  R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+  R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+  R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
   PYTHONDONTWRITEBYTECODE: '1'
   PYTHONUNBUFFERED: '1'
 
@@ -75,6 +81,10 @@ jobs:
           # pas et le gain de place ne serait jamais effectif côté GitHub —
           # exactement l'erreur qui a recréé ces doublons.
           git add -A -- parts/
+          # R2 (15/10/2026) : en mode R2_PRIMARY=on, retire du commit les
+          # partitions que R2 détient déjà À L'IDENTIQUE. Toute autre partition
+          # reste dans le commit (filet git : jamais de perte). No-op sinon.
+          python scripts/r2_parts.py gate || true
           if git diff --staged --quiet; then
             echo 'Rien à commit.'; exit 0
           fi

@@ -1,0 +1,89 @@
+name: CLV — partitionner clv_history (migration)
+
+# AJOUTÉ LE 15/10/2026. clv_history.jsonl (83 Mo) approche le mur GitHub de
+# 100 Mo par fichier. Ce workflow le découpe en partitions mensuelles
+# clv_history/clv_history_YYYY-MM.jsonl (scripts/clv_store.py).
+#
+# DEUX ÉTAPES, LANCÉES À LA MAIN, DANS L'ORDRE :
+#   1. etape=migrer        découpe + vérification octet pour octet, commit
+#                          des partitions. L'ancien fichier RESTE (sauvegarde)
+#                          et n'est plus lu ni écrit. Relançable sans risque.
+#   2. etape=supprimer_ancien   (quelques jours plus tard) re-vérifie, puis
+#                          retire clv_history.jsonl du dépôt (son contenu
+#                          reste dans l'historique git).
+#
+# Même groupe de concurrence que fetch_clv / clean_clv_metrics : aucun
+# écrivain de clv_history ne tourne pendant la migration.
+# Push NORMAL (merge + push), JAMAIS de force-push.
+
+on:
+  workflow_dispatch:
+    inputs:
+      etape:
+        description: "migrer (sans risque) | supprimer_ancien (après vérification)"
+        type: choice
+        default: migrer
+        options:
+          - migrer
+          - supprimer_ancien
+
+permissions:
+  contents: write
+
+concurrency:
+  group: capture-closing
+  cancel-in-progress: false
+
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+
+jobs:
+  migration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          filter: blob:none
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /*
+            !/parts
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Migrer (découpe + vérification)
+        if: inputs.etape == 'migrer'
+        run: python scripts/clv_store.py migrate
+
+      - name: Supprimer l'ancien fichier (après vérification)
+        if: inputs.etape == 'supprimer_ancien'
+        run: python scripts/clv_store.py remove-legacy
+
+      - name: Commit (push normal, jamais forcé)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A -- clv_history.jsonl 'clv_history/*.jsonl' clv_history/MIGRATION.json
+          git status --short
+          if git diff --staged --quiet; then echo "Rien à committer."; exit 0; fi
+          git commit -m "clv_history : partitions mensuelles (${{ inputs.etape }})"
+          attente=2
+          for essai in 1 2 3 4 5 6; do
+            git fetch origin main || true
+            if git merge origin/main --no-edit; then :; else
+              git merge --abort 2>/dev/null || true
+              echo "⚠️ conflit — nouvelle tentative ($essai)"
+              sleep "$attente"; attente=$((attente*2)); continue
+            fi
+            if git push origin HEAD:main; then echo "✅ PUSH OK"; exit 0; fi
+            sleep "$attente"; attente=$((attente*2))
+          done
+          echo "❌ push impossible — rien n'est perdu, relancer le workflow."
+          exit 1
+
+      - name: Vérification finale
+        run: python scripts/clv_store.py verify

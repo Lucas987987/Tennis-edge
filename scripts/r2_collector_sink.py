@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Opt-in, write-through V6.4 shadow sink for the existing collectors."""
+"""Opt-in V6.4 shadow sink for the existing collectors.
+
+Local writes are immediate; R2 publication is batched once per run in
+finish() (one PUT per new segment + one per index), never per tick."""
 from __future__ import annotations
 
 import json
@@ -80,8 +83,12 @@ class R2V64CollectorSink:
         self._record_result(namespace, result)
         if result.get("written"):
             self.dirty.add(namespace)
-        if namespace in self.dirty:
-            self._publish(namespace)
+        # PLUS D'ENVOI PAR TICK (15/10/2026) : chaque appel faisait HEAD+GET
+        # de l'index puis PUT du segment ET de l'index complet, soit ~3
+        # opérations classe A par tick et un index retransmis en entier à
+        # chaque fois — l'offre gratuite R2 (1 M/mois) sautait en quelques
+        # jours. L'envoi est désormais groupé dans finish() : une écriture
+        # par segment et une par index, par run.
         return result
 
     def write_bookmaker_curve(self, market: str, record: dict) -> dict:
@@ -96,8 +103,12 @@ class R2V64CollectorSink:
         self._record_result(namespace, result)
         if result.get("written"):
             self.dirty.add(namespace)
-        if namespace in self.dirty:
-            self._publish(namespace)
+        # PLUS D'ENVOI PAR TICK (15/10/2026) : chaque appel faisait HEAD+GET
+        # de l'index puis PUT du segment ET de l'index complet, soit ~3
+        # opérations classe A par tick et un index retransmis en entier à
+        # chaque fois — l'offre gratuite R2 (1 M/mois) sautait en quelques
+        # jours. L'envoi est désormais groupé dans finish() : une écriture
+        # par segment et une par index, par run.
         return result
 
     def finish(self) -> dict:

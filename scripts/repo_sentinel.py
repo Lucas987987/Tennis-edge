@@ -110,7 +110,14 @@ def main():
     # SOUS-estimer. À lire comme un plancher, pas comme une mesure exacte.
 
     if taille_go >= SEUIL_GO:
-        msg = "SEUIL FRANCHI — lancer le git filter-repo (RUNBOOK_FILTER_REPO.md) sans attendre."
+        # MODIFIÉ LE 15/10/2026 : ce message recommandait « git filter-repo »,
+        # qui impose un force-push — INTERDIT depuis la perte de données du
+        # 29/09. La réponse est désormais : sortir les données qui tournent
+        # vers R2 (README_MIGRATION_R2.md), puis, plus tard et à froid, un
+        # NOUVEAU DÉPÔT PROPRE (l'ancien archivé en lecture seule).
+        msg = ("SEUIL FRANCHI — ne PAS réécrire l'historique (force-push interdit). "
+               "Poursuivre la migration R2 (README_MIGRATION_R2.md) ; "
+               "« nouveau dépôt propre » à planifier plus tard, à froid.")
         print(f"  🔴 {msg}")
         _ecrire_statut('alarme', taille_go=taille_go, marge_go=SEUIL_GO - taille_go, message=msg)
         return 1 if strict else 0
@@ -121,7 +128,8 @@ def main():
         # « ✅ marge restante » était trompeusement rassurant. La bande de
         # vigilance rend l'approche du seuil visible AVANT le franchissement,
         # sans rendre le run rouge (ce n'est pas encore une urgence).
-        msg = f"ZONE DE VIGILANCE — marge restante : {marge:.2f} Go. Planifier la purge, ne pas attendre le rouge."
+        msg = (f"ZONE DE VIGILANCE — marge restante : {marge:.2f} Go. Sortir les données "
+               f"à forte rotation vers R2 (README_MIGRATION_R2.md), sans réécrire l'historique.")
         print(f"  🟠 {msg}")
         _ecrire_statut('vigilance', taille_go=taille_go, marge_go=marge, message=msg)
         return 0

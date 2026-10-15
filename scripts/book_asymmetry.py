@@ -35,6 +35,7 @@ import os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import oddspapi_v5 as ov
 import json, os, sys, datetime, statistics as st
+import clv_store   # clv_history partitionné par mois (15/10/2026)
 
 CLV_FILE  = os.environ.get('CLV_FILE', 'clv_history.jsonl')
 BOOK_FILE = os.environ.get('BOOK_FILE', 'book_curves.jsonl')
@@ -53,9 +54,9 @@ def load_jsonl(path, key):
     """Charge un jsonl en dict key->entry (la DERNIERE occurrence fait foi :
     courbe la plus complete)."""
     out = {}
-    if not os.path.exists(path):
+    if not clv_store.exists(path):
         return out
-    with open(path, encoding='utf-8') as f:
+    with clv_store.open_text(path) as f:
         for line in f:
             line = line.strip()
             if not line:
