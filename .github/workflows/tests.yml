@@ -36,5 +36,5 @@ jobs:
       - run: pip install -r requirements.txt
       - run: pytest tests/ -v
       - run: python3 -m unittest discover -s Tennis_Edge_Lab/tests -v
-      - run: node --check Tennis_Edge_Lab/app.js && node --check Tennis_Edge_Lab/research.js && node --check Tennis_Edge_Lab/research_v61.js && node --check Tennis_Edge_Lab/research_v63.js && node --check Tennis_Edge_Lab/research_v66.js && node --check Tennis_Edge_Lab/freshness.js && node --check Tennis_Edge_Lab/v4.js && node --check Tennis_Edge_Lab/v6.js
-      - run: node --test Tennis_Edge_Lab/tests/test_v5_ui.js Tennis_Edge_Lab/tests/test_v6_ui.js Tennis_Edge_Lab/tests/test_v61_ui.js Tennis_Edge_Lab/tests/test_v63_ui.js Tennis_Edge_Lab/tests/test_v66_ui.js Tennis_Edge_Lab/tests/test_freshness_ui.js
+      - run: node --check Tennis_Edge_Lab/app.js && node --check Tennis_Edge_Lab/research.js && node --check Tennis_Edge_Lab/research_v61.js && node --check Tennis_Edge_Lab/research_v63.js && node --check Tennis_Edge_Lab/research_v66.js && node --check Tennis_Edge_Lab/research_explorer.js && node --check Tennis_Edge_Lab/research_profils.js && node --check Tennis_Edge_Lab/freshness.js && node --check Tennis_Edge_Lab/v4.js && node --check Tennis_Edge_Lab/v6.js
+      - run: node --test Tennis_Edge_Lab/tests/test_v5_ui.js Tennis_Edge_Lab/tests/test_v6_ui.js Tennis_Edge_Lab/tests/test_v61_ui.js Tennis_Edge_Lab/tests/test_v63_ui.js Tennis_Edge_Lab/tests/test_v66_ui.js Tennis_Edge_Lab/tests/test_v67_explorer_ui.js Tennis_Edge_Lab/tests/test_freshness_ui.js
