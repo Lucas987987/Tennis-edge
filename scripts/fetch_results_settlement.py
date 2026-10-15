@@ -25,6 +25,7 @@ import oddspapi_v5 as ov
 # Reutilise le matching de fetch_results_fast (helpers au niveau module ;
 # run() seulement sous __main__ -> import sans effet de bord)
 from fetch_results_fast import same_player
+import clv_store   # clv_history partitionné par mois (15/10/2026)
 
 CLV_LOG          = os.environ.get('CLV_LOG_FILE', 'clv_history.jsonl')
 STORE            = os.environ.get('RESULTATS_OP_FILE', 'resultats_oddspapi.json')
@@ -53,9 +54,9 @@ def parse_iso(s):
 def load_clv_matches():
     """Matchs uniques suivis en CLV : {fixture_id: {home,away,commence_time,tournament}}."""
     out = {}
-    if not os.path.exists(CLV_LOG):
+    if not clv_store.exists(CLV_LOG):
         return out
-    with open(CLV_LOG, encoding='utf-8') as f:
+    with clv_store.open_text(CLV_LOG) as f:
         for line in f:
             line = line.strip()
             if not line:

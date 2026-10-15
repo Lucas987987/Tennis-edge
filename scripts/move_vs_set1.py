@@ -31,6 +31,7 @@ Sources (lecture seule, AUCUNE API) :
   RESULTS   = resultats_oddspapi.json  (winner + set1 par fixtureId, settlement)
 """
 import json, os, sys
+import clv_store   # clv_history partitionné par mois (15/10/2026)
 
 CLV_FILE = os.environ.get('CLV_FILE', 'clv_history.jsonl')
 RESULTS  = os.environ.get('RESULTS', 'resultats_oddspapi.json')
@@ -54,12 +55,12 @@ def devig(o_self, o_other):
 
 
 def load_join():
-    if not os.path.exists(CLV_FILE) or not os.path.exists(RESULTS):
+    if not clv_store.exists(CLV_FILE) or not os.path.exists(RESULTS):
         print(f"❌ fichier manquant ({CLV_FILE} / {RESULTS})"); sys.exit(1)
     with open(RESULTS, encoding='utf-8') as f:
         results = json.load(f)
     rows, seen = [], set()
-    with open(CLV_FILE, encoding='utf-8') as f:
+    with clv_store.open_text(CLV_FILE) as f:
         for line in f:
             line = line.strip()
             if not line:

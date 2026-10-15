@@ -33,6 +33,12 @@ concurrency:
   cancel-in-progress: false
 
 env:
+  # R2 (15/10/2026) — voir README_MIGRATION_R2.md. off | double | on ;
+  # sans variable de dépôt : double (git fait foi, R2 reçoit une copie).
+  R2_PRIMARY: ${{ vars.R2_PRIMARY || 'double' }}
+  R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+  R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+  R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
   PYTHONDONTWRITEBYTECODE: '1'
   # Sortie en direct : sans cela, un run qui plante à mi-parcours laisse un
   # log vide et un diagnostic impossible (constaté sur le collecteur Polymarket).
@@ -84,6 +90,13 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python scripts/restore_curves.py || true
 
+      # R2 (15/10/2026) : en mode R2_PRIMARY=on, rapatrie dans parts/ les
+      # partitions (kx) que git ne contient plus. No-op en double/off.
+      - name: R2 — rapatrier les partitions (kx)
+        run: |
+          pip install --quiet boto3 || true
+          python scripts/r2_parts.py pull --kinds kx || true
+
       - name: Kalshi collector
         env:
           R2_V64_SHADOW: ${{ inputs.r2_v64_shadow && vars.R2_V64_SHADOW_ENABLED == 'true' && '1' || '0' }}
@@ -104,6 +117,13 @@ jobs:
           MARKETS: ''
           EXTRA_GLOBS: 'parts/kx_ticks_*.jsonl'
         run: python scripts/compress_hist_partitions.py || true
+
+      # R2 (15/10/2026) : UNE écriture par partition modifiée + une pour le
+      # manifeste, en double comme en on. Un échec n'arrête rien : la
+      # partition reste alors dans le commit git.
+      - name: R2 — envoyer les partitions (kx)
+        if: always()
+        run: python scripts/r2_parts.py push --kinds kx || true
 
       - name: Commit Kalshi data
         if: always()
@@ -152,6 +172,10 @@ jobs:
             fi
           done
 
+          # R2 (15/10/2026) : en mode R2_PRIMARY=on, retire du commit les
+          # partitions que R2 détient déjà À L'IDENTIQUE. Toute autre partition
+          # reste dans le commit (filet git : jamais de perte). No-op sinon.
+          python scripts/r2_parts.py gate || true
           echo '--- en attente de commit ---'
           git status --short
 

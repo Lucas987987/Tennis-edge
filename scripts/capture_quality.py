@@ -27,6 +27,7 @@ import os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import oddspapi_v5 as ov
 import json, os, sys, datetime, statistics as st
+import clv_store   # clv_history partitionné par mois (15/10/2026)
 
 CLOSING   = os.environ.get('CLOSING', 'closing_lines.json')
 CLV_FILE  = os.environ.get('CLV_FILE', 'clv_history.jsonl')
@@ -124,8 +125,8 @@ def main():
     # Q3 — triangulation
     print("\n── Q3 TRIANGULATION DES CLOSINGS (A=clv, B=snapshot, C=book_curves pinnacle) ──")
     clv = {}
-    if os.path.exists(CLV_FILE):
-        with open(CLV_FILE, encoding='utf-8') as f:
+    if clv_store.exists(CLV_FILE):
+        with clv_store.open_text(CLV_FILE) as f:
             for line in f:
                 line = line.strip()
                 if not line:

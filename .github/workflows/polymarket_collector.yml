@@ -25,6 +25,12 @@ permissions:
 # faisaient avorter le merge puis rejeter le push (panne du 16/08/2026). Les 22
 # autres workflows qui commitent portent déjà cette variable.
 env:
+  # R2 (15/10/2026) — voir README_MIGRATION_R2.md. off | double | on ;
+  # sans variable de dépôt : double (git fait foi, R2 reçoit une copie).
+  R2_PRIMARY: ${{ vars.R2_PRIMARY || 'double' }}
+  R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+  R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+  R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
   PYTHONDONTWRITEBYTECODE: '1'
   # Sans ceci, tout le stdout du collecteur est bufferisé et n'apparaît qu'à la
   # FIN du step : sur un run de 15 min qui plante à la minute 10, le log est
@@ -156,6 +162,13 @@ jobs:
       # excédentaires en file : ils ne se chevauchent pas, ils s'enchaînent.
       # refresh 450 s = 2 sessions WebSocket par run, donc peu de reconnexions,
       # tout en redécouvrant les nouveaux matchs deux fois par run.
+      # R2 (15/10/2026) : en mode R2_PRIMARY=on, rapatrie dans parts/ les
+      # partitions (pm) que git ne contient plus. No-op en double/off.
+      - name: R2 — rapatrier les partitions (pm)
+        run: |
+          pip install --quiet boto3 || true
+          python scripts/r2_parts.py pull --kinds pm || true
+
       - name: Polymarket collector
         if: '!inputs.diag && !inputs.probe'
         env:
@@ -177,6 +190,13 @@ jobs:
           MARKETS: ''
           EXTRA_GLOBS: 'parts/pm_ticks_*.jsonl'
         run: python scripts/compress_hist_partitions.py || true
+
+      # R2 (15/10/2026) : UNE écriture par partition modifiée + une pour le
+      # manifeste, en double comme en on. Un échec n'arrête rien : la
+      # partition reste alors dans le commit git.
+      - name: R2 — envoyer les partitions (pm)
+        if: always()
+        run: python scripts/r2_parts.py push --kinds pm || true
 
       - name: Commit Polymarket data (robuste)
         if: always()
@@ -238,6 +258,10 @@ jobs:
             fi
           done
 
+          # R2 (15/10/2026) : en mode R2_PRIMARY=on, retire du commit les
+          # partitions que R2 détient déjà À L'IDENTIQUE. Toute autre partition
+          # reste dans le commit (filet git : jamais de perte). No-op sinon.
+          python scripts/r2_parts.py gate || true
           echo '--- fichiers en attente de commit ---'
           git status --short
 

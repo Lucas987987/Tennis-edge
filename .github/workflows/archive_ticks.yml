@@ -10,9 +10,18 @@ name: Archive Ticks (Releases)
 # NB : retirer un fichier n'efface pas ses blobs de l'HISTORIQUE — le dépôt
 # distant ne maigrit pas rétroactivement. Le gain est sur le working tree,
 # donc sur chaque checkout de chaque workflow, et sur la croissance future.
-# Purger l'historique (git filter-repo) reste une opération manuelle, à froid.
+# Purger l'historique (git filter-repo) est INTERDIT depuis le 29/09/2026
+# (force-push). Voir README_MIGRATION_R2.md.
+# 15/10/2026 : en mode R2_PRIMARY=on, plus de release pour les ticks neufs :
+# R2 les détient déjà ; archive_ticks.py vérifie R2 puis retire la copie git.
 
 env:
+  # R2 (15/10/2026) — voir README_MIGRATION_R2.md. off | double | on ;
+  # sans variable de dépôt : double (git fait foi, R2 reçoit une copie).
+  R2_PRIMARY: ${{ vars.R2_PRIMARY || 'double' }}
+  R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+  R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+  R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
   PYTHONDONTWRITEBYTECODE: '1'
 
 on:
@@ -58,6 +67,10 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           # Portée RESTREINTE aux partitions : ce workflow ne touche rien d'autre.
           git add -A -- 'parts/'
+          # R2 (15/10/2026) : en mode R2_PRIMARY=on, retire du commit les
+          # partitions que R2 détient déjà À L'IDENTIQUE. Toute autre partition
+          # reste dans le commit (filet git : jamais de perte). No-op sinon.
+          python scripts/r2_parts.py gate || true
           git diff --staged --quiet && { echo "rien à committer"; exit 0; }
           git commit -m "Archivage ticks -> Releases ($(date -u +%F))"
           attente=2

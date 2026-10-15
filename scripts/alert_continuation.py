@@ -25,6 +25,7 @@ Garde-fou n >= MIN_N (30). Mecanique (pas de resultats requis).
 Sources : ALERTS_LOG=odds_alerts_log.jsonl  CLV_FILE=clv_history.jsonl
 """
 import json, os, sys, statistics as st
+import clv_store   # clv_history partitionné par mois (15/10/2026)
 
 ALERTS_LOG = os.environ.get('ALERTS_LOG', 'odds_alerts_log.jsonl')
 CLV_FILE   = os.environ.get('CLV_FILE', 'clv_history.jsonl')
@@ -35,9 +36,9 @@ NOISE      = 0.5    # % en-dessous duquel le post-move est "stable"
 
 def load_jsonl(path):
     out = []
-    if not os.path.exists(path):
+    if not clv_store.exists(path):
         return out
-    with open(path, encoding='utf-8') as f:
+    with clv_store.open_text(path) as f:
         for line in f:
             line = line.strip()
             if line:

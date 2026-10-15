@@ -212,7 +212,10 @@ def main():
     else:
         print("  historique (book_curves/set*_curves) : conservé intégralement")
     if CLV_DAYS > 0:
-        purge_jsonl('clv_history.jsonl', CLV_DAYS)
+        # 15/10/2026 : clv_history partitionné (clv_store) -> chaque partition.
+        import clv_store
+        for chemin in (clv_store.resolve('clv_history.jsonl') or []):
+            purge_jsonl(chemin, CLV_DAYS)
     else:
         print("  clv_history.jsonl : conservé intégralement")
     purge_closing()
