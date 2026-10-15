@@ -1,4 +1,4 @@
-name: Lab - geler des pistes V6.6
+name: Lab - gel (V6.6 et explorateur)
 
 # Seul chemin pour geler une piste V6.6 : Lucas choisit des identifiants parmi
 # les « Propositions de la semaine » publiées sur la page Recherche, puis lance
@@ -10,9 +10,15 @@ on:
   workflow_dispatch:
     inputs:
       ids:
-        description: Identifiants à geler, séparés par des virgules (ex. a1b2c3d4e5f60718,0f1e2d3c4b5a6978)
+        description: Pistes V6.6 - identifiants séparés par des virgules (ex. a1b2c3d4e5f60718,0f1e2d3c4b5a6978)
         type: string
-        required: true
+        required: false
+        default: ''
+      explorateur:
+        description: Explorateur - coller le bloc JSON de « Préparer le gel » (onglet Explorateur)
+        type: string
+        required: false
+        default: ''
 
 permissions:
   contents: write
@@ -39,17 +45,31 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Tests des gels V6.6
-        run: python -m unittest discover -s Tennis_Edge_Lab/tests -p 'test_v66*.py' -v
+      - name: Tests des gels V6.6 et Explorateur
+        run: |
+          python -m unittest discover -s Tennis_Edge_Lab/tests -p 'test_v66*.py' -v
+          python -m unittest discover -s Tennis_Edge_Lab/tests -p 'test_v67*.py' -v
 
-      - name: Geler les identifiants choisis
+      - name: Geler les identifiants ou la sélection choisis
         env:
           IDS: ${{ inputs.ids }}
+          SPEC: ${{ inputs.explorateur }}
         run: |
           set -euo pipefail
+          if [[ -z "${IDS// /}" && -z "${SPEC// /}" ]]; then
+            echo '::error::Renseigner « ids » (V6.6) ou « explorateur » (bloc JSON).'
+            exit 1
+          fi
           python Tennis_Edge_Lab/selection_v66.py verify --root .
-          python Tennis_Edge_Lab/selection_v66.py freeze --root . --ids "$IDS"
+          python Tennis_Edge_Lab/explorer_gel.py verify --root .
+          if [[ -n "${IDS// /}" ]]; then
+            python Tennis_Edge_Lab/selection_v66.py freeze --root . --ids "$IDS"
+          fi
+          if [[ -n "${SPEC// /}" ]]; then
+            python Tennis_Edge_Lab/explorer_gel.py freeze --root . --spec "$SPEC"
+          fi
           python Tennis_Edge_Lab/selection_v66.py verify --root .
+          python Tennis_Edge_Lab/explorer_gel.py verify --root .
 
       - name: Publier le registre (ajout seul, jamais de force push)
         env:
@@ -58,15 +78,17 @@ jobs:
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          # Seul le registre des gels V6.6 peut changer ici.
-          if [[ -n "$(git status --porcelain -- . ':!Tennis_Edge_Lab/registry/gel_v66.jsonl' ':!**/__pycache__/**')" ]]; then
+          # Seuls les registres de gels V6.6 et Explorateur peuvent changer ici.
+          if [[ -n "$(git status --porcelain -- . ':!Tennis_Edge_Lab/registry/gel_v66.jsonl' ':!Tennis_Edge_Lab/registry/gel_explorateur.jsonl' ':!**/__pycache__/**')" ]]; then
             git status --porcelain
             echo '::error::Fichiers inattendus modifiés : gel annulé.'
             exit 1
           fi
-          git add -- Tennis_Edge_Lab/registry/gel_v66.jsonl
+          for f in Tennis_Edge_Lab/registry/gel_v66.jsonl Tennis_Edge_Lab/registry/gel_explorateur.jsonl; do
+            if [ -f "$f" ]; then git add -- "$f"; fi
+          done
           git diff --cached --quiet && { echo 'Rien à geler.'; exit 0; }
-          git commit -m "Lab V6.6 : gel des pistes ${IDS}"
+          git commit -m "Lab : gel V6.6 / Explorateur"
           for i in 1 2 3 4 5; do
             if ! git pull --rebase --autostash origin main; then
               git rebase --abort || true
@@ -74,6 +96,7 @@ jobs:
               exit 1
             fi
             python Tennis_Edge_Lab/selection_v66.py verify --root .
+            python Tennis_Edge_Lab/explorer_gel.py verify --root .
             if git push origin HEAD:main; then
               echo '✅ Gel publié. Suivi à partir du jour UTC suivant.'
               exit 0
