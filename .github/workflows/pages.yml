@@ -79,6 +79,11 @@ jobs:
             Tennis_Edge_Lab/research_v632.css
             Tennis_Edge_Lab/research_v66.css
             Tennis_Edge_Lab/research_v66.js
+            Tennis_Edge_Lab/research_explorer.js
+            Tennis_Edge_Lab/research_explorer.css
+            Tennis_Edge_Lab/research_profils.js
+            Tennis_Edge_Lab/research_profils.css
+            Tennis_Edge_Lab/tennis_meta.py
             Tennis_Edge_Lab/books.py
             Tennis_Edge_Lab/clv_stats.py
             Tennis_Edge_Lab/freshness.js
@@ -96,6 +101,10 @@ jobs:
             Tennis_Edge_Lab/live/history_stability.json
             Tennis_Edge_Lab/live/propositions_v66.json
             Tennis_Edge_Lab/live/gel_v66_prospective.json
+            Tennis_Edge_Lab/live/gel_explorateur_prospective.json
+            Tennis_Edge_Lab/live/profils_hypotheses.json
+            Tennis_Edge_Lab/live/explorateur_alertes.json.gz
+            Tennis_Edge_Lab/live/explorateur_histo.json.gz
             Tennis_Edge_Lab/live/archive/bookmakers_sets_v61/current
             Tennis_Edge_Lab/registry
             scripts/validation_report.py
@@ -198,7 +207,7 @@ jobs:
           for f in index.html style.css app.js data.js; do
             cp "Tennis_Edge_Lab/$f" "_site/Tennis_Edge_Lab/$f"
           done
-          for f in research.html research.js research_v61.js research_v63.js research_v66.js freshness.js research.css research_v632.css research_v66.css v4.js v6.js; do
+          for f in research.html research.js research_v61.js research_v63.js research_v66.js research_explorer.js research_profils.js freshness.js research.css research_v632.css research_v66.css research_explorer.css research_profils.css v4.js v6.js; do
             cp "Tennis_Edge_Lab/$f" "_site/Tennis_Edge_Lab/$f"
           done
           # Rapports : copie fidèle, état de fraîcheur explicite, jamais de remplacement
@@ -206,6 +215,14 @@ jobs:
           python Tennis_Edge_Lab/publish_guard.py --root . --site _site \
             --previous-base "https://${GITHUB_REPOSITORY_OWNER}.github.io/${GITHUB_EVENT_REPO_NAME}/Tennis_Edge_Lab/live" \
             --daily-run-at "${DAILY_RUN_AT}"
+          # Explorateur : .json.gz (lu via DecompressionStream) + copie .json décompressée
+          # en secours pour les navigateurs sans DecompressionStream (non committée).
+          for x in explorateur_alertes explorateur_histo; do
+            if [ -f "Tennis_Edge_Lab/live/$x.json.gz" ]; then
+              cp "Tennis_Edge_Lab/live/$x.json.gz" "_site/Tennis_Edge_Lab/live/$x.json.gz"
+              gunzip -c "Tennis_Edge_Lab/live/$x.json.gz" > "_site/Tennis_Edge_Lab/live/$x.json"
+            fi
+          done
           # Archive annuelle tennis-data (onglet Sources) : fichiers statiques.
           mkdir -p _site/Tennis_Edge_Lab/live/archive
           cp Tennis_Edge_Lab/cache/archive/20*.json _site/Tennis_Edge_Lab/live/archive/ 2>/dev/null || echo "⚠️ archive annuelle absente"

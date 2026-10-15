@@ -115,7 +115,7 @@ class PagesWorkflowTest(unittest.TestCase):
             self.assertIn(script, workflow, f"{script} absent de pages.yml")
             self.assertTrue((LAB / script).exists())
         reports = set(re.findall(r"\./live/([a-z0-9_/]+\.json)", html))
-        for js in ("research.js", "research_v61.js", "research_v63.js", "research_v66.js", "v4.js", "v6.js"):
+        for js in ("research.js", "research_v61.js", "research_v63.js", "research_v66.js", "research_explorer.js", "research_profils.js", "v4.js", "v6.js"):
             reports |= set(re.findall(r"\./live/([a-z0-9_/]+\.json)", (LAB / js).read_text(encoding="utf8")))
         reports = {r for r in reports if not r.startswith("archive/bookmakers_sets_v61/")}
         reports.discard("publication_status.json")

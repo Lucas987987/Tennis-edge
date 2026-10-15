@@ -66,6 +66,9 @@ jobs:
             h16b_signal_log.jsonl
             h17_signal_log.jsonl
             h18_signal_log.jsonl
+            canal_public_log.jsonl
+            odds_alerts_log.jsonl
+            clv_history.jsonl
 
       - uses: actions/setup-python@v6
         with:
@@ -125,6 +128,14 @@ jobs:
           python Tennis_Edge_Lab/selection_v66.py verify --root .
           python Tennis_Edge_Lab/selection_v66.py evaluate --root .
 
+      - name: Explorateur (jeux de données et suivi des gels Explorateur)
+        run: |
+          set -e
+          python Tennis_Edge_Lab/explorer_build.py .
+          python Tennis_Edge_Lab/explorer_gel.py verify --root .
+          python Tennis_Edge_Lab/explorer_gel.py evaluate --root .
+          python Tennis_Edge_Lab/profils.py .
+
       - name: Archiver l'audit exhaustif (90 jours, hors dépôt)
         uses: actions/upload-artifact@v4
         with:
@@ -144,6 +155,7 @@ jobs:
             Tennis_Edge_Lab/registry/candidate_watch_v62.jsonl
             Tennis_Edge_Lab/registry/v62_evidence
             Tennis_Edge_Lab/registry/gel_v66.jsonl
+            Tennis_Edge_Lab/registry/gel_explorateur.jsonl
             Tennis_Edge_Lab/registry/candidates.jsonl
           )
           if ! git diff --quiet HEAD -- "${FROZEN[@]}" || \
@@ -158,6 +170,8 @@ jobs:
             Tennis_Edge_Lab/live/history_stability.json
             Tennis_Edge_Lab/live/propositions_v66.json
             Tennis_Edge_Lab/live/gel_v66_prospective.json
+            Tennis_Edge_Lab/live/gel_explorateur_prospective.json
+            Tennis_Edge_Lab/live/profils_hypotheses.json
             Tennis_Edge_Lab/cache/source_catalog.json
             Tennis_Edge_Lab/cache/archive/index.json
           )
@@ -167,7 +181,9 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           for f in "${OUTPUTS[@]}" \
               Tennis_Edge_Lab/cache/parts_features_public.json.gz \
-              Tennis_Edge_Lab/live/propositions_v66_populations.json.gz; do
+              Tennis_Edge_Lab/live/propositions_v66_populations.json.gz \
+              Tennis_Edge_Lab/live/explorateur_alertes.json.gz \
+              Tennis_Edge_Lab/live/explorateur_histo.json.gz; do
             if [ -f "$f" ]; then git add -- "$f"; fi
           done
           git diff --cached --check
@@ -190,6 +206,7 @@ jobs:
             python Tennis_Edge_Lab/candidate_selection_v63.py verify --root .
             python Tennis_Edge_Lab/candidate_registry_v62.py verify --root .
             python Tennis_Edge_Lab/selection_v66.py verify --root .
+            python Tennis_Edge_Lab/explorer_gel.py verify --root .
             if git push origin HEAD:main; then
               echo '✅ Rapports quotidiens publiés.'
               exit 0
