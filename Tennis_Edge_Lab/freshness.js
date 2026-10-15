@@ -9,6 +9,7 @@
     missing: 'Absent', pending: 'En attente', error: 'Erreur', not_published: 'Non publié',
   };
   const GOOD = new Set(['ok', 'ok_sans_date']);
+  const HISTORICAL = new Set(['economic_v64.json', 'archive/bookmakers_sets_v61/current']);
 
   function age(stamp, now) {
     const time = Date.parse(stamp);
@@ -27,8 +28,8 @@
   function render(host, status) {
     const now = Date.now();
     const rows = status.reports.map(entry => ({ ...entry, live: liveState(entry, now) }));
-    const bad = rows.filter(entry => !GOOD.has(entry.live));
-    const lines = rows.map(entry => `<tr class="${GOOD.has(entry.live) ? '' : 'stale'}">
+    const bad = rows.filter(entry => !GOOD.has(entry.live) && !HISTORICAL.has(entry.file));
+    const lines = rows.map(entry => `<tr class="${GOOD.has(entry.live) || HISTORICAL.has(entry.file) ? '' : 'stale'}">
       <td>${esc(entry.tab)}</td><td><code>${esc(entry.file)}</code></td>
       <td><b>${esc(LABELS[entry.live] || entry.live)}</b></td>
       <td>${esc(entry.generated_at || '—')}</td><td>${entry.generated_at ? esc(age(entry.generated_at, now)) : '—'}</td>
