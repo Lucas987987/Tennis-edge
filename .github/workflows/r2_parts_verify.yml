@@ -1,0 +1,68 @@
+name: R2 — vérifier partitions (R2 vs git)
+
+# AJOUTÉ LE 15/10/2026 — migration R2, phase « double ».
+#
+# Compare les partitions à forte rotation présentes dans git (ticks
+# Polymarket/Kalshi, courbes live) à leur copie R2 : SHA-256 et nombre de
+# lignes. Un jour clos qui diffère = run ROUGE = ne PAS passer R2_PRIMARY à
+# « on ». Le jour en cours est affiché mais jamais bloquant (les collecteurs
+# écrivent pendant la vérification).
+#
+# LECTURE SEULE : contents: read, aucun commit, aucune écriture R2.
+# Coût : ~3 GET de manifeste + 3 LIST (+ 1 GET par partition différente).
+# Résultat : résumé du run (tableau) + artefact JSON, gardé 30 jours.
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Chaque jour à 06:47 UTC : après la bascule de jour et l'archivage (05:15).
+    - cron: '47 6 * * *'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: r2-parts-verify
+  cancel-in-progress: false
+
+env:
+  R2_PRIMARY: ${{ vars.R2_PRIMARY || 'double' }}
+  R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+  R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+  R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+  PYTHONDONTWRITEBYTECODE: '1'
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /scripts/r2_io.py
+            /scripts/r2_parts.py
+            /parts/pm_ticks_*
+            /parts/kx_ticks_*
+            /parts/live_*
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Etat R2
+        run: python scripts/r2_parts.py status
+
+      - name: Comparer R2 et git
+        run: python scripts/r2_parts.py verify --kinds all --report r2_verify.json
+
+      - name: Rapport JSON
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: r2-verify-${{ github.run_id }}
+          path: r2_verify.json
+          retention-days: 30
+          if-no-files-found: ignore

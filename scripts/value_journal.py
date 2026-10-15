@@ -20,6 +20,7 @@ Entrées : closing_lines.json, clv_history.jsonl, elo_ratings_atp.json, elo_rati
 Sorties : value_candidates.jsonl (1 ligne/match), value_clv_report.json (agrégats)
 """
 import json, os, math, datetime
+import clv_store   # clv_history partitionné par mois (15/10/2026)
 
 CLOSING_FILE = 'closing_lines.json'
 CLV_LOG      = 'clv_history.jsonl'
@@ -153,8 +154,8 @@ def main():
 
     # CLV réalisé indexé par uid (dernière entrée gagne)
     clv = {}
-    if os.path.exists(CLV_LOG):
-        with open(CLV_LOG, encoding='utf-8') as f:
+    if clv_store.exists(CLV_LOG):
+        with clv_store.open_text(CLV_LOG) as f:
             for line in f:
                 line = line.strip()
                 if not line: continue

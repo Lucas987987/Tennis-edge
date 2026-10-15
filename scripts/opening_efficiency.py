@@ -25,6 +25,7 @@ Garde-fou n >= MIN_N (30) ; [DIR] en dessous.
 Sources : CLV_FILE=clv_history.jsonl  RESULTS=resultats_oddspapi.json (optionnel pour O2)
 """
 import json, os, sys, datetime, statistics as st
+import clv_store   # clv_history partitionné par mois (15/10/2026)
 
 CLV_FILE = os.environ.get('CLV_FILE', 'clv_history.jsonl')
 RESULTS  = os.environ.get('RESULTS', 'resultats_oddspapi.json')
@@ -53,7 +54,7 @@ def tag(n):
 
 
 def main():
-    if not os.path.exists(CLV_FILE):
+    if not clv_store.exists(CLV_FILE):
         print(f"❌ {CLV_FILE} manquant"); sys.exit(0)
     results = {}
     if os.path.exists(RESULTS):
@@ -61,7 +62,7 @@ def main():
             results = json.load(f)
 
     rows, seen = [], set()
-    with open(CLV_FILE, encoding='utf-8') as f:
+    with clv_store.open_text(CLV_FILE) as f:
         for line in f:
             line = line.strip()
             if not line:

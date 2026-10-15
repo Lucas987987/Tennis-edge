@@ -45,6 +45,8 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           [ -f clv_history.jsonl ] && git add -- clv_history.jsonl
+          # partitions mensuelles (clv_store, 15/10/2026)
+          for f in clv_history/clv_history_*.jsonl; do [ -f "$f" ] && git add -- "$f"; done
           git diff --staged --quiet || git commit -m "Nettoyage metriques CLV (pre-match only)"
           # BOUCLE DE REPRISE AVEC FUSION DES CONFLITS JSON.
           # Ce workflow tourne toutes les 5-10 min : deux exécutions se

@@ -83,6 +83,14 @@ def _partitions(market):
     """Toutes les partitions du marche, compressees ou non, triees par
     date. Le tri porte sur le nom SANS suffixe, pour que live_x_2026-10-02
     .jsonl et live_x_2026-10-03.jsonl.gz s'ordonnent correctement."""
+    # R2 (15/10/2026) : en mode R2_PRIMARY=on, les partitions live ne sont
+    # plus committées ; celles qui manquent au checkout viennent de R2.
+    # No-op en off/double ou sans secrets ; ne lève jamais.
+    try:
+        import r2_io
+        r2_io.materialize_glob(os.path.join(PARTS_DIR, f"live_{market}_*.jsonl.gz"))
+    except Exception as e:                      # noqa: BLE001
+        print(f"  [r2] matérialisation live_{market} ignorée ({type(e).__name__})")
     motifs = [os.path.join(PARTS_DIR, f"live_{market}_*.jsonl"),
               os.path.join(PARTS_DIR, f"live_{market}_*.jsonl.gz")]
     vus = []

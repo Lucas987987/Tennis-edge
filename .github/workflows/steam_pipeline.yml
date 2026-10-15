@@ -19,6 +19,12 @@ name: Steam Pipeline (résultats set + journal CLV/ROI)
 # regeneres a chaque run faisaient echouer le merge puis le push
 # (panne du 16/08/2026). Portee workflow = toutes les etapes.
 env:
+  # R2 (15/10/2026) — voir README_MIGRATION_R2.md. off | double | on ;
+  # sans variable de dépôt : double (git fait foi, R2 reçoit une copie).
+  R2_PRIMARY: ${{ vars.R2_PRIMARY || 'double' }}
+  R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+  R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+  R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
   PYTHONDONTWRITEBYTECODE: '1'
 
 on:
@@ -88,6 +94,12 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: '3.11'
+
+      # R2 (15/10/2026) : en mode R2_PRIMARY=on, rapatrie dans parts/ les
+      # partitions (live) que git ne contient plus. No-op en double/off.
+      - name: R2 — rapatrier les partitions (live)
+        run: |
+          python scripts/r2_parts.py pull --kinds live || true
 
       # Les fichiers plats *_curves_live.jsonl sont dans .gitignore : ils ne
       # sont PAS dans le checkout, ils sont reconstruits depuis parts/live_*.jsonl.

@@ -40,7 +40,7 @@ jobs:
         run: python scripts/repair_curve_sides.py
       - name: Commit
         run: |
-          rm -f clv_history.jsonl.bak book_curves.jsonl.bak
+          rm -f clv_history.jsonl.bak book_curves.jsonl.bak clv_history/*.bak
           # PANNE DU 16/08/2026 -- cause exacte, tracee par pipeline_status.
           # Les .pyc sont SUIVIS par git (ajoutes avant le .gitignore, qui ne
           # s'applique plus une fois un fichier suivi). capture_closing tourne
@@ -55,7 +55,8 @@ jobs:
           find . -name '*.pyc' -delete 2>/dev/null || true
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          for f in clv_history.jsonl book_curves.jsonl; do
+          # clv_history/ : partitions mensuelles (clv_store, 15/10/2026).
+          for f in clv_history.jsonl book_curves.jsonl clv_history/clv_history_*.jsonl; do
             [ -f "$f" ] && git add -- "$f"
           done
           git diff --staged --quiet || git commit -m "repair: orientation courbes v4 (swap home/away)"

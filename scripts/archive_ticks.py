@@ -95,6 +95,48 @@ def _indexer(path, d, tag, octets):
               ensure_ascii=False, indent=1)
 
 
+def _mode_r2():
+    try:
+        import r2_io
+        return r2_io.mode()
+    except Exception:                           # noqa: BLE001
+        return 'off'
+
+
+def _retirer_si_dans_r2(candidats):
+    import r2_io
+    r2 = r2_io.client()
+    if r2 is None:
+        print('  ❌ R2_PRIMARY=on mais R2 indisponible : rien n\'est retiré.')
+        return 1
+    mans = {}
+    echecs, retires = 0, 0
+    for path, d in candidats:
+        nom = os.path.basename(path)
+        fam = r2_io.family_of(nom)
+        if fam is None:
+            continue
+        if fam not in mans:
+            mans[fam] = r2_io.load_manifest(r2, fam, use_cache=False)[0]
+        ent = mans[fam]['files'].get(nom)
+        taille = os.path.getsize(path)
+        complet = ent and (ent.get('sha256') == r2_io.file_sha256(path)
+                           or ent.get('size', 0) >= taille)
+        if not complet:
+            print(f'  ❌ {nom} : absent ou moins complet dans R2 — GARDÉ dans git.')
+            echecs += 1
+            continue
+        if DRY_RUN:
+            print(f'  [dry] {nom} ({taille/1e6:.1f} Mo) déjà dans R2 -> retiré de git')
+            continue
+        os.remove(path)
+        _indexer(path, d, 'r2:' + ent['key'], taille)
+        retires += 1
+        print(f'  ✅ {nom} ({taille/1e6:.1f} Mo) déjà dans R2 ({ent["lines"]} lignes) -> retiré de git')
+    print(f'Bilan R2 : {retires} retiré(s) de git, {echecs} gardé(s). {r2_io.ops_summary()}')
+    return 1 if echecs else 0
+
+
 def main():
     cutoff = datetime.date.today() - datetime.timedelta(days=RETENTION_DAYS)
     candidats = []
@@ -110,6 +152,13 @@ def main():
     if not candidats:
         print('  rien à archiver.')
         return 0
+
+    # MODE R2 PRIMAIRE (15/10/2026) : R2 détient déjà ces partitions (écrites
+    # par les collecteurs, r2_parts.py push). Plus de release pour les ticks
+    # neufs : on vérifie seulement que R2 a une version au moins aussi
+    # complète que la copie git, puis on retire celle-ci du working tree.
+    if _mode_r2() == 'on':
+        return _retirer_si_dans_r2(candidats)
 
     echecs, archives, octets = 0, 0, 0
     releases_ok = set()

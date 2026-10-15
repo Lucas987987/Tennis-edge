@@ -110,6 +110,15 @@ def iter_hist_lines(market='book'):
     les deux formes coexistent, aucun script consommateur n'a à changer.
     Si un .jsonl et son .jsonl.gz existent tous les deux (compression en cours),
     seul le .jsonl est lu, pour ne jamais servir deux fois les mêmes lignes."""
+    # R2 (15/10/2026) : l'historique hist_* reste dans git ; sur demande
+    # explicite (R2_MATERIALIZE_HIST=1), on complète depuis R2 un checkout
+    # qui l'exclut. Désactivé par défaut : ~600 Mo à rapatrier.
+    if os.environ.get('R2_MATERIALIZE_HIST') == '1':
+        try:
+            import restore_curves
+            restore_curves.from_r2_only(f'hist_{market}_')
+        except Exception as e:                  # noqa: BLE001
+            print(f"  [r2] historique {market} non complété ({type(e).__name__})")
     plain = sorted(glob.glob(f'parts/hist_{market}_*.jsonl'))
     gz = sorted(glob.glob(f'parts/hist_{market}_*.jsonl.gz'))
     if not plain and not gz:
@@ -158,6 +167,18 @@ def iter_hist_lines(market='book'):
 # code d'erreur. Symptôme concret constaté : moves_detail.csv et
 # moves_detail_hist.csv réduits à leur seule ligne d'en-tête (154 octets).
 # open_curves() encapsule les deux cas : à utiliser PARTOUT à la place de open().
+def _r2_materialize(motif):
+    """AJOUTÉ LE 15/10/2026 (migration R2). En mode R2_PRIMARY=on, les
+    partitions ticks/live ne sont plus dans git : on rapatrie depuis R2
+    celles du motif qui manquent au checkout (no-op en off/double ou sans
+    secrets). Ne lève JAMAIS : au pire, lecture des seules copies locales."""
+    try:
+        import r2_io
+        r2_io.materialize_glob(motif)
+    except Exception as e:                      # noqa: BLE001
+        print(f"  [r2] matérialisation ignorée pour {motif} ({type(e).__name__})")
+
+
 def load_partitions(motif):
     """Chemins des partitions correspondant à un motif, SANS DOUBLON.
 
@@ -182,6 +203,7 @@ def load_partitions(motif):
     Trois logiques de lecture divergentes, c'est exactement ce qui a produit
     les bugs historiques du projet (cf. les trois copies de player_match).
     """
+    _r2_materialize(motif)
     plain = glob.glob(motif)
     gz = glob.glob(motif + '.gz')
     vus = set(plain)
@@ -288,6 +310,16 @@ def open_curves(path, verbose=True):
                    'set1_curves_live.jsonl': 'set1',
                    'set2_curves_live.jsonl': 'set2'}
     base = os.path.basename(str(path))
+
+    # 15/10/2026 : clv_history.jsonl est partitionné par mois (clv_store).
+    if base == 'clv_history.jsonl':
+        import clv_store
+        if not clv_store.exists(str(path)):
+            raise FileNotFoundError(f"{path} introuvable (ni fichier, ni partitions clv_history/)")
+        for line in clv_store.iter_lines(str(path)):
+            if line.strip():
+                yield line
+        return
 
     if base in LEGACY_HIST and not os.path.exists(path):
         market = LEGACY_HIST[base]

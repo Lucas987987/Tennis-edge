@@ -30,3 +30,9 @@ calib_cache.json
 # V6.4 data belongs in R2; never add local segments or retry journals to Git.
 /parts/v64/
 /parts/v64-pending/
+
+# AJOUTÉ LE 15/10/2026 (migration R2 / clv_history partitionné) :
+# fichiers temporaires de r2_io (écriture atomique) et sauvegardes .bak de
+# clean_clv_metrics / repair_curve_sides sur les partitions mensuelles.
+*.r2tmp
+clv_history/*.bak

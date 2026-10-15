@@ -15,6 +15,7 @@ Sorties : money_flow.jsonl (1 ligne/match), money_flow_report.json (agrégats)
 """
 import json, os, math
 from datetime import datetime, timezone
+import clv_store   # clv_history partitionné par mois (15/10/2026)
 
 CLV_LOG    = 'clv_history.jsonl'
 OUT_PER    = 'money_flow.jsonl'
@@ -105,11 +106,11 @@ def analyze_match(e):
 def mean(xs): return sum(xs)/len(xs) if xs else None
 
 def main():
-    if not os.path.exists(CLV_LOG):
+    if not clv_store.exists(CLV_LOG):
         print(f"❌ {CLV_LOG} introuvable — lance d'abord fetch_clv pour accumuler des courbes.")
         return
     recs = []; n_lines = 0; n_with_curve = 0
-    with open(CLV_LOG, encoding='utf-8') as f:
+    with clv_store.open_text(CLV_LOG) as f:
         for line in f:
             line = line.strip()
             if not line: continue

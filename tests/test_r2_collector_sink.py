@@ -169,13 +169,14 @@ class R2CollectorSinkTests(unittest.TestCase):
 
     def test_manifest_failure_after_segment_upload_recovers_on_finish(self):
         self.client.fail_put_suffix = "/index.json"
-        self.client.fail_put_count = 5
+        self.client.fail_put_count = 2
         sink = R2V64CollectorSink("polymarket", self.root, self.client)
 
         sink.write_tick(self._pm_tick())
-        self.assertTrue(any(key.endswith(".jsonl.gz") for _, key in self.client.objects))
-        self.assertFalse(any(key.endswith("/index.json") for _, key in self.client.objects))
+        # Envoi groupé (15/10/2026) : rien ne part vers R2 pendant la collecte.
+        self.assertFalse(self.client.objects)
         report = sink.finish()
+        self.assertTrue(any(key.endswith(".jsonl.gz") for _, key in self.client.objects))
 
         self.assertEqual(
             report["shadow/collectors/polymarket/ticks"]["records"], 1,
@@ -248,6 +249,7 @@ class R2CollectorSinkTests(unittest.TestCase):
     def test_corrupt_remote_segment_fails_final_checksum_verification(self):
         sink = R2V64CollectorSink("polymarket", self.root, self.client)
         sink.write_tick(self._pm_tick())
+        sink._publish("shadow/collectors/polymarket/ticks")   # envoi sans vérification
         object_key = next(
             key for bucket, key in self.client.objects
             if key.endswith(".jsonl.gz")
@@ -278,6 +280,31 @@ class R2CollectorSinkTests(unittest.TestCase):
             self.assertIsNone(r2_collector_sink.sink_for("kalshi"))
             with self.assertRaisesRegex(RuntimeError, "legacy collection output remains enabled"):
                 r2_collector_sink.finish_sink("kalshi")
+
+    def test_many_ticks_publish_nothing_until_finish_and_index_once(self):
+        """Régression du 15/10/2026 : l'ancien sink publiait (index compris) à CHAQUE tick."""
+        puts = []
+        original = self.client.put_object
+
+        def counting_put(**kwargs):
+            puts.append(kwargs["Key"])
+            return original(**kwargs)
+
+        self.client.put_object = counting_put
+        sink = R2V64CollectorSink("kalshi", self.root, self.client)
+        for i in range(200):
+            sink.write_tick({"ts": f"2026-10-13T13:{i // 60:02d}:{i % 60:02d}.000Z",
+                             "ticker": f"SYNTH-{i}", "mid": 0.5})
+        self.assertEqual(puts, [])
+        report = sink.finish()
+        self.assertEqual(report["shadow/collectors/kalshi/ticks"]["records"], 200)
+        # Le magasin V6.4 crée un segment immuable par enregistrement : ils
+        # partent tous dans finish(), mais l'index n'est plus écrit qu'UNE
+        # fois (au lieu de 200). Le chemin de production des ticks est
+        # désormais r2_parts.py (1 écriture par partition et par run).
+        index_puts = [k for k in puts if k.endswith("/index.json")]
+        self.assertEqual(len(index_puts), 1, index_puts)
+        self.assertLessEqual(len(puts), 200 + 1)
 
     def test_real_probe_flow_isolated_namespace_counts_and_orphan_recovery(self):
         report = run_probe(
