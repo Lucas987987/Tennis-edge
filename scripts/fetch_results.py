@@ -5,6 +5,7 @@ et enrichit le CSV backtest avec Elo/stats depuis players_data.json.
 Tourne chaque nuit à 2h UTC.
 """
 import urllib.request, json, datetime, csv, io, os, re, unicodedata
+import closing_store   # closing_lines chaud + archives mensuelles (16/10/2026)
 
 GITHUB_TOKEN = os.environ.get('GITHUB_TOKEN', '')
 
@@ -458,12 +459,11 @@ def enrich_closing_lines():
     """Calcule le CLV vs closing lines Pinnacle pour le backtest."""
     BACKTEST_FILE = 'backtest_tennis.csv'
     CLOSING_FILE = 'closing_lines.json'
-    if not os.path.exists(BACKTEST_FILE) or not os.path.exists(CLOSING_FILE):
+    if not os.path.exists(BACKTEST_FILE) or not closing_store.exists(CLOSING_FILE):
         print("  Pas de backtest ou closing_lines.json")
         return
 
-    with open(CLOSING_FILE, encoding='utf-8') as f:
-        closing = json.load(f)
+    closing = closing_store.load_all(CLOSING_FILE)
 
     with open(BACKTEST_FILE, encoding='utf-8') as f:
         raw = f.read()

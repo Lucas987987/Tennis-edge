@@ -17,6 +17,7 @@ perte) ; les uid canoniques déjà présents ne sont pas écrasés.
 Usage : python scripts/migrate_set_results.py   (racine du repo, puis commit)
 """
 import json, re, unicodedata
+import closing_store   # closing_lines chaud + archives mensuelles (16/10/2026)
 
 def _norm(s):  # IDENTIQUE à build_live_curves._norm
     s = unicodedata.normalize('NFD', str(s).lower().strip())
@@ -28,7 +29,7 @@ def _slug(commence, home, away):  # IDENTIQUE à build_live_curves._slug
 
 def main():
     sr = json.load(open('set_results.json', encoding='utf-8'))
-    cl = json.load(open('closing_lines.json', encoding='utf-8'))
+    cl = closing_store.load_all('closing_lines.json')
     out = dict(sr)
     migrated = skipped = nofields = 0
     for key, m in cl.items():

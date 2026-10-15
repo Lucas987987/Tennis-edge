@@ -7,6 +7,7 @@ v3 : ne grille plus les matchs sur échec, ré-ouvre les échecs précédents,
 import json, os, datetime, time
 import oddspapi_v5 as ov   # client commun OddsPapi v5 (RapidAPI, curl)
 import clv_store           # clv_history partitionné par mois (15/10/2026)
+import closing_store       # closing_lines chaud + archives mensuelles (16/10/2026)
 
 # Auth v4 (ODDSPAPI_KEY/BASE) supprimée : gérée par oddspapi_v5.
 MARKET = '121'             # marché vainqueur tennis en v5 (info ; le client gère l'extraction)
@@ -165,8 +166,9 @@ def main():
         print("❌ RAPIDAPI_KEY absente"); return
     if not os.path.exists(CLOSING_FILE):
         print("Pas de closing_lines.json"); return
-    with open(CLOSING_FILE, encoding='utf-8') as f:
-        closing = json.load(f)
+    # 16/10/2026 : fichier CHAUD seulement — les matchs dont la CLV n'est pas
+    # réglée y restent toujours (closing_store.is_hot), rien ne manque ici.
+    closing = closing_store.load_hot(CLOSING_FILE)
 
     # ── self-heal : ré-ouvrir les 'done' sans courbe (échecs précédents) ──
     healed = 0
@@ -247,6 +249,7 @@ def main():
             done += 1
             print(f"  ✅ {m.get('home')} vs {m.get('away')} | home {ah['open']}→{ah['close']} ({ah['move_pct']:+.1f}%, {ah['n_points']}pts)")
 
+    closing = closing_store.roll(closing, CLOSING_FILE)   # bascule chaud -> archive
     with open(CLOSING_FILE, 'w', encoding='utf-8') as f:
         json.dump(closing, f, ensure_ascii=False, indent=2)
     print(f"\n✅ {done} matchs analysés (courbe complète, gratuit hors quota)")

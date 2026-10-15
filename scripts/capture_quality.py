@@ -28,6 +28,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import oddspapi_v5 as ov
 import json, os, sys, datetime, statistics as st
 import clv_store   # clv_history partitionné par mois (15/10/2026)
+import closing_store   # closing_lines chaud + archives mensuelles (16/10/2026)
 
 CLOSING   = os.environ.get('CLOSING', 'closing_lines.json')
 CLV_FILE  = os.environ.get('CLV_FILE', 'clv_history.jsonl')
@@ -75,10 +76,9 @@ def book_curves_aligned(be, ref_home, ref_away):
     return hc, ac
 
 def main():
-    if not os.path.exists(CLOSING):
+    if not closing_store.exists(CLOSING):
         print(f"❌ {CLOSING} manquant"); sys.exit(0)
-    with open(CLOSING, encoding='utf-8') as f:
-        closing = json.load(f)
+    closing = closing_store.load_all(CLOSING)
     now = datetime.datetime.utcnow()
 
     started = []

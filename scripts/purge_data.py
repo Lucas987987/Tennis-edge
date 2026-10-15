@@ -78,6 +78,17 @@ def purge_closing(path=  'closing_lines.json', days=None):
         data = json.load(open(path, encoding='utf-8'))
     except Exception:
         print(f"  {path}: illisible, ignoré"); return
+    # 16/10/2026 : après la migration closing_store, rien n'est supprimé :
+    # les vieux matchs partent dans les archives mensuelles closing_lines/.
+    import closing_store
+    if os.path.isdir(closing_store.archive_dir(path)):
+        keep = closing_store.roll(data, path)
+        if len(keep) != len(data):
+            json.dump(keep, open(path, 'w', encoding='utf-8'), ensure_ascii=False)
+            print(f"  {path}: {len(data) - len(keep)} match(s) archivé(s), {len(keep)} chauds")
+        else:
+            print(f"  {path}: rien à archiver ({len(data)} matchs)")
+        return
     keep = {}
     for uid, m in data.items():
         d = _dt((m or {}).get('commence_time'))

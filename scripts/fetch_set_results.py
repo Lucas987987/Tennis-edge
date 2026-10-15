@@ -28,6 +28,7 @@ COOL = float(os.environ.get('RESULTS_COOLDOWN', '2.0'))
 # TOUJOURS les resultats sous l'uid date derive des champs, pour que courbes /
 # journal / audit joignent. (La cle closing brute n'est plus utilisee.)
 import re as _re, unicodedata as _ud
+import closing_store   # closing_lines chaud + archives mensuelles (16/10/2026)
 def _norm_slug(x):
     x = _ud.normalize('NFD', str(x).lower().strip())
     x = ''.join(c for c in x if not _ud.combining(c))
@@ -40,9 +41,9 @@ def _canon_uid(m):
 def main():
     if not ov.KEY:
         print("❌ RAPIDAPI_KEY absente"); return
-    if not os.path.exists(CLOSING):
+    if not closing_store.exists(CLOSING):
         print("Pas de closing_lines.json"); return
-    closing = json.load(open(CLOSING, encoding='utf-8'))
+    closing = closing_store.load_all(CLOSING)
 
     cache = {}
     if os.path.exists(OUT):
