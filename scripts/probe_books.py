@@ -10,6 +10,7 @@ Env : RAPIDAPI_KEY. FIXTURE_ID (optionnel). BOOKS (def "pinnacle,unibet,bwin,bet
 
 import os, json, datetime
 import oddspapi_v5 as ov
+import closing_store   # closing_lines chaud + archives mensuelles (16/10/2026)
 
 CLOSING_FILE = 'closing_lines.json'
 FIXTURE_ID = os.environ.get('FIXTURE_ID', '')
@@ -20,9 +21,9 @@ def pick_fixture():
     if FIXTURE_ID:
         return FIXTURE_ID
     now = datetime.datetime.utcnow()
-    if os.path.exists(CLOSING_FILE):
+    if closing_store.exists(CLOSING_FILE):
         try:
-            closing = json.load(open(CLOSING_FILE, encoding='utf-8'))
+            closing = closing_store.load_all(CLOSING_FILE)
             cand = []
             for uid, m in closing.items():
                 fid = m.get('fixture_id') or m.get('id')

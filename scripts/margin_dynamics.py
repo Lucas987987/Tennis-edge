@@ -33,6 +33,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import oddspapi_v5 as ov
 import json, os, sys, datetime, statistics as st
 import clv_store   # clv_history partitionné par mois (15/10/2026)
+import closing_store   # closing_lines chaud + archives mensuelles (16/10/2026)
 
 CLOSING   = os.environ.get('CLOSING', 'closing_lines.json')
 CLV_FILE  = os.environ.get('CLV_FILE', 'clv_history.jsonl')
@@ -93,9 +94,8 @@ def tag(n):
 
 def main():
     closing = {}
-    if os.path.exists(CLOSING):
-        with open(CLOSING, encoding='utf-8') as f:
-            closing = json.load(f)
+    if closing_store.exists(CLOSING):
+        closing = closing_store.load_all(CLOSING)
     clv, books = {}, []
     if clv_store.exists(CLV_FILE):
         with clv_store.open_text(CLV_FILE) as f:

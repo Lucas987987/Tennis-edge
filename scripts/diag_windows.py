@@ -26,6 +26,7 @@ cadence/horaires), ou (b) elle voit bien mais ne RANGE pas en snapshot
 Lecture seule. Source : CLOSING=closing_lines.json
 """
 import json, os, sys, datetime
+import closing_store   # closing_lines chaud + archives mensuelles (16/10/2026)
 
 CLOSING  = os.environ.get('CLOSING', 'closing_lines.json')
 RECENT_H = float(os.environ.get('RECENT_H', '48'))
@@ -41,10 +42,9 @@ def parse_dt(s):
 
 
 def main():
-    if not os.path.exists(CLOSING):
+    if not closing_store.exists(CLOSING):
         print(f"❌ {CLOSING} manquant"); sys.exit(0)
-    with open(CLOSING, encoding='utf-8') as f:
-        closing = json.load(f)
+    closing = closing_store.load_all(CLOSING)
     now = datetime.datetime.utcnow()
 
     recent = []

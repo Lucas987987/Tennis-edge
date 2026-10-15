@@ -298,6 +298,18 @@ if key_lines:
     parts.extend(key_lines)
     parts.append("")
 
+# AJOUTÉ LE 16/10/2026 : croissance du dépôt sur 24 h (croissance_depot.py,
+# lancé juste avant dans health_check.yml). Absent ou illisible : rien.
+try:
+    import croissance_depot
+    with open('croissance_depot.json', encoding='utf-8') as _f:
+        _ligne = croissance_depot.ligne_telegram(json.load(_f))
+    if _ligne:
+        parts.append(f"📦 {_esc(_ligne)}")
+        parts.append("")
+except Exception:
+    pass
+
 parts.append("<b>Composants :</b>")
 parts.extend(infos)
 

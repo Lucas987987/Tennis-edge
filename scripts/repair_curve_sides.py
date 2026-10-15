@@ -26,6 +26,7 @@ Sauvegardes .bak ecrites avant modification. A lancer UNE fois.
 """
 import json, os, datetime, shutil
 import clv_store   # clv_history partitionné par mois (15/10/2026)
+import closing_store   # closing_lines chaud + archives mensuelles (16/10/2026)
 
 CLOSING  = os.environ.get('CLOSING', 'closing_lines.json')
 TARGETS  = [t for t in os.environ.get('TARGETS', 'clv_history.jsonl,book_curves.jsonl').split(',') if t.strip()]
@@ -125,10 +126,9 @@ def repair_file(path, ref):
 
 
 def main():
-    if not os.path.exists(CLOSING):
+    if not closing_store.exists(CLOSING):
         print(f"❌ {CLOSING} manquant"); return
-    with open(CLOSING, encoding='utf-8') as f:
-        closing = json.load(f)
+    closing = closing_store.load_all(CLOSING)
     ref = cap_reference(closing)
     print(f"Reference capture : {len(ref)} matchs avec history exploitable\n")
     for path in TARGETS:

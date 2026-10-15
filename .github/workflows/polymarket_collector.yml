@@ -31,6 +31,8 @@ env:
   R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
   R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
   R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+  # 16/10/2026 : on | off — filtre des commits « champs volatils seuls ».
+  JSON_CHURN: ${{ vars.JSON_CHURN || 'on' }}
   PYTHONDONTWRITEBYTECODE: '1'
   # Sans ceci, tout le stdout du collecteur est bufferisé et n'apparaît qu'à la
   # FIN du step : sur un run de 15 min qui plante à la minute 10, le log est
@@ -262,6 +264,10 @@ jobs:
           # partitions que R2 détient déjà À L'IDENTIQUE. Toute autre partition
           # reste dans le commit (filet git : jamais de perte). No-op sinon.
           python scripts/r2_parts.py gate || true
+          # 16/10/2026 : un JSON dont seuls les champs volatils (updated_at,
+          # generated_at, liquidity…) ont changé n'est pas committé, sauf si sa
+          # version git a plus de 6 h. Voir scripts/json_churn.py.
+          python scripts/json_churn.py gate || true
           echo '--- fichiers en attente de commit ---'
           git status --short
 

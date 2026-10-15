@@ -20,6 +20,7 @@ Env : RAPIDAPI_KEY. BOOKS (def "pinnacle,unibet,bwin,betsson").
 import os, json, datetime, time, re, unicodedata
 import oddspapi_v5 as ov
 from r2_collector_sink import finish_sink, sink_for
+import closing_store   # closing_lines chaud + archives mensuelles (16/10/2026)
 
 
 def _norm(s):
@@ -97,9 +98,9 @@ def build_entry(uid, fid, book, m, start, ch, ca):
 def main():
     if not ov.KEY:
         print("❌ RAPIDAPI_KEY absente"); return
-    if not os.path.exists(CLOSING_FILE):
+    if not closing_store.exists(CLOSING_FILE):
         print("Pas de closing_lines.json"); return
-    closing = json.load(open(CLOSING_FILE, encoding='utf-8'))
+    closing = closing_store.load_all(CLOSING_FILE)
 
     done = set()
     # LECTURE : couvrir tout l'historique (fichier legacy + partitions
