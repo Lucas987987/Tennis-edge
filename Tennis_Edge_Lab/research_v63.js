@@ -37,9 +37,9 @@
 
   function historicalCLV(item) {
     const h = item.historical_context || {};
-    return `<div class="v63-metric-caption">Historique · descriptif</div>
+    return `<div class="v63-metric-caption">Historique · CLV book (secondaire)</div>
       <strong class="${metricClass(h.clv_mean_pct)}">${pct(h.clv_mean_pct)}</strong>
-      <div class="detail">N CLV ${nf(h.clv_n)} · IC95 non fourni</div>`;
+      <div class="detail">N ${nf(h.clv_n)} · IC95 non fourni</div>`;
   }
 
   function futureROI(item, check) {
@@ -49,9 +49,9 @@
   }
 
   function futureCLV(item, check) {
-    return `<div class="v63-metric-caption">Prospectif · contrôle préenregistré</div>
-      <strong>${check ? pct(check.clv_mean_pct) : 'En attente'}</strong>
-      <div class="detail">${check ? `IC95 ${formatInterval(check.clv_ci95)} · N ${nf(check.clv_n)}` : `J+30 : ${formatDate(item.scheduled_checkpoints_utc?.[0])}`}</div>`;
+    return `<div class="v63-metric-caption">Prospectif · CLV Pinnacle</div>
+      <strong>${check ? pct(check.clv_pin_mean_pct) : 'En attente'}</strong>
+      <div class="detail">${check ? `IC95 ${formatInterval(check.clv_pin_ci95)} · N ${nf(check.clv_pin_n)} · sans clôture Pinnacle : ${nf(check.sans_cloture_pinnacle)} · CLV book (secondaire) ${pct(check.clv_mean_pct)}` : `J+30 : ${formatDate(item.scheduled_checkpoints_utc?.[0])}`}</div>`;
   }
 
   function orderedCandidates(report) {

@@ -9,7 +9,7 @@
     missing: 'Absent', pending: 'En attente', error: 'Erreur', not_published: 'Non publié',
   };
   const GOOD = new Set(['ok', 'ok_sans_date']);
-  const HISTORICAL = new Set(['economic_v64.json', 'archive/bookmakers_sets_v61/current']);
+  const HISTORICAL = new Set(['archive/bookmakers_sets_v61/current']);
 
   function age(stamp, now) {
     const time = Date.parse(stamp);
@@ -21,7 +21,9 @@
   // L'état est recalculé avec l'heure du navigateur : une page restée ouverte ne paraît pas fraîche.
   function liveState(entry, now) {
     if (entry.state !== 'ok' || !entry.generated_at || !entry.max_age_hours) return entry.state;
-    const time = Date.parse(entry.generated_at);
+    // V6.6 : un rapport quotidien inchangé reste frais si la tâche a tourné (verified_at).
+    const stamps = [entry.generated_at, entry.verified_at].map(v => Date.parse(v)).filter(v => !Number.isNaN(v));
+    const time = stamps.length ? Math.max(...stamps) : NaN;
     return !Number.isNaN(time) && (now - time) / 3600000 > entry.max_age_hours ? 'ancien' : entry.state;
   }
 
@@ -41,7 +43,7 @@
       <div class="table-wrap"><table><thead><tr><th>Onglet</th><th>Rapport</th><th>État</th><th>Généré le</th><th>Âge</th><th>Dernière donnée</th></tr></thead>
       <tbody>${lines}</tbody></table></div>
       <p class="description">Un rapport « ancien conservé » est la dernière version valide ; il n'a pas été recalculé lors de cette publication.</p>
-      <p class="description"><strong>Limites connues :</strong> le suivi V6 historique (sans gel strict enregistré) peut être ancien ; le suivi exploratoire V6.1 et l’archive exhaustive V6.1 ne sont pas hébergés dans GitHub Pages. Leur absence est réelle et reste signalée, sans affecter les 60 gels V6.3. Les archives complètes sont à consulter dans les <a href="https://github.com/Lucas987987/Tennis-edge/actions/workflows/lab_autonomous.yml" target="_blank" rel="noopener noreferrer">artifacts des exécutions du Lab</a> tant qu’ils sont conservés (90 jours).</p></details>`;
+      <p class="description"><strong>Limites connues :</strong> le suivi V6 historique (sans gel strict enregistré) peut être ancien ; le suivi exploratoire V6.1 et l’archive exhaustive V6.1 ne sont pas hébergés dans GitHub Pages. Leur absence est réelle et reste signalée, sans affecter les 60 gels V6.3. Les archives complètes sont à consulter dans les <a href="https://github.com/Lucas987987/Tennis-edge/actions/workflows/lab_quotidien.yml" target="_blank" rel="noopener noreferrer">artifacts des exécutions du Lab</a> tant qu’ils sont conservés (90 jours).</p></details>`;
   }
 
   async function load() {

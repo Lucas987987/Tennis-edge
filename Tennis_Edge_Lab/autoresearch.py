@@ -169,13 +169,35 @@ def create_match_index():
 
 
 _external_features=None
+_pin_close=None
+def _load_local(name):
+    import importlib.util
+    path=Path(__file__).resolve().parent/name
+    spec=importlib.util.spec_from_file_location('tennis_edge_'+name.replace('.py',''),path)
+    module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+    return module
+BOOKS=_load_local('books.py')
+CLV=_load_local('clv_stats.py')
+
 def external_features():
-    global _external_features
+    global _external_features,_pin_close
     if _external_features is None:
+        import gzip
         f=ROOT/'Tennis_Edge_Lab/cache/parts_features.json'
-        try:_external_features=json.loads(f.read_text(encoding='utf8')).get('features',{})
-        except (OSError,ValueError):_external_features={}
+        public=ROOT/'Tennis_Edge_Lab/cache/parts_features_public.json.gz'
+        try:
+            # Version légère (committée par la tâche quotidienne) en priorité.
+            doc=(json.loads(gzip.decompress(public.read_bytes()).decode('utf8'))
+                 if public.is_file() else json.loads(f.read_text(encoding='utf8')))
+            _external_features=doc.get('features',{})
+            _pin_close=doc.get('pinnacle_close_evaluation_only',{})
+        except (OSError,ValueError):_external_features={};_pin_close={}
     return _external_features
+
+def pinnacle_close(uid):
+    """Clôture Pinnacle (deux côtés) d'un match : mesure APRÈS coup uniquement."""
+    external_features()
+    return (_pin_close or {}).get(uid)
 
 def safe_row(r):
     date=r.get('date','')[:10];odd=parseval(r.get('entry'));pin=parseval(r.get('pin_open'))
@@ -189,7 +211,14 @@ def safe_row(r):
     if abs(pnl-truep)>0.011: return None
     v={'uid':r.get('uid',''),'date':date,'tour':r.get('tour',''),'book':r.get('entry_book','').lower(),
             'odd':odd,'pin':pin,'lead':lead,'mag':mag,'pnl':pnl,'win':int(win=='oui'),
-            'clv':parseval(r.get('clv_book_pct'))}
+            # CLV secondaire : vs dernière cote du même book (clv_book_pct).
+            'clv':parseval(r.get('clv_book_pct')),'clv_book':parseval(r.get('clv_book_pct')),
+            # CLV brut du CSV : vs clôture Pinnacle AVEC marge (move_audit.py).
+            'clv_pin_brut':parseval(r.get('clv_vs_pin_pct'))}
+    # CLV principal : vs clôture Pinnacle SANS marge (deux côtés), prix net de commission.
+    close=pinnacle_close(v['uid'])
+    v['clv_pin']=(BOOKS.clv_pin_pct(v['book'],odd,close['pin_close_side'],close['pin_close_other'])
+                  if close else None)
     for field,value in external_features().get(v['uid'],{}).items():
         if field in ('soft_vs_pin_pre_pct','books_quoted_pre_signal','pin_limit_at_decision',
                      'polymarket_mid_pre','polymarket_spread_pre','polymarket_age_min','polymarket_momentum_pts_pre',
@@ -200,7 +229,8 @@ def safe_row(r):
 
 def stats_roi(data, bootstrap=0, seed=1):
     n=len(data)
-    if not n:return {'n':0,'roi':None,'ci95':None,'pnl':0,'wins':0,'clv_moyen':None}
+    if not n:return {'n':0,'roi':None,'ci95':None,'pnl':0,'wins':0,'clv_moyen':None,'clv_book_moyen':None,
+                     'clv_pin_moyen':None,'clv_pin_ci95':None,'clv_pin_n':0,'sans_cloture_pinnacle':0,'p_clv_pin':None}
     p=[r['pnl'] for r in data];mu=sum(p)/n
     se=stats.stdev(p)/math.sqrt(n) if n>1 else 0
     clvs=[r['clv'] for r in data if r['clv'] is not None]
@@ -217,9 +247,17 @@ def stats_roi(data, bootstrap=0, seed=1):
                 total=sum(map(sum,bag));cnt=sum(map(len,bag));out.append(100*total/cnt)
             out.sort()
             ci=[out[int(.025*(len(out)-1))],out[int(.975*(len(out)-1))]]
+    pin=CLV.summary([r.get('clv_pin') for r in data],[r['date'] for r in data])
     return {'n':n,'roi':round(mu*100,2),'ci95':None if ci is None else [round(x,2) for x in ci],
             'pnl':round(sum(p),2),'wins':sum(r['win'] for r in data),
-            'clv_moyen':round(stats.mean(clvs),2) if clvs else None,'unique_matches':len(set(r['uid'] for r in data))}
+            # CLV principal (Pinnacle sans marge, IC95 robuste aux grappes par jour).
+            'clv_pin_moyen':None if pin['mean_pct'] is None else round(pin['mean_pct'],2),
+            'clv_pin_ci95':None if pin['ci95'] is None else [round(x,2) for x in pin['ci95']],
+            'clv_pin_n':pin['n'],'sans_cloture_pinnacle':n-pin['n'],'p_clv_pin':pin['p_one_sided'],
+            # CLV secondaire : même book.
+            'clv_moyen':round(stats.mean(clvs),2) if clvs else None,
+            'clv_book_moyen':round(stats.mean(clvs),2) if clvs else None,
+            'unique_matches':len(set(r['uid'] for r in data))}
 
 
 def families():
@@ -301,11 +339,11 @@ def research(moves):
         train=[r for r in training if all(t(r) for t in terms)]
         if len(train)<60:continue
         tstat=stats_roi(train)
-        if tstat['roi']<=0:continue
-        # Calcul du score uniquement sur l'entraînement. Aucune consultation
-        # des gains de la partie test lors du classement.
-        stdev=stats.stdev([r['pnl'] for r in train])
-        score=tstat['roi']-1.64*(100*stdev/math.sqrt(len(train)))
+        # V6.6 : classement sur le CLV Pinnacle (entraînement uniquement) ;
+        # le ROI n'est plus qu'une mesure secondaire.
+        if tstat['clv_pin_n']<60 or tstat['clv_pin_moyen'] is None or tstat['clv_pin_moyen']<=0:continue
+        low,high=tstat['clv_pin_ci95'] or (tstat['clv_pin_moyen'],tstat['clv_pin_moyen'])
+        score=tstat['clv_pin_moyen']-1.645*((high-low)/3.92)
         test=[r for r in testing if all(t(r) for t in terms)]
         if len(test)<30:continue
         eligible+=1
@@ -322,8 +360,12 @@ def research(moves):
         trstat=stats_roi(tr);teststat=stats_roi(te,bootstrap=1000,seed=301+ix)
         p=null_pvalue(te,seed=2000+ix)
         candidates.append({'id':f'c{ix+1:02d}','rule':label,'train':trstat,'test':teststat,
-                           'training_rank_score':round(score,2),'p_nominal_fair_price':round(p,4),
-                           'p_holm_fair_price':None,'status':'exploratoire','freeze_automatic':False})
+                           'training_rank_score':round(score,2),'ranking_metric':'CLV Pinnacle (borne basse 90 %, entraînement)',
+                           'p_nominal_fair_price':round(p,4),'p_holm_fair_price':None,
+                           'p_nominal_clv_pin':teststat['p_clv_pin'],'p_holm_clv_pin':None,
+                           'status':'exploratoire','freeze_automatic':False})
+    for c,adj in zip(candidates,CLV.holm([c['p_nominal_clv_pin'] for c in candidates])):
+        c['p_holm_clv_pin']=None if adj is None else round(adj,4)
     # Correction de Holm sur les pistes évaluées : toutes incluses, même les
     # résultats négatifs, afin de ne pas trier les validations a posteriori.
     order=sorted(range(len(candidates)),key=lambda i:candidates[i]['p_nominal_fair_price'])
@@ -332,12 +374,15 @@ def research(moves):
         p=candidates[i]['p_nominal_fair_price']
         maximum=max(maximum,min(1,(len(order)-rank)*p))
         candidates[i]['p_holm_fair_price']=round(maximum,4)
+    # Statut V6.6 : décidé sur le CLV Pinnacle du test (Holm sur les pistes évaluées).
     for c in candidates:
-        low=(c['test']['ci95'] or [float('-inf')])[0]
-        if c['test']['n']>=50 and c['train']['roi']>0 and c['test']['roi']>0 and low>0 and c['p_holm_fair_price']<.05:
-            c['status']='signal statistique rétrospectif — validation prospective requise'
-        elif c['test']['roi']<=0:
-            c['status']='non répliquée sur période récente'
+        low=(c['test']['clv_pin_ci95'] or [float('-inf')])[0]
+        mean=c['test']['clv_pin_moyen']
+        if (c['test']['clv_pin_n']>=50 and mean is not None and mean>0 and low>0
+                and c['p_holm_clv_pin'] is not None and c['p_holm_clv_pin']<.05):
+            c['status']='signal CLV Pinnacle rétrospectif — validation prospective requise'
+        elif mean is None or mean<=0:
+            c['status']='CLV Pinnacle non répliqué sur période récente'
         else:c['status']='piste non confirmée'
     return {'generated_at':NOW,'schema_version':1,'dataset':'moves_detail_hist.csv',
             'row_counts':{'raw_moves':len(moves),'settled_quality_ok':len(data),'settled_rejected':reject,
@@ -350,8 +395,11 @@ def research(moves):
             'baseline':{'train':stats_roi(training),'test':stats_roi(testing,bootstrap=1000,seed=123)},
             'methodology':{'inputs':['cote entrée','prix Pinnacle ouverture','amplitude à la détection','timing','bookmaker','tournoi'],
                            'excluded_from_selection':['cote de clôture','CLV','vainqueur','profit','amplitude POSTHOC'],
+                           'ranking':'Le CLV Pinnacle de la période d\'entraînement sert de cible de classement (jamais de variable d\'entrée) ; le test n\'est jamais consulté pour classer.',
+                           'clv_primary':'clv_pin = 100 × (cote d\'entrée nette de commission / clôture Pinnacle sans marge − 1). Clôture = dernier point Pinnacle avant le début, deux côtés (cache/parts_features.json). clv_vs_pin_pct du CSV (clôture AVEC marge) conservé comme clv_pin_brut.',
+                           'clv_secondary':'clv_book_pct : vs dernière cote du même book.',
                            'unit':'un mouvement par UID et match dans la base actuelle',
-                           'inference':'bootstrap par jour pour IC95 et comparaison à prix équitables p=1/cote, ajustement de Holm',
+                           'inference':'CLV Pinnacle : IC95 et p unilatérale robustes aux grappes par jour, Holm sur les pistes évaluées. ROI (secondaire) : bootstrap par jour et prix équitables p=1/cote, Holm.',
                            'disclaimer':'Exploration sur historique utilisé à répétition ; des filtres positifs ne sont ni une stratégie validée prospectivement ni un profit garanti. Les montants théoriques ne représentent pas nécessairement des cotes jouables.'}}
 
 
@@ -458,6 +506,8 @@ def segment_audit_from_rows(populations, origin, min_n=10):
                 'roi':metric['roi'],'baseline_roi':base['roi'],
                 'lift':round(metric['roi']-base['roi'],2) if metric['roi'] is not None and base['roi'] is not None else None,
                 'profit_units':metric['pnl'],'ci95':metric['ci95'],
+                'clv_pin_moyen':metric['clv_pin_moyen'],'clv_pin_ci95':metric['clv_pin_ci95'],
+                'clv_pin_n':metric['clv_pin_n'],'sans_cloture_pinnacle':metric['sans_cloture_pinnacle'],
                 'first_half':stats_roi(a),'second_half':stats_roi(b),
                 'start_date':selected[0]['date'],'end_date':selected[-1]['date'],
                 'sample_size_warning':n<30,'provisional':origin=='signaux Telegram (résultats provisoires)',
@@ -482,7 +532,7 @@ def hypothesis_circuits(official_populations):
             if pnl is None:continue
             records.append({'uid':str(r.get('uid') or ''),'date':str(r.get('date') or '')[:10],
                             'tour':str(r.get('circuit') or ''),'pnl':pnl,
-                            'win':int(pnl>0),'clv':None})
+                            'win':int(pnl>0),'clv':None,'clv_pin':None})
         if records:signal_pops[tag.upper()]=records
     signals=segment_audit_from_rows(signal_pops,'signaux Telegram (résultats provisoires)')
     # Découvertes illustrées dans la navigation : au moins 20 résultats et

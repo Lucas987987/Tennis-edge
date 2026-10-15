@@ -21,13 +21,16 @@ on:
       - 'confidence.js'
       - '.github/workflows/pages.yml'
       - 'Tennis_Edge_Lab/**'
-  # Rafraîchit les données publiées sans dépendre des pushs de capture.
+  # V6.6 : rafraîchissement HORAIRE et léger (minute 7, hors pic). Les calculs
+  # lourds (scan V5, stabilité 16 ans, propositions, V6.3) tournent une fois par
+  # jour dans lab_quotidien.yml ; ici on ne fait que recopier leurs JSON.
   schedule:
-    - cron: '*/30 * * * *'
+    - cron: '7 * * * *'
   workflow_dispatch:
 
 permissions:
   contents: read
+  actions: read
   pages: write
   id-token: write
 
@@ -74,15 +77,10 @@ jobs:
             Tennis_Edge_Lab/research_v61.js
             Tennis_Edge_Lab/research_v63.js
             Tennis_Edge_Lab/research_v632.css
-            Tennis_Edge_Lab/research_v64.css
-            Tennis_Edge_Lab/research_v64.js
-            Tennis_Edge_Lab/prospective_v64.py
-            Tennis_Edge_Lab/bookmakers_sets_v5.py
-            Tennis_Edge_Lab/source_features.py
-            scripts/oddspapi_v5.py
-            scripts/restore_curves.py
-            parts/ARCHIVE_INDEX.json
-            parts
+            Tennis_Edge_Lab/research_v66.css
+            Tennis_Edge_Lab/research_v66.js
+            Tennis_Edge_Lab/books.py
+            Tennis_Edge_Lab/clv_stats.py
             Tennis_Edge_Lab/freshness.js
             Tennis_Edge_Lab/publish_guard.py
             Tennis_Edge_Lab/v4.js
@@ -95,7 +93,9 @@ jobs:
             Tennis_Edge_Lab/live/bookmakers_sets_prospective.json
             Tennis_Edge_Lab/live/candidate_watch_v61_prospective.json
             Tennis_Edge_Lab/live/candidate_watch_v62_prospective.json
-            Tennis_Edge_Lab/live/economic_v64.json
+            Tennis_Edge_Lab/live/history_stability.json
+            Tennis_Edge_Lab/live/propositions_v66.json
+            Tennis_Edge_Lab/live/gel_v66_prospective.json
             Tennis_Edge_Lab/live/archive/bookmakers_sets_v61/current
             Tennis_Edge_Lab/registry
             scripts/validation_report.py
@@ -156,35 +156,19 @@ jobs:
       - name: Capturer le bilan public D1 (lecture seule, sans bloquer Pages)
         run: python Tennis_Edge_Lab/fetch_worker_snapshot.py Tennis_Edge_Lab/worker_hypotheses.json
 
-      - name: Suivi V6.4 sur la base existante
+      - name: Date de la dernière tâche quotidienne réussie (fraîcheur)
+        id: daily
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          set -e
-          test -s Tennis_Edge_Lab/live/economic_v64.json || { echo "::error::Sélection V6.4 gelée introuvable"; exit 1; }
-          python3 - <<'PYCODE'
-          import json
-          p='Tennis_Edge_Lab/live/economic_v64.json'
-          x=json.load(open(p))
-          assert x['selected_count']==1627 and len(x['candidates'])==1627
-          assert x['policy_version']=='tennis-edge-economic-v64-1'
-          print('Sélection gelée V6.4 validée:',x['selection_id'])
-          PYCODE
-          python3 scripts/restore_curves.py
-          python3 - <<'PYCODE'
-          from pathlib import Path
-          p=Path('parts')
-          for prefix in ('hist_book_','hist_set1_','hist_set2_'):
-            count=sum(1 for f in p.glob(prefix+'*') if f.suffix in ('.gz','.jsonl'))
-            if count==0: raise SystemExit('::error::Partitions '+prefix+' absentes après restauration')
-            print(prefix,count,'partitions')
-          PYCODE
-          python3 Tennis_Edge_Lab/prospective_v64.py
-          test -s Tennis_Edge_Lab/live/prospective_v64.json
+          at=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow lab_quotidien.yml --status success --limit 1 --json updatedAt --jq '.[0].updatedAt' 2>/dev/null || true)
+          echo "at=${at}" >> "$GITHUB_OUTPUT"
+          echo "Dernière tâche quotidienne réussie : ${at:-inconnue}"
 
       - name: Construire _site
         env:
           GITHUB_EVENT_REPO_NAME: ${{ github.event.repository.name }}
+          DAILY_RUN_AT: ${{ steps.daily.outputs.at }}
         run: |
           set -e
           mkdir -p _site
@@ -214,21 +198,17 @@ jobs:
           for f in index.html style.css app.js data.js; do
             cp "Tennis_Edge_Lab/$f" "_site/Tennis_Edge_Lab/$f"
           done
-          for f in research.html research.js research_v61.js research_v63.js research_v64.js freshness.js research.css research_v632.css research_v64.css v4.js v6.js; do
+          for f in research.html research.js research_v61.js research_v63.js research_v66.js freshness.js research.css research_v632.css research_v66.css v4.js v6.js; do
             cp "Tennis_Edge_Lab/$f" "_site/Tennis_Edge_Lab/$f"
           done
           # Rapports : copie fidèle, état de fraîcheur explicite, jamais de remplacement
           # d'un rapport valide déjà publié par un fichier absent, vide, pending ou error.
           python Tennis_Edge_Lab/publish_guard.py --root . --site _site \
-            --previous-base "https://${GITHUB_REPOSITORY_OWNER}.github.io/${GITHUB_EVENT_REPO_NAME}/Tennis_Edge_Lab/live"
-
-          # Archive prospective V6.3 et sélection économique V6.4 sont indépendantes.
-          if [ -s Tennis_Edge_Lab/live/economic_v64.json ]; then
-            cp Tennis_Edge_Lab/live/economic_v64.json _site/Tennis_Edge_Lab/live/economic_v64.json
-          fi
-          if [ -s Tennis_Edge_Lab/live/prospective_v64.json ]; then
-            cp Tennis_Edge_Lab/live/prospective_v64.json _site/Tennis_Edge_Lab/live/prospective_v64.json
-          fi
+            --previous-base "https://${GITHUB_REPOSITORY_OWNER}.github.io/${GITHUB_EVENT_REPO_NAME}/Tennis_Edge_Lab/live" \
+            --daily-run-at "${DAILY_RUN_AT}"
+          # Archive annuelle tennis-data (onglet Sources) : fichiers statiques.
+          mkdir -p _site/Tennis_Edge_Lab/live/archive
+          cp Tennis_Edge_Lab/cache/archive/20*.json _site/Tennis_Edge_Lab/live/archive/ 2>/dev/null || echo "⚠️ archive annuelle absente"
           echo "--- contenu publié ---"
           du -sh _site
           ls -la _site
