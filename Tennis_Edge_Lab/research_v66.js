@@ -85,7 +85,7 @@
       ${p.alerte_grosse_cote ? '<p class="detail bad"><b>Attention :</b> grosse cote — le CLV Pinnacle est probablement gonflé (la marge retirée proportionnellement est trop faible sur les outsiders).</p>' : ''}
       <span class="chip">Proposition · non gelée</span></article>`).join('')}</div>`
       : '<p class="mini">Aucune proposition pour ce filtre de books.</p>') +
-      '<p class="explain">Pour geler : GitHub → Actions → « Lab — geler des pistes V6.6 » → Run workflow, coller les identifiants choisis séparés par des virgules. Le suivi ne compte que les matchs à partir du lendemain du gel.</p>';
+      '<p class="explain">Pour geler : GitHub → Actions → « Lab - gel (V6.6 et explorateur) » → Run workflow, coller les identifiants choisis (entrée « ids ») séparés par des virgules. Le suivi ne compte que les matchs à partir du lendemain du gel.</p>';
   }
 
   function renderFrozen() {

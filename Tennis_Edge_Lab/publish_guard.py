@@ -22,6 +22,7 @@ DAILY_REPORTS = frozenset({
     "bookmakers_sets.json", "bookmakers_sets_prospective.json", "bookmakers_sets_audit.json",
     "candidate_watch_v61_prospective.json", "candidate_watch_v62_prospective.json",
     "history_stability.json", "propositions_v66.json", "gel_v66_prospective.json",
+    "gel_explorateur_prospective.json", "profils_hypotheses.json",
     "source_catalog.json", "archive/index.json",
 })
 GENERATED_KEYS = ("generated_at", "fetched_at", "worker_generated_at")
@@ -47,6 +48,8 @@ REPORTS = {
     "history_stability.json": ("Tennis_Edge_Lab/live/history_stability.json", False, 48, {"cells": [], "passing": []}, "Stabilité 16 ans"),
     "propositions_v66.json": ("Tennis_Edge_Lab/live/propositions_v66.json", False, 48, {"proposals": []}, "Propositions V6.6"),
     "gel_v66_prospective.json": ("Tennis_Edge_Lab/live/gel_v66_prospective.json", False, 48, {"status": "not_published", "candidates": []}, "Pistes gelées V6.6"),
+    "profils_hypotheses.json": ("Tennis_Edge_Lab/live/profils_hypotheses.json", False, 48, {"sujets": []}, "Profils"),
+    "gel_explorateur_prospective.json": ("Tennis_Edge_Lab/live/gel_explorateur_prospective.json", False, 48, {"status": "not_published", "candidates": []}, "Pistes gelées (Explorateur)"),
     "source_catalog.json": ("Tennis_Edge_Lab/cache/source_catalog.json", False, 24, {}, "Sources"),
     "archive/index.json": ("Tennis_Edge_Lab/cache/archive/index.json", False, 24, {}, "Sources (archive historique)"),
 }
