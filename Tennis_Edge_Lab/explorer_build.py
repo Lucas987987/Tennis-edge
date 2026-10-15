@@ -61,6 +61,7 @@ def _load(name):
 
 books = _load("books.py")
 meta = _load("tennis_meta.py")
+clv_source = _load("clv_source.py")
 
 # (nom, libellé, rôle) — rôle : filtre | filtre_apres_alerte | mesure | descriptif | post_entree
 FIELDS = [
@@ -117,10 +118,12 @@ def name_key(value):
 
 def read_jsonl(path):
     path = pathlib.Path(path)
-    if not path.is_file():
+    # clv_history.jsonl -> partitions mensuelles clv_history/ (15/10/2026) ;
+    # tout autre chemin est lu tel quel.
+    if not clv_source.exists(path):
         return []
     rows = []
-    with path.open(encoding="utf-8") as stream:
+    with clv_source.open_text(path) as stream:
         for line in stream:
             if line.strip():
                 try:

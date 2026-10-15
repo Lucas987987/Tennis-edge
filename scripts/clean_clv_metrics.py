@@ -13,6 +13,8 @@ ecart est signale. Idempotent. Sauvegarde clv_history.jsonl.bak avant ecriture.
 """
 import json, os, datetime, shutil
 
+import clv_store   # clv_history partitionné par mois (15/10/2026)
+
 from fetch_clv import analyze_side   # reutilise EXACTEMENT la logique de calcul (corrigee)
 
 CLV_LOG = os.environ.get('CLV_LOG_FILE', 'clv_history.jsonl')
@@ -40,10 +42,30 @@ def to_curve(raw):
 
 
 def main():
-    if not os.path.exists(CLV_LOG):
+    # 15/10/2026 : clv_history est partitionné par mois (clv_store). Chaque
+    # partition est traitée à part et n'est réécrite QUE si elle change :
+    # un mois clos déjà propre ne produit aucun nouveau blob git.
+    fichiers = clv_store.resolve(CLV_LOG)
+    if not fichiers:
         print(f"X {CLV_LOG} introuvable"); return
-    lines = [l for l in open(CLV_LOG, encoding='utf-8').read().split('\n') if l.strip()]
-    total = 0; changed = 0; flagged = []
+    total = changed = 0; flagged = []
+    for chemin in fichiers:
+        t, c = clean_file(chemin, flagged)
+        total += t; changed += c
+    print(f"OK {total} matchs | {changed} jeux de metriques recalcules "
+          f"| {len(fichiers)} fichier(s)")
+    if flagged:
+        print(f"!! {len(flagged)} close MODIFIES (anormal -- a verifier) :")
+        for x in flagged[:10]:
+            print('  ', x)
+    else:
+        print("OK close inchanges partout : CLV-forward intact")
+
+
+def clean_file(chemin, flagged):
+    raw = open(chemin, encoding='utf-8').read()
+    lines = [l for l in raw.split('\n') if l.strip()]
+    total = 0; changed = 0
     out_lines = []
     for l in lines:
         try:
@@ -67,16 +89,13 @@ def main():
                 changed += 1
         out_lines.append(json.dumps(d, ensure_ascii=False))
 
-    shutil.copyfile(CLV_LOG, CLV_LOG + '.bak')
-    with open(CLV_LOG, 'w', encoding='utf-8') as f:
-        f.write('\n'.join(out_lines) + '\n')
-    print(f"OK {total} matchs | {changed} jeux de metriques recalcules | sauvegarde: {CLV_LOG}.bak")
-    if flagged:
-        print(f"!! {len(flagged)} close MODIFIES (anormal -- a verifier) :")
-        for x in flagged[:10]:
-            print('  ', x)
-    else:
-        print("OK close inchanges partout : CLV-forward intact")
+    contenu = '\n'.join(out_lines) + '\n'
+    if contenu != raw:
+        shutil.copyfile(chemin, chemin + '.bak')
+        with open(chemin, 'w', encoding='utf-8') as f:
+            f.write(contenu)
+        print(f"  {chemin} : {changed} jeu(x) recalcule(s), sauvegarde {chemin}.bak")
+    return total, changed
 
 
 if __name__ == '__main__':

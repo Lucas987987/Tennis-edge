@@ -23,6 +23,14 @@ concurrency:
   group: suivi-collecteurs
   cancel-in-progress: false
 
+env:
+  # R2 (15/10/2026) — voir README_MIGRATION_R2.md. off | double | on ;
+  # sans variable de dépôt : double (git fait foi, R2 reçoit une copie).
+  R2_PRIMARY: ${{ vars.R2_PRIMARY || 'double' }}
+  R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+  R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+  R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+
 jobs:
   rapport:
     runs-on: ubuntu-latest
@@ -35,10 +43,18 @@ jobs:
           sparse-checkout-cone-mode: false
           sparse-checkout: |
             /scripts/suivi_collecteurs.py
+            /scripts/r2_io.py
+            /scripts/r2_parts.py
             /parts/
             /monitoring/
       - name: Historique main (pour la dernière publication)
         run: git fetch -q --depth=400 --filter=blob:none origin main
+      # R2 (15/10/2026) : en mode R2_PRIMARY=on, rapatrie dans parts/ les
+      # partitions (ticks) que git ne contient plus. No-op en double/off.
+      - name: R2 — rapatrier les partitions (ticks)
+        run: |
+          python scripts/r2_parts.py pull --kinds ticks || true
+
       - name: Rapport
         env:
           GH_TOKEN: ${{ github.token }}

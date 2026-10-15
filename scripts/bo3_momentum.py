@@ -27,6 +27,7 @@ case ; [DIR] en dessous (attendu partout au debut).
 Sources : CLV_FILE=clv_history.jsonl  RESULTS=resultats_oddspapi.json
 """
 import json, os, sys
+import clv_store   # clv_history partitionné par mois (15/10/2026)
 
 CLV_FILE = os.environ.get('CLV_FILE', 'clv_history.jsonl')
 RESULTS  = os.environ.get('RESULTS', 'resultats_oddspapi.json')
@@ -52,12 +53,12 @@ def pct(x):
 
 
 def main():
-    if not os.path.exists(CLV_FILE) or not os.path.exists(RESULTS):
+    if not clv_store.exists(CLV_FILE) or not os.path.exists(RESULTS):
         print("❌ fichier manquant"); sys.exit(0)
     with open(RESULTS, encoding='utf-8') as f:
         results = json.load(f)
     rows, seen = [], set()
-    with open(CLV_FILE, encoding='utf-8') as f:
+    with clv_store.open_text(CLV_FILE) as f:
         for line in f:
             line = line.strip()
             if not line:
