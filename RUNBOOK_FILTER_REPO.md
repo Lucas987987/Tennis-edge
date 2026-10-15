@@ -1,3 +1,23 @@
+> ## ⛔ OBSOLÈTE — INTERDIT D'EXÉCUTION (15/10/2026)
+>
+> Cette procédure réécrit l'historique et se termine par un **force-push**
+> (`git push --force`). C'est **interdit** sur ce dépôt depuis la perte de
+> données du 29/09/2026. Ne lancez aucune commande de ce document.
+>
+> Ce qui la remplace :
+> 1. **Migration R2** (en cours) : les données qui changent à chaque run
+>    (ticks Polymarket/Kalshi, courbes live) sortent de git vers Cloudflare
+>    R2, et `clv_history.jsonl` est découpé par mois. Voir
+>    `README_MIGRATION_R2.md`.
+> 2. **Plus tard, à froid, sans urgence** : un *nouveau dépôt propre* (copie
+>    de l'état actuel sans historique lourd), l'ancien dépôt étant archivé en
+>    lecture seule. Aucun force-push, aucune réécriture : l'ancien reste
+>    intact et consultable.
+>
+> Le contenu ci-dessous est conservé **pour mémoire uniquement**.
+
+---
+
 # RUNBOOK — Purge de l'historique git (`git filter-repo`)
 ### À exécuter un dimanche matin creux · durée ~30 min · fenêtre de coupure ~15 min
 

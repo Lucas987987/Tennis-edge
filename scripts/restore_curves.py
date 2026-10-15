@@ -55,6 +55,11 @@ force-push : elles ne font pas partie de l'historique Git. C'est donc la
 source la plus fiable, et elle sert de filet quand l'index est
 incomplet.
 
+SOURCE R2 (15/10/2026) : avant les releases, chaque partition manquante est
+cherchée dans R2 (copie horaire de courbes_r2.py, parts/<nom>), acceptée
+seulement si sa taille égale le manifeste R2 et qu'elle se décompresse.
+Sans secrets R2, cette étape est sautée sans bruit.
+
 Env : DRY_RUN=1, SKIP_RESTORE=1 (saute entièrement, pour les jobs qui
       n'ont pas besoin de l'historique), INDEX, TAGS_PREFIX.
 """
@@ -70,6 +75,75 @@ SKIP = os.environ.get('SKIP_RESTORE', '') == '1'
 INDEX = os.environ.get('INDEX', 'parts/ARCHIVE_INDEX.json')
 PREFIXES = ('hist_book_', 'hist_set1_', 'hist_set2_')
 TAGS_PREFIX = os.environ.get('TAGS_PREFIX', 'curves-')
+
+
+R2_HIST_PREFIX = os.environ.get('R2_HIST_PREFIX', 'parts/')   # dépôt de courbes_r2.py
+
+
+def _r2_hist_manifest(r2):
+    """Manifeste écrit par courbes_r2.py : {'fichiers': {nom: {octets, lignes}}}."""
+    try:
+        raw = r2.get(R2_HIST_PREFIX + '_manifest.json')
+        return (json.loads(raw.decode('utf-8')).get('fichiers', {}) if raw else {})
+    except Exception as e:                      # noqa: BLE001
+        print(f'  ⚠️ manifeste R2 des courbes illisible ({type(e).__name__})')
+        return {}
+
+
+def restore_from_r2(fichiers, parts_dir='parts'):
+    """SOURCE R2 (AJOUTÉE LE 15/10/2026) — essayée AVANT les releases.
+
+    courbes_r2.py copie chaque heure parts/hist_* et parts/live_* dans R2
+    sous parts/<nom>. Un fichier n'est accepté que si sa taille égale celle
+    du manifeste R2 et qu'il se décompresse en entier ; sinon il est laissé
+    aux releases. Renvoie l'ensemble des fichiers restaurés."""
+    try:
+        import r2_io
+    except Exception:                           # noqa: BLE001
+        return set()
+    r2 = r2_io.client()
+    if r2 is None or not fichiers:
+        return set()
+    man = _r2_hist_manifest(r2)
+    ok = set()
+    for nom in sorted(fichiers):
+        if nom not in man:
+            continue
+        data = r2.get(R2_HIST_PREFIX + nom)
+        if data is None:
+            continue
+        attendu = man[nom].get('octets')
+        try:
+            if attendu is not None and len(data) != attendu:
+                raise ValueError(f'taille {len(data)} ≠ manifeste {attendu}')
+            if nom.endswith('.gz'):
+                r2_io.gz_lines(data)
+        except Exception as e:                  # noqa: BLE001
+            print(f'  ⚠️ {nom} : copie R2 rejetée ({e}) — repli releases')
+            continue
+        if not DRY_RUN:
+            r2_io._write_atomic(os.path.join(parts_dir, nom), data)
+        ok.add(nom)
+    if ok:
+        print(f'  ✅ R2 : {len(ok)} partition(s) restaurée(s) ' + ('[DRY RUN] ' if DRY_RUN else '')
+              + f'— {r2_io.ops_summary()}')
+    return ok
+
+
+def from_r2_only(prefixe):
+    """Complète parts/ depuis R2 pour un préfixe (ex. 'hist_book_'),
+    sans releases. Utilisé par oddspapi_v5.iter_hist_lines si
+    R2_MATERIALIZE_HIST=1."""
+    try:
+        import r2_io
+    except Exception:                           # noqa: BLE001
+        return set()
+    r2 = r2_io.client()
+    if r2 is None:
+        return set()
+    presents = {os.path.basename(p) for p in glob.glob('parts/*')}
+    voulus = {n for n in _r2_hist_manifest(r2) if n.startswith(prefixe) and n not in presents}
+    return restore_from_r2(voulus)
 
 
 def gh(*args):
@@ -148,6 +222,13 @@ def main():
         return 0
 
     os.makedirs('parts', exist_ok=True)
+    # R2 D'ABORD (15/10/2026) : plus rapide que les releases, et ne dépend
+    # pas de l'API GitHub. Ce que R2 n'a pas (ou pas intact) part aux releases.
+    depuis_r2 = restore_from_r2({a['fichier'] for a in manquants})
+    manquants = [a for a in manquants if a['fichier'] not in depuis_r2]
+    if not manquants:
+        print(f'Bilan : {len(depuis_r2)} restauré(s) depuis R2, 0 échec.')
+        return 0
     # Groupé par release : un seul appel gh par tag, bien plus rapide que
     # fichier par fichier (20 partitions = 20 appels réseau sinon).
     par_tag = collections.defaultdict(list)
@@ -177,7 +258,8 @@ def main():
                 echecs += 1
         print(f'  ✅ {tag} : {len(fichiers)} fichier(s)')
 
-    print(f'Bilan : {ok} restauré(s) ({octets/1e6:.0f} Mo), {echecs} échec(s).')
+    print(f'Bilan : {ok} restauré(s) depuis les releases ({octets/1e6:.0f} Mo), '
+          f'{len(depuis_r2)} depuis R2, {echecs} échec(s).')
     if echecs:
         print('  ⚠️ HISTORIQUE INCOMPLET — move_audit reconstruirait un '
               'moves_detail_hist.csv amputé, et les références in-sample des '

@@ -15,6 +15,7 @@ si resultats disponibles.
 Garde-fou n >= MIN_N (30) sequences. Sources : CLV_FILE, RESULTS.
 """
 import json, os, sys, statistics as st
+import clv_store   # clv_history partitionné par mois (15/10/2026)
 
 CLV_FILE = os.environ.get('CLV_FILE', 'clv_history.jsonl')
 RESULTS  = os.environ.get('RESULTS', 'resultats_oddspapi.json')
@@ -31,7 +32,7 @@ def devig(o_self, o_other):
 
 
 def main():
-    if not os.path.exists(CLV_FILE):
+    if not clv_store.exists(CLV_FILE):
         print(f"❌ {CLV_FILE} manquant"); sys.exit(0)
     results = {}
     if os.path.exists(RESULTS):
@@ -40,7 +41,7 @@ def main():
 
     apps = []   # (player, date, steamed, won, p_close)
     seen = set()
-    with open(CLV_FILE, encoding='utf-8') as f:
+    with clv_store.open_text(CLV_FILE) as f:
         for line in f:
             line = line.strip()
             if not line:

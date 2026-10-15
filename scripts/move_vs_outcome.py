@@ -20,6 +20,7 @@ import json, os, sys, math, re, unicodedata, datetime
 import os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import player_key as pk
+import clv_store   # clv_history partitionné par mois (15/10/2026)
 
 HIST    = os.environ.get('CLV_HISTORY', 'clv_history.jsonl')
 RESULTS = os.environ.get('RESULTS', 'resultats.json')
@@ -77,8 +78,8 @@ def load_results():
 
 def load_hist():
     rows = []
-    if not os.path.exists(HIST): return rows
-    for line in open(HIST, encoding='utf-8'):
+    if not clv_store.exists(HIST): return rows
+    for line in clv_store.open_text(HIST):
         line = line.strip()
         if not line: continue
         try: rows.append(json.loads(line))

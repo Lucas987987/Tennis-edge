@@ -4,6 +4,9 @@ Only explicitly attested, complete bookmaker snapshots are forwarded.
 """
 import argparse, collections, datetime as dt, hashlib, importlib.util, json
 from pathlib import Path
+import importlib.util as _ilu, pathlib as _pl
+_spec = _ilu.spec_from_file_location("clv_source", _pl.Path(__file__).resolve().parent.parent / "clv_source.py")
+clv_source = _ilu.module_from_spec(_spec); _spec.loader.exec_module(clv_source)   # clv_history partitionné (15/10/2026)
 
 REQUIRED=('observation_id','fixture_id','market','book','horizon','selection','observed_at_utc','match_starts_at_utc','source','metrics','field_observed_at_utc')
 DEFAULT_SOURCES=('odds_alerts_log.jsonl','clv_history.jsonl','Tennis_Edge_Lab/v65/bookmaker_snapshots.jsonl')
@@ -17,10 +20,10 @@ def read_sources(root,paths):
     stats=collections.Counter(); rejects=collections.Counter(); eligible=[]; seen={}
     for name in paths:
         file=root/name
-        if not file.is_file():
+        if not clv_source.exists(file):
             stats['missing_sources']+=1;continue
         stats['found_sources']+=1
-        with file.open(encoding='utf-8') as f:
+        with clv_source.open_text(file) as f:
             for line in f:
                 if not line.strip():continue
                 stats['rows_seen']+=1

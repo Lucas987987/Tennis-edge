@@ -6,6 +6,7 @@ v3 : ne grille plus les matchs sur échec, ré-ouvre les échecs précédents,
 """
 import json, os, datetime, time
 import oddspapi_v5 as ov   # client commun OddsPapi v5 (RapidAPI, curl)
+import clv_store           # clv_history partitionné par mois (15/10/2026)
 
 # Auth v4 (ODDSPAPI_KEY/BASE) supprimée : gérée par oddspapi_v5.
 MARKET = '121'             # marché vainqueur tennis en v5 (info ; le client gère l'extraction)
@@ -190,7 +191,9 @@ def main():
     todo = todo[:MAX_PER_RUN]; done = 0
     dumped = False; warned_http = False
 
-    with open(CLV_LOG, 'a', encoding='utf-8') as logf:
+    # 15/10/2026 : ajout dans la partition du MOIS COURANT (clv_store) ;
+    # avant la migration, clv_store renvoie encore clv_history.jsonl.
+    with open(clv_store.append_path(), 'a', encoding='utf-8') as logf:
         for uid, m, fid, start in todo:
             time.sleep(COOLDOWN)
             try:

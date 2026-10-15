@@ -2,6 +2,9 @@
 """V6.5.3 read-only source mapping. No inference of timezones or hypothesis matches."""
 import argparse, collections, datetime as dt, json
 from pathlib import Path
+import importlib.util as _ilu, pathlib as _pl
+_spec = _ilu.spec_from_file_location("clv_source", _pl.Path(__file__).resolve().parent.parent / "clv_source.py")
+clv_source = _ilu.module_from_spec(_spec); _spec.loader.exec_module(clv_source)   # clv_history partitionné (15/10/2026)
 
 FILES=("odds_alerts_log.jsonl","clv_history.jsonl")
 def parse_timestamp(value):
@@ -21,9 +24,9 @@ def scan(path, freeze, sample_limit=20):
     keys=collections.Counter()
     nested=collections.defaultdict(collections.Counter)
     examples={}
-    if not path.exists():
+    if not clv_source.exists(path):
         return {"exists":False}
-    with path.open(encoding="utf-8") as stream:
+    with clv_source.open_text(path) as stream:
         for line in stream:
             if not line.strip():continue
             counts["rows"]+=1
