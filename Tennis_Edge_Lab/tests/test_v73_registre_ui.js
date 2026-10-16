@@ -126,3 +126,11 @@ test('H19 : suivi gelé, rétrospectif marqué « ne compte pas », grille', () 
   assert.doesNotMatch(html, /petite/);
   assert.equal(R.valeurBlock(null), '');
 });
+
+test('table des books collectés', () => {
+  const html = R.booksBlock({ books: { matchs: 2744, decisions: 12039, books: [{ book: 'bet365', matchs: 1262, couverture: 0.46, meilleur_prix: 0.053, ecart_median: -6.7, au_dessus_2pct: 100, fr: false, bourse: false }, { book: 'winamax.fr', matchs: 439, couverture: 0.16, meilleur_prix: 0.003, ecart_median: -6.2, au_dessus_2pct: 0, fr: true, bourse: false }] } });
+  assert.match(html, /Les books collectés/);
+  assert.match(html, /bet365/);
+  assert.match(html, /🇫🇷/);
+  assert.equal(R.booksBlock(null), '');
+});

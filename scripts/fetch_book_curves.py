@@ -39,8 +39,74 @@ OUT = os.environ.get('BOOK_CURVES', 'book_curves.jsonl')
 SET1_OUT = os.environ.get('SET1_CURVES', 'set1_curves.jsonl')
 SET2_OUT = os.environ.get('SET2_CURVES', 'set2_curves.jsonl')
 BOOKS = [b.strip() for b in os.environ.get('BOOKS', os.environ.get('BOOK', 'pinnacle,unibet,bwin,betsson')).split(',') if b.strip()]
-MAX_PER_RUN = int(os.environ.get('CLV_MAX_PER_RUN', '40'))
+MAX_PER_RUN = int(os.environ.get('CLV_MAX_PER_RUN', '40'))   # ancien plafond, inutilisé depuis le 27/10
 COOLDOWN = float(os.environ.get('CLV_COOLDOWN', '3.0'))
+
+# ── 27/10/2026 : BUDGET au lieu d'un plafond fixe ──────────────────────────
+# Avant : 40 matchs par book et par nuit, les plus récents d'abord. Avec ~55
+# matchs/jour (pics à 117), des matchs n'étaient JAMAIS récupérés : un biais
+# discret (il manquait surtout les grosses journées). Désormais :
+#   — on prend TOUS les matchs commencés de la fenêtre (60 jours), les plus
+#     ANCIENS d'abord (leur historique risque d'expirer côté API) ;
+#   — niveau 1 (Pinnacle + books clés) pour TOUS les matchs en attente, puis
+#     niveau 2 (les autres books) : si le budget manque, on perd des books
+#     secondaires, jamais des matchs ;
+#   — on s'arrête quand le quota restant ne couvre plus la capture jusqu'au
+#     renouvellement (CAPTURE_PAR_JOUR × jours restants) ;
+#   — un book qui ne cote pas un match est noté (courbes_absences.json) et
+#     n'est redemandé qu'une fois, 24 h plus tard : avant, il était redemandé
+#     CHAQUE nuit pendant 60 jours.
+CAPTURE_PAR_JOUR = int(os.environ.get('CAPTURE_PAR_JOUR', '1100'))
+MAX_RUN = int(os.environ.get('CURVES_MAX_RUN', '2500'))
+NIVEAU1 = [b.strip() for b in os.environ.get(
+    'BOOKS_NIVEAU1', 'pinnacle,betfair-ex,bet365,1xbet,22bet,unibet,winamax.fr,unibet.fr,pmu').split(',') if b.strip()]
+ABSENCES = os.environ.get('CURVES_ABSENCES', 'courbes_absences.json')
+COUVERTURE = os.environ.get('CURVES_COUVERTURE', 'courbes_couverture.json')
+RETRY_H = 24
+MAX_ESSAIS = 2
+
+
+def charger_absences(path=ABSENCES):
+    try:
+        with open(path, encoding='utf-8') as f:
+            return json.load(f)
+    except (OSError, ValueError):
+        return {}
+
+
+def plan(started, done, absences, books, now, niveau1=NIVEAU1):
+    """Paires (match, book) à demander, dans l'ordre : niveau 1 puis niveau 2 ;
+    dans chaque niveau, matchs du plus ancien au plus récent, Pinnacle d'abord."""
+    rang = {b: i for i, b in enumerate(books)}
+    out = []
+    for uid, m, fid, start in started:
+        for book in books:
+            if (uid, book) in done:
+                continue
+            a = absences.get(f"{uid}|{book}")
+            if a:
+                if a.get('essais', 0) >= MAX_ESSAIS:
+                    continue
+                try:
+                    last = datetime.datetime.fromisoformat(a['dernier'])
+                except (KeyError, ValueError):
+                    last = None
+                if last and (now - last).total_seconds() < RETRY_H * 3600:
+                    continue
+            niveau = 1 if book in niveau1 else 2
+            out.append((niveau, start, rang[book], uid, m, fid, book))
+    out.sort(key=lambda x: (x[0], x[1], x[2], x[3]))
+    return [(uid, m, fid, start, book) for _, start, _, uid, m, fid, book in out]
+
+
+def marge_quota(reserve_par_jour=CAPTURE_PAR_JOUR):
+    """Requêtes encore dépensables sans entamer la capture jusqu'au renouvellement.
+    None tant qu'aucune réponse n'a donné le quota (on fait au moins un appel)."""
+    q = ov.QUOTA
+    if not q or q.get('remaining') is None:
+        return None
+    jours = max(1.0, (q.get('reset_s') or 0) / 86400.0)
+    return q['remaining'] - int(reserve_par_jour * jours)
 
 
 def _curve_dt(pts):
@@ -141,7 +207,20 @@ def main():
     # RECENTS (ceux dont canal_clv_recap/canal_suivi ont besoin pour mesurer
     # les ecarts signales cette semaine) pouvaient rester indefiniment noyes
     # dans le backlog. On traite donc les plus recents en premier.
-    started.sort(key=lambda x: x[3], reverse=True)
+    started.sort(key=lambda x: x[3])
+    # GARDE-FOU : si l'historique n'a pas été rapatrié (R2 indisponible, checkout
+    # incomplet), `done` est presque vide et on redemanderait TOUT ce qu'on a déjà :
+    # des milliers de requêtes perdues. On refuse dans ce cas.
+    anciens = [x for x in started if (now - x[3]).days >= 3]
+    vus = sum(1 for x in anciens if (x[0], 'pinnacle') in done)
+    if len(anciens) >= 100 and vus < 0.3 * len(anciens) and os.environ.get('CURVES_FORCE') != '1':
+        print(f"❌ historique incomplet ? Pinnacle connu pour {vus}/{len(anciens)} matchs de plus de 3 jours. "
+              "Rien n'est demandé (CURVES_FORCE=1 pour passer outre).")
+        raise SystemExit(1)
+    absences = charger_absences()
+    todo = plan(started, done, absences, BOOKS, now)
+    print(f"{len(started)} matchs commencés dans la fenêtre · {len(todo)} paires (match, book) à demander "
+          f"(niveau 1 : {sum(1 for t in todo if t[4] in NIVEAU1)})")
 
     total = {'match': 0, 'set1': 0, 'set2': 0}
     # un seul appel ramene match + set1 + set2
@@ -152,49 +231,79 @@ def main():
     out_path = ov.current_hist_partition_path('book')
     set1_path = ov.current_hist_partition_path('set1')
     set2_path = ov.current_hist_partition_path('set2')
+    demandes, absents, arret = 0, 0, None
+    par_book = {}
     with open(out_path, 'a', encoding='utf-8') as f, \
          open(set1_path, 'a', encoding='utf-8') as f1, \
          open(set2_path, 'a', encoding='utf-8') as f2:
-        for book in BOOKS:
-            todo = [x for x in started if (x[0], book) not in done][:MAX_PER_RUN]
-            print(f"[{book}] {len(todo)} matchs a traiter")
-            got = {'match': 0, 'set1': 0, 'set2': 0}; warned = False
-            for uid, m, fid, start in todo:
-                time.sleep(COOLDOWN)
-                try:
-                    curves = ov.historical_curves(fid, book, OUTCOMES, with_limit=True)
-                except Exception as e:
-                    if not warned:
-                        print(f"  ⚠️ {book} fixtureId={fid}: {e}"); warned = True
-                    continue
-                ch = _curve_dt(curves.get(ov.OUT_HOME)); ca = _curve_dt(curves.get(ov.OUT_AWAY))
-                if not ch or not ca:
-                    continue  # book ne cote pas ce match
-                entry = build_entry(uid, fid, book, m, start, ch, ca)
-                f.write(json.dumps(entry, ensure_ascii=False) + '\n')
-                sink = sink_for('bookmakers')
+        for uid, m, fid, start, book in todo:
+            if demandes >= MAX_RUN:
+                arret = f"plafond du run ({MAX_RUN})"
+                break
+            marge = marge_quota()
+            if marge is not None and marge <= 0:
+                arret = (f"quota : {ov.QUOTA.get('remaining')} restants, réservés à la capture "
+                         f"({CAPTURE_PAR_JOUR}/jour jusqu'au renouvellement)")
+                break
+            if ov.QUOTA_HIT:
+                arret = "quota épuisé (429)"
+                break
+            time.sleep(COOLDOWN)
+            demandes += 1
+            try:
+                curves = ov.historical_curves(fid, book, OUTCOMES, with_limit=True)
+            except Exception as e:
+                print(f"  ⚠️ {book} fixtureId={fid}: {e}")
+                continue
+            ch = _curve_dt(curves.get(ov.OUT_HOME)); ca = _curve_dt(curves.get(ov.OUT_AWAY))
+            if not ch or not ca:
+                key = f"{uid}|{book}"
+                a = absences.get(key) or {'essais': 0}
+                absences[key] = {'essais': a.get('essais', 0) + 1, 'dernier': now.isoformat(timespec='seconds')}
+                absents += 1
+                continue  # book ne cote pas ce match : noté, redemandé au plus une fois
+            absences.pop(f"{uid}|{book}", None)
+            pb = par_book.setdefault(book, {'match': 0, 'set1': 0, 'set2': 0})
+            entry = build_entry(uid, fid, book, m, start, ch, ca)
+            f.write(json.dumps(entry, ensure_ascii=False) + '\n')
+            sink = sink_for('bookmakers')
+            if sink is not None:
+                sink.write_bookmaker_curve('match', entry)
+            pb['match'] += 1; total['match'] += 1
+            # set 1 (123/124) — meme format, ecrit seulement si le book le cote
+            c1h = _curve_dt(curves.get(ov.SET1_HOME)); c1a = _curve_dt(curves.get(ov.SET1_AWAY))
+            if c1h and c1a:
+                entry = build_entry(uid, fid, book, m, start, c1h, c1a)
+                f1.write(json.dumps(entry, ensure_ascii=False) + '\n')
                 if sink is not None:
-                    sink.write_bookmaker_curve('match', entry)
-                got['match'] += 1
-                # set 1 (123/124) — meme format, ecrit seulement si le book le cote
-                c1h = _curve_dt(curves.get(ov.SET1_HOME)); c1a = _curve_dt(curves.get(ov.SET1_AWAY))
-                if c1h and c1a:
-                    entry = build_entry(uid, fid, book, m, start, c1h, c1a)
-                    f1.write(json.dumps(entry, ensure_ascii=False) + '\n')
-                    if sink is not None:
-                        sink.write_bookmaker_curve('set1', entry)
-                    got['set1'] += 1
-                # set 2 (125/126)
-                c2h = _curve_dt(curves.get(ov.SET2_HOME)); c2a = _curve_dt(curves.get(ov.SET2_AWAY))
-                if c2h and c2a:
-                    entry = build_entry(uid, fid, book, m, start, c2h, c2a)
-                    f2.write(json.dumps(entry, ensure_ascii=False) + '\n')
-                    if sink is not None:
-                        sink.write_bookmaker_curve('set2', entry)
-                    got['set2'] += 1
-            print(f"  ✅ {book}: {got['match']} match | {got['set1']} set1 | {got['set2']} set2")
-            for k in total: total[k] += got[k]
-    print(f"\n✅ total — match {total['match']} | set1 {total['set1']} | set2 {total['set2']} ({', '.join(BOOKS)})")
+                    sink.write_bookmaker_curve('set1', entry)
+                pb['set1'] += 1; total['set1'] += 1
+            # set 2 (125/126)
+            c2h = _curve_dt(curves.get(ov.SET2_HOME)); c2a = _curve_dt(curves.get(ov.SET2_AWAY))
+            if c2h and c2a:
+                entry = build_entry(uid, fid, book, m, start, c2h, c2a)
+                f2.write(json.dumps(entry, ensure_ascii=False) + '\n')
+                if sink is not None:
+                    sink.write_bookmaker_curve('set2', entry)
+                pb['set2'] += 1; total['set2'] += 1
+    for book, got in sorted(par_book.items()):
+        print(f"  ✅ {book}: {got['match']} match | {got['set1']} set1 | {got['set2']} set2")
+    # Absences : on ne garde que la fenêtre de 60 jours (fichier borné).
+    limite = (now - datetime.timedelta(days=61)).date().isoformat()
+    absences = {k: v for k, v in absences.items() if k[:10] >= limite or not k[:4].isdigit()}
+    with open(ABSENCES, 'w', encoding='utf-8') as fa:
+        json.dump(absences, fa, ensure_ascii=False, sort_keys=True, separators=(',', ':'))
+    restant = len(todo) - demandes
+    couv = {'ecrit_le': now.isoformat(timespec='seconds'), 'demandes': demandes, 'courbes': total['match'],
+            'book_ne_cote_pas': absents, 'paires_en_attente': max(0, restant), 'arret': arret,
+            'quota': {k: ov.QUOTA.get(k) for k in ('limit', 'remaining', 'reset_s')},
+            'capture_reservee_par_jour': CAPTURE_PAR_JOUR,
+            'plus_ancien_en_attente': (todo[demandes][3].isoformat() if restant > 0 else None)}
+    with open(COUVERTURE, 'w', encoding='utf-8') as fc:
+        json.dump(couv, fc, ensure_ascii=False, indent=1)
+    print(f"Couverture : {demandes} demandes, {total['match']} courbes, {absents} « ne cote pas », "
+          f"{max(0, restant)} paires en attente{' — arrêt : ' + arret if arret else ''}")
+    print(f"\n✅ total — match {total['match']} | set1 {total['set1']} | set2 {total['set2']} ({len(BOOKS)} books)")
 
     # Sidecar pour audit_qa.py : timestamp EMBARQUÉ DANS LE CONTENU (pas le
     # mtime, peu fiable dans un checkout GitHub Actions frais -- même logique
