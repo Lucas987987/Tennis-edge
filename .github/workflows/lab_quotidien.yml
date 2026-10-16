@@ -160,6 +160,8 @@ jobs:
         run: |
           set -e
           python Tennis_Edge_Lab/explorer_build.py .
+          # V6.9 : « Tous les matchs collectés » (historique figé rapatrié depuis R2 plus haut).
+          python Tennis_Edge_Lab/explorer_matchs.py .
           python Tennis_Edge_Lab/explorer_gel.py verify --root .
           python Tennis_Edge_Lab/explorer_gel.py evaluate --root .
           python Tennis_Edge_Lab/profils.py .
@@ -211,7 +213,8 @@ jobs:
               Tennis_Edge_Lab/cache/parts_features_public.json.gz \
               Tennis_Edge_Lab/live/propositions_v66_populations.json.gz \
               Tennis_Edge_Lab/live/explorateur_alertes.json.gz \
-              Tennis_Edge_Lab/live/explorateur_histo.json.gz; do
+              Tennis_Edge_Lab/live/explorateur_histo.json.gz \
+              Tennis_Edge_Lab/live/explorateur_matchs.json.gz; do
             if [ -f "$f" ]; then git add -- "$f"; fi
           done
           git diff --cached --check
