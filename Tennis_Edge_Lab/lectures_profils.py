@@ -21,6 +21,7 @@ Lecture seule ; aucune ligne ne sert à choisir quoi que ce soit.
 """
 from __future__ import annotations
 
+import bisect
 import collections
 import datetime as dt
 import importlib.util
@@ -28,7 +29,6 @@ import math
 import pathlib
 import sys
 
-import numpy as np
 
 LAB = pathlib.Path(__file__).resolve().parent
 
@@ -63,94 +63,94 @@ def profile_of(row):
             "alerte": "non" if row.get("alerte_avant") in (None, "aucune") else "oui"}
 
 
+# Niveau de relâchement à partir duquel chaque critère disparaît (ordre dp.RELAX).
+_LEVEL = {name: i + 1 for i, name in enumerate(dp.RELAX)}
+
+
 class _Horizon:
-    """Colonnes numpy des lignes d'un horizon, triées par heure de début."""
+    """Lignes d'un horizon triées par heure de début, plus un index trié par cote.
+
+    Bibliothèque standard seulement (le Lab tourne sans dépendance)."""
 
     def __init__(self, rows):
-        rows = sorted(rows, key=lambda r: r["_start"])
-        self.rows = rows
-        self.start = np.array([r["_start"].timestamp() for r in rows]) if rows else np.zeros(0)
+        self.rows = sorted(rows, key=lambda r: r["_start"])
+        self.start = [r["_start"].timestamp() for r in self.rows]
+        self.by_cote = sorted((r["cote_pin"], i) for i, r in enumerate(self.rows) if r.get("cote_pin") is not None)
+        self.cotes = [c for c, _ in self.by_cote]
+        self.feat = []
+        for r in self.rows:
+            mv = r.get("move_pin_pct")
+            self.feat.append((r.get("circuit"), r.get("surface"), dp.direction(mv), dp.band(mv, dp.MOVE_BANDS),
+                              dp.band(r.get("ecart_jouable_pct"), dp.GAP_BANDS) or "sans jouable",
+                              "non" if r.get("alerte_avant") in (None, "aucune") else "oui",
+                              r.get("clv_pinnacle"), r.get("date")))
 
-        def codes(values):
-            index = {}
-            return np.array([index.setdefault(v, len(index)) for v in values], dtype=np.int64), index
-        self.circuit, self.circuit_ix = codes([r.get("circuit") for r in rows])
-        self.surface, self.surface_ix = codes([r.get("surface") for r in rows])
-        self.cote = np.array([np.nan if r.get("cote_pin") is None else r["cote_pin"] for r in rows], dtype=float)
-        self.dir, self.dir_ix = codes([dp.direction(r.get("move_pin_pct")) for r in rows])
-        self.mband, self.mband_ix = codes([dp.band(r.get("move_pin_pct"), dp.MOVE_BANDS) for r in rows])
-        self.eband, self.eband_ix = codes([dp.band(r.get("ecart_jouable_pct"), dp.GAP_BANDS) or "sans jouable"
-                                           for r in rows])
-        self.alerte = np.array([r.get("alerte_avant") not in (None, "aucune") for r in rows], dtype=bool)
-        self.clv = np.array([np.nan if r.get("clv_pinnacle") is None else r["clv_pinnacle"] for r in rows])
-        self.day, _ = codes([r.get("date") for r in rows])
-
-    def mask(self, k, c):
-        """Lignes 0..k-1 qui satisfont les critères c (mêmes règles que dp.row_matches)."""
-        m = np.ones(k, dtype=bool)
-        if "circuit" in c:
-            m &= self.circuit[:k] == self.circuit_ix.get(c["circuit"], -1)
-        if "surface" in c:
-            m &= self.surface[:k] == self.surface_ix.get(c["surface"], -1)
-        lo, hi = c["cote"]
-        cote = self.cote[:k]
-        m &= (cote >= lo) & (cote <= hi)
-        if "move_dir" in c:
-            m &= self.dir[:k] == self.dir_ix.get(c["move_dir"], -1)
-        if "move_band" in c:
-            m &= self.mband[:k] == self.mband_ix.get(c["move_band"], -1)
-        if "ecart_band" in c:
-            m &= self.eband[:k] == self.eband_ix.get(c["ecart_band"], -1)
-        if "alerte" in c:
-            m &= self.alerte[:k] == (c["alerte"] == "oui")
-        return m
-
-
-def _cluster(values, days):
-    """dp.cluster_summary vectorisé (moyenne, IC95 regroupé par jour, p unilatéral)."""
-    ok = ~np.isnan(values)
-    v, d = values[ok], days[ok]
-    n = int(v.size)
-    if not n:
-        return {"n": 0, "mean": None, "ci": None, "p": None}
-    mean = float(v.mean())
-    if n < 2:
-        return {"n": n, "mean": mean, "ci": None, "p": None}
-    sums = np.bincount(d, weights=v - mean)
-    g = int(np.count_nonzero(np.bincount(d)))
-    if g >= 4:
-        var = (g / (g - 1)) * float((sums ** 2).sum()) / (n * n)
-    else:
-        var = float(((v - mean) ** 2).sum()) / (n - 1) / n
-    se = math.sqrt(max(var, 0.0))
-    if not se:
-        return {"n": n, "mean": mean, "ci": [mean, mean], "p": 0.0 if mean > 0 else 1.0}
-    return {"n": n, "mean": mean, "ci": [mean - 1.96 * se, mean + 1.96 * se],
-            "p": 0.5 * math.erfc((mean / se) / math.sqrt(2))}
+    def min_level(self, i, p, cote):
+        """Plus petit niveau de relâchement auquel la ligne i satisfait les critères du profil p
+        (mêmes règles que dp.criteria + dp.row_matches ; None si jamais)."""
+        circuit, surface, mdir, mband, eband, alerte, _, _ = self.feat[i]
+        c0 = p["cote_pin"]
+        if c0 / 1.10 <= cote <= c0 * 1.10:
+            lv = 0
+        elif c0 / 1.20 <= cote <= c0 * 1.20:
+            lv = _LEVEL["cote20"]
+        elif c0 / 1.35 <= cote <= c0 * 1.35:
+            lv = _LEVEL["cote35"]
+        else:
+            return None
+        if alerte != p["alerte"]:
+            lv = max(lv, _LEVEL["alerte"])
+        if eband != (p.get("ecart_band") or "sans jouable"):
+            lv = max(lv, _LEVEL["ecart"])
+        if p.get("move_band") and mband != p["move_band"]:
+            lv = max(lv, _LEVEL["move_band"])
+        if p.get("surface") not in (None, "inconnue") and surface != p["surface"]:
+            lv = max(lv, _LEVEL["surface"])
+        if p.get("move_dir") and mdir != p["move_dir"]:
+            lv = max(lv, _LEVEL["move_dir"])
+        if circuit != p["circuit"]:
+            lv = max(lv, _LEVEL["circuit"])
+        return lv
 
 
 def lecture(H, k, profile):
     """Lecture d'un profil sur les k premières lignes (connues) d'un horizon."""
-    relaxed = []
-    while True:
-        c = dp.criteria(profile, relaxed)
-        m = H.mask(k, c)
-        n_clv = int(np.count_nonzero(m & ~np.isnan(H.clv[:k])))
-        ok = n_clv >= dp.MIN_N
-        if ok or len(relaxed) == len(dp.RELAX):
+    c0 = profile["cote_pin"]
+    lo = bisect.bisect_left(H.cotes, c0 / 1.35 - 1e-12)
+    hi = bisect.bisect_right(H.cotes, c0 * 1.35 + 1e-12)
+    cand = []                                   # (niveau, i)
+    for cote, i in H.by_cote[lo:hi]:
+        if i >= k:
+            continue
+        lv = H.min_level(i, profile, cote)
+        if lv is not None:
+            cand.append((lv, i))
+    # n (avec CLV) à chaque niveau, cumulé
+    per_level = [0] * (len(dp.RELAX) + 1)
+    for lv, i in cand:
+        if H.feat[i][6] is not None:
+            per_level[lv] += 1
+    level, n_clv = len(dp.RELAX), 0
+    for L in range(len(dp.RELAX) + 1):
+        n_clv += per_level[L]
+        if n_clv >= dp.MIN_N:
+            level = L
             break
-        relaxed.append(dp.RELAX[len(relaxed)])
-    lo, hi = c["cote"]
-    cote, clv = H.cote[:k], H.clv[:k]
-    in_band = (cote >= lo) & (cote <= hi) & ~np.isnan(clv)
-    base = float(clv[in_band].mean()) if in_band.any() else 0.0
-    sel = np.flatnonzero(m)
-    exces = _cluster(clv[sel] - base, H.day[sel])
-    clv_s = _cluster(clv[sel], H.day[sel])
-    s = {"exces": exces}
-    return {"n": int(sel.size), "relaches": len(relaxed), "ok": ok, "base": base,
-            "clv": clv_s["mean"], "exces": exces["mean"], "exces_ci": exces["ci"], "p": exces["p"],
-            "verdict": dp.verdict(s, ALPHA)}
+    ok = n_clv >= dp.MIN_N
+    crit = dp.criteria(profile, list(dp.RELAX[:level]))
+    wlo, whi = crit["cote"]
+    sel = [i for lv, i in cand if lv <= level]
+    # base : CLV moyenne des lignes CONNUES de même horizon et même fenêtre de cote
+    blo = bisect.bisect_left(H.cotes, wlo)
+    bhi = bisect.bisect_right(H.cotes, whi)
+    vals = [H.feat[i][6] for _, i in H.by_cote[blo:bhi] if i < k and H.feat[i][6] is not None]
+    base = sum(vals) / len(vals) if vals else 0.0
+    exces = dp.cluster_summary([None if H.feat[i][6] is None else H.feat[i][6] - base for i in sel],
+                               [H.feat[i][7] for i in sel])
+    clv = dp.cluster_summary([H.feat[i][6] for i in sel], [H.feat[i][7] for i in sel])
+    return {"n": len(sel), "relaches": level, "ok": ok, "base": base,
+            "clv": clv["mean"], "exces": exces["mean"], "exces_ci": exces["ci"], "p": exces["p"],
+            "verdict": dp.verdict({"exces": exces}, ALPHA)}
 
 
 def compute(rows):
@@ -169,7 +169,7 @@ def compute(rows):
             out.append(None)
             continue
         cutoff = (_ts(r["decision_ts"]) - dt.timedelta(hours=DELAI_CONNU_H)).timestamp()
-        k = int(np.searchsorted(H.start, cutoff, side="right"))
+        k = bisect.bisect_right(H.start, cutoff)
         out.append(lecture(H, k, profile_of(r)))
     for r in rows:
         r.pop("_start", None)
@@ -178,10 +178,17 @@ def compute(rows):
 
 # ---------------------------------------------------------------- évaluation après coup
 def _summary(values, days):
-    v = np.array([np.nan if x is None else x for x in values], dtype=float)
-    d = np.array(days, dtype=np.int64) if days else np.zeros(0, dtype=np.int64)
-    s = _cluster(v, d) if v.size else {"n": 0, "mean": None, "ci": None, "p": None}
-    return {"n": s["n"], "moyenne": s["mean"], "ic95": s["ci"]}
+    c = dp.cluster_summary(list(values), list(days))
+    return {"n": c["n"], "moyenne": c["mean"], "ic95": c["ci"]}
+
+
+def _corr(x, y):
+    n = len(x)
+    mx, my = sum(x) / n, sum(y) / n
+    sxy = sum((a - mx) * (b - my) for a, b in zip(x, y))
+    sx = math.sqrt(sum((a - mx) ** 2 for a in x))
+    sy = math.sqrt(sum((b - my) ** 2 for b in y))
+    return sxy / (sx * sy) if sx and sy else None
 
 
 def evaluate(rows, readings):
@@ -223,9 +230,7 @@ def evaluate(rows, readings):
                                  "exces_predit_moyen": sum(p[0] for p in part) / len(part),
                                  "exces_realise": _summary([p[1] for p in part], [p[2] for p in part]),
                                  "roi_jouable": _summary([p[3] for p in part], [p[2] for p in part])})
-        x = np.array([q[0] for q in quint])
-        y = np.array([q[1] for q in quint])
-        corr = float(np.corrcoef(x, y)[0, 1]) if x.std() and y.std() else None
+        corr = _corr([q[0] for q in quint], [q[1] for q in quint])
     else:
         corr = None
     return {"par_verdict": par_verdict, "par_quintile": par_quintile, "correlation": corr,
