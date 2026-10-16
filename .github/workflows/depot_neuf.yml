@@ -1,0 +1,371 @@
+name: Dépôt neuf
+
+# CRÉÉ LE 16/10/2026 — repartir d'un dépôt neuf sans les 5 Go d'historique,
+# en recopiant les secrets SANS que personne ne les voie.
+# Déroulé, prérequis et retour arrière : docs/README_DEPOT_NEUF.md.
+#
+# Étapes, dans l'ordre (une par lancement) :
+#   controle       lecture seule, à lancer quand on veut : « PRÊT » ou non
+#   geler          désactive les workflows de CE dépôt (sauf celui-ci et
+#                  « Appliquer un paquet ») et attend la fin des runs
+#   — à la main : renommer ce dépôt, créer le nouveau Tennis-edge VIDE,
+#     ajouter le nouveau dépôt au jeton PAQUET_TOKEN —
+#   copier         (dans le dépôt RENOMMÉ) secrets + variables + réglages
+#                  Actions + instantané en un commit + Pages
+#   verifier       ancien == neuf + R2, fichier par fichier ; secrets ;
+#                  variables ; après le dégel, les premiers runs
+#   degeler        réactive les workflows dans le NOUVEAU dépôt, publie Pages
+#   retour_arriere réactive les workflows de CE dépôt (après l'avoir
+#                  renommé Tennis-edge à nouveau)
+#
+# SÉCURITÉ
+# - Les secrets passent par toJSON(secrets) -> `gh secret set` (stdin) :
+#   GitHub les masque dans les journaux, ce workflow ne les affiche JAMAIS,
+#   seuls leurs NOMS apparaissent.
+# - Aucun push forcé : le nouveau dépôt doit être VIDE, sinon refus.
+# - geler / copier / degeler / retour_arriere exigent de recopier le nom de
+#   l'étape en MAJUSCULES dans « confirmation ».
+
+on:
+  workflow_dispatch:
+    inputs:
+      etape:
+        description: 'Étape'
+        type: choice
+        options: [controle, geler, copier, verifier, degeler, retour_arriere]
+        default: controle
+      confirmation:
+        description: 'Nom de l étape en MAJUSCULES (sauf controle et verifier)'
+        required: false
+        default: ''
+      cible:
+        description: 'Nouveau dépôt (ou, pour retour_arriere, le dépôt neuf mis de côté)'
+        required: false
+        default: 'Lucas987987/Tennis-edge'
+
+concurrency:
+  group: depot-neuf
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  ETAPE: ${{ github.event.inputs.etape }}
+  CIBLE: ${{ github.event.inputs.cible }}
+  SELF: ${{ github.repository }}
+  GH_TOKEN: ${{ secrets.PAQUET_TOKEN }}
+  R2_PRIMARY: ${{ vars.R2_PRIMARY || 'double' }}
+  R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+  R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+  R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+  WORKFLOWS_GELES: ${{ vars.DEPOT_NEUF_WORKFLOWS }}
+  # Workflows jamais désactivés : celui-ci et l'installateur de paquets.
+  GARDES: 'depot_neuf.yml appliquer_paquet.yml'
+
+jobs:
+  etape:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Garde-fous
+        env:
+          CONFIRMATION: ${{ github.event.inputs.confirmation }}
+        run: |
+          set -e
+          if [ -z "$GH_TOKEN" ]; then
+            echo "::error::Secret PAQUET_TOKEN absent."; exit 1
+          fi
+          case "$ETAPE" in
+            controle|verifier) ;;
+            *)
+              attendu=$(echo "$ETAPE" | tr 'a-z' 'A-Z')
+              if [ "$CONFIRMATION" != "$attendu" ]; then
+                echo "::error::Confirmation attendue : $attendu"; exit 1
+              fi ;;
+          esac
+          case "$ETAPE" in
+            copier|verifier|degeler)
+              if [ "$CIBLE" = "$SELF" ]; then
+                echo "::error::« $ETAPE » se lance dans l'ANCIEN dépôt, après l'avoir renommé (ce dépôt s'appelle encore $SELF)."
+                exit 1
+              fi ;;
+            retour_arriere)
+              if [ "$SELF" != "Lucas987987/Tennis-edge" ]; then
+                echo "::warning::Ce dépôt s'appelle $SELF : renomme-le d'abord en Tennis-edge pour que les liens reviennent."
+              fi ;;
+          esac
+          echo "Étape « $ETAPE » dans $SELF (cible : $CIBLE)"
+
+      - uses: actions/checkout@v5
+        if: env.ETAPE == 'controle' || env.ETAPE == 'copier' || env.ETAPE == 'verifier'
+        with:
+          token: ${{ secrets.PAQUET_TOKEN }}
+
+      - uses: actions/setup-python@v6
+        if: env.ETAPE == 'controle' || env.ETAPE == 'copier' || env.ETAPE == 'verifier'
+        with:
+          python-version: '3.11'
+      - name: Dépendances
+        if: env.ETAPE == 'controle' || env.ETAPE == 'copier' || env.ETAPE == 'verifier'
+        run: pip install -q -r requirements.txt
+
+      # ── controle ──────────────────────────────────────────────────────────
+      - name: Contrôle (lecture seule)
+        if: env.ETAPE == 'controle'
+        env:
+          SECRETS_JSON: ${{ toJSON(secrets) }}
+          VARS_JSON: ${{ toJSON(vars) }}
+        run: python scripts/depot_neuf.py controle
+
+      # ── geler ─────────────────────────────────────────────────────────────
+      - name: Geler les workflows de ce dépôt
+        if: env.ETAPE == 'geler'
+        run: |
+          set -e
+          geles="$WORKFLOWS_GELES"
+          while IFS=$'\t' read -r id chemin etat; do
+            nom=$(basename "$chemin")
+            case " $GARDES " in *" $nom "*) continue ;; esac
+            if [ "$etat" = "active" ]; then
+              gh api -X PUT "repos/$SELF/actions/workflows/$id/disable" >/dev/null
+              echo "⏸  $nom"
+              case " $geles " in *" $nom "*) ;; *) geles="$geles $nom" ;; esac
+            fi
+          done < <(gh api "repos/$SELF/actions/workflows" --paginate \
+                     --jq '.workflows[] | "\(.id)\t\(.path)\t\(.state)"')
+          geles=$(echo $geles)
+          # Mémorisé pour « degeler » et « retour_arriere » (union : relancer
+          # « geler » n'efface jamais la liste).
+          gh variable set DEPOT_NEUF_WORKFLOWS -R "$SELF" --body "$geles"
+          echo "$(echo $geles | wc -w) workflow(s) gelé(s), liste mémorisée dans la variable DEPOT_NEUF_WORKFLOWS."
+
+      - name: Attendre la fin des runs en cours
+        if: env.ETAPE == 'geler'
+        run: |
+          for i in $(seq 1 50); do
+            n=$(gh run list -R "$SELF" --limit 100 --json databaseId,status \
+                  --jq "[.[] | select(.databaseId != ${{ github.run_id }}) | select(.status != \"completed\")] | length")
+            if [ "$n" = "0" ]; then
+              echo "✅ Plus aucun run en cours. Le dépôt est gelé."
+              echo
+              echo "SUITE (à la main, voir docs/README_DEPOT_NEUF.md) :"
+              echo "  1. Settings → General → Repository name : Tennis-edge-archive-2026"
+              echo "  2. Créer le dépôt Tennis-edge : PUBLIC, VIDE (sans README, ni licence, ni .gitignore)"
+              echo "  3. Ajouter ce nouveau dépôt au jeton PAQUET_TOKEN"
+              echo "  4. Dans Tennis-edge-archive-2026 : Dépôt neuf → copier"
+              exit 0
+            fi
+            echo "… $n run(s) encore en cours, attente 30 s ($i/50)"
+            sleep 30
+          done
+          echo "::error::Des runs tournent encore après 25 min. Relancer « geler » (sans danger)."
+          exit 1
+
+      # ── copier ────────────────────────────────────────────────────────────
+      - name: Le nouveau dépôt existe et est vide ; ce dépôt est gelé
+        if: env.ETAPE == 'copier'
+        run: |
+          set -e
+          if ! gh api "repos/$CIBLE" --jq .full_name >/dev/null 2>&1; then
+            echo "::error::$CIBLE introuvable. Le créer (public, VIDE), puis l'ajouter au jeton PAQUET_TOKEN."
+            exit 1
+          fi
+          nb=$(gh api "repos/$CIBLE/branches" --jq 'length')
+          if [ "$nb" != "0" ]; then
+            echo "::error::$CIBLE n'est pas vide ($nb branche(s)). Refus : jamais d'écrasement."
+            exit 1
+          fi
+          actifs=$(gh api "repos/$SELF/actions/workflows" --paginate \
+                     --jq '.workflows[] | select(.state == "active") | .path' \
+                   | xargs -r -n1 basename | grep -vxF -e depot_neuf.yml -e appliquer_paquet.yml || true)
+          if [ -n "$actifs" ]; then
+            echo "::error::Workflows encore actifs ici : $actifs — lancer « geler » d'abord."
+            exit 1
+          fi
+          echo "✅ $CIBLE vide, $SELF gelé."
+
+      - name: Recopier les secrets et les variables (valeurs jamais affichées)
+        if: env.ETAPE == 'copier'
+        env:
+          SECRETS_JSON: ${{ toJSON(secrets) }}
+          VARS_JSON: ${{ toJSON(vars) }}
+        run: |
+          python3 - <<'EOF'
+          import json, os, subprocess, sys
+          cible = os.environ["CIBLE"]
+          ko = []
+          sec = json.loads(os.environ["SECRETS_JSON"])
+          noms = sorted(k for k in sec if k.lower() != "github_token")
+          for k in noms:
+              r = subprocess.run(["gh", "secret", "set", k, "-R", cible],
+                                 input=sec[k], text=True, capture_output=True)
+              print(f"  {'✅' if r.returncode == 0 else '❌'} secret {k}")
+              if r.returncode:
+                  ko.append(k)
+          var = json.loads(os.environ["VARS_JSON"])
+          for k in sorted(var):
+              if k.startswith("DEPOT_NEUF_"):
+                  continue
+              r = subprocess.run(["gh", "variable", "set", k, "-R", cible, "--body", var[k]],
+                                 text=True, capture_output=True)
+              print(f"  {'✅' if r.returncode == 0 else '❌'} variable {k} = {var[k]}")
+              if r.returncode:
+                  ko.append(k)
+          print(f"{len(noms)} secret(s), {len([k for k in var if not k.startswith('DEPOT_NEUF_')])} variable(s).")
+          if ko:
+              print(f"::error::Échec pour : {', '.join(ko)} — le jeton PAQUET_TOKEN a-t-il "
+                    "« Secrets » et « Variables » en écriture sur le nouveau dépôt ?")
+              sys.exit(1)
+          EOF
+
+      - name: Réglages Actions (droits d'écriture du jeton automatique)
+        if: env.ETAPE == 'copier'
+        run: |
+          set -e
+          perm=$(gh api "repos/$SELF/actions/permissions/workflow" --jq .default_workflow_permissions || echo write)
+          pr=$(gh api "repos/$SELF/actions/permissions/workflow" --jq .can_approve_pull_request_reviews || echo false)
+          gh api -X PUT "repos/$CIBLE/actions/permissions/workflow" \
+            -f default_workflow_permissions="$perm" -F can_approve_pull_request_reviews="$pr"
+          echo "✅ Jeton automatique : $perm (validation de PR : $pr)"
+
+      - name: Instantané (sans ce que R2 détient déjà)
+        if: env.ETAPE == 'copier'
+        run: python scripts/depot_neuf.py instantane "$RUNNER_TEMP/neuf"
+
+      - name: Pousser dans le nouveau dépôt (un commit, dépôt vide, pas de force)
+        if: env.ETAPE == 'copier'
+        run: |
+          set -e
+          sha=$(git rev-parse HEAD)
+          cd "$RUNNER_TEMP/neuf"
+          git init -q -b main
+          git config user.name  "depot-neuf-bot"
+          git config user.email "depot-neuf-bot@users.noreply.github.com"
+          git add -A
+          # [skip ci] : aucun workflow « on: push » ne se lance sur l'import
+          # (tests, Pages, déploiements, installateur de paquets…).
+          git commit -q -m "Import depuis $SELF @ $sha [skip ci]"
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/$CIBLE.git"
+          git push -u origin main
+          echo "✅ Poussé : $(git count-objects -vH | grep size-pack)"
+
+      - name: Garder les workflows du nouveau dépôt en pause jusqu'au dégel
+        if: env.ETAPE == 'copier'
+        run: |
+          sleep 20
+          for nom in $WORKFLOWS_GELES; do
+            ok=0
+            for i in 1 2 3 4 5 6; do
+              if gh workflow disable "$nom" -R "$CIBLE" >/dev/null 2>&1; then ok=1; break; fi
+              sleep 10
+            done
+            [ $ok = 1 ] && echo "⏸  $nom" || echo "::warning::$nom non désactivé dans $CIBLE"
+          done
+
+      - name: GitHub Pages
+        if: env.ETAPE == 'copier'
+        run: |
+          type=$(gh api "repos/$SELF/pages" --jq .build_type 2>/dev/null || echo workflow)
+          cname=$(gh api "repos/$SELF/pages" --jq '.cname // ""' 2>/dev/null || echo "")
+          if gh api -X POST "repos/$CIBLE/pages" -f build_type="$type" >/dev/null 2>&1 \
+             || gh api -X PUT "repos/$CIBLE/pages" -f build_type="$type" >/dev/null 2>&1; then
+            echo "✅ Pages activé ($type)"
+          else
+            echo "::warning::Pages à activer à la main : Settings → Pages → Source : GitHub Actions"
+          fi
+          if [ -n "$cname" ]; then
+            echo "::warning::Domaine personnalisé $cname : le retirer de l'archive puis l'ajouter au nouveau dépôt."
+          fi
+          echo
+          echo "SUITE : Dépôt neuf → verifier, puis degeler."
+
+      # ── verifier ──────────────────────────────────────────────────────────
+      - name: Fichier par fichier
+        if: env.ETAPE == 'verifier'
+        run: |
+          set -e
+          git clone -q --depth 1 "https://x-access-token:${GH_TOKEN}@github.com/$CIBLE.git" "$RUNNER_TEMP/neuf"
+          python scripts/depot_neuf.py verifier "$RUNNER_TEMP/neuf"
+
+      - name: Secrets, variables, réglages, runs
+        if: env.ETAPE == 'verifier'
+        env:
+          SECRETS_JSON: ${{ toJSON(secrets) }}
+          VARS_JSON: ${{ toJSON(vars) }}
+        run: |
+          python3 - <<'EOF'
+          import json, os, subprocess, sys
+          cible = os.environ["CIBLE"]
+          def gh(*a):
+              r = subprocess.run(["gh", *a], text=True, capture_output=True)
+              return r.stdout if r.returncode == 0 else None
+          ko = []
+          voulus = {k for k in json.loads(os.environ["SECRETS_JSON"]) if k.lower() != "github_token"}
+          la = {x["name"] for x in json.loads(gh("secret", "list", "-R", cible, "--json", "name") or "[]")}
+          manque = sorted(voulus - la)
+          print(f"{'✅' if not manque else '❌'} secrets : {len(voulus & la)}/{len(voulus)}"
+                + (f" — manquent : {', '.join(manque)}" if manque else ""))
+          ko += manque
+          var = {k: v for k, v in json.loads(os.environ["VARS_JSON"]).items() if not k.startswith("DEPOT_NEUF_")}
+          lav = {x["name"]: x["value"] for x in json.loads(gh("variable", "list", "-R", cible, "--json", "name,value") or "[]")}
+          diff = sorted(k for k in var if lav.get(k) != var[k])
+          print(f"{'✅' if not diff else '❌'} variables : {len(var) - len(diff)}/{len(var)}"
+                + (f" — différentes : {', '.join(diff)}" if diff else ""))
+          ko += diff
+          perm = (gh("api", f"repos/{cible}/actions/permissions/workflow", "--jq", ".default_workflow_permissions") or "").strip()
+          print(f"{'✅' if perm == 'write' else '❌'} jeton automatique : {perm or '?'}")
+          if perm != "write":
+              ko.append("permissions")
+          pages = (gh("api", f"repos/{cible}/pages", "--jq", ".html_url") or "").strip()
+          print(f"{'✅' if pages else '⚠️ '} Pages : {pages or 'non activé'}")
+          actifs = json.loads(gh("api", f"repos/{cible}/actions/workflows", "--paginate", "--jq",
+                                 "[.workflows[] | select(.state == \"active\")] | length") or "0")
+          print(f"ℹ️  {actifs} workflow(s) actif(s) dans {cible} (avant dégel : 2 attendus)")
+          runs = json.loads(gh("run", "list", "-R", cible, "--limit", "40", "--json",
+                               "workflowName,event,conclusion,status") or "[]")
+          if runs:
+              disp = [r for r in runs if r["event"] == "repository_dispatch"]
+              print(f"ℹ️  {len(runs)} run(s) récents dans {cible}, dont {len(disp)} déclenché(s) par le worker Cloudflare")
+              for r in runs[:15]:
+                  print(f"     {r['status']:11} {r.get('conclusion') or '':9} {r['event']:20} {r['workflowName']}")
+              rouges = [r for r in runs if r.get("conclusion") == "failure"]
+              if rouges:
+                  print(f"⚠️  {len(rouges)} run(s) rouge(s) : à regarder")
+          if ko:
+              sys.exit(1)
+          EOF
+
+      # ── degeler ───────────────────────────────────────────────────────────
+      - name: Réactiver les workflows du NOUVEAU dépôt
+        if: env.ETAPE == 'degeler'
+        run: |
+          set -e
+          if [ -z "$WORKFLOWS_GELES" ]; then
+            echo "::error::Variable DEPOT_NEUF_WORKFLOWS vide : rien à réactiver ?"; exit 1
+          fi
+          for nom in $WORKFLOWS_GELES; do
+            gh workflow enable "$nom" -R "$CIBLE" >/dev/null && echo "▶️  $nom" \
+              || echo "::warning::$nom non réactivé dans $CIBLE"
+          done
+          gh workflow run pages.yml -R "$CIBLE" && echo "▶️  Publication Pages lancée" || true
+          echo
+          echo "✅ $CIBLE tourne. Les workflows de $SELF restent gelés (c'est voulu)."
+          echo "Dans 15 min : Dépôt neuf → verifier (premiers runs, déclenchements du worker)."
+          echo "Aucun run « repository_dispatch » ? Ajouter $CIBLE au jeton GitHub du worker Cloudflare."
+
+      # ── retour_arriere ────────────────────────────────────────────────────
+      - name: Réactiver les workflows de CE dépôt
+        if: env.ETAPE == 'retour_arriere'
+        run: |
+          set -e
+          if [ "$CIBLE" != "$SELF" ]; then
+            for nom in $WORKFLOWS_GELES; do
+              gh workflow disable "$nom" -R "$CIBLE" >/dev/null 2>&1 && echo "⏸  $nom ($CIBLE)" || true
+            done
+          fi
+          for nom in $WORKFLOWS_GELES; do
+            gh workflow enable "$nom" -R "$SELF" >/dev/null && echo "▶️  $nom" \
+              || echo "::warning::$nom non réactivé"
+          done
+          echo "✅ $SELF tourne de nouveau comme avant."
