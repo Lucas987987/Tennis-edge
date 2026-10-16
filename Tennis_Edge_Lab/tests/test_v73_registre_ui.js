@@ -98,3 +98,12 @@ test('évaluation : tableaux rendus, aucune donnée inventée', () => {
   assert.match(html, /cohérent/);
   assert.equal(R.evaluation(null), '');
 });
+
+test('écart de victoires des profils : tableau et conclusion', () => {
+  const g = (groupe, n) => ({ groupe, n, gagne: 0.433, attendu: 0.431, ecart_pts: 0.2, ic95_pts: [-5.5, 5.9], roi_pinnacle: -3.4 });
+  const html = R.victoires({ lignes: 12859, min_regles: 20, correlation: 0.004, par_ecart: [g('≥ 15 pts en plus', 275), g('vide', 0)], par_z: [g('z ≥ 2,5', 235)] });
+  assert.match(html, /ne dit rien/);
+  assert.match(html, /≥ 15 pts en plus/);
+  assert.doesNotMatch(html, /vide/);
+  assert.equal(R.victoires(null), '');
+});

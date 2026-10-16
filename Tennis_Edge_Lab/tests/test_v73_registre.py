@@ -88,6 +88,27 @@ class PointDansLeTemps(unittest.TestCase):
         self.assertEqual(out[1]["n"], 0)
 
 
+class Victoires(unittest.TestCase):
+    def test_ecart_du_profil_classe_et_mesure_le_match_suivant(self):
+        rows, readings = [], []
+        for i in range(200):
+            gagne = i % 2
+            rows.append({"gagne": gagne, "proba_juste": 0.5, "cote_pin": 2.0, "pnl_pinnacle": 1.0 if gagne else -1.0,
+                         "clv_pinnacle": 0.0})
+            # moitié des profils « 24 sur 25 » pour 50 % attendus, moitié normaux
+            readings.append({"regles": 25, "gagnes": 24 if i < 100 else 12, "juste": 0.5})
+        rows.append({"gagne": 1, "proba_juste": 0.5, "cote_pin": 2.0})
+        readings.append({"regles": 10, "gagnes": 10, "juste": 0.5})          # trop peu de matchs réglés : ignoré
+        V = lp.victoires(rows, readings)
+        self.assertEqual(V["lignes"], 200)
+        haut = V["par_ecart"][-1]
+        self.assertEqual(haut["n"], 100)
+        self.assertAlmostEqual(haut["ecart_profil_moyen"], 46.0)
+        self.assertAlmostEqual(haut["gagne"], 0.5)
+        self.assertAlmostEqual(haut["ecart_pts"], 0.0)
+        self.assertEqual(V["par_z"][-1]["n"], 100)
+
+
 class Coherence(unittest.TestCase):
     def test_coherent_quand_les_gains_suivent_la_clv(self):
         items = [(2.0, 0.0, 1.0 if i % 2 else -1.0) for i in range(200)]
