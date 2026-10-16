@@ -148,7 +148,11 @@ def lecture(H, k, profile):
     exces = dp.cluster_summary([None if H.feat[i][6] is None else H.feat[i][6] - base for i in sel],
                                [H.feat[i][7] for i in sel])
     clv = dp.cluster_summary([H.feat[i][6] for i in sel], [H.feat[i][7] for i in sel])
+    regles = [H.rows[i] for i in sel if H.rows[i].get("gagne") is not None]
+    gagnes = sum(r["gagne"] for r in regles)
+    juste = (sum(r.get("proba_juste") or 1 / r["cote_pin"] for r in regles) / len(regles)) if regles else None
     return {"n": len(sel), "relaches": level, "ok": ok, "base": base,
+            "regles": len(regles), "gagnes": gagnes, "juste": juste,
             "clv": clv["mean"], "exces": exces["mean"], "exces_ci": exces["ci"], "p": exces["p"],
             "verdict": dp.verdict({"exces": exces}, ALPHA)}
 
@@ -234,7 +238,50 @@ def evaluate(rows, readings):
     else:
         corr = None
     return {"par_verdict": par_verdict, "par_quintile": par_quintile, "correlation": corr,
-            "lignes_lues": sum(1 for L in readings if L is not None)}
+            "lignes_lues": sum(1 for L in readings if L is not None),
+            "victoires": victoires(rows, readings)}
+
+
+GAP_BINS = ((-1e9, -15, "≥ 15 pts en moins"), (-15, -5, "5 à 15 pts en moins"), (-5, 5, "± 5 pts"),
+            (5, 15, "5 à 15 pts en plus"), (15, 1e9, "≥ 15 pts en plus"))
+Z_BINS = ((-1e9, -2.5, "z ≤ −2,5"), (-2.5, -1.5, "z −2,5 à −1,5"), (-1.5, 1.5, "z −1,5 à +1,5"),
+          (1.5, 2.5, "z +1,5 à +2,5"), (2.5, 1e9, "z ≥ +2,5 (ex. 24/25)"))
+MIN_REGLES = 20
+
+
+def victoires(rows, readings):
+    """Le profil gagnait-il plus (ou moins) que sa probabilité juste ? Et le match SUIVANT ?
+    Écart du profil = victoires − probabilité Pinnacle juste moyenne de ses matchs réglés.
+    Écart du match = gagné (0/1) − sa propre probabilité juste."""
+    items = []
+    for r, L in zip(rows, readings):
+        if not L or r.get("gagne") is None or not L.get("regles") or L["regles"] < MIN_REGLES:
+            continue
+        p = r.get("proba_juste") or 1 / r["cote_pin"]
+        gap = L["gagnes"] / L["regles"] - L["juste"]
+        se = math.sqrt(max(L["juste"] * (1 - L["juste"]), 1e-9) / L["regles"])
+        items.append({"gap": 100 * gap, "z": gap / se, "won": r["gagne"], "p": p, "pnl": r.get("pnl_pinnacle"),
+                      "clv": r.get("clv_pinnacle")})
+
+    def bloc(label, g):
+        n = len(g)
+        if not n:
+            return {"groupe": label, "n": 0}
+        w = sum(x["won"] for x in g) / n
+        pr = sum(x["p"] for x in g) / n
+        se = math.sqrt(sum(x["p"] * (1 - x["p"]) for x in g)) / n
+        roi = [x["pnl"] for x in g if x["pnl"] is not None]
+        clv = [x["clv"] for x in g if x["clv"] is not None]
+        return {"groupe": label, "n": n, "ecart_profil_moyen": sum(x["gap"] for x in g) / n,
+                "gagne": w, "attendu": pr, "ecart_pts": 100 * (w - pr),
+                "ic95_pts": [100 * (w - pr - 1.96 * se), 100 * (w - pr + 1.96 * se)],
+                "roi_pinnacle": 100 * sum(roi) / len(roi) if roi else None,
+                "clv": sum(clv) / len(clv) if clv else None}
+    return {"min_regles": MIN_REGLES, "lignes": len(items),
+            "par_ecart": [bloc(lab, [x for x in items if lo <= x["gap"] < hi]) for lo, hi, lab in GAP_BINS],
+            "par_z": [bloc(lab, [x for x in items if lo <= x["z"] < hi]) for lo, hi, lab in Z_BINS],
+            "correlation": _corr([x["gap"] for x in items], [100 * (x["won"] - x["p"]) for x in items])
+            if len(items) >= 50 else None}
 
 
 def _calib_bin(p):
