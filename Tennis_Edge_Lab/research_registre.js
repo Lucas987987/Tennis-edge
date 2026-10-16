@@ -239,6 +239,16 @@
       <h5>Selon la rareté de l'écart (z binomial)</h5>${tab(V.par_z, 'Écart du profil')}`;
   }
 
+  /** Chaque book collecté : couverture, part du meilleur prix, écart médian à la cote juste. */
+  function booksBlock(V) {
+    const B = V && V.books;
+    if (!B || !B.books || !B.books.length) return '';
+    return `<details class="rg-eval"><summary>Les books collectés : couverture et prix</summary>
+      <p class="mini">${nf(B.matchs, 0)} matchs, ${nf(B.decisions, 0)} décisions (joueur × horizon). Écart = prix net (commission déduite) contre la cote Pinnacle juste au même moment ; une cote de plus de 30 min n'est pas comptée.</p>
+      <div class="table-wrap rg-table"><table><thead><tr><th>Book</th><th>Matchs cotés</th><th>Meilleur prix</th><th>Écart médian</th><th>Cotes ≥ +2 %</th></tr></thead><tbody>${B.books.map(b => `<tr><td>${esc(b.book)}${b.fr ? ' 🇫🇷' : ''}${b.bourse ? ' (bourse)' : ''}</td><td>${nf(100 * b.couverture, 0)} %<span class="detail">${nf(b.matchs, 0)}</span></td><td>${nf(100 * b.meilleur_prix, 1)} %</td><td>${sg(b.ecart_median)}</td><td>${nf(b.au_dessus_2pct, 0)}</td></tr>`).join('')}</tbody></table></div>
+    </details>`;
+  }
+
   /** H19 « valeur contre Pinnacle juste » : suivi gelé + grille rétrospective (valeur.json). */
   function valeurBlock(V) {
     if (!V || !V.h19) return '';
@@ -313,7 +323,7 @@
     const shown = list.slice(state.page * PAGE, (state.page + 1) * PAGE);
     const opt = (vals, v) => vals.map(([k, l]) => `<option value="${esc(k)}" ${k === (v || '') ? 'selected' : ''}>${esc(l)}</option>`).join('');
     const circuits = [...new Set(cur.list.map(m => m.circuit))].sort();
-    host.innerHTML = `${valeurBlock(state.valeurDoc)}${evaluation(state.evalDoc)}
+    host.innerHTML = `${valeurBlock(state.valeurDoc)}${evaluation(state.evalDoc)}${booksBlock(state.valeurDoc)}
       <div class="rg-filters">
         <label>Mois<select id="rgMois">${opt([...state.index.mois].reverse().map(x => [x.mois, `${x.mois} (${x.matchs})`]), state.mois)}</select></label>
         <label>Circuit<select id="rgCircuit">${opt([['', 'tous'], ...circuits.map(c => [c, c])], state.f.circuit)}</select></label>
@@ -360,6 +370,6 @@
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
   }
   if (typeof module !== 'undefined') {
-    module.exports = { valeurBlock, victoires, powerFair, decodeMonth, fairRow, bestRow, filterMatches, coherence, lectureOf, effective, evaluation, fiche, row };
+    module.exports = { booksBlock, valeurBlock, victoires, powerFair, decodeMonth, fairRow, bestRow, filterMatches, coherence, lectureOf, effective, evaluation, fiche, row };
   }
 })();

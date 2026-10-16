@@ -41,6 +41,12 @@ class Gel(unittest.TestCase):
                          (2.0, 8.0, 30, 300))
         self.assertEqual(va.H19["gele_le"], "2026-10-16")
 
+    def test_amendement_books_avant_donnees(self):
+        self.assertIn("bet365", va.H19["books"])
+        self.assertNotIn("pinnacle", va.H19["books"])
+        self.assertNotIn("zebet.fr", va.H19["books"])
+        self.assertIn("avant toute donnée prospective", va.H19["amendement"])
+
     def test_gel_modifie_detecte(self):
         with tempfile.TemporaryDirectory() as tmp:
             p = pathlib.Path(tmp) / va.GEL_FILE
@@ -81,6 +87,21 @@ class Regle(unittest.TestCase):
         self.assertNotIn("unibet", [c["book"] for c in six["cands"]])            # 40 min : exclu
         bf = [c for c in six["cands"] if c["book"] == "betfair-ex"][0]
         self.assertLess(bf["ecart_pct"], 2.0)                                       # commission déduite
+
+    def test_book_hors_liste_ignore_par_h19(self):
+        opps = va.opportunites(self.records, {})
+        for o in opps:
+            for c in o["cands"]:
+                if c["book"] == "bet365":
+                    c["book"] = "zebet.fr"              # même prix, book hors de la liste gelée
+        self.assertEqual(va.premier(opps, va.regle_h19), [])
+
+    def test_table_des_books(self):
+        T = va.books_table(va.opportunites(self.records, {}))
+        self.assertEqual(T["matchs"], 1)
+        b = {x["book"]: x for x in T["books"]}
+        self.assertEqual(b["bet365"]["au_dessus_2pct"], 2)
+        self.assertTrue(b["betfair-ex"]["bourse"])
 
     def test_holm_monotone(self):
         cases = [{"n": 40, "clv": {"p": p}} for p in (0.001, 0.02, 0.03, 0.5)]
