@@ -16,6 +16,8 @@ Pour chaque surface (match/set1/set2) et par book :
 
 Env : JOURNALS (glob, def 'paper_trades_*.jsonl'). Aucune dependance externe.
 """
+import contextlib
+import io
 import math
 import os
 import json, sys, glob, json, csv, math, datetime, random, statistics as st
@@ -1651,11 +1653,16 @@ def bilan_tests_multiples(resultats):
             continue
         k, n, p0 = r
         resolus.append((idx, (k, n, p0t if p0 == 'temoin' else p0, nt if p0 == 'temoin' else None)))
+    # GARDE (16/10/2026) : une hypothèse « en attente de résultats » (plus de
+    # 10 % de ses détections en direct sans résultat) ne se verrouille pas.
+    attente = {nom: getattr(w, 'attente', None) for nom, _, w in HYPOTHESES}
     a_geler = []
     for idx, r in resolus:
         nom = resultats[idx][0]
         if nom in geles:
             continue                              # déjà gelé, jamais recalculé
+        if attente.get(nom):
+            continue                              # résultats incomplets : jamais verrouillé
         if r is not None and r[1] >= N_CIBLE:
             a_geler.append((idx, r))
     for idx, (k, n, p0, n_ref) in a_geler:
@@ -1691,6 +1698,10 @@ def bilan_tests_multiples(resultats):
             print(f"  {nom:24} gel {str(gel)[:10]} | lu le "
                   f"{g['date_lecture']} (verrouillé) | {k}/{n} vs "
                   f"p0={p0:.3f} | p={p:.4f} -> {v}")
+        elif r is not None and attente.get(nom):
+            k, n = r[0], r[1]
+            print(f"  {nom:24} gel {str(gel)[:10]} | {k}/{n} — {attente[nom]} : "
+                  f"verdict NI verrouillé NI déclaré")
         elif r is not None and r[1] < 30:
             k, n = r[0], r[1]
             print(f"  {nom:24} gel {str(gel)[:10]} | {k}/{n} — n<30 : "
@@ -2816,6 +2827,52 @@ def canal_miser_watch():
     return (k, n, p0)
 
 
+# ══ VERDICTS EN DIRECT (décision du 16/10/2026) ══════════════════════════
+# Les hypothèses H13…H18 se jugent désormais sur les ALERTES EN DIRECT
+# (h*_signal_log.jsonl, champs de décision écrits une fois) complétées par
+# scripts/suivi_direct.py -> verdicts_direct.json. La reconstruction
+# (moves_detail_hist.csv, fonctions *_watch ci-dessus) n'est plus affichée
+# qu'en ligne « contrôle ».
+#
+# NOMS NOUVEAUX (« … (direct) ») : un verdict déjà verrouillé dans
+# verdicts_geles.json sur la reconstruction n'est JAMAIS réécrit ; la lecture
+# en direct sera verrouillée à part, à N_CIBLE paris dénoués EN DIRECT.
+VERDICTS_DIRECT = 'verdicts_direct.json'
+
+
+def _direct(code, controle):
+    def watch():
+        try:
+            doc = json.load(open(VERDICTS_DIRECT, encoding='utf-8'))
+        except (OSError, ValueError):
+            print(f"  {VERDICTS_DIRECT} absent : lancer scripts/suivi_direct.py.")
+            doc = {'hypotheses': []}
+        h = next((x for x in doc.get('hypotheses', []) if x.get('code') == code), None)
+        o = (h or {}).get('out_of_sample') or {}
+        print(f"  EN DIRECT ({VERDICTS_DIRECT}, {doc.get('genere_le', '?')}) : "
+              f"{o.get('n_detectees', 0)} détectée(s) · {o.get('n_envoyees', 0)} envoyée(s) · "
+              f"{o.get('n', 0)} dénouée(s)")
+        if o.get('n'):
+            print(f"  gains {o['gains']}/{o['n']} = {o['taux']} % (seuil {o['seuil']} %) · "
+                  f"écart {o['ecart']:+} pts · ROI {o['roi']:+} % · CLV Pinnacle "
+                  f"{o.get('clv_pin_moyen')} % IC95 {o.get('clv_pin_ic95')}")
+        with contextlib.redirect_stdout(io.StringIO()):
+            c = controle()
+        if c:
+            print(f"  contrôle (reconstruction moves_detail_hist, NE JUGE PAS) : "
+                  f"{c[0]}/{c[1]} · seuil {100 * c[2]:.1f} % · écart {100 * (c[0] / c[1] - c[2]):+.1f} pts")
+        # GARDE (16/10/2026) : pas de verrouillage tant que > 10 % des
+        # détections de matchs commencés sont sans résultat, quel que soit n.
+        watch.attente = None if o.get('verrouillable', True) else o.get('statut')
+        print(f"  statut : {o.get('statut', '—')}")
+        if not o.get('n'):
+            return None
+        return (o['gains'], o['n'], o['seuil'] / 100.0)
+    watch.attente = None
+    watch.__name__ = f'direct_{code.lower()}'
+    return watch
+
+
 HYPOTHESES = [
     ('calibration 2,20-3,50', FREEZE_DATE,           calibration_watch),
     ('heure du match',        FREEZE_DATE,           hour_watch),
@@ -2837,31 +2894,31 @@ HYPOTHESES = [
     # sur le CLV. N_CIBLE est déjà atteint sur l'historique : le filtre
     # out-of-sample est la SEULE chose qui l'empêche de se valider sur
     # les données qui l'ont fait naître.
-    ('ROI bande cote 2-3',    FREEZE_DATE_ROIBANDE,  roi_bande_watch),
+    ('ROI bande cote 2-3 (direct)', FREEZE_DATE_ROIBANDE, _direct('H13', roi_bande_watch)),
     # AJOUTÉE LE 07/09/2026, depuis le rapport de robustesse externe.
     # Seule la stratégie A est gelée : B et C (bande de cote 2,50-4,00)
     # sont des sous-ensembles corrélés, à 23 et 12 observations
     # récentes, issus d'un espace de 448 combinaisons dont 33 %
     # ressortent significatives par pure recherche.
-    ('amplitude + timing',    FREEZE_DATE_AMPLI,     roi_ampli_watch),
+    ('amplitude + timing (direct)', FREEZE_DATE_AMPLI, _direct('H14', roi_ampli_watch)),
     # AJOUTÉE LE 25/09/2026. Bande LARGE volontairement : le noyau
     # 2,70-2,90 fait mieux (+16,3 d'écart, p=0,0021) mais c'est le
     # maximum d'un balayage de ~20 découpages, sur 29 paris récents.
-    ('bande cote 2,40-3,10',  FREEZE_DATE_H15,       bande_240_310_watch),
+    ('bande cote 2,40-3,10 (direct)', FREEZE_DATE_H15, _direct('H15', bande_240_310_watch)),
     # AJOUTÉE LE 25/09/2026. Filtre sur pin_open (prix PINNACLE à
     # l'ouverture), PAS sur la cote d'entrée : le même seuil sur la
     # cote d'entrée donne p=0,0933, soit rien. Disjointe de H15 :
     # recouvrement 0/580.
-    ('favori net (pin<1,80)', FREEZE_DATE_H16,       bande_favori_watch),
+    ('favori net (pin<1,80) (direct)', FREEZE_DATE_H16, _direct('H16', bande_favori_watch)),
     # AJOUTÉE LE 25/09/2026. Écart CAUSAL entrée/Pinnacle ouverture.
     # Ne pas confondre avec clv_vs_pin_pct, qui utilise pin_close et
     # n'existe qu'après le coup d'envoi — ce serait du look-ahead.
-    ('écart entrée 0-3 %',    FREEZE_DATE_H17,       ecart_entree_watch),
+    ('écart entrée 0-3 % (direct)', FREEZE_DATE_H17, _direct('H17', ecart_entree_watch)),
     # AJOUTÉES LE 27/09/2026. NI L'UNE NI L'AUTRE N'EST INDÉPENDANTE :
     # H18 est l'intersection de H16 et H17, H16-B un sous-ensemble de
     # H16. Holm doit en tenir compte — quatre hypothèses corrélées.
-    ('favorite steam value',  FREEZE_DATE_H18,       favorite_steam_value_watch),
-    ('favori sans ultra',     FREEZE_DATE_H16B,      favori_sans_ultra_watch),
+    ('favorite steam value (direct)', FREEZE_DATE_H18, _direct('H18', favorite_steam_value_watch)),
+    ('favori sans ultra (direct)', FREEZE_DATE_H16B, _direct('H16B', favori_sans_ultra_watch)),
     # AJOUTÉE LE 26/10/2026 — 20e hypothèse. Les 19 autres mesurent la
     # RECONSTRUCTION des mouvements ; celle-ci mesure ce que le canal
     # ENVOIE. Deux populations distinctes (31 % de côtés différents,

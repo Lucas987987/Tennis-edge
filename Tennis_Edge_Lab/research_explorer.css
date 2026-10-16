@@ -33,3 +33,6 @@
 #explorer .xp-ranges{border-top:1px solid var(--line,#e2e8f0);padding-top:6px}
 #explorer .xp-range{display:grid;grid-template-columns:1fr 80px 80px;gap:6px;align-items:center;font-size:12px;margin:6px 0}
 #explorer .xp-range input{min-height:36px;width:100%;font:inherit;border:1px solid var(--line,#cbd5e1);border-radius:8px;padding:4px 6px;min-width:0}
+/* V7.0 : n des deux populations (suivi officiel / alertes envoyées) */
+#explorer .xp-pop{margin:8px 0;font-size:12px}
+#explorer .xp-pop summary{cursor:pointer;min-height:32px;line-height:32px}

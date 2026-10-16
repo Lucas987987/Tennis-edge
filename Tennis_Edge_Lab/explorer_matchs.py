@@ -92,6 +92,8 @@ FIELDS = [
     ("pnl_jouable", "P&L — entrée meilleur jouable", "num", "mesure"),
     ("pnl_fr", "P&L — entrée meilleur FR", "num", "mesure"),
     ("decision_ts", "Heure de décision (UTC)", "cat", "descriptif"),
+    # V7.2 : probabilité Pinnacle JUSTE (puissance) à l'horizon, pour « gagnés vs implicite ».
+    ("proba_juste", "Probabilité Pinnacle juste à l'horizon", "num", "descriptif"),
     ("cloture_pin", "Clôture Pinnacle (après coup)", "num", "post_entree"),
     ("move_cloture_pct", "Mouvement horizon→clôture (après coup)", "num", "post_entree"),
 ]
@@ -100,7 +102,7 @@ ENTRIES = ("pinnacle", "jouable", "fr")
 ROUND = {"cote_pin": 3, "move_pin_pct": 2, "ampleur_pts": 2, "age_marche_h": 1, "ecart_jouable_pct": 2,
          "ecart_fr_pct": 2, "cote_jouable": 3, "cote_fr": 3, "clv_pinnacle": 2, "clv_jouable": 2,
          "clv_fr": 2, "pnl_pinnacle": 4, "pnl_jouable": 4, "pnl_fr": 4, "cloture_pin": 3,
-         "move_cloture_pct": 2, "gagne": 0, "nb_books": 0}
+         "move_cloture_pct": 2, "gagne": 0, "nb_books": 0, "proba_juste": 4}
 
 
 # ---------------------------------------------------------------- lecture
@@ -307,6 +309,7 @@ def build_rows(records, results, alerts, surfaces, pair_results=None):
                     "pnl_jouable": pnl(best["jouable"][0], best["jouable"][2]) if best["jouable"] else None,
                     "pnl_fr": pnl(best["fr"][0], best["fr"][2]) if best["fr"] else None,
                     "decision_ts": decision.isoformat(timespec="minutes"),
+                    "proba_juste": 1 / fair_h if fair_h else None,
                     "cloture_pin": cl_s[1] if closing_ok else None,
                     "move_cloture_pct": 100 * (cl_s[1] / quote[1] - 1) if closing_ok else None,
                 }

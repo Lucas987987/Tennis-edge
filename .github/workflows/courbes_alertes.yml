@@ -239,6 +239,19 @@ jobs:
           # le 27/09. ATTENTION : ce retrait vaut pour H16 SEULE. Dans H18
           # les ultra-favoris sont parmi les meilleurs. Ne pas transposer.
           python scripts/h16b_signal.py || true
+
+          # H14 — amplitude + timing (mouvement Pinnacle > 5 % à la détection,
+          # 8-24 h avant le match), gelée le 02/10. CANAL CRÉÉ LE 16/10/2026 :
+          # son échantillon EN DIRECT commence à ce déploiement. Lancé EN
+          # DERNIER : il recoupe toutes les autres et ne renvoie pas un match
+          # déjà envoyé (doublon journalisé, compté pour H14).
+          python scripts/h14_signal.py || true
+
+          # Onglet « Matchs en direct » du Lab (16/10/2026) : petit instantané
+          # (Pinnacle ouverture/courant, dernier prix par book, alertes du
+          # match) lu par le navigateur sur raw.githubusercontent.com. Mêmes
+          # courbes que les signaux ; réécrit seulement si le contenu change.
+          python scripts/direct_matchs.py . || true
           # Signal EXPÉRIMENTAL (non validé) : book déjà ouvert avant Pinnacle,
           # écart au moment où Pinnacle publie son 1er prix. Canal PRIVÉ
           # uniquement (jamais le canal public) -- voir validation_report pour

@@ -1,0 +1,19 @@
+# Worker de la page Tennis Edge (suivi des hypothèses gelées)
+# https://tennis-edge-db.tennis-edge.workers.dev
+#
+# Déployé AUTOMATIQUEMENT par .github/workflows/deploy_tennis_edge_db.yml à
+# chaque modification de ce dossier sur main. Ne plus coller le code dans le
+# tableau de bord Cloudflare : la prochaine modification du dépôt l'écraserait.
+name = "tennis-edge-db"
+main = "worker.js"
+compatibility_date = "2025-01-01"
+workers_dev = true
+# Garde les variables réglées dans le tableau de bord (GH_OWNER, GH_REPO,
+# GH_BRANCH) au lieu de les effacer à chaque déploiement.
+keep_vars = true
+
+# AUCUN CRON : depuis le 16/10/2026 la page lit verdicts_direct.json sur
+# GitHub (cache 60 s) ; l'ancienne ingestion D1 toutes les N minutes ne sert
+# plus. La liste vide SUPPRIME le cron existant au premier déploiement.
+[triggers]
+crons = []
