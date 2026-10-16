@@ -58,6 +58,7 @@ jobs:
             historique
             scripts/validation_report.py
             scripts/oddspapi_v5.py
+            scripts/match_key.py
             matches_oddspapi.json
             moves_detail_hist.csv
             moves_detail.csv
@@ -79,6 +80,11 @@ jobs:
             h16b_signal_log.jsonl
             h17_signal_log.jsonl
             h18_signal_log.jsonl
+            h14_signal_log.jsonl
+            verdicts_direct.json
+            suivi_direct
+            scripts/suivi_direct.py
+            scripts/journal_direct.py
             canal_public_log.jsonl
             odds_alerts_log.jsonl
             clv_history
@@ -166,6 +172,21 @@ jobs:
           python Tennis_Edge_Lab/explorer_gel.py evaluate --root .
           python Tennis_Edge_Lab/profils.py .
 
+      - name: Réconciliation détections (suivi officiel) ↔ alertes envoyées ↔ Worker D1
+        run: |
+          set -e
+          # Capture publique en lecture seule ; une panne garde la capture précédente.
+          python Tennis_Edge_Lab/fetch_worker_snapshot.py "$RUNNER_TEMP/worker.json" || true
+          python - "$RUNNER_TEMP/worker.json" Tennis_Edge_Lab/live/worker_hypotheses_capture.json <<'PY'
+          import json, pathlib, shutil, sys
+          src, dst = pathlib.Path(sys.argv[1]), pathlib.Path(sys.argv[2])
+          ok = src.is_file() and json.loads(src.read_text(encoding='utf-8')).get('status') == 'ok'
+          if ok:
+              shutil.copyfile(src, dst)
+          print('Capture Worker :', 'nouvelle' if ok else ('précédente conservée' if dst.is_file() else 'aucune'))
+          PY
+          python Tennis_Edge_Lab/reconciliation.py . --worker Tennis_Edge_Lab/live/worker_hypotheses_capture.json
+
       - name: Archiver l'audit exhaustif (90 jours, hors dépôt)
         uses: actions/upload-artifact@v4
         with:
@@ -202,6 +223,8 @@ jobs:
             Tennis_Edge_Lab/live/gel_v66_prospective.json
             Tennis_Edge_Lab/live/gel_explorateur_prospective.json
             Tennis_Edge_Lab/live/profils_hypotheses.json
+            Tennis_Edge_Lab/live/reconciliation_hypotheses.json
+            Tennis_Edge_Lab/live/worker_hypotheses_capture.json
             Tennis_Edge_Lab/cache/source_catalog.json
             Tennis_Edge_Lab/cache/archive/index.json
           )
@@ -214,7 +237,8 @@ jobs:
               Tennis_Edge_Lab/live/propositions_v66_populations.json.gz \
               Tennis_Edge_Lab/live/explorateur_alertes.json.gz \
               Tennis_Edge_Lab/live/explorateur_histo.json.gz \
-              Tennis_Edge_Lab/live/explorateur_matchs.json.gz; do
+              Tennis_Edge_Lab/live/explorateur_matchs.json.gz \
+              Tennis_Edge_Lab/live/explorateur_detections.json.gz; do
             if [ -f "$f" ]; then git add -- "$f"; fi
           done
           git diff --cached --check

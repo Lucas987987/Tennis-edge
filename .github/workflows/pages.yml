@@ -84,6 +84,10 @@ jobs:
             Tennis_Edge_Lab/research_explorer.css
             Tennis_Edge_Lab/research_profils.js
             Tennis_Edge_Lab/research_profils.css
+            Tennis_Edge_Lab/research_reconciliation.js
+            Tennis_Edge_Lab/research_reconciliation.css
+            Tennis_Edge_Lab/research_direct.js
+            Tennis_Edge_Lab/research_direct.css
             Tennis_Edge_Lab/tennis_meta.py
             Tennis_Edge_Lab/books.py
             Tennis_Edge_Lab/clv_stats.py
@@ -108,6 +112,8 @@ jobs:
             Tennis_Edge_Lab/live/explorateur_alertes.json.gz
             Tennis_Edge_Lab/live/explorateur_histo.json.gz
             Tennis_Edge_Lab/live/explorateur_matchs.json.gz
+            Tennis_Edge_Lab/live/explorateur_detections.json.gz
+            Tennis_Edge_Lab/live/reconciliation_hypotheses.json
             Tennis_Edge_Lab/live/archive/bookmakers_sets_v61/current
             Tennis_Edge_Lab/registry
             scripts/validation_report.py
@@ -212,7 +218,7 @@ jobs:
           for f in index.html style.css app.js data.js; do
             cp "Tennis_Edge_Lab/$f" "_site/Tennis_Edge_Lab/$f"
           done
-          for f in research.html research.js research_v61.js research_v63.js research_v66.js research_explorer.js research_profils.js freshness.js research.css research_v632.css research_v66.css research_explorer.css research_profils.css v4.js v6.js; do
+          for f in research.html research.js research_v61.js research_v63.js research_v66.js research_explorer.js research_profils.js research_reconciliation.js research_direct.js freshness.js research.css research_v632.css research_v66.css research_explorer.css research_profils.css research_reconciliation.css research_direct.css v4.js v6.js; do
             cp "Tennis_Edge_Lab/$f" "_site/Tennis_Edge_Lab/$f"
           done
           # Rapports : copie fidèle, état de fraîcheur explicite, jamais de remplacement
@@ -222,7 +228,7 @@ jobs:
             --daily-run-at "${DAILY_RUN_AT}"
           # Explorateur : .json.gz (lu via DecompressionStream) + copie .json décompressée
           # en secours pour les navigateurs sans DecompressionStream (non committée).
-          for x in explorateur_alertes explorateur_histo explorateur_matchs; do
+          for x in explorateur_alertes explorateur_histo explorateur_matchs explorateur_detections; do
             if [ -f "Tennis_Edge_Lab/live/$x.json.gz" ]; then
               cp "Tennis_Edge_Lab/live/$x.json.gz" "_site/Tennis_Edge_Lab/live/$x.json.gz"
               gunzip -c "Tennis_Edge_Lab/live/$x.json.gz" > "_site/Tennis_Edge_Lab/live/$x.json"
