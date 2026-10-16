@@ -65,6 +65,7 @@ import urllib.request
 import urllib.parse
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import journal_direct              # noqa: E402 — journal complet (schéma 2)
 import lien_joueur                   # noqa: E402 — liens vers les fiches
 import validation_report as _vr      # noqa: E402
 import oddspapi_v5 as ov      # noqa: E402
@@ -271,24 +272,20 @@ def main():
             continue                   # déjà signalé
         ok = envoyer(message(g, steam, cote, book, ampleur, lead))
         n_envoyes += 1
+        # Journal COMPLET (schéma 2, scripts/journal_direct.py) : TOUTE
+        # détection dans la règle est écrite — envoyée, doublon, échec ou
+        # non tentée. Champs de décision écrits une fois, jamais modifiés.
+        rec = journal_direct.ligne('H13', uid, g, steam, t_det, maintenant,
+                                   cote, book, ampleur, lead, ok, None)
         etat[uid] = {'t': maintenant.isoformat(timespec='seconds'),
-                     'cote': round(cote, 2), 'book': book, 'envoye': ok}
-        with open(LOG, 'a', encoding='utf-8') as f:
-            f.write(json.dumps({
-                'uid': uid, 'detecte_le': t_det.isoformat(timespec='seconds'),
-                'signale_le': maintenant.isoformat(timespec='seconds'),
-                'joueur': g['_home'] if steam == 'h' else g['_away'],
-                'adversaire': g['_away'] if steam == 'h' else g['_home'],
-                'tournoi': g.get('_tour'), 'cote': round(cote, 2),
-                'book': book, 'ampleur_pts': round(ampleur, 2),
-                'lead_min': round(lead, 0), 'commence': g['_ct'].isoformat(),
-                'envoye': ok, 'gele_le': FREEZE,
-            }, ensure_ascii=False) + '\n')
+                     'commence': g['_ct'].isoformat(),
+                     'cote': round(cote, 2), 'pin_open': rec['pin_open'],
+                     'book': book, 'envoye': ok, 'doublon': None or ''}
+        journal_direct.ecrire(LOG, rec)
 
     # Purge des états dont le match est passé : sans elle le fichier gonfle
     # indéfiniment et l'anti-doublon finit par coûter plus cher que le calcul.
-    limite = (maintenant - datetime.timedelta(days=3)).isoformat()
-    etat = {k: v for k, v in etat.items() if str(v.get('t', '')) >= limite}
+    etat = journal_direct.purger(etat, maintenant)
     try:
         ov.ecriture_atomique(ETAT, etat, ensure_ascii=False, indent=1)
     except Exception as e:
@@ -296,11 +293,8 @@ def main():
 
     print(f"  {len(games)} matchs · {n_vus} avec mouvement détecté · "
           f"{n_bande} dans la bande · {n_envoyes} signal(aux) envoyé(s)")
-    # Le VERDICT reste rendu par validation_report.roi_bande_watch() sur
-    # moves_detail_hist.csv. Ce journal-ci sert à SUIVRE en direct et à
-    # vérifier que la détection temps réel voit bien la même population que
-    # la reconstruction batch — pas à juger. Deux juges finissent par
-    # diverger.
+    # DEPUIS LE 16/10/2026 le verdict se rend sur CE journal (suivi_direct.py
+    # -> verdicts_direct.json) ; la reconstruction n'est plus qu'un contrôle.
     return 0
 
 

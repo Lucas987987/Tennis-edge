@@ -1,0 +1,25 @@
+/* V7.0 Réconciliation — mobile d'abord (412 px) */
+#reconciliation table.rc-table{min-width:0;font-size:12px}
+#reconciliation .rc-table th,#reconciliation .rc-table td{padding:8px 6px}
+#reconciliation .rc-row{cursor:pointer}
+#reconciliation .rc-row:hover,#reconciliation .rc-row:focus{background:#f1f6fd;outline:none}
+#reconciliation .rc-selected td{background:#e8f0fb}
+#reconciliation .rc-card{margin:14px 0;min-width:0;overflow-wrap:anywhere}
+#reconciliation .rc-funnel{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px 0}
+#reconciliation .rc-step{border:1px solid var(--line,#dfe6ef);border-radius:10px;padding:8px;min-width:0}
+#reconciliation .rc-step small{display:block;color:var(--muted,#62728b);font-size:11px;line-height:1.35}
+#reconciliation .rc-step strong{display:block;font-size:20px;margin:2px 0}
+#reconciliation .rc-reasons{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+#reconciliation .rc-reasons h4,#reconciliation h4{font-size:13px;margin:12px 0 6px}
+#reconciliation .rc-reasons ul{margin:0;padding-left:18px;font-size:12px;line-height:1.6}
+#reconciliation .rc-flag{color:#b42318;font-weight:700}
+#reconciliation .rc-warn{display:inline-block;font-size:11px;padding:1px 6px;border-radius:6px;background:#fff4e5;color:#7a4a00;border:1px solid #f3c98b}
+#reconciliation .rc-filter{display:flex;flex-direction:column;gap:4px;font-size:12px;margin:8px 0}
+#reconciliation .rc-filter select{min-height:40px;font:inherit;padding:6px;border-radius:8px;border:1px solid var(--line,#cbd5e1);width:100%;background:#fff}
+#reconciliation .rc-list{list-style:none;margin:0;padding:0}
+#reconciliation .rc-list li{border-top:1px solid var(--line,#e2e8f0);padding:8px 0;font-size:13px;line-height:1.4}
+#reconciliation .rc-list li.rc-unexplained{border-left:4px solid #b42318;padding-left:8px;background:#fff5f5}
+#reconciliation .rc-more{min-height:40px;margin:10px 0;padding:8px 12px;border-radius:10px;border:1px solid var(--line,#cbd5e1);background:#fff;font:inherit;cursor:pointer;width:100%}
+@media(max-width:700px){#reconciliation .rc-reasons{grid-template-columns:1fr}#reconciliation .rc-step strong{font-size:18px}}
+#reconciliation .rc-table td:first-child,#reconciliation .rc-table th:first-child{min-width:44px;word-break:normal;overflow-wrap:normal}
+#reconciliation .rc-measures td:first-child{min-width:150px}
