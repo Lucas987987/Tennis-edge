@@ -1,13 +1,15 @@
 {
  "schema_version": 2,
- "generated_at": "2026-10-16T15:34:48+00:00",
+ "generated_at": "2026-10-16T17:09:49+00:00",
  "sources": {
   "worker": {
    "source": "API Worker D1 /api/hypotheses (fetch_worker_snapshot.py)",
-   "fichier": "worker_hypotheses.json",
-   "status": "absent"
+   "fichier": "worker_hypotheses_capture.json",
+   "status": "ok",
+   "fetched_at": "2026-10-16T17:09:48Z",
+   "worker_generated_at": "2026-10-16T16:19:20Z"
   },
-  "suivi_officiel": "alertes en direct : h*_signal_log.jsonl + suivi_direct/resultats.json (verdicts_direct.json du 2026-10-16T11:48:45Z)",
+  "suivi_officiel": "alertes en direct : h*_signal_log.jsonl + suivi_direct/resultats.json (verdicts_direct.json du 2026-10-16T16:19:20Z)",
   "reconstruction": "moves_detail_hist.csv filtré par les règles gelées de validation_report.py (lignes jusqu'au 2026-10-14) — contrôle, ne juge pas",
   "rapprochement": "uid + joueur normalisé ; à défaut paire de joueurs + date ±1 jour"
  },
@@ -75,12 +77,44 @@
    "gel": "2026-09-06",
    "canal": "h13",
    "mise_en_service": "2026-09-06",
-   "worker": null,
+   "worker": {
+    "gele_le": "2026-09-06",
+    "out_of_sample": {
+     "n": 191,
+     "gains": 82,
+     "taux": 42.9,
+     "seuil": 42,
+     "ecart": 1,
+     "roi": 3.5,
+     "pnl": 6.8,
+     "cote_moyenne": 2.42,
+     "clv_moyen": -2.5,
+     "clv_pin_moyen": -2.5,
+     "clv_pin_p": 1,
+     "clv_n": 202,
+     "clv_positif": 31.7,
+     "lead_moyen_h": 7.8,
+     "periode": "2026-09-07 -> 2026-10-15",
+     "verdict": "ne tranche pas",
+     "n_detectees": 207,
+     "n_envoyees": 207,
+     "n_doublons": 0,
+     "n_non_envoyees_autres": 0,
+     "n_denouees": 191,
+     "n_commencees": 206,
+     "n_sans_resultat": 15,
+     "sans_resultat_pct": 7.3,
+     "verrouillable": true,
+     "statut": "verrouillable (résultats complets à 93 %)"
+    },
+    "n": 191,
+    "roi": 3.5
+   },
    "suivi_officiel": {
-    "n": 189,
-    "gagnes": 81,
+    "n": 191,
+    "gagnes": 82,
     "roi": 3.5,
-    "pts": 0.9,
+    "pts": 1.0,
     "clv_pin": -2.5,
     "clv_pin_ic95": [
      -3.4,
@@ -91,10 +125,10 @@
     "n_envoyees": 207,
     "n_doublons": 0,
     "source": "verdicts_direct.json",
-    "sans_resultat_pct": 8.3,
-    "statut": "verrouillable (résultats complets à 92 %)",
+    "sans_resultat_pct": 7.3,
+    "statut": "verrouillable (résultats complets à 93 %)",
     "verrouillable": true,
-    "genere_le": "2026-10-16T11:48:45Z"
+    "genere_le": "2026-10-16T16:19:20Z"
    },
    "reconstruction": {
     "n": 135,
@@ -107,7 +141,7 @@
     "validation_report": {
      "k": 59,
      "n": 135,
-     "p0": 0.4230192040279504
+     "p0": 0.42301920402794996
     },
     "egal_validation_report": true
    },
@@ -116,7 +150,7 @@
     "direct_envoyees": 207,
     "direct_doublons": 0,
     "direct_non_envoyees_autres": 0,
-    "direct_denouees": 189,
+    "direct_denouees": 191,
     "reconstruction_detectees": 244,
     "reconstruction_reglees": 135,
     "communes": 66,
@@ -136,20 +170,20 @@
    },
    "mesures": {
     "suivi_officiel": {
-     "n": 189,
-     "gagnes": 81,
-     "roi": 3.47,
-     "pts": 0.94,
-     "clv_pin": -2.59,
-     "clv_n": 188
+     "n": 191,
+     "gagnes": 82,
+     "roi": 3.53,
+     "pts": 0.97,
+     "clv_pin": -2.56,
+     "clv_n": 190
     },
     "envoyees": {
-     "n": 189,
-     "gagnes": 81,
-     "roi": 3.47,
-     "pts": 0.94,
-     "clv_pin": -2.59,
-     "clv_n": 188
+     "n": 191,
+     "gagnes": 82,
+     "roi": 3.53,
+     "pts": 0.97,
+     "clv_pin": -2.56,
+     "clv_n": 190
     },
     "detectees_non_envoyees": {
      "n": 0,
@@ -184,12 +218,12 @@
      "clv_n": 27
     },
     "direct_seule": {
-     "n": 125,
-     "gagnes": 50,
-     "roi": -4.28,
-     "pts": -2.14,
-     "clv_pin": -2.74,
-     "clv_n": 124
+     "n": 127,
+     "gagnes": 51,
+     "roi": -4.06,
+     "pts": -2.03,
+     "clv_pin": -2.7,
+     "clv_n": 126
     },
     "reconstruction_seule": {
      "n": 108,
@@ -4605,7 +4639,7 @@
      "uid": "2026-10-16_maja_chwalinska_maria_sakkari",
      "cote": 2.2,
      "book": "betway",
-     "statut": "non dénouée",
+     "statut": "dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
      "detail": "match du 2026-10-16, reconstruction arrêtée au 2026-10-14",
@@ -4647,7 +4681,7 @@
      "uid": "2026-10-16_rafael_jodar_casper_ruud",
      "cote": 2.2,
      "book": "bet365",
-     "statut": "non dénouée",
+     "statut": "dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
      "detail": "match du 2026-10-16, reconstruction arrêtée au 2026-10-14",
@@ -4673,8 +4707,25 @@
    "regle": "mouvement > 5.0 % · 8–24 h",
    "gel": "2026-10-02",
    "canal": "h14",
-   "mise_en_service": null,
-   "worker": null,
+   "mise_en_service": "2026-10-16",
+   "worker": {
+    "gele_le": "2026-10-02",
+    "out_of_sample": {
+     "n": 0,
+     "n_detectees": 0,
+     "n_envoyees": 0,
+     "n_doublons": 0,
+     "n_non_envoyees_autres": 0,
+     "n_denouees": 0,
+     "n_commencees": 0,
+     "n_sans_resultat": 0,
+     "sans_resultat_pct": 0,
+     "verrouillable": true,
+     "statut": "verrouillable (résultats complets à 100 %)"
+    },
+    "n": 0,
+    "roi": null
+   },
    "suivi_officiel": {
     "n": 0,
     "gagnes": 0,
@@ -4690,7 +4741,7 @@
     "sans_resultat_pct": 0.0,
     "statut": "verrouillable (résultats complets à 100 %)",
     "verrouillable": true,
-    "genere_le": "2026-10-16T11:48:45Z"
+    "genere_le": "2026-10-16T16:19:20Z"
    },
    "reconstruction": {
     "n": 91,
@@ -4703,14 +4754,14 @@
     "validation_report": {
      "k": 39,
      "n": 91,
-     "p0": 0.41256575538228174
+     "p0": 0.4125657553822815
     },
     "egal_validation_report": true
    },
    "entonnoir": {
-    "direct_detectees": 0,
+    "direct_detectees": 1,
     "direct_envoyees": 0,
-    "direct_doublons": 0,
+    "direct_doublons": 1,
     "direct_non_envoyees_autres": 0,
     "direct_denouees": 0,
     "reconstruction_detectees": 97,
@@ -4718,10 +4769,12 @@
     "communes": 0,
     "reconstruction_seule": 97,
     "reconstruction_seule_raisons": {
-     "sans_canal": 97
+     "avant_canal": 97
     },
-    "direct_seule": 0,
-    "direct_seule_raisons": {},
+    "direct_seule": 1,
+    "direct_seule_raisons": {
+     "pas_encore_reconstruit": 1
+    },
     "inexpliques": 0
    },
    "mesures": {
@@ -4800,9 +4853,9 @@
      "cote": 2.85,
      "book": "betsson",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -4814,9 +4867,9 @@
      "cote": 2.38,
      "book": "betsson",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -4828,9 +4881,9 @@
      "cote": 2.41,
      "book": "betsson",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -4842,9 +4895,9 @@
      "cote": 2.5,
      "book": "betsson",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -4856,9 +4909,9 @@
      "cote": 1.85,
      "book": "bwin",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -4870,9 +4923,9 @@
      "cote": 1.73,
      "book": "unibet",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -4884,9 +4937,9 @@
      "cote": 2.25,
      "book": "bwin",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -4898,9 +4951,9 @@
      "cote": 2.0,
      "book": "betway",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -4912,9 +4965,9 @@
      "cote": 1.73,
      "book": "888sport",
      "statut": "non réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -4926,9 +4979,9 @@
      "cote": 3.0,
      "book": "bet365",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -4940,9 +4993,9 @@
      "cote": 2.25,
      "book": "bet365",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -4954,9 +5007,9 @@
      "cote": 1.85,
      "book": "betsson",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -4968,9 +5021,9 @@
      "cote": 2.2,
      "book": "888sport",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -4982,9 +5035,9 @@
      "cote": 2.6,
      "book": "unibet",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -4996,9 +5049,9 @@
      "cote": 2.75,
      "book": "betsson",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -5010,9 +5063,9 @@
      "cote": 2.1,
      "book": "betway",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -5024,9 +5077,9 @@
      "cote": 1.4,
      "book": "betway",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -5038,9 +5091,9 @@
      "cote": 4.6,
      "book": "unibet",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -5052,9 +5105,9 @@
      "cote": 5.5,
      "book": "bet365",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -5066,9 +5119,9 @@
      "cote": 1.73,
      "book": "888sport",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -5080,9 +5133,9 @@
      "cote": 1.55,
      "book": "betway",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -5094,9 +5147,9 @@
      "cote": 2.7,
      "book": "bwin",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -5108,9 +5161,9 @@
      "cote": 1.74,
      "book": "leovegas",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -5122,9 +5175,9 @@
      "cote": 1.7,
      "book": "betsson",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -5136,9 +5189,9 @@
      "cote": 1.85,
      "book": "bwin",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -5150,9 +5203,9 @@
      "cote": 8.0,
      "book": "betway",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -5164,9 +5217,9 @@
      "cote": 3.3,
      "book": "betsson",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -5178,9 +5231,9 @@
      "cote": 3.8,
      "book": "betway",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -5192,9 +5245,9 @@
      "cote": 3.65,
      "book": "betsson",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -5206,9 +5259,9 @@
      "cote": 3.2,
      "book": "betway",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -5220,9 +5273,9 @@
      "cote": 3.75,
      "book": "888sport",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -5234,9 +5287,9 @@
      "cote": 4.5,
      "book": "bet365",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -5248,9 +5301,9 @@
      "cote": 2.2,
      "book": "betway",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -5262,9 +5315,9 @@
      "cote": 2.2,
      "book": "betway",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -5276,9 +5329,9 @@
      "cote": 3.2,
      "book": "betway",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -5290,9 +5343,9 @@
      "cote": 2.75,
      "book": "betway",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -5304,9 +5357,9 @@
      "cote": 2.05,
      "book": "betsson",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -5318,9 +5371,9 @@
      "cote": 2.0,
      "book": "betway",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -5332,9 +5385,9 @@
      "cote": 2.6,
      "book": "bwin",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -5346,9 +5399,9 @@
      "cote": 2.3,
      "book": "betway",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -5360,9 +5413,9 @@
      "cote": 1.55,
      "book": "bwin",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -5374,9 +5427,9 @@
      "cote": 1.73,
      "book": "888sport",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -5388,9 +5441,9 @@
      "cote": 3.0,
      "book": "betsson",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -5402,9 +5455,9 @@
      "cote": 2.0,
      "book": "bwin",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -5416,9 +5469,9 @@
      "cote": 3.05,
      "book": "unibet",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -5430,9 +5483,9 @@
      "cote": 3.3,
      "book": "unibet",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -5444,9 +5497,9 @@
      "cote": 2.9,
      "book": "unibet",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -5458,9 +5511,9 @@
      "cote": 2.3,
      "book": "betway",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -5472,9 +5525,9 @@
      "cote": 2.9,
      "book": "betway",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -5486,9 +5539,9 @@
      "cote": 2.3,
      "book": "betway",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -5500,9 +5553,9 @@
      "cote": 2.05,
      "book": "unibet",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -5514,9 +5567,9 @@
      "cote": 2.5,
      "book": "888sport",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -5528,9 +5581,9 @@
      "cote": 2.2,
      "book": "bwin",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -5542,9 +5595,9 @@
      "cote": 1.97,
      "book": "bet365",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -5556,9 +5609,9 @@
      "cote": 1.6,
      "book": "bwin",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -5570,9 +5623,9 @@
      "cote": 1.44,
      "book": "betway",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -5584,9 +5637,9 @@
      "cote": 7.2,
      "book": "betsson",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -5598,9 +5651,9 @@
      "cote": 3.75,
      "book": "bet365",
      "statut": "non réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -5612,9 +5665,9 @@
      "cote": 4.7,
      "book": "unibet",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -5626,9 +5679,9 @@
      "cote": 5.25,
      "book": "betway",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -5640,9 +5693,9 @@
      "cote": 1.57,
      "book": "888sport",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -5654,9 +5707,9 @@
      "cote": 2.75,
      "book": "888sport",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -5668,9 +5721,9 @@
      "cote": 1.91,
      "book": "888sport",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -5682,9 +5735,9 @@
      "cote": 1.61,
      "book": "888sport",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -5696,9 +5749,9 @@
      "cote": 3.5,
      "book": "bet365",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -5710,9 +5763,9 @@
      "cote": 2.3,
      "book": "betway",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -5724,9 +5777,9 @@
      "cote": 1.45,
      "book": "betway",
      "statut": "non réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -5738,9 +5791,9 @@
      "cote": 4.3,
      "book": "betsson",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -5752,9 +5805,9 @@
      "cote": 2.46,
      "book": "betsson",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -5766,9 +5819,9 @@
      "cote": 2.02,
      "book": "betsson",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -5780,9 +5833,9 @@
      "cote": 7.0,
      "book": "888sport",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -5794,9 +5847,9 @@
      "cote": 5.0,
      "book": "888sport",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -5808,9 +5861,9 @@
      "cote": 4.75,
      "book": "bwin",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -5822,9 +5875,9 @@
      "cote": 3.55,
      "book": "betsson",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -5836,9 +5889,9 @@
      "cote": 2.47,
      "book": "betsson",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -5850,9 +5903,9 @@
      "cote": 2.75,
      "book": "unibet",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -5864,9 +5917,9 @@
      "cote": 2.5,
      "book": "bet365",
      "statut": "non réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -5878,9 +5931,9 @@
      "cote": 2.85,
      "book": "bwin",
      "statut": "non réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -5892,9 +5945,9 @@
      "cote": 1.8,
      "book": "bwin",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -5906,9 +5959,9 @@
      "cote": 2.3,
      "book": "betway",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -5920,9 +5973,9 @@
      "cote": 1.6,
      "book": "betway",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -5934,9 +5987,9 @@
      "cote": 1.91,
      "book": "unibet",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -5948,9 +6001,9 @@
      "cote": 4.75,
      "book": "betway",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -5962,9 +6015,9 @@
      "cote": 3.25,
      "book": "888sport",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -5976,9 +6029,9 @@
      "cote": 2.39,
      "book": "betsson",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -5990,9 +6043,9 @@
      "cote": 4.1,
      "book": "betway",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -6004,9 +6057,9 @@
      "cote": 3.8,
      "book": "bwin",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -6018,9 +6071,9 @@
      "cote": 3.5,
      "book": "unibet",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -6032,9 +6085,9 @@
      "cote": 2.38,
      "book": "888sport",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -6046,9 +6099,9 @@
      "cote": 3.0,
      "book": "bet365",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -6060,9 +6113,9 @@
      "cote": 2.23,
      "book": "unibet",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -6074,9 +6127,9 @@
      "cote": 2.31,
      "book": "betsson",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -6088,9 +6141,9 @@
      "cote": 1.97,
      "book": "betsson",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -6102,9 +6155,9 @@
      "cote": 1.67,
      "book": "888sport",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -6116,9 +6169,9 @@
      "cote": 1.91,
      "book": "betway",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -6130,9 +6183,9 @@
      "cote": 1.58,
      "book": "unibet",
      "statut": "réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
      "explique": true
     },
     {
@@ -6144,9 +6197,23 @@
      "cote": 2.35,
      "book": "unibet",
      "statut": "non réglée",
-     "raison": "sans_canal",
-     "libelle": "Hypothèse sans canal en direct à cette date",
-     "detail": "canal H14 en direct créé le 16/10/2026",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "première détection en direct le 2026-10-16",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-16",
+     "match": "Juan Manuel La Serna – Franco Roncadelli",
+     "joueur": "Juan Manuel La Serna",
+     "uid": "2026-10-16_juan_manuel_la_serna_franco_roncadelli",
+     "cote": 2.1,
+     "book": "888sport",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-16, reconstruction arrêtée au 2026-10-14",
      "explique": true
     }
    ]
@@ -6156,7 +6223,39 @@
    "gel": "2026-09-25",
    "canal": "h15",
    "mise_en_service": "2026-09-24",
-   "worker": null,
+   "worker": {
+    "gele_le": "2026-09-25",
+    "out_of_sample": {
+     "n": 30,
+     "gains": 14,
+     "taux": 46.7,
+     "seuil": 37.5,
+     "ecart": 9.2,
+     "roi": 24.9,
+     "pnl": 7.5,
+     "cote_moyenne": 2.68,
+     "clv_moyen": -2.2,
+     "clv_pin_moyen": -2.2,
+     "clv_pin_p": 0.9841,
+     "clv_n": 39,
+     "clv_positif": 35.9,
+     "lead_moyen_h": 7.4,
+     "periode": "2026-09-30 -> 2026-10-13",
+     "verdict": "en attente de résultats (26,8 % sans résultat)",
+     "n_detectees": 41,
+     "n_envoyees": 0,
+     "n_doublons": 41,
+     "n_non_envoyees_autres": 0,
+     "n_denouees": 30,
+     "n_commencees": 41,
+     "n_sans_resultat": 11,
+     "sans_resultat_pct": 26.8,
+     "verrouillable": false,
+     "statut": "en attente de résultats (26,8 % sans résultat)"
+    },
+    "n": 30,
+    "roi": 24.9
+   },
    "suivi_officiel": {
     "n": 30,
     "gagnes": 14,
@@ -6175,7 +6274,7 @@
     "sans_resultat_pct": 26.8,
     "statut": "en attente de résultats (26,8 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-10-16T11:48:45Z"
+    "genere_le": "2026-10-16T16:19:20Z"
    },
    "reconstruction": {
     "n": 54,
@@ -7408,12 +7507,44 @@
    "gel": "2026-09-25",
    "canal": "h16",
    "mise_en_service": "2026-09-25",
-   "worker": null,
+   "worker": {
+    "gele_le": "2026-09-25",
+    "out_of_sample": {
+     "n": 102,
+     "gains": 72,
+     "taux": 70.6,
+     "seuil": 68.2,
+     "ecart": 2.4,
+     "roi": 3,
+     "pnl": 3,
+     "cote_moyenne": 1.49,
+     "clv_moyen": -0.4,
+     "clv_pin_moyen": -0.4,
+     "clv_pin_p": 0.776,
+     "clv_n": 117,
+     "clv_positif": 40.2,
+     "lead_moyen_h": 8.7,
+     "periode": "2026-09-26 -> 2026-10-15",
+     "verdict": "en attente de résultats (14,3 % sans résultat)",
+     "n_detectees": 119,
+     "n_envoyees": 119,
+     "n_doublons": 0,
+     "n_non_envoyees_autres": 0,
+     "n_denouees": 102,
+     "n_commencees": 119,
+     "n_sans_resultat": 17,
+     "sans_resultat_pct": 14.3,
+     "verrouillable": false,
+     "statut": "en attente de résultats (14,3 % sans résultat)"
+    },
+    "n": 102,
+    "roi": 3
+   },
    "suivi_officiel": {
-    "n": 101,
-    "gagnes": 71,
-    "roi": 2.5,
-    "pts": 2.1,
+    "n": 102,
+    "gagnes": 72,
+    "roi": 3.0,
+    "pts": 2.4,
     "clv_pin": -0.4,
     "clv_pin_ic95": [
      -1.3,
@@ -7424,10 +7555,10 @@
     "n_envoyees": 119,
     "n_doublons": 0,
     "source": "verdicts_direct.json",
-    "sans_resultat_pct": 15.1,
-    "statut": "en attente de résultats (15,1 % sans résultat)",
+    "sans_resultat_pct": 14.3,
+    "statut": "en attente de résultats (14,3 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-10-16T11:48:45Z"
+    "genere_le": "2026-10-16T16:19:20Z"
    },
    "reconstruction": {
     "n": 158,
@@ -7440,7 +7571,7 @@
     "validation_report": {
      "k": 108,
      "n": 158,
-     "p0": 0.6847029042597353
+     "p0": 0.684702904259735
     },
     "egal_validation_report": true
    },
@@ -7449,7 +7580,7 @@
     "direct_envoyees": 119,
     "direct_doublons": 0,
     "direct_non_envoyees_autres": 0,
-    "direct_denouees": 101,
+    "direct_denouees": 102,
     "reconstruction_detectees": 180,
     "reconstruction_reglees": 158,
     "communes": 36,
@@ -7468,20 +7599,20 @@
    },
    "mesures": {
     "suivi_officiel": {
-     "n": 101,
-     "gagnes": 71,
-     "roi": 2.48,
-     "pts": 2.05,
-     "clv_pin": -0.28,
-     "clv_n": 101
+     "n": 102,
+     "gagnes": 72,
+     "roi": 2.97,
+     "pts": 2.37,
+     "clv_pin": -0.22,
+     "clv_n": 102
     },
     "envoyees": {
-     "n": 101,
-     "gagnes": 71,
-     "roi": 2.48,
-     "pts": 2.05,
-     "clv_pin": -0.28,
-     "clv_n": 101
+     "n": 102,
+     "gagnes": 72,
+     "roi": 2.97,
+     "pts": 2.37,
+     "clv_pin": -0.22,
+     "clv_n": 102
     },
     "detectees_non_envoyees": {
      "n": 0,
@@ -7516,12 +7647,12 @@
      "clv_n": 30
     },
     "direct_seule": {
-     "n": 68,
-     "gagnes": 49,
-     "roi": 4.81,
-     "pts": 3.59,
-     "clv_pin": -0.36,
-     "clv_n": 68
+     "n": 69,
+     "gagnes": 50,
+     "roi": 5.51,
+     "pts": 4.04,
+     "clv_pin": -0.27,
+     "clv_n": 69
     },
     "reconstruction_seule": {
      "n": 127,
@@ -10705,7 +10836,7 @@
      "uid": "2026-10-16_daniil_medvedev_tommy_paul",
      "cote": 1.53,
      "book": "unibet",
-     "statut": "non dénouée",
+     "statut": "dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
      "detail": "match du 2026-10-16, reconstruction arrêtée au 2026-10-14",
@@ -10718,12 +10849,44 @@
    "gel": "2026-09-27",
    "canal": "h16b",
    "mise_en_service": "2026-09-29",
-   "worker": null,
+   "worker": {
+    "gele_le": "2026-09-27",
+    "out_of_sample": {
+     "n": 88,
+     "gains": 60,
+     "taux": 68.2,
+     "seuil": 66.1,
+     "ecart": 2.1,
+     "roi": 2.9,
+     "pnl": 2.5,
+     "cote_moyenne": 1.53,
+     "clv_moyen": -0.5,
+     "clv_pin_moyen": -0.5,
+     "clv_pin_p": 0.8056,
+     "clv_n": 103,
+     "clv_positif": 37.9,
+     "lead_moyen_h": 9.1,
+     "periode": "2026-09-29 -> 2026-10-15",
+     "verdict": "en attente de résultats (14,6 % sans résultat)",
+     "n_detectees": 103,
+     "n_envoyees": 103,
+     "n_doublons": 0,
+     "n_non_envoyees_autres": 0,
+     "n_denouees": 88,
+     "n_commencees": 103,
+     "n_sans_resultat": 15,
+     "sans_resultat_pct": 14.6,
+     "verrouillable": false,
+     "statut": "en attente de résultats (14,6 % sans résultat)"
+    },
+    "n": 88,
+    "roi": 2.9
+   },
    "suivi_officiel": {
-    "n": 87,
-    "gagnes": 59,
-    "roi": 2.3,
-    "pts": 1.7,
+    "n": 88,
+    "gagnes": 60,
+    "roi": 2.9,
+    "pts": 2.1,
     "clv_pin": -0.5,
     "clv_pin_ic95": [
      -1.6,
@@ -10734,10 +10897,10 @@
     "n_envoyees": 103,
     "n_doublons": 0,
     "source": "verdicts_direct.json",
-    "sans_resultat_pct": 15.5,
-    "statut": "en attente de résultats (15,5 % sans résultat)",
+    "sans_resultat_pct": 14.6,
+    "statut": "en attente de résultats (14,6 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-10-16T11:48:45Z"
+    "genere_le": "2026-10-16T16:19:20Z"
    },
    "reconstruction": {
     "n": 135,
@@ -10750,7 +10913,7 @@
     "validation_report": {
      "k": 89,
      "n": 135,
-     "p0": 0.658045277155003
+     "p0": 0.6580452771550028
     },
     "egal_validation_report": true
    },
@@ -10759,7 +10922,7 @@
     "direct_envoyees": 103,
     "direct_doublons": 0,
     "direct_non_envoyees_autres": 0,
-    "direct_denouees": 87,
+    "direct_denouees": 88,
     "reconstruction_detectees": 141,
     "reconstruction_reglees": 135,
     "communes": 32,
@@ -10778,20 +10941,20 @@
    },
    "mesures": {
     "suivi_officiel": {
-     "n": 87,
-     "gagnes": 59,
-     "roi": 2.32,
-     "pts": 1.71,
-     "clv_pin": -0.39,
-     "clv_n": 87
+     "n": 88,
+     "gagnes": 60,
+     "roi": 2.9,
+     "pts": 2.09,
+     "clv_pin": -0.32,
+     "clv_n": 88
     },
     "envoyees": {
-     "n": 87,
-     "gagnes": 59,
-     "roi": 2.32,
-     "pts": 1.71,
-     "clv_pin": -0.39,
-     "clv_n": 87
+     "n": 88,
+     "gagnes": 60,
+     "roi": 2.9,
+     "pts": 2.09,
+     "clv_pin": -0.32,
+     "clv_n": 88
     },
     "detectees_non_envoyees": {
      "n": 0,
@@ -10826,12 +10989,12 @@
      "clv_n": 27
     },
     "direct_seule": {
-     "n": 58,
-     "gagnes": 40,
-     "roi": 4.34,
-     "pts": 3.12,
-     "clv_pin": -0.41,
-     "clv_n": 58
+     "n": 59,
+     "gagnes": 41,
+     "roi": 5.17,
+     "pts": 3.65,
+     "clv_pin": -0.3,
+     "clv_n": 59
     },
     "reconstruction_seule": {
      "n": 107,
@@ -13357,7 +13520,7 @@
      "uid": "2026-10-16_daniil_medvedev_tommy_paul",
      "cote": 1.53,
      "book": "unibet",
-     "statut": "non dénouée",
+     "statut": "dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
      "detail": "match du 2026-10-16, reconstruction arrêtée au 2026-10-14",
@@ -13370,12 +13533,44 @@
    "gel": "2026-09-25",
    "canal": "h17",
    "mise_en_service": "2026-09-25",
-   "worker": null,
+   "worker": {
+    "gele_le": "2026-09-25",
+    "out_of_sample": {
+     "n": 35,
+     "gains": 21,
+     "taux": 60,
+     "seuil": 45.7,
+     "ecart": 14.3,
+     "roi": 23.7,
+     "pnl": 8.3,
+     "cote_moyenne": 2.64,
+     "clv_moyen": 2.4,
+     "clv_pin_moyen": 2.4,
+     "clv_pin_p": 0.0221,
+     "clv_n": 36,
+     "clv_positif": 66.7,
+     "lead_moyen_h": 8.4,
+     "periode": "2026-09-29 -> 2026-10-15",
+     "verdict": "ne tranche pas",
+     "n_detectees": 37,
+     "n_envoyees": 20,
+     "n_doublons": 17,
+     "n_non_envoyees_autres": 0,
+     "n_denouees": 35,
+     "n_commencees": 37,
+     "n_sans_resultat": 2,
+     "sans_resultat_pct": 5.4,
+     "verrouillable": true,
+     "statut": "verrouillable (résultats complets à 95 %)"
+    },
+    "n": 35,
+    "roi": 23.7
+   },
    "suivi_officiel": {
-    "n": 34,
+    "n": 35,
     "gagnes": 21,
-    "roi": 27.3,
-    "pts": 16.0,
+    "roi": 23.7,
+    "pts": 14.3,
     "clv_pin": 2.4,
     "clv_pin_ic95": [
      0.1,
@@ -13386,10 +13581,10 @@
     "n_envoyees": 20,
     "n_doublons": 17,
     "source": "verdicts_direct.json",
-    "sans_resultat_pct": 8.1,
-    "statut": "verrouillable (résultats complets à 92 %)",
+    "sans_resultat_pct": 5.4,
+    "statut": "verrouillable (résultats complets à 95 %)",
     "verrouillable": true,
-    "genere_le": "2026-10-16T11:48:45Z"
+    "genere_le": "2026-10-16T16:19:20Z"
    },
    "reconstruction": {
     "n": 61,
@@ -13402,7 +13597,7 @@
     "validation_report": {
      "k": 33,
      "n": 61,
-     "p0": 0.5298831091704923
+     "p0": 0.5298831091704926
     },
     "egal_validation_report": true
    },
@@ -13411,7 +13606,7 @@
     "direct_envoyees": 20,
     "direct_doublons": 17,
     "direct_non_envoyees_autres": 0,
-    "direct_denouees": 34,
+    "direct_denouees": 35,
     "reconstruction_detectees": 69,
     "reconstruction_reglees": 61,
     "communes": 6,
@@ -13430,12 +13625,12 @@
    },
    "mesures": {
     "suivi_officiel": {
-     "n": 34,
+     "n": 35,
      "gagnes": 21,
-     "roi": 27.32,
-     "pts": 16.03,
-     "clv_pin": 2.46,
-     "clv_n": 34
+     "roi": 23.69,
+     "pts": 14.27,
+     "clv_pin": 2.37,
+     "clv_n": 35
     },
     "envoyees": {
      "n": 19,
@@ -13446,12 +13641,12 @@
      "clv_n": 19
     },
     "detectees_non_envoyees": {
-     "n": 15,
+     "n": 16,
      "gagnes": 8,
-     "roi": 24.27,
-     "pts": 12.51,
-     "clv_pin": 2.47,
-     "clv_n": 15
+     "roi": 16.5,
+     "pts": 8.89,
+     "clv_pin": 2.25,
+     "clv_n": 16
     },
     "reconstruction": {
      "n": 61,
@@ -13478,12 +13673,12 @@
      "clv_n": 6
     },
     "direct_seule": {
-     "n": 28,
+     "n": 29,
      "gagnes": 15,
-     "roi": 6.82,
-     "pts": 9.48,
-     "clv_pin": 2.12,
-     "clv_n": 28
+     "roi": 3.14,
+     "pts": 7.59,
+     "clv_pin": 2.01,
+     "clv_n": 29
     },
     "reconstruction_seule": {
      "n": 55,
@@ -14805,7 +15000,7 @@
      "uid": "2026-10-16_rafael_jodar_casper_ruud",
      "cote": 2.2,
      "book": "bet365",
-     "statut": "non dénouée",
+     "statut": "dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
      "detail": "match du 2026-10-16, reconstruction arrêtée au 2026-10-14",
@@ -14818,7 +15013,39 @@
    "gel": "2026-09-27",
    "canal": "h18",
    "mise_en_service": "2026-09-29",
-   "worker": null,
+   "worker": {
+    "gele_le": "2026-09-27",
+    "out_of_sample": {
+     "n": 11,
+     "gains": 10,
+     "taux": 90.9,
+     "seuil": 66.6,
+     "ecart": 24.3,
+     "roi": 37.1,
+     "pnl": 4.1,
+     "cote_moyenne": 1.52,
+     "clv_moyen": 3,
+     "clv_pin_moyen": 3,
+     "clv_pin_p": 0.0007,
+     "clv_n": 12,
+     "clv_positif": 83.3,
+     "lead_moyen_h": 8,
+     "periode": "2026-09-29 -> 2026-10-15",
+     "verdict": "ne tranche pas",
+     "n_detectees": 12,
+     "n_envoyees": 12,
+     "n_doublons": 0,
+     "n_non_envoyees_autres": 0,
+     "n_denouees": 11,
+     "n_commencees": 12,
+     "n_sans_resultat": 1,
+     "sans_resultat_pct": 8.3,
+     "verrouillable": true,
+     "statut": "verrouillable (résultats complets à 92 %)"
+    },
+    "n": 11,
+    "roi": 37.1
+   },
    "suivi_officiel": {
     "n": 11,
     "gagnes": 10,
@@ -14837,7 +15064,7 @@
     "sans_resultat_pct": 8.3,
     "statut": "verrouillable (résultats complets à 92 %)",
     "verrouillable": true,
-    "genere_le": "2026-10-16T11:48:45Z"
+    "genere_le": "2026-10-16T16:19:20Z"
    },
    "reconstruction": {
     "n": 28,
@@ -14850,7 +15077,7 @@
     "validation_report": {
      "k": 24,
      "n": 28,
-     "p0": 0.7197866322503568
+     "p0": 0.7197866322503567
     },
     "egal_validation_report": true
    },
