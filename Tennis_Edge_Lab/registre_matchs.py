@@ -391,6 +391,13 @@ def run(sink):
     epath = root / OUT_EVAL
     if not (epath.is_file() and _same(epath, ev)):
         epath.write_text(json.dumps(ev, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+    # V7.4 : H19 « valeur contre Pinnacle juste » et sa grille (même lecture des partitions).
+    try:
+        _load("valeur.py").run(sink)
+    except Exception as exc:  # noqa: BLE001
+        import traceback
+        traceback.print_exc()
+        print(f"::warning::valeur.json non mis à jour ({type(exc).__name__}: {exc})")
     L = ev["lectures"]
     print(f"Registre : {len(matches)} matchs sur {len(months)} mois ({changed} fichier(s) réécrit(s)) ; "
           f"{L['lignes_lues']} lectures rejouées ; corrélation excès prédit/réalisé "

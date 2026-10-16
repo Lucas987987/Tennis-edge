@@ -43,3 +43,6 @@
 #matches .buttons{display:flex;gap:8px;align-items:center;justify-content:space-between;margin:10px 0}
 #matches .buttons button{min-height:40px}
 #matches .rg-table td:first-child{white-space:normal;min-width:6.5em;max-width:9em}
+#matches .rg-kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:8px 0}
+#matches .rg-kpis small{display:block;color:var(--muted,#62728b);font-size:11px;line-height:1.35}
+#matches .rg-kpis b{display:block;font-size:17px}
