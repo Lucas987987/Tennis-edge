@@ -1,0 +1,155 @@
+name: Appliquer un paquet
+
+# CRÉÉ LE 16/10/2026 — remplace les commandes tapées dans Codespaces.
+#
+# UTILISATION : déposer le(s) zip à la RACINE du dépôt (Add file → Upload
+# files, sur main). Ce workflow démarre tout seul et :
+#   1. décompresse le(s) zip déposé(s) dans ce commit (pas les anciens zips
+#      déjà présents à la racine) ;
+#   2. lance les tests (les mêmes que « Tests unitaires ») ;
+#   3. si tout est vert : supprime le zip, crée une branche paquet/…, ouvre
+#      la demande de fusion et la fusionne ;
+#   4. si un test est rouge : RIEN n'est modifié sur main (le zip reste là,
+#      envoyer le journal du run).
+#
+# Lancement à la main possible (onglet Actions → Appliquer un paquet → Run
+# workflow) en donnant les noms des zips, séparés par des espaces.
+#
+# BESOIN : le secret PAQUET_TOKEN (jeton fine-grained limité à ce dépôt,
+# droits Contents, Pull requests et Workflows en écriture). Le jeton
+# automatique des Actions ne peut ni modifier .github/workflows ni déclencher
+# les autres workflows (déploiement du worker, tests) après la fusion.
+#
+# JAMAIS de push forcé : branche neuve, fusion par demande de fusion.
+
+on:
+  push:
+    branches: [main]
+    paths: ['*.zip']
+  workflow_dispatch:
+    inputs:
+      paquets:
+        description: 'Noms des zips à la racine, séparés par des espaces'
+        required: true
+      fusionner:
+        description: 'Fusionner automatiquement si les tests sont verts'
+        type: boolean
+        default: true
+
+concurrency:
+  group: appliquer-paquet
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  appliquer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      GH_TOKEN: ${{ secrets.PAQUET_TOKEN }}
+    steps:
+      - name: Vérifier le jeton
+        run: |
+          if [ -z "$GH_TOKEN" ]; then
+            echo "::error::Secret PAQUET_TOKEN absent (Settings → Secrets and variables → Actions)."
+            exit 1
+          fi
+
+      - name: Liste des paquets
+        id: liste
+        env:
+          SAISIE: ${{ github.event.inputs.paquets }}
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            noms="$SAISIE"
+          else
+            # Seulement les zips AJOUTÉS ou REMPLACÉS par ce push, à la racine.
+            noms=$(jq -r '.commits[] | (.added + .modified)[]' "$GITHUB_EVENT_PATH" \
+                   | grep -E '^[^/]+\.zip$' | sort -u | tr '\n' ' ')
+          fi
+          echo "Paquets : ${noms:-aucun}"
+          echo "noms=$noms" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@v5
+        if: steps.liste.outputs.noms != ''
+        with:
+          ref: main
+          token: ${{ secrets.PAQUET_TOKEN }}
+          sparse-checkout: |
+            /*
+            !/parts
+          sparse-checkout-cone-mode: false
+
+      - name: Décompresser
+        if: steps.liste.outputs.noms != ''
+        id: unzip
+        run: |
+          set -e
+          faits=""
+          for z in ${{ steps.liste.outputs.noms }}; do
+            if [ ! -f "$z" ]; then
+              echo "⏭  $z : plus sur main (déjà appliqué ?)"
+              continue
+            fi
+            # Sécurité : aucun chemin absolu ni « .. » dans le zip.
+            if unzip -Z1 "$z" | grep -qE '(^/|(^|/)\.\.(/|$))'; then
+              echo "::error::$z contient un chemin interdit"; exit 1
+            fi
+            echo "── $z"
+            unzip -o -q "$z"
+            unzip -Z1 "$z" | grep -v '/$' | sed 's/^/   /'
+            git rm -q "$z"
+            faits="$faits ${z%.zip}"
+          done
+          echo "faits=$faits" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/setup-python@v6
+        if: steps.unzip.outputs.faits != ''
+        with:
+          python-version: '3.11'
+      - uses: actions/setup-node@v5
+        if: steps.unzip.outputs.faits != ''
+        with:
+          node-version: '20'
+
+      - name: Tests
+        if: steps.unzip.outputs.faits != ''
+        run: |
+          set -e
+          pip install -q -r requirements.txt
+          [ -d tests ] && pytest -q tests/
+          [ -d Tennis_Edge_Lab/tests ] && python3 -m unittest discover -s Tennis_Edge_Lab/tests
+          for f in Tennis_Edge_Lab/*.js workers/*/worker.js; do
+            [ -f "$f" ] && node --check "$f"
+          done
+          js=$(find Tennis_Edge_Lab/tests workers -name 'test_*.js' -o -name 'test_*.mjs' 2>/dev/null | sort)
+          [ -n "$js" ] && node --test $js
+          echo "✅ tests verts"
+
+      - name: Branche, demande de fusion, fusion
+        if: steps.unzip.outputs.faits != ''
+        run: |
+          set -e
+          git config user.name  "paquet-bot"
+          git config user.email "paquet-bot@users.noreply.github.com"
+          noms="$(echo ${{ steps.unzip.outputs.faits }})"
+          branche="paquet/$(echo "$noms" | tr ' ' '+' | tr -cd 'A-Za-z0-9_+.-')-${{ github.run_number }}"
+          git switch -c "$branche"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "Aucun changement à appliquer."; exit 0
+          fi
+          git commit -q -m "Paquet appliqué : $noms"
+          git push -u origin "$branche"
+          url=$(gh pr create --base main --head "$branche" \
+                --title "Paquet : $noms" \
+                --body "Appliqué par le workflow « Appliquer un paquet » (run ${{ github.run_id }}). Tests verts.")
+          echo "Demande de fusion : $url"
+          if [ "${{ github.event_name }}" = "push" ] || [ "${{ github.event.inputs.fusionner }}" = "true" ]; then
+            gh pr merge "$url" --squash --delete-branch
+            echo "✅ fusionnée dans main"
+          else
+            echo "À fusionner à la main : $url"
+          fi
