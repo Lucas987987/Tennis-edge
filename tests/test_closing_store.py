@@ -182,7 +182,8 @@ class RealFileTests(unittest.TestCase):
             full = cs.load_all(path, max_age_days=None)
             self.assertEqual(full, original)
             self.assertEqual(list(full), list(original))
-            self.assertLess(os.path.getsize(path), (REPO / "closing_lines.json").stat().st_size)
+            # <= : un fichier déjà chaud (rien à archiver) garde sa taille.
+            self.assertLessEqual(os.path.getsize(path), (REPO / "closing_lines.json").stat().st_size)
 
 
 if __name__ == "__main__":

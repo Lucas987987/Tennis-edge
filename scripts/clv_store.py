@@ -8,7 +8,7 @@ jour : à ce rythme il touchait le MUR GitHub de 100 Mo par fichier en
 quelques semaines (push refusé = collecte bloquée). Même remède que les
 courbes (parts/hist_*) : un fichier par mois, en ajout seul.
 
-    clv_history/clv_history_2026-10.jsonl     (puis _2, _3 au-delà de 90 Mo)
+    clv_history/clv_history_2026-10.jsonl     (puis _2, _3 au-delà de 8 Mo)
 
 ORDRE IDENTIQUE, À LA LIGNE PRÈS
 Les lecteurs construisent des dicts « dernier gagnant » : l'ordre compte.
@@ -46,7 +46,11 @@ import sys
 LEGACY = "clv_history.jsonl"
 DIRNAME = "clv_history"
 MARKER = "MIGRATION.json"
-MAX_MB = float(os.environ.get("CLV_PART_MAX_MB", "90"))
+# 16/10/2026 : 90 -> 8 Mo. La partition du mois courant est réécrite à
+# chaque run de fetch_clv (~5 fois par jour) : à 17-35 Mo, cela faisait
+# ~100 Mo de nouvelles versions par jour. À 8 Mo max, la partition en cours
+# reste petite (rotation en _2, _3… dans le mois, ordre conservé).
+MAX_MB = float(os.environ.get("CLV_PART_MAX_MB", "8"))
 _NAME = re.compile(r"^clv_history_(\d{4}-\d{2})(?:_(\d+))?\.jsonl$")
 
 
