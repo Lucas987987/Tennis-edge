@@ -44,16 +44,18 @@ test('filtres, statistiques des alertes et bloc de gel', () => {
     ],
   };
   const D = X.prepareAlerts(doc);
-  assert.deepEqual(D.fields.map(f => f.name), ['type', 'circuit', 'suivie_public']); // jamais post_entree
-  const idx = X.filterIndices(D, [{ field: 'type', values: ['H17'] }]);
+  assert.deepEqual(D.order, ['type', 'circuit', 'suivie_public']); // jamais post_entree
+  const idx = X.filterIndices(D, { cats: { type: ['H17'] }, ranges: {} });
   assert.deepEqual(idx, [0, 1]);
-  const s = X.stats(D, idx);
+  const s = X.stats(D, idx, 'alerte');
   assert.equal(s.n, 2); assert.equal(s.settled, 2); assert.equal(s.wins, 1);
   close(s.roi, 5); close(s.clv, 0.5);
-  const all = X.stats(D, X.filterIndices(D, []));
+  const all = X.stats(D, X.filterIndices(D, { cats: {}, ranges: {} }), 'alerte');
   assert.equal(all.clvN, 3);
-  X._state.filters = [{ field: 'type', values: ['H17'] }, { field: 'circuit', values: ['ATP'] }];
+  X._state.filters = { cats: { type: ['H17'], circuit: ['ATP'] }, ranges: {} };
+  X._state.kind = 'alertes';
   const spec = X.freezeSpec(D, s);
   assert.equal(spec.jeu, 'alertes');
   assert.deepEqual(spec.criteres, { type: ['H17'], circuit: ['ATP'] });
+  assert.equal(spec.plages, undefined);
 });
