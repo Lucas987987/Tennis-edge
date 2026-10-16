@@ -139,6 +139,8 @@ jobs:
           for f in kalshi_markets.json kalshi_collector_state.json; do
             [ -f "$f" ] && git add -- "$f" || echo "  (absent : $f)"
           done
+          # 16/10/2026 : registre en ajout seul (market_registry) — fichiers du jour.
+          for f in registres_marches/*.jsonl; do [ -f "$f" ] && git add -- "$f" || true; done
 
           # GARDE-FOU TAILLE. Le 19/08, une partition de 221 Mo a fait rejeter
           # le push ENTIER par GitHub : 15 min de collecte et tous les autres

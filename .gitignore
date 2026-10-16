@@ -36,3 +36,7 @@ calib_cache.json
 # clean_clv_metrics / repair_curve_sides sur les partitions mensuelles.
 *.r2tmp
 clv_history/*.bak
+
+# AJOUTÉ LE 16/10/2026 : cache des champs volatils des registres de marchés
+# (liquidity, volume…) — reconstruit à chaque run, jamais committé.
+registres_marches/.volatil_*
