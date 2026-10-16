@@ -148,13 +148,25 @@ def _lines(path):
                 yield line
 
 
-def collect(root, counters):
-    """records[(uid, book)] = {start, home, away, tournament, curves: {side: anchors}}."""
+def collect(root, counters, series=None):
+    """records[(uid, book)] = {start, home, away, tournament, curves: {side: anchors}}.
+
+    V7.3 : si `series` est un dict, la courbe Pinnacle complète (points où la cote
+    change) y est gardée : series[uid][side] = [(heure, cote)] — pour le registre."""
     records = {}
 
     def add(uid, book, start, home, away, tournament, home_curve, away_curve):
-        curves = {side: engine._anchors(engine._curve_points(curve, start, counters), start)
+        points = {side: engine._curve_points(curve, start, counters)
                   for side, curve in (("home", home_curve), ("away", away_curve))}
+        curves = {side: engine._anchors(points[side], start) for side in ("home", "away")}
+        if series is not None and book == "pinnacle":
+            dest = series.setdefault(uid, {"home": [], "away": []})
+            for side in ("home", "away"):
+                last = None
+                for stamp, odds, _ in points[side]:
+                    if odds != last:
+                        dest[side].append((stamp, odds))
+                        last = odds
         key = (uid, book)
         prev = records.get(key)
         if prev is None:
@@ -339,20 +351,26 @@ def encode(rows) -> dict:
     return {"columns": columns, "dicts": dicts, "data": data, "n": len(rows)}
 
 
-def build(root=ROOT, environ=None) -> dict:
+def build(root=ROOT, environ=None, sink=None) -> dict:
+    """`sink` (dict, facultatif) reçoit les matériaux du registre V7.3 : records,
+    courbes Pinnacle, lignes, résultats, surfaces — une seule lecture des partitions."""
     root = pathlib.Path(root)
     materialize(environ)
     counters = collections.Counter()
     explorer = _load("explorer_build.py")
-    records = collect(root, counters)
+    series = {} if sink is not None else None
+    records = collect(root, counters, series)
     results = engine.load_results(root)
     pair = explorer.Results(root)
 
     def pair_results(player, opponent, start):
         won, _ = pair.won(None, None, player, start, opponent)
         return won
-    rows = build_rows(records, results, alert_index(root),
-                      meta.SurfaceMap(root / "historique/tennis_data.csv.gz"), pair_results)
+    surfaces = meta.SurfaceMap(root / "historique/tennis_data.csv.gz")
+    rows = build_rows(records, results, alert_index(root), surfaces, pair_results)
+    if sink is not None:
+        sink.update({"records": records, "series": series, "rows": rows, "results": results,
+                     "surfaces": surfaces, "pair_results": pair_results, "root": root})
     doc = encode(rows)
     doc.update({
         "schema_version": 1,
@@ -404,13 +422,22 @@ def main(argv=None) -> int:
     parser.add_argument("root", nargs="?", default=str(ROOT))
     args = parser.parse_args(argv)
     root = pathlib.Path(args.root).resolve()
-    doc = build(root)
+    sink = {}
+    doc = build(root, sink=sink)
     changed = write(root, doc)
     s = doc["summary"]
     size = (root / OUTPUT).stat().st_size
     print(f"Explorateur — tous les matchs : {s['lignes']} lignes, {s['avec_resultat']} avec résultat, "
           f"{s['avec_clv']} avec CLV ; {size / 1e6:.2f} Mo gz ({'modifié' if changed else 'inchangé'}) ; "
           f"horizons {s['par_horizon']}")
+    # V7.3 : registre de tous les matchs + lectures des profils rejouées dans le temps.
+    # Une panne ici ne bloque jamais le jeu de l'Explorateur (déjà écrit).
+    try:
+        _load("registre_matchs.py").run(sink)
+    except Exception as exc:  # noqa: BLE001
+        import traceback
+        traceback.print_exc()
+        print(f"::warning::Registre des matchs non mis à jour ({type(exc).__name__}: {exc})")
     return 0
 
 
