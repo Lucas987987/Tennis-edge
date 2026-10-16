@@ -19,6 +19,9 @@ name: Soft open detector
 # regeneres a chaque run faisaient echouer le merge puis le push
 # (panne du 16/08/2026). Portee workflow = toutes les etapes.
 env:
+  # Étape 4 (16/10/2026) : l'historique FIGÉ des courbes (parts/hist_*) est
+  # servi par R2 ; les lecteurs rapatrient ce qui manque (scripts/hist_r2.py).
+  R2_HIST_MATERIALIZE: '1'
   # R2 (15/10/2026) — voir README_MIGRATION_R2.md. off | double | on ;
   # sans variable de dépôt : double (git fait foi, R2 reçoit une copie).
   R2_PRIMARY: ${{ vars.R2_PRIMARY || 'double' }}

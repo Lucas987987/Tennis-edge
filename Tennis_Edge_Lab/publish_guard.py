@@ -8,6 +8,7 @@ vide, pending ou error : l'ancienne version est conservée et signalée.
 Aucune donnée source ni aucun registre n'est modifié.
 """
 import argparse
+import gzip
 import json
 import pathlib
 import sys
@@ -89,10 +90,26 @@ def data_through(doc):
     return None
 
 
+def read_source(path):
+    """Octets JSON d'un rapport : le fichier lui-même, ou sa version compressée
+    `<nom>.gz` (étape 4 stockage, 16/10/2026 : candidate_watch_v61 n'est plus
+    committé qu'en .json.gz). Lève OSError si aucun des deux n'existe."""
+    path = pathlib.Path(path)
+    if path.is_file():
+        return path.read_bytes()
+    gz = path.with_name(path.name + ".gz")
+    if gz.is_file():
+        try:
+            return gzip.decompress(gz.read_bytes())
+        except (EOFError, gzip.BadGzipFile) as exc:
+            raise OSError(f"{gz} illisible : {exc}") from exc
+    raise OSError(f"{path} absent")
+
+
 def load_valid(path):
     """Retourne (document, motif) : document None si absent, vide ou illisible."""
     try:
-        raw = pathlib.Path(path).read_bytes()
+        raw = read_source(path)
     except OSError:
         return None, "missing"
     if not raw.strip():
@@ -142,7 +159,7 @@ def stage(root, site, previous_base, now, daily_run_at=None):
         verified_at = daily_run_at if name in DAILY_REPORTS else None
         state = classify(doc, reason, max_age, now, verified_at)
         carried = False
-        raw = (root / source).read_bytes() if reason == "ok" else b""
+        raw = read_source(root / source) if reason == "ok" else b""
         if reason != "ok":
             previous = fetch_previous(previous_base, name)
             if previous is not None:
@@ -154,6 +171,10 @@ def stage(root, site, previous_base, now, daily_run_at=None):
         target = live / name
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_bytes(raw)
+        if (root / source).with_name((root / source).name + ".gz").is_file():
+            # Version compressée publiée aussi : research_v61.js la lit en
+            # priorité (DecompressionStream), le .json reste le repli.
+            (live / (name + ".gz")).write_bytes(gzip.compress(raw, 9, mtime=0))
         entries.append({
             "file": name,
             "tab": tab,

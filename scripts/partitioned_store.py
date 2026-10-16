@@ -644,6 +644,12 @@ def iter_bookmaker_lines(
         if (root / legacy).is_file():
             with (root / legacy).open(encoding="utf-8") as stream:
                 yield from (line for line in stream if line.strip())
+    # Étape 4 (16/10/2026) : historique figé servi par R2 (R2_HIST_MATERIALIZE=1).
+    try:
+        import r2_io
+        r2_io.materialize_hist(market, parts_dir=str(root / "parts"))
+    except Exception:                           # noqa: BLE001
+        pass
     plain = sorted((root / "parts").glob(f"hist_{market}_*.jsonl"))
     compressed = sorted((root / "parts").glob(f"hist_{market}_*.jsonl.gz"))
     plain_stems = {path.with_suffix("").name for path in plain}

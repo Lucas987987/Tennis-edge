@@ -16,6 +16,14 @@ on:
         description: "Seuil (min) de la 2e vague pour distinguer set 1 / set 2"
         default: "25"
 
+env:
+  # Étape 4 (16/10/2026) : l'historique FIGÉ des courbes (parts/hist_*) est
+  # servi par R2 ; les lecteurs rapatrient ce qui manque (scripts/hist_r2.py).
+  R2_HIST_MATERIALIZE: '1'
+  R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+  R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+  R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+
 jobs:
   identify:
     runs-on: ubuntu-latest

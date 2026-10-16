@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""clv_source.py — lecture de clv_history pour le Lab (15/10/2026).
+"""clv_source.py — lecture de clv_history (et odds_alerts_log) pour le Lab.
 
 Depuis la migration, clv_history.jsonl est découpé par mois dans le dossier
 voisin clv_history/clv_history_YYYY-MM.jsonl (voir scripts/clv_store.py).
@@ -13,18 +13,21 @@ from contextlib import contextmanager
 from pathlib import Path
 
 LEGACY = "clv_history.jsonl"
-_NAME = re.compile(r"^clv_history_(\d{4}-\d{2})(?:_(\d+))?\.jsonl$")
+# 16/10/2026 : même mécanisme pour odds_alerts_log.jsonl (scripts/alerts_store.py).
+PARTITIONED = {"clv_history.jsonl": "clv_history", "odds_alerts_log.jsonl": "odds_alerts_log"}
 
 
 def files(path):
     """Fichiers à lire pour `path`, dans l'ordre."""
     path = Path(path)
-    if path.name == LEGACY:
+    stem = PARTITIONED.get(path.name)
+    if stem:
+        name_re = re.compile(rf"^{stem}_(\d{{4}}-\d{{2}})(?:_(\d+))?\.jsonl$")
         found = []
-        folder = path.parent / "clv_history"
+        folder = path.parent / stem
         if folder.is_dir():
             for p in folder.iterdir():
-                m = _NAME.match(p.name)
+                m = name_re.match(p.name)
                 if m and p.is_file():
                     found.append(((m.group(1), int(m.group(2) or 1)), p))
         if found:

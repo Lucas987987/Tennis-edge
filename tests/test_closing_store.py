@@ -104,7 +104,7 @@ class ClosingStoreTests(unittest.TestCase):
         hot0 = cs.load_hot()
         hot0["d_old_unsettled"].update(SETTLED)            # froid, mais lot mûr (12 j)
         self.assertNotIn("d_old_unsettled", cs.roll(dict(hot0), cs.HOT, now=NOW))
-        tiny = {"y": entry(3.2, **SETTLED)}                 # seul froid : 3,2 j < 3+1
+        tiny = {"y": entry(cs.HOT_DAYS + 0.5, **SETTLED)}   # froid mais lot pas mûr
         self.assertEqual(cs.roll(dict(tiny), cs.HOT, now=NOW), tiny)
         # Run d'écrivain 4 jours plus tard : d est réglé, c a vieilli.
         later = NOW + dt.timedelta(days=4)
