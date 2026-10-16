@@ -239,6 +239,35 @@
       <h5>Selon la rareté de l'écart (z binomial)</h5>${tab(V.par_z, 'Écart du profil')}`;
   }
 
+  /** H19 « valeur contre Pinnacle juste » : suivi gelé + grille rétrospective (valeur.json). */
+  function valeurBlock(V) {
+    if (!V || !V.h19) return '';
+    const H = V.h19, P = H.prospectif, R = H.retrospectif;
+    const cl = s => (s && s.clv && fin(s.clv.mean) ? `${sg(s.clv.mean, 2)}<span class="detail">${ic(s.clv.ci)}</span>` : '—');
+    const roi = s => (s && s.roi && fin(s.roi.mean) ? `${sg(s.roi.mean)}<span class="detail">${ic(s.roi.ci)}</span>` : '—');
+    const pers = s => (s && fin(s.persistance) ? `${nf(100 * s.persistance, 0)} %` : '—');
+    const tab = (rows, first) => `<div class="table-wrap rg-table"><table><thead><tr><th>${first}</th><th>Paris</th><th>CLV · IC95</th><th>ROI · IC95</th><th>Prix encore là à la clôture</th></tr></thead><tbody>${rows.map(g => `<tr><td>${esc(g.groupe ?? g.case)}</td><td>${nf(g.n, 0)}</td><td>${cl(g)}</td><td>${roi(g)}</td><td>${pers(g)}</td></tr>`).join('')}</tbody></table></div>`;
+    const D = H.decoupes_retrospectives || {};
+    const cases = ((V.grille || {}).cases || []).filter(c => c.n >= 30);
+    const gtab = `<div class="table-wrap rg-table"><table><thead><tr><th>Case</th><th>Paris</th><th>CLV · IC95</th><th>p Holm</th><th>Mois CLV+</th><th>ROI</th></tr></thead><tbody>${cases.map(c => `<tr><td>${esc(c.case)}</td><td>${nf(c.n, 0)}</td><td>${cl(c)}</td><td class="${fin(c.p_holm) && c.p_holm < 0.05 ? 'good' : ''}">${fin(c.p_holm) ? nf(c.p_holm, 4) : '—'}</td><td>${esc(c.mois_clv_positif || '—')}</td><td>${roi(c)}</td></tr>`).join('')}</tbody></table></div>`;
+    const gelOk = H.gel && H.gel.etat === 'intact';
+    return `<details class="rg-eval" open><summary>H19 — valeur contre Pinnacle juste (gelée le ${esc(H.regle.gele_le)})</summary>
+      <p class="mini">Règle : meilleur book jouable (hors Pinnacle, cote de moins de ${H.regle.age_max_min} min, commission déduite) qui paie de +${nf(H.regle.ecart_min_pct, 0)} % à +${nf(H.regle.ecart_max_pct, 0)} % au-dessus de la cote Pinnacle juste, à 24 h, 6 h, 1 h ou 10 min ; un pari par joueur et par match. Jugée sur la CLV, matchs commençant après le gel, cible ${nf(H.regle.cible_n, 0)}. Gel ${gelOk ? '<b class="good">intact</b>' : '<b class="bad">' + esc(H.gel && H.gel.etat) + '</b>'}.</p>
+      <div class="rg-kpis"><div><small>Suivi prospectif</small><b>${nf(P.n, 0)} / ${nf(H.regle.cible_n, 0)}</b><small>${esc(P.verdict)}</small></div>
+        <div><small>CLV prospective</small><b>${P.clv && fin(P.clv.mean) ? sg(P.clv.mean, 2) : '—'}</b><small>${ic(P.clv && P.clv.ci)}</small></div>
+        <div><small>ROI prospectif</small><b>${P.roi && fin(P.roi.mean) ? sg(P.roi.mean) : '—'}</b><small>${nf(P.regles, 0)} réglés</small></div></div>
+      <h5>Avant le gel (a servi à choisir la règle : ne compte pas)</h5>
+      <p class="mini">${nf(R.n, 0)} paris · CLV ${sg(R.clv && R.clv.mean, 2)} ${ic(R.clv && R.clv.ci)} · ROI ${sg(R.roi && R.roi.mean)} · mois à CLV positive ${esc(R.mois_clv_positif || '—')} · prix encore là à la clôture ${pers(R)}</p>
+      ${D.persistance ? `<h5>Le book a-t-il corrigé son prix ?</h5>${tab(D.persistance, 'Prix à la clôture du book')}<p class="mini">Un prix qui disparaît avant la clôture = le book s'est aligné : l'écart était une vraie erreur de prix. Un prix encore là à la clôture = souvent Pinnacle qui s'est rapproché du book.</p>` : ''}
+      ${D.age_cote ? `<h5>Âge de la cote au moment de la décision</h5>${tab(D.age_cote, 'Âge')}` : ''}
+      ${D.ecart ? `<h5>Taille de l'écart</h5>${tab(D.ecart, 'Écart')}` : ''}
+      ${D.horizon ? `<h5>Horizon</h5>${tab(D.horizon, 'Horizon')}` : ''}
+      ${D.book ? `<h5>Book</h5>${tab(D.book.filter(g => g.n >= 5), 'Book')}` : ''}
+      <h5>Grille d'étude (exploratoire, corrigée de Holm sur ${nf(V.grille && V.grille.cases_testees, 0)} cases)</h5>${gtab}
+      <p class="mini">La grille sert à comprendre H19, jamais à la modifier : une case qui brille ici devra être gelée à son tour et jugée sur les matchs suivants.</p>
+    </details>`;
+  }
+
   function evaluation(ev) {
     if (!ev) return '';
     const L = ev.lectures || {};
@@ -284,7 +313,7 @@
     const shown = list.slice(state.page * PAGE, (state.page + 1) * PAGE);
     const opt = (vals, v) => vals.map(([k, l]) => `<option value="${esc(k)}" ${k === (v || '') ? 'selected' : ''}>${esc(l)}</option>`).join('');
     const circuits = [...new Set(cur.list.map(m => m.circuit))].sort();
-    host.innerHTML = `${evaluation(state.evalDoc)}
+    host.innerHTML = `${valeurBlock(state.valeurDoc)}${evaluation(state.evalDoc)}
       <div class="rg-filters">
         <label>Mois<select id="rgMois">${opt([...state.index.mois].reverse().map(x => [x.mois, `${x.mois} (${x.matchs})`]), state.mois)}</select></label>
         <label>Circuit<select id="rgCircuit">${opt([['', 'tous'], ...circuits.map(c => [c, c])], state.f.circuit)}</select></label>
@@ -324,12 +353,13 @@
       await loadMonth(state.index.mois[state.index.mois.length - 1].mois);
     } catch (e) { state.err = `Registre indisponible (${e.message}).`; }
     try { state.evalDoc = await json('./live/lectures_profils.json'); } catch { /* évaluation absente : le registre reste lisible */ }
+    try { state.valeurDoc = await json('./live/valeur.json'); } catch { /* H19 absente */ }
     render();
   }
   if (hasDoc && typeof module === 'undefined') {
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
   }
   if (typeof module !== 'undefined') {
-    module.exports = { victoires, powerFair, decodeMonth, fairRow, bestRow, filterMatches, coherence, lectureOf, effective, evaluation, fiche, row };
+    module.exports = { valeurBlock, victoires, powerFair, decodeMonth, fairRow, bestRow, filterMatches, coherence, lectureOf, effective, evaluation, fiche, row };
   }
 })();
