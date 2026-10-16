@@ -107,6 +107,7 @@ jobs:
             Tennis_Edge_Lab/live/profils_hypotheses.json
             Tennis_Edge_Lab/live/explorateur_alertes.json.gz
             Tennis_Edge_Lab/live/explorateur_histo.json.gz
+            Tennis_Edge_Lab/live/explorateur_matchs.json.gz
             Tennis_Edge_Lab/live/archive/bookmakers_sets_v61/current
             Tennis_Edge_Lab/registry
             scripts/validation_report.py
@@ -221,7 +222,7 @@ jobs:
             --daily-run-at "${DAILY_RUN_AT}"
           # Explorateur : .json.gz (lu via DecompressionStream) + copie .json décompressée
           # en secours pour les navigateurs sans DecompressionStream (non committée).
-          for x in explorateur_alertes explorateur_histo; do
+          for x in explorateur_alertes explorateur_histo explorateur_matchs; do
             if [ -f "Tennis_Edge_Lab/live/$x.json.gz" ]; then
               cp "Tennis_Edge_Lab/live/$x.json.gz" "_site/Tennis_Edge_Lab/live/$x.json.gz"
               gunzip -c "Tennis_Edge_Lab/live/$x.json.gz" > "_site/Tennis_Edge_Lab/live/$x.json"

@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
-"""V6.7 — Gels de sélections de l'Explorateur (choisies par Lucas).
+"""V6.7/V6.9 — Gels de sélections de l'Explorateur (choisies par Lucas).
+
+V6.9 : deux jeux gelables (« alertes » et « matchs »), critères catégoriels
+(OU dans un critère, ET entre critères), plages numériques [min, max]
+(bornes incluses ; une ligne sans valeur est exclue) et, pour « matchs », le
+prix d'entrée (pinnacle | jouable | fr). La même logique est implémentée en
+JavaScript (research_explorer.js) ; un jeu d'essai commun vérifie la parité.
 
 freeze   : valide une spécification JSON copiée depuis l'onglet Explorateur
            (« Préparer le gel ») et l'ajoute au registre chaîné
@@ -24,6 +30,8 @@ LAB = pathlib.Path(__file__).resolve().parent
 REGISTRY = "Tennis_Edge_Lab/registry/gel_explorateur.jsonl"
 REPORT = "Tennis_Edge_Lab/live/gel_explorateur_prospective.json"
 DATASET = "Tennis_Edge_Lab/live/explorateur_alertes.json.gz"
+DATASET_MATCHS = "Tennis_Edge_Lab/live/explorateur_matchs.json.gz"
+ENTRIES = ("pinnacle", "jouable", "fr")
 POLICY = "tennis-edge-explorateur-1"
 GENESIS = "GENESIS"
 MAX_CRITERIA = 6
@@ -48,8 +56,40 @@ def _load(name):
 
 explorer = _load("explorer_build.py")
 clv_stats = _load("clv_stats.py")
+_MATCHS = None
+
+
+def matchs_module():
+    global _MATCHS
+    if _MATCHS is None:
+        _MATCHS = _load("explorer_matchs.py")
+    return _MATCHS
+
+
 # Filtres gelables : connus avant l'entrée ET valables pour des matchs futurs.
 FREEZABLE = [f for f in explorer.FILTER_FIELDS if f != "mois"]
+
+
+def freezable(jeu):
+    """(catégoriels, numériques) gelables pour un jeu."""
+    if jeu == "alertes":
+        return FREEZABLE, list(explorer.NUM_FILTER_FIELDS)
+    m = matchs_module()
+    cats = [n for n, _, kind, role in m.FIELDS if role == "filtre" and kind == "cat" and n != "mois"]
+    nums = [n for n, _, kind, role in m.FIELDS if role == "filtre" and kind == "num"]
+    return cats, nums
+
+
+def row_matches(row, criteres, plages=None):
+    """Même règle que l'interface : OU dans un critère, ET entre critères, bornes incluses."""
+    for field, values in criteres.items():
+        if str(row.get(field)) not in values:
+            return False
+    for field, (low, high) in (plages or {}).items():
+        v = row.get(field)
+        if v is None or (low is not None and v < low) or (high is not None and v > high):
+            return False
+    return True
 
 
 def canonical(value) -> bytes:
@@ -67,7 +107,7 @@ def utc(value):
 
 
 def validate_spec(text: str) -> dict:
-    """Spécification attendue : {"jeu":"alertes","criteres":{"champ":["valeur",...]}, ...}."""
+    """{"jeu":"alertes"|"matchs","criteres":{champ:[valeurs]},"plages":{champ:[min,max]},"entree":...}."""
     if not isinstance(text, str) or not text.strip():
         raise ValueError("Spécification vide")
     if len(text) > MAX_SPEC_CHARS:
@@ -76,27 +116,62 @@ def validate_spec(text: str) -> dict:
         spec = json.loads(text)
     except ValueError as exc:
         raise ValueError(f"JSON invalide : {exc}") from exc
-    if not isinstance(spec, dict) or spec.get("jeu") != "alertes":
-        raise ValueError("Seules les sélections du jeu « Nos alertes » peuvent être gelées")
-    criteria = spec.get("criteres")
-    if not isinstance(criteria, dict) or not criteria:
+    jeu = spec.get("jeu") if isinstance(spec, dict) else None
+    if jeu not in ("alertes", "matchs"):
+        raise ValueError("Seules les sélections « Nos alertes » ou « Tous les matchs » peuvent être gelées")
+    cats, nums = freezable(jeu)
+    criteria = spec.get("criteres") or {}
+    ranges = spec.get("plages") or {}
+    if not isinstance(criteria, dict) or not isinstance(ranges, dict):
+        raise ValueError("criteres et plages doivent être des objets")
+    if not criteria and not ranges:
         raise ValueError("Aucun critère : rien à geler")
-    if len(criteria) > MAX_CRITERIA:
+    if len(criteria) + len(ranges) > MAX_CRITERIA:
         raise ValueError(f"Au plus {MAX_CRITERIA} critères")
     clean = {}
     for field, values in criteria.items():
-        if field in explorer.FREEZE_FORBIDDEN or field == "mois":
+        if field == "mois" or field in explorer.FREEZE_FORBIDDEN and jeu == "alertes":
             raise ValueError(f"Critère interdit dans un gel (connu après coup ou passé) : {field}")
-        if field not in FREEZABLE:
-            raise ValueError(f"Critère inconnu : {field}")
+        if field not in cats:
+            raise ValueError(f"Critère inconnu ou interdit : {field}")
         if isinstance(values, str):
             values = [values]
         if (not isinstance(values, list) or not values or len(values) > 30
                 or any(not isinstance(v, str) or not v or len(v) > 120 for v in values)):
             raise ValueError(f"Valeurs invalides pour {field}")
         clean[field] = sorted(set(values))
-    return {"jeu": "alertes", "criteres": dict(sorted(clean.items())),
-            "contexte": spec.get("stats") if isinstance(spec.get("stats"), dict) else None}
+    clean_ranges = {}
+    for field, bounds in ranges.items():
+        if field not in nums:
+            raise ValueError(f"Plage inconnue ou interdite : {field}")
+        if (not isinstance(bounds, list) or len(bounds) != 2
+                or any(b is not None and (not isinstance(b, (int, float)) or isinstance(b, bool)) for b in bounds)
+                or bounds == [None, None]):
+            raise ValueError(f"Plage invalide pour {field} : [min, max] attendu")
+        if bounds[0] is not None and bounds[1] is not None and bounds[0] > bounds[1]:
+            raise ValueError(f"Plage vide pour {field}")
+        clean_ranges[field] = [None if b is None else float(b) for b in bounds]
+    entree = spec.get("entree")
+    if jeu == "matchs":
+        entree = entree or "jouable"
+        if entree not in ENTRIES:
+            raise ValueError("entree doit valoir pinnacle, jouable ou fr")
+    elif entree not in (None, "alerte"):
+        raise ValueError("Le jeu « alertes » n'a pas de choix de prix d'entrée")
+    out = {"jeu": jeu, "criteres": dict(sorted(clean.items())),
+           "contexte": spec.get("stats") if isinstance(spec.get("stats"), dict) else None}
+    if clean_ranges:
+        out["plages"] = dict(sorted(clean_ranges.items()))
+    if jeu == "matchs":
+        out["entree"] = entree
+    return out
+
+
+def spec_id(spec) -> str:
+    """Identifiant stable ; format V6.7 inchangé pour une sélection d'alertes sans plage."""
+    if spec["jeu"] == "alertes" and not spec.get("plages"):
+        return digest(spec["criteres"])[:16]
+    return digest({k: spec.get(k) for k in ("jeu", "criteres", "plages", "entree")})[:16]
 
 
 def read_registry(root=ROOT) -> list[dict]:
@@ -124,7 +199,7 @@ def freeze(root, text: str, when=None) -> dict:
     root = pathlib.Path(root)
     when = utc(when or dt.datetime.now(dt.timezone.utc))
     spec = validate_spec(text)
-    cid = digest(spec["criteres"])[:16]
+    cid = spec_id(spec)
     records = read_registry(root)
     if any(r["candidate_id"] == cid for r in records):
         raise ValueError(f"Sélection déjà gelée : {cid}")
@@ -132,11 +207,15 @@ def freeze(root, text: str, when=None) -> dict:
         "schema_version": 1, "policy_version": POLICY, "event_type": "freeze",
         "candidate_id": cid, "created_at": when.isoformat(timespec="seconds"),
         "eligible_after_utc": (when.date() + dt.timedelta(days=1)).isoformat(),
-        "jeu": "alertes", "criteres": spec["criteres"], "contexte_historique": spec["contexte"],
+        "jeu": spec["jeu"], "criteres": spec["criteres"], "contexte_historique": spec["contexte"],
         "validation_plan": {"primary": "CLV Pinnacle moyen > 0 (IC95 par jour), Holm sur tous les gels Explorateur",
                             "secondary": "ROI à mise fixe", "minimum_matches": 30},
         "previous_hash": records[-1]["event_hash"] if records else GENESIS,
     }
+    if spec.get("plages"):
+        record["plages"] = spec["plages"]
+    if spec.get("entree"):
+        record["entree"] = spec["entree"]
     record["event_hash"] = digest(record)
     path = root / REGISTRY
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -152,33 +231,67 @@ def load_rows(root):
     return [dict(zip(columns, row)) for row in doc["rows"]]
 
 
+def load_match_rows(root):
+    path = pathlib.Path(root) / DATASET_MATCHS
+    if not path.is_file():
+        return []
+    doc = json.loads(gzip.decompress(path.read_bytes()))
+    return decode_columns(doc)
+
+
+def decode_columns(doc):
+    names = [c["name"] for c in doc["columns"]]
+    rows = []
+    for i in range(doc["n"]):
+        row = {}
+        for name in names:
+            v = doc["data"][name][i]
+            row[name] = doc["dicts"][name][v] if name in doc["dicts"] else v
+        rows.append(row)
+    return rows
+
+
 def prospective(record, rows):
-    """Strictement après le gel : alerte > created_at ET date ≥ jour UTC suivant."""
+    """Strictement après le gel : décision > created_at ET date ≥ jour UTC suivant."""
     frozen_at, eligible = utc(record["created_at"]), record["eligible_after_utc"]
+    time_field = "decision_ts" if record.get("jeu") == "matchs" else "_at"
     out = []
     for row in rows:
-        if utc(row["_at"]) <= frozen_at or row["date"] < eligible:
+        if utc(row[time_field]) <= frozen_at or row["date"] < eligible:
             continue
-        if all(str(row.get(field)) in values for field, values in record["criteres"].items()):
+        if row_matches(row, record["criteres"], record.get("plages")):
             out.append(row)
     return out
+
+
+def measures(record):
+    """(champ CLV, champ P&L) selon le jeu et le prix d'entrée gelé."""
+    if record.get("jeu") == "matchs":
+        entree = record.get("entree", "jouable")
+        return f"clv_{entree}", f"pnl_{entree}"
+    return "clv_pin", "pnl"
 
 
 def evaluate(root=ROOT, rows=None, now=None) -> dict:
     root = pathlib.Path(root)
     records = read_registry(root)
     if rows is None:
-        rows = load_rows(root) if records else []
+        rows = {"alertes": load_rows(root) if any(r.get("jeu", "alertes") == "alertes" for r in records) else [],
+                "matchs": load_match_rows(root) if any(r.get("jeu") == "matchs" for r in records) else []}
+    elif isinstance(rows, list):
+        rows = {"alertes": rows, "matchs": rows}
     out = []
     for record in records:
-        sel = prospective(record, rows)
-        clv = clv_stats.summary([r.get("clv_pin") for r in sel], [r["date"] for r in sel])
-        settled = [r for r in sel if r.get("pnl") is not None]
+        sel = prospective(record, rows.get(record.get("jeu", "alertes"), []))
+        clv_field, pnl_field = measures(record)
+        clv = clv_stats.summary([r.get(clv_field) for r in sel], [r["date"] for r in sel])
+        settled = [r for r in sel if r.get(pnl_field) is not None]
         out.append({
             "candidate_id": record["candidate_id"], "created_at": record["created_at"],
             "eligible_after_utc": record["eligible_after_utc"], "criteres": record["criteres"],
+            "jeu": record.get("jeu", "alertes"), "plages": record.get("plages"), "entree": record.get("entree"),
             "n": len(sel), "regles": len(settled),
-            "roi_pct": round(100 * sum(r["pnl"] for r in settled) / len(settled), 2) if settled else None,
+            "roi_pct": round(100 * sum(r[pnl_field] for r in settled) / len(settled), 2) if settled else None,
             "clv_pin_n": clv["n"], "clv_pin_mean_pct": clv["mean_pct"], "clv_pin_ci95": clv["ci95"],
             "p_clv_pin": clv["p_one_sided"], "sans_cloture_pinnacle": len(sel) - clv["n"],
         })
@@ -194,7 +307,7 @@ def evaluate(root=ROOT, rows=None, now=None) -> dict:
         "schema_version": 1, "policy_version": POLICY,
         "generated_at": (now or dt.datetime.now(dt.timezone.utc)).isoformat(timespec="seconds"),
         "registry": REGISTRY, "total_frozen": len(records),
-        "rule": "Alertes strictement après le gel, à partir du jour UTC suivant.",
+        "rule": "Alertes ou décisions strictement après le gel, à partir du jour UTC suivant.",
         "multiple_testing": "Holm sur tous les gels Explorateur (CLV Pinnacle, p unilatérale par grappes de jours).",
         "candidates": out,
     }
