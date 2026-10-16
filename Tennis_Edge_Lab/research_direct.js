@@ -129,6 +129,23 @@
       implied: implied.length ? implied.reduce((a, b) => a + b, 0) / implied.length : null,
       impliedFair: settled.every(i => rows[i].proba_juste), monthsPos: tot.length ? tot.filter(m => m[0] > 0).length / tot.length : null };
   }
+  // V7.3 : la CLV de ces matchs s'est-elle transformée en gains ? (miroir de lectures_profils.coherence)
+  function coherence(items) {
+    const ok = items.filter(([c, v, g]) => Number.isFinite(c) && c > 1 && Number.isFinite(v) && Number.isFinite(g));
+    const n = ok.length;
+    if (!n) return { n: 0, roi_attendu: null, roi_reel: null, z: null, etat: 'aucun pari réglé' };
+    let exp = 0, real = 0, vr = 0;
+    for (const [c, v, g] of ok) {
+      exp += v / 100; real += g;
+      const p = Math.min(Math.max((1 + v / 100) / c, 1e-6), 1 - 1e-6);
+      vr += c * c * p * (1 - p);
+    }
+    const z = vr ? (real - exp) / Math.sqrt(vr) : null;
+    const etat = n < 30 ? 'trop peu de paris' : z === null || Math.abs(z) < 2 ? 'cohérent'
+      : z > 0 ? 'gains au-dessus de la CLV' : 'la CLV ne se transforme pas en gains';
+    return { n, roi_attendu: 100 * exp / n, roi_reel: 100 * real / n, z, etat };
+  }
+
   function verdict(s, alpha) {
     const c = s.exces;
     if (c.n < MIN_N) return 'trop peu de matchs (n<30)';
@@ -219,7 +236,7 @@
   }
   /** Colonnes de explorateur_matchs -> objets (seuls les champs utiles). */
   function rowsFromMatchs(doc) {
-    const keep = [...SIMILARITY_FIELDS, 'date', 'gagne', 'clv_pinnacle', 'clv_jouable', 'pnl_jouable', 'proba_juste'];
+    const keep = [...SIMILARITY_FIELDS, 'date', 'gagne', 'clv_pinnacle', 'clv_jouable', 'pnl_jouable', 'proba_juste', 'cote_jouable'];
     const cols = Object.fromEntries(doc.columns.map(c => [c.name, c]));
     const rows = new Array(doc.n);
     for (let i = 0; i < doc.n; i++) rows[i] = {};
@@ -309,6 +326,10 @@
       <div><small>Écart aux matchs de même horizon et même cote (${sg(s.base)})</small><b class="${v === 'sous-coté' ? 'good' : v === 'sur-coté' ? 'bad' : ''}">${sg(s.exces.mean)}</b><small>${ic(s.exces.ci)}</small></div>
       <div><small>ROI au meilleur jouable</small><b>${sg(s.roi.mean)}</b><small>${ic(s.roi.ci)}</small></div></div>
       <p class="detail">CLV entrée meilleur jouable ${sg(s.clvJ.mean)} · mois CLV+ ${s.monthsPos === null ? '—' : nf(100 * s.monthsPos, 0) + ' %'} · p ${s.exces.p === null ? '—' : nf(s.exces.p, 3)} (seuil α/k = ${nf(alpha, 4)}, k = ${k} profils et découpes consultés)</p>
+      ${(() => {
+        const c = coherence(res.idx.map(i => [state.rows[i].cote_jouable, state.rows[i].clv_jouable, state.rows[i].pnl_jouable]));
+        return c.n ? `<p class="detail">CLV → gains (entrée meilleur jouable, ${nf(c.n, 0)} paris réglés) : ROI attendu d’après la CLV ${sg(c.roi_attendu)} · ROI réel ${sg(c.roi_reel)} · z ${c.z === null ? '—' : nf(c.z, 2)} → <b>${esc(c.etat)}</b></p>` : '';
+      })()}
       <p class="dm-verdict ${v === 'sous-coté' ? 'good' : ''}">${esc(verdictText(s, alpha))}</p></div>`;
   }
   function card(m, now, flags) {
@@ -367,6 +388,6 @@
   }
   if (typeof module !== 'undefined') {
     module.exports = { HORIZONS, RELAX, SIMILARITY_FIELDS, MOVE_BANDS, GAP_BANDS, powerFair, nearestHorizon, criteria, rowMatches,
-      similar, stats, baseline, verdict, verdictText, profileFor, sidePrices, mergeLiveOdds, freshness, visible, rowsFromMatchs, slug, clusterSummary };
+      similar, stats, baseline, verdict, verdictText, coherence, profileFor, sidePrices, mergeLiveOdds, freshness, visible, rowsFromMatchs, slug, clusterSummary };
   }
 })();

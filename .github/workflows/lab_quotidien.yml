@@ -238,7 +238,9 @@ jobs:
               Tennis_Edge_Lab/live/explorateur_alertes.json.gz \
               Tennis_Edge_Lab/live/explorateur_histo.json.gz \
               Tennis_Edge_Lab/live/explorateur_matchs.json.gz \
-              Tennis_Edge_Lab/live/explorateur_detections.json.gz; do
+              Tennis_Edge_Lab/live/explorateur_detections.json.gz \
+              Tennis_Edge_Lab/live/lectures_profils.json \
+              Tennis_Edge_Lab/live/registre/*; do
             if [ -f "$f" ]; then git add -- "$f"; fi
           done
           git diff --cached --check
