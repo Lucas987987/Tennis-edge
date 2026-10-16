@@ -1,4 +1,4 @@
-/* Tennis Edge Lab V6.9 — Explorateur v2 : filtres cumulatifs, plages numériques, 3 jeux. Lecture seule. */
+/* Tennis Edge Lab V7.0 — Explorateur v2 : filtres cumulatifs, plages numériques, 4 jeux (dont Détections du suivi officiel). Lecture seule. */
 (() => {
   'use strict';
   const hasDoc = typeof document !== 'undefined';
@@ -82,8 +82,8 @@
   function addNum(D, name, label, values) { D.num[name] = { vals: numArray(values), label }; D.order.push(name); }
 
   /** Jeu « alertes » (lignes + rôles) : filtre, filtre_num, filtre_apres_alerte. */
-  function prepareAlerts(doc) {
-    const D = emptyModel('alertes', doc.rows.length);
+  function prepareAlerts(doc, kind = 'alertes') {
+    const D = emptyModel(kind, doc.rows.length);
     const col = name => doc.columns.indexOf(name);
     const column = name => { const j = col(name); return doc.rows.map(r => r[j]); };
     for (const f of doc.fields) {
@@ -201,9 +201,16 @@
   }
 
   // ---------- État ----------
-  const state = { kind: 'alertes', data: {}, filters: { cats: {}, ranges: {} }, entry: 'jouable', splitBy: null,
-    sort: 'n', compare: false, seen: new Set(), frozen: null, panelOpen: true, openCrit: new Set() };
+  // V7.0 : les verdicts se lisent sur « Détections (suivi officiel) » (jeu par défaut).
+  const state = { kind: 'detections', data: {}, reco: null, filters: { cats: {}, ranges: {} }, entry: 'jouable', splitBy: null,
+    sort: 'n', compare: false,
+    // V7.2 : compteur de découpes PARTAGÉ avec l'onglet « Matchs en direct » (α/k commun à la session).
+    seen: (hasDoc && typeof window !== 'undefined' ? (window.TELab = window.TELab || { seen: new Set() }).seen : new Set()), frozen: null, panelOpen: true, openCrit: new Set() };
   const PRESETS = {
+    detections: [
+      { label: 'Détections non envoyées, par hypothèse', cats: { envoyee: ['non'] }, ranges: {}, split: 'type' },
+      { label: 'Envoyées ou non : comparer, par hypothèse', cats: {}, ranges: {}, split: 'envoyee' },
+    ],
     alertes: [
       { label: 'Alerte publique · ATP · cote 1,80–2,40 · ampleur ≥ 3 pts', cats: { type: ['PUBLIC'], circuit: ['ATP'] }, ranges: { cote: [1.8, 2.4], ampleur_pts: [3, null] }, split: 'tranche_delai' },
       { label: 'Exemple : alertes H suivies d’une alerte publique', cats: { type: ['H13', 'H16', 'H16B', 'H17', 'H18'], suivie_public: ['oui'] }, ranges: {}, split: 'circuit' },
@@ -221,6 +228,29 @@
   const entryKey = () => (state.kind === 'matchs' ? state.entry : 'alerte');
   const activeCount = () => Object.keys(state.filters.cats).length + Object.keys(state.filters.ranges).length;
 
+  /** n par hypothèse : suivi officiel (EN DIRECT), envoyées, reconstruction (contrôle), Worker — reconciliation_hypotheses.json. */
+  function populationCounts(reco) {
+    const out = [];
+    for (const [code, h] of Object.entries((reco && reco.hypotheses) || {})) {
+      const o = h.suivi_officiel || {}, e = h.entonnoir || {};
+      out.push({ code, detectees: o.n_detectees ?? null, denouees: o.n ?? null, envoyees: e.direct_envoyees ?? null,
+        reconstruction: h.reconstruction?.n ?? null, worker: h.worker?.n ?? null, communes: e.communes ?? null });
+    }
+    return out;
+  }
+  function populationLine() {
+    if (!['detections', 'alertes'].includes(state.kind)) return '';
+    const rows = populationCounts(state.reco);
+    if (!rows.length) return '';
+    return `<details class="xp-pop"><summary><b>H* : suivi officiel (direct) / envoyées / contrôle</b> (n)</summary><div class="table-wrap"><table class="xp-mini"><thead><tr><th>Hyp.</th><th class="num">Détectées</th><th class="num">Dénouées</th><th class="num">Envoyées</th><th class="num">Reconstruction</th><th class="num">Worker</th></tr></thead><tbody>${rows.map(r => `<tr><td>${esc(r.code)}</td><td class="num">${nf(r.detectees, 0)}</td><td class="num">${nf(r.denouees, 0)}</td><td class="num">${nf(r.envoyees, 0)}</td><td class="num">${nf(r.reconstruction, 0)}</td><td class="num">${nf(r.worker, 0)}</td></tr>`).join('')}</tbody></table></div><p class="mini">Verdicts : alertes en direct uniquement. Reconstruction = contrôle. Détail : onglet « Réconciliation ».</p></details>`;
+  }
+  function otherPopulation(value) {
+    const r = populationCounts(state.reco).find(x => x.code === value);
+    if (!r) return '';
+    if (state.kind === 'detections') return `envoyées ${nf(r.envoyees, 0)} · reconstruction ${nf(r.reconstruction, 0)}`;
+    return `suivi officiel ${nf(r.detectees, 0)} détectées`;
+  }
+
   function render() {
     const host = $('explorerBody');
     if (!host) return;
@@ -237,16 +267,17 @@
   }
 
   function toolbar() {
-    const kinds = [['alertes', 'Nos alertes'], ['matchs', 'Tous les matchs'], ['histo', 'Historique 2010–2026']];
+    const kinds = [['detections', 'Détections (suivi officiel)'], ['alertes', 'Alertes envoyées'], ['matchs', 'Tous les matchs'], ['histo', 'Historique 2010–2026']];
     const note = {
-      alertes: 'Alertes surtout de <b>juin à octobre 2026</b> : échantillons courts. Mesure principale : CLV Pinnacle.',
+      detections: '<b>Suivi officiel = alertes EN DIRECT</b> (h*_signal_log.jsonl, données figées à la détection, résultat ajouté ensuite), y compris doublons non envoyés : mêmes n que verdicts_direct.json. <b>Référence pour les verdicts.</b>',
+      alertes: 'Messages réellement envoyés (H*, sans doublon), alertes publiques et mouvements, surtout de <b>juin à octobre 2026</b> : échantillons courts. Mesure principale : CLV Pinnacle.',
       matchs: 'Chaque match suivi depuis juin, côté par côté, à 24 h, 6 h, 1 h et 10 min. Mesure principale : CLV Pinnacle du prix d’entrée choisi.',
       histo: 'tennis-data, clôture Pinnacle (marge incluse) : ROI au prix de clôture, pas de CLV.',
     }[state.kind];
     const entries = state.kind === 'matchs' ? `<label class="xp-entry">Prix d’entrée <select id="xpEntry">${[['pinnacle', 'Pinnacle'], ['jouable', 'Meilleur jouable'], ['fr', 'Meilleur FR']].map(([v, l]) => `<option value="${v}" ${state.entry === v ? 'selected' : ''}>${l}</option>`).join('')}</select></label>` : '';
     const presets = PRESETS[state.kind] || [];
     return `<div class="xp-switch" role="group" aria-label="Jeu de données">${kinds.map(([v, l]) => `<button type="button" data-kind="${v}" class="${state.kind === v ? 'selected' : ''}">${l}</button>`).join('')}</div>
-      <p class="mini">${note} · <b>Découpes consultées : ${k()}</b> · seuil corrigé α/k = ${pval(0.05 / k())}</p>${entries}
+      <p class="mini">${note} · <b>Découpes consultées : ${k()}</b> · seuil corrigé α/k = ${pval(0.05 / k())}</p>${populationLine()}${entries}
       ${presets.length ? `<div class="xp-presets">${presets.map((p, i) => `<button type="button" data-preset="${i}">${esc(p.label)}</button>`).join('')}</div>` : ''}`;
   }
 
@@ -298,7 +329,7 @@
     let period = '';
     if (idx.length) { const ds = idx.map(i => (data.kind === 'histo' ? data.year[i] : data.date[i])).sort(); period = `${ds[0]} → ${ds[ds.length - 1]}`; }
     const isH = data.kind === 'histo';
-    const unit = { alertes: 'Alertes', matchs: 'Décisions', histo: 'Paris' }[data.kind];
+    const unit = { detections: 'Détections', alertes: 'Alertes', matchs: 'Décisions', histo: 'Paris' }[data.kind];
     return `<article class="candidate xp-summary"><h3>Sélection actuelle ${badges(s)}</h3>
       <div class="stats"><div><small>${unit}</small><strong>${nf(s.n, 0)}</strong><small>${isH ? '' : `${nf(s.settled, 0)} réglées`}</small></div>
       ${isH ? '' : `<div><small>CLV Pinnacle · IC95</small><strong class="${excludesZero(s.clvCi) ? (s.clv > 0 ? 'good' : 'bad') : ''}">${pct(s.clv)}</strong><small>${ciTxt(s.clvCi)}</small></div>`}
@@ -360,7 +391,8 @@
       <div class="table-wrap"><table class="xp-split"><thead><tr><th>${esc(label(state.splitBy))}</th><th class="num">n</th><th class="num">Gagnés</th><th class="num">ROI · IC95</th>${isH ? '' : '<th class="num">CLV Pinnacle · IC95</th><th class="num">p (seuil)</th>'}<th class="num">${isH ? 'Années ROI+' : 'Mois CLV+'}</th><th></th></tr></thead><tbody>
       ${rows.map((r, j) => {
         const s = r.s;
-        return `<tr class="xp-row" data-row="${j}" tabindex="0"><td><b>${esc(r.label)}</b> ${s.n < 30 ? '<span class="xp-warn">n &lt; 30</span>' : ''}${!isH && excludesZero(s.roiCi) && s.roiCi[0] > 0 && !excludesZero(s.clvCi) ? ' <span class="xp-luck">probablement de la chance</span>' : ''}</td>
+        const other = state.splitBy === 'type' && ['detections', 'alertes'].includes(data.kind) ? otherPopulation(r.value) : '';
+        return `<tr class="xp-row" data-row="${j}" tabindex="0"><td><b>${esc(r.label)}</b>${other ? `<div class="detail">${esc(other)}</div>` : ''} ${s.n < 30 ? '<span class="xp-warn">n &lt; 30</span>' : ''}${!isH && excludesZero(s.roiCi) && s.roiCi[0] > 0 && !excludesZero(s.clvCi) ? ' <span class="xp-luck">probablement de la chance</span>' : ''}</td>
           <td class="num">${nf(s.n, 0)}</td><td class="num">${s.settled ? nf(100 * s.wins / s.settled, 0) + ' %' : '—'}</td>
           <td class="num">${pct(s.roi)}<div class="detail">${ciTxt(s.roiCi)}</div></td>
           ${isH ? '' : `<td class="num ${excludesZero(s.clvCi) ? 'xp-sig' : ''}">${pct(s.clv)}<div class="detail">${ciTxt(s.clvCi)}</div></td><td class="num">${pval(s.p)}<div class="detail">${s.p !== null && s.p < alpha ? '<b>&lt; α/k</b>' : `α/k ${pval(alpha)}`}</div></td>`}
@@ -382,7 +414,8 @@
     return spec;
   }
   function freezeBlock(data) {
-    if (data.kind === 'histo') return '<p class="mini">Le gel ne concerne que « Nos alertes » et « Tous les matchs » (l’historique est déjà passé).</p>';
+    if (data.kind === 'histo') return '<p class="mini">Le gel ne concerne que « Alertes envoyées » et « Tous les matchs » (l’historique est déjà passé).</p>';
+    if (data.kind === 'detections') return '<p class="mini">Les hypothèses H* sont déjà gelées : rien à geler ici. Pour une nouvelle piste, utilisez « Alertes envoyées » ou « Tous les matchs ».</p>';
     return '<div class="xp-freeze"><button type="button" id="xpFreeze">Préparer le gel</button><div id="xpFreezeOut"></div></div>';
   }
   function showFreeze() {
@@ -478,7 +511,8 @@
     if (state.data[kind]) return;
     const host = $('explorerBody');
     try {
-      if (kind === 'alertes') state.data.alertes = prepareAlerts(await fetchJsonGz('./live/explorateur_alertes'));
+      if (kind === 'detections') state.data.detections = prepareAlerts(await fetchJsonGz('./live/explorateur_detections'), 'detections');
+      else if (kind === 'alertes') state.data.alertes = prepareAlerts(await fetchJsonGz('./live/explorateur_alertes'));
       else if (kind === 'matchs') state.data.matchs = prepareMatchs(await fetchJsonGz('./live/explorateur_matchs'));
       else state.data.histo = prepareHisto(await fetchJsonGz('./live/explorateur_histo'));
     } catch (e) {
@@ -489,7 +523,15 @@
 
   async function start() {
     if (!$('explorerBody')) return;
-    try { await ensure('alertes'); render(); } catch { return; }
+    try {
+      const r = await fetch(`./live/reconciliation_hypotheses.json?t=${Date.now()}`, { cache: 'no-store' });
+      state.reco = r.ok ? await r.json() : null;
+    } catch { state.reco = null; }
+    try { await ensure(state.kind); } catch {
+      state.kind = 'alertes'; // repli : jeu Détections pas encore publié
+      try { await ensure('alertes'); } catch { return; }
+    }
+    render();
     try {
       const r = await fetch(`./live/gel_explorateur_prospective.json?t=${Date.now()}`, { cache: 'no-store' });
       state.frozen = r.ok ? await r.json() : null;
@@ -502,6 +544,6 @@
   }
   if (typeof module !== 'undefined') {
     module.exports = { clusterSummary, cubeStats, alertStats, stats, prepareAlerts, prepareMatchs, prepareRows, prepareHisto,
-      filterIndices, splitGroups, freezeSpec, _state: state };
+      filterIndices, splitGroups, freezeSpec, populationCounts, _state: state };
   }
 })();

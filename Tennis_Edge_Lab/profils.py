@@ -171,7 +171,7 @@ def rows_from_explorer(root):
 
 
 def rows_from_official(root):
-    """Suivi officiel : populations post-gel d'autoresearch (moves_detail_hist), CLV puissance."""
+    """Reconstruction (CONTRÔLE depuis le 16/10/2026) : populations post-gel d'autoresearch (moves_detail_hist), CLV puissance."""
     ar = _load("autoresearch.py")
     ar.ROOT = pathlib.Path(root)
     ar._external_features = None
@@ -349,7 +349,9 @@ def build(root=ROOT, explorer_rows=None, official_rows=None) -> dict:
     subjects = []
     for code in OFFICIAL:
         subjects.append((code, "alertes envoyées", code, explorer_rows.get(code, []), True))
-        subjects.append((code, "suivi officiel", code, official_rows.get(code, []), True))
+        # 16/10/2026 : le suivi officiel est désormais le journal EN DIRECT ; la
+        # reconstruction (moves_detail_hist) n'est plus qu'un contrôle.
+        subjects.append((code, "reconstruction (contrôle)", code, official_rows.get(code, []), True))
     for kind in ("PUBLIC", "MOUVEMENT"):
         subjects.append((kind, "alertes envoyées", kind, explorer_rows.get(kind, []), True))
     for name, rows in rows_from_explorer_freezes(root, explorer_rows).items() if explorer_rows else []:

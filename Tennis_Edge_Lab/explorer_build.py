@@ -40,7 +40,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 LAB = pathlib.Path(__file__).resolve().parent
 OUT_ALERTS = "Tennis_Edge_Lab/live/explorateur_alertes.json.gz"
 OUT_HISTO = "Tennis_Edge_Lab/live/explorateur_histo.json.gz"
-H_LOGS = ("h13", "h15", "h16", "h16b", "h17", "h18")
+H_LOGS = ("h13", "h14", "h15", "h16", "h16b", "h17", "h18")
 REF_BOOK = "médiane/ref"
 
 
