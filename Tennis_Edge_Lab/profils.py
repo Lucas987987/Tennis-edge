@@ -218,6 +218,8 @@ def rows_from_explorer_freezes(root, explorer_rows):
     all_rows = [r for rows in explorer_rows.values() for r in rows]
     out = {}
     for record in gel.read_registry(root):
+        if record.get("jeu", "alertes") != "alertes":
+            continue  # gels du jeu « matchs » : suivis dans l'onglet Explorateur
         rows = gel.prospective(record, all_rows)
         if rows:
             out[f"Gel Explorateur {record['candidate_id']}"] = rows

@@ -87,7 +87,12 @@ FIELDS = [
     ("date", "Date", "descriptif"),
     ("joueur", "Joueur", "descriptif"),
     ("uid", "Match", "descriptif"),
-    ("cote", "Cote d'entrée", "mesure"),
+    ("cote", "Cote d'entrée", "filtre_num"),
+    ("delai_min", "Délai avant match (min)", "filtre_num"),
+    ("ampleur_pts", "Ampleur du mouvement (pts)", "filtre_num"),
+    ("pin_move_avant_pct", "Mouvement Pinnacle ouverture→entrée (%)", "filtre_num"),
+    ("pin_age_h", "Âge du marché Pinnacle (h)", "filtre_num"),
+    ("pin_points_n", "Points Pinnacle avant entrée", "filtre_num"),
     ("gagne", "Gagné (1/0)", "mesure"),
     ("pnl", "P&L (1 unité)", "mesure"),
     ("clv_pin", "CLV Pinnacle %", "mesure"),
@@ -98,7 +103,9 @@ FIELDS = [
     ("pin_move_entree_cloture", "Mouvement Pinnacle entrée→clôture (après coup)", "post_entree"),
 ]
 FILTER_FIELDS = [name for name, _, role in FIELDS if role == "filtre"]
-FREEZE_FORBIDDEN = {name for name, _, role in FIELDS if role != "filtre"}
+# V6.9 : critères numériques (plages min/max) connus avant l'entrée.
+NUM_FILTER_FIELDS = [name for name, _, role in FIELDS if role == "filtre_num"]
+FREEZE_FORBIDDEN = {name for name, _, role in FIELDS if role not in ("filtre", "filtre_num")}
 
 
 def parse_time(value):
@@ -191,7 +198,8 @@ def pinnacle_features(item, side, at):
     pts, opp = item["curves"].get(side) or [], item["curves"].get(other) or []
     out = {"pin_close": None, "pin_close_adv": None, "pin_move_avant": "sans courbe",
            "pin_points": "sans courbe", "pin_age": "sans courbe", "cote_pinnacle": "inconnu",
-           "pin_move_entree_cloture": None}
+           "pin_move_entree_cloture": None, "pin_move_avant_pct": None, "pin_age_h": None,
+           "pin_points_n": None}
     if pts and opp:
         out["pin_close"], out["pin_close_adv"] = pts[-1][1], opp[-1][1]
     before = [p for p in pts if p[0] <= at]
@@ -199,11 +207,14 @@ def pinnacle_features(item, side, at):
     if before:
         move = 100 * (before[-1][1] / before[0][1] - 1)
         out["pin_move_avant"] = meta.band(move, meta.PIN_MOVE_BANDS)
+        out["pin_move_avant_pct"] = round(move, 2)
+        out["pin_points_n"] = len(before)
         out["pin_points"] = meta.band(len(before), ((0, 10, "< 10"), (10, 50, "10–50"),
                                                     (50, 200, "50–200"), (200, None, "≥ 200")))
         age_h = (at - before[0][0]).total_seconds() / 3600
         out["pin_age"] = meta.band(age_h, ((0, 6, "< 6 h"), (6, 24, "6–24 h"), (24, 72, "24–72 h"),
                                            (72, None, "≥ 72 h")))
+        out["pin_age_h"] = round(age_h, 1)
         if out["pin_close"]:
             out["pin_move_entree_cloture"] = round(100 * (out["pin_close"] / before[-1][1] - 1), 2)
     if entry and entry_adv:
@@ -355,6 +366,10 @@ def build_alerts(root=ROOT) -> dict:
             "nb_alertes_match": "1" if n_match == 1 else "2" if n_match == 2 else "3+",
             "pin_move_avant": feats["pin_move_avant"], "pin_points": feats["pin_points"],
             "pin_age": feats["pin_age"],
+            "delai_min": None if lead is None else round(lead),
+            "ampleur_pts": None if a["ampleur"] is None else round(abs(a["ampleur"]), 2),
+            "pin_move_avant_pct": feats["pin_move_avant_pct"], "pin_age_h": feats["pin_age_h"],
+            "pin_points_n": feats["pin_points_n"],
             "suivie_public": ("oui" if later_public else "non") if a["type"].startswith("H") else "sans objet",
             "date": a["at"].date().isoformat(), "joueur": a["joueur"], "uid": a["uid"],
             "cote": round(a["cote"], 3), "gagne": None if won is None else int(won),

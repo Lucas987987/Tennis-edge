@@ -20,3 +20,16 @@
 #explorer .xp-json{width:100%;font:12px/1.4 ui-monospace,Menlo,monospace;border-radius:8px;border:1px solid var(--line,#cbd5e1);padding:8px}
 #explorer .candidate{margin:12px 0;min-width:0;overflow-wrap:anywhere}
 #explorer .xp-cmp table{min-width:380px}
+/* V6.9 : panneau de filtres cumulatifs */
+#explorer .xp-switch button{flex:1 1 30%}
+#explorer .xp-entry{display:flex;flex-direction:column;gap:4px;font-size:12px;margin:6px 0}
+#explorer .xp-entry select{min-height:40px;font:inherit;border-radius:8px;border:1px solid var(--line,#cbd5e1);padding:6px}
+#explorer .xp-panel{border:1px solid var(--line,#cbd5e1);border-radius:12px;padding:8px 10px;margin:10px 0;background:#fff}
+#explorer .xp-panel>summary{cursor:pointer;font-size:13px;line-height:1.4;min-height:32px}
+#explorer .xp-crit{border-top:1px solid var(--line,#e2e8f0);padding:6px 0}
+#explorer .xp-crit summary{cursor:pointer;font-size:13px;min-height:32px;display:list-item}
+#explorer .xp-values{display:flex;flex-wrap:wrap;gap:6px 12px;max-height:220px;overflow-y:auto;padding:6px 2px}
+#explorer .xp-values label{display:flex;gap:6px;align-items:center;font-size:12px;min-height:32px}
+#explorer .xp-ranges{border-top:1px solid var(--line,#e2e8f0);padding-top:6px}
+#explorer .xp-range{display:grid;grid-template-columns:1fr 80px 80px;gap:6px;align-items:center;font-size:12px;margin:6px 0}
+#explorer .xp-range input{min-height:36px;width:100%;font:inherit;border:1px solid var(--line,#cbd5e1);border-radius:8px;padding:4px 6px;min-width:0}
