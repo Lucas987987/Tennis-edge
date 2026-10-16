@@ -107,3 +107,22 @@ test('écart de victoires des profils : tableau et conclusion', () => {
   assert.doesNotMatch(html, /vide/);
   assert.equal(R.victoires(null), '');
 });
+
+test('H19 : suivi gelé, rétrospectif marqué « ne compte pas », grille', () => {
+  const s = (n, m) => ({ n, clv: { n, mean: m, ci: [m - 1, m + 1] }, roi: { mean: 5, ci: [-20, 30] }, persistance: 0.4, regles: n, mois_clv_positif: '3/3' });
+  const V = {
+    h19: { regle: { gele_le: '2026-10-16', age_max_min: 30, ecart_min_pct: 2, ecart_max_pct: 8, cible_n: 300 }, gel: { etat: 'intact' },
+      prospectif: { ...s(0, null), verdict: 'EN COURS — 0/300, aucun verdict avant la cible' }, retrospectif: s(227, 2.31),
+      decoupes_retrospectives: { persistance: [{ groupe: 'prix disparu avant la clôture', ...s(136, 3.1) }] } },
+    grille: { cases_testees: 20, cases: [{ case: 'écart ≥ 2 %', ...s(241, 2.33), p_holm: 0.0001 }, { case: 'petite', ...s(5, 9) }] },
+  };
+  const html = R.valeurBlock(V);
+  assert.match(html, /gelée le 2026-10-16/);
+  assert.match(html, /intact/);
+  assert.match(html, /EN COURS/);
+  assert.match(html, /ne compte pas/);
+  assert.match(html, /prix disparu avant la clôture/);
+  assert.match(html, /écart ≥ 2 %/);
+  assert.doesNotMatch(html, /petite/);
+  assert.equal(R.valeurBlock(null), '');
+});

@@ -208,6 +208,7 @@ jobs:
             Tennis_Edge_Lab/registry/gel_v66.jsonl
             Tennis_Edge_Lab/registry/gel_explorateur.jsonl
             Tennis_Edge_Lab/registry/candidates.jsonl
+            Tennis_Edge_Lab/registry/gel_h19.json
           )
           if ! git diff --quiet HEAD -- "${FROZEN[@]}" || \
              [[ -n "$(git ls-files --others --exclude-standard -- "${FROZEN[@]}")" ]]; then
@@ -240,6 +241,7 @@ jobs:
               Tennis_Edge_Lab/live/explorateur_matchs.json.gz \
               Tennis_Edge_Lab/live/explorateur_detections.json.gz \
               Tennis_Edge_Lab/live/lectures_profils.json \
+              Tennis_Edge_Lab/live/valeur.json \
               Tennis_Edge_Lab/live/registre/*; do
             if [ -f "$f" ]; then git add -- "$f"; fi
           done
