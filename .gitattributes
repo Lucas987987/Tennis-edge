@@ -35,6 +35,8 @@ clv_history/*.jsonl merge=union
 closing_lines/*.jsonl merge=union
 # 16/10/2026 : registres de marchés en ajout seul (scripts/market_registry.py).
 registres_marches/*.jsonl merge=union
+# 16/10/2026 (étape 4) : partitions mensuelles de odds_alerts_log (alerts_store).
+odds_alerts_log/*.jsonl merge=union
 paper_trades_*.jsonl merge=union
 
 # Les partitions compressées sont binaires : jamais de fusion ligne à ligne.

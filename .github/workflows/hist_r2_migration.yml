@@ -1,0 +1,112 @@
+name: Historique courbes → R2 (migration)
+
+# AJOUTÉ LE 16/10/2026 (étape 4). parts/hist_* (~500 Mo) : les partitions
+# FIGÉES (semaine ou mois clos) sortent de git, servies par R2.
+# Voir scripts/hist_r2.py et docs/README_ETAPE4_STOCKAGE.md.
+#
+#   inventaire  lecture seule : fichiers, tailles, figés ?, copie R2 identique ?
+#               doublons .jsonl/.jsonl.gz. Rapport JSON en artefact.
+#   migrer      pour chaque partition figée : copie R2 VÉRIFIÉE par
+#               re-téléchargement (SHA-256), puis `git rm --cached` et ajout
+#               au bloc .gitignore. Commit + push NORMAL. Jamais la partition
+#               en cours d'écriture. Rien n'est supprimé dans R2.
+#   verifier    contrôle (ajouter « complet » pour tout re-télécharger).
+#   annuler     RETOUR ARRIÈRE : re-télécharge depuis R2, vérifie, remet dans git.
+#
+# Option : variable de dépôt HIST_R2_AUTO=true -> « migrer » chaque lundi
+# 06:13 UTC pour la semaine qui vient de se clore.
+
+on:
+  workflow_dispatch:
+    inputs:
+      etape:
+        description: "inventaire | migrer | verifier | verifier_complet | annuler"
+        type: choice
+        default: inventaire
+        options:
+          - inventaire
+          - migrer
+          - verifier
+          - verifier_complet
+          - annuler
+  schedule:
+    - cron: '13 6 * * 1'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: hist-r2-migration
+  cancel-in-progress: false
+
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+  R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+  R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+  R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+  ETAPE: ${{ inputs.etape || 'migrer' }}
+
+jobs:
+  hist:
+    if: github.event_name == 'workflow_dispatch' || vars.HIST_R2_AUTO == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          filter: blob:none
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /*
+            !/parts
+            /parts/hist_*
+            /parts/ARCHIVE_INDEX.json
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Client R2
+        run: pip install --quiet boto3 || true
+
+      - name: Étape ${{ env.ETAPE }}
+        run: |
+          case "$ETAPE" in
+            inventaire)       python scripts/hist_r2.py inventaire ;;
+            migrer)           python scripts/hist_r2.py migrer ;;
+            verifier)         python scripts/hist_r2.py verifier ;;
+            verifier_complet) python scripts/hist_r2.py verifier --complet ;;
+            annuler)          python scripts/hist_r2.py annuler ;;
+          esac
+
+      - name: Rapport d'inventaire
+        if: env.ETAPE == 'inventaire'
+        uses: actions/upload-artifact@v4
+        with:
+          name: hist-r2-inventaire-${{ github.run_id }}
+          path: hist_r2_inventaire.json
+          retention-days: 30
+
+      - name: Commit (push normal, jamais forcé)
+        if: env.ETAPE == 'migrer' || env.ETAPE == 'annuler'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -- .gitignore
+          git status --short | head -80
+          if git diff --staged --quiet; then echo "Rien à committer."; exit 0; fi
+          git commit -m "Historique courbes : $ETAPE (partitions figées servies par R2)"
+          attente=2
+          for essai in 1 2 3 4 5 6; do
+            git fetch origin main || true
+            if git merge origin/main --no-edit; then :; else
+              git merge --abort 2>/dev/null || true
+              echo "⚠️ conflit — nouvelle tentative ($essai)"
+              sleep "$attente"; attente=$((attente*2)); continue
+            fi
+            if git push origin HEAD:main; then echo "✅ PUSH OK"; exit 0; fi
+            sleep "$attente"; attente=$((attente*2))
+          done
+          echo "❌ push impossible — rien n'est perdu (R2 garde les copies), relancer."
+          exit 1

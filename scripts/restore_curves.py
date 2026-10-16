@@ -155,6 +155,19 @@ def main():
     if SKIP:
         print('restore_curves — SKIP_RESTORE=1, rien à faire.')
         return 0
+    # ÉTAPE 4 (16/10/2026) : l'historique FIGÉ (semaines/mois clos) n'est
+    # plus dans git ; il est servi par R2 (parts/hist/, scripts/hist_r2.py).
+    # Actif si R2_HIST_MATERIALIZE=1, posé par les workflows qui lisent
+    # l'historique (les collecteurs, qui n'en ont pas besoin, ne le posent pas).
+    try:
+        import r2_io
+        rep = r2_io.materialize_hist()
+        if rep:
+            n = sum(1 for v in rep.values() if v == 'telecharge')
+            print(f'restore_curves — historique R2 : {n} partition(s) rapatriée(s), '
+                  f'{len(rep) - n} déjà présente(s).')
+    except Exception as e:                      # noqa: BLE001
+        print(f'restore_curves — historique R2 indisponible ({type(e).__name__})')
     # L'INDEX N'EST PLUS BLOQUANT — corrige le 02/10/2026.
     #
     # La version precedente sortait ici des que parts/ARCHIVE_INDEX.json

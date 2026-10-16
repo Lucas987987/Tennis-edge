@@ -9,6 +9,7 @@ import datetime, json, math, statistics as st, sys
 from collections import defaultdict
 import player_form as pf
 import etude_difficulte_tous as edt
+import alerts_store   # odds_alerts_log découpé par mois (16/10/2026)
 
 SEUIL_LISTE = float(sys.argv[1]) if len(sys.argv) > 1 else 15.0
 
@@ -16,7 +17,7 @@ SEUIL_LISTE = float(sys.argv[1]) if len(sys.argv) > 1 else 15.0
 def charger():
     R = edt.charger_resultats(pf.charger_matchs())
     out, vus = [], set()
-    for l in open('odds_alerts_log.jsonl', encoding='utf-8'):
+    for l in alerts_store.open_text('odds_alerts_log.jsonl'):
         try:
             r = json.loads(l)
             d = datetime.date.fromisoformat(r['commence_time'][:10])

@@ -28,6 +28,22 @@
   let requestNumber = 0;
   let initialized = false;
 
+  // Étape 4 stockage (16/10/2026) : le rapport V6.1 est publié compressé
+  // (.json.gz, 2,8 Mo au lieu de 42 Mo). Lecture du .gz si le navigateur sait
+  // décompresser, sinon repli sur le .json — même principe que l'Explorateur.
+  async function fetchJSONGz(url) {
+    if (typeof DecompressionStream !== 'undefined') {
+      try {
+        const r = await fetch(`${url}.gz?t=${Date.now()}`, { cache: 'no-store' });
+        if (r.ok && r.body) {
+          const text = await new Response(r.body.pipeThrough(new DecompressionStream('gzip'))).text();
+          return JSON.parse(text);
+        }
+      } catch { /* repli JSON simple */ }
+    }
+    return fetchJSON(url);
+  }
+
   async function fetchJSON(url) {
     const response = await fetch(`${url}${url.includes('?') ? '&' : '?'}t=${Date.now()}`, {
       cache: 'no-store',
@@ -175,7 +191,7 @@
     try {
       [audit, frozen] = await Promise.all([
         fetchJSON('./live/bookmakers_sets_audit.json'),
-        fetchJSON('./live/candidate_watch_v61_prospective.json'),
+        fetchJSONGz('./live/candidate_watch_v61_prospective.json'),
       ]);
       if (audit.schema_version !== 1 || !Number.isInteger(audit.segment_count)) {
         throw new Error('Rapport d’audit V6.1 invalide');

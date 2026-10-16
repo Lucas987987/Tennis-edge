@@ -14,6 +14,7 @@ import datetime
 import json
 import statistics as st
 import pistes_common as pc
+import alerts_store   # odds_alerts_log découpé par mois (16/10/2026)
 
 DELTAS = (0, 2, 10, 30, 60)
 SOFTS_EXCLUS = {'pinnacle', 'betfair-ex'}
@@ -32,10 +33,10 @@ def cle_match(home, away, jour):
 
 def charge_alertes(max_n=400):
     out = []
-    if not os.path.exists('odds_alerts_log.jsonl'):
+    if not alerts_store.exists('odds_alerts_log.jsonl'):
         print('⚠️ odds_alerts_log.jsonl absent.')
         return out
-    for l in open('odds_alerts_log.jsonl', encoding='utf-8'):
+    for l in alerts_store.open_text('odds_alerts_log.jsonl'):
         try:
             a = json.loads(l)
             cote_steame = ('home' if float(a.get('mv_home_pct', 0))
