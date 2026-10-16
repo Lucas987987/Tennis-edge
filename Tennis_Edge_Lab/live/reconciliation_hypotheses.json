@@ -1,15 +1,15 @@
 {
  "schema_version": 2,
- "generated_at": "2026-10-16T20:32:55+00:00",
+ "generated_at": "2026-10-16T21:40:46+00:00",
  "sources": {
   "worker": {
    "source": "API Worker D1 /api/hypotheses (fetch_worker_snapshot.py)",
    "fichier": "worker_hypotheses_capture.json",
    "status": "ok",
-   "fetched_at": "2026-10-16T20:32:50Z",
+   "fetched_at": "2026-10-16T21:40:41Z",
    "worker_generated_at": "2026-10-16T16:19:20Z"
   },
-  "suivi_officiel": "alertes en direct : h*_signal_log.jsonl + suivi_direct/resultats.json (verdicts_direct.json du 2026-10-16T20:32:55Z)",
+  "suivi_officiel": "alertes en direct : h*_signal_log.jsonl + suivi_direct/resultats.json (verdicts_direct.json du 2026-10-16T21:40:46Z)",
   "reconstruction": "moves_detail_hist.csv filtré par les règles gelées de validation_report.py (lignes jusqu'au 2026-10-14) — contrôle, ne juge pas",
   "rapprochement": "uid + joueur normalisé ; à défaut paire de joueurs + date ±1 jour"
  },
@@ -120,7 +120,7 @@
      -3.4,
      -1.6
     ],
-    "clv_n": 202,
+    "clv_n": 203,
     "n_detectees": 207,
     "n_envoyees": 207,
     "n_doublons": 0,
@@ -128,7 +128,7 @@
     "sans_resultat_pct": 7.7,
     "statut": "verrouillable (résultats complets à 92 %)",
     "verrouillable": true,
-    "genere_le": "2026-10-16T20:32:55Z"
+    "genere_le": "2026-10-16T21:40:46Z"
    },
    "reconstruction": {
     "n": 135,
@@ -4731,9 +4731,9 @@
     "gagnes": 0,
     "roi": null,
     "pts": null,
-    "clv_pin": null,
+    "clv_pin": 2.8,
     "clv_pin_ic95": null,
-    "clv_n": 0,
+    "clv_n": 1,
     "n_detectees": 1,
     "n_envoyees": 0,
     "n_doublons": 1,
@@ -4741,7 +4741,7 @@
     "sans_resultat_pct": 100.0,
     "statut": "en attente de résultats (100,0 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-10-16T20:32:55Z"
+    "genere_le": "2026-10-16T21:40:46Z"
    },
    "reconstruction": {
     "n": 91,
@@ -6274,7 +6274,7 @@
     "sans_resultat_pct": 26.8,
     "statut": "en attente de résultats (26,8 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-10-16T20:32:55Z"
+    "genere_le": "2026-10-16T21:40:46Z"
    },
    "reconstruction": {
     "n": 54,
@@ -7551,14 +7551,14 @@
      0.6
     ],
     "clv_n": 117,
-    "n_detectees": 119,
-    "n_envoyees": 119,
+    "n_detectees": 120,
+    "n_envoyees": 120,
     "n_doublons": 0,
     "source": "verdicts_direct.json (recalculé : journal plus récent)",
     "sans_resultat_pct": 14.3,
     "statut": "en attente de résultats (14,3 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-10-16T20:32:55Z"
+    "genere_le": "2026-10-16T21:40:46Z"
    },
    "reconstruction": {
     "n": 158,
@@ -7576,8 +7576,8 @@
     "egal_validation_report": true
    },
    "entonnoir": {
-    "direct_detectees": 119,
-    "direct_envoyees": 119,
+    "direct_detectees": 120,
+    "direct_envoyees": 120,
     "direct_doublons": 0,
     "direct_non_envoyees_autres": 0,
     "direct_denouees": 102,
@@ -7588,12 +7588,12 @@
     "reconstruction_seule_raisons": {
      "apres_coup": 144
     },
-    "direct_seule": 83,
+    "direct_seule": 84,
     "direct_seule_raisons": {
      "cote_opposee_reco": 22,
      "absent_reconstruction": 54,
      "prix_different": 2,
-     "pas_encore_reconstruit": 5
+     "pas_encore_reconstruit": 6
     },
     "inexpliques": 0
    },
@@ -10841,6 +10841,20 @@
      "libelle": "Pas encore dans la reconstruction",
      "detail": "match du 2026-10-16, reconstruction arrêtée au 2026-10-14",
      "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-17",
+     "match": "Emerson Jones – Heather Watson",
+     "joueur": "Emerson Jones",
+     "uid": "2026-10-17_heather_watson_emerson_jones",
+     "cote": 1.286,
+     "book": "888sport",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-17, reconstruction arrêtée au 2026-10-14",
+     "explique": true
     }
    ]
   },
@@ -10893,14 +10907,14 @@
      0.6
     ],
     "clv_n": 103,
-    "n_detectees": 103,
-    "n_envoyees": 103,
+    "n_detectees": 104,
+    "n_envoyees": 104,
     "n_doublons": 0,
     "source": "verdicts_direct.json (recalculé : journal plus récent)",
     "sans_resultat_pct": 14.6,
     "statut": "en attente de résultats (14,6 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-10-16T20:32:55Z"
+    "genere_le": "2026-10-16T21:40:46Z"
    },
    "reconstruction": {
     "n": 135,
@@ -10918,8 +10932,8 @@
     "egal_validation_report": true
    },
    "entonnoir": {
-    "direct_detectees": 103,
-    "direct_envoyees": 103,
+    "direct_detectees": 104,
+    "direct_envoyees": 104,
     "direct_doublons": 0,
     "direct_non_envoyees_autres": 0,
     "direct_denouees": 88,
@@ -10930,12 +10944,12 @@
     "reconstruction_seule_raisons": {
      "apres_coup": 109
     },
-    "direct_seule": 71,
+    "direct_seule": 72,
     "direct_seule_raisons": {
      "cote_opposee_reco": 18,
      "absent_reconstruction": 46,
      "prix_different": 2,
-     "pas_encore_reconstruit": 5
+     "pas_encore_reconstruit": 6
     },
     "inexpliques": 0
    },
@@ -13525,6 +13539,20 @@
      "libelle": "Pas encore dans la reconstruction",
      "detail": "match du 2026-10-16, reconstruction arrêtée au 2026-10-14",
      "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-17",
+     "match": "Emerson Jones – Heather Watson",
+     "joueur": "Emerson Jones",
+     "uid": "2026-10-17_heather_watson_emerson_jones",
+     "cote": 1.286,
+     "book": "888sport",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-17, reconstruction arrêtée au 2026-10-14",
+     "explique": true
     }
    ]
   },
@@ -13584,7 +13612,7 @@
     "sans_resultat_pct": 5.4,
     "statut": "verrouillable (résultats complets à 95 %)",
     "verrouillable": true,
-    "genere_le": "2026-10-16T20:32:55Z"
+    "genere_le": "2026-10-16T21:40:46Z"
    },
    "reconstruction": {
     "n": 61,
@@ -15064,7 +15092,7 @@
     "sans_resultat_pct": 8.3,
     "statut": "verrouillable (résultats complets à 92 %)",
     "verrouillable": true,
-    "genere_le": "2026-10-16T20:32:55Z"
+    "genere_le": "2026-10-16T21:40:46Z"
    },
    "reconstruction": {
     "n": 28,
