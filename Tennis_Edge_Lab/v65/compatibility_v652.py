@@ -56,7 +56,11 @@ def main():
     a=p.parse_args()
     snapshot=json.loads(pathlib.Path(a.snapshot).read_text(encoding="utf-8"))
     rows=[]
-    with pathlib.Path(a.alerts).open(encoding="utf-8") as f:
+    # 16/10/2026 : odds_alerts_log.jsonl peut être découpé par mois (clv_source).
+    import importlib.util as _ilu
+    _sp=_ilu.spec_from_file_location("clv_source",pathlib.Path(__file__).resolve().parent.parent/"clv_source.py")
+    _cs=_ilu.module_from_spec(_sp);_sp.loader.exec_module(_cs)
+    with _cs.open_text(pathlib.Path(a.alerts)) as f:
         for line in f:
             if line.strip():rows.append(json.loads(line))
     result=inspect(snapshot,rows)

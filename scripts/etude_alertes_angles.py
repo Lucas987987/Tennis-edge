@@ -58,6 +58,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import player_form as pf                                    # noqa: E402
 import etude_difficulte_tous as edt                         # noqa: E402
 import etude_tous_angles as eta                             # noqa: E402
+import alerts_store   # odds_alerts_log découpé par mois (16/10/2026)
 
 N_MIN = 30
 HYPOS = ['h13', 'h15', 'h16', 'h16b', 'h17', 'h18', 'zone']
@@ -86,8 +87,8 @@ def charger_alertes():
                 continue
             A.append((h.upper(), frozenset((j, o)), d, j, cote,
                       bool(r.get('envoye'))))
-    if os.path.exists('odds_alerts_log.jsonl'):
-        for l in open('odds_alerts_log.jsonl', encoding='utf-8'):
+    if alerts_store.exists('odds_alerts_log.jsonl'):
+        for l in alerts_store.open_text('odds_alerts_log.jsonl'):
             try:
                 r = json.loads(l)
                 mh, ma = float(r['mv_home_pct']), float(r['mv_away_pct'])

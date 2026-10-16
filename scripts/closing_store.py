@@ -12,7 +12,7 @@ il y a deux mois — chaque version diffère donc partout.
 LE PRINCIPE
   closing_lines.json                     fichier CHAUD (même format qu'avant)
       matchs encore utiles aux écrivains : commencés il y a moins de
-      HOT_DAYS jours (3), à venir, ou dont la CLV n'est pas encore réglée.
+      HOT_DAYS jours (2), à venir, ou dont la CLV n'est pas encore réglée.
   closing_lines/closing_lines_YYYY-MM.jsonl     archives FROIDES
       une ligne {"uid": …, "entry": {…}} par match, écrite UNE fois quand il
       quitte la fenêtre chaude ; mois = mois de commence_time ; ajout seul.
@@ -40,7 +40,15 @@ import sys
 HOT = "closing_lines.json"
 DIRNAME = "closing_lines"
 MARKER = "MIGRATION.json"
-HOT_DAYS = float(os.environ.get("CLOSING_HOT_DAYS", "3"))
+# 16/10/2026 (étape 4) : 3 -> 2 jours. Mesuré sur le fichier chaud réel :
+# 0,99 Mo à 3 jours, 0,47 Mo à 2 jours, soit la moitié des ~270 Mo de
+# versions brutes par jour. Sans risque pour les écrivains : capture_closing
+# ne modifie que les matchs encore annoncés ou tout juste disparus (clôture
+# par disparition en ~15 min), et les matchs dont la CLV n'est pas réglée
+# restent chauds quel que soit leur âge (is_hot). Seul cas limite : un match
+# reporté de PLUS de 2 jours qui réapparaît repart d'une entrée neuve
+# (l'ancienne reste dans l'archive) — accepté, rarissime en tennis.
+HOT_DAYS = float(os.environ.get("CLOSING_HOT_DAYS", "2"))
 # Bascule GROUPÉE : on n'archive que lorsqu'au moins un match froid a dépassé
 # HOT_DAYS + ROLL_BATCH_DAYS ; tous les froids partent alors ensemble. Sans
 # cela, presque chaque capture (toutes les 5-10 min) ajouterait une ligne à

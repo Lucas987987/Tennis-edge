@@ -34,6 +34,12 @@ def _ouvrir(path):
 
 def iter_hist(market='book'):
     """Itère les lignes (match×book) des partitions hist, gz inclus."""
+    # Étape 4 (16/10/2026) : historique figé servi par R2 (R2_HIST_MATERIALIZE=1).
+    try:
+        import r2_io
+        r2_io.materialize_hist(market)
+    except Exception:                           # noqa: BLE001
+        pass
     fichiers = sorted(glob.glob(f'parts/hist_{market}_*.jsonl')
                       + glob.glob(f'parts/hist_{market}_*.jsonl.gz'))
     if not fichiers:
