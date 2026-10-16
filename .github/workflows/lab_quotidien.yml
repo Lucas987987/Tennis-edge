@@ -28,6 +28,9 @@ concurrency:
   cancel-in-progress: false
 
 env:
+  # Étape 4 (16/10/2026) : l'historique FIGÉ des courbes (parts/hist_*) est
+  # servi par R2 ; les lecteurs rapatrient ce qui manque (scripts/hist_r2.py).
+  R2_HIST_MATERIALIZE: '1'
   # R2 (15/10/2026) — voir README_MIGRATION_R2.md. off | double | on ;
   # sans variable de dépôt : double (git fait foi, R2 reçoit une copie).
   R2_PRIMARY: ${{ vars.R2_PRIMARY || 'double' }}
@@ -82,6 +85,10 @@ jobs:
             scripts/clv_store.py
             scripts/r2_io.py
             scripts/r2_parts.py
+            scripts/hist_r2.py
+            scripts/alerts_store.py
+            scripts/jsonl_parts.py
+            odds_alerts_log
             clv_history.jsonl
 
       - uses: actions/setup-python@v6
@@ -93,6 +100,7 @@ jobs:
       - name: R2 — rapatrier les partitions (all)
         run: |
           python scripts/r2_parts.py pull --kinds all || true
+          python scripts/hist_r2.py pull || true   # étape 4 : historique figé (R2)
 
       - name: Tests (Python et interface)
         run: |

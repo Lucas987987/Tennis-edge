@@ -115,6 +115,12 @@ def charge_courbes(besoins, closing_lines, cl_idx):
     pouvoir chercher le prix À L'INSTANT DE L'ENTRÉE, pas seulement à la
     clôture)."""
     out = {}
+    # Étape 4 (16/10/2026) : historique figé servi par R2 (R2_HIST_MATERIALIZE=1).
+    try:
+        import r2_io
+        r2_io.materialize_hist('book')
+    except Exception:                           # noqa: BLE001
+        pass
     fichiers = sorted(glob.glob('parts/hist_book_*.jsonl') +
                       glob.glob('parts/hist_book_*.jsonl.gz'))
     print(f'  {len(fichiers)} partitions à charger (filtrées aux {len(besoins)} '

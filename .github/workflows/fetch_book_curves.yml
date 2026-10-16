@@ -13,6 +13,12 @@ name: Fetch Book Curves
 # regeneres a chaque run faisaient echouer le merge puis le push
 # (panne du 16/08/2026). Portee workflow = toutes les etapes.
 env:
+  # Étape 4 (16/10/2026) : l'historique FIGÉ des courbes (parts/hist_*) est
+  # servi par R2 ; les lecteurs rapatrient ce qui manque (scripts/hist_r2.py).
+  R2_HIST_MATERIALIZE: '1'
+  R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+  R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+  R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
   PYTHONDONTWRITEBYTECODE: '1'
 
 on:
@@ -62,9 +68,11 @@ jobs:
         env:
           RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
           R2_V64_SHADOW: ${{ inputs.r2_v64_shadow && vars.R2_V64_SHADOW_ENABLED == 'true' && '1' || '0' }}
-          R2_ACCESS_KEY_ID: ${{ inputs.r2_v64_shadow && vars.R2_V64_SHADOW_ENABLED == 'true' && secrets.R2_ACCESS_KEY_ID || '' }}
-          R2_SECRET_ACCESS_KEY: ${{ inputs.r2_v64_shadow && vars.R2_V64_SHADOW_ENABLED == 'true' && secrets.R2_SECRET_ACCESS_KEY || '' }}
-          R2_ENDPOINT: ${{ inputs.r2_v64_shadow && vars.R2_V64_SHADOW_ENABLED == 'true' && secrets.R2_ENDPOINT || '' }}
+          # Étape 4 : secrets toujours fournis (lecture de l'historique R2) ; le
+          # shadow V6.4 reste piloté par R2_V64_SHADOW ci-dessus.
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
           BOOKS: "pinnacle,betfair-ex,winamax.fr,unibet.fr,bet365.fr,pmu,zebet.fr,netbet.fr,bwin.fr,genybet.fr,vbet.fr,circusbet.fr,feelingbet.fr,unibet,bwin,betsson,bet365,williamhill,betway,1xbet,888sport,leovegas,tipico,netbet,betsafe,nordicbet,coolbet,interwetten,vbet,marathonbet,22bet"
         # ÉCONOMIE QUOTA RapidAPI (ajouté le 14/10/2026) : 31 books x 40
         # matchs = jusqu'à 1 240 requêtes par nuit, la moitié du quota

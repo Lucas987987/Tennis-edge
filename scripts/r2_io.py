@@ -80,8 +80,20 @@ FAMILIES = {
         # 3 jours = rétention git de purge_data (LIVE_DAYS) : jamais plus.
         "window_env": "R2_WINDOW_DAYS_LIVE", "window_default": 3,
     },
+    # 16/10/2026 (étape 4) : historique des courbes. Les partitions FIGÉES
+    # (semaines/mois clos) quittent git (scripts/hist_r2.py) ; la partition
+    # en cours reste dans git. Hors de l'alias « all » : pull/push/gate des
+    # collecteurs n'y touchent jamais. Fenêtre 0 = tout l'historique.
+    "hist": {
+        "regex": re.compile(r"^hist_(?:book|set1|set2)_(\d{4}-(?:W\d{2}|\d{2}))(?:_\d+)?\.jsonl(?:\.gz)?$"),
+        "prefix": "parts/hist/",
+        "manifest": "parts/hist/_manifest.json",
+        "glob": "parts/hist_*",
+        "window_env": "R2_WINDOW_DAYS_HIST", "window_default": 0,
+    },
 }
 ALIASES = {"ticks": ("pm", "kx"), "all": ("pm", "kx", "live")}
+STREAM_FAMILIES = ("pm", "kx", "live")       # familles gérées par pull/push/gate
 PARTS_DIR = "parts"
 
 # Compteur d'opérations du PROCESSUS (imprimé en fin de commande).
@@ -667,7 +679,12 @@ def sync_from_r2(fams, parts_dir=PARTS_DIR, days=None, only_missing=False,
                     # Le contenu peut être plus récent que le manifeste (un
                     # écrivain entre son PUT et son manifeste) : on l'accepte
                     # s'il est un gzip lisible, jamais un fichier corrompu.
-                    gz_lines(got[0])
+                    # Un fichier non compressé (historique) doit avoir
+                    # EXACTEMENT l'empreinte du manifeste.
+                    if _sha256_hex(got[0]) != ent.get("sha256"):
+                        if not name.endswith(".gz"):
+                            raise IOError("empreinte différente du manifeste")
+                        gz_lines(got[0])
                     _write_atomic(path, got[0])
                     report[name] = "telecharge"
                     continue
@@ -719,6 +736,8 @@ def materialize_glob(pattern: str, environ=None) -> dict:
     head = base.split("*")[0]
     fams = []
     for fam, spec in FAMILIES.items():
+        if fam not in STREAM_FAMILIES:
+            continue
         fam_head = os.path.basename(spec["glob"]).split("*")[0]
         if head.startswith(fam_head) or fam_head.startswith(head):
             fams.append(fam)
@@ -729,6 +748,43 @@ def materialize_glob(pattern: str, environ=None) -> dict:
         return sync_from_r2(fams, parts_dir=parts_dir, match=match, environ=environ)
     except Exception as exc:  # noqa: BLE001
         log(f"matérialisation {pattern} impossible ({type(exc).__name__}) — copies git")
+        return {}
+
+
+def materialize_hist(market=None, environ=None, force=False, parts_dir=PARTS_DIR) -> dict:
+    """Rapatrie depuis R2 les partitions d'historique (parts/hist_*) absentes
+    du checkout — INDÉPENDANT de R2_PRIMARY : une fois l'historique figé
+    sorti de git (scripts/hist_r2.py migrer), c'est la seule source.
+
+    Actif seulement si R2_HIST_MATERIALIZE=1 (posé par les workflows qui
+    lisent l'historique) ou force=True, pour qu'un workflow qui excluait
+    volontairement parts/hist_* ne télécharge pas ~450 Mo par surprise.
+    Un fichier présent mais de taille différente du manifeste (cache
+    corrompu, non suivi par git) est retéléchargé. Ne lève jamais."""
+    environ = os.environ if environ is None else environ
+    if not force and environ.get("R2_HIST_MATERIALIZE") != "1":
+        return {}
+    try:
+        r2 = client(environ)
+        if r2 is None:
+            return {}
+        man, _ = load_manifest(r2, "hist")
+        prefix = f"hist_{market}_" if market else "hist_"
+        tracked = set()
+        for name, ent in man["files"].items():
+            path = os.path.join(parts_dir, name)
+            if (name.startswith(prefix) and os.path.exists(path)
+                    and os.path.getsize(path) != ent.get("size")):
+                if not tracked:
+                    out = subprocess.run(["git", "ls-files", "--", parts_dir],
+                                         capture_output=True, text=True)
+                    tracked = {os.path.basename(p) for p in out.stdout.split()} or {""}
+                if name not in tracked:
+                    os.remove(path)            # copie locale douteuse : on la reprend
+        return sync_from_r2(["hist"], parts_dir=parts_dir, days=0, only_missing=True,
+                            match=lambda n: n.startswith(prefix), r2=r2)
+    except Exception as exc:  # noqa: BLE001
+        log(f"historique R2 non rapatrié ({type(exc).__name__}: {exc}) — copies git seules")
         return {}
 
 

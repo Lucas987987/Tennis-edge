@@ -106,6 +106,12 @@ def charger():
     idx = rj.ResultIndex()
     matchs = {}
     n_lignes = 0
+    # Étape 4 (16/10/2026) : historique figé servi par R2 (R2_HIST_MATERIALIZE=1).
+    try:
+        import r2_io
+        r2_io.materialize_hist('book')
+    except Exception:                           # noqa: BLE001
+        pass
     fichiers = sorted(glob.glob('parts/hist_book_*.jsonl')
                       + glob.glob('parts/hist_book_*.jsonl.gz'))
     for f in fichiers:

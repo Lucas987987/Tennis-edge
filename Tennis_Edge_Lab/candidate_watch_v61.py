@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import hashlib
+import gzip
 import json
 import math
 import os
@@ -523,7 +524,34 @@ def run(root: pathlib.Path = ROOT, when: dt.datetime | None = None) -> dict:
     return report
 
 
+# Étape 4 stockage (16/10/2026) : rapports publiés COMPRESSÉS (.json.gz, gzip
+# déterministe mtime=0) au lieu du JSON brut. candidate_watch_v61_prospective
+# pesait 42,5 Mo (2,8 Mo compressé). Le .json brut est retiré ; publish_guard
+# republie la version décompressée pour le site, research_v61.js lit le .gz.
+GZ_REPORTS = frozenset({"candidate_watch_v61_prospective.json"})
+
+
+def gz_path(path: pathlib.Path) -> pathlib.Path:
+    return path.with_name(path.name + ".gz")
+
+
+def read_report(path: pathlib.Path):
+    """Contenu JSON d'un rapport, compressé (.json.gz) ou brut ; None sinon."""
+    path = pathlib.Path(path)
+    try:
+        if gz_path(path).is_file():
+            return json.loads(gzip.decompress(gz_path(path).read_bytes()).decode("utf-8"))
+        if path.is_file():
+            return json.loads(path.read_text(encoding="utf-8"))
+    except (ValueError, OSError, EOFError):
+        return None
+    return None
+
+
 def _write_report(path: pathlib.Path, report: dict) -> None:
+    path = pathlib.Path(path)
+    if path.name in GZ_REPORTS:
+        return _write_report_gz(path, report)
     # V6.6 : generated_at conservé si seul l'horodatage change (pas de commit vide).
     if path.is_file():
         try:
@@ -537,6 +565,29 @@ def _write_report(path: pathlib.Path, report: dict) -> None:
     content = canonical(report)
     if not path.is_file() or path.read_bytes() != content:
         _atomic_replace(path, content)
+
+
+def _write_report_gz(path: pathlib.Path, report: dict) -> None:
+    """Même règle que _write_report (generated_at conservé si rien d'autre ne
+    change, fichier réécrit seulement si son contenu change), en .json.gz."""
+    existing = read_report(path) or {}
+    if isinstance(existing, dict):
+        old = {k: v for k, v in existing.items() if k != "generated_at"}
+        new = {k: v for k, v in report.items() if k != "generated_at"}
+        if old == new:
+            report["generated_at"] = existing.get("generated_at", report["generated_at"])
+    content = canonical(report)
+    target = gz_path(path)
+    current = None
+    if target.is_file():
+        try:
+            current = gzip.decompress(target.read_bytes())
+        except (OSError, EOFError):
+            current = None
+    if current != content:
+        _atomic_replace(target, gzip.compress(content, 9, mtime=0))
+    if path.is_file():
+        path.unlink()                    # l'ancien JSON brut ne doit plus être publié
 
 
 def main() -> None:

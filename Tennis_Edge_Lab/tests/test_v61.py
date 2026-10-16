@@ -307,7 +307,10 @@ class V61Tests(unittest.TestCase):
         self.assertEqual(v4_ledger.read_bytes(), v4_before)
         self.assertEqual(strict_v6_path.read_bytes(), v6_before)
         self.assertTrue((self.lab / "live/bookmakers_sets_audit.json").is_file())
-        self.assertTrue((self.lab / "live/candidate_watch_v61_prospective.json").is_file())
+        # Étape 4 stockage : rapport V6.1 publié compressé (.json.gz), JSON brut retiré.
+        self.assertTrue((self.lab / "live/candidate_watch_v61_prospective.json.gz").is_file())
+        self.assertFalse((self.lab / "live/candidate_watch_v61_prospective.json").is_file())
+        self.assertEqual(watch.read_report(self.lab / "live/candidate_watch_v61_prospective.json")["total_frozen"], len(frozen))
 
     def observation(self, index):
         date = (dt.date(2026, 8, 1) + dt.timedelta(days=index)).isoformat()
