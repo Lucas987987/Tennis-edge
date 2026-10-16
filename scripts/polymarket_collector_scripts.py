@@ -70,6 +70,7 @@ from typing import Any, Dict, Iterable, List, Optional, Tuple
 import requests
 import websocket
 from r2_collector_sink import finish_sink, sink_for
+import market_registry  # registre Polymarket en ajout seul (16/10/2026)
 
 
 GAMMA_URL = os.environ.get("PM_GAMMA_URL", "https://gamma-api.polymarket.com").rstrip("/")
@@ -717,7 +718,16 @@ def save_markets(markets: List[Dict[str, Any]]) -> None:
     passés (question, titre, joueurs) seraient perdues et les ticks anciens
     deviendraient inexploitables. On conserve donc l'historique des marchés
     déjà vus.
+
+    16/10/2026 : après la migration (dossier registres_marches/), le registre
+    est en AJOUT SEUL (market_registry) : une ligne par marché nouveau ou
+    modifié, au lieu de réécrire 3,4 Mo à chaque run.
     """
+    if market_registry.active(str(MARKETS_FILE.parent)):
+        rep = market_registry.save("polymarket", markets, root=str(MARKETS_FILE.parent))
+        print(f"   📒 registre : {rep['nouvelles_lignes']} ligne(s) ajoutée(s), "
+              f"{rep['count']} marchés connus")
+        return
     anciens: Dict[str, Dict[str, Any]] = {}
     for m in load_markets():
         mid = str(m.get("market_id") or "")
@@ -737,6 +747,8 @@ def save_markets(markets: List[Dict[str, Any]]) -> None:
 
 
 def load_markets() -> List[Dict[str, Any]]:
+    if market_registry.active(str(MARKETS_FILE.parent)):
+        return market_registry.load("polymarket", root=str(MARKETS_FILE.parent))
     if not MARKETS_FILE.exists():
         return []
     try:

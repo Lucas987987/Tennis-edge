@@ -59,6 +59,7 @@ import urllib.parse
 import urllib.error
 from pathlib import Path
 from r2_collector_sink import finish_sink, sink_for
+import market_registry  # registre Kalshi en ajout seul (16/10/2026)
 
 BASE       = os.environ.get('KALSHI_BASE', 'https://api.elections.kalshi.com/trade-api/v2')
 MATCHES    = os.environ.get('MATCHES_FILE', 'matches_oddspapi.json')
@@ -430,7 +431,13 @@ class Ecrivain:
 def sauver_registre(suivis):
     """Registre FUSIONNÉ. Les ticks ne portent que le ticker : réécrire ce
     fichier avec les seuls marchés du moment rendrait les ticks anciens
-    illisibles."""
+    illisibles.
+
+    16/10/2026 : après la migration (dossier registres_marches/), registre en
+    AJOUT SEUL (market_registry) au lieu de réécrire 1,6 Mo à chaque run."""
+    if market_registry.active(str(MARKETS_F.parent)):
+        market_registry.save('kalshi', suivis, root=str(MARKETS_F.parent))
+        return
     anciens = {}
     if MARKETS_F.exists():
         try:

@@ -33,6 +33,8 @@ clv_history/*.jsonl merge=union
 # 16/10/2026 : archives mensuelles de closing_lines (scripts/closing_store.py),
 # une ligne par match, ajout seul : l'union des deux côtés ne perd rien.
 closing_lines/*.jsonl merge=union
+# 16/10/2026 : registres de marchés en ajout seul (scripts/market_registry.py).
+registres_marches/*.jsonl merge=union
 paper_trades_*.jsonl merge=union
 
 # Les partitions compressées sont binaires : jamais de fusion ligne à ligne.
