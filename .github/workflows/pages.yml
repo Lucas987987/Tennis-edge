@@ -88,6 +88,8 @@ jobs:
             Tennis_Edge_Lab/research_reconciliation.css
             Tennis_Edge_Lab/research_direct.js
             Tennis_Edge_Lab/research_direct.css
+            Tennis_Edge_Lab/research_registre.js
+            Tennis_Edge_Lab/research_registre.css
             Tennis_Edge_Lab/tennis_meta.py
             Tennis_Edge_Lab/books.py
             Tennis_Edge_Lab/clv_stats.py
@@ -114,6 +116,8 @@ jobs:
             Tennis_Edge_Lab/live/explorateur_matchs.json.gz
             Tennis_Edge_Lab/live/explorateur_detections.json.gz
             Tennis_Edge_Lab/live/reconciliation_hypotheses.json
+            Tennis_Edge_Lab/live/registre
+            Tennis_Edge_Lab/live/lectures_profils.json
             Tennis_Edge_Lab/live/archive/bookmakers_sets_v61/current
             Tennis_Edge_Lab/registry
             scripts/validation_report.py
@@ -218,7 +222,7 @@ jobs:
           for f in index.html style.css app.js data.js; do
             cp "Tennis_Edge_Lab/$f" "_site/Tennis_Edge_Lab/$f"
           done
-          for f in research.html research.js research_v61.js research_v63.js research_v66.js research_explorer.js research_profils.js research_reconciliation.js research_direct.js freshness.js research.css research_v632.css research_v66.css research_explorer.css research_profils.css research_reconciliation.css research_direct.css v4.js v6.js; do
+          for f in research.html research.js research_v61.js research_v63.js research_v66.js research_explorer.js research_profils.js research_reconciliation.js research_direct.js research_registre.js freshness.js research.css research_v632.css research_v66.css research_explorer.css research_profils.css research_reconciliation.css research_direct.css research_registre.css v4.js v6.js; do
             cp "Tennis_Edge_Lab/$f" "_site/Tennis_Edge_Lab/$f"
           done
           # Rapports : copie fidèle, état de fraîcheur explicite, jamais de remplacement
@@ -234,6 +238,12 @@ jobs:
               gunzip -c "Tennis_Edge_Lab/live/$x.json.gz" > "_site/Tennis_Edge_Lab/live/$x.json"
             fi
           done
+          # V7.3 Base des matchs : registre mensuel (.json.gz, lu via DecompressionStream) + évaluation.
+          if [ -d Tennis_Edge_Lab/live/registre ]; then
+            mkdir -p _site/Tennis_Edge_Lab/live/registre
+            cp Tennis_Edge_Lab/live/registre/* _site/Tennis_Edge_Lab/live/registre/
+          fi
+          cp Tennis_Edge_Lab/live/lectures_profils.json _site/Tennis_Edge_Lab/live/ 2>/dev/null || echo "⚠️ lectures_profils.json absent"
           # Archive annuelle tennis-data (onglet Sources) : fichiers statiques.
           mkdir -p _site/Tennis_Edge_Lab/live/archive
           cp Tennis_Edge_Lab/cache/archive/20*.json _site/Tennis_Edge_Lab/live/archive/ 2>/dev/null || echo "⚠️ archive annuelle absente"

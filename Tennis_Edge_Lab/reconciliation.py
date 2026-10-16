@@ -282,6 +282,17 @@ def build(root=ROOT, worker_path=None, check_validator=True):
     verdicts, table = load_direct(root)
     vby = {h.get("code"): h for h in verdicts.get("hypotheses", [])}
     live_all = sd.detections(root, _Gels({c: v[0] for c, v in definitions.items()}))
+    # 16/10/2026 : si le journal a reçu des détections APRÈS le dernier calcul de
+    # verdicts_direct.json (Steam pipeline), on recalcule les verdicts ICI, mêmes règles
+    # (suivi_direct.verdicts), sur le MÊME journal que les lignes : chiffres officiels et
+    # jeu « Détections » restent égaux. Rien n'est écrit dans verdicts_direct.json.
+    stale = [c for c in OFFICIAL if len(live_all[c]["lignes"])
+             != ((vby.get(c) or {}).get("out_of_sample") or {}).get("n_detectees", 0)]
+    if stale:
+        verdicts, table = sd.verdicts(root)
+        verdicts["recalcule_par_le_lab"] = stale
+        vby = {h.get("code"): h for h in verdicts.get("hypotheses", [])}
+        print(f"verdicts_direct.json plus ancien que le journal pour {', '.join(stale)} : recalculé ici (non écrit).")
     raw_logs = {code: read_jsonl(root / f"{code.lower()}_signal_log.jsonl") for code in OFFICIAL}
     log_index = {}
     for code, rows in raw_logs.items():
@@ -421,7 +432,9 @@ def build(root=ROOT, worker_path=None, check_validator=True):
                                "pts": o.get("ecart"), "clv_pin": o.get("clv_pin_moyen"),
                                "clv_pin_ic95": o.get("clv_pin_ic95"), "clv_n": o.get("clv_n", 0),
                                "n_detectees": o.get("n_detectees", 0), "n_envoyees": o.get("n_envoyees", 0),
-                               "n_doublons": o.get("n_doublons", 0), "source": "verdicts_direct.json",
+                               "n_doublons": o.get("n_doublons", 0),
+                               "source": "verdicts_direct.json" + (" (recalculé : journal plus récent)"
+                                                                  if verdicts.get("recalcule_par_le_lab") else ""),
                                "sans_resultat_pct": o.get("sans_resultat_pct"), "statut": o.get("statut"),
                                "verrouillable": o.get("verrouillable"),
                                "genere_le": verdicts.get("genere_le")},

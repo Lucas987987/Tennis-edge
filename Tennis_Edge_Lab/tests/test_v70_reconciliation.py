@@ -226,9 +226,13 @@ class CommittedJson(unittest.TestCase):
             self.skipTest("jeu Détections absent")
         summary = json.loads(gzip.decompress(path.read_bytes()))["summary"]
         for code, h in self.doc["hypotheses"].items():
-            self.assertEqual(summary["by_type"].get(code, 0), h["suivi_officiel"]["n_detectees"], code)
-            self.assertEqual(summary.get("settled_by_type", {}).get(code, 0), h["suivi_officiel"]["n"], code)
+            # Le jeu « Détections » et l'entonnoir viennent du MÊME passage sur le journal.
+            self.assertEqual(summary["by_type"].get(code, 0), h["entonnoir"]["direct_detectees"], code)
             self.assertIs(h["reconstruction"]["egal_validation_report"], True, code)
+            # Chiffres officiels : égaux quand ils portent sur le même état du journal (depuis le
+            # 16/10, reconciliation.py recalcule les verdicts si verdicts_direct.json est en retard).
+            if h["suivi_officiel"]["n_detectees"] == h["entonnoir"]["direct_detectees"]:
+                self.assertEqual(summary.get("settled_by_type", {}).get(code, 0), h["suivi_officiel"]["n"], code)
 
 
 if __name__ == "__main__":
