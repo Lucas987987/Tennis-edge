@@ -1,0 +1,29 @@
+{
+ "ecrit_le": "2026-10-16",
+ "regle": {
+  "age_max_min": 30,
+  "cible_n": 300,
+  "circuits": [
+   "ATP",
+   "WTA",
+   "Challenger",
+   "Grand Chelem"
+  ],
+  "code": "H19",
+  "ecart_max_pct": 8.0,
+  "ecart_min_pct": 2.0,
+  "gele_le": "2026-10-16",
+  "horizons": [
+   "24h",
+   "6h",
+   "1h",
+   "10m"
+  ],
+  "juge_sur": "matchs commençant après le 16/10/2026 (jour UTC du début > 2026-10-16)",
+  "mesure": "CLV contre la clôture Pinnacle sans marge (puissance), entrée nette de commission",
+  "nom": "Valeur contre Pinnacle juste",
+  "un_pari_par": "match et joueur, premier horizon qui remplit la règle",
+  "verdict": "VALIDÉE si IC95 de la CLV > 0 ; RÉFUTÉE si CLV moyenne < 0 ; sinon NON CONCLUANT ; rien avant la cible"
+ },
+ "sha256": "03d73beb968a76c71fe3182a4f5fa8667ed2c448cde756ba3c2107deb45a2153"
+}
