@@ -1,6 +1,6 @@
 {
  "schema_version": 1,
- "generated_at": "2026-10-16T20:32:49+00:00",
+ "generated_at": "2026-10-16T21:40:39+00:00",
  "h19": {
   "regle": {
    "code": "H19",
@@ -25,12 +25,34 @@
    "mesure": "CLV contre la clôture Pinnacle sans marge (puissance), entrée nette de commission",
    "cible_n": 300,
    "verdict": "VALIDÉE si IC95 de la CLV > 0 ; RÉFUTÉE si CLV moyenne < 0 ; sinon NON CONCLUANT ; rien avant la cible",
-   "juge_sur": "matchs commençant après le 16/10/2026 (jour UTC du début > 2026-10-16)"
+   "juge_sur": "matchs commençant après le 16/10/2026 (jour UTC du début > 2026-10-16)",
+   "books": [
+    "betfair-ex",
+    "bet365",
+    "1xbet",
+    "22bet",
+    "unibet",
+    "winamax.fr",
+    "unibet.fr",
+    "pmu",
+    "bwin",
+    "coolbet",
+    "betsson",
+    "betway",
+    "williamhill",
+    "888sport",
+    "leovegas",
+    "tipico",
+    "netbet",
+    "marathonbet",
+    "bet365.fr"
+   ],
+   "amendement": "16/10/2026 avant toute donnée prospective : books = liste de la collecte des courbes (les 12 books jamais servis par l'API en tennis retirés)"
   },
   "gel": {
    "etat": "intact",
-   "sha256": "03d73beb968a76c71fe3182a4f5fa8667ed2c448cde756ba3c2107deb45a2153",
-   "attendu": "03d73beb968a76c71fe3182a4f5fa8667ed2c448cde756ba3c2107deb45a2153"
+   "sha256": "fe2214e7702b17e429ae44e8d89d96da787fa79a54e80b54d128f51243bd4026",
+   "attendu": "fe2214e7702b17e429ae44e8d89d96da787fa79a54e80b54d128f51243bd4026"
   },
   "prospectif": {
    "n": 0,
@@ -3458,7 +3480,222 @@
   ],
   "cases_testees": 20
  },
- "opportunites": 12021,
+ "books": {
+  "matchs": 2733,
+  "decisions": 12027,
+  "books": [
+   {
+    "book": "betfair-ex",
+    "matchs": 2237,
+    "couverture": 0.818514452982071,
+    "meilleur_prix": 0.5942462792051219,
+    "ecart_median": -3.068141823883286,
+    "cotes": 10318,
+    "au_dessus_2pct": 49,
+    "fr": false,
+    "bourse": true
+   },
+   {
+    "book": "bwin",
+    "matchs": 1839,
+    "couverture": 0.672886937431394,
+    "meilleur_prix": 0.055541697846512014,
+    "ecart_median": -6.658174236114633,
+    "cotes": 6166,
+    "au_dessus_2pct": 7,
+    "fr": false,
+    "bourse": false
+   },
+   {
+    "book": "coolbet",
+    "matchs": 1712,
+    "couverture": 0.6264178558360776,
+    "meilleur_prix": 0.0699259998337075,
+    "ecart_median": -5.141786491283151,
+    "cotes": 7240,
+    "au_dessus_2pct": 7,
+    "fr": false,
+    "bourse": false
+   },
+   {
+    "book": "1xbet",
+    "matchs": 1652,
+    "couverture": 0.6044639590193926,
+    "meilleur_prix": 0.06402261578115906,
+    "ecart_median": -6.017768450155991,
+    "cotes": 6239,
+    "au_dessus_2pct": 75,
+    "fr": false,
+    "bourse": false
+   },
+   {
+    "book": "betsson",
+    "matchs": 1649,
+    "couverture": 0.6033662641785583,
+    "meilleur_prix": 0.02544275380394113,
+    "ecart_median": -6.496867349789648,
+    "cotes": 5620,
+    "au_dessus_2pct": 11,
+    "fr": false,
+    "bourse": false
+   },
+   {
+    "book": "22bet",
+    "matchs": 1608,
+    "couverture": 0.5883644346871569,
+    "meilleur_prix": 0.014467448241456722,
+    "ecart_median": -6.280063556556181,
+    "cotes": 6263,
+    "au_dessus_2pct": 59,
+    "fr": false,
+    "bourse": false
+   },
+   {
+    "book": "betway",
+    "matchs": 1299,
+    "couverture": 0.47530186608122943,
+    "meilleur_prix": 0.023364097447409995,
+    "ecart_median": -6.320927975249546,
+    "cotes": 4005,
+    "au_dessus_2pct": 4,
+    "fr": false,
+    "bourse": false
+   },
+   {
+    "book": "bet365",
+    "matchs": 1217,
+    "couverture": 0.44529820709842666,
+    "meilleur_prix": 0.04855741248856739,
+    "ecart_median": -6.7384266384930225,
+    "cotes": 4386,
+    "au_dessus_2pct": 116,
+    "fr": false,
+    "bourse": false
+   },
+   {
+    "book": "tipico",
+    "matchs": 1181,
+    "couverture": 0.43212586900841565,
+    "meilleur_prix": 0.007898894154818325,
+    "ecart_median": -8.388371429252528,
+    "cotes": 4236,
+    "au_dessus_2pct": 2,
+    "fr": false,
+    "bourse": false
+   },
+   {
+    "book": "bet365.fr",
+    "matchs": 1181,
+    "couverture": 0.43212586900841565,
+    "meilleur_prix": 0.0009146087968737008,
+    "ecart_median": -10.372696720378173,
+    "cotes": 4288,
+    "au_dessus_2pct": 21,
+    "fr": false,
+    "bourse": false
+   },
+   {
+    "book": "888sport",
+    "matchs": 944,
+    "couverture": 0.34540797658251005,
+    "meilleur_prix": 0.01637981208946537,
+    "ecart_median": -6.367252079810715,
+    "cotes": 2982,
+    "au_dessus_2pct": 10,
+    "fr": false,
+    "bourse": false
+   },
+   {
+    "book": "netbet",
+    "matchs": 866,
+    "couverture": 0.3168679107208196,
+    "meilleur_prix": 0.0003325850170449821,
+    "ecart_median": -7.047630616410072,
+    "cotes": 2823,
+    "au_dessus_2pct": 0,
+    "fr": false,
+    "bourse": false
+   },
+   {
+    "book": "marathonbet",
+    "matchs": 791,
+    "couverture": 0.28942553969996343,
+    "meilleur_prix": 0.00465619023862975,
+    "ecart_median": -7.248390159984497,
+    "cotes": 2389,
+    "au_dessus_2pct": 8,
+    "fr": false,
+    "bourse": false
+   },
+   {
+    "book": "unibet",
+    "matchs": 661,
+    "couverture": 0.24185876326381267,
+    "meilleur_prix": 0.0418225658934065,
+    "ecart_median": -5.659184382359617,
+    "cotes": 1970,
+    "au_dessus_2pct": 40,
+    "fr": false,
+    "bourse": false
+   },
+   {
+    "book": "williamhill",
+    "matchs": 593,
+    "couverture": 0.21697768020490305,
+    "meilleur_prix": 0.017959590920429036,
+    "ecart_median": -6.188099432816374,
+    "cotes": 2190,
+    "au_dessus_2pct": 11,
+    "fr": false,
+    "bourse": false
+   },
+   {
+    "book": "leovegas",
+    "matchs": 499,
+    "couverture": 0.18258324185876326,
+    "meilleur_prix": 0.008397771680385798,
+    "ecart_median": -5.812041395073941,
+    "cotes": 1714,
+    "au_dessus_2pct": 25,
+    "fr": false,
+    "bourse": false
+   },
+   {
+    "book": "unibet.fr",
+    "matchs": 479,
+    "couverture": 0.1752652762532016,
+    "meilleur_prix": 0.002826972644882348,
+    "ecart_median": -7.3595362738828936,
+    "cotes": 1389,
+    "au_dessus_2pct": 1,
+    "fr": true,
+    "bourse": false
+   },
+   {
+    "book": "winamax.fr",
+    "matchs": 415,
+    "couverture": 0.15184778631540433,
+    "meilleur_prix": 0.0025775338820986115,
+    "ecart_median": -6.111157592629879,
+    "cotes": 1233,
+    "au_dessus_2pct": 1,
+    "fr": true,
+    "bourse": false
+   },
+   {
+    "book": "pmu",
+    "matchs": 292,
+    "couverture": 0.10684229784120014,
+    "meilleur_prix": 0.0006651700340899642,
+    "ecart_median": -7.991988007397888,
+    "cotes": 1008,
+    "au_dessus_2pct": 1,
+    "fr": true,
+    "bourse": false
+   }
+  ]
+ },
+ "opportunites": 12027,
  "notes": {
   "persistance": "le book paie-t-il encore au moins ce prix (net) à sa dernière cote avant le match ?",
   "holm": "p unilatéral CLV > 0, corrigé de Holm sur toutes les cases d'au moins 30 paris",
