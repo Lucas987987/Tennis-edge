@@ -1,15 +1,15 @@
 {
  "schema_version": 2,
- "generated_at": "2026-10-16T18:59:43+00:00",
+ "generated_at": "2026-10-16T20:32:55+00:00",
  "sources": {
   "worker": {
    "source": "API Worker D1 /api/hypotheses (fetch_worker_snapshot.py)",
    "fichier": "worker_hypotheses_capture.json",
    "status": "ok",
-   "fetched_at": "2026-10-16T18:59:38Z",
+   "fetched_at": "2026-10-16T20:32:50Z",
    "worker_generated_at": "2026-10-16T16:19:20Z"
   },
-  "suivi_officiel": "alertes en direct : h*_signal_log.jsonl + suivi_direct/resultats.json (verdicts_direct.json du 2026-10-16T18:59:43Z)",
+  "suivi_officiel": "alertes en direct : h*_signal_log.jsonl + suivi_direct/resultats.json (verdicts_direct.json du 2026-10-16T20:32:55Z)",
   "reconstruction": "moves_detail_hist.csv filtré par les règles gelées de validation_report.py (lignes jusqu'au 2026-10-14) — contrôle, ne juge pas",
   "rapprochement": "uid + joueur normalisé ; à défaut paire de joueurs + date ±1 jour"
  },
@@ -125,10 +125,10 @@
     "n_envoyees": 207,
     "n_doublons": 0,
     "source": "verdicts_direct.json (recalculé : journal plus récent)",
-    "sans_resultat_pct": 7.3,
-    "statut": "verrouillable (résultats complets à 93 %)",
+    "sans_resultat_pct": 7.7,
+    "statut": "verrouillable (résultats complets à 92 %)",
     "verrouillable": true,
-    "genere_le": "2026-10-16T18:59:43Z"
+    "genere_le": "2026-10-16T20:32:55Z"
    },
    "reconstruction": {
     "n": 135,
@@ -4738,10 +4738,10 @@
     "n_envoyees": 0,
     "n_doublons": 1,
     "source": "verdicts_direct.json (recalculé : journal plus récent)",
-    "sans_resultat_pct": 0.0,
-    "statut": "verrouillable (résultats complets à 100 %)",
-    "verrouillable": true,
-    "genere_le": "2026-10-16T18:59:43Z"
+    "sans_resultat_pct": 100.0,
+    "statut": "en attente de résultats (100,0 % sans résultat)",
+    "verrouillable": false,
+    "genere_le": "2026-10-16T20:32:55Z"
    },
    "reconstruction": {
     "n": 91,
@@ -6274,7 +6274,7 @@
     "sans_resultat_pct": 26.8,
     "statut": "en attente de résultats (26,8 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-10-16T18:59:43Z"
+    "genere_le": "2026-10-16T20:32:55Z"
    },
    "reconstruction": {
     "n": 54,
@@ -7558,7 +7558,7 @@
     "sans_resultat_pct": 14.3,
     "statut": "en attente de résultats (14,3 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-10-16T18:59:43Z"
+    "genere_le": "2026-10-16T20:32:55Z"
    },
    "reconstruction": {
     "n": 158,
@@ -10900,7 +10900,7 @@
     "sans_resultat_pct": 14.6,
     "statut": "en attente de résultats (14,6 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-10-16T18:59:43Z"
+    "genere_le": "2026-10-16T20:32:55Z"
    },
    "reconstruction": {
     "n": 135,
@@ -13584,7 +13584,7 @@
     "sans_resultat_pct": 5.4,
     "statut": "verrouillable (résultats complets à 95 %)",
     "verrouillable": true,
-    "genere_le": "2026-10-16T18:59:43Z"
+    "genere_le": "2026-10-16T20:32:55Z"
    },
    "reconstruction": {
     "n": 61,
@@ -15064,7 +15064,7 @@
     "sans_resultat_pct": 8.3,
     "statut": "verrouillable (résultats complets à 92 %)",
     "verrouillable": true,
-    "genere_le": "2026-10-16T18:59:43Z"
+    "genere_le": "2026-10-16T20:32:55Z"
    },
    "reconstruction": {
     "n": 28,
