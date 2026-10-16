@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-h13_recap.py — suivi QUOTIDIEN de l'hypothèse gelée n°13, sur Telegram privé.
+h13_recap.py — récap QUOTIDIEN des hypothèses gelées (EN DIRECT depuis le 16/10/2026), Telegram privé.
 
     « Parier le côté steamé au book d'entrée, cote entre 2,00 et 3,00,
       SANS aucun autre filtre. »  — gelée le 2026-09-06
@@ -170,6 +170,33 @@ def message(outs, ins, hier):
     return '\n'.join(L)
 
 
+def message_direct(doc, controle_h13=None):
+    """Récap des hypothèses gelées EN DIRECT (verdicts_direct.json, décision du 16/10/2026).
+
+    La reconstruction (moves_detail_hist) n'apparaît qu'en ligne « contrôle »."""
+    L = ["📊 <b>Hypothèses gelées — suivi EN DIRECT</b>",
+         f"<i>alertes réellement détectées, résultat ajouté après coup · {doc.get('genere_le', '?')[:16]}</i>"]
+    for h in doc.get('hypotheses', []):
+        o = h.get('out_of_sample') or {}
+        tete = (f"\n<b>{h['code']}</b> {h.get('libelle', '')} — {o.get('n_detectees', 0)} détectée(s) · "
+                f"{o.get('n_envoyees', 0)} envoyée(s) · {o.get('n', 0)}/{h.get('cible')} dénouée(s)")
+        L.append(tete)
+        if o.get('n'):
+            clv = o.get('clv_pin_moyen')
+            L.append(f"écart {o['ecart']:+.1f} pts · ROI {o['roi']:+.1f} % · CLV Pinnacle "
+                     + (f"{clv:+.1f} %" if clv is not None else "—")
+                     + (" · <i>n &lt; 30</i>" if o['n'] < 30 else ""))
+        if o.get('verrouillable') is False:
+            L.append(f"⏳ {o.get('statut')} — aucun verdict tant que les résultats manquent")
+        if not o.get('n') and h['code'] == 'H14':
+            L.append("<i>canal en direct ouvert le 16/10/2026 : échantillon en cours de constitution</i>")
+    if controle_h13:
+        L.append(f"\n<i>Contrôle H13 (reconstruction, ne juge pas) : {controle_h13['k']}/{controle_h13['n']} · "
+                 f"ROI {100 * controle_h13['roi']:+.1f} %</i>")
+    L.append("\n<i>Aucune hypothèse validée. Verdicts : validation_report (Holm, n ≥ 100). Ne pas diffuser.</i>")
+    return '\n'.join(L)
+
+
 def envoyer(texte):
     token = os.environ.get('TELEGRAM_TOKEN')
     chat = os.environ.get('TELEGRAM_CHAT_ID')       # PRIVÉ uniquement
@@ -197,7 +224,15 @@ def main():
         return 0
     veille = (datetime.date.today() - datetime.timedelta(days=1)).isoformat()
     hier = bloc([p for p in outs if p['date'] == veille])
-    txt = message(outs, ins, hier)
+    # DEPUIS LE 16/10/2026 : récap EN DIRECT (verdicts_direct.json, écrit par
+    # scripts/suivi_direct.py). L'ancien message sur la reconstruction ne
+    # sert plus que de repli si ce fichier manque.
+    try:
+        import json
+        doc = json.load(open(os.environ.get('VERDICTS', 'verdicts_direct.json'), encoding='utf-8'))
+    except (OSError, ValueError):
+        doc = None
+    txt = message_direct(doc, bloc(outs)) if doc else message(outs, ins, hier)
     ok = envoyer(txt)
     print(f"  {len(outs)} pari(s) out-of-sample · {len(ins)} in-sample · "
           f"envoi {'OK' if ok else 'non effectué'}")

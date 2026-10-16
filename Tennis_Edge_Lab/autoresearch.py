@@ -407,11 +407,13 @@ def research(moves):
                            'disclaimer':'Exploration sur historique utilisé à répétition ; des filtres positifs ne sont ni une stratégie validée prospectivement ni un profit garanti. Les montants théoriques ne représentent pas nécessairement des cotes jouables.'}}
 
 
-def frozen_results(rawmoves):
+def official_definitions():
     """Règles historiques du validateur officiel : valeurs extraites au build.
 
     Si une constante cesse d'être littérale ou disparaît, refuser le rapport :
     une hypothèse gelée ne doit jamais être recalculée avec un seuil deviné.
+    Renvoie [(code, date de gel, libellé, prédicat sur {odd, pin, lead, mag})].
+    (V7.0 : partagé avec reconciliation.py, qui applique EXACTEMENT ces règles.)
     """
     target=ROOT/'scripts'/'validation_report.py'
     if not target.exists():raise RuntimeError('validation_report.py absent : impossible de vérifier les critères gelés')
@@ -431,9 +433,8 @@ def frozen_results(rawmoves):
             if node.targets[0].id in needed:cfg[node.targets[0].id]=ast.literal_eval(node.value)
     miss=needed-set(cfg)
     if miss:raise RuntimeError('Constantes officielles introuvables : '+','.join(sorted(miss)))
-    rows=[x for r in rawmoves if (x:=safe_row(r))]
     h=cfg
-    definitions=[
+    return [
         ('H13',h['FREEZE_DATE_ROIBANDE'],f"{h['H13_COTE_MIN']:.2f} ≤ cote entrée ≤ {h['H13_COTE_MAX']:.2f}",
          lambda r:h['H13_COTE_MIN']<=r['odd']<=h['H13_COTE_MAX']),
         ('H14',h['FREEZE_DATE_AMPLI'],f"mouvement > {h['H14_MOVE_MIN_PCT']} % · {h['H14_LEAD_MIN']/60:.0f}–{h['H14_LEAD_MAX']/60:.0f} h",
@@ -449,6 +450,12 @@ def frozen_results(rawmoves):
         ('H18',h['FREEZE_DATE_H18'],'Intersection stricte H16 et H17',
          lambda r:r['pin']<h['H16_PIN_OPEN_MAX'] and h['H17_ECART_MIN']<=100*(r['odd']/r['pin']-1)<h['H17_ECART_MAX'])
     ]
+
+
+def frozen_results(rawmoves):
+    """Populations du suivi officiel (validation_report.py) : lignes réglées après le gel."""
+    definitions=official_definitions()
+    rows=[x for r in rawmoves if (x:=safe_row(r))]
     out=[]
     qualified={}
     for code,freeze,rule,pred in definitions:

@@ -62,6 +62,7 @@ import urllib.request
 import urllib.parse
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import journal_direct              # noqa: E402 — journal complet (schéma 2)
 import lien_joueur                   # noqa: E402 — liens vers les fiches
 import oddspapi_v5 as ov      # noqa: E402
 
@@ -288,7 +289,7 @@ def message(g, steam, cote, book, ampleur, lead, pin_open):
          f"{g.get('_tour') or '?'} · T-{lead_txt}",
          f"{lien_joueur.duo_html(joueur, adv)}",
          f"📉 mouvement Pinnacle {ampleur:.1f} pts · entrée {book} @ {cote:.2f}"]
-    s = _suivi()
+    s = journal_direct.suivi('H17')  # bilan EN DIRECT (verdicts_direct.json)
     if s and s.get('n'):
         L.append(f"\n📊 <b>Suivi</b> : {s['n']}/350 paris dénoués "
                  f"({100 * s['n'] / 350:.0f} %)")
@@ -361,33 +362,20 @@ def main():
         if not doublon:
             ok = envoyer(message(g, steam, cote, book, ampleur, lead, pin_open))
             n_envoyes += 1
+        # Journal COMPLET (schéma 2, scripts/journal_direct.py) : TOUTE
+        # détection dans la règle est écrite — envoyée, doublon, échec ou
+        # non tentée. Champs de décision écrits une fois, jamais modifiés.
+        rec = journal_direct.ligne('H17', uid, g, steam, t_det, maintenant,
+                                   cote, book, ampleur, lead, ok, doublon)
         etat[uid] = {'t': maintenant.isoformat(timespec='seconds'),
-                     'cote': round(cote, 2), 'pin_open': round(pin_open, 3),
-                'book': book, 'envoye': ok,
-                     'doublon': doublon or ''}
-        with open(LOG, 'a', encoding='utf-8') as f:
-            f.write(json.dumps({
-                'uid': uid, 'detecte_le': t_det.isoformat(timespec='seconds'),
-                'signale_le': maintenant.isoformat(timespec='seconds'),
-                'joueur': g['_home'] if steam == 'h' else g['_away'],
-                'adversaire': g['_away'] if steam == 'h' else g['_home'],
-                # `side` ENREGISTRÉ LE 09/09/2026. Sans lui, il fallait le
-                # déduire en comparant le nom du joueur au uid — fragile sur
-                # les noms composés, les accents et les homonymes. Un journal
-                # permanent doit porter ce qu'il sait, pas obliger à le
-                # reconstituer.
-                'side': 'home' if steam == 'h' else 'away',
-                'tournoi': g.get('_tour'), 'cote': round(cote, 2),
-                'book': book, 'ampleur_pts': round(ampleur, 2),
-                'lead_min': round(lead, 0), 'commence': g['_ct'].isoformat(),
-                'envoye': ok, 'doublon': doublon or '',
-                'gele_le': FREEZE,
-            }, ensure_ascii=False) + '\n')
+                     'commence': g['_ct'].isoformat(),
+                     'cote': round(cote, 2), 'pin_open': rec['pin_open'],
+                     'book': book, 'envoye': ok, 'doublon': doublon or ''}
+        journal_direct.ecrire(LOG, rec)
 
     # Purge des états dont le match est passé : sans elle le fichier gonfle
     # indéfiniment et l'anti-doublon finit par coûter plus cher que le calcul.
-    limite = (maintenant - datetime.timedelta(days=3)).isoformat()
-    etat = {k: v for k, v in etat.items() if str(v.get('t', '')) >= limite}
+    etat = journal_direct.purger(etat, maintenant)
     try:
         ov.ecriture_atomique(ETAT, etat, ensure_ascii=False, indent=1)
     except Exception as e:
@@ -395,11 +383,8 @@ def main():
 
     print(f"  {len(games)} matchs · {n_vus} avec mouvement détecté · "
           f"{n_bande} dans la bande · {n_envoyes} signal(aux) envoyé(s)")
-    # Le VERDICT reste rendu par validation_report.roi_bande_watch() sur
-    # moves_detail_hist.csv. Ce journal-ci sert à SUIVRE en direct et à
-    # vérifier que la détection temps réel voit bien la même population que
-    # la reconstruction batch — pas à juger. Deux juges finissent par
-    # diverger.
+    # DEPUIS LE 16/10/2026 le verdict se rend sur CE journal (suivi_direct.py
+    # -> verdicts_direct.json) ; la reconstruction n'est plus qu'un contrôle.
     return 0
 
 
