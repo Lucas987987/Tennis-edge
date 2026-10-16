@@ -1,0 +1,100 @@
+// V7.3 « Base des matchs » : décodage du registre, meilleurs prix, filtres, cohérence CLV → gains.
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const R = require('../research_registre.js');
+const D = require('../research_direct.js');
+
+const doc = {
+  points: ['open', '24h', '6h', '1h', '10m', 'close'],
+  books: [{ nom: 'pinnacle', jouable: true, fr: false, commission: 0 }, { nom: 'betfair-ex', jouable: true, fr: false, commission: 0.05 },
+    { nom: 'winamax.fr', jouable: true, fr: true, commission: 0 }],
+  colonnes_horizons: ['horizon', 'cote_pin', 'proba_juste', 'book_jouable', 'cote_jouable', 'book_fr', 'cote_fr', 'ecart_jouable_pct',
+    'move_pin_pct', 'alerte_avant', 'clv_pinnacle', 'clv_jouable', 'clv_fr', 'pnl_pinnacle', 'pnl_jouable', 'pnl_fr',
+    'lecture_verdict', 'lecture_n', 'lecture_relaches', 'lecture_exces', 'lecture_exces_lo', 'lecture_exces_hi', 'lecture_base'],
+  colonnes_alertes: ['type', 'cote_de', 'minutes_avant', 'book', 'cote', 'ampleur_pts', 'envoyee', 'clv_pin', 'pnl'],
+  matchs: [
+    { uid: 'm1', debut: '2026-10-02T12:00+00:00', mois: '2026-10', tournoi: 'ATP Metz', circuit: 'ATP', surface: 'Hard', joueurs: ['Alpha Un', 'Beta Deux'], vainqueur: 0,
+      cotes: [[0, [[1800, 1.8], null, [360, 1.75], [60, 1.7], [10, 1.68], [5, 1.68]], [[1800, 2.1], null, [360, 2.15], [60, 2.2], [10, 2.25], [5, 2.25]]],
+        [1, [[1700, 1.9], null, [360, 1.82], null, null, [5, 1.74]], [[1700, 2.2], null, [360, 2.3], null, null, [5, 2.4]]],
+        [2, [[1600, 1.85], null, [360, 1.78], null, null, null], [[1600, 2.0], null, [360, 2.1], null, null, null]]],
+      pinnacle: [[[1800, 1.8], [360, 1.75], [5, 1.68]], [[1800, 2.1], [5, 2.25]]],
+      alertes: [['H13', 1, 300, 'betfair-ex', 2.3, 2.1, 1, 3.5, -1]],
+      horizons: [[0, '6h', 1.75, 0.55, 'betfair-ex', 1.779, 'winamax.fr', 1.78, -2.1, -2.8, 'aucune', 1.2, 0.9, 1.1, 0.75, 0.779, 0.78, 'sur-coté', 40, 2, -1.1, -2, -0.2, -3.4]] },
+    { uid: 'm2', debut: '2026-10-03T12:00+00:00', mois: '2026-10', tournoi: 'ATP Challenger Roanne', circuit: 'Challenger', surface: 'Hard', joueurs: ['Gamma', 'Delta'], vainqueur: null,
+      sans_courbe: true, cotes: [], pinnacle: [[], []], alertes: [['PUBLIC', 0, 120, 'unibet', 2.5, 3, 0, null, null]], horizons: [] },
+  ],
+};
+
+test('décodage : colonnes nommées, côté conservé', () => {
+  const list = R.decodeMonth(doc);
+  assert.equal(list.length, 2);
+  assert.equal(list[0].horizons[0].side, 0);
+  assert.equal(list[0].horizons[0].lecture_verdict, 'sur-coté');
+  assert.equal(list[0].alertes[0].type, 'H13');
+  assert.equal(list[0].alertes[0].cote_de, 1);
+  assert.equal(R.lectureOf(list[0]), 'sur-coté');
+});
+
+test('Pinnacle juste et meilleur prix net de commission, Pinnacle exclu', () => {
+  const m = { ...R.decodeMonth(doc)[0], _pinIx: 0 };
+  const fair = R.fairRow(m, 0, 6);
+  assert.ok(Math.abs(fair[0] - R.powerFair(1.8, 2.1)) < 1e-12);
+  assert.equal(fair[1], null);
+  const best = R.bestRow(m, 0, 6, doc.books);
+  // ouverture : betfair 1.9 net = 1 + 0.9 × 0.95 = 1.855 > winamax 1.85
+  assert.equal(best[0].book, 'betfair-ex');
+  assert.ok(Math.abs(best[0].odds - 1.855) < 1e-12);
+  // 6 h : betfair 1.82 net = 1.779 < winamax 1.78
+  assert.equal(best[2].book, 'winamax.fr');
+  const fr = R.bestRow(m, 0, 6, doc.books, true);
+  assert.equal(fr[0].book, 'winamax.fr');
+  assert.equal(fr[5], null);
+});
+
+test('filtres cumulables', () => {
+  const list = R.decodeMonth(doc);
+  assert.equal(R.filterMatches(list, { q: 'roanne' }).length, 1);
+  assert.equal(R.filterMatches(list, { alerte: 'H' }).length, 1);
+  assert.equal(R.filterMatches(list, { alerte: 'PUBLIC', circuit: 'Challenger' }).length, 1);
+  assert.equal(R.filterMatches(list, { lecture: 'sur-coté' }).length, 1);
+  assert.equal(R.filterMatches(list, { courbe: 'sans' })[0].uid, 'm2');
+  assert.equal(R.filterMatches(list, { resultat: 'avec' })[0].uid, 'm1');
+});
+
+test('cohérence CLV → gains : mêmes règles que Python (cas du tipster)', () => {
+  const ok = R.coherence(Array.from({ length: 200 }, (_, i) => [2.0, 0.0, i % 2 ? 1 : -1]));
+  assert.equal(ok.etat, 'cohérent');
+  const tip = R.coherence(Array.from({ length: 1000 }, (_, i) => [2.0, 2.0, i % 5 < 2 ? 1 : -1]));
+  assert.ok(tip.z < -2);
+  assert.equal(tip.etat, 'la CLV ne se transforme pas en gains');
+  assert.equal(R.coherence([[2, 1, 1]]).etat, 'trop peu de paris');
+  // même fonction dans « Matchs en direct »
+  assert.deepEqual(D.coherence(Array.from({ length: 1000 }, (_, i) => [2.0, 2.0, i % 5 < 2 ? 1 : -1])), tip);
+});
+
+test('fiche : complète avec courbes, réduite sans courbe', () => {
+  const [m1, m2] = R.decodeMonth(doc).map(m => ({ ...m, _pinIx: 0 }));
+  const h1 = R.fiche(m1, doc);
+  assert.match(h1, /Cotes de l'ouverture à la clôture — Alpha Un/);
+  assert.match(h1, /Pinnacle juste/);
+  assert.match(h1, /rg-best/);
+  assert.match(h1, /sur-coté/);
+  assert.match(h1, /<svg/);
+  const h2 = R.fiche(m2, doc);
+  assert.match(h2, /Courbes de cotes non collectées/);
+  assert.match(h2, /PUBLIC/);
+  assert.doesNotMatch(h2, /<svg/);
+});
+
+test('évaluation : tableaux rendus, aucune donnée inventée', () => {
+  const html = R.evaluation({
+    lectures: { lignes_lues: 10, correlation: 0.036, par_verdict: [{ verdict: 'sur-coté', horizon: 'tous', lignes: 5, exces_realise: { n: 5, moyenne: -0.5, ic95: [-0.8, -0.2] } }], par_quintile: [] },
+    fiabilite_cloture: { cotes_jugees: 40, par_tranche: [{ groupe: '60–70 %', n: 40, proba_juste: 0.65, proba_brute: 0.67, victoires: 0.6, ecart_pts: -5, ic95_pts: [-10, 0], z: -1.2, etat: 'conforme' }] },
+    coherence_matchs: [{ horizon: 'tous', entree: 'pinnacle', n: 100, roi_attendu: -4.5, roi_reel: -3.6, z: 1.06, etat: 'cohérent' }],
+    coherence_hypotheses: [],
+  });
+  assert.match(html, /ne prédisent presque rien/);
+  assert.match(html, /La clôture Pinnacle est-elle juste/);
+  assert.match(html, /cohérent/);
+  assert.equal(R.evaluation(null), '');
+});
