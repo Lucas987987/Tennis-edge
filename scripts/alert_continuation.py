@@ -26,6 +26,7 @@ Sources : ALERTS_LOG=odds_alerts_log.jsonl  CLV_FILE=clv_history.jsonl
 """
 import json, os, sys, statistics as st
 import clv_store   # clv_history partitionné par mois (15/10/2026)
+import alerts_store   # odds_alerts_log découpé par mois (16/10/2026)
 
 ALERTS_LOG = os.environ.get('ALERTS_LOG', 'odds_alerts_log.jsonl')
 CLV_FILE   = os.environ.get('CLV_FILE', 'clv_history.jsonl')
@@ -50,7 +51,7 @@ def load_jsonl(path):
 
 
 def main():
-    logs = load_jsonl(ALERTS_LOG)
+    logs = list(alerts_store.iter_records(ALERTS_LOG))
     clv = {}
     for e in load_jsonl(CLV_FILE):
         uid = e.get('uid')

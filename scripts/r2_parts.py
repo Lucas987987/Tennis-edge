@@ -245,7 +245,8 @@ def staged_partitions():
         if len(parts) < 2:
             continue
         status, path = parts[0][:1], parts[-1]
-        if os.path.dirname(path) == r2_io.PARTS_DIR and r2_io.family_of(path):
+        if (os.path.dirname(path) == r2_io.PARTS_DIR
+                and r2_io.family_of(path) in r2_io.STREAM_FAMILIES):
             res.append((status, path))
     return res
 

@@ -19,6 +19,9 @@ name: Steam Pipeline (résultats set + journal CLV/ROI)
 # regeneres a chaque run faisaient echouer le merge puis le push
 # (panne du 16/08/2026). Portee workflow = toutes les etapes.
 env:
+  # Étape 4 (16/10/2026) : l'historique FIGÉ des courbes (parts/hist_*) est
+  # servi par R2 ; les lecteurs rapatrient ce qui manque (scripts/hist_r2.py).
+  R2_HIST_MATERIALIZE: '1'
   # R2 (15/10/2026) — voir README_MIGRATION_R2.md. off | double | on ;
   # sans variable de dépôt : double (git fait foi, R2 reçoit une copie).
   R2_PRIMARY: ${{ vars.R2_PRIMARY || 'double' }}
@@ -94,6 +97,24 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: '3.11'
+
+      # Étape 4 (16/10/2026) : historique FIGÉ des courbes servi par R2. Le
+      # cache (hors du dépôt, une clé par semaine ISO) évite de retélécharger
+      # ~450 Mo à chaque run ; il ne remplace jamais un fichier du checkout.
+      - name: Semaine ISO (clé du cache d'historique)
+        id: semaine_hist
+        run: echo "v=$(date -u +%G-W%V)" >> "$GITHUB_OUTPUT"
+      - name: Cache de l'historique figé
+        uses: actions/cache@v5
+        with:
+          path: ~/.cache/hist_r2
+          key: hist-r2-${{ steps.semaine_hist.outputs.v }}
+          restore-keys: |
+            hist-r2-
+      - name: R2 — historique des courbes
+        run: |
+          pip install --quiet boto3 || true
+          python scripts/hist_r2.py pull --cache ~/.cache/hist_r2 || true
 
       # R2 (15/10/2026) : en mode R2_PRIMARY=on, rapatrie dans parts/ les
       # partitions (live) que git ne contient plus. No-op en double/off.

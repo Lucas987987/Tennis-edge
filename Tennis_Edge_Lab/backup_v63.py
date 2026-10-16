@@ -69,7 +69,9 @@ def _collect(root: Path) -> tuple[dict[str, set[str]], dict]:
     add(V61_LEDGER, "v61_exploratory_registry")
     add(SELECTION_MANIFEST, "v63_selection_manifest")
     add(V62_LEDGER, "compact_v62_v63_registry")
-    add("Tennis_Edge_Lab/live/candidate_watch_v61_prospective.json",
+    # Étape 4 stockage : le rapport V6.1 est committé en .json.gz.
+    _v61 = "Tennis_Edge_Lab/live/candidate_watch_v61_prospective.json"
+    add(_v61 + ".gz" if _safe_path(root, _v61 + ".gz").is_file() else _v61,
         "prospective_report")
     add(compact.REPORT, "prospective_report")
     add("Tennis_Edge_Lab/registry/bookmakers_sets_v6.jsonl",

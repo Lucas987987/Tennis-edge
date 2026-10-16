@@ -110,15 +110,7 @@ def iter_hist_lines(market='book'):
     les deux formes coexistent, aucun script consommateur n'a à changer.
     Si un .jsonl et son .jsonl.gz existent tous les deux (compression en cours),
     seul le .jsonl est lu, pour ne jamais servir deux fois les mêmes lignes."""
-    # R2 (15/10/2026) : l'historique hist_* reste dans git ; sur demande
-    # explicite (R2_MATERIALIZE_HIST=1), on complète depuis R2 un checkout
-    # qui l'exclut. Désactivé par défaut : ~600 Mo à rapatrier.
-    if os.environ.get('R2_MATERIALIZE_HIST') == '1':
-        try:
-            import restore_curves
-            restore_curves.from_r2_only(f'hist_{market}_')
-        except Exception as e:                  # noqa: BLE001
-            print(f"  [r2] historique {market} non complété ({type(e).__name__})")
+    _r2_hist(market)
     plain = sorted(glob.glob(f'parts/hist_{market}_*.jsonl'))
     gz = sorted(glob.glob(f'parts/hist_{market}_*.jsonl.gz'))
     if not plain and not gz:
@@ -167,6 +159,20 @@ def iter_hist_lines(market='book'):
 # code d'erreur. Symptôme concret constaté : moves_detail.csv et
 # moves_detail_hist.csv réduits à leur seule ligne d'en-tête (154 octets).
 # open_curves() encapsule les deux cas : à utiliser PARTOUT à la place de open().
+def _r2_hist(market=None):
+    """ÉTAPE 4 (16/10/2026) : les partitions d'historique FIGÉES ne sont plus
+    dans git (scripts/hist_r2.py) ; celles qui manquent au checkout viennent
+    de R2. Actif seulement si R2_HIST_MATERIALIZE=1 (workflows qui lisent
+    l'historique). Ne lève jamais : au pire, copies locales seules."""
+    if os.environ.get('R2_HIST_MATERIALIZE') != '1':
+        return
+    try:
+        import r2_io
+        r2_io.materialize_hist(market)
+    except Exception as e:                      # noqa: BLE001
+        print(f"  [r2] historique non rapatrié ({type(e).__name__})")
+
+
 def _r2_materialize(motif):
     """AJOUTÉ LE 15/10/2026 (migration R2). En mode R2_PRIMARY=on, les
     partitions ticks/live ne sont plus dans git : on rapatrie depuis R2
@@ -204,6 +210,8 @@ def load_partitions(motif):
     les bugs historiques du projet (cf. les trois copies de player_match).
     """
     _r2_materialize(motif)
+    if 'hist_' in os.path.basename(motif):
+        _r2_hist()
     plain = glob.glob(motif)
     gz = glob.glob(motif + '.gz')
     vus = set(plain)
@@ -290,6 +298,7 @@ def hist_partitions(market='book'):
     """Chemins des partitions d'un marché, .jsonl et .jsonl.gz confondus.
     Le .gz est renvoyé SANS son suffixe : open_any() se charge de le résoudre,
     et les appelants gardent des chemins lisibles."""
+    _r2_hist(market)
     plain = glob.glob(f'parts/hist_{market}_*.jsonl')
     gz = [p[:-3] for p in glob.glob(f'parts/hist_{market}_*.jsonl.gz')]
     return sorted(set(plain) | set(gz))

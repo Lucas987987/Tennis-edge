@@ -53,6 +53,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import player_form as pf                                    # noqa: E402
 import etude_difficulte_tous as edt                         # noqa: E402
 import etude_tous_angles as eta                             # noqa: E402
+import alerts_store   # odds_alerts_log découpé par mois (16/10/2026)
 
 COTES = [(1.0, 1.3), (1.3, 1.6), (1.6, 2.0), (2.0, 2.6), (2.6, 4.0), (4.0, 50)]
 MOUV = [(0, 3), (3, 6), (6, 10), (10, 15), (15, 20), (20, 36)]
@@ -63,7 +64,7 @@ def charger():
     prix = eta.charger_prix()
     R = edt.charger_resultats(pf.charger_matchs())
     M, vus = [], set()
-    for l in open('odds_alerts_log.jsonl', encoding='utf-8'):
+    for l in alerts_store.open_text('odds_alerts_log.jsonl'):
         try:
             r = json.loads(l)
             d = datetime.date.fromisoformat(r['commence_time'][:10])

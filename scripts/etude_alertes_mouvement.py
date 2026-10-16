@@ -24,6 +24,7 @@ import player_form as pf                                    # noqa: E402
 import etude_difficulte_tous as edt                         # noqa: E402
 import etude_tous_angles as eta                             # noqa: E402
 import etude_alertes_angles as eaa                          # noqa: E402
+import alerts_store   # odds_alerts_log découpé par mois (16/10/2026)
 
 TRANCHES = [(0, 2), (2, 3), (3, 5), (5, 8), (8, 12), (12, 100)]
 
@@ -44,8 +45,8 @@ def alertes_ampleur():
             j, o = pf.cle_joueur(r.get('joueur')), pf.cle_joueur(r.get('adversaire'))
             if j and o and j != o:
                 A.append(('HYPOS', frozenset((j, o)), d, j, amp))
-    if os.path.exists('odds_alerts_log.jsonl'):
-        for l in open('odds_alerts_log.jsonl', encoding='utf-8'):
+    if alerts_store.exists('odds_alerts_log.jsonl'):
+        for l in alerts_store.open_text('odds_alerts_log.jsonl'):
             try:
                 r = json.loads(l)
                 d = datetime.date.fromisoformat(r['commence_time'][:10])

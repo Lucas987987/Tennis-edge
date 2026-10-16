@@ -20,6 +20,7 @@ PHILOSOPHIE : on mesure tout, on ne conclut rien tant qu'on n'a pas de volume.
 import os, json, urllib.request, urllib.parse, datetime
 import lien_joueur                   # noqa: E402 — liens vers les fiches
 import closing_store   # closing_lines chaud + archives mensuelles (16/10/2026)
+import alerts_store   # odds_alerts_log découpé par mois (16/10/2026)
 
 CLOSING_FILE = 'closing_lines.json'
 ALERTS_FILE = 'odds_alerts_state.json'   # état anti-spam des alertes (éphémère)
@@ -345,7 +346,9 @@ def log_entry(mv):
         'amplitude_pct': mv['amp'],
     }
     try:
-        with open(ALERTS_LOG, 'a', encoding='utf-8') as f:
+        # 16/10/2026 : partition du mois courant (alerts_store) ; avant la
+        # migration, alerts_store renvoie encore odds_alerts_log.jsonl.
+        with open(alerts_store.append_path(), 'a', encoding='utf-8') as f:
             f.write(json.dumps(entry, ensure_ascii=False) + '\n')
         return True
     except Exception as e:
