@@ -221,6 +221,8 @@ jobs:
           for f in polymarket_markets.json polymarket_collector_state.json polymarket_diag.json; do
             [ -f "$f" ] && git add -- "$f" || echo "  (absent : $f)"
           done
+          # 16/10/2026 : registre en ajout seul (market_registry) — fichiers du jour.
+          for f in registres_marches/*.jsonl; do [ -f "$f" ] && git add -- "$f" || true; done
           # GARDE-FOU TAILLE, avant tout git add.
           # Le 19/08/2026, parts/pm_ticks_2026-08-19.jsonl a atteint 221 Mo et
           # GitHub a rejeté le push entier ("pre-receive hook declined") : les

@@ -115,6 +115,21 @@ class ClvStoreTests(unittest.TestCase):
             self.assertEqual(os.path.basename(clv_store.append_path(".", now=sept)),
                              "clv_history_2026-10_2.jsonl")
 
+    def test_small_rollover_keeps_the_current_partition_small_and_order_exact(self):
+        clv_store.migrate(".", verbose=False)
+        before = list(clv_store.iter_lines("clv_history.jsonl"))
+        oct_ = dt.datetime(2026, 10, 20, tzinfo=dt.timezone.utc)
+        with mock.patch.object(clv_store, "MAX_MB", 0.0005):          # ~500 octets
+            added = []
+            for i in range(6):
+                line = rec(f"n{i}", "2026-10-19T10:00:00Z") + "\n"
+                with open(clv_store.append_path(".", now=oct_), "a", encoding="utf-8") as f:
+                    f.write(line)
+                added.append(line)
+        names = [os.path.basename(p) for p in clv_store.partitions(".")]
+        self.assertIn("clv_history_2026-10_2.jsonl", names)
+        self.assertEqual(list(clv_store.iter_lines("clv_history.jsonl")), before + added)
+
     def test_rewrite_touches_only_changed_partitions(self):
         clv_store.migrate(".", verbose=False)
         mt = {p: os.stat(p).st_mtime_ns for p in clv_store.partitions(".")}
