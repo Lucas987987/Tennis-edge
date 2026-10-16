@@ -148,8 +148,17 @@ jobs:
                 --body "Appliqué par le workflow « Appliquer un paquet » (run ${{ github.run_id }}). Tests verts.")
           echo "Demande de fusion : $url"
           if [ "${{ github.event_name }}" = "push" ] || [ "${{ github.event.inputs.fusionner }}" = "true" ]; then
-            gh pr merge "$url" --squash --delete-branch
-            echo "✅ fusionnée dans main"
+            # main bouge sans arrêt (robots) : « Base branch was modified » est
+            # passager. On réessaie, jamais de force.
+            for i in 1 2 3 4 5 6; do
+              if gh pr merge "$url" --squash --delete-branch; then
+                echo "✅ fusionnée dans main"; exit 0
+              fi
+              echo "… main a bougé pendant la fusion, nouvel essai dans 15 s ($i/6)"
+              sleep 15
+            done
+            echo "::error::Fusion impossible après 6 essais : fusionner à la main $url"
+            exit 1
           else
             echo "À fusionner à la main : $url"
           fi

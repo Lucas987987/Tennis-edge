@@ -224,6 +224,21 @@
   }
 
   const summaryCell = s => (s && fin(s.moyenne) ? `${sg(s.moyenne)}<span class="detail">${ic(s.ic95)} · n=${nf(s.n, 0)}</span>` : '—');
+  /** Écart de victoires des profils (ex. 24/25 gagnés pour 72 % attendus) et ce qu'a fait le match suivant. */
+  function victoires(V) {
+    if (!V || !V.lignes) return '';
+    const corr = V.correlation;
+    const msg = !fin(corr) ? '' : Math.abs(corr) < 0.05
+      ? `Corrélation écart du profil / écart du match suivant : <b>${nf(corr, 3)}</b>. Un profil qui gagnait beaucoup plus (ou moins) que prévu <b>ne dit rien</b> du match suivant : l'écart venait du hasard.`
+      : `Corrélation écart du profil / écart du match suivant : <b>${nf(corr, 3)}</b> — à examiner tranche par tranche.`;
+    const tab = (rows, head) => `<div class="table-wrap rg-table"><table><thead><tr><th>${head}</th><th>Matchs suivants</th><th>Gagné</th><th>Attendu (juste)</th><th>Écart · IC95</th><th>ROI Pinnacle</th></tr></thead><tbody>${rows.filter(g => g.n).map(g => `<tr><td>${esc(g.groupe)}</td><td>${nf(g.n, 0)}</td><td>${nf(100 * g.gagne, 1)} %</td><td>${nf(100 * g.attendu, 1)} %</td><td>${sg(g.ecart_pts, 1, ' pts')}<span class="detail">[${sg(g.ic95_pts[0], 1, '')} ; ${sg(g.ic95_pts[1], 1, '')}]</span></td><td>${sg(g.roi_pinnacle)}</td></tr>`).join('')}</tbody></table></div>`;
+    return `<h4>Écart de victoires des profils, vérifié après coup</h4>
+      <p class="mini">${nf(V.lignes, 0)} matchs dont le profil avait au moins ${V.min_regles} matchs réglés. On classe chaque match selon l'écart de son profil (victoires − probabilité juste), puis on regarde si le match lui-même a gagné plus ou moins que prévu.</p>
+      <p>${msg}</p>
+      <h5>Selon l'écart du profil</h5>${tab(V.par_ecart, 'Le profil gagnait…')}
+      <h5>Selon la rareté de l'écart (z binomial)</h5>${tab(V.par_z, 'Écart du profil')}`;
+  }
+
   function evaluation(ev) {
     if (!ev) return '';
     const L = ev.lectures || {};
@@ -245,6 +260,7 @@
       <p>${lecture}</p>
       <div class="table-wrap rg-table"><table><thead><tr><th>Lecture</th><th>Lignes</th><th>Excès réalisé</th><th>CLV réalisée</th><th>ROI jouable</th></tr></thead><tbody>${tv}</tbody></table></div>
       ${tq ? `<h5>Par quintile de l'excès prédit (1 = le plus « sur-coté », 5 = le plus « sous-coté »)</h5><div class="table-wrap rg-table"><table><thead><tr><th>Quintile</th><th>Excès prédit</th><th>Excès réalisé</th><th>ROI jouable</th></tr></thead><tbody>${tq}</tbody></table></div><p class="mini">Si les lectures servaient, l'excès réalisé monterait régulièrement du quintile 1 au quintile 5.</p>` : ''}
+      ${victoires(L.victoires)}
       <h4>La clôture Pinnacle est-elle juste ?</h4>
       <p class="mini">Notre CLV suppose que la clôture Pinnacle sans marge donne la vraie probabilité. Ici on le vérifie sur ${nf(F.cotes_jugees, 0)} matchs (le favori à la clôture). « Annoncé brut » = 1/cote, marge incluse : c'est ce qu'utilise une « CLV brute ».</p>
       ${ft(F.par_tranche, 'Par probabilité annoncée')}${ft(F.par_circuit, 'Par circuit')}${ft(F.par_surface, 'Par surface')}
@@ -314,6 +330,6 @@
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
   }
   if (typeof module !== 'undefined') {
-    module.exports = { powerFair, decodeMonth, fairRow, bestRow, filterMatches, coherence, lectureOf, effective, evaluation, fiche, row };
+    module.exports = { victoires, powerFair, decodeMonth, fairRow, bestRow, filterMatches, coherence, lectureOf, effective, evaluation, fiche, row };
   }
 })();
