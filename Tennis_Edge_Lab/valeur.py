@@ -77,6 +77,13 @@ H19 = {
     "cible_n": 300,
     "verdict": "VALIDÉE si IC95 de la CLV > 0 ; RÉFUTÉE si CLV moyenne < 0 ; sinon NON CONCLUANT ; rien avant la cible",
     "juge_sur": "matchs commençant après le 16/10/2026 (jour UTC du début > 2026-10-16)",
+    # Amendement du 16/10/2026, AVANT toute donnée prospective (la collecte des
+    # courbes reprend le 27/10) : liste des books fixée, celle de la collecte.
+    "books": ["betfair-ex", "bet365", "1xbet", "22bet", "unibet", "winamax.fr", "unibet.fr", "pmu", "bwin",
+              "coolbet", "betsson", "betway", "williamhill", "888sport", "leovegas", "tipico", "netbet",
+              "marathonbet", "bet365.fr"],
+    "amendement": "16/10/2026 avant toute donnée prospective : books = liste de la collecte des courbes "
+                  "(les 12 books jamais servis par l'API en tennis retirés)",
 }
 # ───────────────────────────────────────────────────────────────────────────
 
@@ -192,8 +199,33 @@ def premier(opps, test):
 
 
 def regle_h19(o):
-    c = o["best"]
+    pool = [c for c in o["cands"] if c["book"] in H19["books"]]
+    if not pool:
+        return None
+    c = max(pool, key=lambda c: c["eff"])
     return c if H19["ecart_min_pct"] <= c["ecart_pct"] < H19["ecart_max_pct"] else None
+
+
+def books_table(opps):
+    """Chaque book collecté : couverture, meilleur prix, écart médian à la cote juste,
+    cotes au-dessus de la juste — sur TOUTES les décisions, pas seulement H19."""
+    matchs = {o["uid"] for o in opps}
+    cov, best, gaps, above = collections.defaultdict(set), collections.Counter(), collections.defaultdict(list), collections.Counter()
+    for o in opps:
+        for c in o["cands"]:
+            cov[c["book"]].add(o["uid"])
+            gaps[c["book"]].append(c["ecart_pct"])
+            if c["ecart_pct"] >= 2:
+                above[c["book"]] += 1
+        best[o["best"]["book"]] += 1
+    out = []
+    for b in sorted(cov, key=lambda k: -len(cov[k])):
+        g = sorted(gaps[b])
+        f = books.flags(b)
+        out.append({"book": b, "matchs": len(cov[b]), "couverture": len(cov[b]) / len(matchs) if matchs else None,
+                    "meilleur_prix": best[b] / len(opps) if opps else None, "ecart_median": g[len(g) // 2],
+                    "cotes": len(g), "au_dessus_2pct": above[b], "fr": f["jouable_fr"], "bourse": f["exchange"]})
+    return {"matchs": len(matchs), "decisions": len(opps), "books": out}
 
 
 # ── statistiques ──────────────────────────────────────────────────────────────
@@ -303,6 +335,7 @@ def build(sink):
                 "retrospectif": {**resume(avant), "avertissement": "période qui a servi à CHOISIR la règle : ne compte pas"},
                 "decoupes_retrospectives": decoupes_h19(avant)},
         "grille": grille(opps),
+        "books": books_table(opps),
         "opportunites": len(opps),
         "notes": {"persistance": "le book paie-t-il encore au moins ce prix (net) à sa dernière cote avant le match ?",
                   "holm": "p unilatéral CLV > 0, corrigé de Holm sur toutes les cases d'au moins 30 paris",
