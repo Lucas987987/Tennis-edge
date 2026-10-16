@@ -28,6 +28,13 @@ on:
         description: "Mode shadow V6.4 (écritures R2 vérifiées en plus des fichiers existants)"
         type: boolean
         default: false
+      forcer:
+        description: "Lancer malgré la pause économie (avant le 27/10)"
+        type: boolean
+        default: false
+      reserve_par_jour:
+        description: "Requêtes réservées à la capture par jour jusqu'au renouvellement"
+        default: "1100"
   schedule:
     - cron: '45 23 * * *'
 
@@ -82,7 +89,8 @@ jobs:
           BOOKS_NIVEAU1: "pinnacle,betfair-ex,bet365,1xbet,22bet,unibet,winamax.fr,unibet.fr,pmu"
           # Budget : on s'arrête quand le quota restant ne couvre plus la capture
           # (CAPTURE_PAR_JOUR × jours avant renouvellement). Plafond par run.
-          CAPTURE_PAR_JOUR: "1100"
+          CAPTURE_PAR_JOUR: ${{ github.event.inputs.reserve_par_jour || '1100' }}
+          FORCER: ${{ github.event.inputs.forcer || 'false' }}
           CURVES_MAX_RUN: "2500"
         # ÉCONOMIE QUOTA RapidAPI (ajouté le 14/10/2026) : 31 books x 40
         # matchs = jusqu'à 1 240 requêtes par nuit, la moitié du quota
@@ -90,7 +98,7 @@ jobs:
         # (rien à retoucher). Les courbes live des alertes viennent de la
         # capture, pas d'ici : les alertes H13-H18 ne sont pas touchées.
         run: |
-          if [ "$(date -u +%Y%m%d)" -lt 20261027 ]; then
+          if [ "$(date -u +%Y%m%d)" -lt 20261027 ] && [ "$FORCER" != "true" ]; then
             echo "⏸️ économie quota RapidAPI jusqu'au 27/10 : courbes books en pause"
             exit 0
           fi
