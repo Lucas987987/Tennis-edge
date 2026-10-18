@@ -1,15 +1,15 @@
 {
  "schema_version": 2,
- "generated_at": "2026-10-18T15:19:52+00:00",
+ "generated_at": "2026-10-18T20:08:22+00:00",
  "sources": {
   "worker": {
    "source": "API Worker D1 /api/hypotheses (fetch_worker_snapshot.py)",
    "fichier": "worker_hypotheses_capture.json",
    "status": "ok",
-   "fetched_at": "2026-10-18T15:19:47Z",
+   "fetched_at": "2026-10-18T20:08:17Z",
    "worker_generated_at": "2026-10-18T04:49:29Z"
   },
-  "suivi_officiel": "alertes en direct : h*_signal_log.jsonl + suivi_direct/resultats.json (verdicts_direct.json du 2026-10-18T15:19:52Z)",
+  "suivi_officiel": "alertes en direct : h*_signal_log.jsonl + suivi_direct/resultats.json (verdicts_direct.json du 2026-10-18T20:08:22Z)",
   "reconstruction": "moves_detail_hist.csv filtré par les règles gelées de validation_report.py (lignes jusqu'au 2026-10-14) — contrôle, ne juge pas",
   "rapprochement": "uid + joueur normalisé ; à défaut paire de joueurs + date ±1 jour"
  },
@@ -121,14 +121,14 @@
      -1.6
     ],
     "clv_n": 210,
-    "n_detectees": 215,
-    "n_envoyees": 215,
+    "n_detectees": 216,
+    "n_envoyees": 216,
     "n_doublons": 0,
     "source": "verdicts_direct.json (recalculé : journal plus récent)",
     "sans_resultat_pct": 9.8,
     "statut": "verrouillable (résultats complets à 90 %)",
     "verrouillable": true,
-    "genere_le": "2026-10-18T15:19:52Z"
+    "genere_le": "2026-10-18T20:08:22Z"
    },
    "reconstruction": {
     "n": 139,
@@ -146,8 +146,8 @@
     "egal_validation_report": true
    },
    "entonnoir": {
-    "direct_detectees": 215,
-    "direct_envoyees": 215,
+    "direct_detectees": 216,
+    "direct_envoyees": 216,
     "direct_doublons": 0,
     "direct_non_envoyees_autres": 0,
     "direct_denouees": 193,
@@ -159,12 +159,12 @@
      "apres_coup": 182,
      "cote_opposee_live": 1
     },
-    "direct_seule": 149,
+    "direct_seule": 150,
     "direct_seule_raisons": {
      "absent_reconstruction": 98,
      "prix_different": 4,
      "cote_opposee_reco": 32,
-     "pas_encore_reconstruit": 15
+     "pas_encore_reconstruit": 16
     },
     "inexpliques": 0
    },
@@ -4882,6 +4882,20 @@
      "libelle": "Pas encore dans la reconstruction",
      "detail": "match du 2026-10-18, reconstruction arrêtée au 2026-10-14",
      "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-19",
+     "match": "Raphael Collignon – Holger Rune",
+     "joueur": "Raphael Collignon",
+     "uid": "2026-10-19_holger_rune_raphael_collignon",
+     "cote": 2.65,
+     "book": "unibet",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-19, reconstruction arrêtée au 2026-10-14",
+     "explique": true
     }
    ]
   },
@@ -4935,14 +4949,14 @@
      3.7
     ],
     "clv_n": 3,
-    "n_detectees": 7,
+    "n_detectees": 8,
     "n_envoyees": 4,
-    "n_doublons": 3,
+    "n_doublons": 4,
     "source": "verdicts_direct.json (recalculé : journal plus récent)",
     "sans_resultat_pct": 66.7,
     "statut": "en attente de résultats (66,7 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-10-18T15:19:52Z"
+    "genere_le": "2026-10-18T20:08:22Z"
    },
    "reconstruction": {
     "n": 91,
@@ -4960,9 +4974,9 @@
     "egal_validation_report": true
    },
    "entonnoir": {
-    "direct_detectees": 7,
+    "direct_detectees": 8,
     "direct_envoyees": 4,
-    "direct_doublons": 3,
+    "direct_doublons": 4,
     "direct_non_envoyees_autres": 0,
     "direct_denouees": 1,
     "reconstruction_detectees": 97,
@@ -4972,9 +4986,9 @@
     "reconstruction_seule_raisons": {
      "avant_canal": 97
     },
-    "direct_seule": 7,
+    "direct_seule": 8,
     "direct_seule_raisons": {
-     "pas_encore_reconstruit": 7
+     "pas_encore_reconstruit": 8
     },
     "inexpliques": 0
    },
@@ -6500,6 +6514,20 @@
      "libelle": "Pas encore dans la reconstruction",
      "detail": "match du 2026-10-19, reconstruction arrêtée au 2026-10-14",
      "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-19",
+     "match": "Raphael Collignon – Holger Rune",
+     "joueur": "Raphael Collignon",
+     "uid": "2026-10-19_holger_rune_raphael_collignon",
+     "cote": 2.65,
+     "book": "unibet",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-19, reconstruction arrêtée au 2026-10-14",
+     "explique": true
     }
    ]
   },
@@ -6552,14 +6580,14 @@
      -0.5
     ],
     "clv_n": 43,
-    "n_detectees": 46,
+    "n_detectees": 47,
     "n_envoyees": 0,
-    "n_doublons": 46,
+    "n_doublons": 47,
     "source": "verdicts_direct.json (recalculé : journal plus récent)",
     "sans_resultat_pct": 33.3,
     "statut": "en attente de résultats (33,3 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-10-18T15:19:52Z"
+    "genere_le": "2026-10-18T20:08:22Z"
    },
    "reconstruction": {
     "n": 54,
@@ -6577,9 +6605,9 @@
     "egal_validation_report": true
    },
    "entonnoir": {
-    "direct_detectees": 46,
+    "direct_detectees": 47,
     "direct_envoyees": 0,
-    "direct_doublons": 46,
+    "direct_doublons": 47,
     "direct_non_envoyees_autres": 0,
     "direct_denouees": 30,
     "reconstruction_detectees": 65,
@@ -6589,12 +6617,12 @@
     "reconstruction_seule_raisons": {
      "apres_coup": 52
     },
-    "direct_seule": 33,
+    "direct_seule": 34,
     "direct_seule_raisons": {
      "absent_reconstruction": 19,
      "cote_opposee_reco": 4,
      "prix_different": 2,
-     "pas_encore_reconstruit": 8
+     "pas_encore_reconstruit": 9
     },
     "inexpliques": 0
    },
@@ -7854,6 +7882,20 @@
      "libelle": "Pas encore dans la reconstruction",
      "detail": "match du 2026-10-18, reconstruction arrêtée au 2026-10-14",
      "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-19",
+     "match": "Raphael Collignon – Holger Rune",
+     "joueur": "Raphael Collignon",
+     "uid": "2026-10-19_holger_rune_raphael_collignon",
+     "cote": 2.65,
+     "book": "unibet",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-19, reconstruction arrêtée au 2026-10-14",
+     "explique": true
     }
    ]
   },
@@ -7903,9 +7945,9 @@
     "clv_pin": -0.5,
     "clv_pin_ic95": [
      -1.4,
-     0.5
+     0.4
     ],
-    "clv_n": 121,
+    "clv_n": 122,
     "n_detectees": 125,
     "n_envoyees": 125,
     "n_doublons": 0,
@@ -7913,7 +7955,7 @@
     "sans_resultat_pct": 17.7,
     "statut": "en attente de résultats (17,7 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-10-18T15:19:52Z"
+    "genere_le": "2026-10-18T20:08:22Z"
    },
    "reconstruction": {
     "n": 158,
@@ -11329,9 +11371,9 @@
     "clv_pin": -0.6,
     "clv_pin_ic95": [
      -1.7,
-     0.5
+     0.4
     ],
-    "clv_n": 107,
+    "clv_n": 108,
     "n_detectees": 109,
     "n_envoyees": 109,
     "n_doublons": 0,
@@ -11339,7 +11381,7 @@
     "sans_resultat_pct": 18.5,
     "statut": "en attente de résultats (18,5 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-10-18T15:19:52Z"
+    "genere_le": "2026-10-18T20:08:22Z"
    },
    "reconstruction": {
     "n": 135,
@@ -14107,7 +14149,7 @@
     "sans_resultat_pct": 5.4,
     "statut": "verrouillable (résultats complets à 95 %)",
     "verrouillable": true,
-    "genere_le": "2026-10-18T15:19:52Z"
+    "genere_le": "2026-10-18T20:08:22Z"
    },
    "reconstruction": {
     "n": 61,
@@ -15587,7 +15629,7 @@
     "sans_resultat_pct": 8.3,
     "statut": "verrouillable (résultats complets à 92 %)",
     "verrouillable": true,
-    "genere_le": "2026-10-18T15:19:52Z"
+    "genere_le": "2026-10-18T20:08:22Z"
    },
    "reconstruction": {
     "n": 28,
