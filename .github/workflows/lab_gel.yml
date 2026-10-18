@@ -38,8 +38,9 @@ jobs:
           filter: blob:none
           sparse-checkout-cone-mode: false
           sparse-checkout: |
-            .github/workflows/lab_gel.yml
+            .github/workflows
             Tennis_Edge_Lab
+            scripts
 
       - uses: actions/setup-python@v6
         with:
