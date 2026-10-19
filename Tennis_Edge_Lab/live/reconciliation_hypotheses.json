@@ -1,15 +1,15 @@
 {
  "schema_version": 2,
- "generated_at": "2026-10-18T20:08:22+00:00",
+ "generated_at": "2026-10-19T10:20:46+00:00",
  "sources": {
   "worker": {
    "source": "API Worker D1 /api/hypotheses (fetch_worker_snapshot.py)",
    "fichier": "worker_hypotheses_capture.json",
    "status": "ok",
-   "fetched_at": "2026-10-18T20:08:17Z",
+   "fetched_at": "2026-10-19T10:20:41Z",
    "worker_generated_at": "2026-10-18T04:49:29Z"
   },
-  "suivi_officiel": "alertes en direct : h*_signal_log.jsonl + suivi_direct/resultats.json (verdicts_direct.json du 2026-10-18T20:08:22Z)",
+  "suivi_officiel": "alertes en direct : h*_signal_log.jsonl + suivi_direct/resultats.json (verdicts_direct.json du 2026-10-19T10:20:45Z)",
   "reconstruction": "moves_detail_hist.csv filtré par les règles gelées de validation_report.py (lignes jusqu'au 2026-10-14) — contrôle, ne juge pas",
   "rapprochement": "uid + joueur normalisé ; à défaut paire de joueurs + date ±1 jour"
  },
@@ -120,15 +120,15 @@
      -3.4,
      -1.6
     ],
-    "clv_n": 210,
-    "n_detectees": 216,
-    "n_envoyees": 216,
+    "clv_n": 211,
+    "n_detectees": 224,
+    "n_envoyees": 224,
     "n_doublons": 0,
     "source": "verdicts_direct.json (recalculé : journal plus récent)",
-    "sans_resultat_pct": 9.8,
-    "statut": "verrouillable (résultats complets à 90 %)",
-    "verrouillable": true,
-    "genere_le": "2026-10-18T20:08:22Z"
+    "sans_resultat_pct": 11.9,
+    "statut": "en attente de résultats (11,9 % sans résultat)",
+    "verrouillable": false,
+    "genere_le": "2026-10-19T10:20:45Z"
    },
    "reconstruction": {
     "n": 139,
@@ -146,8 +146,8 @@
     "egal_validation_report": true
    },
    "entonnoir": {
-    "direct_detectees": 216,
-    "direct_envoyees": 216,
+    "direct_detectees": 224,
+    "direct_envoyees": 224,
     "direct_doublons": 0,
     "direct_non_envoyees_autres": 0,
     "direct_denouees": 193,
@@ -159,12 +159,12 @@
      "apres_coup": 182,
      "cote_opposee_live": 1
     },
-    "direct_seule": 150,
+    "direct_seule": 158,
     "direct_seule_raisons": {
      "absent_reconstruction": 98,
      "prix_different": 4,
      "cote_opposee_reco": 32,
-     "pas_encore_reconstruit": 16
+     "pas_encore_reconstruit": 24
     },
     "inexpliques": 0
    },
@@ -4896,6 +4896,118 @@
      "libelle": "Pas encore dans la reconstruction",
      "detail": "match du 2026-10-19, reconstruction arrêtée au 2026-10-14",
      "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-19",
+     "match": "Kaitlin Quevedo – Lanlana Tararudee",
+     "joueur": "Kaitlin Quevedo",
+     "uid": "2026-10-19_lanlana_tararudee_kaitlin_quevedo",
+     "cote": 2.62,
+     "book": "bet365",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-19, reconstruction arrêtée au 2026-10-14",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-19",
+     "match": "Maxim Mrva – Pierre-Hugues Herbert",
+     "joueur": "Maxim Mrva",
+     "uid": "2026-10-19_pierre_hugues_herbert_maxim_mrva",
+     "cote": 2.3,
+     "book": "betway",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-19, reconstruction arrêtée au 2026-10-14",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-19",
+     "match": "Franco Ribero – Alex Hernandez",
+     "joueur": "Franco Ribero",
+     "uid": "2026-10-19_alex_hernandez_franco_ribero",
+     "cote": 2.75,
+     "book": "betway",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-19, reconstruction arrêtée au 2026-10-14",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-19",
+     "match": "Albert Pedrico Kravtsov – Michael Antonius",
+     "joueur": "Albert Pedrico Kravtsov",
+     "uid": "2026-10-19_michael_antonius_albert_pedrico_kravtsov",
+     "cote": 2.4,
+     "book": "betsson",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-19, reconstruction arrêtée au 2026-10-14",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-19",
+     "match": "Marin Cilic – Nikoloz Basilashvili",
+     "joueur": "Marin Cilic",
+     "uid": "2026-10-19_marin_cilic_nikoloz_basilashvili",
+     "cote": 2.3,
+     "book": "bet365",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-19, reconstruction arrêtée au 2026-10-14",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-19",
+     "match": "Vitaliy Sachko – Borna Gojo",
+     "joueur": "Vitaliy Sachko",
+     "uid": "2026-10-19_vitaliy_sachko_borna_gojo",
+     "cote": 2.38,
+     "book": "unibet",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-19, reconstruction arrêtée au 2026-10-14",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-20",
+     "match": "Jelena Ostapenko – Belinda Bencic",
+     "joueur": "Jelena Ostapenko",
+     "uid": "2026-10-20_jelena_ostapenko_belinda_bencic",
+     "cote": 2.2,
+     "book": "betway",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-20, reconstruction arrêtée au 2026-10-14",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-20",
+     "match": "Kimberly Birrell – Sonay Kartal",
+     "joueur": "Kimberly Birrell",
+     "uid": "2026-10-20_sonay_kartal_kimberly_birrell",
+     "cote": 2.9,
+     "book": "888sport",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-20, reconstruction arrêtée au 2026-10-14",
+     "explique": true
     }
    ]
   },
@@ -4949,14 +5061,14 @@
      3.7
     ],
     "clv_n": 3,
-    "n_detectees": 8,
-    "n_envoyees": 4,
-    "n_doublons": 4,
+    "n_detectees": 14,
+    "n_envoyees": 7,
+    "n_doublons": 7,
     "source": "verdicts_direct.json (recalculé : journal plus récent)",
-    "sans_resultat_pct": 66.7,
-    "statut": "en attente de résultats (66,7 % sans résultat)",
+    "sans_resultat_pct": 85.7,
+    "statut": "en attente de résultats (85,7 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-10-18T20:08:22Z"
+    "genere_le": "2026-10-19T10:20:45Z"
    },
    "reconstruction": {
     "n": 91,
@@ -4974,9 +5086,9 @@
     "egal_validation_report": true
    },
    "entonnoir": {
-    "direct_detectees": 8,
-    "direct_envoyees": 4,
-    "direct_doublons": 4,
+    "direct_detectees": 14,
+    "direct_envoyees": 7,
+    "direct_doublons": 7,
     "direct_non_envoyees_autres": 0,
     "direct_denouees": 1,
     "reconstruction_detectees": 97,
@@ -4986,9 +5098,9 @@
     "reconstruction_seule_raisons": {
      "avant_canal": 97
     },
-    "direct_seule": 8,
+    "direct_seule": 14,
     "direct_seule_raisons": {
-     "pas_encore_reconstruit": 8
+     "pas_encore_reconstruit": 14
     },
     "inexpliques": 0
    },
@@ -6528,6 +6640,90 @@
      "libelle": "Pas encore dans la reconstruction",
      "detail": "match du 2026-10-19, reconstruction arrêtée au 2026-10-14",
      "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-19",
+     "match": "Juan Sebastian Gomez – Felipe Meligeni Alves",
+     "joueur": "Juan Sebastian Gomez",
+     "uid": "2026-10-19_felipe_meligeni_alves_juan_sebastian_gomez",
+     "cote": 11.0,
+     "book": "betway",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-19, reconstruction arrêtée au 2026-10-14",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-19",
+     "match": "Franco Ribero – Alex Hernandez",
+     "joueur": "Franco Ribero",
+     "uid": "2026-10-19_alex_hernandez_franco_ribero",
+     "cote": 2.75,
+     "book": "betway",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-19, reconstruction arrêtée au 2026-10-14",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-19",
+     "match": "Albert Pedrico Kravtsov – Michael Antonius",
+     "joueur": "Albert Pedrico Kravtsov",
+     "uid": "2026-10-19_michael_antonius_albert_pedrico_kravtsov",
+     "cote": 2.4,
+     "book": "betsson",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-19, reconstruction arrêtée au 2026-10-14",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-19",
+     "match": "Kaylan Bigun – Patrick Zahraj",
+     "joueur": "Kaylan Bigun",
+     "uid": "2026-10-19_kaylan_bigun_patrick_zahraj",
+     "cote": 1.7,
+     "book": "betsson",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-19, reconstruction arrêtée au 2026-10-14",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-20",
+     "match": "Timofey Skatov – Fabian Marozsan",
+     "joueur": "Timofey Skatov",
+     "uid": "2026-10-20_fabian_marozsan_timofey_skatov",
+     "cote": 3.75,
+     "book": "bet365",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-20, reconstruction arrêtée au 2026-10-14",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-20",
+     "match": "Katarzyna Kawa – Daria Snigur",
+     "joueur": "Katarzyna Kawa",
+     "uid": "2026-10-20_katarzyna_kawa_daria_snigur",
+     "cote": 3.95,
+     "book": "betsson",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-20, reconstruction arrêtée au 2026-10-14",
+     "explique": true
     }
    ]
   },
@@ -6576,18 +6772,18 @@
     "pts": 9.2,
     "clv_pin": -2.4,
     "clv_pin_ic95": [
-     -4.3,
-     -0.5
+     -4.2,
+     -0.6
     ],
-    "clv_n": 43,
-    "n_detectees": 47,
+    "clv_n": 44,
+    "n_detectees": 51,
     "n_envoyees": 0,
-    "n_doublons": 47,
+    "n_doublons": 51,
     "source": "verdicts_direct.json (recalculé : journal plus récent)",
-    "sans_resultat_pct": 33.3,
-    "statut": "en attente de résultats (33,3 % sans résultat)",
+    "sans_resultat_pct": 36.2,
+    "statut": "en attente de résultats (36,2 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-10-18T20:08:22Z"
+    "genere_le": "2026-10-19T10:20:45Z"
    },
    "reconstruction": {
     "n": 54,
@@ -6605,9 +6801,9 @@
     "egal_validation_report": true
    },
    "entonnoir": {
-    "direct_detectees": 47,
+    "direct_detectees": 51,
     "direct_envoyees": 0,
-    "direct_doublons": 47,
+    "direct_doublons": 51,
     "direct_non_envoyees_autres": 0,
     "direct_denouees": 30,
     "reconstruction_detectees": 65,
@@ -6617,12 +6813,12 @@
     "reconstruction_seule_raisons": {
      "apres_coup": 52
     },
-    "direct_seule": 34,
+    "direct_seule": 38,
     "direct_seule_raisons": {
      "absent_reconstruction": 19,
      "cote_opposee_reco": 4,
      "prix_different": 2,
-     "pas_encore_reconstruit": 9
+     "pas_encore_reconstruit": 13
     },
     "inexpliques": 0
    },
@@ -7896,6 +8092,62 @@
      "libelle": "Pas encore dans la reconstruction",
      "detail": "match du 2026-10-19, reconstruction arrêtée au 2026-10-14",
      "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-19",
+     "match": "Kaitlin Quevedo – Lanlana Tararudee",
+     "joueur": "Kaitlin Quevedo",
+     "uid": "2026-10-19_lanlana_tararudee_kaitlin_quevedo",
+     "cote": 2.62,
+     "book": "bet365",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-19, reconstruction arrêtée au 2026-10-14",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-19",
+     "match": "Franco Ribero – Alex Hernandez",
+     "joueur": "Franco Ribero",
+     "uid": "2026-10-19_alex_hernandez_franco_ribero",
+     "cote": 2.75,
+     "book": "betway",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-19, reconstruction arrêtée au 2026-10-14",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-19",
+     "match": "Albert Pedrico Kravtsov – Michael Antonius",
+     "joueur": "Albert Pedrico Kravtsov",
+     "uid": "2026-10-19_michael_antonius_albert_pedrico_kravtsov",
+     "cote": 2.4,
+     "book": "betsson",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-19, reconstruction arrêtée au 2026-10-14",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-20",
+     "match": "Kimberly Birrell – Sonay Kartal",
+     "joueur": "Kimberly Birrell",
+     "uid": "2026-10-20_sonay_kartal_kimberly_birrell",
+     "cote": 2.9,
+     "book": "888sport",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-20, reconstruction arrêtée au 2026-10-14",
+     "explique": true
     }
    ]
   },
@@ -7948,14 +8200,14 @@
      0.4
     ],
     "clv_n": 122,
-    "n_detectees": 125,
-    "n_envoyees": 125,
+    "n_detectees": 132,
+    "n_envoyees": 132,
     "n_doublons": 0,
     "source": "verdicts_direct.json (recalculé : journal plus récent)",
-    "sans_resultat_pct": 17.7,
-    "statut": "en attente de résultats (17,7 % sans résultat)",
+    "sans_resultat_pct": 20.3,
+    "statut": "en attente de résultats (20,3 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-10-18T20:08:22Z"
+    "genere_le": "2026-10-19T10:20:45Z"
    },
    "reconstruction": {
     "n": 158,
@@ -7973,8 +8225,8 @@
     "egal_validation_report": true
    },
    "entonnoir": {
-    "direct_detectees": 125,
-    "direct_envoyees": 125,
+    "direct_detectees": 132,
+    "direct_envoyees": 132,
     "direct_doublons": 0,
     "direct_non_envoyees_autres": 0,
     "direct_denouees": 102,
@@ -7985,12 +8237,12 @@
     "reconstruction_seule_raisons": {
      "apres_coup": 144
     },
-    "direct_seule": 89,
+    "direct_seule": 96,
     "direct_seule_raisons": {
      "cote_opposee_reco": 22,
      "absent_reconstruction": 54,
      "prix_different": 2,
-     "pas_encore_reconstruit": 11
+     "pas_encore_reconstruit": 18
     },
     "inexpliques": 0
    },
@@ -11322,6 +11574,104 @@
      "libelle": "Pas encore dans la reconstruction",
      "detail": "match du 2026-10-19, reconstruction arrêtée au 2026-10-14",
      "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-19",
+     "match": "Duncan Chan – Gavin Young",
+     "joueur": "Duncan Chan",
+     "uid": "2026-10-19_gavin_young_duncan_chan",
+     "cote": 1.56,
+     "book": "betsson",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-19, reconstruction arrêtée au 2026-10-14",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-19",
+     "match": "Thiago Agustin Tirante – Facundo Diaz Acosta",
+     "joueur": "Thiago Agustin Tirante",
+     "uid": "2026-10-19_thiago_agustin_tirante_facundo_diaz_acosta",
+     "cote": 1.34,
+     "book": "unibet",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-19, reconstruction arrêtée au 2026-10-14",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-19",
+     "match": "Stefanos Sakellaridis – Mikhail Kukushkin",
+     "joueur": "Stefanos Sakellaridis",
+     "uid": "2026-10-19_mikhail_kukushkin_stefanos_sakellaridis",
+     "cote": 1.35,
+     "book": "betway",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-19, reconstruction arrêtée au 2026-10-14",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-19",
+     "match": "Zdenek Kolar – Federico Bondioli",
+     "joueur": "Zdenek Kolar",
+     "uid": "2026-10-19_zdenek_kolar_federico_bondioli",
+     "cote": 1.7,
+     "book": "bwin",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-19, reconstruction arrêtée au 2026-10-14",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-19",
+     "match": "Kaylan Bigun – Patrick Zahraj",
+     "joueur": "Kaylan Bigun",
+     "uid": "2026-10-19_kaylan_bigun_patrick_zahraj",
+     "cote": 1.7,
+     "book": "betsson",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-19, reconstruction arrêtée au 2026-10-14",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-19",
+     "match": "Kyrian Jacquet – Michael Mmoh",
+     "joueur": "Kyrian Jacquet",
+     "uid": "2026-10-19_kyrian_jacquet_michael_mmoh",
+     "cote": 1.45,
+     "book": "bwin",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-19, reconstruction arrêtée au 2026-10-14",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-19",
+     "match": "Max Alcala Gurri – Andres Andrade",
+     "joueur": "Max Alcala Gurri",
+     "uid": "2026-10-19_max_alcala_gurri_andres_andrade",
+     "cote": 1.38,
+     "book": "unibet",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-19, reconstruction arrêtée au 2026-10-14",
+     "explique": true
     }
    ]
   },
@@ -11374,14 +11724,14 @@
      0.4
     ],
     "clv_n": 108,
-    "n_detectees": 109,
-    "n_envoyees": 109,
+    "n_detectees": 116,
+    "n_envoyees": 116,
     "n_doublons": 0,
     "source": "verdicts_direct.json (recalculé : journal plus récent)",
-    "sans_resultat_pct": 18.5,
-    "statut": "en attente de résultats (18,5 % sans résultat)",
+    "sans_resultat_pct": 21.4,
+    "statut": "en attente de résultats (21,4 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-10-18T20:08:22Z"
+    "genere_le": "2026-10-19T10:20:45Z"
    },
    "reconstruction": {
     "n": 135,
@@ -11399,8 +11749,8 @@
     "egal_validation_report": true
    },
    "entonnoir": {
-    "direct_detectees": 109,
-    "direct_envoyees": 109,
+    "direct_detectees": 116,
+    "direct_envoyees": 116,
     "direct_doublons": 0,
     "direct_non_envoyees_autres": 0,
     "direct_denouees": 88,
@@ -11411,12 +11761,12 @@
     "reconstruction_seule_raisons": {
      "apres_coup": 109
     },
-    "direct_seule": 77,
+    "direct_seule": 84,
     "direct_seule_raisons": {
      "cote_opposee_reco": 18,
      "absent_reconstruction": 46,
      "prix_different": 2,
-     "pas_encore_reconstruit": 11
+     "pas_encore_reconstruit": 18
     },
     "inexpliques": 0
    },
@@ -14090,6 +14440,104 @@
      "libelle": "Pas encore dans la reconstruction",
      "detail": "match du 2026-10-19, reconstruction arrêtée au 2026-10-14",
      "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-19",
+     "match": "Duncan Chan – Gavin Young",
+     "joueur": "Duncan Chan",
+     "uid": "2026-10-19_gavin_young_duncan_chan",
+     "cote": 1.56,
+     "book": "betsson",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-19, reconstruction arrêtée au 2026-10-14",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-19",
+     "match": "Thiago Agustin Tirante – Facundo Diaz Acosta",
+     "joueur": "Thiago Agustin Tirante",
+     "uid": "2026-10-19_thiago_agustin_tirante_facundo_diaz_acosta",
+     "cote": 1.34,
+     "book": "unibet",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-19, reconstruction arrêtée au 2026-10-14",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-19",
+     "match": "Stefanos Sakellaridis – Mikhail Kukushkin",
+     "joueur": "Stefanos Sakellaridis",
+     "uid": "2026-10-19_mikhail_kukushkin_stefanos_sakellaridis",
+     "cote": 1.35,
+     "book": "betway",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-19, reconstruction arrêtée au 2026-10-14",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-19",
+     "match": "Zdenek Kolar – Federico Bondioli",
+     "joueur": "Zdenek Kolar",
+     "uid": "2026-10-19_zdenek_kolar_federico_bondioli",
+     "cote": 1.7,
+     "book": "bwin",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-19, reconstruction arrêtée au 2026-10-14",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-19",
+     "match": "Kaylan Bigun – Patrick Zahraj",
+     "joueur": "Kaylan Bigun",
+     "uid": "2026-10-19_kaylan_bigun_patrick_zahraj",
+     "cote": 1.7,
+     "book": "betsson",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-19, reconstruction arrêtée au 2026-10-14",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-19",
+     "match": "Kyrian Jacquet – Michael Mmoh",
+     "joueur": "Kyrian Jacquet",
+     "uid": "2026-10-19_kyrian_jacquet_michael_mmoh",
+     "cote": 1.45,
+     "book": "bwin",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-19, reconstruction arrêtée au 2026-10-14",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-19",
+     "match": "Max Alcala Gurri – Andres Andrade",
+     "joueur": "Max Alcala Gurri",
+     "uid": "2026-10-19_max_alcala_gurri_andres_andrade",
+     "cote": 1.38,
+     "book": "unibet",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-19, reconstruction arrêtée au 2026-10-14",
+     "explique": true
     }
    ]
   },
@@ -14142,14 +14590,14 @@
      4.7
     ],
     "clv_n": 36,
-    "n_detectees": 37,
-    "n_envoyees": 20,
+    "n_detectees": 40,
+    "n_envoyees": 23,
     "n_doublons": 17,
     "source": "verdicts_direct.json (recalculé : journal plus récent)",
     "sans_resultat_pct": 5.4,
     "statut": "verrouillable (résultats complets à 95 %)",
     "verrouillable": true,
-    "genere_le": "2026-10-18T20:08:22Z"
+    "genere_le": "2026-10-19T10:20:45Z"
    },
    "reconstruction": {
     "n": 61,
@@ -14167,8 +14615,8 @@
     "egal_validation_report": true
    },
    "entonnoir": {
-    "direct_detectees": 37,
-    "direct_envoyees": 20,
+    "direct_detectees": 40,
+    "direct_envoyees": 23,
     "direct_doublons": 17,
     "direct_non_envoyees_autres": 0,
     "direct_denouees": 35,
@@ -14179,12 +14627,12 @@
     "reconstruction_seule_raisons": {
      "apres_coup": 63
     },
-    "direct_seule": 31,
+    "direct_seule": 34,
     "direct_seule_raisons": {
      "absent_reconstruction": 14,
      "cote_opposee_reco": 6,
      "prix_different": 9,
-     "pas_encore_reconstruit": 2
+     "pas_encore_reconstruit": 5
     },
     "inexpliques": 0
    },
@@ -15570,6 +16018,48 @@
      "libelle": "Pas encore dans la reconstruction",
      "detail": "match du 2026-10-16, reconstruction arrêtée au 2026-10-14",
      "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-19",
+     "match": "Kaylan Bigun – Patrick Zahraj",
+     "joueur": "Kaylan Bigun",
+     "uid": "2026-10-19_kaylan_bigun_patrick_zahraj",
+     "cote": 1.7,
+     "book": "betsson",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-19, reconstruction arrêtée au 2026-10-14",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-19",
+     "match": "Luciano Emanuel Ambrogi – Patrick Maloney",
+     "joueur": "Luciano Emanuel Ambrogi",
+     "uid": "2026-10-19_luciano_emanuel_ambrogi_patrick_maloney",
+     "cote": 6.1,
+     "book": "unibet",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-19, reconstruction arrêtée au 2026-10-14",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-19",
+     "match": "Thiago Monteiro – Alejandro Moro Canas",
+     "joueur": "Thiago Monteiro",
+     "uid": "2026-10-19_thiago_monteiro_alejandro_moro_canas",
+     "cote": 1.97,
+     "book": "leovegas",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-19, reconstruction arrêtée au 2026-10-14",
+     "explique": true
     }
    ]
   },
@@ -15622,14 +16112,14 @@
      4.8
     ],
     "clv_n": 12,
-    "n_detectees": 12,
-    "n_envoyees": 12,
+    "n_detectees": 13,
+    "n_envoyees": 13,
     "n_doublons": 0,
     "source": "verdicts_direct.json (recalculé : journal plus récent)",
     "sans_resultat_pct": 8.3,
     "statut": "verrouillable (résultats complets à 92 %)",
     "verrouillable": true,
-    "genere_le": "2026-10-18T20:08:22Z"
+    "genere_le": "2026-10-19T10:20:45Z"
    },
    "reconstruction": {
     "n": 28,
@@ -15647,8 +16137,8 @@
     "egal_validation_report": true
    },
    "entonnoir": {
-    "direct_detectees": 12,
-    "direct_envoyees": 12,
+    "direct_detectees": 13,
+    "direct_envoyees": 13,
     "direct_doublons": 0,
     "direct_non_envoyees_autres": 0,
     "direct_denouees": 11,
@@ -15659,12 +16149,12 @@
     "reconstruction_seule_raisons": {
      "apres_coup": 26
     },
-    "direct_seule": 9,
+    "direct_seule": 10,
     "direct_seule_raisons": {
      "absent_reconstruction": 3,
      "cote_opposee_reco": 1,
      "prix_different": 4,
-     "pas_encore_reconstruit": 1
+     "pas_encore_reconstruit": 2
     },
     "inexpliques": 0
    },
@@ -16223,6 +16713,20 @@
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
      "detail": "match du 2026-10-15, reconstruction arrêtée au 2026-10-14",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-19",
+     "match": "Kaylan Bigun – Patrick Zahraj",
+     "joueur": "Kaylan Bigun",
+     "uid": "2026-10-19_kaylan_bigun_patrick_zahraj",
+     "cote": 1.7,
+     "book": "betsson",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-19, reconstruction arrêtée au 2026-10-14",
      "explique": true
     }
    ]
