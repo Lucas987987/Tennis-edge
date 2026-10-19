@@ -16,6 +16,11 @@ le depart (sert alors de track record), puis purge. Zero appel API.
 Env : LIVE_ODDS (def live_odds.json), LIVE_IN (def matches_oddspapi.json, repli),
       OUT_MATCH (book_curves_live.jsonl), OUT_SET1 (set1_curves_live.jsonl),
       OUT_SET2 (set2_curves_live.jsonl), RETAIN_DAYS (10), DEDUP_MIN (4).
+
+AJOUT 19/10/2026 : les trois courbes plates, utilisees ensuite par TOUS les
+canaux Telegram, sont filtrees en fin de construction par prematch_guard.
+Les points BRUTS ont deja ete archives (append-only) dans parts/live_* :
+le garde de publication ne falsifie ni la collecte ni les donnees historiques.
 """
 import os, json, curves_parts, re, unicodedata
 from datetime import datetime, timezone, timedelta
@@ -164,6 +169,12 @@ def main():
         accumulate(OUT_SET2, rows_from_books(snap, 'books_set2'), now, now_iso); did = True
     if not did:
         print(f"{LIVE_IN} et {LIVE_ODDS} absents — capture pas encore passee ?")
+
+    # Une seule barriere partagee par canal_public, steam_alert match/set1/set2,
+    # H13...H18, H16B, zone_signal et early_open_signal. Chacun lit ensuite
+    # les fichiers *_curves_live.jsonl que ce filtre vient de nettoyer.
+    import prematch_guard
+    prematch_guard.filter_all('.', curve_paths=(OUT_MATCH, OUT_SET1, OUT_SET2))
 
 
 if __name__ == '__main__':
