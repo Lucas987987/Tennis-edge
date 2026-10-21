@@ -203,7 +203,7 @@ def envoyer(texte):
         return False
 
 
-def message(g, steam, cote, book, ampleur, lead, mag):
+def message(g, steam, cote, book, ampleur, lead, mag, deja=''):
     joueur = g['_home'] if steam == 'h' else g['_away']
     adv = g['_away'] if steam == 'h' else g['_home']
     hh = int(lead // 60)
@@ -213,15 +213,9 @@ def message(g, steam, cote, book, ampleur, lead, mag):
          f"{g.get('_tour') or '?'}",
          f"{lien_joueur.duo_html(joueur, adv)}",
          f"📉 mouvement Pinnacle {ampleur:.1f} pts · entrée {book} @ {cote:.2f}"]
-    s = journal_direct.suivi('H14')  # bilan EN DIRECT (verdicts_direct.json)
-    if s and s.get('n'):
-        L.append(f"\n📊 <b>Suivi en direct</b> : {s['n']}/166 paris dénoués "
-                 f"({100 * s['n'] / 166:.0f} %)")
-        L.append(f"gains {s['k']}/{s['n']} = {s['taux']:.1f} % "
-                 f"(seuil {s['p0']:.1f} %) · écart {s['taux'] - s['p0']:+.1f} pts")
-        L.append(f"ROI {s['roi']:+.1f} % · P&L {s['pnl']:+.1f} u")
-    elif s is not None:
-        L.append("\n📊 <b>Suivi en direct</b> : aucun pari dénoué depuis la mise en service.")
+    if deja:
+        L.append(deja)
+    L += journal_direct.suivi_txt('H14', 166)  # bilan EN DIRECT (verdicts_direct.json)
     L.append(f"\n<i>Hypothèse gelée le {FREEZE}, NON VALIDÉE. Échantillon EN "
              f"DIRECT commencé au déploiement du canal (16/10/2026). Référence "
              f"in-sample (reconstruction, avant regel) : 146/275 = 53,1 % · "
@@ -277,10 +271,10 @@ def main():
         if uid in etat:
             continue                   # déjà traité par CE script
         doublon = _deja_signale(uid)
-        ok = False
-        if not doublon:
-            ok = envoyer(message(g, steam, cote, book, ampleur, lead, mag))
-            n_envoyes += 1
+        # Depuis le 21/10/2026 : envoyé MÊME en doublon (demande de Lucas), avec
+        # la mention « déjà signalé ». La règle et la mesure ne changent pas.
+        ok = envoyer(message(g, steam, cote, book, ampleur, lead, mag, deja=journal_direct.deja_txt(doublon, uid)))
+        n_envoyes += 1
         # Journal COMPLET (schéma 2, scripts/journal_direct.py) : TOUTE
         # détection dans la règle est écrite — envoyée, doublon, échec ou
         # non tentée. Champs de décision écrits une fois, jamais modifiés.
