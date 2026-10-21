@@ -63,7 +63,41 @@ NIVEAU1 = [b.strip() for b in os.environ.get(
 ABSENCES = os.environ.get('CURVES_ABSENCES', 'courbes_absences.json')
 COUVERTURE = os.environ.get('CURVES_COUVERTURE', 'courbes_couverture.json')
 RETRY_H = 24
-MAX_ESSAIS = 2
+# 21/10/2026 : une seule tentative. La courbe historique est demandée APRÈS le
+# match : un book absent l'est pour de bon (mesuré : la seconde tentative ne
+# servait jamais, 50 % des requêtes perdues en « ne cote pas »).
+MAX_ESSAIS = int(os.environ.get('CURVES_MAX_ESSAIS', '1'))
+# Apprentissage : un book qui ne cote presque jamais un TYPE de tournoi
+# (≥ APPRIS_MIN essais, < APPRIS_TAUX de réussite) n'y est plus demandé.
+STATS = os.environ.get('CURVES_STATS', 'courbes_stats.json')
+APPRIS_MIN = int(os.environ.get('CURVES_APPRIS_MIN', '40'))
+APPRIS_TAUX = float(os.environ.get('CURVES_APPRIS_TAUX', '0.05'))
+
+
+def categorie(tournoi):
+    t = str(tournoi or '').lower()
+    if 'itf' in t:
+        return 'ITF'
+    if 'challenger' in t:
+        return 'Challenger'
+    if '125' in t:
+        return 'WTA 125'
+    if t.startswith('wta') or 'women' in t:
+        return 'WTA'
+    return 'ATP'
+
+
+def charger_stats(path=STATS):
+    try:
+        with open(path, encoding='utf-8') as f:
+            return json.load(f)
+    except (OSError, ValueError):
+        return {}
+
+
+def exclu(stats, book, cat):
+    e, r = (stats.get(f"{book}|{cat}") or [0, 0])
+    return book != 'pinnacle' and e >= APPRIS_MIN and r / e < APPRIS_TAUX
 
 
 def charger_absences(path=ABSENCES):
@@ -74,14 +108,17 @@ def charger_absences(path=ABSENCES):
         return {}
 
 
-def plan(started, done, absences, books, now, niveau1=NIVEAU1):
+def plan(started, done, absences, books, now, niveau1=NIVEAU1, stats=None):
     """Paires (match, book) à demander, dans l'ordre : niveau 1 puis niveau 2 ;
-    dans chaque niveau, matchs du plus ancien au plus récent, Pinnacle d'abord."""
+    dans chaque niveau, matchs du plus ancien au plus récent, Pinnacle d'abord.
+    Les couples (book, type de tournoi) appris comme « ne cote jamais » sont sautés."""
     rang = {b: i for i, b in enumerate(books)}
+    stats = stats or {}
     out = []
     for uid, m, fid, start in started:
+        cat = categorie(m.get('tournament'))
         for book in books:
-            if (uid, book) in done:
+            if (uid, book) in done or exclu(stats, book, cat):
                 continue
             a = absences.get(f"{uid}|{book}")
             if a:
@@ -97,6 +134,21 @@ def plan(started, done, absences, books, now, niveau1=NIVEAU1):
             out.append((niveau, start, rang[book], uid, m, fid, book))
     out.sort(key=lambda x: (x[0], x[1], x[2], x[3]))
     return [(uid, m, fid, start, book) for _, start, _, uid, m, fid, book in out]
+
+
+def reserve_mesuree(prec, quota_debut, now, plancher=CAPTURE_PAR_JOUR):
+    """Consommation RÉELLE du reste du projet (capture, CLV, résultats…) entre la fin
+    du run précédent et le début de celui-ci, × 1,3 de marge ; jamais sous le plancher."""
+    try:
+        fin = prec['quota_fin']['remaining']
+        t0 = datetime.datetime.fromisoformat(prec['quota_fin']['a'])
+    except (KeyError, TypeError, ValueError):
+        return plancher, None
+    jours = (now - t0).total_seconds() / 86400
+    if quota_debut is None or jours < 0.25 or quota_debut > fin:     # renouvellement entre-temps
+        return plancher, None
+    par_jour = (fin - quota_debut) / jours
+    return max(plancher, int(1.3 * par_jour)), round(par_jour)
 
 
 def marge_quota(reserve_par_jour=CAPTURE_PAR_JOUR):
@@ -218,7 +270,27 @@ def main():
               "Rien n'est demandé (CURVES_FORCE=1 pour passer outre).")
         raise SystemExit(1)
     absences = charger_absences()
-    todo = plan(started, done, absences, BOOKS, now)
+    stats = charger_stats()
+    if not stats:
+        # Premier passage : on amorce l'apprentissage avec ce qu'on sait déjà
+        # (courbes obtenues = réussites, absences notées = échecs).
+        for uid, m, fid, start in started:
+            cat = categorie(m.get('tournament'))
+            for book in BOOKS:
+                if (uid, book) in done:
+                    st = stats.setdefault(f"{book}|{cat}", [0, 0]); st[0] += 1; st[1] += 1
+                elif f"{uid}|{book}" in absences:
+                    stats.setdefault(f"{book}|{cat}", [0, 0])[0] += 1
+    todo = plan(started, done, absences, BOOKS, now, stats=stats)
+    appris = sorted(k for k in stats if exclu(stats, *k.split('|', 1)))
+    if appris:
+        print(f"Appris « ne cote jamais » (sautés) : {', '.join(appris)}")
+    try:
+        with open(COUVERTURE, encoding='utf-8') as fp:
+            precedent = json.load(fp)
+    except (OSError, ValueError):
+        precedent = {}
+    reserve, conso_mesuree = CAPTURE_PAR_JOUR, None
     print(f"{len(started)} matchs commencés dans la fenêtre · {len(todo)} paires (match, book) à demander "
           f"(niveau 1 : {sum(1 for t in todo if t[4] in NIVEAU1)})")
 
@@ -240,10 +312,14 @@ def main():
             if demandes >= MAX_RUN:
                 arret = f"plafond du run ({MAX_RUN})"
                 break
-            marge = marge_quota()
+            if demandes == 1 and ov.QUOTA.get('remaining') is not None:
+                reserve, conso_mesuree = reserve_mesuree(precedent, ov.QUOTA['remaining'] + 1, now)
+                print(f"Réserve pour le reste du projet : {reserve}/jour"
+                      f"{f' (consommation mesurée {conso_mesuree}/jour × 1,3)' if conso_mesuree is not None else ' (plancher)'}")
+            marge = marge_quota(reserve)
             if marge is not None and marge <= 0:
-                arret = (f"quota : {ov.QUOTA.get('remaining')} restants, réservés à la capture "
-                         f"({CAPTURE_PAR_JOUR}/jour jusqu'au renouvellement)")
+                arret = (f"quota : {ov.QUOTA.get('remaining')} restants, réservés au reste du projet "
+                         f"({reserve}/jour jusqu'au renouvellement)")
                 break
             if ov.QUOTA_HIT:
                 arret = "quota épuisé (429)"
@@ -256,6 +332,11 @@ def main():
                 print(f"  ⚠️ {book} fixtureId={fid}: {e}")
                 continue
             ch = _curve_dt(curves.get(ov.OUT_HOME)); ca = _curve_dt(curves.get(ov.OUT_AWAY))
+            sk = f"{book}|{categorie(m.get('tournament'))}"
+            st = stats.setdefault(sk, [0, 0])
+            st[0] += 1
+            if ch and ca:
+                st[1] += 1
             if not ch or not ca:
                 key = f"{uid}|{book}"
                 a = absences.get(key) or {'essais': 0}
@@ -293,11 +374,15 @@ def main():
     absences = {k: v for k, v in absences.items() if k[:10] >= limite or not k[:4].isdigit()}
     with open(ABSENCES, 'w', encoding='utf-8') as fa:
         json.dump(absences, fa, ensure_ascii=False, sort_keys=True, separators=(',', ':'))
+    with open(STATS, 'w', encoding='utf-8') as fs:
+        json.dump(stats, fs, ensure_ascii=False, sort_keys=True, indent=0)
     restant = len(todo) - demandes
     couv = {'ecrit_le': now.isoformat(timespec='seconds'), 'demandes': demandes, 'courbes': total['match'],
             'book_ne_cote_pas': absents, 'paires_en_attente': max(0, restant), 'arret': arret,
             'quota': {k: ov.QUOTA.get(k) for k in ('limit', 'remaining', 'reset_s')},
-            'capture_reservee_par_jour': CAPTURE_PAR_JOUR,
+            'capture_reservee_par_jour': reserve, 'conso_mesuree_par_jour': conso_mesuree,
+            'quota_fin': {'remaining': ov.QUOTA.get('remaining'), 'a': datetime.datetime.utcnow().isoformat(timespec='seconds')},
+            'appris_ne_cote_jamais': appris,
             'plus_ancien_en_attente': (todo[demandes][3].isoformat() if restant > 0 else None)}
     with open(COUVERTURE, 'w', encoding='utf-8') as fc:
         json.dump(couv, fc, ensure_ascii=False, indent=1)
