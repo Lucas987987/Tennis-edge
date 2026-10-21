@@ -164,6 +164,11 @@ def validate_spec(text: str) -> dict:
         out["plages"] = dict(sorted(clean_ranges.items()))
     if jeu == "matchs":
         out["entree"] = entree
+    un_par = spec.get("un_par_joueur", False)
+    if not isinstance(un_par, bool) or (un_par and jeu != "matchs"):
+        raise ValueError("un_par_joueur : vrai ou faux, seulement pour « Tous les matchs »")
+    if un_par:
+        out["un_par_joueur"] = True
     return out
 
 
@@ -171,7 +176,8 @@ def spec_id(spec) -> str:
     """Identifiant stable ; format V6.7 inchangé pour une sélection d'alertes sans plage."""
     if spec["jeu"] == "alertes" and not spec.get("plages"):
         return digest(spec["criteres"])[:16]
-    return digest({k: spec.get(k) for k in ("jeu", "criteres", "plages", "entree")})[:16]
+    keys = ("jeu", "criteres", "plages", "entree") + (("un_par_joueur",) if spec.get("un_par_joueur") else ())
+    return digest({k: spec.get(k) for k in keys})[:16]
 
 
 def read_registry(root=ROOT) -> list[dict]:
@@ -216,6 +222,8 @@ def freeze(root, text: str, when=None) -> dict:
         record["plages"] = spec["plages"]
     if spec.get("entree"):
         record["entree"] = spec["entree"]
+    if spec.get("un_par_joueur"):
+        record["un_par_joueur"] = True
     record["event_hash"] = digest(record)
     path = root / REGISTRY
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -251,8 +259,23 @@ def decode_columns(doc):
     return rows
 
 
+ORDRE_HZ = {"24h": 0, "6h": 1, "1h": 2, "10m": 3}
+
+
+def premier_horizon(rows):
+    """Un pari par (jour, joueur) : le premier horizon parmi les lignes retenues (même règle que l'interface)."""
+    best = {}
+    for row in rows:
+        key = (row.get("date"), row.get("joueur"))
+        o = ORDRE_HZ.get(row.get("horizon"), 9)
+        if key not in best or o < best[key][0]:
+            best[key] = (o, row)
+    return sorted((r for _, r in best.values()), key=lambda r: str(r.get("decision_ts")))
+
+
 def prospective(record, rows):
-    """Strictement après le gel : décision > created_at ET date ≥ jour UTC suivant."""
+    """Strictement après le gel : décision > created_at ET date ≥ jour UTC suivant.
+    Avec un_par_joueur (21/10/2026) : un seul pari par joueur et par match, au premier horizon."""
     frozen_at, eligible = utc(record["created_at"]), record["eligible_after_utc"]
     time_field = "decision_ts" if record.get("jeu") == "matchs" else "_at"
     out = []
@@ -261,7 +284,7 @@ def prospective(record, rows):
             continue
         if row_matches(row, record["criteres"], record.get("plages")):
             out.append(row)
-    return out
+    return premier_horizon(out) if record.get("un_par_joueur") else out
 
 
 def measures(record):
@@ -290,6 +313,7 @@ def evaluate(root=ROOT, rows=None, now=None) -> dict:
             "candidate_id": record["candidate_id"], "created_at": record["created_at"],
             "eligible_after_utc": record["eligible_after_utc"], "criteres": record["criteres"],
             "jeu": record.get("jeu", "alertes"), "plages": record.get("plages"), "entree": record.get("entree"),
+            "un_par_joueur": bool(record.get("un_par_joueur")),
             "n": len(sel), "regles": len(settled),
             "roi_pct": round(100 * sum(r[pnl_field] for r in settled) / len(settled), 2) if settled else None,
             "clv_pin_n": clv["n"], "clv_pin_mean_pct": clv["mean_pct"], "clv_pin_ci95": clv["ci95"],
