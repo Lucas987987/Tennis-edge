@@ -24,6 +24,9 @@ import re
 import unicodedata
 
 SURFACES = {'hard': 'Hard', 'clay': 'Clay', 'grass': 'Grass', 'carpet': 'Hard'}
+# Ordre des tours dans un tournoi (rejouer les matchs dans l'ordre où ils ont eu lieu).
+ORDRE_TOURS = {'Q1': 0, 'Q2': 1, 'Q3': 2, 'Q4': 3, 'ER': 4, 'R128': 4, 'R64': 5, 'R32': 6, 'RR': 6, 'R16': 7,
+               'QF': 8, 'SF': 9, 'BR': 9, 'F': 10}
 
 
 def norm(s):
@@ -102,8 +105,10 @@ def charger(racine, annee_min=2018):
                     'nom_g': r.get('winner_name') or '', 'nom_p': r.get('loser_name') or '',
                     'stats': st if len(st) == 2 else None, 'sets': sets, 'complet': complet,
                     'tournoi': r.get('tourney_name') or '',
+                    'tour': ORDRE_TOURS.get(str(r.get('round') or '').upper(), 6),
+                    'num': _int(r.get('match_num')) or 0,
                 })
-    out.sort(key=lambda m: m['date'])
+    out.sort(key=lambda m: (m['date'], m['tour'], m['num']))
     return out
 
 
