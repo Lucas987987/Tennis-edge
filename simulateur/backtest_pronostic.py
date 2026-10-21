@@ -132,7 +132,7 @@ def main(argv):
         noms[g], noms[p] = m['nom_g'], m['nom_p']
         if DEBUT_A <= m['date'] < FIN_A and m['circuit'] in ('ATP', 'WTA'):
             pred_sack[i] = (elo.proba(g, p, m['surface']), min(elo.matchs(g), elo.matchs(p)))
-        elo.maj(g, p, m['surface'])
+        elo.maj(g, p, m['surface'], m.get('niveau') == 'G')
     T = Table()
     B = []
     for x in nous:                                   # 2. nos matchs : idem
@@ -142,7 +142,7 @@ def main(argv):
         B.append(dict(x, p_elo=elo.proba(h, a, x['surface']), connus=min(elo.matchs(h), elo.matchs(a))))
         if x['gagnant'] in ('home', 'away'):
             w, l = (h, a) if x['gagnant'] == 'home' else (a, h)
-            elo.maj(w, l, x['surface'])
+            elo.maj(w, l, x['surface'], x.get('grand_chelem', False))
 
     # ---- A : ATP / WTA principaux contre tennis-data
     td = donnees.charger_td(os.path.join(racine, 'historique', 'tennis_data.csv.gz'), DEBUT_A.isoformat())
@@ -187,7 +187,7 @@ def main(argv):
 
     rap = {'genere_le': dt.datetime.now(dt.timezone.utc).isoformat(timespec='seconds'),
            'objectif': 'deviner le vainqueur et le score (pas battre Pinnacle)',
-           'elo': 'FiveThirtyEight : K = 250/(n+5)^0,4, général + surface à parts égales, départ 1500, aucun réglage',
+           'elo': 'FiveThirtyEight (Kovalchik 2016) : K = 250/(n+5)^0,4, ×1,1 en Grand Chelem, départ 1500 ; général + surface à parts égales ; aucun réglage',
            'sackmann_jusqu_au': fin_sack.isoformat(), 'nos_matchs': len(nous),
            'A_atp_wta_2024_2026': dict(rapA, periode=f"{DEBUT_A} → {FIN_A}", matchs=len(A)),
            'B_nos_matchs': dict(rapB, periode=f"{nous[0]['date'] if nous else '—'} → {nous[-1]['date'] if nous else '—'}"),
