@@ -414,7 +414,7 @@ jobs:
                    canal_clv_exclus.csv \
                    pipeline_status.json pipeline_status.md \
                    verdicts_geles.json q3_status.json clv_vs_median_report.json \
-                   verdicts_direct.json suivi_direct/resultats.json; do
+                   verdicts_direct.json suivi_direct/resultats.json suivi_canaux.json; do
             # CORRIGÉ LE 27/08/2026 (audit v2 §B) : verdicts_geles.json
             # n'était committé par AUCUN workflow -- le mécanisme de lecture
             # unique par hypothèse (audit 1, §3.3) ne servait donc à rien :
