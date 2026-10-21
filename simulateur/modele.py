@@ -173,3 +173,59 @@ def ancrer(pA, pB, p_cible, sets_gagnants=2):
 def depuis_marche(p_cible, p_service_moyen=0.62, sets_gagnants=2):
     """Sans statistiques : deux joueurs au même profil de service, niveau pris au marché."""
     return ancrer(p_service_moyen, p_service_moyen, p_cible, sets_gagnants)
+
+
+# ------------------------------------------------------------------ forme du jour
+# 21/10/2026. Sur 2 706 matchs réels (juin–octobre), le modèle « points
+# indépendants » prévoit 54,7 % de matchs en 2 sets ; il y en a 63,7 %. Les sets
+# d'un même match sont liés : un joueur dans un bon (ou mauvais) jour le reste
+# tout le match. On le modélise par un écart de forme δ ~ N(0, σ), tiré une fois
+# par match, ajouté (en logit) au service de A et retiré de celui de B — donc
+# A sert mieux ET relance mieux ce jour-là. σ = 0 redonne le modèle de base.
+_Z = [-3.0 + 0.5 * i for i in range(13)]
+_W = [math.exp(-z * z / 2) for z in _Z]
+_W = [w / sum(_W) for w in _W]
+
+
+def match_forme(pA, pB, sets_gagnants=2, sigma=0.0, tb_final=None):
+    """Comme match(), moyenné sur la forme du jour (13 points d'une loi normale)."""
+    if sigma <= 0:
+        return match(pA, pB, sets_gagnants, tb_final)
+    la, lb = logit(pA), logit(pB)
+    tot = None
+    for z, w in zip(_Z, _W):
+        d = sigma * z
+        r = match(sigmoide(la + d), sigmoide(lb - d), sets_gagnants, tb_final)
+        if tot is None:
+            tot = {'victoire': 0.0, 'set1': 0.0, 'tiebreak': 0.0, 'sets': {}, 'total_jeux': {}, 'ecart_jeux': {}}
+        for k in ('victoire', 'set1', 'tiebreak'):
+            tot[k] += w * r[k]
+        for k in ('sets', 'total_jeux', 'ecart_jeux'):
+            for c, v in r[k].items():
+                tot[k][c] = tot[k].get(c, 0.0) + w * v
+    for k in ('total_jeux', 'ecart_jeux'):
+        tot[k] = dict(sorted(tot[k].items()))
+    return tot
+
+
+def ancrer_forme(pA, pB, p_cible, sets_gagnants=2, sigma=0.0, iterations=24):
+    """ancrer() avec la forme du jour : la victoire de A vaut p_cible APRÈS mélange."""
+    if sigma <= 0:
+        return ancrer(pA, pB, p_cible, sets_gagnants)
+    lo, hi = -6.0, 6.0
+    la, lb = logit(pA), logit(pB)
+    for _ in range(iterations):
+        d = (lo + hi) / 2
+        v = match_forme(sigmoide(la + d), sigmoide(lb - d), sets_gagnants, sigma)['victoire']
+        if v < p_cible:
+            lo = d
+        else:
+            hi = d
+    d = (lo + hi) / 2
+    return sigmoide(la + d), sigmoide(lb - d)
+
+
+def prix_depuis_pinnacle(p_cible, p_service_moyen, sets_gagnants=2, sigma=0.0):
+    """Distribution complète (sets, jeux, set 1…) cohérente avec la proba de victoire de Pinnacle."""
+    a, b = ancrer_forme(p_service_moyen, p_service_moyen, p_cible, sets_gagnants, sigma)
+    return match_forme(a, b, sets_gagnants, sigma)

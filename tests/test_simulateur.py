@@ -107,3 +107,41 @@ class Notes(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class FormeDuJour(unittest.TestCase):
+    def test_sigma_zero_identique(self):
+        a, b = M.match(0.66, 0.60), M.match_forme(0.66, 0.60, 2, 0.0)
+        self.assertEqual(a['victoire'], b['victoire'])
+
+    def test_plus_de_deux_sets_moins_de_jeux(self):
+        r0 = M.prix_depuis_pinnacle(0.70, 0.64, 2, 0.0)
+        r1 = M.prix_depuis_pinnacle(0.70, 0.64, 2, 0.15)
+        self.assertAlmostEqual(r1['victoire'], 0.70, places=4)        # niveau gardé (celui de Pinnacle)
+        deux = lambda r: r['sets']['2-0'] + r['sets']['0-2']
+        self.assertGreater(deux(r1), deux(r0) + 0.05)                   # réglage 21/10 : 55 % -> 63 %
+        self.assertLess(M.moyenne(r1['total_jeux']), M.moyenne(r0['total_jeux']))
+        self.assertAlmostEqual(sum(r1['sets'].values()), 1.0, places=9)
+
+
+class MarchesSets(unittest.TestCase):
+    def test_cote_a_l_instant(self):
+        import importlib.util
+        sp = importlib.util.spec_from_file_location(
+            'tennis_edge_t_ms', os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'simulateur', 'marches_sets.py'))
+        ms = importlib.util.module_from_spec(sp)
+        argv = sys.argv
+        sys.argv = ['x']
+        try:
+            sp.loader.exec_module(ms)
+        finally:
+            sys.argv = argv
+        r = {'home_curve': [['2026-10-20T10:00:00', 1.9], ['2026-10-20T11:40:00', 1.8], ['2026-10-20T12:10:00', 3.5]],
+             'away_curve': [['2026-10-20T10:00:00', 2.0], ['2026-10-20T11:40:00', 2.1], ['2026-10-20T12:10:00', 1.3]]}
+        t = dt.datetime(2026, 10, 20, 11, 30)                           # 30 min avant un début à 12:00
+        self.assertEqual(ms.paire_a(r, t), (1.9, 2.0))                  # jamais la cote d'après
+        self.assertEqual(ms.paire_a(r, dt.datetime(2026, 10, 20, 12, 0)), (1.8, 2.1))   # pas la cote en direct
+        self.assertIsNone(ms.paire_a(r, dt.datetime(2026, 10, 20, 15, 0), age_max=60))   # trop vieille
+        self.assertAlmostEqual(ms.juste(2.0, 2.0), 0.5, places=9)
+        self.assertTrue(ms.cinq_sets('Wimbledon Men Singles'))
+        self.assertFalse(ms.cinq_sets('Wimbledon Women Singles'))
