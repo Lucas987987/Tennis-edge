@@ -1,15 +1,15 @@
 {
  "schema_version": 2,
- "generated_at": "2026-10-20T09:56:55+00:00",
+ "generated_at": "2026-10-21T07:58:51+00:00",
  "sources": {
   "worker": {
    "source": "API Worker D1 /api/hypotheses (fetch_worker_snapshot.py)",
    "fichier": "worker_hypotheses_capture.json",
    "status": "ok",
-   "fetched_at": "2026-10-20T09:56:49Z",
-   "worker_generated_at": "2026-10-20T05:07:05Z"
+   "fetched_at": "2026-10-21T07:58:46Z",
+   "worker_generated_at": "2026-10-21T05:06:46Z"
   },
-  "suivi_officiel": "alertes en direct : h*_signal_log.jsonl + suivi_direct/resultats.json (verdicts_direct.json du 2026-10-20T09:56:55Z)",
+  "suivi_officiel": "alertes en direct : h*_signal_log.jsonl + suivi_direct/resultats.json (verdicts_direct.json du 2026-10-21T07:58:51Z)",
   "reconstruction": "moves_detail_hist.csv filtré par les règles gelées de validation_report.py (lignes jusqu'au 2026-10-14) — contrôle, ne juge pas",
   "rapprochement": "uid + joueur normalisé ; à défaut paire de joueurs + date ±1 jour"
  },
@@ -80,110 +80,110 @@
    "worker": {
     "gele_le": "2026-09-06",
     "out_of_sample": {
-     "n": 194,
-     "gains": 85,
-     "taux": 43.8,
+     "n": 198,
+     "gains": 88,
+     "taux": 44.4,
      "seuil": 42,
-     "ecart": 1.8,
-     "roi": 5.4,
-     "pnl": 10.5,
+     "ecart": 2.4,
+     "roi": 6.7,
+     "pnl": 13.3,
      "cote_moyenne": 2.41,
      "clv_moyen": -2.5,
      "clv_pin_moyen": -2.5,
      "clv_pin_p": 1,
-     "clv_n": 219,
-     "clv_positif": 32.4,
+     "clv_n": 228,
+     "clv_positif": 32.9,
      "lead_moyen_h": 7.8,
-     "periode": "2026-09-07 -> 2026-10-19",
-     "verdict": "en attente de résultats (14,2 % sans résultat)",
-     "n_detectees": 230,
-     "n_envoyees": 230,
+     "periode": "2026-09-07 -> 2026-10-20",
+     "verdict": "en attente de résultats (14,7 % sans résultat)",
+     "n_detectees": 236,
+     "n_envoyees": 236,
      "n_doublons": 0,
      "n_non_envoyees_autres": 0,
-     "n_denouees": 194,
-     "n_commencees": 226,
-     "n_sans_resultat": 32,
-     "sans_resultat_pct": 14.2,
+     "n_denouees": 198,
+     "n_commencees": 232,
+     "n_sans_resultat": 34,
+     "sans_resultat_pct": 14.7,
      "verrouillable": false,
-     "statut": "en attente de résultats (14,2 % sans résultat)"
+     "statut": "en attente de résultats (14,7 % sans résultat)"
     },
-    "n": 194,
-    "roi": 5.4
+    "n": 198,
+    "roi": 6.7
    },
    "suivi_officiel": {
-    "n": 194,
-    "gagnes": 85,
-    "roi": 5.4,
-    "pts": 1.8,
+    "n": 198,
+    "gagnes": 88,
+    "roi": 6.7,
+    "pts": 2.4,
     "clv_pin": -2.5,
     "clv_pin_ic95": [
      -3.3,
      -1.6
     ],
-    "clv_n": 219,
-    "n_detectees": 232,
-    "n_envoyees": 232,
+    "clv_n": 228,
+    "n_detectees": 238,
+    "n_envoyees": 238,
     "n_doublons": 0,
     "source": "verdicts_direct.json (recalculé : journal plus récent)",
-    "sans_resultat_pct": 14.5,
-    "statut": "en attente de résultats (14,5 % sans résultat)",
+    "sans_resultat_pct": 15.0,
+    "statut": "en attente de résultats (15,0 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-10-20T09:56:55Z"
+    "genere_le": "2026-10-21T07:58:51Z"
    },
    "reconstruction": {
-    "n": 139,
-    "gagnes": 61,
-    "roi": 3.98,
-    "pts": 1.57,
-    "clv_pin": -3.29,
-    "clv_n": 137,
+    "n": 155,
+    "gagnes": 69,
+    "roi": 5.33,
+    "pts": 2.16,
+    "clv_pin": -3.42,
+    "clv_n": 152,
     "source": "moves_detail_hist.csv · validation_report.py (contrôle)",
     "validation_report": {
-     "k": 61,
-     "n": 139,
-     "p0": 0.4231809645594046
+     "k": 69,
+     "n": 155,
+     "p0": 0.4236076130393212
     },
     "egal_validation_report": true
    },
    "entonnoir": {
-    "direct_detectees": 232,
-    "direct_envoyees": 232,
+    "direct_detectees": 238,
+    "direct_envoyees": 238,
     "direct_doublons": 0,
     "direct_non_envoyees_autres": 0,
-    "direct_denouees": 194,
-    "reconstruction_detectees": 249,
-    "reconstruction_reglees": 139,
-    "communes": 66,
-    "reconstruction_seule": 183,
+    "direct_denouees": 198,
+    "reconstruction_detectees": 266,
+    "reconstruction_reglees": 155,
+    "communes": 68,
+    "reconstruction_seule": 198,
     "reconstruction_seule_raisons": {
-     "apres_coup": 182,
+     "apres_coup": 197,
      "cote_opposee_live": 1
     },
-    "direct_seule": 166,
+    "direct_seule": 170,
     "direct_seule_raisons": {
-     "absent_reconstruction": 98,
-     "prix_different": 4,
-     "cote_opposee_reco": 32,
-     "pas_encore_reconstruit": 32
+     "absent_reconstruction": 93,
+     "prix_different": 5,
+     "cote_opposee_reco": 34,
+     "pas_encore_reconstruit": 38
     },
     "inexpliques": 0
    },
    "mesures": {
     "suivi_officiel": {
-     "n": 194,
-     "gagnes": 85,
-     "roi": 5.39,
-     "pts": 1.81,
-     "clv_pin": -2.54,
-     "clv_n": 192
+     "n": 198,
+     "gagnes": 88,
+     "roi": 6.71,
+     "pts": 2.41,
+     "clv_pin": -2.55,
+     "clv_n": 197
     },
     "envoyees": {
-     "n": 194,
-     "gagnes": 85,
-     "roi": 5.39,
-     "pts": 1.81,
-     "clv_pin": -2.54,
-     "clv_n": 192
+     "n": 198,
+     "gagnes": 88,
+     "roi": 6.71,
+     "pts": 2.41,
+     "clv_pin": -2.55,
+     "clv_n": 197
     },
     "detectees_non_envoyees": {
      "n": 0,
@@ -194,44 +194,44 @@
      "clv_n": 0
     },
     "reconstruction": {
-     "n": 139,
-     "gagnes": 61,
-     "roi": 3.98,
-     "pts": 1.57,
-     "clv_pin": -3.29,
-     "clv_n": 137
+     "n": 155,
+     "gagnes": 69,
+     "roi": 5.33,
+     "pts": 2.16,
+     "clv_pin": -3.42,
+     "clv_n": 152
     },
     "communes_direct": {
-     "n": 64,
+     "n": 66,
      "gagnes": 31,
-     "roi": 18.59,
-     "pts": 6.94,
-     "clv_pin": -2.29,
-     "clv_n": 64
+     "roi": 15.0,
+     "pts": 5.43,
+     "clv_pin": -2.44,
+     "clv_n": 66
     },
     "communes_reconstruction": {
-     "n": 27,
+     "n": 29,
      "gagnes": 13,
-     "roi": 24.81,
-     "pts": 7.1,
-     "clv_pin": -0.01,
-     "clv_n": 27
+     "roi": 16.45,
+     "pts": 3.88,
+     "clv_pin": 0.08,
+     "clv_n": 29
     },
     "direct_seule": {
-     "n": 130,
-     "gagnes": 54,
-     "roi": -1.12,
-     "pts": -0.72,
-     "clv_pin": -2.66,
-     "clv_n": 128
+     "n": 132,
+     "gagnes": 57,
+     "roi": 2.56,
+     "pts": 0.89,
+     "clv_pin": -2.61,
+     "clv_n": 131
     },
     "reconstruction_seule": {
-     "n": 112,
-     "gagnes": 48,
-     "roi": -1.04,
-     "pts": 0.23,
-     "clv_pin": -4.1,
-     "clv_n": 110
+     "n": 126,
+     "gagnes": 56,
+     "roi": 2.77,
+     "pts": 1.76,
+     "clv_pin": -4.24,
+     "clv_n": 123
     }
    },
    "ecarts": [
@@ -350,6 +350,90 @@
     {
      "sens": "reconstruction seule",
      "date": "2026-09-07",
+     "match": "Alex Hernandez – Tuncay Duran",
+     "joueur": "Alex Hernandez",
+     "uid": "2026-09-07_alex_hernandez_tuncay_duran",
+     "cote": 2.75,
+     "book": "bet365",
+     "statut": "réglée",
+     "raison": "apres_coup",
+     "libelle": "Vue seulement après coup (absente du journal en direct)",
+     "detail": "match absent de tous les journaux en direct",
+     "explique": true
+    },
+    {
+     "sens": "reconstruction seule",
+     "date": "2026-09-07",
+     "match": "Andrej Martin – Svyatoslav Gulin",
+     "joueur": "Andrej Martin",
+     "uid": "2026-09-07_andrej_martin_svyatoslav_gulin",
+     "cote": 2.2,
+     "book": "bet365",
+     "statut": "réglée",
+     "raison": "apres_coup",
+     "libelle": "Vue seulement après coup (absente du journal en direct)",
+     "detail": "match absent de tous les journaux en direct",
+     "explique": true
+    },
+    {
+     "sens": "reconstruction seule",
+     "date": "2026-09-07",
+     "match": "Mikalai Haliak – Alexander Binda",
+     "joueur": "Mikalai Haliak",
+     "uid": "2026-09-07_alexander_binda_mikalai_haliak",
+     "cote": 2.38,
+     "book": "bet365",
+     "statut": "réglée",
+     "raison": "apres_coup",
+     "libelle": "Vue seulement après coup (absente du journal en direct)",
+     "detail": "match absent de tous les journaux en direct",
+     "explique": true
+    },
+    {
+     "sens": "reconstruction seule",
+     "date": "2026-09-07",
+     "match": "Tiago Pereira – Pavel Lagutin",
+     "joueur": "Tiago Pereira",
+     "uid": "2026-09-07_tiago_pereira_pavel_lagutin",
+     "cote": 2.25,
+     "book": "bet365",
+     "statut": "réglée",
+     "raison": "apres_coup",
+     "libelle": "Vue seulement après coup (absente du journal en direct)",
+     "detail": "match absent de tous les journaux en direct",
+     "explique": true
+    },
+    {
+     "sens": "reconstruction seule",
+     "date": "2026-09-07",
+     "match": "Henry Bernet – Diego Dedura-Palomero",
+     "joueur": "Henry Bernet",
+     "uid": "2026-09-07_diego_dedura_palomero_henry_bernet",
+     "cote": 2.25,
+     "book": "bet365",
+     "statut": "réglée",
+     "raison": "apres_coup",
+     "libelle": "Vue seulement après coup (absente du journal en direct)",
+     "detail": "match absent de tous les journaux en direct",
+     "explique": true
+    },
+    {
+     "sens": "reconstruction seule",
+     "date": "2026-09-07",
+     "match": "Gabriel Ghetu – Alibek Kachmazov",
+     "joueur": "Gabriel Ghetu",
+     "uid": "2026-09-07_alibek_kachmazov_gabriel_ghetu",
+     "cote": 2.0,
+     "book": "bet365",
+     "statut": "réglée",
+     "raison": "apres_coup",
+     "libelle": "Vue seulement après coup (absente du journal en direct)",
+     "detail": "match absent de tous les journaux en direct",
+     "explique": true
+    },
+    {
+     "sens": "reconstruction seule",
+     "date": "2026-09-07",
      "match": "Sam Ryan Ziegann – Yuta Kawahashi",
      "joueur": "Sam Ryan Ziegann",
      "uid": "2026-09-07_yuta_kawahashi_sam_ryan_ziegann",
@@ -362,17 +446,73 @@
      "explique": true
     },
     {
-     "sens": "direct seule",
+     "sens": "reconstruction seule",
      "date": "2026-09-07",
-     "match": "Lorenzo Rottoli – Valerio Aboian",
-     "joueur": "Lorenzo Rottoli",
-     "uid": "2026-09-07_valerio_aboian_lorenzo_rottoli",
-     "cote": 2.6,
-     "book": "betsson",
-     "statut": "dénouée",
-     "raison": "absent_reconstruction",
-     "libelle": "Absent de la reconstruction (aucun mouvement retenu)",
-     "detail": "move_audit n'a retenu aucun mouvement sur ce match",
+     "match": "Maxime Janvier – Oskari Paldanius",
+     "joueur": "Maxime Janvier",
+     "uid": "2026-09-07_maxime_janvier_oskari_paldanius",
+     "cote": 2.2,
+     "book": "bet365",
+     "statut": "réglée",
+     "raison": "apres_coup",
+     "libelle": "Vue seulement après coup (absente du journal en direct)",
+     "detail": "match absent de tous les journaux en direct",
+     "explique": true
+    },
+    {
+     "sens": "reconstruction seule",
+     "date": "2026-09-07",
+     "match": "Kaito Uesugi – Ji Sung Nam",
+     "joueur": "Kaito Uesugi",
+     "uid": "2026-09-07_kaito_uesugi_ji_sung_nam",
+     "cote": 2.62,
+     "book": "bet365",
+     "statut": "réglée",
+     "raison": "apres_coup",
+     "libelle": "Vue seulement après coup (absente du journal en direct)",
+     "detail": "match absent de tous les journaux en direct",
+     "explique": true
+    },
+    {
+     "sens": "reconstruction seule",
+     "date": "2026-09-07",
+     "match": "Daniel Siniakov – Oleg Prihodko",
+     "joueur": "Daniel Siniakov",
+     "uid": "2026-09-07_oleg_prihodko_daniel_siniakov",
+     "cote": 2.2,
+     "book": "bet365",
+     "statut": "réglée",
+     "raison": "apres_coup",
+     "libelle": "Vue seulement après coup (absente du journal en direct)",
+     "detail": "match absent de tous les journaux en direct",
+     "explique": true
+    },
+    {
+     "sens": "reconstruction seule",
+     "date": "2026-09-07",
+     "match": "Gijs Brouwer – Matteo Martineau",
+     "joueur": "Gijs Brouwer",
+     "uid": "2026-09-07_gijs_brouwer_matteo_martineau",
+     "cote": 2.38,
+     "book": "bet365",
+     "statut": "réglée",
+     "raison": "apres_coup",
+     "libelle": "Vue seulement après coup (absente du journal en direct)",
+     "detail": "match absent de tous les journaux en direct",
+     "explique": true
+    },
+    {
+     "sens": "reconstruction seule",
+     "date": "2026-09-07",
+     "match": "Gerard Campana Lee – Jonas Forejtek",
+     "joueur": "Gerard Campana Lee",
+     "uid": "2026-09-07_jonas_forejtek_gerard_campana_lee",
+     "cote": 2.38,
+     "book": "bet365",
+     "statut": "réglée",
+     "raison": "apres_coup",
+     "libelle": "Vue seulement après coup (absente du journal en direct)",
+     "detail": "match absent de tous les journaux en direct",
      "explique": true
     },
     {
@@ -398,9 +538,9 @@
      "cote": 2.17,
      "book": "unibet",
      "statut": "dénouée",
-     "raison": "absent_reconstruction",
-     "libelle": "Absent de la reconstruction (aucun mouvement retenu)",
-     "detail": "move_audit n'a retenu aucun mouvement sur ce match",
+     "raison": "prix_different",
+     "libelle": "Prix/seuil différent (direct vs reconstruction)",
+     "detail": "direct 2.17 (unibet) · reconstruction 1.83 (bet365), Pinnacle ouv. 2.31",
      "explique": true
     },
     {
@@ -412,9 +552,9 @@
      "cote": 2.7,
      "book": "unibet",
      "statut": "dénouée",
-     "raison": "absent_reconstruction",
-     "libelle": "Absent de la reconstruction (aucun mouvement retenu)",
-     "detail": "move_audit n'a retenu aucun mouvement sur ce match",
+     "raison": "cote_opposee_reco",
+     "libelle": "Reconstruction sur l'autre joueur",
+     "detail": "reconstruction sur Kaichi Uchida à 1.53 (bet365)",
      "explique": true
     },
     {
@@ -426,9 +566,9 @@
      "cote": 2.1,
      "book": "bwin",
      "statut": "dénouée",
-     "raison": "absent_reconstruction",
-     "libelle": "Absent de la reconstruction (aucun mouvement retenu)",
-     "detail": "move_audit n'a retenu aucun mouvement sur ce match",
+     "raison": "cote_opposee_reco",
+     "libelle": "Reconstruction sur l'autre joueur",
+     "detail": "reconstruction sur Moez Echargui à 1.73 (bet365)",
      "explique": true
     },
     {
@@ -551,6 +691,20 @@
      "uid": "2026-09-08_maxime_janvier_yanis_ghazouani_durand",
      "cote": 2.1,
      "book": "betway",
+     "statut": "réglée",
+     "raison": "apres_coup",
+     "libelle": "Vue seulement après coup (absente du journal en direct)",
+     "detail": "match absent de tous les journaux en direct",
+     "explique": true
+    },
+    {
+     "sens": "reconstruction seule",
+     "date": "2026-09-08",
+     "match": "Max Purcell – Rodrigo Pacheco Mendez",
+     "joueur": "Max Purcell",
+     "uid": "2026-09-08_max_purcell_rodrigo_pacheco_mendez",
+     "cote": 2.0,
+     "book": "bet365",
      "statut": "réglée",
      "raison": "apres_coup",
      "libelle": "Vue seulement après coup (absente du journal en direct)",
@@ -2636,7 +2790,7 @@
      "joueur": "Filippo Romano",
      "uid": "2026-09-29_filippo_romano_harry_wendelken",
      "cote": 2.1,
-     "book": "bwin",
+     "book": "unibet",
      "statut": "réglée",
      "raison": "apres_coup",
      "libelle": "Vue seulement après coup (absente du journal en direct)",
@@ -2716,12 +2870,40 @@
     {
      "sens": "reconstruction seule",
      "date": "2026-09-29",
+     "match": "Adolfo Daniel Vallejo – Jaime Faria",
+     "joueur": "Adolfo Daniel Vallejo",
+     "uid": "2026-09-29_adolfo_daniel_vallejo_jaime_faria",
+     "cote": 2.75,
+     "book": "unibet",
+     "statut": "réglée",
+     "raison": "apres_coup",
+     "libelle": "Vue seulement après coup (absente du journal en direct)",
+     "detail": "match absent de tous les journaux en direct",
+     "explique": true
+    },
+    {
+     "sens": "reconstruction seule",
+     "date": "2026-09-29",
      "match": "Ryan Dickerson – Bruno Fernandez",
      "joueur": "Ryan Dickerson",
      "uid": "2026-09-29_bruno_fernandez_ryan_dickerson",
      "cote": 2.4,
      "book": "betway",
      "statut": "non réglée",
+     "raison": "apres_coup",
+     "libelle": "Vue seulement après coup (absente du journal en direct)",
+     "detail": "match absent de tous les journaux en direct",
+     "explique": true
+    },
+    {
+     "sens": "reconstruction seule",
+     "date": "2026-09-29",
+     "match": "Max Wiskandt – Pierluigi Basile",
+     "joueur": "Max Wiskandt",
+     "uid": "2026-09-29_max_wiskandt_pierluigi_basile",
+     "cote": 2.37,
+     "book": "bet365",
+     "statut": "réglée",
      "raison": "apres_coup",
      "libelle": "Vue seulement après coup (absente du journal en direct)",
      "detail": "match absent de tous les journaux en direct",
@@ -3066,6 +3248,20 @@
     {
      "sens": "reconstruction seule",
      "date": "2026-10-01",
+     "match": "Alex Molcan – Arthur Rinderknech",
+     "joueur": "Alex Molcan",
+     "uid": "2026-10-01_alex_molcan_arthur_rinderknech",
+     "cote": 2.5,
+     "book": "unibet",
+     "statut": "non réglée",
+     "raison": "apres_coup",
+     "libelle": "Vue seulement après coup (absente du journal en direct)",
+     "detail": "match absent de tous les journaux en direct",
+     "explique": true
+    },
+    {
+     "sens": "reconstruction seule",
+     "date": "2026-10-01",
      "match": "Sebastian Baez – Juncheng Shang",
      "joueur": "Sebastian Baez",
      "uid": "2026-10-01_juncheng_shang_sebastian_baez",
@@ -3113,20 +3309,6 @@
      "uid": "2026-10-01_petr_bar_biryukov_dane_sweeny",
      "cote": 2.95,
      "book": "bwin",
-     "statut": "dénouée",
-     "raison": "absent_reconstruction",
-     "libelle": "Absent de la reconstruction (aucun mouvement retenu)",
-     "detail": "move_audit n'a retenu aucun mouvement sur ce match",
-     "explique": true
-    },
-    {
-     "sens": "direct seule",
-     "date": "2026-10-01",
-     "match": "Robin Montgomery – Katie Volynets",
-     "joueur": "Robin Montgomery",
-     "uid": "2026-10-01_katie_volynets_robin_montgomery",
-     "cote": 2.13,
-     "book": "betsson",
      "statut": "dénouée",
      "raison": "absent_reconstruction",
      "libelle": "Absent de la reconstruction (aucun mouvement retenu)",
@@ -5045,7 +5227,7 @@
      "uid": "2026-10-20_arthur_fery_borna_gojo",
      "cote": 2.33,
      "book": "unibet",
-     "statut": "non dénouée",
+     "statut": "dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
      "detail": "match du 2026-10-20, reconstruction arrêtée au 2026-10-14",
@@ -5073,7 +5255,7 @@
      "uid": "2026-10-20_jacob_fearnley_hugo_gaston",
      "cote": 2.37,
      "book": "bet365",
-     "statut": "non dénouée",
+     "statut": "dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
      "detail": "match du 2026-10-20, reconstruction arrêtée au 2026-10-14",
@@ -5087,7 +5269,7 @@
      "uid": "2026-10-20_botic_van_de_zandschulp_clement_chidekh",
      "cote": 2.3,
      "book": "bet365",
-     "statut": "non dénouée",
+     "statut": "dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
      "detail": "match du 2026-10-20, reconstruction arrêtée au 2026-10-14",
@@ -5100,6 +5282,20 @@
      "joueur": "Raphael Collignon",
      "uid": "2026-10-20_nishesh_basavareddy_raphael_collignon",
      "cote": 2.2,
+     "book": "bet365",
+     "statut": "dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-20, reconstruction arrêtée au 2026-10-14",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-20",
+     "match": "Kyrian Jacquet – Matteo Berrettini",
+     "joueur": "Kyrian Jacquet",
+     "uid": "2026-10-20_matteo_berrettini_kyrian_jacquet",
+     "cote": 2.3,
      "book": "bet365",
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
@@ -5120,6 +5316,76 @@
      "libelle": "Pas encore dans la reconstruction",
      "detail": "match du 2026-10-21, reconstruction arrêtée au 2026-10-14",
      "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-21",
+     "match": "James Duckworth – Luciano Darderi",
+     "joueur": "James Duckworth",
+     "uid": "2026-10-21_james_duckworth_luciano_darderi",
+     "cote": 2.02,
+     "book": "unibet",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-21, reconstruction arrêtée au 2026-10-14",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-21",
+     "match": "Martin Damm Jr – Francisco Cerundolo",
+     "joueur": "Martin Damm Jr",
+     "uid": "2026-10-21_martin_damm_jr_francisco_cerundolo",
+     "cote": 2.6,
+     "book": "betway",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-21, reconstruction arrêtée au 2026-10-14",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-21",
+     "match": "Sara Bejlek – Sorana Cirstea",
+     "joueur": "Sara Bejlek",
+     "uid": "2026-10-21_sorana_cirstea_sara_bejlek",
+     "cote": 2.9,
+     "book": "unibet",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-21, reconstruction arrêtée au 2026-10-14",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-22",
+     "match": "Moyuka Uchijima – Mary Stoiana",
+     "joueur": "Moyuka Uchijima",
+     "uid": "2026-10-22_mary_stoiana_moyuka_uchijima",
+     "cote": 2.75,
+     "book": "bet365",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-22, reconstruction arrêtée au 2026-10-14",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-22",
+     "match": "Benjamin Hassan – Sumit Nagal",
+     "joueur": "Benjamin Hassan",
+     "uid": "2026-10-22_sumit_nagal_benjamin_hassan",
+     "cote": 2.62,
+     "book": "bet365",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-22, reconstruction arrêtée au 2026-10-14",
+     "explique": true
     }
    ]
   },
@@ -5131,55 +5397,55 @@
    "worker": {
     "gele_le": "2026-10-02",
     "out_of_sample": {
-     "n": 2,
-     "gains": 1,
+     "n": 6,
+     "gains": 3,
      "taux": 50,
-     "seuil": 28.4,
-     "ecart": 21.6,
-     "roi": 5,
-     "pnl": 0.1,
-     "cote_moyenne": 6.55,
-     "clv_moyen": -4.4,
-     "clv_pin_moyen": -4.4,
-     "clv_pin_p": 1,
-     "clv_n": 13,
-     "clv_positif": 30.8,
-     "lead_moyen_h": 10.7,
-     "periode": "2026-10-16 -> 2026-10-19",
-     "verdict": "en attente de résultats (87,5 % sans résultat)",
-     "n_detectees": 19,
-     "n_envoyees": 8,
-     "n_doublons": 11,
+     "seuil": 40.3,
+     "ecart": 9.7,
+     "roi": 10,
+     "pnl": 0.6,
+     "cote_moyenne": 3.64,
+     "clv_moyen": -3.9,
+     "clv_pin_moyen": -3.9,
+     "clv_pin_p": 0.998,
+     "clv_n": 19,
+     "clv_positif": 31.6,
+     "lead_moyen_h": 10.8,
+     "periode": "2026-10-16 -> 2026-10-20",
+     "verdict": "en attente de résultats (72,7 % sans résultat)",
+     "n_detectees": 23,
+     "n_envoyees": 10,
+     "n_doublons": 13,
      "n_non_envoyees_autres": 0,
-     "n_denouees": 2,
-     "n_commencees": 16,
-     "n_sans_resultat": 14,
-     "sans_resultat_pct": 87.5,
+     "n_denouees": 6,
+     "n_commencees": 22,
+     "n_sans_resultat": 16,
+     "sans_resultat_pct": 72.7,
      "verrouillable": false,
-     "statut": "en attente de résultats (87,5 % sans résultat)"
+     "statut": "en attente de résultats (72,7 % sans résultat)"
     },
-    "n": 2,
-    "roi": 5
+    "n": 6,
+    "roi": 10
    },
    "suivi_officiel": {
-    "n": 2,
-    "gagnes": 1,
-    "roi": 5.0,
-    "pts": 21.6,
-    "clv_pin": -4.4,
+    "n": 6,
+    "gagnes": 3,
+    "roi": 10.0,
+    "pts": 9.7,
+    "clv_pin": -3.9,
     "clv_pin_ic95": [
-     -6.2,
-     -2.6
+     -6.6,
+     -1.2
     ],
-    "clv_n": 13,
-    "n_detectees": 19,
-    "n_envoyees": 8,
-    "n_doublons": 11,
+    "clv_n": 19,
+    "n_detectees": 23,
+    "n_envoyees": 10,
+    "n_doublons": 13,
     "source": "verdicts_direct.json (recalculé : journal plus récent)",
-    "sans_resultat_pct": 88.2,
-    "statut": "en attente de résultats (88,2 % sans résultat)",
+    "sans_resultat_pct": 73.9,
+    "statut": "en attente de résultats (73,9 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-10-20T09:56:55Z"
+    "genere_le": "2026-10-21T07:58:51Z"
    },
    "reconstruction": {
     "n": 91,
@@ -5197,11 +5463,11 @@
     "egal_validation_report": true
    },
    "entonnoir": {
-    "direct_detectees": 19,
-    "direct_envoyees": 8,
-    "direct_doublons": 11,
+    "direct_detectees": 23,
+    "direct_envoyees": 10,
+    "direct_doublons": 13,
     "direct_non_envoyees_autres": 0,
-    "direct_denouees": 2,
+    "direct_denouees": 6,
     "reconstruction_detectees": 97,
     "reconstruction_reglees": 91,
     "communes": 0,
@@ -5209,36 +5475,36 @@
     "reconstruction_seule_raisons": {
      "avant_canal": 97
     },
-    "direct_seule": 19,
+    "direct_seule": 23,
     "direct_seule_raisons": {
-     "pas_encore_reconstruit": 19
+     "pas_encore_reconstruit": 23
     },
     "inexpliques": 0
    },
    "mesures": {
     "suivi_officiel": {
-     "n": 2,
-     "gagnes": 1,
-     "roi": 5.0,
-     "pts": 21.65,
-     "clv_pin": -15.38,
-     "clv_n": 2
+     "n": 6,
+     "gagnes": 3,
+     "roi": 10.0,
+     "pts": 9.67,
+     "clv_pin": -7.99,
+     "clv_n": 5
     },
     "envoyees": {
-     "n": 1,
+     "n": 2,
      "gagnes": 0,
      "roi": -100.0,
-     "pts": -9.09,
+     "pts": -31.57,
      "clv_pin": -33.53,
      "clv_n": 1
     },
     "detectees_non_envoyees": {
-     "n": 1,
-     "gagnes": 1,
-     "roi": 110.0,
-     "pts": 52.38,
-     "clv_pin": 2.77,
-     "clv_n": 1
+     "n": 4,
+     "gagnes": 3,
+     "roi": 65.0,
+     "pts": 30.3,
+     "clv_pin": -1.6,
+     "clv_n": 4
     },
     "reconstruction": {
      "n": 91,
@@ -5265,12 +5531,12 @@
      "clv_n": 0
     },
     "direct_seule": {
-     "n": 2,
-     "gagnes": 1,
-     "roi": 5.0,
-     "pts": 21.65,
-     "clv_pin": -15.38,
-     "clv_n": 2
+     "n": 6,
+     "gagnes": 3,
+     "roi": 10.0,
+     "pts": 9.67,
+     "clv_pin": -7.99,
+     "clv_n": 5
     },
     "reconstruction_seule": {
      "n": 91,
@@ -6886,7 +7152,7 @@
      "uid": "2026-10-20_arthur_fery_borna_gojo",
      "cote": 2.33,
      "book": "unibet",
-     "statut": "non dénouée",
+     "statut": "dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
      "detail": "match du 2026-10-20, reconstruction arrêtée au 2026-10-14",
@@ -6900,10 +7166,66 @@
      "uid": "2026-10-20_jacob_fearnley_hugo_gaston",
      "cote": 2.37,
      "book": "bet365",
+     "statut": "dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-20, reconstruction arrêtée au 2026-10-14",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-20",
+     "match": "Raphael Collignon – Nishesh Basavareddy",
+     "joueur": "Raphael Collignon",
+     "uid": "2026-10-20_nishesh_basavareddy_raphael_collignon",
+     "cote": 2.17,
+     "book": "unibet",
+     "statut": "dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-20, reconstruction arrêtée au 2026-10-14",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-20",
+     "match": "Lui Maxted – Sander Jong",
+     "joueur": "Lui Maxted",
+     "uid": "2026-10-20_sander_jong_lui_maxted",
+     "cote": 1.85,
+     "book": "unibet",
+     "statut": "dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-20, reconstruction arrêtée au 2026-10-14",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-20",
+     "match": "Federico Coria – Nicolas Mejia",
+     "joueur": "Federico Coria",
+     "uid": "2026-10-20_federico_coria_nicolas_mejia",
+     "cote": 5.0,
+     "book": "bet365",
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
      "detail": "match du 2026-10-20, reconstruction arrêtée au 2026-10-14",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-21",
+     "match": "James Duckworth – Luciano Darderi",
+     "joueur": "James Duckworth",
+     "uid": "2026-10-21_james_duckworth_luciano_darderi",
+     "cote": 2.02,
+     "book": "unibet",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-21, reconstruction arrêtée au 2026-10-14",
      "explique": true
     }
    ]
@@ -6924,17 +7246,17 @@
      "roi": 29,
      "pnl": 9,
      "cote_moyenne": 2.68,
-     "clv_moyen": -2.2,
-     "clv_pin_moyen": -2.2,
-     "clv_pin_p": 0.9961,
-     "clv_n": 48,
-     "clv_positif": 35.4,
+     "clv_moyen": -2.3,
+     "clv_pin_moyen": -2.3,
+     "clv_pin_p": 0.9977,
+     "clv_n": 50,
+     "clv_positif": 34,
      "lead_moyen_h": 7.3,
      "periode": "2026-09-30 -> 2026-10-19",
      "verdict": "en attente de résultats (40,4 % sans résultat)",
-     "n_detectees": 53,
+     "n_detectees": 55,
      "n_envoyees": 0,
-     "n_doublons": 53,
+     "n_doublons": 55,
      "n_non_envoyees_autres": 0,
      "n_denouees": 31,
      "n_commencees": 52,
@@ -6951,55 +7273,55 @@
     "gagnes": 15,
     "roi": 29.0,
     "pts": 10.8,
-    "clv_pin": -2.2,
+    "clv_pin": -2.3,
     "clv_pin_ic95": [
      -3.9,
-     -0.6
+     -0.7
     ],
-    "clv_n": 48,
-    "n_detectees": 53,
+    "clv_n": 50,
+    "n_detectees": 57,
     "n_envoyees": 0,
-    "n_doublons": 53,
+    "n_doublons": 57,
     "source": "verdicts_direct.json (recalculé : journal plus récent)",
     "sans_resultat_pct": 40.4,
     "statut": "en attente de résultats (40,4 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-10-20T09:56:55Z"
+    "genere_le": "2026-10-21T07:58:51Z"
    },
    "reconstruction": {
-    "n": 54,
-    "gagnes": 20,
-    "roi": -0.35,
-    "pts": -0.18,
-    "clv_pin": -6.64,
-    "clv_n": 54,
+    "n": 55,
+    "gagnes": 21,
+    "roi": 2.84,
+    "pts": 0.98,
+    "clv_pin": -6.53,
+    "clv_n": 55,
     "source": "moves_detail_hist.csv · validation_report.py (contrôle)",
     "validation_report": {
-     "k": 20,
-     "n": 54,
-     "p0": 0.3721384264276051
+     "k": 21,
+     "n": 55,
+     "p0": 0.3719838434677643
     },
     "egal_validation_report": true
    },
    "entonnoir": {
-    "direct_detectees": 53,
+    "direct_detectees": 57,
     "direct_envoyees": 0,
-    "direct_doublons": 53,
+    "direct_doublons": 57,
     "direct_non_envoyees_autres": 0,
     "direct_denouees": 31,
-    "reconstruction_detectees": 65,
-    "reconstruction_reglees": 54,
+    "reconstruction_detectees": 67,
+    "reconstruction_reglees": 55,
     "communes": 13,
-    "reconstruction_seule": 52,
+    "reconstruction_seule": 54,
     "reconstruction_seule_raisons": {
-     "apres_coup": 52
+     "apres_coup": 54
     },
-    "direct_seule": 40,
+    "direct_seule": 44,
     "direct_seule_raisons": {
      "absent_reconstruction": 19,
      "cote_opposee_reco": 4,
      "prix_different": 2,
-     "pas_encore_reconstruit": 15
+     "pas_encore_reconstruit": 19
     },
     "inexpliques": 0
    },
@@ -7009,8 +7331,8 @@
      "gagnes": 15,
      "roi": 28.97,
      "pts": 10.81,
-     "clv_pin": -1.9,
-     "clv_n": 30
+     "clv_pin": -2.08,
+     "clv_n": 31
     },
     "envoyees": {
      "n": 0,
@@ -7025,16 +7347,16 @@
      "gagnes": 15,
      "roi": 28.97,
      "pts": 10.81,
-     "clv_pin": -1.9,
-     "clv_n": 30
+     "clv_pin": -2.08,
+     "clv_n": 31
     },
     "reconstruction": {
-     "n": 54,
-     "gagnes": 20,
-     "roi": -0.35,
-     "pts": -0.18,
-     "clv_pin": -6.64,
-     "clv_n": 54
+     "n": 55,
+     "gagnes": 21,
+     "roi": 2.84,
+     "pts": 0.98,
+     "clv_pin": -6.53,
+     "clv_n": 55
     },
     "communes_direct": {
      "n": 11,
@@ -7057,16 +7379,16 @@
      "gagnes": 7,
      "roi": -9.1,
      "pts": -2.79,
-     "clv_pin": -2.34,
-     "clv_n": 19
+     "clv_pin": -2.61,
+     "clv_n": 20
     },
     "reconstruction_seule": {
-     "n": 43,
-     "gagnes": 12,
-     "roi": -26.02,
-     "pts": -9.38,
-     "clv_pin": -8.24,
-     "clv_n": 43
+     "n": 44,
+     "gagnes": 13,
+     "roi": -21.45,
+     "pts": -7.72,
+     "clv_pin": -8.07,
+     "clv_n": 44
     }
    },
    "ecarts": [
@@ -7231,6 +7553,20 @@
      "joueur": "Oliver Okonkwo",
      "uid": "2026-09-29_oliver_okonkwo_luca_staeheli",
      "cote": 2.7,
+     "book": "unibet",
+     "statut": "réglée",
+     "raison": "apres_coup",
+     "libelle": "Vue seulement après coup (absente du journal en direct)",
+     "detail": "match absent de tous les journaux en direct",
+     "explique": true
+    },
+    {
+     "sens": "reconstruction seule",
+     "date": "2026-09-29",
+     "match": "Adolfo Daniel Vallejo – Jaime Faria",
+     "joueur": "Adolfo Daniel Vallejo",
+     "uid": "2026-09-29_adolfo_daniel_vallejo_jaime_faria",
+     "cote": 2.75,
      "book": "unibet",
      "statut": "réglée",
      "raison": "apres_coup",
@@ -7432,6 +7768,20 @@
      "raison": "apres_coup",
      "libelle": "Vue seulement après coup (absente du journal en direct)",
      "detail": "match vu en direct par H16, H16B",
+     "explique": true
+    },
+    {
+     "sens": "reconstruction seule",
+     "date": "2026-10-01",
+     "match": "Alex Molcan – Arthur Rinderknech",
+     "joueur": "Alex Molcan",
+     "uid": "2026-10-01_alex_molcan_arthur_rinderknech",
+     "cote": 2.5,
+     "book": "unibet",
+     "statut": "non réglée",
+     "raison": "apres_coup",
+     "libelle": "Vue seulement après coup (absente du journal en direct)",
+     "detail": "match absent de tous les journaux en direct",
      "explique": true
     },
     {
@@ -8357,6 +8707,62 @@
      "libelle": "Pas encore dans la reconstruction",
      "detail": "match du 2026-10-21, reconstruction arrêtée au 2026-10-14",
      "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-21",
+     "match": "Martin Damm Jr – Francisco Cerundolo",
+     "joueur": "Martin Damm Jr",
+     "uid": "2026-10-21_martin_damm_jr_francisco_cerundolo",
+     "cote": 2.6,
+     "book": "betway",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-21, reconstruction arrêtée au 2026-10-14",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-21",
+     "match": "Sara Bejlek – Sorana Cirstea",
+     "joueur": "Sara Bejlek",
+     "uid": "2026-10-21_sorana_cirstea_sara_bejlek",
+     "cote": 2.9,
+     "book": "unibet",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-21, reconstruction arrêtée au 2026-10-14",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-22",
+     "match": "Moyuka Uchijima – Mary Stoiana",
+     "joueur": "Moyuka Uchijima",
+     "uid": "2026-10-22_mary_stoiana_moyuka_uchijima",
+     "cote": 2.75,
+     "book": "bet365",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-22, reconstruction arrêtée au 2026-10-14",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-22",
+     "match": "Benjamin Hassan – Sumit Nagal",
+     "joueur": "Benjamin Hassan",
+     "uid": "2026-10-22_sumit_nagal_benjamin_hassan",
+     "cote": 2.62,
+     "book": "bet365",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-22, reconstruction arrêtée au 2026-10-14",
+     "explique": true
     }
    ]
   },
@@ -8368,109 +8774,109 @@
    "worker": {
     "gele_le": "2026-09-25",
     "out_of_sample": {
-     "n": 104,
-     "gains": 74,
-     "taux": 71.2,
+     "n": 107,
+     "gains": 75,
+     "taux": 70.1,
      "seuil": 68.3,
-     "ecart": 2.9,
-     "roi": 3.7,
-     "pnl": 3.9,
+     "ecart": 1.8,
+     "roi": 2,
+     "pnl": 2.1,
      "cote_moyenne": 1.48,
      "clv_moyen": -0.5,
      "clv_pin_moyen": -0.5,
-     "clv_pin_p": 0.8618,
-     "clv_n": 134,
-     "clv_positif": 40.3,
+     "clv_pin_p": 0.8778,
+     "clv_n": 142,
+     "clv_positif": 40.1,
      "lead_moyen_h": 8.6,
-     "periode": "2026-09-26 -> 2026-10-19",
-     "verdict": "en attente de résultats (25,2 % sans résultat)",
-     "n_detectees": 141,
-     "n_envoyees": 141,
+     "periode": "2026-09-26 -> 2026-10-20",
+     "verdict": "en attente de résultats (27,7 % sans résultat)",
+     "n_detectees": 149,
+     "n_envoyees": 149,
      "n_doublons": 0,
      "n_non_envoyees_autres": 0,
-     "n_denouees": 104,
-     "n_commencees": 139,
-     "n_sans_resultat": 35,
-     "sans_resultat_pct": 25.2,
+     "n_denouees": 107,
+     "n_commencees": 148,
+     "n_sans_resultat": 41,
+     "sans_resultat_pct": 27.7,
      "verrouillable": false,
-     "statut": "en attente de résultats (25,2 % sans résultat)"
+     "statut": "en attente de résultats (27,7 % sans résultat)"
     },
-    "n": 104,
-    "roi": 3.7
+    "n": 107,
+    "roi": 2
    },
    "suivi_officiel": {
-    "n": 104,
-    "gagnes": 74,
-    "roi": 3.7,
-    "pts": 2.9,
+    "n": 107,
+    "gagnes": 75,
+    "roi": 2.0,
+    "pts": 1.8,
     "clv_pin": -0.5,
     "clv_pin_ic95": [
      -1.3,
-     0.4
+     0.3
     ],
-    "clv_n": 134,
-    "n_detectees": 144,
-    "n_envoyees": 144,
+    "clv_n": 142,
+    "n_detectees": 149,
+    "n_envoyees": 149,
     "n_doublons": 0,
     "source": "verdicts_direct.json (recalculé : journal plus récent)",
-    "sans_resultat_pct": 25.2,
-    "statut": "en attente de résultats (25,2 % sans résultat)",
+    "sans_resultat_pct": 28.2,
+    "statut": "en attente de résultats (28,2 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-10-20T09:56:55Z"
+    "genere_le": "2026-10-21T07:58:51Z"
    },
    "reconstruction": {
-    "n": 158,
-    "gagnes": 108,
-    "roi": -0.25,
-    "pts": -0.12,
-    "clv_pin": -0.57,
-    "clv_n": 153,
+    "n": 162,
+    "gagnes": 112,
+    "roi": 1.03,
+    "pts": 0.71,
+    "clv_pin": -0.55,
+    "clv_n": 157,
     "source": "moves_detail_hist.csv · validation_report.py (contrôle)",
     "validation_report": {
-     "k": 108,
-     "n": 158,
-     "p0": 0.684702904259735
+     "k": 112,
+     "n": 162,
+     "p0": 0.6842222843792413
     },
     "egal_validation_report": true
    },
    "entonnoir": {
-    "direct_detectees": 144,
-    "direct_envoyees": 144,
+    "direct_detectees": 149,
+    "direct_envoyees": 149,
     "direct_doublons": 0,
     "direct_non_envoyees_autres": 0,
-    "direct_denouees": 104,
-    "reconstruction_detectees": 180,
-    "reconstruction_reglees": 158,
-    "communes": 36,
-    "reconstruction_seule": 144,
+    "direct_denouees": 107,
+    "reconstruction_detectees": 184,
+    "reconstruction_reglees": 162,
+    "communes": 37,
+    "reconstruction_seule": 147,
     "reconstruction_seule_raisons": {
-     "apres_coup": 144
+     "apres_coup": 147
     },
-    "direct_seule": 108,
+    "direct_seule": 112,
     "direct_seule_raisons": {
      "cote_opposee_reco": 22,
-     "absent_reconstruction": 54,
+     "absent_reconstruction": 53,
      "prix_different": 2,
-     "pas_encore_reconstruit": 30
+     "pas_encore_reconstruit": 35
     },
     "inexpliques": 0
    },
    "mesures": {
     "suivi_officiel": {
-     "n": 104,
-     "gagnes": 74,
-     "roi": 3.74,
-     "pts": 2.89,
-     "clv_pin": -0.2,
-     "clv_n": 104
+     "n": 107,
+     "gagnes": 75,
+     "roi": 2.0,
+     "pts": 1.77,
+     "clv_pin": -0.25,
+     "clv_n": 106
     },
     "envoyees": {
-     "n": 104,
-     "gagnes": 74,
-     "roi": 3.74,
-     "pts": 2.89,
-     "clv_pin": -0.2,
-     "clv_n": 104
+     "n": 107,
+     "gagnes": 75,
+     "roi": 2.0,
+     "pts": 1.77,
+     "clv_pin": -0.25,
+     "clv_n": 106
     },
     "detectees_non_envoyees": {
      "n": 0,
@@ -8481,44 +8887,44 @@
      "clv_n": 0
     },
     "reconstruction": {
-     "n": 158,
-     "gagnes": 108,
-     "roi": -0.25,
-     "pts": -0.12,
-     "clv_pin": -0.57,
-     "clv_n": 153
+     "n": 162,
+     "gagnes": 112,
+     "roi": 1.03,
+     "pts": 0.71,
+     "clv_pin": -0.55,
+     "clv_n": 157
     },
     "communes_direct": {
-     "n": 33,
-     "gagnes": 22,
-     "roi": -2.33,
-     "pts": -1.11,
-     "clv_pin": -0.12,
-     "clv_n": 33
+     "n": 34,
+     "gagnes": 23,
+     "roi": -0.29,
+     "pts": 0.1,
+     "clv_pin": -0.02,
+     "clv_n": 34
     },
     "communes_reconstruction": {
-     "n": 31,
-     "gagnes": 21,
-     "roi": 0.48,
-     "pts": 0.44,
-     "clv_pin": 0.45,
-     "clv_n": 30
+     "n": 32,
+     "gagnes": 22,
+     "roi": 2.34,
+     "pts": 1.6,
+     "clv_pin": 0.4,
+     "clv_n": 31
     },
     "direct_seule": {
-     "n": 71,
+     "n": 73,
      "gagnes": 52,
-     "roi": 6.56,
-     "pts": 4.75,
-     "clv_pin": -0.24,
-     "clv_n": 71
+     "roi": 3.06,
+     "pts": 2.55,
+     "clv_pin": -0.36,
+     "clv_n": 72
     },
     "reconstruction_seule": {
-     "n": 127,
-     "gagnes": 87,
-     "roi": -0.43,
-     "pts": -0.25,
-     "clv_pin": -0.81,
-     "clv_n": 123
+     "n": 130,
+     "gagnes": 90,
+     "roi": 0.71,
+     "pts": 0.5,
+     "clv_pin": -0.78,
+     "clv_n": 126
     }
    },
    "ecarts": [
@@ -8791,6 +9197,20 @@
     {
      "sens": "reconstruction seule",
      "date": "2026-09-29",
+     "match": "Gianluca Cadenasso – Benito Sanchez Martinez",
+     "joueur": "Gianluca Cadenasso",
+     "uid": "2026-09-29_gianluca_cadenasso_benito_sanchez_martinez",
+     "cote": 1.68,
+     "book": "unibet",
+     "statut": "réglée",
+     "raison": "apres_coup",
+     "libelle": "Vue seulement après coup (absente du journal en direct)",
+     "detail": "match absent de tous les journaux en direct",
+     "explique": true
+    },
+    {
+     "sens": "reconstruction seule",
+     "date": "2026-09-29",
      "match": "Nicolai Budkov Kjaer – Yanis Ghazouani Durand",
      "joueur": "Nicolai Budkov Kjaer",
      "uid": "2026-09-29_yanis_ghazouani_durand_nicolai_budkov_kjaer",
@@ -8852,6 +9272,20 @@
      "uid": "2026-09-29_miguel_tobon_juan_bautista_torres",
      "cote": 1.4,
      "book": "bwin",
+     "statut": "réglée",
+     "raison": "apres_coup",
+     "libelle": "Vue seulement après coup (absente du journal en direct)",
+     "detail": "match absent de tous les journaux en direct",
+     "explique": true
+    },
+    {
+     "sens": "reconstruction seule",
+     "date": "2026-09-29",
+     "match": "Lorenzo Giustino – John Sperle",
+     "joueur": "Lorenzo Giustino",
+     "uid": "2026-09-29_lorenzo_giustino_john_sperle",
+     "cote": 1.44,
+     "book": "unibet",
      "statut": "réglée",
      "raison": "apres_coup",
      "libelle": "Vue seulement après coup (absente du journal en direct)",
@@ -9365,6 +9799,20 @@
     {
      "sens": "reconstruction seule",
      "date": "2026-10-01",
+     "match": "Stefanos Tsitsipas – Tomas Martin Etcheverry",
+     "joueur": "Stefanos Tsitsipas",
+     "uid": "2026-10-01_tomas_martin_etcheverry_stefanos_tsitsipas",
+     "cote": 1.34,
+     "book": "unibet",
+     "statut": "réglée",
+     "raison": "apres_coup",
+     "libelle": "Vue seulement après coup (absente du journal en direct)",
+     "detail": "match absent de tous les journaux en direct",
+     "explique": true
+    },
+    {
+     "sens": "reconstruction seule",
+     "date": "2026-10-01",
      "match": "Alexander Zverev – Cameron Norrie",
      "joueur": "Alexander Zverev",
      "uid": "2026-10-01_alexander_zverev_cameron_norrie",
@@ -9412,20 +9860,6 @@
      "uid": "2026-10-01_magda_linette_katerina_siniakova",
      "cote": 1.58,
      "book": "unibet",
-     "statut": "dénouée",
-     "raison": "absent_reconstruction",
-     "libelle": "Absent de la reconstruction (aucun mouvement retenu)",
-     "detail": "move_audit n'a retenu aucun mouvement sur ce match",
-     "explique": true
-    },
-    {
-     "sens": "direct seule",
-     "date": "2026-10-01",
-     "match": "Ashlyn Krueger – Sofia Kenin",
-     "joueur": "Ashlyn Krueger",
-     "uid": "2026-10-01_sofia_kenin_ashlyn_krueger",
-     "cote": 1.67,
-     "book": "888sport",
      "statut": "dénouée",
      "raison": "absent_reconstruction",
      "libelle": "Absent de la reconstruction (aucun mouvement retenu)",
@@ -12030,7 +12464,7 @@
      "uid": "2026-10-20_hugo_dellien_juan_manuel_la_serna",
      "cote": 1.364,
      "book": "888sport",
-     "statut": "non dénouée",
+     "statut": "dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
      "detail": "match du 2026-10-20, reconstruction arrêtée au 2026-10-14",
@@ -12049,6 +12483,76 @@
      "libelle": "Pas encore dans la reconstruction",
      "detail": "match du 2026-10-20, reconstruction arrêtée au 2026-10-14",
      "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-20",
+     "match": "Juan Bautista Torres – Daniel Salazar Martinez",
+     "joueur": "Juan Bautista Torres",
+     "uid": "2026-10-20_daniel_salazar_martinez_juan_bautista_torres",
+     "cote": 1.25,
+     "book": "betway",
+     "statut": "dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-20, reconstruction arrêtée au 2026-10-14",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-20",
+     "match": "Andres Martin – Erik Arutiunian",
+     "joueur": "Andres Martin",
+     "uid": "2026-10-20_andres_martin_erik_arutiunian",
+     "cote": 1.727,
+     "book": "betway",
+     "statut": "dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-20, reconstruction arrêtée au 2026-10-14",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-20",
+     "match": "Facundo Mena – Valerio Aboian",
+     "joueur": "Facundo Mena",
+     "uid": "2026-10-20_facundo_mena_valerio_aboian",
+     "cote": 1.43,
+     "book": "unibet",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-20, reconstruction arrêtée au 2026-10-14",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-21",
+     "match": "Nikoloz Basilashvili – Facundo Diaz Acosta",
+     "joueur": "Nikoloz Basilashvili",
+     "uid": "2026-10-21_facundo_diaz_acosta_nikoloz_basilashvili",
+     "cote": 1.54,
+     "book": "betsson",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-21, reconstruction arrêtée au 2026-10-14",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-21",
+     "match": "Marie Bouzkova – Anastasia Zakharova",
+     "joueur": "Marie Bouzkova",
+     "uid": "2026-10-21_marie_bouzkova_anastasia_zakharova",
+     "cote": 1.27,
+     "book": "bet365",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-21, reconstruction arrêtée au 2026-10-14",
+     "explique": true
     }
    ]
   },
@@ -12060,109 +12564,109 @@
    "worker": {
     "gele_le": "2026-09-27",
     "out_of_sample": {
-     "n": 89,
+     "n": 91,
      "gains": 61,
-     "taux": 68.5,
+     "taux": 67,
      "seuil": 66.1,
-     "ecart": 2.5,
-     "roi": 3.5,
-     "pnl": 3.1,
+     "ecart": 1,
+     "roi": 1.2,
+     "pnl": 1.1,
      "cote_moyenne": 1.53,
      "clv_moyen": -0.6,
      "clv_pin_moyen": -0.6,
-     "clv_pin_p": 0.892,
-     "clv_n": 119,
-     "clv_positif": 37.8,
+     "clv_pin_p": 0.8921,
+     "clv_n": 124,
+     "clv_positif": 38.7,
      "lead_moyen_h": 9,
-     "periode": "2026-09-29 -> 2026-10-19",
-     "verdict": "en attente de résultats (26,4 % sans résultat)",
-     "n_detectees": 122,
-     "n_envoyees": 122,
+     "periode": "2026-09-29 -> 2026-10-20",
+     "verdict": "en attente de résultats (28,3 % sans résultat)",
+     "n_detectees": 128,
+     "n_envoyees": 128,
      "n_doublons": 0,
      "n_non_envoyees_autres": 0,
-     "n_denouees": 89,
-     "n_commencees": 121,
-     "n_sans_resultat": 32,
-     "sans_resultat_pct": 26.4,
+     "n_denouees": 91,
+     "n_commencees": 127,
+     "n_sans_resultat": 36,
+     "sans_resultat_pct": 28.3,
      "verrouillable": false,
-     "statut": "en attente de résultats (26,4 % sans résultat)"
+     "statut": "en attente de résultats (28,3 % sans résultat)"
     },
-    "n": 89,
-    "roi": 3.5
+    "n": 91,
+    "roi": 1.2
    },
    "suivi_officiel": {
-    "n": 89,
+    "n": 91,
     "gagnes": 61,
-    "roi": 3.5,
-    "pts": 2.5,
+    "roi": 1.2,
+    "pts": 1.0,
     "clv_pin": -0.6,
     "clv_pin_ic95": [
-     -1.6,
-     0.4
+     -1.5,
+     0.3
     ],
-    "clv_n": 119,
-    "n_detectees": 125,
-    "n_envoyees": 125,
+    "clv_n": 124,
+    "n_detectees": 128,
+    "n_envoyees": 128,
     "n_doublons": 0,
     "source": "verdicts_direct.json (recalculé : journal plus récent)",
-    "sans_resultat_pct": 26.4,
-    "statut": "en attente de résultats (26,4 % sans résultat)",
+    "sans_resultat_pct": 28.9,
+    "statut": "en attente de résultats (28,9 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-10-20T09:56:55Z"
+    "genere_le": "2026-10-21T07:58:51Z"
    },
    "reconstruction": {
-    "n": 135,
-    "gagnes": 89,
-    "roi": 0.09,
-    "pts": 0.12,
-    "clv_pin": -0.65,
-    "clv_n": 130,
+    "n": 139,
+    "gagnes": 93,
+    "roi": 1.57,
+    "pts": 1.08,
+    "clv_pin": -0.63,
+    "clv_n": 134,
     "source": "moves_detail_hist.csv · validation_report.py (contrôle)",
     "validation_report": {
-     "k": 89,
-     "n": 135,
-     "p0": 0.6580452771550028
+     "k": 93,
+     "n": 139,
+     "p0": 0.6582522562037724
     },
     "egal_validation_report": true
    },
    "entonnoir": {
-    "direct_detectees": 125,
-    "direct_envoyees": 125,
+    "direct_detectees": 128,
+    "direct_envoyees": 128,
     "direct_doublons": 0,
     "direct_non_envoyees_autres": 0,
-    "direct_denouees": 89,
-    "reconstruction_detectees": 141,
-    "reconstruction_reglees": 135,
-    "communes": 32,
-    "reconstruction_seule": 109,
+    "direct_denouees": 91,
+    "reconstruction_detectees": 145,
+    "reconstruction_reglees": 139,
+    "communes": 33,
+    "reconstruction_seule": 112,
     "reconstruction_seule_raisons": {
-     "apres_coup": 109
+     "apres_coup": 112
     },
-    "direct_seule": 93,
+    "direct_seule": 95,
     "direct_seule_raisons": {
      "cote_opposee_reco": 18,
-     "absent_reconstruction": 46,
+     "absent_reconstruction": 45,
      "prix_different": 2,
-     "pas_encore_reconstruit": 27
+     "pas_encore_reconstruit": 30
     },
     "inexpliques": 0
    },
    "mesures": {
     "suivi_officiel": {
-     "n": 89,
+     "n": 91,
      "gagnes": 61,
-     "roi": 3.51,
-     "pts": 2.47,
-     "clv_pin": -0.32,
-     "clv_n": 89
+     "roi": 1.23,
+     "pts": 0.98,
+     "clv_pin": -0.38,
+     "clv_n": 90
     },
     "envoyees": {
-     "n": 89,
+     "n": 91,
      "gagnes": 61,
-     "roi": 3.51,
-     "pts": 2.47,
-     "clv_pin": -0.32,
-     "clv_n": 89
+     "roi": 1.23,
+     "pts": 0.98,
+     "clv_pin": -0.38,
+     "clv_n": 90
     },
     "detectees_non_envoyees": {
      "n": 0,
@@ -12173,44 +12677,44 @@
      "clv_n": 0
     },
     "reconstruction": {
-     "n": 135,
-     "gagnes": 89,
-     "roi": 0.09,
-     "pts": 0.12,
-     "clv_pin": -0.65,
-     "clv_n": 130
+     "n": 139,
+     "gagnes": 93,
+     "roi": 1.57,
+     "pts": 1.08,
+     "clv_pin": -0.63,
+     "clv_n": 134
     },
     "communes_direct": {
-     "n": 29,
-     "gagnes": 19,
-     "roi": -1.72,
-     "pts": -1.09,
-     "clv_pin": -0.37,
-     "clv_n": 29
+     "n": 30,
+     "gagnes": 20,
+     "roi": 0.57,
+     "pts": 0.28,
+     "clv_pin": -0.25,
+     "clv_n": 30
     },
     "communes_reconstruction": {
-     "n": 28,
-     "gagnes": 18,
-     "roi": -2.14,
-     "pts": -1.65,
-     "clv_pin": 0.12,
-     "clv_n": 27
+     "n": 29,
+     "gagnes": 19,
+     "roi": 0.0,
+     "pts": -0.3,
+     "clv_pin": 0.08,
+     "clv_n": 28
     },
     "direct_seule": {
-     "n": 60,
-     "gagnes": 42,
-     "roi": 6.03,
-     "pts": 4.19,
-     "clv_pin": -0.3,
+     "n": 61,
+     "gagnes": 41,
+     "roi": 1.56,
+     "pts": 1.32,
+     "clv_pin": -0.45,
      "clv_n": 60
     },
     "reconstruction_seule": {
-     "n": 107,
-     "gagnes": 71,
-     "roi": 0.67,
-     "pts": 0.59,
-     "clv_pin": -0.86,
-     "clv_n": 103
+     "n": 110,
+     "gagnes": 74,
+     "roi": 1.98,
+     "pts": 1.45,
+     "clv_pin": -0.82,
+     "clv_n": 106
     }
    },
    "ecarts": [
@@ -12236,6 +12740,20 @@
      "uid": "2026-09-29_goncalo_marques_pyotr_nesterov",
      "cote": 1.47,
      "book": "betsson",
+     "statut": "réglée",
+     "raison": "apres_coup",
+     "libelle": "Vue seulement après coup (absente du journal en direct)",
+     "detail": "match absent de tous les journaux en direct",
+     "explique": true
+    },
+    {
+     "sens": "reconstruction seule",
+     "date": "2026-09-29",
+     "match": "Gianluca Cadenasso – Benito Sanchez Martinez",
+     "joueur": "Gianluca Cadenasso",
+     "uid": "2026-09-29_gianluca_cadenasso_benito_sanchez_martinez",
+     "cote": 1.68,
+     "book": "unibet",
      "statut": "réglée",
      "raison": "apres_coup",
      "libelle": "Vue seulement après coup (absente du journal en direct)",
@@ -12306,6 +12824,20 @@
      "uid": "2026-09-29_miguel_tobon_juan_bautista_torres",
      "cote": 1.4,
      "book": "bwin",
+     "statut": "réglée",
+     "raison": "apres_coup",
+     "libelle": "Vue seulement après coup (absente du journal en direct)",
+     "detail": "match absent de tous les journaux en direct",
+     "explique": true
+    },
+    {
+     "sens": "reconstruction seule",
+     "date": "2026-09-29",
+     "match": "Lorenzo Giustino – John Sperle",
+     "joueur": "Lorenzo Giustino",
+     "uid": "2026-09-29_lorenzo_giustino_john_sperle",
+     "cote": 1.44,
+     "book": "unibet",
      "statut": "réglée",
      "raison": "apres_coup",
      "libelle": "Vue seulement après coup (absente du journal en direct)",
@@ -12775,6 +13307,20 @@
      "explique": true
     },
     {
+     "sens": "reconstruction seule",
+     "date": "2026-10-01",
+     "match": "Stefanos Tsitsipas – Tomas Martin Etcheverry",
+     "joueur": "Stefanos Tsitsipas",
+     "uid": "2026-10-01_tomas_martin_etcheverry_stefanos_tsitsipas",
+     "cote": 1.34,
+     "book": "unibet",
+     "statut": "réglée",
+     "raison": "apres_coup",
+     "libelle": "Vue seulement après coup (absente du journal en direct)",
+     "detail": "match absent de tous les journaux en direct",
+     "explique": true
+    },
+    {
      "sens": "direct seule",
      "date": "2026-10-01",
      "match": "Learner Tien – Hubert Hurkacz",
@@ -12796,20 +13342,6 @@
      "uid": "2026-10-01_magda_linette_katerina_siniakova",
      "cote": 1.58,
      "book": "unibet",
-     "statut": "dénouée",
-     "raison": "absent_reconstruction",
-     "libelle": "Absent de la reconstruction (aucun mouvement retenu)",
-     "detail": "move_audit n'a retenu aucun mouvement sur ce match",
-     "explique": true
-    },
-    {
-     "sens": "direct seule",
-     "date": "2026-10-01",
-     "match": "Ashlyn Krueger – Sofia Kenin",
-     "joueur": "Ashlyn Krueger",
-     "uid": "2026-10-01_sofia_kenin_ashlyn_krueger",
-     "cote": 1.67,
-     "book": "888sport",
      "statut": "dénouée",
      "raison": "absent_reconstruction",
      "libelle": "Absent de la reconstruction (aucun mouvement retenu)",
@@ -15022,7 +15554,7 @@
      "uid": "2026-10-20_hugo_dellien_juan_manuel_la_serna",
      "cote": 1.364,
      "book": "888sport",
-     "statut": "non dénouée",
+     "statut": "dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
      "detail": "match du 2026-10-20, reconstruction arrêtée au 2026-10-14",
@@ -15041,6 +15573,48 @@
      "libelle": "Pas encore dans la reconstruction",
      "detail": "match du 2026-10-20, reconstruction arrêtée au 2026-10-14",
      "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-20",
+     "match": "Andres Martin – Erik Arutiunian",
+     "joueur": "Andres Martin",
+     "uid": "2026-10-20_andres_martin_erik_arutiunian",
+     "cote": 1.727,
+     "book": "betway",
+     "statut": "dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-20, reconstruction arrêtée au 2026-10-14",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-20",
+     "match": "Facundo Mena – Valerio Aboian",
+     "joueur": "Facundo Mena",
+     "uid": "2026-10-20_facundo_mena_valerio_aboian",
+     "cote": 1.43,
+     "book": "unibet",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-20, reconstruction arrêtée au 2026-10-14",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-21",
+     "match": "Nikoloz Basilashvili – Facundo Diaz Acosta",
+     "joueur": "Nikoloz Basilashvili",
+     "uid": "2026-10-21_facundo_diaz_acosta_nikoloz_basilashvili",
+     "cote": 1.54,
+     "book": "betsson",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-21, reconstruction arrêtée au 2026-10-14",
+     "explique": true
     }
    ]
   },
@@ -15052,109 +15626,109 @@
    "worker": {
     "gele_le": "2026-09-25",
     "out_of_sample": {
-     "n": 36,
+     "n": 37,
      "gains": 22,
-     "taux": 61.1,
-     "seuil": 46.6,
-     "ecart": 14.5,
-     "roi": 23.8,
-     "pnl": 8.6,
-     "cote_moyenne": 2.61,
-     "clv_moyen": 2.6,
-     "clv_pin_moyen": 2.6,
-     "clv_pin_p": 0.0061,
-     "clv_n": 41,
-     "clv_positif": 65.9,
-     "lead_moyen_h": 8.4,
-     "periode": "2026-09-29 -> 2026-10-19",
-     "verdict": "en attente de résultats (14,3 % sans résultat)",
-     "n_detectees": 42,
-     "n_envoyees": 25,
-     "n_doublons": 17,
+     "taux": 59.5,
+     "seuil": 47.3,
+     "ecart": 12.1,
+     "roi": 20.5,
+     "pnl": 7.6,
+     "cote_moyenne": 2.57,
+     "clv_moyen": 2.5,
+     "clv_pin_moyen": 2.5,
+     "clv_pin_p": 0.0069,
+     "clv_n": 43,
+     "clv_positif": 65.1,
+     "lead_moyen_h": 8.3,
+     "periode": "2026-09-29 -> 2026-10-20",
+     "verdict": "en attente de résultats (17,8 % sans résultat)",
+     "n_detectees": 46,
+     "n_envoyees": 27,
+     "n_doublons": 19,
      "n_non_envoyees_autres": 0,
-     "n_denouees": 36,
-     "n_commencees": 42,
-     "n_sans_resultat": 6,
-     "sans_resultat_pct": 14.3,
+     "n_denouees": 37,
+     "n_commencees": 45,
+     "n_sans_resultat": 8,
+     "sans_resultat_pct": 17.8,
      "verrouillable": false,
-     "statut": "en attente de résultats (14,3 % sans résultat)"
+     "statut": "en attente de résultats (17,8 % sans résultat)"
     },
-    "n": 36,
-    "roi": 23.8
+    "n": 37,
+    "roi": 20.5
    },
    "suivi_officiel": {
-    "n": 36,
+    "n": 37,
     "gagnes": 22,
-    "roi": 23.8,
-    "pts": 14.5,
-    "clv_pin": 2.6,
+    "roi": 20.5,
+    "pts": 12.1,
+    "clv_pin": 2.5,
     "clv_pin_ic95": [
-     0.6,
-     4.7
+     0.5,
+     4.5
     ],
-    "clv_n": 41,
-    "n_detectees": 43,
-    "n_envoyees": 26,
-    "n_doublons": 17,
+    "clv_n": 43,
+    "n_detectees": 46,
+    "n_envoyees": 27,
+    "n_doublons": 19,
     "source": "verdicts_direct.json (recalculé : journal plus récent)",
-    "sans_resultat_pct": 14.3,
-    "statut": "en attente de résultats (14,3 % sans résultat)",
+    "sans_resultat_pct": 17.8,
+    "statut": "en attente de résultats (17,8 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-10-20T09:56:55Z"
+    "genere_le": "2026-10-21T07:58:51Z"
    },
    "reconstruction": {
-    "n": 61,
-    "gagnes": 33,
-    "roi": -8.23,
-    "pts": 1.11,
-    "clv_pin": 2.54,
-    "clv_n": 58,
+    "n": 63,
+    "gagnes": 35,
+    "roi": -4.49,
+    "pts": 2.57,
+    "clv_pin": 2.46,
+    "clv_n": 60,
     "source": "moves_detail_hist.csv · validation_report.py (contrôle)",
     "validation_report": {
-     "k": 33,
-     "n": 61,
-     "p0": 0.5298831091704926
+     "k": 35,
+     "n": 63,
+     "p0": 0.5298563566266802
     },
     "egal_validation_report": true
    },
    "entonnoir": {
-    "direct_detectees": 43,
-    "direct_envoyees": 26,
-    "direct_doublons": 17,
+    "direct_detectees": 46,
+    "direct_envoyees": 27,
+    "direct_doublons": 19,
     "direct_non_envoyees_autres": 0,
-    "direct_denouees": 36,
-    "reconstruction_detectees": 69,
-    "reconstruction_reglees": 61,
+    "direct_denouees": 37,
+    "reconstruction_detectees": 71,
+    "reconstruction_reglees": 63,
     "communes": 6,
-    "reconstruction_seule": 63,
+    "reconstruction_seule": 65,
     "reconstruction_seule_raisons": {
-     "apres_coup": 63
+     "apres_coup": 65
     },
-    "direct_seule": 37,
+    "direct_seule": 40,
     "direct_seule_raisons": {
      "absent_reconstruction": 14,
      "cote_opposee_reco": 6,
      "prix_different": 9,
-     "pas_encore_reconstruit": 8
+     "pas_encore_reconstruit": 11
     },
     "inexpliques": 0
    },
    "mesures": {
     "suivi_officiel": {
-     "n": 36,
+     "n": 37,
      "gagnes": 22,
-     "roi": 23.82,
-     "pts": 14.49,
-     "clv_pin": 2.37,
-     "clv_n": 36
+     "roi": 20.48,
+     "pts": 12.12,
+     "clv_pin": 2.15,
+     "clv_n": 37
     },
     "envoyees": {
-     "n": 20,
+     "n": 21,
      "gagnes": 14,
-     "roi": 29.68,
-     "pts": 18.98,
-     "clv_pin": 2.46,
-     "clv_n": 20
+     "roi": 23.5,
+     "pts": 14.58,
+     "clv_pin": 2.08,
+     "clv_n": 21
     },
     "detectees_non_envoyees": {
      "n": 16,
@@ -15165,12 +15739,12 @@
      "clv_n": 16
     },
     "reconstruction": {
-     "n": 61,
-     "gagnes": 33,
-     "roi": -8.23,
-     "pts": 1.11,
-     "clv_pin": 2.54,
-     "clv_n": 58
+     "n": 63,
+     "gagnes": 35,
+     "roi": -4.49,
+     "pts": 2.57,
+     "clv_pin": 2.46,
+     "clv_n": 60
     },
     "communes_direct": {
      "n": 6,
@@ -15189,20 +15763,20 @@
      "clv_n": 6
     },
     "direct_seule": {
-     "n": 30,
+     "n": 31,
      "gagnes": 16,
-     "roi": 3.99,
-     "pts": 8.08,
-     "clv_pin": 2.02,
-     "clv_n": 30
+     "roi": 0.63,
+     "pts": 5.45,
+     "clv_pin": 1.78,
+     "clv_n": 31
     },
     "reconstruction_seule": {
-     "n": 55,
-     "gagnes": 27,
-     "roi": -23.45,
-     "pts": -3.9,
-     "clv_pin": 2.13,
-     "clv_n": 52
+     "n": 57,
+     "gagnes": 29,
+     "roi": -18.79,
+     "pts": -2.11,
+     "clv_pin": 2.06,
+     "clv_n": 54
     }
    },
    "ecarts": [
@@ -15349,6 +15923,20 @@
     {
      "sens": "reconstruction seule",
      "date": "2026-09-29",
+     "match": "Adolfo Daniel Vallejo – Jaime Faria",
+     "joueur": "Adolfo Daniel Vallejo",
+     "uid": "2026-09-29_adolfo_daniel_vallejo_jaime_faria",
+     "cote": 2.75,
+     "book": "unibet",
+     "statut": "réglée",
+     "raison": "apres_coup",
+     "libelle": "Vue seulement après coup (absente du journal en direct)",
+     "detail": "match absent de tous les journaux en direct",
+     "explique": true
+    },
+    {
+     "sens": "reconstruction seule",
+     "date": "2026-09-29",
      "match": "Dylan Dietrich – Jeffrey John Wolf",
      "joueur": "Dylan Dietrich",
      "uid": "2026-09-29_dylan_dietrich_jeffrey_john_wolf",
@@ -15367,6 +15955,20 @@
      "joueur": "Stefan Kozlov",
      "uid": "2026-09-29_stefan_kozlov_james_kent_trotter",
      "cote": 1.93,
+     "book": "unibet",
+     "statut": "réglée",
+     "raison": "apres_coup",
+     "libelle": "Vue seulement après coup (absente du journal en direct)",
+     "detail": "match absent de tous les journaux en direct",
+     "explique": true
+    },
+    {
+     "sens": "reconstruction seule",
+     "date": "2026-09-29",
+     "match": "Lorenzo Giustino – John Sperle",
+     "joueur": "Lorenzo Giustino",
+     "uid": "2026-09-29_lorenzo_giustino_john_sperle",
+     "cote": 1.44,
      "book": "unibet",
      "statut": "réglée",
      "raison": "apres_coup",
@@ -16600,10 +17202,52 @@
      "uid": "2026-10-20_hugo_dellien_juan_manuel_la_serna",
      "cote": 1.364,
      "book": "888sport",
+     "statut": "dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-20, reconstruction arrêtée au 2026-10-14",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-20",
+     "match": "Kyrian Jacquet – Matteo Berrettini",
+     "joueur": "Kyrian Jacquet",
+     "uid": "2026-10-20_matteo_berrettini_kyrian_jacquet",
+     "cote": 2.3,
+     "book": "bet365",
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
      "detail": "match du 2026-10-20, reconstruction arrêtée au 2026-10-14",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-21",
+     "match": "Marie Bouzkova – Anastasia Zakharova",
+     "joueur": "Marie Bouzkova",
+     "uid": "2026-10-21_marie_bouzkova_anastasia_zakharova",
+     "cote": 1.27,
+     "book": "bet365",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-21, reconstruction arrêtée au 2026-10-14",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-22",
+     "match": "Moyuka Uchijima – Mary Stoiana",
+     "joueur": "Moyuka Uchijima",
+     "uid": "2026-10-22_mary_stoiana_moyuka_uchijima",
+     "cote": 2.75,
+     "book": "bet365",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-22, reconstruction arrêtée au 2026-10-14",
      "explique": true
     }
    ]
@@ -16616,109 +17260,109 @@
    "worker": {
     "gele_le": "2026-09-27",
     "out_of_sample": {
-     "n": 12,
+     "n": 13,
      "gains": 11,
-     "taux": 91.7,
-     "seuil": 67.5,
-     "ecart": 24.1,
-     "roi": 36.4,
-     "pnl": 4.4,
-     "cote_moyenne": 1.5,
-     "clv_moyen": 2.3,
-     "clv_pin_moyen": 2.3,
-     "clv_pin_p": 0.0066,
-     "clv_n": 15,
-     "clv_positif": 73.3,
-     "lead_moyen_h": 7.8,
-     "periode": "2026-09-29 -> 2026-10-19",
-     "verdict": "en attente de résultats (20,0 % sans résultat)",
-     "n_detectees": 15,
-     "n_envoyees": 15,
+     "taux": 84.6,
+     "seuil": 68,
+     "ecart": 16.7,
+     "roi": 25.9,
+     "pnl": 3.4,
+     "cote_moyenne": 1.49,
+     "clv_moyen": 1.8,
+     "clv_pin_moyen": 1.8,
+     "clv_pin_p": 0.0327,
+     "clv_n": 16,
+     "clv_positif": 68.8,
+     "lead_moyen_h": 7.7,
+     "periode": "2026-09-29 -> 2026-10-20",
+     "verdict": "en attente de résultats (23,5 % sans résultat)",
+     "n_detectees": 17,
+     "n_envoyees": 17,
      "n_doublons": 0,
      "n_non_envoyees_autres": 0,
-     "n_denouees": 12,
-     "n_commencees": 15,
-     "n_sans_resultat": 3,
-     "sans_resultat_pct": 20,
+     "n_denouees": 13,
+     "n_commencees": 17,
+     "n_sans_resultat": 4,
+     "sans_resultat_pct": 23.5,
      "verrouillable": false,
-     "statut": "en attente de résultats (20,0 % sans résultat)"
+     "statut": "en attente de résultats (23,5 % sans résultat)"
     },
-    "n": 12,
-    "roi": 36.4
+    "n": 13,
+    "roi": 25.9
    },
    "suivi_officiel": {
-    "n": 12,
+    "n": 13,
     "gagnes": 11,
-    "roi": 36.4,
-    "pts": 24.1,
-    "clv_pin": 2.3,
+    "roi": 25.9,
+    "pts": 16.7,
+    "clv_pin": 1.8,
     "clv_pin_ic95": [
-     0.5,
-     4.1
+     -0.1,
+     3.8
     ],
-    "clv_n": 15,
-    "n_detectees": 16,
-    "n_envoyees": 16,
+    "clv_n": 16,
+    "n_detectees": 17,
+    "n_envoyees": 17,
     "n_doublons": 0,
     "source": "verdicts_direct.json (recalculé : journal plus récent)",
-    "sans_resultat_pct": 20.0,
-    "statut": "en attente de résultats (20,0 % sans résultat)",
+    "sans_resultat_pct": 23.5,
+    "statut": "en attente de résultats (23,5 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-10-20T09:56:55Z"
+    "genere_le": "2026-10-21T07:58:51Z"
    },
    "reconstruction": {
-    "n": 28,
-    "gagnes": 24,
-    "roi": 19.57,
-    "pts": 13.74,
-    "clv_pin": 2.76,
-    "clv_n": 26,
+    "n": 29,
+    "gagnes": 25,
+    "roi": 20.41,
+    "pts": 14.32,
+    "clv_pin": 2.7,
+    "clv_n": 27,
     "source": "moves_detail_hist.csv · validation_report.py (contrôle)",
     "validation_report": {
-     "k": 24,
-     "n": 28,
-     "p0": 0.7197866322503567
+     "k": 25,
+     "n": 29,
+     "p0": 0.7189127637053251
     },
     "egal_validation_report": true
    },
    "entonnoir": {
-    "direct_detectees": 16,
-    "direct_envoyees": 16,
+    "direct_detectees": 17,
+    "direct_envoyees": 17,
     "direct_doublons": 0,
     "direct_non_envoyees_autres": 0,
-    "direct_denouees": 12,
-    "reconstruction_detectees": 29,
-    "reconstruction_reglees": 28,
+    "direct_denouees": 13,
+    "reconstruction_detectees": 30,
+    "reconstruction_reglees": 29,
     "communes": 3,
-    "reconstruction_seule": 26,
+    "reconstruction_seule": 27,
     "reconstruction_seule_raisons": {
-     "apres_coup": 26
+     "apres_coup": 27
     },
-    "direct_seule": 13,
+    "direct_seule": 14,
     "direct_seule_raisons": {
      "absent_reconstruction": 3,
      "cote_opposee_reco": 1,
      "prix_different": 4,
-     "pas_encore_reconstruit": 5
+     "pas_encore_reconstruit": 6
     },
     "inexpliques": 0
    },
    "mesures": {
     "suivi_officiel": {
-     "n": 12,
+     "n": 13,
      "gagnes": 11,
-     "roi": 36.38,
-     "pts": 24.15,
-     "clv_pin": 2.97,
-     "clv_n": 12
+     "roi": 25.89,
+     "pts": 16.65,
+     "clv_pin": 2.32,
+     "clv_n": 13
     },
     "envoyees": {
-     "n": 12,
+     "n": 13,
      "gagnes": 11,
-     "roi": 36.38,
-     "pts": 24.15,
-     "clv_pin": 2.97,
-     "clv_n": 12
+     "roi": 25.89,
+     "pts": 16.65,
+     "clv_pin": 2.32,
+     "clv_n": 13
     },
     "detectees_non_envoyees": {
      "n": 0,
@@ -16729,12 +17373,12 @@
      "clv_n": 0
     },
     "reconstruction": {
-     "n": 28,
-     "gagnes": 24,
-     "roi": 19.57,
-     "pts": 13.74,
-     "clv_pin": 2.76,
-     "clv_n": 26
+     "n": 29,
+     "gagnes": 25,
+     "roi": 20.41,
+     "pts": 14.32,
+     "clv_pin": 2.7,
+     "clv_n": 27
     },
     "communes_direct": {
      "n": 3,
@@ -16753,23 +17397,37 @@
      "clv_n": 3
     },
     "direct_seule": {
-     "n": 9,
+     "n": 10,
      "gagnes": 8,
-     "roi": 34.84,
-     "pts": 23.06,
-     "clv_pin": 2.56,
-     "clv_n": 9
+     "roi": 21.36,
+     "pts": 13.43,
+     "clv_pin": 1.75,
+     "clv_n": 10
     },
     "reconstruction_seule": {
-     "n": 25,
-     "gagnes": 21,
-     "roi": 17.0,
-     "pts": 12.1,
-     "clv_pin": 2.57,
-     "clv_n": 23
+     "n": 26,
+     "gagnes": 22,
+     "roi": 18.04,
+     "pts": 12.81,
+     "clv_pin": 2.51,
+     "clv_n": 24
     }
    },
    "ecarts": [
+    {
+     "sens": "reconstruction seule",
+     "date": "2026-09-29",
+     "match": "Lorenzo Giustino – John Sperle",
+     "joueur": "Lorenzo Giustino",
+     "uid": "2026-09-29_lorenzo_giustino_john_sperle",
+     "cote": 1.44,
+     "book": "unibet",
+     "statut": "réglée",
+     "raison": "apres_coup",
+     "libelle": "Vue seulement après coup (absente du journal en direct)",
+     "detail": "match absent de tous les journaux en direct",
+     "explique": true
+    },
     {
      "sens": "reconstruction seule",
      "date": "2026-09-30",
@@ -17310,10 +17968,24 @@
      "uid": "2026-10-20_hugo_dellien_juan_manuel_la_serna",
      "cote": 1.364,
      "book": "888sport",
-     "statut": "non dénouée",
+     "statut": "dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
      "detail": "match du 2026-10-20, reconstruction arrêtée au 2026-10-14",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-21",
+     "match": "Marie Bouzkova – Anastasia Zakharova",
+     "joueur": "Marie Bouzkova",
+     "uid": "2026-10-21_marie_bouzkova_anastasia_zakharova",
+     "cote": 1.27,
+     "book": "bet365",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-21, reconstruction arrêtée au 2026-10-14",
      "explique": true
     }
    ]
