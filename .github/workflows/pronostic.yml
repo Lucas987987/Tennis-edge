@@ -1,0 +1,66 @@
+name: Pronostic - test du modèle (deviner le vainqueur)
+
+# 21/10/2026 — le modèle DEVINE l'issue (pas battre Pinnacle). Classement Elo
+# tiré des résultats (archive Sackmann jusqu'en juin 2026, puis nos résultats),
+# moteur point par point pour les sets. Deux versions côte à côte : « stats
+# seules » et « stats + marché ». Chaque match est pronostiqué AVANT que son
+# résultat ne serve. 0 requête d'API.
+# Écrit simulateur/rapport_pronostic.json et simulateur/elo_etat.json.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+
+concurrency:
+  group: simulateur
+  cancel-in-progress: false
+
+jobs:
+  pronostic:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          filter: blob:none
+          sparse-checkout: |
+            /simulateur/
+            /scripts/closing_store.py
+            /Tennis_Edge_Lab/books.py
+            /historique/
+            /set_results.json
+            /clv_history/
+            /clv_history.jsonl
+            /closing_lines.json
+            /closing_lines/
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - name: Archive Sackmann (fichiers de matchs seulement)
+        run: |
+          set -euo pipefail
+          git clone --depth 1 --filter=blob:none --sparse https://github.com/Aneeshers/tennis-sackmann-archive.git /tmp/sackmann
+          cd /tmp/sackmann
+          git sparse-checkout set --no-cone 'atp_matches_20*.csv' 'atp_matches_qual_chall_20*.csv' 'wta_matches_20*.csv' 'wta_matches_qual_itf_20*.csv'
+      - name: Test chronologique
+        run: python simulateur/backtest_pronostic.py /tmp/sackmann .
+      - name: Publier
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- simulateur/rapport_pronostic.json simulateur/elo_etat.json
+          if git diff --cached --quiet; then echo 'Rien de nouveau.'; exit 0; fi
+          git commit -m 'Pronostic : test du modèle (vainqueur, sets)'
+          for i in 1 2 3 4 5; do
+            git pull --rebase origin main || { git rebase --abort || true; echo '::error::Conflit avec main'; exit 1; }
+            if git push origin HEAD:main; then exit 0; fi
+            sleep $((i * 10))
+          done
+          echo '::error::Push impossible après 5 essais'; exit 1
