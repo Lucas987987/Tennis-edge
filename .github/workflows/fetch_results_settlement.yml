@@ -39,11 +39,11 @@ jobs:
           # FINISHED_AFTER_H: '4'        # marge avant de considérer un match fini
           # MAX_SETTLEMENT_CALLS: '60'   # plafond d'appels par run
         # ÉCONOMIE QUOTA RapidAPI (ajouté le 14/10/2026) : 20 appels par run
-        # au lieu de 60 jusqu'au 27/10, retour AUTOMATIQUE ensuite.
+        # au lieu de 60 jusqu'au 21/10 (quota renouvelé le 20/10), retour AUTOMATIQUE ensuite.
         run: |
-          if [ "$(date -u +%Y%m%d)" -lt 20261027 ]; then
+          if [ "$(date -u +%Y%m%d)" -lt 20261021 ]; then
             export MAX_SETTLEMENT_CALLS=20
-            echo "💰 économie quota jusqu'au 27/10 : $MAX_SETTLEMENT_CALLS appels max"
+            echo "💰 économie quota jusqu'au 21/10 (quota renouvelé le 20/10) : $MAX_SETTLEMENT_CALLS appels max"
           fi
           python scripts/fetch_results_settlement.py
       - name: Commit
