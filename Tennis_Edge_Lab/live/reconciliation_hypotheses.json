@@ -1,15 +1,15 @@
 {
  "schema_version": 2,
- "generated_at": "2026-10-21T11:54:04+00:00",
+ "generated_at": "2026-10-21T19:35:36+00:00",
  "sources": {
   "worker": {
    "source": "API Worker D1 /api/hypotheses (fetch_worker_snapshot.py)",
    "fichier": "worker_hypotheses_capture.json",
    "status": "ok",
-   "fetched_at": "2026-10-21T11:54:00Z",
+   "fetched_at": "2026-10-21T19:35:30Z",
    "worker_generated_at": "2026-10-21T05:06:46Z"
   },
-  "suivi_officiel": "alertes en direct : h*_signal_log.jsonl + suivi_direct/resultats.json (verdicts_direct.json du 2026-10-21T11:54:04Z)",
+  "suivi_officiel": "alertes en direct : h*_signal_log.jsonl + suivi_direct/resultats.json (verdicts_direct.json du 2026-10-21T19:35:36Z)",
   "reconstruction": "moves_detail_hist.csv filtré par les règles gelées de validation_report.py (lignes jusqu'au 2026-10-14) — contrôle, ne juge pas",
   "rapprochement": "uid + joueur normalisé ; à défaut paire de joueurs + date ±1 jour"
  },
@@ -115,20 +115,20 @@
     "gagnes": 88,
     "roi": 6.7,
     "pts": 2.4,
-    "clv_pin": -2.5,
+    "clv_pin": -2.4,
     "clv_pin_ic95": [
-     -3.3,
+     -3.2,
      -1.6
     ],
-    "clv_n": 229,
-    "n_detectees": 238,
-    "n_envoyees": 238,
+    "clv_n": 232,
+    "n_detectees": 239,
+    "n_envoyees": 239,
     "n_doublons": 0,
     "source": "verdicts_direct.json (recalculé : journal plus récent)",
     "sans_resultat_pct": 16.1,
     "statut": "en attente de résultats (16,1 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-10-21T11:54:04Z"
+    "genere_le": "2026-10-21T19:35:36Z"
    },
    "reconstruction": {
     "n": 155,
@@ -146,8 +146,8 @@
     "egal_validation_report": true
    },
    "entonnoir": {
-    "direct_detectees": 238,
-    "direct_envoyees": 238,
+    "direct_detectees": 239,
+    "direct_envoyees": 239,
     "direct_doublons": 0,
     "direct_non_envoyees_autres": 0,
     "direct_denouees": 198,
@@ -159,12 +159,12 @@
      "apres_coup": 197,
      "cote_opposee_live": 1
     },
-    "direct_seule": 170,
+    "direct_seule": 171,
     "direct_seule_raisons": {
      "absent_reconstruction": 93,
      "prix_different": 5,
      "cote_opposee_reco": 34,
-     "pas_encore_reconstruit": 38
+     "pas_encore_reconstruit": 39
     },
     "inexpliques": 0
    },
@@ -5386,6 +5386,20 @@
      "libelle": "Pas encore dans la reconstruction",
      "detail": "match du 2026-10-22, reconstruction arrêtée au 2026-10-14",
      "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-22",
+     "match": "Terence Atmane – Mattia Bellucci",
+     "joueur": "Terence Atmane",
+     "uid": "2026-10-22_terence_atmane_mattia_bellucci",
+     "cote": 2.2,
+     "book": "unibet",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-22, reconstruction arrêtée au 2026-10-14",
+     "explique": true
     }
    ]
   },
@@ -5438,14 +5452,14 @@
      2.4
     ],
     "clv_n": 22,
-    "n_detectees": 23,
+    "n_detectees": 24,
     "n_envoyees": 10,
-    "n_doublons": 13,
+    "n_doublons": 14,
     "source": "verdicts_direct.json (recalculé : journal plus récent)",
     "sans_resultat_pct": 73.9,
     "statut": "en attente de résultats (73,9 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-10-21T11:54:04Z"
+    "genere_le": "2026-10-21T19:35:36Z"
    },
    "reconstruction": {
     "n": 91,
@@ -5463,9 +5477,9 @@
     "egal_validation_report": true
    },
    "entonnoir": {
-    "direct_detectees": 23,
+    "direct_detectees": 24,
     "direct_envoyees": 10,
-    "direct_doublons": 13,
+    "direct_doublons": 14,
     "direct_non_envoyees_autres": 0,
     "direct_denouees": 6,
     "reconstruction_detectees": 97,
@@ -5475,9 +5489,9 @@
     "reconstruction_seule_raisons": {
      "avant_canal": 97
     },
-    "direct_seule": 23,
+    "direct_seule": 24,
     "direct_seule_raisons": {
-     "pas_encore_reconstruit": 23
+     "pas_encore_reconstruit": 24
     },
     "inexpliques": 0
    },
@@ -7227,6 +7241,20 @@
      "libelle": "Pas encore dans la reconstruction",
      "detail": "match du 2026-10-21, reconstruction arrêtée au 2026-10-14",
      "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-22",
+     "match": "Terence Atmane – Mattia Bellucci",
+     "joueur": "Terence Atmane",
+     "uid": "2026-10-22_terence_atmane_mattia_bellucci",
+     "cote": 2.2,
+     "book": "unibet",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-22, reconstruction arrêtée au 2026-10-14",
+     "explique": true
     }
    ]
   },
@@ -7273,20 +7301,20 @@
     "gagnes": 15,
     "roi": 29.0,
     "pts": 10.8,
-    "clv_pin": -2.3,
+    "clv_pin": -2.1,
     "clv_pin_ic95": [
-     -3.9,
-     -0.7
+     -3.6,
+     -0.6
     ],
-    "clv_n": 50,
-    "n_detectees": 57,
+    "clv_n": 53,
+    "n_detectees": 58,
     "n_envoyees": 0,
-    "n_doublons": 57,
+    "n_doublons": 58,
     "source": "verdicts_direct.json (recalculé : journal plus récent)",
-    "sans_resultat_pct": 43.6,
-    "statut": "en attente de résultats (43,6 % sans résultat)",
+    "sans_resultat_pct": 44.6,
+    "statut": "en attente de résultats (44,6 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-10-21T11:54:04Z"
+    "genere_le": "2026-10-21T19:35:36Z"
    },
    "reconstruction": {
     "n": 55,
@@ -7304,9 +7332,9 @@
     "egal_validation_report": true
    },
    "entonnoir": {
-    "direct_detectees": 57,
+    "direct_detectees": 58,
     "direct_envoyees": 0,
-    "direct_doublons": 57,
+    "direct_doublons": 58,
     "direct_non_envoyees_autres": 0,
     "direct_denouees": 31,
     "reconstruction_detectees": 67,
@@ -7316,12 +7344,12 @@
     "reconstruction_seule_raisons": {
      "apres_coup": 54
     },
-    "direct_seule": 44,
+    "direct_seule": 45,
     "direct_seule_raisons": {
      "absent_reconstruction": 19,
      "cote_opposee_reco": 4,
      "prix_different": 2,
-     "pas_encore_reconstruit": 19
+     "pas_encore_reconstruit": 20
     },
     "inexpliques": 0
    },
@@ -8738,6 +8766,20 @@
     },
     {
      "sens": "direct seule",
+     "date": "2026-10-21",
+     "match": "Juan Pablo Varillas – Gustavo Heide",
+     "joueur": "Juan Pablo Varillas",
+     "uid": "2026-10-21_gustavo_heide_juan_pablo_varillas",
+     "cote": 3.05,
+     "book": "unibet",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-21, reconstruction arrêtée au 2026-10-14",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
      "date": "2026-10-22",
      "match": "Moyuka Uchijima – Mary Stoiana",
      "joueur": "Moyuka Uchijima",
@@ -8809,20 +8851,20 @@
     "gagnes": 75,
     "roi": 2.0,
     "pts": 1.8,
-    "clv_pin": -0.4,
+    "clv_pin": -0.5,
     "clv_pin_ic95": [
      -1.2,
      0.3
     ],
-    "clv_n": 145,
+    "clv_n": 149,
     "n_detectees": 151,
     "n_envoyees": 151,
     "n_doublons": 0,
     "source": "verdicts_direct.json (recalculé : journal plus récent)",
-    "sans_resultat_pct": 28.7,
-    "statut": "en attente de résultats (28,7 % sans résultat)",
+    "sans_resultat_pct": 29.1,
+    "statut": "en attente de résultats (29,1 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-10-21T11:54:04Z"
+    "genere_le": "2026-10-21T19:35:36Z"
    },
    "reconstruction": {
     "n": 162,
@@ -12627,20 +12669,20 @@
     "gagnes": 61,
     "roi": 1.2,
     "pts": 1.0,
-    "clv_pin": -0.5,
+    "clv_pin": -0.6,
     "clv_pin_ic95": [
      -1.4,
-     0.4
+     0.3
     ],
-    "clv_n": 127,
+    "clv_n": 130,
     "n_detectees": 130,
     "n_envoyees": 130,
     "n_doublons": 0,
     "source": "verdicts_direct.json (recalculé : journal plus récent)",
-    "sans_resultat_pct": 29.5,
-    "statut": "en attente de résultats (29,5 % sans résultat)",
+    "sans_resultat_pct": 30.0,
+    "statut": "en attente de résultats (30,0 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-10-21T11:54:04Z"
+    "genere_le": "2026-10-21T19:35:36Z"
    },
    "reconstruction": {
     "n": 139,
@@ -15720,17 +15762,17 @@
     "clv_pin": 2.5,
     "clv_pin_ic95": [
      0.5,
-     4.5
+     4.4
     ],
-    "clv_n": 43,
-    "n_detectees": 46,
-    "n_envoyees": 27,
+    "clv_n": 44,
+    "n_detectees": 47,
+    "n_envoyees": 28,
     "n_doublons": 19,
     "source": "verdicts_direct.json (recalculé : journal plus récent)",
-    "sans_resultat_pct": 17.8,
-    "statut": "en attente de résultats (17,8 % sans résultat)",
+    "sans_resultat_pct": 19.6,
+    "statut": "en attente de résultats (19,6 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-10-21T11:54:04Z"
+    "genere_le": "2026-10-21T19:35:36Z"
    },
    "reconstruction": {
     "n": 63,
@@ -15748,8 +15790,8 @@
     "egal_validation_report": true
    },
    "entonnoir": {
-    "direct_detectees": 46,
-    "direct_envoyees": 27,
+    "direct_detectees": 47,
+    "direct_envoyees": 28,
     "direct_doublons": 19,
     "direct_non_envoyees_autres": 0,
     "direct_denouees": 37,
@@ -15760,12 +15802,12 @@
     "reconstruction_seule_raisons": {
      "apres_coup": 65
     },
-    "direct_seule": 40,
+    "direct_seule": 41,
     "direct_seule_raisons": {
      "absent_reconstruction": 14,
      "cote_opposee_reco": 6,
      "prix_different": 9,
-     "pas_encore_reconstruit": 11
+     "pas_encore_reconstruit": 12
     },
     "inexpliques": 0
    },
@@ -17294,6 +17336,20 @@
     },
     {
      "sens": "direct seule",
+     "date": "2026-10-21",
+     "match": "Benjamin Bonzi – Tommy Paul",
+     "joueur": "Benjamin Bonzi",
+     "uid": "2026-10-21_benjamin_bonzi_tommy_paul",
+     "cote": 3.45,
+     "book": "unibet",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-21, reconstruction arrêtée au 2026-10-14",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
      "date": "2026-10-22",
      "match": "Moyuka Uchijima – Mary Stoiana",
      "joueur": "Moyuka Uchijima",
@@ -17353,10 +17409,10 @@
     "pts": 16.7,
     "clv_pin": 1.8,
     "clv_pin_ic95": [
-     -0.1,
-     3.8
+     0.0,
+     3.6
     ],
-    "clv_n": 16,
+    "clv_n": 17,
     "n_detectees": 17,
     "n_envoyees": 17,
     "n_doublons": 0,
@@ -17364,7 +17420,7 @@
     "sans_resultat_pct": 23.5,
     "statut": "en attente de résultats (23,5 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-10-21T11:54:04Z"
+    "genere_le": "2026-10-21T19:35:36Z"
    },
    "reconstruction": {
     "n": 29,
