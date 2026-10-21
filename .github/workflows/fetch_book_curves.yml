@@ -165,7 +165,7 @@ jobs:
           git add -A -- 'parts/hist_*' 2>/dev/null || true
           [ -f hist_curves_meta.json ] && git add -- hist_curves_meta.json
           # 27/10 : mémoire des « book ne cote pas ce match » et bilan de couverture.
-          for f in courbes_absences.json courbes_couverture.json courbes_stats.json; do [ -f "$f" ] && git add -- "$f"; done
+          for f in courbes_absences.json courbes_couverture.json courbes_stats.json marches_oddspapi.json; do [ -f "$f" ] && git add -- "$f"; done
           git diff --cached --quiet || git commit -m "book+set curves partitionnées $(date -u +%FT%TZ)"
           # "merge" et non "rebase" : un rebase en conflit après un commit
           # peut écarter ce commit en silence -- exactement le bug qui a
