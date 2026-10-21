@@ -1,0 +1,456 @@
+{
+ "genere_le": "2026-10-21T17:16:34+00:00",
+ "protocole": {
+  "reglage": "2023-01-01 → 2023-12-31",
+  "test": "2024-01-01 → fin des données",
+  "point_in_time": "notes au lundi, tournois terminés avant",
+  "reference": "clôture Pinnacle tennis-data, marge retirée (puissance)",
+  "n_min_points": 200
+ },
+ "couverture_sackmann": {
+  "ATP 2018": {
+   "matchs": 2982,
+   "avec_stats": 2938,
+   "dernier": "2018-12-31"
+  },
+  "ATP 2019": {
+   "matchs": 2721,
+   "avec_stats": 2604,
+   "dernier": "2019-11-24"
+  },
+  "ATP 2020": {
+   "matchs": 1462,
+   "avec_stats": 1411,
+   "dernier": "2020-11-16"
+  },
+  "ATP 2021": {
+   "matchs": 2733,
+   "avec_stats": 2625,
+   "dernier": "2021-12-05"
+  },
+  "ATP 2022": {
+   "matchs": 2917,
+   "avec_stats": 2734,
+   "dernier": "2022-11-27"
+  },
+  "ATP 2023": {
+   "matchs": 2986,
+   "avec_stats": 2799,
+   "dernier": "2023-11-27"
+  },
+  "ATP 2024": {
+   "matchs": 3158,
+   "avec_stats": 3084,
+   "dernier": "2024-12-30"
+  },
+  "ATP 2025": {
+   "matchs": 2862,
+   "avec_stats": 2579,
+   "dernier": "2025-12-17"
+  },
+  "ATP 2026": {
+   "matchs": 1449,
+   "avec_stats": 1182,
+   "dernier": "2026-05-25"
+  },
+  "CH 2018": {
+   "matchs": 10103,
+   "avec_stats": 9700,
+   "dernier": "2018-12-31"
+  },
+  "CH 2019": {
+   "matchs": 8787,
+   "avec_stats": 8700,
+   "dernier": "2019-11-18"
+  },
+  "CH 2020": {
+   "matchs": 3288,
+   "avec_stats": 3237,
+   "dernier": "2020-11-30"
+  },
+  "CH 2021": {
+   "matchs": 7497,
+   "avec_stats": 7420,
+   "dernier": "2021-12-13"
+  },
+  "CH 2022": {
+   "matchs": 10016,
+   "avec_stats": 9870,
+   "dernier": "2022-11-28"
+  },
+  "CH 2023": {
+   "matchs": 10663,
+   "avec_stats": 10566,
+   "dernier": "2023-11-27"
+  },
+  "CH 2024": {
+   "matchs": 11357,
+   "avec_stats": 11228,
+   "dernier": "2024-12-30"
+  },
+  "CH 2025": {
+   "matchs": 11462,
+   "avec_stats": 11321,
+   "dernier": "2025-11-24"
+  },
+  "CH 2026": {
+   "matchs": 5745,
+   "avec_stats": 5679,
+   "dernier": "2026-06-01"
+  },
+  "ITF 2018": {
+   "matchs": 18741,
+   "avec_stats": 1979,
+   "dernier": "2018-12-31"
+  },
+  "ITF 2019": {
+   "matchs": 29258,
+   "avec_stats": 1957,
+   "dernier": "2019-12-30"
+  },
+  "ITF 2020": {
+   "matchs": 9426,
+   "avec_stats": 853,
+   "dernier": "2020-12-28"
+  },
+  "ITF 2021": {
+   "matchs": 24189,
+   "avec_stats": 1828,
+   "dernier": "2021-12-27"
+  },
+  "ITF 2022": {
+   "matchs": 33105,
+   "avec_stats": 2345,
+   "dernier": "2022-12-26"
+  },
+  "ITF 2023": {
+   "matchs": 34322,
+   "avec_stats": 2367,
+   "dernier": "2023-12-25"
+  },
+  "ITF 2024": {
+   "matchs": 38457,
+   "avec_stats": 2947,
+   "dernier": "2024-12-30"
+  },
+  "ITF 2025": {
+   "matchs": 21439,
+   "avec_stats": 20516,
+   "dernier": "2025-12-29"
+  },
+  "ITF 2026": {
+   "matchs": 8975,
+   "avec_stats": 8843,
+   "dernier": "2026-06-02"
+  },
+  "WTA 2018": {
+   "matchs": 2847,
+   "avec_stats": 2814,
+   "dernier": "2018-12-31"
+  },
+  "WTA 2019": {
+   "matchs": 2652,
+   "avec_stats": 2578,
+   "dernier": "2019-12-16"
+  },
+  "WTA 2020": {
+   "matchs": 1276,
+   "avec_stats": 1262,
+   "dernier": "2020-11-09"
+  },
+  "WTA 2021": {
+   "matchs": 2597,
+   "avec_stats": 2470,
+   "dernier": "2021-11-10"
+  },
+  "WTA 2022": {
+   "matchs": 2594,
+   "avec_stats": 2473,
+   "dernier": "2022-11-13"
+  },
+  "WTA 2023": {
+   "matchs": 2810,
+   "avec_stats": 2556,
+   "dernier": "2023-11-10"
+  },
+  "WTA 2024": {
+   "matchs": 2792,
+   "avec_stats": 2696,
+   "dernier": "2024-12-30"
+  },
+  "WTA 2025": {
+   "matchs": 2692,
+   "avec_stats": 2603,
+   "dernier": "2025-11-01"
+  },
+  "WTA 2026": {
+   "matchs": 1295,
+   "avec_stats": 1104,
+   "dernier": "2026-05-25"
+  }
+ },
+ "jointure_tennis_data": {
+  "matchs_td": 14843,
+  "joints": 13972,
+  "reglage": 4695,
+  "test": 9277
+ },
+ "reglage": [
+  {
+   "demi_vie_jours": 250,
+   "prior_points": 150,
+   "n": 4609,
+   "log_loss": 0.61174,
+   "secondes": 57
+  },
+  {
+   "demi_vie_jours": 250,
+   "prior_points": 500,
+   "n": 4609,
+   "log_loss": 0.6116,
+   "secondes": 57
+  },
+  {
+   "demi_vie_jours": 500,
+   "prior_points": 150,
+   "n": 4630,
+   "log_loss": 0.61563,
+   "secondes": 57
+  },
+  {
+   "demi_vie_jours": 500,
+   "prior_points": 500,
+   "n": 4630,
+   "log_loss": 0.61258,
+   "secondes": 57
+  }
+ ],
+ "retenu": {
+  "demi_vie_jours": 250,
+  "prior_points": 500
+ },
+ "test": {
+  "matchs_notes": 9185,
+  "matchs_sans_note": 92,
+  "victoire": {
+   "modele_pur": {
+    "log_loss": 0.61859,
+    "brier": 0.2154
+   },
+   "pinnacle": {
+    "log_loss": 0.59153,
+    "brier": 0.20376
+   },
+   "moyenne_50_50": {
+    "log_loss": 0.59825,
+    "brier": 0.20656
+   },
+   "ecart_log_loss_modele_moins_pinnacle": {
+    "moyenne": 0.02706,
+    "ic95": [
+     0.0223,
+     0.0317
+    ]
+   }
+  },
+  "calibration_modele_pur": [
+   {
+    "tranche": "0–10 %",
+    "n": 154,
+    "prevu": 6.2,
+    "realise": 7.8,
+    "pinnacle": 6.8
+   },
+   {
+    "tranche": "10–20 %",
+    "n": 383,
+    "prevu": 15.5,
+    "realise": 12.8,
+    "pinnacle": 14.8
+   },
+   {
+    "tranche": "20–30 %",
+    "n": 687,
+    "prevu": 25.6,
+    "realise": 23.9,
+    "pinnacle": 24.3
+   },
+   {
+    "tranche": "30–40 %",
+    "n": 1343,
+    "prevu": 35.3,
+    "realise": 32.2,
+    "pinnacle": 33.3
+   },
+   {
+    "tranche": "40–50 %",
+    "n": 1862,
+    "prevu": 45.1,
+    "realise": 44.5,
+    "pinnacle": 43.3
+   },
+   {
+    "tranche": "50–60 %",
+    "n": 1897,
+    "prevu": 54.9,
+    "realise": 50.2,
+    "pinnacle": 53.6
+   },
+   {
+    "tranche": "60–70 %",
+    "n": 1389,
+    "prevu": 64.7,
+    "realise": 65.9,
+    "pinnacle": 64.0
+   },
+   {
+    "tranche": "70–80 %",
+    "n": 887,
+    "prevu": 74.4,
+    "realise": 71.0,
+    "pinnacle": 73.9
+   },
+   {
+    "tranche": "80–90 %",
+    "n": 448,
+    "prevu": 84.1,
+    "realise": 82.4,
+    "pinnacle": 83.9
+   },
+   {
+    "tranche": "90–100 %",
+    "n": 135,
+    "prevu": 93.6,
+    "realise": 91.1,
+    "pinnacle": 90.7
+   }
+  ],
+  "paris_cloture_pinnacle": [
+   {
+    "seuil_valeur": "> 0 %",
+    "n": 8114,
+    "roi_pct": -4.51,
+    "ic95_pct": [
+     -7.55,
+     -1.32
+    ]
+   },
+   {
+    "seuil_valeur": "> 3 %",
+    "n": 7080,
+    "roi_pct": -5.09,
+    "ic95_pct": [
+     -8.84,
+     -1.36
+    ]
+   },
+   {
+    "seuil_valeur": "> 5 %",
+    "n": 6466,
+    "roi_pct": -5.9,
+    "ic95_pct": [
+     -9.82,
+     -1.92
+    ]
+   },
+   {
+    "seuil_valeur": "> 10 %",
+    "n": 5233,
+    "roi_pct": -7.03,
+    "ic95_pct": [
+     -11.48,
+     -2.39
+    ]
+   }
+  ],
+  "sets_et_jeux": {
+   "matchs_complets": 9183,
+   "modele_pur": {
+    "set1_log_loss": 0.64854,
+    "total_jeux_log_score": 3.1257,
+    "total_jeux_erreur_moyenne": 1.929,
+    "total_jeux_erreur_absolue": 5.554,
+    "tiebreak_log_loss": 0.61313,
+    "score_sets_log_score": 1.3199
+   },
+   "modele_ancre_pinnacle": {
+    "set1_log_loss": 0.63353,
+    "total_jeux_log_score": 3.1049,
+    "total_jeux_erreur_moyenne": 1.689,
+    "total_jeux_erreur_absolue": 5.454,
+    "tiebreak_log_loss": 0.60805,
+    "score_sets_log_score": 1.2824
+   },
+   "marche_seul": {
+    "set1_log_loss": 0.63353,
+    "total_jeux_log_score": 3.102,
+    "total_jeux_erreur_moyenne": 1.449,
+    "total_jeux_erreur_absolue": 5.401,
+    "tiebreak_log_loss": 0.6092,
+    "score_sets_log_score": 1.2824
+   },
+   "apport_stats_total_jeux": {
+    "ecart_log_score_ancre_moins_marche": 0.0029,
+    "ic95": [
+     -0.0,
+     0.0058
+    ],
+    "lecture": "négatif = les statistiques améliorent la prévision du total de jeux"
+   },
+   "apport_stats_set1": {
+    "ecart_log_loss_ancre_moins_marche": 0.0,
+    "ic95": [
+     -0.0,
+     0.0
+    ],
+    "lecture": "négatif = les statistiques améliorent la prévision du set 1"
+   }
+  },
+  "par_circuit": {
+   "ATP": {
+    "modele_pur": {
+     "log_loss": 0.62073,
+     "brier": 0.21663
+    },
+    "pinnacle": {
+     "log_loss": 0.59054,
+     "brier": 0.20319
+    },
+    "moyenne_50_50": {
+     "log_loss": 0.5983,
+     "brier": 0.20661
+    },
+    "ecart_log_loss_modele_moins_pinnacle": {
+     "moyenne": 0.03019,
+     "ic95": [
+      0.0238,
+      0.0369
+     ]
+    }
+   },
+   "WTA": {
+    "modele_pur": {
+     "log_loss": 0.61632,
+     "brier": 0.2141
+    },
+    "pinnacle": {
+     "log_loss": 0.59258,
+     "brier": 0.20437
+    },
+    "moyenne_50_50": {
+     "log_loss": 0.5982,
+     "brier": 0.20649
+    },
+    "ecart_log_loss_modele_moins_pinnacle": {
+     "moyenne": 0.02374,
+     "ic95": [
+      0.0168,
+      0.03
+     ]
+    }
+   }
+  }
+ },
+ "notes_exportees": 2831,
+ "duree_s": 1997
+}
