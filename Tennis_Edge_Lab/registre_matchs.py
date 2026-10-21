@@ -405,6 +405,13 @@ def run(sink):
         import traceback
         traceback.print_exc()
         print(f"::warning::valeur.json non mis à jour ({type(exc).__name__}: {exc})")
+    # V7.6 : l'issue selon les circonstances (réel − attendu), découverte / confirmation.
+    try:
+        _load("croisements.py").run(sink)
+    except Exception as exc:  # noqa: BLE001
+        import traceback
+        traceback.print_exc()
+        print(f"::warning::croisements.json non mis à jour ({type(exc).__name__}: {exc})")
     L = ev["lectures"]
     print(f"Registre : {len(matches)} matchs sur {len(months)} mois ({changed} fichier(s) réécrit(s)) ; "
           f"{L['lignes_lues']} lectures rejouées ; corrélation excès prédit/réalisé "

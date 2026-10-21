@@ -144,3 +144,20 @@ test('délai alerte -> pari : tableau par hypothèse et par délai', () => {
   assert.ok(html.indexOf('H17') < html.indexOf('toutes'));
   assert.equal(R.delaiBlock(null), '');
 });
+
+test('croisements : écarts découverte / confirmation, statut, rien d\'inventé', () => {
+  const L = (c, i, d, k, st) => ({ famille: 'Marché', circonstance: c, issue: i, statut: st,
+    decouverte: { n: 300, ecart: d, z: d / 2 }, confirmation: { n: 300, ecart: k, z: k / 2 } });
+  const C = { matchs: 2706, periode: ['2026-06-07', '2026-10-21'], tests_holm: 92,
+    issues: [{ cle: 'victoire', libelle: 'victoire du favori' }, { cle: '2-0', libelle: 'favori gagne 2-0' }],
+    lignes: [L('cote stable', 'victoire', 1.2, 0.4, 'rien'), L('cote stable', '2-0', -4.4, 1.3, 'à suivre')] };
+  const html = R.croisementsBlock(C);
+  assert.match(html, /Croisements : l'issue selon les circonstances/);
+  assert.match(html, /Aucun croisement confirmé/);
+  assert.match(html, /À suivre/);
+  assert.match(html, /rg-suivre/);
+  assert.match(html, /cote stable/);
+  const C2 = { ...C, lignes: [L('cote stable', 'victoire', -6, -5, 'confirmé')] };
+  assert.match(R.croisementsBlock(C2), /Confirmé/);
+  assert.equal(R.croisementsBlock(null), '');
+});
