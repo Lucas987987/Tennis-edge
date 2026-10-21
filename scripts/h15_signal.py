@@ -262,7 +262,7 @@ def _suivi():
             'roi': 100.0 * somme / n, 'pnl': somme}
 
 
-def message(g, steam, cote, book, ampleur, lead):
+def message(g, steam, cote, book, ampleur, lead, deja=''):
     joueur = g['_home'] if steam == 'h' else g['_away']
     adv = g['_away'] if steam == 'h' else g['_home']
     hh = int(lead // 60)
@@ -271,15 +271,9 @@ def message(g, steam, cote, book, ampleur, lead):
          f"{g.get('_tour') or '?'} · T-{lead_txt}",
          f"{lien_joueur.duo_html(joueur, adv)}",
          f"📉 mouvement Pinnacle {ampleur:.1f} pts · entrée {book} @ {cote:.2f}"]
-    s = journal_direct.suivi('H15')  # bilan EN DIRECT (verdicts_direct.json)
-    if s and s.get('n'):
-        L.append(f"\n📊 <b>Suivi</b> : {s['n']}/150 paris dénoués "
-                 f"({100 * s['n'] / 150:.0f} %)")
-        L.append(f"gains {s['k']}/{s['n']} = {s['taux']:.1f} % "
-                 f"(seuil {s['p0']:.1f} %) · écart {s['taux'] - s['p0']:+.1f} pts")
-        L.append(f"ROI {s['roi']:+.1f} % · P&L {s['pnl']:+.1f} u")
-    elif s is not None:
-        L.append("\n📊 <b>Suivi</b> : aucun pari dénoué depuis le gel.")
+    if deja:
+        L.append(deja)
+    L += journal_direct.suivi_txt('H15', 150)  # bilan EN DIRECT (verdicts_direct.json)
     L.append(f"\n<i>Hypothèse gelée le {FREEZE}, NON VALIDÉE. Référence "
              f"in-sample : 103/225 = 45,8 % contre 37,5 % de seuil, "
              f"ROI +23,4 %. Bande trouvée APRÈS coup sur ~20 découpages — "
@@ -339,10 +333,10 @@ def main():
         if uid in etat:
             continue                   # déjà traité par CE script
         doublon = _deja_signale(uid)
-        ok = False
-        if not doublon:
-            ok = envoyer(message(g, steam, cote, book, ampleur, lead))
-            n_envoyes += 1
+        # Depuis le 21/10/2026 : envoyé MÊME en doublon (demande de Lucas), avec
+        # la mention « déjà signalé ». La règle et la mesure ne changent pas.
+        ok = envoyer(message(g, steam, cote, book, ampleur, lead, deja=journal_direct.deja_txt(doublon, uid)))
+        n_envoyes += 1
         # Journal COMPLET (schéma 2, scripts/journal_direct.py) : TOUTE
         # détection dans la règle est écrite — envoyée, doublon, échec ou
         # non tentée. Champs de décision écrits une fois, jamais modifiés.
