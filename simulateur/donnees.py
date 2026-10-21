@@ -106,6 +106,7 @@ def charger(racine, annee_min=2018):
                     'stats': st if len(st) == 2 else None, 'sets': sets, 'complet': complet,
                     'tournoi': r.get('tourney_name') or '',
                     'tour': ORDRE_TOURS.get(str(r.get('round') or '').upper(), 6),
+                    'niveau': niveau,
                     'num': _int(r.get('match_num')) or 0,
                 })
     out.sort(key=lambda m: (m['date'], m['tour'], m['num']))
