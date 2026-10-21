@@ -4,10 +4,12 @@
 elo.py — force de chaque joueur, tirée des RÉSULTATS (21/10/2026).
 
 Classement Elo général + Elo par surface, mélangés à parts égales pour prédire
-(méthode publiée par FiveThirtyEight pour le tennis, paramètres repris TELS
+(méthode FiveThirtyEight pour le tennis, décrite par Kovalchik, JQAS 2016 ;
+mélange surface/général à 50/50 de Tennis Abstract ; paramètres repris TELS
 QUELS, jamais réglés sur nos données) :
     p(A bat B) = 1 / (1 + 10^((elo_B − elo_A) / 400))
     K du joueur = 250 / (matchs joués + 5)^0,4   (un nouveau bouge vite, un ancien lentement)
+    K × 1,1 en Grand Chelem
 Tout joueur commence à 1500, ATP comme ITF : ce sont les résultats qui placent
 chacun à son niveau.
 
@@ -56,11 +58,12 @@ class Elo:
     def _k(n):
         return 250 / (n + 5) ** 0.4
 
-    def maj(self, gagnant, perdant, surface=None):
+    def maj(self, gagnant, perdant, surface=None, grand_chelem=False):
         """Met à jour après un match (à appeler APRÈS la prédiction de ce match)."""
         w, l = gagnant, perdant
+        f = 1.1 if grand_chelem else 1.0
         e = 1 / (1 + 10 ** ((self.g.get(l, self.depart) - self.g.get(w, self.depart)) / 400))
-        kw, kl = self._k(self.n.get(w, 0)), self._k(self.n.get(l, 0))
+        kw, kl = f * self._k(self.n.get(w, 0)), f * self._k(self.n.get(l, 0))
         self.g[w] = self.g.get(w, self.depart) + kw * (1 - e)
         self.g[l] = self.g.get(l, self.depart) - kl * (1 - e)
         self.n[w] = self.n.get(w, 0) + 1
@@ -68,7 +71,7 @@ class Elo:
         if surface in SURFACES:
             sw, sl = (w, surface), (l, surface)
             e = 1 / (1 + 10 ** ((self.s.get(sl, self.depart) - self.s.get(sw, self.depart)) / 400))
-            kw, kl = self._k(self.ns.get(sw, 0)), self._k(self.ns.get(sl, 0))
+            kw, kl = f * self._k(self.ns.get(sw, 0)), f * self._k(self.ns.get(sl, 0))
             self.s[sw] = self.s.get(sw, self.depart) + kw * (1 - e)
             self.s[sl] = self.s.get(sl, self.depart) - kl * (1 - e)
             self.ns[sw] = self.ns.get(sw, 0) + 1

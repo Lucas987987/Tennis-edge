@@ -59,6 +59,10 @@ def surface_de(tournoi, table):
     return max(votes, key=votes.get) if votes else 'Hard'
 
 
+def grand_chelem(t):
+    return bool(re.search(r'(wimbledon|us open|french open|roland|australian open)', str(t or ''), re.I))
+
+
 def cinq_sets(t):
     t = str(t or '')
     return bool(re.search(r'(wimbledon|us open|french open|roland|australian open)', t, re.I)) and \
@@ -140,6 +144,7 @@ def charger(racine=RACINE, table_surfaces=None):
             pass
         out.append({'date': d0, 'debut': debut, 'home': h, 'away': a, 'tournoi': r.get('tournament') or '',
                     'surface': surface_de(r.get('tournament'), table_surfaces or {}), 'bo': bo, 'gagnant': g,
-                    'sets': sets, 'set1': s1 if s1 in ('home', 'away') else None, 'pin': pin})
+                    'sets': sets, 'set1': s1 if s1 in ('home', 'away') else None, 'pin': pin,
+                    'grand_chelem': grand_chelem(r.get('tournament'))})
     out.sort(key=lambda x: x['debut'])
     return out

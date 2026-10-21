@@ -68,3 +68,13 @@ class Pronostic(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class GrandChelem(unittest.TestCase):
+    def test_k_multiplie_par_1_1(self):
+        a, b = E.Elo(), E.Elo()
+        a.maj('x', 'y')
+        b.maj('x', 'y', grand_chelem=True)
+        self.assertAlmostEqual(b.note('x') - 1500, 1.1 * (a.note('x') - 1500))
+        self.assertTrue(NR.grand_chelem('US Open Women Singles'))
+        self.assertFalse(NR.grand_chelem('ATP Brussels'))
