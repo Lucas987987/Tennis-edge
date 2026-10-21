@@ -229,15 +229,16 @@ def message(g, steam, cote, book, ampleur, lead):
     adv = g['_away'] if steam == 'h' else g['_home']
     hh = int(lead // 60)
     lead_txt = f"{int(lead)} min" if lead < 60 else f"{hh}h{int(lead % 60):02d}"
-    return (f"🧪 <b>H13 — signal privé</b> (cote {cote:.2f})\n"
-            f"{g.get('_tour') or '?'} · T-{lead_txt}\n"
-            f"{lien_joueur.duo_html(joueur, adv)}\n"
-            f"📉 mouvement Pinnacle {ampleur:.1f} pts · entrée {book} @ {cote:.2f}\n"
-            f"\n"
-            f"<i>Hypothèse gelée le {FREEZE}, NON VALIDÉE. ROI in-sample "
-            f"+13,7 % sur 316 paris, IC95 [+0,3 ; +27,0] — la borne basse "
-            f"frôle zéro. Verdict attendu vers décembre 2026. "
-            f"Ne pas diffuser.</i>")
+    L = [f"🧪 <b>H13 — signal privé</b> (cote {cote:.2f})",
+         f"{g.get('_tour') or '?'} · T-{lead_txt}",
+         f"{lien_joueur.duo_html(joueur, adv)}",
+         f"📉 mouvement Pinnacle {ampleur:.1f} pts · entrée {book} @ {cote:.2f}"]
+    L += journal_direct.suivi_txt('H13', 300)  # bilan EN DIRECT (verdicts_direct.json)
+    L.append(f"\n<i>Hypothèse gelée le {FREEZE}, NON VALIDÉE. ROI in-sample "
+             f"+13,7 % sur 316 paris, IC95 [+0,3 ; +27,0] — la borne basse "
+             f"frôle zéro. Verdict attendu vers décembre 2026. "
+             f"Ne pas diffuser.</i>")
+    return '\n'.join(L)
 
 
 def main():

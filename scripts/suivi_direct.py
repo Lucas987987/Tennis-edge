@@ -79,7 +79,7 @@ META = {
 }
 NOTES = {
     'H14': "Canal en direct créé le 16/10/2026 : l'échantillon en direct commence à son déploiement.",
-    'H15': "H15 n'envoie jamais quand H13 a déjà couvert le match : ses détections comptent quand même (doublons).",
+    'H15': "Bande recouverte par H13 : jusqu'au 21/10/2026 H15 n'envoyait pas les matchs déjà couverts ; depuis, ils partent marqués « déjà signalé ». Toutes ses détections comptent.",
     'H16B': 'Sous-ensemble de H16 : non indépendante (Holm).',
     'H18': 'Intersection de H16 et H17 : non indépendante (Holm).',
 }

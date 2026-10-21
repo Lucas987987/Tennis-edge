@@ -122,6 +122,11 @@ def pinnacle(g, steam, t_det, maintenant):
 
 
 def statut_envoi(envoye, doublon):
+    # Depuis le 21/10/2026, H14 et H15 envoient AUSSI leurs doublons (message
+    # marqué « déjà signalé ») : le champ `doublon` garde le canal d'origine,
+    # pour que chaque match ne compte qu'une fois dans les études de prix.
+    if doublon and envoye:
+        return f'envoyé (déjà signalé par {doublon})'
     if doublon:
         return 'doublon'
     if envoye:
@@ -188,6 +193,30 @@ def purger(etat, maintenant, jours=2):
     limite = (maintenant - datetime.timedelta(days=jours)).isoformat()
     return {k: v for k, v in etat.items()
             if str(v.get('commence') or v.get('t', '')) >= limite}
+
+
+def deja_txt(doublon, uid):
+    """Ligne « déjà signalé » d'un message envoyé malgré un doublon (H14, H15)."""
+    if not doublon:
+        return ''
+    r = doublon_ref(doublon, uid) or {}
+    prix = f" ({r['book']} @ {r['cote']:.2f})" if r.get('book') and r.get('cote') else ''
+    return f"🔁 Match déjà signalé par {doublon.upper()}{prix}."
+
+
+def suivi_txt(code, cible):
+    """Bloc « Suivi en direct » commun à tous les messages : paris dénoués, gains, ROI, CLV."""
+    s = suivi(code)
+    if s is None:
+        return []
+    if not s.get('n'):
+        return [f"\n📊 <b>Suivi en direct</b> : aucun pari dénoué pour l'instant "
+                f"({s.get('n_detectees') or 0} détection(s))."]
+    L = [f"\n📊 <b>Suivi en direct</b> : {s['n']}/{cible} paris dénoués ({100 * s['n'] / cible:.0f} %)",
+         f"gains {s['k']}/{s['n']} = {s['taux']:.1f} % (seuil {s['p0']:.1f} %) · écart {s['taux'] - s['p0']:+.1f} pts",
+         f"ROI {s['roi']:+.1f} % · P&L {s['pnl']:+.1f} u"
+         + (f" · CLV Pinnacle {s['clv']:+.1f} %" if s.get('clv') is not None else '')]
+    return L
 
 
 def suivi(code, chemin='verdicts_direct.json'):
