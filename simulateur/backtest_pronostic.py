@@ -134,54 +134,71 @@ def resultats_td(chemin, depuis):
     return out
 
 
-def index_noms(noms_complets):
-    """(nom de famille, initiale) -> clés Elo possibles, pour relier « Bublik A. » à « Alexander Bublik »."""
+def index_td(noms_par_cle, sexe=None):
+    """(nom de famille, initiale) -> {(clé, mots du nom, sexe)} pour relier les noms tennis-data.
+    sexe : {clé: 'H' | 'F'} (circuits où le joueur a joué), pour départager les homonymes."""
+    sexe = sexe or {}
     idx = collections.defaultdict(set)
-    for nm in noms_complets:
-        for k in donnees.cles_sackmann(nm):
-            idx[k].add(E.cle(nm))
+    for k, nm in noms_par_cle.items():
+        cles, t = donnees.cles_sackmann_etendues(nm)
+        for c in cles:
+            idx[c].add((k, tuple(t), sexe.get(k)))
     return idx
 
 
-def main(argv):
-    t0 = time.time()
-    dossier = argv[1] if len(argv) > 1 else 'sackmann'
-    racine = argv[2] if len(argv) > 2 else os.path.join(ICI, '..')
-    M = donnees.charger(dossier, 2016)
-    if not M:
-        print(f"::error::aucun match Sackmann sous {dossier}")
-        return 1
-    fin_sack = max(m['date'] for m in M)
-    table_surf = NR.surfaces_tournois(M)
-    nous = [x for x in NR.charger(racine, table_surf) if x['date'] > fin_sack + dt.timedelta(days=3)]
-    print(f"Sackmann : {len(M)} matchs jusqu'au {fin_sack} · nos matchs ensuite : {len(nous)}", flush=True)
+def cle_tennis_data(idx, nom, circuit_td=None):
+    """Clé du joueur pour « Wang Xin. » / « Mpetshi G. » ; None si inconnu ou ambigu.
+    circuit_td 'ATP' / 'WTA' écarte les homonymes de l'autre circuit (« Nakashima B. »)."""
+    k = donnees.cle_td_prefixe(nom)
+    if not k:
+        return None
+    s = {'ATP': 'H', 'WTA': 'F'}.get(str(circuit_td or '').upper())
+    cands = {c for c, t, sx in idx.get((k[0], k[1][0]), ())
+             if any(w.startswith(k[1]) for w in t) and (s is None or sx in (None, s))}
+    return next(iter(cands)) if len(cands) == 1 else None
 
-    elo, noms = E.Elo(), {}
-    pred_sack = {}
-    for i, m in enumerate(M):                        # 1. archive : prédire puis mettre à jour
-        g, p = E.cle(m['nom_g']), E.cle(m['nom_p'])
+
+def sexe_de_circuit(c):
+    return 'F' if c in ('WTA', 'ITF') else 'H'
+
+
+BAS = ('CH', 'ITF')          # niveaux où un nouveau joueur part plus bas (règle Tennis Abstract)
+DEPART_BAS = 1200.0
+
+
+def rejouer(M, nous, td_rows, cle_c, idx, depart_bas):
+    """Rejoue tout dans l'ordre ; renvoie classement, pronostics de l'archive et de nos matchs."""
+    elo, noms, pred_sack = E.Elo(), {}, {}
+    bas, tot = collections.Counter(), collections.Counter()
+
+    def voir(k, circ):
+        if depart_bas and circ in BAS:
+            elo.presenter(k, DEPART_BAS)
+        tot[k] += 1
+        bas[k] += circ in BAS
+
+    for i, m in enumerate(M):
+        g, p = cle_c(m['nom_g']), cle_c(m['nom_p'])
         noms[g], noms[p] = m['nom_g'], m['nom_p']
+        voir(g, m['circuit'])
+        voir(p, m['circuit'])
         if DEBUT_A <= m['date'] < FIN_A and m['circuit'] in ('ATP', 'WTA'):
             pred_sack[i] = (elo.proba(g, p, m['surface']), min(elo.matchs(g), elo.matchs(p)))
         elo.maj(g, p, m['surface'], m.get('niveau') == 'G')
-    T = Table()
-    # 2. depuis juin : nos matchs (pronostiqués puis appris) + résultats tennis-data (appris seulement)
-    idx = index_noms(set(m['nom_g'] for m in M) | set(m['nom_p'] for m in M) | {x['home'] for x in nous} | {x['away'] for x in nous})
     paires_nous = collections.defaultdict(list)
     for x in nous:
-        paires_nous[frozenset((E.cle(x['home']), E.cle(x['away'])))].append(x['date'])
-    ev, td_ok, td_doublon, td_inconnu = [], 0, 0, 0
-    for d, w, l, _c in resultats_td(os.path.join(racine, 'historique', 'tennis_data_resultats.csv.gz'), fin_sack + dt.timedelta(days=3)):
-        kw, kl = idx.get(donnees.cle_td(w) or ('', '')), idx.get(donnees.cle_td(l) or ('', ''))
-        if not kw or not kl or len(kw) != 1 or len(kl) != 1:
-            td_inconnu += 1
+        paires_nous[frozenset((cle_c(x['home']), cle_c(x['away'])))].append(x['date'])
+    ev, cpt = [], collections.Counter()
+    for d, w, l, _c in td_rows:
+        w_, l_ = cle_tennis_data(idx, w, _c), cle_tennis_data(idx, l, _c)
+        if not w_ or not l_:
+            cpt['non_reconnus'] += 1
             continue
-        w_, l_ = next(iter(kw)), next(iter(kl))
         if any(abs((d - d2).days) <= 2 for d2 in paires_nous.get(frozenset((w_, l_)), [])):
-            td_doublon += 1
+            cpt['doublons_ecartes'] += 1
             continue
         ev.append((dt.datetime.combine(d, dt.time(23, 59, 59)), 'td', (w_, l_)))
-        td_ok += 1
+        cpt['ajoutes'] += 1
     for x in nous:
         ev.append((x['debut'], 'nous', x))
     ev.sort(key=lambda e: (e[0], e[1] == 'td'))
@@ -190,41 +207,62 @@ def main(argv):
         if src == 'td':
             elo.maj(x[0], x[1])                       # surface inconnue : Elo général seulement
             continue
-        h, a = E.cle(x['home']), E.cle(x['away'])
+        h, a = cle_c(x['home']), cle_c(x['away'])
         noms.setdefault(h, x['home'])
         noms.setdefault(a, x['away'])
-        B.append(dict(x, p_elo=elo.proba(h, a, x['surface']), connus=min(elo.matchs(h), elo.matchs(a))))
+        c = circuit(x['tournoi'])
+        if depart_bas and c in BAS:
+            elo.presenter(h, DEPART_BAS)
+            elo.presenter(a, DEPART_BAS)
+        p = elo.proba(h, a, x['surface'])
+        fav = h if p >= 0.5 else a
+        B.append(dict(x, p_elo=p, connus=min(elo.matchs(h), elo.matchs(a)),
+                      part_bas_fav=(bas[fav] / tot[fav]) if tot[fav] else None))
+        tot[h] += 1; tot[a] += 1
+        bas[h] += c in BAS; bas[a] += c in BAS
         if x['gagnant'] in ('home', 'away'):
             w, l = (h, a) if x['gagnant'] == 'home' else (a, h)
             elo.maj(w, l, x['surface'], x.get('grand_chelem', False))
-    print(f"tennis-data depuis juin : {td_ok} résultats ajoutés, {td_doublon} doublons de nos matchs, {td_inconnu} joueurs non reconnus", flush=True)
+    return {'elo': elo, 'noms': noms, 'pred_sack': pred_sack, 'B': B, 'td': dict(cpt)}
 
-    # ---- A : ATP / WTA principaux contre tennis-data
-    td = donnees.charger_td(os.path.join(racine, 'historique', 'tennis_data.csv.gz'), DEBUT_A.isoformat())
+
+def evaluer(V, M, td, T):
+    """Rapports A (ATP/WTA contre tennis-data) et B (nos matchs) d'une variante."""
     idx = {id(m): i for i, m in enumerate(M)}
     A = []
     for t, m in donnees.joindre(td, M):
         i = idx.get(id(m))
-        if i in pred_sack and t['date'] < FIN_A:
-            p, nc = pred_sack[i]
-            A.append({'p_elo': p, 'p_pin': juste(t['psw'], t['psl']), 'connus': nc, 'circuit': m['circuit']})
+        if i in V['pred_sack'] and t['date'] < FIN_A:
+            p, nc = V['pred_sack'][i]
+            A.append({'p_elo': p, 'p_pin': juste(t['psw'], t['psl']), 'connus': nc, 'circuit': m['circuit'],
+                      'bo': m['bo'], 'sets': m['sets'], 'complet': m['complet']})
     rapA = {}
     for nom, g in (('tous', A), ('joueurs connus (≥ 10 matchs)', [a for a in A if a['connus'] >= N_CONNU]),
                    ('ATP', [a for a in A if a['circuit'] == 'ATP']), ('WTA', [a for a in A if a['circuit'] == 'WTA'])):
-        # le vainqueur réel est le joueur « A » de p_elo / p_pin : y = 1 ; on oriente au hasard pour la calibration
         rapA[nom] = {'stats_seules': bloc([(a['p_elo'], 1) for a in g]), 'stats_plus_marche': bloc([(a['p_pin'], 1) for a in g])}
     rapA['calibration_stats_seules'] = calibration([(a['p_elo'], 1) if k % 2 else (1 - a['p_elo'], 0) for k, a in enumerate(A)])
     rapA['calibration_marche'] = calibration([(a['p_pin'], 1) if k % 2 else (1 - a['p_pin'], 0) for k, a in enumerate(A)])
-
-    # ---- B : nos matchs
+    rapA['matchs'] = len(A)
+    R = [b for b in V['B'] if b['gagnant'] in ('home', 'away')]
+    y = lambda b: int(b['gagnant'] == 'home')
     rapB = {}
-    R = [b for b in B if b['gagnant'] in ('home', 'away')]
     for nom, g in (('tous', R), ('joueurs connus (≥ 10 matchs)', [b for b in R if b['connus'] >= N_CONNU])) + tuple(
             (c, [b for b in R if circuit(b['tournoi']) == c]) for c in ('ATP', 'CH', 'WTA', 'ITF')):
-        rapB[nom] = {'stats_seules': bloc([(b['p_elo'], int(b['gagnant'] == 'home')) for b in g]),
-                     'stats_plus_marche': bloc([(b['pin'], int(b['gagnant'] == 'home')) for b in g if b['pin']])}
-    rapB['calibration_stats_seules'] = calibration([(b['p_elo'], int(b['gagnant'] == 'home')) for b in R])
-    rapB['calibration_marche'] = calibration([(b['pin'], int(b['gagnant'] == 'home')) for b in R if b['pin']])
+        rapB[nom] = {'stats_seules': bloc([(b['p_elo'], y(b)) for b in g]),
+                     'stats_plus_marche': bloc([(b['pin'], y(b)) for b in g if b['pin']])}
+    rapB['calibration_stats_seules'] = calibration([(b['p_elo'], y(b)) for b in R])
+    rapB['calibration_marche'] = calibration([(b['pin'], y(b)) for b in R if b['pin']])
+    # ---- diagnostic (point 1) : où le classement se trompe-t-il de confiance ?
+    diag = {'par_circuit': {}, 'par_origine_du_favori': {}}
+    for c in ('ATP', 'CH', 'WTA'):
+        g = [b for b in R if circuit(b['tournoi']) == c]
+        diag['par_circuit'][c] = calibration([(b['p_elo'], y(b)) for b in g])
+    for nom, lo, hi in (('surtout ITF / Challenger (≥ 70 % de ses matchs)', 0.7, 1.01), ('mixte (30–70 %)', 0.3, 0.7),
+                        ('surtout grand circuit (< 30 %)', -0.01, 0.3)):
+        g = [b for b in R if b['part_bas_fav'] is not None and lo <= b['part_bas_fav'] < hi]
+        diag['par_origine_du_favori'][nom] = {'n': len(g), 'stats_seules': bloc([(b['p_elo'], y(b)) for b in g]),
+                                               'calibration': calibration([(b['p_elo'], y(b)) for b in g])}
+    rapB['diagnostic'] = diag
     S = [b for b in R if b['bo'] == 3 and b['sets'] and b['pin']]
     sc = {}
     for nom, cle_p in (('stats_seules', 'p_elo'), ('stats_plus_marche', 'pin')):
@@ -239,21 +277,147 @@ def main(argv):
         sc[nom] = {'n': len(S), 'log_score': round(ls / n, 4), 'score_le_plus_probable_juste_pct': round(100 * juste_ / n, 1),
                    'trois_sets_prevu_pct': round(100 * p3 / n, 1), 'trois_sets_reel_pct': round(100 * r3 / n, 1)}
     rapB['scores_en_sets'] = sc
+    return rapA, rapB, A
 
+
+SERVICE_MOYEN = {'ATP': 0.646, 'WTA': 0.559}
+
+
+def scores_exacts(A):
+    """Point 4 : le score EXACT (set par set) des matchs ATP/WTA, deux versions."""
+    import modele as Mo
+    cache = {}
+
+    def dist(c, bo, pf):
+        k = (c, bo, round(min(max(pf, 0.5), 0.99), 2))
+        if k not in cache:
+            sg = 3 if bo == 5 else 2
+            a, b = Mo.ancrer_forme(SERVICE_MOYEN[c], SERVICE_MOYEN[c], k[2], sg, 0.15, iterations=20)
+            cache[k] = dict(Mo.scores_complets(a, b, sg, 0.15, top=10 ** 7, faisceau=1500)['scores'])
+        return cache[k]
+
+    def sets_de(s):
+        return [tuple(int(v) for v in x.split('-')) for x in s.split()]
+    EV = {'au moins un tie-break': lambda S: any({a, b} == {6, 7} for a, b in S),
+          'au moins un set à 6-0 ou 6-1': lambda S: any(min(a, b) <= 1 for a, b in S),
+          'match en 3 sets': lambda S: len(S) == 3,
+          'plus de 22,5 jeux': lambda S: sum(a + b for a, b in S) > 22.5}
+    out = {}
+    G = [a for a in A if a['complet'] and a['sets'] and a['circuit'] in SERVICE_MOYEN]
+    for nom, cle_p in (('stats_seules', 'p_elo'), ('stats_plus_marche', 'p_pin')):
+        r = {}
+        for bo in (3, 5):
+            g = [a for a in G if a['bo'] == bo]
+            if not g:
+                continue
+            pv, top1, top3, top10, ls = 0.0, 0, 0, 0, 0.0
+            ev = {k: [0.0, 0] for k in EV}
+            for a in g:
+                p = a[cle_p]                                   # probabilité du VAINQUEUR réel
+                fav = p >= 0.5
+                D = dist(a['circuit'], bo, p if fav else 1 - p)
+                s_reel = ' '.join(f"{x}-{y}" for x, y in a['sets'])          # vu du vainqueur
+                s_fav = s_reel if fav else ' '.join(f"{y}-{x}" for x, y in a['sets'])
+                q = D.get(s_fav, 0.0)
+                rang = 1 + sum(1 for v in D.values() if v > q)
+                pv += q
+                ls += -math.log(max(q, 1e-9))
+                top1 += rang == 1
+                top3 += rang <= 3
+                top10 += rang <= 10
+                if bo == 3:
+                    for k, f in EV.items():
+                        ev[k][0] += sum(v for s_, v in D.items() if f(sets_de(s_)))
+                        ev[k][1] += f(sets_de(s_fav))
+            n = len(g)
+            r[f'meilleur_des_{bo}'] = {'n': n, 'proba_moyenne_du_vrai_score_pct': round(100 * pv / n, 2), 'log_score': round(ls / n, 3),
+                                       'score_n1_juste_pct': round(100 * top1 / n, 1), 'dans_le_top3_pct': round(100 * top3 / n, 1),
+                                       'dans_le_top10_pct': round(100 * top10 / n, 1)}
+            if bo == 3:
+                r['evenements_meilleur_des_3'] = {k: {'prevu_pct': round(100 * v[0] / n, 1), 'reel_pct': round(100 * v[1] / n, 1)}
+                                                   for k, v in ev.items()}
+        out[nom] = r
+    return out
+
+
+def main(argv):
+    t0 = time.time()
+    args = [a for a in argv[1:] if not a.startswith('--')]
+    avec_scores = '--scores' in argv
+    dossier = args[0] if args else 'sackmann'
+    racine = args[1] if len(args) > 1 else os.path.join(ICI, '..')
+    M = donnees.charger(dossier, 2016)
+    if not M:
+        print(f"::error::aucun match Sackmann sous {dossier}")
+        return 1
+    fin_sack = max(m['date'] for m in M)
+    table_surf = NR.surfaces_tournois(M)
+    nous = [x for x in NR.charger(racine, table_surf) if x['date'] > fin_sack + dt.timedelta(days=3)]
+    print(f"Sackmann : {len(M)} matchs jusqu'au {fin_sack} · nos matchs ensuite : {len(nous)}", flush=True)
+    # Point 3 : un joueur = un classement, quel que soit l'écriture de son nom.
+    connus = {}
+    for m in M:
+        connus.setdefault(E.cle(m['nom_g']), m['nom_g'])
+        connus.setdefault(E.cle(m['nom_p']), m['nom_p'])
+    alias = E.unifier(connus, {x['home'] for x in nous} | {x['away'] for x in nous})
+    cle_c = lambda n: alias.get(E.cle(n), E.cle(n))
+    noms_c = dict(connus)
+    for x in nous:
+        for n in (x['home'], x['away']):
+            noms_c.setdefault(cle_c(n), n)
+    sexe = {}
+    for m in M:
+        for n in (m['nom_g'], m['nom_p']):
+            sexe.setdefault(cle_c(n), sexe_de_circuit(m['circuit']))
+    for x in nous:
+        sx = 'F' if circuit(x['tournoi']) == 'WTA' or 'women' in x['tournoi'].lower() else 'H'
+        for n in (x['home'], x['away']):
+            sexe.setdefault(cle_c(n), sx)
+    idx = index_td(noms_c, sexe)
+    td_rows = resultats_td(os.path.join(racine, 'historique', 'tennis_data_resultats.csv.gz'), fin_sack + dt.timedelta(days=3))
+    td = donnees.charger_td(os.path.join(racine, 'historique', 'tennis_data.csv.gz'), DEBUT_A.isoformat())
+    T = Table()
+    V = {}
+    for nom, bas_ in (('depart_1500', False), ('depart_1200_petits_niveaux', True)):
+        V[nom] = rejouer(M, nous, td_rows, cle_c, idx, bas_)
+        V[nom]['rapA'], V[nom]['rapB'], V[nom]['A'] = evaluer(V[nom], M, td, T)
+        print(f"{nom} : A {V[nom]['rapA']['tous']['stats_seules']} · B {V[nom]['rapB']['tous']['stats_seules']}", flush=True)
+    # Règle d'adoption fixée AVANT les résultats : la variante « départ bas » n'est retenue que si
+    # elle améliore nos matchs (log loss B) sans dégrader l'ATP/WTA (log loss A, tolérance 0,001).
+    a0, a1 = V['depart_1500']['rapA']['tous']['stats_seules'], V['depart_1200_petits_niveaux']['rapA']['tous']['stats_seules']
+    b0, b1 = V['depart_1500']['rapB']['tous']['stats_seules'], V['depart_1200_petits_niveaux']['rapB']['tous']['stats_seules']
+    a_ok = (a0.get('n', 0) == 0 and a1.get('n', 0) == 0) or \
+        ('log_loss' in a0 and 'log_loss' in a1 and a1['log_loss'] <= a0['log_loss'] + 0.001)
+    b_ok = 'log_loss' in b0 and 'log_loss' in b1 and b1['log_loss'] < b0['log_loss']
+    retenue = 'depart_1200_petits_niveaux' if (a_ok and b_ok) else 'depart_1500'
+    W = V[retenue]
     rap = {'genere_le': dt.datetime.now(dt.timezone.utc).isoformat(timespec='seconds'),
            'objectif': 'deviner le vainqueur et le score (pas battre Pinnacle)',
-           'elo': 'FiveThirtyEight (Kovalchik 2016) : K = 250/(n+5)^0,4, ×1,1 en Grand Chelem, départ 1500 ; général + surface à parts égales ; aucun réglage',
+           'elo': 'FiveThirtyEight (Kovalchik 2016) : K = 250/(n+5)^0,4, ×1,1 en Grand Chelem ; général + surface à parts égales ; aucun réglage',
+           'variantes': {k: {'A': v['rapA']['tous']['stats_seules'], 'B': v['rapB']['tous']['stats_seules'],
+                             'B_calibration': v['rapB']['calibration_stats_seules'], 'tennis_data': v['td']} for k, v in V.items()},
+           'regle_adoption': "départ bas retenu seulement si log loss B baisse et log loss A ne monte pas de plus de 0,001",
+           'variante_retenue': retenue,
+           'joueurs_relies_nom_different': len(alias),
            'sackmann_jusqu_au': fin_sack.isoformat(), 'nos_matchs': len(nous),
-           'resultats_tennis_data_ajoutes': {'ajoutes': td_ok, 'doublons_ecartes': td_doublon, 'non_reconnus': td_inconnu},
-           'A_atp_wta_2024_2026': dict(rapA, periode=f"{DEBUT_A} → {FIN_A}", matchs=len(A)),
-           'B_nos_matchs': dict(rapB, periode=f"{nous[0]['date'] if nous else '—'} → {nous[-1]['date'] if nous else '—'}"),
-           'duree_s': round(time.time() - t0)}
+           'resultats_tennis_data_ajoutes': W['td'],
+           'A_atp_wta_2024_2026': dict(W['rapA'], periode=f"{DEBUT_A} → {FIN_A}"),
+           'B_nos_matchs': dict(W['rapB'], periode=f"{nous[0]['date'] if nous else '—'} → {nous[-1]['date'] if nous else '—'}")}
+    if avec_scores:
+        print("scores exacts…", flush=True)
+        rap['scores_exacts_atp_wta'] = scores_exacts(W['A'])
+    rap['duree_s'] = round(time.time() - t0)
     with open(os.path.join(ICI, 'rapport_pronostic.json'), 'w', encoding='utf-8') as f:
         json.dump(rap, f, ensure_ascii=False, indent=1)
+    elo = W['elo']
     with open(os.path.join(ICI, 'elo_etat.json'), 'w', encoding='utf-8') as f:
         json.dump({'genere_le': rap['genere_le'], 'dernier_match': str(nous[-1]['date'] if nous else fin_sack),
-                   'surfaces_tournois': table_surf, 'joueurs': elo.exporter(noms)}, f, ensure_ascii=False, separators=(',', ':'))
-    print(json.dumps({k: rap[k] for k in ('A_atp_wta_2024_2026', 'B_nos_matchs')}, ensure_ascii=False, indent=1))
+                   'variante': retenue, 'depart_bas': DEPART_BAS if retenue != 'depart_1500' else None,
+                   'surfaces_tournois': table_surf, 'alias': alias, 'joueurs': elo.exporter(W['noms'])},
+                  f, ensure_ascii=False, separators=(',', ':'))
+    print(json.dumps({k: rap[k] for k in ('variantes', 'variante_retenue', 'joueurs_relies_nom_different')}, ensure_ascii=False, indent=1))
+    if avec_scores:
+        print(json.dumps(rap['scores_exacts_atp_wta'], ensure_ascii=False, indent=1))
     return 0
 
 
