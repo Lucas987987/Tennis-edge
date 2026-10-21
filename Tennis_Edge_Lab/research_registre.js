@@ -301,6 +301,33 @@
     </details>`;
   }
 
+  /** Pronostics du jour : deux versions côte à côte + compteur de réussite (pronostics.json, pronostics_bilan.json). */
+  function pronosticsBlock(P, B) {
+    if (!P || !P.matchs) return '';
+    const pc = v => (fin(v) ? `${nf(100 * v, 0)} %` : '—');
+    const heure = d => { try { return new Date(`${d}Z`).toLocaleString('fr-FR', { weekday: 'short', hour: '2-digit', minute: '2-digit' }); } catch { return esc(d); } };
+    const nomCourt = n => esc(String(n || '').split(' ').slice(-1)[0]);
+    const ligne = (lab, v, m) => {
+      if (!v) return `<tr><td>${lab}</td><td colspan="3" class="mini">Pinnacle ne cote pas encore ce match</td></tr>`;
+      const fav = v.p_home >= 0.5;
+      const sets = Object.entries(v.sets || {}).map(([k, x]) => `${esc(k)} ${pc(x)}`).join(' · ');
+      const scores = (v.scores_probables || []).map(([s, p]) => `${esc(s)} <small>${pc(p)}</small>`).join('<br>');
+      const rem = v.remontee ? `<span class="detail">gagne après avoir perdu le 1er set : ${nomCourt(m.home)} ${pc(v.remontee.home)} · ${nomCourt(m.away)} ${pc(v.remontee.away)}</span>` : '';
+      return `<tr><td>${lab}</td><td><b>${fav ? nomCourt(m.home) : nomCourt(m.away)}</b> ${pc(fav ? v.p_home : 1 - v.p_home)}<span class="detail">${sets}</span></td><td>${scores}${rem}</td><td>${nf(v.jeux_moyen, 1)}</td></tr>`;
+    };
+    const kpi = (lab, b) => `<div><small>${lab}</small><b>${b && b.n ? `${nf(b.reussite_pct, 1)} %` : '—'}</b><small>${b && b.n ? `${nf(b.n, 0)} matchs joués` : 'pas encore de match joué'}</small></div>`;
+    const T = (B && B.tous) || {}, S = (B && B['7_derniers_jours']) || {};
+    const cartes = P.matchs.map(m => `<div class="rg-pron"><div class="mini">${heure(m.debut)} · ${esc(m.tournoi)} · ${esc(m.surface)}${m.meilleur_des === 5 ? ' · 5 sets' : ''}</div>
+        <div class="rg-pron-j"><b>${esc(m.home)}</b> – <b>${esc(m.away)}</b></div>
+        <div class="table-wrap rg-table"><table><thead><tr><th></th><th>Vainqueur · sets</th><th>Scores les plus probables (sur ~1 500 possibles)</th><th>Jeux</th></tr></thead>
+        <tbody>${ligne('Stats seules', m.stats, m)}${ligne('Stats + marché', m.marche, m)}</tbody></table></div></div>`).join('');
+    return `<details class="rg-eval" open><summary>Pronostics du jour (${nf(P.matchs.length, 0)} matchs dans les ${nf(P.horizon_h, 0)} h)</summary>
+      <p class="mini">Chaque match est rejoué point par point par le moteur (forme du jour). <b>Stats seules</b> : niveau tiré des résultats (classement Elo), style de service et de retour de chaque joueur. <b>Stats + marché</b> : même moteur, niveau pris à la cote Pinnacle. Le premier pronostic de chaque match est gardé tel quel : le compteur porte sur lui. Test du 21/10 sur 9 277 matchs ATP/WTA : stats seules 65,8 %, marché 68,0 %.</p>
+      <div class="rg-kpis rg-kpis-2">${kpi('Réussite stats seules', T.stats_seules)}${kpi('Réussite stats + marché', T.stats_plus_marche)}${kpi('7 derniers jours, stats', S.stats_seules)}${kpi('7 derniers jours, marché', S.stats_plus_marche)}</div>
+      ${cartes || '<p class="mini">Aucun match dans les prochaines heures.</p>'}
+    </details>`;
+  }
+
   /** H19 « valeur contre Pinnacle juste » : suivi gelé + grille rétrospective (valeur.json). */
   function valeurBlock(V) {
     if (!V || !V.h19) return '';
@@ -376,7 +403,7 @@
     const shown = list.slice(state.page * PAGE, (state.page + 1) * PAGE);
     const opt = (vals, v) => vals.map(([k, l]) => `<option value="${esc(k)}" ${k === (v || '') ? 'selected' : ''}>${esc(l)}</option>`).join('');
     const circuits = [...new Set(cur.list.map(m => m.circuit))].sort();
-    host.innerHTML = `${valeurBlock(state.valeurDoc)}${croisementsBlock(state.croisDoc)}${delaiBlock(state.delaiDoc)}${evaluation(state.evalDoc)}${booksBlock(state.valeurDoc)}
+    host.innerHTML = `${pronosticsBlock(state.pronoDoc, state.pronoBilan)}${valeurBlock(state.valeurDoc)}${croisementsBlock(state.croisDoc)}${delaiBlock(state.delaiDoc)}${evaluation(state.evalDoc)}${booksBlock(state.valeurDoc)}
       <div class="rg-filters">
         <label>Mois<select id="rgMois">${opt([...state.index.mois].reverse().map(x => [x.mois, `${x.mois} (${x.matchs})`]), state.mois)}</select></label>
         <label>Circuit<select id="rgCircuit">${opt([['', 'tous'], ...circuits.map(c => [c, c])], state.f.circuit)}</select></label>
@@ -419,12 +446,14 @@
     try { state.valeurDoc = await json('./live/valeur.json'); } catch { /* H19 absente */ }
     try { state.delaiDoc = await json('./live/delai_alertes.json'); } catch { /* étude absente */ }
     try { state.croisDoc = await json('./live/croisements.json'); } catch { /* croisements absents */ }
+    try { state.pronoDoc = await json('./live/pronostics.json'); } catch { /* pronostics absents */ }
+    try { state.pronoBilan = await json('./live/pronostics_bilan.json'); } catch { /* bilan absent */ }
     render();
   }
   if (hasDoc && typeof module === 'undefined') {
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
   }
   if (typeof module !== 'undefined') {
-    module.exports = { croisementsBlock, delaiBlock, booksBlock, valeurBlock, victoires, powerFair, decodeMonth, fairRow, bestRow, filterMatches, coherence, lectureOf, effective, evaluation, fiche, row };
+    module.exports = { pronosticsBlock, croisementsBlock, delaiBlock, booksBlock, valeurBlock, victoires, powerFair, decodeMonth, fairRow, bestRow, filterMatches, coherence, lectureOf, effective, evaluation, fiche, row };
   }
 })();
