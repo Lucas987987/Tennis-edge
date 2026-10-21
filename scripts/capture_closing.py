@@ -116,7 +116,10 @@ CLOSING_MAX_MINS = 35
 # ECO_INTERVALLE_MIN minutes, et une passe étendue toutes les 4 h au lieu
 # de 2. RETOUR AUTOMATIQUE à la normale le 27/10 : rien à retoucher.
 # CAPTURE_ECO_JUSQUA='' désactive l'économie tout de suite.
-ECO_JUSQUA = os.environ.get('CAPTURE_ECO_JUSQUA', '2026-10-27')
+# 21/10/2026 : quota renouvelé le 20/10 (40 000 requêtes jusqu'au 20/11, demande de
+# Lucas) -> retour à la capture toutes les 3 min dès aujourd'hui. L'économie reste
+# disponible : CAPTURE_ECO_JUSQUA=AAAA-MM-JJ la réactive jusqu'à cette date.
+ECO_JUSQUA = os.environ.get('CAPTURE_ECO_JUSQUA', '2026-10-21')
 ECO_INTERVALLE_MIN = float(os.environ.get('CAPTURE_ECO_INTERVALLE_MIN', '5'))
 try:
     ECO = bool(ECO_JUSQUA) and datetime.datetime.utcnow().date() < datetime.date.fromisoformat(ECO_JUSQUA)
