@@ -111,6 +111,12 @@
     const dd = doc.dicts.date; D.date = doc.data.date.map(c => dd[c]); D.month = doc.data.mois.map(c => doc.dicts.mois[c]);
     D.time = doc.data.decision_ts.map(c => doc.dicts.decision_ts[c]);
     D.entrees = doc.entrees;
+    // 21/10/2026 : clé (jour, joueur) et horizon, pour « un pari par joueur et par match ».
+    if (doc.data.joueur && doc.data.horizon) {
+      const dj = doc.dicts.joueur || [], dh = doc.dicts.horizon || [];
+      D.cle = doc.data.joueur.map((c, i) => `${D.date[i]}|${dj[c] ?? c}`);
+      D.hz = doc.data.horizon.map(c => dh[c] ?? c);
+    }
     return D;
   }
   /** Lignes simples (jeu d'essai de parité) : fields = [{name, type:'cat'|'num'}]. */
@@ -160,6 +166,18 @@
     return out;
   }
 
+  /** Un pari par (jour, joueur) : le premier horizon (24 h, 6 h, 1 h, 10 min) parmi les lignes retenues. */
+  const ORDRE_HZ = { '24h': 0, '6h': 1, '1h': 2, '10m': 3 };
+  function premierHorizon(D, idx) {
+    if (!D.cle || !D.hz) return idx;
+    const best = new Map();
+    for (const i of idx) {
+      const o = ORDRE_HZ[D.hz[i]] ?? 9, b = best.get(D.cle[i]);
+      if (b === undefined || o < b[0]) best.set(D.cle[i], [o, i]);
+    }
+    return [...best.values()].map(b => b[1]).sort((a, b) => a - b);
+  }
+
   function stats(D, idx, entry) {
     if (D.kind === 'histo') {
       const s = cubeStats(idx.map(i => D.cells[i]));
@@ -203,6 +221,7 @@
   // ---------- État ----------
   // V7.0 : les verdicts se lisent sur « Détections (suivi officiel) » (jeu par défaut).
   const state = { kind: 'detections', data: {}, reco: null, filters: { cats: {}, ranges: {} }, entry: 'jouable', splitBy: null,
+    unParJoueur: true,
     sort: 'n', compare: false,
     // V7.2 : compteur de découpes PARTAGÉ avec l'onglet « Matchs en direct » (α/k commun à la session).
     seen: (hasDoc && typeof window !== 'undefined' ? (window.TELab = window.TELab || { seen: new Set() }).seen : new Set()), frozen: null, panelOpen: true, openCrit: new Set() };
@@ -226,6 +245,8 @@
   const D = () => state.data[state.kind];
   const k = () => Math.max(1, state.seen.size);
   const entryKey = () => (state.kind === 'matchs' ? state.entry : 'alerte');
+  const unPar = () => state.kind === 'matchs' && state.unParJoueur;
+  const selection = data => (unPar() ? premierHorizon(data, filterIndices(data, state.filters)) : filterIndices(data, state.filters));
   const activeCount = () => Object.keys(state.filters.cats).length + Object.keys(state.filters.ranges).length;
 
   /** n par hypothèse : suivi officiel (EN DIRECT), envoyées, reconstruction (contrôle), Worker — reconciliation_hypotheses.json. */
@@ -256,11 +277,11 @@
     if (!host) return;
     const data = D();
     if (!data) { host.innerHTML = '<p class="mini">Chargement des données…</p>'; return; }
-    const idx = filterIndices(data, state.filters);
+    const idx = selection(data);
     const s = stats(data, idx, entryKey());
     const candidates = data.order.filter(n => !(n in state.filters.cats) && !(n in state.filters.ranges));
     if (!state.splitBy || !candidates.includes(state.splitBy)) state.splitBy = candidates.find(n => data.cat[n]) || candidates[0] || null;
-    if (state.splitBy) state.seen.add(JSON.stringify([state.kind, state.filters, state.splitBy, state.entry]));
+    if (state.splitBy) state.seen.add(JSON.stringify([state.kind, state.filters, state.splitBy, state.entry, unPar()]));
     const alpha = 0.05 / k();
     host.innerHTML = `${toolbar()}${filterPanel(data)}${chips(data)}${summaryCard(data, idx, s)}${state.compare ? compareCard(data, idx, s) : ''}${splitTable(data, idx, alpha)}${freezeBlock(data)}`;
     bind();
@@ -274,7 +295,8 @@
       matchs: 'Chaque match suivi depuis juin, côté par côté, à 24 h, 6 h, 1 h et 10 min. Mesure principale : CLV Pinnacle du prix d’entrée choisi.',
       histo: 'tennis-data, clôture Pinnacle (marge incluse) : ROI au prix de clôture, pas de CLV.',
     }[state.kind];
-    const entries = state.kind === 'matchs' ? `<label class="xp-entry">Prix d’entrée <select id="xpEntry">${[['pinnacle', 'Pinnacle'], ['jouable', 'Meilleur jouable'], ['fr', 'Meilleur FR']].map(([v, l]) => `<option value="${v}" ${state.entry === v ? 'selected' : ''}>${l}</option>`).join('')}</select></label>` : '';
+    const entries = state.kind === 'matchs' ? `<label class="xp-entry">Prix d’entrée <select id="xpEntry">${[['pinnacle', 'Pinnacle'], ['jouable', 'Meilleur jouable'], ['fr', 'Meilleur FR']].map(([v, l]) => `<option value="${v}" ${state.entry === v ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
+      <label class="xp-entry"><input type="checkbox" id="xpUnPar" ${state.unParJoueur ? 'checked' : ''}> Un pari par joueur et par match (premier horizon qui remplit les filtres)</label>` : '';
     const presets = PRESETS[state.kind] || [];
     return `<div class="xp-switch" role="group" aria-label="Jeu de données">${kinds.map(([v, l]) => `<button type="button" data-kind="${v}" class="${state.kind === v ? 'selected' : ''}">${l}</button>`).join('')}</div>
       <p class="mini">${note} · <b>Découpes consultées : ${k()}</b> · seuil corrigé α/k = ${pval(0.05 / k())}</p>${populationLine()}${entries}
@@ -309,7 +331,7 @@
 
   function badges(s) {
     const out = [];
-    if (state.kind === 'matchs' && (state.filters.cats.horizon || []).length !== 1) out.push('<span class="xp-warn">un match compte jusqu’à 4 fois (horizons) : choisir un seul horizon</span>');
+    if (state.kind === 'matchs' && !state.unParJoueur && (state.filters.cats.horizon || []).length !== 1) out.push('<span class="xp-warn">un match compte jusqu’à 4 fois (horizons) : choisir un seul horizon</span>');
     if (s.n < 30) out.push('<span class="xp-warn">n &lt; 30</span>');
     if (excludesZero(s.roiCi) && s.roiCi[0] > 0 && s.clvCi && !excludesZero(s.clvCi)) out.push('<span class="xp-luck">ROI seul, CLV Pinnacle compatible avec 0 : probablement de la chance</span>');
     return out.join(' ');
@@ -341,7 +363,8 @@
 
   function compareCard(data, idx, s) {
     const inSel = new Uint8Array(data.n); for (const i of idx) inSel[i] = 1;
-    const rest = []; for (let i = 0; i < data.n; i++) if (!inSel[i]) rest.push(i);
+    let rest = []; for (let i = 0; i < data.n; i++) if (!inSel[i]) rest.push(i);
+    if (unPar()) rest = premierHorizon(data, rest);
     const r = stats(data, rest, entryKey());
     const overlap = (a, b) => a && b ? !(a[0] > b[1] || b[0] > a[1]) : null;
     const line = (name, a, b, ca, cb) => `<tr><td>${name}</td><td class="num">${pct(a)}</td><td class="num">${pct(b)}</td><td class="num">${pct(a !== null && b !== null ? a - b : null)}</td><td>${overlap(ca, cb) === null ? '—' : overlap(ca, cb) ? 'IC qui se chevauchent : différence non établie' : '<b>IC disjoints</b>'}</td></tr>`;
@@ -411,6 +434,7 @@
     };
     if (Object.keys(state.filters.ranges).length) spec.plages = Object.fromEntries(Object.entries(state.filters.ranges).map(([f, r]) => [f, [r[0], r[1]]]));
     if (data.kind === 'matchs') spec.entree = state.entry;
+    if (data.kind === 'matchs' && state.unParJoueur) spec.un_par_joueur = true;
     return spec;
   }
   function freezeBlock(data) {
@@ -419,7 +443,7 @@
     return '<div class="xp-freeze"><button type="button" id="xpFreeze">Préparer le gel</button><div id="xpFreezeOut"></div></div>';
   }
   function showFreeze() {
-    const data = D(); const idx = filterIndices(data, state.filters); const s = stats(data, idx, entryKey());
+    const data = D(); const idx = selection(data); const s = stats(data, idx, entryKey());
     const out = $('xpFreezeOut'); if (!out) return;
     const bad = Object.keys(state.filters.cats).filter(f => f === 'mois' || data.cat[f]?.apres);
     if (!activeCount()) { out.innerHTML = '<p class="xp-luck">Ajoutez au moins un critère avant de geler.</p>'; return; }
@@ -434,7 +458,7 @@
     if (!f || !Array.isArray(f.candidates) || !f.candidates.length) { host.innerHTML = '<p class="mini">Aucune sélection de l’Explorateur gelée pour l’instant.</p>'; return; }
     const desc = c => [...Object.entries(c.criteres || {}).map(([a, b]) => `${a} : ${b.join(' ou ')}`),
       ...Object.entries(c.plages || {}).map(([a, [lo, hi]]) => `${a} : ${lo ?? '…'} à ${hi ?? '…'}`)].join(' · ');
-    host.innerHTML = `<p class="mini">${esc(f.rule)} ${esc(f.multiple_testing)}</p><div class="table-wrap"><table class="xp-mini"><thead><tr><th>Sélection</th><th>Gel</th><th class="num">Futures</th><th class="num">CLV Pinnacle · IC95</th><th class="num">p Holm</th><th class="num">ROI</th><th>État</th></tr></thead><tbody>${f.candidates.map(c => `<tr><td><code>${esc(c.candidate_id)}</code><div class="detail">${esc(c.jeu || 'alertes')}${c.entree ? ` · entrée ${esc(c.entree)}` : ''} · ${esc(desc(c))}</div></td><td>${esc(String(c.created_at).slice(0, 10))}</td><td class="num">${nf(c.n, 0)}</td><td class="num">${pct(c.clv_pin_mean_pct)}<div class="detail">${ciTxt(c.clv_pin_ci95)}</div></td><td class="num">${pval(c.p_holm_clv_pin)}</td><td class="num">${pct(c.roi_pct)}</td><td>${esc(c.state)}</td></tr>`).join('')}</tbody></table></div>`;
+    host.innerHTML = `<p class="mini">${esc(f.rule)} ${esc(f.multiple_testing)}</p><div class="table-wrap"><table class="xp-mini"><thead><tr><th>Sélection</th><th>Gel</th><th class="num">Futures</th><th class="num">CLV Pinnacle · IC95</th><th class="num">p Holm</th><th class="num">ROI</th><th>État</th></tr></thead><tbody>${f.candidates.map(c => `<tr><td><code>${esc(c.candidate_id)}</code><div class="detail">${esc(c.jeu || 'alertes')}${c.entree ? ` · entrée ${esc(c.entree)}` : ''}${c.un_par_joueur ? ' · un pari par joueur' : ''} · ${esc(desc(c))}</div></td><td>${esc(String(c.created_at).slice(0, 10))}</td><td class="num">${nf(c.n, 0)}</td><td class="num">${pct(c.clv_pin_mean_pct)}<div class="detail">${ciTxt(c.clv_pin_ci95)}</div></td><td class="num">${pval(c.p_holm_clv_pin)}</td><td class="num">${pct(c.roi_pct)}</td><td>${esc(c.state)}</td></tr>`).join('')}</tbody></table></div>`;
   }
 
   function applyPreset(p) {
@@ -484,7 +508,7 @@
     host.querySelectorAll('[data-remove-num]').forEach(b => b.addEventListener('click', () => { delete state.filters.ranges[b.dataset.removeNum]; render(); }));
     host.querySelectorAll('[data-clear]').forEach(b => b.addEventListener('click', () => { state.filters = { cats: {}, ranges: {} }; render(); }));
     const data = D();
-    const groups = state.splitBy ? splitGroups(data, filterIndices(data, state.filters), state.splitBy) : [];
+    const groups = state.splitBy ? splitGroups(data, selection(data), state.splitBy) : [];
     const sorted = (() => {
       const rows = groups.map(g => ({ ...g, s: stats(data, g.members, entryKey()) }));
       if (state.sort === 'clv' && data.kind !== 'histo') rows.sort((a, b) => ((b.s.clvCi?.[0] ?? -1e9) - (a.s.clvCi?.[0] ?? -1e9)));
@@ -503,6 +527,7 @@
     const split = $('xpSplit'); if (split) split.addEventListener('change', () => { state.splitBy = split.value; render(); });
     const sort = $('xpSort'); if (sort) sort.addEventListener('change', () => { state.sort = sort.value; render(); });
     const entry = $('xpEntry'); if (entry) entry.addEventListener('change', () => { state.entry = entry.value; render(); });
+    const up = $('xpUnPar'); if (up) up.addEventListener('change', () => { state.unParJoueur = up.checked; render(); });
     const cmp = $('xpCompare'); if (cmp) cmp.addEventListener('change', () => { state.compare = cmp.checked; render(); });
     const fr = $('xpFreeze'); if (fr) fr.addEventListener('click', showFreeze);
   }
@@ -544,6 +569,6 @@
   }
   if (typeof module !== 'undefined') {
     module.exports = { clusterSummary, cubeStats, alertStats, stats, prepareAlerts, prepareMatchs, prepareRows, prepareHisto,
-      filterIndices, splitGroups, freezeSpec, populationCounts, _state: state };
+      filterIndices, premierHorizon, splitGroups, freezeSpec, populationCounts, _state: state };
   }
 })();
