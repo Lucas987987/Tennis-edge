@@ -1,0 +1,67 @@
+name: Simulateur - test contre Pinnacle
+
+# 21/10/2026 — simulateur de matchs point par point (simulateur/).
+# Clone l'ARCHIVE publique des CSV de Jeff Sackmann (ses dépôts ont été
+# supprimés en 2026 : 404) — instantané de juin 2026, licence CC BY-NC-SA 4.0,
+# usage non commercial. Seuls les fichiers de matchs sont téléchargés.
+# Réglage sur 2023, test sur 2024 → janvier 2026 (fin des cotes Pinnacle de
+# tennis-data) contre la clôture Pinnacle
+# (historique/tennis_data.csv.gz), sans jamais regarder le futur.
+# Écrit simulateur/rapport_backtest.json et simulateur/notes_joueurs.json.
+# 0 requête d'API de cotes. Manuel uniquement.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+
+concurrency:
+  group: simulateur
+  cancel-in-progress: false
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          filter: blob:none
+          sparse-checkout: |
+            simulateur
+            Tennis_Edge_Lab/books.py
+            historique
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - name: Archive Sackmann (fichiers de matchs seulement)
+        run: |
+          set -euo pipefail
+          git clone --depth 1 --filter=blob:none --sparse https://github.com/Aneeshers/tennis-sackmann-archive.git /tmp/sackmann
+          cd /tmp/sackmann
+          git sparse-checkout set --no-cone 'atp_matches_20*.csv' 'atp_matches_qual_chall_20*.csv' 'wta_matches_20*.csv' 'wta_matches_qual_itf_20*.csv'
+          echo "--- fichiers récupérés ---"
+          find . -name '*_matches_*.csv' | sort | tail -40
+          du -sh /tmp/sackmann
+      - name: Test (réglage 2023, jugement 2024 → janvier 2026)
+        run: python simulateur/backtest.py /tmp/sackmann historique/tennis_data.csv.gz
+      - name: Publier le rapport
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- simulateur/rapport_backtest.json simulateur/notes_joueurs.json
+          if git diff --cached --quiet; then echo 'Rien de nouveau.'; exit 0; fi
+          git commit -m 'Simulateur : test contre la clôture Pinnacle'
+          for i in 1 2 3 4 5; do
+            git pull --rebase origin main || { git rebase --abort || true; echo '::error::Conflit avec main'; exit 1; }
+            if git push origin HEAD:main; then exit 0; fi
+            sleep $((i * 10))
+          done
+          echo '::error::Push impossible après 5 essais'; exit 1
