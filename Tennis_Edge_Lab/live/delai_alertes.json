@@ -1,0 +1,565 @@
+{
+ "schema_version": 1,
+ "generated_at": "2026-10-21T19:35:27+00:00",
+ "alertes_envoyees": 583,
+ "sans_courbe_du_book": 182,
+ "delais_min": [
+  0,
+  2,
+  5,
+  10,
+  30
+ ],
+ "resume": [
+  {
+   "hypothese": "H13",
+   "delai_min": 0,
+   "n": 144,
+   "prix_tenu": 0.8819444444444444,
+   "variation_moyenne_pct": -0.7053223606277254,
+   "clv_au_prix_disponible": -2.9068292299241705,
+   "clv_ic95": [
+    -4.137257951101507,
+    -1.676400508746834
+   ],
+   "clv_meilleur_book": -0.3506914085658873,
+   "clv_au_prix_alerte": -2.1875466040561617
+  },
+  {
+   "hypothese": "H13",
+   "delai_min": 2,
+   "n": 144,
+   "prix_tenu": 0.8611111111111112,
+   "variation_moyenne_pct": -0.8790374579500455,
+   "clv_au_prix_disponible": -3.079005922177055,
+   "clv_ic95": [
+    -4.301578552024557,
+    -1.856433292329553
+   ],
+   "clv_meilleur_book": -0.3677622217881314,
+   "clv_au_prix_alerte": -2.1875466040561617
+  },
+  {
+   "hypothese": "H13",
+   "delai_min": 5,
+   "n": 144,
+   "prix_tenu": 0.8125,
+   "variation_moyenne_pct": -1.2516479308977353,
+   "clv_au_prix_disponible": -3.4562518504891195,
+   "clv_ic95": [
+    -4.672508816086239,
+    -2.2399948848920004
+   ],
+   "clv_meilleur_book": -0.5568100176614372,
+   "clv_au_prix_alerte": -2.1875466040561617
+  },
+  {
+   "hypothese": "H13",
+   "delai_min": 10,
+   "n": 144,
+   "prix_tenu": 0.7569444444444444,
+   "variation_moyenne_pct": -1.5605600987654866,
+   "clv_au_prix_disponible": -3.7779821973630225,
+   "clv_ic95": [
+    -4.995236509136362,
+    -2.560727885589683
+   ],
+   "clv_meilleur_book": -0.6238577774574209,
+   "clv_au_prix_alerte": -2.1875466040561617
+  },
+  {
+   "hypothese": "H13",
+   "delai_min": 30,
+   "n": 143,
+   "prix_tenu": 0.7062937062937062,
+   "variation_moyenne_pct": -1.8413322864258808,
+   "clv_au_prix_disponible": -4.044565357906879,
+   "clv_ic95": [
+    -5.256151284373278,
+    -2.8329794314404793
+   ],
+   "clv_meilleur_book": -0.9250426032265285,
+   "clv_au_prix_alerte": -2.174324820136559
+  },
+  {
+   "hypothese": "H14",
+   "delai_min": 0,
+   "n": 8,
+   "prix_tenu": 1.0,
+   "variation_moyenne_pct": 0.0,
+   "clv_au_prix_disponible": -4.463526870281312,
+   "clv_ic95": [
+    -16.596227567320113,
+    7.669173826757488
+   ],
+   "clv_meilleur_book": -2.5475849798665453,
+   "clv_au_prix_alerte": -4.463526870281312
+  },
+  {
+   "hypothese": "H14",
+   "delai_min": 2,
+   "n": 8,
+   "prix_tenu": 1.0,
+   "variation_moyenne_pct": 0.0,
+   "clv_au_prix_disponible": -4.463526870281312,
+   "clv_ic95": [
+    -16.596227567320113,
+    7.669173826757488
+   ],
+   "clv_meilleur_book": -2.5475849798665453,
+   "clv_au_prix_alerte": -4.463526870281312
+  },
+  {
+   "hypothese": "H14",
+   "delai_min": 5,
+   "n": 8,
+   "prix_tenu": 1.0,
+   "variation_moyenne_pct": 0.0,
+   "clv_au_prix_disponible": -4.463526870281312,
+   "clv_ic95": [
+    -16.596227567320113,
+    7.669173826757488
+   ],
+   "clv_meilleur_book": -2.5475849798665453,
+   "clv_au_prix_alerte": -4.463526870281312
+  },
+  {
+   "hypothese": "H14",
+   "delai_min": 10,
+   "n": 8,
+   "prix_tenu": 0.75,
+   "variation_moyenne_pct": -2.0218002812939533,
+   "clv_au_prix_disponible": -6.484293798284494,
+   "clv_ic95": [
+    -18.52460977689696,
+    5.556022180327972
+   ],
+   "clv_meilleur_book": -2.895168588529621,
+   "clv_au_prix_alerte": -4.463526870281312
+  },
+  {
+   "hypothese": "H14",
+   "delai_min": 30,
+   "n": 8,
+   "prix_tenu": 0.625,
+   "variation_moyenne_pct": -3.513361462728552,
+   "clv_au_prix_disponible": -7.950544474094258,
+   "clv_ic95": [
+    -19.972010958485857,
+    4.070922010297341
+   ],
+   "clv_meilleur_book": -3.187792498724028,
+   "clv_au_prix_alerte": -4.463526870281312
+  },
+  {
+   "hypothese": "H16",
+   "delai_min": 0,
+   "n": 103,
+   "prix_tenu": 0.8932038834951457,
+   "variation_moyenne_pct": -0.3385854533688601,
+   "clv_au_prix_disponible": -0.7248812356116198,
+   "clv_ic95": [
+    -1.3028467541727258,
+    -0.14691571705051387
+   ],
+   "clv_meilleur_book": 0.3020930247067531,
+   "clv_au_prix_alerte": -0.3736665006737403
+  },
+  {
+   "hypothese": "H16",
+   "delai_min": 2,
+   "n": 103,
+   "prix_tenu": 0.8737864077669902,
+   "variation_moyenne_pct": -0.39506163421922985,
+   "clv_au_prix_disponible": -0.7741503622527927,
+   "clv_ic95": [
+    -1.4007345864453047,
+    -0.14756613806028052
+   ],
+   "clv_meilleur_book": 0.2910874685044318,
+   "clv_au_prix_alerte": -0.3736665006737403
+  },
+  {
+   "hypothese": "H16",
+   "delai_min": 5,
+   "n": 103,
+   "prix_tenu": 0.8446601941747572,
+   "variation_moyenne_pct": -0.5159340851319384,
+   "clv_au_prix_disponible": -0.8969861619915521,
+   "clv_ic95": [
+    -1.5329275786776302,
+    -0.26104474530547417
+   ],
+   "clv_meilleur_book": 0.2383540399569257,
+   "clv_au_prix_alerte": -0.3736665006737403
+  },
+  {
+   "hypothese": "H16",
+   "delai_min": 10,
+   "n": 103,
+   "prix_tenu": 0.7475728155339806,
+   "variation_moyenne_pct": -1.074099463105433,
+   "clv_au_prix_disponible": -1.4478993489635983,
+   "clv_ic95": [
+    -2.1949551560507694,
+    -0.7008435418764272
+   ],
+   "clv_meilleur_book": 0.14484350667198104,
+   "clv_au_prix_alerte": -0.3736665006737403
+  },
+  {
+   "hypothese": "H16",
+   "delai_min": 30,
+   "n": 103,
+   "prix_tenu": 0.6504854368932039,
+   "variation_moyenne_pct": -1.456324258922743,
+   "clv_au_prix_disponible": -1.8382508599293654,
+   "clv_ic95": [
+    -2.463423552938427,
+    -1.2130781669203037
+   ],
+   "clv_meilleur_book": -0.03482417301824253,
+   "clv_au_prix_alerte": -0.3736665006737403
+  },
+  {
+   "hypothese": "H16B",
+   "delai_min": 0,
+   "n": 91,
+   "prix_tenu": 0.9010989010989011,
+   "variation_moyenne_pct": -0.3179186592669109,
+   "clv_au_prix_disponible": -0.8691510242973409,
+   "clv_ic95": [
+    -1.4951701482958102,
+    -0.24313190029887155
+   ],
+   "clv_meilleur_book": 0.13256981509612994,
+   "clv_au_prix_alerte": -0.5382008928606491
+  },
+  {
+   "hypothese": "H16B",
+   "delai_min": 2,
+   "n": 91,
+   "prix_tenu": 0.8791208791208791,
+   "variation_moyenne_pct": -0.3818422485810656,
+   "clv_au_prix_disponible": -0.92491717862746,
+   "clv_ic95": [
+    -1.6089315132858473,
+    -0.2409028439690729
+   ],
+   "clv_meilleur_book": 0.12011297675723882,
+   "clv_au_prix_alerte": -0.5382008928606491
+  },
+  {
+   "hypothese": "H16B",
+   "delai_min": 5,
+   "n": 91,
+   "prix_tenu": 0.8461538461538461,
+   "variation_moyenne_pct": -0.5186539237899556,
+   "clv_au_prix_disponible": -1.0639511058042974,
+   "clv_ic95": [
+    -1.7469343118808975,
+    -0.3809678997276972
+   ],
+   "clv_meilleur_book": 0.07072969114983876,
+   "clv_au_prix_alerte": -0.5382008928606491
+  },
+  {
+   "hypothese": "H16B",
+   "delai_min": 10,
+   "n": 91,
+   "prix_tenu": 0.7362637362637363,
+   "variation_moyenne_pct": -1.1179092747656558,
+   "clv_au_prix_disponible": -1.6548937026536374,
+   "clv_ic95": [
+    -2.4775709891861966,
+    -0.8322164161210784
+   ],
+   "clv_meilleur_book": -0.03045555917378603,
+   "clv_au_prix_alerte": -0.5382008928606491
+  },
+  {
+   "hypothese": "H16B",
+   "delai_min": 30,
+   "n": 91,
+   "prix_tenu": 0.6483516483516484,
+   "variation_moyenne_pct": -1.4705241204982287,
+   "clv_au_prix_disponible": -2.015210499923501,
+   "clv_ic95": [
+    -2.712372246712767,
+    -1.3180487531342353
+   ],
+   "clv_meilleur_book": -0.17183695030941645,
+   "clv_au_prix_alerte": -0.5382008928606491
+  },
+  {
+   "hypothese": "H17",
+   "delai_min": 0,
+   "n": 24,
+   "prix_tenu": 0.75,
+   "variation_moyenne_pct": -1.4024466749231994,
+   "clv_au_prix_disponible": 1.4262175305531175,
+   "clv_ic95": [
+    -2.8445516142063187,
+    5.696986675312553
+   ],
+   "clv_meilleur_book": 4.9161816932815,
+   "clv_au_prix_alerte": 2.8226440737581258
+  },
+  {
+   "hypothese": "H17",
+   "delai_min": 2,
+   "n": 24,
+   "prix_tenu": 0.75,
+   "variation_moyenne_pct": -1.4024466749231994,
+   "clv_au_prix_disponible": 1.4262175305531175,
+   "clv_ic95": [
+    -2.8445516142063187,
+    5.696986675312553
+   ],
+   "clv_meilleur_book": 4.9161816932815,
+   "clv_au_prix_alerte": 2.8226440737581258
+  },
+  {
+   "hypothese": "H17",
+   "delai_min": 5,
+   "n": 24,
+   "prix_tenu": 0.7083333333333334,
+   "variation_moyenne_pct": -1.6078457359560632,
+   "clv_au_prix_disponible": 1.2275921162598211,
+   "clv_ic95": [
+    -3.079351400748884,
+    5.534535633268526
+   ],
+   "clv_meilleur_book": 4.775725150316954,
+   "clv_au_prix_alerte": 2.8226440737581258
+  },
+  {
+   "hypothese": "H17",
+   "delai_min": 10,
+   "n": 24,
+   "prix_tenu": 0.5416666666666666,
+   "variation_moyenne_pct": -2.896226975781209,
+   "clv_au_prix_disponible": -0.14748344123983295,
+   "clv_ic95": [
+    -4.110663255779704,
+    3.815696373300038
+   ],
+   "clv_meilleur_book": 4.059832352497729,
+   "clv_au_prix_alerte": 2.8226440737581258
+  },
+  {
+   "hypothese": "H17",
+   "delai_min": 30,
+   "n": 24,
+   "prix_tenu": 0.5,
+   "variation_moyenne_pct": -4.200509635403518,
+   "clv_au_prix_disponible": -1.5640306749419812,
+   "clv_ic95": [
+    -5.387374754944208,
+    2.2593134050602455
+   ],
+   "clv_meilleur_book": 3.475676060797575,
+   "clv_au_prix_alerte": 2.8226440737581258
+  },
+  {
+   "hypothese": "H18",
+   "delai_min": 0,
+   "n": 14,
+   "prix_tenu": 0.7142857142857143,
+   "variation_moyenne_pct": -0.7866994758517788,
+   "clv_au_prix_disponible": 1.2902691341583792,
+   "clv_ic95": [
+    -0.6910330341925144,
+    3.2715713025092725
+   ],
+   "clv_meilleur_book": 1.6100432883413982,
+   "clv_au_prix_alerte": 2.10288757356152
+  },
+  {
+   "hypothese": "H18",
+   "delai_min": 2,
+   "n": 14,
+   "prix_tenu": 0.7142857142857143,
+   "variation_moyenne_pct": -0.7866994758517788,
+   "clv_au_prix_disponible": 1.2902691341583792,
+   "clv_ic95": [
+    -0.6910330341925144,
+    3.2715713025092725
+   ],
+   "clv_meilleur_book": 1.6100432883413982,
+   "clv_au_prix_alerte": 2.10288757356152
+  },
+  {
+   "hypothese": "H18",
+   "delai_min": 5,
+   "n": 14,
+   "prix_tenu": 0.6428571428571429,
+   "variation_moyenne_pct": -1.1388121519081162,
+   "clv_au_prix_disponible": 0.9497684239412995,
+   "clv_ic95": [
+    -1.2166074651867977,
+    3.116144313069397
+   ],
+   "clv_meilleur_book": 1.3692606432593195,
+   "clv_au_prix_alerte": 2.10288757356152
+  },
+  {
+   "hypothese": "H18",
+   "delai_min": 10,
+   "n": 14,
+   "prix_tenu": 0.5,
+   "variation_moyenne_pct": -2.020179361548571,
+   "clv_au_prix_disponible": 0.09681319482734445,
+   "clv_ic95": [
+    -2.685436956154257,
+    2.879063345808946
+   ],
+   "clv_meilleur_book": 1.2388635069723317,
+   "clv_au_prix_alerte": 2.10288757356152
+  },
+  {
+   "hypothese": "H18",
+   "delai_min": 30,
+   "n": 14,
+   "prix_tenu": 0.5,
+   "variation_moyenne_pct": -2.8288786987580714,
+   "clv_au_prix_disponible": -0.7771981011298329,
+   "clv_ic95": [
+    -2.310316600856036,
+    0.7559203985963702
+   ],
+   "clv_meilleur_book": 0.7061565785939362,
+   "clv_au_prix_alerte": 2.10288757356152
+  },
+  {
+   "hypothese": "H19",
+   "delai_min": 0,
+   "n": 1,
+   "prix_tenu": 0.0,
+   "variation_moyenne_pct": -12.987012987012992,
+   "clv_au_prix_disponible": -7.448525957141639,
+   "clv_ic95": null,
+   "clv_meilleur_book": 6.365126885076022,
+   "clv_au_prix_alerte": 6.365126885076022
+  },
+  {
+   "hypothese": "H19",
+   "delai_min": 2,
+   "n": 1,
+   "prix_tenu": 0.0,
+   "variation_moyenne_pct": -12.987012987012992,
+   "clv_au_prix_disponible": -7.448525957141639,
+   "clv_ic95": null,
+   "clv_meilleur_book": 6.365126885076022,
+   "clv_au_prix_alerte": 6.365126885076022
+  },
+  {
+   "hypothese": "H19",
+   "delai_min": 5,
+   "n": 1,
+   "prix_tenu": 0.0,
+   "variation_moyenne_pct": -12.987012987012992,
+   "clv_au_prix_disponible": -7.448525957141639,
+   "clv_ic95": null,
+   "clv_meilleur_book": 6.365126885076022,
+   "clv_au_prix_alerte": 6.365126885076022
+  },
+  {
+   "hypothese": "H19",
+   "delai_min": 10,
+   "n": 1,
+   "prix_tenu": 0.0,
+   "variation_moyenne_pct": -12.987012987012992,
+   "clv_au_prix_disponible": -7.448525957141639,
+   "clv_ic95": null,
+   "clv_meilleur_book": -4.1332492750093985,
+   "clv_au_prix_alerte": 6.365126885076022
+  },
+  {
+   "hypothese": "H19",
+   "delai_min": 30,
+   "n": 1,
+   "prix_tenu": 0.0,
+   "variation_moyenne_pct": -12.987012987012992,
+   "clv_au_prix_disponible": -7.448525957141639,
+   "clv_ic95": null,
+   "clv_meilleur_book": -4.1332492750093985,
+   "clv_au_prix_alerte": 6.365126885076022
+  },
+  {
+   "hypothese": "toutes",
+   "delai_min": 0,
+   "n": 385,
+   "prix_tenu": 0.8753246753246753,
+   "variation_moyenne_pct": -0.5793008973188796,
+   "clv_au_prix_disponible": -1.462864082846849,
+   "clv_ic95": [
+    -2.2393577940790625,
+    -0.6863703716146355
+   ],
+   "clv_meilleur_book": 0.3095929496278828,
+   "clv_au_prix_alerte": -0.8691684313790111
+  },
+  {
+   "hypothese": "toutes",
+   "delai_min": 2,
+   "n": 385,
+   "prix_tenu": 0.8571428571428571,
+   "variation_moyenne_pct": -0.6744932798372956,
+   "clv_au_prix_disponible": -1.5536248199182705,
+   "clv_ic95": [
+    -2.3441621838432645,
+    -0.7630874559932764
+   ],
+   "clv_meilleur_book": 0.29731933487026896,
+   "clv_au_prix_alerte": -0.8691684313790111
+  },
+  {
+   "hypothese": "toutes",
+   "delai_min": 5,
+   "n": 385,
+   "prix_tenu": 0.8181818181818182,
+   "variation_moyenne_pct": -0.9041420796348615,
+   "clv_au_prix_disponible": -1.78521341292918,
+   "clv_ic95": [
+    -2.5601844615478173,
+    -1.0102423643105425
+   ],
+   "clv_meilleur_book": 0.18331876656190324,
+   "clv_au_prix_alerte": -0.8691684313790111
+  },
+  {
+   "hypothese": "toutes",
+   "delai_min": 10,
+   "n": 385,
+   "prix_tenu": 0.7246753246753247,
+   "variation_moyenne_pct": -1.4650286146585925,
+   "clv_au_prix_disponible": -2.351338936391168,
+   "clv_ic95": [
+    -3.228057706014805,
+    -1.4746201667675307
+   ],
+   "clv_meilleur_book": 0.025447721877513315,
+   "clv_au_prix_alerte": -0.8691684313790111
+  },
+  {
+   "hypothese": "toutes",
+   "delai_min": 30,
+   "n": 384,
+   "prix_tenu": 0.6536458333333334,
+   "variation_moyenne_pct": -1.8975001258188051,
+   "clv_au_prix_disponible": -2.7879354989863785,
+   "clv_ic95": [
+    -3.649763530047923,
+    -1.9261074679248342
+   ],
+   "clv_meilleur_book": -0.22874561527545345,
+   "clv_au_prix_alerte": -0.8608114176467705
+  }
+ ],
+ "notes": {
+  "prix": "prix NET (commission déduite) du book alerté, dernier changement de cote avant l'instant",
+  "clv": "contre la clôture Pinnacle sans marge (méthode puissance)",
+  "meilleur": "meilleur prix entre le book alerté et les autres books jouables au même instant"
+ }
+}
