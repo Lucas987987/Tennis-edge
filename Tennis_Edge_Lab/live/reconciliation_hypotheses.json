@@ -1,15 +1,15 @@
 {
  "schema_version": 2,
- "generated_at": "2026-10-21T09:43:20+00:00",
+ "generated_at": "2026-10-21T11:54:04+00:00",
  "sources": {
   "worker": {
    "source": "API Worker D1 /api/hypotheses (fetch_worker_snapshot.py)",
    "fichier": "worker_hypotheses_capture.json",
    "status": "ok",
-   "fetched_at": "2026-10-21T09:43:16Z",
+   "fetched_at": "2026-10-21T11:54:00Z",
    "worker_generated_at": "2026-10-21T05:06:46Z"
   },
-  "suivi_officiel": "alertes en direct : h*_signal_log.jsonl + suivi_direct/resultats.json (verdicts_direct.json du 2026-10-21T09:43:20Z)",
+  "suivi_officiel": "alertes en direct : h*_signal_log.jsonl + suivi_direct/resultats.json (verdicts_direct.json du 2026-10-21T11:54:04Z)",
   "reconstruction": "moves_detail_hist.csv filtré par les règles gelées de validation_report.py (lignes jusqu'au 2026-10-14) — contrôle, ne juge pas",
   "rapprochement": "uid + joueur normalisé ; à défaut paire de joueurs + date ±1 jour"
  },
@@ -120,7 +120,7 @@
      -3.3,
      -1.6
     ],
-    "clv_n": 228,
+    "clv_n": 229,
     "n_detectees": 238,
     "n_envoyees": 238,
     "n_doublons": 0,
@@ -128,7 +128,7 @@
     "sans_resultat_pct": 16.1,
     "statut": "en attente de résultats (16,1 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-10-21T09:43:20Z"
+    "genere_le": "2026-10-21T11:54:04Z"
    },
    "reconstruction": {
     "n": 155,
@@ -5432,12 +5432,12 @@
     "gagnes": 3,
     "roi": 10.0,
     "pts": 9.7,
-    "clv_pin": -3.9,
+    "clv_pin": -2.5,
     "clv_pin_ic95": [
-     -6.6,
-     -1.2
+     -7.4,
+     2.4
     ],
-    "clv_n": 19,
+    "clv_n": 22,
     "n_detectees": 23,
     "n_envoyees": 10,
     "n_doublons": 13,
@@ -5445,7 +5445,7 @@
     "sans_resultat_pct": 73.9,
     "statut": "en attente de résultats (73,9 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-10-21T09:43:20Z"
+    "genere_le": "2026-10-21T11:54:04Z"
    },
    "reconstruction": {
     "n": 91,
@@ -5487,16 +5487,16 @@
      "gagnes": 3,
      "roi": 10.0,
      "pts": 9.67,
-     "clv_pin": -7.99,
-     "clv_n": 5
+     "clv_pin": -6.77,
+     "clv_n": 6
     },
     "envoyees": {
      "n": 2,
      "gagnes": 0,
      "roi": -100.0,
      "pts": -31.57,
-     "clv_pin": -33.53,
-     "clv_n": 1
+     "clv_pin": -17.1,
+     "clv_n": 2
     },
     "detectees_non_envoyees": {
      "n": 4,
@@ -5535,8 +5535,8 @@
      "gagnes": 3,
      "roi": 10.0,
      "pts": 9.67,
-     "clv_pin": -7.99,
-     "clv_n": 5
+     "clv_pin": -6.77,
+     "clv_n": 6
     },
     "reconstruction_seule": {
      "n": 91,
@@ -7286,7 +7286,7 @@
     "sans_resultat_pct": 43.6,
     "statut": "en attente de résultats (43,6 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-10-21T09:43:20Z"
+    "genere_le": "2026-10-21T11:54:04Z"
    },
    "reconstruction": {
     "n": 55,
@@ -8809,20 +8809,20 @@
     "gagnes": 75,
     "roi": 2.0,
     "pts": 1.8,
-    "clv_pin": -0.5,
+    "clv_pin": -0.4,
     "clv_pin_ic95": [
-     -1.3,
+     -1.2,
      0.3
     ],
-    "clv_n": 142,
+    "clv_n": 145,
     "n_detectees": 151,
     "n_envoyees": 151,
     "n_doublons": 0,
     "source": "verdicts_direct.json (recalculé : journal plus récent)",
-    "sans_resultat_pct": 28.2,
-    "statut": "en attente de résultats (28,2 % sans résultat)",
+    "sans_resultat_pct": 28.7,
+    "statut": "en attente de résultats (28,7 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-10-21T09:43:20Z"
+    "genere_le": "2026-10-21T11:54:04Z"
    },
    "reconstruction": {
     "n": 162,
@@ -8867,16 +8867,16 @@
      "gagnes": 75,
      "roi": 2.0,
      "pts": 1.77,
-     "clv_pin": -0.25,
-     "clv_n": 106
+     "clv_pin": -0.26,
+     "clv_n": 107
     },
     "envoyees": {
      "n": 107,
      "gagnes": 75,
      "roi": 2.0,
      "pts": 1.77,
-     "clv_pin": -0.25,
-     "clv_n": 106
+     "clv_pin": -0.26,
+     "clv_n": 107
     },
     "detectees_non_envoyees": {
      "n": 0,
@@ -8915,8 +8915,8 @@
      "gagnes": 52,
      "roi": 3.06,
      "pts": 2.55,
-     "clv_pin": -0.36,
-     "clv_n": 72
+     "clv_pin": -0.37,
+     "clv_n": 73
     },
     "reconstruction_seule": {
      "n": 130,
@@ -12627,20 +12627,20 @@
     "gagnes": 61,
     "roi": 1.2,
     "pts": 1.0,
-    "clv_pin": -0.6,
+    "clv_pin": -0.5,
     "clv_pin_ic95": [
-     -1.5,
-     0.3
+     -1.4,
+     0.4
     ],
-    "clv_n": 124,
+    "clv_n": 127,
     "n_detectees": 130,
     "n_envoyees": 130,
     "n_doublons": 0,
     "source": "verdicts_direct.json (recalculé : journal plus récent)",
-    "sans_resultat_pct": 28.9,
-    "statut": "en attente de résultats (28,9 % sans résultat)",
+    "sans_resultat_pct": 29.5,
+    "statut": "en attente de résultats (29,5 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-10-21T09:43:20Z"
+    "genere_le": "2026-10-21T11:54:04Z"
    },
    "reconstruction": {
     "n": 139,
@@ -12685,16 +12685,16 @@
      "gagnes": 61,
      "roi": 1.23,
      "pts": 0.98,
-     "clv_pin": -0.38,
-     "clv_n": 90
+     "clv_pin": -0.39,
+     "clv_n": 91
     },
     "envoyees": {
      "n": 91,
      "gagnes": 61,
      "roi": 1.23,
      "pts": 0.98,
-     "clv_pin": -0.38,
-     "clv_n": 90
+     "clv_pin": -0.39,
+     "clv_n": 91
     },
     "detectees_non_envoyees": {
      "n": 0,
@@ -12733,8 +12733,8 @@
      "gagnes": 41,
      "roi": 1.56,
      "pts": 1.32,
-     "clv_pin": -0.45,
-     "clv_n": 60
+     "clv_pin": -0.46,
+     "clv_n": 61
     },
     "reconstruction_seule": {
      "n": 110,
@@ -15730,7 +15730,7 @@
     "sans_resultat_pct": 17.8,
     "statut": "en attente de résultats (17,8 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-10-21T09:43:20Z"
+    "genere_le": "2026-10-21T11:54:04Z"
    },
    "reconstruction": {
     "n": 63,
@@ -17364,7 +17364,7 @@
     "sans_resultat_pct": 23.5,
     "statut": "en attente de résultats (23,5 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-10-21T09:43:20Z"
+    "genere_le": "2026-10-21T11:54:04Z"
    },
    "reconstruction": {
     "n": 29,
