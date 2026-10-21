@@ -1,0 +1,154 @@
+{
+ "genere_le": "2026-10-21T18:23:20+00:00",
+ "sigma": 0.15,
+ "decision": "30 min avant le début, cotes de moins de 180 min ; CLV contre la dernière cote set 1 Pinnacle d'avant-match",
+ "matchs": 2714,
+ "periode": [
+  "2026-06-11",
+  "2026-10-14"
+ ],
+ "accord_moteur_pinnacle_set1": {
+  "ecart_moyen_pts": 0.03,
+  "ecart_absolu_moyen_pts": 1.03
+ },
+ "precision_set1": {
+  "matchs": 2384,
+  "moteur": 0.65,
+  "pinnacle_set1": 0.64893,
+  "victoire_match_comme_set1": 0.65923
+ },
+ "valeur_books_juge_moteur": [
+  {
+   "seuil": "> 0 %",
+   "paris": 607,
+   "clv_pinnacle_set1_pct": 2.34,
+   "regles": 515,
+   "roi_pct": -6.94,
+   "ic95_roi_pct": [
+    -15.04,
+    1.72
+   ]
+  },
+  {
+   "seuil": "> 3 %",
+   "paris": 93,
+   "clv_pinnacle_set1_pct": 19.7,
+   "regles": 76,
+   "roi_pct": -14.18,
+   "ic95_roi_pct": [
+    -44.58,
+    35.01
+   ]
+  },
+  {
+   "seuil": "> 5 %",
+   "paris": 51,
+   "clv_pinnacle_set1_pct": 33.33,
+   "regles": 44,
+   "roi_pct": -33.72,
+   "ic95_roi_pct": [
+    -66.06,
+    50.02
+   ]
+  },
+  {
+   "seuil": "> 10 %",
+   "paris": 32,
+   "clv_pinnacle_set1_pct": 47.57,
+   "regles": 31,
+   "roi_pct": -66.92,
+   "ic95_roi_pct": [
+    -100.0,
+    -7.14
+   ]
+  }
+ ],
+ "valeur_books_juge_pinnacle_set1": [
+  {
+   "seuil": "> 0 %",
+   "paris": 509,
+   "clv_pinnacle_set1_pct": 5.22,
+   "regles": 436,
+   "roi_pct": 1.03,
+   "ic95_roi_pct": [
+    -11.11,
+    13.89
+   ]
+  },
+  {
+   "seuil": "> 3 %",
+   "paris": 107,
+   "clv_pinnacle_set1_pct": 20.87,
+   "regles": 82,
+   "roi_pct": -7.88,
+   "ic95_roi_pct": [
+    -37.69,
+    37.64
+   ]
+  },
+  {
+   "seuil": "> 5 %",
+   "paris": 70,
+   "clv_pinnacle_set1_pct": 29.46,
+   "regles": 58,
+   "roi_pct": -19.29,
+   "ic95_roi_pct": [
+    -55.5,
+    44.17
+   ]
+  },
+  {
+   "seuil": "> 10 %",
+   "paris": 41,
+   "clv_pinnacle_set1_pct": 45.2,
+   "regles": 34,
+   "roi_pct": -50.06,
+   "ic95_roi_pct": [
+    -82.66,
+    3.12
+   ]
+  }
+ ],
+ "ecart_par_niveau": [
+  {
+   "favori_match": "50–60 %",
+   "n": 849,
+   "set1_moteur": 54.2,
+   "set1_pinnacle": 54.0,
+   "set1_reel": 54.1,
+   "n_reel": 747
+  },
+  {
+   "favori_match": "60–70 %",
+   "n": 887,
+   "set1_moteur": 61.4,
+   "set1_pinnacle": 60.8,
+   "set1_reel": 58.7,
+   "n_reel": 770
+  },
+  {
+   "favori_match": "70–80 %",
+   "n": 577,
+   "set1_moteur": 69.6,
+   "set1_pinnacle": 68.7,
+   "set1_reel": 65.2,
+   "n_reel": 503
+  },
+  {
+   "favori_match": "80–90 %",
+   "n": 305,
+   "set1_moteur": 77.9,
+   "set1_pinnacle": 76.9,
+   "set1_reel": 78.3,
+   "n_reel": 277
+  },
+  {
+   "favori_match": "90–100 %",
+   "n": 96,
+   "set1_moteur": 87.9,
+   "set1_pinnacle": 86.7,
+   "set1_reel": 82.8,
+   "n_reel": 87
+  }
+ ]
+}
