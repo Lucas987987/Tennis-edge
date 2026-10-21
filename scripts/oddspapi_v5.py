@@ -724,7 +724,18 @@ def historical_curves(fixture_id, bookmaker="pinnacle", outcome_ids=None, with_l
     proxy de confiance du book dans son prix. Non disponible sur /odds/main,
     donc recuperable seulement a posteriori.
     """
+    return courbes_depuis(historical(fixture_id, bookmaker), bookmaker, outcome_ids, with_limit)
+
+
+def historical_curves_et_brut(fixture_id, bookmaker="pinnacle", outcome_ids=None, with_limit=False):
+    """Comme historical_curves (UN SEUL appel), mais rend aussi la réponse brute,
+    qui contient TOUS les marchés du book (total de jeux, sets…) — 21/10/2026."""
     data = historical(fixture_id, bookmaker)
+    return courbes_depuis(data, bookmaker, outcome_ids, with_limit), data
+
+
+def courbes_depuis(data, bookmaker, outcome_ids=None, with_limit=False):
+    """Découpe une réponse /fixtures/odds/historical en {outcomeId: [(ts_ms, price[, limit])]}."""
     series = ((data or {}).get("odds") or {}).get(bookmaker) or {}
     want = set(outcome_ids) if outcome_ids else None
     out = {}

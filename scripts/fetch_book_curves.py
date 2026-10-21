@@ -21,6 +21,7 @@ import os, json, datetime, time, re, unicodedata
 import oddspapi_v5 as ov
 from r2_collector_sink import finish_sink, sink_for
 import closing_store   # closing_lines chaud + archives mensuelles (16/10/2026)
+import marches_derives  # total de sets / jeux, handicaps (21/10/2026) — même requête
 
 
 def _norm(s):
@@ -63,6 +64,10 @@ NIVEAU1 = [b.strip() for b in os.environ.get(
 ABSENCES = os.environ.get('CURVES_ABSENCES', 'courbes_absences.json')
 COUVERTURE = os.environ.get('CURVES_COUVERTURE', 'courbes_couverture.json')
 RETRY_H = 24
+# 21/10/2026 : marchés dérivés (total de sets, handicap de sets, total et
+# handicap de jeux) gardés pour ces books — ils sont DÉJÀ dans la réponse
+# payée, 0 requête de plus. Vide = désactivé.
+DERIVES_BOOKS = [b.strip() for b in os.environ.get('DERIVES_BOOKS', 'pinnacle').split(',') if b.strip()]
 # 21/10/2026 : une seule tentative. La courbe historique est demandée APRÈS le
 # match : un book absent l'est pour de bon (mesuré : la seconde tentative ne
 # servait jamais, 50 % des requêtes perdues en « ne cote pas »).
@@ -300,7 +305,16 @@ def main():
     print(f"{len(started)} matchs commencés dans la fenêtre · {len(todo)} paires (match, book) à demander "
           f"(niveau 1 : {sum(1 for t in todo if t[4] in NIVEAU1)})")
 
-    total = {'match': 0, 'set1': 0, 'set2': 0}
+    total = {'match': 0, 'set1': 0, 'set2': 0, 'derives': 0}
+    table = {}
+    if DERIVES_BOOKS and todo:
+        # Table des marchés (ligne de chaque marketId) : 1 requête la toute première fois, puis lue du dépôt.
+        try:
+            table = marches_derives.charger_table(
+                demander=lambda: ov.api_get('/markets', {'sportId': ov.TENNIS_SPORT_ID})[0])
+        except Exception as e:
+            print(f"  ⚠️ table des marchés indisponible ({e}) : marchés dérivés non gardés ce run")
+        print(f"Marchés dérivés ({','.join(DERIVES_BOOKS)}) : table de {len(table)} marchés")
     # un seul appel ramene match + set1 + set2
     OUTCOMES = (ov.OUT_HOME, ov.OUT_AWAY, ov.SET1_HOME, ov.SET1_AWAY, ov.SET2_HOME, ov.SET2_AWAY)
     # ÉCRITURE : partition du MOIS COURANT, plus jamais le fichier monolithique
@@ -309,11 +323,13 @@ def main():
     out_path = ov.current_hist_partition_path('book')
     set1_path = ov.current_hist_partition_path('set1')
     set2_path = ov.current_hist_partition_path('set2')
+    derives_path = ov.current_hist_partition_path('derives')
     demandes, absents, arret = 0, 0, None
     par_book = {}
     with open(out_path, 'a', encoding='utf-8') as f, \
          open(set1_path, 'a', encoding='utf-8') as f1, \
-         open(set2_path, 'a', encoding='utf-8') as f2:
+         open(set2_path, 'a', encoding='utf-8') as f2, \
+         open(derives_path, 'a', encoding='utf-8') as fd:
         for uid, m, fid, start, book in todo:
             if demandes >= MAX_RUN:
                 arret = f"plafond du run ({MAX_RUN})"
@@ -333,7 +349,7 @@ def main():
             time.sleep(COOLDOWN)
             demandes += 1
             try:
-                curves = ov.historical_curves(fid, book, OUTCOMES, with_limit=True)
+                curves, brut = ov.historical_curves_et_brut(fid, book, OUTCOMES, with_limit=True)
             except Exception as e:
                 print(f"  ⚠️ {book} fixtureId={fid}: {e}")
                 continue
@@ -373,8 +389,23 @@ def main():
                 if sink is not None:
                     sink.write_bookmaker_curve('set2', entry)
                 pb['set2'] += 1; total['set2'] += 1
+            # marchés dérivés (même réponse, 0 requête) — jamais bloquant
+            if book in DERIVES_BOOKS and table:
+                try:
+                    md = marches_derives.resumer(brut, book, table, start)
+                    if md:
+                        fd.write(json.dumps(marches_derives.ligne(uid, fid, book, m, start, md), ensure_ascii=False) + '\n')
+                        pb['derives'] = pb.get('derives', 0) + 1; total['derives'] += 1
+                except Exception as e:
+                    print(f"  ⚠️ marchés dérivés {book} {uid}: {e}")
+    try:
+        if os.path.getsize(derives_path) == 0:
+            os.remove(derives_path)          # rien de gardé ce run : pas de partition vide
+    except OSError:
+        pass
     for book, got in sorted(par_book.items()):
-        print(f"  ✅ {book}: {got['match']} match | {got['set1']} set1 | {got['set2']} set2")
+        print(f"  ✅ {book}: {got['match']} match | {got['set1']} set1 | {got['set2']} set2"
+              + (f" | {got['derives']} dérivés" if got.get('derives') else ''))
     # Absences : on ne garde que la fenêtre de 60 jours (fichier borné).
     limite = (now - datetime.timedelta(days=61)).date().isoformat()
     absences = {k: v for k, v in absences.items() if k[:10] >= limite or not k[:4].isdigit()}
@@ -394,7 +425,7 @@ def main():
         json.dump(couv, fc, ensure_ascii=False, indent=1)
     print(f"Couverture : {demandes} demandes, {total['match']} courbes, {absents} « ne cote pas », "
           f"{max(0, restant)} paires en attente{' — arrêt : ' + arret if arret else ''}")
-    print(f"\n✅ total — match {total['match']} | set1 {total['set1']} | set2 {total['set2']} ({len(BOOKS)} books)")
+    print(f"\n✅ total — match {total['match']} | set1 {total['set1']} | set2 {total['set2']} | dérivés {total['derives']} ({len(BOOKS)} books)")
 
     # Sidecar pour audit_qa.py : timestamp EMBARQUÉ DANS LE CONTENU (pas le
     # mtime, peu fiable dans un checkout GitHub Actions frais -- même logique
