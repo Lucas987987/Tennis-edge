@@ -151,14 +151,20 @@ def reserve_mesuree(prec, quota_debut, now, plancher=CAPTURE_PAR_JOUR):
     return max(plancher, int(1.3 * par_jour)), round(par_jour)
 
 
-def marge_quota(reserve_par_jour=CAPTURE_PAR_JOUR):
-    """Requêtes encore dépensables sans entamer la capture jusqu'au renouvellement.
-    None tant qu'aucune réponse n'a donné le quota (on fait au moins un appel)."""
+# Requêtes à garder intactes au renouvellement (programme du 21/10 : 40 000 requêtes
+# jusqu'au 20/11 sur ~42 000 restantes).
+QUOTA_PLANCHER = int(os.environ.get('QUOTA_PLANCHER', '2000'))
+
+
+def marge_quota(reserve_par_jour=CAPTURE_PAR_JOUR, plancher=None):
+    """Requêtes encore dépensables sans entamer le reste du projet jusqu'au renouvellement,
+    ni le plancher gardé en fin de cycle. None tant qu'aucune réponse n'a donné le quota."""
     q = ov.QUOTA
     if not q or q.get('remaining') is None:
         return None
+    plancher = QUOTA_PLANCHER if plancher is None else plancher
     jours = max(1.0, (q.get('reset_s') or 0) / 86400.0)
-    return q['remaining'] - int(reserve_par_jour * jours)
+    return q['remaining'] - int(reserve_par_jour * jours) - plancher
 
 
 def _curve_dt(pts):
