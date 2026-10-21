@@ -239,6 +239,24 @@
       <h5>Selon la rareté de l'écart (z binomial)</h5>${tab(V.par_z, 'Écart du profil')}`;
   }
 
+  /** Le prix tient-il après l'alerte ? (delai_alertes.json) */
+  function delaiBlock(D) {
+    if (!D || !D.resume || !D.resume.length) return '';
+    const by = {};
+    for (const r of D.resume) (by[r.hypothese] = by[r.hypothese] || {})[r.delai_min] = r;
+    const delais = D.delais_min || [0, 2, 5, 10, 30];
+    const codes = Object.keys(by).sort((a, b) => (a === 'toutes') - (b === 'toutes') || a.localeCompare(b));
+    const cell = r => (r ? `${nf(100 * r.prix_tenu, 0)} %<span class="detail">CLV ${sg(r.clv_au_prix_disponible, 2)}</span>` : '—');
+    const rows = codes.map(c => {
+      const r0 = by[c][delais[0]] || {};
+      return `<tr><td>${esc(c)}</td><td>${nf(r0.n, 0)}</td><td>${sg(r0.clv_au_prix_alerte, 2)}</td>${delais.map(d => `<td>${cell(by[c][d])}</td>`).join('')}<td>${sg((by[c][5] || {}).clv_meilleur_book, 2)}</td></tr>`;
+    }).join('');
+    return `<details class="rg-eval"><summary>Le prix tient-il après l'alerte ?</summary>
+      <p class="mini">${nf(D.alertes_envoyees, 0)} alertes envoyées (H13 à H19) ; ${nf(D.sans_courbe_du_book, 0)} sans courbe du book alerté (matchs pas encore récupérés). Pour chaque délai après l'envoi : part des alertes où le book paie encore au moins le prix du message, et CLV au prix alors disponible (clôture Pinnacle sans marge). Dernière colonne : CLV au meilleur prix tous books confondus, 5 min après.</p>
+      <div class="table-wrap rg-table"><table><thead><tr><th>Hypothèse</th><th>Alertes</th><th>CLV message</th>${delais.map(d => `<th>+${d} min</th>`).join('')}<th>Meilleur book à +5 min</th></tr></thead><tbody>${rows}</tbody></table></div>
+    </details>`;
+  }
+
   /** Chaque book collecté : couverture, part du meilleur prix, écart médian à la cote juste. */
   function booksBlock(V) {
     const B = V && V.books;
@@ -266,6 +284,7 @@
       <div class="rg-kpis"><div><small>Suivi prospectif</small><b>${nf(P.n, 0)} / ${nf(H.regle.cible_n, 0)}</b><small>${esc(P.verdict)}</small></div>
         <div><small>CLV prospective</small><b>${P.clv && fin(P.clv.mean) ? sg(P.clv.mean, 2) : '—'}</b><small>${ic(P.clv && P.clv.ci)}</small></div>
         <div><small>ROI prospectif</small><b>${P.roi && fin(P.roi.mean) ? sg(P.roi.mean) : '—'}</b><small>${nf(P.regles, 0)} réglés</small></div></div>
+      ${H.alertes_direct && H.alertes_direct.lignes ? `<p class="mini">Alertes en direct : ${nf(H.alertes_direct.envoyees, 0)} envoyées sur ${nf(H.alertes_direct.lignes, 0)} détections ; ${nf(H.alertes_direct.communes_avec_le_lab, 0)} correspondent à un pari du suivi du Lab (${nf(H.alertes_direct.paris_lab_meme_periode, 0)} sur la même période). Le suivi officiel reste celui des courbes de tous les matchs.</p>` : ''}
       <h5>Avant le gel (a servi à choisir la règle : ne compte pas)</h5>
       <p class="mini">${nf(R.n, 0)} paris · CLV ${sg(R.clv && R.clv.mean, 2)} ${ic(R.clv && R.clv.ci)} · ROI ${sg(R.roi && R.roi.mean)} · mois à CLV positive ${esc(R.mois_clv_positif || '—')} · prix encore là à la clôture ${pers(R)}</p>
       ${D.persistance ? `<h5>Le book a-t-il corrigé son prix ?</h5>${tab(D.persistance, 'Prix à la clôture du book')}<p class="mini">Un prix qui disparaît avant la clôture = le book s'est aligné : l'écart était une vraie erreur de prix. Un prix encore là à la clôture = souvent Pinnacle qui s'est rapproché du book.</p>` : ''}
@@ -323,7 +342,7 @@
     const shown = list.slice(state.page * PAGE, (state.page + 1) * PAGE);
     const opt = (vals, v) => vals.map(([k, l]) => `<option value="${esc(k)}" ${k === (v || '') ? 'selected' : ''}>${esc(l)}</option>`).join('');
     const circuits = [...new Set(cur.list.map(m => m.circuit))].sort();
-    host.innerHTML = `${valeurBlock(state.valeurDoc)}${evaluation(state.evalDoc)}${booksBlock(state.valeurDoc)}
+    host.innerHTML = `${valeurBlock(state.valeurDoc)}${delaiBlock(state.delaiDoc)}${evaluation(state.evalDoc)}${booksBlock(state.valeurDoc)}
       <div class="rg-filters">
         <label>Mois<select id="rgMois">${opt([...state.index.mois].reverse().map(x => [x.mois, `${x.mois} (${x.matchs})`]), state.mois)}</select></label>
         <label>Circuit<select id="rgCircuit">${opt([['', 'tous'], ...circuits.map(c => [c, c])], state.f.circuit)}</select></label>
@@ -364,12 +383,13 @@
     } catch (e) { state.err = `Registre indisponible (${e.message}).`; }
     try { state.evalDoc = await json('./live/lectures_profils.json'); } catch { /* évaluation absente : le registre reste lisible */ }
     try { state.valeurDoc = await json('./live/valeur.json'); } catch { /* H19 absente */ }
+    try { state.delaiDoc = await json('./live/delai_alertes.json'); } catch { /* étude absente */ }
     render();
   }
   if (hasDoc && typeof module === 'undefined') {
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
   }
   if (typeof module !== 'undefined') {
-    module.exports = { booksBlock, valeurBlock, victoires, powerFair, decodeMonth, fairRow, bestRow, filterMatches, coherence, lectureOf, effective, evaluation, fiche, row };
+    module.exports = { delaiBlock, booksBlock, valeurBlock, victoires, powerFair, decodeMonth, fairRow, bestRow, filterMatches, coherence, lectureOf, effective, evaluation, fiche, row };
   }
 })();

@@ -134,3 +134,13 @@ test('table des books collectés', () => {
   assert.match(html, /🇫🇷/);
   assert.equal(R.booksBlock(null), '');
 });
+
+test('délai alerte -> pari : tableau par hypothèse et par délai', () => {
+  const r = (h, d, t) => ({ hypothese: h, delai_min: d, n: 17, prix_tenu: t, clv_au_prix_disponible: 0.5, clv_au_prix_alerte: 2.81, clv_meilleur_book: 5.8 });
+  const html = R.delaiBlock({ alertes_envoyees: 581, sans_courbe_du_book: 250, delais_min: [0, 5], resume: [r('H17', 0, 0.65), r('H17', 5, 0.65), r('toutes', 0, 0.88), r('toutes', 5, 0.82)] });
+  assert.match(html, /Le prix tient-il/);
+  assert.match(html, /H17/);
+  assert.match(html, /\+5 min/);
+  assert.ok(html.indexOf('H17') < html.indexOf('toutes'));
+  assert.equal(R.delaiBlock(null), '');
+});

@@ -81,6 +81,7 @@ jobs:
             h17_signal_log.jsonl
             h18_signal_log.jsonl
             h14_signal_log.jsonl
+            h19_signal_log.jsonl
             verdicts_direct.json
             suivi_direct
             scripts/suivi_direct.py
@@ -242,6 +243,7 @@ jobs:
               Tennis_Edge_Lab/live/explorateur_detections.json.gz \
               Tennis_Edge_Lab/live/lectures_profils.json \
               Tennis_Edge_Lab/live/valeur.json \
+              Tennis_Edge_Lab/live/delai_alertes.json \
               Tennis_Edge_Lab/live/registre/*; do
             if [ -f "$f" ]; then git add -- "$f"; fi
           done
