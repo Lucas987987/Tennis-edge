@@ -1,0 +1,49 @@
+name: Sonde marchés (2 requêtes)
+
+# 21/10/2026 — quels marchés OddsPapi cote-t-il sur un match (total de jeux,
+# handicap de jeux, score exact en sets…) ? 2 requêtes au plus, aucune
+# nouvelle tentative. Résultat dans le journal du run et sonde_marches.json
+# (non commité : à lire dans le journal).
+on:
+  workflow_dispatch:
+    inputs:
+      jour:
+        description: 'Jour du match (AAAA-MM-JJ), vide = avant-hier'
+        default: ''
+      book:
+        description: 'Book'
+        default: 'pinnacle'
+
+permissions:
+  contents: read
+
+env:
+  R2_PRIMARY: ${{ vars.R2_PRIMARY || 'double' }}
+  R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+  R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+  R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+  ODDS_RETRIES: '0'
+
+jobs:
+  sonde:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          sparse-checkout: |
+            scripts
+            closing_lines.json
+            closing_lines
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - name: Deux requêtes au plus
+        env:
+          RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
+          JOUR: ${{ github.event.inputs.jour }}
+          BOOK: ${{ github.event.inputs.book }}
+        run: |
+          if [ -n "$JOUR" ]; then python scripts/sonde_marches.py "$JOUR" "$BOOK"; else python scripts/sonde_marches.py; fi
+          cat sonde_marches.json | head -c 20000
