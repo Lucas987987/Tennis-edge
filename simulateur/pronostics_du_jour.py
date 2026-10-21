@@ -157,10 +157,19 @@ def construire(racine, maintenant=None):
     elo = E.Elo.importer(etat['joueurs'])
     surf = etat.get('surfaces_tournois') or {}
     S = Styles(os.path.join(racine, 'simulateur', 'notes_joueurs.json'))
+    venir = matchs_a_venir(racine, maintenant)
+    # Un joueur = un classement : alias du dernier calcul, puis noms nouveaux reliés au joueur connu.
+    alias = dict(etat.get('alias') or {})
+    alias.update(E.unifier({k: v.get('nom', k) for k, v in etat['joueurs'].items()},
+                           [n for x in venir for n in (x['home'], x['away'])]))
+    cle_c = lambda n: alias.get(E.cle(n), E.cle(n))
     out = []
-    for x in matchs_a_venir(racine, maintenant):
-        h, a = E.cle(x['home']), E.cle(x['away'])
+    for x in venir:
+        h, a = cle_c(x['home']), cle_c(x['away'])
         c = circuit(x['tournoi'])
+        if etat.get('depart_bas') and c in ('CH', 'ITF'):
+            elo.presenter(h, etat['depart_bas'])
+            elo.presenter(a, etat['depart_bas'])
         s = NR.surface_de(x['tournoi'], surf)
         sg = 3 if NR.cinq_sets(x['tournoi']) else 2
         pa0, pb0 = S.service(h, a, c, s)
