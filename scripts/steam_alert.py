@@ -25,6 +25,7 @@ import match_key as mk
 import curves_common as cc
 import lien_joueur                   # noqa: E402 — liens vers les fiches
 import meilleurs_prix                # noqa: E402 — 3 meilleurs prix (affichage)
+import scenarios                     # noqa: E402 — scénarios en sets (affichage)
 from datetime import datetime, timezone
 
 MARKET = os.environ.get('MARKET', 'match').lower()
@@ -488,6 +489,16 @@ def suivi_line():
     return L + REFERENCE + "\n"
 
 
+def _jouable(book):
+    """Flux « données seules » (4casters, sbobet, sharpbet…) : jamais un book d'alerte.
+    Liste unique : Tennis_Edge_Lab/books.py (DATA_ONLY). Constaté le 21/10/2026 :
+    la calibration en production les comptait parmi les books mous."""
+    try:
+        return meilleurs_prix.books.flags(book)['jouable']
+    except Exception:
+        return book not in ('4casters', 'sbobet', 'sharpbet', 'betinasia', 'singbet')
+
+
 def send(text):
     if DRY_RUN:
         print("---- (DRY_RUN) message Telegram ----\n" + text + "\n"); return True
@@ -513,7 +524,7 @@ def main():
         past = {u: bk for u, bk in track.items()
                 if bk.get('_commence') and win_start <= bk['_commence'] < now}
         sb = sorted({b for m in list(past.values()) + list(upcoming.values())
-                     for b in m if not b.startswith('_') and b != SHARP})
+                     for b in m if not b.startswith('_') and b != SHARP and _jouable(b)})
         if SOFT_PREF:
             keep = set(s.strip() for s in SOFT_PREF.split(','))
             sb = [b for b in sb if b in keep]
@@ -523,6 +534,10 @@ def main():
         return past, sb
 
     stats, softbooks = stats_avec_cache(MARKET, _charger)
+    # Un cache écrit avant le 21/10/2026 peut encore lister 4casters / sbobet /
+    # sharpbet : on filtre aussi ici, jamais d'alerte sur un book où l'on ne
+    # peut pas miser.
+    softbooks = [b for b in softbooks if _jouable(b)]
     print(f"{CURVES}: {len(data)} matchs | a venir {len(upcoming)} | books {softbooks}")
     if not softbooks:
         print("Aucun book mou — rien a faire."); return
@@ -634,11 +649,14 @@ def main():
             prix = meilleurs_prix.ligne(bk, side, now)
         except Exception:
             prix = ""
+        # Scénarios en sets depuis la cote Pinnacle du match (marché vainqueur seulement)
+        sc = scenarios.ligne(bk, side, now) if MARKET == 'match' else ""
         msg = (f"🎯 MISER{_MKT_LABEL.get(MARKET, '')} · {bk['_home']} vs {bk['_away']}"
                + (f" ({bk['_tour']})" if bk['_tour'] else "")
                + lien_joueur.ligne_texte(bk['_home'], bk['_away']) + "\n"
                f"→ {who} {verb} @ {best['odds']:.2f} ({best['sb']})\n"
                + (prix + "\n" if prix else "") +
+               (sc + "\n" if sc else "") +
                f"💰 EV {best['ev']*100:+.1f}% vs fair {best['fair']:.2f} (Shin Pinnacle, seuil {EV_MIN_NOW*100:.0f}%)\n"
                f"Palier {int(best['thr']*100)}pt · Pinnacle {o_open:.2f}→{o_now:.2f} · depart dans {fmt_lead(lead)}\n"
                + marge_line + reliab_line +

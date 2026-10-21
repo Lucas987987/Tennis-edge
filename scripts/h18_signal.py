@@ -53,6 +53,7 @@ import urllib.parse
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import journal_direct              # noqa: E402 — journal complet (schéma 2)
 import meilleurs_prix               # noqa: E402 — 3 meilleurs prix (affichage)
+import scenarios                    # noqa: E402 — scénarios en sets (affichage)
 import lien_joueur                   # noqa: E402 — liens vers les fiches
 import oddspapi_v5 as ov      # noqa: E402
 
@@ -285,6 +286,9 @@ def message(g, steam, cote, book, ampleur, lead, pin_open):
     prix = meilleurs_prix.ligne(g, steam)  # 3 meilleurs prix frais (affichage seul)
     if prix:
         L.append(prix)
+    sc = scenarios.ligne(g, steam)  # 2-0 / 2-1… depuis la cote Pinnacle (affichage seul)
+    if sc:
+        L.append(sc)
     s = journal_direct.suivi('H18')  # bilan EN DIRECT (verdicts_direct.json)
     if s and s.get('n'):
         L.append(f"\n📊 <b>Suivi</b> : {s['n']}/150 paris dénoués "
