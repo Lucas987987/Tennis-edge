@@ -40,6 +40,7 @@ RACINE = os.path.dirname(ICI)
 sys.path.insert(0, ICI)
 import oddspapi_v5 as ov          # noqa: E402 — lecture des courbes, écriture atomique
 import lien_joueur                # noqa: E402
+import meilleurs_prix               # noqa: E402 — 3 meilleurs prix (affichage)
 
 _spec = importlib.util.spec_from_file_location('tennis_edge_books_h19',
                                                os.path.join(RACINE, 'Tennis_Edge_Lab', 'books.py'))
@@ -206,6 +207,9 @@ def message(g, side, d, R, maintenant):
          f"<b>écart {d['ecart_pct']:+.1f} %</b>",
          f"Pinnacle {d['pin']:.2f} · cote du book vieille de {d['age_min']:.0f} min",
          "⏱️ L'avantage vient d'une erreur de prix : il disparaît vite (le book corrige)."]
+    prix = meilleurs_prix.ligne(g, side, maintenant)  # 3 meilleurs prix frais (affichage seul)
+    if prix:
+        L.append(prix)
     s = suivi()
     if s:
         n, clv, cible, n_roi, roi = s
