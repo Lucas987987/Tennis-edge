@@ -120,6 +120,7 @@ jobs:
             Tennis_Edge_Lab/live/lectures_profils.json
             Tennis_Edge_Lab/live/valeur.json
             Tennis_Edge_Lab/live/delai_alertes.json
+            Tennis_Edge_Lab/live/croisements.json
             Tennis_Edge_Lab/live/archive/bookmakers_sets_v61/current
             Tennis_Edge_Lab/registry
             scripts/validation_report.py
@@ -248,6 +249,7 @@ jobs:
           cp Tennis_Edge_Lab/live/lectures_profils.json _site/Tennis_Edge_Lab/live/ 2>/dev/null || echo "⚠️ lectures_profils.json absent"
           cp Tennis_Edge_Lab/live/valeur.json _site/Tennis_Edge_Lab/live/ 2>/dev/null || echo "⚠️ valeur.json absent"
           cp Tennis_Edge_Lab/live/delai_alertes.json _site/Tennis_Edge_Lab/live/ 2>/dev/null || echo "⚠️ delai_alertes.json absent"
+          cp Tennis_Edge_Lab/live/croisements.json _site/Tennis_Edge_Lab/live/ 2>/dev/null || echo "⚠️ croisements.json absent"
           # Archive annuelle tennis-data (onglet Sources) : fichiers statiques.
           mkdir -p _site/Tennis_Edge_Lab/live/archive
           cp Tennis_Edge_Lab/cache/archive/20*.json _site/Tennis_Edge_Lab/live/archive/ 2>/dev/null || echo "⚠️ archive annuelle absente"

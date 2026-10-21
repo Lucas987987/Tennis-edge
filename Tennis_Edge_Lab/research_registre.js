@@ -267,6 +267,40 @@
     </details>`;
   }
 
+  /** Croisements : réel − attendu de l'issue selon les circonstances (croisements.json). */
+  function croisementsBlock(C) {
+    if (!C || !C.lignes || !C.lignes.length) return '';
+    const iss = C.issues || [];
+    const by = {};
+    for (const L of C.lignes) ((by[L.famille] = by[L.famille] || {})[L.circonstance] = by[L.famille][L.circonstance] || {})[L.issue] = L;
+    const pts = s => (s && s.n ? `${sg(s.ecart, 1, '')}` : '—');
+    const cell = L => {
+      if (!L || !L.decouverte || !L.decouverte.n) return '<td>—</td>';
+      const cls = L.statut === 'confirmé' ? 'good' : L.statut === 'à suivre' ? 'rg-suivre' : '';
+      return `<td class="${cls}">${pts(L.decouverte)} / ${pts(L.confirmation)}<span class="detail">z ${nf(L.decouverte.z, 1)} / ${nf(L.confirmation && L.confirmation.z, 1)}</span></td>`;
+    };
+    const fams = Object.keys(by);
+    const conf = C.lignes.filter(L => L.statut === 'confirmé');
+    const suiv = C.lignes.filter(L => L.statut === 'à suivre');
+    const lab = k => ((iss.find(i => i.cle === k) || {}).libelle || k);
+    const tables = fams.map(f => {
+      const rows = Object.entries(by[f]).filter(([, v]) => Object.values(v).some(L => L.decouverte && L.decouverte.n >= 20));
+      if (!rows.length) return '';
+      return `<h5>${esc(f)}</h5><div class="table-wrap rg-table"><table><thead><tr><th>Circonstance</th><th>Matchs</th>${iss.map(i => `<th>${esc(i.libelle)}</th>`).join('')}</tr></thead><tbody>${rows.map(([lib, v]) => {
+        const any = Object.values(v)[0] || {};
+        return `<tr><td>${esc(lib)}</td><td>${nf((any.decouverte || {}).n, 0)} + ${nf((any.confirmation || {}).n, 0)}</td>${iss.map(i => cell(v[i.cle])).join('')}</tr>`;
+      }).join('')}</tbody></table></div>`;
+    }).join('');
+    const liste = (arr, t) => (arr.length ? `<p><b>${t}</b> : ${arr.map(L => `${esc(L.circonstance)} — ${esc(lab(L.issue))} (${pts(L.decouverte)} / ${pts(L.confirmation)} pts)`).join(' · ')}</p>` : '');
+    return `<details class="rg-eval"><summary>Croisements : l'issue selon les circonstances</summary>
+      <p class="mini">${nf(C.matchs, 0)} matchs joués (${esc((C.periode || [])[0] || '')} → ${esc((C.periode || [])[1] || '')}). Chaque case : écart <b>réel − attendu</b> en points, sur la 1re moitié des matchs de la circonstance (découverte) / sur la 2de (confirmation). Attendu : victoire = cote Pinnacle juste à la clôture ; 2-0, 3 sets et set 1 = moteur du simulateur (forme du jour). Un écart proche de 0 : la circonstance est déjà dans la cote.</p>
+      ${conf.length ? liste(conf, 'Confirmé (Holm en découverte, même sens z ≥ 1,96 en confirmation)') : `<p>Aucun croisement confirmé pour l'instant (${nf(C.tests_holm, 0)} tests, correction de Holm).</p>`}
+      ${liste(suiv, 'À suivre (|z| ≥ 2 en découverte seulement — souvent du hasard)')}
+      ${tables}
+      <p class="mini">Un croisement confirmé n'est pas un pari : il devient une hypothèse à geler, puis à juger sur la CLV des matchs suivants.</p>
+    </details>`;
+  }
+
   /** H19 « valeur contre Pinnacle juste » : suivi gelé + grille rétrospective (valeur.json). */
   function valeurBlock(V) {
     if (!V || !V.h19) return '';
@@ -342,7 +376,7 @@
     const shown = list.slice(state.page * PAGE, (state.page + 1) * PAGE);
     const opt = (vals, v) => vals.map(([k, l]) => `<option value="${esc(k)}" ${k === (v || '') ? 'selected' : ''}>${esc(l)}</option>`).join('');
     const circuits = [...new Set(cur.list.map(m => m.circuit))].sort();
-    host.innerHTML = `${valeurBlock(state.valeurDoc)}${delaiBlock(state.delaiDoc)}${evaluation(state.evalDoc)}${booksBlock(state.valeurDoc)}
+    host.innerHTML = `${valeurBlock(state.valeurDoc)}${croisementsBlock(state.croisDoc)}${delaiBlock(state.delaiDoc)}${evaluation(state.evalDoc)}${booksBlock(state.valeurDoc)}
       <div class="rg-filters">
         <label>Mois<select id="rgMois">${opt([...state.index.mois].reverse().map(x => [x.mois, `${x.mois} (${x.matchs})`]), state.mois)}</select></label>
         <label>Circuit<select id="rgCircuit">${opt([['', 'tous'], ...circuits.map(c => [c, c])], state.f.circuit)}</select></label>
@@ -384,12 +418,13 @@
     try { state.evalDoc = await json('./live/lectures_profils.json'); } catch { /* évaluation absente : le registre reste lisible */ }
     try { state.valeurDoc = await json('./live/valeur.json'); } catch { /* H19 absente */ }
     try { state.delaiDoc = await json('./live/delai_alertes.json'); } catch { /* étude absente */ }
+    try { state.croisDoc = await json('./live/croisements.json'); } catch { /* croisements absents */ }
     render();
   }
   if (hasDoc && typeof module === 'undefined') {
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
   }
   if (typeof module !== 'undefined') {
-    module.exports = { delaiBlock, booksBlock, valeurBlock, victoires, powerFair, decodeMonth, fairRow, bestRow, filterMatches, coherence, lectureOf, effective, evaluation, fiche, row };
+    module.exports = { croisementsBlock, delaiBlock, booksBlock, valeurBlock, victoires, powerFair, decodeMonth, fairRow, bestRow, filterMatches, coherence, lectureOf, effective, evaluation, fiche, row };
   }
 })();

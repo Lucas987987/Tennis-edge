@@ -28,7 +28,7 @@ SÉCURITÉ
   • idempotent : une partition déjà compressée est ignorée ;
   • DRY_RUN=1 pour voir ce qui serait fait sans rien modifier.
 
-Env : MIN_MB (5 = ne compresse pas les miettes), DRY_RUN, MARKETS (book,set1,set2).
+Env : MIN_MB (5 = ne compresse pas les miettes), DRY_RUN, MARKETS (book,set1,set2,derives).
 """
 import os, sys, glob, gzip, shutil
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -36,7 +36,7 @@ import oddspapi_v5 as ov
 
 MIN_MB  = float(os.environ.get('MIN_MB', '5'))
 DRY     = os.environ.get('DRY_RUN', '0') == '1'
-MARKETS = [m.strip() for m in os.environ.get('MARKETS', 'book,set1,set2').split(',') if m.strip()]
+MARKETS = [m.strip() for m in os.environ.get('MARKETS', 'book,set1,set2,derives').split(',') if m.strip()]
 # Partitions supplémentaires, hors marchés historiques : ticks Polymarket
 # (parts/pm_ticks_*, parts/kx_ticks_*). Kalshi manquait à cette liste : ses
 # partitions n'auraient JAMAIS été compressées. Même traitement, mêmes garde-fous :
