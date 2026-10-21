@@ -229,3 +229,47 @@ def prix_depuis_pinnacle(p_cible, p_service_moyen, sets_gagnants=2, sigma=0.0):
     """Distribution complète (sets, jeux, set 1…) cohérente avec la proba de victoire de Pinnacle."""
     a, b = ancrer_forme(p_service_moyen, p_service_moyen, p_cible, sets_gagnants, sigma)
     return match_forme(a, b, sets_gagnants, sigma)
+
+
+# ------------------------------------------------------------------ scores complets
+def scores_complets(pA, pB, sets_gagnants=2, sigma=0.0, tb_final=None, top=3, faisceau=400):
+    """Les `top` scores complets les plus probables, SET PAR SET ET DANS L'ORDRE réel
+    (« 4-6 6-3 6-4 » : A perd le 1er set et gagne), du point de vue de A, forme du
+    jour comprise. Rien n'est supposé sur l'ordre des sets : chaque suite est
+    calculée (exact au meilleur des 3 ; en 5 sets, on garde à chaque set les
+    `faisceau` suites les plus probables, ce qui ne change pas le haut du classement).
+    Renvoie aussi la probabilité que A gagne APRÈS avoir perdu le 1er set (« remontée »)."""
+    if tb_final is None:
+        tb_final = 10 if sets_gagnants == 3 else 7
+    noeuds = [(0.0, 1.0)] if sigma <= 0 else [(sigma * z, w) for z, w in zip(_Z, _W)]
+    total, remontee_a, remontee_b = {}, 0.0, 0.0
+    la, lb = logit(pA), logit(pB)
+    for d, w in noeuds:
+        a, b = sigmoide(la + d), sigmoide(lb - d)
+        for a_premier in (True, False):
+            # état : (suite de sets, sets A, sets B, A sert le prochain jeu) -> probabilité
+            etats = {((), 0, 0, a_premier): w / 2}
+            while etats:
+                nouv = {}
+                for (suite, sa, sb, srv), pr in etats.items():
+                    decisif = sa == sets_gagnants - 1 and sb == sets_gagnants - 1
+                    for x, y, q in set_issues(a, b, srv, tb_final if decisif else 7):
+                        m = pr * q
+                        ns = suite + ((x, y),)
+                        na, nb = sa + (x > y), sb + (y > x)
+                        nsrv = srv if (x + y) % 2 == 0 else not srv
+                        if na == sets_gagnants or nb == sets_gagnants:
+                            cle = ' '.join(f"{u}-{v}" for u, v in ns)
+                            total[cle] = total.get(cle, 0.0) + m
+                            if na > nb and ns[0][0] < ns[0][1]:
+                                remontee_a += m
+                            if nb > na and ns[0][0] > ns[0][1]:
+                                remontee_b += m
+                        else:
+                            k = (ns, na, nb, nsrv)
+                            nouv[k] = nouv.get(k, 0.0) + m
+                if len(nouv) > faisceau:
+                    nouv = dict(sorted(nouv.items(), key=lambda kv: -kv[1])[:faisceau])
+                etats = nouv
+    meilleurs = sorted(total.items(), key=lambda kv: -kv[1])[:top]
+    return {'scores': [(s, p) for s, p in meilleurs], 'remontee_A': remontee_a, 'remontee_B': remontee_b}

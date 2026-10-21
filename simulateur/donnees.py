@@ -24,6 +24,9 @@ import re
 import unicodedata
 
 SURFACES = {'hard': 'Hard', 'clay': 'Clay', 'grass': 'Grass', 'carpet': 'Hard'}
+# Ordre des tours dans un tournoi (rejouer les matchs dans l'ordre où ils ont eu lieu).
+ORDRE_TOURS = {'Q1': 0, 'Q2': 1, 'Q3': 2, 'Q4': 3, 'ER': 4, 'R128': 4, 'R64': 5, 'R32': 6, 'RR': 6, 'R16': 7,
+               'QF': 8, 'SF': 9, 'BR': 9, 'F': 10}
 
 
 def norm(s):
@@ -102,8 +105,11 @@ def charger(racine, annee_min=2018):
                     'nom_g': r.get('winner_name') or '', 'nom_p': r.get('loser_name') or '',
                     'stats': st if len(st) == 2 else None, 'sets': sets, 'complet': complet,
                     'tournoi': r.get('tourney_name') or '',
+                    'tour': ORDRE_TOURS.get(str(r.get('round') or '').upper(), 6),
+                    'niveau': niveau,
+                    'num': _int(r.get('match_num')) or 0,
                 })
-    out.sort(key=lambda m: m['date'])
+    out.sort(key=lambda m: (m['date'], m['tour'], m['num']))
     return out
 
 
@@ -115,6 +121,38 @@ def cles_sackmann(nom):
     if len(t) < 2:
         return set()
     return {(' '.join(t[k:]), t[0][0]) for k in range(1, len(t))}
+
+
+def cles_sackmann_etendues(nom):
+    """Comme cles_sackmann, plus souple (22/10/2026) : nom de famille = n'importe quelle
+    suite de mots après le prénom (« Mpetshi » pour Giovanni Mpetshi Perricard), initiale
+    de n'importe quel prénom (« D. » pour Adolfo Daniel Vallejo). Renvoie
+    {(nom de famille, initiale)} et les prénoms, pour départager « Xin. » et « Xiy. »."""
+    t = norm(nom)
+    out = set()
+    for ordre in (t, t[::-1]):            # « Xinyu Wang » comme « Wang Xinyu »
+        for k in range(1, len(ordre)):
+            prenoms = ordre[:k]
+            for j in range(k + 1, len(ordre) + 1):
+                for p in prenoms:
+                    out.add((' '.join(ordre[k:j]), p[0]))
+    return out, t
+
+
+def cle_td_prefixe(nom):
+    """« Wang Xin. » -> ('wang', 'xin') ; « Fernandez L.A. » -> ('fernandez', 'l')."""
+    brut = str(nom or '').strip()
+    parts = brut.split()
+    if len(parts) < 2:
+        return None
+    ini = parts[-1]
+    if '.' not in ini and len(ini) > 3:
+        return None
+    nom_famille = ' '.join(norm(' '.join(parts[:-1])))
+    pref = norm(ini.split('.')[0])
+    if not nom_famille or not pref:
+        return None
+    return (nom_famille, pref[0])
 
 
 def cle_td(nom):
