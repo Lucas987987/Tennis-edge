@@ -69,6 +69,18 @@ def cinq_sets(t):
         bool(re.search(r'\bmen', t, re.I)) and not re.search(r'women', t, re.I)
 
 
+def resultat(sr, d0, h, a):
+    """(résultat set_results, sens) pour un match (date, home, away) : identifiant exact
+    ou date ± 1 jour, dans les deux ordres ; sens = −1 si home/away sont inversés."""
+    for d in (d0, d0 - dt.timedelta(days=1), d0 + dt.timedelta(days=1)):
+        k1, k2 = f"{d}_{slug(h)}_{slug(a)}", f"{d}_{slug(a)}_{slug(h)}"
+        if sr.get(k1, {}).get('match') in ('home', 'away'):
+            return sr[k1], 1
+        if sr.get(k2, {}).get('match') in ('home', 'away'):
+            return sr[k2], -1
+    return None, 1
+
+
 def _jsonl(path):
     try:
         with open(path, encoding='utf-8') as f:
@@ -117,15 +129,7 @@ def charger(racine=RACINE, table_surfaces=None):
         except ValueError:
             continue
         h, a = r['home'], r['away']
-        res, sens = None, 1
-        for d in (d0, d0 - dt.timedelta(days=1), d0 + dt.timedelta(days=1)):
-            k1, k2 = f"{d}_{slug(h)}_{slug(a)}", f"{d}_{slug(a)}_{slug(h)}"
-            if sr.get(k1, {}).get('match') in ('home', 'away'):
-                res, sens = sr[k1], 1
-                break
-            if sr.get(k2, {}).get('match') in ('home', 'away'):
-                res, sens = sr[k2], -1
-                break
+        res, sens = resultat(sr, d0, h, a)
         if not res:
             continue
         o = (lambda v: v) if sens == 1 else (lambda v: {'home': 'away', 'away': 'home'}.get(v))
