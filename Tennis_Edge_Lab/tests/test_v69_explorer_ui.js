@@ -64,3 +64,28 @@ test('rapide sur la taille réelle (≈ 20 000 lignes)', () => {
   }
   assert.ok((Date.now() - t0) / 20 < 100, 'filtrage + statistiques trop lents');
 });
+
+test('un pari par joueur et par match : premier horizon retenu, puis spécification du gel (21/10/2026)', () => {
+  const doc = {
+    n: 5, entrees: {},
+    columns: [{ name: 'circuit', type: 'cat', role: 'filtre' }, { name: 'horizon', type: 'cat', role: 'filtre' },
+      { name: 'date', type: 'cat', role: 'descriptif' }, { name: 'joueur', type: 'cat', role: 'descriptif' },
+      { name: 'mois', type: 'cat', role: 'filtre' }, { name: 'decision_ts', type: 'cat', role: 'descriptif' }],
+    dicts: { circuit: ['WTA'], horizon: ['24h', '6h', '1h', '10m'], date: ['2026-10-01', '2026-10-02'], joueur: ['A', 'B'],
+      mois: ['2026-10'], decision_ts: ['t'] },
+    data: { circuit: [0, 0, 0, 0, 0], horizon: [3, 1, 2, 3, 3], date: [0, 0, 0, 0, 1], joueur: [0, 0, 0, 1, 0],
+      mois: [0, 0, 0, 0, 0], decision_ts: [0, 0, 0, 0, 0], gagne: [1, 1, 1, 0, 1],
+      clv_pinnacle: [0, 0, 0, 0, 0], clv_jouable: [1, 2, 3, 4, 5], clv_fr: [null, null, null, null, null],
+      pnl_pinnacle: [0, 0, 0, 0, 0], pnl_jouable: [1, 1, 1, -1, 1], pnl_fr: [null, null, null, null, null] },
+  };
+  const D = X.prepareMatchs(doc);
+  // A le 01/10 : 10 min, 6 h, 1 h -> 6 h seulement ; B le 01/10 ; A le 02/10 (autre match)
+  assert.deepEqual(X.premierHorizon(D, [0, 1, 2, 3, 4]), [1, 3, 4]);
+  assert.deepEqual(X.premierHorizon(D, [0, 2]), [2]);
+  X._state.kind = 'matchs'; X._state.entry = 'jouable'; X._state.unParJoueur = true;
+  X._state.filters = { cats: { circuit: ['WTA'] }, ranges: {} };
+  assert.equal(X.freezeSpec(D, { n: 3, clv: 1, clvCi: null, roi: 1 }).un_par_joueur, true);
+  X._state.unParJoueur = false;
+  assert.ok(!('un_par_joueur' in X.freezeSpec(D, { n: 3, clv: 1, clvCi: null, roi: 1 })));
+  X._state.unParJoueur = true;
+});
