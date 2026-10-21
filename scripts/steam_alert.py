@@ -24,6 +24,7 @@ import oddspapi_v5 as ov
 import match_key as mk
 import curves_common as cc
 import lien_joueur                   # noqa: E402 — liens vers les fiches
+import meilleurs_prix                # noqa: E402 — 3 meilleurs prix (affichage)
 from datetime import datetime, timezone
 
 MARKET = os.environ.get('MARKET', 'match').lower()
@@ -628,10 +629,16 @@ def main():
                                f"sur {bs['n']} matchs{twin_txt}\n")
         except Exception:
             pass
+        # 3 meilleurs prix frais du côté alerté, tous books (affichage seul, 21/10/2026)
+        try:
+            prix = meilleurs_prix.ligne(bk, side, now)
+        except Exception:
+            prix = ""
         msg = (f"🎯 MISER{_MKT_LABEL.get(MARKET, '')} · {bk['_home']} vs {bk['_away']}"
                + (f" ({bk['_tour']})" if bk['_tour'] else "")
                + lien_joueur.ligne_texte(bk['_home'], bk['_away']) + "\n"
                f"→ {who} {verb} @ {best['odds']:.2f} ({best['sb']})\n"
+               + (prix + "\n" if prix else "") +
                f"💰 EV {best['ev']*100:+.1f}% vs fair {best['fair']:.2f} (Shin Pinnacle, seuil {EV_MIN_NOW*100:.0f}%)\n"
                f"Palier {int(best['thr']*100)}pt · Pinnacle {o_open:.2f}→{o_now:.2f} · depart dans {fmt_lead(lead)}\n"
                + marge_line + reliab_line +

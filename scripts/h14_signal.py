@@ -33,6 +33,7 @@ import urllib.parse
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import journal_direct              # noqa: E402 — journal complet (schéma 2)
+import meilleurs_prix               # noqa: E402 — 3 meilleurs prix (affichage)
 import lien_joueur                   # noqa: E402 — liens vers les fiches
 import oddspapi_v5 as ov      # noqa: E402
 
@@ -213,6 +214,9 @@ def message(g, steam, cote, book, ampleur, lead, mag, deja=''):
          f"{g.get('_tour') or '?'}",
          f"{lien_joueur.duo_html(joueur, adv)}",
          f"📉 mouvement Pinnacle {ampleur:.1f} pts · entrée {book} @ {cote:.2f}"]
+    prix = meilleurs_prix.ligne(g, steam)  # 3 meilleurs prix frais (affichage seul)
+    if prix:
+        L.append(prix)
     if deja:
         L.append(deja)
     L += journal_direct.suivi_txt('H14', 166)  # bilan EN DIRECT (verdicts_direct.json)
