@@ -145,3 +145,24 @@ class MarchesSets(unittest.TestCase):
         self.assertAlmostEqual(ms.juste(2.0, 2.0), 0.5, places=9)
         self.assertTrue(ms.cinq_sets('Wimbledon Men Singles'))
         self.assertFalse(ms.cinq_sets('Wimbledon Women Singles'))
+
+
+class ScoresComplets(unittest.TestCase):
+    def test_ordre_reel_et_somme(self):
+        r = M.scores_complets(0.66, 0.62, 2, 0.15, top=10 ** 6)
+        tot = sum(p for _, p in r['scores'])
+        self.assertAlmostEqual(tot, 1.0, places=9)
+        gagne = sum(p for s, p in r['scores'] if sum(int(a) > int(b) for a, b in (x.split('-') for x in s.split())) == 2)
+        self.assertAlmostEqual(gagne, M.match_forme(0.66, 0.62, 2, 0.15)['victoire'], places=9)
+        # le vainqueur peut perdre le 1er set : ces suites existent et sont comptées
+        d = dict(r['scores'])
+        self.assertGreater(d['4-6 6-3 6-4'], 0)
+        rem = sum(p for s, p in d.items() if s.split()[0].split('-')[0] < s.split()[0].split('-')[1] and len(s.split()) == 3
+                  and int(s.split()[2].split('-')[0]) > int(s.split()[2].split('-')[1]))
+        self.assertAlmostEqual(rem, r['remontee_A'], places=9)
+
+    def test_effet_du_service_sur_l_ordre(self):
+        # joueurs identiques : « 6-3 puis 6-4 » plus probable que « 6-4 puis 6-3 » (qui sert le dernier jeu)
+        d = dict(M.scores_complets(0.63, 0.63, 2, 0.0, top=10 ** 6)['scores'])
+        self.assertGreater(d['6-3 6-4'], d['6-4 6-3'])
+        self.assertAlmostEqual(d['6-4 6-4'], d['4-6 4-6'], places=12)

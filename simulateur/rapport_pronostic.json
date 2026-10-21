@@ -1,9 +1,14 @@
 {
- "genere_le": "2026-10-21T19:46:04+00:00",
+ "genere_le": "2026-10-21T20:05:38+00:00",
  "objectif": "deviner le vainqueur et le score (pas battre Pinnacle)",
  "elo": "FiveThirtyEight (Kovalchik 2016) : K = 250/(n+5)^0,4, ×1,1 en Grand Chelem, départ 1500 ; général + surface à parts égales ; aucun réglage",
  "sackmann_jusqu_au": "2026-06-02",
  "nos_matchs": 2990,
+ "resultats_tennis_data_ajoutes": {
+  "ajoutes": 639,
+  "doublons_ecartes": 906,
+  "non_reconnus": 305
+ },
  "A_atp_wta_2024_2026": {
   "tous": {
    "stats_seules": {
@@ -164,13 +169,13 @@
   "tous": {
    "stats_seules": {
     "n": 2990,
-    "reussite_pct": 63.5,
+    "reussite_pct": 63.2,
     "ic95_pct": [
-     61.7,
-     65.2
+     61.5,
+     65.0
     ],
-    "log_loss": 0.6426,
-    "brier": 0.2239
+    "log_loss": 0.6418,
+    "brier": 0.2236
    },
    "stats_plus_marche": {
     "n": 2985,
@@ -186,13 +191,13 @@
   "joueurs connus (≥ 10 matchs)": {
    "stats_seules": {
     "n": 2720,
-    "reussite_pct": 63.6,
+    "reussite_pct": 63.3,
     "ic95_pct": [
-     61.8,
-     65.4
+     61.5,
+     65.2
     ],
-    "log_loss": 0.6342,
-    "brier": 0.2215
+    "log_loss": 0.6334,
+    "brier": 0.2212
    },
    "stats_plus_marche": {
     "n": 2715,
@@ -208,13 +213,13 @@
   "ATP": {
    "stats_seules": {
     "n": 1080,
-    "reussite_pct": 62.8,
+    "reussite_pct": 62.9,
     "ic95_pct": [
-     59.9,
-     65.7
+     60.0,
+     65.8
     ],
-    "log_loss": 0.6558,
-    "brier": 0.2294
+    "log_loss": 0.6543,
+    "brier": 0.2288
    },
    "stats_plus_marche": {
     "n": 1079,
@@ -230,13 +235,13 @@
   "CH": {
    "stats_seules": {
     "n": 973,
-    "reussite_pct": 63.4,
+    "reussite_pct": 63.1,
     "ic95_pct": [
-     60.3,
-     66.4
+     60.0,
+     66.1
     ],
-    "log_loss": 0.6437,
-    "brier": 0.2251
+    "log_loss": 0.6438,
+    "brier": 0.2252
    },
    "stats_plus_marche": {
     "n": 971,
@@ -252,13 +257,13 @@
   "WTA": {
    "stats_seules": {
     "n": 937,
-    "reussite_pct": 64.4,
+    "reussite_pct": 63.8,
     "ic95_pct": [
-     61.3,
-     67.4
+     60.7,
+     66.9
     ],
-    "log_loss": 0.6261,
-    "brier": 0.2161
+    "log_loss": 0.6255,
+    "brier": 0.2158
    },
    "stats_plus_marche": {
     "n": 935,
@@ -282,33 +287,33 @@
   "calibration_stats_seules": [
    {
     "tranche": "50–60 %",
-    "n": 1099,
-    "prevu": 54.9,
-    "reel": 51.6
+    "n": 1102,
+    "prevu": 55.0,
+    "reel": 51.2
    },
    {
     "tranche": "60–70 %",
-    "n": 864,
+    "n": 867,
     "prevu": 64.9,
-    "reel": 66.4
+    "reel": 66.3
    },
    {
     "tranche": "70–80 %",
-    "n": 623,
-    "prevu": 74.6,
-    "reel": 70.8
+    "n": 617,
+    "prevu": 74.7,
+    "reel": 70.7
    },
    {
     "tranche": "80–90 %",
-    "n": 307,
+    "n": 309,
     "prevu": 84.3,
-    "reel": 78.2
+    "reel": 78.0
    },
    {
     "tranche": "90–100 %",
-    "n": 97,
-    "prevu": 93.3,
-    "reel": 78.4
+    "n": 95,
+    "prevu": 93.4,
+    "reel": 78.9
    }
   ],
   "calibration_marche": [
@@ -346,7 +351,7 @@
   "scores_en_sets": {
    "stats_seules": {
     "n": 2707,
-    "log_score": 1.2999,
+    "log_score": 1.2985,
     "score_le_plus_probable_juste_pct": 41.9,
     "trois_sets_prevu_pct": 37.4,
     "trois_sets_reel_pct": 36.3
@@ -361,5 +366,5 @@
   },
   "periode": "2026-06-07 → 2026-10-21"
  },
- "duree_s": 20
+ "duree_s": 24
 }

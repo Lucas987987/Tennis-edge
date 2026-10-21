@@ -161,3 +161,24 @@ test('croisements : écarts découverte / confirmation, statut, rien d\'inventé
   assert.match(R.croisementsBlock(C2), /Confirmé/);
   assert.equal(R.croisementsBlock(null), '');
 });
+
+test('pronostics du jour : deux versions côte à côte et compteur', () => {
+  const v = (p, sc) => ({ p_home: p, sets: { '2-0': 0.4, '2-1': 0.2, '1-2': 0.2, '0-2': 0.2 }, scores_probables: [[sc, 0.034], ['4-6 6-3 6-4', 0.012]],
+    remontee: { home: 0.11, away: 0.08 }, jeux_moyen: 22.6 });
+  const P = { horizon_h: 36, matchs: [
+    { debut: '2026-10-22T04:00', tournoi: 'ATP Challenger Guangzhou', surface: 'Hard', meilleur_des: 3, home: 'Liam Broady', away: 'Akira Santillan',
+      stats: v(0.75, '6-3 6-3'), marche: v(0.31, '4-6 4-6') },
+    { debut: '2026-10-22T05:00', tournoi: 'WTA Osaka', surface: 'Hard', meilleur_des: 3, home: 'A B', away: 'C D', stats: v(0.5, '6-4 6-4'), marche: null }] };
+  const B = { tous: { stats_seules: { n: 120, reussite_pct: 64.2 }, stats_plus_marche: { n: 118, reussite_pct: 66.1 } }, '7_derniers_jours': {} };
+  const html = R.pronosticsBlock(P, B);
+  assert.match(html, /Pronostics du jour \(2 matchs dans les 36 h\)/);
+  assert.match(html, /<b>Broady<\/b> 75 %/);
+  assert.match(html, /<b>Santillan<\/b> 69 %/);
+  assert.match(html, /6-3 6-3 <small>3 %<\/small>/);
+  assert.match(html, /4-6 6-3 6-4/);
+  assert.match(html, /gagne après avoir perdu le 1er set : Broady 11 %/);
+  assert.match(html, /Pinnacle ne cote pas encore ce match/);
+  assert.match(html, /64,2 %/);
+  assert.match(html, /pas encore de match joué/);
+  assert.equal(R.pronosticsBlock(null), '');
+});
