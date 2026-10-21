@@ -429,6 +429,64 @@ def x_search_url(home, away):
     return "https://x.com/search?q=" + urllib.parse.quote(q) + "&f=live"
 
 
+# ── Journal des alertes ENVOYÉES (21/10/2026) ──────────────────────────────
+# paper_trades_match.jsonl ouvre un pari fictif pour CHAQUE book qui franchit
+# son palier : il ne dit pas ce qui a été envoyé (150 lignes pour 67 matchs au
+# 20/10). Ici : une ligne par message réellement parti, au book et au prix du
+# message. suivi_direct.py y ajoute résultat, clôture Pinnacle, CLV et P&L
+# (suivi_canaux.json) ; seule la PREMIÈRE alerte d'un match compte.
+MISER_LOG = os.environ.get('MISER_LOG', 'miser_signal_log.jsonl')
+SUIVI_CANAUX = os.environ.get('SUIVI_CANAUX', 'suivi_canaux.json')
+
+
+def journaliser(bk, uid, best, o_open, o_now, lead, relance, now):
+    """Écrit la décision une fois, jamais modifiée. En DRY_RUN, seulement si MISER_LOG est posé."""
+    if DRY_RUN and 'MISER_LOG' not in os.environ:
+        return
+    side = best['side']
+    rec = {'uid': uid, 'marche': MARKET, 'side': side,
+           'joueur': bk['_home'] if side == 'home' else bk['_away'],
+           'adversaire': bk['_away'] if side == 'home' else bk['_home'],
+           'tournoi': bk.get('_tour') or '',
+           'signale_le': datetime.fromtimestamp(now, timezone.utc).isoformat(timespec='seconds'),
+           'commence': datetime.fromtimestamp(bk['_commence'], timezone.utc).isoformat(timespec='seconds'),
+           'book': best['sb'], 'cote': round(best['odds'], 3), 'fair': round(best['fair'], 3),
+           'ev_pct': round(100 * best['ev'], 2), 'palier': int(round(best['thr'] * 100)),
+           'pin_open': o_open, 'pin_signal': o_now, 'lead_min': round(lead / 60, 1),
+           'relance': bool(relance), 'schema': 1}
+    try:
+        with open(MISER_LOG, 'a', encoding='utf-8') as f:
+            f.write(json.dumps(rec, ensure_ascii=False) + '\n')
+    except OSError as e:
+        print("journal MISER non écrit :", e)
+
+
+# Référence AVANT ce journal, mesurée le 21/10/2026 sur paper_trades_match.jsonl
+# (05/08 -> 20/10), une ligne par match faute de savoir laquelle était partie :
+# une ESTIMATION, pas le bilan du canal.
+REFERENCE = "Avant ce suivi (05/08–20/10, estimation, 67 matchs) : ROI +36.9 % · CLV Pinnacle méd +6.1 %"
+
+
+def suivi_line():
+    """Bilan en direct du canal (suivi_canaux.json), marché vainqueur du match seulement."""
+    if MARKET != 'match':
+        return ""
+    try:
+        c = (_load_json(SUIVI_CANAUX, {}).get('canaux') or {}).get('MISER') or {}
+    except Exception:
+        c = {}
+    b = c.get('bilan') or {}
+    if b.get('n'):
+        clv = (f" · CLV Pinnacle méd {b['clv_mediane']:+.1f} %" if b.get('clv_mediane') is not None else "")
+        L = (f"📊 Suivi MISER en direct : {b['n']} paris dénoués · gains {b['gains']}/{b['n']} "
+             f"({b['taux']:.0f} %, seuil de rentabilité {b['seuil']:.0f} %) · ROI {b['roi']:+.1f} % · "
+             f"P&L {b['pnl']:+.1f} u{clv}\n")
+    else:
+        n = c.get('n_matchs') or 0
+        L = f"📊 Suivi MISER en direct : aucun pari dénoué pour l'instant ({n} alerte(s) suivie(s))\n"
+    return L + REFERENCE + "\n"
+
+
 def send(text):
     if DRY_RUN:
         print("---- (DRY_RUN) message Telegram ----\n" + text + "\n"); return True
@@ -525,7 +583,8 @@ def main():
         if not cands: continue
         # meilleur : EV d'abord (c'est elle qui paie), reussite historique ensuite
         best = max(cands, key=lambda c: (c['ev'], c['pct']))
-        if state.get(uid, 0) >= best['thr']: continue   # deja alerte a ce niveau+
+        prev = state.get(uid, 0)
+        if prev >= best['thr']: continue   # deja alerte a ce niveau+
         side = best['side']
         pser = bk[SHARP]['h'] if side == 'home' else bk[SHARP]['a']
         o_open, o_now = pser[0][1], pser[-1][1]
@@ -577,10 +636,12 @@ def main():
                f"Palier {int(best['thr']*100)}pt · Pinnacle {o_open:.2f}→{o_now:.2f} · depart dans {fmt_lead(lead)}\n"
                + marge_line + reliab_line +
                f"{rec}\n"
+               + suivi_line() +
                f"Seuils/book : {seuils_line}\n"
                f"🔎 Posts X sur ce match : {x_search_url(bk['_home'], bk['_away'])}")
         if send(msg):
             state[uid] = best['thr']; n_sent += 1
+            journaliser(bk, uid, best, o_open, o_now, lead, prev, now)
     if not DRY_RUN:
         json.dump(state, open(STATE, 'w'))
     print(f"\nsignaux envoyes : {n_sent}")

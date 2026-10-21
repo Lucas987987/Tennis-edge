@@ -444,6 +444,54 @@ def verdicts(root=ROOT, vr=None, ajouts=None, maintenant=None):
     return doc, table
 
 
+# ------------------------------------------------------------------ canal MISER
+MISER_LOG = 'miser_signal_log.jsonl'
+OUT_CANAUX = 'suivi_canaux.json'
+
+
+def canal_miser(root, ajouts, maintenant=None):
+    """Bilan du canal « 🎯 MISER » (steam_alert.py, vainqueur du match).
+
+    Une ligne de miser_signal_log.jsonl = un message réellement envoyé (21/10/2026).
+    Compte : la PREMIÈRE alerte de chaque match, au book et au prix du message
+    (les relances à un palier supérieur sont comptées à part, pas misées deux fois).
+    Mêmes ajouts que les hypothèses : résultat par uid ou paire exacte, clôture
+    Pinnacle sans marge, entrée nette de commission."""
+    now = maintenant or dt.datetime.now(dt.timezone.utc)
+    rows, seen = [], set()
+    for r in read_jsonl(pathlib.Path(root) / MISER_LOG):
+        blob = json.dumps(r, sort_keys=True, ensure_ascii=False)
+        if blob in seen or r.get('marche', 'match') != 'match' or not r.get('uid') or r.get('cote') in (None, ''):
+            continue                                      # doublon de fusion « union », autre marché
+        seen.add(blob)
+        rows.append(r)
+    premiers = {}
+    for r in sorted(rows, key=lambda r: str(r.get('signale_le'))):
+        premiers.setdefault(r['uid'], r)
+    lignes = sorted(premiers.values(), key=lambda r: str(r.get('signale_le')))
+    paris, clv_all, table = [], [], {}
+    for r in lignes:
+        a = ajouts.pour(dict(r, _side=r.get('side')))
+        jour = str(r.get('signale_le'))[:10]
+        table[r['uid']] = {k: a[k] for k in ('gagne', 'pnl', 'pin_close', 'pin_close_adv', 'clv_pin', 'source_resultat')}
+        clv_all.append((a['clv_pin'], jour))
+        if a['denoue']:
+            paris.append({'cote': float(r['cote']), 'book': books.normalize(r.get('book')), 'gagne': a['gagne'],
+                          'pnl': a['pnl'], 'clv_pin': a['clv_pin'], 'jour': jour, 'lead_min': r.get('lead_min')})
+    b = bloc(paris, clv_all)
+    vals = sorted(c for c, _ in clv_all if c is not None)
+    b['clv_mediane'] = r1(vals[len(vals) // 2] if len(vals) % 2 else (vals[len(vals) // 2 - 1] + vals[len(vals) // 2]) / 2) if vals else None
+    b.update(garde(lignes, len(paris), now))
+    return {'schema_version': 1, 'genere_le': now.isoformat(timespec='seconds').replace('+00:00', 'Z'),
+            'canaux': {'MISER': {
+                'libelle': '🎯 MISER — steam, EV ≥ seuil vs Pinnacle juste (vainqueur du match)',
+                'source': f'{MISER_LOG} (messages envoyés) + ajouts de suivi_direct',
+                'regle': 'première alerte de chaque match, au book et au prix du message ; relances non recomptées',
+                'debut': str(lignes[0].get('signale_le'))[:10] if lignes else None,
+                'n_alertes': len(rows), 'n_matchs': len(lignes), 'n_relances': len(rows) - len(lignes),
+                'n_denoues': len(paris), 'bilan': b, 'paris': dict(sorted(table.items()))}}}
+
+
 def _regle(code, vr):
     return {'H13': f"{vr.H13_COTE_MIN:.2f} ≤ cote entrée ≤ {vr.H13_COTE_MAX:.2f}",
             'H14': f"mouvement Pinnacle > {vr.H14_MOVE_MIN_PCT:g} % à la détection, {vr.H14_LEAD_MIN / 60:.0f}–{vr.H14_LEAD_MAX / 60:.0f} h avant",
@@ -473,7 +521,16 @@ def ecrire_si_change(path, doc, volatile=('genere_le',)):
 def main(argv=None):
     argv = sys.argv[1:] if argv is None else argv
     root = pathlib.Path(argv[0]) if argv else pathlib.Path.cwd()
-    doc, table = verdicts(root)
+    ajouts = Ajouts(root)
+    doc, table = verdicts(root, ajouts=ajouts)
+    try:  # le bilan du canal MISER ne bloque jamais les verdicts
+        c = ecrire_si_change(root / OUT_CANAUX, canal_miser(root, ajouts))
+        m = json.loads((root / OUT_CANAUX).read_text(encoding='utf-8'))['canaux']['MISER']
+        print(f"MISER: alertes {m['n_alertes']} · matchs {m['n_matchs']} · dénoués {m['n_denoues']}"
+              f" · ROI {m['bilan'].get('roi')} % · CLV méd {m['bilan'].get('clv_mediane')} %"
+              f" · {OUT_CANAUX} {'écrit' if c else 'inchangé'}")
+    except Exception as exc:
+        print(f"MISER: bilan non calculé ({type(exc).__name__}: {str(exc)[:120]})")
     t = ecrire_si_change(root / OUT_RESULTS, {'schema_version': 1, 'champs': 'ajoutés après coup ; jamais de champ de décision',
                                               'paris': dict(sorted(table.items()))})
     v = ecrire_si_change(root / OUT_VERDICTS, doc)
