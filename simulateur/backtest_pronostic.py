@@ -146,16 +146,31 @@ def index_td(noms_par_cle, sexe=None):
     return idx
 
 
-def cle_tennis_data(idx, nom, circuit_td=None):
-    """Clé du joueur pour « Wang Xin. » / « Mpetshi G. » ; None si inconnu ou ambigu.
-    circuit_td 'ATP' / 'WTA' écarte les homonymes de l'autre circuit (« Nakashima B. »)."""
+def lire_tennis_data(idx, nom, circuit_td=None):
+    """(clé, état) pour un nom tennis-data : état 'relie', 'absent' (aucun joueur connu de ce nom),
+    'ambigu' (plusieurs candidats) ou 'illisible'. circuit_td 'ATP' / 'WTA' écarte les homonymes
+    de l'autre circuit (« Nakashima B. »)."""
     k = donnees.cle_td_prefixe(nom)
     if not k:
-        return None
+        return None, 'illisible'
     s = {'ATP': 'H', 'WTA': 'F'}.get(str(circuit_td or '').upper())
     cands = {c for c, t, sx in idx.get((k[0], k[1][0]), ())
              if any(w.startswith(k[1]) for w in t) and (s is None or sx in (None, s))}
-    return next(iter(cands)) if len(cands) == 1 else None
+    if len(cands) == 1:
+        return next(iter(cands)), 'relie'
+    return None, ('ambigu' if cands else 'absent')
+
+
+def cle_tennis_data(idx, nom, circuit_td=None):
+    """Clé du joueur pour « Wang Xin. » / « Mpetshi G. » ; None si inconnu ou ambigu."""
+    return lire_tennis_data(idx, nom, circuit_td)[0]
+
+
+def cle_nouveau(nom, circuit_td):
+    """Clé d'un joueur présent seulement dans tennis-data (22/10/2026) : circuit + nom tel qu'écrit."""
+    k = donnees.cle_td_prefixe(nom)
+    pref = ''.join(donnees.norm(str(nom).split()[-1].replace('.', ' ')))
+    return f"td:{str(circuit_td or '?').upper()}:{k[0]}:{pref}" if k else None
 
 
 def sexe_de_circuit(c):
@@ -166,8 +181,10 @@ BAS = ('CH', 'ITF')          # niveaux où un nouveau joueur part plus bas (règ
 DEPART_BAS = 1200.0
 
 
-def rejouer(M, nous, td_rows, cle_c, idx, depart_bas):
-    """Rejoue tout dans l'ordre ; renvoie classement, pronostics de l'archive et de nos matchs."""
+def rejouer(M, nous, td_rows, cle_c, idx, depart_bas, nouveaux=False):
+    """Rejoue tout dans l'ordre ; renvoie classement, pronostics de l'archive et de nos matchs.
+    nouveaux : un nom tennis-data inconnu partout (ni Sackmann ni nos matchs) devient un nouveau
+    joueur au lieu de faire jeter le match ; un nom ambigu reste écarté."""
     elo, noms, pred_sack = E.Elo(), {}, {}
     bas, tot = collections.Counter(), collections.Counter()
 
@@ -188,9 +205,19 @@ def rejouer(M, nous, td_rows, cle_c, idx, depart_bas):
     paires_nous = collections.defaultdict(list)
     for x in nous:
         paires_nous[frozenset((cle_c(x['home']), cle_c(x['away'])))].append(x['date'])
-    ev, cpt = [], collections.Counter()
+    ev, cpt, crees = [], collections.Counter({'ajoutes': 0, 'non_reconnus': 0, 'doublons_ecartes': 0}), set()
     for d, w, l, _c in td_rows:
-        w_, l_ = cle_tennis_data(idx, w, _c), cle_tennis_data(idx, l, _c)
+        cles = []
+        for nm in (w, l):
+            k, etat = lire_tennis_data(idx, nm, _c)
+            if k is None and nouveaux and etat == 'absent':
+                k = cle_nouveau(nm, _c)
+                if k:
+                    crees.add(k)
+                    noms.setdefault(k, nm)
+            cpt[f"noms_{etat}"] += 1
+            cles.append(k)
+        w_, l_ = cles
         if not w_ or not l_:
             cpt['non_reconnus'] += 1
             continue
@@ -223,6 +250,7 @@ def rejouer(M, nous, td_rows, cle_c, idx, depart_bas):
         if x['gagnant'] in ('home', 'away'):
             w, l = (h, a) if x['gagnant'] == 'home' else (a, h)
             elo.maj(w, l, x['surface'], x.get('grand_chelem', False))
+    cpt['nouveaux_joueurs'] = len(crees)
     return {'elo': elo, 'noms': noms, 'pred_sack': pred_sack, 'B': B, 'td': dict(cpt)}
 
 
@@ -390,13 +418,29 @@ def main(argv):
         ('log_loss' in a0 and 'log_loss' in a1 and a1['log_loss'] <= a0['log_loss'] + 0.001)
     b_ok = 'log_loss' in b0 and 'log_loss' in b1 and b1['log_loss'] < b0['log_loss']
     retenue = 'depart_1200_petits_niveaux' if (a_ok and b_ok) else 'depart_1500'
+    # Étape 2 (22/10/2026), règle fixée AVANT les résultats, sur la variante de départ retenue :
+    # les joueurs absents de nos bases (connus seulement de tennis-data) deviennent de nouveaux
+    # joueurs ; retenu seulement si log loss B baisse et log loss A ne monte pas de plus de 0,001.
+    nom2 = retenue + '+nouveaux_joueurs'
+    V[nom2] = rejouer(M, nous, td_rows, cle_c, idx, retenue != 'depart_1500', nouveaux=True)
+    V[nom2]['rapA'], V[nom2]['rapB'], V[nom2]['A'] = evaluer(V[nom2], M, td, T)
+    print(f"{nom2} : A {V[nom2]['rapA']['tous']['stats_seules']} · B {V[nom2]['rapB']['tous']['stats_seules']}"
+          f" · tennis-data {V[nom2]['td']}", flush=True)
+    a0, a1 = V[retenue]['rapA']['tous']['stats_seules'], V[nom2]['rapA']['tous']['stats_seules']
+    b0, b1 = V[retenue]['rapB']['tous']['stats_seules'], V[nom2]['rapB']['tous']['stats_seules']
+    a_ok = (a0.get('n', 0) == 0 and a1.get('n', 0) == 0) or \
+        ('log_loss' in a0 and 'log_loss' in a1 and a1['log_loss'] <= a0['log_loss'] + 0.001)
+    b_ok = 'log_loss' in b0 and 'log_loss' in b1 and b1['log_loss'] < b0['log_loss']
+    if a_ok and b_ok:
+        retenue = nom2
     W = V[retenue]
     rap = {'genere_le': dt.datetime.now(dt.timezone.utc).isoformat(timespec='seconds'),
            'objectif': 'deviner le vainqueur et le score (pas battre Pinnacle)',
            'elo': 'FiveThirtyEight (Kovalchik 2016) : K = 250/(n+5)^0,4, ×1,1 en Grand Chelem ; général + surface à parts égales ; aucun réglage',
            'variantes': {k: {'A': v['rapA']['tous']['stats_seules'], 'B': v['rapB']['tous']['stats_seules'],
                              'B_calibration': v['rapB']['calibration_stats_seules'], 'tennis_data': v['td']} for k, v in V.items()},
-           'regle_adoption': "départ bas retenu seulement si log loss B baisse et log loss A ne monte pas de plus de 0,001",
+           'regle_adoption': "départ bas retenu seulement si log loss B baisse et log loss A ne monte pas de plus de 0,001 ; "
+                             "puis, même règle, nouveaux joueurs tennis-data sur la variante de départ retenue",
            'variante_retenue': retenue,
            'joueurs_relies_nom_different': len(alias),
            'sackmann_jusqu_au': fin_sack.isoformat(), 'nos_matchs': len(nous),
@@ -412,7 +456,7 @@ def main(argv):
     elo = W['elo']
     with open(os.path.join(ICI, 'elo_etat.json'), 'w', encoding='utf-8') as f:
         json.dump({'genere_le': rap['genere_le'], 'dernier_match': str(nous[-1]['date'] if nous else fin_sack),
-                   'variante': retenue, 'depart_bas': DEPART_BAS if retenue != 'depart_1500' else None,
+                   'variante': retenue, 'depart_bas': DEPART_BAS if not retenue.startswith('depart_1500') else None,
                    'surfaces_tournois': table_surf, 'alias': alias, 'joueurs': elo.exporter(W['noms'])},
                   f, ensure_ascii=False, separators=(',', ':'))
     print(json.dumps({k: rap[k] for k in ('variantes', 'variante_retenue', 'joueurs_relies_nom_different')}, ensure_ascii=False, indent=1))
