@@ -391,6 +391,13 @@ def run(sink):
     epath = root / OUT_EVAL
     if not (epath.is_file() and _same(epath, ev)):
         epath.write_text(json.dumps(ev, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+    # V7.5 : le prix tient-il après l'alerte ? (délai alerte -> pari)
+    try:
+        _load("delai_alertes.py").run(sink)
+    except Exception as exc:  # noqa: BLE001
+        import traceback
+        traceback.print_exc()
+        print(f"::warning::delai_alertes.json non mis à jour ({type(exc).__name__}: {exc})")
     # V7.4 : H19 « valeur contre Pinnacle juste » et sa grille (même lecture des partitions).
     try:
         _load("valeur.py").run(sink)
