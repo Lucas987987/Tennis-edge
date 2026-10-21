@@ -90,6 +90,25 @@ class Pronostics(unittest.TestCase):
         self.assertEqual(BP.cle_tennis_data(idx, 'Mpetshi G.'), E.cle('Giovanni Mpetshi Perricard'))
         self.assertEqual(BP.cle_tennis_data(idx, 'Vallejo D.'), E.cle('Adolfo Daniel Vallejo'))
 
+    def test_nouveaux_joueurs_tennis_data(self):
+        """22/10/2026 : un nom inconnu partout devient un nouveau joueur ; un nom ambigu reste écarté."""
+        noms = {E.cle(n): n for n in ['Alexander Bublik', 'Wang Xinyu', 'Wang Xiyu']}
+        idx = BP.index_td(noms)
+        self.assertEqual(BP.lire_tennis_data(idx, 'Bublik A.')[1], 'relie')
+        self.assertEqual(BP.lire_tennis_data(idx, 'Wang X.')[1], 'ambigu')
+        self.assertEqual(BP.lire_tennis_data(idx, 'Inconnu Z.')[1], 'absent')
+        self.assertEqual(BP.cle_nouveau('Inconnu Z.', 'ATP'), 'td:ATP:inconnu:z')
+        self.assertEqual(BP.cle_nouveau('Fernandez L.A.', 'WTA'), 'td:WTA:fernandez:la')
+        d = dt.date(2026, 7, 1)
+        rows = [(d, 'Bublik A.', 'Inconnu Z.', 'ATP'), (d, 'Inconnu Z.', 'Bublik A.', 'ATP'),
+                (d, 'Bublik A.', 'Wang X.', 'ATP')]
+        sans = BP.rejouer([], [], rows, E.cle, idx, False)
+        avec = BP.rejouer([], [], rows, E.cle, idx, False, nouveaux=True)
+        self.assertEqual((sans['td'].get('ajoutes', 0), sans['td']['non_reconnus']), (0, 3))
+        self.assertEqual((avec['td']['ajoutes'], avec['td']['non_reconnus'], avec['td']['nouveaux_joueurs']), (2, 1, 1))
+        self.assertEqual(avec['elo'].matchs(E.cle('Alexander Bublik')), 2)
+        self.assertEqual(avec['noms']['td:ATP:inconnu:z'], 'Inconnu Z.')
+
     def test_un_joueur_un_classement(self):
         a = E.unifier({E.cle('Leylah Annie Fernandez'): 'Leylah Annie Fernandez', E.cle('Brandon Nakashima'): 'Brandon Nakashima'},
                       ['Leylah Fernandez', 'Bradley Nakashima'])
