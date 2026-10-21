@@ -1,5 +1,5 @@
 {
- "genere_le": "2026-10-21T20:45:37+00:00",
+ "genere_le": "2026-10-21T21:59:29+00:00",
  "objectif": "deviner le vainqueur et le score (pas battre Pinnacle)",
  "elo": "FiveThirtyEight (Kovalchik 2016) : K = 250/(n+5)^0,4, ×1,1 en Grand Chelem ; général + surface à parts égales ; aucun réglage",
  "variantes": {
@@ -58,8 +58,12 @@
    ],
    "tennis_data": {
     "ajoutes": 608,
+    "non_reconnus": 309,
     "doublons_ecartes": 933,
-    "non_reconnus": 309
+    "noms_relie": 3380,
+    "noms_ambigu": 305,
+    "noms_absent": 15,
+    "nouveaux_joueurs": 0
    }
   },
   "depart_1200_petits_niveaux": {
@@ -117,20 +121,91 @@
    ],
    "tennis_data": {
     "ajoutes": 608,
+    "non_reconnus": 309,
     "doublons_ecartes": 933,
-    "non_reconnus": 309
+    "noms_relie": 3380,
+    "noms_ambigu": 305,
+    "noms_absent": 15,
+    "nouveaux_joueurs": 0
+   }
+  },
+  "depart_1200_petits_niveaux+nouveaux_joueurs": {
+   "A": {
+    "n": 9277,
+    "reussite_pct": 65.9,
+    "ic95_pct": [
+     65.0,
+     66.9
+    ],
+    "log_loss": 0.6101,
+    "brier": 0.2117
+   },
+   "B": {
+    "n": 2990,
+    "reussite_pct": 63.8,
+    "ic95_pct": [
+     62.0,
+     65.5
+    ],
+    "log_loss": 0.6364,
+    "brier": 0.2221
+   },
+   "B_calibration": [
+    {
+     "tranche": "50–60 %",
+     "n": 1075,
+     "prevu": 55.0,
+     "reel": 51.9
+    },
+    {
+     "tranche": "60–70 %",
+     "n": 853,
+     "prevu": 64.8,
+     "reel": 66.1
+    },
+    {
+     "tranche": "70–80 %",
+     "n": 651,
+     "prevu": 74.6,
+     "reel": 70.2
+    },
+    {
+     "tranche": "80–90 %",
+     "n": 326,
+     "prevu": 84.2,
+     "reel": 79.1
+    },
+    {
+     "tranche": "90–100 %",
+     "n": 85,
+     "prevu": 93.1,
+     "reel": 81.2
+    }
+   ],
+   "tennis_data": {
+    "ajoutes": 620,
+    "non_reconnus": 297,
+    "doublons_ecartes": 933,
+    "noms_relie": 3380,
+    "noms_ambigu": 305,
+    "noms_absent": 15,
+    "nouveaux_joueurs": 4
    }
   }
  },
- "regle_adoption": "départ bas retenu seulement si log loss B baisse et log loss A ne monte pas de plus de 0,001",
+ "regle_adoption": "départ bas retenu seulement si log loss B baisse et log loss A ne monte pas de plus de 0,001 ; puis, même règle, nouveaux joueurs tennis-data sur la variante de départ retenue",
  "variante_retenue": "depart_1200_petits_niveaux",
  "joueurs_relies_nom_different": 21,
  "sackmann_jusqu_au": "2026-06-02",
  "nos_matchs": 2990,
  "resultats_tennis_data_ajoutes": {
   "ajoutes": 608,
+  "non_reconnus": 309,
   "doublons_ecartes": 933,
-  "non_reconnus": 309
+  "noms_relie": 3380,
+  "noms_ambigu": 305,
+  "noms_absent": 15,
+  "nouveaux_joueurs": 0
  },
  "A_atp_wta_2024_2026": {
   "tous": {
@@ -782,5 +857,5 @@
    }
   }
  },
- "duree_s": 685
+ "duree_s": 681
 }
