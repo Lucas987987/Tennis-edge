@@ -148,7 +148,7 @@ def _lines(path):
                 yield line
 
 
-def collect(root, counters, series=None):
+def collect(root, counters, series=None, series_books=None, uids_books=None):
     """records[(uid, book)] = {start, home, away, tournament, curves: {side: anchors}}.
 
     V7.3 : si `series` est un dict, la courbe Pinnacle complète (points où la cote
@@ -159,6 +159,12 @@ def collect(root, counters, series=None):
         points = {side: engine._curve_points(curve, start, counters)
                   for side, curve in (("home", home_curve), ("away", away_curve))}
         curves = {side: engine._anchors(points[side], start) for side in ("home", "away")}
+        if series_books is not None and uids_books and uid in uids_books:
+            # V7.5 : courbe complète de CHAQUE book pour les matchs alertés (délai alerte → pari).
+            dest_b = series_books.setdefault(uid, {}).setdefault(book, {"home": [], "away": []})
+            for side in ("home", "away"):
+                for stamp, odds, _ in points[side]:
+                    dest_b[side].append((stamp, odds))
         if series is not None and book == "pinnacle":
             dest = series.setdefault(uid, {"home": [], "away": []})
             for side in ("home", "away"):
@@ -359,7 +365,24 @@ def build(root=ROOT, environ=None, sink=None) -> dict:
     counters = collections.Counter()
     explorer = _load("explorer_build.py")
     series = {} if sink is not None else None
-    records = collect(root, counters, series)
+    series_books, uids_books = None, None
+    if sink is not None:
+        try:
+            uids_books = _load("delai_alertes.py").alert_uids(root)
+            series_books = {}
+        except Exception as exc:  # noqa: BLE001
+            print(f"  [délai alertes] journaux illisibles ({type(exc).__name__}) — étude sautée")
+    records = collect(root, counters, series, series_books, uids_books)
+    if series_books is not None:
+        for uid, bks in series_books.items():
+            for book, sides in bks.items():
+                for side in ("home", "away"):
+                    pts, last = [], None
+                    for t, o in sorted(set(sides[side])):
+                        if o != last:
+                            pts.append((t, o))
+                            last = o
+                    sides[side] = pts
     results = engine.load_results(root)
     pair = explorer.Results(root)
 
@@ -369,7 +392,8 @@ def build(root=ROOT, environ=None, sink=None) -> dict:
     surfaces = meta.SurfaceMap(root / "historique/tennis_data.csv.gz")
     rows = build_rows(records, results, alert_index(root), surfaces, pair_results)
     if sink is not None:
-        sink.update({"records": records, "series": series, "rows": rows, "results": results,
+        sink.update({"records": records, "series": series, "series_books": series_books or {},
+                     "rows": rows, "results": results,
                      "surfaces": surfaces, "pair_results": pair_results, "root": root})
     doc = encode(rows)
     doc.update({

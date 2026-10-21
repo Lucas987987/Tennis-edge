@@ -240,6 +240,12 @@ jobs:
           # les ultra-favoris sont parmi les meilleurs. Ne pas transposer.
           python scripts/h16b_signal.py || true
 
+          # H19 — valeur contre Pinnacle juste, gelée le 16/10 (règle lue dans
+          # Tennis_Edge_Lab/registry/gel_h19.json, empreinte vérifiée). Évaluée à
+          # l'instant de décision de chaque horizon (24 h, 6 h, 1 h, 10 min).
+          # Canal PRIVÉ. Le verdict officiel reste celui du Lab (courbes complètes).
+          python scripts/h19_signal.py || true
+
           # H14 — amplitude + timing (mouvement Pinnacle > 5 % à la détection,
           # 8-24 h avant le match), gelée le 02/10. CANAL CRÉÉ LE 16/10/2026 :
           # son échantillon EN DIRECT commence à ce déploiement. Lancé EN
