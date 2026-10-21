@@ -57,7 +57,8 @@ class Quota(unittest.TestCase):
 
     def test_marge_reserve_la_capture(self):
         fb.ov.QUOTA.update({'remaining': 20000, 'reset_s': 10 * 86400})
-        self.assertEqual(fb.marge_quota(1100), 20000 - 11000)
+        self.assertEqual(fb.marge_quota(1100, plancher=0), 20000 - 11000)
+        self.assertEqual(fb.marge_quota(1100, plancher=2000), 20000 - 11000 - 2000)
         fb.ov.QUOTA.update({'remaining': 5000})
         self.assertLess(fb.marge_quota(1100), 0)
 

@@ -94,6 +94,8 @@ jobs:
           CAPTURE_PAR_JOUR: ${{ github.event.inputs.reserve_par_jour || '600' }}
           FORCER: ${{ github.event.inputs.forcer || 'false' }}
           CURVES_MAX_RUN: "2500"
+          # Programme du 21/10 : 40 000 requêtes jusqu'au 20/11 -> ~2 000 gardées au renouvellement.
+          QUOTA_PLANCHER: "2000"
         # ÉCONOMIE QUOTA RapidAPI (ajouté le 14/10/2026) : 31 books x 40
         # matchs = jusqu'à 1 240 requêtes par nuit, la moitié du quota
         # quotidien. EN PAUSE jusqu'au 27/10, reprise AUTOMATIQUE ensuite
