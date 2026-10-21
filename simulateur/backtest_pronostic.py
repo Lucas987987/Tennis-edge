@@ -12,9 +12,12 @@ Le détail des sets (2-0, 2-1…) vient du moteur (forme du jour) appliqué au
 niveau de chaque version.
 
 PROTOCOLE : tous les résultats sont rejoués dans l'ordre (archive Sackmann,
-puis nos matchs depuis juin) ; chaque match est PRONOSTIQUÉ avant que son
-résultat ne mette le classement à jour. Aucun réglage : rien ne regarde le
-futur.
+puis, depuis juin, nos matchs ET les résultats ATP/WTA de tennis-data,
+historique/tennis_data_resultats.csv.gz) ; chaque match est PRONOSTIQUÉ avant
+que son résultat ne mette le classement à jour. Un résultat tennis-data n'a
+que la date : il est placé en FIN de journée (il ne sert jamais à pronostiquer
+un match du même jour) et écarté s'il double l'un de nos matchs (même paire,
+± 2 jours). Aucun réglage : rien ne regarde le futur.
 
 Mesures : taux de vainqueurs devinés (une prédiction à 50 % compte pour ½),
 log loss, Brier, calibration ; sur nos matchs, aussi le score en sets
@@ -112,6 +115,34 @@ def calibration(items):
     return out
 
 
+def resultats_td(chemin, depuis):
+    """[(date, vainqueur, perdant, circuit)] des résultats tennis-data postérieurs à `depuis`."""
+    import csv
+    import gzip
+    out = []
+    try:
+        with gzip.open(chemin, 'rt', encoding='utf-8') as fh:
+            for r in csv.DictReader(fh):
+                try:
+                    d = dt.date.fromisoformat(r['date'])
+                except (KeyError, ValueError):
+                    continue
+                if d > depuis and r.get('vainqueur') and r.get('perdant'):
+                    out.append((d, r['vainqueur'], r['perdant'], r.get('circuit')))
+    except OSError:
+        pass
+    return out
+
+
+def index_noms(noms_complets):
+    """(nom de famille, initiale) -> clés Elo possibles, pour relier « Bublik A. » à « Alexander Bublik »."""
+    idx = collections.defaultdict(set)
+    for nm in noms_complets:
+        for k in donnees.cles_sackmann(nm):
+            idx[k].add(E.cle(nm))
+    return idx
+
+
 def main(argv):
     t0 = time.time()
     dossier = argv[1] if len(argv) > 1 else 'sackmann'
@@ -134,8 +165,31 @@ def main(argv):
             pred_sack[i] = (elo.proba(g, p, m['surface']), min(elo.matchs(g), elo.matchs(p)))
         elo.maj(g, p, m['surface'], m.get('niveau') == 'G')
     T = Table()
+    # 2. depuis juin : nos matchs (pronostiqués puis appris) + résultats tennis-data (appris seulement)
+    idx = index_noms(set(m['nom_g'] for m in M) | set(m['nom_p'] for m in M) | {x['home'] for x in nous} | {x['away'] for x in nous})
+    paires_nous = collections.defaultdict(list)
+    for x in nous:
+        paires_nous[frozenset((E.cle(x['home']), E.cle(x['away'])))].append(x['date'])
+    ev, td_ok, td_doublon, td_inconnu = [], 0, 0, 0
+    for d, w, l, _c in resultats_td(os.path.join(racine, 'historique', 'tennis_data_resultats.csv.gz'), fin_sack + dt.timedelta(days=3)):
+        kw, kl = idx.get(donnees.cle_td(w) or ('', '')), idx.get(donnees.cle_td(l) or ('', ''))
+        if not kw or not kl or len(kw) != 1 or len(kl) != 1:
+            td_inconnu += 1
+            continue
+        w_, l_ = next(iter(kw)), next(iter(kl))
+        if any(abs((d - d2).days) <= 2 for d2 in paires_nous.get(frozenset((w_, l_)), [])):
+            td_doublon += 1
+            continue
+        ev.append((dt.datetime.combine(d, dt.time(23, 59, 59)), 'td', (w_, l_)))
+        td_ok += 1
+    for x in nous:
+        ev.append((x['debut'], 'nous', x))
+    ev.sort(key=lambda e: (e[0], e[1] == 'td'))
     B = []
-    for x in nous:                                   # 2. nos matchs : idem
+    for _t, src, x in ev:
+        if src == 'td':
+            elo.maj(x[0], x[1])                       # surface inconnue : Elo général seulement
+            continue
         h, a = E.cle(x['home']), E.cle(x['away'])
         noms.setdefault(h, x['home'])
         noms.setdefault(a, x['away'])
@@ -143,6 +197,7 @@ def main(argv):
         if x['gagnant'] in ('home', 'away'):
             w, l = (h, a) if x['gagnant'] == 'home' else (a, h)
             elo.maj(w, l, x['surface'], x.get('grand_chelem', False))
+    print(f"tennis-data depuis juin : {td_ok} résultats ajoutés, {td_doublon} doublons de nos matchs, {td_inconnu} joueurs non reconnus", flush=True)
 
     # ---- A : ATP / WTA principaux contre tennis-data
     td = donnees.charger_td(os.path.join(racine, 'historique', 'tennis_data.csv.gz'), DEBUT_A.isoformat())
@@ -189,6 +244,7 @@ def main(argv):
            'objectif': 'deviner le vainqueur et le score (pas battre Pinnacle)',
            'elo': 'FiveThirtyEight (Kovalchik 2016) : K = 250/(n+5)^0,4, ×1,1 en Grand Chelem, départ 1500 ; général + surface à parts égales ; aucun réglage',
            'sackmann_jusqu_au': fin_sack.isoformat(), 'nos_matchs': len(nous),
+           'resultats_tennis_data_ajoutes': {'ajoutes': td_ok, 'doublons_ecartes': td_doublon, 'non_reconnus': td_inconnu},
            'A_atp_wta_2024_2026': dict(rapA, periode=f"{DEBUT_A} → {FIN_A}", matchs=len(A)),
            'B_nos_matchs': dict(rapB, periode=f"{nous[0]['date'] if nous else '—'} → {nous[-1]['date'] if nous else '—'}"),
            'duree_s': round(time.time() - t0)}
@@ -196,7 +252,7 @@ def main(argv):
         json.dump(rap, f, ensure_ascii=False, indent=1)
     with open(os.path.join(ICI, 'elo_etat.json'), 'w', encoding='utf-8') as f:
         json.dump({'genere_le': rap['genere_le'], 'dernier_match': str(nous[-1]['date'] if nous else fin_sack),
-                   'joueurs': E.Elo.exporter(elo, noms)}, f, ensure_ascii=False, separators=(',', ':'))
+                   'surfaces_tournois': table_surf, 'joueurs': elo.exporter(noms)}, f, ensure_ascii=False, separators=(',', ':'))
     print(json.dumps({k: rap[k] for k in ('A_atp_wta_2024_2026', 'B_nos_matchs')}, ensure_ascii=False, indent=1))
     return 0
 
