@@ -318,6 +318,30 @@ def decoupes_h19(paris):
             "favori": by(None, lambda p: "favori" if p["favori"] else "outsider")}
 
 
+def alertes_direct(root, paris_lab):
+    """Alertes H19 envoyées en direct (h19_signal_log.jsonl) contre la mesure du Lab :
+    le canal direct voit-il les mêmes paris que les courbes complètes ?"""
+    path = pathlib.Path(root) / "h19_signal_log.jsonl"
+    if not path.is_file():
+        return {"lignes": 0}
+    recs = []
+    for line in path.read_text(encoding="utf-8").splitlines():
+        try:
+            recs.append(json.loads(line))
+        except ValueError:
+            pass
+    lab = {(p["uid"], p["joueur"]): p for p in paris_lab}
+    envoyees = [r for r in recs if r.get("envoye")]
+    communs = [r for r in recs if (r.get("uid"), r.get("joueur")) in lab]
+    dates_direct = sorted(str(r.get("commence", ""))[:10] for r in recs)
+    debut = dates_direct[0] if dates_direct else None
+    lab_periode = [p for p in paris_lab if debut and p["date"] >= debut]
+    return {"lignes": len(recs), "envoyees": len(envoyees), "communes_avec_le_lab": len(communs),
+            "paris_lab_meme_periode": len(lab_periode),
+            "meme_book": sum(1 for r in communs if lab[(r["uid"], r["joueur"])]["book"] == r.get("book")),
+            "derniers": recs[-15:]}
+
+
 def build(sink):
     opps = opportunites(sink["records"], sink["results"], sink.get("pair_results"))
     tous = premier(opps, regle_h19)
@@ -333,7 +357,8 @@ def build(sink):
                                "derniers": [{k: (round(v, 3) if isinstance(v, float) else v) for k, v in p.items()}
                                             for p in apres[-30:]]},
                 "retrospectif": {**resume(avant), "avertissement": "période qui a servi à CHOISIR la règle : ne compte pas"},
-                "decoupes_retrospectives": decoupes_h19(avant)},
+                "decoupes_retrospectives": decoupes_h19(avant),
+                "alertes_direct": alertes_direct(sink["root"], apres)},
         "grille": grille(opps),
         "books": books_table(opps),
         "opportunites": len(opps),
