@@ -246,6 +246,12 @@ jobs:
           # Canal PRIVÉ. Le verdict officiel reste celui du Lab (courbes complètes).
           python scripts/h19_signal.py || true
 
+          # H20 — outsider WTA soutenu par Pinnacle (cote 2-3,19, probabilité
+          # +3,15 à +20 pts depuis l'ouverture), gelée le 21/10 (règle lue dans
+          # Tennis_Edge_Lab/registry/gel_h20.json, empreinte vérifiée). Canal
+          # PRIVÉ. Verdict officiel : Tennis_Edge_Lab/h20.py (CLV, cible 100).
+          python scripts/h20_signal.py || true
+
           # H14 — amplitude + timing (mouvement Pinnacle > 5 % à la détection,
           # 8-24 h avant le match), gelée le 02/10. CANAL CRÉÉ LE 16/10/2026 :
           # son échantillon EN DIRECT commence à ce déploiement. Lancé EN

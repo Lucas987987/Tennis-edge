@@ -157,6 +157,31 @@ class FreezeV2Tests(unittest.TestCase):
             self.assertEqual((c["n"], c["clv_pin_mean_pct"], c["roi_pct"]), (1, 3.0, 100.0))
             self.assertEqual(c["entree"], "fr")
 
+    def test_un_pari_par_joueur(self):
+        """21/10/2026 : option « un pari par joueur et par match » (premier horizon), même règle que l'interface."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = pathlib.Path(tmp)
+            when = dt.datetime(2026, 10, 15, 18, 0, tzinfo=dt.timezone.utc)
+            sans = xg.validate_spec(json.dumps({"jeu": "matchs", "criteres": {"circuit": ["WTA"]}, "entree": "jouable"}))
+            avec = xg.validate_spec(json.dumps({"jeu": "matchs", "criteres": {"circuit": ["WTA"]}, "entree": "jouable",
+                                                "un_par_joueur": True}))
+            self.assertNotIn("un_par_joueur", sans)
+            self.assertNotEqual(xg.spec_id(sans), xg.spec_id(avec))
+            with self.assertRaises(ValueError):
+                xg.validate_spec(json.dumps({"jeu": "alertes", "criteres": {"type": ["H17"]}, "un_par_joueur": True}))
+            record = xg.freeze(root, json.dumps({"jeu": "matchs", "criteres": {"circuit": ["WTA"]},
+                                                 "entree": "jouable", "un_par_joueur": True}), when)
+            self.assertTrue(record["un_par_joueur"])
+            base = {"circuit": "WTA", "date": "2026-10-16", "joueur": "A", "clv_jouable": 1.0, "pnl_jouable": 1.0}
+            rows = [dict(base, horizon="10m", decision_ts="2026-10-16T14:50+00:00"),
+                    dict(base, horizon="6h", decision_ts="2026-10-16T09:00+00:00"),
+                    dict(base, horizon="1h", decision_ts="2026-10-16T14:00+00:00"),
+                    dict(base, joueur="B", horizon="1h", decision_ts="2026-10-16T14:00+00:00")]
+            sel = xg.prospective(record, rows)
+            self.assertEqual([(r["joueur"], r["horizon"]) for r in sel], [("A", "6h"), ("B", "1h")])
+            c = xg.evaluate(root, {"alertes": [], "matchs": rows})["candidates"][0]
+            self.assertEqual((c["n"], c["un_par_joueur"]), (2, True))
+
 
 if __name__ == "__main__":
     unittest.main()

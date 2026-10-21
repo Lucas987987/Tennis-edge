@@ -174,6 +174,8 @@ jobs:
           python Tennis_Edge_Lab/explorer_matchs.py .
           python Tennis_Edge_Lab/explorer_gel.py verify --root .
           python Tennis_Edge_Lab/explorer_gel.py evaluate --root .
+          # H20 (gelée le 21/10) : un pari par joueur, premier horizon, CLV Pinnacle.
+          python Tennis_Edge_Lab/h20.py .
           python Tennis_Edge_Lab/profils.py .
 
       - name: Réconciliation détections (suivi officiel) ↔ alertes envoyées ↔ Worker D1
@@ -213,6 +215,7 @@ jobs:
             Tennis_Edge_Lab/registry/gel_explorateur.jsonl
             Tennis_Edge_Lab/registry/candidates.jsonl
             Tennis_Edge_Lab/registry/gel_h19.json
+            Tennis_Edge_Lab/registry/gel_h20.json
           )
           if ! git diff --quiet HEAD -- "${FROZEN[@]}" || \
              [[ -n "$(git ls-files --others --exclude-standard -- "${FROZEN[@]}")" ]]; then
@@ -246,6 +249,7 @@ jobs:
               Tennis_Edge_Lab/live/explorateur_detections.json.gz \
               Tennis_Edge_Lab/live/lectures_profils.json \
               Tennis_Edge_Lab/live/valeur.json \
+              Tennis_Edge_Lab/live/h20.json \
               Tennis_Edge_Lab/live/delai_alertes.json \
               Tennis_Edge_Lab/live/croisements.json \
               Tennis_Edge_Lab/live/registre/*; do
