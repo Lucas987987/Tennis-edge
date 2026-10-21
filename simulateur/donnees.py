@@ -123,6 +123,38 @@ def cles_sackmann(nom):
     return {(' '.join(t[k:]), t[0][0]) for k in range(1, len(t))}
 
 
+def cles_sackmann_etendues(nom):
+    """Comme cles_sackmann, plus souple (22/10/2026) : nom de famille = n'importe quelle
+    suite de mots après le prénom (« Mpetshi » pour Giovanni Mpetshi Perricard), initiale
+    de n'importe quel prénom (« D. » pour Adolfo Daniel Vallejo). Renvoie
+    {(nom de famille, initiale)} et les prénoms, pour départager « Xin. » et « Xiy. »."""
+    t = norm(nom)
+    out = set()
+    for ordre in (t, t[::-1]):            # « Xinyu Wang » comme « Wang Xinyu »
+        for k in range(1, len(ordre)):
+            prenoms = ordre[:k]
+            for j in range(k + 1, len(ordre) + 1):
+                for p in prenoms:
+                    out.add((' '.join(ordre[k:j]), p[0]))
+    return out, t
+
+
+def cle_td_prefixe(nom):
+    """« Wang Xin. » -> ('wang', 'xin') ; « Fernandez L.A. » -> ('fernandez', 'l')."""
+    brut = str(nom or '').strip()
+    parts = brut.split()
+    if len(parts) < 2:
+        return None
+    ini = parts[-1]
+    if '.' not in ini and len(ini) > 3:
+        return None
+    nom_famille = ' '.join(norm(' '.join(parts[:-1])))
+    pref = norm(ini.split('.')[0])
+    if not nom_famille or not pref:
+        return None
+    return (nom_famille, pref[0])
+
+
 def cle_td(nom):
     """« Del Potro J.M. » -> (del potro, j) ; « Bublik A. » -> (bublik, a)."""
     brut = str(nom or '').strip()
