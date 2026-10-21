@@ -137,9 +137,9 @@ jobs:
 
       - name: Résultats match + set (API oddspapi)
         # ÉCONOMIE QUOTA RapidAPI (ajouté le 14/10/2026) : 20 au lieu de 80
-        # jusqu'au 27/10, retour AUTOMATIQUE ensuite.
+        # jusqu'au 21/10 (quota renouvelé le 20/10), retour AUTOMATIQUE ensuite.
         run: |
-          if [ "$(date -u +%Y%m%d)" -lt 20261027 ]; then
+          if [ "$(date -u +%Y%m%d)" -lt 20261021 ]; then
             export RESULTS_MAX_PER_RUN=20
           fi
           python scripts/fetch_set_results.py || true
