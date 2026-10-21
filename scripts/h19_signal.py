@@ -186,7 +186,9 @@ def suivi():
     try:
         v = json.load(open(os.path.join(RACINE, 'Tennis_Edge_Lab', 'live', 'valeur.json'), encoding='utf-8'))
         p = v['h19']['prospectif']
-        return p['n'], (p.get('clv') or {}).get('mean'), v['h19']['regle']['cible_n']
+        roi = p.get('roi') or {}
+        return (p['n'], (p.get('clv') or {}).get('mean'), v['h19']['regle']['cible_n'],
+                roi.get('n') or 0, roi.get('mean'))
     except (OSError, ValueError, KeyError, TypeError):
         return None
 
@@ -206,8 +208,10 @@ def message(g, side, d, R, maintenant):
          "⏱️ L'avantage vient d'une erreur de prix : il disparaît vite (le book corrige)."]
     s = suivi()
     if s:
-        n, clv, cible = s
+        n, clv, cible, n_roi, roi = s
         L.append(f"\n📊 <b>Suivi</b> : {n}/{cible} paris" + (f" · CLV {clv:+.1f} %" if clv is not None else ''))
+        if n_roi and roi is not None:
+            L.append(f"ROI {roi:+.1f} % sur {n_roi} pari(s) dénoué(s) — à ce stade, bruit : H19 se juge sur la CLV.")
     L.append(f"\n<i>Hypothèse gelée le {R['gele_le']}, NON VALIDÉE. Jugée sur la CLV, cible {R['cible_n']}. "
              f"Ne pas diffuser.</i>")
     return '\n'.join(L)
