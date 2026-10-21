@@ -39,13 +39,24 @@ def cle(nom):
 class Elo:
     def __init__(self, depart=1500.0):
         self.depart = depart
-        self.g, self.s, self.n, self.ns = {}, {}, {}, {}
+        self.g, self.s, self.n, self.ns, self.dep = {}, {}, {}, {}, {}
+
+    def presenter(self, j, valeur):
+        """Note de départ d'un joueur jamais vu (ex. 1200 s'il débute en Challenger/ITF)."""
+        if j not in self.g and j not in self.dep:
+            self.dep[j] = valeur
+
+    def _g(self, j):
+        return self.g.get(j, self.dep.get(j, self.depart))
+
+    def _s(self, j, surface):
+        return self.s.get((j, surface), self.dep.get(j, self.depart))
 
     def note(self, j, surface=None):
-        g = self.g.get(j, self.depart)
+        g = self._g(j)
         if surface not in SURFACES:
             return g
-        return 0.5 * g + 0.5 * self.s.get((j, surface), self.depart)
+        return 0.5 * g + 0.5 * self._s(j, surface)
 
     def proba(self, a, b, surface=None):
         """Probabilité que A batte B."""
@@ -62,18 +73,20 @@ class Elo:
         """Met à jour après un match (à appeler APRÈS la prédiction de ce match)."""
         w, l = gagnant, perdant
         f = 1.1 if grand_chelem else 1.0
-        e = 1 / (1 + 10 ** ((self.g.get(l, self.depart) - self.g.get(w, self.depart)) / 400))
+        gw, gl = self._g(w), self._g(l)
+        e = 1 / (1 + 10 ** ((gl - gw) / 400))
         kw, kl = f * self._k(self.n.get(w, 0)), f * self._k(self.n.get(l, 0))
-        self.g[w] = self.g.get(w, self.depart) + kw * (1 - e)
-        self.g[l] = self.g.get(l, self.depart) - kl * (1 - e)
+        self.g[w] = gw + kw * (1 - e)
+        self.g[l] = gl - kl * (1 - e)
         self.n[w] = self.n.get(w, 0) + 1
         self.n[l] = self.n.get(l, 0) + 1
         if surface in SURFACES:
             sw, sl = (w, surface), (l, surface)
-            e = 1 / (1 + 10 ** ((self.s.get(sl, self.depart) - self.s.get(sw, self.depart)) / 400))
+            vw, vl = self._s(w, surface), self._s(l, surface)
+            e = 1 / (1 + 10 ** ((vl - vw) / 400))
             kw, kl = f * self._k(self.ns.get(sw, 0)), f * self._k(self.ns.get(sl, 0))
-            self.s[sw] = self.s.get(sw, self.depart) + kw * (1 - e)
-            self.s[sl] = self.s.get(sl, self.depart) - kl * (1 - e)
+            self.s[sw] = vw + kw * (1 - e)
+            self.s[sl] = vl - kl * (1 - e)
             self.ns[sw] = self.ns.get(sw, 0) + 1
             self.ns[sl] = self.ns.get(sl, 0) + 1
 
@@ -99,3 +112,41 @@ class Elo:
 def log_loss(p, y):
     p = min(max(p, 1e-6), 1 - 1e-6)
     return -math.log(p if y else 1 - p)
+
+
+# ------------------------------------------------------------------ identité des joueurs
+def mots(nom):
+    s = unicodedata.normalize('NFKD', str(nom or '')).encode('ascii', 'ignore').decode().lower()
+    return [m for m in re.split(r'[^a-z]+', s) if m and m not in SUFFIXES]
+
+
+def unifier(connus, nouveaux):
+    """Relie un nom écrit autrement au joueur déjà connu (22/10/2026).
+
+    « Leylah Fernandez » (OddsPapi) et « Leylah Annie Fernandez » (Sackmann) ont
+    des clés différentes : sans ce lien, le même joueur aurait DEUX classements,
+    chacun nourri d'une partie de ses résultats. Règle : les mots d'un nom sont
+    inclus dans ceux de l'autre (un prénom en plus ou en moins), au moins deux
+    mots en commun, et un SEUL joueur connu possible — sinon on ne relie pas.
+    connus : {clé: nom} ; nouveaux : noms -> {clé du nouveau: clé du connu}."""
+    par_mot, toks = {}, {}
+    for k, n in connus.items():
+        t = set(mots(n))
+        toks[k] = t
+        for w in t:
+            par_mot.setdefault(w, set()).add(k)
+    alias = {}
+    for n in nouveaux:
+        k = cle(n)
+        if k in connus or k in alias:
+            continue
+        t = set(mots(n))
+        if len(t) < 2:
+            continue
+        cands = set()
+        for w in t:
+            cands |= par_mot.get(w, set())
+        bons = {c for c in cands if (t <= toks[c] or toks[c] <= t) and len(t & toks[c]) >= 2}
+        if len(bons) == 1:
+            alias[k] = next(iter(bons))
+    return alias

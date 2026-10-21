@@ -22,7 +22,7 @@ concurrency:
 jobs:
   pronostic:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v5
         with:
@@ -49,7 +49,7 @@ jobs:
           cd /tmp/sackmann
           git sparse-checkout set --no-cone 'atp_matches_20*.csv' 'atp_matches_qual_chall_20*.csv' 'wta_matches_20*.csv' 'wta_matches_qual_itf_20*.csv'
       - name: Test chronologique
-        run: python simulateur/backtest_pronostic.py /tmp/sackmann .
+        run: python simulateur/backtest_pronostic.py /tmp/sackmann . --scores
       - name: Publier
         run: |
           set -euo pipefail

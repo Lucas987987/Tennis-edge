@@ -79,10 +79,21 @@ class Pronostics(unittest.TestCase):
         self.assertEqual(b['tous']['stats_plus_marche']['reussite_pct'], 0.0)
 
     def test_noms_tennis_data(self):
-        idx = BP.index_noms(['Alexander Bublik', 'Alex de Minaur'])
-        import donnees
-        self.assertEqual(idx[donnees.cle_td('Bublik A.')], {E.cle('Alexander Bublik')})
-        self.assertEqual(idx[donnees.cle_td('De Minaur A.')], {E.cle('Alex de Minaur')})
+        noms = {E.cle(n): n for n in ['Alexander Bublik', 'Alex de Minaur', 'Wang Xinyu', 'Wang Xiyu',
+                                      'Giovanni Mpetshi Perricard', 'Adolfo Daniel Vallejo']}
+        idx = BP.index_td(noms)
+        self.assertEqual(BP.cle_tennis_data(idx, 'Bublik A.'), E.cle('Alexander Bublik'))
+        self.assertEqual(BP.cle_tennis_data(idx, 'De Minaur A.'), E.cle('Alex de Minaur'))
+        self.assertEqual(BP.cle_tennis_data(idx, 'Wang Xin.'), E.cle('Wang Xinyu'))      # initiales étendues
+        self.assertEqual(BP.cle_tennis_data(idx, 'Wang Xiy.'), E.cle('Wang Xiyu'))
+        self.assertIsNone(BP.cle_tennis_data(idx, 'Wang X.'))                           # ambigu : on ne relie pas
+        self.assertEqual(BP.cle_tennis_data(idx, 'Mpetshi G.'), E.cle('Giovanni Mpetshi Perricard'))
+        self.assertEqual(BP.cle_tennis_data(idx, 'Vallejo D.'), E.cle('Adolfo Daniel Vallejo'))
+
+    def test_un_joueur_un_classement(self):
+        a = E.unifier({E.cle('Leylah Annie Fernandez'): 'Leylah Annie Fernandez', E.cle('Brandon Nakashima'): 'Brandon Nakashima'},
+                      ['Leylah Fernandez', 'Bradley Nakashima'])
+        self.assertEqual(a, {E.cle('Leylah Fernandez'): E.cle('Leylah Annie Fernandez')})
 
 
 if __name__ == '__main__':
