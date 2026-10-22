@@ -152,14 +152,30 @@ def charger_reglages(racine):
 REGLAGES = None
 
 
+def charger_choix(racine):
+    """Composantes retenues par le test (backtest_match_simule.py) : 'ajustees' ou 'profils'."""
+    try:
+        with open(os.path.join(racine, 'simulateur', 'choix_simulation.json'), encoding='utf-8') as f:
+            return json.load(f).get('composantes', 'profils')
+    except (OSError, ValueError):
+        return 'profils'
+
+
+CHOIX = 'profils'
+
+
 def match_simule(P, h, a, c, s, sg, p_home, cle):
     """Le match joué SIMULATIONS fois au niveau p_home, avec les profils de service des deux joueurs."""
     ph, nh = P.profil(h, c, s, P.jour_export)
     pa, na = P.profil(a, c, s, P.jour_export)
     mu = P.moyenne(c, s)
-    r = MS.simuler(MS.composantes(ph, pa, mu), MS.composantes(pa, ph, mu), p_home, sg, SIMULATIONS, SIGMA, cle=cle,
-                   reglages=REGLAGES)
+    if CHOIX == 'ajustees' and getattr(P, 'ajuste', None) is not None:
+        cH, cA = MS.composantes_ajustees(P.ajuste, h, a, c, s), MS.composantes_ajustees(P.ajuste, a, h, c, s)
+    else:
+        cH, cA = MS.composantes(ph, pa, mu), MS.composantes(pa, ph, mu)
+    r = MS.simuler(cH, cA, p_home, sg, SIMULATIONS, SIGMA, cle=cle, reglages=REGLAGES)
     r['reglages'] = REGLAGES
+    r['composantes'] = CHOIX if (CHOIX == 'ajustees' and getattr(P, 'ajuste', None) is not None) else 'profils'
     r['profil_connu'] = [nh >= BALLES_CONNU, na >= BALLES_CONNU]
     return r
 
@@ -203,8 +219,9 @@ def construire(racine, maintenant=None):
     surf = etat.get('surfaces_tournois') or {}
     S = Styles(os.path.join(racine, 'simulateur', 'notes_joueurs.json'))
     PR = charger_profils(racine)
-    global REGLAGES
+    global REGLAGES, CHOIX
     REGLAGES = charger_reglages(racine)
+    CHOIX = charger_choix(racine)
     venir = matchs_a_venir(racine, maintenant)
     # Un joueur = un classement : alias du dernier calcul, puis noms nouveaux reliés au joueur connu.
     alias = dict(etat.get('alias') or {})
