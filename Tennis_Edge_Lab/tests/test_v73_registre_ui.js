@@ -330,6 +330,12 @@ test('prédit / réel (22/10/2026)', () => {
   assert.match(pc, /ATP · 7 derniers jours<\/small><\/td><td>100 %/);
   assert.match(pc, /Challenger/);
   assert.match(pc, /ITF \(non joué\)/);
+  const RI = { matchs: [{ uid: 'v', debut: '2026-10-21T10:00', home: 'A B', away: 'C D', circuit: 'ATP', reel: { gagnant: 'away', interrompu: 'abandon' },
+    premier: { combinaison: { p_home: 0.7, vainqueur_juste: false } } }, R.matchs[0]] };
+  RI.matchs[1].circuit = 'ATP';
+  const hi = R_.resultatsBlock(RI);
+  assert.match(hi, /<small>Simulation \+ Elo<\/small><b>1\/1<\/b>/);              // l'abandon ne compte pas
+  assert.match(hi, /abandon — non compté/);
   assert.match(R_.resultatsBlock({ matchs: [] }), /Aucun match joué/);
   assert.equal(R_.resultatsBlock(null), '');
 });

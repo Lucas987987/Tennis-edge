@@ -208,21 +208,40 @@ def charger_ajustements(racine):
     nv = choix.get('nouveaux_venus') or {}
     if nv.get('adopte') and nv.get('delta') is not None:
         out['delta_nouveaux'] = float(nv['delta'])
+    for cle_s in ('qualifies', 'transition'):                  # 22/10/2026 : même règle, autres situations
+        v = choix.get(cle_s) or {}
+        if v.get('adopte') and v.get('delta') is not None:
+            out['delta_' + cle_s] = float(v['delta'])
     return out
 
 
-def ajuster_combinaison(p_c, c, p_elo, p_sim, n_home, n_away, contexte=None):
-    """Challenger : poids propres s'ils sont adoptés (remplacent le mélange commun) ; puis nouveaux venus :
-    z += δ·(nouveau(home) − nouveau(away)), nouveau(n) = max(0, 1 − n/30)."""
+def ajuster_combinaison(p_c, c, p_elo, p_sim, n_home, n_away, situations=None):
+    """Challenger : poids propres s'ils sont adoptés (remplacent le mélange commun) ; puis chaque situation
+    adoptée (règle de entrainement_progressif.correction_situation) : z += δ·(situation(home) − situation(away)).
+    Nouveaux venus : nouveau(n) = max(0, 1 − n/30) ; situations = {'qualifies': (h, a), 'transition': (h, a)}."""
     if c == 'CH' and AJUSTEMENTS.get('poids_CH'):
         p_c = MS.melange(AJUSTEMENTS['poids_CH'], p_elo, p_sim)
-    d = AJUSTEMENTS.get('delta_nouveaux')
-    if d and n_home is not None and n_away is not None:
-        f = max(0.0, 1 - n_home / 30) - max(0.0, 1 - n_away / 30)
-        if f:
-            z = math.log(min(max(p_c, 1e-6), 1 - 1e-6) / (1 - min(max(p_c, 1e-6), 1 - 1e-6))) + d * f
-            p_c = sig(max(min(z, 30), -30))
+    ecarts = []
+    if AJUSTEMENTS.get('delta_nouveaux') and n_home is not None and n_away is not None:
+        ecarts.append((AJUSTEMENTS['delta_nouveaux'], max(0.0, 1 - n_home / 30) - max(0.0, 1 - n_away / 30)))
+    for cle_s, (vh, va) in (situations or {}).items():
+        if AJUSTEMENTS.get('delta_' + cle_s):
+            ecarts.append((AJUSTEMENTS['delta_' + cle_s], vh - va))
+    dz = sum(d * f for d, f in ecarts)
+    if dz:
+        q = min(max(p_c, 1e-6), 1 - 1e-6)
+        p_c = sig(max(min(math.log(q / (1 - q)) + dz, 30), -30))
     return p_c
+
+
+def situations_du_match(h, a, tournoi, debut, surface):
+    """(qualifié, changement de surface) de chaque joueur, depuis le contexte des facteurs ; {} sans contexte."""
+    if CONTEXTE is None or not hasattr(CONTEXTE, 'qualifie'):
+        return {}
+    ts = (debut.replace(tzinfo=dt.timezone.utc).timestamp() if debut.tzinfo is None else debut.timestamp()) \
+        if isinstance(debut, dt.datetime) else float(debut)
+    return {'qualifies': (CONTEXTE.qualifie(h, tournoi, ts), CONTEXTE.qualifie(a, tournoi, ts)),
+            'transition': (CONTEXTE.transition(h, surface, ts), CONTEXTE.transition(a, surface, ts))}
 
 
 def charger_facteurs(racine):
@@ -420,7 +439,8 @@ def construire(racine, maintenant=None):
                 p_sim = MS.victoire_pure(cH, cA, sg, sigma_sim())
                 p_c = MS.melange_contexte(COMBINAISON, MS.contexte_match(s, c, 2 * sg - 1), stats['p_home'], p_sim)
                 p_c = MS.calibrer(p_c, COMBINAISON.get('calibration'))     # excès de confiance (si adopté)
-                p_c = ajuster_combinaison(p_c, c, stats['p_home'], p_sim, elo.matchs(h), elo.matchs(a))
+                p_c = ajuster_combinaison(p_c, c, stats['p_home'], p_sim, elo.matchs(h), elo.matchs(a),
+                                          situations_du_match(h, a, x['tournoi'], x['debut'], s))
                 combinaison = dict(pronostic(p_c, c, sg, pa0, pb0), p_simulation=round(p_sim, 4), p_elo=stats['p_home'])
             # 22/10/2026 — EN DIRECT (direct.py, Lab) : points de service des deux joueurs pour la version
             # principale (simulation + Elo si adoptée, sinon simulation pure), avant toute forme du jour.
@@ -606,6 +626,10 @@ def bilan(racine, maintenant=None):
         lignes = open(os.path.join(racine, LOG), encoding='utf-8').read().splitlines()
     except OSError:
         lignes = []
+    try:
+        idx_b = FE.Index(FE.lire(racine, depuis=(maintenant - dt.timedelta(days=200)).date().isoformat()))
+    except Exception:  # noqa: BLE001 — sans feuilles, on garde tous les matchs
+        idx_b = None
     for l in lignes:
         try:
             r = json.loads(l)
@@ -619,6 +643,8 @@ def bilan(racine, maintenant=None):
         res, sens = NR.resultat(sr, d0, r['home'], r['away'])
         if not res:
             continue
+        if idx_b is not None and interruption(idx_b.trouver(r['debut'][:10], r['home'], r['away'])[0]):
+            continue                                          # abandon ou forfait : ne juge pas le modèle
         o = (lambda v: v) if sens == 1 else (lambda v: {'home': 'away', 'away': 'home'}.get(v))
         g, s1, s2 = o(res.get('match')), o(res.get('set1')), o(res.get('set2'))
         sets = None
@@ -706,6 +732,13 @@ def juger(v, gagnant, sets, score, jeux):
     return out
 
 
+def interruption(fi):
+    """'abandon' (abandon, disqualification), 'forfait' (walkover) ou None, d'après la feuille TennisApi.
+    22/10/2026 : ces matchs ne jugent pas le modèle (un abandon à 3-1 n'est pas une erreur de pronostic)."""
+    txt = str(((fi or {}).get('statut') or {}).get('texte') or '').lower()
+    return 'abandon' if txt in ('retired', 'defaulted') else 'forfait' if txt == 'walkover' else None
+
+
 def resoudre(racine, maintenant=None):
     """Chaque match du journal dont le résultat est connu : 1re prédiction, dernière avant le match,
     résultat réel (vainqueur, sets, score en jeux, feuille de stats), et le jugement de chaque version."""
@@ -737,6 +770,7 @@ def resoudre(racine, maintenant=None):
         d0 = dt.date.fromisoformat(r['debut'][:10])
         res, sens = NR.resultat(sr, d0, r['home'], r['away'])
         fi, inv = idx.trouver(r['debut'][:10], r['home'], r['away'])
+        interrompu = interruption(fi)
         if fi is not None and str((fi.get('statut') or {}).get('texte') or '').lower() != 'ended':
             fi = None
         gagnant = sets = None
@@ -767,7 +801,7 @@ def resoudre(racine, maintenant=None):
                     'circuit': r.get('circuit'), 'pronostique_le': r.get('pronostique_le'),
                     'dernier_passage': dernier['passage'] if dernier else None, 'n_passages': len(avant),
                     'reel': {'gagnant': gagnant, 'sets': sets, 'score': score, 'jeux': jeux,
-                             'feuille': feuille[0] if feuille else None},
+                             'feuille': feuille[0] if feuille else None, 'interrompu': interrompu},
                     'premier': {k: juger(premier.get(k), gagnant, sets, score, jeux) for k in VERSIONS},
                     'dernier': ({k: juger(dernier.get(k), gagnant, sets, score, jeux) for k in VERSIONS} if dernier else None),
                     'pin_cotes': r.get('pin_cotes')})
