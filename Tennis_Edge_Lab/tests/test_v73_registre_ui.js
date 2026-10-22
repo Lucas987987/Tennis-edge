@@ -271,3 +271,40 @@ test('facteurs du match : ce qui pèse, seulement les groupes adoptés (22/10/20
   assert.match(html, /Facteurs du match retenus par le test : Forme récente et fatigue\./);
   assert.match(html, /rg-facteurs/);
 });
+
+test('simulation + Elo et calibration (22/10/2026)', () => {
+  const v = p => ({ p_home: p, sets: {}, scores_probables: [], jeux_moyen: 22 });
+  const m = { uid: 'u', debut: '2026-10-22T04:00', tournoi: 'ATP Vienna', surface: 'Hard', meilleur_des: 3, home: 'Arthur Fils', away: 'Hugo Gaston',
+    combinaison: v(0.64), simulation: v(0.7), stats: v(0.6), marche: null };
+  const B = { tous: { combinaison: { n: 12, reussite_pct: 70 } }, '7_derniers_jours': {},
+    calibration: { combinaison: [{ tranche: '60–70 %', n: 12, prevu: 64, reel: 66.7 }], simulation: [{ tranche: '70–80 %', n: 5, prevu: 72, reel: 60 }] },
+    par_circuit: { ATP: { combinaison: { n: 12, reussite_pct: 70 } } } };
+  const html = R.pronosticsBlock({ horizon_h: 36, simulations: 5000, combinaison: { elo: 0.6, simulation: 0.5 }, matchs: [m] }, B);
+  assert.match(html, /<b>Simulation \+ Elo<\/b>.*<b>Fils<\/b> 64 %/s);
+  assert.match(html, /Réussite simulation \+ Elo<\/small><b>70 %<\/b>/);
+  const c = R.calibrationBlock(B);
+  assert.match(c, /<td>60–70 %<\/td><td>67 % <small>\(12\)<\/small><\/td><td>—<\/td>/);
+  assert.match(c, /<td>ATP<\/td><td>70 % <small>\(12\)<\/small><\/td>/);
+  assert.equal(R.calibrationBlock(null), '');
+});
+
+test('en direct : même calcul exact que simulateur/direct.py (22/10/2026)', () => {
+  const N = [[-3.0, 0.0022182], [-2.5, 0.00877313], [-2.0, 0.02702316], [-1.5, 0.06482519], [-1.0, 0.12110939], [-0.5, 0.17621312], [0.0, 0.19967563], [0.5, 0.17621312], [1.0, 0.12110939], [1.5, 0.06482519], [2.0, 0.02702316], [2.5, 0.00877313], [3.0, 0.0022182]];
+  const d = { a: 0.66, b: 0.62, sigma: 0.15, sets_gagnants: 2, tb_final: 7 };
+  const cas = [[[], 0, 0, true, [0, 0], 0.647195616, 0.647195616], [[[6, 1]], 4, 0, true, [0, 0], 0.998594199, 0.986323688],
+    [[[6, 4], [4, 6]], 6, 6, true, [5, 6], 0.342832449, 0.359979224], [[[3, 6]], 5, 4, false, [2, 3], 0.31393115, 0.403461101],
+    [[[7, 6], [4, 6]], 2, 3, true, [4, 3], 0.503400832, 0.565048423]];
+  for (const [S, ga, gb, hs, pts, p, p0] of cas) {
+    const r = R.enDirect(d, N, S, ga, gb, hs, pts);
+    assert.ok(Math.abs(r.p - p) < 1e-6, `${JSON.stringify(S)} ${ga}-${gb} : ${r.p} ≠ ${p}`);
+    assert.ok(Math.abs(r.p0 - p0) < 1e-6);
+  }
+  assert.deepEqual(R.lireScore('6-4 3-6', '2-1', '40-AV'), { sets: [[6, 4], [3, 6]], jeux: [2, 1], points: [3, 4] });
+  assert.deepEqual(R.lireScore('', '6-6', '5-4').points, [5, 4]);
+  assert.match(R.lireScore('6/4', '', '').erreur, /Sets terminés/);
+  const m = { uid: 'u', home: 'Arthur Fils', away: 'Hugo Gaston', direct: d };
+  assert.match(R.directBlock(m, N), /En direct : le % depuis le score/);
+  assert.equal(R.directBlock({ uid: 'x' }, N), '');
+  assert.match(R.directResultat(m, N, { sets: '6-1', jeux: '4-0', points: '', homeSert: true }), /<b>Fils<\/b> 99,9 %|<b>Fils<\/b> 100 %/);
+  assert.match(R.directResultat(m, N, { sets: 'x', jeux: '', points: '', homeSert: true }), /Sets terminés/);
+});

@@ -56,6 +56,13 @@ jobs:
           git clone --depth 1 --filter=blob:none --sparse https://github.com/Aneeshers/tennis-sackmann-archive.git /tmp/sackmann
           cd /tmp/sackmann
           git sparse-checkout set --no-cone 'atp_matches_20*.csv' 'atp_matches_qual_chall_20*.csv' 'wta_matches_20*.csv' 'wta_matches_qual_itf_20*.csv'
+      - name: Match Charting Project (Jeff Sackmann, CC BY-NC-SA 4.0) — statistiques seulement
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          git clone --depth 1 --filter=blob:none --sparse https://github.com/JeffSackmann/tennis_MatchChartingProject.git /tmp/mcp
+          cd /tmp/mcp
+          git sparse-checkout set --no-cone 'charting-*-matches.csv' 'charting-*-stats-ServeBasics.csv' 'charting-*-stats-ReturnOutcomes.csv' 'charting-*-stats-Rally.csv'
       - name: Test chronologique
         run: python simulateur/backtest_pronostic.py /tmp/sackmann . --scores
       - name: Profils de service (aces, doubles fautes, 1re et 2e balle, retour)
@@ -66,8 +73,8 @@ jobs:
         run: python simulateur/etude_forme_du_jour.py .
       - name: Test de la feuille de match simulée (avant l'heure)
         run: python simulateur/backtest_match_simule.py /tmp/sackmann . --n=300 --max=2000
-      - name: Facteurs du match (forme, fatigue, vitesse du court, gaucher/taille, points importants)
-        run: python simulateur/facteurs.py /tmp/sackmann .
+      - name: Facteurs du match (forme, fatigue, court, gaucher/taille, points importants, styles, face-à-face, conditions, contexte, Match Charting)
+        run: python simulateur/facteurs.py /tmp/sackmann . /tmp/mcp
       - name: Publier
         run: |
           set -euo pipefail

@@ -49,6 +49,7 @@ jobs:
           sparse-checkout: |
             /scripts/feuilles_match.py
             /scripts/joueurs_infos.py
+            /scripts/lieux_tournois.py
             /feuilles/
           sparse-checkout-cone-mode: false
       - uses: actions/setup-python@v6
@@ -71,6 +72,10 @@ jobs:
           RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
           FEUILLES_RESERVE: '1500'
         run: python scripts/joueurs_infos.py 1500
+      - name: Lieux et météo des tournois (Open-Meteo, gratuit, sans clé)
+        if: always()
+        timeout-minutes: 20
+        run: python scripts/lieux_tournois.py 400
       - name: Publier (même après une interruption)
         if: always()
         run: |

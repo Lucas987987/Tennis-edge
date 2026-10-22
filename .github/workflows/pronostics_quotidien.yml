@@ -61,6 +61,13 @@ jobs:
           git clone --depth 1 --filter=blob:none --sparse https://github.com/Aneeshers/tennis-sackmann-archive.git /tmp/sackmann
           cd /tmp/sackmann
           git sparse-checkout set --no-cone 'atp_matches_20*.csv' 'atp_matches_qual_chall_20*.csv' 'wta_matches_20*.csv' 'wta_matches_qual_itf_20*.csv'
+      - name: Match Charting Project (Jeff Sackmann, CC BY-NC-SA 4.0) — statistiques seulement
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          git clone --depth 1 --filter=blob:none --sparse https://github.com/JeffSackmann/tennis_MatchChartingProject.git /tmp/mcp
+          cd /tmp/mcp
+          git sparse-checkout set --no-cone 'charting-*-matches.csv' 'charting-*-stats-ServeBasics.csv' 'charting-*-stats-ReturnOutcomes.csv' 'charting-*-stats-Rally.csv'
       - name: Classement (tous les résultats)
         run: python simulateur/backtest_pronostic.py /tmp/sackmann .
       - name: Profils de service (archive + feuilles collectées depuis)
