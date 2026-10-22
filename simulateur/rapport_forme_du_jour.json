@@ -1,0 +1,42 @@
+{
+ "genere_le": "2026-10-22T13:24:39+00:00",
+ "sigma_modele": 0.15,
+ "matchs_avec_sets": 8363,
+ "joueur_matchs": 15548,
+ "mesures_brutes": {
+  "A_meme_match": 0.003798,
+  "A_temoin": -0.000565,
+  "B_meme_set": -0.003841,
+  "B_temoin": 5.3e-05,
+  "C_meme_match": 0.003986,
+  "C_temoin": -0.000651,
+  "n_joueur_match": 15548,
+  "n_paires_B": 17598
+ },
+ "forme_du_jour_service": {
+  "variance": 0.004363,
+  "ic95": [
+   0.003661,
+   0.004307
+  ],
+  "sigma_logit": 0.281,
+  "attendu_par_le_modele_variance": 0.001246
+ },
+ "adversaires_meme_set": {
+  "covariance": -0.003894,
+  "ic95": [
+   -0.004265,
+   -0.003471
+  ],
+  "lecture": "négatif : un joueur en forme fait moins bien servir l'autre (ce que suppose le modèle)"
+ },
+ "premiere_balle": {
+  "variance": 0.004637,
+  "ic95": [
+   0.003884,
+   0.004531
+  ],
+  "sigma_logit": 0.298
+ },
+ "verdict": "forme du jour au service : σ ≈ 0.281 en logit (modèle : 0.15) ; plus forte que le modèle ; adversaires au même set : négatif : un joueur en forme fait moins bien servir l'autre (ce que suppose le modèle) ; 1re balle d'un match à l'autre : σ ≈ 0.298 en logit"
+}
