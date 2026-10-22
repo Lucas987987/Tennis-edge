@@ -3,7 +3,7 @@
 """
 facteurs.py — ce qui fait basculer un match, au-delà du niveau habituel des joueurs (22/10/2026).
 
-Quatre groupes de facteurs, mesurés sur les feuilles de match collectées (TennisApi),
+Neuf groupes de facteurs, mesurés sur les feuilles de match collectées (TennisApi),
 chacun appris sur juin–août 2026 et JUGÉ sur septembre–octobre 2026, jamais vus :
 
   1. forme_fatigue : forme des 30 derniers jours (points gagnés au service et au retour,
@@ -14,7 +14,18 @@ chacun appris sur juin–août 2026 et JUGÉ sur septembre–octobre 2026, jamai
   3. morphologie : gaucher (serveur, relanceur, gaucher contre droitier), taille ;
   4. points_importants : balles de break sauvées au-delà de ce que le joueur gagne sur ses
      autres points de service (archive Sackmann + feuilles), et balles de break converties
-     au retour ; plus l'effet moyen d'une balle de break.
+     au retour ; plus l'effet moyen d'une balle de break ;
+  5. styles : duels de styles — service du serveur × retour de l'adversaire (aces contre
+     retour de 1re, 1re contre retour de 1re, 2e contre retour de 2e), effets qui ne
+     s'additionnent pas ;
+  6. face_a_face : ce que le serveur a réellement fait contre CET adversaire (archive des
+     4 dernières années + feuilles), au-delà de l'attendu, ramené vers 0 ;
+  7. conditions : altitude, salle, chaleur et vent en plein air (Open-Meteo), joueur à
+     domicile, décalage horaire depuis le tournoi précédent (scripts/lieux_tournois.py) ;
+  8. contexte_tournoi : déjà joué dans ce tournoi, retour après plus de 45 jours sans
+     match, matchs dans d'autres tournois les 10 derniers jours ;
+  9. charting : Match Charting Project (charting.py) — points de service gagnés en 3
+     frappes ou moins, retours remis en jeu, goût pour les longs échanges.
 
 Chaque facteur décale, en logit, les points gagnés au service (1re et 2e balle), les aces,
 ou le point joué sur balle de break, PAR RAPPORT AU MODÈLE AJUSTÉ AUX ADVERSAIRES (base).
@@ -28,7 +39,7 @@ vainqueur ; il doit donc aider sur les points sans nuire au vainqueur.) Le rappo
 si le vainqueur est mieux trouvé. Les groupes adoptés sont ensuite ré-appris sur toutes les
 feuilles pour les pronostics.
 
-Usage : python simulateur/facteurs.py <archive Sackmann> [racine]
+Usage : python simulateur/facteurs.py <archive Sackmann> [racine] [dépôt Match Charting Project]
 Sorties : simulateur/facteurs.json (coefficients, groupes adoptés, rapport) ;
           contexte_actuel() / exporter_contexte() pour les pronostics du jour.
 """
@@ -44,6 +55,7 @@ import time
 ICI = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, ICI)
 import ajustement as AJ  # noqa: E402
+import charting as CH  # noqa: E402
 import donnees  # noqa: E402
 import elo as E  # noqa: E402
 import feuilles as FE  # noqa: E402
@@ -64,7 +76,65 @@ GROUPES = {
     'morphologie': {'service': ['gaucher_srv', 'gaucher_adv', 'gaucher_contre_droitier', 'taille_srv', 'taille_adv'],
                     'aces': ['taille_srv', 'gaucher_srv', 'gaucher_adv']},
     'points_importants': {'bp': ['bp_constante', 'clutch_srv', 'clutch_ret_adv']},
+    # 22/10/2026 — point 4 : DUELS DE STYLES (un gros serveur souffre-t-il plus ou moins qu'attendu face à un
+    # grand relanceur ? effets qui ne s'additionnent pas) et FACE-À-FACE (ce que le serveur a réellement fait
+    # contre CET adversaire, au-delà de l'attendu).
+    'styles': {'service': ['style_ace_x_retour', 'style_1re_x_retour', 'style_2e_x_retour'], 'aces': ['style_ace_x_retour']},
+    'face_a_face': {'service': ['h2h_srv']},
+    # 22/10/2026 — point 5 : CONDITIONS DU JOUR (altitude, salle, chaleur et vent en plein air, joueur à domicile,
+    # voyage depuis le tournoi précédent) ; point 6 : CONTEXTE DU TOURNOI (déjà joué ici, retour après une longue
+    # absence, tournois enchaînés).
+    'conditions': {'service': ['altitude', 'interieur', 'chaleur', 'vent', 'domicile_srv', 'domicile_adv', 'voyage_srv', 'voyage_adv'],
+                   'aces': ['altitude', 'interieur', 'chaleur', 'vent']},
+    'contexte_tournoi': {'service': ['deja_ici_srv', 'deja_ici_adv', 'absence_srv', 'absence_adv', 'enchaine_srv', 'enchaine_adv']},
+    # 22/10/2026 — point 7 : Match Charting Project (charting.py) — points gagnés en 3 frappes ou moins,
+    # retours remis en jeu, goût pour les longs échanges ; le duel premier coup du serveur × retour adverse.
+    'charting': {'service': ['mcp_premier_coup_srv', 'mcp_retour_adv', 'mcp_duel', 'mcp_echanges'], 'aces': ['mcp_premier_coup_srv']},
 }
+MCP_DIR = os.environ.get('MCP_DIR', '/tmp/mcp')
+ABSENCE_J = 45
+# Code pays des joueurs (TennisApi, ISO alpha-3) → ISO alpha-2 (géocodage des tournois).
+ISO3_2 = {'ARG': 'AR', 'AUS': 'AU', 'AUT': 'AT', 'BEL': 'BE', 'BGR': 'BG', 'BIH': 'BA', 'BLR': 'BY', 'BOL': 'BO', 'BRA': 'BR',
+          'CAN': 'CA', 'CHE': 'CH', 'CHL': 'CL', 'CHN': 'CN', 'COL': 'CO', 'CRI': 'CR', 'CYP': 'CY', 'CZE': 'CZ', 'DEU': 'DE',
+          'DNK': 'DK', 'DOM': 'DO', 'ECU': 'EC', 'EGY': 'EG', 'ESP': 'ES', 'EST': 'EE', 'FIN': 'FI', 'FRA': 'FR', 'GBR': 'GB',
+          'GEO': 'GE', 'GRC': 'GR', 'HKG': 'HK', 'HRV': 'HR', 'HUN': 'HU', 'IDN': 'ID', 'IND': 'IN', 'IRL': 'IE', 'ISR': 'IL',
+          'ITA': 'IT', 'JPN': 'JP', 'KAZ': 'KZ', 'KOR': 'KR', 'LTU': 'LT', 'LUX': 'LU', 'LVA': 'LV', 'MAR': 'MA', 'MCO': 'MC',
+          'MDA': 'MD', 'MEX': 'MX', 'MKD': 'MK', 'MLT': 'MT', 'MNE': 'ME', 'NLD': 'NL', 'NOR': 'NO', 'NZL': 'NZ', 'PAK': 'PK',
+          'PER': 'PE', 'PHL': 'PH', 'POL': 'PL', 'PRT': 'PT', 'PRY': 'PY', 'ROU': 'RO', 'RUS': 'RU', 'SAU': 'SA', 'SGP': 'SG',
+          'SRB': 'RS', 'SVK': 'SK', 'SVN': 'SI', 'SWE': 'SE', 'THA': 'TH', 'TPE': 'TW', 'TWN': 'TW', 'TUN': 'TN', 'TUR': 'TR',
+          'UKR': 'UA', 'URY': 'UY', 'USA': 'US', 'UZB': 'UZ', 'VEN': 'VE', 'VNM': 'VN', 'ZAF': 'ZA', 'ZWE': 'ZW', 'ARE': 'AE',
+          'QAT': 'QA', 'BHR': 'BH', 'ARM': 'AM', 'AZE': 'AZ', 'ISL': 'IS', 'LBN': 'LB', 'JOR': 'JO', 'KEN': 'KE', 'NGA': 'NG',
+          'MYS': 'MY', 'PRI': 'PR', 'GTM': 'GT', 'SLV': 'SV', 'PAN': 'PA', 'BRB': 'BB', 'JAM': 'JM', 'TTO': 'TT', 'CUB': 'CU',
+          'ALB': 'AL', 'AND': 'AD', 'MON': 'MC', 'GER': 'DE', 'NED': 'NL', 'SUI': 'CH', 'POR': 'PT', 'CRO': 'HR', 'GRE': 'GR',
+          'RSA': 'ZA', 'CHI': 'CL', 'URU': 'UY', 'PAR': 'PY', 'BUL': 'BG', 'SLO': 'SI', 'DEN': 'DK', 'LAT': 'LV', 'INA': 'ID'}
+
+
+def charger_lieux(racine):
+    """(tournois, météo) écrits par scripts/lieux_tournois.py ; vides si absents."""
+    out = []
+    for nom in ('tournois.json', 'meteo.json'):
+        try:
+            with open(os.path.join(racine, 'feuilles', nom), encoding='utf-8') as f:
+                out.append(json.load(f))
+        except (OSError, ValueError):
+            out.append({})
+    return tuple(out)
+K_H2H = 150.0
+STYLE_COMPS = (('a', 'S'), ('w1', 'S'), ('w2j', 'S'), ('w1', 'R'), ('w2j', 'R'))
+
+
+def style(adj, j):
+    """Style d'un joueur dans le modèle ajusté : (ace, 1re, 2e au service ; 1re, 2e au retour), en logit."""
+    A = getattr(adj, 'fond', adj)
+    if A is None or not hasattr(A, 'eff'):
+        return (0.0,) * 5
+    return tuple(A.eff[c][t].get(j, 0.0) for c, t in STYLE_COMPS)
+
+
+def variables_style(st_j, st_adv):
+    """Produits service du serveur × retour de l'adversaire (×4 : effets de l'ordre de 0,1–0,3 en logit)."""
+    return {'style_ace_x_retour': 16 * st_j[0] * st_adv[3], 'style_1re_x_retour': 16 * st_j[1] * st_adv[3],
+            'style_2e_x_retour': 16 * st_j[2] * st_adv[4]}
 
 
 def _lg(p):
@@ -85,6 +155,16 @@ class Historique:
         self.sets = collections.defaultdict(list)                 # joueur -> [(t, sets joués)]
         self.clutch = collections.defaultdict(lambda: [0.0, 0.0, 0.0, 0.0])   # Σ(sauvées−attendu), Σ bp, Σ(conv−att), Σ bp obtenues
         self.vit = collections.defaultdict(lambda: [0.0, 0.0, 0.0, 0.0])      # tournoi -> Σres srv, Σn, Σres aces, Σ in1
+        self.h2h = collections.defaultdict(lambda: [0.0, 0.0])                # (serveur, adversaire) -> Σres, Σn
+        self.parcours = collections.defaultdict(list)                          # joueur -> [(t, tournoi)]
+        self.pays, self.interieur = {}, {}
+        self.lieux, self.meteo = {}, {}
+        self.charting = None
+
+    def ajouter_h2h(self, j, adv, res, n):
+        h = self.h2h[(j, adv)]
+        h[0] += res
+        h[1] += n
 
     def ajouter_clutch(self, j, adv, det_j, det_adv):
         sv, in1, w1, w2 = det_j[:4]
@@ -107,6 +187,12 @@ class Historique:
             ro = x['srv'][1 - k]
             self.forme[j].append((t, r['res'], r['n'], -ro['res'], ro['n']))
             self.sets[j].append((t, x['nb_sets']))
+            self.ajouter_h2h(j, (x['b'], x['a'])[k], r['res'], r['n'])
+            self.parcours[j].append((t, x['tournoi']))
+            if (x.get('pays') or (None, None))[k]:
+                self.pays[j] = x['pays'][k]
+        if x.get('interieur'):
+            self.interieur[x['tournoi']] = True
         da, db = x['det']
         self.ajouter_clutch(x['a'], x['b'], da, db)
         self.ajouter_clutch(x['b'], x['a'], db, da)
@@ -145,12 +231,50 @@ class Historique:
         ij, ia = infos.get(j) or {}, infos.get(adv) or {}
         g_j, g_a = 1.0 if ij.get('main') == 'gauche' else 0.0, 1.0 if ia.get('main') == 'gauche' else 0.0
         taille = lambda i: ((i.get('taille_cm') or 185) - 185) / 10.0
-        return {'forme_srv': 4 * fs, 'forme_ret_adv': 4 * fr_adv, 'sets3_srv': s3 / 3, 'sets3_adv': s3a / 3,
+        lieu = self.lieux.get(tournoi) or {}
+        inter = 1.0 if (lieu.get('interieur') or self.interieur.get(tournoi)) else 0.0
+        jour = dt.datetime.fromtimestamp(t, dt.timezone.utc).date().isoformat()
+        met = (self.meteo.get(tournoi) or {}).get(jour)
+
+        def domicile(p):
+            c = ISO3_2.get(str(self.pays.get(p) or '').upper())
+            return 1.0 if c and lieu.get('code') and c == str(lieu['code']).upper() else 0.0
+
+        def parcours(p):
+            L = [e for e in self.parcours.get(p, ()) if e[0] < t]
+            if not L:
+                return 0.0, 0.0, 0.0, 0.0
+            der = L[-1]
+            absence = 1.0 if t - der[0] > ABSENCE_J * 86400 else 0.0
+            ici = sum(1 for tt, tr in L if tr == tournoi and t - tt <= 14 * 86400)
+            ailleurs = sum(1 for tt, tr in L if tr != tournoi and t - tt <= 10 * 86400)
+            voyage = 0.0
+            if der[1] != tournoi and t - der[0] <= 10 * 86400:
+                l0 = self.lieux.get(der[1]) or {}
+                if l0.get('lon') is not None and lieu.get('lon') is not None:
+                    dlon = abs(l0['lon'] - lieu['lon'])
+                    voyage = min(min(dlon, 360 - dlon) / 15.0, 12.0) / 6.0          # heures de décalage / 6
+            return min(ici, 4) / 4, absence, min(ailleurs, 5) / 5, voyage
+        ici_j, abs_j, ench_j, voy_j = parcours(j)
+        ici_a, abs_a, ench_a, voy_a = parcours(adv)
+        cond = {'altitude': (lieu.get('altitude') or 0.0) / 1000.0, 'interieur': inter,
+                'chaleur': (1 - inter) * ((met[0] - 25.0) / 10.0) if met else 0.0,
+                'vent': (1 - inter) * ((met[1] - 15.0) / 10.0) if met else 0.0,
+                'domicile_srv': domicile(j), 'domicile_adv': domicile(adv), 'voyage_srv': voy_j, 'voyage_adv': voy_a,
+                'deja_ici_srv': ici_j, 'deja_ici_adv': ici_a, 'absence_srv': abs_j, 'absence_adv': abs_a,
+                'enchaine_srv': ench_j, 'enchaine_adv': ench_a}
+        if self.charting is not None:
+            d_ = dt.datetime.fromtimestamp(t, dt.timezone.utc).date()
+            cond.update(CH.variables(self.charting.profil(j, d_), self.charting.profil(adv, d_)))
+        else:
+            cond.update(CH.variables((0.0, 0.0, 0.0), (0.0, 0.0, 0.0)))
+        return {**cond, 'forme_srv': 4 * fs, 'forme_ret_adv': 4 * fr_adv, 'sets3_srv': s3 / 3, 'sets3_adv': s3a / 3,
                 'repos_srv': rep / 10, 'repos_adv': repa / 10,
                 'vit_srv': 4 * v[0] / (v[1] + K_VITESSE), 'vit_ace': 10 * v[2] / (v[3] + K_VITESSE),
                 'gaucher_srv': g_j, 'gaucher_adv': g_a, 'gaucher_contre_droitier': g_j * (1 - g_a),
                 'taille_srv': taille(ij), 'taille_adv': taille(ia),
-                'bp_constante': 1.0, 'clutch_srv': 4 * cj[0] / (cj[1] + K_CLUTCH), 'clutch_ret_adv': 4 * ca[2] / (ca[3] + K_CLUTCH)}
+                'bp_constante': 1.0, 'clutch_srv': 4 * cj[0] / (cj[1] + K_CLUTCH), 'clutch_ret_adv': 4 * ca[2] / (ca[3] + K_CLUTCH),
+                'h2h_srv': 4 * (self.h2h.get((j, adv)) or [0.0, 0.0])[0] / ((self.h2h.get((j, adv)) or [0.0, 0.0])[1] + K_H2H)}
 
 
 # ------------------------------------------------------------------ préparation des lignes
@@ -180,7 +304,9 @@ def preparer(fiches, adj_pour, cle=E.cle):
             srv.append({'tx': tx, 'n': sv, 'res': (w1 + w2) - sv * p, 'in1': in1, 'res_ace': ace - in1 * tx['a'],
                         'w1': (in1, w1), 'w2j': (sec - df, w2), 'ace': (in1, ace), 'bp': (d[6], d[7]), 'p': p})
         nb_sets = len(r['score_home'].get('sets') or [])
-        out.append({'id': r.get('id'), 't': r['debut'], 'jour': jour, 'a': a, 'b': b, 'circuit': circ, 'surface': surf,
+        out.append({'style': (style(adj, a), style(adj, b)), 'id': r.get('id'),
+                    'interieur': 'indoor' in str(r.get('surface') or '').lower(),
+                    'pays': (r['home'].get('pays'), r['away'].get('pays')), 't': r['debut'], 'jour': jour, 'a': a, 'b': b, 'circuit': circ, 'surface': surf,
                     'tournoi': str(r.get('tournoi_id') or r.get('tournoi')), 'nom_tournoi': r.get('tournoi_unique') or r.get('tournoi'),
                     'srv': srv, 'det': (dh, da), 'nb_sets': nb_sets,
                     'vainqueur': 0 if r.get('vainqueur') == 1 else 1, 'bo': r.get('meilleur_des') or 3})
@@ -204,15 +330,28 @@ def infos_par_cle(racine, fiches, cle=E.cle):
     return out
 
 
-def avec_variables(lignes, infos, avant=None, final=False):
+def avec_variables(lignes, infos, avant=None, final=False, adj_avant=None, lieux=None, charting=None):
     """Ajoute à chaque ligne les variables point-in-time des deux serveurs ; avant : matchs de
-    l'archive pour les balles de break (format donnees.charger)."""
+    l'archive pour les balles de break (format donnees.charger) ; adj_avant : modèle ajusté à la fin
+    de l'archive, pour les face-à-face de l'archive (écart au service attendu, 4 dernières années)."""
     H = Historique()
+    if lieux:
+        H.lieux, H.meteo = lieux[0] or {}, lieux[1] or {}
+    H.charting = charting
+    lim = None
+    if avant and adj_avant is not None:
+        lim = max(m['date'] for m in avant) - dt.timedelta(days=4 * 365)
     for m in avant or []:
         d = m.get('detail')
         if d:
-            H.ajouter_clutch(E.cle(m['nom_g']), E.cle(m['nom_p']), d['w'], d['l'])
-            H.ajouter_clutch(E.cle(m['nom_p']), E.cle(m['nom_g']), d['l'], d['w'])
+            g, p = E.cle(m['nom_g']), E.cle(m['nom_p'])
+            H.ajouter_clutch(g, p, d['w'], d['l'])
+            H.ajouter_clutch(p, g, d['l'], d['w'])
+            if lim is not None and m['date'] >= lim and m['circuit'] in ('ATP', 'WTA', 'CH'):
+                for j, o, dj in ((g, p, d['w']), (p, g, d['l'])):
+                    sv, in1, w1, w2 = dj[:4]
+                    if sv:
+                        H.ajouter_h2h(j, o, (w1 + w2) - sv * S.p_service(S.borner(adj_avant.taux(j, o, m['circuit'], m['surface']))), sv)
     attente = []
     for x in lignes:
         while attente and attente[0][0] <= x['t']:
@@ -220,6 +359,9 @@ def avec_variables(lignes, infos, avant=None, final=False):
             H.ajouter(y)
         x['var'] = [H.variables(x['a'], x['b'], x['tournoi'], x['t'], infos),
                     H.variables(x['b'], x['a'], x['tournoi'], x['t'], infos)]
+        st = x.get('style') or ((0.0,) * 5, (0.0,) * 5)
+        x['var'][0].update(variables_style(st[0], st[1]))
+        x['var'][1].update(variables_style(st[1], st[0]))
         heapq.heappush(attente, (x['t'] + DISPO_H * 3600, x['id'] or 0, x))
     while final and attente:                    # contexte du jour : tout ce qui est joué compte
         H.ajouter(heapq.heappop(attente)[2])
@@ -377,8 +519,24 @@ def contexte(H, infos, noms_tournois, maintenant_ts):
         if e:
             joueurs[j] = e
     vit = {k: [round(x, 2) for x in v] for k, v in H.vit.items() if v[1] > 0}
+    h2h = {f"{a}|{b}": [round(v[0], 2), round(v[1])] for (a, b), v in H.h2h.items() if v[1] > 0}
+    for j, L in H.parcours.items():
+        rec = [[int(tt), tr] for tt, tr in L if tt >= t - 60 * 86400]
+        if not rec and L:
+            rec = [[int(L[-1][0]), L[-1][1]]]                 # dernier match, pour l'« absence »
+        if rec:
+            joueurs.setdefault(j, {})['parcours'] = rec
+        if H.pays.get(j):
+            joueurs.setdefault(j, {})['pays'] = H.pays[j]
+    actifs = {tr for L in H.parcours.values() for tt, tr in L if tt >= t - 60 * 86400}
+    jour0 = (dt.datetime.fromtimestamp(t, dt.timezone.utc).date() - dt.timedelta(days=3)).isoformat()
+    lieux = {k: v for k, v in H.lieux.items() if k in actifs or k in (noms_tournois or {})}
+    meteo = {k: {j: v for j, v in d.items() if j >= jour0} for k, d in H.meteo.items() if k in lieux}
+    ch = H.charting.exporter(set(joueurs) | set(getattr(H.charting, 'D', {})), dt.datetime.fromtimestamp(t, dt.timezone.utc).date()
+                             + dt.timedelta(days=1)) if hasattr(H.charting, 'exporter') else {}
     return {'genere_le': dt.datetime.now(dt.timezone.utc).isoformat(timespec='seconds'), 'instant': t,
-            'joueurs': joueurs, 'vitesse': vit, 'noms_tournois': noms_tournois}
+            'joueurs': joueurs, 'vitesse': vit, 'h2h': h2h, 'noms_tournois': noms_tournois,
+            'interieur': sorted(H.interieur), 'lieux': lieux, 'meteo': meteo, 'charting': ch}
 
 
 class Contexte:
@@ -397,6 +555,18 @@ class Contexte:
                 self.H.clutch[j] = list(e['clutch'])
         for k, v in (self.doc.get('vitesse') or {}).items():
             self.H.vit[k] = list(v)
+        for j, e in (self.doc.get('joueurs') or {}).items():
+            for tt, tr in e.get('parcours') or []:
+                self.H.parcours[j].append((tt, tr))
+            if e.get('pays'):
+                self.H.pays[j] = e['pays']
+        for k in self.doc.get('interieur') or []:
+            self.H.interieur[k] = True
+        self.H.lieux, self.H.meteo = self.doc.get('lieux') or {}, self.doc.get('meteo') or {}
+        self.H.charting = CH.ChartingFige(self.doc.get('charting'))
+        for k, v in (self.doc.get('h2h') or {}).items():
+            a, b = k.split('|', 1)
+            self.H.h2h[(a, b)] = list(v)
         self.infos = {j: e['infos'] for j, e in (self.doc.get('joueurs') or {}).items() if e.get('infos')}
         self.noms = self.doc.get('noms_tournois') or {}
 
@@ -411,8 +581,10 @@ class Contexte:
                 best, bs = k, s
         return best
 
-    def variables(self, j, adv, nom_tournoi, debut_ts):
-        return self.H.variables(j, adv, self.tournoi(nom_tournoi), debut_ts, self.infos)
+    def variables(self, j, adv, nom_tournoi, debut_ts, adj=None):
+        v = self.H.variables(j, adv, self.tournoi(nom_tournoi), debut_ts, self.infos)
+        v.update(variables_style(style(adj, j), style(adj, adv)))
+        return v
 
 
 # ------------------------------------------------------------------ programme principal
@@ -422,26 +594,32 @@ def main(argv):
     racine = argv[2] if len(argv) > 2 else os.path.join(ICI, '..')
     M = donnees.charger(dossier, 2016)
     fiches = FE.lire(racine)
-    F = [m for m in FE.charger(racine) if not M or m['date'] > max(x['date'] for x in M)]
+    fin_sack = max(x['date'] for x in M) if M else None             # calculé une fois (pas à chaque feuille)
+    F = [m for m in FE.charger(racine) if fin_sack is None or m['date'] > fin_sack]
     tout = sorted(M + F, key=lambda m: m['date'])
     try:
         with open(os.path.join(ICI, 'choix_simulation.json'), encoding='utf-8') as f:
-            n0 = float(json.load(f).get('n0') or AJ.N0)
+            choix = json.load(f)
     except (OSError, ValueError):
-        n0 = AJ.N0
+        choix = {}
+    n0 = float(choix.get('n0') or AJ.N0)
+    dyn = AJ.lire_dynamique(choix)
     cache = {}
 
     def adj_pour(jour):
         m0 = jour.replace(day=1)
         if m0 not in cache:
             prec = cache[max(cache)] if cache else None
-            cache[m0] = AJ.ajuster(tout, m0, E.cle, n0=n0, depart=prec, tours=6 if prec is None else 2)
+            cache[m0] = AJ.ajuster_choisi(tout, m0, E.cle, n0=n0, dyn=dyn, depart=prec, tours=6 if prec is None else 2)
             print(f"  base ajustée aux adversaires au {m0} ({round(time.time() - t0)} s)", flush=True)
         return cache[m0]
 
     lignes = preparer(fiches, adj_pour)
     infos = infos_par_cle(racine, fiches)
-    H = avec_variables(lignes, infos, avant=M)
+    mcp = argv[3] if len(argv) > 3 else MCP_DIR
+    charting = CH.Charting(CH.charger(mcp))
+    print(f"Match Charting Project : {len(charting.D)} joueurs relevés ({mcp})", flush=True)
+    H = avec_variables(lignes, infos, avant=M, adj_avant=adj_pour(DEBUT_APPR), lieux=charger_lieux(racine), charting=charting)
     appr = [x for x in lignes if DEBUT_APPR <= x['jour'] < DEBUT_JUGE]
     juge = [x for x in lignes if x['jour'] >= DEBUT_JUGE]
     print(f"Feuilles : {len(lignes)} matchs ATP/WTA/Challenger · apprentissage {len(appr)} (juin–août) · "
@@ -474,12 +652,13 @@ def main(argv):
     return 0
 
 
-def exporter_contexte(racine, M, adj, cle=E.cle):
+def exporter_contexte(racine, M, adj, cle=E.cle, mcp=None):
     """Contexte actuel (pour pronostics_du_jour) : toutes les feuilles + archive ; adj = ajustement actuel."""
     fiches = FE.lire(racine)
     lignes = preparer(fiches, lambda jour: adj, cle)
     infos = infos_par_cle(racine, fiches, cle)
-    H = avec_variables(lignes, infos, avant=M, final=True)
+    H = avec_variables(lignes, infos, avant=M, final=True, adj_avant=adj, lieux=charger_lieux(racine),
+                       charting=CH.Charting(CH.charger(mcp or MCP_DIR)))
     noms = {str(r.get('tournoi_id') or r.get('tournoi')): (r.get('tournoi_unique') or r.get('tournoi') or '') for r in fiches}
     doc = contexte(H, infos, noms, dt.datetime.now(dt.timezone.utc).timestamp())
     with open(CONTEXTE, 'w', encoding='utf-8') as f:

@@ -361,6 +361,12 @@ CLES_FEUILLE = ('aces', 'doubles_fautes', 'premiere_pct', 'gagnes_1re_pct', 'gag
                 'balles_break_obtenues', 'breaks', 'jeux_service_gagnes_pct', 'points_gagnes', 'jeux')
 
 
+def melange(poids, p_elo, p_sim):
+    """Combinaison simulation + Elo (backtest_match_simule.combinaison) : σ(a·logit p_elo + b·logit p_sim)."""
+    z = poids['elo'] * _lg(min(max(p_elo, 1e-6), 1 - 1e-6)) + poids['simulation'] * _lg(min(max(p_sim, 1e-6), 1 - 1e-6))
+    return _sg(max(min(z, 30), -30))
+
+
 def appliquer_facteurs(c, d_service=0.0, d_aces=0.0, d_bp=0.0):
     """Facteurs du jour (facteurs.py) : décalages en logit des points gagnés au service (1re et 2e),
     des aces, et du point de service sur balle de break."""

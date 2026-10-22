@@ -1,0 +1,60 @@
+name: Étude - statistiques qui évoluent dans le temps
+
+# 22/10/2026 — point 3 : le service et le retour de chaque joueur dérivent-ils assez vite
+# pour qu'une « dérive récente » (demi-vie 45 ou 90 jours) par-dessus le niveau de fond
+# trouve mieux le vainqueur ? Variante choisie sur 2023, jugée sur ATP/WTA 2024 → 2026,
+# adoptée seulement si elle trouve mieux le vainqueur ET prédit mieux les points.
+# Écrit simulateur/rapport_dynamique.json et la décision dans simulateur/choix_simulation.json.
+# À lancer à la main, avant « Pronostic - test du modèle » (qui reprend la décision). 0 requête d'API.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+
+concurrency:
+  group: simulateur
+  cancel-in-progress: false
+
+jobs:
+  etude:
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          filter: blob:none
+          sparse-checkout: |
+            /simulateur/
+            /scripts/closing_store.py
+            /Tennis_Edge_Lab/books.py
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - name: Archive Sackmann (fichiers de matchs seulement)
+        run: |
+          set -euo pipefail
+          git clone --depth 1 --filter=blob:none --sparse https://github.com/Aneeshers/tennis-sackmann-archive.git /tmp/sackmann
+          cd /tmp/sackmann
+          git sparse-checkout set --no-cone 'atp_matches_20*.csv' 'atp_matches_qual_chall_20*.csv' 'wta_matches_20*.csv' 'wta_matches_qual_itf_20*.csv'
+      - name: Choix sur 2023 puis jugement 2024 → 2026
+        run: python simulateur/etude_dynamique.py /tmp/sackmann
+      - name: Publier
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- simulateur/rapport_dynamique.json simulateur/choix_simulation.json
+          if git diff --cached --quiet; then echo 'Rien de nouveau.'; exit 0; fi
+          git commit -m 'Étude : statistiques qui évoluent dans le temps'
+          for i in 1 2 3 4 5; do
+            git pull --rebase origin main || { git rebase --abort || true; echo '::error::Conflit avec main'; exit 1; }
+            if git push origin HEAD:main; then exit 0; fi
+            sleep $((i * 10))
+          done
+          echo '::error::Push impossible après 5 essais'; exit 1
