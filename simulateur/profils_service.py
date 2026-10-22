@@ -223,6 +223,20 @@ def main(argv):
     doc['feuilles_ajoutees'] = sum(1 for m in F if m.get('detail'))
     with open(SORTIE, 'w', encoding='utf-8') as f:
         json.dump(doc, f, ensure_ascii=False, separators=(',', ':'))
+    # 22/10/2026 — facteurs du match : si l'étude (facteurs.py) en a adopté, le contexte du jour
+    # (forme, fatigue, vitesse des tournois, gaucher/taille, points importants) pour les pronostics.
+    try:
+        with open(os.path.join(ICI, 'facteurs.json'), encoding='utf-8') as f:
+            adoptes = json.load(f).get('adoptes') or []
+    except (OSError, ValueError):
+        adoptes = []
+    if adoptes:
+        try:
+            import facteurs as FA
+            ctx = FA.exporter_contexte(racine, M, A, E.cle)
+            print(f"Contexte des facteurs adoptés ({', '.join(adoptes)}) : {len(ctx.get('joueurs') or {})} joueurs")
+        except Exception as e:  # le pronostic reste possible sans facteurs
+            print(f"::warning::Contexte des facteurs non exporté : {e}")
     import fiches_service as FS
     fiches = FS.construire(P, fin, tout, F, E.cle)
     FS.ecrire(fiches, racine)

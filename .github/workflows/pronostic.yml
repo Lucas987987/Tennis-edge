@@ -10,6 +10,9 @@ name: Pronostic - test du modèle (deviner le vainqueur)
 # (simulateur/profils_service.json, lu ensuite par « Pronostics du jour ») et
 # test de la feuille de match simulée sur ATP/WTA 2024–2026
 # (simulateur/rapport_match_simule.json).
+# 22/10/2026 — FACTEURS DU MATCH (simulateur/facteurs.json) : forme récente et
+# fatigue, vitesse du court, gaucher/taille, points importants ; chacun appris
+# sur juin–août, jugé sur septembre →, gardé seulement s'il aide (règle fixée).
 on:
   workflow_dispatch:
 
@@ -26,7 +29,7 @@ concurrency:
 jobs:
   pronostic:
     runs-on: ubuntu-latest
-    timeout-minutes: 150
+    timeout-minutes: 200
     steps:
       - uses: actions/checkout@v5
         with:
@@ -63,6 +66,8 @@ jobs:
         run: python simulateur/etude_forme_du_jour.py .
       - name: Test de la feuille de match simulée (avant l'heure)
         run: python simulateur/backtest_match_simule.py /tmp/sackmann . --n=300 --max=2000
+      - name: Facteurs du match (forme, fatigue, vitesse du court, gaucher/taille, points importants)
+        run: python simulateur/facteurs.py /tmp/sackmann .
       - name: Publier
         run: |
           set -euo pipefail
@@ -71,7 +76,7 @@ jobs:
           git add -- simulateur/rapport_pronostic.json simulateur/elo_etat.json \
                      simulateur/profils_service.json simulateur/rapport_match_simule.json \
                      simulateur/reglages_match_simule.json simulateur/rapport_forme_du_jour.json \
-                     simulateur/choix_simulation.json
+                     simulateur/choix_simulation.json simulateur/facteurs.json
           if git diff --cached --quiet; then echo 'Rien de nouveau.'; exit 0; fi
           git commit -m 'Pronostic : test du modèle (vainqueur, sets)'
           for i in 1 2 3 4 5; do

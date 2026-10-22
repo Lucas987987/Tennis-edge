@@ -74,6 +74,7 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git checkout -- simulateur/elo_etat.json 2>/dev/null || true
           git checkout -- simulateur/profils_service.json 2>/dev/null || true
+          rm -f simulateur/facteurs_contexte.json
           git add -- Tennis_Edge_Lab/live/pronostics.json Tennis_Edge_Lab/live/pronostics_bilan.json \
                      Tennis_Edge_Lab/live/joueurs_service.json.gz \
                      simulateur/pronostics_log.jsonl simulateur/rapport_pronostic.json
