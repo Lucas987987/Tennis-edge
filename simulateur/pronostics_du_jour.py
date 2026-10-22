@@ -164,8 +164,25 @@ def charger_choix(racine):
 CHOIX = 'profils'
 
 
-def match_simule(P, h, a, c, s, sg, p_home, cle):
-    """Le match joué SIMULATIONS fois au niveau p_home, avec les profils de service des deux joueurs."""
+def charger_facteurs(racine):
+    """Facteurs du match ADOPTÉS par l'étude (facteurs.py, règle fixée d'avance) et contexte du jour
+    (forme, fatigue, vitesse des tournois, gaucher/taille, points importants). (None, None) sinon."""
+    try:
+        with open(os.path.join(racine, 'simulateur', 'facteurs.json'), encoding='utf-8') as f:
+            doc = json.load(f)
+        if not doc.get('adoptes') or not doc.get('coefs'):
+            return None, None
+        import facteurs as FA
+        with open(os.path.join(racine, 'simulateur', 'facteurs_contexte.json'), encoding='utf-8') as f:
+            return doc, FA.Contexte(json.load(f))
+    except (OSError, ValueError, ImportError):
+        return None, None
+
+
+FACTEURS, CONTEXTE = None, None
+
+
+def composantes_du_match(P, h, a, c, s):
     ph, nh = P.profil(h, c, s, P.jour_export)
     pa, na = P.profil(a, c, s, P.jour_export)
     mu = P.moyenne(c, s)
@@ -173,6 +190,50 @@ def match_simule(P, h, a, c, s, sg, p_home, cle):
         cH, cA = MS.composantes_ajustees(P.ajuste, h, a, c, s), MS.composantes_ajustees(P.ajuste, a, h, c, s)
     else:
         cH, cA = MS.composantes(ph, pa, mu), MS.composantes(pa, ph, mu)
+    return cH, cA, nh, na
+
+
+def facteurs_du_match(h, a, tournoi, debut):
+    """{groupe adopté: ((d_service, d_aces, d_bp) home, (…) away)} en logit, + variables lues."""
+    if not FACTEURS or CONTEXTE is None:
+        return None
+    import facteurs as FA
+    ts = debut.replace(tzinfo=dt.timezone.utc).timestamp() if debut.tzinfo is None else debut.timestamp()
+    vH, vA = CONTEXTE.variables(h, a, tournoi, ts), CONTEXTE.variables(a, h, tournoi, ts)
+    coefs = FACTEURS['coefs']
+    par_groupe = {}
+    for g in FACTEURS['adoptes']:
+        cg = {m: {f: b for f, b in (coefs.get(m) or {}).items() if f in FA.GROUPES[g].get(m, [])} for m in coefs}
+        par_groupe[g] = (FA.deltas(vH, cg), FA.deltas(vA, cg))
+    return {'groupes': par_groupe, 'total': (FA.deltas(vH, coefs), FA.deltas(vA, coefs))}
+
+
+def avec_facteurs(cH, cA, fct):
+    if not fct:
+        return cH, cA
+    dH, dA = fct['total']
+    return MS.appliquer_facteurs(cH, *dH), MS.appliquer_facteurs(cA, *dA)
+
+
+def impact_facteurs(cH, cA, sg, fct):
+    """Ce qui pèse : victoire home (simulation pure, limite exacte) sans facteurs, avec tous, et
+    l'écart dû à chaque groupe seul (en points de %)."""
+    if not fct:
+        return None
+    base = MS.victoire_pure(cH, cA, sg, SIGMA)
+    tH, tA = avec_facteurs(cH, cA, fct)
+    out = {'sans': round(base, 4), 'avec': round(MS.victoire_pure(tH, tA, sg, SIGMA), 4), 'groupes': {}}
+    for g, (dH, dA) in fct['groupes'].items():
+        p = MS.victoire_pure(MS.appliquer_facteurs(cH, *dH), MS.appliquer_facteurs(cA, *dA), sg, SIGMA)
+        out['groupes'][g] = round(100 * (p - base), 1)
+    return out
+
+
+def match_simule(P, h, a, c, s, sg, p_home, cle, fct=None):
+    """Le match joué SIMULATIONS fois au niveau p_home, avec les profils de service des deux joueurs
+    (et les facteurs du match adoptés, s'il y en a)."""
+    cH, cA, nh, na = composantes_du_match(P, h, a, c, s)
+    cH, cA = avec_facteurs(cH, cA, fct)
     r = MS.simuler(cH, cA, p_home, sg, SIMULATIONS, SIGMA, cle=cle, reglages=REGLAGES)
     r['reglages'] = REGLAGES
     r['composantes'] = CHOIX if (CHOIX == 'ajustees' and getattr(P, 'ajuste', None) is not None) else 'profils'
@@ -219,9 +280,10 @@ def construire(racine, maintenant=None):
     surf = etat.get('surfaces_tournois') or {}
     S = Styles(os.path.join(racine, 'simulateur', 'notes_joueurs.json'))
     PR = charger_profils(racine)
-    global REGLAGES, CHOIX
+    global REGLAGES, CHOIX, FACTEURS, CONTEXTE
     REGLAGES = charger_reglages(racine)
     CHOIX = charger_choix(racine)
+    FACTEURS, CONTEXTE = charger_facteurs(racine)
     venir = matchs_a_venir(racine, maintenant)
     # Un joueur = un classement : alias du dernier calcul, puis noms nouveaux reliés au joueur connu.
     alias = dict(etat.get('alias') or {})
@@ -250,13 +312,17 @@ def construire(racine, maintenant=None):
             # 22/10/2026 — SIMULATION PURE : le match joué SIMULATIONS fois avec les seuls taux des deux
             # joueurs (1re balle, aces, doubles fautes, points gagnés derrière la 1re et la 2e, retour),
             # sans Elo ni cote : c'est la simulation qui dit qui gagne.
-            r = match_simule(PR, h, a, c, s, sg, None, f"{uid}|simulation")
+            fct = facteurs_du_match(h, a, x['tournoi'], x['debut'])
+            r = match_simule(PR, h, a, c, s, sg, None, f"{uid}|simulation", fct)
             simulation = {'p_home': r['victoire_A'], 'sets': r['sets'], 'scores_probables': r['scores'][:3],
                           'remontee': {'home': r['remontee'][0], 'away': r['remontee'][1]}, 'set1_home': r['set1_A'],
                           'jeux_moyen': r['jeux']['moy'], 'tiebreak': r['tiebreak'], 'match_simule': r}
+            if fct:
+                cH, cA, _, _ = composantes_du_match(PR, h, a, c, s)
+                simulation['facteurs'] = impact_facteurs(cH, cA, sg, fct)
             for nom_v, v in (('stats', stats), ('marche', marche)):
                 if v:
-                    v['match_simule'] = match_simule(PR, h, a, c, s, sg, v['p_home'], f"{uid}|{nom_v}")
+                    v['match_simule'] = match_simule(PR, h, a, c, s, sg, v['p_home'], f"{uid}|{nom_v}", fct)
         out.append({'uid': uid,
                     'debut': x['debut'].isoformat(timespec='minutes'), 'tournoi': x['tournoi'], 'circuit': c,
                     'surface': s, 'meilleur_des': 2 * sg - 1, 'home': x['home'], 'away': x['away'],
@@ -264,7 +330,8 @@ def construire(racine, maintenant=None):
                     'simulation': simulation, 'stats': stats, 'marche': marche})
     return {'genere_le': maintenant.isoformat(timespec='seconds') + 'Z', 'elo_au': etat.get('dernier_match'),
             'horizon_h': HORIZON_H, 'sigma': SIGMA, 'simulations': SIMULATIONS if PR is not None else 0,
-            'profils_au': PR.jour_export.isoformat() if PR is not None else None, 'matchs': out}
+            'profils_au': PR.jour_export.isoformat() if PR is not None else None,
+            'facteurs_adoptes': (FACTEURS or {}).get('adoptes') or [], 'matchs': out}
 
 
 SUIVI_STATS = ('aces', 'doubles_fautes', 'premiere_pct', 'gagnes_1re_pct', 'gagnes_2e_pct', 'breaks', 'jeux')

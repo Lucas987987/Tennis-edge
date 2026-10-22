@@ -48,6 +48,7 @@ jobs:
           filter: blob:none
           sparse-checkout: |
             /scripts/feuilles_match.py
+            /scripts/joueurs_infos.py
             /feuilles/
           sparse-checkout-cone-mode: false
       - uses: actions/setup-python@v6
@@ -63,6 +64,13 @@ jobs:
           FIN: ${{ github.event.inputs.fin }}
           CATS: ${{ github.event.inputs.categories }}
         run: python scripts/feuilles_match.py "$DEBUT" "$FIN" "$CATS"
+      - name: Infos joueurs (gaucher / droitier, taille, naissance) — une requête par nouveau joueur
+        if: always()
+        timeout-minutes: 30
+        env:
+          RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
+          FEUILLES_RESERVE: '1500'
+        run: python scripts/joueurs_infos.py 1500
       - name: Publier (même après une interruption)
         if: always()
         run: |

@@ -137,6 +137,13 @@ def score(s):
     return {'sets': sets, 'tb': tb, 'total': s.get('current')}
 
 
+def infos_joueur(t):
+    """playerTeamInfo compact (main, taille, naissance) s'il est fourni avec le match (22/10/2026)."""
+    p = (t or {}).get('playerTeamInfo') or {}
+    out = {k: p.get(k) for k in ('plays', 'height', 'birthDateTimestamp') if p.get(k) not in (None, '')}
+    return out or None
+
+
 def fiche(e, categorie):
     t = e.get('tournament') or {}
     ut = t.get('uniqueTournament') or {}
@@ -148,8 +155,10 @@ def fiche(e, categorie):
             'tournoi_unique': ut.get('name'), 'surface': ut.get('groundType') or e.get('groundType'),
             'points_tournoi': ut.get('tennisPoints'), 'tour': (e.get('roundInfo') or {}).get('name'),
             'meilleur_des': e.get('bestOf') or e.get('defaultPeriodCount'),
-            'home': {'id': h.get('id'), 'nom': h.get('name'), 'court': h.get('shortName'), 'pays': (h.get('country') or {}).get('alpha3')},
-            'away': {'id': a.get('id'), 'nom': a.get('name'), 'court': a.get('shortName'), 'pays': (a.get('country') or {}).get('alpha3')},
+            'home': {'id': h.get('id'), 'nom': h.get('name'), 'court': h.get('shortName'), 'pays': (h.get('country') or {}).get('alpha3'),
+                     'infos': infos_joueur(h)},
+            'away': {'id': a.get('id'), 'nom': a.get('name'), 'court': a.get('shortName'), 'pays': (a.get('country') or {}).get('alpha3'),
+                     'infos': infos_joueur(a)},
             'premier_serveur': e.get('firstToServe'), 'vainqueur': e.get('winnerCode'),
             'statut': {'code': st.get('code'), 'texte': st.get('description'), 'type': st.get('type')},
             'score_home': score(e.get('homeScore')), 'score_away': score(e.get('awayScore')),
