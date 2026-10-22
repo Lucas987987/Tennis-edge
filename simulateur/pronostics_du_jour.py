@@ -181,6 +181,9 @@ def charger_combinaison(racine):
         cc = choix.get('combinaison_continue') or {}            # appris sur NOS matchs joués (apprentissage continu)
         if cc.get('adopte') and cc.get('poids'):
             return dict(cc['poids'], source='nos matchs joués')
+        cf = choix.get('combinaison_feuilles') or {}            # rejouée semaine après semaine sur les feuilles
+        if cf.get('adopte') and cf.get('poids'):
+            return dict(cf['poids'], source='les feuilles depuis juin (entraînement semaine après semaine)')
         cb = choix.get('combinaison') or {}
         return dict(cb['poids'], source='archive 2024–2026') if cb.get('adopte') and cb.get('poids') else None
     except (OSError, ValueError, KeyError):

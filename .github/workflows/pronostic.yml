@@ -84,6 +84,12 @@ jobs:
         run: python simulateur/facteurs.py /tmp/sackmann . /tmp/mcp
       - name: Apprentissage continu (mélange simulation + Elo appris sur nos matchs joués)
         run: python simulateur/apprentissage_continu.py .
+      - name: Bilan de la semaine de l'algorithme (Telegram, canal privé)
+        if: always()
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python simulateur/bilan_algo.py . || true
       - name: Publier
         run: |
           set -euo pipefail
@@ -92,7 +98,7 @@ jobs:
           git add -- simulateur/rapport_pronostic.json simulateur/elo_etat.json \
                      simulateur/profils_service.json simulateur/rapport_match_simule.json \
                      simulateur/reglages_match_simule.json simulateur/rapport_forme_du_jour.json \
-                     simulateur/choix_simulation.json simulateur/facteurs.json \
+                     simulateur/choix_simulation.json simulateur/facteurs.json simulateur/bilan_algo_etat.json \
                      Tennis_Edge_Lab/live/explorateur_pronostics.json.gz
           if git diff --cached --quiet; then echo 'Rien de nouveau.'; exit 0; fi
           git commit -m 'Pronostic : test du modèle (vainqueur, sets)'
