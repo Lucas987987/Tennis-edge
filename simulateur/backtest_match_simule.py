@@ -173,7 +173,7 @@ melange = S.melange
 GRILLE_SIGMA = (0.0, 0.05, 0.10, 0.15)
 GRILLE_AMPLIFICATION = (1.0,)       # k > 1 jamais retenu (22/10/2026) : retiré pour gagner du temps
 GRILLE_JEUX = ()                    # couche « jeux » : jamais retenue (22/10/2026), code gardé
-GRILLE_RESULTATS = (0.015, 0.04)    # vitesse K de la couche « résultats » (0 = sans) — 22/10/2026
+GRILLE_RESULTATS = ()   # 22/10/2026 : version « tous les matchs » rejetée (double compte) ; voir etude_resultats.py
 DEBUT_RESULTATS = dt.date(2023, 1, 1)
 
 
@@ -315,6 +315,69 @@ def ajuster_contexte(L, P, sim, ridge=2.0, tours=25):
         if max(abs(v) for v in d) < 1e-8:
             break
     return dict(zip(S.CONTEXTE_COLS, (round(v, 4) for v in c)))
+
+
+def _logistique_decalee(rows, k, ridge=2.0, tours=25):
+    """c minimisant la log loss symétrique de σ(off + c·f) (vrai vainqueur y = 1, miroir y = 0), ridge vers 0."""
+    c = [0.0] * k
+    for _ in range(tours):
+        g = [-ridge * v for v in c]
+        H = [[ridge * (i == j) for j in range(k)] for i in range(k)]
+        for off, f in rows:
+            for sgn, y in ((1, 1), (-1, 0)):
+                z = sgn * (off + sum(a * b for a, b in zip(c, f)))
+                p = 1 / (1 + math.exp(-max(min(z, 30), -30)))
+                for i in range(k):
+                    g[i] += (y - p) * sgn * f[i]
+                    for j in range(k):
+                        H[i][j] += p * (1 - p) * f[i] * f[j]
+        A = [row[:] + [g[i]] for i, row in enumerate(H)]
+        for col in range(k):
+            piv = max(range(col, k), key=lambda r: abs(A[r][col]))
+            A[col], A[piv] = A[piv], A[col]
+            for r in range(k):
+                if r != col and abs(A[col][col]) > 1e-12:
+                    f_ = A[r][col] / A[col][col]
+                    A[r] = [a - f_ * b for a, b in zip(A[r], A[col])]
+        d = [A[i][k] / A[i][i] if abs(A[i][i]) > 1e-12 else 0.0 for i in range(k)]
+        c = [a + b for a, b in zip(c, d)]
+        if max(abs(v) for v in d) < 1e-8:
+            break
+    return c
+
+
+def ajuster_calibration(probas, ridge=10.0):
+    """5 pentes de match_simule.calibrer apprises sur des probas données au vrai vainqueur."""
+    rows = []
+    for p in probas:
+        z = _lg(p)
+        rows.append((z, S.variables_calibration(z)))
+    return [round(v, 4) for v in _logistique_decalee(rows, len(S.CALIBRATION_NOEUDS), ridge)]
+
+
+def calibration_combinaison(L, sim, cb):
+    """Excès de confiance (22/10/2026) — RÈGLE FIXÉE AVANT DE VOIR LE RÉSULTAT : correction apprise sur 2024
+    (mélange aux poids appris sur 2024) ; adoptée si la log loss du vainqueur 2025 → baisse par rapport au
+    mélange non corrigé. Ré-apprise ensuite sur toute la période, sur le mélange aux poids finaux."""
+    P = cb.get('poids_appris_2024')
+    if not P or not cb.get('poids'):
+        return {'adopte': False, 'raison': 'pas de mélange'}
+    appr = [S.melange(P, x['elo'], x[sim]) for x in L if x['date'] < DEBUT_JUGE_COMB]
+    juge = [S.melange(P, x['elo'], x[sim]) for x in L if x['date'] >= DEBUT_JUGE_COMB]
+    if len(appr) < 300 or len(juge) < 300:
+        return {'adopte': False, 'raison': 'pas assez de matchs'}
+    c = ajuster_calibration(appr)
+    jc = [S.calibrer(p, c) for p in juge]
+    l0, l1 = _ll(juge), _ll(jc)
+    ok = l1 < l0
+    b0, b1 = bilan_victoire(juge), bilan_victoire(jc)
+    out = {'adopte': bool(ok), 'pentes_2024': c, 'jugement': {'sans': b0, 'avec': b1},
+           'raison': (f"2025 → : log loss {round(l1, 5)} avec la correction contre {round(l0, 5)} sans ; calibration "
+                      + ' · '.join(f"{t['tranche']} {t['prevu']}→{t['reel']}" for t in b1.get('calibration', []))
+                      + " (sans : " + ' · '.join(f"{t['tranche']} {t['prevu']}→{t['reel']}" for t in b0.get('calibration', [])) + ")")}
+    if ok:
+        out['pentes'] = ajuster_calibration([S.melange(cb['poids'], x['elo'], x[sim]) for x in L])
+    return out
 
 
 def contexte_poids(L, sim, cb):
@@ -538,12 +601,18 @@ def main(argv):
         rap['combinaison']['contexte'] = contexte_poids(LIGNES, sim, rap['combinaison'])
         print(f"\nPoids selon le contexte (gazon, terre, WTA, 5 sets) : "
               f"{'ADOPTÉS' if rap['combinaison']['contexte']['adopte'] else 'non adoptés'} — {rap['combinaison']['contexte']['raison']}")
+        rap['combinaison']['calibration'] = calibration_combinaison(LIGNES, sim, rap['combinaison'])
+        print(f"\nCorrection de l'excès de confiance (apprise sur 2024, jugée 2025 →) : "
+              f"{'ADOPTÉE' if rap['combinaison']['calibration']['adopte'] else 'non adoptée'} — {rap['combinaison']['calibration']['raison']}")
     rap['calibration_detaillee'] = calibration_detaillee(LIGNES, sim, rap['combinaison'])
     exporter_explorateur(LIGNES, sim, rap['combinaison'], os.path.join(ICI, '..', EXPLORATEUR))
     rap['choix']['combinaison'] = {k: rap['combinaison'].get(k) for k in ('adopte', 'poids', 'raison', 'simulation')}
     ctxp = rap['combinaison'].get('contexte') or {}
     if ctxp.get('adopte') and ctxp.get('corrections') and rap['choix']['combinaison'].get('poids'):
         rap['choix']['combinaison']['poids'] = dict(rap['choix']['combinaison']['poids'], contexte=ctxp['corrections'])
+    calp = rap['combinaison'].get('calibration') or {}
+    if calp.get('adopte') and calp.get('pentes') and rap['choix']['combinaison'].get('poids'):
+        rap['choix']['combinaison']['poids'] = dict(rap['choix']['combinaison']['poids'], calibration=calp['pentes'])
     with open(CHOIX, 'w', encoding='utf-8') as f:            # les autres décisions (ex. « dynamique ») sont gardées
         json.dump(dict(choix_avant, **rap['choix'], genere_le=rap['genere_le']), f, ensure_ascii=False, indent=1)
     with open(SORTIE, 'w', encoding='utf-8') as f:
