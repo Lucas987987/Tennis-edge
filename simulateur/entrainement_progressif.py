@@ -142,42 +142,60 @@ def _delta(rows, ridge=5.0, tours=30):
     return d
 
 
-def nouveaux_venus(hors, P, lim, experience, poids_finaux=None):
-    """RÈGLE FIXÉE AVANT DE VOIR LE RÉSULTAT (22/10/2026, 23 h 50) : le modèle se trompe-t-il TOUJOURS dans le
-    même sens avec les nouveaux venus (moins de 30 matchs) ? Correction δ (logit) apprise avant les 6 dernières
-    semaines, sur le mélange : z' = z + δ·(nouveau(vainqueur) − nouveau(perdant)). Adoptée si la log loss du
-    vainqueur des 6 dernières semaines baisse sur les matchs avec au moins un nouveau venu (au moins 100)."""
-    if not P or not experience:
-        return {'adopte': False, 'raison': 'pas de mélange ou pas de compte de matchs'}
+SITUATIONS = {'nouveaux_venus': 'Nouveaux venus', 'qualifies': 'Sortis des qualifications',
+              'transition': 'Changement de surface'}
+LIB_SITUATION = {'nouveaux_venus': 'le nouveau venu', 'qualifies': 'le qualifié', 'transition': 'celui qui change de surface'}
+
+
+def correction_situation(hors, P, lim, valeur, cle_s, poids_finaux=None, min_avant=200, min_juge=100):
+    """RÈGLE FIXÉE AVANT DE VOIR LE RÉSULTAT (22/10/2026) — même règle pour chaque situation (nouveau venu,
+    sorti des qualifications, changement de surface) : le modèle se trompe-t-il TOUJOURS dans le même sens ?
+    Correction δ (logit) apprise avant les 6 dernières semaines, sur le mélange :
+        z' = z + δ·(situation(vainqueur) − situation(perdant))
+    adoptée si la log loss du vainqueur des 6 dernières semaines baisse sur les matchs concernés (au moins 100,
+    et 200 avant). valeur(x) -> (situation du vrai vainqueur, du perdant) entre 0 et 1, ou None."""
+    lib = LIB_SITUATION[cle_s]
+    if not P:
+        return {'adopte': False, 'raison': 'pas de mélange'}
     rows = []
     for x, ps, pe in hors:
-        nw, nl = experience.get(id(x), (None, None))
-        if nw is None:
+        v = valeur(x)
+        if v is None:
             continue
-        f = nouveau(nw) - nouveau(nl)
-        rows.append((x['jour'] >= lim, _lg(S.melange(P, pe, ps)), f, (x, ps, pe)))
+        rows.append((x['jour'] >= lim, _lg(S.melange(P, pe, ps)), v[0] - v[1], (x, ps, pe)))
     av = [(o, f) for j, o, f, _ in rows if not j]
     ju = [(o, f) for j, o, f, _ in rows if j and f != 0]
     n_av = sum(1 for _, f in av if f != 0)
-    if n_av < 200 or len(ju) < 100:
-        return {'adopte': False, 'raison': f"pas assez de matchs avec un nouveau venu ({n_av} avant, {len(ju)} à juger)"}
+    if n_av < min_avant or len(ju) < min_juge:
+        return {'adopte': False, 'raison': f"pas assez de matchs concernés ({n_av} avant, {len(ju)} à juger)"}
     d = _delta(av)
     sg_ = lambda z: 1 / (1 + math.exp(-max(min(z, 30), -30)))
     l0, l1 = _ll([sg_(o) for o, _ in ju]), _ll([sg_(o + d * f) for o, f in ju])
-    att = sum(1 for o, f in ju if f > 0) / len(ju)          # part des matchs où le nouveau venu a gagné
+    att = sum(1 for o, f in ju if f > 0) / len(ju)          # part des matchs gagnés par celui qui est dans la situation
     ok = l1 < l0
     out = {'adopte': bool(ok), 'delta_appris_avant': round(d, 4), 'n_juge': len(ju),
-           'raison': (f"{len(ju)} matchs avec un nouveau venu (6 dernières semaines) : log loss {round(l1, 4)} corrigée contre "
-                      f"{round(l0, 4)} ; δ = {round(d, 3)} ({'le nouveau venu est sous-estimé' if d > 0 else 'le nouveau venu est surestimé'})"
-                      f" ; le nouveau venu gagne {round(100 * att)} % de ces matchs")}
+           'raison': (f"{len(ju)} matchs concernés (6 dernières semaines) : log loss {round(l1, 4)} corrigée contre "
+                      f"{round(l0, 4)} ; δ = {round(d, 3)} ({lib} est {'sous-estimé' if d > 0 else 'surestimé'})"
+                      f" ; {lib} gagne {round(100 * att)} % de ces matchs")}
     if ok:
         Pf = poids_finaux or P
         out['delta'] = round(_delta([(_lg(S.melange(Pf, pe, ps)), f) for _, _, f, (x, ps, pe) in rows]), 4)
     return out
 
 
+def nouveaux_venus(hors, P, lim, experience, poids_finaux=None):
+    """Moins de 30 matchs connus (nouveau(n) décroît de 1 à 0) — voir correction_situation."""
+    if not experience:
+        return {'adopte': False, 'raison': 'pas de compte de matchs'}
+
+    def valeur(x):
+        e = experience.get(id(x))
+        return (nouveau(e[0]), nouveau(e[1])) if e else None
+    return correction_situation(hors, P, lim, valeur, 'nouveaux_venus', poids_finaux)
+
+
 def rejouer_saison(lignes, p_elo, groupes, apprendre, victoire_ligne, ajuster_poids, sigma,
-                   poids_archive=None, aujourdhui=None, experience=None):
+                   poids_archive=None, aujourdhui=None, experience=None, situations=None):
     """Pronostics hors échantillon semaine par semaine ; renvoie le rapport et les poids finaux."""
     if not lignes:
         return {'semaines': [], 'adopte': False, 'raison': 'pas de feuilles'}
@@ -232,6 +250,9 @@ def rejouer_saison(lignes, p_elo, groupes, apprendre, victoire_ligne, ajuster_po
     out['par_circuit'] = par_circuit(hors, P, lim)
     out['poids_challenger'] = poids_challenger(hors, P, lim, ajuster_poids)
     out['nouveaux_venus'] = nouveaux_venus(hors, P, lim, experience, final)
+    for cle_s in ('qualifies', 'transition'):
+        out[cle_s] = (correction_situation(hors, P, lim, lambda x, c=cle_s: (situations.get(id(x)) or {}).get(c), cle_s, final)
+                      if situations else {'adopte': False, 'raison': 'pas de données'})
     l_new = _ll([S.melange(P, pe, ps) for _, ps, pe in juge])
     l_arch = _ll([S.melange(poids_archive, pe, ps) for _, ps, pe in juge]) if poids_archive else None
     l_elo = _ll([pe for _, _, pe in juge])

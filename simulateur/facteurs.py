@@ -457,6 +457,45 @@ def abandons_des_fiches(fiches, cle=E.cle):
     return sorted(out)
 
 
+# ------------------------------------------------------------------ 22/10/2026 : qualifiés, changement de surface
+QUALIF_J = 10                # un match de qualification ici dans les 10 jours = joueur sorti des qualifications
+TRANSITION_J = 21            # aucun match sur cette surface parmi ceux des 21 derniers jours = il vient d'en changer
+
+
+def parcours_des_fiches(fiches, cle=E.cle):
+    """(qualifs, surfaces) : {joueur: [(t, tournoi)]} des matchs de QUALIFICATION, et {joueur: [(t, surface)]}
+    de tous ses matchs (Hard / Clay / Grass), depuis les feuilles TennisApi."""
+    Q, Sf = {}, {}
+    for r in fiches:
+        if not r.get('debut'):
+            continue
+        t, tr = float(r['debut']), str(r.get('tournoi_id') or r.get('tournoi'))
+        su = FE.surface_de(r.get('surface'))
+        q = 'qualif' in str(r.get('tour') or '').lower()
+        for cote in ('home', 'away'):
+            j = cle((r.get(cote) or {}).get('nom'))
+            if not j:
+                continue
+            Sf.setdefault(j, []).append((t, su))
+            if q:
+                Q.setdefault(j, []).append((t, tr))
+    for d in (Q, Sf):
+        for L in d.values():
+            L.sort()
+    return Q, Sf
+
+
+def qualifie(Q, j, tournoi, t):
+    """1 si le joueur a joué un match de qualification dans CE tournoi dans les 10 jours avant t."""
+    return 1.0 if any(tr == tournoi and 0 < t - tt <= QUALIF_J * 86400 for tt, tr in Q.get(j) or ()) else 0.0
+
+
+def transition(Sf, j, surface, t):
+    """1 si le joueur a joué dans les 21 jours avant t, mais jamais sur cette surface : il vient d'en changer."""
+    rec = [su for tt, su in Sf.get(j) or () if 0 < t - tt <= TRANSITION_J * 86400]
+    return 1.0 if rec and surface not in rec else 0.0
+
+
 def avec_variables(lignes, infos, avant=None, final=False, adj_avant=None, lieux=None, charting=None, abandons=None, points=None):
     """Ajoute à chaque ligne les variables point-in-time des deux serveurs ; avant : matchs de
     l'archive pour les balles de break (format donnees.charger) ; adj_avant : modèle ajusté à la fin
@@ -668,6 +707,14 @@ def contexte(H, infos, noms_tournois, maintenant_ts):
             joueurs.setdefault(j, {})['parcours'] = rec
         if H.pays.get(j):
             joueurs.setdefault(j, {})['pays'] = H.pays[j]
+    for j, L in (getattr(H, 'qualifs', None) or {}).items():
+        rec = [[int(tt), tr] for tt, tr in L if tt >= t - 30 * 86400]
+        if rec:
+            joueurs.setdefault(j, {})['qualifs'] = rec
+    for j, L in (getattr(H, 'surfaces', None) or {}).items():
+        rec = [[int(tt), su] for tt, su in L if tt >= t - 30 * 86400]
+        if rec:
+            joueurs.setdefault(j, {})['surfaces'] = rec
     for j, P_ in H.pression.items():
         if isinstance(j, str) and any(P_):
             joueurs.setdefault(j, {})['pression'] = [round(v, 3) for v in P_]
@@ -720,6 +767,15 @@ class Contexte:
             self.H.h2h[(a, b)] = list(v)
         self.infos = {j: e['infos'] for j, e in (self.doc.get('joueurs') or {}).items() if e.get('infos')}
         self.noms = self.doc.get('noms_tournois') or {}
+        J = self.doc.get('joueurs') or {}
+        self.qualifs = {j: [(float(tt), str(tr)) for tt, tr in e['qualifs']] for j, e in J.items() if e.get('qualifs')}
+        self.surfaces = {j: [(float(tt), su) for tt, su in e['surfaces']] for j, e in J.items() if e.get('surfaces')}
+
+    def qualifie(self, j, nom_tournoi, debut_ts):
+        return qualifie(self.qualifs, j, self.tournoi(nom_tournoi), debut_ts)
+
+    def transition(self, j, surface, debut_ts):
+        return transition(self.surfaces, j, surface, debut_ts)
 
     def tournoi(self, nom):
         """Identifiant du tournoi collecté dont le nom partage le plus de mots avec `nom`."""
@@ -815,9 +871,15 @@ def main(argv):
         cb = choix.get('combinaison') or {}
         experience = {}
         p_elo = EP.elo_au_moment(M, lignes, et.get('options'), et.get('depart_bas'), experience=experience)
+        Q, Sf = parcours_des_fiches(fiches)
+        situations = {}
+        for x in lignes:                                       # (vrai vainqueur, perdant) pour chaque situation
+            w, l = (x['a'], x['b']) if x['vainqueur'] == 0 else (x['b'], x['a'])
+            situations[id(x)] = {'qualifies': (qualifie(Q, w, x['tournoi'], x['t']), qualifie(Q, l, x['tournoi'], x['t'])),
+                                 'transition': (transition(Sf, w, x['surface'], x['t']), transition(Sf, l, x['surface'], x['t']))}
         doc['entrainement_progressif'] = EP.rejouer_saison(
             lignes, p_elo, doc.get('adoptes') or [], apprendre, victoire_ligne, BMS.ajuster_poids, sigma,
-            poids_archive=cb.get('poids') if cb.get('adopte') else None, experience=experience)
+            poids_archive=cb.get('poids') if cb.get('adopte') else None, experience=experience, situations=situations)
         ep = doc['entrainement_progressif']
         print(f"Entraînement progressif : {len(ep.get('semaines', []))} semaines rejouées · "
               f"{'ADOPTÉ' if ep.get('adopte') else 'non adopté'} — {ep.get('raison')}", flush=True)
@@ -830,6 +892,10 @@ def main(argv):
         # 22/10/2026 : poids propres aux Challenger, correction des nouveaux venus (règles fixées d'avance)
         choix['poids_challenger'] = {k: (ep.get('poids_challenger') or {}).get(k) for k in ('adopte', 'poids', 'raison')}
         choix['nouveaux_venus'] = {k: (ep.get('nouveaux_venus') or {}).get(k) for k in ('adopte', 'delta', 'raison')}
+        for cle_s in ('qualifies', 'transition'):
+            choix[cle_s] = {k: (ep.get(cle_s) or {}).get(k) for k in ('adopte', 'delta', 'raison')}
+            print(f"{EP.SITUATIONS[cle_s]} : {'correction ADOPTÉE' if choix[cle_s]['adopte'] else 'pas de correction'} — "
+                  f"{choix[cle_s]['raison']}", flush=True)
         for c, b in (ep.get('par_circuit') or {}).items():
             sx = b['six_dernieres_semaines']
             print(f"  {b['circuit']:<10} simulation {b['simulation']['reussite_pct']} % · Elo {b['elo']['reussite_pct']} % "
@@ -859,6 +925,7 @@ def exporter_contexte(racine, M, adj, cle=E.cle, mcp=None):
                        charting=CH.Charting(CH.charger(mcp or MCP_DIR)), abandons=abandons_des_fiches(fiches, cle),
                        points=charger_points(racine))
     noms = {str(r.get('tournoi_id') or r.get('tournoi')): (r.get('tournoi_unique') or r.get('tournoi') or '') for r in fiches}
+    H.qualifs, H.surfaces = parcours_des_fiches(fiches, cle)
     doc = contexte(H, infos, noms, dt.datetime.now(dt.timezone.utc).timestamp())
     with open(CONTEXTE, 'w', encoding='utf-8') as f:
         json.dump(doc, f, ensure_ascii=False, separators=(',', ':'))

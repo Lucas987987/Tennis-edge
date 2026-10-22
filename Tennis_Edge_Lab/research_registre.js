@@ -621,12 +621,13 @@
   function resultatsBlock(R, ouvert) {
     if (!R || !R.matchs) return '';
     const L = R.matchs;
+    const J = L.filter(m => !(m.reel && m.reel.interrompu));       // abandons et forfaits : ne jugent pas le modèle
     if (!L.length) return '<details class="rg-eval"><summary>Prédit / réel</summary><p class="mini">Aucun match joué avec son résultat pour l\'instant.</p></details>';
     const nc = n => esc(String(n || '').split(' ').slice(-1)[0]);
     const ok = v => (v === true ? '<span class="good">✓</span>' : v === false ? '<span class="bad">✗</span>' : '·');
     const principal = m => ['combinaison', 'simulation', 'stats'].find(k => m.premier && m.premier[k]);
     const resume = Object.keys(VERSION_LIB).map(k => {
-      const g = L.filter(m => m.premier && m.premier[k] && m.premier[k].vainqueur_juste != null);
+      const g = J.filter(m => m.premier && m.premier[k] && m.premier[k].vainqueur_juste != null);
       if (!g.length) return '';
       const j = g.filter(m => m.premier[k].vainqueur_juste).length;
       return `<div><small>${VERSION_LIB[k]}</small><b>${nf(j, 0)}/${nf(g.length, 0)}</b><small>vainqueurs trouvés</small></div>`;
@@ -637,15 +638,15 @@
       const fav = v ? (v.p_home >= 0.5 ? m.home : m.away) : null;
       const pf = v ? Math.max(v.p_home, 1 - v.p_home) : null;
       const prevu = v ? `<b>${nc(fav)}</b> ${pcCote(pf)}${v.score_prevu ? `<span class="detail">score : ${esc(v.score_prevu)}</span>` : (v.sets_prevus ? `<span class="detail">sets : ${esc(v.sets_prevus)}</span>` : '')}<span class="detail">${esc(VERSION_LIB[k])}</span>` : '—';
-      const reel = `<b>${nc(r.gagnant === 'home' ? m.home : m.away)}</b>${r.score ? `<span class="detail">${esc(r.score)}</span>` : (r.sets ? `<span class="detail">sets : ${esc(r.sets)}</span>` : '')}`;
-      const juste = v ? `${ok(v.vainqueur_juste)} vainqueur${v.sets_justes != null ? `<br>${ok(v.sets_justes)} sets` : ''}${v.score_juste != null ? `<br>${ok(v.score_juste)} score` : ''}` : '—';
+      const reel = `<b>${nc(r.gagnant === 'home' ? m.home : m.away)}</b>${r.interrompu ? `<span class="detail">${esc(r.interrompu)} — non compté</span>` : ''}${r.score ? `<span class="detail">${esc(r.score)}</span>` : (r.sets ? `<span class="detail">sets : ${esc(r.sets)}</span>` : '')}`;
+      const juste = r.interrompu ? '·' : v ? `${ok(v.vainqueur_juste)} vainqueur${v.sets_justes != null ? `<br>${ok(v.sets_justes)} sets` : ''}${v.score_juste != null ? `<br>${ok(v.score_juste)} score` : ''}` : '—';
       return `<tr><td>${esc(String(m.debut).slice(5, 10).split('-').reverse().join('/'))} · ${esc(m.home)} – ${esc(m.away)}<span class="detail">${esc(m.tournoi || '')}</span></td><td>${prevu}</td><td>${pin ? `${nc(pin.p_home >= 0.5 ? m.home : m.away)} ${pcCote(Math.max(pin.p_home, 1 - pin.p_home))}` : '—'}</td><td>${reel}</td><td>${juste}</td></tr>`;
     }).join('');
     return `<details class="rg-eval" id="rgResultats"${ouvert ? ' open' : ''}><summary>Prédit / réel (${nf(L.length, 0)} matchs joués)</summary>
       <div class="rg-kpis">${resume}</div>
-      ${parCircuitBlock(L)}
+      ${parCircuitBlock(J)}
       <div class="table-wrap rg-table"><table><thead><tr><th>Match</th><th>Prédit avant le match</th><th>Pinnacle</th><th>Résultat</th><th>Juste ?</th></tr></thead><tbody>${lignes}</tbody></table></div>
-      <p class="mini">Première prédiction de chaque match, jamais retouchée. Version affichée : Simulation + Elo quand elle existait, sinon la simulation, sinon le classement Elo. Le score en jeux arrive avec la feuille de match (collecte de 4 h 41 et 16 h 41 UTC). Tout est enregistré : chaque passage dans simulateur/journal_pronostics, chaque match joué dans live/pronostics_resultats.json.</p></details>`;
+      <p class="mini">Première prédiction de chaque match, jamais retouchée. Version affichée : Simulation + Elo quand elle existait, sinon la simulation, sinon le classement Elo. Le score en jeux arrive avec la feuille de match (collecte de 4 h 41 et 16 h 41 UTC). Tout est enregistré : chaque passage dans simulateur/journal_pronostics, chaque match joué dans live/pronostics_resultats.json. Abandons et forfaits : affichés, mais pas comptés (ils ne jugent pas le pronostic).</p></details>`;
   }
 
   // 22/10/2026 — EXPLORATEUR DES PRONOSTICS : croiser les résultats de l'algorithme avec les critères

@@ -46,7 +46,7 @@ class PreditReel(unittest.TestCase):
             R = P.resoudre(d, dt.datetime(2026, 10, 22, 12))
             self.assertEqual(len(R), 1)
             x = R[0]
-            self.assertEqual(x['reel'], {'gagnant': 'home', 'sets': '2-0', 'score': '6-4 6-4', 'jeux': 20, 'feuille': None})
+            self.assertEqual(x['reel'], {'gagnant': 'home', 'sets': '2-0', 'score': '6-4 6-4', 'jeux': 20, 'feuille': None, 'interrompu': None})
             c = x['premier']['combinaison']
             self.assertTrue(c['vainqueur_juste'])
             self.assertTrue(c['sets_justes'])
