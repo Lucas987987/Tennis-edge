@@ -220,3 +220,24 @@ test('pronostics : suivi du match simulé contre la vraie feuille (22/10/2026)',
   assert.match(html, /Total de jeux/);
   assert.match(R.pronosticsBlock({ horizon_h: 36, simulations: 5000, matchs: [] }, { tous: {}, match_simule_contre_feuille: { n: 0 } }), /en attente des premiers matchs/);
 });
+
+test('profils de service : recherche, fiche, centiles, évolution, liens depuis les pronostics (22/10/2026)', () => {
+  const t = x => ({ f: 0.6, a: x, d: 0.08, w1: 0.74, w2j: 0.55, serv: 0.65, ra: 0.1, ret1: 0.27, ret2: 0.48, ret: 0.36 });
+  const doc = { moyennes: { ATP: { all: t(0.12), Hard: t(0.13) } }, joueurs: {
+    k1: { nom: 'Arthur Fils', circuit: 'ATP', balles: 4200, dernier_match: '2026-10-20', evolution: [['2026-09', 6, 8.2, 61.5, 75.1, 52.0, 66.3, 37.9]],
+      surfaces: { all: { balles: 4200, joueur: t(0.18), centiles: { a: 88, d: 20 } }, Hard: { balles: 2500, joueur: t(0.2) } } },
+    k2: { nom: 'Hugo Gaston', circuit: 'ATP', balles: 3000, dernier_match: '2026-10-19', surfaces: { all: { balles: 3000, joueur: t(0.05) } } } } };
+  assert.deepEqual(R.chercherJoueurs(doc, 'fils').map(x => x[0]), ['k1']);
+  assert.deepEqual(R.chercherJoueurs(doc, 'h'), []);                                     // au moins 2 lettres
+  const f = R.ficheService(doc, 'k1');
+  assert.match(f, /<b>Arthur Fils<\/b>/);
+  assert.match(f, /Aces par 1re balle dans le court<\/td><td><b>18 %<\/b><span class="rg-cent good">88<sup>e<\/sup> centile<\/span><span class="detail">circuit 12 %<\/span>/);
+  assert.match(f, /<th>Dur<span class="detail">2\s500 balles<\/span><\/th>/);
+  assert.match(f, /rg-cent bad">20/);
+  assert.match(f, /2026-09<\/td><td>6<\/td><td>8,2<\/td>/);
+  assert.match(R.ficheService(doc, 'absent'), /Pas de profil/);
+  assert.match(R.serviceInner(doc, 'gas', null), /data-serv-key="k2">Hugo Gaston/);
+  const P = { horizon_h: 36, matchs: [{ uid: 'u', cles: ['k1', 'k2'], debut: '2026-10-22T04:00', tournoi: 'ATP Brussels', surface: 'Hard', meilleur_des: 3,
+    home: 'Arthur Fils', away: 'Hugo Gaston', stats: { p_home: 0.6, sets: {} }, marche: null }] };
+  assert.match(R.pronosticsBlock(P, null), /Profil de service : <button type="button" data-serv-key="k1">Fils<\/button>/);
+});

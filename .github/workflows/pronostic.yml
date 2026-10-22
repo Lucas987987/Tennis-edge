@@ -57,6 +57,10 @@ jobs:
         run: python simulateur/backtest_pronostic.py /tmp/sackmann . --scores
       - name: Profils de service (aces, doubles fautes, 1re et 2e balle, retour)
         run: python simulateur/profils_service.py /tmp/sackmann .
+      - name: Réglage du match simulé (aces, 1re balle) jugé sur les feuilles collectées
+        run: python simulateur/reglage_match_simule.py /tmp/sackmann . --n=300 --max=1500
+      - name: Étude de la forme du jour (feuilles set par set)
+        run: python simulateur/etude_forme_du_jour.py .
       - name: Test de la feuille de match simulée (avant l'heure)
         run: python simulateur/backtest_match_simule.py /tmp/sackmann . --n=300 --max=2000
       - name: Publier
@@ -65,7 +69,8 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -- simulateur/rapport_pronostic.json simulateur/elo_etat.json \
-                     simulateur/profils_service.json simulateur/rapport_match_simule.json
+                     simulateur/profils_service.json simulateur/rapport_match_simule.json \
+                     simulateur/reglages_match_simule.json simulateur/rapport_forme_du_jour.json
           if git diff --cached --quiet; then echo 'Rien de nouveau.'; exit 0; fi
           git commit -m 'Pronostic : test du modèle (vainqueur, sets)'
           for i in 1 2 3 4 5; do
