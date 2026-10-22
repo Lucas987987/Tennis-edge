@@ -361,6 +361,20 @@ CLES_FEUILLE = ('aces', 'doubles_fautes', 'premiere_pct', 'gagnes_1re_pct', 'gag
                 'balles_break_obtenues', 'breaks', 'jeux_service_gagnes_pct', 'points_gagnes', 'jeux')
 
 
+def amplifier(c, moyen, k):
+    """22/10/2026 — la simulation est trop timide (favori annoncé 64 % → gagne 69 %) : l'écart de chaque
+    taux du point à la moyenne du circuit (en logit) est multiplié par k. k = 1 : inchangé. Réglage choisi
+    sur 2024, jugé sur 2025 → (backtest_match_simule.choisir_reglage)."""
+    if not k or k == 1.0:
+        return c
+    out = dict(c)
+    for x in ('f', 'a', 'w1', 'd', 'w2j'):
+        if x in c and x in moyen:
+            m = _lg(min(max(moyen[x], 1e-4), 1 - 1e-4))
+            out[x] = _sg(m + k * (_lg(min(max(c[x], 1e-4), 1 - 1e-4)) - m))
+    return borner(out)
+
+
 def melange(poids, p_elo, p_sim):
     """Combinaison simulation + Elo (backtest_match_simule.combinaison) : σ(a·logit p_elo + b·logit p_sim)."""
     z = poids['elo'] * _lg(min(max(p_elo, 1e-6), 1 - 1e-6)) + poids['simulation'] * _lg(min(max(p_sim, 1e-6), 1 - 1e-6))

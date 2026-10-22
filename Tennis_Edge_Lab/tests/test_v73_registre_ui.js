@@ -325,3 +325,27 @@ test('prédit / réel (22/10/2026)', () => {
   assert.match(R_.resultatsBlock({ matchs: [] }), /Aucun match joué/);
   assert.equal(R_.resultatsBlock(null), '');
 });
+
+test('explorateur des pronostics (22/10/2026)', () => {
+  const colonnes = ['date', 'circuit', 'surface', 'bo', 'tour', 'niveau', 'tournoi', 'gagnant', 'perdant', 'matchs_min', 'elo', 'simulation', 'combinaison', 'pinnacle'];
+  const lignes = [];
+  for (let i = 0; i < 400; i++) {
+    const atp = i % 2 === 0;
+    lignes.push([i < 200 ? '2024-05-01' : '2025-05-01', atp ? 'ATP' : 'WTA', 'Hard', 3, 6, 'A', 'T', 'g', 'p', 120,
+      i % 4 === 0 ? 0.4 : 0.7, atp ? 0.7 : (i % 4 === 1 ? 0.4 : 0.65), 0.68, 0.72]);
+  }
+  const doc = { colonnes, lignes, debut_jugement: '2025-01-01' };
+  const all = R.xpStats(R.xpFiltrer(doc, {}), 'simulation');
+  assert.equal(all.n, 400);
+  assert.ok(Math.abs(all.ok - 0.75) < 1e-9);
+  const atp = R.xpStats(R.xpFiltrer(doc, { circuit: 'ATP' }), 'simulation');
+  assert.equal(atp.ok, 1);
+  const scan = R.xpScan(doc, {}, 150);
+  const c = scan.find(z => z.critere === 'Circuit' && z.valeur === 'ATP');
+  assert.ok(c && Math.abs(c.vsElo - 0.5) < 1e-9);                  // ATP : simulation 100 %, Elo 50 %
+  const h = R.explorateurBlock(doc, { circuit: 'WTA' }, true);
+  assert.match(h, /200 matchs dans ce filtre/);
+  assert.match(h, /<option selected>WTA<\/option>/);
+  assert.match(R.explorateurBlock(null, {}, true), /Chargement/);
+  assert.doesNotMatch(R.explorateurBlock(doc, {}, false), /<table>/);
+});

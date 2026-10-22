@@ -169,6 +169,60 @@ def ajuster_poids(X, ridge=1.0, tours=30):
 
 
 melange = S.melange
+GRILLE_SIGMA = (0.0, 0.05, 0.10, 0.15)
+GRILLE_AMPLIFICATION = (1.0, 1.15, 1.3, 1.5)
+
+
+def _ll(L):
+    return -sum(math.log(min(max(p, 1e-6), 1 - 1e-6)) for p in L) / len(L) if L else None
+
+
+EXPLORATEUR = 'Tennis_Edge_Lab/live/explorateur_pronostics.json.gz'
+
+
+def exporter_explorateur(L, sim, cb, chemin):
+    """Point 3 (22/10/2026) : tous les matchs ATP/WTA 2024 → 01/2026 rejoués avant l'heure, avec les
+    % donnés AU VRAI VAINQUEUR par chaque version et les critères (circuit, surface, format, tour, niveau,
+    expérience) — pour croiser les résultats de l'algorithme avec tous les critères dans le Lab."""
+    import gzip
+    P = cb.get('poids') or cb.get('poids_appris_2024')
+    cols = ['date', 'circuit', 'surface', 'bo', 'tour', 'niveau', 'tournoi', 'gagnant', 'perdant', 'matchs_min',
+            'elo', 'simulation', 'combinaison', 'pinnacle']
+    rows = []
+    for x in L:
+        c = melange(P, x['elo'], x[sim]) if P else None
+        rows.append([x['date'].isoformat(), x['circuit'], x.get('surface'), x.get('bo'), x.get('tour'), x.get('niveau'),
+                     x.get('tournoi'), x.get('gagnant'), x.get('perdant'), x.get('matchs_min'),
+                     round(x['elo'], 4), round(x[sim], 4), round(c, 4) if c is not None else None, round(x['pinnacle'], 4)])
+    doc = {'genere_le': dt.datetime.now(dt.timezone.utc).isoformat(timespec='seconds'), 'colonnes': cols,
+           'lecture': "probabilités données au VRAI vainqueur : > 0,5 = vainqueur trouvé", 'simulation': sim,
+           'debut_jugement': DEBUT_JUGE_COMB.isoformat(), 'lignes': rows}
+    os.makedirs(os.path.dirname(chemin), exist_ok=True)
+    with gzip.open(chemin, 'wt', encoding='utf-8') as f:
+        json.dump(doc, f, ensure_ascii=False, separators=(',', ':'))
+
+
+def choisir_reglage(L):
+    """Règle fixée d'avance (22/10/2026) : (σ, k) de plus petite log loss du vainqueur sur 2024 ; adopté
+    s'il fait mieux que le réglage actuel (σ = 0,15, k = 1) sur 2025 →."""
+    appr = [x for x in L if x['date'] < DEBUT_JUGE_COMB]
+    juge = [x for x in L if x['date'] >= DEBUT_JUGE_COMB]
+    if len(appr) < 300 or len(juge) < 300:
+        return {'adopte': False, 'sigma': 0.15, 'amplification': 1.0, 'cle': '0.15|1', 'raison': 'pas assez de matchs'}
+    cles = list(appr[0]['grille'])
+    sc = {k: _ll([x['grille'][k] for x in appr]) for k in cles}
+    best = min(sc, key=sc.get)
+    actuel = '0.15|1'
+    jb, ja = _ll([x['grille'][best] for x in juge]), _ll([x['grille'][actuel] for x in juge])
+    rb = bilan_victoire([x['grille'][best] for x in juge])
+    ra = bilan_victoire([x['grille'][actuel] for x in juge])
+    s_, k_ = best.split('|')
+    return {'adopte': best != actuel and jb < ja, 'sigma': float(s_), 'amplification': float(k_), 'cle': best,
+            'grille_2024': {k: round(v, 5) for k, v in sorted(sc.items(), key=lambda kv: kv[1])},
+            'jugement': {'choisi': rb, 'actuel': ra},
+            'raison': (f"choisi sur 2024 : σ = {s_}, k = {k_} ; 2025 → : log loss {round(jb, 4)} contre {round(ja, 4)} "
+                       f"(réussite {rb.get('reussite_pct')} % contre {ra.get('reussite_pct')} %, calibration "
+                       + ' · '.join(f"{c['tranche']} {c['prevu']}→{c['reel']}" for c in rb.get('calibration', [])) + ")")}
 
 
 def combinaison(L, sim):
@@ -302,10 +356,20 @@ def main(argv):
             mois_adj = debut_mois
             print(f"  ajustement aux adversaires au {debut_mois} ({round(time.time() - t1)} s)", flush=True)
         ag, ap = S.composantes_ajustees(adj, g, p, m['circuit'], m['surface']), S.composantes_ajustees(adj, p, g, m['circuit'], m['surface'])
+        moy = S.borner(adj.taux('__moyen__', '__moyen__', m['circuit'], m['surface']))
+        grille = {}
+        for k_amp in GRILLE_AMPLIFICATION:
+            a2, p2 = S.amplifier(ag, moy, k_amp), S.amplifier(ap, moy, k_amp)
+            for s_ in GRILLE_SIGMA:
+                grille[f"{s_:g}|{k_amp:g}"] = S.victoire_pure(a2, p2, sg, s_)
         LIGNES.append({'date': m['date'], 'circuit': m['circuit'], 'connus': V['pred_sack'][i][1],
                        'elo': V['pred_sack'][i][0], 'pinnacle': pin[id(m)],
-                       'simulation_pure_ajustee': S.victoire_pure(ag, ap, sg, SIGMA),
-                       'simulation_pure': S.victoire_pure(cg, cp, sg, SIGMA)})
+                       'simulation_pure_ajustee': grille[f"{SIGMA:g}|1"],
+                       'simulation_pure': S.victoire_pure(cg, cp, sg, SIGMA), 'grille': grille,
+                       # pour l'explorateur des pronostics (point 3, 22/10/2026)
+                       'surface': m['surface'], 'bo': m['bo'], 'tour': m.get('tour'), 'niveau': m.get('niveau'),
+                       'tournoi': m.get('tournoi'), 'gagnant': m['nom_g'], 'perdant': m['nom_p'],
+                       'matchs_min': V['pred_sack'][i][1]})
         if i not in choisis:
             continue
         connus[min(ng, np_) >= 500] += 1
@@ -354,8 +418,21 @@ def main(argv):
                     'raison': (f"log loss de la simulation pure : ajustée {va.get('log_loss')} contre profils bruts "
                                f"{vp.get('log_loss')} (réussite {va.get('reussite_pct')} % contre {vp.get('reussite_pct')} %)")}
     sim = 'simulation_pure_ajustee' if ok else 'simulation_pure'
+    # 22/10/2026 — réglage de la simulation pure (forme du jour σ, amplification k des écarts au circuit),
+    # choisi sur 2024, adopté s'il trouve mieux le vainqueur en 2025 → ; la combinaison est ensuite
+    # ré-apprise avec la simulation réglée (son poids monte si elle trouve mieux).
+    if ok:
+        rap['reglage_simulation'] = choisir_reglage(LIGNES)
+        rg = rap['reglage_simulation']
+        if rg['adopte']:
+            for x in LIGNES:
+                x['simulation_reglee'] = x['grille'][rg['cle']]
+            sim = 'simulation_reglee'
+        rap['choix']['reglage_simulation'] = {k: rg[k] for k in ('adopte', 'sigma', 'amplification', 'raison')}
+        print(f"\nRéglage de la simulation (choisi sur 2024, jugé 2025 →) : {'ADOPTÉ' if rg['adopte'] else 'non adopté'} — {rg['raison']}")
     rap['combinaison'] = combinaison(LIGNES, sim)
     rap['calibration_detaillee'] = calibration_detaillee(LIGNES, sim, rap['combinaison'])
+    exporter_explorateur(LIGNES, sim, rap['combinaison'], os.path.join(ICI, '..', EXPLORATEUR))
     rap['choix']['combinaison'] = {k: rap['combinaison'][k] for k in ('adopte', 'poids', 'raison', 'simulation')}
     with open(CHOIX, 'w', encoding='utf-8') as f:            # les autres décisions (ex. « dynamique ») sont gardées
         json.dump(dict(choix_avant, **rap['choix'], genere_le=rap['genere_le']), f, ensure_ascii=False, indent=1)
