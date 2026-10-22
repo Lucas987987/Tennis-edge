@@ -618,6 +618,27 @@
     return `<div class="table-wrap rg-table"><table><thead><tr><th>Vainqueurs trouvés</th>${vers.map(k => `<th>${esc(VERSION_LIB[k])}</th>`).join('')}</tr></thead><tbody>${total}${lignes}</tbody></table></div>`;
   }
 
+  // 23/10/2026 — la vraie feuille contre les 5 000 simulations : ce qui a fait la différence, et les biais.
+  const DIAG_LIB = { premiere_pct: '% de 1re balle', gagnes_1re_pct: 'points gagnés 1re balle', gagnes_2e_pct: 'points gagnés 2e balle', aces: 'aces', doubles_fautes: 'doubles fautes', breaks: 'breaks', jeux: 'jeux gagnés' };
+  function diagLigne(m) {
+    const d = m.diagnostic; if (!d) return '';
+    const nc = n => esc(String(n || '').split(' ').slice(-1)[0]);
+    const k = d.decisif;
+    const dif = k ? `différence : ${nc(k.joueur === 'home' ? m.home : m.away)}, ${esc(DIAG_LIB[k.stat] || k.stat)} ${nf(k.reel, 0)}${/pct/.test(k.stat) ? ' %' : ''} (prévu ${nf(k.prevu, 0)})` : 'aucune statistique nettement hors de la simulation';
+    return `<span class="detail">${dif} · feuille dans la fourchette : ${nf(d.dans_fourchette_pct, 0)} %</span>`;
+  }
+  function biaisBlock(Bi) {
+    if (!Bi || !Bi.n) return '';
+    const T = Bi.tous || {};
+    const cell = x => (x ? `${x.ecart_moyen > 0 ? '+' : ''}${nf(x.ecart_moyen, 1)} <small>(${nf(x.dans_fourchette_pct, 0)} % dedans)</small>` : '—');
+    const rows = Object.keys(DIAG_LIB).filter(k => T[k]).map(k => `<tr><td>${esc(DIAG_LIB[k])}</td><td>${cell(T[k].favori)}</td><td>${cell(T[k].outsider)}</td></tr>`).join('');
+    const E = Bi.erreurs || {};
+    const dec = Object.entries(E.stat_decisive || {}).map(([k, n]) => `${esc(DIAG_LIB[k] || k)} ${nf(n, 0)}`).join(' · ');
+    return `<h5>Là où la simulation a bon et pas bon (${nf(Bi.n, 0)} matchs avec leur feuille)${Bi.conclure ? '' : ' — moins de 30 matchs : ne pas conclure'}</h5>
+      <div class="table-wrap rg-table"><table><thead><tr><th>Statistique</th><th>Favori annoncé : réel − prévu</th><th>Outsider annoncé : réel − prévu</th></tr></thead><tbody>${rows}</tbody></table></div>
+      <p class="mini">Écart moyen entre la vraie feuille et la moyenne des 5 000 simulations ; entre parenthèses, part des réels dans la fourchette à 80 % (bien réglé : environ 80 %). Un écart qui reste du même signe match après match est un biais à corriger.${E.n ? ` Vainqueur faux (${nf(E.n, 0)} matchs) — statistique qui a fait la différence : ${dec}.` : ''}</p>`;
+  }
+
   function resultatsBlock(R, ouvert) {
     if (!R || !R.matchs) return '';
     const L = R.matchs;
@@ -638,13 +659,14 @@
       const fav = v ? (v.p_home >= 0.5 ? m.home : m.away) : null;
       const pf = v ? Math.max(v.p_home, 1 - v.p_home) : null;
       const prevu = v ? `<b>${nc(fav)}</b> ${pcCote(pf)}${v.score_prevu ? `<span class="detail">score : ${esc(v.score_prevu)}</span>` : (v.sets_prevus ? `<span class="detail">sets : ${esc(v.sets_prevus)}</span>` : '')}<span class="detail">${esc(VERSION_LIB[k])}</span>` : '—';
-      const reel = `<b>${nc(r.gagnant === 'home' ? m.home : m.away)}</b>${r.interrompu ? `<span class="detail">${esc(r.interrompu)} — non compté</span>` : ''}${r.score ? `<span class="detail">${esc(r.score)}</span>` : (r.sets ? `<span class="detail">sets : ${esc(r.sets)}</span>` : '')}`;
+      const reel = `<b>${nc(r.gagnant === 'home' ? m.home : m.away)}</b>${r.interrompu ? `<span class="detail">${esc(r.interrompu)} — non compté</span>` : ''}${r.score ? `<span class="detail">${esc(r.score)}</span>` : (r.sets ? `<span class="detail">sets : ${esc(r.sets)}</span>` : '')}${diagLigne(m)}`;
       const juste = r.interrompu ? '·' : v ? `${ok(v.vainqueur_juste)} vainqueur${v.sets_justes != null ? `<br>${ok(v.sets_justes)} sets` : ''}${v.score_juste != null ? `<br>${ok(v.score_juste)} score` : ''}` : '—';
       return `<tr><td>${esc(String(m.debut).slice(5, 10).split('-').reverse().join('/'))} · ${esc(m.home)} – ${esc(m.away)}<span class="detail">${esc(m.tournoi || '')}</span></td><td>${prevu}</td><td>${pin ? `${nc(pin.p_home >= 0.5 ? m.home : m.away)} ${pcCote(Math.max(pin.p_home, 1 - pin.p_home))}` : '—'}</td><td>${reel}</td><td>${juste}</td></tr>`;
     }).join('');
     return `<details class="rg-eval" id="rgResultats"${ouvert ? ' open' : ''}><summary>Prédit / réel (${nf(L.length, 0)} matchs joués)</summary>
       <div class="rg-kpis">${resume}</div>
       ${parCircuitBlock(J)}
+      ${biaisBlock(R.biais)}
       <div class="table-wrap rg-table"><table><thead><tr><th>Match</th><th>Prédit avant le match</th><th>Pinnacle</th><th>Résultat</th><th>Juste ?</th></tr></thead><tbody>${lignes}</tbody></table></div>
       <p class="mini">Première prédiction de chaque match, jamais retouchée. Version affichée : Simulation + Elo quand elle existait, sinon la simulation, sinon le classement Elo. Le score en jeux arrive avec la feuille de match (collecte de 4 h 41 et 16 h 41 UTC). Tout est enregistré : chaque passage dans simulateur/journal_pronostics, chaque match joué dans live/pronostics_resultats.json. Abandons et forfaits : affichés, mais pas comptés (ils ne jugent pas le pronostic).</p></details>`;
   }
@@ -731,7 +753,21 @@
       <p class="mini">Exploration : en regardant beaucoup de cases, certaines sortent du lot par hasard. Une piste n'est qu'une candidate tant qu'elle n'a pas été gelée puis confirmée sur des matchs joués APRÈS le gel (comme H13–H20). Le filtre « Période » permet de vérifier qu'un écart vu en 2024 tient en 2025 →.</p></details>`;
   }
 
-  function pronosticsBlock(P, B, ouverts) {
+  // 23/10/2026 — la cote Pinnacle suit les captures (live/pronostics_marche.json, toutes les ~3 min) ; les
+  // pronostics complets, eux, sont recalculés toutes les 2 h.
+  function pinFraiche(m, MK, ligneBase) {
+    const f = MK && MK.matchs && MK.matchs[m.uid];
+    const nc = n => esc(String(n || '').split(' ').slice(-1)[0]);
+    const h = MK && MK.genere_le ? (() => { try { return new Date(MK.genere_le).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }); } catch { return ''; } })() : '';
+    if (!f) return ligneBase;
+    const fav = f.p_home >= 0.5; const pv = fav ? f.p_home : 1 - f.p_home;
+    const txt = `<b>${fav ? nc(m.home) : nc(m.away)}</b> ${pcCote(pv)}`;
+    if (!m.marche) return `<tr><td>Cote Pinnacle</td><td>${txt}<span class="detail">cote Pinnacle à ${esc(h)} ; sets et scores au prochain calcul</span></td><td colspan="2"></td></tr>`;
+    if (Math.abs(f.p_home - m.marche.p_home) < 0.005) return ligneBase;
+    return `${ligneBase}<tr><td></td><td colspan="3" class="mini">Pinnacle maintenant (${esc(h)}) : ${txt}</td></tr>`;
+  }
+
+  function pronosticsBlock(P, B, ouverts, MK) {
     if (!P || !P.matchs) return '';
     const pc = v => (fin(v) ? `${nf(100 * v, 0)} %` : '—');
     const heure = d => { try { return new Date(`${d}Z`).toLocaleString('fr-FR', { weekday: 'short', hour: '2-digit', minute: '2-digit' }); } catch { return esc(d); } };
@@ -754,7 +790,7 @@
     const cartes = P.matchs.map(m => `<div class="rg-pron"><div class="mini">${heure(m.debut)} · ${esc(m.tournoi)} · ${esc(m.surface)}${m.meilleur_des === 5 ? ' · 5 sets' : ''}</div>
         <div class="rg-pron-j"><b>${esc(m.home)}</b> – <b>${esc(m.away)}</b></div>
         <div class="table-wrap rg-table"><table><thead><tr><th></th><th>Vainqueur · sets <small>(% · cote juste)</small></th><th>Scores les plus probables (sur ~1 500 possibles)</th><th>Jeux</th></tr></thead>
-        <tbody>${m.combinaison ? ligne(`<b>Simulation + Elo</b><span class="detail">les deux % mélangés, puis le match joué à ce niveau</span>`, m.combinaison, m) : ''}${m.simulation ? ligne(`<b>Simulation</b><span class="detail">${nf((P.simulations || 0), 0)} matchs joués</span>`, m.simulation, m) : ''}${ligne('Classement Elo', m.stats, m)}${ligne('Cote Pinnacle', m.marche, m)}</tbody></table></div>${facteursBlock(m)}${directBlock(m, P.noeuds_forme, ouverts)}${simuleBlock(m, ouverts)}${m.cles ? `<div class="rg-serv-liens">Profil de service : <button type="button" data-serv-key="${esc(m.cles[0])}">${nomCourt(m.home)}</button> <button type="button" data-serv-key="${esc(m.cles[1])}">${nomCourt(m.away)}</button></div>` : ''}</div>`).join('');
+        <tbody>${m.combinaison ? ligne(`<b>Simulation + Elo</b><span class="detail">les deux % mélangés, puis le match joué à ce niveau</span>`, m.combinaison, m) : ''}${m.simulation ? ligne(`<b>Simulation</b><span class="detail">${nf((P.simulations || 0), 0)} matchs joués</span>`, m.simulation, m) : ''}${ligne('Classement Elo', m.stats, m)}${pinFraiche(m, MK, ligne('Cote Pinnacle', m.marche, m))}</tbody></table></div>${facteursBlock(m)}${directBlock(m, P.noeuds_forme, ouverts)}${simuleBlock(m, ouverts)}${m.cles ? `<div class="rg-serv-liens">Profil de service : <button type="button" data-serv-key="${esc(m.cles[0])}">${nomCourt(m.home)}</button> <button type="button" data-serv-key="${esc(m.cles[1])}">${nomCourt(m.away)}</button></div>` : ''}</div>`).join('');
     return `<details class="rg-eval" open><summary>Pronostics du jour (${nf(P.matchs.length, 0)} matchs dans les ${nf(P.horizon_h, 0)} h)</summary>
       <p class="mini"><b>Simulation</b> : chaque match est joué ${nf(P.simulations || 5000, 0)} fois point par point avec les seules statistiques des deux joueurs — 1re balle, aces, doubles fautes, points gagnés derrière la 1re et la 2e, qualité de retour (profils au ${esc(P.profils_au || '—')}) — et la part des simulations gagnées donne le pourcentage. Pour comparaison : <b>classement Elo</b> (résultats seuls) et <b>cote Pinnacle</b> (marge retirée), joués dans le même moteur. Le premier pronostic de chaque match est gardé tel quel : les compteurs portent sur lui. Chaque pourcentage est aussi lu en <b>cote juste</b> (1 / probabilité, sans marge).${(P.facteurs_adoptes || []).length ? ` Facteurs du match retenus par le test : ${P.facteurs_adoptes.map(g => esc(FACTEURS_LIB[g] || g)).join(', ')}.` : ''}${P.combinaison && fin(P.combinaison.simulation) ? ` <b>Simulation + Elo</b> : poids ${nf(100 * P.combinaison.simulation / (P.combinaison.simulation + P.combinaison.elo), 0)} % simulation, appris sur ${esc(P.combinaison.source || 'l\'archive 2024–2026')} ; ré-appris chaque lundi.${Array.isArray(P.combinaison.calibration) ? ' Les grosses probabilités sont corrigées de leur excès de confiance (correction jugée sur 2025).' : ''}` : ''}${P.reglage_simulation && P.reglage_simulation.jeux > 0 ? ' La simulation apprend aussi des scores des matchs sans statistiques détaillées (ITF, Challenger…).' : ''}${P.reglage_simulation && P.reglage_simulation.resultats > 0 ? ' Elle apprend aussi de qui a gagné, match après match (une surprise corrige plus qu\'une victoire attendue).' : ''}</p>
       <div class="rg-kpis">${(P.combinaison || (T.combinaison && T.combinaison.n)) ? kpi('Réussite simulation + Elo', T.combinaison) : ''}${kpi('Réussite simulation', T.simulation)}${kpi('Réussite Elo', T.stats_seules)}${kpi('Réussite Pinnacle', T.stats_plus_marche)}${(P.combinaison || (T.combinaison && T.combinaison.n)) ? kpi('7 jours, simulation + Elo', S.combinaison) : ''}${kpi('7 jours, simulation', S.simulation)}${kpi('7 jours, Elo', S.stats_seules)}${kpi('7 jours, Pinnacle', S.stats_plus_marche)}</div>
@@ -839,7 +875,7 @@
     const shown = list.slice(state.page * PAGE, (state.page + 1) * PAGE);
     const opt = (vals, v) => vals.map(([k, l]) => `<option value="${esc(k)}" ${k === (v || '') ? 'selected' : ''}>${esc(l)}</option>`).join('');
     const circuits = [...new Set(cur.list.map(m => m.circuit))].sort();
-    host.innerHTML = `${pronosticsBlock(state.pronoDoc, state.pronoBilan, state.simOpen)}${resultatsBlock(state.pronoResultats, state.simOpen.has('resultats'))}${explorateurBlock(state.xpDoc, state.xpF, state.xpOpen)}${serviceBlock(state.servDoc, state.servQ, state.servKey, state.servOpen)}${valeurBlock(state.valeurDoc)}${croisementsBlock(state.croisDoc)}${delaiBlock(state.delaiDoc)}${evaluation(state.evalDoc)}${booksBlock(state.valeurDoc)}
+    host.innerHTML = `${pronosticsBlock(state.pronoDoc, state.pronoBilan, state.simOpen, state.marcheDoc)}${resultatsBlock(state.pronoResultats, state.simOpen.has('resultats'))}${explorateurBlock(state.xpDoc, state.xpF, state.xpOpen)}${serviceBlock(state.servDoc, state.servQ, state.servKey, state.servOpen)}${valeurBlock(state.valeurDoc)}${croisementsBlock(state.croisDoc)}${delaiBlock(state.delaiDoc)}${evaluation(state.evalDoc)}${booksBlock(state.valeurDoc)}
       <div class="rg-filters">
         <label>Mois<select id="rgMois">${opt([...state.index.mois].reverse().map(x => [x.mois, `${x.mois} (${x.matchs})`]), state.mois)}</select></label>
         <label>Circuit<select id="rgCircuit">${opt([['', 'tous'], ...circuits.map(c => [c, c])], state.f.circuit)}</select></label>
@@ -914,12 +950,13 @@
     try { state.pronoDoc = await json('./live/pronostics.json'); } catch { /* pronostics absents */ }
     try { state.pronoBilan = await json('./live/pronostics_bilan.json'); } catch { /* bilan absent */ }
     try { state.pronoResultats = await json('./live/pronostics_resultats.json'); } catch { /* prédit / réel absent */ }
+    try { state.marcheDoc = await json('./live/pronostics_marche.json'); } catch { /* cote fraîche absente */ }
     render();
   }
   if (hasDoc && typeof module === 'undefined') {
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
   }
   if (typeof module !== 'undefined') {
-    module.exports = { explorateurBlock, xpScan, xpStats, xpFiltrer, resultatsBlock, parCircuitBlock, pronosticsBlock, calibrationBlock, directBlock, directResultat, enDirect, lireScore, facteursBlock, simuleBlock, serviceBlock, serviceInner, ficheService, chercherJoueurs, croisementsBlock, delaiBlock, booksBlock, valeurBlock, victoires, powerFair, decodeMonth, fairRow, bestRow, filterMatches, coherence, lectureOf, effective, evaluation, fiche, row };
+    module.exports = { explorateurBlock, xpScan, xpStats, xpFiltrer, resultatsBlock, parCircuitBlock, biaisBlock, diagLigne, pinFraiche, pronosticsBlock, calibrationBlock, directBlock, directResultat, enDirect, lireScore, facteursBlock, simuleBlock, serviceBlock, serviceInner, ficheService, chercherJoueurs, croisementsBlock, delaiBlock, booksBlock, valeurBlock, victoires, powerFair, decodeMonth, fairRow, bestRow, filterMatches, coherence, lectureOf, effective, evaluation, fiche, row };
   }
 })();
