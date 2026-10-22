@@ -207,7 +207,7 @@ test('match simulé : feuille prévue, fourchette, match type, version marché e
   assert.match(R.simuleBlock({ ...m, marche: null }), /Niveau : classement Elo/);
   assert.equal(R.simuleBlock({ stats: {}, marche: null }), '');
   assert.match(R.pronosticsBlock({ horizon_h: 36, simulations: 5000, profils_au: '2026-06-02', matchs: [{ ...m, debut: '2026-10-22T04:00', tournoi: 'ATP Brussels', surface: 'Hard', meilleur_des: 3,
-    stats: { ...m.stats, p_home: 0.6, sets: {} }, marche: { ...m.marche, p_home: 0.7, sets: {} } }] }, null), /joué 5\s000 fois avec le profil de service/);
+    stats: { ...m.stats, p_home: 0.6, sets: {} }, marche: { ...m.marche, p_home: 0.7, sets: {} } }] }, null), /joué 5\s000 fois point par point avec les seules statistiques/);
 });
 
 test('pronostics : suivi du match simulé contre la vraie feuille (22/10/2026)', () => {
@@ -240,4 +240,21 @@ test('profils de service : recherche, fiche, centiles, évolution, liens depuis 
   const P = { horizon_h: 36, matchs: [{ uid: 'u', cles: ['k1', 'k2'], debut: '2026-10-22T04:00', tournoi: 'ATP Brussels', surface: 'Hard', meilleur_des: 3,
     home: 'Arthur Fils', away: 'Hugo Gaston', stats: { p_home: 0.6, sets: {} }, marche: null }] };
   assert.match(R.pronosticsBlock(P, null), /Profil de service : <button type="button" data-serv-key="k1">Fils<\/button>/);
+});
+
+test('simulation pure : ligne principale, compteur, match simulé joué sans classement ni cote (22/10/2026)', () => {
+  const x = (moy, p10, p90) => ({ moy, p10, p90 });
+  const f = { aces: x(5, 2, 9), doubles_fautes: x(3, 1, 5), premiere_pct: x(62, 55, 69), gagnes_1re_pct: x(72, 62, 81), gagnes_2e_pct: x(50, 38, 62),
+    balles_break_obtenues: x(6, 2, 11), breaks: x(2, 0, 4), jeux_service_gagnes_pct: x(78, 60, 92), points_gagnes: x(70, 50, 95) };
+  const sim = { n: 5000, victoire_A: 0.7, jeux: x(22, 17, 30), tiebreak: 0.3, scores: [['6-3 6-4', 0.03]], feuille: [f, f], profil_connu: [true, true] };
+  const v = p => ({ p_home: p, sets: { '2-0': 0.45 }, scores_probables: [['6-3 6-4', 0.03]], jeux_moyen: 22 });
+  const m = { uid: 'u', debut: '2026-10-22T04:00', tournoi: 'ATP Vienna', surface: 'Hard', meilleur_des: 3, home: 'Arthur Fils', away: 'Hugo Gaston',
+    simulation: { ...v(0.7), match_simule: sim }, stats: v(0.62), marche: v(0.66) };
+  const B = { tous: { simulation: { n: 40, reussite_pct: 66.5 }, stats_seules: { n: 40, reussite_pct: 64 }, stats_plus_marche: { n: 38, reussite_pct: 68 } }, '7_derniers_jours': {} };
+  const html = R.pronosticsBlock({ horizon_h: 36, simulations: 5000, matchs: [m] }, B);
+  assert.match(html, /<b>Simulation<\/b><span class="detail">5\s000 matchs joués<\/span><\/td><td><b>Fils<\/b> 70 %/);
+  assert.match(html, /Classement Elo<\/td><td><b>Fils<\/b> 62 %/);
+  assert.match(html, /Cote Pinnacle<\/td><td><b>Fils<\/b> 66 %/);
+  assert.match(html, /Réussite simulation<\/small><b>66,5 %<\/b>/);
+  assert.match(R.simuleBlock(m), /Match joué avec les seules statistiques des deux joueurs/);
 });
