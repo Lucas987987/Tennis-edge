@@ -361,6 +361,31 @@ CLES_FEUILLE = ('aces', 'doubles_fautes', 'premiere_pct', 'gagnes_1re_pct', 'gag
                 'balles_break_obtenues', 'breaks', 'jeux_service_gagnes_pct', 'points_gagnes', 'jeux')
 
 
+CONTEXTE_COLS = ('sim_gazon', 'sim_terre', 'sim_wta', 'sim_5sets', 'elo_gazon', 'elo_terre', 'elo_wta', 'elo_5sets')
+
+
+def contexte_match(surface, circuit, bo):
+    """Indicateurs du contexte (22/10/2026) : gazon, terre, WTA, 5 sets."""
+    return {'gazon': 1.0 if surface == 'Grass' else 0.0, 'terre': 1.0 if surface == 'Clay' else 0.0,
+            'wta': 1.0 if circuit == 'WTA' else 0.0, '5sets': 1.0 if bo == 5 else 0.0}
+
+
+def variables_contexte(ctx, z_elo, z_sim):
+    return [z_sim * ctx['gazon'], z_sim * ctx['terre'], z_sim * ctx['wta'], z_sim * ctx['5sets'],
+            z_elo * ctx['gazon'], z_elo * ctx['terre'], z_elo * ctx['wta'], z_elo * ctx['5sets']]
+
+
+def melange_contexte(poids, ctx, p_elo, p_sim):
+    """Mélange simulation + Elo dont les poids changent selon le contexte (poids['contexte'] = 8 corrections)."""
+    ze = _lg(min(max(p_elo, 1e-6), 1 - 1e-6))
+    zs = _lg(min(max(p_sim, 1e-6), 1 - 1e-6))
+    z = poids['elo'] * ze + poids['simulation'] * zs
+    c = poids.get('contexte')
+    if c and ctx:
+        z += sum(c.get(k, 0.0) * v for k, v in zip(CONTEXTE_COLS, variables_contexte(ctx, ze, zs)))
+    return _sg(max(min(z, 30), -30))
+
+
 def amplifier(c, moyen, k):
     """22/10/2026 — la simulation est trop timide (favori annoncé 64 % → gagne 69 %) : l'écart de chaque
     taux du point à la moyenne du circuit (en logit) est multiplié par k. k = 1 : inchangé. Réglage choisi

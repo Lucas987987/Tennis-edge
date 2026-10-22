@@ -53,6 +53,7 @@ jobs:
             /closing_lines.json
             /closing_lines/
             /feuilles/
+            /feuilles_points/
           sparse-checkout-cone-mode: false
       - uses: actions/setup-python@v6
         with:
