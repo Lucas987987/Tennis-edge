@@ -101,11 +101,72 @@ def ajuster(c, p_cible):
     return out
 
 
-def victoire(pA, pB, sets_gagnants=2, tb_final=None):
+def tenue(p, p_bp=None):
+    """P(le serveur gagne son jeu) quand il gagne chaque point avec p, et p_bp sur BALLE DE BREAK
+    (le relanceur est à un point du jeu). p_bp = p redonne modele.p_jeu (22/10/2026)."""
+    q = p if p_bp is None else p_bp
+    if q == p:
+        return M.p_jeu(p)
+    memo = {}
+    # égalité : D = p² + p(1−p)·D + (1−p)·q·D  (avantage serveur puis point, ou balle de break sauvée)
+    den = 1 - p * (1 - p) - (1 - p) * q
+    deuce = p * p / den if den > 0 else 0.5
+
+    def v(a, b):
+        if a >= 4 and a - b >= 2:
+            return 1.0
+        if b >= 4 and b - a >= 2:
+            return 0.0
+        if a >= 3 and b >= 3 and a == b:
+            return deuce
+        if (a, b) in memo:
+            return memo[(a, b)]
+        x = q if (b >= 3 and b > a) else p
+        memo[(a, b)] = r = x * v(a + 1, b) + (1 - x) * v(a, b + 1)
+        return r
+    return v(0, 0)
+
+
+_SET_CACHE = {}
+
+
+def set_issues_bp(pA, pB, qA, qB, a_sert_premier, cible_tb=7):
+    """modele.set_issues avec une probabilité propre aux balles de break (qA, qB)."""
+    cle = (pA, pB, qA, qB, a_sert_premier, cible_tb)
+    if cle in _SET_CACHE:
+        return _SET_CACHE[cle]
+    hA, hB = tenue(pA, qA), tenue(pB, qB)
+    etats, fin = {(0, 0): 1.0}, {}
+    while etats:
+        nouv = {}
+        for (a, b), pr in etats.items():
+            sert_a = ((a + b) % 2 == 0) == a_sert_premier
+            if a == 6 and b == 6:
+                t = M.p_tiebreak(pA, pB, sert_a, cible_tb)
+                fin[(7, 6)] = fin.get((7, 6), 0.0) + pr * t
+                fin[(6, 7)] = fin.get((6, 7), 0.0) + pr * (1 - t)
+                continue
+            w = hA if sert_a else 1 - hB
+            for na, nb, x in ((a + 1, b, w), (a, b + 1, 1 - w)):
+                if (na >= 6 and na - nb >= 2) or (nb >= 6 and nb - na >= 2):
+                    fin[(na, nb)] = fin.get((na, nb), 0.0) + pr * x
+                else:
+                    nouv[(na, nb)] = nouv.get((na, nb), 0.0) + pr * x
+        etats = nouv
+    if len(_SET_CACHE) > 20000:
+        _SET_CACHE.clear()
+    _SET_CACHE[cle] = out = tuple((a, b, pr) for (a, b), pr in sorted(fin.items()))
+    return out
+
+
+def victoire(pA, pB, sets_gagnants=2, tb_final=None, dA=0.0, dB=0.0):
     """P(A gagne le match) seule — même calcul que modele.match()['victoire'], sans suivre les jeux
-    (états : sets et serveur), donc bien plus rapide pour l'ancrage."""
+    (états : sets et serveur), donc bien plus rapide pour l'ancrage.
+    dA, dB (22/10/2026) : décalage, en logit, du point de service sur balle de break."""
     if tb_final is None:
         tb_final = 10 if sets_gagnants == 3 else 7
+    bp = bool(dA or dB)
+    qA, qB = (_sg(_lg(pA) + dA), _sg(_lg(pB) + dB)) if bp else (pA, pB)
     tot = 0.0
     for a_premier in (True, False):
         etats = {(0, 0, a_premier): 0.5}
@@ -113,7 +174,9 @@ def victoire(pA, pB, sets_gagnants=2, tb_final=None):
             nouv = {}
             for (sa, sb, srv), pr in etats.items():
                 decisif = sa == sets_gagnants - 1 and sb == sets_gagnants - 1
-                for a, b, x in M.set_issues(pA, pB, srv, tb_final if decisif else 7):
+                issues = (set_issues_bp(pA, pB, qA, qB, srv, tb_final if decisif else 7) if bp
+                          else M.set_issues(pA, pB, srv, tb_final if decisif else 7))
+                for a, b, x in issues:
                     na, nb = sa + (a > b), sb + (b > a)
                     m = pr * x
                     if na == sets_gagnants:
@@ -125,14 +188,14 @@ def victoire(pA, pB, sets_gagnants=2, tb_final=None):
     return tot
 
 
-def ancrer_rapide(pA, pB, p_cible, sets_gagnants=2, sigma=0.0, iterations=30):
+def ancrer_rapide(pA, pB, p_cible, sets_gagnants=2, sigma=0.0, iterations=30, dA=0.0, dB=0.0):
     """Comme modele.ancrer_forme (même mélange de forme, mêmes 13 nœuds), avec victoire() rapide."""
     la, lb = _lg(pA), _lg(pB)
     noeuds = [(0.0, 1.0)] if sigma <= 0 else [(sigma * z, w) for z, w in zip(M._Z, M._W)]
     lo, hi = -6.0, 6.0
     for _ in range(iterations):
         d = (lo + hi) / 2
-        v = sum(w * victoire(_sg(la + d + dz), _sg(lb - d - dz), sets_gagnants) for dz, w in noeuds)
+        v = sum(w * victoire(_sg(la + d + dz), _sg(lb - d - dz), sets_gagnants, None, dA, dB) for dz, w in noeuds)
         if v < p_cible:
             lo = d
         else:
@@ -145,7 +208,8 @@ def victoire_pure(cA, cB, sets_gagnants=2, sigma=0.0):
     """P(A gagne) de la simulation pure (limite exacte de n → ∞ simulations, même forme du jour)."""
     la, lb = _lg(p_service(cA)), _lg(p_service(cB))
     noeuds = [(0.0, 1.0)] if sigma <= 0 else [(sigma * z, w) for z, w in zip(M._Z, M._W)]
-    return sum(w * victoire(_sg(la + dz), _sg(lb - dz), sets_gagnants) for dz, w in noeuds)
+    dA, dB = cA.get('bp', 0.0), cB.get('bp', 0.0)
+    return sum(w * victoire(_sg(la + dz), _sg(lb - dz), sets_gagnants, None, dA, dB) for dz, w in noeuds)
 
 
 def noeuds_de_forme(cA, cB, p_victoire, sets_gagnants, sigma):
@@ -159,7 +223,8 @@ def noeuds_de_forme(cA, cB, p_victoire, sets_gagnants, sigma):
     if p_victoire is None:
         a, b = pA0, pB0
     else:
-        a, b = ancrer_rapide(pA0, pB0, min(max(p_victoire, 0.005), 0.995), sets_gagnants, sigma)
+        a, b = ancrer_rapide(pA0, pB0, min(max(p_victoire, 0.005), 0.995), sets_gagnants, sigma,
+                             dA=cA.get('bp', 0.0), dB=cB.get('bp', 0.0))
     if sigma <= 0:
         return [(1.0, ajuster(cA, a), ajuster(cB, b))]
     out = []
@@ -174,13 +239,16 @@ def un_match(cA, cB, sets_gagnants, tb_final, rnd, a_sert):
     """Joue un match. Renvoie (gagnant 0/1, sets [(jA, jB)], feuille [2][12], breaks [(set, jA, jB, 0/1)], tb)."""
     C = (cA, cB)
     P = [(c['f'], c['a'], c['w1'], c['d'], c['w2j']) for c in C]
+    # balles de break (22/10/2026) : points gagnés derrière la 1re et la 2e décalés de c['bp'] (logit)
+    Pb = [(c['f'], min(c['a'], 0.95 * _sg(_lg(c['w1']) + c['bp'])), _sg(_lg(c['w1']) + c['bp']), c['d'],
+           _sg(_lg(c['w2j']) + c['bp'])) if c.get('bp') else None for c in C]
     st = [[0] * 12, [0] * 12]
     r = rnd.random
     sets, ss, breaks, ntb = [], [0, 0], [], 0
     srv = 0 if a_sert else 1
 
-    def point(s):
-        f, a, w1, d, w2j = P[s]
+    def point(s, bp=False):
+        f, a, w1, d, w2j = Pb[s] if (bp and Pb[s]) else P[s]
         x = st[s]
         x[SVPT] += 1
         if r() < f:
@@ -232,7 +300,7 @@ def un_match(cA, cB, sets_gagnants, tb_final, rnd, a_sert):
                 bp = ps[1] >= 3 and ps[1] > ps[0]
                 if bp:
                     st[s][BPF] += 1
-                if point(s):
+                if point(s, bp):
                     ps[0] += 1
                     st[s][PTS] += 1
                     if bp:
@@ -291,6 +359,18 @@ def feuille_derivee(st_j, st_adv):
 
 CLES_FEUILLE = ('aces', 'doubles_fautes', 'premiere_pct', 'gagnes_1re_pct', 'gagnes_2e_pct',
                 'balles_break_obtenues', 'breaks', 'jeux_service_gagnes_pct', 'points_gagnes', 'jeux')
+
+
+def appliquer_facteurs(c, d_service=0.0, d_aces=0.0, d_bp=0.0):
+    """Facteurs du jour (facteurs.py) : décalages en logit des points gagnés au service (1re et 2e),
+    des aces, et du point de service sur balle de break."""
+    if not (d_service or d_aces or d_bp):
+        return c
+    out = dict(c, w1=_sg(_lg(c['w1']) + d_service), w2j=_sg(_lg(c['w2j']) + d_service), a=_sg(_lg(c['a']) + d_aces))
+    out = borner(out)
+    if d_bp:
+        out['bp'] = c.get('bp', 0.0) + d_bp
+    return out
 
 
 def appliquer_reglages(c, reglages):
