@@ -203,12 +203,33 @@ def charger_facteurs(racine):
 FACTEURS, CONTEXTE = None, None
 
 
-def composantes_du_match(P, h, a, c, s):
+def charger_reglage_simulation(racine):
+    """Réglage de la simulation pure adopté par le test (σ de la forme du jour, amplification k), ou None."""
+    try:
+        with open(os.path.join(racine, 'simulateur', 'choix_simulation.json'), encoding='utf-8') as f:
+            r = json.load(f).get('reglage_simulation') or {}
+        return {'sigma': float(r['sigma']), 'k': float(r['amplification'])} if r.get('adopte') else None
+    except (OSError, ValueError, KeyError, TypeError):
+        return None
+
+
+REGLAGE_SIM = None
+
+
+def sigma_sim():
+    return REGLAGE_SIM['sigma'] if REGLAGE_SIM else SIGMA
+
+
+def composantes_du_match(P, h, a, c, s, pure=False):
+    """pure=True : la simulation pure (son réglage adopté s'applique) ; sinon versions ancrées (inchangées)."""
     ph, nh = P.profil(h, c, s, P.jour_export)
     pa, na = P.profil(a, c, s, P.jour_export)
     mu = P.moyenne(c, s)
     if CHOIX == 'ajustees' and getattr(P, 'ajuste', None) is not None:
         cH, cA = MS.composantes_ajustees(P.ajuste, h, a, c, s), MS.composantes_ajustees(P.ajuste, a, h, c, s)
+        if pure and REGLAGE_SIM and REGLAGE_SIM['k'] != 1.0:
+            moy = MS.borner(P.ajuste.taux('__moyen__', '__moyen__', c, s))
+            cH, cA = MS.amplifier(cH, moy, REGLAGE_SIM['k']), MS.amplifier(cA, moy, REGLAGE_SIM['k'])
     else:
         cH, cA = MS.composantes(ph, pa, mu), MS.composantes(pa, ph, mu)
     return cH, cA, nh, na
@@ -241,11 +262,11 @@ def impact_facteurs(cH, cA, sg, fct):
     l'écart dû à chaque groupe seul (en points de %)."""
     if not fct:
         return None
-    base = MS.victoire_pure(cH, cA, sg, SIGMA)
+    base = MS.victoire_pure(cH, cA, sg, sigma_sim())
     tH, tA = avec_facteurs(cH, cA, fct)
-    out = {'sans': round(base, 4), 'avec': round(MS.victoire_pure(tH, tA, sg, SIGMA), 4), 'groupes': {}}
+    out = {'sans': round(base, 4), 'avec': round(MS.victoire_pure(tH, tA, sg, sigma_sim()), 4), 'groupes': {}}
     for g, (dH, dA) in fct['groupes'].items():
-        p = MS.victoire_pure(MS.appliquer_facteurs(cH, *dH), MS.appliquer_facteurs(cA, *dA), sg, SIGMA)
+        p = MS.victoire_pure(MS.appliquer_facteurs(cH, *dH), MS.appliquer_facteurs(cA, *dA), sg, sigma_sim())
         out['groupes'][g] = round(100 * (p - base), 1)
     return out
 
@@ -253,9 +274,9 @@ def impact_facteurs(cH, cA, sg, fct):
 def match_simule(P, h, a, c, s, sg, p_home, cle, fct=None):
     """Le match joué SIMULATIONS fois au niveau p_home, avec les profils de service des deux joueurs
     (et les facteurs du match adoptés, s'il y en a)."""
-    cH, cA, nh, na = composantes_du_match(P, h, a, c, s)
+    cH, cA, nh, na = composantes_du_match(P, h, a, c, s, pure=p_home is None)
     cH, cA = avec_facteurs(cH, cA, fct)
-    r = MS.simuler(cH, cA, p_home, sg, SIMULATIONS, SIGMA, cle=cle, reglages=REGLAGES)
+    r = MS.simuler(cH, cA, p_home, sg, SIMULATIONS, sigma_sim() if p_home is None else SIGMA, cle=cle, reglages=REGLAGES)
     r['reglages'] = REGLAGES
     r['composantes'] = CHOIX if (CHOIX == 'ajustees' and getattr(P, 'ajuste', None) is not None) else 'profils'
     r['profil_connu'] = [nh >= BALLES_CONNU, na >= BALLES_CONNU]
@@ -301,10 +322,11 @@ def construire(racine, maintenant=None):
     surf = etat.get('surfaces_tournois') or {}
     S = Styles(os.path.join(racine, 'simulateur', 'notes_joueurs.json'))
     PR = charger_profils(racine)
-    global REGLAGES, CHOIX, FACTEURS, CONTEXTE, COMBINAISON
+    global REGLAGES, CHOIX, FACTEURS, CONTEXTE, COMBINAISON, REGLAGE_SIM
     REGLAGES = charger_reglages(racine)
     CHOIX = charger_choix(racine)
     COMBINAISON = charger_combinaison(racine)
+    REGLAGE_SIM = charger_reglage_simulation(racine)
     FACTEURS, CONTEXTE = charger_facteurs(racine)
     venir = matchs_a_venir(racine, maintenant)
     # Un joueur = un classement : alias du dernier calcul, puis noms nouveaux reliés au joueur connu.
@@ -340,23 +362,23 @@ def construire(racine, maintenant=None):
                           'remontee': {'home': r['remontee'][0], 'away': r['remontee'][1]}, 'set1_home': r['set1_A'],
                           'jeux_moyen': r['jeux']['moy'], 'tiebreak': r['tiebreak'], 'match_simule': r}
             if fct:
-                cH, cA, _, _ = composantes_du_match(PR, h, a, c, s)
+                cH, cA, _, _ = composantes_du_match(PR, h, a, c, s, pure=True)
                 simulation['facteurs'] = impact_facteurs(cH, cA, sg, fct)
             if COMBINAISON:
                 # 22/10/2026 — SIMULATION + ELO : le % de la simulation (limite exacte) mélangé à celui de l'Elo,
                 # poids appris sur 2024 et adoptés parce qu'ils trouvent mieux le vainqueur en 2025–2026 ; le
                 # match est ensuite joué avec les statistiques des deux joueurs, à ce niveau.
-                cH, cA = avec_facteurs(*composantes_du_match(PR, h, a, c, s)[:2], fct)
-                p_sim = MS.victoire_pure(cH, cA, sg, SIGMA)
+                cH, cA = avec_facteurs(*composantes_du_match(PR, h, a, c, s, pure=True)[:2], fct)
+                p_sim = MS.victoire_pure(cH, cA, sg, sigma_sim())
                 p_c = MS.melange(COMBINAISON, stats['p_home'], p_sim)
                 combinaison = dict(pronostic(p_c, c, sg, pa0, pb0), p_simulation=round(p_sim, 4), p_elo=stats['p_home'])
             # 22/10/2026 — EN DIRECT (direct.py, Lab) : points de service des deux joueurs pour la version
             # principale (simulation + Elo si adoptée, sinon simulation pure), avant toute forme du jour.
-            cH0, cA0 = avec_facteurs(*composantes_du_match(PR, h, a, c, s)[:2], fct)
+            cH0, cA0 = avec_facteurs(*composantes_du_match(PR, h, a, c, s, pure=not combinaison)[:2], fct)
             pa_s, pb_s = MS.p_service(cH0), MS.p_service(cA0)
             if combinaison:
                 pa_s, pb_s = MS.ancrer_rapide(pa_s, pb_s, combinaison['p_home'], sg, SIGMA)
-            direct = {'a': round(pa_s, 5), 'b': round(pb_s, 5), 'sigma': SIGMA, 'sets_gagnants': sg,
+            direct = {'a': round(pa_s, 5), 'b': round(pb_s, 5), 'sigma': SIGMA if combinaison else sigma_sim(), 'sets_gagnants': sg,
                       'tb_final': 10 if sg == 3 else 7, 'version': 'combinaison' if combinaison else 'simulation'}
             for nom_v, v in (('stats', stats), ('marche', marche), ('combinaison', combinaison)):
                 if v:
@@ -371,6 +393,7 @@ def construire(racine, maintenant=None):
             'horizon_h': HORIZON_H, 'sigma': SIGMA, 'simulations': SIMULATIONS if PR is not None else 0,
             'profils_au': PR.jour_export.isoformat() if PR is not None else None,
             'facteurs_adoptes': (FACTEURS or {}).get('adoptes') or [], 'combinaison': COMBINAISON,
+            'reglage_simulation': REGLAGE_SIM,
             'noeuds_forme': [[round(z, 6), round(w, 8)] for z, w in zip(M._Z, M._W)], 'matchs': out}
 
 

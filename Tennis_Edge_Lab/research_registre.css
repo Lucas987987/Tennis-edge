@@ -73,3 +73,6 @@
 #matches .rg-direct-form fieldset label{display:flex;gap:.35rem;align-items:center}
 #matches .rg-direct-form button{justify-self:start;font:inherit;padding:.45rem .9rem}
 #matches .rg-direct-res{min-height:1.4em}
+#matches .rg-xp-filtres{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:.5rem;margin:.5rem 0}
+#matches .rg-xp-filtres label{display:grid;gap:.15rem;font-size:.85rem}
+#matches .rg-xp-filtres select{font:inherit;padding:.35rem}

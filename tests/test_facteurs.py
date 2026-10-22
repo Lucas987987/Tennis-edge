@@ -247,3 +247,22 @@ def json_rond(doc):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class Blessure(unittest.TestCase):
+    def test_abandons(self):
+        fiches = [{'statut': {'texte': 'Retired'}, 'vainqueur': 1, 'debut': 1000.0, 'home': {'nom': 'A B'}, 'away': {'nom': 'C D'}},
+                  {'statut': {'texte': 'Ended'}, 'vainqueur': 1, 'debut': 2000.0, 'home': {'nom': 'A B'}, 'away': {'nom': 'C D'}},
+                  {'statut': {'texte': 'Walkover'}, 'vainqueur': 2, 'debut': 3000.0, 'home': {'nom': 'E F'}, 'away': {'nom': 'A B'}}]
+        self.assertEqual(FA.abandons_des_fiches(fiches), [(1000.0, E.cle('C D')), (3000.0, E.cle('E F'))])
+        H = FA.Historique()
+        J = 86400
+        H.abandons['c'] = [0.0]
+        v = H.variables('c', 'x', 't', 15 * J, {})
+        self.assertAlmostEqual(v['abandon_srv'], 0.5)                 # demi-vie 15 jours
+        self.assertAlmostEqual(v['retour_abandon_srv'], 0.5)          # pas rejoué depuis
+        self.assertEqual(v['abandons90_srv'], 0.5)
+        H.parcours['c'] = [(5 * J, 't')]
+        self.assertEqual(H.variables('c', 'x', 't', 15 * J, {})['retour_abandon_srv'], 0.0)
+        self.assertEqual(H.variables('x', 'c', 't', 15 * J, {})['abandon_adv'], 0.5)
+        self.assertEqual(H.variables('c', 'x', 't', 0.0, {})['abandon_srv'], 0.0)   # rien avant l'abandon

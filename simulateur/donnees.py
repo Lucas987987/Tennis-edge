@@ -117,6 +117,8 @@ def charger(racine, annee_min=2018):
                     'gagnant': f"{tour}:{r['winner_id']}", 'perdant': f"{tour}:{r['loser_id']}",
                     'nom_g': r.get('winner_name') or '', 'nom_p': r.get('loser_name') or '',
                     'stats': st if len(st) == 2 else None, 'sets': sets, 'complet': complet,
+                    # 22/10/2026 : le perdant a abandonné, déclaré forfait ou été disqualifié (signal de blessure)
+                    'abandon': bool(re.search(r'RET|W/O|DEF|ABD|Walkover', str(r.get('score') or ''), re.I)),
                     'detail': det if len(det) == 2 else None,
                     'tournoi': r.get('tourney_name') or '',
                     'tour': ORDRE_TOURS.get(str(r.get('round') or '').upper(), 6),
