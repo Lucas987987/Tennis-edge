@@ -26,10 +26,16 @@ class Scenarios(unittest.TestCase):
 
     def test_ligne_deux_cotes(self):
         a = S.ligne(g(3.33, 1.371), 'a', NOW)
-        self.assertTrue(a.startswith('🎾 Scénarios : Nakashima gagne 72 % = 2-0'))
+        self.assertTrue(a.startswith('🎾 Scénarios : Nakashima gagne 72 % (1.39) = 2-0'), a)
         self.assertIn('3 sets', a)
         h = S.ligne(g(3.33, 1.371), 'home', NOW)
-        self.assertIn('Medjedovic gagne 28 %', h)
+        self.assertIn('Medjedovic gagne 28 % (3.57)', h)
+
+    def test_cote_juste(self):
+        self.assertEqual(S.cote(0.5), '2.00')
+        self.assertEqual(S.cote(0.004), '—')
+        self.assertEqual(S.cote(0.008), '125')
+        self.assertEqual(S.pc(0.25), '25 % (4.00)')
 
     def test_cinq_sets(self):
         t = S.ligne(g(3.33, 1.371, 'Wimbledon Men Singles'), 'a', NOW)
