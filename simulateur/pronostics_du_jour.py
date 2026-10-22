@@ -732,6 +732,87 @@ def juger(v, gagnant, sets, score, jeux):
     return out
 
 
+# ------------------------------------------------------------------ 23/10/2026 : la feuille entière contre les 5 000 simulations
+DIAG_STATS = ('premiere_pct', 'gagnes_1re_pct', 'gagnes_2e_pct', 'aces', 'doubles_fautes', 'breaks', 'jeux')
+SERVICE_STATS = ('premiere_pct', 'gagnes_1re_pct', 'gagnes_2e_pct')
+DIAG_LIB = {'premiere_pct': '% de 1re balle', 'gagnes_1re_pct': 'points gagnés derrière la 1re',
+            'gagnes_2e_pct': 'points gagnés derrière la 2e', 'aces': 'aces', 'doubles_fautes': 'doubles fautes',
+            'breaks': 'breaks réussis', 'jeux': 'jeux gagnés'}
+
+
+def diagnostic(prevue, reelle, gagnant, p_home_sim):
+    """Chaque statistique de la vraie feuille placée dans la distribution des 5 000 simulations (journal, 1re
+    prédiction) : prévu (moyenne), fourchette à 80 %, réel, écart réduit z = (réel − prévu) / écart type des
+    simulations. Puis CE QUI A FAIT LA DIFFÉRENCE : la statistique de service où un joueur s'est le plus écarté
+    de sa simulation dans le sens du vrai résultat (z orienté ≥ 1)."""
+    if not prevue or not reelle or gagnant not in ('home', 'away'):
+        return None
+    st = {}
+    for k in DIAG_STATS:
+        if k not in prevue:
+            continue
+        for i, cote in enumerate(('home', 'away')):
+            v = reelle[i].get(k)
+            if v is None:
+                continue
+            moy, lo, hi = prevue[k][i]
+            et = max((hi - lo) / 2.563, 1e-6)                  # p10–p90 d'une loi normale = 2,563 écarts types
+            st.setdefault(k, {})[cote] = {'prevu': round(moy, 1), 'bas': round(lo, 1), 'haut': round(hi, 1),
+                                          'reel': round(v, 1), 'z': round((v - moy) / et, 2), 'dans': lo <= v <= hi}
+    if not st:
+        return None
+    cases = [x for d in st.values() for x in d.values()]
+    out = {'stats': st, 'dans_fourchette_pct': round(100 * sum(x['dans'] for x in cases) / len(cases), 1),
+           'vainqueur_juste': ((p_home_sim >= 0.5) == (gagnant == 'home')) if p_home_sim is not None else None}
+    cand = []
+    for k in SERVICE_STATS:
+        for cote, x in (st.get(k) or {}).items():
+            cand.append(((x['z'] if cote == gagnant else -x['z']), k, cote))
+    cand.sort(reverse=True)
+    if cand and cand[0][0] >= 1:
+        z, k, cote = cand[0]
+        out['decisif'] = {'stat': k, 'joueur': cote, 'z': round(z, 2), 'prevu': st[k][cote]['prevu'], 'reel': st[k][cote]['reel']}
+    return out
+
+
+def biais(R, min_n=30):
+    """Là où la simulation a bon et pas bon, sur tous les matchs joués avec leur feuille : par statistique, écart
+    moyen (réel − prévu) et part des réels dans la fourchette, pour le FAVORI et l'OUTSIDER annoncés par la
+    simulation, par circuit ; et, quand le vainqueur est faux, la statistique qui a fait la différence.
+    Moins de 30 matchs : affiché, mais signalé « ne pas conclure »."""
+    D = [m for m in R if m.get('diagnostic') and not (m.get('reel') or {}).get('interrompu')]
+    if not D:
+        return {'n': 0}
+
+    def bloc(G):
+        out = {}
+        for k in DIAG_STATS:
+            for role in ('favori', 'outsider'):
+                xs = []
+                for m in G:
+                    ph = m.get('p_simulation')
+                    if ph is None:
+                        continue
+                    cote = ('home' if ph >= 0.5 else 'away') if role == 'favori' else ('away' if ph >= 0.5 else 'home')
+                    x = (m['diagnostic']['stats'].get(k) or {}).get(cote)
+                    if x:
+                        xs.append(x)
+                if xs:
+                    out.setdefault(k, {})[role] = {'n': len(xs), 'ecart_moyen': round(sum(x['reel'] - x['prevu'] for x in xs) / len(xs), 2),
+                                                    'z_moyen': round(sum(x['z'] for x in xs) / len(xs), 2),
+                                                    'dans_fourchette_pct': round(100 * sum(x['dans'] for x in xs) / len(xs), 1)}
+        return out
+    faux = [m for m in D if m['diagnostic'].get('vainqueur_juste') is False]
+    dec = {}
+    for m in faux:
+        k = (m['diagnostic'].get('decisif') or {}).get('stat') or 'aucune stat nette'
+        dec[k] = dec.get(k, 0) + 1
+    return {'n': len(D), 'conclure': len(D) >= min_n, 'tous': bloc(D),
+            'par_circuit': {c: bloc([m for m in D if m.get('circuit') == c]) for c in ('ATP', 'WTA', 'CH')
+                            if any(m.get('circuit') == c for m in D)},
+            'erreurs': {'n': len(faux), 'stat_decisive': dict(sorted(dec.items(), key=lambda kv: -kv[1]))}}
+
+
 def interruption(fi):
     """'abandon' (abandon, disqualification), 'forfait' (walkover) ou None, d'après la feuille TennisApi.
     22/10/2026 : ces matchs ne jugent pas le modèle (un abandon à 3-1 n'est pas une erreur de pronostic)."""
@@ -803,6 +884,9 @@ def resoudre(racine, maintenant=None):
                     'reel': {'gagnant': gagnant, 'sets': sets, 'score': score, 'jeux': jeux,
                              'feuille': feuille[0] if feuille else None, 'interrompu': interrompu},
                     'premier': {k: juger(premier.get(k), gagnant, sets, score, jeux) for k in VERSIONS},
+                    'p_simulation': (premier.get('simulation') or {}).get('p_home'),
+                    'diagnostic': (diagnostic(r.get('feuille'), feuille[0], gagnant, (premier.get('simulation') or {}).get('p_home'))
+                                   if feuille and not interrompu else None),
                     'dernier': ({k: juger(dernier.get(k), gagnant, sets, score, jeux) for k in VERSIONS} if dernier else None),
                     'pin_cotes': r.get('pin_cotes')})
     out.sort(key=lambda x: x['debut'], reverse=True)
@@ -822,7 +906,8 @@ def main(argv):
         json.dump(b, f, ensure_ascii=False, indent=1)
     R = resoudre(racine)
     with open(os.path.join(racine, RESULTATS), 'w', encoding='utf-8') as f:
-        json.dump({'genere_le': doc['genere_le'], 'n': len(R), 'matchs': R}, f, ensure_ascii=False, separators=(',', ':'))
+        json.dump({'genere_le': doc['genere_le'], 'n': len(R), 'biais': biais(R), 'matchs': R}, f, ensure_ascii=False,
+                  separators=(',', ':'))
     print(f"Enregistré : {ni} instantanés ({INSTANTANES}) · {len(R)} matchs joués prédit/réel ({RESULTATS})")
     t = b['tous']
     print(f"Pronostics : {len(doc['matchs'])} matchs dans les {HORIZON_H} h ({n} nouveaux au journal) · "

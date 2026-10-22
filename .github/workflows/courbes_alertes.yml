@@ -295,6 +295,11 @@ jobs:
           python scripts/results_bridge.py || true
           python scripts/paper_journal_canal.py || true
 
+      # 23/10/2026 : la ligne « Cote Pinnacle » du Lab suit les cotes capturées (les pronostics complets ne
+      # sont recalculés que toutes les 2 h). 0 requête d'API, fichier écrit seulement si une cote a bougé.
+      - name: Cote Pinnacle du Lab (pronostics_marche.json)
+        if: always()
+        run: python simulateur/marche_du_lab.py . || true
       - name: Écrire l'état (pour la planification par le Worker)
         # planifierCollecteur() dans le Worker lit `last_run_at` de ce fichier
         # pour espacer les runs. Même convention que
