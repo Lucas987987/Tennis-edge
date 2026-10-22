@@ -42,6 +42,7 @@ jobs:
             /clv_history.jsonl
             /closing_lines.json
             /closing_lines/
+            /feuilles/
           sparse-checkout-cone-mode: false
       - uses: actions/setup-python@v6
         with:

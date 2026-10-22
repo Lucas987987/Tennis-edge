@@ -24,6 +24,9 @@ Force du rappel (en nombre de balles) : PRIOR ci-dessous.
 POINT-IN-TIME : Profils.ajouter() reçoit les matchs dans l'ordre, et le
 backtest n'ajoute un tournoi qu'une fois terminé (champ `fin`).
 
+22/10/2026 : les feuilles de match collectées depuis (feuilles/, TennisApi) prolongent
+l'archive : seuls les matchs APRÈS la fin de l'archive sont ajoutés (pas de doublon).
+
 Usage : python simulateur/profils_service.py <archive Sackmann> [racine]
         -> simulateur/profils_service.json (sommes pondérées par joueur).
 """
@@ -37,6 +40,7 @@ ICI = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, ICI)
 import donnees  # noqa: E402
 import elo as E  # noqa: E402
+import feuilles as FE  # noqa: E402
 
 SORTIE = os.path.join(ICI, 'profils_service.json')
 DEMI_VIE = 365.0
@@ -112,7 +116,7 @@ class Profils:
     # ---------------------------------------------------------------- lecture
     def moyenne(self, circuit, surface):
         """Profil moyen du circuit sur la surface (repli : tous terrains, puis ATP/WTA, puis valeurs fixes)."""
-        rep = {'CH': 'ATP', 'ITF': 'WTA'}.get(circuit)
+        rep = {'CH': 'ATP', 'ITF': 'WTA', 'ITFH': 'CH'}.get(circuit)
         for c, s in ((circuit, surface), (circuit, 'all'), (rep, surface), (rep, 'all')):
             x = self.m.get((c, s))
             if x and x[I['svpt']] > 0:
@@ -193,15 +197,24 @@ def main(argv):
     if not M:
         print(f"::error::aucun match Sackmann sous {dossier}")
         return 1
-    fin = max(m['date'] for m in M)
-    P = construire(M, cle=E.cle)
+    racine = argv[2] if len(argv) > 2 else os.path.join(ICI, '..')
+    fin_sack = max(m['date'] for m in M)
+    F = [m for m in FE.charger(racine) if m['date'] > fin_sack]
+    tout = M + F
+    tout.sort(key=lambda m: m['date'])
+    fin = max(m['date'] for m in tout)
+    P = construire(tout, cle=E.cle)
     doc = P.exporter(fin)
     doc['genere_le'] = dt.datetime.now(dt.timezone.utc).isoformat(timespec='seconds')
-    doc['source'] = 'archive Jeff Sackmann (CC BY-NC-SA 4.0), feuilles de match jusqu\'au ' + fin.isoformat()
+    doc['source'] = ('archive Jeff Sackmann (CC BY-NC-SA 4.0) jusqu\'au ' + fin_sack.isoformat()
+                     + (f", puis {sum(1 for m in F if m.get('detail'))} feuilles TennisApi jusqu'au {fin}" if F else ''))
+    doc['archive_jusqu_au'] = fin_sack.isoformat()
+    doc['feuilles_ajoutees'] = sum(1 for m in F if m.get('detail'))
     with open(SORTIE, 'w', encoding='utf-8') as f:
         json.dump(doc, f, ensure_ascii=False, separators=(',', ':'))
-    avec = sum(1 for m in M if m.get('detail'))
-    print(f"Profils de service : {len(doc['joueurs'])} joueurs ({avec} feuilles de match sur {len(M)}), "
+    avec = sum(1 for m in tout if m.get('detail'))
+    print(f"Profils de service : {len(doc['joueurs'])} joueurs ({avec} feuilles de match sur {len(tout)}, "
+          f"dont {doc['feuilles_ajoutees']} collectées après l'archive), "
           f"jusqu'au {fin} -> {SORTIE} ({os.path.getsize(SORTIE) // 1024} Ko)")
     for c in ('ATP', 'WTA', 'CH'):
         mo = P.moyenne(c, 'all')

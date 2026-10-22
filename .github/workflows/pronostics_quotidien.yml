@@ -12,6 +12,8 @@ name: Pronostics du jour
 # 22/10/2026 : chaque match est aussi joué 5 000 fois point par point avec les
 # profils de service (simulateur/profils_service.json, produit par le workflow
 # « Pronostic - test du modèle ») : feuille de stats prévue et match type.
+# 22/10/2026 : les profils sont recalculés à chaque passage avec les feuilles
+# collectées (feuilles/, workflow « Feuilles de match ») ; non commités ici.
 on:
   workflow_dispatch:
   schedule:
@@ -48,6 +50,7 @@ jobs:
             /closing_lines.json
             /closing_lines/
             /matches_oddspapi.json
+            /feuilles/
           sparse-checkout-cone-mode: false
       - uses: actions/setup-python@v6
         with:
@@ -60,6 +63,8 @@ jobs:
           git sparse-checkout set --no-cone 'atp_matches_20*.csv' 'atp_matches_qual_chall_20*.csv' 'wta_matches_20*.csv' 'wta_matches_qual_itf_20*.csv'
       - name: Classement (tous les résultats)
         run: python simulateur/backtest_pronostic.py /tmp/sackmann .
+      - name: Profils de service (archive + feuilles collectées depuis)
+        run: python simulateur/profils_service.py /tmp/sackmann .
       - name: Pronostics des 36 prochaines heures
         run: python simulateur/pronostics_du_jour.py .
       - name: Publier
@@ -68,6 +73,7 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git checkout -- simulateur/elo_etat.json 2>/dev/null || true
+          git checkout -- simulateur/profils_service.json 2>/dev/null || true
           git add -- Tennis_Edge_Lab/live/pronostics.json Tennis_Edge_Lab/live/pronostics_bilan.json \
                      simulateur/pronostics_log.jsonl simulateur/rapport_pronostic.json
           if git diff --cached --quiet; then echo 'Rien de nouveau.'; exit 0; fi
