@@ -10,11 +10,24 @@
  "combinaison": {
   "adopte": true,
   "poids": {
-   "elo": 0.7949,
-   "simulation": 0.3102
+   "elo": 0.7816,
+   "simulation": 0.2377
   },
-  "raison": "log loss 2025 → : combinaison 0.6147 contre Elo 0.6148 et simulation 0.6248 (Pinnacle 0.598)",
-  "simulation": "simulation_pure_ajustee"
+  "raison": "log loss 2025 → : combinaison 0.6146 contre Elo 0.6148 et simulation 0.6238 (Pinnacle 0.598)",
+  "simulation": "simulation_reglee"
  },
- "genere_le": "2026-10-22T13:47:31+00:00"
+ "genere_le": "2026-10-22T16:27:13+00:00",
+ "reglage_simulation": {
+  "adopte": true,
+  "sigma": 0.0,
+  "amplification": 1.0,
+  "raison": "choisi sur 2024 : σ = 0, k = 1 ; 2025 → : log loss 0.6238 contre 0.6248 (réussite 64.9 % contre 64.9 %, calibration 50–60 % 54.8→54.5 · 60–70 % 64.7→66.0 · 70–80 % 74.5→69.7 · 80–90 % 84.4→81.4 · 90–100 % 93.9→90.6)"
+ },
+ "combinaison_continue": {
+  "n": 0,
+  "min": 400,
+  "adopte": false,
+  "raison": "en attente : 0 matchs joués avec les deux % (il en faut 400)",
+  "genere_le": "2026-10-22T16:32:21+00:00"
+ }
 }
