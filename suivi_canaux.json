@@ -1,0 +1,26 @@
+{
+ "schema_version": 1,
+ "genere_le": "2026-10-22T05:08:54Z",
+ "canaux": {
+  "MISER": {
+   "libelle": "🎯 MISER — steam, EV ≥ seuil vs Pinnacle juste (vainqueur du match)",
+   "source": "miser_signal_log.jsonl (messages envoyés) + ajouts de suivi_direct",
+   "regle": "première alerte de chaque match, au book et au prix du message ; relances non recomptées",
+   "debut": null,
+   "n_alertes": 0,
+   "n_matchs": 0,
+   "n_relances": 0,
+   "n_denoues": 0,
+   "bilan": {
+    "n": 0,
+    "clv_mediane": null,
+    "n_commencees": 0,
+    "n_sans_resultat": 0,
+    "sans_resultat_pct": 0.0,
+    "verrouillable": true,
+    "statut": "verrouillable (résultats complets à 100 %)"
+   },
+   "paris": {}
+  }
+ }
+}
