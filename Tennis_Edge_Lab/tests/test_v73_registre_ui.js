@@ -258,3 +258,16 @@ test('simulation pure : ligne principale, compteur, match simulé joué sans cla
   assert.match(html, /Réussite simulation<\/small><b>66,5 %<\/b>/);
   assert.match(R.simuleBlock(m), /Match joué avec les seules statistiques des deux joueurs/);
 });
+
+test('facteurs du match : ce qui pèse, seulement les groupes adoptés (22/10/2026)', () => {
+  const v = p => ({ p_home: p, sets: {}, scores_probables: [], jeux_moyen: 22 });
+  const m = { uid: 'u', debut: '2026-10-22T04:00', tournoi: 'ATP Vienna', surface: 'Hard', meilleur_des: 3, home: 'Arthur Fils', away: 'Hugo Gaston',
+    simulation: { ...v(0.55), facteurs: { sans: 0.6, avec: 0.55, groupes: { forme_fatigue: -4.2, vitesse_court: 0.3 } } }, stats: v(0.6), marche: null };
+  const f = R.facteursBlock(m);
+  assert.match(f, /Ce qui pèse pour Fils : Forme récente et fatigue <b>−4,2 pt<\/b> · Vitesse du court <b>\+0,3 pt<\/b>/);
+  assert.match(f, /60 % sans, 55 % avec/);
+  assert.equal(R.facteursBlock({ simulation: v(0.5) }), '');
+  const html = R.pronosticsBlock({ horizon_h: 36, simulations: 5000, facteurs_adoptes: ['forme_fatigue'], matchs: [m] }, null);
+  assert.match(html, /Facteurs du match retenus par le test : Forme récente et fatigue\./);
+  assert.match(html, /rg-facteurs/);
+});
