@@ -226,6 +226,9 @@ def sonder_tennisapi(cle, jour, ouvrir=None):
     rep = {'api': 'TennisApi (RapidAPI, fluis.lacasse)', 'jour': jour}
     d = dt.date.fromisoformat(jour)
     code, doc = c.get(f"/api/tennis/events/{d.day}/{d.month}/{d.year}")
+    if code in (204, 404):
+        # 22/10/2026 : 204 (vide) sur la liste du jour -> on essaie les matchs en cours.
+        code, doc = c.get("/api/tennis/events/live")
     rep['liste_code'] = code
     M = matchs_de(doc) if code == 200 else []
     rep['matchs_dans_la_liste'] = len(M)
@@ -241,6 +244,22 @@ def sonder_tennisapi(cle, jour, ouvrir=None):
                                      'stats': stats_trouvees(d2) if code2 == 200 else []})
     rep['requetes'] = c.journal
     return rep
+
+
+HOTES = {'matchstat': 'tennis-api-atp-wta-itf.p.rapidapi.com', 'tennisapi': 'tennisapi1.p.rapidapi.com'}
+
+
+def explorer(cle, api, chemins, ouvrir=None):
+    """Chemins choisis à la main (copiés depuis la page « Endpoints » de RapidAPI), 3 au plus :
+    structure de la réponse, statistiques repérées et un court extrait."""
+    c = Client(HOTES[api], cle, ouvrir)
+    out = []
+    for ch in chemins[:MAX_REQ]:
+        code, doc = c.get(ch)
+        out.append({'chemin': ch, 'code': code, 'stats': stats_trouvees(doc) if code == 200 else [],
+                    'matchs': len(matchs_de(doc)) if code == 200 else 0,
+                    'extrait': json.dumps(doc, ensure_ascii=False)[:1500] if code == 200 else None})
+    return {'api': api, 'exploration': out, 'requetes': c.journal}
 
 
 SONDES = {'matchstat': sonder_matchstat, 'tennisapi': sonder_tennisapi}
@@ -274,6 +293,26 @@ def main(argv):
     jour = argv[1] if len(argv) > 1 and argv[1] else (dt.date.today() - dt.timedelta(days=1)).isoformat()
     quelles = (argv[2] if len(argv) > 2 and argv[2] else 'matchstat,tennisapi').split(',')
     out = {'genere_le': dt.datetime.now(dt.timezone.utc).isoformat(timespec='seconds'), 'jour': jour, 'api': {}}
+    chemins = [x.strip() for x in (argv[3] if len(argv) > 3 else '').split(',') if x.strip().startswith('/')]
+    if chemins:
+        api = quelles[0].strip()
+        if api not in HOTES:
+            print(f"::error::API inconnue : {api}")
+            return 1
+        rep = explorer(cle, api, chemins)
+        out['api'][api] = rep
+        print(f"\n===== Exploration {api} =====")
+        for r, e in zip(rep['requetes'], rep['exploration']):
+            print(f"  GET {r['chemin']} -> {r.get('code')} ({r.get('octets', 0)} octets) quota restant "
+                  f"{r.get('quota', {}).get('x-ratelimit-requests-remaining')}" + (f" · {r['message']}" if r.get('message') else ''))
+            print(f"    matchs : {e['matchs']} · structure : {json.dumps(r.get('structure'), ensure_ascii=False)[:800]}")
+            for s in e['stats'][:30]:
+                print(f"    - {s['stat']} : {json.dumps(s['valeurs'], ensure_ascii=False)[:160]}")
+            if e['extrait']:
+                print(f"    extrait : {e['extrait'][:1200]}")
+        with open(SORTIE, 'w', encoding='utf-8') as f:
+            json.dump(out, f, ensure_ascii=False, indent=1)
+        return 0
     for q in quelles:
         q = q.strip()
         if q not in SONDES:
