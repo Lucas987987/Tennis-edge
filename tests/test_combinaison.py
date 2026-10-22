@@ -110,3 +110,25 @@ class Combinaison(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class ReglageSimulation(unittest.TestCase):
+    def test_amplifier(self):
+        c = S.borner({'f': 0.62, 'a': 0.14, 'w1': 0.76, 'd': 0.07, 'w2j': 0.55})
+        moy = S.borner({'f': 0.62, 'a': 0.10, 'w1': 0.72, 'd': 0.08, 'w2j': 0.55})
+        self.assertIs(S.amplifier(c, moy, 1.0), c)
+        x = S.amplifier(c, moy, 1.5)
+        self.assertGreater(x['w1'], c['w1'])                    # écart à la moyenne agrandi
+        self.assertGreater(x['a'], c['a'])
+        self.assertLess(x['d'], c['d'])
+        self.assertAlmostEqual(x['w2j'], c['w2j'], places=9)     # déjà à la moyenne : inchangé
+
+    def test_choix_du_reglage(self):
+        L = lignes(6000)
+        for x in L:                                              # monde où la simulation à σ = 0 est la bonne
+            p = x['pinnacle']                                   # la vraie probabilité du monde synthétique
+            x['grille'] = {'0.15|1': 0.5 + 0.8 * (p - 0.5), '0|1': p, '0|1.3': 0.5 + 1.3 * (p - 0.5)}
+        r = BMS.choisir_reglage(L)
+        self.assertEqual(r['cle'], '0|1')
+        self.assertTrue(r['adopte'])
+        self.assertEqual((r['sigma'], r['amplification']), (0.0, 1.0))

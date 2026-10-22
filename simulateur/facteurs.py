@@ -3,7 +3,7 @@
 """
 facteurs.py — ce qui fait basculer un match, au-delà du niveau habituel des joueurs (22/10/2026).
 
-Neuf groupes de facteurs, mesurés sur les feuilles de match collectées (TennisApi),
+Dix groupes de facteurs, mesurés sur les feuilles de match collectées (TennisApi),
 chacun appris sur juin–août 2026 et JUGÉ sur septembre–octobre 2026, jamais vus :
 
   1. forme_fatigue : forme des 30 derniers jours (points gagnés au service et au retour,
@@ -26,6 +26,8 @@ chacun appris sur juin–août 2026 et JUGÉ sur septembre–octobre 2026, jamai
      match, matchs dans d'autres tournois les 10 derniers jours ;
   9. charting : Match Charting Project (charting.py) — points de service gagnés en 3
      frappes ou moins, retours remis en jeu, goût pour les longs échanges.
+  10. blessure : abandon, forfait ou disqualification récents (demi-vie 15 jours), nombre
+     d'abandons sur 90 jours, 1er match depuis un abandon (archive + feuilles TennisApi).
 
 Chaque facteur décale, en logit, les points gagnés au service (1re et 2e balle), les aces,
 ou le point joué sur balle de break, PAR RAPPORT AU MODÈLE AJUSTÉ AUX ADVERSAIRES (base).
@@ -90,7 +92,13 @@ GROUPES = {
     # 22/10/2026 — point 7 : Match Charting Project (charting.py) — points gagnés en 3 frappes ou moins,
     # retours remis en jeu, goût pour les longs échanges ; le duel premier coup du serveur × retour adverse.
     'charting': {'service': ['mcp_premier_coup_srv', 'mcp_retour_adv', 'mcp_duel', 'mcp_echanges'], 'aces': ['mcp_premier_coup_srv']},
+    # 22/10/2026 — BLESSURES : abandon, forfait ou disqualification récents (archive + feuilles TennisApi :
+    # statuts « Retired », « Walkover », « Defaulted »), poids qui décroît avec le temps (demi-vie 15 jours),
+    # nombre d'abandons sur 90 jours, et 1er match depuis un abandon — pour le serveur et l'adversaire.
+    'blessure': {'service': ['abandon_srv', 'abandon_adv', 'abandons90_srv', 'abandons90_adv', 'retour_abandon_srv',
+                             'retour_abandon_adv']},
 }
+DEMI_VIE_ABANDON_J = 15.0
 MCP_DIR = os.environ.get('MCP_DIR', '/tmp/mcp')
 ABSENCE_J = 45
 # Code pays des joueurs (TennisApi, ISO alpha-3) → ISO alpha-2 (géocodage des tournois).
@@ -160,6 +168,7 @@ class Historique:
         self.pays, self.interieur = {}, {}
         self.lieux, self.meteo = {}, {}
         self.charting = None
+        self.abandons = collections.defaultdict(list)                          # joueur -> [t] (abandon, forfait)
 
     def ajouter_h2h(self, j, adv, res, n):
         h = self.h2h[(j, adv)]
@@ -263,6 +272,19 @@ class Historique:
                 'domicile_srv': domicile(j), 'domicile_adv': domicile(adv), 'voyage_srv': voy_j, 'voyage_adv': voy_a,
                 'deja_ici_srv': ici_j, 'deja_ici_adv': ici_a, 'absence_srv': abs_j, 'absence_adv': abs_a,
                 'enchaine_srv': ench_j, 'enchaine_adv': ench_a}
+        def blessure(p):
+            A = [ta for ta in self.abandons.get(p, ()) if ta < t]
+            if not A:
+                return 0.0, 0.0, 0.0
+            der = max(A)
+            poids = 0.5 ** ((t - der) / 86400 / DEMI_VIE_ABANDON_J)
+            n90 = sum(1 for ta in A if t - ta <= 90 * 86400)
+            joue_depuis = any(der < tt < t for tt, _ in self.parcours.get(p, ()))
+            return poids, min(n90, 2) / 2, (0.0 if joue_depuis else poids)
+        bj, bj90, rj = blessure(j)
+        ba, ba90, ra = blessure(adv)
+        cond.update({'abandon_srv': bj, 'abandon_adv': ba, 'abandons90_srv': bj90, 'abandons90_adv': ba90,
+                     'retour_abandon_srv': rj, 'retour_abandon_adv': ra})
         if self.charting is not None:
             d_ = dt.datetime.fromtimestamp(t, dt.timezone.utc).date()
             cond.update(CH.variables(self.charting.profil(j, d_), self.charting.profil(adv, d_)))
@@ -330,7 +352,18 @@ def infos_par_cle(racine, fiches, cle=E.cle):
     return out
 
 
-def avec_variables(lignes, infos, avant=None, final=False, adj_avant=None, lieux=None, charting=None):
+def abandons_des_fiches(fiches, cle=E.cle):
+    """[(t, joueur)] : perdant d'un match « Retired », « Walkover » ou « Defaulted » (feuilles TennisApi)."""
+    out = []
+    for r in fiches:
+        txt = str((r.get('statut') or {}).get('texte') or '').lower()
+        if txt in ('retired', 'walkover', 'defaulted') and r.get('vainqueur') in (1, 2) and r.get('debut'):
+            perdant = r['away'] if r['vainqueur'] == 1 else r['home']
+            out.append((float(r['debut']), cle(perdant.get('nom'))))
+    return sorted(out)
+
+
+def avec_variables(lignes, infos, avant=None, final=False, adj_avant=None, lieux=None, charting=None, abandons=None):
     """Ajoute à chaque ligne les variables point-in-time des deux serveurs ; avant : matchs de
     l'archive pour les balles de break (format donnees.charger) ; adj_avant : modèle ajusté à la fin
     de l'archive, pour les face-à-face de l'archive (écart au service attendu, 4 dernières années)."""
@@ -342,6 +375,9 @@ def avec_variables(lignes, infos, avant=None, final=False, adj_avant=None, lieux
     if avant and adj_avant is not None:
         lim = max(m['date'] for m in avant) - dt.timedelta(days=4 * 365)
     for m in avant or []:
+        if m.get('abandon'):
+            fin_ = m.get('fin') or m['date']
+            H.abandons[E.cle(m['nom_p'])].append(dt.datetime(fin_.year, fin_.month, fin_.day, tzinfo=dt.timezone.utc).timestamp())
         d = m.get('detail')
         if d:
             g, p = E.cle(m['nom_g']), E.cle(m['nom_p'])
@@ -353,10 +389,15 @@ def avec_variables(lignes, infos, avant=None, final=False, adj_avant=None, lieux
                     if sv:
                         H.ajouter_h2h(j, o, (w1 + w2) - sv * S.p_service(S.borner(adj_avant.taux(j, o, m['circuit'], m['surface']))), sv)
     attente = []
+    ab = list(abandons or [])
+    k_ab = 0
     for x in lignes:
         while attente and attente[0][0] <= x['t']:
             _, _, y = heapq.heappop(attente)
             H.ajouter(y)
+        while k_ab < len(ab) and ab[k_ab][0] + DISPO_H * 3600 <= x['t']:
+            H.abandons[ab[k_ab][1]].append(ab[k_ab][0])
+            k_ab += 1
         x['var'] = [H.variables(x['a'], x['b'], x['tournoi'], x['t'], infos),
                     H.variables(x['b'], x['a'], x['tournoi'], x['t'], infos)]
         st = x.get('style') or ((0.0,) * 5, (0.0,) * 5)
@@ -365,6 +406,9 @@ def avec_variables(lignes, infos, avant=None, final=False, adj_avant=None, lieux
         heapq.heappush(attente, (x['t'] + DISPO_H * 3600, x['id'] or 0, x))
     while final and attente:                    # contexte du jour : tout ce qui est joué compte
         H.ajouter(heapq.heappop(attente)[2])
+    while final and k_ab < len(ab):
+        H.abandons[ab[k_ab][1]].append(ab[k_ab][0])
+        k_ab += 1
     return H
 
 
@@ -528,6 +572,10 @@ def contexte(H, infos, noms_tournois, maintenant_ts):
             joueurs.setdefault(j, {})['parcours'] = rec
         if H.pays.get(j):
             joueurs.setdefault(j, {})['pays'] = H.pays[j]
+    for j, A in H.abandons.items():
+        rec = [int(ta) for ta in A if ta >= t - 90 * 86400]
+        if rec:
+            joueurs.setdefault(j, {})['abandons'] = rec
     actifs = {tr for L in H.parcours.values() for tt, tr in L if tt >= t - 60 * 86400}
     jour0 = (dt.datetime.fromtimestamp(t, dt.timezone.utc).date() - dt.timedelta(days=3)).isoformat()
     lieux = {k: v for k, v in H.lieux.items() if k in actifs or k in (noms_tournois or {})}
@@ -560,6 +608,8 @@ class Contexte:
                 self.H.parcours[j].append((tt, tr))
             if e.get('pays'):
                 self.H.pays[j] = e['pays']
+            for ta in e.get('abandons') or []:
+                self.H.abandons[j].append(float(ta))
         for k in self.doc.get('interieur') or []:
             self.H.interieur[k] = True
         self.H.lieux, self.H.meteo = self.doc.get('lieux') or {}, self.doc.get('meteo') or {}
@@ -619,7 +669,8 @@ def main(argv):
     mcp = argv[3] if len(argv) > 3 else MCP_DIR
     charting = CH.Charting(CH.charger(mcp))
     print(f"Match Charting Project : {len(charting.D)} joueurs relevés ({mcp})", flush=True)
-    H = avec_variables(lignes, infos, avant=M, adj_avant=adj_pour(DEBUT_APPR), lieux=charger_lieux(racine), charting=charting)
+    H = avec_variables(lignes, infos, avant=M, adj_avant=adj_pour(DEBUT_APPR), lieux=charger_lieux(racine), charting=charting,
+                       abandons=abandons_des_fiches(fiches))
     appr = [x for x in lignes if DEBUT_APPR <= x['jour'] < DEBUT_JUGE]
     juge = [x for x in lignes if x['jour'] >= DEBUT_JUGE]
     print(f"Feuilles : {len(lignes)} matchs ATP/WTA/Challenger · apprentissage {len(appr)} (juin–août) · "
@@ -658,7 +709,7 @@ def exporter_contexte(racine, M, adj, cle=E.cle, mcp=None):
     lignes = preparer(fiches, lambda jour: adj, cle)
     infos = infos_par_cle(racine, fiches, cle)
     H = avec_variables(lignes, infos, avant=M, final=True, adj_avant=adj, lieux=charger_lieux(racine),
-                       charting=CH.Charting(CH.charger(mcp or MCP_DIR)))
+                       charting=CH.Charting(CH.charger(mcp or MCP_DIR)), abandons=abandons_des_fiches(fiches, cle))
     noms = {str(r.get('tournoi_id') or r.get('tournoi')): (r.get('tournoi_unique') or r.get('tournoi') or '') for r in fiches}
     doc = contexte(H, infos, noms, dt.datetime.now(dt.timezone.utc).timestamp())
     with open(CONTEXTE, 'w', encoding='utf-8') as f:
