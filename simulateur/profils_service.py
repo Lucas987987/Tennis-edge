@@ -177,6 +177,7 @@ class Profils:
                 P.j[(j, s)] = [x * w for x in v]
         P.jour_export = jour
         P.ajuste = AJ.importer(doc['ajuste']) if doc.get('ajuste') else None
+        P.jeux = doc.get('jeux') or {}
         return P
 
 
@@ -222,6 +223,12 @@ def main(argv):
     dyn = AJ.lire_dynamique(choix)          # statistiques qui évoluent dans le temps, si le test les a adoptées
     A = AJ.ajuster_choisi(tout, fin + dt.timedelta(days=1), E.cle, n0=n0, dyn=dyn)
     doc['ajuste'] = A.exporter(actifs)
+    # 22/10/2026 : couche « jeux » (apprend aussi des matchs sans feuille, score seul) si le test l'a adoptée
+    rg = choix.get('reglage_simulation') or {}
+    if rg.get('adopte') and float(rg.get('jeux') or 0) > 0:
+        G = AJ.ajuster_jeux(tout, fin + dt.timedelta(days=1), E.cle, A, lam=float(rg['jeux']), tours=6)
+        doc['jeux'] = {k: round(v, 4) for k, v in G.items() if k in actifs}
+        print(f"Couche « jeux » (scores sans feuille) : {len(doc['jeux'])} joueurs actifs")
     doc['feuilles_ajoutees'] = sum(1 for m in F if m.get('detail'))
     with open(SORTIE, 'w', encoding='utf-8') as f:
         json.dump(doc, f, ensure_ascii=False, separators=(',', ':'))

@@ -46,6 +46,7 @@ import match_simule as MS  # noqa: E402
 import modele as M  # noqa: E402
 import nos_resultats as NR  # noqa: E402
 import profils_service as PS  # noqa: E402
+import ajustement as AJ  # noqa: E402
 
 SIGMA = 0.15
 SIMULATIONS = int(os.environ.get('SIMULATIONS', '5000'))
@@ -212,7 +213,7 @@ def charger_reglage_simulation(racine):
     try:
         with open(os.path.join(racine, 'simulateur', 'choix_simulation.json'), encoding='utf-8') as f:
             r = json.load(f).get('reglage_simulation') or {}
-        return {'sigma': float(r['sigma']), 'k': float(r['amplification'])} if r.get('adopte') else None
+        return {'sigma': float(r['sigma']), 'k': float(r['amplification']), 'jeux': float(r.get('jeux') or 0)} if r.get('adopte') else None
     except (OSError, ValueError, KeyError, TypeError):
         return None
 
@@ -231,6 +232,8 @@ def composantes_du_match(P, h, a, c, s, pure=False):
     mu = P.moyenne(c, s)
     if CHOIX == 'ajustees' and getattr(P, 'ajuste', None) is not None:
         cH, cA = MS.composantes_ajustees(P.ajuste, h, a, c, s), MS.composantes_ajustees(P.ajuste, a, h, c, s)
+        if pure and REGLAGE_SIM and getattr(P, 'jeux', None):            # appris aussi des scores sans feuille
+            cH, cA = MS.borner(AJ.avec_jeux(cH, P.jeux, h, a)), MS.borner(AJ.avec_jeux(cA, P.jeux, a, h))
         if pure and REGLAGE_SIM and REGLAGE_SIM['k'] != 1.0:
             moy = MS.borner(P.ajuste.taux('__moyen__', '__moyen__', c, s))
             cH, cA = MS.amplifier(cH, moy, REGLAGE_SIM['k']), MS.amplifier(cA, moy, REGLAGE_SIM['k'])

@@ -275,3 +275,92 @@ def ajuster_choisi(matchs, date, cle, n0=N0, dyn=None, depart=None, tours=6):
         return fond
     d_rec = depart.recent if isinstance(depart, AjusteDeux) else None
     return ajuster_recent(matchs, date, cle, fond, n0=n0, demi_vie=float(r), depart=d_rec, tours=4 if d_rec is None else 2)
+
+
+# ------------------------------------------------------------------ apprendre des SCORES (matchs sans feuille)
+# 22/10/2026 — la simulation n'apprenait que des matchs avec statistiques détaillées. ~95 000 matchs
+# (ITF surtout, aussi Challenger, ATP, WTA) n'ont que le score : on sait combien de jeux chacun a gagnés.
+# Une couche « jeux » apprend, pour chaque joueur, un écart G (logit, appliqué aux points gagnés derrière
+# la 1re et la 2e balle, au service pour lui, au retour contre lui) PAR-DESSUS le modèle des points :
+#   P(A gagne un jeu du match) ≈ ½ · tenue(pA + G_A − G_B) + ½ · (1 − tenue(pB − G_A + G_B)),
+# vraisemblance binomiale des jeux gagnés. Ramené vers 0 par un prior (lam) ; ancienneté : demi-vie 1 an.
+def _p_service(t):
+    return t['f'] * t['w1'] + (1 - t['f']) * (1 - t['d']) * t['w2j']
+
+
+def _decale(t, d):
+    return dict(t, w1=_sg(_lg(t['w1']) + d), w2j=_sg(_lg(t['w2j']) + d))
+
+
+def ajuster_jeux(matchs, date, cle, base, lam=60.0, demi_vie=DEMI_VIE, annees=ANNEES, tours=5, depart=None, h=0.02):
+    """{joueur: G} appris sur les matchs SANS feuille détaillée (score complet), tournois finis avant date."""
+    import modele as Mo
+    debut = date - dt.timedelta(days=int(365.25 * annees))
+    obs, circs = [], []
+    for m in matchs:
+        if m.get('detail') or not m.get('complet') or not m.get('sets') or m['fin'] >= date or m['date'] < debut:
+            continue
+        ga = sum(a for a, b in m['sets'])
+        gb = sum(b for a, b in m['sets'])
+        if ga + gb < 6:
+            continue
+        i, j = cle(m['nom_g']), cle(m['nom_p'])
+        w = 0.5 ** ((date - m['fin']).days / demi_vie)
+        ti = base.taux(i, j, m['circuit'], m['surface'])
+        tj = base.taux(j, i, m['circuit'], m['surface'])
+        obs.append((i, j, ti, tj, ga, gb, w))
+        circs.append(m['circuit'])
+    G = dict(depart or {})
+    # Les joueurs SANS données de points ont, dans le modèle des points, le niveau moyen de TOUS les joueurs :
+    # bien trop haut pour un joueur d'ITF. Leur écart G est donc ramené vers la moyenne U de leur circuit
+    # (estimée), pas vers 0 — sinon quiconque bat des inconnus d'ITF paraît plus fort qu'il n'est.
+    inconnu = {}
+    circ = {}
+    for i, j, ti, tj, ga, gb, w in obs:
+        for p in (i, j):
+            if p not in inconnu:
+                inconnu[p] = not (hasattr(base, 'connu') and base.connu(p))
+    c_cpt = {}
+    for (i, j, ti, tj, ga, gb, w), c in zip(obs, circs):
+        for p in (i, j):
+            c_cpt.setdefault(p, {}).setdefault(c, 0.0)
+            c_cpt[p][c] += w
+    circ = {p: max(d_, key=d_.get) for p, d_ in c_cpt.items()}
+    U = {}
+
+    def q(ti, tj, d):
+        hi = Mo.p_jeu(min(max(_p_service(_decale(ti, d)), 0.3), 0.95))
+        hj = Mo.p_jeu(min(max(_p_service(_decale(tj, -d)), 0.3), 0.95))
+        return min(max(0.5 * hi + 0.5 * (1 - hj), 1e-4), 1 - 1e-4)
+    for _ in range(tours):
+        grad, hess = {}, {}
+        for i, j, ti, tj, ga, gb, w in obs:
+            d = G.get(i, 0.0) - G.get(j, 0.0)
+            q0 = q(ti, tj, d)
+            dq = (q(ti, tj, d + h) - q(ti, tj, d - h)) / (2 * h)
+            g = w * (ga / q0 - gb / (1 - q0)) * dq
+            info = w * (ga + gb) * dq * dq / (q0 * (1 - q0))
+            grad[i] = grad.get(i, 0.0) + g
+            grad[j] = grad.get(j, 0.0) - g
+            hess[i] = hess.get(i, 0.0) + info
+            hess[j] = hess.get(j, 0.0) + info
+        for p in grad:
+            v = G.get(p, 0.0)
+            centre = U.get(circ.get(p), 0.0) if inconnu.get(p) else 0.0
+            G[p] = v + (grad[p] - lam * (v - centre)) / (hess[p] + lam)
+        num, den = {}, {}
+        for p, inc in inconnu.items():
+            if inc and p in hess:
+                c = circ.get(p)
+                num[c] = num.get(c, 0.0) + hess[p] * G.get(p, 0.0)
+                den[c] = den.get(c, 0.0) + hess[p]
+        U = {c: num[c] / den[c] for c in num if den[c] > 0}
+    return {p: v for p, v in G.items() if abs(v) >= 1e-4}
+
+
+def avec_jeux(t_srv, G, serveur, relanceur):
+    """Taux du point du serveur, décalés par la couche « jeux »."""
+    if not G:
+        return t_srv
+    d = G.get(serveur, 0.0) - G.get(relanceur, 0.0)
+    return _decale(t_srv, d) if d else t_srv
