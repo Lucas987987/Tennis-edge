@@ -207,3 +207,14 @@ test('match simulé : feuille prévue, fourchette, match type, version marché e
   assert.match(R.pronosticsBlock({ horizon_h: 36, simulations: 5000, profils_au: '2026-06-02', matchs: [{ ...m, debut: '2026-10-22T04:00', tournoi: 'ATP Brussels', surface: 'Hard', meilleur_des: 3,
     stats: { ...m.stats, p_home: 0.6, sets: {} }, marche: { ...m.marche, p_home: 0.7, sets: {} } }] }, null), /joué 5\s000 fois avec le profil de service/);
 });
+
+test('pronostics : suivi du match simulé contre la vraie feuille (22/10/2026)', () => {
+  const B = { tous: {}, '7_derniers_jours': {}, match_simule_contre_feuille: { n: 42, stats: {
+    aces: { n: 84, prevu: 4.6, reel: 5.1, ecart_moyen: 2.2, dans_fourchette_pct: 81.0 },
+    total_jeux: { n: 42, prevu: 23.4, reel: 24.0, ecart_moyen: 4.9, dans_fourchette_pct: 83.3 } } } };
+  const html = R.pronosticsBlock({ horizon_h: 36, simulations: 5000, matchs: [] }, B);
+  assert.match(html, /Match simulé contre la vraie feuille \(42 matchs joués\)/);
+  assert.match(html, /<td>Aces<\/td><td>4,6<\/td><td>5,1<\/td><td>2,2<\/td><td>81 %<\/td>/);
+  assert.match(html, /Total de jeux/);
+  assert.match(R.pronosticsBlock({ horizon_h: 36, simulations: 5000, matchs: [] }, { tous: {}, match_simule_contre_feuille: { n: 0 } }), /en attente des premiers matchs/);
+});
