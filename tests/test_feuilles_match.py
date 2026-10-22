@@ -88,10 +88,18 @@ class Collecte(unittest.TestCase):
         return [('/calendar/', lambda: Rep(INDEX)), ('/category/3/', lambda: Rep(ATP)), ('/category/785/', lambda: Rep(ITF)),
                 ('/event/1/statistics', lambda: Rep(stats())), ('/event/1', lambda: Rep(None, 204))]
 
+    def test_itf_plus_demande_par_defaut(self):
+        appels = []
+        c = FM.Client('cle', ouvrir=ouvreur(appels, self.table()), pause=0)
+        FM.collecter_jour(c, JOUR, aujourd_hui=dt.date(2026, 10, 30), dossier=self.d, journal=lambda *_: None)
+        self.assertFalse([a for a in appels if '/category/785/' in a])
+
     def test_un_jour(self):
         appels = []
         c = FM.Client('cle', ouvrir=ouvreur(appels, self.table()), pause=0)
-        b = FM.collecter_jour(c, JOUR, aujourd_hui=dt.date(2026, 10, 30), dossier=self.d, journal=lambda *_: None)
+        avec_itf = FM.CATEGORIES + ('itf men', 'itf women')                               # ITF demandé à la main
+        b = FM.collecter_jour(c, JOUR, voulues=avec_itf, aujourd_hui=dt.date(2026, 10, 30), dossier=self.d,
+                              journal=lambda *_: None)
         self.assertNotIn('/api/tennis/category/999/events/21/10/2026', appels)            # catégorie non voulue
         stats_appels = [a for a in appels if a.endswith('/statistics')]
         self.assertEqual(stats_appels[0], '/api/tennis/event/1/statistics')                # grand circuit d'abord

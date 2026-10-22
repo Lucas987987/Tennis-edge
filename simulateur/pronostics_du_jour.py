@@ -235,7 +235,7 @@ def composantes_du_match(P, h, a, c, s, pure=False):
     mu = P.moyenne(c, s)
     if CHOIX == 'ajustees' and getattr(P, 'ajuste', None) is not None:
         cH, cA = MS.composantes_ajustees(P.ajuste, h, a, c, s), MS.composantes_ajustees(P.ajuste, a, h, c, s)
-        if pure and REGLAGE_SIM and getattr(P, 'resultats', None):       # appris aussi de qui a gagné (couche « résultats »)
+        if pure and getattr(P, 'resultats', None):       # appris aussi de qui a gagné (matchs sans feuille, si adopté)
             d = P.resultats.get(h, 0.0) - P.resultats.get(a, 0.0)
             cH = MS.borner(dict(cH, w1=MS._sg(MS._lg(cH['w1']) + d), w2j=MS._sg(MS._lg(cH['w2j']) + d)))
             cA = MS.borner(dict(cA, w1=MS._sg(MS._lg(cA['w1']) - d), w2j=MS._sg(MS._lg(cA['w2j']) - d)))
@@ -385,6 +385,7 @@ def construire(racine, maintenant=None):
                 cH, cA = avec_facteurs(*composantes_du_match(PR, h, a, c, s, pure=True)[:2], fct)
                 p_sim = MS.victoire_pure(cH, cA, sg, sigma_sim())
                 p_c = MS.melange_contexte(COMBINAISON, MS.contexte_match(s, c, 2 * sg - 1), stats['p_home'], p_sim)
+                p_c = MS.calibrer(p_c, COMBINAISON.get('calibration'))     # excès de confiance (si adopté)
                 combinaison = dict(pronostic(p_c, c, sg, pa0, pb0), p_simulation=round(p_sim, 4), p_elo=stats['p_home'])
             # 22/10/2026 — EN DIRECT (direct.py, Lab) : points de service des deux joueurs pour la version
             # principale (simulation + Elo si adoptée, sinon simulation pure), avant toute forme du jour.
