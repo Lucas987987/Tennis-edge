@@ -94,7 +94,7 @@ class Pronostics(unittest.TestCase):
         z = 0.8 * BP.math.log(m['stats']['p_home'] / (1 - m['stats']['p_home'])) + 0.3 * BP.math.log(c['p_simulation'] / (1 - c['p_simulation']))
         self.assertAlmostEqual(c['p_home'], 1 / (1 + BP.math.exp(-z)), delta=0.01)     # ancrage du moteur à 1 % près
         self.assertEqual(c['match_simule']['n'], 200)
-        self.assertEqual(doc['combinaison'], {'elo': 0.8, 'simulation': 0.3})
+        self.assertEqual(doc['combinaison'], {'elo': 0.8, 'simulation': 0.3, 'source': 'archive 2024–2026'})
         import direct as D
         d = m['direct']
         self.assertEqual(d['version'], 'combinaison')

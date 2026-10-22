@@ -15,6 +15,11 @@ name: Pronostic - test du modèle (deviner le vainqueur)
 # sur juin–août, jugé sur septembre →, gardé seulement s'il aide (règle fixée).
 on:
   workflow_dispatch:
+  # 22/10/2026 — APPRENTISSAGE CONTINU : chaque lundi, tout est ré-appris sur les données de la semaine
+  # (Elo, profils, réglage de la simulation, facteurs sur les 6 dernières semaines, mélange simulation + Elo
+  # sur nos propres matchs joués), toujours avec les règles d'adoption fixées d'avance.
+  schedule:
+    - cron: '37 2 * * 1'
 
 permissions:
   contents: write
@@ -40,6 +45,7 @@ jobs:
             /scripts/closing_store.py
             /Tennis_Edge_Lab/books.py
             /Tennis_Edge_Lab/live/explorateur_pronostics.json.gz
+            /Tennis_Edge_Lab/live/pronostics_resultats.json
             /historique/
             /set_results.json
             /clv_history/
@@ -76,6 +82,8 @@ jobs:
         run: python simulateur/backtest_match_simule.py /tmp/sackmann . --n=300 --max=2000
       - name: Facteurs du match (forme, fatigue, court, gaucher/taille, points importants, styles, face-à-face, conditions, contexte, Match Charting)
         run: python simulateur/facteurs.py /tmp/sackmann . /tmp/mcp
+      - name: Apprentissage continu (mélange simulation + Elo appris sur nos matchs joués)
+        run: python simulateur/apprentissage_continu.py .
       - name: Publier
         run: |
           set -euo pipefail
