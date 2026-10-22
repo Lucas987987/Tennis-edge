@@ -274,14 +274,28 @@ CLES_FEUILLE = ('aces', 'doubles_fautes', 'premiere_pct', 'gagnes_1re_pct', 'gag
                 'balles_break_obtenues', 'breaks', 'jeux_service_gagnes_pct', 'points_gagnes', 'jeux')
 
 
-def simuler(cA, cB, p_victoire, sets_gagnants=2, n=5000, sigma=0.15, cle='', tb_final=None, garder=False):
+def appliquer_reglages(c, reglages):
+    """Réglages adoptés (reglage_match_simule.py) : facteur sur le taux d'aces."""
+    if not reglages or not reglages.get('ace_facteur'):
+        return c
+    return borner(dict(c, a=c['a'] * reglages['ace_facteur']))
+
+
+def simuler(cA, cB, p_victoire, sets_gagnants=2, n=5000, sigma=0.15, cle='', tb_final=None, garder=False,
+            reglages=None):
     """Le match joué n fois. cA, cB : composantes « au niveau du profil » (avant ancrage).
+
+    reglages (facultatif, 22/10/2026) : {'ace_facteur': x, 'tau_f': t} — aces recalés et
+    % de 1re balle qui varie d'un match à l'autre (écart en logit tiré par joueur et par
+    simulation, comme une forme du jour propre à la 1re balle).
 
     Renvoie un résumé : victoire, sets, scores complets, jeux, tie-breaks, feuille de stats
     (moyenne et fourchette 80 %) pour chaque joueur, match type. garder=True : renvoie aussi
     les feuilles brutes (pour les tests et le backtest)."""
     if tb_final is None:
         tb_final = 10 if sets_gagnants == 3 else 7
+    cA, cB = appliquer_reglages(cA, reglages), appliquer_reglages(cB, reglages)
+    tau_f = float((reglages or {}).get('tau_f') or 0.0)
     noeuds = noeuds_de_forme(cA, cB, p_victoire, sets_gagnants, sigma)
     cum, tot = [], 0.0
     for w, _, _ in noeuds:
@@ -297,6 +311,9 @@ def simuler(cA, cB, p_victoire, sets_gagnants=2, n=5000, sigma=0.15, cle='', tb_
         while j < len(cum) - 1 and x > cum[j]:
             j += 1
         _, ca, cb = noeuds[j]
+        if tau_f > 0:
+            ca = dict(ca, f=min(max(_sg(_lg(ca['f']) + rnd.gauss(0, tau_f)), 0.3), 0.95))
+            cb = dict(cb, f=min(max(_sg(_lg(cb['f']) + rnd.gauss(0, tau_f)), 0.3), 0.95))
         g, sets, st, br, ntb = un_match(ca, cb, sets_gagnants, tb_final, rnd, rnd.random() < 0.5)
         vA += g == 0
         ks = f"{sum(a > b for a, b in sets)}-{sum(b > a for a, b in sets)}"

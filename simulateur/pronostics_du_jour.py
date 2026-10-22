@@ -139,12 +139,27 @@ def charger_profils(racine):
         return None
 
 
+def charger_reglages(racine):
+    """Réglages du match simulé, seulement s'ils ont été ADOPTÉS (reglage_match_simule.py)."""
+    try:
+        with open(os.path.join(racine, 'simulateur', 'reglages_match_simule.json'), encoding='utf-8') as f:
+            d = json.load(f)
+        return d['reglages'] if d.get('adopte') else None
+    except (OSError, ValueError, KeyError):
+        return None
+
+
+REGLAGES = None
+
+
 def match_simule(P, h, a, c, s, sg, p_home, cle):
     """Le match joué SIMULATIONS fois au niveau p_home, avec les profils de service des deux joueurs."""
     ph, nh = P.profil(h, c, s, P.jour_export)
     pa, na = P.profil(a, c, s, P.jour_export)
     mu = P.moyenne(c, s)
-    r = MS.simuler(MS.composantes(ph, pa, mu), MS.composantes(pa, ph, mu), p_home, sg, SIMULATIONS, SIGMA, cle=cle)
+    r = MS.simuler(MS.composantes(ph, pa, mu), MS.composantes(pa, ph, mu), p_home, sg, SIMULATIONS, SIGMA, cle=cle,
+                   reglages=REGLAGES)
+    r['reglages'] = REGLAGES
     r['profil_connu'] = [nh >= BALLES_CONNU, na >= BALLES_CONNU]
     return r
 
@@ -188,6 +203,8 @@ def construire(racine, maintenant=None):
     surf = etat.get('surfaces_tournois') or {}
     S = Styles(os.path.join(racine, 'simulateur', 'notes_joueurs.json'))
     PR = charger_profils(racine)
+    global REGLAGES
+    REGLAGES = charger_reglages(racine)
     venir = matchs_a_venir(racine, maintenant)
     # Un joueur = un classement : alias du dernier calcul, puis noms nouveaux reliés au joueur connu.
     alias = dict(etat.get('alias') or {})
@@ -218,7 +235,7 @@ def construire(racine, maintenant=None):
         out.append({'uid': uid,
                     'debut': x['debut'].isoformat(timespec='minutes'), 'tournoi': x['tournoi'], 'circuit': c,
                     'surface': s, 'meilleur_des': 2 * sg - 1, 'home': x['home'], 'away': x['away'],
-                    'matchs_joues': [elo.matchs(h), elo.matchs(a)], 'style_connu': [S.connu(h), S.connu(a)],
+                    'cles': [h, a], 'matchs_joues': [elo.matchs(h), elo.matchs(a)], 'style_connu': [S.connu(h), S.connu(a)],
                     'stats': stats, 'marche': marche})
     return {'genere_le': maintenant.isoformat(timespec='seconds') + 'Z', 'elo_au': etat.get('dernier_match'),
             'horizon_h': HORIZON_H, 'sigma': SIGMA, 'simulations': SIMULATIONS if PR is not None else 0,
