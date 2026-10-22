@@ -228,7 +228,15 @@ def construire(racine, maintenant=None):
             ph = (1 / x['pin'][0]) ** k if k else (1 / x['pin'][0]) / (1 / x['pin'][0] + 1 / x['pin'][1])
             marche = pronostic(ph, c, sg, pa0, pb0)
         uid = f"{x['debut'].date()}_{NR.slug(x['home'])}_{NR.slug(x['away'])}"
+        simulation = None
         if PR is not None:
+            # 22/10/2026 — SIMULATION PURE : le match joué SIMULATIONS fois avec les seuls taux des deux
+            # joueurs (1re balle, aces, doubles fautes, points gagnés derrière la 1re et la 2e, retour),
+            # sans Elo ni cote : c'est la simulation qui dit qui gagne.
+            r = match_simule(PR, h, a, c, s, sg, None, f"{uid}|simulation")
+            simulation = {'p_home': r['victoire_A'], 'sets': r['sets'], 'scores_probables': r['scores'][:3],
+                          'remontee': {'home': r['remontee'][0], 'away': r['remontee'][1]}, 'set1_home': r['set1_A'],
+                          'jeux_moyen': r['jeux']['moy'], 'tiebreak': r['tiebreak'], 'match_simule': r}
             for nom_v, v in (('stats', stats), ('marche', marche)):
                 if v:
                     v['match_simule'] = match_simule(PR, h, a, c, s, sg, v['p_home'], f"{uid}|{nom_v}")
@@ -236,7 +244,7 @@ def construire(racine, maintenant=None):
                     'debut': x['debut'].isoformat(timespec='minutes'), 'tournoi': x['tournoi'], 'circuit': c,
                     'surface': s, 'meilleur_des': 2 * sg - 1, 'home': x['home'], 'away': x['away'],
                     'cles': [h, a], 'matchs_joues': [elo.matchs(h), elo.matchs(a)], 'style_connu': [S.connu(h), S.connu(a)],
-                    'stats': stats, 'marche': marche})
+                    'simulation': simulation, 'stats': stats, 'marche': marche})
     return {'genere_le': maintenant.isoformat(timespec='seconds') + 'Z', 'elo_au': etat.get('dernier_match'),
             'horizon_h': HORIZON_H, 'sigma': SIGMA, 'simulations': SIMULATIONS if PR is not None else 0,
             'profils_au': PR.jour_export.isoformat() if PR is not None else None, 'matchs': out}
@@ -246,13 +254,13 @@ SUIVI_STATS = ('aces', 'doubles_fautes', 'premiere_pct', 'gagnes_1re_pct', 'gagn
 
 
 def feuille_prevue(m):
-    """Feuille simulée gardée au journal (version marché si Pinnacle cote, sinon stats seules) :
+    """Feuille simulée gardée au journal (simulation pure ; à défaut marché, puis stats seules) :
     {stat: [[moy, p10, p90] home, [..] away]} + total de jeux."""
-    v = m['marche'] if m.get('marche') and m['marche'].get('match_simule') else m['stats']
+    v = next((m[k] for k in ('simulation', 'marche', 'stats') if m.get(k) and m[k].get('match_simule')), None)
     S = (v or {}).get('match_simule')
     if not S:
         return None
-    out = {'version': 'marche' if v is m.get('marche') else 'stats'}
+    out = {'version': next(k for k in ('simulation', 'marche', 'stats') if m.get(k) is v)}
     for k in SUIVI_STATS:
         a, b = S['feuille'][0].get(k), S['feuille'][1].get(k)
         if a and b:
@@ -321,6 +329,8 @@ def journaliser(racine, doc):
                                 'home': m['home'], 'away': m['away'], 'tournoi': m['tournoi'], 'circuit': m['circuit'],
                                 'stats': {'p_home': m['stats']['p_home'], 'sets': m['stats']['sets']},
                                 'marche': ({'p_home': m['marche']['p_home'], 'sets': m['marche']['sets']} if m['marche'] else None),
+                                'simulation': ({'p_home': m['simulation']['p_home'], 'sets': m['simulation']['sets']}
+                                               if m.get('simulation') else None),
                                 'feuille': feuille_prevue(m)},
                                ensure_ascii=False) + '\n')
             n += 1
@@ -372,10 +382,12 @@ def bilan(racine, maintenant=None):
                 'score_sets_juste_pct': round(100 * sj / len(s), 1) if s else None, 'n_sets': len(s)}
     depuis7 = (maintenant - dt.timedelta(days=7)).date().isoformat()
     doc = {'genere_le': maintenant.isoformat(timespec='seconds') + 'Z', 'pronostiques': len(vus), 'joues_avec_resultat': len(L),
-           'tous': {'stats_seules': bloc(L, 'stats'), 'stats_plus_marche': bloc(L, 'marche')},
-           '7_derniers_jours': {'stats_seules': bloc([x for x in L if x['debut'] >= depuis7], 'stats'),
+           'tous': {'simulation': bloc(L, 'simulation'), 'stats_seules': bloc(L, 'stats'), 'stats_plus_marche': bloc(L, 'marche')},
+           '7_derniers_jours': {'simulation': bloc([x for x in L if x['debut'] >= depuis7], 'simulation'),
+                                'stats_seules': bloc([x for x in L if x['debut'] >= depuis7], 'stats'),
                                 'stats_plus_marche': bloc([x for x in L if x['debut'] >= depuis7], 'marche')},
            'derniers': [{'debut': x['debut'], 'home': x['home'], 'away': x['away'], 'gagnant': x['gagnant'],
+                         'simulation': (x.get('simulation') or {}).get('p_home'),
                          'stats': x['stats']['p_home'], 'marche': (x['marche'] or {}).get('p_home')}
                         for x in sorted(L, key=lambda x: x['debut'])[-30:]],
            'match_simule_contre_feuille': suivi_feuilles(racine, journal)}
