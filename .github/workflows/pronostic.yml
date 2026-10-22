@@ -101,6 +101,7 @@ jobs:
                      simulateur/reglages_match_simule.json simulateur/rapport_forme_du_jour.json \
                      simulateur/choix_simulation.json simulateur/facteurs.json simulateur/bilan_algo_etat.json \
                      Tennis_Edge_Lab/live/explorateur_pronostics.json.gz
+          if [ -f simulateur/journal_decisions.jsonl ]; then git add -- simulateur/journal_decisions.jsonl; fi
           if git diff --cached --quiet; then echo 'Rien de nouveau.'; exit 0; fi
           git commit -m 'Pronostic : test du modèle (vainqueur, sets)'
           # fichiers écrits hors du checkout partiel (ex. live/joueurs_service.json.gz, contexte des

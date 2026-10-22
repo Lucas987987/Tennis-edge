@@ -813,10 +813,11 @@ def main(argv):
         rg = choix.get('reglage_simulation') or {}
         sigma = float(rg['sigma']) if rg.get('adopte') else SIGMA
         cb = choix.get('combinaison') or {}
-        p_elo = EP.elo_au_moment(M, lignes, et.get('options'), et.get('depart_bas'))
+        experience = {}
+        p_elo = EP.elo_au_moment(M, lignes, et.get('options'), et.get('depart_bas'), experience=experience)
         doc['entrainement_progressif'] = EP.rejouer_saison(
             lignes, p_elo, doc.get('adoptes') or [], apprendre, victoire_ligne, BMS.ajuster_poids, sigma,
-            poids_archive=cb.get('poids') if cb.get('adopte') else None)
+            poids_archive=cb.get('poids') if cb.get('adopte') else None, experience=experience)
         ep = doc['entrainement_progressif']
         print(f"Entraînement progressif : {len(ep.get('semaines', []))} semaines rejouées · "
               f"{'ADOPTÉ' if ep.get('adopte') else 'non adopté'} — {ep.get('raison')}", flush=True)
@@ -826,6 +827,18 @@ def main(argv):
                   f"Elo {w['elo']['reussite_pct']} % · simulation + Elo {c.get('reussite_pct', '—')} % · poids simulation "
                   f"{w.get('poids_simulation_pct') if w.get('poids_simulation_pct') is not None else '—'} %", flush=True)
         choix['combinaison_feuilles'] = {k: ep.get(k) for k in ('adopte', 'poids', 'raison', 'poids_simulation_pct')}
+        # 22/10/2026 : poids propres aux Challenger, correction des nouveaux venus (règles fixées d'avance)
+        choix['poids_challenger'] = {k: (ep.get('poids_challenger') or {}).get(k) for k in ('adopte', 'poids', 'raison')}
+        choix['nouveaux_venus'] = {k: (ep.get('nouveaux_venus') or {}).get(k) for k in ('adopte', 'delta', 'raison')}
+        for c, b in (ep.get('par_circuit') or {}).items():
+            sx = b['six_dernieres_semaines']
+            print(f"  {b['circuit']:<10} simulation {b['simulation']['reussite_pct']} % · Elo {b['elo']['reussite_pct']} % "
+                  f"(n {b['simulation']['n']}) · 6 dernières semaines : mélange "
+                  f"{(sx.get('combinaison') or {}).get('reussite_pct', '—')} %", flush=True)
+        print(f"Poids propres aux Challenger : {'ADOPTÉS' if choix['poids_challenger']['adopte'] else 'non adoptés'} — "
+              f"{choix['poids_challenger']['raison']}", flush=True)
+        print(f"Nouveaux venus : {'correction ADOPTÉE' if choix['nouveaux_venus']['adopte'] else 'pas de correction'} — "
+              f"{choix['nouveaux_venus']['raison']}", flush=True)
         with open(os.path.join(ICI, 'choix_simulation.json'), 'w', encoding='utf-8') as f:
             json.dump(choix, f, ensure_ascii=False, indent=1)
     except Exception as e:  # l'étude des facteurs reste valable sans cette partie
