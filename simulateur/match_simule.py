@@ -63,6 +63,11 @@ def composantes(serveur, relanceur, moy):
     return borner({'f': serveur['f'], 'a': a, 'w1': w1, 'd': serveur['d'], 'w2j': w2j})
 
 
+def composantes_ajustees(adj, serveur, relanceur, circuit, surface):
+    """Taux du point ajustés au niveau des adversaires rencontrés (ajustement.Ajuste)."""
+    return borner(adj.taux(serveur, relanceur, circuit, surface))
+
+
 def borner(c):
     c = dict(c)
     c['f'] = min(max(c['f'], 0.3), 0.95)

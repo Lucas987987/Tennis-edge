@@ -44,8 +44,10 @@ import donnees  # noqa: E402
 import elo as E  # noqa: E402
 import match_simule as S  # noqa: E402
 import profils_service as PS  # noqa: E402
+import ajustement as AJ  # noqa: E402
 
 SORTIE = os.path.join(ICI, 'rapport_match_simule.json')
+CHOIX = os.path.join(ICI, 'choix_simulation.json')
 SIGMA = 0.15
 STATS = ('aces', 'doubles_fautes', 'premiere_pct', 'gagnes_1re_pct', 'gagnes_2e_pct',
          'balles_break_obtenues', 'breaks', 'jeux')
@@ -162,12 +164,15 @@ def main(argv):
             and m.get('detail') and m['complet'] and id(m) in pin and i in V['pred_sack'] and (m['circuit'], m['bo']) in naif]
     pas = max(1, len(elig) // n_max)
     choisis = set(elig[::pas][:n_max])
-    print(f"Matchs éligibles : {len(elig)} · simulés : {len(choisis)} × {n_sim} fois × 4 versions", flush=True)
+    print(f"Matchs éligibles : {len(elig)} · simulés : {len(choisis)} × {n_sim} fois × 5 versions", flush=True)
 
     P = PS.Profils()
     attente = []
-    R = {v: Suivi() for v in ('simulation_pure', 'stats_seules', 'stats_plus_marche', 'joueurs_moyens')}
-    VIC = {'simulation_pure': [], 'elo': [], 'pinnacle': []}       # probabilité donnée au vrai vainqueur
+    R = {v: Suivi() for v in ('simulation_pure_ajustee', 'simulation_pure', 'stats_seules', 'stats_plus_marche', 'joueurs_moyens')}
+    VIC = {'simulation_pure_ajustee': [], 'simulation_pure': [], 'elo': [], 'pinnacle': []}   # proba donnée au vrai vainqueur
+    adj, mois_adj = None, None                                    # ajustement aux adversaires, refait chaque mois
+    n0, scores_n0 = AJ.choisir_n0(M, E.cle)                         # prior choisi sur 2023 seulement
+    print(f"Prior de l'ajustement aux adversaires retenu sur 2023 : N0 = {n0:g}", flush=True)
     connus = collections.Counter()
     for i, m in enumerate(M):
         while attente and attente[0][0] < m['date']:
@@ -185,12 +190,21 @@ def main(argv):
         sg = 3 if m['bo'] == 5 else 2
         cg, cp = S.composantes(pg, pp, mu), S.composantes(pp, pg, mu)
         cmu = S.composantes(mu, mu, mu)
+        debut_mois = m['date'].replace(day=1)
+        if mois_adj != debut_mois:                                 # point-in-time : tournois finis avant le 1er du mois
+            t1 = time.time()
+            adj = AJ.ajuster(M, debut_mois, E.cle, n0=n0, depart=adj, tours=6 if adj is None else 2)
+            mois_adj = debut_mois
+            print(f"  ajustement aux adversaires au {debut_mois} ({round(time.time() - t1)} s)", flush=True)
+        ag, ap = S.composantes_ajustees(adj, g, p, m['circuit'], m['surface']), S.composantes_ajustees(adj, p, g, m['circuit'], m['surface'])
+        VIC['simulation_pure_ajustee'].append(S.victoire_pure(ag, ap, sg, SIGMA))
         (fw, fl), tot = reel(m)
         nz = naif[(m['circuit'], m['bo'])]
         VIC['simulation_pure'].append(S.victoire_pure(cg, cp, sg, SIGMA))
         VIC['elo'].append(V['pred_sack'][i][0])
         VIC['pinnacle'].append(pin[id(m)])
-        for version, (ca, cb, pv) in (('simulation_pure', (cg, cp, None)),
+        for version, (ca, cb, pv) in (('simulation_pure_ajustee', (ag, ap, None)),
+                                      ('simulation_pure', (cg, cp, None)),
                                       ('stats_seules', (cg, cp, V['pred_sack'][i][0])),
                                       ('stats_plus_marche', (cg, cp, pin[id(m)])),
                                       ('joueurs_moyens', (cmu, cmu, pin[id(m)]))):
@@ -219,12 +233,23 @@ def main(argv):
                                 "cote : c'est la simulation qui désigne le vainqueur. elo / pinnacle : références."),
            'calibration': {v: {k: s.calibration(k) for k in ('aces', 'doubles_fautes', 'breaks')} for v, s in R.items()},
            'duree_s': round(time.time() - t0)}
+    # Règle fixée d'avance (22/10/2026) : les statistiques AJUSTÉES aux adversaires remplacent les profils
+    # bruts dans les pronostics si la simulation pure ajustée trouve mieux le vainqueur (log loss plus basse).
+    va, vp = rap['victoire']['simulation_pure_ajustee'], rap['victoire']['simulation_pure']
+    ok = bool(va.get('n')) and va['log_loss'] < vp['log_loss']
+    rap['choix'] = {'composantes': 'ajustees' if ok else 'profils', 'n0': n0,
+                    'n0_choisi_sur_2023': {f"{k:g}": round(v, 5) for k, v in scores_n0.items()},
+                    'raison': (f"log loss de la simulation pure : ajustée {va.get('log_loss')} contre profils bruts "
+                               f"{vp.get('log_loss')} (réussite {va.get('reussite_pct')} % contre {vp.get('reussite_pct')} %)")}
+    with open(CHOIX, 'w', encoding='utf-8') as f:
+        json.dump(dict(rap['choix'], genere_le=rap['genere_le']), f, ensure_ascii=False, indent=1)
     with open(SORTIE, 'w', encoding='utf-8') as f:
         json.dump(rap, f, ensure_ascii=False, indent=1)
     print("\nQui gagne ? (probabilité donnée au vrai vainqueur)")
     for v, x in rap['victoire'].items():
         print(f"  {v:<16} réussite {x.get('reussite_pct')} % · log loss {x.get('log_loss')} · Brier {x.get('brier')}")
-    for v in ('simulation_pure', 'stats_plus_marche', 'joueurs_moyens', 'stats_seules'):
+    print(f"\nChoix pour les pronostics : {rap['choix']['composantes']} — {rap['choix']['raison']}")
+    for v in ('simulation_pure_ajustee', 'simulation_pure', 'stats_plus_marche', 'joueurs_moyens', 'stats_seules'):
         print(f"\n{v}")
         for k, x in rap['versions'][v].items():
             print(f"  {x['libelle']:<28} prévu {x['prevu_moy']:>6} réel {x['reel_moy']:>6} · MAE {x['mae']:>6} "
