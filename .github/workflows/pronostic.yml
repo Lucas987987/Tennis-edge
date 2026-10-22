@@ -39,6 +39,7 @@ jobs:
             /simulateur/
             /scripts/closing_store.py
             /Tennis_Edge_Lab/books.py
+            /Tennis_Edge_Lab/live/explorateur_pronostics.json.gz
             /historique/
             /set_results.json
             /clv_history/
@@ -83,7 +84,8 @@ jobs:
           git add -- simulateur/rapport_pronostic.json simulateur/elo_etat.json \
                      simulateur/profils_service.json simulateur/rapport_match_simule.json \
                      simulateur/reglages_match_simule.json simulateur/rapport_forme_du_jour.json \
-                     simulateur/choix_simulation.json simulateur/facteurs.json
+                     simulateur/choix_simulation.json simulateur/facteurs.json \
+                     Tennis_Edge_Lab/live/explorateur_pronostics.json.gz
           if git diff --cached --quiet; then echo 'Rien de nouveau.'; exit 0; fi
           git commit -m 'Pronostic : test du modèle (vainqueur, sets)'
           # fichiers écrits hors du checkout partiel (ex. live/joueurs_service.json.gz, contexte des
