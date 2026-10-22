@@ -594,6 +594,30 @@
   // 22/10/2026 — PRÉDIT / RÉEL : chaque match joué, ce qu'on avait annoncé (1re prédiction) contre
   // ce qui s'est passé. Tout est aussi gardé dans simulateur/journal_pronostics (chaque passage).
   const VERSION_LIB = { combinaison: 'Simulation + Elo', simulation: 'Simulation', stats: 'Classement Elo', marche: 'Cote Pinnacle' };
+  // 22/10/2026 — fiabilité PAR CIRCUIT : ATP, WTA, Challenger d'abord (les circuits joués), ITF à part.
+  const CIRCUITS_LIB = [['ATP', 'ATP'], ['WTA', 'WTA'], ['CH', 'Challenger'], ['ITF', 'ITF (non joué)']];
+  function parCircuitBlock(L, maintenant) {
+    const t7 = new Date((maintenant || Date.now()) - 7 * 86400000).toISOString().slice(0, 16);
+    const vers = Object.keys(VERSION_LIB).filter(k => L.some(m => m.premier && m.premier[k] && m.premier[k].vainqueur_juste != null));
+    const cell = (g, k) => {
+      const h = g.filter(m => m.premier && m.premier[k] && m.premier[k].vainqueur_juste != null);
+      if (!h.length) return '—';
+      const j = h.filter(m => m.premier[k].vainqueur_juste).length;
+      return `${nf(100 * j / h.length, 0)} % <small>(${nf(j, 0)}/${nf(h.length, 0)})</small>`;
+    };
+    const lignes = CIRCUITS_LIB.flatMap(([c, lib]) => {
+      const g = L.filter(m => m.circuit === c);
+      if (!g.length) return [];
+      const g7 = g.filter(m => String(m.debut) >= t7);
+      return [`<tr><td><b>${esc(lib)}</b></td>${vers.map(k => `<td>${cell(g, k)}</td>`).join('')}</tr>`,
+        g7.length ? `<tr><td><small>${esc(lib)} · 7 derniers jours</small></td>${vers.map(k => `<td>${cell(g7, k)}</td>`).join('')}</tr>` : ''];
+    }).join('');
+    const tes = L.filter(m => m.circuit !== 'ITF');
+    const total = tes.length ? `<tr><td><b>Tes circuits (hors ITF)</b></td>${vers.map(k => `<td><b>${cell(tes, k)}</b></td>`).join('')}</tr>` : '';
+    if (!lignes) return '';
+    return `<div class="table-wrap rg-table"><table><thead><tr><th>Vainqueurs trouvés</th>${vers.map(k => `<th>${esc(VERSION_LIB[k])}</th>`).join('')}</tr></thead><tbody>${total}${lignes}</tbody></table></div>`;
+  }
+
   function resultatsBlock(R, ouvert) {
     if (!R || !R.matchs) return '';
     const L = R.matchs;
@@ -619,6 +643,7 @@
     }).join('');
     return `<details class="rg-eval" id="rgResultats"${ouvert ? ' open' : ''}><summary>Prédit / réel (${nf(L.length, 0)} matchs joués)</summary>
       <div class="rg-kpis">${resume}</div>
+      ${parCircuitBlock(L)}
       <div class="table-wrap rg-table"><table><thead><tr><th>Match</th><th>Prédit avant le match</th><th>Pinnacle</th><th>Résultat</th><th>Juste ?</th></tr></thead><tbody>${lignes}</tbody></table></div>
       <p class="mini">Première prédiction de chaque match, jamais retouchée. Version affichée : Simulation + Elo quand elle existait, sinon la simulation, sinon le classement Elo. Le score en jeux arrive avec la feuille de match (collecte de 4 h 41 et 16 h 41 UTC). Tout est enregistré : chaque passage dans simulateur/journal_pronostics, chaque match joué dans live/pronostics_resultats.json.</p></details>`;
   }
@@ -894,6 +919,6 @@
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
   }
   if (typeof module !== 'undefined') {
-    module.exports = { explorateurBlock, xpScan, xpStats, xpFiltrer, resultatsBlock, pronosticsBlock, calibrationBlock, directBlock, directResultat, enDirect, lireScore, facteursBlock, simuleBlock, serviceBlock, serviceInner, ficheService, chercherJoueurs, croisementsBlock, delaiBlock, booksBlock, valeurBlock, victoires, powerFair, decodeMonth, fairRow, bestRow, filterMatches, coherence, lectureOf, effective, evaluation, fiche, row };
+    module.exports = { explorateurBlock, xpScan, xpStats, xpFiltrer, resultatsBlock, parCircuitBlock, pronosticsBlock, calibrationBlock, directBlock, directResultat, enDirect, lireScore, facteursBlock, simuleBlock, serviceBlock, serviceInner, ficheService, chercherJoueurs, croisementsBlock, delaiBlock, booksBlock, valeurBlock, victoires, powerFair, decodeMonth, fairRow, bestRow, filterMatches, coherence, lectureOf, effective, evaluation, fiche, row };
   }
 })();

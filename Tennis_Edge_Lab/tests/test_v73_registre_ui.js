@@ -322,6 +322,14 @@ test('prédit / réel (22/10/2026)', () => {
   assert.match(h, /<b>Fils<\/b> 68 %.*score : 6-4 6-4/s);
   assert.match(h, /21\/10 · Arthur Fils – Hugo Gaston/);
   assert.match(h, /✓<\/span> vainqueur<br><span class="good">✓<\/span> sets<br><span class="good">✓<\/span> score/);
+  const mk = (c, ok, d) => ({ circuit: c, debut: d, premier: { combinaison: { vainqueur_juste: ok }, stats: { vainqueur_juste: !ok } } });
+  const pc = R_.parCircuitBlock([mk('ATP', true, '2026-10-21T10:00'), mk('ATP', false, '2026-09-01T10:00'), mk('CH', true, '2026-10-21T10:00'),
+    mk('ITF', false, '2026-10-21T10:00')], Date.parse('2026-10-22T12:00:00Z'));
+  assert.match(pc, /Tes circuits \(hors ITF\)<\/b><\/td><td><b>67 % <small>\(2\/3\)/);
+  assert.match(pc, /<b>ATP<\/b><\/td><td>50 % <small>\(1\/2\)/);
+  assert.match(pc, /ATP · 7 derniers jours<\/small><\/td><td>100 %/);
+  assert.match(pc, /Challenger/);
+  assert.match(pc, /ITF \(non joué\)/);
   assert.match(R_.resultatsBlock({ matchs: [] }), /Aucun match joué/);
   assert.equal(R_.resultatsBlock(null), '');
 });
