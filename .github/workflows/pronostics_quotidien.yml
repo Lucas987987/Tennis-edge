@@ -84,7 +84,8 @@ jobs:
           rm -f simulateur/facteurs_contexte.json
           git add -- Tennis_Edge_Lab/live/pronostics.json Tennis_Edge_Lab/live/pronostics_bilan.json \
                      Tennis_Edge_Lab/live/joueurs_service.json.gz \
-                     simulateur/pronostics_log.jsonl simulateur/rapport_pronostic.json
+                     simulateur/pronostics_log.jsonl simulateur/rapport_pronostic.json \
+                     simulateur/journal_pronostics Tennis_Edge_Lab/live/pronostics_resultats.json
           if git diff --cached --quiet; then echo 'Rien de nouveau.'; exit 0; fi
           git commit -m "Pronostics du jour $(date -u +%FT%TZ)"
           # fichiers écrits hors du checkout partiel (ex. live/joueurs_service.json.gz, contexte des

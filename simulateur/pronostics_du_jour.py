@@ -52,6 +52,14 @@ SIMULATIONS = int(os.environ.get('SIMULATIONS', '5000'))
 BALLES_CONNU = 500          # profil « connu » : au moins 500 balles de service (pondérées) dans l'archive
 HORIZON_H = 36
 LOG = 'simulateur/pronostics_log.jsonl'
+# 22/10/2026 — TOUT est enregistré pour l'analyse a posteriori :
+#   INSTANTANES : chaque passage (toutes les 6 h), chaque match, chaque version (%, sets, scores,
+#                 jeux, tie-break, facteurs, cote Pinnacle) — on voit le pronostic évoluer jusqu'au match ;
+#   RESULTATS   : chaque match joué, prédiction (1re et dernière avant le match) contre résultat réel
+#                 (vainqueur, score en sets et en jeux, feuille de stats), et ce qui était juste ou faux.
+INSTANTANES = 'simulateur/journal_pronostics'
+RESULTATS = 'Tennis_Edge_Lab/live/pronostics_resultats.json'
+VERSIONS = ('combinaison', 'simulation', 'stats', 'marche')
 SORTIE = 'Tennis_Edge_Lab/live/pronostics.json'
 BILAN = 'Tennis_Edge_Lab/live/pronostics_bilan.json'
 
@@ -357,6 +365,7 @@ def construire(racine, maintenant=None):
                     'debut': x['debut'].isoformat(timespec='minutes'), 'tournoi': x['tournoi'], 'circuit': c,
                     'surface': s, 'meilleur_des': 2 * sg - 1, 'home': x['home'], 'away': x['away'],
                     'cles': [h, a], 'matchs_joues': [elo.matchs(h), elo.matchs(a)], 'style_connu': [S.connu(h), S.connu(a)],
+                    'pin_cotes': list(x['pin']) if x['pin'] else None,
                     'combinaison': combinaison, 'simulation': simulation, 'stats': stats, 'marche': marche, 'direct': direct})
     return {'genere_le': maintenant.isoformat(timespec='seconds') + 'Z', 'elo_au': etat.get('dernier_match'),
             'horizon_h': HORIZON_H, 'sigma': SIGMA, 'simulations': SIMULATIONS if PR is not None else 0,
@@ -423,6 +432,61 @@ def suivi_feuilles(racine, lignes):
     return out
 
 
+def resume_version(v):
+    """Ce qu'on garde d'une version pour l'analyse : %, sets, 3 scores, jeux, tie-break, 1er set."""
+    if not v:
+        return None
+    out = {k: v.get(k) for k in ('p_home', 'sets', 'scores_probables', 'jeux_moyen', 'tiebreak', 'set1_home') if v.get(k) is not None}
+    if v.get('facteurs'):
+        out['facteurs'] = v['facteurs']
+    return out
+
+
+def instantane(doc, m):
+    return {'passage': doc['genere_le'], 'uid': m['uid'], 'debut': m['debut'], 'home': m['home'], 'away': m['away'],
+            'tournoi': m['tournoi'], 'circuit': m['circuit'], 'surface': m['surface'], 'meilleur_des': m['meilleur_des'],
+            'pin_cotes': m.get('pin_cotes'), 'matchs_joues': m.get('matchs_joues'),
+            'modele': {'facteurs': doc.get('facteurs_adoptes') or [], 'combinaison': doc.get('combinaison'),
+                       'profils_au': doc.get('profils_au'), 'elo_au': doc.get('elo_au')},
+            **{k: resume_version(m.get(k)) for k in VERSIONS}, 'direct': m.get('direct')}
+
+
+def enregistrer_instantanes(racine, doc):
+    """Une ligne par match et par passage, dans simulateur/journal_pronostics/AAAA-MM-JJ.jsonl.gz
+    (jour UTC du passage ; fichier gzip complété à chaque passage)."""
+    import gzip
+    dossier = os.path.join(racine, INSTANTANES)
+    os.makedirs(dossier, exist_ok=True)
+    chemin = os.path.join(dossier, doc['genere_le'][:10] + '.jsonl.gz')
+    with gzip.open(chemin, 'at', encoding='utf-8') as f:
+        for m in doc['matchs']:
+            f.write(json.dumps(instantane(doc, m), ensure_ascii=False, separators=(',', ':')) + '\n')
+    return len(doc['matchs'])
+
+
+def lire_instantanes(racine, depuis=None):
+    """{uid: [instantanés dans l'ordre des passages]}."""
+    import glob
+    import gzip
+    out = {}
+    for p in sorted(glob.glob(os.path.join(racine, INSTANTANES, '*.jsonl.gz'))):
+        if depuis and os.path.basename(p)[:10] < depuis:
+            continue
+        try:
+            with gzip.open(p, 'rt', encoding='utf-8') as f:
+                for l in f:
+                    try:
+                        r = json.loads(l)
+                    except ValueError:
+                        continue
+                    out.setdefault(r['uid'], []).append(r)
+        except (OSError, EOFError):
+            continue
+    for L in out.values():
+        L.sort(key=lambda r: r['passage'])
+    return out
+
+
 def journaliser(racine, doc):
     chemin = os.path.join(racine, LOG)
     deja = set()
@@ -448,6 +512,9 @@ def journaliser(racine, doc):
                                                if m.get('simulation') else None),
                                 'combinaison': ({'p_home': m['combinaison']['p_home'], 'sets': m['combinaison']['sets']}
                                                 if m.get('combinaison') else None),
+                                'detail': {k: resume_version(m.get(k)) for k in VERSIONS},
+                                'pin_cotes': m.get('pin_cotes'), 'surface': m.get('surface'),
+                                'meilleur_des': m.get('meilleur_des'),
                                 'feuille': feuille_prevue(m)},
                                ensure_ascii=False) + '\n')
             n += 1
@@ -534,6 +601,107 @@ def bilan(racine, maintenant=None):
     return doc
 
 
+def score_reel(fi, inverse):
+    """« 6-4 3-6 7-6 » du point de vue home du pronostic, depuis une feuille TennisApi ; None sinon."""
+    a, b = (fi.get('score_home') or {}).get('sets') or [], (fi.get('score_away') or {}).get('sets') or []
+    if not a or len(a) != len(b):
+        return None
+    if inverse:
+        a, b = b, a
+    return ' '.join(f"{x}-{y}" for x, y in zip(a, b))
+
+
+def juger(v, gagnant, sets, score, jeux):
+    """Ce qui était juste dans une version du pronostic."""
+    if not v or v.get('p_home') is None:
+        return None
+    p = v['p_home']
+    out = {'p_home': p, 'proba_du_vainqueur': round(p if gagnant == 'home' else 1 - p, 4),
+           'vainqueur_juste': None if p == 0.5 else ((p > 0.5) == (gagnant == 'home'))}
+    if sets and v.get('sets'):
+        out['sets_prevus'] = max(v['sets'], key=v['sets'].get)
+        out['sets_justes'] = out['sets_prevus'] == sets
+        out['proba_des_sets_reels'] = v['sets'].get(sets)
+    sc = [x[0] for x in v.get('scores_probables') or []]
+    if sc:
+        out['score_prevu'] = sc[0]
+        if score:
+            out['score_juste'] = sc[0] == score
+            out['rang_du_score_reel'] = sc.index(score) + 1 if score in sc else None
+    if jeux is not None and v.get('jeux_moyen') is not None:
+        out['jeux_prevus'], out['ecart_jeux'] = v['jeux_moyen'], round(jeux - v['jeux_moyen'], 1)
+    return out
+
+
+def resoudre(racine, maintenant=None):
+    """Chaque match du journal dont le résultat est connu : 1re prédiction, dernière avant le match,
+    résultat réel (vainqueur, sets, score en jeux, feuille de stats), et le jugement de chaque version."""
+    maintenant = maintenant or dt.datetime.utcnow()
+    try:
+        sr = json.load(open(os.path.join(racine, 'set_results.json'), encoding='utf-8'))
+    except (OSError, ValueError):
+        sr = {}
+    journal, vus = [], set()
+    try:
+        for l in open(os.path.join(racine, LOG), encoding='utf-8'):
+            try:
+                r = json.loads(l)
+            except ValueError:
+                continue
+            if r['uid'] not in vus:
+                vus.add(r['uid'])
+                journal.append(r)
+    except OSError:
+        pass
+    passes = [r for r in journal if dt.datetime.fromisoformat(r['debut']) < maintenant]
+    if not passes:
+        return []
+    debut_min = (dt.date.fromisoformat(min(r['debut'] for r in passes)[:10]) - dt.timedelta(days=1)).isoformat()
+    idx = FE.Index(FE.lire(racine, depuis=debut_min))
+    inst = lire_instantanes(racine, depuis=debut_min)
+    out = []
+    for r in passes:
+        d0 = dt.date.fromisoformat(r['debut'][:10])
+        res, sens = NR.resultat(sr, d0, r['home'], r['away'])
+        fi, inv = idx.trouver(r['debut'][:10], r['home'], r['away'])
+        if fi is not None and str((fi.get('statut') or {}).get('texte') or '').lower() != 'ended':
+            fi = None
+        gagnant = sets = None
+        if res:
+            o = (lambda v: v) if sens == 1 else (lambda v: {'home': 'away', 'away': 'home'}.get(v))
+            gagnant = o(res.get('match'))
+            s1, s2 = o(res.get('set1')), o(res.get('set2'))
+            if r.get('meilleur_des', 3) == 3 and s1 in ('home', 'away') and s2 in ('home', 'away') and not (s1 == s2 and gagnant != s1):
+                sets = ('2-0' if gagnant == 'home' else '0-2') if s1 == s2 else ('2-1' if gagnant == 'home' else '1-2')
+        score = score_reel(fi, inv) if fi else None
+        if gagnant not in ('home', 'away') and fi and fi.get('vainqueur') in (1, 2):
+            gagnant = 'home' if (fi['vainqueur'] == 1) != inv else 'away'
+        if gagnant not in ('home', 'away'):
+            continue
+        if score:
+            ns = [tuple(int(v) for v in x.split('-')) for x in score.split()]
+            gh, ga = sum(1 for a, b in ns if a > b), sum(1 for a, b in ns if b > a)
+            if (gh > ga) == (gagnant == 'home'):
+                sets = f"{gh}-{ga}"
+            else:
+                score = None                     # feuille incohérente avec le résultat : on ne garde pas le score
+        jeux = sum(a + b for a, b in (tuple(int(v) for v in x.split('-')) for x in score.split())) if score else None
+        feuille = FE.feuille_reelle(fi, inv) if fi else None
+        avant = [x for x in inst.get(r['uid'], []) if x['passage'][:16] < r['debut'][:16]]
+        dernier = avant[-1] if avant else None
+        premier = r.get('detail') or {k: r.get(k) for k in VERSIONS}
+        out.append({'uid': r['uid'], 'debut': r['debut'], 'home': r['home'], 'away': r['away'], 'tournoi': r['tournoi'],
+                    'circuit': r.get('circuit'), 'pronostique_le': r.get('pronostique_le'),
+                    'dernier_passage': dernier['passage'] if dernier else None, 'n_passages': len(avant),
+                    'reel': {'gagnant': gagnant, 'sets': sets, 'score': score, 'jeux': jeux,
+                             'feuille': feuille[0] if feuille else None},
+                    'premier': {k: juger(premier.get(k), gagnant, sets, score, jeux) for k in VERSIONS},
+                    'dernier': ({k: juger(dernier.get(k), gagnant, sets, score, jeux) for k in VERSIONS} if dernier else None),
+                    'pin_cotes': r.get('pin_cotes')})
+    out.sort(key=lambda x: x['debut'], reverse=True)
+    return out
+
+
 def main(argv):
     racine = argv[1] if len(argv) > 1 else os.path.join(ICI, '..')
     doc = construire(racine)
@@ -541,9 +709,14 @@ def main(argv):
     with open(os.path.join(racine, SORTIE), 'w', encoding='utf-8') as f:
         json.dump(doc, f, ensure_ascii=False, indent=1)
     n = journaliser(racine, doc)
+    ni = enregistrer_instantanes(racine, doc)
     b = bilan(racine)
     with open(os.path.join(racine, BILAN), 'w', encoding='utf-8') as f:
         json.dump(b, f, ensure_ascii=False, indent=1)
+    R = resoudre(racine)
+    with open(os.path.join(racine, RESULTATS), 'w', encoding='utf-8') as f:
+        json.dump({'genere_le': doc['genere_le'], 'n': len(R), 'matchs': R}, f, ensure_ascii=False, separators=(',', ':'))
+    print(f"Enregistré : {ni} instantanés ({INSTANTANES}) · {len(R)} matchs joués prédit/réel ({RESULTATS})")
     t = b['tous']
     print(f"Pronostics : {len(doc['matchs'])} matchs dans les {HORIZON_H} h ({n} nouveaux au journal) · "
           f"bilan sur {b['joues_avec_resultat']} matchs joués : stats {t['stats_seules'].get('reussite_pct')} % · "
