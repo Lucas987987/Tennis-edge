@@ -1,0 +1,224 @@
+{
+ "genere_le": "2026-10-22T13:24:38+00:00",
+ "regle": "Réglé sur l'archive (ATP/WTA 2024 → 01/2026), jugé sur les feuilles collectées après l'archive (ATP/WTA/Challenger). Adopté si le biais des aces baisse, si la couverture de la 1re balle se rapproche de 80 % et si aucun écart moyen ne monte de plus de 2 %.",
+ "reglages": {
+  "ace_facteur": 1.1065,
+  "tau_f": 0.1704
+ },
+ "adopte": false,
+ "raison": "biais aces 2.4 % → 7.8 % ; couverture 1re balle à 66.3 % → 76.0 % ; écart moyen dégradé de plus de 2 % : aces",
+ "entrainement": {
+  "feuilles_de_joueur": 22356,
+  "periode": "2024-01-01 → 2026-02-01"
+ },
+ "jugement": {
+  "matchs": 1500,
+  "simulations_par_match": 300,
+  "periode": "2026-06-03 → 2026-10-10",
+  "versions": {
+   "sans_reglage": {
+    "aces": {
+     "libelle": "Aces",
+     "n": 3000,
+     "prevu_moy": 4.15,
+     "reel_moy": 4.25,
+     "mae": 2.187,
+     "correlation": 0.66,
+     "couverture_80_pct": 80.1,
+     "sous_p10_pct": 7.7,
+     "au_dessus_p90_pct": 12.2
+    },
+    "doubles_fautes": {
+     "libelle": "Doubles fautes",
+     "n": 3000,
+     "prevu_moy": 3.18,
+     "reel_moy": 3.18,
+     "mae": 1.727,
+     "correlation": 0.42,
+     "couverture_80_pct": 84.9,
+     "sous_p10_pct": 5.9,
+     "au_dessus_p90_pct": 9.2
+    },
+    "premiere_pct": {
+     "libelle": "% de 1re balle",
+     "n": 3000,
+     "prevu_moy": 62.4,
+     "reel_moy": 62.87,
+     "mae": 6.164,
+     "correlation": 0.412,
+     "couverture_80_pct": 66.3,
+     "sous_p10_pct": 15.5,
+     "au_dessus_p90_pct": 18.2
+    },
+    "gagnes_1re_pct": {
+     "libelle": "% gagnés derrière la 1re",
+     "n": 3000,
+     "prevu_moy": 67.17,
+     "reel_moy": 67.98,
+     "mae": 7.711,
+     "correlation": 0.483,
+     "couverture_80_pct": 72.4,
+     "sous_p10_pct": 12.4,
+     "au_dessus_p90_pct": 15.3
+    },
+    "gagnes_2e_pct": {
+     "libelle": "% gagnés derrière la 2e",
+     "n": 3000,
+     "prevu_moy": 48.92,
+     "reel_moy": 49.33,
+     "mae": 9.309,
+     "correlation": 0.307,
+     "couverture_80_pct": 76.9,
+     "sous_p10_pct": 10.5,
+     "au_dessus_p90_pct": 12.6
+    },
+    "balles_break_obtenues": {
+     "libelle": "Balles de break obtenues",
+     "n": 3000,
+     "prevu_moy": 7.45,
+     "reel_moy": 6.8,
+     "mae": 3.158,
+     "correlation": 0.349,
+     "couverture_80_pct": 82.0,
+     "sous_p10_pct": 10.8,
+     "au_dessus_p90_pct": 7.1
+    },
+    "breaks": {
+     "libelle": "Breaks réussis",
+     "n": 3000,
+     "prevu_moy": 3.08,
+     "reel_moy": 2.81,
+     "mae": 1.446,
+     "correlation": 0.456,
+     "couverture_80_pct": 87.5,
+     "sous_p10_pct": 6.8,
+     "au_dessus_p90_pct": 5.7
+    },
+    "jeux": {
+     "libelle": "Jeux gagnés",
+     "n": 3000,
+     "prevu_moy": 11.66,
+     "reel_moy": 11.49,
+     "mae": 3.025,
+     "correlation": 0.425,
+     "couverture_80_pct": 82.6,
+     "sous_p10_pct": 9.4,
+     "au_dessus_p90_pct": 8.0
+    },
+    "total_jeux": {
+     "libelle": "Total de jeux du match",
+     "n": 1500,
+     "prevu_moy": 23.32,
+     "reel_moy": 22.97,
+     "mae": 4.963,
+     "correlation": 0.442,
+     "couverture_80_pct": 84.5,
+     "sous_p10_pct": 7.7,
+     "au_dessus_p90_pct": 7.7
+    }
+   },
+   "avec_reglage": {
+    "aces": {
+     "libelle": "Aces",
+     "n": 3000,
+     "prevu_moy": 4.58,
+     "reel_moy": 4.25,
+     "mae": 2.258,
+     "correlation": 0.661,
+     "couverture_80_pct": 80.8,
+     "sous_p10_pct": 9.9,
+     "au_dessus_p90_pct": 9.3
+    },
+    "doubles_fautes": {
+     "libelle": "Doubles fautes",
+     "n": 3000,
+     "prevu_moy": 3.18,
+     "reel_moy": 3.18,
+     "mae": 1.727,
+     "correlation": 0.42,
+     "couverture_80_pct": 85.4,
+     "sous_p10_pct": 5.6,
+     "au_dessus_p90_pct": 9.0
+    },
+    "premiere_pct": {
+     "libelle": "% de 1re balle",
+     "n": 3000,
+     "prevu_moy": 62.31,
+     "reel_moy": 62.87,
+     "mae": 6.172,
+     "correlation": 0.413,
+     "couverture_80_pct": 76.0,
+     "sous_p10_pct": 10.8,
+     "au_dessus_p90_pct": 13.3
+    },
+    "gagnes_1re_pct": {
+     "libelle": "% gagnés derrière la 1re",
+     "n": 3000,
+     "prevu_moy": 67.17,
+     "reel_moy": 67.98,
+     "mae": 7.705,
+     "correlation": 0.484,
+     "couverture_80_pct": 71.9,
+     "sous_p10_pct": 12.5,
+     "au_dessus_p90_pct": 15.6
+    },
+    "gagnes_2e_pct": {
+     "libelle": "% gagnés derrière la 2e",
+     "n": 3000,
+     "prevu_moy": 48.93,
+     "reel_moy": 49.33,
+     "mae": 9.304,
+     "correlation": 0.311,
+     "couverture_80_pct": 77.2,
+     "sous_p10_pct": 10.5,
+     "au_dessus_p90_pct": 12.3
+    },
+    "balles_break_obtenues": {
+     "libelle": "Balles de break obtenues",
+     "n": 3000,
+     "prevu_moy": 7.44,
+     "reel_moy": 6.8,
+     "mae": 3.157,
+     "correlation": 0.35,
+     "couverture_80_pct": 82.2,
+     "sous_p10_pct": 11.0,
+     "au_dessus_p90_pct": 6.8
+    },
+    "breaks": {
+     "libelle": "Breaks réussis",
+     "n": 3000,
+     "prevu_moy": 3.09,
+     "reel_moy": 2.81,
+     "mae": 1.448,
+     "correlation": 0.455,
+     "couverture_80_pct": 87.6,
+     "sous_p10_pct": 6.7,
+     "au_dessus_p90_pct": 5.7
+    },
+    "jeux": {
+     "libelle": "Jeux gagnés",
+     "n": 3000,
+     "prevu_moy": 11.65,
+     "reel_moy": 11.49,
+     "mae": 3.033,
+     "correlation": 0.42,
+     "couverture_80_pct": 82.1,
+     "sous_p10_pct": 9.6,
+     "au_dessus_p90_pct": 8.3
+    },
+    "total_jeux": {
+     "libelle": "Total de jeux du match",
+     "n": 1500,
+     "prevu_moy": 23.3,
+     "reel_moy": 22.97,
+     "mae": 4.977,
+     "correlation": 0.436,
+     "couverture_80_pct": 84.2,
+     "sous_p10_pct": 7.7,
+     "au_dessus_p90_pct": 8.1
+    }
+   }
+  }
+ },
+ "duree_s": 255
+}

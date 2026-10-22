@@ -1,0 +1,20 @@
+{
+ "composantes": "ajustees",
+ "n0": 300.0,
+ "n0_choisi_sur_2023": {
+  "150": 0.5378,
+  "300": 0.53777,
+  "500": 0.53784
+ },
+ "raison": "log loss de la simulation pure : ajustée 0.6207 contre profils bruts 0.6437 (réussite 65.1 % contre 62.1 %)",
+ "combinaison": {
+  "adopte": true,
+  "poids": {
+   "elo": 0.7949,
+   "simulation": 0.3102
+  },
+  "raison": "log loss 2025 → : combinaison 0.6147 contre Elo 0.6148 et simulation 0.6248 (Pinnacle 0.598)",
+  "simulation": "simulation_pure_ajustee"
+ },
+ "genere_le": "2026-10-22T13:47:31+00:00"
+}
