@@ -38,6 +38,30 @@ def taux(L, cle):
     return (sum(1 for x in g if x[cle]), len(g))
 
 
+CIRCUITS = (('ATP', 'ATP'), ('WTA', 'WTA'), ('CH', 'Challenger'))
+
+
+def version_principale(m):
+    pr = m.get('premier') or {}
+    return next((pr[k] for k in ('combinaison', 'simulation', 'stats') if pr.get(k) and pr[k].get('vainqueur_juste') is not None), None)
+
+
+def lignes_circuits(S, Tous):
+    """22/10/2026 — fiabilité sur les circuits JOUÉS (ATP, WTA, Challenger), semaine et depuis le début ;
+    version principale (Simulation + Elo, sinon simulation, sinon Elo). L'ITF n'est pas compté."""
+    out = []
+    for c, lib in CIRCUITS:
+        def t(L):
+            v = [version_principale(m) for m in L if m.get('circuit') == c]
+            return taux(v, 'vainqueur_juste')
+        (o7, n7), (o, n) = t(S), t(Tous)
+        if not n:
+            continue
+        out.append(f"• {lib} : " + (f"{o7}/{n7} ({100 * o7 / n7:.0f} %) cette semaine · " if n7 else 'rien cette semaine · ')
+                   + f"{o}/{n} ({100 * o / n:.0f} %) depuis le début")
+    return out
+
+
 def construire(racine, maintenant=None):
     maintenant = maintenant or dt.datetime.now(dt.timezone.utc).replace(tzinfo=None)
     R = lire(os.path.join(racine, 'Tennis_Edge_Lab', 'live', 'pronostics_resultats.json'), {})
@@ -45,10 +69,12 @@ def construire(racine, maintenant=None):
     C = lire(os.path.join(ICI, 'choix_simulation.json'), {})
     E = lire(os.path.join(ICI, 'bilan_algo_etat.json'), {})
     depuis = (maintenant - dt.timedelta(days=7)).isoformat(timespec='minutes')
-    S = [m for m in R.get('matchs') or [] if m.get('debut', '') >= depuis]
+    # ITF exclu partout (22/10/2026) : aucun pari n'y est joué, il ne doit pas peser sur la fiabilité lue
+    Tous = [m for m in R.get('matchs') or [] if m.get('circuit') != 'ITF']
+    S = [m for m in Tous if m.get('debut', '') >= depuis]
     L = [f"🧠 <b>Bilan de l'algorithme</b> — semaine au {maintenant.date().strftime('%d/%m')}"]
     if S:
-        L.append(f"\n🎾 <b>{len(S)} matchs joués</b> (1re prédiction, avant le match)")
+        L.append(f"\n🎾 <b>{len(S)} matchs joués</b> sur tes circuits (1re prédiction, avant le match ; ITF non compté)")
         for k, lab in VERSIONS:
             v = [(m.get('premier') or {}).get(k) for m in S]
             ok, n = taux(v, 'vainqueur_juste')
@@ -58,6 +84,10 @@ def construire(racine, maintenant=None):
             c_ok, c_n = taux(v, 'score_juste')
             L.append(f"• {lab} : vainqueur {ok}/{n} ({100 * ok / n:.0f} %)"
                      + (f" · sets {s_ok}/{s_n}" if s_n else '') + (f" · score exact {c_ok}/{c_n}" if c_n else ''))
+        lc = lignes_circuits(S, Tous)
+        if lc:
+            L.append("\n🎯 <b>Par circuit</b> (vainqueur trouvé, version principale ; ITF non compté)")
+            L.extend(lc)
         err = []
         for m in S:
             pr = m.get('premier') or {}

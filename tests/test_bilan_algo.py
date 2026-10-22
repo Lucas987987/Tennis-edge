@@ -14,12 +14,13 @@ class Bilan(unittest.TestCase):
     def test_message(self):
         with tempfile.TemporaryDirectory() as d:
             os.makedirs(os.path.join(d, 'Tennis_Edge_Lab', 'live'))
-            m = lambda h, ok, p, sc=None: {'debut': '2026-10-20T14:00', 'home': h, 'away': 'X Y', 'tournoi': 'ATP Vienna',
+            m = lambda h, ok, p, sc=None, c='ATP', d_='2026-10-20T14:00': {'debut': d_, 'home': h, 'away': 'X Y', 'tournoi': 'ATP Vienna', 'circuit': c,
                                            'reel': {'gagnant': 'home' if ok else 'away', 'score': sc},
                                            'premier': {'combinaison': {'vainqueur_juste': ok, 'proba_du_vainqueur': p, 'sets_justes': ok,
                                                                        'score_juste': False},
                                                        'stats': {'vainqueur_juste': ok, 'proba_du_vainqueur': p}}}
-            json.dump({'matchs': [m('A B', True, 0.7), m('C D', False, 0.2, '4-6 3-6'), m('E F', True, 0.6)]},
+            json.dump({'matchs': [m('A B', True, 0.7), m('C D', False, 0.2, '4-6 3-6'), m('E F', True, 0.6),
+                                  m('G H', True, 0.6, c='CH', d_='2026-10-10T10:00'), m('I J', True, 0.9, c='ITF')]},
                       open(os.path.join(d, 'Tennis_Edge_Lab', 'live', 'pronostics_resultats.json'), 'w'))
             old = BA.ICI
             BA.ICI = d
@@ -31,8 +32,11 @@ class Bilan(unittest.TestCase):
                 t, etat = BA.construire(d, dt.datetime(2026, 10, 26, 3, 0))
             finally:
                 BA.ICI = old
-        self.assertIn('3 matchs joués', t)
+        self.assertIn('3 matchs joués</b> sur tes circuits', t)
         self.assertIn('Simulation + Elo : vainqueur 2/3 (67 %) · sets 2/3 · score exact 0/3', t)
+        self.assertIn('• ATP : 2/3 (67 %) cette semaine · 2/3 (67 %) depuis le début', t)
+        self.assertIn('• Challenger : rien cette semaine · 1/1 (100 %) depuis le début', t)
+        self.assertNotIn('ITF :', t)
         self.assertIn('C D annoncé à 80 %, battu (ATP Vienna, 4-6 3-6)', t)
         self.assertIn('+ styles · − blessure', t)
         self.assertIn("poids de la simulation 25 % (appris sur l'archive 2024–2026)", t)
