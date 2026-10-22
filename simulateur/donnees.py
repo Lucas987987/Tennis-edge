@@ -23,6 +23,8 @@ import os
 import re
 import unicodedata
 
+# Ordre des champs de « detail » (tuple, pour la mémoire : ~400 000 matchs).
+DETAIL = ('svpt', 'in1', 'w1', 'w2', 'ace', 'df', 'bpf', 'bps', 'sg')
 SURFACES = {'hard': 'Hard', 'clay': 'Clay', 'grass': 'Grass', 'carpet': 'Hard'}
 # Ordre des tours dans un tournoi (rejouer les matchs dans l'ordre où ils ont eu lieu).
 ORDRE_TOURS = {'Q1': 0, 'Q2': 1, 'Q3': 2, 'Q4': 3, 'ER': 4, 'R128': 4, 'R64': 5, 'R32': 6, 'RR': 6, 'R16': 7,
@@ -96,6 +98,17 @@ def charger(racine, annee_min=2018):
                     k1, k2 = _int(r.get(f'{p}_1stWon')), _int(r.get(f'{p}_2ndWon'))
                     if n and n >= 20 and k1 is not None and k2 is not None and 0 <= k1 + k2 <= n:
                         st[p] = (n, k1 + k2)
+                # 22/10/2026 : détail du service (feuille de stats complète) quand il est cohérent.
+                det = {}
+                for p in ('w', 'l'):
+                    v = {k: _int(r.get(f'{p}_{c}')) for k, c in (('svpt', 'svpt'), ('in1', '1stIn'), ('w1', '1stWon'),
+                                                                  ('w2', '2ndWon'), ('ace', 'ace'), ('df', 'df'),
+                                                                  ('bpf', 'bpFaced'), ('bps', 'bpSaved'), ('sg', 'SvGms'))}
+                    if (None not in v.values() and v['svpt'] >= 20 and 0 < v['in1'] < v['svpt']
+                            and 0 <= v['w1'] <= v['in1'] and 0 <= v['w2'] <= v['svpt'] - v['in1']
+                            and 0 <= v['ace'] <= v['w1'] and 0 <= v['df'] <= v['svpt'] - v['in1'] - v['w2']
+                            and 0 <= v['bps'] <= v['bpf']):
+                        det[p] = tuple(v[k] for k in DETAIL)
                 sets, complet = score_sets(r.get('score'))
                 out.append({
                     'date': debut, 'fin': fin, 'circuit': c,
@@ -104,6 +117,7 @@ def charger(racine, annee_min=2018):
                     'gagnant': f"{tour}:{r['winner_id']}", 'perdant': f"{tour}:{r['loser_id']}",
                     'nom_g': r.get('winner_name') or '', 'nom_p': r.get('loser_name') or '',
                     'stats': st if len(st) == 2 else None, 'sets': sets, 'complet': complet,
+                    'detail': det if len(det) == 2 else None,
                     'tournoi': r.get('tourney_name') or '',
                     'tour': ORDRE_TOURS.get(str(r.get('round') or '').upper(), 6),
                     'niveau': niveau,
