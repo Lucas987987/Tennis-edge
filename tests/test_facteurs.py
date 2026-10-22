@@ -266,3 +266,27 @@ class Blessure(unittest.TestCase):
         self.assertEqual(H.variables('c', 'x', 't', 15 * J, {})['retour_abandon_srv'], 0.0)
         self.assertEqual(H.variables('x', 'c', 't', 15 * J, {})['abandon_adv'], 0.5)
         self.assertEqual(H.variables('c', 'x', 't', 0.0, {})['abandon_srv'], 0.0)   # rien avant l'abandon
+
+
+class EntrainementProgressif(unittest.TestCase):
+    def test_saison_rejouee_semaine_apres_semaine(self):
+        import entrainement_progressif as EP
+        import backtest_match_simule as BMS
+        fiches, infos, _ = generer()
+        M = [FE.en_match(r) for r in fiches]
+        adj = AJ.ajuster([m for m in M if m], dt.date(2026, 11, 1), E.cle, n0=150)
+        L = FA.preparer(fiches, lambda jour: adj)
+        FA.avec_variables(L, infos)
+        p_elo = EP.elo_au_moment([], L)
+        EP.MIN_HORS = 400
+        self.assertEqual(len(p_elo), len(L))
+        r = EP.rejouer_saison(L, p_elo, ['forme_fatigue'], FA.apprendre, FA.victoire_ligne, BMS.ajuster_poids, 0.0,
+                              poids_archive={'elo': 0.8, 'simulation': 0.2})
+        self.assertGreaterEqual(len(r['semaines']), 10)               # 21 semaines, à partir de la 9e
+        self.assertEqual(r['semaines'][0]['semaine'], 9)
+        self.assertIsNone(r['semaines'][0]['combinaison'])             # pas encore assez de pronostics passés
+        self.assertIsNotNone(r['semaines'][-1]['combinaison'])
+        self.assertIn('poids', r)
+        self.assertIn('adopte', r)
+        # dans ce monde, l'Elo n'apprend que des feuilles, la simulation connaît la fatigue : elle prend du poids
+        self.assertGreater(r['poids_simulation_pct'], 50)

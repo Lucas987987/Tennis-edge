@@ -497,12 +497,12 @@ def deltas(v, coefs):
     return d['service'], d['aces'], d['bp']
 
 
-def victoire_ligne(x, coefs):
+def victoire_ligne(x, coefs, sigma=SIGMA):
     """P(vrai vainqueur) de la simulation pure (exacte), base + facteurs."""
     ca = S.appliquer_facteurs(x['srv'][0]['tx'], *deltas(x['var'][0], coefs))
     cb = S.appliquer_facteurs(x['srv'][1]['tx'], *deltas(x['var'][1], coefs))
     sg = 3 if x['bo'] == 5 else 2
-    p = S.victoire_pure(ca, cb, sg, SIGMA)
+    p = S.victoire_pure(ca, cb, sg, sigma)
     return p if x['vainqueur'] == 0 else 1 - p
 
 
@@ -709,6 +709,36 @@ def main(argv):
             doc['ensemble_sur_le_jugement'] = {'base': {'log_loss': ll0, 'reussite_pct': ok0},
                                                'avec': {'log_loss': ll1, 'reussite_pct': ok1}}
         doc['verdict'] = f"groupes adoptés : {', '.join(doc['adoptes']) or 'aucun'}"
+    # 22/10/2026 — ENTRAÎNEMENT PROGRESSIF : la saison des feuilles rejouée semaine après semaine, l'algorithme
+    # ré-entraîné à chaque fois sur le passé seulement (entrainement_progressif.py).
+    try:
+        import entrainement_progressif as EP
+        import backtest_match_simule as BMS
+        try:
+            with open(os.path.join(ICI, 'elo_etat.json'), encoding='utf-8') as f:
+                et = json.load(f)
+        except (OSError, ValueError):
+            et = {}
+        rg = choix.get('reglage_simulation') or {}
+        sigma = float(rg['sigma']) if rg.get('adopte') else SIGMA
+        cb = choix.get('combinaison') or {}
+        p_elo = EP.elo_au_moment(M, lignes, et.get('options'), et.get('depart_bas'))
+        doc['entrainement_progressif'] = EP.rejouer_saison(
+            lignes, p_elo, doc.get('adoptes') or [], apprendre, victoire_ligne, BMS.ajuster_poids, sigma,
+            poids_archive=cb.get('poids') if cb.get('adopte') else None)
+        ep = doc['entrainement_progressif']
+        print(f"Entraînement progressif : {len(ep.get('semaines', []))} semaines rejouées · "
+              f"{'ADOPTÉ' if ep.get('adopte') else 'non adopté'} — {ep.get('raison')}", flush=True)
+        for w in ep.get('semaines', []):
+            c = w.get('combinaison') or {}
+            print(f"  semaine {w['semaine']:>2} ({w['debut']}) · {w['n']:>4} matchs · simulation {w['simulation']['reussite_pct']} % · "
+                  f"Elo {w['elo']['reussite_pct']} % · simulation + Elo {c.get('reussite_pct', '—')} % · poids simulation "
+                  f"{w.get('poids_simulation_pct') if w.get('poids_simulation_pct') is not None else '—'} %", flush=True)
+        choix['combinaison_feuilles'] = {k: ep.get(k) for k in ('adopte', 'poids', 'raison', 'poids_simulation_pct')}
+        with open(os.path.join(ICI, 'choix_simulation.json'), 'w', encoding='utf-8') as f:
+            json.dump(choix, f, ensure_ascii=False, indent=1)
+    except Exception as e:  # l'étude des facteurs reste valable sans cette partie
+        print(f"::warning::Entraînement progressif non fait : {type(e).__name__}: {e}")
     doc['duree_s'] = round(time.time() - t0)
     with open(SORTIE, 'w', encoding='utf-8') as f:
         json.dump(doc, f, ensure_ascii=False, indent=1)
