@@ -2,6 +2,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const R = require('../research_registre.js');
+const R_ = R;
 const D = require('../research_direct.js');
 
 const doc = {
@@ -307,4 +308,20 @@ test('en direct : même calcul exact que simulateur/direct.py (22/10/2026)', () 
   assert.equal(R.directBlock({ uid: 'x' }, N), '');
   assert.match(R.directResultat(m, N, { sets: '6-1', jeux: '4-0', points: '', homeSert: true }), /<b>Fils<\/b> 99,9 %|<b>Fils<\/b> 100 %/);
   assert.match(R.directResultat(m, N, { sets: 'x', jeux: '', points: '', homeSert: true }), /Sets terminés/);
+});
+
+test('prédit / réel (22/10/2026)', () => {
+  const R = { n: 1, matchs: [{ uid: 'u', debut: '2026-10-21T14:00', home: 'Arthur Fils', away: 'Hugo Gaston', tournoi: 'ATP Vienna',
+    reel: { gagnant: 'home', sets: '2-0', score: '6-4 6-4', jeux: 20 },
+    premier: { combinaison: { p_home: 0.68, vainqueur_juste: true, sets_prevus: '2-0', sets_justes: true, score_prevu: '6-4 6-4', score_juste: true },
+      simulation: { p_home: 0.45, vainqueur_juste: false }, stats: { p_home: 0.7, vainqueur_juste: true }, marche: { p_home: 0.66, vainqueur_juste: true } } }] };
+  const h = R_.resultatsBlock(R);
+  assert.match(h, /Prédit \/ réel \(1 matchs joués\)/);
+  assert.match(h, /<small>Simulation \+ Elo<\/small><b>1\/1<\/b>/);
+  assert.match(h, /<small>Simulation<\/small><b>0\/1<\/b>/);
+  assert.match(h, /<b>Fils<\/b> 68 %.*score : 6-4 6-4/s);
+  assert.match(h, /21\/10 · Arthur Fils – Hugo Gaston/);
+  assert.match(h, /✓<\/span> vainqueur<br><span class="good">✓<\/span> sets<br><span class="good">✓<\/span> score/);
+  assert.match(R_.resultatsBlock({ matchs: [] }), /Aucun match joué/);
+  assert.equal(R_.resultatsBlock(null), '');
 });

@@ -591,6 +591,38 @@
       <tbody>${circ.map(c => `<tr><td>${esc(c)}</td>${vers.map(([k]) => `<td>${pcell(PC[c][k])}</td>`).join('')}</tr>`).join('')}</tbody></table></div><p class="mini">Vainqueurs trouvés par circuit.</p>` : ''}</details>`;
   }
 
+  // 22/10/2026 — PRÉDIT / RÉEL : chaque match joué, ce qu'on avait annoncé (1re prédiction) contre
+  // ce qui s'est passé. Tout est aussi gardé dans simulateur/journal_pronostics (chaque passage).
+  const VERSION_LIB = { combinaison: 'Simulation + Elo', simulation: 'Simulation', stats: 'Classement Elo', marche: 'Cote Pinnacle' };
+  function resultatsBlock(R, ouvert) {
+    if (!R || !R.matchs) return '';
+    const L = R.matchs;
+    if (!L.length) return '<details class="rg-eval"><summary>Prédit / réel</summary><p class="mini">Aucun match joué avec son résultat pour l\'instant.</p></details>';
+    const nc = n => esc(String(n || '').split(' ').slice(-1)[0]);
+    const ok = v => (v === true ? '<span class="good">✓</span>' : v === false ? '<span class="bad">✗</span>' : '·');
+    const principal = m => ['combinaison', 'simulation', 'stats'].find(k => m.premier && m.premier[k]);
+    const resume = Object.keys(VERSION_LIB).map(k => {
+      const g = L.filter(m => m.premier && m.premier[k] && m.premier[k].vainqueur_juste != null);
+      if (!g.length) return '';
+      const j = g.filter(m => m.premier[k].vainqueur_juste).length;
+      return `<div><small>${VERSION_LIB[k]}</small><b>${nf(j, 0)}/${nf(g.length, 0)}</b><small>vainqueurs trouvés</small></div>`;
+    }).join('');
+    const lignes = L.slice(0, 60).map(m => {
+      const k = principal(m); const v = k ? m.premier[k] : null; const r = m.reel || {};
+      const pin = m.premier && m.premier.marche;
+      const fav = v ? (v.p_home >= 0.5 ? m.home : m.away) : null;
+      const pf = v ? Math.max(v.p_home, 1 - v.p_home) : null;
+      const prevu = v ? `<b>${nc(fav)}</b> ${pcCote(pf)}${v.score_prevu ? `<span class="detail">score : ${esc(v.score_prevu)}</span>` : (v.sets_prevus ? `<span class="detail">sets : ${esc(v.sets_prevus)}</span>` : '')}<span class="detail">${esc(VERSION_LIB[k])}</span>` : '—';
+      const reel = `<b>${nc(r.gagnant === 'home' ? m.home : m.away)}</b>${r.score ? `<span class="detail">${esc(r.score)}</span>` : (r.sets ? `<span class="detail">sets : ${esc(r.sets)}</span>` : '')}`;
+      const juste = v ? `${ok(v.vainqueur_juste)} vainqueur${v.sets_justes != null ? `<br>${ok(v.sets_justes)} sets` : ''}${v.score_juste != null ? `<br>${ok(v.score_juste)} score` : ''}` : '—';
+      return `<tr><td>${esc(String(m.debut).slice(5, 10).split('-').reverse().join('/'))} · ${esc(m.home)} – ${esc(m.away)}<span class="detail">${esc(m.tournoi || '')}</span></td><td>${prevu}</td><td>${pin ? `${nc(pin.p_home >= 0.5 ? m.home : m.away)} ${pcCote(Math.max(pin.p_home, 1 - pin.p_home))}` : '—'}</td><td>${reel}</td><td>${juste}</td></tr>`;
+    }).join('');
+    return `<details class="rg-eval" id="rgResultats"${ouvert ? ' open' : ''}><summary>Prédit / réel (${nf(L.length, 0)} matchs joués)</summary>
+      <div class="rg-kpis">${resume}</div>
+      <div class="table-wrap rg-table"><table><thead><tr><th>Match</th><th>Prédit avant le match</th><th>Pinnacle</th><th>Résultat</th><th>Juste ?</th></tr></thead><tbody>${lignes}</tbody></table></div>
+      <p class="mini">Première prédiction de chaque match, jamais retouchée. Version affichée : Simulation + Elo quand elle existait, sinon la simulation, sinon le classement Elo. Le score en jeux arrive avec la feuille de match (collecte de 4 h 41 et 16 h 41 UTC). Tout est enregistré : chaque passage dans simulateur/journal_pronostics, chaque match joué dans live/pronostics_resultats.json.</p></details>`;
+  }
+
   function pronosticsBlock(P, B, ouverts) {
     if (!P || !P.matchs) return '';
     const pc = v => (fin(v) ? `${nf(100 * v, 0)} %` : '—');
@@ -699,7 +731,7 @@
     const shown = list.slice(state.page * PAGE, (state.page + 1) * PAGE);
     const opt = (vals, v) => vals.map(([k, l]) => `<option value="${esc(k)}" ${k === (v || '') ? 'selected' : ''}>${esc(l)}</option>`).join('');
     const circuits = [...new Set(cur.list.map(m => m.circuit))].sort();
-    host.innerHTML = `${pronosticsBlock(state.pronoDoc, state.pronoBilan, state.simOpen)}${serviceBlock(state.servDoc, state.servQ, state.servKey, state.servOpen)}${valeurBlock(state.valeurDoc)}${croisementsBlock(state.croisDoc)}${delaiBlock(state.delaiDoc)}${evaluation(state.evalDoc)}${booksBlock(state.valeurDoc)}
+    host.innerHTML = `${pronosticsBlock(state.pronoDoc, state.pronoBilan, state.simOpen)}${resultatsBlock(state.pronoResultats, state.simOpen.has('resultats'))}${serviceBlock(state.servDoc, state.servQ, state.servKey, state.servOpen)}${valeurBlock(state.valeurDoc)}${croisementsBlock(state.croisDoc)}${delaiBlock(state.delaiDoc)}${evaluation(state.evalDoc)}${booksBlock(state.valeurDoc)}
       <div class="rg-filters">
         <label>Mois<select id="rgMois">${opt([...state.index.mois].reverse().map(x => [x.mois, `${x.mois} (${x.matchs})`]), state.mois)}</select></label>
         <label>Circuit<select id="rgCircuit">${opt([['', 'tous'], ...circuits.map(c => [c, c])], state.f.circuit)}</select></label>
@@ -723,6 +755,8 @@
     document.querySelectorAll('#registreBody .rg-sim').forEach(d => d.addEventListener('toggle', () => {
       if (d.open) state.simOpen.add(d.dataset.sim); else state.simOpen.delete(d.dataset.sim);
     }));
+    const resD = $('rgResultats');
+    if (resD) resD.addEventListener('toggle', () => { if (resD.open) state.simOpen.add('resultats'); else state.simOpen.delete('resultats'); });
     const serv = $('rgServ');
     if (serv) serv.addEventListener('toggle', async () => {
       state.servOpen = serv.open;
@@ -762,12 +796,13 @@
     try { state.croisDoc = await json('./live/croisements.json'); } catch { /* croisements absents */ }
     try { state.pronoDoc = await json('./live/pronostics.json'); } catch { /* pronostics absents */ }
     try { state.pronoBilan = await json('./live/pronostics_bilan.json'); } catch { /* bilan absent */ }
+    try { state.pronoResultats = await json('./live/pronostics_resultats.json'); } catch { /* prédit / réel absent */ }
     render();
   }
   if (hasDoc && typeof module === 'undefined') {
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
   }
   if (typeof module !== 'undefined') {
-    module.exports = { pronosticsBlock, calibrationBlock, directBlock, directResultat, enDirect, lireScore, facteursBlock, simuleBlock, serviceBlock, serviceInner, ficheService, chercherJoueurs, croisementsBlock, delaiBlock, booksBlock, valeurBlock, victoires, powerFair, decodeMonth, fairRow, bestRow, filterMatches, coherence, lectureOf, effective, evaluation, fiche, row };
+    module.exports = { resultatsBlock, pronosticsBlock, calibrationBlock, directBlock, directResultat, enDirect, lireScore, facteursBlock, simuleBlock, serviceBlock, serviceInner, ficheService, chercherJoueurs, croisementsBlock, delaiBlock, booksBlock, valeurBlock, victoires, powerFair, decodeMonth, fairRow, bestRow, filterMatches, coherence, lectureOf, effective, evaluation, fiche, row };
   }
 })();
