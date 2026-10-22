@@ -1,0 +1,19 @@
+# Worker tennis-edge-closing — le SEUL déclencheur des collectes (capture des
+# cotes, Polymarket, Kalshi, courbes live + alertes).
+#
+# Rangé dans le dépôt le 22/10/2026. Déployé AUTOMATIQUEMENT par
+# .github/workflows/deploy_closing.yml à chaque modification de ce dossier sur
+# main. Ne plus modifier le code dans le tableau de bord Cloudflare : le
+# prochain déploiement l'écraserait.
+name = "tennis-edge-closing"
+main = "worker.js"
+compatibility_date = "2025-01-01"
+workers_dev = true
+# Garde les variables réglées dans le tableau de bord (GH_OWNER, GH_REPO,
+# DAY_CADENCE_MIN…) au lieu de les effacer. Le secret GH_TOKEN n'est jamais
+# touché par un déploiement.
+keep_vars = true
+
+# DOIT correspondre à CRON_MIN dans worker.js.
+[triggers]
+crons = ["*/3 * * * *"]
