@@ -127,8 +127,10 @@ class ReglageSimulation(unittest.TestCase):
         L = lignes(6000)
         for x in L:                                              # monde où la simulation à σ = 0 est la bonne
             p = x['pinnacle']                                   # la vraie probabilité du monde synthétique
-            x['grille'] = {'0.15|1': 0.5 + 0.8 * (p - 0.5), '0|1': p, '0|1.3': 0.5 + 1.3 * (p - 0.5)}
+            x['grille'] = {'0|0.15|1': 0.5 + 0.8 * (p - 0.5), '0|0|1': 0.5 + 0.6 * (p - 0.5), '30|0|1': p,
+                           '0|0|1.3': 0.5 + 1.3 * (p - 0.5)}
         r = BMS.choisir_reglage(L)
-        self.assertEqual(r['cle'], '0|1')
+        self.assertEqual(r['cle'], '30|0|1')                    # les scores aident : couche « jeux » choisie
         self.assertTrue(r['adopte'])
-        self.assertEqual((r['sigma'], r['amplification']), (0.0, 1.0))
+        self.assertEqual((r['sigma'], r['amplification'], r['jeux']), (0.0, 1.0, 30.0))
+        self.assertLess(r['apport_des_scores_2025']['avec'], r['apport_des_scores_2025']['sans'])

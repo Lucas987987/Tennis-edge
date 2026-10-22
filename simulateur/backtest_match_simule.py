@@ -170,7 +170,8 @@ def ajuster_poids(X, ridge=1.0, tours=30):
 
 melange = S.melange
 GRILLE_SIGMA = (0.0, 0.05, 0.10, 0.15)
-GRILLE_AMPLIFICATION = (1.0, 1.15, 1.3, 1.5)
+GRILLE_AMPLIFICATION = (1.0, 1.15)
+GRILLE_JEUX = (120.0, 500.0)       # prior de la couche « jeux » (0 = sans) — 22/10/2026
 
 
 def _ll(L):
@@ -208,19 +209,24 @@ def choisir_reglage(L):
     appr = [x for x in L if x['date'] < DEBUT_JUGE_COMB]
     juge = [x for x in L if x['date'] >= DEBUT_JUGE_COMB]
     if len(appr) < 300 or len(juge) < 300:
-        return {'adopte': False, 'sigma': 0.15, 'amplification': 1.0, 'cle': '0.15|1', 'raison': 'pas assez de matchs'}
+        return {'adopte': False, 'sigma': 0.15, 'amplification': 1.0, 'jeux': 0.0, 'cle': '0|0.15|1', 'raison': 'pas assez de matchs'}
     cles = list(appr[0]['grille'])
     sc = {k: _ll([x['grille'][k] for x in appr]) for k in cles}
     best = min(sc, key=sc.get)
-    actuel = '0.15|1'
+    actuel = '0|0.15|1'
+    # ce qu'apporte la couche « jeux » seule (même σ et k que le choix, sans les scores)
+    sans_jeux = '0|' + best.split('|', 1)[1]
+    js = _ll([x['grille'][sans_jeux] for x in juge])
     jb, ja = _ll([x['grille'][best] for x in juge]), _ll([x['grille'][actuel] for x in juge])
     rb = bilan_victoire([x['grille'][best] for x in juge])
     ra = bilan_victoire([x['grille'][actuel] for x in juge])
-    s_, k_ = best.split('|')
-    return {'adopte': best != actuel and jb < ja, 'sigma': float(s_), 'amplification': float(k_), 'cle': best,
+    l_, s_, k_ = best.split('|')
+    return {'adopte': best != actuel and jb < ja, 'sigma': float(s_), 'amplification': float(k_), 'jeux': float(l_), 'cle': best,
+            'apport_des_scores_2025': {'avec': round(jb, 5), 'sans': round(js, 5)},
             'grille_2024': {k: round(v, 5) for k, v in sorted(sc.items(), key=lambda kv: kv[1])},
             'jugement': {'choisi': rb, 'actuel': ra},
-            'raison': (f"choisi sur 2024 : σ = {s_}, k = {k_} ; 2025 → : log loss {round(jb, 4)} contre {round(ja, 4)} "
+            'raison': (f"choisi sur 2024 : σ = {s_}, k = {k_}, apprentissage des scores {'non' if l_ == '0' else 'oui (prior ' + l_ + ')'} ; "
+                       f"2025 → : log loss {round(jb, 4)} contre {round(ja, 4)} (sans les scores : {round(js, 4)}) "
                        f"(réussite {rb.get('reussite_pct')} % contre {ra.get('reussite_pct')} %, calibration "
                        + ' · '.join(f"{c['tranche']} {c['prevu']}→{c['reel']}" for c in rb.get('calibration', [])) + ")")}
 
@@ -325,6 +331,7 @@ def main(argv):
     R = {v: Suivi() for v in ('simulation_pure_ajustee', 'simulation_pure', 'stats_seules', 'stats_plus_marche', 'joueurs_moyens')}
     VIC = {'simulation_pure_ajustee': [], 'simulation_pure': [], 'elo': [], 'pinnacle': []}   # proba donnée au vrai vainqueur
     adj, mois_adj = None, None                                    # ajustement aux adversaires, refait chaque mois
+    jeux = {}
     try:
         with open(CHOIX, encoding='utf-8') as f:
             choix_avant = json.load(f)
@@ -353,18 +360,24 @@ def main(argv):
         if mois_adj != debut_mois:                                 # point-in-time : tournois finis avant le 1er du mois
             t1 = time.time()
             adj = AJ.ajuster_choisi(M, debut_mois, E.cle, n0=n0, dyn=dyn, depart=adj, tours=6 if adj is None else 2)
+            # couche « jeux » : apprend aussi des matchs SANS feuille (score seul), par-dessus le modèle des points
+            jeux = {lam: AJ.ajuster_jeux(M, debut_mois, E.cle, adj, lam=lam, depart=jeux.get(lam), tours=6 if not jeux else 3)
+                    for lam in GRILLE_JEUX}
             mois_adj = debut_mois
             print(f"  ajustement aux adversaires au {debut_mois} ({round(time.time() - t1)} s)", flush=True)
         ag, ap = S.composantes_ajustees(adj, g, p, m['circuit'], m['surface']), S.composantes_ajustees(adj, p, g, m['circuit'], m['surface'])
         moy = S.borner(adj.taux('__moyen__', '__moyen__', m['circuit'], m['surface']))
         grille = {}
-        for k_amp in GRILLE_AMPLIFICATION:
-            a2, p2 = S.amplifier(ag, moy, k_amp), S.amplifier(ap, moy, k_amp)
-            for s_ in GRILLE_SIGMA:
-                grille[f"{s_:g}|{k_amp:g}"] = S.victoire_pure(a2, p2, sg, s_)
+        for lam in (0,) + GRILLE_JEUX:
+            Gj = jeux.get(lam) if lam else None
+            ag_, ap_ = (S.borner(AJ.avec_jeux(ag, Gj, g, p)), S.borner(AJ.avec_jeux(ap, Gj, p, g))) if Gj else (ag, ap)
+            for k_amp in GRILLE_AMPLIFICATION:
+                a2, p2 = S.amplifier(ag_, moy, k_amp), S.amplifier(ap_, moy, k_amp)
+                for s_ in GRILLE_SIGMA:
+                    grille[f"{lam:g}|{s_:g}|{k_amp:g}"] = S.victoire_pure(a2, p2, sg, s_)
         LIGNES.append({'date': m['date'], 'circuit': m['circuit'], 'connus': V['pred_sack'][i][1],
                        'elo': V['pred_sack'][i][0], 'pinnacle': pin[id(m)],
-                       'simulation_pure_ajustee': grille[f"{SIGMA:g}|1"],
+                       'simulation_pure_ajustee': grille[f"0|{SIGMA:g}|1"],
                        'simulation_pure': S.victoire_pure(cg, cp, sg, SIGMA), 'grille': grille,
                        # pour l'explorateur des pronostics (point 3, 22/10/2026)
                        'surface': m['surface'], 'bo': m['bo'], 'tour': m.get('tour'), 'niveau': m.get('niveau'),
@@ -428,7 +441,7 @@ def main(argv):
             for x in LIGNES:
                 x['simulation_reglee'] = x['grille'][rg['cle']]
             sim = 'simulation_reglee'
-        rap['choix']['reglage_simulation'] = {k: rg[k] for k in ('adopte', 'sigma', 'amplification', 'raison')}
+        rap['choix']['reglage_simulation'] = {k: rg[k] for k in ('adopte', 'sigma', 'amplification', 'jeux', 'raison')}
         print(f"\nRéglage de la simulation (choisi sur 2024, jugé 2025 →) : {'ADOPTÉ' if rg['adopte'] else 'non adopté'} — {rg['raison']}")
     rap['combinaison'] = combinaison(LIGNES, sim)
     rap['calibration_detaillee'] = calibration_detaillee(LIGNES, sim, rap['combinaison'])
