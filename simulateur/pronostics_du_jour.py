@@ -18,8 +18,15 @@ simulateur/pronostics_log.jsonl et jamais modifié ; le bilan (taux de
 vainqueurs devinés des deux versions, sur les matchs joués) se calcule sur ce
 journal — un vrai suivi en direct, sans retouche.
 
+MATCH SIMULÉ (22/10/2026) : chaque version est aussi jouée 5 000 fois point
+par point (match_simule.py) avec le profil de service des deux joueurs
+(profils_service.json : % de 1re balle, aces, doubles fautes, points gagnés
+derrière la 1re et la 2e balle, qualité de retour), au niveau de la version.
+On en tire la feuille de stats prévue (moyenne et fourchette à 80 %) et un
+match type, set par set avec les breaks.
+
 Entrées : matches_oddspapi.json (matchs à venir), simulateur/elo_etat.json,
-simulateur/notes_joueurs.json, set_results.json (résultats).
+simulateur/notes_joueurs.json, simulateur/profils_service.json, set_results.json (résultats).
 Sorties : Tennis_Edge_Lab/live/pronostics.json, Tennis_Edge_Lab/live/pronostics_bilan.json,
 simulateur/pronostics_log.jsonl. 0 requête API.
 """
@@ -34,10 +41,14 @@ import sys
 ICI = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, ICI)
 import elo as E  # noqa: E402
+import match_simule as MS  # noqa: E402
 import modele as M  # noqa: E402
 import nos_resultats as NR  # noqa: E402
+import profils_service as PS  # noqa: E402
 
 SIGMA = 0.15
+SIMULATIONS = int(os.environ.get('SIMULATIONS', '5000'))
+BALLES_CONNU = 500          # profil « connu » : au moins 500 balles de service (pondérées) dans l'archive
 HORIZON_H = 36
 LOG = 'simulateur/pronostics_log.jsonl'
 SORTIE = 'Tennis_Edge_Lab/live/pronostics.json'
@@ -119,6 +130,24 @@ def pronostic(p_home, c, sg, pa0, pb0):
             'tiebreak': round(r['tiebreak'], 3)}
 
 
+def charger_profils(racine):
+    try:
+        with open(os.path.join(racine, 'simulateur', 'profils_service.json'), encoding='utf-8') as f:
+            return PS.Profils.importer(json.load(f))
+    except (OSError, ValueError, KeyError):
+        return None
+
+
+def match_simule(P, h, a, c, s, sg, p_home, cle):
+    """Le match joué SIMULATIONS fois au niveau p_home, avec les profils de service des deux joueurs."""
+    ph, nh = P.profil(h, c, s, P.jour_export)
+    pa, na = P.profil(a, c, s, P.jour_export)
+    mu = P.moyenne(c, s)
+    r = MS.simuler(MS.composantes(ph, pa, mu), MS.composantes(pa, ph, mu), p_home, sg, SIMULATIONS, SIGMA, cle=cle)
+    r['profil_connu'] = [nh >= BALLES_CONNU, na >= BALLES_CONNU]
+    return r
+
+
 def matchs_a_venir(racine, maintenant):
     try:
         L = json.load(open(os.path.join(racine, 'matches_oddspapi.json'), encoding='utf-8'))
@@ -157,6 +186,7 @@ def construire(racine, maintenant=None):
     elo = E.Elo.importer(etat['joueurs'])
     surf = etat.get('surfaces_tournois') or {}
     S = Styles(os.path.join(racine, 'simulateur', 'notes_joueurs.json'))
+    PR = charger_profils(racine)
     venir = matchs_a_venir(racine, maintenant)
     # Un joueur = un classement : alias du dernier calcul, puis noms nouveaux reliés au joueur connu.
     alias = dict(etat.get('alias') or {})
@@ -179,13 +209,19 @@ def construire(racine, maintenant=None):
             k = books.power_exponent(*x['pin'])
             ph = (1 / x['pin'][0]) ** k if k else (1 / x['pin'][0]) / (1 / x['pin'][0] + 1 / x['pin'][1])
             marche = pronostic(ph, c, sg, pa0, pb0)
-        out.append({'uid': f"{x['debut'].date()}_{NR.slug(x['home'])}_{NR.slug(x['away'])}",
+        uid = f"{x['debut'].date()}_{NR.slug(x['home'])}_{NR.slug(x['away'])}"
+        if PR is not None:
+            for nom_v, v in (('stats', stats), ('marche', marche)):
+                if v:
+                    v['match_simule'] = match_simule(PR, h, a, c, s, sg, v['p_home'], f"{uid}|{nom_v}")
+        out.append({'uid': uid,
                     'debut': x['debut'].isoformat(timespec='minutes'), 'tournoi': x['tournoi'], 'circuit': c,
                     'surface': s, 'meilleur_des': 2 * sg - 1, 'home': x['home'], 'away': x['away'],
                     'matchs_joues': [elo.matchs(h), elo.matchs(a)], 'style_connu': [S.connu(h), S.connu(a)],
                     'stats': stats, 'marche': marche})
     return {'genere_le': maintenant.isoformat(timespec='seconds') + 'Z', 'elo_au': etat.get('dernier_match'),
-            'horizon_h': HORIZON_H, 'sigma': SIGMA, 'matchs': out}
+            'horizon_h': HORIZON_H, 'sigma': SIGMA, 'simulations': SIMULATIONS if PR is not None else 0,
+            'profils_au': PR.jour_export.isoformat() if PR is not None else None, 'matchs': out}
 
 
 def journaliser(racine, doc):

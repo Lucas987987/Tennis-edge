@@ -111,7 +111,7 @@
   const ago = min => (!fin(min) ? '—' : min >= 1440 ? `${nf(min / 1440, 1)} j avant` : min >= 60 ? `${nf(min / 60, 1)} h avant` : `${nf(min, 0)} min avant`);
 
   // ---------- Rendu ----------
-  const state = { index: null, months: {}, mois: null, list: null, f: {}, page: 0, open: new Set(), evalDoc: null, err: null };
+  const state = { index: null, months: {}, mois: null, list: null, f: {}, page: 0, open: new Set(), simOpen: new Set(), evalDoc: null, err: null };
   async function gz(url) {
     if (typeof DecompressionStream === 'undefined') throw new Error('navigateur sans décompression gzip');
     const r = await fetch(`${url}?t=${Date.now()}`, { cache: 'no-store' });
@@ -302,7 +302,43 @@
   }
 
   /** Pronostics du jour : deux versions côte à côte + compteur de réussite (pronostics.json, pronostics_bilan.json). */
-  function pronosticsBlock(P, B) {
+  /** 22/10/2026 — le match joué avant l'heure : feuille de stats prévue (moyenne + fourchette 80 %),
+   *  scores les plus fréquents, match type set par set avec les breaks. Version marché si Pinnacle cote. */
+  const SIM_LIGNES = [['aces', 'Aces', 1], ['doubles_fautes', 'Doubles fautes', 1], ['premiere_pct', '1re balle', 0, ' %'],
+    ['gagnes_1re_pct', 'Points gagnés 1re balle', 0, ' %'], ['gagnes_2e_pct', 'Points gagnés 2e balle', 0, ' %'],
+    ['balles_break_obtenues', 'Balles de break obtenues', 1], ['breaks', 'Breaks', 1],
+    ['jeux_service_gagnes_pct', 'Jeux de service gagnés', 0, ' %'], ['points_gagnes', 'Points gagnés', 0]];
+  function simuleBlock(m, ouverts) {
+    const v = m.marche && m.marche.match_simule ? m.marche : m.stats;
+    const S = v && v.match_simule;
+    if (!S || !S.feuille) return '';
+    const court = n => esc(String(n || '').split(' ').slice(-1)[0]);
+    const H = court(m.home), A = court(m.away);
+    const pl = (n, un, plus = `${un}s`) => (fin(n) ? `${n} ${n > 1 ? plus : un}` : '—');
+    const val = (x, dec, unit = '') => (x && fin(x.moy) ? `<b>${nf(x.moy, dec)}${unit}</b><span class="detail">${nf(x.p10, 0)}–${nf(x.p90, 0)}${unit}</span>` : '—');
+    const rows = SIM_LIGNES.map(([k, lab, dec, unit]) => `<tr><td>${val(S.feuille[0][k], dec, unit)}</td><th scope="row">${lab}</th><td>${val(S.feuille[1][k], dec, unit)}</td></tr>`).join('');
+    const scores = (S.scores || []).map(([sc, p]) => `${esc(sc)} <small>${nf(100 * p, 1)} %</small>`).join(' · ');
+    const T = S.match_type;
+    let recit = '';
+    if (T && T.sets) {
+      recit = T.sets.map(([a, b], i) => {
+        const br = (T.breaks || []).filter(x => x[0] === i).map(([, ga, gb, qui]) => `${qui === 0 ? H : A} (${ga + (qui === 0)}-${gb + (qui === 1)})`);
+        return `<li><b>Set ${i + 1} · ${a}-${b}</b>${a + b === 13 ? ' (tie-break)' : ''}${br.length ? ` — break${br.length > 1 ? 's' : ''} : ${br.join(', ')}` : ' — aucun break'}</li>`;
+      }).join('');
+      const f = T.feuille || [{}, {}];
+      recit = `<h5>Match type</h5><p class="mini">Une simulation réelle, la plus proche de la médiane parmi celles du score le plus fréquent (${esc(T.score)}).</p>
+        <ol class="rg-sim-sets">${recit}</ol><p class="mini">${H} : ${pl(f[0].aces, "ace")}, ${pl(f[0].doubles_fautes, "double faute", "doubles fautes")}, ${nf(f[0].premiere_pct, 0)} % de 1re balle · ${A} : ${pl(f[1].aces, "ace")}, ${pl(f[1].doubles_fautes, "double faute", "doubles fautes")}, ${nf(f[1].premiere_pct, 0)} % de 1re balle.</p>`;
+    }
+    const inconnus = [[m.home, 0], [m.away, 1]].filter(([, i]) => S.profil_connu && !S.profil_connu[i]).map(([n]) => esc(n));
+    const ouvert = ouverts && ouverts.has(m.uid) ? ' open' : '';
+    return `<details class="rg-sim" data-sim="${esc(m.uid || '')}"${ouvert}><summary>Match simulé ${nf(S.n, 0)} fois</summary>
+      <p class="mini">${v === m.marche ? 'Niveau : cote Pinnacle (stats + marché)' : 'Niveau : classement Elo (stats seules)'}. ${H} gagne ${nf(100 * S.victoire_A, 0)} % des simulations. Sous chaque valeur : fourchette à 80 % (8 simulations sur 10 dedans).${inconnus.length ? ` Profil de service inconnu pour ${inconnus.join(' et ')} : moyenne du circuit.` : ''}</p>
+      <div class="table-wrap rg-table rg-sim-feuille"><table><thead><tr><th>${H}</th><th></th><th>${A}</th></tr></thead><tbody>${rows}</tbody></table></div>
+      <p class="mini">Jeux : <b>${nf(S.jeux && S.jeux.moy, 1)}</b> (${nf(S.jeux && S.jeux.p10, 0)}–${nf(S.jeux && S.jeux.p90, 0)}) · au moins un tie-break : <b>${nf(100 * S.tiebreak, 0)} %</b></p>
+      <p class="mini">Scores les plus fréquents : ${scores}</p>${recit}</details>`;
+  }
+
+  function pronosticsBlock(P, B, ouverts) {
     if (!P || !P.matchs) return '';
     const pc = v => (fin(v) ? `${nf(100 * v, 0)} %` : '—');
     const heure = d => { try { return new Date(`${d}Z`).toLocaleString('fr-FR', { weekday: 'short', hour: '2-digit', minute: '2-digit' }); } catch { return esc(d); } };
@@ -320,9 +356,9 @@
     const cartes = P.matchs.map(m => `<div class="rg-pron"><div class="mini">${heure(m.debut)} · ${esc(m.tournoi)} · ${esc(m.surface)}${m.meilleur_des === 5 ? ' · 5 sets' : ''}</div>
         <div class="rg-pron-j"><b>${esc(m.home)}</b> – <b>${esc(m.away)}</b></div>
         <div class="table-wrap rg-table"><table><thead><tr><th></th><th>Vainqueur · sets</th><th>Scores les plus probables (sur ~1 500 possibles)</th><th>Jeux</th></tr></thead>
-        <tbody>${ligne('Stats seules', m.stats, m)}${ligne('Stats + marché', m.marche, m)}</tbody></table></div></div>`).join('');
+        <tbody>${ligne('Stats seules', m.stats, m)}${ligne('Stats + marché', m.marche, m)}</tbody></table></div>${simuleBlock(m, ouverts)}</div>`).join('');
     return `<details class="rg-eval" open><summary>Pronostics du jour (${nf(P.matchs.length, 0)} matchs dans les ${nf(P.horizon_h, 0)} h)</summary>
-      <p class="mini">Chaque match est rejoué point par point par le moteur (forme du jour). <b>Stats seules</b> : niveau tiré des résultats (classement Elo), style de service et de retour de chaque joueur. <b>Stats + marché</b> : même moteur, niveau pris à la cote Pinnacle. Le premier pronostic de chaque match est gardé tel quel : le compteur porte sur lui. Test du 21/10 sur 9 277 matchs ATP/WTA : stats seules 65,8 %, marché 68,0 %.</p>
+      <p class="mini">Chaque match est rejoué point par point par le moteur (forme du jour)${P.simulations ? `, puis joué ${nf(P.simulations, 0)} fois avec le profil de service des deux joueurs (archive au ${esc(P.profils_au || '—')}) : « Match simulé »` : ''}. <b>Stats seules</b> : niveau tiré des résultats (classement Elo), style de service et de retour de chaque joueur. <b>Stats + marché</b> : même moteur, niveau pris à la cote Pinnacle. Le premier pronostic de chaque match est gardé tel quel : le compteur porte sur lui. Test du 21/10 sur 9 277 matchs ATP/WTA : stats seules 65,8 %, marché 68,0 %.</p>
       <div class="rg-kpis rg-kpis-2">${kpi('Réussite stats seules', T.stats_seules)}${kpi('Réussite stats + marché', T.stats_plus_marche)}${kpi('7 derniers jours, stats', S.stats_seules)}${kpi('7 derniers jours, marché', S.stats_plus_marche)}</div>
       ${cartes || '<p class="mini">Aucun match dans les prochaines heures.</p>'}
     </details>`;
@@ -403,7 +439,7 @@
     const shown = list.slice(state.page * PAGE, (state.page + 1) * PAGE);
     const opt = (vals, v) => vals.map(([k, l]) => `<option value="${esc(k)}" ${k === (v || '') ? 'selected' : ''}>${esc(l)}</option>`).join('');
     const circuits = [...new Set(cur.list.map(m => m.circuit))].sort();
-    host.innerHTML = `${pronosticsBlock(state.pronoDoc, state.pronoBilan)}${valeurBlock(state.valeurDoc)}${croisementsBlock(state.croisDoc)}${delaiBlock(state.delaiDoc)}${evaluation(state.evalDoc)}${booksBlock(state.valeurDoc)}
+    host.innerHTML = `${pronosticsBlock(state.pronoDoc, state.pronoBilan, state.simOpen)}${valeurBlock(state.valeurDoc)}${croisementsBlock(state.croisDoc)}${delaiBlock(state.delaiDoc)}${evaluation(state.evalDoc)}${booksBlock(state.valeurDoc)}
       <div class="rg-filters">
         <label>Mois<select id="rgMois">${opt([...state.index.mois].reverse().map(x => [x.mois, `${x.mois} (${x.matchs})`]), state.mois)}</select></label>
         <label>Circuit<select id="rgCircuit">${opt([['', 'tous'], ...circuits.map(c => [c, c])], state.f.circuit)}</select></label>
@@ -424,6 +460,9 @@
     set('rgCircuit', 'circuit'); set('rgAlerte', 'alerte'); set('rgLecture', 'lecture'); set('rgResultat', 'resultat'); set('rgCourbe', 'courbe'); set('rgQ', 'q', 'input');
     const mois = $('rgMois');
     if (mois) mois.addEventListener('change', async () => { $('registreBody').insertAdjacentHTML('afterbegin', '<p class="mini">Chargement…</p>'); try { await loadMonth(mois.value); } catch (e) { state.err = e.message; } render(); });
+    document.querySelectorAll('#registreBody .rg-sim').forEach(d => d.addEventListener('toggle', () => {
+      if (d.open) state.simOpen.add(d.dataset.sim); else state.simOpen.delete(d.dataset.sim);
+    }));
     const prev = $('rgPrev'), next = $('rgNext');
     if (prev) prev.addEventListener('click', () => { state.page--; render(); });
     if (next) next.addEventListener('click', () => { state.page++; render(); });
@@ -454,6 +493,6 @@
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
   }
   if (typeof module !== 'undefined') {
-    module.exports = { pronosticsBlock, croisementsBlock, delaiBlock, booksBlock, valeurBlock, victoires, powerFair, decodeMonth, fairRow, bestRow, filterMatches, coherence, lectureOf, effective, evaluation, fiche, row };
+    module.exports = { pronosticsBlock, simuleBlock, croisementsBlock, delaiBlock, booksBlock, valeurBlock, victoires, powerFair, decodeMonth, fairRow, bestRow, filterMatches, coherence, lectureOf, effective, evaluation, fiche, row };
   }
 })();

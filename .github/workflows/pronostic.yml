@@ -6,6 +6,10 @@ name: Pronostic - test du modèle (deviner le vainqueur)
 # seules » et « stats + marché ». Chaque match est pronostiqué AVANT que son
 # résultat ne serve. 0 requête d'API.
 # Écrit simulateur/rapport_pronostic.json et simulateur/elo_etat.json.
+# 22/10/2026 — MATCH SIMULÉ : profils de service de chaque joueur
+# (simulateur/profils_service.json, lu ensuite par « Pronostics du jour ») et
+# test de la feuille de match simulée sur ATP/WTA 2024–2026
+# (simulateur/rapport_match_simule.json).
 on:
   workflow_dispatch:
 
@@ -50,12 +54,17 @@ jobs:
           git sparse-checkout set --no-cone 'atp_matches_20*.csv' 'atp_matches_qual_chall_20*.csv' 'wta_matches_20*.csv' 'wta_matches_qual_itf_20*.csv'
       - name: Test chronologique
         run: python simulateur/backtest_pronostic.py /tmp/sackmann . --scores
+      - name: Profils de service (aces, doubles fautes, 1re et 2e balle, retour)
+        run: python simulateur/profils_service.py /tmp/sackmann .
+      - name: Test de la feuille de match simulée (avant l'heure)
+        run: python simulateur/backtest_match_simule.py /tmp/sackmann . --n=300 --max=2000
       - name: Publier
         run: |
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -- simulateur/rapport_pronostic.json simulateur/elo_etat.json
+          git add -- simulateur/rapport_pronostic.json simulateur/elo_etat.json \
+                     simulateur/profils_service.json simulateur/rapport_match_simule.json
           if git diff --cached --quiet; then echo 'Rien de nouveau.'; exit 0; fi
           git commit -m 'Pronostic : test du modèle (vainqueur, sets)'
           for i in 1 2 3 4 5; do
