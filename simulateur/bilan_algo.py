@@ -73,11 +73,14 @@ def construire(racine, maintenant=None):
     E = lire(os.path.join(ICI, 'bilan_algo_etat.json'), {})
     depuis = (maintenant - dt.timedelta(days=7)).isoformat(timespec='minutes')
     # ITF exclu partout (22/10/2026) : aucun pari n'y est joué, il ne doit pas peser sur la fiabilité lue
-    Tous = [m for m in R.get('matchs') or [] if m.get('circuit') != 'ITF']
+    # abandons et forfaits exclus aussi (22/10/2026) : ils ne jugent pas le modèle
+    Tous = [m for m in R.get('matchs') or [] if m.get('circuit') != 'ITF' and not (m.get('reel') or {}).get('interrompu')]
+    n_int = sum(1 for m in R.get('matchs') or [] if (m.get('reel') or {}).get('interrompu') and m.get('debut', '') >= depuis)
     S = [m for m in Tous if m.get('debut', '') >= depuis]
     L = [f"🧠 <b>Bilan de l'algorithme</b> — semaine au {maintenant.date().strftime('%d/%m')}"]
     if S:
-        L.append(f"\n🎾 <b>{len(S)} matchs joués</b> sur tes circuits (1re prédiction, avant le match ; ITF non compté)")
+        L.append(f"\n🎾 <b>{len(S)} matchs joués</b> sur tes circuits (1re prédiction, avant le match ; ITF non compté)"
+                 + (f" · {n_int} abandon(s) ou forfait(s) non compté(s)" if n_int else ''))
         for k, lab in VERSIONS:
             v = [(m.get('premier') or {}).get(k) for m in S]
             ok, n = taux(v, 'vainqueur_juste')
@@ -202,7 +205,7 @@ def bilan_du_mois(racine, maintenant, journal):
     debut = (fin - dt.timedelta(days=1)).replace(day=1)
     R = lire(os.path.join(racine, 'Tennis_Edge_Lab', 'live', 'pronostics_resultats.json'), {})
     C = lire(os.path.join(ICI, 'choix_simulation.json'), {})
-    Mm = [m for m in R.get('matchs') or [] if m.get('circuit') != 'ITF'
+    Mm = [m for m in R.get('matchs') or [] if m.get('circuit') != 'ITF' and not (m.get('reel') or {}).get('interrompu')
           and debut.isoformat(timespec='minutes') <= m.get('debut', '') < fin.isoformat(timespec='minutes')]
     L = [f"📅 <b>Bilan de {MOIS[debut.month - 1]} {debut.year}</b>"]
     v = [version_principale(m) for m in Mm]
