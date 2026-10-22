@@ -29,6 +29,20 @@ MIN_ROWS = int(os.environ.get('MIN_ROWS', '3'))
 # aussi, au cas où d'anciennes alertes remonteraient dans la fenêtre.
 EXCHANGES = set(b.strip() for b in os.environ.get(
     'EXCHANGES', 'betfair-ex,betfair,matchbook,smarkets,betdaq').split(',') if b.strip())
+
+# AJOUTÉ LE 22/10/2026 : flux « données seules » (4casters, sbobet…) et books retirés (leovegas),
+# même traitement que les bourses — on ne peut pas y miser, ils sortent du registre actif et
+# vont à l'archive avec leur motif. Liste unique : Tennis_Edge_Lab/books.py.
+import importlib.util as _ilu  # noqa: E402
+_spec = _ilu.spec_from_file_location('tennis_edge_canal_books3', os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), '..', 'Tennis_Edge_Lab', 'books.py'))
+_books = _ilu.module_from_spec(_spec)
+_spec.loader.exec_module(_books)
+HORS_JEU = set(_books.DATA_ONLY) | set(_books.RETIRES)
+
+
+def _exclu(b):
+    return 'exchange' if b in EXCHANGES else ('non_jouable' if b in HORS_JEU else '')
 REPO_URL = os.environ.get('REPO_URL', '')
 TOKEN    = os.environ.get('TELEGRAM_TOKEN', '')
 CHAT     = os.environ.get('TELEGRAM_PUBLIC_CHAT_ID', '')
@@ -109,8 +123,8 @@ def main():
                 book, prix = entry[0], float(entry[1])
             except Exception:
                 continue
-            if book in EXCHANGES:
-                continue      # cf. note EXCHANGES en tête
+            if _exclu(book):
+                continue      # cf. note EXCHANGES en tête (et books non jouables, 22/10/2026)
             cl = closes.get((m.get('uid'), book, joueur))
             if not cl:
                 continue

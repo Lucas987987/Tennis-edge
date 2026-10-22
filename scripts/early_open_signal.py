@@ -46,6 +46,17 @@ LOG_FILE     = 'early_open_log.jsonl'
 GAP_MIN_PCT  = float(os.environ.get('EARLY_GAP_MIN_PCT', '5'))
 MAX_LEAD_MIN = float(os.environ.get('EARLY_MAX_LEAD_MIN', '600'))
 EXCLUDE_BOOKS = {'pinnacle', 'betfair-ex', 'betfair', 'matchbook', 'smarkets'}
+# CORRIGÉ LE 22/10/2026 : flux « données seules » (4casters, sbobet…) et books retirés (leovegas)
+# exclus comme partout ailleurs (liste unique : Tennis_Edge_Lab/books.py). 18 alertes sur 160 concernées.
+import importlib.util as _ilu  # noqa: E402
+_spec = _ilu.spec_from_file_location('tennis_edge_early_books', os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), '..', 'Tennis_Edge_Lab', 'books.py'))
+_books = _ilu.module_from_spec(_spec)
+_spec.loader.exec_module(_books)
+
+
+def _jouable(b):
+    return _books.flags(b)['jouable']
 
 
 def shin_ph(oh, oa):
@@ -147,7 +158,7 @@ def _find_signal(g):
 
     best = None
     for book, sb in g.items():
-        if book.startswith('_') or book in EXCLUDE_BOOKS or not isinstance(sb, dict):
+        if book.startswith('_') or book in EXCLUDE_BOOKS or not isinstance(sb, dict) or not _jouable(book):
             continue
         h, a = sb.get('h') or [], sb.get('a') or []
         if not h or not a or h[0][0] >= t_pin:

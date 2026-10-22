@@ -77,6 +77,20 @@ REBUILD = os.environ.get('REBUILD', '0') == '1'
 EXCHANGES = set(b.strip() for b in os.environ.get(
     'EXCHANGES', 'betfair-ex,betfair,matchbook,smarkets,betdaq').split(',') if b.strip())
 
+# AJOUTÉ LE 22/10/2026 : flux « données seules » (4casters, sbobet…) et books retirés (leovegas),
+# même traitement que les bourses — on ne peut pas y miser, ils sortent du registre actif et
+# vont à l'archive avec leur motif. Liste unique : Tennis_Edge_Lab/books.py.
+import importlib.util as _ilu  # noqa: E402
+_spec = _ilu.spec_from_file_location('tennis_edge_canal_books2', os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), '..', 'Tennis_Edge_Lab', 'books.py'))
+_books = _ilu.module_from_spec(_spec)
+_spec.loader.exec_module(_books)
+HORS_JEU = set(_books.DATA_ONLY) | set(_books.RETIRES)
+
+
+def _exclu(b):
+    return 'exchange' if b in EXCHANGES else ('non_jouable' if b in HORS_JEU else '')
+
 ARCHIVE = os.environ.get('ARCHIVE', 'canal_clv_exclus.csv')
 
 FIELDS = ['date', 'uid', 'joueur', 'book', 'prix_signale', 'cloture',
@@ -181,7 +195,7 @@ def load_ledger():
                 r.setdefault('gele_le', '')
                 # rétro-marquage des lignes gelées avant l'introduction du champ
                 if not r.get('exclu'):
-                    r['exclu'] = 'exchange' if r['book'] in EXCHANGES else ''
+                    r['exclu'] = _exclu(r['book'])
                 r.setdefault('match_id', '')
                 out[(r['date'], r.get('uid', ''), r['book'])] = r
     except Exception as e:
@@ -226,7 +240,7 @@ def main():
                 book, prix, ecart = entry[0], float(entry[1]), float(entry[2])
             except Exception:
                 continue
-            if book in EXCHANGES:
+            if _exclu(book):
                 continue          # catégorie exclue : n'entre plus au registre
             k = (date, uid, book)
             if k in ledger:
@@ -245,13 +259,13 @@ def main():
                 prix_signale=prix, cloture=cl, ecart_annonce=round(ecart, 1),
                 clv=round((prix / cl - 1) * 100, 1),
                 source=origine,
-                exclu='exchange' if book in EXCHANGES else '',
+                exclu=_exclu(book),
                 match_id=_canon(idx, uid),
                 gele_le=today)
             nouveaux += 1
 
     # ── Sortie des exchanges déjà gelés vers l'archive ────────────────────
-    a_archiver = [r for r in ledger.values() if r['book'] in EXCHANGES]
+    a_archiver = [r for r in ledger.values() if _exclu(r['book'])]
     if a_archiver:
         deja = set()
         if os.path.exists(ARCHIVE):
@@ -267,11 +281,11 @@ def main():
             for r in sorted(a_archiver, key=lambda x: x['date']):
                 if (r['date'], r.get('uid'), r['book']) in deja:
                     continue
-                r['exclu'] = 'exchange'
+                r['exclu'] = _exclu(r['book'])
                 w.writerow(r); n_arch += 1
         for r in a_archiver:
             ledger.pop((r['date'], r.get('uid', ''), r['book']), None)
-        print(f"→ {n_arch} ligne(s) d'exchange déplacée(s) vers {ARCHIVE} "
+        print(f"→ {n_arch} ligne(s) d'exchange ou de book non jouable déplacée(s) vers {ARCHIVE} "
               f"(hors métrique, trace conservée)")
 
     rows = list(ledger.values())

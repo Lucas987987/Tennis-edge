@@ -1,22 +1,125 @@
 {
- "genere_le": "2026-10-22T05:05:44Z",
- "pronostiques": 77,
- "joues_avec_resultat": 0,
+ "genere_le": "2026-10-22T12:13:39Z",
+ "pronostiques": 85,
+ "joues_avec_resultat": 2,
  "tous": {
-  "stats_seules": {
+  "combinaison": {
    "n": 0
   },
-  "stats_plus_marche": {
+  "simulation": {
    "n": 0
+  },
+  "stats_seules": {
+   "n": 2,
+   "reussite_pct": 100.0,
+   "log_loss": 0.5885,
+   "score_sets_juste_pct": 100.0,
+   "n_sets": 1
+  },
+  "stats_plus_marche": {
+   "n": 2,
+   "reussite_pct": 50.0,
+   "log_loss": 0.5681,
+   "score_sets_juste_pct": 100.0,
+   "n_sets": 1
   }
  },
  "7_derniers_jours": {
-  "stats_seules": {
+  "combinaison": {
    "n": 0
   },
-  "stats_plus_marche": {
+  "simulation": {
    "n": 0
+  },
+  "stats_seules": {
+   "n": 2,
+   "reussite_pct": 100.0,
+   "log_loss": 0.5885,
+   "score_sets_juste_pct": 100.0,
+   "n_sets": 1
+  },
+  "stats_plus_marche": {
+   "n": 2,
+   "reussite_pct": 50.0,
+   "log_loss": 0.5681,
+   "score_sets_juste_pct": 100.0,
+   "n_sets": 1
   }
  },
- "derniers": []
+ "calibration": {
+  "combinaison": [],
+  "simulation": [],
+  "stats_seules": [
+   {
+    "tranche": "50–60 %",
+    "n": 2,
+    "prevu": 55.7,
+    "reel": 100.0
+   }
+  ],
+  "stats_plus_marche": [
+   {
+    "tranche": "50–60 %",
+    "n": 1,
+    "prevu": 50.7,
+    "reel": 0.0
+   },
+   {
+    "tranche": "60–70 %",
+    "n": 1,
+    "prevu": 65.1,
+    "reel": 100.0
+   }
+  ]
+ },
+ "par_circuit": {
+  "WTA": {
+   "combinaison": {
+    "n": 0
+   },
+   "simulation": {
+    "n": 0
+   },
+   "stats_seules": {
+    "n": 2,
+    "reussite_pct": 100.0,
+    "log_loss": 0.5885,
+    "score_sets_juste_pct": 100.0,
+    "n_sets": 1
+   },
+   "stats_plus_marche": {
+    "n": 2,
+    "reussite_pct": 50.0,
+    "log_loss": 0.5681,
+    "score_sets_juste_pct": 100.0,
+    "n_sets": 1
+   }
+  }
+ },
+ "derniers": [
+  {
+   "debut": "2026-10-22T02:30",
+   "home": "Ann Li",
+   "away": "Zeynep Sonmez",
+   "gagnant": "home",
+   "combinaison": null,
+   "simulation": null,
+   "stats": 0.5969,
+   "marche": 0.6513
+  },
+  {
+   "debut": "2026-10-22T02:30",
+   "home": "Antonia Ruzic",
+   "away": "Kayla Day",
+   "gagnant": "home",
+   "combinaison": null,
+   "simulation": null,
+   "stats": 0.5163,
+   "marche": 0.4929
+  }
+ ],
+ "match_simule_contre_feuille": {
+  "n": 0,
+  "stats": {}
+ }
 }
