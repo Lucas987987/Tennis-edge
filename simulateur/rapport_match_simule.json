@@ -1,5 +1,5 @@
 {
- "genere_le": "2026-10-22T06:34:49+00:00",
+ "genere_le": "2026-10-22T13:47:31+00:00",
  "periode": "2024-01-01 → 2026-02-01",
  "matchs_simules": 2000,
  "simulations_par_match": 300,
@@ -9,44 +9,282 @@
  },
  "methode": "Profils de service point-in-time (tournois terminés avant le match), niveau ancré sur Elo ou Pinnacle, forme du jour σ = 0,15. Référence naïve : moyenne du circuit 2016–2023, même format. Fourchette 80 % = 10e–90e centile des simulations, bornes incluses : pour un compte entier (aces, breaks…) la couverture dépasse naturellement 80 % ; lire aussi « sous p10 » et « au-dessus p90 », qui doivent rester proches de 10 % chacun ou en dessous.",
  "versions": {
+  "simulation_pure_ajustee": {
+   "aces": {
+    "libelle": "Aces",
+    "n": 4000,
+    "prevu_moy": 4.69,
+    "reel_moy": 4.76,
+    "mae": 2.166,
+    "mae_naif": 2.969,
+    "gain_vs_naif_pct": 27.1,
+    "correlation": 0.754,
+    "couverture_80_pct": 84.5,
+    "sous_p10_pct": 5.7,
+    "au_dessus_p90_pct": 9.7
+   },
+   "doubles_fautes": {
+    "libelle": "Doubles fautes",
+    "n": 4000,
+    "prevu_moy": 3.38,
+    "reel_moy": 3.29,
+    "mae": 1.771,
+    "mae_naif": 1.935,
+    "gain_vs_naif_pct": 8.5,
+    "correlation": 0.457,
+    "couverture_80_pct": 84.8,
+    "sous_p10_pct": 6.7,
+    "au_dessus_p90_pct": 8.6
+   },
+   "premiere_pct": {
+    "libelle": "% de 1re balle",
+    "n": 4000,
+    "prevu_moy": 62.53,
+    "reel_moy": 62.37,
+    "mae": 5.515,
+    "mae_naif": 6.307,
+    "gain_vs_naif_pct": 12.6,
+    "correlation": 0.48,
+    "couverture_80_pct": 70.5,
+    "sous_p10_pct": 14.8,
+    "au_dessus_p90_pct": 14.8
+   },
+   "gagnes_1re_pct": {
+    "libelle": "% gagnés derrière la 1re",
+    "n": 4000,
+    "prevu_moy": 67.69,
+    "reel_moy": 68.01,
+    "mae": 6.963,
+    "mae_naif": 7.991,
+    "gain_vs_naif_pct": 12.9,
+    "correlation": 0.577,
+    "couverture_80_pct": 75.4,
+    "sous_p10_pct": 11.3,
+    "au_dessus_p90_pct": 13.3
+   },
+   "gagnes_2e_pct": {
+    "libelle": "% gagnés derrière la 2e",
+    "n": 4000,
+    "prevu_moy": 48.39,
+    "reel_moy": 48.6,
+    "mae": 8.7,
+    "mae_naif": 9.076,
+    "gain_vs_naif_pct": 4.2,
+    "correlation": 0.37,
+    "couverture_80_pct": 78.5,
+    "sous_p10_pct": 10.7,
+    "au_dessus_p90_pct": 10.8
+   },
+   "balles_break_obtenues": {
+    "libelle": "Balles de break obtenues",
+    "n": 4000,
+    "prevu_moy": 7.76,
+    "reel_moy": 7.5,
+    "mae": 3.174,
+    "mae_naif": 3.303,
+    "gain_vs_naif_pct": 3.9,
+    "correlation": 0.401,
+    "couverture_80_pct": 83.2,
+    "sous_p10_pct": 8.7,
+    "au_dessus_p90_pct": 8.1
+   },
+   "breaks": {
+    "libelle": "Breaks réussis",
+    "n": 4000,
+    "prevu_moy": 3.19,
+    "reel_moy": 3.12,
+    "mae": 1.442,
+    "mae_naif": 1.593,
+    "gain_vs_naif_pct": 9.5,
+    "correlation": 0.506,
+    "couverture_80_pct": 89.2,
+    "sous_p10_pct": 4.8,
+    "au_dessus_p90_pct": 6.0
+   },
+   "jeux": {
+    "libelle": "Jeux gagnés",
+    "n": 4000,
+    "prevu_moy": 12.34,
+    "reel_moy": 12.14,
+    "mae": 3.105,
+    "mae_naif": 3.353,
+    "gain_vs_naif_pct": 7.4,
+    "correlation": 0.524,
+    "couverture_80_pct": 84.0,
+    "sous_p10_pct": 8.6,
+    "au_dessus_p90_pct": 7.4
+   },
+   "total_jeux": {
+    "libelle": "Total de jeux du match",
+    "n": 2000,
+    "prevu_moy": 24.68,
+    "reel_moy": 24.29,
+    "mae": 5.257,
+    "mae_naif": 5.23,
+    "gain_vs_naif_pct": -0.5,
+    "correlation": 0.575,
+    "couverture_80_pct": 84.0,
+    "sous_p10_pct": 8.4,
+    "au_dessus_p90_pct": 7.6
+   }
+  },
+  "simulation_pure": {
+   "aces": {
+    "libelle": "Aces",
+    "n": 4000,
+    "prevu_moy": 4.45,
+    "reel_moy": 4.76,
+    "mae": 2.198,
+    "mae_naif": 2.969,
+    "gain_vs_naif_pct": 26.0,
+    "correlation": 0.739,
+    "couverture_80_pct": 82.5,
+    "sous_p10_pct": 5.7,
+    "au_dessus_p90_pct": 11.9
+   },
+   "doubles_fautes": {
+    "libelle": "Doubles fautes",
+    "n": 4000,
+    "prevu_moy": 3.43,
+    "reel_moy": 3.29,
+    "mae": 1.773,
+    "mae_naif": 1.935,
+    "gain_vs_naif_pct": 8.4,
+    "correlation": 0.462,
+    "couverture_80_pct": 84.9,
+    "sous_p10_pct": 6.8,
+    "au_dessus_p90_pct": 8.3
+   },
+   "premiere_pct": {
+    "libelle": "% de 1re balle",
+    "n": 4000,
+    "prevu_moy": 62.44,
+    "reel_moy": 62.37,
+    "mae": 5.494,
+    "mae_naif": 6.307,
+    "gain_vs_naif_pct": 12.9,
+    "correlation": 0.491,
+    "couverture_80_pct": 70.0,
+    "sous_p10_pct": 15.1,
+    "au_dessus_p90_pct": 14.9
+   },
+   "gagnes_1re_pct": {
+    "libelle": "% gagnés derrière la 1re",
+    "n": 4000,
+    "prevu_moy": 67.1,
+    "reel_moy": 68.01,
+    "mae": 7.162,
+    "mae_naif": 7.991,
+    "gain_vs_naif_pct": 10.4,
+    "correlation": 0.548,
+    "couverture_80_pct": 75.0,
+    "sous_p10_pct": 10.3,
+    "au_dessus_p90_pct": 14.7
+   },
+   "gagnes_2e_pct": {
+    "libelle": "% gagnés derrière la 2e",
+    "n": 4000,
+    "prevu_moy": 48.19,
+    "reel_moy": 48.6,
+    "mae": 8.796,
+    "mae_naif": 9.076,
+    "gain_vs_naif_pct": 3.1,
+    "correlation": 0.341,
+    "couverture_80_pct": 77.6,
+    "sous_p10_pct": 10.9,
+    "au_dessus_p90_pct": 11.6
+   },
+   "balles_break_obtenues": {
+    "libelle": "Balles de break obtenues",
+    "n": 4000,
+    "prevu_moy": 7.97,
+    "reel_moy": 7.5,
+    "mae": 3.234,
+    "mae_naif": 3.303,
+    "gain_vs_naif_pct": 2.1,
+    "correlation": 0.383,
+    "couverture_80_pct": 82.9,
+    "sous_p10_pct": 9.6,
+    "au_dessus_p90_pct": 7.5
+   },
+   "breaks": {
+    "libelle": "Breaks réussis",
+    "n": 4000,
+    "prevu_moy": 3.31,
+    "reel_moy": 3.12,
+    "mae": 1.474,
+    "mae_naif": 1.593,
+    "gain_vs_naif_pct": 7.5,
+    "correlation": 0.481,
+    "couverture_80_pct": 89.0,
+    "sous_p10_pct": 5.7,
+    "au_dessus_p90_pct": 5.3
+   },
+   "jeux": {
+    "libelle": "Jeux gagnés",
+    "n": 4000,
+    "prevu_moy": 12.37,
+    "reel_moy": 12.14,
+    "mae": 3.143,
+    "mae_naif": 3.353,
+    "gain_vs_naif_pct": 6.3,
+    "correlation": 0.507,
+    "couverture_80_pct": 84.2,
+    "sous_p10_pct": 8.8,
+    "au_dessus_p90_pct": 7.1
+   },
+   "total_jeux": {
+    "libelle": "Total de jeux du match",
+    "n": 2000,
+    "prevu_moy": 24.73,
+    "reel_moy": 24.29,
+    "mae": 5.283,
+    "mae_naif": 5.23,
+    "gain_vs_naif_pct": -1.0,
+    "correlation": 0.573,
+    "couverture_80_pct": 84.0,
+    "sous_p10_pct": 8.2,
+    "au_dessus_p90_pct": 7.8
+   }
+  },
   "stats_seules": {
    "aces": {
     "libelle": "Aces",
     "n": 4000,
-    "prevu_moy": 4.35,
+    "prevu_moy": 4.36,
     "reel_moy": 4.76,
-    "mae": 2.194,
+    "mae": 2.192,
     "mae_naif": 2.969,
-    "gain_vs_naif_pct": 26.1,
-    "correlation": 0.739,
-    "couverture_80_pct": 82.3,
-    "sous_p10_pct": 5.1,
-    "au_dessus_p90_pct": 12.6
+    "gain_vs_naif_pct": 26.2,
+    "correlation": 0.74,
+    "couverture_80_pct": 82.5,
+    "sous_p10_pct": 5.2,
+    "au_dessus_p90_pct": 12.3
    },
    "doubles_fautes": {
     "libelle": "Doubles fautes",
     "n": 4000,
     "prevu_moy": 3.37,
     "reel_moy": 3.29,
-    "mae": 1.757,
+    "mae": 1.756,
     "mae_naif": 1.935,
     "gain_vs_naif_pct": 9.2,
-    "correlation": 0.469,
-    "couverture_80_pct": 85.2,
-    "sous_p10_pct": 6.2,
+    "correlation": 0.468,
+    "couverture_80_pct": 84.8,
+    "sous_p10_pct": 6.5,
     "au_dessus_p90_pct": 8.7
    },
    "premiere_pct": {
     "libelle": "% de 1re balle",
     "n": 4000,
-    "prevu_moy": 62.45,
+    "prevu_moy": 62.44,
     "reel_moy": 62.37,
-    "mae": 5.493,
+    "mae": 5.492,
     "mae_naif": 6.307,
     "gain_vs_naif_pct": 12.9,
     "correlation": 0.49,
-    "couverture_80_pct": 70.2,
-    "sous_p10_pct": 14.9,
+    "couverture_80_pct": 70.3,
+    "sous_p10_pct": 14.8,
     "au_dessus_p90_pct": 14.8
    },
    "gagnes_1re_pct": {
@@ -54,25 +292,25 @@
     "n": 4000,
     "prevu_moy": 67.04,
     "reel_moy": 68.01,
-    "mae": 7.034,
+    "mae": 7.013,
     "mae_naif": 7.991,
-    "gain_vs_naif_pct": 12.0,
-    "correlation": 0.574,
-    "couverture_80_pct": 75.2,
-    "sous_p10_pct": 9.8,
-    "au_dessus_p90_pct": 14.9
+    "gain_vs_naif_pct": 12.2,
+    "correlation": 0.577,
+    "couverture_80_pct": 75.9,
+    "sous_p10_pct": 9.4,
+    "au_dessus_p90_pct": 14.7
    },
    "gagnes_2e_pct": {
     "libelle": "% gagnés derrière la 2e",
     "n": 4000,
-    "prevu_moy": 48.17,
+    "prevu_moy": 48.19,
     "reel_moy": 48.6,
-    "mae": 8.744,
+    "mae": 8.724,
     "mae_naif": 9.076,
-    "gain_vs_naif_pct": 3.7,
-    "correlation": 0.37,
-    "couverture_80_pct": 78.4,
-    "sous_p10_pct": 10.5,
+    "gain_vs_naif_pct": 3.9,
+    "correlation": 0.372,
+    "couverture_80_pct": 78.2,
+    "sous_p10_pct": 10.6,
     "au_dessus_p90_pct": 11.2
    },
    "balles_break_obtenues": {
@@ -80,52 +318,52 @@
     "n": 4000,
     "prevu_moy": 7.85,
     "reel_moy": 7.5,
-    "mae": 3.189,
+    "mae": 3.193,
     "mae_naif": 3.303,
-    "gain_vs_naif_pct": 3.4,
-    "correlation": 0.41,
-    "couverture_80_pct": 83.4,
-    "sous_p10_pct": 8.7,
-    "au_dessus_p90_pct": 7.9
+    "gain_vs_naif_pct": 3.3,
+    "correlation": 0.411,
+    "couverture_80_pct": 83.6,
+    "sous_p10_pct": 8.4,
+    "au_dessus_p90_pct": 8.0
    },
    "breaks": {
     "libelle": "Breaks réussis",
     "n": 4000,
     "prevu_moy": 3.28,
     "reel_moy": 3.12,
-    "mae": 1.439,
+    "mae": 1.435,
     "mae_naif": 1.593,
-    "gain_vs_naif_pct": 9.7,
-    "correlation": 0.507,
-    "couverture_80_pct": 88.6,
-    "sous_p10_pct": 5.8,
-    "au_dessus_p90_pct": 5.6
+    "gain_vs_naif_pct": 9.9,
+    "correlation": 0.512,
+    "couverture_80_pct": 89.2,
+    "sous_p10_pct": 5.6,
+    "au_dessus_p90_pct": 5.2
    },
    "jeux": {
     "libelle": "Jeux gagnés",
     "n": 4000,
     "prevu_moy": 12.13,
     "reel_moy": 12.14,
-    "mae": 3.086,
+    "mae": 3.076,
     "mae_naif": 3.353,
-    "gain_vs_naif_pct": 8.0,
-    "correlation": 0.535,
-    "couverture_80_pct": 84.0,
-    "sous_p10_pct": 8.3,
-    "au_dessus_p90_pct": 7.7
+    "gain_vs_naif_pct": 8.3,
+    "correlation": 0.539,
+    "couverture_80_pct": 84.4,
+    "sous_p10_pct": 8.0,
+    "au_dessus_p90_pct": 7.5
    },
    "total_jeux": {
     "libelle": "Total de jeux du match",
     "n": 2000,
     "prevu_moy": 24.26,
     "reel_moy": 24.29,
-    "mae": 5.142,
+    "mae": 5.138,
     "mae_naif": 5.23,
-    "gain_vs_naif_pct": 1.7,
-    "correlation": 0.582,
-    "couverture_80_pct": 84.9,
+    "gain_vs_naif_pct": 1.8,
+    "correlation": 0.584,
+    "couverture_80_pct": 84.5,
     "sous_p10_pct": 7.0,
-    "au_dessus_p90_pct": 8.2
+    "au_dessus_p90_pct": 8.5
    }
   },
   "stats_plus_marche": {
@@ -367,14 +605,365 @@
    }
   }
  },
+ "victoire": {
+  "simulation_pure_ajustee": {
+   "n": 2000,
+   "reussite_pct": 63.5,
+   "log_loss": 0.6254,
+   "brier": 0.2181,
+   "calibration": [
+    {
+     "tranche": "50–60 %",
+     "n": 992,
+     "prevu": 54.9,
+     "reel": 52.2
+    },
+    {
+     "tranche": "60–70 %",
+     "n": 626,
+     "prevu": 64.5,
+     "reel": 69.3
+    },
+    {
+     "tranche": "70–80 %",
+     "n": 271,
+     "prevu": 74.2,
+     "reel": 80.4
+    },
+    {
+     "tranche": "80–90 %",
+     "n": 98,
+     "prevu": 83.6,
+     "reel": 88.8
+    },
+    {
+     "tranche": "90–100 %",
+     "n": 13,
+     "prevu": 92.9,
+     "reel": 92.3
+    }
+   ]
+  },
+  "simulation_pure": {
+   "n": 2000,
+   "reussite_pct": 61.4,
+   "log_loss": 0.6436,
+   "brier": 0.2265,
+   "calibration": [
+    {
+     "tranche": "50–60 %",
+     "n": 1223,
+     "prevu": 54.7,
+     "reel": 54.2
+    },
+    {
+     "tranche": "60–70 %",
+     "n": 563,
+     "prevu": 64.3,
+     "reel": 68.9
+    },
+    {
+     "tranche": "70–80 %",
+     "n": 174,
+     "prevu": 74.1,
+     "reel": 79.9
+    },
+    {
+     "tranche": "80–90 %",
+     "n": 36,
+     "prevu": 83.1,
+     "reel": 94.4
+    },
+    {
+     "tranche": "90–100 %",
+     "n": 4,
+     "prevu": 91.0,
+     "reel": 100.0
+    }
+   ]
+  },
+  "elo": {
+   "n": 2000,
+   "reussite_pct": 65.5,
+   "log_loss": 0.6104,
+   "brier": 0.2117,
+   "calibration": [
+    {
+     "tranche": "50–60 %",
+     "n": 714,
+     "prevu": 55.1,
+     "reel": 53.9
+    },
+    {
+     "tranche": "60–70 %",
+     "n": 569,
+     "prevu": 64.8,
+     "reel": 62.6
+    },
+    {
+     "tranche": "70–80 %",
+     "n": 441,
+     "prevu": 74.7,
+     "reel": 74.6
+    },
+    {
+     "tranche": "80–90 %",
+     "n": 206,
+     "prevu": 84.5,
+     "reel": 85.9
+    },
+    {
+     "tranche": "90–100 %",
+     "n": 70,
+     "prevu": 93.0,
+     "reel": 90.0
+    }
+   ]
+  },
+  "pinnacle": {
+   "n": 2000,
+   "reussite_pct": 67.1,
+   "log_loss": 0.5949,
+   "brier": 0.2051,
+   "calibration": [
+    {
+     "tranche": "50–60 %",
+     "n": 629,
+     "prevu": 55.4,
+     "reel": 54.2
+    },
+    {
+     "tranche": "60–70 %",
+     "n": 558,
+     "prevu": 64.6,
+     "reel": 64.3
+    },
+    {
+     "tranche": "70–80 %",
+     "n": 442,
+     "prevu": 75.0,
+     "reel": 73.5
+    },
+    {
+     "tranche": "80–90 %",
+     "n": 257,
+     "prevu": 84.6,
+     "reel": 84.0
+    },
+    {
+     "tranche": "90–100 %",
+     "n": 114,
+     "prevu": 94.0,
+     "reel": 91.2
+    }
+   ]
+  }
+ },
+ "victoire_lecture": "simulation_pure : le match joué avec les seuls taux des deux joueurs (1re balle, aces, doubles fautes, points gagnés derrière la 1re et la 2e, qualité de retour), sans Elo ni cote : c'est la simulation qui désigne le vainqueur. elo / pinnacle : références.",
  "calibration": {
+  "simulation_pure_ajustee": {
+   "aces": [
+    {
+     "quintile": 1,
+     "n": 800,
+     "prevu": 1.48,
+     "reel": 1.24
+    },
+    {
+     "quintile": 2,
+     "n": 800,
+     "prevu": 2.58,
+     "reel": 2.52
+    },
+    {
+     "quintile": 3,
+     "n": 800,
+     "prevu": 3.8,
+     "reel": 3.9
+    },
+    {
+     "quintile": 4,
+     "n": 800,
+     "prevu": 5.64,
+     "reel": 5.87
+    },
+    {
+     "quintile": 5,
+     "n": 800,
+     "prevu": 9.94,
+     "reel": 10.27
+    }
+   ],
+   "doubles_fautes": [
+    {
+     "quintile": 1,
+     "n": 800,
+     "prevu": 1.97,
+     "reel": 1.88
+    },
+    {
+     "quintile": 2,
+     "n": 800,
+     "prevu": 2.59,
+     "reel": 2.47
+    },
+    {
+     "quintile": 3,
+     "n": 800,
+     "prevu": 3.15,
+     "reel": 3.01
+    },
+    {
+     "quintile": 4,
+     "n": 800,
+     "prevu": 3.88,
+     "reel": 3.9
+    },
+    {
+     "quintile": 5,
+     "n": 800,
+     "prevu": 5.29,
+     "reel": 5.17
+    }
+   ],
+   "breaks": [
+    {
+     "quintile": 1,
+     "n": 800,
+     "prevu": 1.81,
+     "reel": 1.67
+    },
+    {
+     "quintile": 2,
+     "n": 800,
+     "prevu": 2.56,
+     "reel": 2.48
+    },
+    {
+     "quintile": 3,
+     "n": 800,
+     "prevu": 3.18,
+     "reel": 3.13
+    },
+    {
+     "quintile": 4,
+     "n": 800,
+     "prevu": 3.79,
+     "reel": 3.81
+    },
+    {
+     "quintile": 5,
+     "n": 800,
+     "prevu": 4.59,
+     "reel": 4.53
+    }
+   ]
+  },
+  "simulation_pure": {
+   "aces": [
+    {
+     "quintile": 1,
+     "n": 800,
+     "prevu": 1.14,
+     "reel": 1.29
+    },
+    {
+     "quintile": 2,
+     "n": 800,
+     "prevu": 2.35,
+     "reel": 2.63
+    },
+    {
+     "quintile": 3,
+     "n": 800,
+     "prevu": 3.64,
+     "reel": 3.87
+    },
+    {
+     "quintile": 4,
+     "n": 800,
+     "prevu": 5.44,
+     "reel": 5.77
+    },
+    {
+     "quintile": 5,
+     "n": 800,
+     "prevu": 9.69,
+     "reel": 10.24
+    }
+   ],
+   "doubles_fautes": [
+    {
+     "quintile": 1,
+     "n": 800,
+     "prevu": 1.92,
+     "reel": 1.85
+    },
+    {
+     "quintile": 2,
+     "n": 800,
+     "prevu": 2.58,
+     "reel": 2.55
+    },
+    {
+     "quintile": 3,
+     "n": 800,
+     "prevu": 3.17,
+     "reel": 2.92
+    },
+    {
+     "quintile": 4,
+     "n": 800,
+     "prevu": 3.98,
+     "reel": 3.89
+    },
+    {
+     "quintile": 5,
+     "n": 800,
+     "prevu": 5.52,
+     "reel": 5.22
+    }
+   ],
+   "breaks": [
+    {
+     "quintile": 1,
+     "n": 800,
+     "prevu": 1.92,
+     "reel": 1.76
+    },
+    {
+     "quintile": 2,
+     "n": 800,
+     "prevu": 2.7,
+     "reel": 2.52
+    },
+    {
+     "quintile": 3,
+     "n": 800,
+     "prevu": 3.3,
+     "reel": 3.14
+    },
+    {
+     "quintile": 4,
+     "n": 800,
+     "prevu": 3.88,
+     "reel": 3.64
+    },
+    {
+     "quintile": 5,
+     "n": 800,
+     "prevu": 4.74,
+     "reel": 4.56
+    }
+   ]
+  },
   "stats_seules": {
    "aces": [
     {
      "quintile": 1,
      "n": 800,
      "prevu": 1.12,
-     "reel": 1.29
+     "reel": 1.27
     },
     {
      "quintile": 2,
@@ -386,19 +975,19 @@
      "quintile": 3,
      "n": 800,
      "prevu": 3.56,
-     "reel": 3.85
+     "reel": 3.92
     },
     {
      "quintile": 4,
      "n": 800,
-     "prevu": 5.29,
-     "reel": 5.84
+     "prevu": 5.3,
+     "reel": 5.78
     },
     {
      "quintile": 5,
      "n": 800,
      "prevu": 9.5,
-     "reel": 10.21
+     "reel": 10.23
     }
    ],
    "doubles_fautes": [
@@ -406,63 +995,63 @@
      "quintile": 1,
      "n": 800,
      "prevu": 1.88,
-     "reel": 1.85
+     "reel": 1.89
     },
     {
      "quintile": 2,
      "n": 800,
      "prevu": 2.52,
-     "reel": 2.51
+     "reel": 2.47
     },
     {
      "quintile": 3,
      "n": 800,
      "prevu": 3.1,
-     "reel": 2.92
+     "reel": 2.97
     },
     {
      "quintile": 4,
      "n": 800,
-     "prevu": 3.91,
-     "reel": 3.94
+     "prevu": 3.9,
+     "reel": 3.92
     },
     {
      "quintile": 5,
      "n": 800,
-     "prevu": 5.43,
-     "reel": 5.19
+     "prevu": 5.44,
+     "reel": 5.17
     }
    ],
    "breaks": [
     {
      "quintile": 1,
      "n": 800,
-     "prevu": 1.72,
-     "reel": 1.67
+     "prevu": 1.73,
+     "reel": 1.68
     },
     {
      "quintile": 2,
      "n": 800,
      "prevu": 2.62,
-     "reel": 2.51
+     "reel": 2.49
     },
     {
      "quintile": 3,
      "n": 800,
      "prevu": 3.27,
-     "reel": 3.13
+     "reel": 3.12
     },
     {
      "quintile": 4,
      "n": 800,
      "prevu": 3.93,
-     "reel": 3.67
+     "reel": 3.72
     },
     {
      "quintile": 5,
      "n": 800,
      "prevu": 4.85,
-     "reel": 4.64
+     "reel": 4.62
     }
    ]
   },
@@ -663,5 +1252,1191 @@
    ]
   }
  },
- "duree_s": 674
+ "duree_s": 1354,
+ "victoire_tous_les_matchs": {
+  "simulation_pure_ajustee": {
+   "n": 9267,
+   "reussite_pct": 65.1,
+   "log_loss": 0.6207,
+   "brier": 0.216,
+   "calibration": [
+    {
+     "tranche": "50–60 %",
+     "n": 4584,
+     "prevu": 54.8,
+     "reel": 55.9
+    },
+    {
+     "tranche": "60–70 %",
+     "n": 2900,
+     "prevu": 64.5,
+     "reel": 68.7
+    },
+    {
+     "tranche": "70–80 %",
+     "n": 1274,
+     "prevu": 74.3,
+     "reel": 79.7
+    },
+    {
+     "tranche": "80–90 %",
+     "n": 442,
+     "prevu": 83.8,
+     "reel": 90.5
+    },
+    {
+     "tranche": "90–100 %",
+     "n": 67,
+     "prevu": 92.2,
+     "reel": 94.0
+    }
+   ]
+  },
+  "simulation_pure": {
+   "n": 9267,
+   "reussite_pct": 62.1,
+   "log_loss": 0.6437,
+   "brier": 0.2265,
+   "calibration": [
+    {
+     "tranche": "50–60 %",
+     "n": 5554,
+     "prevu": 54.7,
+     "reel": 55.5
+    },
+    {
+     "tranche": "60–70 %",
+     "n": 2764,
+     "prevu": 64.1,
+     "reel": 68.2
+    },
+    {
+     "tranche": "70–80 %",
+     "n": 758,
+     "prevu": 74.0,
+     "reel": 81.5
+    },
+    {
+     "tranche": "80–90 %",
+     "n": 178,
+     "prevu": 83.9,
+     "reel": 91.0
+    },
+    {
+     "tranche": "90–100 %",
+     "n": 13,
+     "prevu": 91.3,
+     "reel": 100.0
+    }
+   ]
+  },
+  "elo": {
+   "n": 9267,
+   "reussite_pct": 66.2,
+   "log_loss": 0.6069,
+   "brier": 0.2102,
+   "calibration": [
+    {
+     "tranche": "50–60 %",
+     "n": 3213,
+     "prevu": 55.0,
+     "reel": 54.6
+    },
+    {
+     "tranche": "60–70 %",
+     "n": 2726,
+     "prevu": 64.8,
+     "reel": 63.0
+    },
+    {
+     "tranche": "70–80 %",
+     "n": 1984,
+     "prevu": 74.7,
+     "reel": 75.9
+    },
+    {
+     "tranche": "80–90 %",
+     "n": 1040,
+     "prevu": 84.5,
+     "reel": 84.1
+    },
+    {
+     "tranche": "90–100 %",
+     "n": 304,
+     "prevu": 92.9,
+     "reel": 93.1
+    }
+   ]
+  },
+  "pinnacle": {
+   "n": 9267,
+   "reussite_pct": 68.0,
+   "log_loss": 0.5901,
+   "brier": 0.2032,
+   "calibration": [
+    {
+     "tranche": "50–60 %",
+     "n": 2866,
+     "prevu": 55.3,
+     "reel": 55.5
+    },
+    {
+     "tranche": "60–70 %",
+     "n": 2670,
+     "prevu": 64.7,
+     "reel": 64.7
+    },
+    {
+     "tranche": "70–80 %",
+     "n": 1997,
+     "prevu": 74.7,
+     "reel": 73.6
+    },
+    {
+     "tranche": "80–90 %",
+     "n": 1181,
+     "prevu": 84.4,
+     "reel": 85.0
+    },
+    {
+     "tranche": "90–100 %",
+     "n": 553,
+     "prevu": 93.7,
+     "reel": 93.5
+    }
+   ]
+  }
+ },
+ "choix": {
+  "composantes": "ajustees",
+  "n0": 300.0,
+  "n0_choisi_sur_2023": {
+   "150": 0.5378,
+   "300": 0.53777,
+   "500": 0.53784
+  },
+  "raison": "log loss de la simulation pure : ajustée 0.6207 contre profils bruts 0.6437 (réussite 65.1 % contre 62.1 %)",
+  "combinaison": {
+   "adopte": true,
+   "poids": {
+    "elo": 0.7949,
+    "simulation": 0.3102
+   },
+   "raison": "log loss 2025 → : combinaison 0.6147 contre Elo 0.6148 et simulation 0.6248 (Pinnacle 0.598)",
+   "simulation": "simulation_pure_ajustee"
+  }
+ },
+ "combinaison": {
+  "simulation": "simulation_pure_ajustee",
+  "apprentissage": 4778,
+  "jugement_n": 4489,
+  "adopte": true,
+  "poids": {
+   "elo": 0.7949,
+   "simulation": 0.3102
+  },
+  "poids_appris_2024": {
+   "elo": 0.8731,
+   "simulation": 0.2978
+  },
+  "elo_recalibre_coef": 1.0582,
+  "simulation_recalibree_coef": 1.3943,
+  "jugement": {
+   "elo": {
+    "n": 4489,
+    "reussite_pct": 66.1,
+    "log_loss": 0.6148,
+    "brier": 0.2136,
+    "calibration": [
+     {
+      "tranche": "50–60 %",
+      "n": 1525,
+      "prevu": 55.0,
+      "reel": 56.1
+     },
+     {
+      "tranche": "60–70 %",
+      "n": 1307,
+      "prevu": 64.9,
+      "reel": 61.8
+     },
+     {
+      "tranche": "70–80 %",
+      "n": 996,
+      "prevu": 74.8,
+      "reel": 74.6
+     },
+     {
+      "tranche": "80–90 %",
+      "n": 510,
+      "prevu": 84.4,
+      "reel": 82.0
+     },
+     {
+      "tranche": "90–100 %",
+      "n": 151,
+      "prevu": 92.9,
+      "reel": 92.7
+     }
+    ]
+   },
+   "simulation": {
+    "n": 4489,
+    "reussite_pct": 64.9,
+    "log_loss": 0.6248,
+    "brier": 0.218,
+    "calibration": [
+     {
+      "tranche": "50–60 %",
+      "n": 2215,
+      "prevu": 54.7,
+      "reel": 56.4
+     },
+     {
+      "tranche": "60–70 %",
+      "n": 1372,
+      "prevu": 64.5,
+      "reel": 68.6
+     },
+     {
+      "tranche": "70–80 %",
+      "n": 641,
+      "prevu": 74.3,
+      "reel": 77.1
+     },
+     {
+      "tranche": "80–90 %",
+      "n": 226,
+      "prevu": 83.9,
+      "reel": 87.2
+     },
+     {
+      "tranche": "90–100 %",
+      "n": 35,
+      "prevu": 92.1,
+      "reel": 97.1
+     }
+    ]
+   },
+   "elo_recalibre": {
+    "n": 4489,
+    "reussite_pct": 66.1,
+    "log_loss": 0.6157,
+    "brier": 0.2139,
+    "calibration": [
+     {
+      "tranche": "50–60 %",
+      "n": 1449,
+      "prevu": 55.0,
+      "reel": 56.4
+     },
+     {
+      "tranche": "60–70 %",
+      "n": 1257,
+      "prevu": 64.9,
+      "reel": 61.3
+     },
+     {
+      "tranche": "70–80 %",
+      "n": 1016,
+      "prevu": 74.8,
+      "reel": 73.0
+     },
+     {
+      "tranche": "80–90 %",
+      "n": 577,
+      "prevu": 84.3,
+      "reel": 79.5
+     },
+     {
+      "tranche": "90–100 %",
+      "n": 190,
+      "prevu": 93.1,
+      "reel": 92.6
+     }
+    ]
+   },
+   "simulation_recalibree": {
+    "n": 4489,
+    "reussite_pct": 64.9,
+    "log_loss": 0.6239,
+    "brier": 0.2175,
+    "calibration": [
+     {
+      "tranche": "50–60 %",
+      "n": 1668,
+      "prevu": 54.8,
+      "reel": 53.9
+     },
+     {
+      "tranche": "60–70 %",
+      "n": 1302,
+      "prevu": 64.7,
+      "reel": 66.2
+     },
+     {
+      "tranche": "70–80 %",
+      "n": 859,
+      "prevu": 74.6,
+      "reel": 70.3
+     },
+     {
+      "tranche": "80–90 %",
+      "n": 501,
+      "prevu": 84.4,
+      "reel": 80.4
+     },
+     {
+      "tranche": "90–100 %",
+      "n": 159,
+      "prevu": 93.5,
+      "reel": 92.5
+     }
+    ]
+   },
+   "combinaison": {
+    "n": 4489,
+    "reussite_pct": 66.1,
+    "log_loss": 0.6147,
+    "brier": 0.2135,
+    "calibration": [
+     {
+      "tranche": "50–60 %",
+      "n": 1432,
+      "prevu": 55.0,
+      "reel": 55.6
+     },
+     {
+      "tranche": "60–70 %",
+      "n": 1276,
+      "prevu": 64.8,
+      "reel": 62.0
+     },
+     {
+      "tranche": "70–80 %",
+      "n": 997,
+      "prevu": 74.7,
+      "reel": 72.9
+     },
+     {
+      "tranche": "80–90 %",
+      "n": 583,
+      "prevu": 84.4,
+      "reel": 79.9
+     },
+     {
+      "tranche": "90–100 %",
+      "n": 201,
+      "prevu": 93.3,
+      "reel": 92.5
+     }
+    ]
+   },
+   "pinnacle": {
+    "n": 4489,
+    "reussite_pct": 67.9,
+    "log_loss": 0.598,
+    "brier": 0.2064,
+    "calibration": [
+     {
+      "tranche": "50–60 %",
+      "n": 1367,
+      "prevu": 55.3,
+      "reel": 56.5
+     },
+     {
+      "tranche": "60–70 %",
+      "n": 1329,
+      "prevu": 64.7,
+      "reel": 65.5
+     },
+     {
+      "tranche": "70–80 %",
+      "n": 978,
+      "prevu": 74.8,
+      "reel": 73.0
+     },
+     {
+      "tranche": "80–90 %",
+      "n": 544,
+      "prevu": 84.3,
+      "reel": 81.8
+     },
+     {
+      "tranche": "90–100 %",
+      "n": 271,
+      "prevu": 93.6,
+      "reel": 93.0
+     }
+    ]
+   }
+  },
+  "raison": "log loss 2025 → : combinaison 0.6147 contre Elo 0.6148 et simulation 0.6248 (Pinnacle 0.598)"
+ },
+ "calibration_detaillee": {
+  "tous (2025 →)": {
+   "elo": {
+    "n": 4489,
+    "reussite_pct": 66.1,
+    "log_loss": 0.6148,
+    "brier": 0.2136,
+    "calibration": [
+     {
+      "tranche": "50–60 %",
+      "n": 1525,
+      "prevu": 55.0,
+      "reel": 56.1
+     },
+     {
+      "tranche": "60–70 %",
+      "n": 1307,
+      "prevu": 64.9,
+      "reel": 61.8
+     },
+     {
+      "tranche": "70–80 %",
+      "n": 996,
+      "prevu": 74.8,
+      "reel": 74.6
+     },
+     {
+      "tranche": "80–90 %",
+      "n": 510,
+      "prevu": 84.4,
+      "reel": 82.0
+     },
+     {
+      "tranche": "90–100 %",
+      "n": 151,
+      "prevu": 92.9,
+      "reel": 92.7
+     }
+    ]
+   },
+   "simulation": {
+    "n": 4489,
+    "reussite_pct": 64.9,
+    "log_loss": 0.6248,
+    "brier": 0.218,
+    "calibration": [
+     {
+      "tranche": "50–60 %",
+      "n": 2215,
+      "prevu": 54.7,
+      "reel": 56.4
+     },
+     {
+      "tranche": "60–70 %",
+      "n": 1372,
+      "prevu": 64.5,
+      "reel": 68.6
+     },
+     {
+      "tranche": "70–80 %",
+      "n": 641,
+      "prevu": 74.3,
+      "reel": 77.1
+     },
+     {
+      "tranche": "80–90 %",
+      "n": 226,
+      "prevu": 83.9,
+      "reel": 87.2
+     },
+     {
+      "tranche": "90–100 %",
+      "n": 35,
+      "prevu": 92.1,
+      "reel": 97.1
+     }
+    ]
+   },
+   "pinnacle": {
+    "n": 4489,
+    "reussite_pct": 67.9,
+    "log_loss": 0.598,
+    "brier": 0.2064,
+    "calibration": [
+     {
+      "tranche": "50–60 %",
+      "n": 1367,
+      "prevu": 55.3,
+      "reel": 56.5
+     },
+     {
+      "tranche": "60–70 %",
+      "n": 1329,
+      "prevu": 64.7,
+      "reel": 65.5
+     },
+     {
+      "tranche": "70–80 %",
+      "n": 978,
+      "prevu": 74.8,
+      "reel": 73.0
+     },
+     {
+      "tranche": "80–90 %",
+      "n": 544,
+      "prevu": 84.3,
+      "reel": 81.8
+     },
+     {
+      "tranche": "90–100 %",
+      "n": 271,
+      "prevu": 93.6,
+      "reel": 93.0
+     }
+    ]
+   },
+   "combinaison": {
+    "n": 4489,
+    "reussite_pct": 66.1,
+    "log_loss": 0.6147,
+    "brier": 0.2135,
+    "calibration": [
+     {
+      "tranche": "50–60 %",
+      "n": 1432,
+      "prevu": 55.0,
+      "reel": 55.6
+     },
+     {
+      "tranche": "60–70 %",
+      "n": 1276,
+      "prevu": 64.8,
+      "reel": 62.0
+     },
+     {
+      "tranche": "70–80 %",
+      "n": 997,
+      "prevu": 74.7,
+      "reel": 72.9
+     },
+     {
+      "tranche": "80–90 %",
+      "n": 583,
+      "prevu": 84.4,
+      "reel": 79.9
+     },
+     {
+      "tranche": "90–100 %",
+      "n": 201,
+      "prevu": 93.3,
+      "reel": 92.5
+     }
+    ]
+   }
+  },
+  "ATP": {
+   "elo": {
+    "n": 2259,
+    "reussite_pct": 65.3,
+    "log_loss": 0.6173,
+    "brier": 0.2146,
+    "calibration": [
+     {
+      "tranche": "50–60 %",
+      "n": 735,
+      "prevu": 55.0,
+      "reel": 53.3
+     },
+     {
+      "tranche": "60–70 %",
+      "n": 651,
+      "prevu": 64.8,
+      "reel": 62.8
+     },
+     {
+      "tranche": "70–80 %",
+      "n": 509,
+      "prevu": 75.0,
+      "reel": 73.5
+     },
+     {
+      "tranche": "80–90 %",
+      "n": 262,
+      "prevu": 84.5,
+      "reel": 79.4
+     },
+     {
+      "tranche": "90–100 %",
+      "n": 102,
+      "prevu": 93.2,
+      "reel": 91.2
+     }
+    ]
+   },
+   "simulation": {
+    "n": 2259,
+    "reussite_pct": 64.5,
+    "log_loss": 0.6268,
+    "brier": 0.2192,
+    "calibration": [
+     {
+      "tranche": "50–60 %",
+      "n": 1170,
+      "prevu": 54.7,
+      "reel": 56.8
+     },
+     {
+      "tranche": "60–70 %",
+      "n": 648,
+      "prevu": 64.4,
+      "reel": 68.2
+     },
+     {
+      "tranche": "70–80 %",
+      "n": 295,
+      "prevu": 74.4,
+      "reel": 74.2
+     },
+     {
+      "tranche": "80–90 %",
+      "n": 118,
+      "prevu": 84.2,
+      "reel": 87.3
+     },
+     {
+      "tranche": "90–100 %",
+      "n": 28,
+      "prevu": 92.0,
+      "reel": 100.0
+     }
+    ]
+   },
+   "pinnacle": {
+    "n": 2259,
+    "reussite_pct": 67.8,
+    "log_loss": 0.5987,
+    "brier": 0.207,
+    "calibration": [
+     {
+      "tranche": "50–60 %",
+      "n": 699,
+      "prevu": 55.3,
+      "reel": 56.5
+     },
+     {
+      "tranche": "60–70 %",
+      "n": 679,
+      "prevu": 64.7,
+      "reel": 66.3
+     },
+     {
+      "tranche": "70–80 %",
+      "n": 483,
+      "prevu": 74.9,
+      "reel": 72.0
+     },
+     {
+      "tranche": "80–90 %",
+      "n": 248,
+      "prevu": 84.4,
+      "reel": 80.2
+     },
+     {
+      "tranche": "90–100 %",
+      "n": 150,
+      "prevu": 93.8,
+      "reel": 94.7
+     }
+    ]
+   },
+   "combinaison": {
+    "n": 2259,
+    "reussite_pct": 65.8,
+    "log_loss": 0.6176,
+    "brier": 0.2147,
+    "calibration": [
+     {
+      "tranche": "50–60 %",
+      "n": 706,
+      "prevu": 55.0,
+      "reel": 54.7
+     },
+     {
+      "tranche": "60–70 %",
+      "n": 643,
+      "prevu": 64.8,
+      "reel": 62.5
+     },
+     {
+      "tranche": "70–80 %",
+      "n": 486,
+      "prevu": 74.7,
+      "reel": 72.8
+     },
+     {
+      "tranche": "80–90 %",
+      "n": 293,
+      "prevu": 84.2,
+      "reel": 76.1
+     },
+     {
+      "tranche": "90–100 %",
+      "n": 131,
+      "prevu": 93.6,
+      "reel": 92.4
+     }
+    ]
+   }
+  },
+  "WTA": {
+   "elo": {
+    "n": 2230,
+    "reussite_pct": 66.8,
+    "log_loss": 0.6122,
+    "brier": 0.2127,
+    "calibration": [
+     {
+      "tranche": "50–60 %",
+      "n": 790,
+      "prevu": 54.9,
+      "reel": 58.7
+     },
+     {
+      "tranche": "60–70 %",
+      "n": 656,
+      "prevu": 64.9,
+      "reel": 60.8
+     },
+     {
+      "tranche": "70–80 %",
+      "n": 487,
+      "prevu": 74.6,
+      "reel": 75.8
+     },
+     {
+      "tranche": "80–90 %",
+      "n": 248,
+      "prevu": 84.3,
+      "reel": 84.7
+     },
+     {
+      "tranche": "90–100 %",
+      "n": 49,
+      "prevu": 92.2,
+      "reel": 95.9
+     }
+    ]
+   },
+   "simulation": {
+    "n": 2230,
+    "reussite_pct": 65.4,
+    "log_loss": 0.6229,
+    "brier": 0.2167,
+    "calibration": [
+     {
+      "tranche": "50–60 %",
+      "n": 1045,
+      "prevu": 54.8,
+      "reel": 56.0
+     },
+     {
+      "tranche": "60–70 %",
+      "n": 724,
+      "prevu": 64.6,
+      "reel": 68.9
+     },
+     {
+      "tranche": "70–80 %",
+      "n": 346,
+      "prevu": 74.2,
+      "reel": 79.5
+     },
+     {
+      "tranche": "80–90 %",
+      "n": 108,
+      "prevu": 83.7,
+      "reel": 87.0
+     },
+     {
+      "tranche": "90–100 %",
+      "n": 7,
+      "prevu": 92.7,
+      "reel": 85.7
+     }
+    ]
+   },
+   "pinnacle": {
+    "n": 2230,
+    "reussite_pct": 68.1,
+    "log_loss": 0.5973,
+    "brier": 0.2058,
+    "calibration": [
+     {
+      "tranche": "50–60 %",
+      "n": 668,
+      "prevu": 55.3,
+      "reel": 56.4
+     },
+     {
+      "tranche": "60–70 %",
+      "n": 650,
+      "prevu": 64.7,
+      "reel": 64.6
+     },
+     {
+      "tranche": "70–80 %",
+      "n": 495,
+      "prevu": 74.6,
+      "reel": 73.9
+     },
+     {
+      "tranche": "80–90 %",
+      "n": 296,
+      "prevu": 84.2,
+      "reel": 83.1
+     },
+     {
+      "tranche": "90–100 %",
+      "n": 121,
+      "prevu": 93.3,
+      "reel": 90.9
+     }
+    ]
+   },
+   "combinaison": {
+    "n": 2230,
+    "reussite_pct": 66.4,
+    "log_loss": 0.6118,
+    "brier": 0.2123,
+    "calibration": [
+     {
+      "tranche": "50–60 %",
+      "n": 726,
+      "prevu": 54.9,
+      "reel": 56.5
+     },
+     {
+      "tranche": "60–70 %",
+      "n": 633,
+      "prevu": 64.7,
+      "reel": 61.5
+     },
+     {
+      "tranche": "70–80 %",
+      "n": 511,
+      "prevu": 74.6,
+      "reel": 73.0
+     },
+     {
+      "tranche": "80–90 %",
+      "n": 290,
+      "prevu": 84.5,
+      "reel": 83.8
+     },
+     {
+      "tranche": "90–100 %",
+      "n": 70,
+      "prevu": 92.7,
+      "reel": 92.9
+     }
+    ]
+   }
+  },
+  "un joueur à moins de 30 matchs": {
+   "elo": {
+    "n": 33,
+    "reussite_pct": 81.8,
+    "log_loss": 0.4104,
+    "brier": 0.1296,
+    "calibration": [
+     {
+      "tranche": "50–60 %",
+      "n": 4,
+      "prevu": 55.5,
+      "reel": 75.0
+     },
+     {
+      "tranche": "60–70 %",
+      "n": 6,
+      "prevu": 63.5,
+      "reel": 50.0
+     },
+     {
+      "tranche": "70–80 %",
+      "n": 7,
+      "prevu": 76.7,
+      "reel": 85.7
+     },
+     {
+      "tranche": "80–90 %",
+      "n": 13,
+      "prevu": 87.3,
+      "reel": 92.3
+     },
+     {
+      "tranche": "90–100 %",
+      "n": 3,
+      "prevu": 91.9,
+      "reel": 100.0
+     }
+    ]
+   },
+   "simulation": {
+    "n": 33,
+    "reussite_pct": 75.8,
+    "log_loss": 0.5186,
+    "brier": 0.1714,
+    "calibration": [
+     {
+      "tranche": "50–60 %",
+      "n": 8,
+      "prevu": 55.2,
+      "reel": 62.5
+     },
+     {
+      "tranche": "60–70 %",
+      "n": 9,
+      "prevu": 65.8,
+      "reel": 66.7
+     },
+     {
+      "tranche": "70–80 %",
+      "n": 12,
+      "prevu": 75.9,
+      "reel": 83.3
+     },
+     {
+      "tranche": "80–90 %",
+      "n": 4,
+      "prevu": 84.5,
+      "reel": 100.0
+     }
+    ]
+   },
+   "pinnacle": {
+    "n": 33,
+    "reussite_pct": 75.8,
+    "log_loss": 0.4081,
+    "brier": 0.1343,
+    "calibration": [
+     {
+      "tranche": "50–60 %",
+      "n": 6,
+      "prevu": 54.7,
+      "reel": 16.7
+     },
+     {
+      "tranche": "60–70 %",
+      "n": 6,
+      "prevu": 64.3,
+      "reel": 100.0
+     },
+     {
+      "tranche": "70–80 %",
+      "n": 5,
+      "prevu": 73.3,
+      "reel": 40.0
+     },
+     {
+      "tranche": "80–90 %",
+      "n": 9,
+      "prevu": 85.2,
+      "reel": 100.0
+     },
+     {
+      "tranche": "90–100 %",
+      "n": 7,
+      "prevu": 96.0,
+      "reel": 100.0
+     }
+    ]
+   },
+   "combinaison": {
+    "n": 33,
+    "reussite_pct": 78.8,
+    "log_loss": 0.4133,
+    "brier": 0.1321,
+    "calibration": [
+     {
+      "tranche": "50–60 %",
+      "n": 6,
+      "prevu": 55.1,
+      "reel": 50.0
+     },
+     {
+      "tranche": "60–70 %",
+      "n": 3,
+      "prevu": 66.3,
+      "reel": 33.3
+     },
+     {
+      "tranche": "70–80 %",
+      "n": 6,
+      "prevu": 75.3,
+      "reel": 83.3
+     },
+     {
+      "tranche": "80–90 %",
+      "n": 13,
+      "prevu": 86.8,
+      "reel": 92.3
+     },
+     {
+      "tranche": "90–100 %",
+      "n": 5,
+      "prevu": 91.9,
+      "reel": 100.0
+     }
+    ]
+   }
+  },
+  "deux joueurs à 30 matchs ou plus": {
+   "elo": {
+    "n": 4456,
+    "reussite_pct": 65.9,
+    "log_loss": 0.6163,
+    "brier": 0.2143,
+    "calibration": [
+     {
+      "tranche": "50–60 %",
+      "n": 1521,
+      "prevu": 55.0,
+      "reel": 56.1
+     },
+     {
+      "tranche": "60–70 %",
+      "n": 1301,
+      "prevu": 64.9,
+      "reel": 61.9
+     },
+     {
+      "tranche": "70–80 %",
+      "n": 989,
+      "prevu": 74.8,
+      "reel": 74.5
+     },
+     {
+      "tranche": "80–90 %",
+      "n": 497,
+      "prevu": 84.3,
+      "reel": 81.7
+     },
+     {
+      "tranche": "90–100 %",
+      "n": 148,
+      "prevu": 92.9,
+      "reel": 92.6
+     }
+    ]
+   },
+   "simulation": {
+    "n": 4456,
+    "reussite_pct": 64.9,
+    "log_loss": 0.6256,
+    "brier": 0.2183,
+    "calibration": [
+     {
+      "tranche": "50–60 %",
+      "n": 2207,
+      "prevu": 54.7,
+      "reel": 56.4
+     },
+     {
+      "tranche": "60–70 %",
+      "n": 1363,
+      "prevu": 64.5,
+      "reel": 68.6
+     },
+     {
+      "tranche": "70–80 %",
+      "n": 629,
+      "prevu": 74.2,
+      "reel": 76.9
+     },
+     {
+      "tranche": "80–90 %",
+      "n": 222,
+      "prevu": 83.9,
+      "reel": 86.9
+     },
+     {
+      "tranche": "90–100 %",
+      "n": 35,
+      "prevu": 92.1,
+      "reel": 97.1
+     }
+    ]
+   },
+   "pinnacle": {
+    "n": 4456,
+    "reussite_pct": 67.9,
+    "log_loss": 0.5994,
+    "brier": 0.2069,
+    "calibration": [
+     {
+      "tranche": "50–60 %",
+      "n": 1361,
+      "prevu": 55.3,
+      "reel": 56.6
+     },
+     {
+      "tranche": "60–70 %",
+      "n": 1323,
+      "prevu": 64.7,
+      "reel": 65.3
+     },
+     {
+      "tranche": "70–80 %",
+      "n": 973,
+      "prevu": 74.8,
+      "reel": 73.2
+     },
+     {
+      "tranche": "80–90 %",
+      "n": 535,
+      "prevu": 84.3,
+      "reel": 81.5
+     },
+     {
+      "tranche": "90–100 %",
+      "n": 264,
+      "prevu": 93.5,
+      "reel": 92.8
+     }
+    ]
+   },
+   "combinaison": {
+    "n": 4456,
+    "reussite_pct": 66.0,
+    "log_loss": 0.6162,
+    "brier": 0.2141,
+    "calibration": [
+     {
+      "tranche": "50–60 %",
+      "n": 1426,
+      "prevu": 55.0,
+      "reel": 55.6
+     },
+     {
+      "tranche": "60–70 %",
+      "n": 1273,
+      "prevu": 64.8,
+      "reel": 62.1
+     },
+     {
+      "tranche": "70–80 %",
+      "n": 991,
+      "prevu": 74.7,
+      "reel": 72.9
+     },
+     {
+      "tranche": "80–90 %",
+      "n": 570,
+      "prevu": 84.3,
+      "reel": 79.6
+     },
+     {
+      "tranche": "90–100 %",
+      "n": 196,
+      "prevu": 93.3,
+      "reel": 92.3
+     }
+    ]
+   }
+  }
+ }
 }
