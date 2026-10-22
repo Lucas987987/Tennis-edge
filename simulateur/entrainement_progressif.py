@@ -43,8 +43,10 @@ def _ok(L):
     return sum(1.0 if p > 0.5 else 0.5 if p == 0.5 else 0.0 for p in L) / len(L) if L else None
 
 
-def elo_au_moment(M, lignes, options=None, depart_bas=None):
-    """P(vrai vainqueur) selon l'Elo AVANT chaque match des feuilles (archive rejouée, puis feuilles)."""
+def elo_au_moment(M, lignes, options=None, depart_bas=None, experience=None):
+    """P(vrai vainqueur) selon l'Elo AVANT chaque match des feuilles (archive rejouée, puis feuilles).
+    experience (dict, facultatif) : rempli avec id(ligne) -> (matchs du vrai vainqueur, matchs du perdant)
+    AVANT le match — même compte que elo.matchs() dans les pronostics du jour."""
     e = E.Elo(**(options or {}))
     for m in M:
         g, p = E.cle(m['nom_g']), E.cle(m['nom_p'])
@@ -61,6 +63,8 @@ def elo_au_moment(M, lignes, options=None, depart_bas=None):
         pa = e.proba(a, b, x['surface'])
         out.append((x, pa if x['vainqueur'] == 0 else 1 - pa))
         w, l = (a, b) if x['vainqueur'] == 0 else (b, a)
+        if experience is not None:
+            experience[id(x)] = (e.matchs(w), e.matchs(l))
         e.maj(w, l, x['surface'])
     return {id(x): p for x, p in out}
 
@@ -69,8 +73,111 @@ def semaine(d, d0):
     return (d - d0).days // 7
 
 
+# ------------------------------------------------------------------ 22/10/2026 : par circuit, Challenger, nouveaux venus
+CIRCUITS = (('ATP', 'ATP'), ('WTA', 'WTA'), ('CH', 'Challenger'))
+MIN_CH_AVANT, MIN_CH_JUGE = 300, 150
+SEUIL_NOUVEAU = 30          # moins de 30 matchs connus = nouveau venu (même seuil que le Lab)
+
+
+def _bilan(L):
+    return {'n': len(L), 'reussite_pct': round(100 * _ok(L), 1), 'log_loss': round(_ll(L), 4)} if L else None
+
+
+def par_circuit(hors, P, lim):
+    """Fiabilité de chaque circuit joué : tous les pronostics hors échantillon (simulation, Elo), et les 6
+    dernières semaines avec le mélange appris avant (même P que la règle d'adoption)."""
+    out = {}
+    for c, lib in CIRCUITS:
+        g = [h for h in hors if h[0]['circuit'] == c]
+        if not g:
+            continue
+        j = [h for h in g if h[0]['jour'] >= lim]
+        out[c] = {'circuit': lib, 'simulation': _bilan([h[1] for h in g]), 'elo': _bilan([h[2] for h in g]),
+                  'six_dernieres_semaines': {'simulation': _bilan([h[1] for h in j]), 'elo': _bilan([h[2] for h in j]),
+                                             'combinaison': _bilan([S.melange(P, h[2], h[1]) for h in j]) if P else None}}
+    return out
+
+
+def poids_challenger(hors, P, lim, ajuster_poids):
+    """RÈGLE FIXÉE AVANT DE VOIR LE RÉSULTAT (22/10/2026, 23 h 50) : des poids propres aux Challenger, appris
+    sur les Challenger avant les 6 dernières semaines, remplacent les poids communs pour les Challenger s'ils
+    trouvent mieux le vainqueur (log loss plus basse) sur les Challenger des 6 dernières semaines.
+    Il faut au moins 300 Challenger avant et 150 dans le jugement."""
+    g = [h for h in hors if h[0]['circuit'] == 'CH']
+    av, ju = [h for h in g if h[0]['jour'] < lim], [h for h in g if h[0]['jour'] >= lim]
+    if len(av) < MIN_CH_AVANT or len(ju) < MIN_CH_JUGE or not P:
+        return {'adopte': False, 'raison': f"pas assez de Challenger ({len(av)} avant, {len(ju)} à juger)"}
+    w = ajuster_poids([[_lg(pe), _lg(ps)] for _, ps, pe in av])
+    Pc = {'elo': w[0], 'simulation': w[1]}
+    l_ch, l_co = _ll([S.melange(Pc, pe, ps) for _, ps, pe in ju]), _ll([S.melange(P, pe, ps) for _, ps, pe in ju])
+    ok = l_ch < l_co
+    out = {'adopte': bool(ok), 'n_juge': len(ju), 'poids_appris_avant': {k: round(v, 4) for k, v in Pc.items()},
+           'raison': (f"Challenger des 6 dernières semaines ({len(ju)} matchs) : poids propres {round(l_ch, 4)} contre poids "
+                      f"communs {round(l_co, 4)} ; part de la simulation {part_simulation(Pc)} % contre {part_simulation(P)} %")}
+    if ok:
+        wf = ajuster_poids([[_lg(pe), _lg(ps)] for _, ps, pe in g])
+        out['poids'] = {'elo': round(wf[0], 4), 'simulation': round(wf[1], 4)}
+    return out
+
+
+def nouveau(n):
+    """0 pour un joueur rodé, jusqu'à 1 pour un joueur jamais vu (décroît jusqu'à 30 matchs)."""
+    return max(0.0, 1.0 - n / SEUIL_NOUVEAU)
+
+
+def _delta(rows, ridge=5.0, tours=30):
+    """δ de σ(off + δ·f) (vrai vainqueur y = 1, miroir y = 0) par Newton, ridge vers 0."""
+    d = 0.0
+    for _ in range(tours):
+        g, h = -ridge * d, ridge
+        for off, f in rows:
+            for sgn, y in ((1, 1), (-1, 0)):
+                p = 1 / (1 + math.exp(-max(min(sgn * (off + d * f), 30), -30)))
+                g += (y - p) * sgn * f
+                h += p * (1 - p) * f * f
+        pas = g / h
+        d += pas
+        if abs(pas) < 1e-9:
+            break
+    return d
+
+
+def nouveaux_venus(hors, P, lim, experience, poids_finaux=None):
+    """RÈGLE FIXÉE AVANT DE VOIR LE RÉSULTAT (22/10/2026, 23 h 50) : le modèle se trompe-t-il TOUJOURS dans le
+    même sens avec les nouveaux venus (moins de 30 matchs) ? Correction δ (logit) apprise avant les 6 dernières
+    semaines, sur le mélange : z' = z + δ·(nouveau(vainqueur) − nouveau(perdant)). Adoptée si la log loss du
+    vainqueur des 6 dernières semaines baisse sur les matchs avec au moins un nouveau venu (au moins 100)."""
+    if not P or not experience:
+        return {'adopte': False, 'raison': 'pas de mélange ou pas de compte de matchs'}
+    rows = []
+    for x, ps, pe in hors:
+        nw, nl = experience.get(id(x), (None, None))
+        if nw is None:
+            continue
+        f = nouveau(nw) - nouveau(nl)
+        rows.append((x['jour'] >= lim, _lg(S.melange(P, pe, ps)), f, (x, ps, pe)))
+    av = [(o, f) for j, o, f, _ in rows if not j]
+    ju = [(o, f) for j, o, f, _ in rows if j and f != 0]
+    n_av = sum(1 for _, f in av if f != 0)
+    if n_av < 200 or len(ju) < 100:
+        return {'adopte': False, 'raison': f"pas assez de matchs avec un nouveau venu ({n_av} avant, {len(ju)} à juger)"}
+    d = _delta(av)
+    sg_ = lambda z: 1 / (1 + math.exp(-max(min(z, 30), -30)))
+    l0, l1 = _ll([sg_(o) for o, _ in ju]), _ll([sg_(o + d * f) for o, f in ju])
+    att = sum(1 for o, f in ju if f > 0) / len(ju)          # part des matchs où le nouveau venu a gagné
+    ok = l1 < l0
+    out = {'adopte': bool(ok), 'delta_appris_avant': round(d, 4), 'n_juge': len(ju),
+           'raison': (f"{len(ju)} matchs avec un nouveau venu (6 dernières semaines) : log loss {round(l1, 4)} corrigée contre "
+                      f"{round(l0, 4)} ; δ = {round(d, 3)} ({'le nouveau venu est sous-estimé' if d > 0 else 'le nouveau venu est surestimé'})"
+                      f" ; le nouveau venu gagne {round(100 * att)} % de ces matchs")}
+    if ok:
+        Pf = poids_finaux or P
+        out['delta'] = round(_delta([(_lg(S.melange(Pf, pe, ps)), f) for _, _, f, (x, ps, pe) in rows]), 4)
+    return out
+
+
 def rejouer_saison(lignes, p_elo, groupes, apprendre, victoire_ligne, ajuster_poids, sigma,
-                   poids_archive=None, aujourdhui=None):
+                   poids_archive=None, aujourdhui=None, experience=None):
     """Pronostics hors échantillon semaine par semaine ; renvoie le rapport et les poids finaux."""
     if not lignes:
         return {'semaines': [], 'adopte': False, 'raison': 'pas de feuilles'}
@@ -122,6 +229,9 @@ def rejouer_saison(lignes, p_elo, groupes, apprendre, victoire_ligne, ajuster_po
         return dict(out, adopte=False, raison='pas assez de matchs pour juger')
     wa = ajuster_poids([[_lg(pe), _lg(ps)] for _, ps, pe in avant])
     P = {'elo': wa[0], 'simulation': wa[1]}
+    out['par_circuit'] = par_circuit(hors, P, lim)
+    out['poids_challenger'] = poids_challenger(hors, P, lim, ajuster_poids)
+    out['nouveaux_venus'] = nouveaux_venus(hors, P, lim, experience, final)
     l_new = _ll([S.melange(P, pe, ps) for _, ps, pe in juge])
     l_arch = _ll([S.melange(poids_archive, pe, ps) for _, ps, pe in juge]) if poids_archive else None
     l_elo = _ll([pe for _, _, pe in juge])

@@ -9,6 +9,9 @@ Envoyé après le ré-apprentissage du lundi (« Pronostic - test du modèle »)
   — ce qui a changé dans le modèle : facteurs entrés / sortis, poids de la simulation, source des poids ;
   — l'entraînement semaine après semaine (progression).
 Mémoire d'une semaine à l'autre : simulateur/bilan_algo_etat.json.
+22/10/2026 : chaque semaine, les décisions des règles sont ajoutées à simulateur/journal_decisions.jsonl ;
+le premier lundi du mois, un BILAN DU MOIS en une page (fiabilité par circuit, % annoncé, ce qui a changé et
+pourquoi) part aussi sur le canal privé (--mois pour le forcer).
 Env : TELEGRAM_TOKEN / TELEGRAM_CHAT_ID (sans eux : affiché seulement). Usage : python simulateur/bilan_algo.py [racine]
 """
 import datetime as dt
@@ -134,6 +137,113 @@ def construire(racine, maintenant=None):
     return '\n'.join(L), {'adoptes': ad, 'genere_le': maintenant.isoformat(timespec='seconds')}
 
 
+# ------------------------------------------------------------------ 22/10/2026 : journal des décisions, bilan du mois
+JOURNAL = 'journal_decisions.jsonl'
+MOIS = ('janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre')
+
+
+def decisions(C, F):
+    """Ce que les règles ont décidé, en clair (une ligne par décision ; comparé d'une semaine à l'autre)."""
+    d = {}
+    rg = C.get('reglage_simulation') or {}
+    d['forme du jour (σ)'] = f"σ = {rg.get('sigma')}" if rg.get('adopte') else 'σ = 0,15 (réglage historique)'
+    for cle_c, src in (('combinaison_continue', 'nos pronostics'), ('combinaison_feuilles', 'les feuilles'), ('combinaison', "l'archive")):
+        c = C.get(cle_c) or {}
+        if c.get('adopte') and c.get('poids'):
+            w = c['poids']
+            d['mélange simulation + Elo'] = (f"{100 * abs(w['simulation']) / (abs(w['simulation']) + abs(w['elo'])):.0f} % "
+                                             f"simulation (appris sur {src})")
+            break
+    else:
+        d['mélange simulation + Elo'] = 'non adopté'
+    cb = C.get('combinaison') or {}
+    poids = cb.get('poids') or {}
+    d['correction de confiance'] = 'adoptée' if poids.get('calibration') else 'non adoptée'
+    d['poids selon le contexte'] = 'adoptés' if poids.get('contexte') else 'non adoptés'
+    d['apprend de qui a gagné'] = 'adopté' if (C.get('couche_resultats') or {}).get('adopte') else 'non adopté'
+    d['poids propres aux Challenger'] = 'adoptés' if (C.get('poids_challenger') or {}).get('adopte') else 'non adoptés'
+    nv = C.get('nouveaux_venus') or {}
+    d['nouveaux venus'] = f"corrigés (δ = {nv.get('delta')})" if nv.get('adopte') else 'pas de correction'
+    d['facteurs du match'] = ', '.join(LIB.get(g, g) for g in (F.get('adoptes') or [])) or 'aucun'
+    return d
+
+
+def raisons(C):
+    """Le pourquoi de chaque décision (texte des règles), pour le bilan du mois."""
+    out = []
+    for cle_c, lib in (('reglage_simulation', 'Réglage de la simulation'), ('combinaison', 'Mélange simulation + Elo'),
+                       ('combinaison_feuilles', 'Mélange appris sur les feuilles'), ('combinaison_continue', 'Mélange appris sur nos pronostics'),
+                       ('poids_challenger', 'Poids propres aux Challenger'), ('nouveaux_venus', 'Nouveaux venus'),
+                       ('couche_resultats', 'Apprendre de qui a gagné')):
+        r = (C.get(cle_c) or {}).get('raison')
+        if r:
+            out.append(f"• {lib} : {r}")
+    return out
+
+
+def lire_journal(chemin):
+    out = []
+    try:
+        with open(chemin, encoding='utf-8') as f:
+            for l in f:
+                try:
+                    out.append(json.loads(l))
+                except ValueError:
+                    continue
+    except OSError:
+        pass
+    return out
+
+
+def bilan_du_mois(racine, maintenant, journal):
+    """Le mois civil précédent, en une page : fiabilité par circuit (ITF non compté), le % annoncé tient-il,
+    ce que les règles ont changé, et pourquoi."""
+    fin = maintenant.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    debut = (fin - dt.timedelta(days=1)).replace(day=1)
+    R = lire(os.path.join(racine, 'Tennis_Edge_Lab', 'live', 'pronostics_resultats.json'), {})
+    C = lire(os.path.join(ICI, 'choix_simulation.json'), {})
+    Mm = [m for m in R.get('matchs') or [] if m.get('circuit') != 'ITF'
+          and debut.isoformat(timespec='minutes') <= m.get('debut', '') < fin.isoformat(timespec='minutes')]
+    L = [f"📅 <b>Bilan de {MOIS[debut.month - 1]} {debut.year}</b>"]
+    v = [version_principale(m) for m in Mm]
+    ok, n = taux(v, 'vainqueur_juste')
+    if n:
+        L.append(f"\n🎾 <b>{n} matchs</b> sur tes circuits · vainqueur trouvé {ok}/{n} ({100 * ok / n:.0f} %)")
+        for c, lib in CIRCUITS:
+            o, k = taux([version_principale(m) for m in Mm if m.get('circuit') == c], 'vainqueur_juste')
+            if k:
+                L.append(f"• {lib} : {o}/{k} ({100 * o / k:.0f} %)" + (' — moins de 30 matchs, ne pas conclure' if k < 30 else ''))
+        tr = {}
+        for x in v:
+            if not x or x.get('proba_du_vainqueur') is None:
+                continue
+            p = x['proba_du_vainqueur']
+            fav = max(p, 1 - p)
+            t = min(int(fav * 10), 9) * 10
+            tr.setdefault(t, []).append(fav == p and p != 0.5)
+        if tr:
+            L.append("\n📐 <b>Le % annoncé tient-il ?</b> (favori annoncé → gagne)")
+            for t in sorted(tr):
+                g = tr[t]
+                L.append(f"• {t}–{t + 10} % → {100 * sum(g) / len(g):.0f} % ({len(g)} matchs)")
+    else:
+        L.append("\n🎾 Aucun match joué avec résultat ce mois-ci sur tes circuits.")
+    J = [j for j in journal if debut.isoformat() <= j.get('date', '') < fin.isoformat()]
+    if len(J) >= 2:
+        a, b = J[0]['decisions'], J[-1]['decisions']
+        ch = [f"• {k} : {a.get(k, '—')} → {b[k]}" for k in b if a.get(k) != b[k]]
+        L.append("\n🔧 <b>Ce que les règles ont changé ce mois-ci</b>")
+        L.extend(ch or ["• rien : le modèle est resté le même"])
+    cur = J[-1]['decisions'] if J else decisions(C, lire(os.path.join(ICI, 'facteurs.json'), {}))
+    L.append("\n🧭 <b>Le modèle aujourd'hui</b>")
+    L.extend(f"• {k} : {v_}" for k, v_ in cur.items())
+    rz = raisons(C)
+    if rz:
+        L.append("\n📝 <b>Pourquoi</b> (règles fixées avant de voir les résultats)")
+        L.extend(rz)
+    return '\n'.join(L)
+
+
 def envoyer(texte):
     token, chat = os.environ.get('TELEGRAM_TOKEN'), os.environ.get('TELEGRAM_CHAT_ID')
     if not token or not chat:
@@ -152,9 +262,19 @@ def envoyer(texte):
 
 def main(argv):
     racine = argv[1] if len(argv) > 1 else os.path.join(ICI, '..')
-    texte, etat = construire(racine)
+    maintenant = dt.datetime.now(dt.timezone.utc).replace(tzinfo=None)
+    texte, etat = construire(racine, maintenant)
     print(texte)
     envoyer(texte)
+    # journal des décisions (une ligne par semaine) puis, le premier lundi du mois, le bilan du mois précédent
+    chemin = os.path.join(ICI, JOURNAL)
+    d = decisions(lire(os.path.join(ICI, 'choix_simulation.json'), {}), lire(os.path.join(ICI, 'facteurs.json'), {}))
+    with open(chemin, 'a', encoding='utf-8') as f:
+        f.write(json.dumps({'date': maintenant.date().isoformat(), 'decisions': d}, ensure_ascii=False) + '\n')
+    if maintenant.day <= 7 or '--mois' in argv:
+        mois = bilan_du_mois(racine, maintenant, lire_journal(chemin))
+        print('\n' + mois)
+        envoyer(mois)
     with open(os.path.join(ICI, 'bilan_algo_etat.json'), 'w', encoding='utf-8') as f:
         json.dump(etat, f, ensure_ascii=False, indent=1)
     return 0
