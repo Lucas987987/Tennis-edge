@@ -336,7 +336,7 @@
     ['balles_break_obtenues', 'Balles de break obtenues', 1], ['breaks', 'Breaks', 1],
     ['jeux_service_gagnes_pct', 'Jeux de service gagnés', 0, ' %'], ['points_gagnes', 'Points gagnés', 0]];
   function simuleBlock(m, ouverts) {
-    const v = m.marche && m.marche.match_simule ? m.marche : m.stats;
+    const v = [m.simulation, m.marche, m.stats].find(x => x && x.match_simule);
     const S = v && v.match_simule;
     if (!S || !S.feuille) return '';
     const court = n => esc(String(n || '').split(' ').slice(-1)[0]);
@@ -359,7 +359,7 @@
     const inconnus = [[m.home, 0], [m.away, 1]].filter(([, i]) => S.profil_connu && !S.profil_connu[i]).map(([n]) => esc(n));
     const ouvert = ouverts && ouverts.has(m.uid) ? ' open' : '';
     return `<details class="rg-sim" data-sim="${esc(m.uid || '')}"${ouvert}><summary>Match simulé ${nf(S.n, 0)} fois</summary>
-      <p class="mini">${v === m.marche ? 'Niveau : cote Pinnacle (stats + marché)' : 'Niveau : classement Elo (stats seules)'}. ${H} gagne ${nf(100 * S.victoire_A, 0)} % des simulations. Sous chaque valeur : fourchette à 80 % (8 simulations sur 10 dedans).${inconnus.length ? ` Profil de service inconnu pour ${inconnus.join(' et ')} : moyenne du circuit.` : ''}</p>
+      <p class="mini">${v === m.simulation ? '<b>Match joué avec les seules statistiques des deux joueurs</b> (1re balle, aces, doubles fautes, points gagnés derrière la 1re et la 2e, retour), sans classement ni cote' : v === m.marche ? 'Niveau : cote Pinnacle (stats + marché)' : 'Niveau : classement Elo (stats seules)'}. ${H} gagne ${nf(100 * S.victoire_A, 0)} % des simulations. Sous chaque valeur : fourchette à 80 % (8 simulations sur 10 dedans).${inconnus.length ? ` Profil de service inconnu pour ${inconnus.join(' et ')} : moyenne du circuit.` : ''}</p>
       <div class="table-wrap rg-table rg-sim-feuille"><table><thead><tr><th>${H}</th><th></th><th>${A}</th></tr></thead><tbody>${rows}</tbody></table></div>
       <p class="mini">Jeux : <b>${nf(S.jeux && S.jeux.moy, 1)}</b> (${nf(S.jeux && S.jeux.p10, 0)}–${nf(S.jeux && S.jeux.p90, 0)}) · au moins un tie-break : <b>${pcCote(S.tiebreak)}</b></p>
       <p class="mini">Scores les plus fréquents : ${scores}</p>${recit}</details>`;
@@ -427,10 +427,10 @@
     const cartes = P.matchs.map(m => `<div class="rg-pron"><div class="mini">${heure(m.debut)} · ${esc(m.tournoi)} · ${esc(m.surface)}${m.meilleur_des === 5 ? ' · 5 sets' : ''}</div>
         <div class="rg-pron-j"><b>${esc(m.home)}</b> – <b>${esc(m.away)}</b></div>
         <div class="table-wrap rg-table"><table><thead><tr><th></th><th>Vainqueur · sets <small>(% · cote juste)</small></th><th>Scores les plus probables (sur ~1 500 possibles)</th><th>Jeux</th></tr></thead>
-        <tbody>${ligne('Stats seules', m.stats, m)}${ligne('Stats + marché', m.marche, m)}</tbody></table></div>${simuleBlock(m, ouverts)}${m.cles ? `<div class="rg-serv-liens">Profil de service : <button type="button" data-serv-key="${esc(m.cles[0])}">${nomCourt(m.home)}</button> <button type="button" data-serv-key="${esc(m.cles[1])}">${nomCourt(m.away)}</button></div>` : ''}</div>`).join('');
+        <tbody>${m.simulation ? ligne(`<b>Simulation</b><span class="detail">${nf((P.simulations || 0), 0)} matchs joués</span>`, m.simulation, m) : ''}${ligne('Classement Elo', m.stats, m)}${ligne('Cote Pinnacle', m.marche, m)}</tbody></table></div>${simuleBlock(m, ouverts)}${m.cles ? `<div class="rg-serv-liens">Profil de service : <button type="button" data-serv-key="${esc(m.cles[0])}">${nomCourt(m.home)}</button> <button type="button" data-serv-key="${esc(m.cles[1])}">${nomCourt(m.away)}</button></div>` : ''}</div>`).join('');
     return `<details class="rg-eval" open><summary>Pronostics du jour (${nf(P.matchs.length, 0)} matchs dans les ${nf(P.horizon_h, 0)} h)</summary>
-      <p class="mini">Chaque match est rejoué point par point par le moteur (forme du jour)${P.simulations ? `, puis joué ${nf(P.simulations, 0)} fois avec le profil de service des deux joueurs (archive au ${esc(P.profils_au || '—')}) : « Match simulé »` : ''}. <b>Stats seules</b> : niveau tiré des résultats (classement Elo), style de service et de retour de chaque joueur. <b>Stats + marché</b> : même moteur, niveau pris à la cote Pinnacle. Le premier pronostic de chaque match est gardé tel quel : le compteur porte sur lui. Test du 21/10 sur 9 277 matchs ATP/WTA : stats seules 65,8 %, marché 68,0 %. Chaque probabilité est aussi lue en <b>cote juste</b> (1 / probabilité, sans marge) : un book ne paie jamais autant, car il ajoute sa marge ; le modèle seul ne bat pas Pinnacle (test du 21/10).</p>
-      <div class="rg-kpis rg-kpis-2">${kpi('Réussite stats seules', T.stats_seules)}${kpi('Réussite stats + marché', T.stats_plus_marche)}${kpi('7 derniers jours, stats', S.stats_seules)}${kpi('7 derniers jours, marché', S.stats_plus_marche)}</div>
+      <p class="mini"><b>Simulation</b> : chaque match est joué ${nf(P.simulations || 5000, 0)} fois point par point avec les seules statistiques des deux joueurs — 1re balle, aces, doubles fautes, points gagnés derrière la 1re et la 2e, qualité de retour (profils au ${esc(P.profils_au || '—')}) — et la part des simulations gagnées donne le pourcentage. Pour comparaison : <b>classement Elo</b> (résultats seuls) et <b>cote Pinnacle</b> (marge retirée), joués dans le même moteur. Le premier pronostic de chaque match est gardé tel quel : les compteurs portent sur lui. Chaque pourcentage est aussi lu en <b>cote juste</b> (1 / probabilité, sans marge).</p>
+      <div class="rg-kpis">${kpi('Réussite simulation', T.simulation)}${kpi('Réussite Elo', T.stats_seules)}${kpi('Réussite Pinnacle', T.stats_plus_marche)}${kpi('7 jours, simulation', S.simulation)}${kpi('7 jours, Elo', S.stats_seules)}${kpi('7 jours, Pinnacle', S.stats_plus_marche)}</div>
       ${suiviF}
       ${cartes || '<p class="mini">Aucun match dans les prochaines heures.</p>'}
     </details>`;

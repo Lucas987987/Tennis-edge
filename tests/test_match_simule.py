@@ -190,3 +190,17 @@ class Reglages(unittest.TestCase):
         var, tau = RG.moments_f([(100, 62, 0.62), (100, 70, 0.62), (100, 54, 0.62)])
         self.assertGreater(tau, 0)
         self.assertEqual(RG.moments_f([(100, 62, 0.62)] * 3)[0], 0.0)
+
+
+class SimulationPure(unittest.TestCase):
+    def test_c_est_la_simulation_qui_designe_le_vainqueur(self):
+        cA, cB = S.composantes(GROS, RELANCEUR, MOY), S.composantes(RELANCEUR, GROS, MOY)
+        r = S.simuler(cA, cB, None, 2, 4000, 0.15, cle='pure')
+        p = S.victoire_pure(cA, cB, 2, 0.15)
+        self.assertLess(abs(r['victoire_A'] - p), 4 * math.sqrt(p * (1 - p) / 4000))   # limite exacte des simulations
+        meilleur = dict(GROS, w1=0.84, w2j=0.62)
+        cA2 = S.composantes(meilleur, RELANCEUR, MOY)
+        self.assertGreater(S.victoire_pure(cA2, cB, 2, 0.15), p)                          # mieux servir = gagner plus souvent
+        self.assertAlmostEqual(S.victoire_pure(cA, cA, 2, 0.15), 0.5, places=9)          # deux joueurs identiques
+        self.assertAlmostEqual(r['set1_A'] + 0, r['set1_A'])
+        self.assertGreaterEqual(r['remontee'][0], 0)

@@ -68,6 +68,24 @@ def reel(m):
     return (f(sv, in1, w1, w2, ace, df, obpf, obps, jg), f(osv, oin1, ow1, ow2, oace, odf, bpf, bps, jp)), jg + jp
 
 
+def bilan_victoire(L):
+    """L : probabilité donnée au vrai vainqueur. Réussite (½ si 50 %), log loss, Brier, calibration."""
+    n = len(L)
+    if not n:
+        return {'n': 0}
+    ok = sum(1.0 if p > 0.5 else 0.5 if p == 0.5 else 0.0 for p in L)
+    ll = -sum(math.log(min(max(p, 1e-6), 1 - 1e-6)) for p in L) / n
+    br = sum((1 - p) ** 2 for p in L) / n
+    # calibration sur le FAVORI annoncé (probabilité ≥ 50 %)
+    cal = []
+    for lo in range(50, 100, 10):
+        g = [(max(p, 1 - p), p >= 0.5) for p in L if lo <= 100 * max(p, 1 - p) < lo + 10]
+        if g:
+            cal.append({'tranche': f"{lo}–{lo + 10} %", 'n': len(g), 'prevu': round(100 * sum(x for x, _ in g) / len(g), 1),
+                        'reel': round(100 * sum(w for _, w in g) / len(g), 1)})
+    return {'n': n, 'reussite_pct': round(100 * ok / n, 1), 'log_loss': round(ll, 4), 'brier': round(br, 4), 'calibration': cal}
+
+
 class Suivi:
     """Accumule prévu / réel / fourchette par statistique."""
 
@@ -144,11 +162,12 @@ def main(argv):
             and m.get('detail') and m['complet'] and id(m) in pin and i in V['pred_sack'] and (m['circuit'], m['bo']) in naif]
     pas = max(1, len(elig) // n_max)
     choisis = set(elig[::pas][:n_max])
-    print(f"Matchs éligibles : {len(elig)} · simulés : {len(choisis)} × {n_sim} fois × 3 versions", flush=True)
+    print(f"Matchs éligibles : {len(elig)} · simulés : {len(choisis)} × {n_sim} fois × 4 versions", flush=True)
 
     P = PS.Profils()
     attente = []
-    R = {v: Suivi() for v in ('stats_seules', 'stats_plus_marche', 'joueurs_moyens')}
+    R = {v: Suivi() for v in ('simulation_pure', 'stats_seules', 'stats_plus_marche', 'joueurs_moyens')}
+    VIC = {'simulation_pure': [], 'elo': [], 'pinnacle': []}       # probabilité donnée au vrai vainqueur
     connus = collections.Counter()
     for i, m in enumerate(M):
         while attente and attente[0][0] < m['date']:
@@ -168,7 +187,11 @@ def main(argv):
         cmu = S.composantes(mu, mu, mu)
         (fw, fl), tot = reel(m)
         nz = naif[(m['circuit'], m['bo'])]
-        for version, (ca, cb, pv) in (('stats_seules', (cg, cp, V['pred_sack'][i][0])),
+        VIC['simulation_pure'].append(S.victoire_pure(cg, cp, sg, SIGMA))
+        VIC['elo'].append(V['pred_sack'][i][0])
+        VIC['pinnacle'].append(pin[id(m)])
+        for version, (ca, cb, pv) in (('simulation_pure', (cg, cp, None)),
+                                      ('stats_seules', (cg, cp, V['pred_sack'][i][0])),
                                       ('stats_plus_marche', (cg, cp, pin[id(m)])),
                                       ('joueurs_moyens', (cmu, cmu, pin[id(m)]))):
             r = S.simuler(ca, cb, pv, sg, n_sim, SIGMA, cle=f"{i}|{version}")
@@ -190,11 +213,18 @@ def main(argv):
                        "(aces, breaks…) la couverture dépasse naturellement 80 % ; lire aussi « sous p10 » et "
                        "« au-dessus p90 », qui doivent rester proches de 10 % chacun ou en dessous."),
            'versions': {v: s.rapport() for v, s in R.items()},
+           'victoire': {v: bilan_victoire(L) for v, L in VIC.items()},
+           'victoire_lecture': ("simulation_pure : le match joué avec les seuls taux des deux joueurs (1re balle, aces, "
+                                "doubles fautes, points gagnés derrière la 1re et la 2e, qualité de retour), sans Elo ni "
+                                "cote : c'est la simulation qui désigne le vainqueur. elo / pinnacle : références."),
            'calibration': {v: {k: s.calibration(k) for k in ('aces', 'doubles_fautes', 'breaks')} for v, s in R.items()},
            'duree_s': round(time.time() - t0)}
     with open(SORTIE, 'w', encoding='utf-8') as f:
         json.dump(rap, f, ensure_ascii=False, indent=1)
-    for v in ('stats_plus_marche', 'joueurs_moyens', 'stats_seules'):
+    print("\nQui gagne ? (probabilité donnée au vrai vainqueur)")
+    for v, x in rap['victoire'].items():
+        print(f"  {v:<16} réussite {x.get('reussite_pct')} % · log loss {x.get('log_loss')} · Brier {x.get('brier')}")
+    for v in ('simulation_pure', 'stats_plus_marche', 'joueurs_moyens', 'stats_seules'):
         print(f"\n{v}")
         for k, x in rap['versions'][v].items():
             print(f"  {x['libelle']:<28} prévu {x['prevu_moy']:>6} réel {x['reel_moy']:>6} · MAE {x['mae']:>6} "

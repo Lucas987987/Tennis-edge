@@ -136,11 +136,25 @@ def ancrer_rapide(pA, pB, p_cible, sets_gagnants=2, sigma=0.0, iterations=30):
     return _sg(la + d), _sg(lb - d)
 
 
+def victoire_pure(cA, cB, sets_gagnants=2, sigma=0.0):
+    """P(A gagne) de la simulation pure (limite exacte de n → ∞ simulations, même forme du jour)."""
+    la, lb = _lg(p_service(cA)), _lg(p_service(cB))
+    noeuds = [(0.0, 1.0)] if sigma <= 0 else [(sigma * z, w) for z, w in zip(M._Z, M._W)]
+    return sum(w * victoire(_sg(la + dz), _sg(lb - dz), sets_gagnants) for dz, w in noeuds)
+
+
 def noeuds_de_forme(cA, cB, p_victoire, sets_gagnants, sigma):
     """[(poids, composantes A, composantes B)] : niveau ancré sur p_victoire APRÈS la forme du jour
-    (mêmes 13 nœuds que modele.match_forme). Le hasard de la simulation tire un nœud par match."""
+    (mêmes 13 nœuds que modele.match_forme). Le hasard de la simulation tire un nœud par match.
+
+    p_victoire=None (22/10/2026) : SIMULATION PURE — aucun ancrage ; le match se joue avec les
+    seuls taux des deux joueurs (service de l'un contre retour de l'autre) et c'est la
+    simulation qui dit qui gagne."""
     pA0, pB0 = p_service(cA), p_service(cB)
-    a, b = ancrer_rapide(pA0, pB0, min(max(p_victoire, 0.005), 0.995), sets_gagnants, sigma)
+    if p_victoire is None:
+        a, b = pA0, pB0
+    else:
+        a, b = ancrer_rapide(pA0, pB0, min(max(p_victoire, 0.005), 0.995), sets_gagnants, sigma)
     if sigma <= 0:
         return [(1.0, ajuster(cA, a), ajuster(cB, b))]
     out = []
@@ -303,6 +317,7 @@ def simuler(cA, cB, p_victoire, sets_gagnants=2, n=5000, sigma=0.15, cle='', tb_
         cum.append(tot)
     rnd = random.Random(graine(cle))
     vA, sets_c, scores_c, tbs, jeux = 0, {}, {}, 0, []
+    set1A, remA, remB = 0, 0, 0
     F = [{k: [] for k in CLES_FEUILLE}, {k: [] for k in CLES_FEUILLE}]
     brut = []
     for _ in range(n):
@@ -316,6 +331,10 @@ def simuler(cA, cB, p_victoire, sets_gagnants=2, n=5000, sigma=0.15, cle='', tb_
             cb = dict(cb, f=min(max(_sg(_lg(cb['f']) + rnd.gauss(0, tau_f)), 0.3), 0.95))
         g, sets, st, br, ntb = un_match(ca, cb, sets_gagnants, tb_final, rnd, rnd.random() < 0.5)
         vA += g == 0
+        a1 = sets[0][0] > sets[0][1]
+        set1A += a1
+        remA += g == 0 and not a1
+        remB += g == 1 and a1
         ks = f"{sum(a > b for a, b in sets)}-{sum(b > a for a, b in sets)}"
         sets_c[ks] = sets_c.get(ks, 0) + 1
         sc = ' '.join(f"{a}-{b}" for a, b in sets)
@@ -332,7 +351,8 @@ def simuler(cA, cB, p_victoire, sets_gagnants=2, n=5000, sigma=0.15, cle='', tb_
     resume = lambda v: {'moy': round(sum(v) / len(v), 2), 'p10': round(_quantile(v, 0.1), 1),
                         'p90': round(_quantile(v, 0.9), 1)} if v else None
     top = sorted(scores_c.items(), key=lambda kv: -kv[1])
-    out = {'n': n, 'victoire_A': round(vA / n, 4),
+    out = {'n': n, 'victoire_A': round(vA / n, 4), 'set1_A': round(set1A / n, 4),
+           'remontee': [round(remA / n, 4), round(remB / n, 4)],
            'sets': {k: round(v / n, 4) for k, v in sorted(sets_c.items(), key=lambda kv: (-int(kv[0][0]), kv[0]))},
            'scores': [[s, round(c / n, 4)] for s, c in top[:5]],
            'jeux': resume(jeux), 'tiebreak': round(tbs / n, 3),
