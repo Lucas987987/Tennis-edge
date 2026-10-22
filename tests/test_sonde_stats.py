@@ -92,3 +92,21 @@ class Sonde(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class Exploration(unittest.TestCase):
+    def test_liste_vide_puis_matchs_en_cours(self):
+        vide = Rep({}, 204)
+        vide.read = lambda: b''
+        appels = []
+        rep = S.sonder_tennisapi(CLE, '2026-10-21', ouvrir=ouvreur(appels, [vide, Rep(LISTE), Rep(STATS)]))
+        self.assertTrue(appels[1].full_url.endswith('/api/tennis/events/live'))
+        self.assertEqual(len(appels), 3)
+        self.assertEqual(rep['liste_code'], 200)
+
+    def test_chemins_a_la_main(self):
+        appels = []
+        rep = S.explorer(CLE, 'tennisapi', ['/a', '/b', '/c', '/d'], ouvrir=ouvreur(appels, [Rep(STATS), Rep(LISTE), Rep({})]))
+        self.assertEqual(len(appels), 3)
+        self.assertEqual(rep['exploration'][1]['matchs'], 3)
+        self.assertNotIn(CLE, json.dumps(rep))
