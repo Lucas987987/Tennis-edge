@@ -182,3 +182,28 @@ test('pronostics du jour : deux versions côte à côte et compteur', () => {
   assert.match(html, /pas encore de match joué/);
   assert.equal(R.pronosticsBlock(null), '');
 });
+
+test('match simulé : feuille prévue, fourchette, match type, version marché en priorité (22/10/2026)', () => {
+  const x = (moy, p10, p90) => ({ moy, p10, p90 });
+  const f = a => ({ aces: x(a, 3, 12), doubles_fautes: x(2.4, 0, 5), premiere_pct: x(61.2, 54, 68), gagnes_1re_pct: x(74, 64, 83),
+    gagnes_2e_pct: x(51, 38, 64), balles_break_obtenues: x(6, 2, 11), breaks: x(2.1, 0, 4), jeux_service_gagnes_pct: x(80, 64, 94), points_gagnes: x(70, 50, 95) });
+  const sim = (n, v) => ({ n, victoire_A: v, jeux: x(22.8, 17, 31), tiebreak: 0.34, scores: [['6-4 6-4', 0.031], ['6-3 6-4', 0.029]],
+    feuille: [f(8.4), f(3.1)], profil_connu: [true, false],
+    match_type: { score: '6-4 6-4', sets: [[6, 4], [7, 6]], breaks: [[0, 2, 2, 0]], feuille: [{ aces: 9, doubles_fautes: 1, premiere_pct: 62 }, { aces: 1, doubles_fautes: 3, premiere_pct: 58 }] } });
+  const m = { uid: 'u1', home: 'Arthur Fils', away: 'Hugo Gaston', stats: { match_simule: sim(5000, 0.61) }, marche: { match_simule: sim(5000, 0.7) } };
+  const html = R.simuleBlock(m, new Set(['u1']));
+  assert.match(html, /<details class="rg-sim" data-sim="u1" open>/);
+  assert.match(html, /Match simulé 5\s000 fois/);
+  assert.match(html, /Niveau : cote Pinnacle/);
+  assert.match(html, /Fils gagne 70 %/);
+  assert.match(html, /<b>8,4<\/b><span class="detail">3–12<\/span>/);
+  assert.match(html, /Profil de service inconnu pour Hugo Gaston/);
+  assert.match(html, /Set 1 · 6-4<\/b> — break : Fils \(3-2\)/);
+  assert.match(html, /Set 2 · 7-6<\/b> \(tie-break\) — aucun break/);
+  assert.match(html, /Fils : 9 aces, 1 double faute/);
+  assert.match(html, /Gaston : 1 ace, 3 doubles fautes/);
+  assert.match(R.simuleBlock({ ...m, marche: null }), /Niveau : classement Elo/);
+  assert.equal(R.simuleBlock({ stats: {}, marche: null }), '');
+  assert.match(R.pronosticsBlock({ horizon_h: 36, simulations: 5000, profils_au: '2026-06-02', matchs: [{ ...m, debut: '2026-10-22T04:00', tournoi: 'ATP Brussels', surface: 'Hard', meilleur_des: 3,
+    stats: { ...m.stats, p_home: 0.6, sets: {} }, marche: { ...m.marche, p_home: 0.7, sets: {} } }] }, null), /joué 5\s000 fois avec le profil de service/);
+});
