@@ -176,8 +176,12 @@ def charger_combinaison(racine):
     """Poids de la combinaison simulation + Elo si le test l'a adoptée (backtest_match_simule.py), sinon None."""
     try:
         with open(os.path.join(racine, 'simulateur', 'choix_simulation.json'), encoding='utf-8') as f:
-            cb = json.load(f).get('combinaison') or {}
-        return cb['poids'] if cb.get('adopte') and cb.get('poids') else None
+            choix = json.load(f)
+        cc = choix.get('combinaison_continue') or {}            # appris sur NOS matchs joués (apprentissage continu)
+        if cc.get('adopte') and cc.get('poids'):
+            return dict(cc['poids'], source='nos matchs joués')
+        cb = choix.get('combinaison') or {}
+        return dict(cb['poids'], source='archive 2024–2026') if cb.get('adopte') and cb.get('poids') else None
     except (OSError, ValueError, KeyError):
         return None
 
