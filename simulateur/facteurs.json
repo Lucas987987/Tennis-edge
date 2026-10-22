@@ -1,310 +1,345 @@
 {
- "genere_le": "2026-10-22T13:49:57+00:00",
- "regle": "Chaque groupe appris sur juin–août 2026, jugé sur septembre → : adopté s'il améliore la vraisemblance des points concernés et ne dégrade pas l'erreur (log loss) du vainqueur de la simulation pure de plus de 0,001.",
- "apprentissage": 5468,
- "jugement": 2875,
+ "genere_le": "2026-10-22T16:29:48+00:00",
+ "fenetres": {
+  "apprentissage": "2026-06-01",
+  "jugement": "2026-09-10"
+ },
+ "regle": "Chaque groupe appris sur les feuilles jusqu'aux 6 dernières semaines, jugé sur ces 6 dernières semaines (apprentissage continu, chaque semaine) : adopté s'il améliore la vraisemblance des points concernés et ne dégrade pas l'erreur (log loss) du vainqueur de la simulation pure de plus de 0,001.",
+ "apprentissage": 6003,
+ "jugement": 2340,
  "groupes": {
   "forme_fatigue": {
    "coefs": {
     "service": {
-     "forme_srv": 0.32765,
-     "forme_ret_adv": -0.18368,
-     "sets3_srv": -0.03451,
-     "sets3_adv": 0.03438,
-     "repos_srv": -0.05539,
-     "repos_adv": 0.04864
+     "forme_srv": 0.309,
+     "forme_ret_adv": -0.14503,
+     "sets3_srv": -0.03379,
+     "sets3_adv": 0.03325,
+     "repos_srv": -0.05536,
+     "repos_adv": 0.04899
     }
    },
    "points": {
     "service": {
-     "base": 0.6434,
-     "avec": 0.643257
+     "base": 0.643734,
+     "avec": 0.643542
     }
    },
    "vainqueur": {
     "base": {
-     "log_loss": 0.62364,
-     "reussite_pct": 66.6
+     "log_loss": 0.62392,
+     "reussite_pct": 66.1
     },
     "avec": {
-     "log_loss": 0.61992,
-     "reussite_pct": 66.6
+     "log_loss": 0.61825,
+     "reussite_pct": 66.1
     }
    },
    "adopte": true,
    "vainqueur_mieux_trouve": true,
-   "raison": "points mieux ; vainqueur log loss 0.62364 → 0.61992 (réussite 66.6 % → 66.6 %)"
+   "raison": "points mieux ; vainqueur log loss 0.62392 → 0.61825 (réussite 66.1 % → 66.1 %)"
   },
   "vitesse_court": {
    "coefs": {
     "service": {
-     "vit_srv": 0.81913
+     "vit_srv": 0.77485
     },
     "aces": {
-     "vit_ace": 1.07834
+     "vit_ace": 1.01209
     }
    },
    "points": {
     "service": {
-     "base": 0.6434,
-     "avec": 0.64331
+     "base": 0.643734,
+     "avec": 0.643615
     },
     "aces": {
-     "base": 0.296358,
-     "avec": 0.295819
+     "base": 0.294493,
+     "avec": 0.293792
     }
    },
    "vainqueur": {
     "base": {
-     "log_loss": 0.62364,
-     "reussite_pct": 66.6
+     "log_loss": 0.62392,
+     "reussite_pct": 66.1
     },
     "avec": {
-     "log_loss": 0.62369,
-     "reussite_pct": 66.7
+     "log_loss": 0.624,
+     "reussite_pct": 66.2
     }
    },
    "adopte": true,
    "vainqueur_mieux_trouve": false,
-   "raison": "points mieux ; vainqueur log loss 0.62364 → 0.62369 (réussite 66.6 % → 66.7 %)"
+   "raison": "points mieux ; vainqueur log loss 0.62392 → 0.624 (réussite 66.1 % → 66.2 %)"
   },
   "morphologie": {
    "coefs": {
     "service": {
-     "gaucher_srv": -0.02136,
-     "gaucher_adv": 0.00225,
-     "gaucher_contre_droitier": 0.03631,
-     "taille_srv": 0.01539,
-     "taille_adv": 0.00449
+     "gaucher_srv": -0.01864,
+     "gaucher_adv": 0.00055,
+     "gaucher_contre_droitier": 0.03081,
+     "taille_srv": 0.01593,
+     "taille_adv": 0.00381
     },
     "aces": {
-     "taille_srv": 0.04449,
-     "gaucher_srv": -0.09178,
-     "gaucher_adv": -0.05504
+     "taille_srv": 0.04864,
+     "gaucher_srv": -0.08576,
+     "gaucher_adv": -0.05738
     }
    },
    "points": {
     "service": {
-     "base": 0.6434,
-     "avec": 0.643367
+     "base": 0.643734,
+     "avec": 0.643698
     },
     "aces": {
-     "base": 0.296358,
-     "avec": 0.296329
+     "base": 0.294493,
+     "avec": 0.294485
     }
    },
    "vainqueur": {
     "base": {
-     "log_loss": 0.62364,
-     "reussite_pct": 66.6
+     "log_loss": 0.62392,
+     "reussite_pct": 66.1
     },
     "avec": {
-     "log_loss": 0.62347,
-     "reussite_pct": 66.6
+     "log_loss": 0.62376,
+     "reussite_pct": 66.2
     }
    },
    "adopte": true,
    "vainqueur_mieux_trouve": true,
-   "raison": "points mieux ; vainqueur log loss 0.62364 → 0.62347 (réussite 66.6 % → 66.6 %)"
+   "raison": "points mieux ; vainqueur log loss 0.62392 → 0.62376 (réussite 66.1 % → 66.2 %)"
   },
   "points_importants": {
    "coefs": {
     "bp": {
-     "bp_constante": -0.03841,
-     "clutch_srv": 0.13572,
-     "clutch_ret_adv": -0.23787
+     "bp_constante": -0.04594,
+     "clutch_srv": 0.18472,
+     "clutch_ret_adv": -0.20443
     }
    },
    "points": {
     "bp": {
-     "base": 0.677835,
-     "avec": 0.677369
+     "base": 0.677567,
+     "avec": 0.677016
     }
    },
    "vainqueur": {
     "base": {
-     "log_loss": 0.62364,
-     "reussite_pct": 66.6
+     "log_loss": 0.62392,
+     "reussite_pct": 66.1
     },
     "avec": {
-     "log_loss": 0.6235,
-     "reussite_pct": 66.6
+     "log_loss": 0.62375,
+     "reussite_pct": 66.2
     }
    },
    "adopte": true,
    "vainqueur_mieux_trouve": true,
-   "raison": "points mieux ; vainqueur log loss 0.62364 → 0.6235 (réussite 66.6 % → 66.6 %)"
+   "raison": "points mieux ; vainqueur log loss 0.62392 → 0.62375 (réussite 66.1 % → 66.2 %)"
   },
   "styles": {
    "coefs": {
     "service": {
-     "style_ace_x_retour": 0.01282,
-     "style_1re_x_retour": -0.01524,
-     "style_2e_x_retour": 0.00995
+     "style_ace_x_retour": 0.01307,
+     "style_1re_x_retour": -0.01565,
+     "style_2e_x_retour": 0.01222
     },
     "aces": {
-     "style_ace_x_retour": 0.00088
+     "style_ace_x_retour": 0.00299
     }
    },
    "points": {
     "service": {
-     "base": 0.6434,
-     "avec": 0.643392
+     "base": 0.643734,
+     "avec": 0.643728
     },
     "aces": {
-     "base": 0.296358,
-     "avec": 0.296357
+     "base": 0.294493,
+     "avec": 0.29449
     }
    },
    "vainqueur": {
     "base": {
-     "log_loss": 0.62364,
-     "reussite_pct": 66.6
+     "log_loss": 0.62392,
+     "reussite_pct": 66.1
     },
     "avec": {
-     "log_loss": 0.6232,
-     "reussite_pct": 66.5
+     "log_loss": 0.62363,
+     "reussite_pct": 66.0
     }
    },
    "adopte": true,
    "vainqueur_mieux_trouve": true,
-   "raison": "points mieux ; vainqueur log loss 0.62364 → 0.6232 (réussite 66.6 % → 66.5 %)"
+   "raison": "points mieux ; vainqueur log loss 0.62392 → 0.62363 (réussite 66.1 % → 66.0 %)"
   },
   "face_a_face": {
    "coefs": {
     "service": {
-     "h2h_srv": 0.45457
+     "h2h_srv": 0.39598
     }
    },
    "points": {
     "service": {
-     "base": 0.6434,
-     "avec": 0.643407
+     "base": 0.643734,
+     "avec": 0.643715
     }
    },
    "vainqueur": {
     "base": {
-     "log_loss": 0.62364,
-     "reussite_pct": 66.6
+     "log_loss": 0.62392,
+     "reussite_pct": 66.1
     },
     "avec": {
-     "log_loss": 0.62087,
+     "log_loss": 0.62042,
      "reussite_pct": 67.1
-    }
-   },
-   "adopte": false,
-   "vainqueur_mieux_trouve": true,
-   "raison": "points pas mieux ; vainqueur log loss 0.62364 → 0.62087 (réussite 66.6 % → 67.1 %)"
-  },
-  "conditions": {
-   "coefs": {
-    "service": {
-     "altitude": 0.01604,
-     "interieur": 0.0,
-     "chaleur": -0.00151,
-     "vent": -0.00911,
-     "domicile_srv": -0.00246,
-     "domicile_adv": -0.02693,
-     "voyage_srv": 0.01586,
-     "voyage_adv": -0.02304
-    },
-    "aces": {
-     "altitude": -0.00271,
-     "interieur": 0.0,
-     "chaleur": -0.01226,
-     "vent": -0.07819
-    }
-   },
-   "points": {
-    "service": {
-     "base": 0.6434,
-     "avec": 0.643409
-    },
-    "aces": {
-     "base": 0.296358,
-     "avec": 0.296434
-    }
-   },
-   "vainqueur": {
-    "base": {
-     "log_loss": 0.62364,
-     "reussite_pct": 66.6
-    },
-    "avec": {
-     "log_loss": 0.62363,
-     "reussite_pct": 66.7
-    }
-   },
-   "adopte": false,
-   "vainqueur_mieux_trouve": true,
-   "raison": "points pas mieux ; vainqueur log loss 0.62364 → 0.62363 (réussite 66.6 % → 66.7 %)"
-  },
-  "contexte_tournoi": {
-   "coefs": {
-    "service": {
-     "deja_ici_srv": -0.01811,
-     "deja_ici_adv": 0.03712,
-     "absence_srv": 0.03927,
-     "absence_adv": 0.04298,
-     "enchaine_srv": 0.07006,
-     "enchaine_adv": -0.07162
-    }
-   },
-   "points": {
-    "service": {
-     "base": 0.6434,
-     "avec": 0.64332
-    }
-   },
-   "vainqueur": {
-    "base": {
-     "log_loss": 0.62364,
-     "reussite_pct": 66.6
-    },
-    "avec": {
-     "log_loss": 0.61789,
-     "reussite_pct": 66.4
     }
    },
    "adopte": true,
    "vainqueur_mieux_trouve": true,
-   "raison": "points mieux ; vainqueur log loss 0.62364 → 0.61789 (réussite 66.6 % → 66.4 %)"
+   "raison": "points mieux ; vainqueur log loss 0.62392 → 0.62042 (réussite 66.1 % → 67.1 %)"
   },
-  "charting": {
+  "conditions": {
    "coefs": {
     "service": {
-     "mcp_premier_coup_srv": 0.02811,
-     "mcp_retour_adv": 0.02728,
-     "mcp_duel": 0.01001,
-     "mcp_echanges": 0.00074
+     "altitude": 0.01576,
+     "interieur": 0.0,
+     "chaleur": -0.00319,
+     "vent": -0.0081,
+     "domicile_srv": -0.00157,
+     "domicile_adv": -0.02178,
+     "voyage_srv": 0.01584,
+     "voyage_adv": -0.02238
     },
     "aces": {
-     "mcp_premier_coup_srv": -0.01664
+     "altitude": 0.0045,
+     "interieur": 0.0,
+     "chaleur": -0.01197,
+     "vent": -0.06462
     }
    },
    "points": {
     "service": {
-     "base": 0.6434,
-     "avec": 0.643385
+     "base": 0.643734,
+     "avec": 0.643744
     },
     "aces": {
-     "base": 0.296358,
-     "avec": 0.29638
+     "base": 0.294493,
+     "avec": 0.294458
     }
    },
    "vainqueur": {
     "base": {
-     "log_loss": 0.62364,
-     "reussite_pct": 66.6
+     "log_loss": 0.62392,
+     "reussite_pct": 66.1
     },
     "avec": {
-     "log_loss": 0.62404,
-     "reussite_pct": 66.6
+     "log_loss": 0.62372,
+     "reussite_pct": 66.3
+    }
+   },
+   "adopte": false,
+   "vainqueur_mieux_trouve": true,
+   "raison": "points pas mieux ; vainqueur log loss 0.62392 → 0.62372 (réussite 66.1 % → 66.3 %)"
+  },
+  "contexte_tournoi": {
+   "coefs": {
+    "service": {
+     "deja_ici_srv": -0.02395,
+     "deja_ici_adv": 0.03905,
+     "absence_srv": 0.04232,
+     "absence_adv": 0.03088,
+     "enchaine_srv": 0.07001,
+     "enchaine_adv": -0.06672
+    }
+   },
+   "points": {
+    "service": {
+     "base": 0.643734,
+     "avec": 0.64364
+    }
+   },
+   "vainqueur": {
+    "base": {
+     "log_loss": 0.62392,
+     "reussite_pct": 66.1
+    },
+    "avec": {
+     "log_loss": 0.61758,
+     "reussite_pct": 66.2
+    }
+   },
+   "adopte": true,
+   "vainqueur_mieux_trouve": true,
+   "raison": "points mieux ; vainqueur log loss 0.62392 → 0.61758 (réussite 66.1 % → 66.2 %)"
+  },
+  "charting": {
+   "coefs": {
+    "service": {
+     "mcp_premier_coup_srv": 0.02598,
+     "mcp_retour_adv": 0.02741,
+     "mcp_duel": 0.00868,
+     "mcp_echanges": 0.00291
+    },
+    "aces": {
+     "mcp_premier_coup_srv": -0.01319
+    }
+   },
+   "points": {
+    "service": {
+     "base": 0.643734,
+     "avec": 0.643713
+    },
+    "aces": {
+     "base": 0.294493,
+     "avec": 0.294513
+    }
+   },
+   "vainqueur": {
+    "base": {
+     "log_loss": 0.62392,
+     "reussite_pct": 66.1
+    },
+    "avec": {
+     "log_loss": 0.62424,
+     "reussite_pct": 66.2
     }
    },
    "adopte": false,
    "vainqueur_mieux_trouve": false,
-   "raison": "points pas mieux ; vainqueur log loss 0.62364 → 0.62404 (réussite 66.6 % → 66.6 %)"
+   "raison": "points pas mieux ; vainqueur log loss 0.62392 → 0.62424 (réussite 66.1 % → 66.2 %)"
+  },
+  "blessure": {
+   "coefs": {
+    "service": {
+     "abandon_srv": 0.03368,
+     "abandon_adv": -0.00461,
+     "abandons90_srv": -0.02128,
+     "abandons90_adv": 0.01627,
+     "retour_abandon_srv": -0.04585,
+     "retour_abandon_adv": 0.01875
+    }
+   },
+   "points": {
+    "service": {
+     "base": 0.643734,
+     "avec": 0.643748
+    }
+   },
+   "vainqueur": {
+    "base": {
+     "log_loss": 0.62392,
+     "reussite_pct": 66.1
+    },
+    "avec": {
+     "log_loss": 0.6247,
+     "reussite_pct": 65.6
+    }
+   },
+   "adopte": false,
+   "vainqueur_mieux_trouve": false,
+   "raison": "points pas mieux ; vainqueur log loss 0.62392 → 0.6247 (réussite 66.1 % → 65.6 %)"
   }
  },
  "adoptes": [
@@ -313,31 +348,33 @@
   "morphologie",
   "points_importants",
   "styles",
+  "face_a_face",
   "contexte_tournoi"
  ],
  "coefs": {
   "service": {
-   "forme_srv": 0.24374,
-   "forme_ret_adv": -0.11699,
-   "sets3_srv": -0.02168,
-   "sets3_adv": 0.02102,
-   "repos_srv": -0.06054,
-   "repos_adv": 0.0546,
-   "vit_srv": 0.68182,
-   "gaucher_srv": -0.01122,
-   "gaucher_adv": -0.00071,
-   "gaucher_contre_droitier": 0.02807,
-   "taille_srv": 0.01193,
-   "taille_adv": 0.00513,
-   "style_ace_x_retour": 0.00759,
-   "style_1re_x_retour": -0.00421,
-   "style_2e_x_retour": 0.03424,
-   "deja_ici_srv": -0.06824,
-   "deja_ici_adv": 0.07028,
-   "absence_srv": 0.00942,
-   "absence_adv": 0.02179,
-   "enchaine_srv": 0.05067,
-   "enchaine_adv": -0.04863
+   "forme_srv": 0.23914,
+   "forme_ret_adv": -0.11183,
+   "sets3_srv": -0.02186,
+   "sets3_adv": 0.02053,
+   "repos_srv": -0.06137,
+   "repos_adv": 0.05523,
+   "vit_srv": 0.68406,
+   "gaucher_srv": -0.0125,
+   "gaucher_adv": -0.0006,
+   "gaucher_contre_droitier": 0.02902,
+   "taille_srv": 0.01169,
+   "taille_adv": 0.00492,
+   "style_ace_x_retour": 0.00752,
+   "style_1re_x_retour": -0.00491,
+   "style_2e_x_retour": 0.03564,
+   "h2h_srv": 0.33962,
+   "deja_ici_srv": -0.06717,
+   "deja_ici_adv": 0.07046,
+   "absence_srv": 0.00866,
+   "absence_adv": 0.02223,
+   "enchaine_srv": 0.05019,
+   "enchaine_adv": -0.04719
   },
   "aces": {
    "vit_ace": 1.1237,
@@ -354,14 +391,14 @@
  },
  "ensemble_sur_le_jugement": {
   "base": {
-   "log_loss": 0.62364,
-   "reussite_pct": 66.6
+   "log_loss": 0.62392,
+   "reussite_pct": 66.1
   },
   "avec": {
-   "log_loss": 0.61507,
-   "reussite_pct": 66.7
+   "log_loss": 0.61077,
+   "reussite_pct": 67.1
   }
  },
- "verdict": "groupes adoptés : forme_fatigue, vitesse_court, morphologie, points_importants, styles, contexte_tournoi",
- "duree_s": 306
+ "verdict": "groupes adoptés : forme_fatigue, vitesse_court, morphologie, points_importants, styles, face_a_face, contexte_tournoi",
+ "duree_s": 305
 }

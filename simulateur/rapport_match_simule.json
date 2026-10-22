@@ -1,5 +1,5 @@
 {
- "genere_le": "2026-10-22T13:47:31+00:00",
+ "genere_le": "2026-10-22T16:27:13+00:00",
  "periode": "2024-01-01 → 2026-02-01",
  "matchs_simules": 2000,
  "simulations_par_match": 300,
@@ -1252,7 +1252,7 @@
    ]
   }
  },
- "duree_s": 1354,
+ "duree_s": 1619,
  "victoire_tous_les_matchs": {
   "simulation_pure_ajustee": {
    "n": 9267,
@@ -1416,31 +1416,140 @@
    "500": 0.53784
   },
   "raison": "log loss de la simulation pure : ajustée 0.6207 contre profils bruts 0.6437 (réussite 65.1 % contre 62.1 %)",
+  "reglage_simulation": {
+   "adopte": true,
+   "sigma": 0.0,
+   "amplification": 1.0,
+   "raison": "choisi sur 2024 : σ = 0, k = 1 ; 2025 → : log loss 0.6238 contre 0.6248 (réussite 64.9 % contre 64.9 %, calibration 50–60 % 54.8→54.5 · 60–70 % 64.7→66.0 · 70–80 % 74.5→69.7 · 80–90 % 84.4→81.4 · 90–100 % 93.9→90.6)"
+  },
   "combinaison": {
    "adopte": true,
    "poids": {
-    "elo": 0.7949,
-    "simulation": 0.3102
+    "elo": 0.7816,
+    "simulation": 0.2377
    },
-   "raison": "log loss 2025 → : combinaison 0.6147 contre Elo 0.6148 et simulation 0.6248 (Pinnacle 0.598)",
-   "simulation": "simulation_pure_ajustee"
+   "raison": "log loss 2025 → : combinaison 0.6146 contre Elo 0.6148 et simulation 0.6238 (Pinnacle 0.598)",
+   "simulation": "simulation_reglee"
   }
  },
+ "reglage_simulation": {
+  "adopte": true,
+  "sigma": 0.0,
+  "amplification": 1.0,
+  "cle": "0|1",
+  "grille_2024": {
+   "0|1": 0.61087,
+   "0.05|1": 0.61111,
+   "0.1|1.15": 0.61136,
+   "0.05|1.15": 0.61171,
+   "0.15|1.3": 0.6119,
+   "0.1|1.3": 0.61215,
+   "0|1.15": 0.61248,
+   "0.15|1.5": 0.61256,
+   "0.1|1": 0.61284,
+   "0.15|1.15": 0.61341,
+   "0.05|1.3": 0.61498,
+   "0.1|1.5": 0.61647,
+   "0.15|1": 0.61673,
+   "0|1.3": 0.61691,
+   "0.05|1.5": 0.62315,
+   "0|1.5": 0.62685
+  },
+  "jugement": {
+   "choisi": {
+    "n": 4489,
+    "reussite_pct": 64.9,
+    "log_loss": 0.6238,
+    "brier": 0.2175,
+    "calibration": [
+     {
+      "tranche": "50–60 %",
+      "n": 1695,
+      "prevu": 54.8,
+      "reel": 54.5
+     },
+     {
+      "tranche": "60–70 %",
+      "n": 1284,
+      "prevu": 64.7,
+      "reel": 66.0
+     },
+     {
+      "tranche": "70–80 %",
+      "n": 856,
+      "prevu": 74.5,
+      "reel": 69.7
+     },
+     {
+      "tranche": "80–90 %",
+      "n": 483,
+      "prevu": 84.4,
+      "reel": 81.4
+     },
+     {
+      "tranche": "90–100 %",
+      "n": 171,
+      "prevu": 93.9,
+      "reel": 90.6
+     }
+    ]
+   },
+   "actuel": {
+    "n": 4489,
+    "reussite_pct": 64.9,
+    "log_loss": 0.6248,
+    "brier": 0.218,
+    "calibration": [
+     {
+      "tranche": "50–60 %",
+      "n": 2215,
+      "prevu": 54.7,
+      "reel": 56.4
+     },
+     {
+      "tranche": "60–70 %",
+      "n": 1372,
+      "prevu": 64.5,
+      "reel": 68.6
+     },
+     {
+      "tranche": "70–80 %",
+      "n": 641,
+      "prevu": 74.3,
+      "reel": 77.1
+     },
+     {
+      "tranche": "80–90 %",
+      "n": 226,
+      "prevu": 83.9,
+      "reel": 87.2
+     },
+     {
+      "tranche": "90–100 %",
+      "n": 35,
+      "prevu": 92.1,
+      "reel": 97.1
+     }
+    ]
+   }
+  },
+  "raison": "choisi sur 2024 : σ = 0, k = 1 ; 2025 → : log loss 0.6238 contre 0.6248 (réussite 64.9 % contre 64.9 %, calibration 50–60 % 54.8→54.5 · 60–70 % 64.7→66.0 · 70–80 % 74.5→69.7 · 80–90 % 84.4→81.4 · 90–100 % 93.9→90.6)"
+ },
  "combinaison": {
-  "simulation": "simulation_pure_ajustee",
+  "simulation": "simulation_reglee",
   "apprentissage": 4778,
   "jugement_n": 4489,
   "adopte": true,
   "poids": {
-   "elo": 0.7949,
-   "simulation": 0.3102
+   "elo": 0.7816,
+   "simulation": 0.2377
   },
   "poids_appris_2024": {
-   "elo": 0.8731,
-   "simulation": 0.2978
+   "elo": 0.8541,
+   "simulation": 0.2358
   },
   "elo_recalibre_coef": 1.0582,
-  "simulation_recalibree_coef": 1.3943,
+  "simulation_recalibree_coef": 1.0029,
   "jugement": {
    "elo": {
     "n": 4489,
@@ -1483,38 +1592,38 @@
    "simulation": {
     "n": 4489,
     "reussite_pct": 64.9,
-    "log_loss": 0.6248,
-    "brier": 0.218,
+    "log_loss": 0.6238,
+    "brier": 0.2175,
     "calibration": [
      {
       "tranche": "50–60 %",
-      "n": 2215,
-      "prevu": 54.7,
-      "reel": 56.4
+      "n": 1695,
+      "prevu": 54.8,
+      "reel": 54.5
      },
      {
       "tranche": "60–70 %",
-      "n": 1372,
-      "prevu": 64.5,
-      "reel": 68.6
+      "n": 1284,
+      "prevu": 64.7,
+      "reel": 66.0
      },
      {
       "tranche": "70–80 %",
-      "n": 641,
-      "prevu": 74.3,
-      "reel": 77.1
+      "n": 856,
+      "prevu": 74.5,
+      "reel": 69.7
      },
      {
       "tranche": "80–90 %",
-      "n": 226,
-      "prevu": 83.9,
-      "reel": 87.2
+      "n": 483,
+      "prevu": 84.4,
+      "reel": 81.4
      },
      {
       "tranche": "90–100 %",
-      "n": 35,
-      "prevu": 92.1,
-      "reel": 97.1
+      "n": 171,
+      "prevu": 93.9,
+      "reel": 90.6
      }
     ]
    },
@@ -1564,71 +1673,71 @@
     "calibration": [
      {
       "tranche": "50–60 %",
-      "n": 1668,
+      "n": 1694,
       "prevu": 54.8,
-      "reel": 53.9
+      "reel": 54.5
      },
      {
       "tranche": "60–70 %",
-      "n": 1302,
+      "n": 1280,
       "prevu": 64.7,
-      "reel": 66.2
+      "reel": 65.8
      },
      {
       "tranche": "70–80 %",
       "n": 859,
-      "prevu": 74.6,
-      "reel": 70.3
+      "prevu": 74.5,
+      "reel": 70.0
      },
      {
       "tranche": "80–90 %",
-      "n": 501,
+      "n": 484,
       "prevu": 84.4,
-      "reel": 80.4
+      "reel": 81.4
      },
      {
       "tranche": "90–100 %",
-      "n": 159,
-      "prevu": 93.5,
-      "reel": 92.5
+      "n": 172,
+      "prevu": 93.9,
+      "reel": 90.1
      }
     ]
    },
    "combinaison": {
     "n": 4489,
     "reussite_pct": 66.1,
-    "log_loss": 0.6147,
+    "log_loss": 0.6146,
     "brier": 0.2135,
     "calibration": [
      {
       "tranche": "50–60 %",
-      "n": 1432,
+      "n": 1435,
       "prevu": 55.0,
-      "reel": 55.6
+      "reel": 55.5
      },
      {
       "tranche": "60–70 %",
-      "n": 1276,
+      "n": 1283,
       "prevu": 64.8,
-      "reel": 62.0
+      "reel": 62.3
      },
      {
       "tranche": "70–80 %",
-      "n": 997,
+      "n": 985,
       "prevu": 74.7,
-      "reel": 72.9
+      "reel": 73.0
      },
      {
       "tranche": "80–90 %",
-      "n": 583,
+      "n": 584,
       "prevu": 84.4,
-      "reel": 79.9
+      "reel": 80.0
      },
      {
       "tranche": "90–100 %",
-      "n": 201,
-      "prevu": 93.3,
-      "reel": 92.5
+      "n": 202,
+      "prevu": 93.4,
+      "reel": 92.1
      }
     ]
    },
@@ -1671,7 +1780,7 @@
     ]
    }
   },
-  "raison": "log loss 2025 → : combinaison 0.6147 contre Elo 0.6148 et simulation 0.6248 (Pinnacle 0.598)"
+  "raison": "log loss 2025 → : combinaison 0.6146 contre Elo 0.6148 et simulation 0.6238 (Pinnacle 0.598)"
  },
  "calibration_detaillee": {
   "tous (2025 →)": {
@@ -1716,38 +1825,38 @@
    "simulation": {
     "n": 4489,
     "reussite_pct": 64.9,
-    "log_loss": 0.6248,
-    "brier": 0.218,
+    "log_loss": 0.6238,
+    "brier": 0.2175,
     "calibration": [
      {
       "tranche": "50–60 %",
-      "n": 2215,
-      "prevu": 54.7,
-      "reel": 56.4
+      "n": 1695,
+      "prevu": 54.8,
+      "reel": 54.5
      },
      {
       "tranche": "60–70 %",
-      "n": 1372,
-      "prevu": 64.5,
-      "reel": 68.6
+      "n": 1284,
+      "prevu": 64.7,
+      "reel": 66.0
      },
      {
       "tranche": "70–80 %",
-      "n": 641,
-      "prevu": 74.3,
-      "reel": 77.1
+      "n": 856,
+      "prevu": 74.5,
+      "reel": 69.7
      },
      {
       "tranche": "80–90 %",
-      "n": 226,
-      "prevu": 83.9,
-      "reel": 87.2
+      "n": 483,
+      "prevu": 84.4,
+      "reel": 81.4
      },
      {
       "tranche": "90–100 %",
-      "n": 35,
-      "prevu": 92.1,
-      "reel": 97.1
+      "n": 171,
+      "prevu": 93.9,
+      "reel": 90.6
      }
     ]
    },
@@ -1792,38 +1901,38 @@
    "combinaison": {
     "n": 4489,
     "reussite_pct": 66.1,
-    "log_loss": 0.6147,
+    "log_loss": 0.6146,
     "brier": 0.2135,
     "calibration": [
      {
       "tranche": "50–60 %",
-      "n": 1432,
+      "n": 1435,
       "prevu": 55.0,
-      "reel": 55.6
+      "reel": 55.5
      },
      {
       "tranche": "60–70 %",
-      "n": 1276,
+      "n": 1283,
       "prevu": 64.8,
-      "reel": 62.0
+      "reel": 62.3
      },
      {
       "tranche": "70–80 %",
-      "n": 997,
+      "n": 984,
       "prevu": 74.7,
-      "reel": 72.9
+      "reel": 73.0
      },
      {
       "tranche": "80–90 %",
-      "n": 583,
+      "n": 585,
       "prevu": 84.4,
-      "reel": 79.9
+      "reel": 80.0
      },
      {
       "tranche": "90–100 %",
-      "n": 201,
-      "prevu": 93.3,
-      "reel": 92.5
+      "n": 202,
+      "prevu": 93.4,
+      "reel": 92.1
      }
     ]
    }
@@ -1870,38 +1979,38 @@
    "simulation": {
     "n": 2259,
     "reussite_pct": 64.5,
-    "log_loss": 0.6268,
-    "brier": 0.2192,
+    "log_loss": 0.6262,
+    "brier": 0.219,
     "calibration": [
      {
       "tranche": "50–60 %",
-      "n": 1170,
-      "prevu": 54.7,
-      "reel": 56.8
+      "n": 927,
+      "prevu": 54.8,
+      "reel": 54.7
      },
      {
       "tranche": "60–70 %",
-      "n": 648,
-      "prevu": 64.4,
-      "reel": 68.2
+      "n": 620,
+      "prevu": 64.5,
+      "reel": 66.3
      },
      {
       "tranche": "70–80 %",
-      "n": 295,
+      "n": 398,
       "prevu": 74.4,
-      "reel": 74.2
+      "reel": 69.6
      },
      {
       "tranche": "80–90 %",
-      "n": 118,
-      "prevu": 84.2,
-      "reel": 87.3
+      "n": 213,
+      "prevu": 84.6,
+      "reel": 78.9
      },
      {
       "tranche": "90–100 %",
-      "n": 28,
-      "prevu": 92.0,
-      "reel": 100.0
+      "n": 101,
+      "prevu": 94.4,
+      "reel": 92.1
      }
     ]
    },
@@ -1946,38 +2055,38 @@
    "combinaison": {
     "n": 2259,
     "reussite_pct": 65.8,
-    "log_loss": 0.6176,
-    "brier": 0.2147,
+    "log_loss": 0.6174,
+    "brier": 0.2146,
     "calibration": [
      {
       "tranche": "50–60 %",
-      "n": 706,
+      "n": 711,
       "prevu": 55.0,
-      "reel": 54.7
+      "reel": 54.9
      },
      {
       "tranche": "60–70 %",
-      "n": 643,
+      "n": 647,
       "prevu": 64.8,
-      "reel": 62.5
+      "reel": 62.8
      },
      {
       "tranche": "70–80 %",
-      "n": 486,
+      "n": 481,
       "prevu": 74.7,
-      "reel": 72.8
+      "reel": 72.3
      },
      {
       "tranche": "80–90 %",
-      "n": 293,
-      "prevu": 84.2,
-      "reel": 76.1
+      "n": 289,
+      "prevu": 84.3,
+      "reel": 77.2
      },
      {
       "tranche": "90–100 %",
       "n": 131,
-      "prevu": 93.6,
-      "reel": 92.4
+      "prevu": 93.8,
+      "reel": 91.6
      }
     ]
    }
@@ -2024,38 +2133,38 @@
    "simulation": {
     "n": 2230,
     "reussite_pct": 65.4,
-    "log_loss": 0.6229,
-    "brier": 0.2167,
+    "log_loss": 0.6214,
+    "brier": 0.2159,
     "calibration": [
      {
       "tranche": "50–60 %",
-      "n": 1045,
+      "n": 768,
       "prevu": 54.8,
-      "reel": 56.0
+      "reel": 54.2
      },
      {
       "tranche": "60–70 %",
-      "n": 724,
-      "prevu": 64.6,
-      "reel": 68.9
+      "n": 664,
+      "prevu": 64.8,
+      "reel": 65.7
      },
      {
       "tranche": "70–80 %",
-      "n": 346,
-      "prevu": 74.2,
-      "reel": 79.5
+      "n": 458,
+      "prevu": 74.6,
+      "reel": 69.9
      },
      {
       "tranche": "80–90 %",
-      "n": 108,
-      "prevu": 83.7,
-      "reel": 87.0
+      "n": 270,
+      "prevu": 84.2,
+      "reel": 83.3
      },
      {
       "tranche": "90–100 %",
-      "n": 7,
-      "prevu": 92.7,
-      "reel": 85.7
+      "n": 70,
+      "prevu": 93.2,
+      "reel": 88.6
      }
     ]
    },
@@ -2105,33 +2214,33 @@
     "calibration": [
      {
       "tranche": "50–60 %",
-      "n": 726,
+      "n": 724,
       "prevu": 54.9,
-      "reel": 56.5
+      "reel": 56.1
      },
      {
       "tranche": "60–70 %",
-      "n": 633,
-      "prevu": 64.7,
-      "reel": 61.5
+      "n": 636,
+      "prevu": 64.8,
+      "reel": 61.8
      },
      {
       "tranche": "70–80 %",
-      "n": 511,
+      "n": 503,
       "prevu": 74.6,
-      "reel": 73.0
+      "reel": 73.6
      },
      {
       "tranche": "80–90 %",
-      "n": 290,
+      "n": 296,
       "prevu": 84.5,
-      "reel": 83.8
+      "reel": 82.8
      },
      {
       "tranche": "90–100 %",
-      "n": 70,
-      "prevu": 92.7,
-      "reel": 92.9
+      "n": 71,
+      "prevu": 92.9,
+      "reel": 93.0
      }
     ]
    }
@@ -2178,31 +2287,37 @@
    "simulation": {
     "n": 33,
     "reussite_pct": 75.8,
-    "log_loss": 0.5186,
-    "brier": 0.1714,
+    "log_loss": 0.5027,
+    "brier": 0.1679,
     "calibration": [
      {
       "tranche": "50–60 %",
-      "n": 8,
-      "prevu": 55.2,
-      "reel": 62.5
-     },
-     {
-      "tranche": "60–70 %",
-      "n": 9,
-      "prevu": 65.8,
+      "n": 6,
+      "prevu": 55.7,
       "reel": 66.7
      },
      {
+      "tranche": "60–70 %",
+      "n": 6,
+      "prevu": 65.8,
+      "reel": 50.0
+     },
+     {
       "tranche": "70–80 %",
-      "n": 12,
-      "prevu": 75.9,
-      "reel": 83.3
+      "n": 8,
+      "prevu": 75.2,
+      "reel": 75.0
      },
      {
       "tranche": "80–90 %",
-      "n": 4,
-      "prevu": 84.5,
+      "n": 11,
+      "prevu": 85.3,
+      "reel": 90.9
+     },
+     {
+      "tranche": "90–100 %",
+      "n": 2,
+      "prevu": 93.7,
       "reel": 100.0
      }
     ]
@@ -2248,37 +2363,37 @@
    "combinaison": {
     "n": 33,
     "reussite_pct": 78.8,
-    "log_loss": 0.4133,
-    "brier": 0.1321,
+    "log_loss": 0.4144,
+    "brier": 0.1326,
     "calibration": [
      {
       "tranche": "50–60 %",
       "n": 6,
-      "prevu": 55.1,
+      "prevu": 54.9,
       "reel": 50.0
      },
      {
       "tranche": "60–70 %",
       "n": 3,
-      "prevu": 66.3,
+      "prevu": 66.5,
       "reel": 33.3
      },
      {
       "tranche": "70–80 %",
       "n": 6,
-      "prevu": 75.3,
+      "prevu": 75.1,
       "reel": 83.3
      },
      {
       "tranche": "80–90 %",
-      "n": 13,
-      "prevu": 86.8,
-      "reel": 92.3
+      "n": 14,
+      "prevu": 87.0,
+      "reel": 92.9
      },
      {
       "tranche": "90–100 %",
-      "n": 5,
-      "prevu": 91.9,
+      "n": 4,
+      "prevu": 92.2,
       "reel": 100.0
      }
     ]
@@ -2326,38 +2441,38 @@
    "simulation": {
     "n": 4456,
     "reussite_pct": 64.9,
-    "log_loss": 0.6256,
-    "brier": 0.2183,
+    "log_loss": 0.6247,
+    "brier": 0.2178,
     "calibration": [
      {
       "tranche": "50–60 %",
-      "n": 2207,
-      "prevu": 54.7,
-      "reel": 56.4
+      "n": 1689,
+      "prevu": 54.8,
+      "reel": 54.4
      },
      {
       "tranche": "60–70 %",
-      "n": 1363,
-      "prevu": 64.5,
-      "reel": 68.6
+      "n": 1278,
+      "prevu": 64.7,
+      "reel": 66.0
      },
      {
       "tranche": "70–80 %",
-      "n": 629,
-      "prevu": 74.2,
-      "reel": 76.9
+      "n": 848,
+      "prevu": 74.5,
+      "reel": 69.7
      },
      {
       "tranche": "80–90 %",
-      "n": 222,
-      "prevu": 83.9,
-      "reel": 86.9
+      "n": 472,
+      "prevu": 84.4,
+      "reel": 81.1
      },
      {
       "tranche": "90–100 %",
-      "n": 35,
-      "prevu": 92.1,
-      "reel": 97.1
+      "n": 169,
+      "prevu": 93.9,
+      "reel": 90.5
      }
     ]
    },
@@ -2402,38 +2517,38 @@
    "combinaison": {
     "n": 4456,
     "reussite_pct": 66.0,
-    "log_loss": 0.6162,
+    "log_loss": 0.6161,
     "brier": 0.2141,
     "calibration": [
      {
       "tranche": "50–60 %",
-      "n": 1426,
+      "n": 1429,
       "prevu": 55.0,
-      "reel": 55.6
+      "reel": 55.5
      },
      {
       "tranche": "60–70 %",
-      "n": 1273,
+      "n": 1280,
       "prevu": 64.8,
-      "reel": 62.1
+      "reel": 62.3
      },
      {
       "tranche": "70–80 %",
-      "n": 991,
+      "n": 978,
       "prevu": 74.7,
       "reel": 72.9
      },
      {
       "tranche": "80–90 %",
-      "n": 570,
+      "n": 571,
       "prevu": 84.3,
-      "reel": 79.6
+      "reel": 79.7
      },
      {
       "tranche": "90–100 %",
-      "n": 196,
-      "prevu": 93.3,
-      "reel": 92.3
+      "n": 198,
+      "prevu": 93.5,
+      "reel": 91.9
      }
     ]
    }
