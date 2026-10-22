@@ -330,8 +330,11 @@ H14_LEAD_MAX = 1440.0         # 24 h avant le match
 #                 qualité de son signal sont deux choses différentes.
 #   versions .fr  unibet.fr 11,6 %, winamax.fr 11,1 %, bet365.fr 10,2 % de
 #                 marge, soit le double des versions internationales.
+# AMENDEMENT DU 22/10/2026 (décision de Lucas) : leovegas retiré des books d'entrée, pour les
+# alertes à venir. Effet passé négligeable : aucune ligne leovegas dans moves_detail_hist.csv
+# (patcher_softs.py), 8 paris sur 249 dans le journal H13 (le meilleur prix passe au book suivant).
 H14_SOFTS = ['unibet', 'bwin', 'betsson', 'bet365', '888sport',
-             'betway', 'leovegas']
+             'betway']
 
 FREEZE_DATE_H15 = '2026-09-25'
 # BANDE DE COTE H15 — source de vérité unique, partagée avec h15_signal.py.

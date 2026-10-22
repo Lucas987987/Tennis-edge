@@ -70,6 +70,20 @@ EXCHANGES = set(b.strip() for b in os.environ.get(
 # 6% -> 10% (aucun message interessant perdu). 0 = desactive la regle.
 PALIER_SOLO = float(os.environ.get('PALIER_SOLO_PTS', '5')) / 100
 
+# CORRIGÉ LE 22/10/2026 : la ligne 🏪 ne filtrait que les bourses. Les flux « données seules »
+# (4casters, sbobet, sharpbet…, retirés de steam_alert le 21/10) et les books retirés (leovegas)
+# y apparaissaient encore : 32 alertes du canal sur 497 avaient l'un d'eux en tête, et le journal
+# du canal (paper_journal_canal) les prenait comme prix d'entrée. Liste unique : Tennis_Edge_Lab/books.py.
+import importlib.util as _ilu  # noqa: E402
+_spec = _ilu.spec_from_file_location('tennis_edge_canal_books', os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), '..', 'Tennis_Edge_Lab', 'books.py'))
+books = _ilu.module_from_spec(_spec)
+_spec.loader.exec_module(books)
+
+
+def jouable(b):
+    return books.flags(b)['jouable']
+
 def _load_json(path, default):
     if os.path.exists(path):
         try:
@@ -283,7 +297,7 @@ def main():
         # opérateurs encore au-dessus du juste prix (retard d'ajustement)
         lags = []
         for b, s in g.items():
-            if b.startswith('_') or b == 'pinnacle' or b in EXCHANGES:
+            if b.startswith('_') or b == 'pinnacle' or b in EXCHANGES or not jouable(b):
                 continue
             cur = (s['h'] if side == 'h' else s['a'])[-1][1]
             if fair and cur >= fair * (1 + GAP_MIN):
@@ -373,7 +387,7 @@ def main():
                     'cote_adverse': round(oa1 if side == 'h' else oh1, 3),
                     'limite_pinnacle': lim_pin,
                     'n_books': sum(1 for b in g if not b.startswith('_')
-                                   and b != 'pinnacle' and b not in EXCHANGES),
+                                   and b != 'pinnacle' and b not in EXCHANGES and jouable(b)),
                     'n_retards': len(lags),
                     'rang_palier': PALIERS.index(palier) + 1 if palier in PALIERS else None,
                     'deja_signale': round(state.get(uid, 0), 3),
