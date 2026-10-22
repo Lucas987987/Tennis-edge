@@ -1,0 +1,80 @@
+name: Feuilles de match (TennisApi)
+
+# 22/10/2026 — feuilles de match complètes (aces, doubles fautes, 1re et 2e balle,
+# balles de break, jeux de service, retour ; match entier et chaque set) de tous
+# les matchs en simple terminés : ATP, WTA, Challenger, ITF (quand la feuille
+# existe). Source : TennisApi (RapidAPI, formule Pro, 15 000 requêtes/jour),
+# clé RAPIDAPI_KEY. Une requête par catégorie et par jour, puis une par match.
+#
+# Automatique : chaque jour, avant-hier et hier (matchs finis tard repris).
+# RATTRAPAGE : Run workflow avec debut = 2026-06-01 (fin vide = hier). Les jours
+# déjà complets ne sont jamais redemandés : relancer reprend où le run s'est arrêté.
+# Garde-fous : budget par run, arrêt sous la réserve de quota, 5 requêtes/s.
+# Stockage : feuilles/AAAA-MM-JJ.jsonl.gz + feuilles/etat.json (bilan par jour).
+on:
+  schedule:
+    - cron: '41 4 * * *'
+    - cron: '41 16 * * *'
+  workflow_dispatch:
+    inputs:
+      debut:
+        description: 'Premier jour (AAAA-MM-JJ) ; vide = avant-hier. Rattrapage : 2026-06-01'
+        default: ''
+      fin:
+        description: 'Dernier jour (AAAA-MM-JJ) ; vide = hier'
+        default: ''
+      categories:
+        description: 'Catégories (vide = atp,wta,challenger,itf men,itf women,wta 125)'
+        default: ''
+      budget:
+        description: 'Requêtes au plus pour ce run (formule Pro : 15 000 par jour)'
+        default: '4000'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: feuilles-match
+  cancel-in-progress: false
+
+jobs:
+  feuilles:
+    runs-on: ubuntu-latest
+    timeout-minutes: 340
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+          filter: blob:none
+          sparse-checkout: |
+            /scripts/feuilles_match.py
+            /feuilles/
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - name: Collecte
+        timeout-minutes: 300
+        env:
+          RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
+          FEUILLES_BUDGET: ${{ github.event.inputs.budget || '4000' }}
+          FEUILLES_RESERVE: '1500'
+          DEBUT: ${{ github.event.inputs.debut }}
+          FIN: ${{ github.event.inputs.fin }}
+          CATS: ${{ github.event.inputs.categories }}
+        run: python scripts/feuilles_match.py "$DEBUT" "$FIN" "$CATS"
+      - name: Publier (même après une interruption)
+        if: always()
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- feuilles
+          if git diff --cached --quiet; then echo 'Rien de nouveau.'; exit 0; fi
+          git commit -q -m "Feuilles de match $(date -u +%FT%TZ)"
+          for i in 1 2 3 4 5; do
+            git pull --rebase origin main || { git rebase --abort || true; echo '::error::Conflit avec main'; exit 1; }
+            if git push origin HEAD:main; then exit 0; fi
+            sleep $((i * 10))
+          done
+          echo '::error::Push impossible après 5 essais'; exit 1
