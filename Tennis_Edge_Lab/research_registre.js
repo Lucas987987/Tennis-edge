@@ -404,6 +404,17 @@
       <div id="rgServBody">${ouvert ? serviceInner(doc, q, key) : ''}</div></details>`;
   }
 
+  // 22/10/2026 — facteurs du match adoptés par l'étude : ce qu'ils changent au % de la simulation.
+  const FACTEURS_LIB = { forme_fatigue: 'Forme récente et fatigue', vitesse_court: 'Vitesse du court', morphologie: 'Gaucher ou droitier, taille', points_importants: 'Points importants' };
+  function facteursBlock(m) {
+    const f = m && m.simulation && m.simulation.facteurs;
+    if (!f || !f.groupes || !Object.keys(f.groupes).length) return '';
+    const nom = String(m.home || '').split(' ').slice(-1)[0];
+    const pts = x => `${x > 0 ? '+' : x < 0 ? '−' : ''}${nf(Math.abs(x), 1)} pt`;
+    const items = Object.entries(f.groupes).map(([g, x]) => `${esc(FACTEURS_LIB[g] || g)} <b>${pts(x)}</b>`).join(' · ');
+    return `<div class="rg-facteurs mini">Ce qui pèse pour ${esc(nom)} : ${items} <span class="rg-cote">(${nf(100 * f.sans, 0)} % sans, ${nf(100 * f.avec, 0)} % avec)</span></div>`;
+  }
+
   function pronosticsBlock(P, B, ouverts) {
     if (!P || !P.matchs) return '';
     const pc = v => (fin(v) ? `${nf(100 * v, 0)} %` : '—');
@@ -427,9 +438,9 @@
     const cartes = P.matchs.map(m => `<div class="rg-pron"><div class="mini">${heure(m.debut)} · ${esc(m.tournoi)} · ${esc(m.surface)}${m.meilleur_des === 5 ? ' · 5 sets' : ''}</div>
         <div class="rg-pron-j"><b>${esc(m.home)}</b> – <b>${esc(m.away)}</b></div>
         <div class="table-wrap rg-table"><table><thead><tr><th></th><th>Vainqueur · sets <small>(% · cote juste)</small></th><th>Scores les plus probables (sur ~1 500 possibles)</th><th>Jeux</th></tr></thead>
-        <tbody>${m.simulation ? ligne(`<b>Simulation</b><span class="detail">${nf((P.simulations || 0), 0)} matchs joués</span>`, m.simulation, m) : ''}${ligne('Classement Elo', m.stats, m)}${ligne('Cote Pinnacle', m.marche, m)}</tbody></table></div>${simuleBlock(m, ouverts)}${m.cles ? `<div class="rg-serv-liens">Profil de service : <button type="button" data-serv-key="${esc(m.cles[0])}">${nomCourt(m.home)}</button> <button type="button" data-serv-key="${esc(m.cles[1])}">${nomCourt(m.away)}</button></div>` : ''}</div>`).join('');
+        <tbody>${m.simulation ? ligne(`<b>Simulation</b><span class="detail">${nf((P.simulations || 0), 0)} matchs joués</span>`, m.simulation, m) : ''}${ligne('Classement Elo', m.stats, m)}${ligne('Cote Pinnacle', m.marche, m)}</tbody></table></div>${facteursBlock(m)}${simuleBlock(m, ouverts)}${m.cles ? `<div class="rg-serv-liens">Profil de service : <button type="button" data-serv-key="${esc(m.cles[0])}">${nomCourt(m.home)}</button> <button type="button" data-serv-key="${esc(m.cles[1])}">${nomCourt(m.away)}</button></div>` : ''}</div>`).join('');
     return `<details class="rg-eval" open><summary>Pronostics du jour (${nf(P.matchs.length, 0)} matchs dans les ${nf(P.horizon_h, 0)} h)</summary>
-      <p class="mini"><b>Simulation</b> : chaque match est joué ${nf(P.simulations || 5000, 0)} fois point par point avec les seules statistiques des deux joueurs — 1re balle, aces, doubles fautes, points gagnés derrière la 1re et la 2e, qualité de retour (profils au ${esc(P.profils_au || '—')}) — et la part des simulations gagnées donne le pourcentage. Pour comparaison : <b>classement Elo</b> (résultats seuls) et <b>cote Pinnacle</b> (marge retirée), joués dans le même moteur. Le premier pronostic de chaque match est gardé tel quel : les compteurs portent sur lui. Chaque pourcentage est aussi lu en <b>cote juste</b> (1 / probabilité, sans marge).</p>
+      <p class="mini"><b>Simulation</b> : chaque match est joué ${nf(P.simulations || 5000, 0)} fois point par point avec les seules statistiques des deux joueurs — 1re balle, aces, doubles fautes, points gagnés derrière la 1re et la 2e, qualité de retour (profils au ${esc(P.profils_au || '—')}) — et la part des simulations gagnées donne le pourcentage. Pour comparaison : <b>classement Elo</b> (résultats seuls) et <b>cote Pinnacle</b> (marge retirée), joués dans le même moteur. Le premier pronostic de chaque match est gardé tel quel : les compteurs portent sur lui. Chaque pourcentage est aussi lu en <b>cote juste</b> (1 / probabilité, sans marge).${(P.facteurs_adoptes || []).length ? ` Facteurs du match retenus par le test : ${P.facteurs_adoptes.map(g => esc(FACTEURS_LIB[g] || g)).join(', ')}.` : ''}</p>
       <div class="rg-kpis">${kpi('Réussite simulation', T.simulation)}${kpi('Réussite Elo', T.stats_seules)}${kpi('Réussite Pinnacle', T.stats_plus_marche)}${kpi('7 jours, simulation', S.simulation)}${kpi('7 jours, Elo', S.stats_seules)}${kpi('7 jours, Pinnacle', S.stats_plus_marche)}</div>
       ${suiviF}
       ${cartes || '<p class="mini">Aucun match dans les prochaines heures.</p>'}
@@ -571,6 +582,6 @@
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
   }
   if (typeof module !== 'undefined') {
-    module.exports = { pronosticsBlock, simuleBlock, serviceBlock, serviceInner, ficheService, chercherJoueurs, croisementsBlock, delaiBlock, booksBlock, valeurBlock, victoires, powerFair, decodeMonth, fairRow, bestRow, filterMatches, coherence, lectureOf, effective, evaluation, fiche, row };
+    module.exports = { pronosticsBlock, facteursBlock, simuleBlock, serviceBlock, serviceInner, ficheService, chercherJoueurs, croisementsBlock, delaiBlock, booksBlock, valeurBlock, victoires, powerFair, decodeMonth, fairRow, bestRow, filterMatches, coherence, lectureOf, effective, evaluation, fiche, row };
   }
 })();
