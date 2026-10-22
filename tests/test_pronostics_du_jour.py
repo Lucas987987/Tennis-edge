@@ -78,6 +78,38 @@ class Pronostics(unittest.TestCase):
         self.assertEqual(b['tous']['stats_plus_marche']['n'], 1)
         self.assertEqual(b['tous']['stats_plus_marche']['reussite_pct'], 0.0)
 
+    def test_simulation_plus_elo_et_calibration(self):
+        import profils_service as PS
+        json.dump(PS.Profils().exporter(dt.date(2026, 6, 2)), open(os.path.join(self.d, 'simulateur', 'profils_service.json'), 'w'))
+        json.dump({'composantes': 'profils', 'combinaison': {'adopte': True, 'poids': {'elo': 0.8, 'simulation': 0.3}}},
+                  open(os.path.join(self.d, 'simulateur', 'choix_simulation.json'), 'w'))
+        old = P.SIMULATIONS
+        P.SIMULATIONS = 200
+        try:
+            doc = P.construire(self.d, NOW)
+        finally:
+            P.SIMULATIONS = old
+        m = doc['matchs'][0]
+        c = m['combinaison']
+        z = 0.8 * BP.math.log(m['stats']['p_home'] / (1 - m['stats']['p_home'])) + 0.3 * BP.math.log(c['p_simulation'] / (1 - c['p_simulation']))
+        self.assertAlmostEqual(c['p_home'], 1 / (1 + BP.math.exp(-z)), delta=0.01)     # ancrage du moteur à 1 % près
+        self.assertEqual(c['match_simule']['n'], 200)
+        self.assertEqual(doc['combinaison'], {'elo': 0.8, 'simulation': 0.3})
+        import direct as D
+        d = m['direct']
+        self.assertEqual(d['version'], 'combinaison')
+        avant = 0.5 * (D.en_direct(d['a'], d['b'], [], 0, 0, True)['p_home'] + D.en_direct(d['a'], d['b'], [], 0, 0, False)['p_home'])
+        self.assertAlmostEqual(avant, c['p_home'], delta=0.01)                         # au 1er point : le % annoncé
+        self.assertEqual(len(doc['noeuds_forme']), 13)
+        P.journaliser(self.d, doc)
+        json.dump({'2026-10-21_arthur_fils_hugo_gaston': {'match': 'home', 'set1': 'home', 'set2': 'home'}},
+                  open(os.path.join(self.d, 'set_results.json'), 'w'))
+        b = P.bilan(self.d, NOW + dt.timedelta(days=1))
+        self.assertEqual(b['tous']['combinaison']['n'], 1)
+        self.assertEqual(b['tous']['combinaison']['reussite_pct'], 100.0)
+        self.assertTrue(b['calibration']['combinaison'])
+        self.assertIn('ATP', b['par_circuit'])
+
     def test_noms_tennis_data(self):
         noms = {E.cle(n): n for n in ['Alexander Bublik', 'Alex de Minaur', 'Wang Xinyu', 'Wang Xiyu',
                                       'Giovanni Mpetshi Perricard', 'Adolfo Daniel Vallejo']}

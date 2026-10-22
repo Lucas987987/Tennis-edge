@@ -127,6 +127,99 @@ class Suivi:
         return out
 
 
+# ------------------------------------------------------------------ point 1 : combinaison simulation + Elo
+DEBUT_JUGE_COMB = dt.date(2025, 1, 1)       # apprise sur 2024, jugée du 01/01/2025 au 01/02/2026
+
+
+def _lg(p):
+    p = min(max(p, 1e-6), 1 - 1e-6)
+    return math.log(p / (1 - p))
+
+
+def ajuster_poids(X, ridge=1.0, tours=30):
+    """Régression logistique sans constante, symétrique (chaque match vu des deux côtés) :
+    X = [[z_1, z_2, …] du vrai vainqueur]. Renvoie les poids."""
+    k = len(X[0])
+    b = [1.0 / k] * k
+    for _ in range(tours):
+        g = [-ridge * (bj - 1.0 / k) for bj in b]
+        H = [[-ridge * (i == j) for j in range(k)] for i in range(k)]
+        for x in X:
+            for sgn, y in ((1, 1), (-1, 0)):
+                xs = [sgn * v for v in x]
+                p = 1 / (1 + math.exp(-max(min(sum(bj * v for bj, v in zip(b, xs)), 30), -30)))
+                for i in range(k):
+                    g[i] += (y - p) * xs[i]
+                    for j in range(k):
+                        H[i][j] -= p * (1 - p) * xs[i] * xs[j]
+        # Newton : b ← b − H⁻¹ g (petit système, élimination de Gauss)
+        A = [row[:] + [g[i]] for i, row in enumerate(H)]
+        for c in range(k):
+            piv = max(range(c, k), key=lambda r: abs(A[r][c]))
+            A[c], A[piv] = A[piv], A[c]
+            for r in range(k):
+                if r != c and A[c][c]:
+                    f = A[r][c] / A[c][c]
+                    A[r] = [a - f * cc for a, cc in zip(A[r], A[c])]
+        d = [A[i][k] / A[i][i] if abs(A[i][i]) > 1e-12 else 0.0 for i in range(k)]
+        b = [bj - dj for bj, dj in zip(b, d)]
+        if max(abs(x) for x in d) < 1e-9:
+            break
+    return b
+
+
+melange = S.melange
+
+
+def combinaison(L, sim):
+    """Règle fixée d'avance (22/10/2026) : poids appris sur 2024, jugés sur 2025 → ; la combinaison est
+    adoptée si sa log loss sur le jugement est plus basse que celle de l'Elo ET de la simulation seuls.
+    Si adoptée, les poids des pronostics sont ré-appris sur toute la période."""
+    appr = [x for x in L if x['date'] < DEBUT_JUGE_COMB]
+    juge = [x for x in L if x['date'] >= DEBUT_JUGE_COMB]
+    out = {'simulation': sim, 'apprentissage': len(appr), 'jugement_n': len(juge)}
+    if len(appr) < 300 or len(juge) < 300:
+        return dict(out, adopte=False, poids=None, jugement={}, raison='pas assez de matchs')
+    w = ajuster_poids([[_lg(x['elo']), _lg(x[sim])] for x in appr])
+    w1 = ajuster_poids([[_lg(x['elo'])] for x in appr], ridge=0.0)
+    w2 = ajuster_poids([[_lg(x[sim])] for x in appr], ridge=0.0)      # la simulation seule, confiance recalée
+    P = {'elo': w[0], 'simulation': w[1]}
+    J = {'elo': bilan_victoire([x['elo'] for x in juge]),
+         'simulation': bilan_victoire([x[sim] for x in juge]),
+         'elo_recalibre': bilan_victoire([1 / (1 + math.exp(-w1[0] * _lg(x['elo']))) for x in juge]),
+         'simulation_recalibree': bilan_victoire([1 / (1 + math.exp(-w2[0] * _lg(x[sim]))) for x in juge]),
+         'combinaison': bilan_victoire([melange(P, x['elo'], x[sim]) for x in juge]),
+         'pinnacle': bilan_victoire([x['pinnacle'] for x in juge])}
+    ok = J['combinaison']['log_loss'] < min(J['elo']['log_loss'], J['simulation']['log_loss'])
+    final = P
+    if ok:
+        wa = ajuster_poids([[_lg(x['elo']), _lg(x[sim])] for x in L])
+        final = {'elo': wa[0], 'simulation': wa[1]}
+    return dict(out, adopte=ok, poids={k: round(v, 4) for k, v in final.items()},
+                poids_appris_2024={k: round(v, 4) for k, v in P.items()}, elo_recalibre_coef=round(w1[0], 4),
+                simulation_recalibree_coef=round(w2[0], 4),
+                jugement=J,
+                raison=(f"log loss 2025 → : combinaison {J['combinaison']['log_loss']} contre Elo {J['elo']['log_loss']} "
+                        f"et simulation {J['simulation']['log_loss']} (Pinnacle {J['pinnacle']['log_loss']})"))
+
+
+def calibration_detaillee(L, sim, cb):
+    """Point 9 : où le modèle se trompe de confiance — par circuit et selon l'expérience des joueurs."""
+    P = cb.get('poids_appris_2024')
+    juge = [x for x in L if x['date'] >= DEBUT_JUGE_COMB]
+    grp = {'tous (2025 →)': juge, 'ATP': [x for x in juge if x['circuit'] == 'ATP'], 'WTA': [x for x in juge if x['circuit'] == 'WTA'],
+           'un joueur à moins de 30 matchs': [x for x in juge if x['connus'] < 30],
+           'deux joueurs à 30 matchs ou plus': [x for x in juge if x['connus'] >= 30]}
+    out = {}
+    for nom, g in grp.items():
+        d = {'elo': bilan_victoire([x['elo'] for x in g]), 'simulation': bilan_victoire([x[sim] for x in g]),
+             'pinnacle': bilan_victoire([x['pinnacle'] for x in g])}
+        if P:
+            d['combinaison'] = bilan_victoire([melange(P, x['elo'], x[sim]) for x in g])
+        out[nom] = d
+    return out
+
+
 def main(argv):
     t0 = time.time()
     args = [a for a in argv[1:] if not a.startswith('--')]
@@ -146,7 +239,12 @@ def main(argv):
     for t, m in donnees.joindre(td, M):
         pin[id(m)] = BP.juste(t['psw'], t['psl'])
     print(f"Clôtures Pinnacle jointes : {len(pin)}", flush=True)
-    V = BP.rejouer(M, [], [], E.cle, {}, True)            # Elo point-in-time (départ 1200 aux petits niveaux)
+    try:                                                   # options de l'Elo retenues par backtest_pronostic
+        with open(os.path.join(ICI, 'elo_etat.json'), encoding='utf-8') as f:
+            opts_elo = json.load(f).get('options')
+    except (OSError, ValueError):
+        opts_elo = None
+    V = BP.rejouer(M, [], [], E.cle, {}, True, options=opts_elo)   # Elo point-in-time (départ 1200 aux petits niveaux)
     print(f"Elo rejoué ({round(time.time() - t0)} s)", flush=True)
 
     # Référence naïve : moyenne 2016–2023 par circuit et format (tous joueurs).
@@ -164,6 +262,8 @@ def main(argv):
             and m.get('detail') and m['complet'] and id(m) in pin and i in V['pred_sack'] and (m['circuit'], m['bo']) in naif]
     pas = max(1, len(elig) // n_max)
     choisis = set(elig[::pas][:n_max])
+    elig_set = set(elig)
+    LIGNES = []      # 22/10/2026 : TOUS les matchs éligibles (vainqueur seul, limite exacte) → combinaison, calibration
     print(f"Matchs éligibles : {len(elig)} · simulés : {len(choisis)} × {n_sim} fois × 5 versions", flush=True)
 
     P = PS.Profils()
@@ -171,6 +271,12 @@ def main(argv):
     R = {v: Suivi() for v in ('simulation_pure_ajustee', 'simulation_pure', 'stats_seules', 'stats_plus_marche', 'joueurs_moyens')}
     VIC = {'simulation_pure_ajustee': [], 'simulation_pure': [], 'elo': [], 'pinnacle': []}   # proba donnée au vrai vainqueur
     adj, mois_adj = None, None                                    # ajustement aux adversaires, refait chaque mois
+    try:
+        with open(CHOIX, encoding='utf-8') as f:
+            choix_avant = json.load(f)
+    except (OSError, ValueError):
+        choix_avant = {}
+    dyn = AJ.lire_dynamique(choix_avant)                             # réglage « dans le temps » s'il a été adopté
     n0, scores_n0 = AJ.choisir_n0(M, E.cle)                         # prior choisi sur 2023 seulement
     print(f"Prior de l'ajustement aux adversaires retenu sur 2023 : N0 = {n0:g}", flush=True)
     connus = collections.Counter()
@@ -180,12 +286,11 @@ def main(argv):
             P.ajouter(M[j], E.cle(M[j]['nom_g']), E.cle(M[j]['nom_p']))
         if m.get('detail'):
             heapq.heappush(attente, (m['fin'], i))
-        if i not in choisis:
+        if i not in elig_set:
             continue
         g, p = E.cle(m['nom_g']), E.cle(m['nom_p'])
         pg, ng = P.profil(g, m['circuit'], m['surface'], m['date'])
         pp, np_ = P.profil(p, m['circuit'], m['surface'], m['date'])
-        connus[min(ng, np_) >= 500] += 1
         mu = P.moyenne(m['circuit'], m['surface'])
         sg = 3 if m['bo'] == 5 else 2
         cg, cp = S.composantes(pg, pp, mu), S.composantes(pp, pg, mu)
@@ -193,16 +298,21 @@ def main(argv):
         debut_mois = m['date'].replace(day=1)
         if mois_adj != debut_mois:                                 # point-in-time : tournois finis avant le 1er du mois
             t1 = time.time()
-            adj = AJ.ajuster(M, debut_mois, E.cle, n0=n0, depart=adj, tours=6 if adj is None else 2)
+            adj = AJ.ajuster_choisi(M, debut_mois, E.cle, n0=n0, dyn=dyn, depart=adj, tours=6 if adj is None else 2)
             mois_adj = debut_mois
             print(f"  ajustement aux adversaires au {debut_mois} ({round(time.time() - t1)} s)", flush=True)
         ag, ap = S.composantes_ajustees(adj, g, p, m['circuit'], m['surface']), S.composantes_ajustees(adj, p, g, m['circuit'], m['surface'])
-        VIC['simulation_pure_ajustee'].append(S.victoire_pure(ag, ap, sg, SIGMA))
+        LIGNES.append({'date': m['date'], 'circuit': m['circuit'], 'connus': V['pred_sack'][i][1],
+                       'elo': V['pred_sack'][i][0], 'pinnacle': pin[id(m)],
+                       'simulation_pure_ajustee': S.victoire_pure(ag, ap, sg, SIGMA),
+                       'simulation_pure': S.victoire_pure(cg, cp, sg, SIGMA)})
+        if i not in choisis:
+            continue
+        connus[min(ng, np_) >= 500] += 1
+        for k in VIC:
+            VIC[k].append(LIGNES[-1][k])
         (fw, fl), tot = reel(m)
         nz = naif[(m['circuit'], m['bo'])]
-        VIC['simulation_pure'].append(S.victoire_pure(cg, cp, sg, SIGMA))
-        VIC['elo'].append(V['pred_sack'][i][0])
-        VIC['pinnacle'].append(pin[id(m)])
         for version, (ca, cb, pv) in (('simulation_pure_ajustee', (ag, ap, None)),
                                       ('simulation_pure', (cg, cp, None)),
                                       ('stats_seules', (cg, cp, V['pred_sack'][i][0])),
@@ -233,22 +343,37 @@ def main(argv):
                                 "cote : c'est la simulation qui désigne le vainqueur. elo / pinnacle : références."),
            'calibration': {v: {k: s.calibration(k) for k in ('aces', 'doubles_fautes', 'breaks')} for v, s in R.items()},
            'duree_s': round(time.time() - t0)}
+    rap['victoire_tous_les_matchs'] = {v: bilan_victoire([x[v] for x in LIGNES]) for v in VIC}
     # Règle fixée d'avance (22/10/2026) : les statistiques AJUSTÉES aux adversaires remplacent les profils
-    # bruts dans les pronostics si la simulation pure ajustée trouve mieux le vainqueur (log loss plus basse).
-    va, vp = rap['victoire']['simulation_pure_ajustee'], rap['victoire']['simulation_pure']
+    # bruts dans les pronostics si la simulation pure ajustée trouve mieux le vainqueur (log loss plus basse),
+    # sur TOUS les matchs éligibles (limite exacte de la simulation, pas seulement les matchs simulés).
+    va, vp = rap['victoire_tous_les_matchs']['simulation_pure_ajustee'], rap['victoire_tous_les_matchs']['simulation_pure']
     ok = bool(va.get('n')) and va['log_loss'] < vp['log_loss']
     rap['choix'] = {'composantes': 'ajustees' if ok else 'profils', 'n0': n0,
                     'n0_choisi_sur_2023': {f"{k:g}": round(v, 5) for k, v in scores_n0.items()},
                     'raison': (f"log loss de la simulation pure : ajustée {va.get('log_loss')} contre profils bruts "
                                f"{vp.get('log_loss')} (réussite {va.get('reussite_pct')} % contre {vp.get('reussite_pct')} %)")}
-    with open(CHOIX, 'w', encoding='utf-8') as f:
-        json.dump(dict(rap['choix'], genere_le=rap['genere_le']), f, ensure_ascii=False, indent=1)
+    sim = 'simulation_pure_ajustee' if ok else 'simulation_pure'
+    rap['combinaison'] = combinaison(LIGNES, sim)
+    rap['calibration_detaillee'] = calibration_detaillee(LIGNES, sim, rap['combinaison'])
+    rap['choix']['combinaison'] = {k: rap['combinaison'][k] for k in ('adopte', 'poids', 'raison', 'simulation')}
+    with open(CHOIX, 'w', encoding='utf-8') as f:            # les autres décisions (ex. « dynamique ») sont gardées
+        json.dump(dict(choix_avant, **rap['choix'], genere_le=rap['genere_le']), f, ensure_ascii=False, indent=1)
     with open(SORTIE, 'w', encoding='utf-8') as f:
         json.dump(rap, f, ensure_ascii=False, indent=1)
     print("\nQui gagne ? (probabilité donnée au vrai vainqueur)")
     for v, x in rap['victoire'].items():
         print(f"  {v:<16} réussite {x.get('reussite_pct')} % · log loss {x.get('log_loss')} · Brier {x.get('brier')}")
     print(f"\nChoix pour les pronostics : {rap['choix']['composantes']} — {rap['choix']['raison']}")
+    cb = rap['combinaison']
+    print(f"\nCombinaison simulation + Elo (apprise sur 2024, jugée 2025 →) : {'ADOPTÉE' if cb['adopte'] else 'non adoptée'}"
+          f" — {cb['raison']} · poids {cb['poids']}")
+    for v, x in cb['jugement'].items():
+        print(f"  {v:<22} réussite {x.get('reussite_pct')} % · log loss {x.get('log_loss')} · Brier {x.get('brier')} (n {x.get('n')})")
+    print("\nCalibration (favori annoncé : prévu → réel)")
+    for grp, d in rap['calibration_detaillee'].items():
+        for v, x in d.items():
+            print(f"  {grp:<28} {v:<12} n {x.get('n')} · " + ' · '.join(f"{c['tranche']} {c['prevu']}→{c['reel']}" for c in x.get('calibration', [])))
     for v in ('simulation_pure_ajustee', 'simulation_pure', 'stats_plus_marche', 'joueurs_moyens', 'stats_seules'):
         print(f"\n{v}")
         for k, x in rap['versions'][v].items():
