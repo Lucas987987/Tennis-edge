@@ -63,6 +63,13 @@ class PointParPoint(unittest.TestCase):
         self.assertEqual(PM.suite_des_points(egalite[1:]), 'HAA')
         self.assertIsNone(PM.suite_des_points([{'homePoint': 'x', 'awayPoint': '0'}]))
 
+    def test_pas_d_itf(self):
+        self.assertTrue(PM.a_suivre({'stats': {'x': 1}, 'categorie': 'Challenger'}))
+        self.assertFalse(PM.a_suivre({'stats': {'x': 1}, 'categorie': 'ITF Men'}))
+        self.assertFalse(PM.a_suivre({'stats': None, 'categorie': 'ATP'}))
+        import feuilles_match as FM
+        self.assertFalse([c for c in FM.CATEGORIES if 'itf' in c])
+
     def test_compacter(self):
         doc = {'pointByPoint': [{'set': 1, 'games': [
             {'game': 2, 'score': {'serving': 2, 'scoring': 2}, 'points': [{'homePoint': '0', 'awayPoint': '15'}]},
