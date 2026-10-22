@@ -12,8 +12,9 @@ de l'erreur de la simulation elle-même :
 R (logit) décale les points gagnés derrière la 1re et la 2e balle : au service pour soi, au retour
 contre soi. Une victoire attendue ne bouge presque rien, une surprise bouge beaucoup — comme l'Elo,
 mais à l'échelle du point, si bien que la simulation garde sa façon de jouer (aces, 1re balle…).
-K est choisi sur 2024 et jugé sur 2025 → (backtest_match_simule.choisir_reglage) ; tous les
-circuits nourrissent la couche (ITF compris), à partir du 1er janvier 2023.
+Version d'origine (tous les matchs) rejetée le 22/10/2026 : elle comptait deux fois les matchs avec
+feuille, déjà appris par le modèle des points. Version corrigée : seulement les matchs sans feuille
+(etude_resultats.py, jugée sur une période neuve).
 """
 import match_simule as S
 
@@ -58,12 +59,15 @@ class CoucheResultats:
         return {j: round(v, 4) for j, v in self.R.items() if abs(v) >= 1e-4 and (joueurs is None or j in joueurs)}
 
 
-def rejouer(matchs, adj, K, cle, debut, fin=None):
-    """Couche apprise sur tous les matchs terminés [debut ; fin[ (score complet), modèle des points adj."""
-    import datetime as dt
+def rejouer(matchs, adj, K, cle, debut, fin=None, sans_feuille=False):
+    """Couche apprise sur les matchs terminés [debut ; fin[ (score complet), modèle des points adj.
+    sans_feuille=True (version corrigée, etude_resultats.py) : seulement les matchs SANS feuille de
+    statistiques — ceux que le modèle des points ne voit jamais, donc aucun double compte."""
     C = CoucheResultats(K)
     for m in matchs:
         if m['date'] < debut or (fin and m['date'] >= fin) or not m.get('complet') or not m.get('sets'):
+            continue
+        if sans_feuille and m.get('detail'):
             continue
         g, p = cle(m['nom_g']), cle(m['nom_p'])
         tg = S.borner(adj.taux(g, p, m['circuit'], m['surface']))
