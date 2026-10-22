@@ -1,0 +1,50 @@
+name: Sonde feuilles de match (3 requêtes par API)
+
+# 22/10/2026 — quelle API gratuite donne les feuilles de match (aces, doubles
+# fautes, 1re balle, points gagnés derrière la 1re et la 2e balle, balles de
+# break) pour l'ATP, la WTA et les Challengers ? Deux API RapidAPI, même clé
+# RAPIDAPI_KEY que OddsPapi (s'abonner d'abord à leur formule GRATUITE) :
+#   matchstat : « Tennis API - ATP WTA ITF »
+#   tennisapi : « TennisApi »
+# Au plus 3 requêtes par API, aucune nouvelle tentative. La clé n'est jamais
+# affichée. Résultat dans le journal du run et l'artefact sonde_stats (non commité).
+on:
+  workflow_dispatch:
+    inputs:
+      jour:
+        description: 'Jour des matchs (AAAA-MM-JJ), vide = hier'
+        default: ''
+      api:
+        description: 'API à sonder (matchstat, tennisapi ou les deux)'
+        default: 'matchstat,tennisapi'
+
+permissions:
+  contents: read
+
+jobs:
+  sonde:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          sparse-checkout: |
+            scripts/sonde_stats.py
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - name: Trois requêtes au plus par API
+        env:
+          RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
+          JOUR: ${{ github.event.inputs.jour }}
+          API: ${{ github.event.inputs.api }}
+        run: python scripts/sonde_stats.py "$JOUR" "$API"
+      - name: Rapport
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sonde_stats
+          path: sonde_stats.json
+          if-no-files-found: warn
+          retention-days: 14
