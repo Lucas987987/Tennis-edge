@@ -41,6 +41,7 @@ sys.path.insert(0, ICI)
 import donnees  # noqa: E402
 import elo as E  # noqa: E402
 import feuilles as FE  # noqa: E402
+import ajustement as AJ  # noqa: E402
 
 SORTIE = os.path.join(ICI, 'profils_service.json')
 DEMI_VIE = 365.0
@@ -175,6 +176,7 @@ class Profils:
             for s, v in d['sommes'].items():
                 P.j[(j, s)] = [x * w for x in v]
         P.jour_export = jour
+        P.ajuste = AJ.Ajuste.importer(doc['ajuste']) if doc.get('ajuste') else None
         return P
 
 
@@ -209,6 +211,15 @@ def main(argv):
     doc['source'] = ('archive Jeff Sackmann (CC BY-NC-SA 4.0) jusqu\'au ' + fin_sack.isoformat()
                      + (f", puis {sum(1 for m in F if m.get('detail'))} feuilles TennisApi jusqu'au {fin}" if F else ''))
     doc['archive_jusqu_au'] = fin_sack.isoformat()
+    # 22/10/2026 : statistiques ajustées au niveau des adversaires (ajustement.py), joueurs actifs depuis 2023.
+    actifs = {E.cle(n) for m in tout if m['date'] >= dt.date(2023, 1, 1) for n in (m['nom_g'], m['nom_p'])}
+    try:
+        with open(os.path.join(ICI, 'choix_simulation.json'), encoding='utf-8') as f:
+            n0 = float(json.load(f).get('n0') or AJ.N0)
+    except (OSError, ValueError):
+        n0 = AJ.N0
+    A = AJ.ajuster(tout, fin + dt.timedelta(days=1), E.cle, n0=n0)
+    doc['ajuste'] = A.exporter(actifs)
     doc['feuilles_ajoutees'] = sum(1 for m in F if m.get('detail'))
     with open(SORTIE, 'w', encoding='utf-8') as f:
         json.dump(doc, f, ensure_ascii=False, separators=(',', ':'))
