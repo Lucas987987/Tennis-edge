@@ -1,0 +1,91 @@
+{
+ "schema": 1,
+ "generated_at": "2026-10-22T08:19:48+00:00",
+ "regle": {
+  "age_max_min": 30,
+  "ampleur_definition": "probabilité Pinnacle juste (puissance) à l'horizon − la même au premier point Pinnacle connu, en points ; positive = la cote du joueur a raccourci",
+  "ampleur_pts_max": 20.0,
+  "ampleur_pts_min": 3.15,
+  "cible_n": 100,
+  "circuits": [
+   "WTA"
+  ],
+  "code": "H20",
+  "contexte_avant_gel": "Explorateur, tous horizons : 319 lignes, CLV −0,4 % [−6,2 ; +5,4], ROI +40,7 %. Un pari par joueur (règle H20) : 124 décisions, CLV −3,6 % [−5,3 ; −1,9] (n=54), ROI +22,8 % (n=47). Le passé a servi à choisir la règle : aucune valeur de preuve.",
+  "cote_pin_max": 3.19,
+  "cote_pin_min": 2.0,
+  "entree": "jouable",
+  "entree_definition": "meilleur prix d'un book jouable hors Pinnacle (books.flags), cote de 30 min au plus à la décision, commission de bourse déduite — réglage de l'Explorateur ; sans prix jouable frais, la décision compte mais n'a pas de CLV",
+  "fenetres_pinnacle_min": {
+   "10m": 50,
+   "1h": 60,
+   "24h": 720,
+   "6h": 180
+  },
+  "gele_le": "2026-10-21",
+  "horizons": [
+   "24h",
+   "6h",
+   "1h",
+   "10m"
+  ],
+  "juge_sur": "décisions prises après le gel, matchs commençant à partir du 2026-10-22 (jour UTC)",
+  "mesure": "CLV contre la clôture Pinnacle sans marge (puissance), entrée nette de commission ; ROI secondaire",
+  "nom": "Outsider WTA soutenu par Pinnacle",
+  "origine": "filtre de l'Explorateur choisi par Lucas le 21/10/2026 (WTA, cote Pinnacle 2–3,19, mouvement 3,15–20 pts)",
+  "un_pari_par": "match et joueur, premier horizon qui remplit la règle",
+  "verdict": "VALIDÉE si IC95 de la CLV > 0 ; RÉFUTÉE si CLV moyenne < 0 ; sinon NON CONCLUANT ; rien avant la cible"
+ },
+ "empreinte": "1c86cbba8e6e",
+ "prospectif": {
+  "n": 1,
+  "clv_n": 1,
+  "clv_moy_pct": 0.79,
+  "clv_ic95": null,
+  "p_clv": null,
+  "regles": 0,
+  "gagnes": 0,
+  "roi_pct": null,
+  "par_horizon": {
+   "24h": 0,
+   "6h": 0,
+   "1h": 0,
+   "10m": 1
+  },
+  "verdict": "EN COURS — 1/100 paris avec clôture, aucun verdict avant la cible",
+  "derniers": [
+   {
+    "date": "2026-10-22",
+    "joueur": "Alexandra Eala",
+    "tournoi": "WTA Ningbo",
+    "horizon": "10m",
+    "cote_pin": 2.22,
+    "ampleur_pts": 3.25,
+    "cote_jouable": 2.3,
+    "book_jouable": "bet365",
+    "clv_jouable": 0.79,
+    "gagne": null
+   }
+  ]
+ },
+ "decouverte_avant_gel": {
+  "n": 130,
+  "clv_n": 59,
+  "clv_moy_pct": -3.554,
+  "clv_ic95": [
+   -5.117,
+   -1.99
+  ],
+  "p_clv": 0.9999958043791807,
+  "regles": 49,
+  "gagnes": 25,
+  "roi_pct": 22.14,
+  "par_horizon": {
+   "24h": 28,
+   "6h": 72,
+   "1h": 18,
+   "10m": 12
+  },
+  "note": "période qui a servi à choisir la règle : aucune valeur de preuve"
+ }
+}
