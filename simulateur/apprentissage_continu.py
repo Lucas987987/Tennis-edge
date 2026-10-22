@@ -43,6 +43,8 @@ def lignes(doc):
     """[(debut, p_elo du vrai vainqueur, p_sim du vrai vainqueur)] depuis pronostics_resultats.json."""
     out = []
     for m in (doc or {}).get('matchs') or []:
+        if (m.get('reel') or {}).get('interrompu'):          # abandon / forfait : n'apprend rien sur le pronostic
+            continue
         pr = m.get('premier') or {}
         e, s_ = pr.get('stats'), pr.get('simulation')
         if e and s_ and e.get('proba_du_vainqueur') is not None and s_.get('proba_du_vainqueur') is not None:
