@@ -52,8 +52,14 @@ jobs:
           git add -- simulateur/rapport_dynamique.json simulateur/choix_simulation.json
           if git diff --cached --quiet; then echo 'Rien de nouveau.'; exit 0; fi
           git commit -m 'Étude : statistiques qui évoluent dans le temps'
+          # fichiers écrits hors du checkout partiel (ex. live/joueurs_service.json.gz, contexte des
+          # facteurs) : ils ne sont pas publiés ici et gêneraient le rebase (mis de côté APRÈS le commit).
+          git stash push --include-untracked --quiet 2>/dev/null || true
           for i in 1 2 3 4 5; do
-            git pull --rebase origin main || { git rebase --abort || true; echo '::error::Conflit avec main'; exit 1; }
+            # 22/10/2026 : -X theirs = en cas de conflit sur un fichier PRODUIT par ce run (ex.
+            # rapport_pronostic.json, réécrit aussi par « Pronostics du jour »), c'est la version de ce
+            # run qui est gardée. Avant, un seul conflit faisait perdre tout le run (48 min le 22/10).
+            git pull --rebase -X theirs origin main || { git rebase --abort || true; echo '::error::Conflit avec main'; exit 1; }
             if git push origin HEAD:main; then exit 0; fi
             sleep $((i * 10))
           done
