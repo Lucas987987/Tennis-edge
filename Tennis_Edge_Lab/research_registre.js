@@ -405,7 +405,7 @@
   }
 
   // 22/10/2026 — facteurs du match adoptés par l'étude : ce qu'ils changent au % de la simulation.
-  const FACTEURS_LIB = { forme_fatigue: 'Forme récente et fatigue', vitesse_court: 'Vitesse du court', morphologie: 'Gaucher ou droitier, taille', points_importants: 'Points importants' };
+  const FACTEURS_LIB = { forme_fatigue: 'Forme récente et fatigue', vitesse_court: 'Vitesse du court', morphologie: 'Gaucher ou droitier, taille', points_importants: 'Points importants', styles: 'Duel de styles', face_a_face: 'Face-à-face', conditions: 'Conditions du jour', contexte_tournoi: 'Contexte du tournoi', charting: 'Façon de jouer (Match Charting)' };
   function facteursBlock(m) {
     const f = m && m.simulation && m.simulation.facteurs;
     if (!f || !f.groupes || !Object.keys(f.groupes).length) return '';
@@ -413,6 +413,182 @@
     const pts = x => `${x > 0 ? '+' : x < 0 ? '−' : ''}${nf(Math.abs(x), 1)} pt`;
     const items = Object.entries(f.groupes).map(([g, x]) => `${esc(FACTEURS_LIB[g] || g)} <b>${pts(x)}</b>`).join(' · ');
     return `<div class="rg-facteurs mini">Ce qui pèse pour ${esc(nom)} : ${items} <span class="rg-cote">(${nf(100 * f.sans, 0)} % sans, ${nf(100 * f.avec, 0)} % avec)</span></div>`;
+  }
+
+  // 22/10/2026 — point 8 : EN DIRECT. Même calcul exact que simulateur/direct.py : la forme du jour est
+  // mise à jour d'après le score (règle de Bayes sur les 13 nœuds), puis la suite du match est calculée
+  // depuis le point exact (sets, jeux, points ou tie-break, serveur).
+  const lgD = p => { const q = Math.min(Math.max(p, 1e-9), 1 - 1e-9); return Math.log(q / (1 - q)); };
+  const sgD = z => 1 / (1 + Math.exp(-z));
+  function pJeu(p) { const q = 1 - p; const d = p * p / (1 - 2 * p * q); return p ** 4 * (1 + 4 * q + 10 * q * q) + 20 * p ** 3 * q ** 3 * d; }
+  function jeuDepuis(p, a, b) {
+    if (a >= 4 && a - b >= 2) return 1; if (b >= 4 && b - a >= 2) return 0;
+    if (a >= 3 && b >= 3) { const d = p * p / (1 - 2 * p * (1 - p)); return a === b ? d : (a > b ? p + (1 - p) * d : p * d); }
+    return p * jeuDepuis(p, a + 1, b) + (1 - p) * jeuDepuis(p, a, b + 1);
+  }
+  function tbDepuis(pA, pB, a, b, aPremier, cible) {
+    const memo = new Map();
+    const f = (x, y) => {
+      if (x >= cible && x - y >= 2) return 1; if (y >= cible && y - x >= 2) return 0;
+      if (x >= cible - 1 && y >= cible - 1 && x === y) { const u = pA * (1 - pB), v = (1 - pA) * pB; return u + v > 0 ? u / (u + v) : 0.5; }
+      const k = `${x},${y}`; if (memo.has(k)) return memo.get(k);
+      const n = x + y; const sertA = ((Math.floor((n + 1) / 2) % 2) === 0) === aPremier;
+      const q = sertA ? pA : 1 - pB;
+      const r = q * f(x + 1, y) + (1 - q) * f(x, y + 1); memo.set(k, r); return r;
+    };
+    return f(a, b);
+  }
+  function matchDepuis(pA, pB, sa, sb, ga, gb, aPremier, pts, sg, tbFinal, memo = new Map()) {
+    if (sa === sg) return 1; if (sb === sg) return 0;
+    const key = `${sa},${sb},${ga},${gb},${aPremier},${pts[0]},${pts[1]}`;
+    if (memo.has(key)) return memo.get(key);
+    const cible = (sa === sg - 1 && sb === sg - 1) ? tbFinal : 7;
+    const fin = new Map(); let etats = new Map([[`${ga},${gb},${pts[0]},${pts[1]}`, 1]]);
+    const add = (m, k, v) => m.set(k, (m.get(k) || 0) + v);
+    while (etats.size) {
+      const nouv = new Map();
+      for (const [k, pr] of etats) {
+        const [x, y, p0, p1] = k.split(',').map(Number);
+        if (x === 6 && y === 6) { const t = tbDepuis(pA, pB, p0, p1, aPremier, cible); add(fin, 'A,13', pr * t); add(fin, 'B,13', pr * (1 - t)); continue; }
+        const sertA = ((x + y) % 2 === 0) === aPremier;
+        const h = sertA ? jeuDepuis(pA, p0, p1) : 1 - jeuDepuis(pB, p1, p0);
+        for (const [nx, ny, w] of [[x + 1, y, h], [x, y + 1, 1 - h]]) {
+          if ((nx >= 6 && nx - ny >= 2) || (ny >= 6 && ny - nx >= 2)) add(fin, `${nx > ny ? 'A' : 'B'},${nx + ny}`, pr * w);
+          else add(nouv, `${nx},${ny},0,0`, pr * w);
+        }
+      }
+      etats = nouv;
+    }
+    let tot = 0;
+    for (const [k, pr] of fin) {
+      const [g, n] = k.split(','); const aG = g === 'A';
+      const prochain = Number(n) % 2 === 0 ? aPremier : !aPremier;
+      tot += pr * matchDepuis(pA, pB, sa + (aG ? 1 : 0), sb + (aG ? 0 : 1), 0, 0, prochain, [0, 0], sg, tbFinal, memo);
+    }
+    memo.set(key, tot); return tot;
+  }
+  function setIssues(pA, pB, aPremier, cible) {
+    const hA = pJeu(pA), hB = pJeu(pB); let etats = new Map([['0,0', 1]]); const fin = new Map();
+    while (etats.size) {
+      const nouv = new Map();
+      for (const [k, pr] of etats) {
+        const [a, b] = k.split(',').map(Number);
+        const sertA = ((a + b) % 2 === 0) === aPremier;
+        if (a === 6 && b === 6) { const t = tbDepuis(pA, pB, 0, 0, sertA, cible); fin.set('7,6', (fin.get('7,6') || 0) + pr * t); fin.set('6,7', (fin.get('6,7') || 0) + pr * (1 - t)); continue; }
+        const w = sertA ? hA : 1 - hB;
+        for (const [na, nb, x] of [[a + 1, b, w], [a, b + 1, 1 - w]]) {
+          const m = ((na >= 6 && na - nb >= 2) || (nb >= 6 && nb - na >= 2)) ? fin : nouv;
+          m.set(`${na},${nb}`, (m.get(`${na},${nb}`) || 0) + pr * x);
+        }
+      }
+      etats = nouv;
+    }
+    return fin;
+  }
+  function atteindre(pA, pB, ga, gb, aPremier) {
+    let etats = new Map([['0,0', 1]]);
+    for (let i = 0; i < ga + gb; i++) {
+      const nouv = new Map();
+      for (const [k, pr] of etats) {
+        const [x, y] = k.split(',').map(Number);
+        if ((x >= 6 && x - y >= 2) || (y >= 6 && y - x >= 2) || (x === 6 && y === 6)) continue;
+        const sertA = ((x + y) % 2 === 0) === aPremier; const h = sertA ? pJeu(pA) : 1 - pJeu(pB);
+        nouv.set(`${x + 1},${y}`, (nouv.get(`${x + 1},${y}`) || 0) + pr * h);
+        nouv.set(`${x},${y + 1}`, (nouv.get(`${x},${y + 1}`) || 0) + pr * (1 - h));
+      }
+      etats = nouv;
+    }
+    return etats.get(`${ga},${gb}`) || 0;
+  }
+  function enDirect(d, noeuds, setsJoues, ga, gb, homeSert, pts) {
+    const sg = d.sets_gagnants || 2, tbF = d.tb_final || (sg === 3 ? 10 : 7), sigma = d.sigma == null ? 0.15 : d.sigma;
+    let premierSet;
+    if (ga === 6 && gb === 6) { const n = pts[0] + pts[1]; premierSet = (Math.floor((n + 1) / 2) % 2 === 0) ? homeSert : !homeSert; }
+    else premierSet = (ga + gb) % 2 === 0 ? homeSert : !homeSert;
+    const premiers = []; let p = premierSet;
+    for (let i = setsJoues.length - 1; i >= 0; i--) { const [x, y] = setsJoues[i]; p = (x + y) % 2 === 0 ? p : !p; premiers.unshift(p); }
+    const sa = setsJoues.filter(([x, y]) => x > y).length, sb = setsJoues.filter(([x, y]) => y > x).length;
+    const N = sigma > 0 ? (noeuds || [[0, 1]]) : [[0, 1]];
+    const la = lgD(d.a), lb = lgD(d.b);
+    let num = 0, den = 0, num0 = 0;
+    for (const [z, w] of N) {
+      const dz = sigma * z, pa = sgD(la + dz), pb = sgD(lb - dz);
+      let L = 1;
+      setsJoues.forEach(([x, y], k) => {
+        const s_a = setsJoues.slice(0, k).filter(([u, v]) => u > v).length, s_b = k - s_a;
+        const cible = (s_a === sg - 1 && s_b === sg - 1) ? tbF : 7;
+        L *= setIssues(pa, pb, premiers[k], cible).get(`${x},${y}`) || 0;
+      });
+      L *= atteindre(pa, pb, ga, gb, premierSet);
+      const v = matchDepuis(pa, pb, sa, sb, ga, gb, premierSet, pts, sg, tbF);
+      num += w * L * v; den += w * L; num0 += w * v;
+    }
+    return { p: den > 0 ? num / den : num0, p0: num0 };
+  }
+  // « 6-4 3-6 », jeux « 2-1 », points « 30-15 » / « 40-AV » / tie-break « 5-4 »
+  function lireScore(sets, jeux, points) {
+    const paire = t => { const m = String(t || '').trim().match(/^(\d+)\s*[-–]\s*(\d+)$/); return m ? [Number(m[1]), Number(m[2])] : null; };
+    const S = String(sets || '').trim() ? String(sets).trim().split(/\s+/).map(paire) : [];
+    if (S.some(x => !x)) return { erreur: 'Sets terminés : écrivez par exemple « 6-4 3-6 ».' };
+    const J = String(jeux || '').trim() ? paire(jeux) : [0, 0];
+    if (!J) return { erreur: 'Jeux du set en cours : écrivez par exemple « 2-1 ».' };
+    let P = [0, 0];
+    const t = String(points || '').trim().toUpperCase();
+    if (t) {
+      if (J[0] === 6 && J[1] === 6) { P = paire(t); if (!P) return { erreur: 'Tie-break : points, par exemple « 5-4 ».' }; }
+      else {
+        const V = { 0: 0, 15: 1, 30: 2, 40: 3, AV: 4, A: 4, AD: 4 };
+        const m = t.match(/^(\w+)\s*[-–]\s*(\w+)$/);
+        if (!m || !(m[1] in V) || !(m[2] in V)) return { erreur: 'Points : écrivez par exemple « 30-15 » ou « 40-AV ».' };
+        P = [V[m[1]], V[m[2]]];
+        if (P[0] === 4) P = [4, 3]; if (P[1] === 4) P = [3, 4];
+      }
+    }
+    return { sets: S, jeux: J, points: P };
+  }
+  function directBlock(m, noeuds, ouverts) {
+    if (!m || !m.direct) return '';
+    const id = `${m.uid}|direct`;
+    const nc = n => esc(String(n || '').split(' ').slice(-1)[0]);
+    return `<details class="rg-eval rg-sim rg-direct" data-sim="${esc(id)}"${ouverts && ouverts.has(id) ? ' open' : ''}><summary>En direct : le % depuis le score</summary>
+      <div class="rg-direct-form" data-uid="${esc(m.uid)}">
+        <label>Sets terminés <small>(${nc(m.home)} d'abord)</small><input type="text" inputmode="numeric" data-d="sets" placeholder="ex. 6-4 3-6"></label>
+        <label>Jeux du set en cours<input type="text" inputmode="numeric" data-d="jeux" placeholder="ex. 2-1"></label>
+        <label>Points du jeu en cours<input type="text" data-d="points" placeholder="ex. 30-15, 40-AV ; tie-break : 5-4"></label>
+        <fieldset><legend>Au service</legend><label><input type="radio" name="srv-${esc(m.uid)}" value="home" checked> ${nc(m.home)}</label><label><input type="radio" name="srv-${esc(m.uid)}" value="away"> ${nc(m.away)}</label></fieldset>
+        <button type="button" data-direct="${esc(m.uid)}">Calculer</button>
+        <div class="rg-direct-res mini" aria-live="polite"></div>
+      </div>
+      <p class="mini">Calcul exact, sans tirage au hasard : la forme du jour est revue d'après le score (un joueur qui mène nettement est sans doute dans un bon jour), puis la suite du match est jouée depuis le point exact. Version : ${m.direct.version === 'combinaison' ? 'simulation + Elo' : 'simulation'}.</p></details>`;
+  }
+  function directResultat(m, noeuds, form) {
+    const r = lireScore(form.sets, form.jeux, form.points);
+    if (r.erreur) return `<span class="bad">${esc(r.erreur)}</span>`;
+    const x = enDirect(m.direct, noeuds, r.sets, r.jeux[0], r.jeux[1], form.homeSert, r.points);
+    const nc = n => esc(String(n || '').split(' ').slice(-1)[0]);
+    const fav = x.p >= 0.5;
+    const pv = fav ? x.p : 1 - x.p;
+    return `<b>${fav ? nc(m.home) : nc(m.away)}</b> ${pcCote(pv)} <span class="detail">sans revoir la forme du jour : ${nc(m.home)} ${pcCote(x.p0)}</span>`;
+  }
+
+  // 22/10/2026 — point 9 : le modèle se trompe-t-il de confiance ? (favori annoncé à X %, gagne combien ?)
+  const VERSIONS_LIB = [['combinaison', 'Simulation + Elo'], ['simulation', 'Simulation'], ['stats_seules', 'Classement Elo'], ['stats_plus_marche', 'Cote Pinnacle']];
+  function calibrationBlock(B) {
+    const C = B && B.calibration;
+    if (!C) return '';
+    const vers = VERSIONS_LIB.filter(([k]) => (C[k] || []).length);
+    if (!vers.length) return '';
+    const tranches = [...new Set(vers.flatMap(([k]) => C[k].map(x => x.tranche)))];
+    const cell = (k, t) => { const x = (C[k] || []).find(y => y.tranche === t); return x ? `${nf(x.reel, 0)} % <small>(${nf(x.n, 0)})</small>` : '—'; };
+    const PC = B.par_circuit || {};
+    const circ = Object.keys(PC);
+    const pcell = b => (b && b.n ? `${nf(b.reussite_pct, 1)} % <small>(${nf(b.n, 0)})</small>` : '—');
+    return `<details class="rg-eval"><summary>Le % annoncé tient-il ? (calibration sur les matchs joués)</summary>
+      <div class="table-wrap rg-table"><table><thead><tr><th>Favori annoncé à</th>${vers.map(([, l]) => `<th>${l} : gagne</th>`).join('')}</tr></thead>
+      <tbody>${tranches.map(t => `<tr><td>${esc(t)}</td>${vers.map(([k]) => `<td>${cell(k, t)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>
+      <p class="mini">Bien réglé : un favori annoncé entre 60 et 70 % gagne environ 65 fois sur 100. Plus bas, le modèle est trop sûr de lui ; plus haut, pas assez. Entre parenthèses : nombre de matchs.</p>
+      ${circ.length ? `<div class="table-wrap rg-table"><table><thead><tr><th>Circuit</th>${vers.map(([, l]) => `<th>${l}</th>`).join('')}</tr></thead>
+      <tbody>${circ.map(c => `<tr><td>${esc(c)}</td>${vers.map(([k]) => `<td>${pcell(PC[c][k])}</td>`).join('')}</tr>`).join('')}</tbody></table></div><p class="mini">Vainqueurs trouvés par circuit.</p>` : ''}</details>`;
   }
 
   function pronosticsBlock(P, B, ouverts) {
@@ -438,10 +614,11 @@
     const cartes = P.matchs.map(m => `<div class="rg-pron"><div class="mini">${heure(m.debut)} · ${esc(m.tournoi)} · ${esc(m.surface)}${m.meilleur_des === 5 ? ' · 5 sets' : ''}</div>
         <div class="rg-pron-j"><b>${esc(m.home)}</b> – <b>${esc(m.away)}</b></div>
         <div class="table-wrap rg-table"><table><thead><tr><th></th><th>Vainqueur · sets <small>(% · cote juste)</small></th><th>Scores les plus probables (sur ~1 500 possibles)</th><th>Jeux</th></tr></thead>
-        <tbody>${m.simulation ? ligne(`<b>Simulation</b><span class="detail">${nf((P.simulations || 0), 0)} matchs joués</span>`, m.simulation, m) : ''}${ligne('Classement Elo', m.stats, m)}${ligne('Cote Pinnacle', m.marche, m)}</tbody></table></div>${facteursBlock(m)}${simuleBlock(m, ouverts)}${m.cles ? `<div class="rg-serv-liens">Profil de service : <button type="button" data-serv-key="${esc(m.cles[0])}">${nomCourt(m.home)}</button> <button type="button" data-serv-key="${esc(m.cles[1])}">${nomCourt(m.away)}</button></div>` : ''}</div>`).join('');
+        <tbody>${m.combinaison ? ligne(`<b>Simulation + Elo</b><span class="detail">les deux % mélangés, puis le match joué à ce niveau</span>`, m.combinaison, m) : ''}${m.simulation ? ligne(`<b>Simulation</b><span class="detail">${nf((P.simulations || 0), 0)} matchs joués</span>`, m.simulation, m) : ''}${ligne('Classement Elo', m.stats, m)}${ligne('Cote Pinnacle', m.marche, m)}</tbody></table></div>${facteursBlock(m)}${directBlock(m, P.noeuds_forme, ouverts)}${simuleBlock(m, ouverts)}${m.cles ? `<div class="rg-serv-liens">Profil de service : <button type="button" data-serv-key="${esc(m.cles[0])}">${nomCourt(m.home)}</button> <button type="button" data-serv-key="${esc(m.cles[1])}">${nomCourt(m.away)}</button></div>` : ''}</div>`).join('');
     return `<details class="rg-eval" open><summary>Pronostics du jour (${nf(P.matchs.length, 0)} matchs dans les ${nf(P.horizon_h, 0)} h)</summary>
       <p class="mini"><b>Simulation</b> : chaque match est joué ${nf(P.simulations || 5000, 0)} fois point par point avec les seules statistiques des deux joueurs — 1re balle, aces, doubles fautes, points gagnés derrière la 1re et la 2e, qualité de retour (profils au ${esc(P.profils_au || '—')}) — et la part des simulations gagnées donne le pourcentage. Pour comparaison : <b>classement Elo</b> (résultats seuls) et <b>cote Pinnacle</b> (marge retirée), joués dans le même moteur. Le premier pronostic de chaque match est gardé tel quel : les compteurs portent sur lui. Chaque pourcentage est aussi lu en <b>cote juste</b> (1 / probabilité, sans marge).${(P.facteurs_adoptes || []).length ? ` Facteurs du match retenus par le test : ${P.facteurs_adoptes.map(g => esc(FACTEURS_LIB[g] || g)).join(', ')}.` : ''}</p>
-      <div class="rg-kpis">${kpi('Réussite simulation', T.simulation)}${kpi('Réussite Elo', T.stats_seules)}${kpi('Réussite Pinnacle', T.stats_plus_marche)}${kpi('7 jours, simulation', S.simulation)}${kpi('7 jours, Elo', S.stats_seules)}${kpi('7 jours, Pinnacle', S.stats_plus_marche)}</div>
+      <div class="rg-kpis">${(P.combinaison || (T.combinaison && T.combinaison.n)) ? kpi('Réussite simulation + Elo', T.combinaison) : ''}${kpi('Réussite simulation', T.simulation)}${kpi('Réussite Elo', T.stats_seules)}${kpi('Réussite Pinnacle', T.stats_plus_marche)}${(P.combinaison || (T.combinaison && T.combinaison.n)) ? kpi('7 jours, simulation + Elo', S.combinaison) : ''}${kpi('7 jours, simulation', S.simulation)}${kpi('7 jours, Elo', S.stats_seules)}${kpi('7 jours, Pinnacle', S.stats_plus_marche)}</div>
+      ${calibrationBlock(B)}
       ${suiviF}
       ${cartes || '<p class="mini">Aucun match dans les prochaines heures.</p>'}
     </details>`;
@@ -552,6 +729,15 @@
       if (serv.open && !state.servDoc) { await chargerService(); render(); }
     });
     bindService();
+    document.querySelectorAll('#registreBody [data-direct]').forEach(b => b.addEventListener('click', () => {
+      const P = state.pronoDoc || {};
+      const m = (P.matchs || []).find(x => x.uid === b.dataset.direct);
+      const f = b.closest('.rg-direct-form');
+      if (!m || !f) return;
+      const v = k => (f.querySelector(`[data-d="${k}"]`) || {}).value || '';
+      const srv = f.querySelector('input[type="radio"]:checked');
+      f.querySelector('.rg-direct-res').innerHTML = directResultat(m, P.noeuds_forme, { sets: v('sets'), jeux: v('jeux'), points: v('points'), homeSert: !srv || srv.value === 'home' });
+    }));
     const prev = $('rgPrev'), next = $('rgNext');
     if (prev) prev.addEventListener('click', () => { state.page--; render(); });
     if (next) next.addEventListener('click', () => { state.page++; render(); });
@@ -582,6 +768,6 @@
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
   }
   if (typeof module !== 'undefined') {
-    module.exports = { pronosticsBlock, facteursBlock, simuleBlock, serviceBlock, serviceInner, ficheService, chercherJoueurs, croisementsBlock, delaiBlock, booksBlock, valeurBlock, victoires, powerFair, decodeMonth, fairRow, bestRow, filterMatches, coherence, lectureOf, effective, evaluation, fiche, row };
+    module.exports = { pronosticsBlock, calibrationBlock, directBlock, directResultat, enDirect, lireScore, facteursBlock, simuleBlock, serviceBlock, serviceInner, ficheService, chercherJoueurs, croisementsBlock, delaiBlock, booksBlock, valeurBlock, victoires, powerFair, decodeMonth, fairRow, bestRow, filterMatches, coherence, lectureOf, effective, evaluation, fiche, row };
   }
 })();

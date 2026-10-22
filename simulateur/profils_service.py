@@ -176,7 +176,7 @@ class Profils:
             for s, v in d['sommes'].items():
                 P.j[(j, s)] = [x * w for x in v]
         P.jour_export = jour
-        P.ajuste = AJ.Ajuste.importer(doc['ajuste']) if doc.get('ajuste') else None
+        P.ajuste = AJ.importer(doc['ajuste']) if doc.get('ajuste') else None
         return P
 
 
@@ -215,10 +215,12 @@ def main(argv):
     actifs = {E.cle(n) for m in tout if m['date'] >= dt.date(2023, 1, 1) for n in (m['nom_g'], m['nom_p'])}
     try:
         with open(os.path.join(ICI, 'choix_simulation.json'), encoding='utf-8') as f:
-            n0 = float(json.load(f).get('n0') or AJ.N0)
+            choix = json.load(f)
     except (OSError, ValueError):
-        n0 = AJ.N0
-    A = AJ.ajuster(tout, fin + dt.timedelta(days=1), E.cle, n0=n0)
+        choix = {}
+    n0 = float(choix.get('n0') or AJ.N0)
+    dyn = AJ.lire_dynamique(choix)          # statistiques qui évoluent dans le temps, si le test les a adoptées
+    A = AJ.ajuster_choisi(tout, fin + dt.timedelta(days=1), E.cle, n0=n0, dyn=dyn)
     doc['ajuste'] = A.exporter(actifs)
     doc['feuilles_ajoutees'] = sum(1 for m in F if m.get('detail'))
     with open(SORTIE, 'w', encoding='utf-8') as f:

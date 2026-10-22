@@ -114,6 +114,23 @@ class Facteurs(unittest.TestCase):
         bp = FA.juger_groupe(self.appr, self.juge, 'points_importants')
         self.assertLess(abs(bp['coefs']['bp']['bp_constante']), 0.1)
 
+    def test_styles_et_face_a_face(self):
+        vus = set()
+        for x in self.lignes:
+            paire = (x['a'], x['b'])
+            v = x['var'][0]
+            if paire not in vus and (x['b'], x['a']) not in vus:
+                self.assertEqual(v['h2h_srv'], 0.0)                         # première rencontre : rien
+            vus.add(paire)
+            for f in ('style_ace_x_retour', 'style_1re_x_retour', 'style_2e_x_retour'):
+                self.assertIn(f, v)
+        self.assertTrue(any(x['var'][0]['h2h_srv'] != 0 for x in self.lignes))
+        st = FA.style(None, 'x')
+        self.assertEqual(st, (0.0,) * 5)
+        # pas d'effet de style dans ce monde : le groupe ne trouve pas mieux le vainqueur de façon nette
+        r = FA.juger_groupe(self.appr, self.juge, 'styles')
+        self.assertLess(abs(r['coefs']['service']['style_1re_x_retour']), 0.3)
+
     def test_contexte_relu(self):
         H = FA.avec_variables([dict(x) for x in self.lignes], self.infos, final=True)
         noms = {str(t): v for t, v in enumerate(self.villes)}
@@ -176,6 +193,56 @@ class PronosticAvecFacteurs(unittest.TestCase):
         finally:
             PJ.FACTEURS, PJ.CONTEXTE = None, None
         self.assertIsNone(PJ.facteurs_du_match('a', 'b', 'x', dt.datetime(2026, 10, 22)))
+
+
+class ConditionsEtContexte(unittest.TestCase):
+    def test_variables(self):
+        H = FA.Historique()
+        H.lieux = {'1': {'lon': 2.35, 'altitude': 35, 'code': 'FR', 'interieur': True},
+                   '2': {'lon': -74.0, 'altitude': 2600, 'code': 'CO'}}
+        H.meteo = {'2': {'2026-09-05': [31.0, 25.0, 'archive']}}
+        J = 86400
+        t0 = dt.datetime(2026, 9, 1, 12, tzinfo=dt.timezone.utc).timestamp()
+        H.parcours['a'] = [(t0 - 60 * J, '1')]
+        H.parcours['b'] = [(t0, '1'), (t0 + 2 * J, '2')]
+        H.pays['a'], H.pays['b'] = 'FRA', 'COL'
+        t = t0 + 4 * J
+        va = H.variables('a', 'b', '2', t, {})
+        self.assertAlmostEqual(va['altitude'], 2.6)
+        self.assertEqual(va['interieur'], 0.0)
+        self.assertAlmostEqual(va['chaleur'], 0.6)
+        self.assertAlmostEqual(va['vent'], 1.0)
+        self.assertEqual(va['domicile_srv'], 0.0)
+        self.assertEqual(va['domicile_adv'], 1.0)                    # b est Colombien, le tournoi en Colombie
+        self.assertEqual(va['absence_srv'], 1.0)                     # a n'a pas joué depuis 64 jours
+        self.assertEqual(va['deja_ici_adv'], 0.25)                   # b a déjà joué un match ici
+        self.assertEqual(va['voyage_srv'], 0.0)                      # a revient de trop loin dans le temps
+        vb = H.variables('b', 'a', '2', t, {})
+        self.assertEqual(vb['voyage_srv'], 0.0)                      # dernier match de b : ici même
+        H.parcours['c'] = [(t - 3 * J, '1')]
+        vc = H.variables('c', 'a', '2', t, {})
+        self.assertAlmostEqual(vc['voyage_srv'], (76.35 / 15) / 6, places=3)   # Paris → Bogotá : ~5 h de décalage
+        self.assertEqual(vc['enchaine_srv'], 0.2)
+        vi = H.variables('a', 'b', '1', t, {})
+        self.assertEqual(vi['interieur'], 1.0)
+        self.assertEqual(vi['chaleur'], 0.0)
+        self.assertEqual(vi['domicile_srv'], 1.0)
+
+    def test_contexte_garde_parcours_et_lieux(self):
+        H = FA.Historique()
+        H.lieux = {'1': {'lon': 2.35, 'altitude': 35, 'code': 'FR'}}
+        H.parcours['a'] = [(1000.0, '1')]
+        H.pays['a'] = 'FRA'
+        doc = FA.contexte(H, {}, {'1': 'Paris, France'}, 2000.0)
+        C = FA.Contexte(json_rond(doc))
+        v = C.variables('a', 'z', 'Paris', 3000.0)
+        self.assertEqual(v['domicile_srv'], 1.0)
+        self.assertEqual(v['deja_ici_srv'], 0.25)
+
+
+def json_rond(doc):
+    import json
+    return json.loads(json.dumps(doc))
 
 
 if __name__ == '__main__':

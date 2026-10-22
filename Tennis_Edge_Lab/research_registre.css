@@ -66,3 +66,10 @@
 #matches #rgServ input{min-height:40px;font:inherit;padding:6px;border-radius:8px;border:1px solid var(--line,#cbd5e1);width:100%;box-sizing:border-box}
 #matches .rg-cent{display:block;font-size:11px}
 #matches .rg-facteurs{margin:.35rem 0 .2rem}
+#matches .rg-direct-form{display:grid;gap:.5rem;margin:.4rem 0}
+#matches .rg-direct-form label{display:grid;gap:.15rem;font-size:.9rem}
+#matches .rg-direct-form input[type=text]{font:inherit;padding:.45rem .5rem;border:1px solid var(--line,#d5dbe3);border-radius:6px;background:var(--panel,#fff);color:inherit}
+#matches .rg-direct-form fieldset{display:flex;gap:1rem;border:0;padding:0;margin:0}
+#matches .rg-direct-form fieldset label{display:flex;gap:.35rem;align-items:center}
+#matches .rg-direct-form button{justify-self:start;font:inherit;padding:.45rem .9rem}
+#matches .rg-direct-res{min-height:1.4em}
