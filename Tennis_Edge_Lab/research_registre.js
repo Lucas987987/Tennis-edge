@@ -111,7 +111,26 @@
   const ago = min => (!fin(min) ? '—' : min >= 1440 ? `${nf(min / 1440, 1)} j avant` : min >= 60 ? `${nf(min / 60, 1)} h avant` : `${nf(min, 0)} min avant`);
 
   // ---------- Rendu ----------
-  const state = { index: null, months: {}, mois: null, list: null, f: {}, page: 0, open: new Set(), simOpen: new Set(), evalDoc: null, err: null };
+  const state = { index: null, months: {}, mois: null, list: null, f: {}, page: 0, open: new Set(), simOpen: new Set(), evalDoc: null, err: null,
+    servDoc: null, servQ: '', servKey: null, servOpen: false };
+  async function chargerService() {
+    if (state.servDoc) return;
+    try { state.servDoc = await gz('./live/joueurs_service.json.gz'); } catch (e) { state.servDoc = { joueurs: {}, erreur: e.message }; }
+  }
+  function bindService() {
+    const q = $('rgServQ');
+    if (q) q.addEventListener('input', () => {
+      state.servQ = q.value;
+      const body = $('rgServBody');
+      if (body) { body.innerHTML = serviceInner(state.servDoc, state.servQ, state.servKey); bindService(); const q2 = $('rgServQ'); if (q2) { q2.focus(); q2.setSelectionRange(q2.value.length, q2.value.length); } }
+    });
+    document.querySelectorAll('#registreBody [data-serv-key]').forEach(b => b.addEventListener('click', async () => {
+      state.servKey = b.dataset.servKey; state.servOpen = true;
+      await chargerService();
+      render();
+      const d = $('rgServ'); if (d && d.scrollIntoView) d.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }));
+  }
   async function gz(url) {
     if (typeof DecompressionStream === 'undefined') throw new Error('navigateur sans décompression gzip');
     const r = await fetch(`${url}?t=${Date.now()}`, { cache: 'no-store' });
@@ -346,6 +365,45 @@
       <p class="mini">Scores les plus fréquents : ${scores}</p>${recit}</details>`;
   }
 
+  /** 22/10/2026 — fiche « service et retour » d'un joueur (joueurs_service.json.gz, profils du match simulé). */
+  const SERV_LIGNES = [['f', '% de 1re balle'], ['a', 'Aces par 1re balle dans le court'], ['d', 'Doubles fautes par 2e balle'],
+    ['w1', 'Points gagnés derrière la 1re'], ['w2j', 'Points gagnés derrière la 2e jouée'], ['serv', 'Points de service gagnés'],
+    ['ra', 'Aces concédés au retour'], ['ret1', 'Points gagnés en retour sur 1re'], ['ret2', 'Points gagnés en retour sur 2e'],
+    ['ret', 'Points gagnés en retour']];
+  const SURF_FR = { all: 'Tous terrains', Hard: 'Dur', Clay: 'Terre', Grass: 'Gazon' };
+  const sansAccent = t => String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  function chercherJoueurs(doc, q, n = 8) {
+    const t = sansAccent(q).trim();
+    if (!doc || !doc.joueurs || t.length < 2) return [];
+    const mots = t.split(/\s+/);
+    return Object.entries(doc.joueurs).filter(([, j]) => mots.every(m => sansAccent(j.nom).includes(m)))
+      .sort((a, b) => b[1].balles - a[1].balles).slice(0, n);
+  }
+  function ficheService(doc, key) {
+    const j = doc && doc.joueurs && doc.joueurs[key];
+    if (!j) return '<p class="mini">Pas de profil pour ce joueur (moins de 300 balles de service, ou aucun match depuis 2025).</p>';
+    const S = j.surfaces || {}, M = (doc.moyennes || {})[j.circuit] || {};
+    const surfs = ['all', 'Hard', 'Clay', 'Grass'].filter(s => S[s]);
+    const v = x => (fin(x) ? `${nf(100 * x, 1)} %` : '—');
+    const cent = c => (fin(c) ? `<span class="rg-cent ${c >= 75 ? 'good' : c <= 25 ? 'bad' : ''}">${c}<sup>e</sup> centile</span>` : '');
+    const lignes = SERV_LIGNES.map(([k, lab]) => `<tr><td>${lab}</td>${surfs.map(s => `<td><b>${v(S[s].joueur[k])}</b>${s === 'all' ? cent((S.all.centiles || {})[k]) : ''}<span class="detail">circuit ${v((M[s] || {})[k])}</span></td>`).join('')}</tr>`).join('');
+    const evo = j.evolution && j.evolution.length ? `<h5>Mois par mois (feuilles collectées depuis la fin de l'archive)</h5><div class="table-wrap rg-table"><table><thead><tr><th>Mois</th><th>Matchs</th><th>Aces / match</th><th>1re balle</th><th>Gagnés 1re</th><th>Gagnés 2e</th><th>Service</th><th>Retour</th></tr></thead><tbody>${j.evolution.map(r => `<tr><td>${esc(r[0])}</td><td>${r[1]}</td><td>${nf(r[2], 1)}</td><td>${nf(r[3], 1)} %</td><td>${nf(r[4], 1)} %</td><td>${nf(r[5], 1)} %</td><td>${nf(r[6], 1)} %</td><td>${nf(r[7], 1)} %</td></tr>`).join('')}</tbody></table></div>` : '';
+    return `<div class="rg-serv-fiche"><div class="rg-pron-j"><b>${esc(j.nom)}</b> <span class="mini">${esc(j.circuit)} · ${nf(j.balles, 0)} balles de service (pondérées) · dernier match ${esc(j.dernier_match)}</span></div>
+      <div class="table-wrap rg-table"><table><thead><tr><th></th>${surfs.map(s => `<th>${SURF_FR[s]}<span class="detail">${nf(S[s].balles, 0)} balles</span></th>`).join('')}</tr></thead><tbody>${lignes}</tbody></table></div>
+      <p class="mini">Centile parmi les joueurs actifs du même circuit (100 = le meilleur ; pour les doubles fautes et les aces concédés, moins = mieux). Profil ramené vers la moyenne quand il y a peu de balles : c'est celui qu'utilise le match simulé. Une description du jeu, pas un signal de pari.</p>${evo}</div>`;
+  }
+  function serviceInner(doc, q, key) {
+    if (!doc) return '<p class="mini">Chargement…</p>';
+    const res = chercherJoueurs(doc, q);
+    return `<label class="rg-q">Joueur<input id="rgServQ" type="search" value="${esc(q || '')}" placeholder="ex. Fils, Swiatek…" autocomplete="off"></label>
+      ${res.length ? `<div class="rg-serv-res">${res.map(([k, j]) => `<button type="button" data-serv-key="${esc(k)}">${esc(j.nom)} <small>${esc(j.circuit)}</small></button>`).join('')}</div>` : ''}
+      ${key ? ficheService(doc, key) : '<p class="mini">Tapez au moins deux lettres du nom, ou touchez « Profil » sous un pronostic.</p>'}`;
+  }
+  function serviceBlock(doc, q, key, ouvert) {
+    return `<details class="rg-eval" id="rgServ"${ouvert ? ' open' : ''}><summary>Profils de service et de retour${doc && doc.joueurs ? ` (${nf(Object.keys(doc.joueurs).length, 0)} joueurs)` : ''}</summary>
+      <div id="rgServBody">${ouvert ? serviceInner(doc, q, key) : ''}</div></details>`;
+  }
+
   function pronosticsBlock(P, B, ouverts) {
     if (!P || !P.matchs) return '';
     const pc = v => (fin(v) ? `${nf(100 * v, 0)} %` : '—');
@@ -369,7 +427,7 @@
     const cartes = P.matchs.map(m => `<div class="rg-pron"><div class="mini">${heure(m.debut)} · ${esc(m.tournoi)} · ${esc(m.surface)}${m.meilleur_des === 5 ? ' · 5 sets' : ''}</div>
         <div class="rg-pron-j"><b>${esc(m.home)}</b> – <b>${esc(m.away)}</b></div>
         <div class="table-wrap rg-table"><table><thead><tr><th></th><th>Vainqueur · sets <small>(% · cote juste)</small></th><th>Scores les plus probables (sur ~1 500 possibles)</th><th>Jeux</th></tr></thead>
-        <tbody>${ligne('Stats seules', m.stats, m)}${ligne('Stats + marché', m.marche, m)}</tbody></table></div>${simuleBlock(m, ouverts)}</div>`).join('');
+        <tbody>${ligne('Stats seules', m.stats, m)}${ligne('Stats + marché', m.marche, m)}</tbody></table></div>${simuleBlock(m, ouverts)}${m.cles ? `<div class="rg-serv-liens">Profil de service : <button type="button" data-serv-key="${esc(m.cles[0])}">${nomCourt(m.home)}</button> <button type="button" data-serv-key="${esc(m.cles[1])}">${nomCourt(m.away)}</button></div>` : ''}</div>`).join('');
     return `<details class="rg-eval" open><summary>Pronostics du jour (${nf(P.matchs.length, 0)} matchs dans les ${nf(P.horizon_h, 0)} h)</summary>
       <p class="mini">Chaque match est rejoué point par point par le moteur (forme du jour)${P.simulations ? `, puis joué ${nf(P.simulations, 0)} fois avec le profil de service des deux joueurs (archive au ${esc(P.profils_au || '—')}) : « Match simulé »` : ''}. <b>Stats seules</b> : niveau tiré des résultats (classement Elo), style de service et de retour de chaque joueur. <b>Stats + marché</b> : même moteur, niveau pris à la cote Pinnacle. Le premier pronostic de chaque match est gardé tel quel : le compteur porte sur lui. Test du 21/10 sur 9 277 matchs ATP/WTA : stats seules 65,8 %, marché 68,0 %. Chaque probabilité est aussi lue en <b>cote juste</b> (1 / probabilité, sans marge) : un book ne paie jamais autant, car il ajoute sa marge ; le modèle seul ne bat pas Pinnacle (test du 21/10).</p>
       <div class="rg-kpis rg-kpis-2">${kpi('Réussite stats seules', T.stats_seules)}${kpi('Réussite stats + marché', T.stats_plus_marche)}${kpi('7 derniers jours, stats', S.stats_seules)}${kpi('7 derniers jours, marché', S.stats_plus_marche)}</div>
@@ -453,7 +511,7 @@
     const shown = list.slice(state.page * PAGE, (state.page + 1) * PAGE);
     const opt = (vals, v) => vals.map(([k, l]) => `<option value="${esc(k)}" ${k === (v || '') ? 'selected' : ''}>${esc(l)}</option>`).join('');
     const circuits = [...new Set(cur.list.map(m => m.circuit))].sort();
-    host.innerHTML = `${pronosticsBlock(state.pronoDoc, state.pronoBilan, state.simOpen)}${valeurBlock(state.valeurDoc)}${croisementsBlock(state.croisDoc)}${delaiBlock(state.delaiDoc)}${evaluation(state.evalDoc)}${booksBlock(state.valeurDoc)}
+    host.innerHTML = `${pronosticsBlock(state.pronoDoc, state.pronoBilan, state.simOpen)}${serviceBlock(state.servDoc, state.servQ, state.servKey, state.servOpen)}${valeurBlock(state.valeurDoc)}${croisementsBlock(state.croisDoc)}${delaiBlock(state.delaiDoc)}${evaluation(state.evalDoc)}${booksBlock(state.valeurDoc)}
       <div class="rg-filters">
         <label>Mois<select id="rgMois">${opt([...state.index.mois].reverse().map(x => [x.mois, `${x.mois} (${x.matchs})`]), state.mois)}</select></label>
         <label>Circuit<select id="rgCircuit">${opt([['', 'tous'], ...circuits.map(c => [c, c])], state.f.circuit)}</select></label>
@@ -477,6 +535,12 @@
     document.querySelectorAll('#registreBody .rg-sim').forEach(d => d.addEventListener('toggle', () => {
       if (d.open) state.simOpen.add(d.dataset.sim); else state.simOpen.delete(d.dataset.sim);
     }));
+    const serv = $('rgServ');
+    if (serv) serv.addEventListener('toggle', async () => {
+      state.servOpen = serv.open;
+      if (serv.open && !state.servDoc) { await chargerService(); render(); }
+    });
+    bindService();
     const prev = $('rgPrev'), next = $('rgNext');
     if (prev) prev.addEventListener('click', () => { state.page--; render(); });
     if (next) next.addEventListener('click', () => { state.page++; render(); });
@@ -507,6 +571,6 @@
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
   }
   if (typeof module !== 'undefined') {
-    module.exports = { pronosticsBlock, simuleBlock, croisementsBlock, delaiBlock, booksBlock, valeurBlock, victoires, powerFair, decodeMonth, fairRow, bestRow, filterMatches, coherence, lectureOf, effective, evaluation, fiche, row };
+    module.exports = { pronosticsBlock, simuleBlock, serviceBlock, serviceInner, ficheService, chercherJoueurs, croisementsBlock, delaiBlock, booksBlock, valeurBlock, victoires, powerFair, decodeMonth, fairRow, bestRow, filterMatches, coherence, lectureOf, effective, evaluation, fiche, row };
   }
 })();

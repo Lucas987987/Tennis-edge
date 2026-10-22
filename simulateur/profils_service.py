@@ -212,6 +212,10 @@ def main(argv):
     doc['feuilles_ajoutees'] = sum(1 for m in F if m.get('detail'))
     with open(SORTIE, 'w', encoding='utf-8') as f:
         json.dump(doc, f, ensure_ascii=False, separators=(',', ':'))
+    import fiches_service as FS
+    fiches = FS.construire(P, fin, tout, F, E.cle)
+    FS.ecrire(fiches, racine)
+    print(f"Fiches service/retour du Lab : {len(fiches['joueurs'])} joueurs actifs {fiches['joueurs_par_circuit']}")
     avec = sum(1 for m in tout if m.get('detail'))
     print(f"Profils de service : {len(doc['joueurs'])} joueurs ({avec} feuilles de match sur {len(tout)}, "
           f"dont {doc['feuilles_ajoutees']} collectées après l'archive), "

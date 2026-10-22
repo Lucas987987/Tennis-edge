@@ -162,3 +162,31 @@ class Pronostics(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class Reglages(unittest.TestCase):
+    def test_reglages_elargissent_et_recalent(self):
+        cA, cB = S.composantes(GROS, RELANCEUR, MOY), S.composantes(RELANCEUR, GROS, MOY)
+        a = S.simuler(cA, cB, 0.6, 2, 1500, 0.15, cle='r')
+        b = S.simuler(cA, cB, 0.6, 2, 1500, 0.15, cle='r', reglages={'ace_facteur': 1.1, 'tau_f': 0.3})
+        la = a['feuille'][0]['premiere_pct']['p90'] - a['feuille'][0]['premiere_pct']['p10']
+        lb = b['feuille'][0]['premiere_pct']['p90'] - b['feuille'][0]['premiere_pct']['p10']
+        self.assertGreater(lb, la + 2)                                   # fourchette de la 1re balle plus large
+        self.assertGreater(b['feuille'][0]['aces']['moy'], a['feuille'][0]['aces']['moy'])
+        self.assertLess(abs(b['victoire_A'] - 0.6), 0.04)                # le niveau reste ancré
+        self.assertEqual(S.simuler(cA, cB, 0.6, 2, 300, 0.15, cle='r', reglages=None),
+                         S.simuler(cA, cB, 0.6, 2, 300, 0.15, cle='r'))  # sans réglage : identique
+
+    def test_regle_d_adoption(self):
+        import reglage_match_simule as RG
+        base = {'aces': {'prevu_moy': 4.3, 'reel_moy': 4.8, 'mae': 2.2}, 'premiere_pct': {'couverture_80_pct': 71, 'mae': 5.5},
+                'breaks': {'mae': 1.4}}
+        bon = {'aces': {'prevu_moy': 4.7, 'reel_moy': 4.8, 'mae': 2.2}, 'premiere_pct': {'couverture_80_pct': 79, 'mae': 5.5},
+               'breaks': {'mae': 1.41}}
+        pire = dict(bon, breaks={'mae': 1.5})
+        self.assertTrue(RG.adopter(base, bon)[0])
+        self.assertFalse(RG.adopter(base, pire)[0])                     # un écart moyen monte de plus de 2 %
+        self.assertFalse(RG.adopter({}, bon)[0])
+        var, tau = RG.moments_f([(100, 62, 0.62), (100, 70, 0.62), (100, 54, 0.62)])
+        self.assertGreater(tau, 0)
+        self.assertEqual(RG.moments_f([(100, 62, 0.62)] * 3)[0], 0.0)
