@@ -65,6 +65,34 @@ def lignes_circuits(S, Tous):
     return out
 
 
+DIAG_LIB = {'premiere_pct': '% de 1re balle', 'gagnes_1re_pct': 'points gagnés 1re balle', 'gagnes_2e_pct': 'points gagnés 2e balle',
+            'aces': 'aces', 'doubles_fautes': 'doubles fautes', 'breaks': 'breaks', 'jeux': 'jeux gagnés'}
+
+
+def lignes_biais(B):
+    """23/10/2026 — la vraie feuille contre les 5 000 simulations (pronostics_du_jour.biais) : les deux plus
+    gros écarts réguliers (favori / outsider), et la statistique qui fait la différence quand on se trompe."""
+    if not B or not B.get('n'):
+        return []
+    out = [f"\n📋 <b>Feuilles contre simulations</b> ({B['n']} matchs avec leur feuille"
+           + ('' if B.get('conclure') else ' — moins de 30 : ne pas conclure') + ")"]
+    cand = []
+    for k, d in (B.get('tous') or {}).items():
+        for role, x in d.items():
+            if x.get('n'):
+                cand.append((abs(x.get('z_moyen') or 0), k, role, x))
+    cand.sort(key=lambda c: -c[0])
+    for _, k, role, x in cand[:2]:
+        sens = 'au-dessus' if x['ecart_moyen'] > 0 else 'en dessous'
+        out.append(f"• {DIAG_LIB.get(k, k)} du {role} : réel {sens} du prévu ({x['ecart_moyen']:+.1f} en moyenne, "
+                   f"{x['dans_fourchette_pct']:.0f} % dans la fourchette)")
+    E = B.get('erreurs') or {}
+    if E.get('n'):
+        dec = ' · '.join(f"{DIAG_LIB.get(k, k)} {n}" for k, n in list((E.get('stat_decisive') or {}).items())[:3])
+        out.append(f"• Vainqueur faux ({E['n']}) — ce qui a fait la différence : {dec}")
+    return out
+
+
 def construire(racine, maintenant=None):
     maintenant = maintenant or dt.datetime.now(dt.timezone.utc).replace(tzinfo=None)
     R = lire(os.path.join(racine, 'Tennis_Edge_Lab', 'live', 'pronostics_resultats.json'), {})
@@ -94,6 +122,7 @@ def construire(racine, maintenant=None):
         if lc:
             L.append("\n🎯 <b>Par circuit</b> (vainqueur trouvé, version principale ; ITF non compté)")
             L.extend(lc)
+        L.extend(lignes_biais(R.get('biais') or {}))
         err = []
         for m in S:
             pr = m.get('premier') or {}

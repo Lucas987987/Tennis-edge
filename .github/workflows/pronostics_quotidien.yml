@@ -17,7 +17,9 @@ name: Pronostics du jour
 on:
   workflow_dispatch:
   schedule:
-    - cron: '23 */6 * * *'
+    # 23/10/2026 : toutes les 2 h au lieu de 6 (nouveaux matchs pronostiqués plus vite) ; la cote Pinnacle
+    # du Lab est, elle, rafraîchie à chaque capture (simulateur/marche_du_lab.py, workflow des courbes).
+    - cron: '23 */2 * * *'
 
 permissions:
   contents: write

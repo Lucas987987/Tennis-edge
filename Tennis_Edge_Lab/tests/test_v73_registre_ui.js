@@ -336,6 +336,22 @@ test('prédit / réel (22/10/2026)', () => {
   const hi = R_.resultatsBlock(RI);
   assert.match(hi, /<small>Simulation \+ Elo<\/small><b>1\/1<\/b>/);              // l'abandon ne compte pas
   assert.match(hi, /abandon — non compté/);
+  // 23/10/2026 : la feuille contre les simulations, la cote Pinnacle fraîche
+  const md = { home: 'Juan Tobon', away: 'Nicolas Mejia', diagnostic: { dans_fourchette_pct: 71.4,
+    decisif: { stat: 'gagnes_1re_pct', joueur: 'away', prevu: 71, reel: 55, z: 2.1 } } };
+  assert.match(R_.diagLigne(md), /différence : Mejia, points gagnés 1re balle 55 % \(prévu 71\) · feuille dans la fourchette : 71 %/);
+  assert.equal(R_.diagLigne({}), '');
+  const bi = R_.biaisBlock({ n: 12, conclure: false, tous: { gagnes_1re_pct: { favori: { n: 12, ecart_moyen: -3.2, dans_fourchette_pct: 70 } } },
+    erreurs: { n: 4, stat_decisive: { gagnes_1re_pct: 3, 'aucune stat nette': 1 } } });
+  assert.match(bi, /moins de 30 matchs : ne pas conclure/);
+  assert.match(bi, /-3,2 <small>\(70 % dedans\)/);
+  assert.match(bi, /points gagnés 1re balle 3 · aucune stat nette 1/);
+  const mp = { uid: 'u1', home: 'Akira Santillan', away: 'Jie Cui', marche: null };
+  const MK = { genere_le: '2026-10-22T22:53:35Z', matchs: { u1: { pin: [2.8, 1.467], p_home: 0.3346 } } };
+  assert.match(R_.pinFraiche(mp, MK, 'BASE'), /<b>Cui<\/b> 67 %.*sets et scores au prochain calcul/);
+  assert.equal(R_.pinFraiche({ ...mp, marche: { p_home: 0.335 } }, MK, 'BASE'), 'BASE');
+  assert.match(R_.pinFraiche({ ...mp, marche: { p_home: 0.40 } }, MK, 'BASE'), /^BASE<tr>.*Pinnacle maintenant/);
+  assert.equal(R_.pinFraiche(mp, null, 'BASE'), 'BASE');
   assert.match(R_.resultatsBlock({ matchs: [] }), /Aucun match joué/);
   assert.equal(R_.resultatsBlock(null), '');
 });
