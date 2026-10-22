@@ -9,6 +9,9 @@ name: Pronostics du jour
 #    bilan (pronostics_bilan.json). 0 requête d'API.
 # Le classement complet (elo_etat.json) n'est pas commité ici (stockage) : il
 # est recalculé à chaque passage.
+# 22/10/2026 : chaque match est aussi joué 5 000 fois point par point avec les
+# profils de service (simulateur/profils_service.json, produit par le workflow
+# « Pronostic - test du modèle ») : feuille de stats prévue et match type.
 on:
   workflow_dispatch:
   schedule:

@@ -50,3 +50,11 @@
 #matches .rg-pron{border-top:1px solid var(--line,#dfe6ef);padding:8px 0 4px}
 #matches .rg-pron-j{font-size:15px;margin:2px 0 4px}
 #matches .rg-kpis.rg-kpis-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+#matches .rg-sim{margin:6px 0 2px;border:1px solid var(--line,#dfe6ef);border-radius:10px;padding:2px 8px;background:var(--paper,#fff)}
+#matches .rg-sim summary{cursor:pointer;min-height:40px;line-height:40px;font-weight:600}
+#matches .rg-sim-feuille table{table-layout:fixed;width:100%}
+#matches .rg-sim-feuille th,#matches .rg-sim-feuille td{text-align:center;white-space:normal;position:static}
+#matches .rg-sim-feuille td:first-child,#matches .rg-sim-feuille th:first-child{text-align:center;position:static;max-width:none;min-width:0}
+#matches .rg-sim-feuille tbody th{font-weight:400;font-size:11px;color:var(--muted,#62728b)}
+#matches .rg-sim-feuille td b{font-size:14px}
+#matches .rg-sim-sets{margin:4px 0;padding-left:18px;font-size:12px;line-height:1.5}
