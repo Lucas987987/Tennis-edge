@@ -164,6 +164,19 @@ def charger_choix(racine):
 CHOIX = 'profils'
 
 
+def charger_combinaison(racine):
+    """Poids de la combinaison simulation + Elo si le test l'a adoptée (backtest_match_simule.py), sinon None."""
+    try:
+        with open(os.path.join(racine, 'simulateur', 'choix_simulation.json'), encoding='utf-8') as f:
+            cb = json.load(f).get('combinaison') or {}
+        return cb['poids'] if cb.get('adopte') and cb.get('poids') else None
+    except (OSError, ValueError, KeyError):
+        return None
+
+
+COMBINAISON = None
+
+
 def charger_facteurs(racine):
     """Facteurs du match ADOPTÉS par l'étude (facteurs.py, règle fixée d'avance) et contexte du jour
     (forme, fatigue, vitesse des tournois, gaucher/taille, points importants). (None, None) sinon."""
@@ -193,13 +206,13 @@ def composantes_du_match(P, h, a, c, s):
     return cH, cA, nh, na
 
 
-def facteurs_du_match(h, a, tournoi, debut):
+def facteurs_du_match(h, a, tournoi, debut, adj=None):
     """{groupe adopté: ((d_service, d_aces, d_bp) home, (…) away)} en logit, + variables lues."""
     if not FACTEURS or CONTEXTE is None:
         return None
     import facteurs as FA
     ts = debut.replace(tzinfo=dt.timezone.utc).timestamp() if debut.tzinfo is None else debut.timestamp()
-    vH, vA = CONTEXTE.variables(h, a, tournoi, ts), CONTEXTE.variables(a, h, tournoi, ts)
+    vH, vA = CONTEXTE.variables(h, a, tournoi, ts, adj), CONTEXTE.variables(a, h, tournoi, ts, adj)
     coefs = FACTEURS['coefs']
     par_groupe = {}
     for g in FACTEURS['adoptes']:
@@ -276,13 +289,14 @@ def construire(racine, maintenant=None):
     maintenant = maintenant or dt.datetime.utcnow()
     books = _books(racine)
     etat = json.load(open(os.path.join(racine, 'simulateur', 'elo_etat.json'), encoding='utf-8'))
-    elo = E.Elo.importer(etat['joueurs'])
+    elo = E.Elo.importer(etat['joueurs'], etat.get('options'))
     surf = etat.get('surfaces_tournois') or {}
     S = Styles(os.path.join(racine, 'simulateur', 'notes_joueurs.json'))
     PR = charger_profils(racine)
-    global REGLAGES, CHOIX, FACTEURS, CONTEXTE
+    global REGLAGES, CHOIX, FACTEURS, CONTEXTE, COMBINAISON
     REGLAGES = charger_reglages(racine)
     CHOIX = charger_choix(racine)
+    COMBINAISON = charger_combinaison(racine)
     FACTEURS, CONTEXTE = charger_facteurs(racine)
     venir = matchs_a_venir(racine, maintenant)
     # Un joueur = un classement : alias du dernier calcul, puis noms nouveaux reliés au joueur connu.
@@ -307,12 +321,12 @@ def construire(racine, maintenant=None):
             ph = (1 / x['pin'][0]) ** k if k else (1 / x['pin'][0]) / (1 / x['pin'][0] + 1 / x['pin'][1])
             marche = pronostic(ph, c, sg, pa0, pb0)
         uid = f"{x['debut'].date()}_{NR.slug(x['home'])}_{NR.slug(x['away'])}"
-        simulation = None
+        simulation = combinaison = direct = None
         if PR is not None:
             # 22/10/2026 — SIMULATION PURE : le match joué SIMULATIONS fois avec les seuls taux des deux
             # joueurs (1re balle, aces, doubles fautes, points gagnés derrière la 1re et la 2e, retour),
             # sans Elo ni cote : c'est la simulation qui dit qui gagne.
-            fct = facteurs_du_match(h, a, x['tournoi'], x['debut'])
+            fct = facteurs_du_match(h, a, x['tournoi'], x['debut'], getattr(PR, 'ajuste', None))
             r = match_simule(PR, h, a, c, s, sg, None, f"{uid}|simulation", fct)
             simulation = {'p_home': r['victoire_A'], 'sets': r['sets'], 'scores_probables': r['scores'][:3],
                           'remontee': {'home': r['remontee'][0], 'away': r['remontee'][1]}, 'set1_home': r['set1_A'],
@@ -320,18 +334,35 @@ def construire(racine, maintenant=None):
             if fct:
                 cH, cA, _, _ = composantes_du_match(PR, h, a, c, s)
                 simulation['facteurs'] = impact_facteurs(cH, cA, sg, fct)
-            for nom_v, v in (('stats', stats), ('marche', marche)):
+            if COMBINAISON:
+                # 22/10/2026 — SIMULATION + ELO : le % de la simulation (limite exacte) mélangé à celui de l'Elo,
+                # poids appris sur 2024 et adoptés parce qu'ils trouvent mieux le vainqueur en 2025–2026 ; le
+                # match est ensuite joué avec les statistiques des deux joueurs, à ce niveau.
+                cH, cA = avec_facteurs(*composantes_du_match(PR, h, a, c, s)[:2], fct)
+                p_sim = MS.victoire_pure(cH, cA, sg, SIGMA)
+                p_c = MS.melange(COMBINAISON, stats['p_home'], p_sim)
+                combinaison = dict(pronostic(p_c, c, sg, pa0, pb0), p_simulation=round(p_sim, 4), p_elo=stats['p_home'])
+            # 22/10/2026 — EN DIRECT (direct.py, Lab) : points de service des deux joueurs pour la version
+            # principale (simulation + Elo si adoptée, sinon simulation pure), avant toute forme du jour.
+            cH0, cA0 = avec_facteurs(*composantes_du_match(PR, h, a, c, s)[:2], fct)
+            pa_s, pb_s = MS.p_service(cH0), MS.p_service(cA0)
+            if combinaison:
+                pa_s, pb_s = MS.ancrer_rapide(pa_s, pb_s, combinaison['p_home'], sg, SIGMA)
+            direct = {'a': round(pa_s, 5), 'b': round(pb_s, 5), 'sigma': SIGMA, 'sets_gagnants': sg,
+                      'tb_final': 10 if sg == 3 else 7, 'version': 'combinaison' if combinaison else 'simulation'}
+            for nom_v, v in (('stats', stats), ('marche', marche), ('combinaison', combinaison)):
                 if v:
                     v['match_simule'] = match_simule(PR, h, a, c, s, sg, v['p_home'], f"{uid}|{nom_v}", fct)
         out.append({'uid': uid,
                     'debut': x['debut'].isoformat(timespec='minutes'), 'tournoi': x['tournoi'], 'circuit': c,
                     'surface': s, 'meilleur_des': 2 * sg - 1, 'home': x['home'], 'away': x['away'],
                     'cles': [h, a], 'matchs_joues': [elo.matchs(h), elo.matchs(a)], 'style_connu': [S.connu(h), S.connu(a)],
-                    'simulation': simulation, 'stats': stats, 'marche': marche})
+                    'combinaison': combinaison, 'simulation': simulation, 'stats': stats, 'marche': marche, 'direct': direct})
     return {'genere_le': maintenant.isoformat(timespec='seconds') + 'Z', 'elo_au': etat.get('dernier_match'),
             'horizon_h': HORIZON_H, 'sigma': SIGMA, 'simulations': SIMULATIONS if PR is not None else 0,
             'profils_au': PR.jour_export.isoformat() if PR is not None else None,
-            'facteurs_adoptes': (FACTEURS or {}).get('adoptes') or [], 'matchs': out}
+            'facteurs_adoptes': (FACTEURS or {}).get('adoptes') or [], 'combinaison': COMBINAISON,
+            'noeuds_forme': [[round(z, 6), round(w, 8)] for z, w in zip(M._Z, M._W)], 'matchs': out}
 
 
 SUIVI_STATS = ('aces', 'doubles_fautes', 'premiere_pct', 'gagnes_1re_pct', 'gagnes_2e_pct', 'breaks', 'jeux')
@@ -415,6 +446,8 @@ def journaliser(racine, doc):
                                 'marche': ({'p_home': m['marche']['p_home'], 'sets': m['marche']['sets']} if m['marche'] else None),
                                 'simulation': ({'p_home': m['simulation']['p_home'], 'sets': m['simulation']['sets']}
                                                if m.get('simulation') else None),
+                                'combinaison': ({'p_home': m['combinaison']['p_home'], 'sets': m['combinaison']['sets']}
+                                                if m.get('combinaison') else None),
                                 'feuille': feuille_prevue(m)},
                                ensure_ascii=False) + '\n')
             n += 1
@@ -462,15 +495,38 @@ def bilan(racine, maintenant=None):
                  (0.5 if x[cle]['p_home'] == 0.5 else 0.0) for x in it)
         s = [x for x in it if x['sets_reel']]
         sj = sum(max(x[cle]['sets'], key=x[cle]['sets'].get) == x['sets_reel'] for x in s)
-        return {'n': n, 'reussite_pct': round(100 * ok / n, 1),
+        ll = sum(-math.log(min(max(x[cle]['p_home'] if x['gagnant'] == 'home' else 1 - x[cle]['p_home'], 1e-6), 1))
+                 for x in it) / n
+        return {'n': n, 'reussite_pct': round(100 * ok / n, 1), 'log_loss': round(ll, 4),
                 'score_sets_juste_pct': round(100 * sj / len(s), 1) if s else None, 'n_sets': len(s)}
+
+    def calibration(items, cle):
+        """Point 9 : quand le favori est annoncé à 60 %, gagne-t-il 6 fois sur 10 ? (tranches de 10 points)"""
+        out = []
+        for lo in range(50, 100, 10):
+            g = []
+            for x in items:
+                v = x.get(cle)
+                if not v or x['gagnant'] not in ('home', 'away'):
+                    continue
+                pf = max(v['p_home'], 1 - v['p_home'])
+                if lo <= 100 * pf < lo + 10 or (lo == 90 and pf >= 1):
+                    g.append((pf, (v['p_home'] >= 0.5) == (x['gagnant'] == 'home')))
+            if g:
+                out.append({'tranche': f"{lo}–{lo + 10} %", 'n': len(g), 'prevu': round(100 * sum(p for p, _ in g) / len(g), 1),
+                            'reel': round(100 * sum(w for _, w in g) / len(g), 1)})
+        return out
+    VERS = (('combinaison', 'combinaison'), ('simulation', 'simulation'), ('stats_seules', 'stats'), ('stats_plus_marche', 'marche'))
     depuis7 = (maintenant - dt.timedelta(days=7)).date().isoformat()
+    L7 = [x for x in L if x['debut'] >= depuis7]
     doc = {'genere_le': maintenant.isoformat(timespec='seconds') + 'Z', 'pronostiques': len(vus), 'joues_avec_resultat': len(L),
-           'tous': {'simulation': bloc(L, 'simulation'), 'stats_seules': bloc(L, 'stats'), 'stats_plus_marche': bloc(L, 'marche')},
-           '7_derniers_jours': {'simulation': bloc([x for x in L if x['debut'] >= depuis7], 'simulation'),
-                                'stats_seules': bloc([x for x in L if x['debut'] >= depuis7], 'stats'),
-                                'stats_plus_marche': bloc([x for x in L if x['debut'] >= depuis7], 'marche')},
+           'tous': {k: bloc(L, c) for k, c in VERS},
+           '7_derniers_jours': {k: bloc(L7, c) for k, c in VERS},
+           'calibration': {k: calibration(L, c) for k, c in VERS},
+           'par_circuit': {ci: {k: bloc([x for x in L if x.get('circuit') == ci], c) for k, c in VERS}
+                           for ci in ('ATP', 'WTA', 'CH', 'ITF') if any(x.get('circuit') == ci for x in L)},
            'derniers': [{'debut': x['debut'], 'home': x['home'], 'away': x['away'], 'gagnant': x['gagnant'],
+                         'combinaison': (x.get('combinaison') or {}).get('p_home'),
                          'simulation': (x.get('simulation') or {}).get('p_home'),
                          'stats': x['stats']['p_home'], 'marche': (x['marche'] or {}).get('p_home')}
                         for x in sorted(L, key=lambda x: x['debut'])[-30:]],

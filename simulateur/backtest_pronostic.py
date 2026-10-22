@@ -181,11 +181,12 @@ BAS = ('CH', 'ITF')          # niveaux où un nouveau joueur part plus bas (règ
 DEPART_BAS = 1200.0
 
 
-def rejouer(M, nous, td_rows, cle_c, idx, depart_bas, nouveaux=False):
+def rejouer(M, nous, td_rows, cle_c, idx, depart_bas, nouveaux=False, options=None):
     """Rejoue tout dans l'ordre ; renvoie classement, pronostics de l'archive et de nos matchs.
     nouveaux : un nom tennis-data inconnu partout (ni Sackmann ni nos matchs) devient un nouveau
-    joueur au lieu de faire jeter le match ; un nom ambigu reste écarté."""
-    elo, noms, pred_sack = E.Elo(), {}, {}
+    joueur au lieu de faire jeter le match ; un nom ambigu reste écarté.
+    options : options de l'Elo (elo.Elo : poids_surface, welo, incertitude)."""
+    elo, noms, pred_sack = E.Elo(**(options or {})), {}, {}
     bas, tot = collections.Counter(), collections.Counter()
 
     def voir(k, circ):
@@ -201,7 +202,7 @@ def rejouer(M, nous, td_rows, cle_c, idx, depart_bas, nouveaux=False):
         voir(p, m['circuit'])
         if DEBUT_A <= m['date'] < FIN_A and m['circuit'] in ('ATP', 'WTA'):
             pred_sack[i] = (elo.proba(g, p, m['surface']), min(elo.matchs(g), elo.matchs(p)))
-        elo.maj(g, p, m['surface'], m.get('niveau') == 'G')
+        elo.maj(g, p, m['surface'], m.get('niveau') == 'G', E.part_jeux(m['sets']) if m.get('complet') else None)
     paires_nous = collections.defaultdict(list)
     for x in nous:
         paires_nous[frozenset((cle_c(x['home']), cle_c(x['away'])))].append(x['date'])
@@ -251,7 +252,37 @@ def rejouer(M, nous, td_rows, cle_c, idx, depart_bas, nouveaux=False):
             w, l = (h, a) if x['gagnant'] == 'home' else (a, h)
             elo.maj(w, l, x['surface'], x.get('grand_chelem', False))
     cpt['nouveaux_joueurs'] = len(crees)
-    return {'elo': elo, 'noms': noms, 'pred_sack': pred_sack, 'B': B, 'td': dict(cpt)}
+    return {'options': elo.options(), 'elo': elo, 'noms': noms, 'pred_sack': pred_sack, 'B': B, 'td': dict(cpt)}
+
+
+# 22/10/2026 — Elo amélioré : grille d'options, choisie sur les matchs ATP/WTA de 2023 SEULEMENT
+# (aucun match de la période de jugement 2024–2026 n'entre dans le choix).
+GRILLE = {'poids_surface': (0.3, 0.5, 0.7), 'welo': (None, 'norme', 'brut'), 'incertitude': (0.0, 2.0, 5.0, 15.0)}
+CHOIX_DEBUT, CHOIX_FIN = dt.date(2023, 1, 1), dt.date(2024, 1, 1)
+
+
+def choisir_options(M, cle_c, depart_bas):
+    """{options: log loss sur 2023} et meilleures options (Elo rejoué sur l'archive jusqu'à fin 2023)."""
+    import itertools
+    G = [m for m in M if m['date'] < CHOIX_FIN]
+    K = [(cle_c(m['nom_g']), cle_c(m['nom_p'])) for m in G]
+    P = [E.part_jeux(m['sets']) if m.get('complet') else None for m in G]
+    scores = {}
+    for ps, w, c in itertools.product(*GRILLE.values()):
+        e = E.Elo(poids_surface=ps, welo=w, incertitude=c)
+        ll, n = 0.0, 0
+        for m, (g, p), pj in zip(G, K, P):
+            if depart_bas and m['circuit'] in BAS:
+                e.presenter(g, DEPART_BAS)
+                e.presenter(p, DEPART_BAS)
+            if m['date'] >= CHOIX_DEBUT and m['circuit'] in ('ATP', 'WTA'):
+                ll += E.log_loss(e.proba(g, p, m['surface']), 1)
+                n += 1
+            e.maj(g, p, m['surface'], m.get('niveau') == 'G', pj)
+        scores[(ps, w, c)] = ll / max(n, 1)
+    best = min(scores, key=scores.get)
+    return dict(zip(GRILLE, best)), {f"surface {k[0]:g} · welo {k[1] or 'non'} · incertitude {k[2]:g}": round(v, 5)
+                                     for k, v in sorted(scores.items(), key=lambda kv: kv[1])}
 
 
 def evaluer(V, M, td, T):
@@ -433,6 +464,29 @@ def main(argv):
     b_ok = 'log_loss' in b0 and 'log_loss' in b1 and b1['log_loss'] < b0['log_loss']
     if a_ok and b_ok:
         retenue = nom2
+    # Étape 3 (22/10/2026), règle fixée AVANT les résultats : Elo amélioré (poids de la surface, Elo pondéré
+    # par le score, incertitude des joueurs peu vus), options choisies sur 2023 seulement ; retenu si la
+    # log loss A (ATP/WTA 2024–2026, contre la clôture des mêmes matchs) BAISSE et que la log loss B (nos
+    # matchs) ne monte pas de plus de 0,001.
+    t3 = time.time()
+    opts, grille = choisir_options(M, cle_c, not retenue.startswith('depart_1500'))
+    print(f"Elo amélioré : options choisies sur 2023 {opts} ({round(time.time() - t3)} s)", flush=True)
+    nom3 = retenue + '+elo_ameliore'
+    V[nom3] = rejouer(M, nous, td_rows, cle_c, idx, not retenue.startswith('depart_1500'),
+                      nouveaux=retenue.endswith('+nouveaux_joueurs'), options=opts)
+    V[nom3]['rapA'], V[nom3]['rapB'], V[nom3]['A'] = evaluer(V[nom3], M, td, T)
+    print(f"{nom3} : A {V[nom3]['rapA']['tous']['stats_seules']} · B {V[nom3]['rapB']['tous']['stats_seules']}", flush=True)
+    a0, a1 = V[retenue]['rapA']['tous']['stats_seules'], V[nom3]['rapA']['tous']['stats_seules']
+    b0, b1 = V[retenue]['rapB']['tous']['stats_seules'], V[nom3]['rapB']['tous']['stats_seules']
+    a_ok = 'log_loss' in a0 and 'log_loss' in a1 and a1['log_loss'] < a0['log_loss']
+    b_ok = (b0.get('n', 0) == 0 and b1.get('n', 0) == 0) or \
+        ('log_loss' in b0 and 'log_loss' in b1 and b1['log_loss'] <= b0['log_loss'] + 0.001)
+    elo_ameliore = {'options_choisies_sur_2023': opts, 'grille_2023_log_loss': dict(list(grille.items())[:12]),
+                    'adopte': bool(a_ok and b_ok),
+                    'raison': (f"log loss ATP/WTA 2024–2026 {a1.get('log_loss')} contre {a0.get('log_loss')} ; "
+                               f"nos matchs {b1.get('log_loss')} contre {b0.get('log_loss')}")}
+    if a_ok and b_ok:
+        retenue = nom3
     W = V[retenue]
     rap = {'genere_le': dt.datetime.now(dt.timezone.utc).isoformat(timespec='seconds'),
            'objectif': 'deviner le vainqueur et le score (pas battre Pinnacle)',
@@ -442,6 +496,7 @@ def main(argv):
            'regle_adoption': "départ bas retenu seulement si log loss B baisse et log loss A ne monte pas de plus de 0,001 ; "
                              "puis, même règle, nouveaux joueurs tennis-data sur la variante de départ retenue",
            'variante_retenue': retenue,
+           'elo_ameliore': elo_ameliore,
            'joueurs_relies_nom_different': len(alias),
            'sackmann_jusqu_au': fin_sack.isoformat(), 'nos_matchs': len(nous),
            'resultats_tennis_data_ajoutes': W['td'],
@@ -456,10 +511,10 @@ def main(argv):
     elo = W['elo']
     with open(os.path.join(ICI, 'elo_etat.json'), 'w', encoding='utf-8') as f:
         json.dump({'genere_le': rap['genere_le'], 'dernier_match': str(nous[-1]['date'] if nous else fin_sack),
-                   'variante': retenue, 'depart_bas': DEPART_BAS if not retenue.startswith('depart_1500') else None,
+                   'variante': retenue, 'options': W['options'], 'depart_bas': DEPART_BAS if not retenue.startswith('depart_1500') else None,
                    'surfaces_tournois': table_surf, 'alias': alias, 'joueurs': elo.exporter(W['noms'])},
                   f, ensure_ascii=False, separators=(',', ':'))
-    print(json.dumps({k: rap[k] for k in ('variantes', 'variante_retenue', 'joueurs_relies_nom_different')}, ensure_ascii=False, indent=1))
+    print(json.dumps({k: rap[k] for k in ('variantes', 'variante_retenue', 'elo_ameliore', 'joueurs_relies_nom_different')}, ensure_ascii=False, indent=1))
     if avec_scores:
         print(json.dumps(rap['scores_exacts_atp_wta'], ensure_ascii=False, indent=1))
     return 0
