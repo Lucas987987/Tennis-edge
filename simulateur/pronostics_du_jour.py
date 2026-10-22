@@ -41,6 +41,7 @@ import sys
 ICI = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, ICI)
 import elo as E  # noqa: E402
+import feuilles as FE  # noqa: E402
 import match_simule as MS  # noqa: E402
 import modele as M  # noqa: E402
 import nos_resultats as NR  # noqa: E402
@@ -224,6 +225,64 @@ def construire(racine, maintenant=None):
             'profils_au': PR.jour_export.isoformat() if PR is not None else None, 'matchs': out}
 
 
+SUIVI_STATS = ('aces', 'doubles_fautes', 'premiere_pct', 'gagnes_1re_pct', 'gagnes_2e_pct', 'breaks', 'jeux')
+
+
+def feuille_prevue(m):
+    """Feuille simulée gardée au journal (version marché si Pinnacle cote, sinon stats seules) :
+    {stat: [[moy, p10, p90] home, [..] away]} + total de jeux."""
+    v = m['marche'] if m.get('marche') and m['marche'].get('match_simule') else m['stats']
+    S = (v or {}).get('match_simule')
+    if not S:
+        return None
+    out = {'version': 'marche' if v is m.get('marche') else 'stats'}
+    for k in SUIVI_STATS:
+        a, b = S['feuille'][0].get(k), S['feuille'][1].get(k)
+        if a and b:
+            out[k] = [[a['moy'], a['p10'], a['p90']], [b['moy'], b['p10'], b['p90']]]
+    if S.get('jeux'):
+        out['total_jeux'] = [S['jeux']['moy'], S['jeux']['p10'], S['jeux']['p90']]
+    return out
+
+
+def suivi_feuilles(racine, lignes):
+    """Match simulé contre la vraie feuille (feuilles/ collectées) : par statistique, prévu moyen,
+    réel moyen, écart moyen absolu et part des réels dans la fourchette à 80 % (bornes incluses)."""
+    avec = [r for r in lignes if r.get('feuille')]
+    if not avec:
+        return {'n': 0}
+    jours = sorted(r['debut'][:10] for r in avec)
+    debut = (dt.date.fromisoformat(jours[0]) - dt.timedelta(days=1)).isoformat()
+    idx = FE.Index(FE.lire(racine, depuis=debut))
+    acc = {k: [] for k in SUIVI_STATS + ('total_jeux',)}
+    n = 0
+    for r in avec:
+        fi, inv = idx.trouver(r['debut'][:10], r['home'], r['away'])
+        if not fi or str((fi.get('statut') or {}).get('texte') or '').lower() != 'ended':
+            continue
+        reel = FE.feuille_reelle(fi, inv)
+        if not reel:
+            continue
+        (fh, fa), tot = reel
+        n += 1
+        for k in SUIVI_STATS:
+            if k in r['feuille']:
+                for i, f in ((0, fh), (1, fa)):
+                    moy, lo, hi = r['feuille'][k][i]
+                    acc[k].append((moy, lo, hi, f[k]))
+        if 'total_jeux' in r['feuille']:
+            moy, lo, hi = r['feuille']['total_jeux']
+            acc['total_jeux'].append((moy, lo, hi, tot))
+    out = {'n': n, 'stats': {}}
+    for k, L in acc.items():
+        if L:
+            out['stats'][k] = {'n': len(L), 'prevu': round(sum(x[0] for x in L) / len(L), 2),
+                               'reel': round(sum(x[3] for x in L) / len(L), 2),
+                               'ecart_moyen': round(sum(abs(x[0] - x[3]) for x in L) / len(L), 2),
+                               'dans_fourchette_pct': round(100 * sum(x[1] <= x[3] <= x[2] for x in L) / len(L), 1)}
+    return out
+
+
 def journaliser(racine, doc):
     chemin = os.path.join(racine, LOG)
     deja = set()
@@ -244,7 +303,8 @@ def journaliser(racine, doc):
             f.write(json.dumps({'uid': m['uid'], 'pronostique_le': doc['genere_le'], 'debut': m['debut'],
                                 'home': m['home'], 'away': m['away'], 'tournoi': m['tournoi'], 'circuit': m['circuit'],
                                 'stats': {'p_home': m['stats']['p_home'], 'sets': m['stats']['sets']},
-                                'marche': ({'p_home': m['marche']['p_home'], 'sets': m['marche']['sets']} if m['marche'] else None)},
+                                'marche': ({'p_home': m['marche']['p_home'], 'sets': m['marche']['sets']} if m['marche'] else None),
+                                'feuille': feuille_prevue(m)},
                                ensure_ascii=False) + '\n')
             n += 1
     return n
@@ -257,7 +317,7 @@ def bilan(racine, maintenant=None):
         sr = json.load(open(os.path.join(racine, 'set_results.json'), encoding='utf-8'))
     except (OSError, ValueError):
         sr = {}
-    vus, L = set(), []
+    vus, L, journal = set(), [], []
     try:
         lignes = open(os.path.join(racine, LOG), encoding='utf-8').read().splitlines()
     except OSError:
@@ -270,6 +330,7 @@ def bilan(racine, maintenant=None):
         if r['uid'] in vus:
             continue
         vus.add(r['uid'])
+        journal.append(r)
         d0 = dt.date.fromisoformat(r['debut'][:10])
         res, sens = NR.resultat(sr, d0, r['home'], r['away'])
         if not res:
@@ -299,7 +360,8 @@ def bilan(racine, maintenant=None):
                                 'stats_plus_marche': bloc([x for x in L if x['debut'] >= depuis7], 'marche')},
            'derniers': [{'debut': x['debut'], 'home': x['home'], 'away': x['away'], 'gagnant': x['gagnant'],
                          'stats': x['stats']['p_home'], 'marche': (x['marche'] or {}).get('p_home')}
-                        for x in sorted(L, key=lambda x: x['debut'])[-30:]]}
+                        for x in sorted(L, key=lambda x: x['debut'])[-30:]],
+           'match_simule_contre_feuille': suivi_feuilles(racine, journal)}
     return doc
 
 

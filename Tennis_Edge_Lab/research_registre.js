@@ -353,6 +353,10 @@
     };
     const kpi = (lab, b) => `<div><small>${lab}</small><b>${b && b.n ? `${nf(b.reussite_pct, 1)} %` : '—'}</b><small>${b && b.n ? `${nf(b.n, 0)} matchs joués` : 'pas encore de match joué'}</small></div>`;
     const T = (B && B.tous) || {}, S = (B && B['7_derniers_jours']) || {};
+    const F = B && B.match_simule_contre_feuille;
+    const LIB = { aces: 'Aces', doubles_fautes: 'Doubles fautes', premiere_pct: '% de 1re balle', gagnes_1re_pct: '% gagnés 1re', gagnes_2e_pct: '% gagnés 2e', breaks: 'Breaks', jeux: 'Jeux gagnés', total_jeux: 'Total de jeux' };
+    const suiviF = F && F.n ? `<h5>Match simulé contre la vraie feuille (${nf(F.n, 0)} matchs joués)</h5><div class="table-wrap rg-table"><table><thead><tr><th>Statistique</th><th>Prévu</th><th>Réel</th><th>Écart moyen</th><th>Dans la fourchette 80 %</th></tr></thead><tbody>${Object.entries(F.stats || {}).map(([k, x]) => `<tr><td>${LIB[k] || esc(k)}</td><td>${nf(x.prevu, 1)}</td><td>${nf(x.reel, 1)}</td><td>${nf(x.ecart_moyen, 1)}</td><td>${nf(x.dans_fourchette_pct, 0)} %</td></tr>`).join('')}</tbody></table></div><p class="mini">Feuille prévue avant le match (premier pronostic, jamais retouché) contre la feuille réelle collectée après. Une fourchette bien réglée contient le réel environ 8 fois sur 10.</p>`
+      : (P.simulations ? '<p class="mini">Match simulé contre la vraie feuille : en attente des premiers matchs joués avec leur feuille.</p>' : '');
     const cartes = P.matchs.map(m => `<div class="rg-pron"><div class="mini">${heure(m.debut)} · ${esc(m.tournoi)} · ${esc(m.surface)}${m.meilleur_des === 5 ? ' · 5 sets' : ''}</div>
         <div class="rg-pron-j"><b>${esc(m.home)}</b> – <b>${esc(m.away)}</b></div>
         <div class="table-wrap rg-table"><table><thead><tr><th></th><th>Vainqueur · sets</th><th>Scores les plus probables (sur ~1 500 possibles)</th><th>Jeux</th></tr></thead>
@@ -360,6 +364,7 @@
     return `<details class="rg-eval" open><summary>Pronostics du jour (${nf(P.matchs.length, 0)} matchs dans les ${nf(P.horizon_h, 0)} h)</summary>
       <p class="mini">Chaque match est rejoué point par point par le moteur (forme du jour)${P.simulations ? `, puis joué ${nf(P.simulations, 0)} fois avec le profil de service des deux joueurs (archive au ${esc(P.profils_au || '—')}) : « Match simulé »` : ''}. <b>Stats seules</b> : niveau tiré des résultats (classement Elo), style de service et de retour de chaque joueur. <b>Stats + marché</b> : même moteur, niveau pris à la cote Pinnacle. Le premier pronostic de chaque match est gardé tel quel : le compteur porte sur lui. Test du 21/10 sur 9 277 matchs ATP/WTA : stats seules 65,8 %, marché 68,0 %.</p>
       <div class="rg-kpis rg-kpis-2">${kpi('Réussite stats seules', T.stats_seules)}${kpi('Réussite stats + marché', T.stats_plus_marche)}${kpi('7 derniers jours, stats', S.stats_seules)}${kpi('7 derniers jours, marché', S.stats_plus_marche)}</div>
+      ${suiviF}
       ${cartes || '<p class="mini">Aucun match dans les prochaines heures.</p>'}
     </details>`;
   }
