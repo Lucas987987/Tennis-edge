@@ -45,6 +45,7 @@ import elo as E  # noqa: E402
 import match_simule as S  # noqa: E402
 import profils_service as PS  # noqa: E402
 import ajustement as AJ  # noqa: E402
+import resultats_points as RP  # noqa: E402
 
 SORTIE = os.path.join(ICI, 'rapport_match_simule.json')
 CHOIX = os.path.join(ICI, 'choix_simulation.json')
@@ -170,8 +171,10 @@ def ajuster_poids(X, ridge=1.0, tours=30):
 
 melange = S.melange
 GRILLE_SIGMA = (0.0, 0.05, 0.10, 0.15)
-GRILLE_AMPLIFICATION = (1.0, 1.15)
-GRILLE_JEUX = (120.0, 500.0)       # prior de la couche « jeux » (0 = sans) — 22/10/2026
+GRILLE_AMPLIFICATION = (1.0,)       # k > 1 jamais retenu (22/10/2026) : retiré pour gagner du temps
+GRILLE_JEUX = ()                    # couche « jeux » : jamais retenue (22/10/2026), code gardé
+GRILLE_RESULTATS = (0.015, 0.04)    # vitesse K de la couche « résultats » (0 = sans) — 22/10/2026
+DEBUT_RESULTATS = dt.date(2023, 1, 1)
 
 
 def _ll(L):
@@ -204,29 +207,46 @@ def exporter_explorateur(L, sim, cb, chemin):
 
 
 def choisir_reglage(L):
-    """Règle fixée d'avance (22/10/2026) : (σ, k) de plus petite log loss du vainqueur sur 2024 ; adopté
-    s'il fait mieux que le réglage actuel (σ = 0,15, k = 1) sur 2025 →."""
+    """Règle fixée d'avance (22/10/2026), en deux temps pour que la couche « résultats » ne puisse pas défaire
+    le réglage déjà adopté :
+      1. (σ, k) sans la couche : plus petite log loss du vainqueur sur 2024 ; adopté s'il fait mieux que le
+         réglage historique (σ = 0,15, k = 1) sur 2025 → (règle des livraisons 42–44, inchangée) ;
+      2. la couche « résultats » (K) par-dessus ce réglage : K de plus petite log loss sur 2024 ; ajoutée
+         seulement si elle fait mieux que le réglage du 1. sur 2025 →."""
     appr = [x for x in L if x['date'] < DEBUT_JUGE_COMB]
     juge = [x for x in L if x['date'] >= DEBUT_JUGE_COMB]
+    actuel = '0|0.15|1|0'
     if len(appr) < 300 or len(juge) < 300:
-        return {'adopte': False, 'sigma': 0.15, 'amplification': 1.0, 'jeux': 0.0, 'cle': '0|0.15|1', 'raison': 'pas assez de matchs'}
+        return {'adopte': False, 'sigma': 0.15, 'amplification': 1.0, 'jeux': 0.0, 'resultats': 0.0, 'cle': actuel,
+                'raison': 'pas assez de matchs'}
     cles = list(appr[0]['grille'])
     sc = {k: _ll([x['grille'][k] for x in appr]) for k in cles}
-    best = min(sc, key=sc.get)
-    actuel = '0|0.15|1'
-    # ce qu'apporte la couche « jeux » seule (même σ et k que le choix, sans les scores)
-    sans_jeux = '0|' + best.split('|', 1)[1]
-    js = _ll([x['grille'][sans_jeux] for x in juge])
-    jb, ja = _ll([x['grille'][best] for x in juge]), _ll([x['grille'][actuel] for x in juge])
+    lj = lambda k: _ll([x['grille'][k] for x in juge])
+    base = min((k for k in cles if k.endswith('|0')), key=sc.get)
+    l_, s_, k_, _ = base.split('|')
+    ok_base = base != actuel and lj(base) < lj(actuel)
+    if not ok_base:
+        base, l_, s_, k_ = actuel, '0', '0.15', '1'
+    avec = [k for k in cles if k.startswith(f"{l_}|{s_}|{k_}|") and not k.endswith('|0')]
+    meilleur_K = min(avec, key=sc.get) if avec else None
+    ok_K = bool(meilleur_K) and sc[meilleur_K] < sc[base] and lj(meilleur_K) < lj(base)
+    best = meilleur_K if ok_K else base
+    K_ = best.split('|')[3]
+    jb, ja, js = lj(best), lj(actuel), lj(base)
+    jk = lj(meilleur_K) if meilleur_K else None
     rb = bilan_victoire([x['grille'][best] for x in juge])
     ra = bilan_victoire([x['grille'][actuel] for x in juge])
-    l_, s_, k_ = best.split('|')
-    return {'adopte': best != actuel and jb < ja, 'sigma': float(s_), 'amplification': float(k_), 'jeux': float(l_), 'cle': best,
-            'apport_des_scores_2025': {'avec': round(jb, 5), 'sans': round(js, 5)},
+    return {'adopte': best != actuel, 'sigma': float(s_), 'amplification': float(k_), 'jeux': float(l_),
+            'resultats': float(K_), 'cle': best,
+            'apport_des_resultats_2025': {'K': float(meilleur_K.split('|')[3]) if meilleur_K else None,
+                                          'avec': round(jk, 5) if jk is not None else None, 'sans': round(js, 5),
+                                          'adopte': ok_K},
             'grille_2024': {k: round(v, 5) for k, v in sorted(sc.items(), key=lambda kv: kv[1])},
             'jugement': {'choisi': rb, 'actuel': ra},
-            'raison': (f"choisi sur 2024 : σ = {s_}, k = {k_}, apprentissage des scores {'non' if l_ == '0' else 'oui (prior ' + l_ + ')'} ; "
-                       f"2025 → : log loss {round(jb, 4)} contre {round(ja, 4)} (sans les scores : {round(js, 4)}) "
+            'raison': (f"σ = {s_} ({'adopté' if ok_base else 'réglage historique gardé'}) ; apprentissage des résultats "
+                       + (f"K = {meilleur_K.split('|')[3]} : 2025 → {round(jk, 4)} contre {round(js, 4)} sans — "
+                          + ('ADOPTÉ' if ok_K else 'non adopté') if meilleur_K else 'non testé')
+                       + f" ; log loss 2025 → du réglage retenu {round(jb, 4)} contre {round(ja, 4)} (σ = 0,15) "
                        f"(réussite {rb.get('reussite_pct')} % contre {ra.get('reussite_pct')} %, calibration "
                        + ' · '.join(f"{c['tranche']} {c['prevu']}→{c['reel']}" for c in rb.get('calibration', [])) + ")")}
 
@@ -261,6 +281,62 @@ def combinaison(L, sim):
                 jugement=J,
                 raison=(f"log loss 2025 → : combinaison {J['combinaison']['log_loss']} contre Elo {J['elo']['log_loss']} "
                         f"et simulation {J['simulation']['log_loss']} (Pinnacle {J['pinnacle']['log_loss']})"))
+
+
+def ajuster_contexte(L, P, sim, ridge=2.0, tours=25):
+    """Corrections des poids selon le contexte (gazon, terre, WTA, 5 sets), par-dessus le mélange P."""
+    rows = []
+    for x in L:
+        ze, zs = _lg(x['elo']), _lg(x[sim])
+        rows.append((P['elo'] * ze + P['simulation'] * zs, S.variables_contexte(S.contexte_match(x.get('surface'), x['circuit'], x.get('bo')), ze, zs)))
+    k = len(S.CONTEXTE_COLS)
+    c = [0.0] * k
+    for _ in range(tours):
+        g = [-ridge * v for v in c]
+        H = [[ridge * (i == j) for j in range(k)] for i in range(k)]
+        for off, f in rows:
+            for sgn, y in ((1, 1), (-1, 0)):
+                z = sgn * (off + sum(a * b for a, b in zip(c, f)))
+                p = 1 / (1 + math.exp(-max(min(z, 30), -30)))
+                for i in range(k):
+                    g[i] += (y - p) * sgn * f[i]
+                    for j in range(k):
+                        H[i][j] += p * (1 - p) * f[i] * f[j]
+        A = [row[:] + [g[i]] for i, row in enumerate(H)]
+        for col in range(k):
+            piv = max(range(col, k), key=lambda r: abs(A[r][col]))
+            A[col], A[piv] = A[piv], A[col]
+            for r in range(k):
+                if r != col and abs(A[col][col]) > 1e-12:
+                    f_ = A[r][col] / A[col][col]
+                    A[r] = [a - f_ * b for a, b in zip(A[r], A[col])]
+        d = [A[i][k] / A[i][i] if abs(A[i][i]) > 1e-12 else 0.0 for i in range(k)]
+        c = [a + b for a, b in zip(c, d)]
+        if max(abs(v) for v in d) < 1e-8:
+            break
+    return dict(zip(S.CONTEXTE_COLS, (round(v, 4) for v in c)))
+
+
+def contexte_poids(L, sim, cb):
+    """Point 2 (22/10/2026) — règle fixée d'avance : corrections apprises sur 2024 par-dessus les poids appris sur
+    2024 ; adoptées si la log loss du vainqueur 2025 → baisse par rapport au mélange simple. Ré-apprises ensuite
+    sur toute la période, par-dessus les poids finaux."""
+    P = cb.get('poids_appris_2024')
+    if not P:
+        return {'adopte': False, 'raison': 'pas de mélange'}
+    appr = [x for x in L if x['date'] < DEBUT_JUGE_COMB]
+    juge = [x for x in L if x['date'] >= DEBUT_JUGE_COMB]
+    c = ajuster_contexte(appr, P, sim)
+    pc = dict(P, contexte=c)
+    ctx = lambda x: S.contexte_match(x.get('surface'), x['circuit'], x.get('bo'))
+    l0 = _ll([S.melange(P, x['elo'], x[sim]) for x in juge])
+    l1 = _ll([S.melange_contexte(pc, ctx(x), x['elo'], x[sim]) for x in juge])
+    ok = l1 < l0
+    out = {'adopte': bool(ok), 'corrections_2024': c,
+           'raison': f"2025 → : poids selon le contexte {round(l1, 5)} contre poids uniques {round(l0, 5)}"}
+    if ok and cb.get('poids'):
+        out['corrections'] = ajuster_contexte(L, cb['poids'], sim)
+    return out
 
 
 def calibration_detaillee(L, sim, cb):
@@ -332,6 +408,7 @@ def main(argv):
     VIC = {'simulation_pure_ajustee': [], 'simulation_pure': [], 'elo': [], 'pinnacle': []}   # proba donnée au vrai vainqueur
     adj, mois_adj = None, None                                    # ajustement aux adversaires, refait chaque mois
     jeux = {}
+    COUCHES = {K: RP.CoucheResultats(K) for K in GRILLE_RESULTATS}   # la simulation apprend des résultats
     try:
         with open(CHOIX, encoding='utf-8') as f:
             choix_avant = json.load(f)
@@ -347,15 +424,9 @@ def main(argv):
             P.ajouter(M[j], E.cle(M[j]['nom_g']), E.cle(M[j]['nom_p']))
         if m.get('detail'):
             heapq.heappush(attente, (m['fin'], i))
-        if i not in elig_set:
+        apprend = m['date'] >= DEBUT_RESULTATS and m.get('complet') and m.get('sets') and GRILLE_RESULTATS
+        if i not in elig_set and not apprend:
             continue
-        g, p = E.cle(m['nom_g']), E.cle(m['nom_p'])
-        pg, ng = P.profil(g, m['circuit'], m['surface'], m['date'])
-        pp, np_ = P.profil(p, m['circuit'], m['surface'], m['date'])
-        mu = P.moyenne(m['circuit'], m['surface'])
-        sg = 3 if m['bo'] == 5 else 2
-        cg, cp = S.composantes(pg, pp, mu), S.composantes(pp, pg, mu)
-        cmu = S.composantes(mu, mu, mu)
         debut_mois = m['date'].replace(day=1)
         if mois_adj != debut_mois:                                 # point-in-time : tournois finis avant le 1er du mois
             t1 = time.time()
@@ -365,19 +436,38 @@ def main(argv):
                     for lam in GRILLE_JEUX}
             mois_adj = debut_mois
             print(f"  ajustement aux adversaires au {debut_mois} ({round(time.time() - t1)} s)", flush=True)
+        g, p = E.cle(m['nom_g']), E.cle(m['nom_p'])
+        if i not in elig_set:
+            sg_ = 3 if m['bo'] == 5 else 2
+            tg_, tp_ = (S.composantes_ajustees(adj, g, p, m['circuit'], m['surface']),
+                        S.composantes_ajustees(adj, p, g, m['circuit'], m['surface']))
+            for C in COUCHES.values():
+                C.apprendre(g, p, tg_, tp_, sg_)
+            continue
+        pg, ng = P.profil(g, m['circuit'], m['surface'], m['date'])
+        pp, np_ = P.profil(p, m['circuit'], m['surface'], m['date'])
+        mu = P.moyenne(m['circuit'], m['surface'])
+        sg = 3 if m['bo'] == 5 else 2
+        cg, cp = S.composantes(pg, pp, mu), S.composantes(pp, pg, mu)
+        cmu = S.composantes(mu, mu, mu)
         ag, ap = S.composantes_ajustees(adj, g, p, m['circuit'], m['surface']), S.composantes_ajustees(adj, p, g, m['circuit'], m['surface'])
         moy = S.borner(adj.taux('__moyen__', '__moyen__', m['circuit'], m['surface']))
         grille = {}
         for lam in (0,) + GRILLE_JEUX:
             Gj = jeux.get(lam) if lam else None
             ag_, ap_ = (S.borner(AJ.avec_jeux(ag, Gj, g, p)), S.borner(AJ.avec_jeux(ap, Gj, p, g))) if Gj else (ag, ap)
-            for k_amp in GRILLE_AMPLIFICATION:
-                a2, p2 = S.amplifier(ag_, moy, k_amp), S.amplifier(ap_, moy, k_amp)
-                for s_ in GRILLE_SIGMA:
-                    grille[f"{lam:g}|{s_:g}|{k_amp:g}"] = S.victoire_pure(a2, p2, sg, s_)
+            for K in (0,) + GRILLE_RESULTATS:
+                C = COUCHES.get(K)
+                ag2, ap2 = (C.decaler(ag_, g, p), C.decaler(ap_, p, g)) if C else (ag_, ap_)
+                for k_amp in GRILLE_AMPLIFICATION:
+                    a2, p2 = S.amplifier(ag2, moy, k_amp), S.amplifier(ap2, moy, k_amp)
+                    for s_ in GRILLE_SIGMA:
+                        grille[f"{lam:g}|{s_:g}|{k_amp:g}|{K:g}"] = S.victoire_pure(a2, p2, sg, s_)
+        for C in COUCHES.values():                                 # APRÈS le pronostic : le résultat nourrit la couche
+            C.apprendre(g, p, ag, ap, sg)
         LIGNES.append({'date': m['date'], 'circuit': m['circuit'], 'connus': V['pred_sack'][i][1],
                        'elo': V['pred_sack'][i][0], 'pinnacle': pin[id(m)],
-                       'simulation_pure_ajustee': grille[f"0|{SIGMA:g}|1"],
+                       'simulation_pure_ajustee': grille[f"0|{SIGMA:g}|1|0"],
                        'simulation_pure': S.victoire_pure(cg, cp, sg, SIGMA), 'grille': grille,
                        # pour l'explorateur des pronostics (point 3, 22/10/2026)
                        'surface': m['surface'], 'bo': m['bo'], 'tour': m.get('tour'), 'niveau': m.get('niveau'),
@@ -441,12 +531,19 @@ def main(argv):
             for x in LIGNES:
                 x['simulation_reglee'] = x['grille'][rg['cle']]
             sim = 'simulation_reglee'
-        rap['choix']['reglage_simulation'] = {k: rg[k] for k in ('adopte', 'sigma', 'amplification', 'jeux', 'raison')}
+        rap['choix']['reglage_simulation'] = {k: rg.get(k) for k in ('adopte', 'sigma', 'amplification', 'jeux', 'resultats', 'raison')}
         print(f"\nRéglage de la simulation (choisi sur 2024, jugé 2025 →) : {'ADOPTÉ' if rg['adopte'] else 'non adopté'} — {rg['raison']}")
     rap['combinaison'] = combinaison(LIGNES, sim)
+    if rap['combinaison'].get('adopte'):
+        rap['combinaison']['contexte'] = contexte_poids(LIGNES, sim, rap['combinaison'])
+        print(f"\nPoids selon le contexte (gazon, terre, WTA, 5 sets) : "
+              f"{'ADOPTÉS' if rap['combinaison']['contexte']['adopte'] else 'non adoptés'} — {rap['combinaison']['contexte']['raison']}")
     rap['calibration_detaillee'] = calibration_detaillee(LIGNES, sim, rap['combinaison'])
     exporter_explorateur(LIGNES, sim, rap['combinaison'], os.path.join(ICI, '..', EXPLORATEUR))
-    rap['choix']['combinaison'] = {k: rap['combinaison'][k] for k in ('adopte', 'poids', 'raison', 'simulation')}
+    rap['choix']['combinaison'] = {k: rap['combinaison'].get(k) for k in ('adopte', 'poids', 'raison', 'simulation')}
+    ctxp = rap['combinaison'].get('contexte') or {}
+    if ctxp.get('adopte') and ctxp.get('corrections') and rap['choix']['combinaison'].get('poids'):
+        rap['choix']['combinaison']['poids'] = dict(rap['choix']['combinaison']['poids'], contexte=ctxp['corrections'])
     with open(CHOIX, 'w', encoding='utf-8') as f:            # les autres décisions (ex. « dynamique ») sont gardées
         json.dump(dict(choix_avant, **rap['choix'], genere_le=rap['genere_le']), f, ensure_ascii=False, indent=1)
     with open(SORTIE, 'w', encoding='utf-8') as f:

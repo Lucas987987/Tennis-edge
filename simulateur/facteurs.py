@@ -3,7 +3,7 @@
 """
 facteurs.py — ce qui fait basculer un match, au-delà du niveau habituel des joueurs (22/10/2026).
 
-Dix groupes de facteurs, mesurés sur les feuilles de match collectées (TennisApi),
+Onze groupes de facteurs, mesurés sur les feuilles de match collectées (TennisApi),
 chacun appris sur juin–août 2026 et JUGÉ sur septembre–octobre 2026, jamais vus :
 
   1. forme_fatigue : forme des 30 derniers jours (points gagnés au service et au retour,
@@ -28,6 +28,8 @@ chacun appris sur juin–août 2026 et JUGÉ sur septembre–octobre 2026, jamai
      frappes ou moins, retours remis en jeu, goût pour les longs échanges.
   10. blessure : abandon, forfait ou disqualification récents (demi-vie 15 jours), nombre
      d'abandons sur 90 jours, 1er match depuis un abandon (archive + feuilles TennisApi).
+  11. pression : point par point (scripts/points_match.py) — points gagnés au service à 30-30 et à
+     l'égalité, au-delà de son % du match ; rebond juste après avoir été breaké ; servir pour le set.
 
 Chaque facteur décale, en logit, les points gagnés au service (1re et 2e balle), les aces,
 ou le point joué sur balle de break, PAR RAPPORT AU MODÈLE AJUSTÉ AUX ADVERSAIRES (base).
@@ -109,6 +111,73 @@ GROUPES = {
                              'retour_abandon_adv']},
 }
 DEMI_VIE_ABANDON_J = 15.0
+GROUPES['pression'] = {'service': ['pression_srv', 'pression_ret_adv', 'rebond_srv', 'pour_le_set_srv']}
+K_PRESSION = 60.0
+
+
+def charger_points(racine):
+    """{id du match: [[set, jeu, serveur, « HAHH… »]]} depuis feuilles_points/ (scripts/points_match.py)."""
+    import glob
+    import gzip
+    out = {}
+    for p in sorted(glob.glob(os.path.join(racine, 'feuilles_points', '*.jsonl.gz'))):
+        try:
+            with gzip.open(p, 'rt', encoding='utf-8') as f:
+                for l in f:
+                    r = json.loads(l)
+                    if r.get('jeux'):
+                        out[r['id']] = r['jeux']
+        except (OSError, ValueError, EOFError):
+            continue
+    return out
+
+
+def pression_du_match(jeux, p_srv):
+    """Écarts au service de chaque joueur (0 = home, 1 = away) dans les moments chauds d'un match.
+    p_srv : (% de points gagnés au service dans CE match, home, away) — l'écart ne mesure que la situation.
+    Renvoie {joueur: [Σ écart pression, n points, Σ écart rebond, n, Σ écart pour le set (jeux), n]}."""
+    import modele as Mo
+    acc = {0: [0.0, 0, 0.0, 0, 0.0, 0], 1: [0.0, 0, 0.0, 0, 0.0, 0]}
+    jeux_set = {}
+    dernier_jeu_service_perdu = {0: False, 1: False}
+    for st, num, serveur, seq in jeux:
+        k = 0 if serveur == 1 else 1
+        p = p_srv[k]
+        gh, ga = jeux_set.get(st, (0, 0))
+        gs, gr = (gh, ga) if k == 0 else (ga, gh)
+        tb = gh == 6 and ga == 6
+        ps = pr = 0
+        gagne_jeu = None
+        rebond = dernier_jeu_service_perdu[k]
+        for c in seq:
+            gagne = (c == 'H') == (k == 0)
+            if not tb:
+                chaud = (ps == 2 and pr == 2) or (ps >= 3 and pr >= 3 and ps >= pr)   # 30-30, égalité, avantage service
+                if chaud:
+                    acc[k][0] += gagne - p
+                    acc[k][1] += 1
+                if rebond:
+                    acc[k][2] += gagne - p
+                    acc[k][3] += 1
+            ps, pr = (ps + 1, pr) if gagne else (ps, pr + 1)
+            if not tb and ((ps >= 4 and ps - pr >= 2) or (pr >= 4 and pr - ps >= 2)):
+                gagne_jeu = ps > pr
+                break
+        if gagne_jeu is None:
+            gagne_jeu = (seq[-1] == 'H') == (k == 0) if seq else None
+        if gagne_jeu is None:
+            continue
+        if not tb and gs >= 5 and gs > gr:                    # sert pour le set
+            acc[k][4] += gagne_jeu - Mo.p_jeu(min(max(p, 0.3), 0.95))
+            acc[k][5] += 1
+        if not tb:
+            dernier_jeu_service_perdu[k] = not gagne_jeu
+        if gagne_jeu == (k == 0):                                # home gagne le jeu
+            gh += 1
+        else:
+            ga += 1
+        jeux_set[st] = (gh, ga)
+    return acc
 MCP_DIR = os.environ.get('MCP_DIR', '/tmp/mcp')
 ABSENCE_J = 45
 # Code pays des joueurs (TennisApi, ISO alpha-3) → ISO alpha-2 (géocodage des tournois).
@@ -179,6 +248,7 @@ class Historique:
         self.lieux, self.meteo = {}, {}
         self.charting = None
         self.abandons = collections.defaultdict(list)                          # joueur -> [t] (abandon, forfait)
+        self.pression = collections.defaultdict(lambda: [0.0, 0, 0.0, 0, 0.0, 0, 0.0, 0])   # + Σ, n au retour (pression)
 
     def ajouter_h2h(self, j, adv, res, n):
         h = self.h2h[(j, adv)]
@@ -212,6 +282,17 @@ class Historique:
                 self.pays[j] = x['pays'][k]
         if x.get('interieur'):
             self.interieur[x['tournoi']] = True
+        if x.get('pbp'):
+            dh, da = x['det']
+            p_srv = tuple(((d[2] + d[3]) / d[0]) if d[0] else 0.6 for d in (dh, da))
+            acc = pression_du_match(x['pbp'], p_srv)
+            for k, j in ((0, x['a']), (1, x['b'])):
+                P_ = self.pression[j]
+                for i in range(6):
+                    P_[i] += acc[k][i]
+                o = self.pression[(x['b'], x['a'])[k]]          # au retour : l'inverse de l'adversaire sous pression
+                o[6] -= acc[k][0]
+                o[7] += acc[k][1]
         da, db = x['det']
         self.ajouter_clutch(x['a'], x['b'], da, db)
         self.ajouter_clutch(x['b'], x['a'], db, da)
@@ -293,6 +374,9 @@ class Historique:
             return poids, min(n90, 2) / 2, (0.0 if joue_depuis else poids)
         bj, bj90, rj = blessure(j)
         ba, ba90, ra = blessure(adv)
+        pj, pa_ = self.pression.get(j) or [0.0] * 8, self.pression.get(adv) or [0.0] * 8
+        cond.update({'pression_srv': 4 * pj[0] / (pj[1] + K_PRESSION), 'pression_ret_adv': 4 * pa_[6] / (pa_[7] + K_PRESSION),
+                     'rebond_srv': 4 * pj[2] / (pj[3] + K_PRESSION), 'pour_le_set_srv': 4 * pj[4] / (pj[5] + K_PRESSION / 6)})
         cond.update({'abandon_srv': bj, 'abandon_adv': ba, 'abandons90_srv': bj90, 'abandons90_adv': ba90,
                      'retour_abandon_srv': rj, 'retour_abandon_adv': ra})
         if self.charting is not None:
@@ -373,7 +457,7 @@ def abandons_des_fiches(fiches, cle=E.cle):
     return sorted(out)
 
 
-def avec_variables(lignes, infos, avant=None, final=False, adj_avant=None, lieux=None, charting=None, abandons=None):
+def avec_variables(lignes, infos, avant=None, final=False, adj_avant=None, lieux=None, charting=None, abandons=None, points=None):
     """Ajoute à chaque ligne les variables point-in-time des deux serveurs ; avant : matchs de
     l'archive pour les balles de break (format donnees.charger) ; adj_avant : modèle ajusté à la fin
     de l'archive, pour les face-à-face de l'archive (écart au service attendu, 4 dernières années)."""
@@ -408,6 +492,8 @@ def avec_variables(lignes, infos, avant=None, final=False, adj_avant=None, lieux
         while k_ab < len(ab) and ab[k_ab][0] + DISPO_H * 3600 <= x['t']:
             H.abandons[ab[k_ab][1]].append(ab[k_ab][0])
             k_ab += 1
+        if points and x.get('id') in points:
+            x['pbp'] = points[x['id']]
         x['var'] = [H.variables(x['a'], x['b'], x['tournoi'], x['t'], infos),
                     H.variables(x['b'], x['a'], x['tournoi'], x['t'], infos)]
         st = x.get('style') or ((0.0,) * 5, (0.0,) * 5)
@@ -582,6 +668,9 @@ def contexte(H, infos, noms_tournois, maintenant_ts):
             joueurs.setdefault(j, {})['parcours'] = rec
         if H.pays.get(j):
             joueurs.setdefault(j, {})['pays'] = H.pays[j]
+    for j, P_ in H.pression.items():
+        if isinstance(j, str) and any(P_):
+            joueurs.setdefault(j, {})['pression'] = [round(v, 3) for v in P_]
     for j, A in H.abandons.items():
         rec = [int(ta) for ta in A if ta >= t - 90 * 86400]
         if rec:
@@ -618,6 +707,8 @@ class Contexte:
                 self.H.parcours[j].append((tt, tr))
             if e.get('pays'):
                 self.H.pays[j] = e['pays']
+            if e.get('pression'):
+                self.H.pression[j] = list(e['pression'])
             for ta in e.get('abandons') or []:
                 self.H.abandons[j].append(float(ta))
         for k in self.doc.get('interieur') or []:
@@ -680,7 +771,7 @@ def main(argv):
     charting = CH.Charting(CH.charger(mcp))
     print(f"Match Charting Project : {len(charting.D)} joueurs relevés ({mcp})", flush=True)
     H = avec_variables(lignes, infos, avant=M, adj_avant=adj_pour(DEBUT_APPR), lieux=charger_lieux(racine), charting=charting,
-                       abandons=abandons_des_fiches(fiches))
+                       abandons=abandons_des_fiches(fiches), points=charger_points(racine))
     d_appr, d_juge = fenetres()
     appr = [x for x in lignes if d_appr <= x['jour'] < d_juge]
     juge = [x for x in lignes if x['jour'] >= d_juge]
@@ -752,7 +843,8 @@ def exporter_contexte(racine, M, adj, cle=E.cle, mcp=None):
     lignes = preparer(fiches, lambda jour: adj, cle)
     infos = infos_par_cle(racine, fiches, cle)
     H = avec_variables(lignes, infos, avant=M, final=True, adj_avant=adj, lieux=charger_lieux(racine),
-                       charting=CH.Charting(CH.charger(mcp or MCP_DIR)), abandons=abandons_des_fiches(fiches, cle))
+                       charting=CH.Charting(CH.charger(mcp or MCP_DIR)), abandons=abandons_des_fiches(fiches, cle),
+                       points=charger_points(racine))
     noms = {str(r.get('tournoi_id') or r.get('tournoi')): (r.get('tournoi_unique') or r.get('tournoi') or '') for r in fiches}
     doc = contexte(H, infos, noms, dt.datetime.now(dt.timezone.utc).timestamp())
     with open(CONTEXTE, 'w', encoding='utf-8') as f:

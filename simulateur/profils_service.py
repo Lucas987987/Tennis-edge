@@ -178,6 +178,7 @@ class Profils:
         P.jour_export = jour
         P.ajuste = AJ.importer(doc['ajuste']) if doc.get('ajuste') else None
         P.jeux = doc.get('jeux') or {}
+        P.resultats = doc.get('resultats_R') or {}
         return P
 
 
@@ -225,6 +226,12 @@ def main(argv):
     doc['ajuste'] = A.exporter(actifs)
     # 22/10/2026 : couche « jeux » (apprend aussi des matchs sans feuille, score seul) si le test l'a adoptée
     rg = choix.get('reglage_simulation') or {}
+    # 22/10/2026 : couche « résultats » (la simulation apprend de qui a gagné, match après match) si adoptée
+    if rg.get('adopte') and float(rg.get('resultats') or 0) > 0:
+        import resultats_points as RP
+        C = RP.rejouer(tout, A, float(rg['resultats']), E.cle, dt.date(2023, 1, 1))
+        doc['resultats_R'] = C.exporter(actifs)
+        print(f"Couche « résultats » (K = {rg['resultats']}) : {len(doc['resultats_R'])} joueurs actifs")
     if rg.get('adopte') and float(rg.get('jeux') or 0) > 0:
         G = AJ.ajuster_jeux(tout, fin + dt.timedelta(days=1), E.cle, A, lam=float(rg['jeux']), tours=6)
         doc['jeux'] = {k: round(v, 4) for k, v in G.items() if k in actifs}

@@ -11,6 +11,8 @@ name: Feuilles de match (TennisApi)
 # déjà complets ne sont jamais redemandés : relancer reprend où le run s'est arrêté.
 # Garde-fous : budget par run, arrêt sous la réserve de quota, 5 requêtes/s.
 # Stockage : feuilles/AAAA-MM-JJ.jsonl.gz + feuilles/etat.json (bilan par jour).
+# Point par point (livraison 46) : feuilles_points/AAAA-MM-JJ.jsonl.gz, les plus récents
+# d'abord ; sonde = oui pour vérifier une fois le format de la réponse.
 on:
   schedule:
     - cron: '41 4 * * *'
@@ -29,6 +31,12 @@ on:
       budget:
         description: 'Requêtes au plus pour ce run (formule Pro : 15 000 par jour)'
         default: '4000'
+      points:
+        description: 'Requêtes au plus pour le point par point (une par match ; 0 = rien)'
+        default: '2500'
+      sonde:
+        description: 'oui = affiche la réponse brute du point par point d’un match (vérification du format), sans rien collecter'
+        default: ''
 
 permissions:
   contents: write
@@ -50,7 +58,9 @@ jobs:
             /scripts/feuilles_match.py
             /scripts/joueurs_infos.py
             /scripts/lieux_tournois.py
+            /scripts/points_match.py
             /feuilles/
+            /feuilles_points/
           sparse-checkout-cone-mode: false
       - uses: actions/setup-python@v6
         with:
@@ -76,13 +86,24 @@ jobs:
         if: always()
         timeout-minutes: 20
         run: python scripts/lieux_tournois.py 400
+      - name: Point par point (pression, 30-30, égalité, servir pour le set) — une requête par match
+        if: always()
+        timeout-minutes: 60
+        env:
+          RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
+          FEUILLES_RESERVE: '1500'
+          POINTS: ${{ github.event.inputs.points || '2500' }}
+          SONDE: ${{ github.event.inputs.sonde }}
+        run: |
+          if [ "$SONDE" = "oui" ]; then python scripts/points_match.py 5 --sonde; exit 0; fi
+          if [ "$POINTS" != "0" ]; then python scripts/points_match.py "$POINTS"; fi
       - name: Publier (même après une interruption)
         if: always()
         run: |
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -- feuilles
+          git add -- feuilles feuilles_points 2>/dev/null || git add -- feuilles
           if git diff --cached --quiet; then echo 'Rien de nouveau.'; exit 0; fi
           git commit -q -m "Feuilles de match $(date -u +%FT%TZ)"
           for i in 1 2 3 4 5; do

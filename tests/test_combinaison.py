@@ -125,12 +125,48 @@ class ReglageSimulation(unittest.TestCase):
 
     def test_choix_du_reglage(self):
         L = lignes(6000)
-        for x in L:                                              # monde où la simulation à σ = 0 est la bonne
+        for x in L:                                              # monde où σ = 0 aide, et la couche « résultats » aussi
             p = x['pinnacle']                                   # la vraie probabilité du monde synthétique
-            x['grille'] = {'0|0.15|1': 0.5 + 0.8 * (p - 0.5), '0|0|1': 0.5 + 0.6 * (p - 0.5), '30|0|1': p,
-                           '0|0|1.3': 0.5 + 1.3 * (p - 0.5)}
+            x['grille'] = {'0|0.15|1|0': 0.5 + 0.6 * (p - 0.5), '0|0|1|0': 0.5 + 0.8 * (p - 0.5), '0|0|1|0.04': p,
+                           '0|0.15|1|0.04': 0.5 + 0.7 * (p - 0.5)}
         r = BMS.choisir_reglage(L)
-        self.assertEqual(r['cle'], '30|0|1')                    # les scores aident : couche « jeux » choisie
+        self.assertEqual(r['cle'], '0|0|1|0.04')
         self.assertTrue(r['adopte'])
-        self.assertEqual((r['sigma'], r['amplification'], r['jeux']), (0.0, 1.0, 30.0))
-        self.assertLess(r['apport_des_scores_2025']['avec'], r['apport_des_scores_2025']['sans'])
+        self.assertEqual((r['sigma'], r['amplification'], r['jeux'], r['resultats']), (0.0, 1.0, 0.0, 0.04))
+        self.assertTrue(r['apport_des_resultats_2025']['adopte'])
+        self.assertLess(r['apport_des_resultats_2025']['avec'], r['apport_des_resultats_2025']['sans'])
+
+    def test_la_couche_resultats_ne_defait_pas_le_reglage(self):
+        L = lignes(6000)
+        for x in L:                                              # couche bonne en 2024, mauvaise ensuite
+            p = x['pinnacle']
+            mauvais = x['date'] >= BMS.DEBUT_JUGE_COMB
+            x['grille'] = {'0|0.15|1|0': 0.5 + 0.6 * (p - 0.5), '0|0|1|0': 0.5 + 0.8 * (p - 0.5),
+                           '0|0|1|0.04': 0.5 + (0.2 if mauvais else 1.0) * (p - 0.5)}
+        r = BMS.choisir_reglage(L)
+        self.assertEqual(r['cle'], '0|0|1|0')                   # σ = 0 reste adopté, la couche non
+        self.assertTrue(r['adopte'])
+        self.assertEqual(r['resultats'], 0.0)
+        self.assertFalse(r['apport_des_resultats_2025']['adopte'])
+
+    def test_poids_selon_le_contexte(self):
+        L = lignes(6000)
+        for k, x in enumerate(L):                               # sur gazon, la simulation voit juste, l'Elo non
+            x['surface'] = 'Grass' if k % 3 == 0 else 'Hard'
+            x['bo'] = 3
+            if x['surface'] == 'Grass':
+                x['simulation_pure'] = x['pinnacle']
+                x['elo'] = 0.5 + 0.3 * (x['elo'] - 0.5)
+        cb = BMS.combinaison(L, 'simulation_pure')
+        r = BMS.contexte_poids(L, 'simulation_pure', cb)
+        self.assertTrue(r['adopte'], r['raison'])
+        c = r['corrections']
+        self.assertGreater(c['sim_gazon'], 0.1)                  # plus de poids à la simulation sur gazon
+        P = dict(cb['poids'], contexte=c)
+        gazon, dur = S.contexte_match('Grass', 'ATP', 3), S.contexte_match('Hard', 'ATP', 3)
+        self.assertGreater(S.melange_contexte(P, gazon, 0.5, 0.8), S.melange_contexte(P, dur, 0.5, 0.8))
+        self.assertAlmostEqual(S.melange_contexte(cb['poids'], gazon, 0.6, 0.7), S.melange(cb['poids'], 0.6, 0.7))
+
+    def test_contexte_neutre(self):
+        self.assertEqual(S.contexte_match('Hard', 'ATP', 3), {'gazon': 0.0, 'terre': 0.0, 'wta': 0.0, '5sets': 0.0})
+        self.assertEqual(S.contexte_match('Clay', 'WTA', 5), {'gazon': 0.0, 'terre': 1.0, 'wta': 1.0, '5sets': 1.0})
