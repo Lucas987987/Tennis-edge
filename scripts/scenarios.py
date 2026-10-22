@@ -7,7 +7,9 @@ scenarios.py — ligne « scénarios » des alertes (21/10/2026).
 méthode puissance), le moteur du simulateur (simulateur/modele.py, forme du
 jour σ = 0,15) détaille la victoire en scores de sets :
 
-    🎾 Scénarios : Nakashima gagne 72 % = 2-0 47 % + 2-1 25 % · perd 1-2 13 % + 0-2 15 % · 3 sets 38 %
+    🎾 Scénarios : Nakashima gagne 72 % (1.39) = 2-0 47 % (2.13) + 2-1 25 % (4.00) · perd 1-2 13 % (7.69) + 0-2 15 % (6.67) · 3 sets 38 % (2.63)
+
+Entre parenthèses (22/10/2026) : la COTE JUSTE de chaque issue, 1 / probabilité, sans marge.
 
 Vérifié le 21/10/2026 sur 2 706 matchs réels (juin–octobre) : victoire du
 favori 67,5 % annoncés / 65,4 % réels, 2-0 45,7 / 44,6, 3 sets 36,8 / 36,3.
@@ -77,6 +79,19 @@ def distribution(p_joueur, tournoi):
     return _CACHE[k], sg
 
 
+def cote(p):
+    """Cote juste (1 / probabilité, sans marge) ; '—' si la probabilité est trop petite."""
+    if p is None or p < 0.005:
+        return '—'
+    c = 1 / p
+    return f"{c:.2f}" if c < 100 else f"{c:.0f}"
+
+
+def pc(p):
+    """« 72 % (1.39) » : la probabilité et sa cote juste."""
+    return f"{100 * p:.0f} % ({cote(p)})"
+
+
 def texte(nom, p_joueur, tournoi):
     r, sg = distribution(p_joueur, tournoi)
     s = r['sets']
@@ -85,9 +100,9 @@ def texte(nom, p_joueur, tournoi):
     court = (nom or '').split()[-1] if nom else 'le joueur'
     pg = sum(s.get(x, 0) for x in gagne)
     longs = sum(v for k, v in s.items() if min(map(int, k.split('-'))) == sg - 1)
-    return (f"🎾 Scénarios : {court} gagne {100 * pg:.0f} % = " + " + ".join(f"{x} {100 * s.get(x, 0):.0f} %" for x in gagne)
-            + " · perd " + " + ".join(f"{x} {100 * s.get(x, 0):.0f} %" for x in perd)
-            + f" · {2 * sg - 1} sets {100 * longs:.0f} %")
+    return (f"🎾 Scénarios : {court} gagne {pc(pg)} = " + " + ".join(f"{x} {pc(s.get(x, 0))}" for x in gagne)
+            + " · perd " + " + ".join(f"{x} {pc(s.get(x, 0))}" for x in perd)
+            + f" · {2 * sg - 1} sets {pc(longs)}")
 
 
 def ligne(g, side, maintenant=None, tournoi=None):
