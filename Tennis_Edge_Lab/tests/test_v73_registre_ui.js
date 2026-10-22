@@ -174,7 +174,9 @@ test('pronostics du jour : deux versions côte à côte et compteur', () => {
   assert.match(html, /Pronostics du jour \(2 matchs dans les 36 h\)/);
   assert.match(html, /<b>Broady<\/b> 75 %/);
   assert.match(html, /<b>Santillan<\/b> 69 %/);
-  assert.match(html, /6-3 6-3 <small>3 %<\/small>/);
+  assert.match(html, /6-3 6-3 <small>3,4 % <span class="rg-cote">· 29,4<\/span><\/small>/);
+  assert.match(html, /<b>Broady<\/b> 75 % <span class="rg-cote">· 1,33<\/span><span class="detail">adversaire : 4,00<\/span>/);
+  assert.match(html, /2-0 40 % <span class="rg-cote">· 2,50<\/span>/);
   assert.match(html, /4-6 6-3 6-4/);
   assert.match(html, /gagne après avoir perdu le 1er set : Broady 11 %/);
   assert.match(html, /Pinnacle ne cote pas encore ce match/);
