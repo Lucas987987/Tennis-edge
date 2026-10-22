@@ -42,6 +42,9 @@ ANJ_FR = frozenset({
 })
 
 DATA_ONLY = frozenset({'sbobet', '4casters', 'sharpbet', 'betinasia', 'singbet'})
+# Books RETIRÉS des alertes et des prix d'entrée (décision de Lucas, appliquée le 22/10/2026) :
+# toujours collectés et gardés dans les données, jamais proposés comme prix « jouable ».
+RETIRES = frozenset({'leovegas'})
 
 DUPLICATES = {'bet365.fr': 'bet365'}
 EXCHANGES = {'betfair-ex': BETFAIR_COMMISSION, 'betfair': BETFAIR_COMMISSION,
@@ -59,7 +62,8 @@ def flags(book) -> dict:
     name = normalize(book)
     return {
         'book': name,
-        'jouable': bool(name) and name not in DATA_ONLY,
+        'jouable': bool(name) and name not in DATA_ONLY and name not in RETIRES,
+        'retire': name in RETIRES,
         'jouable_fr': name in ANJ_FR,
         'fr_incertain': name in FR_UNCERTAIN,
         'duplicate_of': DUPLICATES.get(name),

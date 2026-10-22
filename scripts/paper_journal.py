@@ -503,6 +503,20 @@ def main():
                     n_abandonnes += 1
             except ValueError:
                 pass
+    # CORRIGÉ LE 22/10/2026 : un résultat qui arrive APRÈS l'abandon (7 jours) était perdu pour
+    # toujours — 16 paris « match » et 3 « set 1 » abandonnés ont aujourd'hui leur résultat dans
+    # set_results.json. On les règle (clôture et CLV déjà relevés), en le signalant.
+    n_repris = 0
+    for t in trades.values():
+        if t.get('status') == 'ABANDONNED' and 'pnl' not in t and result_side.get(t['uid']) in ('home', 'away'):
+            won = t['side'] == result_side[t['uid']]
+            t['won'] = bool(won)
+            t['pnl'] = round((t['entry_odds'] - 1) if won else -1.0, 3)
+            t['status'] = 'SETTLED'
+            t['regle_apres_abandon'] = aujourdhui.isoformat()
+            n_repris += 1
+    if n_repris:
+        print(f"  {n_repris} trade(s) abandonné(s) réglé(s) : leur résultat est arrivé depuis.")
     if n_abandonnes:
         print(f"  {n_abandonnes} trade(s) basculé(s) en ABANDONNED "
               f"(>{SEUIL_ABANDON_JOURS}j sans résultat).")
