@@ -405,7 +405,7 @@
   }
 
   // 22/10/2026 — facteurs du match adoptés par l'étude : ce qu'ils changent au % de la simulation.
-  const FACTEURS_LIB = { forme_fatigue: 'Forme récente et fatigue', vitesse_court: 'Vitesse du court', morphologie: 'Gaucher ou droitier, taille', points_importants: 'Points importants', styles: 'Duel de styles', face_a_face: 'Face-à-face', conditions: 'Conditions du jour', contexte_tournoi: 'Contexte du tournoi', charting: 'Façon de jouer (Match Charting)' };
+  const FACTEURS_LIB = { forme_fatigue: 'Forme récente et fatigue', vitesse_court: 'Vitesse du court', morphologie: 'Gaucher ou droitier, taille', points_importants: 'Points importants', styles: 'Duel de styles', face_a_face: 'Face-à-face', conditions: 'Conditions du jour', contexte_tournoi: 'Contexte du tournoi', charting: 'Façon de jouer (Match Charting)', blessure: 'Blessure (abandon, forfait récents)' };
   function facteursBlock(m) {
     const f = m && m.simulation && m.simulation.facteurs;
     if (!f || !f.groupes || !Object.keys(f.groupes).length) return '';
@@ -623,6 +623,88 @@
       <p class="mini">Première prédiction de chaque match, jamais retouchée. Version affichée : Simulation + Elo quand elle existait, sinon la simulation, sinon le classement Elo. Le score en jeux arrive avec la feuille de match (collecte de 4 h 41 et 16 h 41 UTC). Tout est enregistré : chaque passage dans simulateur/journal_pronostics, chaque match joué dans live/pronostics_resultats.json.</p></details>`;
   }
 
+  // 22/10/2026 — EXPLORATEUR DES PRONOSTICS : croiser les résultats de l'algorithme avec les critères
+  // (circuit, surface, format, niveau, tour, expérience, confiance, accord simulation / Elo, période)
+  // sur les ~9 000 matchs ATP/WTA 2024 → 2026 rejoués avant l'heure. Une piste trouvée ici n'est qu'une
+  // CANDIDATE : elle se gèle, puis se juge sur les matchs suivants.
+  const XP_VERSIONS = [['simulation', 'Simulation'], ['combinaison', 'Simulation + Elo'], ['elo', 'Classement Elo'], ['pinnacle', 'Cote Pinnacle']];
+  const XP_NIVEAU = n => (n === 'G' ? 'Grand Chelem' : n === 'M' || n === 'PM' ? 'Masters / 1000' : n === 'F' ? 'Finales' : n === 'D' ? 'Coupe Davis / BJK' : 'Autres tournois');
+  const XP_TOUR = t => (t >= 9 ? 'Demi / finale' : t >= 7 ? '8es / quarts' : t >= 5 ? '1er–2e tour (64, 32)' : '1er tour (128)');
+  const XP_EXP = n => (n < 30 ? 'moins de 30 matchs' : n < 100 ? '30 à 100 matchs' : 'plus de 100 matchs');
+  const XP_CRITERES = {
+    circuit: ['Circuit', x => x.circuit],
+    surface: ['Surface', x => x.surface],
+    format: ['Format', x => (x.bo === 5 ? '5 sets' : '3 sets')],
+    niveau: ['Niveau', x => XP_NIVEAU(x.niveau)],
+    tour: ['Tour', x => XP_TOUR(x.tour)],
+    experience: ['Expérience du moins rodé', x => XP_EXP(x.matchs_min)],
+    confiance: ['Confiance de la simulation', x => { const c = Math.max(x.simulation, 1 - x.simulation); return c < 0.6 ? '50–60 %' : c < 0.7 ? '60–70 %' : c < 0.8 ? '70–80 %' : '80 % et plus'; }],
+    accord: ['Simulation et Elo', x => ((x.simulation > 0.5) === (x.elo > 0.5) ? "d'accord sur le vainqueur" : 'en désaccord')],
+    periode: ['Période', (x, d) => (x.date < d ? 'apprentissage (2024)' : 'jugement (2025 →)')],
+  };
+  function xpLignes(doc) {
+    if (!doc || !doc.lignes) return [];
+    if (doc._L) return doc._L;
+    const c = doc.colonnes;
+    doc._L = doc.lignes.map(r => Object.fromEntries(c.map((k, i) => [k, r[i]])));
+    return doc._L;
+  }
+  function xpStats(L, v) {
+    const g = L.filter(x => fin(x[v]));
+    const n = g.length;
+    if (!n) return { n: 0 };
+    const ok = g.reduce((a, x) => a + (x[v] > 0.5 ? 1 : x[v] === 0.5 ? 0.5 : 0), 0) / n;
+    const ll = -g.reduce((a, x) => a + Math.log(Math.min(Math.max(x[v], 1e-6), 1 - 1e-6)), 0) / n;
+    const se = Math.sqrt(ok * (1 - ok) / n);
+    return { n, ok, lo: ok - 1.96 * se, hi: ok + 1.96 * se, ll };
+  }
+  function xpFiltrer(doc, f) {
+    const d = doc.debut_jugement || '2025-01-01';
+    return xpLignes(doc).filter(x => Object.entries(f || {}).every(([k, val]) => !val || XP_CRITERES[k][1](x, d) === val));
+  }
+  function xpScan(doc, f, nMin = 150) {
+    // chaque valeur de chaque critère (dans le filtre courant) : la simulation y trouve-t-elle le vainqueur
+    // plus ou moins souvent que l'Elo, et que d'habitude ? Trié par écart à la moyenne de la simulation.
+    const d = doc.debut_jugement || '2025-01-01';
+    const base = xpFiltrer(doc, f);
+    const ref = xpStats(base, 'simulation');
+    const out = [];
+    for (const [k, [lab, fn]] of Object.entries(XP_CRITERES)) {
+      if (f && f[k]) continue;
+      const groupes = {};
+      base.forEach(x => { const v = fn(x, d); (groupes[v] = groupes[v] || []).push(x); });
+      for (const [val, g] of Object.entries(groupes)) {
+        if (g.length < nMin) continue;
+        const s = xpStats(g, 'simulation'), e = xpStats(g, 'elo');
+        out.push({ critere: lab, valeur: val, n: g.length, sim: s, elo: e, ecart: s.ok - ref.ok, vsElo: s.ok - e.ok });
+      }
+    }
+    return out.sort((a, b) => Math.abs(b.vsElo) - Math.abs(a.vsElo)).slice(0, 12);
+  }
+  function explorateurBlock(doc, f, ouvert) {
+    const head = `<details class="rg-eval" id="rgXp"${ouvert ? ' open' : ''}><summary>Explorateur des pronostics : croiser les résultats avec les critères${doc && doc.lignes ? ` (${nf(doc.lignes.length, 0)} matchs rejoués)` : ''}</summary>`;
+    if (!ouvert) return `${head}</details>`;
+    if (!doc) return `${head}<p class="mini">Chargement…</p></details>`;
+    if (!doc.lignes) return `${head}<p class="mini">Données pas encore produites : lancer « Pronostic - test du modèle ».</p></details>`;
+    const d = doc.debut_jugement || '2025-01-01';
+    const L = xpLignes(doc);
+    const sel = Object.entries(XP_CRITERES).map(([k, [lab, fn]]) => {
+      const vals = [...new Set(L.map(x => fn(x, d)))].filter(v => v != null).sort();
+      return `<label>${esc(lab)}<select data-xp="${k}"><option value="">tous</option>${vals.map(v => `<option${f && f[k] === v ? ' selected' : ''}>${esc(v)}</option>`).join('')}</select></label>`;
+    }).join('');
+    const G = xpFiltrer(doc, f);
+    const pct = x => `${nf(100 * x, 1)} %`;
+    const rows = XP_VERSIONS.map(([v, lab]) => { const s = xpStats(G, v); return s.n ? `<tr><td>${lab}</td><td>${pct(s.ok)} <small>[${nf(100 * s.lo, 1)} ; ${nf(100 * s.hi, 1)}]</small></td><td>${nf(s.ll, 3)}</td><td>${nf(s.n, 0)}</td></tr>` : ''; }).join('');
+    const scan = xpScan(doc, f);
+    const sc = scan.map(z => `<tr><td>${esc(z.critere)} : <b>${esc(z.valeur)}</b></td><td>${pct(z.sim.ok)}</td><td>${pct(z.elo.ok)}</td><td class="${z.vsElo > 0 ? 'good' : 'bad'}">${z.vsElo > 0 ? '+' : '−'}${nf(Math.abs(100 * z.vsElo), 1)} pt</td><td>${nf(z.n, 0)}</td></tr>`).join('');
+    return `${head}<div class="rg-xp-filtres">${sel}</div>
+      <p class="mini">${nf(G.length, 0)} matchs dans ce filtre · vainqueur trouvé quand la version donne plus de 50 % au vrai vainqueur.</p>
+      <div class="table-wrap rg-table"><table><thead><tr><th>Version</th><th>Vainqueurs trouvés <small>(IC 95 %)</small></th><th>Log loss</th><th>Matchs</th></tr></thead><tbody>${rows}</tbody></table></div>
+      ${sc ? `<h5>Où la simulation fait mieux ou moins bien que l'Elo (dans ce filtre, 150 matchs au moins)</h5>
+      <div class="table-wrap rg-table"><table><thead><tr><th>Critère</th><th>Simulation</th><th>Elo</th><th>Écart</th><th>Matchs</th></tr></thead><tbody>${sc}</tbody></table></div>` : ''}
+      <p class="mini">Exploration : en regardant beaucoup de cases, certaines sortent du lot par hasard. Une piste n'est qu'une candidate tant qu'elle n'a pas été gelée puis confirmée sur des matchs joués APRÈS le gel (comme H13–H20). Le filtre « Période » permet de vérifier qu'un écart vu en 2024 tient en 2025 →.</p></details>`;
+  }
+
   function pronosticsBlock(P, B, ouverts) {
     if (!P || !P.matchs) return '';
     const pc = v => (fin(v) ? `${nf(100 * v, 0)} %` : '—');
@@ -731,7 +813,7 @@
     const shown = list.slice(state.page * PAGE, (state.page + 1) * PAGE);
     const opt = (vals, v) => vals.map(([k, l]) => `<option value="${esc(k)}" ${k === (v || '') ? 'selected' : ''}>${esc(l)}</option>`).join('');
     const circuits = [...new Set(cur.list.map(m => m.circuit))].sort();
-    host.innerHTML = `${pronosticsBlock(state.pronoDoc, state.pronoBilan, state.simOpen)}${resultatsBlock(state.pronoResultats, state.simOpen.has('resultats'))}${serviceBlock(state.servDoc, state.servQ, state.servKey, state.servOpen)}${valeurBlock(state.valeurDoc)}${croisementsBlock(state.croisDoc)}${delaiBlock(state.delaiDoc)}${evaluation(state.evalDoc)}${booksBlock(state.valeurDoc)}
+    host.innerHTML = `${pronosticsBlock(state.pronoDoc, state.pronoBilan, state.simOpen)}${resultatsBlock(state.pronoResultats, state.simOpen.has('resultats'))}${explorateurBlock(state.xpDoc, state.xpF, state.xpOpen)}${serviceBlock(state.servDoc, state.servQ, state.servKey, state.servOpen)}${valeurBlock(state.valeurDoc)}${croisementsBlock(state.croisDoc)}${delaiBlock(state.delaiDoc)}${evaluation(state.evalDoc)}${booksBlock(state.valeurDoc)}
       <div class="rg-filters">
         <label>Mois<select id="rgMois">${opt([...state.index.mois].reverse().map(x => [x.mois, `${x.mois} (${x.matchs})`]), state.mois)}</select></label>
         <label>Circuit<select id="rgCircuit">${opt([['', 'tous'], ...circuits.map(c => [c, c])], state.f.circuit)}</select></label>
@@ -754,6 +836,15 @@
     if (mois) mois.addEventListener('change', async () => { $('registreBody').insertAdjacentHTML('afterbegin', '<p class="mini">Chargement…</p>'); try { await loadMonth(mois.value); } catch (e) { state.err = e.message; } render(); });
     document.querySelectorAll('#registreBody .rg-sim').forEach(d => d.addEventListener('toggle', () => {
       if (d.open) state.simOpen.add(d.dataset.sim); else state.simOpen.delete(d.dataset.sim);
+    }));
+    const xp = $('rgXp');
+    if (xp) xp.addEventListener('toggle', async () => {
+      state.xpOpen = xp.open;
+      if (xp.open && !state.xpDoc) { render(); try { state.xpDoc = await gz('./live/explorateur_pronostics.json.gz'); } catch (e) { state.xpDoc = { erreur: e.message }; } render(); }
+    });
+    document.querySelectorAll('#registreBody [data-xp]').forEach(el => el.addEventListener('change', () => {
+      state.xpF = Object.assign({}, state.xpF, { [el.dataset.xp]: el.value }); render();
+      const d2 = $('rgXp'); if (d2 && d2.scrollIntoView) d2.scrollIntoView({ block: 'start' });
     }));
     const resD = $('rgResultats');
     if (resD) resD.addEventListener('toggle', () => { if (resD.open) state.simOpen.add('resultats'); else state.simOpen.delete('resultats'); });
@@ -803,6 +894,6 @@
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
   }
   if (typeof module !== 'undefined') {
-    module.exports = { resultatsBlock, pronosticsBlock, calibrationBlock, directBlock, directResultat, enDirect, lireScore, facteursBlock, simuleBlock, serviceBlock, serviceInner, ficheService, chercherJoueurs, croisementsBlock, delaiBlock, booksBlock, valeurBlock, victoires, powerFair, decodeMonth, fairRow, bestRow, filterMatches, coherence, lectureOf, effective, evaluation, fiche, row };
+    module.exports = { explorateurBlock, xpScan, xpStats, xpFiltrer, resultatsBlock, pronosticsBlock, calibrationBlock, directBlock, directResultat, enDirect, lireScore, facteursBlock, simuleBlock, serviceBlock, serviceInner, ficheService, chercherJoueurs, croisementsBlock, delaiBlock, booksBlock, valeurBlock, victoires, powerFair, decodeMonth, fairRow, bestRow, filterMatches, coherence, lectureOf, effective, evaluation, fiche, row };
   }
 })();
