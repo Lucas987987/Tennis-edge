@@ -386,6 +386,36 @@ def melange_contexte(poids, ctx, p_elo, p_sim):
     return _sg(max(min(z, 30), -30))
 
 
+# 22/10/2026 — EXCÈS DE CONFIANCE. Favori annoncé 80–90 % → gagne 79,9 % (2025 →). Correction de la
+# probabilité finale, symétrique (même traitement pour le favori et l'outsider), en logit :
+#   |z'| = |z| + Σ c_i · max(0, |z| − n_i), nœuds n_i = logit de 50, 60, 70, 80, 90 %.
+# Une pente par tranche : on peut calmer les 80–90 % sans toucher aux 55 %. c appris sur 2024, jugé
+# sur 2025 → (backtest_match_simule.calibration_combinaison).
+CALIBRATION_NOEUDS = (0.0, 0.405465, 0.847298, 1.386294, 2.197225)
+
+
+def variables_calibration(z):
+    a = abs(z)
+    s = 1.0 if z >= 0 else -1.0
+    return [s * max(0.0, a - n) for n in CALIBRATION_NOEUDS]
+
+
+def calibrer(p, c):
+    """Probabilité corrigée (c = 5 pentes) ; c vide : inchangée. Toujours croissante : pente plancher 0,1."""
+    if not c:
+        return p
+    z = _lg(min(max(p, 1e-6), 1 - 1e-6))
+    a, out, debut, pente = abs(z), 0.0, 0.0, 1.0
+    bornes = list(CALIBRATION_NOEUDS[1:]) + [float('inf')]
+    for ci, fin_ in zip(c, bornes):                    # pente de chaque tranche = 1 + Σ c jusque-là
+        pente += ci
+        if a <= debut:
+            break
+        out += max(pente, 0.1) * (min(a, fin_) - debut)
+        debut = fin_
+    return _sg(max(min(out if z >= 0 else -out, 30), -30))
+
+
 def amplifier(c, moyen, k):
     """22/10/2026 — la simulation est trop timide (favori annoncé 64 % → gagne 69 %) : l'écart de chaque
     taux du point à la moyenne du circuit (en logit) est multiplié par k. k = 1 : inchangé. Réglage choisi

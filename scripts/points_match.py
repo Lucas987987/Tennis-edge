@@ -76,6 +76,11 @@ def compacter(doc):
     return jeux or None
 
 
+def a_suivre(r):
+    """Matchs dont on veut le déroulé : statistiques présentes, et pas d'ITF (aucun pari n'y est joué)."""
+    return bool(r.get('stats')) and 'itf' not in str(r.get('categorie') or '').lower()
+
+
 def lire(chemin):
     out = {}
     try:
@@ -110,7 +115,7 @@ def main(argv):
     if sonde:
         for p in reversed(jours):
             for r in FM.lire_jour(os.path.basename(p)[:10]).values():
-                if r.get('stats'):
+                if a_suivre(r):
                     code, doc = c.get(f"/api/tennis/event/{r['id']}/point-by-point")
                     print(f"HTTP {code} · {r['home']['nom']} – {r['away']['nom']} ({r['jour']})")
                     print(json.dumps(doc, ensure_ascii=False)[:3000])
@@ -123,7 +128,7 @@ def main(argv):
             jour = os.path.basename(p)[:10]
             sortie = os.path.join(DOSSIER, jour + '.jsonl.gz')
             deja = lire(sortie)
-            a_faire = [r for r in FM.lire_jour(jour).values() if r.get('stats') and r['id'] not in deja]
+            a_faire = [r for r in FM.lire_jour(jour).values() if a_suivre(r) and r['id'] not in deja]
             try:
                 for r in a_faire:
                     code, doc = c.get(f"/api/tennis/event/{r['id']}/point-by-point")

@@ -45,7 +45,9 @@ DOSSIER = os.environ.get('FEUILLES_DOSSIER', 'feuilles')
 BUDGET = int(os.environ.get('FEUILLES_BUDGET', '4000'))
 RESERVE = int(os.environ.get('FEUILLES_RESERVE', '1500'))
 PAUSE = float(os.environ.get('FEUILLES_PAUSE', '0.2'))
-CATEGORIES = ('atp', 'wta', 'challenger', 'itf men', 'itf women', 'wta 125')
+# 22/10/2026 : ITF retiré — aucun pari n'y est joué, et TennisApi n'y a presque jamais de statistiques
+# (≈ 600 feuilles sur 9 300). Encore demandable à la main : catégories = itf men,itf women.
+CATEGORIES = ('atp', 'wta', 'challenger', 'wta 125')
 ESSAIS_MAX = 3
 DELAI_COMPLET_J = 3
 
