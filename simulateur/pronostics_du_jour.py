@@ -191,6 +191,38 @@ def charger_combinaison(racine):
 
 
 COMBINAISON = None
+AJUSTEMENTS = {}      # 22/10/2026 : poids propres aux Challenger, correction des nouveaux venus (si adoptés)
+
+
+def charger_ajustements(racine):
+    """Décisions de l'entraînement semaine après semaine (facteurs.py → entrainement_progressif.py)."""
+    try:
+        with open(os.path.join(racine, 'simulateur', 'choix_simulation.json'), encoding='utf-8') as f:
+            choix = json.load(f)
+    except (OSError, ValueError):
+        return {}
+    out = {}
+    pc = choix.get('poids_challenger') or {}
+    if pc.get('adopte') and pc.get('poids'):
+        out['poids_CH'] = pc['poids']
+    nv = choix.get('nouveaux_venus') or {}
+    if nv.get('adopte') and nv.get('delta') is not None:
+        out['delta_nouveaux'] = float(nv['delta'])
+    return out
+
+
+def ajuster_combinaison(p_c, c, p_elo, p_sim, n_home, n_away, contexte=None):
+    """Challenger : poids propres s'ils sont adoptés (remplacent le mélange commun) ; puis nouveaux venus :
+    z += δ·(nouveau(home) − nouveau(away)), nouveau(n) = max(0, 1 − n/30)."""
+    if c == 'CH' and AJUSTEMENTS.get('poids_CH'):
+        p_c = MS.melange(AJUSTEMENTS['poids_CH'], p_elo, p_sim)
+    d = AJUSTEMENTS.get('delta_nouveaux')
+    if d and n_home is not None and n_away is not None:
+        f = max(0.0, 1 - n_home / 30) - max(0.0, 1 - n_away / 30)
+        if f:
+            z = math.log(min(max(p_c, 1e-6), 1 - 1e-6) / (1 - min(max(p_c, 1e-6), 1 - 1e-6))) + d * f
+            p_c = sig(max(min(z, 30), -30))
+    return p_c
 
 
 def charger_facteurs(racine):
@@ -340,6 +372,8 @@ def construire(racine, maintenant=None):
     REGLAGES = charger_reglages(racine)
     CHOIX = charger_choix(racine)
     COMBINAISON = charger_combinaison(racine)
+    AJUSTEMENTS.clear()
+    AJUSTEMENTS.update(charger_ajustements(racine))
     REGLAGE_SIM = charger_reglage_simulation(racine)
     FACTEURS, CONTEXTE = charger_facteurs(racine)
     venir = matchs_a_venir(racine, maintenant)
@@ -386,6 +420,7 @@ def construire(racine, maintenant=None):
                 p_sim = MS.victoire_pure(cH, cA, sg, sigma_sim())
                 p_c = MS.melange_contexte(COMBINAISON, MS.contexte_match(s, c, 2 * sg - 1), stats['p_home'], p_sim)
                 p_c = MS.calibrer(p_c, COMBINAISON.get('calibration'))     # excès de confiance (si adopté)
+                p_c = ajuster_combinaison(p_c, c, stats['p_home'], p_sim, elo.matchs(h), elo.matchs(a))
                 combinaison = dict(pronostic(p_c, c, sg, pa0, pb0), p_simulation=round(p_sim, 4), p_elo=stats['p_home'])
             # 22/10/2026 — EN DIRECT (direct.py, Lab) : points de service des deux joueurs pour la version
             # principale (simulation + Elo si adoptée, sinon simulation pure), avant toute forme du jour.
