@@ -67,6 +67,16 @@ SORTIE = os.path.join(ICI, 'facteurs.json')
 CONTEXTE = os.path.join(ICI, 'facteurs_contexte.json')
 SIGMA = 0.15
 DEBUT_APPR, DEBUT_JUGE = dt.date(2026, 6, 1), dt.date(2026, 9, 1)
+# 22/10/2026 — APPRENTISSAGE CONTINU : l'algorithme se nourrit des nouveaux matchs. Chaque semaine, chaque
+# groupe est ré-appris sur toutes les feuilles sauf les 6 dernières semaines, et JUGÉ sur ces 6 dernières
+# semaines (jamais avant le 1er septembre 2026). Même règle d'adoption ; seule la fenêtre avance.
+FENETRE_JUGE_J = 42
+
+
+def fenetres(aujourdhui=None):
+    """(début de l'apprentissage, début du jugement) : le jugement porte sur les 6 dernières semaines."""
+    aujourdhui = aujourdhui or dt.date.today()
+    return DEBUT_APPR, max(DEBUT_JUGE, aujourdhui - dt.timedelta(days=FENETRE_JUGE_J))
 FENETRE_FORME_J = 30
 K_FORME, K_VITESSE, K_CLUTCH = 200.0, 1500.0, 60.0
 DISPO_H = 3                     # un match compte dans l'historique 3 h après son début
@@ -671,12 +681,15 @@ def main(argv):
     print(f"Match Charting Project : {len(charting.D)} joueurs relevés ({mcp})", flush=True)
     H = avec_variables(lignes, infos, avant=M, adj_avant=adj_pour(DEBUT_APPR), lieux=charger_lieux(racine), charting=charting,
                        abandons=abandons_des_fiches(fiches))
-    appr = [x for x in lignes if DEBUT_APPR <= x['jour'] < DEBUT_JUGE]
-    juge = [x for x in lignes if x['jour'] >= DEBUT_JUGE]
-    print(f"Feuilles : {len(lignes)} matchs ATP/WTA/Challenger · apprentissage {len(appr)} (juin–août) · "
-          f"jugement {len(juge)} (septembre →) · infos joueurs {len(infos)}", flush=True)
+    d_appr, d_juge = fenetres()
+    appr = [x for x in lignes if d_appr <= x['jour'] < d_juge]
+    juge = [x for x in lignes if x['jour'] >= d_juge]
+    print(f"Feuilles : {len(lignes)} matchs ATP/WTA/Challenger · apprentissage {len(appr)} ({d_appr} → {d_juge}) · "
+          f"jugement {len(juge)} ({d_juge} →, 6 dernières semaines) · infos joueurs {len(infos)}", flush=True)
     doc = {'genere_le': dt.datetime.now(dt.timezone.utc).isoformat(timespec='seconds'),
-           'regle': ("Chaque groupe appris sur juin–août 2026, jugé sur septembre → : adopté s'il améliore la "
+           'fenetres': {'apprentissage': str(d_appr), 'jugement': str(d_juge)},
+           'regle': ("Chaque groupe appris sur les feuilles jusqu'aux 6 dernières semaines, jugé sur ces 6 dernières "
+                     "semaines (apprentissage continu, chaque semaine) : adopté s'il améliore la "
                      "vraisemblance des points concernés et ne dégrade pas l'erreur (log loss) du vainqueur de la "
                      "simulation pure de plus de 0,001."),
            'apprentissage': len(appr), 'jugement': len(juge), 'groupes': {}, 'adoptes': [], 'coefs': {}}
