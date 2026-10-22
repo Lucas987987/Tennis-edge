@@ -53,6 +53,44 @@ import oddspapi_v5 as ov   # AJOUTÉ 29/08/2026 : ov.ecriture_atomique_texte()
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from results_join import ResultIndex  # noqa: E402
+import re  # noqa: E402
+import unicodedata  # noqa: E402
+import importlib.util as _ilu  # noqa: E402
+_spec = _ilu.spec_from_file_location('tennis_edge_pjc_books', os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), '..', 'Tennis_Edge_Lab', 'books.py'))
+_books = _ilu.module_from_spec(_spec)
+_spec.loader.exec_module(_books)
+SET_RESULTS = os.environ.get('SET_RESULTS', 'set_results.json')
+
+
+def _jouable(b):
+    """CORRIGÉ LE 22/10/2026 : le prix d'entrée est le meilleur book JOUABLE parmi ceux en retard.
+    Avant, le 1er de la liste pouvait être un flux « données seules » (4casters, sbobet, sharpbet :
+    32 paris sur 331) ou leovegas (retiré, 32 paris), où l'on ne peut pas miser."""
+    return _books.flags(b)['jouable']
+
+
+def _slug(s):
+    s = unicodedata.normalize('NFKD', str(s or '')).encode('ascii', 'ignore').decode().lower()
+    return re.sub(r'[^a-z0-9]+', '_', s).strip('_')
+
+
+def cote_du_joueur_par_uid(uid, joueur):
+    """'home' / 'away' : position du joueur signalé dans l'uid <date>_<home>_<away>, None si ambigu."""
+    reste = str(uid).split('_', 1)[1] if '_' in str(uid) else ''
+    s = _slug(joueur)
+    if not s or not reste:
+        return None
+    h, a = reste.startswith(s + '_'), reste.endswith('_' + s)
+    return 'home' if h and not a else ('away' if a and not h else None)
+
+
+def charger_set_results():
+    try:
+        with open(SET_RESULTS, encoding='utf-8') as f:
+            return json.load(f)
+    except (OSError, ValueError):
+        return {}
 
 LOG = os.environ.get('LOG', 'canal_public_log.jsonl')
 OUT = os.environ.get('OUT', 'paper_trades_canal.jsonl')
@@ -108,7 +146,7 @@ def main():
         if not uid or not t or not ct:
             continue
         # retards_tous depuis le 24/08 ; retards (3 max) pour l'historique.
-        lags = a.get('retards_tous') or a.get('retards') or []
+        lags = [x for x in (a.get('retards_tous') or a.get('retards') or []) if _jouable(x[0])]
         if not lags:
             sans_ecart += 1
             continue
@@ -137,6 +175,7 @@ def main():
         }
 
     # ── Règlement ────────────────────────────────────────────────────────
+    SR = charger_set_results()
     for tr in trades.values():
         ct = _dt(tr['commence'])
         # L'uid porte home_away ; le joueur signalé dit de quel côté on est.
@@ -152,12 +191,22 @@ def main():
                 if gagnant is not None:
                     break
         if gagnant is None:
+            # CORRIGÉ LE 22/10/2026 : repli sur set_results.json par l'uid même de l'alerte (même
+            # convention <date>_<home>_<away>) — results_bridge écarte ces lignes quand l'uid n'est
+            # plus dans les courbes, d'où 85 paris « sans résultat » dont le résultat était connu.
+            # Contrôle sur les paris déjà réglés : 111 accords, 0 désaccord.
+            r = SR.get(tr['uid']) or {}
+            cote = cote_du_joueur_par_uid(tr['uid'], tr['joueur'])
+            if r.get('match') in ('home', 'away') and cote:
+                gagnant = 'home' if r['match'] == cote else 'away'
+                tr['source_resultat'] = 'set_results'
+        if gagnant is None:
             sans_resultat += 1
             continue
         gagne = (gagnant == 'home')       # 'home' = le joueur signalé
         tr['statut'] = 'REGLE'
         tr['gagne'] = gagne
-        tr['pnl'] = (tr['cote'] - 1) if gagne else -1.0
+        tr['pnl'] = (_books.effective_odds(tr['book'], tr['cote']) - 1) if gagne else -1.0   # commission de bourse déduite (22/10/2026)
 
     # CORRIGÉ LE 29/08/2026 (validation externe, périmètre resserré) : même
     # motif que paper_journal.py:save_journal(), même raisonnement -- voir
