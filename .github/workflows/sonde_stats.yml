@@ -17,6 +17,9 @@ on:
       api:
         description: 'API à sonder (matchstat, tennisapi ou les deux)'
         default: 'matchstat,tennisapi'
+      chemins:
+        description: 'Facultatif : chemins à essayer (3 max, séparés par des virgules, ex. /api/tennis/events/live) ; une seule API dans le champ api'
+        default: ''
 
 permissions:
   contents: read
@@ -39,7 +42,8 @@ jobs:
           RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
           JOUR: ${{ github.event.inputs.jour }}
           API: ${{ github.event.inputs.api }}
-        run: python scripts/sonde_stats.py "$JOUR" "$API"
+          CHEMINS: ${{ github.event.inputs.chemins }}
+        run: python scripts/sonde_stats.py "$JOUR" "$API" "$CHEMINS"
       - name: Rapport
         if: always()
         uses: actions/upload-artifact@v4
