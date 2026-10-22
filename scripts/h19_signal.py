@@ -148,7 +148,7 @@ def evaluer(g, side, horizon, R):
     best = None
     for b in R['books']:
         s = g.get(b)
-        if not s:
+        if not s or not books.flags(b)['jouable']:        # même filtre que valeur.py (22/10/2026)
             continue
         q = point(s[side], decision, R['age_max_min'])
         if not q:
