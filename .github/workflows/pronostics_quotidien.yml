@@ -16,6 +16,9 @@ name: Pronostics du jour
 # collectées (feuilles/, workflow « Feuilles de match ») ; non commités ici.
 on:
   workflow_dispatch:
+  # 23/10/2026 : déclenché toutes les 2 h par le worker Cloudflare (tennis-edge-closing) ; le cron reste en filet.
+  repository_dispatch:
+    types: [pronostics_quotidien]
   schedule:
     # 23/10/2026 : toutes les 2 h au lieu de 6 (nouveaux matchs pronostiqués plus vite) ; la cote Pinnacle
     # du Lab est, elle, rafraîchie à chaque capture (simulateur/marche_du_lab.py, workflow des courbes).
