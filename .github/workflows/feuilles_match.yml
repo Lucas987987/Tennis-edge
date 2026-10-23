@@ -65,6 +65,7 @@ jobs:
             /scripts/lieux_tournois.py
             /scripts/points_match.py
             /scripts/classements_tennisapi.py
+            /scripts/durees_matchs.py
             /simulateur/elo.py
             /feuilles/
             /feuilles_points/
@@ -91,6 +92,12 @@ jobs:
           SONDE: ${{ github.event.inputs.sonde }}
         run: |
           if [ "$SONDE" = "oui" ]; then python scripts/classements_tennisapi.py --sonde; else python scripts/classements_tennisapi.py; fi
+      - name: Durée des matchs déjà collectés (une fois par jour de feuilles, ~5 requêtes par jour)
+        if: always()
+        timeout-minutes: 15
+        env:
+          RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
+        run: python scripts/durees_matchs.py 800
       - name: Infos joueurs (gaucher / droitier, taille, naissance) — une requête par nouveau joueur
         if: always()
         timeout-minutes: 30
