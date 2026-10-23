@@ -208,6 +208,9 @@ def charger_ajustements(racine):
     nv = choix.get('nouveaux_venus') or {}
     if nv.get('adopte') and nv.get('delta') is not None:
         out['delta_nouveaux'] = float(nv['delta'])
+    ma = choix.get('modele_arbres') or {}                      # 23/10/2026 : arbres qui combinent tout (si adoptés)
+    if ma.get('adopte') and ma.get('modele') and ma.get('poids'):
+        out['arbres'] = {'modele': ma['modele'], 'poids': ma['poids']}
     for cle_s in ('qualifies', 'transition'):                  # 22/10/2026 : même règle, autres situations
         v = choix.get(cle_s) or {}
         if v.get('adopte') and v.get('delta') is not None:
@@ -215,10 +218,19 @@ def charger_ajustements(racine):
     return out
 
 
-def ajuster_combinaison(p_c, c, p_elo, p_sim, n_home, n_away, situations=None):
+def ajuster_combinaison(p_c, c, p_elo, p_sim, n_home, n_away, situations=None, surface=None, bo=3):
     """Challenger : poids propres s'ils sont adoptés (remplacent le mélange commun) ; puis chaque situation
     adoptée (règle de entrainement_progressif.correction_situation) : z += δ·(situation(home) − situation(away)).
     Nouveaux venus : nouveau(n) = max(0, 1 − n/30) ; situations = {'qualifies': (h, a), 'transition': (h, a)}."""
+    if AJUSTEMENTS.get('arbres'):
+        # les arbres partent de LEUR mélange et contiennent déjà nouveaux venus, qualifiés, surface, circuit…
+        import arbres as A
+        import entrainement_progressif as EP
+        sit = situations or {}
+        q, t = sit.get('qualifies') or (0.0, 0.0), sit.get('transition') or (0.0, 0.0)
+        v = EP.variables_match(p_elo, p_sim, n_home or 0, n_away or 0, (q[0], t[0]), (q[1], t[1]), c, surface, bo)
+        o = math.log(MS.melange(AJUSTEMENTS['arbres']['poids'], p_elo, p_sim) / (1 - MS.melange(AJUSTEMENTS['arbres']['poids'], p_elo, p_sim)))
+        return A.predire_symetrique(AJUSTEMENTS['arbres']['modele'], v, o, EP.ECARTS)
     if c == 'CH' and AJUSTEMENTS.get('poids_CH'):
         p_c = MS.melange(AJUSTEMENTS['poids_CH'], p_elo, p_sim)
     ecarts = []
@@ -440,7 +452,7 @@ def construire(racine, maintenant=None):
                 p_c = MS.melange_contexte(COMBINAISON, MS.contexte_match(s, c, 2 * sg - 1), stats['p_home'], p_sim)
                 p_c = MS.calibrer(p_c, COMBINAISON.get('calibration'))     # excès de confiance (si adopté)
                 p_c = ajuster_combinaison(p_c, c, stats['p_home'], p_sim, elo.matchs(h), elo.matchs(a),
-                                          situations_du_match(h, a, x['tournoi'], x['debut'], s))
+                                          situations_du_match(h, a, x['tournoi'], x['debut'], s), s, 2 * sg - 1)
                 combinaison = dict(pronostic(p_c, c, sg, pa0, pb0), p_simulation=round(p_sim, 4), p_elo=stats['p_home'])
             # 22/10/2026 — EN DIRECT (direct.py, Lab) : points de service des deux joueurs pour la version
             # principale (simulation + Elo si adoptée, sinon simulation pure), avant toute forme du jour.
