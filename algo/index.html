@@ -667,6 +667,10 @@ async function modeVideo(){
     <div class="ecran" id="intro"><div class="vs-n a">${esc(m.home)}</div><div class="vs-x">VS</div>
       <div class="vs-n b">${esc(m.away)}</div><div class="vs-t">${t('a_vs_t', D.simulations)}</div></div>`;
   const $ = id => document.getElementById(id);
+  // bande-son : chaque événement est noté avec son heure ; scripts/sons.py le place sur la piste audio
+  window.__sons = [];
+  const son = (type, delai) => window.__sons.push({ t: Date.now() + (delai || 0), type });
+  son('vs', 450);
   let pPrec = p;
   function jauges(q){
     [q, 1-q].forEach((v,i)=>{ $('pc'+i).textContent = pc0(v); $('vie'+i).style.width = (v*100).toFixed(1)+'%'; });
@@ -689,6 +693,7 @@ async function modeVideo(){
     b.style.top = (perdant === 0 ? alea(60, 92) : alea(8, 40)).toFixed(1) + '%';
     const c = $('cote'+perdant); c.className = 'cote ' + (perdant ? 'haut' : 'bas') + ' eclat-p' + (h+1);
     setTimeout(()=>{ c.className = 'cote ' + (perdant ? 'haut' : 'bas'); }, Math.max(120, ms));
+    son('frappe' + h);
     const pj = $('pj'+h); pj.classList.add('flash'); setTimeout(()=>pj.classList.remove('flash'), Math.max(120, ms));
   }
   function annonce(txt, sous, ms, couleur){
@@ -733,22 +738,23 @@ async function modeVideo(){
     let ms = base;
     if (e){
       const lib = [null, t('a_bb'), t('a_bs'), t('a_bm')][e.k];
-      annonce(lib, noms[e.h], 950 * f / vit, coul(e.h)); $('ral').classList.add('on');
+      annonce(lib, noms[e.h], 950 * f / vit, coul(e.h)); $('ral').classList.add('on'); son(e.k === 3 ? 'balle_match' : 'annonce');
       await dort(600 * f / vit); ms = 330 * f / vit;
     }
     const avant = { sets: S.sets[0]+S.sets[1], jeux: S.jeux[0]+S.jeux[1], srv: M.serveur(S), tb: S.tb };
     const h = M.point(S, R());
     frappe(h, Math.min(ms * 0.9, 380));
     serie = h === dernier ? serie + 1 : 1; dernier = h;
+    if (serie >= 4 && serie % 2 === 0) son('combo');
     const cb = $('combo'); if (serie >= 4){ cb.textContent = t('a_combo', serie); cb.style.color = coul(h); cb.classList.add('on'); } else cb.classList.remove('on');
     jauges(pAff()); tableau();
     await dort(ms);
     $('ral').classList.remove('on');
     if (S.fini) break;
     const sets = S.sets[0]+S.sets[1], jeux = S.jeux[0]+S.jeux[1];
-    if (sets > avant.sets){ nset++; annonce(t('a_set', nset - 1), t('a_pour', noms[h]), 1150 * f / vit, coul(h)); await dort(1100 * f / vit); }
-    else if (jeux > avant.jeux && !avant.tb && h !== avant.srv){ annonce(t('a_break'), noms[h], 800 * f / vit, coul(h)); await dort(700 * f / vit); }
-    if (S.tb && !avant.tb){ annonce(t('a_tb'), '', 1000 * f / vit); await dort(950 * f / vit); }
+    if (sets > avant.sets){ nset++; annonce(t('a_set', nset - 1), t('a_pour', noms[h]), 1150 * f / vit, coul(h)); son('set'); await dort(1100 * f / vit); }
+    else if (jeux > avant.jeux && !avant.tb && h !== avant.srv){ annonce(t('a_break'), noms[h], 800 * f / vit, coul(h)); son('break'); await dort(700 * f / vit); }
+    if (S.tb && !avant.tb){ annonce(t('a_tb'), '', 1000 * f / vit); son('jeu_decisif'); await dort(950 * f / vit); }
   }
   const w = S.vainqueur, fav = p >= .5 ? 0 : 1;
   await dort(500 / vit);
@@ -758,7 +764,7 @@ async function modeVideo(){
     <div class="fin-s">${esc(scoreTxt(S, w === 1))}</div>
     <div class="fin-p">${t('a_fin_p', esc(noms[fav]), Math.max(p,1-p)*100, D.simulations)}</div>
     ${Q.get('adresse') === '1' ? `<div class="fin-url">${esc(t('v_url'))}</div>` : ''}`;
-  V.appendChild(fin);
+  V.appendChild(fin); son('fin');
   const cols = ['#2EE6FF','#FF3EA5','#D4FF3A','#F4F1FF','#9B6BFF'];
   for (let i=0;i<70;i++){ const c = document.createElement('i'); c.className='confetti';
     c.style.cssText = `left:${(R()*100).toFixed(1)}vw;background:${cols[i%cols.length]};--d:${(2.2+R()*1.6).toFixed(2)}s;--r:${(R()*0.8).toFixed(2)}s;--rot:${Math.round(R()*720-360)}deg`;
