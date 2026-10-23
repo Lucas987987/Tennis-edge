@@ -129,6 +129,22 @@ On peut le lancer à la main à tout moment (bouton Run workflow).
 **Critère de bascule** : **7 vérifications vertes consécutives**. Les 7 jours
 de ticks gardés dans git sont alors tous passés par R2 et ont été comparés.
 
+## Incident du 22/10/2026 — doublons dans R2 (corrigé le 23/10)
+
+Vérification du 23/10 : jour clos 22/10, R2 six fois plus gros que git
+(Kalshi 1 092 430 lignes pour 170 634, Polymarket 752 342 pour 201 911).
+Git était complet (78 commits Kalshi dans la journée, deux trous de 34 et
+48 min). Cause : quand un run envoie à R2 puis perd son commit git, git et R2
+divergent ; l'ancienne fusion recollait alors à CHAQUE run toute la journée
+depuis le point de divergence. Le calcul (divergence vers 13 h 40 pour
+Kalshi, 17 h 20 pour Polymarket) retrouve les volumes R2 à 3 % près.
+
+Correction : `merge_gz` compare ligne par ligne (une ligne déjà dans R2 n'est
+jamais réécrite ; une partition git inchangée ne provoque plus d'écriture).
+Nettoyage : workflow « R2 — réparer partitions (doublons) », d'abord sans
+appliquer (diagnostic), puis avec. **Le compte des 7 vérifications vertes
+repart de zéro après la réparation.**
+
 ## Étape 5 — Bascule « on » (1 min)
 
 **Settings → Variables → `R2_PRIMARY` → `on`.** Aucune autre action, aucun

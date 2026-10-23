@@ -469,62 +469,111 @@ def reset_cache():
 
 # ── gzip concaténé : lignes, frontières de membres, fusion ───────────────────
 
+def _gz_members(data: bytes):
+    """(fin du membre, texte décompressé) pour chaque membre gzip, en un seul
+    passage (23/10/2026) : gzip.decompress recopie tout le reste des données à
+    chaque membre — quadratique, plus de 100 s pour une partition de 7 800
+    membres. Ici on avance par blocs de 64 Ko sur une vue sans copie."""
+    mv, pos, n = memoryview(data), 0, len(data)
+    while pos < n:
+        d = zlib.decompressobj(16 + zlib.MAX_WBITS)
+        out = []
+        while not d.eof:
+            if pos >= n:
+                raise DivergentData("membre gzip tronqué")
+            chunk = mv[pos:pos + 65536]
+            pos += len(chunk)
+            out.append(d.decompress(chunk))
+        pos -= len(d.unused_data)
+        yield pos, b"".join(out)
+
+
 def gz_lines(data: bytes) -> int:
     """Nombre de lignes non vides d'un gzip multi-membres (lecture COMPLÈTE :
     un décompresseur qui s'arrête au 1er membre en lirait 2 %). Lève une
     exception si les octets ne forment pas un gzip valide."""
-    if not data:
-        return 0
-    text = gzip.decompress(data)
-    return sum(1 for line in text.split(b"\n") if line.strip())
+    return sum(1 for _ in _gz_iter_lines(data))
+
+
+def _gz_iter_lines(data: bytes):
+    reste = b""
+    for _, text in _gz_members(data or b""):
+        parts = (reste + text).split(b"\n")
+        reste = parts.pop()
+        for line in parts:
+            if line.strip():
+                yield line
+    if reste.strip():
+        yield reste
 
 
 def gz_boundaries(data: bytes) -> list[int]:
     """Positions (octets) où se termine chaque membre gzip : [0, b1, b2, …]."""
-    out, pos = [0], 0
-    while pos < len(data):
-        d = zlib.decompressobj(16 + zlib.MAX_WBITS)
-        d.decompress(data[pos:])
-        if not d.eof:
-            raise DivergentData("membre gzip tronqué")
-        pos = len(data) - len(d.unused_data)
-        out.append(pos)
-        if not d.unused_data:
-            break
+    return [0] + [end for end, _ in _gz_members(data)]
+
+
+def gz_line_list(data: bytes) -> list[bytes]:
+    """Lignes non vides d'un gzip multi-membres (sans le saut de ligne)."""
+    return list(_gz_iter_lines(data))
+
+
+def gz_member(lines) -> bytes:
+    """Un membre gzip (mtime=0, comme les collecteurs) contenant ces lignes."""
+    return gzip.compress(b"".join(line + b"\n" for line in lines), mtime=0)
+
+
+def _empreinte(line: bytes) -> bytes:
+    return hashlib.blake2b(line, digest_size=16).digest()
+
+
+def lignes_absentes(reference: bytes, data: bytes) -> list[bytes]:
+    """Lignes de `data` que `reference` ne contient pas, en multiensemble (une
+    ligne présente 2 fois dans data et 1 fois dans reference compte une fois),
+    dans l'ordre de data. Empreintes de 16 octets : ~100 Mo pour 1 M de lignes."""
+    reste = {}
+    for line in gz_line_list(reference):
+        k = _empreinte(line)
+        reste[k] = reste.get(k, 0) + 1
+    out = []
+    for line in gz_line_list(data):
+        k = _empreinte(line)
+        if reste.get(k):
+            reste[k] -= 1
+        else:
+            out.append(line)
     return out
 
 
 def merge_gz(remote: bytes, local: bytes, base_size: int | None = None) -> bytes:
     """Version qui contient remote ET les ajouts de local.
 
-    Les partitions ne font que grandir par ajout de membres gzip. Trois cas :
-    remote prolonge local -> remote ; local prolonge remote -> local ; sinon
-    les deux ont ajouté chacun des membres après un ancêtre commun : on garde
-    remote et on lui ajoute les membres de local postérieurs à l'ancêtre.
-    L'ancêtre est coupé sur une FRONTIÈRE DE MEMBRE (gz_append écrit des
-    en-têtes identiques, mtime=0 : un préfixe commun octet par octet peut
-    déborder dans un membre). Résultat vérifié (gzip lisible, comptes de
-    lignes cohérents) ; sinon DivergentData."""
+    Deux cas simples : remote prolonge local -> remote ; local prolonge
+    remote -> local. Sinon (les deux ont divergé) : remote + UN membre avec
+    les lignes de local que remote n'a pas encore.
+
+    CORRIGÉ LE 23/10/2026. Avant, on recollait tout local après l'« ancêtre
+    commun » octet par octet. Dès que git et R2 divergeaient une fois (run
+    dont le commit git est perdu après l'envoi R2), cet ancêtre restait figé
+    au point de divergence et CHAQUE run suivant recollait toute la journée
+    depuis ce point : 22/10, R2 = 1 092 430 lignes Kalshi pour 170 634 dans
+    git (×6,4), 752 342 Polymarket pour 201 911. La comparaison se fait
+    désormais ligne par ligne : une ligne déjà dans R2 n'est jamais réécrite,
+    et une partition git inchangée ne provoque plus aucune écriture.
+    base_size est gardé pour compatibilité (il n'est plus nécessaire)."""
     if remote.startswith(local):
         return remote
     if local.startswith(remote):
         return local
-    if base_size is not None and local[:base_size] == remote[:base_size]:
-        cut = base_size
-    else:
-        common = os.path.commonprefix([remote, local])
-        bounds = [b for b in gz_boundaries(local) if b <= len(common)]
-        cut = bounds[-1] if bounds else 0
-    if cut not in gz_boundaries(local):
-        raise DivergentData("ancêtre commun hors frontière de membre")
-    merged = remote + local[cut:]
     try:
-        n = gz_lines(merged)
-        expected = gz_lines(remote) + gz_lines(local) - gz_lines(local[:cut])
+        tail = lignes_absentes(remote, local)
+        n_remote = gz_lines(remote)
     except Exception as exc:  # noqa: BLE001
         raise DivergentData(f"fusion illisible ({type(exc).__name__})") from exc
-    if n != expected:
-        raise DivergentData(f"fusion incohérente ({n} lignes, attendu {expected})")
+    if not tail:
+        return remote
+    merged = remote + gz_member(tail)
+    if gz_lines(merged) != n_remote + len(tail):
+        raise DivergentData("fusion incohérente")
     return merged
 
 
