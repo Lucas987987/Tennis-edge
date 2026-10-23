@@ -55,7 +55,7 @@ def main(argv):
     ap.add_argument('--lang', default='fr', choices=['fr', 'en'])
     ap.add_argument('--uid', default='')
     ap.add_argument('--seed', default='7')
-    ap.add_argument('--vitesse', default='1.6')
+    ap.add_argument('--vitesse', default='1')
     ap.add_argument('--adresse', action='store_true', help="afficher l'adresse du site en fin de vidéo (non par défaut)")
     ap.add_argument('--sortie', default=os.path.join(RACINE, 'videos'))
     a = ap.parse_args(argv[1:])

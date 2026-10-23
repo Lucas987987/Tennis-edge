@@ -139,28 +139,83 @@ footer{color:var(--muted);font-size:.85rem;padding:20px 0 40px;border-top:1px so
 .empty{padding:16px;color:var(--muted)}
 
 /* mode vidéo (format vertical 9:16, enregistré pour X) */
-body.video{background:var(--court);overflow:hidden}
+/* ── mode vidéo « arcade » (24/10/2026) : format vertical 9:16 pour X, rendu par scripts/video_simulation.py ── */
+body.video{--ar-bg:#0E0A24;--ar-bg2:#1B1146;--ar-p1:#2EE6FF;--ar-p2:#FF3EA5;--ar-ball:#D4FF3A;--ar-ink:#F4F1FF;--ar-dim:#9C93C8;
+  --ar-disp:"Bungee","Russo One","Arial Black",Impact,sans-serif;background:var(--ar-bg);overflow:hidden;margin:0}
 body.video .page{display:none}
 #video{display:none}
-body.video #video{display:flex;flex-direction:column;justify-content:center;gap:0;width:100vw;height:100vh;padding:9vw 8vw;color:var(--court-ink);font-size:4.2vw;position:relative}
-body.video #video::before{content:"";position:absolute;inset:3.5vw;border:.5vw solid var(--court-line);border-radius:1vw}
-body.video #video > *{position:relative}
-#video .v-kicker{font-family:var(--cond);font-weight:600;font-size:5.2vw;line-height:1.15;opacity:.92;margin:0 0 2vw}
-#video .v-title{font-family:var(--cond);font-weight:700;font-size:9vw;line-height:1.02;margin:0 0 5vw}
-#video .v-duel{display:grid;grid-template-columns:1fr 1fr;gap:3vw;margin-bottom:3vw}
-#video .v-duel div{font-family:var(--cond)}
-#video .v-duel .n{font-size:5.2vw;font-weight:600;line-height:1.1}
-#video .v-duel .p{font-size:14vw;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
-#video .v-duel .r{text-align:right}
-#video .split{height:1.8vw;margin:0 0 5vw;flex:none}
-#video .sim{padding:3vw;border-radius:2vw;margin:0}
-#video .board td{font-size:6.4vw;padding:1vw 1.6vw}
-#video .board td.pts{border-radius:1vw}
-#video svg.momentum{height:20vw}
-#video .liveline{font-size:3.8vw;margin:3vw .5vw 1vw}
-#video .v-end{font-family:var(--cond);font-size:5vw;font-weight:600;margin:5vw 0 0;min-height:3.6em;line-height:1.18}
-#video .nw{white-space:nowrap}
-#video .v-url{font-family:var(--cond);font-size:4.4vw;font-weight:600;opacity:.95;margin:5vw 0 0;white-space:nowrap}
+body.video #video{display:block;position:relative;width:100vw;height:100vh;overflow:hidden;color:var(--ar-ink);font-family:var(--cond);
+  background:radial-gradient(120vw 80vw at 50% 0%,#3A1F8F 0%,transparent 60%),radial-gradient(90vw 70vw at 50% 105%,#0F5C66 0%,transparent 60%),var(--ar-bg)}
+#video .grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.05) 1px,transparent 1px);background-size:6vw 6vw;mask-image:linear-gradient(to bottom,transparent,#000 30%,#000 70%,transparent)}
+#video .scene{position:absolute;inset:0;display:flex;flex-direction:column;padding:7vw 6vw 6vw}
+#video .tag{display:flex;justify-content:space-between;align-items:center;font-size:3.6vw;letter-spacing:.04em;color:var(--ar-dim);font-weight:600}
+#video .tag b{color:var(--ar-ball);font-family:var(--ar-disp);font-weight:400;letter-spacing:.02em}
+#video .live{display:inline-flex;align-items:center;gap:1.6vw;padding:1vw 2.4vw;border-radius:99vw;background:rgba(255,62,165,.16);color:#FF8CC8;font-family:var(--ar-disp);font-size:3vw}
+#video .live i{width:1.8vw;height:1.8vw;border-radius:50%;background:var(--ar-p2);box-shadow:0 0 2vw var(--ar-p2);animation:clign 1s steps(2) infinite}
+@keyframes clign{50%{opacity:.2}}
+/* fiches joueurs + barres de vie (probabilité de gagner, en direct) */
+#video .duel{display:grid;grid-template-columns:1fr 1fr;gap:3vw;margin-top:5vw}
+#video .pj{padding:3vw;border-radius:3vw;background:linear-gradient(160deg,rgba(255,255,255,.08),rgba(255,255,255,.02));border:.4vw solid rgba(255,255,255,.12);transition:box-shadow .15s,border-color .15s}
+#video .pj.p1{--c:var(--ar-p1)} #video .pj.p2{--c:var(--ar-p2);text-align:right}
+#video .pj .nom{font-family:var(--ar-disp);font-size:5.6vw;line-height:1.05;color:var(--c);text-shadow:0 0 3vw color-mix(in srgb,var(--c) 60%,transparent);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#video .pj .pct{font-family:var(--ar-disp);font-size:11vw;line-height:1;margin-top:1.5vw;font-variant-numeric:tabular-nums}
+#video .pj .lbl{font-size:3vw;color:var(--ar-dim);font-weight:600;letter-spacing:.03em}
+#video .vie{height:3.2vw;border-radius:2vw;background:rgba(255,255,255,.1);margin-top:2vw;overflow:hidden;position:relative}
+#video .vie i{position:absolute;top:0;bottom:0;background:var(--c);box-shadow:0 0 3vw var(--c);transition:width .25s ease-out}
+#video .p1 .vie i{left:0} #video .p2 .vie i{right:0}
+#video .pj.flash{border-color:var(--c);box-shadow:0 0 6vw color-mix(in srgb,var(--c) 70%,transparent)}
+#video .secoue{animation:secoue .35s}
+@keyframes secoue{20%{transform:translate(-1.2vw,.6vw)}40%{transform:translate(1.2vw,-.6vw)}60%{transform:translate(-.8vw,.4vw)}80%{transform:translate(.6vw,0)}}
+/* tableau de score */
+#video .score{margin-top:4vw;border-radius:3vw;background:rgba(5,3,20,.65);border:.4vw solid rgba(255,255,255,.12);padding:2vw 3vw}
+#video .score table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+#video .score td{font-family:var(--ar-disp);font-size:6.4vw;padding:.8vw 1.4vw;text-align:center}
+#video .score td.n{text-align:left;font-size:5.4vw;width:100%;white-space:nowrap}
+#video .score tr.r1 td.n{color:var(--ar-p1)} #video .score tr.r2 td.n{color:var(--ar-p2)}
+#video .score td.s{color:var(--ar-dim)}
+#video .score td.pt{min-width:2.6em;background:var(--ar-ball);color:#160E33;border-radius:1.4vw}
+#video .score .srv{display:inline-block;width:2.2vw;height:2.2vw;border-radius:50%;background:var(--ar-ball);box-shadow:0 0 2vw var(--ar-ball);margin-right:2vw;vertical-align:middle;visibility:hidden}
+#video .score .srv.on{visibility:visible}
+/* court vu de haut, en perspective, avec la balle */
+#video .arene{flex:1;display:flex;align-items:center;justify-content:center;perspective:140vw;margin-top:2vw;min-height:0}
+#video .court{position:relative;width:62vw;height:92vw;transform:rotateX(38deg);background:linear-gradient(#1D6B8C,#15506A);border:.7vw solid #E9F6FF;border-radius:.6vw;box-shadow:0 4vw 10vw rgba(0,0,0,.55),0 0 6vw rgba(46,230,255,.25)}
+#video .court::before{content:"";position:absolute;left:12%;right:12%;top:0;bottom:0;border-left:.4vw solid rgba(233,246,255,.8);border-right:.4vw solid rgba(233,246,255,.8)}
+#video .court::after{content:"";position:absolute;left:12%;right:12%;top:25%;bottom:25%;border-top:.4vw solid rgba(233,246,255,.8);border-bottom:.4vw solid rgba(233,246,255,.8);background:linear-gradient(90deg,transparent calc(50% - .2vw),rgba(233,246,255,.8) calc(50% - .2vw),rgba(233,246,255,.8) calc(50% + .2vw),transparent calc(50% + .2vw))}
+#video .filet{position:absolute;left:-3vw;right:-3vw;top:calc(50% - .5vw);height:1vw;background:#F4F1FF;box-shadow:0 1vw 2vw rgba(0,0,0,.4);z-index:2}
+#video .balle{position:absolute;width:4.4vw;height:4.4vw;margin:-2.2vw 0 0 -2.2vw;border-radius:50%;background:radial-gradient(circle at 35% 35%,#F6FFB0,var(--ar-ball) 55%,#9DBF10);box-shadow:0 0 4vw var(--ar-ball),0 0 9vw rgba(212,255,58,.5);z-index:3;left:50%;top:80%}
+#video .court .cote{position:absolute;left:0;right:0;height:50%;transition:background .2s}
+#video .court .cote.haut{top:0} #video .court .cote.bas{bottom:0}
+#video .court .cote.eclat-p1{background:rgba(46,230,255,.35)} #video .court .cote.eclat-p2{background:rgba(255,62,165,.35)}
+/* annonces (BREAK !, BALLE DE MATCH…) */
+#video .annonce{position:absolute;left:4vw;right:4vw;top:63%;transform-origin:50% 50%;text-align:center;font-family:var(--ar-disp);font-size:13vw;line-height:1;pointer-events:none;z-index:10;opacity:0;
+  color:var(--ar-ball);-webkit-text-stroke:.25vw #160E33;paint-order:stroke fill;text-shadow:0 1vw 0 #160E33,0 0 6vw currentColor}
+#video .annonce small{display:block;font-size:5.4vw;margin-top:2vw;-webkit-text-stroke:0;text-shadow:0 .6vw 0 #160E33;color:var(--ar-ink)}
+#video .annonce.pop{animation:pop var(--duree,900ms) cubic-bezier(.2,1.4,.4,1) forwards}
+@keyframes pop{0%{opacity:0;transform:scale(.3) rotate(-8deg)}18%{opacity:1;transform:scale(1.12) rotate(2deg)}30%{transform:scale(1) rotate(-1deg)}80%{opacity:1}100%{opacity:0;transform:scale(1.05)}}
+#video .combo{position:absolute;right:6vw;bottom:15vw;font-family:var(--ar-disp);font-size:6vw;color:var(--ar-ball);opacity:0;transition:opacity .2s;text-shadow:0 0 3vw var(--ar-ball)}
+#video .combo.on{opacity:1}
+#video .ralenti{position:absolute;left:6vw;bottom:15vw;font-family:var(--ar-disp);font-size:4vw;color:#FF8CC8;opacity:0;transition:opacity .2s}
+#video .ralenti.on{opacity:1;animation:clign .5s steps(2) infinite}
+#video .pied{font-size:3.4vw;color:var(--ar-dim);text-align:center;font-weight:600;margin-top:2vw}
+/* écran d'intro VS et écran de fin */
+#video .ecran{position:absolute;inset:0;z-index:20;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4vw;background:rgba(14,10,36,.92);text-align:center;padding:8vw}
+#video .ecran.cache{opacity:0;transition:opacity .4s;pointer-events:none}
+#video .vs-n{font-family:var(--ar-disp);font-size:9vw;line-height:1.05}
+#video .vs-n.a{color:var(--ar-p1);text-shadow:0 0 5vw var(--ar-p1);animation:gauche .5s cubic-bezier(.2,1.3,.4,1) both}
+#video .vs-n.b{color:var(--ar-p2);text-shadow:0 0 5vw var(--ar-p2);animation:droite .5s .15s cubic-bezier(.2,1.3,.4,1) both}
+#video .vs-x{font-family:var(--ar-disp);font-size:20vw;color:var(--ar-ball);-webkit-text-stroke:.6vw #160E33;text-shadow:0 1.2vw 0 #160E33,0 0 8vw var(--ar-ball);animation:slam .45s .45s cubic-bezier(.2,1.6,.4,1) both}
+#video .vs-t{font-size:4.6vw;color:var(--ar-dim);font-weight:600;animation:fondu .4s .8s both}
+#video .vs-t b{color:var(--ar-ball);font-family:var(--ar-disp);font-weight:400}
+@keyframes gauche{from{transform:translateX(-120vw)}} @keyframes droite{from{transform:translateX(120vw)}}
+@keyframes slam{from{transform:scale(4);opacity:0}} @keyframes fondu{from{opacity:0;transform:translateY(3vw)}}
+#video .fin-t{font-family:var(--ar-disp);font-size:12vw;line-height:1;color:var(--ar-ball);-webkit-text-stroke:.5vw #160E33;text-shadow:0 1vw 0 #160E33,0 0 6vw var(--ar-ball);animation:slam .5s cubic-bezier(.2,1.6,.4,1) both}
+#video .fin-w{font-family:var(--ar-disp);font-size:8vw;animation:fondu .4s .35s both}
+#video .fin-s{font-family:var(--ar-disp);font-size:7vw;color:var(--ar-ink);animation:fondu .4s .5s both;font-variant-numeric:tabular-nums}
+#video .fin-p{font-size:5vw;font-weight:600;color:var(--ar-dim);animation:fondu .4s .9s both;max-width:22ch;line-height:1.25}
+#video .fin-p b{color:var(--ar-ink);font-family:var(--ar-disp);font-weight:400}
+#video .fin-url{font-size:4vw;color:var(--ar-dim);margin-top:3vw}
+#video .confetti{position:absolute;top:-4vw;width:2vw;height:3.4vw;border-radius:.4vw;z-index:21;animation:tombe var(--d) linear var(--r) forwards}
+@keyframes tombe{to{transform:translateY(110vh) rotate(var(--rot))}}
 @media (prefers-reduced-motion: reduce){*{scroll-behavior:auto}}
 </style>
 </head>
@@ -261,7 +316,14 @@ const T = {
   maj:d=>`Pronostics mis à jour le ${dateHeure(d)}.`,
   v_kicker:"L'algo a simulé ce match", v_fois:n=>`${fmt(n)} fois`, v_url:'algo.tennis-edge.workers.dev',
   v_fin:(w,s,n,p,x)=>`Cette simulation\u00a0: ${w} <span class="nw">${s}</span>.<br>Sur ${fmt(n)}\u00a0: ${x} gagne <span class="nw">${pc(p)}</span> du temps.`,
-  set_s:'Set', jeu:'Jeu', jeu_decisif:'Jeu décisif'
+  set_s:'Set', jeu:'Jeu', jeu_decisif:'Jeu décisif',
+  a_live:'EN DIRECT', a_sim:'SIMULATION', a_fois:n=>`×${fmt(n)}`, a_chance:'chance de gagner',
+  a_bb:'BALLE DE BREAK', a_bs:'BALLE DE SET', a_bm:'BALLE DE MATCH', a_break:'BREAK !', a_tb:'JEU DÉCISIF',
+  a_set:n=>`SET ${n}`, a_pour:x=>`pour ${x}`, a_combo:n=>`COMBO ×${n}`, a_ralenti:'RALENTI',
+  a_fin:'JEU, SET ET MATCH', a_gagne:x=>`${x} gagne`,
+  a_vs_t:n=>`L'algo a joué ce match <b>${fmt(n)}</b> fois.<br>Voici l'une d'elles.`,
+  a_fin_p:(x,q,n)=>`Sur ${fmt(n)} simulations, <b>${x}</b> gagne <b>${pc(q)}</b> du temps.`,
+  a_pied:n=>`Simulation point par point · une parmi ${fmt(n)}`
  },
  en:{
   marque:'· the algorithm', html_lang:'en',
@@ -295,7 +357,14 @@ const T = {
   maj:d=>`Predictions updated ${dateHeure(d)}.`,
   v_kicker:'The algorithm simulated this match', v_fois:n=>`${fmt(n)} times`, v_url:'algo.tennis-edge.workers.dev',
   v_fin:(w,s,n,p,x)=>`This simulation: ${w} <span class="nw">${s}</span>.<br>Across ${fmt(n)}: ${x} wins <span class="nw">${pc(p)}</span> of the time.`,
-  set_s:'Set', jeu:'Game', jeu_decisif:'Tiebreak'
+  set_s:'Set', jeu:'Game', jeu_decisif:'Tiebreak',
+  a_live:'LIVE', a_sim:'SIMULATION', a_fois:n=>`×${fmt(n)}`, a_chance:'win chance',
+  a_bb:'BREAK POINT', a_bs:'SET POINT', a_bm:'MATCH POINT', a_break:'BREAK!', a_tb:'TIEBREAK',
+  a_set:n=>`SET ${n}`, a_pour:x=>`to ${x}`, a_combo:n=>`COMBO ×${n}`, a_ralenti:'SLOW-MO',
+  a_fin:'GAME, SET, MATCH', a_gagne:x=>`${x} wins`,
+  a_vs_t:n=>`The algorithm played this match <b>${fmt(n)}</b> times.<br>Here's one of them.`,
+  a_fin_p:(x,q,n)=>`Across ${fmt(n)} simulations, <b>${x}</b> wins <b>${pc(q)}</b> of the time.`,
+  a_pied:n=>`Point-by-point simulation · one of ${fmt(n)}`
  }
 };
 const Q = new URLSearchParams(location.search);
@@ -568,29 +637,134 @@ function rendTout(){
 document.querySelectorAll('.lang button').forEach(b=>b.addEventListener('click',()=>{
   L=b.dataset.lang; try{ localStorage.setItem('te_lang',L); }catch(e){} if (lecteur) lecteur.stop(); rendTout(); }));
 
-/* ───────────── mode vidéo (?video=1) ───────────── */
-function modeVideo(){
+/* ───────────── mode vidéo « arcade » (?video=1) — 24/10/2026 ─────────────
+   Écran VS, barres de vie = probabilité de gagner en direct, court vu de haut avec la balle, annonces
+   (BREAK !, BALLE DE MATCH…), combos, ralenti sur les points importants, confettis à la fin.
+   Le match simulé est calé sur le % publié (calibre) : la vidéo raconte la même histoire que le pronostic. */
+const dort = ms => new Promise(r => setTimeout(r, ms));
+async function modeVideo(){
   document.body.classList.add('video');
+  try { const l = document.createElement('link'); l.rel = 'stylesheet';
+    l.href = 'https://fonts.googleapis.com/css2?family=Bungee&display=block'; document.head.appendChild(l); } catch(e){}
   const id = Q.get('uid') || (D.match_du_jour && D.match_du_jour.uid);
   const m = D.matchs.find(x=>x.uid===id && x.simulation);
   const V = document.getElementById('video');
-  if (!m){ V.innerHTML = '<p class="v-title">—</p>'; window.__fini = true; return; }
-  const p=m.p_home, seed = Number(Q.get('seed') || 7);
-  V.innerHTML = `<p class="v-kicker">${esc(t('v_kicker'))} <b>${esc(t('v_fois', D.simulations))}</b></p>
-    <p class="v-title">${esc(court(m.home))} – ${esc(court(m.away))}</p>
-    <div class="v-duel"><div><div class="p">${pc0(p)}</div><div class="n">${esc(m.home)}</div></div><div class="r"><div class="p">${pc0(1-p)}</div><div class="n">${esc(m.away)}</div></div></div>
-    <div class="split"><i style="width:${(p*100).toFixed(1)}%"></i></div>
-    <div class="sim" id="vsim"></div>
-    <p class="v-end" id="vend"></p>
-    ${Q.get('adresse') === '1' ? `<p class="v-url">${esc(t('v_url'))}</p>` : ''}`;
-  const vit = Number(Q.get('vitesse') || 1.2);
-  const lec = Lecteur(document.getElementById('vsim'), m, {seed, vitesse:vit, court:true, onFin:S=>{
-    const w = S.vainqueur===0 ? court(m.home) : court(m.away), fav = p>=.5 ? court(m.home) : court(m.away);
-    document.getElementById('vend').innerHTML = t('v_fin', esc(w), esc(scoreTxt(S, S.vainqueur===1)), D.simulations, Math.max(p,1-p)*100, esc(fav));
-    setTimeout(()=>{ window.__fini = true; }, 3500);
-  }});
-  const go = () => setTimeout(()=>lec.lance(), Number(Q.get('attente') || 2500));
-  (document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve()).then(()=>{ window.__pret = true; go(); });
+  if (!m){ V.innerHTML = '<p style="padding:10vw">—</p>'; window.__fini = true; return; }
+  const p = m.p_home, seed = Number(Q.get('seed') || 7), vit = Number(Q.get('vitesse') || 1);
+  const R = rng(seed), M = Moteur(calibre(m.simulation, p)), S = M.etat(seed % 2);
+  const noms = [court(m.home), court(m.away)];
+  const decal = logit(Math.min(.995,Math.max(.005,p))) - logit(Math.min(.995,Math.max(.005,M.pLive(S))));
+  const pAff = () => { const q = M.pLive(S); return (q<=0||q>=1) ? q : sig(logit(q)+decal); };
+  V.innerHTML = `<div class="grid"></div><div class="scene">
+    <div class="tag"><span class="live"><i></i>${esc(t('a_live'))}</span><span>${esc(m.tournoi)}</span><span><b>${esc(t('a_sim'))}</b> ${esc(t('a_fois', D.simulations))}</span></div>
+    <div class="duel">${[0,1].map(i=>`<div class="pj p${i+1}" id="pj${i}"><div class="nom">${esc(noms[i])}</div>
+      <div class="pct" id="pc${i}"></div><div class="lbl">${esc(t('a_chance'))}</div><div class="vie"><i id="vie${i}"></i></div></div>`).join('')}</div>
+    <div class="score"><table><tbody><tr class="r1" id="sr0"></tr><tr class="r2" id="sr1"></tr></tbody></table></div>
+    <div class="arene"><div class="court"><div class="cote haut" id="cote1"></div><div class="cote bas" id="cote0"></div>
+      <div class="filet"></div><div class="balle" id="balle"></div></div></div>
+    <div class="pied">${esc(t('a_pied', D.simulations))}</div></div>
+    <div class="annonce" id="ann"></div><div class="combo" id="combo"></div><div class="ralenti" id="ral">${esc(t('a_ralenti'))}</div>
+    <div class="ecran" id="intro"><div class="vs-n a">${esc(m.home)}</div><div class="vs-x">VS</div>
+      <div class="vs-n b">${esc(m.away)}</div><div class="vs-t">${t('a_vs_t', D.simulations)}</div></div>`;
+  const $ = id => document.getElementById(id);
+  let pPrec = p;
+  function jauges(q){
+    [q, 1-q].forEach((v,i)=>{ $('pc'+i).textContent = pc0(v); $('vie'+i).style.width = (v*100).toFixed(1)+'%'; });
+    if (Math.abs(q - pPrec) > 0.06){ const d = $(q > pPrec ? 'pj0' : 'pj1'); d.classList.remove('secoue'); void d.offsetWidth; d.classList.add('secoue'); }
+    pPrec = q;
+  }
+  function tableau(){
+    const srv = S.fini ? -1 : M.serveur(S);
+    [0,1].forEach(i=>{
+      $('sr'+i).innerHTML = `<td class="n"><span class="srv ${srv===i?'on':''}"></span>${esc(noms[i])}</td>`
+        + S.histo.map(h=>`<td class="s">${h[i]}</td>`).join('')
+        + (S.fini ? '' : `<td>${S.jeux[i]}</td><td class="pt">${affPts(S,i)}</td>`);
+    });
+  }
+  const alea = (a,b) => a + (b-a) * R();
+  function frappe(h, ms){
+    const b = $('balle'), perdant = 1 - h;            // la balle finit dans la moitié du perdant
+    b.style.transition = `left ${ms}ms cubic-bezier(.3,.1,.3,1), top ${ms}ms cubic-bezier(.3,.1,.3,1)`;
+    b.style.left = alea(14, 86).toFixed(1) + '%';
+    b.style.top = (perdant === 0 ? alea(60, 92) : alea(8, 40)).toFixed(1) + '%';
+    const c = $('cote'+perdant); c.className = 'cote ' + (perdant ? 'haut' : 'bas') + ' eclat-p' + (h+1);
+    setTimeout(()=>{ c.className = 'cote ' + (perdant ? 'haut' : 'bas'); }, Math.max(120, ms));
+    const pj = $('pj'+h); pj.classList.add('flash'); setTimeout(()=>pj.classList.remove('flash'), Math.max(120, ms));
+  }
+  function annonce(txt, sous, ms, couleur){
+    const a = $('ann'); a.classList.remove('pop'); void a.offsetWidth;
+    a.innerHTML = esc(txt) + (sous ? `<small>${esc(sous)}</small>` : '');
+    a.style.color = couleur || ''; a.style.setProperty('--duree', ms + 'ms'); a.classList.add('pop');
+  }
+  const coul = i => i === 0 ? 'var(--ar-p1)' : 'var(--ar-p2)';
+  function enjeu(X){                                  // point important : match > set > break (pour qui)
+    X = X || S;
+    let best = null;
+    for (const h of [0,1]){
+      const C = JSON.parse(JSON.stringify(X)), srv = M.serveur(X), tb = X.tb;
+      M.point(C, h === 0 ? 0 : 0.9999999);
+      const set = C.sets[0]+C.sets[1] > X.sets[0]+X.sets[1], jeu = set || C.jeux[0]+C.jeux[1] > X.jeux[0]+X.jeux[1];
+      const k = C.fini ? 3 : set ? 2 : (jeu && !tb && h !== srv) ? 1 : 0;
+      if (k && (!best || k > best.k)) best = {k, h};
+    }
+    return best;
+  }
+  jauges(p); tableau();
+  await Promise.race([ (document.fonts && document.fonts.load ? document.fonts.load('40px Bungee') : Promise.resolve()), dort(3000) ]);
+  window.__pret = true;
+  await dort(Number(Q.get('attente') || 2600) / vit);
+  $('intro').classList.add('cache');
+  await dort(500 / vit);
+  // Rythme calé sur une durée cible (~32 s) : le même match est d'abord joué « à blanc » (même tirage) pour
+  // compter ses points et ses moments forts, puis la vitesse et les ralentis sont dosés en conséquence.
+  const CIBLE = Number(Q.get('duree') || 27) * 1000;
+  const blanc = (() => { const Rb = rng(seed), X = M.etat(seed % 2); let n = 0, ev = 0;
+    while (!X.fini){ const e = enjeu(X); const a = {s: X.sets[0]+X.sets[1], j: X.jeux[0]+X.jeux[1], v: M.serveur(X), tb: X.tb};
+      const h = M.point(X, Rb()); n++; if (e) ev += 930;
+      if (!X.fini && X.sets[0]+X.sets[1] > a.s) ev += 1100; else if (!X.fini && X.jeux[0]+X.jeux[1] > a.j && !a.tb && h !== a.v) ev += 700;
+      if (X.tb && !a.tb) ev += 950; }
+    return {n, ev}; })();
+  const fixe = 3100 + 5100;
+  const f = Math.max(0.45, Math.min(1, 0.55 * (CIBLE - fixe) / Math.max(1, blanc.ev)));   // dosage des ralentis
+  const base = Math.max(28, Math.min(64, (CIBLE - fixe - f * blanc.ev) / Math.max(1, blanc.n))) / vit;
+  let serie = 0, dernier = -1, nset = 1;
+  while (!S.fini){
+    const e = enjeu();
+    let ms = base;
+    if (e){
+      const lib = [null, t('a_bb'), t('a_bs'), t('a_bm')][e.k];
+      annonce(lib, noms[e.h], 950 * f / vit, coul(e.h)); $('ral').classList.add('on');
+      await dort(600 * f / vit); ms = 330 * f / vit;
+    }
+    const avant = { sets: S.sets[0]+S.sets[1], jeux: S.jeux[0]+S.jeux[1], srv: M.serveur(S), tb: S.tb };
+    const h = M.point(S, R());
+    frappe(h, Math.min(ms * 0.9, 380));
+    serie = h === dernier ? serie + 1 : 1; dernier = h;
+    const cb = $('combo'); if (serie >= 4){ cb.textContent = t('a_combo', serie); cb.style.color = coul(h); cb.classList.add('on'); } else cb.classList.remove('on');
+    jauges(pAff()); tableau();
+    await dort(ms);
+    $('ral').classList.remove('on');
+    if (S.fini) break;
+    const sets = S.sets[0]+S.sets[1], jeux = S.jeux[0]+S.jeux[1];
+    if (sets > avant.sets){ nset++; annonce(t('a_set', nset - 1), t('a_pour', noms[h]), 1150 * f / vit, coul(h)); await dort(1100 * f / vit); }
+    else if (jeux > avant.jeux && !avant.tb && h !== avant.srv){ annonce(t('a_break'), noms[h], 800 * f / vit, coul(h)); await dort(700 * f / vit); }
+    if (S.tb && !avant.tb){ annonce(t('a_tb'), '', 1000 * f / vit); await dort(950 * f / vit); }
+  }
+  const w = S.vainqueur, fav = p >= .5 ? 0 : 1;
+  await dort(500 / vit);
+  const fin = document.createElement('div'); fin.className = 'ecran';
+  fin.innerHTML = `<div class="fin-t">${esc(t('a_fin'))}</div>
+    <div class="fin-w" style="color:${coul(w)};text-shadow:0 0 5vw ${coul(w)}">${esc(t('a_gagne', noms[w]))}</div>
+    <div class="fin-s">${esc(scoreTxt(S, w === 1))}</div>
+    <div class="fin-p">${t('a_fin_p', esc(noms[fav]), Math.max(p,1-p)*100, D.simulations)}</div>
+    ${Q.get('adresse') === '1' ? `<div class="fin-url">${esc(t('v_url'))}</div>` : ''}`;
+  V.appendChild(fin);
+  const cols = ['#2EE6FF','#FF3EA5','#D4FF3A','#F4F1FF','#9B6BFF'];
+  for (let i=0;i<70;i++){ const c = document.createElement('i'); c.className='confetti';
+    c.style.cssText = `left:${(R()*100).toFixed(1)}vw;background:${cols[i%cols.length]};--d:${(2.2+R()*1.6).toFixed(2)}s;--r:${(R()*0.8).toFixed(2)}s;--rot:${Math.round(R()*720-360)}deg`;
+    V.appendChild(c); }
+  await dort(4600 / Math.min(vit, 1));
+  window.__fini = true;
 }
 
 rendTextes();
