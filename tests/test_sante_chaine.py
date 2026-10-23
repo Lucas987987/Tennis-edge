@@ -13,10 +13,10 @@ T0 = dt.datetime(2026, 10, 23, 9, 0, tzinfo=dt.timezone.utc)
 
 
 def ecrire(d, pron_h, feuil_h, verd_h):
-    os.makedirs(os.path.join(d, 'Tennis_Edge_Lab', 'live'), exist_ok=True)
+    os.makedirs(os.path.join(d, 'algo'), exist_ok=True)
     os.makedirs(os.path.join(d, 'feuilles'), exist_ok=True)
     iso = lambda h: (T0 - dt.timedelta(hours=h)).isoformat()
-    json.dump({'genere_le': iso(pron_h).replace('+00:00', 'Z')}, open(os.path.join(d, 'Tennis_Edge_Lab', 'live', 'pronostics.json'), 'w'))
+    json.dump({'pronostics_du': iso(pron_h).replace('+00:00', 'Z')}, open(os.path.join(d, 'algo', 'donnees.json'), 'w'))
     json.dump({'dernier_passage': {'le': iso(feuil_h)}}, open(os.path.join(d, 'feuilles', 'etat.json'), 'w'))
     json.dump({'genere_le': iso(verd_h)}, open(os.path.join(d, 'verdicts_direct.json'), 'w'))
 
