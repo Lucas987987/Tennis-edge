@@ -194,6 +194,65 @@ def nouveaux_venus(hors, P, lim, experience, poids_finaux=None):
     return correction_situation(hors, P, lim, valeur, 'nouveaux_venus', poids_finaux)
 
 
+# ------------------------------------------------------------------ 23/10/2026 : des arbres qui combinent tout
+VARIABLES = ('z_elo', 'z_sim', 'ecart_nouveau', 'ecart_qualifie', 'ecart_transition',
+             'nouveau_max', 'challenger', 'wta', 'terre', 'gazon', 'cinq_sets', 'desaccord')
+ECARTS = (0, 1, 2, 3, 4)            # variables « écart » : changent de signe quand on change de côté
+
+
+def variables_match(p_elo, p_sim, n1, n2, sit1, sit2, circuit, surface, bo):
+    """Vu du joueur 1 (en walk-forward : le vrai vainqueur ; en pronostic : home). sit = (qualifié, transition)."""
+    ze, zs = _lg(p_elo), _lg(p_sim)
+    a, b = nouveau(n1), nouveau(n2)
+    return [ze, zs, a - b, sit1[0] - sit2[0], sit1[1] - sit2[1], max(a, b), 1.0 if circuit == 'CH' else 0.0,
+            1.0 if circuit == 'WTA' else 0.0, 1.0 if surface == 'Clay' else 0.0, 1.0 if surface == 'Grass' else 0.0,
+            1.0 if bo == 5 else 0.0, abs(ze - zs)]
+
+
+def modele_arbres(hors, P, lim, experience, situations, nv, poids_finaux=None):
+    """RÈGLE FIXÉE AVANT DE VOIR LE RÉSULTAT (23/10/2026, 10 h 40) : des arbres (arbres.py) partent du mélange
+    et apprennent des corrections avec toutes les variables (Elo, simulation, nouveaux venus, qualifiés,
+    changement de surface, circuit, surface, format, désaccord simulation / Elo). Appris avant les 6 dernières
+    semaines ; adoptés si la log loss du vainqueur des 6 dernières semaines est plus basse que celle du modèle
+    actuel (mélange + correction des nouveaux venus si elle est adoptée). Il faut 1 500 matchs avant et 500 à
+    juger. Adoptés, ils sont ré-appris sur tous les pronostics hors échantillon, au-dessus des poids finaux."""
+    import arbres as A
+    if not P or not experience:
+        return {'adopte': False, 'raison': 'pas de mélange ou pas de compte de matchs'}
+    lignes = []
+    for x, ps, pe in hors:
+        e = experience.get(id(x))
+        if not e:
+            continue
+        sv = situations.get(id(x)) or {} if situations else {}
+        q, t = sv.get('qualifies') or (0.0, 0.0), sv.get('transition') or (0.0, 0.0)
+        v = variables_match(pe, ps, e[0], e[1], (q[0], t[0]), (q[1], t[1]), x.get('circuit'), x.get('surface'), x.get('bo'))
+        lignes.append((x['jour'] >= lim, v, (x, ps, pe), e))
+    av = [l for l in lignes if not l[0]]
+    ju = [l for l in lignes if l[0]]
+    if len(av) < 1500 or len(ju) < 500:
+        return {'adopte': False, 'raison': f"pas assez de matchs ({len(av)} avant, {len(ju)} à juger)"}
+    off = lambda Pw, h: _lg(S.melange(Pw, h[2], h[1]))
+    X, y, o = A.symetriser([(v, off(P, h), ECARTS) for _, v, h, _ in av])
+    M = A.apprendre(X, y, o)
+    d = (nv or {}).get('delta_appris_avant') if (nv or {}).get('adopte') else None
+    sg_ = lambda z: 1 / (1 + math.exp(-max(min(z, 30), -30)))
+    actuel = [sg_(off(P, h) + (d * (nouveau(e[0]) - nouveau(e[1])) if d else 0.0)) for _, v, h, e in ju]
+    neuf = [A.predire_symetrique(M, v, off(P, h), ECARTS) for _, v, h, _ in ju]
+    l0, l1 = _ll(actuel), _ll(neuf)
+    ok = l1 < l0
+    out = {'adopte': bool(ok), 'n_juge': len(ju), 'variables': list(VARIABLES),
+           'jugement': {'actuel': _bilan(actuel), 'arbres': _bilan(neuf)},
+           'raison': (f"6 dernières semaines ({len(ju)} matchs) : arbres {round(l1, 4)} contre modèle actuel {round(l0, 4)} "
+                      f"(vainqueur trouvé {round(100 * _ok(neuf), 1)} % contre {round(100 * _ok(actuel), 1)} %)")}
+    if ok:
+        Pf = poids_finaux or P
+        X, y, o = A.symetriser([(v, off(Pf, h), ECARTS) for _, v, h, _ in lignes])
+        out['modele'] = A.apprendre(X, y, o)
+        out['poids'] = {k: round(v, 4) for k, v in Pf.items()}       # le mélange de départ, à reprendre tel quel
+    return out
+
+
 def rejouer_saison(lignes, p_elo, groupes, apprendre, victoire_ligne, ajuster_poids, sigma,
                    poids_archive=None, aujourdhui=None, experience=None, situations=None):
     """Pronostics hors échantillon semaine par semaine ; renvoie le rapport et les poids finaux."""
@@ -253,6 +312,7 @@ def rejouer_saison(lignes, p_elo, groupes, apprendre, victoire_ligne, ajuster_po
     for cle_s in ('qualifies', 'transition'):
         out[cle_s] = (correction_situation(hors, P, lim, lambda x, c=cle_s: (situations.get(id(x)) or {}).get(c), cle_s, final)
                       if situations else {'adopte': False, 'raison': 'pas de données'})
+    out['modele_arbres'] = modele_arbres(hors, P, lim, experience, situations, out.get('nouveaux_venus'), final)
     l_new = _ll([S.melange(P, pe, ps) for _, ps, pe in juge])
     l_arch = _ll([S.melange(poids_archive, pe, ps) for _, ps, pe in juge]) if poids_archive else None
     l_elo = _ll([pe for _, _, pe in juge])
