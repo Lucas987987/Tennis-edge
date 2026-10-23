@@ -1,26 +1,41 @@
 {
  "schema_version": 1,
- "genere_le": "2026-10-22T05:08:54Z",
+ "genere_le": "2026-10-23T05:25:50Z",
  "canaux": {
   "MISER": {
    "libelle": "🎯 MISER — steam, EV ≥ seuil vs Pinnacle juste (vainqueur du match)",
    "source": "miser_signal_log.jsonl (messages envoyés) + ajouts de suivi_direct",
    "regle": "première alerte de chaque match, au book et au prix du message ; relances non recomptées",
-   "debut": null,
-   "n_alertes": 0,
-   "n_matchs": 0,
+   "debut": "2026-10-22",
+   "n_alertes": 1,
+   "n_matchs": 1,
    "n_relances": 0,
    "n_denoues": 0,
    "bilan": {
     "n": 0,
-    "clv_mediane": null,
-    "n_commencees": 0,
-    "n_sans_resultat": 0,
-    "sans_resultat_pct": 0.0,
-    "verrouillable": true,
-    "statut": "verrouillable (résultats complets à 100 %)"
+    "clv_moyen": 11.6,
+    "clv_pin_moyen": 11.6,
+    "clv_pin_ic95": null,
+    "clv_pin_p": null,
+    "clv_n": 1,
+    "clv_positif": 100.0,
+    "clv_mediane": 11.6,
+    "n_commencees": 1,
+    "n_sans_resultat": 1,
+    "sans_resultat_pct": 100.0,
+    "verrouillable": false,
+    "statut": "en attente de résultats (100,0 % sans résultat)"
    },
-   "paris": {}
+   "paris": {
+    "2026-10-22_valerio_aboian_matias_soto": {
+     "gagne": null,
+     "pnl": null,
+     "pin_close": 2.029,
+     "pin_close_adv": 1.819,
+     "clv_pin": 11.619,
+     "source_resultat": "inconnu"
+    }
+   }
   }
  }
 }
