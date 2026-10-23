@@ -181,7 +181,22 @@ BAS = ('CH', 'ITF')          # niveaux où un nouveau joueur part plus bas (règ
 DEPART_BAS = 1200.0
 
 
-def rejouer(M, nous, td_rows, cle_c, idx, depart_bas, nouveaux=False, options=None):
+def resultats_feuilles(racine, depuis):
+    """23/10/2026 — résultats des feuilles TennisApi (tous circuits collectés, Challenger compris) après
+    `depuis` : matchs au format donnees ; les forfaits (walkover) sont écartés, aucun jeu n'a été joué."""
+    import feuilles as FE
+    out = []
+    for r in FE.lire(racine):
+        if 'walkover' in str((r.get('statut') or {}).get('texte') or '').lower():
+            continue
+        m = FE.en_match(r)
+        if m and m['date'] > depuis and m['nom_g'] and m['nom_p']:
+            out.append(m)
+    out.sort(key=lambda m: m['date'])
+    return out
+
+
+def rejouer(M, nous, td_rows, cle_c, idx, depart_bas, nouveaux=False, options=None, feuilles=None):
     """Rejoue tout dans l'ordre ; renvoie classement, pronostics de l'archive et de nos matchs.
     nouveaux : un nom tennis-data inconnu partout (ni Sackmann ni nos matchs) devient un nouveau
     joueur au lieu de faire jeter le match ; un nom ambigu reste écarté.
@@ -207,6 +222,20 @@ def rejouer(M, nous, td_rows, cle_c, idx, depart_bas, nouveaux=False, options=No
     for x in nous:
         paires_nous[frozenset((cle_c(x['home']), cle_c(x['away'])))].append(x['date'])
     ev, cpt, crees = [], collections.Counter({'ajoutes': 0, 'non_reconnus': 0, 'doublons_ecartes': 0}), set()
+    # 23/10/2026 : résultats des feuilles (Challenger et février → mai compris) — placés en fin de journée comme
+    # tennis-data ; écartés s'ils doublent l'un de nos matchs ; un résultat tennis-data qui double une feuille
+    # est écarté à son tour (la feuille a la surface).
+    paires_feuilles = collections.defaultdict(list)
+    for m in feuilles or []:
+        w_, l_ = cle_c(m['nom_g']), cle_c(m['nom_p'])
+        if any(abs((m['date'] - d2).days) <= 2 for d2 in paires_nous.get(frozenset((w_, l_)), [])):
+            cpt['feuilles_doublons'] += 1
+            continue
+        noms.setdefault(w_, m['nom_g'])
+        noms.setdefault(l_, m['nom_p'])
+        paires_feuilles[frozenset((w_, l_))].append(m['date'])
+        ev.append((dt.datetime.combine(m['date'], dt.time(23, 59, 58)), 'fe', m))
+        cpt['feuilles_ajoutees'] += 1
     for d, w, l, _c in td_rows:
         cles = []
         for nm in (w, l):
@@ -222,7 +251,8 @@ def rejouer(M, nous, td_rows, cle_c, idx, depart_bas, nouveaux=False, options=No
         if not w_ or not l_:
             cpt['non_reconnus'] += 1
             continue
-        if any(abs((d - d2).days) <= 2 for d2 in paires_nous.get(frozenset((w_, l_)), [])):
+        if any(abs((d - d2).days) <= 2 for d2 in paires_nous.get(frozenset((w_, l_)), [])) or \
+                any(abs((d - d2).days) <= 2 for d2 in paires_feuilles.get(frozenset((w_, l_)), [])):
             cpt['doublons_ecartes'] += 1
             continue
         ev.append((dt.datetime.combine(d, dt.time(23, 59, 59)), 'td', (w_, l_)))
@@ -234,6 +264,12 @@ def rejouer(M, nous, td_rows, cle_c, idx, depart_bas, nouveaux=False, options=No
     for _t, src, x in ev:
         if src == 'td':
             elo.maj(x[0], x[1])                       # surface inconnue : Elo général seulement
+            continue
+        if src == 'fe':
+            w_, l_ = cle_c(x['nom_g']), cle_c(x['nom_p'])
+            voir(w_, x['circuit'])
+            voir(l_, x['circuit'])
+            elo.maj(w_, l_, x['surface'], False, E.part_jeux(x['sets']) if x.get('complet') else None)
             continue
         h, a = cle_c(x['home']), cle_c(x['away'])
         noms.setdefault(h, x['home'])
@@ -418,7 +454,10 @@ def main(argv):
     for m in M:
         connus.setdefault(E.cle(m['nom_g']), m['nom_g'])
         connus.setdefault(E.cle(m['nom_p']), m['nom_p'])
-    alias = E.unifier(connus, {x['home'] for x in nous} | {x['away'] for x in nous})
+    fe_rows = resultats_feuilles(racine, fin_sack + dt.timedelta(days=3))
+    print(f"Feuilles TennisApi après l'archive : {len(fe_rows)} résultats", flush=True)
+    alias = E.unifier(connus, {x['home'] for x in nous} | {x['away'] for x in nous}
+                      | {m['nom_g'] for m in fe_rows} | {m['nom_p'] for m in fe_rows})
     cle_c = lambda n: alias.get(E.cle(n), E.cle(n))
     noms_c = dict(connus)
     for x in nous:
@@ -487,6 +526,29 @@ def main(argv):
                                f"nos matchs {b1.get('log_loss')} contre {b0.get('log_loss')}")}
     if a_ok and b_ok:
         retenue = nom3
+    # Étape 4 (23/10/2026), RÈGLE FIXÉE AVANT LES RÉSULTATS : les résultats des feuilles TennisApi (Challenger, et
+    # février → mai 2026 rattrapés) entrent dans le classement s'ils font baisser la log loss de nos matchs (B)
+    # sans faire monter celle de l'ATP/WTA 2024–2026 (A) de plus de 0,001.
+    feuilles_elo = {'adopte': False, 'raison': 'aucune feuille après l\'archive'}
+    if fe_rows:
+        nom4 = retenue + '+feuilles'
+        V[nom4] = rejouer(M, nous, td_rows, cle_c, idx, not retenue.startswith('depart_1500'),
+                          nouveaux='+nouveaux_joueurs' in retenue, options=V[retenue]['options'],
+                          feuilles=fe_rows)
+        V[nom4]['rapA'], V[nom4]['rapB'], V[nom4]['A'] = evaluer(V[nom4], M, td, T)
+        a0, a1 = V[retenue]['rapA']['tous']['stats_seules'], V[nom4]['rapA']['tous']['stats_seules']
+        b0, b1 = V[retenue]['rapB']['tous']['stats_seules'], V[nom4]['rapB']['tous']['stats_seules']
+        a_ok = (a0.get('n', 0) == 0 and a1.get('n', 0) == 0) or \
+            ('log_loss' in a0 and 'log_loss' in a1 and a1['log_loss'] <= a0['log_loss'] + 0.001)
+        b_ok = 'log_loss' in b0 and 'log_loss' in b1 and b1['log_loss'] < b0['log_loss']
+        feuilles_elo = {'adopte': bool(a_ok and b_ok), 'resultats': V[nom4]['td'],
+                        'raison': (f"nos matchs : log loss {b1.get('log_loss')} avec les feuilles contre {b0.get('log_loss')} sans "
+                                   f"(vainqueur {b1.get('reussite_pct')} % contre {b0.get('reussite_pct')} %) ; ATP/WTA 2024–2026 "
+                                   f"{a1.get('log_loss')} contre {a0.get('log_loss')}")}
+        print(f"Résultats des feuilles dans l'Elo : {'ADOPTÉS' if feuilles_elo['adopte'] else 'non adoptés'} — {feuilles_elo['raison']}",
+              flush=True)
+        if feuilles_elo['adopte']:
+            retenue = nom4
     W = V[retenue]
     rap = {'genere_le': dt.datetime.now(dt.timezone.utc).isoformat(timespec='seconds'),
            'objectif': 'deviner le vainqueur et le score (pas battre Pinnacle)',
@@ -497,6 +559,7 @@ def main(argv):
                              "puis, même règle, nouveaux joueurs tennis-data sur la variante de départ retenue",
            'variante_retenue': retenue,
            'elo_ameliore': elo_ameliore,
+           'feuilles_dans_elo': feuilles_elo,
            'joueurs_relies_nom_different': len(alias),
            'sackmann_jusqu_au': fin_sack.isoformat(), 'nos_matchs': len(nous),
            'resultats_tennis_data_ajoutes': W['td'],

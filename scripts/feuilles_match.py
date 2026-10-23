@@ -301,7 +301,7 @@ def main(argv):
     # 23/10/2026 : jusqu'à AUJOURD'HUI (les matchs terminés du jour) — résultats et feuilles dans la journée
     fin = argv[2] if len(argv) > 2 and argv[2] else auj.isoformat()
     voulues = tuple(norm(x) for x in argv[3].split(',')) if len(argv) > 3 and argv[3].strip() else CATEGORIES
-    etat = lire_etat()
+    etat = lire_etat(DOSSIER)
     jours = jours_a_traiter(debut, fin, etat)
     c = Client(cle)
     print(f"Feuilles de match : {debut} → {fin} · {len(jours)} jour(s) à traiter · catégories {', '.join(voulues)} · "
