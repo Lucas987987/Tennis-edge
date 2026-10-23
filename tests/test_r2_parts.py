@@ -316,6 +316,67 @@ class CentralReaderHookTests(Base):
             "parts/pm_ticks_*.jsonl")], [tick])
 
 
+class DivergenceRepairTests(Base):
+    """23/10/2026 : un run dont le commit git se perd après l'envoi R2 faisait
+    recoller toute la journée à chaque run suivant (×6 le 22/10)."""
+
+    def _run(self, path, lines):
+        r2_parts.cmd_pull(["kx"])
+        with open(path, "ab") as f:
+            f.write(gz(*lines))
+        r2_parts.cmd_push(["kx"])
+
+    def _scenario(self):
+        install(self.fake, "double")
+        name = f"kx_ticks_{D0}.jsonl.gz"
+        path = Path("parts", name)
+        path.write_bytes(gz("t0"))
+        r2_parts.cmd_pull(["kx"])
+        r2_parts.cmd_push(["kx"])
+        self._run(path, ["a1", "a2"])                     # run envoyé à R2...
+        path.write_bytes(gz("t0"))                        # ...dont le commit git est perdu
+        for k in range(1, 4):
+            self._run(path, [f"b{k}"])
+        return name, path
+
+    def _remote(self, name):
+        return self.fake.raw(self.manifest("kx")["files"][name]["key"])
+
+    def test_divergence_never_duplicates_lines(self):
+        name, path = self._scenario()
+        lignes = gzip.decompress(self._remote(name)).split()
+        self.assertEqual(sorted(lignes), sorted([b"t0", b"a1", b"a2", b"b1", b"b2", b"b3"]))
+        self.fake.calls.clear()
+        r2_parts.cmd_pull(["kx"])
+        r2_parts.cmd_push(["kx"])                         # git inchangé : aucune écriture
+        self.assertEqual(self.fake.count("PUT"), 0)
+
+    def test_repair_dedups_and_makes_git_and_r2_identical(self):
+        install(self.fake, "double")
+        name = f"kx_ticks_{D1}.jsonl.gz"
+        path = Path("parts", name)
+        path.write_bytes(gz("t0", "b1"))
+        r2_parts.cmd_push(["kx"])
+        key = self.manifest("kx")["files"][name]["key"]
+        bloated = gz("t0") + gz("a1") + gz("b1") + gz("b1") + gz("a1", "b1")
+        self.fake.put_raw(key, bloated)
+        r2 = r2_io.client()
+        etag = r2.get_with_etag(key)[1]
+        r2_io.save_manifest(r2, "kx", {name: r2_io.entry_for("kx", name, bloated, etag, 6)})
+        self.assertEqual(r2_parts.cmd_verify(["kx"]), 1)
+        self.fake.calls.clear()
+        self.assertEqual(r2_parts.cmd_repair(["kx"], report_path="rep.json"), 0)   # diagnostic
+        self.assertEqual(self.fake.count("PUT"), 0)
+        row = json.load(open("rep.json"))["lignes"][0]
+        self.assertEqual((row["git_lignes"], row["r2_lignes"], row["seules_dans_r2"],
+                          row["seules_dans_git"], row["lignes_apres"]), (2, 6, 1, 0, 3))
+        self.assertEqual(r2_parts.cmd_repair(["kx"], apply=True), 0)
+        self.assertEqual(sorted(gzip.decompress(path.read_bytes()).split()), [b"a1", b"b1", b"t0"])
+        self.assertEqual(self.fake.raw(key), path.read_bytes())
+        self.assertEqual(r2_parts.cmd_verify(["kx"]), 0)
+        self.assertTrue(gzip.decompress(path.read_bytes()).startswith(b"t0\nb1\n"))  # git d'abord
+
+
 class WorkflowWiringTests(unittest.TestCase):
     """Chaque écrivain de partitions R2 envoie puis filtre son commit."""
     W = REPO / ".github/workflows"

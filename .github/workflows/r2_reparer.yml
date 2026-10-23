@@ -1,0 +1,103 @@
+name: R2 — réparer partitions (doublons)
+
+# AJOUTÉ LE 23/10/2026. La vérification du 23/10 a trouvé, pour le jour clos
+# 22/10, R2 six fois plus gros que git (Kalshi 1 092 430 lignes pour
+# 170 634 ; Polymarket 752 342 pour 201 911) : l'ancienne fusion recollait
+# toute la journée à chaque run après une divergence git/R2. La fusion est
+# corrigée (scripts/r2_io.py, merge_gz). Ce workflow nettoie ce qui a déjà
+# été écrit.
+#
+# Lancement À LA MAIN uniquement :
+#   1. appliquer = non (défaut) : diagnostic seul, RIEN n'est écrit. Le résumé
+#      du run donne, par partition : lignes git, lignes R2, doublons, lignes
+#      que R2 est seul à avoir, lignes que git est seul à avoir.
+#   2. appliquer = oui : R2 et la copie git reçoivent la même version
+#      réparée (git + les lignes que seul R2 avait, sans doublon). Rien n'est
+#      perdu. Les deux redeviennent identiques ; la copie git est commitée.
+# Jamais le jour en cours (les collecteurs y écrivent encore).
+
+on:
+  workflow_dispatch:
+    inputs:
+      jours:
+        description: "Jours clos AAAA-MM-JJ séparés par des virgules (vide = tous les jours clos en écart)"
+        required: false
+        default: ''
+      appliquer:
+        description: "Écrire la réparation (sinon diagnostic seul)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: r2-reparer
+  cancel-in-progress: false
+
+env:
+  R2_PRIMARY: ${{ vars.R2_PRIMARY || 'double' }}
+  R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+  R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+  R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+  PYTHONDONTWRITEBYTECODE: '1'
+
+jobs:
+  reparer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          # fetch-depth 0 : requis par le merge de l'étape de commit ; blob:none
+          # évite de télécharger les contenus de tout l'historique.
+          fetch-depth: 0
+          filter: blob:none
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /scripts/r2_io.py
+            /scripts/r2_parts.py
+            /parts/pm_ticks_*
+            /parts/kx_ticks_*
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Diagnostic / réparation
+        run: |
+          python scripts/r2_parts.py repair --kinds ticks \
+            --jours "${{ inputs.jours }}" \
+            ${{ inputs.appliquer && '--apply' || '' }} \
+            --report r2_reparation.json
+
+      - name: Rapport JSON
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: r2-reparation-${{ github.run_id }}
+          path: r2_reparation.json
+          retention-days: 30
+          if-no-files-found: ignore
+
+      - name: Commiter la copie git réparée
+        if: ${{ inputs.appliquer }}
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git add -A -- 'parts/pm_ticks_*' 'parts/kx_ticks_*' 2>/dev/null || true
+          python scripts/r2_parts.py gate || true
+          if git diff --staged --quiet; then
+            echo 'Rien à commiter (git avait déjà tout).'; exit 0
+          fi
+          git commit -m "R2 : partitions réparées (doublons retirés, lignes R2 récupérées)"
+          for attempt in 1 2 3; do
+            git fetch origin main || true
+            if git merge origin/main --no-edit; then
+              if git push origin HEAD:main; then echo 'Push OK.'; exit 0; fi
+            else
+              echo 'Merge non automatique — abandon.'; exit 1
+            fi
+            sleep $((attempt * 10))
+          done
+          exit 1
