@@ -425,6 +425,9 @@ def preparer(fiches, adj_pour, cle=E.cle):
                     'pays': (r['home'].get('pays'), r['away'].get('pays')), 't': r['debut'], 'jour': jour, 'a': a, 'b': b, 'circuit': circ, 'surface': surf,
                     'tournoi': str(r.get('tournoi_id') or r.get('tournoi')), 'nom_tournoi': r.get('tournoi_unique') or r.get('tournoi'),
                     'srv': srv, 'det': (dh, da), 'nb_sets': nb_sets,
+                    # 23/10/2026 : rang relevé le jour du match ou avant (jamais un rang relevé après coup)
+                    'rangs': tuple((r[c].get('rang') if (r[c].get('rang_releve_le') or '9999') <= str(jour) else None)
+                                   for c in ('home', 'away')),
                     'vainqueur': 0 if r.get('vainqueur') == 1 else 1, 'bo': r.get('meilleur_des') or 3})
     return out
 
@@ -887,11 +890,21 @@ def main(argv):
         experience = {}
         p_elo = EP.elo_au_moment(M, lignes, et.get('options'), et.get('depart_bas'), experience=experience)
         Q, Sf = parcours_des_fiches(fiches)
+        import classements as CLS
+        CL = CLS.charger(dossier, racine)                      # 23/10/2026 : classement au jour du match
+        CLS.exporter(CLS.charger(dossier), os.path.join(ICI, 'classements_sackmann.json'))
         situations = {}
         for x in lignes:                                       # (vrai vainqueur, perdant) pour chaque situation
             w, l = (x['a'], x['b']) if x['vainqueur'] == 0 else (x['b'], x['a'])
+            jour_m = dt.datetime.fromtimestamp(x['t'], dt.timezone.utc)
+            rh, ra = x.get('rangs') or (None, None)
+            rw, rl = (rh, ra) if x['vainqueur'] == 0 else (ra, rh)
+            rw, rl = rw or CL.rang_au(w, jour_m), rl or CL.rang_au(l, jour_m)
+            nw, nl = experience.get(id(x), (None, None))
             situations[id(x)] = {'qualifies': (qualifie(Q, w, x['tournoi'], x['t']), qualifie(Q, l, x['tournoi'], x['t'])),
-                                 'transition': (transition(Sf, w, x['surface'], x['t']), transition(Sf, l, x['surface'], x['t']))}
+                                 'transition': (transition(Sf, w, x['surface'], x['t']), transition(Sf, l, x['surface'], x['t'])),
+                                 'classement': ((CLS.niveau_inconnu(rw, nw), CLS.niveau_inconnu(rl, nl))
+                                                if nw is not None else None)}
         doc['entrainement_progressif'] = EP.rejouer_saison(
             lignes, p_elo, doc.get('adoptes') or [], apprendre, victoire_ligne, BMS.ajuster_poids, sigma,
             poids_archive=cb.get('poids') if cb.get('adopte') else None, experience=experience, situations=situations)
@@ -914,7 +927,7 @@ def main(argv):
         import stabilite as ST
         etat_st = ST.lire()
         avant = {k: choix.get(k) for k in ('combinaison_feuilles', 'poids_challenger', 'nouveaux_venus', 'modele_arbres',
-                                           'qualifies', 'transition')}
+                                           'qualifies', 'transition', 'classement')}
         choix['combinaison_feuilles'] = ST.appliquer(etat_st, 'combinaison_feuilles', avant['combinaison_feuilles'],
                                                      {k: ep.get(k) for k in ('adopte', 'poids', 'raison', 'poids_simulation_pct', 'll')},
                                                      ('poids', 'poids_simulation_pct'))
@@ -930,7 +943,7 @@ def main(argv):
                                               ('variables', 'modele', 'poids'))
         print(f"Arbres (tout combiné) : {'ADOPTÉS' if choix['modele_arbres']['adopte'] else 'non adoptés'} — "
               f"{choix['modele_arbres']['raison']}", flush=True)
-        for cle_s in ('qualifies', 'transition'):
+        for cle_s in ('qualifies', 'transition', 'classement'):
             choix[cle_s] = ST.appliquer(etat_st, cle_s, avant[cle_s],
                                         {k: (ep.get(cle_s) or {}).get(k) for k in ('adopte', 'delta', 'raison', 'll')}, ('delta',))
             print(f"{EP.SITUATIONS[cle_s]} : {'correction ADOPTÉE' if choix[cle_s]['adopte'] else 'pas de correction'} — "

@@ -191,6 +191,7 @@ def charger_combinaison(racine):
 
 
 COMBINAISON = None
+CLASSEMENTS = None   # 23/10/2026 : classements (archive résumée + photos TennisApi), classements.py
 AJUSTEMENTS = {}      # 22/10/2026 : poids propres aux Challenger, correction des nouveaux venus (si adoptés)
 
 
@@ -211,7 +212,7 @@ def charger_ajustements(racine):
     ma = choix.get('modele_arbres') or {}                      # 23/10/2026 : arbres qui combinent tout (si adoptés)
     if ma.get('adopte') and ma.get('modele') and ma.get('poids'):
         out['arbres'] = {'modele': ma['modele'], 'poids': ma['poids']}
-    for cle_s in ('qualifies', 'transition'):                  # 22/10/2026 : même règle, autres situations
+    for cle_s in ('qualifies', 'transition', 'classement'):    # 22/10/2026 : même règle, autres situations
         v = choix.get(cle_s) or {}
         if v.get('adopte') and v.get('delta') is not None:
             out['delta_' + cle_s] = float(v['delta'])
@@ -405,6 +406,12 @@ def construire(racine, maintenant=None):
     COMBINAISON = charger_combinaison(racine)
     AJUSTEMENTS.clear()
     AJUSTEMENTS.update(charger_ajustements(racine))
+    global CLASSEMENTS
+    try:
+        import classements as CLS
+        CLASSEMENTS = CLS.charger(None, racine)
+    except Exception:  # noqa: BLE001 — sans classement, la correction ne s'applique pas
+        CLASSEMENTS = None
     REGLAGE_SIM = charger_reglage_simulation(racine)
     FACTEURS, CONTEXTE = charger_facteurs(racine)
     venir = matchs_a_venir(racine, maintenant)
@@ -451,8 +458,11 @@ def construire(racine, maintenant=None):
                 p_sim = MS.victoire_pure(cH, cA, sg, sigma_sim())
                 p_c = MS.melange_contexte(COMBINAISON, MS.contexte_match(s, c, 2 * sg - 1), stats['p_home'], p_sim)
                 p_c = MS.calibrer(p_c, COMBINAISON.get('calibration'))     # excès de confiance (si adopté)
-                p_c = ajuster_combinaison(p_c, c, stats['p_home'], p_sim, elo.matchs(h), elo.matchs(a),
-                                          situations_du_match(h, a, x['tournoi'], x['debut'], s), s, 2 * sg - 1)
+                sit = situations_du_match(h, a, x['tournoi'], x['debut'], s)
+                if CLASSEMENTS is not None:                     # 23/10/2026 : classement du joueur peu connu
+                    import classements as CLS
+                    sit['classement'] = tuple(CLS.niveau_inconnu(CLASSEMENTS.rang_au(j, x['debut']), elo.matchs(j)) for j in (h, a))
+                p_c = ajuster_combinaison(p_c, c, stats['p_home'], p_sim, elo.matchs(h), elo.matchs(a), sit, s, 2 * sg - 1)
                 combinaison = dict(pronostic(p_c, c, sg, pa0, pb0), p_simulation=round(p_sim, 4), p_elo=stats['p_home'])
             # 22/10/2026 — EN DIRECT (direct.py, Lab) : points de service des deux joueurs pour la version
             # principale (simulation + Elo si adoptée, sinon simulation pure), avant toute forme du jour.
