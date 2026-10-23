@@ -1,0 +1,13 @@
+# Worker « algo » (23/10/2026) : site public de l'algorithme sous une adresse neutre
+# (https://algo.tennis-edge.workers.dev) + coffre privé du Lab (/prive/…, clé privée).
+# Déployé AUTOMATIQUEMENT par .github/workflows/deploy_algo.yml à chaque modification de ce dossier sur main.
+name = "algo"
+main = "worker.js"
+compatibility_date = "2025-01-01"
+workers_dev = true
+keep_vars = true
+
+# Coffre privé : le même bucket R2 que les partitions (scripts/r2_io.py, DEFAULT_BUCKET), préfixe prive/.
+[[r2_buckets]]
+binding = "COFFRE"
+bucket_name = "tennis-edge-courbes"

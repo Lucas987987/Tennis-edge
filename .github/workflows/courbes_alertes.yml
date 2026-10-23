@@ -153,6 +153,11 @@ jobs:
           pip install --quiet boto3 || true
           python scripts/r2_parts.py pull --kinds live || true
 
+      # 23/10/2026 — COFFRE PRIVÉ : journaux et états de H18, H19, H20 (canaux privés) rangés dans R2, plus
+      # dans le dépôt public. Rapatriés ici avant les scripts qui les prolongent (voir scripts/coffre.py).
+      - name: Coffre privé — rapatrier (H18, H19, H20)
+        run: python scripts/coffre.py pull --groupe signaux || true
+
       - name: Courbes live + alertes forward (0 requête API)
         env:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
@@ -333,6 +338,14 @@ jobs:
       - name: R2 — envoyer les partitions (live)
         if: always()
         run: python scripts/r2_parts.py push --kinds live || true
+
+      # 23/10/2026 — renvoie au coffre les journaux H18, H19, H20, puis les sort du suivi git (seulement si le
+      # coffre en a une copie identique : jamais de perte). Le .gitignore les empêche d'y revenir.
+      - name: Coffre privé — envoyer et retirer du dépôt (H18, H19, H20)
+        if: always()
+        run: |
+          python scripts/coffre.py push --groupe signaux || true
+          python scripts/coffre.py retirer --groupe signaux || true
 
       - name: Commit (robuste — même boucle de reprise que la capture)
         run: |

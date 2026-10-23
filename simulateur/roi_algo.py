@@ -232,7 +232,11 @@ def main(argv):
     racine = next((a for a in argv[1:] if not a.startswith('--')), os.path.join(ICI, '..'))
     r = calculer(racine)
     texte = message(r)
-    print(texte)
+    # 23/10/2026 : le dépôt est public, ses journaux de runs aussi : avec --telegram, rien n'est affiché dans le log.
+    if '--telegram' not in argv:
+        print(texte)
+    else:
+        print('ROI calculé : envoyé sur le Telegram privé (non affiché ici, journal public).')
     # rien n'est écrit dans le dépôt (public) : le ROI ne sort que sur le Telegram privé et dans le log du run
     if '--telegram' in argv:
         envoyer(texte)
