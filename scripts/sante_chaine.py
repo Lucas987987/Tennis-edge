@@ -6,7 +6,8 @@ sante_chaine.py — alerte Telegram (canal PRIVÉ) quand un maillon de la chaîn
 La nuit du 22 au 23/10, la collecte des feuilles s'est arrêtée 11 h sans que personne le sache : 75 matchs
 pronostiqués joués, 2 jugés. watchdog_capture.py ne surveille que la capture des cotes. Ici, les autres
 maillons, d'après l'horodatage écrit par chacun :
-    pronostics du Lab      Tennis_Edge_Lab/live/pronostics.json   genere_le        > 4 h
+    pronostics du Lab      algo/donnees.json                      pronostics_du    > 4 h
+    (23/10/2026 : pronostics.json est passé au coffre privé ; le site public reprend son horodatage)
     feuilles de match      feuilles/etat.json                     dernier_passage  > 6 h
     verdicts en direct     verdicts_direct.json                   genere_le        > 30 h
 Une alerte quand un maillon passe en retard, rappelée toutes les 6 h tant qu'il l'est, et un message
@@ -23,7 +24,7 @@ import urllib.request
 ETAT = os.environ.get('SANTE_ETAT', 'sante_chaine_etat.json')
 RAPPEL_H = 6
 MAILLONS = (
-    ('pronostics', 'Pronostics du Lab', 'Tennis_Edge_Lab/live/pronostics.json', ('genere_le',), 4,
+    ('pronostics', 'Pronostics du Lab', 'algo/donnees.json', ('pronostics_du',), 4,
      'workflow « Pronostics du jour » (déclenché toutes les 2 h par le worker)'),
     ('feuilles', 'Feuilles de match (résultats, stats, point par point)', 'feuilles/etat.json', ('dernier_passage', 'le'), 6,
      'workflow « Feuilles de match » (toutes les 2 h par le worker) ; quota TennisApi'),
