@@ -144,11 +144,13 @@ def _delta(rows, ridge=5.0, tours=30):
 
 
 SITUATIONS = {'nouveaux_venus': 'Nouveaux venus', 'qualifies': 'Sortis des qualifications',
-              'transition': 'Changement de surface'}
-LIB_SITUATION = {'nouveaux_venus': 'le nouveau venu', 'qualifies': 'le qualifié', 'transition': 'celui qui change de surface'}
+              'transition': 'Changement de surface', 'classement': 'Classement du joueur peu connu'}
+LIB_SITUATION = {'nouveaux_venus': 'le nouveau venu', 'qualifies': 'le qualifié', 'transition': 'celui qui change de surface',
+                 'classement': 'le joueur peu connu mal classé'}
 
 
-def correction_situation(hors, P, lim, valeur, cle_s, poids_finaux=None, min_avant=200, min_juge=100):
+def correction_situation(hors, P, lim, valeur, cle_s, poids_finaux=None, min_avant=200, min_juge=100, decalage=None,
+                         decalage_final=None):
     """RÈGLE FIXÉE AVANT DE VOIR LE RÉSULTAT (22/10/2026) — même règle pour chaque situation (nouveau venu,
     sorti des qualifications, changement de surface) : le modèle se trompe-t-il TOUJOURS dans le même sens ?
     Correction δ (logit) apprise avant les 6 dernières semaines, sur le mélange :
@@ -163,7 +165,8 @@ def correction_situation(hors, P, lim, valeur, cle_s, poids_finaux=None, min_ava
         v = valeur(x)
         if v is None:
             continue
-        rows.append((x['jour'] >= lim, _lg(S.melange(P, pe, ps)), v[0] - v[1], (x, ps, pe)))
+        # decalage : corrections déjà en place à ajouter au départ (ex. nouveaux venus pour le classement)
+        rows.append((x['jour'] >= lim, _lg(S.melange(P, pe, ps)) + (decalage(x) if decalage else 0.0), v[0] - v[1], (x, ps, pe)))
     av = [(o, f) for j, o, f, _ in rows if not j]
     ju = [(o, f) for j, o, f, _ in rows if j and f != 0]
     n_av = sum(1 for _, f in av if f != 0)
@@ -180,7 +183,9 @@ def correction_situation(hors, P, lim, valeur, cle_s, poids_finaux=None, min_ava
                       f" ; {lib} gagne {round(100 * att)} % de ces matchs")}
     if ok:
         Pf = poids_finaux or P
-        out['delta'] = round(_delta([(_lg(S.melange(Pf, pe, ps)), f) for _, _, f, (x, ps, pe) in rows]), 4)
+        dfin = decalage_final or decalage
+        out['delta'] = round(_delta([(_lg(S.melange(Pf, pe, ps)) + (dfin(x) if dfin else 0.0), f)
+                                     for _, _, f, (x, ps, pe) in rows]), 4)
     return out
 
 
@@ -316,8 +321,20 @@ def rejouer_saison(lignes, p_elo, groupes, apprendre, victoire_ligne, ajuster_po
     out['par_circuit'] = par_circuit(hors, P, lim)
     out['poids_challenger'] = poids_challenger(hors, P, lim, ajuster_poids)
     out['nouveaux_venus'] = nouveaux_venus(hors, P, lim, experience, final)
-    for cle_s in ('qualifies', 'transition'):
-        out[cle_s] = (correction_situation(hors, P, lim, lambda x, c=cle_s: (situations.get(id(x)) or {}).get(c), cle_s, final)
+    # 23/10/2026 : « classement » = même règle, valeur = niveau_inconnu (classements.py) : le classement ne compte
+    # que pour un joueur peu connu ; corrige PAR-DESSUS le mélange, comme les autres situations.
+    nv = out.get('nouveaux_venus') or {}
+
+    def dec_nv(d):
+        if not d or not experience:
+            return None
+        return lambda x: d * (nouveau(experience.get(id(x), (99, 99))[0]) - nouveau(experience.get(id(x), (99, 99))[1]))
+    for cle_s in ('qualifies', 'transition', 'classement'):
+        extra = {}
+        if cle_s == 'classement' and nv.get('adopte'):          # par-dessus la correction des nouveaux venus
+            extra = {'decalage': dec_nv(nv.get('delta_appris_avant')), 'decalage_final': dec_nv(nv.get('delta'))}
+        out[cle_s] = (correction_situation(hors, P, lim, lambda x, c=cle_s: (situations.get(id(x)) or {}).get(c), cle_s, final,
+                                           **extra)
                       if situations else {'adopte': False, 'raison': 'pas de données'})
     out['modele_arbres'] = modele_arbres(hors, P, lim, experience, situations, out.get('nouveaux_venus'), final)
     l_new = _ll([S.melange(P, pe, ps) for _, ps, pe in juge])
