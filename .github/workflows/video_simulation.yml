@@ -1,0 +1,102 @@
+name: Vidéo — simulation du match du jour
+
+# AJOUTÉ LE 23/10/2026. Vidéo verticale (1080×1920, MP4, ~25 s) du match du jour rejoué point par point par
+# l'algo, en français et en anglais, prête à poster sur X. Fin de vidéo : % sur 5 000 simulations + adresse
+# du site public (algo/).
+# Chaque matin à 07:05 UTC (09:05 à Paris) : le match du jour est choisi au premier passage des pronostics
+# de la journée. Les deux vidéos arrivent sur le Telegram PRIVÉ (TELEGRAM_CHAT_ID) et restent 7 jours en
+# artefact du run. Rien n'est commité (pas de vidéo dans le dépôt). 0 requête d'API.
+# Lancement à la main : choisir la langue, un autre match (uid du site) ou un autre tirage (seed).
+
+on:
+  workflow_dispatch:
+    inputs:
+      uid:
+        description: "Match (uid, vide = match du jour)"
+        required: false
+        default: ''
+      seed:
+        description: "Tirage de la simulation (un nombre ; change le déroulé du match simulé)"
+        required: false
+        default: '7'
+  schedule:
+    - cron: '5 7 * * *'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: video-simulation
+  cancel-in-progress: false
+
+jobs:
+  video:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /algo/
+            /scripts/video_simulation.py
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Navigateur (Chromium)
+        run: |
+          pip install --quiet playwright==1.48.0
+          python -m playwright install --with-deps chromium
+
+      - name: Y a-t-il un match du jour ?
+        id: mdj
+        run: |
+          python - <<'PY'
+          import json, os
+          d = json.load(open('algo/donnees.json', encoding='utf-8'))
+          uid = os.environ.get('UID_DEMANDE') or (d.get('match_du_jour') or {}).get('uid') or ''
+          m = next((x for x in d.get('matchs', []) if x['uid'] == uid and x.get('simulation')), None)
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+              f.write(f"ok={'1' if m else '0'}\n")
+              f.write(f"titre={(m['home'] + ' – ' + m['away']) if m else ''}\n")
+              f.write(f"tournoi={m['tournoi'] if m else ''}\n")
+          print('Match :', uid or 'aucun', '(simulation disponible)' if m else '(pas de simulation)')
+          PY
+        env:
+          UID_DEMANDE: ${{ inputs.uid }}
+
+      - name: Enregistrer (FR puis EN)
+        if: steps.mdj.outputs.ok == '1'
+        run: |
+          for lang in fr en; do
+            python scripts/video_simulation.py --lang "$lang" --uid "${{ inputs.uid }}" --seed "${{ inputs.seed || '7' }}" --sortie videos
+          done
+          ls -la videos
+
+      - name: Vidéos (artefact)
+        if: steps.mdj.outputs.ok == '1'
+        uses: actions/upload-artifact@v4
+        with:
+          name: video-simulation-${{ github.run_id }}
+          path: videos/*.mp4
+          retention-days: 7
+
+      - name: Envoyer sur le Telegram privé
+        if: steps.mdj.outputs.ok == '1'
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          TITRE: ${{ steps.mdj.outputs.titre }}
+          TOURNOI: ${{ steps.mdj.outputs.tournoi }}
+        run: |
+          if [ -z "${TELEGRAM_TOKEN}" ] || [ -z "${TELEGRAM_CHAT_ID}" ]; then echo 'Telegram non configuré : vidéos en artefact seulement.'; exit 0; fi
+          for lang in fr en; do
+            curl -sS -o /dev/null -w "Telegram ${lang} : HTTP %{http_code}\n" \
+              -F chat_id="${TELEGRAM_CHAT_ID}" -F supports_streaming=true \
+              -F caption="🎬 Vidéo du match du jour (${lang}) — ${TITRE} · ${TOURNOI}" \
+              -F video=@"videos/simulation_${lang}.mp4" \
+              "https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendVideo" || true
+          done

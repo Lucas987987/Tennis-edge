@@ -56,6 +56,7 @@ jobs:
             /closing_lines/
             /matches_oddspapi.json
             /feuilles/
+            /algo/
           sparse-checkout-cone-mode: false
       - uses: actions/setup-python@v6
         with:
@@ -79,6 +80,10 @@ jobs:
         run: python simulateur/profils_service.py /tmp/sackmann .
       - name: Pronostics des 36 prochaines heures
         run: python simulateur/pronostics_du_jour.py .
+      # 23/10/2026 : données du site public (algo/index.html) : % et cote juste de chaque match, match du jour
+      # complet, bilan public, calibration. Aucune cote de bookmaker, aucun signal privé.
+      - name: Site public de l'algo
+        run: python simulateur/vitrine.py . || echo '::warning::site public non mis à jour'
       - name: Publier
         run: |
           set -euo pipefail
@@ -90,7 +95,8 @@ jobs:
           git add -- Tennis_Edge_Lab/live/pronostics.json Tennis_Edge_Lab/live/pronostics_bilan.json \
                      Tennis_Edge_Lab/live/joueurs_service.json.gz \
                      simulateur/pronostics_log.jsonl simulateur/rapport_pronostic.json \
-                     simulateur/journal_pronostics Tennis_Edge_Lab/live/pronostics_resultats.json
+                     simulateur/journal_pronostics Tennis_Edge_Lab/live/pronostics_resultats.json \
+                     algo/donnees.json
           if git diff --cached --quiet; then echo 'Rien de nouveau.'; exit 0; fi
           git commit -m "Pronostics du jour $(date -u +%FT%TZ)"
           # fichiers écrits hors du checkout partiel (ex. live/joueurs_service.json.gz, contexte des
