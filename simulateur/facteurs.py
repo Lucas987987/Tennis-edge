@@ -896,6 +896,12 @@ def main(argv):
             lignes, p_elo, doc.get('adoptes') or [], apprendre, victoire_ligne, BMS.ajuster_poids, sigma,
             poids_archive=cb.get('poids') if cb.get('adopte') else None, experience=experience, situations=situations)
         ep = doc['entrainement_progressif']
+        export = ep.pop('export', None) or []
+        if export:                                     # 23/10/2026 : pour l'étude « l'algorithme sur les marchés »
+            import gzip
+            with gzip.open(os.path.join(ICI, 'pronostics_hors_echantillon.jsonl.gz'), 'wt', encoding='utf-8') as f:
+                for e in export:
+                    f.write(json.dumps(e, separators=(',', ':')) + '\n')
         print(f"Entraînement progressif : {len(ep.get('semaines', []))} semaines rejouées · "
               f"{'ADOPTÉ' if ep.get('adopte') else 'non adopté'} — {ep.get('raison')}", flush=True)
         for w in ep.get('semaines', []):

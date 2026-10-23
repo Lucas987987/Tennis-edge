@@ -266,6 +266,7 @@ def rejouer_saison(lignes, p_elo, groupes, apprendre, victoire_ligne, ajuster_po
         par_sem.setdefault(semaine(x['jour'], d0), []).append(x)
     nsem = max(par_sem) + 1
     hors = []                            # (x, p_sim, p_elo)
+    export = []                          # pronostics hors échantillon, vus de home (etude_rentabilite_marches.py)
     semaines = []
     poids = None
     for s_ in range(SEMAINES_MIN, nsem):
@@ -284,6 +285,11 @@ def rejouer_saison(lignes, p_elo, groupes, apprendre, victoire_ligne, ajuster_po
         if not cur:
             continue
         pc = [S.melange(poids, pe, ps) for _, ps, pe in cur] if poids else None
+        for i, (x, ps, pe) in enumerate(cur):          # 23/10/2026 : export (vu de HOME) pour l'étude des marchés
+            f = (lambda p: p) if x['vainqueur'] == 0 else (lambda p: 1 - p)
+            export.append({'id': x.get('id'), 't': x['t'], 'jour': str(x['jour']), 'circuit': x.get('circuit'),
+                           'gagnant': 'home' if x['vainqueur'] == 0 else 'away', 'p_sim': round(f(ps), 4),
+                           'p_elo': round(f(pe), 4), 'p_algo': round(f(pc[i]), 4) if pc else None})
         semaines.append({'semaine': s_ + 1, 'debut': str(d0 + dt.timedelta(days=7 * s_)), 'n': len(cur),
                          'simulation': {'reussite_pct': round(100 * _ok([c[1] for c in cur]), 1), 'log_loss': round(_ll([c[1] for c in cur]), 4)},
                          'elo': {'reussite_pct': round(100 * _ok([c[2] for c in cur]), 1), 'log_loss': round(_ll([c[2] for c in cur]), 4)},
@@ -291,7 +297,7 @@ def rejouer_saison(lignes, p_elo, groupes, apprendre, victoire_ligne, ajuster_po
                          'poids_simulation_pct': part_simulation(poids) if poids else None})
         hors.extend(cur)
     if len(hors) < MIN_HORS:
-        return {'semaines': semaines, 'n_hors_echantillon': len(hors), 'adopte': False,
+        return {'semaines': semaines, 'n_hors_echantillon': len(hors), 'adopte': False, 'export': export,
                 'raison': f"pas assez de pronostics hors échantillon ({len(hors)})"}
     w = ajuster_poids([[_lg(pe), _lg(ps)] for _, ps, pe in hors])
     final = {'elo': round(w[0], 4), 'simulation': round(w[1], 4)}
@@ -299,7 +305,7 @@ def rejouer_saison(lignes, p_elo, groupes, apprendre, victoire_ligne, ajuster_po
     lim = aujourdhui - dt.timedelta(days=FENETRE_JUGE_J)
     avant = [h for h in hors if h[0]['jour'] < lim]
     juge = [h for h in hors if h[0]['jour'] >= lim]
-    out = {'semaines': semaines, 'n_hors_echantillon': len(hors), 'poids': final,
+    out = {'semaines': semaines, 'n_hors_echantillon': len(hors), 'poids': final, 'export': export,
            'poids_simulation_pct': part_simulation(final),
            'total': {'simulation': {'reussite_pct': round(100 * _ok([h[1] for h in hors]), 1), 'log_loss': round(_ll([h[1] for h in hors]), 4)},
                      'elo': {'reussite_pct': round(100 * _ok([h[2] for h in hors]), 1), 'log_loss': round(_ll([h[2] for h in hors]), 4)}}}
