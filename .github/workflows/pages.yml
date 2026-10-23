@@ -90,6 +90,7 @@ jobs:
             Tennis_Edge_Lab/research_direct.js
             Tennis_Edge_Lab/research_direct.css
             Tennis_Edge_Lab/research_registre.js
+            Tennis_Edge_Lab/prive.js
             Tennis_Edge_Lab/research_registre.css
             Tennis_Edge_Lab/tennis_meta.py
             Tennis_Edge_Lab/books.py
@@ -119,10 +120,8 @@ jobs:
             Tennis_Edge_Lab/live/reconciliation_hypotheses.json
             Tennis_Edge_Lab/live/registre
             Tennis_Edge_Lab/live/lectures_profils.json
-            Tennis_Edge_Lab/live/valeur.json
             Tennis_Edge_Lab/live/delai_alertes.json
             Tennis_Edge_Lab/live/croisements.json
-            Tennis_Edge_Lab/live/pronostics.json
             Tennis_Edge_Lab/live/pronostics_bilan.json
             Tennis_Edge_Lab/live/joueurs_service.json.gz
             Tennis_Edge_Lab/live/archive/bookmakers_sets_v61/current
@@ -147,7 +146,6 @@ jobs:
             h16_signal_log.jsonl
             h16b_signal_log.jsonl
             h17_signal_log.jsonl
-            h18_signal_log.jsonl
 
       - name: Reconstruire les données Tennis Edge Lab
         env:
@@ -234,7 +232,7 @@ jobs:
           for f in index.html style.css app.js data.js; do
             cp "Tennis_Edge_Lab/$f" "_site/Tennis_Edge_Lab/$f"
           done
-          for f in research.html research.js research_v61.js research_v63.js research_v66.js research_explorer.js research_profils.js research_reconciliation.js research_direct.js research_registre.js freshness.js research.css research_v632.css research_v66.css research_explorer.css research_profils.css research_reconciliation.css research_direct.css research_registre.css v4.js v6.js; do
+          for f in research.html research.js research_v61.js research_v63.js research_v66.js research_explorer.js research_profils.js research_reconciliation.js research_direct.js research_registre.js freshness.js prive.js research.css research_v632.css research_v66.css research_explorer.css research_profils.css research_reconciliation.css research_direct.css research_registre.css v4.js v6.js; do
             cp "Tennis_Edge_Lab/$f" "_site/Tennis_Edge_Lab/$f"
           done
           # Rapports : copie fidèle, état de fraîcheur explicite, jamais de remplacement
@@ -256,10 +254,11 @@ jobs:
             cp Tennis_Edge_Lab/live/registre/* _site/Tennis_Edge_Lab/live/registre/
           fi
           cp Tennis_Edge_Lab/live/lectures_profils.json _site/Tennis_Edge_Lab/live/ 2>/dev/null || echo "⚠️ lectures_profils.json absent"
-          cp Tennis_Edge_Lab/live/valeur.json _site/Tennis_Edge_Lab/live/ 2>/dev/null || echo "⚠️ valeur.json absent"
+          # 23/10/2026 : valeur.json (H19) et pronostics.json (complet) ne sont plus publiés : coffre privé,
+          # lus par le Lab via le worker « algo » avec la clé privée (Tennis_Edge_Lab/prive.js).
           cp Tennis_Edge_Lab/live/delai_alertes.json _site/Tennis_Edge_Lab/live/ 2>/dev/null || echo "⚠️ delai_alertes.json absent"
           cp Tennis_Edge_Lab/live/croisements.json _site/Tennis_Edge_Lab/live/ 2>/dev/null || echo "⚠️ croisements.json absent"
-          cp Tennis_Edge_Lab/live/pronostics.json Tennis_Edge_Lab/live/pronostics_bilan.json _site/Tennis_Edge_Lab/live/ 2>/dev/null || echo "⚠️ pronostics absents"
+          cp Tennis_Edge_Lab/live/pronostics_bilan.json _site/Tennis_Edge_Lab/live/ 2>/dev/null || echo "⚠️ bilan des pronostics absent"
           cp Tennis_Edge_Lab/live/joueurs_service.json.gz _site/Tennis_Edge_Lab/live/ 2>/dev/null || echo "⚠️ fiches service/retour absentes"
           # Archive annuelle tennis-data (onglet Sources) : fichiers statiques.
           mkdir -p _site/Tennis_Edge_Lab/live/archive

@@ -14,6 +14,7 @@ on:
       - 'Tennis_Edge_Lab/**'
       - 'requirements.txt'
       - 'workers/tennis-edge-db/**'
+      - 'workers/algo/**'
   workflow_dispatch:
 
 permissions:
@@ -41,3 +42,4 @@ jobs:
       - run: node --test Tennis_Edge_Lab/tests/test_v5_ui.js Tennis_Edge_Lab/tests/test_v6_ui.js Tennis_Edge_Lab/tests/test_v61_ui.js Tennis_Edge_Lab/tests/test_v63_ui.js Tennis_Edge_Lab/tests/test_v66_ui.js Tennis_Edge_Lab/tests/test_v67_explorer_ui.js Tennis_Edge_Lab/tests/test_v69_explorer_ui.js Tennis_Edge_Lab/tests/test_v70_reconciliation_ui.js Tennis_Edge_Lab/tests/test_v72_direct_ui.js Tennis_Edge_Lab/tests/test_v73_registre_ui.js Tennis_Edge_Lab/tests/test_freshness_ui.js
       - run: node --test workers/tennis-edge-db/test_worker.mjs
       - run: node --test workers/tennis-edge-closing/test_worker.mjs
+      - run: node --test workers/algo/test_worker.mjs

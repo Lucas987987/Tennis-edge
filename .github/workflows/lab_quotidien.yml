@@ -111,6 +111,8 @@ jobs:
         run: |
           python scripts/r2_parts.py pull --kinds all || true
           python scripts/hist_r2.py pull || true   # étape 4 : historique figé (R2)
+          # 23/10/2026 : coffre privé — journal H19 (verdict de H19) ; H18 volontairement absent (publié sinon)
+          python scripts/coffre.py pull --groupe lab_entrees || true
 
       - name: Tests (Python et interface)
         run: |
@@ -236,6 +238,12 @@ jobs:
             Tennis_Edge_Lab/cache/source_catalog.json
             Tennis_Edge_Lab/cache/archive/index.json
           )
+          # 23/10/2026 : verdicts H19 (valeur.json) et H20 (h20.json) → coffre privé, plus dans le dépôt public.
+          python scripts/coffre.py push --groupe lab || true
+          python scripts/coffre.py retirer --groupe lab || true
+          # journal H19 rapatrié du coffre pour la lecture seulement : on rend la version git (pas de conflit avec
+          # le commit de « Courbes live + alertes » qui le retire du dépôt).
+          git checkout -- h19_signal_log.jsonl 2>/dev/null || true
           # Un fichier qui ne diffère que par generated_at (ou équivalent) est restauré.
           python Tennis_Edge_Lab/commit_guard.py --root . "${OUTPUTS[@]}"
           git config user.name 'github-actions[bot]'
@@ -248,8 +256,6 @@ jobs:
               Tennis_Edge_Lab/live/explorateur_matchs.json.gz \
               Tennis_Edge_Lab/live/explorateur_detections.json.gz \
               Tennis_Edge_Lab/live/lectures_profils.json \
-              Tennis_Edge_Lab/live/valeur.json \
-              Tennis_Edge_Lab/live/h20.json \
               Tennis_Edge_Lab/live/delai_alertes.json \
               Tennis_Edge_Lab/live/croisements.json \
               Tennis_Edge_Lab/live/registre/*; do

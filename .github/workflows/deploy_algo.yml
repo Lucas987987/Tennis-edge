@@ -1,0 +1,63 @@
+name: Déployer le worker algo (site public + coffre privé)
+
+# AJOUTÉ LE 23/10/2026. Déploie workers/algo : le site public de l'algorithme sous une adresse neutre
+# (https://algo.tennis-edge.workers.dev, celle des vidéos) et l'accès au coffre privé du Lab (/prive/…).
+# À chaque modification du dossier sur main, ou à la main.
+# PRÉREQUIS (une fois) : un secret GitHub CLE_PRIVEE (40 caractères au hasard, gardé pour soi). Il devient le
+# secret du worker ; il n'est jamais affiché. Le jeton Cloudflare doit avoir le droit « Workers R2 Storage ».
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'workers/algo/**'
+      - 'scripts/coffre.py'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-algo
+  cancel-in-progress: false
+
+jobs:
+  deployer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+          sparse-checkout: |
+            workers/algo
+            scripts/coffre.py
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Vérifier la syntaxe et les tests
+        run: |
+          node --check workers/algo/worker.js
+          node --test workers/algo/test_worker.mjs
+
+      - name: Clé du coffre présente ?
+        env:
+          CLE_PRIVEE: ${{ secrets.CLE_PRIVEE }}
+        run: |
+          if [ ${#CLE_PRIVEE} -lt 24 ]; then
+            echo "::warning::Secret CLE_PRIVEE absent ou trop court (24 caractères minimum) : le site public marche, le coffre reste fermé."
+          fi
+
+      - name: Déployer sur Cloudflare
+        uses: cloudflare/wrangler-action@v3
+        env:
+          CLE_PRIVEE: ${{ secrets.CLE_PRIVEE }}
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: workers/algo
+          command: deploy
+          secrets: |
+            CLE_PRIVEE

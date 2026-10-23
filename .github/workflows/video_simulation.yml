@@ -2,10 +2,10 @@ name: Vidéo — simulation du match du jour
 
 # AJOUTÉ LE 23/10/2026. Vidéo verticale (1080×1920, MP4, ~25 s) du match du jour rejoué point par point par
 # l'algo, en français et en anglais, prête à poster sur X. Fin de vidéo : % sur 5 000 simulations + adresse
-# du site public (algo/).
+# neutre du site public (algo.tennis-edge.workers.dev, worker « algo » : ne mène pas au dépôt GitHub).
 # Chaque matin à 07:05 UTC (09:05 à Paris) : le match du jour est choisi au premier passage des pronostics
-# de la journée. Les deux vidéos arrivent sur le Telegram PRIVÉ (TELEGRAM_CHAT_ID) et restent 7 jours en
-# artefact du run. Rien n'est commité (pas de vidéo dans le dépôt). 0 requête d'API.
+# de la journée. Les deux vidéos arrivent sur le Telegram PRIVÉ (TELEGRAM_CHAT_ID) et nulle part ailleurs :
+# pas d'artefact (le dépôt est public, les artefacts de ses runs se téléchargent), rien de commité. 0 requête d'API.
 # Lancement à la main : choisir la langue, un autre match (uid du site) ou un autre tirage (seed).
 
 on:
@@ -76,14 +76,6 @@ jobs:
           done
           ls -la videos
 
-      - name: Vidéos (artefact)
-        if: steps.mdj.outputs.ok == '1'
-        uses: actions/upload-artifact@v4
-        with:
-          name: video-simulation-${{ github.run_id }}
-          path: videos/*.mp4
-          retention-days: 7
-
       - name: Envoyer sur le Telegram privé
         if: steps.mdj.outputs.ok == '1'
         env:
@@ -92,7 +84,7 @@ jobs:
           TITRE: ${{ steps.mdj.outputs.titre }}
           TOURNOI: ${{ steps.mdj.outputs.tournoi }}
         run: |
-          if [ -z "${TELEGRAM_TOKEN}" ] || [ -z "${TELEGRAM_CHAT_ID}" ]; then echo 'Telegram non configuré : vidéos en artefact seulement.'; exit 0; fi
+          if [ -z "${TELEGRAM_TOKEN}" ] || [ -z "${TELEGRAM_CHAT_ID}" ]; then echo '::warning::Telegram non configuré : vidéos non envoyées.'; exit 0; fi
           for lang in fr en; do
             curl -sS -o /dev/null -w "Telegram ${lang} : HTTP %{http_code}\n" \
               -F chat_id="${TELEGRAM_CHAT_ID}" -F supports_streaming=true \
