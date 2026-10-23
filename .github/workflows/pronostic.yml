@@ -92,6 +92,14 @@ jobs:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: python simulateur/bilan_algo.py . || true
+      # 23/10/2026 : ROI interne aux cotes Pinnacle de clôture (règles R1/R2 fixées le 23/10) — Telegram privé
+      # seulement, rien n'est commité.
+      - name: ROI de l'algo (Telegram, canal privé)
+        if: always()
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python simulateur/roi_algo.py . --telegram || true
       - name: Publier
         run: |
           set -euo pipefail

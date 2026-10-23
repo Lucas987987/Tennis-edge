@@ -1,0 +1,40 @@
+name: ROI de l'algo (Telegram privé)
+
+# AJOUTÉ LE 23/10/2026. ROI de l'algorithme aux cotes Pinnacle de clôture, envoyé sur le Telegram PRIVÉ.
+# Règles fixées le 23/10/2026 avant tout résultat (simulateur/roi_algo.py) :
+#   R1 : 1 unité sur le joueur que l'algo donne gagnant ; R2 : 1 unité si % de l'algo × cote ≥ 1,05.
+# Envoyé aussi chaque lundi avec le bilan de la semaine (workflow « Pronostic : test du modèle »).
+# Lecture seule : rien n'est commité, aucune requête d'API.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  roi:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+          sparse-checkout: |
+            /simulateur/
+            /scripts/closing_store.py
+            /Tennis_Edge_Lab/books.py
+            /Tennis_Edge_Lab/live/pronostics_resultats.json
+            /closing_lines.json
+            /closing_lines/
+            /feuilles/
+            /set_results.json
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - name: ROI (Telegram privé)
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python simulateur/roi_algo.py . --telegram
