@@ -6,7 +6,8 @@ name: Feuilles de match (TennisApi)
 # existe). Source : TennisApi (RapidAPI, formule Pro, 15 000 requêtes/jour),
 # clé RAPIDAPI_KEY. Une requête par catégorie et par jour, puis une par match.
 #
-# Automatique : chaque jour, avant-hier et hier (matchs finis tard repris).
+# Automatique : toutes les 2 h (worker Cloudflare), d'avant-hier à AUJOURD'HUI (23/10/2026) : le résultat
+# et la feuille d'un match arrivent quelques heures après sa fin, plus le lendemain.
 # RATTRAPAGE : Run workflow avec debut = 2026-06-01 (fin vide = hier). Les jours
 # déjà complets ne sont jamais redemandés : relancer reprend où le run s'est arrêté.
 # Garde-fous : budget par run, arrêt sous la réserve de quota, 5 requêtes/s.
@@ -14,6 +15,10 @@ name: Feuilles de match (TennisApi)
 # Point par point (livraison 46) : feuilles_points/AAAA-MM-JJ.jsonl.gz, les plus récents
 # d'abord ; sonde = oui pour vérifier une fois le format de la réponse.
 on:
+  # 23/10/2026 : déclenché toutes les 2 h par le worker Cloudflare (tennis-edge-closing), matchs du jour
+  # compris ; les deux crons restent en filet.
+  repository_dispatch:
+    types: [feuilles_match]
   schedule:
     - cron: '41 4 * * *'
     - cron: '41 16 * * *'
