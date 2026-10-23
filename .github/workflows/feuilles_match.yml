@@ -86,7 +86,7 @@ jobs:
         env:
           RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
           FEUILLES_RESERVE: '1500'
-        run: python scripts/joueurs_infos.py 1500
+        run: python scripts/joueurs_infos.py 500
       - name: Lieux et météo des tournois (Open-Meteo, gratuit, sans clé)
         if: always()
         timeout-minutes: 20
@@ -96,7 +96,9 @@ jobs:
         timeout-minutes: 60
         env:
           RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
-          FEUILLES_RESERVE: '1500'
+          # 23/10/2026 : le point par point passe APRÈS les résultats et les feuilles — il s'arrête quand il reste
+          # 6 000 requêtes, pour que les collectes suivantes de la journée (toutes les 2 h) aient toujours du quota.
+          FEUILLES_RESERVE: '6000'
           POINTS: ${{ github.event.inputs.points || '2500' }}
           SONDE: ${{ github.event.inputs.sonde }}
         run: |
