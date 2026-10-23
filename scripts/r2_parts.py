@@ -165,6 +165,8 @@ def _push_one(r2, fam, path, ent, base, m):
                 n = lines if target is data else r2_io.gz_lines(target)
                 cond = got[1]
                 if target == got[0]:          # R2 contient déjà tout
+                    if ent and ent.get("sha256") == r2_io._sha256_hex(target):
+                        return None, None     # manifeste déjà à jour : rien à écrire
                     return r2_io.entry_for(fam, name, target, got[1], n), target
         try:
             etag = r2.put(key, target, create_only=cond is None, if_match=cond,
@@ -389,14 +391,115 @@ def cmd_status(environ=None):
     return 0
 
 
+# ── repair (23/10/2026) ──────────────────────────────────────────────────────
+
+def cmd_repair(fams, parts_dir=r2_io.PARTS_DIR, days=None, apply=False,
+               report_path=None, environ=None, today=None):
+    """Répare les partitions de JOURS CLOS où R2 et git diffèrent (lignes
+    recollées en double par l'ancienne fusion, voir r2_io.merge_gz).
+
+    Pour chaque partition : version réparée = copie git telle quelle + un
+    membre avec les lignes que R2 est seul à avoir (ticks d'un run dont le
+    commit git s'est perdu), sans doublon. Rien n'est perdu : chaque ligne
+    distincte de git ou de R2 s'y trouve. Sans --apply : diagnostic seul,
+    aucune écriture. Avec --apply : R2 (écriture conditionnelle) ET la copie
+    git sont remplacés par la version réparée — elles redeviennent
+    identiques, le workflow commite la copie git."""
+    r2 = r2_io.client(environ)
+    if r2 is None:
+        print("repair — R2 indisponible (secrets absents).")
+        return 2
+    today = today or dt.datetime.now(dt.timezone.utc).date().isoformat()
+    wanted = set(days or [])
+    rows, failures = [], 0
+    for fam in fams:
+        man, etag = r2_io.load_manifest(r2, fam, use_cache=False)
+        updates = {}
+        for path in local_files(fam, parts_dir):
+            name = os.path.basename(path)
+            day = r2_io.day_of(name)
+            if not day or day >= today or (wanted and day not in wanted):
+                continue
+            ent = man["files"].get(name)
+            with open(path, "rb") as f:
+                local = f.read()
+            if not ent or ent.get("sha256") == r2_io._sha256_hex(local):
+                continue
+            got = r2.get_with_etag(ent["key"])
+            if got is None:
+                continue
+            remote, r_etag = got
+            r_lines = r2_io.gz_line_list(remote)
+            g_lines = r2_io.gz_line_list(local)
+            # lignes que git n'a pas du tout, une seule fois chacune (une ligne
+            # identique répétée n'apporte rien : c'est le même relevé)
+            vus = {r2_io._empreinte(line) for line in g_lines}
+            extra = []
+            for line in r_lines:
+                k = r2_io._empreinte(line)
+                if k not in vus:
+                    vus.add(k)
+                    extra.append(line)
+            manquent = len(r2_io.lignes_absentes(remote, local))
+            repaired = local + r2_io.gz_member(extra) if extra else local
+            n = len(g_lines) + len(extra)
+            row = {"famille": fam, "fichier": name, "jour": day,
+                   "git_lignes": len(g_lines), "r2_lignes": len(r_lines),
+                   "r2_distinctes": len(set(map(r2_io._empreinte, r_lines))),
+                   "doublons_r2": len(r_lines) - len(g_lines) + manquent - len(extra),
+                   "seules_dans_r2": len(extra), "seules_dans_git": manquent,
+                   "lignes_apres": n, "octets_apres": len(repaired), "ecrit": False}
+            if apply:
+                try:
+                    new_etag = r2.put(ent["key"], repaired, if_match=r_etag,
+                                      content_type="application/gzip",
+                                      metadata={"lines": str(n)})
+                    updates[name] = r2_io.entry_for(fam, name, repaired, new_etag, n)
+                    if repaired != local:
+                        r2_io._write_atomic(path, repaired)
+                    row["ecrit"] = True
+                except Exception as exc:  # noqa: BLE001
+                    failures += 1
+                    _annotate("warning", f"{name} : réparation non écrite ({exc})")
+            rows.append(row)
+        if updates:
+            try:
+                r2_io.save_manifest(r2, fam, updates, etag=etag)
+            except Exception as exc:  # noqa: BLE001
+                failures += 1
+                _annotate("warning", f"manifeste {fam} non écrit ({exc})")
+    lines = [f"## Réparation R2 — {'APPLIQUÉE' if apply else 'diagnostic seul (rien écrit)'}", "",
+             "| Partition | git | R2 | doublons dans R2 | seules dans R2 | seules dans git | après | écrit |",
+             "|---|---:|---:|---:|---:|---:|---:|:---:|"]
+    for r in rows:
+        lines.append(f"| `{r['fichier']}` | {r['git_lignes']:,} | {r['r2_lignes']:,} | "
+                     f"{r['doublons_r2']:,} | {r['seules_dans_r2']:,} | {r['seules_dans_git']:,} | "
+                     f"{r['lignes_apres']:,} | {'oui' if r['ecrit'] else '—'} |".replace(",", " "))
+    if not rows:
+        lines.append("| aucune partition de jour clos à réparer | | | | | | | |")
+    text = "\n".join(lines)
+    print(text)
+    summ = os.environ.get("GITHUB_STEP_SUMMARY")
+    if summ:
+        with open(summ, "a", encoding="utf-8") as f:
+            f.write(text + "\n")
+    if report_path:
+        with open(report_path, "w", encoding="utf-8") as f:
+            json.dump({"applique": apply, "lignes": rows}, f, ensure_ascii=False, indent=1)
+    print(r2_io.ops_summary())
+    return 1 if failures else 0
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[1])
-    ap.add_argument("command", choices=["pull", "push", "gate", "verify", "status"])
+    ap.add_argument("command", choices=["pull", "push", "gate", "verify", "status", "repair"])
     ap.add_argument("--kinds", default="all", help="pm, kx, live, ticks, all")
     ap.add_argument("--days", type=int, default=None,
                     help="pull : fenêtre en jours (défaut : 7 ticks, 4 live)")
     ap.add_argument("--parts-dir", default=r2_io.PARTS_DIR)
-    ap.add_argument("--report", default=None, help="verify : rapport JSON")
+    ap.add_argument("--report", default=None, help="verify / repair : rapport JSON")
+    ap.add_argument("--jours", default="", help="repair : jours clos AAAA-MM-JJ séparés par des virgules (défaut : tous)")
+    ap.add_argument("--apply", action="store_true", help="repair : écrire (sinon diagnostic seul)")
     args = ap.parse_args(argv)
     fams = r2_io.families(args.kinds)
     if args.command == "pull":
@@ -407,6 +510,9 @@ def main(argv=None):
         return cmd_gate()
     if args.command == "verify":
         return cmd_verify(fams, args.parts_dir, args.report)
+    if args.command == "repair":
+        jours = [j.strip() for j in args.jours.split(",") if j.strip()]
+        return cmd_repair(fams, args.parts_dir, jours, args.apply, args.report)
     return cmd_status()
 
 
