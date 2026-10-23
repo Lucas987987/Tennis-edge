@@ -892,6 +892,9 @@ def main(argv):
         # 22/10/2026 : poids propres aux Challenger, correction des nouveaux venus (règles fixées d'avance)
         choix['poids_challenger'] = {k: (ep.get('poids_challenger') or {}).get(k) for k in ('adopte', 'poids', 'raison')}
         choix['nouveaux_venus'] = {k: (ep.get('nouveaux_venus') or {}).get(k) for k in ('adopte', 'delta', 'raison')}
+        ma = ep.get('modele_arbres') or {}
+        choix['modele_arbres'] = {k: ma.get(k) for k in ('adopte', 'raison', 'variables', 'modele', 'poids')}
+        print(f"Arbres (tout combiné) : {'ADOPTÉS' if ma.get('adopte') else 'non adoptés'} — {ma.get('raison')}", flush=True)
         for cle_s in ('qualifies', 'transition'):
             choix[cle_s] = {k: (ep.get(cle_s) or {}).get(k) for k in ('adopte', 'delta', 'raison')}
             print(f"{EP.SITUATIONS[cle_s]} : {'correction ADOPTÉE' if choix[cle_s]['adopte'] else 'pas de correction'} — "
