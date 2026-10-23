@@ -56,6 +56,7 @@ def main(argv):
     ap.add_argument('--uid', default='')
     ap.add_argument('--seed', default='7')
     ap.add_argument('--vitesse', default='1.6')
+    ap.add_argument('--adresse', action='store_true', help="afficher l'adresse du site en fin de vidéo (non par défaut)")
     ap.add_argument('--sortie', default=os.path.join(RACINE, 'videos'))
     a = ap.parse_args(argv[1:])
     algo = os.path.join(RACINE, 'algo')
@@ -63,7 +64,8 @@ def main(argv):
         print('algo/donnees.json absent : lancer simulateur/vitrine.py d\'abord.')
         return 1
     srv = servir(algo)
-    q = f"video=1&lang={a.lang}&seed={a.seed}&vitesse={a.vitesse}" + (f"&uid={a.uid}" if a.uid else '')
+    q = (f"video=1&lang={a.lang}&seed={a.seed}&vitesse={a.vitesse}" + (f"&uid={a.uid}" if a.uid else '')
+         + ('&adresse=1' if a.adresse else ''))
     url = f"http://127.0.0.1:{srv.server_address[1]}/index.html?{q}"
     tmp = os.path.join(a.sortie, '_brut')
     os.makedirs(tmp, exist_ok=True)
