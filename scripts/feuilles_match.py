@@ -147,6 +147,26 @@ def infos_joueur(t):
     return out or None
 
 
+def classement_joueur(t, tete):
+    """23/10/2026 — ce que la liste des matchs donne déjà, sans requête de plus : rang du joueur au moment de la
+    collecte (le jour du match depuis la collecte toutes les 2 h), et tête de série / statut (« Q », « WC », « 3 »)."""
+    out = {}
+    if isinstance(t.get('ranking'), int) and t['ranking'] > 0:
+        out['rang'] = t['ranking']
+    if tete not in (None, ''):
+        out['tete_de_serie'] = str(tete)
+    if out:
+        out['rang_releve_le'] = dt.datetime.now(dt.timezone.utc).date().isoformat()
+    return out
+
+
+def duree_minutes(e):
+    """Durée du match en minutes (somme des sets, champ « time » de l'événement), ou None."""
+    t = e.get('time') or {}
+    s = sum(v for k, v in t.items() if str(k).startswith('period') and isinstance(v, (int, float)) and v > 0)
+    return round(s / 60) if s else None
+
+
 def fiche(e, categorie):
     t = e.get('tournament') or {}
     ut = t.get('uniqueTournament') or {}
@@ -159,9 +179,10 @@ def fiche(e, categorie):
             'points_tournoi': ut.get('tennisPoints'), 'tour': (e.get('roundInfo') or {}).get('name'),
             'meilleur_des': e.get('bestOf') or e.get('defaultPeriodCount'),
             'home': {'id': h.get('id'), 'nom': h.get('name'), 'court': h.get('shortName'), 'pays': (h.get('country') or {}).get('alpha3'),
-                     'infos': infos_joueur(h)},
+                     'infos': infos_joueur(h), **classement_joueur(h, e.get('homeTeamSeed'))},
             'away': {'id': a.get('id'), 'nom': a.get('name'), 'court': a.get('shortName'), 'pays': (a.get('country') or {}).get('alpha3'),
-                     'infos': infos_joueur(a)},
+                     'infos': infos_joueur(a), **classement_joueur(a, e.get('awayTeamSeed'))},
+            'duree_min': duree_minutes(e),
             'premier_serveur': e.get('firstToServe'), 'vainqueur': e.get('winnerCode'),
             'statut': {'code': st.get('code'), 'texte': st.get('description'), 'type': st.get('type')},
             'score_home': score(e.get('homeScore')), 'score_away': score(e.get('awayScore')),
@@ -245,6 +266,12 @@ def collecter_jour(c, jour, voulues=CATEGORIES, aujourd_hui=None, dossier=DOSSIE
                 old = recs.get(e['id'])
                 if old:
                     nouv['stats'], nouv['essais'] = old.get('stats'), old.get('essais', 0)
+                    for cote in ('home', 'away'):           # le rang relevé le plus tôt (le plus proche du match) reste
+                        o = old.get(cote) or {}
+                        if o.get('rang_releve_le') and (o['rang_releve_le'] <= nouv[cote].get('rang_releve_le', '9999')):
+                            for k in ('rang', 'tete_de_serie', 'rang_releve_le'):
+                                if k in o:
+                                    nouv[cote][k] = o[k]
                 if 'walkover' in norm(nouv['statut']['texte']):
                     nouv['essais'] = ESSAIS_MAX           # forfait : pas de feuille à demander
                 recs[e['id']] = nouv
