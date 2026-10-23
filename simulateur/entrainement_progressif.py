@@ -112,6 +112,7 @@ def poids_challenger(hors, P, lim, ajuster_poids):
     l_ch, l_co = _ll([S.melange(Pc, pe, ps) for _, ps, pe in ju]), _ll([S.melange(P, pe, ps) for _, ps, pe in ju])
     ok = l_ch < l_co
     out = {'adopte': bool(ok), 'n_juge': len(ju), 'poids_appris_avant': {k: round(v, 4) for k, v in Pc.items()},
+           'll': {'avec': l_ch, 'sans': l_co},
            'raison': (f"Challenger des 6 dernières semaines ({len(ju)} matchs) : poids propres {round(l_ch, 4)} contre poids "
                       f"communs {round(l_co, 4)} ; part de la simulation {part_simulation(Pc)} % contre {part_simulation(P)} %")}
     if ok:
@@ -173,7 +174,7 @@ def correction_situation(hors, P, lim, valeur, cle_s, poids_finaux=None, min_ava
     l0, l1 = _ll([sg_(o) for o, _ in ju]), _ll([sg_(o + d * f) for o, f in ju])
     att = sum(1 for o, f in ju if f > 0) / len(ju)          # part des matchs gagnés par celui qui est dans la situation
     ok = l1 < l0
-    out = {'adopte': bool(ok), 'delta_appris_avant': round(d, 4), 'n_juge': len(ju),
+    out = {'adopte': bool(ok), 'delta_appris_avant': round(d, 4), 'n_juge': len(ju), 'll': {'avec': l1, 'sans': l0},
            'raison': (f"{len(ju)} matchs concernés (6 dernières semaines) : log loss {round(l1, 4)} corrigée contre "
                       f"{round(l0, 4)} ; δ = {round(d, 3)} ({lib} est {'sous-estimé' if d > 0 else 'surestimé'})"
                       f" ; {lib} gagne {round(100 * att)} % de ces matchs")}
@@ -241,7 +242,7 @@ def modele_arbres(hors, P, lim, experience, situations, nv, poids_finaux=None):
     neuf = [A.predire_symetrique(M, v, off(P, h), ECARTS) for _, v, h, _ in ju]
     l0, l1 = _ll(actuel), _ll(neuf)
     ok = l1 < l0
-    out = {'adopte': bool(ok), 'n_juge': len(ju), 'variables': list(VARIABLES),
+    out = {'adopte': bool(ok), 'n_juge': len(ju), 'variables': list(VARIABLES), 'll': {'avec': l1, 'sans': l0},
            'jugement': {'actuel': _bilan(actuel), 'arbres': _bilan(neuf)},
            'raison': (f"6 dernières semaines ({len(ju)} matchs) : arbres {round(l1, 4)} contre modèle actuel {round(l0, 4)} "
                       f"(vainqueur trouvé {round(100 * _ok(neuf), 1)} % contre {round(100 * _ok(actuel), 1)} %)")}
@@ -317,7 +318,8 @@ def rejouer_saison(lignes, p_elo, groupes, apprendre, victoire_ligne, ajuster_po
     l_arch = _ll([S.melange(poids_archive, pe, ps) for _, ps, pe in juge]) if poids_archive else None
     l_elo = _ll([pe for _, _, pe in juge])
     ok = l_arch is None or l_new < l_arch
-    return dict(out, adopte=bool(ok), jugement={'n': len(juge), 'depuis': str(lim), 'log_loss_feuilles': round(l_new, 5),
+    return dict(out, adopte=bool(ok), ll={'avec': l_new, 'sans': l_arch},
+                jugement={'n': len(juge), 'depuis': str(lim), 'log_loss_feuilles': round(l_new, 5),
                                                   'log_loss_poids_archive': round(l_arch, 5) if l_arch is not None else None,
                                                   'log_loss_elo_seul': round(l_elo, 5)},
                 raison=(f"6 dernières semaines ({len(juge)} matchs) : poids appris sur les feuilles {round(l_new, 4)} contre "

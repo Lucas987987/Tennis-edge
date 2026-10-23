@@ -487,7 +487,23 @@ def main(argv):
     a_ok = (a0.get('n', 0) == 0 and a1.get('n', 0) == 0) or \
         ('log_loss' in a0 and 'log_loss' in a1 and a1['log_loss'] <= a0['log_loss'] + 0.001)
     b_ok = 'log_loss' in b0 and 'log_loss' in b1 and b1['log_loss'] < b0['log_loss']
-    retenue = 'depart_1200_petits_niveaux' if (a_ok and b_ok) else 'depart_1500'
+    # 23/10/2026 : chaque étape passe par la règle de stabilité (stabilite.py) — marge 0,001 sur nos matchs (B),
+    # deux semaines de suite pour entrer comme pour sortir ; point de départ : la variante en place.
+    import stabilite as ST
+    etat_st = ST.lire()
+    try:
+        en_place = json.load(open(os.path.join(ICI, 'elo_etat.json'), encoding='utf-8')).get('variante') or ''
+    except (OSError, ValueError):
+        en_place = ''
+    stab = {}
+
+    def etape(cle, marque, brut, ll_b1, ll_b0):
+        ok, note = ST.decider(etat_st, cle, marque in en_place, brut, ll_b1, ll_b0)
+        stab[cle] = {'adopte_brut': bool(brut), 'adopte': ok, 'note': note}
+        print(f"  stabilité {cle} : {'retenu' if ok else 'non retenu'} ({note})", flush=True)
+        return ok
+    retenue = 'depart_1200_petits_niveaux' if etape('elo_depart_bas', 'depart_1200', a_ok and b_ok, b1.get('log_loss'), b0.get('log_loss')) \
+        else 'depart_1500'
     # Étape 2 (22/10/2026), règle fixée AVANT les résultats, sur la variante de départ retenue :
     # les joueurs absents de nos bases (connus seulement de tennis-data) deviennent de nouveaux
     # joueurs ; retenu seulement si log loss B baisse et log loss A ne monte pas de plus de 0,001.
@@ -501,7 +517,7 @@ def main(argv):
     a_ok = (a0.get('n', 0) == 0 and a1.get('n', 0) == 0) or \
         ('log_loss' in a0 and 'log_loss' in a1 and a1['log_loss'] <= a0['log_loss'] + 0.001)
     b_ok = 'log_loss' in b0 and 'log_loss' in b1 and b1['log_loss'] < b0['log_loss']
-    if a_ok and b_ok:
+    if etape('elo_nouveaux_joueurs', '+nouveaux_joueurs', a_ok and b_ok, b1.get('log_loss'), b0.get('log_loss')):
         retenue = nom2
     # Étape 3 (22/10/2026), règle fixée AVANT les résultats : Elo amélioré (poids de la surface, Elo pondéré
     # par le score, incertitude des joueurs peu vus), options choisies sur 2023 seulement ; retenu si la
@@ -524,7 +540,8 @@ def main(argv):
                     'adopte': bool(a_ok and b_ok),
                     'raison': (f"log loss ATP/WTA 2024–2026 {a1.get('log_loss')} contre {a0.get('log_loss')} ; "
                                f"nos matchs {b1.get('log_loss')} contre {b0.get('log_loss')}")}
-    if a_ok and b_ok:
+    # (étape 3 jugée sur l'ATP/WTA 2024–2026 : la marge porte sur la log loss A)
+    if etape('elo_ameliore', '+elo_ameliore', a_ok and b_ok, a1.get('log_loss'), a0.get('log_loss')):
         retenue = nom3
     # Étape 4 (23/10/2026), RÈGLE FIXÉE AVANT LES RÉSULTATS : les résultats des feuilles TennisApi (Challenger, et
     # février → mai 2026 rattrapés) entrent dans le classement s'ils font baisser la log loss de nos matchs (B)
@@ -547,8 +564,11 @@ def main(argv):
                                    f"{a1.get('log_loss')} contre {a0.get('log_loss')}")}
         print(f"Résultats des feuilles dans l'Elo : {'ADOPTÉS' if feuilles_elo['adopte'] else 'non adoptés'} — {feuilles_elo['raison']}",
               flush=True)
+        feuilles_elo['adopte_brut'] = feuilles_elo['adopte']
+        feuilles_elo['adopte'] = etape('elo_feuilles', '+feuilles', feuilles_elo['adopte_brut'], b1.get('log_loss'), b0.get('log_loss'))
         if feuilles_elo['adopte']:
             retenue = nom4
+    ST.ecrire(etat_st)
     W = V[retenue]
     rap = {'genere_le': dt.datetime.now(dt.timezone.utc).isoformat(timespec='seconds'),
            'objectif': 'deviner le vainqueur et le score (pas battre Pinnacle)',
@@ -560,6 +580,7 @@ def main(argv):
            'variante_retenue': retenue,
            'elo_ameliore': elo_ameliore,
            'feuilles_dans_elo': feuilles_elo,
+           'stabilite': stab,
            'joueurs_relies_nom_different': len(alias),
            'sackmann_jusqu_au': fin_sack.isoformat(), 'nos_matchs': len(nous),
            'resultats_tennis_data_ajoutes': W['td'],
