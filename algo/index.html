@@ -1,0 +1,604 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tennis Edge — l'algo</title>
+<meta name="description" content="Chaque match de tennis simulé 5 000 fois par un algorithme indépendant du marché : % de victoire, cote juste, et un bilan public, pertes comprises.">
+<meta property="og:title" content="Tennis Edge — l'algo">
+<meta property="og:description" content="Chaque match simulé 5 000 fois. % de victoire, cote juste, bilan public.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F2F4F1; --panel:#FFFFFF; --ink:#13211B; --muted:#5A6A62; --rule:#D7DED9;
+  --court:#1C5C42; --court-ink:#FFFFFF; --court-line:rgba(255,255,255,.55);
+  --home:#1C5C42; --away:#2F56A6; --ok:#1F7A4C; --ko:#B3261E; --ball:#E9E35B;
+  --radius-lg:14px; --radius-sm:6px;
+  --cond:"Barlow Condensed","Arial Narrow","Roboto Condensed",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0D1612; --panel:#14201A; --ink:#E4ECE7; --muted:#93A69C; --rule:#26352D;
+    --court:#1F6B4C; --court-ink:#F4FAF6; --court-line:rgba(255,255,255,.4);
+    --home:#46B184; --away:#7E9CEB; --ok:#4DBE84; --ko:#F0706A;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0D1612; --panel:#14201A; --ink:#E4ECE7; --muted:#93A69C; --rule:#26352D;
+  --court:#1F6B4C; --court-ink:#F4FAF6; --court-line:rgba(255,255,255,.4);
+  --home:#46B184; --away:#7E9CEB; --ok:#4DBE84; --ko:#F0706A;
+}
+*{box-sizing:border-box}
+html{font-size:16px}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Barlow,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.5;-webkit-font-smoothing:antialiased}
+.num,.cond{font-family:var(--cond);font-variant-numeric:tabular-nums}
+a{color:inherit}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--away);outline-offset:2px}
+.wrap{max-width:880px;margin:0 auto;padding:0 16px}
+header.top{display:flex;align-items:center;justify-content:space-between;padding:18px 0 8px}
+.mark{font-family:var(--cond);font-weight:700;font-size:1.45rem;letter-spacing:.01em;margin:0}
+.mark span{color:var(--muted);font-weight:500}
+.lang{display:flex;border:1px solid var(--rule);border-radius:999px;overflow:hidden}
+.lang button{border:0;background:none;padding:5px 12px;cursor:pointer;font-weight:600;font-size:.85rem;color:var(--muted)}
+.lang button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.lede{font-size:1.06rem;color:var(--muted);max-width:60ch;margin:4px 0 22px}
+
+/* match du jour : le court */
+.court{background:var(--court);color:var(--court-ink);border-radius:var(--radius-lg);padding:20px 18px 18px;position:relative;overflow:hidden}
+.court::before{content:"";position:absolute;inset:10px;border:2px solid var(--court-line);border-radius:4px;pointer-events:none}
+.court > *{position:relative;z-index:1}
+.court .ctx{font-size:.9rem;opacity:.85;margin:0 0 10px}
+.duel{display:grid;grid-template-columns:1fr auto 1fr;align-items:end;gap:10px}
+.duel .who{font-family:var(--cond);font-weight:600;font-size:1.35rem;line-height:1.1}
+.duel .who.r{text-align:right}
+.duel .pct{font-family:var(--cond);font-weight:700;font-size:3.4rem;line-height:1;font-variant-numeric:tabular-nums}
+.duel .vs{opacity:.6;font-size:.85rem;padding-bottom:8px}
+.fair{display:flex;justify-content:space-between;font-size:.92rem;opacity:.9;margin-top:4px}
+.split{height:10px;border-radius:999px;background:rgba(255,255,255,.22);overflow:hidden;margin:12px 0 4px;display:flex}
+.split i{display:block;height:100%;background:var(--ball)}
+.court .note{font-size:.85rem;opacity:.8;margin:10px 0 0}
+
+/* tableau de score simulé */
+.sim{margin-top:16px;background:color-mix(in srgb,var(--court) 55%,#000);border-radius:10px;padding:12px}
+.board{width:100%;border-collapse:collapse;font-family:var(--cond);font-variant-numeric:tabular-nums}
+.board td{padding:4px 6px;font-size:1.25rem;font-weight:600}
+.board td.name{width:100%;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:0}
+.board td.set{color:rgba(255,255,255,.75);text-align:center;min-width:1.6em}
+.board td.games{text-align:center;min-width:1.6em}
+.board td.pts{text-align:center;min-width:2.4em;background:var(--ball);color:#13211B;border-radius:5px}
+.srv{display:inline-block;width:.5em;height:.5em;border-radius:50%;background:var(--ball);margin-right:6px;visibility:hidden;vertical-align:middle}
+.srv.on{visibility:visible}
+.liveline{display:flex;justify-content:space-between;font-size:.85rem;opacity:.85;margin:10px 2px 2px}
+svg.momentum{width:100%;height:84px;display:block}
+.controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.btn{border:1px solid var(--court-line);background:rgba(255,255,255,.08);color:var(--court-ink);border-radius:999px;padding:7px 14px;cursor:pointer;font-weight:600;font-size:.92rem}
+.btn.primary{background:var(--ball);border-color:var(--ball);color:#13211B}
+.final{font-size:.95rem;margin:10px 2px 0;min-height:1.5em}
+
+/* sections */
+section{margin:34px 0}
+h2{font-family:var(--cond);font-weight:700;font-size:1.6rem;margin:0 0 4px;line-height:1.15}
+.sub{color:var(--muted);margin:0 0 14px;max-width:62ch}
+.panel{background:var(--panel);border:1px solid var(--rule);border-radius:var(--radius-lg)}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:0}
+.facts > div{padding:14px 16px;border-top:1px solid var(--rule)}
+.facts > div:first-child{border-top:0}
+@media (min-width:560px){.facts > div{border-top:0;border-left:1px solid var(--rule)}.facts > div:first-child{border-left:0}}
+.facts .k{color:var(--muted);font-size:.88rem}
+.facts .v{font-family:var(--cond);font-weight:700;font-size:1.9rem;font-variant-numeric:tabular-nums;line-height:1.1}
+.bars{padding:12px 16px}
+.bar{display:grid;grid-template-columns:3.2em 1fr 3.4em;align-items:center;gap:10px;margin:6px 0;font-variant-numeric:tabular-nums}
+.bar .t{height:8px;background:var(--rule);border-radius:999px;overflow:hidden}
+.bar .t i{display:block;height:100%;background:var(--home)}
+.bar.away .t i{background:var(--away)}
+.mdj-detail{display:grid;gap:12px;margin-top:12px}
+@media (min-width:640px){.mdj-detail{grid-template-columns:1fr 1fr}}
+.mdj-detail h3{font-size:1rem;margin:12px 16px 0;font-weight:600}
+table.sheet{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+table.sheet td,table.sheet th{padding:7px 16px;border-top:1px solid var(--rule);text-align:right}
+table.sheet th{font-weight:500;color:var(--muted);text-align:left}
+table.sheet thead th{border-top:0;font-size:.9rem;text-align:right}
+table.sheet thead th:first-child{text-align:left}
+
+/* liste des matchs */
+.list{list-style:none;margin:0;padding:0}
+.list li{display:grid;grid-template-columns:3.4em 1fr;gap:4px 12px;padding:12px 16px;border-top:1px solid var(--rule)}
+.list li:first-child{border-top:0}
+.list .time{font-family:var(--cond);font-weight:600;font-size:1.05rem;color:var(--muted);padding-top:2px}
+.list .tour{font-size:.85rem;color:var(--muted)}
+.list .pl{display:flex;justify-content:space-between;gap:10px;font-weight:500}
+.list .pl b{font-family:var(--cond);font-weight:700;font-size:1.1rem;font-variant-numeric:tabular-nums}
+.list .mini{height:6px;border-radius:999px;background:var(--away);overflow:hidden;margin:6px 0 2px;display:flex}
+.list .mini i{display:block;height:100%;background:var(--home)}
+.list .meta{display:flex;justify-content:space-between;font-size:.85rem;color:var(--muted)}
+.lock{font-size:.82rem;color:var(--muted)}
+.list li.star{background:color-mix(in srgb,var(--court) 7%,transparent)}
+
+/* bilan */
+svg.curve{width:100%;height:auto;display:block}
+.res{list-style:none;margin:0;padding:0}
+.res li{display:grid;grid-template-columns:1.6em 1fr auto;gap:10px;padding:9px 16px;border-top:1px solid var(--rule);align-items:center;font-size:.95rem}
+.res li:first-child{border-top:0}
+.res .mark-ok{color:var(--ok);font-weight:700}
+.res .mark-ko{color:var(--ko);font-weight:700}
+.res .d{color:var(--muted);font-size:.85rem}
+.res .sc{white-space:nowrap}
+.res .p{font-variant-numeric:tabular-nums;text-align:right}
+.more{display:block;margin:0;padding:10px 16px;border:0;border-top:1px solid var(--rule);background:none;width:100%;text-align:left;cursor:pointer;color:var(--muted);font-weight:600}
+.calib{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+.calib th,.calib td{padding:8px 12px;white-space:nowrap;border-top:1px solid var(--rule);text-align:right}
+.calib th:first-child,.calib td:first-child{text-align:left}
+.calib thead th{border-top:0;color:var(--muted);font-weight:500;font-size:.9rem}
+.plus{padding:18px 16px}
+.plus ul{margin:8px 0 0;padding-left:1.1em}
+.plus .soon{display:inline-block;font-weight:600;color:var(--court);margin-top:10px}
+footer{color:var(--muted);font-size:.85rem;padding:20px 0 40px;border-top:1px solid var(--rule);margin-top:40px}
+.empty{padding:16px;color:var(--muted)}
+
+/* mode vidéo (format vertical 9:16, enregistré pour X) */
+body.video{background:var(--court);overflow:hidden}
+body.video .page{display:none}
+#video{display:none}
+body.video #video{display:flex;flex-direction:column;justify-content:center;gap:0;width:100vw;height:100vh;padding:9vw 8vw;color:var(--court-ink);font-size:4.2vw;position:relative}
+body.video #video::before{content:"";position:absolute;inset:3.5vw;border:.5vw solid var(--court-line);border-radius:1vw}
+body.video #video > *{position:relative}
+#video .v-kicker{font-family:var(--cond);font-weight:600;font-size:5.2vw;line-height:1.15;opacity:.92;margin:0 0 2vw}
+#video .v-title{font-family:var(--cond);font-weight:700;font-size:9vw;line-height:1.02;margin:0 0 5vw}
+#video .v-duel{display:grid;grid-template-columns:1fr 1fr;gap:3vw;margin-bottom:3vw}
+#video .v-duel div{font-family:var(--cond)}
+#video .v-duel .n{font-size:5.2vw;font-weight:600;line-height:1.1}
+#video .v-duel .p{font-size:14vw;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
+#video .v-duel .r{text-align:right}
+#video .split{height:1.8vw;margin:0 0 5vw;flex:none}
+#video .sim{padding:3vw;border-radius:2vw;margin:0}
+#video .board td{font-size:6.4vw;padding:1vw 1.6vw}
+#video .board td.pts{border-radius:1vw}
+#video svg.momentum{height:20vw}
+#video .liveline{font-size:3.8vw;margin:3vw .5vw 1vw}
+#video .v-end{font-family:var(--cond);font-size:5vw;font-weight:600;margin:5vw 0 0;min-height:3.6em;line-height:1.18}
+#video .nw{white-space:nowrap}
+#video .v-url{font-family:var(--cond);font-size:4.4vw;font-weight:600;opacity:.95;margin:5vw 0 0;white-space:nowrap}
+@media (prefers-reduced-motion: reduce){*{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<div class="page">
+<div class="wrap">
+  <header class="top">
+    <p class="mark">Tennis Edge <span data-t="marque"></span></p>
+    <div class="lang" role="group" aria-label="Langue / Language">
+      <button type="button" data-lang="fr" aria-pressed="true">FR</button>
+      <button type="button" data-lang="en" aria-pressed="false">EN</button>
+    </div>
+  </header>
+  <p class="lede" data-t="lede"></p>
+
+  <section id="mdj" aria-labelledby="mdj-h" style="margin-top:0">
+    <h2 id="mdj-h" data-t="mdj_titre"></h2>
+    <p class="sub" data-t="mdj_sous"></p>
+    <div id="mdj-court"></div>
+    <div class="mdj-detail" id="mdj-detail"></div>
+  </section>
+
+  <section aria-labelledby="list-h">
+    <h2 id="list-h" data-t="liste_titre"></h2>
+    <p class="sub" data-t="liste_sous"></p>
+    <div class="panel"><ul class="list" id="list"></ul></div>
+  </section>
+
+  <section aria-labelledby="bilan-h">
+    <h2 id="bilan-h" data-t="bilan_titre"></h2>
+    <p class="sub" id="bilan-sous"></p>
+    <div class="panel" id="bilan-facts"></div>
+    <div class="panel" style="margin-top:12px;padding:12px 8px 4px" id="bilan-curve"></div>
+    <div class="panel" style="margin-top:12px"><ul class="res" id="bilan-res"></ul><button class="more" id="bilan-more" hidden></button></div>
+  </section>
+
+  <section aria-labelledby="calib-h">
+    <h2 id="calib-h" data-t="calib_titre"></h2>
+    <p class="sub" data-t="calib_sous"></p>
+    <div class="panel" id="calib"></div>
+    <p class="sub" style="margin-top:12px" id="rejoue-sous"></p>
+    <div class="panel" id="calib-rejoue"></div>
+  </section>
+
+  <section aria-labelledby="plus-h">
+    <h2 id="plus-h" data-t="plus_titre"></h2>
+    <div class="panel plus">
+      <p style="margin:0" data-t="plus_texte"></p>
+      <ul id="plus-list"></ul>
+      <span class="soon" data-t="plus_bientot"></span>
+    </div>
+  </section>
+
+  <footer>
+    <p data-t="pied_methode"></p>
+    <p data-t="pied_jeu"></p>
+    <p id="maj"></p>
+  </footer>
+</div>
+</div>
+
+<div id="video" aria-hidden="true"></div>
+
+<script>
+(function(){
+'use strict';
+/* ───────────── textes FR / EN ───────────── */
+const T = {
+ fr:{
+  marque:"· l'algo", html_lang:'fr',
+  lede:"Chaque match est simulé 5 000 fois, point par point, par un algorithme qui ne regarde jamais les cotes. On publie son % de victoire, la cote juste qui va avec, et tous ses résultats — y compris quand il se trompe.",
+  mdj_titre:'Le match du jour', mdj_sous:"Choisi par une règle fixe : la plus grosse affiche ATP/WTA du jour (somme des Elo), jamais selon la confiance de l'algo.",
+  mdj_vide:"Pas de match du jour pour l'instant : il est choisi parmi les matchs pas encore commencés de la journée.",
+  vs:'contre', cote_juste:'cote juste', sur_sims:n=>`Sur ${n} simulations`,
+  rejouer:'Rejouer une simulation', accel:'Accélérer', fin:'Aller à la fin',
+  une_parmi:n=>`Une simulation parmi ${fmt(n)} : le vrai match peut se dérouler autrement.`,
+  proba_direct:'Probabilité en direct', gagne_sim:(w,s)=>`Dans cette simulation, ${w} gagne ${s}.`,
+  sets_titre:'Score en sets', scores_titre:'Scores les plus probables', feuille_titre:'Feuille de match prévue (moyenne des 5 000 simulations)',
+  aces:'Aces', df:'Doubles fautes', breaks:'Breaks réussis', prem:'1res balles (%)', jsg:'Jeux de service gagnés (%)',
+  liste_titre:'Tous les matchs', liste_sous:"Les matchs des prochaines heures (ATP, WTA, Challenger). Heure de ton appareil.",
+  liste_vide:"Aucun match à venir pour l'instant : les pronostics sont refaits toutes les 2 heures.",
+  detail_plus:'Détail complet : offre Plus', detail_ici:'Détail complet ci-dessus',
+  bilan_titre:'Bilan public',
+  bilan_sous:d=>`Tous les matchs ATP, WTA et Challenger pronostiqués depuis le ${dateLong(d)}, sans aucun tri. Jugés sur le dernier pronostic affiché avant le match. Abandons et forfaits exclus.`,
+  matchs_juges:'Matchs jugés', vainqueurs:'Vainqueurs trouvés', brier:'Score de Brier', brier_aide:'0,25 = pile ou face ; plus bas = mieux',
+  par_circuit:'Par circuit', courbe_aria:'Taux de vainqueurs trouvés, cumulé jour après jour',
+  bilan_vide:'Le bilan se remplit dès les premiers résultats.', voir_plus:n=>`Voir ${n} résultats de plus`,
+  calib_titre:'Calibration : annoncé contre réel',
+  calib_sous:"Quand l'algo annonce 70 %, le joueur doit gagner environ 7 fois sur 10. Chaque match compte des deux côtés.",
+  annonce:'Annoncé', reel:'Réel', matchs:'Matchs', tranche:'Tranche',
+  calib_attente:n=>`En direct : pas encore assez de matchs par tranche (${n} jugés). Le tableau apparaîtra avec le volume.`,
+  rejoue_sous:r=>`Rejoué hors échantillon du ${dateLong(r.du)} au ${dateLong(r.au)} : chaque semaine prédite avec un modèle entraîné uniquement sur les semaines d'avant. ${fmt(r.global.n)} matchs, ${pc(r.global.pct)} de vainqueurs trouvés, Brier ${dec(r.global.brier,3)}.`,
+  plus_titre:'Plus', plus_texte:"Le % de chaque match restera gratuit, tout comme le match du jour et le bilan. L'offre Plus ouvrira le reste :",
+  plus_items:['La feuille complète de chaque match : sets, scores probables, aces, breaks','La simulation rejouable pour chaque match','Les alertes quand un nouveau match est pronostiqué'],
+  plus_bientot:'Bientôt.',
+  pied_methode:"Méthode : simulation point par point à partir des statistiques de service et de retour de chaque joueur, combinée à un classement Elo par surface, apprise uniquement sur les matchs passés. L'algorithme n'utilise aucune cote de bookmaker.",
+  pied_jeu:"Ce site ne donne pas de conseil de pari. Les paris sportifs sont interdits aux mineurs. Jouer comporte des risques : endettement, isolement, dépendance. Pour être aidé, appelez le 09 74 75 13 13 (appel non surtaxé).",
+  maj:d=>`Pronostics mis à jour le ${dateHeure(d)}.`,
+  v_kicker:"L'algo a simulé ce match", v_fois:n=>`${fmt(n)} fois`, v_url:'lucas987987.github.io/Tennis-edge/algo',
+  v_fin:(w,s,n,p,x)=>`Cette simulation\u00a0: ${w} <span class="nw">${s}</span>.<br>Sur ${fmt(n)}\u00a0: ${x} gagne <span class="nw">${pc(p)}</span> du temps.`,
+  set_s:'Set', jeu:'Jeu', jeu_decisif:'Jeu décisif'
+ },
+ en:{
+  marque:'· the algorithm', html_lang:'en',
+  lede:"Every match is simulated 5,000 times, point by point, by an algorithm that never looks at the odds. We publish its win probability, the fair odds that go with it, and every result — including when it gets it wrong.",
+  mdj_titre:'Match of the day', mdj_sous:"Picked by a fixed rule: the day's biggest ATP/WTA matchup (sum of Elo ratings), never by how confident the algorithm is.",
+  mdj_vide:"No match of the day yet: it is picked among today's matches that haven't started.",
+  vs:'vs', cote_juste:'fair odds', sur_sims:n=>`Across ${n} simulations`,
+  rejouer:'Replay a simulation', accel:'Faster', fin:'Skip to the end',
+  une_parmi:n=>`One simulation out of ${fmt(n)}: the real match can play out differently.`,
+  proba_direct:'Live win probability', gagne_sim:(w,s)=>`In this simulation, ${w} wins ${s}.`,
+  sets_titre:'Score in sets', scores_titre:'Most likely scores', feuille_titre:'Expected match stats (average of 5,000 simulations)',
+  aces:'Aces', df:'Double faults', breaks:'Breaks of serve', prem:'1st serves in (%)', jsg:'Service games won (%)',
+  liste_titre:'All matches', liste_sous:'Matches in the next hours (ATP, WTA, Challenger). Times in your device\'s time zone.',
+  liste_vide:'No upcoming matches right now: predictions refresh every 2 hours.',
+  detail_plus:'Full breakdown: Plus', detail_ici:'Full breakdown above',
+  bilan_titre:'Public record',
+  bilan_sous:d=>`Every ATP, WTA and Challenger match predicted since ${dateLong(d)}, with nothing filtered out. Judged on the last prediction shown before the match. Retirements and walkovers excluded.`,
+  matchs_juges:'Matches judged', vainqueurs:'Winners called', brier:'Brier score', brier_aide:'0.25 = coin flip; lower is better',
+  par_circuit:'By tour', courbe_aria:'Share of winners called, cumulative day by day',
+  bilan_vide:'The record fills up with the first results.', voir_plus:n=>`Show ${n} more results`,
+  calib_titre:'Calibration: forecast vs reality',
+  calib_sous:'When the algorithm says 70%, that player should win about 7 times out of 10. Each match counts from both sides.',
+  annonce:'Forecast', reel:'Actual', matchs:'Matches', tranche:'Range',
+  calib_attente:n=>`Live: not enough matches per range yet (${n} judged). The table will appear as volume builds.`,
+  rejoue_sous:r=>`Replayed out of sample from ${dateLong(r.du)} to ${dateLong(r.au)}: each week predicted by a model trained only on the weeks before. ${fmt(r.global.n)} matches, ${pc(r.global.pct)} winners called, Brier ${dec(r.global.brier,3)}.`,
+  plus_titre:'Plus', plus_texte:'Every match\'s probability will stay free, as will the match of the day and the record. Plus will unlock the rest:',
+  plus_items:['The full breakdown of every match: sets, likely scores, aces, breaks','A replayable simulation for every match','Alerts when a new match is predicted'],
+  plus_bientot:'Coming soon.',
+  pied_methode:'Method: point-by-point simulation from each player\'s serve and return statistics, combined with a surface-specific Elo rating, trained only on past matches. The algorithm uses no bookmaker odds.',
+  pied_jeu:'This site gives no betting advice. Sports betting is for adults only. Gambling carries risks: debt, isolation, addiction. In France, call 09 74 75 13 13 for help.',
+  maj:d=>`Predictions updated ${dateHeure(d)}.`,
+  v_kicker:'The algorithm simulated this match', v_fois:n=>`${fmt(n)} times`, v_url:'lucas987987.github.io/Tennis-edge/algo',
+  v_fin:(w,s,n,p,x)=>`This simulation: ${w} <span class="nw">${s}</span>.<br>Across ${fmt(n)}: ${x} wins <span class="nw">${pc(p)}</span> of the time.`,
+  set_s:'Set', jeu:'Game', jeu_decisif:'Tiebreak'
+ }
+};
+const Q = new URLSearchParams(location.search);
+let L = 'fr';
+try { L = Q.get('lang') || localStorage.getItem('te_lang') || ((navigator.language||'fr').toLowerCase().startsWith('fr') ? 'fr' : 'en'); } catch(e){}
+if (!T[L]) L = 'fr';
+const t = (k, ...a) => { const v = T[L][k]; return typeof v === 'function' ? v(...a) : v; };
+const loc = () => L === 'fr' ? 'fr-FR' : 'en-GB';
+function fmt(n){ return Number(n).toLocaleString(loc()); }
+function dec(x,d){ return Number(x).toLocaleString(loc(),{minimumFractionDigits:d,maximumFractionDigits:d}); }
+function pc(x){ return L==='fr' ? dec(x,1)+'\u202f%' : dec(x,1)+'%'; }
+function pc0(p){ return L==='fr' ? Math.round(p*100)+'\u202f%' : Math.round(p*100)+'%'; }
+function odds(c){ return c ? dec(c,2) : '—'; }
+const utc = s => new Date(/Z|[+-]\d\d:?\d\d$/.test(s) ? s : s + 'Z');
+function dateLong(s){ return new Date(s+'T12:00:00Z').toLocaleDateString(loc(),{day:'numeric',month:'long',year:'numeric'}); }
+function dateHeure(s){ return utc(s).toLocaleString(loc(),{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}); }
+function heure(s){ return utc(s).toLocaleTimeString(loc(),{hour:'2-digit',minute:'2-digit'}); }
+function jourCourt(s){ return utc(s).toLocaleDateString(loc(),{weekday:'short',day:'numeric'}); }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function court(n){ const p = String(n).trim().split(/\s+/); return p.length>1 ? p.slice(1).join(' ') : n; }
+const CIRC = {ATP:'ATP', WTA:'WTA', CH:'Challenger'};
+const SURF = {fr:{Hard:'dur',Clay:'terre battue',Grass:'gazon',Carpet:'moquette'}, en:{Hard:'hard',Clay:'clay',Grass:'grass',Carpet:'carpet'}};
+
+/* ───────────── moteur de simulation (points) ───────────── */
+function rng(seed){ let a = seed>>>0; return function(){ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+
+function Moteur(sim){
+  const A = sim.a, B = sim.b, N = sim.sets_gagnants, TBF = sim.tb_final || 7;
+  const pServ = s => s===0 ? A : 1-B;          // P(home gagne le point) selon le serveur
+  const memo = new Map();
+  function pGame(p,a,b){                        // P(serveur gagne le jeu) depuis a-b points
+    if (a>=4 && a-b>=2) return 1; if (b>=4 && b-a>=2) return 0;
+    if (a>=3 && b>=3){ const d = p*p/(p*p+(1-p)*(1-p)); return a===b ? d : (a>b ? p+(1-p)*d : p*d); }
+    return p*pGame(p,a+1,b)+(1-p)*pGame(p,a,b+1);
+  }
+  const tbServ = (k,s0) => k===0 ? s0 : ((((k-1)>>1)%2)===0 ? 1-s0 : s0);
+  function pTB(i,j,s0,cible){                    // P(home gagne le jeu décisif) depuis i-j
+    if (i>=cible && i-j>=2) return 1; if (j>=cible && j-i>=2) return 0;
+    if (i===j && i>=cible-1){ const k=i+j, p1=pServ(tbServ(k,s0)), p2=pServ(tbServ(k+1,s0)); const w=p1*p2, l=(1-p1)*(1-p2); return w/(w+l); }
+    const key='t'+i+','+j+','+s0+','+cible; if (memo.has(key)) return memo.get(key);
+    const p=pServ(tbServ(i+j,s0)); const v=p*pTB(i+1,j,s0,cible)+(1-p)*pTB(i,j+1,s0,cible); memo.set(key,v); return v;
+  }
+  // distribution de fin de set : [home gagne & sert ensuite 0, home gagne & 1, away gagne & 0, away gagne & 1]
+  function setDist(gh,ga,srv,fin){
+    if ((gh>=6 && gh-ga>=2) || gh===7) return [srv===0?1:0, srv===1?1:0, 0,0];
+    if ((ga>=6 && ga-gh>=2) || ga===7) return [0,0, srv===0?1:0, srv===1?1:0];
+    const key='s'+gh+','+ga+','+srv+','+fin; if (memo.has(key)) return memo.get(key);
+    let v;
+    if (gh===6 && ga===6){ const p=pTB(0,0,srv,fin?TBF:7); v = srv===0 ? [0,p,0,1-p] : [p,0,1-p,0]; }
+    else { const pg = srv===0 ? pGame(A,0,0) : 1-pGame(B,0,0);
+      const x=setDist(gh+1,ga,1-srv,fin), y=setDist(gh,ga+1,1-srv,fin); v=x.map((e,i)=>pg*e+(1-pg)*y[i]); }
+    memo.set(key,v); return v;
+  }
+  function pMatch(sh,sa,srv){
+    if (sh>=N) return 1; if (sa>=N) return 0;
+    const key='m'+sh+','+sa+','+srv; if (memo.has(key)) return memo.get(key);
+    const d=setDist(0,0,srv,sh===N-1&&sa===N-1);
+    const v=d[0]*pMatch(sh+1,sa,0)+d[1]*pMatch(sh+1,sa,1)+d[2]*pMatch(sh,sa+1,0)+d[3]*pMatch(sh,sa+1,1);
+    memo.set(key,v); return v;
+  }
+  function pLive(S){                             // P(home gagne le match) depuis l'état S
+    if (S.fini) return S.vainqueur===0 ? 1 : 0;
+    const sh=S.sets[0], sa=S.sets[1], fin = sh===N-1 && sa===N-1, gh=S.jeux[0], ga=S.jeux[1];
+    let d;
+    if (S.tb){ const p=pTB(S.pts[0],S.pts[1],S.tbS0,S.tbCible); const nx=1-S.tbS0; d = nx===0 ? [p,0,1-p,0] : [0,p,0,1-p]; }
+    else {
+      const ps = S.srv===0 ? pGame(A,S.pts[0],S.pts[1]) : 1-pGame(B,S.pts[1],S.pts[0]);
+      const x=setDist(gh+1,ga,1-S.srv,fin), y=setDist(gh,ga+1,1-S.srv,fin); d=x.map((e,i)=>ps*e+(1-ps)*y[i]);
+    }
+    return d[0]*pMatch(sh+1,sa,0)+d[1]*pMatch(sh+1,sa,1)+d[2]*pMatch(sh,sa+1,0)+d[3]*pMatch(sh,sa+1,1);
+  }
+  function etat(premier){ return {sets:[0,0], jeux:[0,0], pts:[0,0], srv:premier, tb:false, tbS0:0, tbCible:7, histo:[], fini:false, vainqueur:null}; }
+  function point(S, r){                          // joue un point ; r ∈ [0,1)
+    const serveur = S.tb ? tbServ(S.pts[0]+S.pts[1], S.tbS0) : S.srv;
+    const h = r < pServ(serveur) ? 0 : 1;
+    S.pts[h]++;
+    const [a,b]=S.pts;
+    if (S.tb){
+      if ((a>=S.tbCible || b>=S.tbCible) && Math.abs(a-b)>=2){ S.jeux[h]++; finSet(S,h); S.srv = 1-S.tbS0; }
+      return h;
+    }
+    if ((a>=4 || b>=4) && Math.abs(a-b)>=2){
+      S.jeux[h]++; S.pts=[0,0]; S.srv=1-S.srv;
+      const [gh,ga]=S.jeux, fin = S.sets[0]===N-1 && S.sets[1]===N-1;
+      if ((gh>=6||ga>=6) && Math.abs(gh-ga)>=2) finSet(S, gh>ga?0:1);
+      else if (gh===6 && ga===6){ S.tb=true; S.tbS0=S.srv; S.tbCible = fin ? TBF : 7; }
+    }
+    return h;
+  }
+  function finSet(S,h){ S.histo.push([...S.jeux]); S.sets[h]++; S.jeux=[0,0]; S.pts=[0,0]; S.tb=false;
+    if (S.sets[h]>=N){ S.fini=true; S.vainqueur=h; } }
+  const serveur = S => S.tb ? tbServ(S.pts[0]+S.pts[1], S.tbS0) : S.srv;
+  return {etat, point, pLive, serveur};
+}
+const logit = p => Math.log(p/(1-p)), sig = z => 1/(1+Math.exp(-z));
+const PTS = ['0','15','30','40'];
+function affPts(S,i){
+  if (S.fini) return '';
+  if (S.tb) return String(S.pts[i]);
+  const [a,b]=S.pts;
+  if (a>=3 && b>=3){ if (a===b) return '40'; return (i===0)===(a>b) ? 'AD' : '40'; }
+  return PTS[S.pts[i]];
+}
+
+/* Lecteur : anime une simulation dans un conteneur donné. */
+/* Les probabilités au service (a, b) sont décalées d'un même δ (a + δ, b − δ) pour que le match simulé
+   donne exactement le % publié : la simulation rejouée raconte la même histoire que le pronostic. */
+function calibre(sim, p){
+  const f = d => Moteur({...sim, a: sim.a + d, b: sim.b - d}).pLive(Moteur(sim).etat(0)) - p;
+  let lo = -0.2, hi = 0.2;
+  if (f(lo) > 0 || f(hi) < 0) return sim;
+  for (let k=0;k<40;k++){ const mid=(lo+hi)/2; if (f(mid) < 0) lo = mid; else hi = mid; }
+  const d=(lo+hi)/2; return {...sim, a: sim.a + d, b: sim.b - d};
+}
+function Lecteur(root, m, opts){
+  const sim = calibre(m.simulation, m.p_home), M = Moteur(sim);
+  let seed = opts.seed != null ? opts.seed : Math.floor(Math.random()*1e9);
+  let S, R, serie, timer = null, vitesse = opts.vitesse || 1, decal = 0;
+  const premier = (seed % 2);
+  root.innerHTML = `
+    <table class="board" aria-live="off"><tbody>
+      <tr data-j="0"><td class="name"><span class="srv"></span>${esc(opts.court ? court(m.home) : m.home)}</td></tr>
+      <tr data-j="1"><td class="name"><span class="srv"></span>${esc(opts.court ? court(m.away) : m.away)}</td></tr>
+    </tbody></table>
+    <div class="liveline"><span>${esc(t('proba_direct'))}</span><span class="lp"></span></div>
+    <svg class="momentum" viewBox="0 0 300 80" preserveAspectRatio="none" role="img" aria-label="${esc(t('proba_direct'))}">
+      <line x1="0" y1="40" x2="300" y2="40" stroke="currentColor" stroke-opacity=".35" stroke-dasharray="3 4" vector-effect="non-scaling-stroke"/>
+      <polyline fill="none" stroke="var(--ball)" stroke-width="2.5" vector-effect="non-scaling-stroke" stroke-linejoin="round"/>
+    </svg>`;
+  const rows=[...root.querySelectorAll('tr')], lp=root.querySelector('.lp'), poly=root.querySelector('polyline');
+  function reset(){
+    S = M.etat(premier); R = rng(seed); serie = [];
+    decal = logit(Math.min(.995,Math.max(.005,m.p_home))) - logit(Math.min(.995,Math.max(.005,M.pLive(S))));
+    serie.push(m.p_home); dessine();
+  }
+  function pAff(){ const p=M.pLive(S); if (p<=0||p>=1) return p; return sig(logit(p)+decal); }
+  function dessine(){
+    const nbs = Math.max(S.histo.length + (S.fini?0:1), 1);
+    rows.forEach((tr,i)=>{
+      [...tr.querySelectorAll('td:not(.name)')].forEach(td=>td.remove());
+      S.histo.forEach(h=>{ const td=document.createElement('td'); td.className='set'; td.textContent=h[i]; tr.appendChild(td); });
+      if (!S.fini){
+        const g=document.createElement('td'); g.className='games'; g.textContent=S.jeux[i]; tr.appendChild(g);
+        const p=document.createElement('td'); p.className='pts'; p.textContent=affPts(S,i); tr.appendChild(p);
+      }
+      tr.querySelector('.srv').classList.toggle('on', !S.fini && M.serveur(S)===i);
+      tr.style.fontWeight = S.fini && S.vainqueur===i ? '700' : '';
+    });
+    const p = serie[serie.length-1];
+    lp.textContent = `${court(m.home)} ${pc0(p)}`;
+    const n = serie.length, w = 300;
+    poly.setAttribute('points', serie.map((v,i)=>`${(n<2?0:i*w/(n-1)).toFixed(1)},${(78-v*76).toFixed(1)}`).join(' '));
+  }
+  function pointJoue(){ M.point(S, R()); serie.push(pAff()); dessine(); if (S.fini){ stop(); opts.onFin && opts.onFin(S); } }
+  function delai(){ return Math.max(12, 140/vitesse); }
+  function lance(){ stop(); if (S.fini) return; timer = setInterval(pointJoue, delai()); }
+  function stop(){ if (timer){ clearInterval(timer); timer=null; } }
+  reset();
+  return {
+    rejouer(){ seed = Math.floor(Math.random()*1e9); vitesse = opts.vitesse || 1; reset(); lance(); },
+    lance, stop,
+    accelerer(){ vitesse = Math.min(vitesse*3, 27); if (timer) lance(); },
+    finir(){ stop(); let k=0; while(!S.fini && k<2000){ pointJoue(); k++; } },
+    etat:()=>S
+  };
+}
+function scoreTxt(S, inverse){ return S.histo.map(h=> inverse ? `${h[1]}-${h[0]}` : `${h[0]}-${h[1]}`).join(' '); }
+
+/* ───────────── rendu de la page ───────────── */
+let D = null, nRes = 12;
+function rendTextes(){
+  document.documentElement.lang = t('html_lang');
+  document.querySelectorAll('[data-t]').forEach(el=>{ el.textContent = t(el.dataset.t); });
+  document.querySelectorAll('.lang button').forEach(b=>b.setAttribute('aria-pressed', String(b.dataset.lang===L)));
+  document.getElementById('plus-list').innerHTML = t('plus_items').map(x=>`<li>${esc(x)}</li>`).join('');
+}
+let lecteur = null;
+function rendMdj(){
+  const box = document.getElementById('mdj-court'), det = document.getElementById('mdj-detail');
+  const id = D.match_du_jour && D.match_du_jour.uid, m = D.matchs.find(x=>x.uid===id);
+  if (!m){ box.innerHTML = `<div class="panel empty">${esc(t('mdj_vide'))}</div>`; det.innerHTML=''; return; }
+  const p=m.p_home;
+  box.innerHTML = `<div class="court">
+    <p class="ctx">${esc(m.tournoi)} · ${esc(SURF[L][m.surface]||m.surface||'')} · ${esc(jourCourt(m.debut))} ${esc(heure(m.debut))}</p>
+    <div class="duel"><div><div class="pct">${pc0(p)}</div><div class="who">${esc(m.home)}</div></div>
+      <div class="vs">${esc(t('vs'))}</div>
+      <div class="r"><div class="pct" style="text-align:right">${pc0(1-p)}</div><div class="who r">${esc(m.away)}</div></div></div>
+    <div class="split" aria-hidden="true"><i style="width:${(p*100).toFixed(1)}%"></i></div>
+    <div class="fair"><span>${esc(t('cote_juste'))} ${odds(m.cotes_justes[0])}</span><span>${esc(t('cote_juste'))} ${odds(m.cotes_justes[1])}</span></div>
+    ${m.simulation ? `<div class="sim" id="sim"></div>
+    <div class="controls"><button class="btn primary" id="b-rejouer">${esc(t('rejouer'))}</button><button class="btn" id="b-accel">${esc(t('accel'))}</button><button class="btn" id="b-fin">${esc(t('fin'))}</button></div>
+    <p class="final" id="final" aria-live="polite"></p>` : ''}
+    <p class="note">${esc(t('une_parmi', D.simulations))}</p></div>`;
+  if (m.simulation){
+    const fin = document.getElementById('final');
+    lecteur = Lecteur(document.getElementById('sim'), m, {onFin:S=>{ const w = S.vainqueur===0 ? m.home : m.away; fin.textContent = t('gagne_sim', w, scoreTxt(S, S.vainqueur===1)); }});
+    document.getElementById('b-rejouer').onclick=()=>{ fin.textContent=''; lecteur.rejouer(); };
+    document.getElementById('b-accel').onclick=()=>lecteur.accelerer();
+    document.getElementById('b-fin').onclick=()=>lecteur.finir();
+  }
+  const sets = m.sets ? Object.entries(m.sets) : [];
+  const bo = sets.map(([k,v])=>{ const [h,a]=k.split('-').map(Number); const away = a>h;
+    return `<div class="bar ${away?'away':''}"><span class="num">${esc(k)}</span><span class="t"><i style="width:${(v*100).toFixed(1)}%"></i></span><span class="num" style="text-align:right">${pc0(v)}</span></div>`; }).join('');
+  const sc = (m.scores_probables||[]).map(([s,v])=>`<div class="bar"><span class="num" style="grid-column:1/3">${esc(s)}</span><span class="num" style="text-align:right">${dec(v*100,1)}${L==='fr'?' %':'%'}</span></div>`).join('');
+  const f = m.feuille_prevue;
+  const lignes = f ? [['aces','aces'],['doubles_fautes','df'],['breaks','breaks'],['premiere_pct','prem'],['jeux_service_gagnes_pct','jsg']]
+     .filter(([k])=>f[0]&&f[0][k]!=null).map(([k,lib])=>`<tr><th>${esc(t(lib))}</th><td>${dec(f[0][k],1)}</td><td>${dec(f[1][k],1)}</td></tr>`).join('') : '';
+  det.innerHTML = `
+    ${bo ? `<div class="panel"><h3>${esc(t('sets_titre'))} <span style="color:var(--muted);font-weight:400">· ${esc(court(m.home))} – ${esc(court(m.away))}</span></h3><div class="bars">${bo}</div></div>`:''}
+    ${sc ? `<div class="panel"><h3>${esc(t('scores_titre'))}</h3><div class="bars">${sc}</div></div>`:''}
+    ${lignes ? `<div class="panel" style="grid-column:1/-1"><h3>${esc(t('feuille_titre'))}</h3><table class="sheet"><thead><tr><th></th><th>${esc(court(m.home))}</th><th>${esc(court(m.away))}</th></tr></thead><tbody>${lignes}</tbody></table></div>`:''}`;
+}
+function rendListe(){
+  const ul = document.getElementById('list'), mdj = D.match_du_jour && D.match_du_jour.uid;
+  if (!D.matchs.length){ ul.innerHTML = `<li class="empty" style="display:block">${esc(t('liste_vide'))}</li>`; return; }
+  ul.innerHTML = D.matchs.map(m=>{ const p=m.p_home;
+    return `<li class="${m.uid===mdj?'star':''}"><div class="time">${esc(heure(m.debut))}</div><div>
+      <div class="tour">${esc(m.tournoi)} · ${esc(SURF[L][m.surface]||m.surface||'')}</div>
+      <div class="pl"><span>${esc(m.home)}</span><b>${pc0(p)}</b></div>
+      <div class="pl"><span>${esc(m.away)}</span><b>${pc0(1-p)}</b></div>
+      <div class="mini" aria-hidden="true"><i style="width:${(p*100).toFixed(1)}%"></i></div>
+      <div class="meta"><span>${esc(t('cote_juste'))} ${odds(m.cotes_justes[0])} / ${odds(m.cotes_justes[1])}</span><span class="lock">${esc(m.uid===mdj ? t('detail_ici') : t('detail_plus'))}</span></div>
+    </div></li>`; }).join('');
+}
+function courbeSvg(c){
+  if (c.length < 2) return '';
+  const w=600,h=220,lo=40,hi=90, x=i=>i*(w-62)/(c.length-1)+52, y=v=>h-14-(Math.min(hi,Math.max(lo,v))-lo)/(hi-lo)*(h-28);
+  const grid=[50,60,70,80].map(v=>`<line x1="52" x2="${w}" y1="${y(v)}" y2="${y(v)}" stroke="var(--rule)"/><text x="0" y="${y(v)+7}" font-size="20" fill="var(--muted)">${v}%</text>`).join('');
+  return `<svg class="curve" viewBox="0 0 ${w} ${h}" role="img" aria-label="${esc(t('courbe_aria'))}">${grid}
+    <polyline fill="none" stroke="var(--home)" stroke-width="4" stroke-linejoin="round" points="${c.map((p,i)=>`${x(i).toFixed(1)},${y(p.pct).toFixed(1)}`).join(' ')}"/>
+    <circle cx="${x(c.length-1)}" cy="${y(c[c.length-1].pct)}" r="7" fill="var(--home)"/><text x="${w}" y="${y(c[c.length-1].pct)-14}" text-anchor="end" font-size="22" font-weight="600" fill="var(--ink)">${pc(c[c.length-1].pct)}</text></svg>`;
+}
+function rendBilan(){
+  const B = D.bilan || {}, g = B.global;
+  document.getElementById('bilan-sous').textContent = t('bilan_sous', B.depuis || '2026-10-21');
+  const facts = document.getElementById('bilan-facts');
+  if (!g){ facts.innerHTML = `<div class="empty">${esc(t('bilan_vide'))}</div>`; return; }
+  const circ = Object.entries(B.par_circuit||{}).sort((a,b)=>b[1].n-a[1].n).map(([c,v])=>`${CIRC[c]||c} ${pc(v.pct)} (${fmt(v.n)})`).join(' · ');
+  facts.innerHTML = `<div class="facts">
+    <div><div class="k">${esc(t('matchs_juges'))}</div><div class="v">${fmt(g.n)}</div></div>
+    <div><div class="k">${esc(t('vainqueurs'))}</div><div class="v">${pc(g.pct)}</div><div class="k">${fmt(g.vainqueurs)} / ${fmt(g.n)}</div></div>
+    <div><div class="k">${esc(t('brier'))}</div><div class="v">${dec(g.brier,3)}</div><div class="k">${esc(t('brier_aide'))}</div></div>
+  </div><div style="padding:10px 16px;border-top:1px solid var(--rule);font-size:.92rem"><span style="color:var(--muted)">${esc(t('par_circuit'))} :</span> ${esc(circ)}</div>`;
+  const cv = courbeSvg(B.courbe||[]);
+  const cb = document.getElementById('bilan-curve'); cb.innerHTML = cv; cb.hidden = !cv;
+  const res = B.derniers || [];
+  document.getElementById('bilan-res').innerHTML = res.slice(0,nRes).map(r=>{
+    const pw = r.gagnant==='home' ? r.p_home : 1-r.p_home, w = r.gagnant==='home' ? r.home : r.away, l = r.gagnant==='home' ? r.away : r.home;
+    return `<li><span class="${r.juste?'mark-ok':'mark-ko'}" aria-label="${r.juste?'✓':'✗'}">${r.juste?'✓':'✗'}</span>
+      <span><b style="font-weight:600">${esc(w)}</b> ${esc(L==='fr'?'bat':'d.')} ${esc(l)} ${r.score?`<span class="d sc">${esc(r.gagnant==='home' ? r.score : r.score.split(' ').map(x=>x.split('-').reverse().join('-')).join(' '))}</span>`:''}<br><span class="d">${esc(r.tournoi)} · ${esc(jourCourt(r.debut))}</span></span>
+      <span class="p num">${pc0(pw)}</span></li>`; }).join('');
+  const more = document.getElementById('bilan-more');
+  if (res.length > nRes){ more.hidden=false; more.textContent=t('voir_plus', Math.min(20,res.length-nRes)); more.onclick=()=>{ nRes+=20; rendBilan(); }; } else more.hidden=true;
+}
+function tableCalib(c){
+  return `<table class="calib"><thead><tr><th>${esc(t('tranche'))}</th><th>${esc(t('annonce'))}</th><th>${esc(t('reel'))}</th><th>${esc(t('matchs'))}</th></tr></thead><tbody>
+  ${c.map(r=>`<tr><td>${Math.round(r.de*100)}–${Math.round(r.a*100)}${L==='fr'?' %':'%'}</td><td>${pc(r.prevu)}</td><td><b>${pc(r.reel)}</b></td><td>${fmt(r.n)}</td></tr>`).join('')}</tbody></table>`;
+}
+function rendCalib(){
+  const B=D.bilan||{}, c=B.calibration||[], el=document.getElementById('calib');
+  el.innerHTML = c.length >= 4 ? tableCalib(c) : `<div class="empty">${esc(t('calib_attente', (B.global||{}).n||0))}</div>`;
+  const r=D.rejoue, er=document.getElementById('calib-rejoue'), sr=document.getElementById('rejoue-sous');
+  if (r && r.global){ sr.textContent=t('rejoue_sous', r); er.innerHTML=tableCalib(r.calibration||[]); } else { sr.textContent=''; er.innerHTML=''; er.hidden=true; }
+}
+function rendTout(){
+  rendTextes(); if (!D) return;
+  rendMdj(); rendListe(); rendBilan(); rendCalib();
+  document.getElementById('maj').textContent = t('maj', D.pronostics_du || D.genere_le);
+}
+document.querySelectorAll('.lang button').forEach(b=>b.addEventListener('click',()=>{
+  L=b.dataset.lang; try{ localStorage.setItem('te_lang',L); }catch(e){} if (lecteur) lecteur.stop(); rendTout(); }));
+
+/* ───────────── mode vidéo (?video=1) ───────────── */
+function modeVideo(){
+  document.body.classList.add('video');
+  const id = Q.get('uid') || (D.match_du_jour && D.match_du_jour.uid);
+  const m = D.matchs.find(x=>x.uid===id && x.simulation);
+  const V = document.getElementById('video');
+  if (!m){ V.innerHTML = '<p class="v-title">—</p>'; window.__fini = true; return; }
+  const p=m.p_home, seed = Number(Q.get('seed') || 7);
+  V.innerHTML = `<p class="v-kicker">${esc(t('v_kicker'))} <b>${esc(t('v_fois', D.simulations))}</b></p>
+    <p class="v-title">${esc(court(m.home))} – ${esc(court(m.away))}</p>
+    <div class="v-duel"><div><div class="p">${pc0(p)}</div><div class="n">${esc(m.home)}</div></div><div class="r"><div class="p">${pc0(1-p)}</div><div class="n">${esc(m.away)}</div></div></div>
+    <div class="split"><i style="width:${(p*100).toFixed(1)}%"></i></div>
+    <div class="sim" id="vsim"></div>
+    <p class="v-end" id="vend"></p>
+    <p class="v-url">${esc(t('v_url'))}</p>`;
+  const vit = Number(Q.get('vitesse') || 1.2);
+  const lec = Lecteur(document.getElementById('vsim'), m, {seed, vitesse:vit, court:true, onFin:S=>{
+    const w = S.vainqueur===0 ? court(m.home) : court(m.away), fav = p>=.5 ? court(m.home) : court(m.away);
+    document.getElementById('vend').innerHTML = t('v_fin', esc(w), esc(scoreTxt(S, S.vainqueur===1)), D.simulations, Math.max(p,1-p)*100, esc(fav));
+    setTimeout(()=>{ window.__fini = true; }, 3500);
+  }});
+  const go = () => setTimeout(()=>lec.lance(), Number(Q.get('attente') || 2500));
+  (document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve()).then(()=>{ window.__pret = true; go(); });
+}
+
+rendTextes();
+fetch('donnees.json?v=' + Date.now()).then(r=>r.json()).then(d=>{
+  D = d;
+  if (Q.get('video')) modeVideo(); else rendTout();
+}).catch(()=>{ document.getElementById('mdj-court').innerHTML = '<div class="panel empty">Données indisponibles / Data unavailable.</div>'; });
+})();
+</script>
+</body>
+</html>
