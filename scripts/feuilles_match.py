@@ -49,6 +49,7 @@ PAUSE = float(os.environ.get('FEUILLES_PAUSE', '0.2'))
 # (≈ 600 feuilles sur 9 300). Encore demandable à la main : catégories = itf men,itf women.
 CATEGORIES = ('atp', 'wta', 'challenger', 'wta 125')
 ESSAIS_MAX = 3
+ATTENTE_FEUILLE_H = 3
 DELAI_COMPLET_J = 3
 
 
@@ -248,7 +249,11 @@ def collecter_jour(c, jour, voulues=CATEGORIES, aujourd_hui=None, dossier=DOSSIE
                     nouv['essais'] = ESSAIS_MAX           # forfait : pas de feuille à demander
                 recs[e['id']] = nouv
         vides_par_tournoi = {}
-        a_faire = [r for r in recs.values() if r['stats'] is None and r['essais'] < ESSAIS_MAX]
+        # 23/10/2026 : un match commencé il y a moins de 3 h n'est pas encore demandé (sa feuille arrive souvent
+        # après la fin) : on ne gâche pas l'un des 3 essais ; le passage suivant (2 h plus tard) le reprendra.
+        mur = dt.datetime.now(dt.timezone.utc).timestamp() - ATTENTE_FEUILLE_H * 3600
+        a_faire = [r for r in recs.values() if r['stats'] is None and r['essais'] < ESSAIS_MAX
+                   and (r.get('debut') or 0) <= mur]
         a_faire.sort(key=lambda r: (('itf' in norm(r['categorie'])), r['debut'] or 0))   # grand circuit d'abord
         for r in a_faire:
             t = r['tournoi_id']
@@ -293,7 +298,8 @@ def main(argv):
         return 1
     auj = dt.datetime.now(dt.timezone.utc).date()
     debut = argv[1] if len(argv) > 1 and argv[1] else (auj - dt.timedelta(days=2)).isoformat()
-    fin = argv[2] if len(argv) > 2 and argv[2] else (auj - dt.timedelta(days=1)).isoformat()
+    # 23/10/2026 : jusqu'à AUJOURD'HUI (les matchs terminés du jour) — résultats et feuilles dans la journée
+    fin = argv[2] if len(argv) > 2 and argv[2] else auj.isoformat()
     voulues = tuple(norm(x) for x in argv[3].split(',')) if len(argv) > 3 and argv[3].strip() else CATEGORIES
     etat = lire_etat()
     jours = jours_a_traiter(debut, fin, etat)
