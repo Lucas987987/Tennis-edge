@@ -848,6 +848,21 @@ def main(argv):
             rap = juger_groupe(appr, juge, g)
             doc['groupes'][g] = rap
             print(f"  {g:<18} {'ADOPTÉ' if rap['adopte'] else 'non adopté'} — {rap['raison']} · coefs {rap['coefs']}", flush=True)
+        # 23/10/2026 — stabilité (stabilite.py) : un groupe entre ou sort après DEUX semaines de suite du même
+        # verdict (pas de marge en log loss : la règle des groupes juge la vraisemblance des points).
+        import stabilite as ST
+        etat_st = ST.lire()
+        try:
+            with open(SORTIE, encoding='utf-8') as f:
+                en_place = set(json.load(f).get('adoptes') or [])
+        except (OSError, ValueError):
+            en_place = set()
+        for g, r in doc['groupes'].items():
+            ok, note = ST.decider(etat_st, f"facteur:{g}", g in en_place, r['adopte'])
+            r['adopte_brut'], r['adopte'], r['stabilite'] = r['adopte'], ok, note
+            if ok != r['adopte_brut'] or g in en_place:
+                print(f"    {g:<18} → {'en place' if ok else 'hors du modèle'} ({note})", flush=True)
+        ST.ecrire(etat_st)
         doc['adoptes'] = [g for g, r in doc['groupes'].items() if r['adopte']]
         if doc['adoptes']:
             doc['coefs'] = apprendre(appr + juge, doc['adoptes'])          # ré-appris sur toutes les feuilles
@@ -888,17 +903,33 @@ def main(argv):
             print(f"  semaine {w['semaine']:>2} ({w['debut']}) · {w['n']:>4} matchs · simulation {w['simulation']['reussite_pct']} % · "
                   f"Elo {w['elo']['reussite_pct']} % · simulation + Elo {c.get('reussite_pct', '—')} % · poids simulation "
                   f"{w.get('poids_simulation_pct') if w.get('poids_simulation_pct') is not None else '—'} %", flush=True)
-        choix['combinaison_feuilles'] = {k: ep.get(k) for k in ('adopte', 'poids', 'raison', 'poids_simulation_pct')}
-        # 22/10/2026 : poids propres aux Challenger, correction des nouveaux venus (règles fixées d'avance)
-        choix['poids_challenger'] = {k: (ep.get('poids_challenger') or {}).get(k) for k in ('adopte', 'poids', 'raison')}
-        choix['nouveaux_venus'] = {k: (ep.get('nouveaux_venus') or {}).get(k) for k in ('adopte', 'delta', 'raison')}
+        # 23/10/2026 — chaque décision passe par la règle de stabilité (stabilite.py) : entrer = mieux d'au moins
+        # 0,001 deux semaines de suite ; sortir = moins bien d'au moins 0,001 deux semaines de suite.
+        import stabilite as ST
+        etat_st = ST.lire()
+        avant = {k: choix.get(k) for k in ('combinaison_feuilles', 'poids_challenger', 'nouveaux_venus', 'modele_arbres',
+                                           'qualifies', 'transition')}
+        choix['combinaison_feuilles'] = ST.appliquer(etat_st, 'combinaison_feuilles', avant['combinaison_feuilles'],
+                                                     {k: ep.get(k) for k in ('adopte', 'poids', 'raison', 'poids_simulation_pct', 'll')},
+                                                     ('poids', 'poids_simulation_pct'))
+        choix['poids_challenger'] = ST.appliquer(etat_st, 'poids_challenger', avant['poids_challenger'],
+                                                 {k: (ep.get('poids_challenger') or {}).get(k) for k in ('adopte', 'poids', 'raison', 'll')},
+                                                 ('poids',))
+        choix['nouveaux_venus'] = ST.appliquer(etat_st, 'nouveaux_venus', avant['nouveaux_venus'],
+                                               {k: (ep.get('nouveaux_venus') or {}).get(k) for k in ('adopte', 'delta', 'raison', 'll')},
+                                               ('delta',))
         ma = ep.get('modele_arbres') or {}
-        choix['modele_arbres'] = {k: ma.get(k) for k in ('adopte', 'raison', 'variables', 'modele', 'poids')}
-        print(f"Arbres (tout combiné) : {'ADOPTÉS' if ma.get('adopte') else 'non adoptés'} — {ma.get('raison')}", flush=True)
+        choix['modele_arbres'] = ST.appliquer(etat_st, 'modele_arbres', avant['modele_arbres'],
+                                              {k: ma.get(k) for k in ('adopte', 'raison', 'variables', 'modele', 'poids', 'll')},
+                                              ('variables', 'modele', 'poids'))
+        print(f"Arbres (tout combiné) : {'ADOPTÉS' if choix['modele_arbres']['adopte'] else 'non adoptés'} — "
+              f"{choix['modele_arbres']['raison']}", flush=True)
         for cle_s in ('qualifies', 'transition'):
-            choix[cle_s] = {k: (ep.get(cle_s) or {}).get(k) for k in ('adopte', 'delta', 'raison')}
+            choix[cle_s] = ST.appliquer(etat_st, cle_s, avant[cle_s],
+                                        {k: (ep.get(cle_s) or {}).get(k) for k in ('adopte', 'delta', 'raison', 'll')}, ('delta',))
             print(f"{EP.SITUATIONS[cle_s]} : {'correction ADOPTÉE' if choix[cle_s]['adopte'] else 'pas de correction'} — "
                   f"{choix[cle_s]['raison']}", flush=True)
+        ST.ecrire(etat_st)
         for c, b in (ep.get('par_circuit') or {}).items():
             sx = b['six_dernieres_semaines']
             print(f"  {b['circuit']:<10} simulation {b['simulation']['reussite_pct']} % · Elo {b['elo']['reussite_pct']} % "
