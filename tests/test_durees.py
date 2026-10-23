@@ -47,13 +47,16 @@ class Durees(unittest.TestCase):
         H = FA.Historique()
         J = 86400
         t = 1_790_000_000.0
-        H.minutes['a'] = [(t - 1 * J, 180), (t - 2 * J, 60), (t - 5 * J, 200)]
+        H.minutes['a'] = [(t - 1 * J, 180, '1'), (t - 2 * J, 60, '1'), (t - 5 * J, 200, '9'), (t - 9 * J, 90, '1')]
         v = H.variables('a', 'b', '1', t, {})
-        self.assertAlmostEqual(v['minutes3_srv'], 2.4)
+        self.assertAlmostEqual(v['minutes_tournoi_srv'], 3.3)                # tout le tournoi « 1 », 9 jours compris
+        self.assertAlmostEqual(v['minutes7_srv'], 4.4)                       # 7 derniers jours, tous tournois
         self.assertAlmostEqual(v['minutes_dernier_srv'], 1.8)
-        self.assertEqual(v['minutes3_adv'], 0.0)
+        self.assertEqual(v['minutes7_adv'], 0.0)
         doc = json.loads(json.dumps(FA.contexte(H, {}, {}, t)))
-        self.assertAlmostEqual(FA.Contexte(doc).variables('a', 'b', 'x', t)['minutes3_srv'], 2.4)
+        self.assertAlmostEqual(FA.Contexte(doc).variables('a', 'b', '1', t)['minutes_tournoi_srv'], 0.0)   # nom inconnu
+        C = FA.Contexte(dict(doc, noms_tournois={'1': 'Ortisei, Italy'}))
+        self.assertAlmostEqual(C.variables('a', 'b', 'Ortisei', t)['minutes_tournoi_srv'], 3.3)
         self.assertIn('duree', FA.GROUPES)
 
 
