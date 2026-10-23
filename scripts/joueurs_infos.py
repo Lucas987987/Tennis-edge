@@ -92,6 +92,8 @@ def joueurs_des_feuilles():
             with gzip.open(p, 'rt', encoding='utf-8') as f:
                 for l in f:
                     r = json.loads(l)
+                    if 'itf' in str(r.get('categorie') or '').lower():
+                        continue                          # 23/10/2026 : ITF non joué, pas de requête pour ses joueurs
                     for c in ('home', 'away'):
                         j = r.get(c) or {}
                         if j.get('id'):
