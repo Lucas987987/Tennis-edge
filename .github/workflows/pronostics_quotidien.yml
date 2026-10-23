@@ -29,6 +29,10 @@ permissions:
 
 env:
   PYTHONDONTWRITEBYTECODE: '1'
+  # 23/10/2026 : coffre privé (pronostics.json complet, réservé) — scripts/coffre.py
+  R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+  R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+  R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
 
 concurrency:
   group: pronostics
@@ -92,7 +96,10 @@ jobs:
           git checkout -- simulateur/elo_etat.json 2>/dev/null || true
           git checkout -- simulateur/profils_service.json 2>/dev/null || true
           rm -f simulateur/facteurs_contexte.json
-          git add -- Tennis_Edge_Lab/live/pronostics.json Tennis_Edge_Lab/live/pronostics_bilan.json \
+          # 23/10/2026 : le pronostic complet du jour va au coffre privé (R2), plus dans le dépôt public
+          python scripts/coffre.py push --groupe pronostics || true
+          python scripts/coffre.py retirer --groupe pronostics || true
+          git add -- Tennis_Edge_Lab/live/pronostics_bilan.json \
                      Tennis_Edge_Lab/live/joueurs_service.json.gz \
                      simulateur/pronostics_log.jsonl simulateur/rapport_pronostic.json \
                      simulateur/journal_pronostics Tennis_Edge_Lab/live/pronostics_resultats.json \
