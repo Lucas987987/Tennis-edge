@@ -64,6 +64,9 @@ jobs:
             /scripts/joueurs_infos.py
             /scripts/lieux_tournois.py
             /scripts/points_match.py
+            /scripts/classements_tennisapi.py
+            /scripts/durees_matchs.py
+            /simulateur/elo.py
             /feuilles/
             /feuilles_points/
           sparse-checkout-cone-mode: false
@@ -80,6 +83,21 @@ jobs:
           FIN: ${{ github.event.inputs.fin }}
           CATS: ${{ github.event.inputs.categories }}
         run: python scripts/feuilles_match.py "$DEBUT" "$FIN" "$CATS"
+      - name: Classements ATP et WTA du jour (TennisApi) — une photo par jour, 2 à 4 requêtes
+        if: always()
+        timeout-minutes: 5
+        env:
+          RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
+          FEUILLES_RESERVE: '1500'
+          SONDE: ${{ github.event.inputs.sonde }}
+        run: |
+          if [ "$SONDE" = "oui" ]; then python scripts/classements_tennisapi.py --sonde; else python scripts/classements_tennisapi.py; fi
+      - name: Durée des matchs déjà collectés (une fois par jour de feuilles, ~5 requêtes par jour)
+        if: always()
+        timeout-minutes: 15
+        env:
+          RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
+        run: python scripts/durees_matchs.py 800
       - name: Infos joueurs (gaucher / droitier, taille, naissance) — une requête par nouveau joueur
         if: always()
         timeout-minutes: 30

@@ -63,7 +63,8 @@ jobs:
           set -euo pipefail
           git clone --depth 1 --filter=blob:none --sparse https://github.com/Aneeshers/tennis-sackmann-archive.git /tmp/sackmann
           cd /tmp/sackmann
-          git sparse-checkout set --no-cone 'atp_matches_20*.csv' 'atp_matches_qual_chall_20*.csv' 'wta_matches_20*.csv' 'wta_matches_qual_itf_20*.csv'
+          git sparse-checkout set --no-cone 'atp_matches_20*.csv' 'atp_matches_qual_chall_20*.csv' 'wta_matches_20*.csv' 'wta_matches_qual_itf_20*.csv' \
+            'atp_players.csv' 'wta_players.csv' 'atp_rankings_20s.csv' 'atp_rankings_current.csv' 'wta_rankings_20s.csv' 'wta_rankings_current.csv'
       - name: Match Charting Project (Jeff Sackmann, CC BY-NC-SA 4.0) — statistiques seulement
         continue-on-error: true
         run: |
@@ -102,6 +103,7 @@ jobs:
                      simulateur/choix_simulation.json simulateur/facteurs.json simulateur/bilan_algo_etat.json \
                      Tennis_Edge_Lab/live/explorateur_pronostics.json.gz
           if [ -f simulateur/journal_decisions.jsonl ]; then git add -- simulateur/journal_decisions.jsonl; fi
+          if [ -f simulateur/classements_sackmann.json ]; then git add -- simulateur/classements_sackmann.json; fi
           if [ -f simulateur/pronostics_hors_echantillon.jsonl.gz ]; then git add -- simulateur/pronostics_hors_echantillon.jsonl.gz; fi
           if [ -f simulateur/stabilite.json ]; then git add -- simulateur/stabilite.json; fi
           if git diff --cached --quiet; then echo 'Rien de nouveau.'; exit 0; fi

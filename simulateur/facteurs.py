@@ -28,6 +28,7 @@ chacun appris sur juin–août 2026 et JUGÉ sur septembre–octobre 2026, jamai
      frappes ou moins, retours remis en jeu, goût pour les longs échanges.
   10. blessure : abandon, forfait ou disqualification récents (demi-vie 15 jours), nombre
      d'abandons sur 90 jours, 1er match depuis un abandon (archive + feuilles TennisApi).
+  12. duree : minutes jouées dans le tournoi, sur 7 jours, durée du dernier match (feuilles TennisApi).
   11. pression : point par point (scripts/points_match.py) — points gagnés au service à 30-30 et à
      l'égalité, au-delà de son % du match ; rebond juste après avoir été breaké ; servir pour le set.
 
@@ -112,6 +113,11 @@ GROUPES = {
 }
 DEMI_VIE_ABANDON_J = 15.0
 GROUPES['pression'] = {'service': ['pression_srv', 'pression_ret_adv', 'rebond_srv', 'pour_le_set_srv']}
+# 23/10/2026 — DURÉE DES MATCHS (feuilles TennisApi, champ « time »), pour le serveur et l'adversaire, en centaines
+# de minutes : minutes déjà jouées DANS CE TOURNOI (qualifications comprises — un tournoi dure une à deux
+# semaines), minutes des 7 derniers jours (tournois enchaînés), durée du dernier match s'il date de moins de 2 jours.
+GROUPES['duree'] = {'service': ['minutes_tournoi_srv', 'minutes_tournoi_adv', 'minutes7_srv', 'minutes7_adv',
+                                'minutes_dernier_srv', 'minutes_dernier_adv']}
 K_PRESSION = 60.0
 
 
@@ -248,6 +254,7 @@ class Historique:
         self.lieux, self.meteo = {}, {}
         self.charting = None
         self.abandons = collections.defaultdict(list)                          # joueur -> [t] (abandon, forfait)
+        self.minutes = collections.defaultdict(list)                           # joueur -> [(t, minutes)] (durée)
         self.pression = collections.defaultdict(lambda: [0.0, 0, 0.0, 0, 0.0, 0, 0.0, 0])   # + Σ, n au retour (pression)
 
     def ajouter_h2h(self, j, adv, res, n):
@@ -276,6 +283,8 @@ class Historique:
             ro = x['srv'][1 - k]
             self.forme[j].append((t, r['res'], r['n'], -ro['res'], ro['n']))
             self.sets[j].append((t, x['nb_sets']))
+            if x.get('duree_min'):
+                self.minutes[j].append((t, x['duree_min'], x['tournoi']))
             self.ajouter_h2h(j, (x['b'], x['a'])[k], r['res'], r['n'])
             self.parcours[j].append((t, x['tournoi']))
             if (x.get('pays') or (None, None))[k]:
@@ -321,6 +330,13 @@ class Historique:
             der = max((tt for tt, _ in L if tt < t), default=None)
             repos = min((t - der) / 86400, 10.0) if der else 10.0
             return s3, repos
+
+        def duree(p):
+            L = [e if len(e) == 3 else (e[0], e[1], None) for e in (self.minutes.get(p) or ())]
+            mt = sum(m for tt, m, tr in L if tr == tournoi and t - 16 * 86400 <= tt < t)
+            m7 = sum(m for tt, m, _ in L if t - 7 * 86400 <= tt < t)
+            der = max(((tt, m) for tt, m, _ in L if tt < t), default=None)
+            return mt / 100.0, m7 / 100.0, (der[1] / 100.0 if der and t - der[0] <= 2 * 86400 else 0.0)
 
         fs, _ = forme(j)
         _, fr_adv = forme(adv)
@@ -375,6 +391,9 @@ class Historique:
         bj, bj90, rj = blessure(j)
         ba, ba90, ra = blessure(adv)
         pj, pa_ = self.pression.get(j) or [0.0] * 8, self.pression.get(adv) or [0.0] * 8
+        (mtj, m7j, mdj), (mta, m7a, mda) = duree(j), duree(adv)
+        cond.update({'minutes_tournoi_srv': mtj, 'minutes_tournoi_adv': mta, 'minutes7_srv': m7j, 'minutes7_adv': m7a,
+                     'minutes_dernier_srv': mdj, 'minutes_dernier_adv': mda})
         cond.update({'pression_srv': 4 * pj[0] / (pj[1] + K_PRESSION), 'pression_ret_adv': 4 * pa_[6] / (pa_[7] + K_PRESSION),
                      'rebond_srv': 4 * pj[2] / (pj[3] + K_PRESSION), 'pour_le_set_srv': 4 * pj[4] / (pj[5] + K_PRESSION / 6)})
         cond.update({'abandon_srv': bj, 'abandon_adv': ba, 'abandons90_srv': bj90, 'abandons90_adv': ba90,
@@ -424,7 +443,10 @@ def preparer(fiches, adj_pour, cle=E.cle):
                     'interieur': 'indoor' in str(r.get('surface') or '').lower(),
                     'pays': (r['home'].get('pays'), r['away'].get('pays')), 't': r['debut'], 'jour': jour, 'a': a, 'b': b, 'circuit': circ, 'surface': surf,
                     'tournoi': str(r.get('tournoi_id') or r.get('tournoi')), 'nom_tournoi': r.get('tournoi_unique') or r.get('tournoi'),
-                    'srv': srv, 'det': (dh, da), 'nb_sets': nb_sets,
+                    'srv': srv, 'det': (dh, da), 'nb_sets': nb_sets, 'duree_min': r.get('duree_min'),
+                    # 23/10/2026 : rang relevé le jour du match ou avant (jamais un rang relevé après coup)
+                    'rangs': tuple((r[c].get('rang') if (r[c].get('rang_releve_le') or '9999') <= str(jour) else None)
+                                   for c in ('home', 'away')),
                     'vainqueur': 0 if r.get('vainqueur') == 1 else 1, 'bo': r.get('meilleur_des') or 3})
     return out
 
@@ -691,6 +713,9 @@ def contexte(H, infos, noms_tournois, maintenant_ts):
             e['forme'] = [round(sum(x[1] for x in q), 2), round(sum(x[2] for x in q)), round(sum(x[3] for x in q), 2), round(sum(x[4] for x in q))]
         if sets:
             e['sets'] = [[int(tt), s] for tt, s in sets]
+        mins = [e_ for e_ in H.minutes.get(j, ()) if e_[0] >= t - 16 * 86400]
+        if mins:
+            e['minutes'] = [[int(e_[0]), e_[1], e_[2] if len(e_) > 2 else None] for e_ in mins]
         if c and (c[1] or c[3]):
             e['clutch'] = [round(c[0], 2), round(c[1], 1), round(c[2], 2), round(c[3], 1)]
         if i.get('main') or i.get('taille_cm'):
@@ -743,6 +768,8 @@ class Contexte:
             if 'forme' in e:
                 rs, ns, rr, nr = e['forme']
                 self.H.forme[j].append((self.doc.get('instant', 0), rs, ns, rr, nr))
+            for v in e.get('minutes') or []:
+                self.H.minutes[j].append(tuple(v) if len(v) == 3 else (v[0], v[1], None))
             for tt, s in e.get('sets') or []:
                 self.H.sets[j].append((tt, s))
             if 'clutch' in e:
@@ -887,11 +914,21 @@ def main(argv):
         experience = {}
         p_elo = EP.elo_au_moment(M, lignes, et.get('options'), et.get('depart_bas'), experience=experience)
         Q, Sf = parcours_des_fiches(fiches)
+        import classements as CLS
+        CL = CLS.charger(dossier, racine)                      # 23/10/2026 : classement au jour du match
+        CLS.exporter(CLS.charger(dossier), os.path.join(ICI, 'classements_sackmann.json'))
         situations = {}
         for x in lignes:                                       # (vrai vainqueur, perdant) pour chaque situation
             w, l = (x['a'], x['b']) if x['vainqueur'] == 0 else (x['b'], x['a'])
+            jour_m = dt.datetime.fromtimestamp(x['t'], dt.timezone.utc)
+            rh, ra = x.get('rangs') or (None, None)
+            rw, rl = (rh, ra) if x['vainqueur'] == 0 else (ra, rh)
+            rw, rl = rw or CL.rang_au(w, jour_m), rl or CL.rang_au(l, jour_m)
+            nw, nl = experience.get(id(x), (None, None))
             situations[id(x)] = {'qualifies': (qualifie(Q, w, x['tournoi'], x['t']), qualifie(Q, l, x['tournoi'], x['t'])),
-                                 'transition': (transition(Sf, w, x['surface'], x['t']), transition(Sf, l, x['surface'], x['t']))}
+                                 'transition': (transition(Sf, w, x['surface'], x['t']), transition(Sf, l, x['surface'], x['t'])),
+                                 'classement': ((CLS.niveau_inconnu(rw, nw), CLS.niveau_inconnu(rl, nl))
+                                                if nw is not None else None)}
         doc['entrainement_progressif'] = EP.rejouer_saison(
             lignes, p_elo, doc.get('adoptes') or [], apprendre, victoire_ligne, BMS.ajuster_poids, sigma,
             poids_archive=cb.get('poids') if cb.get('adopte') else None, experience=experience, situations=situations)
@@ -914,7 +951,7 @@ def main(argv):
         import stabilite as ST
         etat_st = ST.lire()
         avant = {k: choix.get(k) for k in ('combinaison_feuilles', 'poids_challenger', 'nouveaux_venus', 'modele_arbres',
-                                           'qualifies', 'transition')}
+                                           'qualifies', 'transition', 'classement')}
         choix['combinaison_feuilles'] = ST.appliquer(etat_st, 'combinaison_feuilles', avant['combinaison_feuilles'],
                                                      {k: ep.get(k) for k in ('adopte', 'poids', 'raison', 'poids_simulation_pct', 'll')},
                                                      ('poids', 'poids_simulation_pct'))
@@ -930,7 +967,7 @@ def main(argv):
                                               ('variables', 'modele', 'poids'))
         print(f"Arbres (tout combiné) : {'ADOPTÉS' if choix['modele_arbres']['adopte'] else 'non adoptés'} — "
               f"{choix['modele_arbres']['raison']}", flush=True)
-        for cle_s in ('qualifies', 'transition'):
+        for cle_s in ('qualifies', 'transition', 'classement'):
             choix[cle_s] = ST.appliquer(etat_st, cle_s, avant[cle_s],
                                         {k: (ep.get(cle_s) or {}).get(k) for k in ('adopte', 'delta', 'raison', 'll')}, ('delta',))
             print(f"{EP.SITUATIONS[cle_s]} : {'correction ADOPTÉE' if choix[cle_s]['adopte'] else 'pas de correction'} — "
