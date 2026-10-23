@@ -171,6 +171,31 @@ if os.environ.get('RAPIDAPI_KEY'):
                     _rythme = _conso * 24 / _dt_h
                     _l = (f"consommé depuis le dernier relevé ({_dt_h:.0f} h) : "
                           f"{_conso} req, soit {_rythme:.0f}/jour")
+                    # 23/10/2026 : le rattrapage nocturne des courbes des books
+                    # (fetch_book_curves, jusqu'à 2 500 req) s'arrête SEUL quand
+                    # il ne reste que la réserve du projet jusqu'au renouvellement.
+                    # Le compter dans le rythme donnait une fausse alerte chaque
+                    # jour : on juge le RESTE du projet, seul vrai risque.
+                    _courbes = 0
+                    try:
+                        _cc = json.load(open('courbes_couverture.json', encoding='utf-8'))
+                        _fin_c = datetime.datetime.fromisoformat(_cc['quota_fin']['a'])
+                        if datetime.datetime.fromisoformat(_prev['at']) < _fin_c <= now:
+                            _courbes = int(_cc.get('demandes') or 0)
+                    except (OSError, ValueError, KeyError, TypeError):
+                        _cc = None
+                    if 0 < _courbes <= _conso:
+                        _reste = (_conso - _courbes) * 24 / _dt_h
+                        _res_j = int((_cc or {}).get('capture_reservee_par_jour') or 0)
+                        _marge = (_rest - int(_res_j * (_reset or 0) / 86400.0) - 2000) if _res_j else None
+                        _l += (f" — dont {_courbes} pour le rattrapage des courbes des books, "
+                               f"reste du projet {_reste:.0f}/jour")
+                        if _marge is not None:
+                            quota_lines.append(
+                                "ℹ️ rattrapage des courbes : " + (f"encore ~{_marge:,} req avant son arrêt automatique"
+                                                                 .replace(',', ' ') if _marge > 0 else
+                                                                 "arrêté (il ne reste que la réserve)"))
+                        _rythme = _reste
                     if _par_jour is not None and _rythme > _par_jour:
                         alerts.append(f"❌ Quota RapidAPI : rythme {_rythme:.0f}/jour au-dessus "
                                       f"du tenable ({_par_jour:.0f}/jour) — épuisement avant le renouvellement")
