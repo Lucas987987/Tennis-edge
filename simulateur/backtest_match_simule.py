@@ -371,7 +371,7 @@ def calibration_combinaison(L, sim, cb):
     l0, l1 = _ll(juge), _ll(jc)
     ok = l1 < l0
     b0, b1 = bilan_victoire(juge), bilan_victoire(jc)
-    out = {'adopte': bool(ok), 'pentes_2024': c, 'jugement': {'sans': b0, 'avec': b1},
+    out = {'adopte': bool(ok), 'pentes_2024': c, 'jugement': {'sans': b0, 'avec': b1}, 'll': {'avec': l1, 'sans': l0},
            'raison': (f"2025 → : log loss {round(l1, 5)} avec la correction contre {round(l0, 5)} sans ; calibration "
                       + ' · '.join(f"{t['tranche']} {t['prevu']}→{t['reel']}" for t in b1.get('calibration', []))
                       + " (sans : " + ' · '.join(f"{t['tranche']} {t['prevu']}→{t['reel']}" for t in b0.get('calibration', [])) + ")")}
@@ -395,7 +395,7 @@ def contexte_poids(L, sim, cb):
     l0 = _ll([S.melange(P, x['elo'], x[sim]) for x in juge])
     l1 = _ll([S.melange_contexte(pc, ctx(x), x['elo'], x[sim]) for x in juge])
     ok = l1 < l0
-    out = {'adopte': bool(ok), 'corrections_2024': c,
+    out = {'adopte': bool(ok), 'corrections_2024': c, 'll': {'avec': l1, 'sans': l0},
            'raison': f"2025 → : poids selon le contexte {round(l1, 5)} contre poids uniques {round(l0, 5)}"}
     if ok and cb.get('poids'):
         out['corrections'] = ajuster_contexte(L, cb['poids'], sim)
@@ -607,12 +607,38 @@ def main(argv):
     rap['calibration_detaillee'] = calibration_detaillee(LIGNES, sim, rap['combinaison'])
     exporter_explorateur(LIGNES, sim, rap['combinaison'], os.path.join(ICI, '..', EXPLORATEUR))
     rap['choix']['combinaison'] = {k: rap['combinaison'].get(k) for k in ('adopte', 'poids', 'raison', 'simulation')}
-    ctxp = rap['combinaison'].get('contexte') or {}
-    if ctxp.get('adopte') and ctxp.get('corrections') and rap['choix']['combinaison'].get('poids'):
-        rap['choix']['combinaison']['poids'] = dict(rap['choix']['combinaison']['poids'], contexte=ctxp['corrections'])
-    calp = rap['combinaison'].get('calibration') or {}
-    if calp.get('adopte') and calp.get('pentes') and rap['choix']['combinaison'].get('poids'):
-        rap['choix']['combinaison']['poids'] = dict(rap['choix']['combinaison']['poids'], calibration=calp['pentes'])
+    # 23/10/2026 — règle de stabilité (stabilite.py) : entrer = mieux d'au moins 0,001 deux semaines de suite,
+    # sortir = moins bien d'au moins 0,001 deux semaines de suite ; gardé en place = anciens réglages gardés.
+    import stabilite as ST
+    etat_st = ST.lire()
+    if rap['choix'].get('reglage_simulation'):
+        J = (rap.get('reglage_simulation') or {}).get('jugement') or {}
+        rap['choix']['reglage_simulation'] = ST.appliquer(
+            etat_st, 'reglage_simulation', choix_avant.get('reglage_simulation'),
+            dict(rap['choix']['reglage_simulation'], ll={'avec': (J.get('choisi') or {}).get('log_loss'),
+                                                         'sans': (J.get('actuel') or {}).get('log_loss')}),
+            ('sigma', 'amplification', 'jeux', 'resultats'))
+    Jc = rap['combinaison'].get('jugement') or {}
+    rap['choix']['combinaison'] = ST.appliquer(
+        etat_st, 'combinaison', choix_avant.get('combinaison'),
+        dict(rap['choix']['combinaison'], ll={'avec': (Jc.get('combinaison') or {}).get('log_loss'),
+                                              'sans': (Jc.get('elo') or {}).get('log_loss')}),
+        ('poids', 'simulation'))
+    ancien_poids = (choix_avant.get('combinaison') or {}).get('poids') or {}
+    poids = dict(rap['choix']['combinaison'].get('poids') or {})
+    poids.pop('contexte', None)
+    poids.pop('calibration', None)
+    for cle_c, sous, champ in (('contexte', 'corrections', 'contexte'), ('calibration', 'pentes', 'calibration')):
+        r = rap['combinaison'].get(cle_c) or {}
+        ok, note = ST.decider(etat_st, f"combinaison_{cle_c}", bool(ancien_poids.get(champ)), bool(r.get('adopte')),
+                              (r.get('ll') or {}).get('avec'), (r.get('ll') or {}).get('sans'))
+        r['stabilite'] = note
+        valeur = r.get(sous) if r.get('adopte') else ancien_poids.get(champ)
+        if ok and valeur and poids:
+            poids[champ] = valeur
+    if poids:
+        rap['choix']['combinaison']['poids'] = poids
+    ST.ecrire(etat_st)
     with open(CHOIX, 'w', encoding='utf-8') as f:            # les autres décisions (ex. « dynamique ») sont gardées
         json.dump(dict(choix_avant, **rap['choix'], genere_le=rap['genere_le']), f, ensure_ascii=False, indent=1)
     with open(SORTIE, 'w', encoding='utf-8') as f:

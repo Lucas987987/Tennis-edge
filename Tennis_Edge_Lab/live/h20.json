@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "generated_at": "2026-10-22T09:57:56+00:00",
+ "generated_at": "2026-10-23T09:57:44+00:00",
  "regle": {
   "age_max_min": 30,
   "ampleur_definition": "probabilité Pinnacle juste (puissance) à l'horizon − la même au premier point Pinnacle connu, en points ; positive = la cote du joueur a raccourci",
@@ -38,9 +38,9 @@
  },
  "empreinte": "1c86cbba8e6e",
  "prospectif": {
-  "n": 1,
-  "clv_n": 1,
-  "clv_moy_pct": -3.72,
+  "n": 0,
+  "clv_n": 0,
+  "clv_moy_pct": null,
   "clv_ic95": null,
   "p_clv": null,
   "regles": 0,
@@ -49,41 +49,28 @@
   "par_horizon": {
    "24h": 0,
    "6h": 0,
-   "1h": 1,
+   "1h": 0,
    "10m": 0
   },
-  "verdict": "EN COURS — 1/100 paris avec clôture, aucun verdict avant la cible",
-  "derniers": [
-   {
-    "date": "2026-10-22",
-    "joueur": "Alexandra Eala",
-    "tournoi": "WTA Ningbo",
-    "horizon": "1h",
-    "cote_pin": 2.22,
-    "ampleur_pts": 3.25,
-    "cote_jouable": 2.3,
-    "book_jouable": "bet365",
-    "clv_jouable": -3.72,
-    "gagne": null
-   }
-  ]
+  "verdict": "EN COURS — 0/100 paris avec clôture, aucun verdict avant la cible",
+  "derniers": []
  },
  "decouverte_avant_gel": {
-  "n": 130,
-  "clv_n": 59,
-  "clv_moy_pct": -3.554,
+  "n": 132,
+  "clv_n": 60,
+  "clv_moy_pct": -3.645,
   "clv_ic95": [
-   -5.117,
-   -1.99
+   -5.193,
+   -2.097
   ],
-  "p_clv": 0.9999958043791807,
+  "p_clv": 0.9999980273345683,
   "regles": 49,
   "gagnes": 25,
   "roi_pct": 22.14,
   "par_horizon": {
-   "24h": 28,
+   "24h": 29,
    "6h": 72,
-   "1h": 18,
+   "1h": 19,
    "10m": 12
   },
   "note": "période qui a servi à choisir la règle : aucune valeur de preuve"
