@@ -1,0 +1,78 @@
+name: Rentabilité de l'algorithme sur Kalshi et Polymarket
+
+# 23/10/2026 — notre algorithme (simulation + Elo, sans cote) joué sur les marchés de prédiction : règle fixée
+# d'avance dans simulateur/etude_rentabilite_marches.py, jugée sur la CLV contre la clôture Pinnacle, avec un
+# témoin (la même règle avec Pinnacle à la place de l'algorithme). Lecture seule des données : 0 requête d'API.
+# Les ticks de plus de 7 jours sont rapatriés depuis R2 (90 jours) s'ils ne sont plus dans git.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 6 * * 2'          # mardi, après le test du modèle du lundi
+
+permissions:
+  contents: write
+
+concurrency:
+  group: rentabilite-marches
+  cancel-in-progress: false
+
+env:
+  R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+  R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+  R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+  R2_PRIMARY: ${{ vars.R2_PRIMARY || 'double' }}
+
+jobs:
+  etude:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+          filter: blob:none
+          sparse-checkout: |
+            /simulateur/
+            /scripts/
+            /Tennis_Edge_Lab/books.py
+            /Tennis_Edge_Lab/live/pronostics_resultats.json
+            /closing_lines.json
+            /closing_lines/
+            /feuilles/
+            /parts/kx_ticks_*
+            /parts/pm_ticks_*
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - name: R2 — rapatrier les ticks des 90 derniers jours (lecture seule)
+        run: |
+          python - <<'PY' || true
+          import sys
+          sys.path.insert(0, 'scripts')
+          import r2_io
+          r2 = r2_io.client()
+          if r2 is None:
+              print('R2 indisponible : ticks du checkout git seulement (7 jours).')
+          else:
+              rep = r2_io.sync_from_r2(('pm', 'kx'), days=90, only_missing=True, r2=r2)
+              print(f"{sum(1 for v in rep.values() if v == 'telecharge')} partition(s) rapatriée(s)")
+          PY
+      - name: Étude
+        timeout-minutes: 60
+        run: python simulateur/etude_rentabilite_marches.py .
+      - name: Publier
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- Tennis_Edge_Lab/live/rentabilite_marches.json
+          if git diff --cached --quiet; then echo 'Rien de nouveau.'; exit 0; fi
+          git commit -q -m "Rentabilité de l'algorithme sur les marchés $(date -u +%F)"
+          git stash push --include-untracked --quiet 2>/dev/null || true
+          for i in 1 2 3 4 5; do
+            git pull --rebase -X theirs origin main || { git rebase --abort || true; echo '::error::Conflit'; exit 1; }
+            if git push origin HEAD:main; then exit 0; fi
+            sleep $((i * 10))
+          done
+          exit 1
