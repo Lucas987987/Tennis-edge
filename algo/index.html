@@ -582,7 +582,7 @@ function modeVideo(){
     <div class="split"><i style="width:${(p*100).toFixed(1)}%"></i></div>
     <div class="sim" id="vsim"></div>
     <p class="v-end" id="vend"></p>
-    <p class="v-url">${esc(t('v_url'))}</p>`;
+    ${Q.get('adresse') === '1' ? `<p class="v-url">${esc(t('v_url'))}</p>` : ''}`;
   const vit = Number(Q.get('vitesse') || 1.2);
   const lec = Lecteur(document.getElementById('vsim'), m, {seed, vitesse:vit, court:true, onFin:S=>{
     const w = S.vainqueur===0 ? court(m.home) : court(m.away), fav = p>=.5 ? court(m.home) : court(m.away);
