@@ -3,7 +3,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import worker, { decide, runsBloquants, plafondMin } from './worker.js';
+import worker, { decide, runsBloquants, plafondMin, decisionPeriodique } from './worker.js';
 
 const source = fs.readFileSync(new URL('./worker.js', import.meta.url), 'utf8');
 const MIN = 60000;
@@ -45,4 +45,14 @@ test('decide : de jour, la garde API seule ; repli temporel si l’API est muett
   assert.equal(decide(st, 10, now, cfg, null).fire, true);                 // 2 min >= 3 − 1,5
   const nuit = Date.parse('2026-10-22T23:30:00Z');
   assert.equal(decide({ last_capture_at: new Date(nuit - 5 * MIN).toISOString() }, 0, nuit, cfg, false).fire, false);
+});
+
+test('périodique : pronostics et feuilles toutes les 2 h, sans doublon avec les crons GitHub', () => {
+  const fini = (ilYa) => ({ status: 'completed', created_at: new Date(now - ilYa * MIN).toISOString() });
+  assert.equal(decisionPeriodique([fini(130)], 'pronostics_quotidien.yml', 120, now).fire, true);
+  assert.equal(decisionPeriodique([fini(50)], 'pronostics_quotidien.yml', 120, now).fire, false);   // cron passé il y a 50 min
+  assert.equal(decisionPeriodique([], 'feuilles_match.yml', 120, now).fire, true);
+  assert.equal(decisionPeriodique([run('in_progress', 200)], 'feuilles_match.yml', 120, now).fire, false);  // vraie collecte longue
+  assert.equal(decisionPeriodique([run('in_progress', 400), fini(400)], 'feuilles_match.yml', 120, now).fire, true);  // fantôme
+  assert.equal(plafondMin('pronostics_quotidien.yml'), 60);
 });

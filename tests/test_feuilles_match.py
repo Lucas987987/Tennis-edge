@@ -88,6 +88,19 @@ class Collecte(unittest.TestCase):
         return [('/calendar/', lambda: Rep(INDEX)), ('/category/3/', lambda: Rep(ATP)), ('/category/785/', lambda: Rep(ITF)),
                 ('/event/1/statistics', lambda: Rep(stats())), ('/event/1', lambda: Rep(None, 204))]
 
+    def test_match_trop_recent_pas_encore_demande(self):
+        appels = []
+        c = FM.Client('cle', ouvrir=ouvreur(appels, self.table()), pause=0)
+        old = FM.ATTENTE_FEUILLE_H
+        FM.ATTENTE_FEUILLE_H = 24 * 365 * 10                 # tous les matchs du test passent pour « trop récents »
+        try:
+            FM.collecter_jour(c, JOUR, aujourd_hui=dt.date(2026, 10, 30), dossier=self.d, journal=lambda *_: None)
+        finally:
+            FM.ATTENTE_FEUILLE_H = old
+        self.assertFalse([a for a in appels if a.endswith('/statistics')])
+        r = FM.lire_jour(JOUR, self.d)[1]
+        self.assertEqual(r['essais'], 0)                      # aucun essai gâché : repris au passage suivant
+
     def test_itf_plus_demande_par_defaut(self):
         appels = []
         c = FM.Client('cle', ouvrir=ouvreur(appels, self.table()), pause=0)

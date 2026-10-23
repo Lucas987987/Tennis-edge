@@ -300,6 +300,13 @@ jobs:
       - name: Cote Pinnacle du Lab (pronostics_marche.json)
         if: always()
         run: python simulateur/marche_du_lab.py . || true
+      # 23/10/2026 : alerte (canal privé) si pronostics, feuilles ou verdicts ne sont plus mis à jour.
+      - name: Santé de la chaîne (pronostics, feuilles, verdicts)
+        if: always()
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python scripts/sante_chaine.py . || true
       - name: Écrire l'état (pour la planification par le Worker)
         # planifierCollecteur() dans le Worker lit `last_run_at` de ce fichier
         # pour espacer les runs. Même convention que

@@ -10,7 +10,7 @@
 //
 // Variables (tableau de bord, gardées au déploiement) : GH_OWNER, GH_REPO,
 // GH_TOKEN (secret), et facultatives DAY_CADENCE_MIN, NIGHT_*, *_WORKFLOW_FILE,
-// *_CADENCE_MIN, KALSHI_ENABLED.
+// *_CADENCE_MIN, KALSHI_ENABLED ; 23/10/2026 : PRONOSTICS_ENABLED, FEUILLES_ENABLED, *_PERIODE_MIN.
 
 const RAW = (owner, repo, file) =>
 `https://raw.githubusercontent.com/${owner}/${repo}/main/${file}`;
@@ -260,7 +260,9 @@ async function planifierCollecteur(cfg) {
 // En cas d'échec de l'API, l'exception remonte : les appelants basculent sur le
 // repli temporel — « dégradé mais jamais bloquant ».
 export const GARDE_PLAFOND_MIN = 45;
-export const PLAFOND_PAR_WORKFLOW = { 'capture_closing.yml': 6, 'courbes_alertes.yml': 10 };
+export const PLAFOND_PAR_WORKFLOW = { 'capture_closing.yml': 6, 'courbes_alertes.yml': 10,
+  // 23/10/2026 : workflows planifiés par période (planifierPeriodique) — plafond au-delà de leur timeout
+  'pronostics_quotidien.yml': 60, 'feuilles_match.yml': 360 };
 const ACTIFS = new Set(['queued', 'in_progress', 'waiting', 'requested', 'pending']);
 const _gardeCache = new Map();
 
@@ -312,6 +314,49 @@ async function runEnCours(owner, repo, token, workflowFile) {
   }
   _gardeCache.set(cle, { t: Date.now(), v: bloquant });
   return bloquant;
+}
+
+// 23/10/2026 — WORKFLOWS PÉRIODIQUES. Les crons GitHub sont livrés en retard ou sautés (mesuré la nuit du
+// 22 au 23/10 : « toutes les 2 h » a donné UN passage sur trois, et la collecte des feuilles de 4 h 41 n'a
+// pas eu lieu). Comme pour la capture le 04/09, le worker devient le déclencheur ; les crons GitHub restent
+// en filet. Règle : on lance si aucun run n'est actif (même plafond anti-fantôme) ET si le dernier run, quel
+// que soit son déclencheur (cron, worker, manuel), a été créé il y a au moins `periodeMin` minutes.
+export function decisionPeriodique(runs, workflowFile, periodeMin, nowMs) {
+  const { bloquant } = runsBloquants(runs, workflowFile, nowMs);
+  if (bloquant) return { fire: false, raison: 'run en cours ou en file' };
+  const dates = (runs || []).map(r => Date.parse(r.created_at || '')).filter(t => !isNaN(t));
+  const dernier = dates.length ? Math.max(...dates) : null;
+  const ilYa = dernier === null ? Infinity : (nowMs - dernier) / 60000;
+  if (ilYa < periodeMin) return { fire: false, raison: `dernier run il y a ${Math.round(ilYa)} min (période ${periodeMin} min)` };
+  return { fire: true, raison: `dernier run il y a ${isFinite(ilYa) ? Math.round(ilYa) : '∞'} min` };
+}
+
+async function planifierPeriodique(cfg) {
+  const { owner, repo, token, ts, nom, evenement, workflowFile, periodeMin, messages } = cfg;
+  let runs;
+  try {
+    const r = await fetch(`https://api.github.com/repos/${owner}/${repo}/actions/workflows/`
+      + `${encodeURIComponent(workflowFile)}/runs?per_page=10`, {
+      headers: { 'Accept': 'application/vnd.github+json', 'Authorization': `Bearer ${token}`,
+        'X-GitHub-Api-Version': '2022-11-28', 'User-Agent': 'tennis-edge-worker' },
+    });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    runs = ((await r.json()) || {}).workflow_runs || [];
+  } catch (e) {
+    // API muette : on ne lance rien (les crons GitHub restent en filet) — jamais de rafale à l'aveugle.
+    messages.push(`${nom}: API injoignable (${e}), rien lancé.`);
+    return;
+  }
+  const d = decisionPeriodique(runs, workflowFile, periodeMin, Date.now());
+  if (!d.fire) {
+    messages.push(`${nom}: rien a faire (${d.raison}).`);
+    return;
+  }
+  try {
+    messages.push(await dispatch(owner, repo, token, evenement, { periode_min: periodeMin, triggered_at: ts, raison: d.raison }));
+  } catch (e) {
+    messages.push(`Erreur dispatch ${evenement}: ${e}`);
+  }
 }
 
 async function dispatch(owner, repo, token, eventType, clientPayload) {
@@ -482,6 +527,17 @@ async function run(env) {
     });
   } else {
     messages.push('Kalshi: desactive (KALSHI_ENABLED=0).');
+  }
+
+  // 23/10/2026 : pronostics du jour (toutes les 2 h) et feuilles de match (toutes les 2 h, matchs du jour
+  // compris) — le worker les déclenche, les crons GitHub restent en filet. Désactivables : *_ENABLED=0.
+  if ((env.PRONOSTICS_ENABLED || '1') !== '0') {
+    await planifierPeriodique({ owner, repo, token, ts, messages, nom: 'Pronostics', evenement: 'pronostics_quotidien',
+      workflowFile: 'pronostics_quotidien.yml', periodeMin: Math.max(30, Number(env.PRONOSTICS_PERIODE_MIN) || 120) });
+  }
+  if ((env.FEUILLES_ENABLED || '1') !== '0') {
+    await planifierPeriodique({ owner, repo, token, ts, messages, nom: 'Feuilles', evenement: 'feuilles_match',
+      workflowFile: 'feuilles_match.yml', periodeMin: Math.max(30, Number(env.FEUILLES_PERIODE_MIN) || 120) });
   }
 
   return messages.join('\n');
