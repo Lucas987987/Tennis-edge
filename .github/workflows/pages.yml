@@ -54,6 +54,7 @@ jobs:
             index.html
             division10.html
             confidence.js
+            /algo/
             matches_oddspapi.json
             resultats.json
             resultats_fast.json
@@ -224,6 +225,11 @@ jobs:
           done
 
           # --- Analyse indépendante en sous-répertoire, sans écraser le site existant ---
+          # 23/10/2026 : site public de l'algo (FR/EN) — page + données publiques seulement
+          mkdir -p _site/algo
+          cp algo/index.html _site/algo/ || echo "❌ MANQUANT : algo/index.html"
+          cp algo/donnees.json _site/algo/ 2>/dev/null || echo "⚠️ algo/donnees.json absent (prochain passage des pronostics)"
+
           mkdir -p _site/Tennis_Edge_Lab
           for f in index.html style.css app.js data.js; do
             cp "Tennis_Edge_Lab/$f" "_site/Tennis_Edge_Lab/$f"
