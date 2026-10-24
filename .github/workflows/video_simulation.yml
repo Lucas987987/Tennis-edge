@@ -2,6 +2,8 @@ name: Vidéo — simulation du match du jour
 
 # AJOUTÉ LE 23/10/2026. Vidéo verticale (1080×1920, MP4, ~25 s) du match du jour rejoué point par point par
 # l'algo, en français et en anglais, prête à poster sur X. Fin de vidéo : % sur 5 000 simulations.
+# 24/10/2026 : la vidéo montre le SCÉNARIO LE PLUS FRÉQUENT des 5 000 simulations (score exact le plus probable),
+# rejoué point par point ; un autre tirage seulement si un numéro est donné au lancement à la main.
 # 24/10/2026 : AUCUNE adresse dans la vidéo par défaut (personne ne remonte la piste) ; l'adresse neutre
 # algo.tennis-edge.workers.dev ne s'affiche que si « adresse = oui » est choisi au lancement à la main.
 # Chaque matin à 07:05 UTC (09:05 à Paris) : le match du jour est choisi au premier passage des pronostics
@@ -21,9 +23,9 @@ on:
         type: boolean
         default: false
       seed:
-        description: "Tirage de la simulation (un nombre ; change le déroulé du match simulé)"
+        description: "Vide = le scénario le plus fréquent des 5 000 simulations (défaut). Un nombre = un autre tirage."
         required: false
-        default: '7'
+        default: ''
   schedule:
     - cron: '5 7 * * *'
 
@@ -46,6 +48,7 @@ jobs:
           sparse-checkout: |
             /algo/
             /scripts/video_simulation.py
+            /scripts/sons.py
 
       - uses: actions/setup-python@v6
         with:
@@ -55,6 +58,9 @@ jobs:
         run: |
           pip install --quiet playwright==1.48.0
           python -m playwright install --with-deps chromium
+          # 24/10/2026 : ffmpeg (conversion MP4 + bande-son) n'est pas garanti sur l'image ubuntu-latest
+          command -v ffmpeg >/dev/null || { sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg; }
+          ffmpeg -version | head -1
 
       - name: Y a-t-il un match du jour ?
         id: mdj
@@ -77,7 +83,7 @@ jobs:
         if: steps.mdj.outputs.ok == '1'
         run: |
           for lang in fr en; do
-            python scripts/video_simulation.py --lang "$lang" --uid "${{ inputs.uid }}" --seed "${{ inputs.seed || '7' }}" ${{ inputs.adresse && '--adresse' || '' }} --sortie videos
+            python scripts/video_simulation.py --lang "$lang" --uid "${{ inputs.uid }}" --seed "${{ inputs.seed }}" ${{ inputs.adresse && '--adresse' || '' }} --sortie videos
           done
           ls -la videos
 
@@ -95,5 +101,5 @@ jobs:
               -F chat_id="${TELEGRAM_CHAT_ID}" -F supports_streaming=true \
               -F caption="🎬 Vidéo du match du jour (${lang}) — ${TITRE} · ${TOURNOI}" \
               -F video=@"videos/simulation_${lang}.mp4" \
-              "https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendVideo" || true
+              "https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendVideo" || echo "::warning::envoi Telegram ${lang} impossible"
           done
