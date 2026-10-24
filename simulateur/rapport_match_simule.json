@@ -1,5 +1,5 @@
 {
- "genere_le": "2026-10-23T10:08:10+00:00",
+ "genere_le": "2026-10-24T07:29:39+00:00",
  "periode": "2024-01-01 → 2026-02-01",
  "matchs_simules": 2000,
  "simulations_par_match": 300,
@@ -1252,7 +1252,7 @@
    ]
   }
  },
- "duree_s": 1406,
+ "duree_s": 729,
  "victoire_tous_les_matchs": {
   "simulation_pure_ajustee": {
    "n": 9267,
@@ -1422,7 +1422,13 @@
    "amplification": 1.0,
    "jeux": 0.0,
    "resultats": 0.0,
-   "raison": "σ = 0 (adopté) ; apprentissage des résultats non testé ; log loss 2025 → du réglage retenu 0.6238 contre 0.6248 (σ = 0,15) (réussite 64.9 % contre 64.9 %, calibration 50–60 % 54.8→54.5 · 60–70 % 64.7→66.0 · 70–80 % 74.5→69.7 · 80–90 % 84.4→81.4 · 90–100 % 93.9→90.6)"
+   "raison": "σ = 0 (adopté) ; apprentissage des résultats non testé ; log loss 2025 → du réglage retenu 0.6238 contre 0.6248 (σ = 0,15) (réussite 64.9 % contre 64.9 %, calibration 50–60 % 54.8→54.5 · 60–70 % 64.7→66.0 · 70–80 % 74.5→69.7 · 80–90 % 84.4→81.4 · 90–100 % 93.9→90.6) — en place",
+   "ll": {
+    "avec": 0.6238,
+    "sans": 0.6248
+   },
+   "adopte_brut": true,
+   "stabilite": "en place"
   },
   "combinaison": {
    "adopte": true,
@@ -1430,8 +1436,14 @@
     "elo": 0.7816,
     "simulation": 0.2377
    },
-   "raison": "log loss 2025 → : combinaison 0.6146 contre Elo 0.6148 et simulation 0.6238 (Pinnacle 0.598)",
-   "simulation": "simulation_reglee"
+   "raison": "log loss 2025 → : combinaison 0.6146 contre Elo 0.6148 et simulation 0.6238 (Pinnacle 0.598) — en place",
+   "simulation": "simulation_reglee",
+   "ll": {
+    "avec": 0.6146,
+    "sans": 0.6148
+   },
+   "adopte_brut": true,
+   "stabilite": "en place"
   }
  },
  "reglage_simulation": {
@@ -1791,7 +1803,12 @@
     "elo_wta": 0.2646,
     "elo_5sets": 0.0232
    },
-   "raison": "2025 → : poids selon le contexte 0.61738 contre poids uniques 0.61462"
+   "ll": {
+    "avec": 0.617380711341827,
+    "sans": 0.6146193711910948
+   },
+   "raison": "2025 → : poids selon le contexte 0.61738 contre poids uniques 0.61462",
+   "stabilite": "pas adopté"
   },
   "calibration": {
    "adopte": false,
@@ -1880,7 +1897,12 @@
      ]
     }
    },
-   "raison": "2025 → : log loss 0.61538 avec la correction contre 0.61462 sans ; calibration 50–60 % 54.4→56.5 · 60–70 % 65.0→62.0 · 70–80 % 74.8→72.9 · 80–90 % 84.5→78.5 · 90–100 % 92.8→92.3 (sans : 50–60 % 55.0→55.5 · 60–70 % 64.8→62.3 · 70–80 % 74.7→73.0 · 80–90 % 84.4→80.0 · 90–100 % 93.4→92.1)"
+   "ll": {
+    "avec": 0.6153834784230096,
+    "sans": 0.6146193711910948
+   },
+   "raison": "2025 → : log loss 0.61538 avec la correction contre 0.61462 sans ; calibration 50–60 % 54.4→56.5 · 60–70 % 65.0→62.0 · 70–80 % 74.8→72.9 · 80–90 % 84.5→78.5 · 90–100 % 92.8→92.3 (sans : 50–60 % 55.0→55.5 · 60–70 % 64.8→62.3 · 70–80 % 74.7→73.0 · 80–90 % 84.4→80.0 · 90–100 % 93.4→92.1)",
+   "stabilite": "pas adopté"
   }
  },
  "calibration_detaillee": {

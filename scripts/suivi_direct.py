@@ -216,6 +216,26 @@ class Ajouts:
             self.by_pair[pair].append((jour, winner))
         for v in self.by_pair.values():
             v.sort()
+        # 24/10/2026 : 4e source, les feuilles de match TennisApi (feuilles/, ATP, WTA, Challenger depuis juin).
+        # Contrôle avant adoption sur les 486 paris déjà dénoués par les autres sources : 486 accords, 0 désaccord ;
+        # elle dénoue 157 des ~200 paris restés sans résultat. Seuls les matchs TERMINÉS normalement comptent
+        # (abandon, forfait : pas de résultat d'ici, le règlement dépend du book).
+        self.fe = None
+        try:
+            sys.path.insert(0, str(HERE.parent / 'simulateur'))
+            import feuilles as FE
+            self.fe = FE.Index(FE.lire(str(root), depuis='2026-08-01'))
+        except Exception as exc:  # noqa: BLE001
+            print(f"feuilles de match indisponibles ({type(exc).__name__}: {exc})")
+
+    def par_feuille(self, joueur, adv, start):
+        """Résultat par la feuille de match (paire de joueurs, jour ± 1) ; (None, None) sinon."""
+        if self.fe is None or start is None or not joueur or not adv:
+            return None, None
+        fi, inv = self.fe.trouver(start.date().isoformat(), joueur, adv)
+        if not fi or str(((fi.get('statut') or {}).get('texte') or '')).lower() != 'ended' or fi.get('vainqueur') not in (1, 2):
+            return None, None
+        return (fi['vainqueur'] == 1) != inv, 'feuille de match (TennisApi)'
 
     def par_paire(self, joueur, adv, start):
         """Résultat par PAIRE exacte de joueurs (jamais un seul nom).
@@ -263,6 +283,9 @@ class Ajouts:
         else:
             # 3. PAIRE exacte de joueurs, de la veille à J+7 (jamais un seul nom).
             won, src = self.par_paire(joueur, adv, start)
+            if won is None:
+                # 4. feuille de match TennisApi (paire de joueurs, jour ± 1)
+                won, src = self.par_feuille(joueur, adv, start)
             src = src or 'inconnu'
         close = close_adv = None
         if item is not None and pside:
