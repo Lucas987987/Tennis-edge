@@ -9,6 +9,8 @@ name: Vidéo — simulation du match du jour
 # Chaque matin à 07:05 UTC (09:05 à Paris) : le match du jour est choisi au premier passage des pronostics
 # de la journée. Les deux vidéos arrivent sur le Telegram PRIVÉ (TELEGRAM_CHAT_ID) et nulle part ailleurs :
 # pas d'artefact (le dépôt est public, les artefacts de ses runs se téléchargent), rien de commité. 0 requête d'API.
+# 24/10/2026 : + une CARTE DE STATS (PNG 1080×1350, FR et EN) à poster en réponse à la vidéo (X ne mélange pas
+# vidéo et image dans un même post).
 # Lancement à la main : choisir la langue, un autre match (uid du site) ou un autre tirage (seed).
 
 on:
@@ -84,6 +86,8 @@ jobs:
         run: |
           for lang in fr en; do
             python scripts/video_simulation.py --lang "$lang" --uid "${{ inputs.uid }}" --seed "${{ inputs.seed }}" ${{ inputs.adresse && '--adresse' || '' }} --sortie videos
+            # 24/10/2026 : carte de stats du match (PNG pour X, en réponse à la vidéo)
+            python scripts/video_simulation.py --lang "$lang" --uid "${{ inputs.uid }}" --carte --sortie videos || echo "::warning::carte ${lang} non faite"
           done
           ls -la videos
 
@@ -102,4 +106,10 @@ jobs:
               -F caption="🎬 Vidéo du match du jour (${lang}) — ${TITRE} · ${TOURNOI}" \
               -F video=@"videos/simulation_${lang}.mp4" \
               "https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendVideo" || echo "::warning::envoi Telegram ${lang} impossible"
+            if [ -f "videos/stats_${lang}.png" ]; then
+              curl -sS -o /dev/null -w "Telegram carte ${lang} : HTTP %{http_code}\n" \
+                -F chat_id="${TELEGRAM_CHAT_ID}" -F caption="📊 Stats du match (${lang}) — à poster en réponse à la vidéo" \
+                -F photo=@"videos/stats_${lang}.png" \
+                "https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendPhoto" || echo "::warning::carte Telegram ${lang} impossible"
+            fi
           done
