@@ -51,10 +51,13 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Navigateur (Chromium)
+      - name: Navigateur (Chromium) et ffmpeg
         run: |
           pip install --quiet playwright==1.48.0
           python -m playwright install --with-deps chromium
+          # 24/10/2026 : ffmpeg (conversion MP4 + bande-son) n'est pas garanti sur l'image ubuntu-latest
+          command -v ffmpeg >/dev/null || { sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg; }
+          ffmpeg -version | head -1
 
       - name: Y a-t-il un match du jour ?
         id: mdj
@@ -95,5 +98,5 @@ jobs:
               -F chat_id="${TELEGRAM_CHAT_ID}" -F supports_streaming=true \
               -F caption="🎬 Vidéo du match du jour (${lang}) — ${TITRE} · ${TOURNOI}" \
               -F video=@"videos/simulation_${lang}.mp4" \
-              "https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendVideo" || true
+              "https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendVideo" || echo "::warning::envoi Telegram ${lang} impossible"
           done
