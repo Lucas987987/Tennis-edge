@@ -21,6 +21,8 @@ on:
       - 'confidence.js'
       - '.github/workflows/pages.yml'
       - 'Tennis_Edge_Lab/**'
+      # 24/10/2026 : le site public de l'algo (page + données) se redéploie dès qu'il change
+      - 'algo/**'
   # V6.6 : rafraîchissement HORAIRE et léger (minute 7, hors pic). Les calculs
   # lourds (scan V5, stabilité 16 ans, propositions, V6.3) tournent une fois par
   # jour dans lab_quotidien.yml ; ici on ne fait que recopier leurs JSON.
