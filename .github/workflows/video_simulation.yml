@@ -48,6 +48,7 @@ jobs:
           sparse-checkout: |
             /algo/
             /scripts/video_simulation.py
+            /scripts/sons.py
 
       - uses: actions/setup-python@v6
         with:
