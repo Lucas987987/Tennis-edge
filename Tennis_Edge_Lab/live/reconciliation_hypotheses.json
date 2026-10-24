@@ -1,15 +1,15 @@
 {
  "schema_version": 2,
- "generated_at": "2026-10-24T09:09:29+00:00",
+ "generated_at": "2026-10-24T15:01:08+00:00",
  "sources": {
   "worker": {
    "source": "API Worker D1 /api/hypotheses (fetch_worker_snapshot.py)",
    "fichier": "worker_hypotheses_capture.json",
    "status": "ok",
-   "fetched_at": "2026-10-24T09:09:23Z",
+   "fetched_at": "2026-10-24T15:01:02Z",
    "worker_generated_at": "2026-10-24T08:05:07Z"
   },
-  "suivi_officiel": "alertes en direct : h*_signal_log.jsonl + suivi_direct/resultats.json (verdicts_direct.json du 2026-10-24T09:09:29Z)",
+  "suivi_officiel": "alertes en direct : h*_signal_log.jsonl + suivi_direct/resultats.json (verdicts_direct.json du 2026-10-24T15:01:07Z)",
   "reconstruction": "moves_detail_hist.csv filtré par les règles gelées de validation_report.py (lignes jusqu'au 2026-10-23) — contrôle, ne juge pas",
   "rapprochement": "uid + joueur normalisé ; à défaut paire de joueurs + date ±1 jour"
  },
@@ -125,10 +125,10 @@
     "n_envoyees": 252,
     "n_doublons": 0,
     "source": "verdicts_direct.json (recalculé : journal plus récent)",
-    "sans_resultat_pct": 18.4,
-    "statut": "en attente de résultats (18,4 % sans résultat)",
+    "sans_resultat_pct": 19.0,
+    "statut": "en attente de résultats (19,0 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-10-24T09:09:29Z"
+    "genere_le": "2026-10-24T15:01:07Z"
    },
    "reconstruction": {
     "n": 218,
@@ -6254,10 +6254,10 @@
     "n_envoyees": 13,
     "n_doublons": 22,
     "source": "verdicts_direct.json (recalculé : journal plus récent)",
-    "sans_resultat_pct": 69.7,
-    "statut": "en attente de résultats (69,7 % sans résultat)",
+    "sans_resultat_pct": 71.4,
+    "statut": "en attente de résultats (71,4 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-10-24T09:09:29Z"
+    "genere_le": "2026-10-24T15:01:07Z"
    },
    "reconstruction": {
     "n": 164,
@@ -9794,10 +9794,10 @@
     "n_envoyees": 0,
     "n_doublons": 63,
     "source": "verdicts_direct.json (recalculé : journal plus récent)",
-    "sans_resultat_pct": 42.6,
-    "statut": "en attente de résultats (42,6 % sans résultat)",
+    "sans_resultat_pct": 44.4,
+    "statut": "en attente de résultats (44,4 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-10-24T09:09:29Z"
+    "genere_le": "2026-10-24T15:01:07Z"
    },
    "reconstruction": {
     "n": 84,
@@ -11813,17 +11813,17 @@
     "clv_pin": -0.5,
     "clv_pin_ic95": [
      -1.2,
-     0.2
+     0.3
     ],
-    "clv_n": 159,
+    "clv_n": 160,
     "n_detectees": 163,
     "n_envoyees": 163,
     "n_doublons": 0,
     "source": "verdicts_direct.json (recalculé : journal plus récent)",
-    "sans_resultat_pct": 27.8,
-    "statut": "en attente de résultats (27,8 % sans résultat)",
+    "sans_resultat_pct": 28.2,
+    "statut": "en attente de résultats (28,2 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-10-24T09:09:29Z"
+    "genere_le": "2026-10-24T15:01:07Z"
    },
    "reconstruction": {
     "n": 244,
@@ -16501,15 +16501,15 @@
      -1.4,
      0.2
     ],
-    "clv_n": 140,
+    "clv_n": 141,
     "n_detectees": 142,
     "n_envoyees": 142,
     "n_doublons": 0,
     "source": "verdicts_direct.json (recalculé : journal plus récent)",
-    "sans_resultat_pct": 29.8,
-    "statut": "en attente de résultats (29,8 % sans résultat)",
+    "sans_resultat_pct": 30.3,
+    "statut": "en attente de résultats (30,3 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-10-24T09:09:29Z"
+    "genere_le": "2026-10-24T15:01:07Z"
    },
    "reconstruction": {
     "n": 208,
@@ -20348,14 +20348,14 @@
      4.4
     ],
     "clv_n": 49,
-    "n_detectees": 50,
-    "n_envoyees": 29,
-    "n_doublons": 21,
+    "n_detectees": 52,
+    "n_envoyees": 30,
+    "n_doublons": 22,
     "source": "verdicts_direct.json (recalculé : journal plus récent)",
-    "sans_resultat_pct": 20.0,
-    "statut": "en attente de résultats (20,0 % sans résultat)",
+    "sans_resultat_pct": 23.1,
+    "statut": "en attente de résultats (23,1 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-10-24T09:09:29Z"
+    "genere_le": "2026-10-24T15:01:07Z"
    },
    "reconstruction": {
     "n": 97,
@@ -20373,9 +20373,9 @@
     "egal_validation_report": true
    },
    "entonnoir": {
-    "direct_detectees": 50,
-    "direct_envoyees": 29,
-    "direct_doublons": 21,
+    "direct_detectees": 52,
+    "direct_envoyees": 30,
+    "direct_doublons": 22,
     "direct_non_envoyees_autres": 0,
     "direct_denouees": 40,
     "reconstruction_detectees": 125,
@@ -20385,11 +20385,12 @@
     "reconstruction_seule_raisons": {
      "apres_coup": 116
     },
-    "direct_seule": 41,
+    "direct_seule": 43,
     "direct_seule_raisons": {
      "absent_reconstruction": 7,
      "prix_different": 25,
-     "cote_opposee_reco": 9
+     "cote_opposee_reco": 9,
+     "pas_encore_reconstruit": 2
     },
     "inexpliques": 0
    },
@@ -22657,6 +22658,34 @@
      "libelle": "Prix/seuil différent (direct vs reconstruction)",
      "detail": "direct 2.37 (bet365) · reconstruction 2.37 (bet365), Pinnacle ouv. 2.29",
      "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-24",
+     "match": "Nikoloz Basilashvili – Stefanos Tsitsipas",
+     "joueur": "Nikoloz Basilashvili",
+     "uid": "2026-10-24_nikoloz_basilashvili_stefanos_tsitsipas",
+     "cote": 3.2,
+     "book": "bet365",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-24, reconstruction arrêtée au 2026-10-23",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-24",
+     "match": "Xiaodi You – Dayana Yastremska",
+     "joueur": "Xiaodi You",
+     "uid": "2026-10-24_dayana_yastremska_xiaodi_you",
+     "cote": 5.0,
+     "book": "bet365",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-24, reconstruction arrêtée au 2026-10-23",
+     "explique": true
     }
    ]
   },
@@ -22713,7 +22742,7 @@
     "sans_resultat_pct": 0.0,
     "statut": "verrouillable (résultats complets à 100 %)",
     "verrouillable": true,
-    "genere_le": "2026-10-24T09:09:29Z"
+    "genere_le": "2026-10-24T15:01:07Z"
    },
    "reconstruction": {
     "n": 39,
