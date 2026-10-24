@@ -60,7 +60,7 @@ def main(argv):
     ap = argparse.ArgumentParser()
     ap.add_argument('--lang', default='fr', choices=['fr', 'en'])
     ap.add_argument('--uid', default='')
-    ap.add_argument('--seed', default='7')
+    ap.add_argument('--seed', default='', help='tirage précis ; vide = le scénario le plus fréquent des 5 000 (défaut)')
     ap.add_argument('--vitesse', default='1')
     ap.add_argument('--muet', action='store_true', help='sans bande-son')
     ap.add_argument('--adresse', action='store_true', help="afficher l'adresse du site en fin de vidéo (non par défaut)")
@@ -71,7 +71,8 @@ def main(argv):
         print('algo/donnees.json absent : lancer simulateur/vitrine.py d\'abord.')
         return 1
     srv = servir(algo)
-    q = (f"video=1&lang={a.lang}&seed={a.seed}&vitesse={a.vitesse}" + (f"&uid={a.uid}" if a.uid else '')
+    q = (f"video=1&lang={a.lang}&vitesse={a.vitesse}" + (f"&seed={a.seed}" if str(a.seed).strip() else '')
+         + (f"&uid={a.uid}" if a.uid else '')
          + ('&adresse=1' if a.adresse else ''))
     url = f"http://127.0.0.1:{srv.server_address[1]}/index.html?{q}"
     tmp = os.path.join(a.sortie, '_brut')
