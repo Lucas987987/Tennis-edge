@@ -1,27 +1,30 @@
 {
  "schema_version": 1,
- "genere_le": "2026-10-23T05:25:50Z",
+ "genere_le": "2026-10-24T05:10:04Z",
  "canaux": {
   "MISER": {
    "libelle": "🎯 MISER — steam, EV ≥ seuil vs Pinnacle juste (vainqueur du match)",
    "source": "miser_signal_log.jsonl (messages envoyés) + ajouts de suivi_direct",
    "regle": "première alerte de chaque match, au book et au prix du message ; relances non recomptées",
    "debut": "2026-10-22",
-   "n_alertes": 1,
-   "n_matchs": 1,
+   "n_alertes": 2,
+   "n_matchs": 2,
    "n_relances": 0,
    "n_denoues": 0,
    "bilan": {
     "n": 0,
-    "clv_moyen": 11.6,
-    "clv_pin_moyen": 11.6,
-    "clv_pin_ic95": null,
-    "clv_pin_p": null,
-    "clv_n": 1,
-    "clv_positif": 100.0,
-    "clv_mediane": 11.6,
-    "n_commencees": 1,
-    "n_sans_resultat": 1,
+    "clv_moyen": -2.0,
+    "clv_pin_moyen": -2.0,
+    "clv_pin_ic95": [
+     -28.6,
+     24.7
+    ],
+    "clv_pin_p": 0.5573,
+    "clv_n": 2,
+    "clv_positif": 50.0,
+    "clv_mediane": -2.0,
+    "n_commencees": 2,
+    "n_sans_resultat": 2,
     "sans_resultat_pct": 100.0,
     "verrouillable": false,
     "statut": "en attente de résultats (100,0 % sans résultat)"
@@ -33,6 +36,14 @@
      "pin_close": 2.029,
      "pin_close_adv": 1.819,
      "clv_pin": 11.619,
+     "source_resultat": "inconnu"
+    },
+    "2026-10-23_flavio_cobolli_brandon_nakashima": {
+     "gagne": null,
+     "pnl": null,
+     "pin_close": 3.0,
+     "pin_close_adv": 1.446,
+     "clv_pin": -15.532,
      "source_resultat": "inconnu"
     }
    }
