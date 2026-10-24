@@ -25,7 +25,9 @@ ICI = os.path.dirname(os.path.abspath(__file__))
 VERSIONS = (('combinaison', 'Simulation + Elo'), ('simulation', 'Simulation'), ('stats', 'Elo'), ('marche', 'Pinnacle'))
 LIB = {'forme_fatigue': 'forme/fatigue', 'vitesse_court': 'vitesse du court', 'morphologie': 'gaucher/taille',
        'points_importants': 'points importants', 'styles': 'styles', 'face_a_face': 'face-à-face', 'conditions': 'conditions',
-       'contexte_tournoi': 'contexte du tournoi', 'charting': 'Match Charting', 'blessure': 'blessure'}
+       'contexte_tournoi': 'contexte du tournoi', 'charting': 'Match Charting', 'blessure': 'blessure',
+       'pression': 'points sous pression', 'duree': 'durée des matchs', 'matchup': 'matchup service/retour',
+       'adversaires_communs': 'adversaires communs'}
 
 
 def lire(chemin, defaut):
