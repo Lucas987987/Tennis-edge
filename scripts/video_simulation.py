@@ -8,7 +8,8 @@ Ouvre la page publique algo/index.html en « mode vidéo » (?video=1) dans Chro
 que le match simulé se joue point par point, puis convertit l'enregistrement en MP4 (H.264, lisible partout).
 La page signale la fin (window.__fini) ; la vidéo dure ~25 à 40 s selon la longueur du match simulé.
 
-Usage : python scripts/video_simulation.py [--lang fr|en] [--uid UID] [--seed N] [--sortie dossier]
+Usage : python scripts/video_simulation.py [--lang fr|en] [--uid UID] [--seed N] [--carte] [--sortie dossier]
+--carte : la carte de stats du match (PNG 1080×1350) au lieu de la vidéo.
 La page est servie en local depuis algo/ (algo/donnees.json doit exister : simulateur/vitrine.py).
 """
 import argparse
@@ -56,6 +57,19 @@ def enregistrer(url, dossier_tmp, max_s=120):
     return chemin, [(e['t'] / 1000 - t0, e['type']) for e in sons]
 
 
+def carte(url, chemin):
+    """Carte de stats du match (PNG 1080×1350, format portrait de X) : capture de la page en mode ?carte=1."""
+    from playwright.sync_api import sync_playwright
+    with sync_playwright() as p:
+        nav = p.chromium.launch()
+        page = nav.new_page(viewport={'width': 1080, 'height': 1350}, device_scale_factor=1)
+        page.goto(url)
+        page.wait_for_function('window.__fini === true', timeout=30000, polling=200)
+        page.screenshot(path=chemin)
+        nav.close()
+    return chemin
+
+
 def main(argv):
     ap = argparse.ArgumentParser()
     ap.add_argument('--lang', default='fr', choices=['fr', 'en'])
@@ -64,6 +78,7 @@ def main(argv):
     ap.add_argument('--vitesse', default='1')
     ap.add_argument('--muet', action='store_true', help='sans bande-son')
     ap.add_argument('--adresse', action='store_true', help="afficher l'adresse du site en fin de vidéo (non par défaut)")
+    ap.add_argument('--carte', action='store_true', help='carte de stats (PNG) au lieu de la vidéo')
     ap.add_argument('--sortie', default=os.path.join(RACINE, 'videos'))
     a = ap.parse_args(argv[1:])
     algo = os.path.join(RACINE, 'algo')
@@ -71,6 +86,16 @@ def main(argv):
         print('algo/donnees.json absent : lancer simulateur/vitrine.py d\'abord.')
         return 1
     srv = servir(algo)
+    if a.carte:
+        os.makedirs(a.sortie, exist_ok=True)
+        png = os.path.join(a.sortie, f"stats_{a.lang}.png")
+        try:
+            carte(f"http://127.0.0.1:{srv.server_address[1]}/index.html?carte=1&lang={a.lang}"
+                  + (f"&uid={a.uid}" if a.uid else ''), png)
+        finally:
+            srv.shutdown()
+        print(f"Carte : {png} ({os.path.getsize(png) / 1e3:.0f} Ko)")
+        return 0
     q = (f"video=1&lang={a.lang}&vitesse={a.vitesse}" + (f"&seed={a.seed}" if str(a.seed).strip() else '')
          + (f"&uid={a.uid}" if a.uid else '')
          + ('&adresse=1' if a.adresse else ''))

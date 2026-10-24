@@ -216,6 +216,47 @@ body.video .page{display:none}
 #video{display:none}
 body.video #video{display:block;width:100vw;height:100vh}
 
+
+/* carte de stats (?carte=1) : image 1080×1350 (format portrait de X), même thème arcade (24/10/2026) */
+body.carte{background:#0E0A24;margin:0;overflow:hidden}
+body.carte .page{display:none}
+body.carte #video{display:block;width:1080px;height:1350px}
+.ca{position:relative;width:1080px;height:1350px;overflow:hidden;color:#F4F1FF;font-family:Barlow,system-ui,sans-serif;padding:50px 56px 40px;box-sizing:border-box;
+  background:radial-gradient(1200px 700px at 50% -120px,#3A1F8F 0%,transparent 65%),radial-gradient(900px 600px at 50% 1450px,#0F5C66 0%,transparent 60%),#0E0A24;display:flex;flex-direction:column}
+.ca::before{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.04) 1px,transparent 1px);background-size:60px 60px;pointer-events:none}
+.ca > *{position:relative}
+.ca .haut{display:flex;justify-content:space-between;align-items:center;font-size:30px;color:#ABA3D6;font-weight:600}
+.ca .haut b{font-family:var(--disp);font-weight:400;color:#D4FF3A}
+.ca h1{font-family:var(--disp);font-weight:400;font-size:56px;line-height:1.05;margin:20px 0 4px}
+.ca .ctx{font-size:27px;color:#ABA3D6;margin:0 0 22px}
+.ca .duel{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.ca .pj{border-radius:24px;padding:18px 24px;background:linear-gradient(160deg,rgba(255,255,255,.08),rgba(255,255,255,.02));border:3px solid rgba(255,255,255,.12)}
+.ca .pj.b{text-align:right}
+.ca .pj .n{font-family:var(--disp);font-size:34px;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ca .pj .p{font-family:var(--disp);font-size:88px;line-height:1;margin-top:6px}
+.ca .pj.a .n,.ca .pj.a .p{color:#2EE6FF;text-shadow:0 0 30px rgba(46,230,255,.5)}
+.ca .pj.b .n,.ca .pj.b .p{color:#FF4FAE;text-shadow:0 0 30px rgba(255,79,174,.5)}
+.ca .pj .c{font-size:26px;color:#ABA3D6;margin-top:6px}
+.ca .tir{display:flex;height:18px;border-radius:99px;overflow:hidden;margin:20px 0 22px;background:#FF4FAE;box-shadow:0 0 24px rgba(255,79,174,.4)}
+.ca .tir i{display:block;height:100%;background:#2EE6FF;box-shadow:0 0 24px rgba(46,230,255,.6)}
+.ca .blocs{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.ca .bloc{border-radius:22px;padding:16px 24px;background:rgba(5,3,20,.55);border:3px solid rgba(255,255,255,.1)}
+.ca .bloc h2{font-family:Barlow,sans-serif;font-weight:600;font-size:26px;margin:0 0 6px;color:#F4F1FF}
+.ca .l{display:grid;grid-template-columns:70px 1fr 86px;align-items:center;gap:14px;margin:7px 0;font-family:var(--cond);font-size:30px;font-variant-numeric:tabular-nums}
+.ca .l .t{height:14px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden}
+.ca .l .t i{display:block;height:100%;background:#2EE6FF}
+.ca .l.x .t i{background:#FF4FAE}
+.ca .l .v{text-align:right}
+.ca .sc{display:flex;justify-content:space-between;font-family:var(--cond);font-size:32px;margin:9px 0;font-variant-numeric:tabular-nums}
+.ca .sc:first-of-type b{color:#D4FF3A}
+.ca table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;margin-top:2px}
+.ca td,.ca th{font-size:27px;padding:6px 6px;border-top:2px solid rgba(255,255,255,.1);text-align:right}
+.ca th{font-weight:500;color:#ABA3D6;text-align:left}
+.ca thead th{border-top:0;font-size:26px;text-align:right}
+.ca thead th.a{color:#2EE6FF} .ca thead th.b{color:#FF4FAE}
+.ca td{font-family:var(--cond);font-size:30px}
+.ca .pied{margin-top:auto;padding-top:14px;font-size:24px;color:#ABA3D6;text-align:center}
+.ca .pied b{color:#D4FF3A;font-family:var(--disp);font-weight:400}
 @media (prefers-reduced-motion: reduce){
   .arcade .secoue,.arcade .live i,.arcade .ralenti.on{animation:none}
   .arcade .vs-n.a,.arcade .vs-n.b,.arcade .vs-x,.arcade .vs-t,.arcade .start,.arcade .fin-t,.arcade .fin-w,.arcade .fin-s,.arcade .fin-p{animation:none}
@@ -334,7 +375,9 @@ const T = {
   a_vs_top:n=>`L'algo a joué ce match <b>${fmt(n)}</b> fois.<br>Voici son scénario le plus fréquent.`,
   a_fin_top:(sc,q)=>`Score le plus fréquent sur les 5\u00a0000 : <b>${sc}</b> (${pc(q)} des simulations).`,
   a_fin_p:(x,q,n)=>`Sur ${fmt(n)} simulations, <b>${x}</b> gagne <b>${pc(q)}</b> du temps.`,
-  a_pied:n=>`Simulation point par point · une parmi ${fmt(n)}`
+  a_pied:n=>`Simulation point par point · une parmi ${fmt(n)}`,
+  c_titre:'Les stats de l\'algo', c_sets:'Score en sets', c_scores:'Scores les plus fréquents', c_feuille:'Feuille de match prévue',
+  c_pied:n=>`Simulé <b>${fmt(n)}</b> fois, point par point · aucune cote utilisée`, c_victoire:'de chances de gagner'
  },
  en:{
   marque:'the algorithm', html_lang:'en',
@@ -378,7 +421,9 @@ const T = {
   a_vs_top:n=>`The algorithm played this match <b>${fmt(n)}</b> times.<br>Here is its most frequent outcome.`,
   a_fin_top:(sc,q)=>`Most frequent score across the 5,000: <b>${sc}</b> (${pc(q)} of simulations).`,
   a_fin_p:(x,q,n)=>`Across ${fmt(n)} simulations, <b>${x}</b> wins <b>${pc(q)}</b> of the time.`,
-  a_pied:n=>`Point-by-point simulation · one of ${fmt(n)}`
+  a_pied:n=>`Point-by-point simulation · one of ${fmt(n)}`,
+  c_titre:'The algorithm\'s numbers', c_sets:'Score in sets', c_scores:'Most frequent scores', c_feuille:'Expected match stats',
+  c_pied:n=>`Simulated <b>${fmt(n)}</b> times, point by point · no odds used`, c_victoire:'win chance'
  }
 };
 const Q = new URLSearchParams(location.search);
@@ -857,10 +902,38 @@ function modeVideo(){
   a.jouer(sd);
 }
 
+/* ───────────── carte de stats (?carte=1) : image 1080×1350 pour X, capturée par scripts/video_simulation.py ───────────── */
+function modeCarte(){
+  document.body.classList.add('carte');
+  const id = Q.get('uid') || (D.match_du_jour && D.match_du_jour.uid);
+  const m = D.matchs.find(x=>x.uid===id && x.sets);
+  const V = document.getElementById('video');
+  if (!m){ V.innerHTML = '<p style="padding:60px;color:#fff">—</p>'; window.__fini = true; return; }
+  const p = m.p_home, n1 = court(m.home), n2 = court(m.away);
+  const quand = utc(m.debut).toLocaleString(loc(), {weekday:'long', day:'numeric', month:'long', hour:'2-digit', minute:'2-digit', timeZone:'Europe/Paris'});
+  const sets = Object.entries(m.sets || {}).map(([k,v])=>{ const [h,a]=k.split('-').map(Number);
+    return `<div class="l ${a>h?'x':''}"><span>${esc(k)}</span><span class="t"><i style="width:${(v*100).toFixed(1)}%"></i></span><span class="v">${pc0(v)}</span></div>`; }).join('');
+  const scores = (m.scores_probables||[]).slice(0,3).map(([sc,v])=>`<div class="sc"><b>${esc(sc)}</b><span>${dec(v*100,1)}${L==='fr'?'\u202f%':'%'}</span></div>`).join('');
+  const f = m.feuille_prevue;
+  const lignes = f ? [['aces','aces'],['doubles_fautes','df'],['breaks','breaks'],['premiere_pct','prem'],['jeux_service_gagnes_pct','jsg']]
+     .filter(([k])=>f[0]&&f[0][k]!=null).map(([k,lib])=>`<tr><th>${esc(t(lib))}</th><td>${dec(f[0][k],1)}</td><td>${dec(f[1][k],1)}</td></tr>`).join('') : '';
+  V.innerHTML = `<div class="ca">
+    <div class="haut"><span>${esc(t('c_titre'))}</span><span><b>${esc(t('a_sim'))}</b> ${esc(t('a_fois', D.simulations))}</span></div>
+    <h1 style="font-size:${(n1+n2).length > 30 ? 38 : (n1+n2).length > 20 ? 46 : 56}px">${esc(n1)} – ${esc(n2)}</h1>
+    <p class="ctx">${esc(m.tournoi)} · ${esc(SURF[L][m.surface]||m.surface||'')} · ${esc(quand)}</p>
+    <div class="duel"><div class="pj a"><div class="n">${esc(m.home)}</div><div class="p">${pc0(p)}</div><div class="c">${esc(t('c_victoire'))}</div></div>
+      <div class="pj b"><div class="n">${esc(m.away)}</div><div class="p">${pc0(1-p)}</div><div class="c">${esc(t('c_victoire'))}</div></div></div>
+    <div class="tir"><i style="width:${(p*100).toFixed(1)}%"></i></div>
+    <div class="blocs"><div class="bloc"><h2>${esc(t('c_sets'))}</h2>${sets}</div><div class="bloc"><h2>${esc(t('c_scores'))}</h2>${scores}</div></div>
+    ${lignes ? `<div class="bloc" style="margin-top:20px"><h2>${esc(t('c_feuille'))}</h2><table><thead><tr><th></th><th class="a">${esc(n1)}</th><th class="b">${esc(n2)}</th></tr></thead><tbody>${lignes}</tbody></table></div>` : ''}
+    <div class="pied">${t('c_pied', D.simulations)}</div></div>`;
+  Promise.race([(document.fonts && document.fonts.ready) || Promise.resolve(), dort(3000)]).then(()=>{ window.__fini = true; });
+}
+
 rendTextes();
 fetch('donnees.json?v=' + Date.now()).then(r=>r.json()).then(d=>{
   D = d;
-  if (Q.get('video')) modeVideo(); else rendTout();
+  if (Q.get('carte')) modeCarte(); else if (Q.get('video')) modeVideo(); else rendTout();
 }).catch(()=>{ document.getElementById('mdj-zone').innerHTML = '<div class="panel empty">Données indisponibles / Data unavailable.</div>'; });
 })();
 </script>
