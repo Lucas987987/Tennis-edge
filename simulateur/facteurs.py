@@ -29,6 +29,9 @@ chacun appris sur juin–août 2026 et JUGÉ sur septembre–octobre 2026, jamai
   10. blessure : abandon, forfait ou disqualification récents (demi-vie 15 jours), nombre
      d'abandons sur 90 jours, 1er match depuis un abandon (archive + feuilles TennisApi).
   12. duree : minutes jouées dans le tournoi, sur 7 jours, durée du dernier match (feuilles TennisApi).
+  13. matchup : le relanceur face aux GROS SERVEURS et le serveur face aux GRANDS RELANCEURS, au-delà de leur
+     niveau (pentes mesurées sur les points, archive + feuilles) — 24/10/2026 ;
+  14. adversaires_communs : points gagnés au-delà de l'attendu contre les mêmes adversaires — 24/10/2026.
   11. pression : point par point (scripts/points_match.py) — points gagnés au service à 30-30 et à
      l'égalité, au-delà de son % du match ; rebond juste après avoir été breaké ; servir pour le set.
 
@@ -119,6 +122,16 @@ GROUPES['pression'] = {'service': ['pression_srv', 'pression_ret_adv', 'rebond_s
 GROUPES['duree'] = {'service': ['minutes_tournoi_srv', 'minutes_tournoi_adv', 'minutes7_srv', 'minutes7_adv',
                                 'minutes_dernier_srv', 'minutes_dernier_adv']}
 K_PRESSION = 60.0
+# 24/10/2026 — MATCHUP (cas Li – Krueger : « Li ne supporte pas les grosses serveuses ») et ADVERSAIRES COMMUNS.
+#  · matchup : comment CE relanceur s'en sort, au-delà de son niveau, quand le serveur d'en face est fort
+#    (pente de ses points gagnés en retour, mesurés au-delà de l'attendu, selon la force du service adverse) ;
+#    et pareil pour CE serveur face aux grands relanceurs. On mesure les POINTS (stables), pas les victoires.
+#  · adversaires_communs : sur les adversaires que les deux joueurs ont affrontés (archive 4 ans + feuilles),
+#    qui a gagné le plus de points au-delà de l'attendu — un face-à-face indirect.
+GROUPES['matchup'] = {'service': ['mu_srv', 'mu_ret_adv'], 'aces': ['mu_srv']}
+GROUPES['adversaires_communs'] = {'service': ['communs_srv']}
+K_MU = 20.0                      # ~6 matchs avant d'y croire (n × force² ≈ 3 par match)
+K_COM = 300.0                    # points communs avant d'y croire
 
 
 def charger_points(racine):
@@ -256,11 +269,53 @@ class Historique:
         self.abandons = collections.defaultdict(list)                          # joueur -> [t] (abandon, forfait)
         self.minutes = collections.defaultdict(list)                           # joueur -> [(t, minutes)] (durée)
         self.pression = collections.defaultdict(lambda: [0.0, 0, 0.0, 0, 0.0, 0, 0.0, 0])   # + Σ, n au retour (pression)
+        # 24/10/2026 — matchup : [Σ résidu retour × force service adverse, Σ n × force², Σ résidu service × force
+        # retour adverse, Σ n × force²] ; adversaires déjà affrontés (adversaires communs)
+        self.mu = collections.defaultdict(lambda: [0.0, 0.0, 0.0, 0.0])
+        self.adv = collections.defaultdict(set)
 
     def ajouter_h2h(self, j, adv, res, n):
         h = self.h2h[(j, adv)]
         h[0] += res
         h[1] += n
+        self.adv[j].add(adv)
+        self.adv[adv].add(j)
+
+    def ajouter_matchup(self, x):
+        """Pentes du matchup, depuis les styles du modèle ajusté (force du service : ace + 1re ; du retour : 1re + 2e)."""
+        st = x.get('style')
+        if not st:
+            return
+        for k in (0, 1):
+            j, o = (x['a'], x['b'])[k], (x['b'], x['a'])[k]
+            r = x['srv'][k]
+            s_srv = st[k][0] + st[k][1]
+            q_ret = st[1 - k][3] + st[1 - k][4]
+            m_o, m_j = self.mu[o], self.mu[j]
+            m_o[0] += -r['res'] * s_srv
+            m_o[1] += r['n'] * s_srv * s_srv
+            m_j[2] += r['res'] * q_ret
+            m_j[3] += r['n'] * q_ret * q_ret
+
+    def variables_avancees(self, j, adv, st_j, st_adv):
+        """Matchup et adversaires communs, du point de vue de j au service contre adv."""
+        s_j = st_j[0] + st_j[1]
+        q_a = st_adv[3] + st_adv[4]
+        ma, mj = self.mu.get(adv) or [0.0] * 4, self.mu.get(j) or [0.0] * 4
+        num = den = 0.0
+        communs = (self.adv.get(j) or set()) & (self.adv.get(adv) or set())
+        for o in communs - {j, adv}:
+            vals = []
+            for p in (j, adv):
+                hs, hr = self.h2h.get((p, o)) or (0.0, 0.0), self.h2h.get((o, p)) or (0.0, 0.0)
+                n = hs[1] + hr[1]
+                vals.append(((hs[0] - hr[0]) / n, n) if n else None)
+            if vals[0] and vals[1]:
+                w = min(vals[0][1], vals[1][1])
+                num += w * (vals[0][0] - vals[1][0])
+                den += w
+        return {'mu_ret_adv': 4 * s_j * ma[0] / (ma[1] + K_MU), 'mu_srv': 4 * q_a * mj[2] / (mj[3] + K_MU),
+                'communs_srv': 4 * num / (den + K_COM)}
 
     def ajouter_clutch(self, j, adv, det_j, det_adv):
         sv, in1, w1, w2 = det_j[:4]
@@ -302,6 +357,7 @@ class Historique:
                 o = self.pression[(x['b'], x['a'])[k]]          # au retour : l'inverse de l'adversaire sous pression
                 o[6] -= acc[k][0]
                 o[7] += acc[k][1]
+        self.ajouter_matchup(x)
         da, db = x['det']
         self.ajouter_clutch(x['a'], x['b'], da, db)
         self.ajouter_clutch(x['b'], x['a'], db, da)
@@ -560,6 +616,8 @@ def avec_variables(lignes, infos, avant=None, final=False, adj_avant=None, lieux
         st = x.get('style') or ((0.0,) * 5, (0.0,) * 5)
         x['var'][0].update(variables_style(st[0], st[1]))
         x['var'][1].update(variables_style(st[1], st[0]))
+        x['var'][0].update(H.variables_avancees(x['a'], x['b'], st[0], st[1]))
+        x['var'][1].update(H.variables_avancees(x['b'], x['a'], st[1], st[0]))
         heapq.heappush(attente, (x['t'] + DISPO_H * 3600, x['id'] or 0, x))
     while final and attente:                    # contexte du jour : tout ce qui est joué compte
         H.ajouter(heapq.heappop(attente)[2])
@@ -743,6 +801,9 @@ def contexte(H, infos, noms_tournois, maintenant_ts):
     for j, P_ in H.pression.items():
         if isinstance(j, str) and any(P_):
             joueurs.setdefault(j, {})['pression'] = [round(v, 3) for v in P_]
+    for j, m_ in H.mu.items():
+        if isinstance(j, str) and any(m_):
+            joueurs.setdefault(j, {})['mu'] = [round(v, 4) for v in m_]
     for j, A in H.abandons.items():
         rec = [int(ta) for ta in A if ta >= t - 90 * 86400]
         if rec:
@@ -783,6 +844,8 @@ class Contexte:
                 self.H.pays[j] = e['pays']
             if e.get('pression'):
                 self.H.pression[j] = list(e['pression'])
+            if e.get('mu'):
+                self.H.mu[j] = list(e['mu'])
             for ta in e.get('abandons') or []:
                 self.H.abandons[j].append(float(ta))
         for k in self.doc.get('interieur') or []:
@@ -792,6 +855,8 @@ class Contexte:
         for k, v in (self.doc.get('h2h') or {}).items():
             a, b = k.split('|', 1)
             self.H.h2h[(a, b)] = list(v)
+            self.H.adv[a].add(b)
+            self.H.adv[b].add(a)
         self.infos = {j: e['infos'] for j, e in (self.doc.get('joueurs') or {}).items() if e.get('infos')}
         self.noms = self.doc.get('noms_tournois') or {}
         J = self.doc.get('joueurs') or {}
@@ -817,7 +882,9 @@ class Contexte:
 
     def variables(self, j, adv, nom_tournoi, debut_ts, adj=None):
         v = self.H.variables(j, adv, self.tournoi(nom_tournoi), debut_ts, self.infos)
-        v.update(variables_style(style(adj, j), style(adj, adv)))
+        st_j, st_a = style(adj, j), style(adj, adv)
+        v.update(variables_style(st_j, st_a))
+        v.update(self.H.variables_avancees(j, adv, st_j, st_a))
         return v
 
 
