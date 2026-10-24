@@ -1,6 +1,6 @@
 {
  "schema_version": 1,
- "genere_le": "2026-10-24T05:10:04Z",
+ "genere_le": "2026-10-24T08:05:08Z",
  "canaux": {
   "MISER": {
    "libelle": "🎯 MISER — steam, EV ≥ seuil vs Pinnacle juste (vainqueur du match)",
@@ -10,9 +10,20 @@
    "n_alertes": 2,
    "n_matchs": 2,
    "n_relances": 0,
-   "n_denoues": 0,
+   "n_denoues": 2,
    "bilan": {
-    "n": 0,
+    "n": 2,
+    "gains": 2,
+    "taux": 100.0,
+    "seuil": 40.0,
+    "ecart": 60.0,
+    "ic95": [
+     34.2,
+     100.0
+    ],
+    "roi": 151.0,
+    "pnl": 3.0,
+    "cote_moyenne": 2.51,
     "clv_moyen": -2.0,
     "clv_pin_moyen": -2.0,
     "clv_pin_ic95": [
@@ -22,29 +33,32 @@
     "clv_pin_p": 0.5573,
     "clv_n": 2,
     "clv_positif": 50.0,
+    "lead_moyen_h": 9.1,
+    "periode": "2026-10-22 -> 2026-10-23",
+    "verdict": "ne tranche pas",
     "clv_mediane": -2.0,
     "n_commencees": 2,
-    "n_sans_resultat": 2,
-    "sans_resultat_pct": 100.0,
-    "verrouillable": false,
-    "statut": "en attente de résultats (100,0 % sans résultat)"
+    "n_sans_resultat": 0,
+    "sans_resultat_pct": 0.0,
+    "verrouillable": true,
+    "statut": "verrouillable (résultats complets à 100 %)"
    },
    "paris": {
     "2026-10-22_valerio_aboian_matias_soto": {
-     "gagne": null,
-     "pnl": null,
+     "gagne": 1,
+     "pnl": 1.37,
      "pin_close": 2.029,
      "pin_close_adv": 1.819,
      "clv_pin": 11.619,
-     "source_resultat": "inconnu"
+     "source_resultat": "feuille de match (TennisApi)"
     },
     "2026-10-23_flavio_cobolli_brandon_nakashima": {
-     "gagne": null,
-     "pnl": null,
+     "gagne": 1,
+     "pnl": 1.65,
      "pin_close": 3.0,
      "pin_close_adv": 1.446,
      "clv_pin": -15.532,
-     "source_resultat": "inconnu"
+     "source_resultat": "feuille de match (TennisApi)"
     }
    }
   }
