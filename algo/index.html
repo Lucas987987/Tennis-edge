@@ -299,7 +299,7 @@ const T = {
   mdj_vide:"Pas de match du jour pour l'instant : il est choisi parmi les matchs pas encore commencés de la journée.",
   vs:'contre', cote_juste:'cote juste', sur_sims:n=>`Sur ${n} simulations`,
   rejouer:'Rejouer une simulation', accel:'Accélérer', fin:'Aller à la fin', jouer:'Lancer la simulation',
-  son_on:'Son : activé', son_off:'Son : coupé', jouer_aide:"Un match tiré parmi les 5 000, rejoué point par point.",
+  son_on:'Son : activé', son_off:'Son : coupé', jouer_aide:"D'abord le scénario le plus fréquent des 5 000 simulations, rejoué point par point ; « Rejouer » tire ensuite un autre match au hasard.",
   une_parmi:n=>`Une simulation parmi ${fmt(n)} : le vrai match peut se dérouler autrement.`,
   proba_direct:'Probabilité en direct', gagne_sim:(w,s)=>`Dans cette simulation, ${w} gagne ${s}.`,
   sets_titre:'Score en sets', scores_titre:'Scores les plus probables', feuille_titre:'Feuille de match prévue (moyenne des 5 000 simulations)',
@@ -331,6 +331,8 @@ const T = {
   a_set:n=>`SET ${n}`, a_pour:x=>`pour ${x}`, a_combo:n=>`COMBO ×${n}`, a_ralenti:'RALENTI',
   a_fin:'JEU, SET ET MATCH', a_gagne:x=>`${x} gagne`,
   a_vs_t:n=>`L'algo a joué ce match <b>${fmt(n)}</b> fois.<br>Voici l'une d'elles.`,
+  a_vs_top:n=>`L'algo a joué ce match <b>${fmt(n)}</b> fois.<br>Voici son scénario le plus fréquent.`,
+  a_fin_top:(sc,q)=>`Score le plus fréquent sur les 5\u00a0000 : <b>${sc}</b> (${pc(q)} des simulations).`,
   a_fin_p:(x,q,n)=>`Sur ${fmt(n)} simulations, <b>${x}</b> gagne <b>${pc(q)}</b> du temps.`,
   a_pied:n=>`Simulation point par point · une parmi ${fmt(n)}`
  },
@@ -341,7 +343,7 @@ const T = {
   mdj_vide:"No match of the day yet: it is picked among today's matches that haven't started.",
   vs:'vs', cote_juste:'fair odds', sur_sims:n=>`Across ${n} simulations`,
   rejouer:'Replay a simulation', accel:'Faster', fin:'Skip to the end', jouer:'Play the simulation',
-  son_on:'Sound: on', son_off:'Sound: off', jouer_aide:'One match drawn from the 5,000, replayed point by point.',
+  son_on:'Sound: on', son_off:'Sound: off', jouer_aide:'First the most frequent outcome of the 5,000 simulations, replayed point by point; “Replay” then draws another match at random.',
   une_parmi:n=>`One simulation out of ${fmt(n)}: the real match can play out differently.`,
   proba_direct:'Live win probability', gagne_sim:(w,s)=>`In this simulation, ${w} wins ${s}.`,
   sets_titre:'Score in sets', scores_titre:'Most likely scores', feuille_titre:'Expected match stats (average of 5,000 simulations)',
@@ -373,6 +375,8 @@ const T = {
   a_set:n=>`SET ${n}`, a_pour:x=>`to ${x}`, a_combo:n=>`COMBO ×${n}`, a_ralenti:'SLOW-MO',
   a_fin:'GAME, SET, MATCH', a_gagne:x=>`${x} wins`,
   a_vs_t:n=>`The algorithm played this match <b>${fmt(n)}</b> times.<br>Here's one of them.`,
+  a_vs_top:n=>`The algorithm played this match <b>${fmt(n)}</b> times.<br>Here is its most frequent outcome.`,
+  a_fin_top:(sc,q)=>`Most frequent score across the 5,000: <b>${sc}</b> (${pc(q)} of simulations).`,
   a_fin_p:(x,q,n)=>`Across ${fmt(n)} simulations, <b>${x}</b> wins <b>${pc(q)}</b> of the time.`,
   a_pied:n=>`Point-by-point simulation · one of ${fmt(n)}`
  }
@@ -541,6 +545,27 @@ function Arcade(root, m, opts){
   const $ = s => root.querySelector(s);
   const coul = i => i === 0 ? 'var(--ar-p1)' : 'var(--ar-p2)';
 
+  // 24/10/2026 : le scénario LE PLUS FRÉQUENT des 5 000 simulations (score exact le plus probable) est joué
+  // en premier — c'est lui que montre la vidéo. On cherche le tirage qui aboutit exactement à ce score.
+  const cible = (m.scores_probables || [])[0] || null;
+  let tirageTop;
+  function chercherTop(){
+    if (tirageTop !== undefined) return tirageTop;
+    tirageTop = null;
+    if (!cible) return null;
+    const vise = String(cible[0]).trim(), setsVises = vise.split(' ').length;
+    let repli = null;
+    for (let k = 1; k <= 20000; k++){
+      const X = M.etat(k % 2), Rk = rng(k); let n = 0;
+      while (!X.fini && n < 800){ M.point(X, Rk()); n++; }
+      const sc = scoreTxt(X, false);
+      if (sc === vise){ tirageTop = k; break; }
+      if (repli === null && X.histo.length === setsVises && (X.vainqueur === 0) === (vise.split(' ').filter(x=>{ const [a,b]=x.split('-').map(Number); return a>b; }).length * 2 > setsVises)) repli = k;
+    }
+    if (tirageTop === null) tirageTop = repli;
+    return tirageTop;
+  }
+  let enCoursTop = false;
   function squelette(){
     root.innerHTML = `<div class="grid"></div><div class="scene">
       <div class="tag"><span class="live"><i></i>${esc(t('a_live'))}</span><span>${esc(m.tournoi)}</span><span><b>${esc(t('a_sim'))}</b> ${esc(t('a_fois', D.simulations))}</span></div>
@@ -552,7 +577,7 @@ function Arcade(root, m, opts){
       <div class="pied">${esc(t('a_pied', D.simulations))}</div></div>
       <div class="annonce"></div><div class="combo"></div><div class="ralenti">${esc(t('a_ralenti'))}</div>
       <div class="ecran intro"><div class="vs-n a">${esc(m.home)}</div><div class="vs-x">VS</div>
-        <div class="vs-n b">${esc(m.away)}</div><div class="vs-t">${t('a_vs_t', D.simulations)}</div>
+        <div class="vs-n b">${esc(m.away)}</div><div class="vs-t">${t(enCoursTop ? 'a_vs_top' : 'a_vs_t', D.simulations)}</div>
         ${opts.video ? '' : `<button type="button" class="start">▶ ${esc(t('jouer'))}</button>`}</div>`;
     const b = $('.start'); if (b) b.onclick = () => jouer();
   }
@@ -603,10 +628,13 @@ function Arcade(root, m, opts){
   }
   async function jouer(seedVoulu){
     const mon = ++jeton, vivant = () => mon === jeton;
-    const seed = seedVoulu != null ? seedVoulu : (opts.seed != null && mon === 1 ? opts.seed : Math.floor(Math.random()*1e9));
+    let seed = seedVoulu != null ? seedVoulu : (opts.seed != null && mon === 1 ? opts.seed : null);
+    enCoursTop = false;
+    if (seed == null && mon === 1){ const k = chercherTop(); if (k != null){ seed = k; enCoursTop = true; } }
+    if (seed == null) seed = Math.floor(Math.random()*1e9);
     const vit = opts.vitesse || 1; accel = 1;
     const z = ms => dort(ms / (vit * accel));
-    if (!opts.video || mon > 1) squelette();
+    if (!opts.video || mon > 1 || enCoursTop) squelette();
     opts.onDebut && opts.onDebut();
     const pAff = preparer(seed);
     jauges(p); tableau();
@@ -667,6 +695,7 @@ function Arcade(root, m, opts){
       <div class="fin-w" style="color:${coul(w)};text-shadow:0 0 5cqw ${coul(w)}">${esc(t('a_gagne', noms[w]))}</div>
       <div class="fin-s">${esc(scoreTxt(S, w === 1))}</div>
       <div class="fin-p">${t('a_fin_p', esc(noms[fav]), Math.max(p,1-p)*100, D.simulations)}</div>
+      ${enCoursTop && cible ? `<div class="fin-p">${t('a_fin_top', esc(cible[0]), cible[1]*100)}</div>` : ''}
       ${opts.video && Q.get('adresse') === '1' ? `<div class="fin-url">${esc(t('v_url'))}</div>` : ''}
       ${opts.video ? '' : `<button type="button" class="start">↻ ${esc(t('rejouer'))}</button>`}`;
     root.appendChild(fin); son('fin');
@@ -821,9 +850,11 @@ function modeVideo(){
   if (!m){ V.innerHTML = '<p style="padding:10vw;color:#fff">—</p>'; window.__fini = true; return; }
   window.__sons = [];
   const son = (type, delai) => window.__sons.push({ t: Date.now() + (delai || 0), type });
-  const a = Arcade(V, m, { video: true, seed: Number(Q.get('seed') || 7), vitesse: Number(Q.get('vitesse') || 1),
+  // sans « seed » : le scénario le plus fréquent des 5 000 ; avec : ce tirage-là
+  const sd = Q.get('seed') ? Number(Q.get('seed')) : null;
+  const a = Arcade(V, m, { video: true, seed: sd, vitesse: Number(Q.get('vitesse') || 1),
                            duree: Number(Q.get('duree') || 27), son });
-  a.jouer(Number(Q.get('seed') || 7));
+  a.jouer(sd);
 }
 
 rendTextes();
