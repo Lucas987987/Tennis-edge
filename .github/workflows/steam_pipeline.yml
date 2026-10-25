@@ -54,7 +54,7 @@ jobs:
     # run tourne 12-13 min ; 45 laisse toute la marge nécessaire et évite
     # qu'un blocage réseau consomme des heures de runner sans que personne
     # ne le remarque (l'observateur externe ne le verrait qu'après 30h).
-    timeout-minutes: 45
+    timeout-minutes: 90
     env:
       RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
       TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
