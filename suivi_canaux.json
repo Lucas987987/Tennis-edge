@@ -1,6 +1,6 @@
 {
  "schema_version": 1,
- "genere_le": "2026-10-25T14:50:45Z",
+ "genere_le": "2026-10-25T16:13:05Z",
  "canaux": {
   "MISER": {
    "libelle": "🎯 MISER — steam, EV ≥ seuil vs Pinnacle juste (vainqueur du match)",
@@ -10,38 +10,38 @@
    "n_alertes": 3,
    "n_matchs": 3,
    "n_relances": 0,
-   "n_denoues": 2,
+   "n_denoues": 3,
    "bilan": {
-    "n": 2,
+    "n": 3,
     "gains": 2,
-    "taux": 100.0,
-    "seuil": 40.0,
-    "ecart": 60.0,
+    "taux": 66.7,
+    "seuil": 45.2,
+    "ecart": 21.5,
     "ic95": [
-     34.2,
-     100.0
+     20.8,
+     93.9
     ],
-    "roi": 151.0,
-    "pnl": 3.0,
-    "cote_moyenne": 2.51,
-    "clv_moyen": -2.0,
-    "clv_pin_moyen": -2.0,
+    "roi": 67.3,
+    "pnl": 2.0,
+    "cote_moyenne": 2.27,
+    "clv_moyen": -1.0,
+    "clv_pin_moyen": -1.0,
     "clv_pin_ic95": [
-     -28.6,
-     24.7
+     -16.5,
+     14.5
     ],
-    "clv_pin_p": 0.5573,
-    "clv_n": 2,
-    "clv_positif": 50.0,
-    "lead_moyen_h": 9.1,
-    "periode": "2026-10-22 -> 2026-10-23",
+    "clv_pin_p": 0.5496,
+    "clv_n": 3,
+    "clv_positif": 66.7,
+    "lead_moyen_h": 7.8,
+    "periode": "2026-10-22 -> 2026-10-25",
     "verdict": "ne tranche pas",
-    "clv_mediane": -2.0,
+    "clv_mediane": 1.0,
     "n_commencees": 3,
-    "n_sans_resultat": 1,
-    "sans_resultat_pct": 33.3,
-    "verrouillable": false,
-    "statut": "en attente de résultats (33,3 % sans résultat)"
+    "n_sans_resultat": 0,
+    "sans_resultat_pct": 0.0,
+    "verrouillable": true,
+    "statut": "verrouillable (résultats complets à 100 %)"
    },
    "paris": {
     "2026-10-22_valerio_aboian_matias_soto": {
@@ -61,12 +61,12 @@
      "source_resultat": "feuille de match (TennisApi)"
     },
     "2026-10-25_juan_manuel_cerundolo_daniel_altmaier": {
-     "gagne": null,
-     "pnl": null,
-     "pin_close": null,
-     "pin_close_adv": null,
-     "clv_pin": null,
-     "source_resultat": "inconnu"
+     "gagne": 0,
+     "pnl": -1.0,
+     "pin_close": 1.729,
+     "pin_close_adv": 2.18,
+     "clv_pin": 0.96,
+     "source_resultat": "feuille de match (TennisApi)"
     }
    }
   }
