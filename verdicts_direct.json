@@ -1,6 +1,6 @@
 {
  "schema_version": 1,
- "genere_le": "2026-10-24T08:05:07Z",
+ "genere_le": "2026-10-25T14:50:44Z",
  "source": "h*_signal_log.jsonl (décision) + suivi_direct/resultats.json (ajouts)",
  "regles_de_comptage": [
   "un pari par (hypothèse, uid, côté) = la première détection",
@@ -20,7 +20,7 @@
    "note": null,
    "source": "alertes en direct (h*_signal_log.jsonl)",
    "debut_direct": "2026-09-06",
-   "journal_lignes": 257,
+   "journal_lignes": 264,
    "detections_avant_gel": 5,
    "reference_in_sample": {
     "n": 316,
@@ -33,17 +33,17 @@
     "n": 0
    },
    "out_of_sample": {
-    "n": 241,
+    "n": 246,
     "gains": 110,
-    "taux": 45.6,
+    "taux": 44.7,
     "seuil": 41.8,
-    "ecart": 3.8,
+    "ecart": 2.9,
     "ic95": [
-     39.5,
-     52.0
+     38.6,
+     51.0
     ],
-    "roi": 10.2,
-    "pnl": 24.6,
+    "roi": 8.0,
+    "pnl": 19.6,
     "cote_moyenne": 2.42,
     "clv_moyen": -2.2,
     "clv_pin_moyen": -2.2,
@@ -52,49 +52,49 @@
      -1.4
     ],
     "clv_pin_p": 1.0,
-    "clv_n": 246,
-    "clv_positif": 35.0,
-    "lead_moyen_h": 8.1,
-    "periode": "2026-09-07 -> 2026-10-23",
+    "clv_n": 251,
+    "clv_positif": 35.5,
+    "lead_moyen_h": 8.0,
+    "periode": "2026-09-07 -> 2026-10-25",
     "verdict": "ne tranche pas",
-    "n_detectees": 252,
-    "n_envoyees": 252,
+    "n_detectees": 259,
+    "n_envoyees": 259,
     "n_doublons": 0,
     "n_non_envoyees_autres": 0,
-    "n_denouees": 241,
-    "n_commencees": 250,
-    "n_sans_resultat": 9,
-    "sans_resultat_pct": 3.6,
+    "n_denouees": 246,
+    "n_commencees": 258,
+    "n_sans_resultat": 12,
+    "sans_resultat_pct": 4.7,
     "verrouillable": true,
-    "statut": "verrouillable (résultats complets à 96 %)"
+    "statut": "verrouillable (résultats complets à 95 %)"
    },
    "replication": [
     {
      "moitie": 1,
-     "n": 121,
-     "roi": 3.4,
-     "ecart": 0.9,
+     "n": 123,
+     "roi": 3.5,
+     "ecart": 1.0,
      "clv_pin": -2.6
     },
     {
      "moitie": 2,
-     "n": 120,
-     "roi": 17.1,
-     "ecart": 6.7,
+     "n": 123,
+     "roi": 12.5,
+     "ecart": 4.7,
      "clv_pin": -2.1
     }
    ],
-   "concentration_5_meilleurs": 40.6,
-   "avancement": 80,
-   "restant": 59,
+   "concentration_5_meilleurs": 51.0,
+   "avancement": 82,
+   "restant": 54,
    "controle_reconstruction": {
-    "n": 218,
-    "gains": 99,
+    "n": 221,
+    "gains": 100,
     "seuil": 42.1,
-    "ecart": 3.3,
+    "ecart": 3.1,
     "source": "moves_detail_hist.csv (reconstruction, contrôle uniquement)"
    },
-   "statut": "verrouillable (résultats complets à 96 %)"
+   "statut": "verrouillable (résultats complets à 95 %)"
   },
   {
    "code": "H14",
@@ -105,7 +105,7 @@
    "note": "Canal en direct créé le 16/10/2026 : l'échantillon en direct commence à son déploiement.",
    "source": "alertes en direct (h*_signal_log.jsonl)",
    "debut_direct": "2026-10-16",
-   "journal_lignes": 35,
+   "journal_lignes": 41,
    "detections_avant_gel": 0,
    "reference_in_sample": {
     "n": 275,
@@ -118,60 +118,60 @@
     "n": 0
    },
    "out_of_sample": {
-    "n": 32,
-    "gains": 17,
-    "taux": 53.1,
-    "seuil": 37.7,
-    "ecart": 15.5,
+    "n": 35,
+    "gains": 18,
+    "taux": 51.4,
+    "seuil": 38.7,
+    "ecart": 12.7,
     "ic95": [
-     36.4,
-     69.1
+     35.6,
+     67.0
     ],
-    "roi": 23.1,
-    "pnl": 7.4,
-    "cote_moyenne": 3.45,
-    "clv_moyen": -2.6,
-    "clv_pin_moyen": -2.6,
+    "roi": 18.1,
+    "pnl": 6.3,
+    "cote_moyenne": 3.33,
+    "clv_moyen": -3.0,
+    "clv_pin_moyen": -3.0,
     "clv_pin_ic95": [
-     -6.4,
-     1.2
+     -6.3,
+     0.4
     ],
-    "clv_pin_p": 0.9115,
-    "clv_n": 32,
-    "clv_positif": 34.4,
+    "clv_pin_p": 0.957,
+    "clv_n": 36,
+    "clv_positif": 30.6,
     "lead_moyen_h": 12.5,
-    "periode": "2026-10-16 -> 2026-10-23",
+    "periode": "2026-10-16 -> 2026-10-24",
     "verdict": "ne tranche pas",
-    "n_detectees": 35,
-    "n_envoyees": 13,
-    "n_doublons": 22,
+    "n_detectees": 41,
+    "n_envoyees": 17,
+    "n_doublons": 24,
     "n_non_envoyees_autres": 0,
-    "n_denouees": 32,
-    "n_commencees": 33,
-    "n_sans_resultat": 1,
-    "sans_resultat_pct": 3.0,
+    "n_denouees": 35,
+    "n_commencees": 37,
+    "n_sans_resultat": 2,
+    "sans_resultat_pct": 5.4,
     "verrouillable": true,
-    "statut": "verrouillable (résultats complets à 97 %)"
+    "statut": "verrouillable (résultats complets à 95 %)"
    },
    "replication": [
     {
      "moitie": 1,
-     "n": 16,
-     "roi": 26.6,
-     "ecart": 17.5,
-     "clv_pin": -4.9
+     "n": 18,
+     "roi": 25.5,
+     "ecart": 16.4,
+     "clv_pin": -4.8
     },
     {
      "moitie": 2,
-     "n": 16,
-     "roi": 19.6,
-     "ecart": 13.4,
-     "clv_pin": -1.2
+     "n": 17,
+     "roi": 10.4,
+     "ecart": 8.8,
+     "clv_pin": -1.8
     }
    ],
-   "concentration_5_meilleurs": 137.1,
-   "avancement": 19,
-   "restant": 134,
+   "concentration_5_meilleurs": 159.8,
+   "avancement": 21,
+   "restant": 131,
    "controle_reconstruction": {
     "n": 164,
     "gains": 66,
@@ -179,7 +179,7 @@
     "ecart": -0.4,
     "source": "moves_detail_hist.csv (reconstruction, contrôle uniquement)"
    },
-   "statut": "verrouillable (résultats complets à 97 %)"
+   "statut": "verrouillable (résultats complets à 95 %)"
   },
   {
    "code": "H15",
@@ -190,7 +190,7 @@
    "note": "Bande recouverte par H13 : jusqu'au 21/10/2026 H15 n'envoyait pas les matchs déjà couverts ; depuis, ils partent marqués « déjà signalé ». Toutes ses détections comptent.",
    "source": "alertes en direct (h*_signal_log.jsonl)",
    "debut_direct": "2026-09-24",
-   "journal_lignes": 66,
+   "journal_lignes": 68,
    "detections_avant_gel": 3,
    "reference_in_sample": {
     "n": 225,
@@ -203,60 +203,60 @@
     "n": 0
    },
    "out_of_sample": {
-    "n": 55,
+    "n": 58,
     "gains": 27,
-    "taux": 49.1,
-    "seuil": 37.4,
-    "ecart": 11.7,
+    "taux": 46.6,
+    "seuil": 37.5,
+    "ecart": 9.1,
     "ic95": [
-     36.4,
-     61.9
+     34.3,
+     59.2
     ],
-    "roi": 31.4,
-    "pnl": 17.2,
-    "cote_moyenne": 2.69,
-    "clv_moyen": -2.1,
-    "clv_pin_moyen": -2.1,
+    "roi": 24.6,
+    "pnl": 14.2,
+    "cote_moyenne": 2.68,
+    "clv_moyen": -2.2,
+    "clv_pin_moyen": -2.2,
     "clv_pin_ic95": [
      -3.6,
-     -0.7
+     -0.8
     ],
-    "clv_pin_p": 0.9982,
-    "clv_n": 59,
-    "clv_positif": 37.3,
-    "lead_moyen_h": 8.8,
-    "periode": "2026-09-26 -> 2026-10-23",
-    "verdict": "ne tranche pas",
-    "n_detectees": 63,
+    "clv_pin_p": 0.9991,
+    "clv_n": 62,
+    "clv_positif": 37.1,
+    "lead_moyen_h": 8.7,
+    "periode": "2026-09-26 -> 2026-10-25",
+    "verdict": "en attente de résultats (10,8 % sans résultat)",
+    "n_detectees": 65,
     "n_envoyees": 0,
-    "n_doublons": 63,
+    "n_doublons": 65,
     "n_non_envoyees_autres": 0,
-    "n_denouees": 55,
-    "n_commencees": 61,
-    "n_sans_resultat": 6,
-    "sans_resultat_pct": 9.8,
-    "verrouillable": true,
-    "statut": "verrouillable (résultats complets à 90 %)"
+    "n_denouees": 58,
+    "n_commencees": 65,
+    "n_sans_resultat": 7,
+    "sans_resultat_pct": 10.8,
+    "verrouillable": false,
+    "statut": "en attente de résultats (10,8 % sans résultat)"
    },
    "replication": [
     {
      "moitie": 1,
-     "n": 28,
-     "roi": 14.8,
-     "ecart": 5.0,
-     "clv_pin": -2.2
+     "n": 29,
+     "roi": 19.8,
+     "ecart": 7.0,
+     "clv_pin": -2.1
     },
     {
      "moitie": 2,
-     "n": 27,
-     "roi": 48.6,
-     "ecart": 18.6,
-     "clv_pin": -2.5
+     "n": 29,
+     "roi": 29.4,
+     "ecart": 11.2,
+     "clv_pin": -2.7
     }
    ],
-   "concentration_5_meilleurs": 56.8,
-   "avancement": 37,
-   "restant": 95,
+   "concentration_5_meilleurs": 68.8,
+   "avancement": 39,
+   "restant": 92,
    "controle_reconstruction": {
     "n": 84,
     "gains": 34,
@@ -264,7 +264,7 @@
     "ecart": 3.4,
     "source": "moves_detail_hist.csv (reconstruction, contrôle uniquement)"
    },
-   "statut": "verrouillable (résultats complets à 90 %)"
+   "statut": "en attente de résultats (10,8 % sans résultat)"
   },
   {
    "code": "H16",
@@ -275,7 +275,7 @@
    "note": null,
    "source": "alertes en direct (h*_signal_log.jsonl)",
    "debut_direct": "2026-09-25",
-   "journal_lignes": 164,
+   "journal_lignes": 170,
    "detections_avant_gel": 1,
    "reference_in_sample": {
     "n": 580,
@@ -288,17 +288,17 @@
     "n": 0
    },
    "out_of_sample": {
-    "n": 153,
-    "gains": 105,
-    "taux": 68.6,
-    "seuil": 68.3,
-    "ecart": 0.3,
+    "n": 157,
+    "gains": 107,
+    "taux": 68.2,
+    "seuil": 68.2,
+    "ecart": -0.1,
     "ic95": [
-     60.9,
-     75.4
+     60.5,
+     74.9
     ],
-    "roi": -0.2,
-    "pnl": -0.3,
+    "roi": -1.0,
+    "pnl": -1.6,
     "cote_moyenne": 1.48,
     "clv_moyen": -0.5,
     "clv_pin_moyen": -0.5,
@@ -306,42 +306,42 @@
      -1.2,
      0.2
     ],
-    "clv_pin_p": 0.9167,
-    "clv_n": 159,
-    "clv_positif": 39.0,
+    "clv_pin_p": 0.9193,
+    "clv_n": 163,
+    "clv_positif": 38.7,
     "lead_moyen_h": 8.1,
-    "periode": "2026-09-26 -> 2026-10-23",
+    "periode": "2026-09-26 -> 2026-10-25",
     "verdict": "ne tranche pas",
-    "n_detectees": 163,
-    "n_envoyees": 163,
+    "n_detectees": 169,
+    "n_envoyees": 169,
     "n_doublons": 0,
     "n_non_envoyees_autres": 0,
-    "n_denouees": 153,
-    "n_commencees": 162,
-    "n_sans_resultat": 9,
-    "sans_resultat_pct": 5.6,
+    "n_denouees": 157,
+    "n_commencees": 167,
+    "n_sans_resultat": 10,
+    "sans_resultat_pct": 6.0,
     "verrouillable": true,
     "statut": "verrouillable (résultats complets à 94 %)"
    },
    "replication": [
     {
      "moitie": 1,
-     "n": 77,
-     "roi": 6.2,
-     "ecart": 4.9,
-     "clv_pin": -0.1
+     "n": 79,
+     "roi": 5.0,
+     "ecart": 4.2,
+     "clv_pin": -0.2
     },
     {
      "moitie": 2,
-     "n": 76,
-     "roi": -6.7,
-     "ecart": -4.3,
-     "clv_pin": -0.7
+     "n": 78,
+     "roi": -7.1,
+     "ecart": -4.5,
+     "clv_pin": -0.6
     }
    ],
    "concentration_5_meilleurs": null,
    "avancement": 26,
-   "restant": 447,
+   "restant": 443,
    "controle_reconstruction": {
     "n": 244,
     "gains": 166,
@@ -360,7 +360,7 @@
    "note": "Sous-ensemble de H16 : non indépendante (Holm).",
    "source": "alertes en direct (h*_signal_log.jsonl)",
    "debut_direct": "2026-09-29",
-   "journal_lignes": 142,
+   "journal_lignes": 148,
    "detections_avant_gel": 0,
    "reference_in_sample": {
     "n": 463,
@@ -373,17 +373,17 @@
     "n": 0
    },
    "out_of_sample": {
-    "n": 132,
-    "gains": 86,
-    "taux": 65.2,
+    "n": 136,
+    "gains": 88,
+    "taux": 64.7,
     "seuil": 66.3,
-    "ecart": -1.1,
+    "ecart": -1.6,
     "ic95": [
-     56.7,
-     72.7
+     56.4,
+     72.2
     ],
-    "roi": -2.0,
-    "pnl": -2.6,
+    "roi": -2.9,
+    "pnl": -3.9,
     "cote_moyenne": 1.52,
     "clv_moyen": -0.6,
     "clv_pin_moyen": -0.6,
@@ -391,42 +391,42 @@
      -1.4,
      0.2
     ],
-    "clv_pin_p": 0.9326,
-    "clv_n": 140,
-    "clv_positif": 37.1,
+    "clv_pin_p": 0.9347,
+    "clv_n": 144,
+    "clv_positif": 36.8,
     "lead_moyen_h": 8.4,
-    "periode": "2026-09-29 -> 2026-10-23",
+    "periode": "2026-09-29 -> 2026-10-25",
     "verdict": "ne tranche pas",
-    "n_detectees": 142,
-    "n_envoyees": 142,
+    "n_detectees": 148,
+    "n_envoyees": 148,
     "n_doublons": 0,
     "n_non_envoyees_autres": 0,
-    "n_denouees": 132,
-    "n_commencees": 141,
-    "n_sans_resultat": 9,
-    "sans_resultat_pct": 6.4,
+    "n_denouees": 136,
+    "n_commencees": 146,
+    "n_sans_resultat": 10,
+    "sans_resultat_pct": 6.8,
     "verrouillable": true,
-    "statut": "verrouillable (résultats complets à 94 %)"
+    "statut": "verrouillable (résultats complets à 93 %)"
    },
    "replication": [
     {
      "moitie": 1,
-     "n": 66,
-     "roi": 5.3,
-     "ecart": 3.9,
+     "n": 68,
+     "roi": 4.7,
+     "ecart": 3.5,
      "clv_pin": -0.3
     },
     {
      "moitie": 2,
-     "n": 66,
-     "roi": -9.2,
-     "ecart": -6.1,
+     "n": 68,
+     "roi": -10.4,
+     "ecart": -6.7,
      "clv_pin": -0.7
     }
    ],
    "concentration_5_meilleurs": null,
-   "avancement": 33,
-   "restant": 268,
+   "avancement": 34,
+   "restant": 264,
    "controle_reconstruction": {
     "n": 208,
     "gains": 135,
@@ -434,7 +434,7 @@
     "ecart": -1.7,
     "source": "moves_detail_hist.csv (reconstruction, contrôle uniquement)"
    },
-   "statut": "verrouillable (résultats complets à 94 %)"
+   "statut": "verrouillable (résultats complets à 93 %)"
   },
   {
    "code": "H17",
@@ -445,7 +445,7 @@
    "note": null,
    "source": "alertes en direct (h*_signal_log.jsonl)",
    "debut_direct": "2026-09-25",
-   "journal_lignes": 51,
+   "journal_lignes": 59,
    "detections_avant_gel": 1,
    "reference_in_sample": {
     "n": 255,
@@ -458,60 +458,60 @@
     "n": 0
    },
    "out_of_sample": {
-    "n": 49,
-    "gains": 30,
-    "taux": 61.2,
-    "seuil": 47.7,
-    "ecart": 13.5,
+    "n": 53,
+    "gains": 31,
+    "taux": 58.5,
+    "seuil": 46.7,
+    "ecart": 11.8,
     "ic95": [
-     47.2,
-     73.6
+     45.1,
+     70.7
     ],
-    "roi": 21.0,
-    "pnl": 10.3,
-    "cote_moyenne": 2.54,
-    "clv_moyen": 2.7,
-    "clv_pin_moyen": 2.7,
+    "roi": 17.9,
+    "pnl": 9.5,
+    "cote_moyenne": 2.59,
+    "clv_moyen": 3.0,
+    "clv_pin_moyen": 3.0,
     "clv_pin_ic95": [
-     0.9,
-     4.4
+     1.3,
+     4.7
     ],
-    "clv_pin_p": 0.0012,
-    "clv_n": 49,
-    "clv_positif": 67.3,
-    "lead_moyen_h": 8.2,
-    "periode": "2026-09-27 -> 2026-10-22",
+    "clv_pin_p": 0.0003,
+    "clv_n": 52,
+    "clv_positif": 69.2,
+    "lead_moyen_h": 7.8,
+    "periode": "2026-09-27 -> 2026-10-25",
     "verdict": "ne tranche pas",
-    "n_detectees": 50,
-    "n_envoyees": 29,
-    "n_doublons": 21,
+    "n_detectees": 58,
+    "n_envoyees": 33,
+    "n_doublons": 25,
     "n_non_envoyees_autres": 0,
-    "n_denouees": 49,
-    "n_commencees": 50,
-    "n_sans_resultat": 1,
-    "sans_resultat_pct": 2.0,
+    "n_denouees": 53,
+    "n_commencees": 56,
+    "n_sans_resultat": 3,
+    "sans_resultat_pct": 5.4,
     "verrouillable": true,
-    "statut": "verrouillable (résultats complets à 98 %)"
+    "statut": "verrouillable (résultats complets à 95 %)"
    },
    "replication": [
     {
      "moitie": 1,
-     "n": 25,
-     "roi": 50.6,
-     "ecart": 23.4,
+     "n": 27,
+     "roi": 45.7,
+     "ecart": 21.7,
      "clv_pin": 1.2
     },
     {
      "moitie": 2,
-     "n": 24,
-     "roi": -9.7,
-     "ecart": 3.2,
-     "clv_pin": 4.1
+     "n": 26,
+     "roi": -10.9,
+     "ecart": 1.4,
+     "clv_pin": 4.8
     }
    ],
-   "concentration_5_meilleurs": 101.9,
-   "avancement": 14,
-   "restant": 301,
+   "concentration_5_meilleurs": 117.8,
+   "avancement": 15,
+   "restant": 297,
    "controle_reconstruction": {
     "n": 97,
     "gains": 53,
@@ -519,7 +519,7 @@
     "ecart": 3.6,
     "source": "moves_detail_hist.csv (reconstruction, contrôle uniquement)"
    },
-   "statut": "verrouillable (résultats complets à 98 %)"
+   "statut": "verrouillable (résultats complets à 95 %)"
   },
   {
    "code": "H18",
@@ -530,7 +530,7 @@
    "note": "Intersection de H16 et H17 : non indépendante (Holm).",
    "source": "alertes en direct (h*_signal_log.jsonl)",
    "debut_direct": "2026-09-29",
-   "journal_lignes": 18,
+   "journal_lignes": 19,
    "detections_avant_gel": 0,
    "reference_in_sample": {
     "n": 123,
@@ -567,8 +567,8 @@
     "lead_moyen_h": 8.0,
     "periode": "2026-09-29 -> 2026-10-22",
     "verdict": "ne tranche pas",
-    "n_detectees": 18,
-    "n_envoyees": 18,
+    "n_detectees": 19,
+    "n_envoyees": 19,
     "n_doublons": 0,
     "n_non_envoyees_autres": 0,
     "n_denouees": 17,

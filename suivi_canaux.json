@@ -1,14 +1,14 @@
 {
  "schema_version": 1,
- "genere_le": "2026-10-24T08:05:08Z",
+ "genere_le": "2026-10-25T14:50:45Z",
  "canaux": {
   "MISER": {
    "libelle": "🎯 MISER — steam, EV ≥ seuil vs Pinnacle juste (vainqueur du match)",
    "source": "miser_signal_log.jsonl (messages envoyés) + ajouts de suivi_direct",
    "regle": "première alerte de chaque match, au book et au prix du message ; relances non recomptées",
    "debut": "2026-10-22",
-   "n_alertes": 2,
-   "n_matchs": 2,
+   "n_alertes": 3,
+   "n_matchs": 3,
    "n_relances": 0,
    "n_denoues": 2,
    "bilan": {
@@ -37,11 +37,11 @@
     "periode": "2026-10-22 -> 2026-10-23",
     "verdict": "ne tranche pas",
     "clv_mediane": -2.0,
-    "n_commencees": 2,
-    "n_sans_resultat": 0,
-    "sans_resultat_pct": 0.0,
-    "verrouillable": true,
-    "statut": "verrouillable (résultats complets à 100 %)"
+    "n_commencees": 3,
+    "n_sans_resultat": 1,
+    "sans_resultat_pct": 33.3,
+    "verrouillable": false,
+    "statut": "en attente de résultats (33,3 % sans résultat)"
    },
    "paris": {
     "2026-10-22_valerio_aboian_matias_soto": {
@@ -59,6 +59,14 @@
      "pin_close_adv": 1.446,
      "clv_pin": -15.532,
      "source_resultat": "feuille de match (TennisApi)"
+    },
+    "2026-10-25_juan_manuel_cerundolo_daniel_altmaier": {
+     "gagne": null,
+     "pnl": null,
+     "pin_close": null,
+     "pin_close_adv": null,
+     "clv_pin": null,
+     "source_resultat": "inconnu"
     }
    }
   }
