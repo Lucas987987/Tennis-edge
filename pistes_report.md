@@ -1,4 +1,4 @@
-# Pistes exploratoires — rapport du 2026-10-18
+# Pistes exploratoires — rapport du 2026-10-25
 
 ```
 ==============================================================
@@ -6,23 +6,23 @@ PISTE 1 — LIMITES PINNACLE AU MOMENT DU MOVE
 (exploratoire, protocole gelé le 2026-08-25 — voir frozen_pistes.json ;
  n<30 = suivi sans conclusion ; témoin = population concernée)
 ==============================================================
-  1419 moves appariés | témoin population appariée : 63.8% de CLV>0
-  terciles de limite : basse <= 147 < moyenne <= 558 < haute
-    limite basse    n=475 | CLV>0 : 63% (IC95 59-67%) | CLV méd +4.8%
-    limite moyenne  n=472 | CLV>0 : 65% (IC95 61-69%) | CLV méd +3.9%
-    limite haute    n=472 | CLV>0 : 63% (IC95 59-68%) | CLV méd +3.0%
-  H1b (descriptif) : limite closing / limite move — médiane x6.39 sur n=1419
+  1830 moves appariés | témoin population appariée : 62.3% de CLV>0
+  terciles de limite : basse <= 140 < moyenne <= 541 < haute
+    limite basse    n=611 | CLV>0 : 60% (IC95 56-64%) | CLV méd +4.2%
+    limite moyenne  n=610 | CLV>0 : 66% (IC95 62-69%) | CLV méd +4.0%
+    limite haute    n=609 | CLV>0 : 61% (IC95 57-65%) | CLV méd +2.9%
+  H1b (descriptif) : limite closing / limite move — médiane x6.45 sur n=1830
 
 ==============================================================
 PISTE 7 — SEGMENTATION PAR CIRCUIT
 (exploratoire, protocole gelé le 2026-08-25 — voir frozen_pistes.json ;
  n<30 = suivi sans conclusion ; témoin = population concernée)
 ==============================================================
-  témoin global : 64.6% de CLV>0 (n=2171)
-    ATP         n= 518 | CLV>0 : 69% (IC95 64-72%) | CLV méd +4.3%
-    WTA         n= 521 | CLV>0 : 64% (IC95 60-68%) | CLV méd +3.8%
-    Challenger  n= 706 | CLV>0 : 60% (IC95 56-63%) | CLV méd +3.7%
-    autre       n= 426 | CLV>0 : 68% (IC95 64-72%) | CLV méd +3.9%
+  témoin global : 63.4% de CLV>0 (n=2614)
+    ATP         n= 616 | CLV>0 : 68% (IC95 64-72%) | CLV méd +4.2%
+    WTA         n= 616 | CLV>0 : 63% (IC95 59-67%) | CLV méd +3.6%
+    Challenger  n= 944 | CLV>0 : 58% (IC95 54-61%) | CLV méd +3.0%
+    autre       n= 438 | CLV>0 : 70% (IC95 65-74%) | CLV méd +4.5%
   Lecture : un segment ne devient hypothèse gelée que si son IC95
   se sépare du témoin global avec n>=30.
 
@@ -31,37 +31,37 @@ PISTE 5 — PRÉDIRE LES RETOURNEMENTS (CLV<=0)
 (exploratoire, protocole gelé le 2026-08-25 — voir frozen_pistes.json ;
  n<30 = suivi sans conclusion ; témoin = population concernée)
 ==============================================================
-  taux global de retournement : 35.4% (IC95 33.4-37.4%, n=2171)
+  taux global de retournement : 36.6% (IC95 34.8-38.5%, n=2614)
   — par ampleur du move —
-    2-3%     n= 156 | retournés 54% (IC 46-61%)  <-- hors IC global
-    3-6%     n=1055 | retournés 34% (IC 31-37%)
-    6-12%    n= 768 | retournés 35% (IC 31-38%)
-    >12%     n= 192 | retournés 30% (IC 24-36%)
+    2-3%     n= 183 | retournés 54% (IC 46-61%)  <-- hors IC global
+    3-6%     n=1286 | retournés 36% (IC 34-39%)
+    6-12%    n= 928 | retournés 35% (IC 32-38%)
+    >12%     n= 217 | retournés 31% (IC 25-37%)
   — par avance sur le match —
-    <1h      n=  66 | retournés 76% (IC 64-84%)  <-- hors IC global
-    1-6h     n= 282 | retournés 47% (IC 41-53%)  <-- hors IC global
-    6-24h    n=1286 | retournés 33% (IC 31-36%)
-    >24h     n= 537 | retournés 29% (IC 26-33%)
+    <1h      n=  79 | retournés 77% (IC 67-85%)  <-- hors IC global
+    1-6h     n= 326 | retournés 48% (IC 43-54%)  <-- hors IC global
+    6-24h    n=1583 | retournés 35% (IC 33-38%)
+    >24h     n= 626 | retournés 29% (IC 26-33%)  <-- hors IC global
   — par circuit —
-    WTA         n= 521 | retournés 36% (IC 32-40%)
-    Challenger  n= 706 | retournés 40% (IC 37-44%)
-    ATP         n= 518 | retournés 31% (IC 28-36%)
-    autre       n= 426 | retournés 32% (IC 28-36%)
+    WTA         n= 616 | retournés 37% (IC 33-41%)
+    ATP         n= 616 | retournés 32% (IC 28-36%)
+    Challenger  n= 944 | retournés 42% (IC 39-46%)  <-- hors IC global
+    autre       n= 438 | retournés 30% (IC 26-35%)
 
 ==============================================================
 PISTE 3 — DÉCROISSANCE DU PRIX APRÈS ALERTE
 (exploratoire, protocole gelé le 2026-08-25 — voir frozen_pistes.json ;
  n<30 = suivi sans conclusion ; témoin = population concernée)
 ==============================================================
-  112 alertes appariées à au moins un book soft
+  357 alertes appariées à au moins un book soft
   — alertes à >6h du coup d'envoi —
   — alertes à 1-6h du coup d'envoi —
   — alertes à <1h du coup d'envoi —
-    T+ 0min : CLV atteignable médian +0.0% | 21% positifs | n=1487
-    T+ 2min : CLV atteignable médian +0.0% | 20% positifs | n=1488
-    T+10min : CLV atteignable médian +0.0% | 16% positifs | n=1488
-    T+30min : CLV atteignable médian +0.0% | 12% positifs | n=1489
-    T+60min : CLV atteignable médian +0.0% | 8% positifs | n=1491
+    T+ 0min : CLV atteignable médian +0.0% | 17% positifs | n=1759
+    T+ 2min : CLV atteignable médian +0.0% | 16% positifs | n=1760
+    T+10min : CLV atteignable médian +0.0% | 13% positifs | n=1760
+    T+30min : CLV atteignable médian +0.0% | 8% positifs | n=1760
+    T+60min : CLV atteignable médian +0.0% | 4% positifs | n=1765
   Lecture : la différence T+0 vs T+30 est le prix de la lenteur —
   c'est la fenêtre à annoncer aux abonnés et la décote du ROI papier.
 
@@ -71,19 +71,13 @@ PISTE 4 — LA CASCADE DES BOOKS
  n<30 = suivi sans conclusion ; témoin = population concernée)
 ==============================================================
   délai médian pour parcourir 50 % du move (n>=10 alertes) :
-    netbet             11 min (n=21)
-    coolbet            11 min (n=14)
-    1xbet              13 min (n=20)
-    betway             14 min (n=27)
-    tipico             18 min (n=14)
-    bwin               20 min (n=13)
-    williamhill        22 min (n=13)
-    bet365.fr          27 min (n=15)
-    marathonbet        36 min (n=38)
-    888sport           36 min (n=17)
-    betsson            51 min (n=49)
-    unibet             52 min (n=16)
-    leovegas           54 min (n=23)
+    22bet              12 min (n=68)
+    unibet.fr          15 min (n=30)
+    1xbet              16 min (n=83)
+    bet365             30 min (n=26)
+    winamax.fr         30 min (n=41)
+    pmu                31 min (n=20)
+    unibet             37 min (n=37)
   Lecture : le bas du classement = les books où le CLV vit le plus
   longtemps. Stabilité à vérifier avant tout gel en hypothèse.
 
@@ -92,8 +86,8 @@ PISTE 6 — PROPAGATION ML -> MARCHÉ SET1
 (exploratoire, protocole gelé le 2026-08-25 — voir frozen_pistes.json ;
  n<30 = suivi sans conclusion ; témoin = population concernée)
 ==============================================================
-  1501 paires (fenêtre alerte / fenêtre témoin même match, set1)
-  fenêtre alerte plus baissière que sa fenêtre témoin : 296/1501 = 20% (IC95 18-22%)
+  2283 paires (fenêtre alerte / fenêtre témoin même match, set1)
+  fenêtre alerte plus baissière que sa fenêtre témoin : 483/2283 = 21% (IC95 20-23%)
   IC95 entièrement > 50 % ET n>=30 -> propagation confirmée, à
   geler alors en hypothèse de la famille principale.
   ⚠️ RÉSULTAT INVERSE — lire avec le CONFONDEUR en tête : la
@@ -107,20 +101,20 @@ PISTE 2 — LEAD-LAG POLYMARKET vs PINNACLE
 (exploratoire, protocole gelé le 2026-08-25 — voir frozen_pistes.json ;
  n<30 = suivi sans conclusion ; témoin = population concernée)
 ==============================================================
-  328 marchés Polymarket avec ticks (fenêtre récente)
-  4 matchs appariés avec corrélation exploitable (|r|>0,15)
-  TROP TÔT : verdict à n>=30 matchs — le protocole est gelé,
-  la donnée s'accumule toute seule. Relance hebdomadaire.
+  298 marchés Polymarket avec ticks (fenêtre récente)
+  48 matchs appariés avec corrélation exploitable (|r|>0,15)
+  décalage médian du pic de corrélation : +0 min
+  (négatif = Polymarket PRÉCÈDE Pinnacle = signal en amont du steam)
 
 ==============================================================
 CONFIRMATION PINNACLE — hypothèse ouverture précoce
 (exploratoire, protocole gelé le 2026-08-26 — voir frozen_pistes.json ;
  n<30 = suivi sans conclusion ; témoin = population concernée)
 ==============================================================
-  76 signaux POSTÉRIEURS au gel (les 62 signaux du 13-26/08 ayant servi à formuler le protocole sont exclus).
-  40 signaux appariés (Pinnacle + book, fenêtre 60min)
-    Pinnacle CONFIRME (>= 0.5pt en 60min)      n=  5 — sous 30, suivi sans verdict
-    Pinnacle ne confirme pas                   n= 35 | CLV médian  +11.8% | refermeture 86% (IC95 71-94%)
+  88 signaux POSTÉRIEURS au gel (les 62 signaux du 13-26/08 ayant servi à formuler le protocole sont exclus).
+  66 signaux appariés (Pinnacle + book, fenêtre 60min)
+    Pinnacle CONFIRME (>= 0.5pt en 60min)      n=  8 — sous 30, suivi sans verdict
+    Pinnacle ne confirme pas                   n= 58 | CLV médian  +12.4% | refermeture 88% (IC95 77-94%)
   Verdict : IC95 disjoints ET n>=30 des deux côtés -> promouvoir en
   hypothèse gelée de la famille Holm avec sa propre FREEZE_DATE.
 
