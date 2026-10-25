@@ -1,15 +1,15 @@
 {
  "schema_version": 2,
- "generated_at": "2026-10-24T15:01:08+00:00",
+ "generated_at": "2026-10-25T09:46:15+00:00",
  "sources": {
   "worker": {
    "source": "API Worker D1 /api/hypotheses (fetch_worker_snapshot.py)",
    "fichier": "worker_hypotheses_capture.json",
    "status": "ok",
-   "fetched_at": "2026-10-24T15:01:02Z",
+   "fetched_at": "2026-10-25T09:46:09Z",
    "worker_generated_at": "2026-10-24T08:05:07Z"
   },
-  "suivi_officiel": "alertes en direct : h*_signal_log.jsonl + suivi_direct/resultats.json (verdicts_direct.json du 2026-10-24T15:01:07Z)",
+  "suivi_officiel": "alertes en direct : h*_signal_log.jsonl + suivi_direct/resultats.json (verdicts_direct.json du 2026-10-25T09:46:15Z)",
   "reconstruction": "moves_detail_hist.csv filtré par les règles gelées de validation_report.py (lignes jusqu'au 2026-10-23) — contrôle, ne juge pas",
   "rapprochement": "uid + joueur normalisé ; à défaut paire de joueurs + date ±1 jour"
  },
@@ -120,15 +120,15 @@
      -3.1,
      -1.4
     ],
-    "clv_n": 246,
-    "n_detectees": 252,
-    "n_envoyees": 252,
+    "clv_n": 248,
+    "n_detectees": 257,
+    "n_envoyees": 257,
     "n_doublons": 0,
     "source": "verdicts_direct.json (recalculé : journal plus récent)",
-    "sans_resultat_pct": 19.0,
-    "statut": "en attente de résultats (19,0 % sans résultat)",
+    "sans_resultat_pct": 20.0,
+    "statut": "en attente de résultats (20,0 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-10-24T15:01:07Z"
+    "genere_le": "2026-10-25T09:46:15Z"
    },
    "reconstruction": {
     "n": 218,
@@ -146,8 +146,8 @@
     "egal_validation_report": true
    },
    "entonnoir": {
-    "direct_detectees": 252,
-    "direct_envoyees": 252,
+    "direct_detectees": 257,
+    "direct_envoyees": 257,
     "direct_doublons": 0,
     "direct_non_envoyees_autres": 0,
     "direct_denouees": 204,
@@ -159,12 +159,12 @@
      "apres_coup": 276,
      "cote_opposee_live": 1
     },
-    "direct_seule": 149,
+    "direct_seule": 154,
     "direct_seule_raisons": {
      "absent_reconstruction": 90,
      "prix_different": 8,
      "cote_opposee_reco": 49,
-     "pas_encore_reconstruit": 2
+     "pas_encore_reconstruit": 7
     },
     "inexpliques": 0
    },
@@ -6198,6 +6198,76 @@
      "libelle": "Pas encore dans la reconstruction",
      "detail": "match du 2026-10-24, reconstruction arrêtée au 2026-10-23",
      "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-25",
+     "match": "Kamilla Rakhimova – Aliaksandra Sasnovich",
+     "joueur": "Kamilla Rakhimova",
+     "uid": "2026-10-25_aliaksandra_sasnovich_kamilla_rakhimova",
+     "cote": 2.2,
+     "book": "betway",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-25, reconstruction arrêtée au 2026-10-23",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-25",
+     "match": "Shuai Zhang – Tereza Valentova",
+     "joueur": "Shuai Zhang",
+     "uid": "2026-10-25_tereza_valentova_shuai_zhang",
+     "cote": 2.75,
+     "book": "betsson",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-25, reconstruction arrêtée au 2026-10-23",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-25",
+     "match": "Heather Watson – Alycia Parks",
+     "joueur": "Heather Watson",
+     "uid": "2026-10-25_heather_watson_alycia_parks",
+     "cote": 2.0,
+     "book": "bwin",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-25, reconstruction arrêtée au 2026-10-23",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-25",
+     "match": "Martin Borisiouk – Yaroslav Demin",
+     "joueur": "Martin Borisiouk",
+     "uid": "2026-10-25_martin_borisiouk_yaroslav_demin",
+     "cote": 2.0,
+     "book": "unibet",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-25, reconstruction arrêtée au 2026-10-23",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-25",
+     "match": "Rinky Hijikata – Yannick Hanfmann",
+     "joueur": "Rinky Hijikata",
+     "uid": "2026-10-25_rinky_hijikata_yannick_hanfmann",
+     "cote": 2.4,
+     "book": "unibet",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-25, reconstruction arrêtée au 2026-10-23",
+     "explique": true
     }
    ]
   },
@@ -6244,20 +6314,20 @@
     "gagnes": 4,
     "roi": -13.8,
     "pts": 4.0,
-    "clv_pin": -2.6,
+    "clv_pin": -2.7,
     "clv_pin_ic95": [
-     -6.4,
-     1.2
+     -6.3,
+     0.8
     ],
-    "clv_n": 32,
-    "n_detectees": 35,
-    "n_envoyees": 13,
-    "n_doublons": 22,
+    "clv_n": 34,
+    "n_detectees": 37,
+    "n_envoyees": 14,
+    "n_doublons": 23,
     "source": "verdicts_direct.json (recalculé : journal plus récent)",
-    "sans_resultat_pct": 71.4,
-    "statut": "en attente de résultats (71,4 % sans résultat)",
+    "sans_resultat_pct": 73.0,
+    "statut": "en attente de résultats (73,0 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-10-24T15:01:07Z"
+    "genere_le": "2026-10-25T09:46:15Z"
    },
    "reconstruction": {
     "n": 164,
@@ -6275,9 +6345,9 @@
     "egal_validation_report": true
    },
    "entonnoir": {
-    "direct_detectees": 35,
-    "direct_envoyees": 13,
-    "direct_doublons": 22,
+    "direct_detectees": 37,
+    "direct_envoyees": 14,
+    "direct_doublons": 23,
     "direct_non_envoyees_autres": 0,
     "direct_denouees": 10,
     "reconstruction_detectees": 224,
@@ -6289,12 +6359,12 @@
      "apres_coup": 47,
      "cote_opposee_live": 2
     },
-    "direct_seule": 26,
+    "direct_seule": 28,
     "direct_seule_raisons": {
      "absent_reconstruction": 13,
      "cote_opposee_reco": 6,
      "prix_different": 5,
-     "pas_encore_reconstruit": 2
+     "pas_encore_reconstruit": 4
     },
     "inexpliques": 0
    },
@@ -9738,6 +9808,34 @@
      "libelle": "Pas encore dans la reconstruction",
      "detail": "match du 2026-10-24, reconstruction arrêtée au 2026-10-23",
      "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-25",
+     "match": "Daria Kasatkina – Kimberly Birrell",
+     "joueur": "Daria Kasatkina",
+     "uid": "2026-10-25_kimberly_birrell_daria_kasatkina",
+     "cote": 1.95,
+     "book": "betway",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-25, reconstruction arrêtée au 2026-10-23",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-25",
+     "match": "Shuai Zhang – Tereza Valentova",
+     "joueur": "Shuai Zhang",
+     "uid": "2026-10-25_tereza_valentova_shuai_zhang",
+     "cote": 2.75,
+     "book": "betsson",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-25, reconstruction arrêtée au 2026-10-23",
+     "explique": true
     }
    ]
   },
@@ -9786,18 +9884,18 @@
     "pts": 11.2,
     "clv_pin": -2.1,
     "clv_pin_ic95": [
-     -3.6,
+     -3.5,
      -0.7
     ],
-    "clv_n": 59,
-    "n_detectees": 63,
+    "clv_n": 61,
+    "n_detectees": 65,
     "n_envoyees": 0,
-    "n_doublons": 63,
+    "n_doublons": 65,
     "source": "verdicts_direct.json (recalculé : journal plus récent)",
-    "sans_resultat_pct": 44.4,
-    "statut": "en attente de résultats (44,4 % sans résultat)",
+    "sans_resultat_pct": 45.3,
+    "statut": "en attente de résultats (45,3 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-10-24T15:01:07Z"
+    "genere_le": "2026-10-25T09:46:15Z"
    },
    "reconstruction": {
     "n": 84,
@@ -9815,9 +9913,9 @@
     "egal_validation_report": true
    },
    "entonnoir": {
-    "direct_detectees": 63,
+    "direct_detectees": 65,
     "direct_envoyees": 0,
-    "direct_doublons": 63,
+    "direct_doublons": 65,
     "direct_non_envoyees_autres": 0,
     "direct_denouees": 35,
     "reconstruction_detectees": 124,
@@ -9827,12 +9925,12 @@
     "reconstruction_seule_raisons": {
      "apres_coup": 97
     },
-    "direct_seule": 36,
+    "direct_seule": 38,
     "direct_seule_raisons": {
      "absent_reconstruction": 21,
      "cote_opposee_reco": 9,
      "prix_different": 4,
-     "pas_encore_reconstruit": 2
+     "pas_encore_reconstruit": 4
     },
     "inexpliques": 0
    },
@@ -11764,6 +11862,34 @@
      "libelle": "Pas encore dans la reconstruction",
      "detail": "match du 2026-10-24, reconstruction arrêtée au 2026-10-23",
      "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-25",
+     "match": "Shuai Zhang – Tereza Valentova",
+     "joueur": "Shuai Zhang",
+     "uid": "2026-10-25_tereza_valentova_shuai_zhang",
+     "cote": 2.75,
+     "book": "betsson",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-25, reconstruction arrêtée au 2026-10-23",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-25",
+     "match": "Rinky Hijikata – Yannick Hanfmann",
+     "joueur": "Rinky Hijikata",
+     "uid": "2026-10-25_rinky_hijikata_yannick_hanfmann",
+     "cote": 2.4,
+     "book": "unibet",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-25, reconstruction arrêtée au 2026-10-23",
+     "explique": true
     }
    ]
   },
@@ -11813,17 +11939,17 @@
     "clv_pin": -0.5,
     "clv_pin_ic95": [
      -1.2,
-     0.3
+     0.2
     ],
-    "clv_n": 160,
-    "n_detectees": 163,
-    "n_envoyees": 163,
+    "clv_n": 162,
+    "n_detectees": 165,
+    "n_envoyees": 165,
     "n_doublons": 0,
     "source": "verdicts_direct.json (recalculé : journal plus récent)",
-    "sans_resultat_pct": 28.2,
-    "statut": "en attente de résultats (28,2 % sans résultat)",
+    "sans_resultat_pct": 29.1,
+    "statut": "en attente de résultats (29,1 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-10-24T15:01:07Z"
+    "genere_le": "2026-10-25T09:46:15Z"
    },
    "reconstruction": {
     "n": 244,
@@ -11841,8 +11967,8 @@
     "egal_validation_report": true
    },
    "entonnoir": {
-    "direct_detectees": 163,
-    "direct_envoyees": 163,
+    "direct_detectees": 165,
+    "direct_envoyees": 165,
     "direct_doublons": 0,
     "direct_non_envoyees_autres": 0,
     "direct_denouees": 117,
@@ -11853,12 +11979,12 @@
     "reconstruction_seule_raisons": {
      "apres_coup": 238
     },
-    "direct_seule": 85,
+    "direct_seule": 87,
     "direct_seule_raisons": {
      "cote_opposee_reco": 40,
      "absent_reconstruction": 37,
      "prix_different": 6,
-     "pas_encore_reconstruit": 2
+     "pas_encore_reconstruit": 4
     },
     "inexpliques": 0
    },
@@ -16450,6 +16576,34 @@
      "libelle": "Pas encore dans la reconstruction",
      "detail": "match du 2026-10-24, reconstruction arrêtée au 2026-10-23",
      "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-24",
+     "match": "Darwin Blanch – Sander Jong",
+     "joueur": "Darwin Blanch",
+     "uid": "2026-10-24_sander_jong_darwin_blanch",
+     "cote": 1.3,
+     "book": "unibet",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-24, reconstruction arrêtée au 2026-10-23",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-25",
+     "match": "Hiroki Moriya – Taisei Ichikawa",
+     "joueur": "Hiroki Moriya",
+     "uid": "2026-10-25_hiroki_moriya_taisei_ichikawa",
+     "cote": 1.41,
+     "book": "unibet",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-25, reconstruction arrêtée au 2026-10-23",
+     "explique": true
     }
    ]
   },
@@ -16501,15 +16655,15 @@
      -1.4,
      0.2
     ],
-    "clv_n": 141,
-    "n_detectees": 142,
-    "n_envoyees": 142,
+    "clv_n": 143,
+    "n_detectees": 144,
+    "n_envoyees": 144,
     "n_doublons": 0,
     "source": "verdicts_direct.json (recalculé : journal plus récent)",
-    "sans_resultat_pct": 30.3,
-    "statut": "en attente de résultats (30,3 % sans résultat)",
+    "sans_resultat_pct": 31.2,
+    "statut": "en attente de résultats (31,2 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-10-24T15:01:07Z"
+    "genere_le": "2026-10-25T09:46:15Z"
    },
    "reconstruction": {
     "n": 208,
@@ -16527,8 +16681,8 @@
     "egal_validation_report": true
    },
    "entonnoir": {
-    "direct_detectees": 142,
-    "direct_envoyees": 142,
+    "direct_detectees": 144,
+    "direct_envoyees": 144,
     "direct_doublons": 0,
     "direct_non_envoyees_autres": 0,
     "direct_denouees": 99,
@@ -16539,12 +16693,12 @@
     "reconstruction_seule_raisons": {
      "apres_coup": 190
     },
-    "direct_seule": 73,
+    "direct_seule": 75,
     "direct_seule_raisons": {
      "cote_opposee_reco": 35,
      "prix_different": 6,
      "absent_reconstruction": 30,
-     "pas_encore_reconstruit": 2
+     "pas_encore_reconstruit": 4
     },
     "inexpliques": 0
    },
@@ -20296,6 +20450,34 @@
      "libelle": "Pas encore dans la reconstruction",
      "detail": "match du 2026-10-24, reconstruction arrêtée au 2026-10-23",
      "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-24",
+     "match": "Darwin Blanch – Sander Jong",
+     "joueur": "Darwin Blanch",
+     "uid": "2026-10-24_sander_jong_darwin_blanch",
+     "cote": 1.3,
+     "book": "unibet",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-24, reconstruction arrêtée au 2026-10-23",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-25",
+     "match": "Hiroki Moriya – Taisei Ichikawa",
+     "joueur": "Hiroki Moriya",
+     "uid": "2026-10-25_hiroki_moriya_taisei_ichikawa",
+     "cote": 1.41,
+     "book": "unibet",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-25, reconstruction arrêtée au 2026-10-23",
+     "explique": true
     }
    ]
   },
@@ -20342,20 +20524,20 @@
     "gagnes": 24,
     "roi": 20.4,
     "pts": 12.4,
-    "clv_pin": 2.7,
+    "clv_pin": 3.0,
     "clv_pin_ic95": [
-     0.9,
-     4.4
+     1.2,
+     4.8
     ],
-    "clv_n": 49,
-    "n_detectees": 52,
-    "n_envoyees": 30,
-    "n_doublons": 22,
+    "clv_n": 51,
+    "n_detectees": 56,
+    "n_envoyees": 32,
+    "n_doublons": 24,
     "source": "verdicts_direct.json (recalculé : journal plus récent)",
-    "sans_resultat_pct": 23.1,
-    "statut": "en attente de résultats (23,1 % sans résultat)",
+    "sans_resultat_pct": 24.5,
+    "statut": "en attente de résultats (24,5 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-10-24T15:01:07Z"
+    "genere_le": "2026-10-25T09:46:15Z"
    },
    "reconstruction": {
     "n": 97,
@@ -20373,9 +20555,9 @@
     "egal_validation_report": true
    },
    "entonnoir": {
-    "direct_detectees": 52,
-    "direct_envoyees": 30,
-    "direct_doublons": 22,
+    "direct_detectees": 56,
+    "direct_envoyees": 32,
+    "direct_doublons": 24,
     "direct_non_envoyees_autres": 0,
     "direct_denouees": 40,
     "reconstruction_detectees": 125,
@@ -20385,12 +20567,12 @@
     "reconstruction_seule_raisons": {
      "apres_coup": 116
     },
-    "direct_seule": 43,
+    "direct_seule": 47,
     "direct_seule_raisons": {
      "absent_reconstruction": 7,
      "prix_different": 25,
      "cote_opposee_reco": 9,
-     "pas_encore_reconstruit": 2
+     "pas_encore_reconstruit": 6
     },
     "inexpliques": 0
    },
@@ -22686,6 +22868,62 @@
      "libelle": "Pas encore dans la reconstruction",
      "detail": "match du 2026-10-24, reconstruction arrêtée au 2026-10-23",
      "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-25",
+     "match": "Kamilla Rakhimova – Aliaksandra Sasnovich",
+     "joueur": "Kamilla Rakhimova",
+     "uid": "2026-10-25_aliaksandra_sasnovich_kamilla_rakhimova",
+     "cote": 2.2,
+     "book": "betway",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-25, reconstruction arrêtée au 2026-10-23",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-25",
+     "match": "Fabian Marozsan – Tomas Machac",
+     "joueur": "Fabian Marozsan",
+     "uid": "2026-10-25_fabian_marozsan_tomas_machac",
+     "cote": 3.25,
+     "book": "bet365",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-25, reconstruction arrêtée au 2026-10-23",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-25",
+     "match": "Daniel Altmaier – Juan Manuel Cerundolo",
+     "joueur": "Daniel Altmaier",
+     "uid": "2026-10-25_juan_manuel_cerundolo_daniel_altmaier",
+     "cote": 1.83,
+     "book": "bwin",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-25, reconstruction arrêtée au 2026-10-23",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-25",
+     "match": "Rinky Hijikata – Yannick Hanfmann",
+     "joueur": "Rinky Hijikata",
+     "uid": "2026-10-25_rinky_hijikata_yannick_hanfmann",
+     "cote": 2.4,
+     "book": "unibet",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-25, reconstruction arrêtée au 2026-10-23",
+     "explique": true
     }
    ]
   },
@@ -22742,7 +22980,7 @@
     "sans_resultat_pct": 0.0,
     "statut": "verrouillable (résultats complets à 100 %)",
     "verrouillable": true,
-    "genere_le": "2026-10-24T15:01:07Z"
+    "genere_le": "2026-10-25T09:46:15Z"
    },
    "reconstruction": {
     "n": 39,
