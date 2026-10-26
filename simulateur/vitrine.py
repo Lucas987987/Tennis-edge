@@ -151,7 +151,8 @@ def ligne_match(m, complet):
         'simulation': ({'a': round(d['a'], 4), 'b': round(d['b'], 4),
                         'sets_gagnants': int(d.get('sets_gagnants') or (3 if m.get('meilleur_des') == 5 else 2)),
                         'tb_final': int(d.get('tb_final') or 7), 'n': int(sim.get('n') or 0),
-                        'version': k, 'scenario': sim.get('match_type')}
+                        'version': k, 'scenario': sim.get('match_type'),
+                        'stabilite_score': sim.get('stabilite_score')}
                        if d.get('a') and d.get('b') else None),
     })
     return out

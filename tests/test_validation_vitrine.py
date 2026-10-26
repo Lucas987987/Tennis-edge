@@ -60,6 +60,23 @@ class ValidationVitrine(unittest.TestCase):
         self.assertEqual(NR.surface_de('ATP Vienna', {'vienna': 'Clay'}), 'Hard')
         self.assertEqual(NR.surface_de('Vienna, Austria', {'vienna': 'Clay'}), 'Hard')
 
+    def test_stabilite_doit_porter_sur_le_score_publie(self):
+        doc = document_valide()
+        sim = doc['matchs'][0]['simulation']
+        sim['stabilite_score'] = {'statut': 'stable', 'score_reference': '6-0 6-0', 'n_par_bloc': 20000}
+        with self.assertRaisesRegex(ValueError, 'stabilité'):
+            VV.valider(doc)
+
+    def test_chaque_rejeu_utilise_le_scenario_modal(self):
+        chemin = os.path.join(os.path.dirname(__file__), '..', 'algo', 'index.html')
+        with open(chemin, encoding='utf-8') as f:
+            html = f.read()
+        self.assertIn('if (seed == null && traceTop)', html)
+        self.assertNotIn('mon === 1 && traceTop', html)
+        self.assertNotIn('mon === 1 && !traceTop', html)
+        self.assertNotIn('tire ensuite un autre match au hasard', html)
+        self.assertNotIn('then draws another match at random', html)
+
 
 if __name__ == '__main__':
     unittest.main()
