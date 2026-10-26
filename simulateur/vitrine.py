@@ -4,15 +4,15 @@
 vitrine.py — les données du site public de l'algorithme (23/10/2026) : algo/donnees.json.
 
 Le site public (algo/index.html, en français et en anglais) montre :
-  — chaque match des prochaines heures : % de victoire de l'algo et cote juste (1 / %) ;
-  — le MATCH DU JOUR en entier : sets, scores probables, feuille prévue, et de quoi rejouer une simulation
-    point par point (probabilités de gagner un point au service des deux joueurs) ;
+  — chaque match des prochaines heures en entier : % de victoire, cote juste (1 / %), sets, scores
+    probables, feuille prévue et scénario modal rejouable point par point ;
+  — le MATCH DU JOUR, toujours choisi séparément par sa règle fixe, sans influencer les autres simulations ;
   — le BILAN PUBLIC : tous les matchs pronostiqués depuis le début du journal, sans tri, pertes comprises ;
   — la CALIBRATION : ce que l'algo annonçait contre ce qui s'est passé (en direct, et rejoué hors échantillon).
 
-Offre gratuite / Plus : le détail complet (sets, scores, feuille, simulation) n'est publié QUE pour le match du
-jour. Pour les autres matchs, seul le % sort d'ici : le jour où l'offre Plus existera, ce détail sera servi
-par un service à accès réservé, jamais déposé dans ce dépôt public.
+Préversion Plus : le détail complet (sets, scores, feuille, simulation) est publié pour TOUS les matchs afin
+de tester le catalogue et les parcours. Si une offre payante est activée plus tard, les éléments réservés
+devront être déplacés vers un service à accès contrôlé : un simple masquage visuel ne protégerait pas ce JSON.
 
 Rien d'autre ne sort : ni cote de bookmaker, ni signal d'alerte, ni canal privé. L'algo est une source
 indépendante : il ne regarde pas le marché, le site non plus.
@@ -137,11 +137,12 @@ def ligne_match(m, complet):
            'home': m['home'], 'away': m['away'], 'p_home': round(p, 3), 'version': k,
            'fiabilite': m.get('fiabilite'), 'cotes_justes': [cote(p), cote(1 - p)]}
     if not complet:
-        out['plus'] = True
+        out['simulation_disponible'] = False
         return out
     d = m.get('direct') or {}
     sim = v.get('match_simule') or {}
     out.update({
+        'simulation_disponible': bool(d.get('a') and d.get('b') and sim.get('match_type')),
         'sets': v.get('sets'),
         'scores_probables': _scores_public(v),
         'jeux_moyen': v.get('jeux_moyen'),
@@ -256,7 +257,7 @@ def construire(racine, maintenant=None):
     mdj = choisir_match_du_jour(matchs, etat, maintenant, precedent)
     a_venir = sorted((m for m in matchs if _utc(m['debut']) > maintenant - dt.timedelta(hours=3)),
                      key=lambda m: (m['debut'], m['uid']))
-    lignes = [ligne_match(m, complet=bool(mdj and m['uid'] == mdj['uid'])) for m in a_venir]
+    lignes = [ligne_match(m, complet=True) for m in a_venir]
     return {'genere_le': maintenant.isoformat(timespec='seconds'), 'pronostics_du': pron.get('genere_le'),
             'simulations': pron.get('simulations') or 20000, 'match_du_jour': mdj,
             'matchs': lignes, 'bilan': bilan(_lire(os.path.join(racine, 'Tennis_Edge_Lab', 'live',

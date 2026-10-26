@@ -73,13 +73,20 @@ de marché censure chaque cote au moment disponible et chaque signal à sa date 
 signalisation. Sans volumes ni confirmation multi-bookmakers, ses résultats sont
 exploratoires ; ils ne modifient jamais les probabilités indépendantes.
 
-La vitrine quotidienne n'est publiée qu'après validation : le nombre de tirages
-du match doit égaler celui de l'export (20 000 par défaut), le scénario doit
-porter le score modal et sa trace complète doit le reproduire point par point.
-Le navigateur ne recalibre pas une trace enregistrée et chaque relance rejoue
-ce même scénario modal, jamais un tirage aléatoire différent. Une génération en échec ou
-un ancien format sans scénario fait échouer le workflow au lieu de laisser
-silencieusement l'ancien `algo/donnees.json` en ligne.
+La vitrine quotidienne n'est publiée qu'après validation : chaque match du
+catalogue doit avoir ses 20 000 tirages (par défaut), ses sorties complètes et
+son scénario modal. La trace complète de chaque affiche est rejouée point par
+point avant publication ; un seul match sans simulation bloque l'export. Le
+navigateur ne recalibre pas une trace enregistrée et chaque relance rejoue ce
+même scénario modal, jamais un tirage aléatoire différent. Une génération en
+échec ou un ancien format sans scénario fait échouer le workflow au lieu de
+laisser silencieusement l'ancien `algo/donnees.json` en ligne.
+
+Pour la préversion Plus, la liste permet de rechercher une affiche, de filtrer
+par circuit et d'ouvrir directement son détail et sa borne de simulation. Tous
+les détails sont donc publics dans `algo/donnees.json`. Une future offre payante
+nécessitera un service à accès contrôlé : masquer ces données dans le navigateur
+ne constituerait pas une protection.
 
 ## Stabilité, dérive et profils pauvres (26/10/2026)
 

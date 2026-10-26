@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0E0A24">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230E0A24'/%3E%3Ccircle cx='32' cy='32' r='20' fill='%23D4FF3A'/%3E%3Cpath d='M17 20c12 4 12 20 0 24M47 20c-12 4-12 20 0 24' fill='none' stroke='%230E0A24' stroke-width='3'/%3E%3C/svg%3E">
 <title>Tennis Edge — l'algo</title>
 <meta name="description" content="Chaque match de tennis simulé 20 000 fois par un algorithme indépendant du marché : % de victoire, cote juste, et un bilan public, pertes comprises.">
 <meta property="og:title" content="Tennis Edge — l'algo">
@@ -93,10 +94,20 @@ table.sheet thead th{border-top:0;font-size:.9rem;text-align:right}
 table.sheet thead th:first-child{text-align:left}
 table.sheet thead th.c1{color:var(--p1)} table.sheet thead th.c2{color:var(--p2)}
 
-/* liste des matchs */
+/* catalogue : chaque ligne ouvre le même détail et la même borne que le match du jour */
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.retour{margin:0 0 16px}
+.filtres{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 8px}
+.filtres input{flex:1 1 240px;min-height:44px;border:1px solid var(--line2);border-radius:10px;background:var(--panel);color:var(--ink);padding:10px 12px;font:inherit}
+.filtres input::placeholder{color:var(--dim)}
+.circuits button{min-height:44px;min-width:44px}
+.compte{min-height:1.5em;margin:0 0 8px;color:var(--dim);font-size:.9rem}
 .list{list-style:none;margin:0;padding:0}
-.list li{display:grid;grid-template-columns:3.6em 1fr;gap:4px 12px;padding:14px 16px;border-top:1px solid var(--line)}
+.list li{border-top:1px solid var(--line);transition:background-color .18s ease-out}
 .list li:first-child{border-top:0}
+.match-open{display:grid;grid-template-columns:3.6em minmax(0,1fr);gap:4px 12px;width:100%;padding:14px 16px;border:0;background:transparent;text-align:left;cursor:pointer;color:inherit;transition:transform .18s ease-out,background-color .18s ease-out}
+.match-open:hover,.match-open:focus-visible{background:rgba(255,255,255,.035)}
+.match-open:active{transform:scale(.995)}
 .list .time{font-family:var(--cond);font-weight:600;font-size:1.1rem;color:var(--dim);padding-top:2px}
 .list .tour{font-size:.85rem;color:var(--dim)}
 .list .pl{display:flex;justify-content:space-between;gap:10px;font-weight:500}
@@ -104,8 +115,11 @@ table.sheet thead th.c1{color:var(--p1)} table.sheet thead th.c2{color:var(--p2)
 .list .pl.a b{color:var(--p1)} .list .pl.b b{color:var(--p2)}
 .list .mini{height:6px;border-radius:999px;background:var(--p2);overflow:hidden;margin:7px 0 3px;display:flex;opacity:.9}
 .list .mini i{display:block;height:100%;background:var(--p1)}
-.list .meta{display:flex;justify-content:space-between;gap:10px;font-size:.85rem;color:var(--dim);flex-wrap:wrap}
+.list .meta{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:.85rem;color:var(--dim);flex-wrap:wrap}
+.list .ouvrir{color:var(--p1);font-weight:600;transition:opacity .18s ease-out,transform .18s ease-out}
+.match-open:hover .ouvrir,.match-open:focus-visible .ouvrir{transform:translateX(3px)}
 .list li.star{background:linear-gradient(90deg,rgba(212,255,58,.08),transparent 60%);box-shadow:inset 3px 0 0 var(--ball)}
+.list li.selectionne{background:rgba(46,230,255,.07)}
 .badge{display:inline-block;font-family:var(--disp);font-size:.7rem;padding:2px 8px;border-radius:999px;background:var(--ball);color:#160E33;letter-spacing:.02em;vertical-align:middle;margin-left:6px}
 
 /* tableau des scores (bilan) */
@@ -285,14 +299,26 @@ body.carte #video{display:block;width:1080px;height:1350px}
 
   <section id="mdj" aria-labelledby="mdj-h" style="margin-top:0">
     <h2 id="mdj-h" data-t="mdj_titre"></h2>
-    <p class="sub" data-t="mdj_sous"></p>
+    <p class="sub" id="mdj-sous" data-t="mdj_sous"></p>
+    <button type="button" class="btn retour" id="retour-mdj" hidden></button>
     <div id="mdj-zone"></div>
   </section>
 
   <section aria-labelledby="list-h">
     <h2 id="list-h" data-t="liste_titre"></h2>
     <p class="sub" data-t="liste_sous"></p>
-    <div class="panel"><ul class="list" id="list"></ul></div>
+    <div class="filtres">
+      <label class="sr-only" for="recherche" data-t="recherche_label"></label>
+      <input type="search" id="recherche" autocomplete="off" data-t-placeholder="recherche_placeholder">
+      <div class="seg circuits" role="group" aria-label="Circuit">
+        <button type="button" data-circuit="TOUS" aria-pressed="true" data-t="tous_circuits"></button>
+        <button type="button" data-circuit="ATP" aria-pressed="false">ATP</button>
+        <button type="button" data-circuit="WTA" aria-pressed="false">WTA</button>
+        <button type="button" data-circuit="CH" aria-pressed="false">CH</button>
+      </div>
+    </div>
+    <p class="compte" id="liste-compte" aria-live="polite"></p>
+    <div class="panel"><ul class="list" id="list"></ul><button type="button" class="more" id="liste-more" hidden></button></div>
   </section>
 
   <section aria-labelledby="bilan-h">
@@ -339,6 +365,8 @@ const T = {
   marque:"l'algo", html_lang:'fr',
   lede:"Chaque match est simulé 20 000 fois, point par point, par un algorithme qui ne regarde jamais les cotes. On publie son % de victoire, la cote juste qui va avec, et tous ses résultats — y compris quand il se trompe.",
   mdj_titre:'Le match du jour', mdj_sous:"Choisi par une règle fixe : la plus grosse affiche ATP/WTA du jour (somme des Elo), jamais selon la confiance de l'algo.",
+  sim_titre:'Simulation du match', sim_sous:"Le détail complet et le scénario modal de cette affiche, calculés avec la même variante indépendante.",
+  retour_mdj:'Retour au match du jour',
   mdj_vide:"Pas de match du jour pour l'instant : il est choisi parmi les matchs pas encore commencés de la journée.",
   vs:'contre', cote_juste:'cote juste', sur_sims:n=>`Sur ${n} simulations`,
   fiab:'Fiabilité', fiab_aide:"Robustesse de l'estimation selon les données disponibles, l'accord des modèles et la calibration passée. Ce n'est pas la probabilité que le favori gagne.",
@@ -348,8 +376,11 @@ const T = {
   proba_direct:'Probabilité en direct', gagne_sim:(w,s)=>`Dans cette simulation, ${w} gagne ${s}.`,
   sets_titre:'Score en sets', scores_titre:'Scores les plus probables', feuille_titre:n=>`Feuille de match prévue (moyenne des ${fmt(n)} simulations)`,
   aces:'Aces', df:'Doubles fautes', breaks:'Breaks réussis', prem:'1res balles (%)', jsg:'Jeux de service gagnés (%)',
-  liste_titre:'Tous les matchs', liste_sous:"Les matchs des prochaines heures (ATP, WTA, Challenger). Heure de ton appareil.",
-  liste_vide:"Aucun match à venir pour l'instant : les pronostics sont refaits toutes les 2 heures.",
+  liste_titre:'Tous les matchs', liste_sous:"Choisis une affiche pour ouvrir ses sets, scores, statistiques et sa simulation de 20 000 tirages. Heure de ton appareil.",
+  liste_vide:"Aucun match ne correspond à cette recherche.",
+  recherche_label:'Rechercher un match', recherche_placeholder:'Joueur ou tournoi…', tous_circuits:'Tous',
+  compte_matchs:(n,total)=>n===total ? `${fmt(total)} matchs avec simulation` : `${fmt(n)} matchs affichés sur ${fmt(total)}`,
+  voir_simulation:'Voir la simulation →', simulation_affichee:'Simulation affichée', voir_matchs:n=>`Afficher ${n} matchs de plus`,
   detail_plus:'Détail complet : offre Plus', detail_ici:'Détail complet ci-dessus',
   bilan_titre:'Tableau des scores',
   bilan_sous:d=>`Tous les matchs ATP, WTA et Challenger pronostiqués depuis le ${dateLong(d)}, sans aucun tri. Jugés sur le dernier pronostic affiché avant le match. Abandons et forfaits exclus.`,
@@ -361,9 +392,9 @@ const T = {
   annonce:'Annoncé', reel:'Réel', matchs:'Matchs', tranche:'Tranche',
   calib_attente:n=>`En direct : pas encore assez de matchs par tranche (${n} jugés). Le tableau apparaîtra avec le volume.`,
   rejoue_sous:r=>`Rejoué hors échantillon du ${dateLong(r.du)} au ${dateLong(r.au)} : chaque semaine prédite avec un modèle entraîné uniquement sur les semaines d'avant. ${fmt(r.global.n)} matchs, ${pc(r.global.pct)} de vainqueurs trouvés, Brier ${dec(r.global.brier,3)}.`,
-  plus_titre:'Plus', plus_texte:"Le % de chaque match restera gratuit, tout comme le match du jour et le bilan. L'offre Plus ouvrira le reste :",
-  plus_items:['La feuille complète de chaque match : sets, scores probables, aces, breaks','La simulation rejouable pour chaque match','Les alertes quand un nouveau match est pronostiqué'],
-  plus_bientot:'Bientôt.',
+  plus_titre:'Plus — préversion', plus_texte:"Les fonctions détaillées sont temporairement ouvertes pour préparer la future offre Plus. Tu peux déjà tester :",
+  plus_items:['La feuille complète de chaque match : sets, scores probables, aces, breaks','La simulation rejouable pour chaque match','Plus tard : les alertes quand un nouveau match est pronostiqué'],
+  plus_bientot:'Accès libre pendant la préversion · aucun paiement.',
   pied_methode:"Méthode : simulation point par point à partir des statistiques de service et de retour de chaque joueur, combinée à un classement Elo par surface, apprise uniquement sur les matchs passés. L'algorithme n'utilise aucune cote de bookmaker.",
   pied_jeu:"Ce site ne donne pas de conseil de pari. Les paris sportifs sont interdits aux mineurs. Jouer comporte des risques : endettement, isolement, dépendance. Pour être aidé, appelez le 09 74 75 13 13 (appel non surtaxé).",
   maj:d=>`Pronostics mis à jour le ${dateHeure(d)}.`,
@@ -386,6 +417,8 @@ const T = {
   marque:'the algorithm', html_lang:'en',
   lede:"Every match is simulated 20,000 times, point by point, by an algorithm that never looks at the odds. We publish its win probability, the fair odds that go with it, and every result — including when it gets it wrong.",
   mdj_titre:'Match of the day', mdj_sous:"Picked by a fixed rule: the day's biggest ATP/WTA matchup (sum of Elo ratings), never by how confident the algorithm is.",
+  sim_titre:'Match simulation', sim_sous:'The full breakdown and modal scenario for this matchup, calculated with the same independent variant.',
+  retour_mdj:'Back to match of the day',
   mdj_vide:"No match of the day yet: it is picked among today's matches that haven't started.",
   vs:'vs', cote_juste:'fair odds', sur_sims:n=>`Across ${n} simulations`,
   fiab:'Reliability', fiab_aide:'Robustness of the estimate from data availability, model agreement and past calibration. This is not the probability that the favourite wins.',
@@ -395,8 +428,11 @@ const T = {
   proba_direct:'Live win probability', gagne_sim:(w,s)=>`In this simulation, ${w} wins ${s}.`,
   sets_titre:'Score in sets', scores_titre:'Most likely scores', feuille_titre:n=>`Expected match stats (average of ${fmt(n)} simulations)`,
   aces:'Aces', df:'Double faults', breaks:'Breaks of serve', prem:'1st serves in (%)', jsg:'Service games won (%)',
-  liste_titre:'All matches', liste_sous:'Matches in the next hours (ATP, WTA, Challenger). Times in your device\'s time zone.',
-  liste_vide:'No upcoming matches right now: predictions refresh every 2 hours.',
+  liste_titre:'All matches', liste_sous:'Pick a matchup to open its sets, scores, stats and 20,000-run simulation. Times in your device\'s time zone.',
+  liste_vide:'No match matches this search.',
+  recherche_label:'Search matches', recherche_placeholder:'Player or tournament…', tous_circuits:'All',
+  compte_matchs:(n,total)=>n===total ? `${fmt(total)} matches with simulation` : `${fmt(n)} of ${fmt(total)} matches shown`,
+  voir_simulation:'View simulation →', simulation_affichee:'Simulation displayed', voir_matchs:n=>`Show ${n} more matches`,
   detail_plus:'Full breakdown: Plus', detail_ici:'Full breakdown above',
   bilan_titre:'Scoreboard',
   bilan_sous:d=>`Every ATP, WTA and Challenger match predicted since ${dateLong(d)}, with nothing filtered out. Judged on the last prediction shown before the match. Retirements and walkovers excluded.`,
@@ -408,9 +444,9 @@ const T = {
   annonce:'Forecast', reel:'Actual', matchs:'Matches', tranche:'Range',
   calib_attente:n=>`Live: not enough matches per range yet (${n} judged). The table will appear as volume builds.`,
   rejoue_sous:r=>`Replayed out of sample from ${dateLong(r.du)} to ${dateLong(r.au)}: each week predicted by a model trained only on the weeks before. ${fmt(r.global.n)} matches, ${pc(r.global.pct)} winners called, Brier ${dec(r.global.brier,3)}.`,
-  plus_titre:'Plus', plus_texte:'Every match\'s probability will stay free, as will the match of the day and the record. Plus will unlock the rest:',
-  plus_items:['The full breakdown of every match: sets, likely scores, aces, breaks','A replayable simulation for every match','Alerts when a new match is predicted'],
-  plus_bientot:'Coming soon.',
+  plus_titre:'Plus — preview', plus_texte:'Detailed features are temporarily open while the future Plus offer is being prepared. You can already test:',
+  plus_items:['The full breakdown of every match: sets, likely scores, aces, breaks','A replayable simulation for every match','Later: alerts when a new match is predicted'],
+  plus_bientot:'Free access during the preview · no payment.',
   pied_methode:'Method: point-by-point simulation from each player\'s serve and return statistics, combined with a surface-specific Elo rating, trained only on past matches. The algorithm uses no bookmaker odds.',
   pied_jeu:'This site gives no betting advice. Sports betting is for adults only. Gambling carries risks: debt, isolation, addiction. In France, call 09 74 75 13 13 for help.',
   maj:d=>`Predictions updated ${dateHeure(d)}.`,
@@ -781,7 +817,8 @@ function Arcade(root, m, opts){
 }
 
 /* ───────────── rendu de la page ───────────── */
-let D = null, nRes = 12, borne = null;
+let D = null, nRes = 12, nListe = 30, borne = null;
+let selectionId = null, circuit = 'TOUS', recherche = '';
 function boutonSon(){
   const b = document.getElementById('b-son'), on = Bruit.actif;
   b.setAttribute('aria-pressed', String(on)); b.setAttribute('aria-label', on ? t('son_on') : t('son_off')); b.title = on ? t('son_on') : t('son_off');
@@ -790,7 +827,10 @@ function boutonSon(){
 function rendTextes(){
   document.documentElement.lang = t('html_lang');
   document.querySelectorAll('[data-t]').forEach(el=>{ el.textContent = t(el.dataset.t); });
-  document.querySelectorAll('.seg button').forEach(b=>b.setAttribute('aria-pressed', String(b.dataset.lang===L)));
+  document.querySelectorAll('[data-t-placeholder]').forEach(el=>{ el.placeholder = t(el.dataset.tPlaceholder); });
+  document.querySelectorAll('.seg button[data-lang]').forEach(b=>b.setAttribute('aria-pressed', String(b.dataset.lang===L)));
+  document.querySelectorAll('.circuits button').forEach(b=>b.setAttribute('aria-pressed', String(b.dataset.circuit===circuit)));
+  document.getElementById('retour-mdj').textContent = t('retour_mdj');
   document.getElementById('plus-list').innerHTML = t('plus_items').map(x=>`<li>${esc(x)}</li>`).join('');
   boutonSon();
 }
@@ -798,12 +838,18 @@ function rendFiabilite(f, detail=false){
   if (!f || !Number.isFinite(Number(f.note))) return '';
   const niveaux = L==='fr' ? {fragile:'fragile',prudent:'prudent',correct:'correcte',solide:'solide'} : {fragile:'fragile',prudent:'cautious',correct:'fair',solide:'strong'};
   const niveau = niveaux[f.niveau] || f.niveau || '';
-  return `<div class="fiab" title="${esc(t('fiab_aide'))}"><span>${esc(t('fiab'))}</span><b>${fmt(f.note)}/100</b><span>· ${esc(niveau)}</span>${detail?`<small>${esc(t('fiab_aide'))}</small>`:''}</div>`;
+  return `<span class="fiab" title="${esc(t('fiab_aide'))}"><span>${esc(t('fiab'))}</span><b>${fmt(f.note)}/100</b><span>· ${esc(niveau)}</span>${detail?`<small>${esc(t('fiab_aide'))}</small>`:''}</span>`;
 }
 function rendMdj(){
   const zone = document.getElementById('mdj-zone');
   if (borne) { borne.stop(); borne = null; }
-  const id = D.match_du_jour && D.match_du_jour.uid, m = D.matchs.find(x=>x.uid===id);
+  const idJour = D.match_du_jour && D.match_du_jour.uid;
+  let id = selectionId || idJour, m = D.matchs.find(x=>x.uid===id && x.simulation);
+  if (!m && idJour){ id = idJour; selectionId = idJour; m = D.matchs.find(x=>x.uid===id && x.simulation); }
+  const estJour = !!m && id === idJour;
+  document.getElementById('mdj-h').textContent = t(estJour ? 'mdj_titre' : 'sim_titre');
+  document.getElementById('mdj-sous').textContent = t(estJour ? 'mdj_sous' : 'sim_sous');
+  document.getElementById('retour-mdj').hidden = estJour || !m;
   if (!m){ zone.innerHTML = `<div class="panel empty">${esc(t('mdj_vide'))}</div>`; return; }
   const p = m.p_home;
   const nSim = Math.max(1, Math.round(Number(m.simulation && m.simulation.n) || Number(D.simulations) || 0));
@@ -845,18 +891,32 @@ function rendMdj(){
     document.getElementById('b-fin').onclick = () => borne.finir();
   }
 }
+function matchsFiltres(){
+  const q = recherche.trim().toLocaleLowerCase(loc());
+  return D.matchs.filter(m=>(circuit==='TOUS' || m.circuit===circuit) && (!q || `${m.home} ${m.away} ${m.tournoi}`.toLocaleLowerCase(loc()).includes(q)));
+}
 function rendListe(){
   const ul = document.getElementById('list'), mdj = D.match_du_jour && D.match_du_jour.uid;
-  if (!D.matchs.length){ ul.innerHTML = `<li class="empty" style="display:block">${esc(t('liste_vide'))}</li>`; return; }
-  ul.innerHTML = D.matchs.map(m=>{ const p=m.p_home, star = m.uid===mdj;
-    return `<li class="${star?'star':''}"><div class="time">${esc(heure(m.debut))}</div><div>
-      <div class="tour">${esc(m.tournoi)} · ${esc(SURF[L][m.surface]||m.surface||'')}${star ? `<span class="badge">${esc(L==='fr'?'du jour':'of the day')}</span>` : ''}</div>
-      <div class="pl a"><span>${esc(m.home)}</span><b>${pc0(p)}</b></div>
-      <div class="pl b"><span>${esc(m.away)}</span><b>${pc0(1-p)}</b></div>
-      <div class="mini" aria-hidden="true"><i style="width:${(p*100).toFixed(1)}%"></i></div>
-      <div class="meta"><span>${esc(t('cote_juste'))} ${odds(m.cotes_justes[0])} / ${odds(m.cotes_justes[1])}</span><span>${esc(star ? t('detail_ici') : t('detail_plus'))}</span></div>
+  const tous = matchsFiltres(), visibles = tous.slice(0,nListe);
+  document.getElementById('liste-compte').textContent = t('compte_matchs',tous.length,D.matchs.length);
+  if (!tous.length){
+    ul.innerHTML = `<li class="empty" style="display:block">${esc(t('liste_vide'))}</li>`;
+    document.getElementById('liste-more').hidden = true;
+    return;
+  }
+  ul.innerHTML = visibles.map(m=>{ const p=m.p_home, star=m.uid===mdj, selection=m.uid===(selectionId||mdj);
+    return `<li class="${star?'star ':''}${selection?'selectionne':''}"><button type="button" class="match-open" data-uid="${esc(m.uid)}" data-circuit="${esc(m.circuit)}" aria-current="${selection?'true':'false'}" aria-label="${esc(t('voir_simulation'))} ${esc(m.home)} – ${esc(m.away)}">
+      <span class="time">${esc(heure(m.debut))}</span><span>
+      <span class="tour">${esc(m.tournoi)} · ${esc(SURF[L][m.surface]||m.surface||'')}${star ? `<span class="badge">${esc(L==='fr'?'du jour':'of the day')}</span>` : ''}</span>
+      <span class="pl a"><span>${esc(m.home)}</span><b>${pc0(p)}</b></span>
+      <span class="pl b"><span>${esc(m.away)}</span><b>${pc0(1-p)}</b></span>
+      <span class="mini" aria-hidden="true"><i style="width:${(p*100).toFixed(1)}%"></i></span>
+      <span class="meta"><span>${esc(t('cote_juste'))} ${odds(m.cotes_justes[0])} / ${odds(m.cotes_justes[1])}</span><span class="ouvrir">${esc(selection ? t('simulation_affichee') : t('voir_simulation'))}</span></span>
       ${rendFiabilite(m.fiabilite)}
-    </div></li>`; }).join('');
+    </span></button></li>`; }).join('');
+  const more = document.getElementById('liste-more');
+  more.hidden = visibles.length >= tous.length;
+  more.textContent = t('voir_matchs',Math.min(30,tous.length-visibles.length));
 }
 function courbeSvg(c){
   if (c.length < 2) return '';
@@ -901,14 +961,39 @@ function rendCalib(){
   const r=D.rejoue, er=document.getElementById('calib-rejoue'), sr=document.getElementById('rejoue-sous');
   if (r && r.global){ sr.textContent=t('rejoue_sous', r); er.innerHTML=tableCalib(r.calibration||[]); } else { sr.textContent=''; er.innerHTML=''; er.hidden=true; }
 }
+function ouvrirMatch(uid, aller=true){
+  const m = D && D.matchs.find(x=>x.uid===uid && x.simulation);
+  if (!m) return;
+  if (selectionId !== uid){ selectionId = uid; rendMdj(); rendListe(); }
+  const jour = D.match_du_jour && D.match_du_jour.uid;
+  try{
+    const url = new URL(location.href);
+    if (uid===jour) url.searchParams.delete('match'); else url.searchParams.set('match',uid);
+    history.replaceState(null,'',url);
+  }catch(e){}
+  if (aller) document.getElementById('mdj').scrollIntoView({block:'start',behavior:MOINS_ANIM?'auto':'smooth'});
+}
 function rendTout(){
   rendTextes(); if (!D) return;
   rendMdj(); rendListe(); rendBilan(); rendCalib();
   document.getElementById('maj').textContent = t('maj', D.pronostics_du || D.genere_le);
 }
-document.querySelectorAll('.seg button').forEach(b=>b.addEventListener('click',()=>{
+document.querySelectorAll('.seg button[data-lang]').forEach(b=>b.addEventListener('click',()=>{
   L=b.dataset.lang; try{ localStorage.setItem('te_lang',L); }catch(e){} rendTout(); }));
 document.getElementById('b-son').addEventListener('click', () => { Bruit.basculer(); boutonSon(); });
+document.getElementById('list').addEventListener('click', e=>{
+  const b = e.target.closest('button[data-uid]'); if (b) ouvrirMatch(b.dataset.uid);
+});
+document.getElementById('liste-more').addEventListener('click',()=>{ nListe+=30; rendListe(); });
+document.getElementById('retour-mdj').addEventListener('click',()=>{
+  const id = D && D.match_du_jour && D.match_du_jour.uid; if (id) ouvrirMatch(id);
+});
+document.getElementById('recherche').addEventListener('input',e=>{
+  recherche=e.target.value; nListe=30; rendListe();
+});
+document.querySelectorAll('.circuits button').forEach(b=>b.addEventListener('click',()=>{
+  circuit=b.dataset.circuit; nListe=30; rendTextes(); rendListe();
+}));
 
 /* ───────────── mode vidéo (?video=1) : la borne seule, plein écran ─────────────
    La bande-son est faite après coup (scripts/sons.py) : chaque événement est noté ici avec son heure. */
@@ -958,6 +1043,7 @@ function modeCarte(){
 rendTextes();
 fetch('donnees.json?v=' + Date.now()).then(r=>r.json()).then(d=>{
   D = d;
+  selectionId = Q.get('match') || (D.match_du_jour && D.match_du_jour.uid);
   if (Q.get('carte')) modeCarte(); else if (Q.get('video')) modeVideo(); else rendTout();
 }).catch(()=>{ document.getElementById('mdj-zone').innerHTML = '<div class="panel empty">Données indisponibles / Data unavailable.</div>'; });
 })();

@@ -1,5 +1,7 @@
-"""Site public de l'algo (simulateur/vitrine.py) : règle du match du jour, offre gratuite / Plus, bilan sans tri,
-rien de privé ni de bookmaker dans les données publiées."""
+"""Site public de l'algo : match du jour, catalogue complet de la préversion Plus et bilan sans tri.
+
+Aucune donnée privée ni de bookmaker ne doit être publiée.
+"""
 import datetime as dt
 import json
 import os
@@ -17,7 +19,9 @@ def match(uid, debut, circuit, p, cles, home='A B', away='C D', **k):
     m = {'uid': uid, 'debut': debut, 'tournoi': 'T', 'circuit': circuit, 'surface': 'Hard', 'meilleur_des': 3,
          'home': home, 'away': away, 'cles': cles, 'pin_cotes': {'pinnacle': [1.5, 2.6]},
          'combinaison': {'p_home': p, 'sets': {'2-0': .4, '2-1': .2, '1-2': .2, '0-2': .2},
-                         'scores_probables': [['6-4 6-4', .03]], 'jeux_moyen': 22.0},
+                         'scores_probables': [['6-4 6-4', .03]], 'jeux_moyen': 22.0,
+                         'match_simule': {'n': 20000, 'scores': [['6-4 6-4', .03]],
+                                          'match_type': {'score': '6-4 6-4'}, 'feuille': []}},
          'marche': {'p_home': .5}, 'direct': {'a': .64, 'b': .6, 'sets_gagnants': 2, 'tb_final': 7}}
     m.update(k)
     return m
@@ -57,9 +61,10 @@ class Publication(unittest.TestCase):
         L = [match('gros', '2026-10-24T13:00', 'WTA', .7, ['a', 'b']), match('autre', '2026-10-24T14:00', 'ATP', .4, ['c', 'd']),
              match('prov', '2026-10-24T15:00', 'ATP', .5, ['a', 'b'], home='WQF1'),
              match('itf', '2026-10-24T15:00', 'ITF', .5, ['a', 'b'])]
-        json.dump({'genere_le': 'x', 'simulations': 5000, 'matchs': L},
-                  open(os.path.join(r, 'Tennis_Edge_Lab', 'live', 'pronostics.json'), 'w'))
-        json.dump(ETAT, open(os.path.join(r, 'simulateur', 'elo_etat.json'), 'w'))
+        with open(os.path.join(r, 'Tennis_Edge_Lab', 'live', 'pronostics.json'), 'w', encoding='utf-8') as f:
+            json.dump({'genere_le': 'x', 'simulations': 20000, 'matchs': L}, f)
+        with open(os.path.join(r, 'simulateur', 'elo_etat.json'), 'w', encoding='utf-8') as f:
+            json.dump(ETAT, f)
 
         def res(uid, c, p, gagnant, interrompu=None, home='A B'):
             v = {'p_home': p, 'vainqueur_juste': (p > .5) == (gagnant == 'home')}
@@ -67,23 +72,25 @@ class Publication(unittest.TestCase):
                     'reel': {'gagnant': gagnant, 'score': '6-4 6-4', 'interrompu': interrompu},
                     'premier': {'stats': {'p_home': .9, 'vainqueur_juste': True}},
                     'dernier': {'combinaison': v}}
-        json.dump({'matchs': [res('1', 'ATP', .7, 'home'), res('2', 'CH', .7, 'away'), res('3', 'WTA', .3, 'away'),
-                              res('4', 'ATP', .7, 'away', interrompu='abandon'), res('5', 'ITF', .7, 'away'),
-                              res('6', 'ATP', .7, 'away', home='WSF1')]},
-                  open(os.path.join(r, 'Tennis_Edge_Lab', 'live', 'pronostics_resultats.json'), 'w'))
+        with open(os.path.join(r, 'Tennis_Edge_Lab', 'live', 'pronostics_resultats.json'), 'w', encoding='utf-8') as f:
+            json.dump({'matchs': [res('1', 'ATP', .7, 'home'), res('2', 'CH', .7, 'away'), res('3', 'WTA', .3, 'away'),
+                                  res('4', 'ATP', .7, 'away', interrompu='abandon'), res('5', 'ITF', .7, 'away'),
+                                  res('6', 'ATP', .7, 'away', home='WSF1')]}, f)
         self.doc = V.construire(r, MAINTENANT)
 
     def tearDown(self):
         self.tmp.cleanup()
 
-    def test_free_detail_only_for_match_of_the_day(self):
+    def test_full_detail_for_every_match(self):
         par = {m['uid']: m for m in self.doc['matchs']}
         self.assertEqual(set(par), {'gros', 'autre'})                   # ni joueur provisoire, ni ITF
-        self.assertIn('simulation', par['gros'])
-        self.assertIn('sets', par['gros'])
-        self.assertTrue(par['autre'].get('plus'))
-        self.assertNotIn('sets', par['autre'])
-        self.assertNotIn('simulation', par['autre'])
+        for uid in ('gros', 'autre'):
+            self.assertIn('simulation', par[uid])
+            self.assertIn('sets', par[uid])
+            self.assertTrue(par[uid]['simulation_disponible'])
+            self.assertEqual(par[uid]['simulation']['n'], 20000)
+            self.assertEqual(par[uid]['simulation']['scenario']['score'], '6-4 6-4')
+            self.assertNotIn('plus', par[uid])
         self.assertEqual(par['autre']['cotes_justes'], [2.5, 1.67])
 
     def test_nothing_private_or_from_bookmakers(self):
