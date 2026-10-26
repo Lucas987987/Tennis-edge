@@ -17,7 +17,7 @@ def document_valide():
     scenario = {'score': score, 'sets': [list(x) for x in sets], 'points': ''.join(map(str, points)),
                 'premier_serveur': True, 'simulation_index': 17}
     return {'simulations': 20000, 'matchs': [{
-        'uid': 'test', 'scores_probables': [[score, .03]],
+        'uid': 'test', 'simulation_disponible': True, 'scores_probables': [[score, .03]],
         'simulation': {'n': 20000, 'version': 'simulation', 'sets_gagnants': 2,
                        'tb_final': 7, 'scenario': scenario},
     }]}
@@ -41,6 +41,18 @@ class ValidationVitrine(unittest.TestCase):
         doc = document_valide()
         doc['simulations'] = doc['matchs'][0]['simulation']['n'] = 5000
         with self.assertRaisesRegex(ValueError, '5000'):
+            VV.valider(doc)
+
+    def test_un_match_sans_simulation_bloque_tout_le_catalogue(self):
+        doc = document_valide()
+        del doc['matchs'][0]['simulation']
+        with self.assertRaisesRegex(ValueError, 'simulation complète absente'):
+            VV.valider(doc)
+
+    def test_un_identifiant_duplique_est_refuse(self):
+        doc = document_valide()
+        doc['matchs'].append(copy.deepcopy(doc['matchs'][0]))
+        with self.assertRaisesRegex(ValueError, 'publié en double'):
             VV.valider(doc)
 
     def test_score_annonce_different_de_la_trace_est_refuse(self):
