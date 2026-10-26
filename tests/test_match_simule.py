@@ -84,10 +84,30 @@ class Moteur(unittest.TestCase):
         self.assertTrue(0 <= scenario['simulation_index'] < r1['n'])
         self.assertEqual(scenario['score'], ' '.join(f'{a}-{b}' for a, b in scenario['sets']))
         self.assertTrue(scenario['points'])  # une vraie trace rejouable, pas un score imposé
+        controle = scenario['representativite']
+        self.assertTrue(0 < controle['population'] <= r1['n'])  # victoires simulées du favori
+        self.assertIn(controle['statut'], ('ok', 'a_surveiller'))
+        self.assertLessEqual(controle['distance'], controle['distance_mediane'])
+        self.assertIn('ecarts_iqr', controle)
+        self.assertIn('statistiques_atypiques', controle)
         self.assertGreater(r1['feuille'][0]['aces']['moy'], r1['feuille'][1]['aces']['moy'])
         f = r1['feuille'][0]['aces']
         self.assertLessEqual(f['p10'], f['moy'])
         self.assertLessEqual(f['moy'], f['p90'])
+
+    def test_surveillance_statistique_atypique_non_bloquante(self):
+        valeurs = [0.0] * 19 + [100.0]
+        controle = S.surveillance_representativite(
+            ({'aces': 100.0}, {'aces': 0.0}),
+            ({'aces': valeurs}, {'aces': [0.0] * 20}),
+            ({'aces': 0.0}, {'aces': 0.0}),
+            ({'aces': 1.0}, {'aces': 1.0}),
+            ('aces',), 1.0, [1.0, 2.0, 3.0])
+        self.assertEqual(controle['statut'], 'a_surveiller')
+        self.assertEqual(controle['statistiques_atypiques'][0]['statistique'], 'aces')
+        self.assertEqual(controle['statistiques_atypiques'][0]['centile'], 97.5)
+        # Une statistique constante est au 50e centile : aucune fausse alerte.
+        self.assertEqual(len(controle['statistiques_atypiques']), 1)
 
 
 def _match(jour, g, p, dg, dl, surface='Hard', circuit='ATP'):
