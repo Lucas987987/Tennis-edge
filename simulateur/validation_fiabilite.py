@@ -118,7 +118,9 @@ def preparer(resultats, version='combinaison'):
         v = m['prevus'][version]
         d = dt.datetime.fromisoformat(m['debut'].replace('Z', '+00:00'))
         rows.append({'note': float(f['note']), 'p': float(v['p_home']),
-                     'y': int(m['gagnant'] == 'home'), 'semaine': d.isocalendar()[:2]})
+                     'y': int(m['gagnant'] == 'home'), 'semaine': d.isocalendar()[:2],
+                     'categorie': f.get('categorie') or 'D_non_controle',
+                     'desaccord': bool(f.get('desaccord_vainqueur_elo_simulation'))})
     return rows
 
 
@@ -126,6 +128,9 @@ def evaluer(resultats, version='combinaison'):
     rows = preparer(resultats, version)
     par_niveau = {niveau: _metriques([r for r in rows if FI.niveau(r['note']) == niveau])
                   for niveau in FI.NIVEAUX}
+    par_categorie = {cat: _metriques([r for r in rows if r['categorie'] == cat])
+                     for cat in FI.CATEGORIES}
+    desaccords = {str(v): _metriques([r for r in rows if r['desaccord'] is v]) for v in (False, True)}
     bas = [r for r in rows if r['note'] < FI.SEUILS['correct']]
     haut = [r for r in rows if r['note'] >= FI.SEUILS['correct']]
     notes = sorted({r['note'] for r in rows})
@@ -151,7 +156,9 @@ def evaluer(resultats, version='combinaison'):
         verdict = 'non_concluant'
     return {
         'version': version, 'n_avec_note': len(rows), 'global': _metriques(rows),
-        'par_niveau': par_niveau, 'contraste_correct_ou_solide_vs_fragile_ou_prudent': contraste,
+        'par_niveau': par_niveau, 'par_categorie': par_categorie,
+        'par_desaccord_elo_simulation': desaccords,
+        'contraste_correct_ou_solide_vs_fragile_ou_prudent': contraste,
         'effectifs_contraste': {'notes_fragile_ou_prudent': len(bas), 'notes_correct_ou_solide': len(haut)},
         'spearman_note_vs_perte': monotone,
         'statut': 'interpretable' if pret else 'accumulation', 'verdict_notes': verdict,
