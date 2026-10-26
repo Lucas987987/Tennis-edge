@@ -99,6 +99,14 @@ def valider(doc, simulations_attendues=20000):
                 raise ValueError(f"trace={reel['score']}, score annoncé={scenario.get('score')}")
             if scenario.get('sets') is not None and [tuple(x) for x in scenario['sets']] != reel['sets']:
                 raise ValueError('sets du scénario différents de la trace')
+            stabilite = sim.get('stabilite_score')
+            if stabilite is not None:
+                if stabilite.get('statut') not in ('stable', 'fragile', 'instable', 'non_controle'):
+                    raise ValueError('statut de stabilité du score inconnu')
+                if stabilite.get('score_reference') != scenario.get('score'):
+                    raise ValueError('la stabilité ne contrôle pas le score modal publié')
+                if stabilite.get('n_par_bloc') != n:
+                    raise ValueError('blocs de stabilité différents du nombre de simulations publié')
         except (TypeError, ValueError) as e:
             erreurs.append(f'{uid}: {e}')
     if erreurs:
