@@ -24,10 +24,10 @@ class PreditReel(unittest.TestCase):
             S = {'2-0': 0.45, '2-1': 0.25, '1-2': 0.15, '0-2': 0.15}
             det = {'combinaison': version(0.68, S, [['6-4 6-4', 0.04], ['6-3 6-4', 0.035], ['6-4 6-3', 0.03]], 22.0),
                    'simulation': version(0.45, {'2-0': 0.2, '2-1': 0.25, '1-2': 0.25, '0-2': 0.3}, [['4-6 4-6', 0.03]], 23.0),
-                   'stats': version(0.7, S, [], 21.5), 'marche': version(0.66, S, [], 22.0)}
+                   'stats': version(0.7, S, [], 21.5)}
             r = {'uid': '2026-10-21_arthur_fils_hugo_gaston', 'pronostique_le': '2026-10-21T08:00:00Z', 'debut': '2026-10-21T14:00',
                  'home': 'Arthur Fils', 'away': 'Hugo Gaston', 'tournoi': 'ATP Vienna', 'circuit': 'ATP', 'meilleur_des': 3,
-                 'stats': {'p_home': 0.7, 'sets': S}, 'marche': {'p_home': 0.66, 'sets': S}, 'detail': det}
+                 'stats': {'p_home': 0.7, 'sets': S}, 'detail': det}
             open(os.path.join(d, P.LOG), 'w').write(json.dumps(r) + '\n')
             json.dump({'2026-10-21_arthur_fils_hugo_gaston': {'match': 'home', 'set1': 'home', 'set2': 'home'}},
                       open(os.path.join(d, 'set_results.json'), 'w'))
@@ -38,7 +38,7 @@ class PreditReel(unittest.TestCase):
                 f.write(json.dumps(fi) + '\n')
             doc = {'genere_le': '2026-10-21T12:00:00Z', 'facteurs_adoptes': [], 'combinaison': None,
                    'matchs': [dict(r, surface='Hard', combinaison=det['combinaison'], simulation=det['simulation'],
-                                   stats=det['stats'], marche=det['marche'], direct=None, pin_cotes=[1.45, 2.8])]}
+                                   stats=det['stats'], direct=None)]}
             self.assertEqual(P.enregistrer_instantanes(d, doc), 1)
             doc2 = dict(doc, genere_le='2026-10-21T18:00:00Z')               # après le début : pas « dernier »
             P.enregistrer_instantanes(d, doc2)
@@ -46,7 +46,8 @@ class PreditReel(unittest.TestCase):
             R = P.resoudre(d, dt.datetime(2026, 10, 22, 12))
             self.assertEqual(len(R), 1)
             x = R[0]
-            self.assertEqual(x['reel'], {'gagnant': 'home', 'sets': '2-0', 'score': '6-4 6-4', 'jeux': 20, 'feuille': None, 'interrompu': None})
+            self.assertEqual(x['reel'], {'gagnant': 'home', 'sets': '2-0', 'score': '6-4 6-4', 'jeux': 20,
+                                         'feuille': None, 'interrompu': None, 'score_invalide': False})
             c = x['premier']['combinaison']
             self.assertTrue(c['vainqueur_juste'])
             self.assertTrue(c['sets_justes'])

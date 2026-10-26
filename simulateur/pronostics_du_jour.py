@@ -6,8 +6,9 @@ pronostics_du_jour.py — pronostic de chaque match à venir, deux versions côt
   « stats seules »   : force Elo (elo_etat.json, refait chaque run depuis tous
                         les résultats) + style service/retour de chaque joueur
                         (notes_joueurs.json) + forme du jour, dans le moteur ;
-  « stats + marché » : même moteur, niveau pris à la cote Pinnacle (marge
-                        retirée) quand Pinnacle cote le match.
+  « simulation pure » : profils service/retour ajustés aux adversaires ;
+  « combinaison »   : Elo + simulation + corrections apprises sur le passé.
+Aucune cote ni aucun mouvement de marché n'entre dans ces trois variantes.
 Pour chaque match : probabilité de victoire, 2-0 / 2-1 / 1-2 / 0-2 (ou en 5
 sets), les 3 scores complets les plus probables set par set dans l'ordre réel
 (ex. « 4-6 6-3 6-4 »), victoire après la perte du 1er set, set 1, total de jeux
@@ -18,7 +19,7 @@ simulateur/pronostics_log.jsonl et jamais modifié ; le bilan (taux de
 vainqueurs devinés des deux versions, sur les matchs joués) se calcule sur ce
 journal — un vrai suivi en direct, sans retouche.
 
-MATCH SIMULÉ (22/10/2026) : chaque version est aussi jouée 5 000 fois point
+MATCH SIMULÉ : chaque version est aussi jouée SIMULATIONS fois point
 par point (match_simule.py) avec le profil de service des deux joueurs
 (profils_service.json : % de 1re balle, aces, doubles fautes, points gagnés
 derrière la 1re et la 2e balle, qualité de retour), au niveau de la version.
@@ -31,7 +32,6 @@ Sorties : Tennis_Edge_Lab/live/pronostics.json, Tennis_Edge_Lab/live/pronostics_
 simulateur/pronostics_log.jsonl. 0 requête API.
 """
 import datetime as dt
-import importlib.util
 import json
 import math
 import os
@@ -42,6 +42,7 @@ ICI = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, ICI)
 import elo as E  # noqa: E402
 import feuilles as FE  # noqa: E402
+import fiabilite as FI  # noqa: E402
 import match_simule as MS  # noqa: E402
 import modele as M  # noqa: E402
 import nos_resultats as NR  # noqa: E402
@@ -49,27 +50,20 @@ import profils_service as PS  # noqa: E402
 import ajustement as AJ  # noqa: E402
 
 SIGMA = 0.15
-SIMULATIONS = int(os.environ.get('SIMULATIONS', '5000'))
+SIMULATIONS = int(os.environ.get('SIMULATIONS', '20000'))
 BALLES_CONNU = 500          # profil « connu » : au moins 500 balles de service (pondérées) dans l'archive
 HORIZON_H = 36
 LOG = 'simulateur/pronostics_log.jsonl'
 # 22/10/2026 — TOUT est enregistré pour l'analyse a posteriori :
 #   INSTANTANES : chaque passage (toutes les 6 h), chaque match, chaque version (%, sets, scores,
-#                 jeux, tie-break, facteurs, cote Pinnacle) — on voit le pronostic évoluer jusqu'au match ;
+#                 jeux, tie-break, facteurs) — on voit le pronostic évoluer jusqu'au match ;
 #   RESULTATS   : chaque match joué, prédiction (1re et dernière avant le match) contre résultat réel
 #                 (vainqueur, score en sets et en jeux, feuille de stats), et ce qui était juste ou faux.
 INSTANTANES = 'simulateur/journal_pronostics'
 RESULTATS = 'Tennis_Edge_Lab/live/pronostics_resultats.json'
-VERSIONS = ('combinaison', 'simulation', 'stats', 'marche')
+VERSIONS = ('combinaison', 'simulation', 'stats')
 SORTIE = 'Tennis_Edge_Lab/live/pronostics.json'
 BILAN = 'Tennis_Edge_Lab/live/pronostics_bilan.json'
-
-
-def _books(racine):
-    sp = importlib.util.spec_from_file_location('tennis_edge_pj_books', os.path.join(racine, 'Tennis_Edge_Lab', 'books.py'))
-    b = importlib.util.module_from_spec(sp)
-    sp.loader.exec_module(b)
-    return b
 
 
 def circuit(t):
@@ -378,24 +372,14 @@ def matchs_a_venir(racine, maintenant):
         h, a = m.get('home_team'), m.get('away_team')
         if not h or not a:
             continue
-        pin = None
-        for bk in m.get('bookmakers') or []:
-            if bk.get('key') != 'pinnacle':
-                continue
-            for mk in bk.get('markets') or []:
-                if mk.get('key') == 'h2h':
-                    px = {o.get('name'): o.get('price') for o in mk.get('outcomes') or []}
-                    if px.get(h) and px.get(a):
-                        pin = (float(px[h]), float(px[a]))
-        out.append({'debut': debut, 'home': h, 'away': a, 'tournoi': m.get('sport_title') or '', 'pin': pin})
+        out.append({'debut': debut, 'home': h, 'away': a, 'tournoi': m.get('sport_title') or ''})
     out.sort(key=lambda x: x['debut'])
     return out
 
 
 def construire(racine, maintenant=None):
     maintenant = maintenant or dt.datetime.utcnow()
-    books = _books(racine)
-    etat = json.load(open(os.path.join(racine, 'simulateur', 'elo_etat.json'), encoding='utf-8'))
+    etat = E.migrer_etat(json.load(open(os.path.join(racine, 'simulateur', 'elo_etat.json'), encoding='utf-8')))
     elo = E.Elo.importer(etat['joueurs'], etat.get('options'))
     surf = etat.get('surfaces_tournois') or {}
     S = Styles(os.path.join(racine, 'simulateur', 'notes_joueurs.json'))
@@ -420,22 +404,25 @@ def construire(racine, maintenant=None):
     alias.update(E.unifier({k: v.get('nom', k) for k, v in etat['joueurs'].items()},
                            [n for x in venir for n in (x['home'], x['away'])]))
     cle_c = lambda n: alias.get(E.cle(n), E.cle(n))
-    out = []
+    noms = [v.get('nom', k) for k, v in etat['joueurs'].items()] + [n for x in venir for n in (x['home'], x['away'])]
+    ambigus = {c['cle'] for c in E.collisions_identite(noms)}
+    out, rejets = [], []
     for x in venir:
         h, a = cle_c(x['home']), cle_c(x['away'])
+        if not h or not a or h == a or h in ambigus or a in ambigus:
+            rejets.append({'home': x['home'], 'away': x['away'], 'raison': 'identite_ambigue'})
+            continue
         c = circuit(x['tournoi'])
         if etat.get('depart_bas') and c in ('CH', 'ITF'):
             elo.presenter(h, etat['depart_bas'])
             elo.presenter(a, etat['depart_bas'])
         s = NR.surface_de(x['tournoi'], surf)
+        if s not in E.SURFACES:
+            rejets.append({'home': x['home'], 'away': x['away'], 'tournoi': x['tournoi'], 'raison': 'surface_inconnue'})
+            continue
         sg = 3 if NR.cinq_sets(x['tournoi']) else 2
         pa0, pb0 = S.service(h, a, c, s)
         stats = pronostic(elo.proba(h, a, s), c, sg, pa0, pb0)
-        marche = None
-        if x['pin'] and min(x['pin']) > 1:
-            k = books.power_exponent(*x['pin'])
-            ph = (1 / x['pin'][0]) ** k if k else (1 / x['pin'][0]) / (1 / x['pin'][0] + 1 / x['pin'][1])
-            marche = pronostic(ph, c, sg, pa0, pb0)
         uid = f"{x['debut'].date()}_{NR.slug(x['home'])}_{NR.slug(x['away'])}"
         simulation = combinaison = direct = None
         if PR is not None:
@@ -463,7 +450,8 @@ def construire(racine, maintenant=None):
                     import classements as CLS
                     sit['classement'] = tuple(CLS.niveau_inconnu(CLASSEMENTS.rang_au(j, x['debut']), elo.matchs(j)) for j in (h, a))
                 p_c = ajuster_combinaison(p_c, c, stats['p_home'], p_sim, elo.matchs(h), elo.matchs(a), sit, s, 2 * sg - 1)
-                combinaison = dict(pronostic(p_c, c, sg, pa0, pb0), p_simulation=round(p_sim, 4), p_elo=stats['p_home'])
+                combinaison = dict(pronostic(p_c, c, sg, MS.p_service(cH), MS.p_service(cA)),
+                                   p_simulation=round(p_sim, 4), p_elo=stats['p_home'])
             # 22/10/2026 — EN DIRECT (direct.py, Lab) : points de service des deux joueurs pour la version
             # principale (simulation + Elo si adoptée, sinon simulation pure), avant toute forme du jour.
             cH0, cA0 = avec_facteurs(*composantes_du_match(PR, h, a, c, s, pure=not combinaison)[:2], fct)
@@ -472,20 +460,19 @@ def construire(racine, maintenant=None):
                 pa_s, pb_s = MS.ancrer_rapide(pa_s, pb_s, combinaison['p_home'], sg, SIGMA)
             direct = {'a': round(pa_s, 5), 'b': round(pb_s, 5), 'sigma': SIGMA if combinaison else sigma_sim(), 'sets_gagnants': sg,
                       'tb_final': 10 if sg == 3 else 7, 'version': 'combinaison' if combinaison else 'simulation'}
-            for nom_v, v in (('stats', stats), ('marche', marche), ('combinaison', combinaison)):
+            for nom_v, v in (('stats', stats), ('combinaison', combinaison)):
                 if v:
                     v['match_simule'] = match_simule(PR, h, a, c, s, sg, v['p_home'], f"{uid}|{nom_v}", fct)
         out.append({'uid': uid,
                     'debut': x['debut'].isoformat(timespec='minutes'), 'tournoi': x['tournoi'], 'circuit': c,
                     'surface': s, 'meilleur_des': 2 * sg - 1, 'home': x['home'], 'away': x['away'],
                     'cles': [h, a], 'matchs_joues': [elo.matchs(h), elo.matchs(a)], 'style_connu': [S.connu(h), S.connu(a)],
-                    'pin_cotes': list(x['pin']) if x['pin'] else None,
-                    'combinaison': combinaison, 'simulation': simulation, 'stats': stats, 'marche': marche, 'direct': direct})
+                    'combinaison': combinaison, 'simulation': simulation, 'stats': stats, 'direct': direct})
     return {'genere_le': maintenant.isoformat(timespec='seconds') + 'Z', 'elo_au': etat.get('dernier_match'),
             'horizon_h': HORIZON_H, 'sigma': SIGMA, 'simulations': SIMULATIONS if PR is not None else 0,
             'profils_au': PR.jour_export.isoformat() if PR is not None else None,
             'facteurs_adoptes': (FACTEURS or {}).get('adoptes') or [], 'combinaison': COMBINAISON,
-            'reglage_simulation': REGLAGE_SIM,
+            'reglage_simulation': REGLAGE_SIM, 'rejets_entrees': rejets,
             'noeuds_forme': [[round(z, 6), round(w, 8)] for z, w in zip(M._Z, M._W)], 'matchs': out}
 
 
@@ -493,13 +480,12 @@ SUIVI_STATS = ('aces', 'doubles_fautes', 'premiere_pct', 'gagnes_1re_pct', 'gagn
 
 
 def feuille_prevue(m):
-    """Feuille simulée gardée au journal (simulation pure ; à défaut marché, puis stats seules) :
-    {stat: [[moy, p10, p90] home, [..] away]} + total de jeux."""
-    v = next((m[k] for k in ('simulation', 'marche', 'stats') if m.get(k) and m[k].get('match_simule')), None)
+    """Feuille de la MÊME variante que le pronostic public, jamais celle d'une autre version."""
+    v = next((m[k] for k in VERSIONS if m.get(k) and m[k].get('match_simule')), None)
     S = (v or {}).get('match_simule')
     if not S:
         return None
-    out = {'version': next(k for k in ('simulation', 'marche', 'stats') if m.get(k) is v)}
+    out = {'version': next(k for k in VERSIONS if m.get(k) is v)}
     for k in SUIVI_STATS:
         a, b = S['feuille'][0].get(k), S['feuille'][1].get(k)
         if a and b:
@@ -622,14 +608,13 @@ def journaliser(racine, doc):
             f.write(json.dumps({'uid': m['uid'], 'pronostique_le': doc['genere_le'], 'debut': m['debut'],
                                 'home': m['home'], 'away': m['away'], 'tournoi': m['tournoi'], 'circuit': m['circuit'],
                                 'stats': {'p_home': m['stats']['p_home'], 'sets': m['stats']['sets']},
-                                'marche': ({'p_home': m['marche']['p_home'], 'sets': m['marche']['sets']} if m['marche'] else None),
                                 'simulation': ({'p_home': m['simulation']['p_home'], 'sets': m['simulation']['sets']}
                                                if m.get('simulation') else None),
                                 'combinaison': ({'p_home': m['combinaison']['p_home'], 'sets': m['combinaison']['sets']}
                                                 if m.get('combinaison') else None),
                                 'detail': {k: resume_version(m.get(k)) for k in VERSIONS},
                                 'pin_cotes': m.get('pin_cotes'), 'surface': m.get('surface'),
-                                'meilleur_des': m.get('meilleur_des'),
+                                'meilleur_des': m.get('meilleur_des'), 'matchs_joues': m.get('matchs_joues'),
                                 'feuille': feuille_prevue(m)},
                                ensure_ascii=False) + '\n')
             n += 1
@@ -704,7 +689,7 @@ def bilan(racine, maintenant=None):
                 out.append({'tranche': f"{lo}–{lo + 10} %", 'n': len(g), 'prevu': round(100 * sum(p for p, _ in g) / len(g), 1),
                             'reel': round(100 * sum(w for _, w in g) / len(g), 1)})
         return out
-    VERS = (('combinaison', 'combinaison'), ('simulation', 'simulation'), ('stats_seules', 'stats'), ('stats_plus_marche', 'marche'))
+    VERS = (('combinaison', 'combinaison'), ('simulation', 'simulation'), ('stats_seules', 'stats'))
     depuis7 = (maintenant - dt.timedelta(days=7)).date().isoformat()
     L7 = [x for x in L if x['debut'] >= depuis7]
     doc = {'genere_le': maintenant.isoformat(timespec='seconds') + 'Z', 'pronostiques': len(vus), 'joues_avec_resultat': len(L),
@@ -716,7 +701,7 @@ def bilan(racine, maintenant=None):
            'derniers': [{'debut': x['debut'], 'home': x['home'], 'away': x['away'], 'gagnant': x['gagnant'],
                          'combinaison': (x.get('combinaison') or {}).get('p_home'),
                          'simulation': (x.get('simulation') or {}).get('p_home'),
-                         'stats': x['stats']['p_home'], 'marche': (x['marche'] or {}).get('p_home')}
+                         'stats': x['stats']['p_home']}
                         for x in sorted(L, key=lambda x: x['debut'])[-30:]],
            'match_simule_contre_feuille': suivi_feuilles(racine, journal)}
     return doc
@@ -754,7 +739,7 @@ def juger(v, gagnant, sets, score, jeux):
     return out
 
 
-# ------------------------------------------------------------------ 23/10/2026 : la feuille entière contre les 5 000 simulations
+# ------------------------------------------------------------------ La feuille entière contre les simulations
 DIAG_STATS = ('premiere_pct', 'gagnes_1re_pct', 'gagnes_2e_pct', 'aces', 'doubles_fautes', 'breaks', 'jeux')
 SERVICE_STATS = ('premiere_pct', 'gagnes_1re_pct', 'gagnes_2e_pct')
 DIAG_LIB = {'premiere_pct': '% de 1re balle', 'gagnes_1re_pct': 'points gagnés derrière la 1re',
@@ -763,7 +748,7 @@ DIAG_LIB = {'premiere_pct': '% de 1re balle', 'gagnes_1re_pct': 'points gagnés 
 
 
 def diagnostic(prevue, reelle, gagnant, p_home_sim):
-    """Chaque statistique de la vraie feuille placée dans la distribution des 5 000 simulations (journal, 1re
+    """Chaque statistique de la vraie feuille placée dans la distribution des simulations (journal, 1re
     prédiction) : prévu (moyenne), fourchette à 80 %, réel, écart réduit z = (réel − prévu) / écart type des
     simulations. Puis CE QUI A FAIT LA DIFFÉRENCE : la statistique de service où un joueur s'est le plus écarté
     de sa simulation dans le sens du vrai résultat (z orienté ≥ 1)."""
@@ -812,7 +797,7 @@ def biais(R, min_n=30):
             for role in ('favori', 'outsider'):
                 xs = []
                 for m in G:
-                    ph = m.get('p_simulation')
+                    ph = m.get('p_affiche', m.get('p_simulation'))
                     if ph is None:
                         continue
                     cote = ('home' if ph >= 0.5 else 'away') if role == 'favori' else ('away' if ph >= 0.5 else 'home')
@@ -888,26 +873,31 @@ def resoudre(racine, maintenant=None):
             gagnant = 'home' if (fi['vainqueur'] == 1) != inv else 'away'
         if gagnant not in ('home', 'away'):
             continue
+        score_brut = score
         if score:
-            ns = [tuple(int(v) for v in x.split('-')) for x in score.split()]
-            gh, ga = sum(1 for a, b in ns if a > b), sum(1 for a, b in ns if b > a)
-            if (gh > ga) == (gagnant == 'home'):
-                sets = f"{gh}-{ga}"
+            g_score = NR.gagnant_score(score, r.get('meilleur_des', 3))
+            if g_score == gagnant:
+                ns = [tuple(int(v) for v in x.split('-')) for x in score.split()]
+                sets = f"{sum(a > b for a, b in ns)}-{sum(b > a for a, b in ns)}"
             else:
-                score = None                     # feuille incohérente avec le résultat : on ne garde pas le score
+                score = None                     # incomplet, impossible ou incohérent : jamais utilisé pour apprendre
         jeux = sum(a + b for a, b in (tuple(int(v) for v in x.split('-')) for x in score.split())) if score else None
-        feuille = FE.feuille_reelle(fi, inv) if fi else None
+        feuille = FE.feuille_reelle(fi, inv) if fi and (not score_brut or score) else None
         avant = [x for x in inst.get(r['uid'], []) if x['passage'][:16] < r['debut'][:16]]
         dernier = avant[-1] if avant else None
         premier = r.get('detail') or {k: r.get(k) for k in VERSIONS}
+        p_affiche = next(((premier.get(k) or {}).get('p_home') for k in VERSIONS
+                          if (premier.get(k) or {}).get('p_home') is not None), None)
         out.append({'uid': r['uid'], 'debut': r['debut'], 'home': r['home'], 'away': r['away'], 'tournoi': r['tournoi'],
-                    'circuit': r.get('circuit'), 'pronostique_le': r.get('pronostique_le'),
+                    'circuit': r.get('circuit'), 'surface': r.get('surface'), 'meilleur_des': r.get('meilleur_des', 3),
+                    'pronostique_le': r.get('pronostique_le'), 'matchs_joues': r.get('matchs_joues'),
                     'dernier_passage': dernier['passage'] if dernier else None, 'n_passages': len(avant),
                     'reel': {'gagnant': gagnant, 'sets': sets, 'score': score, 'jeux': jeux,
-                             'feuille': feuille[0] if feuille else None, 'interrompu': interrompu},
+                             'feuille': feuille[0] if feuille else None, 'interrompu': interrompu,
+                             'score_invalide': bool(score_brut and not score)},
                     'premier': {k: juger(premier.get(k), gagnant, sets, score, jeux) for k in VERSIONS},
-                    'p_simulation': (premier.get('simulation') or {}).get('p_home'),
-                    'diagnostic': (diagnostic(r.get('feuille'), feuille[0], gagnant, (premier.get('simulation') or {}).get('p_home'))
+                    'p_simulation': (premier.get('simulation') or {}).get('p_home'), 'p_affiche': p_affiche,
+                    'diagnostic': (diagnostic(r.get('feuille'), feuille[0], gagnant, p_affiche)
                                    if feuille and not interrompu else None),
                     'dernier': ({k: juger(dernier.get(k), gagnant, sets, score, jeux) for k in VERSIONS} if dernier else None),
                     'pin_cotes': r.get('pin_cotes')})
@@ -918,6 +908,14 @@ def resoudre(racine, maintenant=None):
 def main(argv):
     racine = argv[1] if len(argv) > 1 else os.path.join(ICI, '..')
     doc = construire(racine)
+    # Seuls les résultats déjà publiés entrent dans la note : aucun résultat du match à venir,
+    # ni résolution nouvellement calculée pendant ce passage, ne peut fuiter dans le pronostic.
+    try:
+        with open(os.path.join(racine, RESULTATS), encoding='utf-8') as f:
+            anciens_resultats = json.load(f)
+    except (OSError, ValueError):
+        anciens_resultats = {}
+    FI.ajouter(doc['matchs'], anciens_resultats)
     os.makedirs(os.path.join(racine, 'Tennis_Edge_Lab', 'live'), exist_ok=True)
     with open(os.path.join(racine, SORTIE), 'w', encoding='utf-8') as f:
         json.dump(doc, f, ensure_ascii=False, indent=1)
@@ -934,7 +932,7 @@ def main(argv):
     t = b['tous']
     print(f"Pronostics : {len(doc['matchs'])} matchs dans les {HORIZON_H} h ({n} nouveaux au journal) · "
           f"bilan sur {b['joues_avec_resultat']} matchs joués : stats {t['stats_seules'].get('reussite_pct')} % · "
-          f"marché {t['stats_plus_marche'].get('reussite_pct')} %")
+          f"combinaison {t['combinaison'].get('reussite_pct')} %")
     return 0
 
 

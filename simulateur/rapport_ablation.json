@@ -1,0 +1,92 @@
+{
+ "n": 155,
+ "semaines": 2,
+ "source": "premiers pronostics pré-match figés",
+ "population": "mêmes matchs pour les quatre modèles ; abandons, forfaits et entrées incomplètes exclus",
+ "combinaison_base": "mélange logit fixe 50 % Elo / 50 % simulation",
+ "bootstrap": {
+  "unite": "semaine ISO",
+  "repetitions": 2000
+ },
+ "avertissement": "Moins de 8 semaines : intervalles exploratoires, pas une preuve de supériorité.",
+ "modeles": {
+  "elo": {
+   "n": 155,
+   "log_loss": 0.65168,
+   "brier": 0.23061,
+   "reussite_pct": 63.87097
+  },
+  "simulation": {
+   "n": 155,
+   "log_loss": 0.63451,
+   "brier": 0.22358,
+   "reussite_pct": 61.29032
+  },
+  "combinaison_base": {
+   "n": 155,
+   "log_loss": 0.63623,
+   "brier": 0.22447,
+   "reussite_pct": 63.87097
+  },
+  "pipeline_complet": {
+   "n": 155,
+   "log_loss": 0.63728,
+   "brier": 0.22498,
+   "reussite_pct": 61.93548
+  }
+ },
+ "comparaisons": {
+  "pipeline_complet_contre_elo": {
+   "difference": {
+    "log_loss": 0.01439,
+    "brier": 0.00563
+   },
+   "ic95": {
+    "log_loss": {
+     "bas": 0.01398,
+     "haut": 0.01643
+    },
+    "brier": {
+     "bas": 0.00535,
+     "haut": 0.00569
+    }
+   },
+   "sens": "positif = pipeline complet meilleur (perte de l’autre moins perte du pipeline)"
+  },
+  "pipeline_complet_contre_simulation": {
+   "difference": {
+    "log_loss": -0.00277,
+    "brier": -0.0014
+   },
+   "ic95": {
+    "log_loss": {
+     "bas": -0.0133,
+     "haut": 0.04947
+    },
+    "brier": {
+     "bas": -0.00573,
+     "haut": 0.02012
+    }
+   },
+   "sens": "positif = pipeline complet meilleur (perte de l’autre moins perte du pipeline)"
+  },
+  "pipeline_complet_contre_combinaison_base": {
+   "difference": {
+    "log_loss": -0.00106,
+    "brier": -0.00051
+   },
+   "ic95": {
+    "log_loss": {
+     "bas": -0.00636,
+     "haut": 0.02525
+    },
+    "brier": {
+     "bas": -0.00282,
+     "haut": 0.01094
+    }
+   },
+   "sens": "positif = pipeline complet meilleur (perte de l’autre moins perte du pipeline)"
+  }
+ },
+ "genere_le": "2026-10-26T11:24:37+00:00"
+}
