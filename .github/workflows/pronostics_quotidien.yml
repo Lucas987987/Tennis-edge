@@ -87,8 +87,11 @@ jobs:
         run: python simulateur/pronostics_du_jour.py .
       # 23/10/2026 : données du site public (algo/index.html) : % et cote juste de chaque match, match du jour
       # complet, bilan public, calibration. Aucune cote de bookmaker, aucun signal privé.
-      - name: Site public de l'algo
-        run: python simulateur/vitrine.py . || echo '::warning::site public non mis à jour'
+      - name: Site public de l'algo — génération et contrôle bloquants
+        run: |
+          set -euo pipefail
+          python simulateur/vitrine.py .
+          python simulateur/validation_vitrine.py .
       - name: Publier
         run: |
           set -euo pipefail

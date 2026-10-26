@@ -599,6 +599,7 @@ function Arcade(root, m, opts){
   const scenario = m.simulation && m.simulation.scenario;
   const traceTop = scenario && /^[01]+$/.test(scenario.points || '') ? scenario.points : null;
   const scoreTop = traceTop ? (m.scores_probables || []).find(x => x[0] === scenario.score) : null;
+  const nSim = Math.max(1, Math.round(Number(m.simulation.n) || Number(D.simulations) || 0));
   const cible = traceTop ? [scenario.score, scoreTop ? scoreTop[1] : null] : (m.scores_probables || [])[0] || null;
   let tirageTop;
   function chercherTop(){
@@ -620,16 +621,16 @@ function Arcade(root, m, opts){
   let enCoursTop = false;
   function squelette(){
     root.innerHTML = `<div class="grid"></div><div class="scene">
-      <div class="tag"><span class="live"><i></i>${esc(t('a_live'))}</span><span>${esc(m.tournoi)}</span><span><b>${esc(t('a_sim'))}</b> ${esc(t('a_fois', D.simulations))}</span></div>
+      <div class="tag"><span class="live"><i></i>${esc(t('a_live'))}</span><span>${esc(m.tournoi)}</span><span><b>${esc(t('a_sim'))}</b> ${esc(t('a_fois', nSim))}</span></div>
       <div class="duel">${[0,1].map(i=>`<div class="pj p${i+1}" data-pj="${i}"><div class="nom">${esc(noms[i])}</div>
         <div class="pct" data-pc="${i}"></div><div class="lbl">${esc(t('a_chance'))}</div><div class="vie"><i data-vie="${i}"></i></div></div>`).join('')}</div>
       <div class="score"><table><tbody><tr class="r1" data-sr="0"></tr><tr class="r2" data-sr="1"></tr></tbody></table></div>
       <div class="arene"><div class="court"><div class="cote haut" data-cote="1"></div><div class="cote bas" data-cote="0"></div>
         <div class="filet"></div><div class="balle"></div></div></div>
-      <div class="pied">${esc(t('a_pied', D.simulations))}</div></div>
+      <div class="pied">${esc(t('a_pied', nSim))}</div></div>
       <div class="annonce"></div><div class="combo"></div><div class="ralenti">${esc(t('a_ralenti'))}</div>
       <div class="ecran intro"><div class="vs-n a">${esc(m.home)}</div><div class="vs-x">VS</div>
-        <div class="vs-n b">${esc(m.away)}</div><div class="vs-t">${t(enCoursTop ? 'a_vs_top' : 'a_vs_t', D.simulations)}</div>
+        <div class="vs-n b">${esc(m.away)}</div><div class="vs-t">${t(enCoursTop ? 'a_vs_top' : 'a_vs_t', nSim)}</div>
         ${opts.video ? '' : `<button type="button" class="start">▶ ${esc(t('jouer'))}</button>`}</div>`;
     const b = $('.start'); if (b) b.onclick = () => jouer();
   }
@@ -754,8 +755,8 @@ function Arcade(root, m, opts){
     fin.innerHTML = `<div class="fin-t">${esc(t('a_fin'))}</div>
       <div class="fin-w" style="color:${coul(w)};text-shadow:0 0 5cqw ${coul(w)}">${esc(t('a_gagne', noms[w]))}</div>
       <div class="fin-s">${esc(scoreTxt(S, w === 1))}</div>
-      <div class="fin-p">${t('a_fin_p', esc(noms[fav]), Math.max(p,1-p)*100, D.simulations)}</div>
-      ${enCoursTop && cible && cible[1] != null ? `<div class="fin-p">${t('a_fin_top', esc(cible[0]), cible[1]*100, D.simulations)}</div>` : ''}
+      <div class="fin-p">${t('a_fin_p', esc(noms[fav]), Math.max(p,1-p)*100, nSim)}</div>
+      ${enCoursTop && cible && cible[1] != null ? `<div class="fin-p">${t('a_fin_top', esc(cible[0]), cible[1]*100, nSim)}</div>` : ''}
       ${opts.video && Q.get('adresse') === '1' ? `<div class="fin-url">${esc(t('v_url'))}</div>` : ''}
       ${opts.video ? '' : `<button type="button" class="start">↻ ${esc(t('rejouer'))}</button>`}`;
     root.appendChild(fin); son('fin');
@@ -805,6 +806,7 @@ function rendMdj(){
   const id = D.match_du_jour && D.match_du_jour.uid, m = D.matchs.find(x=>x.uid===id);
   if (!m){ zone.innerHTML = `<div class="panel empty">${esc(t('mdj_vide'))}</div>`; return; }
   const p = m.p_home;
+  const nSim = Math.max(1, Math.round(Number(m.simulation && m.simulation.n) || Number(D.simulations) || 0));
   const sets = m.sets ? Object.entries(m.sets) : [];
   const bo = sets.map(([k,v])=>{ const [h,a]=k.split('-').map(Number);
     return `<div class="bar ${a>h?'away':''}"><span class="num">${esc(k)}</span><span class="t"><i style="width:${(v*100).toFixed(1)}%"></i></span><span class="num" style="text-align:right">${pc0(v)}</span></div>`; }).join('');
@@ -815,7 +817,7 @@ function rendMdj(){
   zone.innerHTML = `<div class="mdj">
     <div>${m.simulation ? `<div class="borne"><div class="ecran-jeu" id="borne"></div></div>
       <div class="commandes"><button type="button" class="btn" id="b-accel" disabled>⏩ ${esc(t('accel'))}</button><button type="button" class="btn" id="b-fin" disabled>⏭ ${esc(t('fin'))}</button></div>
-      <p class="aide">${esc(t('jouer_aide', D.simulations))}</p><p class="final" id="final" aria-live="polite"></p>` : ''}</div>
+      <p class="aide">${esc(t('jouer_aide', nSim))}</p><p class="final" id="final" aria-live="polite"></p>` : ''}</div>
     <div class="fiche">
       <div class="panel duelx">
         <p class="ctx">${esc(m.tournoi)} · ${esc(SURF[L][m.surface]||m.surface||'')} · ${esc(jourCourt(m.debut))} ${esc(heure(m.debut))}</p>
@@ -829,7 +831,7 @@ function rendMdj(){
         ${bo ? `<div class="panel"><h3>${esc(t('sets_titre'))}</h3><div class="bars">${bo}</div></div>` : ''}
         ${sc ? `<div class="panel"><h3>${esc(t('scores_titre'))}</h3><div class="bars">${sc}</div></div>` : ''}
       </div>
-      ${lignes ? `<div class="panel"><h3>${esc(t('feuille_titre', D.simulations))}</h3><table class="sheet"><thead><tr><th></th><th class="c1">${esc(court(m.home))}</th><th class="c2">${esc(court(m.away))}</th></tr></thead><tbody>${lignes}</tbody></table></div>` : ''}
+      ${lignes ? `<div class="panel"><h3>${esc(t('feuille_titre', nSim))}</h3><table class="sheet"><thead><tr><th></th><th class="c1">${esc(court(m.home))}</th><th class="c2">${esc(court(m.away))}</th></tr></thead><tbody>${lignes}</tbody></table></div>` : ''}
     </div></div>`;
   if (m.simulation){
     const fin = document.getElementById('final');

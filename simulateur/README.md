@@ -16,6 +16,7 @@ jouer 5 000 matchs au hasard, il calcule la probabilité de chaque issue.
 | `ablation.py` | Elo, simulation, mélange de base et pipeline complet sur les mêmes pronostics figés, avec bootstrap par semaine |
 | `evaluation_sorties.py` | log loss des sets, rang des scores, erreur des jeux et des statistiques, couverture réelle des intervalles à 80 % |
 | `validation_fiabilite.py` | performances par niveau de note, calibration et contraste temporel apparié |
+| `validation_vitrine.py` | contrôle bloquant des 20 000 simulations et rejeu de la trace vidéo avant publication |
 | `profils_robustes.py` | challengers de récence et de shrinkage sur les mêmes matchs, avec sous-groupes peu documentés, transitions, absences et BO5 |
 | `dependances_points.py` | tests du point précédent, des tie-breaks, de la fatigue et de l’évolution entre sets sur les séquences ordonnées |
 | `gouvernance.py` | périodes disjointes, traçabilité et une seule nouvelle promotion hebdomadaire |
@@ -68,3 +69,10 @@ leur gain sur les points n'a pas aussi été validé sur le vainqueur. La recher
 de marché censure chaque cote au moment disponible et chaque signal à sa date de
 signalisation. Sans volumes ni confirmation multi-bookmakers, ses résultats sont
 exploratoires ; ils ne modifient jamais les probabilités indépendantes.
+
+La vitrine quotidienne n'est publiée qu'après validation : le nombre de tirages
+du match doit égaler celui de l'export (20 000 par défaut), le scénario doit
+porter le score modal et sa trace complète doit le reproduire point par point.
+Le navigateur ne recalibre pas une trace enregistrée. Une génération en échec ou
+un ancien format sans scénario fait échouer le workflow au lieu de laisser
+silencieusement l'ancien `algo/donnees.json` en ligne.
