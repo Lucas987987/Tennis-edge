@@ -266,9 +266,14 @@ def construire(racine, maintenant=None):
 def main(argv):
     racine = argv[1] if len(argv) > 1 else os.path.join(ICI, '..')
     doc = construire(racine)
+    from validation_vitrine import valider
+    valider(doc, int(os.environ.get('SIMULATIONS', '20000')))
     os.makedirs(os.path.join(racine, 'algo'), exist_ok=True)
-    with open(os.path.join(racine, SORTIE), 'w', encoding='utf-8') as f:
+    destination = os.path.join(racine, SORTIE)
+    temporaire = destination + '.tmp'
+    with open(temporaire, 'w', encoding='utf-8') as f:
         json.dump(doc, f, ensure_ascii=False, separators=(',', ':'))
+    os.replace(temporaire, destination)
     b = (doc['bilan'] or {}).get('global') or {}
     print(f"Site public : {len(doc['matchs'])} matchs · match du jour {(doc['match_du_jour'] or {}).get('uid')} · "
           f"bilan {b.get('vainqueurs')}/{b.get('n')} ({b.get('pct')} %)")
