@@ -51,6 +51,7 @@ import ajustement as AJ  # noqa: E402
 
 SIGMA = 0.15
 SIMULATIONS = int(os.environ.get('SIMULATIONS', '20000'))
+STABILITE_BLOCS = int(os.environ.get('STABILITE_BLOCS', '2'))
 BALLES_CONNU = 500          # profil « connu » : au moins 500 balles de service (pondérées) dans l'archive
 HORIZON_H = 36
 LOG = 'simulateur/pronostics_log.jsonl'
@@ -343,16 +344,27 @@ def impact_facteurs(cH, cA, sg, fct):
     return out
 
 
-def match_simule(P, h, a, c, s, sg, p_home, cle, fct=None):
+def match_simule(P, h, a, c, s, sg, p_home, cle, fct=None, controler_stabilite=False):
     """Le match joué SIMULATIONS fois au niveau p_home, avec les profils de service des deux joueurs
     (et les facteurs du match adoptés, s'il y en a)."""
     cH, cA, nh, na = composantes_du_match(P, h, a, c, s, pure=p_home is None)
     cH, cA = avec_facteurs(cH, cA, fct)
-    r = MS.simuler(cH, cA, p_home, sg, SIMULATIONS, sigma_sim() if p_home is None else SIGMA, cle=cle, reglages=REGLAGES)
+    sigma = sigma_sim() if p_home is None else SIGMA
+    r = MS.simuler(cH, cA, p_home, sg, SIMULATIONS, sigma, cle=cle, reglages=REGLAGES)
+    if controler_stabilite and STABILITE_BLOCS > 0:
+        import stabilite_scores as SS
+        r['stabilite_score'] = SS.controler(cH, cA, p_home, r, sg, SIMULATIONS, sigma, cle,
+                                           reglages=REGLAGES, blocs=STABILITE_BLOCS)
     r['reglages'] = REGLAGES
     r['composantes'] = CHOIX if (CHOIX == 'ajustees' and getattr(P, 'ajuste', None) is not None) else 'profils'
     r['profil_connu'] = [nh >= BALLES_CONNU, na >= BALLES_CONNU]
-    r['profil_contexte'] = {'n_balles_effectives': [round(nh, 1), round(na, 1)]}
+    niveau = lambda n: 'tres_faible' if n < 100 else 'faible' if n < 500 else 'documente'
+    prior_service = 150 * getattr(P, 'prior_mult', 1.0)
+    r['profil_contexte'] = {
+        'n_balles_effectives': [round(nh, 1), round(na, 1)],
+        'niveau_documentation': [niveau(nh), niveau(na)],
+        'poids_donnees_service': [round(nh/(nh+prior_service), 4), round(na/(na+prior_service), 4)],
+    }
     if CONTEXTE is not None:
         try:
             jour = P.jour_export
@@ -470,7 +482,8 @@ def construire(racine, maintenant=None):
                       'tb_final': 10 if sg == 3 else 7, 'version': 'combinaison' if combinaison else 'simulation'}
             for nom_v, v in (('stats', stats), ('combinaison', combinaison)):
                 if v:
-                    v['match_simule'] = match_simule(PR, h, a, c, s, sg, v['p_home'], f"{uid}|{nom_v}", fct)
+                    v['match_simule'] = match_simule(PR, h, a, c, s, sg, v['p_home'], f"{uid}|{nom_v}", fct,
+                                                    controler_stabilite=(nom_v == 'combinaison'))
         out.append({'uid': uid,
                     'debut': x['debut'].isoformat(timespec='minutes'), 'tournoi': x['tournoi'], 'circuit': c,
                     'surface': s, 'meilleur_des': 2 * sg - 1, 'home': x['home'], 'away': x['away'],
@@ -625,6 +638,7 @@ def journaliser(racine, doc):
                                 'meilleur_des': m.get('meilleur_des'), 'matchs_joues': m.get('matchs_joues'),
                                 'fiabilite': m.get('fiabilite'),
                                 'profil_contexte': (m.get('match_simule') or {}).get('profil_contexte'),
+                                'stabilite_score': (m.get('match_simule') or {}).get('stabilite_score'),
                                 'feuille': feuille_prevue(m)},
                                ensure_ascii=False) + '\n')
             n += 1
@@ -902,6 +916,7 @@ def resoudre(racine, maintenant=None):
                     'circuit': r.get('circuit'), 'surface': r.get('surface'), 'meilleur_des': r.get('meilleur_des', 3),
                     'pronostique_le': r.get('pronostique_le'), 'matchs_joues': r.get('matchs_joues'),
                     'fiabilite': r.get('fiabilite'), 'profil_contexte': r.get('profil_contexte'),
+                    'stabilite_score': r.get('stabilite_score'),
                     'dernier_passage': dernier['passage'] if dernier else None, 'n_passages': len(avant),
                     'reel': {'gagnant': gagnant, 'sets': sets, 'score': score, 'jeux': jeux,
                              'feuille': feuille[0] if feuille else None, 'interrompu': interrompu,

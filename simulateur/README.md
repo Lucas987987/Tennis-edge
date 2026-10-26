@@ -17,7 +17,9 @@ jouer 5 000 matchs au hasard, il calcule la probabilité de chaque issue.
 | `evaluation_sorties.py` | log loss des sets, rang des scores, erreur des jeux et des statistiques, couverture réelle des intervalles à 80 % |
 | `validation_fiabilite.py` | performances par niveau de note, calibration et contraste temporel apparié |
 | `validation_vitrine.py` | contrôle bloquant des 20 000 simulations et rejeu de la trace vidéo avant publication |
-| `profils_robustes.py` | challengers de récence et de shrinkage sur les mêmes matchs, avec sous-groupes peu documentés, transitions, absences et BO5 |
+| `stabilite_scores.py` | deux blocs indépendants de 20 000 tirages pour vérifier le score modal de la variante publiée |
+| `surveillance_derive.py` | log loss, Brier et confiance sur 4, 8 et 12 semaines, globalement et par sous-groupe |
+| `profils_robustes.py` | challengers contrôlés, avec validation obligatoire sur les profils de moins de 500 balles effectives |
 | `dependances_points.py` | tests du point précédent, des tie-breaks, de la fatigue et de l’évolution entre sets sur les séquences ordonnées |
 | `gouvernance.py` | périodes disjointes, traçabilité et une seule nouvelle promotion hebdomadaire |
 | `recherche_externe.py` | croisement séparé avec les mouvements de marché et H13–H19, sans réinjection dans le modèle |
@@ -73,6 +75,28 @@ exploratoires ; ils ne modifient jamais les probabilités indépendantes.
 La vitrine quotidienne n'est publiée qu'après validation : le nombre de tirages
 du match doit égaler celui de l'export (20 000 par défaut), le scénario doit
 porter le score modal et sa trace complète doit le reproduire point par point.
-Le navigateur ne recalibre pas une trace enregistrée. Une génération en échec ou
+Le navigateur ne recalibre pas une trace enregistrée et chaque relance rejoue
+ce même scénario modal, jamais un tirage aléatoire différent. Une génération en échec ou
 un ancien format sans scénario fait échouer le workflow au lieu de laisser
 silencieusement l'ancien `algo/donnees.json` en ligne.
+
+## Stabilité, dérive et profils pauvres (26/10/2026)
+
+La variante publiée reçoit deux blocs de contrôle indépendants de 20 000 tirages
+(`STABILITE_BLOCS=2` par défaut, `0` pour désactiver explicitement le contrôle).
+Le score est **instable** si un bloc change de modal, **fragile** si le modal
+reste identique mais que le top 1/top 2 est trop proche ou que sa fréquence varie
+trop, et **stable** sinon. Les blocs ne remplacent jamais la simulation publiée
+et ne déclenchent pas de hausse automatique du nombre de tirages.
+
+`rapport_surveillance_derive.json` compare les fenêtres de 4, 8 et 12 semaines à
+leurs périodes immédiatement précédentes. Les alertes exigent 30 matchs par
+période et portent sur la dégradation conjointe de la log loss et du Brier, ou
+sur l'écart entre confiance et exactitude. Les surfaces, circuits, formats et
+niveaux de documentation sont isolés. Aucune alerte ne modifie le champion.
+
+Le backtest des profils distingue moins de 100 et moins de 500 balles effectives.
+L'adoption exige un gain global confirmé **et** au moins 30 matchs peu documentés,
+sans dégradation de leur log loss au-delà de 0,001 ; le Brier est publié pour
+chaque sous-groupe. Le contexte figé conserve aussi le poids des données propres
+au joueur dans le taux de service, afin de distinguer estimation et prior.

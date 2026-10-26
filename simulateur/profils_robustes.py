@@ -22,7 +22,8 @@ CANDIDATS = {
     'prudent': {'demi_vie': 365, 'prior_mult': 2.0},
     'recent_prudent': {'demi_vie': 180, 'prior_mult': 2.0},
 }
-GROUPES = ('global', 'peu_documente', 'transition_surface', 'retour_absence', 'best_of_5')
+GROUPES = ('global', 'tres_peu_documente', 'peu_documente', 'documente',
+           'transition_surface', 'retour_absence', 'best_of_5')
 
 
 def _pertes():
@@ -30,7 +31,12 @@ def _pertes():
 
 
 def _resume(L):
-    return {'n': len(L), 'log_loss': round(sum(L)/len(L), 6)} if L else {'n': 0, 'log_loss': None}
+    if not L:
+        return {'n': 0, 'log_loss': None, 'brier': None}
+    # L'orientation fixe met le futur vainqueur à home : p = exp(-log_loss du match).
+    brier = [(1-math.exp(-perte))**2 for perte in L]
+    return {'n': len(L), 'log_loss': round(sum(L)/len(L), 6),
+            'brier': round(sum(brier)/len(brier), 6)}
 
 
 def selection(M, debut, maximum):
@@ -62,8 +68,13 @@ def evaluer_candidat(M, choisis, reglage, coupure, sigma=.15):
             p = MS.victoire_pure(cH, cA, m['bo']//2+1, sigma)
             perte = -math.log(min(1-1e-12, max(1e-12, p)))
             groupes = ['global']
-            if min(nh, na) < 500:
+            minimum_documentation = min(nh, na)
+            if minimum_documentation < 100:
+                groupes.append('tres_peu_documente')
+            if minimum_documentation < 500:
                 groupes.append('peu_documente')
+            else:
+                groupes.append('documente')
             if any(j in surfaces and surfaces[j] != m['surface'] for j in (h, a)):
                 groupes.append('transition_surface')
             if any(j in derniers and (m['date']-derniers[j]).days > 45 for j in (h, a)):
@@ -93,12 +104,22 @@ def _verdict(rapports, champion='champion'):
     nom = min(eligibles, key=lambda n: rapports[n]['decouverte']['global']['log_loss'])
     r = rapports[nom]
     gain = base['confirmation']['global']['log_loss'] - r['confirmation']['global']['log_loss']
-    faible_base, faible = base['confirmation']['peu_documente']['log_loss'], r['confirmation']['peu_documente']['log_loss']
-    faible_ok = faible_base is None or faible is None or faible <= faible_base + .001
+    controles = {}
+    for groupe in ('peu_documente', 'tres_peu_documente'):
+        b, c = base['confirmation'][groupe], r['confirmation'][groupe]
+        # Le groupe très pauvre est facultatif s'il est absent ; s'il est présent, 30 matchs minimum.
+        assez = c['n'] >= 30 or (groupe == 'tres_peu_documente' and c['n'] == 0)
+        ok = assez and c['log_loss'] <= b['log_loss'] + .001
+        controles[groupe] = {'n': c['n'], 'gain_log_loss': round(b['log_loss']-c['log_loss'], 6) if assez else None,
+                             'delta_brier': round(c['brier']-b['brier'], 6) if assez else None,
+                             'brier_avec': c['brier'], 'brier_sans': b['brier'],
+                             'minimum_matchs': 30, 'ok': ok}
+    faible_ok = all(x['ok'] for x in controles.values())
     return nom, {
         'adopte': gain >= ST.MARGE and faible_ok,
-        'raison': f"gain confirmation {gain:+.6f} ; sous-groupe peu documenté {'validé' if faible_ok else 'dégradé'}",
+        'raison': f"gain confirmation {gain:+.6f} ; profils peu documentés {'validés' if faible_ok else 'non validés'}",
         'll': {'avec': r['confirmation']['global']['log_loss'], 'sans': base['confirmation']['global']['log_loss']},
+        'controles_sous_groupes': controles,
         **CANDIDATS[nom], 'challenger': nom,
     }
 
