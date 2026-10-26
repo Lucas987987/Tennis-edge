@@ -368,6 +368,7 @@ const T = {
   sim_titre:'Simulation du match', sim_sous:"Le détail complet et le scénario modal de cette affiche, calculés avec la même variante indépendante.",
   retour_mdj:'Retour au match du jour',
   mdj_vide:"Pas de match du jour pour l'instant : il est choisi parmi les matchs pas encore commencés de la journée.",
+  sim_indisponible:"Cette simulation n'est pas disponible dans les données publiées. Actualise la page ou reviens au match du jour.",
   vs:'contre', cote_juste:'cote juste', sur_sims:n=>`Sur ${n} simulations`,
   fiab:'Fiabilité', fiab_aide:"Robustesse de l'estimation selon les données disponibles, l'accord des modèles et la calibration passée. Ce n'est pas la probabilité que le favori gagne.",
   rejouer:'Rejouer une simulation', accel:'Accélérer', fin:'Aller à la fin', jouer:'Lancer la simulation',
@@ -420,6 +421,7 @@ const T = {
   sim_titre:'Match simulation', sim_sous:'The full breakdown and modal scenario for this matchup, calculated with the same independent variant.',
   retour_mdj:'Back to match of the day',
   mdj_vide:"No match of the day yet: it is picked among today's matches that haven't started.",
+  sim_indisponible:'This simulation is unavailable in the published data. Refresh the page or return to the match of the day.',
   vs:'vs', cote_juste:'fair odds', sur_sims:n=>`Across ${n} simulations`,
   fiab:'Reliability', fiab_aide:'Robustness of the estimate from data availability, model agreement and past calibration. This is not the probability that the favourite wins.',
   rejouer:'Replay a simulation', accel:'Faster', fin:'Skip to the end', jouer:'Play the simulation',
@@ -848,13 +850,16 @@ function rendMdj(){
   const zone = document.getElementById('mdj-zone');
   if (borne) { borne.stop(); borne = null; }
   const idJour = D.match_du_jour && D.match_du_jour.uid;
-  let id = matchDemande() || selectionId || idJour, m = D.matchs.find(x=>x.uid===id && x.simulation);
-  if (!m && idJour){ id = idJour; selectionId = idJour; m = D.matchs.find(x=>x.uid===id && x.simulation); }
+  const demande = matchDemande();
+  let id = demande || selectionId || idJour, m = D.matchs.find(x=>x.uid===id && x.simulation);
+  // Ne jamais présenter le match du jour comme si c'était le match demandé : une donnée
+  // absente ou un lien obsolète doit être visible, et non masqué par un repli silencieux.
+  if (!m && !demande && idJour){ id = idJour; selectionId = idJour; m = D.matchs.find(x=>x.uid===id && x.simulation); }
   const estJour = !!m && id === idJour;
   document.getElementById('mdj-h').textContent = t(estJour ? 'mdj_titre' : 'sim_titre');
   document.getElementById('mdj-sous').textContent = t(estJour ? 'mdj_sous' : 'sim_sous');
-  document.getElementById('retour-mdj').hidden = estJour || !m;
-  if (!m){ zone.innerHTML = `<div class="panel empty">${esc(t('mdj_vide'))}</div>`; return; }
+  document.getElementById('retour-mdj').hidden = estJour || !idJour;
+  if (!m){ zone.innerHTML = `<div class="panel empty">${esc(t(demande ? 'sim_indisponible' : 'mdj_vide'))}</div>`; return; }
   const p = m.p_home;
   const nSim = Math.max(1, Math.round(Number(m.simulation && m.simulation.n) || Number(D.simulations) || 0));
   const sets = m.sets ? Object.entries(m.sets) : [];
@@ -897,12 +902,15 @@ function rendMdj(){
 }
 function matchsFiltres(){
   const q = recherche.trim().toLocaleLowerCase(loc());
-  return D.matchs.filter(m=>(circuit==='TOUS' || m.circuit===circuit) && (!q || `${m.home} ${m.away} ${m.tournoi}`.toLocaleLowerCase(loc()).includes(q)));
+  return D.matchs.filter(m=>m.simulation && m.simulation_disponible !== false &&
+    (circuit==='TOUS' || m.circuit===circuit) &&
+    (!q || `${m.home} ${m.away} ${m.tournoi}`.toLocaleLowerCase(loc()).includes(q)));
 }
 function rendListe(){
   const ul = document.getElementById('list'), mdj = D.match_du_jour && D.match_du_jour.uid;
   const tous = matchsFiltres(), visibles = tous.slice(0,nListe);
-  document.getElementById('liste-compte').textContent = t('compte_matchs',tous.length,D.matchs.length);
+  const total = D.matchs.filter(m=>m.simulation && m.simulation_disponible !== false).length;
+  document.getElementById('liste-compte').textContent = t('compte_matchs',tous.length,total);
   if (!tous.length){
     ul.innerHTML = `<li class="empty" style="display:block">${esc(t('liste_vide'))}</li>`;
     document.getElementById('liste-more').hidden = true;
