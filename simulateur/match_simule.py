@@ -22,8 +22,8 @@ statistiques en direct : aces, doubles fautes, % de 1re balle, points gagnés
 derrière la 1re et la 2e balle, balles de break obtenues / converties, jeux
 de service gagnés, points gagnés, jeux, tie-breaks, score set par set.
 On en tire la moyenne et la fourchette à 80 % (10e–90e centile) de chaque
-statistique, les scores les plus fréquents et un « match type » : la
-simulation la plus proche de la médiane parmi celles du score le plus probable.
+statistique, les scores les plus fréquents et un « match représentatif » : une
+simulation réelle du vainqueur favori, la plus proche des médianes de ses victoires.
 
 Règles identiques à modele.py : avantage, tie-break à 7 à 6-6, set décisif à
 10 points au meilleur des 5, premier serveur à pile ou face, service alterné
@@ -523,29 +523,50 @@ def simuler(cA, cB, p_victoire, sets_gagnants=2, n=20000, sigma=0.15, cle='', tb
            'scores': [[s, round(c / n, 4)] for s, c in top[:5]],
            'jeux': resume(jeux), 'tiebreak': round(tbs / n, 3),
            'feuille': [{k: resume(F[i][k]) for k in CLES_FEUILLE} for i in (0, 1)],
-           'match_type': match_type(brut, top[0][0] if top else None, F, traces)}
+           'match_type': match_type(brut, traces,
+                                    0 if (vA / n if p_victoire is None else p_victoire) >= .5 else 1)}
     if garder:
         out['_brut'] = brut
     return out
 
 
-def match_type(brut, score, F, traces=None):
-    """Un match RÉELLEMENT TIRÉ, au score le plus fréquent et proche des médianes statistiques.
+def match_type(brut, traces=None, vainqueur=0):
+    """Match médoid RÉELLEMENT TIRÉ parmi les victoires du favori de la simulation.
 
-    La trace ordonnée des points permet à la vidéo de rejouer ce tirage exact, sans conditionner un
-    nouveau tirage au seul score final. Les autres champs restent compatibles avec l'ancien export."""
-    if not score:
+    Le score exact modal fragmente les matchs en trois sets et uniformise les vidéos autour de
+    quelques scores en deux sets. Ici, le choix porte sur le profil complet : sets, jeux et statistiques
+    service–retour. Les médianes et écarts interquartiles sont calculés dans le sous-ensemble retenu ;
+    chaque écart est normalisé pour qu'une statistique en pourcentage n'écrase pas les compteurs.
+    Le premier index gagne les égalités : le résultat est déterministe à données identiques."""
+    candidats = []
+    for i, ligne in enumerate(brut):
+        sc, fa, fb, br, sets = ligne
+        w = 0 if sum(a > b for a, b in sets) > sum(a < b for a, b in sets) else 1
+        if w == vainqueur:
+            candidats.append((i, ligne))
+    if not candidats:
         return None
+    groupe = [ligne for _, ligne in candidats]
+    F = []
+    for j in (0, 1):
+        valeurs = [(ligne[1], ligne[2])[j] for ligne in groupe]
+        F.append({k: [f[k] for f in valeurs if f[k] is not None] for k in CLES_FEUILLE})
     med = [{k: _quantile(F[i][k], 0.5) for k in CLES_FEUILLE} for i in (0, 1)]
-    eiq = [{k: max((_quantile(F[i][k], 0.75) or 0) - (_quantile(F[i][k], 0.25) or 0), 1.0) for k in CLES_FEUILLE}
-           for i in (0, 1)]
+    eiq = [{k: max((_quantile(F[i][k], 0.75) or 0) - (_quantile(F[i][k], 0.25) or 0), 1.0)
+            for k in CLES_FEUILLE} for i in (0, 1)]
+    total_jeux = [sum(a + b for a, b in ligne[4]) for ligne in groupe]
+    nb_sets = [len(ligne[4]) for ligne in groupe]
+    med_jeux, med_sets = _quantile(total_jeux, 0.5), _quantile(nb_sets, 0.5)
+    eiq_jeux = max((_quantile(total_jeux, 0.75) or 0) - (_quantile(total_jeux, 0.25) or 0), 1.0)
+    eiq_sets = max((_quantile(nb_sets, 0.75) or 0) - (_quantile(nb_sets, 0.25) or 0), 1.0)
+    mesures = ('aces', 'doubles_fautes', 'premiere_pct', 'gagnes_1re_pct', 'gagnes_2e_pct',
+               'breaks', 'points_gagnes', 'jeux', 'jeux_service_gagnes_pct')
     best, bd = None, None
-    for i, (sc, fa, fb, br, sets) in enumerate(brut):
-        if sc != score:
-            continue
-        dist = 0.0
+    for i, (sc, fa, fb, br, sets) in candidats:
+        dist = ((len(sets) - med_sets) / eiq_sets) ** 2
+        dist += ((sum(a + b for a, b in sets) - med_jeux) / eiq_jeux) ** 2
         for j, f in ((0, fa), (1, fb)):
-            for k in ('aces', 'doubles_fautes', 'premiere_pct', 'gagnes_1re_pct', 'gagnes_2e_pct', 'breaks'):
+            for k in mesures:
                 if f[k] is not None and med[j][k] is not None:
                     dist += ((f[k] - med[j][k]) / eiq[j][k]) ** 2
         if bd is None or dist < bd:
@@ -553,7 +574,8 @@ def match_type(brut, score, F, traces=None):
     i, sc, fa, fb, br, sets = best
     arr = lambda f: {k: (round(v, 1) if isinstance(v, float) else v) for k, v in f.items()}
     out = {'score': sc, 'sets': [list(s) for s in sets], 'breaks': [list(b) for b in br],
-           'feuille': [arr(fa), arr(fb)], 'simulation_index': i}
+           'feuille': [arr(fa), arr(fb)], 'simulation_index': i,
+           'selection': 'representatif', 'vainqueur': vainqueur}
     if traces is not None:
         premier, trace = traces[i]
         out.update({'premier_serveur': premier, 'points': ''.join(str(x) for x in trace)})

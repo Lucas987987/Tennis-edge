@@ -33,11 +33,11 @@ class Moteur(unittest.TestCase):
 
     def test_ajuster_et_composantes(self):
         c = S.composantes(GROS, RELANCEUR, MOY)
-        self.assertLess(c['a'], GROS['a'])                       # bon relanceur : moins d'aces
+        self.assertLess(c['a'], GROS['a'])
         self.assertLess(c['w1'], GROS['w1'])
         c2 = S.ajuster(c, 0.70)
         self.assertAlmostEqual(S.p_service(c2), 0.70, places=6)
-        self.assertEqual((c2['f'], c2['d']), (c['f'], c['d']))  # le style ne bouge pas, seul le niveau
+        self.assertEqual((c2['f'], c2['d']), (c['f'], c['d']))
         self.assertLessEqual(c2['a'], 0.95 * c2['w1'])
 
     def test_simulation_retrouve_le_moteur_exact(self):
@@ -45,7 +45,7 @@ class Moteur(unittest.TestCase):
         for sg, p in ((2, 0.64), (3, 0.78)):
             r = S.simuler(cA, cB, p, sg, 4000, 0.15, cle=f't{sg}')
             se = math.sqrt(p * (1 - p) / 4000)
-            self.assertLess(abs(r['victoire_A'] - p), 4 * se)    # niveau ancré : la simulation tombe sur p
+            self.assertLess(abs(r['victoire_A'] - p), 4 * se)
             a, b = S.ancrer_rapide(S.p_service(cA), S.p_service(cB), p, sg, 0.15)
             ex = M.match_forme(a, b, sg, 0.15)
             for k, v in ex['sets'].items():
@@ -60,7 +60,7 @@ class Moteur(unittest.TestCase):
             g, sets, st, br, ntb = S.un_match(cA, cB, 2, 7, rnd, rnd.random() < 0.5)
             ga, gb = sum(a for a, _ in sets), sum(b for _, b in sets)
             self.assertEqual((st[0][S.JEUX], st[1][S.JEUX]), (ga, gb))
-            self.assertEqual(sum(x[S.SVPT] for x in st), sum(x[S.PTS] for x in st))   # chaque point a un vainqueur
+            self.assertEqual(sum(x[S.SVPT] for x in st), sum(x[S.PTS] for x in st))
             self.assertEqual(ntb, sum(a + b == 13 for a, b in sets))
             for i in (0, 1):
                 x = st[i]
@@ -69,17 +69,22 @@ class Moteur(unittest.TestCase):
                 self.assertLessEqual(x[S.W2] + x[S.DF], x[S.SVPT] - x[S.IN1])
                 self.assertLessEqual(x[S.BPS], x[S.BPF])
                 perdus = x[S.SG] - x[S.SGW]
-                self.assertEqual(perdus, x[S.BPF] - x[S.BPS])                  # un jeu perdu = une balle de break convertie
+                self.assertEqual(perdus, x[S.BPF] - x[S.BPS])
                 self.assertEqual(perdus, sum(1 for b in br if b[3] == 1 - i))
             self.assertEqual(g, 0 if sum(a > b for a, b in sets) > sum(b > a for a, b in sets) else 1)
 
-    def test_reproductible_et_match_type(self):
+    def test_reproductible_et_scenario_representatif(self):
         cA, cB = S.composantes(GROS, RELANCEUR, MOY), S.composantes(RELANCEUR, GROS, MOY)
         r1 = S.simuler(cA, cB, 0.6, 2, 500, 0.15, cle='x')
         r2 = S.simuler(cA, cB, 0.6, 2, 500, 0.15, cle='x')
         self.assertEqual(r1, r2)
-        self.assertEqual(r1['match_type']['score'], r1['scores'][0][0])
-        self.assertGreater(r1['feuille'][0]['aces']['moy'], r1['feuille'][1]['aces']['moy'])    # le gros serveur
+        scenario = r1['match_type']
+        self.assertEqual(scenario['selection'], 'representatif')
+        self.assertEqual(scenario['vainqueur'], 0)  # p_victoire = 0,6 : A est le favori
+        self.assertTrue(0 <= scenario['simulation_index'] < r1['n'])
+        self.assertEqual(scenario['score'], ' '.join(f'{a}-{b}' for a, b in scenario['sets']))
+        self.assertTrue(scenario['points'])  # une vraie trace rejouable, pas un score imposé
+        self.assertGreater(r1['feuille'][0]['aces']['moy'], r1['feuille'][1]['aces']['moy'])
         f = r1['feuille'][0]['aces']
         self.assertLessEqual(f['p10'], f['moy'])
         self.assertLessEqual(f['moy'], f['p90'])
@@ -119,16 +124,16 @@ class Profils(unittest.TestCase):
         inconnu, n0 = P.profil('personne', 'ATP', 'Hard', jour)
         self.assertEqual(n0, 0.0)
         for k, v in P.moyenne('ATP', 'Hard').items():
-            self.assertAlmostEqual(inconnu[k], v, places=9)                   # inconnu : moyenne du circuit
-        self.assertEqual(P.moyenne('CH', 'Hard'), P.moyenne('ATP', 'Hard'))   # repli Challenger -> ATP
+            self.assertAlmostEqual(inconnu[k], v, places=9)
+        self.assertEqual(P.moyenne('CH', 'Hard'), P.moyenne('ATP', 'Hard'))
 
     def test_point_in_time(self):
         coupe = self.M[80]['date']
         P = PS.construire(self.M, jusqu_au=coupe)
         n_attendu = sum(m['detail']['w'][0] + m['detail']['l'][0] for m in self.M if m['fin'] < coupe)
         tot = P.m[('ATP', 'all')][PS.I['svpt']] / P._poids(coupe)
-        self.assertGreater(tot, 0.5 * n_attendu)                               # pondéré dans le temps, mais
-        self.assertLessEqual(tot, n_attendu + 1e-6)                            # jamais un match d'après
+        self.assertGreater(tot, 0.5 * n_attendu)
+        self.assertLessEqual(tot, n_attendu + 1e-6)
 
     def test_export_import(self):
         P = PS.construire(self.M)
@@ -157,7 +162,7 @@ class Pronostics(unittest.TestCase):
                 PJ.SIMULATIONS = old
             self.assertEqual(r['n'], 400)
             self.assertEqual(r['profil_connu'], [False, False])
-            self.assertLess(abs(r['victoire_A'] - 0.7), 0.08)            # profils vides : valeurs de repli
+            self.assertLess(abs(r['victoire_A'] - 0.7), 0.08)
 
 
 if __name__ == '__main__':
@@ -171,11 +176,11 @@ class Reglages(unittest.TestCase):
         b = S.simuler(cA, cB, 0.6, 2, 1500, 0.15, cle='r', reglages={'ace_facteur': 1.1, 'tau_f': 0.3})
         la = a['feuille'][0]['premiere_pct']['p90'] - a['feuille'][0]['premiere_pct']['p10']
         lb = b['feuille'][0]['premiere_pct']['p90'] - b['feuille'][0]['premiere_pct']['p10']
-        self.assertGreater(lb, la + 2)                                   # fourchette de la 1re balle plus large
+        self.assertGreater(lb, la + 2)
         self.assertGreater(b['feuille'][0]['aces']['moy'], a['feuille'][0]['aces']['moy'])
-        self.assertLess(abs(b['victoire_A'] - 0.6), 0.04)                # le niveau reste ancré
+        self.assertLess(abs(b['victoire_A'] - 0.6), 0.04)
         self.assertEqual(S.simuler(cA, cB, 0.6, 2, 300, 0.15, cle='r', reglages=None),
-                         S.simuler(cA, cB, 0.6, 2, 300, 0.15, cle='r'))  # sans réglage : identique
+                         S.simuler(cA, cB, 0.6, 2, 300, 0.15, cle='r'))
 
     def test_regle_d_adoption(self):
         import reglage_match_simule as RG
@@ -185,7 +190,7 @@ class Reglages(unittest.TestCase):
                'breaks': {'mae': 1.41}}
         pire = dict(bon, breaks={'mae': 1.5})
         self.assertTrue(RG.adopter(base, bon)[0])
-        self.assertFalse(RG.adopter(base, pire)[0])                     # un écart moyen monte de plus de 2 %
+        self.assertFalse(RG.adopter(base, pire)[0])
         self.assertFalse(RG.adopter({}, bon)[0])
         var, tau = RG.moments_f([(100, 62, 0.62), (100, 70, 0.62), (100, 54, 0.62)])
         self.assertGreater(tau, 0)
@@ -197,10 +202,10 @@ class SimulationPure(unittest.TestCase):
         cA, cB = S.composantes(GROS, RELANCEUR, MOY), S.composantes(RELANCEUR, GROS, MOY)
         r = S.simuler(cA, cB, None, 2, 4000, 0.15, cle='pure')
         p = S.victoire_pure(cA, cB, 2, 0.15)
-        self.assertLess(abs(r['victoire_A'] - p), 4 * math.sqrt(p * (1 - p) / 4000))   # limite exacte des simulations
+        self.assertLess(abs(r['victoire_A'] - p), 4 * math.sqrt(p * (1 - p) / 4000))
         meilleur = dict(GROS, w1=0.84, w2j=0.62)
         cA2 = S.composantes(meilleur, RELANCEUR, MOY)
-        self.assertGreater(S.victoire_pure(cA2, cB, 2, 0.15), p)                          # mieux servir = gagner plus souvent
-        self.assertAlmostEqual(S.victoire_pure(cA, cA, 2, 0.15), 0.5, places=9)          # deux joueurs identiques
+        self.assertGreater(S.victoire_pure(cA2, cB, 2, 0.15), p)
+        self.assertAlmostEqual(S.victoire_pure(cA, cA, 2, 0.15), 0.5, places=9)
         self.assertAlmostEqual(r['set1_A'] + 0, r['set1_A'])
         self.assertGreaterEqual(r['remontee'][0], 0)
