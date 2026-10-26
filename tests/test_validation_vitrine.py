@@ -128,5 +128,30 @@ class ValidationVitrine(unittest.TestCase):
         self.assertIn("github.event.workflow_run.conclusion == 'success'", yml)
 
 
+class WorkflowVideoTelegram(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        chemin = os.path.join(os.path.dirname(__file__), '..', '.github', 'workflows', 'video_simulation.yml')
+        with open(chemin, encoding='utf-8') as f:
+            cls.yml = f.read()
+
+    def test_uid_manuel_recharge_le_catalogue_public(self):
+        self.assertIn("if uid_demande and not m:", self.yml)
+        self.assertIn('https://algo.tennis-edge.workers.dev/donnees.json', self.yml)
+        self.assertIn('https://lucas987987.github.io/Tennis-edge/algo/donnees.json', self.yml)
+        self.assertIn("json.dump(d, f, ensure_ascii=False", self.yml)
+
+    def test_uid_manuel_absent_fait_echouer_le_run(self):
+        self.assertIn('raise SystemExit(f"UID demandé introuvable ou sans simulation', self.yml)
+        self.assertNotIn("uid = os.environ.get('UID_DEMANDE') or", self.yml)
+
+    def test_echec_telegram_ne_peut_plus_produire_un_run_vert(self):
+        self.assertIn("Telegram non configuré : vidéos non envoyées.'; exit 1", self.yml)
+        self.assertEqual(self.yml.count('curl --fail-with-body'), 2)
+        self.assertNotIn('|| echo "::warning::envoi Telegram', self.yml)
+        self.assertNotIn('|| echo "::warning::carte Telegram', self.yml)
+        self.assertIn('test -s "videos/simulation_${lang}.mp4"', self.yml)
+
+
 if __name__ == '__main__':
     unittest.main()

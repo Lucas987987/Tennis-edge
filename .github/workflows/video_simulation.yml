@@ -68,10 +68,35 @@ jobs:
         id: mdj
         run: |
           python - <<'PY'
-          import json, os
-          d = json.load(open('algo/donnees.json', encoding='utf-8'))
-          uid = os.environ.get('UID_DEMANDE') or (d.get('match_du_jour') or {}).get('uid') or ''
-          m = next((x for x in d.get('matchs', []) if x['uid'] == uid and x.get('simulation')), None)
+          import json, os, urllib.request
+          chemin = 'algo/donnees.json'
+          with open(chemin, encoding='utf-8') as f:
+              d = json.load(f)
+          uid_demande = (os.environ.get('UID_DEMANDE') or '').strip()
+          uid = uid_demande or (d.get('match_du_jour') or {}).get('uid') or ''
+          def trouver(doc):
+              return next((x for x in doc.get('matchs', []) if x.get('uid') == uid and x.get('simulation')), None)
+          m = trouver(d)
+          # Un lancement manuel peut viser un match déjà publié mais pas encore commité dans main.
+          # Recharger alors le catalogue public ; ne jamais replacer silencieusement l'UID par le match du jour.
+          if uid_demande and not m:
+              for url in ('https://algo.tennis-edge.workers.dev/donnees.json',
+                          'https://lucas987987.github.io/Tennis-edge/algo/donnees.json'):
+                  try:
+                      req = urllib.request.Request(url, headers={'User-Agent': 'Tennis-Edge-Video/1.0'})
+                      with urllib.request.urlopen(req, timeout=45) as r:
+                          public = json.load(r)
+                      m = trouver(public)
+                      if m:
+                          d = public
+                          with open(chemin, 'w', encoding='utf-8') as f:
+                              json.dump(d, f, ensure_ascii=False, separators=(',', ':'))
+                          print('Catalogue public rechargé :', url)
+                          break
+                  except Exception as e:
+                      print('Catalogue public indisponible :', url, type(e).__name__)
+          if uid_demande and not m:
+              raise SystemExit(f"UID demandé introuvable ou sans simulation : {uid_demande}")
           with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
               f.write(f"ok={'1' if m else '0'}\n")
               f.write(f"titre={(m['home'] + ' – ' + m['away']) if m else ''}\n")
@@ -99,17 +124,18 @@ jobs:
           TITRE: ${{ steps.mdj.outputs.titre }}
           TOURNOI: ${{ steps.mdj.outputs.tournoi }}
         run: |
-          if [ -z "${TELEGRAM_TOKEN}" ] || [ -z "${TELEGRAM_CHAT_ID}" ]; then echo '::warning::Telegram non configuré : vidéos non envoyées.'; exit 0; fi
+          if [ -z "${TELEGRAM_TOKEN}" ] || [ -z "${TELEGRAM_CHAT_ID}" ]; then echo '::error::Telegram non configuré : vidéos non envoyées.'; exit 1; fi
           for lang in fr en; do
-            curl -sS -o /dev/null -w "Telegram ${lang} : HTTP %{http_code}\n" \
+            test -s "videos/simulation_${lang}.mp4"
+            curl --fail-with-body -sS -o /dev/null -w "Telegram ${lang} : HTTP %{http_code}\n" \
               -F chat_id="${TELEGRAM_CHAT_ID}" -F supports_streaming=true \
-              -F caption="🎬 Vidéo du match du jour (${lang}) — ${TITRE} · ${TOURNOI}" \
+              -F caption="🎬 Simulation (${lang}) — ${TITRE} · ${TOURNOI}" \
               -F video=@"videos/simulation_${lang}.mp4" \
-              "https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendVideo" || echo "::warning::envoi Telegram ${lang} impossible"
+              "https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendVideo"
             if [ -f "videos/stats_${lang}.png" ]; then
-              curl -sS -o /dev/null -w "Telegram carte ${lang} : HTTP %{http_code}\n" \
+              curl --fail-with-body -sS -o /dev/null -w "Telegram carte ${lang} : HTTP %{http_code}\n" \
                 -F chat_id="${TELEGRAM_CHAT_ID}" -F caption="📊 Stats du match (${lang}) — à poster en réponse à la vidéo" \
                 -F photo=@"videos/stats_${lang}.png" \
-                "https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendPhoto" || echo "::warning::carte Telegram ${lang} impossible"
+                "https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendPhoto"
             fi
           done
