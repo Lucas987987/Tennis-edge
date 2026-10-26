@@ -343,7 +343,7 @@ const T = {
   vs:'contre', cote_juste:'cote juste', sur_sims:n=>`Sur ${n} simulations`,
   fiab:'Fiabilité', fiab_aide:"Robustesse de l'estimation selon les données disponibles, l'accord des modèles et la calibration passée. Ce n'est pas la probabilité que le favori gagne.",
   rejouer:'Rejouer une simulation', accel:'Accélérer', fin:'Aller à la fin', jouer:'Lancer la simulation',
-  son_on:'Son : activé', son_off:'Son : coupé', jouer_aide:n=>`D'abord un match réellement tiré parmi les ${fmt(n)} simulations, au score le plus fréquent et rejoué point par point ; « Rejouer » tire ensuite un autre match au hasard.`,
+  son_on:'Son : activé', son_off:'Son : coupé', jouer_aide:n=>`Match réellement tiré parmi les ${fmt(n)} simulations, au score le plus fréquent et rejoué point par point. Chaque relance reprend ce même scénario modal.`,
   une_parmi:n=>`Une simulation parmi ${fmt(n)} : le vrai match peut se dérouler autrement.`,
   proba_direct:'Probabilité en direct', gagne_sim:(w,s)=>`Dans cette simulation, ${w} gagne ${s}.`,
   sets_titre:'Score en sets', scores_titre:'Scores les plus probables', feuille_titre:n=>`Feuille de match prévue (moyenne des ${fmt(n)} simulations)`,
@@ -390,7 +390,7 @@ const T = {
   vs:'vs', cote_juste:'fair odds', sur_sims:n=>`Across ${n} simulations`,
   fiab:'Reliability', fiab_aide:'Robustness of the estimate from data availability, model agreement and past calibration. This is not the probability that the favourite wins.',
   rejouer:'Replay a simulation', accel:'Faster', fin:'Skip to the end', jouer:'Play the simulation',
-  son_on:'Sound: on', son_off:'Sound: off', jouer_aide:n=>`First, an actual simulated match with the most frequent score among ${fmt(n)} simulations, replayed point by point; “Replay” then draws another match at random.`,
+  son_on:'Sound: on', son_off:'Sound: off', jouer_aide:n=>`An actual simulated match with the most frequent score among ${fmt(n)} simulations, replayed point by point. Every replay uses this same modal scenario.`,
   une_parmi:n=>`One simulation out of ${fmt(n)}: the real match can play out differently.`,
   proba_direct:'Live win probability', gagne_sim:(w,s)=>`In this simulation, ${w} wins ${s}.`,
   sets_titre:'Score in sets', scores_titre:'Most likely scores', feuille_titre:n=>`Expected match stats (average of ${fmt(n)} simulations)`,
@@ -683,8 +683,8 @@ function Arcade(root, m, opts){
     const mon = ++jeton, vivant = () => mon === jeton;
     let seed = seedVoulu != null ? seedVoulu : (opts.seed != null && mon === 1 ? opts.seed : null);
     enCoursTop = false;
-    if (seed == null && mon === 1 && traceTop){ seed = (scenario.simulation_index || 0) + 1; enCoursTop = true; }
-    if (seed == null && mon === 1 && !traceTop){ const k = chercherTop(); if (k != null){ seed = k; enCoursTop = true; } }
+    if (seed == null && traceTop){ seed = (scenario.simulation_index || 0) + 1; enCoursTop = true; }
+    if (seed == null && !traceTop){ const k = chercherTop(); if (k != null){ seed = k; enCoursTop = true; } }
     if (seed == null) seed = Math.floor(Math.random()*1e9);
     const traceActive = enCoursTop && traceTop;
     const premier = traceActive ? scenario.premier_serveur : seed % 2;
