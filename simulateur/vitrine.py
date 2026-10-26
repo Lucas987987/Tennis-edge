@@ -5,7 +5,7 @@ vitrine.py — les données du site public de l'algorithme (23/10/2026) : algo/d
 
 Le site public (algo/index.html, en français et en anglais) montre :
   — chaque match des prochaines heures en entier : % de victoire, cote juste (1 / %), sets, scores
-    probables, feuille prévue et scénario modal rejouable point par point ;
+    probables, feuille prévue et scénario représentatif rejouable point par point ;
   — le MATCH DU JOUR, toujours choisi séparément par sa règle fixe, sans influencer les autres simulations ;
   — le BILAN PUBLIC : tous les matchs pronostiqués depuis le début du journal, sans tri, pertes comprises ;
   — la CALIBRATION : ce que l'algo annonçait contre ce qui s'est passé (en direct, et rejoué hors échantillon).

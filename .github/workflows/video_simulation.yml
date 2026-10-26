@@ -1,9 +1,9 @@
 name: Vidéo — simulation du match du jour
 
 # AJOUTÉ LE 23/10/2026. Vidéo verticale (1080×1920, MP4, ~25 s) du match du jour rejoué point par point par
-# l'algo, en français et en anglais, prête à poster sur X. Fin de vidéo : % sur 5 000 simulations.
-# 24/10/2026 : la vidéo montre le SCÉNARIO LE PLUS FRÉQUENT des 5 000 simulations (score exact le plus probable),
-# rejoué point par point ; un autre tirage seulement si un numéro est donné au lancement à la main.
+# l'algo, en français et en anglais, prête à poster sur X. Fin de vidéo : % sur 20 000 simulations.
+# 27/10/2026 : la vidéo montre un MATCH REPRÉSENTATIF des victoires du favori (médoid des sets, jeux et
+# statistiques), rejoué point par point ; un autre tirage seulement si un numéro est donné au lancement.
 # 24/10/2026 : AUCUNE adresse dans la vidéo par défaut (personne ne remonte la piste) ; l'adresse neutre
 # algo.tennis-edge.workers.dev ne s'affiche que si « adresse = oui » est choisi au lancement à la main.
 # Chaque matin à 07:05 UTC (09:05 à Paris) : le match du jour est choisi au premier passage des pronostics
@@ -25,7 +25,7 @@ on:
         type: boolean
         default: false
       seed:
-        description: "Vide = le scénario le plus fréquent des 5 000 simulations (défaut). Un nombre = un autre tirage."
+        description: "Vide = le scénario représentatif des 20 000 simulations (défaut). Un nombre = un autre tirage."
         required: false
         default: ''
   schedule:
