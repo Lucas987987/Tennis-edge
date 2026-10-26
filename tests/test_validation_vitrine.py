@@ -96,11 +96,36 @@ class ValidationVitrine(unittest.TestCase):
             html = f.read()
         self.assertIn('<a class="match-open" href="${m.uid===mdj?', html)
         self.assertIn("'#match='+encodeURIComponent(m.uid)", html)
-        self.assertIn('let id = matchDemande() || selectionId || idJour', html)
+        self.assertIn('const demande = matchDemande()', html)
+        self.assertIn('let id = demande || selectionId || idJour', html)
         self.assertIn("window.addEventListener('hashchange'", html)
         self.assertIn("e.target.closest('a[data-uid]')", html)
         self.assertIn('if (ouvrirMatch(a.dataset.uid)) e.preventDefault();', html)
         self.assertNotIn("e.target.closest('button[data-uid]')", html)
+
+    def test_catalogue_ne_compte_que_les_simulations_reellement_presentes(self):
+        chemin = os.path.join(os.path.dirname(__file__), '..', 'algo', 'index.html')
+        with open(chemin, encoding='utf-8') as f:
+            html = f.read()
+        self.assertIn("D.matchs.filter(m=>m.simulation && m.simulation_disponible !== false &&", html)
+        self.assertIn("D.matchs.filter(m=>m.simulation && m.simulation_disponible !== false).length", html)
+        self.assertNotIn("t('compte_matchs',tous.length,D.matchs.length)", html)
+
+    def test_lien_incomplet_ne_retombe_pas_silencieusement_sur_match_du_jour(self):
+        chemin = os.path.join(os.path.dirname(__file__), '..', 'algo', 'index.html')
+        with open(chemin, encoding='utf-8') as f:
+            html = f.read()
+        self.assertIn("if (!m && !demande && idJour)", html)
+        self.assertIn("t(demande ? 'sim_indisponible' : 'mdj_vide')", html)
+        self.assertNotIn("if (!m && idJour)", html)
+
+    def test_pages_se_redeploie_apres_chaque_generation_reussie(self):
+        chemin = os.path.join(os.path.dirname(__file__), '..', '.github', 'workflows', 'pages.yml')
+        with open(chemin, encoding='utf-8') as f:
+            yml = f.read()
+        self.assertIn("workflows: ['Pronostics du jour']", yml)
+        self.assertIn('types: [completed]', yml)
+        self.assertIn("github.event.workflow_run.conclusion == 'success'", yml)
 
 
 if __name__ == '__main__':

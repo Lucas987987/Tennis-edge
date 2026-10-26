@@ -26,6 +26,13 @@ on:
   # V6.6 : rafraîchissement HORAIRE et léger (minute 7, hors pic). Les calculs
   # lourds (scan V5, stabilité 16 ans, propositions, V6.3) tournent une fois par
   # jour dans lab_quotidien.yml ; ici on ne fait que recopier leurs JSON.
+  # Les commits créés avec GITHUB_TOKEN ne déclenchent pas un autre workflow « push ».
+  # Ce déclencheur publie donc explicitement le nouveau algo/donnees.json après chaque
+  # génération réussie : le worker Cloudflare relit ensuite GitHub Pages (cache 60 s).
+  workflow_run:
+    workflows: ['Pronostics du jour']
+    types: [completed]
+    branches: [main]
   schedule:
     - cron: '7 * * * *'
   workflow_dispatch:
@@ -42,6 +49,7 @@ concurrency:
 
 jobs:
   deploy:
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     environment:
       name: github-pages
