@@ -83,6 +83,8 @@ jobs:
         run: python simulateur/backtest_pronostic.py /tmp/sackmann . --scores
       - name: Profils peu documentés, récence et transitions (champion–challenger)
         run: python simulateur/profils_robustes.py /tmp/sackmann . --max 2000
+      - name: Interactions service–retour horodatées (challenger)
+        run: python simulateur/styles_joueurs.py /tmp/sackmann . --max 2000
       - name: Profils de service (aces, doubles fautes, 1re et 2e balle, retour)
         run: python simulateur/profils_service.py /tmp/sackmann .
       - name: Réglage du match simulé (aces, 1re balle) jugé sur les feuilles collectées
@@ -97,6 +99,8 @@ jobs:
         run: python simulateur/apprentissage_continu.py .
       - name: Ablation appariée sur les mêmes pronostics figés
         run: python simulateur/ablation.py . --bootstrap 2000
+      - name: Recalibrages challengers sur fenêtres futures disjointes
+        run: python simulateur/recalibrage.py --racine .
       - name: Évaluation complète des sorties indépendantes
         run: python simulateur/evaluation_sorties.py --racine .
       - name: Validation empirique de la note de fiabilité
@@ -130,7 +134,7 @@ jobs:
                      simulateur/profils_service.json simulateur/rapport_match_simule.json \
                      simulateur/reglages_match_simule.json simulateur/rapport_forme_du_jour.json \
                      simulateur/choix_simulation.json simulateur/facteurs.json simulateur/bilan_algo_etat.json \
-                     simulateur/rapport_ablation.json simulateur/rapport_evaluation_sorties.json                      simulateur/rapport_validation_fiabilite.json simulateur/rapport_surveillance_derive.json simulateur/rapport_roi_algo.json simulateur/rapport_profils_robustes.json                      simulateur/rapport_dependances_points.json simulateur/rapport_recherche_externe.json                      simulateur/rapport_gouvernance.json simulateur/gouvernance_etat.json                      Tennis_Edge_Lab/live/explorateur_pronostics.json.gz
+                     simulateur/rapport_ablation.json simulateur/rapport_evaluation_sorties.json                      simulateur/rapport_validation_fiabilite.json simulateur/rapport_surveillance_derive.json simulateur/rapport_roi_algo.json simulateur/rapport_profils_robustes.json simulateur/rapport_styles_joueurs.json simulateur/rapport_recalibrage.json                      simulateur/rapport_dependances_points.json simulateur/rapport_recherche_externe.json                      simulateur/rapport_gouvernance.json simulateur/gouvernance_etat.json                      Tennis_Edge_Lab/live/explorateur_pronostics.json.gz
           if [ -f simulateur/journal_decisions.jsonl ]; then git add -- simulateur/journal_decisions.jsonl; fi
           if [ -f simulateur/classements_sackmann.json ]; then git add -- simulateur/classements_sackmann.json; fi
           if [ -f simulateur/pronostics_hors_echantillon.jsonl.gz ]; then git add -- simulateur/pronostics_hors_echantillon.jsonl.gz; fi
