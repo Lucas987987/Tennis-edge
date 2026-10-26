@@ -85,7 +85,7 @@ jobs:
         run: python simulateur/profils_service.py /tmp/sackmann .
       - name: Pronostics des 36 prochaines heures
         run: python simulateur/pronostics_du_jour.py .
-      # Préversion Plus : %, cote juste, détail complet et scénario modal de chaque match, match du jour,
+      # Préversion Plus : %, cote juste, détail complet et scénario représentatif de chaque match, match du jour,
       # bilan public et calibration. Aucune cote de bookmaker, aucun signal privé.
       - name: Site public de l'algo — génération et contrôle bloquants
         run: |

@@ -16,8 +16,10 @@ def document_valide():
     score = VV.score_texte(sets)
     scenario = {'score': score, 'sets': [list(x) for x in sets], 'points': ''.join(map(str, points)),
                 'premier_serveur': True, 'simulation_index': 17}
+    scenario.update({'selection': 'representatif', 'vainqueur': 0 if gagnant == 0 else 1})
     return {'simulations': 20000, 'matchs': [{
-        'uid': 'test', 'simulation_disponible': True, 'scores_probables': [[score, .03]],
+        'uid': 'test', 'p_home': .62 if gagnant == 0 else .38,
+        'simulation_disponible': True, 'scores_probables': [[score, .03]],
         'simulation': {'n': 20000, 'version': 'simulation', 'sets_gagnants': 2,
                        'tb_final': 7, 'scenario': scenario},
     }]}
@@ -31,10 +33,38 @@ class ValidationVitrine(unittest.TestCase):
         rejoue = VV.rejouer_trace(sc['points'], premier_serveur=True)
         self.assertEqual(rejoue['score'], sc['score'])
 
+    def test_scenario_representatif_peut_etre_different_du_score_modal(self):
+        doc = document_valide()
+        doc['matchs'][0]['scores_probables'].insert(0, ['0-6 0-6', .04])
+        self.assertTrue(VV.valider(doc))
+
+    def test_scenario_representatif_suit_le_favori_de_la_variante(self):
+        doc = document_valide()
+        m = doc['matchs'][0]
+        m['p_home'] = .99 if m['p_home'] < .5 else .01
+        with self.assertRaisesRegex(ValueError, 'vainqueur favori'):
+            VV.valider(doc)
+
+    def test_match_type_choisit_un_medoid_pas_un_score_impose(self):
+        def ligne(sets, valeur):
+            f = {k: float(valeur) for k in MS.CLES_FEUILLE}
+            return (' '.join(f'{a}-{b}' for a, b in sets), f, dict(f), [], sets)
+        brut = [ligne([(6, 0), (6, 0)], 0),
+                ligne([(6, 4), (3, 6), (6, 4)], 10),
+                ligne([(6, 4), (6, 4)], 20),
+                ligne([(0, 6), (0, 6)], 10)]
+        traces = [(1, b'0') for _ in brut]
+        a = MS.match_type(brut, traces, vainqueur=0)
+        b = MS.match_type(brut, traces, vainqueur=0)
+        self.assertEqual(a['simulation_index'], 1)
+        self.assertEqual(a['score'], '6-4 3-6 6-4')
+        self.assertEqual(a['selection'], 'representatif')
+        self.assertEqual(a, b)
+
     def test_ancien_export_sans_scenario_est_refuse(self):
         doc = document_valide()
         del doc['matchs'][0]['simulation']['scenario']
-        with self.assertRaisesRegex(ValueError, 'score le plus fréquent'):
+        with self.assertRaisesRegex(ValueError, 'scénario représentatif'):
             VV.valider(doc)
 
     def test_5000_est_refuse(self):
@@ -79,7 +109,7 @@ class ValidationVitrine(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'stabilité'):
             VV.valider(doc)
 
-    def test_chaque_rejeu_utilise_le_scenario_modal(self):
+    def test_chaque_rejeu_utilise_le_scenario_representatif(self):
         chemin = os.path.join(os.path.dirname(__file__), '..', 'algo', 'index.html')
         with open(chemin, encoding='utf-8') as f:
             html = f.read()
