@@ -3,7 +3,7 @@
 """Contrôles bloquants de algo/donnees.json avant sa publication.
 
 Le scénario vidéo est un vrai tirage du moteur : sa trace de points doit reproduire
-exactement le score modal, sans recalibrage côté navigateur.
+exactement le score représentatif exporté, sans recalibrage côté navigateur.
 """
 import json
 import os
@@ -96,8 +96,8 @@ def valider(doc, simulations_attendues=20000):
                 raise ValueError('variante du scénario absente ou inconnue')
             scores = m.get('scores_probables') or []
             scenario = sim.get('scenario') or {}
-            if not scores or scenario.get('score') != scores[0][0]:
-                raise ValueError('le scénario ne reprend pas le score le plus fréquent')
+            if not scores or scenario.get('selection') != 'representatif':
+                raise ValueError('le scénario représentatif est absent')
             index = scenario.get('simulation_index')
             if not isinstance(index, int) or isinstance(index, bool) or not 0 <= index < n:
                 raise ValueError('simulation_index hors des tirages réalisés')
@@ -107,11 +107,14 @@ def valider(doc, simulations_attendues=20000):
                 raise ValueError(f"trace={reel['score']}, score annoncé={scenario.get('score')}")
             if scenario.get('sets') is not None and [tuple(x) for x in scenario['sets']] != reel['sets']:
                 raise ValueError('sets du scénario différents de la trace')
+            favori = 0 if float(m.get('p_home', .5)) >= .5 else 1
+            if scenario.get('vainqueur') != favori or reel['vainqueur'] != favori:
+                raise ValueError('le scénario représentatif ne suit pas le vainqueur favori de la variante')
             stabilite = sim.get('stabilite_score')
             if stabilite is not None:
                 if stabilite.get('statut') not in ('stable', 'fragile', 'instable', 'non_controle'):
                     raise ValueError('statut de stabilité du score inconnu')
-                if stabilite.get('score_reference') != scenario.get('score'):
+                if stabilite.get('score_reference') != scores[0][0]:
                     raise ValueError('la stabilité ne contrôle pas le score modal publié')
                 if stabilite.get('n_par_bloc') != n:
                     raise ValueError('blocs de stabilité différents du nombre de simulations publié')
