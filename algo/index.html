@@ -105,7 +105,7 @@ table.sheet thead th.c1{color:var(--p1)} table.sheet thead th.c2{color:var(--p2)
 .list{list-style:none;margin:0;padding:0}
 .list li{border-top:1px solid var(--line);transition:background-color .18s ease-out}
 .list li:first-child{border-top:0}
-.match-open{display:grid;grid-template-columns:3.6em minmax(0,1fr);gap:4px 12px;width:100%;padding:14px 16px;border:0;background:transparent;text-align:left;cursor:pointer;color:inherit;transition:transform .18s ease-out,background-color .18s ease-out}
+.match-open{display:grid;grid-template-columns:3.6em minmax(0,1fr);gap:4px 12px;width:100%;padding:14px 16px;border:0;background:transparent;text-align:left;cursor:pointer;color:inherit;text-decoration:none;transition:transform .18s ease-out,background-color .18s ease-out}
 .match-open:hover,.match-open:focus-visible{background:rgba(255,255,255,.035)}
 .match-open:active{transform:scale(.995)}
 .list .time{font-family:var(--cond);font-weight:600;font-size:1.1rem;color:var(--dim);padding-top:2px}
@@ -905,7 +905,7 @@ function rendListe(){
     return;
   }
   ul.innerHTML = visibles.map(m=>{ const p=m.p_home, star=m.uid===mdj, selection=m.uid===(selectionId||mdj);
-    return `<li class="${star?'star ':''}${selection?'selectionne':''}"><button type="button" class="match-open" data-uid="${esc(m.uid)}" data-circuit="${esc(m.circuit)}" aria-current="${selection?'true':'false'}" aria-label="${esc(t('voir_simulation'))} ${esc(m.home)} – ${esc(m.away)}">
+    return `<li class="${star?'star ':''}${selection?'selectionne':''}"><a class="match-open" href="${m.uid===mdj?'?':'?match='+encodeURIComponent(m.uid)}" data-uid="${esc(m.uid)}" data-circuit="${esc(m.circuit)}" aria-current="${selection?'true':'false'}" aria-label="${esc(t('voir_simulation'))} ${esc(m.home)} – ${esc(m.away)}">
       <span class="time">${esc(heure(m.debut))}</span><span>
       <span class="tour">${esc(m.tournoi)} · ${esc(SURF[L][m.surface]||m.surface||'')}${star ? `<span class="badge">${esc(L==='fr'?'du jour':'of the day')}</span>` : ''}</span>
       <span class="pl a"><span>${esc(m.home)}</span><b>${pc0(p)}</b></span>
@@ -913,7 +913,7 @@ function rendListe(){
       <span class="mini" aria-hidden="true"><i style="width:${(p*100).toFixed(1)}%"></i></span>
       <span class="meta"><span>${esc(t('cote_juste'))} ${odds(m.cotes_justes[0])} / ${odds(m.cotes_justes[1])}</span><span class="ouvrir">${esc(selection ? t('simulation_affichee') : t('voir_simulation'))}</span></span>
       ${rendFiabilite(m.fiabilite)}
-    </span></button></li>`; }).join('');
+    </span></a></li>`; }).join('');
   const more = document.getElementById('liste-more');
   more.hidden = visibles.length >= tous.length;
   more.textContent = t('voir_matchs',Math.min(30,tous.length-visibles.length));
@@ -963,7 +963,7 @@ function rendCalib(){
 }
 function ouvrirMatch(uid, aller=true){
   const m = D && D.matchs.find(x=>x.uid===uid && x.simulation);
-  if (!m) return;
+  if (!m) return false;
   if (selectionId !== uid){ selectionId = uid; rendMdj(); rendListe(); }
   const jour = D.match_du_jour && D.match_du_jour.uid;
   try{
@@ -972,6 +972,7 @@ function ouvrirMatch(uid, aller=true){
     history.replaceState(null,'',url);
   }catch(e){}
   if (aller) document.getElementById('mdj').scrollIntoView({block:'start',behavior:MOINS_ANIM?'auto':'smooth'});
+  return true;
 }
 function rendTout(){
   rendTextes(); if (!D) return;
@@ -982,7 +983,9 @@ document.querySelectorAll('.seg button[data-lang]').forEach(b=>b.addEventListene
   L=b.dataset.lang; try{ localStorage.setItem('te_lang',L); }catch(e){} rendTout(); }));
 document.getElementById('b-son').addEventListener('click', () => { Bruit.basculer(); boutonSon(); });
 document.getElementById('list').addEventListener('click', e=>{
-  const b = e.target.closest('button[data-uid]'); if (b) ouvrirMatch(b.dataset.uid);
+  const a = e.target.closest('a[data-uid]');
+  if (!a || e.button!==0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+  if (ouvrirMatch(a.dataset.uid)) e.preventDefault();
 });
 document.getElementById('liste-more').addEventListener('click',()=>{ nListe+=30; rendListe(); });
 document.getElementById('retour-mdj').addEventListener('click',()=>{
