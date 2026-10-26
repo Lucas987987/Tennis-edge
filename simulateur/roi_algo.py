@@ -172,7 +172,14 @@ def bilan(P):
 def calculer(racine):
     C = clotures(racine)
     L = direct(racine)
-    out = {'direct': {}, 'n_pronostics': len(L), 'n_avec_cloture': sum(1 for x in L if _cote(C, x[0], None)), 'rejoue': {}}
+    out = {'direct': {}, 'n_pronostics': len(L), 'n_avec_cloture': sum(1 for x in L if _cote(C, x[0], None)), 'rejoue': {},
+           'genere_le': dt.datetime.now(dt.timezone.utc).isoformat(timespec='seconds'),
+           'source_probabilites': 'dernier pronostic indépendant affiché avant le match, sinon premier',
+           'source_cotes': 'dernière cote Pinnacle fiable capturée avant le début ; jamais une cote postérieure',
+           'regles': {'R1': '1 unité sur le vainqueur annoncé',
+                      'R2': f'1 unité sur chaque côté si probabilité × cote >= {SEUIL_VALEUR}'},
+           'minimum_pour_conclure': N_MIN,
+           'avertissement': 'Le marché sert seulement à évaluer le rendement ; il ne modifie pas le modèle indépendant.'}
     for regle, P in paris(L, C).items():
         out['direct'][regle] = dict(bilan(P), par_circuit={LIB[c]: bilan([x for x in P if x[0] == c]) for c in CIRCUITS})
     try:
@@ -231,13 +238,17 @@ def envoyer(texte):
 def main(argv):
     racine = next((a for a in argv[1:] if not a.startswith('--')), os.path.join(ICI, '..'))
     r = calculer(racine)
+    chemin = os.path.join(racine, 'simulateur', 'rapport_roi_algo.json')
+    os.makedirs(os.path.dirname(chemin), exist_ok=True)
+    with open(chemin, 'w', encoding='utf-8') as f:
+        json.dump(r, f, ensure_ascii=False, indent=2)
     texte = message(r)
     # 23/10/2026 : le dépôt est public, ses journaux de runs aussi : avec --telegram, rien n'est affiché dans le log.
     if '--telegram' not in argv:
         print(texte)
     else:
         print('ROI calculé : envoyé sur le Telegram privé (non affiché ici, journal public).')
-    # rien n'est écrit dans le dépôt (public) : le ROI ne sort que sur le Telegram privé et dans le log du run
+    # Le rapport JSON garde le calcul reproductible ; Telegram reste une notification privée séparée.
     if '--telegram' in argv:
         envoyer(texte)
     return 0

@@ -1,0 +1,202 @@
+{
+  "direct": {
+    "R1": {
+      "n": 203,
+      "gagnes": 129,
+      "unites": -8.43,
+      "roi": -0.042,
+      "cote_moy": 1.57,
+      "ic95": [
+        -0.147,
+        0.066
+      ],
+      "par_circuit": {
+        "ATP": {
+          "n": 39,
+          "gagnes": 25,
+          "unites": 0.5,
+          "roi": 0.013,
+          "cote_moy": 1.61,
+          "ic95": [
+            -0.257,
+            0.282
+          ]
+        },
+        "WTA": {
+          "n": 57,
+          "gagnes": 41,
+          "unites": 3.09,
+          "roi": 0.054,
+          "cote_moy": 1.53,
+          "ic95": [
+            -0.128,
+            0.242
+          ]
+        },
+        "Challenger": {
+          "n": 107,
+          "gagnes": 63,
+          "unites": -12.03,
+          "roi": -0.112,
+          "cote_moy": 1.58,
+          "ic95": [
+            -0.262,
+            0.035
+          ]
+        }
+      }
+    },
+    "R2": {
+      "n": 131,
+      "gagnes": 51,
+      "unites": -18.83,
+      "roi": -0.144,
+      "cote_moy": 3.41,
+      "ic95": [
+        -0.344,
+        0.064
+      ],
+      "par_circuit": {
+        "ATP": {
+          "n": 27,
+          "gagnes": 14,
+          "unites": 0.27,
+          "roi": 0.01,
+          "cote_moy": 2.57,
+          "ic95": [
+            -0.415,
+            0.421
+          ]
+        },
+        "WTA": {
+          "n": 33,
+          "gagnes": 10,
+          "unites": -10.65,
+          "roi": -0.323,
+          "cote_moy": 3.5,
+          "ic95": [
+            -0.684,
+            0.084
+          ]
+        },
+        "Challenger": {
+          "n": 71,
+          "gagnes": 27,
+          "unites": -8.44,
+          "roi": -0.119,
+          "cote_moy": 3.69,
+          "ic95": [
+            -0.406,
+            0.172
+          ]
+        }
+      }
+    }
+  },
+  "n_pronostics": 210,
+  "n_avec_cloture": 203,
+  "rejoue": {
+    "R1": {
+      "n": 2243,
+      "gagnes": 1447,
+      "unites": -95.98,
+      "roi": -0.043,
+      "cote_moy": 1.58,
+      "ic95": [
+        -0.073,
+        -0.011
+      ],
+      "par_circuit": {
+        "ATP": {
+          "n": 537,
+          "gagnes": 344,
+          "unites": -21.92,
+          "roi": -0.041,
+          "cote_moy": 1.57,
+          "ic95": [
+            -0.104,
+            0.023
+          ]
+        },
+        "WTA": {
+          "n": 514,
+          "gagnes": 326,
+          "unites": -42.62,
+          "roi": -0.083,
+          "cote_moy": 1.54,
+          "ic95": [
+            -0.15,
+            -0.019
+          ]
+        },
+        "Challenger": {
+          "n": 1142,
+          "gagnes": 738,
+          "unites": -38.31,
+          "roi": -0.034,
+          "cote_moy": 1.61,
+          "ic95": [
+            -0.077,
+            0.01
+          ]
+        }
+      }
+    },
+    "R2": {
+      "n": 1417,
+      "gagnes": 517,
+      "unites": -155.36,
+      "roi": -0.11,
+      "cote_moy": 3.45,
+      "ic95": [
+        -0.18,
+        -0.036
+      ],
+      "par_circuit": {
+        "ATP": {
+          "n": 337,
+          "gagnes": 132,
+          "unites": -14.56,
+          "roi": -0.043,
+          "cote_moy": 2.98,
+          "ic95": [
+            -0.183,
+            0.112
+          ]
+        },
+        "WTA": {
+          "n": 328,
+          "gagnes": 123,
+          "unites": -21.74,
+          "roi": -0.066,
+          "cote_moy": 3.8,
+          "ic95": [
+            -0.212,
+            0.088
+          ]
+        },
+        "Challenger": {
+          "n": 724,
+          "gagnes": 251,
+          "unites": -119.54,
+          "roi": -0.165,
+          "cote_moy": 3.47,
+          "ic95": [
+            -0.259,
+            -0.071
+          ]
+        }
+      }
+    }
+  },
+  "genere_le": "2026-10-26T16:02:12+00:00",
+  "source_probabilites": "dernier pronostic indépendant affiché avant le match, sinon premier",
+  "source_cotes": "dernière cote Pinnacle fiable capturée avant le début ; jamais une cote postérieure",
+  "regles": {
+    "R1": "1 unité sur le vainqueur annoncé",
+    "R2": "1 unité sur chaque côté si probabilité × cote >= 1.05"
+  },
+  "minimum_pour_conclure": 30,
+  "avertissement": "Le marché sert seulement à évaluer le rendement ; il ne modifie pas le modèle indépendant.",
+  "n_rejoue": 2310
+}
