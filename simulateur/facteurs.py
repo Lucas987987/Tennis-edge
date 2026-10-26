@@ -965,6 +965,17 @@ def main(argv):
             doc['ensemble_sur_le_jugement'] = {'base': {'log_loss': ll0, 'reussite_pct': ok0},
                                                'avec': {'log_loss': ll1, 'reussite_pct': ok1}}
         doc['verdict'] = f"groupes adoptés : {', '.join(doc['adoptes']) or 'aucun'}"
+    # Dépendances dynamiques : testées sur les points, jamais publiées sans backtest du vainqueur.
+    try:
+        import dependances_points as DP
+        dep = DP.evaluer(lignes, doc.get('coefs') or {})
+        dep['genere_le'] = dt.datetime.now(dt.timezone.utc).isoformat()
+        with open(os.path.join(ICI, 'rapport_dependances_points.json'), 'w', encoding='utf-8') as f:
+            json.dump(dep, f, ensure_ascii=False, indent=2)
+        doc['dependances_points'] = {k: (v.get('confirmation') or {}).get('gain') for k, v in (dep.get('candidats') or {}).items()}
+        print('Dépendances entre points :', dep['statut'], flush=True)
+    except Exception as e:
+        print(f"::warning::Tests de dépendances non faits : {type(e).__name__}: {e}")
     # 22/10/2026 — ENTRAÎNEMENT PROGRESSIF : la saison des feuilles rejouée semaine après semaine, l'algorithme
     # ré-entraîné à chaque fois sur le passé seulement (entrainement_progressif.py).
     try:

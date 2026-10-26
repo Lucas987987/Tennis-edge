@@ -42,6 +42,30 @@ def _semaine(debut):
     return f'{annee}-S{semaine:02d}'
 
 
+
+def utilisables(doc, version='combinaison'):
+    """Matchs figés utilisables pour une version, avec rejet explicite des entrées invalides.
+
+    Accepte le document complet ou sa liste de matchs. Contrairement à observations(),
+    conserve les sorties détaillées et les métadonnées nécessaires aux autres audits.
+    """
+    source = (doc or {}).get('matchs') if isinstance(doc, dict) else (doc or [])
+    out, rejetes, vus = [], [], set()
+    for m in source:
+        uid = m.get('uid')
+        reel = m.get('reel') or {}
+        premier = m.get('premier') or {}
+        prevu = premier.get(version) or {}
+        if (not uid or uid in vus or not m.get('debut') or reel.get('interrompu')
+                or reel.get('gagnant') not in ('home', 'away')
+                or not isinstance(prevu.get('p_home'), (int, float))):
+            rejetes.append(m)
+            continue
+        vus.add(uid)
+        ligne = dict(m, gagnant=reel['gagnant'], prevus=premier)
+        out.append(ligne)
+    return sorted(out, key=lambda r: r['debut']), rejetes
+
 def observations(doc):
     """Une ligne par match, avec les quatre probabilités home et le résultat."""
     out, vus = [], set()

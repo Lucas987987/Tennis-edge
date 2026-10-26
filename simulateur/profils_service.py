@@ -83,8 +83,9 @@ def sommes_du_match(d_moi, d_adv):
 
 
 class Profils:
-    def __init__(self, demi_vie=DEMI_VIE):
+    def __init__(self, demi_vie=DEMI_VIE, prior_mult=1.0):
         self.hl = demi_vie
+        self.prior_mult = max(.1, float(prior_mult))
         self.j = {}          # (joueur, surface | 'all') -> sommes pondérées
         self.m = {}          # (circuit, surface | 'all') -> sommes pondérées
         self.noms = {}
@@ -133,6 +134,7 @@ class Profils:
         sa, ss = self.j.get((joueur, 'all')), self.j.get((joueur, surface))
         out = {}
         for k, (num, den, force) in TAUX.items():
+            force *= self.prior_mult
             dev = 0.0
             if sa:
                 n = _val(sa, den) * facteur
@@ -159,13 +161,13 @@ class Profils:
                 continue
             J.setdefault(j, {'nom': self.noms.get(j, j), 'sommes': {}})['sommes'][s] = [round(x * facteur, 1) for x in v]
         Mo = {f"{c} {s}": [round(x * facteur, 1) for x in v] for (c, s), v in self.m.items()}
-        return {'jour': jour.isoformat(), 'demi_vie_j': self.hl, 'champs': list(CHAMPS),
+        return {'jour': jour.isoformat(), 'demi_vie_j': self.hl, 'prior_mult': self.prior_mult, 'champs': list(CHAMPS),
                 'taux': {k: list(v) for k, v in TAUX.items()}, 'moyennes': Mo, 'joueurs': J}
 
     @classmethod
     def importer(cls, doc):
         """Profils lus depuis profils_service.json (sommes au jour d'export ; jour du match = jour d'export)."""
-        P = cls(doc.get('demi_vie_j', DEMI_VIE))
+        P = cls(doc.get('demi_vie_j', DEMI_VIE), doc.get('prior_mult', 1.0))
         jour = dt.date.fromisoformat(doc['jour'])
         w = P._poids(jour)
         for k, v in (doc.get('moyennes') or {}).items():
@@ -182,9 +184,9 @@ class Profils:
         return P
 
 
-def construire(M, jusqu_au=None, cle=None):
+def construire(M, jusqu_au=None, cle=None, demi_vie=DEMI_VIE, prior_mult=1.0):
     """Profils de tous les matchs terminés avant `jusqu_au` (tous si None). cle : nom -> clé joueur."""
-    P = Profils()
+    P = Profils(demi_vie, prior_mult)
     for m in M:
         if jusqu_au and m['fin'] >= jusqu_au:
             continue
@@ -207,7 +209,14 @@ def main(argv):
     tout = M + F
     tout.sort(key=lambda m: m['date'])
     fin = max(m['date'] for m in tout)
-    P = construire(tout, cle=E.cle)
+    try:
+        with open(os.path.join(ICI, 'choix_simulation.json'), encoding='utf-8') as f:
+            reglage_profil = (json.load(f).get('profils_hierarchiques') or {})
+    except (OSError, ValueError):
+        reglage_profil = {}
+    actif = reglage_profil if reglage_profil.get('adopte') else {}
+    P = construire(tout, cle=E.cle, demi_vie=actif.get('demi_vie', DEMI_VIE),
+                   prior_mult=actif.get('prior_mult', 1.0))
     doc = P.exporter(fin)
     doc['genere_le'] = dt.datetime.now(dt.timezone.utc).isoformat(timespec='seconds')
     doc['source'] = ('archive Jeff Sackmann (CC BY-NC-SA 4.0) jusqu\'au ' + fin_sack.isoformat()
