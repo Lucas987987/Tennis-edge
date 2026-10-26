@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-match_simule.py — le match joué AVANT l'heure, 5 000 fois, point par point (22/10/2026).
+match_simule.py — le match joué AVANT l'heure, N fois, point par point.
 
 Le moteur exact (modele.py) donne les probabilités du score. Ici, on rejoue le
 match au hasard, point par point, avec le DÉTAIL de chaque service :
@@ -13,8 +13,8 @@ match au hasard, point par point, avec le DÉTAIL de chaque service :
 Ces taux viennent du profil de chaque joueur (profils_service.py) et de son
 adversaire (un bon relanceur concède moins d'aces et gagne plus de points
 derrière la 1re et la 2e balle). Le NIVEAU est ancré sur la probabilité de
-victoire de la version choisie (Elo « stats seules » ou Pinnacle « stats +
-marché ») avec la même forme du jour que le moteur exact : le pourcentage de
+victoire de la version indépendante choisie (Elo, simulation ou combinaison),
+avec la même forme du jour que le moteur exact : le pourcentage de
 victoire de la simulation retombe sur celui du pronostic (contrôlé par test).
 
 Chaque simulation produit une feuille de match complète, comme les
@@ -235,8 +235,8 @@ def noeuds_de_forme(cA, cB, p_victoire, sets_gagnants, sigma):
 
 
 # ------------------------------------------------------------------ un match
-def un_match(cA, cB, sets_gagnants, tb_final, rnd, a_sert):
-    """Joue un match. Renvoie (gagnant 0/1, sets [(jA, jB)], feuille [2][12], breaks [(set, jA, jB, 0/1)], tb)."""
+def un_match(cA, cB, sets_gagnants, tb_final, rnd, a_sert, tracer=False):
+    """Joue un match. Avec tracer=True, ajoute la liste ordonnée des gagnants de chaque point."""
     C = (cA, cB)
     P = [(c['f'], c['a'], c['w1'], c['d'], c['w2j']) for c in C]
     # balles de break (22/10/2026) : points gagnés derrière la 1re et la 2e décalés de c['bp'] (logit)
@@ -245,31 +245,34 @@ def un_match(cA, cB, sets_gagnants, tb_final, rnd, a_sert):
     st = [[0] * 12, [0] * 12]
     r = rnd.random
     sets, ss, breaks, ntb = [], [0, 0], [], 0
+    trace = [] if tracer else None
     srv = 0 if a_sert else 1
 
     def point(s, bp=False):
         f, a, w1, d, w2j = Pb[s] if (bp and Pb[s]) else P[s]
         x = st[s]
         x[SVPT] += 1
+        gagne = False
         if r() < f:
             x[IN1] += 1
             y = r()
             if y < a:
                 x[ACE] += 1
                 x[W1] += 1
-                return True
-            if y < w1:
+                gagne = True
+            elif y < w1:
                 x[W1] += 1
-                return True
-            return False
-        y = r()
-        if y < d:
-            x[DF] += 1
-            return False
-        if r() < w2j:
-            x[W2] += 1
-            return True
-        return False
+                gagne = True
+        else:
+            y = r()
+            if y < d:
+                x[DF] += 1
+            elif r() < w2j:
+                x[W2] += 1
+                gagne = True
+        if tracer:
+            trace.append(s if gagne else 1 - s)
+        return gagne
 
     while ss[0] < sets_gagnants and ss[1] < sets_gagnants:
         g = [0, 0]
@@ -325,10 +328,11 @@ def un_match(cA, cB, sets_gagnants, tb_final, rnd, a_sert):
                 break
         sets.append((g[0], g[1]))
         ss[0 if g[0] > g[1] else 1] += 1
-    return (0 if ss[0] > ss[1] else 1), sets, st, breaks, ntb
+    out = ((0 if ss[0] > ss[1] else 1), sets, st, breaks, ntb)
+    return out + (trace,) if tracer else out
 
 
-# ------------------------------------------------------------------ 5 000 matchs
+# ------------------------------------------------------------------ N matchs
 def graine(texte):
     return int(hashlib.sha256(str(texte).encode('utf-8')).hexdigest()[:12], 16)
 
@@ -455,7 +459,7 @@ def appliquer_reglages(c, reglages):
     return borner(dict(c, a=c['a'] * reglages['ace_facteur']))
 
 
-def simuler(cA, cB, p_victoire, sets_gagnants=2, n=5000, sigma=0.15, cle='', tb_final=None, garder=False,
+def simuler(cA, cB, p_victoire, sets_gagnants=2, n=20000, sigma=0.15, cle='', tb_final=None, garder=False,
             reglages=None):
     """Le match joué n fois. cA, cB : composantes « au niveau du profil » (avant ancrage).
 
@@ -479,7 +483,7 @@ def simuler(cA, cB, p_victoire, sets_gagnants=2, n=5000, sigma=0.15, cle='', tb_
     vA, sets_c, scores_c, tbs, jeux = 0, {}, {}, 0, []
     set1A, remA, remB = 0, 0, 0
     F = [{k: [] for k in CLES_FEUILLE}, {k: [] for k in CLES_FEUILLE}]
-    brut = []
+    brut, traces = [], []
     for _ in range(n):
         x = rnd.random() * tot
         j = 0
@@ -489,7 +493,9 @@ def simuler(cA, cB, p_victoire, sets_gagnants=2, n=5000, sigma=0.15, cle='', tb_
         if tau_f > 0:
             ca = dict(ca, f=min(max(_sg(_lg(ca['f']) + rnd.gauss(0, tau_f)), 0.3), 0.95))
             cb = dict(cb, f=min(max(_sg(_lg(cb['f']) + rnd.gauss(0, tau_f)), 0.3), 0.95))
-        g, sets, st, br, ntb = un_match(ca, cb, sets_gagnants, tb_final, rnd, rnd.random() < 0.5)
+        a_sert = rnd.random() < 0.5
+        g, sets, st, br, ntb, trace = un_match(ca, cb, sets_gagnants, tb_final, rnd, a_sert, tracer=True)
+        traces.append((0 if a_sert else 1, bytes(trace)))
         vA += g == 0
         a1 = sets[0][0] > sets[0][1]
         set1A += a1
@@ -517,32 +523,38 @@ def simuler(cA, cB, p_victoire, sets_gagnants=2, n=5000, sigma=0.15, cle='', tb_
            'scores': [[s, round(c / n, 4)] for s, c in top[:5]],
            'jeux': resume(jeux), 'tiebreak': round(tbs / n, 3),
            'feuille': [{k: resume(F[i][k]) for k in CLES_FEUILLE} for i in (0, 1)],
-           'match_type': match_type(brut, top[0][0] if top else None, F)}
+           'match_type': match_type(brut, top[0][0] if top else None, F, traces)}
     if garder:
         out['_brut'] = brut
     return out
 
 
-def match_type(brut, score, F):
-    """Parmi les simulations du score le plus fréquent, celle dont la feuille est la plus proche
-    des médianes (écart normalisé par l'écart interquartile) : un match plausible, pas une moyenne."""
+def match_type(brut, score, F, traces=None):
+    """Un match RÉELLEMENT TIRÉ, au score le plus fréquent et proche des médianes statistiques.
+
+    La trace ordonnée des points permet à la vidéo de rejouer ce tirage exact, sans conditionner un
+    nouveau tirage au seul score final. Les autres champs restent compatibles avec l'ancien export."""
     if not score:
         return None
     med = [{k: _quantile(F[i][k], 0.5) for k in CLES_FEUILLE} for i in (0, 1)]
     eiq = [{k: max((_quantile(F[i][k], 0.75) or 0) - (_quantile(F[i][k], 0.25) or 0), 1.0) for k in CLES_FEUILLE}
            for i in (0, 1)]
     best, bd = None, None
-    for sc, fa, fb, br, sets in brut:
+    for i, (sc, fa, fb, br, sets) in enumerate(brut):
         if sc != score:
             continue
         dist = 0.0
-        for i, f in ((0, fa), (1, fb)):
+        for j, f in ((0, fa), (1, fb)):
             for k in ('aces', 'doubles_fautes', 'premiere_pct', 'gagnes_1re_pct', 'gagnes_2e_pct', 'breaks'):
-                if f[k] is not None and med[i][k] is not None:
-                    dist += ((f[k] - med[i][k]) / eiq[i][k]) ** 2
+                if f[k] is not None and med[j][k] is not None:
+                    dist += ((f[k] - med[j][k]) / eiq[j][k]) ** 2
         if bd is None or dist < bd:
-            best, bd = (sc, fa, fb, br, sets), dist
-    sc, fa, fb, br, sets = best
+            best, bd = (i, sc, fa, fb, br, sets), dist
+    i, sc, fa, fb, br, sets = best
     arr = lambda f: {k: (round(v, 1) if isinstance(v, float) else v) for k, v in f.items()}
-    return {'score': sc, 'sets': [list(s) for s in sets], 'breaks': [list(b) for b in br],
-            'feuille': [arr(fa), arr(fb)]}
+    out = {'score': sc, 'sets': [list(s) for s in sets], 'breaks': [list(b) for b in br],
+           'feuille': [arr(fa), arr(fb)], 'simulation_index': i}
+    if traces is not None:
+        premier, trace = traces[i]
+        out.update({'premier_serveur': premier, 'points': ''.join(str(x) for x in trace)})
+    return out
