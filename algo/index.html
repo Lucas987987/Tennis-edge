@@ -372,14 +372,6 @@ const T = {
   vs:'contre', cote_juste:'cote juste', sur_sims:n=>`Sur ${n} simulations`,
   fiab:'Fiabilité', fiab_aide:"Robustesse de l'estimation selon les données disponibles, l'accord des modèles et la calibration passée. Ce n'est pas la probabilité que le favori gagne.",
   rejouer:'Rejouer une simulation', accel:'Accélérer', fin:'Aller à la fin', jouer:'Lancer la simulation',
-  enregistrer:'Enregistrer la vidéo', enregistrer_stop:'Arrêter et télécharger',
-  enregistrer_aide:"Choisissez « Cet onglet » et laissez la simulation visible. Le fichier est téléchargé sur votre appareil à la fin.",
-  enregistrement_choix:"Choisissez « Cet onglet » dans la fenêtre de partage pour lancer l’enregistrement.",
-  enregistrement_cours:"Enregistrement en cours… Laissez la simulation visible dans cet onglet.",
-  enregistrement_termine:n=>`Vidéo téléchargée : ${n}`,
-  enregistrement_annule:"Enregistrement annulé : aucune vidéo n’a été créée.",
-  enregistrement_indisponible:"Ce navigateur ne permet pas l’enregistrement vidéo. Essayez Chrome, Edge ou Firefox sur ordinateur.",
-  enregistrement_erreur:"L’enregistrement n’a pas pu démarrer. Réessayez en autorisant le partage de cet onglet.",
   son_on:'Son : activé', son_off:'Son : coupé', jouer_aide:n=>`Match réellement tiré parmi les ${fmt(n)} simulations, au score le plus fréquent et rejoué point par point. Chaque relance reprend ce même scénario modal.`,
   une_parmi:n=>`Une simulation parmi ${fmt(n)} : le vrai match peut se dérouler autrement.`,
   proba_direct:'Probabilité en direct', gagne_sim:(w,s)=>`Dans cette simulation, ${w} gagne ${s}.`,
@@ -433,14 +425,6 @@ const T = {
   vs:'vs', cote_juste:'fair odds', sur_sims:n=>`Across ${n} simulations`,
   fiab:'Reliability', fiab_aide:'Robustness of the estimate from data availability, model agreement and past calibration. This is not the probability that the favourite wins.',
   rejouer:'Replay a simulation', accel:'Faster', fin:'Skip to the end', jouer:'Play the simulation',
-  enregistrer:'Record video', enregistrer_stop:'Stop and download',
-  enregistrer_aide:'Choose “This tab” and keep the simulation visible. The file downloads to your device when the match ends.',
-  enregistrement_choix:'Choose “This tab” in the sharing prompt to start recording.',
-  enregistrement_cours:'Recording… Keep the simulation visible in this tab.',
-  enregistrement_termine:n=>`Video downloaded: ${n}`,
-  enregistrement_annule:'Recording cancelled: no video was created.',
-  enregistrement_indisponible:'This browser cannot record video. Try Chrome, Edge or Firefox on a computer.',
-  enregistrement_erreur:'Recording could not start. Try again and allow sharing of this tab.',
   son_on:'Sound: on', son_off:'Sound: off', jouer_aide:n=>`An actual simulated match with the most frequent score among ${fmt(n)} simulations, replayed point by point. Every replay uses this same modal scenario.`,
   une_parmi:n=>`One simulation out of ${fmt(n)}: the real match can play out differently.`,
   proba_direct:'Live win probability', gagne_sim:(w,s)=>`In this simulation, ${w} wins ${s}.`,
@@ -839,76 +823,8 @@ function Arcade(root, m, opts){
 }
 
 /* ───────────── rendu de la page ───────────── */
-let D = null, nRes = 12, nListe = 30, borne = null, capture = null;
+let D = null, nRes = 12, nListe = 30, borne = null;
 let selectionId = null, circuit = 'TOUS', recherche = '';
-
-function arreterCapture(telecharger=true){
-  const c = capture;
-  if (!c) return;
-  capture = null;
-  c.telecharger = telecharger;
-  if (c.recorder.state !== 'inactive') c.recorder.stop();
-  else c.flux.getTracks().forEach(p=>p.stop());
-}
-function nomVideo(m, extension){
-  const nom = `${m.debut.slice(0,10)}_${m.home}_${m.away}`.normalize('NFD')
-    .replace(/[\u0300-\u036f]/g,'').replace(/[^A-Za-z0-9_-]+/g,'_').replace(/^_+|_+$/g,'');
-  return `simulation_${nom}.${extension}`;
-}
-async function enregistrerSimulation(m, bouton, statut){
-  if (capture){ arreterCapture(true); return; }
-  if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia || !window.MediaRecorder){
-    statut.textContent = t('enregistrement_indisponible'); return;
-  }
-  bouton.disabled = true;
-  statut.textContent = t('enregistrement_choix');
-  let flux;
-  try{
-    flux = await navigator.mediaDevices.getDisplayMedia({
-      video:{frameRate:{ideal:30,max:30}}, audio:true,
-      preferCurrentTab:true, selfBrowserSurface:'include', surfaceSwitching:'exclude'
-    });
-  }catch(e){
-    bouton.disabled = false;
-    statut.textContent = t(e && e.name==='NotAllowedError' ? 'enregistrement_annule' : 'enregistrement_erreur');
-    return;
-  }
-  let recorder;
-  try{
-    const type = ['video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm','video/mp4']
-      .find(x=>MediaRecorder.isTypeSupported(x)) || '';
-    recorder = new MediaRecorder(flux, type ? {mimeType:type,videoBitsPerSecond:6000000} : undefined);
-  }catch(e){
-    flux.getTracks().forEach(p=>p.stop()); bouton.disabled = false;
-    statut.textContent = t('enregistrement_erreur'); return;
-  }
-  const chunks = [], c = {recorder,flux,telecharger:true,erreur:false};
-  capture = c;
-  recorder.ondataavailable = e=>{ if (e.data && e.data.size) chunks.push(e.data); };
-  recorder.onerror = ()=>{ c.erreur=true; if (capture===c) arreterCapture(false); };
-  recorder.onstop = ()=>{
-    flux.getTracks().forEach(p=>p.stop());
-    bouton.disabled = false; bouton.textContent = `⏺ ${t('enregistrer')}`;
-    if (!c.telecharger){ statut.textContent=c.erreur ? t('enregistrement_erreur') : ''; return; }
-    if (!chunks.length){ statut.textContent=t('enregistrement_erreur'); return; }
-    const type = recorder.mimeType || 'video/webm', extension = type.includes('mp4') ? 'mp4' : 'webm';
-    const blob = new Blob(chunks,{type}), url = URL.createObjectURL(blob), a = document.createElement('a');
-    a.href=url; a.download=nomVideo(m,extension); a.style.display='none';
-    document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(()=>URL.revokeObjectURL(url),5000);
-    statut.textContent=t('enregistrement_termine',a.download);
-  };
-  const piste = flux.getVideoTracks()[0];
-  if (piste) piste.addEventListener('ended',()=>{ if (capture===c) arreterCapture(true); });
-  try{ recorder.start(1000); }
-  catch(e){
-    capture=null; flux.getTracks().forEach(p=>p.stop()); bouton.disabled=false;
-    statut.textContent=t('enregistrement_erreur'); return;
-  }
-  bouton.disabled = false; bouton.textContent = `■ ${t('enregistrer_stop')}`;
-  statut.textContent = t('enregistrement_cours');
-  if (borne) borne.jouer();
-}
 function boutonSon(){
   const b = document.getElementById('b-son'), on = Bruit.actif;
   b.setAttribute('aria-pressed', String(on)); b.setAttribute('aria-label', on ? t('son_on') : t('son_off')); b.title = on ? t('son_on') : t('son_off');
@@ -932,7 +848,6 @@ function rendFiabilite(f, detail=false){
 }
 function rendMdj(){
   const zone = document.getElementById('mdj-zone');
-  if (capture) arreterCapture(false);
   if (borne) { borne.stop(); borne = null; }
   const idJour = D.match_du_jour && D.match_du_jour.uid;
   const demande = matchDemande();
@@ -956,7 +871,7 @@ function rendMdj(){
      .filter(([k])=>f[0]&&f[0][k]!=null).map(([k,lib])=>`<tr><th>${esc(t(lib))}</th><td>${dec(f[0][k],1)}</td><td>${dec(f[1][k],1)}</td></tr>`).join('') : '';
   zone.innerHTML = `<div class="mdj">
     <div>${m.simulation ? `<div class="borne"><div class="ecran-jeu" id="borne"></div></div>
-      <div class="commandes"><button type="button" class="btn" id="b-accel" disabled>⏩ ${esc(t('accel'))}</button><button type="button" class="btn" id="b-fin" disabled>⏭ ${esc(t('fin'))}</button><button type="button" class="btn" id="b-enregistrer" title="${esc(t('enregistrer_aide'))}">⏺ ${esc(t('enregistrer'))}</button></div>
+      <div class="commandes"><button type="button" class="btn" id="b-accel" disabled>⏩ ${esc(t('accel'))}</button><button type="button" class="btn" id="b-fin" disabled>⏭ ${esc(t('fin'))}</button></div>
       <p class="aide">${esc(t('jouer_aide', nSim))}</p><p class="final" id="final" aria-live="polite"></p>` : ''}</div>
     <div class="fiche">
       <div class="panel duelx">
@@ -975,18 +890,15 @@ function rendMdj(){
     </div></div>`;
   if (m.simulation){
     const fin = document.getElementById('final');
-    const bA = document.getElementById('b-accel'), bF = document.getElementById('b-fin'), bE = document.getElementById('b-enregistrer');
+    const bA = document.getElementById('b-accel'), bF = document.getElementById('b-fin');
     borne = Arcade(document.getElementById('borne'), m, { duree: 24, son: Bruit.jouer,
-      onDebut: () => { fin.textContent = capture ? t('enregistrement_cours') : ''; bA.disabled = bF.disabled = false;
+      onDebut: () => { fin.textContent = ''; bA.disabled = bF.disabled = false;
         const b = document.querySelector('.borne'), r = b.getBoundingClientRect();
         if (r.top < 0 || r.bottom > innerHeight) b.scrollIntoView({ block: 'start', behavior: MOINS_ANIM ? 'auto' : 'smooth' }); },
       onFin: S => { bA.disabled = bF.disabled = true;
-        fin.textContent = capture ? t('enregistrement_cours') : t('gagne_sim', S.vainqueur===0 ? m.home : m.away, scoreTxt(S, S.vainqueur===1));
-        // Garder l'écran final dans la vidéo, puis arrêter la piste et télécharger le fichier.
-        if (capture) setTimeout(()=>arreterCapture(true),1600); } });
+        fin.textContent = t('gagne_sim', S.vainqueur===0 ? m.home : m.away, scoreTxt(S, S.vainqueur===1)); } });
     document.getElementById('b-accel').onclick = () => borne.accelerer();
     document.getElementById('b-fin').onclick = () => borne.finir();
-    bE.onclick = () => enregistrerSimulation(m,bE,fin);
   }
 }
 function matchsFiltres(){
