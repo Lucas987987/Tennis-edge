@@ -90,5 +90,15 @@ class ValidationVitrine(unittest.TestCase):
         self.assertNotIn('then draws another match at random', html)
 
 
+    def test_catalogue_conserve_un_lien_direct_si_le_clic_dynamique_echoue(self):
+        chemin = os.path.join(os.path.dirname(__file__), '..', 'algo', 'index.html')
+        with open(chemin, encoding='utf-8') as f:
+            html = f.read()
+        self.assertIn('<a class="match-open" href="${m.uid===mdj?', html)
+        self.assertIn("e.target.closest('a[data-uid]')", html)
+        self.assertIn('if (ouvrirMatch(a.dataset.uid)) e.preventDefault();', html)
+        self.assertNotIn("e.target.closest('button[data-uid]')", html)
+
+
 if __name__ == '__main__':
     unittest.main()
