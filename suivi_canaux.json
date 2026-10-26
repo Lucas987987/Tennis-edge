@@ -1,14 +1,14 @@
 {
  "schema_version": 1,
- "genere_le": "2026-10-25T16:13:05Z",
+ "genere_le": "2026-10-26T05:22:33Z",
  "canaux": {
   "MISER": {
    "libelle": "🎯 MISER — steam, EV ≥ seuil vs Pinnacle juste (vainqueur du match)",
    "source": "miser_signal_log.jsonl (messages envoyés) + ajouts de suivi_direct",
    "regle": "première alerte de chaque match, au book et au prix du message ; relances non recomptées",
    "debut": "2026-10-22",
-   "n_alertes": 3,
-   "n_matchs": 3,
+   "n_alertes": 4,
+   "n_matchs": 4,
    "n_relances": 0,
    "n_denoues": 3,
    "bilan": {
@@ -67,6 +67,14 @@
      "pin_close_adv": 2.18,
      "clv_pin": 0.96,
      "source_resultat": "feuille de match (TennisApi)"
+    },
+    "2026-10-26_han_shi_alevtina_ibragimova": {
+     "gagne": null,
+     "pnl": null,
+     "pin_close": null,
+     "pin_close_adv": null,
+     "clv_pin": null,
+     "source_resultat": "inconnu"
     }
    }
   }
