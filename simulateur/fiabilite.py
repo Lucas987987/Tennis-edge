@@ -1,0 +1,103 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""Indice de robustesse d'un pronostic indépendant, appris seulement sur les matchs déjà résolus.
+
+La note ne prédit pas que le favori va gagner : elle résume la qualité des entrées, l'accord entre
+Elo et simulation, et la calibration historique de la variante réellement affichée. Aucune cote.
+"""
+import math
+
+VERSIONS = ('combinaison', 'simulation', 'stats')
+
+
+def _lg(p):
+    p = min(max(float(p), 1e-6), 1 - 1e-6)
+    return math.log(p / (1 - p))
+
+
+def variante(bloc):
+    for k in VERSIONS:
+        v = (bloc or {}).get(k) or {}
+        if v.get('p_home') is not None:
+            return k, v
+    return None, {}
+
+
+def enregistrements(doc):
+    """Observations antérieures, une par match, sans duplication home/away."""
+    out = []
+    for m in (doc or {}).get('matchs') or []:
+        reel = m.get('reel') or {}
+        if reel.get('interrompu') or reel.get('gagnant') not in ('home', 'away'):
+            continue
+        premier = m.get('premier') or {}
+        k, v = variante(premier)
+        p = m.get('p_affiche', v.get('p_home'))
+        if p is None:
+            continue
+        out.append({'uid': m.get('uid'), 'p': float(p), 'y': int(reel['gagnant'] == 'home'),
+                    'circuit': m.get('circuit'), 'surface': m.get('surface')})
+    return out
+
+
+def calibration_locale(p, circuit, surface, historique, uid=None):
+    """Calibration locale pondérée ; n efficace et taux réel sont retournés pour transparence."""
+    poids, sp, sy = [], [], []
+    for r in historique:
+        if uid is not None and r.get('uid') == uid:
+            continue
+        distance = abs(r['p'] - p)
+        if distance > 0.15:
+            continue
+        w = max(0.0, 1 - distance / 0.15)
+        w *= 2.0 if r.get('circuit') == circuit else 0.5
+        w *= 1.5 if r.get('surface') == surface else 1.0
+        if w:
+            poids.append(w)
+            sp.append(w * r['p'])
+            sy.append(w * r['y'])
+    n = sum(poids)
+    if not n:
+        return {'n': 0.0, 'score': 0.5, 'ecart': None}
+    prevu, reel = sum(sp) / n, sum(sy) / n
+    ecart = reel - prevu
+    # Peu d'historique : on se rapproche d'une note neutre plutôt que d'inventer une certitude.
+    brut = 1 - min(abs(ecart) / 0.20, 1.0)
+    score = 0.5 + (n / (n + 80.0)) * (brut - 0.5)
+    return {'n': round(n, 1), 'score': score, 'ecart': round(ecart, 4),
+            'prevu': round(prevu, 4), 'reel': round(reel, 4)}
+
+
+def evaluer(match, historique):
+    k, v = variante(match)
+    if not k:
+        return None
+    p = float(v['p_home'])
+    sim = v.get('match_simule') or {}
+    profils = sim.get('profil_connu') or match.get('style_connu') or [False, False]
+    experience = match.get('matchs_joues') or [0, 0]
+    donnees_joueurs = []
+    for connu, n in zip(profils, experience):
+        donnees_joueurs.append(0.5 * bool(connu) + 0.5 * min(max((n or 0) / 30.0, 0.0), 1.0))
+    donnees = sum(donnees_joueurs) / 2 if donnees_joueurs else 0.0
+    p_elo = (match.get('stats') or {}).get('p_home')
+    p_sim = (match.get('simulation') or {}).get('p_home')
+    accord = math.exp(-abs(_lg(p_elo) - _lg(p_sim)) / 1.2) if p_elo is not None and p_sim is not None else 0.5
+    hist = calibration_locale(p, match.get('circuit'), match.get('surface'), historique, match.get('uid'))
+    preuve = min(hist['n'] / 200.0, 1.0)
+    note = round(100 * (0.40 * donnees + 0.20 * accord + 0.30 * hist['score'] + 0.10 * preuve))
+    niveau = 'fragile' if note < 45 else 'prudent' if note < 65 else 'correct' if note < 80 else 'solide'
+    return {'note': note, 'niveau': niveau, 'version': k,
+            'composantes': {'donnees': round(100 * donnees), 'accord_modeles': round(100 * accord),
+                            'calibration': round(100 * hist['score']), 'profondeur_historique': round(100 * preuve)},
+            'historique_effectif': hist['n'], 'ecart_calibration': hist['ecart'],
+            'definition': "Robustesse de l'estimation, pas probabilité que le favori gagne."}
+
+
+def ajouter(matchs, resultats):
+    historique = enregistrements(resultats)
+    for m in matchs or []:
+        note = evaluer(m, historique)
+        if note:
+            m['fiabilite'] = note
+    return matchs

@@ -7,7 +7,8 @@ Noms et tournoi : clv_history (avec la clôture Pinnacle) et closing_lines ;
 résultat : set_results.json (vainqueur du match, set 1, set 2), retrouvé par
 date et paire de joueurs (identifiant exact, ou date ± 1 jour, dans les deux
 ordres). Surface : déduite du nom du tournoi grâce aux tournois de l'archive
-Sackmann (table construite par surfaces_tournois), « Hard » à défaut.
+Sackmann (table construite par surfaces_tournois). Une surface inconnue reste inconnue :
+elle ne doit jamais être transformée silencieusement en « Hard ».
 """
 import datetime as dt
 import glob
@@ -27,6 +28,10 @@ _sp.loader.exec_module(books)
 MOTS_VIDES = {'atp', 'wta', 'itf', 'challenger', 'men', 'women', 'singles', 'masters', 'open', 'ch', 'qualifying',
               'qualifiers', 'qualification', 'the', 'de', 'cup', 'championships', 'international', 'grand', 'prix',
               'tennis', 'classic', 'trophy', 'w', 'm', 'h', 'ladies'}
+SURFACES = ('Hard', 'Clay', 'Grass')
+# Corrections explicites pour les noms dont le rapprochement par mots est trompeur.
+SURFACES_IMPOSEES = ((r'vienna|vienne', 'Hard'), (r'french open|roland garros', 'Clay'),
+                     (r'wimbledon', 'Grass'), (r'australian open|us open', 'Hard'))
 
 
 def slug(s):
@@ -45,6 +50,8 @@ def surfaces_tournois(matchs_sackmann, depuis=dt.date(2023, 1, 1)):
     for m in matchs_sackmann:
         if m['date'] < depuis:
             continue
+        if m.get('surface') not in SURFACES:
+            continue
         for w in mots_tournoi(m.get('tournoi')):
             d = c.setdefault(w, {})
             d[m['surface']] = d.get(m['surface'], 0) + 1
@@ -52,11 +59,15 @@ def surfaces_tournois(matchs_sackmann, depuis=dt.date(2023, 1, 1)):
 
 
 def surface_de(tournoi, table):
+    texte = str(tournoi or '')
+    for motif, surface in SURFACES_IMPOSEES:
+        if re.search(motif, texte, re.I):
+            return surface
     votes = {}
-    for w in mots_tournoi(tournoi):
-        if w in table:
+    for w in mots_tournoi(texte):
+        if table.get(w) in SURFACES:
             votes[table[w]] = votes.get(table[w], 0) + 1
-    return max(votes, key=votes.get) if votes else 'Hard'
+    return max(votes, key=votes.get) if votes else None
 
 
 def grand_chelem(t):
@@ -67,6 +78,39 @@ def cinq_sets(t):
     t = str(t or '')
     return bool(re.search(r'(wimbledon|us open|french open|roland|australian open)', t, re.I)) and \
         bool(re.search(r'\bmen', t, re.I)) and not re.search(r'women', t, re.I)
+
+
+def score_valide(score, meilleur_des=3):
+    """Score COMPLET d'un match terminé, sans sets incomplets ni jeux impossibles."""
+    try:
+        morceaux = str(score or '').split()
+        if meilleur_des not in (3, 5) or not morceaux or len(morceaux) > meilleur_des:
+            return False
+        sets = []
+        for morceau in morceaux:
+            m = re.fullmatch(r'(\d+)-(\d+)(?:\(\d+\))?', morceau)
+            if not m:
+                return False
+            a, b = int(m.group(1)), int(m.group(2))
+            if a == b:
+                return False
+            hi, lo = max(a, b), min(a, b)
+            if not ((hi == 6 and lo <= 4) or (hi == 7 and lo in (5, 6))):
+                return False
+            sets.append((a, b))
+        cible = meilleur_des // 2 + 1
+        gh = sum(a > b for a, b in sets)
+        ga = len(sets) - gh
+        return (gh == cible and ga < cible) or (ga == cible and gh < cible)
+    except (TypeError, ValueError):
+        return False
+
+
+def gagnant_score(score, meilleur_des=3):
+    if not score_valide(score, meilleur_des):
+        return None
+    sets = [tuple(map(int, re.match(r'(\d+)-(\d+)', x).groups())) for x in score.split()]
+    return 'home' if sum(a > b for a, b in sets) > sum(b > a for a, b in sets) else 'away'
 
 
 def resultat(sr, d0, h, a):
@@ -146,8 +190,11 @@ def charger(racine=RACINE, table_surfaces=None):
                 pin = (1 / ch) ** k if k else (1 / ch) / (1 / ch + 1 / ca)
         except (KeyError, TypeError, ValueError):
             pass
+        surface = surface_de(r.get('tournament'), table_surfaces or {})
+        if surface is None:
+            continue
         out.append({'date': d0, 'debut': debut, 'home': h, 'away': a, 'tournoi': r.get('tournament') or '',
-                    'surface': surface_de(r.get('tournament'), table_surfaces or {}), 'bo': bo, 'gagnant': g,
+                    'surface': surface, 'bo': bo, 'gagnant': g,
                     'sets': sets, 'set1': s1 if s1 in ('home', 'away') else None, 'pin': pin,
                     'grand_chelem': grand_chelem(r.get('tournament'))})
     out.sort(key=lambda x: x['debut'])

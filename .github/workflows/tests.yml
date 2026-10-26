@@ -10,6 +10,8 @@ on:
   push:
     paths:
       - 'scripts/**.py'
+      - 'simulateur/**.py'
+      - 'algo/index.html'
       - 'tests/**.py'
       - 'Tennis_Edge_Lab/**'
       - 'requirements.txt'
@@ -37,7 +39,10 @@ jobs:
           python-version: '3.11'
       - run: pip install -r requirements.txt
       - run: pytest tests/ -v
+      - run: python3 -m unittest discover -s simulateur/tests -v
       - run: python3 -m unittest discover -s Tennis_Edge_Lab/tests -v
+      - run: python3 -c "import re,pathlib; s=pathlib.Path('algo/index.html').read_text(); pathlib.Path('/tmp/algo-inline.js').write_text(re.search(r'<script>([\\s\\S]*?)</script>',s).group(1))"
+      - run: node --check /tmp/algo-inline.js
       - run: node --check Tennis_Edge_Lab/app.js && node --check Tennis_Edge_Lab/research.js && node --check Tennis_Edge_Lab/research_v61.js && node --check Tennis_Edge_Lab/research_v63.js && node --check Tennis_Edge_Lab/research_v66.js && node --check Tennis_Edge_Lab/research_explorer.js && node --check Tennis_Edge_Lab/research_profils.js && node --check Tennis_Edge_Lab/research_reconciliation.js && node --check Tennis_Edge_Lab/research_direct.js && node --check Tennis_Edge_Lab/research_registre.js && node --check Tennis_Edge_Lab/freshness.js && node --check Tennis_Edge_Lab/v4.js && node --check Tennis_Edge_Lab/v6.js
       - run: node --test Tennis_Edge_Lab/tests/test_v5_ui.js Tennis_Edge_Lab/tests/test_v6_ui.js Tennis_Edge_Lab/tests/test_v61_ui.js Tennis_Edge_Lab/tests/test_v63_ui.js Tennis_Edge_Lab/tests/test_v66_ui.js Tennis_Edge_Lab/tests/test_v67_explorer_ui.js Tennis_Edge_Lab/tests/test_v69_explorer_ui.js Tennis_Edge_Lab/tests/test_v70_reconciliation_ui.js Tennis_Edge_Lab/tests/test_v72_direct_ui.js Tennis_Edge_Lab/tests/test_v73_registre_ui.js Tennis_Edge_Lab/tests/test_freshness_ui.js
       - run: node --test workers/tennis-edge-db/test_worker.mjs

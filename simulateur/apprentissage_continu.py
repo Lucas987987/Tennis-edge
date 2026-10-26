@@ -26,6 +26,7 @@ sys.path.insert(0, ICI)
 import match_simule as MS  # noqa: E402
 
 MIN_MATCHS = 400
+MIN_NOUVEAUX = 30
 PART_JUGEMENT = 0.3
 CHOIX = os.path.join(ICI, 'choix_simulation.json')
 
@@ -58,13 +59,23 @@ def ajuster(L, ridge=1.0, tours=30):
     return B.ajuster_poids([[_lg(e), _lg(s_)] for _, e, s_ in L], ridge=ridge, tours=tours)
 
 
-def decider(L, poids_archive):
+def decider(L, poids_archive, deja_juge_jusqua=None):
     n = len(L)
     out = {'n': n, 'min': MIN_MATCHS}
     if n < MIN_MATCHS:
         return dict(out, adopte=False, raison=f"en attente : {n} matchs joués avec les deux % (il en faut {MIN_MATCHS})")
-    k = int(n * (1 - PART_JUGEMENT))
-    appr, juge = L[:k], L[k:]
+    if deja_juge_jusqua:
+        # Une période de jugement n'est jamais réutilisée pour retenter une adoption :
+        # seuls les matchs arrivés depuis forment le nouveau test hors échantillon.
+        appr = [r for r in L if r[0] <= deja_juge_jusqua]
+        juge = [r for r in L if r[0] > deja_juge_jusqua]
+        if len(juge) < MIN_NOUVEAUX:
+            return dict(out, adopte=False, juge_jusqua=deja_juge_jusqua,
+                        raison=f"en attente : {len(juge)} nouveaux matchs depuis le dernier jugement "
+                               f"(il en faut {MIN_NOUVEAUX})")
+    else:
+        k = int(n * (1 - PART_JUGEMENT))
+        appr, juge = L[:k], L[k:]
     w = ajuster(appr)
     P = {'elo': w[0], 'simulation': w[1]}
     l_new = ll([MS.melange(P, e, s_) for _, e, s_ in juge])
@@ -77,9 +88,11 @@ def decider(L, poids_archive):
         final = {'elo': wa[0], 'simulation': wa[1]}
     return dict(out, adopte=bool(ok), poids={k_: round(v, 4) for k_, v in final.items()},
                 poids_appris={k_: round(v, 4) for k_, v in P.items()},
-                jugement={'n': len(juge), 'depuis': juge[0][0], 'log_loss_continu': round(l_new, 5),
+                jugement={'n': len(juge), 'depuis': juge[0][0], 'jusqua': juge[-1][0],
+                          'log_loss_continu': round(l_new, 5),
                           'log_loss_poids_archive': round(l_arch, 5) if l_arch is not None else None,
                           'log_loss_elo_seul': round(l_elo, 5)},
+                juge_jusqua=juge[-1][0],
                 raison=(f"sur les {len(juge)} matchs joués les plus récents : poids appris sur nos matchs {round(l_new, 4)} "
                         f"contre poids de l'archive {round(l_arch, 4) if l_arch is not None else '—'} (Elo seul {round(l_elo, 4)})"))
 
@@ -97,9 +110,14 @@ def main(argv):
     except (OSError, ValueError):
         choix = {}
     pa = ((choix.get('combinaison') or {}).get('poids')) if (choix.get('combinaison') or {}).get('adopte') else None
-    d = decider(lignes(doc), pa)
+    precedent = choix.get('combinaison_continue') or {}
+    suivi = choix.get('apprentissage_continu_suivi') or {}
+    deja_juge = suivi.get('juge_jusqua') or (precedent.get('jugement') or {}).get('jusqua')
+    d = decider(lignes(doc), pa, deja_juge)
     d['genere_le'] = dt.datetime.now(dt.timezone.utc).isoformat(timespec='seconds')
     choix['combinaison_continue'] = d
+    if d.get('jugement'):
+        choix['apprentissage_continu_suivi'] = {'juge_jusqua': d['jugement']['jusqua']}
     with open(CHOIX, 'w', encoding='utf-8') as f:
         json.dump(choix, f, ensure_ascii=False, indent=1)
     print(f"Apprentissage continu : {'ADOPTÉ' if d['adopte'] else 'non adopté'} — {d['raison']}")
