@@ -123,27 +123,35 @@ def _feuille_prevue(v):
     return out or None
 
 
+def _scores_public(v):
+    """Scores des simulations de CETTE variante ; calcul exact seulement en repli."""
+    sim = v.get('match_simule') or {}
+    return (sim.get('scores') or v.get('scores_probables') or [])[:3]
+
+
 def ligne_match(m, complet):
     k, v = version(m)
     p = float(v['p_home'])
     out = {'uid': m['uid'], 'debut': m['debut'], 'tournoi': m.get('tournoi'), 'circuit': m.get('circuit'),
            'surface': m.get('surface'), 'meilleur_des': m.get('meilleur_des', 3),
-           'home': m['home'], 'away': m['away'], 'p_home': round(p, 3),
-           'cotes_justes': [cote(p), cote(1 - p)]}
+           'home': m['home'], 'away': m['away'], 'p_home': round(p, 3), 'version': k,
+           'fiabilite': m.get('fiabilite'), 'cotes_justes': [cote(p), cote(1 - p)]}
     if not complet:
         out['plus'] = True
         return out
     d = m.get('direct') or {}
+    sim = v.get('match_simule') or {}
     out.update({
         'sets': v.get('sets'),
-        'scores_probables': (v.get('scores_probables') or [])[:3],
+        'scores_probables': _scores_public(v),
         'jeux_moyen': v.get('jeux_moyen'),
         'tiebreak': v.get('tiebreak'),
         'set1_home': v.get('set1_home'),
-        'feuille_prevue': _feuille_prevue(m.get('simulation') or v),
+        'feuille_prevue': _feuille_prevue(v),
         'simulation': ({'a': round(d['a'], 4), 'b': round(d['b'], 4),
                         'sets_gagnants': int(d.get('sets_gagnants') or (3 if m.get('meilleur_des') == 5 else 2)),
-                        'tb_final': int(d.get('tb_final') or 7), 'n': 5000}
+                        'tb_final': int(d.get('tb_final') or 7), 'n': int(sim.get('n') or 0),
+                        'version': k, 'scenario': sim.get('match_type')}
                        if d.get('a') and d.get('b') else None),
     })
     return out
@@ -239,6 +247,9 @@ def construire(racine, maintenant=None):
     maintenant = maintenant or dt.datetime.now(dt.timezone.utc)
     pron = _lire(os.path.join(racine, 'Tennis_Edge_Lab', 'live', 'pronostics.json'), {}) or {}
     etat = _lire(os.path.join(racine, 'simulateur', 'elo_etat.json'), {})
+    sys.path.insert(0, ICI)
+    import elo as E
+    etat = E.migrer_etat(etat)
     precedent = (_lire(os.path.join(racine, SORTIE), {}) or {}).get('match_du_jour')
     matchs = [m for m in pron.get('matchs') or [] if m.get('circuit') in CIRCUITS and version(m)[1] and connu(m)]
     mdj = choisir_match_du_jour(matchs, etat, maintenant, precedent)
@@ -246,7 +257,7 @@ def construire(racine, maintenant=None):
                      key=lambda m: (m['debut'], m['uid']))
     lignes = [ligne_match(m, complet=bool(mdj and m['uid'] == mdj['uid'])) for m in a_venir]
     return {'genere_le': maintenant.isoformat(timespec='seconds'), 'pronostics_du': pron.get('genere_le'),
-            'simulations': pron.get('simulations') or 5000, 'match_du_jour': mdj,
+            'simulations': pron.get('simulations') or 20000, 'match_du_jour': mdj,
             'matchs': lignes, 'bilan': bilan(_lire(os.path.join(racine, 'Tennis_Edge_Lab', 'live',
                                                                    'pronostics_resultats.json'), {})),
             'rejoue': rejoue(racine)}

@@ -63,7 +63,7 @@ class Pronostic(unittest.TestCase):
 
     def test_surface_par_mots_du_tournoi(self):
         self.assertEqual(NR.surface_de('ATP Challenger Roland Garros Qualifying', {'roland': 'Clay', 'garros': 'Clay'}), 'Clay')
-        self.assertEqual(NR.surface_de('ITF W35 Inconnu', {}), 'Hard')
+        self.assertIsNone(NR.surface_de('ITF W35 Inconnu', {}))  # jamais de repli silencieux sur Hard
 
 
 if __name__ == '__main__':

@@ -1,7 +1,7 @@
 name: Pronostics du jour
 
-# 21/10/2026 — pronostic de chaque match des 36 prochaines heures, deux versions
-# côte à côte (stats seules / stats + marché), et compteur de réussite.
+# Pronostic indépendant de chaque match des 36 prochaines heures : Elo,
+# simulation pure et combinaison, sans cote ni mouvement de marché en entrée.
 # 1. le classement Elo est refait depuis tous les résultats (archive Sackmann,
 #    puis nos résultats et ceux de tennis-data) : backtest_pronostic.py ;
 # 2. pronostics_du_jour.py écrit Tennis_Edge_Lab/live/pronostics.json, ajoute le
@@ -9,7 +9,7 @@ name: Pronostics du jour
 #    bilan (pronostics_bilan.json). 0 requête d'API.
 # Le classement complet (elo_etat.json) n'est pas commité ici (stockage) : il
 # est recalculé à chaque passage.
-# 22/10/2026 : chaque match est aussi joué 5 000 fois point par point avec les
+# Chaque match est joué 20 000 fois point par point avec les
 # profils de service (simulateur/profils_service.json, produit par le workflow
 # « Pronostic - test du modèle ») : feuille de stats prévue et match type.
 # 22/10/2026 : les profils sont recalculés à chaque passage avec les feuilles
@@ -20,8 +20,7 @@ on:
   repository_dispatch:
     types: [pronostics_quotidien]
   schedule:
-    # 23/10/2026 : toutes les 2 h au lieu de 6 (nouveaux matchs pronostiqués plus vite) ; la cote Pinnacle
-    # du Lab est, elle, rafraîchie à chaque capture (simulateur/marche_du_lab.py, workflow des courbes).
+    # Toutes les 2 h pour pronostiquer les nouveaux matchs plus vite.
     - cron: '23 */2 * * *'
 
 permissions:
@@ -41,7 +40,7 @@ concurrency:
 jobs:
   pronostics:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v5
         with:
@@ -65,6 +64,8 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: '3.11'
+      - name: Tests de cohérence du simulateur indépendant
+        run: python -m unittest discover -s simulateur/tests -v
       - name: Archive Sackmann (fichiers de matchs seulement)
         run: |
           set -euo pipefail
