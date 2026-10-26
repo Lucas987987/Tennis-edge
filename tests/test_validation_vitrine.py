@@ -95,6 +95,9 @@ class ValidationVitrine(unittest.TestCase):
         with open(chemin, encoding='utf-8') as f:
             html = f.read()
         self.assertIn('<a class="match-open" href="${m.uid===mdj?', html)
+        self.assertIn("'#match='+encodeURIComponent(m.uid)", html)
+        self.assertIn('let id = matchDemande() || selectionId || idJour', html)
+        self.assertIn("window.addEventListener('hashchange'", html)
         self.assertIn("e.target.closest('a[data-uid]')", html)
         self.assertIn('if (ouvrirMatch(a.dataset.uid)) e.preventDefault();', html)
         self.assertNotIn("e.target.closest('button[data-uid]')", html)
