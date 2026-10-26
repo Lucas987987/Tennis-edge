@@ -75,12 +75,20 @@ def valider(doc, simulations_attendues=20000):
     n_global = doc.get('simulations')
     if n_global != simulations_attendues:
         erreurs.append(f'simulations globales {n_global!r} != {simulations_attendues}')
+    vus = set()
     for m in doc.get('matchs') or []:
+        uid = m.get('uid', '?')
+        if uid in vus:
+            erreurs.append(f'{uid}: match publié en double')
+            continue
+        vus.add(uid)
         sim = m.get('simulation')
         if not sim:
+            erreurs.append(f'{uid}: simulation complète absente du catalogue')
             continue
-        uid = m.get('uid', '?')
         try:
+            if m.get('simulation_disponible') is not True:
+                raise ValueError('le match n’est pas marqué comme accessible en simulation')
             n = sim.get('n')
             if n != n_global or n != simulations_attendues:
                 raise ValueError(f'n={n!r}, attendu {simulations_attendues}')
