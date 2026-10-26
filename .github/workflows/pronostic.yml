@@ -1,10 +1,9 @@
 name: Pronostic - test du modèle (deviner le vainqueur)
 
-# 21/10/2026 — le modèle DEVINE l'issue (pas battre Pinnacle). Classement Elo
-# tiré des résultats (archive Sackmann jusqu'en juin 2026, puis nos résultats),
-# moteur point par point pour les sets. Deux versions côte à côte : « stats
-# seules » et « stats + marché ». Chaque match est pronostiqué AVANT que son
-# résultat ne serve. 0 requête d'API.
+# Le modèle indépendant DEVINE l'issue. Classement Elo tiré des résultats
+# (archive Sackmann jusqu'en juin 2026, puis nos résultats), moteur point par
+# point pour les sets. Chaque match est pronostiqué AVANT que son résultat ne
+# serve ; aucune cote ni donnée de marché n'entre dans les variantes.
 # Écrit simulateur/rapport_pronostic.json et simulateur/elo_etat.json.
 # 22/10/2026 — MATCH SIMULÉ : profils de service de chaque joueur
 # (simulateur/profils_service.json, lu ensuite par « Pronostics du jour ») et
@@ -86,6 +85,8 @@ jobs:
         run: python simulateur/facteurs.py /tmp/sackmann . /tmp/mcp
       - name: Apprentissage continu (mélange simulation + Elo appris sur nos matchs joués)
         run: python simulateur/apprentissage_continu.py .
+      - name: Ablation appariée sur les mêmes pronostics figés
+        run: python simulateur/ablation.py . --bootstrap 2000
       - name: Bilan de la semaine de l'algorithme (Telegram, canal privé)
         if: always()
         env:
@@ -109,7 +110,7 @@ jobs:
                      simulateur/profils_service.json simulateur/rapport_match_simule.json \
                      simulateur/reglages_match_simule.json simulateur/rapport_forme_du_jour.json \
                      simulateur/choix_simulation.json simulateur/facteurs.json simulateur/bilan_algo_etat.json \
-                     Tennis_Edge_Lab/live/explorateur_pronostics.json.gz
+                     simulateur/rapport_ablation.json Tennis_Edge_Lab/live/explorateur_pronostics.json.gz
           if [ -f simulateur/journal_decisions.jsonl ]; then git add -- simulateur/journal_decisions.jsonl; fi
           if [ -f simulateur/classements_sackmann.json ]; then git add -- simulateur/classements_sackmann.json; fi
           if [ -f simulateur/pronostics_hors_echantillon.jsonl.gz ]; then git add -- simulateur/pronostics_hors_echantillon.jsonl.gz; fi

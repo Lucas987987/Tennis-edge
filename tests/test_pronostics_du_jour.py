@@ -1,5 +1,5 @@
-"""Pronostics du jour (21/10/2026) : deux versions, niveau = Elo ou Pinnacle,
-journal écrit une seule fois par match, bilan sur les matchs joués."""
+"""Pronostics du jour : variantes indépendantes du marché, journal figé et bilan
+sur les matchs joués. Les bookmakers des entrées de test doivent être ignorés."""
 import datetime as dt
 import json
 import os
@@ -36,8 +36,9 @@ class Pronostics(unittest.TestCase):
         e = E.Elo()
         for _ in range(30):
             e.maj(E.cle('Arthur Fils'), E.cle('Hugo Gaston'), 'Hard')
+        noms = {E.cle('Arthur Fils'): 'Arthur Fils', E.cle('Hugo Gaston'): 'Hugo Gaston'}
         json.dump({'dernier_match': '2026-10-20', 'surfaces_tournois': {'brussels': 'Hard'},
-                   'joueurs': e.exporter({})}, open(os.path.join(d, 'simulateur', 'elo_etat.json'), 'w'))
+                   'joueurs': e.exporter(noms)}, open(os.path.join(d, 'simulateur', 'elo_etat.json'), 'w'))
         json.dump({'mu': {'ATP Hard': 0.6}, 'joueurs': {'1': {'nom': 'Arthur Fils', 'service': 0.2, 'retour': 0.05, 'points': 900}}},
                   open(os.path.join(d, 'simulateur', 'notes_joueurs.json'), 'w'))
         json.dump([match('Arthur Fils', 'Hugo Gaston', 3, pin=(1.30, 3.70)), match('A B', 'C D', 5),
@@ -48,20 +49,20 @@ class Pronostics(unittest.TestCase):
     def tearDown(self):
         self.tmp.cleanup()
 
-    def test_deux_versions(self):
+    def test_stats_sans_marche(self):
         doc = P.construire(self.d, NOW)
         self.assertEqual([m['home'] for m in doc['matchs']], ['Arthur Fils', 'A B'])     # ni commencé, ni au-delà de 36 h
         m = doc['matchs'][0]
         self.assertGreater(m['stats']['p_home'], 0.9)                                      # Elo : 30 victoires
-        k = P._books(self.d).power_exponent(1.30, 3.70)
-        self.assertAlmostEqual(m['marche']['p_home'], (1 / 1.30) ** k, delta=0.002)       # marché : Pinnacle sans marge
-        for v in (m['stats'], m['marche']):
-            self.assertAlmostEqual(sum(v['sets'].values()), 1.0, places=3)   # arrondis à 4 décimales
-            self.assertEqual(len(v['scores_probables']), 3)
-            for sc, pr in v['scores_probables']:
-                self.assertRegex(sc, r'^\d+-\d+( \d+-\d+){1,2}$')
-            self.assertGreater(v['remontee']['home'] + v['remontee']['away'], 0)
-        self.assertIsNone(doc['matchs'][1]['marche'])                                       # Pinnacle absent
+        self.assertNotIn('marche', m)                                                      # Pinnacle présent en entrée, mais ignoré
+        self.assertIsNone(m['combinaison'])                                                # profils service absents dans ce test
+        self.assertIsNone(m['simulation'])
+        v = m['stats']
+        self.assertAlmostEqual(sum(v['sets'].values()), 1.0, places=3)       # arrondis à 4 décimales
+        self.assertEqual(len(v['scores_probables']), 3)
+        for sc, pr in v['scores_probables']:
+            self.assertRegex(sc, r'^\d+-\d+( \d+-\d+){1,2}$')
+        self.assertGreater(v['remontee']['home'] + v['remontee']['away'], 0)
         self.assertAlmostEqual(doc['matchs'][1]['stats']['p_home'], 0.5, delta=0.01)        # joueurs inconnus
         self.assertEqual(m['style_connu'], [True, False])
 
@@ -75,8 +76,9 @@ class Pronostics(unittest.TestCase):
         b = P.bilan(self.d, NOW + dt.timedelta(days=1))
         self.assertEqual(b['joues_avec_resultat'], 2)
         self.assertEqual(b['tous']['stats_seules']['reussite_pct'], 0.0 + 25.0)            # Fils perdu (0) + 50/50 (½) sur 2
-        self.assertEqual(b['tous']['stats_plus_marche']['n'], 1)
-        self.assertEqual(b['tous']['stats_plus_marche']['reussite_pct'], 0.0)
+        self.assertNotIn('stats_plus_marche', b['tous'])
+        self.assertEqual(b['tous']['combinaison']['n'], 0)                                # pas de profils dans ce test
+        self.assertEqual(b['tous']['simulation']['n'], 0)
 
     def test_simulation_plus_elo_et_calibration(self):
         import profils_service as PS

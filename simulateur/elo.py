@@ -42,9 +42,35 @@ PART_JEUX_MOY = 0.661       # part moyenne des jeux du vainqueur, archive Sackma
 
 
 def cle(nom):
-    s = unicodedata.normalize('NFKD', str(nom or '')).encode('ascii', 'ignore').decode().lower()
-    mots = [m for m in re.split(r'[^a-z]+', s) if m and m not in SUFFIXES]
-    return ''.join(sorted(''.join(mots)))
+    """Clé insensible à l'ordre des MOTS, jamais à l'ordre de leurs lettres."""
+    return ''.join(sorted(mots(nom)))
+
+
+def collisions_identite(noms):
+    """Noms réellement différents qui partageraient une clé ; les permutations sont des alias volontaires."""
+    groupes = {}
+    for nom in noms:
+        k = cle(nom)
+        if k:
+            groupes.setdefault(k, set()).add(tuple(mots(nom)))
+    return [{'cle': k, 'noms': sorted(' '.join(t) for t in toks)}
+            for k, toks in groupes.items() if len({tuple(sorted(t)) for t in toks}) > 1]
+
+
+def migrer_etat(etat):
+    """Convertit les anciennes clés triées par lettres, sans fusion silencieuse en cas de collision."""
+    etat = dict(etat or {})
+    joueurs, vus = {}, {}
+    for ancienne, v in (etat.get('joueurs') or {}).items():
+        nouvelle = cle(v.get('nom')) or ancienne
+        if nouvelle in joueurs:
+            raise ValueError(f"Collision d'identité pendant la migration Elo : {nouvelle}")
+        joueurs[nouvelle] = v
+        vus[nouvelle] = v.get('nom', nouvelle)
+    etat['joueurs'] = joueurs
+    # Les anciennes cibles d'alias ne sont plus fiables : unifier() les reconstruit à partir des noms.
+    etat['alias'] = {}
+    return etat
 
 
 def part_jeux(sets):
@@ -134,6 +160,7 @@ class Elo:
     @classmethod
     def importer(cls, doc, options=None):
         e = cls(**(options or {}))
+        doc = migrer_etat({'joueurs': doc})['joueurs']
         for j, v in doc.items():
             e.g[j] = v['elo']
             e.n[j] = v.get('matchs', 0)
