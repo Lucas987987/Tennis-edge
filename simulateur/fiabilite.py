@@ -8,6 +8,12 @@ Elo et simulation, et la calibration historique de la variante réellement affic
 import math
 
 VERSIONS = ('combinaison', 'simulation', 'stats')
+SEUILS = {'prudent': 45, 'correct': 65, 'solide': 80}
+NIVEAUX = ('fragile', 'prudent', 'correct', 'solide')
+
+
+def niveau(note):
+    return 'fragile' if note < SEUILS['prudent'] else 'prudent' if note < SEUILS['correct'] else 'correct' if note < SEUILS['solide'] else 'solide'
 
 
 def _lg(p):
@@ -86,8 +92,7 @@ def evaluer(match, historique):
     hist = calibration_locale(p, match.get('circuit'), match.get('surface'), historique, match.get('uid'))
     preuve = min(hist['n'] / 200.0, 1.0)
     note = round(100 * (0.40 * donnees + 0.20 * accord + 0.30 * hist['score'] + 0.10 * preuve))
-    niveau = 'fragile' if note < 45 else 'prudent' if note < 65 else 'correct' if note < 80 else 'solide'
-    return {'note': note, 'niveau': niveau, 'version': k,
+    return {'note': note, 'niveau': niveau(note), 'version': k,
             'composantes': {'donnees': round(100 * donnees), 'accord_modeles': round(100 * accord),
                             'calibration': round(100 * hist['score']), 'profondeur_historique': round(100 * preuve)},
             'historique_effectif': hist['n'], 'ecart_calibration': hist['ecart'],

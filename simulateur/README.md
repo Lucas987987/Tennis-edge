@@ -14,6 +14,12 @@ jouer 5 000 matchs au hasard, il calcule la probabilité de chaque issue.
 | `match_simule.py` | le match joué **20 000 fois en production**, point par point : feuille prévue, scores et scénario réellement tiré, rejouable par sa trace de points |
 | `fiabilite.py` | note de robustesse 0–100 par match, fondée sur les données, l’accord des modèles et la calibration antérieure |
 | `ablation.py` | Elo, simulation, mélange de base et pipeline complet sur les mêmes pronostics figés, avec bootstrap par semaine |
+| `evaluation_sorties.py` | log loss des sets, rang des scores, erreur des jeux et des statistiques, couverture réelle des intervalles à 80 % |
+| `validation_fiabilite.py` | performances par niveau de note, calibration et contraste temporel apparié |
+| `profils_robustes.py` | challengers de récence et de shrinkage sur les mêmes matchs, avec sous-groupes peu documentés, transitions, absences et BO5 |
+| `dependances_points.py` | tests du point précédent, des tie-breaks, de la fatigue et de l’évolution entre sets sur les séquences ordonnées |
+| `gouvernance.py` | périodes disjointes, traçabilité et une seule nouvelle promotion hebdomadaire |
+| `recherche_externe.py` | croisement séparé avec les mouvements de marché et H13–H19, sans réinjection dans le modèle |
 | `tests/` | invariants probabilistes, ancrage, traces vidéo, identités, surfaces, scores et sorties unifiées |
 | `backtest_match_simule.py` | le test de la feuille simulée sur ATP/WTA 2024 → janvier 2026, avant l'heure (→ `rapport_match_simule.json`) |
 
@@ -41,3 +47,24 @@ variantes. Sa probabilité de victoire retombe sur celle du moteur exact (test).
 test `backtest_match_simule.py` compare la feuille prévue à la vraie, contre la
 moyenne du circuit et contre deux « joueurs moyens » au même niveau. Lancer :
 Actions → « Pronostic - test du modèle ».
+
+
+## Validation et gouvernance (26/10/2026)
+
+Le workflow hebdomadaire produit les rapports `rapport_evaluation_sorties.json`,
+`rapport_validation_fiabilite.json`, `rapport_profils_robustes.json`,
+`rapport_dependances_points.json`, `rapport_recherche_externe.json` et
+`rapport_gouvernance.json`. Une métrique indisponible reste absente : elle n'est
+jamais remplacée par zéro. Les scores sont rangés à partir de 1 et les
+statistiques sont rattachées uniquement à la variante qui les a simulées.
+
+Les profils candidats sont comparés au champion réellement publié. Un challenger
+est choisi sur la période de découverte, puis doit confirmer chronologiquement,
+améliorer la log loss d'au moins 0,001 et passer l'hystérésis de deux semaines.
+La gouvernance finale limite en outre les promotions à une par semaine.
+
+Les effets dynamiques entre points restent des candidats de recherche tant que
+leur gain sur les points n'a pas aussi été validé sur le vainqueur. La recherche
+de marché censure chaque cote au moment disponible et chaque signal à sa date de
+signalisation. Sans volumes ni confirmation multi-bookmakers, ses résultats sont
+exploratoires ; ils ne modifient jamais les probabilités indépendantes.
