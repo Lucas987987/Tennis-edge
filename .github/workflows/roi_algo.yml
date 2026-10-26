@@ -4,7 +4,8 @@ name: ROI de l'algo (Telegram privé)
 # Règles fixées le 23/10/2026 avant tout résultat (simulateur/roi_algo.py) :
 #   R1 : 1 unité sur le joueur que l'algo donne gagnant ; R2 : 1 unité si % de l'algo × cote ≥ 1,05.
 # Envoyé aussi chaque lundi avec le bilan de la semaine (workflow « Pronostic : test du modèle »).
-# Lecture seule : rien n'est commité, aucune requête d'API.
+# Lecture seule : le rapport JSON est recalculé mais n'est pas commité ici, aucune requête d'API.
+# La version hebdomadaire est publiée par le workflow « Pronostic - test du modèle ».
 
 on:
   workflow_dispatch:

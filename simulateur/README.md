@@ -15,7 +15,8 @@ jouer 5 000 matchs au hasard, il calcule la probabilité de chaque issue.
 | `fiabilite.py` | note de robustesse 0–100 par match, fondée sur les données, l’accord des modèles et la calibration antérieure |
 | `ablation.py` | Elo, simulation, mélange de base et pipeline complet sur les mêmes pronostics figés, avec bootstrap par semaine |
 | `evaluation_sorties.py` | log loss des sets, rang des scores, erreur des jeux et des statistiques, couverture réelle des intervalles à 80 % |
-| `validation_fiabilite.py` | performances par niveau de note, calibration et contraste temporel apparié |
+| `validation_fiabilite.py` | performances par niveau de note, IC d'exactitude et verdict contrôlé sur au moins 30 matchs par groupe |
+| `roi_algo.py` | ROI comptable R1/R2 à mise fixe, cotes de clôture pré-match, IC95 et rapport JSON reproductible |
 | `validation_vitrine.py` | contrôle bloquant des 20 000 simulations et rejeu de la trace vidéo avant publication |
 | `stabilite_scores.py` | deux blocs indépendants de 20 000 tirages pour vérifier le score modal de la variante publiée |
 | `surveillance_derive.py` | log loss, Brier et confiance sur 4, 8 et 12 semaines, globalement et par sous-groupe |
@@ -100,3 +101,19 @@ L'adoption exige un gain global confirmé **et** au moins 30 matchs peu document
 sans dégradation de leur log loss au-delà de 0,001 ; le Brier est publié pour
 chaque sous-groupe. Le contexte figé conserve aussi le poids des données propres
 au joueur dans le taux de service, afin de distinguer estimation et prior.
+
+## ROI et vérité empirique des notes (26/10/2026)
+
+`rapport_roi_algo.json` conserve les règles R1/R2 fixées le 23/10 : une unité
+sur le vainqueur annoncé, ou une unité lorsque probabilité × cote atteint 1,05.
+La cote est la dernière clôture Pinnacle fiable capturée avant le début. Le
+rapport indique les paris, gains nets, ROI, cote moyenne et IC95 ; aucune
+conclusion n'est affichée avant 30 paris. Le marché ne sert qu'à l'évaluation.
+
+La note de fiabilité n'est pas une probabilité de victoire. Son contrôle compare
+les notes correctes/solides aux notes fragiles/prudentes, avec 30 matchs minimum
+dans chaque groupe et quatre semaines appariées. Les notes sont **confirmées**
+uniquement si le contraste bootstrap atteint 95 % et si la corrélation note/perte
+est négative ; elles sont **contredites** sous 5 %, et **non concluantes** sinon.
+Chaque niveau publie aussi l'exactitude, son IC de Wilson et l'écart à
+l'exactitude attendue. Aucun verdict ne modifie automatiquement la note.
