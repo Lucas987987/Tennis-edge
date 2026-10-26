@@ -352,6 +352,14 @@ def match_simule(P, h, a, c, s, sg, p_home, cle, fct=None):
     r['reglages'] = REGLAGES
     r['composantes'] = CHOIX if (CHOIX == 'ajustees' and getattr(P, 'ajuste', None) is not None) else 'profils'
     r['profil_connu'] = [nh >= BALLES_CONNU, na >= BALLES_CONNU]
+    r['profil_contexte'] = {'n_balles_effectives': [round(nh, 1), round(na, 1)]}
+    if CONTEXTE is not None:
+        try:
+            jour = P.jour_export
+            ts = dt.datetime.combine(jour, dt.time(), tzinfo=dt.timezone.utc).timestamp() if isinstance(jour, dt.date) and not isinstance(jour, dt.datetime) else jour.timestamp()
+            r['profil_contexte']['changement_surface'] = [bool(CONTEXTE.transition(h, s, ts)), bool(CONTEXTE.transition(a, s, ts))]
+        except (AttributeError, KeyError, TypeError, ValueError):
+            pass
     return r
 
 
@@ -615,6 +623,8 @@ def journaliser(racine, doc):
                                 'detail': {k: resume_version(m.get(k)) for k in VERSIONS},
                                 'pin_cotes': m.get('pin_cotes'), 'surface': m.get('surface'),
                                 'meilleur_des': m.get('meilleur_des'), 'matchs_joues': m.get('matchs_joues'),
+                                'fiabilite': m.get('fiabilite'),
+                                'profil_contexte': (m.get('match_simule') or {}).get('profil_contexte'),
                                 'feuille': feuille_prevue(m)},
                                ensure_ascii=False) + '\n')
             n += 1
@@ -891,6 +901,7 @@ def resoudre(racine, maintenant=None):
         out.append({'uid': r['uid'], 'debut': r['debut'], 'home': r['home'], 'away': r['away'], 'tournoi': r['tournoi'],
                     'circuit': r.get('circuit'), 'surface': r.get('surface'), 'meilleur_des': r.get('meilleur_des', 3),
                     'pronostique_le': r.get('pronostique_le'), 'matchs_joues': r.get('matchs_joues'),
+                    'fiabilite': r.get('fiabilite'), 'profil_contexte': r.get('profil_contexte'),
                     'dernier_passage': dernier['passage'] if dernier else None, 'n_passages': len(avant),
                     'reel': {'gagnant': gagnant, 'sets': sets, 'score': score, 'jeux': jeux,
                              'feuille': feuille[0] if feuille else None, 'interrompu': interrompu,
@@ -899,6 +910,7 @@ def resoudre(racine, maintenant=None):
                     'p_simulation': (premier.get('simulation') or {}).get('p_home'), 'p_affiche': p_affiche,
                     'diagnostic': (diagnostic(r.get('feuille'), feuille[0], gagnant, p_affiche)
                                    if feuille and not interrompu else None),
+                    'diagnostic_version': (r.get('feuille') or {}).get('version'),
                     'dernier': ({k: juger(dernier.get(k), gagnant, sets, score, jeux) for k in VERSIONS} if dernier else None),
                     'pin_cotes': r.get('pin_cotes')})
     out.sort(key=lambda x: x['debut'], reverse=True)
