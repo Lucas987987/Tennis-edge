@@ -562,6 +562,7 @@ def match_type(brut, traces=None, vainqueur=0):
     mesures = ('aces', 'doubles_fautes', 'premiere_pct', 'gagnes_1re_pct', 'gagnes_2e_pct',
                'breaks', 'points_gagnes', 'jeux', 'jeux_service_gagnes_pct')
     best, bd = None, None
+    distances = []
     for i, (sc, fa, fb, br, sets) in candidats:
         dist = ((len(sets) - med_sets) / eiq_sets) ** 2
         dist += ((sum(a + b for a, b in sets) - med_jeux) / eiq_jeux) ** 2
@@ -569,14 +570,47 @@ def match_type(brut, traces=None, vainqueur=0):
             for k in mesures:
                 if f[k] is not None and med[j][k] is not None:
                     dist += ((f[k] - med[j][k]) / eiq[j][k]) ** 2
+        distances.append(dist)
         if bd is None or dist < bd:
             best, bd = (i, sc, fa, fb, br, sets), dist
     i, sc, fa, fb, br, sets = best
     arr = lambda f: {k: (round(v, 1) if isinstance(v, float) else v) for k, v in f.items()}
+    controle = surveillance_representativite((fa, fb), F, med, eiq, mesures, bd, distances)
     out = {'score': sc, 'sets': [list(s) for s in sets], 'breaks': [list(b) for b in br],
            'feuille': [arr(fa), arr(fb)], 'simulation_index': i,
-           'selection': 'representatif', 'vainqueur': vainqueur}
+           'selection': 'representatif', 'vainqueur': vainqueur,
+           'representativite': controle}
     if traces is not None:
         premier, trace = traces[i]
         out.update({'premier_serveur': premier, 'points': ''.join(str(x) for x in trace)})
     return out
+
+
+def surveillance_representativite(feuilles, distributions, med, eiq, mesures, distance, distances):
+    """Diagnostic NON BLOQUANT du scénario choisi, dans les victoires simulées du favori.
+
+    Une statistique est signalée seulement si son écart à la médiane dépasse deux EIQ et si
+    son rang appartient aux 5 % extrêmes. Les rangs utilisent le milieu des ex æquo : une
+    statistique constante vaut donc 50 %, au lieu de produire une fausse alerte."""
+    ecarts = [{}, {}]
+    alertes = []
+    for j, f in enumerate(feuilles):
+        for k in mesures:
+            x = f[k]
+            valeurs = distributions[j][k]
+            if x is None or med[j][k] is None or not valeurs:
+                continue
+            ecart = abs(x - med[j][k]) / eiq[j][k]
+            ecarts[j][k] = round(ecart, 3)
+            n = len(valeurs)
+            centile = 100 * (sum(v < x for v in valeurs) + .5 * sum(v == x for v in valeurs)) / n
+            if ecart > 2 and (centile <= 5 or centile >= 95):
+                alertes.append({'joueur': j, 'statistique': k, 'valeur': round(x, 2),
+                                'mediane': round(med[j][k], 2), 'ecart_iqr': round(ecart, 3),
+                                'centile': round(centile, 1)})
+    dmed = _quantile(distances, .5) or 0.0
+    return {'statut': 'a_surveiller' if alertes else 'ok', 'population': len(distances),
+            'distance': round(distance, 4), 'distance_mediane': round(dmed, 4),
+            'ratio_distance': round(distance / dmed, 4) if dmed else 0.0,
+            'ecart_max_iqr': max((max(e.values()) for e in ecarts if e), default=0.0),
+            'ecarts_iqr': ecarts, 'statistiques_atypiques': alertes}
