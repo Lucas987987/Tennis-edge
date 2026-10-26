@@ -1,0 +1,40 @@
+{
+  "version": "combinaison",
+  "n_avec_note": 0,
+  "global": {
+    "n": 0,
+    "semaines": 0
+  },
+  "par_niveau": {
+    "fragile": {
+      "n": 0,
+      "semaines": 0
+    },
+    "prudent": {
+      "n": 0,
+      "semaines": 0
+    },
+    "correct": {
+      "n": 0,
+      "semaines": 0
+    },
+    "solide": {
+      "n": 0,
+      "semaines": 0
+    }
+  },
+  "contraste_correct_ou_solide_vs_fragile_ou_prudent": {
+    "n_boot": 0,
+    "raison": "moins de quatre semaines"
+  },
+  "effectifs_contraste": {
+    "notes_fragile_ou_prudent": 0,
+    "notes_correct_ou_solide": 0
+  },
+  "spearman_note_vs_perte": null,
+  "statut": "accumulation",
+  "verdict_notes": "accumulation",
+  "regle": "Au moins 30 matchs dans chacun des deux groupes de notes et quatre semaines appariées. Notes confirmées seulement si P(hautes notes meilleures) >= 95 % et Spearman négatif ; contredites si cette probabilité <= 5 % ; non concluant sinon. Aucune modification automatique.",
+  "interpretation_spearman": "Une valeur négative est souhaitée : note haute, perte faible.",
+  "genere_le": "2026-10-26T16:07:35.350601+00:00"
+}
