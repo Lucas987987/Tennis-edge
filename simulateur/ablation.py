@@ -84,7 +84,8 @@ def observations(doc):
         if bloc is None:
             continue
         vus.add(uid)
-        out.append({'uid': uid, 'semaine': _semaine(m['debut']), 'y': int(reel['gagnant'] == 'home'),
+        out.append({'uid': uid, 'debut': m['debut'], 'semaine': _semaine(m['debut']),
+                    'circuit': m.get('circuit') or '?', 'y': int(reel['gagnant'] == 'home'),
                     'elo': pe, 'simulation': ps,
                     'combinaison_base': MS.melange({'elo': 0.5, 'simulation': 0.5}, pe, ps),
                     'pipeline_complet': _p(bloc['p_home'])})

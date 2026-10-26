@@ -1,0 +1,239 @@
+{
+  "populations_separees": true,
+  "direct": {
+    "n": 159,
+    "semaines": 2,
+    "population": "premiers pronostics figés et résultats ultérieurs",
+    "marche_utilise": false,
+    "fenetres_details": [],
+    "decisions": {
+      "logistique": {
+        "adopte": false,
+        "gain_log_loss_pondere": null,
+        "fenetres_positives": 0,
+        "fenetres": 0,
+        "statut": "accumulation",
+        "regle": "au moins deux fenêtres, deux gains positifs et gain pondéré >= 0,001"
+      },
+      "contraction_hierarchique": {
+        "adopte": false,
+        "gain_log_loss_pondere": null,
+        "fenetres_positives": 0,
+        "fenetres": 0,
+        "statut": "accumulation",
+        "regle": "au moins deux fenêtres, deux gains positifs et gain pondéré >= 0,001"
+      },
+      "isotone": {
+        "adopte": false,
+        "gain_log_loss_pondere": null,
+        "fenetres_positives": 0,
+        "fenetres": 0,
+        "statut": "accumulation",
+        "regle": "au moins deux fenêtres, deux gains positifs et gain pondéré >= 0,001"
+      }
+    },
+    "champion_actif_modifie": false
+  },
+  "rejoue": {
+    "n": 4821,
+    "semaines": 13,
+    "population": "premiers pronostics figés et résultats ultérieurs",
+    "marche_utilise": false,
+    "fenetres_details": [
+      {
+        "train_n": 387,
+        "test_n": 747,
+        "semaines_test": [
+          "2026-S33",
+          "2026-S34"
+        ],
+        "champion_log_loss": 0.6165278508541644,
+        "challengers": {
+          "logistique": {
+            "log_loss": 0.6234482450197727,
+            "gain": -0.006920394165608301
+          },
+          "contraction_hierarchique": {
+            "log_loss": 0.617845760479036,
+            "gain": -0.0013179096248716604
+          },
+          "isotone": {
+            "log_loss": 0.6283751460090782,
+            "gain": -0.011847295154913784
+          }
+        }
+      },
+      {
+        "train_n": 1134,
+        "test_n": 921,
+        "semaines_test": [
+          "2026-S35",
+          "2026-S36"
+        ],
+        "champion_log_loss": 0.6113200772712262,
+        "challengers": {
+          "logistique": {
+            "log_loss": 0.612602902356432,
+            "gain": -0.0012828250852058298
+          },
+          "contraction_hierarchique": {
+            "log_loss": 0.6100477741613143,
+            "gain": 0.0012723031099118876
+          },
+          "isotone": {
+            "log_loss": 0.7436551697219329,
+            "gain": -0.13233509245070674
+          }
+        }
+      },
+      {
+        "train_n": 2055,
+        "test_n": 707,
+        "semaines_test": [
+          "2026-S37",
+          "2026-S38"
+        ],
+        "champion_log_loss": 0.6066202649148629,
+        "challengers": {
+          "logistique": {
+            "log_loss": 0.609888493748277,
+            "gain": -0.003268228833414155
+          },
+          "contraction_hierarchique": {
+            "log_loss": 0.6073216323622563,
+            "gain": -0.0007013674473934639
+          },
+          "isotone": {
+            "log_loss": 0.7345512363966458,
+            "gain": -0.1279309714817829
+          }
+        }
+      },
+      {
+        "train_n": 2762,
+        "test_n": 829,
+        "semaines_test": [
+          "2026-S39",
+          "2026-S40"
+        ],
+        "champion_log_loss": 0.5770272096862701,
+        "challengers": {
+          "logistique": {
+            "log_loss": 0.5755775708163816,
+            "gain": 0.00144963886988847
+          },
+          "contraction_hierarchique": {
+            "log_loss": 0.577467338440404,
+            "gain": -0.00044012875413390606
+          },
+          "isotone": {
+            "log_loss": 0.6015793328798898,
+            "gain": -0.024552123193619768
+          }
+        }
+      },
+      {
+        "train_n": 3591,
+        "test_n": 791,
+        "semaines_test": [
+          "2026-S41",
+          "2026-S42"
+        ],
+        "champion_log_loss": 0.6238752012043212,
+        "challengers": {
+          "logistique": {
+            "log_loss": 0.6310145446980207,
+            "gain": -0.00713934349369949
+          },
+          "contraction_hierarchique": {
+            "log_loss": 0.6281063727851103,
+            "gain": -0.004231171580789117
+          },
+          "isotone": {
+            "log_loss": 0.6741178743650854,
+            "gain": -0.05024267316076425
+          }
+        }
+      },
+      {
+        "train_n": 4382,
+        "test_n": 439,
+        "semaines_test": [
+          "2026-S43",
+          "2026-S44"
+        ],
+        "champion_log_loss": 0.6240105004023445,
+        "challengers": {
+          "logistique": {
+            "log_loss": 0.625488866118708,
+            "gain": -0.0014783657163635056
+          },
+          "contraction_hierarchique": {
+            "log_loss": 0.624590362417338,
+            "gain": -0.000579862014993493
+          },
+          "isotone": {
+            "log_loss": 0.6532809234134739,
+            "gain": -0.029270423011129365
+          }
+        }
+      }
+    ],
+    "decisions": {
+      "logistique": {
+        "adopte": false,
+        "gain_log_loss_pondere": -0.003102419206195334,
+        "fenetres_positives": 1,
+        "fenetres": 6,
+        "statut": "confirmation",
+        "regle": "au moins deux fenêtres, deux gains positifs et gain pondéré >= 0,001"
+      },
+      "contraction_hierarchique": {
+        "adopte": false,
+        "gain_log_loss_pondere": -0.0009641039677539025,
+        "fenetres_positives": 1,
+        "fenetres": 6,
+        "statut": "confirmation",
+        "regle": "au moins deux fenêtres, deux gains positifs et gain pondéré >= 0,001"
+      },
+      "isotone": {
+        "adopte": false,
+        "gain_log_loss_pondere": -0.06633358745263941,
+        "fenetres_positives": 0,
+        "fenetres": 6,
+        "statut": "confirmation",
+        "regle": "au moins deux fenêtres, deux gains positifs et gain pondéré >= 0,001"
+      }
+    },
+    "champion_actif_modifie": false
+  },
+  "n": 159,
+  "decisions": {
+    "logistique": {
+      "adopte": false,
+      "gain_log_loss_pondere": null,
+      "fenetres_positives": 0,
+      "fenetres": 0,
+      "statut": "accumulation",
+      "regle": "au moins deux fenêtres, deux gains positifs et gain pondéré >= 0,001"
+    },
+    "contraction_hierarchique": {
+      "adopte": false,
+      "gain_log_loss_pondere": null,
+      "fenetres_positives": 0,
+      "fenetres": 0,
+      "statut": "accumulation",
+      "regle": "au moins deux fenêtres, deux gains positifs et gain pondéré >= 0,001"
+    },
+    "isotone": {
+      "adopte": false,
+      "gain_log_loss_pondere": null,
+      "fenetres_positives": 0,
+      "fenetres": 0,
+      "statut": "accumulation",
+      "regle": "au moins deux fenêtres, deux gains positifs et gain pondéré >= 0,001"
+    }
+  },
+  "regle_populations": "le direct et le rejoué ne sont jamais agrégés ; aucune promotion automatique",
+  "genere_le": "2026-10-26T19:22:39.588777+00:00"
+}

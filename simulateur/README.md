@@ -12,7 +12,7 @@ jouer 5 000 matchs au hasard, il calcule la probabilité de chaque issue.
 | `marches_sets.py` | le moteur contre les marchés « set 1 » (Pinnacle et books mous), 30 min avant le début |
 | `profils_service.py` | profil de service et de retour de chaque joueur : % de 1re balle, aces, doubles fautes, points gagnés derrière la 1re et la 2e balle (→ `profils_service.json`) |
 | `match_simule.py` | le match joué **20 000 fois en production**, point par point : feuille prévue, scores et scénario réellement tiré, rejouable par sa trace de points |
-| `fiabilite.py` | note de robustesse 0–100 par match, fondée sur les données, l’accord des modèles et la calibration antérieure |
+| `fiabilite.py` | note 0–100 et catégories A–D : données, désaccord Elo–simulation, stabilité et calibration antérieure |
 | `ablation.py` | Elo, simulation, mélange de base et pipeline complet sur les mêmes pronostics figés, avec bootstrap par semaine |
 | `evaluation_sorties.py` | log loss des sets, rang des scores, erreur des jeux et des statistiques, couverture réelle des intervalles à 80 % |
 | `validation_fiabilite.py` | performances par niveau de note, IC d'exactitude et verdict contrôlé sur au moins 30 matchs par groupe |
@@ -21,6 +21,9 @@ jouer 5 000 matchs au hasard, il calcule la probabilité de chaque issue.
 | `stabilite_scores.py` | deux blocs indépendants de 20 000 tirages pour vérifier le score modal de la variante publiée |
 | `surveillance_derive.py` | log loss, Brier et confiance sur 4, 8 et 12 semaines, globalement et par sous-groupe |
 | `profils_robustes.py` | challengers contrôlés, avec validation obligatoire sur les profils de moins de 500 balles effectives |
+| `matchs_similaires.py` | voisinage strictement pré-match, futur exclu, sans cote ni sélection par ROI ; contrôle descriptif de calibration |
+| `styles_joueurs.py` | instantanés service–retour horodatés et challenger d'interaction de styles sur périodes disjointes |
+| `recalibrage.py` | régression logistique, contraction hiérarchique et isotone en origine glissante ; direct et rejoué séparés |
 | `dependances_points.py` | tests du point précédent, des tie-breaks, de la fatigue et de l’évolution entre sets sur les séquences ordonnées |
 | `gouvernance.py` | périodes disjointes, traçabilité et une seule nouvelle promotion hebdomadaire |
 | `recherche_externe.py` | croisement séparé avec les mouvements de marché et H13–H19, sans réinjection dans le modèle |
