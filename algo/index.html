@@ -467,6 +467,10 @@ const T = {
  }
 };
 const Q = new URLSearchParams(location.search);
+function matchDemande(){
+  const fragment = new URLSearchParams(location.hash.replace(/^#/, ''));
+  return fragment.get('match') || Q.get('match') || new URLSearchParams(location.search).get('match');
+}
 let L = 'fr';
 try { L = Q.get('lang') || localStorage.getItem('te_lang') || ((navigator.language||'fr').toLowerCase().startsWith('fr') ? 'fr' : 'en'); } catch(e){}
 if (!T[L]) L = 'fr';
@@ -844,7 +848,7 @@ function rendMdj(){
   const zone = document.getElementById('mdj-zone');
   if (borne) { borne.stop(); borne = null; }
   const idJour = D.match_du_jour && D.match_du_jour.uid;
-  let id = selectionId || idJour, m = D.matchs.find(x=>x.uid===id && x.simulation);
+  let id = matchDemande() || selectionId || idJour, m = D.matchs.find(x=>x.uid===id && x.simulation);
   if (!m && idJour){ id = idJour; selectionId = idJour; m = D.matchs.find(x=>x.uid===id && x.simulation); }
   const estJour = !!m && id === idJour;
   document.getElementById('mdj-h').textContent = t(estJour ? 'mdj_titre' : 'sim_titre');
@@ -905,7 +909,7 @@ function rendListe(){
     return;
   }
   ul.innerHTML = visibles.map(m=>{ const p=m.p_home, star=m.uid===mdj, selection=m.uid===(selectionId||mdj);
-    return `<li class="${star?'star ':''}${selection?'selectionne':''}"><a class="match-open" href="${m.uid===mdj?'?':'?match='+encodeURIComponent(m.uid)}" data-uid="${esc(m.uid)}" data-circuit="${esc(m.circuit)}" aria-current="${selection?'true':'false'}" aria-label="${esc(t('voir_simulation'))} ${esc(m.home)} – ${esc(m.away)}">
+    return `<li class="${star?'star ':''}${selection?'selectionne':''}"><a class="match-open" href="${m.uid===mdj?'#':'#match='+encodeURIComponent(m.uid)}" data-uid="${esc(m.uid)}" data-circuit="${esc(m.circuit)}" aria-current="${selection?'true':'false'}" aria-label="${esc(t('voir_simulation'))} ${esc(m.home)} – ${esc(m.away)}">
       <span class="time">${esc(heure(m.debut))}</span><span>
       <span class="tour">${esc(m.tournoi)} · ${esc(SURF[L][m.surface]||m.surface||'')}${star ? `<span class="badge">${esc(L==='fr'?'du jour':'of the day')}</span>` : ''}</span>
       <span class="pl a"><span>${esc(m.home)}</span><b>${pc0(p)}</b></span>
@@ -964,13 +968,16 @@ function rendCalib(){
 function ouvrirMatch(uid, aller=true){
   const m = D && D.matchs.find(x=>x.uid===uid && x.simulation);
   if (!m) return false;
-  if (selectionId !== uid){ selectionId = uid; rendMdj(); rendListe(); }
   const jour = D.match_du_jour && D.match_du_jour.uid;
+  selectionId = uid;
   try{
     const url = new URL(location.href);
-    if (uid===jour) url.searchParams.delete('match'); else url.searchParams.set('match',uid);
+    url.searchParams.delete('match');
+    if (uid===jour) url.hash = ''; else url.hash = 'match='+encodeURIComponent(uid);
     history.replaceState(null,'',url);
   }catch(e){}
+  // L'URL est déjà à jour : rendMdj relit le fragment et ne peut pas afficher l'ancien match.
+  rendMdj(); rendListe();
   if (aller) document.getElementById('mdj').scrollIntoView({block:'start',behavior:MOINS_ANIM?'auto':'smooth'});
   return true;
 }
@@ -997,6 +1004,11 @@ document.getElementById('recherche').addEventListener('input',e=>{
 document.querySelectorAll('.circuits button').forEach(b=>b.addEventListener('click',()=>{
   circuit=b.dataset.circuit; nListe=30; rendTextes(); rendListe();
 }));
+window.addEventListener('hashchange',()=>{
+  if (!D || Q.get('carte') || Q.get('video')) return;
+  selectionId = matchDemande() || (D.match_du_jour && D.match_du_jour.uid);
+  rendMdj(); rendListe();
+});
 
 /* ───────────── mode vidéo (?video=1) : la borne seule, plein écran ─────────────
    La bande-son est faite après coup (scripts/sons.py) : chaque événement est noté ici avec son heure. */
@@ -1046,7 +1058,7 @@ function modeCarte(){
 rendTextes();
 fetch('donnees.json?v=' + Date.now()).then(r=>r.json()).then(d=>{
   D = d;
-  selectionId = Q.get('match') || (D.match_du_jour && D.match_du_jour.uid);
+  selectionId = matchDemande() || (D.match_du_jour && D.match_du_jour.uid);
   if (Q.get('carte')) modeCarte(); else if (Q.get('video')) modeVideo(); else rendTout();
 }).catch(()=>{ document.getElementById('mdj-zone').innerHTML = '<div class="panel empty">Données indisponibles / Data unavailable.</div>'; });
 })();
