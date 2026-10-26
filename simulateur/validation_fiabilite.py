@@ -19,6 +19,16 @@ MIN_MATCHS = 30
 MIN_SEMAINES = 4
 
 
+def _wilson(reussites, n, z=1.96):
+    if not n:
+        return None
+    p = reussites / n
+    den = 1 + z*z/n
+    centre = (p + z*z/(2*n)) / den
+    marge = z * math.sqrt(p*(1-p)/n + z*z/(4*n*n)) / den
+    return [round(centre-marge, 6), round(centre+marge, 6)]
+
+
 def _metriques(rows):
     if not rows:
         return {'n': 0, 'semaines': 0}
@@ -32,11 +42,16 @@ def _metriques(rows):
             calibration.append({'bas': round(lo, 1), 'haut': round(lo+.2, 1), 'n': len(rr),
                                 'prevu': round(sum(r['p'] for r in rr)/len(rr), 4),
                                 'reel': round(sum(r['y'] for r in rr)/len(rr), 4)})
+    exactes = sum((r['p'] >= .5) == bool(r['y']) for r in rows)
+    attendue = sum(max(r['p'], 1-r['p']) for r in rows) / len(rows)
     return {
         'n': len(rows), 'semaines': len({r['semaine'] for r in rows}),
         'note_moyenne': round(sum(r['note'] for r in rows)/len(rows), 2),
         'log_loss': round(sum(ll)/len(ll), 6), 'brier': round(sum(br)/len(br), 6),
-        'vainqueur_exact': round(sum((r['p'] >= .5) == bool(r['y']) for r in rows)/len(rows), 6),
+        'vainqueur_exact': round(exactes/len(rows), 6),
+        'ic95_exactitude_wilson': _wilson(exactes, len(rows)),
+        'exactitude_attendue': round(attendue, 6),
+        'ecart_exactitude_moins_attendue': round(exactes/len(rows)-attendue, 6),
         'calibration': calibration,
     }
 
@@ -123,13 +138,26 @@ def evaluer(resultats, version='combinaison'):
         monotone = round(rho, 6) if rho is not None else None
     contraste = _bootstrap(haut, bas)
     groupes_assez = sum(v['n'] >= 10 for v in par_niveau.values())
-    pret = len(rows) >= MIN_MATCHS and contraste.get('n_boot', 0) > 0 and groupes_assez >= 2
+    pret = (len(bas) >= MIN_MATCHS and len(haut) >= MIN_MATCHS
+            and contraste.get('n_boot', 0) > 0 and groupes_assez >= 2)
+    probabilite = contraste.get('probabilite_haut_meilleur')
+    if not pret:
+        verdict = 'accumulation'
+    elif probabilite >= .95 and (monotone is None or monotone < 0):
+        verdict = 'confirmees'
+    elif probabilite <= .05:
+        verdict = 'contredites'
+    else:
+        verdict = 'non_concluant'
     return {
         'version': version, 'n_avec_note': len(rows), 'global': _metriques(rows),
         'par_niveau': par_niveau, 'contraste_correct_ou_solide_vs_fragile_ou_prudent': contraste,
+        'effectifs_contraste': {'notes_fragile_ou_prudent': len(bas), 'notes_correct_ou_solide': len(haut)},
         'spearman_note_vs_perte': monotone,
-        'statut': 'interpretable' if pret else 'accumulation',
-        'regle': "Validation seulement après au moins 30 matchs notés et quatre semaines pour le contraste temporel ; aucune modification automatique de la note.",
+        'statut': 'interpretable' if pret else 'accumulation', 'verdict_notes': verdict,
+        'regle': ("Au moins 30 matchs dans chacun des deux groupes de notes et quatre semaines appariées. "
+                  "Notes confirmées seulement si P(hautes notes meilleures) >= 95 % et Spearman négatif ; "
+                  "contredites si cette probabilité <= 5 % ; non concluant sinon. Aucune modification automatique."),
         'interpretation_spearman': 'Une valeur négative est souhaitée : note haute, perte faible.',
     }
 
