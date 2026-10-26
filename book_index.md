@@ -1,27 +1,27 @@
 # Indice des opérateurs — tennis
 
-*Mesuré sur 3420 matchs et 1053 mouvements de marché. Mise à jour du 2026-10-19.*
+*Mesuré sur 4237 matchs et 1261 mouvements de marché. Mise à jour du 2026-10-26.*
 
 | Opérateur | Marge | Réactivité | Meilleur prix | Licence FR |
 |---|---:|---:|---:|:---:|
-| coolbet | 5.43 % | -0.17 % | 60 | — |
-| unibet | 5.97 % | +0.91 % | 309 | — |
-| 1xbet | 6.52 % | -0.38 % | 55 | — |
-| betway | 6.57 % | -0.96 % | 71 | — |
-| leovegas | 6.59 % | +0.22 % | 1 | — |
-| williamhill | 6.61 % | +1.11 % | 16 | — |
-| 888sport | 6.64 % | -2.34 % | 36 | — |
-| winamax.fr | 6.65 % | -1.96 % | 14 | ✅ |
-| 22bet | 6.89 % | -0.38 % | 38 | — |
-| bwin | 7.19 % | -1.35 % | 135 | — |
-| bet365 | 7.35 % | +1.07 % | 124 | — |
-| betsson | 7.40 % | -1.98 % | 47 | — |
-| unibet.fr | 7.64 % | -3.69 % | 2 | ✅ |
-| netbet | 7.91 % | -3.56 % | 0 | — |
-| marathonbet | 8.01 % | -2.84 % | 8 | — |
-| pmu | 8.96 % | -2.18 % | 0 | ✅ |
-| tipico | 9.09 % | -2.79 % | 33 | — |
-| bet365.fr | 11.33 % | -3.99 % | 0 | ✅ |
+| coolbet | 5.38 % | +0.07 % | 75 | — |
+| unibet | 6.00 % | +0.76 % | 352 | — |
+| betway | 6.49 % | -0.57 % | 86 | — |
+| leovegas | 6.58 % | +0.48 % | 2 | — |
+| 1xbet | 6.59 % | -0.56 % | 76 | — |
+| williamhill | 6.61 % | +1.18 % | 17 | — |
+| 888sport | 6.65 % | -2.02 % | 45 | — |
+| winamax.fr | 6.80 % | -2.75 % | 14 | ✅ |
+| 22bet | 6.92 % | -0.57 % | 60 | — |
+| bwin | 7.21 % | -1.09 % | 151 | — |
+| betsson | 7.37 % | -1.56 % | 51 | — |
+| bet365 | 7.56 % | +0.79 % | 149 | — |
+| netbet | 7.85 % | -3.25 % | 0 | — |
+| marathonbet | 7.99 % | -2.77 % | 7 | — |
+| unibet.fr | 8.21 % | -4.21 % | 3 | ✅ |
+| tipico | 9.06 % | -2.50 % | 36 | — |
+| pmu | 9.29 % | -2.42 % | 0 | ✅ |
+| bet365.fr | 11.31 % | -3.37 % | 0 | ✅ |
 
 **Marge** — ce que l'opérateur prélève, mesuré sur ses cotes de clôture avant match. C'est le coût réel du pari.
 
