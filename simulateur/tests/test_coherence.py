@@ -88,7 +88,9 @@ class SimulationTracee(unittest.TestCase):
     def test_scenario_est_un_match_reellement_simule(self):
         r = MS.simuler(self.ca, self.cb, None, 2, n=240, sigma=0.15, cle='test-trace')
         sc = r['match_type']
-        self.assertEqual(sc['score'], r['scores'][0][0])
+        self.assertEqual(sc['selection'], 'representatif')
+        self.assertEqual(sc['vainqueur'], 0 if r['victoire_A'] >= .5 else 1)
+        self.assertIn(sc['representativite']['statut'], ('ok', 'a_surveiller'))
         self.assertTrue(sc['points'] and set(sc['points']) <= {'0', '1'})
         gagnant, score = rejouer_trace(sc['points'], sc['premier_serveur'], 2, 7)
         self.assertEqual(score, sc['score'])
