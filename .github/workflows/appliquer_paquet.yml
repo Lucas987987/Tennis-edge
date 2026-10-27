@@ -142,7 +142,23 @@ jobs:
             echo "Aucun changement à appliquer."; exit 0
           fi
           git commit -q -m "Paquet appliqué : $noms"
-          git push -u origin "$branche"
+          # GitHub peut refuser temporairement la création de la référence
+          # (« remote: fatal error in commit_refs ») après des tests verts.
+          # On réessaie la même branche, jamais de force : si le serveur a
+          # quand même enregistré le premier push, le suivant est sans objet.
+          pousse=false
+          for i in 1 2 3 4 5; do
+            if git push -u origin "$branche"; then
+              pousse=true
+              break
+            fi
+            echo "… création distante de la branche refusée, nouvel essai dans 15 s ($i/5)"
+            sleep 15
+          done
+          if [ "$pousse" != true ]; then
+            echo "::error::Branche non publiée après 5 essais : $branche"
+            exit 1
+          fi
           url=$(gh pr create --base main --head "$branche" \
                 --title "Paquet : $noms" \
                 --body "Appliqué par le workflow « Appliquer un paquet » (run ${{ github.run_id }}). Tests verts.")
