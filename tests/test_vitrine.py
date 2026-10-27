@@ -11,6 +11,7 @@ import unittest
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'simulateur'))
 import vitrine as V  # noqa: E402
+import qualite_donnees as QD  # noqa: E402
 
 MAINTENANT = dt.datetime(2026, 10, 24, 5, 0, tzinfo=dt.timezone.utc)      # 07:00 à Paris
 
@@ -50,6 +51,21 @@ class MatchDuJour(unittest.TestCase):
         self.assertEqual(V.choisir_match_du_jour(L, ETAT, MAINTENANT, prec)['uid'], 'x')
         prec = {'jour': '2026-10-23', 'uid': 'x'}
         self.assertEqual(V.choisir_match_du_jour(L, ETAT, MAINTENANT, prec)['uid'], 'y')
+
+
+class QualiteDonnees(unittest.TestCase):
+    def test_couverture_et_coherence_sont_mesurees_sans_surpromesse(self):
+        champs = ['svpt', 'in1', 'w1', 'ace', 'sec', 'df', 'w2']
+        doc = {'jour': '2026-10-27', 'source': 'test', 'champs': champs,
+               'joueurs': {'a': {'sommes': {'all': [600, 360, 250, 30, 240, 12, 120], 'Hard': [600, 360, 250, 30, 240, 12, 120]}},
+                           'b': {'sommes': {'all': [100, 60, 40, 5, 40, 2, 20]}}}}
+        out = QD.auditer(doc)
+        self.assertEqual(out['profils'], 2)
+        self.assertEqual(out['balles_effectives']['au_moins_500'], 1)
+        self.assertEqual(out['balles_effectives']['pct_au_moins_500'], 50.0)
+        self.assertEqual(out['surfaces'], {'Hard': 1})
+        self.assertEqual(out['anomalies'], {})
+        self.assertIn('ne mesure', out['portee'])
 
 
 class Publication(unittest.TestCase):
@@ -108,6 +124,27 @@ class Publication(unittest.TestCase):
         pts = [(.7, 1)] * 30
         c = V.calibration(pts)
         self.assertEqual([(b['de'], b['n']) for b in c], [(0.3, 30), (0.7, 30)])
+
+    def test_nouvelle_fiabilite_est_strictement_prospective(self):
+        def res(uid, date, version, enregistre, p=.7, gagnant='home'):
+            return {'uid': uid, 'debut': date + 'T12:00', 'pronostique_le': enregistre,
+                    'home': 'A B', 'away': 'C D', 'circuit': 'CH',
+                    'fiabilite': {'note': 55, 'version_fiabilite': version},
+                    'reel': {'gagnant': gagnant},
+                    'dernier': {'combinaison': {'p_home': p, 'vainqueur_juste': p > .5}}}
+        rows = [
+            res('ancien', '2026-10-26', 'circuit_v1', '2026-10-26'),
+            res('mauvaise_version', '2026-10-28', None, '2026-10-28'),
+            res('nouveau_juste', '2026-10-28', 'circuit_v1', '2026-10-28'),
+            res('nouveau_faux', '2026-10-29', 'circuit_v1', '2026-10-29', gagnant='away'),
+        ]
+        out = V.validation_fiabilite({'matchs': rows})
+        self.assertEqual(out['global']['n'], 2)
+        self.assertEqual(out['global']['vainqueurs'], 1)
+        self.assertEqual(out['global']['pct'], 50.0)
+        self.assertEqual(out['version'], 'circuit_v1')
+        self.assertEqual([r['debut'] for r in out['derniers']],
+                         ['2026-10-29T12:00', '2026-10-28T12:00'])
 
 
 if __name__ == '__main__':
