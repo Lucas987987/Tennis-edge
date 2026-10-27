@@ -44,6 +44,10 @@ jobs:
         run: python3 simulateur/etude_charting.py /tmp/sackmann /tmp/mcp . --maximum "${{ inputs.maximum }}" --bootstrap "${{ inputs.bootstrap }}"
       - name: Styles adverses ajustés à l’Elo pré-match
         run: python3 simulateur/etude_styles_ajustes.py /tmp/sackmann . --maximum 8000 --bootstrap "${{ inputs.bootstrap }}"
+      - name: Pression V2 — récence, surface, circuit et force adverse
+        run: python3 simulateur/etude_pression_v2.py /tmp/sackmann . --maximum "${{ inputs.maximum }}" --bootstrap "${{ inputs.bootstrap }}"
+      - name: Trajectoires descriptives des statistiques joueurs
+        run: python3 simulateur/evolution_statistiques.py /tmp/sackmann . --maximum-joueurs 20
       - name: Validation du moteur exact des scores
         run: python3 simulateur/validation_distribution_exacte.py . --simulations 20000
       - name: Rapports de diagnostic, sans activation
@@ -54,5 +58,7 @@ jobs:
             simulateur/rapport_evolutions_algorithmes.json
             simulateur/rapport_charting_couverture.json
             simulateur/rapport_styles_ajustes.json
+            simulateur/rapport_pression_v2.json
+            simulateur/evolution_statistiques_joueurs.json
             simulateur/rapport_distribution_exacte.json
           if-no-files-found: error
