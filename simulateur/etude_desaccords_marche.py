@@ -28,10 +28,11 @@ LAB = os.path.join(RACINE, 'Tennis_Edge_Lab')
 sys.path.insert(0, ICI)
 sys.path.insert(0, LAB)
 import ablation as AB  # noqa: E402
-import bookmakers_sets_v5 as cotes_engine  # noqa: E402
-import clv_source  # noqa: E402
-import courbes_cotes  # noqa: E402
 import styles_joueurs as ST  # noqa: E402
+
+# Les dépendances du Lab sont importées dans les fonctions d'audit qui les
+# utilisent réellement. Les tests du modèle indépendant peuvent ainsi fonctionner
+# avec le checkout allégé, sans charger aucune brique de marché.
 
 COUPURE_DIRECT = dt.datetime(2026, 10, 24, tzinfo=dt.timezone.utc)
 COUPURE_STYLES = dt.date(2025, 1, 1)
@@ -341,6 +342,8 @@ def _audit_resultat(compteurs, fichiers):
 
 
 def _auditer_clv(racine):
+    import clv_source
+    import courbes_cotes
     compteurs = collections.Counter()
     chemin = os.path.join(racine, 'clv_history.jsonl')
     fichiers = clv_source.files(chemin)
@@ -380,6 +383,7 @@ def _auditer_clv(racine):
 
 
 def _auditer_partitions(racine):
+    import bookmakers_sets_v5 as cotes_engine
     compteurs = collections.Counter()
     chemins = sorted(p for p in glob.glob(os.path.join(racine, 'parts', 'hist_book_*.jsonl*'))
                      if p.endswith('.jsonl') or p.endswith('.jsonl.gz'))
