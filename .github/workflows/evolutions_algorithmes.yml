@@ -1,0 +1,55 @@
+name: Recherche - évolutions algorithmes figées
+
+on:
+  workflow_dispatch:
+    inputs:
+      maximum:
+        description: Nombre de matchs de l'échantillon commun
+        default: '16000'
+        required: true
+      bootstrap:
+        description: Répétitions bootstrap par semaine ISO
+        default: '2000'
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  recherche:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - name: Tests des briques figées
+        run: python3 -m unittest discover -s simulateur/tests -p 'test_*.py'
+      - name: Archive Sackmann
+        run: |
+          set -euo pipefail
+          git clone --depth 1 --filter=blob:none --sparse https://github.com/Aneeshers/tennis-sackmann-archive.git /tmp/sackmann
+          cd /tmp/sackmann
+          git sparse-checkout set --no-cone 'atp_matches_20*.csv' 'atp_matches_qual_chall_20*.csv' 'wta_matches_20*.csv' 'wta_matches_qual_itf_20*.csv'
+      - name: Match Charting Project — archive publique CC BY-NC-SA 4.0
+        run: |
+          set -euo pipefail
+          curl -fL --retry 3 -o /tmp/mcp.zip https://codeload.github.com/JeffSackmann/tennis_MatchChartingProject/zip/refs/heads/master
+          unzip -q /tmp/mcp.zip -d /tmp/mcp-src
+          mv /tmp/mcp-src/tennis_MatchChartingProject-master /tmp/mcp
+      - name: Challengers service–retour, incertitude et interactions
+        run: python3 simulateur/etude_evolutions.py /tmp/sackmann . --maximum "${{ inputs.maximum }}" --bootstrap "${{ inputs.bootstrap }}"
+      - name: Match Charting avec contrôle de couverture
+        run: python3 simulateur/etude_charting.py /tmp/sackmann /tmp/mcp . --maximum "${{ inputs.maximum }}" --bootstrap "${{ inputs.bootstrap }}"
+      - name: Validation du moteur exact des scores
+        run: python3 simulateur/validation_distribution_exacte.py . --simulations 20000
+      - name: Rapports de diagnostic, sans activation
+        uses: actions/upload-artifact@v6
+        with:
+          name: evolutions-algorithmes-${{ inputs.maximum }}
+          path: |
+            simulateur/rapport_evolutions_algorithmes.json
+            simulateur/rapport_charting_couverture.json
+            simulateur/rapport_distribution_exacte.json
+          if-no-files-found: error
