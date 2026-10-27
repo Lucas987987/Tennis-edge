@@ -14,6 +14,7 @@ import sys
 
 ICI = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, ICI)
+import charting_echanges as CE  # noqa: E402
 import donnees  # noqa: E402
 import elo as E  # noqa: E402
 
@@ -83,7 +84,13 @@ def _evenement(m, joueur, propre, adverse):
     stats = _sommes_propres(propre, adverse)
     stats['tiebreaks_gagnes_pct'] = (tie_v, tie_n)
     stats['sets_decisifs_gagnes_pct'] = (dec_v, dec_n)
-    return {'date': m['date'], 'surface': m['surface'], 'circuit': m['circuit'], 'stats': stats}
+    jeux_gagnes = sum(sg if joueur == m['gagnant'] else sp for sg, sp in sets)
+    jeux_perdus = sum(sp if joueur == m['gagnant'] else sg for sg, sp in sets)
+    moyennes = {'jeux_totaux_par_match': jeux_gagnes + jeux_perdus,
+                'jeux_gagnes_par_match': jeux_gagnes,
+                'jeux_perdus_par_match': jeux_perdus}
+    return {'date': m['date'], 'surface': m['surface'], 'circuit': m['circuit'],
+            'stats': stats, 'moyennes': moyennes}
 
 
 def evenements(M, cibles):
@@ -105,6 +112,7 @@ def evenements(M, cibles):
 
 def agreger(lignes, debut, fin, surface=None):
     total = {nom: [0.0, 0.0] for nom in SEUILS}
+    moyennes = {'jeux_totaux_par_match': 0.0, 'jeux_gagnes_par_match': 0.0, 'jeux_perdus_par_match': 0.0}
     matchs = 0
     for ligne in lignes:
         if not debut <= ligne['date'] < fin:
@@ -115,8 +123,12 @@ def agreger(lignes, debut, fin, surface=None):
         for nom, (num, den) in ligne['stats'].items():
             total[nom][0] += num
             total[nom][1] += den
+        for nom in moyennes:
+            moyennes[nom] += ligne['moyennes'][nom]
     return {'matchs': matchs,
-            'statistiques': {nom: _ligne(num, den, nom) for nom, (num, den) in total.items()}}
+            'statistiques': {nom: _ligne(num, den, nom) for nom, (num, den) in total.items()},
+            'moyennes': {nom: {'n_matchs': matchs, 'moyenne': round(valeur / matchs, 3) if matchs else None}
+                         for nom, valeur in moyennes.items()}}
 
 
 def comparaison(lignes, reference, fenetre, surface=None):
@@ -133,7 +145,15 @@ def comparaison(lignes, reference, fenetre, surface=None):
             'variation_points': round(b['taux_pct'] - a['taux_pct'], 2) if documente else None,
             'statut': 'comparaison_documentee' if documente else 'sous_documentee',
         }
-    return {'periode_precedente': ancien, 'periode_recente': recent, 'variations': variations}
+    variations_moyennes = {}
+    for nom in recent['moyennes']:
+        a, b = ancien['moyennes'][nom], recent['moyennes'][nom]
+        documente = min(a['n_matchs'], b['n_matchs']) >= 5
+        variations_moyennes[nom] = {
+            'variation_jeux': round(b['moyenne'] - a['moyenne'], 3) if documente else None,
+            'statut': 'comparaison_documentee' if documente else 'sous_documentee'}
+    return {'periode_precedente': ancien, 'periode_recente': recent,
+            'variations': variations, 'variations_moyennes': variations_moyennes}
 
 
 def _cibles_actives(M, reference, maximum, jours=365):
@@ -151,7 +171,7 @@ def _cibles_actives(M, reference, maximum, jours=365):
 
 
 def construire(M, reference=None, joueurs=(), maximum_joueurs=20, fenetre_jours=180,
-               points_trajectoire=6, pas_jours=90):
+               points_trajectoire=6, pas_jours=90, donnees_echanges=None):
     reference = reference or (max(m['date'] for m in M) + dt.timedelta(days=1))
     M = [m for m in M if m['date'] < reference]
     if joueurs:
@@ -178,7 +198,9 @@ def construire(M, reference=None, joueurs=(), maximum_joueurs=20, fenetre_jours=
             'periode_recente': f'{fenetre_jours} jours avant la référence, date de référence exclue',
             'periode_precedente': f'{fenetre_jours} jours immédiatement antérieurs',
             'variation': 'taux récent moins taux précédent, en points de pourcentage',
-            'documentation': 'effectif du dénominateur propre à chaque statistique',
+            'documentation': 'effectif du dénominateur propre à chaque statistique ; cinq matchs minimum pour comparer les moyennes de jeux',
+            'jeux': 'total, gagnés et perdus par match ; moyennes exactes à partir des scores',
+            'echanges': 'fréquence et réussite par tranche Match Charting, au total, au service et au retour ; matchs relevés seulement',
             'limites': 'taux bruts non ajustés à la force adverse ; aucune causalité ni probabilité de victoire',
         },
         'joueurs': {},
@@ -196,6 +218,14 @@ def construire(M, reference=None, joueurs=(), maximum_joueurs=20, fenetre_jours=
         for surface in ('Hard', 'Clay', 'Grass'):
             if any(x['surface'] == surface for x in lignes):
                 bloc['par_surface'][surface] = comparaison(lignes, reference, fenetre_jours, surface)
+        lignes_echanges = (donnees_echanges or {}).get(E.cle(bloc['nom'])) or []
+        if lignes_echanges:
+            bloc['echanges'] = {'global': CE.comparaison(lignes_echanges, reference, fenetre_jours),
+                                'par_surface': {}}
+            for surface in ('Hard', 'Clay', 'Grass'):
+                if any(x[1] == surface for x in lignes_echanges):
+                    bloc['echanges']['par_surface'][surface] = CE.comparaison(
+                        lignes_echanges, reference, fenetre_jours, surface)
         for k in range(points_trajectoire - 1, -1, -1):
             fin = reference - dt.timedelta(days=k * pas_jours)
             point = agreger(lignes, fin - dt.timedelta(days=fenetre_jours), fin)
@@ -214,13 +244,17 @@ def main(argv=None):
     ap.add_argument('--fenetre-jours', type=int, default=180)
     ap.add_argument('--points-trajectoire', type=int, default=6)
     ap.add_argument('--pas-jours', type=int, default=90)
+    ap.add_argument('--charting', help='dossier Match Charting Project pour les tranches d’échange')
     args = ap.parse_args(argv)
     M = donnees.charger(args.archive, 2021)
     if not M:
         raise SystemExit('Aucun match Sackmann lisible.')
     reference = dt.date.fromisoformat(args.reference) if args.reference else None
+    donnees_echanges = CE.charger(args.charting) if args.charting else None
+    if args.charting and not donnees_echanges:
+        raise SystemExit('Aucune tranche Match Charting lisible : rapport des échanges non généré.')
     out = construire(M, reference, args.joueurs, args.maximum_joueurs, args.fenetre_jours,
-                     args.points_trajectoire, args.pas_jours)
+                     args.points_trajectoire, args.pas_jours, donnees_echanges)
     out['genere_le'] = dt.datetime.now(dt.timezone.utc).isoformat(timespec='seconds')
     out['source'] = 'Archive Jeff Sackmann, CC BY-NC-SA 4.0, usage non commercial et attribution requis'
     chemin = os.path.join(args.racine, SORTIE)
