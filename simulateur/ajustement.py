@@ -162,13 +162,16 @@ def importer(doc):
     return AjusteDeux.importer(doc) if doc.get('recent') else Ajuste.importer(doc)
 
 
-def ajuster_recent(matchs, date, cle, fond, n0=N0, demi_vie=90.0, annees=1, depart=None, tours=4):
+def ajuster_recent(matchs, date, cle, fond, n0=N0, demi_vie=90.0, annees=1, depart=None, tours=4,
+                   n0_par_composante=None):
     """Dérive récente par-dessus `fond` (Ajuste) : dernière(s) année(s), demi-vie courte."""
-    rec = ajuster(matchs, date, cle, n0=n0, depart=depart, tours=tours, demi_vie=demi_vie, annees=annees, base=fond)
+    rec = ajuster(matchs, date, cle, n0=n0, depart=depart, tours=tours, demi_vie=demi_vie, annees=annees,
+                  base=fond, n0_par_composante=n0_par_composante)
     return AjusteDeux(fond, rec)
 
 
-def ajuster(matchs, date, cle, n0=N0, depart=None, tours=6, demi_vie=DEMI_VIE, annees=ANNEES, base=None):
+def ajuster(matchs, date, cle, n0=N0, depart=None, tours=6, demi_vie=DEMI_VIE, annees=ANNEES, base=None,
+            n0_par_composante=None):
     """Effets au `date` (exclu). depart : ajustement précédent (démarrage à chaud, moins de tours).
     base : un Ajuste servant de niveau de fond (offset) — les effets estimés sont alors des écarts
     à ce fond, et les moyennes mu restent à 0."""
@@ -193,7 +196,8 @@ def ajuster(matchs, date, cle, n0=N0, depart=None, tours=6, demi_vie=DEMI_VIE, a
             mu, S, Ss, R, Rs = {}, {}, {}, {}, {}
         tot_n = sum(w * n for _, _, _, _, n, _, w, _ in ob) or 1.0
         p_moy = sum(w * k for _, _, _, _, _, k, w, _ in ob) / tot_n
-        lam = n0 * max(p_moy * (1 - p_moy), 0.02)          # prior de n0 essais (information de Fisher)
+        n0_comp = float((n0_par_composante or {}).get(c, n0))
+        lam = n0_comp * max(p_moy * (1 - p_moy), 0.02)      # prior de n0 essais (information de Fisher)
         lam_s = lam * FACTEUR_SURFACE
         for _, _, g, _, n, k, w, _ in ob:
             if g not in mu:
@@ -221,7 +225,7 @@ def ajuster(matchs, date, cle, n0=N0, depart=None, tours=6, demi_vie=DEMI_VIE, a
     return Ajuste(date, eff)
 
 
-def log_vraisemblance(A, matchs, debut, fin, cle):
+def log_vraisemblance(A, matchs, debut, fin, cle, composante=None):
     """−log-vraisemblance moyenne (par essai) des composantes des matchs [debut ; fin[ prédites par A."""
     tot, n_tot = 0.0, 0
     for m in matchs:
@@ -232,7 +236,7 @@ def log_vraisemblance(A, matchs, debut, fin, cle):
         for srv, ret, det, dadv in ((a, b, d['w'], d['l']), (b, a, d['l'], d['w'])):
             t = A.taux(srv, ret, m['circuit'], m['surface'])
             for c, (n, k) in essais(det, dadv).items():
-                if n <= 0:
+                if n <= 0 or (composante is not None and c != composante):
                     continue
                 p = min(max(t[c], 1e-6), 1 - 1e-6)
                 tot -= k * math.log(p) + (n - k) * math.log(1 - p)
@@ -240,21 +244,28 @@ def log_vraisemblance(A, matchs, debut, fin, cle):
     return tot / n_tot if n_tot else None
 
 
-def choisir_n0(matchs, cle, grille=(150.0, 300.0, 500.0), dates=None, journal=print):
-    """N0 choisi sur 2023 seulement : ajustements au 1er janvier, mai, septembre 2023, chacun jugé
-    sur les 4 mois suivants. Renvoie (n0 retenu, {n0: score})."""
+def choisir_n0(matchs, cle, grille=(150.0, 300.0, 500.0), dates=None, journal=print,
+               composante=None, n0_base=N0):
+    """N0 choisi sur 2023 seulement, globalement ou pour une seule composante.
+
+    Pour ``w2j``, seuls les points de seconde balle entrent dans le score ; les
+    autres composantes gardent ``n0_base``. Les périodes de jugement ultérieures
+    du backtest restent disjointes de ce choix.
+    """
     dates = dates or [dt.date(2023, 1, 1), dt.date(2023, 5, 1), dt.date(2023, 9, 1)]
     scores = {}
     for n0 in grille:
         L = []
         for d in dates:
-            A = ajuster(matchs, d, cle, n0=n0)
+            spec = {composante: n0} if composante else None
+            A = ajuster(matchs, d, cle, n0=n0_base if composante else n0,
+                        n0_par_composante=spec)
             fin = (d.replace(day=1) + dt.timedelta(days=125)).replace(day=1)
-            v = log_vraisemblance(A, matchs, d, fin, cle)
+            v = log_vraisemblance(A, matchs, d, fin, cle, composante=composante)
             if v is not None:
                 L.append(v)
         scores[n0] = sum(L) / len(L) if L else float('inf')
-        journal(f"  choix du prior sur 2023 : N0 = {n0:g} -> {scores[n0]:.5f}")
+        journal(f"  choix du prior sur 2023 : {composante or 'global'} N0 = {n0:g} -> {scores[n0]:.5f}")
     return min(scores, key=scores.get), scores
 
 
@@ -264,17 +275,19 @@ def lire_dynamique(choix):
     return d if d.get('adopte') else None
 
 
-def ajuster_choisi(matchs, date, cle, n0=N0, dyn=None, depart=None, tours=6):
+def ajuster_choisi(matchs, date, cle, n0=N0, dyn=None, depart=None, tours=6, n0_par_composante=None):
     """Ajustement tel que retenu par les tests : niveau de fond (demi-vie choisie) et, si adoptée,
     dérive récente par-dessus. depart : ajustement précédent (Ajuste ou AjusteDeux)."""
     h = float((dyn or {}).get('demi_vie_fond') or DEMI_VIE)
     d_fond = depart.fond if isinstance(depart, AjusteDeux) else depart
-    fond = ajuster(matchs, date, cle, n0=n0, depart=d_fond, tours=tours, demi_vie=h)
+    fond = ajuster(matchs, date, cle, n0=n0, depart=d_fond, tours=tours, demi_vie=h,
+                   n0_par_composante=n0_par_composante)
     r = (dyn or {}).get('demi_vie_recent')
     if not r:
         return fond
     d_rec = depart.recent if isinstance(depart, AjusteDeux) else None
-    return ajuster_recent(matchs, date, cle, fond, n0=n0, demi_vie=float(r), depart=d_rec, tours=4 if d_rec is None else 2)
+    return ajuster_recent(matchs, date, cle, fond, n0=n0, demi_vie=float(r), depart=d_rec,
+                          tours=4 if d_rec is None else 2, n0_par_composante=n0_par_composante)
 
 
 # ------------------------------------------------------------------ apprendre des SCORES (matchs sans feuille)

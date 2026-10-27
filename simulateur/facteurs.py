@@ -904,6 +904,7 @@ def main(argv):
     except (OSError, ValueError):
         choix = {}
     n0 = float(choix.get('n0') or AJ.N0)
+    n0_comp = choix.get('n0_par_composante') or None
     dyn = AJ.lire_dynamique(choix)
     cache = {}
 
@@ -911,7 +912,8 @@ def main(argv):
         m0 = jour.replace(day=1)
         if m0 not in cache:
             prec = cache[max(cache)] if cache else None
-            cache[m0] = AJ.ajuster_choisi(tout, m0, E.cle, n0=n0, dyn=dyn, depart=prec, tours=6 if prec is None else 2)
+            cache[m0] = AJ.ajuster_choisi(tout, m0, E.cle, n0=n0, dyn=dyn, depart=prec,
+                                          tours=6 if prec is None else 2, n0_par_composante=n0_comp)
             print(f"  base ajustée aux adversaires au {m0} ({round(time.time() - t0)} s)", flush=True)
         return cache[m0]
 

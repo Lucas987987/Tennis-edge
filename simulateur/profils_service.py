@@ -231,7 +231,8 @@ def main(argv):
         choix = {}
     n0 = float(choix.get('n0') or AJ.N0)
     dyn = AJ.lire_dynamique(choix)          # statistiques qui évoluent dans le temps, si le test les a adoptées
-    A = AJ.ajuster_choisi(tout, fin + dt.timedelta(days=1), E.cle, n0=n0, dyn=dyn)
+    A = AJ.ajuster_choisi(tout, fin + dt.timedelta(days=1), E.cle, n0=n0, dyn=dyn,
+                          n0_par_composante=choix.get('n0_par_composante') or None)
     doc['ajuste'] = A.exporter(actifs)
     # 22/10/2026 : couche « jeux » (apprend aussi des matchs sans feuille, score seul) si le test l'a adoptée
     rg = choix.get('reglage_simulation') or {}

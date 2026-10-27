@@ -45,6 +45,10 @@ class ControleNotes(unittest.TestCase):
         self.assertEqual(out['effectifs_contraste']['notes_fragile_ou_prudent'], 40)
         self.assertEqual(out['verdict_notes'], 'confirmees')
         self.assertIn('ic95_exactitude_wilson', out['global'])
+        self.assertEqual(out['global']['defaites_du_favori'], 40)
+        self.assertIn('ATP', out['par_circuit'])
+        self.assertIn('tres_peu_documente', out['par_documentation'])
+        self.assertIn('spearman_note_vs_perte_residuelle', out)
 
     def test_effectif_insuffisant_ne_valide_pas(self):
         rows = [match_note(i, 85 if i % 2 else 30, .85, 'home' if i % 2 else 'away') for i in range(40)]
