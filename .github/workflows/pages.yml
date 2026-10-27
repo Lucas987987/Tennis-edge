@@ -100,6 +100,7 @@ jobs:
             Tennis_Edge_Lab/research_direct.js
             Tennis_Edge_Lab/research_direct.css
             Tennis_Edge_Lab/research_registre.js
+            Tennis_Edge_Lab/research_h18_h20.js
             Tennis_Edge_Lab/prive.js
             Tennis_Edge_Lab/research_registre.css
             Tennis_Edge_Lab/tennis_meta.py
@@ -242,7 +243,7 @@ jobs:
           for f in index.html style.css app.js data.js; do
             cp "Tennis_Edge_Lab/$f" "_site/Tennis_Edge_Lab/$f"
           done
-          for f in research.html research.js research_v61.js research_v63.js research_v66.js research_explorer.js research_profils.js research_reconciliation.js research_direct.js research_registre.js freshness.js prive.js research.css research_v632.css research_v66.css research_explorer.css research_profils.css research_reconciliation.css research_direct.css research_registre.css v4.js v6.js; do
+          for f in research.html research.js research_v61.js research_v63.js research_v66.js research_explorer.js research_profils.js research_reconciliation.js research_direct.js research_registre.js research_h18_h20.js freshness.js prive.js research.css research_v632.css research_v66.css research_explorer.css research_profils.css research_reconciliation.css research_direct.css research_registre.css v4.js v6.js; do
             cp "Tennis_Edge_Lab/$f" "_site/Tennis_Edge_Lab/$f"
           done
           # Rapports : copie fidèle, état de fraîcheur explicite, jamais de remplacement
