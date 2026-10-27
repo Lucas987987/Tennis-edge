@@ -1,0 +1,73 @@
+{
+  "schema": "charting_atp_wta_v1",
+  "n_decouverte_atp_wta_couvert": 1152,
+  "controle_decouverte": {
+    "n": 1152,
+    "log_loss": 0.60143,
+    "brier": 0.208061,
+    "reussite_pct": 65.71
+  },
+  "challenger_decouverte": {
+    "n": 1152,
+    "log_loss": 0.600826,
+    "brier": 0.207738,
+    "reussite_pct": 66.15
+  },
+  "gains_decouverte_dans_echantillon": {
+    "log_loss": 0.000603,
+    "brier": 0.000323,
+    "sens": "positif = apport du challenger"
+  },
+  "activation": false,
+  "champion_actif_modifie": false,
+  "confirmation_future": {
+    "minimum_matchs": 1000,
+    "minimum_semaines_iso": 8,
+    "debut_apres": "2026-10-28T00:00:00+00:00",
+    "2025_2026_exclus": true
+  },
+  "genere_le": "2026-10-27T20:48:07+00:00",
+  "diagnostic_declencheur_post_hoc": {
+    "ATP": {
+      "controle": {
+        "n": 770,
+        "log_loss": 0.588201,
+        "brier": 0.202629,
+        "reussite_pct": 67.66
+      },
+      "challenger": {
+        "n": 770,
+        "log_loss": 0.587149,
+        "brier": 0.202024,
+        "reussite_pct": 67.53
+      },
+      "gains": {
+        "log_loss": 0.001053,
+        "brier": 0.000606,
+        "sens": "positif = apport du challenger"
+      }
+    },
+    "WTA": {
+      "controle": {
+        "n": 731,
+        "log_loss": 0.597327,
+        "brier": 0.207331,
+        "reussite_pct": 65.53
+      },
+      "challenger": {
+        "n": 731,
+        "log_loss": 0.595725,
+        "brier": 0.206558,
+        "reussite_pct": 65.12
+      },
+      "gains": {
+        "log_loss": 0.001602,
+        "brier": 0.000773,
+        "sens": "positif = apport du challenger"
+      }
+    }
+  },
+  "avertissement": "Le diagnostic déclencheur est réutilisé et ne constitue pas une confirmation.",
+  "source": "Match Charting Project, Jeff Sackmann et contributeurs, CC BY-NC-SA 4.0 ; archive Sackmann, même licence",
+  "marche_utilise": false
+}
