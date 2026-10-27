@@ -12,6 +12,7 @@ import os
 from collections import defaultdict
 
 import ablation as AB
+import fiabilite as FI
 
 EPS = 1e-12
 VERSIONS = ('combinaison', 'simulation', 'stats')
@@ -89,6 +90,8 @@ def evaluer(resultats, versions=VERSIONS):
     groupes = {v: _groupe() for v in versions}
     par_surface = defaultdict(lambda: {v: _groupe() for v in versions})
     par_circuit = defaultdict(lambda: {v: _groupe() for v in versions})
+    par_fiabilite = defaultdict(lambda: {v: _groupe() for v in versions})
+    par_documentation = defaultdict(lambda: {v: _groupe() for v in versions})
     utilises, rejetes = AB.utilisables(resultats, 'combinaison')
     for m in utilises:
         surface = (m.get('surface') or 'Inconnue').strip()
@@ -97,12 +100,24 @@ def evaluer(resultats, versions=VERSIONS):
             prevu = (m.get('prevus') or {}).get(v)
             if not isinstance(prevu, dict) or not isinstance(prevu.get('p_home'), (int, float)):
                 continue
-            for g in (groupes[v], par_surface[surface][v], par_circuit[circuit][v]):
+            f = m.get('fiabilite') or (prevu or {}).get('fiabilite') or {}
+            niveau = FI.niveau(f['note']) if isinstance(f.get('note'), (int, float)) else 'non_note'
+            sim = prevu.get('match_simule') or {}
+            profils = sim.get('profil_connu')
+            if isinstance(profils, list) and len(profils) == 2:
+                documentation = 'documente' if all(profils) else 'tres_peu_documente' if not any(profils) else 'peu_documente'
+            else:
+                score_doc = (f.get('composantes') or {}).get('donnees', 0)
+                documentation = 'documente' if score_doc >= 65 else 'peu_documente' if score_doc >= 20 else 'tres_peu_documente'
+            for g in (groupes[v], par_surface[surface][v], par_circuit[circuit][v],
+                      par_fiabilite[niveau][v], par_documentation[documentation][v]):
                 _ajouter(g, v, m, prevu)
     return {
         'global': {v: _exporter(g) for v, g in groupes.items()},
         'par_surface': {k: {v: _exporter(g) for v, g in d.items()} for k, d in par_surface.items()},
         'par_circuit': {k: {v: _exporter(g) for v, g in d.items()} for k, d in par_circuit.items()},
+        'par_fiabilite': {k: {v: _exporter(g) for v, g in d.items()} for k, d in par_fiabilite.items()},
+        'par_documentation': {k: {v: _exporter(g) for v, g in d.items()} for k, d in par_documentation.items()},
         'matchs_retenus_vainqueur': len(utilises),
         'entrees_ecartees': len(rejetes),
     }

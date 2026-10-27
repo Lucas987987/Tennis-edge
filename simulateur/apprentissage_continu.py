@@ -28,6 +28,7 @@ import match_simule as MS  # noqa: E402
 MIN_MATCHS = 400
 MIN_NOUVEAUX = 30
 PART_JUGEMENT = 0.3
+MARGE_LOG_LOSS = 0.001
 CHOIX = os.path.join(ICI, 'choix_simulation.json')
 
 
@@ -38,6 +39,10 @@ def _lg(p):
 
 def ll(L):
     return -sum(math.log(min(max(p, 1e-6), 1 - 1e-6)) for p in L) / len(L) if L else None
+
+
+def brier(L):
+    return sum((1-p)**2 for p in L) / len(L) if L else None
 
 
 def lignes(doc):
@@ -78,10 +83,14 @@ def decider(L, poids_archive, deja_juge_jusqua=None):
         appr, juge = L[:k], L[k:]
     w = ajuster(appr)
     P = {'elo': w[0], 'simulation': w[1]}
-    l_new = ll([MS.melange(P, e, s_) for _, e, s_ in juge])
-    l_arch = ll([MS.melange(poids_archive, e, s_) for _, e, s_ in juge]) if poids_archive else None
-    l_elo = ll([e for _, e, _ in juge])
-    ok = l_arch is None or l_new < l_arch
+    p_new = [MS.melange(P, e, s_) for _, e, s_ in juge]
+    p_arch = [MS.melange(poids_archive, e, s_) for _, e, s_ in juge] if poids_archive else []
+    p_elo = [e for _, e, _ in juge]
+    l_new, l_arch, l_elo = ll(p_new), ll(p_arch) if p_arch else None, ll(p_elo)
+    b_new, b_arch, b_elo = brier(p_new), brier(p_arch) if p_arch else None, brier(p_elo)
+    # Une amélioration infime ou un simple déplacement de variance ne suffit pas.
+    ok = ((l_arch is not None and l_new <= l_arch - MARGE_LOG_LOSS and b_new <= b_arch)
+          or (l_arch is None and l_new < l_elo and b_new <= b_elo))
     final = P
     if ok:
         wa = ajuster(L)
@@ -91,10 +100,16 @@ def decider(L, poids_archive, deja_juge_jusqua=None):
                 jugement={'n': len(juge), 'depuis': juge[0][0], 'jusqua': juge[-1][0],
                           'log_loss_continu': round(l_new, 5),
                           'log_loss_poids_archive': round(l_arch, 5) if l_arch is not None else None,
-                          'log_loss_elo_seul': round(l_elo, 5)},
+                          'log_loss_elo_seul': round(l_elo, 5),
+                          'brier_continu': round(b_new, 5),
+                          'brier_poids_archive': round(b_arch, 5) if b_arch is not None else None,
+                          'brier_elo_seul': round(b_elo, 5),
+                          'gain_log_loss': round(l_arch-l_new, 6) if l_arch is not None else None,
+                          'marge_requise': MARGE_LOG_LOSS},
                 juge_jusqua=juge[-1][0],
                 raison=(f"sur les {len(juge)} matchs joués les plus récents : poids appris sur nos matchs {round(l_new, 4)} "
-                        f"contre poids de l'archive {round(l_arch, 4) if l_arch is not None else '—'} (Elo seul {round(l_elo, 4)})"))
+                        f"contre poids de l'archive {round(l_arch, 4) if l_arch is not None else '—'} (Elo seul {round(l_elo, 4)}) ; "
+                        f"marge exigée {MARGE_LOG_LOSS} et Brier non dégradé"))
 
 
 def main(argv):
