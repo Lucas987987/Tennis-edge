@@ -27,6 +27,8 @@ import sys
 import tempfile
 from typing import Any
 
+from courbes_cotes import dedupliquer
+
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 HORIZONS = {
     "24h": (1440, 720),
@@ -211,7 +213,8 @@ def _curve_points(curve: Any, start: dt.datetime, counters: collections.Counter)
             counters["post_start_quotes_excluded"] += 1
             continue
         points.append((stamp, odds, limit if limit is not None and limit > 0 else None))
-    return sorted(points, key=lambda point: point[0])
+    points.sort(key=lambda point: point[0])
+    return dedupliquer(points, counters)
 
 
 def _anchors(points, start: dt.datetime):
