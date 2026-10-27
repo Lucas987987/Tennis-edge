@@ -75,6 +75,26 @@
       "statut": "diagnostic",
       "resultat_diagnostic": "non_confirmant",
       "activation": false
+    },
+    "echanges_atp_wta_v1": {
+      "famille": "fréquence et réussite par tranche de longueur d’échange sur ATP/WTA couverts",
+      "implementation": "charting_echanges.py, etude_echanges_atp_wta.py et modele_echanges_atp_wta.json",
+      "parametres": {
+        "tranches": ["1-3", "4-6", "7-9", "10+"],
+        "circuits": ["ATP", "WTA"],
+        "deux_joueurs_couverts_avant_match": true,
+        "demi_vie_jours": 365.0,
+        "prior_reussite_points": 100.0,
+        "prior_frequence_points": 300.0,
+        "surface": "contraction vers le profil global",
+        "ridge": 1.0,
+        "decouverte": "2024",
+        "diagnostic_reutilise": "2025–2026",
+        "confirmation_apres": "2026-10-28T00:00:00+00:00"
+      },
+      "statut": "diagnostic",
+      "resultat_diagnostic": "non_confirmant",
+      "activation": false
     }
   },
   "briques_techniques": {

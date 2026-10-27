@@ -30,7 +30,9 @@ jouer 5 000 matchs au hasard, il calcule la probabilité de chaque issue.
 | `variables_pre_match.py` | fatigue, absences, mains, H2H, tie-breaks, sets décisifs et balles de break contractés |
 | `pression_v2.py` | challenger de résidus Elo/points ordinaires avec demi-vie 365 jours et contraction surface/circuit ; jamais actif automatiquement |
 | `etude_pression_v2.py` | comparaison appariée contrôle/V1/V2 ; 2025–2026 reste un diagnostic réutilisé, pas une confirmation nouvelle |
-| `evolution_statistiques.py` | trajectoires descriptives service, retour et pression sur fenêtres de 180 jours, par surface et avec effectifs propres à chaque taux |
+| `evolution_statistiques.py` | trajectoires descriptives service, retour et pression sur fenêtres de 180 jours, moyennes exactes de jeux et tranches d’échange, par surface et avec effectifs |
+| `charting_echanges.py` | fréquence et réussite sur 1–3, 4–6, 7–9 et 10+ frappes, au total/service/retour ; profils pré-match contractés pour la recherche |
+| `etude_echanges_atp_wta.py` | apport incrémental des tranches sur ATP/WTA couverts, contre le contrôle et les variables Match Charting existantes ; diagnostic seulement |
 | `conditions_tournoi.py` | conditions résiduelles estimées sur les seules éditions antérieures et contractées vers la surface |
 | `elo_recherche.py` | petite grille Elo dynamique isolée du classement actif |
 | `etude_circuits.py` | comparaison de deux algorithmes ATP/WTA et Challenger/ITF au meilleur algorithme partagé |
@@ -391,3 +393,32 @@ python simulateur/etude_pression_v2.py /tmp/sackmann . --maximum 16000 --bootstr
 python simulateur/evolution_statistiques.py /tmp/sackmann . --maximum-joueurs 20
 python simulateur/evolution_statistiques.py /tmp/sackmann . --joueurs "Harriet Dart" "Janice Tjen"
 ```
+
+## Tranches d’échange et jeux moyens par match (28/10/2026)
+
+`charting_echanges.py` exploite les tableaux `Rally` du Match Charting Project. Pour chaque joueur, il conserve les tranches **1–3, 4–6, 7–9 et 10+ frappes**, avec le nombre de points, leur fréquence et le taux de points gagnés. Les relevés sont disponibles au total, au service et au retour. La catégorie 10+ étant ouverte, aucune moyenne exacte de frappes n’est déduite de ce tableau agrégé. Les profils de recherche utilisent une demi-vie de 365 jours, des relevés strictement antérieurs et une contraction de surface vers le profil global ; ils restent extérieurs au champion.
+
+Le rapport descriptif compare les 180 derniers jours aux 180 jours précédents, globalement et par surface. Une variation de réussite exige au moins 50 points dans chaque période pour la tranche concernée ; une variation de fréquence exige au moins 200 points au total dans chaque période. Les effectifs restent visibles et l’absence de relevé n’est jamais imputée. La couverture Match Charting n’étant pas aléatoire, ces résultats ne sont pas généralisés aux matchs non couverts.
+
+`evolution_statistiques.py` calcule aussi, à partir des scores, les moyennes exactes de **jeux totaux, gagnés et perdus par match**, avec les effectifs et les mêmes comparaisons temporelles et par surface. Par exemple, un score de 7–6, 6–4 représente 23 jeux au total, 13 gagnés et 10 perdus pour le vainqueur.
+
+Le test prédictif est limité aux matchs ATP/WTA pour lesquels les deux joueurs ont des relevés antérieurs. La couverture est de **90,83 %** : 2 653 matchs couverts sur 2 921. Sur 2024, les coefficients sont appris puis figés ; le diagnostic 2025–2026 porte sur 1 501 matchs couverts et a déjà été réutilisé par la recherche. Il ne constitue donc pas une confirmation prospective.
+
+| Modèle apparié | Log loss | Brier | Exactitude |
+|---|---:|---:|---:|
+| Contrôle | 0,594146 | 0,205471 | 66,56 % |
+| Match Charting existant | 0,593152 | 0,204951 | 67,09 % |
+| Tranches seules | 0,596695 | 0,206524 | 65,89 % |
+| Match Charting existant + tranches | 0,595637 | 0,206026 | 66,09 % |
+
+Les tranches seules perdent **−0,002549** de log loss contre le contrôle ; leur ajout au Match Charting existant perd **−0,002486**. L’IC95 du gain combiné contre l’existant est **[−0,006647 ; +0,001550]**. Le résultat est donc non confirmant : les tranches restent utiles pour décrire les joueurs, mais **ne modifient pas les pronostics**. Le challenger reste en diagnostic avec `activation: false`, sans promesse d’amélioration des vainqueurs ou du ROI.
+
+Rejouer l’étude et les rapports descriptifs :
+
+```bash
+python simulateur/etude_echanges_atp_wta.py /tmp/sackmann /tmp/mcp . --maximum 16000 --bootstrap 2000
+python simulateur/evolution_statistiques.py /tmp/sackmann . --charting /tmp/mcp --maximum-joueurs 20
+python simulateur/evolution_statistiques.py /tmp/sackmann . --charting /tmp/mcp --joueurs "Harriet Dart" "Janice Tjen"
+```
+
+Le workflow `evolutions_algorithmes.yml` exécute l’étude ATP/WTA et joint `/tmp/mcp` au rapport d’évolution. Il publie `rapport_echanges_atp_wta.json` et `evolution_statistiques_joueurs.json` comme artefacts de diagnostic, sans activation automatique.

@@ -31,7 +31,7 @@ def cle_match(m):
 
 
 def observations(M, choisis, demi_vie=PS.DEMI_VIE, prior_mult=1.0, sigma=.15,
-                 evolutions=False, charting=None, avec_pression_v2=False):
+                 evolutions=False, charting=None, avec_pression_v2=False, echanges=None):
     P, classement = PS.Profils(demi_vie, prior_mult), E.Elo(**ELO_CONTROLE)
     hierarchie = HI.HierarchieServiceRetour() if evolutions else None
     historique, conditions = VP.HistoriquePreMatch(), CT.ConditionsTournoi()
@@ -90,6 +90,11 @@ def observations(M, choisis, demi_vie=PS.DEMI_VIE, prior_mult=1.0, sigma=.15,
                             'mcp_points_minimum': min(dh['points_service'] + dh['points_retour'],
                                                       da['points_service'] + da['points_retour']),
                             'mcp_deux_joueurs_couverts': dh['matchs'] > 0 and da['matchs'] > 0})
+            if echanges is not None:
+                nom_h = m.get('nom_g') if h == gagnant else m.get('nom_p')
+                nom_a = m.get('nom_p') if h == gagnant else m.get('nom_g')
+                kh, ka = E.cle(nom_h), E.cle(nom_a)
+                row.update(echanges.variables_match(kh, ka, m['circuit'], m['surface'], m['date']))
             if hierarchie is not None:
                 sigma_dyn, detail = hierarchie.sigma(h, a, m['date'])
                 ch_h = MS.ajuster(ch, hierarchie.point(h, a, m['circuit'], m['surface']))
