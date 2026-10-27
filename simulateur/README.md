@@ -128,6 +128,15 @@ est négative ; elles sont **contredites** sous 5 %, et **non concluantes** sino
 Chaque niveau publie aussi l'exactitude, son IC de Wilson et l'écart à
 l'exactitude attendue. Aucun verdict ne modifie automatiquement la note.
 
+Depuis le 27/10/2026, la note intègre aussi `performance_circuit` : perte du
+modèle sur les pronostics antérieurs du même circuit, diminuée de l'entropie
+attendue. Ainsi, un circuit aux matchs plus équilibrés n'est pas pénalisé pour sa
+seule réussite brute plus faible ; en revanche, une contre-performance supérieure
+à 0,05 sur au moins 30 matchs plafonne la note à 64 et interdit `A_solide`. Les
+champs `note_avant_composante_circuit` et `note_avant_plafond_circuit` conservent
+la comparaison avec l'ancienne formule. Les notes déjà figées ne sont jamais
+réécrites après les résultats.
+
 ## Amélioration contrôlée des sorties et des familles (27/10/2026)
 
 `reglage_match_simule.py` ne juge plus les aces et la première balle comme un

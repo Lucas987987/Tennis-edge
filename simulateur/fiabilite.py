@@ -3,7 +3,8 @@
 """Indice de robustesse d'un pronostic indépendant, appris seulement sur les matchs déjà résolus.
 
 La note ne prédit pas que le favori va gagner : elle résume la qualité des entrées, l'accord entre
-Elo et simulation, et la calibration historique de la variante réellement affichée. Aucune cote.
+Elo et simulation, la calibration historique et la performance passée sur le circuit, toujours à
+partir de pronostics antérieurs. Elle ne modifie aucune probabilité. Aucune cote.
 """
 import math
 
@@ -75,7 +76,40 @@ def calibration_locale(p, circuit, surface, historique, uid=None):
             'prevu': round(prevu, 4), 'reel': round(reel, 4)}
 
 
-def categorie(donnees, desaccord, stabilite=None, historique_effectif=0):
+def performance_circuit(circuit, historique):
+    """Performance passée du modèle sur ce circuit, relative à sa confiance.
+
+    La perte résiduelle retranche l'entropie attendue : un circuit avec beaucoup
+    de matchs équilibrés n'est pas pénalisé simplement parce que sa réussite brute
+    est plus faible. Toutes les observations sont censées être antérieures au
+    match ; sans historique, la composante reste neutre et non optimiste.
+    """
+    rows = [r for r in historique if circuit and r.get('circuit') == circuit]
+    n = len(rows)
+    if not n:
+        return {'n': 0, 'score': .5, 'perte_residuelle': None, 'log_loss': None,
+                'exactitude': None, 'exactitude_attendue': None}
+    residus, exactes, attendues, pertes = [], [], [], []
+    for r in rows:
+        p = min(1 - 1e-12, max(1e-12, float(r['p'])))
+        y = int(r['y'])
+        perte = -math.log(p if y else 1-p)
+        entropie = -(p*math.log(p) + (1-p)*math.log(1-p))
+        residus.append(perte-entropie)
+        pertes.append(perte)
+        exactes.append(float((p >= .5) == bool(y)))
+        attendues.append(max(p, 1-p))
+    residuel = sum(residus)/n
+    brut = 1 / (1 + math.exp(residuel/.08))
+    score = .5 + n/(n+80.0)*(brut-.5)
+    return {'n': n, 'score': score, 'perte_residuelle': round(residuel, 6),
+            'log_loss': round(sum(pertes)/n, 6),
+            'exactitude': round(sum(exactes)/n, 6),
+            'exactitude_attendue': round(sum(attendues)/n, 6)}
+
+
+def categorie(donnees, desaccord, stabilite=None, historique_effectif=0,
+              performance=None):
     """Catégorie descriptive figée avant le résultat ; elle ne change jamais la probabilité.
 
     A : composantes d'accord, joueurs documentés, score modal contrôlé et historique suffisant.
@@ -87,7 +121,9 @@ def categorie(donnees, desaccord, stabilite=None, historique_effectif=0):
         return 'D_non_controle'
     if desaccord:
         return 'C_fragile'
-    if donnees < .65 or stabilite in ('fragile', 'instable', 'non_controle') or historique_effectif < 30:
+    circuit_fragile = (performance or {}).get('n', 0) >= 30 and (performance or {}).get('perte_residuelle', 0) > .05
+    if (donnees < .65 or stabilite in ('fragile', 'instable', 'non_controle')
+            or historique_effectif < 30 or circuit_fragile):
         return 'B_incertain'
     return 'A_solide'
 
@@ -112,12 +148,23 @@ def evaluer(match, historique):
     ecart = abs(float(p_elo) - float(p_sim)) if p_elo is not None and p_sim is not None else None
     stabilite = ((v.get('match_simule') or {}).get('stabilite_score') or {}).get('statut')
     hist = calibration_locale(p, match.get('circuit'), match.get('surface'), historique, match.get('uid'))
+    circuit = performance_circuit(match.get('circuit'), historique)
     preuve = min(hist['n'] / 200.0, 1.0)
-    note = round(100 * (0.40 * donnees + 0.20 * accord + 0.30 * hist['score'] + 0.10 * preuve))
-    cat = categorie(donnees, desaccord, stabilite, hist['n'])
+    note_avant = round(100 * (0.40 * donnees + 0.20 * accord + 0.30 * hist['score'] + 0.10 * preuve))
+    note = round(100 * (0.30 * donnees + 0.15 * accord + 0.20 * hist['score']
+                        + 0.25 * circuit['score'] + 0.10 * preuve))
+    # Une contre-performance circuit suffisamment documentée interdit une note élevée.
+    plafond = 64 if circuit['n'] >= 30 and (circuit['perte_residuelle'] or 0) > .05 else 100
+    note = min(note, plafond)
+    cat = categorie(donnees, desaccord, stabilite, hist['n'], circuit)
     return {'note': note, 'niveau': niveau(note), 'categorie': cat, 'version': k,
             'composantes': {'donnees': round(100 * donnees), 'accord_modeles': round(100 * accord),
-                            'calibration': round(100 * hist['score']), 'profondeur_historique': round(100 * preuve)},
+                            'calibration': round(100 * hist['score']), 'performance_circuit': round(100 * circuit['score']),
+                            'profondeur_historique': round(100 * preuve)},
+            'performance_circuit': {k: circuit[k] for k in ('n', 'perte_residuelle', 'log_loss', 'exactitude', 'exactitude_attendue')},
+            'note_avant_composante_circuit': note_avant,
+            'note_avant_plafond_circuit': note,
+            'plafond_circuit': plafond,
             'desaccord_vainqueur_elo_simulation': desaccord,
             'ecart_elo_simulation': round(ecart, 4) if ecart is not None else None,
             'stabilite_score_modal': stabilite or 'non_controle',
