@@ -43,6 +43,13 @@
       "parametres": {"prior_service": 300.0, "prior_retour": 300.0, "prior_echanges": 600.0, "minimum_matchs_couverts": 100},
       "statut": "diagnostic",
       "activation": false
+    },
+    "charting_atp_wta_v1": {
+      "famille": "tactique Match Charting ATP/WTA, sous-groupe repéré post hoc",
+      "implementation": "charting_atp_wta.py, etude_charting_atp_wta.py et modele_charting_atp_wta.json",
+      "parametres": {"circuits": ["ATP", "WTA"], "deux_joueurs_couverts_avant_match": true, "prior_service": 300.0, "prior_retour": 300.0, "prior_echanges": 600.0, "ridge": 1.0, "decouverte": "2024", "confirmation_apres": "2026-10-28T00:00:00+00:00"},
+      "statut": "diagnostic",
+      "activation": false
     }
   },
   "briques_techniques": {

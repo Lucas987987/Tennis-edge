@@ -40,6 +40,8 @@ import sys
 
 ICI = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, ICI)
+import contexte_optionnel as CO  # noqa: E402
+import distribution_exacte as DE  # noqa: E402
 import elo as E  # noqa: E402
 import feuilles as FE  # noqa: E402
 import fiabilite as FI  # noqa: E402
@@ -375,26 +377,62 @@ def match_simule(P, h, a, c, s, sg, p_home, cle, fct=None, controler_stabilite=F
     return r
 
 
-def matchs_a_venir(racine, maintenant):
+def distribution_exacte_du_match(P, h, a, c, s, sg, p_home, fct=None, pure=False):
+    """Distribution complète sans bruit Monte Carlo, ancrée sur CETTE variante.
+
+    Elle ne remplace ni les tirages, ni leur médoid, ni leurs statistiques. Le
+    contrôle de masse et de victoire est bloquant pour éviter un score trompeur.
+    """
+    cH, cA, _, _ = composantes_du_match(P, h, a, c, s, pure=pure)
+    cH, cA = avec_facteurs(cH, cA, fct)
+    sigma = sigma_sim() if pure else SIGMA
+    distribution = DE.distribution_forme(cH, cA, sg, sigma, p_victoire=p_home)
+    controle = DE.controle(distribution)
+    victoire = DE.victoire_depuis_distribution(distribution)
+    if not controle['ok'] or abs(victoire - p_home) > 1e-8:
+        raise ValueError(f'Distribution exacte incohérente pour {h}–{a}: {controle}, victoire={victoire}')
+    rows = DE.scores_ordonnes(distribution)
+    scores = [(' '.join(f'{x}-{y}' for x, y in r['score']), r['probabilite']) for r in rows]
+    return {'source': 'exact', 'scores': [[score, round(p, 8)] for score, p in scores[:3]],
+            'distribution': [{'score': r['score'], 'vainqueur': r['vainqueur'],
+                              'probabilite': round(r['probabilite'], 12)} for r in rows],
+            'controle': {'somme': controle['somme'], 'n_scores': controle['n_scores'],
+                         'victoire_home': victoire, 'monte_carlo': False}}
+
+
+def matchs_a_venir(racine, maintenant, avec_couverture=False):
     try:
-        L = json.load(open(os.path.join(racine, 'matches_oddspapi.json'), encoding='utf-8'))
+        with open(os.path.join(racine, 'matches_oddspapi.json'), encoding='utf-8') as f:
+            L = json.load(f)
     except (OSError, ValueError):
-        return []
+        L = []
     L = L if isinstance(L, list) else list(L.values())
-    out = []
+    out, invalides, valides = [], [], 0
     for m in L:
         try:
-            debut = dt.datetime.fromisoformat(str(m['commence_time']).replace('Z', '+00:00')).replace(tzinfo=None)
-        except (KeyError, ValueError):
+            debut_utc = CO.instant(str(m['commence_time']))
+            debut = debut_utc.replace(tzinfo=None)       # comparaison historique en UTC naïf
+            valides += 1
+        except (KeyError, TypeError, ValueError):
+            invalides.append({'id': m.get('id'), 'raison': 'commence_time absent, invalide ou sans fuseau'})
             continue
         if not (maintenant < debut <= maintenant + dt.timedelta(hours=HORIZON_H)):
             continue
         h, a = m.get('home_team'), m.get('away_team')
         if not h or not a:
             continue
-        out.append({'debut': debut, 'home': h, 'away': a, 'tournoi': m.get('sport_title') or ''})
+        out.append({'debut': debut, 'debut_utc': debut_utc.isoformat(),
+                    'horodatage': {'nature': 'debut_planifie', 'source': 'oddspapi.commence_time',
+                                   'fuseau': 'UTC', 'interpole': False, 'fin_utc': None},
+                    'home': h, 'away': a, 'tournoi': m.get('sport_title') or ''})
     out.sort(key=lambda x: x['debut'])
-    return out
+    couverture = {'n_source': len(L), 'horodatages_valides': valides,
+                  'couverture_pct': round(100 * valides / len(L), 2) if L else None,
+                  'matchs_dans_fenetre': len(out), 'horodatages_invalides': invalides,
+                  'nature': 'débuts planifiés avec fuseau, pas heures de fin constatées',
+                  'repli': 'aucun : un match sans horodatage valide est exclu des pronostics à venir',
+                  'interpolation': False, 'dates_de_fin_inventees': False}
+    return (out, couverture) if avec_couverture else out
 
 
 def construire(racine, maintenant=None):
@@ -418,7 +456,7 @@ def construire(racine, maintenant=None):
         CLASSEMENTS = None
     REGLAGE_SIM = charger_reglage_simulation(racine)
     FACTEURS, CONTEXTE = charger_facteurs(racine)
-    venir = matchs_a_venir(racine, maintenant)
+    venir, couverture_horodatages = matchs_a_venir(racine, maintenant, avec_couverture=True)
     # Un joueur = un classement : alias du dernier calcul, puis noms nouveaux reliés au joueur connu.
     alias = dict(etat.get('alias') or {})
     alias.update(E.unifier({k: v.get('nom', k) for k, v in etat['joueurs'].items()},
@@ -451,7 +489,9 @@ def construire(racine, maintenant=None):
             # sans Elo ni cote : c'est la simulation qui dit qui gagne.
             fct = facteurs_du_match(h, a, x['tournoi'], x['debut'], getattr(PR, 'ajuste', None))
             r = match_simule(PR, h, a, c, s, sg, None, f"{uid}|simulation", fct)
-            simulation = {'p_home': r['victoire_A'], 'sets': r['sets'], 'scores_probables': r['scores'][:3],
+            exact_simulation = distribution_exacte_du_match(PR, h, a, c, s, sg, r['victoire_A'], fct, pure=True)
+            simulation = {'p_home': r['victoire_A'], 'sets': r['sets'],
+                          'scores_probables': exact_simulation['scores'], 'scores_exact': exact_simulation,
                           'remontee': {'home': r['remontee'][0], 'away': r['remontee'][1]}, 'set1_home': r['set1_A'],
                           'jeux_moyen': r['jeux']['moy'], 'tiebreak': r['tiebreak'], 'match_simule': r}
             if fct:
@@ -484,17 +524,29 @@ def construire(racine, maintenant=None):
                 if v:
                     v['match_simule'] = match_simule(PR, h, a, c, s, sg, v['p_home'], f"{uid}|{nom_v}", fct,
                                                     controler_stabilite=(nom_v == 'combinaison'))
+                    v['scores_exact'] = distribution_exacte_du_match(PR, h, a, c, s, sg, v['p_home'], fct)
+                    v['scores_probables'] = v['scores_exact']['scores']
         out.append({'uid': uid,
-                    'debut': x['debut'].isoformat(timespec='minutes'), 'tournoi': x['tournoi'], 'circuit': c,
+                    'debut': x['debut'].isoformat(timespec='minutes'), 'debut_utc': x['debut_utc'],
+                    'horodatage': x['horodatage'], 'tournoi': x['tournoi'], 'circuit': c,
                     'surface': s, 'meilleur_des': 2 * sg - 1, 'home': x['home'], 'away': x['away'],
                     'cles': [h, a], 'matchs_joues': [elo.matchs(h), elo.matchs(a)], 'style_connu': [S.connu(h), S.connu(a)],
                     'combinaison': combinaison, 'simulation': simulation, 'stats': stats, 'direct': direct})
-    return {'genere_le': maintenant.isoformat(timespec='seconds') + 'Z', 'elo_au': etat.get('dernier_match'),
+    doc = {'genere_le': maintenant.isoformat(timespec='seconds') + 'Z', 'elo_au': etat.get('dernier_match'),
             'horizon_h': HORIZON_H, 'sigma': SIGMA, 'simulations': SIMULATIONS if PR is not None else 0,
+            'qualite_horodatages': couverture_horodatages,
             'profils_au': PR.jour_export.isoformat() if PR is not None else None,
             'facteurs_adoptes': (FACTEURS or {}).get('adoptes') or [], 'combinaison': COMBINAISON,
             'reglage_simulation': REGLAGE_SIM, 'rejets_entrees': rejets,
             'noeuds_forme': [[round(z, 6), round(w, 8)] for z, w in zip(M._Z, M._W)], 'matchs': out}
+    import charting_atp_wta as CAW
+    try:
+        doc['suivi_charting_atp_wta'] = CAW.journaliser(racine, doc, CONTEXTE)
+    except FileNotFoundError:
+        # Checkout de test ou ancien paquet : le suivi optionnel ne bloque pas le champion.
+        doc['suivi_charting_atp_wta'] = {'schema': CAW.SCHEMA, 'statut': 'modele_non_installe',
+                                         'nouveaux_figes': 0, 'activation': False}
+    return doc
 
 
 SUIVI_STATS = ('aces', 'doubles_fautes', 'premiere_pct', 'gagnes_1re_pct', 'gagnes_2e_pct', 'breaks', 'jeux')
@@ -559,13 +611,17 @@ def resume_version(v):
     if not v:
         return None
     out = {k: v.get(k) for k in ('p_home', 'sets', 'scores_probables', 'jeux_moyen', 'tiebreak', 'set1_home') if v.get(k) is not None}
+    if v.get('scores_exact'):
+        out['scores_source'] = 'exact'
+        out['scores_exact_controle'] = v['scores_exact']['controle']
     if v.get('facteurs'):
         out['facteurs'] = v['facteurs']
     return out
 
 
 def instantane(doc, m):
-    return {'passage': doc['genere_le'], 'uid': m['uid'], 'debut': m['debut'], 'home': m['home'], 'away': m['away'],
+    return {'passage': doc['genere_le'], 'uid': m['uid'], 'debut': m['debut'],
+            'debut_utc': m.get('debut_utc'), 'horodatage': m.get('horodatage'), 'home': m['home'], 'away': m['away'],
             'tournoi': m['tournoi'], 'circuit': m['circuit'], 'surface': m['surface'], 'meilleur_des': m['meilleur_des'],
             'pin_cotes': m.get('pin_cotes'), 'matchs_joues': m.get('matchs_joues'),
             'modele': {'facteurs': doc.get('facteurs_adoptes') or [], 'combinaison': doc.get('combinaison'),
@@ -627,6 +683,7 @@ def journaliser(racine, doc):
             if m['uid'] in deja:
                 continue
             f.write(json.dumps({'uid': m['uid'], 'pronostique_le': doc['genere_le'], 'debut': m['debut'],
+                                'debut_utc': m.get('debut_utc'), 'horodatage': m.get('horodatage'),
                                 'home': m['home'], 'away': m['away'], 'tournoi': m['tournoi'], 'circuit': m['circuit'],
                                 'stats': {'p_home': m['stats']['p_home'], 'sets': m['stats']['sets']},
                                 'simulation': ({'p_home': m['simulation']['p_home'], 'sets': m['simulation']['sets']}

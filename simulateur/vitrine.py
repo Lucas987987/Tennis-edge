@@ -124,15 +124,17 @@ def _feuille_prevue(v):
 
 
 def _scores_public(v):
-    """Scores des simulations de CETTE variante ; calcul exact seulement en repli."""
+    """Classement exact en priorité ; les fréquences simulées restent séparées."""
+    exact = v.get('scores_exact') or {}
     sim = v.get('match_simule') or {}
-    return (sim.get('scores') or v.get('scores_probables') or [])[:3]
+    return (exact.get('scores') or v.get('scores_probables') or sim.get('scores') or [])[:3]
 
 
 def ligne_match(m, complet):
     k, v = version(m)
     p = float(v['p_home'])
-    out = {'uid': m['uid'], 'debut': m['debut'], 'tournoi': m.get('tournoi'), 'circuit': m.get('circuit'),
+    out = {'uid': m['uid'], 'debut': m['debut'], 'debut_utc': m.get('debut_utc'),
+           'horodatage': m.get('horodatage'), 'tournoi': m.get('tournoi'), 'circuit': m.get('circuit'),
            'surface': m.get('surface'), 'meilleur_des': m.get('meilleur_des', 3),
            'home': m['home'], 'away': m['away'], 'p_home': round(p, 3), 'version': k,
            'fiabilite': m.get('fiabilite'), 'cotes_justes': [cote(p), cote(1 - p)]}
@@ -141,10 +143,14 @@ def ligne_match(m, complet):
         return out
     d = m.get('direct') or {}
     sim = v.get('match_simule') or {}
+    exact = v.get('scores_exact') or {}
     out.update({
         'simulation_disponible': bool(d.get('a') and d.get('b') and sim.get('match_type')),
         'sets': v.get('sets'),
         'scores_probables': _scores_public(v),
+        'scores_source': 'exact' if exact else 'repli_ancien_format',
+        'distribution_scores': exact.get('distribution'),
+        'scores_simules': (sim.get('scores') or [])[:3],
         'jeux_moyen': v.get('jeux_moyen'),
         'tiebreak': v.get('tiebreak'),
         'set1_home': v.get('set1_home'),
@@ -305,6 +311,7 @@ def construire(racine, maintenant=None):
     resultats = _lire(os.path.join(racine, 'Tennis_Edge_Lab', 'live', 'pronostics_resultats.json'), {})
     return {'genere_le': maintenant.isoformat(timespec='seconds'), 'pronostics_du': pron.get('genere_le'),
             'simulations': pron.get('simulations') or 20000, 'match_du_jour': mdj,
+            'qualite_horodatages': pron.get('qualite_horodatages'),
             'styles_descriptifs_source': ({'archive_jusqu_au': styles_doc.get('archive_jusqu_au'),
                                            'feuilles_recentes': styles_doc.get('feuilles_recentes'),
                                            'regle': styles_doc.get('regle')} if styles else None),
