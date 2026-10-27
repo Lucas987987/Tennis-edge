@@ -78,10 +78,10 @@ exploratoires ; ils ne modifient jamais les probabilités indépendantes.
 
 La vitrine quotidienne n'est publiée qu'après validation : chaque match du
 catalogue doit avoir ses 20 000 tirages (par défaut), ses sorties complètes et
-son scénario modal. La trace complète de chaque affiche est rejouée point par
+son scénario représentatif. La trace complète de chaque affiche est rejouée point par
 point avant publication ; un seul match sans simulation bloque l'export. Le
 navigateur ne recalibre pas une trace enregistrée et chaque relance rejoue ce
-même scénario modal, jamais un tirage aléatoire différent. Une génération en
+même scénario représentatif, jamais un tirage aléatoire différent. Une génération en
 échec ou un ancien format sans scénario fait échouer le workflow au lieu de
 laisser silencieusement l'ancien `algo/donnees.json` en ligne.
 
@@ -127,3 +127,38 @@ uniquement si le contraste bootstrap atteint 95 % et si la corrélation note/per
 est négative ; elles sont **contredites** sous 5 %, et **non concluantes** sinon.
 Chaque niveau publie aussi l'exactitude, son IC de Wilson et l'écart à
 l'exactitude attendue. Aucun verdict ne modifie automatiquement la note.
+
+## Amélioration contrôlée des sorties et des familles (27/10/2026)
+
+`reglage_match_simule.py` ne juge plus les aces et la première balle comme un
+bloc indissociable. `tau_f`, `ace_facteur` et `jeux_delta` sont appris sur
+l'archive, évalués séparément sur les feuilles postérieures, puis ensemble si
+plusieurs composantes passent. Une combinaison rejetée ne peut pas être activée
+sous prétexte que ses composantes isolées étaient bonnes. Le réglage des jeux
+modifie les deux serveurs avant le réancrage de la probabilité de victoire ;
+il ne constitue donc pas une correction indépendante du scénario affiché.
+
+`backtest_match_simule.py` publie `ablation_familles` : Elo avec et sans surface,
+profils bruts, service seul, retour seul, service–retour ajusté, sans récence et
+sans surface. Toutes les variantes portent sur les mêmes matchs et sont ventilées
+par circuit, surface, BO3/BO5 et documentation. Les styles ne sont pas ablatés
+tant qu'aucune variable de style figée avant le match n'est disponible. Le format
+BO5 reste une donnée nécessaire au moteur et est contrôlé par sous-groupe.
+
+L'ajustement actif accepte un prior `N0` propre à la deuxième balle (`w2j`),
+choisi sur 2023 par la log-vraisemblance des seconds services, puis évalué dans
+le backtest ultérieur. L'adoption des composantes ajustées exige le gain global
+et l'absence de dégradation supérieure à 0,002 sur les groupes peu documentés
+d'au moins 100 matchs. Les exports de profils et les facteurs utilisent le même
+prior : il ne s'agit pas d'un réglage isolé dans un rapport.
+
+La validation des notes ajoute les coupures par circuit, surface et documentation,
+les défaites du favori et une corrélation sur la perte résiduelle après prise en
+compte de la difficulté annoncée. `evaluation_sorties.py` ventile également sets,
+scores, jeux, statistiques et couvertures par niveau de fiabilité et documentation.
+Cela ne réécrit jamais une note figée après le résultat.
+
+L'apprentissage continu exige désormais un gain de log loss d'au moins 0,001 sur
+une période de jugement nouvelle et un Brier non dégradé. Les challengers qui ne
+franchissent pas ces gardes restent rejetés. Aucun de ces mécanismes n'utilise le
+marché comme entrée du modèle indépendant.

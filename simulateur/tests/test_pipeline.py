@@ -8,6 +8,7 @@ from unittest import mock
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import ablation as AB
+import ajustement as AJ
 import apprentissage_continu as AC
 import fiabilite as FI
 import vitrine as V
@@ -97,6 +98,41 @@ class Ablation(unittest.TestCase):
         self.doc['matchs'][1]['reel']['interrompu'] = 'abandon'
         self.assertEqual(len(AB.observations(self.doc)), 10)
 
+    def test_ablation_familles_et_documentation(self):
+        lignes = []
+        for i in range(120):
+            ref = .55 + (i % 4) * .05
+            lignes.append({'date': None, 'circuit': 'ATP' if i % 2 else 'WTA',
+                           'surface': 'Hard', 'bo': 5 if i % 30 == 0 else 3,
+                           'connus': i % 45, 'elo': ref + .03,
+                           'elo_sans_surface': ref + .02, 'simulation_pure': ref - .02,
+                           'simulation_pure_ajustee': ref,
+                           'simulation_service_seul': ref - .01,
+                           'simulation_retour_seul': ref - .015,
+                           'simulation_sans_recence': ref - .005,
+                           'simulation_sans_surface': ref - .008})
+        r = AB.analyser_familles(lignes)
+        self.assertEqual(r['n'], 120)
+        self.assertEqual(r['comparaisons']['simulation_pure']['delta_log_loss_vs_reference'],
+                         round(r['modeles']['simulation_pure']['log_loss'] - r['modeles']['simulation_pure_ajustee']['log_loss'], 6))
+        self.assertIn('documentation:tres_peu_documente', r['sous_groupes'])
+        self.assertIn('circuit:ATP', r['sous_groupes'])
+        self.assertIn('styles', r['limites'])
+
+
+class RegularisationSecondeBalle(unittest.TestCase):
+    def test_prior_specifique_w2j(self):
+        with mock.patch.object(AJ, 'ajuster', return_value='A') as a, \
+             mock.patch.object(AJ, 'log_vraisemblance', return_value=.5) as lv:
+            import datetime as dt
+            n0, scores = AJ.choisir_n0([], lambda x: x, grille=(600.0,),
+                                       dates=[dt.date(2023, 1, 1)], journal=lambda x: None,
+                                       composante='w2j', n0_base=300.0)
+            self.assertEqual(n0, 600.0)
+            self.assertEqual(a.call_args.kwargs['n0'], 300.0)
+            self.assertEqual(a.call_args.kwargs['n0_par_composante'], {'w2j': 600.0})
+            self.assertEqual(lv.call_args.kwargs['composante'], 'w2j')
+
 
 class ApprentissageControle(unittest.TestCase):
     def test_periode_de_jugement_non_reutilisee(self):
@@ -105,6 +141,8 @@ class ApprentissageControle(unittest.TestCase):
              mock.patch.object(AC, 'ajuster', return_value=(0.5, 0.5)):
             premier = AC.decider(L, {'elo': 0.5, 'simulation': 0.5})
             self.assertIn('jugement', premier)
+            self.assertFalse(premier['adopte'])  # gain nul : la marge de 0,001 n'est pas franchie
+            self.assertEqual(premier['jugement']['gain_log_loss'], 0.0)
             borne = premier['jugement']['jusqua']
             attente = AC.decider(L, {'elo': 0.5, 'simulation': 0.5}, borne)
             self.assertFalse(attente['adopte'])

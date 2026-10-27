@@ -453,10 +453,21 @@ def appliquer_facteurs(c, d_service=0.0, d_aces=0.0, d_bp=0.0):
 
 
 def appliquer_reglages(c, reglages):
-    """Réglages adoptés (reglage_match_simule.py) : facteur sur le taux d'aces."""
-    if not reglages or not reglages.get('ace_facteur'):
+    """Applique les réglages avant l'ancrage de la probabilité de victoire.
+
+    ``jeux_delta`` est commun aux deux joueurs : il raccourcit ou allonge les
+    échanges sans désigner un vainqueur. Le réancrage ultérieur neutralise son
+    éventuel effet résiduel sur la probabilité de victoire.
+    """
+    if not reglages:
         return c
-    return borner(dict(c, a=c['a'] * reglages['ace_facteur']))
+    out = dict(c)
+    if reglages.get('ace_facteur'):
+        out['a'] = out['a'] * reglages['ace_facteur']
+    delta = float(reglages.get('jeux_delta') or 0.0)
+    if delta:
+        out = ajuster(borner(out), max(.15, min(.85, p_service(borner(out)) + delta)))
+    return borner(out)
 
 
 def simuler(cA, cB, p_victoire, sets_gagnants=2, n=20000, sigma=0.15, cle='', tb_final=None, garder=False,
@@ -465,7 +476,8 @@ def simuler(cA, cB, p_victoire, sets_gagnants=2, n=20000, sigma=0.15, cle='', tb
 
     reglages (facultatif, 22/10/2026) : {'ace_facteur': x, 'tau_f': t} — aces recalés et
     % de 1re balle qui varie d'un match à l'autre (écart en logit tiré par joueur et par
-    simulation, comme une forme du jour propre à la 1re balle).
+    simulation, comme une forme du jour propre à la 1re balle). ``jeux_delta``
+    déplace les deux services avant réancrage pour challenger le total de jeux.
 
     Renvoie un résumé : victoire, sets, scores complets, jeux, tie-breaks, feuille de stats
     (moyenne et fourchette 80 %) pour chaque joueur, match type. garder=True : renvoie aussi

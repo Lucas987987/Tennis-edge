@@ -38,7 +38,7 @@ def match_resultat(note=None):
 
 class EvaluationSorties(unittest.TestCase):
     def test_toutes_les_sorties_et_rang_un_indexe(self):
-        out = ES.evaluer({'matchs': [match_resultat()]})
+        out = ES.evaluer({'matchs': [match_resultat(85)]})
         r = out['global']['combinaison']
         self.assertEqual(r['matchs'], 1)
         self.assertEqual(r['sets']['exact']['valeur'], 1)
@@ -48,6 +48,8 @@ class EvaluationSorties(unittest.TestCase):
         self.assertEqual(r['statistiques']['aces']['mae']['valeur'], 2)
         self.assertEqual(r['statistiques']['aces']['couverture80']['valeur'], 1)
         self.assertEqual(out['global']['simulation']['statistiques'], {})
+        self.assertEqual(out['par_fiabilite']['solide']['combinaison']['matchs'], 1)
+        self.assertIn('tres_peu_documente', out['par_documentation'])
 
     def test_donnee_absente_ne_devient_pas_zero(self):
         m = match_resultat()

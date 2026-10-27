@@ -110,7 +110,9 @@ def main(argv):
         debut_mois = m['date'].replace(day=1)
         if mois != debut_mois:                                 # point-in-time : tournois finis avant le 1er du mois
             t1 = time.time()
-            adj = AJ.ajuster_choisi(M, debut_mois, E.cle, n0=n0, dyn=dyn, depart=adj, tours=6 if adj is None else 2)
+            adj = AJ.ajuster_choisi(M, debut_mois, E.cle, n0=n0, dyn=dyn, depart=adj,
+                                    tours=6 if adj is None else 2,
+                                    n0_par_composante=choix.get('n0_par_composante') or None)
             mois = debut_mois
             print(f"  modèle des points au {debut_mois} ({round(time.time() - t1)} s)", flush=True)
         g, p = E.cle(m['nom_g']), E.cle(m['nom_p'])

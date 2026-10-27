@@ -52,6 +52,8 @@ def _metriques(rows):
         'ic95_exactitude_wilson': _wilson(exactes, len(rows)),
         'exactitude_attendue': round(attendue, 6),
         'ecart_exactitude_moins_attendue': round(exactes/len(rows)-attendue, 6),
+        'defaites_du_favori': sum(r['p'] >= .5 and not r['y'] or r['p'] < .5 and r['y'] for r in rows),
+        'defaites_du_favori_pct': round(100 * sum(r['p'] >= .5 and not r['y'] or r['p'] < .5 and r['y'] for r in rows) / len(rows), 2),
         'calibration': calibration,
     }
 
@@ -117,9 +119,19 @@ def preparer(resultats, version='combinaison'):
             continue
         v = m['prevus'][version]
         d = dt.datetime.fromisoformat(m['debut'].replace('Z', '+00:00'))
+        sim = v.get('match_simule') or {}
+        profils = sim.get('profil_connu')
+        if isinstance(profils, list) and len(profils) == 2:
+            documentation = 'documente' if all(profils) else 'tres_peu_documente' if not any(profils) else 'peu_documente'
+        else:
+            score_doc = (f.get('composantes') or {}).get('donnees', 0)
+            documentation = 'documente' if score_doc >= 65 else 'peu_documente' if score_doc >= 20 else 'tres_peu_documente'
         rows.append({'note': float(f['note']), 'p': float(v['p_home']),
                      'y': int(m['gagnant'] == 'home'), 'semaine': d.isocalendar()[:2],
                      'categorie': f.get('categorie') or 'D_non_controle',
+                     'circuit': m.get('circuit') or v.get('circuit') or 'Inconnu',
+                     'surface': m.get('surface') or v.get('surface') or 'Inconnue',
+                     'documentation': documentation,
                      'desaccord': bool(f.get('desaccord_vainqueur_elo_simulation'))})
     return rows
 
@@ -141,6 +153,17 @@ def evaluer(resultats, version='combinaison'):
         perte = [-math.log(min(1-1e-12, max(1e-12, r['p'] if r['y'] else 1-r['p']))) for r in rows]
         rho = _spearman(nr, perte)
         monotone = round(rho, 6) if rho is not None else None
+    residuel = None
+    if len(notes) >= 2 and len(rows) >= MIN_MATCHS:
+        nr = [r['note'] for r in rows]
+        perte_residuelle = []
+        for r in rows:
+            p = min(1-1e-12, max(1e-12, r['p']))
+            reelle = -math.log(p if r['y'] else 1-p)
+            attendue = -(p*math.log(p) + (1-p)*math.log(1-p))
+            perte_residuelle.append(reelle-attendue)
+        rho_res = _spearman(nr, perte_residuelle)
+        residuel = round(rho_res, 6) if rho_res is not None else None
     contraste = _bootstrap(haut, bas)
     groupes_assez = sum(v['n'] >= 10 for v in par_niveau.values())
     pret = (len(bas) >= MIN_MATCHS and len(haut) >= MIN_MATCHS
@@ -148,7 +171,7 @@ def evaluer(resultats, version='combinaison'):
     probabilite = contraste.get('probabilite_haut_meilleur')
     if not pret:
         verdict = 'accumulation'
-    elif probabilite >= .95 and (monotone is None or monotone < 0):
+    elif probabilite >= .95 and (monotone is None or monotone < 0) and (residuel is None or residuel < 0):
         verdict = 'confirmees'
     elif probabilite <= .05:
         verdict = 'contredites'
@@ -157,7 +180,12 @@ def evaluer(resultats, version='combinaison'):
     return {
         'version': version, 'n_avec_note': len(rows), 'global': _metriques(rows),
         'par_niveau': par_niveau, 'par_categorie': par_categorie,
+        'par_circuit': {k: _metriques([r for r in rows if r['circuit'] == k]) for k in sorted({r['circuit'] for r in rows})},
+        'par_surface': {k: _metriques([r for r in rows if r['surface'] == k]) for k in sorted({r['surface'] for r in rows})},
+        'par_documentation': {k: _metriques([r for r in rows if r['documentation'] == k])
+                              for k in ('tres_peu_documente', 'peu_documente', 'documente')},
         'par_desaccord_elo_simulation': desaccords,
+        'spearman_note_vs_perte_residuelle': residuel,
         'contraste_correct_ou_solide_vs_fragile_ou_prudent': contraste,
         'effectifs_contraste': {'notes_fragile_ou_prudent': len(bas), 'notes_correct_ou_solide': len(haut)},
         'spearman_note_vs_perte': monotone,

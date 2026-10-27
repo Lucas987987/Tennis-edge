@@ -154,6 +154,73 @@ def analyser(doc, bootstrap=2000, graine=20261026):
     return out
 
 
+FAMILLES = (
+    'elo', 'elo_sans_surface', 'simulation_pure',
+    'simulation_pure_ajustee', 'simulation_service_seul',
+    'simulation_retour_seul', 'simulation_sans_recence',
+    'simulation_sans_surface',
+)
+
+
+def _mesure_vainqueur(lignes, modele):
+    vals = [min(max(float(r[modele]), 1e-6), 1 - 1e-6) for r in lignes]
+    if not vals:
+        return {'n': 0}
+    return {'n': len(vals),
+            'log_loss': round(-sum(math.log(p) for p in vals) / len(vals), 6),
+            'brier': round(sum((1 - p) ** 2 for p in vals) / len(vals), 6)}
+
+
+def analyser_familles(lignes, reference='simulation_pure_ajustee'):
+    """Ablation appariée des familles, sur les probabilités du vrai vainqueur.
+
+    Les lignes viennent du backtest chronologique : toutes les variantes sont
+    présentes sur les mêmes matchs. Les sous-groupes évitent qu'un gain global
+    cache une dégradation des profils rares, d'un circuit ou du BO5.
+    """
+    lignes = [r for r in lignes if reference in r]
+    modeles = [k for k in FAMILLES if all(k in r for r in lignes)]
+    groupes = {'global': lignes}
+    for champ in ('circuit', 'surface', 'bo'):
+        for valeur in sorted({str(r.get(champ) or '?') for r in lignes}):
+            g = [r for r in lignes if str(r.get(champ) or '?') == valeur]
+            if len(g) >= 30:
+                groupes[f'{champ}:{valeur}'] = g
+    docs = {
+        'tres_peu_documente': lambda r: r.get('connus', 0) < 20,
+        'peu_documente': lambda r: 20 <= r.get('connus', 0) < 100,
+        'documente': lambda r: r.get('connus', 0) >= 100,
+    }
+    for nom, test in docs.items():
+        g = [r for r in lignes if test(r)]
+        if len(g) >= 30:
+            groupes[f'documentation:{nom}'] = g
+
+    out = {
+        'n': len(lignes), 'reference': reference,
+        'population': 'mêmes matchs, probabilités données au vrai vainqueur',
+        'modeles': {k: _mesure_vainqueur(lignes, k) for k in modeles},
+        'sous_groupes': {}, 'comparaisons': {},
+        'limites': {
+            'styles': 'aucune variable de style figée point-in-time : pas d’ablation fabriquée',
+            'bo5': 'le format est nécessaire au calcul du score ; il est contrôlé par sous-groupe, pas supprimé des matchs BO5',
+            'circuit': 'niveau et composition du circuit contrôlés par sous-groupe ; Elo conserve son départ différencié',
+        },
+    }
+    base = _mesure_vainqueur(lignes, reference)
+    for k in modeles:
+        m = _mesure_vainqueur(lignes, k)
+        out['comparaisons'][k] = {
+            'delta_log_loss_vs_reference': round(m['log_loss'] - base['log_loss'], 6),
+            'lecture': 'positif = variante moins bonne que la référence ajustée',
+        }
+    for nom, g in groupes.items():
+        if nom == 'global':
+            continue
+        out['sous_groupes'][nom] = {k: _mesure_vainqueur(g, k) for k in modeles}
+    return out
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument('racine', nargs='?', default=os.path.join(ICI, '..'))
