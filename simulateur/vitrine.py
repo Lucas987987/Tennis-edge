@@ -171,7 +171,8 @@ def ajouter_styles_descriptifs(lignes, document):
     for ligne in lignes:
         bloc = styles.get(ligne.get('uid'))
         if bloc and bloc.get('descriptif_seulement') is True and len(bloc.get('joueurs') or []) == 2:
-            ligne['styles_descriptifs'] = bloc
+            # Les résidus du challenger restent hors du document public.
+            ligne['styles_descriptifs'] = {'descriptif_seulement': True, 'joueurs': bloc['joueurs']}
     return lignes
 
 
