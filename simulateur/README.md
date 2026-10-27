@@ -40,6 +40,7 @@ jouer 5 000 matchs au hasard, il calcule la probabilité de chaque issue.
 | `recalibrage.py` | régression logistique, contraction hiérarchique et isotone en origine glissante ; direct et rejoué séparés |
 | `dependances_points.py` | tests du point précédent, des tie-breaks, de la fatigue et de l’évolution entre sets sur les séquences ordonnées |
 | `gouvernance.py` | périodes disjointes, traçabilité et une seule nouvelle promotion hebdomadaire |
+| `recap_apprentissage.py` | synthèse hebdomadaire lisible des apprentissages, décisions, performances, alertes et état du champion ; lecture seule |
 | `gouvernance_candidats.py` | empreintes des challengers figés et confirmation réservée aux futurs pronostics réellement nouveaux |
 | `hierarchie.py` | challenger service–retour à partage partiel et incertitude dynamique, sans séparation des circuits |
 | `distribution_exacte.py` | distribution exacte des scores set par set, forme du jour et tie-breaks, sans remplacer les simulations vidéo |
@@ -84,6 +85,19 @@ Le workflow hebdomadaire produit les rapports `rapport_evaluation_sorties.json`,
 `rapport_gouvernance.json`. Une métrique indisponible reste absente : elle n'est
 jamais remplacée par zéro. Les scores sont rangés à partir de 1 et les
 statistiques sont rattachées uniquement à la variante qui les a simulées.
+
+Après la gouvernance, `recap_apprentissage.py` réunit ces résultats dans
+`recap_apprentissage.md` et `recap_apprentissage.json`. La synthèse indique les
+effectifs d’apprentissage et de jugement, les groupes adoptés ou en attente,
+l’avant/après des facteurs, les performances récentes, le recalibrage direct et
+rejoué, la dérive, les promotions et l’empreinte du champion. Les populations
+restent séparées et une mesure absente n’est jamais remplacée par zéro. Le
+module est en lecture seule : il n’entraîne rien, ne promeut aucun candidat et
+ne déduit aucun gain de ROI. Rejouer :
+
+```bash
+python simulateur/recap_apprentissage.py --racine .
+```
 
 Les profils candidats sont comparés au champion réellement publié. Un challenger
 est choisi sur la période de découverte, puis doit confirmer chronologiquement,

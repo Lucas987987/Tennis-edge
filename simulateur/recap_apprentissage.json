@@ -1,0 +1,230 @@
+{
+  "schema": "recap_apprentissage_v1",
+  "semaine": "2026-W44",
+  "genere_le": "2026-10-27T23:12:53+00:00",
+  "statut": "ok",
+  "lecture_seule": true,
+  "modifie_apprentissage": false,
+  "marche_utilise": false,
+  "sources": {
+    "facteurs": {
+      "disponible": true,
+      "genere_le": "2026-10-26T08:49:39+00:00"
+    },
+    "choix": {
+      "disponible": true,
+      "genere_le": "2026-10-26T08:47:14+00:00"
+    },
+    "stabilite": {
+      "disponible": true,
+      "genere_le": null
+    },
+    "evaluation": {
+      "disponible": true,
+      "genere_le": "2026-10-26T13:16:28.121370+00:00"
+    },
+    "recalibrage": {
+      "disponible": true,
+      "genere_le": "2026-10-26T19:22:39.588777+00:00"
+    },
+    "derive": {
+      "disponible": true,
+      "genere_le": "2026-10-26T15:20:46+00:00"
+    },
+    "gouvernance": {
+      "disponible": true,
+      "genere_le": "2026-10-26T13:09:24.858504+00:00"
+    }
+  },
+  "sources_manquantes": [],
+  "facteurs": {
+    "apprentissage_n": 6183,
+    "jugement_n": 2398,
+    "fenetres": {
+      "apprentissage": "2026-06-01",
+      "jugement": "2026-09-14"
+    },
+    "adoptes": [
+      "contexte_tournoi",
+      "face_a_face",
+      "forme_fatigue",
+      "morphologie",
+      "points_importants",
+      "styles",
+      "vitesse_court"
+    ],
+    "non_adoptes": [
+      {
+        "nom": "adversaires_communs",
+        "libelle": "Adversaires communs",
+        "adopte_brut": true,
+        "statut": "candidat (1/2) : adopté s'il fait encore mieux la semaine prochaine"
+      },
+      {
+        "nom": "blessure",
+        "libelle": "Blessure",
+        "adopte_brut": false,
+        "statut": "pas adopté"
+      },
+      {
+        "nom": "charting",
+        "libelle": "Match Charting",
+        "adopte_brut": false,
+        "statut": "pas adopté"
+      },
+      {
+        "nom": "conditions",
+        "libelle": "Conditions",
+        "adopte_brut": false,
+        "statut": "pas adopté"
+      },
+      {
+        "nom": "duree",
+        "libelle": "Durée",
+        "adopte_brut": false,
+        "statut": "pas adopté"
+      },
+      {
+        "nom": "matchup",
+        "libelle": "Matchup",
+        "adopte_brut": true,
+        "statut": "candidat (1/2) : adopté s'il fait encore mieux la semaine prochaine"
+      },
+      {
+        "nom": "pression",
+        "libelle": "Pression",
+        "adopte_brut": false,
+        "statut": "pas adopté"
+      }
+    ],
+    "candidats_en_attente": [
+      "adversaires_communs",
+      "matchup"
+    ],
+    "avant_apres_jugement": {
+      "log_loss_avant": 0.62627,
+      "log_loss_apres": 0.61354,
+      "gain_log_loss": 0.01273,
+      "exactitude_avant_pct": 65.6,
+      "exactitude_apres_pct": 66.4,
+      "gain_exactitude_points": 0.8
+    },
+    "population": "évaluation des facteurs, distincte des seuls pronostics directs récents"
+  },
+  "apprentissage_continu": {
+    "n": 140,
+    "minimum_n": 400,
+    "adopte": false,
+    "raison": "en attente : 140 matchs joués avec les deux % (il en faut 400)",
+    "poids": null,
+    "poids_appris": null,
+    "jugement": {},
+    "statut": "accumulation",
+    "population": "premiers pronostics figés avec simulation et Elo, résultats ultérieurs"
+  },
+  "performance_recente": {
+    "matchs": 150,
+    "log_loss": 0.633311,
+    "brier": 0.223103,
+    "exactitude": 0.633333,
+    "score_exact": 0.034014,
+    "jeux_mae": 4.909524,
+    "population": "pronostics récents évalués ; ne pas confondre avec le jugement des facteurs"
+  },
+  "recalibrage": {
+    "direct": {
+      "n": 159,
+      "semaines": 2,
+      "decisions": [
+        {
+          "nom": "contraction_hierarchique",
+          "libelle": "Contraction hiérarchique",
+          "adopte": false,
+          "statut": "accumulation",
+          "gain_log_loss_pondere": null,
+          "fenetres_positives": 0,
+          "fenetres": 0
+        },
+        {
+          "nom": "isotone",
+          "libelle": "Isotone",
+          "adopte": false,
+          "statut": "accumulation",
+          "gain_log_loss_pondere": null,
+          "fenetres_positives": 0,
+          "fenetres": 0
+        },
+        {
+          "nom": "logistique",
+          "libelle": "Régression logistique",
+          "adopte": false,
+          "statut": "accumulation",
+          "gain_log_loss_pondere": null,
+          "fenetres_positives": 0,
+          "fenetres": 0
+        }
+      ],
+      "champion_actif_modifie": false
+    },
+    "rejoue": {
+      "n": 4821,
+      "semaines": 13,
+      "decisions": [
+        {
+          "nom": "contraction_hierarchique",
+          "libelle": "Contraction hiérarchique",
+          "adopte": false,
+          "statut": "confirmation",
+          "gain_log_loss_pondere": -0.000964,
+          "fenetres_positives": 1,
+          "fenetres": 6
+        },
+        {
+          "nom": "isotone",
+          "libelle": "Isotone",
+          "adopte": false,
+          "statut": "confirmation",
+          "gain_log_loss_pondere": -0.066334,
+          "fenetres_positives": 0,
+          "fenetres": 6
+        },
+        {
+          "nom": "logistique",
+          "libelle": "Régression logistique",
+          "adopte": false,
+          "statut": "confirmation",
+          "gain_log_loss_pondere": -0.003102,
+          "fenetres_positives": 1,
+          "fenetres": 6
+        }
+      ]
+    },
+    "populations_separees": true
+  },
+  "derive": {
+    "statut": "accumulation",
+    "n": 150,
+    "date_de_reference": "2026-10-26",
+    "alertes": []
+  },
+  "champion": {
+    "statut_gouvernance": "ok",
+    "initialisation": true,
+    "empreinte_avant": null,
+    "empreinte_apres": "cd5f6330137afe0a82f35629f007cb47a9a941148ccff2ed56b5fbadcae16b8f",
+    "modifie_cette_semaine": null,
+    "promotions_demande_es": [],
+    "promotions_retenues": [],
+    "promotions_differees": [],
+    "periodes": {
+      "juge_jusqua": null,
+      "jugement_courant": {},
+      "minimum_nouveaux_matchs": 30,
+      "n_nouveaux": null,
+      "ok": true,
+      "problemes": []
+    },
+    "decisions_sans_trace_stabilite": []
+  },
+  "avertissement": "Synthèse descriptive des rapports existants. Les populations ne sont pas agrégées ; aucune adoption nouvelle et aucune promesse de taux de réussite ou de ROI."
+}
