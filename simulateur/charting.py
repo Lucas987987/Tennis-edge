@@ -103,6 +103,20 @@ class Charting:
             if c:
                 tot = [a + b for a, b in zip(tot, c[-1])]
         self.moy = (tot[1] / tot[0] if tot[0] else 0.3, tot[3] / tot[2] if tot[2] else 0.7, tot[5] / tot[4] if tot[4] else 0.2)
+        # Moyennes de référence elles aussi point-in-time : aucune feuille future dans le prior.
+        evenements = sorted((e[0], *e[1:]) for L in self.D.values() for e in L)
+        self._dates_moy = [e[0] for e in evenements]
+        self._cum_moy, acc = [], [0, 0, 0, 0, 0, 0]
+        for e in evenements:
+            acc = [a + b for a, b in zip(acc, e[1:])]
+            self._cum_moy.append(tuple(acc))
+
+    def moyenne(self, date):
+        k = bisect.bisect_left(self._dates_moy, date)
+        if not k:
+            return .3, .7, .2
+        sp, sc, rp, ri, pm, pl = self._cum_moy[k - 1]
+        return (sc / sp if sp else .3, ri / rp if rp else .7, pl / pm if pm else .2)
 
     def profil(self, j, date):
         L = self.cum.get(j)
@@ -112,9 +126,20 @@ class Charting:
         if k == 0:
             return 0.0, 0.0, 0.0
         sp, sc, rp, ri, pm, pl = L[k - 1]
-        m1, m2, m3 = self.moy
+        m1, m2, m3 = self.moyenne(date)
         return ((sc + K_SERVICE * m1) / (sp + K_SERVICE) - m1, (ri + K_RETOUR * m2) / (rp + K_RETOUR) - m2,
                 (pl + K_ECHANGES * m3) / (pm + K_ECHANGES) - m3)
+
+    def documentation(self, j, date):
+        """Couverture disponible strictement avant date, sans utiliser le match courant."""
+        L = self.cum.get(j)
+        if not L:
+            return {'matchs': 0, 'points_service': 0, 'points_retour': 0, 'points_echanges': 0}
+        k = bisect.bisect_left(self.dates[j], date)
+        if not k:
+            return {'matchs': 0, 'points_service': 0, 'points_retour': 0, 'points_echanges': 0}
+        sp, sc, rp, ri, pm, pl = L[k - 1]
+        return {'matchs': k, 'points_service': sp, 'points_retour': rp, 'points_echanges': pm}
 
     def exporter(self, joueurs, date):
         out = {}
@@ -134,8 +159,21 @@ class ChartingFige:
     def profil(self, j, date=None):
         return tuple(self.d.get(j) or (0.0, 0.0, 0.0))
 
+    def documentation(self, j, date=None):
+        return {'matchs': 0, 'points_service': 0, 'points_retour': 0, 'points_echanges': 0}
+
 
 def variables(pj, pa):
     """Variables du point de vue du serveur j contre adv (profils (premier_coup, retour, echanges))."""
     return {'mcp_premier_coup_srv': 10 * pj[0], 'mcp_retour_adv': 10 * pa[1], 'mcp_duel': 100 * pj[0] * pa[1],
             'mcp_echanges': 10 * (pj[2] - pa[2])}
+
+
+def variables_match(ph, pa):
+    """Écarts antisymétriques pour une ablation du vainqueur, orientation h contre a."""
+    return {
+        'mcp_premier_coup_ecart': 10 * (ph[0] - pa[0]),
+        'mcp_retour_ecart': 10 * (ph[1] - pa[1]),
+        'mcp_duel_ecart': 100 * (ph[0] * pa[1] - pa[0] * ph[1]),
+        'mcp_echanges_ecart': 10 * (ph[2] - pa[2]),
+    }
