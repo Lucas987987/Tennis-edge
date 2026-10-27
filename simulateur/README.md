@@ -171,3 +171,22 @@ L'apprentissage continu exige désormais un gain de log loss d'au moins 0,001 su
 une période de jugement nouvelle et un Brier non dégradé. Les challengers qui ne
 franchissent pas ces gardes restent rejetés. Aucun de ces mécanismes n'utilise le
 marché comme entrée du modèle indépendant.
+
+## Suivi public de la fiabilité circuit et audit des profils (27/10/2026)
+
+La version de note est identifiée par `version_fiabilite = "circuit_v1"` et sa
+date d'activation. La vitrine suit séparément les seuls matchs **nouvellement
+enregistrés** après cette activation et portant cette version. Recalculer la note
+d'un match déjà journalisé ne le fait pas entrer dans ce suivi. Le taux affiché
+reste indisponible tant qu'aucun de ces matchs n'est résolu : la note ne change
+pas le favori et ne crée donc pas, à elle seule, un nouveau taux de réussite.
+
+Le détail d'un match expose l'effectif antérieur du circuit, l'exactitude réelle
+et attendue, la perte résiduelle et le plafond éventuel. Le bilan historique et
+ses probabilités figées restent séparés de cette cohorte prospective.
+
+`qualite_donnees.py` audite `profils_service.json` : nombre de profils, surfaces,
+balles de service effectives après pondération, couverture à 200/500 balles et
+contrôles structurels des numérateurs/dénominateurs. Ce descriptif reproductible
+ne prouve ni l'exactitude externe ni la supériorité sur PythiaTennis ou un autre
+fournisseur ; cette dernière exigerait les mêmes matchs et des données comparables.

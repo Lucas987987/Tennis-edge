@@ -9,6 +9,8 @@ partir de pronostics antérieurs. Elle ne modifie aucune probabilité. Aucune co
 import math
 
 VERSIONS = ('combinaison', 'simulation', 'stats')
+VERSION_FIABILITE = 'circuit_v1'
+ACTIVE_LE = '2026-10-27'
 SEUILS = {'prudent': 45, 'correct': 65, 'solide': 80}
 NIVEAUX = ('fragile', 'prudent', 'correct', 'solide')
 CATEGORIES = ('A_solide', 'B_incertain', 'C_fragile', 'D_non_controle')
@@ -158,6 +160,7 @@ def evaluer(match, historique):
     note = min(note, plafond)
     cat = categorie(donnees, desaccord, stabilite, hist['n'], circuit)
     return {'note': note, 'niveau': niveau(note), 'categorie': cat, 'version': k,
+            'version_fiabilite': VERSION_FIABILITE, 'active_le': ACTIVE_LE,
             'composantes': {'donnees': round(100 * donnees), 'accord_modeles': round(100 * accord),
                             'calibration': round(100 * hist['score']), 'performance_circuit': round(100 * circuit['score']),
                             'profondeur_historique': round(100 * preuve)},
