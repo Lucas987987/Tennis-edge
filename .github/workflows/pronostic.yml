@@ -85,14 +85,14 @@ jobs:
         run: python simulateur/profils_robustes.py /tmp/sackmann . --max 2000
       - name: Interactions service–retour horodatées (challenger)
         run: python simulateur/styles_joueurs.py /tmp/sackmann . --max 2000
-      - name: Profils de service (aces, doubles fautes, 1re et 2e balle, retour)
-        run: python simulateur/profils_service.py /tmp/sackmann .
-      - name: Réglage du match simulé (aces, 1re balle) jugé sur les feuilles collectées
+      - name: Test de la feuille, ablation des familles et priors (avant l'heure)
+        run: python simulateur/backtest_match_simule.py /tmp/sackmann . --n=300 --max=2000
+      - name: Réglage du match simulé (aces, 1re balle, jeux) sur la variante retenue
         run: python simulateur/reglage_match_simule.py /tmp/sackmann . --n=300 --max=1500
       - name: Étude de la forme du jour (feuilles set par set)
         run: python simulateur/etude_forme_du_jour.py .
-      - name: Test de la feuille de match simulée (avant l'heure)
-        run: python simulateur/backtest_match_simule.py /tmp/sackmann . --n=300 --max=2000
+      - name: Export des profils avec les priors retenus (1re et 2e balle, retour)
+        run: python simulateur/profils_service.py /tmp/sackmann .
       - name: Facteurs du match (forme, fatigue, court, gaucher/taille, points importants, styles, face-à-face, conditions, contexte, Match Charting)
         run: python simulateur/facteurs.py /tmp/sackmann . /tmp/mcp
       - name: Apprentissage continu (mélange simulation + Elo appris sur nos matchs joués)

@@ -444,7 +444,8 @@ def main(argv):
     except (OSError, ValueError):
         opts_elo = None
     V = BP.rejouer(M, [], [], E.cle, {}, True, options=opts_elo)   # Elo point-in-time (départ 1200 aux petits niveaux)
-    print(f"Elo rejoué ({round(time.time() - t0)} s)", flush=True)
+    V0 = BP.rejouer(M, [], [], E.cle, {}, True, options=dict(opts_elo or {}, poids_surface=0.0))
+    print(f"Elo rejoué, avec et sans surface ({round(time.time() - t0)} s)", flush=True)
 
     # Référence naïve : moyenne 2016–2023 par circuit et format (tous joueurs).
     naif_s = collections.defaultdict(lambda: collections.defaultdict(list))
@@ -479,7 +480,10 @@ def main(argv):
         choix_avant = {}
     dyn = AJ.lire_dynamique(choix_avant)                             # réglage « dans le temps » s'il a été adopté
     n0, scores_n0 = AJ.choisir_n0(M, E.cle)                         # prior choisi sur 2023 seulement
-    print(f"Prior de l'ajustement aux adversaires retenu sur 2023 : N0 = {n0:g}", flush=True)
+    n0_w2, scores_n0_w2 = AJ.choisir_n0(M, E.cle, grille=(300.0, 600.0, 1200.0),
+                                       composante='w2j', n0_base=n0)
+    priors_comp = {'w2j': n0_w2}
+    print(f"Priors retenus sur 2023 : global N0 = {n0:g} · deuxième balle N0 = {n0_w2:g}", flush=True)
     connus = collections.Counter()
     for i, m in enumerate(M):
         while attente and attente[0][0] < m['date']:
@@ -493,7 +497,8 @@ def main(argv):
         debut_mois = m['date'].replace(day=1)
         if mois_adj != debut_mois:                                 # point-in-time : tournois finis avant le 1er du mois
             t1 = time.time()
-            adj = AJ.ajuster_choisi(M, debut_mois, E.cle, n0=n0, dyn=dyn, depart=adj, tours=6 if adj is None else 2)
+            adj = AJ.ajuster_choisi(M, debut_mois, E.cle, n0=n0, dyn=dyn, depart=adj,
+                                    tours=6 if adj is None else 2, n0_par_composante=priors_comp)
             # couche « jeux » : apprend aussi des matchs SANS feuille (score seul), par-dessus le modèle des points
             jeux = {lam: AJ.ajuster_jeux(M, debut_mois, E.cle, adj, lam=lam, depart=jeux.get(lam), tours=6 if not jeux else 3)
                     for lam in GRILLE_JEUX}
@@ -515,6 +520,23 @@ def main(argv):
         cmu = S.composantes(mu, mu, mu)
         ag, ap = S.composantes_ajustees(adj, g, p, m['circuit'], m['surface']), S.composantes_ajustees(adj, p, g, m['circuit'], m['surface'])
         moy = S.borner(adj.taux('__moyen__', '__moyen__', m['circuit'], m['surface']))
+        # Ablation des familles internes, toutes reconstruites avant le match.
+        sg1, sp1 = (S.composantes_ajustees(adj, g, '__moyen__', m['circuit'], m['surface']),
+                    S.composantes_ajustees(adj, p, '__moyen__', m['circuit'], m['surface']))
+        rg1, rp1 = (S.composantes_ajustees(adj, '__moyen__', p, m['circuit'], m['surface']),
+                    S.composantes_ajustees(adj, '__moyen__', g, m['circuit'], m['surface']))
+        fond = getattr(adj, 'fond', adj)
+        fg, fp = (S.composantes_ajustees(fond, g, p, m['circuit'], m['surface']),
+                  S.composantes_ajustees(fond, p, g, m['circuit'], m['surface']))
+        hg, hp = (S.composantes_ajustees(adj, g, p, m['circuit'], 'all'),
+                  S.composantes_ajustees(adj, p, g, m['circuit'], 'all'))
+        abl = {
+            'simulation_service_seul': S.victoire_pure(sg1, sp1, sg, SIGMA),
+            'simulation_retour_seul': S.victoire_pure(rg1, rp1, sg, SIGMA),
+            'simulation_sans_recence': S.victoire_pure(fg, fp, sg, SIGMA),
+            'simulation_sans_surface': S.victoire_pure(hg, hp, sg, SIGMA),
+            'elo_sans_surface': V0['pred_sack'][i][0],
+        }
         grille = {}
         for lam in (0,) + GRILLE_JEUX:
             Gj = jeux.get(lam) if lam else None
@@ -532,6 +554,7 @@ def main(argv):
                        'elo': V['pred_sack'][i][0], 'pinnacle': pin[id(m)],
                        'simulation_pure_ajustee': grille[f"0|{SIGMA:g}|1|0"],
                        'simulation_pure': S.victoire_pure(cg, cp, sg, SIGMA), 'grille': grille,
+                       **abl,
                        # pour l'explorateur des pronostics (point 3, 22/10/2026)
                        'surface': m['surface'], 'bo': m['bo'], 'tour': m.get('tour'), 'niveau': m.get('niveau'),
                        'tournoi': m.get('tournoi'), 'gagnant': m['nom_g'], 'perdant': m['nom_p'],
@@ -574,15 +597,29 @@ def main(argv):
            'calibration': {v: {k: s.calibration(k) for k in ('aces', 'doubles_fautes', 'breaks')} for v, s in R.items()},
            'duree_s': round(time.time() - t0)}
     rap['victoire_tous_les_matchs'] = {v: bilan_victoire([x[v] for x in LIGNES]) for v in VIC}
+    import ablation as AB
+    rap['ablation_familles'] = AB.analyser_familles(LIGNES)
     # Règle fixée d'avance (22/10/2026) : les statistiques AJUSTÉES aux adversaires remplacent les profils
     # bruts dans les pronostics si la simulation pure ajustée trouve mieux le vainqueur (log loss plus basse),
     # sur TOUS les matchs éligibles (limite exacte de la simulation, pas seulement les matchs simulés).
     va, vp = rap['victoire_tous_les_matchs']['simulation_pure_ajustee'], rap['victoire_tous_les_matchs']['simulation_pure']
-    ok = bool(va.get('n')) and va['log_loss'] < vp['log_loss']
+    controles_rares = {}
+    for groupe in ('documentation:tres_peu_documente', 'documentation:peu_documente'):
+        g = rap['ablation_familles']['sous_groupes'].get(groupe) or {}
+        a, b = g.get('simulation_pure_ajustee', {}), g.get('simulation_pure', {})
+        assez = a.get('n', 0) >= 100 and b.get('n', 0) == a.get('n')
+        controles_rares[groupe] = {'n': a.get('n', 0), 'ok': not assez or a['log_loss'] <= b['log_loss'] + .002,
+                                   'log_loss_ajustee': a.get('log_loss'), 'log_loss_brute': b.get('log_loss')}
+    rares_ok = all(x['ok'] for x in controles_rares.values())
+    ok = bool(va.get('n')) and va['log_loss'] < vp['log_loss'] and rares_ok
     rap['choix'] = {'composantes': 'ajustees' if ok else 'profils', 'n0': n0,
+                    'controles_profils_peu_documentes': controles_rares,
+                    'n0_par_composante': priors_comp,
+                    'n0_w2j_choisi_sur_2023': {f"{k:g}": round(v, 5) for k, v in scores_n0_w2.items()},
                     'n0_choisi_sur_2023': {f"{k:g}": round(v, 5) for k, v in scores_n0.items()},
                     'raison': (f"log loss de la simulation pure : ajustée {va.get('log_loss')} contre profils bruts "
-                               f"{vp.get('log_loss')} (réussite {va.get('reussite_pct')} % contre {vp.get('reussite_pct')} %)")}
+                               f"{vp.get('log_loss')} (réussite {va.get('reussite_pct')} % contre {vp.get('reussite_pct')} %) ; "
+                               f"profils peu documentés {'validés' if rares_ok else 'non validés'}")}
     sim = 'simulation_pure_ajustee' if ok else 'simulation_pure'
     # 22/10/2026 — réglage de la simulation pure (forme du jour σ, amplification k des écarts au circuit),
     # choisi sur 2024, adopté s'il trouve mieux le vainqueur en 2025 → ; la combinaison est ensuite

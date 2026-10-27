@@ -10,19 +10,16 @@ Défauts constatés le 22/10 (2 000 matchs ATP/WTA 2024 → janvier 2026) :
      l'autre, alors qu'il varie selon les jours.
 
 RÈGLE FIXÉE AVANT DE REGARDER LES FEUILLES COLLECTÉES :
-  • RÉGLAGE, sur l'archive Sackmann (ATP/WTA, 01/01/2024 → 01/02/2026), profils
-    point-in-time, sans simulation :
-      ace_facteur = Σ aces réels / Σ (1res balles dans le court × taux d'aces prévu) ;
-      tau_f       = écart-type, en logit, de la variation du % de 1re balle d'un match
-                    à l'autre, AU-DELÀ du hasard des points (méthode des moments :
-                    Σ[(1res dans − n·f)² − n·f·(1−f)] / Σ n², ramené en logit).
-  • JUGEMENT, sur les feuilles collectées APRÈS la fin de l'archive (TennisApi,
-    ATP/WTA/Challenger), jamais utilisées pour régler : même simulation (niveau Elo
-    du rejeu chronologique), sans puis avec réglage. Le réglage est ADOPTÉ si :
-      (a) le biais relatif des aces (prévu − réel) / réel diminue en valeur absolue ;
-      (b) la couverture de la fourchette du % de 1re balle se rapproche de 80 % ;
-      (c) aucune statistique ne voit son écart moyen (MAE) augmenter de plus de 2 %.
-    Sinon le match simulé reste tel quel. Aucun autre réglage n'est essayé.
+  • RÉGLAGE sur l'archive Sackmann : aces par rapport de sommes, première balle
+    par méthode des moments, longueur du match sur un petit maillage de DP exacte.
+  • JUGEMENT sur les feuilles collectées APRÈS l'archive. Chaque composante est
+    testée seule, puis leur combinaison est obligatoire si plusieurs passent :
+      (a) aces : biais relatif absolu réduit ;
+      (b) première balle : couverture de l'intervalle plus proche de 80 % ;
+      (c) total de jeux : MAE réduite d'au moins 1 % ;
+      (d) dans tous les cas, aucune autre MAE n'augmente de plus de 2 %.
+    Si la combinaison échoue, une seule composante peut être conservée selon la
+    priorité fixée : première balle, jeux, aces. Les réglages rejetés restent off.
 
 Usage : python simulateur/reglage_match_simule.py <archive Sackmann> [racine] [--n=300] [--max=1500]
 Sortie : simulateur/reglages_match_simule.json (lu par pronostics_du_jour.py si adopté).
@@ -37,12 +34,14 @@ import time
 
 ICI = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, ICI)
+import ajustement as AJ  # noqa: E402
 import backtest_match_simule as BMS  # noqa: E402
 import backtest_pronostic as BP  # noqa: E402
 import donnees  # noqa: E402
 import elo as E  # noqa: E402
 import feuilles as FE  # noqa: E402
 import match_simule as S  # noqa: E402
+import modele as MM  # noqa: E402
 import profils_service as PS  # noqa: E402
 
 SORTIE = os.path.join(ICI, 'reglages_match_simule.json')
@@ -75,6 +74,82 @@ def adopter(base, regle):
     return ok, raison
 
 
+def apprendre_delta_jeux(obs, limite=800):
+    """Règle une longueur commune de service sur l'archive, par DP exacte.
+
+    obs : (composantes gagnant, composantes perdant, p Elo, sets gagnants,
+    jeux réels). La même modification est appliquée aux deux joueurs, puis la
+    probabilité de victoire est réancrée : ce challenger vise les jeux, pas le
+    vainqueur. Le petit maillage est fixé avant le jugement.
+    """
+    if not obs:
+        return 0.0, {}
+    pas = max(1, len(obs) // limite)
+    choisis = obs[::pas][:limite]
+    scores = {}
+    for delta in (-.03, -.015, 0.0, .015, .03):
+        erreurs = []
+        for cg, cp, p_elo, sg, reel in choisis:
+            if delta:
+                cg = S.ajuster(cg, max(.15, min(.85, S.p_service(cg) + delta)))
+                cp = S.ajuster(cp, max(.15, min(.85, S.p_service(cp) + delta)))
+            a, b = S.ancrer_rapide(S.p_service(cg), S.p_service(cp), p_elo, sg, SIGMA)
+            prev = MM.moyenne(MM.match_forme(a, b, sg, SIGMA)['total_jeux'])
+            erreurs.append(abs(prev - reel))
+        scores[delta] = sum(erreurs) / len(erreurs) if erreurs else float('inf')
+    delta = min(scores, key=lambda x: (scores[x], abs(x), x))
+    return delta, {str(k): round(v, 4) for k, v in scores.items()}
+
+
+def _degradations(base, regle, tolerance=1.02):
+    return [k for k in base if k in regle and regle[k]['mae'] > tolerance * base[k]['mae']]
+
+
+def choisir_reglages(rap, appris):
+    """Juge séparément chaque correction, puis leur combinaison si nécessaire.
+
+    Priorité conservative fixée : première balle, total de jeux, aces. Si la
+    combinaison échoue, une seule composante peut rester active ; les réglages
+    rejetés restent dans le rapport et ne sont jamais réactivés artificiellement.
+    """
+    base = rap.get('sans_reglage', {})
+    if not base or 'aces' not in base or 'premiere_pct' not in base or 'total_jeux' not in base:
+        return {}, [], 'pas assez de feuilles collectées pour juger'
+
+    def premiere_ok(r):
+        return (abs(r['premiere_pct']['couverture_80_pct'] - 80)
+                < abs(base['premiere_pct']['couverture_80_pct'] - 80)
+                and not _degradations(base, r))
+
+    def aces_ok(r):
+        b = abs(base['aces']['prevu_moy'] - base['aces']['reel_moy']) / max(base['aces']['reel_moy'], 1e-9)
+        a = abs(r['aces']['prevu_moy'] - r['aces']['reel_moy']) / max(base['aces']['reel_moy'], 1e-9)
+        return a < b and not _degradations(base, r)
+
+    def jeux_ok(r):
+        return (r['total_jeux']['mae'] < .99 * base['total_jeux']['mae']
+                and not _degradations(base, r))
+
+    regles = {
+        'premiere_seule': premiere_ok,
+        'jeux_seuls': jeux_ok,
+        'aces_seuls': aces_ok,
+    }
+    admis = [nom for nom, test in regles.items() if test(rap.get(nom, {}))]
+    cles = {'premiere_seule': 'tau_f', 'jeux_seuls': 'jeux_delta', 'aces_seuls': 'ace_facteur'}
+    complet = rap.get('complet', {})
+    complet_ok = complet and all(regles[nom](complet) for nom in admis)
+    if len(admis) > 1 and complet_ok:
+        return ({cles[nom]: appris[cles[nom]] for nom in admis}, admis + ['complet'],
+                'composantes et combinaison validées hors échantillon')
+    if admis:
+        nom = admis[0]
+        raison = 'une seule composante validée' if len(admis) == 1 else 'combinaison rejetée ; composante prioritaire conservée'
+        return {cles[nom]: appris[cles[nom]]}, [nom], raison
+    pires = _degradations(base, complet) if complet else []
+    return {}, [], 'aucune composante ne franchit les critères ; dégradations du complet : ' + (', '.join(pires) or 'aucune')
+
+
 def main(argv):
     t0 = time.time()
     args = [a for a in argv[1:] if not a.startswith('--')]
@@ -93,7 +168,17 @@ def main(argv):
           f"({sum(1 for m in F if m.get('detail'))} avec feuille complète)", flush=True)
 
     elo, P, attente = E.Elo(), PS.Profils(), []
-    obs_f, ace_num, ace_den = [], 0.0, 0.0
+    try:
+        with open(os.path.join(ICI, 'choix_simulation.json'), encoding='utf-8') as f:
+            choix = json.load(f)
+    except (OSError, ValueError):
+        choix = {}
+    ajustees = choix.get('composantes', 'ajustees') == 'ajustees'
+    n0 = float(choix.get('n0') or AJ.N0)
+    n0_comp = choix.get('n0_par_composante') or None
+    dyn = AJ.lire_dynamique(choix)
+    adj, mois_adj = None, None
+    obs_f, obs_jeux, ace_num, ace_den = [], [], 0.0, 0.0
     valid = []
     for i, m in enumerate(tout):
         while attente and attente[0][0] < m['date']:
@@ -113,12 +198,23 @@ def main(argv):
                 pp, _ = P.profil(p, m['circuit'], m['surface'], m['date'])
                 mu = P.moyenne(m['circuit'], m['surface'])
                 cg, cp = S.composantes(pg, pp, mu), S.composantes(pp, pg, mu)
+                if ajustees:
+                    debut_mois = m['date'].replace(day=1)
+                    if mois_adj != debut_mois:
+                        adj = AJ.ajuster_choisi(tout, debut_mois, E.cle, n0=n0, dyn=dyn, depart=adj,
+                                                tours=6 if adj is None else 2, n0_par_composante=n0_comp)
+                        mois_adj = debut_mois
+                    cg = S.composantes_ajustees(adj, g, p, m['circuit'], m['surface'])
+                    cp = S.composantes_ajustees(adj, p, g, m['circuit'], m['surface'])
                 if entrainement:
                     for c, d in ((cg, det['w']), (cp, det['l'])):
                         sv, in1, ace = d[0], d[1], d[4]
                         obs_f.append((sv, in1, c['f']))
                         ace_num += ace
                         ace_den += in1 * c['a']
+                    total_reel = sum(a + b for a, b in m['sets'] if a >= 0 and b >= 0)
+                    if total_reel:
+                        obs_jeux.append((cg, cp, p_elo, 3 if m['bo'] == 5 else 2, total_reel))
                 else:
                     valid.append((m, cg, cp, p_elo))
         if det:
@@ -126,17 +222,26 @@ def main(argv):
         elo.maj(g, p, m['surface'], m.get('niveau') == 'G')
     ace_facteur = ace_num / ace_den if ace_den else 1.0
     var_f, tau_f = moments_f(obs_f)
-    reglages = {'ace_facteur': round(ace_facteur, 4), 'tau_f': round(tau_f, 4)}
+    delta_jeux, mae_jeux = apprendre_delta_jeux(obs_jeux)
+    appris = {'ace_facteur': round(ace_facteur, 4), 'tau_f': round(tau_f, 4),
+              'jeux_delta': round(delta_jeux, 4)}
     print(f"Réglage (archive 2024 → 01/2026, {len(obs_f)} feuilles de joueur) : ace_facteur {ace_facteur:.3f} · "
-          f"tau_f {tau_f:.3f} (variation de la 1re balle d'un match à l'autre, en logit)", flush=True)
+          f"tau_f {tau_f:.3f} · jeux_delta {delta_jeux:+.3f}", flush=True)
 
     pas = max(1, len(valid) // n_max)
     choisis = valid[::pas][:n_max]
-    R = {'sans_reglage': BMS.Suivi(), 'avec_reglage': BMS.Suivi()}
+    variantes = {
+        'sans_reglage': None,
+        'premiere_seule': {'tau_f': appris['tau_f']},
+        'aces_seuls': {'ace_facteur': appris['ace_facteur']},
+        'jeux_seuls': {'jeux_delta': appris['jeux_delta']},
+        'complet': appris,
+    }
+    R = {nom: BMS.Suivi() for nom in variantes}
     for k, (m, cg, cp, p_elo) in enumerate(choisis):
         (fw, fl), tot = BMS.reel(m)
         sg = 3 if m['bo'] == 5 else 2
-        for nom, rg in (('sans_reglage', None), ('avec_reglage', reglages)):
+        for nom, rg in variantes.items():
             r = S.simuler(cg, cp, p_elo, sg, n_sim, SIGMA, cle=f"{m.get('id')}|{k}", reglages=rg)
             for kj, vrai in ((0, fw), (1, fl)):
                 for st in BMS.STATS:
@@ -151,13 +256,18 @@ def main(argv):
         for v in x.values():
             v.pop('mae_naif', None)
             v.pop('gain_vs_naif_pct', None)
-    ok, raison = adopter(rap['sans_reglage'], rap['avec_reglage'])
+    reglages, adoptes, raison = choisir_reglages(rap, appris)
+    ok = bool(reglages)
     doc = {'genere_le': dt.datetime.now(dt.timezone.utc).isoformat(timespec='seconds'),
-           'regle': ("Réglé sur l'archive (ATP/WTA 2024 → 01/2026), jugé sur les feuilles collectées après l'archive "
-                     "(ATP/WTA/Challenger). Adopté si le biais des aces baisse, si la couverture de la 1re balle se "
-                     "rapproche de 80 % et si aucun écart moyen ne monte de plus de 2 %."),
-           'reglages': reglages, 'adopte': ok, 'raison': raison,
-           'entrainement': {'feuilles_de_joueur': len(obs_f), 'periode': f"{BP.DEBUT_A} → {BP.FIN_A}"},
+           'regle': ("Réglé sur l'archive, jugé sur les feuilles postérieures. Chaque composante est jugée seule ; "
+                     "leur combinaison doit aussi passer. Première balle : couverture plus proche de 80 %. "
+                     "Aces : biais absolu réduit. Jeux : MAE réduite d'au moins 1 %. Dans tous les cas, "
+                     "aucune MAE ne doit augmenter de plus de 2 %."),
+           'variante_testee': 'composantes_ajustees' if ajustees else 'profils_bruts',
+           'reglages': reglages, 'reglages_appris': appris, 'composantes_adoptees': adoptes,
+           'adopte': ok, 'raison': raison,
+           'entrainement': {'feuilles_de_joueur': len(obs_f), 'matchs_jeux': len(obs_jeux),
+                            'mae_jeux_par_delta': mae_jeux, 'periode': f"{BP.DEBUT_A} → {BP.FIN_A}"},
            'jugement': {'matchs': len(choisis), 'simulations_par_match': n_sim,
                         'periode': (f"{choisis[0][0]['date']} → {choisis[-1][0]['date']}" if choisis else None),
                         'versions': rap},
@@ -165,7 +275,7 @@ def main(argv):
     with open(SORTIE, 'w', encoding='utf-8') as f:
         json.dump(doc, f, ensure_ascii=False, indent=1)
     print(f"\n{'ADOPTÉ' if ok else 'NON ADOPTÉ'} — {raison}")
-    for nom in ('sans_reglage', 'avec_reglage'):
+    for nom in variantes:
         print(f"\n{nom} ({len(choisis)} matchs des feuilles collectées)")
         for k, x in rap[nom].items():
             print(f"  {x['libelle']:<28} prévu {x['prevu_moy']:>6} réel {x['reel_moy']:>6} · MAE {x['mae']:>6} · "

@@ -155,6 +155,17 @@ class Profils(unittest.TestCase):
         self.assertGreater(tot, 0.5 * n_attendu)
         self.assertLessEqual(tot, n_attendu + 1e-6)
 
+    def test_prior_second_service_reellement_isole(self):
+        import ajustement as AJ
+        coupe = self.M[-1]['date'] + dt.timedelta(days=1)
+        a = AJ.ajuster(self.M, coupe, lambda x: x, n0=300, tours=2,
+                       n0_par_composante={'w2j': 1200})
+        b = AJ.ajuster(self.M, coupe, lambda x: x, n0=300, tours=2)
+        self.assertNotEqual(a.eff['w2j']['S'], b.eff['w2j']['S'])
+        self.assertEqual(a.eff['f']['S'], b.eff['f']['S'])
+        v = AJ.log_vraisemblance(a, self.M, self.M[0]['date'], coupe, lambda x: x, composante='w2j')
+        self.assertIsNotNone(v)
+
     def test_export_import(self):
         P = PS.construire(self.M)
         jour = self.M[-1]['date']
@@ -215,6 +226,42 @@ class Reglages(unittest.TestCase):
         var, tau = RG.moments_f([(100, 62, 0.62), (100, 70, 0.62), (100, 54, 0.62)])
         self.assertGreater(tau, 0)
         self.assertEqual(RG.moments_f([(100, 62, 0.62)] * 3)[0], 0.0)
+
+    def test_composantes_jugees_separement(self):
+        import reglage_match_simule as RG
+        base = {
+            'aces': {'prevu_moy': 4.3, 'reel_moy': 4.8, 'mae': 2.2},
+            'premiere_pct': {'couverture_80_pct': 66, 'mae': 6.0},
+            'total_jeux': {'couverture_80_pct': 84, 'mae': 5.0},
+            'gagnes_2e_pct': {'mae': 9.0},
+        }
+        tau = {'aces': dict(base['aces']), 'premiere_pct': {'couverture_80_pct': 76, 'mae': 6.05},
+               'total_jeux': dict(base['total_jeux']), 'gagnes_2e_pct': {'mae': 9.0}}
+        aces = {'aces': {'prevu_moy': 5.1, 'reel_moy': 4.8, 'mae': 2.3},
+                'premiere_pct': dict(base['premiere_pct']), 'total_jeux': dict(base['total_jeux']),
+                'gagnes_2e_pct': {'mae': 9.0}}
+        jeux = {'aces': dict(base['aces']), 'premiere_pct': dict(base['premiere_pct']),
+                'total_jeux': {'couverture_80_pct': 84, 'mae': 4.9}, 'gagnes_2e_pct': {'mae': 9.0}}
+        complet = {'aces': {'prevu_moy': 5.1, 'reel_moy': 4.8, 'mae': 2.3},
+                   'premiere_pct': {'couverture_80_pct': 76, 'mae': 6.05},
+                   'total_jeux': {'couverture_80_pct': 84, 'mae': 4.9}, 'gagnes_2e_pct': {'mae': 9.0}}
+        rap = {'sans_reglage': base, 'premiere_seule': tau, 'aces_seuls': aces,
+               'jeux_seuls': jeux, 'complet': complet}
+        actif, noms, _ = RG.choisir_reglages(rap, {'tau_f': .17, 'ace_facteur': 1.1, 'jeux_delta': .015})
+        self.assertEqual(actif, {'tau_f': .17})
+        self.assertEqual(noms, ['premiere_seule'])
+
+    def test_delta_jeux_conserve_l_ancrage_du_vainqueur(self):
+        cA, cB = S.composantes(GROS, RELANCEUR, MOY), S.composantes(RELANCEUR, GROS, MOY)
+        a = S.simuler(cA, cB, .6, 2, 1200, .15, cle='jeux')
+        b = S.simuler(cA, cB, .6, 2, 1200, .15, cle='jeux', reglages={'jeux_delta': .03})
+        self.assertGreater(S.p_service(S.appliquer_reglages(cA, {'jeux_delta': .03})), S.p_service(cA))
+        self.assertLess(abs(b['victoire_A'] - .6), .05)
+        self.assertNotEqual(a['jeux']['moy'], b['jeux']['moy'])
+        import reglage_match_simule as RG
+        delta, scores = RG.apprendre_delta_jeux([(cA, cB, .6, 2, 22)], limite=1)
+        self.assertIn(delta, (-.03, -.015, 0.0, .015, .03))
+        self.assertEqual(len(scores), 5)
 
 
 class SimulationPure(unittest.TestCase):
