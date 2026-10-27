@@ -546,6 +546,12 @@ def construire(racine, maintenant=None):
         # Checkout de test ou ancien paquet : le suivi optionnel ne bloque pas le champion.
         doc['suivi_charting_atp_wta'] = {'schema': CAW.SCHEMA, 'statut': 'modele_non_installe',
                                          'nouveaux_figes': 0, 'activation': False}
+    import styles_ajustes as SA
+    try:
+        doc['suivi_styles_ajustes'] = SA.journaliser(racine, doc)
+    except FileNotFoundError:
+        doc['suivi_styles_ajustes'] = {'schema': SA.SCHEMA, 'statut': 'modele_non_installe',
+                                       'nouveaux_figes': 0, 'activation': False}
     return doc
 
 
