@@ -24,6 +24,7 @@ jouer 5 000 matchs au hasard, il calcule la probabilité de chaque issue.
 | `matchs_similaires.py` | voisinage strictement pré-match, futur exclu, sans cote ni sélection par ROI ; contrôle descriptif de calibration |
 | `styles_joueurs.py` | instantanés service–retour horodatés, challenger d'interaction et apport incrémental après contrôles Elo/surface/documentation |
 | `styles_descriptifs.py` | bilans publics contre six profils service–retour, global/surface, effectifs, IC de Wilson et derniers matchs ; descriptif seulement |
+| `styles_valeur.py` | test hors échantillon de ces bilans comme variables candidates après Elo et service–retour ; aucune activation automatique |
 | `etude_desaccords_marche.py` | étude privée appariée algorithme–marché, veto H14 non activé, recouvrement H13–H14 et audit des doublons de cotes |
 | `recalibrage.py` | régression logistique, contraction hiérarchique et isotone en origine glissante ; direct et rejoué séparés |
 | `dependances_points.py` | tests du point précédent, des tie-breaks, de la fatigue et de l’évolution entre sets sur les séquences ordonnées |
@@ -248,4 +249,27 @@ Ce bloc est fusionné par UID dans `vitrine.py`, après la création des sorties
 modèle. Il ne modifie ni probabilité, ni note, ni scénario, ni journal, ni règle
 gelée. Il ne réutilise ni les catégories de matchup-tennis.fr ni une cote de
 marché. L'artefact intermédiaire `styles_descriptifs.json` est régénéré et ignoré
-par Git ; seule sa fusion dans `algo/donnees.json` est publiée.
+par Git ; seule sa fusion dans `algo/donnees.json` est publiée. Sans heure
+historique fiable, les résultats du même jour ne sont jamais supposés connus.
+
+## Valeur prédictive des bilans de styles (28/10/2026)
+
+`styles_valeur.py` transforme chaque bilan pré-match en logit contracté vers
+50 % avec 20 matchs de prior. Le contrôle conserve Elo général/surface, surface,
+circuit, service–retour pur et documentation. Deux challengers seulement sont
+comparés : bilan global, puis bilan global + surface. Le choix est fait sur 2024,
+puis figé pour la confirmation à partir de 2025 ; les matchs et l'orientation
+sont identiques dans tous les modèles.
+
+Sur 8 000 matchs (2 153 en découverte, 5 847 en confirmation), le candidat
+global + surface est choisi sur découverte. Son gain de confirmation est de
+0,000089 de log loss et 0,000039 de Brier, avec IC95 bootstrap par semaine de
+[-0,000459 ; +0,000641] pour la log loss. L'exactitude passe de 68,00 % à
+67,88 %. Le bilan global seul ne gagne pas non plus de log loss en confirmation.
+Le signal est donc trop faible et trop incertain pour devenir une entrée du
+champion. Aucune variable n'est activée et aucun sous-groupe n'est retenu après
+plusieurs comparaisons. Rejouer :
+
+```bash
+python simulateur/styles_valeur.py /tmp/sackmann . --maximum 8000
+```
