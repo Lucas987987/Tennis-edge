@@ -4,6 +4,7 @@ import unittest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'simulateur'))
 import roi_algo as ROI
+import fiabilite as FI
 import validation_fiabilite as VF
 
 
@@ -32,6 +33,30 @@ class ROIComptable(unittest.TestCase):
     def test_moins_de_30_paris_ne_conclut_pas(self):
         texte = ROI._ligne('R1', {'n': 12, 'gagnes': 8, 'unites': 2., 'roi': .1, 'cote_moy': 1.8, 'ic95': None})
         self.assertIn('rien à conclure', texte)
+
+
+class PerformanceCircuit(unittest.TestCase):
+    def test_challenger_survendu_ne_peut_plus_avoir_une_note_elevee(self):
+        def match(circuit):
+            return {'uid': 'courant-'+circuit, 'circuit': circuit, 'surface': 'Hard',
+                    'matchs_joues': [80, 80], 'style_connu': [True, True],
+                    'stats': {'p_home': .70}, 'simulation': {'p_home': .72},
+                    'combinaison': {'p_home': .71, 'match_simule': {
+                        'profil_connu': [True, True], 'stabilite_score': {'statut': 'stable'}}}}
+        hist_atp = [{'uid': f'a{i}', 'circuit': 'ATP', 'surface': 'Hard', 'p': .85, 'y': 1} for i in range(60)]
+        hist_ch = [{'uid': f'c{i}', 'circuit': 'CH', 'surface': 'Hard', 'p': .85, 'y': 0} for i in range(60)]
+        atp = FI.evaluer(match('ATP'), hist_atp)
+        ch = FI.evaluer(match('CH'), hist_ch)
+        self.assertGreater(atp['note'], ch['note'])
+        self.assertLessEqual(ch['note'], 64)
+        self.assertEqual(ch['categorie'], 'B_incertain')
+        self.assertGreater(ch['performance_circuit']['perte_residuelle'], .05)
+        self.assertLess(ch['composantes']['performance_circuit'], 50)
+
+    def test_circuit_sans_historique_reste_neutre(self):
+        r = FI.performance_circuit('CH', [])
+        self.assertEqual(r['score'], .5)
+        self.assertEqual(r['n'], 0)
 
 
 class ControleNotes(unittest.TestCase):
