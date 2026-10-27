@@ -81,6 +81,16 @@ class HistoriqueTests(unittest.TestCase):
         self.assertIn(('a', 'equilibre', 'global'), a1)
         self.assertIn(('b', 'equilibre', 'global'), a2)
 
+    def test_resultat_du_meme_jour_non_suppose_connu(self):
+        M = [match(i) for i in range(8)]
+        jour = M[-1]['date']
+        acc, _ = SD.calculer(M, {'a': {'circuit': 'ATP', 'surface': 'Hard'}}, jour)
+        # Le septième résultat est disponible ; celui du huitième, joueur le jour de référence, ne l'est pas.
+        self.assertEqual(SD.resume(acc.get(('a', 'equilibre', 'global')))['n'], 1)
+        jour_suivant = jour + dt.timedelta(days=1)
+        acc_apres, _ = SD.calculer(M, {'a': {'circuit': 'ATP', 'surface': 'Hard'}}, jour_suivant)
+        self.assertEqual(SD.resume(acc_apres.get(('a', 'equilibre', 'global')))['n'], 2)
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -131,10 +131,25 @@ def calculer(M, cibles, jour, demi_vie=PS.DEMI_VIE, prior_mult=1.0):
     """
     P = PS.Profils(demi_vie, prior_mult)
     attente, serial, acc = [], 0, {}
+    resultats_veille, jour_courant = [], None
+
+    def enregistrer(m, sg, sp):
+        g, p, surface = m['_g'], m['_p'], m['surface']
+        if g in cibles and sp != 'indetermine':
+            ev = _evenement(m, g, p, m.get('nom_p') or p, True, sp)
+            _ajouter(acc, g, sp, surface, ev, True)
+        if p in cibles and sg != 'indetermine':
+            ev = _evenement(m, p, g, m.get('nom_g') or g, False, sg)
+            _ajouter(acc, p, sg, surface, ev, False)
+
     for original in sorted(M, key=lambda m: (m['date'], m.get('tour', 0), m.get('num', 0))):
         m = original
         if m['date'] > jour:
             break  # aucun résultat postérieur à la référence pré-match
+        if jour_courant != m['date']:
+            for ancien, sg, sp in resultats_veille:
+                enregistrer(ancien, sg, sp)
+            resultats_veille, jour_courant = [], m['date']
         debut = dt.datetime.combine(m['date'], dt.time())
         while attente and attente[0][0] < debut:
             _, _, ancien = heapq.heappop(attente)
@@ -149,14 +164,13 @@ def calculer(M, cibles, jour, demi_vie=PS.DEMI_VIE, prior_mult=1.0):
         sg = classifier(ig, ng, mug)
         sp = classifier(ip, np, mug)
         if m.get('complet') and not m.get('abandon'):
-            if g in cibles and sp != 'indetermine':
-                ev = _evenement(m, g, p, m.get('nom_p') or p, True, sp)
-                _ajouter(acc, g, sp, surface, ev, True)
-            if p in cibles and sg != 'indetermine':
-                ev = _evenement(m, p, g, m.get('nom_g') or g, False, sg)
-                _ajouter(acc, p, sg, surface, ev, False)
+            # Sans heure historique fiable, les résultats du même jour restent indisponibles.
+            resultats_veille.append((m, sg, sp))
         heapq.heappush(attente, (dt.datetime.combine(m['fin'], dt.time()), serial, m))
         serial += 1
+    if jour_courant is not None and jour_courant < jour:
+        for ancien, sg, sp in resultats_veille:
+            enregistrer(ancien, sg, sp)
     reference = dt.datetime.combine(jour, dt.time())
     while attente and attente[0][0] < reference:
         _, _, ancien = heapq.heappop(attente)
@@ -173,7 +187,8 @@ def calculer(M, cibles, jour, demi_vie=PS.DEMI_VIE, prior_mult=1.0):
 def _cibles(racine, maintenant):
     with open(os.path.join(racine, 'simulateur', 'elo_etat.json'), encoding='utf-8') as f:
         etat = E.migrer_etat(json.load(f))
-    venir = PD.matchs_a_venir(racine, maintenant)
+    # matchs_a_venir utilise historiquement des dates UTC naïves.
+    venir = PD.matchs_a_venir(racine, maintenant.replace(tzinfo=None))
     alias = dict(etat.get('alias') or {})
     alias.update(E.unifier({k: v.get('nom', k) for k, v in etat['joueurs'].items()},
                            [n for x in venir for n in (x['home'], x['away'])]))
