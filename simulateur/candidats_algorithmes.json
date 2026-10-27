@@ -57,11 +57,30 @@
       "parametres": {"reference": "résultat moins probabilité Elo pré-match", "demi_vie_jours": 365.0, "prior_matchs_equivalents": 20.0, "surface_separee": true, "ridge": 1.0, "decouverte": "2024", "confirmation_apres": "2026-10-28T00:00:00+00:00"},
       "statut": "diagnostic",
       "activation": false
+    },
+    "pression_v2": {
+      "famille": "résidus de pression avec récence, surface, circuit et force adverse",
+      "implementation": "pression_v2.py, etude_pression_v2.py et modele_pression_v2.json",
+      "parametres": {
+        "reference_matchs_serres": "résultat moins probabilité Elo pré-match",
+        "reference_balles_break": "résultat moins niveau sur les points ordinaires",
+        "demi_vie_jours": 365.0,
+        "priors": {"tiebreak": 10.0, "decisif": 10.0, "proche": 20.0, "bp_service": 30.0, "bp_retour": 30.0},
+        "surface_et_circuit": "contractés vers le résidu global",
+        "ridge": 1.0,
+        "decouverte": "2024",
+        "diagnostic_reutilise": "2025–2026",
+        "confirmation_apres": "2026-10-28T00:00:00+00:00"
+      },
+      "statut": "diagnostic",
+      "resultat_diagnostic": "non_confirmant",
+      "activation": false
     }
   },
   "briques_techniques": {
     "distribution_scores_exacte_v1": {"implementation": "distribution_exacte.py", "change_le_pronostic": false},
-    "connecteurs_contexte_v1": {"implementation": "contexte_optionnel.py", "change_le_pronostic": false}
+    "connecteurs_contexte_v1": {"implementation": "contexte_optionnel.py", "change_le_pronostic": false},
+    "evolution_statistiques_joueurs_v1": {"implementation": "evolution_statistiques.py", "change_le_pronostic": false, "descriptif_seulement": true}
   },
   "securite": "Aucun secret, identifiant privé ou contenu R2 privé n’a été demandé ou consulté.",
   "marche": "Le marché ne doit pas devenir une entrée du modèle indépendant. Les recherches marché/H13–H20 restent séparées ou servent à l’évaluation externe."

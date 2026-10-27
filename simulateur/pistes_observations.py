@@ -16,6 +16,7 @@ import elo as E
 import hierarchie as HI
 import match_simule as MS
 import profils_service as PS
+import pression_v2 as PV2
 import styles_joueurs as ST
 import variables_pre_match as VP
 
@@ -30,10 +31,11 @@ def cle_match(m):
 
 
 def observations(M, choisis, demi_vie=PS.DEMI_VIE, prior_mult=1.0, sigma=.15,
-                 evolutions=False, charting=None):
+                 evolutions=False, charting=None, avec_pression_v2=False):
     P, classement = PS.Profils(demi_vie, prior_mult), E.Elo(**ELO_CONTROLE)
     hierarchie = HI.HierarchieServiceRetour() if evolutions else None
     historique, conditions = VP.HistoriquePreMatch(), CT.ConditionsTournoi()
+    pression_v2 = PV2.HistoriquePressionV2() if avec_pression_v2 else None
     attente, serial, out = [], 0, []
     resultats_veille, jour_courant = [], None
     for m in sorted(M, key=lambda x: (x['date'], x.get('tour', 0), x.get('num', 0))):
@@ -45,6 +47,8 @@ def observations(M, choisis, demi_vie=PS.DEMI_VIE, prior_mult=1.0, sigma=.15,
                                E.part_jeux(ancien['sets']) if ancien.get('complet') else None)
                 historique.ajouter(ancien, p_elo)
                 conditions.ajouter(ancien, attendu)
+                if pression_v2 is not None:
+                    pression_v2.ajouter(ancien, p_elo)
             resultats_veille, jour_courant = [], m['date']
         debut = dt.datetime.combine(m['date'], dt.time())
         while attente and attente[0][0] < debut:
@@ -100,6 +104,8 @@ def observations(M, choisis, demi_vie=PS.DEMI_VIE, prior_mult=1.0, sigma=.15,
                     **detail,
                 })
             row.update(historique.features(m, h, a, main_h, main_a))
+            if pression_v2 is not None:
+                row.update(pression_v2.features(h, a, m['surface'], m['circuit'], m['date']))
             row.update(conditions.features(m, h, a, ih['profil'], ia['profil'], historique))
             repos_h, _ = historique._repos(h, m['date'])
             repos_a, _ = historique._repos(a, m['date'])

@@ -28,6 +28,9 @@ jouer 5 000 matchs au hasard, il calcule la probabilité de chaque issue.
 | `etude_pistes.py` | ablation commune des cinq familles calendrier, tournoi, Elo dynamique, mains/H2H et matchs serrés ; recherche seulement |
 | `pistes_observations.py` | socle point-in-time et orientation alphabétique ; aucun résultat du même jour n’est supposé connu |
 | `variables_pre_match.py` | fatigue, absences, mains, H2H, tie-breaks, sets décisifs et balles de break contractés |
+| `pression_v2.py` | challenger de résidus Elo/points ordinaires avec demi-vie 365 jours et contraction surface/circuit ; jamais actif automatiquement |
+| `etude_pression_v2.py` | comparaison appariée contrôle/V1/V2 ; 2025–2026 reste un diagnostic réutilisé, pas une confirmation nouvelle |
+| `evolution_statistiques.py` | trajectoires descriptives service, retour et pression sur fenêtres de 180 jours, par surface et avec effectifs propres à chaque taux |
 | `conditions_tournoi.py` | conditions résiduelles estimées sur les seules éditions antérieures et contractées vers la surface |
 | `elo_recherche.py` | petite grille Elo dynamique isolée du classement actif |
 | `etude_circuits.py` | comparaison de deux algorithmes ATP/WTA et Challenger/ITF au meilleur algorithme partagé |
@@ -372,3 +375,19 @@ python simulateur/validation_distribution_exacte.py . --simulations 20000
 `contexte_optionnel.py` accepte des horodatages ISO avec fuseau et des mesures physiques datées. Les doublons, dates incohérentes, valeurs négatives et observations futures sont refusés ou exclus. En l’absence de source réelle, rien n’est interpolé : `tourney_date` reste un proxy explicite. Aucune mesure physique n’entre dans le modèle actif.
 
 Aucun secret, identifiant privé ou contenu R2 privé n’a été demandé ou consulté. Le marché ne devient pas une entrée du modèle indépendant ; les recherches marché/H13–H20 restent séparées ou servent à l’évaluation externe.
+
+## Pression V2 et trajectoires des joueurs (28/10/2026)
+
+`pression_v2.py` remplace les bilans bruts cumulés par des résidus : résultat moins probabilité Elo pré-match pour les tie-breaks, sets décisifs et adversaires proches ; performance sur balle de break moins niveau sur les points ordinaires pour le service et le retour. La demi-vie est de 365 jours. Les mesures de surface et de circuit sont contractées vers le résidu global, avec les mêmes priors figés que la V1.
+
+Sur 4 306 matchs de découverte en 2024, la V2 gagne +0,001167 de log loss contre le contrôle, mais perd -0,001698 contre la V1. Sur les 11 694 matchs du diagnostic historique réutilisé 2025–2026, elle gagne seulement +0,000448 contre le contrôle, avec un IC95 [-0,000453 ; +0,001348], et perd -0,001730 contre la V1. Son exactitude est de 68,53 %, identique à la V1 et inférieure au contrôle (68,79 %). **La V2 n’est donc ni confirmée ni activée.** Ce diagnostic ne constitue pas une confirmation prospective et ne prouve aucun gain de vainqueurs ou de ROI.
+
+`evolution_statistiques.py` produit un rapport descriptif indépendant. Il compare les 180 derniers jours aux 180 jours précédents, globalement et par surface, puis fournit une trajectoire par fenêtres glissantes. Les statistiques comprennent première balle, aces, points gagnés derrière les deux services, doubles fautes, retours, balles de break, tie-breaks et sets décisifs. Chaque taux conserve son propre dénominateur ; une comparaison insuffisamment documentée ne produit aucune variation chiffrée. Ces taux bruts ne sont pas ajustés à la force adverse et ne deviennent pas automatiquement des entrées du modèle.
+
+Rejouer :
+
+```bash
+python simulateur/etude_pression_v2.py /tmp/sackmann . --maximum 16000 --bootstrap 2000
+python simulateur/evolution_statistiques.py /tmp/sackmann . --maximum-joueurs 20
+python simulateur/evolution_statistiques.py /tmp/sackmann . --joueurs "Harriet Dart" "Janice Tjen"
+```
