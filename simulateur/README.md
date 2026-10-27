@@ -35,7 +35,13 @@ jouer 5 000 matchs au hasard, il calcule la probabilité de chaque issue.
 | `recalibrage.py` | régression logistique, contraction hiérarchique et isotone en origine glissante ; direct et rejoué séparés |
 | `dependances_points.py` | tests du point précédent, des tie-breaks, de la fatigue et de l’évolution entre sets sur les séquences ordonnées |
 | `gouvernance.py` | périodes disjointes, traçabilité et une seule nouvelle promotion hebdomadaire |
-| `recherche_externe.py` | croisement séparé avec les mouvements de marché et H13–H19, sans réinjection dans le modèle |
+| `gouvernance_candidats.py` | empreintes des challengers figés et confirmation réservée aux futurs pronostics réellement nouveaux |
+| `hierarchie.py` | challenger service–retour à partage partiel et incertitude dynamique, sans séparation des circuits |
+| `distribution_exacte.py` | distribution exacte des scores set par set, forme du jour et tie-breaks, sans remplacer les simulations vidéo |
+| `contexte_optionnel.py` | connecteurs validés pour horodatages et données physiques réelles ; aucune imputation |
+| `etude_evolutions.py` | ablation appariée des challengers hiérarchique, incertitude et petit modèle non linéaire |
+| `etude_charting.py` | valeur Match Charting sur les seuls matchs couverts, avec priors strictement antérieurs |
+| `recherche_externe.py` | croisement séparé avec les mouvements de marché et H13–H20, sans réinjection dans le modèle |
 | `tests/` | invariants probabilistes, ancrage, traces vidéo, identités, surfaces, scores et sorties unifiées |
 | `backtest_match_simule.py` | le test de la feuille simulée sur ATP/WTA 2024 → janvier 2026, avant l'heure (→ `rapport_match_simule.json`) |
 
@@ -335,3 +341,34 @@ python simulateur/etude_circuits.py /tmp/sackmann . --maximum 16000 --bootstrap 
 ```
 
 `rapport_algorithmes_circuits.json` conserve les candidats de découverte, les trois comparaisons — séparation seule, algorithme local contre contrôle partagé et contre meilleur partagé — ainsi que les ventilations annuelles, circuits, surfaces, documentation et défaites du favori.
+
+## Évolutions algorithmiques figées (28/10/2026)
+
+Le manifeste `candidats_algorithmes.json` fige les paramètres et leurs empreintes. La période 2025–2026, déjà utilisée par plusieurs évaluations, est désormais explicitement un **diagnostic réutilisé**, pas une confirmation vierge. Une promotion éventuelle exige au moins 1 000 nouveaux pronostics figés après le 28 octobre 2026, sur huit semaines ISO, appariés au champion et résolus ensuite. Toute modification d’un candidat impose une nouvelle version et remet cette confirmation à zéro.
+
+Sur les mêmes 16 000 matchs, le contrôle conserve une log loss de 0,583017 sur les 11 694 matchs de diagnostic. Les gains sont positifs quand le challenger améliore le contrôle :
+
+| Challenger | Gain de log loss | Gain de Brier | IC95 du gain de log loss | Verdict |
+|---|---:|---:|---:|---|
+| Partage hiérarchique service–retour | -0,001723 | -0,000565 | [-0,002461 ; -0,000936] | dégradation, rejeté |
+| Incertitude dynamique | +0,000017 | +0,000020 | [-0,000080 ; +0,000115] | effet négligeable |
+| Hiérarchie + incertitude | -0,001891 | -0,000663 | [-0,002703 ; -0,001117] | dégradation, rejetée |
+| Petits arbres résiduels | +0,000714 | +0,000218 | [+0,000206 ; +0,001173] | signal robuste mais sous le seuil de 0,001 |
+
+La hiérarchie dégrade notamment les profils de moins de 500 balles et de moins de dix matchs Elo. Le challenger non linéaire passe les contrôles ciblés, mais son gain absolu reste insuffisant. **Aucun n’est activé.** Ces résultats ne démontrent ni une amélioration future du taux de réussite ni une amélioration du ROI.
+
+`distribution_exacte.py` complète le moteur existant par la distribution exacte des scores complets, avec forme du jour et balles de break spécifiques. Douze configurations BO3/BO5 ont été comparées au moteur de victoire : écart maximal de 2,23×10⁻¹⁶ et masses normalisées. Les 20 000 simulations restent utilisées pour la vidéo, les statistiques, le tirage rejouable et le médoid. Cette équivalence mathématique n’est pas présentée comme une amélioration prédictive.
+
+Match Charting est évalué uniquement quand les deux joueurs ont des relevés antérieurs : 5 726 matchs sur 16 000 (35,79 %). Sur les 3 565 matchs couverts du diagnostic, le gain est de +0,000488 de log loss et +0,000242 de Brier, mais l’IC95 de log loss [-0,000782 ; +0,001772] franchit zéro. Le circuit Challenger et le gazon se dégradent ; 2026 est quasiment neutre. La couverture est de 93,06 % ATP, 88,48 % WTA, 28,52 % Challenger et 19,18 % ITF : aucune généralisation automatique aux matchs non couverts et aucune activation.
+
+Rejouer les études et la validation technique :
+
+```bash
+python simulateur/etude_evolutions.py /tmp/sackmann . --maximum 16000 --bootstrap 2000
+python simulateur/etude_charting.py /tmp/sackmann /tmp/mcp . --maximum 16000 --bootstrap 2000
+python simulateur/validation_distribution_exacte.py . --simulations 20000
+```
+
+`contexte_optionnel.py` accepte des horodatages ISO avec fuseau et des mesures physiques datées. Les doublons, dates incohérentes, valeurs négatives et observations futures sont refusés ou exclus. En l’absence de source réelle, rien n’est interpolé : `tourney_date` reste un proxy explicite. Aucune mesure physique n’entre dans le modèle actif.
+
+Aucun secret, identifiant privé ou contenu R2 privé n’a été demandé ou consulté. Le marché ne devient pas une entrée du modèle indépendant ; les recherches marché/H13–H20 restent séparées ou servent à l’évaluation externe.
