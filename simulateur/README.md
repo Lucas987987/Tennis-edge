@@ -25,6 +25,11 @@ jouer 5 000 matchs au hasard, il calcule la probabilité de chaque issue.
 | `styles_joueurs.py` | instantanés service–retour horodatés, challenger d'interaction et apport incrémental après contrôles Elo/surface/documentation |
 | `styles_descriptifs.py` | bilans publics contre six profils service–retour, global/surface, effectifs, IC de Wilson et derniers matchs ; descriptif seulement |
 | `styles_valeur.py` | test hors échantillon de ces bilans comme variables candidates après Elo et service–retour ; aucune activation automatique |
+| `etude_pistes.py` | ablation commune des cinq familles calendrier, tournoi, Elo dynamique, mains/H2H et matchs serrés ; recherche seulement |
+| `pistes_observations.py` | socle point-in-time et orientation alphabétique ; aucun résultat du même jour n’est supposé connu |
+| `variables_pre_match.py` | fatigue, absences, mains, H2H, tie-breaks, sets décisifs et balles de break contractés |
+| `conditions_tournoi.py` | conditions résiduelles estimées sur les seules éditions antérieures et contractées vers la surface |
+| `elo_recherche.py` | petite grille Elo dynamique isolée du classement actif |
 | `etude_desaccords_marche.py` | étude privée appariée algorithme–marché, veto H14 non activé, recouvrement H13–H14 et audit des doublons de cotes |
 | `recalibrage.py` | régression logistique, contraction hiérarchique et isotone en origine glissante ; direct et rejoué séparés |
 | `dependances_points.py` | tests du point précédent, des tie-breaks, de la fatigue et de l’évolution entre sets sur les séquences ordonnées |
@@ -273,3 +278,33 @@ plusieurs comparaisons. Rejouer :
 ```bash
 python simulateur/styles_valeur.py /tmp/sackmann . --maximum 8000
 ```
+
+## Cinq familles de variables pré-match (28/10/2026)
+
+`etude_pistes.py` compare les cinq familles sur **16 000 matchs identiques** : 4 306 en découverte sur 2024 et 11 694 en confirmation de 2025 à juin 2026. Le contrôle contient Elo général/surface, service–retour pur, surface, circuit et documentation. L’orientation alphabétique est indépendante du résultat. Les coefficients sont appris sur 2024 puis figés ; les variantes Elo et les composantes de la combinaison sont choisies sur 2024 seulement. Le marché n’est jamais lu.
+
+Les résultats d’une même date sont versés seulement à la date suivante et les profils service–retour attendent la fin du tournoi. **Limite importante : `tourney_date` est la date de début du tournoi.** Les jours de repos, les fenêtres de 7/14/30 jours et les enchaînements sont donc des proxys prudents, non des durées exactes entre matchs. Les conditions d’un tournoi excluent toujours l’édition courante. Les taux de H2H, mains et matchs serrés sont fortement contractés ; aucune variable n’est interprétée causalement.
+
+| Challenger | Log loss confirmation | Gain de log loss | Gain de Brier | Exactitude | Verdict |
+|---|---:|---:|---:|---:|---|
+| Contrôle | 0,583017 | — | — | 68,79 % | référence |
+| Elo, adaptation surface ×1,25 | 0,582366 | +0,000651 | +0,000270 | 68,86 % | positif, sous le seuil de 0,001 |
+| Calendrier/fatigue/absence | 0,581495 | +0,001523 | +0,000670 | 68,72 % | IC95 du gain [-0,001096 ; +0,003836], non confirmé |
+| Conditions de tournoi | 0,582516 | +0,000502 | +0,000233 | 68,84 % | IC95 [-0,000037 ; +0,001108], non confirmé |
+| Gauchers/droitiers et H2H | 0,582374 | +0,000644 | +0,000104 | 68,68 % | IC95 [-0,000557 ; +0,001794], non confirmé |
+| Matchs serrés/pression | 0,580839 | +0,002178 | +0,000708 | 68,53 % | gain global confirmé, exactitude non améliorée |
+| Combinaison choisie sur 2024 | 0,579143 | +0,003875 | +0,001490 | 68,86 % | gain global confirmé, réserves ciblées |
+
+Les IC sont des bootstraps par semaine ISO avec 2 000 répétitions. Pour « matchs serrés », l’IC95 du gain de log loss est [+0,000770 ; +0,003590]. Le gain est de +0,002845 en 2025 et +0,000714 en 2026. Pour la combinaison, l’IC95 est [+0,000524 ; +0,006840], avec +0,004746 en 2025 et +0,001962 en 2026. Les deux années sont donc positives, mais **2026 ne franchit pas à elle seule le seuil de 0,001 pour la famille matchs serrés**.
+
+Les contrôles ciblés interdisent une lecture triomphale : la combinaison dégrade la log loss WTA de 0,005487 et celle des défaites du favori de 0,007076 ; la famille matchs serrés dégrade aussi la WTA, le BO5 et les défaites du favori. Le Challenger et les profils peu documentés passent les tolérances fixées, mais cela ne compense pas ces réserves. **Aucun challenger n’est activé** : la combinaison peut seulement être soumise à une gouvernance ultérieure, sans promesse de taux de réussite ou de ROI.
+
+Sur la confirmation, les deux mains sont connues dans 54,40 % des matchs, un H2H antérieur existe dans 25,00 %, une édition antérieure du tournoi dans 45,25 %, et la durée des deux derniers matchs dans 88,11 %. Les historiques de tie-breaks, sets décisifs, adversaires proches et balles de break dépassent 92 %. Le rapport détaille la couverture de chaque source et la fréquence non nulle de chaque variable. Un zéro contracté n’est pas confondu avec une donnée manquante.
+
+Rejouer :
+
+```bash
+python simulateur/etude_pistes.py /tmp/sackmann . --maximum 16000 --bootstrap 2000
+```
+
+Les fichiers `elo_recherche.py`, `variables_pre_match.py`, `conditions_tournoi.py`, `pistes_observations.py` et `etude_pistes.py` ne sont importés par aucune composante de production. `rapport_pistes_amelioration.json` conserve toutes les variantes Elo, coefficients de découverte, sous-groupes, contrôles de convergence et verdicts ; `champion_actif_modifie` reste `false`.

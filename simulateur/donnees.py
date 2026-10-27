@@ -110,6 +110,10 @@ def charger(racine, annee_min=2018):
                             and 0 <= v['bps'] <= v['bpf']):
                         det[p] = tuple(v[k] for k in DETAIL)
                 sets, complet = score_sets(r.get('score'))
+                minutes = _int(r.get('minutes'))
+                if minutes is not None and not 0 < minutes <= 600:
+                    minutes = None
+                tournoi_id = str(r.get('tourney_id') or '')
                 out.append({
                     'date': debut, 'fin': fin, 'circuit': c,
                     'surface': SURFACES.get(str(r.get('surface') or '').lower(), 'Hard'),
@@ -121,6 +125,14 @@ def charger(racine, annee_min=2018):
                     'abandon': bool(re.search(r'RET|W/O|DEF|ABD|Walkover', str(r.get('score') or ''), re.I)),
                     'detail': det if len(det) == 2 else None,
                     'tournoi': r.get('tourney_name') or '',
+                    'tournoi_id': tournoi_id,
+                    # L'identifiant sans l'année relie les éditions sans utiliser le nom commercial.
+                    'tournoi_base': re.sub(r'^\d{4}[-_]?', '', tournoi_id),
+                    'edition': debut.year,
+                    # Champs strictement descriptifs du match, connus avant son issue.
+                    'main_g': str(r.get('winner_hand') or 'U').upper() if str(r.get('winner_hand') or '').upper() in ('R', 'L') else 'U',
+                    'main_p': str(r.get('loser_hand') or 'U').upper() if str(r.get('loser_hand') or '').upper() in ('R', 'L') else 'U',
+                    'minutes': minutes,
                     'tour': ORDRE_TOURS.get(str(r.get('round') or '').upper(), 6),
                     'niveau': niveau,
                     'num': _int(r.get('match_num')) or 0,
