@@ -812,11 +812,18 @@ def contexte(H, infos, noms_tournois, maintenant_ts):
     jour0 = (dt.datetime.fromtimestamp(t, dt.timezone.utc).date() - dt.timedelta(days=3)).isoformat()
     lieux = {k: v for k, v in H.lieux.items() if k in actifs or k in (noms_tournois or {})}
     meteo = {k: {j: v for j, v in d.items() if j >= jour0} for k, d in H.meteo.items() if k in lieux}
-    ch = H.charting.exporter(set(joueurs) | set(getattr(H.charting, 'D', {})), dt.datetime.fromtimestamp(t, dt.timezone.utc).date()
-                             + dt.timedelta(days=1)) if hasattr(H.charting, 'exporter') else {}
+    ch_date = dt.datetime.fromtimestamp(t, dt.timezone.utc).date() + dt.timedelta(days=1)
+    ch = H.charting.exporter(set(joueurs) | set(getattr(H.charting, 'D', {})), ch_date) if hasattr(H.charting, 'exporter') else {}
+    ch_doc = {}
+    if hasattr(H.charting, 'documentation'):
+        for j in set(joueurs) | set(getattr(H.charting, 'D', {})):
+            d = H.charting.documentation(j, ch_date)
+            if d.get('matchs'):
+                ch_doc[j] = d
     return {'genere_le': dt.datetime.now(dt.timezone.utc).isoformat(timespec='seconds'), 'instant': t,
             'joueurs': joueurs, 'vitesse': vit, 'h2h': h2h, 'noms_tournois': noms_tournois,
-            'interieur': sorted(H.interieur), 'lieux': lieux, 'meteo': meteo, 'charting': ch}
+            'interieur': sorted(H.interieur), 'lieux': lieux, 'meteo': meteo, 'charting': ch,
+            'charting_documentation': ch_doc}
 
 
 class Contexte:
@@ -851,7 +858,7 @@ class Contexte:
         for k in self.doc.get('interieur') or []:
             self.H.interieur[k] = True
         self.H.lieux, self.H.meteo = self.doc.get('lieux') or {}, self.doc.get('meteo') or {}
-        self.H.charting = CH.ChartingFige(self.doc.get('charting'))
+        self.H.charting = CH.ChartingFige(self.doc.get('charting'), self.doc.get('charting_documentation'))
         for k, v in (self.doc.get('h2h') or {}).items():
             a, b = k.split('|', 1)
             self.H.h2h[(a, b)] = list(v)

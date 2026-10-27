@@ -19,6 +19,8 @@ import re
 import sys
 import unicodedata
 
+import contexte_optionnel as CO
+
 ICI = os.path.dirname(os.path.abspath(__file__))
 RACINE = os.path.abspath(os.path.join(ICI, '..'))
 _sp = importlib.util.spec_from_file_location('tennis_edge_nr_books', os.path.join(RACINE, 'Tennis_Edge_Lab', 'books.py'))
@@ -169,7 +171,8 @@ def charger(racine=RACINE, table_surfaces=None):
     for (jour, _), r in cand.items():
         try:
             d0 = dt.date.fromisoformat(jour)
-            debut = dt.datetime.fromisoformat(str(r['commence_time']).replace('Z', '').split('+')[0])
+            debut_utc = CO.instant(str(r['commence_time']))
+            debut = debut_utc.replace(tzinfo=None)       # UTC naïf conservé pour les anciens consommateurs
         except ValueError:
             continue
         h, a = r['home'], r['away']
@@ -193,7 +196,10 @@ def charger(racine=RACINE, table_surfaces=None):
         surface = surface_de(r.get('tournament'), table_surfaces or {})
         if surface is None:
             continue
-        out.append({'date': d0, 'debut': debut, 'home': h, 'away': a, 'tournoi': r.get('tournament') or '',
+        out.append({'date': d0, 'debut': debut, 'debut_utc': debut_utc.isoformat(),
+                    'horodatage': {'nature': 'debut_planifie', 'source': 'commence_time',
+                                   'fuseau': 'UTC', 'interpole': False, 'fin_utc': None},
+                    'home': h, 'away': a, 'tournoi': r.get('tournament') or '',
                     'surface': surface, 'bo': bo, 'gagnant': g,
                     'sets': sets, 'set1': s1 if s1 in ('home', 'away') else None, 'pin': pin,
                     'grand_chelem': grand_chelem(r.get('tournament'))})

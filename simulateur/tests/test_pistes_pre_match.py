@@ -70,7 +70,9 @@ class VariablesTests(unittest.TestCase):
         x = h.calendrier(m, 'a', 'b')
         # Les deux joueurs ont le même historique : tous les écarts sont nuls.
         descriptifs = {'fatigue_documentation_duree_7j', 'fatigue_duree_derniers_matchs_connue',
-                       'fatigue_historique_deux_joueurs'}
+                       'fatigue_historique_deux_joueurs', 'fatigue_horodatage_deux_joueurs',
+                       'fatigue_duree_168h_reel_documentee', 'fatigue_repos_heures_reel',
+                       'fatigue_matchs_168h_reel', 'fatigue_minutes_168h_reel'}
         for nom, valeur in x.items():
             if nom not in descriptifs:
                 self.assertEqual(valeur, 0, nom)
