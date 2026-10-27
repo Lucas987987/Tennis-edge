@@ -197,10 +197,12 @@ def calibration(points, n_min=20):
     return out
 
 
-def bilan(resultats, debut=DEBUT_BILAN):
+def bilan(resultats, debut=DEBUT_BILAN, seulement=None):
     lignes, points, par_c, par_jour = [], [], {}, {}
     for m in (resultats or {}).get('matchs') or []:
         if m.get('circuit') not in CIRCUITS or str(m.get('debut'))[:10] < debut or not connu(m):
+            continue
+        if seulement and not seulement(m):
             continue
         reel = m.get('reel') or {}
         if reel.get('interrompu') or reel.get('gagnant') not in ('home', 'away'):
@@ -214,7 +216,8 @@ def bilan(resultats, debut=DEBUT_BILAN):
         par_jour.setdefault(jour_paris(m['debut']), []).append((p, y))
         lignes.append({'debut': m['debut'], 'tournoi': m.get('tournoi'), 'circuit': m['circuit'],
                        'home': m['home'], 'away': m['away'], 'p_home': round(p, 3),
-                       'gagnant': reel['gagnant'], 'score': reel.get('score'), 'juste': (p > 0.5) == (y == 1)})
+                       'gagnant': reel['gagnant'], 'score': reel.get('score'), 'juste': (p > 0.5) == (y == 1),
+                       'fiabilite': m.get('fiabilite')})
     lignes.sort(key=lambda x: x['debut'], reverse=True)
     cumul, courbe = [], []
     for j in sorted(par_jour):
@@ -245,6 +248,33 @@ def rejoue(racine):
     return {'du': min(jours), 'au': max(jours), 'global': _mesures(points), 'calibration': calibration(points)}
 
 
+def validation_fiabilite(resultats):
+    """Cohorte strictement prospective de la fiabilité circuit.
+
+    Une note recalculée sur un match déjà journalisé ne le fait pas entrer dans
+    cette cohorte : la date du premier enregistrement doit elle aussi suivre
+    l'activation. Les probabilités et le bilan historique restent inchangés.
+    """
+    sys.path.insert(0, ICI)
+    from fiabilite import ACTIVE_LE, VERSION_FIABILITE
+
+    def eligible(m):
+        f = m.get('fiabilite') or {}
+        return (f.get('version_fiabilite') == VERSION_FIABILITE
+                and str(m.get('pronostique_le') or '')[:10] >= ACTIVE_LE)
+
+    out = bilan(resultats, debut=ACTIVE_LE, seulement=eligible)
+    out.update({'version': VERSION_FIABILITE, 'depuis': ACTIVE_LE,
+                'regle': "Premiers pronostics enregistrés après activation, portant la version circuit_v1 ; aucun ancien match recalculé."})
+    return out
+
+
+def qualite_donnees(racine):
+    from qualite_donnees import auditer
+    doc = _lire(os.path.join(racine, 'simulateur', 'profils_service.json'), {}) or {}
+    return auditer(doc)
+
+
 def construire(racine, maintenant=None):
     maintenant = maintenant or dt.datetime.now(dt.timezone.utc)
     pron = _lire(os.path.join(racine, 'Tennis_Edge_Lab', 'live', 'pronostics.json'), {}) or {}
@@ -258,10 +288,12 @@ def construire(racine, maintenant=None):
     a_venir = sorted((m for m in matchs if _utc(m['debut']) > maintenant - dt.timedelta(hours=3)),
                      key=lambda m: (m['debut'], m['uid']))
     lignes = [ligne_match(m, complet=True) for m in a_venir]
+    resultats = _lire(os.path.join(racine, 'Tennis_Edge_Lab', 'live', 'pronostics_resultats.json'), {})
     return {'genere_le': maintenant.isoformat(timespec='seconds'), 'pronostics_du': pron.get('genere_le'),
             'simulations': pron.get('simulations') or 20000, 'match_du_jour': mdj,
-            'matchs': lignes, 'bilan': bilan(_lire(os.path.join(racine, 'Tennis_Edge_Lab', 'live',
-                                                                   'pronostics_resultats.json'), {})),
+            'matchs': lignes, 'bilan': bilan(resultats),
+            'validation_fiabilite': validation_fiabilite(resultats),
+            'qualite_donnees': qualite_donnees(racine),
             'rejoue': rejoue(racine)}
 
 
