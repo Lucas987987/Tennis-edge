@@ -98,6 +98,15 @@ def valider(doc, simulations_attendues=20000):
             scenario = sim.get('scenario') or {}
             if not scores or scenario.get('selection') != 'representatif':
                 raise ValueError('le scénario représentatif est absent')
+            distribution = m.get('distribution_scores') or []
+            if m.get('scores_source') != 'exact' or not distribution:
+                raise ValueError('la distribution exacte des scores est absente')
+            if abs(sum(float(r['probabilite']) for r in distribution) - 1) > 1e-8:
+                raise ValueError('la distribution exacte publiée ne somme pas à 1')
+            premier = distribution[0]
+            texte_exact = ' '.join(f'{a}-{b}' for a, b in premier['score'])
+            if texte_exact != scores[0][0]:
+                raise ValueError('le premier score publié ne suit pas la distribution exacte')
             index = scenario.get('simulation_index')
             if not isinstance(index, int) or isinstance(index, bool) or not 0 <= index < n:
                 raise ValueError('simulation_index hors des tirages réalisés')
@@ -114,8 +123,9 @@ def valider(doc, simulations_attendues=20000):
             if stabilite is not None:
                 if stabilite.get('statut') not in ('stable', 'fragile', 'instable', 'non_controle'):
                     raise ValueError('statut de stabilité du score inconnu')
-                if stabilite.get('score_reference') != scores[0][0]:
-                    raise ValueError('la stabilité ne contrôle pas le score modal publié')
+                scores_simules = m.get('scores_simules') or []
+                if not scores_simules or stabilite.get('score_reference') != scores_simules[0][0]:
+                    raise ValueError('la stabilité ne contrôle pas le score modal des simulations')
                 if stabilite.get('n_par_bloc') != n:
                     raise ValueError('blocs de stabilité différents du nombre de simulations publié')
         except (TypeError, ValueError) as e:

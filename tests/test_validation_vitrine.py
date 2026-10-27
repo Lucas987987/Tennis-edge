@@ -19,7 +19,10 @@ def document_valide():
     scenario.update({'selection': 'representatif', 'vainqueur': 0 if gagnant == 0 else 1})
     return {'simulations': 20000, 'matchs': [{
         'uid': 'test', 'p_home': .62 if gagnant == 0 else .38,
-        'simulation_disponible': True, 'scores_probables': [[score, .03]],
+        'simulation_disponible': True, 'scores_probables': [[score, .97]], 'scores_source': 'exact',
+        'distribution_scores': [{'score': [list(x) for x in sets], 'vainqueur': scenario['vainqueur'], 'probabilite': .97},
+                                {'score': [[0, 6], [0, 6]], 'vainqueur': 1, 'probabilite': .03}],
+        'scores_simules': [[score, .03]],
         'simulation': {'n': 20000, 'version': 'simulation', 'sets_gagnants': 2,
                        'tb_final': 7, 'scenario': scenario},
     }]}
@@ -35,7 +38,8 @@ class ValidationVitrine(unittest.TestCase):
 
     def test_scenario_representatif_peut_etre_different_du_score_modal(self):
         doc = document_valide()
-        doc['matchs'][0]['scores_probables'].insert(0, ['0-6 0-6', .04])
+        doc['matchs'][0]['scores_probables'][0][0] = '0-6 0-6'
+        doc['matchs'][0]['distribution_scores'][0]['score'] = [[0, 6], [0, 6]]
         self.assertTrue(VV.valider(doc))
 
     def test_scenario_representatif_suit_le_favori_de_la_variante(self):
@@ -89,6 +93,7 @@ class ValidationVitrine(unittest.TestCase):
         doc = document_valide()
         doc['matchs'][0]['simulation']['scenario']['score'] = '6-0 6-0'
         doc['matchs'][0]['scores_probables'][0][0] = '6-0 6-0'
+        doc['matchs'][0]['distribution_scores'][0]['score'] = [[6, 0], [6, 0]]
         with self.assertRaisesRegex(ValueError, 'trace='):
             VV.valider(doc)
 
