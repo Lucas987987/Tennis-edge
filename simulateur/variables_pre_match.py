@@ -10,6 +10,8 @@ ne produit aucune probabilité et ne modifie aucun réglage actif.
 import datetime as dt
 import math
 
+import contexte_optionnel as CO
+
 PRIOR_MAIN = 20.0
 PRIOR_H2H = 5.0
 DEMI_VIE_H2H = 730.0
@@ -51,6 +53,17 @@ class HistoriquePreMatch:
         self.h2h = {}
         self.pression = {}
 
+    @staticmethod
+    def _instant(m):
+        """Début réel uniquement s'il porte un fuseau ; jamais de midi inventé."""
+        for nom in ('debut_utc', 'debut'):
+            if m.get(nom):
+                try:
+                    return CO.instant(m[nom])
+                except (TypeError, ValueError):
+                    return None
+        return None
+
     # -------------------------------------------------------------- lectures
     def _repos(self, j, jour):
         lignes = self.matchs.get(j) or []
@@ -88,7 +101,7 @@ class HistoriquePreMatch:
         tournoi = m.get('tournoi_base') or m.get('tournoi') or ''
         enchaine_h = bool(lh and 0 < rh <= 7 and lh[3] and lh[3] != tournoi)
         enchaine_a = bool(la and 0 < ra <= 7 and la[3] and la[3] != tournoi)
-        return {
+        out = {
             'fatigue_repos_log': math.log1p(min(rh, 90)) - math.log1p(min(ra, 90)),
             'fatigue_matchs_7j': float(h7['n'] - a7['n']),
             'fatigue_matchs_14j': float(h14['n'] - a14['n']),
@@ -106,6 +119,39 @@ class HistoriquePreMatch:
             'fatigue_documentation_duree_7j': min(h7['minutes_n'], a7['minutes_n']),
             'fatigue_duree_derniers_matchs_connue': bool(lh and la and lh[1] is not None and la[1] is not None),
             'fatigue_historique_deux_joueurs': bool(lh and la),
+        }
+        out.update(self._calendrier_horodate(m, h, a))
+        return out
+
+    def _calendrier_horodate(self, m, h, a):
+        """Variables exactes additionnelles, jamais substituées aux proxys historiques.
+
+        Un match sans heure réelle n'entre pas dans ces fenêtres. Il n'est ni placé
+        à midi ni interpolé : la documentation reste fausse et les écarts sont None.
+        """
+        instant = self._instant(m)
+        vide = {'fatigue_repos_heures_reel': None, 'fatigue_matchs_168h_reel': None,
+                'fatigue_minutes_168h_reel': None, 'fatigue_horodatage_deux_joueurs': False,
+                'fatigue_duree_168h_reel_documentee': False}
+        if instant is None:
+            return vide
+        repos, matchs, minutes = {}, {}, {}
+        for j in (h, a):
+            lignes = [x for x in self.matchs.get(j) or []
+                      if len(x) > 7 and x[7] is not None and x[7] < instant]
+            if not lignes:
+                return vide
+            repos[j] = (instant - lignes[-1][7]).total_seconds() / 3600.0
+            fenetre = [x for x in lignes if instant - dt.timedelta(hours=168) < x[7] < instant]
+            matchs[j] = len(fenetre)
+            minutes[j] = (sum(x[1] for x in fenetre), all(x[1] is not None for x in fenetre))
+        duree_documentee = minutes[h][1] and minutes[a][1]
+        return {
+            'fatigue_repos_heures_reel': repos[h] - repos[a],
+            'fatigue_matchs_168h_reel': float(matchs[h] - matchs[a]),
+            'fatigue_minutes_168h_reel': (minutes[h][0] - minutes[a][0]) if duree_documentee else None,
+            'fatigue_horodatage_deux_joueurs': True,
+            'fatigue_duree_168h_reel_documentee': duree_documentee,
         }
 
     def _contre_main(self, j, main_adverse):
@@ -198,10 +244,11 @@ class HistoriquePreMatch:
         """Ajoute un match terminé ; p_gagnant est la probabilité Elo d'avant match."""
         g, p = m['gagnant'], m['perdant']
         jeux = _jeux(m)
+        debut_reel = self._instant(m)
         for j in (g, p):
             self.matchs.setdefault(j, []).append((m['date'], m.get('minutes'), m.get('bo') or 3,
                                                   m.get('tournoi_base') or m.get('tournoi') or '',
-                                                  m['surface'], m['circuit'], jeux))
+                                                  m['surface'], m['circuit'], jeux, debut_reel))
         if not m.get('complet') or m.get('abandon'):
             return
         cle = tuple(sorted((g, p)))

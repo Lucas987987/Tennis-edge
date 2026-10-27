@@ -151,15 +151,23 @@ class Charting:
 
 
 class ChartingFige:
-    """Profils déjà calculés (contexte du jour) : même interface."""
+    """Profils et documentation déjà calculés, sans relevé postérieur au gel."""
 
-    def __init__(self, d):
+    def __init__(self, d, documentation=None):
         self.d = d or {}
+        self.doc = documentation or {}
 
     def profil(self, j, date=None):
         return tuple(self.d.get(j) or (0.0, 0.0, 0.0))
 
     def documentation(self, j, date=None):
+        if j in self.doc:
+            return dict(self.doc[j])
+        if j in self.d:
+            # Ancien contexte : la présence du profil atteste une couverture, sans
+            # inventer son nombre de matchs ou de points. Les nouveaux exports ont self.doc.
+            return {'matchs': None, 'couvert': True, 'comptage': 'presence_du_profil_seulement',
+                    'points_service': 0, 'points_retour': 0, 'points_echanges': 0}
         return {'matchs': 0, 'points_service': 0, 'points_retour': 0, 'points_echanges': 0}
 
 
