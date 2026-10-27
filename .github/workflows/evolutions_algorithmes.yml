@@ -42,6 +42,8 @@ jobs:
         run: python3 simulateur/etude_evolutions.py /tmp/sackmann . --maximum "${{ inputs.maximum }}" --bootstrap "${{ inputs.bootstrap }}"
       - name: Match Charting avec contrôle de couverture
         run: python3 simulateur/etude_charting.py /tmp/sackmann /tmp/mcp . --maximum "${{ inputs.maximum }}" --bootstrap "${{ inputs.bootstrap }}"
+      - name: Styles adverses ajustés à l’Elo pré-match
+        run: python3 simulateur/etude_styles_ajustes.py /tmp/sackmann . --maximum 8000 --bootstrap "${{ inputs.bootstrap }}"
       - name: Validation du moteur exact des scores
         run: python3 simulateur/validation_distribution_exacte.py . --simulations 20000
       - name: Rapports de diagnostic, sans activation
@@ -51,5 +53,6 @@ jobs:
           path: |
             simulateur/rapport_evolutions_algorithmes.json
             simulateur/rapport_charting_couverture.json
+            simulateur/rapport_styles_ajustes.json
             simulateur/rapport_distribution_exacte.json
           if-no-files-found: error

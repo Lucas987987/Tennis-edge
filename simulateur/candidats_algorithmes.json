@@ -50,6 +50,13 @@
       "parametres": {"circuits": ["ATP", "WTA"], "deux_joueurs_couverts_avant_match": true, "prior_service": 300.0, "prior_retour": 300.0, "prior_echanges": 600.0, "ridge": 1.0, "decouverte": "2024", "confirmation_apres": "2026-10-28T00:00:00+00:00"},
       "statut": "diagnostic",
       "activation": false
+    },
+    "styles_adverses_ajustes_v1": {
+      "famille": "résidus de victoire contre les styles après correction Elo pré-match",
+      "implementation": "styles_ajustes.py, etude_styles_ajustes.py et modele_styles_ajustes.json",
+      "parametres": {"reference": "résultat moins probabilité Elo pré-match", "demi_vie_jours": 365.0, "prior_matchs_equivalents": 20.0, "surface_separee": true, "ridge": 1.0, "decouverte": "2024", "confirmation_apres": "2026-10-28T00:00:00+00:00"},
+      "statut": "diagnostic",
+      "activation": false
     }
   },
   "briques_techniques": {

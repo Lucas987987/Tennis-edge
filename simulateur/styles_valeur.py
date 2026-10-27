@@ -25,6 +25,7 @@ import elo as E  # noqa: E402
 import match_simule as MS  # noqa: E402
 import profils_robustes as PR  # noqa: E402
 import profils_service as PS  # noqa: E402
+import styles_ajustes as SA  # noqa: E402
 import styles_descriptifs as SD  # noqa: E402
 import styles_joueurs as ST  # noqa: E402
 
@@ -79,12 +80,15 @@ def observations(M, choisis, demi_vie=PS.DEMI_VIE, prior_mult=1.0, sigma=.15):
     """
     P, elo = PS.Profils(demi_vie, prior_mult), E.Elo()
     attente, serial, acc, out = [], 0, {}, []
-    resultats_veille, jour_courant = [], None
+    acc_ajuste = SA.Accumulateur()
+    resultats_veille, residus_veille, jour_courant = [], [], None
     for m in sorted(M, key=lambda x: (x['date'], x.get('tour', 0), x.get('num', 0))):
         if jour_courant != m['date']:
             for ancien in resultats_veille:
                 _ajouter_resultat(acc, *ancien)
-            resultats_veille, jour_courant = [], m['date']
+            for ancien in residus_veille:
+                acc_ajuste.ajouter(*ancien)
+            resultats_veille, residus_veille, jour_courant = [], [], m['date']
         debut = dt.datetime.combine(m['date'], dt.time())
         while attente and attente[0][0] < debut:
             _, _, ancien = heapq.heappop(attente)
@@ -93,6 +97,7 @@ def observations(M, choisis, demi_vie=PS.DEMI_VIE, prior_mult=1.0, sigma=.15):
         if m['circuit'] in ('CH', 'ITF'):
             elo.presenter(gagnant, 1200.0)
             elo.presenter(perdant, 1200.0)
+        p_elo_gagnant = elo.proba(gagnant, perdant, m['surface'])
         h, a = sorted((gagnant, perdant))
         ih = ST.instantane(P, h, m['circuit'], m['surface'], m['date'])
         ia = ST.instantane(P, a, m['circuit'], m['surface'], m['date'])
@@ -113,11 +118,14 @@ def observations(M, choisis, demi_vie=PS.DEMI_VIE, prior_mult=1.0, sigma=.15):
                 'paire_styles': '|'.join(sorted((style_h, style_a))),
             }
             row.update(_features(acc, h, a, style_h, style_a, m['surface']))
+            row.update(acc_ajuste.variables(h, a, style_h, style_a, m['surface'], m['date']))
             out.append(row)
         if m.get('complet') and not m.get('abandon'):
             # Ordre attendu : gagnant, perdant, style du gagnant, style du perdant, surface.
             resultats_veille.append((gagnant, perdant, style_h if h == gagnant else style_a,
                                      style_a if h == gagnant else style_h, m['surface']))
+            residus_veille.append((gagnant, perdant, style_h if h == gagnant else style_a,
+                                   style_a if h == gagnant else style_h, m['surface'], m['date'], p_elo_gagnant))
         heapq.heappush(attente, (dt.datetime.combine(m['fin'], dt.time()), serial, m))
         serial += 1
         elo.maj(gagnant, perdant, m['surface'], m.get('niveau') == 'G',

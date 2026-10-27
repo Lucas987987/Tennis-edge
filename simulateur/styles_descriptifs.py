@@ -29,6 +29,7 @@ import feuilles as FE  # noqa: E402
 import nos_resultats as NR  # noqa: E402
 import profils_service as PS  # noqa: E402
 import pronostics_du_jour as PD  # noqa: E402
+import styles_ajustes as SA  # noqa: E402
 
 SORTIE = os.path.join('simulateur', 'styles_descriptifs.json')
 MIN_BALLES_STYLE = 500.0
@@ -122,16 +123,17 @@ def _ajouter(acc, joueur, style_adverse, surface, evenement, victoire):
         ligne['derniers'].append(evenement)
 
 
-def calculer(M, cibles, jour, demi_vie=PS.DEMI_VIE, prior_mult=1.0):
+def calculer(M, cibles, jour, demi_vie=PS.DEMI_VIE, prior_mult=1.0, avec_ajustes=False):
     """Calcule bilans et styles courants pour {clé joueur: {circuit, surface}}.
 
     `jour` est la date de référence pré-match. Les matchs incomplets et abandons
     sont exclus. Le résultat courant n'est jamais utilisé pour classifier les
     deux joueurs avant ce même match.
     """
-    P = PS.Profils(demi_vie, prior_mult)
+    P, elo = PS.Profils(demi_vie, prior_mult), E.Elo()
     attente, serial, acc = [], 0, {}
-    resultats_veille, jour_courant = [], None
+    acc_ajuste = SA.Accumulateur()
+    resultats_veille, residus_veille, jour_courant = [], [], None
 
     def enregistrer(m, sg, sp):
         g, p, surface = m['_g'], m['_p'], m['surface']
@@ -149,7 +151,9 @@ def calculer(M, cibles, jour, demi_vie=PS.DEMI_VIE, prior_mult=1.0):
         if jour_courant != m['date']:
             for ancien, sg, sp in resultats_veille:
                 enregistrer(ancien, sg, sp)
-            resultats_veille, jour_courant = [], m['date']
+            for ancien in residus_veille:
+                acc_ajuste.ajouter(*ancien)
+            resultats_veille, residus_veille, jour_courant = [], [], m['date']
         debut = dt.datetime.combine(m['date'], dt.time())
         while attente and attente[0][0] < debut:
             _, _, ancien = heapq.heappop(attente)
@@ -158,6 +162,10 @@ def calculer(M, cibles, jour, demi_vie=PS.DEMI_VIE, prior_mult=1.0):
         if not g or not p or g == p:
             continue
         circuit, surface = m['circuit'], m['surface']
+        if circuit in ('CH', 'ITF'):
+            elo.presenter(g, 1200.0)
+            elo.presenter(p, 1200.0)
+        p_elo_gagnant = elo.proba(g, p, surface)
         ig, ng = P.profil(g, circuit, surface, m['date'])
         ip, np = P.profil(p, circuit, surface, m['date'])
         mug = P.moyenne(circuit, surface)
@@ -166,11 +174,15 @@ def calculer(M, cibles, jour, demi_vie=PS.DEMI_VIE, prior_mult=1.0):
         if m.get('complet') and not m.get('abandon'):
             # Sans heure historique fiable, les résultats du même jour restent indisponibles.
             resultats_veille.append((m, sg, sp))
+            residus_veille.append((g, p, sg, sp, surface, m['date'], p_elo_gagnant))
         heapq.heappush(attente, (dt.datetime.combine(m['fin'], dt.time()), serial, m))
         serial += 1
+        elo.maj(g, p, surface, m.get('niveau') == 'G', E.part_jeux(m['sets']) if m.get('complet') else None)
     if jour_courant is not None and jour_courant < jour:
         for ancien, sg, sp in resultats_veille:
             enregistrer(ancien, sg, sp)
+        for ancien in residus_veille:
+            acc_ajuste.ajouter(*ancien)
     reference = dt.datetime.combine(jour, dt.time())
     while attente and attente[0][0] < reference:
         _, _, ancien = heapq.heappop(attente)
@@ -181,7 +193,7 @@ def calculer(M, cibles, jour, demi_vie=PS.DEMI_VIE, prior_mult=1.0):
         profil, n = P.profil(joueur, circuit, surface, jour)
         courants[joueur] = {'style': classifier(profil, n, P.moyenne(circuit, surface)),
                             'balles_effectives': round(n, 1)}
-    return acc, courants
+    return (acc, courants, acc_ajuste) if avec_ajustes else (acc, courants)
 
 
 def _cibles(racine, maintenant):
@@ -237,21 +249,28 @@ def construire(racine, archive, maintenant=None):
         n = dict(m)
         n['_g'], n['_p'] = cle_c(m.get('nom_g')), cle_c(m.get('nom_p'))
         tout.append(n)
-    acc, courants = calculer(tout, cibles, maintenant.date())
+    acc, courants, acc_ajuste = calculer(tout, cibles, maintenant.date(), avec_ajustes=True)
     out = {}
     for x in matchs:
         h, a, s = x['h'], x['a'], x['surface']
         if h not in courants or a not in courants:
             continue
+        ajustes = acc_ajuste.variables(h, a, courants[h]['style'], courants[a]['style'], s, maintenant.date())
+        ajustes.update({'challenger_seulement': True, 'schema': SA.SCHEMA,
+                        'styles': [courants[h]['style'], courants[a]['style']],
+                        'reference': 'résultat moins probabilité Elo pré-match ; demi-vie 365 j ; prior 20'})
         out[x['uid']] = {
             'descriptif_seulement': True,
             'joueurs': [_bloc(h, x['home'], courants[h], courants[a], s, acc),
-                        _bloc(a, x['away'], courants[a], courants[h], s, acc)]}
+                        _bloc(a, x['away'], courants[a], courants[h], s, acc)],
+            'styles_ajustes': ajustes}
     return {'schema': 'styles_descriptifs_v1', 'genere_le': maintenant.isoformat(timespec='seconds'),
             'archive_jusqu_au': fin_sack.isoformat(), 'feuilles_recentes': len(F),
             'minimum_balles_style': MIN_BALLES_STYLE,
+            'styles_ajustes': {'schema': SA.SCHEMA, 'demi_vie_jours': SA.DEMI_VIE_J,
+                               'prior_matchs_equivalents': SA.PRIOR_MATCHS, 'activation': False},
             'regle': ('Style service–retour interne figé avant chaque match ; résultats ajoutés ensuite. '
-                      'Descriptif seulement : aucune entrée du modèle de probabilité.'),
+                      'Bilans bruts descriptifs ; résidus ajustés réservés au challenger non actif.'),
             'seuils': {'service': SEUIL_SERVICE, 'ace': SEUIL_ACE, 'retour': SEUIL_RETOUR,
                        'contre_service': SEUIL_CONTRE_SERVICE, 'contre_retour': SEUIL_CONTRE_RETOUR},
             'matchs': out}
