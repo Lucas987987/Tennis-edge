@@ -145,6 +145,19 @@ svg.curve{width:100%;height:auto;display:block}
 .calib th:first-child,.calib td:first-child{text-align:left}
 .calib thead th{border-top:0;color:var(--dim);font-weight:500;font-size:.9rem}
 .calib td b{color:var(--ball)}
+.suivi{padding:18px}
+.suivi .statut{display:flex;align-items:baseline;justify-content:space-between;gap:16px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:14px}
+.suivi .statut strong{font-family:var(--cond);font-size:2rem;font-weight:600;color:var(--ball);font-variant-numeric:tabular-nums}
+.suivi .statut span{color:var(--dim)}
+.suivi-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:14px}
+.suivi-circuit{padding:10px 0;border-top:1px solid var(--line)}
+.suivi-circuit b{display:block;font-weight:600}.suivi-circuit span{font-family:var(--cond);font-size:1.35rem;font-variant-numeric:tabular-nums}.suivi-circuit small{display:block;color:var(--dim)}
+.suivi .note{margin:14px 0 0;color:var(--dim);font-size:.88rem;max-width:72ch}
+.fiab-detail{margin-top:10px;border-top:1px solid var(--line);padding-top:8px;font-size:.86rem;color:var(--dim)}
+.fiab-detail summary{cursor:pointer;min-height:44px;display:flex;align-items:center;font-weight:600;color:var(--ink)}
+.fiab-detail dl{display:grid;grid-template-columns:1fr auto;gap:6px 12px;margin:6px 0}.fiab-detail dd{margin:0;text-align:right;font-variant-numeric:tabular-nums;color:var(--ink)}
+.qualite{padding:18px}.qualite-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.qualite-grid b{display:block;font-family:var(--cond);font-size:1.6rem;color:var(--ball);font-variant-numeric:tabular-nums}.qualite-grid span{color:var(--dim);font-size:.88rem}.qualite p{color:var(--dim);font-size:.88rem;max-width:72ch;margin:14px 0 0;overflow-wrap:anywhere}
+@media(max-width:520px){.suivi-grid,.qualite-grid{grid-template-columns:1fr}.suivi-circuit{display:grid;grid-template-columns:1fr auto;align-items:baseline}.suivi-circuit small{grid-column:1/-1}}
 .plus{padding:18px}
 .plus ul{margin:10px 0 0;padding-left:1.1em}
 .plus li{margin:4px 0}
@@ -329,6 +342,18 @@ body.carte #video{display:block;width:1080px;height:1350px}
     <div class="panel" style="margin-top:12px"><ul class="res" id="bilan-res"></ul><button class="more" id="bilan-more" hidden></button></div>
   </section>
 
+  <section aria-labelledby="suivi-h">
+    <h2 id="suivi-h" data-t="suivi_titre"></h2>
+    <p class="sub" id="suivi-sous"></p>
+    <div class="panel suivi" id="suivi-fiabilite"></div>
+  </section>
+
+  <section aria-labelledby="qualite-h">
+    <h2 id="qualite-h" data-t="qualite_titre"></h2>
+    <p class="sub" data-t="qualite_sous"></p>
+    <div class="panel qualite" id="qualite-donnees"></div>
+  </section>
+
   <section aria-labelledby="calib-h">
     <h2 id="calib-h" data-t="calib_titre"></h2>
     <p class="sub" data-t="calib_sous"></p>
@@ -388,6 +413,15 @@ const T = {
   matchs_juges:'Matchs jugés', vainqueurs:'Vainqueurs trouvés', brier:'Score de Brier', brier_aide:'0,25 = pile ou face ; plus bas = mieux',
   par_circuit:'Par circuit', courbe_aria:'Taux de vainqueurs trouvés, cumulé jour après jour',
   bilan_vide:'Le bilan se remplit dès les premiers résultats.', voir_plus:n=>`Voir ${n} résultats de plus`,
+  suivi_titre:'Nouvelle fiabilité : suivi prospectif',
+  suivi_sous:d=>`Depuis le ${dateLong(d)}, les matchs nouvellement enregistrés avec la correction par circuit sont suivis séparément. Aucun ancien pronostic n’est recalculé après coup.`,
+  suivi_attente:'En attente des premiers résultats', suivi_zero:'0 match jugé : le nouveau taux de réussite n’est pas encore mesurable.',
+  suivi_taux:'Vainqueurs trouvés', suivi_note:'La note de fiabilité mesure la robustesse de l’estimation ; elle ne change ni la probabilité de victoire ni le favori. Ce suivi ne constitue donc pas une nouvelle variante du modèle de vainqueur.',
+  fiab_detail:'Pourquoi cette note ?', fiab_circuit_n:'Matchs antérieurs sur ce circuit', fiab_circuit_reel:'Vainqueurs trouvés sur ce circuit', fiab_circuit_attendu:'Vainqueurs attendus selon les probabilités', fiab_residuel:'Perte résiduelle (plus bas = mieux)', fiab_plafond:'Plafond lié à la contre-performance du circuit', fiab_ancienne:'Cette note date d’avant le suivi circuit_v1 ; elle reste affichée telle qu’elle a été enregistrée.',
+  qualite_titre:'Données de service et de retour', qualite_sous:'Audit du fichier de profils utilisé par la simulation. Les balles effectives tiennent compte de la pondération temporelle.',
+  qualite_profils:'Profils joueurs', qualite_balles:'Médiane de balles de service effectives', qualite_500:'Profils avec au moins 500 balles effectives', qualite_source:q=>`Sources : ${q.source||'non documentées'}. Archive jusqu’au ${q.archive_jusqu_au?dateLong(q.archive_jusqu_au):'non précisé'} ; profils exportés au ${q.jour?dateLong(q.jour):'non précisé'}.`,
+  qualite_anomalies:n=>n?`${fmt(n)} contrôle(s) de cohérence à examiner.`:'Aucune anomalie détectée dans les contrôles de cohérence des sommes agrégées.',
+  qualite_limite:'Cet audit mesure la couverture et la cohérence interne, pas l’exactitude absolue. Il ne permet pas d’affirmer que cette donnée est supérieure à celle d’un autre fournisseur sans comparaison sur les mêmes matchs.',
   calib_titre:'Calibration : annoncé contre réel',
   calib_sous:"Quand l'algo annonce 70 %, le joueur doit gagner environ 7 fois sur 10. Chaque match compte des deux côtés.",
   annonce:'Annoncé', reel:'Réel', matchs:'Matchs', tranche:'Tranche',
@@ -441,6 +475,15 @@ const T = {
   matchs_juges:'Matches judged', vainqueurs:'Winners called', brier:'Brier score', brier_aide:'0.25 = coin flip; lower is better',
   par_circuit:'By tour', courbe_aria:'Share of winners called, cumulative day by day',
   bilan_vide:'The record fills up with the first results.', voir_plus:n=>`Show ${n} more results`,
+  suivi_titre:'New reliability: prospective tracking',
+  suivi_sous:d=>`Since ${dateLong(d)}, newly recorded matches using the circuit correction are tracked separately. No past prediction is recalculated after the fact.`,
+  suivi_attente:'Waiting for the first results', suivi_zero:'0 matches judged: the new success rate cannot be measured yet.',
+  suivi_taux:'Winners called', suivi_note:'Reliability measures how robust the estimate is; it changes neither win probability nor the favourite. This tracking is not a new winner-prediction variant.',
+  fiab_detail:'Why this rating?', fiab_circuit_n:'Previous matches on this tour', fiab_circuit_reel:'Winners called on this tour', fiab_circuit_attendu:'Winners expected from probabilities', fiab_residuel:'Residual loss (lower is better)', fiab_plafond:'Cap caused by tour underperformance', fiab_ancienne:'This rating predates circuit_v1 tracking and remains displayed as originally recorded.',
+  qualite_titre:'Serve and return data', qualite_sous:'Audit of the player-profile file used by the simulation. Effective points include time weighting.',
+  qualite_profils:'Player profiles', qualite_balles:'Median effective service points', qualite_500:'Profiles with at least 500 effective points', qualite_source:q=>`Sources: ${q.source||'not documented'}. Archive through ${q.archive_jusqu_au?dateLong(q.archive_jusqu_au):'not specified'}; profiles exported on ${q.jour?dateLong(q.jour):'not specified'}.`,
+  qualite_anomalies:n=>n?`${fmt(n)} consistency check(s) require review.`:'No anomaly found in the consistency checks on aggregated totals.',
+  qualite_limite:'This audit measures coverage and internal consistency, not absolute accuracy. It cannot establish superiority over another provider without a like-for-like comparison on the same matches.',
   calib_titre:'Calibration: forecast vs reality',
   calib_sous:'When the algorithm says 70%, that player should win about 7 times out of 10. Each match counts from both sides.',
   annonce:'Forecast', reel:'Actual', matchs:'Matches', tranche:'Range',
@@ -844,7 +887,20 @@ function rendFiabilite(f, detail=false){
   if (!f || !Number.isFinite(Number(f.note))) return '';
   const niveaux = L==='fr' ? {fragile:'fragile',prudent:'prudent',correct:'correcte',solide:'solide'} : {fragile:'fragile',prudent:'cautious',correct:'fair',solide:'strong'};
   const niveau = niveaux[f.niveau] || f.niveau || '';
-  return `<span class="fiab" title="${esc(t('fiab_aide'))}"><span>${esc(t('fiab'))}</span><b>${fmt(f.note)}/100</b><span>· ${esc(niveau)}</span>${detail?`<small>${esc(t('fiab_aide'))}</small>`:''}</span>`;
+  let explication = '';
+  if (detail){
+    const c = f.performance_circuit;
+    if (c && Number.isFinite(Number(c.n))){
+      const cap = Number(f.plafond_circuit) < 100 ? `<dt>${esc(t('fiab_plafond'))}</dt><dd>${fmt(f.plafond_circuit)}/100</dd>` : '';
+      explication = `<details class="fiab-detail"><summary>${esc(t('fiab_detail'))}</summary><dl>
+        <dt>${esc(t('fiab_circuit_n'))}</dt><dd>${fmt(c.n)}</dd>
+        <dt>${esc(t('fiab_circuit_reel'))}</dt><dd>${c.exactitude==null?'—':pc(c.exactitude*100)}</dd>
+        <dt>${esc(t('fiab_circuit_attendu'))}</dt><dd>${c.exactitude_attendue==null?'—':pc(c.exactitude_attendue*100)}</dd>
+        <dt>${esc(t('fiab_residuel'))}</dt><dd>${c.perte_residuelle==null?'—':dec(c.perte_residuelle,3)}</dd>${cap}
+      </dl></details>`;
+    } else explication = `<p class="aide">${esc(t('fiab_ancienne'))}</p>`;
+  }
+  return `<span class="fiab" title="${esc(t('fiab_aide'))}"><span>${esc(t('fiab'))}</span><b>${fmt(f.note)}/100</b><span>· ${esc(niveau)}</span>${detail?`<small>${esc(t('fiab_aide'))}</small>`:''}</span>${explication}`;
 }
 function rendMdj(){
   const zone = document.getElementById('mdj-zone');
@@ -964,6 +1020,24 @@ function rendBilan(){
   const more = document.getElementById('bilan-more');
   if (res.length > nRes){ more.hidden=false; more.textContent=t('voir_plus', Math.min(20,res.length-nRes)); more.onclick=()=>{ nRes+=20; rendBilan(); }; } else more.hidden=true;
 }
+function rendSuivi(){
+  const B = D.validation_fiabilite || {}, g = B.global;
+  document.getElementById('suivi-sous').textContent = t('suivi_sous', B.depuis || '2026-10-27');
+  const el = document.getElementById('suivi-fiabilite');
+  const circuits = Object.entries(B.par_circuit || {}).sort((a,b)=>b[1].n-a[1].n);
+  const detail = circuits.length ? `<div class="suivi-grid">${circuits.map(([c,v])=>`<div class="suivi-circuit"><b>${esc(CIRC[c]||c)}</b><span>${pc(v.pct)}</span><small>${fmt(v.vainqueurs)} / ${fmt(v.n)} · Brier ${dec(v.brier,3)}</small></div>`).join('')}</div>` : '';
+  el.innerHTML = `<div class="statut"><span>${esc(t(g?'suivi_taux':'suivi_attente'))}</span><strong>${g?pc(g.pct):'—'}</strong><span>${g?`${fmt(g.vainqueurs)} / ${fmt(g.n)} · Brier ${dec(g.brier,3)}`:esc(t('suivi_zero'))}</span></div>${detail}<p class="note">${esc(t('suivi_note'))}</p>`;
+}
+function rendQualite(){
+  const q = D.qualite_donnees, el = document.getElementById('qualite-donnees');
+  if (!q){ el.innerHTML = `<div class="empty">${esc(t('bilan_vide'))}</div>`; return; }
+  const b = q.balles_effectives || {}, anomalies = Object.values(q.anomalies||{}).reduce((a,n)=>a+Number(n||0),0);
+  el.innerHTML = `<div class="qualite-grid">
+    <div><b>${fmt(q.profils)}</b><span>${esc(t('qualite_profils'))}</span></div>
+    <div><b>${b.mediane==null?'—':fmt(b.mediane)}</b><span>${esc(t('qualite_balles'))}</span></div>
+    <div><b>${b.pct_au_moins_500==null?'—':pc(b.pct_au_moins_500)}</b><span>${esc(t('qualite_500'))}</span></div>
+  </div><p>${esc(t('qualite_source',q))}<br>${esc(t('qualite_anomalies',anomalies))}</p><p>${esc(t('qualite_limite'))}</p>`;
+}
 function tableCalib(c){
   return `<table class="calib"><thead><tr><th>${esc(t('tranche'))}</th><th>${esc(t('annonce'))}</th><th>${esc(t('reel'))}</th><th>${esc(t('matchs'))}</th></tr></thead><tbody>
   ${c.map(r=>`<tr><td>${Math.round(r.de*100)}–${Math.round(r.a*100)}${L==='fr'?' %':'%'}</td><td>${pc(r.prevu)}</td><td><b>${pc(r.reel)}</b></td><td>${fmt(r.n)}</td></tr>`).join('')}</tbody></table>`;
@@ -992,7 +1066,7 @@ function ouvrirMatch(uid, aller=true){
 }
 function rendTout(){
   rendTextes(); if (!D) return;
-  rendMdj(); rendListe(); rendBilan(); rendCalib();
+  rendMdj(); rendListe(); rendBilan(); rendSuivi(); rendQualite(); rendCalib();
   document.getElementById('maj').textContent = t('maj', D.pronostics_du || D.genere_le);
 }
 document.querySelectorAll('.seg button[data-lang]').forEach(b=>b.addEventListener('click',()=>{
