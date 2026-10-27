@@ -22,7 +22,8 @@ jouer 5 000 matchs au hasard, il calcule la probabilité de chaque issue.
 | `surveillance_derive.py` | log loss, Brier et confiance sur 4, 8 et 12 semaines, globalement et par sous-groupe |
 | `profils_robustes.py` | challengers contrôlés, avec validation obligatoire sur les profils de moins de 500 balles effectives |
 | `matchs_similaires.py` | voisinage strictement pré-match, futur exclu, sans cote ni sélection par ROI ; contrôle descriptif de calibration |
-| `styles_joueurs.py` | instantanés service–retour horodatés et challenger d'interaction de styles sur périodes disjointes |
+| `styles_joueurs.py` | instantanés service–retour horodatés, challenger d'interaction et apport incrémental après contrôles Elo/surface/documentation |
+| `etude_desaccords_marche.py` | étude privée appariée algorithme–marché, veto H14 non activé, recouvrement H13–H14 et audit des doublons de cotes |
 | `recalibrage.py` | régression logistique, contraction hiérarchique et isotone en origine glissante ; direct et rejoué séparés |
 | `dependances_points.py` | tests du point précédent, des tie-breaks, de la fatigue et de l’évolution entre sets sur les séquences ordonnées |
 | `gouvernance.py` | périodes disjointes, traçabilité et une seule nouvelle promotion hebdomadaire |
@@ -150,8 +151,9 @@ il ne constitue donc pas une correction indépendante du scénario affiché.
 `backtest_match_simule.py` publie `ablation_familles` : Elo avec et sans surface,
 profils bruts, service seul, retour seul, service–retour ajusté, sans récence et
 sans surface. Toutes les variantes portent sur les mêmes matchs et sont ventilées
-par circuit, surface, BO3/BO5 et documentation. Les styles ne sont pas ablatés
-tant qu'aucune variable de style figée avant le match n'est disponible. Le format
+par circuit, surface, BO3/BO5 et documentation. Les taux de styles affichés après
+coup ne sont pas injectés rétroactivement : `styles_joueurs.py` reconstruit leur
+interaction avant chaque match et la teste séparément après contrôles. Le format
 BO5 reste une donnée nécessaire au moteur et est contrôlé par sous-groupe.
 
 L'ajustement actif accepte un prior `N0` propre à la deuxième balle (`w2j`),
@@ -190,3 +192,35 @@ balles de service effectives après pondération, couverture à 200/500 balles e
 contrôles structurels des numérateurs/dénominateurs. Ce descriptif reproductible
 ne prouve ni l'exactitude externe ni la supériorité sur PythiaTennis ou un autre
 fournisseur ; cette dernière exigerait les mêmes matchs et des données comparables.
+
+
+## Désaccords externes et redondance H13–H14 (27/10/2026)
+
+Lancer manuellement :
+
+```bash
+python simulateur/etude_desaccords_marche.py . --archive /tmp/sackmann
+```
+
+Le rapport est **privé et agrégé** (`rapport_etude_desaccords_marche.json`) : il
+n'est ni publié dans le Lab ni commité par le workflow. Les cotes sont celles du
+premier pronostic figé, jamais une clôture future présentée comme disponible à
+la décision. Algorithme et marché sont jugés par log loss et Brier sur les mêmes
+matchs, avec bootstrap par semaine ISO et seuils fixés sans optimisation.
+
+Le veto H14 n'est évalué que si le pronostic existait déjà à la détection, avec
+identité et côté vérifiés. Les populations conservée et écartée restent
+distinctes : leurs métriques ne sont pas présentées comme un gain apparié. H13
+et H14 sont rapprochés par UID et joueur sur leur période commune ; ils ne
+constituent jamais deux confirmations indépendantes. H14 demeure **NON VALIDÉE**
+et le veto n'est pas activé.
+
+Le contrôle incrémental des styles apprend sur 2024 puis fige les coefficients
+pour 2025–2026. Elo, surface, circuit, service–retour et documentation restent
+dans les deux modèles ; seule l'interaction de styles est ajoutée au challenger.
+Aucun résultat de ce rapport ne modifie les règles gelées ou le champion actif.
+
+`Tennis_Edge_Lab/courbes_cotes.py` supprime seulement les répétitions de la même
+paire horodatage–cote dans les lectures du Lab. Les horodatages différents et
+les cotes conflictuelles sont conservés. Le producteur Telegram, absent de ce
+checkout, n'est pas prétendu corrigé par cette modification.

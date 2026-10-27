@@ -60,6 +60,7 @@ def _load(name, folder=LAB):
 books = _load("books.py")
 meta = _load("tennis_meta.py")
 engine = _load("bookmakers_sets_v5.py")
+courbes = _load("courbes_cotes.py")
 
 # (nom, libellé, type, rôle). type : cat | num ; rôle : filtre | mesure | descriptif | post_entree
 FIELDS = [
@@ -222,6 +223,17 @@ def collect(root, counters, series=None, series_books=None, uids_books=None):
         if start is None or start.date().isoformat() < SINCE:
             continue
         add(uid, book, start, t["info"][1], t["info"][2], t["info"][3], t["home"], t["away"])
+    if series is not None:
+        # Les partitions peuvent répéter le même instantané dans plusieurs lignes.
+        # On déduplique après fusion, puis on conserve la convention « changements de cote ».
+        for sides in series.values():
+            for side in ("home", "away"):
+                points = courbes.dedupliquer(sorted(sides[side]), counters)
+                sides[side], last = [], None
+                for stamp, odds in points:
+                    if odds != last:
+                        sides[side].append((stamp, odds))
+                        last = odds
     return records
 
 

@@ -62,6 +62,7 @@ def _load(name):
 books = _load("books.py")
 meta = _load("tennis_meta.py")
 clv_source = _load("clv_source.py")
+courbes = _load("courbes_cotes.py")
 
 # (nom, libellé, rôle) — rôle : filtre | filtre_apres_alerte | mesure | descriptif | post_entree
 FIELDS = [
@@ -161,7 +162,7 @@ class PinnacleIndex:
                     if t is not None and t < start and odds > 1:
                         pts.append((t, odds))
                 pts.sort()
-                curves[side] = pts
+                curves[side] = courbes.dedupliquer(pts)
             item = {"uid": record.get("uid"), "start": start, "home": record.get("home"),
                     "away": record.get("away"), "curves": curves}
             for side in ("home", "away"):
