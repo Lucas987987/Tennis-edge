@@ -1,47 +1,47 @@
 {
  "schema_version": 1,
- "genere_le": "2026-10-26T05:22:33Z",
+ "genere_le": "2026-10-27T05:41:46Z",
  "canaux": {
   "MISER": {
    "libelle": "🎯 MISER — steam, EV ≥ seuil vs Pinnacle juste (vainqueur du match)",
    "source": "miser_signal_log.jsonl (messages envoyés) + ajouts de suivi_direct",
    "regle": "première alerte de chaque match, au book et au prix du message ; relances non recomptées",
    "debut": "2026-10-22",
-   "n_alertes": 4,
-   "n_matchs": 4,
+   "n_alertes": 8,
+   "n_matchs": 8,
    "n_relances": 0,
-   "n_denoues": 3,
+   "n_denoues": 6,
    "bilan": {
-    "n": 3,
-    "gains": 2,
+    "n": 6,
+    "gains": 4,
     "taux": 66.7,
-    "seuil": 45.2,
-    "ecart": 21.5,
+    "seuil": 37.1,
+    "ecart": 29.5,
     "ic95": [
-     20.8,
-     93.9
+     30.0,
+     90.3
     ],
-    "roi": 67.3,
-    "pnl": 2.0,
-    "cote_moyenne": 2.27,
-    "clv_moyen": -1.0,
-    "clv_pin_moyen": -1.0,
+    "roi": 107.8,
+    "pnl": 6.5,
+    "cote_moyenne": 2.88,
+    "clv_moyen": 3.6,
+    "clv_pin_moyen": 3.6,
     "clv_pin_ic95": [
-     -16.5,
-     14.5
+     -3.6,
+     10.8
     ],
-    "clv_pin_p": 0.5496,
-    "clv_n": 3,
-    "clv_positif": 66.7,
-    "lead_moyen_h": 7.8,
-    "periode": "2026-10-22 -> 2026-10-25",
+    "clv_pin_p": 0.1634,
+    "clv_n": 7,
+    "clv_positif": 57.1,
+    "lead_moyen_h": 9.3,
+    "periode": "2026-10-22 -> 2026-10-26",
     "verdict": "ne tranche pas",
     "clv_mediane": 1.0,
-    "n_commencees": 3,
-    "n_sans_resultat": 0,
-    "sans_resultat_pct": 0.0,
-    "verrouillable": true,
-    "statut": "verrouillable (résultats complets à 100 %)"
+    "n_commencees": 8,
+    "n_sans_resultat": 2,
+    "sans_resultat_pct": 25.0,
+    "verrouillable": false,
+    "statut": "en attente de résultats (25,0 % sans résultat)"
    },
    "paris": {
     "2026-10-22_valerio_aboian_matias_soto": {
@@ -68,13 +68,45 @@
      "clv_pin": 0.96,
      "source_resultat": "feuille de match (TennisApi)"
     },
-    "2026-10-26_han_shi_alevtina_ibragimova": {
+    "2026-10-26_alan_magadan_tristan_mccormick": {
      "gagne": null,
      "pnl": null,
      "pin_close": null,
      "pin_close_adv": null,
      "clv_pin": null,
      "source_resultat": "inconnu"
+    },
+    "2026-10-26_arthur_fery_jacob_fearnley": {
+     "gagne": null,
+     "pnl": null,
+     "pin_close": 1.925,
+     "pin_close_adv": 1.961,
+     "clv_pin": -5.596,
+     "source_resultat": "inconnu"
+    },
+    "2026-10-26_han_shi_alevtina_ibragimova": {
+     "gagne": 0,
+     "pnl": -1.0,
+     "pin_close": 2.53,
+     "pin_close_adv": 1.578,
+     "clv_pin": 13.739,
+     "source_resultat": "feuille de match (TennisApi)"
+    },
+    "2026-10-26_ryan_nijboer_lorenzo_claverie": {
+     "gagne": 1,
+     "pnl": 2.95,
+     "pin_close": 2.95,
+     "pin_close_adv": 1.392,
+     "clv_pin": 20.345,
+     "source_resultat": "feuille de match (TennisApi)"
+    },
+    "2026-10-26_spencer_johnson_tomasz_berkieta": {
+     "gagne": 1,
+     "pnl": 2.5,
+     "pin_close": 3.21,
+     "pin_close_adv": 1.366,
+     "clv_pin": -0.218,
+     "source_resultat": "feuille de match (TennisApi)"
     }
    }
   }
