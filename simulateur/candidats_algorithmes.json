@@ -1,0 +1,54 @@
+{
+  "schema": "candidats_algorithmes_v1",
+  "fige_le": "2026-10-28",
+  "confirmation_finale": {
+    "regle": "Uniquement des pronostics figés après la date de gel, jugés quand leurs résultats sont disponibles.",
+    "minimum_matchs": 1000,
+    "minimum_semaines_iso": 8,
+    "ablation": "appariée sur exactement les mêmes matchs",
+    "gain_log_loss_minimum": 0.001,
+    "brier_non_degrade": true,
+    "activation_automatique": false
+  },
+  "periodes_historiques": {
+    "decouverte": "2024",
+    "diagnostique_deja_reutilise": "2025-01-01 au 2026-10-28",
+    "interdiction": "Ne pas présenter 2025–2026 comme une confirmation vierge après modification d'un candidat."
+  },
+  "candidats": {
+    "hierarchie_service_retour_v1": {
+      "famille": "partage partiel service-retour",
+      "implementation": "hierarchie.py",
+      "parametres": {"prior_service_retour": 300.0, "prior_surface": 1200.0, "prior_circuit": 2400.0, "pas_global": 0.12, "pas_local": 0.04},
+      "statut": "diagnostic",
+      "activation": false
+    },
+    "incertitude_dynamique_v1": {
+      "famille": "documentation, absence et volatilité",
+      "implementation": "hierarchie.py",
+      "parametres": {"sigma_base": 0.15, "sigma_minimum": 0.05, "sigma_maximum": 0.35},
+      "statut": "diagnostic",
+      "activation": false
+    },
+    "non_lineaire_parcimonieux_v1": {
+      "famille": "correction résiduelle par arbres",
+      "implementation": "arbres.py et etude_evolutions.py",
+      "parametres": {"profondeur": 2, "tours": 60, "pas": 0.05, "feuille_min": 80, "seuils": 12},
+      "statut": "diagnostic",
+      "activation": false
+    },
+    "charting_couverture_v1": {
+      "famille": "tactique Match Charting point-in-time",
+      "implementation": "charting.py et etude_charting.py",
+      "parametres": {"prior_service": 300.0, "prior_retour": 300.0, "prior_echanges": 600.0, "minimum_matchs_couverts": 100},
+      "statut": "diagnostic",
+      "activation": false
+    }
+  },
+  "briques_techniques": {
+    "distribution_scores_exacte_v1": {"implementation": "distribution_exacte.py", "change_le_pronostic": false},
+    "connecteurs_contexte_v1": {"implementation": "contexte_optionnel.py", "change_le_pronostic": false}
+  },
+  "securite": "Aucun secret, identifiant privé ou contenu R2 privé n’a été demandé ou consulté.",
+  "marche": "Le marché ne doit pas devenir une entrée du modèle indépendant. Les recherches marché/H13–H20 restent séparées ou servent à l’évaluation externe."
+}
