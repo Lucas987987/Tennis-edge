@@ -30,6 +30,7 @@ jouer 5 000 matchs au hasard, il calcule la probabilité de chaque issue.
 | `variables_pre_match.py` | fatigue, absences, mains, H2H, tie-breaks, sets décisifs et balles de break contractés |
 | `conditions_tournoi.py` | conditions résiduelles estimées sur les seules éditions antérieures et contractées vers la surface |
 | `elo_recherche.py` | petite grille Elo dynamique isolée du classement actif |
+| `etude_circuits.py` | comparaison de deux algorithmes ATP/WTA et Challenger/ITF au meilleur algorithme partagé |
 | `etude_desaccords_marche.py` | étude privée appariée algorithme–marché, veto H14 non activé, recouvrement H13–H14 et audit des doublons de cotes |
 | `recalibrage.py` | régression logistique, contraction hiérarchique et isotone en origine glissante ; direct et rejoué séparés |
 | `dependances_points.py` | tests du point précédent, des tie-breaks, de la fatigue et de l’évolution entre sets sur les séquences ordonnées |
@@ -308,3 +309,29 @@ python simulateur/etude_pistes.py /tmp/sackmann . --maximum 16000 --bootstrap 20
 ```
 
 Les fichiers `elo_recherche.py`, `variables_pre_match.py`, `conditions_tournoi.py`, `pistes_observations.py` et `etude_pistes.py` ne sont importés par aucune composante de production. `rapport_pistes_amelioration.json` conserve toutes les variantes Elo, coefficients de découverte, sous-groupes, contrôles de convergence et verdicts ; `champion_actif_modifie` reste `false`.
+
+## Deux algorithmes par grand circuit : test et rejet (28/10/2026)
+
+`etude_circuits.py` teste la proposition de créer un algorithme ATP/WTA et un algorithme Challenger/ITF. **Les historiques ne sont jamais coupés** : Elo, service–retour, calendrier, H2H et pression continuent à utiliser tous les circuits et leurs transitions. Seuls les coefficients et les variables retenues peuvent différer. Pour chaque groupe, le candidat est choisi sur 2024 parmi contrôle, Elo dynamique, familles isolées et combinaison éligible, puis figé pour 2025–2026.
+
+Le comparateur exigeant est le **meilleur algorithme partagé choisi selon la même règle**, pas seulement l’ancien contrôle. Sur les mêmes 16 000 matchs :
+
+| Population | Log loss partagé | Log loss deux algorithmes | Gain du local | Verdict |
+|---|---:|---:|---:|---|
+| ATP/WTA, 1 649 confirmations | 0,590472 | 0,594819 | **-0,004347** | dégradation |
+| Challenger/ITF, 10 045 confirmations | 0,577283 | 0,577947 | **-0,000664** | dégradation |
+| Ensemble, 11 694 confirmations | 0,579143 | 0,580326 | **-0,001183** | dégradation |
+
+Sur l’ensemble, le Brier passe de 0,198568 à 0,199049. L’exactitude monte légèrement de 68,86 % à 68,97 %, mais ce faible écart ne compense pas la dégradation conjointe de la log loss et du Brier. L’IC95 du gain global de log loss est [-0,002582 ; +0,000215].
+
+La séparation des seuls coefficients de contrôle ne suffit pas non plus : gain de -0,001162 sur ATP/WTA et +0,000352 sur Challenger/ITF, sous le seuil de 0,001. Contre l’algorithme partagé, le local ATP/WTA dégrade les deux années et surtout la WTA (-0,008611). Le local Challenger/ITF gagne +0,000132 en 2025 mais perd -0,002408 en 2026 : le résultat n’est pas reproduit.
+
+**Verdict : ne pas créer deux algorithmes actifs.** Le modèle partagé avec indicateurs de circuit et historiques inter-circuits reste préférable. Les ventilations par circuit restent utiles pour la surveillance et la gouvernance. Aucun challenger n’est activé et aucun gain de ROI n’est déduit de cette étude.
+
+Rejouer :
+
+```bash
+python simulateur/etude_circuits.py /tmp/sackmann . --maximum 16000 --bootstrap 2000
+```
+
+`rapport_algorithmes_circuits.json` conserve les candidats de découverte, les trois comparaisons — séparation seule, algorithme local contre contrôle partagé et contre meilleur partagé — ainsi que les ventilations annuelles, circuits, surfaces, documentation et défaites du favori.
