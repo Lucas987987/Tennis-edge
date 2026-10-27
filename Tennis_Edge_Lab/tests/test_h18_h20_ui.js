@@ -84,18 +84,22 @@ test('Un coffre verrouillé ne masque pas les résultats publics H18', async () 
   await context.module.exports.start();
   const html = element('h1820Body').innerHTML;
   assert.match(html, /Reconstruction — contrôle historique/);
-  assert.equal((html.match(/Coffre privé verrouillé/g) || []).length, 2);
-  assert.match(html, /H19 — résultats indisponibles/);
-  assert.match(html, /H20 — résultats indisponibles/);
+  assert.equal((html.match(/accès privé requis/g) || []).length, 2);
+  assert.match(html, /H19 — accès privé requis/);
+  assert.match(html, /H20 — accès privé requis/);
+  assert.doesNotMatch(html, /HTTP 401/);
   assert.doesNotMatch(html, /cible non atteinte/);
 });
 
-test('Le nouvel onglet et son script sont reliés au déploiement Pages', () => {
+test('Les résultats sont dans l’Explorateur et leur script est relié à Pages', () => {
   const html = fs.readFileSync(path.join(lab, 'research.html'), 'utf8');
   const workflow = fs.readFileSync(path.join(lab, '..', '.github', 'workflows', 'pages.yml'), 'utf8');
-  assert.match(html, /data-tab="h18h20"/);
-  assert.match(html, /id="h1820Body"/);
-  assert.match(html, /id="h1820Refresh"/);
+  const explorer = html.match(/<section id="explorer"[\s\S]*?<section id="direct"/)[0];
+  assert.doesNotMatch(html, /data-tab="h18h20"/);
+  assert.match(explorer, /id="h1820Body"/);
+  assert.match(explorer, /id="h1820Refresh"/);
+  assert.match(explorer, /Résultats H18, H19 et H20/);
+  assert.match(html, /research\.css\?v=20261027-h1820-explorer/);
   assert.match(html, /research_h18_h20\.js/);
   assert.match(workflow, /Tennis_Edge_Lab\/research_h18_h20\.js/);
   assert.match(workflow, /research_registre\.js research_h18_h20\.js freshness\.js/);

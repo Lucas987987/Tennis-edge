@@ -85,9 +85,13 @@
       <details class="h1820-details"><summary>Période de découverte (aucune valeur de preuve)</summary>${statsProspectifH20(d)}<p class="detail">${esc(d?.note || '')}</p></details></article>`;
   }
 
-  function verrouille(code, raison) {
+  function verrouille(code) {
     const prive = code !== 'H18';
-    return `<article class="candidate h1820-card"><h3>${esc(code)} — résultats indisponibles</h3><p class="notice warn">${prive ? 'Coffre privé verrouillé ou rapport absent. Ouvrez une fois le Lab avec votre clé (<code>?cle=VOTRE_CLE</code>), puis revenez sur cet onglet. Aucune clé n’est incluse dans la page.' : 'Le rapport public n’a pas pu être chargé.'}</p><p class="detail">${esc(raison || '')}</p></article>`;
+    const titre = prive ? `${code} — accès privé requis` : `${code} — résultats indisponibles`;
+    const message = prive
+      ? 'Les résultats sont protégés. Ouvrez une fois le Lab avec votre clé (<code>?cle=VOTRE_CLE</code>), puis cliquez sur Actualiser. Aucune clé n’est incluse dans la page.'
+      : 'Le rapport public n’a pas pu être chargé. Cliquez sur Actualiser pour réessayer.';
+    return `<article class="candidate h1820-card h1820-locked"><h3>${esc(titre)}</h3><p class="notice">${message}</p></article>`;
   }
 
   async function load(url) {
