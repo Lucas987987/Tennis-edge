@@ -23,6 +23,7 @@ jouer 5 000 matchs au hasard, il calcule la probabilité de chaque issue.
 | `profils_robustes.py` | challengers contrôlés, avec validation obligatoire sur les profils de moins de 500 balles effectives |
 | `matchs_similaires.py` | voisinage strictement pré-match, futur exclu, sans cote ni sélection par ROI ; contrôle descriptif de calibration |
 | `styles_joueurs.py` | instantanés service–retour horodatés, challenger d'interaction et apport incrémental après contrôles Elo/surface/documentation |
+| `styles_descriptifs.py` | bilans publics contre six profils service–retour, global/surface, effectifs, IC de Wilson et derniers matchs ; descriptif seulement |
 | `etude_desaccords_marche.py` | étude privée appariée algorithme–marché, veto H14 non activé, recouvrement H13–H14 et audit des doublons de cotes |
 | `recalibrage.py` | régression logistique, contraction hiérarchique et isotone en origine glissante ; direct et rejoué séparés |
 | `dependances_points.py` | tests du point précédent, des tie-breaks, de la fatigue et de l’évolution entre sets sur les séquences ordonnées |
@@ -224,3 +225,27 @@ Aucun résultat de ce rapport ne modifie les règles gelées ou le champion acti
 paire horodatage–cote dans les lectures du Lab. Les horodatages différents et
 les cotes conflictuelles sont conservés. Le producteur Telegram, absent de ce
 checkout, n'est pas prétendu corrigé par cette modification.
+
+## Bilans descriptifs contre les styles adverses (27/10/2026)
+
+Le workflow quotidien exécute `styles_descriptifs.py` après les profils et avant
+les pronostics. Le classement adverse utilise uniquement nos statistiques de
+service et de retour disponibles **avant chaque match**, avec au moins 500 balles
+effectives : grand serveur, serveur attaquant, retourneur pressant, contreur,
+profil équilibré ou indéterminé. Il ne prétend pas reconnaître le lift, le jeu à
+plat ou la longueur des rallyes, que ces données ne mesurent pas directement.
+Le résultat est ajouté au bilan seulement après ce classement ; abandons,
+matchs incomplets et résultats postérieurs à la référence sont exclus.
+
+La fiche publique affiche victoires/matchs et effectifs, globalement et sur la
+surface du match, avec un IC de Wilson à 95 % et les cinq derniers matchs du
+bilan global. Moins de 10 matchs est signalé comme très faible documentation,
+moins de 30 comme faible, moins de 100 comme intermédiaire. Un effectif élevé ne
+prouve pas à lui seul un avantage causal : adversaires, époque et niveau peuvent
+différer.
+
+Ce bloc est fusionné par UID dans `vitrine.py`, après la création des sorties du
+modèle. Il ne modifie ni probabilité, ni note, ni scénario, ni journal, ni règle
+gelée. Il ne réutilise ni les catégories de matchup-tennis.fr ni une cote de
+marché. L'artefact intermédiaire `styles_descriptifs.json` est régénéré et ignoré
+par Git ; seule sa fusion dans `algo/donnees.json` est publiée.

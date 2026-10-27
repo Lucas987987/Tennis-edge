@@ -159,6 +159,16 @@ def ligne_match(m, complet):
     return out
 
 
+def ajouter_styles_descriptifs(lignes, document):
+    """Ajoute seulement un descriptif par UID ; ne recalcule aucune sortie du modèle."""
+    styles = (document or {}).get('matchs') or {}
+    for ligne in lignes:
+        bloc = styles.get(ligne.get('uid'))
+        if bloc and bloc.get('descriptif_seulement') is True and len(bloc.get('joueurs') or []) == 2:
+            ligne['styles_descriptifs'] = bloc
+    return lignes
+
+
 def _juge(m):
     """(p_home, gagnant) du pronostic jugé : dernier avant le match, sinon premier."""
     for bloc in ('dernier', 'premier'):
@@ -288,9 +298,16 @@ def construire(racine, maintenant=None):
     a_venir = sorted((m for m in matchs if _utc(m['debut']) > maintenant - dt.timedelta(hours=3)),
                      key=lambda m: (m['debut'], m['uid']))
     lignes = [ligne_match(m, complet=True) for m in a_venir]
+    # Bloc descriptif calculé hors du moteur de probabilité : simple fusion par UID.
+    styles_doc = _lire(os.path.join(racine, 'simulateur', 'styles_descriptifs.json'), {}) or {}
+    styles = styles_doc.get('matchs') or {}
+    ajouter_styles_descriptifs(lignes, styles_doc)
     resultats = _lire(os.path.join(racine, 'Tennis_Edge_Lab', 'live', 'pronostics_resultats.json'), {})
     return {'genere_le': maintenant.isoformat(timespec='seconds'), 'pronostics_du': pron.get('genere_le'),
             'simulations': pron.get('simulations') or 20000, 'match_du_jour': mdj,
+            'styles_descriptifs_source': ({'archive_jusqu_au': styles_doc.get('archive_jusqu_au'),
+                                           'feuilles_recentes': styles_doc.get('feuilles_recentes'),
+                                           'regle': styles_doc.get('regle')} if styles else None),
             'matchs': lignes, 'bilan': bilan(resultats),
             'validation_fiabilite': validation_fiabilite(resultats),
             'qualite_donnees': qualite_donnees(racine),
