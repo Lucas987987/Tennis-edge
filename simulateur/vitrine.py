@@ -344,10 +344,23 @@ def validation_fiabilite(resultats):
     return out
 
 
-def qualite_donnees(racine):
-    from qualite_donnees import auditer
+def qualite_donnees(racine, resultats=None):
+    from qualite_donnees import auditer, couverture_pronostiques
     doc = _lire(os.path.join(racine, 'simulateur', 'profils_service.json'), {}) or {}
-    return auditer(doc)
+    out = auditer(doc)
+    if out is not None and resultats:
+        # 28/10/2026 : couverture des joueurs réellement pronostiqués (mêmes matchs que le tableau des scores)
+        matchs = [m for m in resultats.get('matchs') or [] if m.get('circuit') in CIRCUITS
+                  and str(m.get('debut'))[:10] >= DEBUT_BILAN and connu(m)]
+
+        def juge(m):
+            reel = m.get('reel') or {}
+            if reel.get('interrompu') or reel.get('gagnant') not in ('home', 'away'):
+                return None
+            p, _ = _juge(m)
+            return None if p is None else (p, 1 if reel['gagnant'] == 'home' else 0)
+        out['pronostiques'] = couverture_pronostiques(doc, matchs, juge)
+    return out
 
 
 def construire(racine, maintenant=None):
@@ -399,7 +412,7 @@ def construire(racine, maintenant=None):
             'matchs': lignes, 'bilan': bilan(resultats),
             'bilan_lignes': bilan_lignes(racine, resultats),
             'validation_fiabilite': validation_fiabilite(resultats),
-            'qualite_donnees': qualite_donnees(racine),
+            'qualite_donnees': qualite_donnees(racine, resultats),
             'rejoue': rejoue(racine)}
 
 

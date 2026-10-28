@@ -315,6 +315,7 @@ body.carte #video{display:block;width:1080px;height:1350px}
   .arcade .annonce.pop{animation-name:popdoux}
   @keyframes popdoux{0%,100%{opacity:0}15%,80%{opacity:1}}
 }
+.cv-h{font-size:1rem;margin:18px 0 4px}.cv-p{color:var(--dim);font-size:.85rem;margin:0 0 8px}.cv-wrap{overflow-x:auto}.cv{font-size:.85rem;width:100%}.cv td,.cv th{padding:6px 5px}.cv td:not(:first-child),.cv th:not(:first-child){text-align:right;white-space:nowrap}.cv-n{color:var(--dim);font-size:.75rem}
 </style>
 </head>
 <body>
@@ -479,6 +480,11 @@ const T = {
   fiab_detail:'Pourquoi cette note ?', fiab_circuit_n:'Matchs antérieurs sur ce circuit', fiab_circuit_reel:'Vainqueurs trouvés sur ce circuit', fiab_circuit_attendu:'Vainqueurs attendus selon les probabilités', fiab_residuel:'Perte résiduelle (plus bas = mieux)', fiab_plafond:'Plafond lié à la contre-performance du circuit', fiab_ancienne:'Cette note date d’avant le suivi circuit_v1 ; elle reste affichée telle qu’elle a été enregistrée.',
   qualite_titre:'Données de service et de retour', qualite_sous:'Audit du fichier de profils utilisé par la simulation. Les balles effectives tiennent compte de la pondération temporelle.',
   qualite_profils:'Profils joueurs', qualite_balles:'Médiane de balles de service effectives', qualite_500:'Profils avec au moins 500 balles effectives', qualite_source:q=>`Sources : ${q.source||'non documentées'}. Archive jusqu’au ${q.archive_jusqu_au?dateLong(q.archive_jusqu_au):'non précisé'} ; profils exportés au ${q.jour?dateLong(q.jour):'non précisé'}.`,
+  cv_titre:'Joueurs réellement pronostiqués', cv_sous:'Chaque joueur de chaque match jugé depuis le 21 octobre, compté une fois par match. Part sous 500 et sous 1 500 balles effectives.',
+  cv_circuit:'Circuit', cv_med:'Médiane', cv_n:n=>`${fmt(n)} joueurs × matchs`, cv_m:n=>`${fmt(n)} matchs`,
+  cv_titre2:'Bilan selon la documentation', cv_sous2:'Classés selon le joueur le moins documenté du match. Confiance = probabilité moyenne donnée au favori : des vainqueurs trouvés nettement en dessous signalent une tranche trop sûre d’elle. Moins de 30 matchs : aucune conclusion.',
+  cv_moins_doc:'Moins documenté', cv_trouves:'Trouvés', cv_conf:'Confiance',
+  cv_tranches:['moins de 500 balles','500 à 1 500','1 500 à 3 000','3 000 et plus'],
   qualite_anomalies:n=>n?`${fmt(n)} contrôle(s) de cohérence à examiner.`:'Aucune anomalie détectée dans les contrôles de cohérence des sommes agrégées.',
   qualite_limite:'Cet audit mesure la couverture et la cohérence interne, pas l’exactitude absolue. Il ne permet pas d’affirmer que cette donnée est supérieure à celle d’un autre fournisseur sans comparaison sur les mêmes matchs.',
   calib_titre:'Calibration : annoncé contre réel',
@@ -572,6 +578,11 @@ const T = {
   fiab_detail:'Why this rating?', fiab_circuit_n:'Previous matches on this tour', fiab_circuit_reel:'Winners called on this tour', fiab_circuit_attendu:'Winners expected from probabilities', fiab_residuel:'Residual loss (lower is better)', fiab_plafond:'Cap caused by tour underperformance', fiab_ancienne:'This rating predates circuit_v1 tracking and remains displayed as originally recorded.',
   qualite_titre:'Serve and return data', qualite_sous:'Audit of the player-profile file used by the simulation. Effective points include time weighting.',
   qualite_profils:'Player profiles', qualite_balles:'Median effective service points', qualite_500:'Profiles with at least 500 effective points', qualite_source:q=>`Sources: ${q.source||'not documented'}. Archive through ${q.archive_jusqu_au?dateLong(q.archive_jusqu_au):'not specified'}; profiles exported on ${q.jour?dateLong(q.jour):'not specified'}.`,
+  cv_titre:'Players we actually predict', cv_sous:'Every player of every judged match since 21 October, counted once per match. Share below 500 and below 1,500 effective points.',
+  cv_circuit:'Tour', cv_med:'Median', cv_n:n=>`${fmt(n)} player-matches`, cv_m:n=>`${fmt(n)} matches`,
+  cv_titre2:'Record by data depth', cv_sous2:'Grouped by the less documented player of the match. Confidence = average probability given to the favourite: winners called well below it flag an overconfident band. Under 30 matches: no conclusion.',
+  cv_moins_doc:'Less documented', cv_trouves:'Called', cv_conf:'Confidence',
+  cv_tranches:['under 500 points','500 to 1,500','1,500 to 3,000','3,000 and more'],
   qualite_anomalies:n=>n?`${fmt(n)} consistency check(s) require review.`:'No anomaly found in the consistency checks on aggregated totals.',
   qualite_limite:'This audit measures coverage and internal consistency, not absolute accuracy. It cannot establish superiority over another provider without a like-for-like comparison on the same matches.',
   calib_titre:'Calibration: forecast vs reality',
@@ -1226,7 +1237,18 @@ function rendQualite(){
     <div><b>${fmt(q.profils)}</b><span>${esc(t('qualite_profils'))}</span></div>
     <div><b>${b.mediane==null?'—':fmt(b.mediane)}</b><span>${esc(t('qualite_balles'))}</span></div>
     <div><b>${b.pct_au_moins_500==null?'—':pc(b.pct_au_moins_500)}</b><span>${esc(t('qualite_500'))}</span></div>
-  </div><p>${esc(t('qualite_source',q))}<br>${esc(t('qualite_anomalies',anomalies))}</p><p>${esc(t('qualite_limite'))}</p>`;
+  </div>${rendCouverture(q.pronostiques)}<p>${esc(t('qualite_source',q))}<br>${esc(t('qualite_anomalies',anomalies))}</p><p>${esc(t('qualite_limite'))}</p>`;
+}
+function rendCouverture(c){
+  if (!c || !c.circuits) return '';
+  const circ = Object.entries(c.circuits).sort((a,b)=>b[1].joueurs_matchs-a[1].joueurs_matchs).map(([k,v])=>
+    `<tr><td>${esc(CIRC[k]||k)}<br><span class="cv-n">${esc(t('cv_n',v.joueurs_matchs))}</span></td><td>${fmt(v.mediane)}</td><td>${pc(v.pct_moins_500)}</td><td>${pc(v.pct_moins_1500)}</td></tr>`).join('');
+  const tr = (c.tranches||[]).map((r,i)=>`<tr><td>${esc(t('cv_tranches')[i]||r.tranche)}<br><span class="cv-n">${esc(t('cv_m',r.n))}</span></td>
+    <td>${r.n?`<b>${pc(r.vainqueurs_pct)}</b>`:'—'}</td><td>${r.n?pc(r.confiance_pct):'—'}</td><td>${r.n?dec(r.brier,3):'—'}</td></tr>`).join('');
+  return `<h3 class="cv-h">${esc(t('cv_titre'))}</h3><p class="cv-p">${esc(t('cv_sous'))}</p>
+  <div class="cv-wrap"><table class="calib cv"><thead><tr><th>${esc(t('cv_circuit'))}</th><th>${esc(t('cv_med'))}</th><th>&lt; 500</th><th>&lt; 1 500</th></tr></thead><tbody>${circ}</tbody></table></div>
+  <h3 class="cv-h">${esc(t('cv_titre2'))}</h3><p class="cv-p">${esc(t('cv_sous2'))}</p>
+  <div class="cv-wrap"><table class="calib cv"><thead><tr><th>${esc(t('cv_moins_doc'))}</th><th>${esc(t('cv_trouves'))}</th><th>${esc(t('cv_conf'))}</th><th>Brier</th></tr></thead><tbody>${tr}</tbody></table></div>`;
 }
 function tableCalib(c){
   return `<table class="calib"><thead><tr><th>${esc(t('tranche'))}</th><th>${esc(t('annonce'))}</th><th>${esc(t('reel'))}</th><th>${esc(t('matchs'))}</th></tr></thead><tbody>
