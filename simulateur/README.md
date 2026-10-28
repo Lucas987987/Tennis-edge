@@ -341,7 +341,14 @@ style contient aussi la force générale du joueur et la qualité moyenne de ses
 adversaires. Il peut donc bien prévoir seul tout en n'ajoutant presque rien après
 les autres facteurs. La victoire de Joint ne sert ni au réglage ni à la
 sélection. La période 2025–2026 n'est pas une nouvelle confirmation prospective ;
-aucune variable n'est activée et le champion reste inchangé. Rejouer :
+aucune variable n'est activée et le champion reste inchangé.
+
+Le bilan global seul est néanmoins inscrit comme `styles_adverses_global_v1`
+dans `candidats_algorithmes.json`. Le rapport conserve son modèle complet
+(coefficients, moyennes et écarts de standardisation) pour figer exactement le
+challenger. Cette inscription ne change aucune probabilité publiée : une promotion
+exige toujours un apport incrémental apparié au champion sur au moins 1 000
+nouveaux pronostics figés et huit semaines ISO, avec Brier non dégradé. Rejouer :
 
 ```bash
 python simulateur/etude_styles_seuls.py /tmp/sackmann . --maximum 8000 --bootstrap 2000
