@@ -76,6 +76,25 @@
       "resultat_diagnostic": "signal_autonome_positif_apport_incremental_non_confirme",
       "activation": false
     },
+    "statistiques_styles_adverses_v1": {
+      "famille": "écarts détaillés service, retour, deuxième balle et balles de break contre le style adverse",
+      "implementation": "etude_statistiques_styles.py, statistiques_styles.py et modele_statistiques_styles.json",
+      "parametres": {
+        "candidat_choisi_sur_2024": "pression",
+        "reference_incrementale": "contrôles Elo/service–retour + bilan global",
+        "ridge": 1.0,
+        "decouverte": "2024",
+        "diagnostic_reutilise": "2025–2026",
+        "surface_journalisee": "Hard",
+        "selection_surface": "sous-groupe repéré post hoc, jamais validé par le même historique",
+        "confirmation_apres": "2026-10-28T00:00:00+00:00",
+        "confirmation_exigee": "au moins 1 000 matchs sur dur et huit semaines ISO, gains appariés contre le champion et le contrôle avec bilan"
+      },
+      "statut": "diagnostic",
+      "suivi": "prospectif_dur_uniquement",
+      "resultat_diagnostic": "global_non_confirmant_signal_dur_positif_sous_seuil_post_hoc",
+      "activation": false
+    },
     "pression_v2": {
       "famille": "résidus de pression avec récence, surface, circuit et force adverse",
       "implementation": "pression_v2.py, etude_pression_v2.py et modele_pression_v2.json",
@@ -119,7 +138,8 @@
     "distribution_scores_exacte_v1": {"implementation": "distribution_exacte.py", "change_le_pronostic": false},
     "connecteurs_contexte_v1": {"implementation": "contexte_optionnel.py", "change_le_pronostic": false},
     "evolution_statistiques_joueurs_v1": {"implementation": "evolution_statistiques.py", "change_le_pronostic": false, "descriptif_seulement": true},
-    "suivi_styles_global_v1": {"implementation": "styles_global.py et modele_styles_global.json", "change_le_pronostic": false, "second_avis_journalise": true, "bonus_par_paire": false}
+    "suivi_styles_global_v1": {"implementation": "styles_global.py et modele_styles_global.json", "change_le_pronostic": false, "second_avis_journalise": true, "bonus_par_paire": false},
+    "suivi_statistiques_styles_dur_v1": {"implementation": "statistiques_styles.py et modele_statistiques_styles.json", "change_le_pronostic": false, "second_avis_journalise": true, "surface": "Hard", "sous_groupe_post_hoc": true}
   },
   "securite": "Aucun secret, identifiant privé ou contenu R2 privé n’a été demandé ou consulté.",
   "marche": "Le marché ne doit pas devenir une entrée du modèle indépendant. Les recherches marché/H13–H20 restent séparées ou servent à l’évaluation externe."
