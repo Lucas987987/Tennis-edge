@@ -136,6 +136,8 @@ jobs:
           R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
         run: |
           python simulateur/roi_algo.py . --telegram
+          # 28/10/2026 : désaccords algo / marché (loupe, jamais une entrée du modèle) — Telegram privé + coffre
+          python simulateur/rapport_desaccords.py /tmp/sackmann . --telegram || echo '::warning::rapport des désaccords non fait'
           # 28/10/2026 : le rapport JSON du ROI va au coffre privé (R2) et sort du dépôt public
           python scripts/coffre.py push --groupe roi || true
           python scripts/coffre.py retirer --groupe roi || true

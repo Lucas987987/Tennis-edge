@@ -139,6 +139,10 @@ class ApprentissageControle(unittest.TestCase):
     def test_workflow_reapprend_avant_chaque_pronostic_et_publie_la_decision(self):
         racine = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
         chemin = os.path.join(racine, '.github', 'workflows', 'pronostics_quotidien.yml')
+        # 28/10/2026 : les runs de pronostics n'extraient pas .github/ (checkout partiel) ; ce contrôle tourne dans
+        # le workflow « Tests » (dépôt complet). Sans ce saut, il bloquait TOUS les pronostics du jour.
+        if not os.path.exists(chemin):
+            self.skipTest('workflow absent du checkout partiel (vérifié par le workflow Tests)')
         with open(chemin, encoding='utf-8') as f:
             workflow = f.read()
         apprentissage = 'run: python simulateur/apprentissage_continu.py .'

@@ -270,6 +270,20 @@ def charger_facteurs(racine):
 
 
 FACTEURS, CONTEXTE = None, None
+FORME_SCORES = None             # 28/10/2026 : (coefs, profils) si la forme des scores par profil est adoptée
+
+
+def charger_forme_scores(racine):
+    """(coefs, profils) si facteurs.json l'a ADOPTÉE (forme_scores.py, règle fixée, stabilité), sinon None."""
+    try:
+        with open(os.path.join(racine, 'simulateur', 'facteurs.json'), encoding='utf-8') as f:
+            fs = json.load(f).get('forme_scores') or {}
+        if not fs.get('adopte') or not fs.get('coefs'):
+            return None
+        with open(os.path.join(racine, 'simulateur', 'profil_rythme.json'), encoding='utf-8') as f:
+            return fs['coefs'], json.load(f).get('joueurs') or {}
+    except (OSError, ValueError):
+        return None
 
 
 def charger_reglage_simulation(racine):
@@ -387,6 +401,14 @@ def distribution_exacte_du_match(P, h, a, c, s, sg, p_home, fct=None, pure=False
     cH, cA = avec_facteurs(cH, cA, fct)
     sigma = sigma_sim() if pure else SIGMA
     distribution = DE.distribution_forme(cH, cA, sg, sigma, p_victoire=p_home)
+    forme = None
+    if FORME_SCORES and not pure and sg == 2:
+        # 28/10/2026 : forme du match selon les profils (tie-break, 3 sets) ; vainqueur inchangé par construction
+        import forme_scores as FS
+        f = FS.caracteristiques(FORME_SCORES[1].get(h), FORME_SCORES[1].get(a))
+        if f:
+            distribution = FS.reponderer(distribution, f, FORME_SCORES[0])
+            forme = {'caracteristiques': [round(x, 4) for x in f], 'coefs': FORME_SCORES[0]}
     controle = DE.controle(distribution)
     victoire = DE.victoire_depuis_distribution(distribution)
     if not controle['ok'] or abs(victoire - p_home) > 1e-8:
@@ -397,7 +419,8 @@ def distribution_exacte_du_match(P, h, a, c, s, sg, p_home, fct=None, pure=False
             'distribution': [{'score': r['score'], 'vainqueur': r['vainqueur'],
                               'probabilite': round(r['probabilite'], 12)} for r in rows],
             'controle': {'somme': controle['somme'], 'n_scores': controle['n_scores'],
-                         'victoire_home': victoire, 'monte_carlo': False}}
+                         'victoire_home': victoire, 'monte_carlo': False},
+            'forme_profils': forme}
 
 
 def matchs_a_venir(racine, maintenant, avec_couverture=False):
@@ -456,6 +479,8 @@ def construire(racine, maintenant=None):
         CLASSEMENTS = None
     REGLAGE_SIM = charger_reglage_simulation(racine)
     FACTEURS, CONTEXTE = charger_facteurs(racine)
+    global FORME_SCORES
+    FORME_SCORES = charger_forme_scores(racine)
     venir, couverture_horodatages = matchs_a_venir(racine, maintenant, avec_couverture=True)
     # Un joueur = un classement : alias du dernier calcul, puis noms nouveaux reliés au joueur connu.
     alias = dict(etat.get('alias') or {})
@@ -526,6 +551,13 @@ def construire(racine, maintenant=None):
                                                     controler_stabilite=(nom_v == 'combinaison'))
                     v['scores_exact'] = distribution_exacte_du_match(PR, h, a, c, s, sg, v['p_home'], fct)
                     v['scores_probables'] = v['scores_exact']['scores']
+                    if v['scores_exact'].get('forme_profils'):          # sets cohérents avec les scores inclinés
+                        sets = {}
+                        for row in v['scores_exact']['distribution']:
+                            k = f"{sum(x > y for x, y in row['score'])}-{sum(y > x for x, y in row['score'])}"
+                            sets[k] = sets.get(k, 0.0) + row['probabilite']
+                        ordre = ('2-0', '2-1', '1-2', '0-2')
+                        v['sets'] = {k: round(sets.get(k, 0.0), 4) for k in ordre}
         out.append({'uid': uid,
                     'debut': x['debut'].isoformat(timespec='minutes'), 'debut_utc': x['debut_utc'],
                     'horodatage': x['horodatage'], 'tournoi': x['tournoi'], 'circuit': c,
