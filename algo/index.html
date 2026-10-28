@@ -318,6 +318,9 @@ body.carte #video{display:block;width:1080px;height:1350px}
   @keyframes popdoux{0%,100%{opacity:0}15%,80%{opacity:1}}
 }
 .cv-h{font-size:1rem;margin:18px 0 4px}.cv-p{color:var(--dim);font-size:.85rem;margin:0 0 8px}.cv-wrap{overflow-x:auto}.cv{font-size:.85rem;width:100%}.cv td,.cv th{padding:6px 5px}.cv td:not(:first-child),.cv th:not(:first-child){text-align:right;white-space:nowrap}.cv-n{color:var(--dim);font-size:.75rem}
+.essentiel ul{list-style:none;margin:0;padding:4px 16px 16px;display:grid;gap:6px}.essentiel li{padding:7px 10px;border-radius:9px;background:rgba(255,255,255,.04);border-left:3px solid var(--dim);font-size:.92rem;line-height:1.4}.essentiel li.plus{border-left-color:var(--ok)}.essentiel li.moins{border-left-color:var(--ko)}.essentiel li.info{border-left-color:var(--ball)}
+.evol{margin:6px 0 0;color:var(--dim);font-size:.82rem}.badge.peu{background:rgba(255,107,134,.16);color:var(--ko)}
+.res li.avec-am{grid-template-columns:1.8em 1fr auto}.res li .am{grid-column:1/-1}.am summary{cursor:pointer;font-weight:600;font-size:.88rem;color:var(--ball);min-height:36px;display:flex;align-items:center}.am h4{margin:10px 0 4px;font-size:.88rem}.am-t{font-size:.85rem;width:100%}.am-t td{vertical-align:top}.am-t th,.am-t td:first-child{text-align:left}.am-t td+td{text-align:right}.am-ok{color:var(--ok)}.am-ko{color:var(--ko)}.am .d{color:var(--dim);font-size:.8rem}
 </style>
 </head>
 <body>
@@ -449,6 +452,21 @@ const T = {
   styles_att_match:a=>`attendu ${pc(a)}`,
   styles_diff:(n,e,o)=>`Difficulté des adversaires : ${dec(n,1)}/10 · Elo moyen ${fmt(e)} · ${fmt(o)} fois outsider`,
   styles_note:'Écart « net » : le chiffre attendu tombe hors de la fourchette probable (intervalle de confiance à 95 %). Styles internes mesurés au service et au retour, non comparables aux catégories d’un site tiers.',
+  es_titre:'L’essentiel', es_favori:(n,p,f,fem)=>`${n} ${fem?'favorite':'favori'} à ${p}${f ? ', ' + f : ''}.`, es_fiab:(niv,note)=>`fiabilité ${({fragile:'fragile',prudent:'prudente',correct:'correcte',solide:'solide'})[niv]||niv} (${note}/100)`,
+  es_evol:(n,p0,p1,d)=>`Pronostic de ${n} passé de ${p0} à ${p1} depuis le premier affichage${d ? ' (' + d + ')' : ''}.`,
+  es_raisons:r=>`Pourquoi : ${r}.`, es_raisons_donnees:'Pourquoi : nouveaux résultats et nouvelles données des joueurs.',
+  es_premier:(p,n,d)=>`Premier pronostic : ${n} ${p}${d ? ' (' + d + ')' : ''}`,
+  es_peu:(n,b,fem)=>`${n} est peu ${fem?'documentée':'documenté'} (${fmt(b)} balles de service) : c’est la tranche où l’algo se trompe le plus, prudence.`,
+  es_tres_peu:(n,b,fem)=>`${n} est très peu ${fem?'documentée':'documenté'} (${fmt(b)} balles de service) : estimation surtout fondée sur son classement et ses résultats.`,
+  es_duree:d=>`Durée prévue ${d}.`, es_style_rien:'Aucun écart net contre le style adverse.',
+  es_badge:'peu documenté', es_badge_aide:'Un joueur a moins de 1 500 balles de service dans nos données',
+  am_titre:'Bilan après match', am_vainqueur:'Vainqueur', am_vainqueur_v:(n,p)=>`${n} : l’algo lui donnait ${p}`,
+  am_score:'Score', am_rang:(r,p)=>`${r}e score le plus probable (${p} %)`, am_hors:'hors des scores prévus à plus de 0,1 %',
+  am_top:s=>`Les 3 plus probables : ${s}`, am_sets:'Sets', am_sets_v:(s,p)=>`${s} : probabilité donnée ${p}`,
+  am_duree:'Durée', am_duree_v:(p,a,b,r)=>`prévue ${p} (${a} – ${b}), réelle ${r}`, am_duree_inc:p=>`prévue ${p}, réelle pas encore connue`,
+  am_oui:'oui', am_non:'non', am_lignes:'Lignes de l’algo (une ligne à 30 % qui n’arrive pas n’est pas une erreur)', am_prevu:'Prévu', am_arrive:'Arrivé', am_handicap:k=>`Favori gagne de plus de ${dec(k,1)} jeux`,
+  am_feuille:'Feuille de match : prévu → réel',
+  am_note:d=>`Dernier pronostic affiché avant le match (${d}). Tous ces bilans sont gardés et analysés par l’algo (analyse_apres_match.json) ; rien n’entre dans le modèle sans le test habituel.`,
   sv_rien:'Rien de net contre ce style', sv_plus:e=>`Réussit contre ce style : ${dec(e,1)} pts de plus que prévu`,
   sv_moins:e=>`Peine contre ce style : ${dec(Math.abs(e),1)} pts de moins que prévu`,
   sv_detail:(p,a,n)=>`${Math.round(p)} % de victoires, ${Math.round(a)} % attendus vu le niveau de ses adversaires (${fmt(n)} matchs).`,
@@ -567,6 +585,21 @@ const T = {
   styles_att_match:a=>`expected ${pc(a)}`,
   styles_diff:(n,e,o)=>`Opponent difficulty: ${dec(n,1)}/10 · average Elo ${fmt(e)} · underdog ${fmt(o)} times`,
   styles_note:'A “clear” gap: the expected figure falls outside the likely range (95% confidence interval). Internal serve–return styles, not comparable with third-party categories.',
+  es_titre:'Key points', es_favori:(n,p,f)=>`${n} favourite at ${p}${f ? ', ' + f : ''}.`, es_fiab:(niv,note)=>`${({fragile:'fragile',prudent:'cautious',correct:'fair',solide:'strong'})[niv]||niv} reliability (${note}/100)`,
+  es_evol:(n,p0,p1,d)=>`${n}’s forecast moved from ${p0} to ${p1} since first shown${d ? ' (' + d + ')' : ''}.`,
+  es_raisons:r=>`Why: ${r}.`, es_raisons_donnees:'Why: new results and new player data.',
+  es_premier:(p,n,d)=>`First forecast: ${n} ${p}${d ? ' (' + d + ')' : ''}`,
+  es_peu:(n,b)=>`${n} has little data (${fmt(b)} service points): the band where the model errs most, be careful.`,
+  es_tres_peu:(n,b)=>`${n} has very little data (${fmt(b)} service points): estimate mostly from ranking and results.`,
+  es_duree:d=>`Expected length ${d}.`, es_style_rien:'No clear gap against the opponent’s style.',
+  es_badge:'little data', es_badge_aide:'One player has fewer than 1,500 service points in our data',
+  am_titre:'After-match review', am_vainqueur:'Winner', am_vainqueur_v:(n,p)=>`${n}: the model gave ${p}`,
+  am_score:'Score', am_rang:(r,p)=>`#${r} most likely score (${p}%)`, am_hors:'outside the scores predicted above 0.1%',
+  am_top:s=>`3 most likely: ${s}`, am_sets:'Sets', am_sets_v:(s,p)=>`${s}: probability given ${p}`,
+  am_duree:'Length', am_duree_v:(p,a,b,r)=>`expected ${p} (${a} – ${b}), actual ${r}`, am_duree_inc:p=>`expected ${p}, actual not yet known`,
+  am_oui:'yes', am_non:'no', am_lignes:'Model lines (a 30% line that does not happen is not a mistake)', am_prevu:'Forecast', am_arrive:'Happened', am_handicap:k=>`Favourite wins by more than ${dec(k,1)} games`,
+  am_feuille:'Match stats: forecast → actual',
+  am_note:d=>`Last forecast shown before the match (${d}). Every review is kept and analysed by the model (analyse_apres_match.json); nothing enters the model without the usual test.`,
   sv_rien:'Nothing clear against this style', sv_plus:e=>`Does well against this style: ${dec(e,1)} pts above expectation`,
   sv_moins:e=>`Struggles against this style: ${dec(Math.abs(e),1)} pts below expectation`,
   sv_detail:(p,a,n)=>`${Math.round(p)}% wins, ${Math.round(a)}% expected given the level of the opponents (${fmt(n)} matches).`,
@@ -698,8 +731,12 @@ function rendDuel(d,m){
 // 28/10/2026 — phrases en clair : on ne dit quelque chose que si l'écart est net (seuils fixes ci-dessous),
 // sinon « rien ne sort de l'ordinaire ». Duel : écart de 10 points d'indice (même seuil que les lignes).
 function phraseDuel(d,N){
-  const E = {}; d.duels.forEach(x=>{ E[x.service] = x.ecart; });
-  if (E[0]==null || E[1]==null) return '';
+  const v = duelTexte(d,N);
+  return v ? `<p class="sv-phrase ${v.sens}">${esc(v.txt)}</p>` : '';
+}
+function duelTexte(d,N){
+  const E = {}; (d && d.duels || []).forEach(x=>{ E[x.service] = x.ecart; });
+  if (E[0]==null || E[1]==null) return null;
   const cl = s => { const e=E[s], r=1-s; return e>=10 ? 'srv' : e<=-10 ? 'ret' : 'eq'; };
   const a = cl(0), b = cl(1);
   let txt, sens = 'neutre';
@@ -713,12 +750,16 @@ function phraseDuel(d,N){
     sens = 'info';
   }
   if (sens==='neutre' && !(a==='eq' && b==='eq')) sens = 'info';
-  return `<p class="sv-phrase ${sens}">${esc(txt)}</p>`;
+  return { txt, sens };
 }
 const RY_ECART = 5, RY_RYTHME = 5;   // repères : médiane des joueurs du MÊME circuit (profil_rythme.references_circuit)
 function phraseRythme(r,m){
-  const J = r.joueurs || [], N = [court(m.home), court(m.away)];
-  if (J.length!==2 || !J[0] || !J[1]) return '';
+  const v = rythmeTexte(r,m);
+  return v ? `<p class="sv-phrase ${v.sens}">${esc(v.txt)}</p>` : '';
+}
+function rythmeTexte(r,m){
+  const J = (r && r.joueurs) || [], N = [court(m.home), court(m.away)];
+  if (J.length!==2 || !J[0] || !J[1]) return null;
   const out = [];
   const moy = k => (J[0][k]!=null && J[1][k]!=null) ? (J[0][k]+J[1][k])/2 : null;
   const r0 = v => L==='fr' ? Math.round(v)+' %' : Math.round(v)+'%';
@@ -730,10 +771,42 @@ function phraseRythme(r,m){
   if (s3!=null && r3!=null && s3 <= r3-RY_ECART) out.push(t('ry_p_3s_moins',r0(J[0].trois_sets_pct),r0(J[1].trois_sets_pct),r0(r3)));
   J.forEach((j,i)=>{ if (j.rythme_pct!=null && Math.abs(j.rythme_pct) >= RY_RYTHME) out.push(t(j.rythme_pct<0?'ry_p_vite':'ry_p_lent',N[i],j.rythme_pct)); });
   J.forEach((j,i)=>{ if (j.regularite==='jours_sans_frequents') out.push(t('ry_p_jours',N[i])); });
-  if (!out.length) return `<p class="sv-phrase neutre">${esc(t('ry_p_rien'))}</p>`;
+  if (!out.length) return { txt: t('ry_p_rien'), sens: 'neutre' };
   const txt = out.map((x,i)=>i===0 ? x.charAt(0).toUpperCase()+x.slice(1) : x).join(' ; ') + '.';
-  return `<p class="sv-phrase info">${esc(txt)}</p>`;
+  return { txt, sens: 'info' };
 }
+// 28/10/2026 — L'ESSENTIEL : les conclusions des cartes en quelques lignes, en tête de la fiche (les cartes restent).
+const DOC_PEU = 1500, DOC_TRES_PEU = 500;   // balles de service effectives (tranche 500–1 500 : l'algo s'y trompe le plus)
+function peuDocumentes(m){
+  const d = m.documentation; if (!Array.isArray(d)) return [];
+  return [0,1].filter(i=>d[i]!=null && d[i] < DOC_PEU).map(i=>({ nom: i===0?m.home:m.away, balles: d[i] }));
+}
+function evolutionTexte(m){
+  const e = m.evolution; if (!e || Math.abs(e.ecart_pts) < 1) return null;
+  const fav = e.premier_p_home >= .5 ? m.home : m.away, p0 = e.premier_p_home >= .5 ? e.premier_p_home : 1-e.premier_p_home;
+  const p1 = e.premier_p_home >= .5 ? m.p_home : 1-m.p_home;
+  return t('es_evol', court(fav), pc0(p0), pc0(p1), e.premier_le ? dateHeure(e.premier_le) : '') +
+    (e.raisons && e.raisons.length ? ' ' + t('es_raisons', e.raisons.join(' ; ')) : ' ' + t('es_raisons_donnees'));
+}
+function rendEssentiel(m){
+  const L_ = [], fav = m.p_home >= .5 ? m.home : m.away, pf = Math.max(m.p_home, 1-m.p_home), fb = m.fiabilite || {};
+  const fem = m.circuit === 'WTA';
+  L_.push({ sens:'info', txt: t('es_favori', fav, pc0(pf), fb.niveau ? t('es_fiab', fb.niveau, fb.note) : '', fem) });
+  const ev = evolutionTexte(m); if (ev) L_.push({ sens:'info', txt: ev });
+  peuDocumentes(m).forEach(x=>L_.push({ sens:'moins', txt: t(x.balles < DOC_TRES_PEU ? 'es_tres_peu' : 'es_peu', x.nom, x.balles, fem) }));
+  const N = [court(m.home), court(m.away)];
+  const du = m.duel ? duelTexte(m.duel, N) : null; if (du) L_.push(du);
+  const ry = m.rythme ? rythmeTexte(m.rythme, m) : null, pv = m.rythme && m.rythme.prevision;
+  if (pv || ry) L_.push({ sens: ry ? ry.sens : 'neutre', txt: (pv ? t('es_duree', hm(pv.minutes)) + ' ' : '') + (ry ? ry.txt : '') });
+  const sd = m.styles_descriptifs;
+  if (sd && Array.isArray(sd.joueurs) && sd.joueurs.length===2){
+    const nets = sd.joueurs.map((j,i)=>({ j, i, v: verdictStyle(j.global) })).filter(x=>x.v && x.v.net);
+    if (nets.length) nets.forEach(x=>L_.push({ sens: x.v.sens, txt: `${i18nNom(x.i===0?m.home:m.away)} : ${x.v.texte}.` }));
+    else L_.push({ sens:'neutre', txt: t('es_style_rien') });
+  }
+  return `<div class="panel essentiel"><h3>${esc(t('es_titre'))}</h3><ul>${L_.map(x=>`<li class="${x.sens}">${esc(x.txt)}</li>`).join('')}</ul></div>`;
+}
+function i18nNom(n){ return court(n); }
 function rendRythme(r,m){
   if (!r || r.descriptif_seulement !== true) return '';
   const pv = r.prevision, J = r.joueurs || [];
@@ -1245,8 +1318,10 @@ function rendMdj(){
         <div class="tir" aria-hidden="true"><i style="width:${(p*100).toFixed(1)}%"></i></div>
         <div class="ligne l2"><span class="nm">${esc(m.away)}</span><span class="pc">${pc0(1-p)}</span></div>
         <div class="ligne" style="margin-top:8px"><span class="cj">${esc(t('cote_juste'))} ${odds(m.cotes_justes[0])}</span><span class="cj">${esc(t('cote_juste'))} ${odds(m.cotes_justes[1])}</span></div>
+        ${m.evolution && Math.abs(m.evolution.ecart_pts) >= 1 ? `<p class="evol">${esc(t('es_premier', pc0(m.evolution.premier_p_home), court(m.home), m.evolution.premier_le ? dateHeure(m.evolution.premier_le) : ''))}</p>` : ''}
         ${rendFiabilite(m.fiabilite, true)}
       </div>
+      ${rendEssentiel(m)}
       ${rendStylesDescriptifs(m.styles_descriptifs,m)}
       <div class="duo">
         ${bo ? `<div class="panel"><h3>${esc(t('sets_titre'))}</h3><div class="bars">${bo}</div></div>` : ''}
@@ -1289,7 +1364,7 @@ function rendListe(){
   ul.innerHTML = visibles.map(m=>{ const p=m.p_home, star=m.uid===mdj, selection=m.uid===(selectionId||mdj);
     return `<li class="${star?'star ':''}${selection?'selectionne':''}"><a class="match-open" href="${m.uid===mdj?'#':'#match='+encodeURIComponent(m.uid)}" data-uid="${esc(m.uid)}" data-circuit="${esc(m.circuit)}" aria-current="${selection?'true':'false'}" aria-label="${esc(t('voir_simulation'))} ${esc(m.home)} – ${esc(m.away)}">
       <span class="time">${esc(heure(m.debut))}</span><span>
-      <span class="tour">${esc(m.tournoi)} · ${esc(SURF[L][m.surface]||m.surface||'')}${star ? `<span class="badge">${esc(L==='fr'?'du jour':'of the day')}</span>` : ''}</span>
+      <span class="tour">${esc(m.tournoi)} · ${esc(SURF[L][m.surface]||m.surface||'')}${star ? `<span class="badge">${esc(L==='fr'?'du jour':'of the day')}</span>` : ''}${peuDocumentes(m).length ? `<span class="badge peu" title="${esc(t('es_badge_aide'))}">${esc(t('es_badge'))}</span>` : ''}</span>
       <span class="pl a"><span>${esc(m.home)}</span><b>${pc0(p)}</b></span>
       <span class="pl b"><span>${esc(m.away)}</span><b>${pc0(1-p)}</b></span>
       <span class="mini" aria-hidden="true"><i style="width:${(p*100).toFixed(1)}%"></i></span>
@@ -1312,6 +1387,32 @@ function courbeSvg(c){
     <polyline fill="none" stroke="#D4FF3A" stroke-width="4" stroke-linejoin="round" points="${pts}"/>
     <circle cx="${x(c.length-1)}" cy="${y(c[c.length-1].pct)}" r="7" fill="#D4FF3A"/><text x="${w}" y="${y(c[c.length-1].pct)-16}" text-anchor="end" font-size="22" font-weight="600" fill="#F4F1FF">${pc(c[c.length-1].pct)}</text></svg>`;
 }
+// 28/10/2026 — BILAN APRÈS MATCH : le dernier pronostic affiché avant le match contre ce qui s'est passé.
+function rendApresMatch(b){
+  const P = b.prevu || {}, R = b.reel || {}, E = b.ecarts || {}, N = [court(b.home), court(b.away)];
+  const ok = v => v ? '<b class="am-ok">✓</b>' : '<b class="am-ko">✗</b>';
+  const lig = [];
+  const gagnant = R.gagnant==='home' ? b.home : b.away;
+  if (E.p_vainqueur!=null) lig.push(`<tr><th>${esc(t('am_vainqueur'))}</th><td>${esc(t('am_vainqueur_v', court(gagnant), pc0(E.p_vainqueur)))}</td><td>${ok(E.vainqueur_juste)}</td></tr>`);
+  if (R.score) lig.push(`<tr><th>${esc(t('am_score'))}</th><td>${esc(R.score)} · ${esc(E.score_rang ? t('am_rang', E.score_rang, dec(100*E.score_proba,1)) : t('am_hors'))}${(P.scores||[]).length ? `<br><span class="d">${esc(t('am_top', P.scores.map(x=>x[0]).join(' / ')))}</span>` : ''}</td><td>${ok(E.score_dans_top3)}</td></tr>`);
+  if (E.sets_proba!=null) lig.push(`<tr><th>${esc(t('am_sets'))}</th><td>${esc(t('am_sets_v', R.sets, pc0(E.sets_proba)))}</td><td></td></tr>`);
+  const du = P.duree;
+  if (du && R.minutes) lig.push(`<tr><th>${esc(t('am_duree'))}</th><td>${esc(t('am_duree_v', hm(du.minutes), hm(du.minutes_p10), hm(du.minutes_p90), hm(R.minutes)))}</td><td>${ok(E.duree_dans_fourchette)}</td></tr>`);
+  else if (du) lig.push(`<tr><th>${esc(t('am_duree'))}</th><td>${esc(t('am_duree_inc', hm(du.minutes)))}</td><td></td></tr>`);
+  const L2 = E.lignes || {}, choix = ['total_plus_20.5','total_plus_22.5','handicap_favori_2.5','handicap_favori_4.5','tie_break','set_decisif','set1_home'];
+  const lgs = choix.filter(k=>L2[k]).map(k=>{ const [p,v]=L2[k];
+    const lib = k.startsWith('total_plus_') ? t('mk_total', parseFloat(k.slice(11))) : k.startsWith('handicap_favori_') ? t('am_handicap', parseFloat(k.slice(16))) :
+      k==='tie_break' ? t('mk_tb') : k==='set_decisif' ? t('mk_decisif') : t('mk_set1', N[0]);
+    return `<tr><td>${esc(lib)}</td><td>${pc0(p)}</td><td>${esc(t(v?'am_oui':'am_non'))}</td></tr>`; }).join('');
+  const F = P.feuille, FR = R.feuille;
+  const fe = (F && FR) ? [['aces','aces'],['doubles_fautes','df'],['breaks','breaks'],['premiere_pct','prem']].map(([k,lib])=>
+    `<tr><th>${esc(t(lib))}</th><td>${dec(F[0][k],1)} → <b>${dec(FR[0][k],k==='premiere_pct'?1:0)}</b></td><td>${dec(F[1][k],1)} → <b>${dec(FR[1][k],k==='premiere_pct'?1:0)}</b></td></tr>`).join('') : '';
+  return `<details class="am"><summary>${esc(t('am_titre'))}</summary>
+    <table class="sheet am-t"><tbody>${lig.join('')}</tbody></table>
+    ${lgs ? `<h4>${esc(t('am_lignes'))}</h4><table class="sheet am-t"><thead><tr><th></th><th>${esc(t('am_prevu'))}</th><th>${esc(t('am_arrive'))}</th></tr></thead><tbody>${lgs}</tbody></table>` : ''}
+    ${fe ? `<h4>${esc(t('am_feuille'))}</h4><table class="sheet am-t"><thead><tr><th></th><th class="c1">${esc(N[0])}</th><th class="c2">${esc(N[1])}</th></tr></thead><tbody>${fe}</tbody></table>` : ''}
+    <p class="aide">${esc(t('am_note', b.fige_le ? dateHeure(b.fige_le) : '—'))}</p></details>`;
+}
 function rendBilan(){
   const B = D.bilan || {}, C = circBilan==='TOUS' ? null : (B.par_circuit||{})[circBilan], g = circBilan==='TOUS' ? B.global : C;
   document.querySelectorAll('.bilan-circ button').forEach(b=>b.setAttribute('aria-pressed', String(b.dataset.bc===circBilan)));
@@ -1330,9 +1431,10 @@ function rendBilan(){
   document.getElementById('bilan-res').innerHTML = res.slice(0,nRes).map(r=>{
     const pw = r.gagnant==='home' ? r.p_home : 1-r.p_home, w = r.gagnant==='home' ? r.home : r.away, l = r.gagnant==='home' ? r.away : r.home;
     const sc = r.score ? (r.gagnant==='home' ? r.score : r.score.split(' ').map(x=>x.split('-').reverse().join('-')).join(' ')) : '';
-    return `<li><span class="m ${r.juste?'ok':'ko'}" role="img" aria-label="${r.juste?(L==='fr'?'juste':'right'):(L==='fr'?'raté':'wrong')}">${r.juste?'✓':'✗'}</span>
+    const am = r.uid && D.apres_match && D.apres_match[r.uid];
+    return `<li${am?' class="avec-am"':''}><span class="m ${r.juste?'ok':'ko'}" role="img" aria-label="${r.juste?(L==='fr'?'juste':'right'):(L==='fr'?'raté':'wrong')}">${r.juste?'✓':'✗'}</span>
       <span><b style="font-weight:600">${esc(w)}</b> ${esc(L==='fr'?'bat':'d.')} ${esc(l)} ${sc?`<span class="d sc">${esc(sc)}</span>`:''}<br><span class="d">${esc(r.tournoi)} · ${esc(jourCourt(r.debut))}</span></span>
-      <span class="p">${pc0(pw)}</span></li>`; }).join('');
+      <span class="p">${pc0(pw)}</span>${am ? rendApresMatch(am) : ''}</li>`; }).join('');
   const more = document.getElementById('bilan-more');
   if (res.length > nRes){ more.hidden=false; more.textContent=t('voir_plus', Math.min(20,res.length-nRes)); more.onclick=()=>{ nRes+=20; rendBilan(); }; } else more.hidden=true;
 }
