@@ -42,6 +42,8 @@ jobs:
           sparse-checkout: |
             /simulateur/
             /scripts/closing_store.py
+            /scripts/coffre.py
+            /scripts/r2_io.py
             /Tennis_Edge_Lab/books.py
             /Tennis_Edge_Lab/bookmakers_sets_v5.py
             /Tennis_Edge_Lab/clv_source.py
@@ -129,7 +131,14 @@ jobs:
         env:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        run: python simulateur/roi_algo.py . --telegram
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+        run: |
+          python simulateur/roi_algo.py . --telegram
+          # 28/10/2026 : le rapport JSON du ROI va au coffre privé (R2) et sort du dépôt public
+          python scripts/coffre.py push --groupe roi || true
+          python scripts/coffre.py retirer --groupe roi || true
       - name: Publier
         run: |
           set -euo pipefail
@@ -139,7 +148,7 @@ jobs:
                      simulateur/profils_service.json simulateur/rapport_match_simule.json \
                      simulateur/reglages_match_simule.json simulateur/rapport_forme_du_jour.json \
                      simulateur/choix_simulation.json simulateur/facteurs.json simulateur/bilan_algo_etat.json \
-                     simulateur/rapport_ablation.json simulateur/rapport_evaluation_sorties.json                      simulateur/rapport_validation_fiabilite.json simulateur/rapport_surveillance_derive.json simulateur/rapport_roi_algo.json simulateur/rapport_profils_robustes.json simulateur/rapport_styles_joueurs.json simulateur/rapport_recalibrage.json                      simulateur/rapport_dependances_points.json simulateur/rapport_recherche_externe.json                      simulateur/rapport_gouvernance.json simulateur/gouvernance_etat.json \
+                     simulateur/rapport_ablation.json simulateur/rapport_evaluation_sorties.json                      simulateur/rapport_validation_fiabilite.json simulateur/rapport_surveillance_derive.json simulateur/rapport_profils_robustes.json simulateur/rapport_styles_joueurs.json simulateur/rapport_recalibrage.json                      simulateur/rapport_dependances_points.json simulateur/rapport_recherche_externe.json                      simulateur/rapport_gouvernance.json simulateur/gouvernance_etat.json \
                      simulateur/recap_apprentissage.json simulateur/recap_apprentissage.md \
                      Tennis_Edge_Lab/live/explorateur_pronostics.json.gz
           if [ -f simulateur/journal_decisions.jsonl ]; then git add -- simulateur/journal_decisions.jsonl; fi
