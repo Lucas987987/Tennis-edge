@@ -166,6 +166,11 @@ svg.curve{width:100%;height:auto;display:block}
 .style-chiffre .style-att{display:block;color:var(--ink);font-size:.8rem;margin:2px 0}.style-att b{font-weight:700}.style-att b.plus{color:var(--ok)}.style-att b.moins{color:var(--ko)}
 .style-chiffre .style-diff{display:block;color:var(--dim);font-size:.78rem;margin:1px 0 2px}
 .rythme .ry-duree{font-family:var(--cond);font-size:1.25rem;margin:4px 0 2px;color:var(--ink)}.rythme .ry-pts{color:var(--dim);font-size:.85rem;margin:0 0 10px}
+.marches .mk-g{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}.marches h4{margin:6px 0;font-size:.9rem;color:var(--dim);font-weight:600}
+.mk-l{position:relative;display:flex;justify-content:space-between;gap:8px;padding:5px 8px;margin:3px 0;border-radius:6px;overflow:hidden;font-size:.86rem;background:rgba(255,255,255,.03)}
+.mk-l i{position:absolute;left:0;top:0;bottom:0;background:var(--p1);opacity:.14;pointer-events:none}.mk-l b{font-variant-numeric:tabular-nums}
+.duel-sr .du-l{border-top:1px solid var(--line);padding:8px 0}.duel-sr .du-l p{margin:0 0 4px;font-size:.88rem;color:var(--dim)}
+.du-v{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.du-v b{font-family:var(--cond);font-size:1.5rem}.du-v .c1 b{color:var(--p1)}.du-v .c2 b{color:var(--p2)}.du-v em{color:var(--dim);font-style:normal}.duel-sr small{color:var(--ball)}
 .style-chiffre .style-ic{color:var(--dim);font-size:.78rem}.style-alerte{display:block;color:var(--ball);font-size:.76rem;margin-top:2px}.style-vide{font-size:1.15rem!important;color:var(--dim)!important}
 .style-details{margin-top:10px;border-top:1px solid var(--line)}.style-details summary{min-height:44px;display:flex;align-items:center;cursor:pointer;font-weight:600;font-size:.9rem}
 .style-matchs{list-style:none;margin:0;padding:0}.style-matchs li{display:grid;grid-template-columns:1.5em minmax(0,1fr) auto;gap:8px;padding:8px 0;border-top:1px solid var(--line);font-size:.86rem;align-items:start}
@@ -441,6 +446,14 @@ const T = {
   ry_lent:v=>`${dec(Math.abs(v),1)} % plus lent`, ry_rapide:v=>`${dec(Math.abs(v),1)} % plus rapide`, ry_moyen:'dans la moyenne',
   ry_reg_tres_regulier:'Très régulier', ry_reg_habituel:'Habituel', ry_reg_jours_sans_frequents:'Jours sans fréquents',
   ry_note:'Descriptif : ces chiffres ne modifient pas la probabilité. Durée = points simulés × rythme des deux joueurs (archive ATP/WTA). Régularité comparée aux joueurs du même circuit.',
+  mk_titre:"Lignes calculées par l'algo", mk_sous:"Probabilités tirées de la distribution exacte des scores de CE match — aucune cote utilisée.",
+  mk_total:k=>`Plus de ${dec(k,1)} jeux`, mk_handicap:(n,k)=>`${n} −${dec(k,1)} jeux`, mk_tb:'Au moins un tie-break',
+  mk_decisif:'Set décisif joué', mk_set1:n=>`${n} gagne le 1er set`, mk_jeux:j=>`${dec(j,1)} jeux en moyenne`,
+  mk_titre_total:'Total de jeux', mk_titre_handicap:'Handicap de jeux (favori)', mk_titre_forme:'Forme du match',
+  mk_note:"Chaque ligne est figée avant le match puis comparée au score réel. Vérifiées sur 2 468 matchs : meilleures qu'un taux fixe, avec un léger biais connu (matchs prévus un peu trop longs), corrigé dès que la correction en cours de jugement est adoptée.",
+  du_titre:'Duel service ↔ retour', du_sous:(s)=>`Indice 0–100 = rang parmi les joueurs du circuit sur ${s} (au moins 200 points joués).`,
+  du_ligne:(a,b)=>`${a} au service contre ${b} au retour`, du_srv:'Service', du_ret:'Retour', du_pts:p=>`${pc(p)} des points`,
+  du_avantage:(n)=>`avantage ${n}`, du_equilibre:'équilibré',
   aces:'Aces', df:'Doubles fautes', breaks:'Breaks réussis', prem:'1res balles (%)', jsg:'Jeux de service gagnés (%)',
   liste_titre:'Tous les matchs', liste_sous:"Choisis une affiche pour ouvrir ses sets, scores, statistiques et sa simulation de 20 000 tirages. Heure de ton appareil.",
   liste_vide:"Aucun match ne correspond à cette recherche.",
@@ -526,6 +539,14 @@ const T = {
   ry_lent:v=>`${dec(Math.abs(v),1)}% slower`, ry_rapide:v=>`${dec(Math.abs(v),1)}% faster`, ry_moyen:'average',
   ry_reg_tres_regulier:'Very consistent', ry_reg_habituel:'Typical', ry_reg_jours_sans_frequents:'Frequent off days',
   ry_note:'Descriptive: these figures do not change the probability. Length = simulated points × both players’ pace (ATP/WTA archive). Consistency compared with players on the same tour.',
+  mk_titre:"Lines computed by the algorithm", mk_sous:"Probabilities taken from the exact score distribution of THIS match — no odds used.",
+  mk_total:k=>`Over ${dec(k,1)} games`, mk_handicap:(n,k)=>`${n} −${dec(k,1)} games`, mk_tb:'At least one tiebreak',
+  mk_decisif:'Deciding set played', mk_set1:n=>`${n} wins set 1`, mk_jeux:j=>`${dec(j,1)} games on average`,
+  mk_titre_total:'Total games', mk_titre_handicap:'Game handicap (favourite)', mk_titre_forme:'Match shape',
+  mk_note:'Each line is frozen before the match and checked against the final score. Checked on 2,468 matches: better than a fixed rate, with a small known bias (matches predicted slightly too long), removed once the correction under review is adopted.',
+  du_titre:'Serve ↔ return duel', du_sous:(s)=>`Index 0–100 = rank among players on the same tour on ${s} (at least 200 points played).`,
+  du_ligne:(a,b)=>`${a} serving against ${b} returning`, du_srv:'Serve', du_ret:'Return', du_pts:p=>`${pc(p)} of points`,
+  du_avantage:(n)=>`edge ${n}`, du_equilibre:'even',
   aces:'Aces', df:'Double faults', breaks:'Breaks of serve', prem:'1st serves in (%)', jsg:'Service games won (%)',
   liste_titre:'All matches', liste_sous:'Pick a matchup to open its sets, scores, stats and 20,000-run simulation. Times in your device\'s time zone.',
   liste_vide:'No match matches this search.',
@@ -596,6 +617,25 @@ function heure(s){ return utc(s).toLocaleTimeString(loc(),{hour:'2-digit',minute
 function jourCourt(s){ return utc(s).toLocaleDateString(loc(),{weekday:'short',day:'numeric'}); }
 function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 function hm(min){ const h=Math.floor(min/60), m=Math.round(min%60); return L==='fr' ? `${h} h ${String(m).padStart(2,'0')}` : `${h}h ${String(m).padStart(2,'0')}m`; }
+function rendMarches(k,m){
+  if (!k) return '';
+  const fav = k.favori==='home' ? court(m.home) : court(m.away);
+  const bar = (lib,p) => `<div class="mk-l"><span>${esc(lib)}</span><b>${pc(100*p)}</b><i style="width:${(100*p).toFixed(0)}%"></i></div>`;
+  const tot = Object.keys(k).filter(x=>x.startsWith('total_plus_')).map(x=>bar(t('mk_total',parseFloat(x.slice(11))),k[x])).join('');
+  const hc = Object.keys(k).filter(x=>x.startsWith('handicap_favori_')).map(x=>bar(t('mk_handicap',fav,parseFloat(x.slice(16))),k[x])).join('');
+  const forme = bar(t('mk_tb'),k.tie_break) + bar(t('mk_decisif'),k.set_decisif) + bar(t('mk_set1',court(m.home)),k.set1_home);
+  return `<div class="panel marches"><h3>${esc(t('mk_titre'))}</h3><p class="styles-intro">${esc(t('mk_sous'))} ${esc(t('mk_jeux',k.jeux_moyen))}.</p>
+    <div class="mk-g"><div><h4>${esc(t('mk_titre_total'))}</h4>${tot}</div><div><h4>${esc(t('mk_titre_handicap'))}</h4>${hc}</div><div><h4>${esc(t('mk_titre_forme'))}</h4>${forme}</div></div>
+    <p class="styles-note">${esc(t('mk_note'))}</p></div>`;
+}
+function rendDuel(d,m){
+  if (!d || d.descriptif_seulement !== true) return '';
+  const N=[court(m.home),court(m.away)], J=d.joueurs;
+  const lig = d.duels.map(x=>{ const s=x.service, r=1-s, e=x.ecart;
+    const verdict = Math.abs(e)<10 ? t('du_equilibre') : t('du_avantage', e>0 ? N[s] : N[r]);
+    return `<div class="du-l"><p>${esc(t('du_ligne',N[s],N[r]))}</p><div class="du-v"><span class="${s===0?'c1':'c2'}"><b>${J[s].serv_indice}</b> ${esc(t('du_srv'))} · ${esc(t('du_pts',J[s].serv_pct))}</span><em>vs</em><span class="${r===0?'c1':'c2'}"><b>${J[r].ret_indice}</b> ${esc(t('du_ret'))} · ${esc(t('du_pts',J[r].ret_pct))}</span></div><small>${esc(verdict)}${Math.abs(e)>=10?` (${Math.abs(e)} pts)`:''}</small></div>`;}).join('');
+  return `<div class="panel duel-sr"><h3>${esc(t('du_titre'))}</h3><p class="styles-intro">${esc(t('du_sous', SURF[L][d.surface]||d.surface))}</p>${lig}</div>`;
+}
 function rendRythme(r,m){
   if (!r || r.descriptif_seulement !== true) return '';
   const pv = r.prevision, J = r.joueurs || [];
@@ -1081,6 +1121,8 @@ function rendMdj(){
         ${sc ? `<div class="panel"><h3>${esc(t('scores_titre'))}</h3><div class="bars">${sc}</div></div>` : ''}
       </div>
       ${lignes ? `<div class="panel"><h3>${esc(t('feuille_titre', nSim))}</h3><table class="sheet"><thead><tr><th></th><th class="c1">${esc(court(m.home))}</th><th class="c2">${esc(court(m.away))}</th></tr></thead><tbody>${lignes}</tbody></table></div>` : ''}
+      ${rendDuel(m.duel,m)}
+      ${rendMarches(m.lignes_algo,m)}
       ${rendRythme(m.rythme,m)}
     </div></div>`;
   if (m.simulation){
