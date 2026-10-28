@@ -45,5 +45,19 @@ class TestFemmes(unittest.TestCase):
         self.assertEqual([x.get('id') for x in T if x.get('source') == 'itf'], [1])   # le 28/05 est déjà dans l'archive
 
 
+class TestDecisionFemmes(unittest.TestCase):
+    def test_en_production_sauf_retrait(self):
+        import json
+        import tempfile
+        with tempfile.TemporaryDirectory() as d:
+            self.assertTrue(EI.itf_femmes_adoptees(d))                     # pas d'étude : décision du 29/10
+            os.makedirs(os.path.join(d, 'simulateur'))
+            chemin = os.path.join(d, EI.SORTIE)
+            json.dump({'femmes': {'adopte': False, 'statut': 'candidat (1/2)'}}, open(chemin, 'w'))
+            self.assertTrue(EI.itf_femmes_adoptees(d))                     # ancien rapport (avant la décision)
+            json.dump({'femmes': {'adopte': False, 'retire': True}}, open(chemin, 'w'))
+            self.assertFalse(EI.itf_femmes_adoptees(d))                    # retirées par le jugement
+
+
 if __name__ == '__main__':
     unittest.main()
