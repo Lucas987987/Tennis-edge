@@ -74,6 +74,29 @@ TRANCHES = ((0, 500, 'moins de 500'), (500, 1500, '500 à 1 500'), (1500, 3000, 
             (3000, float('inf'), '3 000 et plus'))
 
 
+def balles_par_nom(doc, noms):
+    """28/10/2026 — fonction nom -> balles de service effectives (0 si inconnu), joueurs retrouvés comme en
+    production (clé du nom, puis même joueur écrit autrement : elo.unifier). noms : les noms à relier."""
+    import elo as E
+    pos = {c: i for i, c in enumerate((doc or {}).get('champs') or [])}
+    balles, connus = {}, {}
+    if 'svpt' in pos:
+        for d in ((doc or {}).get('joueurs') or {}).values():
+            k = E.cle(d.get('nom') or '')
+            try:
+                b = float((d.get('sommes') or {}).get('all')[pos['svpt']])
+            except (TypeError, IndexError, ValueError):
+                continue
+            if k and b > balles.get(k, -1):
+                balles[k], connus[k] = b, d.get('nom')
+    alias = E.unifier(connus, list(noms))
+
+    def f(nom):
+        k = E.cle(nom or '')
+        return round(balles.get(alias.get(k, k), 0.0))
+    return f
+
+
 def couverture_pronostiques(doc, matchs, juge):
     """matchs : [{circuit, home, away, …}] jugés ; juge(m) -> (p_home, y) ou None (y = 1 si home gagne)."""
     import elo as E
