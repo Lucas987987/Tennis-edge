@@ -29,5 +29,25 @@ class Sigma(unittest.TestCase):
         self.assertEqual(SG.sigma_de({'CH': 0.22}, 'WTA'), 0.15)
 
 
+class Production(unittest.TestCase):
+    """28/10/2026 : décision de Lucas — Challenger 0,22 tout de suite ; retiré seulement si le jugement l'a sorti."""
+
+    def _charger(self, facteurs):
+        import json
+        import tempfile
+        import pronostics_du_jour as PD
+        with tempfile.TemporaryDirectory() as d:
+            os.makedirs(os.path.join(d, 'simulateur'))
+            if facteurs is not None:
+                with open(os.path.join(d, 'simulateur', 'facteurs.json'), 'w') as f:
+                    json.dump(facteurs, f)
+            return PD.charger_sigma_circuit(d)
+
+    def test_decision_puis_jugement(self):
+        self.assertEqual(self._charger(None), {'CH': 0.22})                      # pas encore jugé : décision
+        self.assertEqual(self._charger({'sigma_circuit': {'adopte': True, 'sigmas': {'CH': 0.26}}}), {'CH': 0.26})
+        self.assertIsNone(self._charger({'sigma_circuit': {'adopte': False, 'sigmas': {'CH': 0.26}}}))  # retiré
+
+
 if __name__ == '__main__':
     unittest.main()
