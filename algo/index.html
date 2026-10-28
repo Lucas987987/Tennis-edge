@@ -165,6 +165,7 @@ svg.curve{width:100%;height:auto;display:block}
 .style-joueur.home .style-chiffre strong{color:var(--p1)}.style-joueur.away .style-chiffre strong{color:var(--p2)}
 .style-chiffre .style-att{display:block;color:var(--ink);font-size:.8rem;margin:2px 0}.style-att b{font-weight:700}.style-att b.plus{color:var(--ok)}.style-att b.moins{color:var(--ko)}
 .style-chiffre .style-diff{display:block;color:var(--dim);font-size:.78rem;margin:1px 0 2px}
+.rythme .ry-duree{font-family:var(--cond);font-size:1.25rem;margin:4px 0 2px;color:var(--ink)}.rythme .ry-pts{color:var(--dim);font-size:.85rem;margin:0 0 10px}
 .style-chiffre .style-ic{color:var(--dim);font-size:.78rem}.style-alerte{display:block;color:var(--ball);font-size:.76rem;margin-top:2px}.style-vide{font-size:1.15rem!important;color:var(--dim)!important}
 .style-details{margin-top:10px;border-top:1px solid var(--line)}.style-details summary{min-height:44px;display:flex;align-items:center;cursor:pointer;font-weight:600;font-size:.9rem}
 .style-matchs{list-style:none;margin:0;padding:0}.style-matchs li{display:grid;grid-template-columns:1.5em minmax(0,1fr) auto;gap:8px;padding:8px 0;border-top:1px solid var(--line);font-size:.86rem;align-items:start}
@@ -434,6 +435,12 @@ const T = {
   styles_att_match:a=>`attendu ${pc(a)}`,
   styles_diff:(n,e,o)=>`Difficulté des adversaires : ${dec(n,1)}/10 · Elo moyen ${fmt(e)} · ${fmt(o)} fois outsider`,
   styles_note:'Lis l’effectif et l’intervalle de confiance, pas seulement le pourcentage. Styles internes mesurés au service et au retour, non comparables aux catégories d’un site tiers.',
+  ry_titre:'Durée et rythme', ry_duree:(m,a,b)=>`Durée prévue : ${hm(m)} (${hm(a)} – ${hm(b)} dans 8 cas sur 10)`, ry_points:(n,s)=>`≈ ${fmt(n)} points · ${dec(s,1)} s par point`,
+  ry_pts:'Points par match', ry_jeux:'Jeux par match', ry_min:'Durée moyenne de ses matchs', ry_rythme:'Rythme (temps par point)',
+  ry_tb:'Matchs avec tie-break', ry_3s:'Matchs en 3 sets', ry_reg:'Jours avec / jours sans', ry_matchs:n=>`Sur ${fmt(n)} matchs depuis 2021`,
+  ry_lent:v=>`${dec(Math.abs(v),1)} % plus lent`, ry_rapide:v=>`${dec(Math.abs(v),1)} % plus rapide`, ry_moyen:'dans la moyenne',
+  ry_reg_tres_regulier:'Très régulier', ry_reg_habituel:'Habituel', ry_reg_jours_sans_frequents:'Jours sans fréquents',
+  ry_note:'Descriptif : ces chiffres ne modifient pas la probabilité. Durée = points simulés × rythme des deux joueurs (archive ATP/WTA). Régularité comparée aux joueurs du même circuit.',
   aces:'Aces', df:'Doubles fautes', breaks:'Breaks réussis', prem:'1res balles (%)', jsg:'Jeux de service gagnés (%)',
   liste_titre:'Tous les matchs', liste_sous:"Choisis une affiche pour ouvrir ses sets, scores, statistiques et sa simulation de 20 000 tirages. Heure de ton appareil.",
   liste_vide:"Aucun match ne correspond à cette recherche.",
@@ -513,6 +520,12 @@ const T = {
   styles_att_match:a=>`expected ${pc(a)}`,
   styles_diff:(n,e,o)=>`Opponent difficulty: ${dec(n,1)}/10 · average Elo ${fmt(e)} · underdog ${fmt(o)} times`,
   styles_note:'Read the sample size and confidence interval, not just the percentage. Internal serve–return styles, not comparable with third-party categories.',
+  ry_titre:'Length and pace', ry_duree:(m,a,b)=>`Expected length: ${hm(m)} (${hm(a)} – ${hm(b)} 8 times out of 10)`, ry_points:(n,s)=>`≈ ${fmt(n)} points · ${dec(s,1)} s per point`,
+  ry_pts:'Points per match', ry_jeux:'Games per match', ry_min:'Average match length', ry_rythme:'Pace (time per point)',
+  ry_tb:'Matches with a tiebreak', ry_3s:'Three-set matches', ry_reg:'Good days / bad days', ry_matchs:n=>`From ${fmt(n)} matches since 2021`,
+  ry_lent:v=>`${dec(Math.abs(v),1)}% slower`, ry_rapide:v=>`${dec(Math.abs(v),1)}% faster`, ry_moyen:'average',
+  ry_reg_tres_regulier:'Very consistent', ry_reg_habituel:'Typical', ry_reg_jours_sans_frequents:'Frequent off days',
+  ry_note:'Descriptive: these figures do not change the probability. Length = simulated points × both players’ pace (ATP/WTA archive). Consistency compared with players on the same tour.',
   aces:'Aces', df:'Double faults', breaks:'Breaks of serve', prem:'1st serves in (%)', jsg:'Service games won (%)',
   liste_titre:'All matches', liste_sous:'Pick a matchup to open its sets, scores, stats and 20,000-run simulation. Times in your device\'s time zone.',
   liste_vide:'No match matches this search.',
@@ -582,6 +595,23 @@ function dateHeure(s){ return utc(s).toLocaleString(loc(),{day:'numeric',month:'
 function heure(s){ return utc(s).toLocaleTimeString(loc(),{hour:'2-digit',minute:'2-digit'}); }
 function jourCourt(s){ return utc(s).toLocaleDateString(loc(),{weekday:'short',day:'numeric'}); }
 function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function hm(min){ const h=Math.floor(min/60), m=Math.round(min%60); return L==='fr' ? `${h} h ${String(m).padStart(2,'0')}` : `${h}h ${String(m).padStart(2,'0')}m`; }
+function rendRythme(r,m){
+  if (!r || r.descriptif_seulement !== true) return '';
+  const pv = r.prevision, J = r.joueurs || [];
+  const val = (j,k,f) => j && j[k]!=null ? f(j[k]) : '—';
+  const rythme = v => Math.abs(v)<1.5 ? t('ry_moyen') : (v>0 ? t('ry_lent',v) : t('ry_rapide',v));
+  const rows = [['ry_pts',j=>val(j,'points_par_match',v=>fmt(Math.round(v)))],['ry_jeux',j=>val(j,'jeux_par_match',v=>dec(v,1))],
+    ['ry_min',j=>val(j,'minutes_par_match',hm)],['ry_rythme',j=>val(j,'rythme_pct',rythme)],
+    ['ry_tb',j=>val(j,'tiebreak_pct',pc)],['ry_3s',j=>val(j,'trois_sets_pct',pc)],
+    ['ry_reg',j=>j && j.regularite ? t('ry_reg_'+j.regularite) : '—']]
+    .map(([k,f])=>`<tr><th>${esc(t(k))}</th><td class="c1">${esc(f(J[0]))}</td><td class="c2">${esc(f(J[1]))}</td></tr>`).join('');
+  const n = J.filter(Boolean).map(j=>j.matchs);
+  return `<div class="panel rythme"><h3>${esc(t('ry_titre'))}</h3>
+    ${pv ? `<p class="ry-duree">${esc(t('ry_duree',pv.minutes,pv.minutes_p10,pv.minutes_p90))}</p><p class="ry-pts">${esc(t('ry_points',pv.points,pv.secondes_par_point))}</p>` : ''}
+    <table class="sheet"><thead><tr><th></th><th class="c1">${esc(court(m.home))}</th><th class="c2">${esc(court(m.away))}</th></tr></thead><tbody>${rows}</tbody></table>
+    <p class="styles-note">${esc(t('ry_note'))}</p></div>`;
+}
 function court(n){ const p = String(n).trim().split(/\s+/); return p.length>1 ? p.slice(1).join(' ') : n; }
 const CIRC = {ATP:'ATP', WTA:'WTA', CH:'Challenger'};
 const SURF = {fr:{Hard:'dur',Clay:'terre battue',Grass:'gazon',Carpet:'moquette'}, en:{Hard:'hard',Clay:'clay',Grass:'grass',Carpet:'carpet'}};
@@ -1051,6 +1081,7 @@ function rendMdj(){
         ${sc ? `<div class="panel"><h3>${esc(t('scores_titre'))}</h3><div class="bars">${sc}</div></div>` : ''}
       </div>
       ${lignes ? `<div class="panel"><h3>${esc(t('feuille_titre', nSim))}</h3><table class="sheet"><thead><tr><th></th><th class="c1">${esc(court(m.home))}</th><th class="c2">${esc(court(m.away))}</th></tr></thead><tbody>${lignes}</tbody></table></div>` : ''}
+      ${rendRythme(m.rythme,m)}
     </div></div>`;
   if (m.simulation){
     const fin = document.getElementById('final');

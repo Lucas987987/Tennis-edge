@@ -88,6 +88,10 @@ jobs:
         run: python simulateur/profils_service.py /tmp/sackmann .
       - name: Bilans descriptifs contre les styles service–retour
         run: python simulateur/styles_descriptifs.py /tmp/sackmann .
+      # 28/10/2026 : rythme, longueur et régularité des joueurs (descriptif) → durée prévue sur la fiche
+      - name: Profils de rythme et de longueur
+        continue-on-error: true
+        run: python simulateur/profil_rythme.py /tmp/sackmann .
       # À chaque passage : les nouveaux résultats de NOS pronostics figés réapprennent
       # le mélange simulation + Elo. La règle existante exige 30 nouveaux matchs depuis
       # le dernier jugement, un gain de log loss >= 0,001 et un Brier non dégradé.
