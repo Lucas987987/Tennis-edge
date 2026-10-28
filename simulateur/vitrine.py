@@ -277,14 +277,31 @@ def bilan(resultats, debut=DEBUT_BILAN, seulement=None):
                        'gagnant': reel['gagnant'], 'score': reel.get('score'), 'juste': (p > 0.5) == (y == 1),
                        'fiabilite': m.get('fiabilite')})
     lignes.sort(key=lambda x: x['debut'], reverse=True)
-    cumul, courbe = [], []
+    par_circuit = {}
+    for c, v in par_c.items():
+        jours_c = {}
+        for x in lignes:
+            if x['circuit'] == c:
+                y = 1 if x['gagnant'] == 'home' else 0
+                jours_c.setdefault(jour_paris(x['debut']), []).append((x['p_home'], y))
+        par_circuit[c] = dict(_mesures(v), courbe=_courbe(jours_c),
+                              derniers=[x for x in lignes if x['circuit'] == c][:40])
+    return {'depuis': debut, 'global': _mesures(points), 'par_circuit': par_circuit,
+            'calibration': calibration(points), 'courbe': _courbe(par_jour), 'derniers': lignes[:40]}
+
+
+COURBE_N_MIN = 10        # la courbe démarre quand 10 matchs sont jugés (avant : un pourcentage sur 3 matchs)
+
+
+def _courbe(par_jour):
+    """Taux de vainqueurs trouvés cumulé jour après jour (Europe/Paris)."""
+    cumul, out = [], []
     for j in sorted(par_jour):
         cumul += par_jour[j]
-        mm = _mesures(cumul)
-        courbe.append({'jour': j, 'n': mm['n'], 'pct': mm['pct']})
-    return {'depuis': debut, 'global': _mesures(points),
-            'par_circuit': {c: _mesures(v) for c, v in par_c.items()},
-            'calibration': calibration(points), 'courbe': courbe, 'derniers': lignes[:40]}
+        if len(cumul) >= COURBE_N_MIN:
+            mm = _mesures(cumul)
+            out.append({'jour': j, 'n': mm['n'], 'pct': mm['pct']})
+    return out
 
 
 def rejoue(racine):
