@@ -41,6 +41,9 @@ jobs:
           filter: blob:none
           sparse-checkout: |
             /simulateur/
+            /scripts/feuilles_match.py
+            /scripts/resultats_itf.py
+            /resultats_itf/
             /scripts/closing_store.py
             /scripts/coffre.py
             /scripts/r2_io.py

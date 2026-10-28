@@ -177,7 +177,7 @@ def sexe_de_circuit(c):
     return 'F' if c in ('WTA', 'ITF') else 'H'
 
 
-BAS = ('CH', 'ITF')          # niveaux où un nouveau joueur part plus bas (règle Tennis Abstract)
+BAS = ('CH', 'ITF', 'ITFH')  # niveaux où un nouveau joueur part plus bas (règle Tennis Abstract ; ITFH = ITF hommes, 28/10/2026)
 DEPART_BAS = 1200.0
 
 
@@ -194,6 +194,30 @@ def resultats_feuilles(racine, depuis):
             out.append(m)
     out.sort(key=lambda m: m['date'])
     return out
+
+
+def resultats_itf(racine, ids_feuilles=()):
+    """28/10/2026 — résultats ITF hommes collectés (scripts/resultats_itf.py → resultats_itf/), au format donnees ;
+    forfaits écartés ; un match déjà présent dans les feuilles (même identifiant TennisApi) n'est pas compté deux fois."""
+    import etude_itf_elo as EI
+    sys.path.insert(0, os.path.join(ICI, '..', 'scripts'))
+    try:
+        import resultats_itf as RI
+    except ImportError:
+        return []
+    ids = set(ids_feuilles or ())
+    out = [m for m in (EI.match_itf(r) for r in RI.lire_tout(racine)) if m and m.get('id') not in ids]
+    out.sort(key=lambda m: m['date'])
+    return out
+
+
+def itf_en_production(racine):
+    """Vrai sauf si l'étude hebdomadaire a RETIRÉ l'ITF (simulateur/etude_itf_elo.json, « adopte » = false)."""
+    try:
+        with open(os.path.join(racine, 'simulateur', 'etude_itf_elo.json'), encoding='utf-8') as f:
+            return bool(json.load(f).get('adopte', True))
+    except (OSError, ValueError):
+        return True
 
 
 def rejouer(M, nous, td_rows, cle_c, idx, depart_bas, nouveaux=False, options=None, feuilles=None):
@@ -456,8 +480,11 @@ def main(argv):
         connus.setdefault(E.cle(m['nom_p']), m['nom_p'])
     fe_rows = resultats_feuilles(racine, fin_sack + dt.timedelta(days=3))
     print(f"Feuilles TennisApi après l'archive : {len(fe_rows)} résultats", flush=True)
+    itf_rows = resultats_itf(racine, {m.get('id') for m in fe_rows if m.get('id')})
+    print(f"Résultats ITF hommes (resultats_itf/) : {len(itf_rows)} matchs", flush=True)
     alias = E.unifier(connus, {x['home'] for x in nous} | {x['away'] for x in nous}
-                      | {m['nom_g'] for m in fe_rows} | {m['nom_p'] for m in fe_rows})
+                      | {m['nom_g'] for m in fe_rows} | {m['nom_p'] for m in fe_rows}
+                      | {m['nom_g'] for m in itf_rows} | {m['nom_p'] for m in itf_rows})
     cle_c = lambda n: alias.get(E.cle(n), E.cle(n))
     noms_c = dict(connus)
     for x in nous:
@@ -569,6 +596,32 @@ def main(argv):
         if feuilles_elo['adopte']:
             retenue = nom4
     ST.ecrire(etat_st)
+    # Étape 5 (28/10/2026) — RÉSULTATS ITF HOMMES (vainqueur, score ; pas de feuille). Mis en production le 28/10 PAR
+    # DÉCISION DE LUCAS, sans attendre la 2e semaine de stabilité, au vu de l'étude (simulateur/etude_itf_elo.py :
+    # log loss Challenger −0,0145 sur 22 530 matchs, ATP + WTA −0,0042, joueurs peu vus −0,035 ; règle : −0,001).
+    # Garde-fou : l'étude hebdomadaire continue ; si l'ITF fait moins bien deux semaines de suite, elle le retire
+    # (etude_itf_elo.json « adopte » = false) et cette étape n'est plus appliquée. ITF = DONNÉE seulement.
+    itf_elo = {'applique': False, 'matchs': len(itf_rows), 'raison': 'aucun résultat ITF'}
+    if itf_rows and itf_en_production(racine):
+        avant = sorted([m for m in itf_rows if m['date'] <= fin_sack], key=lambda m: m['date'])
+        apres = [m for m in itf_rows if m['date'] > fin_sack]
+        M5 = sorted(M + avant, key=lambda m: (m['date'], m.get('tour', 0), m.get('num', 0)))
+        nom5 = retenue + '+itf'
+        V[nom5] = rejouer(M5, nous, td_rows, cle_c, idx, not retenue.startswith('depart_1500'),
+                          nouveaux='+nouveaux_joueurs' in retenue, options=V[retenue]['options'],
+                          feuilles=(fe_rows if '+feuilles' in retenue else []) + apres)
+        V[nom5]['rapA'], V[nom5]['rapB'], V[nom5]['A'] = evaluer(V[nom5], M5, td, T)
+        b0, b1 = V[retenue]['rapB']['tous']['stats_seules'], V[nom5]['rapB']['tous']['stats_seules']
+        a0, a1 = V[retenue]['rapA']['tous']['stats_seules'], V[nom5]['rapA']['tous']['stats_seules']
+        itf_elo = {'applique': True, 'matchs': len(itf_rows), 'avant_archive': len(avant), 'apres_archive': len(apres),
+                   'decision': "Lucas, 28/10/2026 (étude : etude_itf_elo.json) ; retiré si l'étude échoue 2 semaines de suite",
+                   'suivi': (f"nos matchs : log loss {b1.get('log_loss')} avec l'ITF contre {b0.get('log_loss')} sans ; "
+                             f"ATP/WTA 2024–2026 {a1.get('log_loss')} contre {a0.get('log_loss')}")}
+        print(f"Résultats ITF dans l'Elo : APPLIQUÉS — {itf_elo['suivi']}", flush=True)
+        retenue = nom5
+    elif itf_rows:
+        itf_elo['raison'] = "retirés par l'étude hebdomadaire (moins bien deux semaines de suite)"
+        print(f"Résultats ITF dans l'Elo : non appliqués — {itf_elo['raison']}", flush=True)
     W = V[retenue]
     rap = {'genere_le': dt.datetime.now(dt.timezone.utc).isoformat(timespec='seconds'),
            'objectif': 'deviner le vainqueur et le score (pas battre Pinnacle)',
@@ -580,6 +633,7 @@ def main(argv):
            'variante_retenue': retenue,
            'elo_ameliore': elo_ameliore,
            'feuilles_dans_elo': feuilles_elo,
+           'itf_dans_elo': itf_elo,
            'stabilite': stab,
            'joueurs_relies_nom_different': len(alias),
            'sackmann_jusqu_au': fin_sack.isoformat(), 'nos_matchs': len(nous),

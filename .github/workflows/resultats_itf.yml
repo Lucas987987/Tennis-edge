@@ -5,7 +5,8 @@ name: Résultats ITF hommes → étude Elo
 #    ~2 requêtes par jour de calendrier : ~1 800 la première fois, puis ~15 par semaine. Arrêt sous 6 000 de quota.
 # 2. Étude (simulateur/etude_itf_elo.py) : l'Elo avec et sans ces résultats, jugé sur les matchs Challenger depuis le
 #    01/01/2025 ; règle fixée avant tout résultat, adoption seulement deux semaines de suite.
-# La production n'est PAS modifiée ici : elle ne lit pas resultats_itf/. Une adoption fera l'objet d'une livraison.
+# 28/10/2026 : l'ITF est EN PRODUCTION par décision de Lucas (backtest_pronostic.py, étape 5). Cette étude devient le
+# garde-fou : moins bien deux semaines de suite → « adopte » = false → l'Elo de production le retire.
 # Lancement : à la main la première fois (Actions → « Résultats ITF hommes → étude Elo » → Run) ; ensuite chaque
 # lundi automatiquement, après le jugement hebdomadaire.
 
