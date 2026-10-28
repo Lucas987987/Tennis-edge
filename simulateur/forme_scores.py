@@ -191,7 +191,7 @@ def observation(sets):
     return _cat(tuple(tuple(s) for s in sets))
 
 
-def jeu_de_donnees(lignes, profils, scores_reels, max_n=None, graine=7, references=None):
+def jeu_de_donnees(lignes, profils, scores_reels, max_n=None, graine=7, references=None, sigmas=None):
     """[(masses, observation, f, circuit)] pour les matchs au meilleur des 3 avec score réel complet.
     references : {circuit: repère} (profil_rythme.references_circuit des MÊMES profils, arrêtés à la même date)."""
     import distribution_exacte as DE
@@ -205,8 +205,8 @@ def jeu_de_donnees(lignes, profils, scores_reels, max_n=None, graine=7, referenc
         sets = scores_reels[x['id']]
         ca, cb = x['srv'][0]['tx'], x['srv'][1]['tx']
         pv = Mo.match(S.p_service(ca), S.p_service(cb), 2)['victoire']
-        d = DE.distribution_forme(ca, cb, 2, SIGMA, p_victoire=pv)
         c = x.get('circuit')
+        d = DE.distribution_forme(ca, cb, 2, (sigmas or {}).get(c, SIGMA), p_victoire=pv)   # σ du circuit si adopté
         out.append((masses(d), observation(sets),
                     caracteristiques(profils.get(x['a']), profils.get(x['b']), (references or {}).get(c)), c))
     return out
@@ -218,11 +218,12 @@ def verdict(gain, par_circuit):
     return bool(gain is not None and gain >= MARGE and pire >= -MARGE)
 
 
-def juger(appr, juge, profils_appr, profils_juge, scores_reels):
+def juger(appr, juge, profils_appr, profils_juge, scores_reels, sigmas=None):
     """Rapport et verdict BRUT de la règle fixée (la stabilité est appliquée par l'appelant)."""
     import profil_rythme as PR
-    Da = jeu_de_donnees(appr, profils_appr, scores_reels, MAX_APPR, references=PR.references_circuit(profils_appr))
-    Dj = jeu_de_donnees(juge, profils_juge, scores_reels, references=PR.references_circuit(profils_juge))
+    Da = jeu_de_donnees(appr, profils_appr, scores_reels, MAX_APPR, references=PR.references_circuit(profils_appr),
+                        sigmas=sigmas)
+    Dj = jeu_de_donnees(juge, profils_juge, scores_reels, references=PR.references_circuit(profils_juge), sigmas=sigmas)
     c = apprendre(Da)
     l0, l1 = log_vrais(Dj, [0.0] * N_COEFS), log_vrais(Dj, c)
     gain = (l0 - l1) if l0 is not None and l1 is not None else None
