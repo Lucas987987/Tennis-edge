@@ -41,6 +41,12 @@ SEUIL_CONTRE_SERVICE = -.010
 SEUIL_CONTRE_RETOUR = .010
 STYLES = ('grand_serveur', 'serveur_attaquant', 'retourneur_pressant', 'contreur', 'equilibre', 'indetermine')
 SURFACES = ('Hard', 'Clay', 'Grass')
+# 28/10/2026 — DIFFICULTÉ des adversaires rencontrés (Elo d'avant-match, surface mêlée), FIGÉE : note sur 10 =
+# (Elo moyen − 1300) / 90, bornée à [0 ; 10]. Échelle mesurée sur les 41 000 Elo d'avant-match d'oct. 2025 à
+# oct. 2026 : 0 ≈ bas de Challenger (p10 CH 1160, médiane CH 1379), ≈ 4 = joueur ATP médian (1659), ≈ 6,2 = 90e
+# centile ATP (1862), ≈ 8 = Djokovic (2046), 10 = les tout meilleurs (Sinner 2267, Sabalenka 2242).
+# « Outsider » : match où l'Elo d'avant-match lui donnait moins de 40 %.
+DIFF_ELO_ZERO, DIFF_ELO_PAR_POINT, SEUIL_OUTSIDER = 1300.0, 90.0, 0.40
 TOUS_STYLES = '__tous__'
 SOMMES_STATS = ('svpt', 'in1', 'w1', 'w2', 'ace', 'df', 'bpf', 'bps',
                 'ret_svpt', 'ret_won', 'bp_obtenues', 'bp_converties')
@@ -180,6 +186,10 @@ def resume(ligne, reference=None):
         att = 100 * ligne['att'] / ligne['n_att']
         out['attendu_pct'] = round(att, 1)
         out['ecart_pts'] = round(100 * v / n - att, 1)
+    if ligne.get('n_elo'):
+        elo_moy = ligne['elo_adv'] / ligne['n_elo']
+        out['difficulte'] = {'note': round(min(10.0, max(0.0, (elo_moy - DIFF_ELO_ZERO) / DIFF_ELO_PAR_POINT)), 1),
+                             'elo_moyen': round(elo_moy), 'matchs_outsider': ligne.get('outsider', 0)}
     return out
 
 
@@ -200,7 +210,7 @@ def _evenement(m, joueur, adversaire, nom_adversaire, victoire, style_adverse, a
     return ev
 
 
-def _ajouter(acc, joueur, style_adverse, surface, evenement, victoire, stats=None, attendu=None):
+def _ajouter(acc, joueur, style_adverse, surface, evenement, victoire, stats=None, attendu=None, elo_adv=None):
     for scope in ('global', surface):
         cle = (joueur, style_adverse, scope)
         ligne = acc.setdefault(cle, {'n': 0, 'v': 0, 'derniers': [], 'stats_n': 0,
@@ -215,6 +225,10 @@ def _ajouter(acc, joueur, style_adverse, surface, evenement, victoire, stats=Non
         if attendu is not None:
             ligne['att'] = ligne.get('att', 0.0) + attendu
             ligne['n_att'] = ligne.get('n_att', 0) + 1
+            ligne['outsider'] = ligne.get('outsider', 0) + int(attendu < SEUIL_OUTSIDER)
+        if elo_adv is not None:
+            ligne['elo_adv'] = ligne.get('elo_adv', 0.0) + elo_adv
+            ligne['n_elo'] = ligne.get('n_elo', 0) + 1
 
 
 def calculer(M, cibles, jour, demi_vie=PS.DEMI_VIE, prior_mult=1.0, avec_ajustes=False):
@@ -229,29 +243,30 @@ def calculer(M, cibles, jour, demi_vie=PS.DEMI_VIE, prior_mult=1.0, avec_ajustes
     acc_ajuste = SA.Accumulateur()
     resultats_veille, residus_veille, jour_courant = [], [], None
 
-    def enregistrer(m, sg, sp, p_g=None):
+    def enregistrer(m, sg, sp, p_g=None, elos=(None, None)):
         g, p, surface = m['_g'], m['_p'], m['surface']
         p_p = None if p_g is None else 1 - p_g          # 28/10/2026 : attendu (Elo d'avant-match) de chacun
+        e_g, e_p = elos                                  # Elo d'avant-match du gagnant et du perdant
         if g in cibles:
             ev = _evenement(m, g, p, m.get('nom_p') or p, True, sp, p_g)
             stats = _stats_match(m, True)
             if sp != 'indetermine':
-                _ajouter(acc, g, sp, surface, ev, True, stats, p_g)
-            _ajouter(acc, g, TOUS_STYLES, surface, ev, True, stats, p_g)
+                _ajouter(acc, g, sp, surface, ev, True, stats, p_g, e_p)
+            _ajouter(acc, g, TOUS_STYLES, surface, ev, True, stats, p_g, e_p)
         if p in cibles:
             ev = _evenement(m, p, g, m.get('nom_g') or g, False, sg, p_p)
             stats = _stats_match(m, False)
             if sg != 'indetermine':
-                _ajouter(acc, p, sg, surface, ev, False, stats, p_p)
-            _ajouter(acc, p, TOUS_STYLES, surface, ev, False, stats, p_p)
+                _ajouter(acc, p, sg, surface, ev, False, stats, p_p, e_g)
+            _ajouter(acc, p, TOUS_STYLES, surface, ev, False, stats, p_p, e_g)
 
     for original in sorted(M, key=lambda m: (m['date'], m.get('tour', 0), m.get('num', 0))):
         m = original
         if m['date'] > jour:
             break  # aucun résultat postérieur à la référence pré-match
         if jour_courant != m['date']:
-            for ancien, sg, sp, pe in resultats_veille:
-                enregistrer(ancien, sg, sp, pe)
+            for ancien, sg, sp, pe, el in resultats_veille:
+                enregistrer(ancien, sg, sp, pe, el)
             for ancien in residus_veille:
                 acc_ajuste.ajouter(*ancien)
             resultats_veille, residus_veille, jour_courant = [], [], m['date']
@@ -274,14 +289,14 @@ def calculer(M, cibles, jour, demi_vie=PS.DEMI_VIE, prior_mult=1.0, avec_ajustes
         sp = classifier(ip, np, mug)
         if m.get('complet') and not m.get('abandon'):
             # Sans heure historique fiable, les résultats du même jour restent indisponibles.
-            resultats_veille.append((m, sg, sp, p_elo_gagnant))
+            resultats_veille.append((m, sg, sp, p_elo_gagnant, (elo.note(g, surface), elo.note(p, surface))))
             residus_veille.append((g, p, sg, sp, surface, m['date'], p_elo_gagnant))
         heapq.heappush(attente, (dt.datetime.combine(m['fin'], dt.time()), serial, m))
         serial += 1
         elo.maj(g, p, surface, m.get('niveau') == 'G', E.part_jeux(m['sets']) if m.get('complet') else None)
     if jour_courant is not None and jour_courant < jour:
-        for ancien, sg, sp, pe in resultats_veille:
-            enregistrer(ancien, sg, sp, pe)
+        for ancien, sg, sp, pe, el in resultats_veille:
+            enregistrer(ancien, sg, sp, pe, el)
         for ancien in residus_veille:
             acc_ajuste.ajouter(*ancien)
     reference = dt.datetime.combine(jour, dt.time())
