@@ -26,6 +26,7 @@ jouer 5 000 matchs au hasard, il calcule la probabilité de chaque issue.
 | `styles_descriptifs.py` | bilans publics contre six profils service–retour, global/surface, effectifs, IC de Wilson et derniers matchs ; descriptif seulement |
 | `styles_valeur.py` | test hors échantillon de ces bilans comme variables candidates après Elo et service–retour ; aucune activation automatique |
 | `etude_styles_seuls.py` | trois prévisions utilisant exclusivement les bilans de styles, contre une référence neutre à 50 % ; diagnostic seulement |
+| `etude_matrice_styles.py` | matrice des 21 paires avec le bilan global figé, IC de Wilson et bootstrap par semaine ; aucune sélection post hoc |
 | `etude_pistes.py` | ablation commune des cinq familles calendrier, tournoi, Elo dynamique, mains/H2H et matchs serrés ; recherche seulement |
 | `pistes_observations.py` | socle point-in-time et orientation alphabétique ; aucun résultat du même jour n’est supposé connu |
 | `variables_pre_match.py` | fatigue, absences, mains, H2H, tie-breaks, sets décisifs et balles de break contractés |
@@ -352,6 +353,42 @@ nouveaux pronostics figés et huit semaines ISO, avec Brier non dégradé. Rejou
 
 ```bash
 python simulateur/etude_styles_seuls.py /tmp/sackmann . --maximum 8000 --bootstrap 2000
+```
+
+### Matrice exhaustive des paires de styles
+
+`etude_matrice_styles.py` applique le **bilan global seul figé sur 2024** aux 21
+paires non orientées formées par les cinq styles réels et `indetermine`. Chaque
+paire publie ses effectifs, semaines, log loss, Brier, exactitude avec IC95 de
+Wilson, ainsi que les gains contre 50 % et leurs IC95 bootstrap par semaine ISO.
+Aucune paire n'est masquée ou rangée selon son résultat.
+
+Sur le diagnostic réutilisé 2025–2026, les 21 paires sont observées, avec 54 à
+824 matchs et 36 à 74 semaines. Dix ont un IC95 de gain de log loss entièrement
+positif. Parmi les paires de styles réels :
+
+| Paire | n | Log loss | Brier | Exactitude [IC95 Wilson] | Gain log loss [IC95 bootstrap] |
+|---|---:|---:|---:|---:|---:|
+| Grand serveur × équilibré | 603 | 0,657792 | 0,233088 | 60,53 % [56,57 ; 64,35] | +0,035355 [+0,013004 ; +0,056948] |
+| Serveur attaquant × contreur | 129 | 0,613308 | 0,212674 | 66,67 % [58,15 ; 74,22] | +0,079839 [+0,043619 ; +0,111566] |
+| Serveur attaquant × équilibré | 362 | 0,663159 | 0,236026 | 60,22 % [55,10 ; 65,13] | +0,029988 [+0,005958 ; +0,056202] |
+| Contreur × équilibré | 522 | 0,675735 | 0,241522 | 56,13 % [51,84 ; 60,33] | +0,017412 [+0,003990 ; +0,031204] |
+| Équilibré × équilibré | 824 | 0,679950 | 0,243399 | 58,50 % [55,10 ; 61,81] | +0,013197 [+0,001283 ; +0,024149] |
+
+Le signal n'est donc pas uniforme. Quatre paires ont un gain ponctuel négatif,
+mais leur IC95 traverse zéro. Serveur attaquant × contreur illustre aussi le
+risque de sélection : son gain était seulement +0,000624 sur la découverte 2024,
+contre +0,079839 dans le diagnostic. Contreur × équilibré est positif dans les
+deux périodes (+0,008205 puis +0,017412), mais la découverte est en échantillon
+et la confirmation historique est réutilisée : ce n'est toujours pas une preuve
+prospective indépendante.
+
+Les 21 lignes et tous les IC figurent dans `rapport_matrice_styles.md` et le
+détail des deux périodes dans `rapport_matrice_styles.json`. **Aucune paire n'est
+sélectionnée ou activée** après ces comparaisons multiples. Rejouer :
+
+```bash
+python simulateur/etude_matrice_styles.py /tmp/sackmann . --maximum 8000 --bootstrap 2000
 ```
 
 ## Cinq familles de variables pré-match (28/10/2026)
