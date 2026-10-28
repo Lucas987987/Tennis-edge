@@ -68,6 +68,26 @@ def feuilles_apres(racine, depuis):
     return out
 
 
+def sexe_de_circuit(c):
+    return 'F' if c in ('WTA', 'ITF') else 'H'
+
+
+def lier_itf(M, connus, itf_rows, deja):
+    """28/10/2026 — alias des noms venus SEULEMENT des résultats ITF, par elo.unifier_strict (audit : des fusions à tort
+    avec la règle souple) : même sexe, même ordre des mots, même premier et dernier mot, nom de famille rare si le nom
+    court n'a que deux mots. Utilisé par l'étude ET par l'Elo de production (backtest_pronostic)."""
+    import elo as E
+    sexe_connus = {}
+    for m in M:
+        for n in (m['nom_g'], m['nom_p']):
+            sexe_connus.setdefault(E.cle(n), sexe_de_circuit(m['circuit']))
+    sx = {}
+    for m in itf_rows:
+        sx[m['nom_g']] = sx[m['nom_p']] = sexe_de_circuit(m['circuit'])
+    noms = ({m['nom_g'] for m in itf_rows} | {m['nom_p'] for m in itf_rows}) - set(deja)
+    return E.unifier_strict(connus, noms, sexe_connus, sx)
+
+
 def match_itf(r):
     """Fiche resultats_itf -> match (format donnees) ; None si forfait, inachevé ou incomplet."""
     import elo as E
@@ -84,7 +104,8 @@ def match_itf(r):
     sets = list(zip(sh, sa)) if r['vainqueur'] == 1 else list(zip(sa, sh))
     complet = str((r.get('statut') or {}).get('texte') or '').lower() in ('ended', 'finished', 'terminé')
     j = dt.date.fromisoformat(r['jour'])
-    return {'date': j, 'fin': j, 'circuit': 'ITFH', 'surface': surface_de(r.get('surface')), 'nom_g': g['nom'],
+    femme = 'women' in str(r.get('categorie') or '').lower()
+    return {'date': j, 'fin': j, 'circuit': 'ITF' if femme else 'ITFH', 'surface': surface_de(r.get('surface')), 'nom_g': g['nom'],
             'nom_p': p['nom'], 'sets': sets, 'complet': complet, 'niveau': '', 'tour': 0, 'num': 0, 'id': r.get('id'),
             'source': 'itf', 'gagnant': E.cle(g['nom']), 'perdant': E.cle(p['nom'])}
 
@@ -94,7 +115,8 @@ def flux(M, F, I):
     fin = max(m['date'] for m in M)
     F = [m for m in F if m['date'] > fin]
     ids = {m.get('id') for m in F if m.get('id')}
-    I = [m for m in (I or []) if m.get('id') not in ids]
+    # ITF féminin : déjà dans l'archive jusqu'à sa fin → seulement après (l'ITF masculin n'y est jamais)
+    I = [m for m in (I or []) if m.get('id') not in ids and not (m['circuit'] == 'ITF' and m['date'] <= fin)]
     rang = {'archive': 0, 'tennisapi': 1, 'itf': 2}
     tout = [dict(m, source=m.get('source') or 'archive') for m in M] + F + I
     tout.sort(key=lambda m: (m['date'], rang.get(m['source'], 1), m.get('tour', 0), m.get('num', 0)))
@@ -133,15 +155,16 @@ def comparer(sans, avec, circuits, filtre=None):
             'vainqueurs_avec_pct': round(100 * sum(avec[k][0] > .5 for k in ks) / len(ks), 1) if ks else None}
 
 
-def couverture(racine, aujourd_hui):
+def couverture(racine, aujourd_hui, dossier=None, debut=None):
     import resultats_itf as RI
+    dossier, debut = dossier or RI.DOSSIER_HOMMES, debut or DEBUT_ITF
     try:
-        with open(os.path.join(racine, RI.DOSSIER, 'etat.json'), encoding='utf-8') as f:
+        with open(os.path.join(racine, dossier, 'etat.json'), encoding='utf-8') as f:
             jours = json.load(f).get('jours') or {}
     except (OSError, ValueError):
         jours = {}
-    attendus = (aujourd_hui - DEBUT_ITF).days
-    faits = sum(1 for j in jours if DEBUT_ITF.isoformat() <= j < aujourd_hui.isoformat())
+    attendus = (aujourd_hui - debut).days
+    faits = sum(1 for j in jours if debut.isoformat() <= j < aujourd_hui.isoformat())
     return round(faits / attendus, 4) if attendus > 0 else 0.0
 
 
@@ -153,7 +176,9 @@ def etude(M, F, I_brut):
     for m in M:
         connus.setdefault(E.cle(m['nom_g']), m['nom_g'])
         connus.setdefault(E.cle(m['nom_p']), m['nom_p'])
-    alias = E.unifier(connus, {n for m in F + I for n in (m['nom_g'], m['nom_p'])})
+    base_noms = {n for m in F for n in (m['nom_g'], m['nom_p'])}
+    alias = E.unifier(connus, base_noms)
+    alias.update(lier_itf(M, connus, I, base_noms))      # même règle stricte que la production pour les noms ITF
     cle_c = lambda n: alias.get(E.cle(n), E.cle(n))
     T0, T1 = flux(M, F, None), flux(M, F, I)
     cle_m = lambda m: (m['date'].isoformat(), cle_c(m['nom_g']), cle_c(m['nom_p']), m['circuit'])
@@ -171,6 +196,52 @@ def etude(M, F, I_brut):
     gc, ga = rap['challenger']['gain'], rap['atp_wta']['gain']
     rap['verdict_semaine'] = bool(gc is not None and gc >= MARGE and (ga is None or ga >= -TOLERANCE))
     return rap
+
+
+# ------------------------------------------------------------------ ITF FEMMES (28/10/2026)
+# RÈGLE FIXÉE LE 28/10/2026, AVANT TOUT RÉSULTAT : base = l'Elo de production (archive + feuilles + ITF hommes) ;
+# on ajoute les résultats ITF femmes APRÈS la fin de l'archive (02/06/2026 : avant, ils y sont déjà). Matchs jugés :
+# WTA joués après la fin de l'archive (là où l'information manquait). Verdict de la semaine : log loss WTA −0,001 au
+# moins, ATP + Challenger pas plus de +0,0005 ; adoption DEUX semaines de suite (série « elo_itf_femmes ») ; rien n'est
+# jugé sous 95 % des jours collectés depuis le 25/05/2026. Adopté seulement : l'Elo de production les ajoute.
+DEBUT_ITF_FEMMES = dt.date(2026, 5, 25)
+CLE_FEMMES = 'elo_itf_femmes'
+
+
+def etude_femmes(M, F, I_hommes_brut, I_femmes_brut):
+    import elo as E
+    Ih = [m for m in (match_itf(r) for r in I_hommes_brut) if m]
+    If = [m for m in (match_itf(r) for r in I_femmes_brut) if m]
+    fin = max(m['date'] for m in M)
+    connus = {}
+    for m in M:
+        connus.setdefault(E.cle(m['nom_g']), m['nom_g'])
+        connus.setdefault(E.cle(m['nom_p']), m['nom_p'])
+    base_noms = {n for m in F for n in (m['nom_g'], m['nom_p'])}
+    alias = E.unifier(connus, base_noms)
+    alias.update(lier_itf(M, connus, Ih + If, base_noms))
+    cle_c = lambda n: alias.get(E.cle(n), E.cle(n))
+    T0, T1 = flux(M, F, Ih), flux(M, F, Ih + If)
+    cle_m = lambda m: (m['date'].isoformat(), cle_c(m['nom_g']), cle_c(m['nom_p']), m['circuit'])
+    juge = lambda m: cle_m(m) if (m['date'] > fin and m['circuit'] in ('ATP', 'WTA', 'CH')
+                                  and m.get('source') != 'itf') else None
+    sans, avec = rejouer(T0, cle_c, juge), rejouer(T1, cle_c, juge)
+    rap = {'matchs_itf_femmes': sum(1 for m in If if m['date'] > fin),
+           'wta': comparer(sans, avec, lambda k: k[3] == 'WTA'),
+           'atp_challenger': comparer(sans, avec, lambda k: k[3] in ('ATP', 'CH')),
+           'descriptif': {'wta_peu_vues': comparer(sans, avec, lambda k: k[3] == 'WTA', lambda k: sans[k][1] < PEU_VUS)}}
+    gw, ga = rap['wta']['gain'], rap['atp_challenger']['gain']
+    rap['verdict_semaine'] = bool(gw is not None and gw >= MARGE and (ga is None or ga >= -TOLERANCE))
+    return rap
+
+
+def itf_femmes_adoptees(racine):
+    """Vrai seulement si l'étude a ADOPTÉ les résultats ITF femmes (deux semaines de suite)."""
+    try:
+        with open(os.path.join(racine, SORTIE), encoding='utf-8') as f:
+            return bool((json.load(f).get('femmes') or {}).get('adopte'))
+    except (OSError, ValueError):
+        return False
 
 
 def main(argv):
@@ -205,6 +276,23 @@ def main(argv):
         adopte, note = ST.decider(etat, CLE_STABILITE, True, rap['verdict_semaine'],
                                   rap['challenger']['log_loss_avec'], rap['challenger']['log_loss_sans'])
         doc.update(rap, statut=note, adopte=adopte, stabilite=etat)
+    # --- ITF femmes : jugées à part, adoption seulement deux semaines de suite
+    cvf = couverture(racine, auj, RI.DOSSIER_FEMMES, DEBUT_ITF_FEMMES)
+    fem = {'couverture': cvf, 'regle': ("WTA après la fin de l'archive : log loss −0,001 au moins avec l'ITF femmes, "
+                                        "ATP + Challenger pas plus de +0,0005 ; deux semaines de suite (fixée le 28/10/2026)")}
+    if cvf < COUVERTURE_MIN:
+        fem['statut'] = f"collecte incomplète ({100 * cvf:.1f} % des jours) : rien n'est jugé"
+        fem['adopte'] = bool((etat.get(CLE_FEMMES) or {}).get('adopte', False))
+    else:
+        if 'M' not in locals():
+            M = donnees.charger(args[0], 2016)
+        rf = etude_femmes(M, feuilles_apres(racine, max(m['date'] for m in M)), RI.lire_tout(racine),
+                          RI.lire_tout(racine, RI.DOSSIER_FEMMES))
+        ok, note = ST.decider(etat, CLE_FEMMES, False, rf['verdict_semaine'],
+                              rf['wta']['log_loss_avec'], rf['wta']['log_loss_sans'])
+        fem.update(rf, statut=note, adopte=ok)
+    doc['femmes'] = fem
+    doc['stabilite'] = etat
     with open(chemin, 'w', encoding='utf-8') as f:
         json.dump(doc, f, ensure_ascii=False, indent=1)
     print(json.dumps({k: v for k, v in doc.items() if k != 'stabilite'}, ensure_ascii=False, indent=1))
