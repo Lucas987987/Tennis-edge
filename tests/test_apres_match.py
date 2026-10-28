@@ -91,5 +91,23 @@ class TestBilans(unittest.TestCase):
         self.assertNotIn('u1', AM.pour_le_site(B, 3, T0 + dt.timedelta(days=5)))
 
 
+
+class TestPistes(unittest.TestCase):
+    def test_biais_net_signale_et_hasard_ignore(self):
+        B = {}
+        for i in range(40):
+            e = {'feuille': [{'aces': 2.0 + (i % 3) * 0.1}, {'aces': 1.9}],          # aces prévus trop hauts : net
+                 'lignes': {'tie_break': [0.3, i % 10 < 3]},                          # 30 % prévu, 30 % réel : rien
+                 'p_vainqueur': 0.7, 'vainqueur_juste': i % 10 < 7}
+            B[str(i)] = {'circuit': 'WTA', 'ecarts': e}
+        P = AM.pistes(B)
+        self.assertTrue(any(p['type'] == 'feuille' and p['stat'] == 'aces' and p['groupe'] == 'WTA' for p in P))
+        self.assertFalse(any(p['stat'] == 'tie_break' for p in P))
+        self.assertFalse(any(p['type'] == 'vainqueur' for p in P))
+        self.assertIn('aces', AM.message_pistes({'pistes': P, 'groupes': {'TOUS': {'matchs': 40}}}))
+        self.assertIn('Rien de net', AM.message_pistes({'pistes': [], 'groupes': {}}))
+        self.assertEqual(AM.pistes({str(i): B[str(i)] for i in range(10)}), [])   # moins de 30 matchs : rien
+
+
 if __name__ == '__main__':
     unittest.main()

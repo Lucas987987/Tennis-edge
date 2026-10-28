@@ -180,6 +180,61 @@ def mots(nom):
     return [m for m in re.split(r'[^a-z]+', s) if m and m not in SUFFIXES]
 
 
+def _sous_suite(court, long_):
+    """Les mots de `court` apparaissent dans `long_`, dans le même ordre."""
+    i = 0
+    for w in long_:
+        if i < len(court) and w == court[i]:
+            i += 1
+    return i == len(court)
+
+
+def unifier_strict(connus, nouveaux, sexe_connus=None, sexe_nouveaux=None):
+    """28/10/2026 — version STRICTE de unifier(), pour les noms venus des résultats ITF (données seulement).
+    Audit du 28/10 : sur 52 liens créés par les noms ITF, plusieurs fusionnaient deux joueurs différents
+    (« Jose Moreno » → « Maria Jose Luque Moreno », « Pedro Gomes » → « Joao Pedro Gomes Leme », « Yu-Chen Chiu » →
+    « Yu Chen »…). Une fusion à tort abîme le classement d'un vrai joueur ; un lien manqué laisse seulement quelques
+    résultats ITF de côté. Règle : le nom court est contenu dans le long DANS LE MÊME ORDRE, même premier et même
+    dernier mot, au moins deux mots, même sexe (si connu), et un SEUL joueur connu possible ; si le nom court n'a que
+    DEUX mots, son nom de famille doit être rare (porté par 5 joueurs connus au plus : « Daniel Silva », « Jose
+    Rodriguez », « Raul Garcia » ne sont plus reliés au premier homonyme venu).
+    sexe_connus : {clé: 'H'/'F'} ; sexe_nouveaux : {nom: 'H'/'F'}."""
+    sexe_connus, sexe_nouveaux = sexe_connus or {}, sexe_nouveaux or {}
+    par_mot, toks, nom_famille = {}, {}, {}
+    for k, n in connus.items():
+        t = mots(n)
+        toks[k] = t
+        for w in set(t):
+            par_mot.setdefault(w, set()).add(k)
+        if t:
+            nom_famille[t[-1]] = nom_famille.get(t[-1], 0) + 1
+    alias = {}
+    for n in nouveaux:
+        k = cle(n)
+        if k in connus or k in alias:
+            continue
+        t = mots(n)
+        if len(t) < 2:
+            continue
+        cands = set()
+        for w in set(t):
+            cands |= par_mot.get(w, set())
+        bons = set()
+        for c in cands:
+            a_, b_ = (t, toks[c]) if len(t) <= len(toks[c]) else (toks[c], t)
+            if len(a_) < 2 or a_[0] != b_[0] or a_[-1] != b_[-1] or not _sous_suite(a_, b_):
+                continue
+            if len(a_) == 2 and nom_famille.get(a_[-1], 0) > 5:
+                continue
+            sx, sc = sexe_nouveaux.get(n), sexe_connus.get(c)
+            if sx and sc and sx != sc:
+                continue
+            bons.add(c)
+        if len(bons) == 1:
+            alias[k] = next(iter(bons))
+    return alias
+
+
 def unifier(connus, nouveaux):
     """Relie un nom écrit autrement au joueur déjà connu (22/10/2026).
 

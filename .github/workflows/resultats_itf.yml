@@ -42,6 +42,7 @@ jobs:
             /scripts/resultats_itf.py
             /feuilles/
             /resultats_itf/
+            /resultats_itf_femmes/
 
       - uses: actions/setup-python@v6
         with:
@@ -56,6 +57,17 @@ jobs:
           ITF_MINUTES: '85'
           BUDGET: ${{ github.event.inputs.budget || '2500' }}
         run: python scripts/resultats_itf.py '' '' "$BUDGET"
+
+      - name: Collecte des résultats ITF femmes (depuis le 25/05/2026 ; ~2 requêtes par jour)
+        # 28/10/2026 : l'archive s'arrête au 02/06/2026 pour l'ITF féminin ; on reprend juste avant.
+        if: always()
+        timeout-minutes: 30
+        env:
+          RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
+          FEUILLES_RESERVE: '6000'
+          ITF_SEXE: 'F'
+          ITF_MINUTES: '25'
+        run: python scripts/resultats_itf.py '' '' 800
 
       - name: Archive Sackmann (fichiers de matchs seulement)
         run: |
@@ -73,7 +85,7 @@ jobs:
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          for f in resultats_itf simulateur/etude_itf_elo.json; do if [ -e "$f" ]; then git add -- "$f"; fi; done
+          for f in resultats_itf resultats_itf_femmes simulateur/etude_itf_elo.json; do if [ -e "$f" ]; then git add -- "$f"; fi; done
           if git diff --cached --quiet; then echo 'Rien de nouveau.'; exit 0; fi
           git commit -q -m "Résultats ITF hommes + étude Elo $(date -u +%FT%TZ)"
           for i in 1 2 3 4 5; do
