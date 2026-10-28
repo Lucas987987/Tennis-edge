@@ -1,0 +1,2271 @@
+{
+  "schema": "matrice_styles_v1",
+  "n": 8000,
+  "n_decouverte": 2153,
+  "n_confirmation": 5847,
+  "coupure": "2025-01-01",
+  "modele": "bilan global seul ; régression logistique ridge 1.0 ajustée sur 2024 puis figée",
+  "modele_complet_decouverte": {
+    "beta": [
+      0.05620585436651076,
+      0.41083445105218047
+    ],
+    "moyennes": [
+      0.0,
+      -0.01739610265726015
+    ],
+    "ecarts": [
+      1.0,
+      0.43177599580638715
+    ],
+    "converged": true
+  },
+  "reference": "probabilité neutre de 50 % sur exactement les mêmes matchs",
+  "paires": "21 paires non orientées ; les cinq styles réels et indéterminé sont tous conservés",
+  "orientation_resultat": "joueur home alphabétique ; la paire de styles est non orientée",
+  "incertitude": {
+    "exactitude": "IC95 de Wilson",
+    "log_loss_brier_et_gains": "IC95 bootstrap par semaine ISO, 2 000 répétitions par défaut",
+    "fragile": "moins de 30 matchs ou moins de quatre semaines"
+  },
+  "matrices": {
+    "decouverte": {
+      "grand_serveur|grand_serveur": {
+        "styles": [
+          "grand_serveur",
+          "grand_serveur"
+        ],
+        "noms": [
+          "Grand serveur",
+          "Grand serveur"
+        ],
+        "n": 77,
+        "semaines": 40,
+        "neutre_50": {
+          "n": 77,
+          "log_loss": 0.693147,
+          "brier": 0.25,
+          "reussite_pct": 48.05
+        },
+        "profils_global": {
+          "n": 77,
+          "log_loss": 0.702764,
+          "brier": 0.254687,
+          "reussite_pct": 49.35,
+          "ic95_exactitude_wilson": [
+            38.48,
+            60.28
+          ]
+        },
+        "gains_contre_neutre": {
+          "log_loss": -0.009617,
+          "brier": -0.004687,
+          "sens": "positif = apport des styles"
+        },
+        "ic95_bootstrap_semaine": {
+          "log_loss": {
+            "bas": 0.661342,
+            "haut": 0.744997
+          },
+          "brier": {
+            "bas": 0.234517,
+            "haut": 0.275323
+          },
+          "gain_log_loss": {
+            "bas": -0.052272,
+            "haut": 0.031561
+          },
+          "gain_brier": {
+            "bas": -0.025404,
+            "haut": 0.015376
+          }
+        },
+        "estimation_fragile": false,
+        "lecture": "estimation descriptive ; pas une confirmation prospective indépendante"
+      },
+      "grand_serveur|serveur_attaquant": {
+        "styles": [
+          "grand_serveur",
+          "serveur_attaquant"
+        ],
+        "noms": [
+          "Grand serveur",
+          "Serveur attaquant"
+        ],
+        "n": 45,
+        "semaines": 26,
+        "neutre_50": {
+          "n": 45,
+          "log_loss": 0.693147,
+          "brier": 0.25,
+          "reussite_pct": 55.56
+        },
+        "profils_global": {
+          "n": 45,
+          "log_loss": 0.632083,
+          "brier": 0.220341,
+          "reussite_pct": 64.44,
+          "ic95_exactitude_wilson": [
+            49.84,
+            76.78
+          ]
+        },
+        "gains_contre_neutre": {
+          "log_loss": 0.061064,
+          "brier": 0.029659,
+          "sens": "positif = apport des styles"
+        },
+        "ic95_bootstrap_semaine": {
+          "log_loss": {
+            "bas": 0.575038,
+            "haut": 0.692566
+          },
+          "brier": {
+            "bas": 0.192631,
+            "haut": 0.249441
+          },
+          "gain_log_loss": {
+            "bas": 0.00055,
+            "haut": 0.117861
+          },
+          "gain_brier": {
+            "bas": 0.000471,
+            "haut": 0.057185
+          }
+        },
+        "estimation_fragile": false,
+        "lecture": "estimation descriptive ; pas une confirmation prospective indépendante"
+      },
+      "grand_serveur|retourneur_pressant": {
+        "styles": [
+          "grand_serveur",
+          "retourneur_pressant"
+        ],
+        "noms": [
+          "Grand serveur",
+          "Retourneur pressant"
+        ],
+        "n": 68,
+        "semaines": 36,
+        "neutre_50": {
+          "n": 68,
+          "log_loss": 0.693147,
+          "brier": 0.25,
+          "reussite_pct": 60.29
+        },
+        "profils_global": {
+          "n": 68,
+          "log_loss": 0.701179,
+          "brier": 0.253991,
+          "reussite_pct": 48.53,
+          "ic95_exactitude_wilson": [
+            37.05,
+            60.17
+          ]
+        },
+        "gains_contre_neutre": {
+          "log_loss": -0.008032,
+          "brier": -0.003991,
+          "sens": "positif = apport des styles"
+        },
+        "ic95_bootstrap_semaine": {
+          "log_loss": {
+            "bas": 0.653603,
+            "haut": 0.75205
+          },
+          "brier": {
+            "bas": 0.230912,
+            "haut": 0.278642
+          },
+          "gain_log_loss": {
+            "bas": -0.058965,
+            "haut": 0.039479
+          },
+          "gain_brier": {
+            "bas": -0.028661,
+            "haut": 0.019024
+          }
+        },
+        "estimation_fragile": false,
+        "lecture": "estimation descriptive ; pas une confirmation prospective indépendante"
+      },
+      "contreur|grand_serveur": {
+        "styles": [
+          "grand_serveur",
+          "contreur"
+        ],
+        "noms": [
+          "Grand serveur",
+          "Contreur"
+        ],
+        "n": 134,
+        "semaines": 47,
+        "neutre_50": {
+          "n": 134,
+          "log_loss": 0.693147,
+          "brier": 0.25,
+          "reussite_pct": 47.01
+        },
+        "profils_global": {
+          "n": 134,
+          "log_loss": 0.689001,
+          "brier": 0.247882,
+          "reussite_pct": 58.21,
+          "ic95_exactitude_wilson": [
+            49.74,
+            66.22
+          ]
+        },
+        "gains_contre_neutre": {
+          "log_loss": 0.004146,
+          "brier": 0.002118,
+          "sens": "positif = apport des styles"
+        },
+        "ic95_bootstrap_semaine": {
+          "log_loss": {
+            "bas": 0.656444,
+            "haut": 0.725164
+          },
+          "brier": {
+            "bas": 0.23229,
+            "haut": 0.264915
+          },
+          "gain_log_loss": {
+            "bas": -0.032896,
+            "haut": 0.036547
+          },
+          "gain_brier": {
+            "bas": -0.015534,
+            "haut": 0.017621
+          }
+        },
+        "estimation_fragile": false,
+        "lecture": "estimation descriptive ; pas une confirmation prospective indépendante"
+      },
+      "equilibre|grand_serveur": {
+        "styles": [
+          "grand_serveur",
+          "equilibre"
+        ],
+        "noms": [
+          "Grand serveur",
+          "Équilibré"
+        ],
+        "n": 280,
+        "semaines": 47,
+        "neutre_50": {
+          "n": 280,
+          "log_loss": 0.693147,
+          "brier": 0.25,
+          "reussite_pct": 48.57
+        },
+        "profils_global": {
+          "n": 280,
+          "log_loss": 0.635459,
+          "brier": 0.222388,
+          "reussite_pct": 63.21,
+          "ic95_exactitude_wilson": [
+            57.42,
+            68.65
+          ]
+        },
+        "gains_contre_neutre": {
+          "log_loss": 0.057688,
+          "brier": 0.027612,
+          "sens": "positif = apport des styles"
+        },
+        "ic95_bootstrap_semaine": {
+          "log_loss": {
+            "bas": 0.60035,
+            "haut": 0.673954
+          },
+          "brier": {
+            "bas": 0.205666,
+            "haut": 0.24075
+          },
+          "gain_log_loss": {
+            "bas": 0.019156,
+            "haut": 0.092652
+          },
+          "gain_brier": {
+            "bas": 0.009221,
+            "haut": 0.044331
+          }
+        },
+        "estimation_fragile": false,
+        "lecture": "estimation descriptive ; pas une confirmation prospective indépendante"
+      },
+      "grand_serveur|indetermine": {
+        "styles": [
+          "grand_serveur",
+          "indetermine"
+        ],
+        "noms": [
+          "Grand serveur",
+          "Indéterminé"
+        ],
+        "n": 55,
+        "semaines": 36,
+        "neutre_50": {
+          "n": 55,
+          "log_loss": 0.693147,
+          "brier": 0.25,
+          "reussite_pct": 30.91
+        },
+        "profils_global": {
+          "n": 55,
+          "log_loss": 0.672969,
+          "brier": 0.239956,
+          "reussite_pct": 67.27,
+          "ic95_exactitude_wilson": [
+            54.1,
+            78.19
+          ]
+        },
+        "gains_contre_neutre": {
+          "log_loss": 0.020178,
+          "brier": 0.010044,
+          "sens": "positif = apport des styles"
+        },
+        "ic95_bootstrap_semaine": {
+          "log_loss": {
+            "bas": 0.65877,
+            "haut": 0.686737
+          },
+          "brier": {
+            "bas": 0.232879,
+            "haut": 0.246831
+          },
+          "gain_log_loss": {
+            "bas": 0.006369,
+            "haut": 0.034359
+          },
+          "gain_brier": {
+            "bas": 0.003165,
+            "haut": 0.017106
+          }
+        },
+        "estimation_fragile": false,
+        "lecture": "estimation descriptive ; pas une confirmation prospective indépendante"
+      },
+      "serveur_attaquant|serveur_attaquant": {
+        "styles": [
+          "serveur_attaquant",
+          "serveur_attaquant"
+        ],
+        "noms": [
+          "Serveur attaquant",
+          "Serveur attaquant"
+        ],
+        "n": 12,
+        "semaines": 12,
+        "neutre_50": {
+          "n": 12,
+          "log_loss": 0.693147,
+          "brier": 0.25,
+          "reussite_pct": 58.33
+        },
+        "profils_global": {
+          "n": 12,
+          "log_loss": 0.597818,
+          "brier": 0.20308,
+          "reussite_pct": 91.67,
+          "ic95_exactitude_wilson": [
+            64.61,
+            98.51
+          ]
+        },
+        "gains_contre_neutre": {
+          "log_loss": 0.095329,
+          "brier": 0.04692,
+          "sens": "positif = apport des styles"
+        },
+        "ic95_bootstrap_semaine": {
+          "log_loss": {
+            "bas": 0.546536,
+            "haut": 0.640997
+          },
+          "brier": {
+            "bas": 0.178301,
+            "haut": 0.223984
+          },
+          "gain_log_loss": {
+            "bas": 0.051391,
+            "haut": 0.146611
+          },
+          "gain_brier": {
+            "bas": 0.025572,
+            "haut": 0.071476
+          }
+        },
+        "estimation_fragile": true,
+        "lecture": "estimation fragile : moins de 30 matchs ou de quatre semaines"
+      },
+      "retourneur_pressant|serveur_attaquant": {
+        "styles": [
+          "serveur_attaquant",
+          "retourneur_pressant"
+        ],
+        "noms": [
+          "Serveur attaquant",
+          "Retourneur pressant"
+        ],
+        "n": 27,
+        "semaines": 18,
+        "neutre_50": {
+          "n": 27,
+          "log_loss": 0.693147,
+          "brier": 0.25,
+          "reussite_pct": 55.56
+        },
+        "profils_global": {
+          "n": 27,
+          "log_loss": 0.693722,
+          "brier": 0.249253,
+          "reussite_pct": 51.85,
+          "ic95_exactitude_wilson": [
+            33.99,
+            69.26
+          ]
+        },
+        "gains_contre_neutre": {
+          "log_loss": -0.000575,
+          "brier": 0.000747,
+          "sens": "positif = apport des styles"
+        },
+        "ic95_bootstrap_semaine": {
+          "log_loss": {
+            "bas": 0.600201,
+            "haut": 0.802808
+          },
+          "brier": {
+            "bas": 0.204494,
+            "haut": 0.301577
+          },
+          "gain_log_loss": {
+            "bas": -0.110498,
+            "haut": 0.092281
+          },
+          "gain_brier": {
+            "bas": -0.05185,
+            "haut": 0.045192
+          }
+        },
+        "estimation_fragile": true,
+        "lecture": "estimation fragile : moins de 30 matchs ou de quatre semaines"
+      },
+      "contreur|serveur_attaquant": {
+        "styles": [
+          "serveur_attaquant",
+          "contreur"
+        ],
+        "noms": [
+          "Serveur attaquant",
+          "Contreur"
+        ],
+        "n": 44,
+        "semaines": 27,
+        "neutre_50": {
+          "n": 44,
+          "log_loss": 0.693147,
+          "brier": 0.25,
+          "reussite_pct": 63.64
+        },
+        "profils_global": {
+          "n": 44,
+          "log_loss": 0.692523,
+          "brier": 0.248965,
+          "reussite_pct": 56.82,
+          "ic95_exactitude_wilson": [
+            42.22,
+            70.32
+          ]
+        },
+        "gains_contre_neutre": {
+          "log_loss": 0.000624,
+          "brier": 0.001035,
+          "sens": "positif = apport des styles"
+        },
+        "ic95_bootstrap_semaine": {
+          "log_loss": {
+            "bas": 0.60184,
+            "haut": 0.786286
+          },
+          "brier": {
+            "bas": 0.205806,
+            "haut": 0.292943
+          },
+          "gain_log_loss": {
+            "bas": -0.09326,
+            "haut": 0.089873
+          },
+          "gain_brier": {
+            "bas": -0.042945,
+            "haut": 0.043736
+          }
+        },
+        "estimation_fragile": false,
+        "lecture": "estimation descriptive ; pas une confirmation prospective indépendante"
+      },
+      "equilibre|serveur_attaquant": {
+        "styles": [
+          "serveur_attaquant",
+          "equilibre"
+        ],
+        "noms": [
+          "Serveur attaquant",
+          "Équilibré"
+        ],
+        "n": 102,
+        "semaines": 43,
+        "neutre_50": {
+          "n": 102,
+          "log_loss": 0.693147,
+          "brier": 0.25,
+          "reussite_pct": 51.96
+        },
+        "profils_global": {
+          "n": 102,
+          "log_loss": 0.657538,
+          "brier": 0.233496,
+          "reussite_pct": 59.8,
+          "ic95_exactitude_wilson": [
+            50.1,
+            68.8
+          ]
+        },
+        "gains_contre_neutre": {
+          "log_loss": 0.035609,
+          "brier": 0.016504,
+          "sens": "positif = apport des styles"
+        },
+        "ic95_bootstrap_semaine": {
+          "log_loss": {
+            "bas": 0.592636,
+            "haut": 0.72275
+          },
+          "brier": {
+            "bas": 0.203526,
+            "haut": 0.263061
+          },
+          "gain_log_loss": {
+            "bas": -0.029685,
+            "haut": 0.100431
+          },
+          "gain_brier": {
+            "bas": -0.013088,
+            "haut": 0.046417
+          }
+        },
+        "estimation_fragile": false,
+        "lecture": "estimation descriptive ; pas une confirmation prospective indépendante"
+      },
+      "indetermine|serveur_attaquant": {
+        "styles": [
+          "serveur_attaquant",
+          "indetermine"
+        ],
+        "noms": [
+          "Serveur attaquant",
+          "Indéterminé"
+        ],
+        "n": 13,
+        "semaines": 11,
+        "neutre_50": {
+          "n": 13,
+          "log_loss": 0.693147,
+          "brier": 0.25,
+          "reussite_pct": 30.77
+        },
+        "profils_global": {
+          "n": 13,
+          "log_loss": 0.680228,
+          "brier": 0.243543,
+          "reussite_pct": 69.23,
+          "ic95_exactitude_wilson": [
+            42.37,
+            87.32
+          ]
+        },
+        "gains_contre_neutre": {
+          "log_loss": 0.012919,
+          "brier": 0.006457,
+          "sens": "positif = apport des styles"
+        },
+        "ic95_bootstrap_semaine": {
+          "log_loss": {
+            "bas": 0.65743,
+            "haut": 0.712461
+          },
+          "brier": {
+            "bas": 0.232149,
+            "haut": 0.259638
+          },
+          "gain_log_loss": {
+            "bas": -0.019314,
+            "haut": 0.035718
+          },
+          "gain_brier": {
+            "bas": -0.009638,
+            "haut": 0.017851
+          }
+        },
+        "estimation_fragile": true,
+        "lecture": "estimation fragile : moins de 30 matchs ou de quatre semaines"
+      },
+      "retourneur_pressant|retourneur_pressant": {
+        "styles": [
+          "retourneur_pressant",
+          "retourneur_pressant"
+        ],
+        "noms": [
+          "Retourneur pressant",
+          "Retourneur pressant"
+        ],
+        "n": 22,
+        "semaines": 18,
+        "neutre_50": {
+          "n": 22,
+          "log_loss": 0.693147,
+          "brier": 0.25,
+          "reussite_pct": 54.55
+        },
+        "profils_global": {
+          "n": 22,
+          "log_loss": 0.713749,
+          "brier": 0.260526,
+          "reussite_pct": 50.0,
+          "ic95_exactitude_wilson": [
+            30.72,
+            69.28
+          ]
+        },
+        "gains_contre_neutre": {
+          "log_loss": -0.020602,
+          "brier": -0.010526,
+          "sens": "positif = apport des styles"
+        },
+        "ic95_bootstrap_semaine": {
+          "log_loss": {
+            "bas": 0.632301,
+            "haut": 0.793424
+          },
+          "brier": {
+            "bas": 0.221381,
+            "haut": 0.299319
+          },
+          "gain_log_loss": {
+            "bas": -0.100711,
+            "haut": 0.060278
+          },
+          "gain_brier": {
+            "bas": -0.049424,
+            "haut": 0.028583
+          }
+        },
+        "estimation_fragile": true,
+        "lecture": "estimation fragile : moins de 30 matchs ou de quatre semaines"
+      },
+      "contreur|retourneur_pressant": {
+        "styles": [
+          "retourneur_pressant",
+          "contreur"
+        ],
+        "noms": [
+          "Retourneur pressant",
+          "Contreur"
+        ],
+        "n": 75,
+        "semaines": 33,
+        "neutre_50": {
+          "n": 75,
+          "log_loss": 0.693147,
+          "brier": 0.25,
+          "reussite_pct": 52.0
+        },
+        "profils_global": {
+          "n": 75,
+          "log_loss": 0.658373,
+          "brier": 0.233063,
+          "reussite_pct": 61.33,
+          "ic95_exactitude_wilson": [
+            50.02,
+            71.54
+          ]
+        },
+        "gains_contre_neutre": {
+          "log_loss": 0.034774,
+          "brier": 0.016937,
+          "sens": "positif = apport des styles"
+        },
+        "ic95_bootstrap_semaine": {
+          "log_loss": {
+            "bas": 0.622087,
+            "haut": 0.700049
+          },
+          "brier": {
+            "bas": 0.215394,
+            "haut": 0.253433
+          },
+          "gain_log_loss": {
+            "bas": -0.007331,
+            "haut": 0.071024
+          },
+          "gain_brier": {
+            "bas": -0.003557,
+            "haut": 0.034527
+          }
+        },
+        "estimation_fragile": false,
+        "lecture": "estimation descriptive ; pas une confirmation prospective indépendante"
+      },
+      "equilibre|retourneur_pressant": {
+        "styles": [
+          "retourneur_pressant",
+          "equilibre"
+        ],
+        "noms": [
+          "Retourneur pressant",
+          "Équilibré"
+        ],
+        "n": 158,
+        "semaines": 49,
+        "neutre_50": {
+          "n": 158,
+          "log_loss": 0.693147,
+          "brier": 0.25,
+          "reussite_pct": 54.43
+        },
+        "profils_global": {
+          "n": 158,
+          "log_loss": 0.689371,
+          "brier": 0.247737,
+          "reussite_pct": 58.23,
+          "ic95_exactitude_wilson": [
+            50.43,
+            65.63
+          ]
+        },
+        "gains_contre_neutre": {
+          "log_loss": 0.003776,
+          "brier": 0.002263,
+          "sens": "positif = apport des styles"
+        },
+        "ic95_bootstrap_semaine": {
+          "log_loss": {
+            "bas": 0.653852,
+            "haut": 0.727598
+          },
+          "brier": {
+            "bas": 0.230767,
+            "haut": 0.265977
+          },
+          "gain_log_loss": {
+            "bas": -0.034581,
+            "haut": 0.039231
+          },
+          "gain_brier": {
+            "bas": -0.016047,
+            "haut": 0.019144
+          }
+        },
+        "estimation_fragile": false,
+        "lecture": "estimation descriptive ; pas une confirmation prospective indépendante"
+      },
+      "indetermine|retourneur_pressant": {
+        "styles": [
+          "retourneur_pressant",
+          "indetermine"
+        ],
+        "noms": [
+          "Retourneur pressant",
+          "Indéterminé"
+        ],
+        "n": 17,
+        "semaines": 15,
+        "neutre_50": {
+          "n": 17,
+          "log_loss": 0.693147,
+          "brier": 0.25,
+          "reussite_pct": 23.53
+        },
+        "profils_global": {
+          "n": 17,
+          "log_loss": 0.662053,
+          "brier": 0.234472,
+          "reussite_pct": 82.35,
+          "ic95_exactitude_wilson": [
+            58.97,
+            93.81
+          ]
+        },
+        "gains_contre_neutre": {
+          "log_loss": 0.031094,
+          "brier": 0.015528,
+          "sens": "positif = apport des styles"
+        },
+        "ic95_bootstrap_semaine": {
+          "log_loss": {
+            "bas": 0.648094,
+            "haut": 0.677763
+          },
+          "brier": {
+            "bas": 0.227504,
+            "haut": 0.242311
+          },
+          "gain_log_loss": {
+            "bas": 0.015365,
+            "haut": 0.04494
+          },
+          "gain_brier": {
+            "bas": 0.007671,
+            "haut": 0.022444
+          }
+        },
+        "estimation_fragile": true,
+        "lecture": "estimation fragile : moins de 30 matchs ou de quatre semaines"
+      },
+      "contreur|contreur": {
+        "styles": [
+          "contreur",
+          "contreur"
+        ],
+        "noms": [
+          "Contreur",
+          "Contreur"
+        ],
+        "n": 56,
+        "semaines": 31,
+        "neutre_50": {
+          "n": 56,
+          "log_loss": 0.693147,
+          "brier": 0.25,
+          "reussite_pct": 32.14
+        },
+        "profils_global": {
+          "n": 56,
+          "log_loss": 0.641576,
+          "brier": 0.224714,
+          "reussite_pct": 73.21,
+          "ic95_exactitude_wilson": [
+            60.41,
+            83.04
+          ]
+        },
+        "gains_contre_neutre": {
+          "log_loss": 0.051571,
+          "brier": 0.025286,
+          "sens": "positif = apport des styles"
+        },
+        "ic95_bootstrap_semaine": {
+          "log_loss": {
+            "bas": 0.610776,
+            "haut": 0.671724
+          },
+          "brier": {
+            "bas": 0.209784,
+            "haut": 0.239538
+          },
+          "gain_log_loss": {
+            "bas": 0.021315,
+            "haut": 0.082292
+          },
+          "gain_brier": {
+            "bas": 0.010429,
+            "haut": 0.04021
+          }
+        },
+        "estimation_fragile": false,
+        "lecture": "estimation descriptive ; pas une confirmation prospective indépendante"
+      },
+      "contreur|equilibre": {
+        "styles": [
+          "contreur",
+          "equilibre"
+        ],
+        "noms": [
+          "Contreur",
+          "Équilibré"
+        ],
+        "n": 274,
+        "semaines": 50,
+        "neutre_50": {
+          "n": 274,
+          "log_loss": 0.693147,
+          "brier": 0.25,
+          "reussite_pct": 47.45
+        },
+        "profils_global": {
+          "n": 274,
+          "log_loss": 0.684942,
+          "brier": 0.245673,
+          "reussite_pct": 58.03,
+          "ic95_exactitude_wilson": [
+            52.11,
+            63.72
+          ]
+        },
+        "gains_contre_neutre": {
+          "log_loss": 0.008205,
+          "brier": 0.004327,
+          "sens": "positif = apport des styles"
+        },
+        "ic95_bootstrap_semaine": {
+          "log_loss": {
+            "bas": 0.663252,
+            "haut": 0.70752
+          },
+          "brier": {
+            "bas": 0.23526,
+            "haut": 0.256561
+          },
+          "gain_log_loss": {
+            "bas": -0.014485,
+            "haut": 0.029818
+          },
+          "gain_brier": {
+            "bas": -0.006578,
+            "haut": 0.014701
+          }
+        },
+        "estimation_fragile": false,
+        "lecture": "estimation descriptive ; pas une confirmation prospective indépendante"
+      },
+      "contreur|indetermine": {
+        "styles": [
+          "contreur",
+          "indetermine"
+        ],
+        "noms": [
+          "Contreur",
+          "Indéterminé"
+        ],
+        "n": 64,
+        "semaines": 34,
+        "neutre_50": {
+          "n": 64,
+          "log_loss": 0.693147,
+          "brier": 0.25,
+          "reussite_pct": 35.94
+        },
+        "profils_global": {
+          "n": 64,
+          "log_loss": 0.678323,
+          "brier": 0.242595,
+          "reussite_pct": 64.06,
+          "ic95_exactitude_wilson": [
+            51.82,
+            74.71
+          ]
+        },
+        "gains_contre_neutre": {
+          "log_loss": 0.014824,
+          "brier": 0.007405,
+          "sens": "positif = apport des styles"
+        },
+        "ic95_bootstrap_semaine": {
+          "log_loss": {
+            "bas": 0.666586,
+            "haut": 0.690915
+          },
+          "brier": {
+            "bas": 0.236747,
+            "haut": 0.248878
+          },
+          "gain_log_loss": {
+            "bas": 0.002227,
+            "haut": 0.026522
+          },
+          "gain_brier": {
+            "bas": 0.001115,
+            "haut": 0.013227
+          }
+        },
+        "estimation_fragile": false,
+        "lecture": "estimation descriptive ; pas une confirmation prospective indépendante"
+      },
+      "equilibre|equilibre": {
+        "styles": [
+          "equilibre",
+          "equilibre"
+        ],
+        "noms": [
+          "Équilibré",
+          "Équilibré"
+        ],
+        "n": 386,
+        "semaines": 51,
+        "neutre_50": {
+          "n": 386,
+          "log_loss": 0.693147,
+          "brier": 0.25,
+          "reussite_pct": 52.59
+        },
+        "profils_global": {
+          "n": 386,
+          "log_loss": 0.680887,
+          "brier": 0.2439,
+          "reussite_pct": 55.96,
+          "ic95_exactitude_wilson": [
+            50.97,
+            60.83
+          ]
+        },
+        "gains_contre_neutre": {
+          "log_loss": 0.01226,
+          "brier": 0.0061,
+          "sens": "positif = apport des styles"
+        },
+        "ic95_bootstrap_semaine": {
+          "log_loss": {
+            "bas": 0.662659,
+            "haut": 0.697853
+          },
+          "brier": {
+            "bas": 0.235021,
+            "haut": 0.252138
+          },
+          "gain_log_loss": {
+            "bas": -0.004757,
+            "haut": 0.030243
+          },
+          "gain_brier": {
+            "bas": -0.002139,
+            "haut": 0.01492
+          }
+        },
+        "estimation_fragile": false,
+        "lecture": "estimation descriptive ; pas une confirmation prospective indépendante"
+      },
+      "equilibre|indetermine": {
+        "styles": [
+          "equilibre",
+          "indetermine"
+        ],
+        "noms": [
+          "Équilibré",
+          "Indéterminé"
+        ],
+        "n": 193,
+        "semaines": 47,
+        "neutre_50": {
+          "n": 193,
+          "log_loss": 0.693147,
+          "brier": 0.25,
+          "reussite_pct": 41.45
+        },
+        "profils_global": {
+          "n": 193,
+          "log_loss": 0.669355,
+          "brier": 0.238163,
+          "reussite_pct": 65.28,
+          "ic95_exactitude_wilson": [
+            58.33,
+            71.64
+          ]
+        },
+        "gains_contre_neutre": {
+          "log_loss": 0.023792,
+          "brier": 0.011837,
+          "sens": "positif = apport des styles"
+        },
+        "ic95_bootstrap_semaine": {
+          "log_loss": {
+            "bas": 0.652381,
+            "haut": 0.68639
+          },
+          "brier": {
+            "bas": 0.229839,
+            "haut": 0.246549
+          },
+          "gain_log_loss": {
+            "bas": 0.006756,
+            "haut": 0.040669
+          },
+          "gain_brier": {
+            "bas": 0.003448,
+            "haut": 0.020156
+          }
+        },
+        "estimation_fragile": false,
+        "lecture": "estimation descriptive ; pas une confirmation prospective indépendante"
+      },
+      "indetermine|indetermine": {
+        "styles": [
+          "indetermine",
+          "indetermine"
+        ],
+        "noms": [
+          "Indéterminé",
+          "Indéterminé"
+        ],
+        "n": 51,
+        "semaines": 25,
+        "neutre_50": {
+          "n": 51,
+          "log_loss": 0.693147,
+          "brier": 0.25,
+          "reussite_pct": 50.98
+        },
+        "profils_global": {
+          "n": 51,
+          "log_loss": 0.694522,
+          "brier": 0.250687,
+          "reussite_pct": 49.02,
+          "ic95_exactitude_wilson": [
+            35.86,
+            62.32
+          ]
+        },
+        "gains_contre_neutre": {
+          "log_loss": -0.001375,
+          "brier": -0.000687,
+          "sens": "positif = apport des styles"
+        },
+        "ic95_bootstrap_semaine": {
+          "log_loss": {
+            "bas": 0.686533,
+            "haut": 0.70324
+          },
+          "brier": {
+            "bas": 0.246694,
+            "haut": 0.255044
+          },
+          "gain_log_loss": {
+            "bas": -0.010152,
+            "haut": 0.006614
+          },
+          "gain_brier": {
+            "bas": -0.005074,
+            "haut": 0.003306
+          }
+        },
+        "estimation_fragile": false,
+        "lecture": "estimation descriptive ; pas une confirmation prospective indépendante"
+      }
+    },
+    "confirmation": {
+      "grand_serveur|grand_serveur": {
+        "styles": [
+          "grand_serveur",
+          "grand_serveur"
+        ],
+        "noms": [
+          "Grand serveur",
+          "Grand serveur"
+        ],
+        "n": 155,
+        "semaines": 61,
+        "neutre_50": {
+          "n": 155,
+          "log_loss": 0.693147,
+          "brier": 0.25,
+          "reussite_pct": 51.61
+        },
+        "profils_global": {
+          "n": 155,
+          "log_loss": 0.683161,
+          "brier": 0.245073,
+          "reussite_pct": 55.48,
+          "ic95_exactitude_wilson": [
+            47.62,
+            63.08
+          ]
+        },
+        "gains_contre_neutre": {
+          "log_loss": 0.009986,
+          "brier": 0.004927,
+          "sens": "positif = apport des styles"
+        },
+        "ic95_bootstrap_semaine": {
+          "log_loss": {
+            "bas": 0.659134,
+            "haut": 0.712398
+          },
+          "brier": {
+            "bas": 0.233356,
+            "haut": 0.259277
+          },
+          "gain_log_loss": {
+            "bas": -0.019317,
+            "haut": 0.033851
+          },
+          "gain_brier": {
+            "bas": -0.00931,
+            "haut": 0.016628
+          }
+        },
+        "estimation_fragile": false,
+        "lecture": "estimation descriptive ; pas une confirmation prospective indépendante"
+      },
+      "grand_serveur|serveur_attaquant": {
+        "styles": [
+          "grand_serveur",
+          "serveur_attaquant"
+        ],
+        "noms": [
+          "Grand serveur",
+          "Serveur attaquant"
+        ],
+        "n": 150,
+        "semaines": 58,
+        "neutre_50": {
+          "n": 150,
+          "log_loss": 0.693147,
+          "brier": 0.25,
+          "reussite_pct": 56.67
+        },
+        "profils_global": {
+          "n": 150,
+          "log_loss": 0.689516,
+          "brier": 0.248424,
+          "reussite_pct": 53.33,
+          "ic95_exactitude_wilson": [
+            45.37,
+            61.13
+          ]
+        },
+        "gains_contre_neutre": {
+          "log_loss": 0.003631,
+          "brier": 0.001576,
+          "sens": "positif = apport des styles"
+        },
+        "ic95_bootstrap_semaine": {
+          "log_loss": {
+            "bas": 0.661646,
+            "haut": 0.720487
+          },
+          "brier": {
+            "bas": 0.234954,
+            "haut": 0.263336
+          },
+          "gain_log_loss": {
+            "bas": -0.027469,
+            "haut": 0.031393
+          },
+          "gain_brier": {
+            "bas": -0.013439,
+            "haut": 0.014918
+          }
+        },
+        "estimation_fragile": false,
+        "lecture": "estimation descriptive ; pas une confirmation prospective indépendante"
+      },
+      "grand_serveur|retourneur_pressant": {
+        "styles": [
+          "grand_serveur",
+          "retourneur_pressant"
+        ],
+        "noms": [
+          "Grand serveur",
+          "Retourneur pressant"
+        ],
+        "n": 175,
+        "semaines": 59,
+        "neutre_50": {
+          "n": 175,
+          "log_loss": 0.693147,
+          "brier": 0.25,
+          "reussite_pct": 46.29
+        },
+        "profils_global": {
+          "n": 175,
+          "log_loss": 0.673267,
+          "brier": 0.240265,
+          "reussite_pct": 57.71,
+          "ic95_exactitude_wilson": [
+            50.31,
+            64.79
+          ]
+        },
+        "gains_contre_neutre": {
+          "log_loss": 0.01988,
+          "brier": 0.009735,
+          "sens": "positif = apport des styles"
+        },
+        "ic95_bootstrap_semaine": {
+          "log_loss": {
+            "bas": 0.645754,
+            "haut": 0.701962
+          },
+          "brier": {
+            "bas": 0.226792,
+            "haut": 0.254108
+          },
+          "gain_log_loss": {
+            "bas": -0.008915,
+            "haut": 0.047389
+          },
+          "gain_brier": {
+            "bas": -0.004143,
+            "haut": 0.023117
+          }
+        },
+        "estimation_fragile": false,
+        "lecture": "estimation descriptive ; pas une confirmation prospective indépendante"
+      },
+      "contreur|grand_serveur": {
+        "styles": [
+          "grand_serveur",
+          "contreur"
+        ],
+        "noms": [
+          "Grand serveur",
+          "Contreur"
+        ],
+        "n": 178,
+        "semaines": 63,
+        "neutre_50": {
+          "n": 178,
+          "log_loss": 0.693147,
+          "brier": 0.25,
+          "reussite_pct": 46.07
+        },
+        "profils_global": {
+          "n": 178,
+          "log_loss": 0.699675,
+          "brier": 0.252994,
+          "reussite_pct": 51.12,
+          "ic95_exactitude_wilson": [
+            43.83,
+            58.37
+          ]
+        },
+        "gains_contre_neutre": {
+          "log_loss": -0.006528,
+          "brier": -0.002994,
+          "sens": "positif = apport des styles"
+        },
+        "ic95_bootstrap_semaine": {
+          "log_loss": {
+            "bas": 0.668668,
+            "haut": 0.734333
+          },
+          "brier": {
+            "bas": 0.238443,
+            "haut": 0.26948
+          },
+          "gain_log_loss": {
+            "bas": -0.04146,
+            "haut": 0.024387
+          },
+          "gain_brier": {
+            "bas": -0.019578,
+            "haut": 0.011551
+          }
+        },
+        "estimation_fragile": false,
+        "lecture": "estimation descriptive ; pas une confirmation prospective indépendante"
+      },
+      "equilibre|grand_serveur": {
+        "styles": [
+          "grand_serveur",
+          "equilibre"
+        ],
+        "noms": [
+          "Grand serveur",
+          "Équilibré"
+        ],
+        "n": 603,
+        "semaines": 73,
+        "neutre_50": {
+          "n": 603,
+          "log_loss": 0.693147,
+          "brier": 0.25,
+          "reussite_pct": 49.09
+        },
+        "profils_global": {
+          "n": 603,
+          "log_loss": 0.657792,
+          "brier": 0.233088,
+          "reussite_pct": 60.53,
+          "ic95_exactitude_wilson": [
+            56.57,
+            64.35
+          ]
+        },
+        "gains_contre_neutre": {
+          "log_loss": 0.035355,
+          "brier": 0.016912,
+          "sens": "positif = apport des styles"
+        },
+        "ic95_bootstrap_semaine": {
+          "log_loss": {
+            "bas": 0.636049,
+            "haut": 0.680085
+          },
+          "brier": {
+            "bas": 0.22275,
+            "haut": 0.24345
+          },
+          "gain_log_loss": {
+            "bas": 0.013004,
+            "haut": 0.056948
+          },
+          "gain_brier": {
+            "bas": 0.006522,
+            "haut": 0.027227
+          }
+        },
+        "estimation_fragile": false,
+        "lecture": "estimation descriptive ; pas une confirmation prospective indépendante"
+      },
+      "grand_serveur|indetermine": {
+        "styles": [
+          "grand_serveur",
+          "indetermine"
+        ],
+        "noms": [
+          "Grand serveur",
+          "Indéterminé"
+        ],
+        "n": 140,
+        "semaines": 60,
+        "neutre_50": {
+          "n": 140,
+          "log_loss": 0.693147,
+          "brier": 0.25,
+          "reussite_pct": 32.86
+        },
+        "profils_global": {
+          "n": 140,
+          "log_loss": 0.677517,
+          "brier": 0.242205,
+          "reussite_pct": 67.86,
+          "ic95_exactitude_wilson": [
+            59.73,
+            75.03
+          ]
+        },
+        "gains_contre_neutre": {
+          "log_loss": 0.01563,
+          "brier": 0.007795,
+          "sens": "positif = apport des styles"
+        },
+        "ic95_bootstrap_semaine": {
+          "log_loss": {
+            "bas": 0.669165,
+            "haut": 0.686279
+          },
+          "brier": {
+            "bas": 0.238033,
+            "haut": 0.24658
+          },
+          "gain_log_loss": {
+            "bas": 0.006664,
+            "haut": 0.023946
+          },
+          "gain_brier": {
+            "bas": 0.00334,
+            "haut": 0.011942
+          }
+        },
+        "estimation_fragile": false,
+        "lecture": "estimation descriptive ; pas une confirmation prospective indépendante"
+      },
+      "serveur_attaquant|serveur_attaquant": {
+        "styles": [
+          "serveur_attaquant",
+          "serveur_attaquant"
+        ],
+        "noms": [
+          "Serveur attaquant",
+          "Serveur attaquant"
+        ],
+        "n": 54,
+        "semaines": 36,
+        "neutre_50": {
+          "n": 54,
+          "log_loss": 0.693147,
+          "brier": 0.25,
+          "reussite_pct": 51.85
+        },
+        "profils_global": {
+          "n": 54,
+          "log_loss": 0.701113,
+          "brier": 0.254217,
+          "reussite_pct": 42.59,
+          "ic95_exactitude_wilson": [
+            30.33,
+            55.84
+          ]
+        },
+        "gains_contre_neutre": {
+          "log_loss": -0.007966,
+          "brier": -0.004217,
+          "sens": "positif = apport des styles"
+        },
+        "ic95_bootstrap_semaine": {
+          "log_loss": {
+            "bas": 0.662329,
+            "haut": 0.742073
+          },
+          "brier": {
+            "bas": 0.235475,
+            "haut": 0.274124
+          },
+          "gain_log_loss": {
+            "bas": -0.048967,
+            "haut": 0.030766
+          },
+          "gain_brier": {
+            "bas": -0.024164,
+            "haut": 0.014453
+          }
+        },
+        "estimation_fragile": false,
+        "lecture": "estimation descriptive ; pas une confirmation prospective indépendante"
+      },
+      "retourneur_pressant|serveur_attaquant": {
+        "styles": [
+          "serveur_attaquant",
+          "retourneur_pressant"
+        ],
+        "noms": [
+          "Serveur attaquant",
+          "Retourneur pressant"
+        ],
+        "n": 123,
+        "semaines": 52,
+        "neutre_50": {
+          "n": 123,
+          "log_loss": 0.693147,
+          "brier": 0.25,
+          "reussite_pct": 55.28
+        },
+        "profils_global": {
+          "n": 123,
+          "log_loss": 0.689925,
+          "brier": 0.248858,
+          "reussite_pct": 54.47,
+          "ic95_exactitude_wilson": [
+            45.67,
+            63.0
+          ]
+        },
+        "gains_contre_neutre": {
+          "log_loss": 0.003222,
+          "brier": 0.001142,
+          "sens": "positif = apport des styles"
+        },
+        "ic95_bootstrap_semaine": {
+          "log_loss": {
+            "bas": 0.659592,
+            "haut": 0.71713
+          },
+          "brier": {
+            "bas": 0.234499,
+            "haut": 0.261711
+          },
+          "gain_log_loss": {
+            "bas": -0.023983,
+            "haut": 0.033266
+          },
+          "gain_brier": {
+            "bas": -0.011839,
+            "haut": 0.015435
+          }
+        },
+        "estimation_fragile": false,
+        "lecture": "estimation descriptive ; pas une confirmation prospective indépendante"
+      },
+      "contreur|serveur_attaquant": {
+        "styles": [
+          "serveur_attaquant",
+          "contreur"
+        ],
+        "noms": [
+          "Serveur attaquant",
+          "Contreur"
+        ],
+        "n": 129,
+        "semaines": 58,
+        "neutre_50": {
+          "n": 129,
+          "log_loss": 0.693147,
+          "brier": 0.25,
+          "reussite_pct": 49.61
+        },
+        "profils_global": {
+          "n": 129,
+          "log_loss": 0.613308,
+          "brier": 0.212674,
+          "reussite_pct": 66.67,
+          "ic95_exactitude_wilson": [
+            58.15,
+            74.22
+          ]
+        },
+        "gains_contre_neutre": {
+          "log_loss": 0.079839,
+          "brier": 0.037326,
+          "sens": "positif = apport des styles"
+        },
+        "ic95_bootstrap_semaine": {
+          "log_loss": {
+            "bas": 0.581425,
+            "haut": 0.649516
+          },
+          "brier": {
+            "bas": 0.19775,
+            "haut": 0.229434
+          },
+          "gain_log_loss": {
+            "bas": 0.043619,
+            "haut": 0.111566
+          },
+          "gain_brier": {
+            "bas": 0.020453,
+            "haut": 0.052218
+          }
+        },
+        "estimation_fragile": false,
+        "lecture": "estimation descriptive ; pas une confirmation prospective indépendante"
+      },
+      "equilibre|serveur_attaquant": {
+        "styles": [
+          "serveur_attaquant",
+          "equilibre"
+        ],
+        "noms": [
+          "Serveur attaquant",
+          "Équilibré"
+        ],
+        "n": 362,
+        "semaines": 70,
+        "neutre_50": {
+          "n": 362,
+          "log_loss": 0.693147,
+          "brier": 0.25,
+          "reussite_pct": 50.28
+        },
+        "profils_global": {
+          "n": 362,
+          "log_loss": 0.663159,
+          "brier": 0.236026,
+          "reussite_pct": 60.22,
+          "ic95_exactitude_wilson": [
+            55.1,
+            65.13
+          ]
+        },
+        "gains_contre_neutre": {
+          "log_loss": 0.029988,
+          "brier": 0.013974,
+          "sens": "positif = apport des styles"
+        },
+        "ic95_bootstrap_semaine": {
+          "log_loss": {
+            "bas": 0.636938,
+            "haut": 0.68701
+          },
+          "brier": {
+            "bas": 0.223502,
+            "haut": 0.247263
+          },
+          "gain_log_loss": {
+            "bas": 0.005958,
+            "haut": 0.056202
+          },
+          "gain_brier": {
+            "bas": 0.002682,
+            "haut": 0.02649
+          }
+        },
+        "estimation_fragile": false,
+        "lecture": "estimation descriptive ; pas une confirmation prospective indépendante"
+      },
+      "indetermine|serveur_attaquant": {
+        "styles": [
+          "serveur_attaquant",
+          "indetermine"
+        ],
+        "noms": [
+          "Serveur attaquant",
+          "Indéterminé"
+        ],
+        "n": 134,
+        "semaines": 57,
+        "neutre_50": {
+          "n": 134,
+          "log_loss": 0.693147,
+          "brier": 0.25,
+          "reussite_pct": 42.54
+        },
+        "profils_global": {
+          "n": 134,
+          "log_loss": 0.686948,
+          "brier": 0.246904,
+          "reussite_pct": 58.96,
+          "ic95_exactitude_wilson": [
+            50.49,
+            66.92
+          ]
+        },
+        "gains_contre_neutre": {
+          "log_loss": 0.006199,
+          "brier": 0.003096,
+          "sens": "positif = apport des styles"
+        },
+        "ic95_bootstrap_semaine": {
+          "log_loss": {
+            "bas": 0.679479,
+            "haut": 0.694459
+          },
+          "brier": {
+            "bas": 0.243184,
+            "haut": 0.250637
+          },
+          "gain_log_loss": {
+            "bas": -0.001358,
+            "haut": 0.013623
+          },
+          "gain_brier": {
+            "bas": -0.000675,
+            "haut": 0.006787
+          }
+        },
+        "estimation_fragile": false,
+        "lecture": "estimation descriptive ; pas une confirmation prospective indépendante"
+      },
+      "retourneur_pressant|retourneur_pressant": {
+        "styles": [
+          "retourneur_pressant",
+          "retourneur_pressant"
+        ],
+        "noms": [
+          "Retourneur pressant",
+          "Retourneur pressant"
+        ],
+        "n": 79,
+        "semaines": 48,
+        "neutre_50": {
+          "n": 79,
+          "log_loss": 0.693147,
+          "brier": 0.25,
+          "reussite_pct": 65.82
+        },
+        "profils_global": {
+          "n": 79,
+          "log_loss": 0.707675,
+          "brier": 0.257028,
+          "reussite_pct": 44.3,
+          "ic95_exactitude_wilson": [
+            33.87,
+            55.27
+          ]
+        },
+        "gains_contre_neutre": {
+          "log_loss": -0.014528,
+          "brier": -0.007028,
+          "sens": "positif = apport des styles"
+        },
+        "ic95_bootstrap_semaine": {
+          "log_loss": {
+            "bas": 0.675982,
+            "haut": 0.737963
+          },
+          "brier": {
+            "bas": 0.241596,
+            "haut": 0.271789
+          },
+          "gain_log_loss": {
+            "bas": -0.044956,
+            "haut": 0.016593
+          },
+          "gain_brier": {
+            "bas": -0.021914,
+            "haut": 0.008093
+          }
+        },
+        "estimation_fragile": false,
+        "lecture": "estimation descriptive ; pas une confirmation prospective indépendante"
+      },
+      "contreur|retourneur_pressant": {
+        "styles": [
+          "retourneur_pressant",
+          "contreur"
+        ],
+        "noms": [
+          "Retourneur pressant",
+          "Contreur"
+        ],
+        "n": 172,
+        "semaines": 66,
+        "neutre_50": {
+          "n": 172,
+          "log_loss": 0.693147,
+          "brier": 0.25,
+          "reussite_pct": 51.74
+        },
+        "profils_global": {
+          "n": 172,
+          "log_loss": 0.677036,
+          "brier": 0.241936,
+          "reussite_pct": 57.56,
+          "ic95_exactitude_wilson": [
+            50.09,
+            64.7
+          ]
+        },
+        "gains_contre_neutre": {
+          "log_loss": 0.016111,
+          "brier": 0.008064,
+          "sens": "positif = apport des styles"
+        },
+        "ic95_bootstrap_semaine": {
+          "log_loss": {
+            "bas": 0.648029,
+            "haut": 0.706606
+          },
+          "brier": {
+            "bas": 0.227962,
+            "haut": 0.256097
+          },
+          "gain_log_loss": {
+            "bas": -0.013519,
+            "haut": 0.045103
+          },
+          "gain_brier": {
+            "bas": -0.006103,
+            "haut": 0.022011
+          }
+        },
+        "estimation_fragile": false,
+        "lecture": "estimation descriptive ; pas une confirmation prospective indépendante"
+      },
+      "equilibre|retourneur_pressant": {
+        "styles": [
+          "retourneur_pressant",
+          "equilibre"
+        ],
+        "noms": [
+          "Retourneur pressant",
+          "Équilibré"
+        ],
+        "n": 453,
+        "semaines": 73,
+        "neutre_50": {
+          "n": 453,
+          "log_loss": 0.693147,
+          "brier": 0.25,
+          "reussite_pct": 47.02
+        },
+        "profils_global": {
+          "n": 453,
+          "log_loss": 0.693925,
+          "brier": 0.250177,
+          "reussite_pct": 53.42,
+          "ic95_exactitude_wilson": [
+            48.82,
+            57.97
+          ]
+        },
+        "gains_contre_neutre": {
+          "log_loss": -0.000778,
+          "brier": -0.000177,
+          "sens": "positif = apport des styles"
+        },
+        "ic95_bootstrap_semaine": {
+          "log_loss": {
+            "bas": 0.674325,
+            "haut": 0.714345
+          },
+          "brier": {
+            "bas": 0.240778,
+            "haut": 0.259916
+          },
+          "gain_log_loss": {
+            "bas": -0.021216,
+            "haut": 0.018631
+          },
+          "gain_brier": {
+            "bas": -0.009976,
+            "haut": 0.009162
+          }
+        },
+        "estimation_fragile": false,
+        "lecture": "estimation descriptive ; pas une confirmation prospective indépendante"
+      },
+      "indetermine|retourneur_pressant": {
+        "styles": [
+          "retourneur_pressant",
+          "indetermine"
+        ],
+        "noms": [
+          "Retourneur pressant",
+          "Indéterminé"
+        ],
+        "n": 134,
+        "semaines": 55,
+        "neutre_50": {
+          "n": 134,
+          "log_loss": 0.693147,
+          "brier": 0.25,
+          "reussite_pct": 38.06
+        },
+        "profils_global": {
+          "n": 134,
+          "log_loss": 0.681676,
+          "brier": 0.244268,
+          "reussite_pct": 65.67,
+          "ic95_exactitude_wilson": [
+            57.3,
+            73.17
+          ]
+        },
+        "gains_contre_neutre": {
+          "log_loss": 0.011471,
+          "brier": 0.005732,
+          "sens": "positif = apport des styles"
+        },
+        "ic95_bootstrap_semaine": {
+          "log_loss": {
+            "bas": 0.673546,
+            "haut": 0.688834
+          },
+          "brier": {
+            "bas": 0.240217,
+            "haut": 0.247831
+          },
+          "gain_log_loss": {
+            "bas": 0.004297,
+            "haut": 0.019595
+          },
+          "gain_brier": {
+            "bas": 0.002156,
+            "haut": 0.00978
+          }
+        },
+        "estimation_fragile": false,
+        "lecture": "estimation descriptive ; pas une confirmation prospective indépendante"
+      },
+      "contreur|contreur": {
+        "styles": [
+          "contreur",
+          "contreur"
+        ],
+        "noms": [
+          "Contreur",
+          "Contreur"
+        ],
+        "n": 132,
+        "semaines": 55,
+        "neutre_50": {
+          "n": 132,
+          "log_loss": 0.693147,
+          "brier": 0.25,
+          "reussite_pct": 50.0
+        },
+        "profils_global": {
+          "n": 132,
+          "log_loss": 0.686053,
+          "brier": 0.246562,
+          "reussite_pct": 50.76,
+          "ic95_exactitude_wilson": [
+            42.33,
+            59.14
+          ]
+        },
+        "gains_contre_neutre": {
+          "log_loss": 0.007094,
+          "brier": 0.003438,
+          "sens": "positif = apport des styles"
+        },
+        "ic95_bootstrap_semaine": {
+          "log_loss": {
+            "bas": 0.66068,
+            "haut": 0.710445
+          },
+          "brier": {
+            "bas": 0.234195,
+            "haut": 0.258496
+          },
+          "gain_log_loss": {
+            "bas": -0.017436,
+            "haut": 0.032446
+          },
+          "gain_brier": {
+            "bas": -0.008507,
+            "haut": 0.01571
+          }
+        },
+        "estimation_fragile": false,
+        "lecture": "estimation descriptive ; pas une confirmation prospective indépendante"
+      },
+      "contreur|equilibre": {
+        "styles": [
+          "contreur",
+          "equilibre"
+        ],
+        "noms": [
+          "Contreur",
+          "Équilibré"
+        ],
+        "n": 522,
+        "semaines": 74,
+        "neutre_50": {
+          "n": 522,
+          "log_loss": 0.693147,
+          "brier": 0.25,
+          "reussite_pct": 46.17
+        },
+        "profils_global": {
+          "n": 522,
+          "log_loss": 0.675735,
+          "brier": 0.241522,
+          "reussite_pct": 56.13,
+          "ic95_exactitude_wilson": [
+            51.84,
+            60.33
+          ]
+        },
+        "gains_contre_neutre": {
+          "log_loss": 0.017412,
+          "brier": 0.008478,
+          "sens": "positif = apport des styles"
+        },
+        "ic95_bootstrap_semaine": {
+          "log_loss": {
+            "bas": 0.661899,
+            "haut": 0.689137
+          },
+          "brier": {
+            "bas": 0.23478,
+            "haut": 0.248075
+          },
+          "gain_log_loss": {
+            "bas": 0.00399,
+            "haut": 0.031204
+          },
+          "gain_brier": {
+            "bas": 0.001919,
+            "haut": 0.01521
+          }
+        },
+        "estimation_fragile": false,
+        "lecture": "estimation descriptive ; pas une confirmation prospective indépendante"
+      },
+      "contreur|indetermine": {
+        "styles": [
+          "contreur",
+          "indetermine"
+        ],
+        "noms": [
+          "Contreur",
+          "Indéterminé"
+        ],
+        "n": 191,
+        "semaines": 67,
+        "neutre_50": {
+          "n": 191,
+          "log_loss": 0.693147,
+          "brier": 0.25,
+          "reussite_pct": 37.7
+        },
+        "profils_global": {
+          "n": 191,
+          "log_loss": 0.673292,
+          "brier": 0.240095,
+          "reussite_pct": 70.68,
+          "ic95_exactitude_wilson": [
+            63.87,
+            76.68
+          ]
+        },
+        "gains_contre_neutre": {
+          "log_loss": 0.019855,
+          "brier": 0.009905,
+          "sens": "positif = apport des styles"
+        },
+        "ic95_bootstrap_semaine": {
+          "log_loss": {
+            "bas": 0.664871,
+            "haut": 0.682261
+          },
+          "brier": {
+            "bas": 0.235897,
+            "haut": 0.244558
+          },
+          "gain_log_loss": {
+            "bas": 0.010871,
+            "haut": 0.028269
+          },
+          "gain_brier": {
+            "bas": 0.00542,
+            "haut": 0.0141
+          }
+        },
+        "estimation_fragile": false,
+        "lecture": "estimation descriptive ; pas une confirmation prospective indépendante"
+      },
+      "equilibre|equilibre": {
+        "styles": [
+          "equilibre",
+          "equilibre"
+        ],
+        "noms": [
+          "Équilibré",
+          "Équilibré"
+        ],
+        "n": 824,
+        "semaines": 74,
+        "neutre_50": {
+          "n": 824,
+          "log_loss": 0.693147,
+          "brier": 0.25,
+          "reussite_pct": 49.76
+        },
+        "profils_global": {
+          "n": 824,
+          "log_loss": 0.67995,
+          "brier": 0.243399,
+          "reussite_pct": 58.5,
+          "ic95_exactitude_wilson": [
+            55.1,
+            61.81
+          ]
+        },
+        "gains_contre_neutre": {
+          "log_loss": 0.013197,
+          "brier": 0.006601,
+          "sens": "positif = apport des styles"
+        },
+        "ic95_bootstrap_semaine": {
+          "log_loss": {
+            "bas": 0.668893,
+            "haut": 0.691768
+          },
+          "brier": {
+            "bas": 0.23803,
+            "haut": 0.249146
+          },
+          "gain_log_loss": {
+            "bas": 0.001283,
+            "haut": 0.024149
+          },
+          "gain_brier": {
+            "bas": 0.000852,
+            "haut": 0.011944
+          }
+        },
+        "estimation_fragile": false,
+        "lecture": "estimation descriptive ; pas une confirmation prospective indépendante"
+      },
+      "equilibre|indetermine": {
+        "styles": [
+          "equilibre",
+          "indetermine"
+        ],
+        "noms": [
+          "Équilibré",
+          "Indéterminé"
+        ],
+        "n": 643,
+        "semaines": 74,
+        "neutre_50": {
+          "n": 643,
+          "log_loss": 0.693147,
+          "brier": 0.25,
+          "reussite_pct": 37.95
+        },
+        "profils_global": {
+          "n": 643,
+          "log_loss": 0.661903,
+          "brier": 0.234516,
+          "reussite_pct": 70.14,
+          "ic95_exactitude_wilson": [
+            66.49,
+            73.55
+          ]
+        },
+        "gains_contre_neutre": {
+          "log_loss": 0.031244,
+          "brier": 0.015484,
+          "sens": "positif = apport des styles"
+        },
+        "ic95_bootstrap_semaine": {
+          "log_loss": {
+            "bas": 0.653437,
+            "haut": 0.669927
+          },
+          "brier": {
+            "bas": 0.230341,
+            "haut": 0.238462
+          },
+          "gain_log_loss": {
+            "bas": 0.023187,
+            "haut": 0.0397
+          },
+          "gain_brier": {
+            "bas": 0.01149,
+            "haut": 0.019647
+          }
+        },
+        "estimation_fragile": false,
+        "lecture": "estimation descriptive ; pas une confirmation prospective indépendante"
+      },
+      "indetermine|indetermine": {
+        "styles": [
+          "indetermine",
+          "indetermine"
+        ],
+        "noms": [
+          "Indéterminé",
+          "Indéterminé"
+        ],
+        "n": 494,
+        "semaines": 65,
+        "neutre_50": {
+          "n": 494,
+          "log_loss": 0.693147,
+          "brier": 0.25,
+          "reussite_pct": 44.13
+        },
+        "profils_global": {
+          "n": 494,
+          "log_loss": 0.689538,
+          "brier": 0.248196,
+          "reussite_pct": 55.87,
+          "ic95_exactitude_wilson": [
+            51.46,
+            60.19
+          ]
+        },
+        "gains_contre_neutre": {
+          "log_loss": 0.003609,
+          "brier": 0.001804,
+          "sens": "positif = apport des styles"
+        },
+        "ic95_bootstrap_semaine": {
+          "log_loss": {
+            "bas": 0.686288,
+            "haut": 0.692515
+          },
+          "brier": {
+            "bas": 0.246572,
+            "haut": 0.249684
+          },
+          "gain_log_loss": {
+            "bas": 0.000626,
+            "haut": 0.006857
+          },
+          "gain_brier": {
+            "bas": 0.000313,
+            "haut": 0.003427
+          }
+        },
+        "estimation_fragile": false,
+        "lecture": "estimation descriptive ; pas une confirmation prospective indépendante"
+      }
+    }
+  },
+  "n_paires_avec_au_moins_30_confirmation": 21,
+  "nature_confirmation": "diagnostic historique 2025–2026 réutilisé ; pas une confirmation prospective nouvelle",
+  "selection_sous_groupe": false,
+  "marche_utilise": false,
+  "activation": false,
+  "champion_actif_modifie": false,
+  "verdict": "matrice descriptive exhaustive ; aucun duel sélectionné et champion inchangé",
+  "regle": "aucune cote, aucun résultat futur, aucune activation à partir des paires historiques"
+}
