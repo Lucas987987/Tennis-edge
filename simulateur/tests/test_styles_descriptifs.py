@@ -133,3 +133,25 @@ class HistoriqueTests(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class AttenduTests(unittest.TestCase):
+    """28/10/2026 : bilan réel comparé à l'attendu vu la force des adversaires (Elo d'avant-match)."""
+
+    def test_attendu_et_ecart(self):
+        r = SD.resume({'n': 4, 'v': 1, 'derniers': [], 'att': 0.8, 'n_att': 4})
+        self.assertEqual(r['attendu_pct'], 20.0)
+        self.assertEqual(r['ecart_pts'], 5.0)
+        self.assertNotIn('attendu_pct', SD.resume({'n': 4, 'v': 1, 'derniers': []}))
+
+    def test_attendu_pre_match_et_complementaire(self):
+        M = [match(i) for i in range(7)]
+        acc, _ = SD.calculer(M, {'a': {'circuit': 'ATP', 'surface': 'Hard'},
+                                 'b': {'circuit': 'ATP', 'surface': 'Hard'}}, dt.date(2024, 4, 1))
+        a = SD.resume(acc.get(('a', 'equilibre', 'global')))
+        b = SD.resume(acc.get(('b', 'equilibre', 'global')))
+        # a a gagné les six matchs précédents : l'Elo d'AVANT le 7e le donne favori, pas à 100 %
+        self.assertGreater(a['attendu_pct'], 50)
+        self.assertLess(a['attendu_pct'], 100)
+        self.assertAlmostEqual(a['attendu_pct'] + b['attendu_pct'], 100.0, places=0)
+        self.assertEqual(a['derniers'][0]['attendu_pct'], a['attendu_pct'])
