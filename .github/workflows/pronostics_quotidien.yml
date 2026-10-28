@@ -132,6 +132,8 @@ jobs:
                      simulateur/recap_apprentissage.json simulateur/recap_apprentissage.md \
                      simulateur/journal_pronostics Tennis_Edge_Lab/live/pronostics_resultats.json \
                      algo/donnees.json
+          # 28/10/2026 : analyse après match (descriptive, pour l'algo) — publiée si elle a été écrite
+          if [ -e simulateur/analyse_apres_match.json ]; then git add -- simulateur/analyse_apres_match.json; fi
           if git diff --cached --quiet; then echo 'Rien de nouveau.'; exit 0; fi
           git commit -m "Pronostics du jour $(date -u +%FT%TZ)"
           # fichiers écrits hors du checkout partiel (ex. live/joueurs_service.json.gz, contexte des
