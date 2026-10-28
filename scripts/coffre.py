@@ -42,6 +42,8 @@ GROUPES = {
 # entrées du Lab quotidien : seul le journal H19 est relu (verdict de H19) ; le journal H18 n'est PAS rapatrié
 # dans le Lab, sans quoi l'explorateur et data.json (publiés) le republieraient
 GROUPES['lab_entrees'] = ['h19_signal_log.jsonl']
+# 28/10/2026 : rapport ROI (règles R1/R2) — interne, jamais dans le dépôt public ; écrit par pronostic.yml
+GROUPES['roi'] = ['simulateur/rapport_roi_algo.json']
 GROUPES['tous'] = [f for k in ('signaux', 'lab', 'pronostics') for f in GROUPES[k]]
 # servis au Lab par le worker « algo » (nom de fichier seul, sans dossier)
 SERVIS = sorted({os.path.basename(f) for f in GROUPES['tous']})
