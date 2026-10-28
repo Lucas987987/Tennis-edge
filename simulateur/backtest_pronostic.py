@@ -206,9 +206,18 @@ def resultats_itf(racine, ids_feuilles=()):
     except ImportError:
         return []
     ids = set(ids_feuilles or ())
-    out = [m for m in (EI.match_itf(r) for r in RI.lire_tout(racine)) if m and m.get('id') not in ids]
+    brut = RI.lire_tout(racine)
+    if EI.itf_femmes_adoptees(racine):              # 28/10/2026 : ITF femmes seulement si l'étude les a adoptées
+        brut += RI.lire_tout(racine, RI.DOSSIER_FEMMES)
+    out = [m for m in (EI.match_itf(r) for r in brut) if m and m.get('id') not in ids]
     out.sort(key=lambda m: m['date'])
     return out
+
+
+def lier_itf(M, connus, itf_rows, deja):
+    """Alias des noms ITF par la règle stricte — définie dans etude_itf_elo (même règle pour l'étude et la production)."""
+    import etude_itf_elo as EI
+    return EI.lier_itf(M, connus, itf_rows, deja)
 
 
 def itf_en_production(racine):
@@ -482,9 +491,11 @@ def main(argv):
     print(f"Feuilles TennisApi après l'archive : {len(fe_rows)} résultats", flush=True)
     itf_rows = resultats_itf(racine, {m.get('id') for m in fe_rows if m.get('id')})
     print(f"Résultats ITF hommes (resultats_itf/) : {len(itf_rows)} matchs", flush=True)
-    alias = E.unifier(connus, {x['home'] for x in nous} | {x['away'] for x in nous}
-                      | {m['nom_g'] for m in fe_rows} | {m['nom_p'] for m in fe_rows}
-                      | {m['nom_g'] for m in itf_rows} | {m['nom_p'] for m in itf_rows})
+    base_noms = ({x['home'] for x in nous} | {x['away'] for x in nous}
+                 | {m['nom_g'] for m in fe_rows} | {m['nom_p'] for m in fe_rows})
+    alias = E.unifier(connus, base_noms)
+    # 28/10/2026 : les noms venus SEULEMENT des résultats ITF sont reliés par la règle stricte (audit : fusions à tort)
+    alias.update(lier_itf(M, connus, itf_rows, base_noms))
     cle_c = lambda n: alias.get(E.cle(n), E.cle(n))
     noms_c = dict(connus)
     for x in nous:
@@ -603,7 +614,8 @@ def main(argv):
     # (etude_itf_elo.json « adopte » = false) et cette étape n'est plus appliquée. ITF = DONNÉE seulement.
     itf_elo = {'applique': False, 'matchs': len(itf_rows), 'raison': 'aucun résultat ITF'}
     if itf_rows and itf_en_production(racine):
-        avant = sorted([m for m in itf_rows if m['date'] <= fin_sack], key=lambda m: m['date'])
+        avant = sorted([m for m in itf_rows if m['date'] <= fin_sack and m['circuit'] != 'ITF'],   # ITF femmes : déjà dans l'archive
+                       key=lambda m: m['date'])
         apres = [m for m in itf_rows if m['date'] > fin_sack]
         M5 = sorted(M + avant, key=lambda m: (m['date'], m.get('tour', 0), m.get('num', 0)))
         nom5 = retenue + '+itf'

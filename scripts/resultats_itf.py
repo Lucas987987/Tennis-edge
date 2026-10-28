@@ -34,12 +34,17 @@ import time
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import feuilles_match as FM  # noqa: E402
 
-DOSSIER = os.environ.get('ITF_DOSSIER', 'resultats_itf')
-DEBUT = '2024-06-01'
-CATEGORIE = 'itf men'
+# 28/10/2026 — ITF FEMMES (ITF_SEXE=F) : l'archive Sackmann contient l'ITF féminin jusqu'au 02/06/2026 ; depuis, plus rien
+# (feuilles_match.py ne collecte plus l'ITF depuis le 22/10, et pas de résultats sans feuille). On reprend donc le
+# 25/05/2026 (chevauchement d'une semaine ; un match déjà dans l'archive est écarté par l'étude).
+SEXE = os.environ.get('ITF_SEXE', 'H').upper()
+DOSSIER_HOMMES, DOSSIER_FEMMES = 'resultats_itf', 'resultats_itf_femmes'
+DOSSIER = os.environ.get('ITF_DOSSIER', DOSSIER_FEMMES if SEXE == 'F' else DOSSIER_HOMMES)
+DEBUT = '2026-05-25' if SEXE == 'F' else '2024-06-01'
+CATEGORIE = 'itf women' if SEXE == 'F' else 'itf men'
 DELAI_COMPLET_J = 3
 MINUTES = float(os.environ.get('ITF_MINUTES', '45'))
-CHAMPS = ('id', 'jour', 'debut', 'tournoi', 'tournoi_id', 'surface', 'tour', 'meilleur_des', 'vainqueur',
+CHAMPS = ('categorie', 'id', 'jour', 'debut', 'tournoi', 'tournoi_id', 'surface', 'tour', 'meilleur_des', 'vainqueur',
           'statut', 'score_home', 'score_away')
 
 
@@ -106,11 +111,11 @@ def collecter_jour(c, jour):
     return out
 
 
-def lire_tout(racine):
-    """Toutes les fiches stockées (pour l'étude)."""
+def lire_tout(racine, dossier=DOSSIER_HOMMES):
+    """Toutes les fiches stockées d'un dossier (hommes par défaut ; DOSSIER_FEMMES pour l'ITF féminin)."""
     import glob
     out = []
-    for p in sorted(glob.glob(os.path.join(racine, DOSSIER, '20*.jsonl.gz'))):
+    for p in sorted(glob.glob(os.path.join(racine, dossier, '20*.jsonl.gz'))):
         try:
             with gzip.open(p, 'rt', encoding='utf-8') as f:
                 out.extend(json.loads(l) for l in f if l.strip())
@@ -183,7 +188,7 @@ def main(argv):
             jours.append(d.isoformat())
         d += dt.timedelta(days=1)
     c = FM.Client(cle, budget=budget, reserve=int(os.environ.get('FEUILLES_RESERVE', '6000')))
-    print(f"Résultats ITF hommes : {debut} → {fin} · {len(jours)} jour(s) à faire · budget {budget}, réserve {c.reserve}, "
+    print(f"Résultats {CATEGORIE.upper()} : {debut} → {fin} · {len(jours)} jour(s) à faire · budget {budget}, réserve {c.reserve}, "
           f"{MINUTES:.0f} min au plus")
     faits, arret = passer(c, jours, etat, auj, limite_s=MINUTES * 60)
     ecrire_etat(etat, c, arret)
