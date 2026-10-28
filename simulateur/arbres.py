@@ -116,3 +116,114 @@ def symetriser(lignes):
         y.append(0)
         off.append(-o)
     return X, y, off
+
+
+# ------------------------------------------------------------------ 28/10/2026 : boosting binomial « tout combiné »
+# Pour le modèle complet des facteurs (facteurs.py, groupe « modele_complet ») : chaque ligne est un paquet de
+# points (n joués, k gagnés) avec un logit de départ (la base ajustée aux adversaires). Coupures cherchées sur des
+# histogrammes (N_CASES quantiles par variable, calculés une fois) : rapide en Python pur sur ~25 000 lignes.
+# Réglages FIGÉS le 28/10/2026 avant tout résultat : profondeur 3, 100 tours, pas 0,05, feuilles d'au moins
+# 600 lignes, rappel L2 de 50 points, 16 cases.
+B_PROFONDEUR, B_TOURS, B_PAS, B_FEUILLE_MIN, B_L2, N_CASES = 3, 100, 0.05, 600, 50.0, 16
+
+
+def _cases(X, n_cases=N_CASES):
+    """Seuils (quantiles) par variable et indice de case de chaque ligne."""
+    nf = len(X[0]) if X else 0
+    seuils, C = [], [[0] * nf for _ in X]
+    for j in range(nf):
+        vals = sorted({x[j] for x in X})
+        if len(vals) <= n_cases:
+            s = [(a + b) / 2 for a, b in zip(vals, vals[1:])]
+        else:
+            col = sorted(x[j] for x in X)
+            s = sorted({col[int(len(col) * q / n_cases)] for q in range(1, n_cases)})
+        seuils.append(s)
+        import bisect
+        for i, x in enumerate(X):
+            C[i][j] = bisect.bisect_left(s, x[j]) if s else 0
+    return seuils, C
+
+
+def _arbre_hist(C, seuils, g, h, idx, prof, feuille_min, l2):
+    G, H = sum(g[i] for i in idx), sum(h[i] for i in idx)
+    feuille = {'v': -G / (H + l2)}
+    if prof == 0 or len(idx) < 2 * feuille_min:
+        return feuille
+    base = G * G / (H + l2)
+    best = None
+    for j, s in enumerate(seuils):
+        if not s:
+            continue
+        nb = len(s) + 1
+        sg, sh, sn = [0.0] * nb, [0.0] * nb, [0] * nb
+        for i in idx:
+            c = C[i][j]
+            sg[c] += g[i]
+            sh[c] += h[i]
+            sn[c] += 1
+        gl = hl = 0.0
+        nl = 0
+        for c in range(nb - 1):
+            gl += sg[c]
+            hl += sh[c]
+            nl += sn[c]
+            if nl < feuille_min or len(idx) - nl < feuille_min:
+                continue
+            gr, hr = G - gl, H - hl
+            gain = gl * gl / (hl + l2) + gr * gr / (hr + l2) - base
+            if best is None or gain > best[0]:
+                best = (gain, j, c)
+    if best is None or best[0] <= 1e-9:
+        return feuille
+    _, j, c = best
+    gauche = [i for i in idx if C[i][j] <= c]
+    droite = [i for i in idx if C[i][j] > c]
+    return {'j': j, 's': seuils[j][c], 'g': _arbre_hist(C, seuils, g, h, gauche, prof - 1, feuille_min, l2),
+            'd': _arbre_hist(C, seuils, g, h, droite, prof - 1, feuille_min, l2)}
+
+
+def _valeur_seuil(a, x):
+    """Coupure « case ≤ c » ⟺ « x ≤ seuil c » (bisect_left : la case compte les seuils strictement inférieurs)."""
+    while 'v' not in a:
+        a = a['g'] if x[a['j']] <= a['s'] else a['d']
+    return a['v']
+
+
+def apprendre_binomial(X, n, k, offset, tours=B_TOURS, pas=B_PAS, profondeur=B_PROFONDEUR,
+                       feuille_min=B_FEUILLE_MIN, l2=B_L2):
+    """Boosting sur paquets de points : X variables, n joués, k gagnés, offset = logit de départ."""
+    seuils, C = _cases(X)
+    F = list(offset)
+    idx = list(range(len(X)))
+    arbres = []
+    for _ in range(tours):
+        p = [_sg(f) for f in F]
+        g = [ni * pi - ki for ni, pi, ki in zip(n, p, k)]
+        h = [max(ni * pi * (1 - pi), 1e-9) for ni, pi in zip(n, p)]
+        a = _arbre_hist(C, seuils, g, h, idx, profondeur, feuille_min, l2)
+        arbres.append(a)
+        for i in idx:
+            F[i] += pas * _valeur_seuil(a, X[i])
+    return {'pas': pas, 'arbres': arbres, 'reglages': {'profondeur': profondeur, 'tours': tours, 'pas': pas,
+                                                      'feuille_min': feuille_min, 'l2': l2, 'cases': N_CASES}}
+
+
+def correction(modele, x):
+    """Décalage en logit apporté par le modèle binomial pour les variables x (liste ordonnée)."""
+    return modele['pas'] * sum(_valeur_seuil(a, x) for a in modele['arbres'])
+
+
+def importance(modele, noms):
+    """Nombre de coupures par variable (lecture : ce que le modèle a jugé utile)."""
+    cpt = {}
+
+    def visiter(a):
+        if 'v' in a:
+            return
+        cpt[noms[a['j']]] = cpt.get(noms[a['j']], 0) + 1
+        visiter(a['g'])
+        visiter(a['d'])
+    for a in modele['arbres']:
+        visiter(a)
+    return dict(sorted(cpt.items(), key=lambda kv: -kv[1]))
