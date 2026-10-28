@@ -28,7 +28,7 @@ concurrency:
 jobs:
   itf:
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 140
     steps:
       - uses: actions/checkout@v5
         with:
@@ -47,10 +47,12 @@ jobs:
           python-version: '3.11'
 
       - name: Collecte des résultats ITF hommes
-        timeout-minutes: 40
+        # 28/10/2026 : le script s'arrête seul après 85 min (ITF_MINUTES) et écrit chaque mois au fil de l'eau
+        timeout-minutes: 95
         env:
           RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
           FEUILLES_RESERVE: '6000'
+          ITF_MINUTES: '85'
           BUDGET: ${{ github.event.inputs.budget || '2500' }}
         run: python scripts/resultats_itf.py '' '' "$BUDGET"
 
@@ -70,7 +72,7 @@ jobs:
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -- resultats_itf simulateur/etude_itf_elo.json 2>/dev/null || git add -- resultats_itf
+          for f in resultats_itf simulateur/etude_itf_elo.json; do if [ -e "$f" ]; then git add -- "$f"; fi; done
           if git diff --cached --quiet; then echo 'Rien de nouveau.'; exit 0; fi
           git commit -q -m "Résultats ITF hommes + étude Elo $(date -u +%FT%TZ)"
           for i in 1 2 3 4 5; do

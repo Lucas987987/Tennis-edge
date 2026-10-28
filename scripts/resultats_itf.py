@@ -17,14 +17,19 @@ Stockage : resultats_itf/AAAA-MM.jsonl.gz (un fichier par mois, une ligne par ma
 (jours faits). Un jour passé depuis plus de 3 jours n'est plus redemandé : relancer reprend où on s'est arrêté.
 Garde-fous de feuilles_match.py : budget par passage, arrêt sous la réserve de quota, 5 requêtes/s, clé jamais affichée.
 
+28/10/2026 (1er run coupé par la limite de 40 min, tout perdu car écrit à la fin) : chaque MOIS est écrit dès qu'on
+passe au suivant (et l'état avec lui), et le script s'arrête de lui-même après ITF_MINUTES (défaut 45) : un passage
+coupé ne perd plus que le mois en cours ; le suivant reprend là.
+
 Usage : python scripts/resultats_itf.py [debut AAAA-MM-JJ] [fin AAAA-MM-JJ] [budget]
-Env : RAPIDAPI_KEY ; FEUILLES_RESERVE (défaut ici : 6 000).
+Env : RAPIDAPI_KEY ; FEUILLES_RESERVE (défaut ici : 6 000) ; ITF_MINUTES (défaut 45).
 """
 import datetime as dt
 import gzip
 import json
 import os
 import sys
+import time
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import feuilles_match as FM  # noqa: E402
@@ -33,6 +38,7 @@ DOSSIER = os.environ.get('ITF_DOSSIER', 'resultats_itf')
 DEBUT = '2024-06-01'
 CATEGORIE = 'itf men'
 DELAI_COMPLET_J = 3
+MINUTES = float(os.environ.get('ITF_MINUTES', '45'))
 CHAMPS = ('id', 'jour', 'debut', 'tournoi', 'tournoi_id', 'surface', 'tour', 'meilleur_des', 'vainqueur',
           'statut', 'score_home', 'score_away')
 
@@ -113,6 +119,54 @@ def lire_tout(racine):
     return out
 
 
+def ecrire_etat(etat, c, arret, dossier=DOSSIER):
+    etat['dernier_passage'] = {'le': dt.datetime.now(dt.timezone.utc).isoformat(timespec='seconds'),
+                               'requetes': c.n, 'codes': {str(k): v for k, v in c.codes.items()},
+                               'quota_restant': c.restant, 'arret': arret}
+    etat['total'] = {'jours': len(etat['jours']), 'matchs': sum(v['matchs'] for v in etat['jours'].values())}
+    os.makedirs(dossier, exist_ok=True)
+    with open(os.path.join(dossier, 'etat.json') + '.tmp', 'w', encoding='utf-8') as f:
+        json.dump(etat, f, ensure_ascii=False, indent=1, sort_keys=True)
+    os.replace(os.path.join(dossier, 'etat.json') + '.tmp', os.path.join(dossier, 'etat.json'))
+
+
+def passer(c, jours, etat, auj, collecter=None, limite_s=None, horloge=time.monotonic, journal=None, dossier=DOSSIER):
+    """Collecte les jours dans l'ordre ; chaque mois est écrit (avec l'état) dès qu'on passe au suivant.
+    Renvoie (jours faits, raison d'arrêt ou None)."""
+    collecter = collecter or collecter_jour
+    journal = journal or (lambda *a: print(*a, flush=True))
+    t0, mois, recs, faits, arret = horloge(), None, {}, 0, None
+
+    def vider():
+        if mois is not None:
+            ecrire_mois(mois, recs, dossier)
+            ecrire_etat(etat, c, arret, dossier)
+    try:
+        for j in jours:
+            if limite_s is not None and horloge() - t0 > limite_s:
+                arret = f"temps du passage écoulé ({limite_s / 60:.0f} min)"
+                journal(f"::notice::Arrêt : {arret} — le prochain passage reprendra au {j}.")
+                break
+            if j[:7] != mois:
+                vider()
+                mois, recs = j[:7], lire_mois(j[:7], dossier)
+            r = collecter(c, j)
+            if r is None:
+                journal(f"  {j} : indisponible, repris au prochain passage")
+                continue
+            recs.update(r)
+            etat['jours'][j] = {'matchs': len(r), 'complet': (auj - dt.date.fromisoformat(j)).days > DELAI_COMPLET_J}
+            faits += 1
+            if faits % 60 == 0:
+                journal(f"  … {j} : {sum(v['matchs'] for v in etat['jours'].values())} matchs au total")
+    except FM.QuotaAtteint as e:
+        arret = str(e)
+        journal(f"::warning::Arrêt : {arret} — le prochain passage reprendra.")
+    finally:
+        vider()
+    return faits, arret
+
+
 def main(argv):
     cle = os.environ.get('RAPIDAPI_KEY', '').strip()
     if not cle:
@@ -129,35 +183,10 @@ def main(argv):
             jours.append(d.isoformat())
         d += dt.timedelta(days=1)
     c = FM.Client(cle, budget=budget, reserve=int(os.environ.get('FEUILLES_RESERVE', '6000')))
-    print(f"Résultats ITF hommes : {debut} → {fin} · {len(jours)} jour(s) à faire · budget {budget}, réserve {c.reserve}")
-    arret, mois_ouverts, faits = None, {}, 0
-    try:
-        for j in jours:
-            r = collecter_jour(c, j)
-            if r is None:
-                print(f"  {j} : indisponible, repris au prochain passage")
-                continue
-            m = j[:7]
-            if m not in mois_ouverts:
-                mois_ouverts[m] = lire_mois(m)
-            mois_ouverts[m].update(r)
-            etat['jours'][j] = {'matchs': len(r), 'complet': (auj - dt.date.fromisoformat(j)).days > DELAI_COMPLET_J}
-            faits += 1
-            if faits % 60 == 0:
-                print(f"  … {j} : {sum(len(v) for v in mois_ouverts.values())} matchs ce passage", flush=True)
-    except FM.QuotaAtteint as e:
-        arret = str(e)
-        print(f"::warning::Arrêt : {arret} — le prochain passage reprendra.")
-    finally:
-        for m, recs in mois_ouverts.items():
-            ecrire_mois(m, recs)
-        etat['dernier_passage'] = {'le': dt.datetime.now(dt.timezone.utc).isoformat(timespec='seconds'),
-                                   'requetes': c.n, 'codes': {str(k): v for k, v in c.codes.items()},
-                                   'quota_restant': c.restant, 'arret': arret}
-        etat['total'] = {'jours': len(etat['jours']), 'matchs': sum(v['matchs'] for v in etat['jours'].values())}
-        os.makedirs(DOSSIER, exist_ok=True)
-        with open(os.path.join(DOSSIER, 'etat.json'), 'w', encoding='utf-8') as f:
-            json.dump(etat, f, ensure_ascii=False, indent=1, sort_keys=True)
+    print(f"Résultats ITF hommes : {debut} → {fin} · {len(jours)} jour(s) à faire · budget {budget}, réserve {c.reserve}, "
+          f"{MINUTES:.0f} min au plus")
+    faits, arret = passer(c, jours, etat, auj, limite_s=MINUTES * 60)
+    ecrire_etat(etat, c, arret)
     print(f"Jours traités : {faits} · requêtes {c.n} · codes {c.codes} · quota restant {c.restant} · "
           f"total {etat['total']['matchs']} matchs sur {etat['total']['jours']} jours")
     return 0
