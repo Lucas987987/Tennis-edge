@@ -115,11 +115,17 @@ def push(fichiers, r2):
     return echecs
 
 
-def retirer(fichiers, r2):
-    """git rm --cached des fichiers suivis que le coffre détient à l'identique."""
+def retirer(fichiers, r2, si_present=False):
+    """git rm --cached des fichiers suivis que le coffre détient à l'identique.
+    28/10/2026 — si_present : retire aussi un fichier suivi dont le coffre détient une AUTRE version (le coffre
+    est la source à jour ; la copie git est une ancienne version figée). Jamais si le coffre n'en a aucune."""
     suivis = set(subprocess.run(['git', 'ls-files', '--', *fichiers], capture_output=True, text=True).stdout.split())
     for f in sorted(suivis):
         data, got = _lire(f), r2.get_with_etag(cle(f))
+        if si_present and got is not None and got[0]:
+            subprocess.run(['git', 'rm', '--cached', '--quiet', '--', f], check=False)
+            print(f"  {f} : retiré du dépôt (le coffre en a une version, {len(got[0])} octets)")
+            continue
         if data is None or got is None or _sha(got[0]) != _sha(data):
             print(f"  {f} : gardé dans git (le coffre n'en a pas une copie identique)")
             continue
@@ -131,6 +137,8 @@ def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument('action', choices=['pull', 'push', 'retirer'])
     ap.add_argument('--groupe', default='tous', choices=sorted(GROUPES))
+    ap.add_argument('--si-present', action='store_true',
+                    help="retirer : aussi quand le coffre a une autre version (copie git figée et périmée)")
     a = ap.parse_args(argv)
     r2 = r2_io.client()
     if r2 is None:
@@ -142,7 +150,7 @@ def main(argv=None):
         return 0
     if a.action == 'push':
         return 1 if push(fichiers, r2) else 0
-    retirer(fichiers, r2)
+    retirer(fichiers, r2, si_present=a.si_present)
     return 0
 
 

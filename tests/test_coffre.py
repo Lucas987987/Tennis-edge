@@ -65,6 +65,22 @@ class Coffre(unittest.TestCase):
         self.assertIn('h19_signal_state.json', suivis)
         self.assertTrue(Path('h18_signal_state.json').exists())                # le fichier reste sur disque
 
+    def test_untrack_stale_git_copy_when_vault_has_newer(self):
+        # 28/10/2026 : copie git figée (23/10) et coffre à jour → --si-present la retire ; sans copie au coffre, gardée
+        git('init', '-q')
+        for f in ('h18_signal_state.json', 'h19_signal_state.json'):
+            Path(f).write_text('{"ancien":1}')
+        git('add', '.')
+        git('commit', '-qm', 'x')
+        self.fake.put_raw('prive/h18_signal_state.json', b'{"nouveau":2}')
+        coffre.retirer(['h18_signal_state.json', 'h19_signal_state.json'], self.r2)
+        self.assertIn('h18_signal_state.json', git('ls-files').split())        # par défaut : identique exigé
+        coffre.retirer(['h18_signal_state.json', 'h19_signal_state.json'], self.r2, si_present=True)
+        suivis = git('ls-files').split()
+        self.assertNotIn('h18_signal_state.json', suivis)
+        self.assertIn('h19_signal_state.json', suivis)
+        self.assertEqual(self.fake.raw('prive/h18_signal_state.json'), b'{"nouveau":2}')   # coffre intact
+
     def test_gitignore_and_worker_cover_every_vault_file(self):
         gi = (REPO / '.gitignore').read_text()
         for f in coffre.GROUPES['tous']:
