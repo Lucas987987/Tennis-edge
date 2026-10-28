@@ -176,6 +176,31 @@ def ajouter_styles_descriptifs(lignes, document):
     return lignes
 
 
+def ajouter_rythme(lignes, document, alias=None):
+    """28/10/2026 — durée prévue et profils de rythme / longueur / régularité (profil_rythme.py). Descriptif."""
+    import elo as E
+    import profil_rythme as PR
+    profils = (document or {}).get('joueurs') or {}
+    bases = (document or {}).get('bases_log_secondes_par_point') or {}
+    if not profils or not bases:
+        return lignes
+    alias = alias or {}
+    cle_c = lambda n: alias.get(E.cle(n), E.cle(n)) if n else None
+    champs = ('matchs', 'points_par_match', 'jeux_par_match', 'minutes_par_match', 'tiebreak_pct', 'trois_sets_pct',
+              'rythme_pct')
+    for ligne in lignes:
+        joueurs = []
+        for nom in (ligne.get('home'), ligne.get('away')):
+            pf = profils.get(cle_c(nom))
+            joueurs.append(dict({k: pf.get(k) for k in champs},
+                                regularite=(pf.get('regularite') or {}).get('niveau'),
+                                regularite_centile=(pf.get('regularite') or {}).get('centile')) if pf else None)
+        prev = PR.prevision(ligne, profils, bases, cle_c)
+        if prev or any(joueurs):
+            ligne['rythme'] = {'descriptif_seulement': True, 'prevision': prev, 'joueurs': joueurs}
+    return lignes
+
+
 def _juge(m):
     """(p_home, gagnant) du pronostic jugé : dernier avant le match, sinon premier."""
     for bloc in ('dernier', 'premier'):
@@ -309,6 +334,13 @@ def construire(racine, maintenant=None):
     styles_doc = _lire(os.path.join(racine, 'simulateur', 'styles_descriptifs.json'), {}) or {}
     styles = styles_doc.get('matchs') or {}
     ajouter_styles_descriptifs(lignes, styles_doc)
+    rythme_doc = _lire(os.path.join(racine, 'simulateur', 'profil_rythme.json'), {}) or {}
+    try:
+        import elo as E
+        alias = dict(E.migrer_etat(etat).get('alias') or {})
+    except Exception:
+        alias = {}
+    ajouter_rythme(lignes, rythme_doc, alias)
     resultats = _lire(os.path.join(racine, 'Tennis_Edge_Lab', 'live', 'pronostics_resultats.json'), {})
     return {'genere_le': maintenant.isoformat(timespec='seconds'), 'pronostics_du': pron.get('genere_le'),
             'simulations': pron.get('simulations') or 20000, 'match_du_jour': mdj,

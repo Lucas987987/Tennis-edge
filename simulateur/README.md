@@ -599,3 +599,33 @@ des échelles de traits provisoires (avant mesure), donnait 0,61741 (non candida
 MESURÉES sur les données (pas choisies d'après ce résultat) et figées, et les réglages des arbres n'ont pas bougé.
 Les variables qu'il utilise le plus sont publiées dans `facteurs.json` (`modele_complet.importance`) : vitesse du
 court, adversaires communs, face-à-face, taille, forme, tournois enchaînés, altitude, puis le profil de réaction.
+
+## Forme des scores, jours avec / jours sans, rythme et durée (28/10/2026)
+
+**Scores répétés.** Le score exact le plus probable est presque toujours 6-4 6-4 ou 6-3 6-4 (57 matchs sur 70 le
+28/10), avec ~3,4 % de chance : c'est le tennis, pas un défaut. Sur 24 032 matchs réels au meilleur des 3 (2025–2026) :
+6-4 6-4 réel 4,2 % / prévu 4,3 % ; 6-3 6-4 3,9 / 4,3 ; 2 sets 65,7 / 65,1 ; jeux 22,6 / 23,0. Léger excès de
+tie-breaks prévus (34,5 contre 30,4 %).
+
+**Forme du jour.** La variante publiée (combinaison) joue déjà ses 20 000 matchs avec une forme du jour σ = 0,15
+ANCRÉE sur la probabilité affichée. Rejeu sur 2 468 matchs de jugement (depuis le 16/09), probabilité du vainqueur
+inchangée (0,62292) : sans forme du jour, sets 1,347 / jeux 3,132 / tie-break 0,608 (TB prévu 38,4 % pour 29,1 %
+réel, 2 sets 53,0 % pour 66,1 %) ; avec σ = 0,15 ancrée, 1,316 / 3,040 / 0,592. σ = 0,15 était aussi le meilleur
+choix sur la fenêtre d'apprentissage (grille 0–0,60 fixée d'avance). La simulation PURE interne (sans Elo) garde
+σ = 0 (réglage adopté sur le vainqueur) ; elle n'alimente pas les scores publiés.
+Une forme du jour PROPRE À CHAQUE JOUEUR (sa volatilité mesurée) n'améliore rien (vainqueur 0,62797 contre 0,62829,
+scores identiques) : le trait existe (corrélation 0,47 entre 2021-23 et 2024-26) mais n'aide pas à prévoir.
+
+**Profils de rythme (`profil_rythme.py`, fiche « Durée et rythme »).** Par joueur, depuis 2021, pondéré par
+l'ancienneté : points et jeux par match, durée moyenne, part de tie-breaks et de matchs en 3 sets, RYTHME (temps par
+point propre au joueur, corrélation 0,87 entre deux périodes ; Djokovic +7 %, Hurkacz −3,5 %) et RÉGULARITÉ (jours
+sans fréquents / habituel / très régulier, comparée au même circuit ; Kyrgios 87e centile). Durée prévue d'un match =
+points attendus (distribution exacte des scores × points par jeu des deux serveurs, tie-break ≈ 12 points) × rythme
+des deux joueurs ; fourchette 10e–90e centile. À nombre de points connu, le rythme ramène l'erreur moyenne sur la
+durée de 8,0 à 6,6 minutes. Descriptif : aucune probabilité modifiée.
+
+**Panne repérée : durées TennisApi.** `duree_min` est vide dans les 9 764 feuilles : la liste des matchs du jour ne
+contient pas le champ « time » (il n'est que dans le détail de chaque match) ; `durees_matchs.py` a pourtant marqué
+tous les jours comme traités. Le groupe de facteurs « durée » n'a donc jamais eu de données. Les durées viennent
+pour l'instant de l'archive Sackmann (ATP/WTA, jusqu'au 02/06/2026) ; corriger la collecte demande une requête de
+détail par match, à arbitrer avec le quota.
