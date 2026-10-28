@@ -63,6 +63,45 @@ class HistoriqueTests(unittest.TestCase):
         self.assertEqual(b['derniers'][0]['score'], '4-6 3-6')
         self.assertNotEqual(courants['a']['style'], 'indetermine')
 
+    def test_statistiques_service_retour_et_ecart_a_tous_styles(self):
+        M = [match(i) for i in range(7)]
+        acc, _ = SD.calculer(M, {'a': {'circuit': 'ATP', 'surface': 'Hard'}},
+                             dt.date(2024, 4, 1))
+        ligne = acc[('a', 'equilibre', 'global')]
+        stats = SD.statistiques(ligne, acc[('a', SD.TOUS_STYLES, 'global')])
+        self.assertEqual(stats['matchs'], 1)
+        self.assertEqual((stats['points_service'], stats['points_retour']), (100, 100))
+        self.assertEqual(stats['service_gagnes_pct'], 60.0)
+        self.assertEqual(stats['retour_gagnes_pct'], 40.0)
+        self.assertEqual(stats['points_gagnes_pct'], 50.0)
+        self.assertEqual(stats['premiere_balle_pct'], 60.0)
+        self.assertEqual(stats['gagnes_1re_pct'], 70.0)
+        self.assertEqual(stats['gagnes_2e_pct'], 45.0)
+        self.assertEqual(stats['aces_pct'], 6.0)
+        self.assertEqual(stats['doubles_fautes_pct'], 5.0)
+        self.assertEqual(stats['balles_break_sauvees_pct'], 50.0)
+        self.assertEqual(stats['balles_break_converties_pct'], 50.0)
+        self.assertTrue(all(v == 0 for v in stats['ecarts_tous_styles_points'].values()))
+        self.assertEqual(acc[('a', SD.TOUS_STYLES, 'global')]['stats_n'], 7)
+
+    def test_statistiques_absentes_ne_deviennent_pas_zero(self):
+        M = [match(i) for i in range(7)]
+        M[-1]['detail'] = None
+        acc, _ = SD.calculer(M, {'a': {'circuit': 'ATP', 'surface': 'Hard'}},
+                             dt.date(2024, 4, 1))
+        ligne = acc[('a', 'equilibre', 'global')]
+        self.assertEqual(ligne['n'], 1)
+        self.assertIsNone(SD.statistiques(ligne))
+
+    def test_statistiques_du_jour_de_reference_non_supposees_connues(self):
+        M = [match(i) for i in range(8)]
+        jour = M[-1]['date']
+        acc, _ = SD.calculer(M, {'a': {'circuit': 'ATP', 'surface': 'Hard'}}, jour)
+        self.assertEqual(SD.statistiques(acc[('a', 'equilibre', 'global')])['matchs'], 1)
+        acc_apres, _ = SD.calculer(M, {'a': {'circuit': 'ATP', 'surface': 'Hard'}},
+                                   jour + dt.timedelta(days=1))
+        self.assertEqual(SD.statistiques(acc_apres[('a', 'equilibre', 'global')])['matchs'], 2)
+
     def test_incomplet_et_futur_exclus(self):
         M = [match(i) for i in range(7)] + [match(7, complet=False), match(8)]
         jour = dt.date(2024, 3, 15)  # après l'incomplet du 11 mars, avant le match du 21

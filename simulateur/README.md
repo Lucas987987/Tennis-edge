@@ -16,7 +16,7 @@ jouer 5 000 matchs au hasard, il calcule la probabilité de chaque issue.
 | `ablation.py` | Elo, simulation, mélange de base et pipeline complet sur les mêmes pronostics figés, avec bootstrap par semaine |
 | `evaluation_sorties.py` | log loss des sets, rang des scores, erreur des jeux et des statistiques, couverture réelle des intervalles à 80 % |
 | `validation_fiabilite.py` | performances par niveau de note, IC d'exactitude et verdict contrôlé sur au moins 30 matchs par groupe |
-| `roi_algo.py` | ROI comptable R1/R2 à mise fixe, cotes de clôture pré-match, IC95 et rapport JSON reproductible |
+| `roi_algo.py` | ROI comptable R1/R2 à mise fixe, cotes de clôture pré-match, IC95 ; rapport JSON au coffre privé (R2), jamais dans le dépôt public |
 | `validation_vitrine.py` | contrôle bloquant des 20 000 simulations et rejeu de la trace vidéo avant publication |
 | `stabilite_scores.py` | deux blocs indépendants de 20 000 tirages pour vérifier le score modal de la variante publiée |
 | `surveillance_derive.py` | log loss, Brier et confiance sur 4, 8 et 12 semaines, globalement et par sous-groupe |

@@ -421,6 +421,13 @@ const T = {
   styles_vide:'Aucun match terminé et documenté', styles_derniers:'Derniers matchs contre ce style',
   styles_derniers_surface:'Derniers matchs sur cette surface', styles_victoire:'Victoire', styles_defaite:'Défaite',
   styles_tres_faible:'Échantillon très faible', styles_faible:'Petit échantillon',
+  styles_stats:'Statistiques contre ce style', styles_stats_n:n=>`${fmt(n)} matchs avec deux feuilles complètes`,
+  styles_taux:'Contre ce style', styles_delta:'Écart / tous', styles_point:'pt',
+  styles_service:'Points gagnés au service', styles_retour:'Points gagnés au retour', styles_points:'Points gagnés au total',
+  styles_w1:'Points gagnés derrière la 1re', styles_w2:'Points gagnés derrière la 2e',
+  styles_aces:'Aces / points de service', styles_dfs:'Doubles fautes / 2es balles',
+  styles_bps:'Balles de break sauvées', styles_bpc:'Balles de break converties',
+  styles_stats_note:'Écart en points de pourcentage par rapport à tous les adversaires du joueur. Description, pas effet causal du style.',
   styles_note:'Lis l’effectif et l’intervalle de confiance, pas seulement le pourcentage. Styles internes mesurés au service et au retour, non comparables aux catégories d’un site tiers.',
   aces:'Aces', df:'Doubles fautes', breaks:'Breaks réussis', prem:'1res balles (%)', jsg:'Jeux de service gagnés (%)',
   liste_titre:'Tous les matchs', liste_sous:"Choisis une affiche pour ouvrir ses sets, scores, statistiques et sa simulation de 20 000 tirages. Heure de ton appareil.",
@@ -490,6 +497,13 @@ const T = {
   styles_vide:'No completed, documented match', styles_derniers:'Latest matches against this style',
   styles_derniers_surface:'Latest matches on this surface', styles_victoire:'Win', styles_defaite:'Loss',
   styles_tres_faible:'Very small sample', styles_faible:'Small sample',
+  styles_stats:'Statistics against this style', styles_stats_n:n=>`${fmt(n)} matches with two complete stat sheets`,
+  styles_taux:'Against this style', styles_delta:'vs all', styles_point:'pp',
+  styles_service:'Service points won', styles_retour:'Return points won', styles_points:'Total points won',
+  styles_w1:'First-serve points won', styles_w2:'Second-serve points won',
+  styles_aces:'Aces / service points', styles_dfs:'Double faults / second serves',
+  styles_bps:'Break points saved', styles_bpc:'Break points converted',
+  styles_stats_note:'Difference in percentage points from the player’s record against all opponents. Descriptive, not a causal style effect.',
   styles_note:'Read the sample size and confidence interval, not just the percentage. Internal serve–return styles, not comparable with third-party categories.',
   aces:'Aces', df:'Double faults', breaks:'Breaks of serve', prem:'1st serves in (%)', jsg:'Service games won (%)',
   liste_titre:'All matches', liste_sous:'Pick a matchup to open its sets, scores, stats and 20,000-run simulation. Times in your device\'s time zone.',
@@ -946,6 +960,27 @@ function rendStyleBilan(b,label){
   const alerte = b.n<10 ? 'styles_tres_faible' : (b.n<30 ? 'styles_faible' : '');
   return `<div class="style-chiffre"><span>${esc(label)}</span><strong>${pc(b.pct)}</strong><span>${esc(t('styles_vn',b.victoires,b.n))}</span>${b.ic95?`<span class="style-ic">${esc(t('styles_ic',b.ic95))}</span>`:''}${alerte?`<small class="style-alerte">${esc(t(alerte))}</small>`:''}</div>`;
 }
+function rendStatsStyle(b,label){
+  const s = b && b.statistiques;
+  if (!s || !s.matchs) return '';
+  const defs = [
+    ['service_gagnes_pct','styles_service'], ['retour_gagnes_pct','styles_retour'],
+    ['points_gagnes_pct','styles_points'], ['premiere_balle_pct','prem'],
+    ['gagnes_1re_pct','styles_w1'], ['gagnes_2e_pct','styles_w2'],
+    ['aces_pct','styles_aces'], ['doubles_fautes_pct','styles_dfs'],
+    ['balles_break_sauvees_pct','styles_bps'], ['balles_break_converties_pct','styles_bpc']
+  ];
+  const ecarts = s.ecarts_tous_styles_points || {};
+  const rows = defs.filter(([k])=>s[k]!=null).map(([k,lib])=>{
+    const d = ecarts[k];
+    const delta = d==null ? '—' : `${d>0?'+':''}${dec(d,1)} ${esc(t('styles_point'))}`;
+    return `<tr><th>${esc(t(lib))}</th><td>${pc(s[k])}</td><td>${delta}</td></tr>`;
+  }).join('');
+  return `<details class="style-details"><summary>${esc(t('styles_stats'))} · ${esc(label)}</summary>
+    <p class="aide">${esc(t('styles_stats_n',s.matchs))}</p>
+    <table class="sheet style-stats"><thead><tr><th></th><th>${esc(t('styles_taux'))}</th><th>${esc(t('styles_delta'))}</th></tr></thead><tbody>${rows}</tbody></table>
+    <p class="aide">${esc(t('styles_stats_note'))}</p></details>`;
+}
 function rendDerniersStyle(b,titre){
   const rows = b && Array.isArray(b.derniers) ? b.derniers : [];
   if (!rows.length) return '';
@@ -960,6 +995,8 @@ function rendStylesDescriptifs(sd,m){
     <div class="style-tete"><h4>${esc(i===0?m.home:m.away)}</h4><span class="style-etiquette">${esc(styleLib(j.style))}</span></div>
     <p class="style-contre">${esc(t('styles_contre',styleLib(j.style_adverse)))}</p>
     <div class="style-chiffres">${rendStyleBilan(j.global,t('styles_global'))}${rendStyleBilan(j.surface,t('styles_surface',SURF[L][m.surface]||m.surface||''))}</div>
+    ${rendStatsStyle(j.global,t('styles_global'))}
+    ${rendStatsStyle(j.surface,t('styles_surface',SURF[L][m.surface]||m.surface||''))}
     ${rendDerniersStyle(j.global,t('styles_derniers'))}
   </section>`).join('');
   return `<div class="panel styles-descriptifs"><h3>${esc(t('styles_titre'))}</h3><p class="styles-intro">${esc(t('styles_sous'))}</p><div class="styles-joueurs">${joueurs}</div><p class="styles-note">${esc(t('styles_note'))}</p></div>`;
