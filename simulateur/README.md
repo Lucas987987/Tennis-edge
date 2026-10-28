@@ -656,3 +656,21 @@ toutes les tranches ; le joueur surestimé gagne 40,1 % (algo 53,2 %, marché 39
 PEU DOCUMENTÉS (< 20 matchs sur 2 ans) — surestimés : 23,2 % réels pour 42,9 % annoncés (n = 95) ; sous-estimés :
 l'algo se trompe aussi dans l'autre sens. L'algo est trop catégorique quand il connaît mal un joueur. L'hypothèse
 « jeune en progression sous-estimé » n'est pas confirmée (même erreur des deux côtés).
+
+## Joueurs peu documentés : le classement relatif (28/10/2026)
+
+Le rapport des désaccords montre que l'algo se trompe dans les DEUX sens sur les joueurs peu documentés : pas un
+simple biais (déjà corrigé par « nouveaux venus » et « classement », adoptés), mais un manque d'information. Inspiré
+de MatchUP, qui affiche le classement de chaque joueur : quand un des deux joueurs est peu connu, l'écart de
+classement ATP/WTA (au jour du match) sert de repère.
+  valeur (vue du joueur 1) = poids × (ln rang 2 − ln rang 1),  poids = max(1 − n1/20, 1 − n2/20, 0)
+(n = matchs connus de l'Elo ; seuil 20 choisi sur la fenêtre d'apprentissage).
+Deux usages, chacun jugé chaque lundi avec la règle existante et la stabilité (deux semaines) :
+  · situation « classement_relatif » (entrainement_progressif.correction_situation), PAR-DESSUS nouveaux venus et
+    classement ; appliquée par ajuster_combinaison quand les arbres ne sont pas en place ;
+  · variable « ecart_rang_peu_connu » des arbres (modèle en production).
+Résultats du 28/10. Test isolé sur les pronostics rejoués (mélange seul, jugé depuis le 16/09) : 0,60542 → 0,60296
+sur 2 263 matchs ; peu documentés 0,53022 → 0,51842 ; bien documentés inchangés ; mieux sur ATP, WTA et Challenger.
+Dans le cadre hebdomadaire (par-dessus les corrections en place) : 248 matchs concernés, 0,5381 → 0,5359, candidat
+(1/2). Les arbres ré-appris s'en servent (14 coupures sur 100 arbres, après nouveaux venus, simulation et Elo).
+Testé et écarté : rapprocher les probabilités de 50 % quand un joueur est peu connu (réglage appris : 0, aucun gain).
