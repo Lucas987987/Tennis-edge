@@ -44,6 +44,7 @@ jobs:
             /scripts/feuilles_match.py
             /scripts/resultats_itf.py
             /resultats_itf/
+            /resultats_itf_femmes/
             /scripts/closing_store.py
             /scripts/coffre.py
             /scripts/r2_io.py
@@ -126,7 +127,10 @@ jobs:
         env:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        run: python simulateur/bilan_algo.py . || true
+        run: |
+          python simulateur/bilan_algo.py . || true
+          # 28/10/2026 : pistes de l'analyse après match (biais nets, ≥ 30 matchs) — questions, jamais des réglages
+          python simulateur/apres_match.py . --telegram || true
       # 23/10/2026 : ROI interne aux cotes Pinnacle de clôture (règles R1/R2 fixées le 23/10) — Telegram privé
       # seulement, rien n'est commité.
       - name: ROI de l'algo (Telegram, canal privé)

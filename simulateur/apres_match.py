@@ -279,6 +279,96 @@ def _moy(L):
     return round(sum(L) / len(L), 4) if L else None
 
 
+N_PISTE = 30          # au moins 30 matchs pour signaler une piste
+Z_PISTE = 2.0         # écart d'au moins 2 erreurs-types
+
+
+def _ecart_type(L):
+    if len(L) < 2:
+        return None
+    m = sum(L) / len(L)
+    return math.sqrt(sum((x - m) ** 2 for x in L) / (len(L) - 1))
+
+
+def pistes(B):
+    """28/10/2026 — biais NETS de l'analyse après match (≥ 30 matchs, écart ≥ 2 erreurs-types), par circuit.
+    Avec des dizaines d'indicateurs, quelques-uns passent ce seuil par hasard : une piste n'est qu'une QUESTION. Elle ne
+    devient un candidat (jugé par la règle habituelle, fixée avant résultat) que si elle revient semaine après semaine."""
+    out = []
+    groupes = {'TOUS': list(B.values())}
+    for c in CIRCUITS:
+        groupes[c] = [b for b in B.values() if b.get('circuit') == c]
+    for g, L in groupes.items():
+        E = [b['ecarts'] for b in L]
+        fe = {}
+        for e in E:
+            for j in e.get('feuille') or []:
+                for k, v in j.items():
+                    fe.setdefault(k, []).append(v)
+        for k, v in fe.items():
+            sd = _ecart_type(v)
+            if len(v) >= N_PISTE and sd:
+                m = sum(v) / len(v)
+                if abs(m) >= Z_PISTE * sd / math.sqrt(len(v)):
+                    out.append({'groupe': g, 'type': 'feuille', 'stat': k, 'n': len(v), 'biais_prevu_moins_reel': round(m, 3),
+                                'z': round(m / (sd / math.sqrt(len(v))), 1)})
+        lig = {}
+        for e in E:
+            for k, (p, ok) in (e.get('lignes') or {}).items():
+                lig.setdefault(k, []).append((p, ok))
+        for k, v in lig.items():
+            n = len(v)
+            if n < N_PISTE:
+                continue
+            pm, rm = sum(p for p, _ in v) / n, sum(ok for _, ok in v) / n
+            se = math.sqrt(max(sum(p * (1 - p) for p, _ in v), 1e-9)) / n
+            if abs(rm - pm) >= Z_PISTE * se:
+                out.append({'groupe': g, 'type': 'ligne', 'stat': k, 'n': n, 'prevu_pct': round(100 * pm, 1),
+                            'reel_pct': round(100 * rm, 1), 'z': round((rm - pm) / se, 1)})
+        V = [(e['p_vainqueur'], e['vainqueur_juste']) for e in E if 'p_vainqueur' in e]
+        if len(V) >= N_PISTE:
+            n = len(V)
+            conf = sum(max(p, 1 - p) for p, _ in V) / n
+            hit = sum(ok for _, ok in V) / n
+            se = math.sqrt(sum(max(p, 1 - p) * (1 - max(p, 1 - p)) for p, _ in V)) / n
+            if abs(hit - conf) >= Z_PISTE * se:
+                out.append({'groupe': g, 'type': 'vainqueur', 'stat': 'confiance', 'n': n, 'prevu_pct': round(100 * conf, 1),
+                            'reel_pct': round(100 * hit, 1), 'z': round((hit - conf) / se, 1)})
+        D = [e['duree_ecart_min'] for e in E if 'duree_ecart_min' in e]
+        sd = _ecart_type(D)
+        if len(D) >= N_PISTE and sd:
+            m = sum(D) / len(D)
+            if abs(m) >= Z_PISTE * sd / math.sqrt(len(D)):
+                out.append({'groupe': g, 'type': 'duree', 'stat': 'biais_min', 'n': len(D), 'biais_prevu_moins_reel': round(m, 1),
+                            'z': round(m / (sd / math.sqrt(len(D))), 1)})
+        C = [e['duree_dans_fourchette'] for e in E if 'duree_dans_fourchette' in e]
+        if len(C) >= N_PISTE:
+            n, cov = len(C), sum(C) / len(C)
+            se = math.sqrt(0.8 * 0.2 / n)
+            if abs(cov - 0.8) >= Z_PISTE * se:
+                out.append({'groupe': g, 'type': 'duree', 'stat': 'fourchette_80', 'n': n, 'prevu_pct': 80.0,
+                            'reel_pct': round(100 * cov, 1), 'z': round((cov - 0.8) / se, 1)})
+    out.sort(key=lambda x: -abs(x['z']))
+    return out
+
+
+def message_pistes(doc):
+    """Texte Telegram (canal privé) : les pistes de la semaine, ou « rien de net »."""
+    P = doc.get('pistes') or []
+    T = doc.get('groupes', {}).get('TOUS') or {}
+    L = ["<b>🔬 Après-match : ce que l'algo prévoit mal</b>",
+         f"<i>{T.get('matchs', 0)} matchs jugés · seuil : 30 matchs et 2 erreurs-types · une piste = une question, pas une preuve</i>"]
+    if not P:
+        L.append("Rien de net cette semaine.")
+    for p in P[:12]:
+        if 'biais_prevu_moins_reel' in p:
+            L.append(f"• {p['groupe']} · {p['type']} {p['stat']} : prévu − réel = {p['biais_prevu_moins_reel']} (n={p['n']}, z={p['z']})")
+        else:
+            L.append(f"• {p['groupe']} · {p['type']} {p['stat']} : prévu {p['prevu_pct']} % / réel {p['reel_pct']} % (n={p['n']}, z={p['z']})")
+    L.append("\n<i>Descriptif : rien n'entre dans le modèle sans le test habituel (fixé avant résultat, deux semaines de suite).</i>")
+    return '\n'.join(L)
+
+
 def analyser(B):
     """Synthèse descriptive de tous les bilans, par circuit (et tous)."""
     groupes = {'TOUS': list(B.values())}
@@ -316,7 +406,7 @@ def analyser(B):
                                                 for k, v in fe.items()}
         r['conclusion_possible'] = len(L) >= 30
         out[g] = r
-    return {'genere_le': dt.datetime.now(dt.timezone.utc).isoformat(timespec='seconds'),
+    return {'genere_le': dt.datetime.now(dt.timezone.utc).isoformat(timespec='seconds'), 'pistes': pistes(B),
             'definition': ("Dernier pronostic affiché avant le match contre le résultat. Descriptif : aucune entrée du "
                            "modèle ; une piste devient un candidat jugé par la règle habituelle (fixée avant résultat)."),
             'groupes': out}
@@ -345,3 +435,35 @@ def evolution(f, ligne, version_actuelle):
     return {'premier_p_home': pr['p_home'], 'premier_le': pr.get('fige_le'),
             'ecart_pts': round(100 * (ligne['p_home'] - pr['p_home']), 1),
             'raisons': raisons_changement(pr.get('modele'), version_actuelle)}
+
+
+def main(argv):
+    """python simulateur/apres_match.py [racine] [--telegram] : affiche (ou envoie au Telegram privé) les pistes."""
+    args = [a for a in argv[1:] if not a.startswith('--')]
+    racine = args[0] if args else os.path.join(ICI, '..')
+    try:
+        with open(os.path.join(racine, SORTIE_ANALYSE), encoding='utf-8') as f:
+            doc = json.load(f)
+    except (OSError, ValueError):
+        print('Analyse après match absente : rien à envoyer.')
+        return 0
+    txt = message_pistes(doc)
+    if '--telegram' in argv:
+        import urllib.parse
+        import urllib.request
+        tok, chat = os.environ.get('TELEGRAM_TOKEN'), os.environ.get('TELEGRAM_CHAT_ID')
+        if tok and chat:
+            try:
+                data = urllib.parse.urlencode({'chat_id': chat, 'text': txt, 'parse_mode': 'HTML'}).encode()
+                urllib.request.urlopen(f'https://api.telegram.org/bot{tok}/sendMessage', data=data, timeout=20).read()
+                print('Pistes après match : envoyées sur le Telegram privé.')
+            except Exception as e:  # noqa: BLE001
+                print(f'::warning::Telegram impossible ({type(e).__name__})')
+        return 0
+    print(txt)
+    return 0
+
+
+if __name__ == '__main__':
+    import sys
+    sys.exit(main(sys.argv))
