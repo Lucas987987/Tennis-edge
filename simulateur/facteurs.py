@@ -132,6 +132,18 @@ GROUPES['matchup'] = {'service': ['mu_srv', 'mu_ret_adv'], 'aces': ['mu_srv']}
 GROUPES['adversaires_communs'] = {'service': ['communs_srv']}
 K_MU = 20.0                      # ~6 matchs avant d'y croire (n × force² ≈ 3 par match)
 K_COM = 300.0                    # points communs avant d'y croire
+# 28/10/2026 — PROFIL DE RÉACTION (demande « rien n'écarter », cas Hurkacz – Rune) : pour CHAQUE joueur, comment ses
+# points au service et au retour s'écartent de l'attendu (modèle ajusté à la force des adversaires) selon CHAQUE trait
+# de l'adversaire — 8 curseurs continus au lieu de 6 cases : ses aces, sa 1re et sa 2e balle, son retour de 1re et de
+# 2e, gaucher, taille, goût pour les longs échanges (Match Charting). On mesure des POINTS (des milliers par joueur),
+# pas des victoires. Chaque pente est ramenée vers 0 (K_PF ≈ 6 matchs). Le groupe est jugé comme les autres.
+PF_TRAITS = ('ace', 'srv1', 'srv2', 'ret1', 'ret2', 'gaucher', 'taille', 'echanges')
+# centre et échelle de chaque trait (mesurés le 28/10/2026 sur les 8 786 feuilles juin–oct. 2026, puis figés) :
+# trait standardisé ≈ moyenne 0, écart 1 ; un trait inconnu (taille, main, pas de Match Charting) vaut le centre (0).
+PF_CENTRE = (0.050, 0.085, 0.049, 0.086, 0.057, 0.121, -0.21, 0.003)
+PF_ECHELLE = (0.43, 0.146, 0.074, 0.099, 0.082, 0.326, 0.775, 0.030)
+K_PF = 500.0
+GROUPES['profil'] = {'service': [f'pf_srv_{d}' for d in PF_TRAITS] + [f'pf_ret_adv_{d}' for d in PF_TRAITS]}
 
 
 def charger_points(racine):
@@ -273,6 +285,9 @@ class Historique:
         # retour adverse, Σ n × force²] ; adversaires déjà affrontés (adversaires communs)
         self.mu = collections.defaultdict(lambda: [0.0, 0.0, 0.0, 0.0])
         self.adv = collections.defaultdict(set)
+        # 28/10/2026 — profil de réaction : joueur -> [Σ résidu × trait, Σ n × trait²] par trait, au service ('s') et au retour ('r')
+        self.pf = collections.defaultdict(lambda: {'s': [[0.0, 0.0] for _ in PF_TRAITS], 'r': [[0.0, 0.0] for _ in PF_TRAITS]})
+        self.infos = {}
 
     def ajouter_h2h(self, j, adv, res, n):
         h = self.h2h[(j, adv)]
@@ -296,6 +311,51 @@ class Historique:
             m_o[1] += r['n'] * s_srv * s_srv
             m_j[2] += r['res'] * q_ret
             m_j[3] += r['n'] * q_ret * q_ret
+
+    def traits(self, j, st, jour=None):
+        """Traits standardisés d'un joueur, tels qu'un adversaire les voit (point-in-time)."""
+        i = self.infos.get(j) or {}
+        g = (1.0 if i['main'] == 'gauche' else 0.0) if i.get('main') else PF_CENTRE[5]
+        h = ((i['taille_cm'] - 185) / 10.0) if i.get('taille_cm') else PF_CENTRE[6]
+        ech = 0.0
+        if self.charting is not None:
+            try:
+                ech = self.charting.profil(j, jour)[2]
+            except Exception:
+                ech = 0.0
+        brut = (st[0], st[1], st[2], st[3], st[4], g, h, ech or PF_CENTRE[7])
+        return tuple((v - c) / e for v, c, e in zip(brut, PF_CENTRE, PF_ECHELLE))
+
+    def ajouter_profil(self, x):
+        """Pentes du profil de réaction, après le match (résidus de points au-delà du modèle ajusté)."""
+        st = x.get('style')
+        if not st:
+            return
+        T = (self.traits(x['a'], st[0], x.get('jour')), self.traits(x['b'], st[1], x.get('jour')))
+        for k in (0, 1):
+            j, o = (x['a'], x['b'])[k], (x['b'], x['a'])[k]
+            r = x['srv'][k]
+            if not r['n']:
+                continue
+            pj, po = self.pf[j]['s'], self.pf[o]['r']
+            for d in range(len(PF_TRAITS)):
+                zo, zj = T[1 - k][d], T[k][d]
+                pj[d][0] += r['res'] * zo                 # j au service, selon le trait d de son adversaire
+                pj[d][1] += r['n'] * zo * zo
+                po[d][0] += -r['res'] * zj                # o au retour, selon le trait d du serveur j
+                po[d][1] += r['n'] * zj * zj
+
+    def variables_profil(self, j, adv, st_j, st_adv, jour=None):
+        """Profil de réaction, du point de vue de j au service contre adv : 8 + 8 variables (logit ×4)."""
+        zj, za = self.traits(j, st_j, jour), self.traits(adv, st_adv, jour)
+        pj, pa = self.pf.get(j), self.pf.get(adv)
+        out = {}
+        for d, nom in enumerate(PF_TRAITS):
+            s_ = pj['s'][d] if pj else (0.0, 0.0)
+            r_ = pa['r'][d] if pa else (0.0, 0.0)
+            out[f'pf_srv_{nom}'] = 4 * za[d] * s_[0] / (s_[1] + K_PF)
+            out[f'pf_ret_adv_{nom}'] = -4 * zj[d] * r_[0] / (r_[1] + K_PF)
+        return out
 
     def variables_avancees(self, j, adv, st_j, st_adv):
         """Matchup et adversaires communs, du point de vue de j au service contre adv."""
@@ -358,6 +418,7 @@ class Historique:
                 o[6] -= acc[k][0]
                 o[7] += acc[k][1]
         self.ajouter_matchup(x)
+        self.ajouter_profil(x)
         da, db = x['det']
         self.ajouter_clutch(x['a'], x['b'], da, db)
         self.ajouter_clutch(x['b'], x['a'], db, da)
@@ -579,6 +640,7 @@ def avec_variables(lignes, infos, avant=None, final=False, adj_avant=None, lieux
     l'archive pour les balles de break (format donnees.charger) ; adj_avant : modèle ajusté à la fin
     de l'archive, pour les face-à-face de l'archive (écart au service attendu, 4 dernières années)."""
     H = Historique()
+    H.infos = infos or {}
     if lieux:
         H.lieux, H.meteo = lieux[0] or {}, lieux[1] or {}
     H.charting = charting
@@ -618,6 +680,8 @@ def avec_variables(lignes, infos, avant=None, final=False, adj_avant=None, lieux
         x['var'][1].update(variables_style(st[1], st[0]))
         x['var'][0].update(H.variables_avancees(x['a'], x['b'], st[0], st[1]))
         x['var'][1].update(H.variables_avancees(x['b'], x['a'], st[1], st[0]))
+        x['var'][0].update(H.variables_profil(x['a'], x['b'], st[0], st[1], x['jour']))
+        x['var'][1].update(H.variables_profil(x['b'], x['a'], st[1], st[0], x['jour']))
         heapq.heappush(attente, (x['t'] + DISPO_H * 3600, x['id'] or 0, x))
     while final and attente:                    # contexte du jour : tout ce qui est joué compte
         H.ajouter(heapq.heappop(attente)[2])
@@ -694,11 +758,16 @@ def log_vrais(L, b):
 
 # ------------------------------------------------------------------ deltas et vainqueur
 def deltas(v, coefs):
-    """(d_service, d_aces, d_bp) en logit pour un serveur, depuis ses variables et les coefficients."""
+    """(d_service, d_aces, d_bp) en logit pour un serveur, depuis ses variables et les coefficients.
+    28/10/2026 : si coefs['_arbres_service'] (modèle complet adopté), il donne la correction des points de service."""
     d = {}
     for modele in ('service', 'aces', 'bp'):
         c = coefs.get(modele) or {}
         d[modele] = sum(b * v.get(f, 0.0) for f, b in c.items())
+    arb = coefs.get('_arbres_service')
+    if arb and arb.get('arbres'):
+        import arbres as A
+        d['service'] += A.correction(arb, [v.get(f, 0.0) for f in arb['variables']])
     return d['service'], d['aces'], d['bp']
 
 
@@ -755,6 +824,73 @@ def juger_groupe(appr, juge, g):
     return rapport
 
 
+# ------------------------------------------------------------------ 28/10/2026 : MODÈLE COMPLET (« rien n'écarter »)
+# Toutes les variables de tous les groupes — adoptés ou non — données d'un coup à des arbres (arbres.py, boosting
+# binomial sur les points de service, départ = base ajustée aux adversaires). Les arbres trouvent eux-mêmes ce qui
+# compte et les combinaisons (ex. « bon contre les gros serveurs, mais seulement en salle »).
+# RÈGLE FIXÉE LE 28/10/2026, AVANT TOUT RÉSULTAT — sur la fenêtre de jugement (6 dernières semaines, jamais vue) :
+#   le modèle complet (appris sur l'apprentissage) remplace la partie « service » des groupes en place SI
+#   (a) il prédit mieux les points de service que les groupes en place (vraisemblance) ET
+#   (b) il baisse la log loss du vainqueur de la simulation pure d'AU MOINS 0,001 par rapport aux groupes en place ;
+#   puis règle de stabilité : deux semaines de suite du même verdict pour entrer comme pour sortir.
+# Adopté, il est ré-appris sur toutes les feuilles ; aces et balles de break restent ceux des groupes en place.
+MARGE_COMPLET = 0.001
+
+
+def variables_completes():
+    """Toutes les variables « service » de tous les groupes, dans un ordre fixe."""
+    out = []
+    for g in GROUPES:
+        for f in GROUPES[g].get('service', []):
+            if f not in out:
+                out.append(f)
+    return out
+
+
+def apprendre_complet(lignes, noms=None):
+    import arbres as A
+    noms = noms or variables_completes()
+    L = lignes_modele(lignes, 'service', noms)
+    m = A.apprendre_binomial([x for _, _, _, x in L], [n for n, _, _, _ in L], [k for _, k, _, _ in L],
+                             [o for _, _, o, _ in L])
+    m['variables'] = noms
+    m['importance'] = A.importance(m, noms)
+    return m
+
+
+def log_vrais_complet(L, m):
+    import arbres as A
+    tot, n_tot = 0.0, 0
+    for n, k, off, x in L:
+        p = min(max(_sg(off + A.correction(m, x)), 1e-9), 1 - 1e-9)
+        tot -= k * math.log(p) + (n - k) * math.log(1 - p)
+        n_tot += n
+    return tot / n_tot if n_tot else None
+
+
+def juger_complet(appr, juge, adoptes):
+    """Rapport du modèle complet contre les groupes en place (règle fixée ci-dessus), verdict BRUT."""
+    champion = apprendre(appr, adoptes) if adoptes else {}
+    m = apprendre_complet(appr)
+    noms = m['variables']
+    Lj = lignes_modele(juge, 'service', noms)
+    c_srv = champion.get('service') or {}
+    b_ch = [c_srv.get(f, 0.0) for f in noms]
+    pts_ch, pts_co = log_vrais(Lj, b_ch), log_vrais_complet(Lj, m)
+    complet = {k: v for k, v in champion.items() if k != 'service'}
+    complet['_arbres_service'] = m
+    ll_ch, ok_ch = log_loss_vainqueur(juge, champion)
+    ll_co, ok_co = log_loss_vainqueur(juge, complet)
+    adopte = bool(pts_ch is not None and pts_co is not None and pts_co < pts_ch
+                  and ll_ch is not None and ll_co is not None and ll_co <= ll_ch - MARGE_COMPLET)
+    return {'variables': len(noms), 'groupes_en_place': list(adoptes),
+            'points_service': {'en_place': round(pts_ch, 6) if pts_ch else None, 'complet': round(pts_co, 6) if pts_co else None},
+            'vainqueur': {'en_place': {'log_loss': ll_ch, 'reussite_pct': ok_ch}, 'complet': {'log_loss': ll_co, 'reussite_pct': ok_co}},
+            'importance': dict(list(m['importance'].items())[:25]), 'reglages': m['reglages'], 'adopte': adopte,
+            'raison': (f"points de service {pts_ch and round(pts_ch, 6)} → {pts_co and round(pts_co, 6)} ; vainqueur log loss "
+                       f"{ll_ch} → {ll_co} (réussite {ok_ch} % → {ok_co} %) ; marge exigée {MARGE_COMPLET}")}
+
+
 # ------------------------------------------------------------------ contexte pour les pronostics du jour
 def contexte(H, infos, noms_tournois, maintenant_ts):
     """Ce que les pronostics du jour doivent savoir, à exporter en JSON."""
@@ -804,6 +940,9 @@ def contexte(H, infos, noms_tournois, maintenant_ts):
     for j, m_ in H.mu.items():
         if isinstance(j, str) and any(m_):
             joueurs.setdefault(j, {})['mu'] = [round(v, 4) for v in m_]
+    for j, pf in H.pf.items():
+        if isinstance(j, str) and any(e[1] for c in ('s', 'r') for e in pf[c]):
+            joueurs.setdefault(j, {})['pf'] = {c: [[round(a, 4), round(b, 1)] for a, b in pf[c]] for c in ('s', 'r')}
     for j, A in H.abandons.items():
         rec = [int(ta) for ta in A if ta >= t - 90 * 86400]
         if rec:
@@ -853,6 +992,8 @@ class Contexte:
                 self.H.pression[j] = list(e['pression'])
             if e.get('mu'):
                 self.H.mu[j] = list(e['mu'])
+            if e.get('pf'):
+                self.H.pf[j] = {c: [list(v) for v in e['pf'][c]] for c in ('s', 'r')}
             for ta in e.get('abandons') or []:
                 self.H.abandons[j].append(float(ta))
         for k in self.doc.get('interieur') or []:
@@ -865,6 +1006,7 @@ class Contexte:
             self.H.adv[a].add(b)
             self.H.adv[b].add(a)
         self.infos = {j: e['infos'] for j, e in (self.doc.get('joueurs') or {}).items() if e.get('infos')}
+        self.H.infos = self.infos
         self.noms = self.doc.get('noms_tournois') or {}
         J = self.doc.get('joueurs') or {}
         self.qualifs = {j: [(float(tt), str(tr)) for tt, tr in e['qualifs']] for j, e in J.items() if e.get('qualifs')}
@@ -892,6 +1034,8 @@ class Contexte:
         st_j, st_a = style(adj, j), style(adj, adv)
         v.update(variables_style(st_j, st_a))
         v.update(self.H.variables_avancees(j, adv, st_j, st_a))
+        jour = dt.datetime.fromtimestamp(debut_ts, dt.timezone.utc).date() if debut_ts else None
+        v.update(self.H.variables_profil(j, adv, st_j, st_a, jour))
         return v
 
 
@@ -974,6 +1118,28 @@ def main(argv):
             doc['ensemble_sur_le_jugement'] = {'base': {'log_loss': ll0, 'reussite_pct': ok0},
                                                'avec': {'log_loss': ll1, 'reussite_pct': ok1}}
         doc['verdict'] = f"groupes adoptés : {', '.join(doc['adoptes']) or 'aucun'}"
+        # 28/10/2026 — modèle complet (toutes les variables, arbres) contre les groupes en place
+        try:
+            try:
+                with open(SORTIE, encoding='utf-8') as f:
+                    complet_en_place = bool((json.load(f).get('modele_complet') or {}).get('adopte'))
+            except (OSError, ValueError):
+                complet_en_place = False
+            rc = juger_complet(appr, juge, doc['adoptes'])
+            etat_st = ST.lire()
+            ok, note = ST.decider(etat_st, 'facteur:modele_complet', complet_en_place, rc['adopte'])
+            ST.ecrire(etat_st)
+            rc['adopte_brut'], rc['adopte'], rc['stabilite'] = rc['adopte'], ok, note
+            if ok:
+                m = apprendre_complet(appr + juge)
+                doc['coefs'] = {k: v for k, v in (doc.get('coefs') or {}).items() if k != 'service'}
+                doc['coefs']['_arbres_service'] = {k: m[k] for k in ('pas', 'arbres', 'variables', 'reglages')}
+                doc['verdict'] += ' + modèle complet (service)'
+            doc['modele_complet'] = rc
+            print(f"  modele_complet     {'ADOPTÉ' if ok else 'non adopté'} — {rc['raison']} ({note})", flush=True)
+            print(f"    variables les plus utilisées : {list(rc['importance'])[:10]}", flush=True)
+        except Exception as e:
+            print(f"::warning::Modèle complet non jugé : {type(e).__name__}: {e}")
     # Dépendances dynamiques : testées sur les points, jamais publiées sans backtest du vainqueur.
     try:
         import dependances_points as DP

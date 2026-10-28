@@ -27,7 +27,7 @@ LIB = {'forme_fatigue': 'forme/fatigue', 'vitesse_court': 'vitesse du court', 'm
        'points_importants': 'points importants', 'styles': 'styles', 'face_a_face': 'face-à-face', 'conditions': 'conditions',
        'contexte_tournoi': 'contexte du tournoi', 'charting': 'Match Charting', 'blessure': 'blessure',
        'pression': 'points sous pression', 'duree': 'durée des matchs', 'matchup': 'matchup service/retour',
-       'adversaires_communs': 'adversaires communs'}
+       'adversaires_communs': 'adversaires communs', 'profil': 'profil de réaction'}
 
 
 def lire(chemin, defaut):
@@ -199,6 +199,10 @@ def decisions(C, F):
     nv = C.get('nouveaux_venus') or {}
     d['nouveaux venus'] = f"corrigés (δ = {nv.get('delta')})" if nv.get('adopte') else 'pas de correction'
     d['facteurs du match'] = ', '.join(LIB.get(g, g) for g in (F.get('adoptes') or [])) or 'aucun'
+    # 28/10/2026 : modèle complet (toutes les variables, arbres) — n'apparaît qu'une fois jugé
+    mc = F.get('modele_complet') or {}
+    if mc:
+        d['modèle complet (toutes les variables)'] = 'adopté' if mc.get('adopte') else 'non adopté'
     return d
 
 
