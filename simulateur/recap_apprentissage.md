@@ -1,6 +1,6 @@
 # Récapitulatif de l’apprentissage — 2026-W44
 
-Généré le 2026-10-27T23:12:53+00:00 · état **ok**.
+Généré le 2026-10-28T13:31:44+00:00 · état **partiel**.
 
 > Lecture seule des rapports hebdomadaires. Les populations restent séparées ; aucune adoption nouvelle n’est déclenchée par ce document et aucun gain de ROI n’est déduit.
 
@@ -8,9 +8,9 @@ Généré le 2026-10-27T23:12:53+00:00 · état **ok**.
 
 - **Facteurs adoptés** : Contexte du tournoi, Face-à-face, Forme et fatigue, Morphologie, Points importants, Styles, Vitesse du court.
 - **Candidats encore en attente** : Adversaires communs, Matchup.
-- **Apprentissage sur nos propres pronostics** : accumulation — 140/400 matchs documentés ; en attente : 140 matchs joués avec les deux % (il en faut 400)
-- **Pronostics récents évalués** : 150 matchs ; exactitude de la combinaison 63.33 %.
-- **Dérive** : accumulation ; 0 alerte(s).
+- **Apprentissage sur nos propres pronostics** : accumulation — 344/400 matchs documentés ; en attente : 344 matchs joués avec les deux % (il en faut 400)
+- **Pronostics récents évalués** : — matchs ; exactitude de la combinaison —.
+- **Dérive** : indisponible ; 0 alerte(s).
 - **Champion modifié cette semaine** : — (initialisation du suivi).
 
 ## Facteurs : apprentissage et jugement
@@ -40,7 +40,7 @@ La log loss est plus faible quand elle est meilleure. Ce avant/après appartient
 
 | Matchs | Log loss | Brier | Exactitude | Score exact | Erreur moyenne de jeux |
 |---:|---:|---:|---:|---:|---:|
-| 150 | 0.633311 | 0.223103 | 63.33 % | 3.4 % | 4.909524 |
+| — | — | — | — | — | — |
 
 ## Recalibrage : décisions séparées
 
@@ -60,8 +60,8 @@ Direct : **159** pronostics sur **2** semaine(s). Rejoué : **4821** pronostics 
 - **Gouvernance** : ok.
 - **Promotions retenues** : aucune.
 - **Promotions différées** : aucune.
-- **Dérive** : accumulation, sur 150 matchs ; alertes : aucune.
-- **Empreinte du champion** : `cd5f6330137afe0a82f35629f007cb47a9a941148ccff2ed56b5fbadcae16b8f`.
-- **Sources manquantes** : aucune.
+- **Dérive** : indisponible, sur — matchs ; alertes : aucune.
+- **Empreinte du champion** : `5ddeee7137ea0ea7f6aa5b894286a5f180346b97ecaca1881817c5d8b37f318c`.
+- **Sources manquantes** : derive, evaluation.
 
 Ce récapitulatif décrit l’apprentissage et ses contrôles. Il ne constitue ni une preuve prospective supplémentaire ni une promesse d’amélioration future des vainqueurs, des scores ou du ROI.
