@@ -182,6 +182,7 @@ def ajouter_rythme(lignes, document, alias=None):
     import profil_rythme as PR
     profils = (document or {}).get('joueurs') or {}
     bases = (document or {}).get('bases_log_secondes_par_point') or {}
+    refs = (document or {}).get('references_circuit') or {}
     if not profils or not bases:
         return lignes
     alias = alias or {}
@@ -197,7 +198,8 @@ def ajouter_rythme(lignes, document, alias=None):
                                 regularite_centile=(pf.get('regularite') or {}).get('centile')) if pf else None)
         prev = PR.prevision(ligne, profils, bases, cle_c)
         if prev or any(joueurs):
-            ligne['rythme'] = {'descriptif_seulement': True, 'prevision': prev, 'joueurs': joueurs}
+            ligne['rythme'] = {'descriptif_seulement': True, 'prevision': prev, 'joueurs': joueurs,
+                               'reference': refs.get(ligne.get('circuit'))}     # repère du circuit (phrases du site)
     return lignes
 
 

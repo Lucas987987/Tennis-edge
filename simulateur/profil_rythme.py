@@ -218,7 +218,22 @@ def construire(racine, archive, maintenant=None):
             'regle': ('Descriptif. Rythme = temps par point propre au joueur (archive ATP/WTA avec durée) ; '
                       'régularité = variabilité de ses points gagnés d’un match à l’autre au-delà de l’attendu. '
                       'Ne modifie aucune probabilité.'),
-            'joueurs': profils}
+            'references_circuit': references_circuit(profils), 'joueurs': profils}
+
+
+def references_circuit(profils, n_min=30):
+    """28/10/2026 — repères par circuit principal pour les phrases du site : médiane des joueurs d'au moins 30 matchs
+    (tie-breaks : ~42 % en ATP, ~33 % en Challenger, ~25 % en WTA — un repère commun tromperait)."""
+    import statistics
+    par = collections.defaultdict(lambda: collections.defaultdict(list))
+    for pf in profils.values():
+        if (pf.get('matchs') or 0) < n_min or not pf.get('circuit_principal'):
+            continue
+        for k in ('tiebreak_pct', 'trois_sets_pct'):
+            if pf.get(k) is not None:
+                par[pf['circuit_principal']][k].append(pf[k])
+    return {c: dict({k: round(statistics.median(v), 1) for k, v in d.items() if v},
+                    joueurs=max(len(v) for v in d.values())) for c, d in par.items() if d}
 
 
 # ------------------------------------------------------------------ prévision de durée d'un match (vitrine)

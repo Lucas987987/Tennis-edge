@@ -164,7 +164,7 @@ svg.curve{width:100%;height:auto;display:block}
 .style-chiffre{min-width:0;border-top:1px solid var(--line);padding-top:8px}.style-chiffre>span{display:block;color:var(--dim);font-size:.82rem}.style-chiffre strong{display:block;font-family:var(--cond);font-size:1.8rem;line-height:1.2;font-variant-numeric:tabular-nums}
 .style-joueur.home .style-chiffre strong{color:var(--p1)}.style-joueur.away .style-chiffre strong{color:var(--p2)}
 .style-chiffre .style-att{display:block;color:var(--ink);font-size:.8rem;margin:2px 0}.style-att b{font-weight:700;color:var(--dim)}.style-att b.plus{color:var(--ok)}.style-att b.moins{color:var(--ko)}
-.sv-phrase{margin:0 0 10px;padding:9px 11px;border-radius:10px;background:rgba(255,255,255,.04);border-left:3px solid var(--dim);font-size:.9rem;line-height:1.45}.sv-phrase b{font-weight:700}.sv-phrase.plus{border-left-color:var(--ok)}.sv-phrase.moins{border-left-color:var(--ko)}
+.sv-phrase{margin:0 0 10px;padding:9px 11px;border-radius:10px;background:rgba(255,255,255,.04);border-left:3px solid var(--dim);font-size:.9rem;line-height:1.45}.sv-phrase b{font-weight:700}.sv-phrase.plus{border-left-color:var(--ok)}.sv-phrase.info{border-left-color:var(--ball)}.sv-phrase.moins{border-left-color:var(--ko)}
 .sv-barre{position:relative;height:12px;margin:8px 0 2px;border-radius:6px;background:rgba(255,255,255,.08)}.sv-barre i{position:absolute;top:0;bottom:0}.sv-ic{background:rgba(255,255,255,.18);border-radius:6px}.sv-att{width:2px;margin-left:-1px;top:-3px!important;bottom:-3px!important;background:var(--ink)}.sv-reel{width:10px;height:10px;margin:1px 0 0 -5px;border-radius:50%;background:currentColor}.style-joueur.home .sv-reel,.style-joueur.home .sv-pt{color:var(--p1)}.style-joueur.away .sv-reel,.style-joueur.away .sv-pt{color:var(--p2)}.sv-legende{display:flex;gap:12px;color:var(--dim);font-size:.72rem;margin-bottom:2px}.sv-legende span{display:flex;align-items:center;gap:4px}.sv-pt{display:inline-block;width:8px;height:8px;border-radius:50%;background:currentColor}.sv-tr{display:inline-block;width:2px;height:10px;background:var(--ink)}
 .style-chiffre .style-diff{display:block;color:var(--dim);font-size:.78rem;margin:1px 0 2px}
 .rythme .ry-duree{font-family:var(--cond);font-size:1.25rem;margin:4px 0 2px;color:var(--ink)}.rythme .ry-pts{color:var(--dim);font-size:.85rem;margin:0 0 10px}
@@ -469,6 +469,20 @@ const T = {
   du_titre:'Duel service ↔ retour', du_sous:(s)=>`Indice 0–100 = rang parmi les joueurs du circuit sur ${s} (au moins 200 points joués).`,
   du_ligne:(a,b)=>`${a} au service contre ${b} au retour`, du_srv:'Service', du_ret:'Retour', du_pts:p=>`${pc(p)} des points`,
   du_avantage:(n)=>`avantage ${n}`, du_equilibre:'équilibré',
+  du_p_retours:'Deux retours au-dessus des services adverses : beaucoup de breaks attendus des deux côtés.',
+  du_p_services:'Deux services au-dessus des retours adverses : peu de breaks attendus, tie-breaks possibles.',
+  du_p_neutre:'Duel équilibré des deux côtés : ni service ni retour ne prend nettement le dessus.',
+  du_p_srv:(a)=>`${a} garde l’avantage sur son service`, du_p_ret:(a,b)=>`${b} menace le service de ${a}`,
+  du_p_eq:(a)=>`le service de ${a} est un duel équilibré`,
+  du_p_lire:'Lecture : indice 90 = meilleur que 90 % des joueurs du circuit sur cette surface. Écart de moins de 10 points = équilibré.',
+  ry_p_rien:'Profil de match habituel : rien ne sort de l’ordinaire pour ces deux joueurs.',
+  ry_p_tb_plus:(a,b,r)=>`Tie-breaks fréquents dans leurs matchs (${a} et ${b}, contre ${r} pour un joueur type du circuit)`,
+  ry_p_tb_moins:(a,b,r)=>`Peu de tie-breaks dans leurs matchs (${a} et ${b}, contre ${r} pour un joueur type du circuit)`,
+  ry_p_3s_plus:(a,b,r)=>`leurs matchs vont souvent au set décisif (${a} et ${b}, contre ${r})`,
+  ry_p_3s_moins:(a,b,r)=>`leurs matchs se règlent souvent sans set décisif (${a} et ${b}, contre ${r})`,
+  ry_p_vite:(n,v)=>`${n} joue nettement plus vite que la moyenne (${dec(Math.abs(v),0)} % plus rapide)`,
+  ry_p_lent:(n,v)=>`${n} joue nettement plus lentement que la moyenne (${dec(Math.abs(v),0)} % plus lent)`,
+  ry_p_jours:(n)=>`${n} a souvent des jours sans : résultat plus incertain`,
   aces:'Aces', df:'Doubles fautes', breaks:'Breaks réussis', prem:'1res balles (%)', jsg:'Jeux de service gagnés (%)',
   liste_titre:'Tous les matchs', liste_sous:"Choisis une affiche pour ouvrir ses sets, scores, statistiques et sa simulation de 20 000 tirages. Heure de ton appareil.",
   liste_vide:"Aucun match ne correspond à cette recherche.",
@@ -573,6 +587,20 @@ const T = {
   du_titre:'Serve ↔ return duel', du_sous:(s)=>`Index 0–100 = rank among players on the same tour on ${s} (at least 200 points played).`,
   du_ligne:(a,b)=>`${a} serving against ${b} returning`, du_srv:'Serve', du_ret:'Return', du_pts:p=>`${pc(p)} of points`,
   du_avantage:(n)=>`edge ${n}`, du_equilibre:'even',
+  du_p_retours:'Both returns are stronger than the opposing serves: plenty of breaks expected on both sides.',
+  du_p_services:'Both serves are stronger than the opposing returns: few breaks expected, tie-breaks possible.',
+  du_p_neutre:'Even on both sides: neither serve nor return clearly has the upper hand.',
+  du_p_srv:(a)=>`${a} keeps the edge on serve`, du_p_ret:(a,b)=>`${b} threatens ${a}’s serve`,
+  du_p_eq:(a)=>`${a}’s serve is an even contest`,
+  du_p_lire:'How to read: index 90 = better than 90% of players on the same tour and surface. A gap under 10 points = even.',
+  ry_p_rien:'A typical match profile: nothing stands out for these two players.',
+  ry_p_tb_plus:(a,b,r)=>`Tie-breaks are frequent in their matches (${a} and ${b}, versus ${r} for a typical player on the tour)`,
+  ry_p_tb_moins:(a,b,r)=>`Few tie-breaks in their matches (${a} and ${b}, versus ${r} for a typical player on the tour)`,
+  ry_p_3s_plus:(a,b,r)=>`their matches often go to a deciding set (${a} and ${b}, versus ${r})`,
+  ry_p_3s_moins:(a,b,r)=>`their matches are often settled without a deciding set (${a} and ${b}, versus ${r})`,
+  ry_p_vite:(n,v)=>`${n} plays clearly faster than average (${dec(Math.abs(v),0)}% quicker)`,
+  ry_p_lent:(n,v)=>`${n} plays clearly slower than average (${dec(Math.abs(v),0)}% slower)`,
+  ry_p_jours:(n)=>`${n} often has off days: a less predictable result`,
   aces:'Aces', df:'Double faults', breaks:'Breaks of serve', prem:'1st serves in (%)', jsg:'Service games won (%)',
   liste_titre:'All matches', liste_sous:'Pick a matchup to open its sets, scores, stats and 20,000-run simulation. Times in your device\'s time zone.',
   liste_vide:'No match matches this search.',
@@ -665,7 +693,46 @@ function rendDuel(d,m){
   const lig = d.duels.map(x=>{ const s=x.service, r=1-s, e=x.ecart;
     const verdict = Math.abs(e)<10 ? t('du_equilibre') : t('du_avantage', e>0 ? N[s] : N[r]);
     return `<div class="du-l"><p>${esc(t('du_ligne',N[s],N[r]))}</p><div class="du-v"><span class="${s===0?'c1':'c2'}"><b>${J[s].serv_indice}</b> ${esc(t('du_srv'))} · ${esc(t('du_pts',J[s].serv_pct))}</span><em>vs</em><span class="${r===0?'c1':'c2'}"><b>${J[r].ret_indice}</b> ${esc(t('du_ret'))} · ${esc(t('du_pts',J[r].ret_pct))}</span></div><small>${esc(verdict)}${Math.abs(e)>=10?` (${Math.abs(e)} pts)`:''}</small></div>`;}).join('');
-  return `<div class="panel duel-sr"><h3>${esc(t('du_titre'))}</h3><p class="styles-intro">${esc(t('du_sous', SURF[L][d.surface]||d.surface))}</p>${lig}</div>`;
+  return `<div class="panel duel-sr"><h3>${esc(t('du_titre'))}</h3><p class="styles-intro">${esc(t('du_sous', SURF[L][d.surface]||d.surface))}</p>${phraseDuel(d,N)}${lig}<p class="styles-note">${esc(t('du_p_lire'))}</p></div>`;
+}
+// 28/10/2026 — phrases en clair : on ne dit quelque chose que si l'écart est net (seuils fixes ci-dessous),
+// sinon « rien ne sort de l'ordinaire ». Duel : écart de 10 points d'indice (même seuil que les lignes).
+function phraseDuel(d,N){
+  const E = {}; d.duels.forEach(x=>{ E[x.service] = x.ecart; });
+  if (E[0]==null || E[1]==null) return '';
+  const cl = s => { const e=E[s], r=1-s; return e>=10 ? 'srv' : e<=-10 ? 'ret' : 'eq'; };
+  const a = cl(0), b = cl(1);
+  let txt, sens = 'neutre';
+  if (a==='ret' && b==='ret') txt = t('du_p_retours');
+  else if (a==='srv' && b==='srv') txt = t('du_p_services');
+  else if (a==='eq' && b==='eq') txt = t('du_p_neutre');
+  else {
+    const part = s => { const c=cl(s); return c==='srv' ? t('du_p_srv',N[s]) : c==='ret' ? t('du_p_ret',N[s],N[1-s]) : t('du_p_eq',N[s]); };
+    const x = part(0), y = part(1);
+    txt = `${x.charAt(0).toUpperCase()+x.slice(1)} ; ${y}.`;
+    sens = 'info';
+  }
+  if (sens==='neutre' && !(a==='eq' && b==='eq')) sens = 'info';
+  return `<p class="sv-phrase ${sens}">${esc(txt)}</p>`;
+}
+const RY_ECART = 5, RY_RYTHME = 5;   // repères : médiane des joueurs du MÊME circuit (profil_rythme.references_circuit)
+function phraseRythme(r,m){
+  const J = r.joueurs || [], N = [court(m.home), court(m.away)];
+  if (J.length!==2 || !J[0] || !J[1]) return '';
+  const out = [];
+  const moy = k => (J[0][k]!=null && J[1][k]!=null) ? (J[0][k]+J[1][k])/2 : null;
+  const r0 = v => L==='fr' ? Math.round(v)+' %' : Math.round(v)+'%';
+  const R = r.reference || {}, tb = moy('tiebreak_pct'), s3 = moy('trois_sets_pct');
+  const rTb = R.tiebreak_pct, r3 = R.trois_sets_pct;
+  if (tb!=null && rTb!=null && tb >= rTb+RY_ECART) out.push(t('ry_p_tb_plus',r0(J[0].tiebreak_pct),r0(J[1].tiebreak_pct),r0(rTb)));
+  if (tb!=null && rTb!=null && tb <= rTb-RY_ECART) out.push(t('ry_p_tb_moins',r0(J[0].tiebreak_pct),r0(J[1].tiebreak_pct),r0(rTb)));
+  if (s3!=null && r3!=null && s3 >= r3+RY_ECART) out.push(t('ry_p_3s_plus',r0(J[0].trois_sets_pct),r0(J[1].trois_sets_pct),r0(r3)));
+  if (s3!=null && r3!=null && s3 <= r3-RY_ECART) out.push(t('ry_p_3s_moins',r0(J[0].trois_sets_pct),r0(J[1].trois_sets_pct),r0(r3)));
+  J.forEach((j,i)=>{ if (j.rythme_pct!=null && Math.abs(j.rythme_pct) >= RY_RYTHME) out.push(t(j.rythme_pct<0?'ry_p_vite':'ry_p_lent',N[i],j.rythme_pct)); });
+  J.forEach((j,i)=>{ if (j.regularite==='jours_sans_frequents') out.push(t('ry_p_jours',N[i])); });
+  if (!out.length) return `<p class="sv-phrase neutre">${esc(t('ry_p_rien'))}</p>`;
+  const txt = out.map((x,i)=>i===0 ? x.charAt(0).toUpperCase()+x.slice(1) : x).join(' ; ') + '.';
+  return `<p class="sv-phrase info">${esc(txt)}</p>`;
 }
 function rendRythme(r,m){
   if (!r || r.descriptif_seulement !== true) return '';
@@ -680,6 +747,7 @@ function rendRythme(r,m){
   const n = J.filter(Boolean).map(j=>j.matchs);
   return `<div class="panel rythme"><h3>${esc(t('ry_titre'))}</h3>
     ${pv ? `<p class="ry-duree">${esc(t('ry_duree',pv.minutes,pv.minutes_p10,pv.minutes_p90))}</p><p class="ry-pts">${esc(t('ry_points',pv.points,pv.secondes_par_point))}</p>` : ''}
+    ${phraseRythme(r,m)}
     <table class="sheet"><thead><tr><th></th><th class="c1">${esc(court(m.home))}</th><th class="c2">${esc(court(m.away))}</th></tr></thead><tbody>${rows}</tbody></table>
     <p class="styles-note">${esc(t('ry_note'))}</p></div>`;
 }
