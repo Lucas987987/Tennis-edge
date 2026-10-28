@@ -48,6 +48,9 @@ jobs:
           filter: blob:none
           sparse-checkout: |
             /simulateur/
+            /scripts/feuilles_match.py
+            /scripts/resultats_itf.py
+            /resultats_itf/
             /scripts/closing_store.py
             /Tennis_Edge_Lab/books.py
             /Tennis_Edge_Lab/bookmakers_sets_v5.py
