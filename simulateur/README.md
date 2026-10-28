@@ -24,6 +24,7 @@ jouer 5 000 matchs au hasard, il calcule la probabilité de chaque issue.
 | `matchs_similaires.py` | voisinage strictement pré-match, futur exclu, sans cote ni sélection par ROI ; contrôle descriptif de calibration |
 | `styles_joueurs.py` | instantanés service–retour horodatés, challenger d'interaction et apport incrémental après contrôles Elo/surface/documentation |
 | `styles_descriptifs.py` | bilans publics contre six profils service–retour, global/surface, effectifs, IC de Wilson et derniers matchs ; descriptif seulement |
+| `styles_global.py` | second avis global figé, journalisé avec le champion réellement publié ; aucune probabilité active modifiée |
 | `styles_valeur.py` | test hors échantillon de ces bilans comme variables candidates après Elo et service–retour ; aucune activation automatique |
 | `etude_styles_seuls.py` | trois prévisions utilisant exclusivement les bilans de styles, contre une référence neutre à 50 % ; diagnostic seulement |
 | `etude_matrice_styles.py` | matrice des 21 paires avec le bilan global figé, IC de Wilson et bootstrap par semaine ; aucune sélection post hoc |
@@ -390,6 +391,36 @@ sélectionnée ou activée** après ces comparaisons multiples. Rejouer :
 ```bash
 python simulateur/etude_matrice_styles.py /tmp/sackmann . --maximum 8000 --bootstrap 2000
 ```
+
+### Mise en place comme second avis journalisé
+
+`styles_global.py` met en production **le suivi**, pas une nouvelle règle du
+champion. `styles_descriptifs.py` calcule avant chaque match les deux taux
+globaux contractés, leur écart de logits, les effectifs et la paire de styles.
+`modele_styles_global.json` conserve exactement le modèle global appris sur 2024 ;
+la matrice ne crée aucun bonus ou coefficient particulier pour un duel.
+
+Après chaque génération, `pronostics_du_jour.py` fige une ligne par UID dans
+`simulateur/journal_pronostics/styles_global_v1.jsonl`, déjà couvert par la
+publication quotidienne du dossier `journal_pronostics`. Chaque ligne contient :
+
+- la probabilité du champion dans la variante réellement publiée
+  (`combinaison`, sinon `simulation`, sinon `stats`) ;
+- le second avis `styles_global`, avec orientation alphabétique de l'apprentissage
+  rétablie avant de revenir au joueur home réel ;
+- les variables, la paire, les empreintes du modèle et des bilans figés.
+
+Seuls les matchs postérieurs au gel du 28 octobre 2026 entrent dans la cohorte.
+Les doublons sont ignorés, les anciens pronostics ne sont pas réécrits et les
+résultats sont rattachés par `set_results.json`, sans injection manuelle. Le
+suivi compare ensuite champion et second avis globalement et par paire dès 30
+résultats. **Cette comparaison de deux modèles indépendants ne prouve pas à elle
+seule un apport incrémental** : elle sert à mesurer les désaccords futurs avant
+une éventuelle règle de combinaison séparément figée.
+
+Le second avis et ses variables restent hors de `algo/donnees.json` et ne
+modifient ni probabilité, ni note, ni simulation, ni score. Les 20 000 tirages,
+le médoid et la trace vidéo sont inchangés.
 
 ## Cinq familles de variables pré-match (28/10/2026)
 

@@ -1,0 +1,29 @@
+{
+  "schema": "styles_adverses_global_v1",
+  "gel_utc": "2026-10-28T00:00:00+00:00",
+  "activation": false,
+  "ajustement": "régression logistique ridge 1.0 sur découverte 2024 uniquement",
+  "variables": [
+    "bilan_global"
+  ],
+  "definition": "écart des logits des taux globaux contre le style adverse, contractés vers 50 % avec 20 matchs de prior",
+  "prior_matchs_par_bilan": 20.0,
+  "orientation_apprentissage": "identifiants joueurs par ordre alphabétique",
+  "modele": {
+    "beta": [
+      0.05620585436651076,
+      0.41083445105218047
+    ],
+    "moyennes": [
+      0.0,
+      -0.01739610265726015
+    ],
+    "ecarts": [
+      1.0,
+      0.43177599580638715
+    ],
+    "converged": true
+  },
+  "matrice_paires": "diagnostic descriptif seulement ; aucun coefficient ou bonus par paire",
+  "confirmation_future": "comparaison appariée au champion réellement publié ; ce second avis indépendant ne mesure pas à lui seul un apport incrémental"
+}
