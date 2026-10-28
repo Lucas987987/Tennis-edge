@@ -6,6 +6,7 @@ import unittest
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import etude_styles_seuls as SS
+import gouvernance_candidats as GC
 
 
 def ligne(i, bilan_global=0.0, bilan_surface=0.0):
@@ -58,7 +59,19 @@ class Evaluation(unittest.TestCase):
             self.assertEqual(neutre['reussite_pct'], 50.0)
             self.assertEqual(bloc['variables'], list(SS.CANDIDATS[candidat]))
             self.assertTrue(bloc['convergence'])
+            self.assertEqual(len(bloc['modele_complet_decouverte']['beta']), len(SS.CANDIDATS[candidat]) + 1)
+            self.assertEqual(len(bloc['modele_complet_decouverte']['moyennes']), len(SS.CANDIDATS[candidat]) + 1)
             self.assertIn('gains_contre_neutre', bloc['confirmation'])
+
+    def test_challenger_global_fige_sans_activation(self):
+        racine = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+        manifeste = GC.charger(racine)
+        candidat = manifeste['candidats']['styles_adverses_global_v1']
+        self.assertEqual(candidat['parametres']['variable'], 'bilan_global')
+        self.assertFalse(candidat['parametres']['surface_ajoutee'])
+        self.assertFalse(candidat['activation'])
+        self.assertIn('modele_complet_decouverte', candidat['implementation'])
+        self.assertTrue(GC.auditer(manifeste)['ok'])
 
     def test_couverture_exige_un_bilan_pour_chaque_joueur(self):
         rows = [ligne(i) for i in range(480)]
