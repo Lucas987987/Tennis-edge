@@ -17,11 +17,20 @@ puis renormalisée camp par camp : la probabilité de chaque vainqueur est STRIC
   f_vol = régularité moyenne des deux (points de %) − 4,4
 Un match dont un joueur n'a pas de profil n'est pas incliné.
 
+VERSION 2 (28/10/2026, après la vérification des lignes de paris sur 2 468 matchs : le modèle prévoit des matchs
+un peu trop longs et serrés — plus de 20,5 jeux 57,8 % prévu pour 52,4 % réel ; 3 sets 38,3 % pour 33,9 %) : trois
+termes de BASE s'ajoutent, valables pour tous les matchs, même sans profil — tie-break, 3 sets, et nombre total de
+jeux (jeux − 22) :
+        poids(score) = exp( c0·f_tb·[tb] + (c1·f_3s + c2·f_vol)·[3 sets] + c3·[tb] + c4·[3 sets] + c5·(jeux − 22) )
+Test du 28/10 (termes de base, apprentissage 1 500 matchs → jugement 2 468) : Brier meilleur sur les 13 lignes,
+plus de 20,5 jeux 54,2 % prévu (52,4 % réel), tie-break 30,5 % (29,1 %), 3 sets 34,6 % (33,9 %).
+La forme jugée devient (camp, tie-break, 3 sets, total de jeux) ; série de stabilité « forme_scores_v2 », neuve.
+
 RÈGLE FIXÉE LE 28/10/2026, AVANT TOUT RÉSULTAT DE CETTE PROCÉDURE : chaque semaine (facteurs.py), les trois
 coefficients sont appris sur la fenêtre d'apprentissage (≤ 1 500 matchs au meilleur des 3, tirés au hasard, graine
 fixe), avec des profils arrêtés au début de cette fenêtre ; puis jugés sur la fenêtre de jugement (6 dernières
 semaines, profils arrêtés au début du jugement) par la log-vraisemblance de la forme réelle (camp gagnant ×
-tie-break oui/non × 2 ou 3 sets). Adoptée si le gain est d'au moins 0,001, deux semaines de suite (stabilite.py).
+tie-break oui/non × 2 ou 3 sets × total de jeux). Adoptée si le gain est d'au moins 0,001, deux semaines de suite (stabilite.py).
 """
 import math
 import random
@@ -49,20 +58,27 @@ def caracteristiques(pa, pb):
 
 
 def _cat(score):
-    """(camp gagnant 0/1, tie-break, 3 sets ou plus) d'un score (tuple de sets vus de A)."""
+    """(camp gagnant 0/1, tie-break, 3 sets ou plus, total de jeux) d'un score (tuple de sets vus de A)."""
     camp = 0 if score[-1][0] > score[-1][1] else 1
     tb = any(max(a, b) == 7 and min(a, b) == 6 for a, b in score)
-    return camp, tb, len(score) >= 3
+    return camp, tb, len(score) >= 3, sum(a + b for a, b in score)
+
+
+N_COEFS = 6
+JEUX_CENTRE = 22
 
 
 def _poids(cat, f, c):
-    _, tb, trois = cat
-    return math.exp(c[0] * f[0] * tb + (c[1] * f[1] + c[2] * f[2]) * trois)
+    _, tb, trois, jeux = cat
+    f = f or (0.0, 0.0, 0.0)
+    return math.exp(c[0] * f[0] * tb + (c[1] * f[1] + c[2] * f[2]) * trois + c[3] * tb + c[4] * trois
+                    + c[5] * (jeux - JEUX_CENTRE))
 
 
 def reponderer(distribution, f, coefs):
-    """Distribution inclinée (même format {score: p}) ; masse de chaque camp conservée."""
-    if not f or not coefs:
+    """Distribution inclinée (même format {score: p}) ; masse de chaque camp conservée. f peut être None (termes de
+    base seulement)."""
+    if not coefs or len(coefs) < N_COEFS:
         return distribution
     brut, masse = {}, [0.0, 0.0]
     for s, p in distribution.items():
@@ -77,7 +93,7 @@ def reponderer(distribution, f, coefs):
 
 # ------------------------------------------------------------------ apprentissage et jugement (chaque semaine)
 def masses(distribution):
-    """{(camp, tb, 3 sets): probabilité} — 8 cases."""
+    """{(camp, tb, 3 sets, jeux): probabilité}."""
     out = {}
     for s, p in distribution.items():
         k = _cat(s)
@@ -86,15 +102,14 @@ def masses(distribution):
 
 
 def _proba_obs(m, obs, f, c):
-    """P(observation) sous la distribution inclinée, depuis les 8 masses."""
-    camp = obs[0]
-    cote = [(k, v) for k, v in m.items() if k[0] == camp]
+    """P(observation) sous la distribution inclinée."""
+    cote = [(k, v) for k, v in m.items() if k[0] == obs[0]]
     tot_brut = sum(v for _, v in cote)
-    tot_inc = sum(v * _poids(k, f, c) for k, v in cote) if f else tot_brut
+    tot_inc = sum(v * _poids(k, f, c) for k, v in cote)
     v_obs = m.get(obs, 0.0)
     if not tot_inc or not tot_brut:
-        return 1e-9
-    return max(tot_brut * v_obs * (_poids(obs, f, c) if f else 1.0) / tot_inc, 1e-9)
+        return 1e-12
+    return max(tot_brut * v_obs * _poids(obs, f, c) / tot_inc, 1e-12)
 
 
 def log_vrais(D, c):
@@ -102,34 +117,37 @@ def log_vrais(D, c):
     return -sum(math.log(_proba_obs(m, o, f, c)) for m, o, f in D) / len(D) if D else None
 
 
-def apprendre(D, iterations=60, pas=0.5):
-    """Trois coefficients par descente de gradient numérique (petit rappel vers 0)."""
-    c = [0.0, 0.0, 0.0]
-    D = [x for x in D if x[2]]
+def apprendre(D, iterations=150):
+    """Six coefficients : descente de gradient numérique, pas adaptatif par coefficient, petit rappel vers 0."""
+    c = [0.0] * N_COEFS
     if not D:
         return c
 
     def obj(cc):
         return log_vrais(D, cc) + RIDGE * sum(v * v for v in cc) / (2 * len(D))
+    pas = [0.5] * N_COEFS
+    base = obj(c)
     for _ in range(iterations):
-        base = obj(c)
-        g = []
-        for i in range(3):
+        progres = False
+        for i in range(N_COEFS):
             cc = list(c)
             cc[i] += 1e-4
-            g.append((obj(cc) - base) / 1e-4)
-        nouveau = [ci - pas * gi * 10 for ci, gi in zip(c, g)]
-        if obj(nouveau) < base:
-            c = nouveau
-        else:
-            pas /= 2
-            if pas < 1e-4:
-                break
-    return [round(v, 4) for v in c]
+            g = (obj(cc) - base) / 1e-4
+            essai = list(c)
+            essai[i] -= pas[i] * g * 10
+            v = obj(essai)
+            if v < base:
+                c, base, progres = essai, v, True
+                pas[i] *= 1.3
+            else:
+                pas[i] /= 2
+        if not progres and max(pas) < 1e-5:
+            break
+    return [round(v, 5) for v in c]
 
 
 def observation(sets):
-    """(camp, tb, 3 sets) d'un score réel [(jeux A, jeux B), …]."""
+    """(camp, tb, 3 sets, jeux) d'un score réel [(jeux A, jeux B), …]."""
     return _cat(tuple(tuple(s) for s in sets))
 
 
@@ -156,12 +174,12 @@ def juger(appr, juge, profils_appr, profils_juge, scores_reels):
     Da = jeu_de_donnees(appr, profils_appr, scores_reels, MAX_APPR)
     Dj = jeu_de_donnees(juge, profils_juge, scores_reels)
     c = apprendre(Da)
-    l0, l1 = log_vrais(Dj, [0.0, 0.0, 0.0]), log_vrais(Dj, c)
+    l0, l1 = log_vrais(Dj, [0.0] * N_COEFS), log_vrais(Dj, c)
     gain = (l0 - l1) if l0 is not None and l1 is not None else None
-    return {'coefs': c, 'apprentissage': len(Da), 'jugement': len(Dj),
+    return {'version': 2, 'coefs': c, 'apprentissage': len(Da), 'jugement': len(Dj),
             'documentes_jugement': sum(1 for x in Dj if x[2]),
             'log_vrais': {'sans': round(l0, 6) if l0 else None, 'avec': round(l1, 6) if l1 else None},
             'gain': round(gain, 6) if gain is not None else None,
             'adopte': bool(gain is not None and gain >= MARGE),
-            'regle': ("forme réelle (camp × tie-break × 3 sets) mieux prédite d'au moins 0,001 sur le jugement ; "
-                      "vainqueur inchangé par construction ; deux semaines de suite")}
+            'regle': ("forme réelle (camp × tie-break × 3 sets × total de jeux) mieux prédite d'au moins 0,001 sur le "
+                      "jugement ; vainqueur inchangé par construction ; deux semaines de suite (série forme_scores_v2)")}

@@ -201,6 +201,22 @@ def ajouter_rythme(lignes, document, alias=None):
     return lignes
 
 
+def bilan_lignes(racine, resultats):
+    """28/10/2026 : lignes figées avant le match (lignes_algo.journaliser) contre les scores réels."""
+    import lignes_algo as MD
+    scores = {}
+    for m in (resultats or {}).get('matchs') or []:
+        reel = m.get('reel') or {}
+        if reel.get('interrompu') or reel.get('score_invalide') or not reel.get('score'):
+            continue
+        try:
+            sets = [tuple(int(v.split('(')[0]) for v in s_.split('-')) for s_ in str(reel['score']).split()]
+        except ValueError:
+            continue
+        scores[m['uid']] = sets
+    return MD.bilan_lignes(racine, scores)
+
+
 def _juge(m):
     """(p_home, gagnant) du pronostic jugé : dernier avant le match, sinon premier."""
     for bloc in ('dernier', 'premier'):
@@ -341,6 +357,21 @@ def construire(racine, maintenant=None):
     except Exception:
         alias = {}
     ajouter_rythme(lignes, rythme_doc, alias)
+    # 28/10/2026 — lignes de paris calculées par l'algo (distribution exacte) et duel service ↔ retour
+    import lignes_algo as MD
+    duel = MD.Duel.charger(racine)
+    cle_c = lambda n: alias.get(E.cle(n), E.cle(n)) if n else None
+    for ligne in lignes:
+        mk = MD.lignes(ligne.get('distribution_scores'), ligne.get('p_home', 0.5), ligne.get('meilleur_des') or 3)
+        if mk:
+            ligne['lignes_algo'] = mk
+        du = duel.match(cle_c(ligne.get('home')), cle_c(ligne.get('away')), ligne.get('circuit'), ligne.get('surface'))
+        if du:
+            ligne['duel'] = du
+    try:
+        MD.journaliser(lignes, racine, maintenant)
+    except OSError as e:
+        print(f'::warning::journal des lignes non écrit : {e}')
     resultats = _lire(os.path.join(racine, 'Tennis_Edge_Lab', 'live', 'pronostics_resultats.json'), {})
     return {'genere_le': maintenant.isoformat(timespec='seconds'), 'pronostics_du': pron.get('genere_le'),
             'simulations': pron.get('simulations') or 20000, 'match_du_jour': mdj,
@@ -349,6 +380,7 @@ def construire(racine, maintenant=None):
                                            'feuilles_recentes': styles_doc.get('feuilles_recentes'),
                                            'regle': styles_doc.get('regle')} if styles else None),
             'matchs': lignes, 'bilan': bilan(resultats),
+            'bilan_lignes': bilan_lignes(racine, resultats),
             'validation_fiabilite': validation_fiabilite(resultats),
             'qualite_donnees': qualite_donnees(racine),
             'rejoue': rejoue(racine)}
