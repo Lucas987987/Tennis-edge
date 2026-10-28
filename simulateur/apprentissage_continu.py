@@ -10,8 +10,10 @@ matchs réels — la simulation y tourne avec ses facteurs du match, ce que le t
   — RÈGLE FIXÉE D'AVANCE : les poids appris sur nos matchs remplacent ceux de l'archive s'ils trouvent
     mieux le vainqueur (log loss plus basse) sur les matchs récents ; il faut au moins MIN_MATCHS matchs
     joués avec les deux % (simulation et Elo).
-Relancé chaque semaine par « Pronostic - test du modèle » ; écrit la décision dans
-simulateur/choix_simulation.json (clé « combinaison_continue »), lue par pronostics_du_jour.
+Relancé à chaque passage de « Pronostics du jour » et chaque semaine par
+« Pronostic - test du modèle » ; écrit la décision dans simulateur/choix_simulation.json
+(clé « combinaison_continue »), lue par pronostics_du_jour. Sans 30 nouveaux matchs
+résolus depuis le dernier jugement, le champion reste inchangé et le run continue.
 
 Usage : python simulateur/apprentissage_continu.py [racine]
 """
