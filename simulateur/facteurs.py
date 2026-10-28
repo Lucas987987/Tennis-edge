@@ -1140,6 +1140,33 @@ def main(argv):
             print(f"    variables les plus utilisées : {list(rc['importance'])[:10]}", flush=True)
         except Exception as e:
             print(f"::warning::Modèle complet non jugé : {type(e).__name__}: {e}")
+        # 28/10/2026 — forme des scores selon les profils (forme_scores.py) : vainqueur inchangé par construction
+        try:
+            import forme_scores as FS
+            import profil_rythme as PRY
+            Lp = PRY.lignes(M + F, lambda n: E.cle(n) if n else None)
+            prof_a, _ = PRY.calculer([x for x in Lp if x[0] < d_appr], d_appr)
+            prof_j, _ = PRY.calculer([x for x in Lp if x[0] < d_juge], d_juge)
+
+            def sets_reels(r):
+                s_ = list(zip(r['score_home'].get('sets') or [], r['score_away'].get('sets') or []))
+                return s_ if len(s_) in (2, 3) and all(u is not None and v is not None for u, v in s_) else None
+            reels = {r.get('id'): sets_reels(r) for r in fiches}
+            try:
+                with open(SORTIE, encoding='utf-8') as f:
+                    fs_en_place = bool((json.load(f).get('forme_scores') or {}).get('adopte'))
+            except (OSError, ValueError):
+                fs_en_place = False
+            rf = FS.juger(appr, juge, prof_a, prof_j, reels)
+            etat_st = ST.lire()
+            ok, note = ST.decider(etat_st, 'forme_scores', fs_en_place, rf['adopte'])
+            ST.ecrire(etat_st)
+            rf['adopte_brut'], rf['adopte'], rf['stabilite'] = rf['adopte'], ok, note
+            doc['forme_scores'] = rf
+            print(f"  forme_scores       {'ADOPTÉE' if ok else 'non adoptée'} — gain {rf['gain']} (marge {FS.MARGE}) · "
+                  f"coefs {rf['coefs']} ({note})", flush=True)
+        except Exception as e:
+            print(f"::warning::Forme des scores non jugée : {type(e).__name__}: {e}")
     # Dépendances dynamiques : testées sur les points, jamais publiées sans backtest du vainqueur.
     try:
         import dependances_points as DP

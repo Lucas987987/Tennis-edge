@@ -119,7 +119,11 @@ class Collecte(unittest.TestCase):
         self.assertNotIn('/api/tennis/event/2/statistics', appels)                         # double
         self.assertNotIn('/api/tennis/event/3/statistics', appels)                         # match de la veille
         self.assertNotIn('/api/tennis/event/4/statistics', appels)                         # forfait
-        self.assertEqual(sum('/event/1' in a and a != '/api/tennis/event/1/statistics' for a in appels), 3)   # ITF : 3 vides puis on saute
+        self.assertEqual(sum('/event/1' in a and a not in ('/api/tennis/event/1/statistics', '/api/tennis/event/1')
+                             for a in appels), 3)                                       # ITF : 3 vides puis on saute
+        # 28/10/2026 : durée lue dans le DÉTAIL du match ATP avec feuille (une requête), jamais pour l'ITF
+        self.assertEqual(appels.count('/api/tennis/event/1'), 1)
+        self.assertFalse([a for a in appels if a.startswith('/api/tennis/event/1') and a[len('/api/tennis/event/1'):].isdigit()])
         self.assertEqual(b['avec_stats'], 1)
         recs = FM.lire_jour(JOUR, self.d)
         r = recs[1]
@@ -127,6 +131,7 @@ class Collecte(unittest.TestCase):
         self.assertEqual(r['stats']['1ST']['aces'], [3, None, 1, None])
         self.assertEqual(r['score_home']['tb'], [None, 7])
         self.assertEqual(r['surface'], 'Red clay')
+        self.assertEqual(r['duree_essai'], 1)                                               # détail 204 : réessayé plus tard
         self.assertFalse(b['complet'])                                                      # ITF encore à reprendre
 
     def test_reprise_sans_redemander(self):
