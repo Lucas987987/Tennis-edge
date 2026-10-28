@@ -277,13 +277,21 @@ SIGMA_CIRCUIT = None            # 28/10/2026 : {circuit: σ} de la forme du jour
 
 
 def charger_sigma_circuit(racine):
-    """{circuit: σ} si facteurs.json l'a adopté (règle fixée, deux semaines de suite), sinon None (σ 0,15 partout)."""
+    """{circuit: σ} de la forme du jour. 28/10/2026 : en production par décision de Lucas (sigma_circuit.DECISION,
+    Challenger 0,22) tant que le jugement hebdomadaire n'a rien dit ; ensuite ce que dit facteurs.json — σ appris si
+    en place, None (0,15 partout) s'il a été RETIRÉ (moins bien deux semaines de suite)."""
+    import sigma_circuit as SGC
     try:
         with open(os.path.join(racine, 'simulateur', 'facteurs.json'), encoding='utf-8') as f:
-            r = json.load(f).get('sigma_circuit') or {}
-        return {k: float(v) for k, v in (r.get('sigmas') or {}).items()} if r.get('adopte') else None
-    except (OSError, ValueError, TypeError):
-        return None
+            r = json.load(f).get('sigma_circuit')
+    except (OSError, ValueError):
+        r = None
+    if not r or 'adopte' not in r:
+        return dict(SGC.DECISION)
+    try:
+        return {k: float(v) for k, v in (r.get('sigmas') or SGC.DECISION).items()} if r.get('adopte') else None
+    except (TypeError, ValueError):
+        return dict(SGC.DECISION)
 
 
 def sigma_de(c):
