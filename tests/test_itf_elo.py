@@ -51,6 +51,30 @@ class TestCollecte(unittest.TestCase):
         self.assertEqual(m['sets'], [(6, 3), (6, 4)])
 
 
+class TestReprise(unittest.TestCase):
+    """28/10/2026 : un passage coupé ne perd plus que le mois en cours ; arrêt propre au bout du temps."""
+
+    def test_mois_ecrits_au_fil_et_arret_au_temps(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as d:
+            t = [0.0]
+
+            def horloge():
+                t[0] += 10
+                return t[0]
+            jours = ['2024-06-29', '2024-06-30', '2024-07-01', '2024-07-02', '2024-07-03']
+            col = lambda c, j: {int(j.replace('-', '')): {'id': int(j.replace('-', '')), 'jour': j}}
+            etat = {'jours': {}}
+            faits, arret = RI.passer(Faux(), jours, etat, dt.date(2026, 10, 28), collecter=col, limite_s=35,
+                                     horloge=horloge, journal=lambda *a: None, dossier=d)
+            self.assertEqual(faits, 3)
+            self.assertIn('temps', arret)
+            self.assertEqual(len(RI.lire_mois('2024-06', d)), 2)
+            self.assertEqual(len(RI.lire_mois('2024-07', d)), 1)
+            self.assertTrue(os.path.exists(os.path.join(d, 'etat.json')))
+            self.assertEqual(sorted(etat['jours']), jours[:3])
+
+
 def mt(d, g, p, circuit='CH', src='archive', i=None):
     return {'date': d, 'fin': d, 'circuit': circuit, 'surface': 'Hard', 'nom_g': g, 'nom_p': p, 'sets': [(6, 3), (6, 3)],
             'complet': True, 'niveau': '', 'tour': 0, 'num': 0, 'source': src, 'id': i}
