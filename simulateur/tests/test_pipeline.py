@@ -136,6 +136,32 @@ class RegularisationSecondeBalle(unittest.TestCase):
 
 
 class ApprentissageControle(unittest.TestCase):
+    def test_workflow_reapprend_avant_chaque_pronostic_et_publie_la_decision(self):
+        racine = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        chemin = os.path.join(racine, '.github', 'workflows', 'pronostics_quotidien.yml')
+        with open(chemin, encoding='utf-8') as f:
+            workflow = f.read()
+        apprentissage = 'run: python simulateur/apprentissage_continu.py .'
+        gouvernance = 'run: python simulateur/gouvernance.py --racine .'
+        pronostic = 'run: python simulateur/pronostics_du_jour.py .'
+        self.assertLess(workflow.index(apprentissage), workflow.index(gouvernance))
+        self.assertLess(workflow.index(gouvernance), workflow.index(pronostic))
+        publication = workflow[workflow.index('- name: Publier'):]
+        for nom in ('simulateur/choix_simulation.json', 'simulateur/gouvernance_etat.json',
+                    'simulateur/rapport_gouvernance.json', 'simulateur/recap_apprentissage.json'):
+            self.assertIn(nom, publication)
+
+    def test_adoption_automatique_seulement_si_le_jugement_est_meilleur(self):
+        L = [(f'2026-10-{1 + i // 10:02d}T12:00', 0.55, 0.90) for i in range(40)]
+        with mock.patch.object(AC, 'MIN_MATCHS', 40), \
+             mock.patch.object(AC, 'ajuster', return_value=(0.0, 1.0)):
+            decision = AC.decider(L, {'elo': 0.5, 'simulation': 0.5})
+        self.assertTrue(decision['adopte'])
+        self.assertEqual(decision['poids'], {'elo': 0.0, 'simulation': 1.0})
+        self.assertGreaterEqual(decision['jugement']['gain_log_loss'], AC.MARGE_LOG_LOSS)
+        self.assertLessEqual(decision['jugement']['brier_continu'],
+                             decision['jugement']['brier_poids_archive'])
+
     def test_periode_de_jugement_non_reutilisee(self):
         L = [(f'2026-10-{1 + i // 10:02d}T12:00', 0.6, 0.65) for i in range(40)]
         with mock.patch.object(AC, 'MIN_MATCHS', 40), mock.patch.object(AC, 'MIN_NOUVEAUX', 5), \

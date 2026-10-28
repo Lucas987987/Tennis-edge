@@ -205,10 +205,14 @@ compte de la difficulté annoncée. `evaluation_sorties.py` ventile également s
 scores, jeux, statistiques et couvertures par niveau de fiabilité et documentation.
 Cela ne réécrit jamais une note figée après le résultat.
 
-L'apprentissage continu exige désormais un gain de log loss d'au moins 0,001 sur
-une période de jugement nouvelle et un Brier non dégradé. Les challengers qui ne
-franchissent pas ces gardes restent rejetés. Aucun de ces mécanismes n'utilise le
-marché comme entrée du modèle indépendant.
+L'apprentissage continu est exécuté à chaque passage de « Pronostics du jour »,
+avant le calcul des nouveaux pronostics, ainsi que dans le contrôle hebdomadaire.
+Il réapprend les poids simulation + Elo dès que 30 nouveaux matchs résolus sont
+disponibles depuis le dernier jugement. Il exige un gain de log loss d'au moins
+0,001 sur une période de jugement nouvelle et un Brier non dégradé. La décision,
+la gouvernance et le récapitulatif sont publiés dans le même run. Sans assez de
+nouveaux matchs ou si ces gardes ne sont pas franchis, le champion reste inchangé.
+Aucun de ces mécanismes n'utilise le marché comme entrée du modèle indépendant.
 
 ## Suivi public de la fiabilité circuit et audit des profils (27/10/2026)
 
