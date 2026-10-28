@@ -30,6 +30,7 @@ import nos_resultats as NR  # noqa: E402
 import profils_service as PS  # noqa: E402
 import pronostics_du_jour as PD  # noqa: E402
 import styles_ajustes as SA  # noqa: E402
+import styles_global as SG  # noqa: E402
 
 SORTIE = os.path.join('simulateur', 'styles_descriptifs.json')
 MIN_BALLES_STYLE = 500.0
@@ -259,18 +260,24 @@ def construire(racine, archive, maintenant=None):
         ajustes.update({'challenger_seulement': True, 'schema': SA.SCHEMA,
                         'styles': [courants[h]['style'], courants[a]['style']],
                         'reference': 'résultat moins probabilité Elo pré-match ; demi-vie 365 j ; prior 20'})
+        global_styles = SG.variables(acc, h, a, courants[h]['style'], courants[a]['style'])
+        global_styles.update({'challenger_seulement': True, 'schema': SG.SCHEMA,
+                              'styles': [courants[h]['style'], courants[a]['style']],
+                              'matrice_paires': 'descriptive ; aucun bonus par paire'})
         out[x['uid']] = {
             'descriptif_seulement': True,
             'joueurs': [_bloc(h, x['home'], courants[h], courants[a], s, acc),
                         _bloc(a, x['away'], courants[a], courants[h], s, acc)],
-            'styles_ajustes': ajustes}
+            'styles_ajustes': ajustes, 'styles_global': global_styles}
     return {'schema': 'styles_descriptifs_v1', 'genere_le': maintenant.isoformat(timespec='seconds'),
             'archive_jusqu_au': fin_sack.isoformat(), 'feuilles_recentes': len(F),
             'minimum_balles_style': MIN_BALLES_STYLE,
             'styles_ajustes': {'schema': SA.SCHEMA, 'demi_vie_jours': SA.DEMI_VIE_J,
                                'prior_matchs_equivalents': SA.PRIOR_MATCHS, 'activation': False},
+            'styles_global': {'schema': SG.SCHEMA, 'prior_matchs_par_bilan': SG.PRIOR_MATCHS,
+                              'second_avis_seulement': True, 'activation': False},
             'regle': ('Style service–retour interne figé avant chaque match ; résultats ajoutés ensuite. '
-                      'Bilans bruts descriptifs ; résidus ajustés réservés au challenger non actif.'),
+                      'Bilans bruts descriptifs ; résidus ajustés et second avis global réservés aux challengers non actifs.'),
             'seuils': {'service': SEUIL_SERVICE, 'ace': SEUIL_ACE, 'retour': SEUIL_RETOUR,
                        'contre_service': SEUIL_CONTRE_SERVICE, 'contre_retour': SEUIL_CONTRE_RETOUR},
             'matchs': out}
