@@ -627,5 +627,32 @@ durée de 8,0 à 6,6 minutes. Descriptif : aucune probabilité modifiée.
 **Panne repérée : durées TennisApi.** `duree_min` est vide dans les 9 764 feuilles : la liste des matchs du jour ne
 contient pas le champ « time » (il n'est que dans le détail de chaque match) ; `durees_matchs.py` a pourtant marqué
 tous les jours comme traités. Le groupe de facteurs « durée » n'a donc jamais eu de données. Les durées viennent
-pour l'instant de l'archive Sackmann (ATP/WTA, jusqu'au 02/06/2026) ; corriger la collecte demande une requête de
-détail par match, à arbitrer avec le quota.
+pour l'instant de l'archive Sackmann (ATP/WTA, jusqu'au 02/06/2026). **Corrigé le 28/10/2026** : une requête de
+détail par match (ATP, WTA, Challenger avec feuille ; 3 tentatives au plus), ~85 par jour pour un quota quotidien
+d'environ 15 000 dont ~470 consommées ; rattrapage des feuilles passées par `durees_matchs.py` (800 par passage,
+réserve 6 000, ~6 jours). Si le détail ne contient pas la durée, le passage s'arrête et affiche les clés reçues.
+
+**Les profils améliorent-ils les prédictions ?** Test du 28/10 (profils calculés sur l'archive seule, coefficients
+appris sur juin → 15/09, jugés sur 2 468 matchs depuis le 16/09) : le vainqueur, NON (régularité : +0,00005 ;
+écart de régularité : −0,00224, pire) ; la FORME du match, un peu : tie-break ← tie-break % des deux joueurs
++0,00104 de log-vraisemblance ; 3 sets ← régularité moyenne +0,00140 (joueurs irréguliers → moins de matchs en
+3 sets) ; 3 sets ← 3 sets % +0,00054 ; jeux ← jeux par match : erreur 5,128 → 5,109. Signal réel mais petit, pour les
+scores seulement.
+
+## Forme des scores par profil, désaccords avec le marché (28/10/2026)
+
+**Forme des scores (`forme_scores.py`, jugée chaque lundi dans `facteurs.py`).** La distribution exacte des scores
+est inclinée, camp par camp (la probabilité de chaque vainqueur est STRICTEMENT inchangée), selon le tie-break %, le
+3 sets % et la régularité des deux joueurs. Règle fixée d'avance : forme réelle (camp × tie-break × 3 sets) mieux
+prédite d'au moins 0,001 sur la fenêtre de jugement, deux semaines de suite ; profils arrêtés au début de chaque
+fenêtre. Premier rejeu (apprentissage 1 500 matchs, jugement 2 468) : 1,824023 → 1,822037, gain 0,00199 → candidate
+(1/2). Adoptée, elle s'applique aux scores et aux sets publiés (variante combinaison) ; la simulation et la vidéo ne
+changent pas.
+
+**Désaccords avec le marché (`rapport_desaccords.py`, Telegram privé chaque lundi + coffre).** Loupe seulement :
+matchs où l'algo s'écarte d'au moins 8 points de la clôture Pinnacle, résultat, et situations (progression, baisse,
+retour d'absence, enchaînement, peu documenté, circuit). Premier rejeu (735 désaccords) : le marché a raison dans
+toutes les tranches ; le joueur surestimé gagne 40,1 % (algo 53,2 %, marché 39,3 %). Piste la plus nette : les joueurs
+PEU DOCUMENTÉS (< 20 matchs sur 2 ans) — surestimés : 23,2 % réels pour 42,9 % annoncés (n = 95) ; sous-estimés :
+l'algo se trompe aussi dans l'autre sens. L'algo est trop catégorique quand il connaît mal un joueur. L'hypothèse
+« jeune en progression sous-estimé » n'est pas confirmée (même erreur des deux côtés).

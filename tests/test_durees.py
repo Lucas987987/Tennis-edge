@@ -1,48 +1,64 @@
-"""Durée des matchs (23/10/2026) : complément des feuilles déjà collectées, variables de fatigue."""
-import datetime as dt
-import gzip
+"""Durées des matchs (23/10/2026 ; collecte corrigée le 28/10/2026) : détail TennisApi, rattrapage borné, variables
+de fatigue."""
 import json
 import os
 import sys
 import tempfile
 import unittest
+from unittest import mock
 
-ICI = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, os.path.join(ICI, '..', 'scripts'))
-sys.path.insert(0, os.path.join(ICI, '..', 'simulateur'))
-import durees_matchs as DM  # noqa: E402
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'scripts'))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'simulateur'))
+import durees_matchs as D  # noqa: E402
 import facteurs as FA  # noqa: E402
+import feuilles_match as FM  # noqa: E402
 
 
-class Faux:
-    def __init__(self):
-        self.n = 0
+class Client:
+    def __init__(self, reponses):
+        self.reponses, self.n = reponses, 0
 
     def get(self, chemin):
         self.n += 1
-        if '/categories' in chemin:
-            return 200, {'categories': [{'category': {'id': 3, 'name': 'ATP'}, 'totalEvents': 1}]}
-        return 200, {'events': [{'id': 1, 'time': {'period1': 3000, 'period2': 3600}}, {'id': 2, 'time': {}}]}
+        return self.reponses(chemin)
+
+
+def rec(i, cat='ATP', stats=True, **kw):
+    return dict({'id': i, 'categorie': cat, 'stats': {'ALL': {}} if stats else None}, **kw)
 
 
 class Durees(unittest.TestCase):
-    def test_completer(self):
-        with tempfile.TemporaryDirectory() as d:
-            old = DM.FM.DOSSIER
-            DM.FM.DOSSIER = d
-            try:
-                with gzip.open(os.path.join(d, '2026-07-01.jsonl.gz'), 'wt', encoding='utf-8') as f:
-                    for i in (1, 2):
-                        f.write(json.dumps({'id': i, 'jour': '2026-07-01', 'rang': None}) + '\n')
-                c = Faux()
-                self.assertEqual(DM.completer_jour(c, '2026-07-01'), 1)
-                recs = DM.FM.lire_jour('2026-07-01', d)
-                self.assertEqual((recs[1]['duree_min'], recs[2]['duree_min']), (110, None))
-                self.assertIsNone(DM.completer_jour(c, '2026-07-01'))          # jour déjà traité : aucune requête
-                self.assertEqual(c.n, 2)
-            finally:
-                DM.FM.DOSSIER = old
+    def test_detail_et_liste(self):
+        self.assertEqual(FM.duree_minutes({'event': {'time': {'period1': 3000, 'period2': 2400}}}), 90)
+        self.assertEqual(FM.duree_minutes({'time': {'period1': 1800}}), 30)
+        self.assertIsNone(FM.duree_minutes({'event': {}}))
+        self.assertIsNone(FM.duree_minutes(None))
 
+    def test_rattrapage_borne_et_itf_exclu(self):
+        recs = {1: rec(1), 2: rec(2, cat='ITF Men'), 3: rec(3, stats=False), 4: rec(4, duree_min=80)}
+        with tempfile.TemporaryDirectory() as d, mock.patch.object(FM, 'DOSSIER', d):
+            FM.ecrire_jour('2026-10-01', recs, d)
+            c = Client(lambda ch: (200, {'event': {'time': {'period1': 3600}}}))
+            cpt = {'essais': 0, 'trouves': 0}
+            self.assertEqual(D.completer_jour(c, '2026-10-01', cpt), 1)
+            self.assertEqual(c.n, 1)                                  # seul le match ATP avec feuille, sans durée
+            relu = FM.lire_jour('2026-10-01', d)
+            self.assertEqual(relu[1]['duree_min'], 60)
+            self.assertEqual(relu[4]['duree_min'], 80)
+            self.assertIsNone(D.completer_jour(c, '2026-10-01', cpt))   # plus rien à faire
+
+    def test_format_inconnu_ne_consomme_rien(self):
+        recs = {i: rec(i) for i in range(25)}
+        with tempfile.TemporaryDirectory() as d, mock.patch.object(FM, 'DOSSIER', d):
+            FM.ecrire_jour('2026-10-02', recs, d)
+            c = Client(lambda ch: (200, {'event': {'autre': 1}}))
+            with self.assertRaises(D.FormatInconnu):
+                D.completer_jour(c, '2026-10-02', {'essais': 0, 'trouves': 0})
+            relu = FM.lire_jour('2026-10-02', d)
+            self.assertTrue(all((r.get('duree_essai') or 0) == 0 for r in relu.values()))
+
+
+class VariablesFatigue(unittest.TestCase):
     def test_variables(self):
         H = FA.Historique()
         J = 86400

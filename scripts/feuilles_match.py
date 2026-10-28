@@ -49,6 +49,7 @@ PAUSE = float(os.environ.get('FEUILLES_PAUSE', '0.2'))
 # (≈ 600 feuilles sur 9 300). Encore demandable à la main : catégories = itf men,itf women.
 CATEGORIES = ('atp', 'wta', 'challenger', 'wta 125')
 ESSAIS_MAX = 3
+DUREE_ESSAIS_MAX = 3            # 28/10/2026 : détail du match pour sa durée, 3 tentatives au plus
 ATTENTE_FEUILLE_H = 3
 DELAI_COMPLET_J = 3
 
@@ -161,7 +162,10 @@ def classement_joueur(t, tete):
 
 
 def duree_minutes(e):
-    """Durée du match en minutes (somme des sets, champ « time » de l'événement), ou None."""
+    """Durée du match en minutes (somme des sets, champ « time » de l'événement), ou None.
+    28/10/2026 : accepte aussi la réponse du DÉTAIL d'un match ({"event": {...}}) — la liste des matchs du jour
+    ne contient pas « time » ; seul le détail /api/tennis/event/{id} le donne."""
+    e = (e or {}).get('event') or e or {}
     t = e.get('time') or {}
     s = sum(v for k, v in t.items() if str(k).startswith('period') and isinstance(v, (int, float)) and v > 0)
     return round(s / 60) if s else None
@@ -266,6 +270,11 @@ def collecter_jour(c, jour, voulues=CATEGORIES, aujourd_hui=None, dossier=DOSSIE
                 old = recs.get(e['id'])
                 if old:
                     nouv['stats'], nouv['essais'] = old.get('stats'), old.get('essais', 0)
+                    # 28/10/2026 : la liste ne donne pas la durée ; on garde celle déjà relevée (détail du match)
+                    if nouv.get('duree_min') is None and old.get('duree_min'):
+                        nouv['duree_min'] = old['duree_min']
+                    if old.get('duree_essai'):
+                        nouv['duree_essai'] = old['duree_essai']
                     for cote in ('home', 'away'):           # le rang relevé le plus tôt (le plus proche du match) reste
                         o = old.get(cote) or {}
                         if o.get('rang_releve_le') and (o['rang_releve_le'] <= nouv[cote].get('rang_releve_le', '9999')):
@@ -293,6 +302,15 @@ def collecter_jour(c, jour, voulues=CATEGORIES, aujourd_hui=None, dossier=DOSSIE
                 vides_par_tournoi[t] = vides_par_tournoi.get(t, 0) + 1
             else:
                 vides_par_tournoi[t] = -999               # le tournoi a des statistiques
+        # 28/10/2026 — DURÉE : une requête de détail par match terminé avec feuille (ATP, WTA, Challenger ; pas
+        # d'ITF), une seule tentative. ~85 requêtes par jour pour un quota quotidien d'environ 15 000.
+        for r in recs.values():
+            if (r.get('stats') and not r.get('duree_min') and (r.get('duree_essai') or 0) < DUREE_ESSAIS_MAX
+                    and 'itf' not in norm(r.get('categorie'))):
+                code, doc = c.get(f"/api/tennis/event/{r['id']}")
+                r['duree_essai'] = (r.get('duree_essai') or 0) + 1      # au plus 3 tentatives par match
+                if code == 200:
+                    r['duree_min'] = duree_minutes(doc)
     finally:
         ecrire_jour(jour, recs, dossier)
     avec = sum(1 for r in recs.values() if r['stats'])
