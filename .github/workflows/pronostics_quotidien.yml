@@ -88,6 +88,15 @@ jobs:
         run: python simulateur/profils_service.py /tmp/sackmann .
       - name: Bilans descriptifs contre les styles service–retour
         run: python simulateur/styles_descriptifs.py /tmp/sackmann .
+      # À chaque passage : les nouveaux résultats de NOS pronostics figés réapprennent
+      # le mélange simulation + Elo. La règle existante exige 30 nouveaux matchs depuis
+      # le dernier jugement, un gain de log loss >= 0,001 et un Brier non dégradé.
+      - name: Apprentissage continu sur les nouveaux matchs résolus
+        run: python simulateur/apprentissage_continu.py .
+      - name: Gouvernance champion–challenger
+        run: python simulateur/gouvernance.py --racine .
+      - name: Récapitulatif de l’apprentissage
+        run: python simulateur/recap_apprentissage.py --racine .
       - name: Pronostics des 36 prochaines heures
         run: python simulateur/pronostics_du_jour.py .
       # Préversion Plus : %, cote juste, détail complet et scénario représentatif de chaque match, match du jour,
@@ -111,6 +120,9 @@ jobs:
           git add -- Tennis_Edge_Lab/live/pronostics_bilan.json \
                      Tennis_Edge_Lab/live/joueurs_service.json.gz \
                      simulateur/pronostics_log.jsonl simulateur/rapport_pronostic.json \
+                     simulateur/choix_simulation.json simulateur/stabilite.json \
+                     simulateur/gouvernance_etat.json simulateur/rapport_gouvernance.json \
+                     simulateur/recap_apprentissage.json simulateur/recap_apprentissage.md \
                      simulateur/journal_pronostics Tennis_Edge_Lab/live/pronostics_resultats.json \
                      algo/donnees.json
           if git diff --cached --quiet; then echo 'Rien de nouveau.'; exit 0; fi
