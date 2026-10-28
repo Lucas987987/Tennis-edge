@@ -25,6 +25,7 @@ jouer 5 000 matchs au hasard, il calcule la probabilité de chaque issue.
 | `styles_joueurs.py` | instantanés service–retour horodatés, challenger d'interaction et apport incrémental après contrôles Elo/surface/documentation |
 | `styles_descriptifs.py` | bilans publics contre six profils service–retour, global/surface, effectifs, IC de Wilson et derniers matchs ; descriptif seulement |
 | `styles_valeur.py` | test hors échantillon de ces bilans comme variables candidates après Elo et service–retour ; aucune activation automatique |
+| `etude_styles_seuls.py` | trois prévisions utilisant exclusivement les bilans de styles, contre une référence neutre à 50 % ; diagnostic seulement |
 | `etude_pistes.py` | ablation commune des cinq familles calendrier, tournoi, Elo dynamique, mains/H2H et matchs serrés ; recherche seulement |
 | `pistes_observations.py` | socle point-in-time et orientation alphabétique ; aucun résultat du même jour n’est supposé connu |
 | `variables_pre_match.py` | fatigue, absences, mains, H2H, tie-breaks, sets décisifs et balles de break contractés |
@@ -303,6 +304,47 @@ plusieurs comparaisons. Rejouer :
 
 ```bash
 python simulateur/styles_valeur.py /tmp/sackmann . --maximum 8000
+```
+
+### Profils seuls, sans les autres facteurs
+
+`etude_styles_seuls.py` répond à une question distincte : les bilans contre les
+styles adverses contiennent-ils de l'information **sans Elo, sans service–retour
+pur, sans circuit, sans marché et sans aucune autre variable explicative** ?
+Trois régressions logistiques ridge 1.0 sont ajustées sur 2024 puis figées :
+bilan global seul, bilan de surface seul, ou les deux. Leur référence commune
+est une probabilité neutre de 50 %. La surface sert uniquement à choisir le
+bilan correspondant, jamais de covariable supplémentaire.
+
+Sur les mêmes 8 000 matchs et le même diagnostic historique réutilisé de
+2025–2026 (5 847 matchs), les résultats sont :
+
+| Profils seuls | Log loss | Gain contre 50 % | Brier | Gain de Brier | Exactitude |
+|---|---:|---:|---:|---:|---:|
+| Neutre 50 % | 0,693147 | — | 0,250000 | — | non classante à 50 % |
+| Bilan global | 0,676174 | +0,016973 | 0,241750 | +0,008250 | 59,16 % |
+| Bilan de surface | 0,679195 | +0,013952 | 0,243156 | +0,006844 | 58,27 % |
+| Global + surface | 0,676071 | +0,017076 | 0,241697 | +0,008303 | 59,07 % |
+
+L'IC95 bootstrap par semaine du gain de log loss contre le neutre est
+[+0,012143 ; +0,021878] pour le global et [+0,012248 ; +0,022100] pour la
+combinaison. Le signal brut des profils est donc réel dans ce diagnostic. En
+revanche, ajouter la surface au global n'améliore la log loss que de 0,000103,
+avec un IC95 de [-0,000076 ; +0,000277] : le bilan global porte presque toute
+l'information. Les deux bilans globaux sont
+documentés pour les deux joueurs dans 67,25 % de la confirmation ; les bilans de
+surface dans 63,13 %. Les autres cas restent contractés vers 50 %, sans être
+retirés de la population appariée.
+
+Ce résultat ne contredit pas le test incrémental précédent : un bilan contre un
+style contient aussi la force générale du joueur et la qualité moyenne de ses
+adversaires. Il peut donc bien prévoir seul tout en n'ajoutant presque rien après
+les autres facteurs. La victoire de Joint ne sert ni au réglage ni à la
+sélection. La période 2025–2026 n'est pas une nouvelle confirmation prospective ;
+aucune variable n'est activée et le champion reste inchangé. Rejouer :
+
+```bash
+python simulateur/etude_styles_seuls.py /tmp/sackmann . --maximum 8000 --bootstrap 2000
 ```
 
 ## Cinq familles de variables pré-match (28/10/2026)

@@ -1,0 +1,444 @@
+{
+  "schema": "styles_seuls_v1",
+  "n": 8000,
+  "n_decouverte": 2153,
+  "n_confirmation": 5847,
+  "coupure": "2025-01-01",
+  "orientation": "ordre alphabétique des identifiants, indépendant du résultat",
+  "reference": "probabilité neutre de 50 % pour chaque match",
+  "variables_explicatives_autorisees": [
+    "bilan_global",
+    "bilan_surface"
+  ],
+  "variables_exclues": [
+    "Elo",
+    "service–retour pur",
+    "interaction service–retour",
+    "circuit",
+    "marché et cotes",
+    "documentation comme prédicteur",
+    "autres facteurs du champion"
+  ],
+  "surface_utilisation": "bilan de surface dans les candidats surface et global_surface ; jamais comme covariable extérieure",
+  "ajustement": "régression logistique ridge 1.0 sur 2024 seulement ; coefficients figés ensuite",
+  "prior_matchs_par_bilan": 20.0,
+  "couverture": {
+    "global": {
+      "n": 8000,
+      "deux_bilans_globaux_documentes": {
+        "n": 5669,
+        "pct": 70.86
+      },
+      "deux_bilans_surface_documentes": {
+        "n": 5345,
+        "pct": 66.81
+      },
+      "regle": "documentation positive pour chacun des deux joueurs ; sinon contraction vers 50 %"
+    },
+    "decouverte": {
+      "n": 2153,
+      "deux_bilans_globaux_documentes": {
+        "n": 1737,
+        "pct": 80.68
+      },
+      "deux_bilans_surface_documentes": {
+        "n": 1654,
+        "pct": 76.82
+      },
+      "regle": "documentation positive pour chacun des deux joueurs ; sinon contraction vers 50 %"
+    },
+    "confirmation": {
+      "n": 5847,
+      "deux_bilans_globaux_documentes": {
+        "n": 3932,
+        "pct": 67.25
+      },
+      "deux_bilans_surface_documentes": {
+        "n": 3691,
+        "pct": 63.13
+      },
+      "regle": "documentation positive pour chacun des deux joueurs ; sinon contraction vers 50 %"
+    }
+  },
+  "resultats": {
+    "global": {
+      "variables": [
+        "bilan_global"
+      ],
+      "convergence": true,
+      "coefficients_standardises_decouverte": {
+        "constante": 0.05620585436651076,
+        "bilan_global": 0.41083445105218047
+      },
+      "decouverte": {
+        "neutre_50": {
+          "n": 2153,
+          "log_loss": 0.693147,
+          "brier": 0.25,
+          "reussite_pct": 48.63
+        },
+        "profils_seuls": {
+          "n": 2153,
+          "log_loss": 0.673243,
+          "brier": 0.240243,
+          "reussite_pct": 59.59
+        },
+        "gains_contre_neutre": {
+          "log_loss": 0.019904,
+          "brier": 0.009757,
+          "sens": "positif = apport des styles"
+        }
+      },
+      "confirmation": {
+        "neutre_50": {
+          "n": 5847,
+          "log_loss": 0.693147,
+          "brier": 0.25,
+          "reussite_pct": 46.61
+        },
+        "profils_seuls": {
+          "n": 5847,
+          "log_loss": 0.676174,
+          "brier": 0.24175,
+          "reussite_pct": 59.16
+        },
+        "gains_contre_neutre": {
+          "log_loss": 0.016973,
+          "brier": 0.00825,
+          "sens": "positif = apport des styles"
+        },
+        "ic95_bootstrap_semaine": {
+          "log_loss": {
+            "bas": 0.012143,
+            "haut": 0.021878
+          },
+          "brier": {
+            "bas": 0.005936,
+            "haut": 0.010622
+          }
+        }
+      },
+      "surfaces_confirmation": {
+        "Hard": {
+          "neutre_50": {
+            "n": 3234,
+            "log_loss": 0.693147,
+            "brier": 0.25,
+            "reussite_pct": 46.54
+          },
+          "profils_seuls": {
+            "n": 3234,
+            "log_loss": 0.672681,
+            "brier": 0.240066,
+            "reussite_pct": 59.25
+          },
+          "gains_contre_neutre": {
+            "log_loss": 0.020466,
+            "brier": 0.009934,
+            "sens": "positif = apport des styles"
+          }
+        },
+        "Clay": {
+          "neutre_50": {
+            "n": 2441,
+            "log_loss": 0.693147,
+            "brier": 0.25,
+            "reussite_pct": 46.05
+          },
+          "profils_seuls": {
+            "n": 2441,
+            "log_loss": 0.683114,
+            "brier": 0.245085,
+            "reussite_pct": 58.79
+          },
+          "gains_contre_neutre": {
+            "log_loss": 0.010033,
+            "brier": 0.004915,
+            "sens": "positif = apport des styles"
+          }
+        },
+        "Grass": {
+          "neutre_50": {
+            "n": 172,
+            "log_loss": 0.693147,
+            "brier": 0.25,
+            "reussite_pct": 55.81
+          },
+          "profils_seuls": {
+            "n": 172,
+            "log_loss": 0.643348,
+            "brier": 0.226083,
+            "reussite_pct": 62.79
+          },
+          "gains_contre_neutre": {
+            "log_loss": 0.049799,
+            "brier": 0.023917,
+            "sens": "positif = apport des styles"
+          }
+        }
+      }
+    },
+    "surface": {
+      "variables": [
+        "bilan_surface"
+      ],
+      "convergence": true,
+      "coefficients_standardises_decouverte": {
+        "constante": 0.0558668571977999,
+        "bilan_surface": 0.3434321105365998
+      },
+      "decouverte": {
+        "neutre_50": {
+          "n": 2153,
+          "log_loss": 0.693147,
+          "brier": 0.25,
+          "reussite_pct": 48.63
+        },
+        "profils_seuls": {
+          "n": 2153,
+          "log_loss": 0.678771,
+          "brier": 0.242927,
+          "reussite_pct": 57.13
+        },
+        "gains_contre_neutre": {
+          "log_loss": 0.014376,
+          "brier": 0.007073,
+          "sens": "positif = apport des styles"
+        }
+      },
+      "confirmation": {
+        "neutre_50": {
+          "n": 5847,
+          "log_loss": 0.693147,
+          "brier": 0.25,
+          "reussite_pct": 46.61
+        },
+        "profils_seuls": {
+          "n": 5847,
+          "log_loss": 0.679195,
+          "brier": 0.243156,
+          "reussite_pct": 58.27
+        },
+        "gains_contre_neutre": {
+          "log_loss": 0.013952,
+          "brier": 0.006844,
+          "sens": "positif = apport des styles"
+        },
+        "ic95_bootstrap_semaine": {
+          "log_loss": {
+            "bas": 0.009895,
+            "haut": 0.018316
+          },
+          "brier": {
+            "bas": 0.004899,
+            "haut": 0.008952
+          }
+        }
+      },
+      "surfaces_confirmation": {
+        "Hard": {
+          "neutre_50": {
+            "n": 3234,
+            "log_loss": 0.693147,
+            "brier": 0.25,
+            "reussite_pct": 46.54
+          },
+          "profils_seuls": {
+            "n": 3234,
+            "log_loss": 0.675702,
+            "brier": 0.241496,
+            "reussite_pct": 58.91
+          },
+          "gains_contre_neutre": {
+            "log_loss": 0.017445,
+            "brier": 0.008504,
+            "sens": "positif = apport des styles"
+          }
+        },
+        "Clay": {
+          "neutre_50": {
+            "n": 2441,
+            "log_loss": 0.693147,
+            "brier": 0.25,
+            "reussite_pct": 46.05
+          },
+          "profils_seuls": {
+            "n": 2441,
+            "log_loss": 0.68377,
+            "brier": 0.245324,
+            "reussite_pct": 57.56
+          },
+          "gains_contre_neutre": {
+            "log_loss": 0.009377,
+            "brier": 0.004676,
+            "sens": "positif = apport des styles"
+          }
+        },
+        "Grass": {
+          "neutre_50": {
+            "n": 172,
+            "log_loss": 0.693147,
+            "brier": 0.25,
+            "reussite_pct": 55.81
+          },
+          "profils_seuls": {
+            "n": 172,
+            "log_loss": 0.679931,
+            "brier": 0.243598,
+            "reussite_pct": 56.4
+          },
+          "gains_contre_neutre": {
+            "log_loss": 0.013216,
+            "brier": 0.006402,
+            "sens": "positif = apport des styles"
+          }
+        }
+      }
+    },
+    "global_surface": {
+      "variables": [
+        "bilan_global",
+        "bilan_surface"
+      ],
+      "convergence": true,
+      "coefficients_standardises_decouverte": {
+        "constante": 0.056194658515401404,
+        "bilan_global": 0.38585673400479764,
+        "bilan_surface": 0.030138859764298667
+      },
+      "decouverte": {
+        "neutre_50": {
+          "n": 2153,
+          "log_loss": 0.693147,
+          "brier": 0.25,
+          "reussite_pct": 48.63
+        },
+        "profils_seuls": {
+          "n": 2153,
+          "log_loss": 0.673213,
+          "brier": 0.240222,
+          "reussite_pct": 59.87
+        },
+        "gains_contre_neutre": {
+          "log_loss": 0.019934,
+          "brier": 0.009778,
+          "sens": "positif = apport des styles"
+        }
+      },
+      "confirmation": {
+        "neutre_50": {
+          "n": 5847,
+          "log_loss": 0.693147,
+          "brier": 0.25,
+          "reussite_pct": 46.61
+        },
+        "profils_seuls": {
+          "n": 5847,
+          "log_loss": 0.676071,
+          "brier": 0.241697,
+          "reussite_pct": 59.07
+        },
+        "gains_contre_neutre": {
+          "log_loss": 0.017076,
+          "brier": 0.008303,
+          "sens": "positif = apport des styles"
+        },
+        "ic95_bootstrap_semaine": {
+          "log_loss": {
+            "bas": 0.012248,
+            "haut": 0.0221
+          },
+          "brier": {
+            "bas": 0.005992,
+            "haut": 0.010702
+          }
+        }
+      },
+      "surfaces_confirmation": {
+        "Hard": {
+          "neutre_50": {
+            "n": 3234,
+            "log_loss": 0.693147,
+            "brier": 0.25,
+            "reussite_pct": 46.54
+          },
+          "profils_seuls": {
+            "n": 3234,
+            "log_loss": 0.672587,
+            "brier": 0.240023,
+            "reussite_pct": 59.25
+          },
+          "gains_contre_neutre": {
+            "log_loss": 0.02056,
+            "brier": 0.009977,
+            "sens": "positif = apport des styles"
+          }
+        },
+        "Clay": {
+          "neutre_50": {
+            "n": 2441,
+            "log_loss": 0.693147,
+            "brier": 0.25,
+            "reussite_pct": 46.05
+          },
+          "profils_seuls": {
+            "n": 2441,
+            "log_loss": 0.682942,
+            "brier": 0.244994,
+            "reussite_pct": 58.58
+          },
+          "gains_contre_neutre": {
+            "log_loss": 0.010205,
+            "brier": 0.005006,
+            "sens": "positif = apport des styles"
+          }
+        },
+        "Grass": {
+          "neutre_50": {
+            "n": 172,
+            "log_loss": 0.693147,
+            "brier": 0.25,
+            "reussite_pct": 55.81
+          },
+          "profils_seuls": {
+            "n": 172,
+            "log_loss": 0.644065,
+            "brier": 0.226391,
+            "reussite_pct": 62.79
+          },
+          "gains_contre_neutre": {
+            "log_loss": 0.049082,
+            "brier": 0.023609,
+            "sens": "positif = apport des styles"
+          }
+        }
+      }
+    }
+  },
+  "comparaison_surface_incrementale_dans_profils": {
+    "reference": "global",
+    "challenger": "global_surface",
+    "gains": {
+      "log_loss": 0.000103,
+      "brier": 5.3e-05,
+      "sens": "positif = apport des styles"
+    },
+    "ic95_bootstrap_semaine": {
+      "log_loss": {
+        "bas": -7.6e-05,
+        "haut": 0.000277
+      },
+      "brier": {
+        "bas": -3.2e-05,
+        "haut": 0.000134
+      }
+    },
+    "sens": "positif = apport du bilan de surface en plus du bilan global ; profils uniquement"
+  },
+  "nature_confirmation": "diagnostic historique 2025–2026 réutilisé ; pas une confirmation prospective nouvelle",
+  "marche_utilise": false,
+  "activation": false,
+  "champion_actif_modifie": false,
+  "verdict": "diagnostic des profils seuls terminé ; aucune activation automatique et champion inchangé",
+  "regle": "résultats versés après la date seulement ; aucun résultat futur ; aucune modification du modèle actif"
+}
