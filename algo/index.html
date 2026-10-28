@@ -163,7 +163,9 @@ svg.curve{width:100%;height:auto;display:block}
 .style-contre{margin:3px 0 10px;color:var(--dim);font-size:.88rem}.style-chiffres{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .style-chiffre{min-width:0;border-top:1px solid var(--line);padding-top:8px}.style-chiffre>span{display:block;color:var(--dim);font-size:.82rem}.style-chiffre strong{display:block;font-family:var(--cond);font-size:1.8rem;line-height:1.2;font-variant-numeric:tabular-nums}
 .style-joueur.home .style-chiffre strong{color:var(--p1)}.style-joueur.away .style-chiffre strong{color:var(--p2)}
-.style-chiffre .style-att{display:block;color:var(--ink);font-size:.8rem;margin:2px 0}.style-att b{font-weight:700}.style-att b.plus{color:var(--ok)}.style-att b.moins{color:var(--ko)}
+.style-chiffre .style-att{display:block;color:var(--ink);font-size:.8rem;margin:2px 0}.style-att b{font-weight:700;color:var(--dim)}.style-att b.plus{color:var(--ok)}.style-att b.moins{color:var(--ko)}
+.sv-phrase{margin:0 0 10px;padding:9px 11px;border-radius:10px;background:rgba(255,255,255,.04);border-left:3px solid var(--dim);font-size:.9rem;line-height:1.45}.sv-phrase b{font-weight:700}.sv-phrase.plus{border-left-color:var(--ok)}.sv-phrase.moins{border-left-color:var(--ko)}
+.sv-barre{position:relative;height:12px;margin:8px 0 2px;border-radius:6px;background:rgba(255,255,255,.08)}.sv-barre i{position:absolute;top:0;bottom:0}.sv-ic{background:rgba(255,255,255,.18);border-radius:6px}.sv-att{width:2px;margin-left:-1px;top:-3px!important;bottom:-3px!important;background:var(--ink)}.sv-reel{width:10px;height:10px;margin:1px 0 0 -5px;border-radius:50%;background:currentColor}.style-joueur.home .sv-reel,.style-joueur.home .sv-pt{color:var(--p1)}.style-joueur.away .sv-reel,.style-joueur.away .sv-pt{color:var(--p2)}.sv-legende{display:flex;gap:12px;color:var(--dim);font-size:.72rem;margin-bottom:2px}.sv-legende span{display:flex;align-items:center;gap:4px}.sv-pt{display:inline-block;width:8px;height:8px;border-radius:50%;background:currentColor}.sv-tr{display:inline-block;width:2px;height:10px;background:var(--ink)}
 .style-chiffre .style-diff{display:block;color:var(--dim);font-size:.78rem;margin:1px 0 2px}
 .rythme .ry-duree{font-family:var(--cond);font-size:1.25rem;margin:4px 0 2px;color:var(--ink)}.rythme .ry-pts{color:var(--dim);font-size:.85rem;margin:0 0 10px}
 .marches .mk-g{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}.marches h4{margin:6px 0;font-size:.9rem;color:var(--dim);font-weight:600}
@@ -432,7 +434,7 @@ const T = {
   sets_titre:'Score en sets', scores_titre:'Scores les plus probables', feuille_titre:n=>`Feuille de match prévue (moyenne des ${fmt(n)} simulations)`,
   styles_titre:'Bilans contre le style adverse', styles_sous:'Notre classification service–retour, figée avant chaque match. Lecture descriptive : ces bilans ne modifient pas la probabilité affichée.',
   styles_global:'Toutes surfaces', styles_surface:s=>`Sur ${s}`, styles_contre:s=>`Contre : ${s}`,
-  styles_vn:(v,n)=>`${fmt(v)} victoires sur ${fmt(n)} matchs`, styles_ic:i=>`IC 95 % : ${pc(i[0])}–${pc(i[1])}`,
+  styles_vn:(v,n)=>`${fmt(v)} victoires sur ${fmt(n)} matchs`, styles_ic:i=>`Fourchette probable : ${Math.round(i[0])} à ${Math.round(i[1])} %`,
   styles_vide:'Aucun match terminé et documenté', styles_derniers:'Derniers matchs contre ce style',
   styles_derniers_surface:'Derniers matchs sur cette surface', styles_victoire:'Victoire', styles_defaite:'Défaite',
   styles_tres_faible:'Échantillon très faible', styles_faible:'Petit échantillon',
@@ -446,7 +448,13 @@ const T = {
   styles_attendu:a=>`Attendu vu ses adversaires : ${pc(a)}`, styles_ecart:e=>`${e>=0?'+':'−'}${dec(Math.abs(e),1)} pts`,
   styles_att_match:a=>`attendu ${pc(a)}`,
   styles_diff:(n,e,o)=>`Difficulté des adversaires : ${dec(n,1)}/10 · Elo moyen ${fmt(e)} · ${fmt(o)} fois outsider`,
-  styles_note:'Lis l’effectif et l’intervalle de confiance, pas seulement le pourcentage. Styles internes mesurés au service et au retour, non comparables aux catégories d’un site tiers.',
+  styles_note:'Écart « net » : le chiffre attendu tombe hors de la fourchette probable (intervalle de confiance à 95 %). Styles internes mesurés au service et au retour, non comparables aux catégories d’un site tiers.',
+  sv_rien:'Rien de net contre ce style', sv_plus:e=>`Réussit contre ce style : ${dec(e,1)} pts de plus que prévu`,
+  sv_moins:e=>`Peine contre ce style : ${dec(Math.abs(e),1)} pts de moins que prévu`,
+  sv_detail:(p,a,n)=>`${Math.round(p)} % de victoires, ${Math.round(a)} % attendus vu le niveau de ses adversaires (${fmt(n)} matchs).`,
+  sv_peu:'Trop peu de matchs pour conclure.', sv_surface:(s,v)=>`Sur ${s} : ${v.charAt(0).toLowerCase()+v.slice(1)}.`,
+  sv_sans:'Pas assez de matchs documentés contre ce style.', sv_calcul:'Détail du calcul',
+  sv_reel:'réel', sv_attendu:'attendu',
   ry_titre:'Durée et rythme', ry_duree:(m,a,b)=>`Durée prévue : ${hm(m)} (${hm(a)} – ${hm(b)} dans 8 cas sur 10)`, ry_points:(n,s)=>`≈ ${fmt(n)} points · ${dec(s,1)} s par point`,
   ry_pts:'Points par match', ry_jeux:'Jeux par match', ry_min:'Durée moyenne de ses matchs', ry_rythme:'Rythme (temps par point)',
   ry_tb:'Matchs avec tie-break', ry_3s:'Matchs en 3 sets', ry_reg:'Jours avec / jours sans', ry_matchs:n=>`Sur ${fmt(n)} matchs depuis 2021`,
@@ -530,7 +538,7 @@ const T = {
   sets_titre:'Score in sets', scores_titre:'Most likely scores', feuille_titre:n=>`Expected match stats (average of ${fmt(n)} simulations)`,
   styles_titre:'Records against the opponent’s style', styles_sous:'Our own serve–return classification, frozen before each match. Descriptive only: these records do not change the displayed probability.',
   styles_global:'All surfaces', styles_surface:s=>`On ${s}`, styles_contre:s=>`Against: ${s}`,
-  styles_vn:(v,n)=>`${fmt(v)} wins in ${fmt(n)} matches`, styles_ic:i=>`95% CI: ${pc(i[0])}–${pc(i[1])}`,
+  styles_vn:(v,n)=>`${fmt(v)} wins in ${fmt(n)} matches`, styles_ic:i=>`Likely range: ${Math.round(i[0])} to ${Math.round(i[1])}%`,
   styles_vide:'No completed, documented match', styles_derniers:'Latest matches against this style',
   styles_derniers_surface:'Latest matches on this surface', styles_victoire:'Win', styles_defaite:'Loss',
   styles_tres_faible:'Very small sample', styles_faible:'Small sample',
@@ -544,7 +552,13 @@ const T = {
   styles_attendu:a=>`Expected given opponents: ${pc(a)}`, styles_ecart:e=>`${e>=0?'+':'−'}${dec(Math.abs(e),1)} pts`,
   styles_att_match:a=>`expected ${pc(a)}`,
   styles_diff:(n,e,o)=>`Opponent difficulty: ${dec(n,1)}/10 · average Elo ${fmt(e)} · underdog ${fmt(o)} times`,
-  styles_note:'Read the sample size and confidence interval, not just the percentage. Internal serve–return styles, not comparable with third-party categories.',
+  styles_note:'A “clear” gap: the expected figure falls outside the likely range (95% confidence interval). Internal serve–return styles, not comparable with third-party categories.',
+  sv_rien:'Nothing clear against this style', sv_plus:e=>`Does well against this style: ${dec(e,1)} pts above expectation`,
+  sv_moins:e=>`Struggles against this style: ${dec(Math.abs(e),1)} pts below expectation`,
+  sv_detail:(p,a,n)=>`${Math.round(p)}% wins, ${Math.round(a)}% expected given the level of the opponents (${fmt(n)} matches).`,
+  sv_peu:'Too few matches to draw a conclusion.', sv_surface:(s,v)=>`On ${s}: ${v.charAt(0).toLowerCase()+v.slice(1)}.`,
+  sv_sans:'Not enough documented matches against this style.', sv_calcul:'How it is calculated',
+  sv_reel:'actual', sv_attendu:'expected',
   ry_titre:'Length and pace', ry_duree:(m,a,b)=>`Expected length: ${hm(m)} (${hm(a)} – ${hm(b)} 8 times out of 10)`, ry_points:(n,s)=>`≈ ${fmt(n)} points · ${dec(s,1)} s per point`,
   ry_pts:'Points per match', ry_jeux:'Games per match', ry_min:'Average match length', ry_rythme:'Pace (time per point)',
   ry_tb:'Matches with a tiebreak', ry_3s:'Three-set matches', ry_reg:'Good days / bad days', ry_matchs:n=>`From ${fmt(n)} matches since 2021`,
@@ -1050,10 +1064,41 @@ function styleLib(code){
   };
   return (lib[code]||{})[L] || code || lib.indetermine[L];
 }
+// 28/10/2026 — lecture en clair : un écart n'est « net » que si le chiffre attendu tombe HORS de la fourchette
+// probable (IC 95 %) ; sinon « rien de net », et l'écart reste gris. Moins de 30 matchs : jamais de conclusion.
+function verdictStyle(b){
+  if (!b || !b.n || typeof b.attendu_pct!=='number') return null;
+  const ic = Array.isArray(b.ic95) ? b.ic95 : null;
+  const net = !!ic && b.n >= 30 && (b.attendu_pct < ic[0] || b.attendu_pct > ic[1]);
+  const sens = !net ? 'neutre' : (b.ecart_pts > 0 ? 'plus' : 'moins');
+  return { sens, net, texte: sens==='plus' ? t('sv_plus',b.ecart_pts) : sens==='moins' ? t('sv_moins',b.ecart_pts) : t('sv_rien') };
+}
+function barreStyle(b){
+  if (!b || typeof b.attendu_pct!=='number') return '';
+  const c = x=>Math.max(0,Math.min(100,x)), ic = Array.isArray(b.ic95) ? b.ic95 : null;
+  return `<div class="sv-barre" role="img" aria-label="${esc(`${t('sv_reel')} ${Math.round(b.pct)} %, ${t('sv_attendu')} ${Math.round(b.attendu_pct)} %`)}">
+    ${ic?`<i class="sv-ic" style="left:${c(ic[0])}%;width:${c(ic[1])-c(ic[0])}%"></i>`:''}
+    <i class="sv-att" style="left:${c(b.attendu_pct)}%"></i><i class="sv-reel" style="left:${c(b.pct)}%"></i></div>
+    <div class="sv-legende"><span><i class="sv-pt"></i>${esc(t('sv_reel'))}</span><span><i class="sv-tr"></i>${esc(t('sv_attendu'))}</span></div>`;
+}
 function rendStyleBilan(b,label){
   if (!b || !b.n) return `<div class="style-chiffre"><span>${esc(label)}</span><strong class="style-vide">—</strong><span>${esc(t('styles_vide'))}</span></div>`;
   const alerte = b.n<10 ? 'styles_tres_faible' : (b.n<30 ? 'styles_faible' : '');
-  return `<div class="style-chiffre"><span>${esc(label)}</span><strong>${pc(b.pct)}</strong><span>${esc(t('styles_vn',b.victoires,b.n))}</span>${typeof b.attendu_pct==='number'?`<span class="style-att">${esc(t('styles_attendu',b.attendu_pct))} <b class="${b.ecart_pts>=0?'plus':'moins'}">${esc(t('styles_ecart',b.ecart_pts))}</b></span>`:''}${b.difficulte?`<span class="style-diff">${esc(t('styles_diff',b.difficulte.note,b.difficulte.elo_moyen,b.difficulte.matchs_outsider))}</span>`:''}${b.ic95?`<span class="style-ic">${esc(t('styles_ic',b.ic95))}</span>`:''}${alerte?`<small class="style-alerte">${esc(t(alerte))}</small>`:''}</div>`;
+  const v = verdictStyle(b);
+  return `<div class="style-chiffre"><span>${esc(label)}</span><strong>${pc(b.pct)}</strong><span>${esc(t('styles_vn',b.victoires,b.n))}</span>${barreStyle(b)}${typeof b.attendu_pct==='number'?`<span class="style-att">${esc(t('styles_attendu',b.attendu_pct))} <b class="${v?v.sens:''}">${esc(t('styles_ecart',b.ecart_pts))}</b></span>`:''}${b.ic95?`<span class="style-ic">${esc(t('styles_ic',b.ic95))}</span>`:''}${alerte?`<small class="style-alerte">${esc(t(alerte))}</small>`:''}</div>`;
+}
+function phraseStyle(j,surfLib){
+  const g = verdictStyle(j.global), s = verdictStyle(j.surface);
+  if (!g) return `<p class="sv-phrase neutre">${esc(t('sv_sans'))}</p>`;
+  let txt = `<b>${esc(g.texte)}.</b> ${esc(t('sv_detail',j.global.pct,j.global.attendu_pct,j.global.n))}`;
+  if (s && s.net && s.sens !== g.sens) txt += ` ${esc(t('sv_surface',surfLib,s.texte))}`;
+  if (j.global.n < 30) txt += ` ${esc(t('sv_peu'))}`;
+  return `<p class="sv-phrase ${g.sens}">${txt}</p>`;
+}
+function rendCalculStyle(j,surfLib){
+  const lignes = [[j.global,t('styles_global')],[j.surface,t('styles_surface',surfLib)]].filter(([b])=>b&&b.difficulte)
+    .map(([b,l])=>`<p class="aide"><b>${esc(l)}</b> · ${esc(t('styles_diff',b.difficulte.note,b.difficulte.elo_moyen,b.difficulte.matchs_outsider))}</p>`).join('');
+  return lignes ? `<details class="style-details"><summary>${esc(t('sv_calcul'))}</summary>${lignes}<p class="aide">${esc(t('styles_note'))}</p></details>` : '';
 }
 function rendStatsStyle(b,label){
   const s = b && b.statistiques;
@@ -1089,12 +1134,14 @@ function rendStylesDescriptifs(sd,m){
   const joueurs = sd.joueurs.map((j,i)=>`<section class="style-joueur ${i===0?'home':'away'}">
     <div class="style-tete"><h4>${esc(i===0?m.home:m.away)}</h4><span class="style-etiquette">${esc(styleLib(j.style))}</span></div>
     <p class="style-contre">${esc(t('styles_contre',styleLib(j.style_adverse)))}</p>
+    ${phraseStyle(j,SURF[L][m.surface]||m.surface||'')}
     <div class="style-chiffres">${rendStyleBilan(j.global,t('styles_global'))}${rendStyleBilan(j.surface,t('styles_surface',SURF[L][m.surface]||m.surface||''))}</div>
+    ${rendCalculStyle(j,SURF[L][m.surface]||m.surface||'')}
     ${rendStatsStyle(j.global,t('styles_global'))}
     ${rendStatsStyle(j.surface,t('styles_surface',SURF[L][m.surface]||m.surface||''))}
     ${rendDerniersStyle(j.global,t('styles_derniers'))}
   </section>`).join('');
-  return `<div class="panel styles-descriptifs"><h3>${esc(t('styles_titre'))}</h3><p class="styles-intro">${esc(t('styles_sous'))}</p><div class="styles-joueurs">${joueurs}</div><p class="styles-note">${esc(t('styles_note'))}</p></div>`;
+  return `<div class="panel styles-descriptifs"><h3>${esc(t('styles_titre'))}</h3><p class="styles-intro">${esc(t('styles_sous'))}</p><div class="styles-joueurs">${joueurs}</div></div>`;
 }
 function rendMdj(){
   const zone = document.getElementById('mdj-zone');
