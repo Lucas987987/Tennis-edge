@@ -557,3 +557,41 @@ python simulateur/evolution_statistiques.py /tmp/sackmann . --charting /tmp/mcp 
 ```
 
 Le workflow `evolutions_algorithmes.yml` exécute l’étude ATP/WTA et joint `/tmp/mcp` au rapport d’évolution. Il publie `rapport_echanges_atp_wta.json` et `evolution_statistiques_joueurs.json` comme artefacts de diagnostic, sans activation automatique.
+
+## Profils de joueurs : attendu, réaction aux traits adverses, modèle complet (28/10/2026)
+
+Demande : « des profils de joueurs construits sur les résultats passés, en prenant tout en compte, sans rien
+écarter ». Exemple de départ : Hurkacz ne gagne que 38 % contre les « serveurs attaquants », Rune 61 % contre les
+« grands serveurs » sur dur. Trois briques, chacune jugée par une règle écrite avant les résultats.
+
+**1. Attendu à côté du bilan (`styles_descriptifs.py`, fiche du site).** Chaque bilan contre un style affiche
+maintenant le % *attendu* vu la force des adversaires réellement rencontrés : la moyenne des probabilités Elo
+d'avant-match de ces mêmes matchs, et l'écart en points. Hurkacz : 37,5 % réel pour 36,4 % attendu (+1,1 pt) ; ses
+« serveurs attaquants » étaient Djokovic, Alcaraz, Rublev, Khachanov… Le bilan brut mesurait surtout le niveau des
+adversaires, pas un problème de style. Rune sur dur : 60,8 % pour 59,4 % attendu (+1,4 pt). Purement descriptif.
+
+**2. Profil de réaction (`facteurs.py`, groupe `profil`).** Pour chaque joueur, 8 curseurs continus au lieu de
+6 cases : comment ses points au service et au retour s'écartent de l'attendu (modèle ajusté à la force de
+l'adversaire) selon chaque trait de l'adversaire — aces, 1re balle, 2e balle, retour de 1re, retour de 2e, gaucher,
+taille, goût pour les longs échanges (Match Charting). On mesure des points (des milliers par joueur), pas des
+victoires ; chaque pente est ramenée vers 0 (`K_PF` = 500 points-traits, ≈ 6 matchs). Traits centrés et réduits
+avec des constantes mesurées une fois sur les 8 786 feuilles puis figées (`PF_CENTRE`, `PF_ECHELLE`) ; un trait
+inconnu vaut le centre. 16 variables décalent les points de service de la simulation : le profil change donc
+directement le match simulé. Même règle d'adoption et même stabilité (deux semaines) que tous les groupes.
+
+Rejeu du 28/10 (apprentissage 6 318 matchs jusqu'au 15/09, jugement 2 468 matchs depuis le 16/09) : points mieux
+prédits et log loss du vainqueur de la simulation pure 0,62829 → 0,62523, soit le plus fort des trois candidats
+(matchup 0,62748, adversaires communs 0,6271). Verdict brut « candidat » ; l'adoption suit la règle de stabilité.
+
+**3. Modèle complet (`facteurs.py` + `arbres.apprendre_binomial`).** Toutes les variables « service » de tous les
+groupes, adoptés ou non, données d'un coup à des arbres (boosting binomial sur les points, départ = base ajustée),
+pour trouver seuls ce qui compte et les combinaisons. Réglages figés avant tout résultat : profondeur 3, 100 tours,
+pas 0,05, feuilles ≥ 600 lignes, L2 50, 16 cases. **Règle fixée d'avance** : il remplace la partie « service » des
+groupes en place seulement s'il prédit mieux les points de service ET baisse la log loss du vainqueur d'au moins
+0,001 sur la fenêtre de jugement, deux semaines de suite. Rejeu du 28/10, contre les 7 groupes en place :
+points de service 0,643131 → 0,643077, vainqueur 0,61646 → 0,61514 (−0,00132), réussite 65,9 % → 65,5 % : verdict
+brut **candidat (1/2)**, adopté seulement s'il refait mieux le lundi suivant. Transparence : un premier rejeu, avec
+des échelles de traits provisoires (avant mesure), donnait 0,61741 (non candidat) ; les échelles ont ensuite été
+MESURÉES sur les données (pas choisies d'après ce résultat) et figées, et les réglages des arbres n'ont pas bougé.
+Les variables qu'il utilise le plus sont publiées dans `facteurs.json` (`modele_complet.importance`) : vitesse du
+court, adversaires communs, face-à-face, taille, forme, tournois enchaînés, altitude, puis le profil de réaction.
