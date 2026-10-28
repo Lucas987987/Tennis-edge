@@ -1,15 +1,15 @@
 {
  "schema_version": 2,
- "generated_at": "2026-10-28T11:01:31+00:00",
+ "generated_at": "2026-10-28T15:35:30+00:00",
  "sources": {
   "worker": {
    "source": "API Worker D1 /api/hypotheses (fetch_worker_snapshot.py)",
    "fichier": "worker_hypotheses_capture.json",
    "status": "ok",
-   "fetched_at": "2026-10-28T11:01:26Z",
+   "fetched_at": "2026-10-28T15:35:23Z",
    "worker_generated_at": "2026-10-28T06:18:52Z"
   },
-  "suivi_officiel": "alertes en direct : h*_signal_log.jsonl + suivi_direct/resultats.json (verdicts_direct.json du 2026-10-28T11:01:31Z)",
+  "suivi_officiel": "alertes en direct : h*_signal_log.jsonl + suivi_direct/resultats.json (verdicts_direct.json du 2026-10-28T15:35:29Z)",
   "reconstruction": "moves_detail_hist.csv filtré par les règles gelées de validation_report.py (lignes jusqu'au 2026-10-27) — contrôle, ne juge pas",
   "rapprochement": "uid + joueur normalisé ; à défaut paire de joueurs + date ±1 jour"
  },
@@ -120,15 +120,15 @@
      -2.8,
      -0.8
     ],
-    "clv_n": 277,
-    "n_detectees": 286,
-    "n_envoyees": 285,
+    "clv_n": 280,
+    "n_detectees": 288,
+    "n_envoyees": 287,
     "n_doublons": 0,
     "source": "verdicts_direct.json (recalculé : journal plus récent)",
     "sans_resultat_pct": 28.2,
     "statut": "en attente de résultats (28,2 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-10-28T11:01:31Z"
+    "genere_le": "2026-10-28T15:35:29Z"
    },
    "reconstruction": {
     "n": 236,
@@ -146,8 +146,8 @@
     "egal_validation_report": true
    },
    "entonnoir": {
-    "direct_detectees": 286,
-    "direct_envoyees": 285,
+    "direct_detectees": 288,
+    "direct_envoyees": 287,
     "direct_doublons": 0,
     "direct_non_envoyees_autres": 1,
     "direct_denouees": 204,
@@ -159,12 +159,12 @@
      "apres_coup": 309,
      "cote_opposee_live": 1
     },
-    "direct_seule": 170,
+    "direct_seule": 172,
     "direct_seule_raisons": {
      "absent_reconstruction": 102,
      "cote_opposee_reco": 53,
      "prix_different": 10,
-     "pas_encore_reconstruit": 5
+     "pas_encore_reconstruit": 7
     },
     "inexpliques": 0
    },
@@ -6929,6 +6929,34 @@
     },
     {
      "sens": "direct seule",
+     "date": "2026-10-28",
+     "match": "Dylan Dietrich – Jenson Brooksby",
+     "joueur": "Dylan Dietrich",
+     "uid": "2026-10-28_jenson_brooksby_dylan_dietrich",
+     "cote": 2.25,
+     "book": "bet365",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-28, reconstruction arrêtée au 2026-10-27",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-28",
+     "match": "Aidan Mayo – Maks Kasnikowski",
+     "joueur": "Aidan Mayo",
+     "uid": "2026-10-28_aidan_mayo_maks_kasnikowski",
+     "cote": 2.4,
+     "book": "unibet",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-28, reconstruction arrêtée au 2026-10-27",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
      "date": "2026-10-29",
      "match": "Jil Teichmann – Zeynep Sonmez",
      "joueur": "Jil Teichmann",
@@ -7002,18 +7030,18 @@
     "pts": 4.0,
     "clv_pin": -0.8,
     "clv_pin_ic95": [
-     -3.8,
-     2.2
+     -3.6,
+     2.0
     ],
-    "clv_n": 60,
-    "n_detectees": 67,
+    "clv_n": 63,
+    "n_detectees": 68,
     "n_envoyees": 24,
-    "n_doublons": 43,
+    "n_doublons": 44,
     "source": "verdicts_direct.json (recalculé : journal plus récent)",
-    "sans_resultat_pct": 84.4,
-    "statut": "en attente de résultats (84,4 % sans résultat)",
+    "sans_resultat_pct": 84.6,
+    "statut": "en attente de résultats (84,6 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-10-28T11:01:31Z"
+    "genere_le": "2026-10-28T15:35:29Z"
    },
    "reconstruction": {
     "n": 185,
@@ -7031,9 +7059,9 @@
     "egal_validation_report": true
    },
    "entonnoir": {
-    "direct_detectees": 67,
+    "direct_detectees": 68,
     "direct_envoyees": 24,
-    "direct_doublons": 43,
+    "direct_doublons": 44,
     "direct_non_envoyees_autres": 0,
     "direct_denouees": 10,
     "reconstruction_detectees": 286,
@@ -7045,12 +7073,12 @@
      "avant_canal": 187,
      "cote_opposee_live": 3
     },
-    "direct_seule": 53,
+    "direct_seule": 54,
     "direct_seule_raisons": {
      "absent_reconstruction": 28,
      "cote_opposee_reco": 9,
      "prix_different": 10,
-     "pas_encore_reconstruit": 6
+     "pas_encore_reconstruit": 7
     },
     "inexpliques": 0
    },
@@ -11645,6 +11673,20 @@
     },
     {
      "sens": "direct seule",
+     "date": "2026-10-28",
+     "match": "Dylan Dietrich – Jenson Brooksby",
+     "joueur": "Dylan Dietrich",
+     "uid": "2026-10-28_jenson_brooksby_dylan_dietrich",
+     "cote": 2.25,
+     "book": "bet365",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-28, reconstruction arrêtée au 2026-10-27",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
      "date": "2026-10-29",
      "match": "Elise Mertens – Leylah Fernandez",
      "joueur": "Elise Mertens",
@@ -11716,20 +11758,20 @@
     "gagnes": 17,
     "roi": 30.4,
     "pts": 11.2,
-    "clv_pin": -2.0,
+    "clv_pin": -2.1,
     "clv_pin_ic95": [
-     -3.4,
-     -0.6
+     -3.5,
+     -0.8
     ],
-    "clv_n": 69,
-    "n_detectees": 75,
+    "clv_n": 71,
+    "n_detectees": 76,
     "n_envoyees": 0,
-    "n_doublons": 75,
+    "n_doublons": 76,
     "source": "verdicts_direct.json (recalculé : journal plus récent)",
     "sans_resultat_pct": 52.1,
     "statut": "en attente de résultats (52,1 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-10-28T11:01:31Z"
+    "genere_le": "2026-10-28T15:35:29Z"
    },
    "reconstruction": {
     "n": 93,
@@ -11747,9 +11789,9 @@
     "egal_validation_report": true
    },
    "entonnoir": {
-    "direct_detectees": 75,
+    "direct_detectees": 76,
     "direct_envoyees": 0,
-    "direct_doublons": 75,
+    "direct_doublons": 76,
     "direct_non_envoyees_autres": 0,
     "direct_denouees": 35,
     "reconstruction_detectees": 150,
@@ -11759,12 +11801,12 @@
     "reconstruction_seule_raisons": {
      "apres_coup": 117
     },
-    "direct_seule": 42,
+    "direct_seule": 43,
     "direct_seule_raisons": {
      "absent_reconstruction": 22,
      "cote_opposee_reco": 12,
      "prix_different": 4,
-     "pas_encore_reconstruit": 4
+     "pas_encore_reconstruit": 5
     },
     "inexpliques": 0
    },
@@ -14035,6 +14077,20 @@
     },
     {
      "sens": "direct seule",
+     "date": "2026-10-28",
+     "match": "Aidan Mayo – Maks Kasnikowski",
+     "joueur": "Aidan Mayo",
+     "uid": "2026-10-28_aidan_mayo_maks_kasnikowski",
+     "cote": 2.4,
+     "book": "unibet",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-28, reconstruction arrêtée au 2026-10-27",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
      "date": "2026-10-29",
      "match": "Jil Teichmann – Zeynep Sonmez",
      "joueur": "Jil Teichmann",
@@ -14111,15 +14167,15 @@
      -1.2,
      0.0
     ],
-    "clv_n": 193,
-    "n_detectees": 197,
-    "n_envoyees": 197,
+    "clv_n": 194,
+    "n_detectees": 199,
+    "n_envoyees": 199,
     "n_doublons": 0,
     "source": "verdicts_direct.json (recalculé : journal plus récent)",
-    "sans_resultat_pct": 40.3,
-    "statut": "en attente de résultats (40,3 % sans résultat)",
+    "sans_resultat_pct": 41.2,
+    "statut": "en attente de résultats (41,2 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-10-28T11:01:31Z"
+    "genere_le": "2026-10-28T15:35:29Z"
    },
    "reconstruction": {
     "n": 256,
@@ -14137,8 +14193,8 @@
     "egal_validation_report": true
    },
    "entonnoir": {
-    "direct_detectees": 197,
-    "direct_envoyees": 197,
+    "direct_detectees": 199,
+    "direct_envoyees": 199,
     "direct_doublons": 0,
     "direct_non_envoyees_autres": 0,
     "direct_denouees": 117,
@@ -14149,12 +14205,12 @@
     "reconstruction_seule_raisons": {
      "apres_coup": 273
     },
-    "direct_seule": 105,
+    "direct_seule": 107,
     "direct_seule_raisons": {
      "cote_opposee_reco": 50,
      "absent_reconstruction": 46,
      "prix_different": 7,
-     "pas_encore_reconstruit": 2
+     "pas_encore_reconstruit": 4
     },
     "inexpliques": 0
    },
@@ -19516,6 +19572,34 @@
      "libelle": "Pas encore dans la reconstruction",
      "detail": "match du 2026-10-28, reconstruction arrêtée au 2026-10-27",
      "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-28",
+     "match": "Jakub Mensik – Adrian Mannarino",
+     "joueur": "Jakub Mensik",
+     "uid": "2026-10-28_jakub_mensik_adrian_mannarino",
+     "cote": 1.21,
+     "book": "unibet",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-28, reconstruction arrêtée au 2026-10-27",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-28",
+     "match": "Carlos Maria Zarate – Alan Magadan",
+     "joueur": "Carlos Maria Zarate",
+     "uid": "2026-10-28_carlos_maria_zarate_alan_magadan",
+     "cote": 1.5,
+     "book": "888sport",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-28, reconstruction arrêtée au 2026-10-27",
+     "explique": true
     }
    ]
   },
@@ -19567,15 +19651,15 @@
      -1.4,
      -0.0
     ],
-    "clv_n": 174,
-    "n_detectees": 176,
-    "n_envoyees": 176,
+    "clv_n": 175,
+    "n_detectees": 177,
+    "n_envoyees": 177,
     "n_doublons": 0,
     "source": "verdicts_direct.json (recalculé : journal plus récent)",
-    "sans_resultat_pct": 43.4,
-    "statut": "en attente de résultats (43,4 % sans résultat)",
+    "sans_resultat_pct": 44.1,
+    "statut": "en attente de résultats (44,1 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-10-28T11:01:31Z"
+    "genere_le": "2026-10-28T15:35:29Z"
    },
    "reconstruction": {
     "n": 219,
@@ -19593,8 +19677,8 @@
     "egal_validation_report": true
    },
    "entonnoir": {
-    "direct_detectees": 176,
-    "direct_envoyees": 176,
+    "direct_detectees": 177,
+    "direct_envoyees": 177,
     "direct_doublons": 0,
     "direct_non_envoyees_autres": 0,
     "direct_denouees": 99,
@@ -19605,12 +19689,12 @@
     "reconstruction_seule_raisons": {
      "apres_coup": 220
     },
-    "direct_seule": 94,
+    "direct_seule": 95,
     "direct_seule_raisons": {
      "cote_opposee_reco": 45,
      "prix_different": 7,
      "absent_reconstruction": 40,
-     "pas_encore_reconstruit": 2
+     "pas_encore_reconstruit": 3
     },
     "inexpliques": 0
    },
@@ -24076,6 +24160,20 @@
      "libelle": "Pas encore dans la reconstruction",
      "detail": "match du 2026-10-28, reconstruction arrêtée au 2026-10-27",
      "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-28",
+     "match": "Carlos Maria Zarate – Alan Magadan",
+     "joueur": "Carlos Maria Zarate",
+     "uid": "2026-10-28_carlos_maria_zarate_alan_magadan",
+     "cote": 1.5,
+     "book": "888sport",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-28, reconstruction arrêtée au 2026-10-27",
+     "explique": true
     }
    ]
   },
@@ -24122,12 +24220,12 @@
     "gagnes": 24,
     "roi": 20.4,
     "pts": 12.4,
-    "clv_pin": 2.7,
+    "clv_pin": 2.6,
     "clv_pin_ic95": [
      1.2,
-     4.1
+     4.0
     ],
-    "clv_n": 67,
+    "clv_n": 69,
     "n_detectees": 71,
     "n_envoyees": 41,
     "n_doublons": 30,
@@ -24135,7 +24233,7 @@
     "sans_resultat_pct": 42.9,
     "statut": "en attente de résultats (42,9 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-10-28T11:01:31Z"
+    "genere_le": "2026-10-28T15:35:29Z"
    },
    "reconstruction": {
     "n": 109,
@@ -27236,7 +27334,7 @@
     "sans_resultat_pct": 0.0,
     "statut": "verrouillable (résultats complets à 100 %)",
     "verrouillable": true,
-    "genere_le": "2026-10-28T11:01:31Z"
+    "genere_le": "2026-10-28T15:35:29Z"
    },
    "reconstruction": {
     "n": 49,
