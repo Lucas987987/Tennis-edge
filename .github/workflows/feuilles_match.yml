@@ -66,6 +66,8 @@ jobs:
             /scripts/points_match.py
             /scripts/classements_tennisapi.py
             /scripts/durees_matchs.py
+            /scripts/resultats_itf.py
+            /resultats_itf/
             /simulateur/elo.py
             /feuilles/
             /feuilles_points/
@@ -83,6 +85,15 @@ jobs:
           FIN: ${{ github.event.inputs.fin }}
           CATS: ${{ github.event.inputs.categories }}
         run: python scripts/feuilles_match.py "$DEBUT" "$FIN" "$CATS"
+      - name: Résultats ITF hommes des derniers jours (Elo seulement ; jamais pronostiqués ni pariés) — ~8 requêtes
+        # 28/10/2026 : les jours de plus de 3 jours sont déjà complets ; seuls les 3 derniers jours sont redemandés.
+        if: always()
+        timeout-minutes: 10
+        env:
+          RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
+          FEUILLES_RESERVE: '3000'
+          ITF_MINUTES: '8'
+        run: python scripts/resultats_itf.py '' '' 200
       - name: Classements ATP et WTA du jour (TennisApi) — une photo par jour, 2 à 4 requêtes
         if: always()
         timeout-minutes: 5
@@ -129,6 +140,7 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -- feuilles feuilles_points 2>/dev/null || git add -- feuilles
+          if [ -e resultats_itf ]; then git add -- resultats_itf; fi
           if git diff --cached --quiet; then echo 'Rien de nouveau.'; exit 0; fi
           git commit -q -m "Feuilles de match $(date -u +%FT%TZ)"
           for i in 1 2 3 4 5; do
