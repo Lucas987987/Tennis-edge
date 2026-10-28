@@ -21,8 +21,11 @@ RÈGLE FIXÉE LE 28/10/2026, AVANT TOUT RÉSULTAT :
     ET celle des matchs ATP + WTA ne monte pas de plus de 0,0005 ;
   — adoption : ce verdict DEUX semaines de suite (stabilite.py ; état gardé dans le rapport) ;
   — rien n'est jugé si la collecte couvre moins de 95 % des jours depuis le 1er juin 2024.
-Une fois adopté seulement : les résultats ITF hommes entrent dans l'Elo de production, avec leur collecte
-quotidienne (livraison séparée). Descriptif en plus (jamais dans la règle) : Challenger dont un joueur avait moins de
+1re semaine (28/10/2026, archive jusqu'au 02/06/2026 + 76 183 matchs ITF) : Challenger −0,0145 (22 530 matchs),
+ATP + WTA −0,0042, joueurs peu vus −0,035 → candidat 1/2.
+DÉCISION DE LUCAS LE 28/10/2026 : mise en production sans attendre la 2e semaine (backtest_pronostic.py, étape 5,
+et collecte quotidienne). La règle devient la SORTIE : l'étude continue chaque lundi et retire l'ITF de l'Elo de
+production s'il fait moins bien deux semaines de suite (« adopte » = false dans etude_itf_elo.json). Descriptif en plus (jamais dans la règle) : Challenger dont un joueur avait moins de
 40 matchs dans l'Elo sans ITF ; Challenger dont un joueur a des résultats ITF.
 
 Usage : python simulateur/etude_itf_elo.py <archive Sackmann> [racine]
@@ -46,7 +49,7 @@ MARGE, TOLERANCE = 0.001, 0.0005
 COUVERTURE_MIN = 0.95
 PEU_VUS = 40
 SORTIE = os.path.join('simulateur', 'etude_itf_elo.json')
-CLE_STABILITE = 'elo_resultats_itf'
+CLE_STABILITE = 'elo_itf_production'      # 28/10/2026 : en place par décision de Lucas ; sort après 2 semaines moins bien
 
 
 def feuilles_apres(racine, depuis):
@@ -195,11 +198,11 @@ def main(argv):
     if cv < COUVERTURE_MIN:
         doc['statut'] = f"collecte incomplète ({100 * cv:.1f} % des jours) : rien n'est jugé"
         doc['stabilite'] = etat
-        doc['adopte'] = bool((etat.get(CLE_STABILITE) or {}).get('adopte'))
+        doc['adopte'] = bool((etat.get(CLE_STABILITE) or {}).get('adopte', True))
     else:
         M = donnees.charger(args[0], 2016)
         rap = etude(M, feuilles_apres(racine, max(m['date'] for m in M)), RI.lire_tout(racine))
-        adopte, note = ST.decider(etat, CLE_STABILITE, False, rap['verdict_semaine'],
+        adopte, note = ST.decider(etat, CLE_STABILITE, True, rap['verdict_semaine'],
                                   rap['challenger']['log_loss_avec'], rap['challenger']['log_loss_sans'])
         doc.update(rap, statut=note, adopte=adopte, stabilite=etat)
     with open(chemin, 'w', encoding='utf-8') as f:
