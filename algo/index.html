@@ -359,6 +359,12 @@ body.carte #video{display:block;width:1080px;height:1350px}
   <section aria-labelledby="bilan-h">
     <h2 id="bilan-h" data-t="bilan_titre"></h2>
     <p class="sub" id="bilan-sous"></p>
+    <div class="seg bilan-circ" role="group" aria-label="Circuit" style="width:max-content;margin:0 0 12px">
+      <button type="button" data-bc="TOUS" aria-pressed="true" data-t="tous_circuits"></button>
+      <button type="button" data-bc="ATP" aria-pressed="false">ATP</button>
+      <button type="button" data-bc="WTA" aria-pressed="false">WTA</button>
+      <button type="button" data-bc="CH" aria-pressed="false">Challenger</button>
+    </div>
     <div class="panel" id="bilan-facts"></div>
     <div class="panel" style="margin-top:12px;padding:14px 10px 6px" id="bilan-curve"></div>
     <div class="panel" style="margin-top:12px"><ul class="res" id="bilan-res"></ul><button class="more" id="bilan-more" hidden></button></div>
@@ -986,7 +992,7 @@ function Arcade(root, m, opts){
 }
 
 /* ───────────── rendu de la page ───────────── */
-let D = null, nRes = 12, nListe = 30, borne = null;
+let D = null, nRes = 12, circBilan = 'TOUS', nListe = 30, borne = null;
 let selectionId = null, circuit = 'TOUS', recherche = '';
 function boutonSon(){
   const b = document.getElementById('b-son'), on = Bruit.actif;
@@ -1173,25 +1179,28 @@ function courbeSvg(c){
   const w=600,h=220,lo=40,hi=90, x=i=>i*(w-62)/(c.length-1)+52, y=v=>h-14-(Math.min(hi,Math.max(lo,v))-lo)/(hi-lo)*(h-28);
   const grid=[50,60,70,80].map(v=>`<line x1="52" x2="${w}" y1="${y(v)}" y2="${y(v)}" stroke="rgba(255,255,255,.1)"/><text x="0" y="${y(v)+7}" font-size="20" fill="#ABA3D6">${v}%</text>`).join('');
   const pts = c.map((p,i)=>`${x(i).toFixed(1)},${y(p.pct).toFixed(1)}`).join(' ');
-  return `<svg class="curve" viewBox="0 0 ${w} ${h}" role="img" aria-label="${esc(t('courbe_aria'))}">${grid}
+  const jr = j => new Date(j+'T12:00:00').toLocaleDateString(loc(),{day:'numeric',month:'short'});
+  const dates = `<text x="52" y="${h+24}" font-size="18" fill="#ABA3D6">${esc(jr(c[0].jour))} · ${fmt(c[0].n)}</text><text x="${w}" y="${h+24}" text-anchor="end" font-size="18" fill="#ABA3D6">${esc(jr(c[c.length-1].jour))} · ${fmt(c[c.length-1].n)} ${esc(L==='fr'?'matchs':'matches')}</text>`;
+  return `<svg class="curve" viewBox="0 0 ${w} ${h+32}" role="img" aria-label="${esc(t('courbe_aria'))}">${grid}${dates}
     <polyline fill="none" stroke="#D4FF3A" stroke-opacity=".25" stroke-width="12" stroke-linejoin="round" points="${pts}"/>
     <polyline fill="none" stroke="#D4FF3A" stroke-width="4" stroke-linejoin="round" points="${pts}"/>
     <circle cx="${x(c.length-1)}" cy="${y(c[c.length-1].pct)}" r="7" fill="#D4FF3A"/><text x="${w}" y="${y(c[c.length-1].pct)-16}" text-anchor="end" font-size="22" font-weight="600" fill="#F4F1FF">${pc(c[c.length-1].pct)}</text></svg>`;
 }
 function rendBilan(){
-  const B = D.bilan || {}, g = B.global;
+  const B = D.bilan || {}, C = circBilan==='TOUS' ? null : (B.par_circuit||{})[circBilan], g = circBilan==='TOUS' ? B.global : C;
+  document.querySelectorAll('.bilan-circ button').forEach(b=>b.setAttribute('aria-pressed', String(b.dataset.bc===circBilan)));
   document.getElementById('bilan-sous').textContent = t('bilan_sous', B.depuis || '2026-10-21');
   const facts = document.getElementById('bilan-facts');
-  if (!g){ facts.innerHTML = `<div class="empty">${esc(t('bilan_vide'))}</div>`; return; }
+  if (!g){ facts.innerHTML = `<div class="empty">${esc(t('bilan_vide'))}</div>`; document.getElementById('bilan-curve').hidden = true; document.getElementById('bilan-res').innerHTML = ''; document.getElementById('bilan-more').hidden = true; return; }
   const circ = Object.entries(B.par_circuit||{}).sort((a,b)=>b[1].n-a[1].n).map(([c,v])=>`${CIRC[c]||c} ${pc(v.pct)} (${fmt(v.n)})`).join(' · ');
   facts.innerHTML = `<div class="scores">
     <div><div class="k">${esc(t('matchs_juges'))}</div><div class="v">${fmt(g.n)}</div></div>
     <div><div class="k">${esc(t('vainqueurs'))}</div><div class="v">${pc(g.pct)}</div><div class="k">${fmt(g.vainqueurs)} / ${fmt(g.n)}</div></div>
     <div><div class="k">${esc(t('brier'))}</div><div class="v">${dec(g.brier,3)}</div><div class="k">${esc(t('brier_aide'))}</div></div>
-  </div><div class="circ"><span style="color:var(--dim)">${esc(t('par_circuit'))} :</span> ${esc(circ)}</div>`;
-  const cv = courbeSvg(B.courbe||[]);
+  </div>${C ? '' : `<div class="circ"><span style="color:var(--dim)">${esc(t('par_circuit'))} :</span> ${esc(circ)}</div>`}`;
+  const cv = courbeSvg((C ? C.courbe : B.courbe)||[]);
   const cb = document.getElementById('bilan-curve'); cb.innerHTML = cv; cb.hidden = !cv;
-  const res = B.derniers || [];
+  const res = (C ? C.derniers : B.derniers) || [];
   document.getElementById('bilan-res').innerHTML = res.slice(0,nRes).map(r=>{
     const pw = r.gagnant==='home' ? r.p_home : 1-r.p_home, w = r.gagnant==='home' ? r.home : r.away, l = r.gagnant==='home' ? r.away : r.home;
     const sc = r.score ? (r.gagnant==='home' ? r.score : r.score.split(' ').map(x=>x.split('-').reverse().join('-')).join(' ')) : '';
@@ -1265,6 +1274,9 @@ document.getElementById('retour-mdj').addEventListener('click',()=>{
 document.getElementById('recherche').addEventListener('input',e=>{
   recherche=e.target.value; nListe=30; rendListe();
 });
+document.querySelectorAll('.bilan-circ button').forEach(b=>b.addEventListener('click',()=>{
+  circBilan=b.dataset.bc; nRes=12; rendBilan();
+}));
 document.querySelectorAll('.circuits button').forEach(b=>b.addEventListener('click',()=>{
   circuit=b.dataset.circuit; nListe=30; rendTextes(); rendListe();
 }));
