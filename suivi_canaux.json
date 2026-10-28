@@ -1,47 +1,47 @@
 {
  "schema_version": 1,
- "genere_le": "2026-10-27T05:41:46Z",
+ "genere_le": "2026-10-28T06:18:53Z",
  "canaux": {
   "MISER": {
    "libelle": "🎯 MISER — steam, EV ≥ seuil vs Pinnacle juste (vainqueur du match)",
    "source": "miser_signal_log.jsonl (messages envoyés) + ajouts de suivi_direct",
    "regle": "première alerte de chaque match, au book et au prix du message ; relances non recomptées",
    "debut": "2026-10-22",
-   "n_alertes": 8,
-   "n_matchs": 8,
+   "n_alertes": 9,
+   "n_matchs": 9,
    "n_relances": 0,
-   "n_denoues": 6,
+   "n_denoues": 8,
    "bilan": {
-    "n": 6,
+    "n": 8,
     "gains": 4,
-    "taux": 66.7,
-    "seuil": 37.1,
-    "ecart": 29.5,
+    "taux": 50.0,
+    "seuil": 39.5,
+    "ecart": 10.5,
     "ic95": [
-     30.0,
-     90.3
+     21.5,
+     78.5
     ],
-    "roi": 107.8,
-    "pnl": 6.5,
-    "cote_moyenne": 2.88,
-    "clv_moyen": 3.6,
-    "clv_pin_moyen": 3.6,
+    "roi": 55.9,
+    "pnl": 4.5,
+    "cote_moyenne": 2.7,
+    "clv_moyen": 5.8,
+    "clv_pin_moyen": 5.8,
     "clv_pin_ic95": [
-     -3.6,
-     10.8
+     -1.1,
+     12.7
     ],
-    "clv_pin_p": 0.1634,
-    "clv_n": 7,
-    "clv_positif": 57.1,
-    "lead_moyen_h": 9.3,
-    "periode": "2026-10-22 -> 2026-10-26",
+    "clv_pin_p": 0.0489,
+    "clv_n": 9,
+    "clv_positif": 66.7,
+    "lead_moyen_h": 8.3,
+    "periode": "2026-10-22 -> 2026-10-27",
     "verdict": "ne tranche pas",
-    "clv_mediane": 1.0,
-    "n_commencees": 8,
-    "n_sans_resultat": 2,
-    "sans_resultat_pct": 25.0,
+    "clv_mediane": 1.5,
+    "n_commencees": 9,
+    "n_sans_resultat": 1,
+    "sans_resultat_pct": 11.1,
     "verrouillable": false,
-    "statut": "en attente de résultats (25,0 % sans résultat)"
+    "statut": "en attente de résultats (11,1 % sans résultat)"
    },
    "paris": {
     "2026-10-22_valerio_aboian_matias_soto": {
@@ -69,12 +69,12 @@
      "source_resultat": "feuille de match (TennisApi)"
     },
     "2026-10-26_alan_magadan_tristan_mccormick": {
-     "gagne": null,
-     "pnl": null,
-     "pin_close": null,
-     "pin_close_adv": null,
-     "clv_pin": null,
-     "source_resultat": "inconnu"
+     "gagne": 0,
+     "pnl": -1.0,
+     "pin_close": 1.675,
+     "pin_close_adv": 2.18,
+     "clv_pin": 25.635,
+     "source_resultat": "feuille de match (TennisApi)"
     },
     "2026-10-26_arthur_fery_jacob_fearnley": {
      "gagne": null,
@@ -106,6 +106,14 @@
      "pin_close": 3.21,
      "pin_close_adv": 1.366,
      "clv_pin": -0.218,
+     "source_resultat": "feuille de match (TennisApi)"
+    },
+    "2026-10-27_jerome_kym_arthur_rinderknech": {
+     "gagne": 0,
+     "pnl": -1.0,
+     "pin_close": 2.009,
+     "pin_close_adv": 1.884,
+     "clv_pin": 1.486,
      "source_resultat": "feuille de match (TennisApi)"
     }
    }
