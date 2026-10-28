@@ -569,6 +569,10 @@ maintenant le % *attendu* vu la force des adversaires réellement rencontrés : 
 d'avant-match de ces mêmes matchs, et l'écart en points. Hurkacz : 37,5 % réel pour 36,4 % attendu (+1,1 pt) ; ses
 « serveurs attaquants » étaient Djokovic, Alcaraz, Rublev, Khachanov… Le bilan brut mesurait surtout le niveau des
 adversaires, pas un problème de style. Rune sur dur : 60,8 % pour 59,4 % attendu (+1,4 pt). Purement descriptif.
+Sous chaque bilan, la **difficulté des adversaires** : note sur 10 = (Elo moyen d'avant-match des adversaires − 1300)
+/ 90, bornée, échelle mesurée puis figée (0 ≈ bas de Challenger, ≈ 4 joueur ATP médian, ≈ 8 Djokovic, 10 les tout
+meilleurs), Elo moyen et nombre de matchs où il partait outsider (moins de 40 % d'avant-match). Hurkacz contre les
+« serveurs attaquants » : 5,7/10, outsider 27 fois sur 48 ; Rune contre les « grands serveurs » : 4,6/10, 9 fois.
 
 **2. Profil de réaction (`facteurs.py`, groupe `profil`).** Pour chaque joueur, 8 curseurs continus au lieu de
 6 cases : comment ses points au service et au retour s'écartent de l'attendu (modèle ajusté à la force de
