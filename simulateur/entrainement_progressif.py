@@ -144,9 +144,25 @@ def _delta(rows, ridge=5.0, tours=30):
 
 
 SITUATIONS = {'nouveaux_venus': 'Nouveaux venus', 'qualifies': 'Sortis des qualifications',
-              'transition': 'Changement de surface', 'classement': 'Classement du joueur peu connu'}
+              'transition': 'Changement de surface', 'classement': 'Classement du joueur peu connu',
+              'classement_relatif': 'Classement relatif quand un joueur est peu connu'}
 LIB_SITUATION = {'nouveaux_venus': 'le nouveau venu', 'qualifies': 'le qualifié', 'transition': 'celui qui change de surface',
-                 'classement': 'le joueur peu connu mal classé'}
+                 'classement': 'le joueur peu connu mal classé', 'classement_relatif': 'le mieux classé'}
+# 28/10/2026 — CLASSEMENT RELATIF quand un joueur est peu connu (rapport des désaccords : l'algo se trompe dans les deux
+# sens sur les joueurs peu documentés ; MatchUP montre le classement à côté de chaque joueur). Valeur, vue du joueur 1 :
+#     poids × (ln rang du joueur 2 − ln rang du joueur 1),   poids = max(1 − n1/20, 1 − n2/20, 0)
+# (n = matchs connus de l'Elo). Seuil 20 CHOISI SUR LA FENÊTRE D'APPRENTISSAGE (20 : 0,61227 ; 30 : 0,61252 ;
+# 50 : 0,61360). Test du 28/10 sur les pronostics rejoués, mélange Elo + simulation, jugé depuis le 16/09 :
+# log loss 0,60542 → 0,60296 sur 2 263 matchs (peu documentés 0,53022 → 0,51842 ; bien documentés inchangés).
+SEUIL_RANG_RELATIF = 20.0
+
+
+def rang_relatif(n1, n2, r1, r2):
+    """Écart de classement (log) pondéré par le manque de documentation, vu du joueur 1 ; 0 sans les deux rangs."""
+    if not r1 or not r2:
+        return 0.0
+    w = max(0.0, 1.0 - (n1 or 0) / SEUIL_RANG_RELATIF, 1.0 - (n2 or 0) / SEUIL_RANG_RELATIF)
+    return w * (math.log(r2) - math.log(r1))
 
 
 def correction_situation(hors, P, lim, valeur, cle_s, poids_finaux=None, min_avant=200, min_juge=100, decalage=None,
@@ -202,17 +218,18 @@ def nouveaux_venus(hors, P, lim, experience, poids_finaux=None):
 
 # ------------------------------------------------------------------ 23/10/2026 : des arbres qui combinent tout
 VARIABLES = ('z_elo', 'z_sim', 'ecart_nouveau', 'ecart_qualifie', 'ecart_transition',
-             'nouveau_max', 'challenger', 'wta', 'terre', 'gazon', 'cinq_sets', 'desaccord')
-ECARTS = (0, 1, 2, 3, 4)            # variables « écart » : changent de signe quand on change de côté
+             'nouveau_max', 'challenger', 'wta', 'terre', 'gazon', 'cinq_sets', 'desaccord', 'ecart_rang_peu_connu')
+ECARTS = (0, 1, 2, 3, 4, 12)        # variables « écart » : changent de signe quand on change de côté
 
 
-def variables_match(p_elo, p_sim, n1, n2, sit1, sit2, circuit, surface, bo):
-    """Vu du joueur 1 (en walk-forward : le vrai vainqueur ; en pronostic : home). sit = (qualifié, transition)."""
+def variables_match(p_elo, p_sim, n1, n2, sit1, sit2, circuit, surface, bo, rangs=None):
+    """Vu du joueur 1 (en walk-forward : le vrai vainqueur ; en pronostic : home). sit = (qualifié, transition) ;
+    rangs = (rang du joueur 1, rang du joueur 2) au jour du match, ou None (28/10/2026)."""
     ze, zs = _lg(p_elo), _lg(p_sim)
     a, b = nouveau(n1), nouveau(n2)
     return [ze, zs, a - b, sit1[0] - sit2[0], sit1[1] - sit2[1], max(a, b), 1.0 if circuit == 'CH' else 0.0,
             1.0 if circuit == 'WTA' else 0.0, 1.0 if surface == 'Clay' else 0.0, 1.0 if surface == 'Grass' else 0.0,
-            1.0 if bo == 5 else 0.0, abs(ze - zs)]
+            1.0 if bo == 5 else 0.0, abs(ze - zs), rang_relatif(n1, n2, *(rangs or (None, None)))]
 
 
 def modele_arbres(hors, P, lim, experience, situations, nv, poids_finaux=None):
@@ -232,7 +249,8 @@ def modele_arbres(hors, P, lim, experience, situations, nv, poids_finaux=None):
             continue
         sv = situations.get(id(x)) or {} if situations else {}
         q, t = sv.get('qualifies') or (0.0, 0.0), sv.get('transition') or (0.0, 0.0)
-        v = variables_match(pe, ps, e[0], e[1], (q[0], t[0]), (q[1], t[1]), x.get('circuit'), x.get('surface'), x.get('bo'))
+        v = variables_match(pe, ps, e[0], e[1], (q[0], t[0]), (q[1], t[1]), x.get('circuit'), x.get('surface'), x.get('bo'),
+                            sv.get('rangs'))
         lignes.append((x['jour'] >= lim, v, (x, ps, pe), e))
     av = [l for l in lignes if not l[0]]
     ju = [l for l in lignes if l[0]]
@@ -329,10 +347,25 @@ def rejouer_saison(lignes, p_elo, groupes, apprendre, victoire_ligne, ajuster_po
         if not d or not experience:
             return None
         return lambda x: d * (nouveau(experience.get(id(x), (99, 99))[0]) - nouveau(experience.get(id(x), (99, 99))[1]))
-    for cle_s in ('qualifies', 'transition', 'classement'):
+    def dec_cumul(cles, cle_delta):
+        """Corrections déjà en place (nouveaux venus + situations listées), à ajouter au départ."""
+        parts = []
+        if nv.get('adopte') and nv.get(cle_delta) is not None:
+            parts.append(dec_nv(nv.get(cle_delta)))
+        for c_ in cles:
+            o = out.get(c_) or {}
+            if o.get('adopte') and o.get(cle_delta) is not None:
+                d_ = o[cle_delta]
+                parts.append(lambda x, c_=c_, d_=d_: d_ * (lambda v: (v[0] - v[1]) if v else 0.0)((situations.get(id(x)) or {}).get(c_)))
+        parts = [p_ for p_ in parts if p_]
+        return (lambda x: sum(p_(x) for p_ in parts)) if parts else None
+    for cle_s in ('qualifies', 'transition', 'classement', 'classement_relatif'):
         extra = {}
         if cle_s == 'classement' and nv.get('adopte'):          # par-dessus la correction des nouveaux venus
             extra = {'decalage': dec_nv(nv.get('delta_appris_avant')), 'decalage_final': dec_nv(nv.get('delta'))}
+        if cle_s == 'classement_relatif':                       # par-dessus nouveaux venus et classement
+            extra = {'decalage': dec_cumul(('classement',), 'delta_appris_avant'),
+                     'decalage_final': dec_cumul(('classement',), 'delta')}
         out[cle_s] = (correction_situation(hors, P, lim, lambda x, c=cle_s: (situations.get(id(x)) or {}).get(c), cle_s, final,
                                            **extra)
                       if situations else {'adopte': False, 'raison': 'pas de données'})
