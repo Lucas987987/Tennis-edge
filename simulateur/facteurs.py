@@ -140,7 +140,20 @@ K_COM = 300.0                    # points communs avant d'y croire
 PF_TRAITS = ('ace', 'srv1', 'srv2', 'ret1', 'ret2', 'gaucher', 'taille', 'echanges')
 # centre et échelle de chaque trait (mesurés le 28/10/2026 sur les 8 786 feuilles juin–oct. 2026, puis figés) :
 # trait standardisé ≈ moyenne 0, écart 1 ; un trait inconnu (taille, main, pas de Match Charting) vaut le centre (0).
-PF_CENTRE = (0.050, 0.085, 0.049, 0.086, 0.057, 0.121, -0.21, 0.003)
+PF_CENTRE = (0.050, 0.085, 0.049, 0.086, 0.057, 0.121, 0.0, 0.003)
+# 28/10/2026 (audit par circuit) : la taille était centrée sur 185 cm pour TOUS ; mesuré dans feuilles/joueurs.json :
+# WTA 174 cm (210 joueuses), ATP 186, Challenger 184 (895), ITF hommes 182. Toutes les joueuses passaient pour
+# « petites » (−1,1 écart) et une joueuse de taille inconnue (comptée 185) prenait un léger avantage de service sur
+# une adversaire de taille connue. Désormais : centre du circuit (femmes 174, hommes 184) ; inconnue = centre (0).
+TAILLE_CENTRE = {True: 174.0, False: 184.0}
+
+
+def taille_centree(i):
+    """(taille − centre de son circuit) / 10 ; 0 si inconnue. i : infos du joueur ({taille_cm, femme})."""
+    i = i or {}
+    if not i.get('taille_cm'):
+        return 0.0
+    return (i['taille_cm'] - TAILLE_CENTRE[bool(i.get('femme'))]) / 10.0
 PF_ECHELLE = (0.43, 0.146, 0.074, 0.099, 0.082, 0.326, 0.775, 0.030)
 K_PF = 500.0
 GROUPES['profil'] = {'service': [f'pf_srv_{d}' for d in PF_TRAITS] + [f'pf_ret_adv_{d}' for d in PF_TRAITS]}
@@ -316,7 +329,7 @@ class Historique:
         """Traits standardisés d'un joueur, tels qu'un adversaire les voit (point-in-time)."""
         i = self.infos.get(j) or {}
         g = (1.0 if i['main'] == 'gauche' else 0.0) if i.get('main') else PF_CENTRE[5]
-        h = ((i['taille_cm'] - 185) / 10.0) if i.get('taille_cm') else PF_CENTRE[6]
+        h = taille_centree(i) if i.get('taille_cm') else PF_CENTRE[6]
         ech = 0.0
         if self.charting is not None:
             try:
@@ -463,7 +476,7 @@ class Historique:
         cj, ca = self.clutch.get(j) or [0, 0, 0, 0], self.clutch.get(adv) or [0, 0, 0, 0]
         ij, ia = infos.get(j) or {}, infos.get(adv) or {}
         g_j, g_a = 1.0 if ij.get('main') == 'gauche' else 0.0, 1.0 if ia.get('main') == 'gauche' else 0.0
-        taille = lambda i: ((i.get('taille_cm') or 185) - 185) / 10.0
+        taille = taille_centree
         lieu = self.lieux.get(tournoi) or {}
         inter = 1.0 if (lieu.get('interieur') or self.interieur.get(tournoi)) else 0.0
         jour = dt.datetime.fromtimestamp(t, dt.timezone.utc).date().isoformat()
@@ -569,7 +582,8 @@ def preparer(fiches, adj_pour, cle=E.cle):
 
 
 def infos_par_cle(racine, fiches, cle=E.cle):
-    """{clé joueur: {main, taille_cm}} depuis feuilles/joueurs.json (ids) et les noms des fiches."""
+    """{clé joueur: {main, taille_cm, femme}} depuis feuilles/joueurs.json (ids) et les noms des fiches.
+    femme : le joueur apparaît dans une catégorie WTA ou ITF femmes (centre de taille de son circuit)."""
     try:
         with open(os.path.join(racine, 'feuilles', 'joueurs.json'), encoding='utf-8') as f:
             J = json.load(f)
@@ -581,7 +595,8 @@ def infos_par_cle(racine, fiches, cle=E.cle):
             j = r.get(c) or {}
             i = str(j.get('id'))
             if i in J:
-                out[cle(j.get('nom'))] = J[i]
+                cat = str(r.get('categorie') or '').lower()
+                out[cle(j.get('nom'))] = dict(J[i], femme=('wta' in cat or 'women' in cat))
     return out
 
 
@@ -913,7 +928,7 @@ def contexte(H, infos, noms_tournois, maintenant_ts):
         if c and (c[1] or c[3]):
             e['clutch'] = [round(c[0], 2), round(c[1], 1), round(c[2], 2), round(c[3], 1)]
         if i.get('main') or i.get('taille_cm'):
-            e['infos'] = {k: i[k] for k in ('main', 'taille_cm') if i.get(k)}
+            e['infos'] = {k: i[k] for k in ('main', 'taille_cm', 'femme') if i.get(k)}
         if e:
             joueurs[j] = e
     vit = {k: [round(x, 2) for x in v] for k, v in H.vit.items() if v[1] > 0}
@@ -1155,17 +1170,17 @@ def main(argv):
             try:
                 with open(SORTIE, encoding='utf-8') as f:
                     fs_prec = json.load(f).get('forme_scores') or {}
-                    fs_en_place = bool(fs_prec.get('adopte') and fs_prec.get('version') == 2)
+                    fs_en_place = bool(fs_prec.get('adopte') and fs_prec.get('version') == 3)
             except (OSError, ValueError):
                 fs_en_place = False
             rf = FS.juger(appr, juge, prof_a, prof_j, reels)
             etat_st = ST.lire()
-            ok, note = ST.decider(etat_st, 'forme_scores_v2', fs_en_place, rf['adopte'])
+            ok, note = ST.decider(etat_st, 'forme_scores_v3', fs_en_place, rf['adopte'])     # 28/10/2026 : v3 par circuit, série neuve
             ST.ecrire(etat_st)
             rf['adopte_brut'], rf['adopte'], rf['stabilite'] = rf['adopte'], ok, note
             doc['forme_scores'] = rf
             print(f"  forme_scores       {'ADOPTÉE' if ok else 'non adoptée'} — gain {rf['gain']} (marge {FS.MARGE}) · "
-                  f"coefs {rf['coefs']} ({note})", flush=True)
+                  f"par circuit {rf.get('par_circuit')} · coefs {rf['coefs']} ({note})", flush=True)
         except Exception as e:
             print(f"::warning::Forme des scores non jugée : {type(e).__name__}: {e}")
     # Dépendances dynamiques : testées sur les points, jamais publiées sans backtest du vainqueur.

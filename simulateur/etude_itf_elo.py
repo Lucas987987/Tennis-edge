@@ -49,6 +49,22 @@ SORTIE = os.path.join('simulateur', 'etude_itf_elo.json')
 CLE_STABILITE = 'elo_resultats_itf'
 
 
+def feuilles_apres(racine, depuis):
+    """Résultats des feuilles TennisApi après `depuis`, forfaits écartés — même règle que
+    backtest_pronostic.resultats_feuilles, sans importer ce module (il dépend de fichiers du Lab absents du run :
+    1er run du 28/10 en échec sur Tennis_Edge_Lab/books.py)."""
+    import feuilles as FE
+    out = []
+    for r in FE.lire(racine):
+        if 'walkover' in str((r.get('statut') or {}).get('texte') or '').lower():
+            continue
+        m = FE.en_match(r)
+        if m and m['date'] > depuis and m['nom_g'] and m['nom_p']:
+            out.append(m)
+    out.sort(key=lambda m: m['date'])
+    return out
+
+
 def match_itf(r):
     """Fiche resultats_itf -> match (format donnees) ; None si forfait, inachevé ou incomplet."""
     import elo as E
@@ -182,8 +198,7 @@ def main(argv):
         doc['adopte'] = bool((etat.get(CLE_STABILITE) or {}).get('adopte'))
     else:
         M = donnees.charger(args[0], 2016)
-        import backtest_pronostic as BP                       # feuilles après l'archive, forfaits écartés (comme l'Elo)
-        rap = etude(M, BP.resultats_feuilles(racine, max(m['date'] for m in M)), RI.lire_tout(racine))
+        rap = etude(M, feuilles_apres(racine, max(m['date'] for m in M)), RI.lire_tout(racine))
         adopte, note = ST.decider(etat, CLE_STABILITE, False, rap['verdict_semaine'],
                                   rap['challenger']['log_loss_avec'], rap['challenger']['log_loss_sans'])
         doc.update(rap, statut=note, adopte=adopte, stabilite=etat)
