@@ -552,6 +552,12 @@ def construire(racine, maintenant=None):
     except FileNotFoundError:
         doc['suivi_styles_ajustes'] = {'schema': SA.SCHEMA, 'statut': 'modele_non_installe',
                                        'nouveaux_figes': 0, 'activation': False}
+    import styles_global as SG
+    try:
+        doc['suivi_styles_global'] = SG.journaliser(racine, doc)
+    except FileNotFoundError:
+        doc['suivi_styles_global'] = {'schema': SG.SCHEMA, 'statut': 'modele_non_installe',
+                                      'nouveaux_figes': 0, 'activation': False}
     return doc
 
 
