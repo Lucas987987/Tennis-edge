@@ -22,6 +22,10 @@ Adoption deux semaines de suite (stabilite.py, série « sigma_circuit »).
 import math
 import random
 
+# DÉCISION DE LUCAS LE 28/10/2026 : mis en production sans attendre les deux semaines, au vu du test (+0,0133, Challenger
+# +0,0216, ATP et WTA inchangés). Valeurs en place jusqu'au premier jugement hebdomadaire ; ensuite la règle devient la
+# SORTIE : retiré (σ 0,15 partout) si le jugement échoue deux semaines de suite.
+DECISION = {'CH': 0.22}
 GRILLE = (0.15, 0.18, 0.22, 0.26)    # 0,12 et moins : jamais choisis au test du 28/10
 BASE = 0.15
 CIRCUITS = ('ATP', 'WTA', 'CH')
