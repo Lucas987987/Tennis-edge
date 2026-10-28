@@ -209,7 +209,7 @@ def charger_ajustements(racine):
     ma = choix.get('modele_arbres') or {}                      # 23/10/2026 : arbres qui combinent tout (si adoptés)
     if ma.get('adopte') and ma.get('modele') and ma.get('poids'):
         out['arbres'] = {'modele': ma['modele'], 'poids': ma['poids']}
-    for cle_s in ('qualifies', 'transition', 'classement'):    # 22/10/2026 : même règle, autres situations
+    for cle_s in ('qualifies', 'transition', 'classement', 'classement_relatif'):    # 22/10/2026 : même règle
         v = choix.get(cle_s) or {}
         if v.get('adopte') and v.get('delta') is not None:
             out['delta_' + cle_s] = float(v['delta'])
@@ -226,7 +226,8 @@ def ajuster_combinaison(p_c, c, p_elo, p_sim, n_home, n_away, situations=None, s
         import entrainement_progressif as EP
         sit = situations or {}
         q, t = sit.get('qualifies') or (0.0, 0.0), sit.get('transition') or (0.0, 0.0)
-        v = EP.variables_match(p_elo, p_sim, n_home or 0, n_away or 0, (q[0], t[0]), (q[1], t[1]), c, surface, bo)
+        v = EP.variables_match(p_elo, p_sim, n_home or 0, n_away or 0, (q[0], t[0]), (q[1], t[1]), c, surface, bo,
+                               sit.get('rangs'))
         o = math.log(MS.melange(AJUSTEMENTS['arbres']['poids'], p_elo, p_sim) / (1 - MS.melange(AJUSTEMENTS['arbres']['poids'], p_elo, p_sim)))
         return A.predire_symetrique(AJUSTEMENTS['arbres']['modele'], v, o, EP.ECARTS)
     if c == 'CH' and AJUSTEMENTS.get('poids_CH'):
@@ -534,6 +535,13 @@ def construire(racine, maintenant=None):
                 if CLASSEMENTS is not None:                     # 23/10/2026 : classement du joueur peu connu
                     import classements as CLS
                     sit['classement'] = tuple(CLS.niveau_inconnu(CLASSEMENTS.rang_au(j, x['debut']), elo.matchs(j)) for j in (h, a))
+                    # 28/10/2026 : classement relatif quand un joueur est peu connu (entrainement_progressif.rang_relatif)
+                    import entrainement_progressif as EP_
+                    rh_, ra_ = CLASSEMENTS.rang_au(h, x['debut']), CLASSEMENTS.rang_au(a, x['debut'])
+                    if rh_ and ra_:
+                        w_rel = max(0.0, 1 - elo.matchs(h) / EP_.SEUIL_RANG_RELATIF, 1 - elo.matchs(a) / EP_.SEUIL_RANG_RELATIF)
+                        sit['rangs'] = (rh_, ra_)
+                        sit['classement_relatif'] = (-w_rel * math.log(rh_), -w_rel * math.log(ra_))
                 p_c = ajuster_combinaison(p_c, c, stats['p_home'], p_sim, elo.matchs(h), elo.matchs(a), sit, s, 2 * sg - 1)
                 combinaison = dict(pronostic(p_c, c, sg, MS.p_service(cH), MS.p_service(cA)),
                                    p_simulation=round(p_sim, 4), p_elo=stats['p_home'])
