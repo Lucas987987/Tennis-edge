@@ -30,6 +30,16 @@ class DistributionExacteTest(unittest.TestCase):
             renverse = tuple((y, x) for x, y in score)
             self.assertAlmostEqual(p, inverse[renverse], places=12)
 
+    def test_ancrage_sous_la_tolerance_du_controle_quotidien(self):
+        # Cas reproductible qui laissait un résidu de 1,002e-8 avec 30 dichotomies.
+        a = MS.ajuster({'f': .6, 'a': .08, 'w1': .72, 'd': .03, 'w2j': .53},
+                       0.5609509048588737)
+        b = MS.ajuster({'f': .62, 'a': .06, 'w1': .69, 'd': .04, 'w2j': .51,
+                        'bp': -0.28834090169682697}, 0.6069058863227424)
+        d = DE.distribution_forme(a, b, 2, .15, p_victoire=.5346)
+        self.assertTrue(DE.controle(d)['ok'])
+        self.assertLessEqual(abs(DE.victoire_depuis_distribution(d) - .5346), 1e-9)
+
 
 class HierarchieTest(unittest.TestCase):
     def match(self, g='A', p='B'):
