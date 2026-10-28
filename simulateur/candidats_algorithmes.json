@@ -58,6 +58,24 @@
       "statut": "diagnostic",
       "activation": false
     },
+    "styles_adverses_global_v1": {
+      "famille": "bilan brut contracté contre le style adverse, sans autre variable explicative",
+      "implementation": "styles_valeur.py, etude_styles_seuls.py et rapport_styles_seuls.json/resultats/global/modele_complet_decouverte",
+      "parametres": {
+        "variable": "bilan_global",
+        "definition": "écart des logits des taux globaux contractés vers 50 %",
+        "prior_matchs_par_bilan": 20.0,
+        "ridge": 1.0,
+        "surface_ajoutee": false,
+        "decouverte": "2024",
+        "diagnostic_reutilise": "2025–2026",
+        "confirmation_apres": "2026-10-28T00:00:00+00:00",
+        "confirmation_exigee": "apport incrémental apparié au champion sur de futurs pronostics figés"
+      },
+      "statut": "diagnostic",
+      "resultat_diagnostic": "signal_autonome_positif_apport_incremental_non_confirme",
+      "activation": false
+    },
     "pression_v2": {
       "famille": "résidus de pression avec récence, surface, circuit et force adverse",
       "implementation": "pression_v2.py, etude_pression_v2.py et modele_pression_v2.json",

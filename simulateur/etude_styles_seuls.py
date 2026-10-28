@@ -86,6 +86,10 @@ def evaluer(rows, coupure=dt.date(2025, 1, 1), bootstrap=2000):
             'convergence': bool(modele and modele['converged']),
             'coefficients_standardises_decouverte': dict(
                 zip(('constante',) + CANDIDATS[candidat], modele['beta'])) if modele else None,
+            'modele_complet_decouverte': {
+                'beta': modele['beta'], 'moyennes': modele['moyennes'],
+                'ecarts': modele['ecarts'], 'converged': modele['converged'],
+            } if modele else None,
             'decouverte': _bloc(y_dec, dec, p_dec, neutre_dec),
             'confirmation': bloc,
             'surfaces_confirmation': sous_groupes,
