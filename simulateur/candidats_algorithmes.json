@@ -118,7 +118,8 @@
   "briques_techniques": {
     "distribution_scores_exacte_v1": {"implementation": "distribution_exacte.py", "change_le_pronostic": false},
     "connecteurs_contexte_v1": {"implementation": "contexte_optionnel.py", "change_le_pronostic": false},
-    "evolution_statistiques_joueurs_v1": {"implementation": "evolution_statistiques.py", "change_le_pronostic": false, "descriptif_seulement": true}
+    "evolution_statistiques_joueurs_v1": {"implementation": "evolution_statistiques.py", "change_le_pronostic": false, "descriptif_seulement": true},
+    "suivi_styles_global_v1": {"implementation": "styles_global.py et modele_styles_global.json", "change_le_pronostic": false, "second_avis_journalise": true, "bonus_par_paire": false}
   },
   "securite": "Aucun secret, identifiant privé ou contenu R2 privé n’a été demandé ou consulté.",
   "marche": "Le marché ne doit pas devenir une entrée du modèle indépendant. Les recherches marché/H13–H20 restent séparées ou servent à l’évaluation externe."
