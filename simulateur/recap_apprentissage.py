@@ -36,6 +36,7 @@ NOMS_GROUPES = {
     'duree': 'Durée',
     'matchup': 'Matchup',
     'adversaires_communs': 'Adversaires communs',
+    'profil': 'Profil de réaction',
 }
 NOMS_RECALIBRAGE = {
     'logistique': 'Régression logistique',

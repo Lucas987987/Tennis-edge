@@ -405,7 +405,7 @@
   }
 
   // 22/10/2026 — facteurs du match adoptés par l'étude : ce qu'ils changent au % de la simulation.
-  const FACTEURS_LIB = { forme_fatigue: 'Forme récente et fatigue', vitesse_court: 'Vitesse du court', morphologie: 'Gaucher ou droitier, taille', points_importants: 'Points importants', styles: 'Duel de styles', face_a_face: 'Face-à-face', conditions: 'Conditions du jour', contexte_tournoi: 'Contexte du tournoi', charting: 'Façon de jouer (Match Charting)', blessure: 'Blessure (abandon, forfait récents)', pression: 'Points sous pression', duree: 'Durée des matchs', matchup: 'Matchup service / retour', adversaires_communs: 'Adversaires communs' };
+  const FACTEURS_LIB = { forme_fatigue: 'Forme récente et fatigue', vitesse_court: 'Vitesse du court', morphologie: 'Gaucher ou droitier, taille', points_importants: 'Points importants', styles: 'Duel de styles', face_a_face: 'Face-à-face', conditions: 'Conditions du jour', contexte_tournoi: 'Contexte du tournoi', charting: 'Façon de jouer (Match Charting)', blessure: 'Blessure (abandon, forfait récents)', pression: 'Points sous pression', duree: 'Durée des matchs', matchup: 'Matchup service / retour', adversaires_communs: 'Adversaires communs', profil: 'Profil de réaction (8 traits adverses)', modele_complet: 'Modèle complet (toutes les variables)' };
   function facteursBlock(m) {
     const f = m && m.simulation && m.simulation.facteurs;
     if (!f || !f.groupes || !Object.keys(f.groupes).length) return '';

@@ -170,10 +170,17 @@ def resume(ligne, reference=None):
         return {'n': 0, 'victoires': 0, 'pct': None, 'ic95': None,
                 'documentation': 'tres_faible', 'derniers': [], 'statistiques': None}
     n, v = ligne['n'], ligne['v']
-    return {'n': n, 'victoires': v, 'pct': round(100*v/n, 1),
-            'ic95': wilson(v, n), 'documentation': documentation(n),
-            'derniers': list(reversed(ligne['derniers'][-5:])),
-            'statistiques': statistiques(ligne, reference)}
+    out = {'n': n, 'victoires': v, 'pct': round(100*v/n, 1),
+           'ic95': wilson(v, n), 'documentation': documentation(n),
+           'derniers': list(reversed(ligne['derniers'][-5:])),
+           'statistiques': statistiques(ligne, reference)}
+    # 28/10/2026 — ATTENDU vu la force des adversaires : moyenne des probabilités Elo d'avant-match de ces mêmes
+    # matchs. « 38 % contre ce style » ne dit rien seul : contre Djokovic et Alcaraz, on attendait déjà peu.
+    if ligne.get('n_att'):
+        att = 100 * ligne['att'] / ligne['n_att']
+        out['attendu_pct'] = round(att, 1)
+        out['ecart_pts'] = round(100 * v / n - att, 1)
+    return out
 
 
 def _score(m, du_perdant=False):
@@ -183,14 +190,17 @@ def _score(m, du_perdant=False):
     return ' '.join(f'{b}-{a}' if du_perdant else f'{a}-{b}' for a, b in sets)
 
 
-def _evenement(m, joueur, adversaire, nom_adversaire, victoire, style_adverse):
-    return {'date': m['date'].isoformat(), 'adversaire': nom_adversaire,
-            'victoire': bool(victoire), 'score': _score(m, not victoire),
-            'surface': m['surface'], 'tournoi': m.get('tournoi') or '',
-            'style_adverse': style_adverse}
+def _evenement(m, joueur, adversaire, nom_adversaire, victoire, style_adverse, attendu=None):
+    ev = {'date': m['date'].isoformat(), 'adversaire': nom_adversaire,
+          'victoire': bool(victoire), 'score': _score(m, not victoire),
+          'surface': m['surface'], 'tournoi': m.get('tournoi') or '',
+          'style_adverse': style_adverse}
+    if attendu is not None:
+        ev['attendu_pct'] = round(100 * attendu, 1)
+    return ev
 
 
-def _ajouter(acc, joueur, style_adverse, surface, evenement, victoire, stats=None):
+def _ajouter(acc, joueur, style_adverse, surface, evenement, victoire, stats=None, attendu=None):
     for scope in ('global', surface):
         cle = (joueur, style_adverse, scope)
         ligne = acc.setdefault(cle, {'n': 0, 'v': 0, 'derniers': [], 'stats_n': 0,
@@ -202,6 +212,9 @@ def _ajouter(acc, joueur, style_adverse, surface, evenement, victoire, stats=Non
             ligne['stats_n'] += 1
             for k, valeur in stats.items():
                 ligne['sommes'][k] += valeur
+        if attendu is not None:
+            ligne['att'] = ligne.get('att', 0.0) + attendu
+            ligne['n_att'] = ligne.get('n_att', 0) + 1
 
 
 def calculer(M, cibles, jour, demi_vie=PS.DEMI_VIE, prior_mult=1.0, avec_ajustes=False):
@@ -216,28 +229,29 @@ def calculer(M, cibles, jour, demi_vie=PS.DEMI_VIE, prior_mult=1.0, avec_ajustes
     acc_ajuste = SA.Accumulateur()
     resultats_veille, residus_veille, jour_courant = [], [], None
 
-    def enregistrer(m, sg, sp):
+    def enregistrer(m, sg, sp, p_g=None):
         g, p, surface = m['_g'], m['_p'], m['surface']
+        p_p = None if p_g is None else 1 - p_g          # 28/10/2026 : attendu (Elo d'avant-match) de chacun
         if g in cibles:
-            ev = _evenement(m, g, p, m.get('nom_p') or p, True, sp)
+            ev = _evenement(m, g, p, m.get('nom_p') or p, True, sp, p_g)
             stats = _stats_match(m, True)
             if sp != 'indetermine':
-                _ajouter(acc, g, sp, surface, ev, True, stats)
-            _ajouter(acc, g, TOUS_STYLES, surface, ev, True, stats)
+                _ajouter(acc, g, sp, surface, ev, True, stats, p_g)
+            _ajouter(acc, g, TOUS_STYLES, surface, ev, True, stats, p_g)
         if p in cibles:
-            ev = _evenement(m, p, g, m.get('nom_g') or g, False, sg)
+            ev = _evenement(m, p, g, m.get('nom_g') or g, False, sg, p_p)
             stats = _stats_match(m, False)
             if sg != 'indetermine':
-                _ajouter(acc, p, sg, surface, ev, False, stats)
-            _ajouter(acc, p, TOUS_STYLES, surface, ev, False, stats)
+                _ajouter(acc, p, sg, surface, ev, False, stats, p_p)
+            _ajouter(acc, p, TOUS_STYLES, surface, ev, False, stats, p_p)
 
     for original in sorted(M, key=lambda m: (m['date'], m.get('tour', 0), m.get('num', 0))):
         m = original
         if m['date'] > jour:
             break  # aucun résultat postérieur à la référence pré-match
         if jour_courant != m['date']:
-            for ancien, sg, sp in resultats_veille:
-                enregistrer(ancien, sg, sp)
+            for ancien, sg, sp, pe in resultats_veille:
+                enregistrer(ancien, sg, sp, pe)
             for ancien in residus_veille:
                 acc_ajuste.ajouter(*ancien)
             resultats_veille, residus_veille, jour_courant = [], [], m['date']
@@ -260,14 +274,14 @@ def calculer(M, cibles, jour, demi_vie=PS.DEMI_VIE, prior_mult=1.0, avec_ajustes
         sp = classifier(ip, np, mug)
         if m.get('complet') and not m.get('abandon'):
             # Sans heure historique fiable, les résultats du même jour restent indisponibles.
-            resultats_veille.append((m, sg, sp))
+            resultats_veille.append((m, sg, sp, p_elo_gagnant))
             residus_veille.append((g, p, sg, sp, surface, m['date'], p_elo_gagnant))
         heapq.heappush(attente, (dt.datetime.combine(m['fin'], dt.time()), serial, m))
         serial += 1
         elo.maj(g, p, surface, m.get('niveau') == 'G', E.part_jeux(m['sets']) if m.get('complet') else None)
     if jour_courant is not None and jour_courant < jour:
-        for ancien, sg, sp in resultats_veille:
-            enregistrer(ancien, sg, sp)
+        for ancien, sg, sp, pe in resultats_veille:
+            enregistrer(ancien, sg, sp, pe)
         for ancien in residus_veille:
             acc_ajuste.ajouter(*ancien)
     reference = dt.datetime.combine(jour, dt.time())
