@@ -274,7 +274,7 @@ def bilan(resultats, debut=DEBUT_BILAN, seulement=None):
         points.append((p, y))
         par_c.setdefault(m['circuit'], []).append((p, y))
         par_jour.setdefault(jour_paris(m['debut']), []).append((p, y))
-        lignes.append({'debut': m['debut'], 'tournoi': m.get('tournoi'), 'circuit': m['circuit'],
+        lignes.append({'uid': m.get('uid'), 'debut': m['debut'], 'tournoi': m.get('tournoi'), 'circuit': m['circuit'],
                        'home': m['home'], 'away': m['away'], 'p_home': round(p, 3),
                        'gagnant': reel['gagnant'], 'score': reel.get('score'), 'juste': (p > 0.5) == (y == 1),
                        'fiabilite': m.get('fiabilite')})
@@ -404,14 +404,40 @@ def construire(racine, maintenant=None):
         MD.journaliser(lignes, racine, maintenant)
     except OSError as e:
         print(f'::warning::journal des lignes non écrit : {e}')
+    # 28/10/2026 — documentation des joueurs (balles de service effectives, comme la production)
+    try:
+        from qualite_donnees import balles_par_nom
+        b_de = balles_par_nom(_lire(os.path.join(racine, 'simulateur', 'profils_service.json'), {}) or {},
+                              [n for x in lignes for n in (x.get('home'), x.get('away'))])
+        for ligne in lignes:
+            ligne['documentation'] = [b_de(ligne.get('home')), b_de(ligne.get('away'))]
+    except Exception as e:  # noqa: BLE001
+        print(f'::warning::documentation des joueurs non calculée : {type(e).__name__}: {e}')
     resultats = _lire(os.path.join(racine, 'Tennis_Edge_Lab', 'live', 'pronostics_resultats.json'), {})
+    # 28/10/2026 — fiches figées (premier et dernier pronostic avant le match), évolution, bilans après match
+    apres = {}
+    try:
+        import apres_match as AM
+        facteurs_doc = _lire(os.path.join(racine, 'simulateur', 'facteurs.json'), {}) or {}
+        version_m = AM.version_modele(etat, facteurs_doc)
+        fiches = AM.figer(lignes, racine, maintenant, version_m)
+        for ligne in lignes:
+            ev = AM.evolution(fiches.get(ligne['uid']), ligne, version_m)
+            if ev:
+                ligne['evolution'] = ev
+        B = AM.bilans(racine, resultats)
+        apres = AM.pour_le_site(B, jours=3, maintenant=maintenant)
+        with open(os.path.join(racine, AM.SORTIE_ANALYSE), 'w', encoding='utf-8') as f:
+            json.dump(AM.analyser(B), f, ensure_ascii=False, indent=1)
+    except Exception as e:  # noqa: BLE001
+        print(f'::warning::après-match non calculé : {type(e).__name__}: {e}')
     return {'genere_le': maintenant.isoformat(timespec='seconds'), 'pronostics_du': pron.get('genere_le'),
             'simulations': pron.get('simulations') or 20000, 'match_du_jour': mdj,
             'qualite_horodatages': pron.get('qualite_horodatages'),
             'styles_descriptifs_source': ({'archive_jusqu_au': styles_doc.get('archive_jusqu_au'),
                                            'feuilles_recentes': styles_doc.get('feuilles_recentes'),
                                            'regle': styles_doc.get('regle')} if styles else None),
-            'matchs': lignes, 'bilan': bilan(resultats),
+            'matchs': lignes, 'bilan': bilan(resultats), 'apres_match': apres,
             'bilan_lignes': bilan_lignes(racine, resultats),
             'validation_fiabilite': validation_fiabilite(resultats),
             'qualite_donnees': qualite_donnees(racine, resultats),
