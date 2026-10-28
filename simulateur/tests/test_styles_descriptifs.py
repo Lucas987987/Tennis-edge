@@ -155,3 +155,26 @@ class AttenduTests(unittest.TestCase):
         self.assertLess(a['attendu_pct'], 100)
         self.assertAlmostEqual(a['attendu_pct'] + b['attendu_pct'], 100.0, places=0)
         self.assertEqual(a['derniers'][0]['attendu_pct'], a['attendu_pct'])
+
+
+class DifficulteTests(unittest.TestCase):
+    """28/10/2026 : difficulté des adversaires (Elo d'avant-match), note figée sur 10."""
+
+    def test_note_bornee_et_outsider(self):
+        r = SD.resume({'n': 2, 'v': 1, 'derniers': [], 'att': 0.9, 'n_att': 2, 'outsider': 1,
+                       'elo_adv': 2 * 1750.0, 'n_elo': 2})
+        self.assertEqual(r['difficulte'], {'note': 5.0, 'elo_moyen': 1750, 'matchs_outsider': 1})
+        haut = SD.resume({'n': 1, 'v': 0, 'derniers': [], 'elo_adv': 2400.0, 'n_elo': 1})
+        bas = SD.resume({'n': 1, 'v': 0, 'derniers': [], 'elo_adv': 1200.0, 'n_elo': 1})
+        self.assertEqual((haut['difficulte']['note'], bas['difficulte']['note']), (10.0, 0.0))
+
+    def test_elo_adverse_pre_match(self):
+        M = [match(i) for i in range(7)]
+        acc, _ = SD.calculer(M, {'a': {'circuit': 'ATP', 'surface': 'Hard'},
+                                 'b': {'circuit': 'ATP', 'surface': 'Hard'}}, dt.date(2024, 4, 1))
+        a = SD.resume(acc.get(('a', 'equilibre', 'global')))
+        b = SD.resume(acc.get(('b', 'equilibre', 'global')))
+        # avant le 7e match, b a perdu six fois : son Elo est sous celui de a ; a affronte donc le plus faible
+        self.assertLess(a['difficulte']['elo_moyen'], b['difficulte']['elo_moyen'])
+        self.assertEqual(b['difficulte']['matchs_outsider'], 1)
+        self.assertEqual(a['difficulte']['matchs_outsider'], 0)
