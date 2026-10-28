@@ -1,0 +1,81 @@
+name: Résultats ITF hommes → étude Elo
+
+# AJOUTÉ LE 28/10/2026. ITF utilisé comme DONNÉE seulement (jamais pronostiqué, jamais parié).
+# 1. Collecte des RÉSULTATS ITF hommes (vainqueur, score ; pas de feuille) depuis le 1er juin 2024 → resultats_itf/
+#    ~2 requêtes par jour de calendrier : ~1 800 la première fois, puis ~15 par semaine. Arrêt sous 6 000 de quota.
+# 2. Étude (simulateur/etude_itf_elo.py) : l'Elo avec et sans ces résultats, jugé sur les matchs Challenger depuis le
+#    01/01/2025 ; règle fixée avant tout résultat, adoption seulement deux semaines de suite.
+# La production n'est PAS modifiée ici : elle ne lit pas resultats_itf/. Une adoption fera l'objet d'une livraison.
+# Lancement : à la main la première fois (Actions → « Résultats ITF hommes → étude Elo » → Run) ; ensuite chaque
+# lundi automatiquement, après le jugement hebdomadaire.
+
+on:
+  schedule:
+    - cron: '23 6 * * 1'
+  workflow_dispatch:
+    inputs:
+      budget:
+        description: 'Requêtes au plus pour la collecte (défaut 2 500)'
+        default: '2500'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: resultats-itf
+  cancel-in-progress: false
+
+jobs:
+  itf:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+          filter: blob:none
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /simulateur/
+            /scripts/feuilles_match.py
+            /scripts/resultats_itf.py
+            /feuilles/
+            /resultats_itf/
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Collecte des résultats ITF hommes
+        timeout-minutes: 40
+        env:
+          RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
+          FEUILLES_RESERVE: '6000'
+          BUDGET: ${{ github.event.inputs.budget || '2500' }}
+        run: python scripts/resultats_itf.py '' '' "$BUDGET"
+
+      - name: Archive Sackmann (fichiers de matchs seulement)
+        run: |
+          set -euo pipefail
+          git clone --depth 1 --filter=blob:none --sparse https://github.com/Aneeshers/tennis-sackmann-archive.git /tmp/sackmann
+          cd /tmp/sackmann
+          git sparse-checkout set --no-cone 'atp_matches_20*.csv' 'atp_matches_qual_chall_20*.csv' 'wta_matches_20*.csv' 'wta_matches_qual_itf_20*.csv'
+
+      - name: Étude Elo avec / sans résultats ITF
+        run: python simulateur/etude_itf_elo.py /tmp/sackmann .
+
+      - name: Publier (même après une interruption)
+        if: always()
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- resultats_itf simulateur/etude_itf_elo.json 2>/dev/null || git add -- resultats_itf
+          if git diff --cached --quiet; then echo 'Rien de nouveau.'; exit 0; fi
+          git commit -q -m "Résultats ITF hommes + étude Elo $(date -u +%FT%TZ)"
+          for i in 1 2 3 4 5; do
+            git pull -q --rebase origin main || { git rebase --abort || true; echo '::error::Conflit avec main'; exit 1; }
+            if git push -q origin HEAD:main; then echo 'Poussé.'; exit 0; fi
+            sleep $((i * 10))
+          done
+          echo '::error::Push impossible après 5 essais'; exit 1
