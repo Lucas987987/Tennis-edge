@@ -1154,12 +1154,13 @@ def main(argv):
             reels = {r.get('id'): sets_reels(r) for r in fiches}
             try:
                 with open(SORTIE, encoding='utf-8') as f:
-                    fs_en_place = bool((json.load(f).get('forme_scores') or {}).get('adopte'))
+                    fs_prec = json.load(f).get('forme_scores') or {}
+                    fs_en_place = bool(fs_prec.get('adopte') and fs_prec.get('version') == 2)
             except (OSError, ValueError):
                 fs_en_place = False
             rf = FS.juger(appr, juge, prof_a, prof_j, reels)
             etat_st = ST.lire()
-            ok, note = ST.decider(etat_st, 'forme_scores', fs_en_place, rf['adopte'])
+            ok, note = ST.decider(etat_st, 'forme_scores_v2', fs_en_place, rf['adopte'])
             ST.ecrire(etat_st)
             rf['adopte_brut'], rf['adopte'], rf['stabilite'] = rf['adopte'], ok, note
             doc['forme_scores'] = rf

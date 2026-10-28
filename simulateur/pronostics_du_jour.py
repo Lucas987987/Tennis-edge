@@ -279,7 +279,7 @@ def charger_forme_scores(racine):
     try:
         with open(os.path.join(racine, 'simulateur', 'facteurs.json'), encoding='utf-8') as f:
             fs = json.load(f).get('forme_scores') or {}
-        if not fs.get('adopte') or not fs.get('coefs'):
+        if not fs.get('adopte') or not fs.get('coefs') or fs.get('version') != 2:
             return None
         with open(os.path.join(racine, 'simulateur', 'profil_rythme.json'), encoding='utf-8') as f:
             return fs['coefs'], json.load(f).get('joueurs') or {}
@@ -406,10 +406,9 @@ def distribution_exacte_du_match(P, h, a, c, s, sg, p_home, fct=None, pure=False
     if FORME_SCORES and not pure and sg == 2:
         # 28/10/2026 : forme du match selon les profils (tie-break, 3 sets) ; vainqueur inchangé par construction
         import forme_scores as FS
-        f = FS.caracteristiques(FORME_SCORES[1].get(h), FORME_SCORES[1].get(a))
-        if f:
-            distribution = FS.reponderer(distribution, f, FORME_SCORES[0])
-            forme = {'caracteristiques': [round(x, 4) for x in f], 'coefs': FORME_SCORES[0]}
+        f = FS.caracteristiques(FORME_SCORES[1].get(h), FORME_SCORES[1].get(a))     # None : termes de base seuls
+        distribution = FS.reponderer(distribution, f, FORME_SCORES[0])
+        forme = {'caracteristiques': [round(x, 4) for x in f] if f else None, 'coefs': FORME_SCORES[0]}
     controle = DE.controle(distribution)
     victoire = DE.victoire_depuis_distribution(distribution)
     if not controle['ok'] or abs(victoire - p_home) > 1e-8:

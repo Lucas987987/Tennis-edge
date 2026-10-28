@@ -674,3 +674,27 @@ sur 2 263 matchs ; peu documentés 0,53022 → 0,51842 ; bien documentés inchan
 Dans le cadre hebdomadaire (par-dessus les corrections en place) : 248 matchs concernés, 0,5381 → 0,5359, candidat
 (1/2). Les arbres ré-appris s'en servent (14 coupures sur 100 arbres, après nouveaux venus, simulation et Elo).
 Testé et écarté : rapprocher les probabilités de 50 % quand un joueur est peu connu (réglage appris : 0, aucun gain).
+
+## Lignes calculées par l'algo, duel service ↔ retour, forme des scores v2 (28/10/2026)
+
+Inspiré des « stats annexes » de MatchUP, mais calculé pour CE match depuis la distribution exacte des scores
+(`lignes_algo.py`), sans aucune cote : total de jeux (18,5 → 23,5 ; 32,5 → 40,5 au meilleur des 5), handicap de
+jeux du favori (−1,5 → −5,5), au moins un tie-break, set décisif, 1er set. Chaque ligne est FIGÉE avant le match dans
+`journal_pronostics/lignes_algo_v1.jsonl` (première écriture seulement) et jugée sur le score réel (`bilan_lignes` dans
+`algo/donnees.json`, conclusions après 30 matchs).
+Vérification du 28/10 sur 2 468 matchs jamais vus (Brier contre un taux fixe) : total de jeux +0,4 à +1,5 %, handicap
++4,6 à +5,4 %, tie-break +2,5 %, 3 sets −0,4 %. Biais net : matchs prévus trop longs et serrés (plus de 20,5 jeux
+57,8 % prévu, 52,4 % réel ; 3 sets 38,3 % pour 33,9 %).
+→ **Forme des scores v2** (`forme_scores.py`) : trois termes de base (tie-break, 3 sets, total de jeux − 22) en plus
+des termes de profil ; vainqueur inchangé ; jugée chaque lundi sur (camp × tie-break × 3 sets × total de jeux),
+série de stabilité neuve « forme_scores_v2 ». Test des termes de base : Brier meilleur sur les 13 lignes ; plus de
+20,5 jeux 54,2 % prévu (52,4 % réel), tie-break 30,5 % (29,1 %), 3 sets 34,6 % (33,9 %). Adoptée, elle corrige aussi
+les lignes publiées. Jugement complet v2 (apprentissage 1 500 → jugement 2 468) : 4,012996 → 4,009573, gain 0,00342 → candidate (1/2).
+
+**Duel service ↔ retour** (fiche) : indice 0–100 = rang centile, sur la surface du match, parmi les joueurs du même
+circuit avec au moins 200 points (profils publics `joueurs_service.json.gz`). Ex. Musetti service 48 / retour 82,
+Hurkacz service 93. Descriptif.
+
+Non repris de MatchUP, et pourquoi : leur modèle mélange le marché (« marché + style de jeu ») ; leurs bilans de style
+sont bruts (sans la force des adversaires) ; leur ROI est mesuré à la meilleure de 9 cotes, sans CLV, et leur courbe
+redescend depuis son sommet (environ −60 unités sur les ~600 derniers signaux).
