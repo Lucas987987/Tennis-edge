@@ -223,8 +223,10 @@ def noeuds_de_forme(cA, cB, p_victoire, sets_gagnants, sigma):
     if p_victoire is None:
         a, b = pA0, pB0
     else:
+        # 40 dichotomies gardent le résidu nettement sous la tolérance 1e-8 du
+        # contrôle de la distribution exacte ; 30 laissaient certains matchs à 1,1e-8.
         a, b = ancrer_rapide(pA0, pB0, min(max(p_victoire, 0.005), 0.995), sets_gagnants, sigma,
-                             dA=cA.get('bp', 0.0), dB=cB.get('bp', 0.0))
+                             iterations=40, dA=cA.get('bp', 0.0), dB=cB.get('bp', 0.0))
     if sigma <= 0:
         return [(1.0, ajuster(cA, a), ajuster(cB, b))]
     out = []
