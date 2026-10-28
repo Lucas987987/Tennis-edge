@@ -23,8 +23,10 @@ jouer 5 000 matchs au hasard, il calcule la probabilité de chaque issue.
 | `profils_robustes.py` | challengers contrôlés, avec validation obligatoire sur les profils de moins de 500 balles effectives |
 | `matchs_similaires.py` | voisinage strictement pré-match, futur exclu, sans cote ni sélection par ROI ; contrôle descriptif de calibration |
 | `styles_joueurs.py` | instantanés service–retour horodatés, challenger d'interaction et apport incrémental après contrôles Elo/surface/documentation |
-| `styles_descriptifs.py` | bilans publics contre six profils service–retour, global/surface, effectifs, IC de Wilson et derniers matchs ; descriptif seulement |
+| `styles_descriptifs.py` | bilans et statistiques publics contre six profils service–retour, global/surface, écarts à tous les adversaires, effectifs, IC de Wilson et derniers matchs ; descriptif seulement |
 | `styles_global.py` | second avis global figé, journalisé avec le champion réellement publié ; aucune probabilité active modifiée |
+| `etude_statistiques_styles.py` | apport incrémental des écarts détaillés contre les styles après les contrôles et le bilan global ; trois candidats figés sur 2024 |
+| `statistiques_styles.py` | suivi prospectif du seul challenger dur repéré post hoc, apparié au champion et au contrôle avec bilan ; jamais actif automatiquement |
 | `styles_valeur.py` | test hors échantillon de ces bilans comme variables candidates après Elo et service–retour ; aucune activation automatique |
 | `etude_styles_seuls.py` | trois prévisions utilisant exclusivement les bilans de styles, contre une référence neutre à 50 % ; diagnostic seulement |
 | `etude_matrice_styles.py` | matrice des 21 paires avec le bilan global figé, IC de Wilson et bootstrap par semaine ; aucune sélection post hoc |
@@ -283,12 +285,57 @@ moins de 30 comme faible, moins de 100 comme intermédiaire. Un effectif élevé
 prouve pas à lui seul un avantage causal : adversaires, époque et niveau peuvent
 différer.
 
+Des tableaux repliables ajoutent, contre le style adverse et sur le même
+périmètre, les points gagnés au service, au retour et au total, la première balle,
+les points gagnés derrière chaque service, les aces, les doubles fautes et les
+balles de break sauvées ou converties. Chaque taux est comparé à celui du même
+joueur contre **tous ses adversaires**, globalement ou sur cette surface ; l'écart
+est exprimé en points de pourcentage. Les taux proviennent des sommes de
+numérateurs et dénominateurs, jamais d'une moyenne non pondérée de pourcentages
+de matchs. Seuls les matchs ayant deux feuilles cohérentes alimentent ces
+statistiques : leur effectif `matchs` est donc distinct de celui du bilan V/D, et
+une statistique absente n'est jamais remplacée par zéro. Comme pour les bilans,
+les résultats et feuilles du jour de référence ne sont pas supposés connus. Ces
+écarts restent descriptifs et ne mesurent pas un effet causal du style.
+
 Ce bloc est fusionné par UID dans `vitrine.py`, après la création des sorties du
 modèle. Il ne modifie ni probabilité, ni note, ni scénario, ni journal, ni règle
 gelée. Il ne réutilise ni les catégories de matchup-tennis.fr ni une cote de
 marché. L'artefact intermédiaire `styles_descriptifs.json` est régénéré et ignoré
 par Git ; seule sa fusion dans `algo/donnees.json` est publiée. Sans heure
 historique fiable, les résultats du même jour ne sont jamais supposés connus.
+
+### Apport incrémental des statistiques détaillées et challenger dur
+
+`etude_statistiques_styles.py` teste ces statistiques au lieu de se contenter de
+leur lecture descriptive. Chaque variable est la différence home–away des écarts
+à la référence tous styles. Si l'un des deux joueurs n'a pas de feuille contre le
+style, les variables sont neutres et la documentation vaut zéro. Trois candidats
+sont choisis sur 2024 : points totaux, service–retour, ou un modèle « pression »
+ajoutant deuxième balle et balles de break. La référence incrémentale contient
+les mêmes contrôles Elo/service–retour et le bilan global.
+
+Sur 8 000 matchs (2 153 en découverte et 5 847 en diagnostic réutilisé), le
+candidat « pression » est choisi sur 2024. Dans le diagnostic, il **perd 0,000129
+de log loss et 0,000055 de Brier** contre le contrôle avec bilan ; l'IC95 du gain
+de log loss est [-0,001843 ; +0,001558]. Le candidat service–retour, non choisi,
+ne gagne que 0,000034 de log loss. Les statistiques détaillées n'apportent donc
+pas un gain global démontré et ne sont pas activées.
+
+Le sous-groupe dur conserve néanmoins un signal à tester : +0,000936 de log loss,
++0,000344 de Brier et 67,84 % d'exactitude contre 67,63 % pour le contrôle avec
+bilan, sur 3 234 matchs. Ce gain est sous le seuil de 0,001 et le sous-groupe a
+été repéré **après coup**. `statistiques_styles.py` le fige donc uniquement comme
+challenger prospectif sur dur, avec le champion réellement publié et le contrôle
+avec bilan sur le même UID. La promotion exige au moins 1 000 nouveaux matchs sur
+dur et huit semaines ISO, un gain d'au moins 0,001 contre les deux références,
+un Brier non dégradé et l'incertitude requise. Le journal, le modèle et le
+diagnostic restent hors de la probabilité publique ; 2025–2026 ne compte pas
+comme une nouvelle confirmation. Rejouer :
+
+```bash
+python simulateur/etude_statistiques_styles.py /tmp/sackmann . --maximum 8000 --bootstrap 2000
+```
 
 ## Valeur prédictive des bilans de styles (28/10/2026)
 
