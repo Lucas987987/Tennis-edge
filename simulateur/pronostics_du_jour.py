@@ -125,9 +125,10 @@ def pronostic(p_home, c, sg, pa0, pb0):
     Scores : les 3 scores COMPLETS les plus probables, set par set et dans l'ordre
     réel (modele.scores_complets : rien n'est supposé — le vainqueur peut perdre le
     1er set). Il y a ~1 500 scores possibles : même le premier dépasse rarement 4 %."""
-    a, b = M.ancrer_forme(pa0, pb0, min(max(p_home, 0.01), 0.99), sg, SIGMA, iterations=20)
-    r = M.match_forme(a, b, sg, SIGMA)
-    sc = M.scores_complets(a, b, sg, SIGMA, top=3)
+    sig = sigma_de(c)
+    a, b = M.ancrer_forme(pa0, pb0, min(max(p_home, 0.01), 0.99), sg, sig, iterations=20)
+    r = M.match_forme(a, b, sg, sig)
+    sc = M.scores_complets(a, b, sg, sig, top=3)
     return {'p_home': round(r['victoire'], 4),
             'sets': {k: round(v, 4) for k, v in r['sets'].items()},
             'scores_probables': [[s_, round(p_, 4)] for s_, p_ in sc['scores']],
@@ -272,6 +273,22 @@ def charger_facteurs(racine):
 
 FACTEURS, CONTEXTE = None, None
 FORME_SCORES = None             # 28/10/2026 : (coefs, profils, repères par circuit) si la forme des scores est adoptée
+SIGMA_CIRCUIT = None            # 28/10/2026 : {circuit: σ} de la forme du jour si sigma_circuit.py l'a ADOPTÉ
+
+
+def charger_sigma_circuit(racine):
+    """{circuit: σ} si facteurs.json l'a adopté (règle fixée, deux semaines de suite), sinon None (σ 0,15 partout)."""
+    try:
+        with open(os.path.join(racine, 'simulateur', 'facteurs.json'), encoding='utf-8') as f:
+            r = json.load(f).get('sigma_circuit') or {}
+        return {k: float(v) for k, v in (r.get('sigmas') or {}).items()} if r.get('adopte') else None
+    except (OSError, ValueError, TypeError):
+        return None
+
+
+def sigma_de(c):
+    """σ de la forme du jour pour un circuit (le vainqueur ne dépend pas de σ : seule la forme du match)."""
+    return (SIGMA_CIRCUIT or {}).get(c, SIGMA)
 
 
 def charger_forme_scores(racine):
@@ -368,7 +385,7 @@ def match_simule(P, h, a, c, s, sg, p_home, cle, fct=None, controler_stabilite=F
     (et les facteurs du match adoptés, s'il y en a)."""
     cH, cA, nh, na = composantes_du_match(P, h, a, c, s, pure=p_home is None)
     cH, cA = avec_facteurs(cH, cA, fct)
-    sigma = sigma_sim() if p_home is None else SIGMA
+    sigma = sigma_sim() if p_home is None else sigma_de(c)
     r = MS.simuler(cH, cA, p_home, sg, SIMULATIONS, sigma, cle=cle, reglages=REGLAGES)
     if controler_stabilite and STABILITE_BLOCS > 0:
         import stabilite_scores as SS
@@ -402,7 +419,7 @@ def distribution_exacte_du_match(P, h, a, c, s, sg, p_home, fct=None, pure=False
     """
     cH, cA, _, _ = composantes_du_match(P, h, a, c, s, pure=pure)
     cH, cA = avec_facteurs(cH, cA, fct)
-    sigma = sigma_sim() if pure else SIGMA
+    sigma = sigma_sim() if pure else sigma_de(c)
     distribution = DE.distribution_forme(cH, cA, sg, sigma, p_victoire=p_home)
     forme = None
     if FORME_SCORES and not pure and sg == 2:
@@ -483,6 +500,8 @@ def construire(racine, maintenant=None):
     FACTEURS, CONTEXTE = charger_facteurs(racine)
     global FORME_SCORES
     FORME_SCORES = charger_forme_scores(racine)
+    global SIGMA_CIRCUIT
+    SIGMA_CIRCUIT = charger_sigma_circuit(racine)
     venir, couverture_horodatages = matchs_a_venir(racine, maintenant, avec_couverture=True)
     # Un joueur = un classement : alias du dernier calcul, puis noms nouveaux reliés au joueur connu.
     alias = dict(etat.get('alias') or {})
@@ -551,8 +570,8 @@ def construire(racine, maintenant=None):
             cH0, cA0 = avec_facteurs(*composantes_du_match(PR, h, a, c, s, pure=not combinaison)[:2], fct)
             pa_s, pb_s = MS.p_service(cH0), MS.p_service(cA0)
             if combinaison:
-                pa_s, pb_s = MS.ancrer_rapide(pa_s, pb_s, combinaison['p_home'], sg, SIGMA)
-            direct = {'a': round(pa_s, 5), 'b': round(pb_s, 5), 'sigma': SIGMA if combinaison else sigma_sim(), 'sets_gagnants': sg,
+                pa_s, pb_s = MS.ancrer_rapide(pa_s, pb_s, combinaison['p_home'], sg, sigma_de(c))
+            direct = {'a': round(pa_s, 5), 'b': round(pb_s, 5), 'sigma': sigma_de(c) if combinaison else sigma_sim(), 'sets_gagnants': sg,
                       'tb_final': 10 if sg == 3 else 7, 'version': 'combinaison' if combinaison else 'simulation'}
             for nom_v, v in (('stats', stats), ('combinaison', combinaison)):
                 if v:
