@@ -81,3 +81,19 @@ class Coffre(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class GroupeRoiTests(unittest.TestCase):
+    """28/10/2026 : le rapport ROI va au coffre, hors du dépôt public, et n'est pas servi au Lab."""
+
+    def test_roi_au_coffre_ignore_par_git(self):
+        self.assertEqual(coffre.GROUPES['roi'], ['simulateur/rapport_roi_algo.json'])
+        self.assertNotIn('simulateur/rapport_roi_algo.json', coffre.GROUPES['tous'])
+        racine = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
+        with open(os.path.join(racine, '.gitignore'), encoding='utf-8') as f:
+            self.assertIn('/simulateur/rapport_roi_algo.json', f.read().splitlines())
+        with open(os.path.join(racine, '.github', 'workflows', 'pronostic.yml'), encoding='utf-8') as f:
+            wf = f.read()
+        self.assertNotIn('git add -- simulateur/rapport_roi_algo.json', wf)
+        self.assertNotIn(' simulateur/rapport_roi_algo.json ', wf.split('- name: Publier')[1])
+        self.assertIn('coffre.py push --groupe roi', wf)
