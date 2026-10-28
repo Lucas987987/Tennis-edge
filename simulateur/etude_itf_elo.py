@@ -205,7 +205,10 @@ def etude(M, F, I_brut):
 # moins, ATP + Challenger pas plus de +0,0005 ; adoption DEUX semaines de suite (série « elo_itf_femmes ») ; rien n'est
 # jugé sous 95 % des jours collectés depuis le 25/05/2026. Adopté seulement : l'Elo de production les ajoute.
 DEBUT_ITF_FEMMES = dt.date(2026, 5, 25)
-CLE_FEMMES = 'elo_itf_femmes'
+# 29/10/2026 — DÉCISION DE LUCAS : ITF femmes en production sans attendre la 2e semaine (1re semaine : WTA −0,0034 de log
+# loss sur 1 915 matchs, ATP + Challenger inchangés, joueuses peu vues −0,015). La règle devient la SORTIE : retirées
+# (« retire » = true) si moins bien deux semaines de suite. Série neuve, partie « en place ».
+CLE_FEMMES = 'elo_itf_femmes_production'
 
 
 def etude_femmes(M, F, I_hommes_brut, I_femmes_brut):
@@ -236,12 +239,12 @@ def etude_femmes(M, F, I_hommes_brut, I_femmes_brut):
 
 
 def itf_femmes_adoptees(racine):
-    """Vrai seulement si l'étude a ADOPTÉ les résultats ITF femmes (deux semaines de suite)."""
+    """Vrai sauf si l'étude a RETIRÉ les résultats ITF femmes (moins bien deux semaines de suite) — décision du 29/10."""
     try:
         with open(os.path.join(racine, SORTIE), encoding='utf-8') as f:
-            return bool((json.load(f).get('femmes') or {}).get('adopte'))
+            return not bool((json.load(f).get('femmes') or {}).get('retire'))
     except (OSError, ValueError):
-        return False
+        return True
 
 
 def main(argv):
@@ -282,15 +285,16 @@ def main(argv):
                                         "ATP + Challenger pas plus de +0,0005 ; deux semaines de suite (fixée le 28/10/2026)")}
     if cvf < COUVERTURE_MIN:
         fem['statut'] = f"collecte incomplète ({100 * cvf:.1f} % des jours) : rien n'est jugé"
-        fem['adopte'] = bool((etat.get(CLE_FEMMES) or {}).get('adopte', False))
+        fem['adopte'] = bool((etat.get(CLE_FEMMES) or {}).get('adopte', True))
+        fem['retire'] = not fem['adopte']
     else:
         if 'M' not in locals():
             M = donnees.charger(args[0], 2016)
         rf = etude_femmes(M, feuilles_apres(racine, max(m['date'] for m in M)), RI.lire_tout(racine),
                           RI.lire_tout(racine, RI.DOSSIER_FEMMES))
-        ok, note = ST.decider(etat, CLE_FEMMES, False, rf['verdict_semaine'],
+        ok, note = ST.decider(etat, CLE_FEMMES, True, rf['verdict_semaine'],
                               rf['wta']['log_loss_avec'], rf['wta']['log_loss_sans'])
-        fem.update(rf, statut=note, adopte=ok)
+        fem.update(rf, statut=note, adopte=ok, retire=not ok)
     doc['femmes'] = fem
     doc['stabilite'] = etat
     with open(chemin, 'w', encoding='utf-8') as f:
