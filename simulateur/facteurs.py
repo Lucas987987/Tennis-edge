@@ -1205,7 +1205,12 @@ def main(argv):
             rw, rl = (rh, ra) if x['vainqueur'] == 0 else (ra, rh)
             rw, rl = rw or CL.rang_au(w, jour_m), rl or CL.rang_au(l, jour_m)
             nw, nl = experience.get(id(x), (None, None))
-            situations[id(x)] = {'qualifies': (qualifie(Q, w, x['tournoi'], x['t']), qualifie(Q, l, x['tournoi'], x['t'])),
+            w_rel = max(0.0, 1 - (nw or 0) / EP.SEUIL_RANG_RELATIF, 1 - (nl or 0) / EP.SEUIL_RANG_RELATIF) if nw is not None else 0.0
+            situations[id(x)] = {'rangs': (rw, rl),
+                                 # 28/10/2026 : classement relatif quand un joueur est peu connu (v_w − v_l = poids·(ln rl − ln rw))
+                                 'classement_relatif': ((-w_rel * math.log(rw), -w_rel * math.log(rl))
+                                                        if rw and rl and nw is not None else None),
+                                 'qualifies': (qualifie(Q, w, x['tournoi'], x['t']), qualifie(Q, l, x['tournoi'], x['t'])),
                                  'transition': (transition(Sf, w, x['surface'], x['t']), transition(Sf, l, x['surface'], x['t'])),
                                  'classement': ((CLS.niveau_inconnu(rw, nw), CLS.niveau_inconnu(rl, nl))
                                                 if nw is not None else None)}
@@ -1231,7 +1236,7 @@ def main(argv):
         import stabilite as ST
         etat_st = ST.lire()
         avant = {k: choix.get(k) for k in ('combinaison_feuilles', 'poids_challenger', 'nouveaux_venus', 'modele_arbres',
-                                           'qualifies', 'transition', 'classement')}
+                                           'qualifies', 'transition', 'classement', 'classement_relatif')}
         choix['combinaison_feuilles'] = ST.appliquer(etat_st, 'combinaison_feuilles', avant['combinaison_feuilles'],
                                                      {k: ep.get(k) for k in ('adopte', 'poids', 'raison', 'poids_simulation_pct', 'll')},
                                                      ('poids', 'poids_simulation_pct'))
@@ -1247,7 +1252,7 @@ def main(argv):
                                               ('variables', 'modele', 'poids'))
         print(f"Arbres (tout combiné) : {'ADOPTÉS' if choix['modele_arbres']['adopte'] else 'non adoptés'} — "
               f"{choix['modele_arbres']['raison']}", flush=True)
-        for cle_s in ('qualifies', 'transition', 'classement'):
+        for cle_s in ('qualifies', 'transition', 'classement', 'classement_relatif'):
             choix[cle_s] = ST.appliquer(etat_st, cle_s, avant[cle_s],
                                         {k: (ep.get(cle_s) or {}).get(k) for k in ('adopte', 'delta', 'raison', 'll')}, ('delta',))
             print(f"{EP.SITUATIONS[cle_s]} : {'correction ADOPTÉE' if choix[cle_s]['adopte'] else 'pas de correction'} — "
