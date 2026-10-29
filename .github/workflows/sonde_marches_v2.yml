@@ -1,0 +1,45 @@
+name: Sonde des marchés v2 (bookmakers, TennisApi)
+
+# AJOUTÉ LE 29/10/2026 — LECTURE SEULE, à lancer à la main. Quels marchés tennis sont cotés, et par quels
+# bookmakers (OddsPapi), et ce que propose le fournisseur de TennisApi. ≈ 3 requêtes OddsPapi + ≈ 6 TennisApi.
+# Rien n'est collecté ni commité : le rapport est un artefact du run, et le résumé est dans le journal.
+# Les cotes ne servent qu'à comparer nos lignes ; elles n'entrent jamais dans l'algo.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sonde:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /scripts/oddspapi_v5.py
+            /scripts/feuilles_match.py
+            /scripts/sonde_marches_v2.py
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Sonde
+        env:
+          RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
+          ODDS_RETRIES: '0'
+        run: python scripts/sonde_marches_v2.py
+
+      - name: Rapport (artefact)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sonde-marches-v2-${{ github.run_id }}
+          path: sonde_marches_v2.json
+          retention-days: 14
+          if-no-files-found: ignore
