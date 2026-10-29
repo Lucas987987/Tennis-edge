@@ -1,6 +1,8 @@
 {
  "regle": "Chaque changement du modèle est noté ici avec sa date, ce qu'il change et ce qu'il a gagné au test (log loss, négatif = mieux prévu). Les changements mis en production par décision, sans attendre la 2e semaine, restent sous le garde-fou du jugement hebdomadaire.",
  "changements": [
+  {"date": "2026-10-29", "titre": "Service et retour du moment (30 jours, même surface) dans la simulation — modèle fantôme", "statut": "candidat", "decision": false,
+   "mesure": "affiché en information sur chaque match ; probabilité « avec la forme du service » suivie à côté, jamais affichée comme pronostic ; test historique (2 811 matchs depuis le 27/07, règle fixée avant) : −0,0003, ATP −0,0015 → pas positif, suivi en direct maintenu ; jugée sur les matchs pronostiqués à partir du 30/10 : rien avant 30 matchs, adoptée seulement si −0,001 de log loss deux semaines de suite sans circuit dégradé"},
   {"date": "2026-10-29", "titre": "Désaccords Elo / simulation en WTA : mélange propre (plus de poids à l'Elo)", "statut": "candidat", "decision": false,
    "mesure": "constat depuis juin : l'Elo a raison 60,8 % du temps sur ces matchs, l'algo affiché 57,5 % ; aperçu sur les 6 dernières semaines : 0,0000 ; jugé chaque lundi contre les arbres"},
   {"date": "2026-10-29", "titre": "Note de fiabilité v2 sans la composante « calibration » (en essai, non affichée)", "statut": "candidat", "decision": false,

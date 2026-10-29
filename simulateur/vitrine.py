@@ -157,6 +157,8 @@ def ligne_match(m, complet):
         out['modeles'] = {'p_elo': round(float(cb_['p_elo']), 4), 'p_simulation': round(float(cb_['p_simulation']), 4)}
     if m.get('activite'):
         out['activite'] = m['activite']             # 29/10/2026 : activité récente des deux joueurs (activite.py)
+    if m.get('forme_service'):
+        out['forme_service'] = m['forme_service']   # 29/10/2026 : service / retour du moment (forme_service.py)
     if not complet:
         out['simulation_disponible'] = False
         return out
@@ -503,7 +505,7 @@ def journal_changements(racine, analyse=None):
     doc['fantome'] = {k: v['fantome'] for k, v in g.items() if isinstance(v, dict) and v.get('fantome')}
     # 29/10/2026 : un fantôme par changement (ITF hommes + femmes ensemble, ITF femmes seules, σ du Challenger)
     T = g.get('TOUS') or {}
-    doc['fantomes'] = [dict(T[k], cle=k) for k in ('fantome', 'fantome_itf_femmes', 'fantome_sigma') if T.get(k)]
+    doc['fantomes'] = [dict(T[k], cle=k) for k in ('fantome', 'fantome_itf_femmes', 'fantome_sigma', 'fantome_forme_service') if T.get(k)]
     return doc
 
 
