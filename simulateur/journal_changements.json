@@ -1,6 +1,10 @@
 {
  "regle": "Chaque changement du modèle est noté ici avec sa date, ce qu'il change et ce qu'il a gagné au test (log loss, négatif = mieux prévu). Les changements mis en production par décision, sans attendre la 2e semaine, restent sous le garde-fou du jugement hebdomadaire.",
  "changements": [
+  {"date": "2026-10-29", "titre": "Activité récente des joueurs dans les arbres (matchs sur 30 jours contre les 60 d'avant)", "statut": "candidat", "decision": false,
+   "mesure": "jugé chaque lundi contre les arbres actuels : log loss plus basse au total et aucun circuit qui perd plus de 0,001, deux semaines de suite"},
+  {"date": "2026-10-29", "titre": "Activité récente ajoutée seule au mélange Elo + simulation", "statut": "rejete", "decision": false,
+   "mesure": "jugement depuis le 14/09 : −0,0026 (Challenger −0,0067) mais WTA +0,0081"},
   {"date": "2026-10-29", "titre": "Poids Elo / simulation propres à l'ATP et à la WTA", "statut": "candidat", "decision": false,
    "mesure": "pronostics hors échantillon depuis le 14/09 : ATP +0,0013, WTA +0,0092 (moins bien) ; même règle que les Challenger, rejugé chaque lundi"},
   {"date": "2026-10-29", "titre": "Échelle de l'Elo propre à chaque circuit", "statut": "rejete", "decision": false,
