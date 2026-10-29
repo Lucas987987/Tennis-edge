@@ -1,0 +1,27 @@
+name: Sonde statut d'entrée (3 requêtes)
+
+# 29/10/2026 — TennisApi donne-t-il « WC » / « Q » avant le match ? Lecture
+# seule, 3 requêtes TennisApi au plus, rien n'est écrit. Résultat : journal.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sonde:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          sparse-checkout: |
+            scripts
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - name: Sonde
+        env:
+          RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
+        run: python scripts/sonde_statut.py
