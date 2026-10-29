@@ -317,7 +317,7 @@ body.carte #video{display:block;width:1080px;height:1350px}
   .arcade .annonce.pop{animation-name:popdoux}
   @keyframes popdoux{0%,100%{opacity:0}15%,80%{opacity:1}}
 }
-.cv-h{font-size:1rem;margin:18px 0 4px}.cv-p{color:var(--dim);font-size:.85rem;margin:0 0 8px}.cv-wrap{overflow-x:auto}.cv{font-size:.85rem;width:100%}.cv td,.cv th{padding:6px 5px}.cv td:not(:first-child),.cv th:not(:first-child){text-align:right;white-space:nowrap}.cv-n{color:var(--dim);font-size:.75rem}.fs-t{table-layout:fixed}.fs-t .jc-st{white-space:normal;display:inline-block;text-align:center;line-height:1.2;max-width:100%}.fs-t th:first-child,.fs-t td:first-child{width:52%;white-space:normal;overflow-wrap:anywhere}.fs-t td:not(:first-child),.fs-t th:not(:first-child){white-space:normal}
+.cv-h{font-size:1rem;margin:18px 0 4px}.cv-p{color:var(--dim);font-size:.85rem;margin:0 0 8px}.cv-wrap{overflow-x:auto}.cv{font-size:.85rem;width:100%}.cv td,.cv th{padding:6px 5px}.cv td:not(:first-child),.cv th:not(:first-child){text-align:right;white-space:nowrap}.cv-n{color:var(--dim);font-size:.75rem}.ds-t{table-layout:fixed}.ds-t th:first-child,.ds-t td:first-child{width:40%;white-space:normal}.ds-t th{font-size:.78rem}.fs-t{table-layout:fixed}.fs-t .jc-st{white-space:normal;display:inline-block;text-align:center;line-height:1.2;max-width:100%}.fs-t th:first-child,.fs-t td:first-child{width:52%;white-space:normal;overflow-wrap:anywhere}.fs-t td:not(:first-child),.fs-t th:not(:first-child){white-space:normal}
 .essentiel ul{list-style:none;margin:0;padding:4px 16px 16px;display:grid;gap:6px}.essentiel li{padding:7px 10px;border-radius:9px;background:rgba(255,255,255,.04);border-left:3px solid var(--dim);font-size:.92rem;line-height:1.4}.essentiel li.plus{border-left-color:var(--ok)}.essentiel li.moins{border-left-color:var(--ko)}.essentiel li.info{border-left-color:var(--ball)}
 .evol{margin:6px 0 0;color:var(--dim);font-size:.82rem}.badge.peu{background:rgba(255,107,134,.16);color:var(--ko)}
 .res li.avec-am{grid-template-columns:1.8em 1fr auto}.res li .am{grid-column:1/-1}.am summary{cursor:pointer;font-weight:600;font-size:.88rem;color:var(--ball);min-height:36px;display:flex;align-items:center}.am h4{margin:10px 0 4px;font-size:.88rem}.am-t{font-size:.85rem;width:100%}.am-t td{vertical-align:top}.am-t th,.am-t td:first-child{text-align:left}.am-t td+td{text-align:right}.am-ok{color:var(--ok)}.am-ko{color:var(--ko)}.am .d{color:var(--dim);font-size:.8rem}
@@ -498,6 +498,13 @@ const T = {
   x_vict:(v,n)=>`${v} victoire${v>1?'s':''} sur ${n}`, x_attendu:'attendu', x_comme:'comme attendu', x_faible:'échantillon faible',
   x_derniers:'Derniers matchs contre ce style', x_v:'V', x_d:'D',
   x_pied:'Attendu : la chance de victoire d’avant-match, en moyenne, sur ces mêmes matchs. Battre des joueurs qu’on devait battre ne prouve rien ; c’est l’écart à l’attendu qui compte.',
+  sv_niv_titre:'Par niveau de fiabilité', sv_niv_sous:'Confiance annoncée → vainqueurs trouvés, et l’erreur en trop par rapport à l’erreur normale vu la confiance (log loss). Proche de 0 : l’annonce tient ; positif : plus d’erreurs que prévu. Les notes hautes vont souvent à des matchs serrés : c’est cette colonne qu’il faut comparer, pas le taux de vainqueurs.',
+  sv_niveau:'Niveau', sv_conf_trouves:'Confiance → trouvés', sv_exces:'Erreur en trop',
+  niv_fragile:'Fragile', niv_prudent:'Prudent', niv_correct:'Correct', niv_solide:'Solide',
+  ds_titre:'Elo et simulation en désaccord', ds_sous:'Les matchs où l’Elo et la simulation ne désignent pas le même vainqueur : qui avait raison, et l’algo affiché. Ce sont les arbres, jugés chaque lundi, qui apprennent quoi en faire.',
+  ds_n:(d,n)=>`${fmt(d)} désaccords sur ${fmt(n)} matchs`, ds_sim:'Simul.', ds_aff:'Affiché',
+  ds_direct:'Sur nos matchs', ds_vide:'Pas encore de désaccord jugé sur nos matchs (suivi depuis le 29 octobre).',
+  ds_ref:'Pronostics hors échantillon depuis juin', ds_ref_txt:(p,a)=>`désaccord sur ${dec(p,0)} % des matchs ; quand ils sont d’accord, l’algo trouve ${dec(a,1)} % des vainqueurs`,
   jc_titre:'Journal des changements', jc_sous:'Ce qui a changé dans l’algo, quand, et ce que chaque changement a gagné au test. Les changements rejetés restent visibles.',
   jc_production:'en production', jc_candidat:'candidat', jc_rejete:'rejeté', jc_decision:'mis en production par décision, sous garde-fou',
   jc_fantome:'En direct :', jc_fantome_v:(n,a,b,g,ok)=>`sur ${fmt(n)} matchs réels, l’Elo en place fait ${dec(a,4)} de log loss contre ${dec(b,4)} pour l’Elo d’avant les changements (${g>=0?'gain':'perte'} ${dec(Math.abs(g),4)})${ok?'':' — moins de 30 matchs : rien à conclure'}.`,
@@ -661,6 +668,13 @@ const T = {
   x_vict:(v,n)=>`${v} win${v>1?'s':''} out of ${n}`, x_attendu:'expected', x_comme:'as expected', x_faible:'small sample',
   x_derniers:'Last matches against this style', x_v:'W', x_d:'L',
   x_pied:'Expected: the pre-match win chance, on average, over these same matches. Beating players you were supposed to beat proves nothing; the gap to expected is what counts.',
+  sv_niv_titre:'By reliability level', sv_niv_sous:'Announced confidence → winners called, and the error above the normal error for that confidence (log loss). Near 0: the forecast holds; positive: more errors than expected. High scores often go to close matches: compare this column, not the hit rate.',
+  sv_niveau:'Level', sv_conf_trouves:'Confidence → called', sv_exces:'Excess error',
+  niv_fragile:'Fragile', niv_prudent:'Cautious', niv_correct:'Fair', niv_solide:'Solid',
+  ds_titre:'Elo and simulation disagree', ds_sous:'Matches where Elo and the simulation pick different winners: who was right, and the published forecast. The trees, judged every Monday, learn what to do with it.',
+  ds_n:(d,n)=>`${fmt(d)} disagreements out of ${fmt(n)} matches`, ds_sim:'Sim.', ds_aff:'Published',
+  ds_direct:'On our matches', ds_vide:'No judged disagreement on our matches yet (tracked since 29 October).',
+  ds_ref:'Out-of-sample forecasts since June', ds_ref_txt:(p,a)=>`disagreement on ${dec(p,0)}% of matches; when they agree, the model calls ${dec(a,1)}% of winners`,
   jc_titre:'Change log', jc_sous:'What changed in the model, when, and what each change gained in testing. Rejected changes stay listed.',
   jc_production:'live', jc_candidat:'candidate', jc_rejete:'rejected', jc_decision:'put live by decision, under a safeguard',
   jc_fantome:'Live:', jc_fantome_v:(n,a,b,g,ok)=>`on ${fmt(n)} real matches, the current Elo scores ${dec(a,4)} log loss vs ${dec(b,4)} for the pre-change Elo (${g>=0?'gain':'loss'} ${dec(Math.abs(g),4)})${ok?'':' — under 30 matches: no conclusion'}.`,
@@ -1656,7 +1670,26 @@ function rendSuivi(){
   const el = document.getElementById('suivi-fiabilite');
   const circuits = Object.entries(B.par_circuit || {}).sort((a,b)=>b[1].n-a[1].n);
   const detail = circuits.length ? `<div class="suivi-grid">${circuits.map(([c,v])=>`<div class="suivi-circuit"><b>${esc(CIRC[c]||c)}</b><span>${pc(v.pct)}</span><small>${fmt(v.vainqueurs)} / ${fmt(v.n)} · Brier ${dec(v.brier,3)}</small></div>`).join('')}</div>` : '';
-  el.innerHTML = `<div class="statut"><span>${esc(t(g?'suivi_taux':'suivi_attente'))}</span><strong>${g?pc(g.pct):'—'}</strong><span>${g?`${fmt(g.vainqueurs)} / ${fmt(g.n)} · Brier ${dec(g.brier,3)}`:esc(t('suivi_zero'))}</span></div>${detail}<p class="note">${esc(t('suivi_note'))}</p>`;
+  // 29/10/2026 : par niveau, la PERTE EXCÉDENTAIRE (erreur réelle − erreur normale vu la confiance annoncée)
+  const PN = B.par_niveau || {}, niv = ['fragile','prudent','correct','solide'].filter(k=>PN[k]);
+  const tn = niv.length ? `<h3 class="cv-h">${esc(t('sv_niv_titre'))}</h3><p class="cv-p">${esc(t('sv_niv_sous'))}</p>
+    <div class="cv-wrap"><table class="calib cv fs-t"><thead><tr><th>${esc(t('sv_niveau'))}</th><th>${esc(t('sv_conf_trouves'))}</th><th>${esc(t('sv_exces'))}</th></tr></thead><tbody>${niv.map(k=>{const v=PN[k];
+      const ex=v.perte_excedentaire, cl=!v.conclusion_possible?'':ex>0.03?'style="color:var(--ko)"':ex<-0.03?'style="color:var(--ok)"':'';
+      return `<tr><td>${esc(t('niv_'+k))}<br><span class="cv-n">${esc(t('cv_m',v.n))}${v.conclusion_possible?'':' · '+esc(t('fs_f').rien)}</span></td><td>${pc(v.confiance_pct)} → <b>${pc(v.vainqueurs_pct)}</b></td><td ${cl}>${ex>0?'+':''}${dec(ex,3)}</td></tr>`;}).join('')}</tbody></table></div>` : '';
+  el.innerHTML = `<div class="statut"><span>${esc(t(g?'suivi_taux':'suivi_attente'))}</span><strong>${g?pc(g.pct):'—'}</strong><span>${g?`${fmt(g.vainqueurs)} / ${fmt(g.n)} · Brier ${dec(g.brier,3)}`:esc(t('suivi_zero'))}</span></div>${detail}${tn}${rendDesaccords()}<p class="note">${esc(t('suivi_note'))}</p>`;
+}
+// 29/10/2026 — Elo et simulation en désaccord sur le vainqueur : qui avait raison ?
+function rendDesaccords(){
+  const X = D.desaccords; if (!X) return '';
+  const lig = (lib, v, n_) => `<tr><td>${esc(lib)}<br><span class="cv-n">${esc(t('ds_n', v.desaccords, n_))}</span></td><td>${pc(v.elo_pct)}</td><td>${pc(v.simulation_pct)}</td><td><b>${pc(v.affiche_pct)}</b></td></tr>`;
+  const tab = (rows) => `<div class="cv-wrap"><table class="calib cv ds-t"><thead><tr><th></th><th>Elo</th><th>${esc(t('ds_sim'))}</th><th>${esc(t('ds_aff'))}</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+  const dir = X.en_direct || {}, ref = X.reference || {}, ordre = ['TOUS','ATP','WTA','CH'];
+  const rd = ordre.filter(k=>dir[k] && dir[k].desaccords).map(k=>lig(k==='TOUS'?t('tous_circuits'):(CIRC[k]||k), dir[k], dir[k].matchs)).join('');
+  const rr_ = ordre.filter(k=>ref[k]).map(k=>lig(k==='TOUS'?t('tous_circuits'):(CIRC[k]||k), ref[k], ref[k].matchs)).join('');
+  const T_ = ref.TOUS;
+  return `<h3 class="cv-h">${esc(t('ds_titre'))}</h3><p class="cv-p">${esc(t('ds_sous'))}</p>
+    ${rd ? `<p class="cv-p"><b>${esc(t('ds_direct'))}</b></p>${tab(rd)}` : `<p class="cv-p">${esc(t('ds_vide'))}</p>`}
+    ${rr_ ? `<p class="cv-p"><b>${esc(t('ds_ref'))}</b>${T_ ? ' — '+esc(t('ds_ref_txt', T_.part_pct, T_.accord_pct)) : ''}</p>${tab(rr_)}` : ''}`;
 }
 function rendQualite(){
   const q = D.qualite_donnees, el = document.getElementById('qualite-donnees');
