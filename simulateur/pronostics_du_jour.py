@@ -276,6 +276,18 @@ FORME_SCORES = None             # 28/10/2026 : (coefs, profils, repères par cir
 SIGMA_CIRCUIT = None            # 28/10/2026 : {circuit: σ} de la forme du jour si sigma_circuit.py l'a ADOPTÉ
 
 
+def controle_fantome(elo, elo_ref, ref_etat, etat, h, a, c, s):
+    """{p_elo, p_elo_reference, reference} : la probabilité Elo en place et celle du modèle fantôme (Elo d'avant les
+    changements), jamais affichée comme pronostic ; comparées après le match (apres_match.py)."""
+    if elo_ref is None:
+        return None
+    if (ref_etat or {}).get('depart_bas') and c in ('CH', 'ITF'):
+        elo_ref.presenter(h, ref_etat['depart_bas'])
+        elo_ref.presenter(a, ref_etat['depart_bas'])
+    return {'p_elo': round(elo.proba(h, a, s), 4), 'p_elo_reference': round(elo_ref.proba(h, a, s), 4),
+            'reference': ref_etat.get('variante'), 'en_place': (etat or {}).get('variante')}
+
+
 def charger_sigma_circuit(racine):
     """{circuit: σ} de la forme du jour. 28/10/2026 : en production par décision de Lucas (sigma_circuit.DECISION,
     Challenger 0,22) tant que le jugement hebdomadaire n'a rien dit ; ensuite ce que dit facteurs.json — σ appris si
@@ -489,6 +501,12 @@ def construire(racine, maintenant=None):
     maintenant = maintenant or dt.datetime.utcnow()
     etat = E.migrer_etat(json.load(open(os.path.join(racine, 'simulateur', 'elo_etat.json'), encoding='utf-8')))
     elo = E.Elo.importer(etat['joueurs'], etat.get('options'))
+    # 29/10/2026 — modèle fantôme : l'Elo d'avant les changements du 28-29/10 (sans ITF), pour comparer en direct
+    try:
+        ref_etat = E.migrer_etat(json.load(open(os.path.join(racine, 'simulateur', 'elo_etat_reference.json'), encoding='utf-8')))
+        elo_ref = E.Elo.importer(ref_etat['joueurs'], ref_etat.get('options'))
+    except (OSError, ValueError, KeyError):
+        ref_etat, elo_ref = None, None
     surf = etat.get('surfaces_tournois') or {}
     S = Styles(os.path.join(racine, 'simulateur', 'notes_joueurs.json'))
     PR = charger_profils(racine)
@@ -599,7 +617,8 @@ def construire(racine, maintenant=None):
                     'horodatage': x['horodatage'], 'tournoi': x['tournoi'], 'circuit': c,
                     'surface': s, 'meilleur_des': 2 * sg - 1, 'home': x['home'], 'away': x['away'],
                     'cles': [h, a], 'matchs_joues': [elo.matchs(h), elo.matchs(a)], 'style_connu': [S.connu(h), S.connu(a)],
-                    'combinaison': combinaison, 'simulation': simulation, 'stats': stats, 'direct': direct})
+                    'combinaison': combinaison, 'simulation': simulation, 'stats': stats, 'direct': direct,
+                    'controle': controle_fantome(elo, elo_ref, ref_etat, etat, h, a, c, s)})
     doc = {'genere_le': maintenant.isoformat(timespec='seconds') + 'Z', 'elo_au': etat.get('dernier_match'),
             'horizon_h': HORIZON_H, 'sigma': SIGMA, 'simulations': SIMULATIONS if PR is not None else 0,
             'qualite_horodatages': couverture_horodatages,
