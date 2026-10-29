@@ -375,6 +375,9 @@ def journal_changements(racine, analyse=None):
         return None
     g = ((analyse or {}).get('groupes') or {})
     doc['fantome'] = {k: v['fantome'] for k, v in g.items() if isinstance(v, dict) and v.get('fantome')}
+    # 29/10/2026 : un fantôme par changement (ITF hommes + femmes ensemble, ITF femmes seules, σ du Challenger)
+    T = g.get('TOUS') or {}
+    doc['fantomes'] = [dict(T[k], cle=k) for k in ('fantome', 'fantome_itf_femmes', 'fantome_sigma') if T.get(k)]
     return doc
 
 
