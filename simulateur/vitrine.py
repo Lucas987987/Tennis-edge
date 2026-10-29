@@ -151,6 +151,10 @@ def ligne_match(m, complet):
            'fiabilite': m.get('fiabilite'), 'cotes_justes': [cote(p), cote(1 - p)]}
     if m.get('controle'):
         out['controle'] = m['controle']             # 29/10/2026 : modèle fantôme (Elo d'avant les changements)
+    cb_ = m.get('combinaison') or {}
+    if cb_.get('p_elo') is not None and cb_.get('p_simulation') is not None:
+        # 29/10/2026 : les deux modèles avant mélange — suivi de leurs désaccords après le match (apres_match.py)
+        out['modeles'] = {'p_elo': round(float(cb_['p_elo']), 4), 'p_simulation': round(float(cb_['p_simulation']), 4)}
     if m.get('activite'):
         out['activite'] = m['activite']             # 29/10/2026 : activité récente des deux joueurs (activite.py)
     if not complet:
@@ -341,6 +345,45 @@ def rejoue(racine):
     return {'du': min(jours), 'au': max(jours), 'global': _mesures(points), 'calibration': calibration(points)}
 
 
+NIVEAUX_FIABILITE = ('fragile', 'prudent', 'correct', 'solide')
+
+
+def perte_attendue(p):
+    """Log loss MOYENNE attendue si la probabilité annoncée p est juste (entropie) : un match à 55 % « coûte »
+    naturellement plus qu'un match à 85 %."""
+    p = min(max(p, 1e-6), 1 - 1e-6)
+    return -(p * math.log(p) + (1 - p) * math.log(1 - p))
+
+
+def par_niveau_fiabilite(matchs):
+    """29/10/2026 — par niveau de fiabilité : vainqueurs trouvés, confiance annoncée et PERTE EXCÉDENTAIRE (log loss
+    réelle − log loss attendue vu les probabilités annoncées). Comparer les niveaux sur le taux de vainqueurs trompe :
+    les notes hautes vont souvent à des matchs serrés. Perte excédentaire ≈ 0 : l'annonce tient ; > 0 : plus d'erreur
+    que prévu. Descriptif ; la règle de jugement de la note reste celle de rapport_validation_fiabilite.json."""
+    par = {}
+    for m in matchs:
+        reel = m.get('reel') or {}
+        niv = (m.get('fiabilite') or {}).get('niveau')
+        if reel.get('interrompu') or reel.get('gagnant') not in ('home', 'away') or niv not in NIVEAUX_FIABILITE:
+            continue
+        p, _ = _juge(m)
+        if p is None:
+            continue
+        y = 1 if reel['gagnant'] == 'home' else 0
+        q = min(max(p if y else 1 - p, 1e-6), 1 - 1e-6)
+        par.setdefault(niv, []).append((max(p, 1 - p), (p >= .5) == (y == 1), -math.log(q), perte_attendue(p)))
+    out = {}
+    for niv in NIVEAUX_FIABILITE:
+        L = par.get(niv) or []
+        if L:
+            n = len(L)
+            out[niv] = {'n': n, 'vainqueurs_pct': round(100 * sum(x[1] for x in L) / n, 1),
+                        'confiance_pct': round(100 * sum(x[0] for x in L) / n, 1),
+                        'perte_excedentaire': round(sum(x[2] - x[3] for x in L) / n, 4),
+                        'conclusion_possible': n >= 30}
+    return out
+
+
 def validation_fiabilite(resultats):
     """Cohorte strictement prospective de la fiabilité circuit.
 
@@ -357,6 +400,7 @@ def validation_fiabilite(resultats):
                 and str(m.get('pronostique_le') or '')[:10] >= ACTIVE_LE)
 
     out = bilan(resultats, debut=ACTIVE_LE, seulement=eligible)
+    out['par_niveau'] = par_niveau_fiabilite([m for m in resultats.get('matchs') or [] if eligible(m)])
     out.update({'version': VERSION_FIABILITE, 'depuis': ACTIVE_LE,
                 'regle': "Premiers pronostics enregistrés après activation, portant la version circuit_v1 ; aucun ancien match recalculé."})
     return out
@@ -415,6 +459,33 @@ def fiabilite_stats(racine, analyse=None):
                                 'erreur_moyenne': x.get('mae'), 'gain_vs_naif_pct': x.get('gain_vs_naif_pct'),
                                 'correlation': x.get('correlation'), 'fiabilite': fi}
     return {'en_direct': direct, 'test': test}
+
+
+def desaccords(racine, analyse=None):
+    """29/10/2026 — quand l'Elo et la simulation ne désignent pas le même vainqueur : qui avait raison ? En direct (nos
+    matchs, apres_match) par circuit, et la référence sur les pronostics hors échantillon (entraînement semaine après
+    semaine, depuis juin). Descriptif : ce sont les arbres, jugés chaque semaine, qui apprennent quoi en faire."""
+    g = (analyse or {}).get('groupes') or {}
+    direct = {k: v['desaccord'] for k, v in g.items() if isinstance(v, dict) and v.get('desaccord')}
+    ref = {}
+    try:
+        with gzip.open(os.path.join(racine, 'simulateur', 'pronostics_hors_echantillon.jsonl.gz'), 'rt', encoding='utf-8') as f:
+            X = [json.loads(l) for l in f if l.strip()]
+    except (OSError, ValueError):
+        X = []
+    for c in ('TOUS',) + CIRCUITS:
+        L = [x for x in X if x.get('p_algo') is not None and (c == 'TOUS' or x.get('circuit') == c)]
+        D_ = [x for x in L if (x['p_elo'] >= .5) != (x['p_sim'] >= .5)]
+        if not D_:
+            continue
+        juste = lambda p, x: (p >= .5) == (x['gagnant'] == 'home')
+        A_ = [x for x in L if (x['p_elo'] >= .5) == (x['p_sim'] >= .5)]
+        ref[c] = {'matchs': len(L), 'desaccords': len(D_), 'part_pct': round(100 * len(D_) / len(L), 1),
+                  'elo_pct': round(100 * sum(juste(x['p_elo'], x) for x in D_) / len(D_), 1),
+                  'simulation_pct': round(100 * sum(juste(x['p_sim'], x) for x in D_) / len(D_), 1),
+                  'affiche_pct': round(100 * sum(juste(x['p_algo'], x) for x in D_) / len(D_), 1),
+                  'accord_pct': round(100 * sum(juste(x['p_algo'], x) for x in A_) / len(A_), 1) if A_ else None}
+    return {'en_direct': direct, 'reference': ref} if (direct or ref) else None
 
 
 def journal_changements(racine, analyse=None):
@@ -542,6 +613,7 @@ def construire(racine, maintenant=None):
             'journal_changements': journal_changements(racine, analyse_am),
             'bilan_lignes': bilan_lignes(racine, resultats),
             'fiabilite_stats': fiabilite_stats(racine, analyse_am),
+            'desaccords': desaccords(racine, analyse_am),
             'validation_fiabilite': validation_fiabilite(resultats),
             'qualite_donnees': qualite_donnees(racine, resultats),
             'rejoue': rejoue(racine)}
