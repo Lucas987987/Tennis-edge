@@ -355,7 +355,7 @@ def perte_attendue(p):
     return -(p * math.log(p) + (1 - p) * math.log(1 - p))
 
 
-def par_niveau_fiabilite(matchs):
+def par_niveau_fiabilite(matchs, cle='niveau'):
     """29/10/2026 — par niveau de fiabilité : vainqueurs trouvés, confiance annoncée et PERTE EXCÉDENTAIRE (log loss
     réelle − log loss attendue vu les probabilités annoncées). Comparer les niveaux sur le taux de vainqueurs trompe :
     les notes hautes vont souvent à des matchs serrés. Perte excédentaire ≈ 0 : l'annonce tient ; > 0 : plus d'erreur
@@ -363,7 +363,7 @@ def par_niveau_fiabilite(matchs):
     par = {}
     for m in matchs:
         reel = m.get('reel') or {}
-        niv = (m.get('fiabilite') or {}).get('niveau')
+        niv = (m.get('fiabilite') or {}).get(cle)
         if reel.get('interrompu') or reel.get('gagnant') not in ('home', 'away') or niv not in NIVEAUX_FIABILITE:
             continue
         p, _ = _juge(m)
@@ -401,6 +401,11 @@ def validation_fiabilite(resultats):
 
     out = bilan(resultats, debut=ACTIVE_LE, seulement=eligible)
     out['par_niveau'] = par_niveau_fiabilite([m for m in resultats.get('matchs') or [] if eligible(m)])
+    # 29/10/2026 : note v2 (sans la calibration) en fantôme, jugée seulement à partir du 30/10
+    from fiabilite import ACTIVE_V2_LE, VERSION_V2
+    out['v2'] = {'version': VERSION_V2, 'depuis': ACTIVE_V2_LE, 'par_niveau': par_niveau_fiabilite(
+        [m for m in resultats.get('matchs') or [] if (m.get('fiabilite') or {}).get('version_v2') == VERSION_V2
+         and str(m.get('pronostique_le') or '')[:10] >= ACTIVE_V2_LE], 'niveau_v2')}
     out.update({'version': VERSION_FIABILITE, 'depuis': ACTIVE_LE,
                 'regle': "Premiers pronostics enregistrés après activation, portant la version circuit_v1 ; aucun ancien match recalculé."})
     return out
@@ -619,10 +624,30 @@ def construire(racine, maintenant=None):
             'rejoue': rejoue(racine)}
 
 
+DISTRIBUTION_P_MIN = 0.001
+
+
+def compacter(doc, p_min=DISTRIBUTION_P_MIN):
+    """29/10/2026 — la distribution exacte compte ~1 470 scores par match (6,6 Mo sur 7,6 Mo pour le fichier) ; le site
+    n'en lit aucune ligne. Tout ce qui s'en sert (lignes de l'algo, rythme, fiches figées) tourne AVANT, sur la
+    distribution complète. On publie les scores à 0,1 % et plus, plus la masse restante (« distribution_reste ») :
+    la somme publiée reste exactement 1 (contrôlée par validation_vitrine)."""
+    for m in doc.get('matchs') or []:
+        D_ = m.get('distribution_scores')
+        if not D_:
+            continue
+        garde = [r for r in D_ if float(r['probabilite']) >= p_min] or D_[:1]
+        m['distribution_scores'] = garde
+        m['distribution_reste'] = round(1.0 - sum(float(r['probabilite']) for r in garde), 12)
+    return doc
+
+
 def main(argv):
     racine = argv[1] if len(argv) > 1 else os.path.join(ICI, '..')
     doc = construire(racine)
     from validation_vitrine import valider
+    valider(doc, int(os.environ.get('SIMULATIONS', '20000')))
+    compacter(doc)
     valider(doc, int(os.environ.get('SIMULATIONS', '20000')))
     os.makedirs(os.path.join(racine, 'algo'), exist_ok=True)
     destination = os.path.join(racine, SORTIE)

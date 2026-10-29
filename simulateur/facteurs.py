@@ -1286,6 +1286,7 @@ def main(argv):
         etat_st = ST.lire()
         avant = {k: choix.get(k) for k in ('combinaison_feuilles', 'poids_challenger', 'poids_ATP', 'poids_WTA',
                                            'nouveaux_venus', 'modele_arbres', 'modele_arbres_activite', 'modele_arbres_tour',
+                                           'desaccord_wta',
                                            'qualifies', 'transition', 'classement', 'classement_relatif')}
         choix['combinaison_feuilles'] = ST.appliquer(etat_st, 'combinaison_feuilles', avant['combinaison_feuilles'],
                                                      {k: ep.get(k) for k in ('adopte', 'poids', 'raison', 'poids_simulation_pct', 'll')},
@@ -1306,6 +1307,11 @@ def main(argv):
                                               ('variables', 'modele', 'poids'))
         print(f"Arbres (tout combiné) : {'ADOPTÉS' if choix['modele_arbres']['adopte'] else 'non adoptés'} — "
               f"{choix['modele_arbres']['raison']}", flush=True)
+        dw_ = ep.get('desaccord_wta') or {}                     # 29/10/2026 : désaccords Elo / simulation en WTA
+        choix['desaccord_wta'] = ST.appliquer(etat_st, 'desaccord_wta', avant['desaccord_wta'],
+                                              {k: dw_.get(k) for k in ('adopte', 'poids', 'raison', 'll')}, ('poids',))
+        print(f"Désaccords Elo / simulation en WTA : {'ADOPTÉ' if choix['desaccord_wta']['adopte'] else 'non adopté'} — "
+              f"{choix['desaccord_wta']['raison']}", flush=True)
         for cle_c, lib_c in (('modele_arbres_activite', 'Arbres + activité récente'), ('modele_arbres_tour', 'Arbres + tour du tableau')):
             maa = ep.get(cle_c) or {}                          # 29/10/2026 : candidats de la famille des arbres
             choix[cle_c] = ST.appliquer(etat_st, cle_c, avant[cle_c],
