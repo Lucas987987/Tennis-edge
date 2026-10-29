@@ -614,6 +614,7 @@ def main(argv):
     # (etude_itf_elo.json « adopte » = false) et cette étape n'est plus appliquée. ITF = DONNÉE seulement.
     itf_elo = {'applique': False, 'matchs': len(itf_rows), 'raison': 'aucun résultat ITF'}
     reference = None              # 29/10/2026 : variante AVANT l'ITF, gardée pour le modèle fantôme (comparaison en direct)
+    reference_femmes = None       # 29/10/2026 : variante sans les seuls résultats ITF femmes (fantôme propre à ce changement)
     if itf_rows and itf_en_production(racine):
         avant = sorted([m for m in itf_rows if m['date'] <= fin_sack and m['circuit'] != 'ITF'],   # ITF femmes : déjà dans l'archive
                        key=lambda m: m['date'])
@@ -631,6 +632,16 @@ def main(argv):
                    'suivi': (f"nos matchs : log loss {b1.get('log_loss')} avec l'ITF contre {b0.get('log_loss')} sans ; "
                              f"ATP/WTA 2024–2026 {a1.get('log_loss')} contre {a0.get('log_loss')}")}
         print(f"Résultats ITF dans l'Elo : APPLIQUÉS — {itf_elo['suivi']}", flush=True)
+        # 29/10/2026 — FANTÔME ITF FEMMES : le même Elo sans les seuls résultats ITF femmes (ajoutés le 29/10), pour
+        # juger ce changement à part sur les matchs WTA réels. Les hommes et les femmes ne se croisent jamais : pour
+        # les hommes, cet Elo est identique à celui en place.
+        fem = [m for m in apres if m['circuit'] == 'ITF']
+        if fem:
+            nom5h = nom5 + '-femmes'
+            V[nom5h] = rejouer(M5, nous, td_rows, cle_c, idx, not retenue.startswith('depart_1500'),
+                               nouveaux='+nouveaux_joueurs' in retenue, options=V[retenue]['options'],
+                               feuilles=(fe_rows if '+feuilles' in retenue else []) + [m for m in apres if m['circuit'] != 'ITF'])
+            reference_femmes = nom5h
         reference, retenue = retenue, nom5
     elif itf_rows:
         itf_elo['raison'] = "retirés par l'étude hebdomadaire (moins bien deux semaines de suite)"
@@ -672,6 +683,12 @@ def main(argv):
         with open(os.path.join(ICI, 'elo_etat_reference.json'), 'w', encoding='utf-8') as f:
             json.dump({'genere_le': rap['genere_le'], 'variante': reference, 'options': R_['options'],
                        'depart_bas': DEPART_BAS if not reference.startswith('depart_1500') else None, 'alias': alias,
+                       'joueurs': R_['elo'].exporter(R_['noms'])}, f, ensure_ascii=False, separators=(',', ':'))
+    if reference_femmes:
+        R_ = V[reference_femmes]
+        with open(os.path.join(ICI, 'elo_etat_sans_itf_femmes.json'), 'w', encoding='utf-8') as f:
+            json.dump({'genere_le': rap['genere_le'], 'variante': reference_femmes, 'options': R_['options'],
+                       'depart_bas': DEPART_BAS if not reference_femmes.startswith('depart_1500') else None, 'alias': alias,
                        'joueurs': R_['elo'].exporter(R_['noms'])}, f, ensure_ascii=False, separators=(',', ':'))
     print(json.dumps({k: rap[k] for k in ('variantes', 'variante_retenue', 'elo_ameliore', 'joueurs_relies_nom_different')}, ensure_ascii=False, indent=1))
     if avec_scores:
