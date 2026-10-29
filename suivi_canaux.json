@@ -1,14 +1,14 @@
 {
  "schema_version": 1,
- "genere_le": "2026-10-28T06:18:53Z",
+ "genere_le": "2026-10-29T06:20:47Z",
  "canaux": {
   "MISER": {
    "libelle": "🎯 MISER — steam, EV ≥ seuil vs Pinnacle juste (vainqueur du match)",
    "source": "miser_signal_log.jsonl (messages envoyés) + ajouts de suivi_direct",
    "regle": "première alerte de chaque match, au book et au prix du message ; relances non recomptées",
    "debut": "2026-10-22",
-   "n_alertes": 9,
-   "n_matchs": 9,
+   "n_alertes": 10,
+   "n_matchs": 10,
    "n_relances": 0,
    "n_denoues": 8,
    "bilan": {
@@ -37,11 +37,11 @@
     "periode": "2026-10-22 -> 2026-10-27",
     "verdict": "ne tranche pas",
     "clv_mediane": 1.5,
-    "n_commencees": 9,
-    "n_sans_resultat": 1,
-    "sans_resultat_pct": 11.1,
+    "n_commencees": 10,
+    "n_sans_resultat": 2,
+    "sans_resultat_pct": 20.0,
     "verrouillable": false,
-    "statut": "en attente de résultats (11,1 % sans résultat)"
+    "statut": "en attente de résultats (20,0 % sans résultat)"
    },
    "paris": {
     "2026-10-22_valerio_aboian_matias_soto": {
@@ -115,6 +115,14 @@
      "pin_close_adv": 1.884,
      "clv_pin": 1.486,
      "source_resultat": "feuille de match (TennisApi)"
+    },
+    "2026-10-29_claire_liu_katerina_siniakova": {
+     "gagne": null,
+     "pnl": null,
+     "pin_close": null,
+     "pin_close_adv": null,
+     "clv_pin": null,
+     "source_resultat": "inconnu"
     }
    }
   }

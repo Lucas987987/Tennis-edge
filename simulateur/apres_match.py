@@ -117,7 +117,8 @@ def fiche(ligne, maintenant, version):
             'jeux_moyen': ligne.get('jeux_moyen'), 'tiebreak': ligne.get('tiebreak'), 'set1_home': ligne.get('set1_home'),
             'feuille': ligne.get('feuille_prevue'),
             'duree': ({k: pv.get(k) for k in ('minutes', 'minutes_p10', 'minutes_p90', 'points')} if pv else None),
-            'lignes': ligne.get('lignes_algo'), 'documentation': ligne.get('documentation')}
+            'lignes': ligne.get('lignes_algo'), 'documentation': ligne.get('documentation'),
+            'controle': ligne.get('controle')}
 
 
 def figer(lignes, racine, maintenant, version):
@@ -217,6 +218,10 @@ def bilan_match(uid, f, reel, duree_reelle=None):
                 res[k] = [v, sets[0][0] > sets[0][1]]
         if res:
             E['lignes'] = res
+    ct = d.get('controle') or {}
+    if ct.get('p_elo') is not None and ct.get('p_elo_reference') is not None:
+        lp = lambda q: round(-math.log(min(max(q if y else 1 - q, 1e-6), 1 - 1e-6)), 5)
+        E['fantome'] = {'ll_elo': lp(ct['p_elo']), 'll_reference': lp(ct['p_elo_reference']), 'reference': ct.get('reference')}
     du = d.get('duree') or {}
     if duree_reelle and du.get('minutes'):
         E['duree_ecart_min'] = round(du['minutes'] - duree_reelle)
@@ -404,6 +409,11 @@ def analyser(B):
                     fe.setdefault(k, []).append(v)
         r['feuille_biais_prevu_moins_reel'] = {k: {'n': len(v), 'biais': _moy(v), 'erreur_moyenne': _moy([abs(x) for x in v])}
                                                 for k, v in fe.items()}
+        fa = [e['fantome'] for e in E if 'fantome' in e]
+        if fa:                      # 29/10/2026 : Elo en place contre le modèle fantôme, sur les mêmes matchs réels
+            a_, b_ = _moy([x['ll_elo'] for x in fa]), _moy([x['ll_reference'] for x in fa])
+            r['fantome'] = {'matchs': len(fa), 'log_loss_elo_en_place': a_, 'log_loss_elo_reference': b_,
+                            'gain': round(b_ - a_, 5), 'conclusion_possible': len(fa) >= 30}
         r['conclusion_possible'] = len(L) >= 30
         out[g] = r
     return {'genere_le': dt.datetime.now(dt.timezone.utc).isoformat(timespec='seconds'), 'pistes': pistes(B),

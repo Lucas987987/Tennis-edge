@@ -1,0 +1,30 @@
+{
+ "regle": "Chaque changement du modèle est noté ici avec sa date, ce qu'il change et ce qu'il a gagné au test (log loss, négatif = mieux prévu). Les changements mis en production par décision, sans attendre la 2e semaine, restent sous le garde-fou du jugement hebdomadaire.",
+ "changements": [
+  {"date": "2026-10-29", "titre": "Résultats ITF femmes dans le classement Elo", "statut": "production", "decision": true,
+   "mesure": "WTA depuis juin : log loss −0,0034 (1 915 matchs) ; ATP et Challenger inchangés",
+   "garde_fou": "retiré si moins bien deux semaines de suite (étude du lundi)"},
+  {"date": "2026-10-28", "titre": "Résultats ITF hommes dans le classement Elo", "statut": "production", "decision": true,
+   "mesure": "Challenger : log loss −0,0145 (22 530 matchs) ; ATP + WTA −0,0042 ; joueurs peu vus −0,035",
+   "garde_fou": "retiré si moins bien deux semaines de suite (étude du lundi)"},
+  {"date": "2026-10-28", "titre": "Forme du jour plus contrastée en Challenger (σ 0,22 au lieu de 0,15)", "statut": "production", "decision": true,
+   "mesure": "forme des matchs (sets, tie-breaks, jeux) : Challenger −0,0216 ; ATP et WTA inchangés ; le vainqueur ne change pas",
+   "garde_fou": "jugé chaque lundi ; retiré si moins bien deux semaines de suite"},
+  {"date": "2026-10-28", "titre": "Noms des joueurs ITF reliés par une règle stricte", "statut": "production", "decision": false,
+   "mesure": "52 liens audités, fusions à tort supprimées (ex. un joueur relié à une joueuse) ; 21 liens sûrs gardés ; gain de l'ITF inchangé"},
+  {"date": "2026-10-28", "titre": "Taille des joueurs centrée sur la moyenne de leur circuit", "statut": "production", "decision": false,
+   "mesure": "correction : toutes les joueuses WTA passaient pour « petites » (centre 185 cm pour tous) ; coefficients réappris chaque lundi"},
+  {"date": "2026-10-28", "titre": "Forme des scores par circuit (v3)", "statut": "candidat", "decision": false,
+   "mesure": "Challenger −0,014 mais ATP +0,0195 : bloquée par le garde-fou « aucun circuit dégradé »"},
+  {"date": "2026-10-29", "titre": "Poids réduit des matchs ITF dans l'Elo (×0,75)", "statut": "rejete", "decision": false,
+   "mesure": "−0,00065 seulement (seuil 0,001)"},
+  {"date": "2026-10-29", "titre": "Incertitude après une longue absence", "statut": "rejete", "decision": false,
+   "mesure": "aucun gain (2025 choisit « aucune »)"},
+  {"date": "2026-10-29", "titre": "Poids de la surface par circuit dans l'Elo", "statut": "rejete", "decision": false,
+   "mesure": "WTA +0,0017 (moins bien)"},
+  {"date": "2026-10-28", "titre": "Forme des scores par circuit × surface", "statut": "rejete", "decision": false,
+   "mesure": "ATP +0,026 et WTA +0,005 (moins bien)"},
+  {"date": "2026-10-28", "titre": "Collecte des statistiques passées des joueurs peu documentés", "statut": "rejete", "decision": false,
+   "mesure": "sonde : +29,7 % de balles pour le joueur médian, seuil fixé 50 % ; leurs matchs manquants sont surtout ITF, sans statistiques"}
+ ]
+}
