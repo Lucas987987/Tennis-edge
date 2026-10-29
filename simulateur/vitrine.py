@@ -352,6 +352,12 @@ def qualite_donnees(racine, resultats=None):
     from qualite_donnees import auditer, couverture_pronostiques
     doc = _lire(os.path.join(racine, 'simulateur', 'profils_service.json'), {}) or {}
     out = auditer(doc)
+    if out is not None:
+        try:                                    # 29/10/2026 : joueurs actifs (30 derniers jours), le chiffre de tête
+            from qualite_donnees import actifs
+            out['actifs'] = actifs(doc, racine)
+        except Exception as e:  # noqa: BLE001
+            print(f"::warning::joueurs actifs non calculés : {type(e).__name__}: {e}")
     if out is not None and resultats:
         # 28/10/2026 : couverture des joueurs réellement pronostiqués (mêmes matchs que le tableau des scores)
         matchs = [m for m in resultats.get('matchs') or [] if m.get('circuit') in CIRCUITS

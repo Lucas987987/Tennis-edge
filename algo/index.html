@@ -534,6 +534,9 @@ const T = {
   suivi_taux:'Vainqueurs trouvés', suivi_note:'La note de fiabilité mesure la robustesse de l’estimation ; elle ne change ni la probabilité de victoire ni le favori. Ce suivi ne constitue donc pas une nouvelle variante du modèle de vainqueur.',
   fiab_detail:'Pourquoi cette note ?', fiab_circuit_n:'Matchs antérieurs sur ce circuit', fiab_circuit_reel:'Vainqueurs trouvés sur ce circuit', fiab_circuit_attendu:'Vainqueurs attendus selon les probabilités', fiab_residuel:'Perte résiduelle (plus bas = mieux)', fiab_plafond:'Plafond lié à la contre-performance du circuit', fiab_ancienne:'Cette note date d’avant le suivi circuit_v1 ; elle reste affichée telle qu’elle a été enregistrée.',
   qualite_titre:'Données de service et de retour', qualite_sous:'Audit du fichier de profils utilisé par la simulation. Les balles effectives tiennent compte de la pondération temporelle.',
+  qa_joueurs:j=>`Joueurs actifs (feuille ATP, WTA ou Challenger ces ${j} derniers jours)`, qa_mediane:'Leur médiane de balles de service effectives',
+  qa_500:'Joueurs actifs avec au moins 500 balles effectives',
+  qa_total:(n,m,p)=>`Tous les profils du fichier, joueurs ITF, retraités et anciens de l’archive compris : ${fmt(n)}, médiane ${m==null?'—':fmt(m)} balles, ${p==null?'—':pc(p)} avec au moins 500. Ce total bouge peu : la collecte n’enrichit que les joueurs actifs.`,
   qualite_profils:'Profils joueurs', qualite_balles:'Médiane de balles de service effectives', qualite_500:'Profils avec au moins 500 balles effectives', qualite_source:q=>`Sources : ${q.source||'non documentées'}. Archive jusqu’au ${q.archive_jusqu_au?dateLong(q.archive_jusqu_au):'non précisé'} ; profils exportés au ${q.jour?dateLong(q.jour):'non précisé'}.`,
   cv_titre:'Joueurs réellement pronostiqués', cv_sous:'Chaque joueur de chaque match jugé depuis le 21 octobre, compté une fois par match. Part sous 500 et sous 1 500 balles effectives.',
   cv_circuit:'Circuit', cv_med:'Médiane', cv_n:n=>`${fmt(n)} joueurs × matchs`, cv_m:n=>`${fmt(n)} matchs`,
@@ -675,6 +678,9 @@ const T = {
   suivi_taux:'Winners called', suivi_note:'Reliability measures how robust the estimate is; it changes neither win probability nor the favourite. This tracking is not a new winner-prediction variant.',
   fiab_detail:'Why this rating?', fiab_circuit_n:'Previous matches on this tour', fiab_circuit_reel:'Winners called on this tour', fiab_circuit_attendu:'Winners expected from probabilities', fiab_residuel:'Residual loss (lower is better)', fiab_plafond:'Cap caused by tour underperformance', fiab_ancienne:'This rating predates circuit_v1 tracking and remains displayed as originally recorded.',
   qualite_titre:'Serve and return data', qualite_sous:'Audit of the player-profile file used by the simulation. Effective points include time weighting.',
+  qa_joueurs:j=>`Active players (ATP, WTA or Challenger sheet in the last ${j} days)`, qa_mediane:'Their median effective service points',
+  qa_500:'Active players with at least 500 effective points',
+  qa_total:(n,m,p)=>`All profiles in the file, including ITF, retired and old archive players: ${fmt(n)}, median ${m==null?'—':fmt(m)} points, ${p==null?'—':pc(p)} with at least 500. This total barely moves: collection only enriches active players.`,
   qualite_profils:'Player profiles', qualite_balles:'Median effective service points', qualite_500:'Profiles with at least 500 effective points', qualite_source:q=>`Sources: ${q.source||'not documented'}. Archive through ${q.archive_jusqu_au?dateLong(q.archive_jusqu_au):'not specified'}; profiles exported on ${q.jour?dateLong(q.jour):'not specified'}.`,
   cv_titre:'Players we actually predict', cv_sous:'Every player of every judged match since 21 October, counted once per match. Share below 500 and below 1,500 effective points.',
   cv_circuit:'Tour', cv_med:'Median', cv_n:n=>`${fmt(n)} player-matches`, cv_m:n=>`${fmt(n)} matches`,
@@ -1487,11 +1493,19 @@ function rendQualite(){
   const q = D.qualite_donnees, el = document.getElementById('qualite-donnees');
   if (!q){ el.innerHTML = `<div class="empty">${esc(t('bilan_vide'))}</div>`; return; }
   const b = q.balles_effectives || {}, anomalies = Object.values(q.anomalies||{}).reduce((a,n)=>a+Number(n||0),0);
-  el.innerHTML = `<div class="qualite-grid">
+  // 29/10/2026 : en tête, les joueurs ACTIFS (feuille ATP, WTA ou Challenger ces 30 derniers jours) ; le total des profils
+  // (surtout ITF, retraités, anciens de l'archive) passe en petit dessous.
+  const A = q.actifs;
+  const tete = A ? `<div class="qualite-grid">
+    <div><b>${fmt(A.joueurs)}</b><span>${esc(t('qa_joueurs', A.jours))}</span></div>
+    <div><b>${fmt(A.mediane)}</b><span>${esc(t('qa_mediane'))}</span></div>
+    <div><b>${pc(A.pct_au_moins_500)}</b><span>${esc(t('qa_500'))}</span></div>
+  </div><p class="cv-p">${esc(t('qa_total', q.profils, b.mediane, b.pct_au_moins_500))}</p>` : `<div class="qualite-grid">
     <div><b>${fmt(q.profils)}</b><span>${esc(t('qualite_profils'))}</span></div>
     <div><b>${b.mediane==null?'—':fmt(b.mediane)}</b><span>${esc(t('qualite_balles'))}</span></div>
     <div><b>${b.pct_au_moins_500==null?'—':pc(b.pct_au_moins_500)}</b><span>${esc(t('qualite_500'))}</span></div>
-  </div>${rendCouverture(q.pronostiques)}<p>${esc(t('qualite_source',q))}<br>${esc(t('qualite_anomalies',anomalies))}</p><p>${esc(t('qualite_limite'))}</p>`;
+  </div>`;
+  el.innerHTML = `${tete}${rendCouverture(q.pronostiques)}<p>${esc(t('qualite_source',q))}<br>${esc(t('qualite_anomalies',anomalies))}</p><p>${esc(t('qualite_limite'))}</p>`;
 }
 function rendCouverture(c){
   if (!c || !c.circuits) return '';
