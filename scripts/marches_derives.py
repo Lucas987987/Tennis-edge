@@ -101,6 +101,7 @@ def resumer(data, book, table, debut):
         cle = f"{TYPES[m['marketName']]} {h:g}" if isinstance(h, (int, float)) else TYPES[m['marketName']]
         out.setdefault(cle, {})[issue] = {
             'ouverture': pts[0][1],
+            'ouverture_t': pts[0][0].strftime('%Y-%m-%dT%H:%M:%SZ'),     # 29/10/2026 : l'heure, pour la CLV au 1er pronostic
             'a_6h': a6h[-1][1] if a6h else None,
             'a_2h': a2h[-1][1] if a2h else None,
             'a_30min': a30[-1][1] if a30 else None,
