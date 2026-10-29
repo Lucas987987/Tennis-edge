@@ -1,7 +1,7 @@
-name: Sonde statut d'entrée (3 requêtes)
+name: Sonde statut d'entrée (14 requêtes)
 
 # 29/10/2026 — TennisApi donne-t-il « WC » / « Q » avant le match ? Lecture
-# seule, 3 requêtes TennisApi au plus, rien n'est écrit. Résultat : journal.
+# seule, 14 requêtes TennisApi au plus, rien n'est écrit. Résultat : journal.
 on:
   workflow_dispatch:
 
