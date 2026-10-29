@@ -280,16 +280,47 @@ FORME_SCORES = None             # 28/10/2026 : (coefs, profils, repères par cir
 SIGMA_CIRCUIT = None            # 28/10/2026 : {circuit: σ} de la forme du jour si sigma_circuit.py l'a ADOPTÉ
 
 
-def controle_fantome(elo, elo_ref, ref_etat, etat, h, a, c, s):
+def controle_fantome(elo, elo_ref, ref_etat, etat, h, a, c, s, elo_fem=None, fem_etat=None):
     """{p_elo, p_elo_reference, reference} : la probabilité Elo en place et celle du modèle fantôme (Elo d'avant les
-    changements), jamais affichée comme pronostic ; comparées après le match (apres_match.py)."""
-    if elo_ref is None:
+    changements), jamais affichée comme pronostic ; comparées après le match (apres_match.py).
+    29/10/2026 : + p_elo_sans_itf_femmes (matchs WTA) : l'Elo sans les seuls résultats ITF femmes."""
+    out = {}
+    for e_, et_, cle in ((elo_ref, ref_etat, 'p_elo_reference'), (elo_fem if c == 'WTA' else None, fem_etat, 'p_elo_sans_itf_femmes')):
+        if e_ is None:
+            continue
+        if (et_ or {}).get('depart_bas') and c in ('CH', 'ITF'):
+            e_.presenter(h, et_['depart_bas'])
+            e_.presenter(a, et_['depart_bas'])
+        out[cle] = round(e_.proba(h, a, s), 4)
+    if not out:
         return None
-    if (ref_etat or {}).get('depart_bas') and c in ('CH', 'ITF'):
-        elo_ref.presenter(h, ref_etat['depart_bas'])
-        elo_ref.presenter(a, ref_etat['depart_bas'])
-    return {'p_elo': round(elo.proba(h, a, s), 4), 'p_elo_reference': round(elo_ref.proba(h, a, s), 4),
-            'reference': ref_etat.get('variante'), 'en_place': (etat or {}).get('variante')}
+    out.update({'p_elo': round(elo.proba(h, a, s), 4), 'en_place': (etat or {}).get('variante')})
+    if 'p_elo_reference' in out:
+        out['reference'] = ref_etat.get('variante')
+    return out
+
+
+def _avec_forme(ct, forme):
+    if not forme:
+        return ct
+    return dict(ct or {}, forme=forme)
+
+
+def controle_forme(PR, h, a, c, s, sg, p_home, fct):
+    """29/10/2026 — FANTÔME DE LA FORME DU JOUR : pour un circuit dont le σ a changé (Challenger 0,22), la forme du
+    match (camp × tie-break × 3 sets × jeux) avec le σ en place et avec l'ancien (0,15), même vainqueur (ancrage).
+    Jamais affichée ; la forme réelle les départage après le match. None si σ inchangé ou match en 5 sets."""
+    import sigma_circuit as SGC
+    import forme_scores as FS
+    sig = sigma_de(c)
+    if sg != 2 or sig == SGC.BASE or p_home is None:
+        return None
+    m1 = FS.masses(distribution_exacte_du_match(PR, h, a, c, s, sg, p_home, fct, sigma=sig, brut=True))
+    m0 = FS.masses(distribution_exacte_du_match(PR, h, a, c, s, sg, p_home, fct, sigma=SGC.BASE, brut=True))
+    cles = sorted(set(m1) | set(m0))
+    return {'sigma': sig, 'sigma_reference': SGC.BASE,
+            'masses': [[int(k[0]), bool(k[1]), bool(k[2]), int(k[3]), round(m1.get(k, 0.0), 4), round(m0.get(k, 0.0), 4)]
+                       for k in cles if max(m1.get(k, 0.0), m0.get(k, 0.0)) >= 5e-4]}
 
 
 def charger_sigma_circuit(racine):
@@ -435,7 +466,7 @@ def match_simule(P, h, a, c, s, sg, p_home, cle, fct=None, controler_stabilite=F
     return r
 
 
-def distribution_exacte_du_match(P, h, a, c, s, sg, p_home, fct=None, pure=False):
+def distribution_exacte_du_match(P, h, a, c, s, sg, p_home, fct=None, pure=False, sigma=None, brut=False):
     """Distribution complète sans bruit Monte Carlo, ancrée sur CETTE variante.
 
     Elle ne remplace ni les tirages, ni leur médoid, ni leurs statistiques. Le
@@ -443,8 +474,10 @@ def distribution_exacte_du_match(P, h, a, c, s, sg, p_home, fct=None, pure=False
     """
     cH, cA, _, _ = composantes_du_match(P, h, a, c, s, pure=pure)
     cH, cA = avec_facteurs(cH, cA, fct)
-    sigma = sigma_sim() if pure else sigma_de(c)
+    sigma = sigma if sigma is not None else (sigma_sim() if pure else sigma_de(c))
     distribution = DE.distribution_forme(cH, cA, sg, sigma, p_victoire=p_home)
+    if brut:                        # 29/10/2026 : distribution seule (fantôme de la forme du jour)
+        return distribution
     forme = None
     if FORME_SCORES and not pure and sg == 2:
         # 28/10/2026 : forme du match selon les profils (tie-break, 3 sets) ; vainqueur inchangé par construction
@@ -511,6 +544,11 @@ def construire(racine, maintenant=None):
         elo_ref = E.Elo.importer(ref_etat['joueurs'], ref_etat.get('options'))
     except (OSError, ValueError, KeyError):
         ref_etat, elo_ref = None, None
+    try:                            # 29/10/2026 : fantôme propre aux résultats ITF femmes
+        fem_etat = E.migrer_etat(json.load(open(os.path.join(racine, 'simulateur', 'elo_etat_sans_itf_femmes.json'), encoding='utf-8')))
+        elo_fem = E.Elo.importer(fem_etat['joueurs'], fem_etat.get('options'))
+    except (OSError, ValueError, KeyError):
+        fem_etat, elo_fem = None, None
     surf = etat.get('surfaces_tournois') or {}
     S = Styles(os.path.join(racine, 'simulateur', 'notes_joueurs.json'))
     PR = charger_profils(racine)
@@ -558,7 +596,7 @@ def construire(racine, maintenant=None):
         pa0, pb0 = S.service(h, a, c, s)
         stats = pronostic(elo.proba(h, a, s), c, sg, pa0, pb0)
         uid = f"{x['debut'].date()}_{NR.slug(x['home'])}_{NR.slug(x['away'])}"
-        simulation = combinaison = direct = None
+        simulation = combinaison = direct = forme_ctl = None
         if PR is not None:
             # 22/10/2026 — SIMULATION PURE : le match joué SIMULATIONS fois avec les seuls taux des deux
             # joueurs (1re balle, aces, doubles fautes, points gagnés derrière la 1re et la 2e, retour),
@@ -601,6 +639,11 @@ def construire(racine, maintenant=None):
             pa_s, pb_s = MS.p_service(cH0), MS.p_service(cA0)
             if combinaison:
                 pa_s, pb_s = MS.ancrer_rapide(pa_s, pb_s, combinaison['p_home'], sg, sigma_de(c))
+            if combinaison:
+                try:
+                    forme_ctl = controle_forme(PR, h, a, c, s, sg, combinaison['p_home'], fct)
+                except Exception as e_:  # noqa: BLE001 — le contrôle ne doit jamais bloquer un pronostic
+                    print(f"::warning::fantôme de la forme du jour non calculé ({h}–{a}) : {type(e_).__name__}: {e_}")
             direct = {'a': round(pa_s, 5), 'b': round(pb_s, 5), 'sigma': sigma_de(c) if combinaison else sigma_sim(), 'sets_gagnants': sg,
                       'tb_final': 10 if sg == 3 else 7, 'version': 'combinaison' if combinaison else 'simulation'}
             for nom_v, v in (('stats', stats), ('combinaison', combinaison)):
@@ -622,7 +665,8 @@ def construire(racine, maintenant=None):
                     'surface': s, 'meilleur_des': 2 * sg - 1, 'home': x['home'], 'away': x['away'],
                     'cles': [h, a], 'matchs_joues': [elo.matchs(h), elo.matchs(a)], 'style_connu': [S.connu(h), S.connu(a)],
                     'combinaison': combinaison, 'simulation': simulation, 'stats': stats, 'direct': direct,
-                    'controle': controle_fantome(elo, elo_ref, ref_etat, etat, h, a, c, s)})
+                    'controle': _avec_forme(controle_fantome(elo, elo_ref, ref_etat, etat, h, a, c, s, elo_fem, fem_etat),
+                                            forme_ctl)})
     doc = {'genere_le': maintenant.isoformat(timespec='seconds') + 'Z', 'elo_au': etat.get('dernier_match'),
             'horizon_h': HORIZON_H, 'sigma': SIGMA, 'simulations': SIMULATIONS if PR is not None else 0,
             'qualite_horodatages': couverture_horodatages,
