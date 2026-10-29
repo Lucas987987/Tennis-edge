@@ -20,6 +20,12 @@ RÈGLE FIXÉE AVANT DE VOIR LES RÉSULTATS (29/10/2026, 15 h 10) — descriptif,
      nous préférons ; CLV = cote d'ouverture / cote de clôture − 1 sur ce côté (la mesure de validation du projet), et
      part des cas où la clôture s'est rapprochée de nous. Moins de 30 signaux : rien à conclure. Un écart n'est « net »
      que si l'intervalle à 95 % de la CLV moyenne ne contient pas 0.
+MOMENT DE LA DÉCISION (précisé par Lucas le 29/10, 15 h 40) : notre pronostic est publié dès que le match sort (premier
+  passage, ~20 h avant le début en médiane) et on peut miser tout de suite. La mesure principale part donc du PREMIER
+  pronostic : prix disponible à ce moment-là = l'ouverture Pinnacle si elle est postérieure au pronostic, sinon la
+  dernière cote relevée avant lui (ouverture, 6 h, 2 h, 30 min). L'heure d'ouverture n'est relevée que depuis le
+  29/10 (« ouverture_t ») : avant, l'ouverture est prise faute de mieux et le résultat est marqué « estimation ».
+  Jugement sur les matchs relevés AVEC l'heure d'ouverture : 30 signaux au moins, intervalle à 95 % hors de 0.
 CONTRÔLE AJOUTÉ APRÈS LE PREMIER RÉSULTAT (29/10/2026, 15 h 30 — donc à juger sur les matchs SUIVANTS seulement) :
   notre pronostic est fait quelques heures avant le match, bien après l'ouverture Pinnacle ; la CLV « depuis
   l'ouverture » mesure surtout l'information arrivée entre-temps, que Pinnacle intègre aussi. La CLV qui compte part du
@@ -63,8 +69,10 @@ def charger_derives(racine, book='pinnacle'):
     return D
 
 
-def charger_journal(racine):
-    """{uid: (debut, home, away, sets du dernier passage avant le début)}."""
+def charger_journal(racine, premier=True):
+    """{uid: (debut, home, away, sets, heure du passage)} — 29/10/2026 : le PREMIER passage par défaut (le pronostic
+    est publié dès que le match sort, ~20 h avant en médiane : on peut miser tout de suite) ; premier=False : le dernier
+    passage avant le début."""
     J = {}
     for p in sorted(glob.glob(os.path.join(racine, 'simulateur', 'journal_pronostics', '20*.jsonl.gz'))):
         try:
@@ -76,7 +84,7 @@ def charger_journal(racine):
                     if str(r.get('passage', ''))[:16] > str(r.get('debut', ''))[:16]:
                         continue                                    # après le début : pas figé avant le match
                     v = next((r.get(k) for k in VERSIONS if (r.get(k) or {}).get('sets')), None)
-                    if v:
+                    if v and not (premier and r['uid'] in J and str(J[r['uid']][4]) <= str(r.get('passage'))):
                         J[r['uid']] = (r.get('debut'), r.get('home'), r.get('away'), v['sets'], r.get('passage'))
         except (OSError, ValueError, EOFError):
             continue
@@ -195,7 +203,7 @@ def etudier(D, J, L, R):
                 continue
             vers = (pc - po) * (1 if p > po else -1)
             e['signaux'].append((clv, vers))
-        k_ = cle_au_pronostic(D[uid].get('commence_time'), quand)        # contrôle : le prix disponible au pronostic
+        k_ = cle_au_pronostic(D[uid].get('commence_time'), quand, qa.get('ouverture_t'))   # le prix disponible au pronostic
         pd_ = juste(qa.get(k_), qb.get(k_)) if k_ else None
         if pd_ is not None and abs(p - pd_) > ECART_SIGNAL:
             cote = qa if p > pd_ else qb
@@ -233,7 +241,7 @@ def etudier(D, J, L, R):
     return out
 
 
-def cle_au_pronostic(debut, quand):
+def cle_au_pronostic(debut, quand, ouverture_t=None):
     """La dernière cote relevée AVANT notre pronostic et proche de lui : 'a_30min', 'a_2h' ou 'a_6h' ; None si le
     pronostic est plus ancien que 6 h avant le début (l'ouverture peut dater de plusieurs jours : écartée)."""
     try:
@@ -245,10 +253,18 @@ def cle_au_pronostic(debut, quand):
         d = d.replace(tzinfo=dt.timezone.utc)
     if q.tzinfo is None:
         q = q.replace(tzinfo=dt.timezone.utc)
+    try:
+        o = dt.datetime.fromisoformat(str(ouverture_t).replace('Z', '+00:00')) if ouverture_t else None
+    except ValueError:
+        o = None
+    if o is not None and o.tzinfo is None:
+        o = o.replace(tzinfo=dt.timezone.utc)
+    if o is not None and o >= q:
+        return 'ouverture'                                  # Pinnacle ouvre après notre pronostic : on mise à l'ouverture
     for k, h in (('a_30min', 0.5), ('a_2h', 2), ('a_6h', 6)):
         if q >= d - dt.timedelta(hours=h):
             return k
-    return None
+    return 'ouverture' if o is not None else None           # ouverture connue et antérieure : pas mieux sans courbe
 
 
 def main(argv):
