@@ -382,6 +382,63 @@ def modele_arbres_candidat(cle, hors, P, lim, experience, situations, nv, poids_
     return out
 
 
+# ------------------------------------------------------------------ 29/10/2026 : désaccords Elo / simulation en WTA
+MIN_DESACCORD_AVANT, MIN_DESACCORD_JUGE = 80, 50
+
+
+def desaccord(pe, ps):
+    """L'Elo et la simulation désignent-ils deux vainqueurs différents ?"""
+    return (pe >= .5) != (ps >= .5)
+
+
+def desaccord_wta(hors, P, lim, ajuster_poids, experience, situations, poids_finaux=None):
+    """RÈGLE FIXÉE AVANT DE VOIR LE RÉSULTAT (29/10/2026, 13 h 45). Constat (pronostics hors échantillon depuis juin) :
+    en WTA, quand l'Elo et la simulation désignent deux vainqueurs différents, l'Elo a raison 60,8 % du temps et
+    l'algo affiché 57,5 %. Candidat : sur ces matchs-là seulement, un mélange Elo + simulation PROPRE, appris sur les
+    désaccords WTA d'avant les 6 dernières semaines (au moins 80), remplace le pronostic de production (les arbres,
+    appris sur la même période). Jugé sur les 6 dernières semaines (au moins 50 désaccords WTA) : adopté si la log
+    loss du vainqueur baisse sur l'ensemble des matchs jugés ; puis stabilité (stabilite.py) : mieux d'au moins
+    0,001 deux semaines de suite. Aperçu du 29/10 sur le mélange simple : 0,0000 (rien à gagner pour l'instant)."""
+    import arbres as A
+    if not P or not experience:
+        return {'adopte': False, 'raison': 'pas de mélange ou pas de compte de matchs'}
+    lignes = []
+    for x, ps, pe in hors:
+        e = experience.get(id(x))
+        if not e:
+            continue
+        sv = situations.get(id(x)) or {} if situations else {}
+        q, t = sv.get('qualifies') or (0.0, 0.0), sv.get('transition') or (0.0, 0.0)
+        v0 = variables_match(pe, ps, e[0], e[1], (q[0], t[0]), (q[1], t[1]), x.get('circuit'), x.get('surface'), x.get('bo'),
+                             sv.get('rangs'))
+        lignes.append((x['jour'] >= lim, v0, (x, ps, pe), x.get('circuit') == 'WTA' and desaccord(pe, ps)))
+    av = [l for l in lignes if not l[0]]
+    ju = [l for l in lignes if l[0]]
+    d_av, d_ju = [l for l in av if l[3]], [l for l in ju if l[3]]
+    if len(d_av) < MIN_DESACCORD_AVANT or len(d_ju) < MIN_DESACCORD_JUGE or len(av) < 1500:
+        return {'adopte': False, 'raison': f"pas assez de désaccords WTA ({len(d_av)} avant, {len(d_ju)} à juger)"}
+    off = lambda Pw, h: _lg(S.melange(Pw, h[2], h[1]))
+    X0, y0, o0 = A.symetriser([(v0, off(P, h), ECARTS) for _, v0, h, _ in av])
+    M0 = A.apprendre(X0, y0, o0)
+    w = ajuster_poids([[_lg(h[2]), _lg(h[1])] for _, _, h, _ in d_av])
+    Pd = {'elo': w[0], 'simulation': w[1]}
+    sans = [A.predire_symetrique(M0, v0, off(P, h), ECARTS) for _, v0, h, _ in ju]
+    avec = [S.melange(Pd, h[2], h[1]) if d else b for (_, _, h, d), b in zip(ju, sans)]
+    l0, l1 = _ll(sans), _ll(avec)
+    ix = [i for i, l in enumerate(ju) if l[3]]
+    ok = l1 < l0
+    out = {'adopte': bool(ok), 'n_juge': len(ju), 'n_desaccords_juges': len(ix), 'll': {'avec': l1, 'sans': l0},
+           'poids_appris_avant': {k: round(v, 4) for k, v in Pd.items()},
+           'raison': (f"{len(ix)} désaccords WTA jugés (6 dernières semaines) : log loss sur eux "
+                      f"{round(_ll([avec[i] for i in ix]), 4)} contre {round(_ll([sans[i] for i in ix]), 4)} ; vainqueurs "
+                      f"{round(100 * _ok([avec[i] for i in ix]), 1)} % contre {round(100 * _ok([sans[i] for i in ix]), 1)} % ; "
+                      f"part de l'Elo {round(100 - part_simulation(Pd), 1)} %")}
+    if ok:
+        wf = ajuster_poids([[_lg(h[2]), _lg(h[1])] for _, _, h, d in lignes if d])
+        out['poids'] = {'elo': round(wf[0], 4), 'simulation': round(wf[1], 4)}
+    return out
+
+
 def modele_arbres_activite(hors, P, lim, experience, situations, nv, poids_finaux=None):
     return modele_arbres_candidat('modele_arbres_activite', hors, P, lim, experience, situations, nv, poids_finaux)
 
@@ -481,6 +538,7 @@ def rejouer_saison(lignes, p_elo, groupes, apprendre, victoire_ligne, ajuster_po
                                            **extra)
                       if situations else {'adopte': False, 'raison': 'pas de données'})
     out['modele_arbres'] = modele_arbres(hors, P, lim, experience, situations, out.get('nouveaux_venus'), final)
+    out['desaccord_wta'] = desaccord_wta(hors, P, lim, ajuster_poids, experience, situations, final)
     for cle_c in CANDIDATS_ARBRES:                     # 29/10/2026 : activité récente, tour du tableau
         out[cle_c] = modele_arbres_candidat(cle_c, hors, P, lim, experience, situations, out.get('nouveaux_venus'), final)
     l_new = _ll([S.melange(P, pe, ps) for _, ps, pe in juge])

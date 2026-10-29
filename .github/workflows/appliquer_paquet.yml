@@ -46,7 +46,7 @@ permissions:
 jobs:
   appliquer:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 40
     env:
       GH_TOKEN: ${{ secrets.PAQUET_TOKEN }}
     steps:
@@ -126,7 +126,39 @@ jobs:
           done
           js=$(find Tennis_Edge_Lab/tests workers -name 'test_*.js' -o -name 'test_*.mjs' 2>/dev/null | sort)
           [ -n "$js" ] && node --test $js
+          # 29/10/2026 : les tests du simulateur aussi (ils n'étaient lancés que par « Tests unitaires »)
+          [ -d simulateur/tests ] && python3 -m unittest discover -s simulateur/tests
           echo "✅ tests verts"
+
+      # 29/10/2026 — CHAÎNE COURTE, BLOQUANTE. Le 29/10 à 11 h, un paquet aux tests verts a cassé « Pronostics du
+      # jour » : l'erreur n'apparaissait qu'en faisant tourner le classement complet. Ici, sur une COPIE du dépôt
+      # (rien de ce qui est produit n'entre dans le commit) : classement Elo complet, pronostics de 3 matchs avec 300
+      # simulations, construction et contrôle du site. Si une étape plante, le paquet n'est pas fusionné.
+      - name: Archive Sackmann (pour la chaîne courte)
+        if: steps.unzip.outputs.faits != ''
+        run: |
+          set -euo pipefail
+          git clone -q --depth 1 --filter=blob:none --sparse https://github.com/Aneeshers/tennis-sackmann-archive.git /tmp/sackmann
+          cd /tmp/sackmann
+          git sparse-checkout set --no-cone 'atp_matches_20*.csv' 'atp_matches_qual_chall_20*.csv' 'wta_matches_20*.csv' 'wta_matches_qual_itf_20*.csv'
+
+      - name: Chaîne courte (classement → pronostics → site), sur une copie
+        if: steps.unzip.outputs.faits != ''
+        env:
+          SIMULATIONS: '300'
+          PRONOSTICS_MAX: '3'
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/chaine && mkdir /tmp/chaine
+          tar --exclude=./.git -cf - . | tar -xf - -C /tmp/chaine
+          cd /tmp/chaine
+          t0=$(date +%s)
+          python simulateur/backtest_pronostic.py /tmp/sackmann . > /tmp/classement.log 2>&1 || { tail -40 /tmp/classement.log; echo "::error::Chaîne courte : le classement Elo plante"; exit 1; }
+          grep -E "^Résultats ITF|^Elo amélioré" /tmp/classement.log || true
+          python simulateur/pronostics_du_jour.py . > /tmp/pronostics.log 2>&1 || { tail -40 /tmp/pronostics.log; echo "::error::Chaîne courte : les pronostics plantent"; exit 1; }
+          python simulateur/vitrine.py . > /tmp/vitrine.log 2>&1 || { tail -40 /tmp/vitrine.log; echo "::error::Chaîne courte : le site ne se construit pas"; exit 1; }
+          python simulateur/validation_vitrine.py . || { echo "::error::Chaîne courte : contrôle du site rouge"; exit 1; }
+          echo "✅ chaîne courte verte en $(( $(date +%s) - t0 )) s"
 
       - name: Branche, demande de fusion, fusion
         if: steps.unzip.outputs.faits != ''

@@ -11,6 +11,12 @@ import math
 VERSIONS = ('combinaison', 'simulation', 'stats')
 VERSION_FIABILITE = 'circuit_v1'
 ACTIVE_LE = '2026-10-27'
+# 29/10/2026 — NOTE V2 EN FANTÔME : la même note SANS la composante « calibration » (la plus liée à l'erreur, dans le
+# mauvais sens, sur les 79 premiers matchs notés). Calculée à côté, jamais affichée sur les matchs ; jugée seulement
+# sur les matchs pronostiqués à partir du 30/10 (les 79 qui l'ont suggérée n'en font pas partie), avec la même règle
+# que la note en place (rapport_validation_fiabilite.json). Poids : ceux de la v1 sans la calibration, renormalisés.
+VERSION_V2 = 'sans_calibration_v1'
+ACTIVE_V2_LE = '2026-10-30'
 SEUILS = {'prudent': 45, 'correct': 65, 'solide': 80}
 NIVEAUX = ('fragile', 'prudent', 'correct', 'solide')
 CATEGORIES = ('A_solide', 'B_incertain', 'C_fragile', 'D_non_controle')
@@ -159,7 +165,9 @@ def evaluer(match, historique):
     plafond = 64 if circuit['n'] >= 30 and (circuit['perte_residuelle'] or 0) > .05 else 100
     note = min(note, plafond)
     cat = categorie(donnees, desaccord, stabilite, hist['n'], circuit)
+    note_v2 = min(round(100 * (0.30 * donnees + 0.15 * accord + 0.25 * circuit['score'] + 0.10 * preuve) / 0.80), plafond)
     return {'note': note, 'niveau': niveau(note), 'categorie': cat, 'version': k,
+            'note_v2': note_v2, 'niveau_v2': niveau(note_v2), 'version_v2': VERSION_V2,
             'version_fiabilite': VERSION_FIABILITE, 'active_le': ACTIVE_LE,
             'composantes': {'donnees': round(100 * donnees), 'accord_modeles': round(100 * accord),
                             'calibration': round(100 * hist['score']), 'performance_circuit': round(100 * circuit['score']),

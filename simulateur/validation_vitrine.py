@@ -101,7 +101,8 @@ def valider(doc, simulations_attendues=20000):
             distribution = m.get('distribution_scores') or []
             if m.get('scores_source') != 'exact' or not distribution:
                 raise ValueError('la distribution exacte des scores est absente')
-            if abs(sum(float(r['probabilite']) for r in distribution) - 1) > 1e-8:
+            # 29/10/2026 : publiée compacte (scores ≥ 0,1 %) + la masse restante ; la somme reste 1
+            if abs(sum(float(r['probabilite']) for r in distribution) + float(m.get('distribution_reste') or 0.0) - 1) > 1e-8:
                 raise ValueError('la distribution exacte publiée ne somme pas à 1')
             premier = distribution[0]
             texte_exact = ' '.join(f'{a}-{b}' for a, b in premier['score'])
