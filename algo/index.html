@@ -499,6 +499,7 @@ const T = {
   x_derniers:'Derniers matchs contre ce style', x_v:'V', x_d:'D',
   x_pied:'Attendu : la chance de victoire d’avant-match, en moyenne, sur ces mêmes matchs. Battre des joueurs qu’on devait battre ne prouve rien ; c’est l’écart à l’attendu qui compte.',
   sv_niv_titre:'Par niveau de fiabilité', sv_niv_sous:'Confiance annoncée → vainqueurs trouvés, et l’erreur en trop par rapport à l’erreur normale vu la confiance (log loss). Proche de 0 : l’annonce tient ; positif : plus d’erreurs que prévu. Les notes hautes vont souvent à des matchs serrés : c’est cette colonne qu’il faut comparer, pas le taux de vainqueurs.',
+  sv_v2_titre:'Note v2 en essai (sans la calibration)', sv_v2_sous:d=>`Calculée à côté de la note affichée, jamais montrée sur les matchs. Jugée seulement sur les matchs pronostiqués depuis le ${dateLong(d)}, avec la même règle que la note en place.`, sv_v2_vide:'Pas encore de match jugé pour la note v2.',
   sv_niveau:'Niveau', sv_conf_trouves:'Confiance → trouvés', sv_exces:'Erreur en trop',
   niv_fragile:'Fragile', niv_prudent:'Prudent', niv_correct:'Correct', niv_solide:'Solide',
   ds_titre:'Elo et simulation en désaccord', ds_sous:'Les matchs où l’Elo et la simulation ne désignent pas le même vainqueur : qui avait raison, et l’algo affiché. Ce sont les arbres, jugés chaque lundi, qui apprennent quoi en faire.',
@@ -669,6 +670,7 @@ const T = {
   x_derniers:'Last matches against this style', x_v:'W', x_d:'L',
   x_pied:'Expected: the pre-match win chance, on average, over these same matches. Beating players you were supposed to beat proves nothing; the gap to expected is what counts.',
   sv_niv_titre:'By reliability level', sv_niv_sous:'Announced confidence → winners called, and the error above the normal error for that confidence (log loss). Near 0: the forecast holds; positive: more errors than expected. High scores often go to close matches: compare this column, not the hit rate.',
+  sv_v2_titre:'Score v2 on trial (without calibration)', sv_v2_sous:d=>`Computed next to the published score, never shown on matches. Judged only on matches forecast since ${dateLong(d)}, with the same rule as the current score.`, sv_v2_vide:'No match judged for score v2 yet.',
   sv_niveau:'Level', sv_conf_trouves:'Confidence → called', sv_exces:'Excess error',
   niv_fragile:'Fragile', niv_prudent:'Cautious', niv_correct:'Fair', niv_solide:'Solid',
   ds_titre:'Elo and simulation disagree', ds_sous:'Matches where Elo and the simulation pick different winners: who was right, and the published forecast. The trees, judged every Monday, learn what to do with it.',
@@ -1676,7 +1678,12 @@ function rendSuivi(){
     <div class="cv-wrap"><table class="calib cv fs-t"><thead><tr><th>${esc(t('sv_niveau'))}</th><th>${esc(t('sv_conf_trouves'))}</th><th>${esc(t('sv_exces'))}</th></tr></thead><tbody>${niv.map(k=>{const v=PN[k];
       const ex=v.perte_excedentaire, cl=!v.conclusion_possible?'':ex>0.03?'style="color:var(--ko)"':ex<-0.03?'style="color:var(--ok)"':'';
       return `<tr><td>${esc(t('niv_'+k))}<br><span class="cv-n">${esc(t('cv_m',v.n))}${v.conclusion_possible?'':' · '+esc(t('fs_f').rien)}</span></td><td>${pc(v.confiance_pct)} → <b>${pc(v.vainqueurs_pct)}</b></td><td ${cl}>${ex>0?'+':''}${dec(ex,3)}</td></tr>`;}).join('')}</tbody></table></div>` : '';
-  el.innerHTML = `<div class="statut"><span>${esc(t(g?'suivi_taux':'suivi_attente'))}</span><strong>${g?pc(g.pct):'—'}</strong><span>${g?`${fmt(g.vainqueurs)} / ${fmt(g.n)} · Brier ${dec(g.brier,3)}`:esc(t('suivi_zero'))}</span></div>${detail}${tn}${rendDesaccords()}<p class="note">${esc(t('suivi_note'))}</p>`;
+  // 29/10/2026 : note v2 (sans la calibration) en fantôme, jugée à partir du 30/10
+  const V2 = (B.v2||{}).par_niveau || {}, niv2 = ['fragile','prudent','correct','solide'].filter(k=>V2[k]);
+  const tv2 = `<h3 class="cv-h">${esc(t('sv_v2_titre'))}</h3><p class="cv-p">${esc(t('sv_v2_sous', (B.v2||{}).depuis || '2026-10-30'))}</p>` + (niv2.length ?
+    `<div class="cv-wrap"><table class="calib cv fs-t"><thead><tr><th>${esc(t('sv_niveau'))}</th><th>${esc(t('sv_conf_trouves'))}</th><th>${esc(t('sv_exces'))}</th></tr></thead><tbody>${niv2.map(k=>{const v=V2[k];
+      return `<tr><td>${esc(t('niv_'+k))}<br><span class="cv-n">${esc(t('cv_m',v.n))}${v.conclusion_possible?'':' · '+esc(t('fs_f').rien)}</span></td><td>${pc(v.confiance_pct)} → <b>${pc(v.vainqueurs_pct)}</b></td><td>${v.perte_excedentaire>0?'+':''}${dec(v.perte_excedentaire,3)}</td></tr>`;}).join('')}</tbody></table></div>` : `<p class="cv-p">${esc(t('sv_v2_vide'))}</p>`);
+  el.innerHTML = `<div class="statut"><span>${esc(t(g?'suivi_taux':'suivi_attente'))}</span><strong>${g?pc(g.pct):'—'}</strong><span>${g?`${fmt(g.vainqueurs)} / ${fmt(g.n)} · Brier ${dec(g.brier,3)}`:esc(t('suivi_zero'))}</span></div>${detail}${tn}${tv2}${rendDesaccords()}<p class="note">${esc(t('suivi_note'))}</p>`;
 }
 // 29/10/2026 — Elo et simulation en désaccord sur le vainqueur : qui avait raison ?
 function rendDesaccords(){
