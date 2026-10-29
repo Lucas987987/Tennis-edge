@@ -248,6 +248,9 @@ def charger_ajustements(racine):
     if adoptes:
         _, cle_c, v = min(adoptes)
         out['arbres_candidat'] = {'cle': cle_c, 'modele': v['modele'], 'poids': v['poids']}
+    dw = choix.get('desaccord_wta') or {}                      # 29/10/2026 : désaccords Elo / simulation en WTA
+    if dw.get('adopte') and dw.get('poids'):
+        out['poids_desaccord_wta'] = dw['poids']
     for cle_s in ('qualifies', 'transition', 'classement', 'classement_relatif'):    # 22/10/2026 : même règle
         v = choix.get(cle_s) or {}
         if v.get('adopte') and v.get('delta') is not None:
@@ -256,6 +259,15 @@ def charger_ajustements(racine):
 
 
 def ajuster_combinaison(p_c, c, p_elo, p_sim, n_home, n_away, situations=None, surface=None, bo=3):
+    """Pronostic final ; 29/10/2026 : en WTA, si l'Elo et la simulation désignent deux vainqueurs différents et que
+    la règle desaccord_wta est adoptée, son mélange propre remplace le reste (entrainement_progressif.desaccord_wta)."""
+    pw = AJUSTEMENTS.get('poids_desaccord_wta')
+    if pw and c == 'WTA' and p_elo is not None and p_sim is not None and (p_elo >= .5) != (p_sim >= .5):
+        return MS.melange(pw, p_elo, p_sim)
+    return _ajuster_combinaison(p_c, c, p_elo, p_sim, n_home, n_away, situations, surface, bo)
+
+
+def _ajuster_combinaison(p_c, c, p_elo, p_sim, n_home, n_away, situations=None, surface=None, bo=3):
     """Challenger : poids propres s'ils sont adoptés (remplacent le mélange commun) ; puis chaque situation
     adoptée (règle de entrainement_progressif.correction_situation) : z += δ·(situation(home) − situation(away)).
     Nouveaux venus : nouveau(n) = max(0, 1 − n/30) ; situations = {'qualifies': (h, a), 'transition': (h, a)}."""
@@ -626,6 +638,8 @@ def construire(racine, maintenant=None):
     global SIGMA_CIRCUIT
     SIGMA_CIRCUIT = charger_sigma_circuit(racine)
     venir, couverture_horodatages = matchs_a_venir(racine, maintenant, avec_couverture=True)
+    if os.environ.get('PRONOSTICS_MAX'):            # 29/10/2026 : test de chaîne courte (appliquer_paquet.yml) seulement
+        venir = venir[:int(os.environ['PRONOSTICS_MAX'])]
     # Un joueur = un classement : alias du dernier calcul, puis noms nouveaux reliés au joueur connu.
     alias = dict(etat.get('alias') or {})
     alias.update(E.unifier({k: v.get('nom', k) for k, v in etat['joueurs'].items()},
