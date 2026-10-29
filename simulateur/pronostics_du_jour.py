@@ -204,6 +204,10 @@ def charger_ajustements(racine):
     pc = choix.get('poids_challenger') or {}
     if pc.get('adopte') and pc.get('poids'):
         out['poids_CH'] = pc['poids']
+    for c_ in ('ATP', 'WTA'):                                  # 29/10/2026 : même règle que les Challenger
+        v = choix.get('poids_' + c_) or {}
+        if v.get('adopte') and v.get('poids'):
+            out['poids_' + c_] = v['poids']
     nv = choix.get('nouveaux_venus') or {}
     if nv.get('adopte') and nv.get('delta') is not None:
         out['delta_nouveaux'] = float(nv['delta'])
@@ -231,8 +235,8 @@ def ajuster_combinaison(p_c, c, p_elo, p_sim, n_home, n_away, situations=None, s
                                sit.get('rangs'))
         o = math.log(MS.melange(AJUSTEMENTS['arbres']['poids'], p_elo, p_sim) / (1 - MS.melange(AJUSTEMENTS['arbres']['poids'], p_elo, p_sim)))
         return A.predire_symetrique(AJUSTEMENTS['arbres']['modele'], v, o, EP.ECARTS)
-    if c == 'CH' and AJUSTEMENTS.get('poids_CH'):
-        p_c = MS.melange(AJUSTEMENTS['poids_CH'], p_elo, p_sim)
+    if c in ('CH', 'ATP', 'WTA') and AJUSTEMENTS.get('poids_' + c):    # 29/10/2026 : ATP et WTA aussi
+        p_c = MS.melange(AJUSTEMENTS['poids_' + c], p_elo, p_sim)
     ecarts = []
     if AJUSTEMENTS.get('delta_nouveaux') and n_home is not None and n_away is not None:
         ecarts.append((AJUSTEMENTS['delta_nouveaux'], max(0.0, 1 - n_home / 30) - max(0.0, 1 - n_away / 30)))

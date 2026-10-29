@@ -1274,7 +1274,8 @@ def main(argv):
         # 0,001 deux semaines de suite ; sortir = moins bien d'au moins 0,001 deux semaines de suite.
         import stabilite as ST
         etat_st = ST.lire()
-        avant = {k: choix.get(k) for k in ('combinaison_feuilles', 'poids_challenger', 'nouveaux_venus', 'modele_arbres',
+        avant = {k: choix.get(k) for k in ('combinaison_feuilles', 'poids_challenger', 'poids_ATP', 'poids_WTA',
+                                           'nouveaux_venus', 'modele_arbres',
                                            'qualifies', 'transition', 'classement', 'classement_relatif')}
         choix['combinaison_feuilles'] = ST.appliquer(etat_st, 'combinaison_feuilles', avant['combinaison_feuilles'],
                                                      {k: ep.get(k) for k in ('adopte', 'poids', 'raison', 'poids_simulation_pct', 'll')},
@@ -1282,6 +1283,10 @@ def main(argv):
         choix['poids_challenger'] = ST.appliquer(etat_st, 'poids_challenger', avant['poids_challenger'],
                                                  {k: (ep.get('poids_challenger') or {}).get(k) for k in ('adopte', 'poids', 'raison', 'll')},
                                                  ('poids',))
+        for c_ in ('ATP', 'WTA'):                          # 29/10/2026 : poids propres, même règle que les Challenger
+            choix['poids_' + c_] = ST.appliquer(etat_st, 'poids_' + c_, avant['poids_' + c_],
+                                                {k: (ep.get('poids_' + c_) or {}).get(k) for k in ('adopte', 'poids', 'raison', 'll')},
+                                                ('poids',))
         choix['nouveaux_venus'] = ST.appliquer(etat_st, 'nouveaux_venus', avant['nouveaux_venus'],
                                                {k: (ep.get('nouveaux_venus') or {}).get(k) for k in ('adopte', 'delta', 'raison', 'll')},
                                                ('delta',))
@@ -1304,6 +1309,9 @@ def main(argv):
                   f"{(sx.get('combinaison') or {}).get('reussite_pct', '—')} %", flush=True)
         print(f"Poids propres aux Challenger : {'ADOPTÉS' if choix['poids_challenger']['adopte'] else 'non adoptés'} — "
               f"{choix['poids_challenger']['raison']}", flush=True)
+        for c_ in ('ATP', 'WTA'):
+            print(f"Poids propres {c_} : {'ADOPTÉS' if choix['poids_' + c_]['adopte'] else 'non adoptés'} — "
+                  f"{choix['poids_' + c_]['raison']}", flush=True)
         print(f"Nouveaux venus : {'correction ADOPTÉE' if choix['nouveaux_venus']['adopte'] else 'pas de correction'} — "
               f"{choix['nouveaux_venus']['raison']}", flush=True)
         with open(os.path.join(ICI, 'choix_simulation.json'), 'w', encoding='utf-8') as f:
