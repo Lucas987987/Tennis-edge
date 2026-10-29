@@ -1,6 +1,309 @@
 {
- "genere_le": "2026-10-29T03:07:15+00:00",
+ "genere_le": "2026-10-29T05:10:56+00:00",
  "pistes": [],
  "definition": "Dernier pronostic affiché avant le match contre le résultat. Descriptif : aucune entrée du modèle ; une piste devient un candidat jugé par la règle habituelle (fixée avant résultat).",
- "groupes": {}
+ "groupes": {
+  "TOUS": {
+   "matchs": 2,
+   "vainqueurs_pct": 0.0,
+   "log_loss": 0.853,
+   "score_dans_top3_pct": 0.0,
+   "proba_moyenne_du_score_reel": 0.0073,
+   "proba_moyenne_des_sets_reels": 0.2393,
+   "duree": {
+    "matchs": 1,
+    "erreur_moyenne_min": 37.0,
+    "biais_min": 37.0,
+    "dans_fourchette_pct": 0.0,
+    "attendu_fourchette_pct": 80
+   },
+   "lignes": {
+    "handicap_favori_1.5": {
+     "n": 2,
+     "prevu_pct": 52.1,
+     "reel_pct": 0.0
+    },
+    "handicap_favori_2.5": {
+     "n": 2,
+     "prevu_pct": 47.1,
+     "reel_pct": 0.0
+    },
+    "handicap_favori_3.5": {
+     "n": 2,
+     "prevu_pct": 39.6,
+     "reel_pct": 0.0
+    },
+    "handicap_favori_4.5": {
+     "n": 2,
+     "prevu_pct": 29.9,
+     "reel_pct": 0.0
+    },
+    "handicap_favori_5.5": {
+     "n": 2,
+     "prevu_pct": 20.6,
+     "reel_pct": 0.0
+    },
+    "set1_home": {
+     "n": 2,
+     "prevu_pct": 47.9,
+     "reel_pct": 50.0
+    },
+    "set_decisif": {
+     "n": 2,
+     "prevu_pct": 40.8,
+     "reel_pct": 0.0
+    },
+    "tie_break": {
+     "n": 2,
+     "prevu_pct": 34.1,
+     "reel_pct": 0.0
+    },
+    "total_plus_18.5": {
+     "n": 2,
+     "prevu_pct": 76.2,
+     "reel_pct": 0.0
+    },
+    "total_plus_19.5": {
+     "n": 2,
+     "prevu_pct": 68.2,
+     "reel_pct": 0.0
+    },
+    "total_plus_20.5": {
+     "n": 2,
+     "prevu_pct": 60.8,
+     "reel_pct": 0.0
+    },
+    "total_plus_21.5": {
+     "n": 2,
+     "prevu_pct": 55.6,
+     "reel_pct": 0.0
+    },
+    "total_plus_22.5": {
+     "n": 2,
+     "prevu_pct": 48.6,
+     "reel_pct": 0.0
+    },
+    "total_plus_23.5": {
+     "n": 2,
+     "prevu_pct": 43.6,
+     "reel_pct": 0.0
+    }
+   },
+   "feuille_biais_prevu_moins_reel": {
+    "aces": {
+     "n": 2,
+     "biais": 2.8,
+     "erreur_moyenne": 2.8
+    },
+    "doubles_fautes": {
+     "n": 2,
+     "biais": 1.7,
+     "erreur_moyenne": 1.7
+    },
+    "premiere_pct": {
+     "n": 2,
+     "biais": 7.31,
+     "erreur_moyenne": 7.31
+    },
+    "breaks": {
+     "n": 2,
+     "biais": 0.9,
+     "erreur_moyenne": 1.6
+    }
+   },
+   "conclusion_possible": false
+  },
+  "WTA": {
+   "matchs": 1,
+   "vainqueurs_pct": 0.0,
+   "log_loss": 0.9163,
+   "score_dans_top3_pct": 0.0,
+   "proba_moyenne_du_score_reel": 0.0046,
+   "proba_moyenne_des_sets_reels": 0.2228,
+   "lignes": {
+    "handicap_favori_1.5": {
+     "n": 1,
+     "prevu_pct": 55.2,
+     "reel_pct": 0.0
+    },
+    "handicap_favori_2.5": {
+     "n": 1,
+     "prevu_pct": 50.8,
+     "reel_pct": 0.0
+    },
+    "handicap_favori_3.5": {
+     "n": 1,
+     "prevu_pct": 44.2,
+     "reel_pct": 0.0
+    },
+    "handicap_favori_4.5": {
+     "n": 1,
+     "prevu_pct": 34.9,
+     "reel_pct": 0.0
+    },
+    "handicap_favori_5.5": {
+     "n": 1,
+     "prevu_pct": 25.5,
+     "reel_pct": 0.0
+    },
+    "set1_home": {
+     "n": 1,
+     "prevu_pct": 42.2,
+     "reel_pct": 100.0
+    },
+    "set_decisif": {
+     "n": 1,
+     "prevu_pct": 39.9,
+     "reel_pct": 0.0
+    },
+    "tie_break": {
+     "n": 1,
+     "prevu_pct": 28.1,
+     "reel_pct": 0.0
+    },
+    "total_plus_18.5": {
+     "n": 1,
+     "prevu_pct": 71.7,
+     "reel_pct": 0.0
+    },
+    "total_plus_19.5": {
+     "n": 1,
+     "prevu_pct": 63.9,
+     "reel_pct": 0.0
+    },
+    "total_plus_20.5": {
+     "n": 1,
+     "prevu_pct": 57.0,
+     "reel_pct": 0.0
+    },
+    "total_plus_21.5": {
+     "n": 1,
+     "prevu_pct": 51.8,
+     "reel_pct": 0.0
+    },
+    "total_plus_22.5": {
+     "n": 1,
+     "prevu_pct": 45.6,
+     "reel_pct": 0.0
+    },
+    "total_plus_23.5": {
+     "n": 1,
+     "prevu_pct": 41.5,
+     "reel_pct": 0.0
+    }
+   },
+   "feuille_biais_prevu_moins_reel": {},
+   "conclusion_possible": false
+  },
+  "CH": {
+   "matchs": 1,
+   "vainqueurs_pct": 0.0,
+   "log_loss": 0.7897,
+   "score_dans_top3_pct": 0.0,
+   "proba_moyenne_du_score_reel": 0.0101,
+   "proba_moyenne_des_sets_reels": 0.2558,
+   "duree": {
+    "matchs": 1,
+    "erreur_moyenne_min": 37.0,
+    "biais_min": 37.0,
+    "dans_fourchette_pct": 0.0,
+    "attendu_fourchette_pct": 80
+   },
+   "lignes": {
+    "handicap_favori_1.5": {
+     "n": 1,
+     "prevu_pct": 49.0,
+     "reel_pct": 0.0
+    },
+    "handicap_favori_2.5": {
+     "n": 1,
+     "prevu_pct": 43.4,
+     "reel_pct": 0.0
+    },
+    "handicap_favori_3.5": {
+     "n": 1,
+     "prevu_pct": 35.1,
+     "reel_pct": 0.0
+    },
+    "handicap_favori_4.5": {
+     "n": 1,
+     "prevu_pct": 24.8,
+     "reel_pct": 0.0
+    },
+    "handicap_favori_5.5": {
+     "n": 1,
+     "prevu_pct": 15.6,
+     "reel_pct": 0.0
+    },
+    "set1_home": {
+     "n": 1,
+     "prevu_pct": 53.5,
+     "reel_pct": 0.0
+    },
+    "set_decisif": {
+     "n": 1,
+     "prevu_pct": 41.8,
+     "reel_pct": 0.0
+    },
+    "tie_break": {
+     "n": 1,
+     "prevu_pct": 40.1,
+     "reel_pct": 0.0
+    },
+    "total_plus_18.5": {
+     "n": 1,
+     "prevu_pct": 80.7,
+     "reel_pct": 0.0
+    },
+    "total_plus_19.5": {
+     "n": 1,
+     "prevu_pct": 72.4,
+     "reel_pct": 0.0
+    },
+    "total_plus_20.5": {
+     "n": 1,
+     "prevu_pct": 64.7,
+     "reel_pct": 0.0
+    },
+    "total_plus_21.5": {
+     "n": 1,
+     "prevu_pct": 59.4,
+     "reel_pct": 0.0
+    },
+    "total_plus_22.5": {
+     "n": 1,
+     "prevu_pct": 51.5,
+     "reel_pct": 0.0
+    },
+    "total_plus_23.5": {
+     "n": 1,
+     "prevu_pct": 45.8,
+     "reel_pct": 0.0
+    }
+   },
+   "feuille_biais_prevu_moins_reel": {
+    "aces": {
+     "n": 2,
+     "biais": 2.8,
+     "erreur_moyenne": 2.8
+    },
+    "doubles_fautes": {
+     "n": 2,
+     "biais": 1.7,
+     "erreur_moyenne": 1.7
+    },
+    "premiere_pct": {
+     "n": 2,
+     "biais": 7.31,
+     "erreur_moyenne": 7.31
+    },
+    "breaks": {
+     "n": 2,
+     "biais": 0.9,
+     "erreur_moyenne": 1.6
+    }
+   },
+   "conclusion_possible": false
+  }
+ }
 }
