@@ -165,6 +165,21 @@ def _sets(score):
         return None
 
 
+def ll_forme(masses, sets):
+    """(−log P σ en place, −log P σ d'avant) de la forme réelle (camp × tie-break × 3 sets × jeux), sachant le
+    vainqueur (le même pour les deux σ par ancrage) ; None si le vainqueur n'a aucune masse."""
+    camp = 0 if sets[-1][0] > sets[-1][1] else 1
+    o = (camp, any(max(a, b) == 7 and min(a, b) == 6 for a, b in sets), len(sets) >= 3, sum(a + b for a, b in sets))
+    out = []
+    for i in (4, 5):
+        cote = sum(r[i] for r in masses if r[0] == camp)
+        if not cote:
+            return None
+        v = next((r[i] for r in masses if (r[0], r[1], r[2], r[3]) == o), 0.0)
+        out.append(round(-math.log(max(v / cote, 1e-6)), 5))
+    return tuple(out)
+
+
 def bilan_match(uid, f, reel, duree_reelle=None):
     """Bilan d'un match : prévu, réel, écarts. f : fiche figée ; reel : 'reel' de pronostics_resultats."""
     d = f.get('dernier') or {}
@@ -222,6 +237,15 @@ def bilan_match(uid, f, reel, duree_reelle=None):
     if ct.get('p_elo') is not None and ct.get('p_elo_reference') is not None:
         lp = lambda q: round(-math.log(min(max(q if y else 1 - q, 1e-6), 1 - 1e-6)), 5)
         E['fantome'] = {'ll_elo': lp(ct['p_elo']), 'll_reference': lp(ct['p_elo_reference']), 'reference': ct.get('reference')}
+    if ct.get('p_elo') is not None and ct.get('p_elo_sans_itf_femmes') is not None:     # 29/10/2026 : ITF femmes à part
+        lp = lambda q: round(-math.log(min(max(q if y else 1 - q, 1e-6), 1 - 1e-6)), 5)
+        E['fantome_itf_femmes'] = {'ll_elo': lp(ct['p_elo']), 'll_reference': lp(ct['p_elo_sans_itf_femmes'])}
+    fo = ct.get('forme') or {}
+    if fo.get('masses') and sets:           # 29/10/2026 : forme du jour (σ) en place contre l'ancienne, forme réelle
+        ll_f = ll_forme(fo['masses'], sets)
+        if ll_f:
+            E['fantome_sigma'] = {'ll_elo': ll_f[0], 'll_reference': ll_f[1], 'sigma': fo.get('sigma'),
+                                  'sigma_reference': fo.get('sigma_reference')}
     du = d.get('duree') or {}
     if duree_reelle and du.get('minutes'):
         E['duree_ecart_min'] = round(du['minutes'] - duree_reelle)
@@ -409,10 +433,12 @@ def analyser(B):
                     fe.setdefault(k, []).append(v)
         r['feuille_biais_prevu_moins_reel'] = {k: {'n': len(v), 'biais': _moy(v), 'erreur_moyenne': _moy([abs(x) for x in v])}
                                                 for k, v in fe.items()}
-        fa = [e['fantome'] for e in E if 'fantome' in e]
-        if fa:                      # 29/10/2026 : Elo en place contre le modèle fantôme, sur les mêmes matchs réels
-            a_, b_ = _moy([x['ll_elo'] for x in fa]), _moy([x['ll_reference'] for x in fa])
-            r['fantome'] = {'matchs': len(fa), 'log_loss_elo_en_place': a_, 'log_loss_elo_reference': b_,
+        # 29/10/2026 : chaque changement contre son modèle fantôme, sur les mêmes matchs réels
+        for cle_f in ('fantome', 'fantome_itf_femmes', 'fantome_sigma'):
+            fa = [e[cle_f] for e in E if cle_f in e]
+            if fa:
+                a_, b_ = _moy([x['ll_elo'] for x in fa]), _moy([x['ll_reference'] for x in fa])
+                r[cle_f] = {'matchs': len(fa), 'log_loss_elo_en_place': a_, 'log_loss_elo_reference': b_,
                             'gain': round(b_ - a_, 5), 'conclusion_possible': len(fa) >= 30}
         r['conclusion_possible'] = len(L) >= 30
         out[g] = r
