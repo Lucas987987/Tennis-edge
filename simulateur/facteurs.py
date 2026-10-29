@@ -1237,6 +1237,12 @@ def main(argv):
         CL = CLS.charger(dossier, racine)                      # 23/10/2026 : classement au jour du match
         CLS.exporter(CLS.charger(dossier), os.path.join(ICI, 'classements_sackmann.json'))
         situations = {}
+        try:                                                   # 29/10/2026 : activité récente (activite.py)
+            import activite as ACT
+            AC = ACT.Activite.depuis(racine, fiches)
+        except Exception as e_:  # noqa: BLE001
+            print(f"::warning::activité non calculée : {type(e_).__name__}: {e_}")
+            AC = None
         for x in lignes:                                       # (vrai vainqueur, perdant) pour chaque situation
             w, l = (x['a'], x['b']) if x['vainqueur'] == 0 else (x['b'], x['a'])
             jour_m = dt.datetime.fromtimestamp(x['t'], dt.timezone.utc)
@@ -1252,7 +1258,9 @@ def main(argv):
                                  'qualifies': (qualifie(Q, w, x['tournoi'], x['t']), qualifie(Q, l, x['tournoi'], x['t'])),
                                  'transition': (transition(Sf, w, x['surface'], x['t']), transition(Sf, l, x['surface'], x['t'])),
                                  'classement': ((CLS.niveau_inconnu(rw, nw), CLS.niveau_inconnu(rl, nl))
-                                                if nw is not None else None)}
+                                                if nw is not None else None),
+                                 'activite': (ACT.ecarts(AC.variables(w, x['jour']), AC.variables(l, x['jour']))
+                                              if AC is not None else None)}
         doc['entrainement_progressif'] = EP.rejouer_saison(
             lignes, p_elo, doc.get('adoptes') or [], apprendre, victoire_ligne, BMS.ajuster_poids, sigma,
             poids_archive=cb.get('poids') if cb.get('adopte') else None, experience=experience, situations=situations)
@@ -1275,7 +1283,7 @@ def main(argv):
         import stabilite as ST
         etat_st = ST.lire()
         avant = {k: choix.get(k) for k in ('combinaison_feuilles', 'poids_challenger', 'poids_ATP', 'poids_WTA',
-                                           'nouveaux_venus', 'modele_arbres',
+                                           'nouveaux_venus', 'modele_arbres', 'modele_arbres_activite',
                                            'qualifies', 'transition', 'classement', 'classement_relatif')}
         choix['combinaison_feuilles'] = ST.appliquer(etat_st, 'combinaison_feuilles', avant['combinaison_feuilles'],
                                                      {k: ep.get(k) for k in ('adopte', 'poids', 'raison', 'poids_simulation_pct', 'll')},
@@ -1296,6 +1304,13 @@ def main(argv):
                                               ('variables', 'modele', 'poids'))
         print(f"Arbres (tout combiné) : {'ADOPTÉS' if choix['modele_arbres']['adopte'] else 'non adoptés'} — "
               f"{choix['modele_arbres']['raison']}", flush=True)
+        maa = ep.get('modele_arbres_activite') or {}           # 29/10/2026 : + activité récente des joueurs
+        choix['modele_arbres_activite'] = ST.appliquer(etat_st, 'modele_arbres_activite', avant['modele_arbres_activite'],
+                                                       {k: maa.get(k) for k in ('adopte', 'raison', 'variables', 'modele', 'poids',
+                                                                                'll', 'par_circuit')},
+                                                       ('variables', 'modele', 'poids'))
+        print(f"Arbres + activité récente : {'ADOPTÉS' if choix['modele_arbres_activite']['adopte'] else 'non adoptés'} — "
+              f"{choix['modele_arbres_activite']['raison']}", flush=True)
         for cle_s in ('qualifies', 'transition', 'classement', 'classement_relatif'):
             choix[cle_s] = ST.appliquer(etat_st, cle_s, avant[cle_s],
                                         {k: (ep.get(cle_s) or {}).get(k) for k in ('adopte', 'delta', 'raison', 'll')}, ('delta',))

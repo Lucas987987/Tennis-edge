@@ -140,6 +140,8 @@ def ligne_match(m, complet):
            'fiabilite': m.get('fiabilite'), 'cotes_justes': [cote(p), cote(1 - p)]}
     if m.get('controle'):
         out['controle'] = m['controle']             # 29/10/2026 : modèle fantôme (Elo d'avant les changements)
+    if m.get('activite'):
+        out['activite'] = m['activite']             # 29/10/2026 : activité récente des deux joueurs (activite.py)
     if not complet:
         out['simulation_disponible'] = False
         return out
