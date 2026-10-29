@@ -240,6 +240,24 @@ def ecrire_jour(jour, recs, dossier=DOSSIER):
     return True
 
 
+def ecrire_programme(jour, prog, dossier=DOSSIER):
+    """feuilles/programme/AAAA-MM-JJ.json : les matchs à venir du jour et leur tour (lus par pronostics_du_jour.py).
+    Les matchs déjà relevés restent (un match commencé quitte la liste de l'API mais garde son tour)."""
+    p = os.path.join(dossier, 'programme', f"{jour}.json")
+    try:
+        with open(p, encoding='utf-8') as f:
+            old = json.load(f).get('matchs') or {}
+    except (OSError, ValueError):
+        old = {}
+    tout = dict(old, **prog)
+    if tout == old:
+        return
+    os.makedirs(os.path.dirname(p), exist_ok=True)
+    with open(p + '.tmp', 'w', encoding='utf-8') as f:
+        json.dump({'jour': jour, 'matchs': tout}, f, ensure_ascii=False, sort_keys=True, separators=(',', ':'))
+    os.replace(p + '.tmp', p)
+
+
 def lire_etat(dossier=DOSSIER):
     try:
         with open(os.path.join(dossier, 'etat.json'), encoding='utf-8') as f:
@@ -258,12 +276,19 @@ def collecter_jour(c, jour, voulues=CATEGORIES, aujourd_hui=None, dossier=DOSSIE
     cats = categories_du_jour(idx, voulues) if code_idx == 200 else []
     if code_idx not in (200, 204):
         journal(f"  {jour} : index du jour indisponible (HTTP {code_idx})")
+    prog = {}
     try:
         for cat in cats:
             code, doc = c.get(f"/api/tennis/category/{cat['id']}/events/{d.day}/{d.month}/{d.year}")
             for e in (doc or {}).get('events') or []:
                 if not e.get('id') or not e.get('startTimestamp') or jour_utc(e['startTimestamp']).isoformat() != jour:
                     continue
+                if est_simple(e) and (e.get('status') or {}).get('type') in ('notstarted', 'inprogress'):
+                    # 29/10/2026 — PROGRAMME : le tour des matchs à venir (aucune requête de plus : même réponse)
+                    f_ = fiche(e, cat['nom'])
+                    prog[str(e['id'])] = {'jour': jour, 'home': f_['home']['nom'], 'away': f_['away']['nom'],
+                                          'tour': f_['tour'], 'points_tournoi': f_['points_tournoi'],
+                                          'categorie': cat['nom'], 'tournoi': f_['tournoi']}
                 if not est_simple(e) or (e.get('status') or {}).get('type') != 'finished':
                     continue
                 nouv = fiche(e, cat['nom'])
@@ -313,6 +338,8 @@ def collecter_jour(c, jour, voulues=CATEGORIES, aujourd_hui=None, dossier=DOSSIE
                     r['duree_min'] = duree_minutes(doc)
     finally:
         ecrire_jour(jour, recs, dossier)
+        if prog:
+            ecrire_programme(jour, prog, dossier)
     avec = sum(1 for r in recs.values() if r['stats'])
     restants = sum(1 for r in recs.values() if r['stats'] is None and r['essais'] < ESSAIS_MAX)
     passe = (aujourd_hui - d).days > DELAI_COMPLET_J

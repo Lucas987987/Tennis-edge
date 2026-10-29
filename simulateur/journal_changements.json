@@ -1,6 +1,10 @@
 {
  "regle": "Chaque changement du modèle est noté ici avec sa date, ce qu'il change et ce qu'il a gagné au test (log loss, négatif = mieux prévu). Les changements mis en production par décision, sans attendre la 2e semaine, restent sous le garde-fou du jugement hebdomadaire.",
  "changements": [
+  {"date": "2026-10-29", "titre": "Tour du tableau dans les arbres (qualifications, 1er tour… finale)", "statut": "candidat", "decision": false,
+   "mesure": "étude sur les pronostics hors échantillon depuis le 14/09 : −0,0014 (WTA −0,0026, Challenger −0,0014, ATP +0,0002) ; jugé chaque lundi, deux semaines de suite"},
+  {"date": "2026-10-29", "titre": "Niveau du tournoi (points) dans les arbres", "statut": "rejete", "decision": false,
+   "mesure": "même étude : 0,0000"},
   {"date": "2026-10-29", "titre": "Activité récente des joueurs dans les arbres (matchs sur 30 jours contre les 60 d'avant)", "statut": "candidat", "decision": false,
    "mesure": "jugé chaque lundi contre les arbres actuels : log loss plus basse au total et aucun circuit qui perd plus de 0,001, deux semaines de suite"},
   {"date": "2026-10-29", "titre": "Activité récente ajoutée seule au mélange Elo + simulation", "statut": "rejete", "decision": false,

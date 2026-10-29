@@ -123,6 +123,17 @@ def _feuille_prevue(v):
     return out or None
 
 
+def _feuille_fourchette(v):
+    """29/10/2026 — fourchette 80 % (10e–90e centile des simulations) de chaque statistique annoncée, par joueur :
+    sert à mesurer après le match si ce qui est annoncé tient (apres_match.py)."""
+    f = ((v.get('match_simule') or {}).get('feuille')) or []
+    out = []
+    for j in f[:2]:
+        out.append({k: [j[k]['p10'], j[k]['p90']] for k in ('aces', 'doubles_fautes', 'breaks', 'premiere_pct')
+                    if isinstance(j.get(k), dict) and j[k].get('p10') is not None and j[k].get('p90') is not None})
+    return out if len(out) == 2 and any(out) else None
+
+
 def _scores_public(v):
     """Classement exact en priorité ; les fréquences simulées restent séparées."""
     exact = v.get('scores_exact') or {}
@@ -159,6 +170,7 @@ def ligne_match(m, complet):
         'tiebreak': v.get('tiebreak'),
         'set1_home': v.get('set1_home'),
         'feuille_prevue': _feuille_prevue(v),
+        'feuille_fourchette': _feuille_fourchette(v),
         'simulation': ({'a': round(d['a'], 4), 'b': round(d['b'], 4),
                         'sets_gagnants': int(d.get('sets_gagnants') or (3 if m.get('meilleur_des') == 5 else 2)),
                         'tb_final': int(d.get('tb_final') or 7), 'n': int(sim.get('n') or 0),
@@ -375,6 +387,36 @@ def qualite_donnees(racine, resultats=None):
     return out
 
 
+STATS_TEST = ('aces', 'doubles_fautes', 'premiere_pct', 'breaks', 'gagnes_1re_pct', 'gagnes_2e_pct', 'jeux', 'total_jeux')
+
+
+def fiabilite_stats(racine, analyse=None):
+    """29/10/2026 — ce qui est annoncé contre ce qui se passe : en direct (nos matchs, apres_match.analyser) par circuit,
+    et le test sur matchs passés (rapport_match_simule.json, version ancrée sur l'Elo, la plus proche de la production).
+    Même règle de fiabilité pour les deux (apres_match.fiabilite_stat)."""
+    import apres_match as AM
+    g = (analyse or {}).get('groupes') or {}
+    direct = {k: {'matchs': v.get('matchs'), 'stats': v.get('stats') or {}, 'lignes': v.get('lignes') or {}}
+              for k, v in g.items() if isinstance(v, dict)}
+    test = None
+    R = _lire(os.path.join(racine, 'simulateur', 'rapport_match_simule.json'), {}) or {}
+    V = (R.get('versions') or {}).get('stats_seules') or {}
+    if V:
+        test = {'periode': R.get('periode'), 'matchs': R.get('matchs_simules'), 'stats': {}}
+        for k in STATS_TEST:
+            x = V.get(k) or {}
+            if x.get('couverture_80_pct') is None:
+                continue
+            n = int(x.get('n') or 0)
+            dans, sous, dessus = x['couverture_80_pct'], x.get('sous_p10_pct') or 0.0, x.get('au_dessus_p90_pct') or 0.0
+            pos = [0] * round(n * dans / 100) + [-1] * round(n * sous / 100) + [1] * round(n * dessus / 100)
+            fi = AM.fiabilite_stat(pos, [])['fiabilite'] if pos else 'rien'
+            test['stats'][k] = {'n': n, 'dans_fourchette_pct': dans, 'sous_pct': sous, 'dessus_pct': dessus,
+                                'erreur_moyenne': x.get('mae'), 'gain_vs_naif_pct': x.get('gain_vs_naif_pct'),
+                                'correlation': x.get('correlation'), 'fiabilite': fi}
+    return {'en_direct': direct, 'test': test}
+
+
 def journal_changements(racine, analyse=None):
     """29/10/2026 — journal des changements du modèle (simulateur/journal_changements.json) + comparaison en direct du
     modèle fantôme (Elo en place contre Elo d'avant les changements, sur les mêmes matchs réels)."""
@@ -499,6 +541,7 @@ def construire(racine, maintenant=None):
             'matchs': lignes, 'bilan': bilan(resultats), 'apres_match': apres,
             'journal_changements': journal_changements(racine, analyse_am),
             'bilan_lignes': bilan_lignes(racine, resultats),
+            'fiabilite_stats': fiabilite_stats(racine, analyse_am),
             'validation_fiabilite': validation_fiabilite(resultats),
             'qualite_donnees': qualite_donnees(racine, resultats),
             'rejoue': rejoue(racine)}

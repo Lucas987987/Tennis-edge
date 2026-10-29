@@ -80,12 +80,13 @@ class Arbres(unittest.TestCase):
         H, e, s = hors_synthetique(1.2)
         r = EP.modele_arbres_activite(H, {'elo': .5, 'simulation': .5}, self.LIM, e, s, None)
         PJ.AJUSTEMENTS.clear()
-        PJ.AJUSTEMENTS['arbres_activite'] = {'modele': r['modele'], 'poids': r['poids']}
+        PJ.AJUSTEMENTS['arbres_candidat'] = {'cle': 'modele_arbres_activite', 'modele': r['modele'], 'poids': r['poids']}
         try:
             p1 = PJ.ajuster_combinaison(.6, 'CH', .6, .6, 50, 50, {'activite': (1.5, 0.0)}, 'Hard', 3)
             p2 = PJ.ajuster_combinaison(.6, 'CH', .6, .6, 50, 50, {'activite': (-1.5, 0.0)}, 'Hard', 3)
             self.assertGreater(p1, p2)
-            self.assertEqual(PJ.ajuster_combinaison(.6, 'CH', .6, .6, 50, 50, {}, 'Hard', 3), .6)   # sans activité : inchangé
+            p0 = PJ.ajuster_combinaison(.6, 'CH', .6, .6, 50, 50, {}, 'Hard', 3)                      # sans activité : neutre (0, 0)
+            self.assertTrue(p2 < p0 < p1)
         finally:
             PJ.AJUSTEMENTS.clear()
 
