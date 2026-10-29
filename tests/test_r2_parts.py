@@ -247,6 +247,30 @@ class VerifyTests(Base):
         self.assertEqual(r2_parts.cmd_verify(["pm"]), 1)
 
 
+    def test_closed_day_r2_with_lost_git_run_is_ok_but_not_duplicates(self):
+        """29/10/2026 : run envoyé à R2 puis commit git perdu → R2 = git + lignes neuves : OK."""
+        install(self.fake, "double")
+        name = f"kx_ticks_{D1}.jsonl.gz"
+        path = Path("parts", name)
+        path.write_bytes(gz("t0", "b1"))
+        r2_parts.cmd_push(["kx"])
+        key = self.manifest("kx")["files"][name]["key"]
+        r2 = r2_io.client()
+
+        def poser(data, n):
+            self.fake.put_raw(key, data)
+            r2_io.save_manifest(r2, "kx", {name: r2_io.entry_for("kx", name, data, r2.get_with_etag(key)[1], n)})
+        poser(gz("t0") + gz("a1") + gz("b1"), 3)            # ticks du run perdu au milieu
+        self.assertEqual(r2_parts.cmd_verify(["kx"], report_path="v.json"), 0)
+        row = json.load(open("v.json"))["lignes"][0]
+        self.assertEqual((row["statut"], row["seules_dans_r2"], row["doublons_r2"], row["seules_dans_git"]),
+                         ("r2_complet", 1, 0, 0))
+        poser(gz("t0") + gz("a1") + gz("b1") + gz("b1"), 4)  # doublon (bug du 22/10) : bloquant
+        self.assertEqual(r2_parts.cmd_verify(["kx"]), 1)
+        poser(gz("t0") + gz("a1"), 2)                        # ligne git absente de R2 : bloquant
+        self.assertEqual(r2_parts.cmd_verify(["kx"]), 1)
+
+
 class ArchiveAndRestoreTests(Base):
     def test_archive_ticks_on_mode_removes_only_what_r2_holds(self):
         install(self.fake, "on")
