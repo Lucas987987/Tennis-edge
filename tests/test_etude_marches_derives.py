@@ -39,6 +39,16 @@ class Etude(unittest.TestCase):
         self.assertEqual(E.cle_au_pronostic(d, '2026-10-29T07:00:00Z'), 'a_6h')
         self.assertIsNone(E.cle_au_pronostic(d, '2026-10-28T20:00:00Z'))         # plus de 6 h : ouverture écartée
 
+    def test_message_et_workflow(self):
+        doc = {'sources': {'resultats': 12}, 'marches': {'nombre de sets : 3 sets': {
+            'matchs_joues': 12, 'log_loss_algo': .66, 'log_loss_pinnacle': .66, 'signaux': 5, 'clv_moy_pct': 1.0,
+            'clv_conclusion': False}}}
+        self.assertIn('moins de 30', E.message(doc))
+        with open(os.path.join(ICI, '..', '.github', 'workflows', 'pronostic.yml'), encoding='utf-8') as f:
+            w = f.read()
+        self.assertIn('etude_marches_derives.py . --telegram', w)
+        self.assertIn('/parts/hist_derives_*', w)
+
     def test_juste(self):
         self.assertAlmostEqual(E.juste(1.9, 1.9), .5)
         self.assertIsNone(E.juste(None, 2.0))
