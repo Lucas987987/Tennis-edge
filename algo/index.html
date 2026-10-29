@@ -158,7 +158,7 @@ svg.curve{width:100%;height:auto;display:block}
 .fiab-detail dl{display:grid;grid-template-columns:1fr auto;gap:6px 12px;margin:6px 0}.fiab-detail dd{margin:0;text-align:right;font-variant-numeric:tabular-nums;color:var(--ink)}
 .styles-descriptifs{padding:16px}
 .styles-descriptifs h3{margin:0;font-size:1rem}.styles-intro{margin:4px 0 14px;color:var(--dim);font-size:.88rem;max-width:72ch}
-.styles-joueurs{display:grid;gap:16px}.style-joueur{min-width:0;border-top:1px solid var(--line);padding-top:12px}
+.styles-joueurs{display:grid;gap:16px}.btn-x{margin:16px 0 2px;width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--line2);background:rgba(212,255,58,.1);color:var(--ink);font:600 .95rem Barlow,system-ui,sans-serif;cursor:pointer}.btn-x:disabled{opacity:.5}.style-joueur{min-width:0;border-top:1px solid var(--line);padding-top:12px}
 .style-tete{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap}.style-tete h4{margin:0;font-size:1rem}.style-etiquette{font-family:var(--cond);font-weight:600;color:var(--ball)}
 .style-contre{margin:3px 0 10px;color:var(--dim);font-size:.88rem}.style-chiffres{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .style-chiffre{min-width:0;border-top:1px solid var(--line);padding-top:8px}.style-chiffre>span{display:block;color:var(--dim);font-size:.82rem}.style-chiffre strong{display:block;font-family:var(--cond);font-size:1.8rem;line-height:1.2;font-variant-numeric:tabular-nums}
@@ -494,6 +494,10 @@ const T = {
         tie_break:'Au moins un tie-break', set_decisif:'Set décisif', set1_home:'1er set au joueur 1'},
   fs_f:{fiable:'fiable', trop_etroite:'fourchette trop étroite', trop_large:'fourchette trop large', penche_haut:'réel souvent au-dessus', penche_bas:'réel souvent au-dessous', surestime:'annonce trop haut', sous_estime:'annonce trop bas', rien:'rien à conclure'},
   fs_total:k=>`Plus de ${k} jeux`, fs_hcp:k=>`Favori gagne de plus de ${k} jeux`,
+  x_bouton:'Image pour X (duel des styles)', x_contre:'contre', x_face:'face aux', x_tous:'Tous terrains', x_sur:s=>`Sur ${s}`,
+  x_vict:(v,n)=>`${v} victoire${v>1?'s':''} sur ${n}`, x_attendu:'attendu', x_comme:'comme attendu', x_faible:'échantillon faible',
+  x_derniers:'Derniers matchs contre ce style', x_v:'V', x_d:'D',
+  x_pied:'Attendu : la chance de victoire d’avant-match, en moyenne, sur ces mêmes matchs. Battre des joueurs qu’on devait battre ne prouve rien ; c’est l’écart à l’attendu qui compte.',
   jc_titre:'Journal des changements', jc_sous:'Ce qui a changé dans l’algo, quand, et ce que chaque changement a gagné au test. Les changements rejetés restent visibles.',
   jc_production:'en production', jc_candidat:'candidat', jc_rejete:'rejeté', jc_decision:'mis en production par décision, sous garde-fou',
   jc_fantome:'En direct :', jc_fantome_v:(n,a,b,g,ok)=>`sur ${fmt(n)} matchs réels, l’Elo en place fait ${dec(a,4)} de log loss contre ${dec(b,4)} pour l’Elo d’avant les changements (${g>=0?'gain':'perte'} ${dec(Math.abs(g),4)})${ok?'':' — moins de 30 matchs : rien à conclure'}.`,
@@ -653,6 +657,10 @@ const T = {
         tie_break:'At least one tie-break', set_decisif:'Deciding set', set1_home:'1st set to player 1'},
   fs_f:{fiable:'reliable', trop_etroite:'range too narrow', trop_large:'range too wide', penche_haut:'actual often above', penche_bas:'actual often below', surestime:'announces too high', sous_estime:'announces too low', rien:'no conclusion'},
   fs_total:k=>`Over ${k} games`, fs_hcp:k=>`Favourite wins by more than ${k} games`,
+  x_bouton:'Image for X (style duel)', x_contre:'vs', x_face:'against', x_tous:'All surfaces', x_sur:s=>`On ${s}`,
+  x_vict:(v,n)=>`${v} win${v>1?'s':''} out of ${n}`, x_attendu:'expected', x_comme:'as expected', x_faible:'small sample',
+  x_derniers:'Last matches against this style', x_v:'W', x_d:'L',
+  x_pied:'Expected: the pre-match win chance, on average, over these same matches. Beating players you were supposed to beat proves nothing; the gap to expected is what counts.',
   jc_titre:'Change log', jc_sous:'What changed in the model, when, and what each change gained in testing. Rejected changes stay listed.',
   jc_production:'live', jc_candidat:'candidate', jc_rejete:'rejected', jc_decision:'put live by decision, under a safeguard',
   jc_fantome:'Live:', jc_fantome_v:(n,a,b,g,ok)=>`on ${fmt(n)} real matches, the current Elo scores ${dec(a,4)} log loss vs ${dec(b,4)} for the pre-change Elo (${g>=0?'gain':'loss'} ${dec(Math.abs(g),4)})${ok?'':' — under 30 matches: no conclusion'}.`,
@@ -1373,8 +1381,74 @@ function rendStylesDescriptifs(sd,m){
     ${rendStatsStyle(j.surface,t('styles_surface',SURF[L][m.surface]||m.surface||''))}
     ${rendDerniersStyle(j.global,t('styles_derniers'))}
   </section>`).join('');
-  return `<div class="panel styles-descriptifs"><h3>${esc(t('styles_titre'))}</h3><p class="styles-intro">${esc(t('styles_sous'))}</p><div class="styles-joueurs">${joueurs}</div></div>`;
+  const okX = sd.joueurs.every(j=>j.global && j.global.n && j.global.attendu_pct!=null);
+  const bx = okX ? `<button type="button" class="btn-x" data-x="${esc(m.uid)}">${esc(t('x_bouton'))}</button>` : '';
+  return `<div class="panel styles-descriptifs"><h3>${esc(t('styles_titre'))}</h3><p class="styles-intro">${esc(t('styles_sous'))}</p><div class="styles-joueurs">${joueurs}</div>${bx}</div>`;
 }
+// 29/10/2026 — IMAGE POUR X : le duel des styles en PNG 1080×1350 (dessiné ici, sans bibliothèque), couleur selon
+// l'ÉCART À L'ATTENDU (pas le % brut), « échantillon faible » sous 30 matchs, aucune adresse ni nom de site.
+function styleLibPluriel(code){
+  const lib = {grand_serveur:{fr:'grands serveurs',en:'big servers'}, serveur_attaquant:{fr:'serveurs attaquants',en:'attacking servers'},
+    retourneur_pressant:{fr:'retourneurs pressants',en:'pressing returners'}, contreur:{fr:'contreurs',en:'counterpunchers'},
+    equilibre:{fr:'profils équilibrés',en:'balanced profiles'}};
+  return (lib[code]||{})[L] || styleLib(code);
+}
+async function imageX(m){
+  const W = 1080, H = 1350, c = document.createElement('canvas'); c.width = W; c.height = H;
+  const g = c.getContext('2d'), sd = m.styles_descriptifs, S_ = SURF[L][m.surface] || m.surface || '';
+  try { await Promise.all(['700 80px "Barlow Condensed"','600 40px Barlow','400 26px Barlow'].map(f=>document.fonts.load(f))); } catch(e){}
+  const C = {bg:'#0E0A24', panel:'#1B1342', line:'rgba(255,255,255,.12)', ink:'#F4F1FF', dim:'#ABA3D6', p1:'#2EE6FF', p2:'#FF4FAE', ball:'#D4FF3A', ok:'#45F0A0', ko:'#FF6B86'};
+  const F = (w,px,fam) => `${w} ${px}px ${fam==='c'?'"Barlow Condensed"':'Barlow'}, system-ui, sans-serif`;
+  const rr = (x,y,w,h,r,fill,stroke) => { g.beginPath(); g.moveTo(x+r,y); g.arcTo(x+w,y,x+w,y+h,r); g.arcTo(x+w,y+h,x,y+h,r); g.arcTo(x,y+h,x,y,r); g.arcTo(x,y,x+w,y,r); g.closePath(); if (fill){ g.fillStyle=fill; g.fill(); } if (stroke){ g.strokeStyle=stroke; g.lineWidth=2; g.stroke(); } };
+  const txt = (s,x,y,font,col,align) => { g.font=font; g.fillStyle=col; g.textAlign=align||'left'; g.fillText(s,x,y); return g.measureText(s).width; };
+  const pcX = v => `${Math.round(v)} %`;
+  g.fillStyle = C.bg; g.fillRect(0,0,W,H);
+  const grd = g.createRadialGradient(W/2,-120,0,W/2,-120,900); grd.addColorStop(0,'#3A1F8F'); grd.addColorStop(.7,'rgba(58,31,143,0)');
+  g.fillStyle = grd; g.fillRect(0,0,W,H);
+  const d = new Date(m.debut_utc || m.debut);
+  txt(`${m.tournoi||''} · ${S_}`, 64, 92, F(400,28), C.dim);
+  txt(d.toLocaleDateString(loc(),{day:'2-digit',month:'2-digit'}), W-64, 92, F(400,28), C.dim, 'right');
+  let x = 64; const yT = 172;
+  x += txt(court(m.home), x, yT, F(700,74,'c'), C.ink); x += txt(` ${t('x_contre')} `, x, yT, F(400,44), C.dim); txt(court(m.away), x, yT, F(700,74,'c'), C.ink);
+  const bloc = (j, nom, col, y0) => {
+    const h = 480; rr(64,y0,W-128,h,28,C.panel,C.line); g.fillStyle = col; g.fillRect(64,y0+24,8,h-48);
+    txt(nom, 104, y0+66, F(600,42), col);
+    let xx = 104; xx += txt(`${styleLib(j.style).toLocaleLowerCase(loc())}, ${t('x_face')} `, xx, y0+108, F(400,28), C.dim);
+    txt(styleLibPluriel(j.style_adverse), xx, y0+108, F(600,28), C.ink);
+    [[j.global, t('x_tous')], [j.surface, t('x_sur', S_)]].forEach(([b, lib], k) => {
+      const tx = 104 + k*444, ty = y0+138, tw = 420, th = 250;
+      rr(tx,ty,tw,th,20,null,C.line);
+      if (!b || !b.n){ txt(lib, tx+24, ty+44, F(400,24), C.dim); txt('—', tx+24, ty+130, F(700,84,'c'), C.dim); return; }
+      txt(lib, tx+24, ty+44, F(400,24), C.dim);
+      txt(pcX(b.pct), tx+24, ty+130, F(700,96,'c'), C.ink);
+      txt(t('x_vict', b.victoires, b.n), tx+24, ty+170, F(400,24), C.dim);
+      const ec = b.ecart_pts || 0, cl = ec >= 5 ? C.ok : ec <= -5 ? C.ko : C.ink;
+      let x2 = tx+24; x2 += txt(`${t('x_attendu')} ${pcX(b.attendu_pct)} · `, x2, ty+206, F(400,26), C.ink);
+      txt(Math.abs(ec) >= 1 ? `${ec>0?'+':'−'}${Math.round(Math.abs(ec))} pts` : t('x_comme'), x2, ty+206, F(600,26), cl);
+      if (b.n < 30){ g.font = F(600,20); const w_ = g.measureText(t('x_faible')).width + 24; rr(tx+24, ty+218, w_, 26, 13, C.ball); txt(t('x_faible'), tx+36, ty+238, F(600,20), '#1a1300'); }
+    });
+    let xd = 104 + txt(t('x_derniers'), 104, y0+436, F(400,25), C.dim) + 16;
+    ((j.global||{}).derniers||[]).slice(0,5).forEach(r_ => {
+      g.beginPath(); g.arc(xd+21, y0+427, 21, 0, Math.PI*2); g.fillStyle = r_.victoire ? 'rgba(69,240,160,.18)' : 'rgba(255,107,134,.18)'; g.fill();
+      txt(r_.victoire ? t('x_v') : t('x_d'), xd+21, y0+435, F(700,21), r_.victoire ? C.ok : C.ko, 'center'); xd += 52; });
+  };
+  bloc(sd.joueurs[0], m.home, C.p1, 222);
+  bloc(sd.joueurs[1], m.away, C.p2, 728);
+  g.fillStyle = C.line; g.fillRect(64, 1228, W-128, 1);
+  const pied = t('x_pied'); g.font = F(400,22); let ligne = '', yy = 1262;
+  for (const mot of pied.split(' ')){ const essai = ligne ? ligne + ' ' + mot : mot; if (g.measureText(essai).width > W-128){ txt(ligne, 64, yy, F(400,22), C.dim); ligne = mot; yy += 29; } else ligne = essai; }
+  if (ligne) txt(ligne, 64, yy, F(400,22), C.dim);
+  const blob = await new Promise(r=>c.toBlob(r,'image/png'));
+  const nomF = `duel-${m.uid}.png`, file = new File([blob], nomF, {type:'image/png'});
+  if (navigator.canShare && navigator.canShare({files:[file]})) { try { await navigator.share({files:[file]}); return; } catch(e){ if (e && e.name === 'AbortError') return; } }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = nomF; document.body.appendChild(a); a.click();
+  setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 2000);
+}
+document.addEventListener('click', e=>{
+  const b = e.target.closest && e.target.closest('.btn-x'); if (!b) return;
+  const m = (D.matchs||[]).find(x=>x.uid===b.dataset.x); if (!m) return;
+  b.disabled = true; imageX(m).finally(()=>{ b.disabled = false; });
+});
 function rendMdj(){
   const zone = document.getElementById('mdj-zone');
   if (borne) { borne.stop(); borne = null; }
