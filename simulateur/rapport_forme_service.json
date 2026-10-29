@@ -1,0 +1,61 @@
+{
+ "genere_le": "2026-10-29T16:57:11+00:00",
+ "poids_simulation": 0.2377,
+ "regle": "positif si −0,001 de log loss au total et aucun circuit dégradé de plus de 0,001 (fixée avant)",
+ "mecanique": {
+  "TOUS": {
+   "matchs": 2811,
+   "log_loss_algo": 0.61625,
+   "log_loss_avec_forme": 0.61654,
+   "gain": -0.00029
+  },
+  "ATP": {
+   "matchs": 476,
+   "log_loss_algo": 0.62283,
+   "log_loss_avec_forme": 0.62429,
+   "gain": -0.00147
+  },
+  "WTA": {
+   "matchs": 392,
+   "log_loss_algo": 0.60118,
+   "log_loss_avec_forme": 0.60074,
+   "gain": 0.00044
+  },
+  "CH": {
+   "matchs": 1943,
+   "log_loss_algo": 0.61767,
+   "log_loss_avec_forme": 0.61782,
+   "gain": -0.00015
+  },
+  "positif": false
+ },
+ "appris": {
+  "TOUS": {
+   "matchs": 2535,
+   "log_loss_algo": 0.61326,
+   "log_loss_avec_forme": 0.61312,
+   "gain": 0.00014
+  },
+  "ATP": {
+   "matchs": 468,
+   "log_loss_algo": 0.62006,
+   "log_loss_avec_forme": 0.61757,
+   "gain": 0.0025
+  },
+  "WTA": {
+   "matchs": 391,
+   "log_loss_algo": 0.60205,
+   "log_loss_avec_forme": 0.60396,
+   "gain": -0.00191
+  },
+  "CH": {
+   "matchs": 1676,
+   "log_loss_algo": 0.61398,
+   "log_loss_avec_forme": 0.61402,
+   "gain": -4e-05
+  },
+  "beta_final": 0.551,
+  "positif": false
+ },
+ "decalage_moyen_abs": 0.1173
+}

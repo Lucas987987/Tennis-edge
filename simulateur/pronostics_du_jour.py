@@ -190,6 +190,7 @@ def charger_combinaison(racine):
 
 COMBINAISON = None
 ACTIVITE = None       # 29/10/2026 : activité récente des joueurs (activite.py), chargée par construire()
+FORME_SERVICE = None  # 29/10/2026 : service / retour du moment (forme_service.py), information + modèle fantôme
 PROGRAMME = {}        # 29/10/2026 : {(jour, clé, clé) triée: tour} — programme du jour relevé par feuilles_match.py
 
 
@@ -365,6 +366,13 @@ def _avec_forme(ct, forme):
     return dict(ct or {}, forme=forme)
 
 
+def _avec_service(ct, fsv_ctl):
+    """29/10/2026 : le fantôme « forme du service » dans le bloc de contrôle (créé s'il n'existe pas)."""
+    if not fsv_ctl:
+        return ct
+    return dict(ct or {}, forme_service=fsv_ctl)
+
+
 def controle_forme(PR, h, a, c, s, sg, p_home, fct):
     """29/10/2026 — FANTÔME DE LA FORME DU JOUR : pour un circuit dont le σ a changé (Challenger 0,22), la forme du
     match (camp × tie-break × 3 sets × jeux) avec le σ en place et avec l'ancien (0,15), même vainqueur (ancrage).
@@ -380,6 +388,23 @@ def controle_forme(PR, h, a, c, s, sg, p_home, fct):
     return {'sigma': sig, 'sigma_reference': SGC.BASE,
             'masses': [[int(k[0]), bool(k[1]), bool(k[2]), int(k[3]), round(m1.get(k, 0.0), 4), round(m0.get(k, 0.0), 4)]
                        for k in cles if max(m1.get(k, 0.0), m0.get(k, 0.0)) >= 5e-4]}
+
+
+def controle_forme_service(cH, cA, vh, va, c, s, sg, p_elo, p_sim, n_h, n_a, sit):
+    """29/10/2026 — FANTÔME « FORME DU SERVICE » : la simulation rejouée avec le service et le retour du moment
+    (forme_service.decalages), puis le même mélange avec l'Elo et les mêmes ajustements que le pronostic affiché.
+    Jamais affiché comme pronostic ; jugé après les matchs (apres_match : fantome_forme_service). None sans écart."""
+    import forme_service as FSV
+    dh, da = FSV.decalages(vh, va)
+    if not (dh or da) or not COMBINAISON:
+        return None
+    cH2, cA2 = MS.appliquer_facteurs(cH, dh), MS.appliquer_facteurs(cA, da)
+    p_sim2 = MS.victoire_pure(cH2, cA2, sg, sigma_sim())
+    p2 = MS.melange_contexte(COMBINAISON, MS.contexte_match(s, c, 2 * sg - 1), p_elo, p_sim2)
+    p2 = MS.calibrer(p2, COMBINAISON.get('calibration'))
+    p2 = ajuster_combinaison(p2, c, p_elo, p_sim2, n_h, n_a, sit, s, 2 * sg - 1)
+    return {'p_home': round(p2, 4), 'p_simulation': round(p_sim2, 4), 'p_simulation_sans': round(p_sim, 4),
+            'decalages': [round(dh, 4), round(da, 4)]}
 
 
 def charger_sigma_circuit(racine):
@@ -608,11 +633,21 @@ def construire(racine, maintenant=None):
         elo_fem = E.Elo.importer(fem_etat['joueurs'], fem_etat.get('options'))
     except (OSError, ValueError, KeyError):
         fem_etat, elo_fem = None, None
-    global ACTIVITE, PROGRAMME
+    global ACTIVITE, PROGRAMME, FORME_SERVICE
     PROGRAMME = charger_programme(racine)
     try:
+        fiches_ = FE.lire(racine)
+    except Exception:  # noqa: BLE001
+        fiches_ = None
+    try:                            # 29/10/2026 : service / retour du moment (information + fantôme)
+        import forme_service as FSV
+        FORME_SERVICE = FSV.FormeService.depuis(racine, fiches_)
+    except Exception as e_:  # noqa: BLE001
+        print(f"::warning::forme du service non chargée : {type(e_).__name__}: {e_}")
+        FORME_SERVICE = None
+    try:
         import activite as ACT
-        ACTIVITE = ACT.Activite.depuis(racine)
+        ACTIVITE = ACT.Activite.depuis(racine, fiches_)
     except Exception as e_:  # noqa: BLE001
         print(f"::warning::activité des joueurs non chargée : {type(e_).__name__}: {e_}")
         ACTIVITE = None
@@ -665,7 +700,14 @@ def construire(racine, maintenant=None):
         pa0, pb0 = S.service(h, a, c, s)
         stats = pronostic(elo.proba(h, a, s), c, sg, pa0, pb0)
         uid = f"{x['debut'].date()}_{NR.slug(x['home'])}_{NR.slug(x['away'])}"
-        simulation = combinaison = direct = forme_ctl = None
+        simulation = combinaison = direct = forme_ctl = fsv_ctl = None
+        fsv = None
+        if FORME_SERVICE is not None:
+            try:
+                fsv = [FORME_SERVICE.variables(k_, x['debut'], s) for k_ in (h, a)]
+            except Exception as e_:  # noqa: BLE001 — information seule, ne bloque jamais un pronostic
+                print(f"::warning::forme du service non calculée ({h}–{a}) : {type(e_).__name__}: {e_}")
+                fsv = None
         if PR is not None:
             # 22/10/2026 — SIMULATION PURE : le match joué SIMULATIONS fois avec les seuls taux des deux
             # joueurs (1re balle, aces, doubles fautes, points gagnés derrière la 1re et la 2e, retour),
@@ -709,6 +751,12 @@ def construire(racine, maintenant=None):
                 p_c = ajuster_combinaison(p_c, c, stats['p_home'], p_sim, elo.matchs(h), elo.matchs(a), sit, s, 2 * sg - 1)
                 combinaison = dict(pronostic(p_c, c, sg, MS.p_service(cH), MS.p_service(cA)),
                                    p_simulation=round(p_sim, 4), p_elo=stats['p_home'])
+                if fsv and (fsv[0] or fsv[1]):
+                    try:
+                        fsv_ctl = controle_forme_service(cH, cA, fsv[0], fsv[1], c, s, sg, stats['p_home'], p_sim,
+                                                         elo.matchs(h), elo.matchs(a), sit)
+                    except Exception as e_:  # noqa: BLE001 — le fantôme ne doit jamais bloquer un pronostic
+                        print(f"::warning::fantôme forme du service non calculé ({h}–{a}) : {type(e_).__name__}: {e_}")
             # 22/10/2026 — EN DIRECT (direct.py, Lab) : points de service des deux joueurs pour la version
             # principale (simulation + Elo si adoptée, sinon simulation pure), avant toute forme du jour.
             cH0, cA0 = avec_facteurs(*composantes_du_match(PR, h, a, c, s, pure=not combinaison)[:2], fct)
@@ -742,8 +790,9 @@ def construire(racine, maintenant=None):
                     'cles': [h, a], 'matchs_joues': [elo.matchs(h), elo.matchs(a)], 'style_connu': [S.connu(h), S.connu(a)],
                     'combinaison': combinaison, 'simulation': simulation, 'stats': stats, 'direct': direct,
                     'activite': ([ACTIVITE.variables(k_, x['debut'], relatif=True) for k_ in (h, a)] if ACTIVITE is not None else None),
-                    'controle': _avec_forme(controle_fantome(elo, elo_ref, ref_etat, etat, h, a, c, s, elo_fem, fem_etat),
-                                            forme_ctl)})
+                    'forme_service': fsv if fsv and (fsv[0] or fsv[1]) else None,
+                    'controle': _avec_service(_avec_forme(controle_fantome(elo, elo_ref, ref_etat, etat, h, a, c, s, elo_fem, fem_etat),
+                                                          forme_ctl), fsv_ctl)})
     doc = {'genere_le': maintenant.isoformat(timespec='seconds') + 'Z', 'elo_au': etat.get('dernier_match'),
             'horizon_h': HORIZON_H, 'sigma': SIGMA, 'simulations': SIMULATIONS if PR is not None else 0,
             'qualite_horodatages': couverture_horodatages,

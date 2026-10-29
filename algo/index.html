@@ -512,6 +512,12 @@ const T = {
   jc_fantome_vide:'En direct : la comparaison avec l’Elo d’avant les changements démarre ; elle s’affichera dès les premiers matchs joués.',
   jc_f_fantome:'Résultats ITF dans l’Elo (hommes et femmes)', jc_f_fantome_itf_femmes:'Résultats ITF femmes seuls (matchs WTA)',
   jc_f_fantome_sigma:'Forme du jour du Challenger (σ 0,22 contre 0,15 : 2 ou 3 sets, tie-breaks, jeux)',
+  jc_f_fantome_forme_service:'Service et retour du moment (30 jours, même surface)',
+  jc_fv_fs:(n,a,b,g,ok)=>`${fmt(n)} matchs réels : pronostic affiché ${dec(a,4)}, avec la forme du service ${dec(b,4)} (${g<=0?'la forme fait mieux de':'la forme fait moins bien de'} ${dec(Math.abs(g),4)})${ok?'':' — moins de 30 matchs : rien à conclure'}.`,
+  sv_j:(n,s,s0,sens)=>`${n} : ${s} des points gagnés au service sur 30 jours (${s0} avant)${sens?', '+sens:''}`,
+  sv_sens:{hausse:'en hausse', baisse:'en baisse', stable:'stable'},
+  sv_l:(a,b)=>`Service du moment — ${a} · ${b}.`,
+  sv_p:(n,p)=>` Avec cette forme, l’algo dirait ${n} à ${p} (suivi à part, pas encore validé : le pronostic affiché ne change pas).`,
   jc_fv:(n,a,b,g,ok)=>`${fmt(n)} matchs réels : en place ${dec(a,4)}, version d’avant ${dec(b,4)} (${g>=0?'gain':'perte'} ${dec(Math.abs(g),4)})${ok?'':' — moins de 30 matchs : rien à conclure'}.`,
   es_badge:'peu documenté', es_badge_aide:'Un joueur a moins de 1 500 balles de service dans nos données',
   am_titre:'Bilan après match', am_vainqueur:'Vainqueur', am_vainqueur_v:(n,p)=>`${n} : l’algo lui donnait ${p}`,
@@ -683,6 +689,12 @@ const T = {
   jc_fantome_vide:'Live: the comparison with the pre-change Elo is starting; it will show once matches are played.',
   jc_f_fantome:'ITF results in the Elo (men and women)', jc_f_fantome_itf_femmes:'Women’s ITF results only (WTA matches)',
   jc_f_fantome_sigma:'Challenger day form (σ 0.22 vs 0.15: 2 or 3 sets, tie-breaks, games)',
+  jc_f_fantome_forme_service:'Current serve and return form (30 days, same surface)',
+  jc_fv_fs:(n,a,b,g,ok)=>`${fmt(n)} real matches: displayed forecast ${dec(a,4)}, with serve form ${dec(b,4)} (${g<=0?'form does better by':'form does worse by'} ${dec(Math.abs(g),4)})${ok?'':' — under 30 matches: no conclusion'}.`,
+  sv_j:(n,s,s0,sens)=>`${n}: ${s} of service points won over 30 days (${s0} before)${sens?', '+sens:''}`,
+  sv_sens:{hausse:'up', baisse:'down', stable:'stable'},
+  sv_l:(a,b)=>`Current serve — ${a} · ${b}.`,
+  sv_p:(n,p)=>` With this form, the algo would say ${n} at ${p} (tracked separately, not yet validated: the displayed forecast does not change).`,
   jc_fv:(n,a,b,g,ok)=>`${fmt(n)} real matches: current ${dec(a,4)}, previous version ${dec(b,4)} (${g>=0?'gain':'loss'} ${dec(Math.abs(g),4)})${ok?'':' — under 30 matches: no conclusion'}.`,
   es_badge:'little data', es_badge_aide:'One player has fewer than 1,500 service points in our data',
   am_titre:'After-match review', am_vainqueur:'Winner', am_vainqueur_v:(n,p)=>`${n}: the model gave ${p}`,
@@ -901,6 +913,18 @@ function activiteTexte(m){
   const note = cats.includes('retour') ? t('act_note_retour') : cats.includes('peu') ? t('act_note_peu') : '';
   return { sens: note ? 'moins' : 'info', txt: (p.length === 2 ? t('act_l', p[0], p[1]) : t('act_l', p[0], '').replace(' · .', '.')) + note };
 }
+// 29/10/2026 — service du moment (forme_service.py) : information ; la probabilité « avec la forme » est un fantôme suivi
+function pc1(p){ const v = (Math.round(p*1000)/10).toFixed(1); return L==='fr' ? v.replace('.',',')+' %' : v+'%'; }
+function serviceTexte(m){
+  const F = m.forme_service; if (!Array.isArray(F) || F.length !== 2) return null;
+  const part = i => { const v = F[i]; if (!v || !v.recent || v.recent.service == null || !v.reference || v.reference.service == null || !v.sens_service) return null;
+    return t('sv_j', court(i===0?m.home:m.away), pc1(v.recent.service), pc1(v.reference.service), t('sv_sens')[v.sens_service]); };
+  const p = [part(0), part(1)].filter(Boolean); if (!p.length) return null;
+  let txt = p.length === 2 ? t('sv_l', p[0], p[1]) : t('sv_l', p[0], '').replace(' · .', '.');
+  const fs = (m.controle||{}).forme_service;
+  if (fs && fs.p_home != null){ const h = fs.p_home >= .5; txt += t('sv_p', court(h?m.home:m.away), pc0(h?fs.p_home:1-fs.p_home)); }
+  return { sens:'info', txt };
+}
 function rendEssentiel(m){
   const L_ = [], fav = m.p_home >= .5 ? m.home : m.away, pf = Math.max(m.p_home, 1-m.p_home), fb = m.fiabilite || {};
   const fem = m.circuit === 'WTA';
@@ -909,6 +933,7 @@ function rendEssentiel(m){
   peuDocumentes(m).forEach(x=>L_.push({ sens:'moins', txt: t(x.balles < DOC_TRES_PEU ? 'es_tres_peu' : 'es_peu', x.nom, x.balles, fem) }));
   (m.abandon_recent||[]).forEach((j,i)=>{ if (j!=null) L_.push({ sens:'moins', txt: t('es_abandon', i===0?m.home:m.away, j) }); });
   const ac = activiteTexte(m); if (ac) L_.push(ac);
+  const sv = serviceTexte(m); if (sv) L_.push(sv);
   const N = [court(m.home), court(m.away)];
   const du = m.duel ? duelTexte(m.duel, N) : null; if (du) L_.push(du);
   const ry = m.rythme ? rythmeTexte(m.rythme, m) : null, pv = m.rythme && m.rythme.prevision;
@@ -1635,7 +1660,7 @@ function rendJournal(){
   // 29/10/2026 : un fantôme par changement (chacun contre la version d'avant, sur les mêmes matchs réels)
   const FS_ = Array.isArray(J.fantomes) && J.fantomes.length ? J.fantomes : ((J.fantome||{}).TOUS ? [Object.assign({cle:'fantome'}, J.fantome.TOUS)] : []);
   const fan = FS_.length ? `<p class="jc-fan"><b>${esc(t('jc_fantome'))}</b></p><ul class="jc-fans">${FS_.map(F=>
-      `<li><b>${esc(t('jc_f_'+F.cle))}</b> — ${esc(t('jc_fv', F.matchs, F.log_loss_elo_en_place, F.log_loss_elo_reference, F.gain, F.conclusion_possible))}</li>`).join('')}</ul>`
+      `<li><b>${esc(t('jc_f_'+F.cle))}</b> — ${esc(t(F.cle==='fantome_forme_service'?'jc_fv_fs':'jc_fv', F.matchs, F.log_loss_elo_en_place, F.log_loss_elo_reference, F.gain, F.conclusion_possible))}</li>`).join('')}</ul>`
                 : `<p class="jc-fan">${esc(t('jc_fantome_vide'))}</p>`;
   const li = J.changements.map(c=>`<li><span class="jc-st ${esc(c.statut)}">${esc(t('jc_'+c.statut))}</span>
     <span><b>${esc(c.titre)}</b><br><span class="d">${esc(dateLong(c.date))}${c.decision?' · '+esc(t('jc_decision')):''} — ${esc(c.mesure)}${c.garde_fou?' · '+esc(c.garde_fou):''}</span></span></li>`).join('');
