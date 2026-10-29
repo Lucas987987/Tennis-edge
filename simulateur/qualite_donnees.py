@@ -97,6 +97,31 @@ def balles_par_nom(doc, noms):
     return f
 
 
+ACTIFS_J = 30
+
+
+def actifs(doc, racine, jours=ACTIFS_J, jour=None):
+    """29/10/2026 — joueurs ACTIFS : vus dans une feuille ATP, WTA ou Challenger (pas ITF) des `jours` derniers jours
+    avant l'export des profils. Le total des profils (≈ 4 600) compte surtout des joueurs ITF, retraités ou anciens de
+    l'archive qu'on ne pronostique pas : il reste vers 48 % quoi qu'on collecte. Celui-ci bouge avec la collecte."""
+    import datetime as dt
+    import feuilles as FE
+    try:
+        fin = dt.date.fromisoformat(str(jour or (doc or {}).get('jour'))[:10])
+    except ValueError:
+        return None
+    noms = {(r.get(c) or {}).get('nom') for r in FE.lire(racine, (fin - dt.timedelta(days=jours)).isoformat(), fin.isoformat())
+            if 'itf' not in str(r.get('categorie') or '').lower() for c in ('home', 'away')} - {None, ''}
+    if not noms:
+        return None
+    import elo as E
+    uniques = {E.cle(n): n for n in sorted(noms)}           # un joueur une fois, même écrit dans un autre ordre
+    b = balles_par_nom(doc, uniques.values())
+    L = sorted(b(n) for n in uniques.values())
+    return {'jours': jours, 'joueurs': len(L), 'mediane': round(_quantile(L, .5)),
+            'au_moins_500': sum(x >= 500 for x in L), 'pct_au_moins_500': round(100 * sum(x >= 500 for x in L) / len(L), 1)}
+
+
 def couverture_pronostiques(doc, matchs, juge):
     """matchs : [{circuit, home, away, …}] jugés ; juge(m) -> (p_home, y) ou None (y = 1 si home gagne)."""
     import elo as E
