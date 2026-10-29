@@ -118,7 +118,7 @@ def fiche(ligne, maintenant, version):
             'feuille': ligne.get('feuille_prevue'), 'fourchette': ligne.get('feuille_fourchette'),
             'duree': ({k: pv.get(k) for k in ('minutes', 'minutes_p10', 'minutes_p90', 'points')} if pv else None),
             'lignes': ligne.get('lignes_algo'), 'documentation': ligne.get('documentation'),
-            'controle': ligne.get('controle')}
+            'controle': ligne.get('controle'), 'modeles': ligne.get('modeles')}
 
 
 def figer(lignes, racine, maintenant, version):
@@ -233,6 +233,13 @@ def bilan_match(uid, f, reel, duree_reelle=None):
                 res[k] = [v, sets[0][0] > sets[0][1]]
         if res:
             E['lignes'] = res
+    mo = d.get('modeles') or {}
+    if mo.get('p_elo') is not None and mo.get('p_simulation') is not None and isinstance(p, (int, float)):
+        # 29/10/2026 : l'Elo et la simulation désignaient-ils le même vainqueur ? Qui avait raison ?
+        ju = lambda q: (q >= .5) == (y == 1)
+        E['modeles'] = {'desaccord': (mo['p_elo'] >= .5) != (mo['p_simulation'] >= .5), 'elo_juste': ju(mo['p_elo']),
+                        'simulation_juste': ju(mo['p_simulation']), 'affiche_juste': ju(p),
+                        'ecart': round(abs(mo['p_elo'] - mo['p_simulation']), 4)}
     ct = d.get('controle') or {}
     if ct.get('p_elo') is not None and ct.get('p_elo_reference') is not None:
         lp = lambda q: round(-math.log(min(max(q if y else 1 - q, 1e-6), 1 - 1e-6)), 5)
@@ -444,6 +451,16 @@ def message_pistes(doc):
             L.append(f"• {p['groupe']} · {p['type']} {p['stat']} : prévu − réel = {p['biais_prevu_moins_reel']} (n={p['n']}, z={p['z']})")
         else:
             L.append(f"• {p['groupe']} · {p['type']} {p['stat']} : prévu {p['prevu_pct']} % / réel {p['reel_pct']} % (n={p['n']}, z={p['z']})")
+    lig = []                        # 29/10/2026 : désaccords Elo / simulation, chaque semaine
+    for g in ('TOUS', 'ATP', 'WTA', 'CH'):
+        dsc = (doc.get('groupes', {}).get(g) or {}).get('desaccord') or {}
+        if dsc.get('desaccords'):
+            lig.append(f"• {g} : {dsc['desaccords']} désaccords sur {dsc['matchs']} · Elo juste {dsc['elo_pct']} % · "
+                       f"simulation {dsc['simulation_pct']} % · affiché {dsc['affiche_pct']} % (accord : {dsc['accord_pct']} %)"
+                       + ('' if dsc.get('conclusion_possible') else ' · moins de 30 : rien à conclure'))
+    if lig:
+        L.append("\n<b>Elo et simulation en désaccord sur le vainqueur</b>")
+        L += lig
     L.append("\n<i>Descriptif : rien n'entre dans le modèle sans le test habituel (fixé avant résultat, deux semaines de suite).</i>")
     return '\n'.join(L)
 
@@ -488,6 +505,13 @@ def analyser(B):
                 for k, v in j.items():
                     fq.setdefault(k, []).append(v)
         r['stats'] = {k: fiabilite_stat(fq.get(k) or [], fe.get(k) or []) for k in STATS_FEUILLE if fq.get(k) or fe.get(k)}
+        mo = [e['modeles'] for e in E if 'modeles' in e]
+        if mo:                      # 29/10/2026 : désaccords Elo / simulation — qui avait raison ?
+            dd, aa = [x for x in mo if x['desaccord']], [x for x in mo if not x['desaccord']]
+            pct = lambda L, k: round(100 * sum(x[k] for x in L) / len(L), 1) if L else None
+            r['desaccord'] = {'matchs': len(mo), 'desaccords': len(dd), 'elo_pct': pct(dd, 'elo_juste'),
+                              'simulation_pct': pct(dd, 'simulation_juste'), 'affiche_pct': pct(dd, 'affiche_juste'),
+                              'accord_pct': pct(aa, 'affiche_juste'), 'conclusion_possible': len(dd) >= 30}
         # 29/10/2026 : chaque changement contre son modèle fantôme, sur les mêmes matchs réels
         for cle_f in ('fantome', 'fantome_itf_femmes', 'fantome_sigma'):
             fa = [e[cle_f] for e in E if cle_f in e]
