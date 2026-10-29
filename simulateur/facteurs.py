@@ -1177,6 +1177,7 @@ def main(argv):
                 fs_en_place, sg_prec = False, {}
             # 28/10/2026 — forme du jour (σ) par circuit (sigma_circuit.py) : règle fixée, deux semaines de suite
             sigmas_en_place = None
+            t_sg = time.time()
             try:
                 import sigma_circuit as SGC
                 rs = SGC.juger(appr, juge, reels)
@@ -1190,10 +1191,12 @@ def main(argv):
                 doc['sigma_circuit'] = rs
                 sigmas_en_place = rs['sigmas'] if ok_s else None
                 print(f"  sigma_circuit      {'ADOPTÉ' if ok_s else 'non adopté'} — gain {rs['gain']} · σ {rs['sigmas']} · "
-                      f"par circuit {rs['par_circuit']} ({note_s})", flush=True)
+                      f"par circuit {rs['par_circuit']} ({note_s}) · {round((time.time() - t_sg) / 60, 1)} min", flush=True)
             except Exception as e:
                 print(f"::warning::σ par circuit non jugé : {type(e).__name__}: {e}")
+            t_fs = time.time()
             rf = FS.juger(appr, juge, prof_a, prof_j, reels, sigmas=sigmas_en_place)
+            print(f"  (forme des scores jugée en {round((time.time() - t_fs) / 60, 1)} min)", flush=True)
             etat_st = ST.lire()
             ok, note = ST.decider(etat_st, 'forme_scores_v3', fs_en_place, rf['adopte'])     # 28/10/2026 : v3 par circuit, série neuve
             ST.ecrire(etat_st)

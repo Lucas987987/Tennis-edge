@@ -43,6 +43,7 @@ jobs:
             /simulateur/
             /scripts/feuilles_match.py
             /scripts/resultats_itf.py
+            /scripts/taille_depot.py
             /resultats_itf/
             /resultats_itf_femmes/
             /scripts/closing_store.py
@@ -122,6 +123,12 @@ jobs:
         run: python simulateur/gouvernance.py --racine .
       - name: Récapitulatif hebdomadaire de l’apprentissage
         run: python simulateur/recap_apprentissage.py --racine .
+      - name: Taille du dépôt (alerte à 800 Mo)
+        if: always()
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python scripts/taille_depot.py
       - name: Bilan de la semaine de l'algorithme (Telegram, canal privé)
         if: always()
         env:

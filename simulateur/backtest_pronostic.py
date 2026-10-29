@@ -613,6 +613,7 @@ def main(argv):
     # Garde-fou : l'étude hebdomadaire continue ; si l'ITF fait moins bien deux semaines de suite, elle le retire
     # (etude_itf_elo.json « adopte » = false) et cette étape n'est plus appliquée. ITF = DONNÉE seulement.
     itf_elo = {'applique': False, 'matchs': len(itf_rows), 'raison': 'aucun résultat ITF'}
+    reference = None              # 29/10/2026 : variante AVANT l'ITF, gardée pour le modèle fantôme (comparaison en direct)
     if itf_rows and itf_en_production(racine):
         avant = sorted([m for m in itf_rows if m['date'] <= fin_sack and m['circuit'] != 'ITF'],   # ITF femmes : déjà dans l'archive
                        key=lambda m: m['date'])
@@ -630,7 +631,7 @@ def main(argv):
                    'suivi': (f"nos matchs : log loss {b1.get('log_loss')} avec l'ITF contre {b0.get('log_loss')} sans ; "
                              f"ATP/WTA 2024–2026 {a1.get('log_loss')} contre {a0.get('log_loss')}")}
         print(f"Résultats ITF dans l'Elo : APPLIQUÉS — {itf_elo['suivi']}", flush=True)
-        retenue = nom5
+        reference, retenue = retenue, nom5
     elif itf_rows:
         itf_elo['raison'] = "retirés par l'étude hebdomadaire (moins bien deux semaines de suite)"
         print(f"Résultats ITF dans l'Elo : non appliqués — {itf_elo['raison']}", flush=True)
@@ -664,6 +665,14 @@ def main(argv):
                    'variante': retenue, 'options': W['options'], 'depart_bas': DEPART_BAS if not retenue.startswith('depart_1500') else None,
                    'surfaces_tournois': table_surf, 'alias': alias, 'joueurs': elo.exporter(W['noms'])},
                   f, ensure_ascii=False, separators=(',', ':'))
+    # 29/10/2026 — MODÈLE FANTÔME : l'Elo d'avant l'ITF, calculé à chaque passage, jamais affiché comme pronostic ;
+    # pronostics_du_jour.py en tire une probabilité de contrôle par match, comparée à l'Elo en place après le match.
+    if reference:
+        R_ = V[reference]
+        with open(os.path.join(ICI, 'elo_etat_reference.json'), 'w', encoding='utf-8') as f:
+            json.dump({'genere_le': rap['genere_le'], 'variante': reference, 'options': R_['options'],
+                       'depart_bas': DEPART_BAS if not reference.startswith('depart_1500') else None, 'alias': alias,
+                       'joueurs': R_['elo'].exporter(R_['noms'])}, f, ensure_ascii=False, separators=(',', ':'))
     print(json.dumps({k: rap[k] for k in ('variantes', 'variante_retenue', 'elo_ameliore', 'joueurs_relies_nom_different')}, ensure_ascii=False, indent=1))
     if avec_scores:
         print(json.dumps(rap['scores_exacts_atp_wta'], ensure_ascii=False, indent=1))

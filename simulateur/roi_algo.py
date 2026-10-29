@@ -169,6 +169,38 @@ def bilan(P):
             'roi': round(sum(gains) / n, 3), 'cote_moy': round(sum(c for _, c, _ in P) / n, 2), 'ic95': _ic(gains)}
 
 
+def avant_apres(L, C, racine):
+    """29/10/2026 — pour chaque changement mis en production (simulateur/journal_changements.json) : l'algo face à la
+    clôture Pinnacle AVANT et APRÈS sa date, sur l'échantillon EN DIRECT. Log loss de l'algo et de la clôture (sans
+    marge) sur les mêmes matchs, et ROI de R1. L'écart algo − clôture qui se resserre = l'algo se rapproche du prix juste.
+    Suivi seulement : pas de conclusion sous 30 matchs de chaque côté."""
+    import math
+    try:
+        J = json.load(open(os.path.join(racine, 'simulateur', 'journal_changements.json'), encoding='utf-8'))
+    except (OSError, ValueError):
+        return []
+    dates = sorted({c['date'] for c in J.get('changements') or [] if c.get('statut') == 'production'})
+
+    def bloc(X):
+        pts = []
+        for uid, circuit, p, g in X:
+            c = _cote(C, uid, None)
+            if not c:
+                continue
+            qh, qa = 1 / c[0], 1 / c[1]
+            pm, y = qh / (qh + qa), g == 'home'
+            ll = lambda q: -math.log(min(max(q if y else 1 - q, 1e-6), 1 - 1e-6))
+            pts.append((ll(p), ll(pm)))
+        n = len(pts)
+        if not n:
+            return {'n': 0}
+        la, lm = sum(a for a, _ in pts) / n, sum(b for _, b in pts) / n
+        return {'n': n, 'log_loss_algo': round(la, 4), 'log_loss_cloture': round(lm, 4), 'ecart': round(la - lm, 4),
+                'R1': bilan(paris(X, C)['R1']), 'conclusion_possible': n >= N_MIN}
+    return [{'date': d, 'avant': bloc([x for x in L if x[0][:10] < d]), 'apres': bloc([x for x in L if x[0][:10] >= d])}
+            for d in dates]
+
+
 def calculer(racine):
     C = clotures(racine)
     L = direct(racine)
@@ -187,6 +219,7 @@ def calculer(racine):
     except Exception as e:  # noqa: BLE001
         print(f"rejoué indisponible ({type(e).__name__}: {e})")
         Rj = []
+    out['avant_apres'] = avant_apres(L, C, racine)
     out['n_rejoue'] = len(Rj)
     for regle, P in paris(Rj, C).items():
         out['rejoue'][regle] = dict(bilan(P), par_circuit={LIB[c]: bilan([x for x in P if x[0] == c]) for c in CIRCUITS})
@@ -219,6 +252,14 @@ def message(r):
             for c, bc in (b.get('par_circuit') or {}).items():
                 if bc.get('n'):
                     L.append(f"   {c} : {bc['n']} · ROI {100 * bc['roi']:+.1f} %")
+    for x in r.get('avant_apres') or []:
+        a, b = x['avant'], x['apres']
+        if not a.get('n') or not b.get('n'):
+            continue
+        L += ["", f"<b>Changement du {x['date']}</b> — écart log loss algo − clôture (plus bas = plus proche du prix juste)",
+              f"   avant : {a['n']} matchs · écart {a['ecart']:+.4f} · R1 ROI {100 * (a['R1'].get('roi') or 0):+.1f} %",
+              f"   après : {b['n']} matchs · écart {b['ecart']:+.4f} · R1 ROI {100 * (b['R1'].get('roi') or 0):+.1f} %"
+              + ('' if b['conclusion_possible'] else ' — moins de 30 matchs : rien à conclure')]
     L += ["", "Règles fixées le 23/10/2026 avant tout résultat. Validation = CLV ; ce ROI est un suivi."]
     return '\n'.join(L)
 
