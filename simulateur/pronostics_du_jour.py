@@ -190,6 +190,29 @@ def charger_combinaison(racine):
 
 COMBINAISON = None
 ACTIVITE = None       # 29/10/2026 : activité récente des joueurs (activite.py), chargée par construire()
+PROGRAMME = {}        # 29/10/2026 : {(jour, clé, clé) triée: tour} — programme du jour relevé par feuilles_match.py
+
+
+def charger_programme(racine, jours=4):
+    """Programme des derniers jours (feuilles/programme/AAAA-MM-JJ.json) : le tour de chaque match à venir."""
+    import glob
+    out = {}
+    for p in sorted(glob.glob(os.path.join(racine, 'feuilles', 'programme', '20*.json')))[-jours:]:
+        try:
+            with open(p, encoding='utf-8') as f:
+                doc = json.load(f)
+        except (OSError, ValueError):
+            continue
+        for r in (doc.get('matchs') or {}).values():
+            if r.get('tour') and r.get('home') and r.get('away'):
+                out[(str(r.get('jour')), *sorted((E.cle(r['home']), E.cle(r['away']))))] = r['tour']
+    return out
+
+
+def tour_du_match(h, a, debut):
+    """Nom du tour (« Round of 32 »…) d'un match à venir, ou None ; h, a : clés des joueurs."""
+    j = (debut.date() if isinstance(debut, dt.datetime) else debut).isoformat()
+    return PROGRAMME.get((j, *sorted((h, a))))
 CLASSEMENTS = None   # 23/10/2026 : classements (archive résumée + photos TennisApi), classements.py
 AJUSTEMENTS = {}      # 22/10/2026 : poids propres aux Challenger, correction des nouveaux venus (si adoptés)
 
@@ -215,9 +238,16 @@ def charger_ajustements(racine):
     ma = choix.get('modele_arbres') or {}                      # 23/10/2026 : arbres qui combinent tout (si adoptés)
     if ma.get('adopte') and ma.get('modele') and ma.get('poids'):
         out['arbres'] = {'modele': ma['modele'], 'poids': ma['poids']}
-    maa = choix.get('modele_arbres_activite') or {}            # 29/10/2026 : arbres + activité récente (si adoptés)
-    if maa.get('adopte') and maa.get('modele') and maa.get('poids'):
-        out['arbres_activite'] = {'modele': maa['modele'], 'poids': maa['poids']}
+    # 29/10/2026 : candidats de la famille des arbres (activité récente, tour du tableau) ; si plusieurs sont adoptés,
+    # celui qui a la log loss la plus basse au dernier jugement
+    adoptes = []
+    for cle_c in ('modele_arbres_activite', 'modele_arbres_tour'):
+        v = choix.get(cle_c) or {}
+        if v.get('adopte') and v.get('modele') and v.get('poids'):
+            adoptes.append(((v.get('ll') or {}).get('avec') or 9.0, cle_c, v))
+    if adoptes:
+        _, cle_c, v = min(adoptes)
+        out['arbres_candidat'] = {'cle': cle_c, 'modele': v['modele'], 'poids': v['poids']}
     for cle_s in ('qualifies', 'transition', 'classement', 'classement_relatif'):    # 22/10/2026 : même règle
         v = choix.get(cle_s) or {}
         if v.get('adopte') and v.get('delta') is not None:
@@ -229,16 +259,19 @@ def ajuster_combinaison(p_c, c, p_elo, p_sim, n_home, n_away, situations=None, s
     """Challenger : poids propres s'ils sont adoptés (remplacent le mélange commun) ; puis chaque situation
     adoptée (règle de entrainement_progressif.correction_situation) : z += δ·(situation(home) − situation(away)).
     Nouveaux venus : nouveau(n) = max(0, 1 − n/30) ; situations = {'qualifies': (h, a), 'transition': (h, a)}."""
-    if AJUSTEMENTS.get('arbres_activite') and (situations or {}).get('activite') is not None:
-        # 29/10/2026 : les arbres avec l'activité récente des deux joueurs (activite.py), s'ils ont été adoptés
+    ac_ = AJUSTEMENTS.get('arbres_candidat')
+    if ac_:
+        # 29/10/2026 : arbres avec les variables d'un candidat adopté (activité récente ou tour du tableau) ; sans la
+        # donnée (tour inconnu…), sa valeur neutre, comme à l'apprentissage
         import arbres as A
         import entrainement_progressif as EP
         sit = situations or {}
         q, t = sit.get('qualifies') or (0.0, 0.0), sit.get('transition') or (0.0, 0.0)
-        v = EP.variables_match_activite(p_elo, p_sim, n_home or 0, n_away or 0, (q[0], t[0]), (q[1], t[1]), c, surface, bo,
-                                        sit.get('rangs'), sit.get('activite'))
-        pm = MS.melange(AJUSTEMENTS['arbres_activite']['poids'], p_elo, p_sim)
-        return A.predire_symetrique(AJUSTEMENTS['arbres_activite']['modele'], v, math.log(pm / (1 - pm)), EP.ECARTS_ACTIVITE)
+        sit_k = EP.CANDIDATS_ARBRES[ac_['cle']][0]
+        v = EP.variables_candidat(ac_['cle'], p_elo, p_sim, n_home or 0, n_away or 0, (q[0], t[0]), (q[1], t[1]), c, surface, bo,
+                                  sit.get('rangs'), sit.get(sit_k))
+        pm = MS.melange(ac_['poids'], p_elo, p_sim)
+        return A.predire_symetrique(ac_['modele'], v, math.log(pm / (1 - pm)), EP.ecarts_candidat(ac_['cle']))
     if AJUSTEMENTS.get('arbres'):
         # les arbres partent de LEUR mélange et contiennent déjà nouveaux venus, qualifiés, surface, circuit…
         import arbres as A
@@ -254,7 +287,7 @@ def ajuster_combinaison(p_c, c, p_elo, p_sim, n_home, n_away, situations=None, s
     ecarts = []
     if AJUSTEMENTS.get('delta_nouveaux') and n_home is not None and n_away is not None:
         ecarts.append((AJUSTEMENTS['delta_nouveaux'], max(0.0, 1 - n_home / 30) - max(0.0, 1 - n_away / 30)))
-    for cle_s, (vh, va) in ((k, v) for k, v in (situations or {}).items() if k not in ('activite', 'rangs')):
+    for cle_s, (vh, va) in ((k, v) for k, v in (situations or {}).items() if k not in ('activite', 'rangs', 'tour')):
         if AJUSTEMENTS.get('delta_' + cle_s):
             ecarts.append((AJUSTEMENTS['delta_' + cle_s], vh - va))
     dz = sum(d * f for d, f in ecarts)
@@ -563,7 +596,8 @@ def construire(racine, maintenant=None):
         elo_fem = E.Elo.importer(fem_etat['joueurs'], fem_etat.get('options'))
     except (OSError, ValueError, KeyError):
         fem_etat, elo_fem = None, None
-    global ACTIVITE
+    global ACTIVITE, PROGRAMME
+    PROGRAMME = charger_programme(racine)
     try:
         import activite as ACT
         ACTIVITE = ACT.Activite.depuis(racine)
@@ -641,6 +675,10 @@ def construire(racine, maintenant=None):
                 p_c = MS.melange_contexte(COMBINAISON, MS.contexte_match(s, c, 2 * sg - 1), stats['p_home'], p_sim)
                 p_c = MS.calibrer(p_c, COMBINAISON.get('calibration'))     # excès de confiance (si adopté)
                 sit = situations_du_match(h, a, x['tournoi'], x['debut'], s)
+                tr_ = tour_du_match(h, a, x['debut'])            # 29/10/2026 : tour du tableau (programme TennisApi)
+                if tr_:
+                    import entrainement_progressif as EP_t
+                    sit['tour'] = EP_t.variables_tour(tr_)
                 if ACTIVITE is not None:                        # 29/10/2026 : (Δ tendance, Δ volume) vus de home
                     import activite as ACT
                     sit['activite'] = ACT.ecarts(ACTIVITE.variables(h, x['debut']), ACTIVITE.variables(a, x['debut']))
