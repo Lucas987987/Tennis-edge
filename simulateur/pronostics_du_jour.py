@@ -727,7 +727,7 @@ def construire(racine, maintenant=None):
                     'surface': s, 'meilleur_des': 2 * sg - 1, 'home': x['home'], 'away': x['away'],
                     'cles': [h, a], 'matchs_joues': [elo.matchs(h), elo.matchs(a)], 'style_connu': [S.connu(h), S.connu(a)],
                     'combinaison': combinaison, 'simulation': simulation, 'stats': stats, 'direct': direct,
-                    'activite': ([ACTIVITE.variables(k_, x['debut']) for k_ in (h, a)] if ACTIVITE is not None else None),
+                    'activite': ([ACTIVITE.variables(k_, x['debut'], relatif=True) for k_ in (h, a)] if ACTIVITE is not None else None),
                     'controle': _avec_forme(controle_fantome(elo, elo_ref, ref_etat, etat, h, a, c, s, elo_fem, fem_etat),
                                             forme_ctl)})
     doc = {'genere_le': maintenant.isoformat(timespec='seconds') + 'Z', 'elo_au': etat.get('dernier_match'),
