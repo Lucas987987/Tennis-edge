@@ -295,14 +295,48 @@ def variables_match_activite(p_elo, p_sim, n1, n2, sit1, sit2, circuit, surface,
     return variables_match(p_elo, p_sim, n1, n2, sit1, sit2, circuit, surface, bo, rangs) + list(activite or (0.0, 0.0))
 
 
-def modele_arbres_activite(hors, P, lim, experience, situations, nv, poids_finaux=None):
-    """RÈGLE FIXÉE AVANT DE VOIR LE RÉSULTAT (29/10/2026, 10 h 15) : les mêmes arbres que modele_arbres (mêmes réglages,
-    même départ, appris sur les mêmes matchs avant les 6 dernières semaines), avec en plus l'activité récente des deux
-    joueurs (activite.py : Δ tendance, Δ volume). Comparés aux arbres SANS l'activité sur les 6 dernières semaines :
-    adoptés si la log loss du vainqueur baisse au total ET qu'aucun circuit (ATP, WTA, Challenger) ne perd plus de
-    0,001 ; puis stabilité (stabilite.py) : mieux d'au moins 0,001 deux semaines de suite. Il faut 1 500 matchs avant et
-    500 à juger. Adoptés, ils remplacent les arbres en production (ré-appris sur tous les pronostics hors échantillon)."""
+# 29/10/2026 (après-midi) — LE TOUR DU TABLEAU (qualifications … finale), candidat de la même famille. Étude du 29/10
+# (4 821 pronostics hors échantillon, arbres simplifiés, jugement depuis le 14/09) : +0,0014 (WTA +0,0026, Challenger
+# +0,0014, ATP −0,0002) ; niveau du tournoi : 0 ; activité : WTA −0,0039. Variables propres au MATCH (pas d'écart).
+TOURS = {'qualification round 1': 0, 'qualification round 2': 0, 'qualification round 3': 0, 'qualifications': 0,
+         'qualification final': 1, 'round of 128': 2, 'round of 64': 3, 'round of 32': 4, 'round of 16': 5,
+         'quarterfinals': 6, 'semifinals': 7, 'final': 8}
+TOUR_INCONNU = 4
+
+
+def variables_tour(nom_tour):
+    """(rang du tour / 8, en qualifications 1/0) ; tour inconnu : le 1er tour d'un tableau à 32, hors qualifications."""
+    t = TOURS.get(str(nom_tour or '').strip().lower(), TOUR_INCONNU)
+    return [t / 8.0, 1.0 if t <= 1 else 0.0]
+
+
+CANDIDATS_ARBRES = {
+    # clé : (situation lue, nombre de variables, indices « écart » ajoutés, valeur neutre, libellé)
+    'modele_arbres_activite': ('activite', 2, True, (0.0, 0.0), "l'activité récente"),
+    'modele_arbres_tour': ('tour', 2, False, tuple(variables_tour(None)), 'le tour du tableau'),
+}
+
+
+def ecarts_candidat(cle):
+    sit, n, ecart, _, _ = CANDIDATS_ARBRES[cle]
+    return ECARTS + (tuple(range(len(VARIABLES), len(VARIABLES) + n)) if ecart else ())
+
+
+def variables_candidat(cle, p_elo, p_sim, n1, n2, sit1, sit2, circuit, surface, bo, rangs=None, extra=None):
+    sit, n, _, neutre, _ = CANDIDATS_ARBRES[cle]
+    return variables_match(p_elo, p_sim, n1, n2, sit1, sit2, circuit, surface, bo, rangs) + list(extra if extra is not None else neutre)
+
+
+def modele_arbres_candidat(cle, hors, P, lim, experience, situations, nv, poids_finaux=None):
+    """RÈGLE FIXÉE AVANT DE VOIR LE RÉSULTAT (29/10/2026, 10 h 15 pour l'activité, 11 h pour le tour) : les mêmes arbres
+    que modele_arbres (mêmes réglages, même départ, appris sur les mêmes matchs avant les 6 dernières semaines), avec
+    en plus les variables du candidat. Comparés aux arbres SANS elles sur les 6 dernières semaines : adoptés si la log
+    loss du vainqueur baisse au total ET qu'aucun circuit (ATP, WTA, Challenger) ne perd plus de 0,001 ; puis stabilité
+    (stabilite.py) : mieux d'au moins 0,001 deux semaines de suite. Il faut 1 500 matchs avant et 500 à juger. Adoptés,
+    ils remplacent les arbres en production (ré-appris sur tous les pronostics hors échantillon)."""
     import arbres as A
+    sit_k, n_k, _, neutre, lib = CANDIDATS_ARBRES[cle]
+    ec1 = ecarts_candidat(cle)
     if not P or not experience:
         return {'adopte': False, 'raison': 'pas de mélange ou pas de compte de matchs'}
     lignes = []
@@ -314,38 +348,42 @@ def modele_arbres_activite(hors, P, lim, experience, situations, nv, poids_finau
         q, t = sv.get('qualifies') or (0.0, 0.0), sv.get('transition') or (0.0, 0.0)
         a = (x.get('circuit'), x.get('surface'), x.get('bo'))
         v0 = variables_match(pe, ps, e[0], e[1], (q[0], t[0]), (q[1], t[1]), *a, sv.get('rangs'))
-        v1 = variables_match_activite(pe, ps, e[0], e[1], (q[0], t[0]), (q[1], t[1]), *a, sv.get('rangs'), sv.get('activite'))
-        lignes.append((x['jour'] >= lim, v0, v1, (x, ps, pe)))
+        v1 = variables_candidat(cle, pe, ps, e[0], e[1], (q[0], t[0]), (q[1], t[1]), *a, sv.get('rangs'), sv.get(sit_k))
+        lignes.append((x['jour'] >= lim, v0, v1, (x, ps, pe), sv.get(sit_k) is not None))
     av = [l for l in lignes if not l[0]]
     ju = [l for l in lignes if l[0]]
     if len(av) < 1500 or len(ju) < 500:
         return {'adopte': False, 'raison': f"pas assez de matchs ({len(av)} avant, {len(ju)} à juger)"}
-    if not any(any(l[2][-2:]) for l in av):
-        return {'adopte': False, 'raison': "pas de données d'activité"}
+    if not any(l[4] for l in av):
+        return {'adopte': False, 'raison': f"pas de données ({lib})"}
     off = lambda Pw, h: _lg(S.melange(Pw, h[2], h[1]))
-    X0, y0, o0 = A.symetriser([(v0, off(P, h), ECARTS) for _, v0, _, h in av])
-    X1, y1, o1 = A.symetriser([(v1, off(P, h), ECARTS_ACTIVITE) for _, _, v1, h in av])
+    X0, y0, o0 = A.symetriser([(v0, off(P, h), ECARTS) for _, v0, _, h, _ in av])
+    X1, y1, o1 = A.symetriser([(v1, off(P, h), ec1) for _, _, v1, h, _ in av])
     M0, M1 = A.apprendre(X0, y0, o0), A.apprendre(X1, y1, o1)
-    sans = [A.predire_symetrique(M0, v0, off(P, h), ECARTS) for _, v0, _, h in ju]
-    avec = [A.predire_symetrique(M1, v1, off(P, h), ECARTS_ACTIVITE) for _, _, v1, h in ju]
+    sans = [A.predire_symetrique(M0, v0, off(P, h), ECARTS) for _, v0, _, h, _ in ju]
+    avec = [A.predire_symetrique(M1, v1, off(P, h), ec1) for _, _, v1, h, _ in ju]
     l0, l1 = _ll(sans), _ll(avec)
     par = {}
-    for c, lib in CIRCUITS:
+    for c, _ in CIRCUITS:
         ix = [i for i, l in enumerate(ju) if l[3][0].get('circuit') == c]
         if ix:
             par[c] = {'n': len(ix), 'gain': round(_ll([sans[i] for i in ix]) - _ll([avec[i] for i in ix]), 5)}
     pire = min((v['gain'] for v in par.values()), default=0.0)
     ok = l1 < l0 and pire >= -0.001
-    out = {'adopte': bool(ok), 'n_juge': len(ju), 'variables': list(VARIABLES_ACTIVITE), 'll': {'avec': l1, 'sans': l0},
-           'par_circuit': par,
-           'raison': (f"6 dernières semaines ({len(ju)} matchs) : arbres avec l'activité {round(l1, 4)} contre sans "
+    out = {'adopte': bool(ok), 'n_juge': len(ju), 'variables': list(VARIABLES) + [f'{sit_k}_{i}' for i in range(n_k)],
+           'll': {'avec': l1, 'sans': l0}, 'par_circuit': par,
+           'raison': (f"6 dernières semaines ({len(ju)} matchs) : arbres avec {lib} {round(l1, 4)} contre sans "
                       f"{round(l0, 4)} ; " + ', '.join(f"{c} {v['gain']:+.4f}" for c, v in par.items()))}
     if ok:
         Pf = poids_finaux or P
-        X, y, o = A.symetriser([(v1, off(Pf, h), ECARTS_ACTIVITE) for _, _, v1, h in lignes])
+        X, y, o = A.symetriser([(v1, off(Pf, h), ec1) for _, _, v1, h, _ in lignes])
         out['modele'] = A.apprendre(X, y, o)
         out['poids'] = {k: round(v, 4) for k, v in Pf.items()}
     return out
+
+
+def modele_arbres_activite(hors, P, lim, experience, situations, nv, poids_finaux=None):
+    return modele_arbres_candidat('modele_arbres_activite', hors, P, lim, experience, situations, nv, poids_finaux)
 
 
 def rejouer_saison(lignes, p_elo, groupes, apprendre, victoire_ligne, ajuster_poids, sigma,
@@ -443,7 +481,8 @@ def rejouer_saison(lignes, p_elo, groupes, apprendre, victoire_ligne, ajuster_po
                                            **extra)
                       if situations else {'adopte': False, 'raison': 'pas de données'})
     out['modele_arbres'] = modele_arbres(hors, P, lim, experience, situations, out.get('nouveaux_venus'), final)
-    out['modele_arbres_activite'] = modele_arbres_activite(hors, P, lim, experience, situations, out.get('nouveaux_venus'), final)
+    for cle_c in CANDIDATS_ARBRES:                     # 29/10/2026 : activité récente, tour du tableau
+        out[cle_c] = modele_arbres_candidat(cle_c, hors, P, lim, experience, situations, out.get('nouveaux_venus'), final)
     l_new = _ll([S.melange(P, pe, ps) for _, ps, pe in juge])
     l_arch = _ll([S.melange(poids_archive, pe, ps) for _, ps, pe in juge]) if poids_archive else None
     l_elo = _ll([pe for _, _, pe in juge])

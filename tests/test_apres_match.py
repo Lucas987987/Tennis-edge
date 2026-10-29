@@ -75,7 +75,8 @@ class TestBilans(unittest.TestCase):
         self.assertEqual(E['feuille'][0]['aces'], -2)
         A = AM.analyser({'u1': b})['groupes']
         self.assertEqual(A['CH']['matchs'], 1)
-        self.assertEqual(A['TOUS']['lignes']['tie_break'], {'n': 1, 'prevu_pct': 30.0, 'reel_pct': 100.0})
+        self.assertEqual({k: A['TOUS']['lignes']['tie_break'][k] for k in ('n', 'prevu_pct', 'reel_pct', 'fiabilite')},
+                         {'n': 1, 'prevu_pct': 30.0, 'reel_pct': 100.0, 'fiabilite': 'rien'})   # 29/10 : + réussite, fiabilité
         self.assertFalse(A['TOUS']['conclusion_possible'])
 
     def test_sans_resultat_ou_interrompu(self):

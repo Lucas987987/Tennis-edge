@@ -317,7 +317,7 @@ body.carte #video{display:block;width:1080px;height:1350px}
   .arcade .annonce.pop{animation-name:popdoux}
   @keyframes popdoux{0%,100%{opacity:0}15%,80%{opacity:1}}
 }
-.cv-h{font-size:1rem;margin:18px 0 4px}.cv-p{color:var(--dim);font-size:.85rem;margin:0 0 8px}.cv-wrap{overflow-x:auto}.cv{font-size:.85rem;width:100%}.cv td,.cv th{padding:6px 5px}.cv td:not(:first-child),.cv th:not(:first-child){text-align:right;white-space:nowrap}.cv-n{color:var(--dim);font-size:.75rem}
+.cv-h{font-size:1rem;margin:18px 0 4px}.cv-p{color:var(--dim);font-size:.85rem;margin:0 0 8px}.cv-wrap{overflow-x:auto}.cv{font-size:.85rem;width:100%}.cv td,.cv th{padding:6px 5px}.cv td:not(:first-child),.cv th:not(:first-child){text-align:right;white-space:nowrap}.cv-n{color:var(--dim);font-size:.75rem}.fs-t{table-layout:fixed}.fs-t .jc-st{white-space:normal;display:inline-block;text-align:center;line-height:1.2;max-width:100%}.fs-t th:first-child,.fs-t td:first-child{width:52%;white-space:normal;overflow-wrap:anywhere}.fs-t td:not(:first-child),.fs-t th:not(:first-child){white-space:normal}
 .essentiel ul{list-style:none;margin:0;padding:4px 16px 16px;display:grid;gap:6px}.essentiel li{padding:7px 10px;border-radius:9px;background:rgba(255,255,255,.04);border-left:3px solid var(--dim);font-size:.92rem;line-height:1.4}.essentiel li.plus{border-left-color:var(--ok)}.essentiel li.moins{border-left-color:var(--ko)}.essentiel li.info{border-left-color:var(--ball)}
 .evol{margin:6px 0 0;color:var(--dim);font-size:.82rem}.badge.peu{background:rgba(255,107,134,.16);color:var(--ko)}
 .res li.avec-am{grid-template-columns:1.8em 1fr auto}.res li .am{grid-column:1/-1}.am summary{cursor:pointer;font-weight:600;font-size:.88rem;color:var(--ball);min-height:36px;display:flex;align-items:center}.am h4{margin:10px 0 4px;font-size:.88rem}.am-t{font-size:.85rem;width:100%}.am-t td{vertical-align:top}.am-t th,.am-t td:first-child{text-align:left}.am-t td+td{text-align:right}.am-ok{color:var(--ok)}.am-ko{color:var(--ko)}.am .d{color:var(--dim);font-size:.8rem}
@@ -375,6 +375,18 @@ body.carte #video{display:block;width:1080px;height:1350px}
     <div class="panel" id="bilan-facts"></div>
     <div class="panel" style="margin-top:12px;padding:14px 10px 6px" id="bilan-curve"></div>
     <div class="panel" style="margin-top:12px"><ul class="res" id="bilan-res"></ul><button class="more" id="bilan-more" hidden></button></div>
+  </section>
+
+  <section aria-labelledby="fs-h">
+    <h2 id="fs-h" data-t="fs_titre"></h2>
+    <p class="sub" data-t="fs_sous"></p>
+    <div class="seg fs-circ" role="group" aria-label="Circuit" style="width:max-content;margin:0 0 12px">
+      <button type="button" data-fc="TOUS" aria-pressed="true" data-t="tous_circuits"></button>
+      <button type="button" data-fc="ATP" aria-pressed="false">ATP</button>
+      <button type="button" data-fc="WTA" aria-pressed="false">WTA</button>
+      <button type="button" data-fc="CH" aria-pressed="false">Challenger</button>
+    </div>
+    <div class="panel qualite" id="fiab-stats"></div>
   </section>
 
   <section aria-labelledby="journal-h">
@@ -473,6 +485,15 @@ const T = {
   act_l:(a,b)=>`Activité récente — ${a} · ${b}.`,
   act_note_retour:' Sur nos données, un joueur bien connu qui revient d’absence gagne un peu moins que prévu (indicatif : 112 cas).',
   act_note_peu:' Sur nos données, un joueur qui a très peu joué récemment gagne moins que prévu.',
+  fs_titre:'Statistiques annoncées : ce qui s’est passé', fs_sous:'Pour chaque statistique, la part des cas où le réel est tombé dans la fourchette annoncée (80 % visés), et pour chaque événement, la part où l’issue annoncée est arrivée. Fiable : 70 à 90 % dans la fourchette, ou moins de 5 points d’écart entre annoncé et arrivé. Moins de 30 cas : rien à conclure.',
+  fs_direct:n=>`Sur nos matchs (${fmt(n)} matchs joués depuis le 27 octobre)`, fs_test:(p,n)=>`Test sur ${fmt(n)} matchs passés (${p}), même calcul`,
+  fs_stat:'Statistique', fs_dans:'Dans la fourchette', fs_err:'Écart moyen', fs_fiab:'Fiabilité', fs_evt:'Événement', fs_annonce:'Annoncé', fs_arrive:'Arrivé', fs_reussite:'Réussite',
+  fs_cas:n=>`${fmt(n)} cas (joueur × match)`, fs_apport:'Apport', fs_matchs:n=>`${fmt(n)} matchs`, fs_err_v:x=>`écart moyen ${x}`, fs_apport_v:x=>`apport ${x} %`, fs_annonce_arrive:'Annoncé → arrivé', fs_evt_sous:(n,r)=>`${fmt(n)} matchs · issue annoncée arrivée ${r}`, fs_apport_note:'Apport : de combien l’écart moyen est plus petit qu’en annonçant simplement la moyenne du circuit pour tout le monde.',
+  fs_vide:'Pas encore de match joué avec une feuille de statistiques réelle.',
+  fs_l:{aces:'Aces', doubles_fautes:'Doubles fautes', premiere_pct:'% de 1res balles', breaks:'Breaks', gagnes_1re_pct:'% gagnés derrière la 1re', gagnes_2e_pct:'% gagnés derrière la 2e', jeux:'Jeux gagnés', total_jeux:'Total de jeux du match',
+        tie_break:'Au moins un tie-break', set_decisif:'Set décisif', set1_home:'1er set au joueur 1'},
+  fs_f:{fiable:'fiable', trop_etroite:'fourchette trop étroite', trop_large:'fourchette trop large', penche_haut:'réel souvent au-dessus', penche_bas:'réel souvent au-dessous', surestime:'annonce trop haut', sous_estime:'annonce trop bas', rien:'rien à conclure'},
+  fs_total:k=>`Plus de ${k} jeux`, fs_hcp:k=>`Favori gagne de plus de ${k} jeux`,
   jc_titre:'Journal des changements', jc_sous:'Ce qui a changé dans l’algo, quand, et ce que chaque changement a gagné au test. Les changements rejetés restent visibles.',
   jc_production:'en production', jc_candidat:'candidat', jc_rejete:'rejeté', jc_decision:'mis en production par décision, sous garde-fou',
   jc_fantome:'En direct :', jc_fantome_v:(n,a,b,g,ok)=>`sur ${fmt(n)} matchs réels, l’Elo en place fait ${dec(a,4)} de log loss contre ${dec(b,4)} pour l’Elo d’avant les changements (${g>=0?'gain':'perte'} ${dec(Math.abs(g),4)})${ok?'':' — moins de 30 matchs : rien à conclure'}.`,
@@ -623,6 +644,15 @@ const T = {
   act_l:(a,b)=>`Recent activity — ${a} · ${b}.`,
   act_note_retour:' In our data, a well-known player returning from a break wins a little less than predicted (indicative: 112 cases).',
   act_note_peu:' In our data, a player who has played very little lately wins less than predicted.',
+  fs_titre:'Announced stats: what happened', fs_sous:'For each stat, the share of cases where the real value fell inside the announced range (80% targeted); for each event, the share where the announced outcome happened. Reliable: 70–90% inside the range, or under 5 points between announced and actual. Under 30 cases: no conclusion.',
+  fs_direct:n=>`On our matches (${fmt(n)} matches played since 27 October)`, fs_test:(p,n)=>`Test on ${fmt(n)} past matches (${p}), same calculation`,
+  fs_stat:'Stat', fs_dans:'Inside range', fs_err:'Mean error', fs_fiab:'Reliability', fs_evt:'Event', fs_annonce:'Announced', fs_arrive:'Happened', fs_reussite:'Hit rate',
+  fs_cas:n=>`${fmt(n)} cases (player × match)`, fs_apport:'Gain', fs_matchs:n=>`${fmt(n)} matches`, fs_err_v:x=>`mean error ${x}`, fs_apport_v:x=>`gain ${x}%`, fs_annonce_arrive:'Announced → happened', fs_evt_sous:(n,r)=>`${fmt(n)} matches · announced outcome happened ${r}`, fs_apport_note:'Gain: how much smaller the mean error is than just announcing the tour average for everyone.',
+  fs_vide:'No match played yet with a real stats sheet.',
+  fs_l:{aces:'Aces', doubles_fautes:'Double faults', premiere_pct:'1st serve %', breaks:'Breaks', gagnes_1re_pct:'1st serve points won %', gagnes_2e_pct:'2nd serve points won %', jeux:'Games won', total_jeux:'Total games in the match',
+        tie_break:'At least one tie-break', set_decisif:'Deciding set', set1_home:'1st set to player 1'},
+  fs_f:{fiable:'reliable', trop_etroite:'range too narrow', trop_large:'range too wide', penche_haut:'actual often above', penche_bas:'actual often below', surestime:'announces too high', sous_estime:'announces too low', rien:'no conclusion'},
+  fs_total:k=>`Over ${k} games`, fs_hcp:k=>`Favourite wins by more than ${k} games`,
   jc_titre:'Change log', jc_sous:'What changed in the model, when, and what each change gained in testing. Rejected changes stay listed.',
   jc_production:'live', jc_candidat:'candidate', jc_rejete:'rejected', jc_decision:'put live by decision, under a safeguard',
   jc_fantome:'Live:', jc_fantome_v:(n,a,b,g,ok)=>`on ${fmt(n)} real matches, the current Elo scores ${dec(a,4)} log loss vs ${dec(b,4)} for the pre-change Elo (${g>=0?'gain':'loss'} ${dec(Math.abs(g),4)})${ok?'':' — under 30 matches: no conclusion'}.`,
@@ -1474,6 +1504,40 @@ function rendApresMatch(b){
     <p class="aide">${esc(t('am_note', b.fige_le ? dateHeure(b.fige_le) : '—'))}</p></details>`;
 }
 // 29/10/2026 — JOURNAL DES CHANGEMENTS + modèle fantôme (Elo en place contre Elo d'avant, mêmes matchs réels)
+// 29/10/2026 — statistiques annoncées contre ce qui s'est passé (apres_match.fiabilite_stat / fiabilite_ligne)
+let circFs = 'TOUS';
+function libEvt(k){
+  const L = t('fs_l'); if (L[k]) return L[k];
+  if (k.startsWith('total_plus_')) return t('fs_total', k.slice(11).replace('.',','));
+  if (k.startsWith('handicap_favori_')) return t('fs_hcp', k.slice(16).replace('.',','));
+  return k;
+}
+function fiabTag(f){ return `<span class="jc-st ${f==='fiable'?'production':f==='rien'?'rejete':'candidat'}">${esc(t('fs_f')[f]||f)}</span>`; }
+function tableStats(S){
+  const L = t('fs_l'), rows = Object.entries(S||{}).map(([k,v])=>{
+    const sous = [t(k==='total_jeux'?'fs_matchs':'fs_cas', v.n)];
+    if (v.erreur_moyenne!=null) sous.push(t('fs_err_v', dec(v.erreur_moyenne,1)));
+    if (v.gain_vs_naif_pct!=null) sous.push(t('fs_apport_v', (v.gain_vs_naif_pct>0?'+':'')+dec(v.gain_vs_naif_pct,0)));
+    return `<tr><td>${esc(L[k]||k)}<br><span class="cv-n">${esc(sous.join(' · '))}</span></td>
+    <td>${v.dans_fourchette_pct==null?'—':`<b>${pc(v.dans_fourchette_pct)}</b>`}</td><td>${fiabTag(v.fiabilite)}</td></tr>`; }).join('');
+  const apport = Object.values(S||{}).some(v=>v.gain_vs_naif_pct!=null);
+  return rows ? `<div class="cv-wrap"><table class="calib cv fs-t"><thead><tr><th>${esc(t('fs_stat'))}</th><th>${esc(t('fs_dans'))}</th><th>${esc(t('fs_fiab'))}</th></tr></thead><tbody>${rows}</tbody></table></div>${apport?`<p class="cv-p">${esc(t('fs_apport_note'))}</p>`:''}` : '';
+}
+function rendFiabStats(){
+  const F = D.fiabilite_stats, el = document.getElementById('fiab-stats');
+  document.querySelectorAll('.fs-circ button').forEach(b=>b.setAttribute('aria-pressed', String(b.dataset.fc===circFs)));
+  if (!F){ el.closest('section').hidden = true; return; }
+  const g = (F.en_direct||{})[circFs];
+  let h = '';
+  if (g && (Object.keys(g.stats||{}).length || Object.keys(g.lignes||{}).length)){
+    const ev = Object.entries(g.lignes||{}).map(([k,v])=>`<tr><td>${esc(libEvt(k))}<br><span class="cv-n">${esc(t('fs_evt_sous', v.n, pc(v.reussite_pct)))}</span></td>
+      <td>${pc(v.prevu_pct)} → <b>${pc(v.reel_pct)}</b></td><td>${fiabTag(v.fiabilite)}</td></tr>`).join('');
+    h += `<h3 class="cv-h">${esc(t('fs_direct', g.matchs))}</h3>${tableStats(g.stats)}
+      ${ev?`<div class="cv-wrap"><table class="calib cv fs-t"><thead><tr><th>${esc(t('fs_evt'))}</th><th>${esc(t('fs_annonce_arrive'))}</th><th>${esc(t('fs_fiab'))}</th></tr></thead><tbody>${ev}</tbody></table></div>`:''}`;
+  } else h += `<p class="cv-p">${esc(t('fs_vide'))}</p>`;
+  if (F.test && circFs === 'TOUS') h += `<h3 class="cv-h">${esc(t('fs_test', F.test.periode||'', F.test.matchs))}</h3>${tableStats(F.test.stats)}`;
+  el.innerHTML = h;
+}
 function rendJournal(){
   const J = D.journal_changements, el = document.getElementById('journal');
   if (!J || !Array.isArray(J.changements)){ el.closest('section').hidden = true; return; }
@@ -1576,7 +1640,7 @@ function ouvrirMatch(uid, aller=true){
 }
 function rendTout(){
   rendTextes(); if (!D) return;
-  rendMdj(); rendListe(); rendBilan(); rendJournal(); rendSuivi(); rendQualite(); rendCalib();
+  rendMdj(); rendListe(); rendBilan(); rendFiabStats(); rendJournal(); rendSuivi(); rendQualite(); rendCalib();
   document.getElementById('maj').textContent = t('maj', D.pronostics_du || D.genere_le);
 }
 document.querySelectorAll('.seg button[data-lang]').forEach(b=>b.addEventListener('click',()=>{
@@ -1594,6 +1658,7 @@ document.getElementById('retour-mdj').addEventListener('click',()=>{
 document.getElementById('recherche').addEventListener('input',e=>{
   recherche=e.target.value; nListe=30; rendListe();
 });
+document.querySelectorAll('.fs-circ button').forEach(b=>b.addEventListener('click',()=>{ circFs=b.dataset.fc; rendFiabStats(); }));
 document.querySelectorAll('.bilan-circ button').forEach(b=>b.addEventListener('click',()=>{
   circBilan=b.dataset.bc; nRes=12; rendBilan();
 }));

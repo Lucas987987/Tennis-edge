@@ -115,7 +115,7 @@ def fiche(ligne, maintenant, version):
             'scores': [[score_txt(d['score']), round(d['probabilite'], 5)] for d in dist[:SCORES_GARDES]
                        if d['probabilite'] >= SCORE_P_MIN],
             'jeux_moyen': ligne.get('jeux_moyen'), 'tiebreak': ligne.get('tiebreak'), 'set1_home': ligne.get('set1_home'),
-            'feuille': ligne.get('feuille_prevue'),
+            'feuille': ligne.get('feuille_prevue'), 'fourchette': ligne.get('feuille_fourchette'),
             'duree': ({k: pv.get(k) for k in ('minutes', 'minutes_p10', 'minutes_p90', 'points')} if pv else None),
             'lignes': ligne.get('lignes_algo'), 'documentation': ligne.get('documentation'),
             'controle': ligne.get('controle')}
@@ -256,6 +256,11 @@ def bilan_match(uid, f, reel, duree_reelle=None):
         E['feuille'] = [{k: round(fp[i][k] - fr[i][k], 2) for k in STATS_FEUILLE
                          if isinstance(fp[i].get(k), (int, float)) and isinstance(fr[i].get(k), (int, float))}
                         for i in (0, 1)]
+    fq = d.get('fourchette')
+    if fq and fr and len(fq) == 2 and len(fr) == 2:     # 29/10/2026 : le réel tombe-t-il dans la fourchette 80 % ?
+        E['fourchette'] = [{k: (-1 if fr[i][k] < fq[i][k][0] else 1 if fr[i][k] > fq[i][k][1] else 0)
+                            for k in STATS_FEUILLE if isinstance(fr[i].get(k), (int, float)) and fq[i].get(k)}
+                           for i in (0, 1)]
     return out
 
 
@@ -306,6 +311,51 @@ def bilans(racine, resultats, fiches=None):
 # ------------------------------------------------------------------ 3. analyse pour l'algo
 def _moy(L):
     return round(sum(L) / len(L), 4) if L else None
+
+
+# ------------------------------------------------------------------ 29/10/2026 : réussite et fiabilité de ce qui est annoncé
+# RÈGLE FIXÉE AVANT DE VOIR LES CHIFFRES (29/10/2026, 10 h 40) — descriptive, rien n'est réglé dessus :
+#  statistiques (aces, doubles fautes, 1re balle, breaks, par joueur) : « réussite » = part des cas où le réel tombe
+#    dans la fourchette 80 % annoncée. Moins de 30 cas : rien à conclure. Fiable si 70 à 90 % ET ni « au-dessous » ni
+#    « au-dessus » ne dépasse 15 % ; sinon : trop étroite (< 70 %), trop large (> 90 %), ou penche d'un côté (biais).
+#  événements (tie-break, set décisif, total de jeux, handicap, 1er set) : « réussite » = l'issue donnée à plus de
+#    50 % est arrivée ; fiabilité = écart entre le % annoncé et le % arrivé, fiable à 5 points ou moins.
+N_FIABLE = 30
+
+
+def fiabilite_stat(pos, ecarts):
+    """pos : [-1 sous, 0 dedans, 1 au-dessus] ; ecarts : prévu − réel."""
+    n = len(pos)
+    out = {'n': n or len(ecarts), 'erreur_moyenne': _moy([abs(x) for x in ecarts]), 'biais': _moy(ecarts)}
+    if not n:
+        return dict(out, fiabilite='rien')
+    dans, sous, dessus = (100.0 * sum(1 for x in pos if x == v) / n for v in (0, -1, 1))
+    out.update(dans_fourchette_pct=round(dans, 1), sous_pct=round(sous, 1), dessus_pct=round(dessus, 1), cible_pct=80)
+    if n < N_FIABLE:
+        out['fiabilite'] = 'rien'
+    elif dans < 70:
+        out['fiabilite'] = 'trop_etroite'
+    elif dans > 90:
+        out['fiabilite'] = 'trop_large'
+    elif max(sous, dessus) > 15:
+        out['fiabilite'] = 'penche_haut' if sous > 15 else 'penche_bas'
+    else:
+        out['fiabilite'] = 'fiable'
+    return out
+
+
+def fiabilite_ligne(v):
+    """v : [(probabilité annoncée, arrivé)]."""
+    n = len(v)
+    prevu, reel = 100 * sum(p for p, _ in v) / n, 100 * sum(ok for _, ok in v) / n
+    reussite = 100 * sum((p >= .5) == bool(ok) for p, ok in v) / n
+    brier = sum((p - ok) ** 2 for p, ok in v) / n
+    base = reel / 100
+    brier_naif = sum((base - ok) ** 2 for _, ok in v) / n
+    ecart = prevu - reel
+    fi = 'rien' if n < N_FIABLE else 'fiable' if abs(ecart) <= 5 else ('surestime' if ecart > 0 else 'sous_estime')
+    return {'n': n, 'prevu_pct': round(prevu, 1), 'reel_pct': round(reel, 1), 'reussite_pct': round(reussite, 1),
+            'ecart_pts': round(ecart, 1), 'brier': round(brier, 4), 'brier_naif': round(brier_naif, 4), 'fiabilite': fi}
 
 
 N_PISTE = 30          # au moins 30 matchs pour signaler une piste
@@ -424,8 +474,7 @@ def analyser(B):
         for e in E:
             for k, (p, ok) in (e.get('lignes') or {}).items():
                 lig.setdefault(k, []).append((p, ok))
-        r['lignes'] = {k: {'n': len(v), 'prevu_pct': round(100 * sum(p for p, _ in v) / len(v), 1),
-                           'reel_pct': round(100 * sum(ok for _, ok in v) / len(v), 1)} for k, v in sorted(lig.items())}
+        r['lignes'] = {k: fiabilite_ligne(v) for k, v in sorted(lig.items())}
         fe = {}
         for e in E:
             for j in e.get('feuille') or []:
@@ -433,6 +482,12 @@ def analyser(B):
                     fe.setdefault(k, []).append(v)
         r['feuille_biais_prevu_moins_reel'] = {k: {'n': len(v), 'biais': _moy(v), 'erreur_moyenne': _moy([abs(x) for x in v])}
                                                 for k, v in fe.items()}
+        fq = {}
+        for e in E:
+            for j in e.get('fourchette') or []:
+                for k, v in j.items():
+                    fq.setdefault(k, []).append(v)
+        r['stats'] = {k: fiabilite_stat(fq.get(k) or [], fe.get(k) or []) for k in STATS_FEUILLE if fq.get(k) or fe.get(k)}
         # 29/10/2026 : chaque changement contre son modèle fantôme, sur les mêmes matchs réels
         for cle_f in ('fantome', 'fantome_itf_femmes', 'fantome_sigma'):
             fa = [e[cle_f] for e in E if cle_f in e]

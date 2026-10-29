@@ -577,7 +577,8 @@ def preparer(fiches, adj_pour, cle=E.cle):
                     # 23/10/2026 : rang relevé le jour du match ou avant (jamais un rang relevé après coup)
                     'rangs': tuple((r[c].get('rang') if (r[c].get('rang_releve_le') or '9999') <= str(jour) else None)
                                    for c in ('home', 'away')),
-                    'vainqueur': 0 if r.get('vainqueur') == 1 else 1, 'bo': r.get('meilleur_des') or 3})
+                    'vainqueur': 0 if r.get('vainqueur') == 1 else 1, 'bo': r.get('meilleur_des') or 3,
+                    'tour': r.get('tour')})
     return out
 
 
@@ -1260,7 +1261,8 @@ def main(argv):
                                  'classement': ((CLS.niveau_inconnu(rw, nw), CLS.niveau_inconnu(rl, nl))
                                                 if nw is not None else None),
                                  'activite': (ACT.ecarts(AC.variables(w, x['jour']), AC.variables(l, x['jour']))
-                                              if AC is not None else None)}
+                                              if AC is not None else None),
+                                 'tour': EP.variables_tour(x.get('tour')) if x.get('tour') else None}
         doc['entrainement_progressif'] = EP.rejouer_saison(
             lignes, p_elo, doc.get('adoptes') or [], apprendre, victoire_ligne, BMS.ajuster_poids, sigma,
             poids_archive=cb.get('poids') if cb.get('adopte') else None, experience=experience, situations=situations)
@@ -1283,7 +1285,7 @@ def main(argv):
         import stabilite as ST
         etat_st = ST.lire()
         avant = {k: choix.get(k) for k in ('combinaison_feuilles', 'poids_challenger', 'poids_ATP', 'poids_WTA',
-                                           'nouveaux_venus', 'modele_arbres', 'modele_arbres_activite',
+                                           'nouveaux_venus', 'modele_arbres', 'modele_arbres_activite', 'modele_arbres_tour',
                                            'qualifies', 'transition', 'classement', 'classement_relatif')}
         choix['combinaison_feuilles'] = ST.appliquer(etat_st, 'combinaison_feuilles', avant['combinaison_feuilles'],
                                                      {k: ep.get(k) for k in ('adopte', 'poids', 'raison', 'poids_simulation_pct', 'll')},
@@ -1304,13 +1306,12 @@ def main(argv):
                                               ('variables', 'modele', 'poids'))
         print(f"Arbres (tout combiné) : {'ADOPTÉS' if choix['modele_arbres']['adopte'] else 'non adoptés'} — "
               f"{choix['modele_arbres']['raison']}", flush=True)
-        maa = ep.get('modele_arbres_activite') or {}           # 29/10/2026 : + activité récente des joueurs
-        choix['modele_arbres_activite'] = ST.appliquer(etat_st, 'modele_arbres_activite', avant['modele_arbres_activite'],
-                                                       {k: maa.get(k) for k in ('adopte', 'raison', 'variables', 'modele', 'poids',
-                                                                                'll', 'par_circuit')},
-                                                       ('variables', 'modele', 'poids'))
-        print(f"Arbres + activité récente : {'ADOPTÉS' if choix['modele_arbres_activite']['adopte'] else 'non adoptés'} — "
-              f"{choix['modele_arbres_activite']['raison']}", flush=True)
+        for cle_c, lib_c in (('modele_arbres_activite', 'Arbres + activité récente'), ('modele_arbres_tour', 'Arbres + tour du tableau')):
+            maa = ep.get(cle_c) or {}                          # 29/10/2026 : candidats de la famille des arbres
+            choix[cle_c] = ST.appliquer(etat_st, cle_c, avant[cle_c],
+                                        {k: maa.get(k) for k in ('adopte', 'raison', 'variables', 'modele', 'poids', 'll', 'par_circuit')},
+                                        ('variables', 'modele', 'poids'))
+            print(f"{lib_c} : {'ADOPTÉS' if choix[cle_c]['adopte'] else 'non adoptés'} — {choix[cle_c]['raison']}", flush=True)
         for cle_s in ('qualifies', 'transition', 'classement', 'classement_relatif'):
             choix[cle_s] = ST.appliquer(etat_st, cle_s, avant[cle_s],
                                         {k: (ep.get(cle_s) or {}).get(k) for k in ('adopte', 'delta', 'raison', 'll')}, ('delta',))
