@@ -467,6 +467,12 @@ const T = {
   es_tres_peu:(n,b,fem)=>`${n} est très peu ${fem?'documentée':'documenté'} (${fmt(b)} balles de service) : estimation surtout fondée sur son classement et ses résultats.`,
   es_duree:d=>`Durée prévue ${d}.`, es_style_rien:'Aucun écart net contre le style adverse.',
   es_abandon:(n,j)=>`${n} a abandonné un match il y a ${j} jours : sur nos données, le risque d’abandon double (environ 3 % contre 1,5 %).`,
+  act_m:(n,m,b)=>`${n} : ${m} match${m>1?'s':''} en 30 jours${b?` (${fmt(b)} balles de service)`:''}`,
+  act_cat:{hausse:'en hausse', baisse:'en baisse', stable:'stable', peu:'très peu de matchs'},
+  act_retour:(n,j)=>`${n} revient après ${j} jours sans match`,
+  act_l:(a,b)=>`Activité récente — ${a} · ${b}.`,
+  act_note_retour:' Sur nos données, un joueur bien connu qui revient d’absence gagne un peu moins que prévu (indicatif : 112 cas).',
+  act_note_peu:' Sur nos données, un joueur qui a très peu joué récemment gagne moins que prévu.',
   jc_titre:'Journal des changements', jc_sous:'Ce qui a changé dans l’algo, quand, et ce que chaque changement a gagné au test. Les changements rejetés restent visibles.',
   jc_production:'en production', jc_candidat:'candidat', jc_rejete:'rejeté', jc_decision:'mis en production par décision, sous garde-fou',
   jc_fantome:'En direct :', jc_fantome_v:(n,a,b,g,ok)=>`sur ${fmt(n)} matchs réels, l’Elo en place fait ${dec(a,4)} de log loss contre ${dec(b,4)} pour l’Elo d’avant les changements (${g>=0?'gain':'perte'} ${dec(Math.abs(g),4)})${ok?'':' — moins de 30 matchs : rien à conclure'}.`,
@@ -611,6 +617,12 @@ const T = {
   es_tres_peu:(n,b)=>`${n} has very little data (${fmt(b)} service points): estimate mostly from ranking and results.`,
   es_duree:d=>`Expected length ${d}.`, es_style_rien:'No clear gap against the opponent’s style.',
   es_abandon:(n,j)=>`${n} retired from a match ${j} days ago: in our data the retirement risk doubles (about 3% vs 1.5%).`,
+  act_m:(n,m,b)=>`${n}: ${m} match${m>1?'es':''} in 30 days${b?` (${fmt(b)} service points)`:''}`,
+  act_cat:{hausse:'rising', baisse:'falling', stable:'steady', peu:'very few matches'},
+  act_retour:(n,j)=>`${n} returns after ${j} days without a match`,
+  act_l:(a,b)=>`Recent activity — ${a} · ${b}.`,
+  act_note_retour:' In our data, a well-known player returning from a break wins a little less than predicted (indicative: 112 cases).',
+  act_note_peu:' In our data, a player who has played very little lately wins less than predicted.',
   jc_titre:'Change log', jc_sous:'What changed in the model, when, and what each change gained in testing. Rejected changes stay listed.',
   jc_production:'live', jc_candidat:'candidate', jc_rejete:'rejected', jc_decision:'put live by decision, under a safeguard',
   jc_fantome:'Live:', jc_fantome_v:(n,a,b,g,ok)=>`on ${fmt(n)} real matches, the current Elo scores ${dec(a,4)} log loss vs ${dec(b,4)} for the pre-change Elo (${g>=0?'gain':'loss'} ${dec(Math.abs(g),4)})${ok?'':' — under 30 matches: no conclusion'}.`,
@@ -817,6 +829,23 @@ function evolutionTexte(m){
   return t('es_evol', court(fav), pc0(p0), pc0(p1), e.premier_le ? dateHeure(e.premier_le) : '') +
     (e.raisons && e.raisons.length ? ' ' + t('es_raisons', e.raisons.join(' ; ')) : ' ' + t('es_raisons_donnees'));
 }
+// 29/10/2026 — activité récente (activite.py) : information seule, n'entre pas dans les probabilités
+function activiteCat(v){
+  if (!v || v.repos==null) return null;
+  if (v.repos >= 45) return 'retour';
+  if (v.m30 + v.m90 < 3) return 'peu';
+  return v.tendance > .4 ? 'hausse' : v.tendance < -.4 ? 'baisse' : 'stable';
+}
+function activiteTexte(m){
+  const A = m.activite; if (!Array.isArray(A) || A.length !== 2) return null;
+  const cats = A.map(activiteCat); if (!cats[0] && !cats[1]) return null;
+  const part = i => { const v = A[i], c = cats[i], n = court(i===0?m.home:m.away);
+    if (!c) return null;
+    return c === 'retour' ? t('act_retour', n, v.repos) : `${t('act_m', n, v.m30, v.balles30)}, ${t('act_cat')[c]}`; };
+  const p = [part(0), part(1)].filter(Boolean); if (!p.length) return null;
+  const note = cats.includes('retour') ? t('act_note_retour') : cats.includes('peu') ? t('act_note_peu') : '';
+  return { sens: note ? 'moins' : 'info', txt: (p.length === 2 ? t('act_l', p[0], p[1]) : t('act_l', p[0], '').replace(' · .', '.')) + note };
+}
 function rendEssentiel(m){
   const L_ = [], fav = m.p_home >= .5 ? m.home : m.away, pf = Math.max(m.p_home, 1-m.p_home), fb = m.fiabilite || {};
   const fem = m.circuit === 'WTA';
@@ -824,6 +853,7 @@ function rendEssentiel(m){
   const ev = evolutionTexte(m); if (ev) L_.push({ sens:'info', txt: ev });
   peuDocumentes(m).forEach(x=>L_.push({ sens:'moins', txt: t(x.balles < DOC_TRES_PEU ? 'es_tres_peu' : 'es_peu', x.nom, x.balles, fem) }));
   (m.abandon_recent||[]).forEach((j,i)=>{ if (j!=null) L_.push({ sens:'moins', txt: t('es_abandon', i===0?m.home:m.away, j) }); });
+  const ac = activiteTexte(m); if (ac) L_.push(ac);
   const N = [court(m.home), court(m.away)];
   const du = m.duel ? duelTexte(m.duel, N) : null; if (du) L_.push(du);
   const ry = m.rythme ? rythmeTexte(m.rythme, m) : null, pv = m.rythme && m.rythme.prevision;

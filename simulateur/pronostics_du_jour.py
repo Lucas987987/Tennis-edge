@@ -189,6 +189,7 @@ def charger_combinaison(racine):
 
 
 COMBINAISON = None
+ACTIVITE = None       # 29/10/2026 : activité récente des joueurs (activite.py), chargée par construire()
 CLASSEMENTS = None   # 23/10/2026 : classements (archive résumée + photos TennisApi), classements.py
 AJUSTEMENTS = {}      # 22/10/2026 : poids propres aux Challenger, correction des nouveaux venus (si adoptés)
 
@@ -214,6 +215,9 @@ def charger_ajustements(racine):
     ma = choix.get('modele_arbres') or {}                      # 23/10/2026 : arbres qui combinent tout (si adoptés)
     if ma.get('adopte') and ma.get('modele') and ma.get('poids'):
         out['arbres'] = {'modele': ma['modele'], 'poids': ma['poids']}
+    maa = choix.get('modele_arbres_activite') or {}            # 29/10/2026 : arbres + activité récente (si adoptés)
+    if maa.get('adopte') and maa.get('modele') and maa.get('poids'):
+        out['arbres_activite'] = {'modele': maa['modele'], 'poids': maa['poids']}
     for cle_s in ('qualifies', 'transition', 'classement', 'classement_relatif'):    # 22/10/2026 : même règle
         v = choix.get(cle_s) or {}
         if v.get('adopte') and v.get('delta') is not None:
@@ -225,6 +229,16 @@ def ajuster_combinaison(p_c, c, p_elo, p_sim, n_home, n_away, situations=None, s
     """Challenger : poids propres s'ils sont adoptés (remplacent le mélange commun) ; puis chaque situation
     adoptée (règle de entrainement_progressif.correction_situation) : z += δ·(situation(home) − situation(away)).
     Nouveaux venus : nouveau(n) = max(0, 1 − n/30) ; situations = {'qualifies': (h, a), 'transition': (h, a)}."""
+    if AJUSTEMENTS.get('arbres_activite') and (situations or {}).get('activite') is not None:
+        # 29/10/2026 : les arbres avec l'activité récente des deux joueurs (activite.py), s'ils ont été adoptés
+        import arbres as A
+        import entrainement_progressif as EP
+        sit = situations or {}
+        q, t = sit.get('qualifies') or (0.0, 0.0), sit.get('transition') or (0.0, 0.0)
+        v = EP.variables_match_activite(p_elo, p_sim, n_home or 0, n_away or 0, (q[0], t[0]), (q[1], t[1]), c, surface, bo,
+                                        sit.get('rangs'), sit.get('activite'))
+        pm = MS.melange(AJUSTEMENTS['arbres_activite']['poids'], p_elo, p_sim)
+        return A.predire_symetrique(AJUSTEMENTS['arbres_activite']['modele'], v, math.log(pm / (1 - pm)), EP.ECARTS_ACTIVITE)
     if AJUSTEMENTS.get('arbres'):
         # les arbres partent de LEUR mélange et contiennent déjà nouveaux venus, qualifiés, surface, circuit…
         import arbres as A
@@ -240,7 +254,7 @@ def ajuster_combinaison(p_c, c, p_elo, p_sim, n_home, n_away, situations=None, s
     ecarts = []
     if AJUSTEMENTS.get('delta_nouveaux') and n_home is not None and n_away is not None:
         ecarts.append((AJUSTEMENTS['delta_nouveaux'], max(0.0, 1 - n_home / 30) - max(0.0, 1 - n_away / 30)))
-    for cle_s, (vh, va) in (situations or {}).items():
+    for cle_s, (vh, va) in ((k, v) for k, v in (situations or {}).items() if k not in ('activite', 'rangs')):
         if AJUSTEMENTS.get('delta_' + cle_s):
             ecarts.append((AJUSTEMENTS['delta_' + cle_s], vh - va))
     dz = sum(d * f for d, f in ecarts)
@@ -549,6 +563,13 @@ def construire(racine, maintenant=None):
         elo_fem = E.Elo.importer(fem_etat['joueurs'], fem_etat.get('options'))
     except (OSError, ValueError, KeyError):
         fem_etat, elo_fem = None, None
+    global ACTIVITE
+    try:
+        import activite as ACT
+        ACTIVITE = ACT.Activite.depuis(racine)
+    except Exception as e_:  # noqa: BLE001
+        print(f"::warning::activité des joueurs non chargée : {type(e_).__name__}: {e_}")
+        ACTIVITE = None
     surf = etat.get('surfaces_tournois') or {}
     S = Styles(os.path.join(racine, 'simulateur', 'notes_joueurs.json'))
     PR = charger_profils(racine)
@@ -620,6 +641,9 @@ def construire(racine, maintenant=None):
                 p_c = MS.melange_contexte(COMBINAISON, MS.contexte_match(s, c, 2 * sg - 1), stats['p_home'], p_sim)
                 p_c = MS.calibrer(p_c, COMBINAISON.get('calibration'))     # excès de confiance (si adopté)
                 sit = situations_du_match(h, a, x['tournoi'], x['debut'], s)
+                if ACTIVITE is not None:                        # 29/10/2026 : (Δ tendance, Δ volume) vus de home
+                    import activite as ACT
+                    sit['activite'] = ACT.ecarts(ACTIVITE.variables(h, x['debut']), ACTIVITE.variables(a, x['debut']))
                 if CLASSEMENTS is not None:                     # 23/10/2026 : classement du joueur peu connu
                     import classements as CLS
                     sit['classement'] = tuple(CLS.niveau_inconnu(CLASSEMENTS.rang_au(j, x['debut']), elo.matchs(j)) for j in (h, a))
@@ -665,6 +689,7 @@ def construire(racine, maintenant=None):
                     'surface': s, 'meilleur_des': 2 * sg - 1, 'home': x['home'], 'away': x['away'],
                     'cles': [h, a], 'matchs_joues': [elo.matchs(h), elo.matchs(a)], 'style_connu': [S.connu(h), S.connu(a)],
                     'combinaison': combinaison, 'simulation': simulation, 'stats': stats, 'direct': direct,
+                    'activite': ([ACTIVITE.variables(k_, x['debut']) for k_ in (h, a)] if ACTIVITE is not None else None),
                     'controle': _avec_forme(controle_fantome(elo, elo_ref, ref_etat, etat, h, a, c, s, elo_fem, fem_etat),
                                             forme_ctl)})
     doc = {'genere_le': maintenant.isoformat(timespec='seconds') + 'Z', 'elo_au': etat.get('dernier_match'),
