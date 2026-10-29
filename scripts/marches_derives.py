@@ -93,10 +93,16 @@ def resumer(data, book, table, debut):
         pts.sort()
         avant = [p for p in pts if debut is None or p[0] <= debut]
         a30 = [p for p in pts if T is not None and p[0] <= T]
+        # 29/10/2026 : aussi 6 h et 2 h avant le début — pour juger la CLV à partir du moment de NOTRE pronostic (il est
+        # fait quelques heures avant le match ; la juger depuis l'ouverture mesure surtout l'information arrivée entre-temps)
+        a6h = [p for p in pts if debut is not None and p[0] <= debut - datetime.timedelta(hours=6)]
+        a2h = [p for p in pts if debut is not None and p[0] <= debut - datetime.timedelta(hours=2)]
         h = m.get('handicap')
         cle = f"{TYPES[m['marketName']]} {h:g}" if isinstance(h, (int, float)) else TYPES[m['marketName']]
         out.setdefault(cle, {})[issue] = {
             'ouverture': pts[0][1],
+            'a_6h': a6h[-1][1] if a6h else None,
+            'a_2h': a2h[-1][1] if a2h else None,
             'a_30min': a30[-1][1] if a30 else None,
             'cloture': avant[-1][1] if avant else None,
             'points': len(pts),
