@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """sonde_statut.py — 29/10/2026 : TennisApi donne-t-il le statut d'entrée (« WC » invité, « Q » qualifié) AVANT le
 match ? Nos feuilles n'en contiennent aucun alors que feuilles_match.py lit homeTeamSeed depuis le 23/10.
-LECTURE SEULE, 3 requêtes au plus (index du jour, liste Challenger du jour, détail d'un match à venir) ; rien n'est
+LECTURE SEULE, 14 requêtes au plus (index du jour, liste Challenger du jour, détail de 12 matchs du jour) ; rien n'est
 écrit. Le journal montre chaque champ dont le nom contient « seed », « rank » ou « entry », et où il se trouve."""
 import datetime as dt
 import json
@@ -29,11 +29,11 @@ def champs(x, chemin='', out=None):
 
 
 def main():
-    c = FM.Client(os.environ['RAPIDAPI_KEY'], budget=3, reserve=500, pause=0.5)
+    c = FM.Client(os.environ['RAPIDAPI_KEY'], budget=14, reserve=500, pause=0.5)
     d = dt.datetime.now(dt.timezone.utc).date()
     code, idx = c.get(f"/api/tennis/calendar/{d.day}/{d.month}/{d.year}/categories")
     print('index', code)
-    cats = FM.categories_du_jour(idx, ('challenger', 'atp')) if code == 200 else []
+    cats = FM.categories_du_jour(idx, ('challenger',)) if code == 200 else []
     print('catégories', [(k['id'], k['nom'], k['matchs']) for k in cats][:5])
     cid = cats[0]['id'] if cats else None
     if not cid:
@@ -50,13 +50,21 @@ def main():
         print(f'  {k} : {sorted(v)[:15]}')
     print('clés d’un match de la liste :', sorted(ev[0].keys()) if ev else None)
     print('clés de homeTeam :', sorted((ev[0].get('homeTeam') or {}).keys()) if ev else None)
-    venir = [e for e in ev if (e.get('status') or {}).get('type') == 'notstarted'] or ev
-    if venir:
-        code, det = c.get(f"/api/tennis/event/{venir[0]['id']}")
-        print('détail', code, venir[0].get('homeTeam', {}).get('name'), '–', venir[0].get('awayTeam', {}).get('name'))
-        print('CHAMPS DANS LE DÉTAIL :')
-        for p, v in champs(det):
-            print(f'  {p} : {v}')
+    # 29/10/2026 (v2) : le 1er essai n'a lu qu'un match ATP sans statut ; ici 12 matchs Challenger du tableau final
+    # (les invités et qualifiés n'y sont que là), au plus 12 requêtes
+    tab = [e for e in ev if not ((e.get('tournament') or {}).get('qualificationOrPreliminary'))][:12]
+    print(len(tab), 'matchs du tableau final interrogés')
+    tous = {}
+    for e in tab:
+        code, det = c.get(f"/api/tennis/event/{e['id']}")
+        ch = champs(det)
+        print(f"  {code} {e.get('homeTeam', {}).get('name')} – {e.get('awayTeam', {}).get('name')} :",
+              {p: v for p, v in ch if 'seed' in p.lower() or 'entry' in p.lower()} or 'aucun statut')
+        for p, v in ch:
+            tous.setdefault(p, set()).add(str(v)[:15])
+    print('TOUS LES CHAMPS VUS DANS LES DÉTAILS :')
+    for k, v in sorted(tous.items()):
+        print(f'  {k} : {sorted(v)[:12]}')
     print('requêtes', c.n, 'quota restant', c.restant)
     return 0
 
