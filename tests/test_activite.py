@@ -56,6 +56,24 @@ def hors_synthetique(effet, n=2600, graine=5):
     return H, exp, sit
 
 
+class Relatif(unittest.TestCase):
+    def test_tendance_par_rapport_au_circuit(self):
+        J = D(2026, 10, 29)
+        M = []
+        # tout le circuit masculin joue plus que d'habitude (saison) : 3 joueurs à 6 matchs sur 30 j, 1 sur 60 j avant
+        for n in ('A Un', 'B Deux', 'C Trois'):
+            M += [(J - dt.timedelta(days=d), [(n, None)]) for d in (2, 6, 10, 14, 18, 22)]
+            M += [(J - dt.timedelta(days=50), [(n, None)])]
+        M += [(J - dt.timedelta(days=d), [('E Egal', None)]) for d in (5, 40, 70)]
+        A = ACT.Activite(M, sexes={n: 'H' for n in ('A Un', 'B Deux', 'C Trois', 'E Egal')})
+        E = __import__('elo')
+        v = A.variables(E.cle('A Un'), J, relatif=True)
+        self.assertEqual(ACT.resume({k: x for k, x in v.items() if k != 'tendance_relative'}), 'hausse')   # brut
+        self.assertEqual(ACT.resume(v), 'stable')                                                       # comme les autres
+        self.assertEqual(ACT.resume(A.variables(E.cle('E Egal'), J, relatif=True)), 'baisse')
+        self.assertNotIn('tendance_relative', A.variables(E.cle('A Un'), J))                           # arbres : brut
+
+
 class Arbres(unittest.TestCase):
     LIM = D(2026, 9, 1)
 
