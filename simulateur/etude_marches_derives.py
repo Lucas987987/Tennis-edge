@@ -267,15 +267,52 @@ def cle_au_pronostic(debut, quand, ouverture_t=None):
     return 'ouverture' if o is not None else None           # ouverture connue et antérieure : pas mieux sans courbe
 
 
+def message(doc):
+    """Résumé Telegram (canal privé) de l'étude."""
+    L = ["<b>📐 Nos lignes contre Pinnacle (sets, jeux)</b>",
+         f"<i>{doc['sources']['resultats']} matchs joués · pronostic figé dès la sortie du match · CLV jugée sur 30 signaux "
+         f"au moins, intervalle à 95 % hors de 0</i>"]
+    for nom, r in doc['marches'].items():
+        if not r.get('matchs_joues') and not r.get('signaux'):
+            continue
+        t = f"• {nom} : {r['matchs_joues']} joués"
+        if r.get('log_loss_algo') is not None:
+            t += f", log loss algo {r['log_loss_algo']} / Pinnacle {r['log_loss_pinnacle']}"
+        if r.get('signaux'):
+            t += (f" · CLV depuis l'ouverture {r['clv_moy_pct']:+.2f} % sur {r['signaux']} signaux"
+                  + (' (net)' if r.get('clv_net') else '' if r.get('clv_conclusion') else ' (moins de 30)'))
+        a = r.get('au_pronostic')
+        if a:
+            t += (f" · au prix disponible au pronostic {a['clv_moy_pct']:+.2f} % sur {a['signaux']}"
+                  + (' (net)' if a.get('net') else '' if a.get('conclusion') else ' (moins de 30)'))
+        L.append(t)
+    L.append("\n<i>Descriptif : les cotes ne servent qu'à comparer, elles n'entrent jamais dans l'algo. Tant que l'heure "
+             "d'ouverture Pinnacle n'est pas connue (relevée depuis le 29/10), la CLV depuis l'ouverture est une estimation.</i>")
+    return '\n'.join(L)
+
+
 def main(argv):
-    racine = argv[1] if len(argv) > 1 else os.path.join(ICI, '..')
+    args = [a for a in argv[1:] if not a.startswith('--')]
+    racine = args[0] if args else os.path.join(ICI, '..')
     D, J, L, R = charger_derives(racine), charger_journal(racine), charger_lignes(racine), charger_resultats(racine)
     res = etudier(D, J, L, R)
     doc = {'genere_le': dt.datetime.now(dt.timezone.utc).isoformat(timespec='seconds'),
            'sources': {'pinnacle_matchs': len(D), 'journal_matchs': len(J), 'lignes_matchs': len(L), 'resultats': len(R)},
            'regle': __doc__.split('RÈGLE FIXÉE')[1].split('Les cotes ne servent')[0].strip(), 'marches': res}
-    with open(os.path.join(racine, SORTIE), 'w', encoding='utf-8') as f:
+    sortie = os.environ.get('ETUDE_MARCHES_SORTIE') or os.path.join(racine, SORTIE)   # workflow : hors du dépôt
+    with open(sortie, 'w', encoding='utf-8') as f:
         json.dump(doc, f, ensure_ascii=False, indent=1)
+    if '--telegram' in argv:
+        import urllib.parse
+        import urllib.request
+        tok, chat = os.environ.get('TELEGRAM_TOKEN'), os.environ.get('TELEGRAM_CHAT_ID')
+        if tok and chat:
+            try:
+                data = urllib.parse.urlencode({'chat_id': chat, 'text': message(doc), 'parse_mode': 'HTML'}).encode()
+                urllib.request.urlopen(f'https://api.telegram.org/bot{tok}/sendMessage', data=data, timeout=20).read()
+                print('Étude des marchés dérivés : envoyée sur le Telegram privé.')
+            except Exception as e:  # noqa: BLE001
+                print(f'::warning::Telegram impossible ({type(e).__name__})')
     print(f"Sources : {doc['sources']}")
     for nom, r in res.items():
         txt = f"{nom:<42} joués {r['matchs_joues']:>4}"

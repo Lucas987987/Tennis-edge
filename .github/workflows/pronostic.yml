@@ -71,6 +71,8 @@ jobs:
             /closing_lines/
             /feuilles/
             /feuilles_points/
+            /parts/hist_derives_*
+            /scripts/marches_derives.py
           sparse-checkout-cone-mode: false
       - uses: actions/setup-python@v6
         with:
@@ -155,6 +157,16 @@ jobs:
           # 28/10/2026 : le rapport JSON du ROI va au coffre privé (R2) et sort du dépôt public
           python scripts/coffre.py push --groupe roi || true
           python scripts/coffre.py retirer --groupe roi || true
+      # 29/10/2026 : nos lignes figées contre Pinnacle (nombre de sets, 2-0, total et handicap de jeux) — Telegram privé ;
+      # le rapport reste hors du dépôt (ETUDE_MARCHES_SORTIE). Les cotes ne servent qu'à comparer.
+      - name: Étude des marchés dérivés (Telegram, canal privé)
+        if: always()
+        continue-on-error: true
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          ETUDE_MARCHES_SORTIE: ${{ runner.temp }}/etude_marches_derives.json
+        run: python simulateur/etude_marches_derives.py . --telegram
       - name: Publier
         run: |
           set -euo pipefail
