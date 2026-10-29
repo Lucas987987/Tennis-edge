@@ -480,7 +480,7 @@ const T = {
   es_duree:d=>`Durée prévue ${d}.`, es_style_rien:'Aucun écart net contre le style adverse.',
   es_abandon:(n,j)=>`${n} a abandonné un match il y a ${j} jours : sur nos données, le risque d’abandon double (environ 3 % contre 1,5 %).`,
   act_m:(n,m,b)=>`${n} : ${m} match${m>1?'s':''} en 30 jours${b?` (${fmt(b)} balles de service)`:''}`,
-  act_cat:{hausse:'en hausse', baisse:'en baisse', stable:'stable', peu:'très peu de matchs'},
+  act_cat:{hausse:'plus que la moyenne du circuit en ce moment', baisse:'moins que la moyenne du circuit en ce moment', stable:'dans la moyenne du circuit', peu:'très peu de matchs'},
   act_retour:(n,j)=>`${n} revient après ${j} jours sans match`,
   act_l:(a,b)=>`Activité récente — ${a} · ${b}.`,
   act_note_retour:' Sur nos données, un joueur bien connu qui revient d’absence gagne un peu moins que prévu (indicatif : 112 cas).',
@@ -639,7 +639,7 @@ const T = {
   es_duree:d=>`Expected length ${d}.`, es_style_rien:'No clear gap against the opponent’s style.',
   es_abandon:(n,j)=>`${n} retired from a match ${j} days ago: in our data the retirement risk doubles (about 3% vs 1.5%).`,
   act_m:(n,m,b)=>`${n}: ${m} match${m>1?'es':''} in 30 days${b?` (${fmt(b)} service points)`:''}`,
-  act_cat:{hausse:'rising', baisse:'falling', stable:'steady', peu:'very few matches'},
+  act_cat:{hausse:'more than the tour average right now', baisse:'less than the tour average right now', stable:'in line with the tour', peu:'very few matches'},
   act_retour:(n,j)=>`${n} returns after ${j} days without a match`,
   act_l:(a,b)=>`Recent activity — ${a} · ${b}.`,
   act_note_retour:' In our data, a well-known player returning from a break wins a little less than predicted (indicative: 112 cases).',
@@ -864,7 +864,8 @@ function activiteCat(v){
   if (!v || v.repos==null) return null;
   if (v.repos >= 45) return 'retour';
   if (v.m30 + v.m90 < 3) return 'peu';
-  return v.tendance > .4 ? 'hausse' : v.tendance < -.4 ? 'baisse' : 'stable';
+  const t_ = v.tendance_relative != null ? v.tendance_relative : v.tendance;   // 29/10 : par rapport à son circuit
+  return t_ > .4 ? 'hausse' : t_ < -.4 ? 'baisse' : 'stable';
 }
 function activiteTexte(m){
   const A = m.activite; if (!Array.isArray(A) || A.length !== 2) return null;

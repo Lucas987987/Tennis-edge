@@ -7,7 +7,11 @@ import unittest
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import styles_joueurs as ST
 import styles_valeur as SV
-from simulateur.tests.test_styles_descriptifs import match
+try:                                    # 29/10/2026 : fonctionne lancé depuis la racine (workflows) ou depuis simulateur/
+    from simulateur.tests.test_styles_descriptifs import match
+except ImportError:
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    from test_styles_descriptifs import match
 
 
 class TauxContractes(unittest.TestCase):

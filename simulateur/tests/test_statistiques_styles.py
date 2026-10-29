@@ -12,7 +12,11 @@ import etude_statistiques_styles as ES
 import statistiques_styles as SS
 import styles_descriptifs as SD
 import vitrine as V
-from simulateur.tests.test_styles_descriptifs import match
+try:                                    # 29/10/2026 : fonctionne lancé depuis la racine (workflows) ou depuis simulateur/
+    from simulateur.tests.test_styles_descriptifs import match
+except ImportError:
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    from test_styles_descriptifs import match
 
 
 def ligne_synthetique(i):
