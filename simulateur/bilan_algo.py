@@ -196,6 +196,9 @@ def decisions(C, F):
     d['poids selon le contexte'] = 'adoptés' if poids.get('contexte') else 'non adoptés'
     d['apprend de qui a gagné'] = 'adopté' if (C.get('couche_resultats') or {}).get('adopte') else 'non adopté'
     d['poids propres aux Challenger'] = 'adoptés' if (C.get('poids_challenger') or {}).get('adopte') else 'non adoptés'
+    for c_ in ('ATP', 'WTA'):                          # 29/10/2026 : n'apparaît qu'une fois jugé
+        if C.get('poids_' + c_):
+            d[f'poids propres {c_}'] = 'adoptés' if C['poids_' + c_].get('adopte') else 'non adoptés'
     nv = C.get('nouveaux_venus') or {}
     d['nouveaux venus'] = f"corrigés (δ = {nv.get('delta')})" if nv.get('adopte') else 'pas de correction'
     d['facteurs du match'] = ', '.join(LIB.get(g, g) for g in (F.get('adoptes') or [])) or 'aucun'
@@ -211,7 +214,8 @@ def raisons(C):
     out = []
     for cle_c, lib in (('reglage_simulation', 'Réglage de la simulation'), ('combinaison', 'Mélange simulation + Elo'),
                        ('combinaison_feuilles', 'Mélange appris sur les feuilles'), ('combinaison_continue', 'Mélange appris sur nos pronostics'),
-                       ('poids_challenger', 'Poids propres aux Challenger'), ('nouveaux_venus', 'Nouveaux venus'),
+                       ('poids_challenger', 'Poids propres aux Challenger'), ('poids_ATP', 'Poids propres ATP'),
+                       ('poids_WTA', 'Poids propres WTA'), ('nouveaux_venus', 'Nouveaux venus'),
                        ('couche_resultats', 'Apprendre de qui a gagné')):
         r = (C.get(cle_c) or {}).get('raison')
         if r:

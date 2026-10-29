@@ -98,27 +98,35 @@ def par_circuit(hors, P, lim):
     return out
 
 
-def poids_challenger(hors, P, lim, ajuster_poids):
-    """RÈGLE FIXÉE AVANT DE VOIR LE RÉSULTAT (22/10/2026, 23 h 50) : des poids propres aux Challenger, appris
-    sur les Challenger avant les 6 dernières semaines, remplacent les poids communs pour les Challenger s'ils
-    trouvent mieux le vainqueur (log loss plus basse) sur les Challenger des 6 dernières semaines.
-    Il faut au moins 300 Challenger avant et 150 dans le jugement."""
-    g = [h for h in hors if h[0]['circuit'] == 'CH']
+def poids_circuit(hors, P, lim, ajuster_poids, circuit='CH'):
+    """RÈGLE FIXÉE AVANT DE VOIR LE RÉSULTAT (22/10/2026, 23 h 50, pour les Challenger ; étendue telle quelle à l'ATP et
+    à la WTA le 29/10/2026, avant le jugement hebdomadaire) : des poids propres au circuit, appris sur ses matchs avant
+    les 6 dernières semaines, remplacent les poids communs pour ce circuit s'ils trouvent mieux le vainqueur (log loss
+    plus basse) sur ses matchs des 6 dernières semaines. Il faut au moins 300 matchs avant et 150 dans le jugement.
+    Puis la stabilité (stabilite.py) : mieux d'au moins 0,001 deux semaines de suite.
+    Test du 29/10/2026 sur les pronostics hors échantillon (jugement depuis le 14/09) : ATP 0,6113 → 0,6126 (−0,0013),
+    WTA 0,5937 → 0,6029 (−0,0092), Challenger 0,6049 → 0,6046 : non adoptés ; jugés de nouveau chaque semaine."""
+    lib = dict(CIRCUITS).get(circuit, circuit)
+    g = [h for h in hors if h[0]['circuit'] == circuit]
     av, ju = [h for h in g if h[0]['jour'] < lim], [h for h in g if h[0]['jour'] >= lim]
     if len(av) < MIN_CH_AVANT or len(ju) < MIN_CH_JUGE or not P:
-        return {'adopte': False, 'raison': f"pas assez de Challenger ({len(av)} avant, {len(ju)} à juger)"}
+        return {'adopte': False, 'raison': f"pas assez de matchs {lib} ({len(av)} avant, {len(ju)} à juger)"}
     w = ajuster_poids([[_lg(pe), _lg(ps)] for _, ps, pe in av])
     Pc = {'elo': w[0], 'simulation': w[1]}
     l_ch, l_co = _ll([S.melange(Pc, pe, ps) for _, ps, pe in ju]), _ll([S.melange(P, pe, ps) for _, ps, pe in ju])
     ok = l_ch < l_co
     out = {'adopte': bool(ok), 'n_juge': len(ju), 'poids_appris_avant': {k: round(v, 4) for k, v in Pc.items()},
            'll': {'avec': l_ch, 'sans': l_co},
-           'raison': (f"Challenger des 6 dernières semaines ({len(ju)} matchs) : poids propres {round(l_ch, 4)} contre poids "
+           'raison': (f"{lib} des 6 dernières semaines ({len(ju)} matchs) : poids propres {round(l_ch, 4)} contre poids "
                       f"communs {round(l_co, 4)} ; part de la simulation {part_simulation(Pc)} % contre {part_simulation(P)} %")}
     if ok:
         wf = ajuster_poids([[_lg(pe), _lg(ps)] for _, ps, pe in g])
         out['poids'] = {'elo': round(wf[0], 4), 'simulation': round(wf[1], 4)}
     return out
+
+
+def poids_challenger(hors, P, lim, ajuster_poids):
+    return poids_circuit(hors, P, lim, ajuster_poids, 'CH')
 
 
 def nouveau(n):
@@ -338,6 +346,8 @@ def rejouer_saison(lignes, p_elo, groupes, apprendre, victoire_ligne, ajuster_po
     P = {'elo': wa[0], 'simulation': wa[1]}
     out['par_circuit'] = par_circuit(hors, P, lim)
     out['poids_challenger'] = poids_challenger(hors, P, lim, ajuster_poids)
+    for c_ in ('ATP', 'WTA'):                              # 29/10/2026 : même règle que les Challenger
+        out['poids_' + c_] = poids_circuit(hors, P, lim, ajuster_poids, c_)
     out['nouveaux_venus'] = nouveaux_venus(hors, P, lim, experience, final)
     # 23/10/2026 : « classement » = même règle, valeur = niveau_inconnu (classements.py) : le classement ne compte
     # que pour un joueur peu connu ; corrige PAR-DESSUS le mélange, comme les autres situations.
