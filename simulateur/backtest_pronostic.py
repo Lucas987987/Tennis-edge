@@ -615,6 +615,7 @@ def main(argv):
     itf_elo = {'applique': False, 'matchs': len(itf_rows), 'raison': 'aucun résultat ITF'}
     reference = None              # 29/10/2026 : variante AVANT l'ITF, gardée pour le modèle fantôme (comparaison en direct)
     reference_femmes = None       # 29/10/2026 : variante sans les seuls résultats ITF femmes (fantôme propre à ce changement)
+    fantome_femmes = None         # 29/10/2026 (correctif) : gardée HORS de V — V ne contient que des variantes évaluées
     if itf_rows and itf_en_production(racine):
         avant = sorted([m for m in itf_rows if m['date'] <= fin_sack and m['circuit'] != 'ITF'],   # ITF femmes : déjà dans l'archive
                        key=lambda m: m['date'])
@@ -638,7 +639,7 @@ def main(argv):
         fem = [m for m in apres if m['circuit'] == 'ITF']
         if fem:
             nom5h = nom5 + '-femmes'
-            V[nom5h] = rejouer(M5, nous, td_rows, cle_c, idx, not retenue.startswith('depart_1500'),
+            fantome_femmes = rejouer(M5, nous, td_rows, cle_c, idx, not retenue.startswith('depart_1500'),
                                nouveaux='+nouveaux_joueurs' in retenue, options=V[retenue]['options'],
                                feuilles=(fe_rows if '+feuilles' in retenue else []) + [m for m in apres if m['circuit'] != 'ITF'])
             reference_femmes = nom5h
@@ -685,7 +686,7 @@ def main(argv):
                        'depart_bas': DEPART_BAS if not reference.startswith('depart_1500') else None, 'alias': alias,
                        'joueurs': R_['elo'].exporter(R_['noms'])}, f, ensure_ascii=False, separators=(',', ':'))
     if reference_femmes:
-        R_ = V[reference_femmes]
+        R_ = fantome_femmes
         with open(os.path.join(ICI, 'elo_etat_sans_itf_femmes.json'), 'w', encoding='utf-8') as f:
             json.dump({'genere_le': rap['genere_le'], 'variante': reference_femmes, 'options': R_['options'],
                        'depart_bas': DEPART_BAS if not reference_femmes.startswith('depart_1500') else None, 'alias': alias,
