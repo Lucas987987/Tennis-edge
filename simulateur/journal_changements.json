@@ -1,6 +1,16 @@
 {
  "regle": "Chaque changement du modèle est noté ici avec sa date, ce qu'il change et ce qu'il a gagné au test (log loss, négatif = mieux prévu). Les changements mis en production par décision, sans attendre la 2e semaine, restent sous le garde-fou du jugement hebdomadaire.",
  "changements": [
+  {"date": "2026-10-29", "titre": "Poids Elo / simulation propres à l'ATP et à la WTA", "statut": "candidat", "decision": false,
+   "mesure": "pronostics hors échantillon depuis le 14/09 : ATP +0,0013, WTA +0,0092 (moins bien) ; même règle que les Challenger, rejugé chaque lundi"},
+  {"date": "2026-10-29", "titre": "Échelle de l'Elo propre à chaque circuit", "statut": "rejete", "decision": false,
+   "mesure": "choix sur 2025, jugement 2026 (17 506 matchs) : −0,0005, ATP +0,0003 ; seuil 0,001"},
+  {"date": "2026-10-29", "titre": "Incertitude des joueurs peu vus propre à chaque circuit", "statut": "rejete", "decision": false,
+   "mesure": "choix sur 2025, jugement 2026 : −0,0008 (Challenger −0,0013, ATP et WTA 0) ; seuil 0,001"},
+  {"date": "2026-10-29", "titre": "Vitesse de l'Elo (K) propre aux hommes et aux femmes", "statut": "rejete", "decision": false,
+   "mesure": "choix sur 2025 (hommes ×1,1, femmes ×1,0), jugement 2026 : −0,0006 ; seuil 0,001"},
+  {"date": "2026-10-29", "titre": "Poids des Grands Chelems dans l'Elo propre à chaque sexe", "statut": "rejete", "decision": false,
+   "mesure": "choix sur 2025 (femmes ×1,25), jugement 2026 : +0,00003, WTA +0,0002"},
   {"date": "2026-10-29", "titre": "Résultats ITF femmes dans le classement Elo", "statut": "production", "decision": true,
    "mesure": "WTA depuis juin : log loss −0,0034 (1 915 matchs) ; ATP et Challenger inchangés",
    "garde_fou": "retiré si moins bien deux semaines de suite (étude du lundi)"},
