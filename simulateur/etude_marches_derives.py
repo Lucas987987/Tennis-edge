@@ -20,6 +20,12 @@ RÈGLE FIXÉE AVANT DE VOIR LES RÉSULTATS (29/10/2026, 15 h 10) — descriptif,
      nous préférons ; CLV = cote d'ouverture / cote de clôture − 1 sur ce côté (la mesure de validation du projet), et
      part des cas où la clôture s'est rapprochée de nous. Moins de 30 signaux : rien à conclure. Un écart n'est « net »
      que si l'intervalle à 95 % de la CLV moyenne ne contient pas 0.
+MOMENT DE LA DÉCISION (précisé par Lucas le 29/10, 15 h 40) : notre pronostic est publié dès que le match sort (premier
+  passage, ~20 h avant le début en médiane) et on peut miser tout de suite. La mesure principale part donc du PREMIER
+  pronostic : prix disponible à ce moment-là = l'ouverture Pinnacle si elle est postérieure au pronostic, sinon la
+  dernière cote relevée avant lui (ouverture, 6 h, 2 h, 30 min). L'heure d'ouverture n'est relevée que depuis le
+  29/10 (« ouverture_t ») : avant, l'ouverture est prise faute de mieux et le résultat est marqué « estimation ».
+  Jugement sur les matchs relevés AVEC l'heure d'ouverture : 30 signaux au moins, intervalle à 95 % hors de 0.
 CONTRÔLE AJOUTÉ APRÈS LE PREMIER RÉSULTAT (29/10/2026, 15 h 30 — donc à juger sur les matchs SUIVANTS seulement) :
   notre pronostic est fait quelques heures avant le match, bien après l'ouverture Pinnacle ; la CLV « depuis
   l'ouverture » mesure surtout l'information arrivée entre-temps, que Pinnacle intègre aussi. La CLV qui compte part du
@@ -63,8 +69,10 @@ def charger_derives(racine, book='pinnacle'):
     return D
 
 
-def charger_journal(racine):
-    """{uid: (debut, home, away, sets du dernier passage avant le début)}."""
+def charger_journal(racine, premier=True):
+    """{uid: (debut, home, away, sets, heure du passage)} — 29/10/2026 : le PREMIER passage par défaut (le pronostic
+    est publié dès que le match sort, ~20 h avant en médiane : on peut miser tout de suite) ; premier=False : le dernier
+    passage avant le début."""
     J = {}
     for p in sorted(glob.glob(os.path.join(racine, 'simulateur', 'journal_pronostics', '20*.jsonl.gz'))):
         try:
@@ -76,7 +84,7 @@ def charger_journal(racine):
                     if str(r.get('passage', ''))[:16] > str(r.get('debut', ''))[:16]:
                         continue                                    # après le début : pas figé avant le match
                     v = next((r.get(k) for k in VERSIONS if (r.get(k) or {}).get('sets')), None)
-                    if v:
+                    if v and not (premier and r['uid'] in J and str(J[r['uid']][4]) <= str(r.get('passage'))):
                         J[r['uid']] = (r.get('debut'), r.get('home'), r.get('away'), v['sets'], r.get('passage'))
         except (OSError, ValueError, EOFError):
             continue
@@ -195,7 +203,7 @@ def etudier(D, J, L, R):
                 continue
             vers = (pc - po) * (1 if p > po else -1)
             e['signaux'].append((clv, vers))
-        k_ = cle_au_pronostic(D[uid].get('commence_time'), quand)        # contrôle : le prix disponible au pronostic
+        k_ = cle_au_pronostic(D[uid].get('commence_time'), quand, qa.get('ouverture_t'))   # le prix disponible au pronostic
         pd_ = juste(qa.get(k_), qb.get(k_)) if k_ else None
         if pd_ is not None and abs(p - pd_) > ECART_SIGNAL:
             cote = qa if p > pd_ else qb
@@ -233,7 +241,7 @@ def etudier(D, J, L, R):
     return out
 
 
-def cle_au_pronostic(debut, quand):
+def cle_au_pronostic(debut, quand, ouverture_t=None):
     """La dernière cote relevée AVANT notre pronostic et proche de lui : 'a_30min', 'a_2h' ou 'a_6h' ; None si le
     pronostic est plus ancien que 6 h avant le début (l'ouverture peut dater de plusieurs jours : écartée)."""
     try:
@@ -245,21 +253,66 @@ def cle_au_pronostic(debut, quand):
         d = d.replace(tzinfo=dt.timezone.utc)
     if q.tzinfo is None:
         q = q.replace(tzinfo=dt.timezone.utc)
+    try:
+        o = dt.datetime.fromisoformat(str(ouverture_t).replace('Z', '+00:00')) if ouverture_t else None
+    except ValueError:
+        o = None
+    if o is not None and o.tzinfo is None:
+        o = o.replace(tzinfo=dt.timezone.utc)
+    if o is not None and o >= q:
+        return 'ouverture'                                  # Pinnacle ouvre après notre pronostic : on mise à l'ouverture
     for k, h in (('a_30min', 0.5), ('a_2h', 2), ('a_6h', 6)):
         if q >= d - dt.timedelta(hours=h):
             return k
-    return None
+    return 'ouverture' if o is not None else None           # ouverture connue et antérieure : pas mieux sans courbe
+
+
+def message(doc):
+    """Résumé Telegram (canal privé) de l'étude."""
+    L = ["<b>📐 Nos lignes contre Pinnacle (sets, jeux)</b>",
+         f"<i>{doc['sources']['resultats']} matchs joués · pronostic figé dès la sortie du match · CLV jugée sur 30 signaux "
+         f"au moins, intervalle à 95 % hors de 0</i>"]
+    for nom, r in doc['marches'].items():
+        if not r.get('matchs_joues') and not r.get('signaux'):
+            continue
+        t = f"• {nom} : {r['matchs_joues']} joués"
+        if r.get('log_loss_algo') is not None:
+            t += f", log loss algo {r['log_loss_algo']} / Pinnacle {r['log_loss_pinnacle']}"
+        if r.get('signaux'):
+            t += (f" · CLV depuis l'ouverture {r['clv_moy_pct']:+.2f} % sur {r['signaux']} signaux"
+                  + (' (net)' if r.get('clv_net') else '' if r.get('clv_conclusion') else ' (moins de 30)'))
+        a = r.get('au_pronostic')
+        if a:
+            t += (f" · au prix disponible au pronostic {a['clv_moy_pct']:+.2f} % sur {a['signaux']}"
+                  + (' (net)' if a.get('net') else '' if a.get('conclusion') else ' (moins de 30)'))
+        L.append(t)
+    L.append("\n<i>Descriptif : les cotes ne servent qu'à comparer, elles n'entrent jamais dans l'algo. Tant que l'heure "
+             "d'ouverture Pinnacle n'est pas connue (relevée depuis le 29/10), la CLV depuis l'ouverture est une estimation.</i>")
+    return '\n'.join(L)
 
 
 def main(argv):
-    racine = argv[1] if len(argv) > 1 else os.path.join(ICI, '..')
+    args = [a for a in argv[1:] if not a.startswith('--')]
+    racine = args[0] if args else os.path.join(ICI, '..')
     D, J, L, R = charger_derives(racine), charger_journal(racine), charger_lignes(racine), charger_resultats(racine)
     res = etudier(D, J, L, R)
     doc = {'genere_le': dt.datetime.now(dt.timezone.utc).isoformat(timespec='seconds'),
            'sources': {'pinnacle_matchs': len(D), 'journal_matchs': len(J), 'lignes_matchs': len(L), 'resultats': len(R)},
            'regle': __doc__.split('RÈGLE FIXÉE')[1].split('Les cotes ne servent')[0].strip(), 'marches': res}
-    with open(os.path.join(racine, SORTIE), 'w', encoding='utf-8') as f:
+    sortie = os.environ.get('ETUDE_MARCHES_SORTIE') or os.path.join(racine, SORTIE)   # workflow : hors du dépôt
+    with open(sortie, 'w', encoding='utf-8') as f:
         json.dump(doc, f, ensure_ascii=False, indent=1)
+    if '--telegram' in argv:
+        import urllib.parse
+        import urllib.request
+        tok, chat = os.environ.get('TELEGRAM_TOKEN'), os.environ.get('TELEGRAM_CHAT_ID')
+        if tok and chat:
+            try:
+                data = urllib.parse.urlencode({'chat_id': chat, 'text': message(doc), 'parse_mode': 'HTML'}).encode()
+                urllib.request.urlopen(f'https://api.telegram.org/bot{tok}/sendMessage', data=data, timeout=20).read()
+                print('Étude des marchés dérivés : envoyée sur le Telegram privé.')
+            except Exception as e:  # noqa: BLE001
+                print(f'::warning::Telegram impossible ({type(e).__name__})')
     print(f"Sources : {doc['sources']}")
     for nom, r in res.items():
         txt = f"{nom:<42} joués {r['matchs_joues']:>4}"
