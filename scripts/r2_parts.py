@@ -336,10 +336,28 @@ def cmd_verify(fams, parts_dir=r2_io.PARTS_DIR, report_path=None, environ=None,
                         row["statut"] = "git_plus_complet"
                     else:
                         row["statut"] = "different"
+                    # 29/10/2026 — un run qui envoie à R2 puis perd son commit
+                    # git (conflit de push) laisse R2 avec des ticks que git n'a
+                    # pas : c'est R2 le plus complet, pas une anomalie. Constaté :
+                    # 3 « different » le 29/10, chacun = 1 ou 2 trous de ~33 min
+                    # dans les commits git du jour. On vérifie ligne à ligne :
+                    # toute ligne git est dans R2, et R2 n'ajoute que des lignes
+                    # NEUVES, chacune une seule fois (aucun doublon du 22/10).
+                    if closed and row["statut"] in {"different", "r2_plus_complet"}:
+                        manquent = len(r2_io.lignes_absentes(remote, local))
+                        extra = r2_io.lignes_absentes(local, remote)
+                        vus = {r2_io._empreinte(x) for x in r2_io.gz_line_list(local)}
+                        ke = [r2_io._empreinte(x) for x in extra]
+                        doublons = len(ke) - len(set(ke)) + sum(1 for k in ke if k in vus)
+                        row.update(seules_dans_git=manquent, seules_dans_r2=len(extra), doublons_r2=doublons)
+                        if manquent == 0 and doublons == 0:
+                            row["statut"] = "r2_complet"
             # En « on », la copie git est figée (sauvegarde) : R2 plus complet
             # est l'état normal. En « double », seul le jour en cours peut
             # différer (les collecteurs écrivent pendant la vérification).
-            ok = row["statut"] == "identique" or (
+            # Jour clos : « r2_complet » = R2 contient tout git + des lignes
+            # neuves sans doublon → rien ne serait perdu en passant à « on ».
+            ok = row["statut"] in {"identique", "r2_complet"} or (
                 not closed and row["statut"] in {"git_plus_complet", "r2_plus_complet"}) or (
                 mode_now == "on" and row["statut"] == "r2_plus_complet")
             row["ok"] = ok
@@ -371,7 +389,13 @@ def cmd_verify(fams, parts_dir=r2_io.PARTS_DIR, report_path=None, environ=None,
     if bad:
         print(f"❌ {bad} partition(s) de jours clos ne correspondent pas : NE PAS passer en 'on'.")
         return 1
-    print("✅ Toutes les partitions de jours clos sont identiques dans R2.")
+    plus = sum(1 for r in rows if r["statut"] == "r2_complet")
+    if plus:
+        print(f"✅ Jours clos : R2 contient tout git. {plus} partition(s) où R2 a EN PLUS les ticks d'un run "
+              f"dont le commit git s'est perdu ({sum(r['seules_dans_r2'] for r in rows if r['statut'] == 'r2_complet')} "
+              f"lignes, aucun doublon) : normal en « double », rien ne serait perdu en « on ».")
+    else:
+        print("✅ Toutes les partitions de jours clos sont identiques dans R2.")
     return 0
 
 
