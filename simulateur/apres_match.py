@@ -253,6 +253,11 @@ def bilan_match(uid, f, reel, duree_reelle=None):
         if ll_f:
             E['fantome_sigma'] = {'ll_elo': ll_f[0], 'll_reference': ll_f[1], 'sigma': fo.get('sigma'),
                                   'sigma_reference': fo.get('sigma_reference')}
+    fsv = ct.get('forme_service') or {}
+    if fsv.get('p_home') is not None and isinstance(p, (int, float)):
+        # 29/10/2026 : pronostic affiché contre le même AVEC le service / retour du moment (forme_service.py)
+        lp = lambda q: round(-math.log(min(max(q if y else 1 - q, 1e-6), 1 - 1e-6)), 5)
+        E['fantome_forme_service'] = {'ll_elo': lp(p), 'll_reference': lp(fsv['p_home'])}
     du = d.get('duree') or {}
     if duree_reelle and du.get('minutes'):
         E['duree_ecart_min'] = round(du['minutes'] - duree_reelle)
@@ -513,7 +518,7 @@ def analyser(B):
                               'simulation_pct': pct(dd, 'simulation_juste'), 'affiche_pct': pct(dd, 'affiche_juste'),
                               'accord_pct': pct(aa, 'affiche_juste'), 'conclusion_possible': len(dd) >= 30}
         # 29/10/2026 : chaque changement contre son modèle fantôme, sur les mêmes matchs réels
-        for cle_f in ('fantome', 'fantome_itf_femmes', 'fantome_sigma'):
+        for cle_f in ('fantome', 'fantome_itf_femmes', 'fantome_sigma', 'fantome_forme_service'):
             fa = [e[cle_f] for e in E if cle_f in e]
             if fa:
                 a_, b_ = _moy([x['ll_elo'] for x in fa]), _moy([x['ll_reference'] for x in fa])
