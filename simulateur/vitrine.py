@@ -138,6 +138,8 @@ def ligne_match(m, complet):
            'surface': m.get('surface'), 'meilleur_des': m.get('meilleur_des', 3),
            'home': m['home'], 'away': m['away'], 'p_home': round(p, 3), 'version': k,
            'fiabilite': m.get('fiabilite'), 'cotes_justes': [cote(p), cote(1 - p)]}
+    if m.get('controle'):
+        out['controle'] = m['controle']             # 29/10/2026 : modèle fantôme (Elo d'avant les changements)
     if not complet:
         out['simulation_disponible'] = False
         return out
@@ -365,6 +367,46 @@ def qualite_donnees(racine, resultats=None):
     return out
 
 
+def journal_changements(racine, analyse=None):
+    """29/10/2026 — journal des changements du modèle (simulateur/journal_changements.json) + comparaison en direct du
+    modèle fantôme (Elo en place contre Elo d'avant les changements, sur les mêmes matchs réels)."""
+    doc = _lire(os.path.join(racine, 'simulateur', 'journal_changements.json'), {}) or {}
+    if not doc:
+        return None
+    g = ((analyse or {}).get('groupes') or {})
+    doc['fantome'] = {k: v['fantome'] for k, v in g.items() if isinstance(v, dict) and v.get('fantome')}
+    return doc
+
+
+ABANDON_J = 90
+
+
+def ajouter_abandons(lignes, racine, maintenant=None):
+    """ligne['abandon_recent'] = [jours depuis le dernier abandon de home, de away] (≤ 90 jours, sinon None)."""
+    import elo as E
+    import feuilles as FE
+    dern = {}
+    for r in FE.lire(racine):
+        txt = str((r.get('statut') or {}).get('texte') or '').lower()
+        if 'retired' not in txt or r.get('vainqueur') not in (1, 2) or not r.get('jour'):
+            continue
+        perdant = r['away'] if r['vainqueur'] == 1 else r['home']
+        k = E.cle(perdant.get('nom'))
+        dern[k] = max(dern.get(k, ''), r['jour'])
+    for x in lignes:
+        try:
+            j0 = _utc(x.get('debut_utc') or x['debut']).date()
+        except (KeyError, TypeError, ValueError):
+            continue
+        v = []
+        for n in (x.get('home'), x.get('away')):
+            d = dern.get(E.cle(n))
+            jours = (j0 - dt.date.fromisoformat(d)).days if d else None
+            v.append(jours if jours is not None and 0 < jours <= ABANDON_J else None)
+        if any(v):
+            x['abandon_recent'] = v
+
+
 def construire(racine, maintenant=None):
     maintenant = maintenant or dt.datetime.now(dt.timezone.utc)
     pron = _lire(os.path.join(racine, 'Tennis_Edge_Lab', 'live', 'pronostics.json'), {}) or {}
@@ -415,7 +457,12 @@ def construire(racine, maintenant=None):
         print(f'::warning::documentation des joueurs non calculée : {type(e).__name__}: {e}')
     resultats = _lire(os.path.join(racine, 'Tennis_Edge_Lab', 'live', 'pronostics_resultats.json'), {})
     # 28/10/2026 — fiches figées (premier et dernier pronostic avant le match), évolution, bilans après match
-    apres = {}
+    apres, analyse_am = {}, None
+    # 29/10/2026 — abandon récent (≤ 90 jours) : 3,1 % d'abandon au match suivant contre 1,5 % (19 502 joueurs-matchs)
+    try:
+        ajouter_abandons(lignes, racine)
+    except Exception as e:  # noqa: BLE001
+        print(f'::warning::abandons récents non calculés : {type(e).__name__}: {e}')
     try:
         import apres_match as AM
         facteurs_doc = _lire(os.path.join(racine, 'simulateur', 'facteurs.json'), {}) or {}
@@ -427,8 +474,9 @@ def construire(racine, maintenant=None):
                 ligne['evolution'] = ev
         B = AM.bilans(racine, resultats)
         apres = AM.pour_le_site(B, jours=3, maintenant=maintenant)
+        analyse_am = AM.analyser(B)
         with open(os.path.join(racine, AM.SORTIE_ANALYSE), 'w', encoding='utf-8') as f:
-            json.dump(AM.analyser(B), f, ensure_ascii=False, indent=1)
+            json.dump(analyse_am, f, ensure_ascii=False, indent=1)
     except Exception as e:  # noqa: BLE001
         print(f'::warning::après-match non calculé : {type(e).__name__}: {e}')
     return {'genere_le': maintenant.isoformat(timespec='seconds'), 'pronostics_du': pron.get('genere_le'),
@@ -438,6 +486,7 @@ def construire(racine, maintenant=None):
                                            'feuilles_recentes': styles_doc.get('feuilles_recentes'),
                                            'regle': styles_doc.get('regle')} if styles else None),
             'matchs': lignes, 'bilan': bilan(resultats), 'apres_match': apres,
+            'journal_changements': journal_changements(racine, analyse_am),
             'bilan_lignes': bilan_lignes(racine, resultats),
             'validation_fiabilite': validation_fiabilite(resultats),
             'qualite_donnees': qualite_donnees(racine, resultats),
