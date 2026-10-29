@@ -321,7 +321,7 @@ body.carte #video{display:block;width:1080px;height:1350px}
 .essentiel ul{list-style:none;margin:0;padding:4px 16px 16px;display:grid;gap:6px}.essentiel li{padding:7px 10px;border-radius:9px;background:rgba(255,255,255,.04);border-left:3px solid var(--dim);font-size:.92rem;line-height:1.4}.essentiel li.plus{border-left-color:var(--ok)}.essentiel li.moins{border-left-color:var(--ko)}.essentiel li.info{border-left-color:var(--ball)}
 .evol{margin:6px 0 0;color:var(--dim);font-size:.82rem}.badge.peu{background:rgba(255,107,134,.16);color:var(--ko)}
 .res li.avec-am{grid-template-columns:1.8em 1fr auto}.res li .am{grid-column:1/-1}.am summary{cursor:pointer;font-weight:600;font-size:.88rem;color:var(--ball);min-height:36px;display:flex;align-items:center}.am h4{margin:10px 0 4px;font-size:.88rem}.am-t{font-size:.85rem;width:100%}.am-t td{vertical-align:top}.am-t th,.am-t td:first-child{text-align:left}.am-t td+td{text-align:right}.am-ok{color:var(--ok)}.am-ko{color:var(--ko)}.am .d{color:var(--dim);font-size:.8rem}
-.jc{list-style:none;margin:0;padding:0}.jc li{display:grid;grid-template-columns:auto 1fr;gap:10px;padding:10px 16px;border-top:1px solid var(--line);font-size:.9rem;align-items:start}.jc .d{color:var(--dim);font-size:.82rem}.jc-st{font-size:.72rem;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap;margin-top:2px}.jc-st.production{background:rgba(69,240,160,.16);color:var(--ok)}.jc-st.candidat{background:rgba(212,255,58,.14);color:var(--ball)}.jc-st.rejete{background:rgba(255,255,255,.07);color:var(--dim)}.jc-fan{margin:0;padding:12px 16px;font-size:.9rem}
+.jc{list-style:none;margin:0;padding:0}.jc li{display:grid;grid-template-columns:auto 1fr;gap:10px;padding:10px 16px;border-top:1px solid var(--line);font-size:.9rem;align-items:start}.jc .d{color:var(--dim);font-size:.82rem}.jc-st{font-size:.72rem;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap;margin-top:2px}.jc-st.production{background:rgba(69,240,160,.16);color:var(--ok)}.jc-st.candidat{background:rgba(212,255,58,.14);color:var(--ball)}.jc-st.rejete{background:rgba(255,255,255,.07);color:var(--dim)}.jc-fan{margin:0;padding:12px 16px;font-size:.9rem}.jc-fans{margin:0 0 6px;padding:0 16px 0 34px;font-size:.88rem;line-height:1.45}.jc-fans li{margin:0 0 6px}
 </style>
 </head>
 <body>
@@ -471,6 +471,9 @@ const T = {
   jc_production:'en production', jc_candidat:'candidat', jc_rejete:'rejeté', jc_decision:'mis en production par décision, sous garde-fou',
   jc_fantome:'En direct :', jc_fantome_v:(n,a,b,g,ok)=>`sur ${fmt(n)} matchs réels, l’Elo en place fait ${dec(a,4)} de log loss contre ${dec(b,4)} pour l’Elo d’avant les changements (${g>=0?'gain':'perte'} ${dec(Math.abs(g),4)})${ok?'':' — moins de 30 matchs : rien à conclure'}.`,
   jc_fantome_vide:'En direct : la comparaison avec l’Elo d’avant les changements démarre ; elle s’affichera dès les premiers matchs joués.',
+  jc_f_fantome:'Résultats ITF dans l’Elo (hommes et femmes)', jc_f_fantome_itf_femmes:'Résultats ITF femmes seuls (matchs WTA)',
+  jc_f_fantome_sigma:'Forme du jour du Challenger (σ 0,22 contre 0,15 : 2 ou 3 sets, tie-breaks, jeux)',
+  jc_fv:(n,a,b,g,ok)=>`${fmt(n)} matchs réels : en place ${dec(a,4)}, version d’avant ${dec(b,4)} (${g>=0?'gain':'perte'} ${dec(Math.abs(g),4)})${ok?'':' — moins de 30 matchs : rien à conclure'}.`,
   es_badge:'peu documenté', es_badge_aide:'Un joueur a moins de 1 500 balles de service dans nos données',
   am_titre:'Bilan après match', am_vainqueur:'Vainqueur', am_vainqueur_v:(n,p)=>`${n} : l’algo lui donnait ${p}`,
   am_score:'Score', am_rang:(r,p)=>`${r}e score le plus probable (${p} %)`, am_hors:'hors des scores prévus à plus de 0,1 %',
@@ -609,6 +612,9 @@ const T = {
   jc_production:'live', jc_candidat:'candidate', jc_rejete:'rejected', jc_decision:'put live by decision, under a safeguard',
   jc_fantome:'Live:', jc_fantome_v:(n,a,b,g,ok)=>`on ${fmt(n)} real matches, the current Elo scores ${dec(a,4)} log loss vs ${dec(b,4)} for the pre-change Elo (${g>=0?'gain':'loss'} ${dec(Math.abs(g),4)})${ok?'':' — under 30 matches: no conclusion'}.`,
   jc_fantome_vide:'Live: the comparison with the pre-change Elo is starting; it will show once matches are played.',
+  jc_f_fantome:'ITF results in the Elo (men and women)', jc_f_fantome_itf_femmes:'Women’s ITF results only (WTA matches)',
+  jc_f_fantome_sigma:'Challenger day form (σ 0.22 vs 0.15: 2 or 3 sets, tie-breaks, games)',
+  jc_fv:(n,a,b,g,ok)=>`${fmt(n)} real matches: current ${dec(a,4)}, previous version ${dec(b,4)} (${g>=0?'gain':'loss'} ${dec(Math.abs(g),4)})${ok?'':' — under 30 matches: no conclusion'}.`,
   es_badge:'little data', es_badge_aide:'One player has fewer than 1,500 service points in our data',
   am_titre:'After-match review', am_vainqueur:'Winner', am_vainqueur_v:(n,p)=>`${n}: the model gave ${p}`,
   am_score:'Score', am_rang:(r,p)=>`#${r} most likely score (${p}%)`, am_hors:'outside the scores predicted above 0.1%',
@@ -1435,8 +1441,10 @@ function rendApresMatch(b){
 function rendJournal(){
   const J = D.journal_changements, el = document.getElementById('journal');
   if (!J || !Array.isArray(J.changements)){ el.closest('section').hidden = true; return; }
-  const F = (J.fantome||{}).TOUS;
-  const fan = F ? `<p class="jc-fan"><b>${esc(t('jc_fantome'))}</b> ${esc(t('jc_fantome_v', F.matchs, F.log_loss_elo_en_place, F.log_loss_elo_reference, F.gain, F.conclusion_possible))}</p>`
+  // 29/10/2026 : un fantôme par changement (chacun contre la version d'avant, sur les mêmes matchs réels)
+  const FS_ = Array.isArray(J.fantomes) && J.fantomes.length ? J.fantomes : ((J.fantome||{}).TOUS ? [Object.assign({cle:'fantome'}, J.fantome.TOUS)] : []);
+  const fan = FS_.length ? `<p class="jc-fan"><b>${esc(t('jc_fantome'))}</b></p><ul class="jc-fans">${FS_.map(F=>
+      `<li><b>${esc(t('jc_f_'+F.cle))}</b> — ${esc(t('jc_fv', F.matchs, F.log_loss_elo_en_place, F.log_loss_elo_reference, F.gain, F.conclusion_possible))}</li>`).join('')}</ul>`
                 : `<p class="jc-fan">${esc(t('jc_fantome_vide'))}</p>`;
   const li = J.changements.map(c=>`<li><span class="jc-st ${esc(c.statut)}">${esc(t('jc_'+c.statut))}</span>
     <span><b>${esc(c.titre)}</b><br><span class="d">${esc(dateLong(c.date))}${c.decision?' · '+esc(t('jc_decision')):''} — ${esc(c.mesure)}${c.garde_fou?' · '+esc(c.garde_fou):''}</span></span></li>`).join('');
