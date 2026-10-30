@@ -24,3 +24,9 @@ def test_circuit_des_competitions_par_equipes():
     assert FE.circuit_de('Davis Cup') == 'ATP'
     assert FE.circuit_de('Billie Jean King Cup') == 'WTA'
     assert FE.circuit_de('WTA 125') == 'WTA' and FE.circuit_de('Challenger') == 'CH'
+
+
+def test_rattrapage_force_les_jours_complets():
+    etat = {'jours': {'2026-09-18': {'complet': True}, '2026-09-19': {'complet': False}}}
+    assert FM.jours_a_traiter('2026-09-18', '2026-09-19', etat) == ['2026-09-19']
+    assert FM.jours_a_traiter('2026-09-18', '2026-09-19', etat, forcer=True) == ['2026-09-18', '2026-09-19']
