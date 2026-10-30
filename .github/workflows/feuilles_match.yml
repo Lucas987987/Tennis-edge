@@ -31,7 +31,7 @@ on:
         description: 'Dernier jour (AAAA-MM-JJ) ; vide = hier'
         default: ''
       categories:
-        description: 'Catégories (vide = atp,wta,challenger,wta 125 ; ITF retiré le 22/10/2026, ajouter itf men,itf women pour le reprendre)'
+        description: 'Catégories (vide = atp,wta,challenger,wta 125,davis cup,billie jean king cup ; ITF retiré le 22/10/2026, ajouter itf men,itf women pour le reprendre)'
         default: ''
       budget:
         description: 'Requêtes au plus pour ce run (formule Pro : 15 000 par jour)'
