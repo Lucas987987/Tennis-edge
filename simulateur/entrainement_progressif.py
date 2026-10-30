@@ -314,7 +314,14 @@ CANDIDATS_ARBRES = {
     # clé : (situation lue, nombre de variables, indices « écart » ajoutés, valeur neutre, libellé)
     'modele_arbres_activite': ('activite', 2, True, (0.0, 0.0), "l'activité récente"),
     'modele_arbres_tour': ('tour', 2, False, tuple(variables_tour(None)), 'le tour du tableau'),
+    # 30/10/2026 — POINTS ATP/WTA DE TOUS LES JOUEURS (classements.ecart_points). Étude du 30/10 (138 657 matchs, appris
+    # 2017–2022, jugé 2023–2026, ajouté à l'Elo) : rang + points +0,0023 (Challenger +0,0034, ATP +0,0003, WTA +0,0001) ;
+    # le rang seul +0,0005 (ATP −0,0010) : ce sont les points qui portent l'information. MIS EN PRODUCTION PAR
+    # DÉCISION DE LUCAS (30/10/2026), sans attendre deux semaines : en place dès le premier modèle appris ; la règle
+    # devient la SORTIE (retiré si moins bien que les arbres sans les points deux semaines de suite, stabilite.py).
+    'modele_arbres_points': ('points', 1, True, (0.0,), 'les points ATP/WTA de tous les joueurs'),
 }
+DECISION_CANDIDATS = {'modele_arbres_points': '2026-10-30'}
 
 
 def ecarts_candidat(cle):
@@ -374,7 +381,9 @@ def modele_arbres_candidat(cle, hors, P, lim, experience, situations, nv, poids_
            'll': {'avec': l1, 'sans': l0}, 'par_circuit': par,
            'raison': (f"6 dernières semaines ({len(ju)} matchs) : arbres avec {lib} {round(l1, 4)} contre sans "
                       f"{round(l0, 4)} ; " + ', '.join(f"{c} {v['gain']:+.4f}" for c, v in par.items()))}
-    if ok:
+    if ok or cle in DECISION_CANDIDATS:            # 30/10/2026 : candidat mis en production par décision → modèle toujours appris
+        if cle in DECISION_CANDIDATS:
+            out['decision'] = DECISION_CANDIDATS[cle]
         Pf = poids_finaux or P
         X, y, o = A.symetriser([(v1, off(Pf, h), ec1) for _, _, v1, h, _ in lignes])
         out['modele'] = A.apprendre(X, y, o)

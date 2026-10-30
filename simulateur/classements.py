@@ -37,14 +37,31 @@ def _fichier(dossier, nom):
 class Classements:
     def __init__(self):
         self.h = {}            # clé -> [(date ordinale, rang)] triés
+        self.pts = {}          # 30/10/2026 : clé -> [(date ordinale, points)] triés
 
-    def ajouter(self, cle, jour, rang):
+    def ajouter(self, cle, jour, rang, points=None):
         self.h.setdefault(cle, []).append((jour.toordinal(), int(rang)))
+        try:
+            if points is not None and str(points).strip() != '':
+                self.pts.setdefault(cle, []).append((jour.toordinal(), int(float(points))))
+        except (TypeError, ValueError):
+            pass
 
     def finir(self):
         for L in self.h.values():
             L.sort()
+        for L in self.pts.values():
+            L.sort()
         return self
+
+    def points_au(self, cle, quand):
+        """30/10/2026 — derniers points ATP/WTA connus STRICTEMENT avant le jour du match (None si inconnus)."""
+        L = self.pts.get(cle)
+        if not L:
+            return None
+        d = (quand.date() if isinstance(quand, dt.datetime) else quand).toordinal()
+        i = bisect.bisect_left(L, (d, -1)) - 1
+        return L[i][1] if i >= 0 else None
 
     def rang_au(self, cle, quand):
         """Dernier rang connu STRICTEMENT avant le jour du match (None si jamais classé)."""
@@ -79,13 +96,14 @@ def charger(dossier_sackmann=None, racine=None):
                             continue
                         if d < DEPUIS or not noms.get(r.get('player')):
                             continue
-                        C.ajouter(noms[r['player']], dt.date(d // 10000, d // 100 % 100, d % 100), r['rank'])
+                        C.ajouter(noms[r['player']], dt.date(d // 10000, d // 100 % 100, d % 100), r['rank'], r.get('points'))
     if racine and not dossier_sackmann:                        # pronostics du jour : l'archive résumée (exporter)
         try:
             ex = json.load(open(os.path.join(racine, 'simulateur', 'classements_sackmann.json'), encoding='utf-8'))
             j0 = dt.date.fromisoformat(ex['date'])
+            pts = ex.get('points') or {}
             for cle, rang in (ex.get('rangs') or {}).items():
-                C.ajouter(cle, j0, rang)
+                C.ajouter(cle, j0, rang, pts.get(cle))
         except (OSError, ValueError, KeyError):
             pass
     if racine:
@@ -97,8 +115,15 @@ def charger(dossier_sackmann=None, racine=None):
                 continue
             for circ in ('ATP', 'WTA'):
                 for cle, v in (doc.get(circ) or {}).items():
-                    C.ajouter(cle, jour, v[0])
+                    C.ajouter(cle, jour, v[0], v[1] if len(v) > 1 else None)
     return C.finir()
+
+
+def ecart_points(p1, p2):
+    """30/10/2026 — (ln(points joueur 1 + 1) − ln(points joueur 2 + 1),) ; None si l'un des deux est inconnu."""
+    if p1 is None or p2 is None:
+        return None
+    return (round(math.log(p1 + 1) - math.log(p2 + 1), 5),)
 
 
 def niveau_inconnu(rang, n_matchs):
@@ -117,6 +142,7 @@ def exporter(C, chemin):
         return 0
     der = max(L[-1][0] for L in C.h.values())
     rangs = {cle: L[-1][1] for cle, L in C.h.items() if L[-1][0] >= der - 21}
+    points = {cle: L[-1][1] for cle, L in C.pts.items() if cle in rangs and L[-1][0] >= der - 21}   # 30/10/2026
     with open(chemin, 'w', encoding='utf-8') as f:
-        json.dump({'date': dt.date.fromordinal(der).isoformat(), 'rangs': rangs}, f, separators=(',', ':'))
+        json.dump({'date': dt.date.fromordinal(der).isoformat(), 'rangs': rangs, 'points': points}, f, separators=(',', ':'))
     return len(rangs)

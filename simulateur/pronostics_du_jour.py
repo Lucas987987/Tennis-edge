@@ -190,6 +190,7 @@ def charger_combinaison(racine):
 
 COMBINAISON = None
 ACTIVITE = None       # 29/10/2026 : activité récente des joueurs (activite.py), chargée par construire()
+ECHANGES = None       # 30/10/2026 : longueur des échanges (Match Charting Project), affichage seul
 FORME_SERVICE = None  # 29/10/2026 : service / retour du moment (forme_service.py), information + modèle fantôme
 PROGRAMME = {}        # 29/10/2026 : {(jour, clé, clé) triée: tour} — programme du jour relevé par feuilles_match.py
 
@@ -242,7 +243,7 @@ def charger_ajustements(racine):
     # 29/10/2026 : candidats de la famille des arbres (activité récente, tour du tableau) ; si plusieurs sont adoptés,
     # celui qui a la log loss la plus basse au dernier jugement
     adoptes = []
-    for cle_c in ('modele_arbres_activite', 'modele_arbres_tour'):
+    for cle_c in ('modele_arbres_activite', 'modele_arbres_tour', 'modele_arbres_points'):
         v = choix.get(cle_c) or {}
         if v.get('adopte') and v.get('modele') and v.get('poids'):
             adoptes.append(((v.get('ll') or {}).get('avec') or 9.0, cle_c, v))
@@ -300,7 +301,7 @@ def _ajuster_combinaison(p_c, c, p_elo, p_sim, n_home, n_away, situations=None, 
     ecarts = []
     if AJUSTEMENTS.get('delta_nouveaux') and n_home is not None and n_away is not None:
         ecarts.append((AJUSTEMENTS['delta_nouveaux'], max(0.0, 1 - n_home / 30) - max(0.0, 1 - n_away / 30)))
-    for cle_s, (vh, va) in ((k, v) for k, v in (situations or {}).items() if k not in ('activite', 'rangs', 'tour')):
+    for cle_s, (vh, va) in ((k, v) for k, v in (situations or {}).items() if k not in ('activite', 'rangs', 'tour', 'points')):
         if AJUSTEMENTS.get('delta_' + cle_s):
             ecarts.append((AJUSTEMENTS['delta_' + cle_s], vh - va))
     dz = sum(d * f for d, f in ecarts)
@@ -364,6 +365,17 @@ def _avec_forme(ct, forme):
     if not forme:
         return ct
     return dict(ct or {}, forme=forme)
+
+
+def _echanges(h, a, debut):
+    """30/10/2026 : [profil home, profil away] de la longueur des échanges, ou None si aucun des deux n'est charté."""
+    if ECHANGES is None:
+        return None
+    try:
+        e = [ECHANGES.profil(k, debut) for k in (h, a)]
+    except Exception:  # noqa: BLE001 — affichage seul
+        return None
+    return e if any(e) else None
 
 
 def _avec_service(ct, fsv_ctl):
@@ -633,7 +645,13 @@ def construire(racine, maintenant=None):
         elo_fem = E.Elo.importer(fem_etat['joueurs'], fem_etat.get('options'))
     except (OSError, ValueError, KeyError):
         fem_etat, elo_fem = None, None
-    global ACTIVITE, PROGRAMME, FORME_SERVICE
+    global ACTIVITE, PROGRAMME, FORME_SERVICE, ECHANGES
+    try:                            # 30/10/2026 : longueur des échanges (affichage seul ; /tmp/mcp cloné par le workflow)
+        import echanges_joueur as EJ
+        ECHANGES = EJ.depuis(os.environ.get('MCP_DIR', '/tmp/mcp'))
+    except Exception as e_:  # noqa: BLE001
+        print(f"::warning::longueur des échanges non chargée : {type(e_).__name__}: {e_}")
+        ECHANGES = None
     PROGRAMME = charger_programme(racine)
     try:
         fiches_ = FE.lire(racine)
@@ -744,6 +762,10 @@ def construire(racine, maintenant=None):
                     # 28/10/2026 : classement relatif quand un joueur est peu connu (entrainement_progressif.rang_relatif)
                     import entrainement_progressif as EP_
                     rh_, ra_ = CLASSEMENTS.rang_au(h, x['debut']), CLASSEMENTS.rang_au(a, x['debut'])
+                    # 30/10/2026 : points ATP/WTA des deux joueurs (candidat des arbres en production par décision)
+                    pts_ = CLS.ecart_points(CLASSEMENTS.points_au(h, x['debut']), CLASSEMENTS.points_au(a, x['debut']))
+                    if pts_ is not None:
+                        sit['points'] = pts_
                     if rh_ and ra_:
                         w_rel = max(0.0, 1 - elo.matchs(h) / EP_.SEUIL_RANG_RELATIF, 1 - elo.matchs(a) / EP_.SEUIL_RANG_RELATIF)
                         sit['rangs'] = (rh_, ra_)
@@ -791,6 +813,7 @@ def construire(racine, maintenant=None):
                     'combinaison': combinaison, 'simulation': simulation, 'stats': stats, 'direct': direct,
                     'activite': ([ACTIVITE.variables(k_, x['debut'], relatif=True) for k_ in (h, a)] if ACTIVITE is not None else None),
                     'forme_service': fsv if fsv and (fsv[0] or fsv[1]) else None,
+                    'echanges': _echanges(h, a, x['debut']),
                     'controle': _avec_service(_avec_forme(controle_fantome(elo, elo_ref, ref_etat, etat, h, a, c, s, elo_fem, fem_etat),
                                                           forme_ctl), fsv_ctl)})
     doc = {'genere_le': maintenant.isoformat(timespec='seconds') + 'Z', 'elo_au': etat.get('dernier_match'),
