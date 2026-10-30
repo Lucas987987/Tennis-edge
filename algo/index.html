@@ -536,6 +536,7 @@ const T = {
   sv_reel:'réel', sv_attendu:'attendu',
   ry_titre:'Durée et rythme', ry_duree:(m,a,b)=>`Durée prévue : ${hm(m)} (${hm(a)} – ${hm(b)} dans 8 cas sur 10)`, ry_points:(n,s)=>`≈ ${fmt(n)} points · ${dec(s,1)} s par point`,
   ry_pts:'Points par match', ry_jeux:'Jeux par match', ry_min:'Durée moyenne de ses matchs', ry_rythme:'Rythme (temps par point)',
+  ry_ech:'Frappes par échange (moyenne)', ry_long:'Échanges de 7 frappes ou plus', ry_ech_m:n=>`${n} match${n>1?'s':''} relevé${n>1?'s':''}`, ry_ech_note:'Longueur des échanges : Match Charting Project, 12 derniers mois (joueurs relevés seulement).',
   ry_tb:'Matchs avec tie-break', ry_3s:'Matchs en 3 sets', ry_reg:'Jours avec / jours sans', ry_matchs:n=>`Sur ${fmt(n)} matchs depuis 2021`,
   ry_lent:v=>`${dec(Math.abs(v),1)} % plus lent`, ry_rapide:v=>`${dec(Math.abs(v),1)} % plus rapide`, ry_moyen:'dans la moyenne',
   ry_reg_tres_regulier:'Très régulier', ry_reg_habituel:'Habituel', ry_reg_jours_sans_frequents:'Jours sans fréquents',
@@ -714,6 +715,7 @@ const T = {
   sv_reel:'actual', sv_attendu:'expected',
   ry_titre:'Length and pace', ry_duree:(m,a,b)=>`Expected length: ${hm(m)} (${hm(a)} – ${hm(b)} 8 times out of 10)`, ry_points:(n,s)=>`≈ ${fmt(n)} points · ${dec(s,1)} s per point`,
   ry_pts:'Points per match', ry_jeux:'Games per match', ry_min:'Average match length', ry_rythme:'Pace (time per point)',
+  ry_ech:'Shots per rally (average)', ry_long:'Rallies of 7+ shots', ry_ech_m:n=>`${n} charted match${n>1?'es':''}`, ry_ech_note:'Rally length: Match Charting Project, last 12 months (charted players only).',
   ry_tb:'Matches with a tiebreak', ry_3s:'Three-set matches', ry_reg:'Good days / bad days', ry_matchs:n=>`From ${fmt(n)} matches since 2021`,
   ry_lent:v=>`${dec(Math.abs(v),1)}% slower`, ry_rapide:v=>`${dec(Math.abs(v),1)}% faster`, ry_moyen:'average',
   ry_reg_tres_regulier:'Very consistent', ry_reg_habituel:'Typical', ry_reg_jours_sans_frequents:'Frequent off days',
@@ -961,13 +963,16 @@ function rendRythme(r,m){
     ['ry_min',j=>val(j,'minutes_par_match',hm)],['ry_rythme',j=>val(j,'rythme_pct',rythme)],
     ['ry_tb',j=>val(j,'tiebreak_pct',pc)],['ry_3s',j=>val(j,'trois_sets_pct',pc)],
     ['ry_reg',j=>j && j.regularite ? t('ry_reg_'+j.regularite) : '—']]
-    .map(([k,f])=>`<tr><th>${esc(t(k))}</th><td class="c1">${esc(f(J[0]))}</td><td class="c2">${esc(f(J[1]))}</td></tr>`).join('');
+    .map(([k,f])=>`<tr><th>${esc(t(k))}</th><td class="c1">${esc(f(J[0]))}</td><td class="c2">${esc(f(J[1]))}</td></tr>`).join('')
+    // 30/10/2026 : longueur des échanges (Match Charting Project) — affichage seul
+    + (Array.isArray(m.echanges) ? [['ry_ech',e=>e ? `${dec(e.frappes,1)} (${t('ry_ech_m',e.jours_charts)})` : '—'],['ry_long',e=>e ? pc(e.long_pct) : '—']]
+        .map(([k,f])=>`<tr><th>${esc(t(k))}</th><td class="c1">${esc(f(m.echanges[0]))}</td><td class="c2">${esc(f(m.echanges[1]))}</td></tr>`).join('') : '');
   const n = J.filter(Boolean).map(j=>j.matchs);
   return `<div class="panel rythme"><h3>${esc(t('ry_titre'))}</h3>
     ${pv ? `<p class="ry-duree">${esc(t('ry_duree',pv.minutes,pv.minutes_p10,pv.minutes_p90))}</p><p class="ry-pts">${esc(t('ry_points',pv.points,pv.secondes_par_point))}</p>` : ''}
     ${phraseRythme(r,m)}
     <table class="sheet"><thead><tr><th></th><th class="c1">${esc(court(m.home))}</th><th class="c2">${esc(court(m.away))}</th></tr></thead><tbody>${rows}</tbody></table>
-    <p class="styles-note">${esc(t('ry_note'))}</p></div>`;
+    <p class="styles-note">${esc(t('ry_note'))}${Array.isArray(m.echanges) ? ' '+esc(t('ry_ech_note')) : ''}</p></div>`;
 }
 function court(n){ const p = String(n).trim().split(/\s+/); return p.length>1 ? p.slice(1).join(' ') : n; }
 const CIRC = {ATP:'ATP', WTA:'WTA', CH:'Challenger'};

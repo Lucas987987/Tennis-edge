@@ -157,6 +157,8 @@ def ligne_match(m, complet):
         out['modeles'] = {'p_elo': round(float(cb_['p_elo']), 4), 'p_simulation': round(float(cb_['p_simulation']), 4)}
     if m.get('activite'):
         out['activite'] = m['activite']             # 29/10/2026 : activité récente des deux joueurs (activite.py)
+    if m.get('echanges'):
+        out['echanges'] = m['echanges']             # 30/10/2026 : longueur des échanges (echanges_joueur.py)
     if m.get('forme_service'):
         out['forme_service'] = m['forme_service']   # 29/10/2026 : service / retour du moment (forme_service.py)
     if not complet:
