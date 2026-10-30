@@ -34,3 +34,34 @@ def test_workflow_sparse_checkout_valide():
     for motif in ('/scripts/suivi_collecteurs.py', '/parts/', '/monitoring/'):
         assert motif in t
     assert 'contents: read' in t and 'actions: read' in t and 'contents: write' not in t
+
+
+def test_run_reessaie_sur_erreur_serveur(monkeypatch):
+    import subprocess, types
+    SC = S
+    appels = []
+
+    def faux(cmd, capture_output, text, cwd):
+        appels.append(1)
+        if len(appels) < 3:
+            return types.SimpleNamespace(returncode=1, stdout='', stderr='gh: Server Error (HTTP 502)')
+        return types.SimpleNamespace(returncode=0, stdout='ok', stderr='')
+    monkeypatch.setattr(subprocess, 'run', faux)
+    monkeypatch.setattr('time.sleep', lambda s: None)
+    assert SC.run(['gh']) == 'ok' and len(appels) == 3
+
+
+def test_run_ne_reessaie_pas_une_vraie_erreur(monkeypatch):
+    import subprocess, types
+    import pytest
+    SC = S
+    appels = []
+
+    def faux(cmd, capture_output, text, cwd):
+        appels.append(1)
+        return types.SimpleNamespace(returncode=1, stdout='', stderr='HTTP 404: Not Found')
+    monkeypatch.setattr(subprocess, 'run', faux)
+    monkeypatch.setattr('time.sleep', lambda s: None)
+    with pytest.raises(RuntimeError):
+        SC.run(['gh'])
+    assert len(appels) == 1
