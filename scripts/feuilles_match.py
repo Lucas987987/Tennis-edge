@@ -244,6 +244,35 @@ def ecrire_jour(jour, recs, dossier=DOSSIER):
     return True
 
 
+DETAIL_PROGRAMME_MAX = int(os.environ.get('FEUILLES_DETAIL_PROGRAMME', '200'))   # requêtes de détail par passage
+
+
+def lire_programme(jour, dossier=DOSSIER):
+    try:
+        with open(os.path.join(dossier, 'programme', f"{jour}.json"), encoding='utf-8') as f:
+            return json.load(f).get('matchs') or {}
+    except (OSError, ValueError):
+        return {}
+
+
+def statut_detail(doc):
+    """30/10/2026 — du DÉTAIL d'un match (/api/tennis/event/{id}) : statut d'entrée de chaque joueur (« WC » invité,
+    « Q » qualifié, « LL », « PR »… ou le numéro de tête de série) et classement actuel. La liste des matchs du jour ne
+    les donne pas (sonde du 30/10). {} si rien."""
+    e = (doc or {}).get('event') or doc or {}
+    out = {}
+    tetes = [e.get('homeTeamSeed'), e.get('awayTeamSeed')]
+    if any(t not in (None, '') for t in tetes):
+        out['tetes'] = [str(t) if t not in (None, '') else None for t in tetes]
+    rangs = []
+    for k in ('homeTeam', 'awayTeam'):
+        r = ((e.get(k) or {}).get('playerTeamInfo') or {}).get('currentRanking')
+        rangs.append(int(r) if isinstance(r, (int, float)) or (isinstance(r, str) and r.isdigit()) else None)
+    if any(rangs):
+        out['rangs_actuels'] = rangs
+    return out
+
+
 def ecrire_programme(jour, prog, dossier=DOSSIER):
     """feuilles/programme/AAAA-MM-JJ.json : les matchs à venir du jour et leur tour (lus par pronostics_du_jour.py).
     Les matchs déjà relevés restent (un match commencé quitte la liste de l'API mais garde son tour)."""
@@ -281,6 +310,7 @@ def collecter_jour(c, jour, voulues=CATEGORIES, aujourd_hui=None, dossier=DOSSIE
     if code_idx not in (200, 204):
         journal(f"  {jour} : index du jour indisponible (HTTP {code_idx})")
     prog = {}
+    prog_ancien = lire_programme(jour, dossier)
     try:
         for cat in cats:
             code, doc = c.get(f"/api/tennis/category/{cat['id']}/events/{d.day}/{d.month}/{d.year}")
@@ -293,6 +323,9 @@ def collecter_jour(c, jour, voulues=CATEGORIES, aujourd_hui=None, dossier=DOSSIE
                     prog[str(e['id'])] = {'jour': jour, 'home': f_['home']['nom'], 'away': f_['away']['nom'],
                                           'tour': f_['tour'], 'points_tournoi': f_['points_tournoi'],
                                           'categorie': cat['nom'], 'tournoi': f_['tournoi']}
+                    for k_ in ('detail_lu', 'tetes', 'rangs_actuels'):          # 30/10/2026 : déjà relevés
+                        if k_ in (prog_ancien.get(str(e['id'])) or {}):
+                            prog[str(e['id'])][k_] = prog_ancien[str(e['id'])][k_]
                 if not est_simple(e) or (e.get('status') or {}).get('type') != 'finished':
                     continue
                 nouv = fiche(e, cat['nom'])
@@ -340,6 +373,16 @@ def collecter_jour(c, jour, voulues=CATEGORIES, aujourd_hui=None, dossier=DOSSIE
                 r['duree_essai'] = (r.get('duree_essai') or 0) + 1      # au plus 3 tentatives par match
                 if code == 200:
                     r['duree_min'] = duree_minutes(doc)
+        # 30/10/2026 — STATUT D'ENTRÉE ET CLASSEMENT ACTUEL des matchs à venir (ATP, WTA, Challenger, compétitions par
+        # équipes ; pas d'ITF) : une requête de détail par match, une seule fois (gardée dans le programme).
+        n_det = 0
+        for id_, r in prog.items():
+            if r.get('detail_lu') or 'itf' in norm(r.get('categorie')) or n_det >= DETAIL_PROGRAMME_MAX:
+                continue
+            code, doc = c.get(f"/api/tennis/event/{id_}")
+            n_det += 1
+            if code == 200:
+                r.update(statut_detail(doc), detail_lu=True)
     finally:
         ecrire_jour(jour, recs, dossier)
         if prog:
