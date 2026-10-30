@@ -29,6 +29,8 @@ def circuit_de(categorie):
     c = re.sub(r'\s+', ' ', str(categorie or '').strip().lower())
     if 'wta' in c and '125' in c:
         return 'WTA'
+    if 'billie jean' in c or 'bjk' in c:          # 30/10/2026 : compétition par équipes féminine → WTA (Coupe Davis → ATP)
+        return 'WTA'
     return CIRCUITS.get(c, 'ATP')
 
 

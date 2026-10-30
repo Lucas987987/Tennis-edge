@@ -71,7 +71,7 @@ class Activite:
             cat = str(r.get('categorie') or '').lower()
             if 'itf' not in cat:                       # sexe des joueurs ATP / WTA / Challenger
                 for c in ('home', 'away'):
-                    sexes[(r.get(c) or {}).get('nom')] = 'F' if ('wta' in cat or 'women' in cat) else 'H'
+                    sexes[(r.get(c) or {}).get('nom')] = 'F' if ('wta' in cat or 'women' in cat or 'billie' in cat or 'bjk' in cat) else 'H'
             st = (r.get('stats') or {}).get('ALL') or {}
             jj = []
             for i, c in ((0, 'home'), (2, 'away')):

@@ -47,7 +47,10 @@ RESERVE = int(os.environ.get('FEUILLES_RESERVE', '1500'))
 PAUSE = float(os.environ.get('FEUILLES_PAUSE', '0.2'))
 # 22/10/2026 : ITF retiré — aucun pari n'y est joué, et TennisApi n'y a presque jamais de statistiques
 # (≈ 600 feuilles sur 9 300). Encore demandable à la main : catégories = itf men,itf women.
-CATEGORIES = ('atp', 'wta', 'challenger', 'wta 125')
+# 30/10/2026 : + Coupe Davis et Billie Jean King Cup (simples seulement, est_simple) — ces matchs manquaient à l'Elo et à
+# l'activité des joueurs depuis la fin de l'archive Sackmann (juin 2026) : ex. Rune, 2 matchs de Coupe Davis en septembre.
+CATEGORIES = ('atp', 'wta', 'challenger', 'wta 125', 'davis cup', 'billie jean king cup')
+PAR_EQUIPES = ('davis cup', 'billie jean king cup')     # reconnues dans le nom de la catégorie (variantes de libellé)
 ESSAIS_MAX = 3
 DUREE_ESSAIS_MAX = 3            # 28/10/2026 : détail du match pour sa durée, 3 tentatives au plus
 ATTENTE_FEUILLE_H = 3
@@ -114,7 +117,8 @@ def categories_du_jour(doc, voulues=CATEGORIES):
     for c in (doc or {}).get('categories') or []:
         cat = c.get('category') or {}
         nom = norm(cat.get('name'))
-        if any(nom == v or (v == 'wta 125' and '125' in nom and 'wta' in nom) for v in voulues):
+        if any(nom == v or (v == 'wta 125' and '125' in nom and 'wta' in nom) or (v in PAR_EQUIPES and v in nom)
+               or (v == 'billie jean king cup' and 'bjk' in nom) for v in voulues):
             out.append({'id': cat.get('id'), 'nom': cat.get('name'), 'matchs': c.get('totalEvents')})
     return out
 
