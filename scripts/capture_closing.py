@@ -220,8 +220,11 @@ def load_active_tournaments():
     return {}
 
 
-def _tournaments_stale(active, max_age_h=18):
-    """Vrai si la liste est absente, sans horodatage, ou plus vieille que max_age_h."""
+def _tournaments_stale(active, max_age_h=6, now=None):
+    """Vrai si la liste est absente, sans horodatage, plus vieille que max_age_h, ou découverte un AUTRE JOUR (UTC).
+    30/10/2026 : la découverte ne retient que les tournois qui ont des matchs le jour même ; découverte à 21 h 39 UTC
+    le 30/10, la liste a ignoré le Masters de Paris (qualifications le 31) jusqu'au lendemain après-midi (seuil 18 h).
+    Désormais : redécouverte au premier passage après minuit UTC, puis toutes les 6 h (2 requêtes chaque fois)."""
     if not active:
         return True
     ts = active.get('_discovered_at')
@@ -231,7 +234,8 @@ def _tournaments_stale(active, max_age_h=18):
         disc = datetime.datetime.fromisoformat(ts)
     except Exception:
         return True
-    return (datetime.datetime.utcnow() - disc).total_seconds() > max_age_h * 3600
+    now = now or datetime.datetime.utcnow()
+    return disc.date() != now.date() or (now - disc).total_seconds() > max_age_h * 3600
 
 
 # AJOUTÉ LE 29/08/2026 (optimisation, piste A) : fixtures_today() était
