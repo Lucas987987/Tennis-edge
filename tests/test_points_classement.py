@@ -43,3 +43,13 @@ def test_candidat_points_et_decision():
     assert len(v) == len(EP.VARIABLES) + 1 and v[-1] == 1.2
     v0 = EP.variables_candidat('modele_arbres_points', 0.6, 0.55, 40, 40, (0, 0), (0, 0), 'ATP', 'Hard', 3, None, None)
     assert v0[-1] == 0.0
+
+
+def test_points_depuis_rang_et_echelle():
+    C = CLS.Classements()
+    C.courbe['ATP'] = {500: 87, 800: 35, 1200: 10}
+    C.photo['ATP'] = (0, {500: 92})
+    assert C.points_depuis_rang('CH', 800) == round(35 * 92 / 87)
+    assert C.points_depuis_rang('ATP', 1210) == round(10 * 92 / 87)
+    assert C.points_depuis_rang('WTA', 800) is None and C.points_depuis_rang('ATP', None) is None
+    assert C.points_depuis_rang('ATP', 3000) is None                 # trop loin de la courbe connue

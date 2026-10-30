@@ -206,15 +206,59 @@ def charger_programme(racine, jours=4):
         except (OSError, ValueError):
             continue
         for r in (doc.get('matchs') or {}).values():
-            if r.get('tour') and r.get('home') and r.get('away'):
-                out[(str(r.get('jour')), *sorted((E.cle(r['home']), E.cle(r['away']))))] = r['tour']
+            if r.get('home') and r.get('away'):
+                out[(str(r.get('jour')), *sorted((E.cle(r['home']), E.cle(r['away']))))] = r     # 30/10 : la fiche entière
     return out
 
 
 def tour_du_match(h, a, debut):
     """Nom du tour (« Round of 32 »…) d'un match à venir, ou None ; h, a : clés des joueurs."""
     j = (debut.date() if isinstance(debut, dt.datetime) else debut).isoformat()
-    return PROGRAMME.get((j, *sorted((h, a))))
+    r = (PROGRAMME or {}).get((j, *sorted((h, a))))
+    return r.get('tour') if isinstance(r, dict) else r
+
+
+def entree_du_match(h, a, debut):
+    """30/10/2026 — [statut de h, statut de a] (« WC », « Q », « LL », numéro de tête de série…, ou None), lu dans le
+    programme (détail TennisApi) ; None si le match n'y est pas ou n'a pas encore été lu."""
+    j = (debut.date() if isinstance(debut, dt.datetime) else debut).isoformat()
+    r = (PROGRAMME or {}).get((j, *sorted((h, a))))
+    if not isinstance(r, dict) or not r.get('tetes'):
+        return None
+    t = r['tetes']
+    return t if E.cle(r['home']) == h else [t[1], t[0]]
+
+
+def rangs_actuels_du_match(h, a, debut):
+    """30/10/2026 — [rang actuel de h, de a] lus dans le détail TennisApi (programme), ou None."""
+    j = (debut.date() if isinstance(debut, dt.datetime) else debut).isoformat()
+    r = (PROGRAMME or {}).get((j, *sorted((h, a))))
+    if not isinstance(r, dict) or not r.get('rangs_actuels'):
+        return None
+    t = r['rangs_actuels']
+    return t if E.cle(r['home']) == h else [t[1], t[0]]
+
+
+# 30/10/2026 — FANTÔME « STATUT D'ENTRÉE ». Écarts mesurés à l'Elo, confirmés sur 2017–2022 (période non regardée) :
+# invité (WC) en Challenger −5,6 points (7 922 matchs, prévu 36,1 % → réel 30,5 %) ; qualifié en ATP +2,1 points
+# (2 780 matchs, 37,1 % → 39,2 %). Décalages FIGÉS en logit au point de mesure : WC Challenger ln(0,305/0,695) −
+# ln(0,361/0,639) ; Q ATP ln(0,392/0,608) − ln(0,371/0,629). Jamais affiché comme pronostic ; jugé après les matchs
+# (apres_match : fantome_entree) : rien avant 30 matchs concernés ; adopté seulement si −0,001 de log loss deux
+# semaines de suite sans circuit dégradé.
+DECALAGE_ENTREE = {('CH', 'WC'): math.log(0.305 / 0.695) - math.log(0.361 / 0.639),
+                   ('ATP', 'Q'): math.log(0.392 / 0.608) - math.log(0.371 / 0.629)}
+
+
+def controle_entree(p_home, c, statuts):
+    """{p_home, statuts, decalage} du fantôme, ou None si aucun des deux statuts ne compte sur ce circuit."""
+    if p_home is None or not statuts:
+        return None
+    norm_ = lambda s: str(s or '').strip().upper()
+    d = (DECALAGE_ENTREE.get((c, norm_(statuts[0])), 0.0) - DECALAGE_ENTREE.get((c, norm_(statuts[1])), 0.0))
+    if not d:
+        return None
+    q = min(max(float(p_home), 1e-6), 1 - 1e-6)
+    return {'p_home': round(sig(math.log(q / (1 - q)) + d), 4), 'statuts': [statuts[0], statuts[1]], 'decalage': round(d, 4)}
 CLASSEMENTS = None   # 23/10/2026 : classements (archive résumée + photos TennisApi), classements.py
 AJUSTEMENTS = {}      # 22/10/2026 : poids propres aux Challenger, correction des nouveaux venus (si adoptés)
 
@@ -376,6 +420,11 @@ def _echanges(h, a, debut):
     except Exception:  # noqa: BLE001 — affichage seul
         return None
     return e if any(e) else None
+
+
+def _avec_entree(ct, ent):
+    """30/10/2026 : le fantôme « statut d'entrée » dans le bloc de contrôle."""
+    return dict(ct or {}, entree=ent) if ent else ct
 
 
 def _avec_service(ct, fsv_ctl):
@@ -763,7 +812,12 @@ def construire(racine, maintenant=None):
                     import entrainement_progressif as EP_
                     rh_, ra_ = CLASSEMENTS.rang_au(h, x['debut']), CLASSEMENTS.rang_au(a, x['debut'])
                     # 30/10/2026 : points ATP/WTA des deux joueurs (candidat des arbres en production par décision)
-                    pts_ = CLS.ecart_points(CLASSEMENTS.points_au(h, x['debut']), CLASSEMENTS.points_au(a, x['debut']))
+                    ph_, pa_ = CLASSEMENTS.points_au(h, x['debut']), CLASSEMENTS.points_au(a, x['debut'])
+                    if ph_ is None or pa_ is None:      # 30/10/2026 : au-delà du top 500, points estimés depuis le rang actuel
+                        ra2 = rangs_actuels_du_match(h, a, x['debut']) or [None, None]
+                        ph_ = ph_ if ph_ is not None else CLASSEMENTS.points_depuis_rang(c, ra2[0])
+                        pa_ = pa_ if pa_ is not None else CLASSEMENTS.points_depuis_rang(c, ra2[1])
+                    pts_ = CLS.ecart_points(ph_, pa_)
                     if pts_ is not None:
                         sit['points'] = pts_
                     if rh_ and ra_:
@@ -814,8 +868,11 @@ def construire(racine, maintenant=None):
                     'activite': ([ACTIVITE.variables(k_, x['debut'], relatif=True) for k_ in (h, a)] if ACTIVITE is not None else None),
                     'forme_service': fsv if fsv and (fsv[0] or fsv[1]) else None,
                     'echanges': _echanges(h, a, x['debut']),
-                    'controle': _avec_service(_avec_forme(controle_fantome(elo, elo_ref, ref_etat, etat, h, a, c, s, elo_fem, fem_etat),
-                                                          forme_ctl), fsv_ctl)})
+                    'entree': entree_du_match(h, a, x['debut']),
+                    'controle': _avec_entree(_avec_service(_avec_forme(controle_fantome(elo, elo_ref, ref_etat, etat, h, a, c, s,
+                                                                                        elo_fem, fem_etat), forme_ctl), fsv_ctl),
+                                             controle_entree((combinaison or simulation or stats or {}).get('p_home'), c,
+                                                             entree_du_match(h, a, x['debut'])))})
     doc = {'genere_le': maintenant.isoformat(timespec='seconds') + 'Z', 'elo_au': etat.get('dernier_match'),
             'horizon_h': HORIZON_H, 'sigma': SIGMA, 'simulations': SIMULATIONS if PR is not None else 0,
             'qualite_horodatages': couverture_horodatages,
