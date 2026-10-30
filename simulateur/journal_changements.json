@@ -1,6 +1,10 @@
 {
  "regle": "Chaque changement du modèle est noté ici avec sa date, ce qu'il change et ce qu'il a gagné au test (log loss, négatif = mieux prévu). Les changements mis en production par décision, sans attendre la 2e semaine, restent sous le garde-fou du jugement hebdomadaire.",
  "changements": [
+  {"date": "2026-10-30", "titre": "Statut d'entrée (invité, qualifié) relevé avant chaque match — modèle fantôme", "statut": "candidat", "decision": false,
+   "mesure": "détail TennisApi des matchs à venir (une requête par match, une fois) ; invité en Challenger −5,6 pts et qualifié en ATP +2,1 pts, confirmés sur 2017–2022 ; probabilité corrigée suivie à côté, jamais affichée ; rien avant 30 matchs concernés"},
+  {"date": "2026-10-30", "titre": "Points estimés au-delà du top 500 (rang actuel → points)", "statut": "production", "decision": true,
+   "mesure": "le rang actuel lu dans le détail TennisApi est converti en points par la courbe du dernier classement complet, remise à l'échelle du jour ; complète la variable « points » des arbres pour les joueurs Challenger"},
   {"date": "2026-10-30", "titre": "Points ATP/WTA de tous les joueurs dans les arbres", "statut": "production", "decision": true,
    "mesure": "138 657 matchs, appris 2017–2022, jugé 2023–2026 : rang + points +0,0023 (Challenger +0,0034, ATP +0,0003, WTA +0,0001) ; rang seul +0,0005 (ATP −0,0010) ; en place dès le premier modèle appris (lundi), retiré si moins bien que les arbres sans les points deux semaines de suite",
    "garde_fou": "jugement hebdomadaire contre les arbres sans les points"},

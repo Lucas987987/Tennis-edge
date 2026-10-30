@@ -514,6 +514,11 @@ const T = {
   jc_f_fantome:'Résultats ITF dans l’Elo (hommes et femmes)', jc_f_fantome_itf_femmes:'Résultats ITF femmes seuls (matchs WTA)',
   jc_f_fantome_sigma:'Forme du jour du Challenger (σ 0,22 contre 0,15 : 2 ou 3 sets, tie-breaks, jeux)',
   jc_f_fantome_forme_service:'Service et retour du moment (30 jours, même surface)',
+  jc_f_fantome_entree:'Statut d’entrée (invité en Challenger, qualifié en ATP)',
+  en_l:(a,b)=>`Statut d’entrée — ${a}${b?' · '+b:''}.`, en_wc:n=>`${n} : invité(e) (wild card)`, en_q:n=>`${n} : qualifié(e)`,
+  en_ll:n=>`${n} : repêché(e) des qualifications`, en_pr:n=>`${n} : classement protégé`, en_ts:(n,k)=>`${n} : tête de série n° ${k}`,
+  en_note_wc:' Sur nos données, un invité en Challenger gagne nettement moins que prévu (−5,6 points, 7 922 matchs) : suivi à part, le pronostic affiché ne change pas.',
+  en_note_q:' Sur nos données, un qualifié en ATP gagne un peu plus que prévu (+2,1 points) : suivi à part, le pronostic affiché ne change pas.',
   jc_fv_fs:(n,a,b,g,ok)=>`${fmt(n)} matchs réels : pronostic affiché ${dec(a,4)}, avec la forme du service ${dec(b,4)} (${g<=0?'la forme fait mieux de':'la forme fait moins bien de'} ${dec(Math.abs(g),4)})${ok?'':' — moins de 30 matchs : rien à conclure'}.`,
   sv_j:(n,s,s0,sens)=>`${n} : ${s} des points gagnés au service sur 30 jours (${s0} avant)${sens?', '+sens:''}`,
   sv_sens:{hausse:'en hausse', baisse:'en baisse', stable:'stable'},
@@ -693,6 +698,11 @@ const T = {
   jc_f_fantome:'ITF results in the Elo (men and women)', jc_f_fantome_itf_femmes:'Women’s ITF results only (WTA matches)',
   jc_f_fantome_sigma:'Challenger day form (σ 0.22 vs 0.15: 2 or 3 sets, tie-breaks, games)',
   jc_f_fantome_forme_service:'Current serve and return form (30 days, same surface)',
+  jc_f_fantome_entree:'Entry status (wild card in Challenger, qualifier in ATP)',
+  en_l:(a,b)=>`Entry status — ${a}${b?' · '+b:''}.`, en_wc:n=>`${n}: wild card`, en_q:n=>`${n}: qualifier`,
+  en_ll:n=>`${n}: lucky loser`, en_pr:n=>`${n}: protected ranking`, en_ts:(n,k)=>`${n}: seed no. ${k}`,
+  en_note_wc:' In our data, a Challenger wild card wins clearly less than predicted (−5.6 points, 7,922 matches): tracked separately, the displayed forecast does not change.',
+  en_note_q:' In our data, an ATP qualifier wins a little more than predicted (+2.1 points): tracked separately, the displayed forecast does not change.',
   jc_fv_fs:(n,a,b,g,ok)=>`${fmt(n)} real matches: displayed forecast ${dec(a,4)}, with serve form ${dec(b,4)} (${g<=0?'form does better by':'form does worse by'} ${dec(Math.abs(g),4)})${ok?'':' — under 30 matches: no conclusion'}.`,
   sv_j:(n,s,s0,sens)=>`${n}: ${s} of service points won over 30 days (${s0} before)${sens?', '+sens:''}`,
   sv_sens:{hausse:'up', baisse:'down', stable:'stable'},
@@ -922,6 +932,17 @@ function activiteTexte(m){
 }
 // 29/10/2026 — service du moment (forme_service.py) : information ; la probabilité « avec la forme » est un fantôme suivi
 function pc1(p){ const v = (Math.round(p*1000)/10).toFixed(1); return L==='fr' ? v.replace('.',',')+' %' : v+'%'; }
+// 30/10/2026 — statut d'entrée (détail TennisApi) : information ; l'effet mesuré est suivi en fantôme
+function entreeTexte(m){
+  const S = m.entree; if (!Array.isArray(S) || S.length !== 2) return null;
+  const part = i => { const s = String(S[i]||'').trim().toUpperCase(), n = court(i===0?m.home:m.away);
+    if (!s) return null; if (s==='WC') return t('en_wc',n); if (s==='Q') return t('en_q',n); if (s==='LL') return t('en_ll',n);
+    if (s==='PR') return t('en_pr',n); if (/^\d+$/.test(s)) return t('en_ts',n,s); return null; };
+  const p = [part(0), part(1)].filter(Boolean); if (!p.length) return null;
+  const up = S.map(x=>String(x||'').toUpperCase());
+  const note = (m.circuit==='CH' && up.includes('WC')) ? t('en_note_wc') : (m.circuit==='ATP' && up.includes('Q')) ? t('en_note_q') : '';
+  return { sens: note ? 'moins' : 'info', txt: t('en_l', p[0], p[1]) + note };
+}
 function serviceTexte(m){
   const F = m.forme_service; if (!Array.isArray(F) || F.length !== 2) return null;
   const part = i => { const v = F[i]; if (!v || !v.recent || v.recent.service == null || !v.reference || v.reference.service == null || !v.sens_service) return null;
@@ -941,6 +962,7 @@ function rendEssentiel(m){
   (m.abandon_recent||[]).forEach((j,i)=>{ if (j!=null) L_.push({ sens:'moins', txt: t('es_abandon', i===0?m.home:m.away, j) }); });
   const ac = activiteTexte(m); if (ac) L_.push(ac);
   const sv = serviceTexte(m); if (sv) L_.push(sv);
+  const en_ = entreeTexte(m); if (en_) L_.push(en_);
   const N = [court(m.home), court(m.away)];
   const du = m.duel ? duelTexte(m.duel, N) : null; if (du) L_.push(du);
   const ry = m.rythme ? rythmeTexte(m.rythme, m) : null, pv = m.rythme && m.rythme.prevision;
