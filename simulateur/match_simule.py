@@ -363,6 +363,27 @@ def feuille_derivee(st_j, st_adv):
             'points_gagnes': st_j[PTS], 'jeux': st_j[JEUX]}
 
 
+# 30/10/2026 — FOURCHETTE DU % DE 1RES BALLES TROP ÉTROITE : elle ne contenait que 70,3 % des cas sur 2 000 matchs
+# passés (rapport_match_simule.json, 14,8 % en dessous, 14,8 % au-dessus ; visée : 80 %) et 65,5 % sur nos 58 premiers
+# cas en direct. Cause mesurée (rapport_forme_du_jour.json) : la 1re balle d'un joueur varie d'un match à l'autre
+# (σ ≈ 0,29 en logit) alors que la simulation la tient fixe dans un match. Correction de l'affichage seulement : la
+# fourchette 10e–90e centile est élargie autour de son milieu ; facteur = 1,2816 / z(0,703) ≈ 1,23 (loi normale :
+# une fourchette qui couvre 70,3 % au lieu de 80 % est 1,23 fois trop courte). Moyenne, probabilités et autres
+# statistiques inchangées. Vérifiée au prochain test du lundi et en direct (apres_match, fiabilité des statistiques).
+ELARGISSEMENT_FOURCHETTE = {'premiere_pct': 1.23}
+
+
+def elargir(cle, r):
+    k = ELARGISSEMENT_FOURCHETTE.get(cle)
+    if not k or not r or r.get('p10') is None or r.get('p90') is None:
+        return r
+    m, d = (r['p10'] + r['p90']) / 2, k * (r['p90'] - r['p10']) / 2
+    lo, hi = m - d, m + d
+    if cle.endswith('_pct'):
+        lo, hi = max(0.0, lo), min(100.0, hi)
+    return dict(r, p10=round(lo, 1), p90=round(hi, 1))
+
+
 CLES_FEUILLE = ('aces', 'doubles_fautes', 'premiere_pct', 'gagnes_1re_pct', 'gagnes_2e_pct',
                 'balles_break_obtenues', 'breaks', 'jeux_service_gagnes_pct', 'points_gagnes', 'jeux')
 
@@ -536,7 +557,7 @@ def simuler(cA, cB, p_victoire, sets_gagnants=2, n=20000, sigma=0.15, cle='', tb
            'sets': {k: round(v / n, 4) for k, v in sorted(sets_c.items(), key=lambda kv: (-int(kv[0][0]), kv[0]))},
            'scores': [[s, round(c / n, 4)] for s, c in top[:5]],
            'jeux': resume(jeux), 'tiebreak': round(tbs / n, 3),
-           'feuille': [{k: resume(F[i][k]) for k in CLES_FEUILLE} for i in (0, 1)],
+           'feuille': [{k: elargir(k, resume(F[i][k])) for k in CLES_FEUILLE} for i in (0, 1)],
            'match_type': match_type(brut, traces,
                                     0 if (vA / n if p_victoire is None else p_victoire) >= .5 else 1)}
     if garder:

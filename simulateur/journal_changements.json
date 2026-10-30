@@ -1,6 +1,16 @@
 {
  "regle": "Chaque changement du modèle est noté ici avec sa date, ce qu'il change et ce qu'il a gagné au test (log loss, négatif = mieux prévu). Les changements mis en production par décision, sans attendre la 2e semaine, restent sous le garde-fou du jugement hebdomadaire.",
  "changements": [
+  {"date": "2026-10-30", "titre": "Fourchette du % de 1res balles élargie (×1,23 autour de son milieu)", "statut": "production", "decision": true,
+   "mesure": "elle ne contenait que 70,3 % des cas sur 2 000 matchs passés et 65,5 % en direct (visée 80 %) ; la 1re balle varie d'un match à l'autre (σ ≈ 0,29) alors que la simulation la tient fixe ; affichage seul, vérifié au test du lundi et en direct"},
+  {"date": "2026-10-30", "titre": "Forme du jour (σ) et lignes de jeux sur 2 391 matchs de jugement", "statut": "rejete", "decision": false,
+   "mesure": "constat seulement : au σ actuel, matchs prévus trop longs et favoris un peu trop serrés ; σ 0,22 calibre le mieux (lignes 0,6439 contre 0,6473) mais le direct (48 matchs) montre l'inverse — rien changé, suivi"},
+  {"date": "2026-10-29", "titre": "Invités (WC) et qualifiés : écarts à l'Elo", "statut": "candidat", "decision": false,
+   "mesure": "ajoutés au pronostic : +0,0006 (rejeté) ; mais deux effets confirmés sur 2017–2022 : invité en Challenger −5,6 pts, qualifié en ATP +2,1 pts ; en attente d'une source du statut avant le match (sonde TennisApi)"},
+  {"date": "2026-10-29", "titre": "Joueur à domicile (sur le vainqueur)", "statut": "rejete", "decision": false,
+   "mesure": "4 631 matchs : le joueur à domicile gagne 39,5 % pour 41,9 % prévus ; ajouté au pronostic 0,0000 (ATP −0,0010)"},
+  {"date": "2026-10-29", "titre": "Âge et progression de l'Elo (10 versions)", "statut": "rejete", "decision": false,
+   "mesure": "bonus âge, écart d'âge, K +25/50/100 % pour les jeunes, jeunes peu vus, progression sur 6 et 12 mois : meilleur +0,0003 (seuil +0,001) ; l'Elo suit déjà la progression"},
   {"date": "2026-10-29", "titre": "Service et retour du moment (30 jours, même surface) dans la simulation — modèle fantôme", "statut": "candidat", "decision": false,
    "mesure": "affiché en information sur chaque match ; probabilité « avec la forme du service » suivie à côté, jamais affichée comme pronostic ; test historique (2 811 matchs depuis le 27/07, règle fixée avant) : −0,0003, ATP −0,0015 → pas positif, suivi en direct maintenu ; jugée sur les matchs pronostiqués à partir du 30/10 : rien avant 30 matchs, adoptée seulement si −0,001 de log loss deux semaines de suite sans circuit dégradé"},
   {"date": "2026-10-29", "titre": "Désaccords Elo / simulation en WTA : mélange propre (plus de poids à l'Elo)", "statut": "candidat", "decision": false,
