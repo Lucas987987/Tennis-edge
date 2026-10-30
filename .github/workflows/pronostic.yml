@@ -167,6 +167,16 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           ETUDE_MARCHES_SORTIE: ${{ runner.temp }}/etude_marches_derives.json
         run: python simulateur/etude_marches_derives.py . --telegram
+      # 30/10/2026 : quand l'algo s'écarte de Pinnacle, qui a raison ? Par circuit et tranche d'écart — Telegram privé,
+      # rapport hors du dépôt. Descriptif : rien ne change dans l'algo.
+      - name: Désaccords algo / Pinnacle (Telegram, canal privé)
+        if: always()
+        continue-on-error: true
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          SUIVI_DESACCORDS_SORTIE: ${{ runner.temp }}/suivi_desaccords_pinnacle.json
+        run: python simulateur/suivi_desaccords_pinnacle.py . --telegram
       - name: Publier
         run: |
           set -euo pipefail
