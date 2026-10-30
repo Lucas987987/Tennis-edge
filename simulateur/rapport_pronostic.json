@@ -1,5 +1,5 @@
 {
- "genere_le": "2026-10-30T12:04:57+00:00",
+ "genere_le": "2026-10-30T12:53:35+00:00",
  "objectif": "deviner le vainqueur et le score (pas battre Pinnacle)",
  "elo": "FiveThirtyEight (Kovalchik 2016) : K = 250/(n+5)^0,4, ×1,1 en Grand Chelem ; général + surface à parts égales ; aucun réglage",
  "variantes": {
@@ -268,38 +268,38 @@
    },
    "B": {
     "n": 2859,
-    "reussite_pct": 65.9,
+    "reussite_pct": 66.0,
     "ic95_pct": [
-     64.1,
-     67.6
+     64.3,
+     67.7
     ],
-    "log_loss": 0.6247,
-    "brier": 0.2173
+    "log_loss": 0.6245,
+    "brier": 0.2172
    },
    "B_calibration": [
     {
      "tranche": "50–60 %",
-     "n": 1025,
+     "n": 1020,
      "prevu": 54.9,
-     "reel": 57.0
+     "reel": 57.3
     },
     {
      "tranche": "60–70 %",
-     "n": 872,
+     "n": 877,
      "prevu": 64.6,
-     "reel": 64.7
+     "reel": 64.5
     },
     {
      "tranche": "70–80 %",
-     "n": 575,
+     "n": 572,
      "prevu": 74.6,
-     "reel": 73.6
+     "reel": 74.0
     },
     {
      "tranche": "80–90 %",
-     "n": 323,
+     "n": 326,
      "prevu": 84.2,
-     "reel": 78.9
+     "reel": 78.8
     },
     {
      "tranche": "90–100 %",
@@ -312,7 +312,7 @@
     "ajoutes": 10,
     "non_reconnus": 306,
     "doublons_ecartes": 1534,
-    "feuilles_ajoutees": 6773,
+    "feuilles_ajoutees": 6926,
     "feuilles_doublons": 2825,
     "noms_relie": 3383,
     "noms_ambigu": 305,
@@ -335,36 +335,36 @@
     "n": 2859,
     "reussite_pct": 65.1,
     "ic95_pct": [
-     63.3,
-     66.8
+     63.4,
+     66.9
     ],
-    "log_loss": 0.6226,
-    "brier": 0.2169
+    "log_loss": 0.6225,
+    "brier": 0.2168
    },
    "B_calibration": [
     {
      "tranche": "50–60 %",
-     "n": 1170,
+     "n": 1173,
      "prevu": 55.0,
-     "reel": 56.2
+     "reel": 56.3
     },
     {
      "tranche": "60–70 %",
-     "n": 864,
-     "prevu": 64.6,
+     "n": 855,
+     "prevu": 64.5,
      "reel": 64.6
     },
     {
      "tranche": "70–80 %",
-     "n": 534,
+     "n": 539,
      "prevu": 74.3,
-     "reel": 75.3
+     "reel": 75.1
     },
     {
      "tranche": "80–90 %",
-     "n": 241,
+     "n": 242,
      "prevu": 84.4,
-     "reel": 81.7
+     "reel": 81.8
     },
     {
      "tranche": "90–100 %",
@@ -377,7 +377,7 @@
     "ajoutes": 10,
     "non_reconnus": 306,
     "doublons_ecartes": 1534,
-    "feuilles_ajoutees": 41067,
+    "feuilles_ajoutees": 41220,
     "feuilles_doublons": 2825,
     "noms_relie": 3383,
     "noms_ambigu": 305,
@@ -417,14 +417,14 @@
    "ajoutes": 10,
    "non_reconnus": 306,
    "doublons_ecartes": 1534,
-   "feuilles_ajoutees": 6773,
+   "feuilles_ajoutees": 6926,
    "feuilles_doublons": 2825,
    "noms_relie": 3383,
    "noms_ambigu": 305,
    "noms_absent": 12,
    "nouveaux_joueurs": 0
   },
-  "raison": "nos matchs : log loss 0.6247 avec les feuilles contre 0.6319 sans (vainqueur 65.9 % contre 64.6 %) ; ATP/WTA 2024–2026 0.6069 contre 0.6069",
+  "raison": "nos matchs : log loss 0.6245 avec les feuilles contre 0.6319 sans (vainqueur 66.0 % contre 64.6 %) ; ATP/WTA 2024–2026 0.6069 contre 0.6069",
   "adopte_brut": true
  },
  "itf_dans_elo": {
@@ -433,7 +433,7 @@
   "avant_archive": 57230,
   "apres_archive": 34294,
   "decision": "Lucas, 28/10/2026 (étude : etude_itf_elo.json) ; retiré si l'étude échoue 2 semaines de suite",
-  "suivi": "nos matchs : log loss 0.6226 avec l'ITF contre 0.6247 sans ; ATP/WTA 2024–2026 0.6064 contre 0.6069"
+  "suivi": "nos matchs : log loss 0.6225 avec l'ITF contre 0.6245 sans ; ATP/WTA 2024–2026 0.6064 contre 0.6069"
  },
  "stabilite": {
   "elo_depart_bas": {
@@ -464,7 +464,7 @@
   "ajoutes": 10,
   "non_reconnus": 306,
   "doublons_ecartes": 1534,
-  "feuilles_ajoutees": 41067,
+  "feuilles_ajoutees": 41220,
   "feuilles_doublons": 2825,
   "noms_relie": 3383,
   "noms_ambigu": 305,
@@ -633,11 +633,11 @@
     "n": 2859,
     "reussite_pct": 65.1,
     "ic95_pct": [
-     63.3,
-     66.8
+     63.4,
+     66.9
     ],
-    "log_loss": 0.6226,
-    "brier": 0.2169
+    "log_loss": 0.6225,
+    "brier": 0.2168
    },
    "stats_plus_marche": {
     "n": 2852,
@@ -655,10 +655,10 @@
     "n": 2829,
     "reussite_pct": 65.1,
     "ic95_pct": [
-     63.3,
-     66.8
+     63.4,
+     66.9
     ],
-    "log_loss": 0.6219,
+    "log_loss": 0.6218,
     "brier": 0.2167
    },
    "stats_plus_marche": {
@@ -675,13 +675,13 @@
   "ATP": {
    "stats_seules": {
     "n": 1069,
-    "reussite_pct": 65.3,
+    "reussite_pct": 65.2,
     "ic95_pct": [
-     62.4,
+     62.3,
      68.1
     ],
-    "log_loss": 0.6378,
-    "brier": 0.2229
+    "log_loss": 0.6376,
+    "brier": 0.2228
    },
    "stats_plus_marche": {
     "n": 1068,
@@ -702,8 +702,8 @@
      61.6,
      67.8
     ],
-    "log_loss": 0.6231,
-    "brier": 0.2175
+    "log_loss": 0.6227,
+    "brier": 0.2173
    },
    "stats_plus_marche": {
     "n": 909,
@@ -719,12 +719,12 @@
   "WTA": {
    "stats_seules": {
     "n": 878,
-    "reussite_pct": 65.3,
+    "reussite_pct": 65.5,
     "ic95_pct": [
-     62.1,
-     68.4
+     62.3,
+     68.6
     ],
-    "log_loss": 0.6036,
+    "log_loss": 0.6038,
     "brier": 0.2091
    },
    "stats_plus_marche": {
@@ -749,27 +749,27 @@
   "calibration_stats_seules": [
    {
     "tranche": "50–60 %",
-    "n": 1170,
+    "n": 1173,
     "prevu": 55.0,
-    "reel": 56.2
+    "reel": 56.3
    },
    {
     "tranche": "60–70 %",
-    "n": 864,
-    "prevu": 64.6,
+    "n": 855,
+    "prevu": 64.5,
     "reel": 64.6
    },
    {
     "tranche": "70–80 %",
-    "n": 534,
+    "n": 539,
     "prevu": 74.3,
-    "reel": 75.3
+    "reel": 75.1
    },
    {
     "tranche": "80–90 %",
-    "n": 241,
+    "n": 242,
     "prevu": 84.4,
-    "reel": 81.7
+    "reel": 81.8
    },
    {
     "tranche": "90–100 %",
@@ -815,21 +815,21 @@
     "ATP": [
      {
       "tranche": "50–60 %",
-      "n": 430,
+      "n": 429,
       "prevu": 55.1,
-      "reel": 59.1
+      "reel": 58.7
      },
      {
       "tranche": "60–70 %",
-      "n": 317,
-      "prevu": 64.5,
-      "reel": 65.0
+      "n": 312,
+      "prevu": 64.4,
+      "reel": 64.7
      },
      {
       "tranche": "70–80 %",
-      "n": 229,
+      "n": 235,
       "prevu": 74.2,
-      "reel": 71.2
+      "reel": 71.5
      },
      {
       "tranche": "80–90 %",
@@ -841,21 +841,21 @@
     "CH": [
      {
       "tranche": "50–60 %",
-      "n": 403,
+      "n": 404,
       "prevu": 54.9,
-      "reel": 56.8
+      "reel": 56.9
      },
      {
       "tranche": "60–70 %",
-      "n": 300,
-      "prevu": 64.6,
-      "reel": 63.0
+      "n": 299,
+      "prevu": 64.7,
+      "reel": 63.2
      },
      {
       "tranche": "70–80 %",
       "n": 149,
       "prevu": 74.1,
-      "reel": 80.5
+      "reel": 79.9
      },
      {
       "tranche": "80–90 %",
@@ -867,27 +867,27 @@
     "WTA": [
      {
       "tranche": "50–60 %",
-      "n": 337,
-      "prevu": 55.0,
-      "reel": 51.6
+      "n": 340,
+      "prevu": 55.1,
+      "reel": 52.4
      },
      {
       "tranche": "60–70 %",
-      "n": 247,
+      "n": 244,
       "prevu": 64.6,
       "reel": 66.0
      },
      {
       "tranche": "70–80 %",
-      "n": 156,
-      "prevu": 74.8,
-      "reel": 76.3
+      "n": 155,
+      "prevu": 74.7,
+      "reel": 76.1
      },
      {
       "tranche": "80–90 %",
-      "n": 107,
-      "prevu": 84.7,
-      "reel": 81.3
+      "n": 108,
+      "prevu": 84.6,
+      "reel": 81.5
      },
      {
       "tranche": "90–100 %",
@@ -907,27 +907,27 @@
        61.6,
        66.3
       ],
-      "log_loss": 0.6308,
+      "log_loss": 0.6307,
       "brier": 0.2204
      },
      "calibration": [
       {
        "tranche": "50–60 %",
-       "n": 765,
+       "n": 766,
        "prevu": 55.0,
-       "reel": 55.7
+       "reel": 55.9
       },
       {
        "tranche": "60–70 %",
-       "n": 517,
-       "prevu": 64.5,
-       "reel": 65.8
+       "n": 516,
+       "prevu": 64.6,
+       "reel": 65.7
       },
       {
        "tranche": "70–80 %",
        "n": 246,
        "prevu": 73.9,
-       "reel": 77.2
+       "reel": 76.8
       },
       {
        "tranche": "80–90 %",
@@ -938,74 +938,74 @@
      ]
     },
     "mixte (30–70 %)": {
-     "n": 703,
+     "n": 701,
      "stats_seules": {
-      "n": 703,
+      "n": 701,
       "reussite_pct": 63.2,
       "ic95_pct": [
        59.6,
-       66.7
+       66.8
       ],
-      "log_loss": 0.6366,
-      "brier": 0.2237
+      "log_loss": 0.636,
+      "brier": 0.2234
      },
      "calibration": [
       {
        "tranche": "50–60 %",
        "n": 292,
-       "prevu": 55.2,
+       "prevu": 55.3,
        "reel": 54.8
       },
       {
        "tranche": "60–70 %",
-       "n": 212,
-       "prevu": 64.3,
-       "reel": 62.7
+       "n": 203,
+       "prevu": 64.2,
+       "reel": 62.6
       },
       {
        "tranche": "70–80 %",
-       "n": 147,
-       "prevu": 74.5,
-       "reel": 74.1
+       "n": 153,
+       "prevu": 74.3,
+       "reel": 73.9
       },
       {
        "tranche": "80–90 %",
-       "n": 46,
-       "prevu": 83.7,
-       "reel": 78.3
+       "n": 47,
+       "prevu": 83.6,
+       "reel": 78.7
       }
      ]
     },
     "surtout grand circuit (< 30 %)": {
-     "n": 523,
+     "n": 525,
      "stats_seules": {
-      "n": 523,
-      "reussite_pct": 71.3,
+      "n": 525,
+      "reussite_pct": 71.4,
       "ic95_pct": [
-       67.4,
-       75.2
+       67.6,
+       75.3
       ],
-      "log_loss": 0.5784,
-      "brier": 0.1969
+      "log_loss": 0.5789,
+      "brier": 0.1971
      },
      "calibration": [
       {
        "tranche": "50–60 %",
-       "n": 113,
+       "n": 115,
        "prevu": 54.9,
-       "reel": 62.8
+       "reel": 62.6
       },
       {
        "tranche": "60–70 %",
-       "n": 135,
+       "n": 136,
        "prevu": 65.1,
-       "reel": 63.0
+       "reel": 63.2
       },
       {
        "tranche": "70–80 %",
-       "n": 141,
-       "prevu": 75.0,
-       "reel": 73.0
+       "n": 140,
+       "prevu": 75.1,
+       "reel": 73.6
       },
       {
        "tranche": "80–90 %",
@@ -1026,8 +1026,8 @@
   "scores_en_sets": {
    "stats_seules": {
     "n": 2572,
-    "log_score": 1.2721,
-    "score_le_plus_probable_juste_pct": 43.4,
+    "log_score": 1.272,
+    "score_le_plus_probable_juste_pct": 43.5,
     "trois_sets_prevu_pct": 38.1,
     "trois_sets_reel_pct": 36.5
    },
@@ -1041,5 +1041,5 @@
   },
   "periode": "2026-06-07 → 2026-10-22"
  },
- "duree_s": 153
+ "duree_s": 100
 }
