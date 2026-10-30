@@ -357,11 +357,14 @@ def collecter_jour(c, jour, voulues=CATEGORIES, aujourd_hui=None, dossier=DOSSIE
             'categories': {k: {'matchs': v[0], 'avec_stats': v[1]} for k, v in sorted(par_cat.items())}}
 
 
-def jours_a_traiter(debut, fin, etat):
+def jours_a_traiter(debut, fin, etat, forcer=False):
+    """Jours à (re)collecter. forcer=True (30/10/2026) : TOUS les jours de la période, même déjà complets — utilisé quand
+    des catégories sont demandées explicitement (rattrapage d'une catégorie nouvelle, ex. Coupe Davis) : sans cela, les
+    jours déjà marqués complets étaient sautés et la nouvelle catégorie n'était jamais lue."""
     d, out = dt.date.fromisoformat(debut), []
     f = dt.date.fromisoformat(fin)
     while d <= f:
-        if not (etat['jours'].get(d.isoformat()) or {}).get('complet'):
+        if forcer or not (etat['jours'].get(d.isoformat()) or {}).get('complet'):
             out.append(d.isoformat())
         d += dt.timedelta(days=1)
     return out
@@ -378,7 +381,7 @@ def main(argv):
     fin = argv[2] if len(argv) > 2 and argv[2] else auj.isoformat()
     voulues = tuple(norm(x) for x in argv[3].split(',')) if len(argv) > 3 and argv[3].strip() else CATEGORIES
     etat = lire_etat(DOSSIER)
-    jours = jours_a_traiter(debut, fin, etat)
+    jours = jours_a_traiter(debut, fin, etat, forcer=len(argv) > 3 and bool(argv[3].strip()))
     c = Client(cle)
     print(f"Feuilles de match : {debut} → {fin} · {len(jours)} jour(s) à traiter · catégories {', '.join(voulues)} · "
           f"budget {c.budget} requêtes, réserve {c.reserve}")
