@@ -13,11 +13,19 @@ def P(s):
     return dt.datetime.fromisoformat(s.replace('Z', '+00:00')).astimezone(dt.timezone.utc)
 
 
-def run(cmd, cwd=None):
-    r = subprocess.run(cmd, capture_output=True, text=True, cwd=cwd)
-    if r.returncode:
-        raise RuntimeError(r.stderr[:200])
-    return r.stdout
+def run(cmd, cwd=None, essais=3):
+    """29/10/2026 : GitHub renvoie parfois une erreur serveur passagère (HTTP 502/503/504) — jusqu'à 3 nouvelles
+    tentatives (10, 30, 60 s) dans ce seul cas ; toute autre erreur s'arrête tout de suite."""
+    import time
+    for i in range(essais + 1):
+        r = subprocess.run(cmd, capture_output=True, text=True, cwd=cwd)
+        if not r.returncode:
+            return r.stdout
+        passager = any(x in (r.stderr or '') for x in ('HTTP 502', 'HTTP 503', 'HTTP 504', 'Server Error'))
+        if not passager or i == essais:
+            raise RuntimeError(r.stderr[:200])
+        print(f"… GitHub indisponible ({r.stderr.strip()[:60]}), nouvel essai dans {(10, 30, 60)[i]} s")
+        time.sleep((10, 30, 60)[i])
 
 
 def gh_runs(wf, since):
