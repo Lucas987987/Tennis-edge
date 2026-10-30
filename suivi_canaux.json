@@ -1,47 +1,47 @@
 {
  "schema_version": 1,
- "genere_le": "2026-10-29T06:20:47Z",
+ "genere_le": "2026-10-30T06:23:37Z",
  "canaux": {
   "MISER": {
    "libelle": "🎯 MISER — steam, EV ≥ seuil vs Pinnacle juste (vainqueur du match)",
    "source": "miser_signal_log.jsonl (messages envoyés) + ajouts de suivi_direct",
    "regle": "première alerte de chaque match, au book et au prix du message ; relances non recomptées",
    "debut": "2026-10-22",
-   "n_alertes": 10,
-   "n_matchs": 10,
+   "n_alertes": 13,
+   "n_matchs": 13,
    "n_relances": 0,
-   "n_denoues": 8,
+   "n_denoues": 10,
    "bilan": {
-    "n": 8,
+    "n": 10,
     "gains": 4,
-    "taux": 50.0,
-    "seuil": 39.5,
-    "ecart": 10.5,
+    "taux": 40.0,
+    "seuil": 37.2,
+    "ecart": 2.8,
     "ic95": [
-     21.5,
-     78.5
+     16.8,
+     68.7
     ],
-    "roi": 55.9,
-    "pnl": 4.5,
-    "cote_moyenne": 2.7,
-    "clv_moyen": 5.8,
-    "clv_pin_moyen": 5.8,
+    "roi": 24.7,
+    "pnl": 2.5,
+    "cote_moyenne": 2.9,
+    "clv_moyen": 6.5,
+    "clv_pin_moyen": 6.5,
     "clv_pin_ic95": [
-     -1.1,
-     12.7
+     1.8,
+     11.1
     ],
-    "clv_pin_p": 0.0489,
-    "clv_n": 9,
-    "clv_positif": 66.7,
-    "lead_moyen_h": 8.3,
-    "periode": "2026-10-22 -> 2026-10-27",
+    "clv_pin_p": 0.0031,
+    "clv_n": 13,
+    "clv_positif": 76.9,
+    "lead_moyen_h": 8.4,
+    "periode": "2026-10-22 -> 2026-10-29",
     "verdict": "ne tranche pas",
-    "clv_mediane": 1.5,
-    "n_commencees": 10,
-    "n_sans_resultat": 2,
-    "sans_resultat_pct": 20.0,
+    "clv_mediane": 5.3,
+    "n_commencees": 13,
+    "n_sans_resultat": 3,
+    "sans_resultat_pct": 23.1,
     "verrouillable": false,
-    "statut": "en attente de résultats (20,0 % sans résultat)"
+    "statut": "en attente de résultats (23,1 % sans résultat)"
    },
    "paris": {
     "2026-10-22_valerio_aboian_matias_soto": {
@@ -119,10 +119,34 @@
     "2026-10-29_claire_liu_katerina_siniakova": {
      "gagne": null,
      "pnl": null,
-     "pin_close": null,
-     "pin_close_adv": null,
-     "clv_pin": null,
+     "pin_close": 2.53,
+     "pin_close_adv": 1.578,
+     "clv_pin": 4.26,
      "source_resultat": "inconnu"
+    },
+    "2026-10-29_liam_draxl_daniil_ostapenkov": {
+     "gagne": null,
+     "pnl": null,
+     "pin_close": 3.71,
+     "pin_close_adv": 1.307,
+     "clv_pin": 5.346,
+     "source_resultat": "inconnu"
+    },
+    "2026-10-29_max_hans_rehberg_stefan_kozlov": {
+     "gagne": 0,
+     "pnl": -1.0,
+     "pin_close": 2.48,
+     "pin_close_adv": 1.584,
+     "clv_pin": 11.378,
+     "source_resultat": "feuille de match (TennisApi)"
+    },
+    "2026-10-29_mitchell_krueger_darwin_blanch": {
+     "gagne": 0,
+     "pnl": -1.0,
+     "pin_close": 3.73,
+     "pin_close_adv": 1.305,
+     "clv_pin": 10.959,
+     "source_resultat": "feuille de match (TennisApi)"
     }
    }
   }
