@@ -1262,7 +1262,9 @@ def main(argv):
                                                 if nw is not None else None),
                                  'activite': (ACT.ecarts(AC.variables(w, x['jour']), AC.variables(l, x['jour']))
                                               if AC is not None else None),
-                                 'tour': EP.variables_tour(x.get('tour')) if x.get('tour') else None}
+                                 'tour': EP.variables_tour(x.get('tour')) if x.get('tour') else None,
+                                 # 30/10/2026 : points ATP/WTA des deux joueurs au jour du match (vrai vainqueur, perdant)
+                                 'points': CLS.ecart_points(CL.points_au(w, jour_m), CL.points_au(l, jour_m))}
         doc['entrainement_progressif'] = EP.rejouer_saison(
             lignes, p_elo, doc.get('adoptes') or [], apprendre, victoire_ligne, BMS.ajuster_poids, sigma,
             poids_archive=cb.get('poids') if cb.get('adopte') else None, experience=experience, situations=situations)
@@ -1286,6 +1288,7 @@ def main(argv):
         etat_st = ST.lire()
         avant = {k: choix.get(k) for k in ('combinaison_feuilles', 'poids_challenger', 'poids_ATP', 'poids_WTA',
                                            'nouveaux_venus', 'modele_arbres', 'modele_arbres_activite', 'modele_arbres_tour',
+                                           'modele_arbres_points',
                                            'desaccord_wta',
                                            'qualifies', 'transition', 'classement', 'classement_relatif')}
         choix['combinaison_feuilles'] = ST.appliquer(etat_st, 'combinaison_feuilles', avant['combinaison_feuilles'],
@@ -1312,8 +1315,12 @@ def main(argv):
                                               {k: dw_.get(k) for k in ('adopte', 'poids', 'raison', 'll')}, ('poids',))
         print(f"Désaccords Elo / simulation en WTA : {'ADOPTÉ' if choix['desaccord_wta']['adopte'] else 'non adopté'} — "
               f"{choix['desaccord_wta']['raison']}", flush=True)
-        for cle_c, lib_c in (('modele_arbres_activite', 'Arbres + activité récente'), ('modele_arbres_tour', 'Arbres + tour du tableau')):
+        for cle_c, lib_c in (('modele_arbres_activite', 'Arbres + activité récente'), ('modele_arbres_tour', 'Arbres + tour du tableau'),
+                             ('modele_arbres_points', 'Arbres + points ATP/WTA')):
             maa = ep.get(cle_c) or {}                          # 29/10/2026 : candidats de la famille des arbres
+            if cle_c in EP.DECISION_CANDIDATS and not avant.get(cle_c):
+                # 30/10/2026 : décision de Lucas — en place dès la première semaine ; la stabilité ne sert qu'à la sortie
+                avant[cle_c] = {'adopte': True, 'decision': EP.DECISION_CANDIDATS[cle_c]}
             choix[cle_c] = ST.appliquer(etat_st, cle_c, avant[cle_c],
                                         {k: maa.get(k) for k in ('adopte', 'raison', 'variables', 'modele', 'poids', 'll', 'par_circuit')},
                                         ('variables', 'modele', 'poids'))
