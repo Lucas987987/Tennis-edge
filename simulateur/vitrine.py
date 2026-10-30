@@ -159,6 +159,8 @@ def ligne_match(m, complet):
         out['activite'] = m['activite']             # 29/10/2026 : activité récente des deux joueurs (activite.py)
     if m.get('echanges'):
         out['echanges'] = m['echanges']             # 30/10/2026 : longueur des échanges (echanges_joueur.py)
+    if m.get('entree'):
+        out['entree'] = m['entree']                 # 30/10/2026 : statut d'entrée (invité, qualifié, tête de série)
     if m.get('forme_service'):
         out['forme_service'] = m['forme_service']   # 29/10/2026 : service / retour du moment (forme_service.py)
     if not complet:
@@ -507,7 +509,7 @@ def journal_changements(racine, analyse=None):
     doc['fantome'] = {k: v['fantome'] for k, v in g.items() if isinstance(v, dict) and v.get('fantome')}
     # 29/10/2026 : un fantôme par changement (ITF hommes + femmes ensemble, ITF femmes seules, σ du Challenger)
     T = g.get('TOUS') or {}
-    doc['fantomes'] = [dict(T[k], cle=k) for k in ('fantome', 'fantome_itf_femmes', 'fantome_sigma', 'fantome_forme_service') if T.get(k)]
+    doc['fantomes'] = [dict(T[k], cle=k) for k in ('fantome', 'fantome_itf_femmes', 'fantome_sigma', 'fantome_forme_service', 'fantome_entree') if T.get(k)]
     return doc
 
 
