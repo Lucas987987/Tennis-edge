@@ -1,14 +1,14 @@
 {
  "schema_version": 1,
- "genere_le": "2026-10-30T06:23:37Z",
+ "genere_le": "2026-10-31T06:20:10Z",
  "canaux": {
   "MISER": {
    "libelle": "🎯 MISER — steam, EV ≥ seuil vs Pinnacle juste (vainqueur du match)",
    "source": "miser_signal_log.jsonl (messages envoyés) + ajouts de suivi_direct",
    "regle": "première alerte de chaque match, au book et au prix du message ; relances non recomptées",
    "debut": "2026-10-22",
-   "n_alertes": 13,
-   "n_matchs": 13,
+   "n_alertes": 14,
+   "n_matchs": 14,
    "n_relances": 0,
    "n_denoues": 10,
    "bilan": {
@@ -147,6 +147,14 @@
      "pin_close_adv": 1.305,
      "clv_pin": 10.959,
      "source_resultat": "feuille de match (TennisApi)"
+    },
+    "2026-10-31_yaroslav_demin_yu_hsiou_hsu": {
+     "gagne": null,
+     "pnl": null,
+     "pin_close": null,
+     "pin_close_adv": null,
+     "clv_pin": null,
+     "source_resultat": "inconnu"
     }
    }
   }
