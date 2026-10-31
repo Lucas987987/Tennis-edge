@@ -32,7 +32,10 @@ MOTS_VIDES = {'atp', 'wta', 'itf', 'challenger', 'men', 'women', 'singles', 'mas
               'tennis', 'classic', 'trophy', 'w', 'm', 'h', 'ladies'}
 SURFACES = ('Hard', 'Clay', 'Grass')
 # Corrections explicites pour les noms dont le rapprochement par mots est trompeur.
+# 31/10/2026 : « ATP Paris » (Masters de Paris-Bercy, dur en salle) tombait sur le mot « paris », que l'archive associe
+# à la terre battue : les matchs du Masters auraient été simulés sur terre. Roland-Garros reste reconnu avant (Clay).
 SURFACES_IMPOSEES = ((r'vienna|vienne', 'Hard'), (r'french open|roland garros', 'Clay'),
+                     (r'atp paris|paris masters|rolex paris|bercy', 'Hard'),
                      (r'wimbledon', 'Grass'), (r'australian open|us open', 'Hard'))
 
 
