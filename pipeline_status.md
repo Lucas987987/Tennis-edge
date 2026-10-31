@@ -1,6 +1,6 @@
 # État du dernier run — Steam Pipeline
 
-Run démarré `2026-10-30T05:53:33` · terminé `2026-10-30T06:52:43` (UTC)
+Run démarré `2026-10-31T05:49:30` · terminé `2026-10-31T06:54:05` (UTC)
 
 **Verdict : 1 livrable(s) à vérifier**
 
@@ -8,22 +8,22 @@ Run démarré `2026-10-30T05:53:33` · terminé `2026-10-30T06:52:43` (UTC)
 |---|---|---:|---:|---|
 | Résultats match + set | `set_results.json` | 3855 | 383193 | ✅ OK |
 | Pont résultats (études) | `resultats_derived.json` | 3806 | 1018777 | ✅ OK |
-| Journal forward — match | `paper_trades_match.jsonl` | 232 | 130624 | ✅ OK |
+| Journal forward — match | `paper_trades_match.jsonl` | 233 | 130978 | ✅ OK |
 | Journal forward — set 1 | `paper_trades_set1.jsonl` | 64 | 34255 | ✅ OK |
 | Journal forward — set 2 | `paper_trades_set2.jsonl` | 0 | 0 | ⚠️ VIDE |
-| Audit des moves (live) | `moves_detail.csv` | 52 | 8306 | ✅ OK |
+| Audit des moves (live) | `moves_detail.csv` | 47 | 7416 | ✅ OK |
 | Audit des moves (historique) | `moves_detail_hist.csv` | 2896 | 490714 | ✅ OK |
-| CLV réalisé du canal public | `canal_clv_detail.csv` | 562 | 90881 | ✅ OK |
-| Journal du canal public | `canal_public_log.jsonl` | 560 | 282959 | ✅ OK |
-| Courbes live reconstruites | `book_curves_live.jsonl` | 4050 | 41827727 | ✅ OK |
+| CLV réalisé du canal public | `canal_clv_detail.csv` | 564 | 91196 | ✅ OK |
+| Journal du canal public | `canal_public_log.jsonl` | 562 | 284037 | ✅ OK |
+| Courbes live reconstruites | `book_curves_live.jsonl` | 2841 | 29121759 | ✅ OK |
 
 
-**Closings exploitables** : 98 % sur 3 jours (fenêtre t3 : 87 %, n=161) — référence 30 jours 93 % (t3 81 %). C'est le dénominateur du CLV : un match sans closing fiable ne valide ni ne réfute rien.
-**Partitions** : 84 fichiers, 734.0 Mo — ⚠️ **vue partielle** (sparse-checkout : pm_ticks/kx_ticks absents de ce run). La taille réelle du dépôt est celle de la sentinelle ci-dessous, pas celle-ci.
+**Closings exploitables** : 99 % sur 3 jours (fenêtre t3 : 89 %, n=124) — référence 30 jours 93 % (t3 81 %). C'est le dénominateur du CLV : un match sans closing fiable ne valide ni ne réfute rien.
+**Partitions** : 86 fichiers, 729.5 Mo — ⚠️ **vue partielle** (sparse-checkout : pm_ticks/kx_ticks absents de ce run). La taille réelle du dépôt est celle de la sentinelle ci-dessous, pas celle-ci.
 
-✅ **Qualité de clôture (Q3)** : 9.0 % d'écarts > 3 % (160/1786), seuil 30.0 %
+✅ **Qualité de clôture (Q3)** : 9.0 % d'écarts > 3 % (164/1819), seuil 30.0 %
 **CLV décomposé** : prime +2.22 % · dérive +2.33 % · part de la sélection 43.5 % (n=2472)
 ✅ **Études Polymarket** : 0 échec(s) · 2 avertissement(s) (info) (il y a 19.8h)
-🔴 **Taille du dépôt** : 6.53 Go -- SEUIL FRANCHI (alarme 4.0 Go, zone GitHub ~5 Go) -- SEUIL FRANCHI — ne PAS réécrire l'historique (force-push interdit). Poursuivre la migration R2 (README_MIGRATION_R2.md) ; « nouveau dépôt propre » à planifier plus tard, à froid.
+🔴 **Taille du dépôt** : 6.58 Go -- SEUIL FRANCHI (alarme 4.0 Go, zone GitHub ~5 Go) -- SEUIL FRANCHI — ne PAS réécrire l'historique (force-push interdit). Poursuivre la migration R2 (README_MIGRATION_R2.md) ; « nouveau dépôt propre » à planifier plus tard, à froid.
 
 Légende : ✅ produit pendant ce run · ⏳ présent mais non réécrit (le script n'a rien produit) · ⚠️ vide ou réduit à son en-tête · ❌ absent.
