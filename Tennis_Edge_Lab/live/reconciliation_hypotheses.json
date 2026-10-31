@@ -1,15 +1,15 @@
 {
  "schema_version": 2,
- "generated_at": "2026-10-30T11:29:53+00:00",
+ "generated_at": "2026-10-31T11:01:31+00:00",
  "sources": {
   "worker": {
    "source": "API Worker D1 /api/hypotheses (fetch_worker_snapshot.py)",
    "fichier": "worker_hypotheses_capture.json",
    "status": "ok",
-   "fetched_at": "2026-10-30T11:29:46Z",
-   "worker_generated_at": "2026-10-30T06:23:36Z"
+   "fetched_at": "2026-10-31T11:01:24Z",
+   "worker_generated_at": "2026-10-31T06:20:10Z"
   },
-  "suivi_officiel": "alertes en direct : h*_signal_log.jsonl + suivi_direct/resultats.json (verdicts_direct.json du 2026-10-30T11:29:52Z)",
+  "suivi_officiel": "alertes en direct : h*_signal_log.jsonl + suivi_direct/resultats.json (verdicts_direct.json du 2026-10-31T11:01:30Z)",
   "reconstruction": "moves_detail_hist.csv filtré par les règles gelées de validation_report.py (lignes jusqu'au 2026-10-29) — contrôle, ne juge pas",
   "rapprochement": "uid + joueur normalisé ; à défaut paire de joueurs + date ±1 jour"
  },
@@ -80,35 +80,35 @@
    "worker": {
     "gele_le": "2026-09-06",
     "out_of_sample": {
-     "n": 281,
-     "gains": 124,
+     "n": 286,
+     "gains": 126,
      "taux": 44.1,
      "seuil": 41.8,
-     "ecart": 2.3,
-     "roi": 6.4,
-     "pnl": 17.9,
+     "ecart": 2.2,
+     "roi": 6.1,
+     "pnl": 17.5,
      "cote_moyenne": 2.42,
      "clv_moyen": -1.7,
      "clv_pin_moyen": -1.7,
      "clv_pin_p": 0.9998,
-     "clv_n": 287,
-     "clv_positif": 36.9,
-     "lead_moyen_h": 8.1,
-     "periode": "2026-09-07 -> 2026-10-29",
+     "clv_n": 292,
+     "clv_positif": 36.6,
+     "lead_moyen_h": 8.2,
+     "periode": "2026-09-07 -> 2026-10-30",
      "verdict": "ne tranche pas",
-     "n_detectees": 293,
-     "n_envoyees": 292,
+     "n_detectees": 298,
+     "n_envoyees": 297,
      "n_doublons": 0,
      "n_non_envoyees_autres": 1,
-     "n_denouees": 281,
-     "n_commencees": 292,
-     "n_sans_resultat": 11,
-     "sans_resultat_pct": 3.8,
+     "n_denouees": 286,
+     "n_commencees": 296,
+     "n_sans_resultat": 10,
+     "sans_resultat_pct": 3.4,
      "verrouillable": true,
-     "statut": "verrouillable (résultats complets à 96 %)"
+     "statut": "verrouillable (résultats complets à 97 %)"
     },
-    "n": 281,
-    "roi": 6.4
+    "n": 286,
+    "roi": 6.1
    },
    "suivi_officiel": {
     "n": 204,
@@ -120,15 +120,15 @@
      -2.7,
      -0.8
     ],
-    "clv_n": 287,
-    "n_detectees": 295,
-    "n_envoyees": 294,
+    "clv_n": 292,
+    "n_detectees": 300,
+    "n_envoyees": 299,
     "n_doublons": 0,
     "source": "verdicts_direct.json (recalculé : journal plus récent)",
-    "sans_resultat_pct": 30.4,
-    "statut": "en attente de résultats (30,4 % sans résultat)",
+    "sans_resultat_pct": 31.8,
+    "statut": "en attente de résultats (31,8 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-10-30T11:29:52Z"
+    "genere_le": "2026-10-31T11:01:30Z"
    },
    "reconstruction": {
     "n": 243,
@@ -146,8 +146,8 @@
     "egal_validation_report": true
    },
    "entonnoir": {
-    "direct_detectees": 295,
-    "direct_envoyees": 294,
+    "direct_detectees": 300,
+    "direct_envoyees": 299,
     "direct_doublons": 0,
     "direct_non_envoyees_autres": 1,
     "direct_denouees": 204,
@@ -159,12 +159,12 @@
      "apres_coup": 341,
      "cote_opposee_live": 1
     },
-    "direct_seule": 163,
+    "direct_seule": 168,
     "direct_seule_raisons": {
      "absent_reconstruction": 88,
      "cote_opposee_reco": 60,
      "prix_different": 11,
-     "pas_encore_reconstruit": 4
+     "pas_encore_reconstruit": 9
     },
     "inexpliques": 0
    },
@@ -7304,6 +7304,76 @@
      "libelle": "Pas encore dans la reconstruction",
      "detail": "match du 2026-10-30, reconstruction arrêtée au 2026-10-29",
      "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-30",
+     "match": "Valerio Aboian – Nick Hardt",
+     "joueur": "Valerio Aboian",
+     "uid": "2026-10-30_valerio_aboian_nick_hardt",
+     "cote": 2.37,
+     "book": "bet365",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-30, reconstruction arrêtée au 2026-10-29",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-31",
+     "match": "Petr Bar Biryukov – Liam Broady",
+     "joueur": "Petr Bar Biryukov",
+     "uid": "2026-10-31_petr_bar_biryukov_liam_broady",
+     "cote": 2.75,
+     "book": "bet365",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-31, reconstruction arrêtée au 2026-10-29",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-31",
+     "match": "Yaroslav Demin – Yu Hsiou Hsu",
+     "joueur": "Yaroslav Demin",
+     "uid": "2026-10-31_yaroslav_demin_yu_hsiou_hsu",
+     "cote": 2.37,
+     "book": "bet365",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-31, reconstruction arrêtée au 2026-10-29",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-31",
+     "match": "Kaitlin Quevedo – Lilli Tagger",
+     "joueur": "Kaitlin Quevedo",
+     "uid": "2026-10-31_kaitlin_quevedo_lilli_tagger",
+     "cote": 2.8,
+     "book": "unibet",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-31, reconstruction arrêtée au 2026-10-29",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-31",
+     "match": "Sebastian Dominko – Liam Draxl",
+     "joueur": "Sebastian Dominko",
+     "uid": "2026-10-31_liam_draxl_sebastian_dominko",
+     "cote": 2.3,
+     "book": "bwin",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-31, reconstruction arrêtée au 2026-10-29",
+     "explique": true
     }
    ]
   },
@@ -7315,55 +7385,55 @@
    "worker": {
     "gele_le": "2026-10-02",
     "out_of_sample": {
-     "n": 69,
+     "n": 73,
      "gains": 34,
-     "taux": 49.3,
-     "seuil": 39.3,
-     "ecart": 10,
-     "roi": 20.5,
-     "pnl": 14.2,
+     "taux": 46.6,
+     "seuil": 39.4,
+     "ecart": 7.2,
+     "roi": 13.9,
+     "pnl": 10.2,
      "cote_moyenne": 3.2,
-     "clv_moyen": -0.3,
-     "clv_pin_moyen": -0.3,
-     "clv_pin_p": 0.5776,
-     "clv_n": 72,
-     "clv_positif": 43.1,
+     "clv_moyen": -0.1,
+     "clv_pin_moyen": -0.1,
+     "clv_pin_p": 0.5406,
+     "clv_n": 76,
+     "clv_positif": 42.1,
      "lead_moyen_h": 12.5,
-     "periode": "2026-10-16 -> 2026-10-29",
+     "periode": "2026-10-16 -> 2026-10-30",
      "verdict": "ne tranche pas",
-     "n_detectees": 76,
+     "n_detectees": 79,
      "n_envoyees": 28,
-     "n_doublons": 48,
+     "n_doublons": 51,
      "n_non_envoyees_autres": 0,
-     "n_denouees": 69,
-     "n_commencees": 73,
+     "n_denouees": 73,
+     "n_commencees": 77,
      "n_sans_resultat": 4,
-     "sans_resultat_pct": 5.5,
+     "sans_resultat_pct": 5.2,
      "verrouillable": true,
-     "statut": "verrouillable (résultats complets à 94 %)"
+     "statut": "verrouillable (résultats complets à 95 %)"
     },
-    "n": 69,
-    "roi": 20.5
+    "n": 73,
+    "roi": 13.9
    },
    "suivi_officiel": {
     "n": 10,
     "gagnes": 4,
     "roi": -13.8,
     "pts": 4.0,
-    "clv_pin": -0.3,
+    "clv_pin": -0.1,
     "clv_pin_ic95": [
-     -2.9,
-     2.3
+     -2.7,
+     2.5
     ],
-    "clv_n": 72,
-    "n_detectees": 77,
+    "clv_n": 76,
+    "n_detectees": 80,
     "n_envoyees": 28,
-    "n_doublons": 49,
+    "n_doublons": 52,
     "source": "verdicts_direct.json (recalculé : journal plus récent)",
-    "sans_resultat_pct": 86.7,
-    "statut": "en attente de résultats (86,7 % sans résultat)",
+    "sans_resultat_pct": 87.3,
+    "statut": "en attente de résultats (87,3 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-10-30T11:29:52Z"
+    "genere_le": "2026-10-31T11:01:30Z"
    },
    "reconstruction": {
     "n": 193,
@@ -7381,9 +7451,9 @@
     "egal_validation_report": true
    },
    "entonnoir": {
-    "direct_detectees": 77,
+    "direct_detectees": 80,
     "direct_envoyees": 28,
-    "direct_doublons": 49,
+    "direct_doublons": 52,
     "direct_non_envoyees_autres": 0,
     "direct_denouees": 10,
     "reconstruction_detectees": 330,
@@ -7395,12 +7465,12 @@
      "avant_canal": 189,
      "cote_opposee_live": 3
     },
-    "direct_seule": 55,
+    "direct_seule": 58,
     "direct_seule_raisons": {
      "cote_opposee_reco": 13,
      "absent_reconstruction": 24,
      "prix_different": 14,
-     "pas_encore_reconstruit": 4
+     "pas_encore_reconstruit": 7
     },
     "inexpliques": 0
    },
@@ -12552,6 +12622,48 @@
      "libelle": "Pas encore dans la reconstruction",
      "detail": "match du 2026-10-30, reconstruction arrêtée au 2026-10-29",
      "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-31",
+     "match": "Petr Bar Biryukov – Liam Broady",
+     "joueur": "Petr Bar Biryukov",
+     "uid": "2026-10-31_petr_bar_biryukov_liam_broady",
+     "cote": 2.75,
+     "book": "bet365",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-31, reconstruction arrêtée au 2026-10-29",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-31",
+     "match": "Yaroslav Demin – Yu Hsiou Hsu",
+     "joueur": "Yaroslav Demin",
+     "uid": "2026-10-31_yaroslav_demin_yu_hsiou_hsu",
+     "cote": 2.37,
+     "book": "bet365",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-31, reconstruction arrêtée au 2026-10-29",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-31",
+     "match": "Sebastian Dominko – Liam Draxl",
+     "joueur": "Sebastian Dominko",
+     "uid": "2026-10-31_liam_draxl_sebastian_dominko",
+     "cote": 2.3,
+     "book": "bwin",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-31, reconstruction arrêtée au 2026-10-29",
+     "explique": true
     }
    ]
   },
@@ -12563,55 +12675,55 @@
    "worker": {
     "gele_le": "2026-09-25",
     "out_of_sample": {
-     "n": 72,
+     "n": 74,
      "gains": 32,
-     "taux": 44.4,
+     "taux": 43.2,
      "seuil": 37.1,
-     "ecart": 7.3,
-     "roi": 19,
-     "pnl": 13.7,
+     "ecart": 6.1,
+     "roi": 15.8,
+     "pnl": 11.7,
      "cote_moyenne": 2.71,
-     "clv_moyen": -1.9,
-     "clv_pin_moyen": -1.9,
-     "clv_pin_p": 0.9969,
-     "clv_n": 77,
-     "clv_positif": 36.4,
-     "lead_moyen_h": 8.8,
+     "clv_moyen": -1.8,
+     "clv_pin_moyen": -1.8,
+     "clv_pin_p": 0.9967,
+     "clv_n": 79,
+     "clv_positif": 36.7,
+     "lead_moyen_h": 9.1,
      "periode": "2026-09-26 -> 2026-10-29",
      "verdict": "ne tranche pas",
-     "n_detectees": 81,
+     "n_detectees": 82,
      "n_envoyees": 0,
-     "n_doublons": 81,
+     "n_doublons": 82,
      "n_non_envoyees_autres": 0,
-     "n_denouees": 72,
-     "n_commencees": 80,
-     "n_sans_resultat": 8,
-     "sans_resultat_pct": 10,
+     "n_denouees": 74,
+     "n_commencees": 81,
+     "n_sans_resultat": 7,
+     "sans_resultat_pct": 8.6,
      "verrouillable": true,
-     "statut": "verrouillable (résultats complets à 90 %)"
+     "statut": "verrouillable (résultats complets à 91 %)"
     },
-    "n": 72,
-    "roi": 19
+    "n": 74,
+    "roi": 15.8
    },
    "suivi_officiel": {
     "n": 35,
     "gagnes": 17,
     "roi": 30.4,
     "pts": 11.2,
-    "clv_pin": -1.9,
+    "clv_pin": -1.8,
     "clv_pin_ic95": [
-     -3.2,
+     -3.0,
      -0.5
     ],
-    "clv_n": 77,
-    "n_detectees": 81,
+    "clv_n": 79,
+    "n_detectees": 83,
     "n_envoyees": 0,
-    "n_doublons": 81,
+    "n_doublons": 83,
     "source": "verdicts_direct.json (recalculé : journal plus récent)",
-    "sans_resultat_pct": 56.8,
-    "statut": "en attente de résultats (56,8 % sans résultat)",
+    "sans_resultat_pct": 57.8,
+    "statut": "en attente de résultats (57,8 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-10-30T11:29:52Z"
+    "genere_le": "2026-10-31T11:01:30Z"
    },
    "reconstruction": {
     "n": 96,
@@ -12629,9 +12741,9 @@
     "egal_validation_report": true
    },
    "entonnoir": {
-    "direct_detectees": 81,
+    "direct_detectees": 83,
     "direct_envoyees": 0,
-    "direct_doublons": 81,
+    "direct_doublons": 83,
     "direct_non_envoyees_autres": 0,
     "direct_denouees": 35,
     "reconstruction_detectees": 175,
@@ -12641,12 +12753,12 @@
     "reconstruction_seule_raisons": {
      "apres_coup": 133
     },
-    "direct_seule": 39,
+    "direct_seule": 41,
     "direct_seule_raisons": {
      "absent_reconstruction": 16,
      "cote_opposee_reco": 15,
      "prix_different": 6,
-     "pas_encore_reconstruit": 2
+     "pas_encore_reconstruit": 4
     },
     "inexpliques": 0
    },
@@ -15124,6 +15236,34 @@
      "libelle": "Pas encore dans la reconstruction",
      "detail": "match du 2026-10-30, reconstruction arrêtée au 2026-10-29",
      "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-31",
+     "match": "Petr Bar Biryukov – Liam Broady",
+     "joueur": "Petr Bar Biryukov",
+     "uid": "2026-10-31_petr_bar_biryukov_liam_broady",
+     "cote": 2.75,
+     "book": "bet365",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-31, reconstruction arrêtée au 2026-10-29",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-31",
+     "match": "Kaitlin Quevedo – Lilli Tagger",
+     "joueur": "Kaitlin Quevedo",
+     "uid": "2026-10-31_kaitlin_quevedo_lilli_tagger",
+     "cote": 2.8,
+     "book": "unibet",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-31, reconstruction arrêtée au 2026-10-29",
+     "explique": true
     }
    ]
   },
@@ -15135,35 +15275,35 @@
    "worker": {
     "gele_le": "2026-09-25",
     "out_of_sample": {
-     "n": 194,
-     "gains": 131,
-     "taux": 67.5,
-     "seuil": 67.7,
-     "ecart": -0.2,
-     "roi": -0.9,
-     "pnl": -1.7,
-     "cote_moyenne": 1.49,
+     "n": 199,
+     "gains": 135,
+     "taux": 67.8,
+     "seuil": 67.6,
+     "ecart": 0.2,
+     "roi": -0.2,
+     "pnl": -0.4,
+     "cote_moyenne": 1.5,
      "clv_moyen": -0.7,
      "clv_pin_moyen": -0.7,
-     "clv_pin_p": 0.988,
-     "clv_n": 202,
-     "clv_positif": 37.6,
-     "lead_moyen_h": 8,
-     "periode": "2026-09-26 -> 2026-10-29",
+     "clv_pin_p": 0.9927,
+     "clv_n": 208,
+     "clv_positif": 37,
+     "lead_moyen_h": 8.1,
+     "periode": "2026-09-26 -> 2026-10-30",
      "verdict": "ne tranche pas",
-     "n_detectees": 209,
-     "n_envoyees": 209,
+     "n_detectees": 212,
+     "n_envoyees": 212,
      "n_doublons": 0,
      "n_non_envoyees_autres": 0,
-     "n_denouees": 194,
-     "n_commencees": 208,
-     "n_sans_resultat": 14,
-     "sans_resultat_pct": 6.7,
+     "n_denouees": 199,
+     "n_commencees": 211,
+     "n_sans_resultat": 12,
+     "sans_resultat_pct": 5.7,
      "verrouillable": true,
-     "statut": "verrouillable (résultats complets à 93 %)"
+     "statut": "verrouillable (résultats complets à 94 %)"
     },
-    "n": 194,
-    "roi": -0.9
+    "n": 199,
+    "roi": -0.2
    },
    "suivi_officiel": {
     "n": 117,
@@ -15175,15 +15315,15 @@
      -1.3,
      -0.1
     ],
-    "clv_n": 202,
-    "n_detectees": 209,
-    "n_envoyees": 209,
+    "clv_n": 208,
+    "n_detectees": 215,
+    "n_envoyees": 215,
     "n_doublons": 0,
     "source": "verdicts_direct.json (recalculé : journal plus récent)",
-    "sans_resultat_pct": 44.0,
-    "statut": "en attente de résultats (44,0 % sans résultat)",
+    "sans_resultat_pct": 45.1,
+    "statut": "en attente de résultats (45,1 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-10-30T11:29:52Z"
+    "genere_le": "2026-10-31T11:01:30Z"
    },
    "reconstruction": {
     "n": 264,
@@ -15201,8 +15341,8 @@
     "egal_validation_report": true
    },
    "entonnoir": {
-    "direct_detectees": 209,
-    "direct_envoyees": 209,
+    "direct_detectees": 215,
+    "direct_envoyees": 215,
     "direct_doublons": 0,
     "direct_non_envoyees_autres": 0,
     "direct_denouees": 117,
@@ -15213,12 +15353,12 @@
     "reconstruction_seule_raisons": {
      "apres_coup": 309
     },
-    "direct_seule": 111,
+    "direct_seule": 117,
     "direct_seule_raisons": {
      "cote_opposee_reco": 53,
      "absent_reconstruction": 46,
      "prix_different": 7,
-     "pas_encore_reconstruit": 5
+     "pas_encore_reconstruit": 11
     },
     "inexpliques": 0
    },
@@ -21168,6 +21308,90 @@
      "libelle": "Pas encore dans la reconstruction",
      "detail": "match du 2026-10-30, reconstruction arrêtée au 2026-10-29",
      "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-30",
+     "match": "Jiri Lehecka – Jerome Kym",
+     "joueur": "Jiri Lehecka",
+     "uid": "2026-10-30_jerome_kym_jiri_lehecka",
+     "cote": 1.34,
+     "book": "unibet",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-30, reconstruction arrêtée au 2026-10-29",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-31",
+     "match": "Diana Shnaider – Mia Pohankova",
+     "joueur": "Diana Shnaider",
+     "uid": "2026-10-31_diana_shnaider_mia_pohankova",
+     "cote": 1.37,
+     "book": "bet365",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-31, reconstruction arrêtée au 2026-10-29",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-31",
+     "match": "Otto Virtanen – Moise Kouame",
+     "joueur": "Otto Virtanen",
+     "uid": "2026-10-31_moise_kouame_otto_virtanen",
+     "cote": 1.77,
+     "book": "bet365",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-31, reconstruction arrêtée au 2026-10-29",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-31",
+     "match": "Rinky Hijikata – Jaime Faria",
+     "joueur": "Rinky Hijikata",
+     "uid": "2026-10-31_jaime_faria_rinky_hijikata",
+     "cote": 1.87,
+     "book": "unibet",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-31, reconstruction arrêtée au 2026-10-29",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-31",
+     "match": "Mattia Bellucci – Pablo Carreno Busta",
+     "joueur": "Mattia Bellucci",
+     "uid": "2026-10-31_pablo_carreno_busta_mattia_bellucci",
+     "cote": 1.68,
+     "book": "unibet",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-31, reconstruction arrêtée au 2026-10-29",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-31",
+     "match": "Damir Dzumhur – Sebastian Baez",
+     "joueur": "Damir Dzumhur",
+     "uid": "2026-10-31_sebastian_baez_damir_dzumhur",
+     "cote": 1.69,
+     "book": "bet365",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-31, reconstruction arrêtée au 2026-10-29",
+     "explique": true
     }
    ]
   },
@@ -21179,35 +21403,35 @@
    "worker": {
     "gele_le": "2026-09-27",
     "out_of_sample": {
-     "n": 172,
-     "gains": 112,
-     "taux": 65.1,
+     "n": 177,
+     "gains": 116,
+     "taux": 65.5,
      "seuil": 66,
-     "ecart": -0.9,
-     "roi": -1.7,
-     "pnl": -3,
+     "ecart": -0.5,
+     "roi": -1,
+     "pnl": -1.7,
      "cote_moyenne": 1.53,
      "clv_moyen": -0.8,
      "clv_pin_moyen": -0.8,
-     "clv_pin_p": 0.9914,
-     "clv_n": 182,
-     "clv_positif": 36.3,
-     "lead_moyen_h": 8.2,
-     "periode": "2026-09-29 -> 2026-10-29",
+     "clv_pin_p": 0.9943,
+     "clv_n": 187,
+     "clv_positif": 35.8,
+     "lead_moyen_h": 8.3,
+     "periode": "2026-09-29 -> 2026-10-30",
      "verdict": "ne tranche pas",
-     "n_detectees": 186,
-     "n_envoyees": 186,
+     "n_detectees": 189,
+     "n_envoyees": 189,
      "n_doublons": 0,
      "n_non_envoyees_autres": 0,
-     "n_denouees": 172,
-     "n_commencees": 185,
-     "n_sans_resultat": 13,
-     "sans_resultat_pct": 7,
+     "n_denouees": 177,
+     "n_commencees": 188,
+     "n_sans_resultat": 11,
+     "sans_resultat_pct": 5.9,
      "verrouillable": true,
-     "statut": "verrouillable (résultats complets à 93 %)"
+     "statut": "verrouillable (résultats complets à 94 %)"
     },
-    "n": 172,
-    "roi": -1.7
+    "n": 177,
+    "roi": -1
    },
    "suivi_officiel": {
     "n": 99,
@@ -21217,17 +21441,17 @@
     "clv_pin": -0.8,
     "clv_pin_ic95": [
      -1.5,
-     -0.1
+     -0.2
     ],
-    "clv_n": 182,
-    "n_detectees": 186,
-    "n_envoyees": 186,
+    "clv_n": 187,
+    "n_detectees": 192,
+    "n_envoyees": 192,
     "n_doublons": 0,
     "source": "verdicts_direct.json (recalculé : journal plus récent)",
-    "sans_resultat_pct": 46.8,
-    "statut": "en attente de résultats (46,8 % sans résultat)",
+    "sans_resultat_pct": 47.9,
+    "statut": "en attente de résultats (47,9 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-10-30T11:29:52Z"
+    "genere_le": "2026-10-31T11:01:30Z"
    },
    "reconstruction": {
     "n": 225,
@@ -21245,8 +21469,8 @@
     "egal_validation_report": true
    },
    "entonnoir": {
-    "direct_detectees": 186,
-    "direct_envoyees": 186,
+    "direct_detectees": 192,
+    "direct_envoyees": 192,
     "direct_doublons": 0,
     "direct_non_envoyees_autres": 0,
     "direct_denouees": 99,
@@ -21257,12 +21481,12 @@
     "reconstruction_seule_raisons": {
      "apres_coup": 250
     },
-    "direct_seule": 98,
+    "direct_seule": 104,
     "direct_seule_raisons": {
      "cote_opposee_reco": 48,
      "prix_different": 7,
      "absent_reconstruction": 39,
-     "pas_encore_reconstruit": 4
+     "pas_encore_reconstruit": 10
     },
     "inexpliques": 0
    },
@@ -26204,6 +26428,90 @@
      "libelle": "Pas encore dans la reconstruction",
      "detail": "match du 2026-10-30, reconstruction arrêtée au 2026-10-29",
      "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-30",
+     "match": "Jiri Lehecka – Jerome Kym",
+     "joueur": "Jiri Lehecka",
+     "uid": "2026-10-30_jerome_kym_jiri_lehecka",
+     "cote": 1.34,
+     "book": "unibet",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-30, reconstruction arrêtée au 2026-10-29",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-31",
+     "match": "Diana Shnaider – Mia Pohankova",
+     "joueur": "Diana Shnaider",
+     "uid": "2026-10-31_diana_shnaider_mia_pohankova",
+     "cote": 1.37,
+     "book": "bet365",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-31, reconstruction arrêtée au 2026-10-29",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-31",
+     "match": "Otto Virtanen – Moise Kouame",
+     "joueur": "Otto Virtanen",
+     "uid": "2026-10-31_moise_kouame_otto_virtanen",
+     "cote": 1.77,
+     "book": "bet365",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-31, reconstruction arrêtée au 2026-10-29",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-31",
+     "match": "Rinky Hijikata – Jaime Faria",
+     "joueur": "Rinky Hijikata",
+     "uid": "2026-10-31_jaime_faria_rinky_hijikata",
+     "cote": 1.87,
+     "book": "unibet",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-31, reconstruction arrêtée au 2026-10-29",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-31",
+     "match": "Mattia Bellucci – Pablo Carreno Busta",
+     "joueur": "Mattia Bellucci",
+     "uid": "2026-10-31_pablo_carreno_busta_mattia_bellucci",
+     "cote": 1.68,
+     "book": "unibet",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-31, reconstruction arrêtée au 2026-10-29",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-31",
+     "match": "Damir Dzumhur – Sebastian Baez",
+     "joueur": "Damir Dzumhur",
+     "uid": "2026-10-31_sebastian_baez_damir_dzumhur",
+     "cote": 1.69,
+     "book": "bet365",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-31, reconstruction arrêtée au 2026-10-29",
+     "explique": true
     }
    ]
   },
@@ -26215,55 +26523,55 @@
    "worker": {
     "gele_le": "2026-09-25",
     "out_of_sample": {
-     "n": 71,
+     "n": 72,
      "gains": 39,
-     "taux": 54.9,
-     "seuil": 45.3,
-     "ecart": 9.6,
-     "roi": 28,
-     "pnl": 19.9,
-     "cote_moyenne": 2.7,
-     "clv_moyen": 2.6,
-     "clv_pin_moyen": 2.6,
+     "taux": 54.2,
+     "seuil": 44.9,
+     "ecart": 9.2,
+     "roi": 26.2,
+     "pnl": 18.9,
+     "cote_moyenne": 2.74,
+     "clv_moyen": 2.9,
+     "clv_pin_moyen": 2.9,
      "clv_pin_p": 0.0001,
-     "clv_n": 72,
-     "clv_positif": 68.1,
-     "lead_moyen_h": 8,
+     "clv_n": 73,
+     "clv_positif": 68.5,
+     "lead_moyen_h": 8.1,
      "periode": "2026-09-27 -> 2026-10-29",
      "verdict": "ne tranche pas",
-     "n_detectees": 74,
+     "n_detectees": 75,
      "n_envoyees": 43,
-     "n_doublons": 31,
+     "n_doublons": 32,
      "n_non_envoyees_autres": 0,
-     "n_denouees": 71,
-     "n_commencees": 73,
+     "n_denouees": 72,
+     "n_commencees": 74,
      "n_sans_resultat": 2,
      "sans_resultat_pct": 2.7,
      "verrouillable": true,
      "statut": "verrouillable (résultats complets à 97 %)"
     },
-    "n": 71,
-    "roi": 28
+    "n": 72,
+    "roi": 26.2
    },
    "suivi_officiel": {
     "n": 40,
     "gagnes": 24,
     "roi": 20.4,
     "pts": 12.4,
-    "clv_pin": 2.6,
+    "clv_pin": 2.9,
     "clv_pin_ic95": [
-     1.3,
-     4.0
+     1.4,
+     4.5
     ],
-    "clv_n": 72,
-    "n_detectees": 74,
+    "clv_n": 73,
+    "n_detectees": 75,
     "n_envoyees": 43,
-    "n_doublons": 31,
+    "n_doublons": 32,
     "source": "verdicts_direct.json (recalculé : journal plus récent)",
-    "sans_resultat_pct": 45.2,
-    "statut": "en attente de résultats (45,2 % sans résultat)",
+    "sans_resultat_pct": 46.7,
+    "statut": "en attente de résultats (46,7 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-10-30T11:29:52Z"
+    "genere_le": "2026-10-31T11:01:30Z"
    },
    "reconstruction": {
     "n": 112,
@@ -26281,9 +26589,9 @@
     "egal_validation_report": true
    },
    "entonnoir": {
-    "direct_detectees": 74,
+    "direct_detectees": 75,
     "direct_envoyees": 43,
-    "direct_doublons": 31,
+    "direct_doublons": 32,
     "direct_non_envoyees_autres": 0,
     "direct_denouees": 40,
     "reconstruction_detectees": 190,
@@ -26293,12 +26601,12 @@
     "reconstruction_seule_raisons": {
      "apres_coup": 177
     },
-    "direct_seule": 61,
+    "direct_seule": 62,
     "direct_seule_raisons": {
      "absent_reconstruction": 14,
      "prix_different": 35,
      "cote_opposee_reco": 11,
-     "pas_encore_reconstruit": 1
+     "pas_encore_reconstruit": 2
     },
     "inexpliques": 0
    },
@@ -29700,6 +30008,20 @@
      "libelle": "Pas encore dans la reconstruction",
      "detail": "match du 2026-10-30, reconstruction arrêtée au 2026-10-29",
      "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-10-31",
+     "match": "Yaroslav Demin – Yu Hsiou Hsu",
+     "joueur": "Yaroslav Demin",
+     "uid": "2026-10-31_yaroslav_demin_yu_hsiou_hsu",
+     "cote": 2.37,
+     "book": "bet365",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-10-31, reconstruction arrêtée au 2026-10-29",
+     "explique": true
     }
    ]
   },
@@ -29756,7 +30078,7 @@
     "sans_resultat_pct": 0.0,
     "statut": "verrouillable (résultats complets à 100 %)",
     "verrouillable": true,
-    "genere_le": "2026-10-30T11:29:52Z"
+    "genere_le": "2026-10-31T11:01:30Z"
    },
    "reconstruction": {
     "n": 51,
