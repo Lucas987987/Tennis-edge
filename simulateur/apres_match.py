@@ -258,6 +258,11 @@ def bilan_match(uid, f, reel, duree_reelle=None):
         # 30/10/2026 : pronostic affiché contre le même corrigé du statut d'entrée (invité en Challenger, qualifié en ATP)
         lp = lambda q: round(-math.log(min(max(q if y else 1 - q, 1e-6), 1 - 1e-6)), 5)
         E['fantome_entree'] = {'ll_elo': lp(p), 'll_reference': lp(ent['p_home'])}
+    srv = ct.get('serveuses_wta') or {}
+    if srv.get('p_home') is not None and isinstance(p, (int, float)):
+        # 01/11/2026 : pronostic affiché contre le même corrigé du duel serveuse / non-serveuse en WTA
+        lp = lambda q: round(-math.log(min(max(q if y else 1 - q, 1e-6), 1 - 1e-6)), 5)
+        E['fantome_serveuses_wta'] = {'ll_elo': lp(p), 'll_reference': lp(srv['p_home'])}
     fsv = ct.get('forme_service') or {}
     if fsv.get('p_home') is not None and isinstance(p, (int, float)):
         # 29/10/2026 : pronostic affiché contre le même AVEC le service / retour du moment (forme_service.py)
@@ -523,7 +528,8 @@ def analyser(B):
                               'simulation_pct': pct(dd, 'simulation_juste'), 'affiche_pct': pct(dd, 'affiche_juste'),
                               'accord_pct': pct(aa, 'affiche_juste'), 'conclusion_possible': len(dd) >= 30}
         # 29/10/2026 : chaque changement contre son modèle fantôme, sur les mêmes matchs réels
-        for cle_f in ('fantome', 'fantome_itf_femmes', 'fantome_sigma', 'fantome_forme_service', 'fantome_entree'):
+        for cle_f in ('fantome', 'fantome_itf_femmes', 'fantome_sigma', 'fantome_forme_service', 'fantome_entree',
+                      'fantome_serveuses_wta'):
             fa = [e[cle_f] for e in E if cle_f in e]
             if fa:
                 a_, b_ = _moy([x['ll_elo'] for x in fa]), _moy([x['ll_reference'] for x in fa])

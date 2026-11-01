@@ -1,0 +1,870 @@
+{
+ "genere_le": "2026-11-01T04:02:22+00:00",
+ "regle": "découverte 2018–2022 : |écart| ≥ 2 pts et z ≥ 2,81 ; confirmation 2023+ : même signe, z ≥ 1,96",
+ "archive_jusqu_au": "2026-06-01",
+ "matchs": 119012,
+ "repartition_styles": {
+  "grand_serveur": 40539,
+  "serveur_attaquant": 15264,
+  "retourneur_pressant": 28636,
+  "contreur": 36598,
+  "equilibre": 95906,
+  "indetermine": 21081
+ },
+ "decouverte": {
+  "grand_serveur>serveur_attaquant": {
+   "matchs": 1560,
+   "victoires_pct": 45.4,
+   "attendu_pct": 45.2,
+   "ecart_pts": 0.14,
+   "z": 0.12
+  },
+  "grand_serveur>retourneur_pressant": {
+   "matchs": 2920,
+   "victoires_pct": 52.9,
+   "attendu_pct": 51.4,
+   "ecart_pts": 1.56,
+   "z": 1.81
+  },
+  "grand_serveur>contreur": {
+   "matchs": 2947,
+   "victoires_pct": 60.5,
+   "attendu_pct": 60.1,
+   "ecart_pts": 0.47,
+   "z": 0.55
+  },
+  "grand_serveur>equilibre": {
+   "matchs": 8222,
+   "victoires_pct": 60.8,
+   "attendu_pct": 61.0,
+   "ecart_pts": -0.24,
+   "z": -0.48
+  },
+  "serveur_attaquant>retourneur_pressant": {
+   "matchs": 1218,
+   "victoires_pct": 58.0,
+   "attendu_pct": 56.8,
+   "ecart_pts": 1.23,
+   "z": 0.93
+  },
+  "serveur_attaquant>contreur": {
+   "matchs": 1118,
+   "victoires_pct": 65.6,
+   "attendu_pct": 64.5,
+   "ecart_pts": 1.07,
+   "z": 0.81
+  },
+  "serveur_attaquant>equilibre": {
+   "matchs": 2897,
+   "victoires_pct": 65.0,
+   "attendu_pct": 64.4,
+   "ecart_pts": 0.55,
+   "z": 0.66
+  },
+  "retourneur_pressant>contreur": {
+   "matchs": 2543,
+   "victoires_pct": 60.9,
+   "attendu_pct": 59.9,
+   "ecart_pts": 1.0,
+   "z": 1.09
+  },
+  "retourneur_pressant>equilibre": {
+   "matchs": 6022,
+   "victoires_pct": 62.0,
+   "attendu_pct": 61.1,
+   "ecart_pts": 0.91,
+   "z": 1.53
+  },
+  "contreur>equilibre": {
+   "matchs": 7099,
+   "victoires_pct": 52.1,
+   "attendu_pct": 52.5,
+   "ecart_pts": -0.42,
+   "z": -0.76
+  }
+ },
+ "confirmation": {
+  "grand_serveur>serveur_attaquant": {
+   "matchs": 1652,
+   "victoires_pct": 42.3,
+   "attendu_pct": 43.9,
+   "ecart_pts": -1.57,
+   "z": -1.4
+  },
+  "grand_serveur>retourneur_pressant": {
+   "matchs": 2411,
+   "victoires_pct": 53.4,
+   "attendu_pct": 53.0,
+   "ecart_pts": 0.34,
+   "z": 0.36
+  },
+  "grand_serveur>contreur": {
+   "matchs": 2881,
+   "victoires_pct": 61.7,
+   "attendu_pct": 60.4,
+   "ecart_pts": 1.24,
+   "z": 1.45
+  },
+  "grand_serveur>equilibre": {
+   "matchs": 7551,
+   "victoires_pct": 59.6,
+   "attendu_pct": 59.7,
+   "ecart_pts": -0.08,
+   "z": -0.15
+  },
+  "serveur_attaquant>retourneur_pressant": {
+   "matchs": 980,
+   "victoires_pct": 61.7,
+   "attendu_pct": 59.9,
+   "ecart_pts": 1.85,
+   "z": 1.28
+  },
+  "serveur_attaquant>contreur": {
+   "matchs": 1138,
+   "victoires_pct": 66.6,
+   "attendu_pct": 66.5,
+   "ecart_pts": 0.15,
+   "z": 0.11
+  },
+  "serveur_attaquant>equilibre": {
+   "matchs": 2692,
+   "victoires_pct": 66.0,
+   "attendu_pct": 65.1,
+   "ecart_pts": 0.96,
+   "z": 1.11
+  },
+  "retourneur_pressant>contreur": {
+   "matchs": 2279,
+   "victoires_pct": 60.7,
+   "attendu_pct": 59.2,
+   "ecart_pts": 1.52,
+   "z": 1.55
+  },
+  "retourneur_pressant>equilibre": {
+   "matchs": 4527,
+   "victoires_pct": 59.4,
+   "attendu_pct": 59.5,
+   "ecart_pts": -0.09,
+   "z": -0.13
+  },
+  "contreur>equilibre": {
+   "matchs": 7308,
+   "victoires_pct": 51.3,
+   "attendu_pct": 51.2,
+   "ecart_pts": 0.11,
+   "z": 0.19
+  }
+ },
+ "par_circuit": {
+  "ATP": {
+   "decouverte": {
+    "grand_serveur>serveur_attaquant": {
+     "matchs": 432,
+     "victoires_pct": 39.4,
+     "attendu_pct": 37.6,
+     "ecart_pts": 1.74,
+     "z": 0.83
+    },
+    "grand_serveur>retourneur_pressant": {
+     "matchs": 1125,
+     "victoires_pct": 57.0,
+     "attendu_pct": 53.3,
+     "ecart_pts": 3.73,
+     "z": 2.73
+    },
+    "grand_serveur>contreur": {
+     "matchs": 1006,
+     "victoires_pct": 62.0,
+     "attendu_pct": 63.2,
+     "ecart_pts": -1.2,
+     "z": -0.85
+    },
+    "grand_serveur>equilibre": {
+     "matchs": 1401,
+     "victoires_pct": 62.6,
+     "attendu_pct": 63.9,
+     "ecart_pts": -1.32,
+     "z": -1.11
+    },
+    "serveur_attaquant>retourneur_pressant": {
+     "matchs": 430,
+     "victoires_pct": 66.0,
+     "attendu_pct": 63.8,
+     "ecart_pts": 2.27,
+     "z": 1.09
+    },
+    "serveur_attaquant>contreur": {
+     "matchs": 348,
+     "victoires_pct": 69.8,
+     "attendu_pct": 72.2,
+     "ecart_pts": -2.39,
+     "z": -1.09
+    },
+    "serveur_attaquant>equilibre": {
+     "matchs": 453,
+     "victoires_pct": 73.1,
+     "attendu_pct": 72.7,
+     "ecart_pts": 0.4,
+     "z": 0.21
+    },
+    "retourneur_pressant>contreur": {
+     "matchs": 1087,
+     "victoires_pct": 60.3,
+     "attendu_pct": 59.8,
+     "ecart_pts": 0.5,
+     "z": 0.36
+    },
+    "retourneur_pressant>equilibre": {
+     "matchs": 1532,
+     "victoires_pct": 62.7,
+     "attendu_pct": 60.4,
+     "ecart_pts": 2.35,
+     "z": 2.01
+    },
+    "contreur>equilibre": {
+     "matchs": 1445,
+     "victoires_pct": 50.7,
+     "attendu_pct": 50.6,
+     "ecart_pts": 0.15,
+     "z": 0.12
+    }
+   },
+   "confirmation": {
+    "grand_serveur>serveur_attaquant": {
+     "matchs": 400,
+     "victoires_pct": 31.5,
+     "attendu_pct": 35.2,
+     "ecart_pts": -3.66,
+     "z": -1.72
+    },
+    "grand_serveur>retourneur_pressant": {
+     "matchs": 858,
+     "victoires_pct": 53.3,
+     "attendu_pct": 56.1,
+     "ecart_pts": -2.86,
+     "z": -1.82
+    },
+    "grand_serveur>contreur": {
+     "matchs": 748,
+     "victoires_pct": 63.8,
+     "attendu_pct": 64.9,
+     "ecart_pts": -1.18,
+     "z": -0.72
+    },
+    "grand_serveur>equilibre": {
+     "matchs": 1284,
+     "victoires_pct": 62.1,
+     "attendu_pct": 61.4,
+     "ecart_pts": 0.77,
+     "z": 0.61
+    },
+    "serveur_attaquant>retourneur_pressant": {
+     "matchs": 338,
+     "victoires_pct": 68.3,
+     "attendu_pct": 68.4,
+     "ecart_pts": -0.1,
+     "z": -0.04
+    },
+    "serveur_attaquant>contreur": {
+     "matchs": 280,
+     "victoires_pct": 70.4,
+     "attendu_pct": 73.1,
+     "ecart_pts": -2.78,
+     "z": -1.14
+    },
+    "serveur_attaquant>equilibre": {
+     "matchs": 401,
+     "victoires_pct": 73.6,
+     "attendu_pct": 73.1,
+     "ecart_pts": 0.51,
+     "z": 0.25
+    },
+    "retourneur_pressant>contreur": {
+     "matchs": 801,
+     "victoires_pct": 63.3,
+     "attendu_pct": 59.6,
+     "ecart_pts": 3.68,
+     "z": 2.26
+    },
+    "retourneur_pressant>equilibre": {
+     "matchs": 1128,
+     "victoires_pct": 59.3,
+     "attendu_pct": 57.8,
+     "ecart_pts": 1.54,
+     "z": 1.13
+    },
+    "contreur>equilibre": {
+     "matchs": 1122,
+     "victoires_pct": 45.5,
+     "attendu_pct": 46.7,
+     "ecart_pts": -1.12,
+     "z": -0.81
+    }
+   },
+   "retenus": []
+  },
+  "WTA": {
+   "decouverte": {
+    "grand_serveur>serveur_attaquant": {
+     "matchs": 555,
+     "victoires_pct": 49.4,
+     "attendu_pct": 49.3,
+     "ecart_pts": 0.04,
+     "z": 0.02
+    },
+    "grand_serveur>retourneur_pressant": {
+     "matchs": 711,
+     "victoires_pct": 56.3,
+     "attendu_pct": 53.5,
+     "ecart_pts": 2.75,
+     "z": 1.57
+    },
+    "grand_serveur>contreur": {
+     "matchs": 592,
+     "victoires_pct": 68.4,
+     "attendu_pct": 64.2,
+     "ecart_pts": 4.23,
+     "z": 2.27
+    },
+    "grand_serveur>equilibre": {
+     "matchs": 1645,
+     "victoires_pct": 65.7,
+     "attendu_pct": 64.6,
+     "ecart_pts": 1.04,
+     "z": 0.93
+    },
+    "serveur_attaquant>retourneur_pressant": {
+     "matchs": 364,
+     "victoires_pct": 54.9,
+     "attendu_pct": 55.8,
+     "ecart_pts": -0.87,
+     "z": -0.35
+    },
+    "serveur_attaquant>contreur": {
+     "matchs": 299,
+     "victoires_pct": 69.9,
+     "attendu_pct": 64.6,
+     "ecart_pts": 5.3,
+     "z": 2.03
+    },
+    "serveur_attaquant>equilibre": {
+     "matchs": 733,
+     "victoires_pct": 67.8,
+     "attendu_pct": 64.8,
+     "ecart_pts": 3.02,
+     "z": 1.81
+    },
+    "retourneur_pressant>contreur": {
+     "matchs": 434,
+     "victoires_pct": 66.8,
+     "attendu_pct": 62.5,
+     "ecart_pts": 4.33,
+     "z": 1.96
+    },
+    "retourneur_pressant>equilibre": {
+     "matchs": 1106,
+     "victoires_pct": 63.9,
+     "attendu_pct": 61.8,
+     "ecart_pts": 2.11,
+     "z": 1.52
+    },
+    "contreur>equilibre": {
+     "matchs": 1303,
+     "victoires_pct": 49.0,
+     "attendu_pct": 50.7,
+     "ecart_pts": -1.74,
+     "z": -1.32
+    }
+   },
+   "confirmation": {
+    "grand_serveur>serveur_attaquant": {
+     "matchs": 617,
+     "victoires_pct": 47.0,
+     "attendu_pct": 47.6,
+     "ecart_pts": -0.6,
+     "z": -0.32
+    },
+    "grand_serveur>retourneur_pressant": {
+     "matchs": 531,
+     "victoires_pct": 61.6,
+     "attendu_pct": 56.7,
+     "ecart_pts": 4.88,
+     "z": 2.42
+    },
+    "grand_serveur>contreur": {
+     "matchs": 590,
+     "victoires_pct": 66.4,
+     "attendu_pct": 63.8,
+     "ecart_pts": 2.61,
+     "z": 1.4
+    },
+    "grand_serveur>equilibre": {
+     "matchs": 1104,
+     "victoires_pct": 65.2,
+     "attendu_pct": 64.4,
+     "ecart_pts": 0.82,
+     "z": 0.61
+    },
+    "serveur_attaquant>retourneur_pressant": {
+     "matchs": 318,
+     "victoires_pct": 62.3,
+     "attendu_pct": 60.1,
+     "ecart_pts": 2.21,
+     "z": 0.86
+    },
+    "serveur_attaquant>contreur": {
+     "matchs": 362,
+     "victoires_pct": 73.2,
+     "attendu_pct": 67.8,
+     "ecart_pts": 5.41,
+     "z": 2.34
+    },
+    "serveur_attaquant>equilibre": {
+     "matchs": 714,
+     "victoires_pct": 71.3,
+     "attendu_pct": 67.3,
+     "ecart_pts": 3.98,
+     "z": 2.4
+    },
+    "retourneur_pressant>contreur": {
+     "matchs": 442,
+     "victoires_pct": 58.6,
+     "attendu_pct": 57.9,
+     "ecart_pts": 0.69,
+     "z": 0.31
+    },
+    "retourneur_pressant>equilibre": {
+     "matchs": 805,
+     "victoires_pct": 58.4,
+     "attendu_pct": 57.6,
+     "ecart_pts": 0.78,
+     "z": 0.47
+    },
+    "contreur>equilibre": {
+     "matchs": 1114,
+     "victoires_pct": 52.6,
+     "attendu_pct": 50.0,
+     "ecart_pts": 2.65,
+     "z": 1.86
+    }
+   },
+   "retenus": []
+  },
+  "CH": {
+   "decouverte": {
+    "grand_serveur>serveur_attaquant": {
+     "matchs": 573,
+     "victoires_pct": 46.1,
+     "attendu_pct": 47.0,
+     "ecart_pts": -0.97,
+     "z": -0.49
+    },
+    "grand_serveur>retourneur_pressant": {
+     "matchs": 1084,
+     "victoires_pct": 46.6,
+     "attendu_pct": 48.1,
+     "ecart_pts": -1.47,
+     "z": -1.02
+    },
+    "grand_serveur>contreur": {
+     "matchs": 1349,
+     "victoires_pct": 56.0,
+     "attendu_pct": 55.9,
+     "ecart_pts": 0.06,
+     "z": 0.05
+    },
+    "grand_serveur>equilibre": {
+     "matchs": 5176,
+     "victoires_pct": 58.7,
+     "attendu_pct": 59.1,
+     "ecart_pts": -0.36,
+     "z": -0.55
+    },
+    "serveur_attaquant>retourneur_pressant": {
+     "matchs": 424,
+     "victoires_pct": 52.6,
+     "attendu_pct": 50.6,
+     "ecart_pts": 1.97,
+     "z": 0.85
+    },
+    "serveur_attaquant>contreur": {
+     "matchs": 471,
+     "victoires_pct": 59.7,
+     "attendu_pct": 58.7,
+     "ecart_pts": 0.95,
+     "z": 0.44
+    },
+    "serveur_attaquant>equilibre": {
+     "matchs": 1711,
+     "victoires_pct": 61.6,
+     "attendu_pct": 62.1,
+     "ecart_pts": -0.46,
+     "z": -0.42
+    },
+    "retourneur_pressant>contreur": {
+     "matchs": 1022,
+     "victoires_pct": 58.9,
+     "attendu_pct": 58.8,
+     "ecart_pts": 0.11,
+     "z": 0.07
+    },
+    "retourneur_pressant>equilibre": {
+     "matchs": 3384,
+     "victoires_pct": 61.0,
+     "attendu_pct": 61.2,
+     "ecart_pts": -0.14,
+     "z": -0.18
+    },
+    "contreur>equilibre": {
+     "matchs": 4351,
+     "victoires_pct": 53.5,
+     "attendu_pct": 53.7,
+     "ecart_pts": -0.22,
+     "z": -0.31
+    }
+   },
+   "confirmation": {
+    "grand_serveur>serveur_attaquant": {
+     "matchs": 635,
+     "victoires_pct": 44.6,
+     "attendu_pct": 45.8,
+     "ecart_pts": -1.22,
+     "z": -0.65
+    },
+    "grand_serveur>retourneur_pressant": {
+     "matchs": 1022,
+     "victoires_pct": 49.2,
+     "attendu_pct": 48.5,
+     "ecart_pts": 0.67,
+     "z": 0.45
+    },
+    "grand_serveur>contreur": {
+     "matchs": 1543,
+     "victoires_pct": 58.8,
+     "attendu_pct": 57.0,
+     "ecart_pts": 1.89,
+     "z": 1.59
+    },
+    "grand_serveur>equilibre": {
+     "matchs": 5163,
+     "victoires_pct": 57.8,
+     "attendu_pct": 58.3,
+     "ecart_pts": -0.48,
+     "z": -0.75
+    },
+    "serveur_attaquant>retourneur_pressant": {
+     "matchs": 324,
+     "victoires_pct": 54.3,
+     "attendu_pct": 50.8,
+     "ecart_pts": 3.52,
+     "z": 1.33
+    },
+    "serveur_attaquant>contreur": {
+     "matchs": 496,
+     "victoires_pct": 59.7,
+     "attendu_pct": 61.7,
+     "ecart_pts": -2.04,
+     "z": -0.99
+    },
+    "serveur_attaquant>equilibre": {
+     "matchs": 1577,
+     "victoires_pct": 61.7,
+     "attendu_pct": 62.0,
+     "ecart_pts": -0.29,
+     "z": -0.26
+    },
+    "retourneur_pressant>contreur": {
+     "matchs": 1036,
+     "victoires_pct": 59.6,
+     "attendu_pct": 59.4,
+     "ecart_pts": 0.19,
+     "z": 0.13
+    },
+    "retourneur_pressant>equilibre": {
+     "matchs": 2594,
+     "victoires_pct": 59.8,
+     "attendu_pct": 60.8,
+     "ecart_pts": -1.07,
+     "z": -1.18
+    },
+    "contreur>equilibre": {
+     "matchs": 5072,
+     "victoires_pct": 52.3,
+     "attendu_pct": 52.4,
+     "ecart_pts": -0.18,
+     "z": -0.27
+    }
+   },
+   "retenus": []
+  }
+ },
+ "par_surface": {
+  "Hard": {
+   "grand_serveur>serveur_attaquant": {
+    "matchs": 1839,
+    "victoires_pct": 44.2,
+    "attendu_pct": 44.3,
+    "ecart_pts": -0.12,
+    "z": -0.11
+   },
+   "grand_serveur>retourneur_pressant": {
+    "matchs": 3141,
+    "victoires_pct": 55.1,
+    "attendu_pct": 53.2,
+    "ecart_pts": 1.88,
+    "z": 2.27
+   },
+   "grand_serveur>contreur": {
+    "matchs": 3381,
+    "victoires_pct": 62.3,
+    "attendu_pct": 61.4,
+    "ecart_pts": 0.93,
+    "z": 1.19
+   },
+   "grand_serveur>equilibre": {
+    "matchs": 9312,
+    "victoires_pct": 61.2,
+    "attendu_pct": 60.7,
+    "ecart_pts": 0.48,
+    "z": 1.01
+   },
+   "serveur_attaquant>retourneur_pressant": {
+    "matchs": 964,
+    "victoires_pct": 63.9,
+    "attendu_pct": 60.0,
+    "ecart_pts": 3.9,
+    "z": 2.69
+   },
+   "serveur_attaquant>contreur": {
+    "matchs": 1075,
+    "victoires_pct": 68.7,
+    "attendu_pct": 67.1,
+    "ecart_pts": 1.66,
+    "z": 1.24
+   },
+   "serveur_attaquant>equilibre": {
+    "matchs": 2844,
+    "victoires_pct": 66.7,
+    "attendu_pct": 65.2,
+    "ecart_pts": 1.51,
+    "z": 1.8
+   },
+   "retourneur_pressant>contreur": {
+    "matchs": 2284,
+    "victoires_pct": 60.7,
+    "attendu_pct": 60.4,
+    "ecart_pts": 0.29,
+    "z": 0.3
+   },
+   "retourneur_pressant>equilibre": {
+    "matchs": 5549,
+    "victoires_pct": 60.3,
+    "attendu_pct": 59.6,
+    "ecart_pts": 0.67,
+    "z": 1.08
+   },
+   "contreur>equilibre": {
+    "matchs": 7655,
+    "victoires_pct": 50.1,
+    "attendu_pct": 50.9,
+    "ecart_pts": -0.81,
+    "z": -1.5
+   }
+  },
+  "Clay": {
+   "grand_serveur>serveur_attaquant": {
+    "matchs": 1177,
+    "victoires_pct": 43.5,
+    "attendu_pct": 44.6,
+    "ecart_pts": -1.08,
+    "z": -0.8
+   },
+   "grand_serveur>retourneur_pressant": {
+    "matchs": 1867,
+    "victoires_pct": 49.6,
+    "attendu_pct": 50.0,
+    "ecart_pts": -0.38,
+    "z": -0.35
+   },
+   "grand_serveur>contreur": {
+    "matchs": 2072,
+    "victoires_pct": 57.9,
+    "attendu_pct": 57.7,
+    "ecart_pts": 0.18,
+    "z": 0.17
+   },
+   "grand_serveur>equilibre": {
+    "matchs": 5287,
+    "victoires_pct": 58.4,
+    "attendu_pct": 59.4,
+    "ecart_pts": -1.05,
+    "z": -1.66
+   },
+   "serveur_attaquant>retourneur_pressant": {
+    "matchs": 1118,
+    "victoires_pct": 56.5,
+    "attendu_pct": 56.4,
+    "ecart_pts": 0.17,
+    "z": 0.12
+   },
+   "serveur_attaquant>contreur": {
+    "matchs": 1055,
+    "victoires_pct": 63.4,
+    "attendu_pct": 63.6,
+    "ecart_pts": -0.18,
+    "z": -0.13
+   },
+   "serveur_attaquant>equilibre": {
+    "matchs": 2417,
+    "victoires_pct": 63.5,
+    "attendu_pct": 64.0,
+    "ecart_pts": -0.46,
+    "z": -0.5
+   },
+   "retourneur_pressant>contreur": {
+    "matchs": 2288,
+    "victoires_pct": 60.7,
+    "attendu_pct": 58.6,
+    "ecart_pts": 2.03,
+    "z": 2.08
+   },
+   "retourneur_pressant>equilibre": {
+    "matchs": 4381,
+    "victoires_pct": 61.8,
+    "attendu_pct": 61.5,
+    "ecart_pts": 0.31,
+    "z": 0.44
+   },
+   "contreur>equilibre": {
+    "matchs": 5917,
+    "victoires_pct": 54.7,
+    "attendu_pct": 53.6,
+    "ecart_pts": 1.11,
+    "z": 1.81
+   }
+  },
+  "Grass": {
+   "grand_serveur>serveur_attaquant": {
+    "matchs": 196,
+    "victoires_pct": 41.8,
+    "attendu_pct": 46.4,
+    "ecart_pts": -4.53,
+    "z": -1.38
+   },
+   "grand_serveur>retourneur_pressant": {
+    "matchs": 323,
+    "victoires_pct": 54.8,
+    "attendu_pct": 54.3,
+    "ecart_pts": 0.5,
+    "z": 0.19
+   },
+   "grand_serveur>contreur": {
+    "matchs": 375,
+    "victoires_pct": 68.0,
+    "attendu_pct": 64.2,
+    "ecart_pts": 3.8,
+    "z": 1.64
+   },
+   "grand_serveur>equilibre": {
+    "matchs": 1174,
+    "victoires_pct": 60.8,
+    "attendu_pct": 62.1,
+    "ecart_pts": -1.28,
+    "z": -0.97
+   },
+   "serveur_attaquant>retourneur_pressant": {
+    "matchs": 116,
+    "victoires_pct": 55.2,
+    "attendu_pct": 60.8,
+    "ecart_pts": -5.6,
+    "z": -1.37
+   },
+   "serveur_attaquant>contreur": {
+    "matchs": 126,
+    "victoires_pct": 65.9,
+    "attendu_pct": 67.7,
+    "ecart_pts": -1.79,
+    "z": -0.46
+   },
+   "serveur_attaquant>equilibre": {
+    "matchs": 328,
+    "victoires_pct": 69.2,
+    "attendu_pct": 66.1,
+    "ecart_pts": 3.08,
+    "z": 1.26
+   },
+   "retourneur_pressant>contreur": {
+    "matchs": 250,
+    "victoires_pct": 62.8,
+    "attendu_pct": 60.1,
+    "ecart_pts": 2.7,
+    "z": 0.93
+   },
+   "retourneur_pressant>equilibre": {
+    "matchs": 619,
+    "victoires_pct": 59.8,
+    "attendu_pct": 59.8,
+    "ecart_pts": -0.0,
+    "z": -0.0
+   },
+   "contreur>equilibre": {
+    "matchs": 835,
+    "victoires_pct": 44.9,
+    "attendu_pct": 48.0,
+    "ecart_pts": -3.13,
+    "z": -1.91
+   }
+  }
+ },
+ "wta_serveuses": {
+  "decouverte": {
+   "matchs": 4344,
+   "ecart_pts": 2.22,
+   "z": 3.21
+  },
+  "confirmation": {
+   "matchs": 3619,
+   "ecart_pts": 2.91,
+   "z": 3.88
+  }
+ },
+ "serveurs_par_circuit": {
+  "ATP": {
+   "decouverte": {
+    "matchs": 4763,
+    "ecart_pts": 0.31,
+    "z": 0.48
+   },
+   "confirmation": {
+    "matchs": 3909,
+    "ecart_pts": -0.75,
+    "z": -1.07
+   }
+  },
+  "WTA": {
+   "decouverte": {
+    "matchs": 4344,
+    "ecart_pts": 2.22,
+    "z": 3.21
+   },
+   "confirmation": {
+    "matchs": 3619,
+    "ecart_pts": 2.91,
+    "z": 3.88
+   }
+  },
+  "CH": {
+   "decouverte": {
+    "matchs": 10215,
+    "ecart_pts": -0.28,
+    "z": -0.61
+   },
+   "confirmation": {
+    "matchs": 10125,
+    "ecart_pts": 0.08,
+    "z": 0.16
+   }
+  }
+ },
+ "retenus": []
+}
