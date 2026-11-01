@@ -19,42 +19,83 @@
     "hierarchie_service_retour_v1": {
       "famille": "partage partiel service-retour",
       "implementation": "hierarchie.py",
-      "parametres": {"prior_service_retour": 300.0, "prior_surface": 1200.0, "prior_circuit": 2400.0, "pas_global": 0.12, "pas_local": 0.04},
+      "parametres": {
+        "prior_service_retour": 300.0,
+        "prior_surface": 1200.0,
+        "prior_circuit": 2400.0,
+        "pas_global": 0.12,
+        "pas_local": 0.04
+      },
       "statut": "diagnostic",
       "activation": false
     },
     "incertitude_dynamique_v1": {
       "famille": "documentation, absence et volatilité",
       "implementation": "hierarchie.py",
-      "parametres": {"sigma_base": 0.15, "sigma_minimum": 0.05, "sigma_maximum": 0.35},
+      "parametres": {
+        "sigma_base": 0.15,
+        "sigma_minimum": 0.05,
+        "sigma_maximum": 0.35
+      },
       "statut": "diagnostic",
       "activation": false
     },
     "non_lineaire_parcimonieux_v1": {
       "famille": "correction résiduelle par arbres",
       "implementation": "arbres.py et etude_evolutions.py",
-      "parametres": {"profondeur": 2, "tours": 60, "pas": 0.05, "feuille_min": 80, "seuils": 12},
+      "parametres": {
+        "profondeur": 2,
+        "tours": 60,
+        "pas": 0.05,
+        "feuille_min": 80,
+        "seuils": 12
+      },
       "statut": "diagnostic",
       "activation": false
     },
     "charting_couverture_v1": {
       "famille": "tactique Match Charting point-in-time",
       "implementation": "charting.py et etude_charting.py",
-      "parametres": {"prior_service": 300.0, "prior_retour": 300.0, "prior_echanges": 600.0, "minimum_matchs_couverts": 100},
+      "parametres": {
+        "prior_service": 300.0,
+        "prior_retour": 300.0,
+        "prior_echanges": 600.0,
+        "minimum_matchs_couverts": 100
+      },
       "statut": "diagnostic",
       "activation": false
     },
     "charting_atp_wta_v1": {
       "famille": "tactique Match Charting ATP/WTA, sous-groupe repéré post hoc",
       "implementation": "charting_atp_wta.py, etude_charting_atp_wta.py et modele_charting_atp_wta.json",
-      "parametres": {"circuits": ["ATP", "WTA"], "deux_joueurs_couverts_avant_match": true, "prior_service": 300.0, "prior_retour": 300.0, "prior_echanges": 600.0, "ridge": 1.0, "decouverte": "2024", "confirmation_apres": "2026-10-28T00:00:00+00:00"},
+      "parametres": {
+        "circuits": [
+          "ATP",
+          "WTA"
+        ],
+        "deux_joueurs_couverts_avant_match": true,
+        "prior_service": 300.0,
+        "prior_retour": 300.0,
+        "prior_echanges": 600.0,
+        "ridge": 1.0,
+        "decouverte": "2024",
+        "confirmation_apres": "2026-10-28T00:00:00+00:00"
+      },
       "statut": "diagnostic",
       "activation": false
     },
     "styles_adverses_ajustes_v1": {
       "famille": "résidus de victoire contre les styles après correction Elo pré-match",
       "implementation": "styles_ajustes.py, etude_styles_ajustes.py et modele_styles_ajustes.json",
-      "parametres": {"reference": "résultat moins probabilité Elo pré-match", "demi_vie_jours": 365.0, "prior_matchs_equivalents": 20.0, "surface_separee": true, "ridge": 1.0, "decouverte": "2024", "confirmation_apres": "2026-10-28T00:00:00+00:00"},
+      "parametres": {
+        "reference": "résultat moins probabilité Elo pré-match",
+        "demi_vie_jours": 365.0,
+        "prior_matchs_equivalents": 20.0,
+        "surface_separee": true,
+        "ridge": 1.0,
+        "decouverte": "2024",
+        "confirmation_apres": "2026-10-28T00:00:00+00:00"
+      },
       "statut": "diagnostic",
       "activation": false
     },
@@ -102,7 +143,13 @@
         "reference_matchs_serres": "résultat moins probabilité Elo pré-match",
         "reference_balles_break": "résultat moins niveau sur les points ordinaires",
         "demi_vie_jours": 365.0,
-        "priors": {"tiebreak": 10.0, "decisif": 10.0, "proche": 20.0, "bp_service": 30.0, "bp_retour": 30.0},
+        "priors": {
+          "tiebreak": 10.0,
+          "decisif": 10.0,
+          "proche": 20.0,
+          "bp_service": 30.0,
+          "bp_retour": 30.0
+        },
         "surface_et_circuit": "contractés vers le résidu global",
         "ridge": 1.0,
         "decouverte": "2024",
@@ -117,8 +164,16 @@
       "famille": "fréquence et réussite par tranche de longueur d’échange sur ATP/WTA couverts",
       "implementation": "charting_echanges.py, etude_echanges_atp_wta.py et modele_echanges_atp_wta.json",
       "parametres": {
-        "tranches": ["1-3", "4-6", "7-9", "10+"],
-        "circuits": ["ATP", "WTA"],
+        "tranches": [
+          "1-3",
+          "4-6",
+          "7-9",
+          "10+"
+        ],
+        "circuits": [
+          "ATP",
+          "WTA"
+        ],
         "deux_joueurs_couverts_avant_match": true,
         "demi_vie_jours": 365.0,
         "prior_reussite_points": 100.0,
@@ -132,14 +187,148 @@
       "statut": "diagnostic",
       "resultat_diagnostic": "non_confirmant",
       "activation": false
+    },
+    "serveurs_styles_circuits_v1": {
+      "famille": "correction orientée de quatre duels de profils serveurs, propre à chaque branche sur socle partagé",
+      "implementation": "etude_serveurs_circuits.py, rapport_serveurs_circuits.json et modele_serveurs_circuits.json",
+      "parametres": {
+        "duels": [
+          "serveur_attaquant/contreur",
+          "serveur_attaquant/equilibre",
+          "grand_serveur/contreur",
+          "grand_serveur/retourneur_pressant"
+        ],
+        "orientation": "+1 serveur home, -1 serveur away, 0 hors duel",
+        "branches": {
+          "atp": [
+            "ATP"
+          ],
+          "wta": [
+            "WTA"
+          ],
+          "challenger": [
+            "CH",
+            "ITF"
+          ]
+        },
+        "reference_incrementale": "contrôles Elo/service–retour + bilan global, socle partagé",
+        "ridge": 1.0,
+        "decouverte": "2024",
+        "diagnostic_reutilise": "2025–2026",
+        "selection": "quatre duels et trois branches fixés avant calcul ; aucun meilleur duel ou circuit sélectionné après diagnostic"
+      },
+      "statut": "diagnostic",
+      "suivi": "aucun_apres_diagnostic",
+      "resultat_diagnostic": "atp_et_wta_non_confirmants_challenger_positif_sous_seuil_incertitude_et_direction_inverse",
+      "branches_suivies": [],
+      "activation": false
+    },
+    "matrice_profils_orientee_v1": {
+      "famille": "interactions orientées exhaustives des cinq profils réels, avec coefficient libre par paire et branche",
+      "implementation": "etude_matrice_profils_orientee.py, rapport_matrice_profils_orientee.json/.md et modele_matrice_profils_orientee.json",
+      "parametres": {
+        "styles": [
+          "grand_serveur",
+          "serveur_attaquant",
+          "retourneur_pressant",
+          "contreur",
+          "equilibre"
+        ],
+        "paires_distinctes": 10,
+        "cellules_directionnelles": 60,
+        "branches": {
+          "atp": [
+            "ATP"
+          ],
+          "wta": [
+            "WTA"
+          ],
+          "challenger": [
+            "CH",
+            "ITF"
+          ]
+        },
+        "reference_incrementale": "socle partagé Elo/service–retour + bilan global",
+        "ridge": 1.0,
+        "decouverte": "2024",
+        "diagnostic_reutilise": "2025–2026",
+        "selection": "aucune ; toutes les directions et leurs incertitudes sont rapportées"
+      },
+      "statut": "diagnostic",
+      "suivi": "aucun_matrice_complete_rejetee",
+      "resultat_diagnostic": "degradation_atp_wta_challenger_et_global_signaux_individuels_instables_ou_incertains",
+      "activation": false
+    },
+    "profils_orientes_signaux_v1": {
+      "famille": "suivi prospectif des résiduels de deux directions de profils sur trois branches, sans probabilité corrigée",
+      "implementation": "profils_orientes.py et journal_pronostics/profils_orientes_signaux_v1.jsonl",
+      "parametres": {
+        "directions": [
+          "serveur_attaquant_contre_contreur",
+          "contreur_contre_grand_serveur"
+        ],
+        "branches": {
+          "atp": [
+            "ATP"
+          ],
+          "wta": [
+            "WTA"
+          ],
+          "challenger": [
+            "CH",
+            "ITF"
+          ]
+        },
+        "cellules_fixees_avant_future_collecte": 6,
+        "reference": "champion publié et contrôle partagé Elo/service–retour + bilan global",
+        "confirmation_apres": "2026-11-01T00:00:00+00:00",
+        "minimum_par_cellule": {
+          "matchs": 200,
+          "semaines_iso": 8
+        },
+        "confirmation_exigee": "résiduels futurs positifs contre champion et contrôle avec bornes basses IC95 positives",
+        "suite": "nouvel apprentissage et nouvelle validation même si le résiduel prospectif est confirmé"
+      },
+      "statut": "diagnostic",
+      "suivi": "prospectif_six_cellules_sans_correction_active",
+      "resultat_diagnostic": "signaux_historiques_partiellement_instables_matrice_complete_rejetee",
+      "activation": false
     }
   },
   "briques_techniques": {
-    "distribution_scores_exacte_v1": {"implementation": "distribution_exacte.py", "change_le_pronostic": false},
-    "connecteurs_contexte_v1": {"implementation": "contexte_optionnel.py", "change_le_pronostic": false},
-    "evolution_statistiques_joueurs_v1": {"implementation": "evolution_statistiques.py", "change_le_pronostic": false, "descriptif_seulement": true},
-    "suivi_styles_global_v1": {"implementation": "styles_global.py et modele_styles_global.json", "change_le_pronostic": false, "second_avis_journalise": true, "bonus_par_paire": false},
-    "suivi_statistiques_styles_dur_v1": {"implementation": "statistiques_styles.py et modele_statistiques_styles.json", "change_le_pronostic": false, "second_avis_journalise": true, "surface": "Hard", "sous_groupe_post_hoc": true}
+    "distribution_scores_exacte_v1": {
+      "implementation": "distribution_exacte.py",
+      "change_le_pronostic": false
+    },
+    "connecteurs_contexte_v1": {
+      "implementation": "contexte_optionnel.py",
+      "change_le_pronostic": false
+    },
+    "evolution_statistiques_joueurs_v1": {
+      "implementation": "evolution_statistiques.py",
+      "change_le_pronostic": false,
+      "descriptif_seulement": true
+    },
+    "suivi_styles_global_v1": {
+      "implementation": "styles_global.py et modele_styles_global.json",
+      "change_le_pronostic": false,
+      "second_avis_journalise": true,
+      "bonus_par_paire": false
+    },
+    "suivi_statistiques_styles_dur_v1": {
+      "implementation": "statistiques_styles.py et modele_statistiques_styles.json",
+      "change_le_pronostic": false,
+      "second_avis_journalise": true,
+      "surface": "Hard",
+      "sous_groupe_post_hoc": true
+    },
+    "suivi_profils_orientes_v1": {
+      "implementation": "profils_orientes.py et modele_matrice_profils_orientee.json (contrôle seul)",
+      "change_le_pronostic": false,
+      "observation_prospective": true,
+      "cellules": 6,
+      "correction_active": false
+    }
   },
   "securite": "Aucun secret, identifiant privé ou contenu R2 privé n’a été demandé ou consulté.",
   "marche": "Le marché ne doit pas devenir une entrée du modèle indépendant. Les recherches marché/H13–H20 restent séparées ou servent à l’évaluation externe."
