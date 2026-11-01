@@ -1,6 +1,8 @@
 {
  "regle": "Chaque changement du modèle est noté ici avec sa date, ce qu'il change et ce qu'il a gagné au test (log loss, négatif = mieux prévu). Les changements mis en production par décision, sans attendre la 2e semaine, restent sous le garde-fou du jugement hebdomadaire.",
  "changements": [
+  {"date": "2026-11-01", "titre": "Duels de profils de jeu : serveuses WTA contre non-serveuses — modèle fantôme", "statut": "candidat", "decision": false,
+   "mesure": "profils service–retour figés avant match, Elo retiré, 119 000 matchs 2018 → juin 2026 ; aucun des 10 duels confirmé au total ni par circuit (ATP, WTA, Challenger étudiés séparément) ; en WTA, profil serveur contre non-serveur +2,2 pts (2018–2022) et +2,9 pts (2023–2026), rien en ATP et Challenger ; repéré après avoir regardé : probabilité corrigée suivie à côté, jamais affichée ; rien avant 30 matchs concernés"},
   {"date": "2026-10-30", "titre": "Statut d'entrée (invité, qualifié) relevé avant chaque match — modèle fantôme", "statut": "candidat", "decision": false,
    "mesure": "détail TennisApi des matchs à venir (une requête par match, une fois) ; invité en Challenger −5,6 pts et qualifié en ATP +2,1 pts, confirmés sur 2017–2022 ; probabilité corrigée suivie à côté, jamais affichée ; rien avant 30 matchs concernés"},
   {"date": "2026-10-30", "titre": "Points estimés au-delà du top 500 (rang actuel → points)", "statut": "production", "decision": true,

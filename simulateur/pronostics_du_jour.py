@@ -191,6 +191,7 @@ def charger_combinaison(racine):
 COMBINAISON = None
 ACTIVITE = None       # 29/10/2026 : activité récente des joueurs (activite.py), chargée par construire()
 ECHANGES = None       # 30/10/2026 : longueur des échanges (Match Charting Project), affichage seul
+STYLES_MATCHS = {}    # 01/11/2026 : styles service–retour figés avant match (styles_descriptifs.json), fantôme seul
 FORME_SERVICE = None  # 29/10/2026 : service / retour du moment (forme_service.py), information + modèle fantôme
 PROGRAMME = {}        # 29/10/2026 : {(jour, clé, clé) triée: tour} — programme du jour relevé par feuilles_match.py
 
@@ -420,6 +421,53 @@ def _echanges(h, a, debut):
     except Exception:  # noqa: BLE001 — affichage seul
         return None
     return e if any(e) else None
+
+
+# 01/11/2026 — FANTÔME « SERVEUSES WTA » (etude_duels_styles.py, archive 2018 → juin 2026, Elo d'avant-match retiré) :
+# en WTA, profil serveur (grand serveur, serveur attaquant) contre profil non serveur (retourneur pressant, contreur,
+# équilibré) : +2,2 points sur 2018–2022 (4 344 matchs, z 3,2) et +2,9 sur 2023–2026 (3 619 matchs, z 3,9) au-dessus
+# de l'Elo. ATP (+0,3 / −0,8) et Challenger (−0,3 / +0,1) : rien. Repéré APRÈS avoir regardé les circuits : seul le
+# fantôme tranche. Décalage FIGÉ : ln(0,5255/0,4745) en logit vers la serveuse (+2,55 points à 50 %).
+# RÈGLE FIXÉE AVANT RÉSULTAT : jugé sur les matchs WTA concernés pronostiqués à partir du 02/11/2026 ; rien avant
+# 30 matchs ; adopté seulement si la log loss baisse d'au moins 0,001 deux semaines de suite.
+STYLES_SERVEURS = ('grand_serveur', 'serveur_attaquant')
+STYLES_NON_SERVEURS = ('retourneur_pressant', 'contreur', 'equilibre')
+DECALAGE_SERVEUSES_WTA = math.log(0.5255 / 0.4745)
+
+
+def charger_styles_matchs(racine):
+    """{uid: [style home, style away]} depuis simulateur/styles_descriptifs.json (régénéré juste avant)."""
+    try:
+        with open(os.path.join(racine, 'simulateur', 'styles_descriptifs.json'), encoding='utf-8') as f:
+            doc = json.load(f)
+    except (OSError, ValueError):
+        return {}
+    out = {}
+    for uid, b in (doc.get('matchs') or {}).items():
+        j = (b or {}).get('joueurs') or []
+        if len(j) == 2:
+            out[uid] = [j[0].get('style'), j[1].get('style')]
+    return out
+
+
+def controle_serveuses(p_home, c, styles):
+    """{p_home, styles, decalage} du fantôme « serveuses WTA », ou None si le match n'est pas concerné."""
+    if p_home is None or c != 'WTA' or not styles or len(styles) != 2:
+        return None
+    sh, sa = styles
+    if sh in STYLES_SERVEURS and sa in STYLES_NON_SERVEURS:
+        d = DECALAGE_SERVEUSES_WTA
+    elif sa in STYLES_SERVEURS and sh in STYLES_NON_SERVEURS:
+        d = -DECALAGE_SERVEUSES_WTA
+    else:
+        return None
+    q = min(max(float(p_home), 1e-6), 1 - 1e-6)
+    return {'p_home': round(sig(math.log(q / (1 - q)) + d), 4), 'styles': [sh, sa], 'decalage': round(d, 4)}
+
+
+def _avec_serveuses(ct, srv):
+    """01/11/2026 : le fantôme « serveuses WTA » dans le bloc de contrôle."""
+    return dict(ct or {}, serveuses_wta=srv) if srv else ct
 
 
 def _avec_entree(ct, ent):
@@ -694,7 +742,8 @@ def construire(racine, maintenant=None):
         elo_fem = E.Elo.importer(fem_etat['joueurs'], fem_etat.get('options'))
     except (OSError, ValueError, KeyError):
         fem_etat, elo_fem = None, None
-    global ACTIVITE, PROGRAMME, FORME_SERVICE, ECHANGES
+    global ACTIVITE, PROGRAMME, FORME_SERVICE, ECHANGES, STYLES_MATCHS
+    STYLES_MATCHS = charger_styles_matchs(racine)
     try:                            # 30/10/2026 : longueur des échanges (affichage seul ; /tmp/mcp cloné par le workflow)
         import echanges_joueur as EJ
         ECHANGES = EJ.depuis(os.environ.get('MCP_DIR', '/tmp/mcp'))
@@ -869,10 +918,13 @@ def construire(racine, maintenant=None):
                     'forme_service': fsv if fsv and (fsv[0] or fsv[1]) else None,
                     'echanges': _echanges(h, a, x['debut']),
                     'entree': entree_du_match(h, a, x['debut']),
-                    'controle': _avec_entree(_avec_service(_avec_forme(controle_fantome(elo, elo_ref, ref_etat, etat, h, a, c, s,
-                                                                                        elo_fem, fem_etat), forme_ctl), fsv_ctl),
-                                             controle_entree((combinaison or simulation or stats or {}).get('p_home'), c,
-                                                             entree_du_match(h, a, x['debut'])))})
+                    'controle': _avec_serveuses(
+                        _avec_entree(_avec_service(_avec_forme(controle_fantome(elo, elo_ref, ref_etat, etat, h, a, c, s,
+                                                                                elo_fem, fem_etat), forme_ctl), fsv_ctl),
+                                     controle_entree((combinaison or simulation or stats or {}).get('p_home'), c,
+                                                     entree_du_match(h, a, x['debut']))),
+                        controle_serveuses((combinaison or simulation or stats or {}).get('p_home'), c,
+                                           STYLES_MATCHS.get(uid)))})
     doc = {'genere_le': maintenant.isoformat(timespec='seconds') + 'Z', 'elo_au': etat.get('dernier_match'),
             'horizon_h': HORIZON_H, 'sigma': SIGMA, 'simulations': SIMULATIONS if PR is not None else 0,
             'qualite_horodatages': couverture_horodatages,
