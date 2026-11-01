@@ -1,0 +1,616 @@
+{
+  "schema": "serveurs_styles_circuits_v1",
+  "n": 8000,
+  "n_decouverte": 2153,
+  "n_diagnostic": 5847,
+  "coupure": "2025-01-01",
+  "orientation": "identifiants alphabétiques ; +1 serveur home, -1 serveur away, 0 hors duel",
+  "socle_partage": true,
+  "algorithmes_autonomes_par_circuit": false,
+  "reference_incrementale": "contrôles Elo/service–retour + bilan global ; une correction de branche seulement",
+  "branches": {
+    "atp": {
+      "circuits": [
+        "ATP"
+      ],
+      "couverture_decouverte": {
+        "n": 343,
+        "duels_serveurs": 88,
+        "pct_duels_serveurs": 25.66
+      },
+      "couverture_diagnostic": {
+        "n": 405,
+        "duels_serveurs": 104,
+        "pct_duels_serveurs": 25.68
+      },
+      "decouverte": {
+        "controle_avec_bilan": {
+          "n": 343,
+          "log_loss": 0.619393,
+          "brier": 0.21711,
+          "reussite_pct": 63.56
+        },
+        "challenger": {
+          "n": 343,
+          "log_loss": 0.613844,
+          "brier": 0.214042,
+          "reussite_pct": 64.43
+        },
+        "gains_incrementaux": {
+          "log_loss": 0.005549,
+          "brier": 0.003068,
+          "sens": "positif = apport des styles"
+        }
+      },
+      "diagnostic": {
+        "controle_avec_bilan": {
+          "n": 405,
+          "log_loss": 0.585165,
+          "brier": 0.200612,
+          "reussite_pct": 68.89
+        },
+        "challenger": {
+          "n": 405,
+          "log_loss": 0.595766,
+          "brier": 0.205548,
+          "reussite_pct": 68.64
+        },
+        "gains_incrementaux": {
+          "log_loss": -0.010601,
+          "brier": -0.004936,
+          "sens": "positif = apport des styles"
+        },
+        "ic95_bootstrap_semaine": {
+          "log_loss": {
+            "bas": -0.019989,
+            "haut": -0.001601
+          },
+          "brier": {
+            "bas": -0.009392,
+            "haut": -0.000633
+          }
+        }
+      },
+      "coefficient_duel_non_standardise": -0.47189146,
+      "direction_attendue_sur_decouverte": false,
+      "diagnostic_positif": false,
+      "suivi_prospectif_justifie": false,
+      "activation": false,
+      "verdict": "apport incrémental non démontré ; aucun suivi de cette branche"
+    },
+    "wta": {
+      "circuits": [
+        "WTA"
+      ],
+      "couverture_decouverte": {
+        "n": 294,
+        "duels_serveurs": 70,
+        "pct_duels_serveurs": 23.81
+      },
+      "couverture_diagnostic": {
+        "n": 414,
+        "duels_serveurs": 122,
+        "pct_duels_serveurs": 29.47
+      },
+      "decouverte": {
+        "controle_avec_bilan": {
+          "n": 294,
+          "log_loss": 0.596669,
+          "brier": 0.205584,
+          "reussite_pct": 68.37
+        },
+        "challenger": {
+          "n": 294,
+          "log_loss": 0.596078,
+          "brier": 0.205391,
+          "reussite_pct": 69.39
+        },
+        "gains_incrementaux": {
+          "log_loss": 0.000591,
+          "brier": 0.000193,
+          "sens": "positif = apport des styles"
+        }
+      },
+      "diagnostic": {
+        "controle_avec_bilan": {
+          "n": 414,
+          "log_loss": 0.613151,
+          "brier": 0.214047,
+          "reussite_pct": 64.25
+        },
+        "challenger": {
+          "n": 414,
+          "log_loss": 0.61371,
+          "brier": 0.214465,
+          "reussite_pct": 64.49
+        },
+        "gains_incrementaux": {
+          "log_loss": -0.000559,
+          "brier": -0.000418,
+          "sens": "positif = apport des styles"
+        },
+        "ic95_bootstrap_semaine": {
+          "log_loss": {
+            "bas": -0.004636,
+            "haut": 0.003271
+          },
+          "brier": {
+            "bas": -0.002259,
+            "haut": 0.001423
+          }
+        }
+      },
+      "coefficient_duel_non_standardise": 0.17635293,
+      "direction_attendue_sur_decouverte": true,
+      "diagnostic_positif": false,
+      "suivi_prospectif_justifie": false,
+      "activation": false,
+      "verdict": "apport incrémental non démontré ; aucun suivi de cette branche",
+      "duels_diagnostic": {
+        "serveur_attaquant_contre_contreur": {
+          "n": 24,
+          "victoires_serveur_pct": 87.5,
+          "residuel_controle_points": 10.736,
+          "ic95_residuel_controle_points": [
+            -2.344,
+            23.816
+          ],
+          "residuel_challenger_points": 8.094,
+          "controle_avec_bilan": {
+            "n": 24,
+            "log_loss": 0.376563,
+            "brier": 0.113956,
+            "reussite_pct": 87.5
+          },
+          "challenger": {
+            "n": 24,
+            "log_loss": 0.361359,
+            "brier": 0.108854,
+            "reussite_pct": 87.5
+          },
+          "gains_incrementaux": {
+            "log_loss": 0.015204,
+            "brier": 0.005102,
+            "sens": "positif = apport des styles"
+          },
+          "note": "résiduel après Elo/service–retour/bilan, pas effet causal ni bonus à injecter"
+        },
+        "serveur_attaquant_contre_equilibre": {
+          "n": 37,
+          "victoires_serveur_pct": 64.86,
+          "residuel_controle_points": 2.074,
+          "ic95_residuel_controle_points": [
+            -12.449,
+            16.598
+          ],
+          "residuel_challenger_points": -1.375,
+          "controle_avec_bilan": {
+            "n": 37,
+            "log_loss": 0.575172,
+            "brier": 0.198097,
+            "reussite_pct": 64.86
+          },
+          "challenger": {
+            "n": 37,
+            "log_loss": 0.574948,
+            "brier": 0.198804,
+            "reussite_pct": 62.16
+          },
+          "gains_incrementaux": {
+            "log_loss": 0.000224,
+            "brier": -0.000707,
+            "sens": "positif = apport des styles"
+          },
+          "note": "résiduel après Elo/service–retour/bilan, pas effet causal ni bonus à injecter"
+        },
+        "grand_serveur_contre_contreur": {
+          "n": 31,
+          "victoires_serveur_pct": 58.06,
+          "residuel_controle_points": -8.295,
+          "ic95_residuel_controle_points": [
+            -24.617,
+            8.026
+          ],
+          "residuel_challenger_points": -11.536,
+          "controle_avec_bilan": {
+            "n": 31,
+            "log_loss": 0.614037,
+            "brier": 0.214905,
+            "reussite_pct": 61.29
+          },
+          "challenger": {
+            "n": 31,
+            "log_loss": 0.63032,
+            "brier": 0.222441,
+            "reussite_pct": 61.29
+          },
+          "gains_incrementaux": {
+            "log_loss": -0.016283,
+            "brier": -0.007536,
+            "sens": "positif = apport des styles"
+          },
+          "note": "résiduel après Elo/service–retour/bilan, pas effet causal ni bonus à injecter"
+        },
+        "grand_serveur_contre_retourneur_pressant": {
+          "n": 30,
+          "victoires_serveur_pct": 56.67,
+          "residuel_controle_points": -0.783,
+          "ic95_residuel_controle_points": [
+            -18.156,
+            16.589
+          ],
+          "residuel_challenger_points": -4.369,
+          "controle_avec_bilan": {
+            "n": 30,
+            "log_loss": 0.637492,
+            "brier": 0.227886,
+            "reussite_pct": 53.33
+          },
+          "challenger": {
+            "n": 30,
+            "log_loss": 0.642373,
+            "brier": 0.229853,
+            "reussite_pct": 56.67
+          },
+          "gains_incrementaux": {
+            "log_loss": -0.004881,
+            "brier": -0.001967,
+            "sens": "positif = apport des styles"
+          },
+          "note": "résiduel après Elo/service–retour/bilan, pas effet causal ni bonus à injecter"
+        }
+      }
+    },
+    "challenger": {
+      "circuits": [
+        "CH",
+        "ITF"
+      ],
+      "couverture_decouverte": {
+        "n": 1516,
+        "duels_serveurs": 190,
+        "pct_duels_serveurs": 12.53
+      },
+      "couverture_diagnostic": {
+        "n": 5028,
+        "duels_serveurs": 618,
+        "pct_duels_serveurs": 12.29
+      },
+      "decouverte": {
+        "controle_avec_bilan": {
+          "n": 1516,
+          "log_loss": 0.626585,
+          "brier": 0.218171,
+          "reussite_pct": 64.78
+        },
+        "challenger": {
+          "n": 1516,
+          "log_loss": 0.626386,
+          "brier": 0.218105,
+          "reussite_pct": 64.84
+        },
+        "gains_incrementaux": {
+          "log_loss": 0.000199,
+          "brier": 6.6e-05,
+          "sens": "positif = apport des styles"
+        }
+      },
+      "diagnostic": {
+        "controle_avec_bilan": {
+          "n": 5028,
+          "log_loss": 0.588383,
+          "brier": 0.20229,
+          "reussite_pct": 68.28
+        },
+        "challenger": {
+          "n": 5028,
+          "log_loss": 0.588031,
+          "brier": 0.202133,
+          "reussite_pct": 68.32
+        },
+        "gains_incrementaux": {
+          "log_loss": 0.000352,
+          "brier": 0.000157,
+          "sens": "positif = apport des styles"
+        },
+        "ic95_bootstrap_semaine": {
+          "log_loss": {
+            "bas": -8.2e-05,
+            "haut": 0.0008
+          },
+          "brier": {
+            "bas": -3.6e-05,
+            "haut": 0.00036
+          }
+        }
+      },
+      "coefficient_duel_non_standardise": -0.12177676,
+      "direction_attendue_sur_decouverte": false,
+      "diagnostic_positif": true,
+      "suivi_prospectif_justifie": false,
+      "activation": false,
+      "verdict": "signal positif au diagnostic mais insuffisamment cohérent pour un suivi"
+    }
+  },
+  "branches_avec_suivi_prospectif": [],
+  "duels": {
+    "serveur_attaquant_contre_contreur": [
+      "serveur_attaquant",
+      "contreur"
+    ],
+    "serveur_attaquant_contre_equilibre": [
+      "serveur_attaquant",
+      "equilibre"
+    ],
+    "grand_serveur_contre_contreur": [
+      "grand_serveur",
+      "contreur"
+    ],
+    "grand_serveur_contre_retourneur_pressant": [
+      "grand_serveur",
+      "retourneur_pressant"
+    ]
+  },
+  "decouverte_globale_controle": {
+    "n": 2153,
+    "log_loss": 0.621354,
+    "brier": 0.216283,
+    "reussite_pct": 65.07
+  },
+  "diagnostic_global_controle": {
+    "n": 5847,
+    "log_loss": 0.589914,
+    "brier": 0.203006,
+    "reussite_pct": 68.03
+  },
+  "convergence": {
+    "controle": true,
+    "atp": true,
+    "wta": true,
+    "challenger": true
+  },
+  "coefficients_standardises_decouverte": {
+    "atp": {
+      "constante": 0.06773256448067262,
+      "elo": 0.7399596094913998,
+      "service_retour": 0.1290447172793549,
+      "terre": -0.004569145285924286,
+      "gazon": -0.06238447326738519,
+      "wta": 0.0338750495820163,
+      "challenger": 0.05790112856344669,
+      "itf": -0.06002014484340767,
+      "documentation_balles": -0.015898145047035798,
+      "documentation_matchs": 0.006509545816696595,
+      "moins_500_balles": 0.10177402214578743,
+      "bilan_global": 0.02896453324755807,
+      "duel_serveur_branche": -0.09537768979518749
+    },
+    "wta": {
+      "constante": 0.06641280021278913,
+      "elo": 0.7395651535028248,
+      "service_retour": 0.12803872081073675,
+      "terre": -0.004512091039985228,
+      "gazon": -0.058063255376754906,
+      "wta": 0.03964896591528181,
+      "challenger": 0.06907329437791254,
+      "itf": -0.05234817433323565,
+      "documentation_balles": -0.016320341358608943,
+      "documentation_matchs": 0.005599009587351356,
+      "moins_500_balles": 0.10257463028193389,
+      "bilan_global": -0.0032978130896004322,
+      "duel_serveur_branche": 0.03179197096878872
+    },
+    "challenger": {
+      "constante": 0.06640425030027854,
+      "elo": 0.737732072535646,
+      "service_retour": 0.13466326648918608,
+      "terre": -0.002881429697781595,
+      "gazon": -0.058918434418639094,
+      "wta": 0.041843048536855484,
+      "challenger": 0.06856003248738819,
+      "itf": -0.05009765394633507,
+      "documentation_balles": -0.015520908962710552,
+      "documentation_matchs": 0.003815676578809733,
+      "moins_500_balles": 0.10086752883883303,
+      "bilan_global": 0.007382130940226711,
+      "duel_serveur_branche": -0.03616721906484614
+    }
+  },
+  "modeles_complets_decouverte": {
+    "controle": {
+      "beta": [
+        0.0664318930692211,
+        0.7400732537403224,
+        0.12804036231391877,
+        -0.003780815335465264,
+        -0.058526787410357245,
+        0.04174207240931397,
+        0.06908481089603058,
+        -0.051964801779847886,
+        -0.015217676231173734,
+        0.005087314554522682,
+        0.102681913015428,
+        0.0037718148294185955
+      ],
+      "moyennes": [
+        0.0,
+        0.05072817007950472,
+        0.00014041116453224092,
+        0.4064096609382257,
+        0.057594054807245706,
+        0.13655364607524384,
+        0.5582907570831398,
+        0.14584300975383185,
+        7.180856111540326,
+        4.221601408263251,
+        0.18253599628425451,
+        -0.01739610265726015
+      ],
+      "ecarts": [
+        1.0,
+        0.8889743169295222,
+        0.4854576953177534,
+        0.49116275147277005,
+        0.23297420384691883,
+        0.34337552012163136,
+        0.4965905633806128,
+        0.3529487586885319,
+        1.9384526263650612,
+        1.3110038051804358,
+        0.38628565381692487,
+        0.43177599580638715
+      ],
+      "converged": true
+    },
+    "atp": {
+      "beta": [
+        0.06773256448067262,
+        0.7399596094913998,
+        0.1290447172793549,
+        -0.004569145285924286,
+        -0.06238447326738519,
+        0.0338750495820163,
+        0.05790112856344669,
+        -0.06002014484340767,
+        -0.015898145047035798,
+        0.006509545816696595,
+        0.10177402214578743,
+        0.02896453324755807,
+        -0.09537768979518749
+      ],
+      "moyennes": [
+        0.0,
+        0.05072817007950472,
+        0.00014041116453224092,
+        0.4064096609382257,
+        0.057594054807245706,
+        0.13655364607524384,
+        0.5582907570831398,
+        0.14584300975383185,
+        7.180856111540326,
+        4.221601408263251,
+        0.18253599628425451,
+        -0.01739610265726015,
+        0.004644681839294009
+      ],
+      "ecarts": [
+        1.0,
+        0.8889743169295222,
+        0.4854576953177534,
+        0.49116275147277005,
+        0.23297420384691883,
+        0.34337552012163136,
+        0.4965905633806128,
+        0.3529487586885319,
+        1.9384526263650612,
+        1.3110038051804358,
+        0.38628565381692487,
+        0.43177599580638715,
+        0.20211785452156125
+      ],
+      "converged": true
+    },
+    "wta": {
+      "beta": [
+        0.06641280021278913,
+        0.7395651535028248,
+        0.12803872081073675,
+        -0.004512091039985228,
+        -0.058063255376754906,
+        0.03964896591528181,
+        0.06907329437791254,
+        -0.05234817433323565,
+        -0.016320341358608943,
+        0.005599009587351356,
+        0.10257463028193389,
+        -0.0032978130896004322,
+        0.03179197096878872
+      ],
+      "moyennes": [
+        0.0,
+        0.05072817007950472,
+        0.00014041116453224092,
+        0.4064096609382257,
+        0.057594054807245706,
+        0.13655364607524384,
+        0.5582907570831398,
+        0.14584300975383185,
+        7.180856111540326,
+        4.221601408263251,
+        0.18253599628425451,
+        -0.01739610265726015,
+        0.0037157454714352067
+      ],
+      "ecarts": [
+        1.0,
+        0.8889743169295222,
+        0.4854576953177534,
+        0.49116275147277005,
+        0.23297420384691883,
+        0.34337552012163136,
+        0.4965905633806128,
+        0.3529487586885319,
+        1.9384526263650612,
+        1.3110038051804358,
+        0.38628565381692487,
+        0.43177599580638715,
+        0.18027469625726614
+      ],
+      "converged": true
+    },
+    "challenger": {
+      "beta": [
+        0.06640425030027854,
+        0.737732072535646,
+        0.13466326648918608,
+        -0.002881429697781595,
+        -0.058918434418639094,
+        0.041843048536855484,
+        0.06856003248738819,
+        -0.05009765394633507,
+        -0.015520908962710552,
+        0.003815676578809733,
+        0.10086752883883303,
+        0.007382130940226711,
+        -0.03616721906484614
+      ],
+      "moyennes": [
+        0.0,
+        0.05072817007950472,
+        0.00014041116453224092,
+        0.4064096609382257,
+        0.057594054807245706,
+        0.13655364607524384,
+        0.5582907570831398,
+        0.14584300975383185,
+        7.180856111540326,
+        4.221601408263251,
+        0.18253599628425451,
+        -0.01739610265726015,
+        0.006502554575011612
+      ],
+      "ecarts": [
+        1.0,
+        0.8889743169295222,
+        0.4854576953177534,
+        0.49116275147277005,
+        0.23297420384691883,
+        0.34337552012163136,
+        0.4965905633806128,
+        0.3529487586885319,
+        1.9384526263650612,
+        1.3110038051804358,
+        0.38628565381692487,
+        0.43177599580638715,
+        0.29699608032865543
+      ],
+      "converged": true
+    }
+  },
+  "nature_diagnostic": "2025–2026 historique réutilisé ; jamais une confirmation prospective nouvelle",
+  "selection": "quatre duels et trois branches fixés avant le calcul ; aucun duel ni meilleur circuit choisi après le diagnostic",
+  "marche_utilise": false,
+  "activation": false,
+  "champion_actif_modifie": false,
+  "regle": "ridge 1.0 ajusté sur 2024 uniquement ; coefficients figés ; aucune activation automatique"
+}

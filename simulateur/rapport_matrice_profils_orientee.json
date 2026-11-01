@@ -1,0 +1,4588 @@
+{
+  "schema": "matrice_profils_orientee_v1",
+  "n": 8000,
+  "n_decouverte": 2153,
+  "n_diagnostic": 5847,
+  "coupure": "2025-01-01",
+  "styles": [
+    "grand_serveur",
+    "serveur_attaquant",
+    "retourneur_pressant",
+    "contreur",
+    "equilibre"
+  ],
+  "paires_canoniques": [
+    [
+      "grand_serveur",
+      "serveur_attaquant"
+    ],
+    [
+      "grand_serveur",
+      "retourneur_pressant"
+    ],
+    [
+      "grand_serveur",
+      "contreur"
+    ],
+    [
+      "grand_serveur",
+      "equilibre"
+    ],
+    [
+      "serveur_attaquant",
+      "retourneur_pressant"
+    ],
+    [
+      "serveur_attaquant",
+      "contreur"
+    ],
+    [
+      "serveur_attaquant",
+      "equilibre"
+    ],
+    [
+      "retourneur_pressant",
+      "contreur"
+    ],
+    [
+      "retourneur_pressant",
+      "equilibre"
+    ],
+    [
+      "contreur",
+      "equilibre"
+    ]
+  ],
+  "cellules_directionnelles_par_branche": 20,
+  "orientation": "ordre alphabétique des joueurs ; chaque paire a un coefficient libre dans chaque branche",
+  "socle_partage": true,
+  "algorithmes_autonomes_par_circuit": false,
+  "reference_incrementale": "contrôles Elo/service–retour + bilan global ; 30 interactions paire × branche",
+  "decouverte_globale": {
+    "controle_avec_bilan": {
+      "n": 2153,
+      "log_loss": 0.621354,
+      "brier": 0.216283,
+      "reussite_pct": 65.07
+    },
+    "challenger": {
+      "n": 2153,
+      "log_loss": 0.612338,
+      "brier": 0.212279,
+      "reussite_pct": 66.23
+    },
+    "gains_incrementaux": {
+      "log_loss": 0.009016,
+      "brier": 0.004004,
+      "sens": "positif = apport des styles"
+    }
+  },
+  "diagnostic_global": {
+    "controle_avec_bilan": {
+      "n": 5847,
+      "log_loss": 0.589914,
+      "brier": 0.203006,
+      "reussite_pct": 68.03
+    },
+    "challenger": {
+      "n": 5847,
+      "log_loss": 0.599431,
+      "brier": 0.207097,
+      "reussite_pct": 67.35
+    },
+    "gains_incrementaux": {
+      "log_loss": -0.009517,
+      "brier": -0.004091,
+      "sens": "positif = apport des styles"
+    },
+    "ic95_bootstrap_semaine": {
+      "log_loss": {
+        "bas": -0.013342,
+        "haut": -0.005613
+      },
+      "brier": {
+        "bas": -0.005748,
+        "haut": -0.00239
+      }
+    }
+  },
+  "branches": {
+    "atp": {
+      "circuits": [
+        "ATP"
+      ],
+      "n_decouverte": 343,
+      "n_diagnostic": 405,
+      "decouverte": {
+        "controle_avec_bilan": {
+          "n": 343,
+          "log_loss": 0.619393,
+          "brier": 0.21711,
+          "reussite_pct": 63.56
+        },
+        "challenger": {
+          "n": 343,
+          "log_loss": 0.60053,
+          "brier": 0.20899,
+          "reussite_pct": 64.14
+        },
+        "gains_incrementaux": {
+          "log_loss": 0.018863,
+          "brier": 0.00812,
+          "sens": "positif = apport des styles"
+        }
+      },
+      "diagnostic": {
+        "controle_avec_bilan": {
+          "n": 405,
+          "log_loss": 0.585165,
+          "brier": 0.200612,
+          "reussite_pct": 68.89
+        },
+        "challenger": {
+          "n": 405,
+          "log_loss": 0.602704,
+          "brier": 0.208745,
+          "reussite_pct": 67.16
+        },
+        "gains_incrementaux": {
+          "log_loss": -0.017539,
+          "brier": -0.008133,
+          "sens": "positif = apport des styles"
+        },
+        "ic95_bootstrap_semaine": {
+          "log_loss": {
+            "bas": -0.034906,
+            "haut": -0.000277
+          },
+          "brier": {
+            "bas": -0.015649,
+            "haut": -0.000824
+          }
+        }
+      },
+      "activation": false
+    },
+    "wta": {
+      "circuits": [
+        "WTA"
+      ],
+      "n_decouverte": 294,
+      "n_diagnostic": 414,
+      "decouverte": {
+        "controle_avec_bilan": {
+          "n": 294,
+          "log_loss": 0.596669,
+          "brier": 0.205584,
+          "reussite_pct": 68.37
+        },
+        "challenger": {
+          "n": 294,
+          "log_loss": 0.582121,
+          "brier": 0.199338,
+          "reussite_pct": 71.43
+        },
+        "gains_incrementaux": {
+          "log_loss": 0.014548,
+          "brier": 0.006246,
+          "sens": "positif = apport des styles"
+        }
+      },
+      "diagnostic": {
+        "controle_avec_bilan": {
+          "n": 414,
+          "log_loss": 0.613151,
+          "brier": 0.214047,
+          "reussite_pct": 64.25
+        },
+        "challenger": {
+          "n": 414,
+          "log_loss": 0.630715,
+          "brier": 0.221352,
+          "reussite_pct": 64.01
+        },
+        "gains_incrementaux": {
+          "log_loss": -0.017564,
+          "brier": -0.007305,
+          "sens": "positif = apport des styles"
+        },
+        "ic95_bootstrap_semaine": {
+          "log_loss": {
+            "bas": -0.031281,
+            "haut": -0.00289
+          },
+          "brier": {
+            "bas": -0.013592,
+            "haut": -0.000569
+          }
+        }
+      },
+      "activation": false
+    },
+    "challenger": {
+      "circuits": [
+        "CH",
+        "ITF"
+      ],
+      "n_decouverte": 1516,
+      "n_diagnostic": 5028,
+      "decouverte": {
+        "controle_avec_bilan": {
+          "n": 1516,
+          "log_loss": 0.626585,
+          "brier": 0.218171,
+          "reussite_pct": 64.78
+        },
+        "challenger": {
+          "n": 1516,
+          "log_loss": 0.620869,
+          "brier": 0.215533,
+          "reussite_pct": 65.7
+        },
+        "gains_incrementaux": {
+          "log_loss": 0.005716,
+          "brier": 0.002638,
+          "sens": "positif = apport des styles"
+        }
+      },
+      "diagnostic": {
+        "controle_avec_bilan": {
+          "n": 5028,
+          "log_loss": 0.588383,
+          "brier": 0.20229,
+          "reussite_pct": 68.28
+        },
+        "challenger": {
+          "n": 5028,
+          "log_loss": 0.596591,
+          "brier": 0.20579,
+          "reussite_pct": 67.64
+        },
+        "gains_incrementaux": {
+          "log_loss": -0.008208,
+          "brier": -0.0035,
+          "sens": "positif = apport des styles"
+        },
+        "ic95_bootstrap_semaine": {
+          "log_loss": {
+            "bas": -0.011725,
+            "haut": -0.004607
+          },
+          "brier": {
+            "bas": -0.005036,
+            "haut": -0.001952
+          }
+        }
+      },
+      "activation": false
+    }
+  },
+  "matrice_directionnelle": {
+    "atp": {
+      "grand_serveur_contre_serveur_attaquant": {
+        "n_decouverte": 16,
+        "n_diagnostic": 16,
+        "decouverte": {
+          "n": 16,
+          "coefficient_log_odds_favorisant_profil": -0.37207252,
+          "victoires_profil_pct": 25.0,
+          "probabilite_controle_profil_pct": 32.48,
+          "residuel_controle_points": -7.479,
+          "controle_avec_bilan": {
+            "n": 16,
+            "log_loss": 0.431897,
+            "brier": 0.135437,
+            "reussite_pct": 87.5
+          },
+          "challenger": {
+            "n": 16,
+            "log_loss": 0.400142,
+            "brier": 0.126153,
+            "reussite_pct": 81.25
+          },
+          "gains_incrementaux": {
+            "log_loss": 0.031755,
+            "brier": 0.009284,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": null
+        },
+        "diagnostic": {
+          "n": 16,
+          "coefficient_log_odds_favorisant_profil": -0.37207252,
+          "victoires_profil_pct": 25.0,
+          "probabilite_controle_profil_pct": 32.79,
+          "residuel_controle_points": -7.792,
+          "controle_avec_bilan": {
+            "n": 16,
+            "log_loss": 0.428633,
+            "brier": 0.133733,
+            "reussite_pct": 87.5
+          },
+          "challenger": {
+            "n": 16,
+            "log_loss": 0.408772,
+            "brier": 0.129014,
+            "reussite_pct": 81.25
+          },
+          "gains_incrementaux": {
+            "log_loss": 0.019861,
+            "brier": 0.004719,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": {
+            "log_loss": {
+              "bas": -0.065346,
+              "haut": 0.091022
+            },
+            "brier": {
+              "bas": -0.029916,
+              "haut": 0.035373
+            },
+            "residuel_controle_points": {
+              "bas": -23.02,
+              "haut": 9.582
+            }
+          }
+        }
+      },
+      "serveur_attaquant_contre_grand_serveur": {
+        "n_decouverte": 16,
+        "n_diagnostic": 16,
+        "decouverte": {
+          "n": 16,
+          "coefficient_log_odds_favorisant_profil": 0.37207252,
+          "victoires_profil_pct": 75.0,
+          "probabilite_controle_profil_pct": 67.52,
+          "residuel_controle_points": 7.479,
+          "controle_avec_bilan": {
+            "n": 16,
+            "log_loss": 0.431897,
+            "brier": 0.135437,
+            "reussite_pct": 87.5
+          },
+          "challenger": {
+            "n": 16,
+            "log_loss": 0.400142,
+            "brier": 0.126153,
+            "reussite_pct": 81.25
+          },
+          "gains_incrementaux": {
+            "log_loss": 0.031755,
+            "brier": 0.009284,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": null
+        },
+        "diagnostic": {
+          "n": 16,
+          "coefficient_log_odds_favorisant_profil": 0.37207252,
+          "victoires_profil_pct": 75.0,
+          "probabilite_controle_profil_pct": 67.21,
+          "residuel_controle_points": 7.792,
+          "controle_avec_bilan": {
+            "n": 16,
+            "log_loss": 0.428633,
+            "brier": 0.133733,
+            "reussite_pct": 87.5
+          },
+          "challenger": {
+            "n": 16,
+            "log_loss": 0.408772,
+            "brier": 0.129014,
+            "reussite_pct": 81.25
+          },
+          "gains_incrementaux": {
+            "log_loss": 0.019861,
+            "brier": 0.004719,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": {
+            "log_loss": {
+              "bas": -0.065346,
+              "haut": 0.091022
+            },
+            "brier": {
+              "bas": -0.029916,
+              "haut": 0.035373
+            },
+            "residuel_controle_points": {
+              "bas": -9.582,
+              "haut": 23.02
+            }
+          }
+        }
+      },
+      "grand_serveur_contre_retourneur_pressant": {
+        "n_decouverte": 22,
+        "n_diagnostic": 30,
+        "decouverte": {
+          "n": 22,
+          "coefficient_log_odds_favorisant_profil": -0.34228682,
+          "victoires_profil_pct": 50.0,
+          "probabilite_controle_profil_pct": 57.14,
+          "residuel_controle_points": -7.136,
+          "controle_avec_bilan": {
+            "n": 22,
+            "log_loss": 0.70064,
+            "brier": 0.253897,
+            "reussite_pct": 54.55
+          },
+          "challenger": {
+            "n": 22,
+            "log_loss": 0.692329,
+            "brier": 0.249289,
+            "reussite_pct": 50.0
+          },
+          "gains_incrementaux": {
+            "log_loss": 0.008311,
+            "brier": 0.004608,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": null
+        },
+        "diagnostic": {
+          "n": 30,
+          "coefficient_log_odds_favorisant_profil": -0.34228682,
+          "victoires_profil_pct": 56.67,
+          "probabilite_controle_profil_pct": 55.53,
+          "residuel_controle_points": 1.139,
+          "controle_avec_bilan": {
+            "n": 30,
+            "log_loss": 0.654264,
+            "brier": 0.231795,
+            "reussite_pct": 56.67
+          },
+          "challenger": {
+            "n": 30,
+            "log_loss": 0.673776,
+            "brier": 0.240793,
+            "reussite_pct": 63.33
+          },
+          "gains_incrementaux": {
+            "log_loss": -0.019512,
+            "brier": -0.008998,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": {
+            "log_loss": {
+              "bas": -0.072327,
+              "haut": 0.033126
+            },
+            "brier": {
+              "bas": -0.033334,
+              "haut": 0.015435
+            },
+            "residuel_controle_points": {
+              "bas": -16.669,
+              "haut": 18.588
+            }
+          }
+        }
+      },
+      "retourneur_pressant_contre_grand_serveur": {
+        "n_decouverte": 22,
+        "n_diagnostic": 30,
+        "decouverte": {
+          "n": 22,
+          "coefficient_log_odds_favorisant_profil": 0.34228682,
+          "victoires_profil_pct": 50.0,
+          "probabilite_controle_profil_pct": 42.86,
+          "residuel_controle_points": 7.136,
+          "controle_avec_bilan": {
+            "n": 22,
+            "log_loss": 0.70064,
+            "brier": 0.253897,
+            "reussite_pct": 54.55
+          },
+          "challenger": {
+            "n": 22,
+            "log_loss": 0.692329,
+            "brier": 0.249289,
+            "reussite_pct": 50.0
+          },
+          "gains_incrementaux": {
+            "log_loss": 0.008311,
+            "brier": 0.004608,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": null
+        },
+        "diagnostic": {
+          "n": 30,
+          "coefficient_log_odds_favorisant_profil": 0.34228682,
+          "victoires_profil_pct": 43.33,
+          "probabilite_controle_profil_pct": 44.47,
+          "residuel_controle_points": -1.139,
+          "controle_avec_bilan": {
+            "n": 30,
+            "log_loss": 0.654264,
+            "brier": 0.231795,
+            "reussite_pct": 56.67
+          },
+          "challenger": {
+            "n": 30,
+            "log_loss": 0.673776,
+            "brier": 0.240793,
+            "reussite_pct": 63.33
+          },
+          "gains_incrementaux": {
+            "log_loss": -0.019512,
+            "brier": -0.008998,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": {
+            "log_loss": {
+              "bas": -0.072327,
+              "haut": 0.033126
+            },
+            "brier": {
+              "bas": -0.033334,
+              "haut": 0.015435
+            },
+            "residuel_controle_points": {
+              "bas": -18.588,
+              "haut": 16.669
+            }
+          }
+        }
+      },
+      "grand_serveur_contre_contreur": {
+        "n_decouverte": 33,
+        "n_diagnostic": 45,
+        "decouverte": {
+          "n": 33,
+          "coefficient_log_odds_favorisant_profil": -0.5084317,
+          "victoires_profil_pct": 51.52,
+          "probabilite_controle_profil_pct": 60.53,
+          "residuel_controle_points": -9.018,
+          "controle_avec_bilan": {
+            "n": 33,
+            "log_loss": 0.664747,
+            "brier": 0.240061,
+            "reussite_pct": 60.61
+          },
+          "challenger": {
+            "n": 33,
+            "log_loss": 0.650716,
+            "brier": 0.230323,
+            "reussite_pct": 57.58
+          },
+          "gains_incrementaux": {
+            "log_loss": 0.014031,
+            "brier": 0.009738,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": null
+        },
+        "diagnostic": {
+          "n": 45,
+          "coefficient_log_odds_favorisant_profil": -0.5084317,
+          "victoires_profil_pct": 68.89,
+          "probabilite_controle_profil_pct": 62.72,
+          "residuel_controle_points": 6.17,
+          "controle_avec_bilan": {
+            "n": 45,
+            "log_loss": 0.616908,
+            "brier": 0.215361,
+            "reussite_pct": 66.67
+          },
+          "challenger": {
+            "n": 45,
+            "log_loss": 0.662703,
+            "brier": 0.237085,
+            "reussite_pct": 53.33
+          },
+          "gains_incrementaux": {
+            "log_loss": -0.045795,
+            "brier": -0.021724,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": {
+            "log_loss": {
+              "bas": -0.114419,
+              "haut": 0.022158
+            },
+            "brier": {
+              "bas": -0.053365,
+              "haut": 0.009393
+            },
+            "residuel_controle_points": {
+              "bas": -10.388,
+              "haut": 22.528
+            }
+          }
+        }
+      },
+      "contreur_contre_grand_serveur": {
+        "n_decouverte": 33,
+        "n_diagnostic": 45,
+        "decouverte": {
+          "n": 33,
+          "coefficient_log_odds_favorisant_profil": 0.5084317,
+          "victoires_profil_pct": 48.48,
+          "probabilite_controle_profil_pct": 39.47,
+          "residuel_controle_points": 9.018,
+          "controle_avec_bilan": {
+            "n": 33,
+            "log_loss": 0.664747,
+            "brier": 0.240061,
+            "reussite_pct": 60.61
+          },
+          "challenger": {
+            "n": 33,
+            "log_loss": 0.650716,
+            "brier": 0.230323,
+            "reussite_pct": 57.58
+          },
+          "gains_incrementaux": {
+            "log_loss": 0.014031,
+            "brier": 0.009738,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": null
+        },
+        "diagnostic": {
+          "n": 45,
+          "coefficient_log_odds_favorisant_profil": 0.5084317,
+          "victoires_profil_pct": 31.11,
+          "probabilite_controle_profil_pct": 37.28,
+          "residuel_controle_points": -6.17,
+          "controle_avec_bilan": {
+            "n": 45,
+            "log_loss": 0.616908,
+            "brier": 0.215361,
+            "reussite_pct": 66.67
+          },
+          "challenger": {
+            "n": 45,
+            "log_loss": 0.662703,
+            "brier": 0.237085,
+            "reussite_pct": 53.33
+          },
+          "gains_incrementaux": {
+            "log_loss": -0.045795,
+            "brier": -0.021724,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": {
+            "log_loss": {
+              "bas": -0.114419,
+              "haut": 0.022158
+            },
+            "brier": {
+              "bas": -0.053365,
+              "haut": 0.009393
+            },
+            "residuel_controle_points": {
+              "bas": -22.528,
+              "haut": 10.388
+            }
+          }
+        }
+      },
+      "grand_serveur_contre_equilibre": {
+        "n_decouverte": 44,
+        "n_diagnostic": 52,
+        "decouverte": {
+          "n": 44,
+          "coefficient_log_odds_favorisant_profil": -0.31037624,
+          "victoires_profil_pct": 56.82,
+          "probabilite_controle_profil_pct": 61.31,
+          "residuel_controle_points": -4.49,
+          "controle_avec_bilan": {
+            "n": 44,
+            "log_loss": 0.572411,
+            "brier": 0.196248,
+            "reussite_pct": 68.18
+          },
+          "challenger": {
+            "n": 44,
+            "log_loss": 0.560932,
+            "brier": 0.190664,
+            "reussite_pct": 68.18
+          },
+          "gains_incrementaux": {
+            "log_loss": 0.011479,
+            "brier": 0.005584,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": null
+        },
+        "diagnostic": {
+          "n": 52,
+          "coefficient_log_odds_favorisant_profil": -0.31037624,
+          "victoires_profil_pct": 69.23,
+          "probabilite_controle_profil_pct": 62.82,
+          "residuel_controle_points": 6.415,
+          "controle_avec_bilan": {
+            "n": 52,
+            "log_loss": 0.453439,
+            "brier": 0.141952,
+            "reussite_pct": 78.85
+          },
+          "challenger": {
+            "n": 52,
+            "log_loss": 0.461274,
+            "brier": 0.145268,
+            "reussite_pct": 82.69
+          },
+          "gains_incrementaux": {
+            "log_loss": -0.007835,
+            "brier": -0.003316,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": {
+            "log_loss": {
+              "bas": -0.028714,
+              "haut": 0.012311
+            },
+            "brier": {
+              "bas": -0.013301,
+              "haut": 0.00642
+            },
+            "residuel_controle_points": {
+              "bas": -2.953,
+              "haut": 15.75
+            }
+          }
+        }
+      },
+      "equilibre_contre_grand_serveur": {
+        "n_decouverte": 44,
+        "n_diagnostic": 52,
+        "decouverte": {
+          "n": 44,
+          "coefficient_log_odds_favorisant_profil": 0.31037624,
+          "victoires_profil_pct": 43.18,
+          "probabilite_controle_profil_pct": 38.69,
+          "residuel_controle_points": 4.49,
+          "controle_avec_bilan": {
+            "n": 44,
+            "log_loss": 0.572411,
+            "brier": 0.196248,
+            "reussite_pct": 68.18
+          },
+          "challenger": {
+            "n": 44,
+            "log_loss": 0.560932,
+            "brier": 0.190664,
+            "reussite_pct": 68.18
+          },
+          "gains_incrementaux": {
+            "log_loss": 0.011479,
+            "brier": 0.005584,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": null
+        },
+        "diagnostic": {
+          "n": 52,
+          "coefficient_log_odds_favorisant_profil": 0.31037624,
+          "victoires_profil_pct": 30.77,
+          "probabilite_controle_profil_pct": 37.18,
+          "residuel_controle_points": -6.415,
+          "controle_avec_bilan": {
+            "n": 52,
+            "log_loss": 0.453439,
+            "brier": 0.141952,
+            "reussite_pct": 78.85
+          },
+          "challenger": {
+            "n": 52,
+            "log_loss": 0.461274,
+            "brier": 0.145268,
+            "reussite_pct": 82.69
+          },
+          "gains_incrementaux": {
+            "log_loss": -0.007835,
+            "brier": -0.003316,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": {
+            "log_loss": {
+              "bas": -0.028714,
+              "haut": 0.012311
+            },
+            "brier": {
+              "bas": -0.013301,
+              "haut": 0.00642
+            },
+            "residuel_controle_points": {
+              "bas": -15.75,
+              "haut": 2.953
+            }
+          }
+        }
+      },
+      "serveur_attaquant_contre_retourneur_pressant": {
+        "n_decouverte": 9,
+        "n_diagnostic": 13,
+        "decouverte": {
+          "n": 9,
+          "coefficient_log_odds_favorisant_profil": -1.25833849,
+          "victoires_profil_pct": 44.44,
+          "probabilite_controle_profil_pct": 68.71,
+          "residuel_controle_points": -24.261,
+          "controle_avec_bilan": {
+            "n": 9,
+            "log_loss": 0.885393,
+            "brier": 0.318244,
+            "reussite_pct": 33.33
+          },
+          "challenger": {
+            "n": 9,
+            "log_loss": 0.757107,
+            "brier": 0.273521,
+            "reussite_pct": 55.56
+          },
+          "gains_incrementaux": {
+            "log_loss": 0.128286,
+            "brier": 0.044723,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": null
+        },
+        "diagnostic": {
+          "n": 13,
+          "coefficient_log_odds_favorisant_profil": -1.25833849,
+          "victoires_profil_pct": 61.54,
+          "probabilite_controle_profil_pct": 72.97,
+          "residuel_controle_points": -11.432,
+          "controle_avec_bilan": {
+            "n": 13,
+            "log_loss": 0.534507,
+            "brier": 0.180821,
+            "reussite_pct": 69.23
+          },
+          "challenger": {
+            "n": 13,
+            "log_loss": 0.504511,
+            "brier": 0.165224,
+            "reussite_pct": 84.62
+          },
+          "gains_incrementaux": {
+            "log_loss": 0.029996,
+            "brier": 0.015597,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": {
+            "log_loss": {
+              "bas": -0.190815,
+              "haut": 0.294047
+            },
+            "brier": {
+              "bas": -0.081085,
+              "haut": 0.130731
+            },
+            "residuel_controle_points": {
+              "bas": -35.627,
+              "haut": 9.451
+            }
+          }
+        }
+      },
+      "retourneur_pressant_contre_serveur_attaquant": {
+        "n_decouverte": 9,
+        "n_diagnostic": 13,
+        "decouverte": {
+          "n": 9,
+          "coefficient_log_odds_favorisant_profil": 1.25833849,
+          "victoires_profil_pct": 55.56,
+          "probabilite_controle_profil_pct": 31.29,
+          "residuel_controle_points": 24.261,
+          "controle_avec_bilan": {
+            "n": 9,
+            "log_loss": 0.885393,
+            "brier": 0.318244,
+            "reussite_pct": 33.33
+          },
+          "challenger": {
+            "n": 9,
+            "log_loss": 0.757107,
+            "brier": 0.273521,
+            "reussite_pct": 55.56
+          },
+          "gains_incrementaux": {
+            "log_loss": 0.128286,
+            "brier": 0.044723,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": null
+        },
+        "diagnostic": {
+          "n": 13,
+          "coefficient_log_odds_favorisant_profil": 1.25833849,
+          "victoires_profil_pct": 38.46,
+          "probabilite_controle_profil_pct": 27.03,
+          "residuel_controle_points": 11.432,
+          "controle_avec_bilan": {
+            "n": 13,
+            "log_loss": 0.534507,
+            "brier": 0.180821,
+            "reussite_pct": 69.23
+          },
+          "challenger": {
+            "n": 13,
+            "log_loss": 0.504511,
+            "brier": 0.165224,
+            "reussite_pct": 84.62
+          },
+          "gains_incrementaux": {
+            "log_loss": 0.029996,
+            "brier": 0.015597,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": {
+            "log_loss": {
+              "bas": -0.190815,
+              "haut": 0.294047
+            },
+            "brier": {
+              "bas": -0.081085,
+              "haut": 0.130731
+            },
+            "residuel_controle_points": {
+              "bas": -9.451,
+              "haut": 35.627
+            }
+          }
+        }
+      },
+      "serveur_attaquant_contre_contreur": {
+        "n_decouverte": 14,
+        "n_diagnostic": 11,
+        "decouverte": {
+          "n": 14,
+          "coefficient_log_odds_favorisant_profil": -0.67689134,
+          "victoires_profil_pct": 57.14,
+          "probabilite_controle_profil_pct": 67.78,
+          "residuel_controle_points": -10.64,
+          "controle_avec_bilan": {
+            "n": 14,
+            "log_loss": 0.600812,
+            "brier": 0.213184,
+            "reussite_pct": 50.0
+          },
+          "challenger": {
+            "n": 14,
+            "log_loss": 0.570327,
+            "brier": 0.197646,
+            "reussite_pct": 64.29
+          },
+          "gains_incrementaux": {
+            "log_loss": 0.030485,
+            "brier": 0.015538,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": null
+        },
+        "diagnostic": {
+          "n": 11,
+          "coefficient_log_odds_favorisant_profil": -0.67689134,
+          "victoires_profil_pct": 81.82,
+          "probabilite_controle_profil_pct": 72.39,
+          "residuel_controle_points": 9.429,
+          "controle_avec_bilan": {
+            "n": 11,
+            "log_loss": 0.499864,
+            "brier": 0.166985,
+            "reussite_pct": 72.73
+          },
+          "challenger": {
+            "n": 11,
+            "log_loss": 0.57399,
+            "brier": 0.201576,
+            "reussite_pct": 72.73
+          },
+          "gains_incrementaux": {
+            "log_loss": -0.074126,
+            "brier": -0.034591,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": {
+            "log_loss": {
+              "bas": -0.192659,
+              "haut": 0.062287
+            },
+            "brier": {
+              "bas": -0.090391,
+              "haut": 0.027157
+            },
+            "residuel_controle_points": {
+              "bas": -15.05,
+              "haut": 29.571
+            }
+          }
+        }
+      },
+      "contreur_contre_serveur_attaquant": {
+        "n_decouverte": 14,
+        "n_diagnostic": 11,
+        "decouverte": {
+          "n": 14,
+          "coefficient_log_odds_favorisant_profil": 0.67689134,
+          "victoires_profil_pct": 42.86,
+          "probabilite_controle_profil_pct": 32.22,
+          "residuel_controle_points": 10.64,
+          "controle_avec_bilan": {
+            "n": 14,
+            "log_loss": 0.600812,
+            "brier": 0.213184,
+            "reussite_pct": 50.0
+          },
+          "challenger": {
+            "n": 14,
+            "log_loss": 0.570327,
+            "brier": 0.197646,
+            "reussite_pct": 64.29
+          },
+          "gains_incrementaux": {
+            "log_loss": 0.030485,
+            "brier": 0.015538,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": null
+        },
+        "diagnostic": {
+          "n": 11,
+          "coefficient_log_odds_favorisant_profil": 0.67689134,
+          "victoires_profil_pct": 18.18,
+          "probabilite_controle_profil_pct": 27.61,
+          "residuel_controle_points": -9.429,
+          "controle_avec_bilan": {
+            "n": 11,
+            "log_loss": 0.499864,
+            "brier": 0.166985,
+            "reussite_pct": 72.73
+          },
+          "challenger": {
+            "n": 11,
+            "log_loss": 0.57399,
+            "brier": 0.201576,
+            "reussite_pct": 72.73
+          },
+          "gains_incrementaux": {
+            "log_loss": -0.074126,
+            "brier": -0.034591,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": {
+            "log_loss": {
+              "bas": -0.192659,
+              "haut": 0.062287
+            },
+            "brier": {
+              "bas": -0.090391,
+              "haut": 0.027157
+            },
+            "residuel_controle_points": {
+              "bas": -29.571,
+              "haut": 15.05
+            }
+          }
+        }
+      },
+      "serveur_attaquant_contre_equilibre": {
+        "n_decouverte": 19,
+        "n_diagnostic": 18,
+        "decouverte": {
+          "n": 19,
+          "coefficient_log_odds_favorisant_profil": -0.75201992,
+          "victoires_profil_pct": 63.16,
+          "probabilite_controle_profil_pct": 72.6,
+          "residuel_controle_points": -9.445,
+          "controle_avec_bilan": {
+            "n": 19,
+            "log_loss": 0.456855,
+            "brier": 0.150702,
+            "reussite_pct": 78.95
+          },
+          "challenger": {
+            "n": 19,
+            "log_loss": 0.423314,
+            "brier": 0.135536,
+            "reussite_pct": 73.68
+          },
+          "gains_incrementaux": {
+            "log_loss": 0.033541,
+            "brier": 0.015166,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": null
+        },
+        "diagnostic": {
+          "n": 18,
+          "coefficient_log_odds_favorisant_profil": -0.75201992,
+          "victoires_profil_pct": 77.78,
+          "probabilite_controle_profil_pct": 69.52,
+          "residuel_controle_points": 8.254,
+          "controle_avec_bilan": {
+            "n": 18,
+            "log_loss": 0.482116,
+            "brier": 0.159425,
+            "reussite_pct": 72.22
+          },
+          "challenger": {
+            "n": 18,
+            "log_loss": 0.564362,
+            "brier": 0.197355,
+            "reussite_pct": 72.22
+          },
+          "gains_incrementaux": {
+            "log_loss": -0.082246,
+            "brier": -0.03793,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": {
+            "log_loss": {
+              "bas": -0.20172,
+              "haut": 0.034679
+            },
+            "brier": {
+              "bas": -0.093416,
+              "haut": 0.017083
+            },
+            "residuel_controle_points": {
+              "bas": -11.025,
+              "haut": 25.316
+            }
+          }
+        }
+      },
+      "equilibre_contre_serveur_attaquant": {
+        "n_decouverte": 19,
+        "n_diagnostic": 18,
+        "decouverte": {
+          "n": 19,
+          "coefficient_log_odds_favorisant_profil": 0.75201992,
+          "victoires_profil_pct": 36.84,
+          "probabilite_controle_profil_pct": 27.4,
+          "residuel_controle_points": 9.445,
+          "controle_avec_bilan": {
+            "n": 19,
+            "log_loss": 0.456855,
+            "brier": 0.150702,
+            "reussite_pct": 78.95
+          },
+          "challenger": {
+            "n": 19,
+            "log_loss": 0.423314,
+            "brier": 0.135536,
+            "reussite_pct": 73.68
+          },
+          "gains_incrementaux": {
+            "log_loss": 0.033541,
+            "brier": 0.015166,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": null
+        },
+        "diagnostic": {
+          "n": 18,
+          "coefficient_log_odds_favorisant_profil": 0.75201992,
+          "victoires_profil_pct": 22.22,
+          "probabilite_controle_profil_pct": 30.48,
+          "residuel_controle_points": -8.254,
+          "controle_avec_bilan": {
+            "n": 18,
+            "log_loss": 0.482116,
+            "brier": 0.159425,
+            "reussite_pct": 72.22
+          },
+          "challenger": {
+            "n": 18,
+            "log_loss": 0.564362,
+            "brier": 0.197355,
+            "reussite_pct": 72.22
+          },
+          "gains_incrementaux": {
+            "log_loss": -0.082246,
+            "brier": -0.03793,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": {
+            "log_loss": {
+              "bas": -0.20172,
+              "haut": 0.034679
+            },
+            "brier": {
+              "bas": -0.093416,
+              "haut": 0.017083
+            },
+            "residuel_controle_points": {
+              "bas": -25.316,
+              "haut": 11.025
+            }
+          }
+        }
+      },
+      "retourneur_pressant_contre_contreur": {
+        "n_decouverte": 27,
+        "n_diagnostic": 27,
+        "decouverte": {
+          "n": 27,
+          "coefficient_log_odds_favorisant_profil": -0.42270368,
+          "victoires_profil_pct": 55.56,
+          "probabilite_controle_profil_pct": 62.85,
+          "residuel_controle_points": -7.294,
+          "controle_avec_bilan": {
+            "n": 27,
+            "log_loss": 0.631514,
+            "brier": 0.217416,
+            "reussite_pct": 70.37
+          },
+          "challenger": {
+            "n": 27,
+            "log_loss": 0.613929,
+            "brier": 0.211727,
+            "reussite_pct": 62.96
+          },
+          "gains_incrementaux": {
+            "log_loss": 0.017585,
+            "brier": 0.005689,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": null
+        },
+        "diagnostic": {
+          "n": 27,
+          "coefficient_log_odds_favorisant_profil": -0.42270368,
+          "victoires_profil_pct": 59.26,
+          "probabilite_controle_profil_pct": 57.4,
+          "residuel_controle_points": 1.86,
+          "controle_avec_bilan": {
+            "n": 27,
+            "log_loss": 0.603054,
+            "brier": 0.206005,
+            "reussite_pct": 77.78
+          },
+          "challenger": {
+            "n": 27,
+            "log_loss": 0.62068,
+            "brier": 0.216347,
+            "reussite_pct": 62.96
+          },
+          "gains_incrementaux": {
+            "log_loss": -0.017626,
+            "brier": -0.010342,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": {
+            "log_loss": {
+              "bas": -0.079931,
+              "haut": 0.048807
+            },
+            "brier": {
+              "bas": -0.038676,
+              "haut": 0.019845
+            },
+            "residuel_controle_points": {
+              "bas": -17.742,
+              "haut": 19.273
+            }
+          }
+        }
+      },
+      "contreur_contre_retourneur_pressant": {
+        "n_decouverte": 27,
+        "n_diagnostic": 27,
+        "decouverte": {
+          "n": 27,
+          "coefficient_log_odds_favorisant_profil": 0.42270368,
+          "victoires_profil_pct": 44.44,
+          "probabilite_controle_profil_pct": 37.15,
+          "residuel_controle_points": 7.294,
+          "controle_avec_bilan": {
+            "n": 27,
+            "log_loss": 0.631514,
+            "brier": 0.217416,
+            "reussite_pct": 70.37
+          },
+          "challenger": {
+            "n": 27,
+            "log_loss": 0.613929,
+            "brier": 0.211727,
+            "reussite_pct": 62.96
+          },
+          "gains_incrementaux": {
+            "log_loss": 0.017585,
+            "brier": 0.005689,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": null
+        },
+        "diagnostic": {
+          "n": 27,
+          "coefficient_log_odds_favorisant_profil": 0.42270368,
+          "victoires_profil_pct": 40.74,
+          "probabilite_controle_profil_pct": 42.6,
+          "residuel_controle_points": -1.86,
+          "controle_avec_bilan": {
+            "n": 27,
+            "log_loss": 0.603054,
+            "brier": 0.206005,
+            "reussite_pct": 77.78
+          },
+          "challenger": {
+            "n": 27,
+            "log_loss": 0.62068,
+            "brier": 0.216347,
+            "reussite_pct": 62.96
+          },
+          "gains_incrementaux": {
+            "log_loss": -0.017626,
+            "brier": -0.010342,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": {
+            "log_loss": {
+              "bas": -0.079931,
+              "haut": 0.048807
+            },
+            "brier": {
+              "bas": -0.038676,
+              "haut": 0.019845
+            },
+            "residuel_controle_points": {
+              "bas": -19.273,
+              "haut": 17.742
+            }
+          }
+        }
+      },
+      "retourneur_pressant_contre_equilibre": {
+        "n_decouverte": 35,
+        "n_diagnostic": 53,
+        "decouverte": {
+          "n": 35,
+          "coefficient_log_odds_favorisant_profil": -0.1495281,
+          "victoires_profil_pct": 54.29,
+          "probabilite_controle_profil_pct": 55.68,
+          "residuel_controle_points": -1.39,
+          "controle_avec_bilan": {
+            "n": 35,
+            "log_loss": 0.558135,
+            "brier": 0.187195,
+            "reussite_pct": 65.71
+          },
+          "challenger": {
+            "n": 35,
+            "log_loss": 0.548644,
+            "brier": 0.182799,
+            "reussite_pct": 71.43
+          },
+          "gains_incrementaux": {
+            "log_loss": 0.009491,
+            "brier": 0.004396,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": null
+        },
+        "diagnostic": {
+          "n": 53,
+          "coefficient_log_odds_favorisant_profil": -0.1495281,
+          "victoires_profil_pct": 52.83,
+          "probabilite_controle_profil_pct": 59.93,
+          "residuel_controle_points": -7.098,
+          "controle_avec_bilan": {
+            "n": 53,
+            "log_loss": 0.638139,
+            "brier": 0.22194,
+            "reussite_pct": 62.26
+          },
+          "challenger": {
+            "n": 53,
+            "log_loss": 0.632995,
+            "brier": 0.21973,
+            "reussite_pct": 60.38
+          },
+          "gains_incrementaux": {
+            "log_loss": 0.005144,
+            "brier": 0.00221,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": {
+            "log_loss": {
+              "bas": -0.002172,
+              "haut": 0.012686
+            },
+            "brier": {
+              "bas": -0.001035,
+              "haut": 0.00561
+            },
+            "residuel_controle_points": {
+              "bas": -18.168,
+              "haut": 4.466
+            }
+          }
+        }
+      },
+      "equilibre_contre_retourneur_pressant": {
+        "n_decouverte": 35,
+        "n_diagnostic": 53,
+        "decouverte": {
+          "n": 35,
+          "coefficient_log_odds_favorisant_profil": 0.1495281,
+          "victoires_profil_pct": 45.71,
+          "probabilite_controle_profil_pct": 44.32,
+          "residuel_controle_points": 1.39,
+          "controle_avec_bilan": {
+            "n": 35,
+            "log_loss": 0.558135,
+            "brier": 0.187195,
+            "reussite_pct": 65.71
+          },
+          "challenger": {
+            "n": 35,
+            "log_loss": 0.548644,
+            "brier": 0.182799,
+            "reussite_pct": 71.43
+          },
+          "gains_incrementaux": {
+            "log_loss": 0.009491,
+            "brier": 0.004396,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": null
+        },
+        "diagnostic": {
+          "n": 53,
+          "coefficient_log_odds_favorisant_profil": 0.1495281,
+          "victoires_profil_pct": 47.17,
+          "probabilite_controle_profil_pct": 40.07,
+          "residuel_controle_points": 7.098,
+          "controle_avec_bilan": {
+            "n": 53,
+            "log_loss": 0.638139,
+            "brier": 0.22194,
+            "reussite_pct": 62.26
+          },
+          "challenger": {
+            "n": 53,
+            "log_loss": 0.632995,
+            "brier": 0.21973,
+            "reussite_pct": 60.38
+          },
+          "gains_incrementaux": {
+            "log_loss": 0.005144,
+            "brier": 0.00221,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": {
+            "log_loss": {
+              "bas": -0.002172,
+              "haut": 0.012686
+            },
+            "brier": {
+              "bas": -0.001035,
+              "haut": 0.00561
+            },
+            "residuel_controle_points": {
+              "bas": -4.466,
+              "haut": 18.168
+            }
+          }
+        }
+      },
+      "contreur_contre_equilibre": {
+        "n_decouverte": 32,
+        "n_diagnostic": 47,
+        "decouverte": {
+          "n": 32,
+          "coefficient_log_odds_favorisant_profil": 0.66340258,
+          "victoires_profil_pct": 62.5,
+          "probabilite_controle_profil_pct": 47.53,
+          "residuel_controle_points": 14.973,
+          "controle_avec_bilan": {
+            "n": 32,
+            "log_loss": 0.687466,
+            "brier": 0.247957,
+            "reussite_pct": 56.25
+          },
+          "challenger": {
+            "n": 32,
+            "log_loss": 0.637064,
+            "brier": 0.226711,
+            "reussite_pct": 59.38
+          },
+          "gains_incrementaux": {
+            "log_loss": 0.050402,
+            "brier": 0.021246,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": null
+        },
+        "diagnostic": {
+          "n": 47,
+          "coefficient_log_odds_favorisant_profil": 0.66340258,
+          "victoires_profil_pct": 51.06,
+          "probabilite_controle_profil_pct": 48.56,
+          "residuel_controle_points": 2.505,
+          "controle_avec_bilan": {
+            "n": 47,
+            "log_loss": 0.628161,
+            "brier": 0.220898,
+            "reussite_pct": 65.96
+          },
+          "challenger": {
+            "n": 47,
+            "log_loss": 0.660325,
+            "brier": 0.234421,
+            "reussite_pct": 63.83
+          },
+          "gains_incrementaux": {
+            "log_loss": -0.032164,
+            "brier": -0.013523,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": {
+            "log_loss": {
+              "bas": -0.1251,
+              "haut": 0.050148
+            },
+            "brier": {
+              "bas": -0.054742,
+              "haut": 0.023401
+            },
+            "residuel_controle_points": {
+              "bas": -10.706,
+              "haut": 15.428
+            }
+          }
+        }
+      },
+      "equilibre_contre_contreur": {
+        "n_decouverte": 32,
+        "n_diagnostic": 47,
+        "decouverte": {
+          "n": 32,
+          "coefficient_log_odds_favorisant_profil": -0.66340258,
+          "victoires_profil_pct": 37.5,
+          "probabilite_controle_profil_pct": 52.47,
+          "residuel_controle_points": -14.973,
+          "controle_avec_bilan": {
+            "n": 32,
+            "log_loss": 0.687466,
+            "brier": 0.247957,
+            "reussite_pct": 56.25
+          },
+          "challenger": {
+            "n": 32,
+            "log_loss": 0.637064,
+            "brier": 0.226711,
+            "reussite_pct": 59.38
+          },
+          "gains_incrementaux": {
+            "log_loss": 0.050402,
+            "brier": 0.021246,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": null
+        },
+        "diagnostic": {
+          "n": 47,
+          "coefficient_log_odds_favorisant_profil": -0.66340258,
+          "victoires_profil_pct": 48.94,
+          "probabilite_controle_profil_pct": 51.44,
+          "residuel_controle_points": -2.505,
+          "controle_avec_bilan": {
+            "n": 47,
+            "log_loss": 0.628161,
+            "brier": 0.220898,
+            "reussite_pct": 65.96
+          },
+          "challenger": {
+            "n": 47,
+            "log_loss": 0.660325,
+            "brier": 0.234421,
+            "reussite_pct": 63.83
+          },
+          "gains_incrementaux": {
+            "log_loss": -0.032164,
+            "brier": -0.013523,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": {
+            "log_loss": {
+              "bas": -0.1251,
+              "haut": 0.050148
+            },
+            "brier": {
+              "bas": -0.054742,
+              "haut": 0.023401
+            },
+            "residuel_controle_points": {
+              "bas": -15.428,
+              "haut": 10.706
+            }
+          }
+        }
+      }
+    },
+    "wta": {
+      "grand_serveur_contre_serveur_attaquant": {
+        "n_decouverte": 15,
+        "n_diagnostic": 25,
+        "decouverte": {
+          "n": 15,
+          "coefficient_log_odds_favorisant_profil": 0.26834571,
+          "victoires_profil_pct": 46.67,
+          "probabilite_controle_profil_pct": 42.19,
+          "residuel_controle_points": 4.481,
+          "controle_avec_bilan": {
+            "n": 15,
+            "log_loss": 0.56905,
+            "brier": 0.193313,
+            "reussite_pct": 73.33
+          },
+          "challenger": {
+            "n": 15,
+            "log_loss": 0.569303,
+            "brier": 0.194937,
+            "reussite_pct": 80.0
+          },
+          "gains_incrementaux": {
+            "log_loss": -0.000253,
+            "brier": -0.001624,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": null
+        },
+        "diagnostic": {
+          "n": 25,
+          "coefficient_log_odds_favorisant_profil": 0.26834571,
+          "victoires_profil_pct": 40.0,
+          "probabilite_controle_profil_pct": 47.57,
+          "residuel_controle_points": -7.566,
+          "controle_avec_bilan": {
+            "n": 25,
+            "log_loss": 0.497419,
+            "brier": 0.161427,
+            "reussite_pct": 80.0
+          },
+          "challenger": {
+            "n": 25,
+            "log_loss": 0.51871,
+            "brier": 0.173544,
+            "reussite_pct": 76.0
+          },
+          "gains_incrementaux": {
+            "log_loss": -0.021291,
+            "brier": -0.012117,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": {
+            "log_loss": {
+              "bas": -0.055059,
+              "haut": 0.019864
+            },
+            "brier": {
+              "bas": -0.027004,
+              "haut": 0.005929
+            },
+            "residuel_controle_points": {
+              "bas": -19.817,
+              "haut": 7.657
+            }
+          }
+        }
+      },
+      "serveur_attaquant_contre_grand_serveur": {
+        "n_decouverte": 15,
+        "n_diagnostic": 25,
+        "decouverte": {
+          "n": 15,
+          "coefficient_log_odds_favorisant_profil": -0.26834571,
+          "victoires_profil_pct": 53.33,
+          "probabilite_controle_profil_pct": 57.81,
+          "residuel_controle_points": -4.481,
+          "controle_avec_bilan": {
+            "n": 15,
+            "log_loss": 0.56905,
+            "brier": 0.193313,
+            "reussite_pct": 73.33
+          },
+          "challenger": {
+            "n": 15,
+            "log_loss": 0.569303,
+            "brier": 0.194937,
+            "reussite_pct": 80.0
+          },
+          "gains_incrementaux": {
+            "log_loss": -0.000253,
+            "brier": -0.001624,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": null
+        },
+        "diagnostic": {
+          "n": 25,
+          "coefficient_log_odds_favorisant_profil": -0.26834571,
+          "victoires_profil_pct": 60.0,
+          "probabilite_controle_profil_pct": 52.43,
+          "residuel_controle_points": 7.566,
+          "controle_avec_bilan": {
+            "n": 25,
+            "log_loss": 0.497419,
+            "brier": 0.161427,
+            "reussite_pct": 80.0
+          },
+          "challenger": {
+            "n": 25,
+            "log_loss": 0.51871,
+            "brier": 0.173544,
+            "reussite_pct": 76.0
+          },
+          "gains_incrementaux": {
+            "log_loss": -0.021291,
+            "brier": -0.012117,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": {
+            "log_loss": {
+              "bas": -0.055059,
+              "haut": 0.019864
+            },
+            "brier": {
+              "bas": -0.027004,
+              "haut": 0.005929
+            },
+            "residuel_controle_points": {
+              "bas": -7.657,
+              "haut": 19.817
+            }
+          }
+        }
+      },
+      "grand_serveur_contre_retourneur_pressant": {
+        "n_decouverte": 14,
+        "n_diagnostic": 30,
+        "decouverte": {
+          "n": 14,
+          "coefficient_log_odds_favorisant_profil": -0.48236517,
+          "victoires_profil_pct": 42.86,
+          "probabilite_controle_profil_pct": 51.9,
+          "residuel_controle_points": -9.045,
+          "controle_avec_bilan": {
+            "n": 14,
+            "log_loss": 0.590566,
+            "brier": 0.20252,
+            "reussite_pct": 64.29
+          },
+          "challenger": {
+            "n": 14,
+            "log_loss": 0.559265,
+            "brier": 0.190021,
+            "reussite_pct": 71.43
+          },
+          "gains_incrementaux": {
+            "log_loss": 0.031301,
+            "brier": 0.012499,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": null
+        },
+        "diagnostic": {
+          "n": 30,
+          "coefficient_log_odds_favorisant_profil": -0.48236517,
+          "victoires_profil_pct": 56.67,
+          "probabilite_controle_profil_pct": 57.45,
+          "residuel_controle_points": -0.783,
+          "controle_avec_bilan": {
+            "n": 30,
+            "log_loss": 0.637492,
+            "brier": 0.227886,
+            "reussite_pct": 53.33
+          },
+          "challenger": {
+            "n": 30,
+            "log_loss": 0.658198,
+            "brier": 0.236987,
+            "reussite_pct": 50.0
+          },
+          "gains_incrementaux": {
+            "log_loss": -0.020706,
+            "brier": -0.009101,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": {
+            "log_loss": {
+              "bas": -0.09732,
+              "haut": 0.05656
+            },
+            "brier": {
+              "bas": -0.045774,
+              "haut": 0.026703
+            },
+            "residuel_controle_points": {
+              "bas": -18.797,
+              "haut": 15.42
+            }
+          }
+        }
+      },
+      "retourneur_pressant_contre_grand_serveur": {
+        "n_decouverte": 14,
+        "n_diagnostic": 30,
+        "decouverte": {
+          "n": 14,
+          "coefficient_log_odds_favorisant_profil": 0.48236517,
+          "victoires_profil_pct": 57.14,
+          "probabilite_controle_profil_pct": 48.1,
+          "residuel_controle_points": 9.045,
+          "controle_avec_bilan": {
+            "n": 14,
+            "log_loss": 0.590566,
+            "brier": 0.20252,
+            "reussite_pct": 64.29
+          },
+          "challenger": {
+            "n": 14,
+            "log_loss": 0.559265,
+            "brier": 0.190021,
+            "reussite_pct": 71.43
+          },
+          "gains_incrementaux": {
+            "log_loss": 0.031301,
+            "brier": 0.012499,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": null
+        },
+        "diagnostic": {
+          "n": 30,
+          "coefficient_log_odds_favorisant_profil": 0.48236517,
+          "victoires_profil_pct": 43.33,
+          "probabilite_controle_profil_pct": 42.55,
+          "residuel_controle_points": 0.783,
+          "controle_avec_bilan": {
+            "n": 30,
+            "log_loss": 0.637492,
+            "brier": 0.227886,
+            "reussite_pct": 53.33
+          },
+          "challenger": {
+            "n": 30,
+            "log_loss": 0.658198,
+            "brier": 0.236987,
+            "reussite_pct": 50.0
+          },
+          "gains_incrementaux": {
+            "log_loss": -0.020706,
+            "brier": -0.009101,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": {
+            "log_loss": {
+              "bas": -0.09732,
+              "haut": 0.05656
+            },
+            "brier": {
+              "bas": -0.045774,
+              "haut": 0.026703
+            },
+            "residuel_controle_points": {
+              "bas": -15.42,
+              "haut": 18.797
+            }
+          }
+        }
+      },
+      "grand_serveur_contre_contreur": {
+        "n_decouverte": 26,
+        "n_diagnostic": 31,
+        "decouverte": {
+          "n": 26,
+          "coefficient_log_odds_favorisant_profil": 0.73595463,
+          "victoires_profil_pct": 80.77,
+          "probabilite_controle_profil_pct": 66.31,
+          "residuel_controle_points": 14.462,
+          "controle_avec_bilan": {
+            "n": 26,
+            "log_loss": 0.461429,
+            "brier": 0.142143,
+            "reussite_pct": 88.46
+          },
+          "challenger": {
+            "n": 26,
+            "log_loss": 0.402663,
+            "brier": 0.123158,
+            "reussite_pct": 80.77
+          },
+          "gains_incrementaux": {
+            "log_loss": 0.058766,
+            "brier": 0.018985,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": null
+        },
+        "diagnostic": {
+          "n": 31,
+          "coefficient_log_odds_favorisant_profil": 0.73595463,
+          "victoires_profil_pct": 58.06,
+          "probabilite_controle_profil_pct": 66.36,
+          "residuel_controle_points": -8.295,
+          "controle_avec_bilan": {
+            "n": 31,
+            "log_loss": 0.614037,
+            "brier": 0.214905,
+            "reussite_pct": 61.29
+          },
+          "challenger": {
+            "n": 31,
+            "log_loss": 0.754911,
+            "brier": 0.268532,
+            "reussite_pct": 58.06
+          },
+          "gains_incrementaux": {
+            "log_loss": -0.140874,
+            "brier": -0.053627,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": {
+            "log_loss": {
+              "bas": -0.280666,
+              "haut": -0.028025
+            },
+            "brier": {
+              "bas": -0.105416,
+              "haut": -0.012031
+            },
+            "residuel_controle_points": {
+              "bas": -22.894,
+              "haut": 6.098
+            }
+          }
+        }
+      },
+      "contreur_contre_grand_serveur": {
+        "n_decouverte": 26,
+        "n_diagnostic": 31,
+        "decouverte": {
+          "n": 26,
+          "coefficient_log_odds_favorisant_profil": -0.73595463,
+          "victoires_profil_pct": 19.23,
+          "probabilite_controle_profil_pct": 33.69,
+          "residuel_controle_points": -14.462,
+          "controle_avec_bilan": {
+            "n": 26,
+            "log_loss": 0.461429,
+            "brier": 0.142143,
+            "reussite_pct": 88.46
+          },
+          "challenger": {
+            "n": 26,
+            "log_loss": 0.402663,
+            "brier": 0.123158,
+            "reussite_pct": 80.77
+          },
+          "gains_incrementaux": {
+            "log_loss": 0.058766,
+            "brier": 0.018985,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": null
+        },
+        "diagnostic": {
+          "n": 31,
+          "coefficient_log_odds_favorisant_profil": -0.73595463,
+          "victoires_profil_pct": 41.94,
+          "probabilite_controle_profil_pct": 33.64,
+          "residuel_controle_points": 8.295,
+          "controle_avec_bilan": {
+            "n": 31,
+            "log_loss": 0.614037,
+            "brier": 0.214905,
+            "reussite_pct": 61.29
+          },
+          "challenger": {
+            "n": 31,
+            "log_loss": 0.754911,
+            "brier": 0.268532,
+            "reussite_pct": 58.06
+          },
+          "gains_incrementaux": {
+            "log_loss": -0.140874,
+            "brier": -0.053627,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": {
+            "log_loss": {
+              "bas": -0.280666,
+              "haut": -0.028025
+            },
+            "brier": {
+              "bas": -0.105416,
+              "haut": -0.012031
+            },
+            "residuel_controle_points": {
+              "bas": -6.098,
+              "haut": 22.894
+            }
+          }
+        }
+      },
+      "grand_serveur_contre_equilibre": {
+        "n_decouverte": 38,
+        "n_diagnostic": 40,
+        "decouverte": {
+          "n": 38,
+          "coefficient_log_odds_favorisant_profil": 0.1222108,
+          "victoires_profil_pct": 68.42,
+          "probabilite_controle_profil_pct": 63.76,
+          "residuel_controle_points": 4.664,
+          "controle_avec_bilan": {
+            "n": 38,
+            "log_loss": 0.534027,
+            "brier": 0.178975,
+            "reussite_pct": 73.68
+          },
+          "challenger": {
+            "n": 38,
+            "log_loss": 0.518443,
+            "brier": 0.17323,
+            "reussite_pct": 81.58
+          },
+          "gains_incrementaux": {
+            "log_loss": 0.015584,
+            "brier": 0.005745,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": null
+        },
+        "diagnostic": {
+          "n": 40,
+          "coefficient_log_odds_favorisant_profil": 0.1222108,
+          "victoires_profil_pct": 67.5,
+          "probabilite_controle_profil_pct": 67.79,
+          "residuel_controle_points": -0.289,
+          "controle_avec_bilan": {
+            "n": 40,
+            "log_loss": 0.52974,
+            "brier": 0.178625,
+            "reussite_pct": 75.0
+          },
+          "challenger": {
+            "n": 40,
+            "log_loss": 0.533452,
+            "brier": 0.181325,
+            "reussite_pct": 72.5
+          },
+          "gains_incrementaux": {
+            "log_loss": -0.003712,
+            "brier": -0.0027,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": {
+            "log_loss": {
+              "bas": -0.034723,
+              "haut": 0.023541
+            },
+            "brier": {
+              "bas": -0.014947,
+              "haut": 0.008425
+            },
+            "residuel_controle_points": {
+              "bas": -12.021,
+              "haut": 11.057
+            }
+          }
+        }
+      },
+      "equilibre_contre_grand_serveur": {
+        "n_decouverte": 38,
+        "n_diagnostic": 40,
+        "decouverte": {
+          "n": 38,
+          "coefficient_log_odds_favorisant_profil": -0.1222108,
+          "victoires_profil_pct": 31.58,
+          "probabilite_controle_profil_pct": 36.24,
+          "residuel_controle_points": -4.664,
+          "controle_avec_bilan": {
+            "n": 38,
+            "log_loss": 0.534027,
+            "brier": 0.178975,
+            "reussite_pct": 73.68
+          },
+          "challenger": {
+            "n": 38,
+            "log_loss": 0.518443,
+            "brier": 0.17323,
+            "reussite_pct": 81.58
+          },
+          "gains_incrementaux": {
+            "log_loss": 0.015584,
+            "brier": 0.005745,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": null
+        },
+        "diagnostic": {
+          "n": 40,
+          "coefficient_log_odds_favorisant_profil": -0.1222108,
+          "victoires_profil_pct": 32.5,
+          "probabilite_controle_profil_pct": 32.21,
+          "residuel_controle_points": 0.289,
+          "controle_avec_bilan": {
+            "n": 40,
+            "log_loss": 0.52974,
+            "brier": 0.178625,
+            "reussite_pct": 75.0
+          },
+          "challenger": {
+            "n": 40,
+            "log_loss": 0.533452,
+            "brier": 0.181325,
+            "reussite_pct": 72.5
+          },
+          "gains_incrementaux": {
+            "log_loss": -0.003712,
+            "brier": -0.0027,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": {
+            "log_loss": {
+              "bas": -0.034723,
+              "haut": 0.023541
+            },
+            "brier": {
+              "bas": -0.014947,
+              "haut": 0.008425
+            },
+            "residuel_controle_points": {
+              "bas": -11.057,
+              "haut": 12.021
+            }
+          }
+        }
+      },
+      "serveur_attaquant_contre_retourneur_pressant": {
+        "n_decouverte": 10,
+        "n_diagnostic": 15,
+        "decouverte": {
+          "n": 10,
+          "coefficient_log_odds_favorisant_profil": 0.24909755,
+          "victoires_profil_pct": 70.0,
+          "probabilite_controle_profil_pct": 64.37,
+          "residuel_controle_points": 5.631,
+          "controle_avec_bilan": {
+            "n": 10,
+            "log_loss": 0.428953,
+            "brier": 0.134798,
+            "reussite_pct": 80.0
+          },
+          "challenger": {
+            "n": 10,
+            "log_loss": 0.415196,
+            "brier": 0.134489,
+            "reussite_pct": 70.0
+          },
+          "gains_incrementaux": {
+            "log_loss": 0.013757,
+            "brier": 0.000309,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": null
+        },
+        "diagnostic": {
+          "n": 15,
+          "coefficient_log_odds_favorisant_profil": 0.24909755,
+          "victoires_profil_pct": 40.0,
+          "probabilite_controle_profil_pct": 55.58,
+          "residuel_controle_points": -15.575,
+          "controle_avec_bilan": {
+            "n": 15,
+            "log_loss": 0.637793,
+            "brier": 0.224951,
+            "reussite_pct": 53.33
+          },
+          "challenger": {
+            "n": 15,
+            "log_loss": 0.700582,
+            "brier": 0.255457,
+            "reussite_pct": 46.67
+          },
+          "gains_incrementaux": {
+            "log_loss": -0.062789,
+            "brier": -0.030506,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": {
+            "log_loss": {
+              "bas": -0.134457,
+              "haut": 0.017065
+            },
+            "brier": {
+              "bas": -0.062635,
+              "haut": 0.005701
+            },
+            "residuel_controle_points": {
+              "bas": -39.588,
+              "haut": 11.859
+            }
+          }
+        }
+      },
+      "retourneur_pressant_contre_serveur_attaquant": {
+        "n_decouverte": 10,
+        "n_diagnostic": 15,
+        "decouverte": {
+          "n": 10,
+          "coefficient_log_odds_favorisant_profil": -0.24909755,
+          "victoires_profil_pct": 30.0,
+          "probabilite_controle_profil_pct": 35.63,
+          "residuel_controle_points": -5.631,
+          "controle_avec_bilan": {
+            "n": 10,
+            "log_loss": 0.428953,
+            "brier": 0.134798,
+            "reussite_pct": 80.0
+          },
+          "challenger": {
+            "n": 10,
+            "log_loss": 0.415196,
+            "brier": 0.134489,
+            "reussite_pct": 70.0
+          },
+          "gains_incrementaux": {
+            "log_loss": 0.013757,
+            "brier": 0.000309,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": null
+        },
+        "diagnostic": {
+          "n": 15,
+          "coefficient_log_odds_favorisant_profil": -0.24909755,
+          "victoires_profil_pct": 60.0,
+          "probabilite_controle_profil_pct": 44.42,
+          "residuel_controle_points": 15.575,
+          "controle_avec_bilan": {
+            "n": 15,
+            "log_loss": 0.637793,
+            "brier": 0.224951,
+            "reussite_pct": 53.33
+          },
+          "challenger": {
+            "n": 15,
+            "log_loss": 0.700582,
+            "brier": 0.255457,
+            "reussite_pct": 46.67
+          },
+          "gains_incrementaux": {
+            "log_loss": -0.062789,
+            "brier": -0.030506,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": {
+            "log_loss": {
+              "bas": -0.134457,
+              "haut": 0.017065
+            },
+            "brier": {
+              "bas": -0.062635,
+              "haut": 0.005701
+            },
+            "residuel_controle_points": {
+              "bas": -11.859,
+              "haut": 39.588
+            }
+          }
+        }
+      },
+      "serveur_attaquant_contre_contreur": {
+        "n_decouverte": 10,
+        "n_diagnostic": 24,
+        "decouverte": {
+          "n": 10,
+          "coefficient_log_odds_favorisant_profil": -0.17311681,
+          "victoires_profil_pct": 60.0,
+          "probabilite_controle_profil_pct": 61.82,
+          "residuel_controle_points": -1.818,
+          "controle_avec_bilan": {
+            "n": 10,
+            "log_loss": 0.542665,
+            "brier": 0.182715,
+            "reussite_pct": 70.0
+          },
+          "challenger": {
+            "n": 10,
+            "log_loss": 0.539042,
+            "brier": 0.181153,
+            "reussite_pct": 70.0
+          },
+          "gains_incrementaux": {
+            "log_loss": 0.003623,
+            "brier": 0.001562,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": null
+        },
+        "diagnostic": {
+          "n": 24,
+          "coefficient_log_odds_favorisant_profil": -0.17311681,
+          "victoires_profil_pct": 87.5,
+          "probabilite_controle_profil_pct": 76.76,
+          "residuel_controle_points": 10.736,
+          "controle_avec_bilan": {
+            "n": 24,
+            "log_loss": 0.376563,
+            "brier": 0.113956,
+            "reussite_pct": 87.5
+          },
+          "challenger": {
+            "n": 24,
+            "log_loss": 0.379382,
+            "brier": 0.115925,
+            "reussite_pct": 87.5
+          },
+          "gains_incrementaux": {
+            "log_loss": -0.002819,
+            "brier": -0.001969,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": {
+            "log_loss": {
+              "bas": -0.013028,
+              "haut": 0.010913
+            },
+            "brier": {
+              "bas": -0.00588,
+              "haut": 0.003428
+            },
+            "residuel_controle_points": {
+              "bas": -1.601,
+              "haut": 21.834
+            }
+          }
+        }
+      },
+      "contreur_contre_serveur_attaquant": {
+        "n_decouverte": 10,
+        "n_diagnostic": 24,
+        "decouverte": {
+          "n": 10,
+          "coefficient_log_odds_favorisant_profil": 0.17311681,
+          "victoires_profil_pct": 40.0,
+          "probabilite_controle_profil_pct": 38.18,
+          "residuel_controle_points": 1.818,
+          "controle_avec_bilan": {
+            "n": 10,
+            "log_loss": 0.542665,
+            "brier": 0.182715,
+            "reussite_pct": 70.0
+          },
+          "challenger": {
+            "n": 10,
+            "log_loss": 0.539042,
+            "brier": 0.181153,
+            "reussite_pct": 70.0
+          },
+          "gains_incrementaux": {
+            "log_loss": 0.003623,
+            "brier": 0.001562,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": null
+        },
+        "diagnostic": {
+          "n": 24,
+          "coefficient_log_odds_favorisant_profil": 0.17311681,
+          "victoires_profil_pct": 12.5,
+          "probabilite_controle_profil_pct": 23.24,
+          "residuel_controle_points": -10.736,
+          "controle_avec_bilan": {
+            "n": 24,
+            "log_loss": 0.376563,
+            "brier": 0.113956,
+            "reussite_pct": 87.5
+          },
+          "challenger": {
+            "n": 24,
+            "log_loss": 0.379382,
+            "brier": 0.115925,
+            "reussite_pct": 87.5
+          },
+          "gains_incrementaux": {
+            "log_loss": -0.002819,
+            "brier": -0.001969,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": {
+            "log_loss": {
+              "bas": -0.013028,
+              "haut": 0.010913
+            },
+            "brier": {
+              "bas": -0.00588,
+              "haut": 0.003428
+            },
+            "residuel_controle_points": {
+              "bas": -21.834,
+              "haut": 1.601
+            }
+          }
+        }
+      },
+      "serveur_attaquant_contre_equilibre": {
+        "n_decouverte": 20,
+        "n_diagnostic": 37,
+        "decouverte": {
+          "n": 20,
+          "coefficient_log_odds_favorisant_profil": -0.12187703,
+          "victoires_profil_pct": 70.0,
+          "probabilite_controle_profil_pct": 69.77,
+          "residuel_controle_points": 0.231,
+          "controle_avec_bilan": {
+            "n": 20,
+            "log_loss": 0.603267,
+            "brier": 0.206119,
+            "reussite_pct": 70.0
+          },
+          "challenger": {
+            "n": 20,
+            "log_loss": 0.601522,
+            "brier": 0.205987,
+            "reussite_pct": 65.0
+          },
+          "gains_incrementaux": {
+            "log_loss": 0.001745,
+            "brier": 0.000132,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": null
+        },
+        "diagnostic": {
+          "n": 37,
+          "coefficient_log_odds_favorisant_profil": -0.12187703,
+          "victoires_profil_pct": 64.86,
+          "probabilite_controle_profil_pct": 62.79,
+          "residuel_controle_points": 2.074,
+          "controle_avec_bilan": {
+            "n": 37,
+            "log_loss": 0.575172,
+            "brier": 0.198097,
+            "reussite_pct": 64.86
+          },
+          "challenger": {
+            "n": 37,
+            "log_loss": 0.570205,
+            "brier": 0.196783,
+            "reussite_pct": 64.86
+          },
+          "gains_incrementaux": {
+            "log_loss": 0.004967,
+            "brier": 0.001314,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": {
+            "log_loss": {
+              "bas": -0.004817,
+              "haut": 0.015377
+            },
+            "brier": {
+              "bas": -0.002897,
+              "haut": 0.005863
+            },
+            "residuel_controle_points": {
+              "bas": -14.628,
+              "haut": 17.857
+            }
+          }
+        }
+      },
+      "equilibre_contre_serveur_attaquant": {
+        "n_decouverte": 20,
+        "n_diagnostic": 37,
+        "decouverte": {
+          "n": 20,
+          "coefficient_log_odds_favorisant_profil": 0.12187703,
+          "victoires_profil_pct": 30.0,
+          "probabilite_controle_profil_pct": 30.23,
+          "residuel_controle_points": -0.231,
+          "controle_avec_bilan": {
+            "n": 20,
+            "log_loss": 0.603267,
+            "brier": 0.206119,
+            "reussite_pct": 70.0
+          },
+          "challenger": {
+            "n": 20,
+            "log_loss": 0.601522,
+            "brier": 0.205987,
+            "reussite_pct": 65.0
+          },
+          "gains_incrementaux": {
+            "log_loss": 0.001745,
+            "brier": 0.000132,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": null
+        },
+        "diagnostic": {
+          "n": 37,
+          "coefficient_log_odds_favorisant_profil": 0.12187703,
+          "victoires_profil_pct": 35.14,
+          "probabilite_controle_profil_pct": 37.21,
+          "residuel_controle_points": -2.074,
+          "controle_avec_bilan": {
+            "n": 37,
+            "log_loss": 0.575172,
+            "brier": 0.198097,
+            "reussite_pct": 64.86
+          },
+          "challenger": {
+            "n": 37,
+            "log_loss": 0.570205,
+            "brier": 0.196783,
+            "reussite_pct": 64.86
+          },
+          "gains_incrementaux": {
+            "log_loss": 0.004967,
+            "brier": 0.001314,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": {
+            "log_loss": {
+              "bas": -0.004817,
+              "haut": 0.015377
+            },
+            "brier": {
+              "bas": -0.002897,
+              "haut": 0.005863
+            },
+            "residuel_controle_points": {
+              "bas": -17.857,
+              "haut": 14.628
+            }
+          }
+        }
+      },
+      "retourneur_pressant_contre_contreur": {
+        "n_decouverte": 14,
+        "n_diagnostic": 20,
+        "decouverte": {
+          "n": 14,
+          "coefficient_log_odds_favorisant_profil": 0.06322957,
+          "victoires_profil_pct": 57.14,
+          "probabilite_controle_profil_pct": 55.55,
+          "residuel_controle_points": 1.597,
+          "controle_avec_bilan": {
+            "n": 14,
+            "log_loss": 0.611307,
+            "brier": 0.212638,
+            "reussite_pct": 71.43
+          },
+          "challenger": {
+            "n": 14,
+            "log_loss": 0.594414,
+            "brier": 0.20544,
+            "reussite_pct": 78.57
+          },
+          "gains_incrementaux": {
+            "log_loss": 0.016893,
+            "brier": 0.007198,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": null
+        },
+        "diagnostic": {
+          "n": 20,
+          "coefficient_log_odds_favorisant_profil": 0.06322957,
+          "victoires_profil_pct": 70.0,
+          "probabilite_controle_profil_pct": 58.84,
+          "residuel_controle_points": 11.162,
+          "controle_avec_bilan": {
+            "n": 20,
+            "log_loss": 0.589625,
+            "brier": 0.202493,
+            "reussite_pct": 70.0
+          },
+          "challenger": {
+            "n": 20,
+            "log_loss": 0.583297,
+            "brier": 0.200096,
+            "reussite_pct": 65.0
+          },
+          "gains_incrementaux": {
+            "log_loss": 0.006328,
+            "brier": 0.002397,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": {
+            "log_loss": {
+              "bas": -0.018553,
+              "haut": 0.028047
+            },
+            "brier": {
+              "bas": -0.009343,
+              "haut": 0.012813
+            },
+            "residuel_controle_points": {
+              "bas": -12.389,
+              "haut": 30.761
+            }
+          }
+        }
+      },
+      "contreur_contre_retourneur_pressant": {
+        "n_decouverte": 14,
+        "n_diagnostic": 20,
+        "decouverte": {
+          "n": 14,
+          "coefficient_log_odds_favorisant_profil": -0.06322957,
+          "victoires_profil_pct": 42.86,
+          "probabilite_controle_profil_pct": 44.45,
+          "residuel_controle_points": -1.597,
+          "controle_avec_bilan": {
+            "n": 14,
+            "log_loss": 0.611307,
+            "brier": 0.212638,
+            "reussite_pct": 71.43
+          },
+          "challenger": {
+            "n": 14,
+            "log_loss": 0.594414,
+            "brier": 0.20544,
+            "reussite_pct": 78.57
+          },
+          "gains_incrementaux": {
+            "log_loss": 0.016893,
+            "brier": 0.007198,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": null
+        },
+        "diagnostic": {
+          "n": 20,
+          "coefficient_log_odds_favorisant_profil": -0.06322957,
+          "victoires_profil_pct": 30.0,
+          "probabilite_controle_profil_pct": 41.16,
+          "residuel_controle_points": -11.162,
+          "controle_avec_bilan": {
+            "n": 20,
+            "log_loss": 0.589625,
+            "brier": 0.202493,
+            "reussite_pct": 70.0
+          },
+          "challenger": {
+            "n": 20,
+            "log_loss": 0.583297,
+            "brier": 0.200096,
+            "reussite_pct": 65.0
+          },
+          "gains_incrementaux": {
+            "log_loss": 0.006328,
+            "brier": 0.002397,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": {
+            "log_loss": {
+              "bas": -0.018553,
+              "haut": 0.028047
+            },
+            "brier": {
+              "bas": -0.009343,
+              "haut": 0.012813
+            },
+            "residuel_controle_points": {
+              "bas": -30.761,
+              "haut": 12.389
+            }
+          }
+        }
+      },
+      "retourneur_pressant_contre_equilibre": {
+        "n_decouverte": 23,
+        "n_diagnostic": 32,
+        "decouverte": {
+          "n": 23,
+          "coefficient_log_odds_favorisant_profil": -0.83702471,
+          "victoires_profil_pct": 43.48,
+          "probabilite_controle_profil_pct": 61.14,
+          "residuel_controle_points": -17.659,
+          "controle_avec_bilan": {
+            "n": 23,
+            "log_loss": 0.715494,
+            "brier": 0.262151,
+            "reussite_pct": 52.17
+          },
+          "challenger": {
+            "n": 23,
+            "log_loss": 0.655024,
+            "brier": 0.23244,
+            "reussite_pct": 60.87
+          },
+          "gains_incrementaux": {
+            "log_loss": 0.06047,
+            "brier": 0.029711,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": null
+        },
+        "diagnostic": {
+          "n": 32,
+          "coefficient_log_odds_favorisant_profil": -0.83702471,
+          "victoires_profil_pct": 46.88,
+          "probabilite_controle_profil_pct": 56.38,
+          "residuel_controle_points": -9.506,
+          "controle_avec_bilan": {
+            "n": 32,
+            "log_loss": 0.684702,
+            "brier": 0.247849,
+            "reussite_pct": 46.88
+          },
+          "challenger": {
+            "n": 32,
+            "log_loss": 0.679166,
+            "brier": 0.242259,
+            "reussite_pct": 65.62
+          },
+          "gains_incrementaux": {
+            "log_loss": 0.005536,
+            "brier": 0.00559,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": {
+            "log_loss": {
+              "bas": -0.10247,
+              "haut": 0.130254
+            },
+            "brier": {
+              "bas": -0.044566,
+              "haut": 0.063793
+            },
+            "residuel_controle_points": {
+              "bas": -26.744,
+              "haut": 6.604
+            }
+          }
+        }
+      },
+      "equilibre_contre_retourneur_pressant": {
+        "n_decouverte": 23,
+        "n_diagnostic": 32,
+        "decouverte": {
+          "n": 23,
+          "coefficient_log_odds_favorisant_profil": 0.83702471,
+          "victoires_profil_pct": 56.52,
+          "probabilite_controle_profil_pct": 38.86,
+          "residuel_controle_points": 17.659,
+          "controle_avec_bilan": {
+            "n": 23,
+            "log_loss": 0.715494,
+            "brier": 0.262151,
+            "reussite_pct": 52.17
+          },
+          "challenger": {
+            "n": 23,
+            "log_loss": 0.655024,
+            "brier": 0.23244,
+            "reussite_pct": 60.87
+          },
+          "gains_incrementaux": {
+            "log_loss": 0.06047,
+            "brier": 0.029711,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": null
+        },
+        "diagnostic": {
+          "n": 32,
+          "coefficient_log_odds_favorisant_profil": 0.83702471,
+          "victoires_profil_pct": 53.12,
+          "probabilite_controle_profil_pct": 43.62,
+          "residuel_controle_points": 9.506,
+          "controle_avec_bilan": {
+            "n": 32,
+            "log_loss": 0.684702,
+            "brier": 0.247849,
+            "reussite_pct": 46.88
+          },
+          "challenger": {
+            "n": 32,
+            "log_loss": 0.679166,
+            "brier": 0.242259,
+            "reussite_pct": 65.62
+          },
+          "gains_incrementaux": {
+            "log_loss": 0.005536,
+            "brier": 0.00559,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": {
+            "log_loss": {
+              "bas": -0.10247,
+              "haut": 0.130254
+            },
+            "brier": {
+              "bas": -0.044566,
+              "haut": 0.063793
+            },
+            "residuel_controle_points": {
+              "bas": -6.604,
+              "haut": 26.744
+            }
+          }
+        }
+      },
+      "contreur_contre_equilibre": {
+        "n_decouverte": 41,
+        "n_diagnostic": 53,
+        "decouverte": {
+          "n": 41,
+          "coefficient_log_odds_favorisant_profil": 0.2827725,
+          "victoires_profil_pct": 63.41,
+          "probabilite_controle_profil_pct": 56.32,
+          "residuel_controle_points": 7.091,
+          "controle_avec_bilan": {
+            "n": 41,
+            "log_loss": 0.714791,
+            "brier": 0.257023,
+            "reussite_pct": 53.66
+          },
+          "challenger": {
+            "n": 41,
+            "log_loss": 0.715674,
+            "brier": 0.251556,
+            "reussite_pct": 63.41
+          },
+          "gains_incrementaux": {
+            "log_loss": -0.000883,
+            "brier": 0.005467,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": null
+        },
+        "diagnostic": {
+          "n": 53,
+          "coefficient_log_odds_favorisant_profil": 0.2827725,
+          "victoires_profil_pct": 50.94,
+          "probabilite_controle_profil_pct": 51.42,
+          "residuel_controle_points": -0.472,
+          "controle_avec_bilan": {
+            "n": 53,
+            "log_loss": 0.710932,
+            "brier": 0.255496,
+            "reussite_pct": 56.6
+          },
+          "challenger": {
+            "n": 53,
+            "log_loss": 0.725031,
+            "brier": 0.261553,
+            "reussite_pct": 52.83
+          },
+          "gains_incrementaux": {
+            "log_loss": -0.014099,
+            "brier": -0.006057,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": {
+            "log_loss": {
+              "bas": -0.045118,
+              "haut": 0.020548
+            },
+            "brier": {
+              "bas": -0.019788,
+              "haut": 0.009457
+            },
+            "residuel_controle_points": {
+              "bas": -10.641,
+              "haut": 10.48
+            }
+          }
+        }
+      },
+      "equilibre_contre_contreur": {
+        "n_decouverte": 41,
+        "n_diagnostic": 53,
+        "decouverte": {
+          "n": 41,
+          "coefficient_log_odds_favorisant_profil": -0.2827725,
+          "victoires_profil_pct": 36.59,
+          "probabilite_controle_profil_pct": 43.68,
+          "residuel_controle_points": -7.091,
+          "controle_avec_bilan": {
+            "n": 41,
+            "log_loss": 0.714791,
+            "brier": 0.257023,
+            "reussite_pct": 53.66
+          },
+          "challenger": {
+            "n": 41,
+            "log_loss": 0.715674,
+            "brier": 0.251556,
+            "reussite_pct": 63.41
+          },
+          "gains_incrementaux": {
+            "log_loss": -0.000883,
+            "brier": 0.005467,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": null
+        },
+        "diagnostic": {
+          "n": 53,
+          "coefficient_log_odds_favorisant_profil": -0.2827725,
+          "victoires_profil_pct": 49.06,
+          "probabilite_controle_profil_pct": 48.58,
+          "residuel_controle_points": 0.472,
+          "controle_avec_bilan": {
+            "n": 53,
+            "log_loss": 0.710932,
+            "brier": 0.255496,
+            "reussite_pct": 56.6
+          },
+          "challenger": {
+            "n": 53,
+            "log_loss": 0.725031,
+            "brier": 0.261553,
+            "reussite_pct": 52.83
+          },
+          "gains_incrementaux": {
+            "log_loss": -0.014099,
+            "brier": -0.006057,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": {
+            "log_loss": {
+              "bas": -0.045118,
+              "haut": 0.020548
+            },
+            "brier": {
+              "bas": -0.019788,
+              "haut": 0.009457
+            },
+            "residuel_controle_points": {
+              "bas": -10.48,
+              "haut": 10.641
+            }
+          }
+        }
+      }
+    },
+    "challenger": {
+      "grand_serveur_contre_serveur_attaquant": {
+        "n_decouverte": 14,
+        "n_diagnostic": 109,
+        "decouverte": {
+          "n": 14,
+          "coefficient_log_odds_favorisant_profil": 0.15457559,
+          "victoires_profil_pct": 42.86,
+          "probabilite_controle_profil_pct": 39.25,
+          "residuel_controle_points": 3.605,
+          "controle_avec_bilan": {
+            "n": 14,
+            "log_loss": 0.635168,
+            "brier": 0.220659,
+            "reussite_pct": 71.43
+          },
+          "challenger": {
+            "n": 14,
+            "log_loss": 0.627933,
+            "brier": 0.218212,
+            "reussite_pct": 64.29
+          },
+          "gains_incrementaux": {
+            "log_loss": 0.007235,
+            "brier": 0.002447,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": null
+        },
+        "diagnostic": {
+          "n": 109,
+          "coefficient_log_odds_favorisant_profil": 0.15457559,
+          "victoires_profil_pct": 44.95,
+          "probabilite_controle_profil_pct": 46.25,
+          "residuel_controle_points": -1.295,
+          "controle_avec_bilan": {
+            "n": 109,
+            "log_loss": 0.62782,
+            "brier": 0.219852,
+            "reussite_pct": 56.88
+          },
+          "challenger": {
+            "n": 109,
+            "log_loss": 0.635344,
+            "brier": 0.222782,
+            "reussite_pct": 60.55
+          },
+          "gains_incrementaux": {
+            "log_loss": -0.007524,
+            "brier": -0.00293,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": {
+            "log_loss": {
+              "bas": -0.02337,
+              "haut": 0.006354
+            },
+            "brier": {
+              "bas": -0.01002,
+              "haut": 0.003357
+            },
+            "residuel_controle_points": {
+              "bas": -9.681,
+              "haut": 6.688
+            }
+          }
+        }
+      },
+      "serveur_attaquant_contre_grand_serveur": {
+        "n_decouverte": 14,
+        "n_diagnostic": 109,
+        "decouverte": {
+          "n": 14,
+          "coefficient_log_odds_favorisant_profil": -0.15457559,
+          "victoires_profil_pct": 57.14,
+          "probabilite_controle_profil_pct": 60.75,
+          "residuel_controle_points": -3.605,
+          "controle_avec_bilan": {
+            "n": 14,
+            "log_loss": 0.635168,
+            "brier": 0.220659,
+            "reussite_pct": 71.43
+          },
+          "challenger": {
+            "n": 14,
+            "log_loss": 0.627933,
+            "brier": 0.218212,
+            "reussite_pct": 64.29
+          },
+          "gains_incrementaux": {
+            "log_loss": 0.007235,
+            "brier": 0.002447,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": null
+        },
+        "diagnostic": {
+          "n": 109,
+          "coefficient_log_odds_favorisant_profil": -0.15457559,
+          "victoires_profil_pct": 55.05,
+          "probabilite_controle_profil_pct": 53.75,
+          "residuel_controle_points": 1.295,
+          "controle_avec_bilan": {
+            "n": 109,
+            "log_loss": 0.62782,
+            "brier": 0.219852,
+            "reussite_pct": 56.88
+          },
+          "challenger": {
+            "n": 109,
+            "log_loss": 0.635344,
+            "brier": 0.222782,
+            "reussite_pct": 60.55
+          },
+          "gains_incrementaux": {
+            "log_loss": -0.007524,
+            "brier": -0.00293,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": {
+            "log_loss": {
+              "bas": -0.02337,
+              "haut": 0.006354
+            },
+            "brier": {
+              "bas": -0.01002,
+              "haut": 0.003357
+            },
+            "residuel_controle_points": {
+              "bas": -6.688,
+              "haut": 9.681
+            }
+          }
+        }
+      },
+      "grand_serveur_contre_retourneur_pressant": {
+        "n_decouverte": 32,
+        "n_diagnostic": 115,
+        "decouverte": {
+          "n": 32,
+          "coefficient_log_odds_favorisant_profil": 0.56330431,
+          "victoires_profil_pct": 59.38,
+          "probabilite_controle_profil_pct": 46.3,
+          "residuel_controle_points": 13.071,
+          "controle_avec_bilan": {
+            "n": 32,
+            "log_loss": 0.687479,
+            "brier": 0.247676,
+            "reussite_pct": 56.25
+          },
+          "challenger": {
+            "n": 32,
+            "log_loss": 0.649076,
+            "brier": 0.227577,
+            "reussite_pct": 65.62
+          },
+          "gains_incrementaux": {
+            "log_loss": 0.038403,
+            "brier": 0.020099,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": null
+        },
+        "diagnostic": {
+          "n": 115,
+          "coefficient_log_odds_favorisant_profil": 0.56330431,
+          "victoires_profil_pct": 51.3,
+          "probabilite_controle_profil_pct": 49.67,
+          "residuel_controle_points": 1.632,
+          "controle_avec_bilan": {
+            "n": 115,
+            "log_loss": 0.642374,
+            "brier": 0.225638,
+            "reussite_pct": 64.35
+          },
+          "challenger": {
+            "n": 115,
+            "log_loss": 0.66618,
+            "brier": 0.235201,
+            "reussite_pct": 60.87
+          },
+          "gains_incrementaux": {
+            "log_loss": -0.023806,
+            "brier": -0.009563,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": {
+            "log_loss": {
+              "bas": -0.068194,
+              "haut": 0.019063
+            },
+            "brier": {
+              "bas": -0.02777,
+              "haut": 0.009053
+            },
+            "residuel_controle_points": {
+              "bas": -5.87,
+              "haut": 9.339
+            }
+          }
+        }
+      },
+      "retourneur_pressant_contre_grand_serveur": {
+        "n_decouverte": 32,
+        "n_diagnostic": 115,
+        "decouverte": {
+          "n": 32,
+          "coefficient_log_odds_favorisant_profil": -0.56330431,
+          "victoires_profil_pct": 40.62,
+          "probabilite_controle_profil_pct": 53.7,
+          "residuel_controle_points": -13.071,
+          "controle_avec_bilan": {
+            "n": 32,
+            "log_loss": 0.687479,
+            "brier": 0.247676,
+            "reussite_pct": 56.25
+          },
+          "challenger": {
+            "n": 32,
+            "log_loss": 0.649076,
+            "brier": 0.227577,
+            "reussite_pct": 65.62
+          },
+          "gains_incrementaux": {
+            "log_loss": 0.038403,
+            "brier": 0.020099,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": null
+        },
+        "diagnostic": {
+          "n": 115,
+          "coefficient_log_odds_favorisant_profil": -0.56330431,
+          "victoires_profil_pct": 48.7,
+          "probabilite_controle_profil_pct": 50.33,
+          "residuel_controle_points": -1.632,
+          "controle_avec_bilan": {
+            "n": 115,
+            "log_loss": 0.642374,
+            "brier": 0.225638,
+            "reussite_pct": 64.35
+          },
+          "challenger": {
+            "n": 115,
+            "log_loss": 0.66618,
+            "brier": 0.235201,
+            "reussite_pct": 60.87
+          },
+          "gains_incrementaux": {
+            "log_loss": -0.023806,
+            "brier": -0.009563,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": {
+            "log_loss": {
+              "bas": -0.068194,
+              "haut": 0.019063
+            },
+            "brier": {
+              "bas": -0.02777,
+              "haut": 0.009053
+            },
+            "residuel_controle_points": {
+              "bas": -9.339,
+              "haut": 5.87
+            }
+          }
+        }
+      },
+      "grand_serveur_contre_contreur": {
+        "n_decouverte": 75,
+        "n_diagnostic": 102,
+        "decouverte": {
+          "n": 75,
+          "coefficient_log_odds_favorisant_profil": -0.43088916,
+          "victoires_profil_pct": 48.0,
+          "probabilite_controle_profil_pct": 56.73,
+          "residuel_controle_points": -8.73,
+          "controle_avec_bilan": {
+            "n": 75,
+            "log_loss": 0.714061,
+            "brier": 0.259225,
+            "reussite_pct": 50.67
+          },
+          "challenger": {
+            "n": 75,
+            "log_loss": 0.695924,
+            "brier": 0.250129,
+            "reussite_pct": 57.33
+          },
+          "gains_incrementaux": {
+            "log_loss": 0.018137,
+            "brier": 0.009096,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": null
+        },
+        "diagnostic": {
+          "n": 102,
+          "coefficient_log_odds_favorisant_profil": -0.43088916,
+          "victoires_profil_pct": 50.98,
+          "probabilite_controle_profil_pct": 57.09,
+          "residuel_controle_points": -6.107,
+          "controle_avec_bilan": {
+            "n": 102,
+            "log_loss": 0.626344,
+            "brier": 0.219139,
+            "reussite_pct": 65.69
+          },
+          "challenger": {
+            "n": 102,
+            "log_loss": 0.623774,
+            "brier": 0.218044,
+            "reussite_pct": 64.71
+          },
+          "gains_incrementaux": {
+            "log_loss": 0.00257,
+            "brier": 0.001095,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": {
+            "log_loss": {
+              "bas": -0.032137,
+              "haut": 0.035
+            },
+            "brier": {
+              "bas": -0.014476,
+              "haut": 0.016123
+            },
+            "residuel_controle_points": {
+              "bas": -14.645,
+              "haut": 3.173
+            }
+          }
+        }
+      },
+      "contreur_contre_grand_serveur": {
+        "n_decouverte": 75,
+        "n_diagnostic": 102,
+        "decouverte": {
+          "n": 75,
+          "coefficient_log_odds_favorisant_profil": 0.43088916,
+          "victoires_profil_pct": 52.0,
+          "probabilite_controle_profil_pct": 43.27,
+          "residuel_controle_points": 8.73,
+          "controle_avec_bilan": {
+            "n": 75,
+            "log_loss": 0.714061,
+            "brier": 0.259225,
+            "reussite_pct": 50.67
+          },
+          "challenger": {
+            "n": 75,
+            "log_loss": 0.695924,
+            "brier": 0.250129,
+            "reussite_pct": 57.33
+          },
+          "gains_incrementaux": {
+            "log_loss": 0.018137,
+            "brier": 0.009096,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": null
+        },
+        "diagnostic": {
+          "n": 102,
+          "coefficient_log_odds_favorisant_profil": 0.43088916,
+          "victoires_profil_pct": 49.02,
+          "probabilite_controle_profil_pct": 42.91,
+          "residuel_controle_points": 6.107,
+          "controle_avec_bilan": {
+            "n": 102,
+            "log_loss": 0.626344,
+            "brier": 0.219139,
+            "reussite_pct": 65.69
+          },
+          "challenger": {
+            "n": 102,
+            "log_loss": 0.623774,
+            "brier": 0.218044,
+            "reussite_pct": 64.71
+          },
+          "gains_incrementaux": {
+            "log_loss": 0.00257,
+            "brier": 0.001095,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": {
+            "log_loss": {
+              "bas": -0.032137,
+              "haut": 0.035
+            },
+            "brier": {
+              "bas": -0.014476,
+              "haut": 0.016123
+            },
+            "residuel_controle_points": {
+              "bas": -3.173,
+              "haut": 14.645
+            }
+          }
+        }
+      },
+      "grand_serveur_contre_equilibre": {
+        "n_decouverte": 198,
+        "n_diagnostic": 511,
+        "decouverte": {
+          "n": 198,
+          "coefficient_log_odds_favorisant_profil": 0.05413924,
+          "victoires_profil_pct": 61.11,
+          "probabilite_controle_profil_pct": 58.59,
+          "residuel_controle_points": 2.523,
+          "controle_avec_bilan": {
+            "n": 198,
+            "log_loss": 0.629641,
+            "brier": 0.219157,
+            "reussite_pct": 63.13
+          },
+          "challenger": {
+            "n": 198,
+            "log_loss": 0.62651,
+            "brier": 0.217599,
+            "reussite_pct": 65.15
+          },
+          "gains_incrementaux": {
+            "log_loss": 0.003131,
+            "brier": 0.001558,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": null
+        },
+        "diagnostic": {
+          "n": 511,
+          "coefficient_log_odds_favorisant_profil": 0.05413924,
+          "victoires_profil_pct": 57.14,
+          "probabilite_controle_profil_pct": 60.37,
+          "residuel_controle_points": -3.228,
+          "controle_avec_bilan": {
+            "n": 511,
+            "log_loss": 0.626623,
+            "brier": 0.219681,
+            "reussite_pct": 63.6
+          },
+          "challenger": {
+            "n": 511,
+            "log_loss": 0.632255,
+            "brier": 0.221756,
+            "reussite_pct": 63.6
+          },
+          "gains_incrementaux": {
+            "log_loss": -0.005632,
+            "brier": -0.002075,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": {
+            "log_loss": {
+              "bas": -0.011305,
+              "haut": -2.7e-05
+            },
+            "brier": {
+              "bas": -0.004327,
+              "haut": 0.000109
+            },
+            "residuel_controle_points": {
+              "bas": -6.928,
+              "haut": 0.286
+            }
+          }
+        }
+      },
+      "equilibre_contre_grand_serveur": {
+        "n_decouverte": 198,
+        "n_diagnostic": 511,
+        "decouverte": {
+          "n": 198,
+          "coefficient_log_odds_favorisant_profil": -0.05413924,
+          "victoires_profil_pct": 38.89,
+          "probabilite_controle_profil_pct": 41.41,
+          "residuel_controle_points": -2.523,
+          "controle_avec_bilan": {
+            "n": 198,
+            "log_loss": 0.629641,
+            "brier": 0.219157,
+            "reussite_pct": 63.13
+          },
+          "challenger": {
+            "n": 198,
+            "log_loss": 0.62651,
+            "brier": 0.217599,
+            "reussite_pct": 65.15
+          },
+          "gains_incrementaux": {
+            "log_loss": 0.003131,
+            "brier": 0.001558,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": null
+        },
+        "diagnostic": {
+          "n": 511,
+          "coefficient_log_odds_favorisant_profil": -0.05413924,
+          "victoires_profil_pct": 42.86,
+          "probabilite_controle_profil_pct": 39.63,
+          "residuel_controle_points": 3.228,
+          "controle_avec_bilan": {
+            "n": 511,
+            "log_loss": 0.626623,
+            "brier": 0.219681,
+            "reussite_pct": 63.6
+          },
+          "challenger": {
+            "n": 511,
+            "log_loss": 0.632255,
+            "brier": 0.221756,
+            "reussite_pct": 63.6
+          },
+          "gains_incrementaux": {
+            "log_loss": -0.005632,
+            "brier": -0.002075,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": {
+            "log_loss": {
+              "bas": -0.011305,
+              "haut": -2.7e-05
+            },
+            "brier": {
+              "bas": -0.004327,
+              "haut": 0.000109
+            },
+            "residuel_controle_points": {
+              "bas": -0.286,
+              "haut": 6.928
+            }
+          }
+        }
+      },
+      "serveur_attaquant_contre_retourneur_pressant": {
+        "n_decouverte": 8,
+        "n_diagnostic": 95,
+        "decouverte": {
+          "n": 8,
+          "coefficient_log_odds_favorisant_profil": 1.0919727,
+          "victoires_profil_pct": 75.0,
+          "probabilite_controle_profil_pct": 51.87,
+          "residuel_controle_points": 23.131,
+          "controle_avec_bilan": {
+            "n": 8,
+            "log_loss": 0.528688,
+            "brier": 0.170942,
+            "reussite_pct": 87.5
+          },
+          "challenger": {
+            "n": 8,
+            "log_loss": 0.401378,
+            "brier": 0.124501,
+            "reussite_pct": 75.0
+          },
+          "gains_incrementaux": {
+            "log_loss": 0.12731,
+            "brier": 0.046441,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": null
+        },
+        "diagnostic": {
+          "n": 95,
+          "coefficient_log_odds_favorisant_profil": 1.0919727,
+          "victoires_profil_pct": 50.53,
+          "probabilite_controle_profil_pct": 51.01,
+          "residuel_controle_points": -0.485,
+          "controle_avec_bilan": {
+            "n": 95,
+            "log_loss": 0.610239,
+            "brier": 0.211024,
+            "reussite_pct": 66.32
+          },
+          "challenger": {
+            "n": 95,
+            "log_loss": 0.741228,
+            "brier": 0.265331,
+            "reussite_pct": 54.74
+          },
+          "gains_incrementaux": {
+            "log_loss": -0.130989,
+            "brier": -0.054307,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": {
+            "log_loss": {
+              "bas": -0.224902,
+              "haut": -0.045176
+            },
+            "brier": {
+              "bas": -0.09251,
+              "haut": -0.01863
+            },
+            "residuel_controle_points": {
+              "bas": -9.15,
+              "haut": 7.469
+            }
+          }
+        }
+      },
+      "retourneur_pressant_contre_serveur_attaquant": {
+        "n_decouverte": 8,
+        "n_diagnostic": 95,
+        "decouverte": {
+          "n": 8,
+          "coefficient_log_odds_favorisant_profil": -1.0919727,
+          "victoires_profil_pct": 25.0,
+          "probabilite_controle_profil_pct": 48.13,
+          "residuel_controle_points": -23.131,
+          "controle_avec_bilan": {
+            "n": 8,
+            "log_loss": 0.528688,
+            "brier": 0.170942,
+            "reussite_pct": 87.5
+          },
+          "challenger": {
+            "n": 8,
+            "log_loss": 0.401378,
+            "brier": 0.124501,
+            "reussite_pct": 75.0
+          },
+          "gains_incrementaux": {
+            "log_loss": 0.12731,
+            "brier": 0.046441,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": null
+        },
+        "diagnostic": {
+          "n": 95,
+          "coefficient_log_odds_favorisant_profil": -1.0919727,
+          "victoires_profil_pct": 49.47,
+          "probabilite_controle_profil_pct": 48.99,
+          "residuel_controle_points": 0.485,
+          "controle_avec_bilan": {
+            "n": 95,
+            "log_loss": 0.610239,
+            "brier": 0.211024,
+            "reussite_pct": 66.32
+          },
+          "challenger": {
+            "n": 95,
+            "log_loss": 0.741228,
+            "brier": 0.265331,
+            "reussite_pct": 54.74
+          },
+          "gains_incrementaux": {
+            "log_loss": -0.130989,
+            "brier": -0.054307,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": {
+            "log_loss": {
+              "bas": -0.224902,
+              "haut": -0.045176
+            },
+            "brier": {
+              "bas": -0.09251,
+              "haut": -0.01863
+            },
+            "residuel_controle_points": {
+              "bas": -7.469,
+              "haut": 9.15
+            }
+          }
+        }
+      },
+      "serveur_attaquant_contre_contreur": {
+        "n_decouverte": 20,
+        "n_diagnostic": 94,
+        "decouverte": {
+          "n": 20,
+          "coefficient_log_odds_favorisant_profil": -1.20902041,
+          "victoires_profil_pct": 30.0,
+          "probabilite_controle_profil_pct": 55.41,
+          "residuel_controle_points": -25.405,
+          "controle_avec_bilan": {
+            "n": 20,
+            "log_loss": 0.724773,
+            "brier": 0.264283,
+            "reussite_pct": 50.0
+          },
+          "challenger": {
+            "n": 20,
+            "log_loss": 0.583395,
+            "brier": 0.201963,
+            "reussite_pct": 65.0
+          },
+          "gains_incrementaux": {
+            "log_loss": 0.141378,
+            "brier": 0.06232,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": null
+        },
+        "diagnostic": {
+          "n": 94,
+          "coefficient_log_odds_favorisant_profil": -1.20902041,
+          "victoires_profil_pct": 60.64,
+          "probabilite_controle_profil_pct": 63.55,
+          "residuel_controle_points": -2.912,
+          "controle_avec_bilan": {
+            "n": 94,
+            "log_loss": 0.680513,
+            "brier": 0.2449,
+            "reussite_pct": 56.38
+          },
+          "challenger": {
+            "n": 94,
+            "log_loss": 0.799345,
+            "brier": 0.293271,
+            "reussite_pct": 50.0
+          },
+          "gains_incrementaux": {
+            "log_loss": -0.118832,
+            "brier": -0.048371,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": {
+            "log_loss": {
+              "bas": -0.238252,
+              "haut": -0.000121
+            },
+            "brier": {
+              "bas": -0.101562,
+              "haut": 0.004128
+            },
+            "residuel_controle_points": {
+              "bas": -12.713,
+              "haut": 7.405
+            }
+          }
+        }
+      },
+      "contreur_contre_serveur_attaquant": {
+        "n_decouverte": 20,
+        "n_diagnostic": 94,
+        "decouverte": {
+          "n": 20,
+          "coefficient_log_odds_favorisant_profil": 1.20902041,
+          "victoires_profil_pct": 70.0,
+          "probabilite_controle_profil_pct": 44.59,
+          "residuel_controle_points": 25.405,
+          "controle_avec_bilan": {
+            "n": 20,
+            "log_loss": 0.724773,
+            "brier": 0.264283,
+            "reussite_pct": 50.0
+          },
+          "challenger": {
+            "n": 20,
+            "log_loss": 0.583395,
+            "brier": 0.201963,
+            "reussite_pct": 65.0
+          },
+          "gains_incrementaux": {
+            "log_loss": 0.141378,
+            "brier": 0.06232,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": null
+        },
+        "diagnostic": {
+          "n": 94,
+          "coefficient_log_odds_favorisant_profil": 1.20902041,
+          "victoires_profil_pct": 39.36,
+          "probabilite_controle_profil_pct": 36.45,
+          "residuel_controle_points": 2.912,
+          "controle_avec_bilan": {
+            "n": 94,
+            "log_loss": 0.680513,
+            "brier": 0.2449,
+            "reussite_pct": 56.38
+          },
+          "challenger": {
+            "n": 94,
+            "log_loss": 0.799345,
+            "brier": 0.293271,
+            "reussite_pct": 50.0
+          },
+          "gains_incrementaux": {
+            "log_loss": -0.118832,
+            "brier": -0.048371,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": {
+            "log_loss": {
+              "bas": -0.238252,
+              "haut": -0.000121
+            },
+            "brier": {
+              "bas": -0.101562,
+              "haut": 0.004128
+            },
+            "residuel_controle_points": {
+              "bas": -7.405,
+              "haut": 12.713
+            }
+          }
+        }
+      },
+      "serveur_attaquant_contre_equilibre": {
+        "n_decouverte": 63,
+        "n_diagnostic": 307,
+        "decouverte": {
+          "n": 63,
+          "coefficient_log_odds_favorisant_profil": 0.10097729,
+          "victoires_profil_pct": 65.08,
+          "probabilite_controle_profil_pct": 61.29,
+          "residuel_controle_points": 3.788,
+          "controle_avec_bilan": {
+            "n": 63,
+            "log_loss": 0.680468,
+            "brier": 0.239281,
+            "reussite_pct": 58.73
+          },
+          "challenger": {
+            "n": 63,
+            "log_loss": 0.683352,
+            "brier": 0.239075,
+            "reussite_pct": 61.9
+          },
+          "gains_incrementaux": {
+            "log_loss": -0.002884,
+            "brier": 0.000206,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": null
+        },
+        "diagnostic": {
+          "n": 307,
+          "coefficient_log_odds_favorisant_profil": 0.10097729,
+          "victoires_profil_pct": 57.98,
+          "probabilite_controle_profil_pct": 62.83,
+          "residuel_controle_points": -4.85,
+          "controle_avec_bilan": {
+            "n": 307,
+            "log_loss": 0.603051,
+            "brier": 0.208208,
+            "reussite_pct": 67.1
+          },
+          "challenger": {
+            "n": 307,
+            "log_loss": 0.615043,
+            "brier": 0.213399,
+            "reussite_pct": 65.15
+          },
+          "gains_incrementaux": {
+            "log_loss": -0.011992,
+            "brier": -0.005191,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": {
+            "log_loss": {
+              "bas": -0.020398,
+              "haut": -0.003521
+            },
+            "brier": {
+              "bas": -0.008572,
+              "haut": -0.001752
+            },
+            "residuel_controle_points": {
+              "bas": -9.127,
+              "haut": -0.616
+            }
+          }
+        }
+      },
+      "equilibre_contre_serveur_attaquant": {
+        "n_decouverte": 63,
+        "n_diagnostic": 307,
+        "decouverte": {
+          "n": 63,
+          "coefficient_log_odds_favorisant_profil": -0.10097729,
+          "victoires_profil_pct": 34.92,
+          "probabilite_controle_profil_pct": 38.71,
+          "residuel_controle_points": -3.788,
+          "controle_avec_bilan": {
+            "n": 63,
+            "log_loss": 0.680468,
+            "brier": 0.239281,
+            "reussite_pct": 58.73
+          },
+          "challenger": {
+            "n": 63,
+            "log_loss": 0.683352,
+            "brier": 0.239075,
+            "reussite_pct": 61.9
+          },
+          "gains_incrementaux": {
+            "log_loss": -0.002884,
+            "brier": 0.000206,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": null
+        },
+        "diagnostic": {
+          "n": 307,
+          "coefficient_log_odds_favorisant_profil": -0.10097729,
+          "victoires_profil_pct": 42.02,
+          "probabilite_controle_profil_pct": 37.17,
+          "residuel_controle_points": 4.85,
+          "controle_avec_bilan": {
+            "n": 307,
+            "log_loss": 0.603051,
+            "brier": 0.208208,
+            "reussite_pct": 67.1
+          },
+          "challenger": {
+            "n": 307,
+            "log_loss": 0.615043,
+            "brier": 0.213399,
+            "reussite_pct": 65.15
+          },
+          "gains_incrementaux": {
+            "log_loss": -0.011992,
+            "brier": -0.005191,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": {
+            "log_loss": {
+              "bas": -0.020398,
+              "haut": -0.003521
+            },
+            "brier": {
+              "bas": -0.008572,
+              "haut": -0.001752
+            },
+            "residuel_controle_points": {
+              "bas": 0.616,
+              "haut": 9.127
+            }
+          }
+        }
+      },
+      "retourneur_pressant_contre_contreur": {
+        "n_decouverte": 34,
+        "n_diagnostic": 125,
+        "decouverte": {
+          "n": 34,
+          "coefficient_log_odds_favorisant_profil": -0.75920862,
+          "victoires_profil_pct": 50.0,
+          "probabilite_controle_profil_pct": 65.72,
+          "residuel_controle_points": -15.72,
+          "controle_avec_bilan": {
+            "n": 34,
+            "log_loss": 0.75414,
+            "brier": 0.275983,
+            "reussite_pct": 55.88
+          },
+          "challenger": {
+            "n": 34,
+            "log_loss": 0.701194,
+            "brier": 0.254631,
+            "reussite_pct": 50.0
+          },
+          "gains_incrementaux": {
+            "log_loss": 0.052946,
+            "brier": 0.021352,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": null
+        },
+        "diagnostic": {
+          "n": 125,
+          "coefficient_log_odds_favorisant_profil": -0.75920862,
+          "victoires_profil_pct": 59.2,
+          "probabilite_controle_profil_pct": 59.09,
+          "residuel_controle_points": 0.11,
+          "controle_avec_bilan": {
+            "n": 125,
+            "log_loss": 0.645095,
+            "brier": 0.226554,
+            "reussite_pct": 61.6
+          },
+          "challenger": {
+            "n": 125,
+            "log_loss": 0.70203,
+            "brier": 0.253875,
+            "reussite_pct": 56.0
+          },
+          "gains_incrementaux": {
+            "log_loss": -0.056935,
+            "brier": -0.027321,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": {
+            "log_loss": {
+              "bas": -0.110365,
+              "haut": -0.003836
+            },
+            "brier": {
+              "bas": -0.051276,
+              "haut": -0.002877
+            },
+            "residuel_controle_points": {
+              "bas": -7.587,
+              "haut": 7.537
+            }
+          }
+        }
+      },
+      "contreur_contre_retourneur_pressant": {
+        "n_decouverte": 34,
+        "n_diagnostic": 125,
+        "decouverte": {
+          "n": 34,
+          "coefficient_log_odds_favorisant_profil": 0.75920862,
+          "victoires_profil_pct": 50.0,
+          "probabilite_controle_profil_pct": 34.28,
+          "residuel_controle_points": 15.72,
+          "controle_avec_bilan": {
+            "n": 34,
+            "log_loss": 0.75414,
+            "brier": 0.275983,
+            "reussite_pct": 55.88
+          },
+          "challenger": {
+            "n": 34,
+            "log_loss": 0.701194,
+            "brier": 0.254631,
+            "reussite_pct": 50.0
+          },
+          "gains_incrementaux": {
+            "log_loss": 0.052946,
+            "brier": 0.021352,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": null
+        },
+        "diagnostic": {
+          "n": 125,
+          "coefficient_log_odds_favorisant_profil": 0.75920862,
+          "victoires_profil_pct": 40.8,
+          "probabilite_controle_profil_pct": 40.91,
+          "residuel_controle_points": -0.11,
+          "controle_avec_bilan": {
+            "n": 125,
+            "log_loss": 0.645095,
+            "brier": 0.226554,
+            "reussite_pct": 61.6
+          },
+          "challenger": {
+            "n": 125,
+            "log_loss": 0.70203,
+            "brier": 0.253875,
+            "reussite_pct": 56.0
+          },
+          "gains_incrementaux": {
+            "log_loss": -0.056935,
+            "brier": -0.027321,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": {
+            "log_loss": {
+              "bas": -0.110365,
+              "haut": -0.003836
+            },
+            "brier": {
+              "bas": -0.051276,
+              "haut": -0.002877
+            },
+            "residuel_controle_points": {
+              "bas": -7.537,
+              "haut": 7.587
+            }
+          }
+        }
+      },
+      "retourneur_pressant_contre_equilibre": {
+        "n_decouverte": 100,
+        "n_diagnostic": 368,
+        "decouverte": {
+          "n": 100,
+          "coefficient_log_odds_favorisant_profil": -0.04166682,
+          "victoires_profil_pct": 62.0,
+          "probabilite_controle_profil_pct": 61.22,
+          "residuel_controle_points": 0.775,
+          "controle_avec_bilan": {
+            "n": 100,
+            "log_loss": 0.650386,
+            "brier": 0.226787,
+            "reussite_pct": 65.0
+          },
+          "challenger": {
+            "n": 100,
+            "log_loss": 0.65209,
+            "brier": 0.227017,
+            "reussite_pct": 65.0
+          },
+          "gains_incrementaux": {
+            "log_loss": -0.001704,
+            "brier": -0.00023,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": null
+        },
+        "diagnostic": {
+          "n": 368,
+          "coefficient_log_odds_favorisant_profil": -0.04166682,
+          "victoires_profil_pct": 60.33,
+          "probabilite_controle_profil_pct": 63.38,
+          "residuel_controle_points": -3.054,
+          "controle_avec_bilan": {
+            "n": 368,
+            "log_loss": 0.604914,
+            "brier": 0.209602,
+            "reussite_pct": 67.12
+          },
+          "challenger": {
+            "n": 368,
+            "log_loss": 0.608084,
+            "brier": 0.211126,
+            "reussite_pct": 66.58
+          },
+          "gains_incrementaux": {
+            "log_loss": -0.00317,
+            "brier": -0.001524,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": {
+            "log_loss": {
+              "bas": -0.00709,
+              "haut": 0.0004
+            },
+            "brier": {
+              "bas": -0.003202,
+              "haut": -4.4e-05
+            },
+            "residuel_controle_points": {
+              "bas": -7.5,
+              "haut": 1.255
+            }
+          }
+        }
+      },
+      "equilibre_contre_retourneur_pressant": {
+        "n_decouverte": 100,
+        "n_diagnostic": 368,
+        "decouverte": {
+          "n": 100,
+          "coefficient_log_odds_favorisant_profil": 0.04166682,
+          "victoires_profil_pct": 38.0,
+          "probabilite_controle_profil_pct": 38.78,
+          "residuel_controle_points": -0.775,
+          "controle_avec_bilan": {
+            "n": 100,
+            "log_loss": 0.650386,
+            "brier": 0.226787,
+            "reussite_pct": 65.0
+          },
+          "challenger": {
+            "n": 100,
+            "log_loss": 0.65209,
+            "brier": 0.227017,
+            "reussite_pct": 65.0
+          },
+          "gains_incrementaux": {
+            "log_loss": -0.001704,
+            "brier": -0.00023,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": null
+        },
+        "diagnostic": {
+          "n": 368,
+          "coefficient_log_odds_favorisant_profil": 0.04166682,
+          "victoires_profil_pct": 39.67,
+          "probabilite_controle_profil_pct": 36.62,
+          "residuel_controle_points": 3.054,
+          "controle_avec_bilan": {
+            "n": 368,
+            "log_loss": 0.604914,
+            "brier": 0.209602,
+            "reussite_pct": 67.12
+          },
+          "challenger": {
+            "n": 368,
+            "log_loss": 0.608084,
+            "brier": 0.211126,
+            "reussite_pct": 66.58
+          },
+          "gains_incrementaux": {
+            "log_loss": -0.00317,
+            "brier": -0.001524,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": {
+            "log_loss": {
+              "bas": -0.00709,
+              "haut": 0.0004
+            },
+            "brier": {
+              "bas": -0.003202,
+              "haut": -4.4e-05
+            },
+            "residuel_controle_points": {
+              "bas": -1.255,
+              "haut": 7.5
+            }
+          }
+        }
+      },
+      "contreur_contre_equilibre": {
+        "n_decouverte": 201,
+        "n_diagnostic": 422,
+        "decouverte": {
+          "n": 201,
+          "coefficient_log_odds_favorisant_profil": -0.14231062,
+          "victoires_profil_pct": 50.25,
+          "probabilite_controle_profil_pct": 53.07,
+          "residuel_controle_points": -2.818,
+          "controle_avec_bilan": {
+            "n": 201,
+            "log_loss": 0.660861,
+            "brier": 0.232998,
+            "reussite_pct": 63.18
+          },
+          "challenger": {
+            "n": 201,
+            "log_loss": 0.661991,
+            "brier": 0.233747,
+            "reussite_pct": 63.68
+          },
+          "gains_incrementaux": {
+            "log_loss": -0.00113,
+            "brier": -0.000749,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": null
+        },
+        "diagnostic": {
+          "n": 422,
+          "coefficient_log_odds_favorisant_profil": -0.14231062,
+          "victoires_profil_pct": 52.13,
+          "probabilite_controle_profil_pct": 54.82,
+          "residuel_controle_points": -2.691,
+          "controle_avec_bilan": {
+            "n": 422,
+            "log_loss": 0.622745,
+            "brier": 0.216744,
+            "reussite_pct": 65.17
+          },
+          "challenger": {
+            "n": 422,
+            "log_loss": 0.619776,
+            "brier": 0.215424,
+            "reussite_pct": 66.35
+          },
+          "gains_incrementaux": {
+            "log_loss": 0.002969,
+            "brier": 0.00132,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": {
+            "log_loss": {
+              "bas": -0.00227,
+              "haut": 0.008595
+            },
+            "brier": {
+              "bas": -0.001049,
+              "haut": 0.003781
+            },
+            "residuel_controle_points": {
+              "bas": -6.717,
+              "haut": 1.208
+            }
+          }
+        }
+      },
+      "equilibre_contre_contreur": {
+        "n_decouverte": 201,
+        "n_diagnostic": 422,
+        "decouverte": {
+          "n": 201,
+          "coefficient_log_odds_favorisant_profil": 0.14231062,
+          "victoires_profil_pct": 49.75,
+          "probabilite_controle_profil_pct": 46.93,
+          "residuel_controle_points": 2.818,
+          "controle_avec_bilan": {
+            "n": 201,
+            "log_loss": 0.660861,
+            "brier": 0.232998,
+            "reussite_pct": 63.18
+          },
+          "challenger": {
+            "n": 201,
+            "log_loss": 0.661991,
+            "brier": 0.233747,
+            "reussite_pct": 63.68
+          },
+          "gains_incrementaux": {
+            "log_loss": -0.00113,
+            "brier": -0.000749,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": null
+        },
+        "diagnostic": {
+          "n": 422,
+          "coefficient_log_odds_favorisant_profil": 0.14231062,
+          "victoires_profil_pct": 47.87,
+          "probabilite_controle_profil_pct": 45.18,
+          "residuel_controle_points": 2.691,
+          "controle_avec_bilan": {
+            "n": 422,
+            "log_loss": 0.622745,
+            "brier": 0.216744,
+            "reussite_pct": 65.17
+          },
+          "challenger": {
+            "n": 422,
+            "log_loss": 0.619776,
+            "brier": 0.215424,
+            "reussite_pct": 66.35
+          },
+          "gains_incrementaux": {
+            "log_loss": 0.002969,
+            "brier": 0.00132,
+            "sens": "positif = apport des styles"
+          },
+          "ic95_bootstrap_semaine": {
+            "log_loss": {
+              "bas": -0.00227,
+              "haut": 0.008595
+            },
+            "brier": {
+              "bas": -0.001049,
+              "haut": 0.003781
+            },
+            "residuel_controle_points": {
+              "bas": -1.208,
+              "haut": 6.717
+            }
+          }
+        }
+      }
+    }
+  },
+  "convergence": {
+    "controle": true,
+    "challenger": true
+  },
+  "coefficients_standardises_decouverte": {
+    "constante": 0.06926746934407807,
+    "elo": 0.7379169778141615,
+    "service_retour": 0.1769816057982824,
+    "terre": 0.0021449074022654906,
+    "gazon": -0.05435288129787997,
+    "wta": 0.051944995755153295,
+    "challenger": 0.0725480910240018,
+    "itf": -0.053031889553612384,
+    "documentation_balles": -0.021146669221163233,
+    "documentation_matchs": 0.008502237943400583,
+    "moins_500_balles": 0.09830945917322789,
+    "bilan_global": 0.055606379570111414,
+    "atp:grand_serveur|serveur_attaquant": -0.03204511015383034,
+    "atp:grand_serveur|retourneur_pressant": -0.0345476358637353,
+    "atp:grand_serveur|contreur": -0.06292420902467998,
+    "atp:grand_serveur|equilibre": -0.04436940670274019,
+    "atp:serveur_attaquant|retourneur_pressant": -0.0813552367399425,
+    "atp:serveur_attaquant|contreur": -0.054579825639718915,
+    "atp:serveur_attaquant|equilibre": -0.07060311527689399,
+    "atp:retourneur_pressant|contreur": -0.04726761369363467,
+    "atp:retourneur_pressant|equilibre": -0.019043522372537244,
+    "atp:contreur|equilibre": 0.08086855702244442,
+    "wta:grand_serveur|serveur_attaquant": 0.022395344604670207,
+    "wta:grand_serveur|retourneur_pressant": -0.03887392954431077,
+    "wta:grand_serveur|contreur": 0.08086370285606502,
+    "wta:grand_serveur|equilibre": 0.01623561585294701,
+    "wta:serveur_attaquant|retourneur_pressant": 0.016976472197311118,
+    "wta:serveur_attaquant|contreur": -0.011793855259492619,
+    "wta:serveur_attaquant|equilibre": -0.011746126177336605,
+    "wta:retourneur_pressant|contreur": 0.005093316952983113,
+    "wta:retourneur_pressant|equilibre": -0.08650490052347816,
+    "wta:contreur|equilibre": 0.03899502757959949,
+    "challenger:grand_serveur|serveur_attaquant": 0.01246473109214712,
+    "challenger:grand_serveur|retourneur_pressant": 0.068674585331101,
+    "challenger:grand_serveur|contreur": -0.08026608409011741,
+    "challenger:grand_serveur|equilibre": 0.01641778598978818,
+    "challenger:serveur_attaquant|retourneur_pressant": 0.06655555734671938,
+    "challenger:serveur_attaquant|contreur": -0.11647829280479052,
+    "challenger:serveur_attaquant|equilibre": 0.017271575560443942,
+    "challenger:retourneur_pressant|contreur": -0.09540663377500173,
+    "challenger:retourneur_pressant|equilibre": -0.00897774838975242,
+    "challenger:contreur|equilibre": -0.043473891666594384
+  },
+  "coefficients_non_standardises": {
+    "constante": 0.06926746934407807,
+    "elo": 0.8300768242246795,
+    "service_retour": 0.3645664854121638,
+    "terre": 0.004366999321169826,
+    "gazon": -0.23329999802722282,
+    "wta": 0.15127751604643572,
+    "challenger": 0.1460923673823362,
+    "itf": -0.15025379250706372,
+    "documentation_balles": -0.01090904618124042,
+    "documentation_matchs": 0.00648528853219492,
+    "moins_500_balles": 0.25449937941474887,
+    "bilan_global": 0.12878525001432894,
+    "atp:grand_serveur|serveur_attaquant": -0.3720725232878535,
+    "atp:grand_serveur|retourneur_pressant": -0.34228681856911847,
+    "atp:grand_serveur|contreur": -0.5084317001611403,
+    "atp:grand_serveur|equilibre": -0.31037623971667183,
+    "atp:serveur_attaquant|retourneur_pressant": -1.25833848747944,
+    "atp:serveur_attaquant|contreur": -0.6768913425408648,
+    "atp:serveur_attaquant|equilibre": -0.7520199154055988,
+    "atp:retourneur_pressant|contreur": -0.4227036773599696,
+    "atp:retourneur_pressant|equilibre": -0.14952810178591852,
+    "atp:contreur|equilibre": 0.6634025773632485,
+    "wta:grand_serveur|serveur_attaquant": 0.2683457108608325,
+    "wta:grand_serveur|retourneur_pressant": -0.4823651734358718,
+    "wta:grand_serveur|contreur": 0.7359546279139416,
+    "wta:grand_serveur|equilibre": 0.12221080379669551,
+    "wta:serveur_attaquant|retourneur_pressant": 0.24909755309855303,
+    "wta:serveur_attaquant|contreur": -0.17311681017711794,
+    "wta:serveur_attaquant|equilibre": -0.12187702689064099,
+    "wta:retourneur_pressant|contreur": 0.0632295738992591,
+    "wta:retourneur_pressant|equilibre": -0.8370247073331356,
+    "wta:contreur|equilibre": 0.28277250336374377,
+    "challenger:grand_serveur|serveur_attaquant": 0.1545755892626664,
+    "challenger:grand_serveur|retourneur_pressant": 0.5633043065633004,
+    "challenger:grand_serveur|contreur": -0.430889164352421,
+    "challenger:grand_serveur|equilibre": 0.054139240672171296,
+    "challenger:serveur_attaquant|retourneur_pressant": 1.091972700079384,
+    "challenger:serveur_attaquant|contreur": -1.20902041448063,
+    "challenger:serveur_attaquant|equilibre": 0.10097729296390617,
+    "challenger:retourneur_pressant|contreur": -0.7592086181385935,
+    "challenger:retourneur_pressant|equilibre": -0.04166681707785878,
+    "challenger:contreur|equilibre": -0.14231062387834606
+  },
+  "modeles_complets_decouverte": {
+    "controle": {
+      "beta": [
+        0.0664318930692211,
+        0.7400732537403224,
+        0.12804036231391877,
+        -0.003780815335465264,
+        -0.058526787410357245,
+        0.04174207240931397,
+        0.06908481089603058,
+        -0.051964801779847886,
+        -0.015217676231173734,
+        0.005087314554522682,
+        0.102681913015428,
+        0.0037718148294185955
+      ],
+      "moyennes": [
+        0.0,
+        0.05072817007950472,
+        0.00014041116453224092,
+        0.4064096609382257,
+        0.057594054807245706,
+        0.13655364607524384,
+        0.5582907570831398,
+        0.14584300975383185,
+        7.180856111540326,
+        4.221601408263251,
+        0.18253599628425451,
+        -0.01739610265726015
+      ],
+      "ecarts": [
+        1.0,
+        0.8889743169295222,
+        0.4854576953177534,
+        0.49116275147277005,
+        0.23297420384691883,
+        0.34337552012163136,
+        0.4965905633806128,
+        0.3529487586885319,
+        1.9384526263650612,
+        1.3110038051804358,
+        0.38628565381692487,
+        0.43177599580638715
+      ],
+      "converged": true
+    },
+    "challenger": {
+      "beta": [
+        0.06926746934407807,
+        0.7379169778141615,
+        0.1769816057982824,
+        0.0021449074022654906,
+        -0.05435288129787997,
+        0.051944995755153295,
+        0.0725480910240018,
+        -0.053031889553612384,
+        -0.021146669221163233,
+        0.008502237943400583,
+        0.09830945917322789,
+        0.055606379570111414,
+        -0.03204511015383034,
+        -0.0345476358637353,
+        -0.06292420902467998,
+        -0.04436940670274019,
+        -0.0813552367399425,
+        -0.054579825639718915,
+        -0.07060311527689399,
+        -0.04726761369363467,
+        -0.019043522372537244,
+        0.08086855702244442,
+        0.022395344604670207,
+        -0.03887392954431077,
+        0.08086370285606502,
+        0.01623561585294701,
+        0.016976472197311118,
+        -0.011793855259492619,
+        -0.011746126177336605,
+        0.005093316952983113,
+        -0.08650490052347816,
+        0.03899502757959949,
+        0.01246473109214712,
+        0.068674585331101,
+        -0.08026608409011741,
+        0.01641778598978818,
+        0.06655555734671938,
+        -0.11647829280479052,
+        0.017271575560443942,
+        -0.09540663377500173,
+        -0.00897774838975242,
+        -0.043473891666594384
+      ],
+      "moyennes": [
+        0.0,
+        0.05072817007950472,
+        0.00014041116453224092,
+        0.4064096609382257,
+        0.057594054807245706,
+        0.13655364607524384,
+        0.5582907570831398,
+        0.14584300975383185,
+        7.180856111540326,
+        4.221601408263251,
+        0.18253599628425451,
+        -0.01739610265726015,
+        0.0037157454714352067,
+        0.00557361820715281,
+        0.003251277287505806,
+        0.0009289363678588017,
+        -0.00046446818392940084,
+        -0.0009289363678588017,
+        -0.003251277287505806,
+        -0.006038086391082211,
+        -0.006038086391082211,
+        0.0018578727357176034,
+        0.0013934045517882026,
+        0.002786809103576405,
+        0.0018578727357176034,
+        0.0009289363678588017,
+        0.0,
+        -0.0018578727357176034,
+        0.0009289363678588017,
+        -0.0037157454714352067,
+        0.0013934045517882026,
+        -0.005109150023223409,
+        0.0,
+        0.0,
+        0.011611704598235021,
+        0.0018578727357176034,
+        0.0009289363678588017,
+        -0.002786809103576405,
+        -0.0023223409196470044,
+        0.0,
+        -0.004644681839294009,
+        -0.006038086391082211
+      ],
+      "ecarts": [
+        1.0,
+        0.8889743169295222,
+        0.4854576953177534,
+        0.49116275147277005,
+        0.23297420384691883,
+        0.34337552012163136,
+        0.4965905633806128,
+        0.3529487586885319,
+        1.9384526263650612,
+        1.3110038051804358,
+        0.38628565381692487,
+        0.43177599580638715,
+        0.08612597853413291,
+        0.1009318325729188,
+        0.12376138034811172,
+        0.14295361894725891,
+        0.06465290345120414,
+        0.08063306798228677,
+        0.0938846350083887,
+        0.11182210192456432,
+        0.12735748093560448,
+        0.12189967266009662,
+        0.08345706191027856,
+        0.0805902492242817,
+        0.10987593499516762,
+        0.1328492682198201,
+        0.06815190268285992,
+        0.06812657446394825,
+        0.09637686836483371,
+        0.08055276414005369,
+        0.10334808490790372,
+        0.13790247324520916,
+        0.08063841872836801,
+        0.12191382975586004,
+        0.18628011732610755,
+        0.3032511314520018,
+        0.0609498363300483,
+        0.09634104718970123,
+        0.17104415313072,
+        0.12566589932674507,
+        0.2154651835530553,
+        0.3054859186321743
+      ],
+      "converged": true
+    }
+  },
+  "nature_diagnostic": "2025–2026 historique réutilisé ; jamais une confirmation prospective nouvelle",
+  "comparaisons_multiples": "60 cellules directionnelles affichées exhaustivement ; aucune case positive sélectionnée comme règle",
+  "marche_utilise": false,
+  "activation": false,
+  "champion_actif_modifie": false,
+  "regle": "ridge 1.0 sur 2024 uniquement ; coefficients figés ; aucune activation automatique"
+}

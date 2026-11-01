@@ -957,6 +957,12 @@ def construire(racine, maintenant=None):
     except FileNotFoundError:
         doc['suivi_statistiques_styles_dur'] = {'schema': SS.SCHEMA, 'statut': 'modele_non_installe',
                                                 'nouveaux_figes': 0, 'activation': False}
+    import profils_orientes as PO
+    try:
+        doc['suivi_profils_orientes'] = PO.journaliser(racine, doc)
+    except FileNotFoundError:
+        doc['suivi_profils_orientes'] = {'schema': PO.SCHEMA, 'statut': 'modele_non_installe',
+                                         'nouveaux_figes': 0, 'activation': False}
     return doc
 
 
