@@ -1,47 +1,47 @@
 {
  "schema_version": 1,
- "genere_le": "2026-10-31T06:20:10Z",
+ "genere_le": "2026-11-01T06:42:42Z",
  "canaux": {
   "MISER": {
    "libelle": "🎯 MISER — steam, EV ≥ seuil vs Pinnacle juste (vainqueur du match)",
    "source": "miser_signal_log.jsonl (messages envoyés) + ajouts de suivi_direct",
    "regle": "première alerte de chaque match, au book et au prix du message ; relances non recomptées",
    "debut": "2026-10-22",
-   "n_alertes": 14,
-   "n_matchs": 14,
+   "n_alertes": 15,
+   "n_matchs": 15,
    "n_relances": 0,
-   "n_denoues": 10,
+   "n_denoues": 12,
    "bilan": {
-    "n": 10,
-    "gains": 4,
-    "taux": 40.0,
-    "seuil": 37.2,
-    "ecart": 2.8,
+    "n": 12,
+    "gains": 5,
+    "taux": 41.7,
+    "seuil": 39.5,
+    "ecart": 2.2,
     "ic95": [
-     16.8,
-     68.7
+     19.3,
+     68.0
     ],
-    "roi": 24.7,
-    "pnl": 2.5,
-    "cote_moyenne": 2.9,
-    "clv_moyen": 6.5,
-    "clv_pin_moyen": 6.5,
+    "roi": 23.7,
+    "pnl": 2.8,
+    "cote_moyenne": 2.75,
+    "clv_moyen": 6.1,
+    "clv_pin_moyen": 6.1,
     "clv_pin_ic95": [
-     1.8,
-     11.1
+     2.0,
+     10.3
     ],
-    "clv_pin_p": 0.0031,
-    "clv_n": 13,
-    "clv_positif": 76.9,
-    "lead_moyen_h": 8.4,
-    "periode": "2026-10-22 -> 2026-10-29",
+    "clv_pin_p": 0.0019,
+    "clv_n": 15,
+    "clv_positif": 80.0,
+    "lead_moyen_h": 8.2,
+    "periode": "2026-10-22 -> 2026-10-31",
     "verdict": "ne tranche pas",
     "clv_mediane": 5.3,
-    "n_commencees": 13,
+    "n_commencees": 15,
     "n_sans_resultat": 3,
-    "sans_resultat_pct": 23.1,
+    "sans_resultat_pct": 20.0,
     "verrouillable": false,
-    "statut": "en attente de résultats (23,1 % sans résultat)"
+    "statut": "en attente de résultats (20,0 % sans résultat)"
    },
    "paris": {
     "2026-10-22_valerio_aboian_matias_soto": {
@@ -148,13 +148,21 @@
      "clv_pin": 10.959,
      "source_resultat": "feuille de match (TennisApi)"
     },
+    "2026-10-31_sebastian_baez_damir_dzumhur": {
+     "gagne": 0,
+     "pnl": -1.0,
+     "pin_close": 1.543,
+     "pin_close_adv": 2.56,
+     "clv_pin": 6.665,
+     "source_resultat": "feuille de match (TennisApi)"
+    },
     "2026-10-31_yaroslav_demin_yu_hsiou_hsu": {
-     "gagne": null,
-     "pnl": null,
-     "pin_close": null,
-     "pin_close_adv": null,
-     "clv_pin": null,
-     "source_resultat": "inconnu"
+     "gagne": 1,
+     "pnl": 1.37,
+     "pin_close": 2.26,
+     "pin_close_adv": 1.694,
+     "clv_pin": 0.708,
+     "source_resultat": "feuille de match (TennisApi)"
     }
    }
   }
