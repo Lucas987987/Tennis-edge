@@ -482,6 +482,75 @@ python simulateur/etude_circuits.py /tmp/sackmann . --maximum 16000 --bootstrap 
 
 `rapport_algorithmes_circuits.json` conserve les candidats de découverte, les trois comparaisons — séparation seule, algorithme local contre contrôle partagé et contre meilleur partagé — ainsi que les ventilations annuelles, circuits, surfaces, documentation et défaites du favori.
 
+### Correction des profils serveurs par branche : non confirmée (01/11/2026)
+
+`etude_serveurs_circuits.py` teste les quatre duels serveurs indiqués pour la piste WTA, sans créer trois algorithmes autonomes. Le socle Elo, surface, circuit, service–retour, documentation et bilan global reste partagé. Chaque candidat ajoute une seule variable orientée : +1 si le profil serveur est home, −1 s’il est away, 0 hors des quatre duels. Les coefficients sont appris sur 2024 puis figés ; aucun point de victoire fourni n’est converti en bonus.
+
+Sur les 8 000 matchs communs (2 153 en découverte, 5 847 en diagnostic), contre le contrôle partagé avec bilan global :
+
+| Branche | Matchs diagnostic | Duels serveurs | Gain log loss | Gain Brier | IC95 log loss | Exactitude contrôle → challenger |
+|---|---:|---:|---:|---:|---:|---:|
+| ATP | 405 | 104 | **−0,010601** | −0,004936 | [−0,019989 ; −0,001601] | 68,89 % → 68,64 % |
+| WTA | 414 | 122 | **−0,000559** | −0,000418 | [−0,004636 ; +0,003271] | 64,25 % → 64,49 % |
+| Challenger/ITF | 5 028 | 618 | **+0,000352** | +0,000157 | [−0,000082 ; +0,000800] | 68,28 % → 68,32 % |
+
+La piste WTA n’est donc pas confirmée après Elo, service–retour et bilan global, malgré une hausse ponctuelle d’exactitude. Le gain Challenger/ITF est sous le seuil de 0,001, son IC franchit zéro et le coefficient appris est dans le sens inverse de l’hypothèse « serveur favorisé ». L’ATP se dégrade nettement.
+
+Les quatre duels WTA restent présentés sans sélection du meilleur. Dans le diagnostic, les résiduels après contrôle sont respectivement +10,736 points (serveuse attaquante/contreuse, 24 matchs), +2,074 (serveuse attaquante/équilibrée, 37), −8,295 (grande serveuse/contreuse, 31) et −0,783 (grande serveuse/retourneuse pressante, 30). Ces petits effectifs et leurs incertitudes ne reproduisent pas uniformément les écarts bruts fournis ; un résiduel n’est ni un effet causal ni un réglage à injecter.
+
+**Verdict : aucune branche ne justifie une journalisation prospective nouvelle et aucune correction n’est activée.** `modele_serveurs_circuits.json` conserve les modèles figés pour reproductibilité avec `branches_suivies: []` ; il n’est importé par aucune composante de production. Le champion, les 20 000 simulations, le médoid et la trace vidéo restent inchangés. Aucun marché n’est utilisé et aucun gain de ROI n’est déduit.
+
+```bash
+python simulateur/etude_serveurs_circuits.py /tmp/sackmann . --maximum 8000 --bootstrap 2000
+```
+
+### Matrice exhaustive de tous les profils dans les deux sens (01/11/2026)
+
+La correction compacte précédente pouvait masquer des effets opposés. `etude_matrice_profils_orientee.py` remplace cette restriction par les **10 paires de profils distincts × 3 branches**, soit 30 coefficients libres et 60 cellules directionnelles publiées. Les cinq profils réels sont tous inclus ; `indetermine` n’est pas traité comme un style de jeu. Les matchs entre deux joueurs d’un même profil n’ont pas de direction A contre B à estimer.
+
+Le socle reste unique et partagé. Chaque coefficient peut favoriser librement un profil ou son adversaire. Toutes les cases sont rapportées, y compris les défavorables et les couvertures nulles ; aucune case positive n’est choisie comme règle après le diagnostic. Les IC sont amorcés par semaine ISO et ne sont pas ajustés pour 60 comparaisons : ils ne doivent donc pas être utilisés pour pêcher un duel significatif.
+
+| Branche | n diagnostic | Gain log loss | Gain Brier | IC95 log loss | Exactitude contrôle → matrice |
+|---|---:|---:|---:|---:|---:|
+| ATP | 405 | **−0,017539** | −0,008133 | [−0,034906 ; −0,000277] | 68,89 % → 67,16 % |
+| WTA | 414 | **−0,017564** | −0,007305 | [−0,031281 ; −0,002890] | 64,25 % → 64,01 % |
+| Challenger/ITF | 5 028 | **−0,008208** | −0,003500 | [−0,011725 ; −0,004607] | 68,28 % → 67,64 % |
+| Global | 5 847 | **−0,009517** | −0,004091 | [−0,013342 ; −0,005613] | 68,03 % → 67,35 % |
+
+La matrice complète est donc surajustée à 2024 et rejetée dans les trois branches. Cela n’efface pas les signaux descriptifs individuels, mais interdit de les convertir directement en coefficients actifs.
+
+| Direction | ATP : 2024 → diagnostic | WTA : 2024 → diagnostic | Challenger/ITF : 2024 → diagnostic |
+|---|---:|---:|---:|
+| Serveur attaquant contre contreur | −10,640 → +9,429 (11 matchs) | −1,818 → **+10,736** (24) | −25,405 → −2,912 (94) |
+| Contreur contre grand serveur | +9,018 → −6,170 (45) | −14,462 → **+8,295** (31) | +8,730 → **+6,107** (102) |
+
+Les deux signaux WTA sont positifs dans le diagnostic, mais leurs IC95 de résiduel franchissent zéro ([−1,601 ; +21,834] et [−6,098 ; +22,894]) et leur signe 2024 était opposé. Le signal Challenger/ITF contreur contre grand serveur est cohérent sur les deux périodes et gagne +0,002570 de log loss dans le diagnostic, mais l’IC95 du gain [−0,032137 ; +0,035000] franchit largement zéro. Il reste un signal de recherche, pas une règle validée.
+
+**Verdict : matrice complète rejetée, aucune interaction activée et aucune nouvelle journalisation.** Le détail des 60 directions, avec effectifs de découverte et diagnostic, résidus, log loss, Brier, exactitude, coefficients et IC, figure dans `rapport_matrice_profils_orientee.json` et `.md`. `modele_matrice_profils_orientee.json` est réservé à la reproductibilité et n’est importé par aucune composante de production. Aucun marché n’est utilisé et aucun gain de ROI n’est déduit.
+
+```bash
+python simulateur/etude_matrice_profils_orientee.py /tmp/sackmann . --maximum 8000 --bootstrap 2000
+```
+
+### Mise en place prospective des six cellules demandées (01/11/2026)
+
+`profils_orientes.py` met en place les deux directions explicitement demandées sur les trois branches, soit six cellules fixées avant toute future collecte :
+
+- serveur attaquant contre contreur sur ATP, WTA et Challenger/ITF ;
+- contreur contre grand serveur sur ATP, WTA et Challenger/ITF.
+
+Il s’agit d’un **suivi prospectif des résiduels**, pas de l’activation de la matrice rejetée. Pour chaque futur match éligible, le journal `journal_pronostics/profils_orientes_signaux_v1.jsonl` conserve sur le même UID :
+
+- le champion réellement publié et le contrôle partagé avec bilan global ;
+- la branche, la direction et le sens du profil étudié dans le home réel ;
+- les variables pré-match et les empreintes du contrôle et des styles figés.
+
+Le premier pronostic postérieur au gel est conservé une seule fois. Les doublons et l’historique sont refusés ; les résultats passent exclusivement par `set_results.json`. Le contrôle est recalculé avec l’orientation alphabétique d’apprentissage puis ramené au home réel. Le challenger complet de la matrice n’est jamais utilisé.
+
+Chaque cellule est évaluée séparément. À partir de 200 résultats sur huit semaines ISO, un signal est dit prospectivement confirmé seulement si le profil dépasse à la fois le champion et le contrôle, avec des IC95 bootstrap par semaine dont les bornes basses sont positives. **Même dans ce cas, aucune correction ne s’active automatiquement** : il faudra apprendre un challenger sur une nouvelle découverte, puis le valider séparément. Les pourcentages historiques +10,736, +8,295 ou +6,107 ne sont donc transformés en aucun bonus manuel.
+
+`pronostics_du_jour.py` ajoute seulement `suivi_profils_orientes` à son rapport interne. Les probabilités, notes, simulations, scores, la vitrine publique et le ROI restent inchangés.
+
 ## Évolutions algorithmiques figées (28/10/2026)
 
 Le manifeste `candidats_algorithmes.json` fige les paramètres et leurs empreintes. La période 2025–2026, déjà utilisée par plusieurs évaluations, est désormais explicitement un **diagnostic réutilisé**, pas une confirmation vierge. Une promotion éventuelle exige au moins 1 000 nouveaux pronostics figés après le 28 octobre 2026, sur huit semaines ISO, appariés au champion et résolus ensuite. Toute modification d’un candidat impose une nouvelle version et remet cette confirmation à zéro.

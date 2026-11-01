@@ -115,6 +115,7 @@ def observations(M, choisis, demi_vie=PS.DEMI_VIE, prior_mult=1.0, sigma=.15):
                 'surface': m['surface'], 'circuit': m['circuit'],
                 'documentation_balles': min(ih['balles_effectives'], ia['balles_effectives']),
                 'documentation_matchs': min(elo.matchs(h), elo.matchs(a)),
+                'style_home': style_h, 'style_away': style_a,
                 'paire_styles': '|'.join(sorted((style_h, style_a))),
             }
             row.update(_features(acc, h, a, style_h, style_a, m['surface']))
