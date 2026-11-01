@@ -69,8 +69,56 @@ def rejouer_trace(points, sets_gagnants=2, tb_final=7, premier_serveur=True):
     return {'score': score_texte(sets), 'sets': sets, 'vainqueur': 0 if ss[0] > ss[1] else 1}
 
 
+def supprimer_doublons_production(doc):
+    """Répare uniquement le flux public généré : un UID ne doit être publié qu'une fois.
+
+    Le calendrier OddsPapi peut exposer une même affiche plusieurs fois, y compris avec
+    des heures différentes. Choix déterministe : première heure annoncée (UTC), puis
+    premier ordre d'entrée. Aucun pronostic, scénario ni bilan n'est recalculé.
+
+    Les documents de test ou les documents sans provenance restent soumis au contrôle
+    strict des doublons dans valider(), afin de conserver le garde-fou historique.
+    """
+    if not isinstance(doc.get('pronostics_du'), str) or not doc['pronostics_du']:
+        return 0
+    matchs = doc.get('matchs')
+    if not isinstance(matchs, list) or len(matchs) < 2:
+        return 0
+    gardes = {}
+    ordre = []
+    doublons = 0
+    for rang, m in enumerate(matchs):
+        uid = m.get('uid')
+        if uid is None:
+            # La validation normale doit traiter une absence d'UID.
+            ordre.append((rang, m))
+            continue
+        if uid not in gardes:
+            gardes[uid] = (rang, m)
+            continue
+        doublons += 1
+        ancien_rang, ancien = gardes[uid]
+        # Les deux valeurs debut sont celles sorties par le moteur : format ISO UTC.
+        d1, d2 = str(ancien.get('debut') or ''), str(m.get('debut') or '')
+        if (d2, rang) < (d1, ancien_rang):
+            gardes[uid] = (rang, m)
+        if d1 != d2 or ancien.get('tournoi') != m.get('tournoi'):
+            print(f'::warning::Calendrier ambigu pour {uid}: ' +
+                  f"{d1} / {ancien.get('tournoi')} vs {d2} / {m.get('tournoi')}")
+    if doublons:
+        # Préserver l'ordre chronologique et la présentation habituelle du site.
+        ordre += list(gardes.values())
+        doc['matchs'] = [m for _, m in sorted(ordre, key=lambda item: (str(item[1].get('debut') or ''), item[0]))]
+        print(f'::notice::Vitrine : {doublons} entrée(s) de calendrier en double écartée(s), '
+              f"{len(doc['matchs'])} UID publiés")
+    return doublons
+
+
 def valider(doc, simulations_attendues=20000):
     """Lève ValueError dès qu'une incohérence peut rendre la vitrine trompeuse."""
+    # Le document produit par vitrine.py provient du calendrier externe. Il est
+    # nettoyé avant le contrôle et avant l'écriture sur disque par vitrine.main().
+    supprimer_doublons_production(doc)
     erreurs = []
     n_global = doc.get('simulations')
     if n_global != simulations_attendues:
@@ -101,7 +149,7 @@ def valider(doc, simulations_attendues=20000):
             distribution = m.get('distribution_scores') or []
             if m.get('scores_source') != 'exact' or not distribution:
                 raise ValueError('la distribution exacte des scores est absente')
-            # 29/10/2026 : publiée compacte (scores ≥ 0,1 %) + la masse restante ; la somme reste 1
+            # 29/10/2026 : publiée compacte (scores >= 0,1 %) + la masse restante ; la somme reste 1
             if abs(sum(float(r['probabilite']) for r in distribution) + float(m.get('distribution_reste') or 0.0) - 1) > 1e-8:
                 raise ValueError('la distribution exacte publiée ne somme pas à 1')
             premier = distribution[0]
