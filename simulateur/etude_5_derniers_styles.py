@@ -26,7 +26,7 @@ def main():
     if args.maximum: M=M[-args.maximum:]
     profiles=PS.Profils(PS.DEMI_VIE,1.0);elo=E.Elo();waiting=[];serial=0
     # Résultats des joueurs contre le style de leur adversaire : (date, victoire, probabilité Elo avant match)
-    history=collections.defaultdict(list); pending=[];day=None;rows=[]
+    history=collections.defaultdict(list); pending=[];day=None;rows=[]; coverage=[]
     def publish():
         for player,style,date,win,prob in pending:
             history[(player,style)].append((date,win,prob))
@@ -57,6 +57,8 @@ def main():
                     ws=[.75**(len(vals)-i-1) for i in range(len(vals))]
                     return sum(v*w for v,w in zip(vals,ws))/sum(ws)*len(vals)/(len(vals)+5)
                 return sum(vals)/(len(vals)+5) # shrinkage against small samples
+            ng=len(history[(g,sp)]); np_=len(history[(p,sg)])
+            coverage.append(dict(date=date.isoformat(),circuit=circuit,ng=ng,np=np_,both5=(ng>=5 and np_>=5),both10=(ng>=10 and np_>=10),any5=(ng>=5 or np_>=5),none=(ng==0 and np_==0)))
             feats={}
             for k in (5,10):
                 feats[f'last{k}']=signal(g,sp,k)-signal(p,sg,k)
@@ -80,7 +82,34 @@ def main():
         sub=[r for r in test if circuit=='TOUS' or r['circuit']==circuit]
         ref=score(sub,'last5',0)
         results[circuit]={'reference_elo':ref,'variantes':{v:dict(coefficient_appris=coefs[v],mesures=score(sub,v,coefs[v]),gain_log_loss=round(ref['log_loss']-score(sub,v,coefs[v])['log_loss'],6) if ref else None) for v in variants}}
-    out={'description':'Test hors échantillon des résultats récents contre style adverse, sans modifier la production','reference':'Elo historique pré-match, PAS algorithme complet','periode_apprentissage':'2015 à '+args.debut_test,'debut_test':args.debut_test,'matchs_apprentissage':len(train)//2,'matchs_test':len(test)//2,'note':'Deux lignes symétriques par match ; n des métriques est le nombre de lignes, soit 2 par match. Résultats du même jour indisponibles. Coefficients choisis sur apprentissage.','resultats':results}
+    diagnostic={}
+    fine_grid=[round(i*.1,2) for i in range(-30,31)]
+    for circuit in ('TOUS','ATP','WTA','CH'):
+        sub=[r for r in test if circuit=='TOUS' or r['circuit']==circuit]
+        tr=[r for r in train if circuit=='TOUS' or r['circuit']==circuit]
+        cov=[r for r in coverage if r['date']>=args.debut_test and (circuit=='TOUS' or r['circuit']==circuit)]
+        diagnostic[circuit]={
+            'matchs_uniques':len(cov),
+            'couverture':{k: {'n':sum(bool(r[k]) for r in cov),'pct':round(100*sum(bool(r[k]) for r in cov)/len(cov),2) if cov else None} for k in ('both5','both10','any5','none')},
+            'variables':{},
+        }
+        for v in variants:
+            vals=np.array([r[v] for r in sub],dtype=float)
+            vals_train=np.array([r[v] for r in tr],dtype=float)
+            grid=[{'coef':c,'log_loss':score(sub,v,c)['log_loss'],'brier':score(sub,v,c)['brier'], 'gain_vs_elo':round(score(sub,v,0)['log_loss']-score(sub,v,c)['log_loss'],6)} for c in [-2,-1,-.5,-.2,-.1,0,.1,.2,.5,1,2]] if sub else []
+            best_train=min(fine_grid,key=lambda c:score(tr,v,c)['log_loss']) if tr else None
+            diagnostic[circuit]['variables'][v]={
+                'train_n_matches':len(tr)//2,
+                'train_non_zero_pct':round(100*np.mean(np.abs(vals_train)>1e-12),2) if len(vals_train) else None,
+                'test_non_zero_pct':round(100*np.mean(np.abs(vals)>1e-12),2) if len(vals) else None,
+                'test_abs_mean':round(float(np.mean(np.abs(vals))),6) if len(vals) else None,
+                'test_std':round(float(np.std(vals)),6) if len(vals) else None,
+                'coefficients_forces_sur_test':grid,
+                'coefficient_grille_fine_appris_sur_train':best_train,
+                'gain_hors_echantillon_grille_fine':round(score(sub,v,0)['log_loss']-score(sub,v,best_train)['log_loss'],6) if sub and best_train is not None else None,
+                'note':'Coefficients forcés = diagnostic, pas sélection sur test; grille fine sélectionnée uniquement sur train.'
+            }
+    out={'diagnostic':diagnostic,'description':'Test hors échantillon des résultats récents contre style adverse, sans modifier la production','reference':'Elo historique pré-match, PAS algorithme complet','periode_apprentissage':'2015 à '+args.debut_test,'debut_test':args.debut_test,'matchs_apprentissage':len(train)//2,'matchs_test':len(test)//2,'note':'Deux lignes symétriques par match ; n des métriques est le nombre de lignes, soit 2 par match. Les matchs uniques et la couverture sont dans diagnostic. Résultats du même jour indisponibles. Coefficients choisis sur apprentissage.','resultats':results}
     os.makedirs(os.path.dirname(args.sortie) or '.',exist_ok=True)
     with open(args.sortie,'w',encoding='utf8') as f:json.dump(out,f,ensure_ascii=False,indent=2)
     print(json.dumps(out,ensure_ascii=False,indent=2))

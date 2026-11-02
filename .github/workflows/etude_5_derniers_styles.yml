@@ -1,4 +1,4 @@
-name: Étude - 5 derniers matchs contre profil adverse
+name: Étude - 5 derniers matchs contre profil adverse (diagnostic)
 on:
   workflow_dispatch:
 permissions:
@@ -23,6 +23,6 @@ jobs:
         run: python simulateur/etude_5_derniers_styles.py /tmp/sackmann --sortie simulateur/rapport_5_derniers_styles.json
       - uses: actions/upload-artifact@v4
         with:
-          name: rapport-5-derniers-styles
+          name: rapport-5-derniers-styles-diagnostic
           path: simulateur/rapport_5_derniers_styles.json
           if-no-files-found: error
