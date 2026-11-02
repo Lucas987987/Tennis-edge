@@ -1,15 +1,15 @@
 {
  "schema_version": 2,
- "generated_at": "2026-11-02T09:46:28+00:00",
+ "generated_at": "2026-11-02T13:02:25+00:00",
  "sources": {
   "worker": {
    "source": "API Worker D1 /api/hypotheses (fetch_worker_snapshot.py)",
    "fichier": "worker_hypotheses_capture.json",
    "status": "ok",
-   "fetched_at": "2026-11-02T09:46:21Z",
+   "fetched_at": "2026-11-02T13:02:19Z",
    "worker_generated_at": "2026-11-02T06:42:51Z"
   },
-  "suivi_officiel": "alertes en direct : h*_signal_log.jsonl + suivi_direct/resultats.json (verdicts_direct.json du 2026-11-02T09:46:28Z)",
+  "suivi_officiel": "alertes en direct : h*_signal_log.jsonl + suivi_direct/resultats.json (verdicts_direct.json du 2026-11-02T13:02:25Z)",
   "reconstruction": "moves_detail_hist.csv filtré par les règles gelées de validation_report.py (lignes jusqu'au 2026-10-30) — contrôle, ne juge pas",
   "rapprochement": "uid + joueur normalisé ; à défaut paire de joueurs + date ±1 jour"
  },
@@ -121,14 +121,14 @@
      -0.9
     ],
     "clv_n": 310,
-    "n_detectees": 318,
-    "n_envoyees": 317,
+    "n_detectees": 320,
+    "n_envoyees": 319,
     "n_doublons": 0,
     "source": "verdicts_direct.json (recalculé : journal plus récent)",
-    "sans_resultat_pct": 35.0,
-    "statut": "en attente de résultats (35,0 % sans résultat)",
+    "sans_resultat_pct": 35.8,
+    "statut": "en attente de résultats (35,8 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-11-02T09:46:28Z"
+    "genere_le": "2026-11-02T13:02:25Z"
    },
    "reconstruction": {
     "n": 243,
@@ -146,8 +146,8 @@
     "egal_validation_report": true
    },
    "entonnoir": {
-    "direct_detectees": 318,
-    "direct_envoyees": 317,
+    "direct_detectees": 320,
+    "direct_envoyees": 319,
     "direct_doublons": 0,
     "direct_non_envoyees_autres": 1,
     "direct_denouees": 204,
@@ -159,12 +159,12 @@
      "apres_coup": 341,
      "cote_opposee_live": 1
     },
-    "direct_seule": 186,
+    "direct_seule": 188,
     "direct_seule_raisons": {
      "absent_reconstruction": 93,
      "cote_opposee_reco": 60,
      "prix_different": 11,
-     "pas_encore_reconstruit": 22
+     "pas_encore_reconstruit": 24
     },
     "inexpliques": 0
    },
@@ -7615,12 +7615,40 @@
     },
     {
      "sens": "direct seule",
+     "date": "2026-11-02",
+     "match": "Aliona Falei – Magda Linette",
+     "joueur": "Aliona Falei",
+     "uid": "2026-11-02_aliona_falei_magda_linette",
+     "cote": 2.85,
+     "book": "bwin",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-10-30",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
      "date": "2026-11-03",
      "match": "Arthur Rinderknech – Francisco Cerundolo",
      "joueur": "Arthur Rinderknech",
      "uid": "2026-11-03_arthur_rinderknech_francisco_cerundolo",
      "cote": 3.0,
      "book": "unibet",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-10-30",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-11-03",
+     "match": "Valentin Vacherot – Novak Djokovic",
+     "joueur": "Valentin Vacherot",
+     "uid": "2026-11-03_novak_djokovic_valentin_vacherot",
+     "cote": 3.0,
+     "book": "bet365",
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
@@ -7678,14 +7706,14 @@
      2.3
     ],
     "clv_n": 88,
-    "n_detectees": 91,
-    "n_envoyees": 31,
-    "n_doublons": 60,
+    "n_detectees": 94,
+    "n_envoyees": 32,
+    "n_doublons": 62,
     "source": "verdicts_direct.json (recalculé : journal plus récent)",
     "sans_resultat_pct": 88.8,
     "statut": "en attente de résultats (88,8 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-11-02T09:46:28Z"
+    "genere_le": "2026-11-02T13:02:25Z"
    },
    "reconstruction": {
     "n": 193,
@@ -7703,9 +7731,9 @@
     "egal_validation_report": true
    },
    "entonnoir": {
-    "direct_detectees": 91,
-    "direct_envoyees": 31,
-    "direct_doublons": 60,
+    "direct_detectees": 94,
+    "direct_envoyees": 32,
+    "direct_doublons": 62,
     "direct_non_envoyees_autres": 0,
     "direct_denouees": 10,
     "reconstruction_detectees": 330,
@@ -7717,12 +7745,12 @@
      "avant_canal": 189,
      "cote_opposee_live": 3
     },
-    "direct_seule": 69,
+    "direct_seule": 72,
     "direct_seule_raisons": {
      "cote_opposee_reco": 13,
      "absent_reconstruction": 28,
      "prix_different": 14,
-     "pas_encore_reconstruit": 14
+     "pas_encore_reconstruit": 17
     },
     "inexpliques": 0
    },
@@ -13070,6 +13098,48 @@
      "libelle": "Pas encore dans la reconstruction",
      "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-10-30",
      "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-11-02",
+     "match": "Gonzalo Villanueva – Carlos Maria Zarate",
+     "joueur": "Gonzalo Villanueva",
+     "uid": "2026-11-02_carlos_maria_zarate_gonzalo_villanueva",
+     "cote": 1.8,
+     "book": "bet365",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-10-30",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-11-02",
+     "match": "Pedro Boscardin Dias – Juan Carlos Prado Angelo",
+     "joueur": "Pedro Boscardin Dias",
+     "uid": "2026-11-02_juan_carlos_prado_angelo_pedro_boscardin_dias",
+     "cote": 3.3,
+     "book": "unibet",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-10-30",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-11-03",
+     "match": "Valentin Vacherot – Novak Djokovic",
+     "joueur": "Valentin Vacherot",
+     "uid": "2026-11-03_novak_djokovic_valentin_vacherot",
+     "cote": 3.0,
+     "book": "bet365",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-10-30",
+     "explique": true
     }
    ]
   },
@@ -13122,14 +13192,14 @@
      -0.6
     ],
     "clv_n": 88,
-    "n_detectees": 92,
+    "n_detectees": 94,
     "n_envoyees": 0,
-    "n_doublons": 92,
+    "n_doublons": 94,
     "source": "verdicts_direct.json (recalculé : journal plus récent)",
-    "sans_resultat_pct": 61.1,
-    "statut": "en attente de résultats (61,1 % sans résultat)",
+    "sans_resultat_pct": 62.0,
+    "statut": "en attente de résultats (62,0 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-11-02T09:46:28Z"
+    "genere_le": "2026-11-02T13:02:25Z"
    },
    "reconstruction": {
     "n": 96,
@@ -13147,9 +13217,9 @@
     "egal_validation_report": true
    },
    "entonnoir": {
-    "direct_detectees": 92,
+    "direct_detectees": 94,
     "direct_envoyees": 0,
-    "direct_doublons": 92,
+    "direct_doublons": 94,
     "direct_non_envoyees_autres": 0,
     "direct_denouees": 35,
     "reconstruction_detectees": 175,
@@ -13159,12 +13229,12 @@
     "reconstruction_seule_raisons": {
      "apres_coup": 133
     },
-    "direct_seule": 50,
+    "direct_seule": 52,
     "direct_seule_raisons": {
      "absent_reconstruction": 18,
      "cote_opposee_reco": 15,
      "prix_different": 6,
-     "pas_encore_reconstruit": 11
+     "pas_encore_reconstruit": 13
     },
     "inexpliques": 0
    },
@@ -15785,12 +15855,40 @@
     },
     {
      "sens": "direct seule",
+     "date": "2026-11-02",
+     "match": "Aliona Falei – Magda Linette",
+     "joueur": "Aliona Falei",
+     "uid": "2026-11-02_aliona_falei_magda_linette",
+     "cote": 2.85,
+     "book": "bwin",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-10-30",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
      "date": "2026-11-03",
      "match": "Arthur Rinderknech – Francisco Cerundolo",
      "joueur": "Arthur Rinderknech",
      "uid": "2026-11-03_arthur_rinderknech_francisco_cerundolo",
      "cote": 3.0,
      "book": "unibet",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-10-30",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-11-03",
+     "match": "Valentin Vacherot – Novak Djokovic",
+     "joueur": "Valentin Vacherot",
+     "uid": "2026-11-03_novak_djokovic_valentin_vacherot",
+     "cote": 3.0,
+     "book": "bet365",
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
@@ -15848,14 +15946,14 @@
      -0.1
     ],
     "clv_n": 225,
-    "n_detectees": 237,
-    "n_envoyees": 237,
+    "n_detectees": 239,
+    "n_envoyees": 239,
     "n_doublons": 0,
     "source": "verdicts_direct.json (recalculé : journal plus récent)",
-    "sans_resultat_pct": 49.6,
-    "statut": "en attente de résultats (49,6 % sans résultat)",
+    "sans_resultat_pct": 50.0,
+    "statut": "en attente de résultats (50,0 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-11-02T09:46:28Z"
+    "genere_le": "2026-11-02T13:02:25Z"
    },
    "reconstruction": {
     "n": 264,
@@ -15873,8 +15971,8 @@
     "egal_validation_report": true
    },
    "entonnoir": {
-    "direct_detectees": 237,
-    "direct_envoyees": 237,
+    "direct_detectees": 239,
+    "direct_envoyees": 239,
     "direct_doublons": 0,
     "direct_non_envoyees_autres": 0,
     "direct_denouees": 117,
@@ -15885,12 +15983,12 @@
     "reconstruction_seule_raisons": {
      "apres_coup": 309
     },
-    "direct_seule": 138,
+    "direct_seule": 140,
     "direct_seule_raisons": {
      "cote_opposee_reco": 53,
      "absent_reconstruction": 51,
      "prix_different": 7,
-     "pas_encore_reconstruit": 27
+     "pas_encore_reconstruit": 29
     },
     "inexpliques": 0
    },
@@ -22218,6 +22316,34 @@
      "libelle": "Pas encore dans la reconstruction",
      "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-10-30",
      "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-11-02",
+     "match": "Gonzalo Villanueva – Carlos Maria Zarate",
+     "joueur": "Gonzalo Villanueva",
+     "uid": "2026-11-02_carlos_maria_zarate_gonzalo_villanueva",
+     "cote": 1.8,
+     "book": "bet365",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-10-30",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-11-02",
+     "match": "Murphy Cassone – Nicolas Mejia",
+     "joueur": "Murphy Cassone",
+     "uid": "2026-11-02_nicolas_mejia_murphy_cassone",
+     "cote": 1.7,
+     "book": "bwin",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-10-30",
+     "explique": true
     }
    ]
   },
@@ -22270,14 +22396,14 @@
      -0.1
     ],
     "clv_n": 198,
-    "n_detectees": 206,
-    "n_envoyees": 206,
+    "n_detectees": 208,
+    "n_envoyees": 208,
     "n_doublons": 0,
     "source": "verdicts_direct.json (recalculé : journal plus récent)",
-    "sans_resultat_pct": 50.7,
-    "statut": "en attente de résultats (50,7 % sans résultat)",
+    "sans_resultat_pct": 51.2,
+    "statut": "en attente de résultats (51,2 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-11-02T09:46:28Z"
+    "genere_le": "2026-11-02T13:02:25Z"
    },
    "reconstruction": {
     "n": 225,
@@ -22295,8 +22421,8 @@
     "egal_validation_report": true
    },
    "entonnoir": {
-    "direct_detectees": 206,
-    "direct_envoyees": 206,
+    "direct_detectees": 208,
+    "direct_envoyees": 208,
     "direct_doublons": 0,
     "direct_non_envoyees_autres": 0,
     "direct_denouees": 99,
@@ -22307,12 +22433,12 @@
     "reconstruction_seule_raisons": {
      "apres_coup": 251
     },
-    "direct_seule": 118,
+    "direct_seule": 120,
     "direct_seule_raisons": {
      "cote_opposee_reco": 48,
      "prix_different": 7,
      "absent_reconstruction": 44,
-     "pas_encore_reconstruit": 19
+     "pas_encore_reconstruit": 21
     },
     "inexpliques": 0
    },
@@ -27548,6 +27674,34 @@
      "libelle": "Pas encore dans la reconstruction",
      "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-10-30",
      "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-11-02",
+     "match": "Gonzalo Villanueva – Carlos Maria Zarate",
+     "joueur": "Gonzalo Villanueva",
+     "uid": "2026-11-02_carlos_maria_zarate_gonzalo_villanueva",
+     "cote": 1.8,
+     "book": "bet365",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-10-30",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-11-02",
+     "match": "Murphy Cassone – Nicolas Mejia",
+     "joueur": "Murphy Cassone",
+     "uid": "2026-11-02_nicolas_mejia_murphy_cassone",
+     "cote": 1.7,
+     "book": "bwin",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-10-30",
+     "explique": true
     }
    ]
   },
@@ -27607,7 +27761,7 @@
     "sans_resultat_pct": 49.4,
     "statut": "en attente de résultats (49,4 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-11-02T09:46:28Z"
+    "genere_le": "2026-11-02T13:02:25Z"
    },
    "reconstruction": {
     "n": 112,
@@ -31170,7 +31324,7 @@
     "sans_resultat_pct": 0.0,
     "statut": "verrouillable (résultats complets à 100 %)",
     "verrouillable": true,
-    "genere_le": "2026-11-02T09:46:28Z"
+    "genere_le": "2026-11-02T13:02:25Z"
    },
    "reconstruction": {
     "n": 51,
