@@ -1,0 +1,28 @@
+name: Étude - 5 derniers matchs contre profil adverse
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  backtest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Installer les dépendances
+        run: python -m pip install numpy
+      - name: Archive historique Sackmann
+        run: |
+          git clone --depth 1 --filter=blob:none --sparse https://github.com/Aneeshers/tennis-sackmann-archive.git /tmp/sackmann
+          cd /tmp/sackmann
+          git sparse-checkout set --no-cone 'atp_matches_20*.csv' 'atp_matches_qual_chall_20*.csv' 'wta_matches_20*.csv' 'wta_matches_qual_itf_20*.csv'
+      - name: Backtest historique sans activation
+        run: python simulateur/etude_5_derniers_styles.py /tmp/sackmann --sortie simulateur/rapport_5_derniers_styles.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rapport-5-derniers-styles
+          path: simulateur/rapport_5_derniers_styles.json
+          if-no-files-found: error
