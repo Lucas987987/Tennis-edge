@@ -1,0 +1,27 @@
+name: Correctif V4 - distribution exacte
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  corriger:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+          token: ${{ secrets.PAQUET_TOKEN }}
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - name: Corriger et verifier
+        run: python3 scripts/correctif_distribution_v4.py
+      - name: Publier sur main
+        run: |
+          set -euo pipefail
+          git config user.name "paquet-bot"
+          git config user.email "paquet-bot@users.noreply.github.com"
+          git add simulateur/pronostics_du_jour.py
+          if git diff --cached --quiet; then echo "Aucun changement"; exit 0; fi
+          git commit -m "Fix exact distribution check at clamped anchor"
+          git push origin HEAD:main
