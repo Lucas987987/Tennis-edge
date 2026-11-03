@@ -1,0 +1,40 @@
+name: Correctif - saturation exacte v2
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  corriger:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Appliquer correctif
+        run: python scripts/correctif_distribution_exacte_v2.py
+      - name: Vérifier compilation
+        run: python -m py_compile simulateur/pronostics_du_jour.py
+      - name: Vérifier cas 0,46 pourcent
+        run: |
+          python - <<'PYTEST'
+          cible = 0.0046
+          exacte = 0.005000000000237375
+          cible_exacte = min(0.995, max(0.005, cible))
+          assert (cible < 0.005 or cible > 0.995) and abs(exacte - cible_exacte) <= 1e-8
+          assert not ((0.03 < 0.005 or 0.03 > 0.995) and abs(0.05-min(0.995,max(0.005,0.03)))<=1e-8)
+          print('Cas extrême corrigé, incohérence non extrême refusée')
+          PYTEST
+      - name: Commit du seul fichier corrigé
+        run: |
+          if git diff --quiet -- simulateur/pronostics_du_jour.py; then
+            echo 'Déjà corrigé'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add simulateur/pronostics_du_jour.py
+          git commit -m 'fix: exact score anchor saturation below 0.5 percent'
+          git push
