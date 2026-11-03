@@ -680,8 +680,16 @@ def distribution_exacte_du_match(P, h, a, c, s, sg, p_home, fct=None, pure=False
         forme = {'caracteristiques': [round(x, 4) for x in f] if f else None, 'coefs': FORME_SCORES[0]}
     controle = DE.controle(distribution)
     victoire = DE.victoire_depuis_distribution(distribution)
-    if not controle['ok'] or abs(victoire - p_home) > 1e-8:
-        raise ValueError(f'Distribution exacte incohérente pour {h}–{a}: {controle}, victoire={victoire}')
+    # L'ancrage de la distribution exacte sature à 0,5 % aux extrêmes.
+    # Une simulation Monte-Carlo peut renvoyer exactement 0 % ou 100 %.
+    # Ne tolérer CET écart connu que pour les cas limites, jamais ailleurs.
+    ecart = abs(victoire - p_home)
+    saturation_extreme = (p_home in (0, 0.0, 1, 1.0)
+                          and ecart <= 0.00500001)
+    if not controle['ok'] or (ecart > 1e-8 and not saturation_extreme):
+        raise ValueError(f'Distribution exacte incohérente pour {h}–{a}: {controle}, victoire={victoire}, cible={p_home}')
+    if saturation_extreme and ecart > 1e-8:
+        print(f'::warning::Ancrage exact saturé à la borne pour {h}–{a}: simulation={p_home}, exact={victoire}')
     rows = DE.scores_ordonnes(distribution)
     scores = [(' '.join(f'{x}-{y}' for x, y in r['score']), r['probabilite']) for r in rows]
     return {'source': 'exact', 'scores': [[score, round(p, 8)] for score, p in scores[:3]],
