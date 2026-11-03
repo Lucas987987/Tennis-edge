@@ -1,47 +1,47 @@
 {
  "schema_version": 1,
- "genere_le": "2026-11-02T06:42:51Z",
+ "genere_le": "2026-11-03T07:24:52Z",
  "canaux": {
   "MISER": {
    "libelle": "🎯 MISER — steam, EV ≥ seuil vs Pinnacle juste (vainqueur du match)",
    "source": "miser_signal_log.jsonl (messages envoyés) + ajouts de suivi_direct",
    "regle": "première alerte de chaque match, au book et au prix du message ; relances non recomptées",
    "debut": "2026-10-22",
-   "n_alertes": 20,
-   "n_matchs": 20,
+   "n_alertes": 24,
+   "n_matchs": 24,
    "n_relances": 0,
-   "n_denoues": 16,
+   "n_denoues": 19,
    "bilan": {
-    "n": 16,
+    "n": 19,
     "gains": 7,
-    "taux": 43.8,
-    "seuil": 39.7,
-    "ecart": 4.0,
+    "taux": 36.8,
+    "seuil": 41.9,
+    "ecart": -5.0,
     "ic95": [
-     23.1,
-     66.8
+     19.1,
+     59.0
     ],
-    "roi": 21.4,
-    "pnl": 3.4,
-    "cote_moyenne": 2.93,
-    "clv_moyen": 7.8,
-    "clv_pin_moyen": 7.8,
+    "roi": 2.2,
+    "pnl": 0.4,
+    "cote_moyenne": 2.81,
+    "clv_moyen": 7.6,
+    "clv_pin_moyen": 7.6,
     "clv_pin_ic95": [
-     3.7,
-     11.9
+     4.1,
+     11.2
     ],
-    "clv_pin_p": 0.0001,
-    "clv_n": 19,
-    "clv_positif": 78.9,
-    "lead_moyen_h": 8.0,
-    "periode": "2026-10-22 -> 2026-11-01",
+    "clv_pin_p": 0.0,
+    "clv_n": 22,
+    "clv_positif": 81.8,
+    "lead_moyen_h": 8.4,
+    "periode": "2026-10-22 -> 2026-11-02",
     "verdict": "ne tranche pas",
-    "clv_mediane": 6.7,
-    "n_commencees": 19,
-    "n_sans_resultat": 3,
-    "sans_resultat_pct": 15.8,
+    "clv_mediane": 7.3,
+    "n_commencees": 24,
+    "n_sans_resultat": 5,
+    "sans_resultat_pct": 20.8,
     "verrouillable": false,
-    "statut": "en attente de résultats (15,8 % sans résultat)"
+    "statut": "en attente de résultats (20,8 % sans résultat)"
    },
    "paris": {
     "2026-10-22_valerio_aboian_matias_soto": {
@@ -196,6 +196,14 @@
      "clv_pin": 16.844,
      "source_resultat": "feuille de match (TennisApi)"
     },
+    "2026-11-02_carlos_maria_zarate_gonzalo_villanueva": {
+     "gagne": 0,
+     "pnl": -1.0,
+     "pin_close": 1.609,
+     "pin_close_adv": 2.37,
+     "clv_pin": 8.342,
+     "source_resultat": "feuille de match (TennisApi)"
+    },
     "2026-11-02_jeline_vandromme_kyoka_okamura": {
      "gagne": null,
      "pnl": null,
@@ -203,6 +211,30 @@
      "pin_close_adv": null,
      "clv_pin": null,
      "source_resultat": "inconnu"
+    },
+    "2026-11-02_juan_carlos_prado_angelo_pedro_boscardin_dias": {
+     "gagne": 0,
+     "pnl": -1.0,
+     "pin_close": 2.84,
+     "pin_close_adv": 1.467,
+     "clv_pin": 9.731,
+     "source_resultat": "feuille de match (TennisApi)"
+    },
+    "2026-11-03_james_mccabe_yanki_erel": {
+     "gagne": null,
+     "pnl": null,
+     "pin_close": null,
+     "pin_close_adv": null,
+     "clv_pin": null,
+     "source_resultat": "inconnu"
+    },
+    "2026-11-03_keegan_smith_jake_delaney": {
+     "gagne": 0,
+     "pnl": -1.0,
+     "pin_close": 1.307,
+     "pin_close_adv": 3.71,
+     "clv_pin": 1.65,
+     "source_resultat": "feuille de match (TennisApi)"
     }
    }
   }
