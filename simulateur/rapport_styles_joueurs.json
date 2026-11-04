@@ -1,0 +1,260 @@
+{
+  "genere_le": "2026-11-04T09:55:13.489641+00:00",
+  "champion_profil": {
+    "demi_vie": 365.0,
+    "prior_mult": 1.0
+  },
+  "coupure": "2025-01-01",
+  "n": 2000,
+  "lambdas": [
+    0.0,
+    0.005,
+    0.01,
+    0.02
+  ],
+  "regle": "profils disponibles après fin des matchs seulement ; aucune variable de marché ; champion inchangé par ce rapport",
+  "candidats": {
+    "0.0": {
+      "decouverte": {
+        "n": 539,
+        "log_loss": 0.651396,
+        "brier": 0.229843
+      },
+      "confirmation": {
+        "n": 1461,
+        "log_loss": 0.658948,
+        "brier": 0.233387
+      }
+    },
+    "0.005": {
+      "decouverte": {
+        "n": 539,
+        "log_loss": 0.651376,
+        "brier": 0.229831
+      },
+      "confirmation": {
+        "n": 1461,
+        "log_loss": 0.65894,
+        "brier": 0.233386
+      }
+    },
+    "0.01": {
+      "decouverte": {
+        "n": 539,
+        "log_loss": 0.651356,
+        "brier": 0.22982
+      },
+      "confirmation": {
+        "n": 1461,
+        "log_loss": 0.658933,
+        "brier": 0.233385
+      }
+    },
+    "0.02": {
+      "decouverte": {
+        "n": 539,
+        "log_loss": 0.651318,
+        "brier": 0.229799
+      },
+      "confirmation": {
+        "n": 1461,
+        "log_loss": 0.65892,
+        "brier": 0.233384
+      }
+    }
+  },
+  "decision": {
+    "adopte": false,
+    "challenger": "interaction_service_retour",
+    "lambda": 0.02,
+    "gain_log_loss_confirmation": 2.8e-05,
+    "marge": 0.001,
+    "ll_champion": 0.658948,
+    "ll_challenger": 0.65892,
+    "raison": "challenger choisi sur découverte seulement, puis jugé sur confirmation disjointe"
+  },
+  "controle_incremental": {
+    "n": 2000,
+    "n_decouverte": 539,
+    "n_confirmation": 1461,
+    "coupure": "2025-01-01",
+    "orientation": "ordre alphabétique des identifiants, indépendant du résultat",
+    "controles": [
+      "Elo général et surface",
+      "surface",
+      "circuit",
+      "service–retour pur",
+      "balles effectives minimales",
+      "matchs Elo minimaux",
+      "indicateur moins de 500 balles"
+    ],
+    "ajout_challenger": "interaction service–retour de styles seule",
+    "modeles_ajustes_sur": "découverte seulement ; coefficients figés sur confirmation",
+    "convergence": {
+      "sans_styles": true,
+      "avec_styles": true
+    },
+    "decouverte": {
+      "sans_styles": {
+        "n": 539,
+        "log_loss": 0.602078,
+        "brier": 0.2067,
+        "reussite_pct": 68.83
+      },
+      "avec_styles": {
+        "n": 539,
+        "log_loss": 0.60075,
+        "brier": 0.205884,
+        "reussite_pct": 69.2
+      }
+    },
+    "confirmation": {
+      "sans_styles": {
+        "n": 1461,
+        "log_loss": 0.57669,
+        "brier": 0.196502,
+        "reussite_pct": 69.88
+      },
+      "avec_styles": {
+        "n": 1461,
+        "log_loss": 0.578559,
+        "brier": 0.197647,
+        "reussite_pct": 69.54
+      },
+      "gains": {
+        "log_loss": -0.001869,
+        "brier": -0.001145,
+        "sens": "positif = apport des styles"
+      },
+      "ic95_bootstrap_semaine": {
+        "log_loss": {
+          "bas": -0.004971,
+          "haut": 0.001003
+        },
+        "brier": {
+          "bas": -0.002366,
+          "haut": 1.5e-05
+        }
+      }
+    },
+    "sous_groupes_confirmation": {
+      "surface:Hard": {
+        "sans_styles": {
+          "n": 796,
+          "log_loss": 0.58317,
+          "brier": 0.199007,
+          "reussite_pct": 69.1
+        },
+        "avec_styles": {
+          "n": 796,
+          "log_loss": 0.58447,
+          "brier": 0.200217,
+          "reussite_pct": 69.1
+        },
+        "gains": {
+          "log_loss": -0.0013,
+          "brier": -0.00121,
+          "sens": "positif = apport des styles"
+        }
+      },
+      "surface:Clay": {
+        "sans_styles": {
+          "n": 621,
+          "log_loss": 0.574071,
+          "brier": 0.195965,
+          "reussite_pct": 70.05
+        },
+        "avec_styles": {
+          "n": 621,
+          "log_loss": 0.576445,
+          "brier": 0.196956,
+          "reussite_pct": 69.4
+        },
+        "gains": {
+          "log_loss": -0.002374,
+          "brier": -0.000991,
+          "sens": "positif = apport des styles"
+        }
+      },
+      "surface:Grass": {
+        "sans_styles": {
+          "n": 44,
+          "log_loss": 0.496416,
+          "brier": 0.15878,
+          "reussite_pct": 81.82
+        },
+        "avec_styles": {
+          "n": 44,
+          "log_loss": 0.501463,
+          "brier": 0.160901,
+          "reussite_pct": 79.55
+        },
+        "gains": {
+          "log_loss": -0.005047,
+          "brier": -0.002121,
+          "sens": "positif = apport des styles"
+        }
+      },
+      "documentation:<100_balles": {
+        "sans_styles": {
+          "n": 206,
+          "log_loss": 0.468531,
+          "brier": 0.151784,
+          "reussite_pct": 77.67
+        },
+        "avec_styles": {
+          "n": 206,
+          "log_loss": 0.46936,
+          "brier": 0.152058,
+          "reussite_pct": 78.64
+        },
+        "gains": {
+          "log_loss": -0.000829,
+          "brier": -0.000274,
+          "sens": "positif = apport des styles"
+        }
+      },
+      "documentation:100-499_balles": {
+        "sans_styles": {
+          "n": 238,
+          "log_loss": 0.521568,
+          "brier": 0.170127,
+          "reussite_pct": 76.05
+        },
+        "avec_styles": {
+          "n": 238,
+          "log_loss": 0.516669,
+          "brier": 0.169281,
+          "reussite_pct": 75.21
+        },
+        "gains": {
+          "log_loss": 0.004899,
+          "brier": 0.000846,
+          "sens": "positif = apport des styles"
+        }
+      },
+      "documentation:>=500_balles": {
+        "sans_styles": {
+          "n": 1017,
+          "log_loss": 0.611498,
+          "brier": 0.211733,
+          "reussite_pct": 66.86
+        },
+        "avec_styles": {
+          "n": 1017,
+          "log_loss": 0.615162,
+          "brier": 0.213519,
+          "reussite_pct": 66.37
+        },
+        "gains": {
+          "log_loss": -0.003664,
+          "brier": -0.001786,
+          "sens": "positif = apport des styles"
+        }
+      }
+    },
+    "activation": false,
+    "verdict": "apport non confirmé ; champion inchangé",
+    "regle": "aucune cote, aucun résultat futur, aucune modification du modèle actif"
+  }
+}

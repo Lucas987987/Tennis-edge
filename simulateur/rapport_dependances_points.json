@@ -1,0 +1,150 @@
+{
+  "statut": "evalue",
+  "matchs": 9328,
+  "points": 686190,
+  "candidats": {
+    "momentum": {
+      "variables": [
+        "precedent"
+      ],
+      "coefficients_decouverte": [
+        0.25678
+      ],
+      "decouverte": {
+        "n_points": 347065,
+        "log_loss_base": 0.773763,
+        "log_loss_avec": 0.766066
+      },
+      "confirmation": {
+        "n_points": 339125,
+        "log_loss_base": 0.772785,
+        "log_loss_avec": 0.764582,
+        "gain": 0.00820307,
+        "bootstrap_matchs": {
+          "ic95": [
+            0.0,
+            0.0
+          ],
+          "n_boot": 1
+        }
+      }
+    },
+    "tiebreak": {
+      "variables": [
+        "tiebreak"
+      ],
+      "coefficients_decouverte": [
+        -0.576403
+      ],
+      "decouverte": {
+        "n_points": 347065,
+        "log_loss_base": 0.773763,
+        "log_loss_avec": 0.772416
+      },
+      "confirmation": {
+        "n_points": 339125,
+        "log_loss_base": 0.772785,
+        "log_loss_avec": 0.771383,
+        "gain": 0.00140187,
+        "bootstrap_matchs": {
+          "ic95": [
+            0.0,
+            0.0
+          ],
+          "n_boot": 1
+        }
+      }
+    },
+    "fatigue_format": {
+      "variables": [
+        "points_100",
+        "points_100_bo5"
+      ],
+      "coefficients_decouverte": [
+        -1.509982,
+        0.0
+      ],
+      "decouverte": {
+        "n_points": 347065,
+        "log_loss_base": 0.773763,
+        "log_loss_avec": 0.708484
+      },
+      "confirmation": {
+        "n_points": 339125,
+        "log_loss_base": 0.772785,
+        "log_loss_avec": 0.708428,
+        "gain": 0.06435729,
+        "bootstrap_matchs": {
+          "ic95": [
+            0.0,
+            0.0
+          ],
+          "n_boot": 1
+        }
+      }
+    },
+    "evolution_sets": {
+      "variables": [
+        "set_avance"
+      ],
+      "coefficients_decouverte": [
+        -1.210762
+      ],
+      "decouverte": {
+        "n_points": 347065,
+        "log_loss_base": 0.773763,
+        "log_loss_avec": 0.723622
+      },
+      "confirmation": {
+        "n_points": 339125,
+        "log_loss_base": 0.772785,
+        "log_loss_avec": 0.7239,
+        "gain": 0.04888543,
+        "bootstrap_matchs": {
+          "ic95": [
+            0.0,
+            0.0
+          ],
+          "n_boot": 1
+        }
+      }
+    },
+    "combines": {
+      "variables": [
+        "precedent",
+        "tiebreak",
+        "points_100",
+        "points_100_bo5",
+        "set_avance"
+      ],
+      "coefficients_decouverte": [
+        0.123149,
+        0.682529,
+        -2.242755,
+        0.0,
+        0.70106
+      ],
+      "decouverte": {
+        "n_points": 347065,
+        "log_loss_base": 0.773763,
+        "log_loss_avec": 0.703766
+      },
+      "confirmation": {
+        "n_points": 339125,
+        "log_loss_base": 0.772785,
+        "log_loss_avec": 0.703654,
+        "gain": 0.06913103,
+        "bootstrap_matchs": {
+          "ic95": [
+            0.0,
+            0.0
+          ],
+          "n_boot": 1
+        }
+      }
+    }
+  },
+  "decouverte_confirmation": "première moitié chronologique / seconde moitié",
+  "publication": "interdite à ce stade : validation du vainqueur encore requise",
+  "genere_le": "2026-11-04T11:13:46.720641+00:00"
+}

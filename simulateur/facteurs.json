@@ -1,491 +1,534 @@
 {
- "genere_le": "2026-10-26T08:49:39+00:00",
+ "genere_le": "2026-11-04T10:46:14+00:00",
  "fenetres": {
   "apprentissage": "2026-06-01",
-  "jugement": "2026-09-14"
+  "jugement": "2026-09-23"
  },
  "regle": "Chaque groupe appris sur les feuilles jusqu'aux 6 dernières semaines, jugé sur ces 6 dernières semaines (apprentissage continu, chaque semaine) : adopté s'il améliore la vraisemblance des points concernés et ne dégrade pas l'erreur (log loss) du vainqueur de la simulation pure de plus de 0,001.",
- "apprentissage": 6183,
- "jugement": 2398,
+ "apprentissage": 6734,
+ "jugement": 2597,
  "groupes": {
   "forme_fatigue": {
    "coefs": {
     "service": {
-     "forme_srv": 0.32014,
-     "forme_ret_adv": -0.1505,
-     "sets3_srv": -0.03622,
-     "sets3_adv": 0.03452,
-     "repos_srv": -0.0599,
-     "repos_adv": 0.05503
+     "forme_srv": 0.32386,
+     "forme_ret_adv": -0.16391,
+     "sets3_srv": -0.03997,
+     "sets3_adv": 0.03787,
+     "repos_srv": -0.06497,
+     "repos_adv": 0.05541
     }
    },
    "points": {
     "service": {
-     "base": 0.643316,
-     "avec": 0.643131
+     "base": 0.642069,
+     "avec": 0.641896
     }
    },
    "vainqueur": {
     "base": {
-     "log_loss": 0.62627,
-     "reussite_pct": 65.6
+     "log_loss": 0.62766,
+     "reussite_pct": 64.9
     },
     "avec": {
-     "log_loss": 0.62061,
-     "reussite_pct": 65.6
+     "log_loss": 0.6215,
+     "reussite_pct": 65.4
     }
    },
    "adopte": true,
    "vainqueur_mieux_trouve": true,
-   "raison": "points mieux ; vainqueur log loss 0.62627 → 0.62061 (réussite 65.6 % → 65.6 %)",
+   "raison": "points mieux ; vainqueur log loss 0.62766 → 0.6215 (réussite 64.9 % → 65.4 %)",
    "adopte_brut": true,
    "stabilite": "en place"
   },
   "vitesse_court": {
    "coefs": {
     "service": {
-     "vit_srv": 0.76931
+     "vit_srv": 0.76195
     },
     "aces": {
-     "vit_ace": 1.01288
+     "vit_ace": 1.03355
     }
    },
    "points": {
     "service": {
-     "base": 0.643316,
-     "avec": 0.643172
+     "base": 0.642069,
+     "avec": 0.641936
     },
     "aces": {
-     "base": 0.296285,
-     "avec": 0.295479
+     "base": 0.297358,
+     "avec": 0.29645
     }
    },
    "vainqueur": {
     "base": {
-     "log_loss": 0.62627,
-     "reussite_pct": 65.6
+     "log_loss": 0.62766,
+     "reussite_pct": 64.9
     },
     "avec": {
-     "log_loss": 0.62637,
-     "reussite_pct": 65.8
+     "log_loss": 0.62776,
+     "reussite_pct": 65.0
     }
    },
    "adopte": true,
    "vainqueur_mieux_trouve": false,
-   "raison": "points mieux ; vainqueur log loss 0.62627 → 0.62637 (réussite 65.6 % → 65.8 %)",
+   "raison": "points mieux ; vainqueur log loss 0.62766 → 0.62776 (réussite 64.9 % → 65.0 %)",
    "adopte_brut": true,
    "stabilite": "en place"
   },
   "morphologie": {
    "coefs": {
     "service": {
-     "gaucher_srv": -0.01848,
-     "gaucher_adv": -0.0005,
-     "gaucher_contre_droitier": 0.03092,
-     "taille_srv": 0.016,
-     "taille_adv": 0.00316
+     "gaucher_srv": -0.01557,
+     "gaucher_adv": -0.00803,
+     "gaucher_contre_droitier": 0.02144,
+     "taille_srv": 0.02985,
+     "taille_adv": 0.00373
     },
     "aces": {
-     "taille_srv": 0.04645,
-     "gaucher_srv": -0.08417,
-     "gaucher_adv": -0.05952
+     "taille_srv": 0.05441,
+     "gaucher_srv": -0.0875,
+     "gaucher_adv": -0.07496
     }
    },
    "points": {
     "service": {
-     "base": 0.643316,
-     "avec": 0.643274
+     "base": 0.642069,
+     "avec": 0.642055
     },
     "aces": {
-     "base": 0.296285,
-     "avec": 0.296267
+     "base": 0.297358,
+     "avec": 0.297347
     }
    },
    "vainqueur": {
     "base": {
-     "log_loss": 0.62627,
-     "reussite_pct": 65.6
+     "log_loss": 0.62766,
+     "reussite_pct": 64.9
     },
     "avec": {
-     "log_loss": 0.62607,
+     "log_loss": 0.62796,
      "reussite_pct": 65.3
     }
    },
    "adopte": true,
-   "vainqueur_mieux_trouve": true,
-   "raison": "points mieux ; vainqueur log loss 0.62627 → 0.62607 (réussite 65.6 % → 65.3 %)",
+   "vainqueur_mieux_trouve": false,
+   "raison": "points mieux ; vainqueur log loss 0.62766 → 0.62796 (réussite 64.9 % → 65.3 %)",
    "adopte_brut": true,
    "stabilite": "en place"
   },
   "points_importants": {
    "coefs": {
     "bp": {
-     "bp_constante": -0.05033,
-     "clutch_srv": 0.19305,
-     "clutch_ret_adv": -0.20039
+     "bp_constante": -0.05407,
+     "clutch_srv": 0.22687,
+     "clutch_ret_adv": -0.16046
     }
    },
    "points": {
     "bp": {
-     "base": 0.676171,
-     "avec": 0.67574
+     "base": 0.675838,
+     "avec": 0.675406
     }
    },
    "vainqueur": {
     "base": {
-     "log_loss": 0.62627,
-     "reussite_pct": 65.6
+     "log_loss": 0.62766,
+     "reussite_pct": 64.9
     },
     "avec": {
-     "log_loss": 0.62611,
-     "reussite_pct": 65.6
+     "log_loss": 0.62741,
+     "reussite_pct": 65.0
     }
    },
    "adopte": true,
    "vainqueur_mieux_trouve": true,
-   "raison": "points mieux ; vainqueur log loss 0.62627 → 0.62611 (réussite 65.6 % → 65.6 %)",
+   "raison": "points mieux ; vainqueur log loss 0.62766 → 0.62741 (réussite 64.9 % → 65.0 %)",
    "adopte_brut": true,
    "stabilite": "en place"
   },
   "styles": {
    "coefs": {
     "service": {
-     "style_ace_x_retour": 0.01342,
-     "style_1re_x_retour": -0.01605,
-     "style_2e_x_retour": 0.01599
+     "style_ace_x_retour": 0.01609,
+     "style_1re_x_retour": -0.02653,
+     "style_2e_x_retour": 0.02312
     },
     "aces": {
-     "style_ace_x_retour": 0.00305
+     "style_ace_x_retour": 0.00106
     }
    },
    "points": {
     "service": {
-     "base": 0.643316,
-     "avec": 0.643314
+     "base": 0.642069,
+     "avec": 0.642059
     },
     "aces": {
-     "base": 0.296285,
-     "avec": 0.296282
+     "base": 0.297358,
+     "avec": 0.297355
     }
    },
    "vainqueur": {
     "base": {
-     "log_loss": 0.62627,
-     "reussite_pct": 65.6
+     "log_loss": 0.62766,
+     "reussite_pct": 64.9
     },
     "avec": {
-     "log_loss": 0.62577,
-     "reussite_pct": 65.5
+     "log_loss": 0.62727,
+     "reussite_pct": 64.9
     }
    },
    "adopte": true,
    "vainqueur_mieux_trouve": true,
-   "raison": "points mieux ; vainqueur log loss 0.62627 → 0.62577 (réussite 65.6 % → 65.5 %)",
+   "raison": "points mieux ; vainqueur log loss 0.62766 → 0.62727 (réussite 64.9 % → 64.9 %)",
    "adopte_brut": true,
    "stabilite": "en place"
   },
   "face_a_face": {
    "coefs": {
     "service": {
-     "h2h_srv": 0.39874
+     "h2h_srv": 0.39685
     }
    },
    "points": {
     "service": {
-     "base": 0.643316,
-     "avec": 0.643301
+     "base": 0.642069,
+     "avec": 0.642076
     }
    },
    "vainqueur": {
     "base": {
-     "log_loss": 0.62627,
-     "reussite_pct": 65.6
+     "log_loss": 0.62766,
+     "reussite_pct": 64.9
     },
     "avec": {
-     "log_loss": 0.62323,
-     "reussite_pct": 66.4
+     "log_loss": 0.62572,
+     "reussite_pct": 65.3
     }
    },
    "adopte": true,
    "vainqueur_mieux_trouve": true,
-   "raison": "points mieux ; vainqueur log loss 0.62627 → 0.62323 (réussite 65.6 % → 66.4 %)",
-   "adopte_brut": true,
-   "stabilite": "en place"
+   "raison": "points pas mieux ; vainqueur log loss 0.62766 → 0.62572 (réussite 64.9 % → 65.3 %)",
+   "adopte_brut": false,
+   "stabilite": "en place ; à confirmer pour sortir (1/2)"
   },
   "conditions": {
    "coefs": {
     "service": {
-     "altitude": 0.01613,
-     "interieur": 0.11232,
-     "chaleur": -0.00252,
-     "vent": -0.00702,
-     "domicile_srv": -0.00327,
-     "domicile_adv": -0.02167,
-     "voyage_srv": 0.01551,
-     "voyage_adv": -0.02295
+     "altitude": 0.01698,
+     "interieur": 0.0428,
+     "chaleur": -0.00329,
+     "vent": -0.00647,
+     "domicile_srv": -0.00401,
+     "domicile_adv": -0.02518,
+     "voyage_srv": 0.01611,
+     "voyage_adv": -0.02411
     },
     "aces": {
-     "altitude": 0.00779,
-     "interieur": 0.00432,
-     "chaleur": -0.01444,
-     "vent": -0.06627
+     "altitude": 0.01658,
+     "interieur": -0.08543,
+     "chaleur": -0.02286,
+     "vent": -0.07203
     }
    },
    "points": {
     "service": {
-     "base": 0.643316,
-     "avec": 0.643508
+     "base": 0.642069,
+     "avec": 0.642115
     },
     "aces": {
-     "base": 0.296285,
-     "avec": 0.296279
+     "base": 0.297358,
+     "avec": 0.297655
     }
    },
    "vainqueur": {
     "base": {
-     "log_loss": 0.62627,
-     "reussite_pct": 65.6
+     "log_loss": 0.62766,
+     "reussite_pct": 64.9
     },
     "avec": {
-     "log_loss": 0.62635,
-     "reussite_pct": 65.6
+     "log_loss": 0.62749,
+     "reussite_pct": 64.8
     }
    },
    "adopte": false,
-   "vainqueur_mieux_trouve": false,
-   "raison": "points pas mieux ; vainqueur log loss 0.62627 → 0.62635 (réussite 65.6 % → 65.6 %)",
+   "vainqueur_mieux_trouve": true,
+   "raison": "points pas mieux ; vainqueur log loss 0.62766 → 0.62749 (réussite 64.9 % → 64.8 %)",
    "adopte_brut": false,
    "stabilite": "pas adopté"
   },
   "contexte_tournoi": {
    "coefs": {
     "service": {
-     "deja_ici_srv": -0.02465,
-     "deja_ici_adv": 0.03847,
-     "absence_srv": 0.03376,
-     "absence_adv": 0.03125,
-     "enchaine_srv": 0.07454,
-     "enchaine_adv": -0.07118
+     "deja_ici_srv": -0.02988,
+     "deja_ici_adv": 0.03988,
+     "absence_srv": 0.01464,
+     "absence_adv": 0.02225,
+     "enchaine_srv": 0.08184,
+     "enchaine_adv": -0.07619
     }
    },
    "points": {
     "service": {
-     "base": 0.643316,
-     "avec": 0.643224
+     "base": 0.642069,
+     "avec": 0.641972
     }
    },
    "vainqueur": {
     "base": {
-     "log_loss": 0.62627,
-     "reussite_pct": 65.6
+     "log_loss": 0.62766,
+     "reussite_pct": 64.9
     },
     "avec": {
-     "log_loss": 0.6202,
-     "reussite_pct": 65.7
+     "log_loss": 0.62187,
+     "reussite_pct": 65.1
     }
    },
    "adopte": true,
    "vainqueur_mieux_trouve": true,
-   "raison": "points mieux ; vainqueur log loss 0.62627 → 0.6202 (réussite 65.6 % → 65.7 %)",
+   "raison": "points mieux ; vainqueur log loss 0.62766 → 0.62187 (réussite 64.9 % → 65.1 %)",
    "adopte_brut": true,
    "stabilite": "en place"
   },
   "charting": {
    "coefs": {
     "service": {
-     "mcp_premier_coup_srv": 0.02487,
-     "mcp_retour_adv": 0.02868,
-     "mcp_duel": 0.00873,
-     "mcp_echanges": 0.00309
+     "mcp_premier_coup_srv": 0.03249,
+     "mcp_retour_adv": 0.03696,
+     "mcp_duel": 0.00431,
+     "mcp_echanges": 0.01177
     },
     "aces": {
-     "mcp_premier_coup_srv": -0.01216
+     "mcp_premier_coup_srv": -0.0109
     }
    },
    "points": {
     "service": {
-     "base": 0.643316,
-     "avec": 0.643301
+     "base": 0.642069,
+     "avec": 0.642071
     },
     "aces": {
-     "base": 0.296285,
-     "avec": 0.296307
+     "base": 0.297358,
+     "avec": 0.297379
     }
    },
    "vainqueur": {
     "base": {
-     "log_loss": 0.62627,
-     "reussite_pct": 65.6
+     "log_loss": 0.62766,
+     "reussite_pct": 64.9
     },
     "avec": {
-     "log_loss": 0.62641,
-     "reussite_pct": 65.7
+     "log_loss": 0.6278,
+     "reussite_pct": 65.3
     }
    },
    "adopte": false,
    "vainqueur_mieux_trouve": false,
-   "raison": "points pas mieux ; vainqueur log loss 0.62627 → 0.62641 (réussite 65.6 % → 65.7 %)",
+   "raison": "points pas mieux ; vainqueur log loss 0.62766 → 0.6278 (réussite 64.9 % → 65.3 %)",
    "adopte_brut": false,
    "stabilite": "pas adopté"
   },
   "blessure": {
    "coefs": {
     "service": {
-     "abandon_srv": 0.06062,
-     "abandon_adv": -0.00252,
-     "abandons90_srv": -0.02538,
-     "abandons90_adv": 0.01227,
-     "retour_abandon_srv": -0.05306,
-     "retour_abandon_adv": 0.02862
+     "abandon_srv": 0.05176,
+     "abandon_adv": 0.00634,
+     "abandons90_srv": -0.02019,
+     "abandons90_adv": 0.0045,
+     "retour_abandon_srv": -0.04142,
+     "retour_abandon_adv": 0.02301
     }
    },
    "points": {
     "service": {
-     "base": 0.643316,
-     "avec": 0.643325
+     "base": 0.642069,
+     "avec": 0.642075
     }
    },
    "vainqueur": {
     "base": {
-     "log_loss": 0.62627,
-     "reussite_pct": 65.6
+     "log_loss": 0.62766,
+     "reussite_pct": 64.9
     },
     "avec": {
-     "log_loss": 0.62703,
-     "reussite_pct": 65.1
+     "log_loss": 0.62795,
+     "reussite_pct": 64.7
     }
    },
    "adopte": false,
    "vainqueur_mieux_trouve": false,
-   "raison": "points pas mieux ; vainqueur log loss 0.62627 → 0.62703 (réussite 65.6 % → 65.1 %)",
+   "raison": "points pas mieux ; vainqueur log loss 0.62766 → 0.62795 (réussite 64.9 % → 64.7 %)",
    "adopte_brut": false,
    "stabilite": "pas adopté"
   },
   "pression": {
    "coefs": {
     "service": {
-     "pression_srv": 0.00782,
-     "pression_ret_adv": -0.00705,
-     "rebond_srv": 0.03728,
-     "pour_le_set_srv": -0.0054
+     "pression_srv": -0.00952,
+     "pression_ret_adv": -0.01087,
+     "rebond_srv": 0.03195,
+     "pour_le_set_srv": -0.00598
     }
    },
    "points": {
     "service": {
-     "base": 0.643316,
-     "avec": 0.643316
+     "base": 0.642069,
+     "avec": 0.642068
     }
    },
    "vainqueur": {
     "base": {
-     "log_loss": 0.62627,
-     "reussite_pct": 65.6
+     "log_loss": 0.62766,
+     "reussite_pct": 64.9
     },
     "avec": {
-     "log_loss": 0.62625,
-     "reussite_pct": 65.9
-    }
-   },
-   "adopte": false,
-   "vainqueur_mieux_trouve": true,
-   "raison": "points pas mieux ; vainqueur log loss 0.62627 → 0.62625 (réussite 65.6 % → 65.9 %)",
-   "adopte_brut": false,
-   "stabilite": "pas adopté"
-  },
-  "duree": {
-   "coefs": {
-    "service": {
-     "minutes_tournoi_srv": 0.0,
-     "minutes_tournoi_adv": 0.0,
-     "minutes7_srv": 0.0,
-     "minutes7_adv": 0.0,
-     "minutes_dernier_srv": 0.0,
-     "minutes_dernier_adv": 0.0
-    }
-   },
-   "points": {
-    "service": {
-     "base": 0.643316,
-     "avec": 0.643316
-    }
-   },
-   "vainqueur": {
-    "base": {
-     "log_loss": 0.62627,
-     "reussite_pct": 65.6
-    },
-    "avec": {
-     "log_loss": 0.62627,
-     "reussite_pct": 65.6
+     "log_loss": 0.62774,
+     "reussite_pct": 65.2
     }
    },
    "adopte": false,
    "vainqueur_mieux_trouve": false,
-   "raison": "points pas mieux ; vainqueur log loss 0.62627 → 0.62627 (réussite 65.6 % → 65.6 %)",
-   "adopte_brut": false,
-   "stabilite": "pas adopté"
+   "raison": "points mieux ; vainqueur log loss 0.62766 → 0.62774 (réussite 64.9 % → 65.2 %)",
+   "adopte_brut": true,
+   "stabilite": "candidat (1/2) : adopté s'il fait encore mieux la semaine prochaine"
+  },
+  "duree": {
+   "coefs": {
+    "service": {
+     "minutes_tournoi_srv": -0.02499,
+     "minutes_tournoi_adv": 0.02489,
+     "minutes7_srv": 0.01963,
+     "minutes7_adv": -0.01559,
+     "minutes_dernier_srv": -0.00774,
+     "minutes_dernier_adv": 0.00082
+    }
+   },
+   "points": {
+    "service": {
+     "base": 0.642069,
+     "avec": 0.641983
+    }
+   },
+   "vainqueur": {
+    "base": {
+     "log_loss": 0.62766,
+     "reussite_pct": 64.9
+    },
+    "avec": {
+     "log_loss": 0.6229,
+     "reussite_pct": 65.4
+    }
+   },
+   "adopte": false,
+   "vainqueur_mieux_trouve": true,
+   "raison": "points mieux ; vainqueur log loss 0.62766 → 0.6229 (réussite 64.9 % → 65.4 %)",
+   "adopte_brut": true,
+   "stabilite": "candidat (1/2) : adopté s'il fait encore mieux la semaine prochaine"
   },
   "matchup": {
    "coefs": {
     "service": {
-     "mu_srv": 0.1746,
-     "mu_ret_adv": -0.031
+     "mu_srv": 0.15198,
+     "mu_ret_adv": -0.02268
     },
     "aces": {
-     "mu_srv": 0.46631
+     "mu_srv": 0.39872
     }
    },
    "points": {
     "service": {
-     "base": 0.643316,
-     "avec": 0.643303
+     "base": 0.642069,
+     "avec": 0.642052
     },
     "aces": {
-     "base": 0.296285,
-     "avec": 0.29628
+     "base": 0.297358,
+     "avec": 0.297348
     }
    },
    "vainqueur": {
     "base": {
-     "log_loss": 0.62627,
-     "reussite_pct": 65.6
+     "log_loss": 0.62766,
+     "reussite_pct": 64.9
     },
     "avec": {
-     "log_loss": 0.62549,
-     "reussite_pct": 65.6
+     "log_loss": 0.62688,
+     "reussite_pct": 65.3
     }
    },
-   "adopte": false,
+   "adopte": true,
    "vainqueur_mieux_trouve": true,
-   "raison": "points mieux ; vainqueur log loss 0.62627 → 0.62549 (réussite 65.6 % → 65.6 %)",
+   "raison": "points mieux ; vainqueur log loss 0.62766 → 0.62688 (réussite 64.9 % → 65.3 %)",
    "adopte_brut": true,
-   "stabilite": "candidat (1/2) : adopté s'il fait encore mieux la semaine prochaine"
+   "stabilite": "adopté : mieux 2 semaines de suite"
   },
   "adversaires_communs": {
    "coefs": {
     "service": {
-     "communs_srv": 0.33999
+     "communs_srv": 0.33861
     }
    },
    "points": {
     "service": {
-     "base": 0.643316,
-     "avec": 0.643283
+     "base": 0.642069,
+     "avec": 0.642043
     }
    },
    "vainqueur": {
     "base": {
-     "log_loss": 0.62627,
-     "reussite_pct": 65.6
+     "log_loss": 0.62766,
+     "reussite_pct": 64.9
     },
     "avec": {
-     "log_loss": 0.62466,
-     "reussite_pct": 65.0
+     "log_loss": 0.62672,
+     "reussite_pct": 64.9
+    }
+   },
+   "adopte": true,
+   "vainqueur_mieux_trouve": true,
+   "raison": "points mieux ; vainqueur log loss 0.62766 → 0.62672 (réussite 64.9 % → 64.9 %)",
+   "adopte_brut": true,
+   "stabilite": "adopté : mieux 2 semaines de suite"
+  },
+  "profil": {
+   "coefs": {
+    "service": {
+     "pf_srv_ace": -0.24728,
+     "pf_srv_srv1": 0.37815,
+     "pf_srv_srv2": -0.00422,
+     "pf_srv_ret1": 0.12545,
+     "pf_srv_ret2": 0.09548,
+     "pf_srv_gaucher": 0.10986,
+     "pf_srv_taille": -0.07968,
+     "pf_srv_echanges": -0.01037,
+     "pf_ret_adv_ace": -0.03987,
+     "pf_ret_adv_srv1": 0.0986,
+     "pf_ret_adv_srv2": 0.04064,
+     "pf_ret_adv_ret1": 0.01963,
+     "pf_ret_adv_ret2": 0.11128,
+     "pf_ret_adv_gaucher": 0.03648,
+     "pf_ret_adv_taille": 0.07583,
+     "pf_ret_adv_echanges": 0.08674
+    }
+   },
+   "points": {
+    "service": {
+     "base": 0.642069,
+     "avec": 0.64202
+    }
+   },
+   "vainqueur": {
+    "base": {
+     "log_loss": 0.62766,
+     "reussite_pct": 64.9
+    },
+    "avec": {
+     "log_loss": 0.62468,
+     "reussite_pct": 65.4
     }
    },
    "adopte": false,
    "vainqueur_mieux_trouve": true,
-   "raison": "points mieux ; vainqueur log loss 0.62627 → 0.62466 (réussite 65.6 % → 65.0 %)",
+   "raison": "points mieux ; vainqueur log loss 0.62766 → 0.62468 (réussite 64.9 % → 65.4 %)",
    "adopte_brut": true,
    "stabilite": "candidat (1/2) : adopté s'il fait encore mieux la semaine prochaine"
   }
@@ -497,57 +540,233 @@
   "points_importants",
   "styles",
   "face_a_face",
-  "contexte_tournoi"
+  "contexte_tournoi",
+  "matchup",
+  "adversaires_communs"
  ],
  "coefs": {
   "service": {
-   "forme_srv": 0.24599,
-   "forme_ret_adv": -0.11133,
-   "sets3_srv": -0.02107,
-   "sets3_adv": 0.02097,
-   "repos_srv": -0.0621,
-   "repos_adv": 0.05543,
-   "vit_srv": 0.69246,
-   "gaucher_srv": -0.0132,
-   "gaucher_adv": 0.00013,
-   "gaucher_contre_droitier": 0.02971,
-   "taille_srv": 0.01261,
-   "taille_adv": 0.00434,
-   "style_ace_x_retour": 0.00726,
-   "style_1re_x_retour": -0.00546,
-   "style_2e_x_retour": 0.03769,
-   "h2h_srv": 0.33472,
-   "deja_ici_srv": -0.07068,
-   "deja_ici_adv": 0.07119,
-   "absence_srv": 0.00847,
-   "absence_adv": 0.0198,
-   "enchaine_srv": 0.05059,
-   "enchaine_adv": -0.04851
+   "forme_srv": 0.23773,
+   "forme_ret_adv": -0.12064,
+   "sets3_srv": -0.02179,
+   "sets3_adv": 0.01981,
+   "repos_srv": -0.0616,
+   "repos_adv": 0.05327,
+   "vit_srv": 0.67461,
+   "gaucher_srv": -0.00378,
+   "gaucher_adv": -0.00808,
+   "gaucher_contre_droitier": 0.02252,
+   "taille_srv": 0.01993,
+   "taille_adv": 0.00637,
+   "style_ace_x_retour": 0.00863,
+   "style_1re_x_retour": -0.02524,
+   "style_2e_x_retour": 0.04098,
+   "h2h_srv": 0.29162,
+   "deja_ici_srv": -0.05693,
+   "deja_ici_adv": 0.06121,
+   "absence_srv": 0.01333,
+   "absence_adv": 0.01323,
+   "enchaine_srv": 0.05266,
+   "enchaine_adv": -0.04808,
+   "mu_srv": -0.00491,
+   "mu_ret_adv": -0.00341,
+   "communs_srv": 0.25624
   },
   "aces": {
-   "vit_ace": 1.12704,
-   "taille_srv": 0.05676,
-   "gaucher_srv": -0.0311,
-   "gaucher_adv": -0.02452,
-   "style_ace_x_retour": 0.01657
+   "vit_ace": 1.16057,
+   "taille_srv": 0.07052,
+   "gaucher_srv": -0.03831,
+   "gaucher_adv": -0.04247,
+   "style_ace_x_retour": -0.0002,
+   "mu_srv": 0.35897
   },
   "bp": {
-   "bp_constante": -0.05677,
-   "clutch_srv": 0.20004,
-   "clutch_ret_adv": -0.12443
+   "bp_constante": -0.05886,
+   "clutch_srv": 0.20724,
+   "clutch_ret_adv": -0.13776
   }
  },
  "ensemble_sur_le_jugement": {
   "base": {
-   "log_loss": 0.62627,
-   "reussite_pct": 65.6
+   "log_loss": 0.62766,
+   "reussite_pct": 64.9
   },
   "avec": {
-   "log_loss": 0.61354,
-   "reussite_pct": 66.4
+   "log_loss": 0.61625,
+   "reussite_pct": 66.2
   }
  },
- "verdict": "groupes adoptés : forme_fatigue, vitesse_court, morphologie, points_importants, styles, face_a_face, contexte_tournoi",
+ "verdict": "groupes adoptés : forme_fatigue, vitesse_court, morphologie, points_importants, styles, face_a_face, contexte_tournoi, matchup, adversaires_communs",
+ "modele_complet": {
+  "variables": 69,
+  "groupes_en_place": [
+   "forme_fatigue",
+   "vitesse_court",
+   "morphologie",
+   "points_importants",
+   "styles",
+   "face_a_face",
+   "contexte_tournoi",
+   "matchup",
+   "adversaires_communs"
+  ],
+  "points_service": {
+   "en_place": 0.641777,
+   "complet": 0.641703
+  },
+  "vainqueur": {
+   "en_place": {
+    "log_loss": 0.61625,
+    "reussite_pct": 66.2
+   },
+   "complet": {
+    "log_loss": 0.61406,
+    "reussite_pct": 66.0
+   }
+  },
+  "importance": {
+   "vit_srv": 62,
+   "taille_srv": 54,
+   "communs_srv": 45,
+   "altitude": 38,
+   "forme_srv": 31,
+   "h2h_srv": 30,
+   "enchaine_srv": 27,
+   "forme_ret_adv": 24,
+   "rebond_srv": 20,
+   "pression_ret_adv": 20,
+   "enchaine_adv": 19,
+   "pf_ret_adv_srv2": 18,
+   "pf_ret_adv_ret2": 15,
+   "mcp_premier_coup_srv": 14,
+   "abandon_srv": 13,
+   "pf_srv_gaucher": 13,
+   "abandon_adv": 13,
+   "pf_srv_ret2": 12,
+   "mcp_retour_adv": 11,
+   "pf_ret_adv_ret1": 10,
+   "pf_srv_ret1": 10,
+   "taille_adv": 10,
+   "style_ace_x_retour": 9,
+   "chaleur": 9,
+   "pf_srv_ace": 8
+  },
+  "reglages": {
+   "profondeur": 3,
+   "tours": 100,
+   "pas": 0.05,
+   "feuille_min": 600,
+   "l2": 50.0,
+   "cases": 16
+  },
+  "adopte": false,
+  "raison": "points de service 0.641777 → 0.641703 ; vainqueur log loss 0.61625 → 0.61406 (réussite 66.2 % → 66.0 %) ; marge exigée 0.001",
+  "adopte_brut": true,
+  "stabilite": "candidat (1/2) : adopté s'il fait encore mieux la semaine prochaine"
+ },
+ "sigma_circuit": {
+  "sigmas": {
+   "ATP": 0.15,
+   "WTA": 0.15,
+   "CH": 0.22
+  },
+  "apprentissage": 2400,
+  "jugement": 2597,
+  "par_circuit": {
+   "ATP": {
+    "n": 507,
+    "sigma": 0.15,
+    "gain": 0.0
+   },
+   "WTA": {
+    "n": 586,
+    "sigma": 0.15,
+    "gain": 0.0
+   },
+   "CH": {
+    "n": 1504,
+    "sigma": 0.22,
+    "gain": 0.021616
+   }
+  },
+  "gain": 0.012518,
+  "adopte": true,
+  "regle": "σ de la forme du jour choisi par circuit sur l'apprentissage ; jugé contre 0,15 partout : gain total ≥ 0,001 et aucun circuit qui perd plus de 0,001 ; deux semaines de suite (série sigma_circuit)",
+  "adopte_brut": true,
+  "stabilite": "en place"
+ },
+ "forme_scores": {
+  "version": 3,
+  "coefs": [
+   0.51949,
+   0.66332,
+   -0.17983,
+   -0.15717,
+   0.38654,
+   -0.00507,
+   -0.122,
+   0.30326,
+   -0.02637,
+   0.11972,
+   0.24993,
+   -0.01679
+  ],
+  "circuits": [
+   "ATP",
+   "WTA",
+   "CH"
+  ],
+  "par_circuit": {
+   "ATP": {
+    "n": 507,
+    "gain": -0.018471
+   },
+   "WTA": {
+    "n": 586,
+    "gain": 0.000196
+   },
+   "CH": {
+    "n": 1504,
+    "gain": -0.006035
+   }
+  },
+  "apprentissage": 1500,
+  "jugement": 2597,
+  "documentes_jugement": 2256,
+  "references": {
+   "CH": {
+    "tiebreak_pct": 30.8,
+    "trois_sets_pct": 34.8,
+    "joueurs": 819
+   },
+   "ATP": {
+    "tiebreak_pct": 39.0,
+    "trois_sets_pct": 37.8,
+    "joueurs": 100
+   },
+   "WTA": {
+    "tiebreak_pct": 23.9,
+    "trois_sets_pct": 35.5,
+    "joueurs": 218
+   }
+  },
+  "log_vrais": {
+   "sans": 4.032227,
+   "avec": 4.039283
+  },
+  "gain": -0.007057,
+  "adopte": false,
+  "regle": "forme réelle (camp × tie-break × 3 sets × total de jeux) mieux prédite d'au moins 0,001 sur le jugement ; vainqueur inchangé par construction ; base propre à chaque circuit, profils centrés sur leur circuit ; deux semaines de suite (série forme_scores_v3)",
+  "adopte_brut": false,
+  "stabilite": "pas adopté"
+ },
+ "dependances_points": {
+  "momentum": 0.00820307,
+  "tiebreak": 0.00140187,
+  "fatigue_format": 0.06435729,
+  "evolution_sets": 0.04888543,
+  "combines": 0.06913103
+ },
  "entrainement_progressif": {
   "semaines": [
    {
@@ -555,12 +774,12 @@
     "debut": "2026-07-27",
     "n": 408,
     "simulation": {
-     "reussite_pct": 56.6,
-     "log_loss": 0.6656
+     "reussite_pct": 57.8,
+     "log_loss": 0.6755
     },
     "elo": {
-     "reussite_pct": 59.6,
-     "log_loss": 0.669
+     "reussite_pct": 59.8,
+     "log_loss": 0.6709
     },
     "combinaison": null,
     "poids_simulation_pct": null
@@ -571,17 +790,17 @@
     "n": 387,
     "simulation": {
      "reussite_pct": 62.0,
-     "log_loss": 0.6741
+     "log_loss": 0.6707
     },
     "elo": {
      "reussite_pct": 63.3,
-     "log_loss": 0.6442
+     "log_loss": 0.6438
     },
     "combinaison": {
-     "reussite_pct": 62.0,
-     "log_loss": 0.6464
+     "reussite_pct": 62.5,
+     "log_loss": 0.6428
     },
-    "poids_simulation_pct": 56.3
+    "poids_simulation_pct": 45.3
    },
    {
     "semaine": 11,
@@ -589,381 +808,439 @@
     "n": 400,
     "simulation": {
      "reussite_pct": 63.0,
-     "log_loss": 0.6415
+     "log_loss": 0.6395
     },
     "elo": {
-     "reussite_pct": 67.2,
-     "log_loss": 0.6269
+     "reussite_pct": 67.5,
+     "log_loss": 0.6288
     },
     "combinaison": {
-     "reussite_pct": 66.2,
-     "log_loss": 0.6312
+     "reussite_pct": 66.5,
+     "log_loss": 0.6316
     },
-    "poids_simulation_pct": 31.6
+    "poids_simulation_pct": 31.4
    },
    {
     "semaine": 12,
     "debut": "2026-08-17",
     "n": 347,
     "simulation": {
-     "reussite_pct": 66.3,
-     "log_loss": 0.6251
+     "reussite_pct": 67.4,
+     "log_loss": 0.6183
     },
     "elo": {
      "reussite_pct": 68.9,
-     "log_loss": 0.5878
+     "log_loss": 0.5875
     },
     "combinaison": {
-     "reussite_pct": 66.3,
-     "log_loss": 0.5996
+     "reussite_pct": 66.9,
+     "log_loss": 0.5989
     },
-    "poids_simulation_pct": 29.7
+    "poids_simulation_pct": 32.1
    },
    {
     "semaine": 13,
     "debut": "2026-08-24",
     "n": 473,
     "simulation": {
-     "reussite_pct": 60.9,
-     "log_loss": 0.658
+     "reussite_pct": 61.9,
+     "log_loss": 0.6601
     },
     "elo": {
-     "reussite_pct": 63.4,
-     "log_loss": 0.6279
+     "reussite_pct": 63.6,
+     "log_loss": 0.6291
     },
     "combinaison": {
-     "reussite_pct": 62.4,
-     "log_loss": 0.6296
+     "reussite_pct": 62.8,
+     "log_loss": 0.6312
     },
-    "poids_simulation_pct": 20.2
+    "poids_simulation_pct": 23.9
    },
    {
     "semaine": 14,
     "debut": "2026-08-31",
     "n": 448,
     "simulation": {
-     "reussite_pct": 67.9,
-     "log_loss": 0.6063
+     "reussite_pct": 66.5,
+     "log_loss": 0.6054
     },
     "elo": {
      "reussite_pct": 69.2,
-     "log_loss": 0.593
+     "log_loss": 0.5932
     },
     "combinaison": {
-     "reussite_pct": 69.6,
+     "reussite_pct": 68.5,
      "log_loss": 0.5921
     },
-    "poids_simulation_pct": 16.5
+    "poids_simulation_pct": 19.0
    },
    {
     "semaine": 15,
     "debut": "2026-09-07",
     "n": 368,
     "simulation": {
-     "reussite_pct": 66.3,
-     "log_loss": 0.6158
+     "reussite_pct": 65.8,
+     "log_loss": 0.6292
     },
     "elo": {
      "reussite_pct": 65.9,
      "log_loss": 0.6271
     },
     "combinaison": {
-     "reussite_pct": 66.6,
-     "log_loss": 0.6209
+     "reussite_pct": 67.9,
+     "log_loss": 0.6225
     },
-    "poids_simulation_pct": 18.7
+    "poids_simulation_pct": 20.7
    },
    {
     "semaine": 16,
     "debut": "2026-09-14",
-    "n": 339,
+    "n": 401,
     "simulation": {
-     "reussite_pct": 66.4,
-     "log_loss": 0.6033
+     "reussite_pct": 66.1,
+     "log_loss": 0.5782
     },
     "elo": {
-     "reussite_pct": 68.4,
-     "log_loss": 0.5933
+     "reussite_pct": 70.6,
+     "log_loss": 0.5654
     },
     "combinaison": {
-     "reussite_pct": 69.3,
-     "log_loss": 0.5912
+     "reussite_pct": 71.1,
+     "log_loss": 0.5646
     },
-    "poids_simulation_pct": 24.4
+    "poids_simulation_pct": 23.6
    },
    {
     "semaine": 17,
     "debut": "2026-09-21",
-    "n": 361,
+    "n": 365,
     "simulation": {
-     "reussite_pct": 69.5,
-     "log_loss": 0.5981
+     "reussite_pct": 67.4,
+     "log_loss": 0.6062
     },
     "elo": {
-     "reussite_pct": 68.4,
-     "log_loss": 0.6097
+     "reussite_pct": 68.2,
+     "log_loss": 0.6116
     },
     "combinaison": {
-     "reussite_pct": 70.1,
-     "log_loss": 0.6014
+     "reussite_pct": 69.0,
+     "log_loss": 0.6051
     },
-    "poids_simulation_pct": 25.4
+    "poids_simulation_pct": 24.1
    },
    {
     "semaine": 18,
     "debut": "2026-09-28",
     "n": 468,
     "simulation": {
-     "reussite_pct": 70.7,
-     "log_loss": 0.5622
+     "reussite_pct": 70.3,
+     "log_loss": 0.5671
     },
     "elo": {
-     "reussite_pct": 72.4,
-     "log_loss": 0.5669
+     "reussite_pct": 72.2,
+     "log_loss": 0.5665
     },
     "combinaison": {
-     "reussite_pct": 72.4,
-     "log_loss": 0.5582
+     "reussite_pct": 72.6,
+     "log_loss": 0.5601
     },
-    "poids_simulation_pct": 29.8
+    "poids_simulation_pct": 27.3
    },
    {
     "semaine": 19,
     "debut": "2026-10-05",
     "n": 391,
     "simulation": {
-     "reussite_pct": 67.5,
-     "log_loss": 0.6253
+     "reussite_pct": 66.0,
+     "log_loss": 0.63
     },
     "elo": {
-     "reussite_pct": 65.0,
-     "log_loss": 0.6278
+     "reussite_pct": 65.2,
+     "log_loss": 0.6271
     },
     "combinaison": {
-     "reussite_pct": 66.5,
-     "log_loss": 0.6228
+     "reussite_pct": 67.0,
+     "log_loss": 0.6234
     },
-    "poids_simulation_pct": 33.4
+    "poids_simulation_pct": 29.7
    },
    {
     "semaine": 20,
     "debut": "2026-10-12",
     "n": 400,
     "simulation": {
-     "reussite_pct": 62.5,
-     "log_loss": 0.6322
+     "reussite_pct": 64.8,
+     "log_loss": 0.6357
     },
     "elo": {
-     "reussite_pct": 64.5,
+     "reussite_pct": 64.0,
      "log_loss": 0.6292
     },
     "combinaison": {
-     "reussite_pct": 64.8,
-     "log_loss": 0.625
+     "reussite_pct": 64.2,
+     "log_loss": 0.626
     },
-    "poids_simulation_pct": 34.7
+    "poids_simulation_pct": 30.7
    },
    {
     "semaine": 21,
     "debut": "2026-10-19",
     "n": 426,
     "simulation": {
-     "reussite_pct": 61.5,
-     "log_loss": 0.6303
+     "reussite_pct": 63.4,
+     "log_loss": 0.6288
     },
     "elo": {
-     "reussite_pct": 62.9,
-     "log_loss": 0.6293
+     "reussite_pct": 63.1,
+     "log_loss": 0.6306
     },
     "combinaison": {
-     "reussite_pct": 62.7,
-     "log_loss": 0.6234
+     "reussite_pct": 62.4,
+     "log_loss": 0.6243
     },
-    "poids_simulation_pct": 35.3
+    "poids_simulation_pct": 31.1
    },
    {
     "semaine": 22,
     "debut": "2026-10-26",
-    "n": 13,
+    "n": 502,
     "simulation": {
-     "reussite_pct": 69.2,
-     "log_loss": 0.6478
+     "reussite_pct": 66.7,
+     "log_loss": 0.6304
     },
     "elo": {
-     "reussite_pct": 69.2,
-     "log_loss": 0.6519
+     "reussite_pct": 65.7,
+     "log_loss": 0.6076
     },
     "combinaison": {
-     "reussite_pct": 76.9,
-     "log_loss": 0.6454
+     "reussite_pct": 67.9,
+     "log_loss": 0.6086
     },
-    "poids_simulation_pct": 36.3
+    "poids_simulation_pct": 32.7
+   },
+   {
+    "semaine": 23,
+    "debut": "2026-11-02",
+    "n": 195,
+    "simulation": {
+     "reussite_pct": 67.7,
+     "log_loss": 0.5914
+    },
+    "elo": {
+     "reussite_pct": 67.2,
+     "log_loss": 0.5913
+    },
+    "combinaison": {
+     "reussite_pct": 66.7,
+     "log_loss": 0.5849
+    },
+    "poids_simulation_pct": 31.0
    }
   ],
-  "n_hors_echantillon": 5229,
+  "n_hors_echantillon": 5979,
   "poids": {
-   "elo": 0.6601,
-   "simulation": 0.3777
+   "elo": 0.6888,
+   "simulation": 0.3187
   },
-  "poids_simulation_pct": 36.4,
+  "poids_simulation_pct": 31.6,
   "total": {
    "simulation": {
-    "reussite_pct": 64.7,
-    "log_loss": 0.626
+    "reussite_pct": 65.0,
+    "log_loss": 0.6254
    },
    "elo": {
-    "reussite_pct": 66.1,
-    "log_loss": 0.6178
+    "reussite_pct": 66.3,
+    "log_loss": 0.6144
    }
   },
   "par_circuit": {
    "ATP": {
     "circuit": "ATP",
     "simulation": {
-     "n": 997,
-     "reussite_pct": 64.5,
-     "log_loss": 0.6379
+     "n": 1164,
+     "reussite_pct": 65.7,
+     "log_loss": 0.626
     },
     "elo": {
-     "n": 997,
-     "reussite_pct": 64.5,
-     "log_loss": 0.6362
+     "n": 1164,
+     "reussite_pct": 65.7,
+     "log_loss": 0.6201
     },
     "six_dernieres_semaines": {
      "simulation": {
-      "n": 418,
+      "n": 507,
       "reussite_pct": 66.5,
-      "log_loss": 0.6083
+      "log_loss": 0.6102
      },
      "elo": {
-      "n": 418,
-      "reussite_pct": 63.6,
-      "log_loss": 0.6202
+      "n": 507,
+      "reussite_pct": 63.1,
+      "log_loss": 0.6199
      },
      "combinaison": {
-      "n": 418,
-      "reussite_pct": 63.9,
-      "log_loss": 0.6113
+      "n": 507,
+      "reussite_pct": 64.5,
+      "log_loss": 0.6116
      }
     }
    },
    "WTA": {
     "circuit": "WTA",
     "simulation": {
-     "n": 1032,
-     "reussite_pct": 63.7,
-     "log_loss": 0.6046
+     "n": 1272,
+     "reussite_pct": 65.6,
+     "log_loss": 0.6045
     },
     "elo": {
-     "n": 1032,
-     "reussite_pct": 67.9,
-     "log_loss": 0.581
+     "n": 1272,
+     "reussite_pct": 68.1,
+     "log_loss": 0.5787
     },
     "six_dernieres_semaines": {
      "simulation": {
-      "n": 448,
-      "reussite_pct": 65.0,
-      "log_loss": 0.6045
+      "n": 586,
+      "reussite_pct": 66.7,
+      "log_loss": 0.6084
      },
      "elo": {
-      "n": 448,
+      "n": 586,
       "reussite_pct": 67.9,
-      "log_loss": 0.5967
+      "log_loss": 0.5905
      },
      "combinaison": {
-      "n": 448,
-      "reussite_pct": 68.3,
-      "log_loss": 0.5937
+      "n": 586,
+      "reussite_pct": 68.1,
+      "log_loss": 0.5893
      }
     }
    },
    "CH": {
     "circuit": "Challenger",
     "simulation": {
-     "n": 3200,
-     "reussite_pct": 65.0,
-     "log_loss": 0.6292
+     "n": 3543,
+     "reussite_pct": 64.6,
+     "log_loss": 0.6327
     },
     "elo": {
-     "n": 3200,
-     "reussite_pct": 66.0,
-     "log_loss": 0.624
+     "n": 3543,
+     "reussite_pct": 65.8,
+     "log_loss": 0.6252
     },
     "six_dernieres_semaines": {
      "simulation": {
-      "n": 1532,
-      "reussite_pct": 66.8,
-      "log_loss": 0.6089
+      "n": 1504,
+      "reussite_pct": 66.4,
+      "log_loss": 0.6191
      },
      "elo": {
-      "n": 1532,
-      "reussite_pct": 67.7,
-      "log_loss": 0.6095
+      "n": 1504,
+      "reussite_pct": 66.7,
+      "log_loss": 0.6142
      },
      "combinaison": {
-      "n": 1532,
-      "reussite_pct": 68.7,
-      "log_loss": 0.6049
+      "n": 1504,
+      "reussite_pct": 67.6,
+      "log_loss": 0.6104
      }
     }
    }
   },
   "poids_challenger": {
-   "adopte": true,
-   "n_juge": 1532,
+   "adopte": false,
+   "n_juge": 1504,
    "poids_appris_avant": {
-    "elo": 0.6469,
-    "simulation": 0.3068
+    "elo": 0.6167,
+    "simulation": 0.332
    },
    "ll": {
-    "avec": 0.6045679726329919,
-    "sans": 0.6048573757670372
+    "avec": 0.6104989061798243,
+    "sans": 0.6103893889437376
    },
-   "raison": "Challenger des 6 dernières semaines (1532 matchs) : poids propres 0.6046 contre poids communs 0.6049 ; part de la simulation 32.2 % contre 24.4 %",
-   "poids": {
-    "elo": 0.6267,
-    "simulation": 0.4339
-   }
+   "raison": "Challenger des 6 dernières semaines (1504 matchs) : poids propres 0.6105 contre poids communs 0.6104 ; part de la simulation 35.0 % contre 25.4 %"
+  },
+  "poids_ATP": {
+   "adopte": false,
+   "n_juge": 507,
+   "poids_appris_avant": {
+    "elo": 0.7097,
+    "simulation": 0.1784
+   },
+   "ll": {
+    "avec": 0.6128779029514749,
+    "sans": 0.6116423397283647
+   },
+   "raison": "ATP des 6 dernières semaines (507 matchs) : poids propres 0.6129 contre poids communs 0.6116 ; part de la simulation 20.1 % contre 25.4 %"
+  },
+  "poids_WTA": {
+   "adopte": false,
+   "n_juge": 586,
+   "poids_appris_avant": {
+    "elo": 1.2022,
+    "simulation": 0.0851
+   },
+   "ll": {
+    "avec": 0.5986418391270826,
+    "sans": 0.5892740454233926
+   },
+   "raison": "WTA des 6 dernières semaines (586 matchs) : poids propres 0.5986 contre poids communs 0.5893 ; part de la simulation 6.6 % contre 25.4 %"
   },
   "nouveaux_venus": {
    "adopte": true,
-   "delta_appris_avant": -0.4533,
+   "delta_appris_avant": -0.3896,
    "n_juge": 583,
    "ll": {
-    "avec": 0.5435836671993921,
-    "sans": 0.5639810017617598
+    "avec": 0.5485149489283635,
+    "sans": 0.564409445591329
    },
-   "raison": "583 matchs concernés (6 dernières semaines) : log loss 0.5436 corrigée contre 0.564 ; δ = -0.453 (le nouveau venu est surestimé) ; le nouveau venu gagne 30 % de ces matchs",
-   "delta": -0.6005
+   "raison": "583 matchs concernés (6 dernières semaines) : log loss 0.5485 corrigée contre 0.5644 ; δ = -0.39 (le nouveau venu est surestimé) ; le nouveau venu gagne 31 % de ces matchs",
+   "delta": -0.5221
   },
   "qualifies": {
-   "adopte": false,
-   "delta_appris_avant": 0.056,
-   "n_juge": 448,
+   "adopte": true,
+   "delta_appris_avant": 0.0102,
+   "n_juge": 486,
    "ll": {
-    "avec": 0.5888655787990468,
-    "sans": 0.5873654104347683
+    "avec": 0.6035493099581518,
+    "sans": 0.6036499632676208
    },
-   "raison": "448 matchs concernés (6 dernières semaines) : log loss 0.5889 corrigée contre 0.5874 ; δ = 0.056 (le qualifié est sous-estimé) ; le qualifié gagne 36 % de ces matchs"
+   "raison": "486 matchs concernés (6 dernières semaines) : log loss 0.6035 corrigée contre 0.6036 ; δ = 0.01 (le qualifié est sous-estimé) ; le qualifié gagne 38 % de ces matchs",
+   "delta": 0.0406
   },
   "transition": {
    "adopte": false,
-   "raison": "pas assez de matchs concernés (178 avant, 68 à juger)"
+   "delta_appris_avant": -0.0819,
+   "n_juge": 104,
+   "ll": {
+    "avec": 0.5410356508468261,
+    "sans": 0.5326996637720961
+   },
+   "raison": "104 matchs concernés (6 dernières semaines) : log loss 0.541 corrigée contre 0.5327 ; δ = -0.082 (celui qui change de surface est surestimé) ; celui qui change de surface gagne 61 % de ces matchs"
   },
   "classement": {
    "adopte": true,
-   "delta_appris_avant": -0.1408,
-   "n_juge": 586,
+   "delta_appris_avant": -0.158,
+   "n_juge": 584,
    "ll": {
-    "avec": 0.5409469042688005,
-    "sans": 0.5435593626824052
+    "avec": 0.5462082195784611,
+    "sans": 0.548794794321265
    },
-   "raison": "586 matchs concernés (6 dernières semaines) : log loss 0.5409 corrigée contre 0.5436 ; δ = -0.141 (le joueur peu connu mal classé est surestimé) ; le joueur peu connu mal classé gagne 30 % de ces matchs",
-   "delta": -0.0929
+   "raison": "584 matchs concernés (6 dernières semaines) : log loss 0.5462 corrigée contre 0.5488 ; δ = -0.158 (le joueur peu connu mal classé est surestimé) ; le joueur peu connu mal classé gagne 31 % de ces matchs",
+   "delta": -0.1128
+  },
+  "classement_relatif": {
+   "adopte": true,
+   "delta_appris_avant": 0.1215,
+   "n_juge": 260,
+   "ll": {
+    "avec": 0.5485774283627205,
+    "sans": 0.5508231117533594
+   },
+   "raison": "260 matchs concernés (6 dernières semaines) : log loss 0.5486 corrigée contre 0.5508 ; δ = 0.122 (le mieux classé est sous-estimé) ; le mieux classé gagne 71 % de ces matchs",
+   "delta": 0.1147
   },
   "modele_arbres": {
    "adopte": true,
-   "n_juge": 2398,
+   "n_juge": 2597,
    "variables": [
     "z_elo",
     "z_sim",
@@ -976,25 +1253,26 @@
     "terre",
     "gazon",
     "cinq_sets",
-    "desaccord"
+    "desaccord",
+    "ecart_rang_peu_connu"
    ],
    "ll": {
-    "avec": 0.5969198623149372,
-    "sans": 0.5989394612706724
+    "avec": 0.6007680477307487,
+    "sans": 0.602301453501605
    },
    "jugement": {
     "actuel": {
-     "n": 2398,
-     "reussite_pct": 68.1,
-     "log_loss": 0.5989
+     "n": 2597,
+     "reussite_pct": 67.3,
+     "log_loss": 0.6023
     },
     "arbres": {
-     "n": 2398,
-     "reussite_pct": 67.9,
-     "log_loss": 0.5969
+     "n": 2597,
+     "reussite_pct": 67.1,
+     "log_loss": 0.6008
     }
    },
-   "raison": "6 dernières semaines (2398 matchs) : arbres 0.5969 contre modèle actuel 0.5989 (vainqueur trouvé 67.9 % contre 68.1 %)",
+   "raison": "6 dernières semaines (2597 matchs) : arbres 0.6008 contre modèle actuel 0.6023 (vainqueur trouvé 67.1 % contre 67.3 %)",
    "modele": {
     "pas": 0.05,
     "arbres": [
@@ -1003,22 +1281,22 @@
       "s": 0.016666666666666607,
       "g": {
        "j": 5,
-       "s": 0.6166666666666667,
+       "s": 0.65,
        "g": {
-        "v": 0.009023777833362596
+        "v": 0.0032131731485090034
        },
        "d": {
-        "v": 0.47021885015114606
+        "v": 0.4828584366975314
        }
       },
       "d": {
        "j": 5,
        "s": 0.95,
        "g": {
-        "v": -0.11560148881692568
+        "v": -0.0774236474865039
        },
        "d": {
-        "v": -1.2345213819523235
+        "v": -1.172810005627714
        }
       }
      },
@@ -1027,22 +1305,22 @@
       "s": 0.016666666666666607,
       "g": {
        "j": 5,
-       "s": 0.6166666666666667,
+       "s": 0.65,
        "g": {
-        "v": 0.008572887843150538
+        "v": 0.0030525993329295815
        },
        "d": {
-        "v": 0.4491252715609064
+        "v": 0.4613607936132091
        }
       },
       "d": {
        "j": 5,
        "s": 0.95,
        "g": {
-        "v": -0.10996004590378257
+        "v": -0.07361873328841333
        },
        "d": {
-        "v": -1.1884668712345188
+        "v": -1.1286821777926113
        }
       }
      },
@@ -1051,22 +1329,22 @@
       "s": 0.016666666666666607,
       "g": {
        "j": 5,
-       "s": 0.6166666666666667,
+       "s": 0.65,
        "g": {
-        "v": 0.008144525710419766
+        "v": 0.0029000496925297935
        },
        "d": {
-        "v": 0.4289618704702706
+        "v": 0.4408031764194433
        }
       },
       "d": {
        "j": 5,
        "s": 0.95,
        "g": {
-        "v": -0.10458969854391266
+        "v": -0.06999869987204622
        },
        "d": {
-        "v": -1.1451777871616684
+        "v": -1.087080666128961
        }
       }
      },
@@ -1075,22 +1353,22 @@
       "s": 0.016666666666666607,
       "g": {
        "j": 5,
-       "s": 0.6166666666666667,
+       "s": 0.65,
        "g": {
-        "v": 0.007737565991127143
+        "v": 0.0027551232688934903
        },
        "d": {
-        "v": 0.40968209276037004
+        "v": 0.42113833603462186
        }
       },
       "d": {
        "j": 5,
        "s": 0.95,
        "g": {
-        "v": -0.09947771914338378
+        "v": -0.06655473555493786
        },
        "d": {
-        "v": -1.1043339392552254
+        "v": -1.0477244333810978
        }
       }
      },
@@ -1099,22 +1377,22 @@
       "s": 0.016666666666666607,
       "g": {
        "j": 5,
-       "s": 0.6166666666666667,
+       "s": 0.65,
        "g": {
-        "v": 0.007350939461577084
+        "v": 0.0026174391369207127
        },
        "d": {
-        "v": 0.39124305413111066
+        "v": 0.40232285950254265
        }
       },
       "d": {
        "j": 5,
        "s": 0.95,
        "g": {
-        "v": -0.09461196354259789
+        "v": -0.06327843651397001
        },
        "d": {
-        "v": -1.065663221917649
+        "v": -1.0103739052892273
        }
       }
      },
@@ -1123,22 +1401,22 @@
       "s": 0.016666666666666607,
       "g": {
        "j": 5,
-       "s": 0.6166666666666667,
+       "s": 0.65,
        "g": {
-        "v": 0.006983630309433005
+        "v": 0.002486635404051909
        },
        "d": {
-        "v": 0.3736050773636846
+        "v": 0.3843166765776324
        }
       },
       "d": {
        "j": 5,
        "s": 0.95,
        "g": {
-        "v": -0.08998084356204769
+        "v": -0.0601617884505565
        },
        "d": {
-        "v": -1.028933248650121
+        "v": -0.974823948163849
        }
       }
      },
@@ -1147,22 +1425,190 @@
       "s": 0.016666666666666607,
       "g": {
        "j": 5,
-       "s": 0.6166666666666667,
+       "s": 0.65,
        "g": {
-        "v": 0.006634673465273648
+        "v": 0.0023623682594764053
        },
        "d": {
-        "v": 0.3567312977572676
+        "v": 0.36708263913634964
+       }
+      },
+      "d": {
+       "j": 5,
+       "s": 0.95,
+       "g": {
+        "v": -0.05719714911682526
+       },
+       "d": {
+        "v": -0.9408982382939485
+       }
+      }
+     },
+     {
+      "j": 2,
+      "s": 0.016666666666666607,
+      "g": {
+       "j": 5,
+       "s": 0.65,
+       "g": {
+        "v": 0.0022443110708300117
+       },
+       "d": {
+        "v": 0.35058616230154094
+       }
+      },
+      "d": {
+       "j": 5,
+       "s": 0.95,
+       "g": {
+        "v": -0.05437723164630437
+       },
+       "d": {
+        "v": -0.9084447070675256
+       }
+      }
+     },
+     {
+      "j": 2,
+      "s": 0.016666666666666607,
+      "g": {
+       "j": 5,
+       "s": 0.65,
+       "g": {
+        "v": 0.0021321535260088783
+       },
+       "d": {
+        "v": 0.3347949179886783
+       }
+      },
+      "d": {
+       "j": 5,
+       "s": 0.95,
+       "g": {
+        "v": -0.05169508863920566
+       },
+       "d": {
+        "v": -0.8773318251679694
+       }
+      }
+     },
+     {
+      "j": 2,
+      "s": 0.016666666666666607,
+      "g": {
+       "j": 5,
+       "s": 0.65,
+       "g": {
+        "v": 0.002025600817847578
+       },
+       "d": {
+        "v": 0.3196785730680155
+       }
+      },
+      "d": {
+       "j": 5,
+       "s": 0.95,
+       "g": {
+        "v": -0.049144096957971464
+       },
+       "d": {
+        "v": -0.8474455469168607
+       }
+      }
+     },
+     {
+      "j": 2,
+      "s": 0.016666666666666607,
+      "g": {
+       "j": 5,
+       "s": 0.65,
+       "g": {
+        "v": 0.0019243728695197031
+       },
+       "d": {
+        "v": 0.30520856555512865
+       }
+      },
+      "d": {
+       "j": 5,
+       "s": 0.95,
+       "g": {
+        "v": -0.04671794319348006
+       },
+       "d": {
+        "v": -0.8186867782107289
+       }
+      }
+     },
+     {
+      "j": 2,
+      "s": 0.016666666666666607,
+      "g": {
+       "j": 5,
+       "s": 0.65,
+       "g": {
+        "v": 0.0018282035986278995
+       },
+       "d": {
+        "v": 0.29135791324818777
+       }
+      },
+      "d": {
+       "j": 5,
+       "s": 0.95,
+       "g": {
+        "v": -0.04441060976630037
+       },
+       "d": {
+        "v": -0.790969262950417
+       }
+      }
+     },
+     {
+      "j": 2,
+      "s": 0.016666666666666607,
+      "g": {
+       "j": 5,
+       "s": 0.65,
+       "g": {
+        "v": 0.0017368402180514
+       },
+       "d": {
+        "v": 0.2781010500659569
+       }
+      },
+      "d": {
+       "j": 5,
+       "s": 0.95,
+       "g": {
+        "v": -0.04221636163078385
+       },
+       "d": {
+        "v": -0.7642178064350776
+       }
+      }
+     },
+     {
+      "j": 2,
+      "s": 0.016666666666666607,
+      "g": {
+       "j": 5,
+       "s": 0.65,
+       "g": {
+        "v": 0.0016500425717151435
+       },
+       "d": {
+        "v": 0.26541368603888305
        }
       },
       "d": {
        "j": 5,
        "s": 0.8833333333333333,
        "g": {
-        "v": -0.042262084186095034
+        "v": -0.004700502447923502
        },
        "d": {
-        "v": -0.8133532345750891
+        "v": -0.584124018362648
        }
       }
      },
@@ -1171,22 +1617,22 @@
       "s": 0.016666666666666607,
       "g": {
        "j": 5,
-       "s": 0.6166666666666667,
+       "s": 0.65,
        "g": {
-        "v": 0.006303152067623087
+        "v": 0.001567582503537164
        },
        "d": {
-        "v": 0.34058732632801836
+        "v": 0.2532726874925138
        }
       },
       "d": {
        "j": 5,
        "s": 0.95,
        "g": {
-        "v": -0.07982872248787146
+        "v": -0.036936529786946455
        },
        "d": {
-        "v": -0.9665728472913722
+        "v": -0.718586756514115
        }
       }
      },
@@ -1195,22 +1641,22 @@
       "s": 0.016666666666666607,
       "g": {
        "j": 5,
-       "s": 0.6166666666666667,
+       "s": 0.65,
        "g": {
-        "v": 0.005988195054744097
+        "v": 0.001489243257895987
        },
        "d": {
-        "v": 0.3251409620563765
+        "v": 0.24165597445841305
        }
       },
       "d": {
        "j": 5,
        "s": 0.8833333333333333,
        "g": {
-        "v": -0.03622929892729703
+        "v": -0.0026284244518689076
        },
        "d": {
-        "v": -0.7586353351469504
+        "v": -0.5443678357930722
        }
       }
      },
@@ -1219,22 +1665,22 @@
       "s": 0.016666666666666607,
       "g": {
        "j": 5,
-       "s": 0.6166666666666667,
+       "s": 0.65,
        "g": {
-        "v": 0.005688974876830917
+        "v": 0.0014148189100465448
        },
        "d": {
-        "v": 0.31036194585624965
+        "v": 0.23054243276879455
        }
       },
       "d": {
        "j": 5,
        "s": 0.95,
        "g": {
-        "v": -0.0707167471895183
+        "v": -0.03222631661556271
        },
        "d": {
-        "v": -0.909191537886341
+        "v": -0.6756916747005217
        }
       }
      },
@@ -1243,22 +1689,22 @@
       "s": 0.016666666666666607,
       "g": {
        "j": 5,
-       "s": 0.6166666666666667,
+       "s": 0.65,
        "g": {
-        "v": 0.0054047053225581045
+        "v": 0.0013441138249865405
        },
        "d": {
-        "v": 0.29622175008069906
+        "v": 0.21991183865019165
        }
       },
       "d": {
        "j": 5,
        "s": 0.95,
        "g": {
-        "v": -0.06724218621266836
+        "v": -0.03063065285818031
        },
        "d": {
-        "v": -0.8792383916816302
+        "v": -0.6526344907647547
        }
       }
      },
@@ -1267,22 +1713,22 @@
       "s": 0.016666666666666607,
       "g": {
        "j": 5,
-       "s": 0.6166666666666667,
+       "s": 0.65,
        "g": {
-        "v": 0.005134639454251896
+        "v": 0.0012769421433540173
        },
        "d": {
-        "v": 0.28269339832288354
+        "v": 0.2097447939389758
        }
       },
       "d": {
        "j": 5,
        "s": 0.8833333333333333,
        "g": {
-        "v": -0.02761124476808025
+        "v": 0.0006320896819216178
        },
        "d": {
-        "v": -0.6868896811398836
+        "v": -0.49201033989454596
        }
       }
      },
@@ -1291,22 +1737,22 @@
       "s": 0.016666666666666607,
       "g": {
        "j": 5,
-       "s": 0.6166666666666667,
+       "s": 0.65,
        "g": {
-        "v": 0.004878067646240691
+        "v": 0.001213127293005825
        },
        "d": {
-        "v": 0.2697513110568414
+        "v": 0.2000226703057048
        }
       },
       "d": {
        "j": 5,
        "s": 0.95,
        "g": {
-        "v": -0.05947946877664033
+        "v": -0.026654290363762993
        },
        "d": {
-        "v": -0.8279431723436891
+        "v": -0.6133322920518722
        }
       }
      },
@@ -1315,190 +1761,22 @@
       "s": 0.016666666666666607,
       "g": {
        "j": 5,
-       "s": 0.016666666666666663,
+       "s": 0.65,
        "g": {
-        "v": -0.004389628362598847
+        "v": 0.0011525015249942904
        },
        "d": {
-        "v": 0.18061278574760062
-       }
-      },
-      "d": {
-       "j": 5,
-       "s": 0.95,
-       "g": {
-        "v": -0.05655146330906456
-       },
-       "d": {
-        "v": -0.800913340741957
-       }
-      }
-     },
-     {
-      "j": 2,
-      "s": 0.016666666666666607,
-      "g": {
-       "j": 5,
-       "s": 0.6166666666666667,
-       "g": {
-        "v": 0.004102873126204294
-       },
-       "d": {
-        "v": 0.24906448039414314
+        "v": 0.19072756110289532
        }
       },
       "d": {
        "j": 5,
        "s": 0.8833333333333333,
        "g": {
-        "v": -0.020494442348653077
+        "v": 0.0019282867357418498
        },
        "d": {
-        "v": -0.6224252804205059
-       }
-      }
-     },
-     {
-      "j": 2,
-      "s": 0.016666666666666607,
-      "g": {
-       "j": 5,
-       "s": 0.6166666666666667,
-       "g": {
-        "v": 0.0038978550130495575
-       },
-       "d": {
-        "v": 0.23758542659642898
-       }
-      },
-      "d": {
-       "j": 5,
-       "s": 0.95,
-       "g": {
-        "v": -0.04994423595968405
-       },
-       "d": {
-        "v": -0.7544636566503835
-       }
-      }
-     },
-     {
-      "j": 2,
-      "s": 0.016666666666666607,
-      "g": {
-       "j": 5,
-       "s": 0.016666666666666663,
-       "g": {
-        "v": -0.0045700749047948176
-       },
-       "d": {
-        "v": 0.16051622382482109
-       }
-      },
-      "d": {
-       "j": 5,
-       "s": 0.8833333333333333,
-       "g": {
-        "v": -0.017001136791222775
-       },
-       "d": {
-        "v": -0.5810632754401917
-       }
-      }
-     },
-     {
-      "j": 2,
-      "s": 0.016666666666666607,
-      "g": {
-       "j": 5,
-       "s": 0.6166666666666667,
-       "g": {
-        "v": 0.0032622225498565513
-       },
-       "d": {
-        "v": 0.21917621732130074
-       }
-      },
-      "d": {
-       "j": 5,
-       "s": 0.95,
-       "g": {
-        "v": -0.04402437536997089
-       },
-       "d": {
-        "v": -0.7107656026707204
-       }
-      }
-     },
-     {
-      "j": 2,
-      "s": 0.016666666666666607,
-      "g": {
-       "j": 5,
-       "s": 0.016666666666666663,
-       "g": {
-        "v": -0.004504721552366089
-       },
-       "d": {
-        "v": 0.14765296920023727
-       }
-      },
-      "d": {
-       "j": 5,
-       "s": 0.95,
-       "g": {
-        "v": -0.04185120978846602
-       },
-       "d": {
-        "v": -0.6874126318513561
-       }
-      }
-     },
-     {
-      "j": 2,
-      "s": 0.016666666666666607,
-      "g": {
-       "j": 5,
-       "s": 0.6166666666666667,
-       "g": {
-        "v": 0.002708126250797611
-       },
-       "d": {
-        "v": 0.20214229455673022
-       }
-      },
-      "d": {
-       "j": 5,
-       "s": 0.8833333333333333,
-       "g": {
-        "v": -0.011895016437125004
-       },
-       "d": {
-        "v": -0.5262763284382014
-       }
-      }
-     },
-     {
-      "j": 2,
-      "s": 0.016666666666666607,
-      "g": {
-       "j": 5,
-       "s": 0.016666666666666663,
-       "g": {
-        "v": -0.004414945747179234
-       },
-       "d": {
-        "v": 0.13579593581051289
-       }
-      },
-      "d": {
-       "j": 5,
-       "s": 0.95,
-       "g": {
-        "v": -0.03682271297127989
-       },
-       "d": {
-        "v": -0.6473006407050618
+        "v": -0.45813111559277014
        }
       }
      },
@@ -1507,22 +1785,94 @@
       "s": 0.9833333333333334,
       "g": {
        "j": 0,
-       "s": -0.8960685514833506,
+       "s": 0.9098576530748503,
        "g": {
-        "v": 0.08735750748942953
+        "v": 0.005038583172956973
        },
        "d": {
-        "v": -0.01890442834588687
+        "v": -0.08926059603718162
        }
       },
       "d": {
        "j": 2,
-       "s": 0.36666666666666664,
+       "s": 0.29999999999999993,
        "g": {
-        "v": 1.0083242835903434
+        "v": 0.9777950546592098
        },
        "d": {
-        "v": -0.8046783837161786
+        "v": -0.7931297346496797
+       }
+      }
+     },
+     {
+      "j": 5,
+      "s": 0.9833333333333334,
+      "g": {
+       "j": 0,
+       "s": -0.4330264167547242,
+       "g": {
+        "v": 0.04188221994050208
+       },
+       "d": {
+        "v": -0.023678674435090936
+       }
+      },
+      "d": {
+       "j": 2,
+       "s": 0.29999999999999993,
+       "g": {
+        "v": 0.9437430402650698
+       },
+       "d": {
+        "v": -0.7708355687763129
+       }
+      }
+     },
+     {
+      "j": 5,
+      "s": 0.9833333333333334,
+      "g": {
+       "j": 0,
+       "s": 0.43173133806200525,
+       "g": {
+        "v": 0.012226489917329044
+       },
+       "d": {
+        "v": -0.050678969404378084
+       }
+      },
+      "d": {
+       "j": 2,
+       "s": 0.29999999999999993,
+       "g": {
+        "v": 0.9111664634434194
+       },
+       "d": {
+        "v": -0.749104003186013
+       }
+      }
+     },
+     {
+      "j": 5,
+      "s": 0.9833333333333334,
+      "g": {
+       "j": 0,
+       "s": -0.9125433117764957,
+       "g": {
+        "v": 0.07212751349061003
+       },
+       "d": {
+        "v": -0.014954016989326522
+       }
+      },
+      "d": {
+       "j": 2,
+       "s": 0.29999999999999993,
+       "g": {
+        "v": 0.8799347174129488
+       },
+       "d": {
+        "v": -0.7279008383601108
        }
       }
      },
@@ -1531,22 +1881,22 @@
       "s": 0.016666666666666607,
       "g": {
        "j": 5,
-       "s": 0.016666666666666663,
+       "s": 0.65,
        "g": {
-        "v": -0.0038446840055200424
+        "v": 0.002305414119824278
        },
        "d": {
-        "v": 0.12536101786142206
+        "v": 0.14969773301505201
        }
       },
       "d": {
-       "j": 5,
-       "s": 0.8833333333333333,
+       "j": 0,
+       "s": -1.07456369902888,
        "g": {
-        "v": -0.009764946106674626
+        "v": 0.3224840868591225
        },
        "d": {
-        "v": -0.4822231402876448
+        "v": -0.15897162347239732
        }
       }
      },
@@ -1555,22 +1905,46 @@
       "s": 0.9833333333333334,
       "g": {
        "j": 0,
-       "s": 0.8920427907889394,
+       "s": 0.9098576530748503,
        "g": {
-        "v": 0.005926429011214969
+        "v": 0.005192205683650592
        },
        "d": {
-        "v": -0.09937366297631633
+        "v": -0.08046873139634404
        }
       },
       "d": {
        "j": 2,
-       "s": 0.36666666666666664,
+       "s": 0.29999999999999993,
        "g": {
-        "v": 0.9711627806585353
+        "v": 0.8459519007814443
        },
        "d": {
-        "v": -0.7695503458612131
+        "v": -0.703201459828559
+       }
+      }
+     },
+     {
+      "j": 12,
+      "s": 4.878050328154253e-05,
+      "g": {
+       "j": 2,
+       "s": 0.016666666666666607,
+       "g": {
+        "v": 0.004910136642397113
+       },
+       "d": {
+        "v": -0.09635112496118949
+       }
+      },
+      "d": {
+       "j": 0,
+       "s": 0.5536633620635748,
+       "g": {
+        "v": 0.35168156116859656
+       },
+       "d": {
+        "v": -0.19563535239393645
        }
       }
      },
@@ -1579,46 +1953,22 @@
       "s": 0.9833333333333334,
       "g": {
        "j": 0,
-       "s": -0.8960685514833506,
+       "s": -0.4330264167547242,
        "g": {
-        "v": 0.0830500658503477
+        "v": 0.03789625081686126
        },
        "d": {
-        "v": -0.017798604035964467
+        "v": -0.020717368859984372
        }
       },
       "d": {
        "j": 2,
-       "s": 0.36666666666666664,
+       "s": 0.29999999999999993,
        "g": {
-        "v": 0.9377093753959281
+        "v": 0.8157841224876203
        },
        "d": {
-        "v": -0.7484557829782318
-       }
-      }
-     },
-     {
-      "j": 5,
-      "s": 0.9833333333333334,
-      "g": {
-       "j": 1,
-       "s": 0.6342091616832636,
-       "g": {
-        "v": 0.01029443617106025
-       },
-       "d": {
-        "v": -0.07021147721223148
-       }
-      },
-      "d": {
-       "j": 2,
-       "s": 0.36666666666666664,
-       "g": {
-        "v": 0.9056590776281102
-       },
-       "d": {
-        "v": -0.7278488554509241
+        "v": -0.6803002127301788
        }
       }
      },
@@ -1627,70 +1977,46 @@
       "s": 0.9833333333333334,
       "g": {
        "j": 0,
-       "s": 0.8920427907889394,
+       "s": 0.9098576530748503,
        "g": {
-        "v": 0.005847182966277485
+        "v": 0.004894266122291
        },
        "d": {
-        "v": -0.09063415423494194
+        "v": -0.0740619983871391
        }
       },
       "d": {
        "j": 2,
-       "s": 0.36666666666666664,
+       "s": 0.29999999999999993,
        "g": {
-        "v": 0.8748911593294326
+        "v": 0.7881727421659175
        },
        "d": {
-        "v": -0.7077029860903685
+        "v": -0.6606742656457913
        }
       }
      },
      {
-      "j": 2,
-      "s": 0.016666666666666607,
+      "j": 12,
+      "s": 4.878050328154253e-05,
       "g": {
-       "j": 5,
-       "s": 0.016666666666666663,
-       "g": {
-        "v": -0.002528861255029815
-       },
-       "d": {
-        "v": 0.10612189326073311
-       }
-      },
-      "d": {
-       "j": 5,
-       "s": 0.8833333333333333,
-       "g": {
-        "v": -0.009863499046015618
-       },
-       "d": {
-        "v": -0.4338178021218124
-       }
-      }
-     },
-     {
-      "j": 5,
-      "s": 0.9833333333333334,
-      "g": {
-       "j": 1,
-       "s": -0.6367090710877952,
-       "g": {
-        "v": 0.056699806468657195
-       },
-       "d": {
-        "v": -0.020697772194319917
-       }
-      },
-      "d": {
        "j": 2,
-       "s": 0.36666666666666664,
+       "s": 0.016666666666666607,
        "g": {
-        "v": 0.8438410363905073
+        "v": 0.004385276892511234
        },
        "d": {
-        "v": -0.6758481288836976
+        "v": -0.08837732551091058
+       }
+      },
+      "d": {
+       "j": 0,
+       "s": 0.5536633620635748,
+       "g": {
+        "v": 0.3310891022632325
+       },
+       "d": {
+        "v": -0.18603709493790838
        }
       }
      },
@@ -1699,94 +2025,22 @@
       "s": 0.9833333333333334,
       "g": {
        "j": 0,
-       "s": -0.8960685514833506,
+       "s": -0.9125433117764957,
        "g": {
-        "v": 0.07645601071821635
+        "v": 0.06491314552744339
        },
        "d": {
-        "v": -0.015825930812698
+        "v": -0.012991629185337677
        }
       },
       "d": {
        "j": 2,
        "s": -0.45,
        "g": {
-        "v": 0.9541051822352676
+        "v": 0.8889097457007764
        },
        "d": {
-        "v": -0.496732012643409
-       }
-      }
-     },
-     {
-      "j": 5,
-      "s": 0.9833333333333334,
-      "g": {
-       "j": 1,
-       "s": 0.6342091616832636,
-       "g": {
-        "v": 0.009905093346953955
-       },
-       "d": {
-        "v": -0.06373467614209732
-       }
-      },
-      "d": {
-       "j": 2,
-       "s": -0.45,
-       "g": {
-        "v": 0.9275907134423431
-       },
-       "d": {
-        "v": -0.47847532785120767
-       }
-      }
-     },
-     {
-      "j": 2,
-      "s": 0.016666666666666607,
-      "g": {
-       "j": 0,
-       "s": 0.9531614817025993,
-       "g": {
-        "v": 0.02443290798297405
-       },
-       "d": {
-        "v": -0.08600330286144918
-       }
-      },
-      "d": {
-       "j": 8,
-       "s": 0.5,
-       "g": {
-        "v": 0.040638613957663196
-       },
-       "d": {
-        "v": -0.2830286875515331
-       }
-      }
-     },
-     {
-      "j": 5,
-      "s": 0.9833333333333334,
-      "g": {
-       "j": 1,
-       "s": -0.6367090710877952,
-       "g": {
-        "v": 0.0521262608255267
-       },
-       "d": {
-        "v": -0.018676421283798893
-       }
-      },
-      "d": {
-       "j": 2,
-       "s": 0.36666666666666664,
-       "g": {
-        "v": 0.7752494404902284
-       },
-       "d": {
-        "v": -0.6259701503969493
+        "v": -0.4849169702513875
        }
       }
      },
@@ -1795,118 +2049,46 @@
       "s": 0.9833333333333334,
       "g": {
        "j": 0,
-       "s": -0.8960685514833506,
+       "s": -0.4330264167547242,
        "g": {
-        "v": 0.07030177519455925
+        "v": 0.035100582439939056
        },
        "d": {
-        "v": -0.014256627583006446
+        "v": -0.018783310206794877
        }
       },
       "d": {
        "j": 2,
-       "s": -0.45,
+       "s": 0.29999999999999993,
        "g": {
-        "v": 0.8801460513599036
+        "v": 0.7410002464427827
        },
        "d": {
-        "v": -0.44979674406516196
+        "v": -0.6246868464201891
        }
       }
      },
      {
-      "j": 2,
-      "s": 0.016666666666666607,
+      "j": 12,
+      "s": 4.878050328154253e-05,
       "g": {
+       "j": 2,
+       "s": 0.016666666666666607,
+       "g": {
+        "v": 0.003979130304050179
+       },
+       "d": {
+        "v": -0.08134218883119039
+       }
+      },
+      "d": {
        "j": 0,
-       "s": 0.9531614817025993,
+       "s": 0.5536633620635748,
        "g": {
-        "v": 0.022759572979669178
+        "v": 0.31250111970597405
        },
        "d": {
-        "v": -0.08065243341417815
-       }
-      },
-      "d": {
-       "j": 8,
-       "s": 0.5,
-       "g": {
-        "v": 0.04077251788821239
-       },
-       "d": {
-        "v": -0.2675903616260061
-       }
-      }
-     },
-     {
-      "j": 5,
-      "s": 0.9833333333333334,
-      "g": {
-       "j": 1,
-       "s": -0.6367090710877952,
-       "g": {
-        "v": 0.048375534026066765
-       },
-       "d": {
-        "v": -0.017239838014374172
-       }
-      },
-      "d": {
-       "j": 2,
-       "s": 0.36666666666666664,
-       "g": {
-        "v": 0.7306597893716089
-       },
-       "d": {
-        "v": -0.591988047564179
-       }
-      }
-     },
-     {
-      "j": 5,
-      "s": 0.9833333333333334,
-      "g": {
-       "j": 1,
-       "s": 0.6342091616832636,
-       "g": {
-        "v": 0.008910675603228611
-       },
-       "d": {
-        "v": -0.05540758234990648
-       }
-      },
-      "d": {
-       "j": 2,
-       "s": -0.45,
-       "g": {
-        "v": 0.8355396420490976
-       },
-       "d": {
-        "v": -0.4227438034703268
-       }
-      }
-     },
-     {
-      "j": 2,
-      "s": 0.016666666666666607,
-      "g": {
-       "j": 0,
-       "s": 0.9531614817025993,
-       "g": {
-        "v": 0.02102570928257762
-       },
-       "d": {
-        "v": -0.07422705113404647
-       }
-      },
-      "d": {
-       "j": 5,
-       "s": 0.8833333333333333,
-       "g": {
-        "v": -0.0033492589739411824
-       },
-       "d": {
-        "v": -0.36880354875733706
+        "v": -0.1784002994567115
        }
       }
      },
@@ -1915,22 +2097,22 @@
       "s": 0.9833333333333334,
       "g": {
        "j": 0,
-       "s": -0.8960685514833506,
+       "s": -0.9125433117764957,
        "g": {
-        "v": 0.06424504250183449
+        "v": 0.060355403499046154
        },
        "d": {
-        "v": -0.0129596713014468
+        "v": -0.011979168876665685
        }
       },
       "d": {
        "j": 2,
-       "s": 0.36666666666666664,
+       "s": -0.45,
        "g": {
-        "v": 0.690072754061396
+        "v": 0.8411361773030075
        },
        "d": {
-        "v": -0.5512007559454641
+        "v": -0.45565840231038274
        }
       }
      },
@@ -1938,23 +2120,47 @@
       "j": 5,
       "s": 0.9833333333333334,
       "g": {
-       "j": 1,
-       "s": -0.6367090710877952,
+       "j": 0,
+       "s": 0.9098576530748503,
        "g": {
-        "v": 0.04402020614422802
+        "v": 0.004720092829925527
        },
        "d": {
-        "v": -0.015593837199383637
+        "v": -0.06579704892394922
        }
       },
       "d": {
        "j": 2,
-       "s": -0.45,
+       "s": 0.29999999999999993,
        "g": {
-        "v": 0.7933379808981532
+        "v": 0.6967797492894091
        },
        "d": {
-        "v": -0.38865965566073885
+        "v": -0.5902694713364502
+       }
+      }
+     },
+     {
+      "j": 12,
+      "s": 4.878050328154253e-05,
+      "g": {
+       "j": 2,
+       "s": 0.016666666666666607,
+       "g": {
+        "v": 0.0035836622631938795
+       },
+       "d": {
+        "v": -0.07473939604664825
+       }
+      },
+      "d": {
+       "j": 0,
+       "s": 0.5536633620635748,
+       "g": {
+        "v": 0.29448032105273153
+       },
+       "d": {
+        "v": -0.16995788546598395
        }
       }
      },
@@ -1962,47 +2168,47 @@
       "j": 5,
       "s": 0.9833333333333334,
       "g": {
-       "j": 1,
-       "s": 0.6342091616832636,
+       "j": 0,
+       "s": -0.4330264167547242,
        "g": {
-        "v": 0.008163014617053285
+        "v": 0.03277675508856666
        },
        "d": {
-        "v": -0.050128812818114064
+        "v": -0.01715942848937679
        }
       },
       "d": {
        "j": 2,
        "s": -0.45,
        "g": {
-        "v": 0.771556161502172
+        "v": 0.7962328896814148
        },
        "d": {
-        "v": -0.37370341244358185
+        "v": -0.4280147726342883
        }
       }
      },
      {
-      "j": 2,
-      "s": 0.016666666666666607,
+      "j": 12,
+      "s": 4.878050328154253e-05,
       "g": {
        "j": 5,
-       "s": 0.016666666666666663,
+       "s": 0.4166666666666667,
        "g": {
-        "v": -0.002010453791660414
+        "v": 0.0033498289884493944
        },
        "d": {
-        "v": 0.0777158887339097
+        "v": -0.07100254505070326
        }
       },
       "d": {
-       "j": 8,
-       "s": 0.5,
+       "j": 0,
+       "s": 0.5536633620635748,
        "g": {
-        "v": 0.04681516857460244
+        "v": 0.2792597956191905
        },
        "d": {
-        "v": -0.24671090074191407
+        "v": -0.1617840924686026
        }
       }
      },
@@ -2011,22 +2217,22 @@
       "s": 0.9833333333333334,
       "g": {
        "j": 0,
-       "s": -0.8960685514833506,
+       "s": -0.9125433117764957,
        "g": {
-        "v": 0.0597759621304635
+        "v": 0.056171797149667475
        },
        "d": {
-        "v": -0.01174596195269412
+        "v": -0.0109053976875664
        }
       },
       "d": {
        "j": 2,
-       "s": 0.36666666666666664,
+       "s": 0.29999999999999993,
        "g": {
-        "v": 0.6326108643379207
+        "v": 0.6558104117127618
        },
        "d": {
-        "v": -0.5089123153525182
+        "v": -0.5551684043421492
        }
       }
      },
@@ -2035,46 +2241,46 @@
       "s": 0.9833333333333334,
       "g": {
        "j": 0,
-       "s": 0.8920427907889394,
+       "s": -0.4330264167547242,
        "g": {
-        "v": 0.005009594546167762
+        "v": 0.030372954052569408
        },
        "d": {
-        "v": -0.06407369688731306
+        "v": -0.015843484788808922
        }
       },
       "d": {
        "j": 2,
        "s": -0.45,
        "g": {
-        "v": 0.7306621043626771
+        "v": 0.7552770678250578
        },
        "d": {
-        "v": -0.3510498298613113
+        "v": -0.40137450720759804
        }
       }
      },
      {
-      "j": 2,
-      "s": 0.016666666666666607,
+      "j": 12,
+      "s": 4.878050328154253e-05,
       "g": {
-       "j": 8,
-       "s": 0.5,
+       "j": 5,
+       "s": 0.4166666666666667,
        "g": {
-        "v": -0.007472843529197278
+        "v": 0.003502169666111607
        },
        "d": {
-        "v": 0.052798598213675746
+        "v": -0.06883290450043729
        }
       },
       "d": {
-       "j": 8,
-       "s": 0.5,
+       "j": 0,
+       "s": -0.35977854716310187,
        "g": {
-        "v": 0.045986189349518466
+        "v": 0.637818078823845
        },
        "d": {
-        "v": -0.23340041707181164
+        "v": 0.0037524141299461553
        }
       }
      },
@@ -2082,23 +2288,23 @@
       "j": 5,
       "s": 0.9833333333333334,
       "g": {
-       "j": 1,
-       "s": -0.6367090710877952,
+       "j": 0,
+       "s": 0.9098576530748503,
        "g": {
-        "v": 0.041260422685803516
+        "v": 0.004366420243688601
        },
        "d": {
-        "v": -0.014078384831201074
+        "v": -0.05797451572955716
        }
       },
       "d": {
        "j": 2,
-       "s": 0.36666666666666664,
+       "s": 0.29999999999999993,
        "g": {
-        "v": 0.5956647754524754
+        "v": 0.618996742087435
        },
        "d": {
-        "v": -0.47987103578212714
+        "v": -0.5236667401402133
        }
       }
      },
@@ -2106,47 +2312,23 @@
       "j": 5,
       "s": 0.9833333333333334,
       "g": {
-       "j": 1,
-       "s": 0.6342091616832636,
+       "j": 0,
+       "s": -0.9125433117764957,
        "g": {
-        "v": 0.007871885382182559
+        "v": 0.0515625180681305
        },
        "d": {
-        "v": -0.04572117167165567
+        "v": -0.009845307707420703
        }
       },
       "d": {
        "j": 2,
        "s": -0.45,
        "g": {
-        "v": 0.693124985504107
+        "v": 0.7171388248341761
        },
        "d": {
-        "v": -0.3291509592872
-       }
-      }
-     },
-     {
-      "j": 2,
-      "s": 0.016666666666666607,
-      "g": {
-       "j": 0,
-       "s": 0.9531614817025993,
-       "g": {
-        "v": 0.01730002727540113
-       },
-       "d": {
-        "v": -0.06395715846968725
-       }
-      },
-      "d": {
-       "j": 11,
-       "s": 0.5247843684715435,
-       "g": {
-        "v": 0.028058828383791836
-       },
-       "d": {
-        "v": -0.25411226149296884
+        "v": -0.37584836482650963
        }
       }
      },
@@ -2155,309 +2337,4886 @@
       "s": 0.9833333333333334,
       "g": {
        "j": 0,
-       "s": -0.8960685514833506,
+       "s": 0.43173133806200525,
        "g": {
-        "v": 0.05527598953382999
+        "v": 0.009220878057242482
        },
        "d": {
-        "v": -0.010492331086910323
-       }
-      },
-      "d": {
-       "j": 2,
-       "s": 0.36666666666666664,
-       "g": {
-        "v": 0.5606144789449494
-       },
-       "d": {
-        "v": -0.4534873799313902
-       }
-      }
-     },
-     {
-      "j": 5,
-      "s": 0.9833333333333334,
-      "g": {
-       "j": 1,
-       "s": -0.6367090710877952,
-       "g": {
-        "v": 0.038020722247689945
-       },
-       "d": {
-        "v": -0.012751851325988639
+        "v": -0.03321036143690346
        }
       },
       "d": {
        "j": 2,
        "s": -0.45,
        "g": {
-        "v": 0.6574508696339135
+        "v": 0.6965182892154217
        },
        "d": {
-        "v": -0.30989688529336956
+        "v": -0.36108500578515795
        }
       }
      },
      {
-      "j": 2,
-      "s": 0.016666666666666607,
+      "j": 12,
+      "s": 4.878050328154253e-05,
       "g": {
-       "j": 8,
-       "s": 0.5,
+       "j": 5,
+       "s": 0.4166666666666667,
        "g": {
-        "v": -0.007592856251622626
+        "v": 0.0037251914418731237
        },
        "d": {
-        "v": 0.04872589280292639
+        "v": -0.06710629240031225
        }
       },
       "d": {
-       "j": 8,
-       "s": 0.5,
-       "g": {
-        "v": 0.0489137164386422
-       },
-       "d": {
-        "v": -0.21685958205349762
-       }
-      }
-     },
-     {
-      "j": 5,
-      "s": 0.9833333333333334,
-      "g": {
        "j": 0,
-       "s": -0.8960685514833506,
+       "s": 1.012329052595125,
        "g": {
-        "v": 0.05162241019069165
+        "v": 0.18096866480553664
        },
        "d": {
-        "v": -0.009733243166502476
-       }
-      },
-      "d": {
-       "j": 2,
-       "s": -0.45,
-       "g": {
-        "v": 0.6381749293546867
-       },
-       "d": {
-        "v": -0.29554598640955376
-       }
-      }
-     },
-     {
-      "j": 5,
-      "s": 0.9833333333333334,
-      "g": {
-       "j": 1,
-       "s": 0.6342091616832636,
-       "g": {
-        "v": 0.007314163026602642
-       },
-       "d": {
-        "v": -0.04089969705980776
-       }
-      },
-      "d": {
-       "j": 2,
-       "s": 0.36666666666666664,
-       "g": {
-        "v": 0.5140982999321202
-       },
-       "d": {
-        "v": -0.41716326316185365
-       }
-      }
-     },
-     {
-      "j": 2,
-      "s": 0.016666666666666607,
-      "g": {
-       "j": 0,
-       "s": 1.3276184671587528,
-       "g": {
-        "v": 0.012218685022694548
-       },
-       "d": {
-        "v": -0.09964198162518287
-       }
-      },
-      "d": {
-       "j": 11,
-       "s": 0.5247843684715435,
-       "g": {
-        "v": 0.03240519658178508
-       },
-       "d": {
-        "v": -0.23867131930204863
-       }
-      }
-     },
-     {
-      "j": 5,
-      "s": 0.9833333333333334,
-      "g": {
-       "j": 1,
-       "s": -0.6367090710877952,
-       "g": {
-        "v": 0.03553579946895645
-       },
-       "d": {
-        "v": -0.01170735853380821
-       }
-      },
-      "d": {
-       "j": 2,
-       "s": -0.45,
-       "g": {
-        "v": 0.6047025140908765
-       },
-       "d": {
-        "v": -0.2780558883138497
-       }
-      }
-     },
-     {
-      "j": 2,
-      "s": 0.016666666666666607,
-      "g": {
-       "j": 8,
-       "s": 0.5,
-       "g": {
-        "v": -0.007612538044583461
-       },
-       "d": {
-        "v": 0.045288334688918526
-       }
-      },
-      "d": {
-       "j": 8,
-       "s": 0.5,
-       "g": {
-        "v": 0.050413715229900485
-       },
-       "d": {
-        "v": -0.20248043837509802
-       }
-      }
-     },
-     {
-      "j": 5,
-      "s": 0.9833333333333334,
-      "g": {
-       "j": 0,
-       "s": -0.8960685514833506,
-       "g": {
-        "v": 0.048011071577912665
-       },
-       "d": {
-        "v": -0.008886182154383599
-       }
-      },
-      "d": {
-       "j": 2,
-       "s": 0.36666666666666664,
-       "g": {
-        "v": 0.48267625412231924
-       },
-       "d": {
-        "v": -0.39152910821232595
-       }
-      }
-     },
-     {
-      "j": 1,
-      "s": 0.6362435574897088,
-      "g": {
-       "j": 2,
-       "s": -0.21666666666666667,
-       "g": {
-        "v": 0.13573478812239315
-       },
-       "d": {
-        "v": -0.002025862822845785
-       }
-      },
-      "d": {
-       "j": 11,
-       "s": 0.1735903466127004,
-       "g": {
-        "v": 0.1667685074115439
-       },
-       "d": {
-        "v": -0.09333141062304243
+        "v": -0.33766431486347837
        }
       }
      },
      {
       "j": 0,
-      "s": 0.8881427238852964,
+      "s": -0.9084717826429212,
       "g": {
-       "j": 0,
-       "s": -1.3644196262980293,
-       "g": {
-        "v": 0.13005996198107211
-       },
-       "d": {
-        "v": 0.0006131574819189356
-       }
-      },
-      "d": {
        "j": 7,
        "s": 0.5,
        "g": {
-        "v": -0.12797459886335022
+        "v": 0.13521506003950198
        },
        "d": {
-        "v": 0.2665428553837798
+        "v": -0.22143350393819808
+       }
+      },
+      "d": {
+       "j": 2,
+       "s": 0.016666666666666607,
+       "g": {
+        "v": 0.006620428649823989
+       },
+       "d": {
+        "v": -0.11887158129800808
+       }
+      }
+     },
+     {
+      "j": 5,
+      "s": 0.9833333333333334,
+      "g": {
+       "j": 0,
+       "s": -0.4330264167547242,
+       "g": {
+        "v": 0.026530391344123133
+       },
+       "d": {
+        "v": -0.013745319935027709
+       }
+      },
+      "d": {
+       "j": 2,
+       "s": 0.29999999999999993,
+       "g": {
+        "v": 0.5687781375617189
+       },
+       "d": {
+        "v": -0.478998054598161
+       }
+      }
+     },
+     {
+      "j": 5,
+      "s": 0.9833333333333334,
+      "g": {
+       "j": 0,
+       "s": 0.43173133806200525,
+       "g": {
+        "v": 0.008486389408002684
+       },
+       "d": {
+        "v": -0.030617410466595177
+       }
+      },
+      "d": {
+       "j": 2,
+       "s": -0.45,
+       "g": {
+        "v": 0.6598320050015413
+       },
+       "d": {
+        "v": -0.33471817430326034
+       }
+      }
+     },
+     {
+      "j": 12,
+      "s": 4.878050328154253e-05,
+      "g": {
+       "j": 5,
+       "s": 0.4166666666666667,
+       "g": {
+        "v": 0.003490471906288008
+       },
+       "d": {
+        "v": -0.06300547299239428
+       }
+      },
+      "d": {
+       "j": 0,
+       "s": -0.35977854716310187,
+       "g": {
+        "v": 0.5900427431267846
+       },
+       "d": {
+        "v": -0.0033947773166491794
+       }
+      }
+     },
+     {
+      "j": 5,
+      "s": 0.9833333333333334,
+      "g": {
+       "j": 0,
+       "s": 0.9098576530748503,
+       "g": {
+        "v": 0.003841606484141996
+       },
+       "d": {
+        "v": -0.0490032358442268
+       }
+      },
+      "d": {
+       "j": 2,
+       "s": 0.29999999999999993,
+       "g": {
+        "v": 0.5364716025919812
+       },
+       "d": {
+        "v": -0.45077952887864864
        }
       }
      },
      {
       "j": 0,
-      "s": -0.08706638992950033,
+      "s": -0.9084717826429212,
       "g": {
-       "j": 1,
-       "s": 0.22800681375493315,
+       "j": 7,
+       "s": 0.5,
        "g": {
-        "v": 0.006461422870922545
+        "v": 0.12661780049753782
        },
        "d": {
-        "v": -0.26966857482128415
+        "v": -0.21350213041719454
+       }
+      },
+      "d": {
+       "j": 2,
+       "s": 0.016666666666666607,
+       "g": {
+        "v": 0.005955259922570397
+       },
+       "d": {
+        "v": -0.10865023981757367
+       }
+      }
+     },
+     {
+      "j": 5,
+      "s": 0.9833333333333334,
+      "g": {
+       "j": 0,
+       "s": 0.9098576530748503,
+       "g": {
+        "v": 0.0036222498828646613
+       },
+       "d": {
+        "v": -0.04658940102365896
+       }
+      },
+      "d": {
+       "j": 2,
+       "s": -0.45,
+       "g": {
+        "v": 0.6256414297116478
+       },
+       "d": {
+        "v": -0.30983349482952877
+       }
+      }
+     },
+     {
+      "j": 12,
+      "s": 4.878050328154253e-05,
+      "g": {
+       "j": 5,
+       "s": 0.4166666666666667,
+       "g": {
+        "v": 0.0032602709296099775
+       },
+       "d": {
+        "v": -0.05909620132343687
        }
       },
       "d": {
        "j": 0,
-       "s": 1.5619296671284135,
+       "s": 1.012329052595125,
        "g": {
-        "v": 0.02802886839247927
+        "v": 0.16429966573943516
        },
        "d": {
-        "v": -0.2672008467537284
+        "v": -0.312864801367117
+       }
+      }
+     },
+     {
+      "j": 5,
+      "s": 0.9833333333333334,
+      "g": {
+       "j": 0,
+       "s": -0.4330264167547242,
+       "g": {
+        "v": 0.02359000371835747
+       },
+       "d": {
+        "v": -0.01208831100852911
+       }
+      },
+      "d": {
+       "j": 2,
+       "s": 0.29999999999999993,
+       "g": {
+        "v": 0.5050082159879057
+       },
+       "d": {
+        "v": -0.42110751946356123
+       }
+      }
+     },
+     {
+      "j": 0,
+      "s": -0.9084717826429212,
+      "g": {
+       "j": 7,
+       "s": 0.5,
+       "g": {
+        "v": 0.11918077172217248
+       },
+       "d": {
+        "v": -0.20538500153008638
+       }
+      },
+      "d": {
+       "j": 2,
+       "s": 0.016666666666666607,
+       "g": {
+        "v": 0.005388806119079256
+       },
+       "d": {
+        "v": -0.10025019024347143
+       }
+      }
+     },
+     {
+      "j": 5,
+      "s": 0.9833333333333334,
+      "g": {
+       "j": 0,
+       "s": 0.43173133806200525,
+       "g": {
+        "v": 0.007305936545270585
+       },
+       "d": {
+        "v": -0.026334371173316204
+       }
+      },
+      "d": {
+       "j": 2,
+       "s": -0.45,
+       "g": {
+        "v": 0.5919732526053524
+       },
+       "d": {
+        "v": -0.286782681673157
+       }
+      }
+     },
+     {
+      "j": 12,
+      "s": 4.878050328154253e-05,
+      "g": {
+       "j": 5,
+       "s": 0.4166666666666667,
+       "g": {
+        "v": 0.003066452404091505
+       },
+       "d": {
+        "v": -0.055606519921900965
+       }
+      },
+      "d": {
+       "j": 0,
+       "s": -0.35977854716310187,
+       "g": {
+        "v": 0.5470322992995009
+       },
+       "d": {
+        "v": -0.007877900548188281
+       }
+      }
+     },
+     {
+      "j": 5,
+      "s": 0.9833333333333334,
+      "g": {
+       "j": 0,
+       "s": -0.4330264167547242,
+       "g": {
+        "v": 0.02114109498587166
+       },
+       "d": {
+        "v": -0.010933772838487427
+       }
+      },
+      "d": {
+       "j": 2,
+       "s": 0.29999999999999993,
+       "g": {
+        "v": 0.4759117351947033
+       },
+       "d": {
+        "v": -0.39294956414553156
+       }
+      }
+     },
+     {
+      "j": 5,
+      "s": 0.9833333333333334,
+      "g": {
+       "j": 0,
+       "s": 0.43173133806200525,
+       "g": {
+        "v": 0.006791974946131943
+       },
+       "d": {
+        "v": -0.024353424075182612
+       }
+      },
+      "d": {
+       "j": 2,
+       "s": -0.45,
+       "g": {
+        "v": 0.5607102239784796
+       },
+       "d": {
+        "v": -0.2674899017337854
        }
       }
      }
     ]
    },
    "poids": {
-    "elo": 0.6601,
-    "simulation": 0.3777
+    "elo": 0.6888,
+    "simulation": 0.3187
    }
   },
-  "adopte": false,
+  "desaccord_wta": {
+   "adopte": false,
+   "n_juge": 2597,
+   "n_desaccords_juges": 83,
+   "ll": {
+    "avec": 0.6012843459491138,
+    "sans": 0.6007680477307487
+   },
+   "poids_appris_avant": {
+    "elo": 1.2533,
+    "simulation": -0.2095
+   },
+   "raison": "83 désaccords WTA jugés (6 dernières semaines) : log loss sur eux 0.7032 contre 0.687 ; vainqueurs 54.2 % contre 54.2 % ; part de l'Elo 85.7 %"
+  },
+  "modele_arbres_activite": {
+   "adopte": true,
+   "n_juge": 2597,
+   "variables": [
+    "z_elo",
+    "z_sim",
+    "ecart_nouveau",
+    "ecart_qualifie",
+    "ecart_transition",
+    "nouveau_max",
+    "challenger",
+    "wta",
+    "terre",
+    "gazon",
+    "cinq_sets",
+    "desaccord",
+    "ecart_rang_peu_connu",
+    "activite_0",
+    "activite_1"
+   ],
+   "ll": {
+    "avec": 0.5997793000167215,
+    "sans": 0.6007680477307487
+   },
+   "par_circuit": {
+    "ATP": {
+     "n": 507,
+     "gain": 0.00471
+    },
+    "WTA": {
+     "n": 586,
+     "gain": -0.00075
+    },
+    "CH": {
+     "n": 1504,
+     "gain": 0.00042
+    }
+   },
+   "raison": "6 dernières semaines (2597 matchs) : arbres avec l'activité récente 0.5998 contre sans 0.6008 ; ATP +0.0047, WTA -0.0008, CH +0.0004",
+   "modele": {
+    "pas": 0.05,
+    "arbres": [
+     {
+      "j": 14,
+      "s": 0.040000000000000036,
+      "g": {
+       "j": 14,
+       "s": -1.3606500000000001,
+       "g": {
+        "v": -0.5976131526520017
+       },
+       "d": {
+        "v": -0.10423721503149831
+       }
+      },
+      "d": {
+       "j": 14,
+       "s": 1.2669000000000001,
+       "g": {
+        "v": 0.1274551799141338
+       },
+       "d": {
+        "v": 0.5978224541318993
+       }
+      }
+     },
+     {
+      "j": 14,
+      "s": 0.040000000000000036,
+      "g": {
+       "j": 14,
+       "s": -1.3606500000000001,
+       "g": {
+        "v": -0.5689687429759808
+       },
+       "d": {
+        "v": -0.09903564838278284
+       }
+      },
+      "d": {
+       "j": 14,
+       "s": 1.2669000000000001,
+       "g": {
+        "v": 0.12110075339437076
+       },
+       "d": {
+        "v": 0.5690578233996247
+       }
+      }
+     },
+     {
+      "j": 14,
+      "s": 0.040000000000000036,
+      "g": {
+       "j": 14,
+       "s": -1.3606500000000001,
+       "g": {
+        "v": -0.5417880666417645
+       },
+       "d": {
+        "v": -0.09409415887437005
+       }
+      },
+      "d": {
+       "j": 14,
+       "s": 1.2669000000000001,
+       "g": {
+        "v": 0.1150640334598933
+       },
+       "d": {
+        "v": 0.5417739355033255
+       }
+      }
+     },
+     {
+      "j": 14,
+      "s": 0.40545,
+      "g": {
+       "j": 2,
+       "s": 0.016666666666666607,
+       "g": {
+        "v": -0.04215594154442669
+       },
+       "d": {
+        "v": -0.40632071575675227
+       }
+      },
+      "d": {
+       "j": 5,
+       "s": 0.95,
+       "g": {
+        "v": 0.18842862853598763
+       },
+       "d": {
+        "v": 0.8999347322638453
+       }
+      }
+     },
+     {
+      "j": 14,
+      "s": -0.2876500000000001,
+      "g": {
+       "j": 14,
+       "s": -1.2901500000000001,
+       "g": {
+        "v": -0.5123845990197966
+       },
+       "d": {
+        "v": -0.13502197182235692
+       }
+      },
+      "d": {
+       "j": 14,
+       "s": 1.1913,
+       "g": {
+        "v": 0.05780545407594694
+       },
+       "d": {
+        "v": 0.4818926686739793
+       }
+      }
+     },
+     {
+      "j": 14,
+      "s": 0.040000000000000036,
+      "g": {
+       "j": 14,
+       "s": -1.3606500000000001,
+       "g": {
+        "v": -0.4849511920119548
+       },
+       "d": {
+        "v": -0.08245473541064731
+       }
+      },
+      "d": {
+       "j": 14,
+       "s": 1.2669000000000001,
+       "g": {
+        "v": 0.10156542689687179
+       },
+       "d": {
+        "v": 0.47899370820603693
+       }
+      }
+     },
+     {
+      "j": 14,
+      "s": -0.2876500000000001,
+      "g": {
+       "j": 2,
+       "s": 0.6333333333333333,
+       "g": {
+        "v": -0.13976993847491392
+       },
+       "d": {
+        "v": -0.6571728105895498
+       }
+      },
+      "d": {
+       "j": 14,
+       "s": 1.1913,
+       "g": {
+        "v": 0.05315293217319671
+       },
+       "d": {
+        "v": 0.43890971847067406
+       }
+      }
+     },
+     {
+      "j": 14,
+      "s": 0.40545,
+      "g": {
+       "j": 2,
+       "s": 0.016666666666666607,
+       "g": {
+        "v": -0.032581117838540036
+       },
+       "d": {
+        "v": -0.37000366382599664
+       }
+      },
+      "d": {
+       "j": 5,
+       "s": 0.95,
+       "g": {
+        "v": 0.1573113616176196
+       },
+       "d": {
+        "v": 0.8271807053435404
+       }
+      }
+     },
+     {
+      "j": 14,
+      "s": -0.2876500000000001,
+      "g": {
+       "j": 2,
+       "s": 0.6333333333333333,
+       "g": {
+        "v": -0.12984374544641272
+       },
+       "d": {
+        "v": -0.6170456172187168
+       }
+      },
+      "d": {
+       "j": 14,
+       "s": 1.1913,
+       "g": {
+        "v": 0.04955160975398589
+       },
+       "d": {
+        "v": 0.4062490510921568
+       }
+      }
+     },
+     {
+      "j": 14,
+      "s": 0.40545,
+      "g": {
+       "j": 2,
+       "s": 0.016666666666666607,
+       "g": {
+        "v": -0.029330654052842665
+       },
+       "d": {
+        "v": -0.34546093331812483
+       }
+      },
+      "d": {
+       "j": 5,
+       "s": 0.95,
+       "g": {
+        "v": 0.1434874365754542
+       },
+       "d": {
+        "v": 0.783388541810159
+       }
+      }
+     },
+     {
+      "j": 14,
+      "s": -0.2876500000000001,
+      "g": {
+       "j": 14,
+       "s": -1.6894,
+       "g": {
+        "v": -0.5822481139411553
+       },
+       "d": {
+        "v": -0.11853831554725267
+       }
+      },
+      "d": {
+       "j": 14,
+       "s": 1.1913,
+       "g": {
+        "v": 0.04621643556105599
+       },
+       "d": {
+        "v": 0.37607420628909477
+       }
+      }
+     },
+     {
+      "j": 14,
+      "s": 0.040000000000000036,
+      "g": {
+       "j": 14,
+       "s": -1.3606500000000001,
+       "g": {
+        "v": -0.4135007557593684
+       },
+       "d": {
+        "v": -0.06217235930042026
+       }
+      },
+      "d": {
+       "j": 2,
+       "s": -0.5833333333333334,
+       "g": {
+        "v": 0.45527819820414556
+       },
+       "d": {
+        "v": 0.0884938835336222
+       }
+      }
+     },
+     {
+      "j": 14,
+      "s": -0.2876500000000001,
+      "g": {
+       "j": 5,
+       "s": 0.9833333333333334,
+       "g": {
+        "v": -0.11910302072191756
+       },
+       "d": {
+        "v": -0.8021921753748217
+       }
+      },
+      "d": {
+       "j": 14,
+       "s": 1.1913,
+       "g": {
+        "v": 0.04155850608389157
+       },
+       "d": {
+        "v": 0.3511583598325654
+       }
+      }
+     },
+     {
+      "j": 14,
+      "s": -1.07,
+      "g": {
+       "j": 5,
+       "s": 0.9166666666666667,
+       "g": {
+        "v": -0.23180195887891022
+       },
+       "d": {
+        "v": -0.837497152378269
+       }
+      },
+      "d": {
+       "j": 14,
+       "s": 0.3712000000000002,
+       "g": {
+        "v": -0.026083071604384684
+       },
+       "d": {
+        "v": 0.147693146270433
+       }
+      }
+     },
+     {
+      "j": 14,
+      "s": -0.4610000000000001,
+      "g": {
+       "j": 5,
+       "s": 0.95,
+       "g": {
+        "v": -0.12370530774619368
+       },
+       "d": {
+        "v": -0.7431213025595123
+       }
+      },
+      "d": {
+       "j": 14,
+       "s": 1.0986500000000001,
+       "g": {
+        "v": 0.025905365155914212
+       },
+       "d": {
+        "v": 0.30529317472933915
+       }
+      }
+     },
+     {
+      "j": 14,
+      "s": -1.07,
+      "g": {
+       "j": 5,
+       "s": 0.9166666666666667,
+       "g": {
+        "v": -0.2143768037083068
+       },
+       "d": {
+        "v": -0.7809788588321642
+       }
+      },
+      "d": {
+       "j": 14,
+       "s": 0.3712000000000002,
+       "g": {
+        "v": -0.02390537256560909
+       },
+       "d": {
+        "v": 0.13571620828470515
+       }
+      }
+     },
+     {
+      "j": 14,
+      "s": 0.040000000000000036,
+      "g": {
+       "j": 2,
+       "s": 0.016666666666666663,
+       "g": {
+        "v": -0.04337181427653551
+       },
+       "d": {
+        "v": -0.2907541773202144
+       }
+      },
+      "d": {
+       "j": 2,
+       "s": -0.5833333333333334,
+       "g": {
+        "v": 0.41601798809729396
+       },
+       "d": {
+        "v": 0.06863876255161791
+       }
+      }
+     },
+     {
+      "j": 14,
+      "s": -1.07,
+      "g": {
+       "j": 5,
+       "s": 0.9166666666666667,
+       "g": {
+        "v": -0.2001738869958789
+       },
+       "d": {
+        "v": -0.7427140085473943
+       }
+      },
+      "d": {
+       "j": 14,
+       "s": 1.1309500000000001,
+       "g": {
+        "v": 0.005978956362924356
+       },
+       "d": {
+        "v": 0.27739824048584044
+       }
+      }
+     },
+     {
+      "j": 14,
+      "s": -0.2876500000000001,
+      "g": {
+       "j": 2,
+       "s": 0.6333333333333333,
+       "g": {
+        "v": -0.08384279364107004
+       },
+       "d": {
+        "v": -0.48845363921108315
+       }
+      },
+      "d": {
+       "j": 2,
+       "s": -0.4833333333333334,
+       "g": {
+        "v": 0.3260823259626508
+       },
+       "d": {
+        "v": 0.03501005186678169
+       }
+      }
+     },
+     {
+      "j": 14,
+      "s": -1.07,
+      "g": {
+       "j": 5,
+       "s": 0.9166666666666667,
+       "g": {
+        "v": -0.18525277290494677
+       },
+       "d": {
+        "v": -0.7020640018820101
+       }
+      },
+      "d": {
+       "j": 12,
+       "s": 4.878050328154253e-05,
+       "g": {
+        "v": 0.006436704711491509
+       },
+       "d": {
+        "v": 0.2814476027465994
+       }
+      }
+     },
+     {
+      "j": 14,
+      "s": 0.40545,
+      "g": {
+       "j": 2,
+       "s": 0.016666666666666607,
+       "g": {
+        "v": -0.014181481954521027
+       },
+       "d": {
+        "v": -0.27816000962572823
+       }
+      },
+      "d": {
+       "j": 5,
+       "s": 0.95,
+       "g": {
+        "v": 0.09050436186389262
+       },
+       "d": {
+        "v": 0.6718943353987499
+       }
+      }
+     },
+     {
+      "j": 14,
+      "s": -0.14864999999999984,
+      "g": {
+       "j": 14,
+       "s": -1.5749499999999999,
+       "g": {
+        "v": -0.4150834780911604
+       },
+       "d": {
+        "v": -0.058378071152175956
+       }
+      },
+      "d": {
+       "j": 14,
+       "s": 1.4166,
+       "g": {
+        "v": 0.04145710169469191
+       },
+       "d": {
+        "v": 0.3477554725743645
+       }
+      }
+     },
+     {
+      "j": 14,
+      "s": 0.40545,
+      "g": {
+       "j": 2,
+       "s": 0.016666666666666607,
+       "g": {
+        "v": -0.012095313642116858
+       },
+       "d": {
+        "v": -0.2625456976419258
+       }
+      },
+      "d": {
+       "j": 5,
+       "s": 0.95,
+       "g": {
+        "v": 0.08224676063354762
+       },
+       "d": {
+        "v": 0.6383640082967189
+       }
+      }
+     },
+     {
+      "j": 14,
+      "s": -1.07,
+      "g": {
+       "j": 5,
+       "s": 0.9166666666666667,
+       "g": {
+        "v": -0.16270226302154334
+       },
+       "d": {
+        "v": -0.6496537618008772
+       }
+      },
+      "d": {
+       "j": 12,
+       "s": 4.878050328154253e-05,
+       "g": {
+        "v": 0.00495735846869688
+       },
+       "d": {
+        "v": 0.26250259544175847
+       }
+      }
+     },
+     {
+      "j": 14,
+      "s": -0.4610000000000001,
+      "g": {
+       "j": 14,
+       "s": -1.7632,
+       "g": {
+        "v": -0.4826674075017027
+       },
+       "d": {
+        "v": -0.07965785778290535
+       }
+      },
+      "d": {
+       "j": 14,
+       "s": 1.9088500000000002,
+       "g": {
+        "v": 0.02758783789335593
+       },
+       "d": {
+        "v": 0.506929586153354
+       }
+      }
+     },
+     {
+      "j": 14,
+      "s": 0.40545,
+      "g": {
+       "j": 2,
+       "s": 0.016666666666666607,
+       "g": {
+        "v": -0.010565938554297015
+       },
+       "d": {
+        "v": -0.24525878901937412
+       }
+      },
+      "d": {
+       "j": 5,
+       "s": 0.95,
+       "g": {
+        "v": 0.0746424637594875
+       },
+       "d": {
+        "v": 0.604483526038965
+       }
+      }
+     },
+     {
+      "j": 14,
+      "s": -0.4610000000000001,
+      "g": {
+       "j": 5,
+       "s": 0.95,
+       "g": {
+        "v": -0.0805216574565407
+       },
+       "d": {
+        "v": -0.5763462280909248
+       }
+      },
+      "d": {
+       "j": 14,
+       "s": 1.9088500000000002,
+       "g": {
+        "v": 0.025647833251241956
+       },
+       "d": {
+        "v": 0.47681229346224885
+       }
+      }
+     },
+     {
+      "j": 14,
+      "s": 0.040000000000000036,
+      "g": {
+       "j": 2,
+       "s": -0.3333333333333333,
+       "g": {
+        "v": 0.16089198074392294
+       },
+       "d": {
+        "v": -0.07203373096577444
+       }
+      },
+      "d": {
+       "j": 13,
+       "s": -0.7621,
+       "g": {
+        "v": 0.34487108874665784
+       },
+       "d": {
+        "v": 0.04268041082709903
+       }
+      }
+     },
+     {
+      "j": 2,
+      "s": 0.016666666666666607,
+      "g": {
+       "j": 5,
+       "s": 0.65,
+       "g": {
+        "v": -0.003287651628975229
+       },
+       "d": {
+        "v": 0.3674370926540826
+       }
+      },
+      "d": {
+       "j": 5,
+       "s": 0.95,
+       "g": {
+        "v": -0.010565800621621204
+       },
+       "d": {
+        "v": -0.9735601738712496
+       }
+      }
+     },
+     {
+      "j": 14,
+      "s": -1.07,
+      "g": {
+       "j": 7,
+       "s": 0.5,
+       "g": {
+        "v": -0.27306335302802515
+       },
+       "d": {
+        "v": 0.09210577823720598
+       }
+      },
+      "d": {
+       "j": 12,
+       "s": 4.878050328154253e-05,
+       "g": {
+        "v": 0.0035059901031712607
+       },
+       "d": {
+        "v": 0.23291871561240896
+       }
+      }
+     },
+     {
+      "j": 14,
+      "s": 0.40545,
+      "g": {
+       "j": 2,
+       "s": 0.016666666666666607,
+       "g": {
+        "v": -0.008988832649230888
+       },
+       "d": {
+        "v": -0.21830649840091704
+       }
+      },
+      "d": {
+       "j": 5,
+       "s": 0.95,
+       "g": {
+        "v": 0.06393904257160855
+       },
+       "d": {
+        "v": 0.5662488172578839
+       }
+      }
+     },
+     {
+      "j": 14,
+      "s": -1.07,
+      "g": {
+       "j": 13,
+       "s": -0.13834999999999997,
+       "g": {
+        "v": -0.09998732207053593
+       },
+       "d": {
+        "v": -0.47315414265815897
+       }
+      },
+      "d": {
+       "j": 12,
+       "s": 4.878050328154253e-05,
+       "g": {
+        "v": 0.003214290572227531
+       },
+       "d": {
+        "v": 0.2202641242885053
+       }
+      }
+     },
+     {
+      "j": 2,
+      "s": 0.016666666666666607,
+      "g": {
+       "j": 5,
+       "s": 0.65,
+       "g": {
+        "v": -0.003235814323213875
+       },
+       "d": {
+        "v": 0.337349979848387
+       }
+      },
+      "d": {
+       "j": 5,
+       "s": 0.95,
+       "g": {
+        "v": -0.003091491730419386
+       },
+       "d": {
+        "v": -0.9321343286325622
+       }
+      }
+     },
+     {
+      "j": 14,
+      "s": -0.14864999999999984,
+      "g": {
+       "j": 14,
+       "s": -1.5749499999999999,
+       "g": {
+        "v": -0.31928751298367775
+       },
+       "d": {
+        "v": -0.0413528192927218
+       }
+      },
+      "d": {
+       "j": 2,
+       "s": 0.016666666666666607,
+       "g": {
+        "v": 0.06738454299028172
+       },
+       "d": {
+        "v": -0.12680381642271196
+       }
+      }
+     },
+     {
+      "j": 14,
+      "s": 0.40545,
+      "g": {
+       "j": 2,
+       "s": 0.016666666666666607,
+       "g": {
+        "v": -0.008949761885067523
+       },
+       "d": {
+        "v": -0.19410617780999012
+       }
+      },
+      "d": {
+       "j": 5,
+       "s": 0.95,
+       "g": {
+        "v": 0.05709569348007783
+       },
+       "d": {
+        "v": 0.5393866515798658
+       }
+      }
+     },
+     {
+      "j": 14,
+      "s": -0.2876500000000001,
+      "g": {
+       "j": 14,
+       "s": -1.6894,
+       "g": {
+        "v": -0.33073835196122975
+       },
+       "d": {
+        "v": -0.04866715537962962
+       }
+      },
+      "d": {
+       "j": 2,
+       "s": 0.016666666666666607,
+       "g": {
+        "v": 0.056168513434524656
+       },
+       "d": {
+        "v": -0.12290195651931603
+       }
+      }
+     },
+     {
+      "j": 14,
+      "s": 0.40545,
+      "g": {
+       "j": 2,
+       "s": 0.016666666666666607,
+       "g": {
+        "v": -0.008538090280189252
+       },
+       "d": {
+        "v": -0.17993715650940278
+       }
+      },
+      "d": {
+       "j": 5,
+       "s": 0.95,
+       "g": {
+        "v": 0.05262138280250804
+       },
+       "d": {
+        "v": 0.517199014231376
+       }
+      }
+     },
+     {
+      "j": 14,
+      "s": -0.4610000000000001,
+      "g": {
+       "j": 13,
+       "s": 0.70095,
+       "g": {
+        "v": -0.05020704183580677
+       },
+       "d": {
+        "v": -0.44231631898650403
+       }
+      },
+      "d": {
+       "j": 14,
+       "s": 1.9088500000000002,
+       "g": {
+        "v": 0.017489814997743998
+       },
+       "d": {
+        "v": 0.4221465447660875
+       }
+      }
+     },
+     {
+      "j": 14,
+      "s": -1.07,
+      "g": {
+       "j": 1,
+       "s": 0.11104832269740747,
+       "g": {
+        "v": -0.011248187025944868
+       },
+       "d": {
+        "v": -0.3220391042010783
+       }
+      },
+      "d": {
+       "j": 12,
+       "s": 4.878050328154253e-05,
+       "g": {
+        "v": 0.0014926238962893496
+       },
+       "d": {
+        "v": 0.1967158026028147
+       }
+      }
+     },
+     {
+      "j": 14,
+      "s": 0.40545,
+      "g": {
+       "j": 2,
+       "s": 0.016666666666666607,
+       "g": {
+        "v": -0.0071649194609480485
+       },
+       "d": {
+        "v": -0.16948948846577228
+       }
+      },
+      "d": {
+       "j": 5,
+       "s": 0.95,
+       "g": {
+        "v": 0.047542500890232625
+       },
+       "d": {
+        "v": 0.4899048935199566
+       }
+      }
+     },
+     {
+      "j": 2,
+      "s": 0.6000000000000001,
+      "g": {
+       "j": 5,
+       "s": 0.7166666666666667,
+       "g": {
+        "v": -0.0035355875137840337
+       },
+       "d": {
+        "v": 0.20011174334729703
+       }
+      },
+      "d": {
+       "j": 5,
+       "s": 0.95,
+       "g": {
+        "v": 0.04697408064261393
+       },
+       "d": {
+        "v": -0.7512775760995903
+       }
+      }
+     },
+     {
+      "j": 14,
+      "s": 1.3105499999999999,
+      "g": {
+       "j": 14,
+       "s": -1.0986500000000001,
+       "g": {
+        "v": -0.1704824065445308
+       },
+       "d": {
+        "v": 0.003365207274101832
+       }
+      },
+      "d": {
+       "j": 13,
+       "s": 0.6931,
+       "g": {
+        "v": 0.5606970889729145
+       },
+       "d": {
+        "v": -0.014547240297075763
+       }
+      }
+     },
+     {
+      "j": 14,
+      "s": 0.040000000000000036,
+      "g": {
+       "j": 11,
+       "s": 0.3818437783719574,
+       "g": {
+        "v": 0.013899226431333164
+       },
+       "d": {
+        "v": -0.09681501959018875
+       }
+      },
+      "d": {
+       "j": 13,
+       "s": -0.7621,
+       "g": {
+        "v": 0.29906099369379147
+       },
+       "d": {
+        "v": 0.023503631725758346
+       }
+      }
+     },
+     {
+      "j": 12,
+      "s": 4.878050328154253e-05,
+      "g": {
+       "j": 2,
+       "s": -0.050000000000000044,
+       "g": {
+        "v": 0.1425669250656975
+       },
+       "d": {
+        "v": -0.022424037046270613
+       }
+      },
+      "d": {
+       "j": 0,
+       "s": 0.5536633620635748,
+       "g": {
+        "v": 0.3914612889215661
+       },
+       "d": {
+        "v": -0.1641454353658383
+       }
+      }
+     },
+     {
+      "j": 2,
+      "s": 0.6000000000000001,
+      "g": {
+       "j": 5,
+       "s": 0.7166666666666667,
+       "g": {
+        "v": -0.0027956880461989546
+       },
+       "d": {
+        "v": 0.18223947883608768
+       }
+      },
+      "d": {
+       "j": 5,
+       "s": 0.95,
+       "g": {
+        "v": 0.045260784120214004
+       },
+       "d": {
+        "v": -0.7230281876012791
+       }
+      }
+     },
+     {
+      "j": 14,
+      "s": 1.3105499999999999,
+      "g": {
+       "j": 14,
+       "s": -1.0986500000000001,
+       "g": {
+        "v": -0.15842205223384734
+       },
+       "d": {
+        "v": 0.0031376062938867737
+       }
+      },
+      "d": {
+       "j": 7,
+       "s": 0.5,
+       "g": {
+        "v": 0.31169225434301995
+       },
+       "d": {
+        "v": -0.3425026493676679
+       }
+      }
+     },
+     {
+      "j": 2,
+      "s": 0.016666666666666607,
+      "g": {
+       "j": 5,
+       "s": 0.65,
+       "g": {
+        "v": -0.004463940098220025
+       },
+       "d": {
+        "v": 0.276796167980408
+       }
+      },
+      "d": {
+       "j": 5,
+       "s": 0.95,
+       "g": {
+        "v": 0.020747173477634967
+       },
+       "d": {
+        "v": -0.8462963374068885
+       }
+      }
+     },
+     {
+      "j": 14,
+      "s": -0.14864999999999984,
+      "g": {
+       "j": 11,
+       "s": 0.38628909907823916,
+       "g": {
+        "v": 0.017815735121884026
+       },
+       "d": {
+        "v": -0.11915127637853674
+       }
+      },
+      "d": {
+       "j": 5,
+       "s": 0.9833333333333334,
+       "g": {
+        "v": 0.023155449574131903
+       },
+       "d": {
+        "v": 0.39645900512497056
+       }
+      }
+     },
+     {
+      "j": 2,
+      "s": 0.016666666666666607,
+      "g": {
+       "j": 5,
+       "s": 0.65,
+       "g": {
+        "v": -0.004000434317340806
+       },
+       "d": {
+        "v": 0.26170069665270523
+       }
+      },
+      "d": {
+       "j": 5,
+       "s": 0.95,
+       "g": {
+        "v": 0.019930450057778163
+       },
+       "d": {
+        "v": -0.8200394936286152
+       }
+      }
+     },
+     {
+      "j": 14,
+      "s": 1.3105499999999999,
+      "g": {
+       "j": 13,
+       "s": 1.3406500000000001,
+       "g": {
+        "v": 0.003206941147951577
+       },
+       "d": {
+        "v": -0.1562046550749576
+       }
+      },
+      "d": {
+       "j": 13,
+       "s": 0.6931,
+       "g": {
+        "v": 0.5119451777490758
+       },
+       "d": {
+        "v": -0.027683797641246993
+       }
+      }
+     },
+     {
+      "j": 14,
+      "s": 0.40545,
+      "g": {
+       "j": 2,
+       "s": 0.016666666666666607,
+       "g": {
+        "v": -0.005659345110300787
+       },
+       "d": {
+        "v": -0.13946493955308092
+       }
+      },
+      "d": {
+       "j": 1,
+       "s": 0.19800448853473768,
+       "g": {
+        "v": 0.13206946805105757
+       },
+       "d": {
+        "v": -0.049925742934626836
+       }
+      }
+     },
+     {
+      "j": 14,
+      "s": -0.4610000000000001,
+      "g": {
+       "j": 1,
+       "s": -0.20796936158653936,
+       "g": {
+        "v": 0.06453132499875615
+       },
+       "d": {
+        "v": -0.14686275412439664
+       }
+      },
+      "d": {
+       "j": 14,
+       "s": 1.9088500000000002,
+       "g": {
+        "v": 0.01230113213485961
+       },
+       "d": {
+        "v": 0.3579561196902614
+       }
+      }
+     },
+     {
+      "j": 2,
+      "s": 0.016666666666666607,
+      "g": {
+       "j": 5,
+       "s": 0.65,
+       "g": {
+        "v": -0.004101647240398821
+       },
+       "d": {
+        "v": 0.24772945472137733
+       }
+      },
+      "d": {
+       "j": 5,
+       "s": 0.95,
+       "g": {
+        "v": 0.021705524806039187
+       },
+       "d": {
+        "v": -0.7882920462676198
+       }
+      }
+     },
+     {
+      "j": 2,
+      "s": 0.016666666666666607,
+      "g": {
+       "j": 5,
+       "s": 0.65,
+       "g": {
+        "v": -0.0038966536582571605
+       },
+       "d": {
+        "v": 0.23633616368439045
+       }
+      },
+      "d": {
+       "j": 5,
+       "s": 0.95,
+       "g": {
+        "v": 0.020619572445017404
+       },
+       "d": {
+        "v": -0.7614763158066572
+       }
+      }
+     },
+     {
+      "j": 14,
+      "s": -0.2876500000000001,
+      "g": {
+       "j": 11,
+       "s": 0.39261402185142297,
+       "g": {
+        "v": 0.016566638779157705
+       },
+       "d": {
+        "v": -0.11934802026655193
+       }
+      },
+      "d": {
+       "j": 2,
+       "s": 0.016666666666666607,
+       "g": {
+        "v": 0.0399369208496851
+       },
+       "d": {
+        "v": -0.10482715297087178
+       }
+      }
+     },
+     {
+      "j": 14,
+      "s": 0.40545,
+      "g": {
+       "j": 2,
+       "s": 0.016666666666666607,
+       "g": {
+        "v": -0.005648516736070191
+       },
+       "d": {
+        "v": -0.11936349206369642
+       }
+      },
+      "d": {
+       "j": 1,
+       "s": 0.19800448853473768,
+       "g": {
+        "v": 0.12300889456478686
+       },
+       "d": {
+        "v": -0.05336030479553129
+       }
+      }
+     },
+     {
+      "j": 12,
+      "s": 4.878050328154253e-05,
+      "g": {
+       "j": 2,
+       "s": -0.050000000000000044,
+       "g": {
+        "v": 0.11108085119593215
+       },
+       "d": {
+        "v": -0.01721847259816781
+       }
+      },
+      "d": {
+       "j": 0,
+       "s": 1.012329052595125,
+       "g": {
+        "v": 0.25030881903198293
+       },
+       "d": {
+        "v": -0.43697501551584517
+       }
+      }
+     },
+     {
+      "j": 14,
+      "s": 1.3105499999999999,
+      "g": {
+       "j": 13,
+       "s": 1.3406500000000001,
+       "g": {
+        "v": 0.0039766956071680395
+       },
+       "d": {
+        "v": -0.14921948660911816
+       }
+      },
+      "d": {
+       "j": 7,
+       "s": 0.5,
+       "g": {
+        "v": 0.26561429494412014
+       },
+       "d": {
+        "v": -0.34382951325773187
+       }
+      }
+     },
+     {
+      "j": 0,
+      "s": -0.9084717826429212,
+      "g": {
+       "j": 7,
+       "s": 0.5,
+       "g": {
+        "v": 0.17354576877788544
+       },
+       "d": {
+        "v": -0.21726828610235413
+       }
+      },
+      "d": {
+       "j": 2,
+       "s": 0.016666666666666607,
+       "g": {
+        "v": 0.008922592316203995
+       },
+       "d": {
+        "v": -0.16958317133888795
+       }
+      }
+     },
+     {
+      "j": 14,
+      "s": -0.4610000000000001,
+      "g": {
+       "j": 1,
+       "s": -0.20796936158653936,
+       "g": {
+        "v": 0.06845414332719148
+       },
+       "d": {
+        "v": -0.1362924186019905
+       }
+      },
+      "d": {
+       "j": 14,
+       "s": 1.9088500000000002,
+       "g": {
+        "v": 0.01037813340087097
+       },
+       "d": {
+        "v": 0.328579774913352
+       }
+      }
+     }
+    ]
+   },
+   "poids": {
+    "elo": 0.6888,
+    "simulation": 0.3187
+   }
+  },
+  "modele_arbres_tour": {
+   "adopte": true,
+   "n_juge": 2597,
+   "variables": [
+    "z_elo",
+    "z_sim",
+    "ecart_nouveau",
+    "ecart_qualifie",
+    "ecart_transition",
+    "nouveau_max",
+    "challenger",
+    "wta",
+    "terre",
+    "gazon",
+    "cinq_sets",
+    "desaccord",
+    "ecart_rang_peu_connu",
+    "tour_0",
+    "tour_1"
+   ],
+   "ll": {
+    "avec": 0.6006628432208779,
+    "sans": 0.6007680477307487
+   },
+   "par_circuit": {
+    "ATP": {
+     "n": 507,
+     "gain": 0.0003
+    },
+    "WTA": {
+     "n": 586,
+     "gain": 0.00021
+    },
+    "CH": {
+     "n": 1504,
+     "gain": -0.0
+    }
+   },
+   "raison": "6 dernières semaines (2597 matchs) : arbres avec le tour du tableau 0.6007 contre sans 0.6008 ; ATP +0.0003, WTA +0.0002, CH -0.0000",
+   "modele": {
+    "pas": 0.05,
+    "arbres": [
+     {
+      "j": 2,
+      "s": 0.016666666666666607,
+      "g": {
+       "j": 5,
+       "s": 0.65,
+       "g": {
+        "v": 0.0032131731485090034
+       },
+       "d": {
+        "v": 0.4828584366975314
+       }
+      },
+      "d": {
+       "j": 5,
+       "s": 0.95,
+       "g": {
+        "v": -0.0774236474865039
+       },
+       "d": {
+        "v": -1.172810005627714
+       }
+      }
+     },
+     {
+      "j": 2,
+      "s": 0.016666666666666607,
+      "g": {
+       "j": 5,
+       "s": 0.65,
+       "g": {
+        "v": 0.0030525993329295815
+       },
+       "d": {
+        "v": 0.4613607936132091
+       }
+      },
+      "d": {
+       "j": 5,
+       "s": 0.95,
+       "g": {
+        "v": -0.07361873328841333
+       },
+       "d": {
+        "v": -1.1286821777926113
+       }
+      }
+     },
+     {
+      "j": 2,
+      "s": 0.016666666666666607,
+      "g": {
+       "j": 5,
+       "s": 0.65,
+       "g": {
+        "v": 0.0029000496925297935
+       },
+       "d": {
+        "v": 0.4408031764194433
+       }
+      },
+      "d": {
+       "j": 5,
+       "s": 0.95,
+       "g": {
+        "v": -0.06999869987204622
+       },
+       "d": {
+        "v": -1.087080666128961
+       }
+      }
+     },
+     {
+      "j": 2,
+      "s": 0.016666666666666607,
+      "g": {
+       "j": 5,
+       "s": 0.65,
+       "g": {
+        "v": 0.0027551232688934903
+       },
+       "d": {
+        "v": 0.42113833603462186
+       }
+      },
+      "d": {
+       "j": 5,
+       "s": 0.95,
+       "g": {
+        "v": -0.06655473555493786
+       },
+       "d": {
+        "v": -1.0477244333810978
+       }
+      }
+     },
+     {
+      "j": 2,
+      "s": 0.016666666666666607,
+      "g": {
+       "j": 5,
+       "s": 0.65,
+       "g": {
+        "v": 0.0026174391369207127
+       },
+       "d": {
+        "v": 0.40232285950254265
+       }
+      },
+      "d": {
+       "j": 5,
+       "s": 0.95,
+       "g": {
+        "v": -0.06327843651397001
+       },
+       "d": {
+        "v": -1.0103739052892273
+       }
+      }
+     },
+     {
+      "j": 2,
+      "s": 0.016666666666666607,
+      "g": {
+       "j": 5,
+       "s": 0.65,
+       "g": {
+        "v": 0.002486635404051909
+       },
+       "d": {
+        "v": 0.3843166765776324
+       }
+      },
+      "d": {
+       "j": 5,
+       "s": 0.95,
+       "g": {
+        "v": -0.0601617884505565
+       },
+       "d": {
+        "v": -0.974823948163849
+       }
+      }
+     },
+     {
+      "j": 2,
+      "s": 0.016666666666666607,
+      "g": {
+       "j": 5,
+       "s": 0.65,
+       "g": {
+        "v": 0.0023623682594764053
+       },
+       "d": {
+        "v": 0.36708263913634964
+       }
+      },
+      "d": {
+       "j": 5,
+       "s": 0.95,
+       "g": {
+        "v": -0.05719714911682526
+       },
+       "d": {
+        "v": -0.9408982382939485
+       }
+      }
+     },
+     {
+      "j": 2,
+      "s": 0.016666666666666607,
+      "g": {
+       "j": 5,
+       "s": 0.65,
+       "g": {
+        "v": 0.0022443110708300117
+       },
+       "d": {
+        "v": 0.35058616230154094
+       }
+      },
+      "d": {
+       "j": 5,
+       "s": 0.95,
+       "g": {
+        "v": -0.05437723164630437
+       },
+       "d": {
+        "v": -0.9084447070675256
+       }
+      }
+     },
+     {
+      "j": 2,
+      "s": 0.016666666666666607,
+      "g": {
+       "j": 5,
+       "s": 0.65,
+       "g": {
+        "v": 0.0021321535260088783
+       },
+       "d": {
+        "v": 0.3347949179886783
+       }
+      },
+      "d": {
+       "j": 5,
+       "s": 0.95,
+       "g": {
+        "v": -0.05169508863920566
+       },
+       "d": {
+        "v": -0.8773318251679694
+       }
+      }
+     },
+     {
+      "j": 2,
+      "s": 0.016666666666666607,
+      "g": {
+       "j": 5,
+       "s": 0.65,
+       "g": {
+        "v": 0.002025600817847578
+       },
+       "d": {
+        "v": 0.3196785730680155
+       }
+      },
+      "d": {
+       "j": 5,
+       "s": 0.95,
+       "g": {
+        "v": -0.049144096957971464
+       },
+       "d": {
+        "v": -0.8474455469168607
+       }
+      }
+     },
+     {
+      "j": 2,
+      "s": 0.016666666666666607,
+      "g": {
+       "j": 5,
+       "s": 0.65,
+       "g": {
+        "v": 0.0019243728695197031
+       },
+       "d": {
+        "v": 0.30520856555512865
+       }
+      },
+      "d": {
+       "j": 5,
+       "s": 0.95,
+       "g": {
+        "v": -0.04671794319348006
+       },
+       "d": {
+        "v": -0.8186867782107289
+       }
+      }
+     },
+     {
+      "j": 2,
+      "s": 0.016666666666666607,
+      "g": {
+       "j": 5,
+       "s": 0.65,
+       "g": {
+        "v": 0.0018282035986278995
+       },
+       "d": {
+        "v": 0.29135791324818777
+       }
+      },
+      "d": {
+       "j": 5,
+       "s": 0.95,
+       "g": {
+        "v": -0.04441060976630037
+       },
+       "d": {
+        "v": -0.790969262950417
+       }
+      }
+     },
+     {
+      "j": 2,
+      "s": 0.016666666666666607,
+      "g": {
+       "j": 5,
+       "s": 0.65,
+       "g": {
+        "v": 0.0017368402180514
+       },
+       "d": {
+        "v": 0.2781010500659569
+       }
+      },
+      "d": {
+       "j": 5,
+       "s": 0.95,
+       "g": {
+        "v": -0.04221636163078385
+       },
+       "d": {
+        "v": -0.7642178064350776
+       }
+      }
+     },
+     {
+      "j": 2,
+      "s": 0.016666666666666607,
+      "g": {
+       "j": 5,
+       "s": 0.65,
+       "g": {
+        "v": 0.0016500425717151435
+       },
+       "d": {
+        "v": 0.26541368603888305
+       }
+      },
+      "d": {
+       "j": 5,
+       "s": 0.8833333333333333,
+       "g": {
+        "v": -0.004700502447923502
+       },
+       "d": {
+        "v": -0.584124018362648
+       }
+      }
+     },
+     {
+      "j": 2,
+      "s": 0.016666666666666607,
+      "g": {
+       "j": 5,
+       "s": 0.65,
+       "g": {
+        "v": 0.001567582503537164
+       },
+       "d": {
+        "v": 0.2532726874925138
+       }
+      },
+      "d": {
+       "j": 5,
+       "s": 0.95,
+       "g": {
+        "v": -0.036936529786946455
+       },
+       "d": {
+        "v": -0.718586756514115
+       }
+      }
+     },
+     {
+      "j": 2,
+      "s": 0.016666666666666607,
+      "g": {
+       "j": 5,
+       "s": 0.65,
+       "g": {
+        "v": 0.001489243257895987
+       },
+       "d": {
+        "v": 0.24165597445841305
+       }
+      },
+      "d": {
+       "j": 5,
+       "s": 0.8833333333333333,
+       "g": {
+        "v": -0.0026284244518689076
+       },
+       "d": {
+        "v": -0.5443678357930722
+       }
+      }
+     },
+     {
+      "j": 2,
+      "s": 0.016666666666666607,
+      "g": {
+       "j": 5,
+       "s": 0.65,
+       "g": {
+        "v": 0.0014148189100465448
+       },
+       "d": {
+        "v": 0.23054243276879455
+       }
+      },
+      "d": {
+       "j": 13,
+       "s": 0.0625,
+       "g": {
+        "v": -0.3718941299724239
+       },
+       "d": {
+        "v": 0.0750979655754085
+       }
+      }
+     },
+     {
+      "j": 2,
+      "s": 0.016666666666666607,
+      "g": {
+       "j": 5,
+       "s": 0.65,
+       "g": {
+        "v": 0.0013441138249865405
+       },
+       "d": {
+        "v": 0.21991183865019165
+       }
+      },
+      "d": {
+       "j": 5,
+       "s": 0.95,
+       "g": {
+        "v": -0.027650612609981595
+       },
+       "d": {
+        "v": -0.6659985027127058
+       }
+      }
+     },
+     {
+      "j": 2,
+      "s": 0.016666666666666607,
+      "g": {
+       "j": 13,
+       "s": 0.0625,
+       "g": {
+        "v": 0.12056172672636646
+       },
+       "d": {
+        "v": -0.011764087484570748
+       }
+      },
+      "d": {
+       "j": 13,
+       "s": 0.0625,
+       "g": {
+        "v": -0.34764559915691284
+       },
+       "d": {
+        "v": 0.07420247413553412
+       }
+      }
+     },
+     {
+      "j": 2,
+      "s": 0.016666666666666607,
+      "g": {
+       "j": 5,
+       "s": 0.65,
+       "g": {
+        "v": 0.00070595750858045
+       },
+       "d": {
+        "v": 0.2065268170321235
+       }
+      },
+      "d": {
+       "j": 5,
+       "s": 0.95,
+       "g": {
+        "v": -0.02214557314843978
+       },
+       "d": {
+        "v": -0.6341898465967204
+       }
+      }
+     },
+     {
+      "j": 2,
+      "s": 0.016666666666666607,
+      "g": {
+       "j": 13,
+       "s": 0.0625,
+       "g": {
+        "v": 0.11258744982821385
+       },
+       "d": {
+        "v": -0.011548120834177614
+       }
+      },
+      "d": {
+       "j": 5,
+       "s": 0.8833333333333333,
+       "g": {
+        "v": 0.007798283789846343
+       },
+       "d": {
+        "v": -0.47456593660139107
+       }
+      }
+     },
+     {
+      "j": 5,
+      "s": 0.9833333333333334,
+      "g": {
+       "j": 0,
+       "s": 0.9098576530748503,
+       "g": {
+        "v": 0.005136569953435472
+       },
+       "d": {
+        "v": -0.08885483577943454
+       }
+      },
+      "d": {
+       "j": 2,
+       "s": 0.29999999999999993,
+       "g": {
+        "v": 0.9814921940691835
+       },
+       "d": {
+        "v": -0.806409624297331
+       }
+      }
+     },
+     {
+      "j": 5,
+      "s": 0.9833333333333334,
+      "g": {
+       "j": 0,
+       "s": -0.4330264167547242,
+       "g": {
+        "v": 0.04210054342528828
+       },
+       "d": {
+        "v": -0.023585013711916528
+       }
+      },
+      "d": {
+       "j": 2,
+       "s": 0.29999999999999993,
+       "g": {
+        "v": 0.9472365717269019
+       },
+       "d": {
+        "v": -0.78377751393336
+       }
+      }
+     },
+     {
+      "j": 12,
+      "s": 4.878050328154253e-05,
+      "g": {
+       "j": 2,
+       "s": 0.016666666666666607,
+       "g": {
+        "v": 0.005339863693028641
+       },
+       "d": {
+        "v": -0.10662080664133003
+       }
+      },
+      "d": {
+       "j": 0,
+       "s": 0.5536633620635748,
+       "g": {
+        "v": 0.3668178661587012
+       },
+       "d": {
+        "v": -0.18224928275876628
+       }
+      }
+     },
+     {
+      "j": 5,
+      "s": 0.9833333333333334,
+      "g": {
+       "j": 0,
+       "s": -0.9125433117764957,
+       "g": {
+        "v": 0.07395438455060595
+       },
+       "d": {
+        "v": -0.015357932898616587
+       }
+      },
+      "d": {
+       "j": 2,
+       "s": 0.29999999999999993,
+       "g": {
+        "v": 0.912851388638222
+       },
+       "d": {
+        "v": -0.7587253562274069
+       }
+      }
+     },
+     {
+      "j": 5,
+      "s": 0.9833333333333334,
+      "g": {
+       "j": 0,
+       "s": 0.9098576530748503,
+       "g": {
+        "v": 0.005069852380819332
+       },
+       "d": {
+        "v": -0.08111142116076661
+       }
+      },
+      "d": {
+       "j": 2,
+       "s": 0.29999999999999993,
+       "g": {
+        "v": 0.8815367092235505
+       },
+       "d": {
+        "v": -0.7372981904274295
+       }
+      }
+     },
+     {
+      "j": 12,
+      "s": 4.878050328154253e-05,
+      "g": {
+       "j": 2,
+       "s": 0.016666666666666607,
+       "g": {
+        "v": 0.004722619573086808
+       },
+       "d": {
+        "v": -0.09728756034562572
+       }
+      },
+      "d": {
+       "j": 0,
+       "s": 0.5536633620635748,
+       "g": {
+        "v": 0.3447926617060991
+       },
+       "d": {
+        "v": -0.1743740739118877
+       }
+      }
+     },
+     {
+      "j": 5,
+      "s": 0.9833333333333334,
+      "g": {
+       "j": 0,
+       "s": -0.4330264167547242,
+       "g": {
+        "v": 0.0394822496326775
+       },
+       "d": {
+        "v": -0.021554173661176172
+       }
+      },
+      "d": {
+       "j": 2,
+       "s": 0.29999999999999993,
+       "g": {
+        "v": 0.8500139584701993
+       },
+       "d": {
+        "v": -0.7136140158550046
+       }
+      }
+     },
+     {
+      "j": 5,
+      "s": 0.9833333333333334,
+      "g": {
+       "j": 0,
+       "s": -0.9125433117764957,
+       "g": {
+        "v": 0.06855066831234312
+       },
+       "d": {
+        "v": -0.013863975311064893
+       }
+      },
+      "d": {
+       "j": 2,
+       "s": 0.29999999999999993,
+       "g": {
+        "v": 0.8211484957841633
+       },
+       "d": {
+        "v": -0.6932443878927325
+       }
+      }
+     },
+     {
+      "j": 12,
+      "s": 4.878050328154253e-05,
+      "g": {
+       "j": 2,
+       "s": 0.016666666666666607,
+       "g": {
+        "v": 0.004204419380232709
+       },
+       "d": {
+        "v": -0.08904448759942109
+       }
+      },
+      "d": {
+       "j": 0,
+       "s": 0.5536633620635748,
+       "g": {
+        "v": 0.3249824280135452
+       },
+       "d": {
+        "v": -0.16764964003641306
+       }
+      }
+     },
+     {
+      "j": 5,
+      "s": 0.9833333333333334,
+      "g": {
+       "j": 0,
+       "s": -0.4330264167547242,
+       "g": {
+        "v": 0.036817835679265394
+       },
+       "d": {
+        "v": -0.019930362157410404
+       }
+      },
+      "d": {
+       "j": 2,
+       "s": 0.29999999999999993,
+       "g": {
+        "v": 0.7920287309010988
+       },
+       "d": {
+        "v": -0.6707640749348135
+       }
+      }
+     },
+     {
+      "j": 12,
+      "s": 4.878050328154253e-05,
+      "g": {
+       "j": 2,
+       "s": 0.016666666666666607,
+       "g": {
+        "v": 0.0038653422737372507
+       },
+       "d": {
+        "v": -0.08313728630105839
+       }
+      },
+      "d": {
+       "j": 0,
+       "s": 0.5536633620635748,
+       "g": {
+        "v": 0.3079107844105134
+       },
+       "d": {
+        "v": -0.15969840339295313
+       }
+      }
+     },
+     {
+      "j": 5,
+      "s": 0.9833333333333334,
+      "g": {
+       "j": 0,
+       "s": -0.9125433117764957,
+       "g": {
+        "v": 0.06439043802988245
+       },
+       "d": {
+        "v": -0.012872320963806234
+       }
+      },
+      "d": {
+       "j": 2,
+       "s": -0.45,
+       "g": {
+        "v": 0.8944498016325072
+       },
+       "d": {
+        "v": -0.49478555020332765
+       }
+      }
+     },
+     {
+      "j": 5,
+      "s": 0.9833333333333334,
+      "g": {
+       "j": 0,
+       "s": 0.9098576530748503,
+       "g": {
+        "v": 0.004931175993023542
+       },
+       "d": {
+        "v": -0.07034106368970179
+       }
+      },
+      "d": {
+       "j": 2,
+       "s": 0.29999999999999993,
+       "g": {
+        "v": 0.744736411681838
+       },
+       "d": {
+        "v": -0.6344909042521331
+       }
+      }
+     },
+     {
+      "j": 12,
+      "s": 4.878050328154253e-05,
+      "g": {
+       "j": 2,
+       "s": 0.016666666666666607,
+       "g": {
+        "v": 0.003443224190038751
+       },
+       "d": {
+        "v": -0.07606178522534594
+       }
+      },
+      "d": {
+       "j": 0,
+       "s": 1.012329052595125,
+       "g": {
+        "v": 0.21009147247164214
+       },
+       "d": {
+        "v": -0.34439808274619527
+       }
+      }
+     },
+     {
+      "j": 5,
+      "s": 0.9833333333333334,
+      "g": {
+       "j": 0,
+       "s": -0.4330264167547242,
+       "g": {
+        "v": 0.03445501134066294
+       },
+       "d": {
+        "v": -0.01822319120085568
+       }
+      },
+      "d": {
+       "j": 2,
+       "s": -0.45,
+       "g": {
+        "v": 0.8463691010225352
+       },
+       "d": {
+        "v": -0.46508747357549424
+       }
+      }
+     },
+     {
+      "j": 5,
+      "s": 0.9833333333333334,
+      "g": {
+       "j": 0,
+       "s": -0.9125433117764957,
+       "g": {
+        "v": 0.05965121557323791
+       },
+       "d": {
+        "v": -0.011638197238974756
+       }
+      },
+      "d": {
+       "j": 2,
+       "s": 0.29999999999999993,
+       "g": {
+        "v": 0.7002812234243936
+       },
+       "d": {
+        "v": -0.5998160543361154
+       }
+      }
+     },
+     {
+      "j": 12,
+      "s": 4.878050328154253e-05,
+      "g": {
+       "j": 2,
+       "s": 0.016666666666666607,
+       "g": {
+        "v": 0.0030890659084879565
+       },
+       "d": {
+        "v": -0.0697819067376822
+       }
+      },
+      "d": {
+       "j": 0,
+       "s": 0.5536633620635748,
+       "g": {
+        "v": 0.27725110628969907
+       },
+       "d": {
+        "v": -0.1522838087027813
+       }
+      }
+     },
+     {
+      "j": 5,
+      "s": 0.9833333333333334,
+      "g": {
+       "j": 0,
+       "s": 0.43173133806200525,
+       "g": {
+        "v": 0.010447527741856788
+       },
+       "d": {
+        "v": -0.03877132400027746
+       }
+      },
+      "d": {
+       "j": 2,
+       "s": -0.45,
+       "g": {
+        "v": 0.8013462190379141
+       },
+       "d": {
+        "v": -0.437097292670942
+       }
+      }
+     },
+     {
+      "j": 5,
+      "s": 0.9833333333333334,
+      "g": {
+       "j": 0,
+       "s": -0.9125433117764957,
+       "g": {
+        "v": 0.056552502791263295
+       },
+       "d": {
+        "v": -0.010873921321169237
+       }
+      },
+      "d": {
+       "j": 2,
+       "s": 0.29999999999999993,
+       "g": {
+        "v": 0.6585552608049556
+       },
+       "d": {
+        "v": -0.5666266187995539
+       }
+      }
+     },
+     {
+      "j": 12,
+      "s": 4.878050328154253e-05,
+      "g": {
+       "j": 5,
+       "s": 0.4166666666666667,
+       "g": {
+        "v": 0.002716247474985404
+       },
+       "d": {
+        "v": -0.06447827373372929
+       }
+      },
+      "d": {
+       "j": 0,
+       "s": -0.35977854716310187,
+       "g": {
+        "v": 0.6333138245669842
+       },
+       "d": {
+        "v": 0.007139039137348152
+       }
+      }
+     },
+     {
+      "j": 5,
+      "s": 0.9833333333333334,
+      "g": {
+       "j": 0,
+       "s": -0.4330264167547242,
+       "g": {
+        "v": 0.030413490362043098
+       },
+       "d": {
+        "v": -0.015810017735494612
+       }
+      },
+      "d": {
+       "j": 2,
+       "s": -0.45,
+       "g": {
+        "v": 0.7609313043498006
+       },
+       "d": {
+        "v": -0.4098953895443367
+       }
+      }
+     },
+     {
+      "j": 5,
+      "s": 0.9833333333333334,
+      "g": {
+       "j": 0,
+       "s": 0.9098576530748503,
+       "g": {
+        "v": 0.004616748675013349
+       },
+       "d": {
+        "v": -0.059339157663414716
+       }
+      },
+      "d": {
+       "j": 2,
+       "s": 0.29999999999999993,
+       "g": {
+        "v": 0.621433180180927
+       },
+       "d": {
+        "v": -0.5348512865995638
+       }
+      }
+     },
+     {
+      "j": 0,
+      "s": -0.9084717826429212,
+      "g": {
+       "j": 13,
+       "s": 0.0625,
+       "g": {
+        "v": -0.2281126143211364
+       },
+       "d": {
+        "v": 0.14805046060871366
+       }
+      },
+      "d": {
+       "j": 2,
+       "s": 0.016666666666666607,
+       "g": {
+        "v": 0.006939520275055254
+       },
+       "d": {
+        "v": -0.12426420285196378
+       }
+      }
+     },
+     {
+      "j": 12,
+      "s": 4.878050328154253e-05,
+      "g": {
+       "j": 5,
+       "s": 0.4166666666666667,
+       "g": {
+        "v": 0.0023559799060019885
+       },
+       "d": {
+        "v": -0.05918647876001194
+       }
+      },
+      "d": {
+       "j": 0,
+       "s": -0.35977854716310187,
+       "g": {
+        "v": 0.5990579810576281
+       },
+       "d": {
+        "v": 0.005309012625658575
+       }
+      }
+     },
+     {
+      "j": 5,
+      "s": 0.9833333333333334,
+      "g": {
+       "j": 0,
+       "s": 0.43173133806200525,
+       "g": {
+        "v": 0.00938516693956966
+       },
+       "d": {
+        "v": -0.034188248980762316
+       }
+      },
+      "d": {
+       "j": 2,
+       "s": -0.45,
+       "g": {
+        "v": 0.7222365798613418
+       },
+       "d": {
+        "v": -0.3804503173969367
+       }
+      }
+     },
+     {
+      "j": 5,
+      "s": 0.9833333333333334,
+      "g": {
+       "j": 0,
+       "s": 0.9098576530748503,
+       "g": {
+        "v": 0.004234303118937856
+       },
+       "d": {
+        "v": -0.05458709897384013
+       }
+      },
+      "d": {
+       "j": 2,
+       "s": -0.45,
+       "g": {
+        "v": 0.7015038206095152
+       },
+       "d": {
+        "v": -0.36553121693052715
+       }
+      }
+     },
+     {
+      "j": 0,
+      "s": -0.9084717826429212,
+      "g": {
+       "j": 13,
+       "s": 0.0625,
+       "g": {
+        "v": -0.2181750191478642
+       },
+       "d": {
+        "v": 0.13952783890006043
+       }
+      },
+      "d": {
+       "j": 2,
+       "s": 0.016666666666666607,
+       "g": {
+        "v": 0.00622559445202203
+       },
+       "d": {
+        "v": -0.11468062010093714
+       }
+      }
+     },
+     {
+      "j": 5,
+      "s": 0.9833333333333334,
+      "g": {
+       "j": 0,
+       "s": 0.43173133806200525,
+       "g": {
+        "v": 0.008635120299803177
+       },
+       "d": {
+        "v": -0.03141678553954873
+       }
+      },
+      "d": {
+       "j": 2,
+       "s": 0.29999999999999993,
+       "g": {
+        "v": 0.571953245927697
+       },
+       "d": {
+        "v": -0.4856521354452101
+       }
+      }
+     },
+     {
+      "j": 12,
+      "s": 4.878050328154253e-05,
+      "g": {
+       "j": 5,
+       "s": 0.4166666666666667,
+       "g": {
+        "v": 0.002137798349783278
+       },
+       "d": {
+        "v": -0.05477847634748889
+       }
+      },
+      "d": {
+       "j": 0,
+       "s": 1.012329052595125,
+       "g": {
+        "v": 0.17245171746189178
+       },
+       "d": {
+        "v": -0.3099590549531399
+       }
+      }
+     },
+     {
+      "j": 5,
+      "s": 0.9833333333333334,
+      "g": {
+       "j": 0,
+       "s": -0.4330264167547242,
+       "g": {
+        "v": 0.0258519542295141
+       },
+       "d": {
+        "v": -0.013323537551460048
+       }
+      },
+      "d": {
+       "j": 2,
+       "s": -0.45,
+       "g": {
+        "v": 0.6644760339507537
+       },
+       "d": {
+        "v": -0.33881557251565053
+       }
+      }
+     },
+     {
+      "j": 5,
+      "s": 0.9833333333333334,
+      "g": {
+       "j": 0,
+       "s": -0.9125433117764957,
+       "g": {
+        "v": 0.043898483735075614
+       },
+       "d": {
+        "v": -0.008372099378122147
+       }
+      },
+      "d": {
+       "j": 2,
+       "s": 0.29999999999999993,
+       "g": {
+        "v": 0.5383063533665495
+       },
+       "d": {
+        "v": -0.4574719822404528
+       }
+      }
+     },
+     {
+      "j": 12,
+      "s": 4.878050328154253e-05,
+      "g": {
+       "j": 5,
+       "s": 0.4166666666666667,
+       "g": {
+        "v": 0.002276155927529076
+       },
+       "d": {
+        "v": -0.053128688523856445
+       }
+      },
+      "d": {
+       "j": 12,
+       "s": 0.6641775177349486,
+       "g": {
+        "v": -0.0343693807508874
+       },
+       "d": {
+        "v": 0.4055193397694617
+       }
+      }
+     },
+     {
+      "j": 0,
+      "s": -0.9084717826429212,
+      "g": {
+       "j": 7,
+       "s": 0.5,
+       "g": {
+        "v": 0.13012824576251963
+       },
+       "d": {
+        "v": -0.23082304055642025
+       }
+      },
+      "d": {
+       "j": 2,
+       "s": 0.016666666666666607,
+       "g": {
+        "v": 0.0055430989545622875
+       },
+       "d": {
+        "v": -0.10287363219067129
+       }
+      }
+     },
+     {
+      "j": 5,
+      "s": 0.9833333333333334,
+      "g": {
+       "j": 0,
+       "s": 0.9098576530748503,
+       "g": {
+        "v": 0.003898928973601644
+       },
+       "d": {
+        "v": -0.04847920689933534
+       }
+      },
+      "d": {
+       "j": 2,
+       "s": -0.45,
+       "g": {
+        "v": 0.6273554060357915
+       },
+       "d": {
+        "v": -0.31439653492315084
+       }
+      }
+     },
+     {
+      "j": 12,
+      "s": 4.878050328154253e-05,
+      "g": {
+       "j": 4,
+       "s": -0.5,
+       "g": {
+        "v": -0.10997619701876148
+       },
+       "d": {
+        "v": -0.001345796391507808
+       }
+      },
+      "d": {
+       "j": 0,
+       "s": -0.35977854716310187,
+       "g": {
+        "v": 0.5552332590729703
+       },
+       "d": {
+        "v": -0.005883769371176783
+       }
+      }
+     },
+     {
+      "j": 5,
+      "s": 0.9833333333333334,
+      "g": {
+       "j": 0,
+       "s": 0.43173133806200525,
+       "g": {
+        "v": 0.007836120289869164
+       },
+       "d": {
+        "v": -0.027774010298019517
+       }
+      },
+      "d": {
+       "j": 2,
+       "s": 0.29999999999999993,
+       "g": {
+        "v": 0.5049752211243786
+       },
+       "d": {
+        "v": -0.4276270084390099
+       }
+      }
+     },
+     {
+      "j": 0,
+      "s": -0.9084717826429212,
+      "g": {
+       "j": 13,
+       "s": 0.0625,
+       "g": {
+        "v": -0.21236183903439482
+       },
+       "d": {
+        "v": 0.12551149351633778
+       }
+      },
+      "d": {
+       "j": 2,
+       "s": 0.016666666666666607,
+       "g": {
+        "v": 0.005144184492396874
+       },
+       "d": {
+        "v": -0.09624534696199202
+       }
+      }
+     },
+     {
+      "j": 5,
+      "s": 0.9833333333333334,
+      "g": {
+       "j": 0,
+       "s": 0.9098576530748503,
+       "g": {
+        "v": 0.0035822032559027412
+       },
+       "d": {
+        "v": -0.04443635221567304
+       }
+      },
+      "d": {
+       "j": 2,
+       "s": -0.45,
+       "g": {
+        "v": 0.5933627979612525
+       },
+       "d": {
+        "v": -0.2923862326584723
+       }
+      }
+     },
+     {
+      "j": 12,
+      "s": 4.878050328154253e-05,
+      "g": {
+       "j": 4,
+       "s": -0.5,
+       "g": {
+        "v": -0.10345728816863083
+       },
+       "d": {
+        "v": -0.0012647108049965144
+       }
+      },
+      "d": {
+       "j": 0,
+       "s": 0.5536633620635748,
+       "g": {
+        "v": 0.22196418628879397
+       },
+       "d": {
+        "v": -0.14849008466952873
+       }
+      }
+     }
+    ]
+   },
+   "poids": {
+    "elo": 0.6888,
+    "simulation": 0.3187
+   }
+  },
+  "modele_arbres_points": {
+   "adopte": false,
+   "n_juge": 2597,
+   "variables": [
+    "z_elo",
+    "z_sim",
+    "ecart_nouveau",
+    "ecart_qualifie",
+    "ecart_transition",
+    "nouveau_max",
+    "challenger",
+    "wta",
+    "terre",
+    "gazon",
+    "cinq_sets",
+    "desaccord",
+    "ecart_rang_peu_connu",
+    "points_0"
+   ],
+   "ll": {
+    "avec": 0.6028271869478953,
+    "sans": 0.6007680477307487
+   },
+   "par_circuit": {
+    "ATP": {
+     "n": 507,
+     "gain": -0.0012
+    },
+    "WTA": {
+     "n": 586,
+     "gain": -0.00428
+    },
+    "CH": {
+     "n": 1504,
+     "gain": -0.00148
+    }
+   },
+   "raison": "6 dernières semaines (2597 matchs) : arbres avec les points ATP/WTA de tous les joueurs 0.6028 contre sans 0.6008 ; ATP -0.0012, WTA -0.0043, CH -0.0015",
+   "decision": "2026-10-30",
+   "modele": {
+    "pas": 0.05,
+    "arbres": [
+     {
+      "j": 2,
+      "s": 0.016666666666666607,
+      "g": {
+       "j": 5,
+       "s": 0.65,
+       "g": {
+        "v": 0.0032131731485090034
+       },
+       "d": {
+        "v": 0.4828584366975314
+       }
+      },
+      "d": {
+       "j": 5,
+       "s": 0.95,
+       "g": {
+        "v": -0.0774236474865039
+       },
+       "d": {
+        "v": -1.172810005627714
+       }
+      }
+     },
+     {
+      "j": 2,
+      "s": 0.016666666666666607,
+      "g": {
+       "j": 5,
+       "s": 0.65,
+       "g": {
+        "v": 0.0030525993329295815
+       },
+       "d": {
+        "v": 0.4613607936132091
+       }
+      },
+      "d": {
+       "j": 5,
+       "s": 0.95,
+       "g": {
+        "v": -0.07361873328841333
+       },
+       "d": {
+        "v": -1.1286821777926113
+       }
+      }
+     },
+     {
+      "j": 2,
+      "s": 0.016666666666666607,
+      "g": {
+       "j": 5,
+       "s": 0.65,
+       "g": {
+        "v": 0.0029000496925297935
+       },
+       "d": {
+        "v": 0.4408031764194433
+       }
+      },
+      "d": {
+       "j": 5,
+       "s": 0.95,
+       "g": {
+        "v": -0.06999869987204622
+       },
+       "d": {
+        "v": -1.087080666128961
+       }
+      }
+     },
+     {
+      "j": 2,
+      "s": 0.016666666666666607,
+      "g": {
+       "j": 5,
+       "s": 0.65,
+       "g": {
+        "v": 0.0027551232688934903
+       },
+       "d": {
+        "v": 0.42113833603462186
+       }
+      },
+      "d": {
+       "j": 5,
+       "s": 0.95,
+       "g": {
+        "v": -0.06655473555493786
+       },
+       "d": {
+        "v": -1.0477244333810978
+       }
+      }
+     },
+     {
+      "j": 2,
+      "s": 0.016666666666666607,
+      "g": {
+       "j": 5,
+       "s": 0.65,
+       "g": {
+        "v": 0.0026174391369207127
+       },
+       "d": {
+        "v": 0.40232285950254265
+       }
+      },
+      "d": {
+       "j": 5,
+       "s": 0.95,
+       "g": {
+        "v": -0.06327843651397001
+       },
+       "d": {
+        "v": -1.0103739052892273
+       }
+      }
+     },
+     {
+      "j": 2,
+      "s": 0.016666666666666607,
+      "g": {
+       "j": 5,
+       "s": 0.65,
+       "g": {
+        "v": 0.002486635404051909
+       },
+       "d": {
+        "v": 0.3843166765776324
+       }
+      },
+      "d": {
+       "j": 5,
+       "s": 0.95,
+       "g": {
+        "v": -0.0601617884505565
+       },
+       "d": {
+        "v": -0.974823948163849
+       }
+      }
+     },
+     {
+      "j": 2,
+      "s": 0.016666666666666607,
+      "g": {
+       "j": 5,
+       "s": 0.65,
+       "g": {
+        "v": 0.0023623682594764053
+       },
+       "d": {
+        "v": 0.36708263913634964
+       }
+      },
+      "d": {
+       "j": 5,
+       "s": 0.95,
+       "g": {
+        "v": -0.05719714911682526
+       },
+       "d": {
+        "v": -0.9408982382939485
+       }
+      }
+     },
+     {
+      "j": 2,
+      "s": 0.016666666666666607,
+      "g": {
+       "j": 5,
+       "s": 0.65,
+       "g": {
+        "v": 0.0022443110708300117
+       },
+       "d": {
+        "v": 0.35058616230154094
+       }
+      },
+      "d": {
+       "j": 5,
+       "s": 0.95,
+       "g": {
+        "v": -0.05437723164630437
+       },
+       "d": {
+        "v": -0.9084447070675256
+       }
+      }
+     },
+     {
+      "j": 2,
+      "s": 0.016666666666666607,
+      "g": {
+       "j": 5,
+       "s": 0.65,
+       "g": {
+        "v": 0.0021321535260088783
+       },
+       "d": {
+        "v": 0.3347949179886783
+       }
+      },
+      "d": {
+       "j": 5,
+       "s": 0.95,
+       "g": {
+        "v": -0.05169508863920566
+       },
+       "d": {
+        "v": -0.8773318251679694
+       }
+      }
+     },
+     {
+      "j": 2,
+      "s": 0.016666666666666607,
+      "g": {
+       "j": 5,
+       "s": 0.65,
+       "g": {
+        "v": 0.002025600817847578
+       },
+       "d": {
+        "v": 0.3196785730680155
+       }
+      },
+      "d": {
+       "j": 5,
+       "s": 0.95,
+       "g": {
+        "v": -0.049144096957971464
+       },
+       "d": {
+        "v": -0.8474455469168607
+       }
+      }
+     },
+     {
+      "j": 2,
+      "s": 0.016666666666666607,
+      "g": {
+       "j": 5,
+       "s": 0.65,
+       "g": {
+        "v": 0.0019243728695197031
+       },
+       "d": {
+        "v": 0.30520856555512865
+       }
+      },
+      "d": {
+       "j": 5,
+       "s": 0.95,
+       "g": {
+        "v": -0.04671794319348006
+       },
+       "d": {
+        "v": -0.8186867782107289
+       }
+      }
+     },
+     {
+      "j": 2,
+      "s": 0.016666666666666607,
+      "g": {
+       "j": 5,
+       "s": 0.65,
+       "g": {
+        "v": 0.0018282035986278995
+       },
+       "d": {
+        "v": 0.29135791324818777
+       }
+      },
+      "d": {
+       "j": 5,
+       "s": 0.95,
+       "g": {
+        "v": -0.04441060976630037
+       },
+       "d": {
+        "v": -0.790969262950417
+       }
+      }
+     },
+     {
+      "j": 2,
+      "s": 0.016666666666666607,
+      "g": {
+       "j": 5,
+       "s": 0.65,
+       "g": {
+        "v": 0.0017368402180514
+       },
+       "d": {
+        "v": 0.2781010500659569
+       }
+      },
+      "d": {
+       "j": 5,
+       "s": 0.95,
+       "g": {
+        "v": -0.04221636163078385
+       },
+       "d": {
+        "v": -0.7642178064350776
+       }
+      }
+     },
+     {
+      "j": 2,
+      "s": 0.016666666666666607,
+      "g": {
+       "j": 5,
+       "s": 0.65,
+       "g": {
+        "v": 0.0016500425717151435
+       },
+       "d": {
+        "v": 0.26541368603888305
+       }
+      },
+      "d": {
+       "j": 5,
+       "s": 0.8833333333333333,
+       "g": {
+        "v": -0.004700502447923502
+       },
+       "d": {
+        "v": -0.584124018362648
+       }
+      }
+     },
+     {
+      "j": 13,
+      "s": 0.447665,
+      "g": {
+       "j": 2,
+       "s": 0.95,
+       "g": {
+        "v": -0.02212216644935295
+       },
+       "d": {
+        "v": -0.5899244508418048
+       }
+      },
+      "d": {
+       "j": 13,
+       "s": 2.7098,
+       "g": {
+        "v": 0.05499767451647737
+       },
+       "d": {
+        "v": 0.4215095326317852
+       }
+      }
+     },
+     {
+      "j": 2,
+      "s": 0.016666666666666607,
+      "g": {
+       "j": 5,
+       "s": 0.65,
+       "g": {
+        "v": 0.0012839526280225388
+       },
+       "d": {
+        "v": 0.2502610750368376
+       }
+      },
+      "d": {
+       "j": 5,
+       "s": 0.95,
+       "g": {
+        "v": -0.03609625373420873
+       },
+       "d": {
+        "v": -0.7053362639506274
+       }
+      }
+     },
+     {
+      "j": 13,
+      "s": 0.447665,
+      "g": {
+       "j": 2,
+       "s": 0.95,
+       "g": {
+        "v": -0.021102359451030554
+       },
+       "d": {
+        "v": -0.5442890302905222
+       }
+      },
+      "d": {
+       "j": 13,
+       "s": 2.7098,
+       "g": {
+        "v": 0.05140213453369673
+       },
+       "d": {
+        "v": 0.3996122017523284
+       }
+      }
+     },
+     {
+      "j": 13,
+      "s": -0.42967,
+      "g": {
+       "j": 13,
+       "s": -2.1182600000000003,
+       "g": {
+        "v": -0.28258462006226287
+       },
+       "d": {
+        "v": -0.039177712053449595
+       }
+      },
+      "d": {
+       "j": 2,
+       "s": 0.9166666666666667,
+       "g": {
+        "v": 0.038278744023959387
+       },
+       "d": {
+        "v": -0.6653785310718627
+       }
+      }
+     },
+     {
+      "j": 2,
+      "s": 0.016666666666666607,
+      "g": {
+       "j": 5,
+       "s": 0.65,
+       "g": {
+        "v": 0.00036904880680909465
+       },
+       "d": {
+        "v": 0.23439995706283362
+       }
+      },
+      "d": {
+       "j": 5,
+       "s": 0.8833333333333333,
+       "g": {
+        "v": 0.0008495763807606422
+       },
+       "d": {
+        "v": -0.5166604366212398
+       }
+      }
+     },
+     {
+      "j": 13,
+      "s": -0.42967,
+      "g": {
+       "j": 11,
+       "s": 0.4819197911012959,
+       "g": {
+        "v": -0.002219135881998266
+       },
+       "d": {
+        "v": -0.16857984799323172
+       }
+      },
+      "d": {
+       "j": 2,
+       "s": 0.9166666666666667,
+       "g": {
+        "v": 0.03565649394219533
+       },
+       "d": {
+        "v": -0.6258091673054671
+       }
+      }
+     },
+     {
+      "j": 13,
+      "s": 0.447665,
+      "g": {
+       "j": 13,
+       "s": -2.00691,
+       "g": {
+        "v": -0.26204687246518416
+       },
+       "d": {
+        "v": -0.011463874645744176
+       }
+      },
+      "d": {
+       "j": 13,
+       "s": 2.7098,
+       "g": {
+        "v": 0.04446363335065092
+       },
+       "d": {
+        "v": 0.3757757122838113
+       }
+      }
+     },
+     {
+      "j": 13,
+      "s": 0.447665,
+      "g": {
+       "j": 13,
+       "s": -2.00691,
+       "g": {
+        "v": -0.25041499759984537
+       },
+       "d": {
+        "v": -0.010891560112803168
+       }
+      },
+      "d": {
+       "j": 11,
+       "s": 0.4845200254564592,
+       "g": {
+        "v": 0.0008592744606478904
+       },
+       "d": {
+        "v": 0.16101342600566695
+       }
+      }
+     },
+     {
+      "j": 2,
+      "s": 0.016666666666666607,
+      "g": {
+       "j": 5,
+       "s": 0.65,
+       "g": {
+        "v": -0.0005201161845667202
+       },
+       "d": {
+        "v": 0.21875095610187173
+       }
+      },
+      "d": {
+       "j": 5,
+       "s": 0.95,
+       "g": {
+        "v": -0.0222527994918249
+       },
+       "d": {
+        "v": -0.6252970336407779
+       }
+      }
+     },
+     {
+      "j": 5,
+      "s": 0.9833333333333334,
+      "g": {
+       "j": 0,
+       "s": -0.4330264167547242,
+       "g": {
+        "v": 0.04877336515708884
+       },
+       "d": {
+        "v": -0.026783185779136798
+       }
+      },
+      "d": {
+       "j": 2,
+       "s": 0.29999999999999993,
+       "g": {
+        "v": 0.9899236735743125
+       },
+       "d": {
+        "v": -0.808495843177764
+       }
+      }
+     },
+     {
+      "j": 13,
+      "s": -0.42967,
+      "g": {
+       "j": 11,
+       "s": 0.4819197911012959,
+       "g": {
+        "v": 0.002924627473464657
+       },
+       "d": {
+        "v": -0.15606503711428307
+       }
+      },
+      "d": {
+       "j": 2,
+       "s": 0.9166666666666667,
+       "g": {
+        "v": 0.031267980068931396
+       },
+       "d": {
+        "v": -0.5714551909970806
+       }
+      }
+     },
+     {
+      "j": 5,
+      "s": 0.9833333333333334,
+      "g": {
+       "j": 0,
+       "s": 0.9098576530748503,
+       "g": {
+        "v": 0.0064327164773373795
+       },
+       "d": {
+        "v": -0.09965915610074726
+       }
+      },
+      "d": {
+       "j": 2,
+       "s": 0.29999999999999993,
+       "g": {
+        "v": 0.9540940112986773
+       },
+       "d": {
+        "v": -0.7770587420121476
+       }
+      }
+     },
+     {
+      "j": 13,
+      "s": 0.447665,
+      "g": {
+       "j": 13,
+       "s": -2.00691,
+       "g": {
+        "v": -0.23133835129583863
+       },
+       "d": {
+        "v": -0.010312558436693865
+       }
+      },
+      "d": {
+       "j": 11,
+       "s": 0.4845200254564592,
+       "g": {
+        "v": -0.0009783851549602612
+       },
+       "d": {
+        "v": 0.15259667763012144
+       }
+      }
+     },
+     {
+      "j": 5,
+      "s": 0.9833333333333334,
+      "g": {
+       "j": 0,
+       "s": 0.43173133806200525,
+       "g": {
+        "v": 0.015362751355873092
+       },
+       "d": {
+        "v": -0.05975290458982999
+       }
+      },
+      "d": {
+       "j": 2,
+       "s": 0.29999999999999993,
+       "g": {
+        "v": 0.9209299730958415
+       },
+       "d": {
+        "v": -0.7533177728963728
+       }
+      }
+     },
+     {
+      "j": 13,
+      "s": 0.447665,
+      "g": {
+       "j": 13,
+       "s": -2.00691,
+       "g": {
+        "v": -0.21985400856186765
+       },
+       "d": {
+        "v": -0.01021510343728791
+       }
+      },
+      "d": {
+       "j": 13,
+       "s": 2.7098,
+       "g": {
+        "v": 0.036834634575297065
+       },
+       "d": {
+        "v": 0.34170089696171857
+       }
+      }
+     },
+     {
+      "j": 5,
+      "s": 0.9833333333333334,
+      "g": {
+       "j": 0,
+       "s": -0.9125433117764957,
+       "g": {
+        "v": 0.08899367323461532
+       },
+       "d": {
+        "v": -0.017266848562726634
+       }
+      },
+      "d": {
+       "j": 2,
+       "s": 0.29999999999999993,
+       "g": {
+        "v": 0.8880246191332878
+       },
+       "d": {
+        "v": -0.730241281503098
+       }
+      }
+     },
+     {
+      "j": 13,
+      "s": 0.447665,
+      "g": {
+       "j": 13,
+       "s": -2.00691,
+       "g": {
+        "v": -0.20966139685394083
+       },
+       "d": {
+        "v": -0.00982544785976384
+       }
+      },
+      "d": {
+       "j": 11,
+       "s": 0.4845200254564592,
+       "g": {
+        "v": -0.0028013392049989743
+       },
+       "d": {
+        "v": 0.14407099641548965
+       }
+      }
+     },
+     {
+      "j": 5,
+      "s": 0.9833333333333334,
+      "g": {
+       "j": 0,
+       "s": -0.4330264167547242,
+       "g": {
+        "v": 0.04926406574834781
+       },
+       "d": {
+        "v": -0.025661510865011554
+       }
+      },
+      "d": {
+       "j": 2,
+       "s": 0.29999999999999993,
+       "g": {
+        "v": 0.8576107702323712
+       },
+       "d": {
+        "v": -0.7077876511795315
+       }
+      }
+     },
+     {
+      "j": 13,
+      "s": 0.447665,
+      "g": {
+       "j": 0,
+       "s": 0.4577477527225426,
+       "g": {
+        "v": -0.0014642870635418108
+       },
+       "d": {
+        "v": -0.13141506965516858
+       }
+      },
+      "d": {
+       "j": 0,
+       "s": 1.8472917652723673,
+       "g": {
+        "v": 0.06395246302002726
+       },
+       "d": {
+        "v": -0.3126193741251818
+       }
+      }
+     },
+     {
+      "j": 13,
+      "s": -0.42967,
+      "g": {
+       "j": 0,
+       "s": -1.4739328769004696,
+       "g": {
+        "v": 0.20129456641750923
+       },
+       "d": {
+        "v": -0.07302626471214985
+       }
+      },
+      "d": {
+       "j": 2,
+       "s": 0.9166666666666667,
+       "g": {
+        "v": 0.02658660273604483
+       },
+       "d": {
+        "v": -0.4949679166824431
+       }
+      }
+     },
+     {
+      "j": 5,
+      "s": 0.9833333333333334,
+      "g": {
+       "j": 0,
+       "s": 0.9098576530748503,
+       "g": {
+        "v": 0.006969359687790387
+       },
+       "d": {
+        "v": -0.0956732156557025
+       }
+      },
+      "d": {
+       "j": 2,
+       "s": 0.29999999999999993,
+       "g": {
+        "v": 0.8278582770110364
+       },
+       "d": {
+        "v": -0.6793313685286613
+       }
+      }
+     },
+     {
+      "j": 5,
+      "s": 0.9833333333333334,
+      "g": {
+       "j": 0,
+       "s": -0.4330264167547242,
+       "g": {
+        "v": 0.046872576612972845
+       },
+       "d": {
+        "v": -0.02424578650145295
+       }
+      },
+      "d": {
+       "j": 2,
+       "s": -0.45,
+       "g": {
+        "v": 0.9322238895345659
+       },
+       "d": {
+        "v": -0.4979631549608726
+       }
+      }
+     },
+     {
+      "j": 13,
+      "s": -0.42967,
+      "g": {
+       "j": 11,
+       "s": 0.4819197911012959,
+       "g": {
+        "v": 0.010353131848585006
+       },
+       "d": {
+        "v": -0.14202840434355485
+       }
+      },
+      "d": {
+       "j": 2,
+       "s": 0.9166666666666667,
+       "g": {
+        "v": 0.025198974730919133
+       },
+       "d": {
+        "v": -0.4557489812871643
+       }
+      }
+     },
+     {
+      "j": 0,
+      "s": -0.9084717826429212,
+      "g": {
+       "j": 7,
+       "s": 0.5,
+       "g": {
+        "v": 0.1653653609312474
+       },
+       "d": {
+        "v": -0.1883040647937192
+       }
+      },
+      "d": {
+       "j": 13,
+       "s": 1.9854150000000002,
+       "g": {
+        "v": -0.022401587840647892
+       },
+       "d": {
+        "v": 0.2116305071046916
+       }
+      }
+     },
+     {
+      "j": 5,
+      "s": 0.9833333333333334,
+      "g": {
+       "j": 0,
+       "s": 0.43173133806200525,
+       "g": {
+        "v": 0.015031077052195157
+       },
+       "d": {
+        "v": -0.05505196231793493
+       }
+      },
+      "d": {
+       "j": 2,
+       "s": 0.29999999999999993,
+       "g": {
+        "v": 0.7777625608920619
+       },
+       "d": {
+        "v": -0.6378552902981208
+       }
+      }
+     },
+     {
+      "j": 13,
+      "s": 0.447665,
+      "g": {
+       "j": 13,
+       "s": -2.00691,
+       "g": {
+        "v": -0.19580841464526208
+       },
+       "d": {
+        "v": -0.008196224356136027
+       }
+      },
+      "d": {
+       "j": 11,
+       "s": 0.4845200254564592,
+       "g": {
+        "v": -0.006420003026395872
+       },
+       "d": {
+        "v": 0.13478787890280333
+       }
+      }
+     },
+     {
+      "j": 0,
+      "s": -0.9084717826429212,
+      "g": {
+       "j": 7,
+       "s": 0.5,
+       "g": {
+        "v": 0.15791093109849133
+       },
+       "d": {
+        "v": -0.17890215199058251
+       }
+      },
+      "d": {
+       "j": 2,
+       "s": 0.016666666666666607,
+       "g": {
+        "v": 0.006391997783778089
+       },
+       "d": {
+        "v": -0.14901960223880883
+       }
+      }
+     },
+     {
+      "j": 5,
+      "s": 0.9833333333333334,
+      "g": {
+       "j": 0,
+       "s": 0.9098576530748503,
+       "g": {
+        "v": 0.006921458140398205
+       },
+       "d": {
+        "v": -0.09030694166135886
+       }
+      },
+      "d": {
+       "j": 2,
+       "s": -0.45,
+       "g": {
+        "v": 0.881452024417106
+       },
+       "d": {
+        "v": -0.4586861487967573
+       }
+      }
+     },
+     {
+      "j": 13,
+      "s": 0.447665,
+      "g": {
+       "j": 0,
+       "s": 0.4577477527225426,
+       "g": {
+        "v": -0.00036863694586563157
+       },
+       "d": {
+        "v": -0.12163976278307977
+       }
+      },
+      "d": {
+       "j": 3,
+       "s": -0.5,
+       "g": {
+        "v": -0.08325109724748692
+       },
+       "d": {
+        "v": 0.0795827551091617
+       }
+      }
+     },
+     {
+      "j": 5,
+      "s": 0.9833333333333334,
+      "g": {
+       "j": 0,
+       "s": 0.9098576530748503,
+       "g": {
+        "v": 0.006580231947518467
+       },
+       "d": {
+        "v": -0.08568122485028275
+       }
+      },
+      "d": {
+       "j": 2,
+       "s": 0.29999999999999993,
+       "g": {
+        "v": 0.7328428885345557
+       },
+       "d": {
+        "v": -0.600222237447253
+       }
+      }
+     },
+     {
+      "j": 13,
+      "s": -0.42967,
+      "g": {
+       "j": 0,
+       "s": -1.4739328769004696,
+       "g": {
+        "v": 0.18800398928153325
+       },
+       "d": {
+        "v": -0.06599773983318927
+       }
+      },
+      "d": {
+       "j": 0,
+       "s": -0.4519976953746926,
+       "g": {
+        "v": 0.12996734407236274
+       },
+       "d": {
+        "v": -0.0007330128551761896
+       }
+      }
+     },
+     {
+      "j": 13,
+      "s": 0.447665,
+      "g": {
+       "j": 13,
+       "s": -2.00691,
+       "g": {
+        "v": -0.1839228579935104
+       },
+       "d": {
+        "v": -0.00728555302299431
+       }
+      },
+      "d": {
+       "j": 11,
+       "s": 0.4845200254564592,
+       "g": {
+        "v": -0.007776979958774746
+       },
+       "d": {
+        "v": 0.12697153256658253
+       }
+      }
+     },
+     {
+      "j": 0,
+      "s": -0.9084717826429212,
+      "g": {
+       "j": 7,
+       "s": 0.5,
+       "g": {
+        "v": 0.14885395711277383
+       },
+       "d": {
+        "v": -0.17167872462856087
+       }
+      },
+      "d": {
+       "j": 13,
+       "s": 1.9854150000000002,
+       "g": {
+        "v": -0.020358781369091535
+       },
+       "d": {
+        "v": 0.1941249806545452
+       }
+      }
+     },
+     {
+      "j": 5,
+      "s": 0.9833333333333334,
+      "g": {
+       "j": 0,
+       "s": 0.9098576530748503,
+       "g": {
+        "v": 0.006536239933710131
+       },
+       "d": {
+        "v": -0.08342317284775469
+       }
+      },
+      "d": {
+       "j": 2,
+       "s": -0.45,
+       "g": {
+        "v": 0.8346943392579276
+       },
+       "d": {
+        "v": -0.4316791959272804
+       }
+      }
+     },
+     {
+      "j": 0,
+      "s": -0.9084717826429212,
+      "g": {
+       "j": 7,
+       "s": 0.5,
+       "g": {
+        "v": 0.14074274338035178
+       },
+       "d": {
+        "v": -0.16429235764721842
+       }
+      },
+      "d": {
+       "j": 2,
+       "s": 0.016666666666666607,
+       "g": {
+        "v": 0.005802293971578101
+       },
+       "d": {
+        "v": -0.13406192760400992
+       }
+      }
+     },
+     {
+      "j": 5,
+      "s": 0.9833333333333334,
+      "g": {
+       "j": 0,
+       "s": 0.43173133806200525,
+       "g": {
+        "v": 0.013471830127943686
+       },
+       "d": {
+        "v": -0.04826751620915673
+       }
+      },
+      "d": {
+       "j": 2,
+       "s": 0.29999999999999993,
+       "g": {
+        "v": 0.689673709234605
+       },
+       "d": {
+        "v": -0.5646906951965703
+       }
+      }
+     },
+     {
+      "j": 13,
+      "s": -0.42967,
+      "g": {
+       "j": 11,
+       "s": 0.4819197911012959,
+       "g": {
+        "v": 0.014130421140443588
+       },
+       "d": {
+        "v": -0.1310741605604648
+       }
+      },
+      "d": {
+       "j": 0,
+       "s": -0.4519976953746926,
+       "g": {
+        "v": 0.12092270371276267
+       },
+       "d": {
+        "v": -0.0006752902139135101
+       }
+      }
+     },
+     {
+      "j": 13,
+      "s": 0.447665,
+      "g": {
+       "j": 12,
+       "s": 4.878050328154253e-05,
+       "g": {
+        "v": -0.021190129462309384
+       },
+       "d": {
+        "v": 0.3258181739237904
+       }
+      },
+      "d": {
+       "j": 0,
+       "s": 1.8472917652723673,
+       "g": {
+        "v": 0.05341525659658257
+       },
+       "d": {
+        "v": -0.290299145390985
+       }
+      }
+     },
+     {
+      "j": 5,
+      "s": 0.9833333333333334,
+      "g": {
+       "j": 0,
+       "s": 0.43173133806200525,
+       "g": {
+        "v": 0.012986369767493556
+       },
+       "d": {
+        "v": -0.04628239045888133
+       }
+      },
+      "d": {
+       "j": 2,
+       "s": -0.45,
+       "g": {
+        "v": 0.7910887991730361
+       },
+       "d": {
+        "v": -0.40406899005611135
+       }
+      }
+     },
+     {
+      "j": 13,
+      "s": 0.447665,
+      "g": {
+       "j": 0,
+       "s": 0.4577477527225426,
+       "g": {
+        "v": -1.7023404239190982e-05
+       },
+       "d": {
+        "v": -0.10839290445432598
+       }
+      },
+      "d": {
+       "j": 11,
+       "s": 0.4845200254564592,
+       "g": {
+        "v": -0.008903936899683612
+       },
+       "d": {
+        "v": 0.12005101166906858
+       }
+      }
+     },
+     {
+      "j": 0,
+      "s": -0.9084717826429212,
+      "g": {
+       "j": 7,
+       "s": 0.5,
+       "g": {
+        "v": 0.13276503059336472
+       },
+       "d": {
+        "v": -0.1562699066697521
+       }
+      },
+      "d": {
+       "j": 13,
+       "s": 1.9854150000000002,
+       "g": {
+        "v": -0.0185448679959738
+       },
+       "d": {
+        "v": 0.18121994680840256
+       }
+      }
+     },
+     {
+      "j": 0,
+      "s": 0.9059921383651747,
+      "g": {
+       "j": 12,
+       "s": 4.878050328154253e-05,
+       "g": {
+        "v": -0.002489015473683517
+       },
+       "d": {
+        "v": 0.2257643868304358
+       }
+      },
+      "d": {
+       "j": 7,
+       "s": 0.5,
+       "g": {
+        "v": -0.14880902002394233
+       },
+       "d": {
+        "v": 0.20528172856624477
+       }
+      }
+     },
+     {
+      "j": 13,
+      "s": -0.42967,
+      "g": {
+       "j": 11,
+       "s": 0.4819197911012959,
+       "g": {
+        "v": 0.01439104735132875
+       },
+       "d": {
+        "v": -0.12353844769865047
+       }
+      },
+      "d": {
+       "j": 2,
+       "s": 0.9166666666666667,
+       "g": {
+        "v": 0.020038365785790352
+       },
+       "d": {
+        "v": -0.37614481598347854
+       }
+      }
+     },
+     {
+      "j": 5,
+      "s": 0.9833333333333334,
+      "g": {
+       "j": 0,
+       "s": -0.4330264167547242,
+       "g": {
+        "v": 0.03774801605728243
+       },
+       "d": {
+        "v": -0.019127351494880124
+       }
+      },
+      "d": {
+       "j": 2,
+       "s": 0.29999999999999993,
+       "g": {
+        "v": 0.647427316217704
+       },
+       "d": {
+        "v": -0.5285452127969675
+       }
+      }
+     },
+     {
+      "j": 5,
+      "s": 0.9833333333333334,
+      "g": {
+       "j": 0,
+       "s": 0.9098576530748503,
+       "g": {
+        "v": 0.005767516973605912
+       },
+       "d": {
+        "v": -0.0715810278203427
+       }
+      },
+      "d": {
+       "j": 2,
+       "s": -0.45,
+       "g": {
+        "v": 0.7481917356805232
+       },
+       "d": {
+        "v": -0.37577649362724147
+       }
+      }
+     },
+     {
+      "j": 13,
+      "s": -0.42967,
+      "g": {
+       "j": 3,
+       "s": 0.5,
+       "g": {
+        "v": -0.07106175633370783
+       },
+       "d": {
+        "v": 0.09214025506582103
+       }
+      },
+      "d": {
+       "j": 0,
+       "s": -0.4519976953746926,
+       "g": {
+        "v": 0.11069374223810438
+       },
+       "d": {
+        "v": -0.0010863431755464526
+       }
+      }
+     }
+    ]
+   },
+   "poids": {
+    "elo": 0.6888,
+    "simulation": 0.3187
+   }
+  },
+  "adopte": true,
   "ll": {
-   "avec": 0.603898404549049,
-   "sans": 0.6037081331954864
+   "avec": 0.605869425426173,
+   "sans": 0.6060464597026497
   },
   "jugement": {
-   "n": 2398,
-   "depuis": "2026-09-14",
-   "log_loss_feuilles": 0.6039,
-   "log_loss_poids_archive": 0.60371,
-   "log_loss_elo_seul": 0.60896
+   "n": 2597,
+   "depuis": "2026-09-23",
+   "log_loss_feuilles": 0.60587,
+   "log_loss_poids_archive": 0.60605,
+   "log_loss_elo_seul": 0.60992
   },
-  "raison": "6 dernières semaines (2398 matchs) : poids appris sur les feuilles 0.6039 contre poids de l'archive 0.6037 (Elo seul 0.609) ; poids de la simulation 36.4 %"
+  "raison": "6 dernières semaines (2597 matchs) : poids appris sur les feuilles 0.6059 contre poids de l'archive 0.606 (Elo seul 0.6099) ; poids de la simulation 31.6 %"
  },
- "duree_s": 428
+ "duree_s": 1946
 }

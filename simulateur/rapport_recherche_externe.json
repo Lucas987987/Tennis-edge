@@ -1,0 +1,219 @@
+{
+  "n_matchs": 787,
+  "candidats": {
+    "marche": {
+      "decouverte": {
+        "n": 393,
+        "n_actifs": 89,
+        "log_loss_base": 0.617143,
+        "log_loss_avec": 0.616372,
+        "gain": 0.000771,
+        "beta": 0.163585,
+        "erreur_type": 0.280415,
+        "p_value": 0.5596465795040239,
+        "p_holm": 1.0
+      },
+      "confirmation": {
+        "n": 394,
+        "n_actifs": 120,
+        "log_loss_base": 0.600996,
+        "log_loss_avec": 0.598882,
+        "gain": 0.002114,
+        "beta_reappris_diagnostic": 0.315505
+      },
+      "statut": "non_confirme"
+    },
+    "H13": {
+      "decouverte": {
+        "n": 393,
+        "n_actifs": 0,
+        "log_loss_base": 0.617143,
+        "log_loss_avec": 0.617143,
+        "gain": 0.0,
+        "beta": 0.0,
+        "erreur_type": 0.316228,
+        "p_value": 1.0,
+        "p_holm": 1.0
+      },
+      "confirmation": {
+        "n": 394,
+        "n_actifs": 1,
+        "log_loss_base": 0.600996,
+        "log_loss_avec": 0.600996,
+        "gain": 0.0,
+        "beta_reappris_diagnostic": 0.05905
+      },
+      "statut": "non_confirme",
+      "raison": "échantillon insuffisant : 100 matchs et 30 signaux actifs par période requis"
+    },
+    "H14": {
+      "decouverte": {
+        "n": 393,
+        "n_actifs": 0,
+        "log_loss_base": 0.617143,
+        "log_loss_avec": 0.617143,
+        "gain": 0.0,
+        "beta": 0.0,
+        "erreur_type": 0.316228,
+        "p_value": 1.0,
+        "p_holm": 1.0
+      },
+      "confirmation": {
+        "n": 394,
+        "n_actifs": 0,
+        "log_loss_base": 0.600996,
+        "log_loss_avec": 0.600996,
+        "gain": 0.0,
+        "beta_reappris_diagnostic": 0.0
+      },
+      "statut": "non_confirme",
+      "raison": "échantillon insuffisant : 100 matchs et 30 signaux actifs par période requis"
+    },
+    "H15": {
+      "decouverte": {
+        "n": 393,
+        "n_actifs": 0,
+        "log_loss_base": 0.617143,
+        "log_loss_avec": 0.617143,
+        "gain": 0.0,
+        "beta": 0.0,
+        "erreur_type": 0.316228,
+        "p_value": 1.0,
+        "p_holm": 1.0
+      },
+      "confirmation": {
+        "n": 394,
+        "n_actifs": 1,
+        "log_loss_base": 0.600996,
+        "log_loss_avec": 0.600996,
+        "gain": 0.0,
+        "beta_reappris_diagnostic": 0.05905
+      },
+      "statut": "non_confirme",
+      "raison": "échantillon insuffisant : 100 matchs et 30 signaux actifs par période requis"
+    },
+    "H16": {
+      "decouverte": {
+        "n": 393,
+        "n_actifs": 4,
+        "log_loss_base": 0.617143,
+        "log_loss_avec": 0.616718,
+        "gain": 0.000425,
+        "beta": 0.126633,
+        "erreur_type": 0.303785,
+        "p_value": 0.6767882568309266,
+        "p_holm": 1.0
+      },
+      "confirmation": {
+        "n": 394,
+        "n_actifs": 1,
+        "log_loss_base": 0.600996,
+        "log_loss_avec": 0.601171,
+        "gain": -0.000175,
+        "beta_reappris_diagnostic": -0.051505
+      },
+      "statut": "non_confirme",
+      "raison": "échantillon insuffisant : 100 matchs et 30 signaux actifs par période requis"
+    },
+    "H16B": {
+      "decouverte": {
+        "n": 393,
+        "n_actifs": 4,
+        "log_loss_base": 0.617143,
+        "log_loss_avec": 0.616718,
+        "gain": 0.000425,
+        "beta": 0.126633,
+        "erreur_type": 0.303785,
+        "p_value": 0.6767882568309266,
+        "p_holm": 1.0
+      },
+      "confirmation": {
+        "n": 394,
+        "n_actifs": 0,
+        "log_loss_base": 0.600996,
+        "log_loss_avec": 0.600996,
+        "gain": 0.0,
+        "beta_reappris_diagnostic": 0.0
+      },
+      "statut": "non_confirme",
+      "raison": "échantillon insuffisant : 100 matchs et 30 signaux actifs par période requis"
+    },
+    "H17": {
+      "decouverte": {
+        "n": 393,
+        "n_actifs": 0,
+        "log_loss_base": 0.617143,
+        "log_loss_avec": 0.617143,
+        "gain": 0.0,
+        "beta": 0.0,
+        "erreur_type": 0.316228,
+        "p_value": 1.0,
+        "p_holm": 1.0
+      },
+      "confirmation": {
+        "n": 394,
+        "n_actifs": 1,
+        "log_loss_base": 0.600996,
+        "log_loss_avec": 0.600996,
+        "gain": 0.0,
+        "beta_reappris_diagnostic": -0.051505
+      },
+      "statut": "non_confirme",
+      "raison": "échantillon insuffisant : 100 matchs et 30 signaux actifs par période requis"
+    },
+    "H18": {
+      "decouverte": {
+        "n": 393,
+        "n_actifs": 0,
+        "log_loss_base": 0.617143,
+        "log_loss_avec": 0.617143,
+        "gain": 0.0,
+        "beta": 0.0,
+        "erreur_type": 0.316228,
+        "p_value": 1.0,
+        "p_holm": 1.0
+      },
+      "confirmation": {
+        "n": 394,
+        "n_actifs": 0,
+        "log_loss_base": 0.600996,
+        "log_loss_avec": 0.600996,
+        "gain": 0.0,
+        "beta_reappris_diagnostic": 0.0
+      },
+      "statut": "non_confirme",
+      "raison": "échantillon insuffisant : 100 matchs et 30 signaux actifs par période requis"
+    },
+    "H19": {
+      "decouverte": {
+        "n": 393,
+        "n_actifs": 0,
+        "log_loss_base": 0.617143,
+        "log_loss_avec": 0.617143,
+        "gain": 0.0,
+        "beta": 0.0,
+        "erreur_type": 0.316228,
+        "p_value": 1.0,
+        "p_holm": 1.0
+      },
+      "confirmation": {
+        "n": 394,
+        "n_actifs": 0,
+        "log_loss_base": 0.600996,
+        "log_loss_avec": 0.600996,
+        "gain": 0.0,
+        "beta_reappris_diagnostic": 0.0
+      },
+      "statut": "non_confirme",
+      "raison": "échantillon insuffisant : 100 matchs et 30 signaux actifs par période requis"
+    }
+  },
+  "protocole": "Découverte puis confirmation chronologiques ; Holm sur les neuf tests ; beta figé pour la confirmation.",
+  "limites": [
+    "Aucun volume de transactions disponible.",
+    "Aucun consensus multi-bookmakers imposé par les données actuelles.",
+    "Un mouvement de cotes ne démontre ni information privilégiée ni pari certain.",
+    "Aucune réinjection dans les probabilités indépendantes."
+  ],
+  "genere_le": "2026-11-04T11:16:42.089831+00:00"
+}
