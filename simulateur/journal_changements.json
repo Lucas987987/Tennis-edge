@@ -3,6 +3,27 @@
  "changements": [
   {
    "date": "2026-11-04",
+   "titre": "Tie-breaks : serveurs qui craquent à 5-5 / 6-5 — rejeté",
+   "statut": "rejete",
+   "decision": false,
+   "mesure": "banc de la forme exacte, réglé 2021–2022, jugé 2023 → (1 200 matchs par circuit) : ATP aucun réglage meilleur, WTA −0,0006, Challenger −0,0020 (seuil +0,001) ; en direct, tie-breaks prévus contre réels : ATP 44,8 → 50,6 %, WTA 25,2 → 29,2 %, Challenger 29,7 → 29,3 % (pas de surestimation)"
+  },
+  {
+   "date": "2026-11-04",
+   "titre": "Drapeaux des joueurs dans le post X",
+   "statut": "production",
+   "decision": true,
+   "mesure": "pays tiré des fiches de match (94 joueurs sur 96 du site au 04/11) ; Russie et Biélorussie sans drapeau (joueurs neutres sur les circuits) ; aucune entrée du modèle"
+  },
+  {
+   "date": "2026-11-04",
+   "titre": "Pronostics forts (> 70 %) trop sûrs ou pas assez, circuit par circuit — rejeté",
+   "statut": "rejete",
+   "decision": false,
+   "mesure": "5 571 pronostics figés ; k appris avant le 01/10, jugé après : ATP −0,0051, WTA −0,0080, Challenger −0,00003 (seuil +0,001) ; pas d'excès de confiance net en direct : la queue 70–90 % reste en place"
+  },
+  {
+   "date": "2026-11-04",
    "titre": "Taille du dépôt : les fichiers de cotes réécrits à chaque capture passent par R2, git n'en garde qu'une photo toutes les 2 h",
    "statut": "production",
    "decision": true,

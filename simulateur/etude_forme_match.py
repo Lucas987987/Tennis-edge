@@ -8,7 +8,10 @@ retour d'avant-match, elo_service_retour.py), avec trois corrections candidates,
   σ   forme du jour : l'écart de forme d = fA − fB ~ N(0, 2σ²) décale le service de A de +d et celui de B de −d
       (le modèle suppose σ = 0,15 ; mesuré 0,27 : rapport_forme_du_jour.json) ;
   tb  au tie-break, chaque serveur décalé de δ_tb en logit (étude des points : −0,58) ;
-  set le joueur qui mène d'un set décalé de δ_set au service (étude des points : −1,2 ; possible effet de sélection).
+  set le joueur qui mène d'un set décalé de δ_set au service (étude des points : −1,2 ; possible effet de sélection) ;
+  pr  (04/11/2026, point 3) jeux sous pression : à 5-5, 6-5 et 5-6, chaque serveur décalé de δ_pr en logit (si les
+      serveurs craquent plus qu'ailleurs, il y a moins de 6-6, donc moins de tie-breaks que la chaîne indépendante).
+      MÊME RÈGLE que ci-dessous, fixée avant de regarder ; grille 0 / −0,1 / −0,2 / −0,35 / +0,1.
 Le VAINQUEUR est tenu fixe : chaque variante est ré-ancrée (décalage opposé des deux services) sur la probabilité de
 victoire de la base (σ = 0,15, sans tb ni set) ; seule la FORME change.
 
@@ -30,8 +33,10 @@ ICI = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, ICI)
 import elo_service_retour as SR  # noqa: E402
 
-GRILLES = {'sigma': [0.15, 0.22, 0.27, 0.32], 'tb': [0.0, -0.1, -0.2, -0.35], 'set': [0.0, -0.05, -0.1, -0.2]}
-BASE = {'sigma': 0.15, 'tb': 0.0, 'set': 0.0}
+GRILLES = {'sigma': [0.15, 0.22, 0.27, 0.32], 'tb': [0.0, -0.1, -0.2, -0.35], 'set': [0.0, -0.05, -0.1, -0.2],
+           'pr': [0.0, -0.1, -0.2, -0.35, 0.1]}
+BASE = {'sigma': 0.15, 'tb': 0.0, 'set': 0.0, 'pr': 0.0}
+PRESSION = ((5, 5), (6, 5), (5, 6))
 # 7 nœuds de Gauss–Hermite (probabilistes) pour d ~ N(0, 1)
 _GH = [(-3.750439717725742, 0.000548268855972), (-2.366759410734541, 0.030757123967586),
        (-1.154405394739968, 0.240123178605013), (0.0, 0.457142857142857),
@@ -79,16 +84,20 @@ def tiebreak(pa, pb, a_sert):
     return f(0, 0)
 
 
-def set_dist(pa, pb, a_sert, ptb_a, ptb_b):
-    """{(jeux A, jeux B, tie-break): proba} ; ptb_* : points au service pendant le tie-break."""
+def set_dist(pa, pb, a_sert, ptb_a, ptb_b, ppr_a=None, ppr_b=None):
+    """{(jeux A, jeux B, tie-break): proba} ; ptb_* : points au service pendant le tie-break ; ppr_* : à 5-5, 6-5, 5-6."""
     ha, hb = tenir(pa), tenir(pb)
+    hpa, hpb = tenir(ppr_a if ppr_a is not None else pa), tenir(ppr_b if ppr_b is not None else pb)
     tb = tiebreak(ptb_a, ptb_b, a_sert)                   # à 6-6, celui qui servait le 1er jeu sert le 1er point
     out, etats = {}, {(0, 0): 1.0}
     while etats:
         nouv = {}
         for (x, y), pr in etats.items():
             a_sert_ici = a_sert if (x + y) % 2 == 0 else not a_sert
-            g = ha if a_sert_ici else 1 - hb
+            if (x, y) in PRESSION:
+                g = hpa if a_sert_ici else 1 - hpb
+            else:
+                g = ha if a_sert_ici else 1 - hb
             for (nx, ny), q in (((x + 1, y), g), ((x, y + 1), 1 - g)):
                 v = pr * q
                 if (nx >= 6 and nx - ny >= 2) or (ny >= 6 and ny - nx >= 2) or nx == 7 or ny == 7:
@@ -102,7 +111,7 @@ def set_dist(pa, pb, a_sert, ptb_a, ptb_b):
     return out
 
 
-def match_dist(pa, pb, d_tb=0.0, d_set=0.0):
+def match_dist(pa, pb, d_tb=0.0, d_set=0.0, d_pr=0.0):
     """{(A gagne, nb sets, tie-break, total jeux): proba} au meilleur des 3 ; A sert le 1er jeu avec proba 1/2."""
     cache = {}
 
@@ -114,7 +123,8 @@ def match_dist(pa, pb, d_tb=0.0, d_set=0.0):
                 za += d_set
             elif diff < 0:
                 zb += d_set
-            cache[k] = set_dist(_sg(za), _sg(zb), a_sert, _sg(za + d_tb), _sg(zb + d_tb))
+            cache[k] = set_dist(_sg(za), _sg(zb), a_sert, _sg(za + d_tb), _sg(zb + d_tb),
+                                _sg(za + d_pr) if d_pr else None, _sg(zb + d_pr) if d_pr else None)
         return cache[k]
     out = {}
     for a_premier in (True, False):
@@ -140,26 +150,26 @@ def victoire(dist):
     return sum(v for k, v in dist.items() if k[0])
 
 
-def avec_forme(pa, pb, sigma, d_tb, d_set, decalage=0.0):
+def avec_forme(pa, pb, sigma, d_tb, d_set, decalage=0.0, d_pr=0.0):
     """Distribution intégrée sur la forme du jour (écart d ~ N(0, 2σ²)), décalage d'ancrage en plus."""
     out = {}
     s = sigma * math.sqrt(2)
     for x, w in _GH:
         d = s * x + decalage
-        for k, v in match_dist(_sg(_lg(pa) + d), _sg(_lg(pb) - d), d_tb, d_set).items():
+        for k, v in match_dist(_sg(_lg(pa) + d), _sg(_lg(pb) - d), d_tb, d_set, d_pr).items():
             out[k] = out.get(k, 0.0) + w * v
     return out
 
 
-def ancree(pa, pb, cible, sigma, d_tb, d_set, iterations=14):
+def ancree(pa, pb, cible, sigma, d_tb, d_set, iterations=14, d_pr=0.0):
     lo, hi = -3.0, 3.0
     for _ in range(iterations):
         m = (lo + hi) / 2
-        if victoire(avec_forme(pa, pb, sigma, d_tb, d_set, m)) < cible:
+        if victoire(avec_forme(pa, pb, sigma, d_tb, d_set, m, d_pr)) < cible:
             lo = m
         else:
             hi = m
-    return avec_forme(pa, pb, sigma, d_tb, d_set, (lo + hi) / 2)
+    return avec_forme(pa, pb, sigma, d_tb, d_set, (lo + hi) / 2, d_pr)
 
 
 def ll_forme(dist, obs):
@@ -206,7 +216,7 @@ def evaluer(rows, reglage):
     tot = 0.0
     for _, _, pa, pb, obs in rows:
         cible = victoire(avec_forme(pa, pb, BASE['sigma'], 0.0, 0.0))
-        dist = ancree(pa, pb, cible, reglage['sigma'], reglage['tb'], reglage['set'])
+        dist = ancree(pa, pb, cible, reglage['sigma'], reglage['tb'], reglage['set'], d_pr=reglage.get('pr', 0.0))
         tot += ll_forme(dist, obs)
     return tot / max(1, len(rows))
 
@@ -230,7 +240,10 @@ def main(argv):
         base_dec = evaluer(dec, BASE)
         bloc = {'decouverte': len(dec), 'jugement': len(ju), 'base_decouverte': round(base_dec, 5)}
         choisis = {}
-        for cle, grille in GRILLES.items():                       # chaque correction seule, réglée sur la découverte
+        corr = [a.split('=')[1] for a in argv if a.startswith('--corr=')]
+        for cle, grille in GRILLES.items():
+            if corr and cle not in corr:
+                continue                       # chaque correction seule, réglée sur la découverte
             best = (base_dec, BASE[cle])
             for v in grille:
                 if v == BASE[cle]:
@@ -255,7 +268,9 @@ def main(argv):
                             'retenu': base_ju - l_t >= 0.001}
         out['circuits'][c] = bloc
         print(c, json.dumps(bloc, ensure_ascii=False), flush=True)
-    nom = 'rapport_forme_match' + (f'_{seuls[0]}' if len(seuls) == 1 else '') + '.json'
+    corr = [a.split('=')[1] for a in argv if a.startswith('--corr=')]
+    nom = ('rapport_forme_match' + (f'_{"_".join(corr)}' if corr else '') + (f'_{seuls[0]}' if len(seuls) == 1 else '')
+           + '.json')
     with open(os.path.join(ICI, nom), 'w', encoding='utf-8') as f:
         json.dump(out, f, ensure_ascii=False, indent=1)
     return 0
