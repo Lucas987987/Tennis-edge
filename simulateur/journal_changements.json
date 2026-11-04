@@ -1,6 +1,8 @@
 {
  "regle": "Chaque changement du modèle est noté ici avec sa date, ce qu'il change et ce qu'il a gagné au test (log loss, négatif = mieux prévu). Les changements mis en production par décision, sans attendre la 2e semaine, restent sous le garde-fou du jugement hebdomadaire.",
  "changements": [
+  {"date": "2026-11-04", "titre": "Vitesse des courts : CPI officiel quand il existe, CPI estimé pour tous les autres tournois", "statut": "production", "decision": true,
+   "mesure": "CPI officiel publié pour 14 tournois seulement (Grands Chelems, Masters 1000, ATP Finals ; 107 valeurs 2012–2026) ; notre indice (points de service et aces au-delà de l'attendu de l'Elo service / retour) étalonné dessus : corrélation 0,78 et erreur moyenne 3,1 points en « tournoi laissé de côté » (5,9 sans l'indice) ; Paris 2026 estimé 45,3 pour 47,9 officiel ; affiché sur la fiche et dans le post, n'entre pas dans le pronostic (la vitesse est déjà un facteur du modèle)"},
   {"date": "2026-11-04", "titre": "Tout l'entraînement hebdomadaire jugé circuit par circuit (arbres, candidats, corrections)", "statut": "production", "decision": true,
    "mesure": "décision de Lucas : arbres, arbres + activité / tour / points, nouveaux venus, qualifiés, changement de surface, classement : une série de stabilité par circuit (ATP, WTA, Challenger), appliqués seulement où ils sont en place ; moins de 50 matchs jugés sur un circuit : la semaine ne compte pas ; première lecture : activité récente candidate en ATP (+0,0047), points en sursis sur les trois circuits"},
   {"date": "2026-11-04", "titre": "Bouton « Générer la vidéo » sur la fiche du match", "statut": "production", "decision": true,
