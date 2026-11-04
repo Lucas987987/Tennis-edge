@@ -20,3 +20,11 @@ def test_post_x_sans_adresse_ni_cote_ni_marche():
     assert 'cotes_justes' not in f and 'odds(' not in f
     assert not re.search(r'march[ée]', f, re.I)
     assert "L = 'fr'" in f and 'finally { L = Ls; }' in f      # toujours en français, langue du site rendue
+
+
+def test_desaccord_des_deux_modeles_explique():
+    # 04/11/2026 : Elo et simulation ne désignent pas le même favori (ou 10 points d'écart) → une ligne l'explique
+    f = _fonction('essentielListe')
+    assert "t('es_modeles'" in f and 'mo.p_elo' in f and '.10' in f
+    assert 'es_modeles:' in HTML.split("es_titre:'Key points'")[0]          # version française
+    assert 'Taux BRUTS' in HTML                                                # le duel dit qu'il est brut
