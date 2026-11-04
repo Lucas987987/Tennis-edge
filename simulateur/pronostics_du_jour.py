@@ -194,6 +194,9 @@ ECHANGES = None       # 30/10/2026 : longueur des échanges (Match Charting Proj
 STYLES_MATCHS = {}    # 01/11/2026 : styles service–retour figés avant match (styles_descriptifs.json), fantôme seul
 ELO_SR = None         # 04/11/2026 : Elo au service et au retour (elo_service_retour.py), fantôme seul
 SIGNAUX_CIRCUIT = {}  # 04/11/2026 : {signal: [circuits]} adoptés par circuit (fantomes_circuits.py)
+# 04/11/2026 — changement de surface (etude_changement_surface.py, archive 2016–2022 → jugé 2023 →, positif sur les
+# trois circuits) : β par circuit, z += β·(nouveau(home) − nouveau(away)) ; fantôme seul tant que non adopté.
+BETA_CHANGEMENT_SURFACE = {'ATP': -0.1724, 'WTA': -0.1142, 'CH': -0.1705}
 BETA_ELO_SR = 0.284   # 04/11/2026 : poids de l'Elo service / retour (étude hors échantillon, dernière semaine apprise)
 FORME_SERVICE = None  # 29/10/2026 : service / retour du moment (forme_service.py), information + modèle fantôme
 PROGRAMME = {}        # 29/10/2026 : {(jour, clé, clé) triée: tour} — programme du jour relevé par feuilles_match.py
@@ -519,14 +522,37 @@ def controle_elo_sr(p_home, h, a, c, s, sg):
     return {'p_home': round(sig(lg(p_home) + d), 4), 'p_sr': round(psr, 4), 'decalage': round(d, 4)}
 
 
-def signaux_du_match(c, p_base, fsv_ctl, ent_ctl, srv_ctl, sr_ctl):
+def controle_changement_surface(p_home, c, h, a, surface, debut):
+    """04/11/2026 — fantôme « changement de surface » : celui qui joue son 1er ou 2e match sur la surface depuis qu'il en
+    a changé (match précédent à 45 jours au plus) est moins fort que son Elo. None si personne n'est concerné."""
+    b = BETA_CHANGEMENT_SURFACE.get(c)
+    if b is None or p_home is None or CONTEXTE is None or not hasattr(CONTEXTE, 'nouveau_surface'):
+        return None
+    ts = (debut.replace(tzinfo=dt.timezone.utc).timestamp() if debut.tzinfo is None else debut.timestamp()) \
+        if isinstance(debut, dt.datetime) else float(debut)
+    x = CONTEXTE.nouveau_surface(h, surface, ts) - CONTEXTE.nouveau_surface(a, surface, ts)
+    if not x:
+        return None
+    lg = lambda q: math.log(min(max(q, 1e-6), 1 - 1e-6) / (1 - min(max(q, 1e-6), 1 - 1e-6)))
+    return {'p_home': round(sig(lg(p_home) + b * x), 4), 'x': x, 'decalage': round(b * x, 4)}
+
+
+def _changement_surface_sur(p_home, c, h, a, surface, debut):
+    try:
+        return controle_changement_surface(p_home, c, h, a, surface, debut)
+    except Exception as e_:  # noqa: BLE001 — un fantôme ne bloque jamais un pronostic
+        print(f"::warning::fantôme changement de surface non calculé : {type(e_).__name__}: {e_}")
+        return None
+
+
+def signaux_du_match(c, p_base, fsv_ctl, ent_ctl, srv_ctl, sr_ctl, cs_ctl=None):
     """04/11/2026 — décalages (logit) des signaux ADOPTÉS SUR CE CIRCUIT (fantomes_circuits.py) ; {signal: décalage}."""
     if not SIGNAUX_CIRCUIT or p_base is None:
         return {}
     lg = lambda q: math.log(min(max(q, 1e-6), 1 - 1e-6) / (1 - min(max(q, 1e-6), 1 - 1e-6)))
     cand = {'forme_service': (lg(fsv_ctl['p_home']) - lg(p_base)) if (fsv_ctl or {}).get('p_home') is not None else None,
             'entree': (ent_ctl or {}).get('decalage'), 'serveuses_wta': (srv_ctl or {}).get('decalage'),
-            'elo_service_retour': (sr_ctl or {}).get('decalage')}
+            'elo_service_retour': (sr_ctl or {}).get('decalage'), 'changement_surface': (cs_ctl or {}).get('decalage')}
     return {k: v for k, v in cand.items() if v and c in (SIGNAUX_CIRCUIT.get(k) or [])}
 
 
@@ -994,7 +1020,8 @@ def construire(racine, maintenant=None):
                 # n'est plus calculé sur ce circuit (on suit « avec contre sans » dans signaux_circuit)
                 p_base = combinaison['p_home']
                 sh_ = signaux_du_match(c, p_base, fsv_ctl, controle_entree(p_base, c, entree_du_match(h, a, x['debut'])),
-                                       controle_serveuses(p_base, c, STYLES_MATCHS.get(uid)), controle_elo_sr(p_base, h, a, c, s, sg))
+                                       controle_serveuses(p_base, c, STYLES_MATCHS.get(uid)), controle_elo_sr(p_base, h, a, c, s, sg),
+                                       _changement_surface_sur(p_base, c, h, a, s, x['debut']))
                 adoptes_ici = tuple(k for k, v in SIGNAUX_CIRCUIT.items() if c in (v or []))
                 if sh_:
                     q_ = min(max(p_base, 1e-6), 1 - 1e-6)
@@ -1039,7 +1066,7 @@ def construire(racine, maintenant=None):
                     'forme_service': fsv if fsv and (fsv[0] or fsv[1]) else None,
                     'echanges': _echanges(h, a, x['debut']),
                     'entree': entree_du_match(h, a, x['debut']),
-                    'controle': _avec_cle(_avec_cle(_avec_cle(_avec_serveuses(
+                    'controle': _avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_serveuses(
                         _avec_entree(_avec_service(_avec_forme(controle_fantome(elo, elo_ref, ref_etat, etat, h, a, c, s,
                                                                                 elo_fem, fem_etat), forme_ctl),
                                                    None if 'forme_service' in adoptes_ici else fsv_ctl),
@@ -1051,7 +1078,9 @@ def construire(racine, maintenant=None):
                                            STYLES_MATCHS.get(uid))),
                         'elo_service_retour', None if 'elo_service_retour' in adoptes_ici else
                         controle_elo_sr((combinaison or {}).get('p_home'), h, a, c, s, sg)),
-                        'signaux_circuit', sig_ctl), 'forme_set', _forme_set_sur(c, direct, sg))})
+                        'signaux_circuit', sig_ctl), 'forme_set', _forme_set_sur(c, direct, sg)),
+                        'changement_surface', None if 'changement_surface' in adoptes_ici else
+                        _changement_surface_sur((combinaison or {}).get('p_home'), c, h, a, s, x['debut']))})
     doc = {'genere_le': maintenant.isoformat(timespec='seconds') + 'Z', 'elo_au': etat.get('dernier_match'),
             'horizon_h': HORIZON_H, 'sigma': SIGMA, 'simulations': SIMULATIONS if PR is not None else 0,
             'qualite_horodatages': couverture_horodatages,
