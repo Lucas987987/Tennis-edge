@@ -49,7 +49,7 @@ def ll(z):
     return ESC.ll(z)
 
 
-def lignes(archive, racine):
+def lignes(archive, racine, avec_pinnacle=False):
     import donnees as DN
     import elo as E
     import feuilles as FE
@@ -63,6 +63,11 @@ def lignes(archive, racine):
         alias = {}
     k = lambda n: alias.get(E.cle(n), E.cle(n)) if n else None
     naiss = EA.naissances(archive, k)
+    pin = {}
+    if avec_pinnacle:                       # 04/11/2026 : clôture Pinnacle sans marge, pour la LOUPE seulement (jamais une entrée)
+        import backtest_pronostic as BP
+        td = DN.charger_td(os.path.join(racine, 'historique', 'tennis_data.csv.gz'), '2016-01-01')
+        pin = {id(m_): BP.juste(t['psw'], t['psl']) for t, m_ in DN.joindre(td, M)}
     M.sort(key=lambda m: (m['date'], m.get('tour', 0), m.get('num', 0)))
     el, su, rt, RS = E.Elo(), ECS.Suivi(), ERA.Retours(), EPC.Residus()
     niv = collections.defaultdict(lambda: collections.deque(maxlen=NIVEAU_N))
@@ -93,7 +98,7 @@ def lignes(archive, racine):
             x_bas = part(g) - part(p)
             x_tour = min(tour_n.get((g, tid), 0), PLAFOND_TOURNOI) - min(tour_n.get((p, tid), 0), PLAFOND_TOURNOI)
             rows.append({'d': d, 'c': c, 'z': _lg(pe), 'x6': (float(xs), xa[0], xa[1], xg[0], xg[1], xr),
-                         'montee_petits_tournois': x_bas, 'parcours_tournoi': float(x_tour)})
+                         'montee_petits_tournois': x_bas, 'parcours_tournoi': float(x_tour), 'pin': pin.get(id(m))})
         su.jouer(g, d, s)
         su.jouer(p, d, s)
         rt.jouer(g, d)
