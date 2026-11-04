@@ -17,6 +17,7 @@ Signaux suivis (modèles fantômes, jamais affichés avant adoption) :
                         β par circuit (ATP −0,172, WTA −0,114, Challenger −0,171)
   retour_absence      — (04/11/2026) retour après 45 jours ou plus sans match (etude_retour_absence.py), poids 1, 1/2,
                         1/4 sur les trois premiers matchs, β court / long par circuit
+  age                 — (04/11/2026) années au-delà de 30 ans et sous 23 ans (etude_age.py), β par circuit
 
 Chaque match joué donne, pour un signal et le circuit du match : log loss SANS le signal et AVEC lui
 (apres_match : fantome_<signal> tant qu'il n'est pas adopté sur ce circuit, signaux_circuit une fois appliqué).
@@ -38,7 +39,7 @@ import sys
 ICI = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, ICI)
 
-SIGNAUX = ('forme_service', 'entree', 'serveuses_wta', 'elo_service_retour', 'forme_set', 'changement_surface', 'retour_absence')
+SIGNAUX = ('forme_service', 'entree', 'serveuses_wta', 'elo_service_retour', 'forme_set', 'changement_surface', 'retour_absence', 'age')
 CIRCUITS = ('ATP', 'WTA', 'CH')
 MIN_MATCHS, MARGE = 30, 0.001
 SORTIE = os.path.join('simulateur', 'fantomes_circuits.json')
