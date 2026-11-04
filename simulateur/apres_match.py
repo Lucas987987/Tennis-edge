@@ -272,6 +272,10 @@ def bilan_match(uid, f, reel, duree_reelle=None):
     if rab.get('p_home') is not None and isinstance(p, (int, float)):
         # 04/11/2026 : pronostic affiché contre le même corrigé du retour d'absence
         E['fantome_retour_absence'] = {'ll_elo': lp_(p), 'll_reference': lp_(rab['p_home'])}
+    agc = ct.get('age') or {}
+    if agc.get('p_home') is not None and isinstance(p, (int, float)):
+        # 04/11/2026 : pronostic affiché contre le même corrigé de l'âge
+        E['fantome_age'] = {'ll_elo': lp_(p), 'll_reference': lp_(agc['p_home'])}
     fsm = ct.get('forme_set') or {}
     S_ = _sets((reel or {}).get('score'))
     if fsm.get('base') and fsm.get('variante') and S_ and len(S_) in (2, 3):
@@ -556,7 +560,7 @@ def analyser(B):
         # 29/10/2026 : chaque changement contre son modèle fantôme, sur les mêmes matchs réels
         for cle_f in ('fantome', 'fantome_itf_femmes', 'fantome_sigma', 'fantome_forme_service', 'fantome_entree',
                       'fantome_serveuses_wta', 'fantome_elo_service_retour', 'fantome_forme_set',
-                      'fantome_changement_surface', 'fantome_retour_absence'):
+                      'fantome_changement_surface', 'fantome_retour_absence', 'fantome_age'):
             fa = [e[cle_f] for e in E if cle_f in e]
             if fa:
                 a_, b_ = _moy([x['ll_elo'] for x in fa]), _moy([x['ll_reference'] for x in fa])
