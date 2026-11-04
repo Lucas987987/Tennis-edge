@@ -47,8 +47,8 @@ class PerformanceCircuit(unittest.TestCase):
         hist_ch = [{'uid': f'c{i}', 'circuit': 'CH', 'surface': 'Hard', 'p': .85, 'y': 0} for i in range(60)]
         atp = FI.evaluer(match('ATP'), hist_atp)
         ch = FI.evaluer(match('CH'), hist_ch)
-        self.assertGreater(atp['note'], ch['note'])
-        self.assertLessEqual(ch['note'], 64)
+        self.assertGreater(atp['note_v1'], ch['note_v1'])          # 04/11/2026 : règle de la v1 (gardée à côté de la v3)
+        self.assertLessEqual(ch['note_v1'], 64)
         self.assertEqual(ch['categorie'], 'B_incertain')
         self.assertGreater(ch['performance_circuit']['perte_residuelle'], .05)
         self.assertLess(ch['composantes']['performance_circuit'], 50)

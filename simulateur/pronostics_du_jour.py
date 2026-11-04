@@ -229,7 +229,75 @@ def charger_betas_combines(racine):
             doc = json.load(f)
     except (OSError, ValueError):
         return {}
-    return {c: v['betas'] for c, v in (doc.get('circuits') or {}).items() if v.get('adopte') and v.get('betas')}
+    out = {c: dict(v['betas']) for c, v in (doc.get('circuits') or {}).items() if v.get('adopte') and v.get('betas')}
+    # 04/11/2026 — pistes ajoutées au combiné (etude_pistes_tournoi.py) : là où une piste est adoptée, les 7 β appris
+    # ENSEMBLE remplacent les 6 du combiné (ordre : NOMS du combiné, puis la piste)
+    try:
+        with open(os.path.join(racine, 'simulateur', 'rapport_pistes_tournoi.json'), encoding='utf-8') as f:
+            pistes = json.load(f)
+        import etude_signaux_combines as ESC_
+        for c, v in (pistes.get('circuits') or {}).items():
+            for nom in ('parcours_tournoi', 'montee_petits_tournois'):
+                x = v.get(nom) or {}
+                if x.get('adoptee') and c in out:
+                    b7 = x['ajoutee_au_combine']['betas_7']
+                    out[c] = dict(zip(ESC_.NOMS + (nom,), b7))
+    except (OSError, ValueError, KeyError, ImportError):
+        pass
+    return out
+
+
+PARCOURS = None   # 04/11/2026 : {joueur: [(début, tournoi_id, ville, gagné)]} des 20 derniers jours (feuilles)
+
+
+def charger_parcours(racine, aujourdhui=None, cle=None):
+    import feuilles as FE_
+    cle = cle or E.cle
+    debut = ((aujourdhui or dt.date.today()) - dt.timedelta(days=20)).isoformat()
+    out = {}
+    for r in FE_.lire(racine, depuis=debut):
+        if r.get('vainqueur') not in (1, 2) or not r.get('debut'):
+            continue
+        ville = str(r.get('tournoi') or '').split(',')[0].strip().lower()
+        for i, cote in ((1, 'home'), (2, 'away')):
+            k = cle((r.get(cote) or {}).get('nom'))
+            if k:
+                out.setdefault(k, []).append((float(r['debut']), r.get('tournoi_id'), ville, r['vainqueur'] == i))
+    for L in out.values():
+        L.sort()
+    return out
+
+
+def parcours_du_joueur(k, tournoi, debut_ts, plafond=6):
+    """Matchs déjà gagnés dans CE tournoi (qualifications comprises) : la série de victoires de son tournoi le plus
+    récent, si ce tournoi est celui du match (même ville) et si le joueur ne l'a pas perdu."""
+    L = [x for x in (PARCOURS or {}).get(k) or () if x[0] < debut_ts - 1800 and debut_ts - x[0] <= 16 * 86400]
+    if not L or not L[-1][3]:
+        return 0
+    tid, ville = L[-1][1], L[-1][2]
+    if not ville or ville not in str(tournoi or '').lower():
+        return 0
+    n = 0
+    for x in reversed(L):
+        if x[1] != tid or not x[3]:
+            break
+        n += 1
+    return min(n, plafond)
+
+
+def controle_parcours(p_home, c, h, a, tournoi, debut):
+    """04/11/2026 — « parcours dans le tournoi » (etude_pistes_tournoi.py) : celui qui a déjà gagné plus de matchs ici
+    (qualifications comprises) est sous-estimé par l'Elo. Seulement là où la piste est adoptée (β combinés)."""
+    b = (BETAS_COMBINES.get(c) or {}).get('parcours_tournoi')
+    if b is None or p_home is None or not PARCOURS:
+        return None
+    ts = (debut.replace(tzinfo=dt.timezone.utc).timestamp() if debut.tzinfo is None else debut.timestamp()) \
+        if isinstance(debut, dt.datetime) else float(debut)
+    x = parcours_du_joueur(h, tournoi, ts) - parcours_du_joueur(a, tournoi, ts)
+    if not x:
+        return None
+    lg = lambda q: math.log(min(max(q, 1e-6), 1 - 1e-6) / (1 - min(max(q, 1e-6), 1 - 1e-6)))
+    return {'p_home': round(sig(lg(p_home) + b * x), 4), 'x': x, 'decalage': round(b * x, 4)}
 
 
 BETA_ELO_SR = 0.284   # 04/11/2026 : poids de l'Elo service / retour (étude hors échantillon, dernière semaine apprise)
@@ -655,7 +723,8 @@ def _changement_surface_sur(p_home, c, h, a, surface, debut):
         return None
 
 
-def signaux_du_match(c, p_base, fsv_ctl, ent_ctl, srv_ctl, sr_ctl, cs_ctl=None, ra_ctl=None, age_ctl=None, role_ctl=None):
+def signaux_du_match(c, p_base, fsv_ctl, ent_ctl, srv_ctl, sr_ctl, cs_ctl=None, ra_ctl=None, age_ctl=None, role_ctl=None,
+                     pt_ctl=None):
     """04/11/2026 — décalages (logit) des signaux ADOPTÉS SUR CE CIRCUIT (fantomes_circuits.py) ; {signal: décalage}."""
     if not SIGNAUX_CIRCUIT or p_base is None:
         return {}
@@ -664,7 +733,7 @@ def signaux_du_match(c, p_base, fsv_ctl, ent_ctl, srv_ctl, sr_ctl, cs_ctl=None, 
             'entree': (ent_ctl or {}).get('decalage'), 'serveuses_wta': (srv_ctl or {}).get('decalage'),
             'elo_service_retour': (sr_ctl or {}).get('decalage'), 'changement_surface': (cs_ctl or {}).get('decalage'),
             'retour_absence': (ra_ctl or {}).get('decalage'), 'age': (age_ctl or {}).get('decalage'),
-            'favori_outsider': (role_ctl or {}).get('decalage')}
+            'favori_outsider': (role_ctl or {}).get('decalage'), 'parcours_tournoi': (pt_ctl or {}).get('decalage')}
     return {k: v for k, v in cand.items() if v and c in (SIGNAUX_CIRCUIT.get(k) or [])}
 
 
@@ -1007,7 +1076,7 @@ def construire(racine, maintenant=None):
         elo_fem = E.Elo.importer(fem_etat['joueurs'], fem_etat.get('options'))
     except (OSError, ValueError, KeyError):
         fem_etat, elo_fem = None, None
-    global ACTIVITE, PROGRAMME, FORME_SERVICE, ECHANGES, STYLES_MATCHS, ELO_SR, SIGNAUX_CIRCUIT, DATES_MATCHS, SEUILS_FORME, NAISSANCES, RESIDUS_ROLE, BETAS_COMBINES
+    global ACTIVITE, PROGRAMME, FORME_SERVICE, ECHANGES, STYLES_MATCHS, ELO_SR, SIGNAUX_CIRCUIT, DATES_MATCHS, SEUILS_FORME, NAISSANCES, RESIDUS_ROLE, BETAS_COMBINES, PARCOURS
     STYLES_MATCHS = charger_styles_matchs(racine)
     try:                            # 04/11/2026 : signaux adoptés circuit par circuit
         import fantomes_circuits as FCI
@@ -1031,6 +1100,12 @@ def construire(racine, maintenant=None):
         print(f"::warning::seuils de la forme vidéo non calculés : {type(e_).__name__}: {e_}")
         SEUILS_FORME = {}
     BETAS_COMBINES = charger_betas_combines(racine)      # 04/11/2026 : adoption directe des signaux combinés
+    try:                            # 04/11/2026 : parcours de chaque joueur dans son tournoi en cours (feuilles)
+        _alp = dict(etat.get('alias') or {})
+        PARCOURS = charger_parcours(racine, cle=lambda n: _alp.get(E.cle(n), E.cle(n)) if n else None)
+    except Exception as e_:  # noqa: BLE001
+        print(f"::warning::parcours dans le tournoi non chargés : {type(e_).__name__}: {e_}")
+        PARCOURS = None
     if BETAS_COMBINES:
         print(f"Signaux combinés adoptés (β appris ensemble) : {sorted(BETAS_COMBINES)}")
     try:                            # 04/11/2026 : résidus favori / outsider de chaque joueur (archive rejouée, ~3 min)
@@ -1200,7 +1275,8 @@ def construire(racine, maintenant=None):
                                        _changement_surface_sur(p_base, c, h, a, s, x['debut']),
                                        _retour_absence_sur(p_base, c, h, a, x['debut']),
                                        _age_sur(p_base, c, h, a, x['debut']),
-                                       _role_sur(p_base, stats['p_home'], c, h, a))
+                                       _role_sur(p_base, stats['p_home'], c, h, a),
+                                       controle_parcours(p_base, c, h, a, x['tournoi'], x['debut']))
                 adoptes_ici = tuple(k for k, v in SIGNAUX_CIRCUIT.items() if c in (v or []))
                 if sh_:
                     q_ = min(max(p_base, 1e-6), 1 - 1e-6)
