@@ -7,7 +7,7 @@
 //    verdicts H19/H20, pronostic complet du jour) — SEULEMENT avec la clé privée (en-tête X-Cle = secret
 //    CLE_PRIVEE du worker). Le Lab la lit via Tennis_Edge_Lab/prive.js. Sans clé : 401, et rien ne fuit.
 //
-// Déployé par .github/workflows/deploy_algo.yml (secret CLE_PRIVEE posé depuis le secret GitHub du même nom).
+// Déployé par .github/workflows/deploy_algo.yml (secrets CLE_PRIVEE et GH_TOKEN posés depuis les secrets GitHub).
 
 const ORIGINE = 'https://lucas987987.github.io/Tennis-edge/algo/';
 const LAB = 'https://lucas987987.github.io';
@@ -62,9 +62,47 @@ export async function publique(req, chemin) {
   return new Response(r.body, { headers: h });
 }
 
+// 3. VIDÉO À LA DEMANDE (04/11/2026, demande de Lucas) : POST /video {uid} lance le workflow « Vidéo — simulation du
+//    match du jour » (video_simulation.yml) pour ce match ; la vidéo arrive sur le Telegram PRIVÉ, comme chaque matin.
+//    Même clé privée que le coffre (en-tête X-Cle) ; jeton GitHub (secret GH_TOKEN du worker, droit « Actions » en
+//    écriture) jamais exposé à la page ; une demande toutes les 3 minutes au plus (horodatage gardé au coffre).
+export const UID_VIDEO = /^\d{4}-\d{2}-\d{2}_[a-z0-9_]{3,120}$/;
+const DEPOT = 'Lucas987987/Tennis-edge';
+const ECART_VIDEO_MS = 3 * 60 * 1000;
+
+export async function video(req, env) {
+  const h = { ...SECURITE, 'Cache-Control': 'no-store', 'Content-Type': 'application/json; charset=utf-8' };
+  const rep = (status, o) => new Response(JSON.stringify(o), { status, headers: h });
+  if (req.method !== 'POST') return rep(405, { ok: false, message: 'POST attendu.' });
+  if (!env.CLE_PRIVEE || String(env.CLE_PRIVEE).length < 24) return rep(503, { ok: false, message: 'Clé privée non configurée.' });
+  if (!egal(req.headers.get('X-Cle'), env.CLE_PRIVEE)) return rep(401, { ok: false, message: 'Clé privée incorrecte.' });
+  if (!env.GH_TOKEN) return rep(503, { ok: false, message: 'Jeton GitHub du worker absent (secret GH_TOKEN).' });
+  let corps = {};
+  try { corps = await req.json(); } catch (e) { corps = {}; }
+  const uid = String(corps.uid || '');
+  if (!UID_VIDEO.test(uid)) return rep(400, { ok: false, message: 'Match inconnu.' });
+  const dernier = env.COFFRE ? await env.COFFRE.get('prive/video_derniere_demande.json') : null;
+  if (dernier) {
+    let t = 0;
+    try { t = Number(JSON.parse(await dernier.text()).t) || 0; } catch (e) { t = 0; }
+    const reste = ECART_VIDEO_MS - (Date.now() - t);
+    if (reste > 0) return rep(429, { ok: false, message: `Une vidéo est déjà en route : réessayer dans ${Math.ceil(reste / 60000)} min.` });
+  }
+  const r = await fetch(`https://api.github.com/repos/${DEPOT}/actions/workflows/video_simulation.yml/dispatches`, {
+    method: 'POST',
+    headers: { Accept: 'application/vnd.github+json', Authorization: `Bearer ${env.GH_TOKEN}`,
+               'X-GitHub-Api-Version': '2022-11-28', 'User-Agent': 'tennis-edge-algo', 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ref: 'main', inputs: { uid, adresse: 'false', seed: '' } }),
+  });
+  if (r.status !== 204) return rep(502, { ok: false, message: `GitHub a refusé (HTTP ${r.status}).` });
+  if (env.COFFRE) await env.COFFRE.put('prive/video_derniere_demande.json', JSON.stringify({ t: Date.now(), uid }));
+  return rep(202, { ok: true, message: 'Vidéo lancée : elle arrive sur ton Telegram privé dans 5 à 10 minutes.' });
+}
+
 export default {
   async fetch(req, env) {
     const url = new URL(req.url);
+    if (url.pathname === '/video') return video(req, env);
     if (url.pathname.startsWith('/prive/')) return prive(req, env, decodeURIComponent(url.pathname.slice(7)));
     if (req.method !== 'GET' && req.method !== 'HEAD') return new Response(null, { status: 405, headers: SECURITE });
     return publique(req, url.pathname);
