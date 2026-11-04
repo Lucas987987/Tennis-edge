@@ -3,6 +3,27 @@
  "changements": [
   {
    "date": "2026-11-04",
+   "titre": "Adoption directe : changement de surface, retour d'absence, âge et profil favori / outsider, appris ensemble",
+   "statut": "production",
+   "decision": true,
+   "mesure": "décision de Lucas (sans période de fantôme) ; les quatre signaux appris ENSEMBLE sur 2016–2022 (pas de double compte), jugés 2023 → : ATP +0,0077, WTA +0,0043, Challenger +0,0039 de log loss ; chaque signal garde une part positive ; retirés d'un circuit si deux semaines de suite (≥ 30 matchs) le pronostic affiché fait pire d'au moins 0,001 qu'avant eux ; écart moyen sur les matchs du 04/11 : 3 points"
+  },
+  {
+   "date": "2026-11-04",
+   "titre": "Profil du joueur en favori / en outsider — modèle fantôme par circuit",
+   "statut": "candidat",
+   "decision": false,
+   "mesure": "archive, β appris 2016–2022, jugé 2023 → sur tous les matchs : ATP +0,0032, WTA +0,0013, Challenger +0,0014 ; le même résidu sans distinguer le rôle fait moins bien en ATP (+0,0012) et en Challenger (0,0000) : le rôle compte ; adopté sur un circuit seulement après deux semaines gagnantes en direct"
+  },
+  {
+   "date": "2026-11-04",
+   "titre": "Bilan propre à chaque joueur contre gaucher — rejeté",
+   "statut": "rejete",
+   "decision": false,
+   "mesure": "archive, jugé 2023 → : ATP −0,0003, WTA −0,0000, Challenger +0,0001 sur les matchs concernés (seuil +0,001) ; l'effet général gaucher / droitier reste dans le facteur « morphologie »"
+  },
+  {
+   "date": "2026-11-04",
    "titre": "Évolution du classement (3 mois) et série des 10 derniers matchs — rejetées",
    "statut": "rejete",
    "decision": false,
