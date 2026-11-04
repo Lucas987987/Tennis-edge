@@ -9,8 +9,45 @@ partir de pronostics antérieurs. Elle ne modifie aucune probabilité. Aucune co
 import math
 
 VERSIONS = ('combinaison', 'simulation', 'stats')
-VERSION_FIABILITE = 'circuit_v1'
-ACTIVE_LE = '2026-10-27'
+# 04/11/2026 — NOTE V3 AFFICHÉE (définition de Lucas : « plus la note est proche de 100, plus nos % sont la réalité ») :
+# la pente d'étalonnage de la case du match (etude_fiabilite_v3.py : circuit × expérience du moins connu × ampleur des
+# signaux appliqués), apprise sur l'archive 2016–2022 ; jugée sur 2023 → : tiers haut pente 0,98 et 0,5 point
+# d'erreur d'étalonnage, tiers bas pente 0,76 et 3,1 points. La v1 reste calculée à côté (note_v1).
+VERSION_FIABILITE = 'pente_v3'
+ACTIVE_LE = '2026-11-05'
+SEUILS_V3 = {'prudent': 78, 'correct': 85, 'solide': 93}
+_MODELE_V3 = {}
+
+
+def modele_v3():
+    if 'm' not in _MODELE_V3:
+        import json
+        import os
+        try:
+            with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'rapport_fiabilite_v3.json'),
+                      encoding='utf-8') as f:
+                doc = json.load(f)
+            _MODELE_V3['m'] = doc.get('modele') if doc.get('adopte') else None
+        except (OSError, ValueError):
+            _MODELE_V3['m'] = None
+    return _MODELE_V3['m']
+
+
+def niveau_v3(note):
+    s = SEUILS_V3
+    return 'fragile' if note < s['prudent'] else 'prudent' if note < s['correct'] else 'correct' if note < s['solide'] else 'solide'
+
+
+def note_v3(match):
+    """Note v3 du match, ou None (modèle absent, circuit hors ATP / WTA / Challenger, expérience inconnue)."""
+    M = modele_v3()
+    c = match.get('circuit')
+    n = [x for x in (match.get('matchs_joues') or []) if x is not None]
+    if not M or c not in ('ATP', 'WTA', 'CH') or len(n) < 2:
+        return None
+    import etude_fiabilite_v3 as V3
+    sc = ((match.get('controle') or {}).get('signaux_circuit') or {}).get('decalages') or {}
+    return V3.note_du_match(M, c, min(n), sum(sc.values()))
 # 29/10/2026 — NOTE V2 EN FANTÔME : la même note SANS la composante « calibration » (la plus liée à l'erreur, dans le
 # mauvais sens, sur les 79 premiers matchs notés). Calculée à côté, jamais affichée sur les matchs ; jugée seulement
 # sur les matchs pronostiqués à partir du 30/10 (les 79 qui l'ont suggérée n'en font pas partie), avec la même règle
@@ -166,7 +203,12 @@ def evaluer(match, historique):
     note = min(note, plafond)
     cat = categorie(donnees, desaccord, stabilite, hist['n'], circuit)
     note_v2 = min(round(100 * (0.30 * donnees + 0.15 * accord + 0.25 * circuit['score'] + 0.10 * preuve) / 0.80), plafond)
-    return {'note': note, 'niveau': niveau(note), 'categorie': cat, 'version': k,
+    v3 = note_v3(match)
+    note_v1, niveau_v1 = note, niveau(note)
+    if v3 is not None:
+        note = v3
+    return {'note': note, 'niveau': niveau_v3(note) if v3 is not None else niveau_v1, 'categorie': cat, 'version': k,
+            'note_v1': note_v1, 'niveau_v1': niveau_v1, 'note_v3': v3,
             'note_v2': note_v2, 'niveau_v2': niveau(note_v2), 'version_v2': VERSION_V2,
             'version_fiabilite': VERSION_FIABILITE, 'active_le': ACTIVE_LE,
             'composantes': {'donnees': round(100 * donnees), 'accord_modeles': round(100 * accord),
@@ -180,7 +222,8 @@ def evaluer(match, historique):
             'ecart_elo_simulation': round(ecart, 4) if ecart is not None else None,
             'stabilite_score_modal': stabilite or 'non_controle',
             'historique_effectif': hist['n'], 'ecart_calibration': hist['ecart'],
-            'definition': "Robustesse de l'estimation, pas probabilité que le favori gagne."}
+            'definition': ("Plus la note est proche de 100, plus nos % se sont réalisés tels quels dans ce type de match. "
+                           "Robustesse de l'estimation, pas probabilité que le favori gagne.")}
 
 
 def ajouter(matchs, resultats):

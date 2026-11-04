@@ -132,19 +132,19 @@ class Publication(unittest.TestCase):
                     'fiabilite': {'note': 55, 'version_fiabilite': version},
                     'reel': {'gagnant': gagnant},
                     'dernier': {'combinaison': {'p_home': p, 'vainqueur_juste': p > .5}}}
-        rows = [
-            res('ancien', '2026-10-26', 'circuit_v1', '2026-10-26'),
-            res('mauvaise_version', '2026-10-28', None, '2026-10-28'),
-            res('nouveau_juste', '2026-10-28', 'circuit_v1', '2026-10-28'),
-            res('nouveau_faux', '2026-10-29', 'circuit_v1', '2026-10-29', gagnant='away'),
+        rows = [                                                    # 04/11/2026 : note v3 active le 05/11
+            res('ancien', '2026-11-04', 'pente_v3', '2026-11-04'),
+            res('mauvaise_version', '2026-11-06', 'circuit_v1', '2026-11-06'),
+            res('nouveau_juste', '2026-11-06', 'pente_v3', '2026-11-06'),
+            res('nouveau_faux', '2026-11-07', 'pente_v3', '2026-11-07', gagnant='away'),
         ]
         out = V.validation_fiabilite({'matchs': rows})
         self.assertEqual(out['global']['n'], 2)
         self.assertEqual(out['global']['vainqueurs'], 1)
         self.assertEqual(out['global']['pct'], 50.0)
-        self.assertEqual(out['version'], 'circuit_v1')
+        self.assertEqual(out['version'], 'pente_v3')
         self.assertEqual([r['debut'] for r in out['derniers']],
-                         ['2026-10-29T12:00', '2026-10-28T12:00'])
+                         ['2026-11-07T12:00', '2026-11-06T12:00'])
 
 
 if __name__ == '__main__':

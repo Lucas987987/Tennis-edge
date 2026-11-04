@@ -40,7 +40,8 @@ import sys
 ICI = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, ICI)
 
-SIGNAUX = ('forme_service', 'entree', 'serveuses_wta', 'elo_service_retour', 'forme_set', 'changement_surface', 'retour_absence', 'age', 'favori_outsider')
+SIGNAUX = ('forme_service', 'entree', 'serveuses_wta', 'elo_service_retour', 'forme_set', 'changement_surface', 'retour_absence', 'age',
+           'favori_outsider', 'parcours_tournoi')
 CIRCUITS = ('ATP', 'WTA', 'CH')
 MIN_MATCHS, MARGE = 30, 0.001
 SORTIE = os.path.join('simulateur', 'fantomes_circuits.json')
@@ -59,7 +60,17 @@ def directs(racine):
             doc = json.load(f)
     except (OSError, ValueError):
         return set()
-    return {(s, c) for c, v in (doc.get('circuits') or {}).items() if v.get('adopte') for s in SIGNAUX_COMBINES}
+    out = {(s, c) for c, v in (doc.get('circuits') or {}).items() if v.get('adopte') for s in SIGNAUX_COMBINES}
+    try:                                                    # pistes ajoutées au combiné (etude_pistes_tournoi.py)
+        with open(os.path.join(racine, 'simulateur', 'rapport_pistes_tournoi.json'), encoding='utf-8') as f:
+            pistes = json.load(f)
+        for c, v in (pistes.get('circuits') or {}).items():
+            for nom in ('parcours_tournoi', 'montee_petits_tournois'):
+                if (v.get(nom) or {}).get('adoptee'):
+                    out.add((nom, c))
+    except (OSError, ValueError):
+        pass
+    return out
 DOSSIER_BILANS = os.path.join('simulateur', 'journal_pronostics', 'apres_match')
 
 
