@@ -62,6 +62,8 @@ jobs:
           python -m playwright install --with-deps chromium
           # 24/10/2026 : ffmpeg (conversion MP4 + bande-son) n'est pas garanti sur l'image ubuntu-latest
           command -v ffmpeg >/dev/null || { sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg; }
+          # 04/11/2026 : drapeaux des joueurs (emoji en couleur) dans la vidéo
+          fc-list | grep -qi 'Noto Color Emoji' || { sudo apt-get update -qq && sudo apt-get install -y -qq fonts-noto-color-emoji && fc-cache -f; }
           ffmpeg -version | head -1
 
       - name: Y a-t-il un match du jour ?
