@@ -49,6 +49,16 @@ class ValidationVitrine(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'vainqueur favori'):
             VV.valider(doc)
 
+    def test_favori_au_point_d_arrondi_admet_les_deux_sens(self):
+        # 04/11/2026 (Montgomery – Vandromme, chaîne courte) : variante à 0,4996 → favori away dans la simulation,
+        # p_home publié « 0.5 » → favori home pour le contrôle. Au point d'arrondi, les deux sens sont admis.
+        doc = document_valide()
+        doc['matchs'][0]['p_home'] = .5
+        self.assertTrue(VV.valider(doc))
+        doc['matchs'][0]['p_home'] = .499 if doc['matchs'][0]['simulation']['scenario']['vainqueur'] == 0 else .501
+        with self.assertRaisesRegex(ValueError, 'vainqueur favori'):
+            VV.valider(doc)
+
     def test_match_type_choisit_un_medoid_pas_un_score_impose(self):
         def ligne(sets, valeur):
             f = {k: float(valeur) for k in MS.CLES_FEUILLE}
