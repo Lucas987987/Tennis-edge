@@ -38,6 +38,20 @@ def niveau_v3(note):
     return 'fragile' if note < s['prudent'] else 'prudent' if note < s['correct'] else 'correct' if note < s['solide'] else 'solide'
 
 
+_ACTIFS = {}
+
+
+def criteres_fragiles(match, p, p_elo, p_sim):
+    """Clés des critères de fragilité en vigueur que ce match remplit (surveillance_fragilite.CRITERES)."""
+    import os
+    import surveillance_fragilite as SF
+    if 'a' not in _ACTIFS:
+        _ACTIFS['a'] = SF.actifs(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
+    mj = [x for x in (match.get('matchs_joues') or []) if x is not None]
+    r = {'p': float(p), 'pe': p_elo, 'ps': p_sim, 'xp': min(mj) if len(mj) == 2 else None}
+    return sorted(k for k in _ACTIFS['a'] if k in SF.CRITERES and SF.CRITERES[k][1](r))
+
+
 def note_v3(match):
     """Note v3 du match, ou None (modèle absent, circuit hors ATP / WTA / Challenger, expérience inconnue)."""
     M = modele_v3()
@@ -210,12 +224,14 @@ def evaluer(match, historique):
     # 04/11/2026 (décision de Lucas) : Elo et simulation désignent des favoris DIFFÉRENTS → « fragile » d'office
     # (nos pronostics rejoués : 54 % de bons vainqueurs, log loss 0,686, presque pile ou face ; pente d'étalonnage
     # 0,32 sur octobre–novembre). Les autres critères testés (rapport_criteres_fragilite.json) ne tiennent pas.
-    fragile_force = bool(desaccord) and v3 is not None
-    if fragile_force:
+    # 04/11/2026 : critères de fragilité EN VIGUEUR, revérifiés chaque semaine (surveillance_fragilite.py)
+    criteres = criteres_fragiles(match, p, p_elo, p_sim) if v3 is not None else []
+    fragile_force = 'favoris_opposes' in criteres
+    if criteres:
         note = min(note, SEUILS_V3['prudent'] - 1)
     return {'note': note, 'niveau': niveau_v3(note) if v3 is not None else niveau_v1, 'categorie': cat, 'version': k,
             'note_v1': note_v1, 'niveau_v1': niveau_v1, 'note_v3': v3,
-            'fragile_desaccord_modeles': fragile_force,
+            'fragile_desaccord_modeles': fragile_force, 'fragile_criteres': criteres,
             'note_v2': note_v2, 'niveau_v2': niveau(note_v2), 'version_v2': VERSION_V2,
             'version_fiabilite': VERSION_FIABILITE, 'active_le': ACTIVE_LE,
             'composantes': {'donnees': round(100 * donnees), 'accord_modeles': round(100 * accord),
