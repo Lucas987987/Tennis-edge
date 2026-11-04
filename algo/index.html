@@ -472,7 +472,7 @@ const T = {
   styles_att_match:a=>`attendu ${pc(a)}`,
   styles_diff:(n,e,o)=>`Difficulté des adversaires : ${dec(n,1)}/10 · Elo moyen ${fmt(e)} · ${fmt(o)} fois outsider`,
   styles_note:'Écart « net » : le chiffre attendu tombe hors de la fourchette probable (intervalle de confiance à 95 %). Styles internes mesurés au service et au retour, non comparables aux catégories d’un site tiers.',
-  es_titre:'L’essentiel', es_modeles:(e,pe,s_,ps,f,pf)=>`Les deux modèles divergent : l’Elo (résultats, en tenant compte du niveau des adversaires battus) donne ${e} à ${pe} ; la simulation service-retour (taux corrigés du niveau des adversaires rencontrés) donne ${s_} à ${ps}. Le mélange appris sur nos matchs retient ${f} à ${pf}.`, es_favori:(n,p,f,fem)=>`${n} ${fem?'favorite':'favori'} à ${p}${f ? ', ' + f : ''}.`, es_fiab:(niv,note)=>`fiabilité ${({fragile:'fragile',prudent:'prudente',correct:'correcte',solide:'solide'})[niv]||niv} (${note}/100)`,
+  es_titre:'L’essentiel', es_signaux:(l,c,p)=>`Signal propre ${c==='WTA'?'à la WTA':c==='ATP'?'à l’ATP':'au '+c} appliqué (adopté après deux semaines gagnantes sur ce circuit) : ${l}. Sans lui : ${p}.`, es_modeles:(e,pe,s_,ps,f,pf)=>`Les deux modèles divergent : l’Elo (résultats, en tenant compte du niveau des adversaires battus) donne ${e} à ${pe} ; la simulation service-retour (taux corrigés du niveau des adversaires rencontrés) donne ${s_} à ${ps}. Le mélange appris sur nos matchs retient ${f} à ${pf}.`, es_favori:(n,p,f,fem)=>`${n} ${fem?'favorite':'favori'} à ${p}${f ? ', ' + f : ''}.`, es_fiab:(niv,note)=>`fiabilité ${({fragile:'fragile',prudent:'prudente',correct:'correcte',solide:'solide'})[niv]||niv} (${note}/100)`,
   es_evol:(n,p0,p1,d)=>`Pronostic de ${n} passé de ${p0} à ${p1} depuis le premier affichage${d ? ' (' + d + ')' : ''}.`,
   es_raisons:r=>`Pourquoi : ${r}.`, es_raisons_donnees:'Pourquoi : nouveaux résultats et nouvelles données des joueurs.',
   es_premier:(p,n,d)=>`Premier pronostic : ${n} ${p}${d ? ' (' + d + ')' : ''}`,
@@ -517,6 +517,7 @@ const T = {
   jc_f_fantome_forme_service:'Service et retour du moment (30 jours, même surface)',
   jc_f_fantome_entree:'Statut d’entrée (invité en Challenger, qualifié en ATP)',
   jc_f_fantome_serveuses_wta:'Serveuses WTA (profil serveur contre non-serveur)',
+  jc_f_fantome_elo_service_retour:'Elo au service et au retour',
   en_l:(a,b)=>`Statut d’entrée — ${a}${b?' · '+b:''}.`, en_wc:n=>`${n} : invité(e) (wild card)`, en_q:n=>`${n} : qualifié(e)`,
   en_ll:n=>`${n} : repêché(e) des qualifications`, en_pr:n=>`${n} : classement protégé`, en_ts:(n,k)=>`${n} : tête de série n° ${k}`,
   en_note_wc:' Sur nos données, un invité en Challenger gagne nettement moins que prévu (−5,6 points, 7 922 matchs) : suivi à part, le pronostic affiché ne change pas.',
@@ -657,7 +658,7 @@ const T = {
   styles_att_match:a=>`expected ${pc(a)}`,
   styles_diff:(n,e,o)=>`Opponent difficulty: ${dec(n,1)}/10 · average Elo ${fmt(e)} · underdog ${fmt(o)} times`,
   styles_note:'A “clear” gap: the expected figure falls outside the likely range (95% confidence interval). Internal serve–return styles, not comparable with third-party categories.',
-  es_titre:'Key points', es_modeles:(e,pe,s_,ps,f,pf)=>`The two models disagree: Elo (results, weighted by the level of the opponents beaten) gives ${e} ${pe}; the serve–return simulation (rates corrected for the level of opponents faced) gives ${s_} ${ps}. The blend learned on our matches settles on ${f} at ${pf}.`, es_favori:(n,p,f)=>`${n} favourite at ${p}${f ? ', ' + f : ''}.`, es_fiab:(niv,note)=>`${({fragile:'fragile',prudent:'cautious',correct:'fair',solide:'strong'})[niv]||niv} reliability (${note}/100)`,
+  es_titre:'Key points', es_signaux:(l,c,p)=>`${c}-specific signal applied (adopted after two winning weeks on this tour): ${l}. Without it: ${p}.`, es_modeles:(e,pe,s_,ps,f,pf)=>`The two models disagree: Elo (results, weighted by the level of the opponents beaten) gives ${e} ${pe}; the serve–return simulation (rates corrected for the level of opponents faced) gives ${s_} ${ps}. The blend learned on our matches settles on ${f} at ${pf}.`, es_favori:(n,p,f)=>`${n} favourite at ${p}${f ? ', ' + f : ''}.`, es_fiab:(niv,note)=>`${({fragile:'fragile',prudent:'cautious',correct:'fair',solide:'strong'})[niv]||niv} reliability (${note}/100)`,
   es_evol:(n,p0,p1,d)=>`${n}’s forecast moved from ${p0} to ${p1} since first shown${d ? ' (' + d + ')' : ''}.`,
   es_raisons:r=>`Why: ${r}.`, es_raisons_donnees:'Why: new results and new player data.',
   es_premier:(p,n,d)=>`First forecast: ${n} ${p}${d ? ' (' + d + ')' : ''}`,
@@ -702,6 +703,7 @@ const T = {
   jc_f_fantome_forme_service:'Current serve and return form (30 days, same surface)',
   jc_f_fantome_entree:'Entry status (wild card in Challenger, qualifier in ATP)',
   jc_f_fantome_serveuses_wta:'WTA servers (server profile vs non-server)',
+  jc_f_fantome_elo_service_retour:'Serve and return Elo',
   en_l:(a,b)=>`Entry status — ${a}${b?' · '+b:''}.`, en_wc:n=>`${n}: wild card`, en_q:n=>`${n}: qualifier`,
   en_ll:n=>`${n}: lucky loser`, en_pr:n=>`${n}: protected ranking`, en_ts:(n,k)=>`${n}: seed no. ${k}`,
   en_note_wc:' In our data, a Challenger wild card wins clearly less than predicted (−5.6 points, 7,922 matches): tracked separately, the displayed forecast does not change.',
@@ -971,6 +973,15 @@ function essentielListe(m){
     if ((pe >= .5) !== (ps >= .5) || Math.abs(pe - ps) >= .10)
       L_.push({ sens:'info', txt: t('es_modeles', court(pe >= .5 ? m.home : m.away), pc0(Math.max(pe,1-pe)),
                                  court(ps >= .5 ? m.home : m.away), pc0(Math.max(ps,1-ps)), court(fav), pc0(pf)) });
+  }
+  // 04/11/2026 : signaux adoptés sur le circuit du match (fantomes_circuits.py)
+  const sgc = (m.controle||{}).signaux_circuit;
+  if (sgc && Array.isArray(sgc.appliques) && sgc.appliques.length && sgc.p_home_sans != null){
+    const lib = { forme_service: L==='fr'?'forme du service':'serve form', entree: L==='fr'?'statut d’entrée':'entry status',
+                  serveuses_wta: L==='fr'?'serveuses WTA':'WTA servers', elo_service_retour: L==='fr'?'Elo service / retour':'serve / return Elo' };
+    const circ = m.circuit === 'CH' ? 'Challenger' : m.circuit, ph = sgc.p_home_sans;
+    L_.push({ sens:'info', txt: t('es_signaux', sgc.appliques.map(k=>lib[k]||k).join(', '), circ,
+                                 `${court(ph >= .5 ? m.home : m.away)} ${pc0(Math.max(ph, 1-ph))}`) });
   }
   const ev = evolutionTexte(m); if (ev) L_.push({ sens:'info', txt: ev });
   peuDocumentes(m).forEach(x=>L_.push({ sens:'moins', txt: t(x.balles < DOC_TRES_PEU ? 'es_tres_peu' : 'es_peu', x.nom, x.balles, fem) }));
