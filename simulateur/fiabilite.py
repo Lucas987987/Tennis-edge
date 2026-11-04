@@ -207,8 +207,15 @@ def evaluer(match, historique):
     note_v1, niveau_v1 = note, niveau(note)
     if v3 is not None:
         note = v3
+    # 04/11/2026 (décision de Lucas) : Elo et simulation désignent des favoris DIFFÉRENTS → « fragile » d'office
+    # (nos pronostics rejoués : 54 % de bons vainqueurs, log loss 0,686, presque pile ou face ; pente d'étalonnage
+    # 0,32 sur octobre–novembre). Les autres critères testés (rapport_criteres_fragilite.json) ne tiennent pas.
+    fragile_force = bool(desaccord) and v3 is not None
+    if fragile_force:
+        note = min(note, SEUILS_V3['prudent'] - 1)
     return {'note': note, 'niveau': niveau_v3(note) if v3 is not None else niveau_v1, 'categorie': cat, 'version': k,
             'note_v1': note_v1, 'niveau_v1': niveau_v1, 'note_v3': v3,
+            'fragile_desaccord_modeles': fragile_force,
             'note_v2': note_v2, 'niveau_v2': niveau(note_v2), 'version_v2': VERSION_V2,
             'version_fiabilite': VERSION_FIABILITE, 'active_le': ACTIVE_LE,
             'composantes': {'donnees': round(100 * donnees), 'accord_modeles': round(100 * accord),
