@@ -53,6 +53,7 @@ env:
   # R2 (15/10/2026) — voir README_MIGRATION_R2.md. off | double | on ;
   # sans variable de dépôt : double (git fait foi, R2 reçoit une copie).
   R2_PRIMARY: ${{ vars.R2_PRIMARY || 'double' }}
+  ETAT_CHAUD: ${{ vars.ETAT_CHAUD || 'double' }}   # 04/11/2026 : fichiers chauds relayés par R2 (scripts/etat_chaud.py)
   R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
   R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
   R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
@@ -81,6 +82,12 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: '3.11'
+
+      # 04/11/2026 — TAILLE DU DÉPÔT : closing_lines, matches_oddspapi, live_odds et les états d'alertes étaient
+      # republiés dans git à chaque passage (~470/jour). En mode ETAT_CHAUD=on, R2 les relaie d'un passage à
+      # l'autre et git n'en reçoit qu'une photo toutes les 2 h. Mode double (défaut) : copie R2 en plus, rien d'autre.
+      - name: État chaud — rapatrier de R2
+        run: python scripts/etat_chaud.py pull || true
 
       - name: Fenêtre de cache (30 min)
         id: bucket
@@ -121,6 +128,10 @@ jobs:
       - name: Rétention (allège les fichiers live — historique conservé)
         run: python scripts/purge_data.py || true
 
+      - name: État chaud — envoyer à R2
+        if: always()
+        run: python scripts/etat_chaud.py push || true
+
 
       - name: Commit (robuste — persiste TOUTE la capture)
         run: |
@@ -147,6 +158,8 @@ jobs:
           # job produit (nombreux : capture_state, courbes live, journaux
           # d'alertes, journal forward...).
           git add -A -- ':!parts/pm_ticks_*' ':!parts/kx_ticks_*'
+          # 04/11/2026 : en mode ETAT_CHAUD=on, les fichiers chauds ne partent dans git qu'une fois toutes les 2 h
+          python scripts/etat_chaud.py garde || true
           echo "--- fichiers en attente de commit ---"
           git status --short
           # GARDE-FOU TAILLE (même principe que kalshi/polymarket).
