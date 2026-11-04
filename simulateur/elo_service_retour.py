@@ -118,6 +118,16 @@ def rejouer(M, requetes, eta=0.004):
     return out
 
 
+def construire(M, avant, eta=0.0015):
+    """Notes après tous les matchs AVANT le jour `avant` (exclu) — état utilisé par le pronostic du jour."""
+    el = EloSR(eta)
+    for d, _, _, g, p, c, s, st in M:
+        if d >= avant:
+            break
+        el.maj(g, p, c, s, st)
+    return el
+
+
 def log_loss_archive(M, eta, debut, fin, circuits=('ATP', 'WTA', 'CH')):
     """Réglage de η : log loss du VAINQUEUR sur [debut, fin[, notes d'avant chaque jour."""
     el, tot, n, i, jour = EloSR(eta), 0.0, 0, 0, None
