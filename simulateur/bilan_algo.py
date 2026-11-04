@@ -17,6 +17,7 @@ Env : TELEGRAM_TOKEN / TELEGRAM_CHAT_ID (sans eux : affiché seulement). Usage :
 import datetime as dt
 import json
 import os
+import re
 import sys
 import urllib.parse
 import urllib.request
@@ -286,20 +287,44 @@ def bilan_du_mois(racine, maintenant, journal):
     return '\n'.join(L)
 
 
+_BALISE_TG = re.compile(r'(</?(?:b|i|u|s|code|pre)>|<a href="[^"<>]*">|</a>|&(?:lt|gt|amp|quot|#\d+);)')
+
+
+def texte_telegram(texte, maxi=4000):
+    """04/11/2026 : « < », « > » et « & » hors balises échappés (Telegram refusait « < 0.001 » : erreur 400),
+    puis découpage en morceaux de moins de 4 096 caractères, aux sauts de ligne."""
+    morceaux = _BALISE_TG.split(texte or '')
+    propre = ''.join(m if i % 2 else m.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+                     for i, m in enumerate(morceaux))
+    out, cur = [], ''
+    for ligne in propre.split('\n'):
+        if cur and len(cur) + 1 + len(ligne) > maxi:
+            out.append(cur)
+            cur = ligne
+        else:
+            cur = f'{cur}\n{ligne}' if cur else ligne
+    if cur:
+        out.append(cur)
+    return [o[:maxi] for o in out] or ['']
+
+
 def envoyer(texte):
     token, chat = os.environ.get('TELEGRAM_TOKEN'), os.environ.get('TELEGRAM_CHAT_ID')
     if not token or not chat:
         print('[non envoyé : TELEGRAM_TOKEN / TELEGRAM_CHAT_ID absents]')
         return False
-    try:
-        req = urllib.request.Request(f"https://api.telegram.org/bot{token}/sendMessage",
-                                     data=urllib.parse.urlencode({'chat_id': chat, 'text': texte, 'parse_mode': 'HTML',
-                                                                  'disable_web_page_preview': 'true'}).encode())
-        with urllib.request.urlopen(req, timeout=15) as r:
-            return r.status == 200
-    except Exception as e:  # noqa: BLE001
-        print(f"⚠️ Telegram : {e}")
-        return False
+    ok = True
+    for morceau in texte_telegram(texte):
+        try:
+            req = urllib.request.Request(f"https://api.telegram.org/bot{token}/sendMessage",
+                                         data=urllib.parse.urlencode({'chat_id': chat, 'text': morceau, 'parse_mode': 'HTML',
+                                                                      'disable_web_page_preview': 'true'}).encode())
+            with urllib.request.urlopen(req, timeout=15) as r:
+                ok = ok and r.status == 200
+        except Exception as e:  # noqa: BLE001
+            print(f"⚠️ Telegram : {e}")
+            ok = False
+    return ok
 
 
 def main(argv):
