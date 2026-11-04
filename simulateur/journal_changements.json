@@ -1,6 +1,8 @@
 {
  "regle": "Chaque changement du modèle est noté ici avec sa date, ce qu'il change et ce qu'il a gagné au test (log loss, négatif = mieux prévu). Les changements mis en production par décision, sans attendre la 2e semaine, restent sous le garde-fou du jugement hebdomadaire.",
  "changements": [
+  {"date": "2026-11-04", "titre": "Correctif : plus de pronostics contre des places vides du tableau (« R16P6 », « Qf1 »…)", "statut": "production", "decision": true,
+   "mesure": "le programme annonce le tour suivant avec des places vides ; un tel « joueur » partait de l'Elo de départ (pronostics à 96 % sur le site) ; ces matchs sont écartés jusqu'à ce que les vrais noms arrivent"},
   {"date": "2026-11-04", "titre": "CPI (vitesse du court) comme variable du vainqueur — rejeté", "statut": "rejete", "decision": false,
    "mesure": "interaction CPI × (avantage au service − avantage au retour), appris 2016–2022, jugé 2023–2026 ; CPI officiel (ATP, 3 063 matchs jugés) : +0,00003 ; CPI estimé avant le match : ATP 0,0000 (10 246), WTA −0,0001 (8 993), Challenger +0,0001 (30 915) ; rien ne passe le seuil de 0,001 : la vitesse reste une information et un facteur des statistiques (aces, service)"},
   {"date": "2026-11-04", "titre": "Vitesse des courts : CPI officiel quand il existe, CPI estimé pour tous les autres tournois", "statut": "production", "decision": true,
