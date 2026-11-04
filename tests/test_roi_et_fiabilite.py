@@ -84,3 +84,17 @@ class ControleNotes(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class FragileDesaccord(unittest.TestCase):
+    def test_favoris_opposes_tombent_en_fragile(self):
+        import fiabilite as FI_
+        base = {'circuit': 'ATP', 'surface': 'Hard', 'matchs_joues': [300, 300], 'style_connu': [True, True], 'uid': 'f',
+                'controle': {'signaux_circuit': {'decalages': {'age': 0.05}}}}
+        opp = FI_.evaluer(dict(base, combinaison={'p_home': .55}, stats={'p_home': .58}, simulation={'p_home': .45}), [])
+        acc = FI_.evaluer(dict(base, combinaison={'p_home': .55}, stats={'p_home': .58}, simulation={'p_home': .56}), [])
+        if acc['note_v3'] is not None:                      # modèle v3 présent
+            self.assertEqual(opp['niveau'], 'fragile')
+            self.assertTrue(opp['fragile_desaccord_modeles'])
+            self.assertFalse(acc['fragile_desaccord_modeles'])
+
