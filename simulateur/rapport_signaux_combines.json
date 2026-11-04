@@ -1,0 +1,78 @@
+{
+ "genere_le": "2026-11-04T21:18:29+00:00",
+ "regle": "β appris ensemble 2016–2022, jugé 2023 → ; adopté directement sur un circuit si −0,001 de log loss sur ≥ 1 000 matchs ; retiré après deux semaines de suite sans gain en direct",
+ "circuits": {
+  "ATP": {
+   "appris": 17573,
+   "juges": 11595,
+   "betas": {
+    "changement_surface": -0.1708,
+    "retour_absence_court": -0.5322,
+    "retour_absence_long": -0.8675,
+    "age_vieux": -0.04,
+    "age_jeune": 0.0665,
+    "favori_outsider": 1.5167
+   },
+   "log_loss_sans": 0.61498,
+   "log_loss_avec": 0.60732,
+   "gain": 0.00767,
+   "perte_si_on_retire": {
+    "changement_surface": 0.00137,
+    "retour_absence_court": 0.0011,
+    "retour_absence_long": 0.00072,
+    "age_vieux": 0.00079,
+    "age_jeune": 0.00049,
+    "favori_outsider": 0.00182
+   },
+   "adopte": true
+  },
+  "WTA": {
+   "appris": 16711,
+   "juges": 11235,
+   "betas": {
+    "changement_surface": -0.1203,
+    "retour_absence_court": -0.3938,
+    "retour_absence_long": -1.0248,
+    "age_vieux": -0.0335,
+    "age_jeune": 0.0265,
+    "favori_outsider": 1.4668
+   },
+   "log_loss_sans": 0.59755,
+   "log_loss_avec": 0.59329,
+   "gain": 0.00426,
+   "perte_si_on_retire": {
+    "changement_surface": 0.00062,
+    "retour_absence_court": 0.00061,
+    "retour_absence_long": 0.00121,
+    "age_vieux": 0.00039,
+    "age_jeune": 0.00038,
+    "favori_outsider": 0.00058
+   },
+   "adopte": true
+  },
+  "CH": {
+   "appris": 46287,
+   "juges": 36086,
+   "betas": {
+    "changement_surface": -0.2018,
+    "retour_absence_court": -0.3111,
+    "retour_absence_long": -0.5296,
+    "age_vieux": -0.0493,
+    "age_jeune": 0.0583,
+    "favori_outsider": 1.4499
+   },
+   "log_loss_sans": 0.64047,
+   "log_loss_avec": 0.63657,
+   "gain": 0.0039,
+   "perte_si_on_retire": {
+    "changement_surface": 0.00039,
+    "retour_absence_court": 0.00035,
+    "retour_absence_long": 0.00028,
+    "age_vieux": 0.00072,
+    "age_jeune": 0.00082,
+    "favori_outsider": 0.00091
+   },
+   "adopte": true
+  }
+ }
+}

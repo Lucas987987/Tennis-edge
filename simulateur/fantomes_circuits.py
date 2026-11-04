@@ -18,6 +18,7 @@ Signaux suivis (modèles fantômes, jamais affichés avant adoption) :
   retour_absence      — (04/11/2026) retour après 45 jours ou plus sans match (etude_retour_absence.py), poids 1, 1/2,
                         1/4 sur les trois premiers matchs, β court / long par circuit
   age                 — (04/11/2026) années au-delà de 30 ans et sous 23 ans (etude_age.py), β par circuit
+  favori_outsider     — (04/11/2026) résidu propre au joueur dans son rôle du match (etude_profils_contexte.py)
 
 Chaque match joué donne, pour un signal et le circuit du match : log loss SANS le signal et AVEC lui
 (apres_match : fantome_<signal> tant qu'il n'est pas adopté sur ce circuit, signaux_circuit une fois appliqué).
@@ -39,10 +40,26 @@ import sys
 ICI = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, ICI)
 
-SIGNAUX = ('forme_service', 'entree', 'serveuses_wta', 'elo_service_retour', 'forme_set', 'changement_surface', 'retour_absence', 'age')
+SIGNAUX = ('forme_service', 'entree', 'serveuses_wta', 'elo_service_retour', 'forme_set', 'changement_surface', 'retour_absence', 'age', 'favori_outsider')
 CIRCUITS = ('ATP', 'WTA', 'CH')
 MIN_MATCHS, MARGE = 30, 0.001
 SORTIE = os.path.join('simulateur', 'fantomes_circuits.json')
+# 04/11/2026 — ADOPTION DIRECTE (décision de Lucas) : les signaux appris ENSEMBLE sur l'archive (etude_signaux_combines.py)
+# sont en place dès le départ sur les circuits où le combiné gagne ≥ 0,001 sur 2023 →. Pas de période de fantôme ;
+# RETRAIT : deux semaines de suite où, avec au moins 30 matchs concernés, la log loss affichée est PIRE d'au moins 0,001
+# que sans eux (une semaine trop pauvre en matchs ne compte ni pour ni contre).
+COMBINES = os.path.join('simulateur', 'rapport_signaux_combines.json')
+SIGNAUX_COMBINES = ('changement_surface', 'retour_absence', 'age', 'favori_outsider')
+
+
+def directs(racine):
+    """{(signal, circuit)} adoptés directement par l'étude combinée."""
+    try:
+        with open(os.path.join(racine, COMBINES), encoding='utf-8') as f:
+            doc = json.load(f)
+    except (OSError, ValueError):
+        return set()
+    return {(s, c) for c, v in (doc.get('circuits') or {}).items() if v.get('adopte') for s in SIGNAUX_COMBINES}
 DOSSIER_BILANS = os.path.join('simulateur', 'journal_pronostics', 'apres_match')
 
 
@@ -106,11 +123,15 @@ def lire(racine):
         with open(os.path.join(racine, SORTIE), encoding='utf-8') as f:
             doc = json.load(f)
     except (OSError, ValueError):
-        return {}
+        doc = {}
     out = {}
-    for cle, d in (doc.get('decisions') or {}).items():
+    dec = doc.get('decisions') or {}
+    for cle, d in dec.items():
         if (d or {}).get('adopte'):
             sgn, c = cle.split('|')
+            out.setdefault(sgn, []).append(c)
+    for sgn, c in sorted(directs(racine)):                 # adoption directe, sauf retrait constaté
+        if not (dec.get(f'{sgn}|{c}') or {}).get('retire') and c not in out.get(sgn, []):
             out.setdefault(sgn, []).append(c)
     return out
 
@@ -138,7 +159,28 @@ def main(argv):
     V = verdicts(lire_bilans(racine), aujourdhui)
     etat_path = os.path.join(racine, 'simulateur', 'stabilite.json')
     etat = ST.lire(etat_path)
-    dec = {cle: ST.appliquer(etat, 'circuit|' + cle, ancien.get(cle), v) for cle, v in V.items()}
+    D = directs(racine)
+    lundi_juge = semaine_jugee(aujourdhui)[0].isocalendar()
+    sem = f'{lundi_juge[0]}-W{lundi_juge[1]:02d}'           # la semaine JUGÉE (rejouable, une décision par semaine)
+    dec = {}
+    for cle, v in V.items():
+        sgn, c = cle.split('|')
+        if (sgn, c) in D and not (ancien.get(cle) or {}).get('retire'):
+            k_st = 'circuit|' + cle
+            if k_st not in etat or not (ancien.get(cle) or {}).get('direct'):
+                etat[k_st] = {'adopte': True, 'semaine': None, 'serie_avant': 0, 'serie': 0}
+            if v['matchs_semaine'] < MIN_MATCHS:
+                dec[cle] = dict(ancien.get(cle) or {}, adopte=True, direct=True, raison=v['raison'] + ' — trop peu de matchs cette semaine : en place')
+                continue
+            perte = -(v['gain_semaine'] or 0.0)
+            v_ = dict(v, adopte=perte < MARGE, ll={'avec': 1.0 + perte, 'sans': 1.0})
+            d_ = ST.appliquer(etat, k_st, {'adopte': True}, v_, semaine=sem)
+            d_['direct'] = True
+            if not d_['adopte']:
+                d_['retire'] = True
+            dec[cle] = d_
+        else:
+            dec[cle] = ST.appliquer(etat, 'circuit|' + cle, ancien.get(cle), v)
     ST.ecrire(etat, etat_path)
     doc = {'genere_le': dt.datetime.now(dt.timezone.utc).isoformat(timespec='seconds'),
            'regle': ("par signal et par circuit : semaine gagnante si ≥ 30 matchs, gain ≥ 0,001 sur la semaine et ≥ 0,001 "
