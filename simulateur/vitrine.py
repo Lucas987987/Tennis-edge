@@ -538,7 +538,8 @@ def journal_changements(racine, analyse=None):
     T = g.get('TOUS') or {}
     doc['fantomes'] = [dict(T[k], cle=k) for k in ('fantome', 'fantome_itf_femmes', 'fantome_sigma', 'fantome_forme_service', 'fantome_entree',
                                                  'fantome_serveuses_wta', 'fantome_elo_service_retour',
-                                                 'fantome_forme_set', 'fantome_changement_surface') if T.get(k)]
+                                                 'fantome_forme_set', 'fantome_changement_surface',
+                                                 'fantome_retour_absence') if T.get(k)]
     return doc
 
 
