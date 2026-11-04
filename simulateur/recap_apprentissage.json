@@ -1,68 +1,61 @@
 {
   "schema": "recap_apprentissage_v1",
   "semaine": "2026-W45",
-  "genere_le": "2026-11-04T09:39:17+00:00",
-  "statut": "partiel",
+  "genere_le": "2026-11-04T11:16:42+00:00",
+  "statut": "ok",
   "lecture_seule": true,
   "modifie_apprentissage": false,
   "marche_utilise": false,
   "sources": {
     "facteurs": {
       "disponible": true,
-      "genere_le": "2026-10-26T08:49:39+00:00"
+      "genere_le": "2026-11-04T10:46:14+00:00"
     },
     "choix": {
       "disponible": true,
-      "genere_le": "2026-10-26T08:47:14+00:00"
+      "genere_le": "2026-11-04T10:20:39+00:00"
     },
     "stabilite": {
       "disponible": true,
       "genere_le": null
     },
     "evaluation": {
-      "disponible": false,
-      "genere_le": null
+      "disponible": true,
+      "genere_le": "2026-11-04T11:16:37.538109+00:00"
     },
     "recalibrage": {
       "disponible": true,
-      "genere_le": "2026-10-26T19:22:39.588777+00:00"
+      "genere_le": "2026-11-04T11:16:37.365343+00:00"
     },
     "derive": {
-      "disponible": false,
-      "genere_le": null
+      "disponible": true,
+      "genere_le": "2026-11-04T11:16:37+00:00"
     },
     "gouvernance": {
       "disponible": true,
-      "genere_le": "2026-11-04T09:39:17.150005+00:00"
+      "genere_le": "2026-11-04T11:16:42.157262+00:00"
     }
   },
-  "sources_manquantes": [
-    "derive",
-    "evaluation"
-  ],
+  "sources_manquantes": [],
   "facteurs": {
-    "apprentissage_n": 6183,
-    "jugement_n": 2398,
+    "apprentissage_n": 6734,
+    "jugement_n": 2597,
     "fenetres": {
       "apprentissage": "2026-06-01",
-      "jugement": "2026-09-14"
+      "jugement": "2026-09-23"
     },
     "adoptes": [
+      "adversaires_communs",
       "contexte_tournoi",
       "face_a_face",
       "forme_fatigue",
+      "matchup",
       "morphologie",
       "points_importants",
       "styles",
       "vitesse_court"
     ],
     "non_adoptes": [
-      {
-        "nom": "adversaires_communs",
-        "libelle": "Adversaires communs",
-        "adopte_brut": true,
-        "statut": "candidat (1/2) : adopté s'il fait encore mieux la semaine prochaine"
-      },
       {
         "nom": "blessure",
         "libelle": "Blessure",
@@ -84,33 +77,34 @@
       {
         "nom": "duree",
         "libelle": "Durée",
-        "adopte_brut": false,
-        "statut": "pas adopté"
-      },
-      {
-        "nom": "matchup",
-        "libelle": "Matchup",
         "adopte_brut": true,
         "statut": "candidat (1/2) : adopté s'il fait encore mieux la semaine prochaine"
       },
       {
         "nom": "pression",
         "libelle": "Pression",
-        "adopte_brut": false,
-        "statut": "pas adopté"
+        "adopte_brut": true,
+        "statut": "candidat (1/2) : adopté s'il fait encore mieux la semaine prochaine"
+      },
+      {
+        "nom": "profil",
+        "libelle": "Profil de réaction",
+        "adopte_brut": true,
+        "statut": "candidat (1/2) : adopté s'il fait encore mieux la semaine prochaine"
       }
     ],
     "candidats_en_attente": [
-      "adversaires_communs",
-      "matchup"
+      "duree",
+      "pression",
+      "profil"
     ],
     "avant_apres_jugement": {
-      "log_loss_avant": 0.62627,
-      "log_loss_apres": 0.61354,
-      "gain_log_loss": 0.01273,
-      "exactitude_avant_pct": 65.6,
-      "exactitude_apres_pct": 66.4,
-      "gain_exactitude_points": 0.8
+      "log_loss_avant": 0.62766,
+      "log_loss_apres": 0.61625,
+      "gain_log_loss": 0.01141,
+      "exactitude_avant_pct": 64.9,
+      "exactitude_apres_pct": 66.2,
+      "gain_exactitude_points": 1.3
     },
     "population": "évaluation des facteurs, distincte des seuls pronostics directs récents"
   },
@@ -126,18 +120,18 @@
     "population": "premiers pronostics figés avec simulation et Elo, résultats ultérieurs"
   },
   "performance_recente": {
-    "matchs": null,
-    "log_loss": null,
-    "brier": null,
-    "exactitude": null,
-    "score_exact": null,
-    "jeux_mae": null,
+    "matchs": 787,
+    "log_loss": 0.60906,
+    "brier": 0.211389,
+    "exactitude": 0.664549,
+    "score_exact": 0.029716,
+    "jeux_mae": 4.922222,
     "population": "pronostics récents évalués ; ne pas confondre avec le jugement des facteurs"
   },
   "recalibrage": {
     "direct": {
-      "n": 159,
-      "semaines": 2,
+      "n": 792,
+      "semaines": 3,
       "decisions": [
         {
           "nom": "contraction_hierarchique",
@@ -170,16 +164,16 @@
       "champion_actif_modifie": false
     },
     "rejoue": {
-      "n": 4821,
-      "semaines": 13,
+      "n": 5571,
+      "semaines": 14,
       "decisions": [
         {
           "nom": "contraction_hierarchique",
           "libelle": "Contraction hiérarchique",
           "adopte": false,
           "statut": "confirmation",
-          "gain_log_loss_pondere": -0.000964,
-          "fenetres_positives": 1,
+          "gain_log_loss_pondere": -0.002785,
+          "fenetres_positives": 3,
           "fenetres": 6
         },
         {
@@ -187,7 +181,7 @@
           "libelle": "Isotone",
           "adopte": false,
           "statut": "confirmation",
-          "gain_log_loss_pondere": -0.066334,
+          "gain_log_loss_pondere": -0.069134,
           "fenetres_positives": 0,
           "fenetres": 6
         },
@@ -196,7 +190,7 @@
           "libelle": "Régression logistique",
           "adopte": false,
           "statut": "confirmation",
-          "gain_log_loss_pondere": -0.003102,
+          "gain_log_loss_pondere": -0.002715,
           "fenetres_positives": 1,
           "fenetres": 6
         }
@@ -205,19 +199,23 @@
     "populations_separees": true
   },
   "derive": {
-    "statut": null,
-    "n": null,
-    "date_de_reference": null,
+    "statut": "accumulation",
+    "n": 787,
+    "date_de_reference": "2026-11-04",
     "alertes": []
   },
   "champion": {
     "statut_gouvernance": "ok",
     "initialisation": false,
     "empreinte_avant": "4e73ad2408a734a41276c44bff281c18debad6cd231c11f64c8fc3ed22c7edf9",
-    "empreinte_apres": "0af0e7fac66d407c1f41885c3bdf579a997d1a1db2f5333371ae259a46aeb25e",
+    "empreinte_apres": "3c7df037059aa5efa040ae08533c13ccccd899af4b6b956ce436671a733ac1b5",
     "modifie_cette_semaine": true,
-    "promotions_demande_es": [],
-    "promotions_retenues": [],
+    "promotions_demande_es": [
+      "modele_arbres_points"
+    ],
+    "promotions_retenues": [
+      "modele_arbres_points"
+    ],
     "promotions_differees": [],
     "periodes": {
       "juge_jusqua": "2026-11-03T22:00",
