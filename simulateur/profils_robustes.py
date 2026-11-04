@@ -131,7 +131,7 @@ def main(archive, racine='.', maximum=2000, coupure=dt.date(2025, 1, 1), debut=d
     for nom, reglage in CANDIDATS.items():
         print('Profils :', nom, flush=True)
         rapports[nom] = evaluer_candidat(M, choisis, reglage, coupure)
-    nom, verdict = _verdict(rapports, champion)
+    # 04/11/2026 : le champion en place est lu AVANT le verdict (il était utilisé avant d'être défini : run du 02/11)
     choix_path = os.path.join(racine, 'simulateur', 'choix_simulation.json')
     try:
         choix = json.load(open(choix_path, encoding='utf-8'))
@@ -139,6 +139,7 @@ def main(archive, racine='.', maximum=2000, coupure=dt.date(2025, 1, 1), debut=d
         choix = {}
     ancien = choix.get('profils_hierarchiques') or {}
     champion = ancien.get('challenger') if ancien.get('adopte') and ancien.get('challenger') in CANDIDATS else 'champion'
+    nom, verdict = _verdict(rapports, champion)
     etat_path = os.path.join(racine, 'simulateur', 'stabilite.json')
     etat = ST.lire(etat_path)
     decision = ST.appliquer(etat, 'profils_hierarchiques', ancien, verdict,
@@ -159,7 +160,11 @@ def main(archive, racine='.', maximum=2000, coupure=dt.date(2025, 1, 1), debut=d
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()
     ap.add_argument('archive')
+    # 04/11/2026 : le workflow « Pronostic » passe la racine en 2e argument (« /tmp/sackmann . ») ; les deux écritures
+    # sont acceptées (le run du 02/11 s'était arrêté sur « unrecognized arguments: . »).
+    ap.add_argument('racine_pos', nargs='?', default=None)
     ap.add_argument('--racine', default='.')
     ap.add_argument('--max', type=int, default=2000)
     args = ap.parse_args()
+    args.racine = args.racine_pos or args.racine
     main(args.archive, args.racine, args.max)

@@ -94,6 +94,7 @@ jobs:
             clv_history
             scripts/clv_store.py
             scripts/r2_io.py
+            scripts/coffre.py
             scripts/r2_parts.py
             scripts/hist_r2.py
             scripts/alerts_store.py
@@ -239,6 +240,8 @@ jobs:
             Tennis_Edge_Lab/cache/archive/index.json
           )
           # 23/10/2026 : verdicts H19 (valeur.json) et H20 (h20.json) → coffre privé, plus dans le dépôt public.
+          # 04/11/2026 : scripts/coffre.py ajouté au checkout — absent, push et retrait échouaient en silence (|| true) :
+          # valeur.json et h20.json restaient dans le dépôt public (version du 23/10) et le coffre n'était plus à jour.
           python scripts/coffre.py push --groupe lab || true
           python scripts/coffre.py retirer --groupe lab || true
           # journal H19 rapatrié du coffre pour la lecture seulement : on rend la version git (pas de conflit avec
