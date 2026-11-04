@@ -755,13 +755,48 @@ def impact_facteurs(cH, cA, sg, fct):
     return out
 
 
+SEUILS_FORME = {}    # 04/11/2026 : {circuit: (seuil 3 sets, seuil tie-break)} de la vidéo (seuils_forme)
+
+
+def seuils_forme(racine, jours=60, minimum=50, aujourdhui=None):
+    """04/11/2026 (Lucas) — la vidéo montre 3 sets (un tie-break) si la probabilité du match dépasse le seuil du circuit :
+    la moyenne réelle du circuit PLUS une marge. La marge est réglée sur NOS probabilités affichées des `jours` derniers
+    jours (bilans après match) : seuil = le quantile tel que la part de matchs au-dessus égale la part réelle du circuit
+    (MS.MOYENNES_FORME). Jamais sous la moyenne ; moins de `minimum` matchs : la moyenne seule."""
+    import glob
+    import gzip
+    debut = ((aujourdhui or dt.date.today()) - dt.timedelta(days=jours)).isoformat()
+    P = {}
+    for f in sorted(glob.glob(os.path.join(racine, 'simulateur', 'journal_pronostics', 'apres_match', '*.json.gz'))):
+        if os.path.basename(f)[:10] < debut:
+            continue
+        try:
+            B = json.load(gzip.open(f, 'rt', encoding='utf-8')).values()
+        except (OSError, ValueError):
+            continue
+        for b in B:
+            li = (b.get('ecarts') or {}).get('lignes') or {}
+            if (li.get('set_decisif') or [None])[0] is not None and (li.get('tie_break') or [None])[0] is not None:
+                P.setdefault(b.get('circuit'), []).append((li['set_decisif'][0], li['tie_break'][0]))
+    out = {}
+    for c, (m3, mtb) in MS.MOYENNES_FORME.items():
+        L = P.get(c) or []
+        if len(L) < minimum:
+            out[c] = (m3, mtb)
+            continue
+        q = lambda v, part: sorted(v)[min(len(v) - 1, int(len(v) * (1 - part)))]
+        out[c] = (max(m3, q([x[0] for x in L], m3)), max(mtb, q([x[1] for x in L], mtb)))
+    return out
+
+
 def match_simule(P, h, a, c, s, sg, p_home, cle, fct=None, controler_stabilite=False):
     """Le match joué SIMULATIONS fois au niveau p_home, avec les profils de service des deux joueurs
     (et les facteurs du match adoptés, s'il y en a)."""
     cH, cA, nh, na = composantes_du_match(P, h, a, c, s, pure=p_home is None)
     cH, cA = avec_facteurs(cH, cA, fct)
     sigma = sigma_sim() if p_home is None else sigma_de(c)
-    r = MS.simuler(cH, cA, p_home, sg, SIMULATIONS, sigma, cle=cle, reglages=REGLAGES)
+    r = MS.simuler(cH, cA, p_home, sg, SIMULATIONS, sigma, cle=cle, reglages=REGLAGES, circuit=c,
+                   seuils_forme=SEUILS_FORME.get(c))
     if controler_stabilite and STABILITE_BLOCS > 0:
         import stabilite_scores as SS
         r['stabilite_score'] = SS.controler(cH, cA, p_home, r, sg, SIMULATIONS, sigma, cle,
@@ -889,7 +924,7 @@ def construire(racine, maintenant=None):
         elo_fem = E.Elo.importer(fem_etat['joueurs'], fem_etat.get('options'))
     except (OSError, ValueError, KeyError):
         fem_etat, elo_fem = None, None
-    global ACTIVITE, PROGRAMME, FORME_SERVICE, ECHANGES, STYLES_MATCHS, ELO_SR, SIGNAUX_CIRCUIT, DATES_MATCHS
+    global ACTIVITE, PROGRAMME, FORME_SERVICE, ECHANGES, STYLES_MATCHS, ELO_SR, SIGNAUX_CIRCUIT, DATES_MATCHS, SEUILS_FORME
     STYLES_MATCHS = charger_styles_matchs(racine)
     try:                            # 04/11/2026 : signaux adoptés circuit par circuit
         import fantomes_circuits as FCI
@@ -906,6 +941,12 @@ def construire(racine, maintenant=None):
     except Exception as e_:  # noqa: BLE001
         print(f"::warning::Elo service / retour non chargé : {type(e_).__name__}: {e_}")
         ELO_SR = None
+    try:                            # 04/11/2026 : seuils de la forme montrée en vidéo (moyenne du circuit + marge)
+        SEUILS_FORME = seuils_forme(racine)
+        print(f"Seuils de la forme vidéo (3 sets, tie-break) : {SEUILS_FORME}")
+    except Exception as e_:  # noqa: BLE001
+        print(f"::warning::seuils de la forme vidéo non calculés : {type(e_).__name__}: {e_}")
+        SEUILS_FORME = {}
     try:                            # 04/11/2026 : jours des matchs de chaque joueur (fantôme « retour d'absence »)
         import etude_retour_absence as ERA
         DATES_MATCHS = ERA.dates_matchs(os.environ.get('SACKMANN_DIR', '/tmp/sackmann'), racine)
