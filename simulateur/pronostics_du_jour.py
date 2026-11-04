@@ -204,8 +204,34 @@ BETA_RETOUR_ABSENCE = {'ATP': (-0.5811, -0.8996), 'WTA': (-0.4034, -1.0571), 'CH
 # WTA +0,0017, Challenger +0,0025 de log loss sur tous les matchs) : (β par année au-delà de 30 ans, β par année sous
 # 23 ans) par circuit ; fantôme seul tant que non adopté.
 BETA_AGE = {'ATP': (-0.053, 0.0858), 'WTA': (-0.0442, 0.0435), 'CH': (-0.0602, 0.0675)}
+# 04/11/2026 — favori / outsider (etude_profils_contexte.py, archive 2016–2022 → jugé 2023 →, positif sur les trois
+# circuits : ATP +0,0032, WTA +0,0013, Challenger +0,0014) : résidu moyen rétréci de chaque joueur (résultat − Elo) dans
+# le rôle qu'il a dans ce match ; β par circuit ; fantôme seul tant que non adopté.
+BETA_ROLE = {'ATP': 2.2868, 'WTA': 1.9465, 'CH': 1.8818}
+RESIDUS_ROLE = None   # 04/11/2026 : {joueur: {'fav': résidu, 'out': résidu}} (etude_profils_contexte.residus_actuels)
 NAISSANCES = None     # 04/11/2026 : {joueur: date de naissance estimée} (etude_age.naissances)
 DATES_MATCHS = None   # 04/11/2026 : {joueur: jours de ses matchs} (etude_retour_absence.dates_matchs)
+# 04/11/2026 — ADOPTION DIRECTE (décision de Lucas, etude_signaux_combines.py) : là où les quatre signaux appris
+# ENSEMBLE gagnent ≥ 0,001 sur 2023 → (ATP +0,0077, WTA +0,0043, Challenger +0,0039), ils sont appliqués avec les β
+# COMBINÉS (pas de double compte) ; ailleurs, les β séparés des fantômes. {circuit: {nom: β}} lu au démarrage.
+BETAS_COMBINES = {}
+
+
+def _beta(c, nom, separe):
+    """β du signal `nom` sur le circuit c : combiné si l'adoption directe vaut sur ce circuit, sinon séparé."""
+    b = (BETAS_COMBINES.get(c) or {}).get(nom)
+    return b if b is not None else separe
+
+
+def charger_betas_combines(racine):
+    try:
+        with open(os.path.join(racine, 'simulateur', 'rapport_signaux_combines.json'), encoding='utf-8') as f:
+            doc = json.load(f)
+    except (OSError, ValueError):
+        return {}
+    return {c: v['betas'] for c, v in (doc.get('circuits') or {}).items() if v.get('adopte') and v.get('betas')}
+
+
 BETA_ELO_SR = 0.284   # 04/11/2026 : poids de l'Elo service / retour (étude hors échantillon, dernière semaine apprise)
 FORME_SERVICE = None  # 29/10/2026 : service / retour du moment (forme_service.py), information + modèle fantôme
 PROGRAMME = {}        # 29/10/2026 : {(jour, clé, clé) triée: tour} — programme du jour relevé par feuilles_match.py
@@ -535,6 +561,7 @@ def controle_changement_surface(p_home, c, h, a, surface, debut):
     """04/11/2026 — fantôme « changement de surface » : celui qui joue son 1er ou 2e match sur la surface depuis qu'il en
     a changé (match précédent à 45 jours au plus) est moins fort que son Elo. None si personne n'est concerné."""
     b = BETA_CHANGEMENT_SURFACE.get(c)
+    b = _beta(c, 'changement_surface', b) if b is not None else None
     if b is None or p_home is None or CONTEXTE is None or not hasattr(CONTEXTE, 'nouveau_surface'):
         return None
     ts = (debut.replace(tzinfo=dt.timezone.utc).timestamp() if debut.tzinfo is None else debut.timestamp()) \
@@ -550,6 +577,7 @@ def controle_retour_absence(p_home, c, h, a, debut):
     """04/11/2026 — fantôme « retour d'absence » : celui qui revient après 45 jours ou plus sans match (poids 1, 1/2,
     1/4 sur ses trois premiers matchs) est moins fort que son Elo. None si personne n'est concerné."""
     b = BETA_RETOUR_ABSENCE.get(c)
+    b = (_beta(c, 'retour_absence_court', b[0]), _beta(c, 'retour_absence_long', b[1])) if b else None
     if b is None or p_home is None or not DATES_MATCHS:
         return None
     import etude_retour_absence as ERA
@@ -566,6 +594,7 @@ def controle_age(p_home, c, h, a, debut):
     """04/11/2026 — fantôme « âge » : l'Elo retarde sur le déclin après 30 ans et sur la progression avant 23 ans.
     None si un âge manque ou si la correction est nulle."""
     b = BETA_AGE.get(c)
+    b = (_beta(c, 'age_vieux', b[0]), _beta(c, 'age_jeune', b[1])) if b else None
     if b is None or p_home is None or not NAISSANCES:
         return None
     import etude_age as EA
@@ -576,6 +605,30 @@ def controle_age(p_home, c, h, a, debut):
     d = b[0] * x[0] + b[1] * x[1]
     lg = lambda q: math.log(min(max(q, 1e-6), 1 - 1e-6) / (1 - min(max(q, 1e-6), 1 - 1e-6)))
     return {'p_home': round(sig(lg(p_home) + d), 4), 'x': [round(x[0], 2), round(x[1], 2)], 'decalage': round(d, 4)}
+
+
+def controle_role(p_home, p_elo, c, h, a):
+    """04/11/2026 — fantôme « favori / outsider » : certains joueurs font mieux (ou moins bien) que leur Elo quand ils
+    sont favoris, d'autres quand ils sont outsiders. None si la correction est nulle."""
+    b = BETA_ROLE.get(c)
+    b = _beta(c, 'favori_outsider', b) if b is not None else None
+    if b is None or p_home is None or p_elo is None or not RESIDUS_ROLE:
+        return None
+    import etude_profils_contexte as EPC
+    x = EPC.variable_role(RESIDUS_ROLE, h, a, p_elo)
+    if abs(x) < 1e-6:
+        return None
+    d = b * x
+    lg = lambda q: math.log(min(max(q, 1e-6), 1 - 1e-6) / (1 - min(max(q, 1e-6), 1 - 1e-6)))
+    return {'p_home': round(sig(lg(p_home) + d), 4), 'x': round(x, 4), 'decalage': round(d, 4)}
+
+
+def _role_sur(p_home, p_elo, c, h, a):
+    try:
+        return controle_role(p_home, p_elo, c, h, a)
+    except Exception as e_:  # noqa: BLE001 — un fantôme ne bloque jamais un pronostic
+        print(f"::warning::fantôme favori / outsider non calculé : {type(e_).__name__}: {e_}")
+        return None
 
 
 def _age_sur(p_home, c, h, a, debut):
@@ -602,7 +655,7 @@ def _changement_surface_sur(p_home, c, h, a, surface, debut):
         return None
 
 
-def signaux_du_match(c, p_base, fsv_ctl, ent_ctl, srv_ctl, sr_ctl, cs_ctl=None, ra_ctl=None, age_ctl=None):
+def signaux_du_match(c, p_base, fsv_ctl, ent_ctl, srv_ctl, sr_ctl, cs_ctl=None, ra_ctl=None, age_ctl=None, role_ctl=None):
     """04/11/2026 — décalages (logit) des signaux ADOPTÉS SUR CE CIRCUIT (fantomes_circuits.py) ; {signal: décalage}."""
     if not SIGNAUX_CIRCUIT or p_base is None:
         return {}
@@ -610,7 +663,8 @@ def signaux_du_match(c, p_base, fsv_ctl, ent_ctl, srv_ctl, sr_ctl, cs_ctl=None, 
     cand = {'forme_service': (lg(fsv_ctl['p_home']) - lg(p_base)) if (fsv_ctl or {}).get('p_home') is not None else None,
             'entree': (ent_ctl or {}).get('decalage'), 'serveuses_wta': (srv_ctl or {}).get('decalage'),
             'elo_service_retour': (sr_ctl or {}).get('decalage'), 'changement_surface': (cs_ctl or {}).get('decalage'),
-            'retour_absence': (ra_ctl or {}).get('decalage'), 'age': (age_ctl or {}).get('decalage')}
+            'retour_absence': (ra_ctl or {}).get('decalage'), 'age': (age_ctl or {}).get('decalage'),
+            'favori_outsider': (role_ctl or {}).get('decalage')}
     return {k: v for k, v in cand.items() if v and c in (SIGNAUX_CIRCUIT.get(k) or [])}
 
 
@@ -953,7 +1007,7 @@ def construire(racine, maintenant=None):
         elo_fem = E.Elo.importer(fem_etat['joueurs'], fem_etat.get('options'))
     except (OSError, ValueError, KeyError):
         fem_etat, elo_fem = None, None
-    global ACTIVITE, PROGRAMME, FORME_SERVICE, ECHANGES, STYLES_MATCHS, ELO_SR, SIGNAUX_CIRCUIT, DATES_MATCHS, SEUILS_FORME, NAISSANCES
+    global ACTIVITE, PROGRAMME, FORME_SERVICE, ECHANGES, STYLES_MATCHS, ELO_SR, SIGNAUX_CIRCUIT, DATES_MATCHS, SEUILS_FORME, NAISSANCES, RESIDUS_ROLE, BETAS_COMBINES
     STYLES_MATCHS = charger_styles_matchs(racine)
     try:                            # 04/11/2026 : signaux adoptés circuit par circuit
         import fantomes_circuits as FCI
@@ -976,6 +1030,15 @@ def construire(racine, maintenant=None):
     except Exception as e_:  # noqa: BLE001
         print(f"::warning::seuils de la forme vidéo non calculés : {type(e_).__name__}: {e_}")
         SEUILS_FORME = {}
+    BETAS_COMBINES = charger_betas_combines(racine)      # 04/11/2026 : adoption directe des signaux combinés
+    if BETAS_COMBINES:
+        print(f"Signaux combinés adoptés (β appris ensemble) : {sorted(BETAS_COMBINES)}")
+    try:                            # 04/11/2026 : résidus favori / outsider de chaque joueur (archive rejouée, ~3 min)
+        import etude_profils_contexte as EPC
+        RESIDUS_ROLE = EPC.residus_actuels(os.environ.get('SACKMANN_DIR', '/tmp/sackmann'), racine)
+    except Exception as e_:  # noqa: BLE001
+        print(f"::warning::résidus favori / outsider non chargés : {type(e_).__name__}: {e_}")
+        RESIDUS_ROLE = None
     try:                            # 04/11/2026 : dates de naissance (fantôme « âge »), clés unifiées comme l'Elo
         import etude_age as EAG
         _al = dict(etat.get('alias') or {})
@@ -1136,7 +1199,8 @@ def construire(racine, maintenant=None):
                                        controle_serveuses(p_base, c, STYLES_MATCHS.get(uid)), controle_elo_sr(p_base, h, a, c, s, sg),
                                        _changement_surface_sur(p_base, c, h, a, s, x['debut']),
                                        _retour_absence_sur(p_base, c, h, a, x['debut']),
-                                       _age_sur(p_base, c, h, a, x['debut']))
+                                       _age_sur(p_base, c, h, a, x['debut']),
+                                       _role_sur(p_base, stats['p_home'], c, h, a))
                 adoptes_ici = tuple(k for k, v in SIGNAUX_CIRCUIT.items() if c in (v or []))
                 if sh_:
                     q_ = min(max(p_base, 1e-6), 1 - 1e-6)
@@ -1181,7 +1245,7 @@ def construire(racine, maintenant=None):
                     'forme_service': fsv if fsv and (fsv[0] or fsv[1]) else None,
                     'echanges': _echanges(h, a, x['debut']),
                     'entree': entree_du_match(h, a, x['debut']),
-                    'controle': _avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_serveuses(
+                    'controle': _avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_serveuses(
                         _avec_entree(_avec_service(_avec_forme(controle_fantome(elo, elo_ref, ref_etat, etat, h, a, c, s,
                                                                                 elo_fem, fem_etat), forme_ctl),
                                                    None if 'forme_service' in adoptes_ici else fsv_ctl),
@@ -1198,7 +1262,9 @@ def construire(racine, maintenant=None):
                         _changement_surface_sur((combinaison or {}).get('p_home'), c, h, a, s, x['debut'])),
                         'retour_absence', None if 'retour_absence' in adoptes_ici else
                         _retour_absence_sur((combinaison or {}).get('p_home'), c, h, a, x['debut'])),
-                        'age', None if 'age' in adoptes_ici else _age_sur((combinaison or {}).get('p_home'), c, h, a, x['debut']))})
+                        'age', None if 'age' in adoptes_ici else _age_sur((combinaison or {}).get('p_home'), c, h, a, x['debut'])),
+                        'favori_outsider', None if 'favori_outsider' in adoptes_ici else
+                        _role_sur((combinaison or {}).get('p_home'), (stats or {}).get('p_home'), c, h, a))})
     doc = {'genere_le': maintenant.isoformat(timespec='seconds') + 'Z', 'elo_au': etat.get('dernier_match'),
             'horizon_h': HORIZON_H, 'sigma': SIGMA, 'simulations': SIMULATIONS if PR is not None else 0,
             'qualite_horodatages': couverture_horodatages,
