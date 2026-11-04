@@ -1,0 +1,362 @@
+{
+  "genere_le": "2026-11-04T09:54:48.046409+00:00",
+  "coupure_decouverte_confirmation": "2025-01-01",
+  "matchs_selectionnes": 2000,
+  "regle": "Challenger choisi sur découverte ; adoption seulement après confirmation, marge et deux semaines.",
+  "champion_compare": "champion",
+  "candidats": {
+    "champion": {
+      "reglage": {
+        "demi_vie": 365,
+        "prior_mult": 1.0
+      },
+      "decouverte": {
+        "global": {
+          "n": 539,
+          "log_loss": 0.651396,
+          "brier": 0.229843
+        },
+        "tres_peu_documente": {
+          "n": 45,
+          "log_loss": 0.666539,
+          "brier": 0.236864
+        },
+        "peu_documente": {
+          "n": 99,
+          "log_loss": 0.63174,
+          "brier": 0.220897
+        },
+        "documente": {
+          "n": 440,
+          "log_loss": 0.655819,
+          "brier": 0.231855
+        },
+        "transition_surface": {
+          "n": 97,
+          "log_loss": 0.641209,
+          "brier": 0.225268
+        },
+        "retour_absence": {
+          "n": 55,
+          "log_loss": 0.60721,
+          "brier": 0.208675
+        },
+        "best_of_5": {
+          "n": 16,
+          "log_loss": 0.626322,
+          "brier": 0.219978
+        }
+      },
+      "confirmation": {
+        "global": {
+          "n": 1461,
+          "log_loss": 0.658948,
+          "brier": 0.233387
+        },
+        "tres_peu_documente": {
+          "n": 206,
+          "log_loss": 0.697403,
+          "brier": 0.251232
+        },
+        "peu_documente": {
+          "n": 444,
+          "log_loss": 0.645827,
+          "brier": 0.227122
+        },
+        "documente": {
+          "n": 1017,
+          "log_loss": 0.664676,
+          "brier": 0.236123
+        },
+        "transition_surface": {
+          "n": 227,
+          "log_loss": 0.646019,
+          "brier": 0.225926
+        },
+        "retour_absence": {
+          "n": 199,
+          "log_loss": 0.640162,
+          "brier": 0.22477
+        },
+        "best_of_5": {
+          "n": 17,
+          "log_loss": 0.548097,
+          "brier": 0.182238
+        }
+      }
+    },
+    "recent": {
+      "reglage": {
+        "demi_vie": 180,
+        "prior_mult": 1.0
+      },
+      "decouverte": {
+        "global": {
+          "n": 539,
+          "log_loss": 0.654357,
+          "brier": 0.231213
+        },
+        "tres_peu_documente": {
+          "n": 50,
+          "log_loss": 0.660266,
+          "brier": 0.23401
+        },
+        "peu_documente": {
+          "n": 132,
+          "log_loss": 0.657624,
+          "brier": 0.232585
+        },
+        "documente": {
+          "n": 407,
+          "log_loss": 0.653297,
+          "brier": 0.230768
+        },
+        "transition_surface": {
+          "n": 97,
+          "log_loss": 0.650509,
+          "brier": 0.229559
+        },
+        "retour_absence": {
+          "n": 55,
+          "log_loss": 0.6269,
+          "brier": 0.217925
+        },
+        "best_of_5": {
+          "n": 16,
+          "log_loss": 0.616069,
+          "brier": 0.21541
+        }
+      },
+      "confirmation": {
+        "global": {
+          "n": 1461,
+          "log_loss": 0.657239,
+          "brier": 0.232842
+        },
+        "tres_peu_documente": {
+          "n": 236,
+          "log_loss": 0.689794,
+          "brier": 0.248212
+        },
+        "peu_documente": {
+          "n": 512,
+          "log_loss": 0.640451,
+          "brier": 0.225327
+        },
+        "documente": {
+          "n": 949,
+          "log_loss": 0.666295,
+          "brier": 0.236895
+        },
+        "transition_surface": {
+          "n": 227,
+          "log_loss": 0.650319,
+          "brier": 0.22856
+        },
+        "retour_absence": {
+          "n": 199,
+          "log_loss": 0.646289,
+          "brier": 0.228142
+        },
+        "best_of_5": {
+          "n": 17,
+          "log_loss": 0.521633,
+          "brier": 0.170647
+        }
+      }
+    },
+    "prudent": {
+      "reglage": {
+        "demi_vie": 365,
+        "prior_mult": 2.0
+      },
+      "decouverte": {
+        "global": {
+          "n": 539,
+          "log_loss": 0.656235,
+          "brier": 0.232094
+        },
+        "tres_peu_documente": {
+          "n": 45,
+          "log_loss": 0.686605,
+          "brier": 0.246688
+        },
+        "peu_documente": {
+          "n": 99,
+          "log_loss": 0.650375,
+          "brier": 0.229427
+        },
+        "documente": {
+          "n": 440,
+          "log_loss": 0.657554,
+          "brier": 0.232694
+        },
+        "transition_surface": {
+          "n": 97,
+          "log_loss": 0.649921,
+          "brier": 0.229191
+        },
+        "retour_absence": {
+          "n": 55,
+          "log_loss": 0.635536,
+          "brier": 0.22184
+        },
+        "best_of_5": {
+          "n": 16,
+          "log_loss": 0.628599,
+          "brier": 0.220156
+        }
+      },
+      "confirmation": {
+        "global": {
+          "n": 1461,
+          "log_loss": 0.658619,
+          "brier": 0.233438
+        },
+        "tres_peu_documente": {
+          "n": 206,
+          "log_loss": 0.688531,
+          "brier": 0.247605
+        },
+        "peu_documente": {
+          "n": 444,
+          "log_loss": 0.649183,
+          "brier": 0.228979
+        },
+        "documente": {
+          "n": 1017,
+          "log_loss": 0.662739,
+          "brier": 0.235384
+        },
+        "transition_surface": {
+          "n": 227,
+          "log_loss": 0.648308,
+          "brier": 0.227741
+        },
+        "retour_absence": {
+          "n": 199,
+          "log_loss": 0.646152,
+          "brier": 0.227606
+        },
+        "best_of_5": {
+          "n": 17,
+          "log_loss": 0.558148,
+          "brier": 0.186526
+        }
+      }
+    },
+    "recent_prudent": {
+      "reglage": {
+        "demi_vie": 180,
+        "prior_mult": 2.0
+      },
+      "decouverte": {
+        "global": {
+          "n": 539,
+          "log_loss": 0.659418,
+          "brier": 0.233603
+        },
+        "tres_peu_documente": {
+          "n": 50,
+          "log_loss": 0.674238,
+          "brier": 0.240692
+        },
+        "peu_documente": {
+          "n": 132,
+          "log_loss": 0.667279,
+          "brier": 0.237289
+        },
+        "documente": {
+          "n": 407,
+          "log_loss": 0.656869,
+          "brier": 0.232408
+        },
+        "transition_surface": {
+          "n": 97,
+          "log_loss": 0.659266,
+          "brier": 0.233594
+        },
+        "retour_absence": {
+          "n": 55,
+          "log_loss": 0.650351,
+          "brier": 0.228956
+        },
+        "best_of_5": {
+          "n": 16,
+          "log_loss": 0.618796,
+          "brier": 0.215492
+        }
+      },
+      "confirmation": {
+        "global": {
+          "n": 1461,
+          "log_loss": 0.658004,
+          "brier": 0.233197
+        },
+        "tres_peu_documente": {
+          "n": 236,
+          "log_loss": 0.6837,
+          "brier": 0.245546
+        },
+        "peu_documente": {
+          "n": 512,
+          "log_loss": 0.646765,
+          "brier": 0.22798
+        },
+        "documente": {
+          "n": 949,
+          "log_loss": 0.664068,
+          "brier": 0.236012
+        },
+        "transition_surface": {
+          "n": 227,
+          "log_loss": 0.652547,
+          "brier": 0.230071
+        },
+        "retour_absence": {
+          "n": 199,
+          "log_loss": 0.652305,
+          "brier": 0.230663
+        },
+        "best_of_5": {
+          "n": 17,
+          "log_loss": 0.537208,
+          "brier": 0.176967
+        }
+      }
+    }
+  },
+  "decision": {
+    "adopte": false,
+    "raison": "gain confirmation +0.001709 ; profils peu documentés validés — candidat (1/2) : adopté s'il fait encore mieux la semaine prochaine",
+    "ll": {
+      "avec": 0.657239,
+      "sans": 0.658948
+    },
+    "controles_sous_groupes": {
+      "peu_documente": {
+        "n": 512,
+        "gain_log_loss": 0.005376,
+        "delta_brier": -0.001795,
+        "brier_avec": 0.225327,
+        "brier_sans": 0.227122,
+        "minimum_matchs": 30,
+        "ok": true
+      },
+      "tres_peu_documente": {
+        "n": 236,
+        "gain_log_loss": 0.007609,
+        "delta_brier": -0.00302,
+        "brier_avec": 0.248212,
+        "brier_sans": 0.251232,
+        "minimum_matchs": 30,
+        "ok": true
+      }
+    },
+    "demi_vie": 180,
+    "prior_mult": 1.0,
+    "challenger": "recent",
+    "adopte_brut": true,
+    "stabilite": "candidat (1/2) : adopté s'il fait encore mieux la semaine prochaine"
+  }
+}

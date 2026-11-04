@@ -1,36 +1,50 @@
 {
  "classement": {
   "adopte": true,
-  "gain": 0.00261,
-  "semaine": "2026-W44",
+  "gain": 0.00259,
+  "semaine": "2026-W45",
   "serie": 0,
+  "serie_avant": 0
+ },
+ "classement_relatif": {
+  "adopte": false,
+  "gain": 0.00225,
+  "semaine": "2026-W45",
+  "serie": 1,
   "serie_avant": 0
  },
  "combinaison": {
   "adopte": true,
   "gain": 0.0002,
-  "semaine": "2026-W44",
+  "semaine": "2026-W45",
   "serie": 0,
   "serie_avant": 0
  },
  "combinaison_calibration": {
   "adopte": false,
   "gain": -0.00076,
-  "semaine": "2026-W44",
+  "semaine": "2026-W45",
   "serie": 0,
   "serie_avant": 0
  },
  "combinaison_contexte": {
   "adopte": false,
   "gain": -0.00276,
-  "semaine": "2026-W44",
+  "semaine": "2026-W45",
   "serie": 0,
   "serie_avant": 0
  },
  "combinaison_feuilles": {
   "adopte": false,
-  "gain": -0.00019,
-  "semaine": "2026-W44",
+  "gain": 0.00018,
+  "semaine": "2026-W45",
+  "serie": 0,
+  "serie_avant": 0
+ },
+ "desaccord_wta": {
+  "adopte": false,
+  "gain": -0.00052,
+  "semaine": "2026-W45",
   "serie": 0,
   "serie_avant": 0
  },
@@ -63,142 +77,212 @@
   "serie_avant": 0
  },
  "facteur:adversaires_communs": {
-  "adopte": false,
+  "adopte": true,
   "gain": null,
-  "semaine": "2026-W44",
-  "serie": 1,
+  "semaine": "2026-W45",
+  "serie": 0,
   "serie_avant": 0
  },
  "facteur:blessure": {
   "adopte": false,
   "gain": null,
-  "semaine": "2026-W44",
+  "semaine": "2026-W45",
   "serie": 0,
   "serie_avant": 0
  },
  "facteur:charting": {
   "adopte": false,
   "gain": null,
-  "semaine": "2026-W44",
+  "semaine": "2026-W45",
   "serie": 0,
   "serie_avant": 0
  },
  "facteur:conditions": {
   "adopte": false,
   "gain": null,
-  "semaine": "2026-W44",
+  "semaine": "2026-W45",
   "serie": 0,
   "serie_avant": 0
  },
  "facteur:contexte_tournoi": {
   "adopte": true,
   "gain": null,
-  "semaine": "2026-W44",
+  "semaine": "2026-W45",
   "serie": 0,
   "serie_avant": 0
  },
  "facteur:duree": {
   "adopte": false,
   "gain": null,
-  "semaine": "2026-W44",
-  "serie": 0,
+  "semaine": "2026-W45",
+  "serie": 1,
   "serie_avant": 0
  },
  "facteur:face_a_face": {
   "adopte": true,
   "gain": null,
-  "semaine": "2026-W44",
-  "serie": 0,
+  "semaine": "2026-W45",
+  "serie": 1,
   "serie_avant": 0
  },
  "facteur:forme_fatigue": {
   "adopte": true,
   "gain": null,
-  "semaine": "2026-W44",
+  "semaine": "2026-W45",
   "serie": 0,
   "serie_avant": 0
  },
  "facteur:matchup": {
+  "adopte": true,
+  "gain": null,
+  "semaine": "2026-W45",
+  "serie": 0,
+  "serie_avant": 0
+ },
+ "facteur:modele_complet": {
   "adopte": false,
   "gain": null,
-  "semaine": "2026-W44",
+  "semaine": "2026-W45",
   "serie": 1,
   "serie_avant": 0
  },
  "facteur:morphologie": {
   "adopte": true,
   "gain": null,
-  "semaine": "2026-W44",
+  "semaine": "2026-W45",
   "serie": 0,
   "serie_avant": 0
  },
  "facteur:points_importants": {
   "adopte": true,
   "gain": null,
-  "semaine": "2026-W44",
+  "semaine": "2026-W45",
   "serie": 0,
   "serie_avant": 0
  },
  "facteur:pression": {
   "adopte": false,
   "gain": null,
-  "semaine": "2026-W44",
-  "serie": 0,
-  "serie_avant": 1
+  "semaine": "2026-W45",
+  "serie": 1,
+  "serie_avant": 0
+ },
+ "facteur:profil": {
+  "adopte": false,
+  "gain": null,
+  "semaine": "2026-W45",
+  "serie": 1,
+  "serie_avant": 0
  },
  "facteur:styles": {
   "adopte": true,
   "gain": null,
-  "semaine": "2026-W44",
+  "semaine": "2026-W45",
   "serie": 0,
   "serie_avant": 0
  },
  "facteur:vitesse_court": {
   "adopte": true,
   "gain": null,
-  "semaine": "2026-W44",
+  "semaine": "2026-W45",
+  "serie": 0,
+  "serie_avant": 0
+ },
+ "forme_scores_v3": {
+  "adopte": false,
+  "gain": null,
+  "semaine": "2026-W45",
   "serie": 0,
   "serie_avant": 0
  },
  "modele_arbres": {
   "adopte": true,
-  "gain": 0.00202,
-  "semaine": "2026-W44",
+  "gain": 0.00153,
+  "semaine": "2026-W45",
+  "serie": 0,
+  "serie_avant": 0
+ },
+ "modele_arbres_activite": {
+  "adopte": false,
+  "gain": 0.00099,
+  "semaine": "2026-W45",
+  "serie": 0,
+  "serie_avant": 0
+ },
+ "modele_arbres_points": {
+  "adopte": true,
+  "gain": -0.00206,
+  "semaine": "2026-W45",
+  "serie": 1,
+  "serie_avant": 0
+ },
+ "modele_arbres_tour": {
+  "adopte": false,
+  "gain": 0.00011,
+  "semaine": "2026-W45",
   "serie": 0,
   "serie_avant": 0
  },
  "nouveaux_venus": {
   "adopte": true,
-  "gain": 0.0204,
-  "semaine": "2026-W44",
+  "gain": 0.01589,
+  "semaine": "2026-W45",
+  "serie": 0,
+  "serie_avant": 0
+ },
+ "poids_ATP": {
+  "adopte": false,
+  "gain": -0.00124,
+  "semaine": "2026-W45",
+  "serie": 0,
+  "serie_avant": 0
+ },
+ "poids_WTA": {
+  "adopte": false,
+  "gain": -0.00937,
+  "semaine": "2026-W45",
   "serie": 0,
   "serie_avant": 0
  },
  "poids_challenger": {
   "adopte": false,
-  "gain": 0.00029,
-  "semaine": "2026-W44",
+  "gain": -0.00011,
+  "semaine": "2026-W45",
   "serie": 0,
+  "serie_avant": 0
+ },
+ "profils_hierarchiques": {
+  "adopte": false,
+  "gain": 0.00171,
+  "semaine": "2026-W45",
+  "serie": 1,
   "serie_avant": 0
  },
  "qualifies": {
   "adopte": false,
-  "gain": -0.0015,
-  "semaine": "2026-W44",
+  "gain": 0.0001,
+  "semaine": "2026-W45",
   "serie": 0,
   "serie_avant": 0
  },
  "reglage_simulation": {
   "adopte": true,
   "gain": 0.001,
-  "semaine": "2026-W44",
+  "semaine": "2026-W45",
+  "serie": 0,
+  "serie_avant": 0
+ },
+ "sigma_circuit_production": {
+  "adopte": true,
+  "gain": null,
+  "semaine": "2026-W45",
   "serie": 0,
   "serie_avant": 0
  },
  "transition": {
   "adopte": false,
-  "gain": null,
-  "semaine": "2026-W44",
+  "gain": -0.00834,
+  "semaine": "2026-W45",
   "serie": 0,
   "serie_avant": 0
  }

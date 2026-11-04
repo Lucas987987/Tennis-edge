@@ -1,0 +1,229 @@
+{
+  "version": "combinaison",
+  "statut": "accumulation",
+  "n": 787,
+  "rejetes": 61,
+  "date_de_reference": "2026-11-04",
+  "fenetres": {
+    "4_semaines": {
+      "courant": {
+        "n": 787,
+        "semaines": 3,
+        "du": "2026-10-23",
+        "au": "2026-11-04",
+        "log_loss": 0.60906,
+        "brier": 0.211389,
+        "exactitude": 0.664549,
+        "confiance_moyenne": 0.657025,
+        "ecart_confiance_exactitude": -0.007524
+      },
+      "precedent": {
+        "n": 0,
+        "semaines": 0
+      },
+      "alertes": [],
+      "statut": "accumulation"
+    },
+    "8_semaines": {
+      "courant": {
+        "n": 787,
+        "semaines": 3,
+        "du": "2026-10-23",
+        "au": "2026-11-04",
+        "log_loss": 0.60906,
+        "brier": 0.211389,
+        "exactitude": 0.664549,
+        "confiance_moyenne": 0.657025,
+        "ecart_confiance_exactitude": -0.007524
+      },
+      "precedent": {
+        "n": 0,
+        "semaines": 0
+      },
+      "alertes": [],
+      "statut": "accumulation"
+    },
+    "12_semaines": {
+      "courant": {
+        "n": 787,
+        "semaines": 3,
+        "du": "2026-10-23",
+        "au": "2026-11-04",
+        "log_loss": 0.60906,
+        "brier": 0.211389,
+        "exactitude": 0.664549,
+        "confiance_moyenne": 0.657025,
+        "ecart_confiance_exactitude": -0.007524
+      },
+      "precedent": {
+        "n": 0,
+        "semaines": 0
+      },
+      "alertes": [],
+      "statut": "accumulation"
+    }
+  },
+  "groupes_12_semaines": {
+    "global": {
+      "courant": {
+        "n": 787,
+        "semaines": 3,
+        "du": "2026-10-23",
+        "au": "2026-11-04",
+        "log_loss": 0.60906,
+        "brier": 0.211389,
+        "exactitude": 0.664549,
+        "confiance_moyenne": 0.657025,
+        "ecart_confiance_exactitude": -0.007524
+      },
+      "precedent": {
+        "n": 0,
+        "semaines": 0
+      },
+      "alertes": [],
+      "statut": "accumulation"
+    },
+    "surface:Clay": {
+      "courant": {
+        "n": 194,
+        "semaines": 3,
+        "du": "2026-10-23",
+        "au": "2026-11-03",
+        "log_loss": 0.610509,
+        "brier": 0.211159,
+        "exactitude": 0.659794,
+        "confiance_moyenne": 0.663995,
+        "ecart_confiance_exactitude": 0.004202
+      },
+      "precedent": {
+        "n": 0,
+        "semaines": 0
+      },
+      "alertes": [],
+      "statut": "accumulation"
+    },
+    "surface:Hard": {
+      "courant": {
+        "n": 591,
+        "semaines": 3,
+        "du": "2026-10-23",
+        "au": "2026-11-04",
+        "log_loss": 0.609579,
+        "brier": 0.211841,
+        "exactitude": 0.664975,
+        "confiance_moyenne": 0.654396,
+        "ecart_confiance_exactitude": -0.010579
+      },
+      "precedent": {
+        "n": 0,
+        "semaines": 0
+      },
+      "alertes": [],
+      "statut": "accumulation"
+    },
+    "surface:inconnue": {
+      "courant": {
+        "n": 2,
+        "semaines": 1,
+        "du": "2026-10-23",
+        "au": "2026-10-23",
+        "log_loss": 0.314939,
+        "brier": 0.100162,
+        "exactitude": 1.0,
+        "confiance_moyenne": 0.7577,
+        "ecart_confiance_exactitude": -0.2423
+      },
+      "precedent": {
+        "n": 0,
+        "semaines": 0
+      },
+      "alertes": [],
+      "statut": "accumulation"
+    },
+    "circuit:ATP": {
+      "courant": {
+        "n": 158,
+        "semaines": 3,
+        "du": "2026-10-23",
+        "au": "2026-11-03",
+        "log_loss": 0.605198,
+        "brier": 0.210457,
+        "exactitude": 0.651899,
+        "confiance_moyenne": 0.661797,
+        "ecart_confiance_exactitude": 0.009898
+      },
+      "precedent": {
+        "n": 0,
+        "semaines": 0
+      },
+      "alertes": [],
+      "statut": "accumulation"
+    },
+    "circuit:CH": {
+      "courant": {
+        "n": 451,
+        "semaines": 3,
+        "du": "2026-10-23",
+        "au": "2026-11-04",
+        "log_loss": 0.623227,
+        "brier": 0.216234,
+        "exactitude": 0.665188,
+        "confiance_moyenne": 0.655723,
+        "ecart_confiance_exactitude": -0.009466
+      },
+      "precedent": {
+        "n": 0,
+        "semaines": 0
+      },
+      "alertes": [],
+      "statut": "accumulation"
+    },
+    "circuit:WTA": {
+      "courant": {
+        "n": 178,
+        "semaines": 3,
+        "du": "2026-10-23",
+        "au": "2026-11-03",
+        "log_loss": 0.576592,
+        "brier": 0.199943,
+        "exactitude": 0.674157,
+        "confiance_moyenne": 0.656088,
+        "ecart_confiance_exactitude": -0.01807
+      },
+      "precedent": {
+        "n": 0,
+        "semaines": 0
+      },
+      "alertes": [],
+      "statut": "accumulation"
+    },
+    "format:BO3": {
+      "courant": {
+        "n": 787,
+        "semaines": 3,
+        "du": "2026-10-23",
+        "au": "2026-11-04",
+        "log_loss": 0.60906,
+        "brier": 0.211389,
+        "exactitude": 0.664549,
+        "confiance_moyenne": 0.657025,
+        "ecart_confiance_exactitude": -0.007524
+      },
+      "precedent": {
+        "n": 0,
+        "semaines": 0
+      },
+      "alertes": [],
+      "statut": "accumulation"
+    }
+  },
+  "seuils": {
+    "minimum_matchs_par_periode": 30,
+    "delta_log_loss": 0.05,
+    "delta_brier": 0.01,
+    "ecart_confiance_absolu": 0.1
+  },
+  "regle": "Dégradation signalée si log loss et Brier franchissent tous deux leurs seuils ; sur/sous-confiance si |confiance - exactitude| >= 0,10. Sous-groupes sur 12 semaines.",
+  "action": "Alerte diagnostique seulement : réévaluation contrôlée, jamais de modification automatique du champion.",
+  "genere_le": "2026-11-04T11:16:37+00:00"
+}
