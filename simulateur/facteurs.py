@@ -651,6 +651,26 @@ def transition(Sf, j, surface, t):
     return 1.0 if rec and surface not in rec else 0.0
 
 
+NOUVEAU_SURFACE_J, NOUVEAU_SURFACE_MATCHS = 45, 2     # 04/11/2026 : etude_changement_surface.py
+
+
+def nouveau_surface(Sf, j, surface, t):
+    """04/11/2026 — 1 si ce match est le 1er ou le 2e du joueur sur cette surface depuis qu'il en a changé, son match
+    précédent (autre surface) datant de 45 jours au plus ; 0 sinon (définition de etude_changement_surface.py)."""
+    avant = [(tt, su) for tt, su in Sf.get(j) or () if tt < t - 3600]
+    if not avant:
+        return 0.0
+    if avant[-1][1] != surface:
+        return 1.0 if t - avant[-1][0] <= NOUVEAU_SURFACE_J * 86400 else 0.0
+    i = len(avant) - 1
+    while i >= 0 and avant[i][1] == surface:
+        i -= 1
+    serie = len(avant) - 1 - i                         # matchs déjà joués sur cette surface depuis le changement
+    if i < 0 or serie >= NOUVEAU_SURFACE_MATCHS:
+        return 0.0
+    return 1.0 if avant[i + 1][0] - avant[i][0] <= NOUVEAU_SURFACE_J * 86400 else 0.0
+
+
 def avec_variables(lignes, infos, avant=None, final=False, adj_avant=None, lieux=None, charting=None, abandons=None, points=None):
     """Ajoute à chaque ligne les variables point-in-time des deux serveurs ; avant : matchs de
     l'archive pour les balles de break (format donnees.charger) ; adj_avant : modèle ajusté à la fin
@@ -1033,6 +1053,9 @@ class Contexte:
 
     def transition(self, j, surface, debut_ts):
         return transition(self.surfaces, j, surface, debut_ts)
+
+    def nouveau_surface(self, j, surface, debut_ts):
+        return nouveau_surface(self.surfaces, j, surface, debut_ts)
 
     def tournoi(self, nom):
         """Identifiant du tournoi collecté dont le nom partage le plus de mots avec `nom`."""

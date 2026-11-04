@@ -264,6 +264,10 @@ def bilan_match(uid, f, reel, duree_reelle=None):
     if esr.get('p_home') is not None and isinstance(p, (int, float)):
         # 04/11/2026 : pronostic affiché contre le même corrigé de l'Elo service / retour
         E['fantome_elo_service_retour'] = {'ll_elo': lp_(p), 'll_reference': lp_(esr['p_home'])}
+    csf = ct.get('changement_surface') or {}
+    if csf.get('p_home') is not None and isinstance(p, (int, float)):
+        # 04/11/2026 : pronostic affiché contre le même corrigé du changement de surface
+        E['fantome_changement_surface'] = {'ll_elo': lp_(p), 'll_reference': lp_(csf['p_home'])}
     fsm = ct.get('forme_set') or {}
     S_ = _sets((reel or {}).get('score'))
     if fsm.get('base') and fsm.get('variante') and S_ and len(S_) in (2, 3):
@@ -547,7 +551,8 @@ def analyser(B):
                               'accord_pct': pct(aa, 'affiche_juste'), 'conclusion_possible': len(dd) >= 30}
         # 29/10/2026 : chaque changement contre son modèle fantôme, sur les mêmes matchs réels
         for cle_f in ('fantome', 'fantome_itf_femmes', 'fantome_sigma', 'fantome_forme_service', 'fantome_entree',
-                      'fantome_serveuses_wta', 'fantome_elo_service_retour', 'fantome_forme_set'):
+                      'fantome_serveuses_wta', 'fantome_elo_service_retour', 'fantome_forme_set',
+                      'fantome_changement_surface'):
             fa = [e[cle_f] for e in E if cle_f in e]
             if fa:
                 a_, b_ = _moy([x['ll_elo'] for x in fa]), _moy([x['ll_reference'] for x in fa])

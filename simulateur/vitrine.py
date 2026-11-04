@@ -538,7 +538,7 @@ def journal_changements(racine, analyse=None):
     T = g.get('TOUS') or {}
     doc['fantomes'] = [dict(T[k], cle=k) for k in ('fantome', 'fantome_itf_femmes', 'fantome_sigma', 'fantome_forme_service', 'fantome_entree',
                                                  'fantome_serveuses_wta', 'fantome_elo_service_retour',
-                                                 'fantome_forme_set') if T.get(k)]
+                                                 'fantome_forme_set', 'fantome_changement_surface') if T.get(k)]
     return doc
 
 
@@ -569,6 +569,26 @@ def ajouter_abandons(lignes, racine, maintenant=None):
             v.append(jours if jours is not None and 0 < jours <= ABANDON_J else None)
         if any(v):
             x['abandon_recent'] = v
+
+
+def ajouter_pays(lignes, racine, alias=None):
+    """04/11/2026 — ligne['pays'] = [code ISO alpha-3 de home, de away] (fiches TennisApi, la plus récente gagne) ;
+    sert au drapeau du post X. Absent si aucun des deux n'est connu."""
+    import elo as E
+    import feuilles as FE
+    alias = alias or {}
+    k = lambda n: alias.get(E.cle(n), E.cle(n)) if n else None
+    pays = {}
+    for r in sorted(FE.lire(racine), key=lambda r: r.get('jour') or ''):
+        for cote in ('home', 'away'):
+            j = r.get(cote) or {}
+            code = str(j.get('pays') or '').upper()
+            if j.get('nom') and len(code) == 3 and code.isalpha():
+                pays[k(j['nom'])] = code
+    for x in lignes:
+        v = [pays.get(k(x.get('home'))), pays.get(k(x.get('away')))]
+        if any(v):
+            x['pays'] = v
 
 
 def construire(racine, maintenant=None):
@@ -639,6 +659,10 @@ def construire(racine, maintenant=None):
         ajouter_abandons(lignes, racine)
     except Exception as e:  # noqa: BLE001
         print(f'::warning::abandons récents non calculés : {type(e).__name__}: {e}')
+    try:
+        ajouter_pays(lignes, racine, alias)
+    except Exception as e:  # noqa: BLE001
+        print(f'::warning::pays des joueurs non calculés : {type(e).__name__}: {e}')
     try:
         import apres_match as AM
         facteurs_doc = _lire(os.path.join(racine, 'simulateur', 'facteurs.json'), {}) or {}

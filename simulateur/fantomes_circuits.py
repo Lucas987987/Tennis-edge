@@ -13,6 +13,8 @@ Signaux suivis (modèles fantômes, jamais affichés avant adoption) :
   forme_set           — (04/11/2026) ATP : relâchement du joueur qui mène d'un set ; ne change que la FORME du match
                         (sets, tie-break), jugée sur la vraisemblance de la forme réelle ; adopté → intégré au calcul des
                         scores (distribution_exacte.py), pas à la probabilité de victoire
+  changement_surface  — (04/11/2026) 1er ou 2e match sur une surface depuis un changement (etude_changement_surface.py),
+                        β par circuit (ATP −0,172, WTA −0,114, Challenger −0,171)
 
 Chaque match joué donne, pour un signal et le circuit du match : log loss SANS le signal et AVEC lui
 (apres_match : fantome_<signal> tant qu'il n'est pas adopté sur ce circuit, signaux_circuit une fois appliqué).
@@ -34,7 +36,7 @@ import sys
 ICI = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, ICI)
 
-SIGNAUX = ('forme_service', 'entree', 'serveuses_wta', 'elo_service_retour', 'forme_set')
+SIGNAUX = ('forme_service', 'entree', 'serveuses_wta', 'elo_service_retour', 'forme_set', 'changement_surface')
 CIRCUITS = ('ATP', 'WTA', 'CH')
 MIN_MATCHS, MARGE = 30, 0.001
 SORTIE = os.path.join('simulateur', 'fantomes_circuits.json')

@@ -519,6 +519,7 @@ const T = {
   jc_f_fantome_serveuses_wta:'Serveuses WTA (profil serveur contre non-serveur)',
   jc_f_fantome_elo_service_retour:'Elo au service et au retour',
   jc_f_fantome_forme_set:'Forme du match ATP (relâchement en tête d’un set)',
+  jc_f_fantome_changement_surface:'Changement de surface (1er ou 2e match sur la surface)',
   en_l:(a,b)=>`Statut d’entrée — ${a}${b?' · '+b:''}.`, en_wc:n=>`${n} : invité(e) (wild card)`, en_q:n=>`${n} : qualifié(e)`,
   en_ll:n=>`${n} : repêché(e) des qualifications`, en_pr:n=>`${n} : classement protégé`, en_ts:(n,k)=>`${n} : tête de série n° ${k}`,
   en_note_wc:' Sur nos données, un invité en Challenger gagne nettement moins que prévu (−5,6 points, 7 922 matchs) : suivi à part, le pronostic affiché ne change pas.',
@@ -706,6 +707,7 @@ const T = {
   jc_f_fantome_serveuses_wta:'WTA servers (server profile vs non-server)',
   jc_f_fantome_elo_service_retour:'Serve and return Elo',
   jc_f_fantome_forme_set:'ATP match shape (letting up after winning a set)',
+  jc_f_fantome_changement_surface:'Surface change (1st or 2nd match on the surface)',
   en_l:(a,b)=>`Entry status — ${a}${b?' · '+b:''}.`, en_wc:n=>`${n}: wild card`, en_q:n=>`${n}: qualifier`,
   en_ll:n=>`${n}: lucky loser`, en_pr:n=>`${n}: protected ranking`, en_ts:(n,k)=>`${n}: seed no. ${k}`,
   en_note_wc:' In our data, a Challenger wild card wins clearly less than predicted (−5.6 points, 7,922 matches): tracked separately, the displayed forecast does not change.',
@@ -980,7 +982,8 @@ function essentielListe(m){
   const sgc = (m.controle||{}).signaux_circuit;
   if (sgc && Array.isArray(sgc.appliques) && sgc.appliques.length && sgc.p_home_sans != null){
     const lib = { forme_service: L==='fr'?'forme du service':'serve form', entree: L==='fr'?'statut d’entrée':'entry status',
-                  serveuses_wta: L==='fr'?'serveuses WTA':'WTA servers', elo_service_retour: L==='fr'?'Elo service / retour':'serve / return Elo' };
+                  serveuses_wta: L==='fr'?'serveuses WTA':'WTA servers', elo_service_retour: L==='fr'?'Elo service / retour':'serve / return Elo',
+                  changement_surface: L==='fr'?'changement de surface':'surface change' };
     const circ = m.circuit === 'CH' ? 'Challenger' : m.circuit, ph = sgc.p_home_sans;
     L_.push({ sens:'info', txt: t('es_signaux', sgc.appliques.map(k=>lib[k]||k).join(', '), circ,
                                  `${court(ph >= .5 ? m.home : m.away)} ${pc0(Math.max(ph, 1-ph))}`) });
@@ -1012,12 +1015,21 @@ function essentielListe(m){
 }
 // 04/11/2026 — POST X généré depuis les données de CE match (demande de Lucas) : uniquement des faits de l'algo,
 // aucune adresse de site, aucune cote de bookmaker, aucun conseil. Toujours en français (les posts le sont).
+// 04/11/2026 — drapeau du joueur (code ISO alpha-3 des fiches) ; Russie et Biélorussie : aucun drapeau (joueurs
+// neutres sur les circuits). Code inconnu : rien.
+const PAYS2 = Object.fromEntries("AGOAO ALBAL ANDAD ARGAR ARMAM ATGAG AUSAU AUTAT AZEAZ BDIBI BELBE BGRBG BHSBS BIHBA BMUBM BOLBO BRABR BRBBB BWABW CANCA CHECH CHLCL CHNCN CIVCI CODCD COLCO CRICR CUBCU CYPCY CZECZ DEUDE DNKDK DOMDO DZADZ ECUEC EGYEG ESPES ESTEE FINFI FRAFR GBRGB GEOGE GHAGH GRCGR HKGHK HRVHR HUNHU IDNID INDIN IRLIE IRNIR ISLIS ISRIL ITAIT JAMJM JORJO JPNJP KAZKZ KENKE KGZKG KORKR LAOLA LBNLB LIELI LKALK LTULT LUXLU LVALV MARMA MCOMC MDAMD MEXMX MKDMK MLTMT MNEME MNPMP MOZMZ MYSMY NCLNC NGANG NLDNL NORNO NPLNP NZLNZ PANPA PERPE PHLPH PNGPG POLPL PRTPT PRYPY ROURO SAUSA SGPSG SLVSV SMRSM SRBRS SURSR SVKSK SVNSI SWESE THATH TTOTT TUNTN TURTR TWNTW UKRUA URYUY USAUS UZBUZ VENVE VNMVN XKXXK ZAFZA ZWEZW QATQA AREAE PRIPR BENBJ TGOTG SENSN CMRCM MNGMN PAKPK BGDBD KWTKW MUSMU MDGMG UGAUG ZMBZM GTMGT HNDHN NICNI HTIHT BRNBN KHMKH FJIFJ LBYLY IRQIQ OMNOM BHRBH TJKTJ TKMTM MACMO".split(' ').map(x=>[x.slice(0,3), x.slice(3)]));
+function drapeau(a3){
+  const a2 = PAYS2[String(a3||'').toUpperCase()];
+  return a2 ? String.fromCodePoint(...[...a2].map(ch => 0x1F1E6 + ch.charCodeAt(0) - 65)) : '';
+}
 function postX(m, court_){
   const Ls = L; L = 'fr';
   try {
     const n = Math.round(Number(m.simulation && m.simulation.n) || Number(D.simulations) || 0);
     const nf = n.toLocaleString('fr-FR').replace(/\u202f|\u00a0/g,' ');
     const H = court(m.home), A = court(m.away), p = m.p_home, favH = p >= .5;
+    const fH = drapeau((m.pays||[])[0]), fA = drapeau((m.pays||[])[1]);
+    const nH = n_ => (fH ? fH + ' ' : '') + n_, nA = n_ => n_ + (fA ? ' ' + fA : '');
     const fav = favH ? m.home : m.away, favC = favH ? H : A, outC = favH ? A : H, pf = Math.max(p, 1-p);
     const pct = v => Math.round(v*100) + ' %', pct1 = v => (Math.round(v*1000)/10).toFixed(1).replace('.', ',') + ' %';
     const d1 = v => Number(v).toFixed(1).replace('.', ',');
@@ -1036,7 +1048,7 @@ function postX(m, court_){
     const cles = essentielListe(m).slice(1).filter(x=>x.sens !== 'neutre')
       .map(x=>x.txt.replace(/^Durée prévue [^.]*\.\s*/, '')).filter(Boolean);   // la durée est dans les projections
     if (court_){
-      const l = [`🎾 ${H} 🆚 ${A} · ${circ} ${m.tournoi.replace(/^(ATP|WTA|Challenger)\s+/i,'')}`,
+      const l = [`🎾 ${nH(H)} 🆚 ${nA(A)} · ${circ} ${m.tournoi.replace(/^(ATP|WTA|Challenger)\s+/i,'')}`,
         `🧠 ${nf} simulations point par point, sans aucune cote`,
         `🎯 ${H} ${pct(p)} – ${pct(1-p)} ${A}`];
       if (principal) l.push(`📊 Scénario principal : ${vainqDe(principal[0])} ${setsTxt(principal[0])} (${pct(principal[1])})`);
@@ -1046,7 +1058,7 @@ function postX(m, court_){
     }
     const L2 = [];
     L2.push('🎾 NOUVEAU MATCH POUR NOTRE ALGORITHME TENNIS EDGE ! 🚀', '');
-    L2.push(`🏟️ ${m.tournoi}`, '', `${m.home} 🆚 ${m.away}`, '');
+    L2.push(`🏟️ ${m.tournoi}`, '', `${nH(m.home)} 🆚 ${nA(m.away)}`, '');
     const vc_ = m.vitesse_court, vv_ = vc_ ? (vc_.cpi_officiel != null ? vc_.cpi_officiel : vc_.cpi_estime) : null;
     L2.push(`📅 ${date.charAt(0).toUpperCase()+date.slice(1)} – ${hr}`, `🎾 Surface : ${surf}` +
             (vv_ != null ? ` · court ${vc_.classe} (CPI ${vc_.cpi_officiel != null ? '' : 'estimé '}${d1(vv_)})` : ''), '');
