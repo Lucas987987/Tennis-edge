@@ -94,6 +94,10 @@ jobs:
         run: python simulateur/profils_service.py /tmp/sackmann .
       - name: Bilans descriptifs contre les styles service–retour
         run: python simulateur/styles_descriptifs.py /tmp/sackmann .
+      # 04/11/2026 : vitesse de chaque tournoi sur l'échelle du CPI (officiel s'il est publié, sinon estimé) — information
+      - name: Vitesse des courts (CPI officiel ou estimé)
+        continue-on-error: true
+        run: python simulateur/vitesse_courts.py /tmp/sackmann .
       # 28/10/2026 : rythme, longueur et régularité des joueurs (descriptif) → durée prévue sur la fiche
       - name: Profils de rythme et de longueur
         continue-on-error: true
