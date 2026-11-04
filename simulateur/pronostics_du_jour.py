@@ -738,6 +738,16 @@ def distribution_exacte_du_match(P, h, a, c, s, sg, p_home, fct=None, pure=False
             'forme_profils': forme}
 
 
+# 04/11/2026 — le programme annonce parfois le tour suivant avec des places vides : « R16P6 » (vainqueur de la partie 6 du
+# 2e tour), « Qf1 », « WQF2 », « WSF1 »… Un tel « joueur » inconnu partait de l'Elo de départ : pronostics à 96 %
+# affichés sur le site. Ces matchs sont écartés ; ils reviennent avec les vrais noms quand le tour précédent est joué.
+_FICTIF = re.compile(r'^(?:w?(?:r\d+p\d+|qf\d*|sf\d*|f\d*|q\d+|r\d+|tbd|tba|bye|winner.*|vainqueur.*|qualifier|qualifie|q|ll))$', re.I)
+
+
+def adversaire_fictif(nom):
+    return bool(_FICTIF.match(re.sub(r'[\s._-]+', '', str(nom or '')).strip()))
+
+
 def matchs_a_venir(racine, maintenant, avec_couverture=False):
     try:
         with open(os.path.join(racine, 'matches_oddspapi.json'), encoding='utf-8') as f:
@@ -758,6 +768,8 @@ def matchs_a_venir(racine, maintenant, avec_couverture=False):
             continue
         h, a = m.get('home_team'), m.get('away_team')
         if not h or not a:
+            continue
+        if adversaire_fictif(h) or adversaire_fictif(a):     # 04/11/2026 : « R16P6 », « Qf1 »… = vainqueur à venir
             continue
         out.append({'debut': debut, 'debut_utc': debut_utc.isoformat(),
                     'horodatage': {'nature': 'debut_planifie', 'source': 'oddspapi.commence_time',
