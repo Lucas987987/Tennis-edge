@@ -264,6 +264,14 @@ def bilan_match(uid, f, reel, duree_reelle=None):
     if esr.get('p_home') is not None and isinstance(p, (int, float)):
         # 04/11/2026 : pronostic affiché contre le même corrigé de l'Elo service / retour
         E['fantome_elo_service_retour'] = {'ll_elo': lp_(p), 'll_reference': lp_(esr['p_home'])}
+    fsm = ct.get('forme_set') or {}
+    S_ = _sets((reel or {}).get('score'))
+    if fsm.get('base') and fsm.get('variante') and S_ and len(S_) in (2, 3):
+        # 04/11/2026 : forme réelle (home gagne, nombre de sets, tie-break) sous la base et sous la variante « set »
+        g_ = int(sum(a > b for a, b in S_) > sum(b > a for a, b in S_))
+        case = f"{g_}|{len(S_)}|{int(any(max(a, b) == 7 and min(a, b) == 6 for a, b in S_))}"
+        lq = lambda d: round(-math.log(max(float(d.get(case) or 0.0), 1e-6)), 5)
+        E['fantome_forme_set'] = {'ll_elo': lq(fsm['base']), 'll_reference': lq(fsm['variante'])}
     sgc = ct.get('signaux_circuit') or {}
     if sgc.get('p_home_sans') is not None and isinstance(p, (int, float)):
         # 04/11/2026 : signaux adoptés sur ce circuit — log loss affichée (avec) contre sans eux
@@ -539,7 +547,7 @@ def analyser(B):
                               'accord_pct': pct(aa, 'affiche_juste'), 'conclusion_possible': len(dd) >= 30}
         # 29/10/2026 : chaque changement contre son modèle fantôme, sur les mêmes matchs réels
         for cle_f in ('fantome', 'fantome_itf_femmes', 'fantome_sigma', 'fantome_forme_service', 'fantome_entree',
-                      'fantome_serveuses_wta', 'fantome_elo_service_retour'):
+                      'fantome_serveuses_wta', 'fantome_elo_service_retour', 'fantome_forme_set'):
             fa = [e[cle_f] for e in E if cle_f in e]
             if fa:
                 a_, b_ = _moy([x['ll_elo'] for x in fa]), _moy([x['ll_reference'] for x in fa])

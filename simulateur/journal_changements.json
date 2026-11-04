@@ -1,6 +1,8 @@
 {
  "regle": "Chaque changement du modèle est noté ici avec sa date, ce qu'il change et ce qu'il a gagné au test (log loss, négatif = mieux prévu). Les changements mis en production par décision, sans attendre la 2e semaine, restent sous le garde-fou du jugement hebdomadaire.",
  "changements": [
+  {"date": "2026-11-04", "titre": "Forme des matchs : relâchement de celui qui mène d'un set en ATP — modèle fantôme", "statut": "candidat", "decision": false,
+   "mesure": "banc d'essai exact (vainqueur tenu fixe), réglé sur 2021–2022, jugé sur 1 200 matchs 2023–2026 par circuit : ATP +0,0033 de log-vraisemblance de la forme (δ = −0,05 au service du joueur qui mène d'un set : plus de matchs en 3 sets) ; WTA et Challenger rien ; forme du jour plus forte (σ 0,22–0,32) : rien nulle part ; serveur affaibli au tie-break : +0,0005 partout, sous le seuil ; suivi en fantôme sur les nouveaux matchs ATP, intégré au calcul des scores après deux semaines gagnantes"},
   {"date": "2026-11-04", "titre": "Correctif : plus de pronostics contre des places vides du tableau (« R16P6 », « Qf1 »…)", "statut": "production", "decision": true,
    "mesure": "le programme annonce le tour suivant avec des places vides ; un tel « joueur » partait de l'Elo de départ (pronostics à 96 % sur le site) ; ces matchs sont écartés jusqu'à ce que les vrais noms arrivent"},
   {"date": "2026-11-04", "titre": "CPI (vitesse du court) comme variable du vainqueur — rejeté", "statut": "rejete", "decision": false,
