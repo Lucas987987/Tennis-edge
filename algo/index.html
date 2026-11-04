@@ -472,7 +472,7 @@ const T = {
   styles_att_match:a=>`attendu ${pc(a)}`,
   styles_diff:(n,e,o)=>`Difficulté des adversaires : ${dec(n,1)}/10 · Elo moyen ${fmt(e)} · ${fmt(o)} fois outsider`,
   styles_note:'Écart « net » : le chiffre attendu tombe hors de la fourchette probable (intervalle de confiance à 95 %). Styles internes mesurés au service et au retour, non comparables aux catégories d’un site tiers.',
-  es_titre:'L’essentiel', es_favori:(n,p,f,fem)=>`${n} ${fem?'favorite':'favori'} à ${p}${f ? ', ' + f : ''}.`, es_fiab:(niv,note)=>`fiabilité ${({fragile:'fragile',prudent:'prudente',correct:'correcte',solide:'solide'})[niv]||niv} (${note}/100)`,
+  es_titre:'L’essentiel', es_modeles:(e,pe,s_,ps,f,pf)=>`Les deux modèles divergent : l’Elo (résultats, en tenant compte du niveau des adversaires battus) donne ${e} à ${pe} ; la simulation service-retour (taux corrigés du niveau des adversaires rencontrés) donne ${s_} à ${ps}. Le mélange appris sur nos matchs retient ${f} à ${pf}.`, es_favori:(n,p,f,fem)=>`${n} ${fem?'favorite':'favori'} à ${p}${f ? ', ' + f : ''}.`, es_fiab:(niv,note)=>`fiabilité ${({fragile:'fragile',prudent:'prudente',correct:'correcte',solide:'solide'})[niv]||niv} (${note}/100)`,
   es_evol:(n,p0,p1,d)=>`Pronostic de ${n} passé de ${p0} à ${p1} depuis le premier affichage${d ? ' (' + d + ')' : ''}.`,
   es_raisons:r=>`Pourquoi : ${r}.`, es_raisons_donnees:'Pourquoi : nouveaux résultats et nouvelles données des joueurs.',
   es_premier:(p,n,d)=>`Premier pronostic : ${n} ${p}${d ? ' (' + d + ')' : ''}`,
@@ -561,7 +561,7 @@ const T = {
   du_p_neutre:'Duel équilibré des deux côtés : ni service ni retour ne prend nettement le dessus.',
   du_p_srv:(a)=>`${a} garde l’avantage sur son service`, du_p_ret:(a,b)=>`${b} menace le service de ${a}`,
   du_p_eq:(a)=>`le service de ${a} est un duel équilibré`,
-  du_p_lire:'Lecture : indice 90 = meilleur que 90 % des joueurs du circuit sur cette surface. Écart de moins de 10 points = équilibré.',
+  du_p_lire:'Lecture : indice 90 = meilleur que 90 % des joueurs du circuit sur cette surface. Écart de moins de 10 points = équilibré. Taux BRUTS : ils ne tiennent pas compte du niveau des adversaires rencontrés (la simulation, elle, en tient compte).',
   ry_p_rien:'Profil de match habituel : rien ne sort de l’ordinaire pour ces deux joueurs.',
   ry_p_tb_plus:(a,b,r)=>`Tie-breaks fréquents dans leurs matchs (${a} et ${b}, contre ${r} pour un joueur type du circuit)`,
   ry_p_tb_moins:(a,b,r)=>`Peu de tie-breaks dans leurs matchs (${a} et ${b}, contre ${r} pour un joueur type du circuit)`,
@@ -657,7 +657,7 @@ const T = {
   styles_att_match:a=>`expected ${pc(a)}`,
   styles_diff:(n,e,o)=>`Opponent difficulty: ${dec(n,1)}/10 · average Elo ${fmt(e)} · underdog ${fmt(o)} times`,
   styles_note:'A “clear” gap: the expected figure falls outside the likely range (95% confidence interval). Internal serve–return styles, not comparable with third-party categories.',
-  es_titre:'Key points', es_favori:(n,p,f)=>`${n} favourite at ${p}${f ? ', ' + f : ''}.`, es_fiab:(niv,note)=>`${({fragile:'fragile',prudent:'cautious',correct:'fair',solide:'strong'})[niv]||niv} reliability (${note}/100)`,
+  es_titre:'Key points', es_modeles:(e,pe,s_,ps,f,pf)=>`The two models disagree: Elo (results, weighted by the level of the opponents beaten) gives ${e} ${pe}; the serve–return simulation (rates corrected for the level of opponents faced) gives ${s_} ${ps}. The blend learned on our matches settles on ${f} at ${pf}.`, es_favori:(n,p,f)=>`${n} favourite at ${p}${f ? ', ' + f : ''}.`, es_fiab:(niv,note)=>`${({fragile:'fragile',prudent:'cautious',correct:'fair',solide:'strong'})[niv]||niv} reliability (${note}/100)`,
   es_evol:(n,p0,p1,d)=>`${n}’s forecast moved from ${p0} to ${p1} since first shown${d ? ' (' + d + ')' : ''}.`,
   es_raisons:r=>`Why: ${r}.`, es_raisons_donnees:'Why: new results and new player data.',
   es_premier:(p,n,d)=>`First forecast: ${n} ${p}${d ? ' (' + d + ')' : ''}`,
@@ -746,7 +746,7 @@ const T = {
   du_p_neutre:'Even on both sides: neither serve nor return clearly has the upper hand.',
   du_p_srv:(a)=>`${a} keeps the edge on serve`, du_p_ret:(a,b)=>`${b} threatens ${a}’s serve`,
   du_p_eq:(a)=>`${a}’s serve is an even contest`,
-  du_p_lire:'How to read: index 90 = better than 90% of players on the same tour and surface. A gap under 10 points = even.',
+  du_p_lire:'How to read: index 90 = better than 90% of players on the same tour and surface. A gap under 10 points = even. RAW rates: they ignore the level of the opponents faced (the simulation corrects for it).',
   ry_p_rien:'A typical match profile: nothing stands out for these two players.',
   ry_p_tb_plus:(a,b,r)=>`Tie-breaks are frequent in their matches (${a} and ${b}, versus ${r} for a typical player on the tour)`,
   ry_p_tb_moins:(a,b,r)=>`Few tie-breaks in their matches (${a} and ${b}, versus ${r} for a typical player on the tour)`,
@@ -964,6 +964,14 @@ function essentielListe(m){
   const L_ = [], fav = m.p_home >= .5 ? m.home : m.away, pf = Math.max(m.p_home, 1-m.p_home), fb = m.fiabilite || {};
   const fem = m.circuit === 'WTA';
   L_.push({ sens:'info', txt: t('es_favori', fav, pc0(pf), fb.niveau ? t('es_fiab', fb.niveau, fb.note) : '', fem) });
+  // 04/11/2026 : quand l'Elo et la simulation ne désignent pas le même favori (ou s'écartent de 10 points), on le dit
+  const mo = m.modeles || {};
+  if (mo.p_elo != null && mo.p_simulation != null){
+    const pe = mo.p_elo, ps = mo.p_simulation;
+    if ((pe >= .5) !== (ps >= .5) || Math.abs(pe - ps) >= .10)
+      L_.push({ sens:'info', txt: t('es_modeles', court(pe >= .5 ? m.home : m.away), pc0(Math.max(pe,1-pe)),
+                                 court(ps >= .5 ? m.home : m.away), pc0(Math.max(ps,1-ps)), court(fav), pc0(pf)) });
+  }
   const ev = evolutionTexte(m); if (ev) L_.push({ sens:'info', txt: ev });
   peuDocumentes(m).forEach(x=>L_.push({ sens:'moins', txt: t(x.balles < DOC_TRES_PEU ? 'es_tres_peu' : 'es_peu', x.nom, x.balles, fem) }));
   (m.abandon_recent||[]).forEach((j,i)=>{ if (j!=null) L_.push({ sens:'moins', txt: t('es_abandon', i===0?m.home:m.away, j) }); });
