@@ -594,6 +594,18 @@ def construire(racine, maintenant=None):
     except Exception:
         alias = {}
     ajouter_rythme(lignes, rythme_doc, alias)
+    # 04/11/2026 — vitesse du court (vitesse_courts.py : CPI officiel quand il existe, sinon estimé) ; information seule
+    vit_doc = _lire(os.path.join(racine, 'simulateur', 'vitesse_courts.json'), {}) or {}
+    if vit_doc.get('tournois'):
+        import vitesse_courts as VC
+        for ligne in lignes:
+            try:
+                v_ = VC.vitesse_du_match(vit_doc, ligne.get('circuit'), ligne.get('tournoi'),
+                                         dt.date.fromisoformat(str(ligne.get('debut'))[:10]))
+            except (ValueError, TypeError):
+                v_ = None
+            if v_:
+                ligne['vitesse_court'] = {k: v_.get(k) for k in ('cpi_estime', 'cpi_officiel', 'classe', 'annee', 'points')}
     # 28/10/2026 — lignes de paris calculées par l'algo (distribution exacte) et duel service ↔ retour
     import lignes_algo as MD
     duel = MD.Duel.charger(racine)
