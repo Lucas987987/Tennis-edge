@@ -8,6 +8,11 @@ Ouvre la page publique algo/index.html en « mode vidéo » (?video=1) dans Chro
 que le match simulé se joue point par point, puis convertit l'enregistrement en MP4 (H.264, lisible partout).
 La page signale la fin (window.__fini) ; la vidéo dure ~25 à 40 s selon la longueur du match simulé.
 
+04/11/2026 — CAPTURE IMAGE PAR IMAGE (par défaut) : l'horloge de la page est remplacée par une horloge virtuelle
+(minuteries, Date, performance, requestAnimationFrame, animations et transitions CSS). Le script avance le temps de
+1/IPS seconde, prend une capture, et recommence : chaque image est exacte, sans saccade, quelle que soit la vitesse
+de la machine. --capture ecran garde l'ancien enregistrement d'écran (repli).
+
 Usage : python scripts/video_simulation.py [--lang fr|en] [--uid UID] [--seed N] [--carte] [--sortie dossier]
 --carte : la carte de stats du match (PNG 1080×1350) au lieu de la vidéo.
 La page est servie en local depuis algo/ (algo/donnees.json doit exister : simulateur/vitrine.py).
@@ -26,6 +31,46 @@ RACINE = os.path.join(ICI, '..')
 sys.path.insert(0, ICI)
 LARGEUR, HAUTEUR = 1080, 1920
 DEBUT_COUPE = 0.4                    # secondes coupées au début (page blanche)
+IPS = 30                             # images par seconde de la capture image par image
+
+# Horloge virtuelle injectée avant tout script de la page : le temps n'avance que quand le script le demande.
+HORLOGE = r"""
+(() => {
+  const vraiST = window.setTimeout.bind(window), D0 = Date.now(), VraiDate = Date;
+  let maint = 0, suiv = 1;
+  const minut = new Map(), rafs = new Map();
+  window.setTimeout = (fn, ms, ...a) => { const i = suiv++; minut.set(i, {at: maint + Math.max(0, +ms || 0), fn, a, ordre: i}); return i; };
+  window.clearTimeout = i => { minut.delete(i); };
+  window.setInterval = (fn, ms, ...a) => { const i = suiv++, pas = Math.max(1, +ms || 0);
+    const tic = () => { minut.set(i, {at: maint + pas, fn: () => { tic(); fn(...a); }, a: [], ordre: suiv++}); }; tic(); return i; };
+  window.clearInterval = window.clearTimeout;
+  window.requestAnimationFrame = fn => { const i = suiv++; rafs.set(i, fn); return i; };
+  window.cancelAnimationFrame = i => { rafs.delete(i); };
+  performance.now = () => maint;
+  Date.now = () => D0 + maint;
+  window.Date = class extends VraiDate { constructor(...a){ if (a.length) super(...a); else super(D0 + maint); } static now(){ return D0 + maint; } };
+  const vide = () => new Promise(r => vraiST(r, 0));         // laisse s'exécuter les suites (await) en attente
+  const anims = () => { for (const an of document.getAnimations()){
+      if (an.__v === undefined){ an.__v = maint - (an.currentTime || 0); an.pause(); }
+      try { an.currentTime = maint - an.__v; } catch (e) {} } };
+  window.__horloge = { t0: D0, avance: async (ms) => {
+    const fin = maint + ms;
+    for (let garde = 0; garde < 5000; garde++){
+      let p = null;
+      for (const [i, x] of minut) if (x.at <= fin && (!p || x.at < p[1].at || (x.at === p[1].at && x.ordre < p[1].ordre))) p = [i, x];
+      if (!p) break;
+      minut.delete(p[0]); maint = Math.max(maint, p[1].at);
+      try { p[1].fn(...p[1].a); } catch (e) { console.error(e); }
+      await vide();
+    }
+    maint = fin;
+    const r = [...rafs.values()]; rafs.clear(); for (const fn of r){ try { fn(maint); } catch (e) {} }
+    await vide();
+    anims();
+    return maint;
+  } };
+})();
+"""
 
 
 def servir(dossier):
@@ -57,6 +102,44 @@ def enregistrer(url, dossier_tmp, max_s=120):
     return chemin, [(e['t'] / 1000 - t0, e['type']) for e in sons]
 
 
+def enregistrer_images(url, mp4, ips=IPS, max_s=150):
+    """Capture image par image (horloge virtuelle) → MP4 muet ; renvoie (durée en s, événements sonores [(s, nom)])."""
+    from playwright.sync_api import sync_playwright
+    ff = subprocess.Popen(['ffmpeg', '-y', '-loglevel', 'error', '-f', 'image2pipe', '-framerate', str(ips), '-c:v', 'mjpeg',
+                           '-i', '-', '-c:v', 'libx264', '-preset', 'medium', '-crf', '19', '-pix_fmt', 'yuv420p',
+                           '-r', str(ips), '-movflags', '+faststart', '-an', mp4], stdin=subprocess.PIPE)
+    n = 0
+    try:
+        with sync_playwright() as p:
+            nav = p.chromium.launch()
+            page = nav.new_page(viewport={'width': LARGEUR, 'height': HAUTEUR}, device_scale_factor=1)
+            page.add_init_script(HORLOGE)
+            page.goto(url)
+            # pas de wait_for_function : son attente passe par les minuteries de la page, ici virtuelles
+            import time
+            limite = time.time() + 30
+            while not page.evaluate('window.__sons !== undefined || window.__fini === true'):
+                if time.time() > limite:
+                    raise RuntimeError('la page vidéo ne démarre pas')
+                time.sleep(0.1)
+            pas = 1000.0 / ips
+            while n < max_s * ips:
+                ff.stdin.write(page.screenshot(type='jpeg', quality=92))
+                n += 1
+                if page.evaluate('window.__fini === true'):
+                    break
+                page.evaluate('ms => window.__horloge.avance(ms)', pas)
+            t0 = page.evaluate('window.__horloge.t0')
+            sons = page.evaluate('window.__sons || []')
+            nav.close()
+    finally:
+        ff.stdin.close()
+        ff.wait()
+    if ff.returncode:
+        raise RuntimeError('ffmpeg a échoué (capture image par image)')
+    return n / ips, [((e['t'] - t0) / 1000.0, e['type']) for e in sons]
+
+
 def carte(url, chemin):
     """Carte de stats du match (PNG 1080×1350, format portrait de X) : capture de la page en mode ?carte=1."""
     from playwright.sync_api import sync_playwright
@@ -79,6 +162,8 @@ def main(argv):
     ap.add_argument('--muet', action='store_true', help='sans bande-son')
     ap.add_argument('--adresse', action='store_true', help="afficher l'adresse du site en fin de vidéo (non par défaut)")
     ap.add_argument('--carte', action='store_true', help='carte de stats (PNG) au lieu de la vidéo')
+    ap.add_argument('--capture', default='images', choices=['images', 'ecran'],
+                    help="images : image par image, sans saccade (défaut) ; ecran : ancien enregistrement d'écran")
     ap.add_argument('--sortie', default=os.path.join(RACINE, 'videos'))
     a = ap.parse_args(argv[1:])
     algo = os.path.join(RACINE, 'algo')
@@ -102,12 +187,30 @@ def main(argv):
     url = f"http://127.0.0.1:{srv.server_address[1]}/index.html?{q}"
     tmp = os.path.join(a.sortie, '_brut')
     os.makedirs(tmp, exist_ok=True)
+    nom = f"simulation_{a.lang}.mp4"
+    mp4 = os.path.join(a.sortie, nom)
+    if a.capture == 'images':
+        try:
+            muet = os.path.join(tmp, 'images.mp4')
+            duree, sons = enregistrer_images(url, muet)
+        finally:
+            srv.shutdown()
+        if a.muet:
+            shutil.move(muet, mp4)
+        else:
+            import sons as SN
+            wav = os.path.join(tmp, 'son.wav')
+            SN.piste(sons, duree, wav)
+            subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-i', muet, '-i', wav, '-map', '0:v', '-map', '1:a',
+                            '-c:v', 'copy', '-c:a', 'aac', '-b:a', '160k', '-shortest', '-movflags', '+faststart', mp4],
+                           check=True)
+        shutil.rmtree(tmp, ignore_errors=True)
+        print(f"Vidéo : {mp4} ({os.path.getsize(mp4) / 1e6:.1f} Mo, {duree:.1f} s, image par image à {IPS} i/s)")
+        return 0
     try:
         webm, sons = enregistrer(url, tmp)
     finally:
         srv.shutdown()
-    nom = f"simulation_{a.lang}.mp4"
-    mp4 = os.path.join(a.sortie, nom)
     brut = subprocess.run(['ffprobe', '-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', webm],
                           capture_output=True, text=True).stdout.strip()
     try:
