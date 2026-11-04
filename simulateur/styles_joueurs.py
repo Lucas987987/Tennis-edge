@@ -361,7 +361,11 @@ def main(archive, racine='.', maximum=2000, coupure=dt.date(2025, 1, 1), debut=d
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()
     ap.add_argument('archive')
+    # 04/11/2026 : le workflow « Pronostic » passe la racine en 2e argument (« /tmp/sackmann . ») ; les deux écritures
+    # sont acceptées (le run du 02/11 s'était arrêté sur « unrecognized arguments: . »).
+    ap.add_argument('racine_pos', nargs='?', default=None)
     ap.add_argument('--racine', default='.')
     ap.add_argument('--max', type=int, default=2000)
     args = ap.parse_args()
+    args.racine = args.racine_pos or args.racine
     main(args.archive, args.racine, args.max)

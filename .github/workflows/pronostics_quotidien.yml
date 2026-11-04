@@ -53,6 +53,8 @@ jobs:
             /resultats_itf/
             /resultats_itf_femmes/
             /scripts/closing_store.py
+            /scripts/coffre.py
+            /scripts/r2_io.py
             /Tennis_Edge_Lab/books.py
             /Tennis_Edge_Lab/bookmakers_sets_v5.py
             /Tennis_Edge_Lab/clv_source.py
@@ -123,6 +125,7 @@ jobs:
           git checkout -- simulateur/profils_service.json 2>/dev/null || true
           rm -f simulateur/facteurs_contexte.json
           # 23/10/2026 : le pronostic complet du jour va au coffre privé (R2), plus dans le dépôt public
+          # 04/11/2026 : scripts/coffre.py et r2_io.py ajoutés au checkout — absents, l'envoi échouait en silence (|| true)
           python scripts/coffre.py push --groupe pronostics || true
           python scripts/coffre.py retirer --groupe pronostics || true
           git add -- Tennis_Edge_Lab/live/pronostics_bilan.json \
