@@ -63,6 +63,7 @@ h2{font-family:var(--disp);font-weight:400;font-size:1.45rem;line-height:1.15;ma
 .commandes{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
 .btn{border:1px solid var(--line2);background:rgba(255,255,255,.04);border-radius:999px;padding:9px 16px;cursor:pointer;font-weight:600;font-size:.95rem}
 .btn:hover{border-color:var(--ink)}
+.btn[aria-pressed="true"]{border-color:var(--ink);background:rgba(255,255,255,.12)}
 .btn.go{background:var(--ball);border-color:var(--ball);color:#160E33;font-family:var(--disp);font-weight:400;font-size:.9rem;letter-spacing:.02em}
 .btn[disabled]{opacity:.45;cursor:default}
 .final{min-height:1.5em;margin:10px 4px 0;color:var(--ink)}
@@ -956,6 +957,10 @@ function serviceTexte(m){
   return { sens:'info', txt };
 }
 function rendEssentiel(m){
+  const L_ = essentielListe(m);
+  return `<div class="panel essentiel"><h3>${esc(t('es_titre'))}</h3><ul>${L_.map(x=>`<li class="${x.sens}">${esc(x.txt)}</li>`).join('')}</ul></div>`;
+}
+function essentielListe(m){
   const L_ = [], fav = m.p_home >= .5 ? m.home : m.away, pf = Math.max(m.p_home, 1-m.p_home), fb = m.fiabilite || {};
   const fem = m.circuit === 'WTA';
   L_.push({ sens:'info', txt: t('es_favori', fav, pc0(pf), fb.niveau ? t('es_fiab', fb.niveau, fb.note) : '', fem) });
@@ -975,7 +980,96 @@ function rendEssentiel(m){
     if (nets.length) nets.forEach(x=>L_.push({ sens: x.v.sens, txt: `${i18nNom(x.i===0?m.home:m.away)} : ${x.v.texte}.` }));
     else L_.push({ sens:'neutre', txt: t('es_style_rien') });
   }
-  return `<div class="panel essentiel"><h3>${esc(t('es_titre'))}</h3><ul>${L_.map(x=>`<li class="${x.sens}">${esc(x.txt)}</li>`).join('')}</ul></div>`;
+  return L_;
+}
+// 04/11/2026 — POST X généré depuis les données de CE match (demande de Lucas) : uniquement des faits de l'algo,
+// aucune adresse de site, aucune cote de bookmaker, aucun conseil. Toujours en français (les posts le sont).
+function postX(m, court_){
+  const Ls = L; L = 'fr';
+  try {
+    const n = Math.round(Number(m.simulation && m.simulation.n) || Number(D.simulations) || 0);
+    const nf = n.toLocaleString('fr-FR').replace(/\u202f|\u00a0/g,' ');
+    const H = court(m.home), A = court(m.away), p = m.p_home, favH = p >= .5;
+    const fav = favH ? m.home : m.away, favC = favH ? H : A, outC = favH ? A : H, pf = Math.max(p, 1-p);
+    const pct = v => Math.round(v*100) + ' %', pct1 = v => (Math.round(v*1000)/10).toFixed(1).replace('.', ',') + ' %';
+    const d1 = v => Number(v).toFixed(1).replace('.', ',');
+    const circ = m.circuit === 'CH' ? 'Challenger' : m.circuit;
+    const tag = m.circuit === 'CH' ? '#ATPChallenger' : '#' + m.circuit;
+    const date = utc(m.debut).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
+    const hr = utc(m.debut).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}).replace(':','h');
+    const surf = SURF.fr[m.surface] || m.surface || '';
+    const S = m.sets || {}, k = m.lignes_algo || {}, fb = m.fiabilite || {};
+    const sF = favH ? ['2-0','2-1'] : ['0-2','1-2'], sO = favH ? ['1-2','0-2'] : ['2-1','2-0'];
+    const pO = sO.reduce((a,x)=>a + (S[x]||0), 0);
+    const principal = Object.entries(S).sort((a,b)=>b[1]-a[1])[0];
+    const vainqDe = sc => { const [h,a_] = sc.split('-').map(Number); return h > a_ ? H : A; };
+    const setsTxt = sc => { const [h,a_] = sc.split('-').map(Number); return Math.max(h,a_) + '-' + Math.min(h,a_); };
+    const serre = pf < .55;
+    const cles = essentielListe(m).slice(1).filter(x=>x.sens !== 'neutre')
+      .map(x=>x.txt.replace(/^Durée prévue [^.]*\.\s*/, '')).filter(Boolean);   // la durée est dans les projections
+    if (court_){
+      const l = [`🎾 ${H} 🆚 ${A} · ${circ} ${m.tournoi.replace(/^(ATP|WTA|Challenger)\s+/i,'')}`,
+        `🧠 ${nf} simulations point par point, sans aucune cote`,
+        `🎯 ${H} ${pct(p)} – ${pct(1-p)} ${A}`];
+      if (principal) l.push(`📊 Scénario principal : ${vainqDe(principal[0])} ${setsTxt(principal[0])} (${pct(principal[1])})`);
+      if (k.set_decisif != null) l.push(`⚖️ Set décisif : ${pct(k.set_decisif)}`);
+      l.push(`#TennisEdge ${tag}`);
+      return l.join('\n');
+    }
+    const L2 = [];
+    L2.push('🎾 NOUVEAU MATCH POUR NOTRE ALGORITHME TENNIS EDGE ! 🚀', '');
+    L2.push(`🏟️ ${m.tournoi}`, '', `${m.home} 🆚 ${m.away}`, '');
+    L2.push(`📅 ${date.charAt(0).toUpperCase()+date.slice(1)} – ${hr}`, `🎾 Surface : ${surf}`, '');
+    L2.push(`🧠 ${nf} SIMULATIONS, POINT PAR POINT, SANS UTILISER LES COTES`, '');
+    L2.push('🎯 PROBABILITÉS DE VICTOIRE', `${H} : ${pct(p)}`, `${A} : ${pct(1-p)}`, '');
+    L2.push(serre ? `⚖️ MATCH TRÈS SERRÉ : ${favC} à peine devant (${pct(pf)})` : `🏆 FAVORI DE L'ALGO : ${fav.toUpperCase()} (${pct(pf)})`);
+    if (fb.note != null) L2.push(`🔎 Fiabilité de l'estimation : ${fb.note}/100${fb.niveau ? ' (' + fb.niveau + ')' : ''}`);
+    L2.push('');
+    if (Object.keys(S).length){
+      L2.push('📊 SCORES EN SETS');
+      sF.forEach(x=>{ if (S[x]!=null) L2.push(`✅ ${favC} ${setsTxt(x)} : ${pct(S[x])}`); });
+      L2.push(`↩️ Victoire de ${outC} : ${pct(pO)}`, '');
+    }
+    const sc = (m.scores_probables||[]).slice(0,3);
+    if (sc.length){ L2.push('🎯 Scores exacts les plus fréquents :'); sc.forEach(([x,v])=>L2.push(`• ${x} : ${pct1(v)}`)); L2.push(''); }
+    const f = m.feuille_prevue;
+    if (f && f[0] && f[1]){
+      L2.push('📈 STATISTIQUES PRÉDITES', `${H} / ${A}`, '');
+      [['aces','🎾 Aces',d1],['breaks','💥 Breaks',d1],['premiere_pct','⚡ Premières balles',v=>d1(v)+' %'],
+       ['jeux_service_gagnes_pct','🔒 Jeux de service gagnés',v=>d1(v)+' %']].forEach(([c,lib,fm])=>{
+        if (f[0][c]!=null && f[1][c]!=null) L2.push(`${lib} : ${fm(f[0][c])} / ${fm(f[1][c])}`); });
+      L2.push('');
+    }
+    if (cles.length){ L2.push('🔬 CE QUE L\'ALGO RELÈVE'); cles.slice(0,4).forEach(x=>L2.push(`▪️ ${x}`)); L2.push(''); }
+    const proj = [];
+    if (k['handicap_favori_1.5'] != null) proj.push(`▪️ ${favC} gagne de plus de 1,5 jeu : ${pct1(k['handicap_favori_1.5'])}`);
+    if (k['total_plus_20.5'] != null) proj.push(`▪️ Plus de 20,5 jeux : ${pct1(k['total_plus_20.5'])}`);
+    if (k.set_decisif != null) proj.push(`▪️ Match en 3 sets : ${pct1(k.set_decisif)}`);
+    if (k.tie_break != null) proj.push(`▪️ Au moins un tie-break : ${pct1(k.tie_break)}`);
+    const pv = m.rythme && m.rythme.prevision;
+    if (pv && pv.minutes) proj.push(`▪️ Durée prévue : ${hm(pv.minutes)}`);
+    if (proj.length){ L2.push('📈 AUTRES PROJECTIONS', ...proj, ''); }
+    if (principal) L2.push(`Scénario le plus fréquent : ${vainqDe(principal[0])} en ${principal[0]==='2-0'||principal[0]==='0-2' ? 'deux' : 'trois'} sets (${pct(principal[1])}).`, '');
+    L2.push(`🎥 Un scénario simulé point par point parmi les ${nf} réalisés, en vidéo.`);
+    L2.push('🔬 Résultat et statistiques comparés après le match pour mesurer la fiabilité des prédictions.');
+    L2.push('📊 Des probabilités calculées sans aucune cote de bookmaker.', '');
+    L2.push(`${tag} #TennisEdge #Tennis #Prediction`);
+    return L2.join('\n');
+  } finally { L = Ls; }
+}
+function ouvrirPost(m){
+  const z = document.getElementById('post-zone'); if (!z) return;
+  const montre = v => { document.getElementById('post-txt').value = postX(m, v === 'court');
+    document.getElementById('post-nb').textContent = document.getElementById('post-txt').value.length + ' caractères';
+    z.querySelectorAll('[data-post]').forEach(b=>b.setAttribute('aria-pressed', String(b.dataset.post === v))); };
+  z.hidden = false; montre('long');
+  z.querySelectorAll('[data-post]').forEach(b=>{ b.onclick = () => montre(b.dataset.post); });
+  document.getElementById('post-copier').onclick = async () => {
+    const ta = document.getElementById('post-txt'), ok = document.getElementById('post-ok');
+    try { await navigator.clipboard.writeText(ta.value); } catch(e){ ta.select(); try { document.execCommand('copy'); } catch(_){} }
+    ok.textContent = 'Copié ✓'; setTimeout(()=>{ ok.textContent = ''; }, 2000);
+  };
+  z.scrollIntoView({ block: 'nearest', behavior: MOINS_ANIM ? 'auto' : 'smooth' });
 }
 function i18nNom(n){ return court(n); }
 function rendRythme(r,m){
@@ -1560,6 +1654,13 @@ function rendMdj(){
         <div class="ligne" style="margin-top:8px"><span class="cj">${esc(t('cote_juste'))} ${odds(m.cotes_justes[0])}</span><span class="cj">${esc(t('cote_juste'))} ${odds(m.cotes_justes[1])}</span></div>
         ${m.evolution && Math.abs(m.evolution.ecart_pts) >= 1 ? `<p class="evol">${esc(t('es_premier', pc0(m.evolution.premier_p_home), court(m.home), m.evolution.premier_le ? dateHeure(m.evolution.premier_le) : ''))}</p>` : ''}
         ${rendFiabilite(m.fiabilite, true)}
+        <p style="margin-top:12px"><button type="button" class="btn" id="b-post">📝 Générer le post X</button></p>
+      </div>
+      <div class="panel" id="post-zone" hidden>
+        <h3>Post X</h3>
+        <p class="ligne" style="gap:8px;justify-content:flex-start;flex-wrap:wrap"><button type="button" class="btn" data-post="long" aria-pressed="true">Complet</button><button type="button" class="btn" data-post="court" aria-pressed="false">Court (un tweet)</button></p>
+        <textarea id="post-txt" rows="16" style="width:100%;box-sizing:border-box;margin-top:10px;background:rgba(255,255,255,.04);color:inherit;border:1px solid var(--line2);border-radius:12px;padding:12px;font:inherit;font-size:.9rem;line-height:1.45"></textarea>
+        <p class="ligne" style="margin-top:8px;gap:10px;justify-content:flex-start;align-items:center"><button type="button" class="btn" id="post-copier">Copier</button><small id="post-nb"></small><small id="post-ok" aria-live="polite"></small></p>
       </div>
       ${rendEssentiel(m)}
       ${rendStylesDescriptifs(m.styles_descriptifs,m)}
@@ -1572,6 +1673,7 @@ function rendMdj(){
       ${rendMarches(m.lignes_algo,m)}
       ${rendRythme(m.rythme,m)}
     </div></div>`;
+  const bPost = document.getElementById('b-post'); if (bPost) bPost.onclick = () => ouvrirPost(m);
   if (m.simulation){
     const fin = document.getElementById('final');
     const bA = document.getElementById('b-accel'), bF = document.getElementById('b-fin');
