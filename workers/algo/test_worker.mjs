@@ -49,3 +49,33 @@ test('liste du coffre identique à scripts/coffre.py', () => {
   const noms = [...bloc.matchAll(/'([^']+\.(?:jsonl|json))'/g)].map((m) => m[1].split('/').pop());
   assert.deepEqual([...new Set(noms)].sort(), [...PRIVES].sort());
 });
+
+// 04/11/2026 — vidéo à la demande
+const post = (corps, h = {}) => new Request('https://algo.tennis-edge.workers.dev/video',
+  { method: 'POST', headers: { 'Content-Type': 'application/json', ...h }, body: JSON.stringify(corps) });
+const UID = '2026-11-04_tommy_paul_daniel_merida';
+
+test('vidéo : sans clé → 401 ; sans jeton → 503 ; uid douteux → 400 ; GET → 405', async () => {
+  globalThis.fetch = async () => { throw new Error('GitHub ne doit pas être appelé'); };
+  assert.equal((await worker.fetch(post({ uid: UID }), { ...env, GH_TOKEN: 't' })).status, 401);
+  assert.equal((await worker.fetch(post({ uid: UID }, { 'X-Cle': CLE }), env)).status, 503);
+  for (const u of ['../x', '', '2026-11-04_A B', 'rien']) {
+    assert.equal((await worker.fetch(post({ uid: u }, { 'X-Cle': CLE }), { ...env, GH_TOKEN: 't' })).status, 400);
+  }
+  assert.equal((await worker.fetch(req('/video', { 'X-Cle': CLE }), { ...env, GH_TOKEN: 't' })).status, 405);
+});
+
+test('vidéo : bonne clé → workflow vidéo lancé pour ce match, puis 3 minutes d’attente', async () => {
+  const appels = [], store = {};
+  const env2 = { ...env, GH_TOKEN: 'jeton', COFFRE: { get: async (k) => (k in store ? { text: async () => store[k] } : null),
+                                                     put: async (k, v) => { store[k] = v; } } };
+  globalThis.fetch = async (u, o) => { appels.push([u, JSON.parse(o.body), o.headers.Authorization]); return new Response(null, { status: 204 }); };
+  const r = await worker.fetch(post({ uid: UID }, { 'X-Cle': CLE }), env2);
+  assert.equal(r.status, 202);
+  assert.match(appels[0][0], /actions\/workflows\/video_simulation\.yml\/dispatches$/);
+  assert.deepEqual(appels[0][1], { ref: 'main', inputs: { uid: UID, adresse: 'false', seed: '' } });
+  assert.equal(appels[0][2], 'Bearer jeton');
+  assert.ok(!JSON.stringify(await r.clone().json()).includes('jeton'));
+  assert.equal((await worker.fetch(post({ uid: UID }, { 'X-Cle': CLE }), env2)).status, 429);
+  assert.equal(appels.length, 1);
+});

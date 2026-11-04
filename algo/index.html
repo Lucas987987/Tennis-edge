@@ -1076,6 +1076,34 @@ function postX(m, court_){
     return L2.join('\n');
   } finally { L = Ls; }
 }
+// 04/11/2026 — VIDÉO À LA DEMANDE : le worker du site lance le workflow vidéo pour CE match (clé privée gardée sur cet
+// appareil seulement ; la vidéo arrive sur le Telegram privé). Seulement sur l'adresse du worker (le point /video y vit).
+const VIDEO_ICI = /workers\.dev$/.test(location.hostname);
+const CLE_VIDEO = 'te_cle_video';
+function lireCle(){ try { return localStorage.getItem(CLE_VIDEO) || ''; } catch(e){ return ''; } }
+async function lancerVideo(m){
+  const msg = document.getElementById('video-msg'), zone = document.getElementById('video-zone'), b = document.getElementById('b-video');
+  const cle = lireCle();
+  if (!cle){ zone.hidden = false; document.getElementById('video-cle').focus(); msg.textContent = 'Clé privée demandée une seule fois sur cet appareil.'; return; }
+  b.disabled = true; msg.textContent = 'Lancement…';
+  try {
+    const r = await fetch('/video', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Cle': cle }, body: JSON.stringify({ uid: m.uid }) });
+    let o = {}; try { o = await r.json(); } catch(e){}
+    msg.textContent = o.message || (r.ok ? 'Vidéo lancée.' : `Échec (HTTP ${r.status}).`);
+    if (r.status === 401){ try { localStorage.removeItem(CLE_VIDEO); } catch(e){} zone.hidden = false; }
+  } catch(e){ msg.textContent = 'Le site ne répond pas : réessayer dans un instant.'; }
+  b.disabled = false;
+}
+function brancherVideo(m){
+  const b = document.getElementById('b-video'); if (!b) return;
+  b.onclick = () => lancerVideo(m);
+  document.getElementById('video-ok').onclick = () => {
+    const v = document.getElementById('video-cle').value.trim(); if (!v) return;
+    try { localStorage.setItem(CLE_VIDEO, v); } catch(e){}
+    document.getElementById('video-zone').hidden = true; document.getElementById('video-cle').value = '';
+    lancerVideo(m);
+  };
+}
 function ouvrirPost(m){
   const z = document.getElementById('post-zone'); if (!z) return;
   const montre = v => { document.getElementById('post-txt').value = postX(m, v === 'court');
@@ -1673,7 +1701,9 @@ function rendMdj(){
         <div class="ligne" style="margin-top:8px"><span class="cj">${esc(t('cote_juste'))} ${odds(m.cotes_justes[0])}</span><span class="cj">${esc(t('cote_juste'))} ${odds(m.cotes_justes[1])}</span></div>
         ${m.evolution && Math.abs(m.evolution.ecart_pts) >= 1 ? `<p class="evol">${esc(t('es_premier', pc0(m.evolution.premier_p_home), court(m.home), m.evolution.premier_le ? dateHeure(m.evolution.premier_le) : ''))}</p>` : ''}
         ${rendFiabilite(m.fiabilite, true)}
-        <p style="margin-top:12px"><button type="button" class="btn" id="b-post">📝 Générer le post X</button></p>
+        <p style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn" id="b-post">📝 Générer le post X</button>${VIDEO_ICI ? '<button type="button" class="btn" id="b-video">🎬 Générer la vidéo</button>' : ''}</p>
+        <div id="video-zone" hidden style="margin-top:8px"><p class="ligne" style="gap:8px;justify-content:flex-start;flex-wrap:wrap;align-items:center"><input id="video-cle" type="password" autocomplete="off" placeholder="Clé privée" aria-label="Clé privée" style="flex:1;min-width:160px;background:rgba(255,255,255,.04);color:inherit;border:1px solid var(--line2);border-radius:999px;padding:9px 14px;font:inherit"><button type="button" class="btn" id="video-ok">Lancer</button></p></div>
+        <p id="video-msg" class="aide" aria-live="polite"></p>
       </div>
       <div class="panel" id="post-zone" hidden>
         <h3>Post X</h3>
@@ -1693,6 +1723,7 @@ function rendMdj(){
       ${rendRythme(m.rythme,m)}
     </div></div>`;
   const bPost = document.getElementById('b-post'); if (bPost) bPost.onclick = () => ouvrirPost(m);
+  brancherVideo(m);
   if (m.simulation){
     const fin = document.getElementById('final');
     const bA = document.getElementById('b-accel'), bF = document.getElementById('b-fin');
