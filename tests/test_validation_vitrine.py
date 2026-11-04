@@ -68,12 +68,34 @@ class ValidationVitrine(unittest.TestCase):
                 ligne([(6, 4), (6, 4)], 20),
                 ligne([(0, 6), (0, 6)], 10)]
         traces = [(1, b'0') for _ in brut]
+        brut.append(ligne([(6, 4), (3, 6), (6, 3)], 10))
+        brut.append(ligne([(6, 2), (4, 6), (6, 1)], 10))
+        traces = [(1, b'0') for _ in brut]
         a = MS.match_type(brut, traces, vainqueur=0)
         b = MS.match_type(brut, traces, vainqueur=0)
-        self.assertEqual(a['simulation_index'], 1)
-        self.assertEqual(a['score'], '6-4 3-6 6-4')
+        # 3 victoires du favori en 3 sets sur 5 : la forme la plus fréquente ; puis le médoïde parmi elles
+        self.assertEqual(a['forme']['sets'], 3)
+        self.assertEqual(a['simulation_index'], 4)          # jeux 29, 28, 25 : le médian (28) est le médoïde
+        self.assertEqual(a['score'], '6-4 3-6 6-3')
         self.assertEqual(a['selection'], 'representatif')
         self.assertEqual(a, b)
+
+    def test_match_type_suit_la_forme_la_plus_probable(self):
+        # 04/11/2026 : 40 % de 3 sets et 45 % de tie-break → la vidéo montre 2 sets sans tie-break
+        def ligne(sets):
+            f = {k: 1.0 for k in MS.CLES_FEUILLE}
+            return (' '.join(f'{a}-{b}' for a, b in sets), f, dict(f), [], sets)
+        brut = ([ligne([(7, 6), (4, 6), (6, 4)])] * 4 +                 # 40 % : 3 sets avec tie-break
+                [ligne([(7, 6), (6, 4)])] * 2 + [ligne([(6, 3), (6, 4)])] * 4)   # 2 sets : 1 sur 3 avec tie-break
+        traces = [(1, b'0') for _ in brut]
+        a = MS.match_type(brut, traces, vainqueur=0)
+        self.assertEqual(a['forme'], {'sets': 2, 'tie_break': False, 'part_sets_pct': 60.0, 'part_tie_break_pct': 33.3})
+        self.assertEqual(len(a['sets']), 2)
+        self.assertFalse(MS.a_un_tiebreak(a['sets']))
+        # tie-break majoritaire dans la forme retenue → le scénario en montre un
+        brut2 = [ligne([(7, 6), (6, 4)])] * 3 + [ligne([(6, 3), (6, 4)])] * 2
+        b = MS.match_type(brut2, [(1, b'0') for _ in brut2], vainqueur=0)
+        self.assertTrue(b['forme']['tie_break'] and MS.a_un_tiebreak(b['sets']))
 
     def test_ancien_export_sans_scenario_est_refuse(self):
         doc = document_valide()
