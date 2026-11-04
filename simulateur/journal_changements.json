@@ -1,6 +1,10 @@
 {
  "regle": "Chaque changement du modèle est noté ici avec sa date, ce qu'il change et ce qu'il a gagné au test (log loss, négatif = mieux prévu). Les changements mis en production par décision, sans attendre la 2e semaine, restent sous le garde-fou du jugement hebdomadaire.",
  "changements": [
+  {"date": "2026-11-04", "titre": "Tout l'entraînement hebdomadaire jugé circuit par circuit (arbres, candidats, corrections)", "statut": "production", "decision": true,
+   "mesure": "décision de Lucas : arbres, arbres + activité / tour / points, nouveaux venus, qualifiés, changement de surface, classement : une série de stabilité par circuit (ATP, WTA, Challenger), appliqués seulement où ils sont en place ; moins de 50 matchs jugés sur un circuit : la semaine ne compte pas ; première lecture : activité récente candidate en ATP (+0,0047), points en sursis sur les trois circuits"},
+  {"date": "2026-11-04", "titre": "Bouton « Générer la vidéo » sur la fiche du match", "statut": "production", "decision": true,
+   "mesure": "le worker du site lance le workflow vidéo pour ce match (clé privée, une demande toutes les 3 minutes au plus) ; la vidéo arrive sur le Telegram privé ; aucun jeton dans la page"},
   {"date": "2026-11-04", "titre": "Signaux jugés circuit par circuit (ATP, WTA, Challenger séparément)", "statut": "production", "decision": true,
    "mesure": "décision de Lucas : un signal positif sur un circuit est utilisé sur ce circuit ; chaque semaine, par signal et par circuit : ≥ 30 matchs, gain ≥ 0,001 sur la semaine et depuis le début ; adopté après deux semaines gagnantes, retiré après deux sans gain ; signaux suivis : forme du service, statut d'entrée, serveuses WTA, Elo service / retour (nouveau fantôme)"},
   {"date": "2026-11-04", "titre": "Elo au service et Elo au retour (3e modèle) — rejeté", "statut": "rejete", "decision": false,

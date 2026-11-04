@@ -54,6 +54,9 @@ jobs:
         uses: cloudflare/wrangler-action@v3
         env:
           CLE_PRIVEE: ${{ secrets.CLE_PRIVEE }}
+          # 04/11/2026 : bouton « vidéo » du site — jeton GitHub du worker (droit Actions en écriture) : le secret
+          # VIDEO_TOKEN s'il existe (conseillé : jeton limité à Actions), sinon PAQUET_TOKEN
+          GH_TOKEN: ${{ secrets.VIDEO_TOKEN || secrets.PAQUET_TOKEN }}
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -61,3 +64,4 @@ jobs:
           command: deploy
           secrets: |
             CLE_PRIVEE
+            GH_TOKEN

@@ -1301,12 +1301,18 @@ def main(argv):
             choix['poids_' + c_] = ST.appliquer(etat_st, 'poids_' + c_, avant['poids_' + c_],
                                                 {k: (ep.get('poids_' + c_) or {}).get(k) for k in ('adopte', 'poids', 'raison', 'll')},
                                                 ('poids',))
-        choix['nouveaux_venus'] = ST.appliquer(etat_st, 'nouveaux_venus', avant['nouveaux_venus'],
-                                               {k: (ep.get('nouveaux_venus') or {}).get(k) for k in ('adopte', 'delta', 'raison', 'll')},
+        import circuits_regles as CR
+        choix['nouveaux_venus'] = CR.appliquer(etat_st, 'nouveaux_venus', avant['nouveaux_venus'],
+                                               {k: (ep.get('nouveaux_venus') or {}).get(k)
+                                                for k in ('adopte', 'delta', 'raison', 'll', 'par_circuit')},
                                                ('delta',))
+        # 04/11/2026 — décision de Lucas : arbres, candidats des arbres et corrections de situation jugés et appliqués
+        # SÉPARÉMENT sur ATP, WTA et Challenger (circuits_regles.py : une série de stabilité par circuit)
+        import circuits_regles as CR
         ma = ep.get('modele_arbres') or {}
-        choix['modele_arbres'] = ST.appliquer(etat_st, 'modele_arbres', avant['modele_arbres'],
-                                              {k: ma.get(k) for k in ('adopte', 'raison', 'variables', 'modele', 'poids', 'll')},
+        choix['modele_arbres'] = CR.appliquer(etat_st, 'modele_arbres', avant['modele_arbres'],
+                                              {k: ma.get(k) for k in ('adopte', 'raison', 'variables', 'modele', 'poids', 'll',
+                                                                      'par_circuit')},
                                               ('variables', 'modele', 'poids'))
         print(f"Arbres (tout combiné) : {'ADOPTÉS' if choix['modele_arbres']['adopte'] else 'non adoptés'} — "
               f"{choix['modele_arbres']['raison']}", flush=True)
@@ -1321,13 +1327,14 @@ def main(argv):
             if cle_c in EP.DECISION_CANDIDATS and not avant.get(cle_c):
                 # 30/10/2026 : décision de Lucas — en place dès la première semaine ; la stabilité ne sert qu'à la sortie
                 avant[cle_c] = {'adopte': True, 'decision': EP.DECISION_CANDIDATS[cle_c]}
-            choix[cle_c] = ST.appliquer(etat_st, cle_c, avant[cle_c],
+            choix[cle_c] = CR.appliquer(etat_st, cle_c, avant[cle_c],
                                         {k: maa.get(k) for k in ('adopte', 'raison', 'variables', 'modele', 'poids', 'll', 'par_circuit')},
                                         ('variables', 'modele', 'poids'))
             print(f"{lib_c} : {'ADOPTÉS' if choix[cle_c]['adopte'] else 'non adoptés'} — {choix[cle_c]['raison']}", flush=True)
         for cle_s in ('qualifies', 'transition', 'classement', 'classement_relatif'):
-            choix[cle_s] = ST.appliquer(etat_st, cle_s, avant[cle_s],
-                                        {k: (ep.get(cle_s) or {}).get(k) for k in ('adopte', 'delta', 'raison', 'll')}, ('delta',))
+            choix[cle_s] = CR.appliquer(etat_st, cle_s, avant[cle_s],
+                                        {k: (ep.get(cle_s) or {}).get(k) for k in ('adopte', 'delta', 'raison', 'll', 'par_circuit')},
+                                        ('delta',))
             print(f"{EP.SITUATIONS[cle_s]} : {'correction ADOPTÉE' if choix[cle_s]['adopte'] else 'pas de correction'} — "
                   f"{choix[cle_s]['raison']}", flush=True)
         ST.ecrire(etat_st)

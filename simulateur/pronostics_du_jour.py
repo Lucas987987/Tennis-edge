@@ -282,22 +282,29 @@ def charger_ajustements(racine):
         v = choix.get('poids_' + c_) or {}
         if v.get('adopte') and v.get('poids'):
             out['poids_' + c_] = v['poids']
+    # 04/11/2026 — chaque règle ne s'applique qu'aux circuits où elle est en place (circuits_regles.py)
+    import circuits_regles as CR
     nv = choix.get('nouveaux_venus') or {}
     if nv.get('adopte') and nv.get('delta') is not None:
         out['delta_nouveaux'] = float(nv['delta'])
+        out['circuits_nouveaux'] = CR.circuits_de(nv)
     ma = choix.get('modele_arbres') or {}                      # 23/10/2026 : arbres qui combinent tout (si adoptés)
     if ma.get('adopte') and ma.get('modele') and ma.get('poids'):
-        out['arbres'] = {'modele': ma['modele'], 'poids': ma['poids']}
-    # 29/10/2026 : candidats de la famille des arbres (activité récente, tour du tableau) ; si plusieurs sont adoptés,
-    # celui qui a la log loss la plus basse au dernier jugement
-    adoptes = []
+        out['arbres'] = {'modele': ma['modele'], 'poids': ma['poids'], 'circuits': CR.circuits_de(ma)}
+    # 29/10/2026 : candidats de la famille des arbres (activité récente, tour du tableau, points) ; 04/11/2026 : choisis
+    # CIRCUIT PAR CIRCUIT — sur chaque circuit, parmi ceux qui y sont en place, le meilleur gain sur ce circuit
+    par_c = {}
     for cle_c in ('modele_arbres_activite', 'modele_arbres_tour', 'modele_arbres_points'):
         v = choix.get(cle_c) or {}
-        if v.get('adopte') and v.get('modele') and v.get('poids'):
-            adoptes.append(((v.get('ll') or {}).get('avec') or 9.0, cle_c, v))
-    if adoptes:
-        _, cle_c, v = min(adoptes)
-        out['arbres_candidat'] = {'cle': cle_c, 'modele': v['modele'], 'poids': v['poids']}
+        if not (v.get('adopte') and v.get('modele') and v.get('poids')):
+            continue
+        for c_ in CR.circuits_de(v):
+            g_ = ((v.get('par_circuit') or {}).get(c_) or {}).get('gain')
+            g_ = g_ if g_ is not None else -((v.get('ll') or {}).get('avec') or 9.0)
+            if c_ not in par_c or g_ > par_c[c_][0]:
+                par_c[c_] = (g_, {'cle': cle_c, 'modele': v['modele'], 'poids': v['poids']})
+    if par_c:
+        out['arbres_candidats'] = {c_: x[1] for c_, x in par_c.items()}
     dw = choix.get('desaccord_wta') or {}                      # 29/10/2026 : désaccords Elo / simulation en WTA
     if dw.get('adopte') and dw.get('poids'):
         out['poids_desaccord_wta'] = dw['poids']
@@ -305,6 +312,7 @@ def charger_ajustements(racine):
         v = choix.get(cle_s) or {}
         if v.get('adopte') and v.get('delta') is not None:
             out['delta_' + cle_s] = float(v['delta'])
+            out['circuits_' + cle_s] = CR.circuits_de(v)
     return out
 
 
@@ -321,7 +329,7 @@ def _ajuster_combinaison(p_c, c, p_elo, p_sim, n_home, n_away, situations=None, 
     """Challenger : poids propres s'ils sont adoptés (remplacent le mélange commun) ; puis chaque situation
     adoptée (règle de entrainement_progressif.correction_situation) : z += δ·(situation(home) − situation(away)).
     Nouveaux venus : nouveau(n) = max(0, 1 − n/30) ; situations = {'qualifies': (h, a), 'transition': (h, a)}."""
-    ac_ = AJUSTEMENTS.get('arbres_candidat')
+    ac_ = (AJUSTEMENTS.get('arbres_candidats') or {}).get(c) or AJUSTEMENTS.get('arbres_candidat')
     if ac_:
         # 29/10/2026 : arbres avec les variables d'un candidat adopté (activité récente ou tour du tableau) ; sans la
         # donnée (tour inconnu…), sa valeur neutre, comme à l'apprentissage
@@ -334,7 +342,7 @@ def _ajuster_combinaison(p_c, c, p_elo, p_sim, n_home, n_away, situations=None, 
                                   sit.get('rangs'), sit.get(sit_k))
         pm = MS.melange(ac_['poids'], p_elo, p_sim)
         return A.predire_symetrique(ac_['modele'], v, math.log(pm / (1 - pm)), EP.ecarts_candidat(ac_['cle']))
-    if AJUSTEMENTS.get('arbres'):
+    if AJUSTEMENTS.get('arbres') and c in (AJUSTEMENTS['arbres'].get('circuits') or ('ATP', 'WTA', 'CH')):
         # les arbres partent de LEUR mélange et contiennent déjà nouveaux venus, qualifiés, surface, circuit…
         import arbres as A
         import entrainement_progressif as EP
@@ -347,10 +355,11 @@ def _ajuster_combinaison(p_c, c, p_elo, p_sim, n_home, n_away, situations=None, 
     if c in ('CH', 'ATP', 'WTA') and AJUSTEMENTS.get('poids_' + c):    # 29/10/2026 : ATP et WTA aussi
         p_c = MS.melange(AJUSTEMENTS['poids_' + c], p_elo, p_sim)
     ecarts = []
-    if AJUSTEMENTS.get('delta_nouveaux') and n_home is not None and n_away is not None:
+    dans = lambda k: c in (AJUSTEMENTS.get('circuits_' + k) or ('ATP', 'WTA', 'CH'))   # 04/11/2026 : par circuit
+    if AJUSTEMENTS.get('delta_nouveaux') and n_home is not None and n_away is not None and dans('nouveaux'):
         ecarts.append((AJUSTEMENTS['delta_nouveaux'], max(0.0, 1 - n_home / 30) - max(0.0, 1 - n_away / 30)))
     for cle_s, (vh, va) in ((k, v) for k, v in (situations or {}).items() if k not in ('activite', 'rangs', 'tour', 'points')):
-        if AJUSTEMENTS.get('delta_' + cle_s):
+        if AJUSTEMENTS.get('delta_' + cle_s) and dans(cle_s):
             ecarts.append((AJUSTEMENTS['delta_' + cle_s], vh - va))
     dz = sum(d * f for d, f in ecarts)
     if dz:
