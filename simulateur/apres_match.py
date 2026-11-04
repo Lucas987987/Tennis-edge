@@ -116,6 +116,7 @@ def fiche(ligne, maintenant, version):
                        if d['probabilite'] >= SCORE_P_MIN],
             'jeux_moyen': ligne.get('jeux_moyen'), 'tiebreak': ligne.get('tiebreak'), 'set1_home': ligne.get('set1_home'),
             'feuille': ligne.get('feuille_prevue'), 'fourchette': ligne.get('feuille_fourchette'),
+            'feuille_brute': ligne.get('feuille_prevue_brute'), 'fourchette_brute': ligne.get('feuille_fourchette_brute'),
             'duree': ({k: pv.get(k) for k in ('minutes', 'minutes_p10', 'minutes_p90', 'points')} if pv else None),
             'lignes': ligne.get('lignes_algo'), 'documentation': ligne.get('documentation'),
             'controle': ligne.get('controle'), 'modeles': ligne.get('modeles')}
