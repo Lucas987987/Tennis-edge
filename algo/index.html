@@ -532,6 +532,7 @@ const T = {
   jc_f_fantome_changement_surface:'Changement de surface (1er ou 2e match sur la surface)',
   jc_f_fantome_retour_absence:'Retour après 45 jours ou plus sans match',
   jc_f_fantome_age:'Âge (déclin après 30 ans, progression avant 23 ans)',
+  jc_f_fantome_favori_outsider:'Profil du joueur en favori / en outsider',
   en_l:(a,b)=>`Statut d’entrée — ${a}${b?' · '+b:''}.`, en_wc:n=>`${n} : invité(e) (wild card)`, en_q:n=>`${n} : qualifié(e)`,
   en_ll:n=>`${n} : repêché(e) des qualifications`, en_pr:n=>`${n} : classement protégé`, en_ts:(n,k)=>`${n} : tête de série n° ${k}`,
   en_note_wc:' Sur nos données, un invité en Challenger gagne nettement moins que prévu (−5,6 points, 7 922 matchs) : suivi à part, le pronostic affiché ne change pas.',
@@ -725,6 +726,7 @@ const T = {
   jc_f_fantome_changement_surface:'Surface change (1st or 2nd match on the surface)',
   jc_f_fantome_retour_absence:'Return after 45+ days without a match',
   jc_f_fantome_age:'Age (decline after 30, growth before 23)',
+  jc_f_fantome_favori_outsider:'Player record as favourite / underdog',
   en_l:(a,b)=>`Entry status — ${a}${b?' · '+b:''}.`, en_wc:n=>`${n}: wild card`, en_q:n=>`${n}: qualifier`,
   en_ll:n=>`${n}: lucky loser`, en_pr:n=>`${n}: protected ranking`, en_ts:(n,k)=>`${n}: seed no. ${k}`,
   en_note_wc:' In our data, a Challenger wild card wins clearly less than predicted (−5.6 points, 7,922 matches): tracked separately, the displayed forecast does not change.',
@@ -1004,7 +1006,8 @@ function essentielListe(m){
     const lib = { forme_service: L==='fr'?'forme du service':'serve form', entree: L==='fr'?'statut d’entrée':'entry status',
                   serveuses_wta: L==='fr'?'serveuses WTA':'WTA servers', elo_service_retour: L==='fr'?'Elo service / retour':'serve / return Elo',
                   changement_surface: L==='fr'?'changement de surface':'surface change',
-                  retour_absence: L==='fr'?'retour d’absence':'return from absence', age: L==='fr'?'âge':'age' };
+                  retour_absence: L==='fr'?'retour d’absence':'return from absence', age: L==='fr'?'âge':'age',
+                  favori_outsider: L==='fr'?'profil favori / outsider':'favourite / underdog profile' };
     const circ = m.circuit === 'CH' ? 'Challenger' : m.circuit, ph = sgc.p_home_sans;
     L_.push({ sens:'info', txt: t('es_signaux', sgc.appliques.map(k=>lib[k]||k).join(', '), circ,
                                  `${court(ph >= .5 ? m.home : m.away)} ${pc0(Math.max(ph, 1-ph))}`) });
