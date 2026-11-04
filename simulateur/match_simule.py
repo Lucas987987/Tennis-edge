@@ -565,6 +565,11 @@ def simuler(cA, cB, p_victoire, sets_gagnants=2, n=20000, sigma=0.15, cle='', tb
     return out
 
 
+def a_un_tiebreak(sets):
+    """Un set gagné 7-6 (ou 6-7) : il s'est joué au tie-break."""
+    return any(max(a, b) == 7 and min(a, b) == 6 for a, b in sets)
+
+
 def match_type(brut, traces=None, vainqueur=0):
     """Match médoid RÉELLEMENT TIRÉ parmi les victoires du favori de la simulation.
 
@@ -581,6 +586,21 @@ def match_type(brut, traces=None, vainqueur=0):
             candidats.append((i, ligne))
     if not candidats:
         return None
+    # 04/11/2026 (demande de Lucas) : la vidéo suit la FORME la plus probable du match. Parmi les victoires du
+    # favori : d'abord le nombre de sets le plus fréquent (à égalité, le moins de sets), puis tie-break seulement
+    # si plus de la moitié de ces matchs en ont un. Avant, un match à 40 % de 3 sets et 45 % de tie-break pouvait
+    # montrer un 3 sets avec tie-break (le médoïde ne contraignait pas la forme).
+    nb = {}
+    for _, ligne in candidats:
+        nb[len(ligne[4])] = nb.get(len(ligne[4]), 0) + 1
+    n_sets = max(nb, key=lambda k: (nb[k], -k))
+    meme_sets = [c for c in candidats if len(c[1][4]) == n_sets]
+    avec_tb = sum(1 for c in meme_sets if a_un_tiebreak(c[1][4]))
+    tb = 2 * avec_tb > len(meme_sets)
+    candidats = [c for c in meme_sets if a_un_tiebreak(c[1][4]) == tb] or meme_sets
+    forme = {'sets': n_sets, 'tie_break': tb,
+             'part_sets_pct': round(100.0 * nb[n_sets] / sum(nb.values()), 1),
+             'part_tie_break_pct': round(100.0 * avec_tb / len(meme_sets), 1)}
     groupe = [ligne for _, ligne in candidats]
     F = []
     for j in (0, 1):
@@ -614,7 +634,7 @@ def match_type(brut, traces=None, vainqueur=0):
     out = {'score': sc, 'sets': [list(s) for s in sets], 'breaks': [list(b) for b in br],
            'feuille': [arr(fa), arr(fb)], 'simulation_index': i,
            'selection': 'representatif', 'vainqueur': vainqueur,
-           'representativite': controle}
+           'representativite': controle, 'forme': forme}
     if traces is not None:
         premier, trace = traces[i]
         out.update({'premier_serveur': premier, 'points': ''.join(str(x) for x in trace)})
