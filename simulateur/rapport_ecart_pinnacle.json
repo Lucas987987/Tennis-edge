@@ -1,0 +1,383 @@
+{
+ "genere_le": "2026-11-04T18:39:10+00:00",
+ "nature": "descriptive : la cote ne sert qu’à mesurer après coup, jamais d’entrée de l’algo",
+ "population": "ATP et WTA depuis 2022-01-01, matchs appariés aux clôtures Pinnacle (sans marge)",
+ "circuits": {
+  "ATP": {
+   "matchs": 9613,
+   "log_loss_elo": 0.61123,
+   "log_loss_pinnacle": 0.58504,
+   "ecart": 0.02619,
+   "situations": {
+    "1er ou 2e match après un changement de surface": {
+     "matchs": 2001,
+     "log_loss_elo": 0.62221,
+     "log_loss_pinnacle": 0.58997,
+     "ecart": 0.03224,
+     "ecart_relatif": 1.23,
+     "a_creuser": false,
+     "joueur_concerne": {
+      "matchs": 1532,
+      "elo_pct": 55.1,
+      "pinnacle_pct": 51.7,
+      "reel_pct": 49.2,
+      "elo_moins_pinnacle_pts": 3.44
+     }
+    },
+    "3 matchs ou plus dans le tournoi (dont qualifications)": {
+     "matchs": 2215,
+     "log_loss_elo": 0.60505,
+     "log_loss_pinnacle": 0.57737,
+     "ecart": 0.02768,
+     "ecart_relatif": 1.06,
+     "a_creuser": false,
+     "joueur_concerne": {
+      "matchs": 1345,
+      "elo_pct": 27.7,
+      "pinnacle_pct": 31.1,
+      "reel_pct": 34.0,
+      "elo_moins_pinnacle_pts": -3.47
+     }
+    },
+    "30 à 100 matchs": {
+     "matchs": 550,
+     "log_loss_elo": 0.60476,
+     "log_loss_pinnacle": 0.58601,
+     "ecart": 0.01875,
+     "ecart_relatif": 0.72,
+     "a_creuser": false,
+     "joueur_concerne": {
+      "matchs": 538,
+      "elo_pct": 31.9,
+      "pinnacle_pct": 36.6,
+      "reel_pct": 37.5,
+      "elo_moins_pinnacle_pts": -4.65
+     }
+    },
+    "abandon dans les 30 derniers jours": {
+     "matchs": 1112,
+     "log_loss_elo": 0.61615,
+     "log_loss_pinnacle": 0.59131,
+     "ecart": 0.02484,
+     "ecart_relatif": 0.95,
+     "a_creuser": false,
+     "joueur_concerne": {
+      "matchs": 1076,
+      "elo_pct": 48.9,
+      "pinnacle_pct": 48.0,
+      "reel_pct": 48.7,
+      "elo_moins_pinnacle_pts": 0.95
+     }
+    },
+    "favori 50–60 %": {
+     "matchs": 2778,
+     "log_loss_elo": 0.68942,
+     "log_loss_pinnacle": 0.66437,
+     "ecart": 0.02505,
+     "ecart_relatif": 0.96,
+     "a_creuser": false,
+     "joueur_concerne": {
+      "matchs": 2778,
+      "elo_pct": 55.0,
+      "pinnacle_pct": 54.1,
+      "reel_pct": 53.3,
+      "elo_moins_pinnacle_pts": 0.86
+     }
+    },
+    "favori 60–75 %": {
+     "matchs": 3662,
+     "log_loss_elo": 0.65895,
+     "log_loss_pinnacle": 0.63294,
+     "ecart": 0.02601,
+     "ecart_relatif": 0.99,
+     "a_creuser": false,
+     "joueur_concerne": {
+      "matchs": 3662,
+      "elo_pct": 67.1,
+      "pinnacle_pct": 64.8,
+      "reel_pct": 62.8,
+      "elo_moins_pinnacle_pts": 2.35
+     }
+    },
+    "favori 75 % et plus": {
+     "matchs": 3173,
+     "log_loss_elo": 0.48771,
+     "log_loss_pinnacle": 0.4603,
+     "ecart": 0.02741,
+     "ecart_relatif": 1.05,
+     "a_creuser": false,
+     "joueur_concerne": {
+      "matchs": 3173,
+      "elo_pct": 83.8,
+      "pinnacle_pct": 80.3,
+      "reel_pct": 80.1,
+      "elo_moins_pinnacle_pts": 3.53
+     }
+    },
+    "moins de 30 matchs": {
+     "matchs": 127,
+     "log_loss_elo": 0.38567,
+     "log_loss_pinnacle": 0.37062,
+     "ecart": 0.01505,
+     "ecart_relatif": 0.57,
+     "a_creuser": false,
+     "joueur_concerne": {
+      "matchs": 127,
+      "elo_pct": 18.1,
+      "pinnacle_pct": 23.0,
+      "reel_pct": 18.9,
+      "elo_moins_pinnacle_pts": -4.91
+     }
+    },
+    "note en forte baisse (−100 sur 3 mois)": {
+     "matchs": 190,
+     "log_loss_elo": 0.58788,
+     "log_loss_pinnacle": 0.58523,
+     "ecart": 0.00265,
+     "ecart_relatif": 0.1,
+     "a_creuser": false,
+     "joueur_concerne": {
+      "matchs": 189,
+      "elo_pct": 37.7,
+      "pinnacle_pct": 40.9,
+      "reel_pct": 43.4,
+      "elo_moins_pinnacle_pts": -3.17
+     }
+    },
+    "note en forte hausse (+100 sur 3 mois)": {
+     "matchs": 962,
+     "log_loss_elo": 0.60038,
+     "log_loss_pinnacle": 0.58004,
+     "ecart": 0.02034,
+     "ecart_relatif": 0.78,
+     "a_creuser": false,
+     "joueur_concerne": {
+      "matchs": 920,
+      "elo_pct": 49.3,
+      "pinnacle_pct": 49.8,
+      "reel_pct": 48.6,
+      "elo_moins_pinnacle_pts": -0.56
+     }
+    },
+    "retour après 45 jours ou plus": {
+     "matchs": 321,
+     "log_loss_elo": 0.62196,
+     "log_loss_pinnacle": 0.54616,
+     "ecart": 0.07579,
+     "ecart_relatif": 2.89,
+     "a_creuser": true,
+     "joueur_concerne": {
+      "matchs": 270,
+      "elo_pct": 56.0,
+      "pinnacle_pct": 45.5,
+      "reel_pct": 40.7,
+      "elo_moins_pinnacle_pts": 10.45
+     }
+    },
+    "vient surtout de l’ITF ou du Challenger": {
+     "matchs": 4080,
+     "log_loss_elo": 0.61054,
+     "log_loss_pinnacle": 0.58034,
+     "ecart": 0.0302,
+     "ecart_relatif": 1.15,
+     "a_creuser": false,
+     "joueur_concerne": {
+      "matchs": 3292,
+      "elo_pct": 29.8,
+      "pinnacle_pct": 32.7,
+      "reel_pct": 34.2,
+      "elo_moins_pinnacle_pts": -2.84
+     }
+    }
+   }
+  },
+  "WTA": {
+   "matchs": 8857,
+   "log_loss_elo": 0.60903,
+   "log_loss_pinnacle": 0.589,
+   "ecart": 0.02003,
+   "situations": {
+    "1er ou 2e match après un changement de surface": {
+     "matchs": 1631,
+     "log_loss_elo": 0.61759,
+     "log_loss_pinnacle": 0.58383,
+     "ecart": 0.03376,
+     "ecart_relatif": 1.69,
+     "a_creuser": true,
+     "joueur_concerne": {
+      "matchs": 1156,
+      "elo_pct": 57.9,
+      "pinnacle_pct": 56.7,
+      "reel_pct": 52.7,
+      "elo_moins_pinnacle_pts": 1.17
+     }
+    },
+    "3 matchs ou plus dans le tournoi (dont qualifications)": {
+     "matchs": 2097,
+     "log_loss_elo": 0.5895,
+     "log_loss_pinnacle": 0.56924,
+     "ecart": 0.02025,
+     "ecart_relatif": 1.01,
+     "a_creuser": false,
+     "joueur_concerne": {
+      "matchs": 1204,
+      "elo_pct": 29.8,
+      "pinnacle_pct": 31.7,
+      "reel_pct": 31.2,
+      "elo_moins_pinnacle_pts": -1.89
+     }
+    },
+    "30 à 100 matchs": {
+     "matchs": 210,
+     "log_loss_elo": 0.50633,
+     "log_loss_pinnacle": 0.47626,
+     "ecart": 0.03007,
+     "ecart_relatif": 1.5,
+     "a_creuser": false,
+     "joueur_concerne": {
+      "matchs": 209,
+      "elo_pct": 34.6,
+      "pinnacle_pct": 35.8,
+      "reel_pct": 30.6,
+      "elo_moins_pinnacle_pts": -1.18
+     }
+    },
+    "abandon dans les 30 derniers jours": {
+     "matchs": 1029,
+     "log_loss_elo": 0.61831,
+     "log_loss_pinnacle": 0.60664,
+     "ecart": 0.01167,
+     "ecart_relatif": 0.58,
+     "a_creuser": false,
+     "joueur_concerne": {
+      "matchs": 989,
+      "elo_pct": 50.3,
+      "pinnacle_pct": 50.1,
+      "reel_pct": 48.4,
+      "elo_moins_pinnacle_pts": 0.28
+     }
+    },
+    "favori 50–60 %": {
+     "matchs": 2914,
+     "log_loss_elo": 0.68635,
+     "log_loss_pinnacle": 0.66672,
+     "ecart": 0.01963,
+     "ecart_relatif": 0.98,
+     "a_creuser": false,
+     "joueur_concerne": {
+      "matchs": 2914,
+      "elo_pct": 55.0,
+      "pinnacle_pct": 55.1,
+      "reel_pct": 54.9,
+      "elo_moins_pinnacle_pts": -0.09
+     }
+    },
+    "favori 60–75 %": {
+     "matchs": 3636,
+     "log_loss_elo": 0.64429,
+     "log_loss_pinnacle": 0.62441,
+     "ecart": 0.01989,
+     "ecart_relatif": 0.99,
+     "a_creuser": false,
+     "joueur_concerne": {
+      "matchs": 3636,
+      "elo_pct": 67.0,
+      "pinnacle_pct": 66.7,
+      "reel_pct": 64.7,
+      "elo_moins_pinnacle_pts": 0.33
+     }
+    },
+    "favori 75 % et plus": {
+     "matchs": 2307,
+     "log_loss_elo": 0.45578,
+     "log_loss_pinnacle": 0.43501,
+     "ecart": 0.02076,
+     "ecart_relatif": 1.04,
+     "a_creuser": false,
+     "joueur_concerne": {
+      "matchs": 2307,
+      "elo_pct": 82.6,
+      "pinnacle_pct": 82.3,
+      "reel_pct": 82.1,
+      "elo_moins_pinnacle_pts": 0.29
+     }
+    },
+    "moins de 30 matchs": {
+     "matchs": 24,
+     "log_loss_elo": 0.41594,
+     "log_loss_pinnacle": 0.35522,
+     "ecart": 0.06072,
+     "ecart_relatif": 3.03,
+     "a_creuser": false,
+     "joueur_concerne": {
+      "matchs": 23,
+      "elo_pct": 18.9,
+      "pinnacle_pct": 24.9,
+      "reel_pct": 21.7,
+      "elo_moins_pinnacle_pts": -6.01
+     }
+    },
+    "note en forte baisse (−100 sur 3 mois)": {
+     "matchs": 50,
+     "log_loss_elo": 0.58246,
+     "log_loss_pinnacle": 0.51624,
+     "ecart": 0.06621,
+     "ecart_relatif": 3.31,
+     "a_creuser": false,
+     "joueur_concerne": {
+      "matchs": 50,
+      "elo_pct": 30.3,
+      "pinnacle_pct": 31.9,
+      "reel_pct": 36.0,
+      "elo_moins_pinnacle_pts": -1.64
+     }
+    },
+    "note en forte hausse (+100 sur 3 mois)": {
+     "matchs": 613,
+     "log_loss_elo": 0.58572,
+     "log_loss_pinnacle": 0.55962,
+     "ecart": 0.0261,
+     "ecart_relatif": 1.3,
+     "a_creuser": false,
+     "joueur_concerne": {
+      "matchs": 605,
+      "elo_pct": 51.8,
+      "pinnacle_pct": 53.2,
+      "reel_pct": 50.1,
+      "elo_moins_pinnacle_pts": -1.45
+     }
+    },
+    "retour après 45 jours ou plus": {
+     "matchs": 328,
+     "log_loss_elo": 0.6288,
+     "log_loss_pinnacle": 0.58582,
+     "ecart": 0.04298,
+     "ecart_relatif": 2.15,
+     "a_creuser": true,
+     "joueur_concerne": {
+      "matchs": 272,
+      "elo_pct": 59.2,
+      "pinnacle_pct": 51.2,
+      "reel_pct": 51.8,
+      "elo_moins_pinnacle_pts": 7.99
+     }
+    },
+    "vient surtout de l’ITF ou du Challenger": {
+     "matchs": 4077,
+     "log_loss_elo": 0.58382,
+     "log_loss_pinnacle": 0.56305,
+     "ecart": 0.02077,
+     "ecart_relatif": 1.04,
+     "a_creuser": false,
+     "joueur_concerne": {
+      "matchs": 3094,
+      "elo_pct": 32.0,
+      "pinnacle_pct": 31.3,
+      "reel_pct": 32.5,
+      "elo_moins_pinnacle_pts": 0.67
+     }
+    }
+   }
+  }
+ }
+}
