@@ -173,6 +173,17 @@ def rang_relatif(n1, n2, r1, r2):
     return w * (math.log(r2) - math.log(r1))
 
 
+def ll_par_circuit(circuits, sans, avec):
+    """04/11/2026 — {circuit: {'n', 'll': {'avec', 'sans'}, 'gain'}} sur les matchs jugés (règles jugées par circuit)."""
+    out = {}
+    for c, _ in CIRCUITS:
+        ix = [i for i, x in enumerate(circuits) if x == c]
+        if ix:
+            l0, l1 = _ll([sans[i] for i in ix]), _ll([avec[i] for i in ix])
+            out[c] = {'n': len(ix), 'll': {'avec': l1, 'sans': l0}, 'gain': round(l0 - l1, 5)}
+    return out
+
+
 def correction_situation(hors, P, lim, valeur, cle_s, poids_finaux=None, min_avant=200, min_juge=100, decalage=None,
                          decalage_final=None):
     """RÈGLE FIXÉE AVANT DE VOIR LE RÉSULTAT (22/10/2026) — même règle pour chaque situation (nouveau venu,
@@ -193,6 +204,7 @@ def correction_situation(hors, P, lim, valeur, cle_s, poids_finaux=None, min_ava
         rows.append((x['jour'] >= lim, _lg(S.melange(P, pe, ps)) + (decalage(x) if decalage else 0.0), v[0] - v[1], (x, ps, pe)))
     av = [(o, f) for j, o, f, _ in rows if not j]
     ju = [(o, f) for j, o, f, _ in rows if j and f != 0]
+    ju_c = [h[0].get('circuit') for j, o, f, h in rows if j and f != 0]
     n_av = sum(1 for _, f in av if f != 0)
     if n_av < min_avant or len(ju) < min_juge:
         return {'adopte': False, 'raison': f"pas assez de matchs concernés ({n_av} avant, {len(ju)} à juger)"}
@@ -201,11 +213,13 @@ def correction_situation(hors, P, lim, valeur, cle_s, poids_finaux=None, min_ava
     l0, l1 = _ll([sg_(o) for o, _ in ju]), _ll([sg_(o + d * f) for o, f in ju])
     att = sum(1 for o, f in ju if f > 0) / len(ju)          # part des matchs gagnés par celui qui est dans la situation
     ok = l1 < l0
+    par = ll_par_circuit(ju_c, [sg_(o) for o, _ in ju], [sg_(o + d * f) for o, f in ju])
     out = {'adopte': bool(ok), 'delta_appris_avant': round(d, 4), 'n_juge': len(ju), 'll': {'avec': l1, 'sans': l0},
+           'par_circuit': par,
            'raison': (f"{len(ju)} matchs concernés (6 dernières semaines) : log loss {round(l1, 4)} corrigée contre "
                       f"{round(l0, 4)} ; δ = {round(d, 3)} ({lib} est {'sous-estimé' if d > 0 else 'surestimé'})"
                       f" ; {lib} gagne {round(100 * att)} % de ces matchs")}
-    if ok:
+    if ok or any(v['gain'] > 0 for v in par.values()):        # 04/11/2026 : appris dès qu'un circuit y gagne
         Pf = poids_finaux or P
         dfin = decalage_final or decalage
         out['delta'] = round(_delta([(_lg(S.melange(Pf, pe, ps)) + (dfin(x) if dfin else 0.0), f)
@@ -273,11 +287,13 @@ def modele_arbres(hors, P, lim, experience, situations, nv, poids_finaux=None):
     neuf = [A.predire_symetrique(M, v, off(P, h), ECARTS) for _, v, h, _ in ju]
     l0, l1 = _ll(actuel), _ll(neuf)
     ok = l1 < l0
+    par = ll_par_circuit([h[0].get('circuit') for _, v, h, _ in ju], actuel, neuf)
     out = {'adopte': bool(ok), 'n_juge': len(ju), 'variables': list(VARIABLES), 'll': {'avec': l1, 'sans': l0},
+           'par_circuit': par,
            'jugement': {'actuel': _bilan(actuel), 'arbres': _bilan(neuf)},
            'raison': (f"6 dernières semaines ({len(ju)} matchs) : arbres {round(l1, 4)} contre modèle actuel {round(l0, 4)} "
                       f"(vainqueur trouvé {round(100 * _ok(neuf), 1)} % contre {round(100 * _ok(actuel), 1)} %)")}
-    if ok:
+    if ok or any(v['gain'] > 0 for v in par.values()):        # 04/11/2026 : appris dès qu'un circuit y gagne
         Pf = poids_finaux or P
         X, y, o = A.symetriser([(v, off(Pf, h), ECARTS) for _, v, h, _ in lignes])
         out['modele'] = A.apprendre(X, y, o)
@@ -370,18 +386,14 @@ def modele_arbres_candidat(cle, hors, P, lim, experience, situations, nv, poids_
     sans = [A.predire_symetrique(M0, v0, off(P, h), ECARTS) for _, v0, _, h, _ in ju]
     avec = [A.predire_symetrique(M1, v1, off(P, h), ec1) for _, _, v1, h, _ in ju]
     l0, l1 = _ll(sans), _ll(avec)
-    par = {}
-    for c, _ in CIRCUITS:
-        ix = [i for i, l in enumerate(ju) if l[3][0].get('circuit') == c]
-        if ix:
-            par[c] = {'n': len(ix), 'gain': round(_ll([sans[i] for i in ix]) - _ll([avec[i] for i in ix]), 5)}
+    par = ll_par_circuit([l[3][0].get('circuit') for l in ju], sans, avec)     # 04/11/2026 : log loss par circuit
     pire = min((v['gain'] for v in par.values()), default=0.0)
     ok = l1 < l0 and pire >= -0.001
     out = {'adopte': bool(ok), 'n_juge': len(ju), 'variables': list(VARIABLES) + [f'{sit_k}_{i}' for i in range(n_k)],
            'll': {'avec': l1, 'sans': l0}, 'par_circuit': par,
            'raison': (f"6 dernières semaines ({len(ju)} matchs) : arbres avec {lib} {round(l1, 4)} contre sans "
                       f"{round(l0, 4)} ; " + ', '.join(f"{c} {v['gain']:+.4f}" for c, v in par.items()))}
-    if ok or cle in DECISION_CANDIDATS:            # 30/10/2026 : candidat mis en production par décision → modèle toujours appris
+    if ok or cle in DECISION_CANDIDATS or any(v['gain'] > 0 for v in par.values()):   # 04/11 : dès qu'un circuit y gagne
         if cle in DECISION_CANDIDATS:
             out['decision'] = DECISION_CANDIDATS[cle]
         Pf = poids_finaux or P
