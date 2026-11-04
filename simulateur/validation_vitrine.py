@@ -165,8 +165,12 @@ def valider(doc, simulations_attendues=20000):
                 raise ValueError(f"trace={reel['score']}, score annoncé={scenario.get('score')}")
             if scenario.get('sets') is not None and [tuple(x) for x in scenario['sets']] != reel['sets']:
                 raise ValueError('sets du scénario différents de la trace')
-            favori = 0 if float(m.get('p_home', .5)) >= .5 else 1
-            if scenario.get('vainqueur') != favori or reel['vainqueur'] != favori:
+            # 04/11/2026 : p_home est publié arrondi à 3 décimales ; une variante à 0,4996 donne « 0.5 » publié
+            # mais un favori « away » dans la simulation. Au point d'arrondi, les deux sens sont admis (le scénario
+            # doit toujours suivre sa propre trace, contrôlée plus haut).
+            p_pub = float(m.get('p_home', .5))
+            favoris = {0, 1} if abs(p_pub - .5) <= .0005 + 1e-12 else {0 if p_pub >= .5 else 1}
+            if scenario.get('vainqueur') not in favoris or reel['vainqueur'] != scenario.get('vainqueur'):
                 raise ValueError('le scénario représentatif ne suit pas le vainqueur favori de la variante')
             stabilite = sim.get('stabilite_score')
             if stabilite is not None:
