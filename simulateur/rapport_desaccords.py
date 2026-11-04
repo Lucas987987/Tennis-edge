@@ -197,8 +197,10 @@ def envoyer(texte):
     tok, chat = os.environ.get('TELEGRAM_TOKEN'), os.environ.get('TELEGRAM_CHAT_ID')
     if not tok or not chat:
         return False
-    data = urllib.parse.urlencode({'chat_id': chat, 'text': texte, 'parse_mode': 'HTML'}).encode()
-    urllib.request.urlopen(f'https://api.telegram.org/bot{tok}/sendMessage', data=data, timeout=20).read()
+    from bilan_algo import texte_telegram          # 04/11/2026 : « < » échappé, message découpé (erreur 400 du 02/11)
+    for morceau in texte_telegram(texte):
+        data = urllib.parse.urlencode({'chat_id': chat, 'text': morceau, 'parse_mode': 'HTML'}).encode()
+        urllib.request.urlopen(f'https://api.telegram.org/bot{tok}/sendMessage', data=data, timeout=20).read()
     return True
 
 
