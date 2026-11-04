@@ -123,6 +123,30 @@ def _feuille_prevue(v):
     return out or None
 
 
+RECALAGE_STATS = None   # 04/11/2026 : recalage des statistiques annoncées (recalage_stats.py), seulement s'il est adopté
+
+
+def recaler_feuille(c, fp, fq, coefs=None):
+    """04/11/2026 — moyenne et fourchette 80 % recalées par circuit et statistique (recalage_stats.py) ; inchangées
+    tant que le recalage n'est pas adopté (deux semaines gagnantes de suite)."""
+    coefs = RECALAGE_STATS if coefs is None else coefs
+    if not coefs or not (coefs.get(c)):
+        return fp, fq
+    import recalage_stats as RS
+    fp2 = [dict(j) for j in fp] if fp else fp
+    fq2 = [dict(j) for j in fq] if fq else fq
+    for i in (0, 1):
+        for k, co in coefs[c].items():
+            m = fp2[i].get(k) if fp2 and len(fp2) > i else None
+            q = fq2[i].get(k) if fq2 and len(fq2) > i else None
+            if m is None or not q:
+                continue
+            m2, lo, hi = RS.recaler(co, k, float(m), float(q[0]), float(q[1]))
+            fp2[i][k] = m2
+            fq2[i][k] = [lo, hi]
+    return fp2, fq2
+
+
 def _feuille_fourchette(v):
     """29/10/2026 — fourchette 80 % (10e–90e centile des simulations) de chaque statistique annoncée, par joueur :
     sert à mesurer après le match si ce qui est annoncé tient (apres_match.py)."""
@@ -179,8 +203,11 @@ def ligne_match(m, complet):
         'jeux_moyen': v.get('jeux_moyen'),
         'tiebreak': v.get('tiebreak'),
         'set1_home': v.get('set1_home'),
-        'feuille_prevue': _feuille_prevue(v),
-        'feuille_fourchette': _feuille_fourchette(v),
+        'feuille_prevue': recaler_feuille(m.get('circuit'), _feuille_prevue(v), _feuille_fourchette(v))[0],
+        'feuille_fourchette': recaler_feuille(m.get('circuit'), _feuille_prevue(v), _feuille_fourchette(v))[1],
+        # 04/11/2026 : valeurs avant recalage, gardées pour l'apprentissage (recalage_stats.py) une fois adopté
+        **({'feuille_prevue_brute': _feuille_prevue(v), 'feuille_fourchette_brute': _feuille_fourchette(v)}
+           if RECALAGE_STATS else {}),
         'simulation': ({'a': round(d['a'], 4), 'b': round(d['b'], 4),
                         'sets_gagnants': int(d.get('sets_gagnants') or (3 if m.get('meilleur_des') == 5 else 2)),
                         'tb_final': int(d.get('tb_final') or 7), 'n': int(sim.get('n') or 0),
@@ -651,6 +678,13 @@ def compacter(doc, p_min=DISTRIBUTION_P_MIN):
 
 def main(argv):
     racine = argv[1] if len(argv) > 1 else os.path.join(ICI, '..')
+    global RECALAGE_STATS
+    try:                                # 04/11/2026 : recalage des statistiques annoncées, s'il est adopté
+        import recalage_stats as RS
+        RECALAGE_STATS = RS.lire_coefs(racine)
+    except Exception as e:  # noqa: BLE001
+        print(f'::warning::recalage des statistiques non lu : {type(e).__name__}: {e}')
+        RECALAGE_STATS = None
     doc = construire(racine)
     from validation_vitrine import valider
     valider(doc, int(os.environ.get('SIMULATIONS', '20000')))

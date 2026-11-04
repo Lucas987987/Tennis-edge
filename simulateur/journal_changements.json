@@ -1,6 +1,8 @@
 {
  "regle": "Chaque changement du modèle est noté ici avec sa date, ce qu'il change et ce qu'il a gagné au test (log loss, négatif = mieux prévu). Les changements mis en production par décision, sans attendre la 2e semaine, restent sous le garde-fou du jugement hebdomadaire.",
  "changements": [
+  {"date": "2026-11-04", "titre": "Recalage des statistiques annoncées par circuit (1res balles, aces, doubles fautes, breaks) — candidat", "statut": "candidat", "decision": false,
+   "mesure": "nos matchs du 28/10 au 04/11 : 1res balles annoncées trop bas (−4,7 pts ATP, −3,5 WTA, −1,5 Challenger), fourchette des breaks trop large (90–93 % dedans au lieu de 80 %) ; décalage et largeur appris par circuit, jugés chaque semaine sur la semaine suivante ; 1er essai (appris jusqu'au 01/11, jugé du 02 au 04/11) : erreur de couverture 7,9 → 2,9 points mais aces ATP 82,8 → 89,7 % : pas gagnant selon la règle ; ne change pas la probabilité de victoire"},
   {"date": "2026-11-01", "titre": "Duels de profils de jeu : serveuses WTA contre non-serveuses — modèle fantôme", "statut": "candidat", "decision": false,
    "mesure": "profils service–retour figés avant match, Elo retiré, 119 000 matchs 2018 → juin 2026 ; aucun des 10 duels confirmé au total ni par circuit (ATP, WTA, Challenger étudiés séparément) ; en WTA, profil serveur contre non-serveur +2,2 pts (2018–2022) et +2,9 pts (2023–2026), rien en ATP et Challenger ; repéré après avoir regardé : probabilité corrigée suivie à côté, jamais affichée ; rien avant 30 matchs concernés"},
   {"date": "2026-10-30", "titre": "Statut d'entrée (invité, qualifié) relevé avant chaque match — modèle fantôme", "statut": "candidat", "decision": false,
