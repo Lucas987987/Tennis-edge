@@ -116,7 +116,8 @@ def lignes(archive, racine):
             xa = ERA.variables(rt.etat(g, d), rt.etat(p, d))
             xg = EA.variables(EA.age_au(naiss, g, d), EA.age_au(naiss, p, d)) or (0.0, 0.0)
             xr = RS.moy(g, role_g) - RS.moy(p, role_p)
-            rows.append({'d': d, 'c': c, 'z': _lg(pe), 'x': (float(xs), xa[0], xa[1], xg[0], xg[1], xr)})
+            rows.append({'d': d, 'c': c, 'z': _lg(pe), 'x': (float(xs), xa[0], xa[1], xg[0], xg[1], xr),
+                         'n': (el.matchs(g), el.matchs(p))})
         su.jouer(g, d, s)
         su.jouer(p, d, s)
         rt.jouer(g, d)

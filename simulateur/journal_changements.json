@@ -3,6 +3,27 @@
  "changements": [
   {
    "date": "2026-11-04",
+   "titre": "Note de fiabilité v3 affichée : plus elle est proche de 100, plus nos % sont la réalité",
+   "statut": "production",
+   "decision": true,
+   "mesure": "pente d'étalonnage de la case du match (circuit × expérience × ampleur des signaux), archive 2016–2022 ; jugée sur 2023 → (règle fixée avant) : tiers des notes hautes pente 0,98 et 0,5 point d'erreur d'étalonnage, tiers bas pente 0,76 et 3,1 points ; tient en ATP et en Challenger (WTA déjà juste partout) ; la v1 reste calculée à côté"
+  },
+  {
+   "date": "2026-11-04",
+   "titre": "Parcours dans le tournoi (matchs déjà gagnés ici, qualifications comprises) — ajouté au combiné en ATP",
+   "statut": "production",
+   "decision": true,
+   "mesure": "seul : ATP +0,0036, WTA +0,0006, Challenger +0,0001 ; ajouté au combiné : ATP +0,0011 de plus (adopté), WTA et Challenger rien de plus ; les 7 β ATP sont appris ensemble"
+  },
+  {
+   "date": "2026-11-04",
+   "titre": "Joueur qui monte des petits tournois (ITF / Challenger) — rejeté",
+   "statut": "rejete",
+   "decision": false,
+   "mesure": "seul : ATP +0,0020 mais seulement +0,0002 de plus que le combiné en place (l'âge et le profil favori / outsider le captent déjà) ; WTA et Challenger rien"
+  },
+  {
+   "date": "2026-11-04",
    "titre": "Adoption directe : changement de surface, retour d'absence, âge et profil favori / outsider, appris ensemble",
    "statut": "production",
    "decision": true,
