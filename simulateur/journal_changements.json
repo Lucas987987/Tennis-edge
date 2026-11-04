@@ -1,6 +1,8 @@
 {
  "regle": "Chaque changement du modèle est noté ici avec sa date, ce qu'il change et ce qu'il a gagné au test (log loss, négatif = mieux prévu). Les changements mis en production par décision, sans attendre la 2e semaine, restent sous le garde-fou du jugement hebdomadaire.",
  "changements": [
+  {"date": "2026-11-04", "titre": "Vidéo du match : le scénario suit la forme la plus probable (nombre de sets, tie-break ou non)", "statut": "production", "decision": true,
+   "mesure": "parmi les victoires simulées du favori : nombre de sets le plus fréquent, puis tie-break seulement s'il est majoritaire, puis le match médian (jeux, statistiques) ; affichage seul, aucune probabilité modifiée"},
   {"date": "2026-11-04", "titre": "Recalage des statistiques annoncées par circuit (1res balles, aces, doubles fautes, breaks) — candidat", "statut": "candidat", "decision": false,
    "mesure": "nos matchs du 28/10 au 04/11 : 1res balles annoncées trop bas (−4,7 pts ATP, −3,5 WTA, −1,5 Challenger), fourchette des breaks trop large (90–93 % dedans au lieu de 80 %) ; décalage et largeur appris par circuit, jugés chaque semaine sur la semaine suivante ; 1er essai (appris jusqu'au 01/11, jugé du 02 au 04/11) : erreur de couverture 7,9 → 2,9 points mais aces ATP 82,8 → 89,7 % : pas gagnant selon la règle ; ne change pas la probabilité de victoire"},
   {"date": "2026-11-01", "titre": "Duels de profils de jeu : serveuses WTA contre non-serveuses — modèle fantôme", "statut": "candidat", "decision": false,
