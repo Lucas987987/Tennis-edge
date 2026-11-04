@@ -482,6 +482,32 @@ def _avec_serveuses(ct, srv):
     return dict(ct or {}, serveuses_wta=srv) if srv else ct
 
 
+# 04/11/2026 — FANTÔME « FORME DU MATCH » (etude_forme_match.py, banc d'essai) : en ATP, le joueur qui mène d'un set
+# relâche un peu au service (δ = −0,05 en logit) ; jugé sur 2023–2026 : +0,0033 de log-vraisemblance de la forme
+# (vainqueur, nombre de sets, tie-break, jeux), rien en WTA ni en Challenger. Vainqueur inchangé (ré-ancré). Suivi sur les
+# nouveaux matchs ATP (cases vainqueur × sets × tie-break) ; adopté dans le calcul des scores après deux semaines gagnantes.
+DELTA_SET_ATP = -0.05
+
+
+def controle_forme_set(c, pa, pb, sg, sigma):
+    """{'base': {case: p}, 'variante': {case: p}} ; case « G|S|T » (home gagne, nombre de sets, tie-break) ; ATP, 3 sets."""
+    if c != 'ATP' or sg != 2 or pa is None or pb is None:
+        return None
+    import etude_forme_match as FM
+    base = FM.avec_forme(pa, pb, sigma, 0.0, 0.0)
+    var = FM.ancree(pa, pb, FM.victoire(base), sigma, 0.0, DELTA_SET_ATP)
+    cases = lambda d: {k: round(v, 5) for k, v in _cases_forme(d).items()}
+    return {'base': cases(base), 'variante': cases(var), 'delta_set': DELTA_SET_ATP}
+
+
+def _cases_forme(dist):
+    out = {}
+    for (g, n, t, _), v in dist.items():
+        k = f"{int(g)}|{n}|{int(t)}"
+        out[k] = out.get(k, 0.0) + v
+    return out
+
+
 def controle_elo_sr(p_home, h, a, c, s, sg):
     """04/11/2026 — fantôme « Elo service / retour » : z = logit p + β·(logit p_sr − logit p), si les deux joueurs ont
     au moins 5 matchs dans l'Elo service / retour ; sinon None."""
@@ -502,6 +528,14 @@ def signaux_du_match(c, p_base, fsv_ctl, ent_ctl, srv_ctl, sr_ctl):
             'entree': (ent_ctl or {}).get('decalage'), 'serveuses_wta': (srv_ctl or {}).get('decalage'),
             'elo_service_retour': (sr_ctl or {}).get('decalage')}
     return {k: v for k, v in cand.items() if v and c in (SIGNAUX_CIRCUIT.get(k) or [])}
+
+
+def _forme_set_sur(c, direct, sg):
+    try:
+        return controle_forme_set(c, (direct or {}).get('a'), (direct or {}).get('b'), sg, (direct or {}).get('sigma') or 0.15)
+    except Exception as e_:  # noqa: BLE001 — un fantôme ne bloque jamais un pronostic
+        print(f"::warning::fantôme forme du match non calculé : {type(e_).__name__}: {e_}")
+        return None
 
 
 def _avec_cle(ct, cle, val):
@@ -1005,7 +1039,7 @@ def construire(racine, maintenant=None):
                     'forme_service': fsv if fsv and (fsv[0] or fsv[1]) else None,
                     'echanges': _echanges(h, a, x['debut']),
                     'entree': entree_du_match(h, a, x['debut']),
-                    'controle': _avec_cle(_avec_cle(_avec_serveuses(
+                    'controle': _avec_cle(_avec_cle(_avec_cle(_avec_serveuses(
                         _avec_entree(_avec_service(_avec_forme(controle_fantome(elo, elo_ref, ref_etat, etat, h, a, c, s,
                                                                                 elo_fem, fem_etat), forme_ctl),
                                                    None if 'forme_service' in adoptes_ici else fsv_ctl),
@@ -1017,7 +1051,7 @@ def construire(racine, maintenant=None):
                                            STYLES_MATCHS.get(uid))),
                         'elo_service_retour', None if 'elo_service_retour' in adoptes_ici else
                         controle_elo_sr((combinaison or {}).get('p_home'), h, a, c, s, sg)),
-                        'signaux_circuit', sig_ctl)})
+                        'signaux_circuit', sig_ctl), 'forme_set', _forme_set_sur(c, direct, sg))})
     doc = {'genere_le': maintenant.isoformat(timespec='seconds') + 'Z', 'elo_au': etat.get('dernier_match'),
             'horizon_h': HORIZON_H, 'sigma': SIGMA, 'simulations': SIMULATIONS if PR is not None else 0,
             'qualite_horodatages': couverture_horodatages,

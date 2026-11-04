@@ -10,6 +10,9 @@ Signaux suivis (modèles fantômes, jamais affichés avant adoption) :
   entree              — statut d'entrée (invité en Challenger, qualifié en ATP)
   serveuses_wta       — profil serveur contre non-serveur (WTA seulement par construction)
   elo_service_retour  — Elo au service et au retour (elo_service_retour.py), β = 0,284
+  forme_set           — (04/11/2026) ATP : relâchement du joueur qui mène d'un set ; ne change que la FORME du match
+                        (sets, tie-break), jugée sur la vraisemblance de la forme réelle ; adopté → intégré au calcul des
+                        scores (distribution_exacte.py), pas à la probabilité de victoire
 
 Chaque match joué donne, pour un signal et le circuit du match : log loss SANS le signal et AVEC lui
 (apres_match : fantome_<signal> tant qu'il n'est pas adopté sur ce circuit, signaux_circuit une fois appliqué).
@@ -31,7 +34,7 @@ import sys
 ICI = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, ICI)
 
-SIGNAUX = ('forme_service', 'entree', 'serveuses_wta', 'elo_service_retour')
+SIGNAUX = ('forme_service', 'entree', 'serveuses_wta', 'elo_service_retour', 'forme_set')
 CIRCUITS = ('ATP', 'WTA', 'CH')
 MIN_MATCHS, MARGE = 30, 0.001
 SORTIE = os.path.join('simulateur', 'fantomes_circuits.json')
