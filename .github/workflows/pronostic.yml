@@ -112,6 +112,14 @@ jobs:
       - name: Recalage des statistiques annoncées
         continue-on-error: true
         run: python simulateur/recalage_stats.py .
+      # 04/11/2026 : chaque signal (forme du service, statut d'entrée, serveuses WTA, Elo service / retour) jugé
+      # SÉPARÉMENT sur ATP, WTA et Challenger ; adopté sur un circuit après deux semaines gagnantes (Telegram privé)
+      - name: Signaux par circuit (ATP, WTA, Challenger jugés séparément)
+        continue-on-error: true
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python simulateur/fantomes_circuits.py . --telegram
       - name: Apprentissage continu (mélange simulation + Elo appris sur nos matchs joués)
         run: python simulateur/apprentissage_continu.py .
       - name: Ablation appariée sur les mêmes pronostics figés
@@ -199,6 +207,7 @@ jobs:
           if [ -f simulateur/pronostics_hors_echantillon.jsonl.gz ]; then git add -- simulateur/pronostics_hors_echantillon.jsonl.gz; fi
           if [ -f simulateur/stabilite.json ]; then git add -- simulateur/stabilite.json; fi
           if [ -f simulateur/recalage_stats.json ]; then git add -- simulateur/recalage_stats.json; fi
+          if [ -f simulateur/fantomes_circuits.json ]; then git add -- simulateur/fantomes_circuits.json; fi
           if git diff --cached --quiet; then echo 'Rien de nouveau.'; exit 0; fi
           git commit -m 'Pronostic : test du modèle (vainqueur, sets)'
           # fichiers écrits hors du checkout partiel (ex. live/joueurs_service.json.gz, contexte des

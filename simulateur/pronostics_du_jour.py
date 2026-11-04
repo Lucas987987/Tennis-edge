@@ -192,6 +192,9 @@ COMBINAISON = None
 ACTIVITE = None       # 29/10/2026 : activité récente des joueurs (activite.py), chargée par construire()
 ECHANGES = None       # 30/10/2026 : longueur des échanges (Match Charting Project), affichage seul
 STYLES_MATCHS = {}    # 01/11/2026 : styles service–retour figés avant match (styles_descriptifs.json), fantôme seul
+ELO_SR = None         # 04/11/2026 : Elo au service et au retour (elo_service_retour.py), fantôme seul
+SIGNAUX_CIRCUIT = {}  # 04/11/2026 : {signal: [circuits]} adoptés par circuit (fantomes_circuits.py)
+BETA_ELO_SR = 0.284   # 04/11/2026 : poids de l'Elo service / retour (étude hors échantillon, dernière semaine apprise)
 FORME_SERVICE = None  # 29/10/2026 : service / retour du moment (forme_service.py), information + modèle fantôme
 PROGRAMME = {}        # 29/10/2026 : {(jour, clé, clé) triée: tour} — programme du jour relevé par feuilles_match.py
 
@@ -468,6 +471,32 @@ def controle_serveuses(p_home, c, styles):
 def _avec_serveuses(ct, srv):
     """01/11/2026 : le fantôme « serveuses WTA » dans le bloc de contrôle."""
     return dict(ct or {}, serveuses_wta=srv) if srv else ct
+
+
+def controle_elo_sr(p_home, h, a, c, s, sg):
+    """04/11/2026 — fantôme « Elo service / retour » : z = logit p + β·(logit p_sr − logit p), si les deux joueurs ont
+    au moins 5 matchs dans l'Elo service / retour ; sinon None."""
+    if ELO_SR is None or p_home is None or ELO_SR.connu(h) < 5 or ELO_SR.connu(a) < 5:
+        return None
+    psr = ELO_SR.proba(h, a, c, s, sg)
+    lg = lambda q: math.log(min(max(q, 1e-6), 1 - 1e-6) / (1 - min(max(q, 1e-6), 1 - 1e-6)))
+    d = BETA_ELO_SR * (lg(psr) - lg(p_home))
+    return {'p_home': round(sig(lg(p_home) + d), 4), 'p_sr': round(psr, 4), 'decalage': round(d, 4)}
+
+
+def signaux_du_match(c, p_base, fsv_ctl, ent_ctl, srv_ctl, sr_ctl):
+    """04/11/2026 — décalages (logit) des signaux ADOPTÉS SUR CE CIRCUIT (fantomes_circuits.py) ; {signal: décalage}."""
+    if not SIGNAUX_CIRCUIT or p_base is None:
+        return {}
+    lg = lambda q: math.log(min(max(q, 1e-6), 1 - 1e-6) / (1 - min(max(q, 1e-6), 1 - 1e-6)))
+    cand = {'forme_service': (lg(fsv_ctl['p_home']) - lg(p_base)) if (fsv_ctl or {}).get('p_home') is not None else None,
+            'entree': (ent_ctl or {}).get('decalage'), 'serveuses_wta': (srv_ctl or {}).get('decalage'),
+            'elo_service_retour': (sr_ctl or {}).get('decalage')}
+    return {k: v for k, v in cand.items() if v and c in (SIGNAUX_CIRCUIT.get(k) or [])}
+
+
+def _avec_cle(ct, cle, val):
+    return dict(ct or {}, **{cle: val}) if val else ct
 
 
 def _avec_entree(ct, ent):
@@ -750,8 +779,23 @@ def construire(racine, maintenant=None):
         elo_fem = E.Elo.importer(fem_etat['joueurs'], fem_etat.get('options'))
     except (OSError, ValueError, KeyError):
         fem_etat, elo_fem = None, None
-    global ACTIVITE, PROGRAMME, FORME_SERVICE, ECHANGES, STYLES_MATCHS
+    global ACTIVITE, PROGRAMME, FORME_SERVICE, ECHANGES, STYLES_MATCHS, ELO_SR, SIGNAUX_CIRCUIT
     STYLES_MATCHS = charger_styles_matchs(racine)
+    try:                            # 04/11/2026 : signaux adoptés circuit par circuit
+        import fantomes_circuits as FCI
+        SIGNAUX_CIRCUIT = FCI.lire(racine)
+        if SIGNAUX_CIRCUIT:
+            print(f"Signaux adoptés par circuit : {SIGNAUX_CIRCUIT}")
+    except Exception as e_:  # noqa: BLE001
+        print(f"::warning::signaux par circuit non lus : {type(e_).__name__}: {e_}")
+        SIGNAUX_CIRCUIT = {}
+    try:                            # 04/11/2026 : Elo au service et au retour (archive Sackmann clonée + feuilles)
+        import elo_service_retour as ESR
+        _M_sr = ESR.matchs(os.environ.get('SACKMANN_DIR', '/tmp/sackmann'), racine)
+        ELO_SR = ESR.construire(_M_sr, dt.date.today()) if _M_sr else None
+    except Exception as e_:  # noqa: BLE001
+        print(f"::warning::Elo service / retour non chargé : {type(e_).__name__}: {e_}")
+        ELO_SR = None
     try:                            # 30/10/2026 : longueur des échanges (affichage seul ; /tmp/mcp cloné par le workflow)
         import echanges_joueur as EJ
         ECHANGES = EJ.depuis(os.environ.get('MCP_DIR', '/tmp/mcp'))
@@ -825,6 +869,7 @@ def construire(racine, maintenant=None):
         stats = pronostic(elo.proba(h, a, s), c, sg, pa0, pb0)
         uid = f"{x['debut'].date()}_{NR.slug(x['home'])}_{NR.slug(x['away'])}"
         simulation = combinaison = direct = forme_ctl = fsv_ctl = None
+        sig_ctl, adoptes_ici = None, ()
         fsv = None
         if FORME_SERVICE is not None:
             try:
@@ -890,6 +935,19 @@ def construire(racine, maintenant=None):
                                                          elo.matchs(h), elo.matchs(a), sit)
                     except Exception as e_:  # noqa: BLE001 — le fantôme ne doit jamais bloquer un pronostic
                         print(f"::warning::fantôme forme du service non calculé ({h}–{a}) : {type(e_).__name__}: {e_}")
+                # 04/11/2026 — signaux adoptés SUR CE CIRCUIT : appliqués avant la simulation ; le fantôme correspondant
+                # n'est plus calculé sur ce circuit (on suit « avec contre sans » dans signaux_circuit)
+                p_base = combinaison['p_home']
+                sh_ = signaux_du_match(c, p_base, fsv_ctl, controle_entree(p_base, c, entree_du_match(h, a, x['debut'])),
+                                       controle_serveuses(p_base, c, STYLES_MATCHS.get(uid)), controle_elo_sr(p_base, h, a, c, s, sg))
+                adoptes_ici = tuple(k for k, v in SIGNAUX_CIRCUIT.items() if c in (v or []))
+                if sh_:
+                    q_ = min(max(p_base, 1e-6), 1 - 1e-6)
+                    p_new = sig(math.log(q_ / (1 - q_)) + sum(sh_.values()))
+                    combinaison = dict(pronostic(p_new, c, sg, MS.p_service(cH), MS.p_service(cA)),
+                                       p_simulation=round(p_sim, 4), p_elo=stats['p_home'])
+                    sig_ctl = {'appliques': sorted(sh_), 'p_home_sans': round(p_base, 4),
+                               'decalages': {k: round(v, 4) for k, v in sh_.items()}}
             # 22/10/2026 — EN DIRECT (direct.py, Lab) : points de service des deux joueurs pour la version
             # principale (simulation + Elo si adoptée, sinon simulation pure), avant toute forme du jour.
             cH0, cA0 = avec_facteurs(*composantes_du_match(PR, h, a, c, s, pure=not combinaison)[:2], fct)
@@ -926,13 +984,19 @@ def construire(racine, maintenant=None):
                     'forme_service': fsv if fsv and (fsv[0] or fsv[1]) else None,
                     'echanges': _echanges(h, a, x['debut']),
                     'entree': entree_du_match(h, a, x['debut']),
-                    'controle': _avec_serveuses(
+                    'controle': _avec_cle(_avec_cle(_avec_serveuses(
                         _avec_entree(_avec_service(_avec_forme(controle_fantome(elo, elo_ref, ref_etat, etat, h, a, c, s,
-                                                                                elo_fem, fem_etat), forme_ctl), fsv_ctl),
+                                                                                elo_fem, fem_etat), forme_ctl),
+                                                   None if 'forme_service' in adoptes_ici else fsv_ctl),
+                                     None if 'entree' in adoptes_ici else
                                      controle_entree((combinaison or simulation or stats or {}).get('p_home'), c,
                                                      entree_du_match(h, a, x['debut']))),
+                        None if 'serveuses_wta' in adoptes_ici else
                         controle_serveuses((combinaison or simulation or stats or {}).get('p_home'), c,
-                                           STYLES_MATCHS.get(uid)))})
+                                           STYLES_MATCHS.get(uid))),
+                        'elo_service_retour', None if 'elo_service_retour' in adoptes_ici else
+                        controle_elo_sr((combinaison or {}).get('p_home'), h, a, c, s, sg)),
+                        'signaux_circuit', sig_ctl)})
     doc = {'genere_le': maintenant.isoformat(timespec='seconds') + 'Z', 'elo_au': etat.get('dernier_match'),
             'horizon_h': HORIZON_H, 'sigma': SIGMA, 'simulations': SIMULATIONS if PR is not None else 0,
             'qualite_horodatages': couverture_horodatages,
