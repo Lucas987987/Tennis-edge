@@ -197,6 +197,10 @@ SIGNAUX_CIRCUIT = {}  # 04/11/2026 : {signal: [circuits]} adoptés par circuit (
 # 04/11/2026 — changement de surface (etude_changement_surface.py, archive 2016–2022 → jugé 2023 →, positif sur les
 # trois circuits) : β par circuit, z += β·(nouveau(home) − nouveau(away)) ; fantôme seul tant que non adopté.
 BETA_CHANGEMENT_SURFACE = {'ATP': -0.1724, 'WTA': -0.1142, 'CH': -0.1705}
+# 04/11/2026 — retour d'absence (etude_retour_absence.py, archive 2016–2022 → jugé 2023 →, positif sur les trois
+# circuits) : (β court 45–119 jours, β long 120 jours et plus) par circuit ; fantôme seul tant que non adopté.
+BETA_RETOUR_ABSENCE = {'ATP': (-0.5811, -0.8996), 'WTA': (-0.4034, -1.0571), 'CH': (-0.2545, -0.4953)}
+DATES_MATCHS = None   # 04/11/2026 : {joueur: jours de ses matchs} (etude_retour_absence.dates_matchs)
 BETA_ELO_SR = 0.284   # 04/11/2026 : poids de l'Elo service / retour (étude hors échantillon, dernière semaine apprise)
 FORME_SERVICE = None  # 29/10/2026 : service / retour du moment (forme_service.py), information + modèle fantôme
 PROGRAMME = {}        # 29/10/2026 : {(jour, clé, clé) triée: tour} — programme du jour relevé par feuilles_match.py
@@ -537,6 +541,30 @@ def controle_changement_surface(p_home, c, h, a, surface, debut):
     return {'p_home': round(sig(lg(p_home) + b * x), 4), 'x': x, 'decalage': round(b * x, 4)}
 
 
+def controle_retour_absence(p_home, c, h, a, debut):
+    """04/11/2026 — fantôme « retour d'absence » : celui qui revient après 45 jours ou plus sans match (poids 1, 1/2,
+    1/4 sur ses trois premiers matchs) est moins fort que son Elo. None si personne n'est concerné."""
+    b = BETA_RETOUR_ABSENCE.get(c)
+    if b is None or p_home is None or not DATES_MATCHS:
+        return None
+    import etude_retour_absence as ERA
+    jour = debut.date() if isinstance(debut, dt.datetime) else debut
+    x = ERA.variables(ERA.etat_au(DATES_MATCHS.get(h), jour), ERA.etat_au(DATES_MATCHS.get(a), jour))
+    if not (x[0] or x[1]):
+        return None
+    d = b[0] * x[0] + b[1] * x[1]
+    lg = lambda q: math.log(min(max(q, 1e-6), 1 - 1e-6) / (1 - min(max(q, 1e-6), 1 - 1e-6)))
+    return {'p_home': round(sig(lg(p_home) + d), 4), 'x': [x[0], x[1]], 'decalage': round(d, 4)}
+
+
+def _retour_absence_sur(p_home, c, h, a, debut):
+    try:
+        return controle_retour_absence(p_home, c, h, a, debut)
+    except Exception as e_:  # noqa: BLE001 — un fantôme ne bloque jamais un pronostic
+        print(f"::warning::fantôme retour d'absence non calculé : {type(e_).__name__}: {e_}")
+        return None
+
+
 def _changement_surface_sur(p_home, c, h, a, surface, debut):
     try:
         return controle_changement_surface(p_home, c, h, a, surface, debut)
@@ -545,14 +573,15 @@ def _changement_surface_sur(p_home, c, h, a, surface, debut):
         return None
 
 
-def signaux_du_match(c, p_base, fsv_ctl, ent_ctl, srv_ctl, sr_ctl, cs_ctl=None):
+def signaux_du_match(c, p_base, fsv_ctl, ent_ctl, srv_ctl, sr_ctl, cs_ctl=None, ra_ctl=None):
     """04/11/2026 — décalages (logit) des signaux ADOPTÉS SUR CE CIRCUIT (fantomes_circuits.py) ; {signal: décalage}."""
     if not SIGNAUX_CIRCUIT or p_base is None:
         return {}
     lg = lambda q: math.log(min(max(q, 1e-6), 1 - 1e-6) / (1 - min(max(q, 1e-6), 1 - 1e-6)))
     cand = {'forme_service': (lg(fsv_ctl['p_home']) - lg(p_base)) if (fsv_ctl or {}).get('p_home') is not None else None,
             'entree': (ent_ctl or {}).get('decalage'), 'serveuses_wta': (srv_ctl or {}).get('decalage'),
-            'elo_service_retour': (sr_ctl or {}).get('decalage'), 'changement_surface': (cs_ctl or {}).get('decalage')}
+            'elo_service_retour': (sr_ctl or {}).get('decalage'), 'changement_surface': (cs_ctl or {}).get('decalage'),
+            'retour_absence': (ra_ctl or {}).get('decalage')}
     return {k: v for k, v in cand.items() if v and c in (SIGNAUX_CIRCUIT.get(k) or [])}
 
 
@@ -860,7 +889,7 @@ def construire(racine, maintenant=None):
         elo_fem = E.Elo.importer(fem_etat['joueurs'], fem_etat.get('options'))
     except (OSError, ValueError, KeyError):
         fem_etat, elo_fem = None, None
-    global ACTIVITE, PROGRAMME, FORME_SERVICE, ECHANGES, STYLES_MATCHS, ELO_SR, SIGNAUX_CIRCUIT
+    global ACTIVITE, PROGRAMME, FORME_SERVICE, ECHANGES, STYLES_MATCHS, ELO_SR, SIGNAUX_CIRCUIT, DATES_MATCHS
     STYLES_MATCHS = charger_styles_matchs(racine)
     try:                            # 04/11/2026 : signaux adoptés circuit par circuit
         import fantomes_circuits as FCI
@@ -877,6 +906,12 @@ def construire(racine, maintenant=None):
     except Exception as e_:  # noqa: BLE001
         print(f"::warning::Elo service / retour non chargé : {type(e_).__name__}: {e_}")
         ELO_SR = None
+    try:                            # 04/11/2026 : jours des matchs de chaque joueur (fantôme « retour d'absence »)
+        import etude_retour_absence as ERA
+        DATES_MATCHS = ERA.dates_matchs(os.environ.get('SACKMANN_DIR', '/tmp/sackmann'), racine)
+    except Exception as e_:  # noqa: BLE001
+        print(f"::warning::jours des matchs non chargés : {type(e_).__name__}: {e_}")
+        DATES_MATCHS = None
     try:                            # 30/10/2026 : longueur des échanges (affichage seul ; /tmp/mcp cloné par le workflow)
         import echanges_joueur as EJ
         ECHANGES = EJ.depuis(os.environ.get('MCP_DIR', '/tmp/mcp'))
@@ -1021,7 +1056,8 @@ def construire(racine, maintenant=None):
                 p_base = combinaison['p_home']
                 sh_ = signaux_du_match(c, p_base, fsv_ctl, controle_entree(p_base, c, entree_du_match(h, a, x['debut'])),
                                        controle_serveuses(p_base, c, STYLES_MATCHS.get(uid)), controle_elo_sr(p_base, h, a, c, s, sg),
-                                       _changement_surface_sur(p_base, c, h, a, s, x['debut']))
+                                       _changement_surface_sur(p_base, c, h, a, s, x['debut']),
+                                       _retour_absence_sur(p_base, c, h, a, x['debut']))
                 adoptes_ici = tuple(k for k, v in SIGNAUX_CIRCUIT.items() if c in (v or []))
                 if sh_:
                     q_ = min(max(p_base, 1e-6), 1 - 1e-6)
@@ -1066,7 +1102,7 @@ def construire(racine, maintenant=None):
                     'forme_service': fsv if fsv and (fsv[0] or fsv[1]) else None,
                     'echanges': _echanges(h, a, x['debut']),
                     'entree': entree_du_match(h, a, x['debut']),
-                    'controle': _avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_serveuses(
+                    'controle': _avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_serveuses(
                         _avec_entree(_avec_service(_avec_forme(controle_fantome(elo, elo_ref, ref_etat, etat, h, a, c, s,
                                                                                 elo_fem, fem_etat), forme_ctl),
                                                    None if 'forme_service' in adoptes_ici else fsv_ctl),
@@ -1080,7 +1116,9 @@ def construire(racine, maintenant=None):
                         controle_elo_sr((combinaison or {}).get('p_home'), h, a, c, s, sg)),
                         'signaux_circuit', sig_ctl), 'forme_set', _forme_set_sur(c, direct, sg)),
                         'changement_surface', None if 'changement_surface' in adoptes_ici else
-                        _changement_surface_sur((combinaison or {}).get('p_home'), c, h, a, s, x['debut']))})
+                        _changement_surface_sur((combinaison or {}).get('p_home'), c, h, a, s, x['debut'])),
+                        'retour_absence', None if 'retour_absence' in adoptes_ici else
+                        _retour_absence_sur((combinaison or {}).get('p_home'), c, h, a, x['debut']))})
     doc = {'genere_le': maintenant.isoformat(timespec='seconds') + 'Z', 'elo_au': etat.get('dernier_match'),
             'horizon_h': HORIZON_H, 'sigma': SIGMA, 'simulations': SIMULATIONS if PR is not None else 0,
             'qualite_horodatages': couverture_horodatages,
