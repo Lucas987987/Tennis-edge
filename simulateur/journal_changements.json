@@ -1,6 +1,14 @@
 {
  "regle": "Chaque changement du modèle est noté ici avec sa date, ce qu'il change et ce qu'il a gagné au test (log loss, négatif = mieux prévu). Les changements mis en production par décision, sans attendre la 2e semaine, restent sous le garde-fou du jugement hebdomadaire.",
  "changements": [
+  {"date": "2026-11-04", "titre": "Signaux jugés circuit par circuit (ATP, WTA, Challenger séparément)", "statut": "production", "decision": true,
+   "mesure": "décision de Lucas : un signal positif sur un circuit est utilisé sur ce circuit ; chaque semaine, par signal et par circuit : ≥ 30 matchs, gain ≥ 0,001 sur la semaine et depuis le début ; adopté après deux semaines gagnantes, retiré après deux sans gain ; signaux suivis : forme du service, statut d'entrée, serveuses WTA, Elo service / retour (nouveau fantôme)"},
+  {"date": "2026-11-04", "titre": "Elo au service et Elo au retour (3e modèle) — rejeté", "statut": "rejete", "decision": false,
+   "mesure": "réglage fixé sur 2023–2024 (η 0,0015) ; seul, il fait comme la simulation (0,620 contre 0,620) ; ajouté à l'algo sur 3 687 pronostics hors échantillon : −0,0004 au total, WTA −0,0056, ATP −0,0007, Challenger +0,0014 : pas positif selon la règle"},
+  {"date": "2026-11-04", "titre": "Forme du service corrigée du niveau des adversaires — rejetée", "statut": "rejete", "decision": false,
+   "mesure": "écarts au service et au retour contre l'attendu de l'Elo service / retour, 30 jours ; 4 674 pronostics : −0,0009 au total (ATP +0,0017, WTA −0,0042, Challenger −0,0007) ; version apprise ±0,0000 : pas positif"},
+  {"date": "2026-11-04", "titre": "Rapprocher de 50 % les matchs où l'Elo et la simulation divergent — rejeté", "statut": "rejete", "decision": false,
+   "mesure": "1 506 désaccords sur 3 687 pronostics : l'algo a raison 63,5 % pour 62,6 % de confiance moyenne (pas trop sûr de lui) ; correction −0,0008 au total : pas positif"},
   {"date": "2026-11-04", "titre": "Vidéo du match : le scénario suit la forme la plus probable (nombre de sets, tie-break ou non)", "statut": "production", "decision": true,
    "mesure": "parmi les victoires simulées du favori : nombre de sets le plus fréquent, puis tie-break seulement s'il est majoritaire, puis le match médian (jeux, statistiques) ; affichage seul, aucune probabilité modifiée"},
   {"date": "2026-11-04", "titre": "Recalage des statistiques annoncées par circuit (1res balles, aces, doubles fautes, breaks) — candidat", "statut": "candidat", "decision": false,
