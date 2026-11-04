@@ -1,102 +1,352 @@
 {
  "regle": "Chaque changement du modèle est noté ici avec sa date, ce qu'il change et ce qu'il a gagné au test (log loss, négatif = mieux prévu). Les changements mis en production par décision, sans attendre la 2e semaine, restent sous le garde-fou du jugement hebdomadaire.",
  "changements": [
-  {"date": "2026-11-04", "titre": "Forme des matchs : relâchement de celui qui mène d'un set en ATP — modèle fantôme", "statut": "candidat", "decision": false,
-   "mesure": "banc d'essai exact (vainqueur tenu fixe), réglé sur 2021–2022, jugé sur 1 200 matchs 2023–2026 par circuit : ATP +0,0033 de log-vraisemblance de la forme (δ = −0,05 au service du joueur qui mène d'un set : plus de matchs en 3 sets) ; WTA et Challenger rien ; forme du jour plus forte (σ 0,22–0,32) : rien nulle part ; serveur affaibli au tie-break : +0,0005 partout, sous le seuil ; suivi en fantôme sur les nouveaux matchs ATP, intégré au calcul des scores après deux semaines gagnantes"},
-  {"date": "2026-11-04", "titre": "Correctif : plus de pronostics contre des places vides du tableau (« R16P6 », « Qf1 »…)", "statut": "production", "decision": true,
-   "mesure": "le programme annonce le tour suivant avec des places vides ; un tel « joueur » partait de l'Elo de départ (pronostics à 96 % sur le site) ; ces matchs sont écartés jusqu'à ce que les vrais noms arrivent"},
-  {"date": "2026-11-04", "titre": "CPI (vitesse du court) comme variable du vainqueur — rejeté", "statut": "rejete", "decision": false,
-   "mesure": "interaction CPI × (avantage au service − avantage au retour), appris 2016–2022, jugé 2023–2026 ; CPI officiel (ATP, 3 063 matchs jugés) : +0,00003 ; CPI estimé avant le match : ATP 0,0000 (10 246), WTA −0,0001 (8 993), Challenger +0,0001 (30 915) ; rien ne passe le seuil de 0,001 : la vitesse reste une information et un facteur des statistiques (aces, service)"},
-  {"date": "2026-11-04", "titre": "Vitesse des courts : CPI officiel quand il existe, CPI estimé pour tous les autres tournois", "statut": "production", "decision": true,
-   "mesure": "CPI officiel publié pour 14 tournois seulement (Grands Chelems, Masters 1000, ATP Finals ; 107 valeurs 2012–2026) ; notre indice (points de service et aces au-delà de l'attendu de l'Elo service / retour) étalonné dessus : corrélation 0,78 et erreur moyenne 3,1 points en « tournoi laissé de côté » (5,9 sans l'indice) ; Paris 2026 estimé 45,3 pour 47,9 officiel ; affiché sur la fiche et dans le post, n'entre pas dans le pronostic (la vitesse est déjà un facteur du modèle)"},
-  {"date": "2026-11-04", "titre": "Tout l'entraînement hebdomadaire jugé circuit par circuit (arbres, candidats, corrections)", "statut": "production", "decision": true,
-   "mesure": "décision de Lucas : arbres, arbres + activité / tour / points, nouveaux venus, qualifiés, changement de surface, classement : une série de stabilité par circuit (ATP, WTA, Challenger), appliqués seulement où ils sont en place ; moins de 50 matchs jugés sur un circuit : la semaine ne compte pas ; première lecture : activité récente candidate en ATP (+0,0047), points en sursis sur les trois circuits"},
-  {"date": "2026-11-04", "titre": "Bouton « Générer la vidéo » sur la fiche du match", "statut": "production", "decision": true,
-   "mesure": "le worker du site lance le workflow vidéo pour ce match (clé privée, une demande toutes les 3 minutes au plus) ; la vidéo arrive sur le Telegram privé ; aucun jeton dans la page"},
-  {"date": "2026-11-04", "titre": "Signaux jugés circuit par circuit (ATP, WTA, Challenger séparément)", "statut": "production", "decision": true,
-   "mesure": "décision de Lucas : un signal positif sur un circuit est utilisé sur ce circuit ; chaque semaine, par signal et par circuit : ≥ 30 matchs, gain ≥ 0,001 sur la semaine et depuis le début ; adopté après deux semaines gagnantes, retiré après deux sans gain ; signaux suivis : forme du service, statut d'entrée, serveuses WTA, Elo service / retour (nouveau fantôme)"},
-  {"date": "2026-11-04", "titre": "Elo au service et Elo au retour (3e modèle) — rejeté", "statut": "rejete", "decision": false,
-   "mesure": "réglage fixé sur 2023–2024 (η 0,0015) ; seul, il fait comme la simulation (0,620 contre 0,620) ; ajouté à l'algo sur 3 687 pronostics hors échantillon : −0,0004 au total, WTA −0,0056, ATP −0,0007, Challenger +0,0014 : pas positif selon la règle"},
-  {"date": "2026-11-04", "titre": "Forme du service corrigée du niveau des adversaires — rejetée", "statut": "rejete", "decision": false,
-   "mesure": "écarts au service et au retour contre l'attendu de l'Elo service / retour, 30 jours ; 4 674 pronostics : −0,0009 au total (ATP +0,0017, WTA −0,0042, Challenger −0,0007) ; version apprise ±0,0000 : pas positif"},
-  {"date": "2026-11-04", "titre": "Rapprocher de 50 % les matchs où l'Elo et la simulation divergent — rejeté", "statut": "rejete", "decision": false,
-   "mesure": "1 506 désaccords sur 3 687 pronostics : l'algo a raison 63,5 % pour 62,6 % de confiance moyenne (pas trop sûr de lui) ; correction −0,0008 au total : pas positif"},
-  {"date": "2026-11-04", "titre": "Vidéo du match : le scénario suit la forme la plus probable (nombre de sets, tie-break ou non)", "statut": "production", "decision": true,
-   "mesure": "parmi les victoires simulées du favori : nombre de sets le plus fréquent, puis tie-break seulement s'il est majoritaire, puis le match médian (jeux, statistiques) ; affichage seul, aucune probabilité modifiée"},
-  {"date": "2026-11-04", "titre": "Recalage des statistiques annoncées par circuit (1res balles, aces, doubles fautes, breaks) — candidat", "statut": "candidat", "decision": false,
-   "mesure": "nos matchs du 28/10 au 04/11 : 1res balles annoncées trop bas (−4,7 pts ATP, −3,5 WTA, −1,5 Challenger), fourchette des breaks trop large (90–93 % dedans au lieu de 80 %) ; décalage et largeur appris par circuit, jugés chaque semaine sur la semaine suivante ; 1er essai (appris jusqu'au 01/11, jugé du 02 au 04/11) : erreur de couverture 7,9 → 2,9 points mais aces ATP 82,8 → 89,7 % : pas gagnant selon la règle ; ne change pas la probabilité de victoire"},
-  {"date": "2026-11-01", "titre": "Duels de profils de jeu : serveuses WTA contre non-serveuses — modèle fantôme", "statut": "candidat", "decision": false,
-   "mesure": "profils service–retour figés avant match, Elo retiré, 119 000 matchs 2018 → juin 2026 ; aucun des 10 duels confirmé au total ni par circuit (ATP, WTA, Challenger étudiés séparément) ; en WTA, profil serveur contre non-serveur +2,2 pts (2018–2022) et +2,9 pts (2023–2026), rien en ATP et Challenger ; repéré après avoir regardé : probabilité corrigée suivie à côté, jamais affichée ; rien avant 30 matchs concernés"},
-  {"date": "2026-10-30", "titre": "Statut d'entrée (invité, qualifié) relevé avant chaque match — modèle fantôme", "statut": "candidat", "decision": false,
-   "mesure": "détail TennisApi des matchs à venir (une requête par match, une fois) ; invité en Challenger −5,6 pts et qualifié en ATP +2,1 pts, confirmés sur 2017–2022 ; probabilité corrigée suivie à côté, jamais affichée ; rien avant 30 matchs concernés"},
-  {"date": "2026-10-30", "titre": "Points estimés au-delà du top 500 (rang actuel → points)", "statut": "production", "decision": true,
-   "mesure": "le rang actuel lu dans le détail TennisApi est converti en points par la courbe du dernier classement complet, remise à l'échelle du jour ; complète la variable « points » des arbres pour les joueurs Challenger"},
-  {"date": "2026-10-30", "titre": "Points ATP/WTA de tous les joueurs dans les arbres", "statut": "production", "decision": true,
+  {
+   "date": "2026-11-04",
+   "titre": "Taille du dépôt : les fichiers de cotes réécrits à chaque capture passent par R2, git n'en garde qu'une photo toutes les 2 h",
+   "statut": "production",
+   "decision": true,
+   "mesure": "closing_lines, matches_oddspapi, live_odds et les deux états d'alertes étaient republiés ~470 fois par jour (dépôt à 6,5 Go, 4 publications refusées) ; mode « double » d'abord (copie R2 en plus, git inchangé), puis variable ETAT_CHAUD=on ; sans R2, comportement d'avant"
+  },
+  {
+   "date": "2026-11-04",
+   "titre": "Forme des matchs : relâchement de celui qui mène d'un set en ATP — modèle fantôme",
+   "statut": "candidat",
+   "decision": false,
+   "mesure": "banc d'essai exact (vainqueur tenu fixe), réglé sur 2021–2022, jugé sur 1 200 matchs 2023–2026 par circuit : ATP +0,0033 de log-vraisemblance de la forme (δ = −0,05 au service du joueur qui mène d'un set : plus de matchs en 3 sets) ; WTA et Challenger rien ; forme du jour plus forte (σ 0,22–0,32) : rien nulle part ; serveur affaibli au tie-break : +0,0005 partout, sous le seuil ; suivi en fantôme sur les nouveaux matchs ATP, intégré au calcul des scores après deux semaines gagnantes"
+  },
+  {
+   "date": "2026-11-04",
+   "titre": "Correctif : plus de pronostics contre des places vides du tableau (« R16P6 », « Qf1 »…)",
+   "statut": "production",
+   "decision": true,
+   "mesure": "le programme annonce le tour suivant avec des places vides ; un tel « joueur » partait de l'Elo de départ (pronostics à 96 % sur le site) ; ces matchs sont écartés jusqu'à ce que les vrais noms arrivent"
+  },
+  {
+   "date": "2026-11-04",
+   "titre": "CPI (vitesse du court) comme variable du vainqueur — rejeté",
+   "statut": "rejete",
+   "decision": false,
+   "mesure": "interaction CPI × (avantage au service − avantage au retour), appris 2016–2022, jugé 2023–2026 ; CPI officiel (ATP, 3 063 matchs jugés) : +0,00003 ; CPI estimé avant le match : ATP 0,0000 (10 246), WTA −0,0001 (8 993), Challenger +0,0001 (30 915) ; rien ne passe le seuil de 0,001 : la vitesse reste une information et un facteur des statistiques (aces, service)"
+  },
+  {
+   "date": "2026-11-04",
+   "titre": "Vitesse des courts : CPI officiel quand il existe, CPI estimé pour tous les autres tournois",
+   "statut": "production",
+   "decision": true,
+   "mesure": "CPI officiel publié pour 14 tournois seulement (Grands Chelems, Masters 1000, ATP Finals ; 107 valeurs 2012–2026) ; notre indice (points de service et aces au-delà de l'attendu de l'Elo service / retour) étalonné dessus : corrélation 0,78 et erreur moyenne 3,1 points en « tournoi laissé de côté » (5,9 sans l'indice) ; Paris 2026 estimé 45,3 pour 47,9 officiel ; affiché sur la fiche et dans le post, n'entre pas dans le pronostic (la vitesse est déjà un facteur du modèle)"
+  },
+  {
+   "date": "2026-11-04",
+   "titre": "Tout l'entraînement hebdomadaire jugé circuit par circuit (arbres, candidats, corrections)",
+   "statut": "production",
+   "decision": true,
+   "mesure": "décision de Lucas : arbres, arbres + activité / tour / points, nouveaux venus, qualifiés, changement de surface, classement : une série de stabilité par circuit (ATP, WTA, Challenger), appliqués seulement où ils sont en place ; moins de 50 matchs jugés sur un circuit : la semaine ne compte pas ; première lecture : activité récente candidate en ATP (+0,0047), points en sursis sur les trois circuits"
+  },
+  {
+   "date": "2026-11-04",
+   "titre": "Bouton « Générer la vidéo » sur la fiche du match",
+   "statut": "production",
+   "decision": true,
+   "mesure": "le worker du site lance le workflow vidéo pour ce match (clé privée, une demande toutes les 3 minutes au plus) ; la vidéo arrive sur le Telegram privé ; aucun jeton dans la page"
+  },
+  {
+   "date": "2026-11-04",
+   "titre": "Signaux jugés circuit par circuit (ATP, WTA, Challenger séparément)",
+   "statut": "production",
+   "decision": true,
+   "mesure": "décision de Lucas : un signal positif sur un circuit est utilisé sur ce circuit ; chaque semaine, par signal et par circuit : ≥ 30 matchs, gain ≥ 0,001 sur la semaine et depuis le début ; adopté après deux semaines gagnantes, retiré après deux sans gain ; signaux suivis : forme du service, statut d'entrée, serveuses WTA, Elo service / retour (nouveau fantôme)"
+  },
+  {
+   "date": "2026-11-04",
+   "titre": "Elo au service et Elo au retour (3e modèle) — rejeté",
+   "statut": "rejete",
+   "decision": false,
+   "mesure": "réglage fixé sur 2023–2024 (η 0,0015) ; seul, il fait comme la simulation (0,620 contre 0,620) ; ajouté à l'algo sur 3 687 pronostics hors échantillon : −0,0004 au total, WTA −0,0056, ATP −0,0007, Challenger +0,0014 : pas positif selon la règle"
+  },
+  {
+   "date": "2026-11-04",
+   "titre": "Forme du service corrigée du niveau des adversaires — rejetée",
+   "statut": "rejete",
+   "decision": false,
+   "mesure": "écarts au service et au retour contre l'attendu de l'Elo service / retour, 30 jours ; 4 674 pronostics : −0,0009 au total (ATP +0,0017, WTA −0,0042, Challenger −0,0007) ; version apprise ±0,0000 : pas positif"
+  },
+  {
+   "date": "2026-11-04",
+   "titre": "Rapprocher de 50 % les matchs où l'Elo et la simulation divergent — rejeté",
+   "statut": "rejete",
+   "decision": false,
+   "mesure": "1 506 désaccords sur 3 687 pronostics : l'algo a raison 63,5 % pour 62,6 % de confiance moyenne (pas trop sûr de lui) ; correction −0,0008 au total : pas positif"
+  },
+  {
+   "date": "2026-11-04",
+   "titre": "Vidéo du match : le scénario suit la forme la plus probable (nombre de sets, tie-break ou non)",
+   "statut": "production",
+   "decision": true,
+   "mesure": "parmi les victoires simulées du favori : nombre de sets le plus fréquent, puis tie-break seulement s'il est majoritaire, puis le match médian (jeux, statistiques) ; affichage seul, aucune probabilité modifiée"
+  },
+  {
+   "date": "2026-11-04",
+   "titre": "Recalage des statistiques annoncées par circuit (1res balles, aces, doubles fautes, breaks) — candidat",
+   "statut": "candidat",
+   "decision": false,
+   "mesure": "nos matchs du 28/10 au 04/11 : 1res balles annoncées trop bas (−4,7 pts ATP, −3,5 WTA, −1,5 Challenger), fourchette des breaks trop large (90–93 % dedans au lieu de 80 %) ; décalage et largeur appris par circuit, jugés chaque semaine sur la semaine suivante ; 1er essai (appris jusqu'au 01/11, jugé du 02 au 04/11) : erreur de couverture 7,9 → 2,9 points mais aces ATP 82,8 → 89,7 % : pas gagnant selon la règle ; ne change pas la probabilité de victoire"
+  },
+  {
+   "date": "2026-11-01",
+   "titre": "Duels de profils de jeu : serveuses WTA contre non-serveuses — modèle fantôme",
+   "statut": "candidat",
+   "decision": false,
+   "mesure": "profils service–retour figés avant match, Elo retiré, 119 000 matchs 2018 → juin 2026 ; aucun des 10 duels confirmé au total ni par circuit (ATP, WTA, Challenger étudiés séparément) ; en WTA, profil serveur contre non-serveur +2,2 pts (2018–2022) et +2,9 pts (2023–2026), rien en ATP et Challenger ; repéré après avoir regardé : probabilité corrigée suivie à côté, jamais affichée ; rien avant 30 matchs concernés"
+  },
+  {
+   "date": "2026-10-30",
+   "titre": "Statut d'entrée (invité, qualifié) relevé avant chaque match — modèle fantôme",
+   "statut": "candidat",
+   "decision": false,
+   "mesure": "détail TennisApi des matchs à venir (une requête par match, une fois) ; invité en Challenger −5,6 pts et qualifié en ATP +2,1 pts, confirmés sur 2017–2022 ; probabilité corrigée suivie à côté, jamais affichée ; rien avant 30 matchs concernés"
+  },
+  {
+   "date": "2026-10-30",
+   "titre": "Points estimés au-delà du top 500 (rang actuel → points)",
+   "statut": "production",
+   "decision": true,
+   "mesure": "le rang actuel lu dans le détail TennisApi est converti en points par la courbe du dernier classement complet, remise à l'échelle du jour ; complète la variable « points » des arbres pour les joueurs Challenger"
+  },
+  {
+   "date": "2026-10-30",
+   "titre": "Points ATP/WTA de tous les joueurs dans les arbres",
+   "statut": "production",
+   "decision": true,
    "mesure": "138 657 matchs, appris 2017–2022, jugé 2023–2026 : rang + points +0,0023 (Challenger +0,0034, ATP +0,0003, WTA +0,0001) ; rang seul +0,0005 (ATP −0,0010) ; en place dès le premier modèle appris (lundi), retiré si moins bien que les arbres sans les points deux semaines de suite",
-   "garde_fou": "jugement hebdomadaire contre les arbres sans les points"},
-  {"date": "2026-10-30", "titre": "Contrecoup après un titre, période de la saison, intransitivité", "statut": "rejete", "decision": false,
-   "mesure": "même étude : titre la semaine d'avant 0,0000 (ATP −3,8 pts sur 781 matchs mais trop rare), saison 0,0000, intransitivité +0,0001 (ATP −0,0003)"},
-  {"date": "2026-10-30", "titre": "Longueur des échanges (frappes par point) contre tie-breaks, jeux et 3 sets", "statut": "rejete", "decision": false, "mesure": "18 825 matchs ATP et WTA, appris 2017–2021, jugé 2022–2024 : tie-break −0,0000, plus de 22,5 jeux −0,0000, 3 sets 0,0000 ; le service et le retour suffisent ; affichée sur la fiche (Match Charting Project), sans effet sur les probabilités"},
-  {"date": "2026-10-30", "titre": "Forme du jour σ 0,22 pour l'ATP et la WTA (lignes de jeux)", "statut": "candidat", "decision": false, "mesure": "2 391 matchs de jugement : ATP −0,0096 (rejeté, σ 0,15 reste), WTA +0,0024 ; laissé au jugement hebdomadaire de σ par circuit, qui avait gardé 0,15 en WTA le 28/10"},
-  {"date": "2026-10-30", "titre": "1re balle variable d'un match à l'autre dans la simulation (σ 0,29 mesuré)", "statut": "rejete", "decision": false, "mesure": "2 391 matchs : vainqueur −0,0004, lignes +0,0005 (ATP −0,0011) ; effet trop faible sur les points de service"},
-  {"date": "2026-10-30", "titre": "Fourchette du % de 1res balles élargie (×1,23 autour de son milieu)", "statut": "production", "decision": true,
-   "mesure": "elle ne contenait que 70,3 % des cas sur 2 000 matchs passés et 65,5 % en direct (visée 80 %) ; la 1re balle varie d'un match à l'autre (σ ≈ 0,29) alors que la simulation la tient fixe ; affichage seul, vérifié au test du lundi et en direct"},
-  {"date": "2026-10-30", "titre": "Forme du jour (σ) et lignes de jeux sur 2 391 matchs de jugement", "statut": "rejete", "decision": false,
-   "mesure": "constat seulement : au σ actuel, matchs prévus trop longs et favoris un peu trop serrés ; σ 0,22 calibre le mieux (lignes 0,6439 contre 0,6473) mais le direct (48 matchs) montre l'inverse — rien changé, suivi"},
-  {"date": "2026-10-29", "titre": "Invités (WC) et qualifiés : écarts à l'Elo", "statut": "candidat", "decision": false,
-   "mesure": "ajoutés au pronostic : +0,0006 (rejeté) ; mais deux effets confirmés sur 2017–2022 : invité en Challenger −5,6 pts, qualifié en ATP +2,1 pts ; en attente d'une source du statut avant le match (sonde TennisApi)"},
-  {"date": "2026-10-29", "titre": "Joueur à domicile (sur le vainqueur)", "statut": "rejete", "decision": false,
-   "mesure": "4 631 matchs : le joueur à domicile gagne 39,5 % pour 41,9 % prévus ; ajouté au pronostic 0,0000 (ATP −0,0010)"},
-  {"date": "2026-10-29", "titre": "Âge et progression de l'Elo (10 versions)", "statut": "rejete", "decision": false,
-   "mesure": "bonus âge, écart d'âge, K +25/50/100 % pour les jeunes, jeunes peu vus, progression sur 6 et 12 mois : meilleur +0,0003 (seuil +0,001) ; l'Elo suit déjà la progression"},
-  {"date": "2026-10-29", "titre": "Service et retour du moment (30 jours, même surface) dans la simulation — modèle fantôme", "statut": "candidat", "decision": false,
-   "mesure": "affiché en information sur chaque match ; probabilité « avec la forme du service » suivie à côté, jamais affichée comme pronostic ; test historique (2 811 matchs depuis le 27/07, règle fixée avant) : −0,0003, ATP −0,0015 → pas positif, suivi en direct maintenu ; jugée sur les matchs pronostiqués à partir du 30/10 : rien avant 30 matchs, adoptée seulement si −0,001 de log loss deux semaines de suite sans circuit dégradé"},
-  {"date": "2026-10-29", "titre": "Désaccords Elo / simulation en WTA : mélange propre (plus de poids à l'Elo)", "statut": "candidat", "decision": false,
-   "mesure": "constat depuis juin : l'Elo a raison 60,8 % du temps sur ces matchs, l'algo affiché 57,5 % ; aperçu sur les 6 dernières semaines : 0,0000 ; jugé chaque lundi contre les arbres"},
-  {"date": "2026-10-29", "titre": "Note de fiabilité v2 sans la composante « calibration » (en essai, non affichée)", "statut": "candidat", "decision": false,
-   "mesure": "jugée sur les matchs pronostiqués à partir du 30/10, même règle que la note en place"},
-  {"date": "2026-10-29", "titre": "Tour du tableau dans les arbres (qualifications, 1er tour… finale)", "statut": "candidat", "decision": false,
-   "mesure": "étude sur les pronostics hors échantillon depuis le 14/09 : −0,0014 (WTA −0,0026, Challenger −0,0014, ATP +0,0002) ; jugé chaque lundi, deux semaines de suite"},
-  {"date": "2026-10-29", "titre": "Niveau du tournoi (points) dans les arbres", "statut": "rejete", "decision": false,
-   "mesure": "même étude : 0,0000"},
-  {"date": "2026-10-29", "titre": "Activité récente des joueurs dans les arbres (matchs sur 30 jours contre les 60 d'avant)", "statut": "candidat", "decision": false,
-   "mesure": "jugé chaque lundi contre les arbres actuels : log loss plus basse au total et aucun circuit qui perd plus de 0,001, deux semaines de suite"},
-  {"date": "2026-10-29", "titre": "Activité récente ajoutée seule au mélange Elo + simulation", "statut": "rejete", "decision": false,
-   "mesure": "jugement depuis le 14/09 : −0,0026 (Challenger −0,0067) mais WTA +0,0081"},
-  {"date": "2026-10-29", "titre": "Poids Elo / simulation propres à l'ATP et à la WTA", "statut": "candidat", "decision": false,
-   "mesure": "pronostics hors échantillon depuis le 14/09 : ATP +0,0013, WTA +0,0092 (moins bien) ; même règle que les Challenger, rejugé chaque lundi"},
-  {"date": "2026-10-29", "titre": "Échelle de l'Elo propre à chaque circuit", "statut": "rejete", "decision": false,
-   "mesure": "choix sur 2025, jugement 2026 (17 506 matchs) : −0,0005, ATP +0,0003 ; seuil 0,001"},
-  {"date": "2026-10-29", "titre": "Incertitude des joueurs peu vus propre à chaque circuit", "statut": "rejete", "decision": false,
-   "mesure": "choix sur 2025, jugement 2026 : −0,0008 (Challenger −0,0013, ATP et WTA 0) ; seuil 0,001"},
-  {"date": "2026-10-29", "titre": "Vitesse de l'Elo (K) propre aux hommes et aux femmes", "statut": "rejete", "decision": false,
-   "mesure": "choix sur 2025 (hommes ×1,1, femmes ×1,0), jugement 2026 : −0,0006 ; seuil 0,001"},
-  {"date": "2026-10-29", "titre": "Poids des Grands Chelems dans l'Elo propre à chaque sexe", "statut": "rejete", "decision": false,
-   "mesure": "choix sur 2025 (femmes ×1,25), jugement 2026 : +0,00003, WTA +0,0002"},
-  {"date": "2026-10-29", "titre": "Résultats ITF femmes dans le classement Elo", "statut": "production", "decision": true,
+   "garde_fou": "jugement hebdomadaire contre les arbres sans les points"
+  },
+  {
+   "date": "2026-10-30",
+   "titre": "Contrecoup après un titre, période de la saison, intransitivité",
+   "statut": "rejete",
+   "decision": false,
+   "mesure": "même étude : titre la semaine d'avant 0,0000 (ATP −3,8 pts sur 781 matchs mais trop rare), saison 0,0000, intransitivité +0,0001 (ATP −0,0003)"
+  },
+  {
+   "date": "2026-10-30",
+   "titre": "Longueur des échanges (frappes par point) contre tie-breaks, jeux et 3 sets",
+   "statut": "rejete",
+   "decision": false,
+   "mesure": "18 825 matchs ATP et WTA, appris 2017–2021, jugé 2022–2024 : tie-break −0,0000, plus de 22,5 jeux −0,0000, 3 sets 0,0000 ; le service et le retour suffisent ; affichée sur la fiche (Match Charting Project), sans effet sur les probabilités"
+  },
+  {
+   "date": "2026-10-30",
+   "titre": "Forme du jour σ 0,22 pour l'ATP et la WTA (lignes de jeux)",
+   "statut": "candidat",
+   "decision": false,
+   "mesure": "2 391 matchs de jugement : ATP −0,0096 (rejeté, σ 0,15 reste), WTA +0,0024 ; laissé au jugement hebdomadaire de σ par circuit, qui avait gardé 0,15 en WTA le 28/10"
+  },
+  {
+   "date": "2026-10-30",
+   "titre": "1re balle variable d'un match à l'autre dans la simulation (σ 0,29 mesuré)",
+   "statut": "rejete",
+   "decision": false,
+   "mesure": "2 391 matchs : vainqueur −0,0004, lignes +0,0005 (ATP −0,0011) ; effet trop faible sur les points de service"
+  },
+  {
+   "date": "2026-10-30",
+   "titre": "Fourchette du % de 1res balles élargie (×1,23 autour de son milieu)",
+   "statut": "production",
+   "decision": true,
+   "mesure": "elle ne contenait que 70,3 % des cas sur 2 000 matchs passés et 65,5 % en direct (visée 80 %) ; la 1re balle varie d'un match à l'autre (σ ≈ 0,29) alors que la simulation la tient fixe ; affichage seul, vérifié au test du lundi et en direct"
+  },
+  {
+   "date": "2026-10-30",
+   "titre": "Forme du jour (σ) et lignes de jeux sur 2 391 matchs de jugement",
+   "statut": "rejete",
+   "decision": false,
+   "mesure": "constat seulement : au σ actuel, matchs prévus trop longs et favoris un peu trop serrés ; σ 0,22 calibre le mieux (lignes 0,6439 contre 0,6473) mais le direct (48 matchs) montre l'inverse — rien changé, suivi"
+  },
+  {
+   "date": "2026-10-29",
+   "titre": "Invités (WC) et qualifiés : écarts à l'Elo",
+   "statut": "candidat",
+   "decision": false,
+   "mesure": "ajoutés au pronostic : +0,0006 (rejeté) ; mais deux effets confirmés sur 2017–2022 : invité en Challenger −5,6 pts, qualifié en ATP +2,1 pts ; en attente d'une source du statut avant le match (sonde TennisApi)"
+  },
+  {
+   "date": "2026-10-29",
+   "titre": "Joueur à domicile (sur le vainqueur)",
+   "statut": "rejete",
+   "decision": false,
+   "mesure": "4 631 matchs : le joueur à domicile gagne 39,5 % pour 41,9 % prévus ; ajouté au pronostic 0,0000 (ATP −0,0010)"
+  },
+  {
+   "date": "2026-10-29",
+   "titre": "Âge et progression de l'Elo (10 versions)",
+   "statut": "rejete",
+   "decision": false,
+   "mesure": "bonus âge, écart d'âge, K +25/50/100 % pour les jeunes, jeunes peu vus, progression sur 6 et 12 mois : meilleur +0,0003 (seuil +0,001) ; l'Elo suit déjà la progression"
+  },
+  {
+   "date": "2026-10-29",
+   "titre": "Service et retour du moment (30 jours, même surface) dans la simulation — modèle fantôme",
+   "statut": "candidat",
+   "decision": false,
+   "mesure": "affiché en information sur chaque match ; probabilité « avec la forme du service » suivie à côté, jamais affichée comme pronostic ; test historique (2 811 matchs depuis le 27/07, règle fixée avant) : −0,0003, ATP −0,0015 → pas positif, suivi en direct maintenu ; jugée sur les matchs pronostiqués à partir du 30/10 : rien avant 30 matchs, adoptée seulement si −0,001 de log loss deux semaines de suite sans circuit dégradé"
+  },
+  {
+   "date": "2026-10-29",
+   "titre": "Désaccords Elo / simulation en WTA : mélange propre (plus de poids à l'Elo)",
+   "statut": "candidat",
+   "decision": false,
+   "mesure": "constat depuis juin : l'Elo a raison 60,8 % du temps sur ces matchs, l'algo affiché 57,5 % ; aperçu sur les 6 dernières semaines : 0,0000 ; jugé chaque lundi contre les arbres"
+  },
+  {
+   "date": "2026-10-29",
+   "titre": "Note de fiabilité v2 sans la composante « calibration » (en essai, non affichée)",
+   "statut": "candidat",
+   "decision": false,
+   "mesure": "jugée sur les matchs pronostiqués à partir du 30/10, même règle que la note en place"
+  },
+  {
+   "date": "2026-10-29",
+   "titre": "Tour du tableau dans les arbres (qualifications, 1er tour… finale)",
+   "statut": "candidat",
+   "decision": false,
+   "mesure": "étude sur les pronostics hors échantillon depuis le 14/09 : −0,0014 (WTA −0,0026, Challenger −0,0014, ATP +0,0002) ; jugé chaque lundi, deux semaines de suite"
+  },
+  {
+   "date": "2026-10-29",
+   "titre": "Niveau du tournoi (points) dans les arbres",
+   "statut": "rejete",
+   "decision": false,
+   "mesure": "même étude : 0,0000"
+  },
+  {
+   "date": "2026-10-29",
+   "titre": "Activité récente des joueurs dans les arbres (matchs sur 30 jours contre les 60 d'avant)",
+   "statut": "candidat",
+   "decision": false,
+   "mesure": "jugé chaque lundi contre les arbres actuels : log loss plus basse au total et aucun circuit qui perd plus de 0,001, deux semaines de suite"
+  },
+  {
+   "date": "2026-10-29",
+   "titre": "Activité récente ajoutée seule au mélange Elo + simulation",
+   "statut": "rejete",
+   "decision": false,
+   "mesure": "jugement depuis le 14/09 : −0,0026 (Challenger −0,0067) mais WTA +0,0081"
+  },
+  {
+   "date": "2026-10-29",
+   "titre": "Poids Elo / simulation propres à l'ATP et à la WTA",
+   "statut": "candidat",
+   "decision": false,
+   "mesure": "pronostics hors échantillon depuis le 14/09 : ATP +0,0013, WTA +0,0092 (moins bien) ; même règle que les Challenger, rejugé chaque lundi"
+  },
+  {
+   "date": "2026-10-29",
+   "titre": "Échelle de l'Elo propre à chaque circuit",
+   "statut": "rejete",
+   "decision": false,
+   "mesure": "choix sur 2025, jugement 2026 (17 506 matchs) : −0,0005, ATP +0,0003 ; seuil 0,001"
+  },
+  {
+   "date": "2026-10-29",
+   "titre": "Incertitude des joueurs peu vus propre à chaque circuit",
+   "statut": "rejete",
+   "decision": false,
+   "mesure": "choix sur 2025, jugement 2026 : −0,0008 (Challenger −0,0013, ATP et WTA 0) ; seuil 0,001"
+  },
+  {
+   "date": "2026-10-29",
+   "titre": "Vitesse de l'Elo (K) propre aux hommes et aux femmes",
+   "statut": "rejete",
+   "decision": false,
+   "mesure": "choix sur 2025 (hommes ×1,1, femmes ×1,0), jugement 2026 : −0,0006 ; seuil 0,001"
+  },
+  {
+   "date": "2026-10-29",
+   "titre": "Poids des Grands Chelems dans l'Elo propre à chaque sexe",
+   "statut": "rejete",
+   "decision": false,
+   "mesure": "choix sur 2025 (femmes ×1,25), jugement 2026 : +0,00003, WTA +0,0002"
+  },
+  {
+   "date": "2026-10-29",
+   "titre": "Résultats ITF femmes dans le classement Elo",
+   "statut": "production",
+   "decision": true,
    "mesure": "WTA depuis juin : log loss −0,0034 (1 915 matchs) ; ATP et Challenger inchangés",
-   "garde_fou": "retiré si moins bien deux semaines de suite (étude du lundi)"},
-  {"date": "2026-10-28", "titre": "Résultats ITF hommes dans le classement Elo", "statut": "production", "decision": true,
+   "garde_fou": "retiré si moins bien deux semaines de suite (étude du lundi)"
+  },
+  {
+   "date": "2026-10-28",
+   "titre": "Résultats ITF hommes dans le classement Elo",
+   "statut": "production",
+   "decision": true,
    "mesure": "Challenger : log loss −0,0145 (22 530 matchs) ; ATP + WTA −0,0042 ; joueurs peu vus −0,035",
-   "garde_fou": "retiré si moins bien deux semaines de suite (étude du lundi)"},
-  {"date": "2026-10-28", "titre": "Forme du jour plus contrastée en Challenger (σ 0,22 au lieu de 0,15)", "statut": "production", "decision": true,
+   "garde_fou": "retiré si moins bien deux semaines de suite (étude du lundi)"
+  },
+  {
+   "date": "2026-10-28",
+   "titre": "Forme du jour plus contrastée en Challenger (σ 0,22 au lieu de 0,15)",
+   "statut": "production",
+   "decision": true,
    "mesure": "forme des matchs (sets, tie-breaks, jeux) : Challenger −0,0216 ; ATP et WTA inchangés ; le vainqueur ne change pas",
-   "garde_fou": "jugé chaque lundi ; retiré si moins bien deux semaines de suite"},
-  {"date": "2026-10-28", "titre": "Noms des joueurs ITF reliés par une règle stricte", "statut": "production", "decision": false,
-   "mesure": "52 liens audités, fusions à tort supprimées (ex. un joueur relié à une joueuse) ; 21 liens sûrs gardés ; gain de l'ITF inchangé"},
-  {"date": "2026-10-28", "titre": "Taille des joueurs centrée sur la moyenne de leur circuit", "statut": "production", "decision": false,
-   "mesure": "correction : toutes les joueuses WTA passaient pour « petites » (centre 185 cm pour tous) ; coefficients réappris chaque lundi"},
-  {"date": "2026-10-28", "titre": "Forme des scores par circuit (v3)", "statut": "candidat", "decision": false,
-   "mesure": "Challenger −0,014 mais ATP +0,0195 : bloquée par le garde-fou « aucun circuit dégradé »"},
-  {"date": "2026-10-29", "titre": "Poids réduit des matchs ITF dans l'Elo (×0,75)", "statut": "rejete", "decision": false,
-   "mesure": "−0,00065 seulement (seuil 0,001)"},
-  {"date": "2026-10-29", "titre": "Incertitude après une longue absence", "statut": "rejete", "decision": false,
-   "mesure": "aucun gain (2025 choisit « aucune »)"},
-  {"date": "2026-10-29", "titre": "Poids de la surface par circuit dans l'Elo", "statut": "rejete", "decision": false,
-   "mesure": "WTA +0,0017 (moins bien)"},
-  {"date": "2026-10-28", "titre": "Forme des scores par circuit × surface", "statut": "rejete", "decision": false,
-   "mesure": "ATP +0,026 et WTA +0,005 (moins bien)"},
-  {"date": "2026-10-28", "titre": "Collecte des statistiques passées des joueurs peu documentés", "statut": "rejete", "decision": false,
-   "mesure": "sonde : +29,7 % de balles pour le joueur médian, seuil fixé 50 % ; leurs matchs manquants sont surtout ITF, sans statistiques"}
+   "garde_fou": "jugé chaque lundi ; retiré si moins bien deux semaines de suite"
+  },
+  {
+   "date": "2026-10-28",
+   "titre": "Noms des joueurs ITF reliés par une règle stricte",
+   "statut": "production",
+   "decision": false,
+   "mesure": "52 liens audités, fusions à tort supprimées (ex. un joueur relié à une joueuse) ; 21 liens sûrs gardés ; gain de l'ITF inchangé"
+  },
+  {
+   "date": "2026-10-28",
+   "titre": "Taille des joueurs centrée sur la moyenne de leur circuit",
+   "statut": "production",
+   "decision": false,
+   "mesure": "correction : toutes les joueuses WTA passaient pour « petites » (centre 185 cm pour tous) ; coefficients réappris chaque lundi"
+  },
+  {
+   "date": "2026-10-28",
+   "titre": "Forme des scores par circuit (v3)",
+   "statut": "candidat",
+   "decision": false,
+   "mesure": "Challenger −0,014 mais ATP +0,0195 : bloquée par le garde-fou « aucun circuit dégradé »"
+  },
+  {
+   "date": "2026-10-29",
+   "titre": "Poids réduit des matchs ITF dans l'Elo (×0,75)",
+   "statut": "rejete",
+   "decision": false,
+   "mesure": "−0,00065 seulement (seuil 0,001)"
+  },
+  {
+   "date": "2026-10-29",
+   "titre": "Incertitude après une longue absence",
+   "statut": "rejete",
+   "decision": false,
+   "mesure": "aucun gain (2025 choisit « aucune »)"
+  },
+  {
+   "date": "2026-10-29",
+   "titre": "Poids de la surface par circuit dans l'Elo",
+   "statut": "rejete",
+   "decision": false,
+   "mesure": "WTA +0,0017 (moins bien)"
+  },
+  {
+   "date": "2026-10-28",
+   "titre": "Forme des scores par circuit × surface",
+   "statut": "rejete",
+   "decision": false,
+   "mesure": "ATP +0,026 et WTA +0,005 (moins bien)"
+  },
+  {
+   "date": "2026-10-28",
+   "titre": "Collecte des statistiques passées des joueurs peu documentés",
+   "statut": "rejete",
+   "decision": false,
+   "mesure": "sonde : +29,7 % de balles pour le joueur médian, seuil fixé 50 % ; leurs matchs manquants sont surtout ITF, sans statistiques"
+  }
  ]
 }
