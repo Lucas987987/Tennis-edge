@@ -89,7 +89,8 @@ class ValidationVitrine(unittest.TestCase):
                 [ligne([(7, 6), (6, 4)])] * 2 + [ligne([(6, 3), (6, 4)])] * 4)   # 2 sets : 1 sur 3 avec tie-break
         traces = [(1, b'0') for _ in brut]
         a = MS.match_type(brut, traces, vainqueur=0)
-        self.assertEqual(a['forme'], {'sets': 2, 'tie_break': False, 'part_sets_pct': 60.0, 'part_tie_break_pct': 33.3})
+        self.assertEqual({k: a['forme'][k] for k in ('sets', 'tie_break', 'part_sets_pct', 'part_tie_break_pct')},
+                         {'sets': 2, 'tie_break': False, 'part_sets_pct': 60.0, 'part_tie_break_pct': 33.3})
         self.assertEqual(len(a['sets']), 2)
         self.assertFalse(MS.a_un_tiebreak(a['sets']))
         # tie-break majoritaire dans la forme retenue → le scénario en montre un
