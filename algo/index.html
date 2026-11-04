@@ -242,6 +242,16 @@ footer p{max-width:72ch}
 .arcade .combo.on{opacity:1}
 .arcade .ralenti{position:absolute;left:5cqw;bottom:13cqw;font-family:var(--ar-disp);font-size:3.8cqw;color:#FF9ACF;opacity:0;transition:opacity .2s}
 .arcade .ralenti.on{opacity:1;animation:clign .5s steps(2) infinite}
+.arcade .vs-h{font-family:var(--ar-disp);font-size:9.5cqw;line-height:1.05;color:var(--ar-ball);-webkit-text-stroke:.4cqw #160E33;paint-order:stroke fill;text-shadow:0 1cqw 0 #160E33,0 0 6cqw var(--ar-ball)}
+.arcade .vs-h small{display:block;font-family:var(--cond);font-size:4.2cqw;font-weight:700;color:var(--ar-ink);-webkit-text-stroke:0;text-shadow:none;margin-top:1.6cqw}
+.arcade .drap{font-family:"Noto Color Emoji","Apple Color Emoji","Segoe UI Emoji",sans-serif;-webkit-text-stroke:0;text-shadow:none;margin:0 .25em}
+.arcade .stats{display:flex;justify-content:center;gap:5cqw;margin-top:2cqw;font-size:3.6cqw;color:var(--ar-dim);font-weight:700;font-variant-numeric:tabular-nums}
+.arcade .stats b{font-family:var(--ar-disp);font-weight:400;color:var(--ar-ink)}
+.arcade .stats .c1{color:var(--ar-p1)} .arcade .stats .c2{color:var(--ar-p2)}
+.arcade .mini{position:absolute;left:0;right:0;top:44%;text-align:center;font-family:var(--ar-disp);font-size:8cqw;pointer-events:none;z-index:9;opacity:0;-webkit-text-stroke:.25cqw #160E33;paint-order:stroke fill;text-shadow:0 .8cqw 0 #160E33,0 0 5cqw currentColor}
+.arcade .mini.pop{animation:pop var(--duree,700ms) cubic-bezier(.2,1.4,.4,1) forwards}
+.arcade .frappes{position:absolute;right:5cqw;bottom:19cqw;font-family:var(--ar-disp);font-size:4.4cqw;color:var(--ar-ink);opacity:0;transition:opacity .2s}
+.arcade .frappes.on{opacity:1}
 .arcade .pied{font-size:3.2cqw;color:var(--ar-dim);text-align:center;font-weight:600;margin-top:2cqw}
 .arcade .ecran{position:absolute;inset:0;z-index:20;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3.6cqw;background:rgba(14,10,36,.9);text-align:center;padding:8cqw}
 .arcade .ecran.cache{opacity:0;transition:opacity .4s;pointer-events:none}
@@ -626,6 +636,9 @@ const T = {
   a_fin_top:(sc,q,n)=>`Score représentatif, observé sur ${fmt(n)} simulations : <b>${sc}</b> (${pc(q)} des tirages).`,
   a_fin_p:(x,q,n)=>`Sur ${fmt(n)} simulations, <b>${x}</b> gagne <b>${pc(q)}</b> du temps.`,
   a_pied:n=>`Simulation point par point · une parmi ${fmt(n)}`,
+  a_hook:n=>`favori de l'algo · ${fmt(n)} simulations, sans cote`, a_serre:'match très serré',
+  a_ace:'ACE !', a_df:'DOUBLE FAUTE', a_aces:'Aces', a_dfs:'Doubles fautes', a_frappes:n=>`${n} frappes`,
+  a_fin_stats:(a1,a2,e1,e2)=>`Aces dans ce match : <b>${a1} – ${a2}</b> (l'algo en prévoit ${e1} – ${e2}).`,
   c_titre:'Les stats de l\'algo', c_sets:'Score en sets', c_scores:'Scores les plus fréquents', c_feuille:'Feuille de match prévue',
   c_pied:n=>`Simulé <b>${fmt(n)}</b> fois, point par point · aucune cote utilisée`, c_victoire:'de chances de gagner'
  },
@@ -815,6 +828,9 @@ const T = {
   a_fin_top:(sc,q,n)=>`Representative score observed across ${fmt(n)} simulations: <b>${sc}</b> (${pc(q)} of runs).`,
   a_fin_p:(x,q,n)=>`Across ${fmt(n)} simulations, <b>${x}</b> wins <b>${pc(q)}</b> of the time.`,
   a_pied:n=>`Point-by-point simulation · one of ${fmt(n)}`,
+  a_hook:n=>`algorithm's favourite · ${fmt(n)} simulations, no odds`, a_serre:'very tight match',
+  a_ace:'ACE!', a_df:'DOUBLE FAULT', a_aces:'Aces', a_dfs:'Double faults', a_frappes:n=>`${n}-shot rally`,
+  a_fin_stats:(a1,a2,e1,e2)=>`Aces in this match: <b>${a1} – ${a2}</b> (the algorithm expects ${e1} – ${e2}).`,
   c_titre:'The algorithm\'s numbers', c_sets:'Score in sets', c_scores:'Most frequent scores', c_feuille:'Expected match stats',
   c_pied:n=>`Simulated <b>${fmt(n)}</b> times, point by point · no odds used`, c_victoire:'win chance'
  }
@@ -1306,6 +1322,14 @@ const Bruit = (() => {
    opts : video (plein écran, lancement automatique), seed, vitesse, duree (s), son(type), onFin(S). */
 function Arcade(root, m, opts){
   const p = m.p_home, M = Moteur(calibre(m.simulation, p)), noms = [court(m.home), court(m.away)];
+  // 04/11/2026 — drapeaux (pays des fiches de match ; Russie / Biélorussie : aucun)
+  const drap = [0,1].map(i => { const d = drapeau((m.pays||[])[i]); return d ? `<span class="drap">${d}</span>` : ''; });
+  // 04/11/2026 — points plus réalistes : aces et doubles fautes tirés des taux prévus de chaque joueur (feuille
+  // prévue), longueur des échanges tirée du profil des joueurs (Match Charting) ou d'une moyenne de circuit.
+  // Tirage SÉPARÉ (graine dérivée) : le vainqueur de chaque point, donc le score, ne change pas.
+  const fp = m.feuille_prevue || null;
+  const ech = (m.echanges||[]).map(e => e && e.frappes).filter(Boolean);
+  const FRAPPES = ech.length ? ech.reduce((a,b)=>a+b,0) / ech.length : (m.circuit === 'WTA' ? 4.4 : 4.2);
   const son = opts.son || (()=>{});
   let jeton = 0, accel = 1;
   root.classList.add('arcade');
@@ -1340,15 +1364,18 @@ function Arcade(root, m, opts){
   function squelette(){
     root.innerHTML = `<div class="grid"></div><div class="scene">
       <div class="tag"><span class="live"><i></i>${esc(t('a_live'))}</span><span>${esc(m.tournoi)}</span><span><b>${esc(t('a_sim'))}</b> ${esc(t('a_fois', nSim))}</span></div>
-      <div class="duel">${[0,1].map(i=>`<div class="pj p${i+1}" data-pj="${i}"><div class="nom">${esc(noms[i])}</div>
+      <div class="duel">${[0,1].map(i=>`<div class="pj p${i+1}" data-pj="${i}"><div class="nom">${i === 0 ? drap[0] + esc(noms[0]) : esc(noms[1]) + drap[1]}</div>
         <div class="pct" data-pc="${i}"></div><div class="lbl">${esc(t('a_chance'))}</div><div class="vie"><i data-vie="${i}"></i></div></div>`).join('')}</div>
       <div class="score"><table><tbody><tr class="r1" data-sr="0"></tr><tr class="r2" data-sr="1"></tr></tbody></table></div>
+      ${fp ? '<div class="stats" data-stats></div>' : ''}
       <div class="arene"><div class="court"><div class="cote haut" data-cote="1"></div><div class="cote bas" data-cote="0"></div>
         <div class="filet"></div><div class="balle"></div></div></div>
       <div class="pied">${esc(t('a_pied', nSim))}</div></div>
-      <div class="annonce"></div><div class="combo"></div><div class="ralenti">${esc(t('a_ralenti'))}</div>
-      <div class="ecran intro"><div class="vs-n a">${esc(m.home)}</div><div class="vs-x">VS</div>
-        <div class="vs-n b">${esc(m.away)}</div><div class="vs-t">${t(enCoursTop ? 'a_vs_top' : 'a_vs_t', nSim)}</div>
+      <div class="annonce"></div><div class="mini"></div><div class="frappes"></div><div class="combo"></div><div class="ralenti">${esc(t('a_ralenti'))}</div>
+      <div class="ecran intro">${opts.video ? `<div class="vs-h">${Math.max(p,1-p) < .55 ? esc(t('a_serre')) + ' · ' + pc0(Math.max(p,1-p))
+          : `${drap[p >= .5 ? 0 : 1]}${esc(noms[p >= .5 ? 0 : 1])} ${pc0(Math.max(p,1-p))}`}<small>${esc(t('a_hook', nSim))}</small></div>` : ''}
+        <div class="vs-n a">${drap[0]}${esc(m.home)}</div><div class="vs-x">VS</div>
+        <div class="vs-n b">${esc(m.away)}${drap[1]}</div><div class="vs-t">${t(enCoursTop ? 'a_vs_top' : 'a_vs_t', nSim)}</div>
         ${opts.video ? '' : `<button type="button" class="start">▶ ${esc(t('jouer'))}</button>`}</div>`;
     const b = $('.start'); if (b) b.onclick = () => jouer();
   }
@@ -1361,10 +1388,26 @@ function Arcade(root, m, opts){
   function tableau(){
     const srv = S.fini ? -1 : M.serveur(S);
     [0,1].forEach(i=>{
-      $(`[data-sr="${i}"]`).innerHTML = `<td class="n"><span class="srv ${srv===i?'on':''}"></span>${esc(noms[i])}</td>`
+      $(`[data-sr="${i}"]`).innerHTML = `<td class="n"><span class="srv ${srv===i?'on':''}"></span>${drap[i]}${esc(noms[i])}</td>`
         + S.histo.map(h=>`<td class="s">${h[i]}</td>`).join('')
         + (S.fini ? '' : `<td>${S.jeux[i]}</td><td class="pt">${affPts(S,i)}</td>`);
     });
+  }
+  let ST = [[0,0],[0,0]], Rv = Math.random;            // [aces, doubles fautes] par joueur ; tirage du « type » de point
+  function stats(){
+    const z = $('[data-stats]'); if (!z) return;
+    z.innerHTML = `<span>${esc(t('a_aces'))} <b class="c1">${ST[0][0]}</b> · <b class="c2">${ST[1][0]}</b></span>`
+      + `<span>${esc(t('a_dfs'))} <b class="c1">${ST[0][1]}</b> · <b class="c2">${ST[1][1]}</b></span>`;
+  }
+  function mini(txt, couleur, ms){
+    const a = $('.mini'); a.classList.remove('pop'); void a.offsetWidth;
+    a.textContent = txt; a.style.color = couleur || ''; a.style.setProperty('--duree', Math.max(380, ms) + 'ms'); a.classList.add('pop');
+  }
+  function balleVers(cote, ms, filet){                 // cote 0 = bas (joueur 1), 1 = haut (joueur 2)
+    const b = $('.balle'), alea = (a,z) => a + (z-a) * Rv();
+    b.style.transition = `left ${ms}ms cubic-bezier(.3,.1,.3,1), top ${ms}ms cubic-bezier(.3,.1,.3,1)`;
+    b.style.left = alea(18, 82).toFixed(1) + '%';
+    b.style.top = (filet ? 50 + (cote ? -2 : 2) : cote === 0 ? alea(60, 92) : alea(8, 40)).toFixed(1) + '%';
   }
   function frappe(h, ms){
     const b = $('.balle'), perdant = 1 - h, alea = (a,z) => a + (z-a) * R();
@@ -1421,7 +1464,7 @@ function Arcade(root, m, opts){
     if (opts.video){
       await Promise.race([(document.fonts && document.fonts.load ? document.fonts.load('40px Bungee') : Promise.resolve()), dort(3000)]);
       window.__pret = true;
-      await z(Number(Q.get('attente') || 2600));
+      await z(Number(Q.get('attente') || 1900));
     } else await z(1300);
     if (!vivant()) return;
     $('.intro').classList.add('cache');
@@ -1429,12 +1472,19 @@ function Arcade(root, m, opts){
     // Rythme calé sur une durée cible : le match est d'abord joué « à blanc » (même tirage) pour compter ses
     // points et ses moments forts ; vitesse et ralentis sont dosés en conséquence.
     const CIBLE = (opts.duree || 27) * 1000;
+    const gagnesSrv = [0,0], perdusSrv = [0,0];
     const blanc = (() => { const Rb = rng(seed), X = M.etat(premier); let n = 0, ev = 0;
       while (!X.fini){ const e = enjeu(X); const a = {s: X.sets[0]+X.sets[1], j: X.jeux[0]+X.jeux[1], v: M.serveur(X), tb: X.tb};
         const h = pointSuivant(X, Rb, true); n++; if (e) ev += 930;
+        if (h === a.v) gagnesSrv[a.v]++; else perdusSrv[a.v]++;
         if (!X.fini && X.sets[0]+X.sets[1] > a.s) ev += 1100; else if (!X.fini && X.jeux[0]+X.jeux[1] > a.j && !a.tb && h !== a.v) ev += 700;
         if (X.tb && !a.tb) ev += 950; }
       return {n, ev}; })();
+    // taux d'aces (parmi les points gagnés au service) et de doubles fautes (parmi les points perdus au service),
+    // calés pour que ce match montre en moyenne le nombre prévu par l'algo ; sans feuille prévue : aucun
+    const pAce = [0,1].map(i => fp && fp[i] ? Math.min(.45, (Number(fp[i].aces)||0) / Math.max(1, gagnesSrv[i])) : 0);
+    const pDF = [0,1].map(i => fp && fp[i] ? Math.min(.35, (Number(fp[i].doubles_fautes)||0) / Math.max(1, perdusSrv[i])) : 0);
+    ST = [[0,0],[0,0]]; Rv = rng((seed * 7 + 13) >>> 0); stats();
     const fixe = 3100 + 5100;
     const f = Math.max(0.45, Math.min(1, 0.55 * (CIBLE - fixe) / Math.max(1, blanc.ev)));
     const base = Math.max(28, Math.min(64, (CIBLE - fixe - f * blanc.ev) / Math.max(1, blanc.n)));
@@ -1451,7 +1501,31 @@ function Arcade(root, m, opts){
       }
       const avant = { sets: S.sets[0]+S.sets[1], jeux: S.jeux[0]+S.jeux[1], srv: M.serveur(S), tb: S.tb };
       const h = pointSuivant(S, R, false);
-      frappe(h, Math.min(ms * 0.9 / (vit * accel), 380));
+      // 04/11/2026 — nature du point (affichage seul, tirage séparé) : ace, double faute ou échange de n frappes
+      const sv = avant.srv, u = Rv();
+      const genre = h === sv && u < pAce[sv] ? 'ace' : h !== sv && u < pDF[sv] ? 'df' : 'echange';
+      if (genre === 'ace'){ ST[sv][0]++; stats(); }
+      if (genre === 'df'){ ST[sv][1]++; stats(); }
+      let nf = 1;
+      if (genre === 'echange'){
+        nf = 1 + Math.floor(Math.log(1 - Rv()) / Math.log(1 - 1 / Math.max(1.2, FRAPPES)));
+        if ((nf % 2 === 1) !== (h === sv)) nf++;          // le dernier coup gagnant est celui du vainqueur du point
+      }
+      const budget = ms * 0.9 / (vit * accel);
+      if (genre === 'df'){
+        balleVers(1 - sv, Math.min(budget, 300) / 2, true); son('frappe' + sv);
+        if (budget >= 160) mini(t('a_df'), coul(1 - sv), budget * 2.2);
+        await z(Math.min(ms, 300) / 2);
+        frappe(h, Math.min(budget, 300) / 2);
+      } else if (genre === 'ace'){
+        frappe(h, Math.min(budget, 260));
+        if (budget >= 160) mini(t('a_ace'), coul(sv), budget * 2.2);
+      } else if (nf > 1 && budget >= 240){               // échange visible : seulement quand le jeu ralentit
+        const pas = Math.max(70, Math.min(260, budget / nf));
+        const fr = $('.frappes'); if (nf >= 7){ fr.textContent = t('a_frappes', nf); fr.classList.add('on'); }
+        for (let k = 0; k < nf - 1; k++){ const qui = (k % 2 === 0) ? sv : 1 - sv; balleVers(1 - qui, pas); son('frappe' + qui); await z(pas * vit * accel); if (!vivant()) return; }
+        frappe(h, pas); fr.classList.remove('on');
+      } else frappe(h, Math.min(budget, 380));
       serie = h === dernier ? serie + 1 : 1; dernier = h;
       if (serie >= 4 && serie % 2 === 0) son('combo');
       const cb = $('.combo'); if (serie >= 4){ cb.textContent = t('a_combo', serie); cb.style.color = coul(h); cb.classList.add('on'); } else cb.classList.remove('on');
@@ -1475,6 +1549,7 @@ function Arcade(root, m, opts){
       <div class="fin-s">${esc(scoreTxt(S, w === 1))}</div>
       <div class="fin-p">${t('a_fin_p', esc(noms[fav]), Math.max(p,1-p)*100, nSim)}</div>
       ${enCoursTop && cible && cible[1] != null ? `<div class="fin-p">${t('a_fin_top', esc(cible[0]), cible[1]*100, nSim)}</div>` : ''}
+      ${fp && fp[0] && fp[1] && fp[0].aces != null ? `<div class="fin-p">${t('a_fin_stats', ST[0][0], ST[1][0], dec(fp[0].aces,1), dec(fp[1].aces,1))}</div>` : ''}
       ${opts.video && Q.get('adresse') === '1' ? `<div class="fin-url">${esc(t('v_url'))}</div>` : ''}
       ${opts.video ? '' : `<button type="button" class="start">↻ ${esc(t('rejouer'))}</button>`}`;
     root.appendChild(fin); son('fin');
