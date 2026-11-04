@@ -3,6 +3,13 @@
  "changements": [
   {
    "date": "2026-11-04",
+   "titre": "Fragilité revérifiée chaque semaine (favoris opposés, cinq autres critères, note v3)",
+   "statut": "production",
+   "decision": true,
+   "mesure": "chaque lundi, sur nos pronostics des 6 dernières semaines : un critère est justifié si sa pente d'étalonnage est inférieure d'au moins 0,10 à celle du reste (≥ 100 matchs) ; deux semaines de suite pour entrer comme pour sortir ; la note v3 doit garder un tiers haut plus juste que le tiers bas, sinon alerte Telegram ; au 05/11 : favoris opposés pente −0,01 contre 0,93 (144 matchs) — justifié"
+  },
+  {
+   "date": "2026-11-04",
    "titre": "Fiabilité : « fragile » d'office quand l'Elo et la simulation désignent des favoris différents",
    "statut": "production",
    "decision": true,
