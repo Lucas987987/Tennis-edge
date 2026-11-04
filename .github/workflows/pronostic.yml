@@ -107,6 +107,11 @@ jobs:
         run: python simulateur/profils_service.py /tmp/sackmann .
       - name: Facteurs du match (forme, fatigue, court, gaucher/taille, points importants, styles, face-à-face, conditions, contexte, Match Charting)
         run: python simulateur/facteurs.py /tmp/sackmann . /tmp/mcp
+      # 04/11/2026 : recalage des statistiques annoncées (aces, doubles fautes, 1res balles, breaks) par circuit —
+      # appris avant la dernière semaine complète, jugé sur elle ; adopté après deux semaines gagnantes de suite.
+      - name: Recalage des statistiques annoncées
+        continue-on-error: true
+        run: python simulateur/recalage_stats.py .
       - name: Apprentissage continu (mélange simulation + Elo appris sur nos matchs joués)
         run: python simulateur/apprentissage_continu.py .
       - name: Ablation appariée sur les mêmes pronostics figés
@@ -193,6 +198,7 @@ jobs:
           if [ -f simulateur/classements_sackmann.json ]; then git add -- simulateur/classements_sackmann.json; fi
           if [ -f simulateur/pronostics_hors_echantillon.jsonl.gz ]; then git add -- simulateur/pronostics_hors_echantillon.jsonl.gz; fi
           if [ -f simulateur/stabilite.json ]; then git add -- simulateur/stabilite.json; fi
+          if [ -f simulateur/recalage_stats.json ]; then git add -- simulateur/recalage_stats.json; fi
           if git diff --cached --quiet; then echo 'Rien de nouveau.'; exit 0; fi
           git commit -m 'Pronostic : test du modèle (vainqueur, sets)'
           # fichiers écrits hors du checkout partiel (ex. live/joueurs_service.json.gz, contexte des
