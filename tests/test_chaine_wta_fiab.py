@@ -74,7 +74,7 @@ class NoteV2(unittest.TestCase):
         a = FI.evaluer(m, [])
         hist = [{'uid': str(i), 'p': .7, 'y': i % 2, 'circuit': 'ATP', 'surface': 'Hard'} for i in range(300)]   # calibration ratée
         b = FI.evaluer(m, hist)
-        self.assertNotEqual(a['note'], b['note'])
+        self.assertNotEqual(a['note_v1'], b['note_v1'])          # 04/11/2026 : la v1 est gardée à côté de la v3
         self.assertEqual(b['version_v2'], FI.VERSION_V2)
         self.assertIn(b['niveau_v2'], FI.NIVEAUX)
 
