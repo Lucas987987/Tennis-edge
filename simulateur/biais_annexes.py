@@ -30,7 +30,8 @@ STATS = ('aces', 'doubles_fautes', 'breaks', 'premiere_pct', 'gagnes_1re_pct', '
          'balles_break_obtenues', 'jeux_service_gagnes_pct', 'points_gagnes')     # 3 derniers : suivis depuis le 05/11
 # 05/11/2026 : « 1er set du joueur cité en premier » retiré : sur 4 698 fiches, ce joueur gagne le 1er set 51,3 % du temps
 # (et le match 52,1 %) ; l'écart vu sur nos 443 matchs suivait leur part de victoires (53 %) — du hasard d'échantillon.
-# Ce qui compte vraiment pour le 1er set, c'est le PREMIER SERVEUR (57,0 % des 1ers sets), inconnu avant le match.
+# Le « premier serveur » à 57 % était un faux signal : le champ firstToServe de TennisApi donne le serveur du DERNIER jeu.
+# Le vrai premier serveur (point par point, 9 304 matchs) gagne le 1er set 50,0 % du temps : aucun avantage à corriger.
 LIGNES = ('tie_break', 'set_decisif', 'total_plus_18.5', 'total_plus_19.5', 'total_plus_20.5',
           'total_plus_21.5', 'total_plus_22.5', 'total_plus_23.5', 'handicap_favori_1.5', 'handicap_favori_2.5',
           'handicap_favori_3.5', 'handicap_favori_4.5', 'handicap_favori_5.5')
