@@ -78,6 +78,8 @@ h2{font-family:var(--disp);font-weight:400;font-size:1.45rem;line-height:1.15;ma
 .duelx .cj{color:var(--dim);font-size:.9rem;font-family:var(--cond);font-variant-numeric:tabular-nums}
 .fiab{display:flex;align-items:center;gap:7px;margin-top:10px;color:var(--dim);font-size:.86rem;flex-wrap:wrap}
 .fiab b{color:var(--ball);font-family:var(--cond);font-size:1rem}.fiab small{flex-basis:100%;font-size:.78rem}
+.typem{display:inline-block;margin-top:8px;padding:2px 10px;border-radius:999px;font-size:.78rem;font-weight:700;border:1px solid currentColor}
+.typem.fiable{color:#7CE3A6}.typem.standard{color:var(--dim)}.typem.fragile{color:#FF9A8B}
 .tir{display:flex;height:12px;border-radius:999px;overflow:hidden;margin:12px 0 8px;background:var(--p2);box-shadow:0 0 14px rgba(255,79,174,.35)}
 .tir i{display:block;height:100%;background:var(--p1);box-shadow:0 0 14px rgba(46,230,255,.5)}
 .fiche h3{font-size:1rem;margin:14px 16px 4px;font-weight:600}
@@ -459,6 +461,10 @@ const T = {
   mdj_vide:"Pas de match du jour pour l'instant : il est choisi parmi les matchs pas encore commencés de la journée.",
   sim_indisponible:"Cette simulation n'est pas disponible dans les données publiées. Actualise la page ou reviens au match du jour.",
   vs:'contre', cote_juste:'cote juste', sur_sims:n=>`Sur ${n} simulations`,
+  typem_fiable:'Match fiable', typem_standard:'Match standard', typem_fragile:'Match fragile',
+  typem_aide_fiable:"Les deux modèles sont d'accord et le favori est à 70 % ou plus : sur nos pronostics passés, le favori a gagné 78 à 87 % du temps et nos pourcentages s'y réalisent.",
+  typem_aide_standard:'Cas courant : nos pourcentages se réalisent en moyenne, sans plus.',
+  typem_aide_fragile:"L'Elo et la simulation ne désignent pas le même favori (ou un autre critère de fragilité vérifié chaque semaine) : sur nos pronostics passés, presque pile ou face.",
   fiab:'Fiabilité', fiab_aide:"Plus la note est proche de 100, plus nos pourcentages se réalisent tels quels dans ce type de match (circuit, expérience des joueurs, corrections appliquées), mesuré sur des milliers de matchs passés. Ce n'est pas la probabilité que le favori gagne.",
   rejouer:'Rejouer une simulation', accel:'Accélérer', fin:'Aller à la fin', jouer:'Lancer la simulation',
   son_on:'Son : activé', son_off:'Son : coupé', jouer_aide:n=>`Match réellement tiré parmi les ${fmt(n)} simulations, choisi pour montrer le type de match prévu : 3 sets si la probabilité de set décisif dépasse nettement la moyenne du circuit (seuil réglé pour que la part de vidéos en 3 sets égale la part réelle du circuit), un tie-break de même ; le favori gagne, avec les jeux et les statistiques médianes. Chaque relance reprend ce même scénario.`,
@@ -533,6 +539,7 @@ const T = {
   jc_f_fantome_retour_absence:'Retour après 45 jours ou plus sans match',
   jc_f_fantome_age:'Âge (déclin après 30 ans, progression avant 23 ans)',
   jc_f_fantome_favori_outsider:'Profil du joueur en favori / en outsider',
+  jc_f_fantome_favori_sous_estime:'Favori sous-estimé (modèles d’accord à 70–80 %, ou même favori avec gros écart à 50–60 %)',
   en_l:(a,b)=>`Statut d’entrée — ${a}${b?' · '+b:''}.`, en_wc:n=>`${n} : invité(e) (wild card)`, en_q:n=>`${n} : qualifié(e)`,
   en_ll:n=>`${n} : repêché(e) des qualifications`, en_pr:n=>`${n} : classement protégé`, en_ts:(n,k)=>`${n} : tête de série n° ${k}`,
   en_note_wc:' Sur nos données, un invité en Challenger gagne nettement moins que prévu (−5,6 points, 7 922 matchs) : suivi à part, le pronostic affiché ne change pas.',
@@ -653,6 +660,10 @@ const T = {
   mdj_vide:"No match of the day yet: it is picked among today's matches that haven't started.",
   sim_indisponible:'This simulation is unavailable in the published data. Refresh the page or return to the match of the day.',
   vs:'vs', cote_juste:'fair odds', sur_sims:n=>`Across ${n} simulations`,
+  typem_fiable:'Reliable match', typem_standard:'Standard match', typem_fragile:'Fragile match',
+  typem_aide_fiable:'Both models agree and the favourite is at 70% or more: in our past forecasts the favourite won 78 to 87% of the time and our percentages came true.',
+  typem_aide_standard:'Usual case: our percentages come true on average.',
+  typem_aide_fragile:'Elo and the simulation pick different favourites (or another fragility rule checked weekly): close to a coin flip in our past forecasts.',
   fiab:'Reliability', fiab_aide:'The closer to 100, the more our percentages come true as stated in this type of match (tour, players\' experience, corrections applied), measured on thousands of past matches. This is not the probability that the favourite wins.',
   rejouer:'Replay a simulation', accel:'Faster', fin:'Skip to the end', jouer:'Play the simulation',
   son_on:'Sound: on', son_off:'Sound: off', jouer_aide:n=>`An actual match drawn from ${fmt(n)} simulations, selected to show the expected type of match: three sets if the deciding-set probability is clearly above the tour average (threshold set so that the share of three-set videos matches the tour's real share), a tie-break likewise; the favourite wins, with median games and statistics. Every replay uses this same scenario.`,
@@ -727,6 +738,7 @@ const T = {
   jc_f_fantome_retour_absence:'Return after 45+ days without a match',
   jc_f_fantome_age:'Age (decline after 30, growth before 23)',
   jc_f_fantome_favori_outsider:'Player record as favourite / underdog',
+  jc_f_fantome_favori_sous_estime:'Underrated favourite (models agree at 70–80%, or same favourite with a wide gap at 50–60%)',
   en_l:(a,b)=>`Entry status — ${a}${b?' · '+b:''}.`, en_wc:n=>`${n}: wild card`, en_q:n=>`${n}: qualifier`,
   en_ll:n=>`${n}: lucky loser`, en_pr:n=>`${n}: protected ranking`, en_ts:(n,k)=>`${n}: seed no. ${k}`,
   en_note_wc:' In our data, a Challenger wild card wins clearly less than predicted (−5.6 points, 7,922 matches): tracked separately, the displayed forecast does not change.',
@@ -1008,7 +1020,8 @@ function essentielListe(m){
                   changement_surface: L==='fr'?'changement de surface':'surface change',
                   retour_absence: L==='fr'?'retour d’absence':'return from absence', age: L==='fr'?'âge':'age',
                   favori_outsider: L==='fr'?'profil favori / outsider':'favourite / underdog profile',
-                  parcours_tournoi: L==='fr'?'parcours dans le tournoi':'run in the tournament' };
+                  parcours_tournoi: L==='fr'?'parcours dans le tournoi':'run in the tournament',
+                  favori_sous_estime: L==='fr'?'favori sous-estimé':'underrated favourite' };
     const circ = m.circuit === 'CH' ? 'Challenger' : m.circuit, ph = sgc.p_home_sans;
     L_.push({ sens:'info', txt: t('es_signaux', sgc.appliques.map(k=>lib[k]||k).join(', '), circ,
                                  `${court(ph >= .5 ? m.home : m.away)} ${pc0(Math.max(ph, 1-ph))}`) });
@@ -1597,6 +1610,11 @@ function rendTextes(){
   document.getElementById('plus-list').innerHTML = t('plus_items').map(x=>`<li>${esc(x)}</li>`).join('');
   boutonSon();
 }
+// 05/11/2026 — type de match (vitrine.type_de_match) : fiable / standard / fragile
+function rendType(m){
+  const k = m && m.type_match; if (!k) return '';
+  return `<span class="typem ${esc(k)}" title="${esc(t('typem_aide_' + k))}">${esc(t('typem_' + k))}</span>`;
+}
 function rendFiabilite(f, detail=false){
   if (!f || !Number.isFinite(Number(f.note))) return '';
   const niveaux = L==='fr' ? {fragile:'fragile',prudent:'prudent',correct:'correcte',solide:'solide'} : {fragile:'fragile',prudent:'cautious',correct:'fair',solide:'strong'};
@@ -1807,7 +1825,7 @@ function rendMdj(){
         <div class="ligne l2"><span class="nm">${esc(m.away)}</span><span class="pc">${pc0(1-p)}</span></div>
         <div class="ligne" style="margin-top:8px"><span class="cj">${esc(t('cote_juste'))} ${odds(m.cotes_justes[0])}</span><span class="cj">${esc(t('cote_juste'))} ${odds(m.cotes_justes[1])}</span></div>
         ${m.evolution && Math.abs(m.evolution.ecart_pts) >= 1 ? `<p class="evol">${esc(t('es_premier', pc0(m.evolution.premier_p_home), court(m.home), m.evolution.premier_le ? dateHeure(m.evolution.premier_le) : ''))}</p>` : ''}
-        ${rendFiabilite(m.fiabilite, true)}
+        ${rendType(m)}${rendFiabilite(m.fiabilite, true)}
         <p style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn" id="b-post">📝 Générer le post X</button>${VIDEO_ICI ? '<button type="button" class="btn" id="b-video">🎬 Générer la vidéo</button>' : ''}</p>
         <div id="video-zone" hidden style="margin-top:8px"><p class="ligne" style="gap:8px;justify-content:flex-start;flex-wrap:wrap;align-items:center"><input id="video-cle" type="password" autocomplete="off" placeholder="Clé privée" aria-label="Clé privée" style="flex:1;min-width:160px;background:rgba(255,255,255,.04);color:inherit;border:1px solid var(--line2);border-radius:999px;padding:9px 14px;font:inherit"><button type="button" class="btn" id="video-ok">Lancer</button></p></div>
         <p id="video-msg" class="aide" aria-live="polite"></p>
@@ -1868,7 +1886,7 @@ function rendListe(){
       <span class="pl b"><span>${esc(m.away)}</span><b>${pc0(1-p)}</b></span>
       <span class="mini" aria-hidden="true"><i style="width:${(p*100).toFixed(1)}%"></i></span>
       <span class="meta"><span>${esc(t('cote_juste'))} ${odds(m.cotes_justes[0])} / ${odds(m.cotes_justes[1])}</span><span class="ouvrir">${esc(selection ? t('simulation_affichee') : t('voir_simulation'))}</span></span>
-      ${rendFiabilite(m.fiabilite)}
+      ${rendType(m)}${rendFiabilite(m.fiabilite)}
     </span></a></li>`; }).join('');
   const more = document.getElementById('liste-more');
   more.hidden = visibles.length >= tous.length;
