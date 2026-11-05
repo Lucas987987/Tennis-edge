@@ -71,6 +71,84 @@ def detail(st, cote):
     return (svpt, in1, w1, w2, ace, df, bpf, bps, sg)
 
 
+# ------------------------------------------------------------------ 05/11/2026 : corrections par le point par point
+# Audit (audit_feuilles.py, 8 842 matchs) : chez TennisApi, balles de break et breaks sont SOUS-COMPTÉS dans 8,5 % des
+# matchs (−3,6 % de breaks au total) et « serviceGamesTotal » est faux par joueur dans 47 % des cas (±1 en miroir).
+# Quand le déroulé point par point du match est là (feuilles_points/, scripts/points_match.py) et qu'il concorde avec
+# la feuille (mêmes jeux par set, points de service à ±2), on prend ses balles de break, breaks et jeux de service.
+_POINTS = {}
+
+
+def points(racine):
+    """{id du match: [[set, jeu, serveur (1/2), 'HAH…']]} depuis feuilles_points/ (mis en cache)."""
+    cle = os.path.abspath(racine)
+    if cle not in _POINTS:
+        out = {}
+        for p in sorted(glob.glob(os.path.join(racine, 'feuilles_points', '*.jsonl.gz'))):
+            try:
+                with gzip.open(p, 'rt', encoding='utf-8') as f:
+                    for l in f:
+                        if l.strip():
+                            x = json.loads(l)
+                            if x.get('jeux'):
+                                out[x.get('id')] = x['jeux']
+            except (OSError, ValueError):
+                continue
+        _POINTS[cle] = out
+    return _POINTS[cle]
+
+
+def recompter(jeux):
+    """Par joueur (0 = home, 1 = away) : points de service, jeux de service, breaks concédés, balles de break
+    concédées, et jeux par set — depuis le point par point. Jeu décisif : service alterné, hors jeux de service."""
+    svpt, sg, perdus, bpf = [0, 0], [0, 0], [0, 0], [0, 0]
+    par_set = {}
+    for s_, j, srv, pts in sorted(jeux, key=lambda g: (g[0], g[1])):
+        if not pts or srv not in (1, 2):
+            continue
+        i = 0 if srv == 1 else 1
+        ps = par_set.setdefault(s_, [0, 0])
+        tb = len(pts) >= 7 and ps == [6, 6]
+        a = b = 0
+        for k, x in enumerate(pts):
+            if tb:
+                svpt[i if (k == 0 or ((k - 1) // 2) % 2 == 1) else 1 - i] += 1
+                continue
+            svpt[i] += 1
+            if b >= 3 and b > a:
+                bpf[i] += 1
+            if (x == 'H') == (i == 0):
+                a += 1
+            else:
+                b += 1
+        g = 0 if pts[-1] == 'H' else 1
+        ps[g] += 1
+        if not tb:
+            sg[i] += 1
+            perdus[i] += g != i
+    return {'svpt': svpt, 'sg': sg, 'breaks_concedes': perdus, 'bpf': bpf,
+            'sets': [tuple(par_set[k]) for k in sorted(par_set)]}
+
+
+def corriger(dh, da, jeux, sets):
+    """(dh, da) avec bpf, bps et sg pris du point par point s'il concorde avec la feuille ; inchangés sinon."""
+    if not (dh and da and jeux):
+        return dh, da
+    try:
+        c = recompter(jeux)
+    except (TypeError, ValueError, IndexError):
+        return dh, da
+    if c['sets'] != [tuple(x) for x in sets] or abs(c['svpt'][0] - dh[0]) > 2 or abs(c['svpt'][1] - da[0]) > 2:
+        return dh, da
+    nouveau = lambda d, i: d[:6] + (c['bpf'][i], c['bpf'][i] - c['breaks_concedes'][i], c['sg'][i])
+    return nouveau(dh, 0), nouveau(da, 1)
+
+
+def _sets(r):
+    return [(a, b) for a, b in zip(r['score_home'].get('sets') or [], r['score_away'].get('sets') or [])
+            if a is not None and b is not None]
+
+
 def lire(racine, depuis=None, jusqu_au=None):
     """Toutes les fiches brutes (dicts) des partitions, filtrées par jour."""
     out = []
@@ -86,12 +164,13 @@ def lire(racine, depuis=None, jusqu_au=None):
     return out
 
 
-def en_match(r):
-    """Fiche -> match au format donnees.charger() (gagnant/perdant = clés E.cle), ou None."""
+def en_match(r, jeux=None):
+    """Fiche -> match au format donnees.charger() (gagnant/perdant = clés E.cle), ou None.
+    jeux : point par point du match (05/11/2026), pour corriger balles de break, breaks et jeux de service."""
     if r.get('vainqueur') not in (1, 2) or not r.get('jour'):
         return None
     st = (r.get('stats') or {}).get('ALL') or {}
-    dh, da = detail(st, 0), detail(st, 2)
+    dh, da = corriger(detail(st, 0), detail(st, 2), jeux, _sets(r))
     g, p = (r['home'], r['away']) if r['vainqueur'] == 1 else (r['away'], r['home'])
     sg, sp = (r['score_home'], r['score_away']) if r['vainqueur'] == 1 else (r['score_away'], r['score_home'])
     sets = list(zip(sg.get('sets') or [], sp.get('sets') or []))
@@ -111,7 +190,8 @@ def en_match(r):
 
 def charger(racine, depuis=None, jusqu_au=None):
     """Matchs (format donnees.charger) des feuilles collectées, triés par date."""
-    out = [m for m in (en_match(r) for r in lire(racine, depuis, jusqu_au)) if m]
+    P = points(racine)
+    out = [m for m in (en_match(r, P.get(r.get('id'))) for r in lire(racine, depuis, jusqu_au)) if m]
     out.sort(key=lambda m: (m['date'], m['id'] or 0))
     return out
 
@@ -159,10 +239,11 @@ class Index:
         return None, False
 
 
-def feuille_reelle(r, inverse=False):
-    """Feuille lisible (mêmes clés que match_simule.feuille_derivee) pour home puis away, ou None."""
+def feuille_reelle(r, inverse=False, jeux=None):
+    """Feuille lisible (mêmes clés que match_simule.feuille_derivee) pour home puis away, ou None.
+    jeux : point par point du match (05/11/2026), pour corriger balles de break, breaks et jeux de service."""
     st = (r.get('stats') or {}).get('ALL') or {}
-    dh, da = detail(st, 0), detail(st, 2)
+    dh, da = corriger(detail(st, 0), detail(st, 2), jeux, _sets(r))
     if not dh or not da:
         return None
     jh = sum(r['score_home'].get('sets') or [])
