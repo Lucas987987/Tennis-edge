@@ -41,6 +41,26 @@ class Densite(unittest.TestCase):
         self.assertAlmostEqual(DA.air_leger(lieu, [30.0, 5.0, 'archive'], False), DA.air_leger(lieu, None, False))
 
 
+class Paquet191(unittest.TestCase):
+    def test_jour_local(self):
+        import datetime as dt
+        ts = dt.datetime(2026, 10, 3, 2, 30, tzinfo=dt.timezone.utc).timestamp()   # 22 h 30 la veille à New York
+        self.assertEqual(DA.jour_local(ts, -74.0), '2026-10-02')
+        self.assertEqual(DA.jour_local(ts, 2.35), '2026-10-03')
+
+    def test_categorie_inconnue_hors_circuits(self):
+        import feuilles as FE
+        self.assertEqual(FE.circuit_de('Challenger'), 'CH')
+        self.assertEqual(FE.circuit_de('WTA 125'), 'WTA')
+        self.assertEqual(FE.circuit_de('Davis Cup'), 'ATP')
+        self.assertEqual(FE.circuit_de('Billie Jean King Cup'), 'WTA')
+        self.assertEqual(FE.circuit_de('Exhibition'), 'AUTRE')
+
+    def test_codes_pays(self):
+        for c in ('DZA', 'CIV', 'IRN', 'LIE'):
+            self.assertIn(c, FA.ISO3_2)
+
+
 class Groupe(unittest.TestCase):
     def test_groupe_et_regle_par_circuit(self):
         self.assertEqual(FA.GROUPES['densite_air'], {'service': ['air_leger'], 'aces': ['air_leger']})
