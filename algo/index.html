@@ -240,9 +240,9 @@ footer p{max-width:72ch}
 .arcade .annonce small{display:block;font-size:5.2cqw;margin-top:2cqw;-webkit-text-stroke:0;text-shadow:0 .6cqw 0 #160E33;color:var(--ar-ink)}
 .arcade .annonce.pop{animation:pop var(--duree,900ms) cubic-bezier(.2,1.4,.4,1) forwards}
 @keyframes pop{0%{opacity:0;transform:scale(.3) rotate(-8deg)}18%{opacity:1;transform:scale(1.12) rotate(2deg)}30%{transform:scale(1) rotate(-1deg)}80%{opacity:1}100%{opacity:0;transform:scale(1.05)}}
-.arcade .combo{position:absolute;right:5cqw;bottom:25cqw;font-family:var(--ar-disp);font-size:5.6cqw;color:var(--ar-ball);opacity:0;transition:opacity .2s;text-shadow:0 0 3cqw currentColor}
+.arcade .combo{position:absolute;right:5cqw;bottom:34cqw;font-family:var(--ar-disp);font-size:5.6cqw;color:var(--ar-ball);opacity:0;transition:opacity .2s;text-shadow:0 0 3cqw currentColor}
 .arcade .combo.on{opacity:1}
-.arcade .ralenti{position:absolute;left:5cqw;bottom:25cqw;font-family:var(--ar-disp);font-size:3.8cqw;color:#FF9ACF;opacity:0;transition:opacity .2s}
+.arcade .ralenti{position:absolute;left:5cqw;bottom:34cqw;font-family:var(--ar-disp);font-size:3.8cqw;color:#FF9ACF;opacity:0;transition:opacity .2s}
 .arcade .ralenti.on{opacity:1;animation:clign .5s steps(2) infinite}
 .arcade .vs-h{font-family:var(--ar-disp);font-size:9.5cqw;line-height:1.05;color:var(--ar-ball);-webkit-text-stroke:.4cqw #160E33;paint-order:stroke fill;text-shadow:0 1cqw 0 #160E33,0 0 6cqw var(--ar-ball)}
 .arcade .vs-h small{display:block;font-family:var(--cond);font-size:4.2cqw;font-weight:700;color:var(--ar-ink);-webkit-text-stroke:0;text-shadow:none;margin-top:1.6cqw}
@@ -262,6 +262,13 @@ footer p{max-width:72ch}
   font-size:3.9cqw;line-height:1.25;font-weight:700;color:var(--ar-ink);text-align:center;display:grid;place-items:center}
 .arcade .legende b{font-family:var(--ar-disp);font-weight:400;color:var(--c,var(--ar-ball))}
 .arcade .legende.vide{visibility:hidden}
+/* 05/11/2026 — lignes de l'algo cochées en direct pendant le scénario (aucune cote) */
+.arcade .lgn{display:grid;grid-template-columns:1fr 1fr;gap:1.4cqw;margin-top:1.8cqw}
+.arcade .lgn > div{display:flex;justify-content:space-between;align-items:center;gap:1.2cqw;padding:1.2cqw 2cqw;border-radius:1.8cqw;background:rgba(5,3,20,.55);border:.35cqw solid rgba(255,255,255,.1);font-size:3cqw;font-weight:700;color:var(--ar-dim);transition:border-color .2s,color .2s,opacity .3s}
+.arcade .lgn b{font-family:var(--ar-disp);font-weight:400;color:var(--ar-ink)}
+.arcade .lgn i{font-style:normal;width:3.4cqw;text-align:center}
+.arcade .lgn .oui{border-color:var(--ar-ball);color:var(--ar-ink)} .arcade .lgn .oui i::after{content:"✅"}
+.arcade .lgn .non{opacity:.45} .arcade .lgn .non i::after{content:"✖"}
 .arcade .pied{font-size:3.2cqw;color:var(--ar-dim);text-align:center;font-weight:600;margin-top:2cqw}
 .arcade .ecran{position:absolute;inset:0;z-index:20;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3.6cqw;background:rgba(14,10,36,.9);text-align:center;padding:8cqw}
 .arcade .ecran.cache{opacity:0;transition:opacity .4s;pointer-events:none}
@@ -305,10 +312,15 @@ body.video #video{display:block;width:100vw;height:100vh}
   body.video .arcade .arene{margin-top:1cqw;min-height:52cqw}
   body.video .arcade .legende{margin-top:1.4cqw;min-height:6.4cqw;padding:1.2cqw 2.6cqw;font-size:3.5cqw}
   body.video .arcade .pied{margin-top:1.2cqw;font-size:2.8cqw}
-  body.video .arcade .combo, body.video .arcade .ralenti{bottom:19cqw}
+  body.video .arcade .combo, body.video .arcade .ralenti{bottom:24cqw}
+  body.video .arcade .lgn{margin-top:1cqw;gap:1cqw} body.video .arcade .lgn > div{padding:.7cqw 1.6cqw;font-size:2.7cqw}
 }
 
 
+/* 05/11/2026 — « Demande à l'algo » : une question, la réponse des simulations */
+.panel.qa select,.panel.qa input{background:rgba(255,255,255,.04);color:inherit;border:1px solid var(--line2);border-radius:999px;padding:8px 12px;font:inherit}
+.panel.qa .qa-l{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px}
+.panel.qa .qa-r{margin-top:12px;font-size:1.05rem} .panel.qa .qa-r b{font-size:1.5rem;color:var(--p1,#2EE6FF)}
 /* carte bilan (?bilan=1) : prévu contre réel, même format et même mise en forme gagné ou perdu (05/11/2026) */
 .ca .verdict{display:flex;align-items:center;gap:22px;border-radius:24px;padding:20px 26px;margin:6px 0 20px;border:3px solid}
 .ca .verdict.ok{background:rgba(212,255,58,.08);border-color:rgba(212,255,58,.5)} .ca .verdict.ko{background:rgba(255,79,174,.08);border-color:rgba(255,79,174,.5)}
@@ -699,6 +711,10 @@ const T = {
   a_hook:n=>`favori de l'algo · ${fmt(n)} simulations, sans cote`, a_serre:'match très serré',
   a_ace:'ACE !', a_df:'DOUBLE FAUTE', a_aces:'Aces', a_dfs:'Doubles fautes', a_frappes:n=>`${n} frappes`,
   a_fin_stats:(a1,a2,e1,e2)=>`Aces dans ce match : <b>${a1} – ${a2}</b> (l'algo en prévoit ${e1} – ${e2}).`,
+  lg_total:k=>`+ de ${k} jeux`, lg_tb:'Un tie-break', lg_3s:n=>`${n} sets`, lg_hand:(x,k)=>`${x} −${k} jeux`,
+  qa_titre:'Demande à l’algo', qa_sous:n=>`Choisis une question : la réponse vient des ${fmt(n)} simulations du match, sans aucune cote.`,
+  qa_q:{deux:'gagne sans perdre de set', un_set:'gagne au moins un set', s1m:'gagne le 1er set et le match', jeux_j:'gagne plus de … jeux', ecart:'gagne avec plus de … jeux d’écart', total:'Plus de … jeux dans le match', tb:'Au moins un tie-break'},
+  qa_rep:(q,c)=>`<b>${q}</b> des simulations · cote juste ${c}`, qa_joueur:'Joueur', qa_n:'Nombre',
   b_titre:'Le bilan de l\'algo', b_ok:'Bon vainqueur', b_ko:'Raté', b_vainq:(x,q)=>`${x} gagne · l'algo lui donnait ${q}`,
   b_reel:'Score réel', b_video:'Scénario de la vidéo', b_exact:'score exact', b_sets:'Score en sets', b_sets_v:q=>`prévu à ${q}`,
   b_stats:'Prévu → réel', b_pied:'Même bilan, gagné ou perdu · prévisions figées avant le match, aucune cote utilisée',
@@ -914,6 +930,10 @@ const T = {
   a_hook:n=>`algorithm's favourite · ${fmt(n)} simulations, no odds`, a_serre:'very tight match',
   a_ace:'ACE!', a_df:'DOUBLE FAULT', a_aces:'Aces', a_dfs:'Double faults', a_frappes:n=>`${n}-shot rally`,
   a_fin_stats:(a1,a2,e1,e2)=>`Aces in this match: <b>${a1} – ${a2}</b> (the algorithm expects ${e1} – ${e2}).`,
+  lg_total:k=>`Over ${k} games`, lg_tb:'A tie-break', lg_3s:n=>`${n} sets`, lg_hand:(x,k)=>`${x} −${k} games`,
+  qa_titre:'Ask the algorithm', qa_sous:n=>`Pick a question: the answer comes from the match’s ${fmt(n)} simulations, no odds involved.`,
+  qa_q:{deux:'wins without dropping a set', un_set:'wins at least one set', s1m:'wins the 1st set and the match', jeux_j:'wins more than … games', ecart:'wins by more than … games', total:'Over … games in the match', tb:'At least one tie-break'},
+  qa_rep:(q,c)=>`<b>${q}</b> of simulations · fair odds ${c}`, qa_joueur:'Player', qa_n:'Number',
   b_titre:'The algorithm\'s report', b_ok:'Right winner', b_ko:'Missed', b_vainq:(x,q)=>`${x} wins · the algorithm gave ${q}`,
   b_reel:'Final score', b_video:'Video scenario', b_exact:'exact score', b_sets:'Score in sets', b_sets_v:q=>`forecast at ${q}`,
   b_stats:'Forecast → actual', b_pied:'Same report, win or lose · forecasts frozen before the match, no odds used',
@@ -944,6 +964,38 @@ function heure(s){ return utc(s).toLocaleTimeString(loc(),{hour:'2-digit',minute
 function jourCourt(s){ return utc(s).toLocaleDateString(loc(),{weekday:'short',day:'numeric'}); }
 function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 function hm(min){ const h=Math.floor(min/60), m=Math.round(min%60); return L==='fr' ? `${h} h ${String(m).padStart(2,'0')}` : `${h}h ${String(m).padStart(2,'0')}m`; }
+// 05/11/2026 — « Demande à l'algo » (idée reprise de Stokastic) : réponses précalculées par vitrine.questions sur la
+// distribution exacte COMPLÈTE des scores (la distribution publiée est coupée sous 0,1 %), aucune cote.
+function repondre(m, q, j, n){
+  const Z = m.questions; if (!Z) return null;
+  const pick = (arr, i, debut) => { const k = Math.floor(i) - (debut || 0); return k < 0 ? 1 : k >= arr.length ? 0 : arr[k]; };
+  switch (q){
+    case 'deux': case 'un_set': case 's1m': return Z.j[j][q];
+    case 'jeux_j': return pick(Z.j[j].jeux_j, n);
+    case 'ecart': return pick(Z.j[j].ecart, n);
+    case 'total': return pick(Z.total, n, Z.total_debut);
+    case 'tb': return Z.tb;
+  } return null;
+}
+function rendQuestion(m){
+  if (!m.questions) return '';
+  const nSim = Math.max(1, Math.round(Number(m.simulation && m.simulation.n) || Number(D.simulations) || 0)), Qs = t('qa_q');
+  return `<div class="panel qa"><h3>💬 ${esc(t('qa_titre'))}</h3><p class="aide">${esc(t('qa_sous', nSim))}</p>
+    <div class="qa-l"><select id="qa-j" aria-label="${esc(t('qa_joueur'))}"><option value="0">${esc(court(m.home))}</option><option value="1">${esc(court(m.away))}</option></select>
+      <select id="qa-q">${Object.entries(Qs).map(([k,v])=>`<option value="${k}">${esc(v)}</option>`).join('')}</select>
+      <input id="qa-n" type="number" step="1" min="0" max="65" value="21" aria-label="${esc(t('qa_n'))}" style="width:5.5em"></div>
+    <p class="qa-r" id="qa-r" aria-live="polite"></p></div>`;
+}
+function brancherQuestion(m){
+  const q = document.getElementById('qa-q'); if (!q) return;
+  const j = document.getElementById('qa-j'), n = document.getElementById('qa-n'), r = document.getElementById('qa-r');
+  const maj = () => { const k = q.value, avecN = ['jeux_j','ecart','total'].includes(k), avecJ = !['total','tb'].includes(k);
+    n.hidden = !avecN; j.hidden = !avecJ;
+    if (k === 'total' && Number(n.value) < 12) n.value = 21; if (k === 'ecart' && Number(n.value) > 12) n.value = 3; if (k === 'jeux_j' && Number(n.value) > 25) n.value = 10;
+    const v = repondre(m, k, Number(j.value), Math.max(0, Math.round(Number(n.value) || 0)));
+    r.innerHTML = v == null ? '—' : t('qa_rep', pc0(v), odds(v > .001 ? Math.round(100 / v) / 100 : null)); };
+  [q, j, n].forEach(x => x.addEventListener('input', maj)); maj();
+}
 function rendMarches(k,m){
   if (!k) return '';
   const fav = k.favori==='home' ? court(m.home) : court(m.away);
@@ -1438,6 +1490,15 @@ function Arcade(root, m, opts){
   const fp = m.feuille_prevue || null;
   const ech = (m.echanges||[]).map(e => e && e.frappes).filter(Boolean);
   const FRAPPES = ech.length ? ech.reduce((a,b)=>a+b,0) / ech.length : (m.circuit === 'WTA' ? 4.4 : 4.2);
+  // 05/11/2026 — 4 lignes de l'algo (vitrine lignes_algo, aucune cote), cochées dès que le scénario les atteint
+  const LG = (() => { const k = m.lignes_algo; if (!k || !opts.video) return [];
+    const proche = pre => Object.keys(k).filter(x=>x.startsWith(pre)).sort((a,b)=>Math.abs(k[a]-.5)-Math.abs(k[b]-.5))[0];
+    const out = [], tt = proche('total_plus_'), hh = proche('handicap_favori_'), fav = k.favori === 'home' ? 0 : 1, bo = m.meilleur_des || 3;
+    if (tt) out.push({cle:'total', n:parseFloat(tt.slice(11)), p:k[tt], lib:t('lg_total', tt.slice(11).replace('.', L==='fr'?',':'.'))});
+    if (k.tie_break != null) out.push({cle:'tb', p:k.tie_break, lib:t('lg_tb')});
+    if (k.set_decisif != null) out.push({cle:'decisif', p:k.set_decisif, lib:t('lg_3s', bo)});
+    if (hh) out.push({cle:'hand', n:parseFloat(hh.slice(16)), fav, p:k[hh], lib:t('lg_hand', court(fav===0?m.home:m.away), hh.slice(16).replace('.', L==='fr'?',':'.'))});
+    return out; })();
   const son = opts.son || (()=>{});
   let jeton = 0, accel = 1;
   root.classList.add('arcade');
@@ -1479,6 +1540,7 @@ function Arcade(root, m, opts){
       <div class="arene"><div class="court"><div class="cote haut" data-cote="1"></div><div class="cote bas" data-cote="0"></div>
         <div class="filet"></div><div class="joueur j0">${esc(ini(noms[0]))}</div><div class="joueur j1">${esc(ini(noms[1]))}</div><div class="balle"></div></div></div>
       <div class="legende vide" data-legende></div>
+      ${LG.length ? `<div class="lgn">${LG.map((x,i)=>`<div data-lg="${i}"><span>${esc(x.lib)}</span><span><b>${pc0(x.p)}</b> <i></i></span></div>`).join('')}</div>` : ''}
       <div class="pied">${esc(t('a_pied', nSim))}</div></div>
       <div class="annonce"></div><div class="mini"></div><div class="frappes"></div><div class="combo"></div><div class="ralenti">${esc(t('a_ralenti'))}</div>
       <div class="ecran intro">${opts.video ? `<div class="vs-h">${Math.max(p,1-p) < .55 ? esc(t('a_serre')) + ' · ' + pc0(Math.max(p,1-p))
@@ -1514,6 +1576,16 @@ function Arcade(root, m, opts){
   function legende(html, i){
     const z = $('[data-legende]'); if (!z) return;
     z.innerHTML = html ? `<span>${html}</span>` : ''; z.style.setProperty('--c', i == null ? '' : coul(i)); z.classList.toggle('vide', !html);
+  }
+  function lignesEtat(fin){
+    if (!LG.length || !S) return;
+    const jeux = S.histo.reduce((a,h)=>a+h[0]+h[1],0) + (S.fini ? 0 : S.jeux[0]+S.jeux[1]);
+    const tb = S.histo.some(h => Math.max(h[0],h[1]) === 7 && Math.min(h[0],h[1]) === 6) || S.tb;
+    const N = (m.simulation && m.simulation.sets_gagnants) || 2, dec = S.sets[0] === N-1 && S.sets[1] === N-1;
+    LG.forEach((x,i)=>{ const el = $(`[data-lg="${i}"]`); if (!el) return;
+      let ok = x.cle === 'total' ? jeux > x.n : x.cle === 'tb' ? tb : x.cle === 'decisif' ? dec || (S.fini && S.histo.length === 2*N-1) : null;
+      if (x.cle === 'hand' && fin){ const d = S.histo.reduce((a,h)=>a+h[x.fav]-h[1-x.fav],0); ok = d > x.n; }
+      el.className = ok ? 'oui' : (fin ? 'non' : ''); });
   }
   function placer(j, x, ms){                          // j : 0 bas, 1 haut ; x en % de la largeur du court
     const el = $(`.joueur.j${j}`); if (!el) return;
@@ -1675,6 +1747,7 @@ function Arcade(root, m, opts){
         else if (nf >= 3) lg = t('lg_ech', nom(h), nf);
         else lg = t('lg_pt', nom(h));
         legende(lg, h);
+        lignesEtat(false);
       }
       await z(ms);
       if (!vivant()) return;
@@ -1688,6 +1761,7 @@ function Arcade(root, m, opts){
     }
     if (!vivant()) return;
     const w = S.vainqueur, fav = p >= .5 ? 0 : 1;
+    lignesEtat(true);
     await z(500);
     const fin = document.createElement('div'); fin.className = 'ecran';
     fin.innerHTML = `<div class="fin-t">${esc(t('a_fin'))}</div>
@@ -1971,10 +2045,12 @@ function rendMdj(){
       </div>
       ${lignes ? `<div class="panel"><h3>${esc(t('feuille_titre', nSim))}</h3><table class="sheet"><thead><tr><th></th><th class="c1">${esc(court(m.home))}</th><th class="c2">${esc(court(m.away))}</th></tr></thead><tbody>${lignes}</tbody></table></div>` : ''}
       ${rendDuel(m.duel,m)}
+      ${rendQuestion(m)}
       ${rendMarches(m.lignes_algo,m)}
       ${rendRythme(m.rythme,m)}
     </div></div>`;
   const bPost = document.getElementById('b-post'); if (bPost) bPost.onclick = () => ouvrirPost(m);
+  brancherQuestion(m);
   brancherVideo(m);
   if (m.simulation){
     const fin = document.getElementById('final');
