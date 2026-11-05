@@ -1411,7 +1411,9 @@ def construire(racine, maintenant=None):
     return doc
 
 
-SUIVI_STATS = ('aces', 'doubles_fautes', 'premiere_pct', 'gagnes_1re_pct', 'gagnes_2e_pct', 'breaks', 'jeux')
+# 05/11/2026 : + balles de break obtenues (le RETOUR), jeux de service gagnés, points gagnés dans le match
+SUIVI_STATS = ('aces', 'doubles_fautes', 'premiere_pct', 'gagnes_1re_pct', 'gagnes_2e_pct', 'breaks', 'jeux',
+               'balles_break_obtenues', 'jeux_service_gagnes_pct', 'points_gagnes')
 
 
 def feuille_prevue(m):
@@ -1683,7 +1685,8 @@ def juger(v, gagnant, sets, score, jeux):
 
 
 # ------------------------------------------------------------------ La feuille entière contre les simulations
-DIAG_STATS = ('premiere_pct', 'gagnes_1re_pct', 'gagnes_2e_pct', 'aces', 'doubles_fautes', 'breaks', 'jeux')
+DIAG_STATS = ('premiere_pct', 'gagnes_1re_pct', 'gagnes_2e_pct', 'aces', 'doubles_fautes', 'breaks', 'jeux',
+              'balles_break_obtenues', 'jeux_service_gagnes_pct', 'points_gagnes')
 SERVICE_STATS = ('premiere_pct', 'gagnes_1re_pct', 'gagnes_2e_pct')
 DIAG_LIB = {'premiere_pct': '% de 1re balle', 'gagnes_1re_pct': 'points gagnés derrière la 1re',
             'gagnes_2e_pct': 'points gagnés derrière la 2e', 'aces': 'aces', 'doubles_fautes': 'doubles fautes',
