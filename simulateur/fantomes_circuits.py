@@ -41,7 +41,7 @@ ICI = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, ICI)
 
 SIGNAUX = ('forme_service', 'entree', 'serveuses_wta', 'elo_service_retour', 'forme_set', 'changement_surface', 'retour_absence', 'age',
-           'favori_outsider', 'parcours_tournoi', 'favori_sous_estime', 'tiebreak')
+           'favori_outsider', 'parcours_tournoi', 'favori_sous_estime', 'tiebreak', 'documentation_faible')
 CIRCUITS = ('ATP', 'WTA', 'CH')
 MIN_MATCHS, MARGE = 30, 0.001
 SORTIE = os.path.join('simulateur', 'fantomes_circuits.json')
@@ -68,6 +68,13 @@ def directs(racine):
             for nom in ('parcours_tournoi', 'montee_petits_tournois'):
                 if (v.get(nom) or {}).get('adoptee'):
                     out.add((nom, c))
+    except (OSError, ValueError):
+        pass
+    try:                                                    # 05/11/2026 (Lucas) : matchs peu documentés, adoptés directement
+        with open(os.path.join(racine, 'simulateur', 'rapport_documentation.json'), encoding='utf-8') as f:
+            for c, v in (json.load(f).get('circuits') or {}).items():
+                if v.get('adopte'):
+                    out.add(('documentation_faible', c))
     except (OSError, ValueError):
         pass
     try:                                                    # 05/11/2026 (Lucas) : tie-breaks du Challenger, adoptés directement
