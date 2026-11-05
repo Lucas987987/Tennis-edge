@@ -461,6 +461,13 @@ const T = {
   mdj_vide:"Pas de match du jour pour l'instant : il est choisi parmi les matchs pas encore commencés de la journée.",
   sim_indisponible:"Cette simulation n'est pas disponible dans les données publiées. Actualise la page ou reviens au match du jour.",
   vs:'contre', cote_juste:'cote juste', sur_sims:n=>`Sur ${n} simulations`,
+  vg_titre:'Points de vigilance', vg_aide:'Où nos prévisions de ce type de match se sont trompées ces 6 dernières semaines (recalculé chaque lundi). Pour lire les chiffres de la fiche avec le bon recul.',
+  vg_stats:{aces:'Aces', doubles_fautes:'Doubles fautes', breaks:'Breaks', premiere_pct:'% de premières balles', gagnes_1re_pct:'Points gagnés derrière la 1re balle', gagnes_2e_pct:'Points gagnés derrière la 2e balle', jeux:'Jeux gagnés'},
+  vg_pts:' pt', vg_bas:x=>`nos prévisions sont en moyenne trop basses de ${x}`, vg_haut:x=>`nos prévisions sont en moyenne trop hautes de ${x}`,
+  vg_etroite:x=>`le réel tombe dans notre fourchette ${x} % du temps au lieu de 80 %`,
+  vg_ligne:(l,p,r,c)=>`${l} : annoncé ${p} % en moyenne, arrivé ${r} % (${c}).`, vg_tous:'tous circuits',
+  vg_set1:n=>`1er set gagné par ${n}`, vg_tb:'Au moins un tie-break', vg_sd:'Set décisif', vg_total:x=>`Plus de ${x} jeux`, vg_hand:x=>`Favori à −${x} jeux`,
+  vg_xp:'Un joueur a moins de 100 matchs : ses statistiques de service prévues sont moins sûres (fourchette respectée environ 70 % du temps au lieu de 80 %).',
   typem_fiable:'Match fiable', typem_standard:'Match standard', typem_fragile:'Match fragile',
   typem_aide_fiable:"Les deux modèles sont d'accord et le favori est à 70 % ou plus : sur nos pronostics passés, le favori a gagné 78 à 87 % du temps et nos pourcentages s'y réalisent.",
   typem_aide_standard:'Cas courant : nos pourcentages se réalisent en moyenne, sans plus.',
@@ -660,6 +667,13 @@ const T = {
   mdj_vide:"No match of the day yet: it is picked among today's matches that haven't started.",
   sim_indisponible:'This simulation is unavailable in the published data. Refresh the page or return to the match of the day.',
   vs:'vs', cote_juste:'fair odds', sur_sims:n=>`Across ${n} simulations`,
+  vg_titre:'Watch-outs', vg_aide:'Where our forecasts for this type of match have been off over the last 6 weeks (recomputed every Monday). Read the numbers on this page with that in mind.',
+  vg_stats:{aces:'Aces', doubles_fautes:'Double faults', breaks:'Breaks', premiere_pct:'First-serve %', gagnes_1re_pct:'Points won behind the 1st serve', gagnes_2e_pct:'Points won behind the 2nd serve', jeux:'Games won'},
+  vg_pts:' pt', vg_bas:x=>`our forecasts are too low by ${x} on average`, vg_haut:x=>`our forecasts are too high by ${x} on average`,
+  vg_etroite:x=>`the actual value lands in our range ${x}% of the time instead of 80%`,
+  vg_ligne:(l,p,r,c)=>`${l}: forecast ${p}% on average, happened ${r}% (${c}).`, vg_tous:'all tours',
+  vg_set1:n=>`First set won by ${n}`, vg_tb:'At least one tie-break', vg_sd:'Deciding set', vg_total:x=>`Over ${x} games`, vg_hand:x=>`Favourite −${x} games`,
+  vg_xp:'One player has fewer than 100 matches: their forecast serve stats are less certain (range met about 70% of the time instead of 80%).',
   typem_fiable:'Reliable match', typem_standard:'Standard match', typem_fragile:'Fragile match',
   typem_aide_fiable:'Both models agree and the favourite is at 70% or more: in our past forecasts the favourite won 78 to 87% of the time and our percentages came true.',
   typem_aide_standard:'Usual case: our percentages come true on average.',
@@ -998,7 +1012,24 @@ function serviceTexte(m){
 }
 function rendEssentiel(m){
   const L_ = essentielListe(m);
-  return `<div class="panel essentiel"><h3>${esc(t('es_titre'))}</h3><ul>${L_.map(x=>`<li class="${x.sens}">${esc(x.txt)}</li>`).join('')}</ul></div>`;
+  return `<div class="panel essentiel"><h3>${esc(t('es_titre'))}</h3><ul>${L_.map(x=>`<li class="${x.sens}">${esc(x.txt)}</li>`).join('')}</ul></div>` + rendVigilance(m);
+}
+// 05/11/2026 — points de vigilance : où nos prévisions annexes se trompent sur ce circuit (biais_annexes.py, 6 semaines)
+function rendVigilance(m){
+  const V = m.vigilance; if (!Array.isArray(V) || !V.length) return '';
+  const circ = m.circuit === 'CH' ? 'Challenger' : m.circuit;
+  const stat = k => (t('vg_stats')[k] || k), unite = k => /_pct$/.test(k) ? t('vg_pts') : '';
+  const lig = k => { if (k === 'set1_home') return t('vg_set1', court(m.home)); if (k === 'tie_break') return t('vg_tb'); if (k === 'set_decisif') return t('vg_sd');
+    const mt = /^total_plus_(.+)$/.exec(k); if (mt) return t('vg_total', mt[1].replace('.', ',')); const mh = /^handicap_favori_(.+)$/.exec(k); if (mh) return t('vg_hand', mh[1].replace('.', ',')); return k; };
+  const items = V.map(x => {
+    if (x.type === 'experience') return t('vg_xp');
+    if (x.type === 'ligne') return t('vg_ligne', lig(x.cle), dec(x.prevu, 1), dec(x.reel, 1), x.portee === 'tous' ? t('vg_tous') : circ);
+    const parts = [];
+    if (x.sens) parts.push(t(x.sens === 'sous-estimé' ? 'vg_bas' : 'vg_haut', dec(Math.abs(x.biais), 1) + unite(x.cle)));
+    if (x.fourchette === 'trop étroite') parts.push(t('vg_etroite', dec(x.dans_pct, 0)));
+    return `${stat(x.cle)} : ${parts.join(' ; ')} (${circ}).`;
+  });
+  return `<div class="panel vigilance"><h3>⚠️ ${esc(t('vg_titre'))}</h3><p class="aide">${esc(t('vg_aide'))}</p><ul>${items.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>`;
 }
 function essentielListe(m){
   const L_ = [], fav = m.p_home >= .5 ? m.home : m.away, pf = Math.max(m.p_home, 1-m.p_home), fb = m.fiabilite || {};
