@@ -1791,6 +1791,37 @@ def interruption(fi):
     return 'abandon' if txt in ('retired', 'defaulted') else 'forfait' if txt == 'walkover' else None
 
 
+def dedoublonner(R):
+    """05/11/2026 — un même match pronostiqué sous DEUX uid (affiché un jour, joué le lendemain : programme décalé,
+    match reporté, passage de minuit) recevait deux fois le même résultat réel : 14,7 % des bilans après match étaient
+    des doublons (ATP : 7 sur 35 la semaine du 02/11). Même paire de joueurs, débuts à 3 jours ou moins, même score (ou
+    même vainqueur sans score) : seul le pronostic le PLUS RÉCENT compte (le dernier connu avant le vrai début)."""
+    import elo as E_
+    cle = lambda r: frozenset((E_.cle(r.get('home')), E_.cle(r.get('away'))))
+    groupes = {}
+    for r in R:
+        groupes.setdefault(cle(r), []).append(r)
+    jeter = set()
+    for L in groupes.values():
+        if len(L) < 2:
+            continue
+        L = sorted(L, key=lambda r: str(r.get('debut')))
+        for a, b in zip(L, L[1:]):
+            try:
+                ecart = (dt.date.fromisoformat(str(b['debut'])[:10]) - dt.date.fromisoformat(str(a['debut'])[:10])).days
+            except ValueError:
+                continue
+            ra, rb = a.get('reel') or {}, b.get('reel') or {}
+            meme = (ra.get('score') and ra.get('score') == rb.get('score')) or \
+                   (not ra.get('score') and not rb.get('score') and ra.get('gagnant') and
+                    {a.get('home'): ra.get('gagnant')} == {b.get('home'): rb.get('gagnant')})
+            if ecart <= 3 and meme:
+                jeter.add(id(a))
+    if jeter:
+        print(f"Doublons écartés (même match sous deux uid) : {len(jeter)}")
+    return [r for r in R if id(r) not in jeter]
+
+
 def resoudre(racine, maintenant=None):
     """Chaque match du journal dont le résultat est connu : 1re prédiction, dernière avant le match,
     résultat réel (vainqueur, sets, score en jeux, feuille de stats), et le jugement de chaque version."""
@@ -1869,7 +1900,7 @@ def resoudre(racine, maintenant=None):
                     'dernier': ({k: juger(dernier.get(k), gagnant, sets, score, jeux) for k in VERSIONS} if dernier else None),
                     'pin_cotes': r.get('pin_cotes')})
     out.sort(key=lambda x: x['debut'], reverse=True)
-    return out
+    return dedoublonner(out)
 
 
 def main(argv):

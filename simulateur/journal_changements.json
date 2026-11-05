@@ -596,6 +596,16 @@
    "date": "2026-11-05",
    "quoi": "Telegram privé : (1) chaque matin, liste des matchs du jour où l'algo contredit Pinnacle (favoris opposés ou ≥ 10 points ; cotes = loupe, jamais une entrée de l'algo ; une fois par jour via un repère dans le coffre) ; (2) chaque lundi, carte de la semaine (tous les matchs ATP/WTA/Challenger jugés, bons vainqueurs contre annoncé par circuit, favoris à 70 %+, plus gros ratés, scores exacts)",
    "paquet": 182
+  },
+  {
+   "date": "2026-11-05",
+   "quoi": "DOUBLONS écartés de l'évaluation : un même match pronostiqué sous deux uid (affiché un jour, joué le lendemain) recevait deux fois son résultat — 14,7 % des bilans après match, 150 sur 904 résultats. Désormais seul le pronostic le plus récent compte (pronostics_du_jour.dedoublonner) : bilans, fantômes, biais, recalage et cartes sont recalculés sans eux. La « mauvaise semaine ATP » passe de 45,7 % sur 35 matchs à 51,9 % sur 27 (z −1,2 : dans le hasard d'une semaine de fin de saison).",
+   "paquet": 183
+  },
+  {
+   "date": "2026-11-05",
+   "quoi": "audit des feuilles TennisApi contre le point par point (8 842 matchs) : points, jeux et sets justes ; « jeux de service joués » faux par joueur dans 47 % des cas (±1 en miroir, suit le faux premier serveur) ; balles de break et breaks sous-comptés (−3,6 %). Tableau des adoptions directes chaque lundi (Telegram privé).",
+   "paquet": 183
   }
  ]
 }
