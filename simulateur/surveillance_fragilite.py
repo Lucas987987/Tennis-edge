@@ -41,7 +41,15 @@ CRITERES = {
     'experience_60': ("un joueur à moins de 60 matchs", lambda r: r['xp'] is not None and r['xp'] < 60),
     'match_serre': ("match serré (favori < 58 %)", lambda r: max(r['p'], 1 - r['p']) < .58),
     'gros_favori': ("gros favori (≥ 80 %)", lambda r: max(r['p'], 1 - r['p']) >= .80),
+    # 05/11/2026 : huitièmes de finale — moins fiables sur nos pronostics rejoués, sur les deux périodes
+    # (etude_criteres_matchs.py : pente 0,96 contre 1,24 puis 0,68 contre 1,04) ; entre seulement si la semaine le confirme
+    'huitiemes': ("huitièmes de finale", lambda r: _tour(r.get('tour')) == 'huitièmes'),
 }
+
+
+def _tour(t):
+    import etude_criteres_matchs as ECM
+    return ECM.tour(t)
 ACTIF_AU_DEPART = {'favoris_opposes'}         # décision de Lucas du 04/11/2026
 
 
@@ -86,6 +94,16 @@ def lignes(racine, aujourdhui):
     with open(os.path.join(racine, 'Tennis_Edge_Lab', 'live', 'pronostics_resultats.json'), encoding='utf-8') as f:
         doc = json.load(f)
     debut = (aujourdhui - dt.timedelta(weeks=SEMAINES)).isoformat()
+    tours = {}
+    try:                                    # tour du tableau : fiches de match (jour, deux joueurs)
+        import elo as E
+        import feuilles as FE
+        for r in FE.lire(racine, depuis=debut):
+            h, a = E.cle((r.get('home') or {}).get('nom')), E.cle((r.get('away') or {}).get('nom'))
+            if h and a and r.get('jour'):
+                tours[(r['jour'], *sorted((h, a)))] = r.get('tour')
+    except Exception:  # noqa: BLE001
+        pass
     out = []
     for m in doc.get('matchs') or []:
         reel = m.get('reel') or {}
@@ -100,8 +118,17 @@ def lignes(racine, aujourdhui):
         f_ = m.get('fiabilite') or {}
         out.append({'c': m.get('circuit'), 'p': _c(p), 'y': int(reel['gagnant'] == 'home'),
                     'pe': (pr.get('stats') or {}).get('p_home'), 'ps': (pr.get('simulation') or {}).get('p_home'),
-                    'xp': min(mj) if len(mj) == 2 else None, 'note_v3': f_.get('note_v3')})
+                    'xp': min(mj) if len(mj) == 2 else None, 'note_v3': f_.get('note_v3'),
+                    'tour': m.get('tour') or _tour_fiche(tours, jour, m)})
     return out
+
+
+def _tour_fiche(tours, jour, m):
+    try:
+        import elo as E
+        return tours.get((jour, *sorted((E.cle(m.get('home')), E.cle(m.get('away'))))))
+    except Exception:  # noqa: BLE001
+        return None
 
 
 def verdict(R, f):
