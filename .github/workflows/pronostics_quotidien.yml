@@ -119,6 +119,13 @@ jobs:
         run: python simulateur/recap_apprentissage.py --racine .
       - name: Pronostics des 36 prochaines heures
         run: python simulateur/pronostics_du_jour.py .
+      # 05/11/2026 : liste PRIVÉE des matchs du jour où l'algo contredit Pinnacle (loupe, jamais une entrée de l'algo) ;
+      # une fois par jour à partir de 7 h à Paris (repère dans le coffre R2) ; jamais bloquant
+      - name: Désaccords du jour (Telegram privé)
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python simulateur/desaccords_du_jour.py . --telegram || echo '::warning::désaccords du jour non envoyés'
       # Préversion Plus : %, cote juste, détail complet et scénario représentatif de chaque match, match du jour,
       # bilan public et calibration. Aucune cote de bookmaker, aucun signal privé.
       - name: Site public de l'algo — génération et contrôle bloquants
