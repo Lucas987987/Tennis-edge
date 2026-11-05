@@ -1,0 +1,71 @@
+name: Bilan — match du jour (prévu contre réel)
+
+# AJOUTÉ LE 05/11/2026 (demande de Lucas). Chaque matin, la CARTE BILAN du match du jour de la veille (PNG 1080×1350,
+# FR et EN) : vainqueur annoncé et %, score réel, scénario de la vidéo (score exact ?), score en sets, aces de la vidéo,
+# statistiques prévues → réelles. MÊME MISE EN FORME GAGNÉ OU PERDU (✅ / ❌) : les ratés sont publiés comme les réussites.
+# Envoyée sur le Telegram PRIVÉ (TELEGRAM_CHAT_ID) seulement : pas d'artefact, rien de commité, aucune adresse de site.
+# Lancement à la main : un autre match (uid du site), par exemple le soir même dès le résultat connu.
+
+on:
+  workflow_dispatch:
+    inputs:
+      uid:
+        description: "Match (uid, vide = match du jour, sinon celui de la veille)"
+        required: false
+        default: ''
+  schedule:
+    - cron: '37 5 * * *'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bilan-match-du-jour
+  cancel-in-progress: false
+
+jobs:
+  bilan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /algo/
+            /scripts/video_simulation.py
+            /scripts/sons.py
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Navigateur (Chromium)
+        run: |
+          pip install --quiet playwright==1.48.0
+          python -m playwright install --with-deps chromium
+          fc-list | grep -qi 'Noto Color Emoji' || { sudo apt-get update -qq && sudo apt-get install -y -qq fonts-noto-color-emoji && fc-cache -f; }
+
+      - name: Carte bilan (FR puis EN)
+        id: carte
+        run: |
+          for lang in fr en; do
+            python scripts/video_simulation.py --lang "$lang" --uid "${{ inputs.uid }}" --bilan --sortie bilans
+          done
+          if [ -s bilans/bilan_fr.png ]; then echo "ok=1" >> "$GITHUB_OUTPUT"; else echo "ok=0" >> "$GITHUB_OUTPUT"; fi
+
+      - name: Envoyer sur le Telegram privé
+        if: steps.carte.outputs.ok == '1'
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          if [ -z "${TELEGRAM_TOKEN}" ] || [ -z "${TELEGRAM_CHAT_ID}" ]; then echo '::error::Telegram non configuré : bilan non envoyé.'; exit 1; fi
+          for lang in fr en; do
+            test -s "bilans/bilan_${lang}.png"
+            curl --fail-with-body -sS -o /dev/null -w "Telegram bilan ${lang} : HTTP %{http_code}\n" \
+              -F chat_id="${TELEGRAM_CHAT_ID}" -F caption="📋 Bilan du match du jour (${lang}) — prévu contre réel" \
+              -F photo=@"bilans/bilan_${lang}.png" \
+              "https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendPhoto"
+          done

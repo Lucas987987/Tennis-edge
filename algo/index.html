@@ -309,6 +309,19 @@ body.video #video{display:block;width:100vw;height:100vh}
 }
 
 
+/* carte bilan (?bilan=1) : prévu contre réel, même format et même mise en forme gagné ou perdu (05/11/2026) */
+.ca .verdict{display:flex;align-items:center;gap:22px;border-radius:24px;padding:20px 26px;margin:6px 0 20px;border:3px solid}
+.ca .verdict.ok{background:rgba(212,255,58,.08);border-color:rgba(212,255,58,.5)} .ca .verdict.ko{background:rgba(255,79,174,.08);border-color:rgba(255,79,174,.5)}
+.ca .verdict .ic{font-size:64px;line-height:1}
+.ca .verdict .tx{font-family:var(--disp);font-size:40px;line-height:1.1}
+.ca .verdict .tx small{display:block;font-family:Barlow,sans-serif;font-size:26px;color:#ABA3D6;margin-top:8px}
+.ca .faits{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px}
+.ca .fait{border-radius:22px;padding:16px 22px;background:rgba(5,3,20,.55);border:3px solid rgba(255,255,255,.1)}
+.ca .fait .k{font-size:25px;color:#ABA3D6;font-weight:600}
+.ca .fait .v{font-family:var(--disp);font-size:44px;margin-top:6px}
+.ca .fait .v small{font-family:Barlow,sans-serif;font-size:24px;color:#ABA3D6;margin-left:8px}
+.ca .fait.vu .v{color:#D4FF3A}
+.ca td.r{color:#F4F1FF;font-weight:700} .ca td.e{color:#ABA3D6;font-size:23px}
 /* carte de stats (?carte=1) : image 1080×1350 (format portrait de X), même thème arcade (24/10/2026) */
 body.carte{background:#0E0A24;margin:0;overflow:hidden}
 body.carte .page{display:none}
@@ -686,6 +699,10 @@ const T = {
   a_hook:n=>`favori de l'algo · ${fmt(n)} simulations, sans cote`, a_serre:'match très serré',
   a_ace:'ACE !', a_df:'DOUBLE FAUTE', a_aces:'Aces', a_dfs:'Doubles fautes', a_frappes:n=>`${n} frappes`,
   a_fin_stats:(a1,a2,e1,e2)=>`Aces dans ce match : <b>${a1} – ${a2}</b> (l'algo en prévoit ${e1} – ${e2}).`,
+  b_titre:'Le bilan de l\'algo', b_ok:'Bon vainqueur', b_ko:'Raté', b_vainq:(x,q)=>`${x} gagne · l'algo lui donnait ${q}`,
+  b_reel:'Score réel', b_video:'Scénario de la vidéo', b_exact:'score exact', b_sets:'Score en sets', b_sets_v:q=>`prévu à ${q}`,
+  b_stats:'Prévu → réel', b_pied:'Même bilan, gagné ou perdu · prévisions figées avant le match, aucune cote utilisée',
+  b_attente:'Résultat pas encore disponible', b_aces_v:'Aces de la vidéo',
   c_titre:'Les stats de l\'algo', c_sets:'Score en sets', c_scores:'Scores les plus fréquents', c_feuille:'Feuille de match prévue',
   c_pied:n=>`Simulé <b>${fmt(n)}</b> fois, point par point · aucune cote utilisée`, c_victoire:'de chances de gagner'
  },
@@ -897,6 +914,10 @@ const T = {
   a_hook:n=>`algorithm's favourite · ${fmt(n)} simulations, no odds`, a_serre:'very tight match',
   a_ace:'ACE!', a_df:'DOUBLE FAULT', a_aces:'Aces', a_dfs:'Double faults', a_frappes:n=>`${n}-shot rally`,
   a_fin_stats:(a1,a2,e1,e2)=>`Aces in this match: <b>${a1} – ${a2}</b> (the algorithm expects ${e1} – ${e2}).`,
+  b_titre:'The algorithm\'s report', b_ok:'Right winner', b_ko:'Missed', b_vainq:(x,q)=>`${x} wins · the algorithm gave ${q}`,
+  b_reel:'Final score', b_video:'Video scenario', b_exact:'exact score', b_sets:'Score in sets', b_sets_v:q=>`forecast at ${q}`,
+  b_stats:'Forecast → actual', b_pied:'Same report, win or lose · forecasts frozen before the match, no odds used',
+  b_attente:'Result not available yet', b_aces_v:'Video aces',
   c_titre:'The algorithm\'s numbers', c_sets:'Score in sets', c_scores:'Most frequent scores', c_feuille:'Expected match stats',
   c_pied:n=>`Simulated <b>${fmt(n)}</b> times, point by point · no odds used`, c_victoire:'win chance'
  }
@@ -2223,7 +2244,7 @@ document.querySelectorAll('.circuits button').forEach(b=>b.addEventListener('cli
   circuit=b.dataset.circuit; nListe=30; rendTextes(); rendListe();
 }));
 window.addEventListener('hashchange',()=>{
-  if (!D || Q.get('carte') || Q.get('video')) return;
+  if (!D || Q.get('carte') || Q.get('video') || Q.get('bilan')) return;
   selectionId = matchDemande() || (D.match_du_jour && D.match_du_jour.uid);
   rendMdj(); rendListe();
 });
@@ -2273,11 +2294,49 @@ function modeCarte(){
   Promise.race([(document.fonts && document.fonts.ready) || Promise.resolve(), dort(3000)]).then(()=>{ window.__fini = true; });
 }
 
+/* ───────────── carte bilan (?bilan=1) : prévu contre réel, capturée par scripts/video_simulation.py --bilan ─────────────
+   05/11/2026 : même mise en forme gagné ou perdu (Lucas : « publier les résultats même lorsqu'ils sont négatifs »). */
+function modeBilan(){
+  document.body.classList.add('carte');
+  const V = document.getElementById('video'), A = D.apres_match || {};
+  const cands = [Q.get('uid'), D.match_du_jour && D.match_du_jour.uid, D.match_du_jour_veille && D.match_du_jour_veille.uid].filter(Boolean);
+  const id = Q.get('uid') || cands.find(u => A[u] && A[u].reel);
+  const b = id && A[id];
+  if (!b || !b.reel){ V.innerHTML = `<p style="padding:60px;color:#fff">${esc(t('b_attente'))}</p>`; window.__vide = true; window.__fini = true; return; }
+  const p = b.prevu || {}, r = b.reel, e = b.ecarts || {}, ph = Number(p.p_home);
+  const n1 = court(b.home), n2 = court(b.away), w = r.gagnant === 'home' ? 0 : 1, nomW = w === 0 ? b.home : b.away;
+  const qW = w === 0 ? ph : 1 - ph, ok = !!e.vainqueur_juste;
+  const sc = String(r.score || '').trim(), vid = (p.scenario || {}).score || null;
+  const exact = vid && sc && vid.trim() === sc;
+  const quand = utc(b.debut).toLocaleString(loc(), {weekday:'long', day:'numeric', month:'long', timeZone:'Europe/Paris'});
+  const fp = p.feuille, fr = r.feuille, va = (p.scenario || {}).aces;
+  const L_ = [['aces','aces',1],['doubles_fautes','df',1],['breaks','breaks',1],['premiere_pct','prem',1]];
+  const lignes = (fp && fr) ? L_.filter(([k])=>fp[0]&&fp[0][k]!=null&&fr[0]&&fr[0][k]!=null).map(([k,lib])=>
+      `<tr><th>${esc(t(lib))}</th><td class="e">${dec(fp[0][k],1)} →</td><td class="r">${dec(fr[0][k], k==='premiere_pct'?0:0)}</td>`
+      + `<td class="e">${dec(fp[1][k],1)} →</td><td class="r">${dec(fr[1][k], 0)}</td></tr>`).join('') : '';
+  V.innerHTML = `<div class="ca">
+    <div class="haut"><span>${esc(t('b_titre'))}</span><span><b>${esc(t('a_sim'))}</b> ${esc(t('a_fois', D.simulations))}</span></div>
+    <h1 style="font-size:${(n1+n2).length > 30 ? 38 : (n1+n2).length > 20 ? 46 : 56}px">${esc(n1)} – ${esc(n2)}</h1>
+    <p class="ctx">${esc(quand)}</p>
+    <div class="verdict ${ok ? 'ok' : 'ko'}"><span class="ic">${ok ? '✅' : '❌'}</span>
+      <div class="tx">${esc(t(ok ? 'b_ok' : 'b_ko'))}<small>${esc(t('b_vainq', nomW, pc0(qW)))}</small></div></div>
+    <div class="faits">
+      <div class="fait"><div class="k">${esc(t('b_reel'))}</div><div class="v">${esc(sc || '—')}</div></div>
+      <div class="fait ${exact ? 'vu' : ''}"><div class="k">${esc(t('b_video'))}</div><div class="v">${esc(vid || '—')}${exact ? `<small>🎯 ${esc(t('b_exact'))}</small>` : ''}</div></div>
+      <div class="fait"><div class="k">${esc(t('b_sets'))} · ${esc(r.sets || '—')}</div><div class="v" style="font-size:34px">${e.sets_proba != null ? esc(t('b_sets_v', pc0(e.sets_proba))) : '—'}</div></div>
+      <div class="fait"><div class="k">${esc(t('b_aces_v'))}</div><div class="v" style="font-size:34px">${va && fr ? `${va[0]} – ${va[1]} <small>→ ${fr[0].aces} – ${fr[1].aces}</small>` : '—'}</div></div>
+    </div>
+    ${lignes ? `<div class="bloc"><h2>${esc(t('b_stats'))}</h2><table><thead><tr><th></th><th class="a" colspan="2">${esc(n1)}</th><th class="b" colspan="2">${esc(n2)}</th></tr></thead><tbody>${lignes}</tbody></table></div>` : ''}
+    <div class="pied" style="margin-top:auto">${esc(t('b_pied'))}</div></div>`;
+  window.__uid = id;
+  Promise.race([(document.fonts && document.fonts.ready) || Promise.resolve(), dort(3000)]).then(()=>{ window.__fini = true; });
+}
+
 rendTextes();
 fetch('donnees.json?v=' + Date.now()).then(r=>r.json()).then(d=>{
   D = d;
   selectionId = matchDemande() || (D.match_du_jour && D.match_du_jour.uid);
-  if (Q.get('carte')) modeCarte(); else if (Q.get('video')) modeVideo(); else rendTout();
+  if (Q.get('bilan')) modeBilan(); else if (Q.get('carte')) modeCarte(); else if (Q.get('video')) modeVideo(); else rendTout();
 }).catch(()=>{ document.getElementById('mdj-zone').innerHTML = '<div class="panel empty">Données indisponibles / Data unavailable.</div>'; });
 })();
 </script>
