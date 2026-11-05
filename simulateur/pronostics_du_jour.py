@@ -1447,7 +1447,7 @@ def suivi_feuilles(racine, lignes):
         fi, inv = idx.trouver(r['debut'][:10], r['home'], r['away'])
         if not fi or str((fi.get('statut') or {}).get('texte') or '').lower() != 'ended':
             continue
-        reel = FE.feuille_reelle(fi, inv)
+        reel = FE.feuille_reelle(fi, inv, FE.points(racine).get(fi.get('id')))
         if not reel:
             continue
         (fh, fa), tot = reel
@@ -1784,11 +1784,36 @@ def biais(R, min_n=30):
             'erreurs': {'n': len(faux), 'stat_decisive': dict(sorted(dec.items(), key=lambda kv: -kv[1]))}}
 
 
+def score_complet(fi):
+    """05/11/2026 — le score d'une feuille « Ended » est-il celui d'un match allé à son terme ? Chaque set fini (6-x avec
+    x ≤ 4, 7-5, 7-6, set décisif à 2 jeux d'écart, super jeu décisif à 10) et le vainqueur à 2 sets (3 au meilleur des 5,
+    déduit si un joueur a 3 sets). None si pas de score."""
+    A, B = (fi.get('score_home') or {}).get('sets') or [], (fi.get('score_away') or {}).get('sets') or []
+    S = [(a, b) for a, b in zip(A, B) if a is not None and b is not None]
+    if not S:
+        return None
+    gagnes = max(sum(a > b for a, b in S), sum(b > a for a, b in S))
+    bo = 5 if (fi.get('meilleur_des') == 5 or gagnes >= 3) else 3
+
+    def fini(a, b, dernier):
+        m, n = max(a, b), min(a, b)
+        return (m == 6 and n <= 4) or (m == 7 and n in (5, 6)) or (dernier and m >= 6 and m - n >= 2) or (m >= 10 and m - n >= 2)
+    return all(fini(a, b, i == len(S) - 1) for i, (a, b) in enumerate(S)) and gagnes == bo // 2 + 1
+
+
 def interruption(fi):
     """'abandon' (abandon, disqualification), 'forfait' (walkover) ou None, d'après la feuille TennisApi.
-    22/10/2026 : ces matchs ne jugent pas le modèle (un abandon à 3-1 n'est pas une erreur de pronostic)."""
+    22/10/2026 : ces matchs ne jugent pas le modèle (un abandon à 3-1 n'est pas une erreur de pronostic).
+    05/11/2026 : TennisApi marque aussi « Ended » des matchs au score inachevé (3,4 % des feuilles : abandons non
+    signalés, scores tronqués) — « abandon_probable », écartés eux aussi."""
     txt = str(((fi or {}).get('statut') or {}).get('texte') or '').lower()
-    return 'abandon' if txt in ('retired', 'defaulted') else 'forfait' if txt == 'walkover' else None
+    if txt in ('retired', 'defaulted'):
+        return 'abandon'
+    if txt == 'walkover':
+        return 'forfait'
+    if txt == 'ended' and score_complet(fi) is False:
+        return 'abandon_probable'
+    return None
 
 
 def dedoublonner(R):
@@ -1877,7 +1902,8 @@ def resoudre(racine, maintenant=None):
             else:
                 score = None                     # incomplet, impossible ou incohérent : jamais utilisé pour apprendre
         jeux = sum(a + b for a, b in (tuple(int(v) for v in x.split('-')) for x in score.split())) if score else None
-        feuille = FE.feuille_reelle(fi, inv) if fi and (not score_brut or score) else None
+        feuille = (FE.feuille_reelle(fi, inv, FE.points(racine).get(fi.get('id')))
+                   if fi and (not score_brut or score) else None)
         avant = [x for x in inst.get(r['uid'], []) if x['passage'][:16] < r['debut'][:16]]
         dernier = avant[-1] if avant else None
         premier = r.get('detail') or {k: r.get(k) for k in VERSIONS}

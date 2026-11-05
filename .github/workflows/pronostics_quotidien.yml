@@ -49,6 +49,7 @@ jobs:
           filter: blob:none
           sparse-checkout: |
             /simulateur/
+            /feuilles_points/
             /scripts/feuilles_match.py
             /scripts/resultats_itf.py
             /resultats_itf/
