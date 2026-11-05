@@ -1,0 +1,28 @@
+{
+ "genere_le": "2026-11-05T14:02:58+00:00",
+ "seuil_balles": 500,
+ "regle": "a appris août–sept (≥ 100), jugé oct → (≥ 100) ; adopté directement si −0,001 de log loss",
+ "circuits": {
+  "ATP": {
+   "appris": 18,
+   "juges": 2,
+   "adopte": false,
+   "raison": "trop peu de matchs peu documentés"
+  },
+  "WTA": {
+   "appris": 28,
+   "juges": 21,
+   "adopte": false,
+   "raison": "trop peu de matchs peu documentés"
+  },
+  "CH": {
+   "appris": 325,
+   "juges": 156,
+   "pente": 1.844,
+   "log_loss_sans": 0.52318,
+   "log_loss_avec": 0.49288,
+   "gain": 0.0303,
+   "adopte": true
+  }
+ }
+}

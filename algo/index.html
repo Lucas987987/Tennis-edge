@@ -604,6 +604,7 @@ const T = {
   jc_f_fantome_favori_outsider:'Profil du joueur en favori / en outsider',
   jc_f_fantome_favori_sous_estime:'Favori sous-estimé (modèles d’accord à 70–80 %, ou même favori avec gros écart à 50–60 %)',
   jc_f_fantome_tiebreak:'Tie-breaks corrigés du biais du circuit (Challenger : en place, suivi avec / sans)',
+  jc_f_fantome_documentation_faible:'Matchs peu documentés (moins de 500 balles) : % écartés de 50 % (Challenger : en place)',
   en_l:(a,b)=>`Statut d’entrée — ${a}${b?' · '+b:''}.`, en_wc:n=>`${n} : invité(e) (wild card)`, en_q:n=>`${n} : qualifié(e)`,
   en_ll:n=>`${n} : repêché(e) des qualifications`, en_pr:n=>`${n} : classement protégé`, en_ts:(n,k)=>`${n} : tête de série n° ${k}`,
   en_note_wc:' Sur nos données, un invité en Challenger gagne nettement moins que prévu (−5,6 points, 7 922 matchs) : suivi à part, le pronostic affiché ne change pas.',
@@ -827,6 +828,7 @@ const T = {
   jc_f_fantome_favori_outsider:'Player record as favourite / underdog',
   jc_f_fantome_favori_sous_estime:'Underrated favourite (models agree at 70–80%, or same favourite with a wide gap at 50–60%)',
   jc_f_fantome_tiebreak:'Tie-breaks corrected for the circuit bias (Challenger: live, tracked with / without)',
+  jc_f_fantome_documentation_faible:'Little-documented matches (under 500 points): odds pushed away from 50% (Challenger: live)',
   en_l:(a,b)=>`Entry status — ${a}${b?' · '+b:''}.`, en_wc:n=>`${n}: wild card`, en_q:n=>`${n}: qualifier`,
   en_ll:n=>`${n}: lucky loser`, en_pr:n=>`${n}: protected ranking`, en_ts:(n,k)=>`${n}: seed no. ${k}`,
   en_note_wc:' In our data, a Challenger wild card wins clearly less than predicted (−5.6 points, 7,922 matches): tracked separately, the displayed forecast does not change.',
@@ -1175,7 +1177,8 @@ function essentielListe(m){
                   favori_outsider: L==='fr'?'profil favori / outsider':'favourite / underdog profile',
                   parcours_tournoi: L==='fr'?'parcours dans le tournoi':'run in the tournament',
                   favori_sous_estime: L==='fr'?'favori sous-estimé':'underrated favourite',
-                  tiebreak: L==='fr'?'tie-breaks':'tie-breaks' };
+                  tiebreak: L==='fr'?'tie-breaks':'tie-breaks',
+                  documentation_faible: L==='fr'?'joueur peu documenté (moins de 500 balles)':'little-documented player (under 500 points)' };
     const circ = m.circuit === 'CH' ? 'Challenger' : m.circuit, ph = sgc.p_home_sans;
     L_.push({ sens:'info', txt: t('es_signaux', sgc.appliques.map(k=>lib[k]||k).join(', '), circ,
                                  `${court(ph >= .5 ? m.home : m.away)} ${pc0(Math.max(ph, 1-ph))}`) });
