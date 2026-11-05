@@ -42,6 +42,17 @@ GRILLE = [round(0.5 + 0.05 * i, 2) for i in range(31)]
 CIBLE = 80.0
 MIN_CAS = 30
 SORTIE = os.path.join('simulateur', 'recalage_stats.json')
+# 05/11/2026 (décision de Lucas) — ADOPTION DIRECTE des cases au biais net et stable chaque semaine (nos matchs suivis
+# du 19/10 au 04/11, réel − annoncé, par joueur et par match) :
+#   % de 1res balles ATP +3,8 / +3,8 / +4,0 pts (342 cas, z 11,4) ; WTA +6,8 / +3,3 / +2,2 (372, z 8,2) ;
+#   aces ATP +0,6 / +1,1 / +0,8 (342, z 4,0).
+# Cause probable : les profils viennent de l'archive Sackmann, les feuilles réelles de TennisApi (comptage différent).
+# Les coefficients sont réappris à chaque mise à jour (apprendre, tous les matchs joués) ; repli figé si les données
+# manquent. RETRAIT d'une case : deux semaines de suite (≥ 30 cas) où, sur la semaine jugée, l'écart moyen
+# |annoncé − réel| avec recalage est PIRE que sans. Les autres cases restent soumises à la règle ci-dessus.
+CASES_DIRECTES = (('ATP', 'premiere_pct'), ('WTA', 'premiere_pct'), ('ATP', 'aces'))
+REPLI_DIRECT = {'ATP': {'premiere_pct': {'delta': 2.98, 'largeur': 1.0}, 'aces': {'delta': 0.72, 'largeur': 1.0}},
+                'WTA': {'premiere_pct': {'delta': 2.92, 'largeur': 1.0}}}
 
 
 def lignes(fiches, reels):
@@ -158,14 +169,51 @@ def charger(racine):
 
 
 def lire_coefs(racine):
-    """Coefficients à appliquer sur le site : seulement s'ils sont adoptés."""
+    """Coefficients à appliquer sur le site : tous s'ils sont adoptés par la règle hebdomadaire ; sinon les cases
+    adoptées directement (CASES_DIRECTES), sauf celles retirées."""
     try:
         with open(os.path.join(racine, SORTIE), encoding='utf-8') as f:
             doc = json.load(f)
     except (OSError, ValueError):
-        return None
+        doc = {}
     d = doc.get('decision') or {}
-    return d.get('coefs') if d.get('adopte') else None
+    if d.get('adopte') and d.get('coefs'):
+        return d['coefs']
+    retirees = {k for k, v in (doc.get('direct') or {}).items() if (v or {}).get('retire')}
+    try:
+        appris = apprendre(charger(racine))
+    except Exception:  # noqa: BLE001 — repli figé
+        appris = {}
+    out = {}
+    for c, k in CASES_DIRECTES:
+        if f'{c}|{k}' in retirees:
+            continue
+        co = (appris.get(c) or {}).get(k) or (REPLI_DIRECT.get(c) or {}).get(k)
+        if co:
+            out.setdefault(c, {})[k] = co
+    return out or None
+
+
+def suivre_directes(ancien, appr, juge):
+    """Retrait des cases directes : deux semaines pires de suite (≥ 30 cas) sur l'écart moyen."""
+    co = apprendre(appr)
+    out = {}
+    for c, k in CASES_DIRECTES:
+        cle, prec = f'{c}|{k}', (ancien or {}).get(f'{c}|{k}') or {}
+        R = [r for r in juge if r['c'] == c and r['k'] == k]
+        coef = (co.get(c) or {}).get(k) or (REPLI_DIRECT.get(c) or {}).get(k)
+        if prec.get('retire'):
+            out[cle] = prec
+            continue
+        if len(R) < MIN_CAS or not coef:
+            out[cle] = dict(prec, cas_semaine=len(R), note='trop peu de cas : inchangé')
+            continue
+        sans = sum(abs(r['moy'] - r['reel']) for r in R) / len(R)
+        avec = sum(abs(recaler(coef, k, r['moy'], r['p10'], r['p90'])[0] - r['reel']) for r in R) / len(R)
+        pires = (prec.get('semaines_pires', 0) + 1) if avec > sans else 0
+        out[cle] = {'cas_semaine': len(R), 'ecart_sans': round(sans, 3), 'ecart_avec': round(avec, 3),
+                    'semaines_pires': pires, 'retire': pires >= 2}
+    return out
 
 
 def main(argv):
@@ -189,9 +237,11 @@ def main(argv):
            'jugement': {'sans_recalage': avant, 'avec_recalage': apres, 'coefs_juges': coefs_juges}}
     chemin = os.path.join(racine, SORTIE)
     try:
-        ancien = (json.load(open(chemin, encoding='utf-8')).get('decision')) or {}
+        ancien_doc = json.load(open(chemin, encoding='utf-8'))
     except (OSError, ValueError):
-        ancien = {}
+        ancien_doc = {}
+    ancien = ancien_doc.get('decision') or {}
+    doc['direct'] = suivre_directes(ancien_doc.get('direct'), appr, juge)
     if '--sans-decision' in argv:
         doc['decision'] = dict(ancien, verdict_semaine=verdict)
     else:
