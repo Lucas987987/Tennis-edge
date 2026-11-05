@@ -561,6 +561,16 @@
    "date": "2026-11-05",
    "quoi": "étude piste Ingram : service / retour des joueurs peu vus ramenés vers ce que leur Elo laisse attendre (au lieu de la moyenne du circuit). Gains réguliers en ATP et WTA mais minuscules (+0,0001 à +0,0002 chez les peu vus, seuil 0,002) ; Challenger nul — non retenue. ajustement.ajuster accepte un centre optionnel (par défaut : inchangé)",
    "paquet": 175
+  },
+  {
+   "date": "2026-11-05",
+   "quoi": "étude tie-breaks (archive 2023 → juin 2026, calcul de la fiche rejoué) : ATP sans biais durable (+0,2 pt sur 2025 →, l'écart vu en direct est du hasard), WTA légèrement surestimés (−1,1 pt, non retenu), Challenger SOUS-ESTIMÉS (28,1 % prévus pour 31,8 %, z 9,8, même sens sur les deux périodes, −0,0034 de log loss) → fantôme « tiebreak » sur le Challenger (décalage figé 0,1497), jugé par fantomes_circuits, appliqué à la ligne tie-break seulement si adopté",
+   "paquet": 176
+  },
+  {
+   "date": "2026-11-05",
+   "quoi": "tie-breaks du Challenger ADOPTÉS DIRECTEMENT (décision de Lucas, solidité de l'archive : z 9,8, même sens sur les deux périodes) : ligne tie-break corrigée (+0,1497 en logit) dès maintenant ; suivi « avec / sans » chaque semaine, retrait après deux semaines de suite (≥ 30 matchs) pires d'au moins 0,001",
+   "paquet": 177
   }
  ]
 }

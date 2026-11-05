@@ -562,7 +562,8 @@ def journal_changements(racine, analyse=None):
                                                  'fantome_serveuses_wta', 'fantome_elo_service_retour',
                                                  'fantome_forme_set', 'fantome_changement_surface',
                                                  'fantome_retour_absence', 'fantome_age',
-                                                 'fantome_favori_outsider', 'fantome_favori_sous_estime') if T.get(k)]
+                                                 'fantome_favori_outsider', 'fantome_favori_sous_estime',
+                                                 'fantome_tiebreak') if T.get(k)]
     return doc
 
 
@@ -657,8 +658,14 @@ def construire(racine, maintenant=None):
     import lignes_algo as MD
     duel = MD.Duel.charger(racine)
     cle_c = lambda n: alias.get(E.cle(n), E.cle(n)) if n else None
+    try:                                    # 05/11/2026 : ligne tie-break corrigée sur les circuits où c'est adopté
+        import fantomes_circuits as FCI
+        tb_adopte = (FCI.lire(racine) or {}).get('tiebreak') or []
+    except Exception:  # noqa: BLE001
+        tb_adopte = []
     for ligne in lignes:
         mk = MD.lignes(ligne.get('distribution_scores'), ligne.get('p_home', 0.5), ligne.get('meilleur_des') or 3)
+        mk = MD.appliquer_tiebreak(mk, ligne.get('circuit'), tb_adopte)
         if mk:
             ligne['lignes_algo'] = mk
         du = duel.match(cle_c(ligne.get('home')), cle_c(ligne.get('away')), ligne.get('circuit'), ligne.get('surface'))

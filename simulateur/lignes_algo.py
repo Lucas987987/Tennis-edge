@@ -17,12 +17,38 @@ import bisect
 import datetime as dt
 import gzip
 import json
+import math
 import os
 
 LIGNES_TOTAL = {3: (18.5, 19.5, 20.5, 21.5, 22.5, 23.5), 5: (32.5, 34.5, 36.5, 38.5, 40.5)}
 LIGNES_HANDICAP = (1.5, 2.5, 3.5, 4.5, 5.5)
 MIN_BALLES_DUEL = 200
 JOURNAL = os.path.join('simulateur', 'journal_pronostics', 'lignes_algo_v1.jsonl')
+
+
+# 05/11/2026 — TIE-BREAKS SOUS-ESTIMÉS EN CHALLENGER (etude_tiebreaks.py, archive : 28,5 % prévus pour 31,6 % réels en
+# 2023–2024, 28,1 % pour 31,8 % en 2025 → juin 2026, z ≈ 9) : décalage δ appris sur 2023–2024, FIGÉ ; ATP et WTA sans
+# biais durable. 05/11/2026 (Lucas) : ADOPTÉ DIRECTEMENT sur le Challenger vu la solidité de l'archive (fantomes_circuits.
+# directs) ; RETRAIT : deux semaines de suite (≥ 30 matchs) où la ligne corrigée fait PIRE d'au moins 0,001 que sans.
+DECALAGE_TIEBREAK = {'CH': 0.1497}
+
+
+def tiebreak_corrige(p, circuit):
+    """P(au moins un tie-break) corrigée du biais du circuit (None si aucun décalage pour ce circuit)."""
+    d = DECALAGE_TIEBREAK.get(circuit)
+    if d is None or p is None:
+        return None
+    p = min(max(float(p), 1e-6), 1 - 1e-6)
+    return round(1 / (1 + math.exp(-(math.log(p / (1 - p)) + d))), 4)
+
+
+def appliquer_tiebreak(lignes, circuit, adoptes):
+    """Remplace la ligne tie-break par sa version corrigée si le signal « tiebreak » est adopté sur ce circuit."""
+    if lignes and circuit in (adoptes or ()) and lignes.get('tie_break') is not None:
+        q = tiebreak_corrige(lignes['tie_break'], circuit)
+        if q is not None:
+            lignes = dict(lignes, tie_break=q, tie_break_brut=lignes['tie_break'])
+    return lignes
 
 
 def _tb(sc):

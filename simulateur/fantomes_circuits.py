@@ -41,7 +41,7 @@ ICI = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, ICI)
 
 SIGNAUX = ('forme_service', 'entree', 'serveuses_wta', 'elo_service_retour', 'forme_set', 'changement_surface', 'retour_absence', 'age',
-           'favori_outsider', 'parcours_tournoi', 'favori_sous_estime')
+           'favori_outsider', 'parcours_tournoi', 'favori_sous_estime', 'tiebreak')
 CIRCUITS = ('ATP', 'WTA', 'CH')
 MIN_MATCHS, MARGE = 30, 0.001
 SORTIE = os.path.join('simulateur', 'fantomes_circuits.json')
@@ -59,7 +59,7 @@ def directs(racine):
         with open(os.path.join(racine, COMBINES), encoding='utf-8') as f:
             doc = json.load(f)
     except (OSError, ValueError):
-        return set()
+        doc = {}
     out = {(s, c) for c, v in (doc.get('circuits') or {}).items() if v.get('adopte') for s in SIGNAUX_COMBINES}
     try:                                                    # pistes ajoutées au combiné (etude_pistes_tournoi.py)
         with open(os.path.join(racine, 'simulateur', 'rapport_pistes_tournoi.json'), encoding='utf-8') as f:
@@ -68,6 +68,14 @@ def directs(racine):
             for nom in ('parcours_tournoi', 'montee_petits_tournois'):
                 if (v.get(nom) or {}).get('adoptee'):
                     out.add((nom, c))
+    except (OSError, ValueError):
+        pass
+    try:                                                    # 05/11/2026 (Lucas) : tie-breaks du Challenger, adoptés directement
+        with open(os.path.join(racine, 'simulateur', 'rapport_tiebreaks.json'), encoding='utf-8') as f:
+            tbr = json.load(f)
+        for c, v in (tbr.get('circuits') or {}).items():
+            if v.get('retenu_pour_fantome'):
+                out.add(('tiebreak', c))
     except (OSError, ValueError):
         pass
     return out
