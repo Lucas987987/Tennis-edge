@@ -1346,6 +1346,7 @@ def construire(racine, maintenant=None):
                     'forme_service': fsv if fsv and (fsv[0] or fsv[1]) else None,
                     'echanges': _echanges(h, a, x['debut']),
                     'entree': entree_du_match(h, a, x['debut']),
+                    'tour': tour_du_match(h, a, x['debut']),     # 05/11/2026 : tour du tableau (critère de fragilité)
                     'controle': _avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_serveuses(
                         _avec_entree(_avec_service(_avec_forme(controle_fantome(elo, elo_ref, ref_etat, etat, h, a, c, s,
                                                                                 elo_fem, fem_etat), forme_ctl),
