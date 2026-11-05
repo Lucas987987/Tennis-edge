@@ -656,6 +656,12 @@
    "date": "2026-11-05",
    "quoi": "joueurs en double sous un prénom abrégé (« B. Perez Mora » des résultats ITF = « Benjamín Pérez Mora ») : la règle stricte de rapprochement des noms accepte maintenant une initiale, si tous les autres mots du nom abrégé sont dans le nom complet, même dernier mot, même sexe, un seul candidat (56 fusions sur l'état actuel, aucune vers un nom plus court). Effectif au prochain recalcul de l'Elo",
    "paquet": 189
+  },
+  {
+   "date": "2026-11-05",
+   "quoi": "LIEUX DES TOURNOIS corrigés : les qualifications (« Jinan, China, Qualifying ») étaient situées au centre du pays (Chine à 1 982 m, Mexique à 2 062 m) — 132 tournois sur 218, 6 385 feuilles sur 10 460 ; altitude et météo fausses pour le facteur « conditions ». Re-géocodage et météo redemandée au bon endroit. Nouvelle étude : DENSITÉ DE L'AIR (pression, température, humidité de 11 h à 20 h ; salle à 20 °C avec la pression du lieu) sur les aces et les points de service, groupe « densite_air » des facteurs ; règle fixée avant résultats : règle des groupes + pas moins bien sur ATP, WTA ni Challenger (100 matchs de jugement au moins), puis deux semaines de suite.",
+   "statut": "etude",
+   "paquet": 190
   }
  ]
 }

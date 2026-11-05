@@ -68,6 +68,7 @@ import donnees  # noqa: E402
 import elo as E  # noqa: E402
 import feuilles as FE  # noqa: E402
 import match_simule as S  # noqa: E402
+import densite_air as DA  # noqa: E402
 
 SORTIE = os.path.join(ICI, 'facteurs.json')
 CONTEXTE = os.path.join(ICI, 'facteurs_contexte.json')
@@ -122,6 +123,15 @@ GROUPES['pression'] = {'service': ['pression_srv', 'pression_ret_adv', 'rebond_s
 GROUPES['duree'] = {'service': ['minutes_tournoi_srv', 'minutes_tournoi_adv', 'minutes7_srv', 'minutes7_adv',
                                 'minutes_dernier_srv', 'minutes_dernier_adv']}
 K_PRESSION = 60.0
+# 05/11/2026 — DENSITÉ DE L'AIR (densite_air.py) : altitude, chaleur et humidité réunies en une seule mesure
+# physique ; un air léger doit donner plus d'aces et plus de points au service.
+# RÈGLE FIXÉE LE 05/11/2026, AVANT TOUT RÉSULTAT : la règle des groupes (points mieux prédits sur les 6 dernières
+# semaines, vainqueur pas dégradé de plus de 0,001) ET, circuit par circuit (ATP, WTA, Challenger, au moins
+# MIN_MATCHS_CIRCUIT matchs de jugement), les points concernés pas moins bien prédits ; puis la stabilité
+# (deux semaines de suite). Un seul coefficient pour tous les circuits : la physique de la balle est la même.
+GROUPES['densite_air'] = {'service': ['air_leger'], 'aces': ['air_leger']}
+GROUPES_PAR_CIRCUIT = {'densite_air'}
+MIN_MATCHS_CIRCUIT = 100
 # 24/10/2026 — MATCHUP (cas Li – Krueger : « Li ne supporte pas les grosses serveuses ») et ADVERSAIRES COMMUNS.
 #  · matchup : comment CE relanceur s'en sort, au-delà de son niveau, quand le serveur d'en face est fort
 #    (pente de ses points gagnés en retour, mesurés au-delà de l'attendu, selon la force du service adverse) ;
@@ -504,6 +514,7 @@ class Historique:
         ici_j, abs_j, ench_j, voy_j = parcours(j)
         ici_a, abs_a, ench_a, voy_a = parcours(adv)
         cond = {'altitude': (lieu.get('altitude') or 0.0) / 1000.0, 'interieur': inter,
+                'air_leger': DA.air_leger(lieu, met, inter),
                 'chaleur': (1 - inter) * ((met[0] - 25.0) / 10.0) if met else 0.0,
                 'vent': (1 - inter) * ((met[1] - 15.0) / 10.0) if met else 0.0,
                 'domicile_srv': domicile(j), 'domicile_adv': domicile(adv), 'voyage_srv': voy_j, 'voyage_adv': voy_a,
@@ -857,6 +868,24 @@ def juger_groupe(appr, juge, g):
     rapport['vainqueur_mieux_trouve'] = bool(ll0 is not None and ll1 < ll0)
     rapport['raison'] = (f"points {'mieux' if mieux_points else 'pas mieux'} ; vainqueur log loss {ll0} → {ll1} "
                          f"(réussite {ok0} % → {ok1} %)")
+    if g in GROUPES_PAR_CIRCUIT:
+        rapport['par_circuit'], pire = {}, []
+        for circ in ('ATP', 'WTA', 'CH'):
+            J = [x for x in juge if x.get('circuit') == circ]
+            if len(J) < MIN_MATCHS_CIRCUIT:
+                rapport['par_circuit'][circ] = {'matchs': len(J), 'note': f"moins de {MIN_MATCHS_CIRCUIT} matchs : non jugé"}
+                continue
+            rc = {'matchs': len(J)}
+            for modele, c in coefs.items():
+                L = lignes_modele(J, modele, list(c))
+                b0, b1 = log_vrais(L, [0.0] * len(c)), log_vrais(L, list(c.values()))
+                rc[modele] = {'base': round(b0, 6) if b0 else None, 'avec': round(b1, 6) if b1 else None}
+                if b0 is None or b1 is None or b1 > b0:
+                    pire.append(f"{circ} {modele}")
+            rapport['par_circuit'][circ] = rc
+        if pire:
+            rapport['adopte'] = False
+            rapport['raison'] += f" ; moins bien sur : {', '.join(pire)}"
     return rapport
 
 
