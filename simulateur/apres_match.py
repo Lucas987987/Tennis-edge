@@ -235,13 +235,15 @@ def bilan_match(uid, f, reel, duree_reelle=None):
         if res:
             E['lignes'] = res
         tbl = res.get('tie_break')
-        if tbl and not (d.get('lignes') or {}).get('tie_break_brut'):
-            # 05/11/2026 : ligne tie-break affichée contre la même corrigée du biais du circuit (lignes_algo, Challenger)
+        if tbl:
+            # 05/11/2026 : ligne tie-break SANS la correction du biais du circuit (ll_elo) contre AVEC (ll_reference) —
+            # qu'elle soit affichée (adoptée directement, Challenger) ou seulement suivie : sert au retrait
             import lignes_algo as LA_
-            q_ = LA_.tiebreak_corrige(tbl[0], f.get('circuit'))
-            if q_ is not None:
+            brut = (d.get('lignes') or {}).get('tie_break_brut')
+            sans, avec = (brut, tbl[0]) if brut is not None else (tbl[0], LA_.tiebreak_corrige(tbl[0], f.get('circuit')))
+            if sans is not None and avec is not None:
                 lt = lambda v: round(-math.log(min(max(v if tb else 1 - v, 1e-6), 1 - 1e-6)), 5)
-                E['fantome_tiebreak'] = {'ll_elo': lt(tbl[0]), 'll_reference': lt(q_)}
+                E['fantome_tiebreak'] = {'ll_elo': lt(sans), 'll_reference': lt(avec)}
     mo = d.get('modeles') or {}
     if mo.get('p_elo') is not None and mo.get('p_simulation') is not None and isinstance(p, (int, float)):
         # 29/10/2026 : l'Elo et la simulation désignaient-ils le même vainqueur ? Qui avait raison ?
