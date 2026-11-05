@@ -210,6 +210,11 @@ BETA_AGE = {'ATP': (-0.053, 0.0858), 'WTA': (-0.0442, 0.0435), 'CH': (-0.0602, 0
 BETA_ROLE = {'ATP': 2.2868, 'WTA': 1.9465, 'CH': 1.8818}
 RESIDUS_ROLE = None   # 04/11/2026 : {joueur: {'fav': résidu, 'out': résidu}} (etude_profils_contexte.residus_actuels)
 NAISSANCES = None     # 04/11/2026 : {joueur: date de naissance estimée} (etude_age.naissances)
+# 05/11/2026 — MATCHS PEU DOCUMENTÉS (etude_documentation.py) : sous 500 points de service cumulés pour le joueur le
+# moins vu, l'algo était trop prudent (Challenger : pente d'étalonnage 1,84 apprise août–sept, −0,030 de log loss en
+# oct–nov). p' = σ(a · logit p) sur les circuits adoptés (rapport_documentation.json).
+BALLES_CUMULEES = None   # {clé joueur: points de service cumulés jusqu'à aujourd'hui}
+PENTES_DOCUMENTATION = {}  # {circuit: a}
 DATES_MATCHS = None   # 04/11/2026 : {joueur: jours de ses matchs} (etude_retour_absence.dates_matchs)
 # 04/11/2026 — ADOPTION DIRECTE (décision de Lucas, etude_signaux_combines.py) : là où les quatre signaux appris
 # ENSEMBLE gagnent ≥ 0,001 sur 2023 → (ATP +0,0077, WTA +0,0043, Challenger +0,0039), ils sont appliqués avec les β
@@ -747,7 +752,7 @@ def _changement_surface_sur(p_home, c, h, a, surface, debut):
 
 
 def signaux_du_match(c, p_base, fsv_ctl, ent_ctl, srv_ctl, sr_ctl, cs_ctl=None, ra_ctl=None, age_ctl=None, role_ctl=None,
-                     pt_ctl=None, fse_ctl=None):
+                     pt_ctl=None, fse_ctl=None, doc_ctl=None):
     """04/11/2026 — décalages (logit) des signaux ADOPTÉS SUR CE CIRCUIT (fantomes_circuits.py) ; {signal: décalage}."""
     if not SIGNAUX_CIRCUIT or p_base is None:
         return {}
@@ -757,7 +762,8 @@ def signaux_du_match(c, p_base, fsv_ctl, ent_ctl, srv_ctl, sr_ctl, cs_ctl=None, 
             'elo_service_retour': (sr_ctl or {}).get('decalage'), 'changement_surface': (cs_ctl or {}).get('decalage'),
             'retour_absence': (ra_ctl or {}).get('decalage'), 'age': (age_ctl or {}).get('decalage'),
             'favori_outsider': (role_ctl or {}).get('decalage'), 'parcours_tournoi': (pt_ctl or {}).get('decalage'),
-            'favori_sous_estime': (fse_ctl or {}).get('decalage')}
+            'favori_sous_estime': (fse_ctl or {}).get('decalage'),
+            'documentation_faible': (doc_ctl or {}).get('decalage')}
     return {k: v for k, v in cand.items() if v and c in (SIGNAUX_CIRCUIT.get(k) or [])}
 
 
@@ -767,6 +773,21 @@ def _forme_set_sur(c, direct, sg):
     except Exception as e_:  # noqa: BLE001 — un fantôme ne bloque jamais un pronostic
         print(f"::warning::fantôme forme du match non calculé : {type(e_).__name__}: {e_}")
         return None
+
+
+def controle_documentation(p_home, c, h, a):
+    """05/11/2026 — p étirée sur un match peu documenté (joueur le moins vu sous 500 points de service), ou None."""
+    k = PENTES_DOCUMENTATION.get(c)
+    if p_home is None or not k or BALLES_CUMULEES is None:
+        return None
+    import elo as E_
+    n = min(BALLES_CUMULEES.get(E_.cle(h), 0), BALLES_CUMULEES.get(E_.cle(a), 0))
+    import etude_documentation as EDO
+    if n >= EDO.SEUIL_BALLES:
+        return None
+    lg = lambda q: math.log(min(max(q, 1e-6), 1 - 1e-6) / (1 - min(max(q, 1e-6), 1 - 1e-6)))
+    z = lg(p_home)
+    return {'p_home': round(sig(k * z), 4), 'decalage': round((k - 1) * z, 4), 'balles': int(n), 'pente': k}
 
 
 def _avec_cle(ct, cle, val):
@@ -1138,6 +1159,17 @@ def construire(racine, maintenant=None):
     except Exception as e_:  # noqa: BLE001
         print(f"::warning::résidus favori / outsider non chargés : {type(e_).__name__}: {e_}")
         RESIDUS_ROLE = None
+    try:                            # 05/11/2026 : points de service cumulés (matchs peu documentés)
+        global BALLES_CUMULEES, PENTES_DOCUMENTATION
+        import etude_documentation as EDO
+        with open(os.path.join(racine, 'simulateur', 'rapport_documentation.json'), encoding='utf-8') as f_:
+            PENTES_DOCUMENTATION = {c_: v['pente'] for c_, v in (json.load(f_).get('circuits') or {}).items()
+                                    if v.get('adopte') and v.get('pente', 0) > 1}
+        BALLES_CUMULEES = dict(EDO.Compteur(EDO.evenements(os.environ.get('SACKMANN_DIR', '/tmp/sackmann'), racine))
+                               .au((dt.date.today() + dt.timedelta(days=1)).isoformat()))
+    except Exception as e_:  # noqa: BLE001
+        print(f"::warning::documentation des joueurs (points cumulés) non chargée : {type(e_).__name__}: {e_}")
+        BALLES_CUMULEES = None
     try:                            # 04/11/2026 : dates de naissance (fantôme « âge »), clés unifiées comme l'Elo
         import etude_age as EAG
         _al = dict(etat.get('alias') or {})
@@ -1301,7 +1333,8 @@ def construire(racine, maintenant=None):
                                        _age_sur(p_base, c, h, a, x['debut']),
                                        _role_sur(p_base, stats['p_home'], c, h, a),
                                        controle_parcours(p_base, c, h, a, x['tournoi'], x['debut']),
-                                       controle_favori_sous_estime(p_base, stats['p_home'], p_sim))
+                                       controle_favori_sous_estime(p_base, stats['p_home'], p_sim),
+                                       controle_documentation(p_base, c, h, a))
                 adoptes_ici = tuple(k for k, v in SIGNAUX_CIRCUIT.items() if c in (v or []))
                 if sh_:
                     q_ = min(max(p_base, 1e-6), 1 - 1e-6)
@@ -1347,7 +1380,7 @@ def construire(racine, maintenant=None):
                     'echanges': _echanges(h, a, x['debut']),
                     'entree': entree_du_match(h, a, x['debut']),
                     'tour': tour_du_match(h, a, x['debut']),     # 05/11/2026 : tour du tableau (critère de fragilité)
-                    'controle': _avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_serveuses(
+                    'controle': _avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_serveuses(
                         _avec_entree(_avec_service(_avec_forme(controle_fantome(elo, elo_ref, ref_etat, etat, h, a, c, s,
                                                                                 elo_fem, fem_etat), forme_ctl),
                                                    None if 'forme_service' in adoptes_ici else fsv_ctl),
@@ -1369,7 +1402,9 @@ def construire(racine, maintenant=None):
                         _role_sur((combinaison or {}).get('p_home'), (stats or {}).get('p_home'), c, h, a)),
                         'favori_sous_estime', None if 'favori_sous_estime' in adoptes_ici else
                         controle_favori_sous_estime((combinaison or {}).get('p_home'), (combinaison or {}).get('p_elo'),
-                                                    (combinaison or {}).get('p_simulation')))})
+                                                    (combinaison or {}).get('p_simulation'))),
+                        'documentation_faible', None if 'documentation_faible' in adoptes_ici else
+                        controle_documentation((combinaison or {}).get('p_home'), c, h, a))})
     doc = {'genere_le': maintenant.isoformat(timespec='seconds') + 'Z', 'elo_au': etat.get('dernier_match'),
             'horizon_h': HORIZON_H, 'sigma': SIGMA, 'simulations': SIMULATIONS if PR is not None else 0,
             'qualite_horodatages': couverture_horodatages,
