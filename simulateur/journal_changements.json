@@ -668,6 +668,13 @@
    "quoi": "CONTRÔLES DES FEUILLES (10 460) : statistiques de service cohérentes (0 erreur sur 19 256), dates et naissances justes, scores de set bizarres = super tie-breaks ITF (normal), pas de double comptage archive/feuilles (feuilles prises seulement après la fin de l'archive). CORRIGÉ : météo lue au jour LOCAL (4 % des matchs, le soir aux Amériques, prenaient celle du lendemain) ; main inconnue (11 % des joueuses WTA, 3 % Challenger, 2 % ATP) = part des gauchers au lieu de « droitier » ; 23 codes pays ajoutés pour le facteur domicile ; une catégorie TennisApi inconnue n'est plus rangée d'office en ATP. Limite connue : surface absente en Coupe Davis (95 matchs) comptée dur.",
    "statut": "production",
    "paquet": 191
+  },
+  {
+   "date": "2026-11-05",
+   "quoi": "ÉTUDE : le bilan au set décisif (celui affiché par d'autres sites, ex. « 7V-1D ») prédit-il le prochain set décisif ? Archive 2018 → juin 2026, 29 000 sets décisifs ATP, WTA, Challenger ; règle fixée avant : −0,001 de log loss sur ≥ 1 000 sets décisifs jugés et même signe sur les deux périodes. NON RETENU sur aucun circuit, ni en bilan brut ni au-delà de l'attendu (gains négatifs, coefficients qui changent de signe) ; fidélité pair/impair sur 992 joueurs : 0,00. Le bilan au set décisif est du hasard une fois le niveau retiré. À noter : au set décisif, le favori gagne moins que son Elo par set le dit (ATP 58 % pour 62 %, WTA 58 % pour 61 %, Challenger 58 % pour 61 %) — l'effet « forme du jour » que la simulation modélise.",
+   "statut": "etude",
+   "decision": false,
+   "paquet": 192
   }
  ]
 }
