@@ -625,9 +625,13 @@ def construire(racine, maintenant=None):
     sys.path.insert(0, ICI)
     import elo as E
     etat = E.migrer_etat(etat)
-    precedent = (_lire(os.path.join(racine, SORTIE), {}) or {}).get('match_du_jour')
+    ancien_doc = _lire(os.path.join(racine, SORTIE), {}) or {}
+    precedent = ancien_doc.get('match_du_jour')
     matchs = [m for m in pron.get('matchs') or [] if m.get('circuit') in CIRCUITS and version(m)[1] and connu(m)]
     mdj = choisir_match_du_jour(matchs, etat, maintenant, precedent)
+    # 05/11/2026 : le match du jour de la VEILLE, pour la carte bilan du matin (scripts/video_simulation.py --bilan)
+    veille = (precedent if precedent and (not mdj or precedent.get('jour') != mdj.get('jour'))
+              else ancien_doc.get('match_du_jour_veille'))
     a_venir = sorted((m for m in matchs if _utc(m['debut']) > maintenant - dt.timedelta(hours=3)),
                      key=lambda m: (m['debut'], m['uid']))
     lignes = [ligne_match(m, complet=True) for m in a_venir]
@@ -713,7 +717,7 @@ def construire(racine, maintenant=None):
     except Exception as e:  # noqa: BLE001
         print(f'::warning::après-match non calculé : {type(e).__name__}: {e}')
     return {'genere_le': maintenant.isoformat(timespec='seconds'), 'pronostics_du': pron.get('genere_le'),
-            'simulations': pron.get('simulations') or 20000, 'match_du_jour': mdj,
+            'simulations': pron.get('simulations') or 20000, 'match_du_jour': mdj, 'match_du_jour_veille': veille,
             'qualite_horodatages': pron.get('qualite_horodatages'),
             'styles_descriptifs_source': ({'archive_jusqu_au': styles_doc.get('archive_jusqu_au'),
                                            'feuilles_recentes': styles_doc.get('feuilles_recentes'),

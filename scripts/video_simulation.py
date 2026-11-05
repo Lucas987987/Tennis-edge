@@ -30,6 +30,8 @@ ICI = os.path.dirname(os.path.abspath(__file__))
 RACINE = os.path.join(ICI, '..')
 sys.path.insert(0, ICI)
 LARGEUR, HAUTEUR = 1080, 1920
+# 05/11/2026 : format au choix — 9:16 (défaut, Reels / Shorts) ou 4:5 (1080×1350, le plus grand dans le fil de X)
+FORMATS = {'9x16': (1080, 1920), '4x5': (1080, 1350)}
 DEBUT_COUPE = 0.4                    # secondes coupées au début (page blanche)
 IPS = 30                             # images par seconde de la capture image par image
 
@@ -83,14 +85,14 @@ def servir(dossier):
     return srv
 
 
-def enregistrer(url, dossier_tmp, max_s=120):
+def enregistrer(url, dossier_tmp, max_s=120, taille=(LARGEUR, HAUTEUR)):
     """Renvoie (chemin de la vidéo brute, événements sonores [(secondes depuis le début de la vidéo, nom)])."""
     import time
     from playwright.sync_api import sync_playwright
     with sync_playwright() as p:
         nav = p.chromium.launch()
-        ctx = nav.new_context(viewport={'width': LARGEUR, 'height': HAUTEUR}, device_scale_factor=1,
-                              record_video_dir=dossier_tmp, record_video_size={'width': LARGEUR, 'height': HAUTEUR})
+        ctx = nav.new_context(viewport={'width': taille[0], 'height': taille[1]}, device_scale_factor=1,
+                              record_video_dir=dossier_tmp, record_video_size={'width': taille[0], 'height': taille[1]})
         page = ctx.new_page()
         t0 = time.time()                     # l'enregistrement commence avec la page
         page.goto(url)
@@ -102,7 +104,7 @@ def enregistrer(url, dossier_tmp, max_s=120):
     return chemin, [(e['t'] / 1000 - t0, e['type']) for e in sons]
 
 
-def enregistrer_images(url, mp4, ips=IPS, max_s=150):
+def enregistrer_images(url, mp4, ips=IPS, max_s=150, taille=(LARGEUR, HAUTEUR)):
     """Capture image par image (horloge virtuelle) → MP4 muet ; renvoie (durée en s, événements sonores [(s, nom)])."""
     from playwright.sync_api import sync_playwright
     ff = subprocess.Popen(['ffmpeg', '-y', '-loglevel', 'error', '-f', 'image2pipe', '-framerate', str(ips), '-c:v', 'mjpeg',
@@ -112,7 +114,7 @@ def enregistrer_images(url, mp4, ips=IPS, max_s=150):
     try:
         with sync_playwright() as p:
             nav = p.chromium.launch()
-            page = nav.new_page(viewport={'width': LARGEUR, 'height': HAUTEUR}, device_scale_factor=1)
+            page = nav.new_page(viewport={'width': taille[0], 'height': taille[1]}, device_scale_factor=1)
             page.add_init_script(HORLOGE)
             page.goto(url)
             # pas de wait_for_function : son attente passe par les minuteries de la page, ici virtuelles
@@ -153,6 +155,22 @@ def carte(url, chemin):
     return chemin
 
 
+def carte_bilan(url, chemin):
+    """05/11/2026 — carte bilan (PNG 1080×1350) : prévu contre réel du match du jour (ou de la veille) ; None si le
+    résultat n'est pas encore disponible."""
+    from playwright.sync_api import sync_playwright
+    with sync_playwright() as p:
+        nav = p.chromium.launch()
+        page = nav.new_page(viewport={'width': 1080, 'height': 1350}, device_scale_factor=1)
+        page.goto(url)
+        page.wait_for_function('window.__fini === true', timeout=30000, polling=200)
+        vide, uid = page.evaluate('window.__vide === true'), page.evaluate('window.__uid || null')
+        if not vide:
+            page.screenshot(path=chemin)
+        nav.close()
+    return None if vide else uid
+
+
 def main(argv):
     ap = argparse.ArgumentParser()
     ap.add_argument('--lang', default='fr', choices=['fr', 'en'])
@@ -162,8 +180,10 @@ def main(argv):
     ap.add_argument('--muet', action='store_true', help='sans bande-son')
     ap.add_argument('--adresse', action='store_true', help="afficher l'adresse du site en fin de vidéo (non par défaut)")
     ap.add_argument('--carte', action='store_true', help='carte de stats (PNG) au lieu de la vidéo')
+    ap.add_argument('--bilan', action='store_true', help='carte bilan prévu / réel (PNG) du match du jour ou de la veille')
     ap.add_argument('--capture', default='images', choices=['images', 'ecran'],
                     help="images : image par image, sans saccade (défaut) ; ecran : ancien enregistrement d'écran")
+    ap.add_argument('--format', default='9x16', choices=sorted(FORMATS), help='9x16 (défaut) ou 4x5 (fil de X)')
     ap.add_argument('--sortie', default=os.path.join(RACINE, 'videos'))
     a = ap.parse_args(argv[1:])
     algo = os.path.join(RACINE, 'algo')
@@ -171,6 +191,16 @@ def main(argv):
         print('algo/donnees.json absent : lancer simulateur/vitrine.py d\'abord.')
         return 1
     srv = servir(algo)
+    if a.bilan:
+        os.makedirs(a.sortie, exist_ok=True)
+        png = os.path.join(a.sortie, f"bilan_{a.lang}.png")
+        try:
+            uid = carte_bilan(f"http://127.0.0.1:{srv.server_address[1]}/index.html?bilan=1&lang={a.lang}"
+                              + (f"&uid={a.uid}" if a.uid else ''), png)
+        finally:
+            srv.shutdown()
+        print(f"Bilan : {png} ({uid})" if uid else 'Bilan : résultat pas encore disponible')
+        return 0
     if a.carte:
         os.makedirs(a.sortie, exist_ok=True)
         png = os.path.join(a.sortie, f"stats_{a.lang}.png")
@@ -187,12 +217,13 @@ def main(argv):
     url = f"http://127.0.0.1:{srv.server_address[1]}/index.html?{q}"
     tmp = os.path.join(a.sortie, '_brut')
     os.makedirs(tmp, exist_ok=True)
-    nom = f"simulation_{a.lang}.mp4"
+    taille = FORMATS[a.format]
+    nom = f"simulation_{a.lang}{'' if a.format == '9x16' else '_' + a.format}.mp4"
     mp4 = os.path.join(a.sortie, nom)
     if a.capture == 'images':
         try:
             muet = os.path.join(tmp, 'images.mp4')
-            duree, sons = enregistrer_images(url, muet)
+            duree, sons = enregistrer_images(url, muet, taille=taille)
         finally:
             srv.shutdown()
         if a.muet:
@@ -208,7 +239,7 @@ def main(argv):
         print(f"Vidéo : {mp4} ({os.path.getsize(mp4) / 1e6:.1f} Mo, {duree:.1f} s, image par image à {IPS} i/s)")
         return 0
     try:
-        webm, sons = enregistrer(url, tmp)
+        webm, sons = enregistrer(url, tmp, taille=taille)
     finally:
         srv.shutdown()
     brut = subprocess.run(['ffprobe', '-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', webm],
