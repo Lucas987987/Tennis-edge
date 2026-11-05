@@ -165,6 +165,9 @@ def _scores_public(v):
     return (exact.get('scores') or v.get('scores_probables') or sim.get('scores') or [])[:3]
 
 
+BIAIS_ANNEXES = None     # 05/11/2026 : biais des prévisions annexes (biais_annexes.py), lu par construire()
+
+
 def type_de_match(m, p):
     """05/11/2026 — étude etude_meilleurs_matchs.py (5 571 pronostics rejoués, deux périodes) :
     « fiable » : Elo et simulation d'accord (même favori, moins de 10 points d'écart) et favori à 70 % ou plus — 77,7 %
@@ -187,6 +190,11 @@ def ligne_match(m, complet):
            'surface': m.get('surface'), 'meilleur_des': m.get('meilleur_des', 3),
            'home': m['home'], 'away': m['away'], 'p_home': round(p, 3), 'version': k,
            'fiabilite': m.get('fiabilite'), 'cotes_justes': [cote(p), cote(1 - p)], 'type_match': type_de_match(m, p)}
+    if BIAIS_ANNEXES:                           # 05/11/2026 : points de vigilance (erreurs probables des prévisions annexes)
+        import biais_annexes as BA
+        vg = BA.vigilance(BIAIS_ANNEXES, m.get('circuit'), m.get('matchs_joues'))
+        if vg:
+            out['vigilance'] = vg
     if m.get('controle'):
         out['controle'] = m['controle']             # 29/10/2026 : modèle fantôme (Elo d'avant les changements)
     cb_ = m.get('combinaison') or {}
@@ -609,6 +617,8 @@ def ajouter_pays(lignes, racine, alias=None):
 
 def construire(racine, maintenant=None):
     maintenant = maintenant or dt.datetime.now(dt.timezone.utc)
+    global BIAIS_ANNEXES
+    BIAIS_ANNEXES = _lire(os.path.join(racine, 'simulateur', 'biais_annexes.json'), {}) or None
     pron = _lire(os.path.join(racine, 'Tennis_Edge_Lab', 'live', 'pronostics.json'), {}) or {}
     etat = _lire(os.path.join(racine, 'simulateur', 'elo_etat.json'), {})
     sys.path.insert(0, ICI)
