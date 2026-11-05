@@ -136,6 +136,8 @@ def charger(racine, annee_min=2018):
                     'tour': ORDRE_TOURS.get(str(r.get('round') or '').upper(), 6),
                     'niveau': niveau,
                     'num': _int(r.get('match_num')) or 0,
+                    # 05/11/2026 : statut d'entrée (Q qualifié, LL lucky loser, WC invitation…), connu avant le match
+                    'entree_g': str(r.get('winner_entry') or '').upper(), 'entree_p': str(r.get('loser_entry') or '').upper(),
                 })
     out.sort(key=lambda m: (m['date'], m['tour'], m['num']))
     return out
