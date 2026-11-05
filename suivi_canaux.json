@@ -1,47 +1,47 @@
 {
  "schema_version": 1,
- "genere_le": "2026-11-04T07:02:31Z",
+ "genere_le": "2026-11-05T07:24:46Z",
  "canaux": {
   "MISER": {
    "libelle": "🎯 MISER — steam, EV ≥ seuil vs Pinnacle juste (vainqueur du match)",
    "source": "miser_signal_log.jsonl (messages envoyés) + ajouts de suivi_direct",
    "regle": "première alerte de chaque match, au book et au prix du message ; relances non recomptées",
    "debut": "2026-10-22",
-   "n_alertes": 25,
-   "n_matchs": 25,
+   "n_alertes": 27,
+   "n_matchs": 27,
    "n_relances": 0,
-   "n_denoues": 21,
+   "n_denoues": 23,
    "bilan": {
-    "n": 21,
-    "gains": 7,
-    "taux": 33.3,
-    "seuil": 40.9,
-    "ecart": -7.6,
+    "n": 23,
+    "gains": 8,
+    "taux": 34.8,
+    "seuil": 40.8,
+    "ecart": -6.0,
     "ic95": [
-     17.2,
-     54.6
+     18.8,
+     55.1
     ],
-    "roi": -7.5,
-    "pnl": -1.6,
-    "cote_moyenne": 2.86,
-    "clv_moyen": 6.9,
-    "clv_pin_moyen": 6.9,
+    "roi": -4.7,
+    "pnl": -1.1,
+    "cote_moyenne": 2.83,
+    "clv_moyen": 6.8,
+    "clv_pin_moyen": 6.8,
     "clv_pin_ic95": [
-     3.1,
-     10.6
+     3.3,
+     10.3
     ],
-    "clv_pin_p": 0.0002,
-    "clv_n": 25,
-    "clv_positif": 80.0,
+    "clv_pin_p": 0.0001,
+    "clv_n": 27,
+    "clv_positif": 81.5,
     "lead_moyen_h": 8.1,
-    "periode": "2026-10-22 -> 2026-11-03",
+    "periode": "2026-10-22 -> 2026-11-04",
     "verdict": "ne tranche pas",
     "clv_mediane": 6.7,
-    "n_commencees": 25,
+    "n_commencees": 27,
     "n_sans_resultat": 4,
-    "sans_resultat_pct": 16.0,
+    "sans_resultat_pct": 14.8,
     "verrouillable": false,
-    "statut": "en attente de résultats (16,0 % sans résultat)"
+    "statut": "en attente de résultats (14,8 % sans résultat)"
    },
    "paris": {
     "2026-10-22_valerio_aboian_matias_soto": {
@@ -242,6 +242,22 @@
      "pin_close": 1.307,
      "pin_close_adv": 3.71,
      "clv_pin": 1.65,
+     "source_resultat": "feuille de match (TennisApi)"
+    },
+    "2026-11-04_gonzalo_bueno_eduardo_ribeiro": {
+     "gagne": 0,
+     "pnl": -1.0,
+     "pin_close": 2.28,
+     "pin_close_adv": 1.68,
+     "clv_pin": 5.104,
+     "source_resultat": "feuille de match (TennisApi)"
+    },
+    "2026-11-04_gustavo_heide_juan_carlos_prado_angelo": {
+     "gagne": 1,
+     "pnl": 1.5,
+     "pin_close": 2.25,
+     "pin_close_adv": 1.699,
+     "clv_pin": 6.7,
      "source_resultat": "feuille de match (TennisApi)"
     }
    }
