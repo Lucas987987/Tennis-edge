@@ -234,6 +234,14 @@ def bilan_match(uid, f, reel, duree_reelle=None):
                 res[k] = [v, sets[0][0] > sets[0][1]]
         if res:
             E['lignes'] = res
+        tbl = res.get('tie_break')
+        if tbl and not (d.get('lignes') or {}).get('tie_break_brut'):
+            # 05/11/2026 : ligne tie-break affichée contre la même corrigée du biais du circuit (lignes_algo, Challenger)
+            import lignes_algo as LA_
+            q_ = LA_.tiebreak_corrige(tbl[0], f.get('circuit'))
+            if q_ is not None:
+                lt = lambda v: round(-math.log(min(max(v if tb else 1 - v, 1e-6), 1 - 1e-6)), 5)
+                E['fantome_tiebreak'] = {'ll_elo': lt(tbl[0]), 'll_reference': lt(q_)}
     mo = d.get('modeles') or {}
     if mo.get('p_elo') is not None and mo.get('p_simulation') is not None and isinstance(p, (int, float)):
         # 29/10/2026 : l'Elo et la simulation désignaient-ils le même vainqueur ? Qui avait raison ?
@@ -569,7 +577,7 @@ def analyser(B):
         for cle_f in ('fantome', 'fantome_itf_femmes', 'fantome_sigma', 'fantome_forme_service', 'fantome_entree',
                       'fantome_serveuses_wta', 'fantome_elo_service_retour', 'fantome_forme_set',
                       'fantome_changement_surface', 'fantome_retour_absence', 'fantome_age',
-                      'fantome_favori_outsider', 'fantome_favori_sous_estime'):
+                      'fantome_favori_outsider', 'fantome_favori_sous_estime', 'fantome_tiebreak'):
             fa = [e[cle_f] for e in E if cle_f in e]
             if fa:
                 a_, b_ = _moy([x['ll_elo'] for x in fa]), _moy([x['ll_reference'] for x in fa])
