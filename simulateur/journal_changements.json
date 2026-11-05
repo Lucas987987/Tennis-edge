@@ -606,6 +606,21 @@
    "date": "2026-11-05",
    "quoi": "audit des feuilles TennisApi contre le point par point (8 842 matchs) : points, jeux et sets justes ; « jeux de service joués » faux par joueur dans 47 % des cas (±1 en miroir, suit le faux premier serveur) ; balles de break et breaks sous-comptés (−3,6 %). Tableau des adoptions directes chaque lundi (Telegram privé).",
    "paquet": 183
+  },
+  {
+   "date": "2026-11-05",
+   "quoi": "feuilles : balles de break, breaks et jeux de service repris du POINT PAR POINT quand il concorde avec la feuille (mêmes jeux par set, points de service à ±2) — 4 632 feuilles sur 9 067 corrigées ; s'applique aux statistiques réelles des fiches et aux matchs qui nourrissent les profils",
+   "paquet": 184
+  },
+  {
+   "date": "2026-11-05",
+   "quoi": "abandons non signalés : TennisApi marque « Ended » des matchs au score inachevé (69 feuilles) — désormais « abandon_probable », écartés du jugement comme les abandons",
+   "paquet": 184
+  },
+  {
+   "date": "2026-11-05",
+   "quoi": "recalage direct du % de 1res balles étendu au Challenger : sur 211 matchs présents dans Sackmann ET TennisApi, mêmes points et mêmes aces mais +0,9 pt de 1res balles chez TennisApi — le biais est un écart de mesure entre les deux sources",
+   "paquet": 184
   }
  ]
 }
