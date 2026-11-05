@@ -191,7 +191,10 @@ def fiche(e, categorie):
             'away': {'id': a.get('id'), 'nom': a.get('name'), 'court': a.get('shortName'), 'pays': (a.get('country') or {}).get('alpha3'),
                      'infos': infos_joueur(a), **classement_joueur(a, e.get('awayTeamSeed'))},
             'duree_min': duree_minutes(e),
-            'premier_serveur': e.get('firstToServe'), 'vainqueur': e.get('winnerCode'),
+            # 05/11/2026 : « firstToServe » de TennisApi N'EST PAS le premier serveur : sur 9 304 matchs comparés au point
+            # par point, il donne le serveur du DERNIER jeu (93,1 %) et le vrai premier serveur une fois sur deux (49 %).
+            # Gardé sous son vrai sens ; le premier serveur se lit dans feuilles_points (1er jeu du 1er set).
+            'dernier_serveur': e.get('firstToServe'), 'vainqueur': e.get('winnerCode'),
             'statut': {'code': st.get('code'), 'texte': st.get('description'), 'type': st.get('type')},
             'score_home': score(e.get('homeScore')), 'score_away': score(e.get('awayScore')),
             'stats': None, 'essais': 0}
