@@ -43,5 +43,13 @@ class TestCorrectionPoints(unittest.TestCase):
         self.assertEqual(FE.corriger(dh, da, [[1, 1, 1, 'HHHH']], [(6, 4)]), (dh, da))
 
 
+class TestPronosticTardif(unittest.TestCase):
+    def test_tardif(self):
+        fi = {'debut': 1793790000}                                  # 2026-11-04 11:00 UTC
+        self.assertTrue(P.pronostic_tardif(fi, '2026-11-05T09:00:00Z'))
+        self.assertFalse(P.pronostic_tardif(fi, '2026-11-04T08:00:00Z'))
+        self.assertFalse(P.pronostic_tardif({}, '2026-11-05T09:00:00Z'))
+
+
 if __name__ == '__main__':
     unittest.main()
