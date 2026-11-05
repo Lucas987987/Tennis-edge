@@ -34,6 +34,11 @@ class Decision(unittest.TestCase):
         self.assertTrue(SF.CRITERES['match_serre'][1](r))
         self.assertFalse(SF.CRITERES['gros_favori'][1](r))
 
+    def test_huitiemes(self):
+        self.assertTrue(SF.CRITERES['huitiemes'][1]({'p': .6, 'tour': 'Round of 16'}))
+        self.assertFalse(SF.CRITERES['huitiemes'][1]({'p': .6, 'tour': 'Round of 32'}))
+        self.assertFalse(SF.CRITERES['huitiemes'][1]({'p': .6}))
+
     def test_actifs_par_defaut(self):
         self.assertEqual(SF.actifs('/nulle/part'), {'favoris_opposes'})
 
