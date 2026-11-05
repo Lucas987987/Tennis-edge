@@ -56,7 +56,10 @@ def test_lire_coefs_seulement_si_adopte(tmp_path):
     (tmp_path / 'simulateur').mkdir()
     p = tmp_path / 'simulateur' / 'recalage_stats.json'
     p.write_text(json.dumps({'decision': {'adopte': False, 'coefs': {'ATP': {}}}}), encoding='utf-8')
-    assert RS.lire_coefs(str(tmp_path)) is None
+    # 05/11/2026 : non adopté → seulement les cases adoptées directement (repli figé faute de données)
+    assert RS.lire_coefs(str(tmp_path)) == RS.REPLI_DIRECT
+    p.write_text(json.dumps({'decision': {'adopte': False}, 'direct': {'ATP|aces': {'retire': True}}}), encoding='utf-8')
+    assert 'aces' not in RS.lire_coefs(str(tmp_path))['ATP']
     p.write_text(json.dumps({'decision': {'adopte': True, 'coefs': {'ATP': {'breaks': {'delta': 0, 'largeur': .75}}}}}),
                  encoding='utf-8')
     assert RS.lire_coefs(str(tmp_path)) == {'ATP': {'breaks': {'delta': 0, 'largeur': .75}}}
@@ -70,3 +73,11 @@ def test_vitrine_recaler_feuille():
     fp2, fq2 = V.recaler_feuille('ATP', fp, fq, coefs={'ATP': {'breaks': {'delta': 0.0, 'largeur': 0.5}}})
     assert fq2[0]['breaks'] == [2.0, 4.0] and fq2[0]['aces'] == [2.0, 9.0] and fq[0]['breaks'] == [1.0, 5.0]
     assert V.recaler_feuille('WTA', fp, fq, coefs={'ATP': {'breaks': {'delta': 0.0, 'largeur': 0.5}}}) == (fp, fq)
+
+
+def test_retrait_direct_deux_semaines_pires():
+    R = [{'c': 'ATP', 'k': 'aces', 'moy': 5.0, 'p10': 2.0, 'p90': 8.0, 'reel': 5.0, 'jour': '2026-11-02'} for _ in range(40)]
+    a = RS.suivre_directes({}, [], R)
+    assert a['ATP|aces']['semaines_pires'] == 1 and not a['ATP|aces']['retire']
+    b = RS.suivre_directes(a, [], R)
+    assert b['ATP|aces']['retire']
