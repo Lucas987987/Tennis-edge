@@ -240,9 +240,9 @@ footer p{max-width:72ch}
 .arcade .annonce small{display:block;font-size:5.2cqw;margin-top:2cqw;-webkit-text-stroke:0;text-shadow:0 .6cqw 0 #160E33;color:var(--ar-ink)}
 .arcade .annonce.pop{animation:pop var(--duree,900ms) cubic-bezier(.2,1.4,.4,1) forwards}
 @keyframes pop{0%{opacity:0;transform:scale(.3) rotate(-8deg)}18%{opacity:1;transform:scale(1.12) rotate(2deg)}30%{transform:scale(1) rotate(-1deg)}80%{opacity:1}100%{opacity:0;transform:scale(1.05)}}
-.arcade .combo{position:absolute;right:5cqw;bottom:13cqw;font-family:var(--ar-disp);font-size:5.6cqw;color:var(--ar-ball);opacity:0;transition:opacity .2s;text-shadow:0 0 3cqw currentColor}
+.arcade .combo{position:absolute;right:5cqw;bottom:25cqw;font-family:var(--ar-disp);font-size:5.6cqw;color:var(--ar-ball);opacity:0;transition:opacity .2s;text-shadow:0 0 3cqw currentColor}
 .arcade .combo.on{opacity:1}
-.arcade .ralenti{position:absolute;left:5cqw;bottom:13cqw;font-family:var(--ar-disp);font-size:3.8cqw;color:#FF9ACF;opacity:0;transition:opacity .2s}
+.arcade .ralenti{position:absolute;left:5cqw;bottom:25cqw;font-family:var(--ar-disp);font-size:3.8cqw;color:#FF9ACF;opacity:0;transition:opacity .2s}
 .arcade .ralenti.on{opacity:1;animation:clign .5s steps(2) infinite}
 .arcade .vs-h{font-family:var(--ar-disp);font-size:9.5cqw;line-height:1.05;color:var(--ar-ball);-webkit-text-stroke:.4cqw #160E33;paint-order:stroke fill;text-shadow:0 1cqw 0 #160E33,0 0 6cqw var(--ar-ball)}
 .arcade .vs-h small{display:block;font-family:var(--cond);font-size:4.2cqw;font-weight:700;color:var(--ar-ink);-webkit-text-stroke:0;text-shadow:none;margin-top:1.6cqw}
@@ -253,7 +253,15 @@ footer p{max-width:72ch}
 .arcade .mini{position:absolute;left:0;right:0;top:44%;text-align:center;font-family:var(--ar-disp);font-size:8cqw;pointer-events:none;z-index:9;opacity:0;-webkit-text-stroke:.25cqw #160E33;paint-order:stroke fill;text-shadow:0 .8cqw 0 #160E33,0 0 5cqw currentColor}
 .arcade .mini.pop{animation:pop var(--duree,700ms) cubic-bezier(.2,1.4,.4,1) forwards}
 .arcade .frappes{position:absolute;right:5cqw;bottom:19cqw;font-family:var(--ar-disp);font-size:4.4cqw;color:var(--ar-ink);opacity:0;transition:opacity .2s}
-.arcade .frappes.on{opacity:1}
+.arcade .frappes.on{opacity:0}
+/* 05/11/2026 — deux joueurs sur le court (ils se placent au service, courent vers la balle) et légende de chaque point */
+.arcade .joueur{position:absolute;width:6.4cqw;height:6.4cqw;margin:-3.2cqw 0 0 -3.2cqw;border-radius:50%;z-index:3;display:grid;place-items:center;
+  font-family:var(--ar-disp);font-size:2.6cqw;color:#160E33;background:var(--c);box-shadow:0 0 3.5cqw var(--c);border:.5cqw solid #F4F1FF;transform:rotateX(-38deg)}
+.arcade .joueur.j0{--c:var(--ar-p1);top:97%;left:50%} .arcade .joueur.j1{--c:var(--ar-p2);top:3%;left:50%}
+.arcade .legende{min-height:8cqw;margin-top:2.4cqw;padding:1.8cqw 3cqw;border-radius:2.4cqw;background:rgba(5,3,20,.6);border:.4cqw solid rgba(255,255,255,.1);
+  font-size:3.9cqw;line-height:1.25;font-weight:700;color:var(--ar-ink);text-align:center;display:grid;place-items:center}
+.arcade .legende b{font-family:var(--ar-disp);font-weight:400;color:var(--c,var(--ar-ball))}
+.arcade .legende.vide{visibility:hidden}
 .arcade .pied{font-size:3.2cqw;color:var(--ar-dim);text-align:center;font-weight:600;margin-top:2cqw}
 .arcade .ecran{position:absolute;inset:0;z-index:20;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3.6cqw;background:rgba(14,10,36,.9);text-align:center;padding:8cqw}
 .arcade .ecran.cache{opacity:0;transition:opacity .4s;pointer-events:none}
@@ -281,6 +289,24 @@ body.video{background:#0E0A24;overflow:hidden;margin:0}
 body.video .page{display:none}
 #video{display:none}
 body.video #video{display:block;width:100vw;height:100vh}
+/* 05/11/2026 — vidéo au format 4:5 (1080×1350, fil de X) : tout est resserré pour garder un court lisible */
+@media (min-aspect-ratio: 7/10){
+  body.video .arcade .scene{padding:3.4cqw 4cqw 2.6cqw}
+  body.video .arcade .duel{margin-top:2.4cqw;gap:2.4cqw}
+  body.video .arcade .pj{padding:1.8cqw 2.6cqw}
+  body.video .arcade .pj .nom{font-size:4.2cqw}
+  body.video .arcade .pj .pct{font-size:7.2cqw;margin-top:.6cqw}
+  body.video .arcade .pj .lbl{display:none}
+  body.video .arcade .vie{height:2.2cqw;margin-top:1.2cqw}
+  body.video .arcade .score{margin-top:2cqw;padding:.8cqw 2.4cqw}
+  body.video .arcade .score td{font-size:4.6cqw;padding:.3cqw 1.1cqw}
+  body.video .arcade .score td.n{font-size:4cqw}
+  body.video .arcade .stats{margin-top:1.2cqw;font-size:3.2cqw}
+  body.video .arcade .arene{margin-top:1cqw;min-height:52cqw}
+  body.video .arcade .legende{margin-top:1.4cqw;min-height:6.4cqw;padding:1.2cqw 2.6cqw;font-size:3.5cqw}
+  body.video .arcade .pied{margin-top:1.2cqw;font-size:2.8cqw}
+  body.video .arcade .combo, body.video .arcade .ralenti{bottom:19cqw}
+}
 
 
 /* carte de stats (?carte=1) : image 1080×1350 (format portrait de X), même thème arcade (24/10/2026) */
@@ -647,6 +673,10 @@ const T = {
   a_live:'EN DIRECT', a_sim:'SIMULATION', a_fois:n=>`×${fmt(n)}`, a_chance:'chance de gagner',
   a_bb:'BALLE DE BREAK', a_bs:'BALLE DE SET', a_bm:'BALLE DE MATCH', a_break:'BREAK !', a_tb:'JEU DÉCISIF',
   a_set:n=>`SET ${n}`, a_pour:x=>`pour ${x}`, a_combo:n=>`COMBO ×${n}`, a_ralenti:'RALENTI',
+  lg_ace:x=>`Ace de <b>${x}</b>`, lg_df:x=>`Double faute de <b>${x}</b>`, lg_srv:x=>`Service gagnant · <b>${x}</b>`,
+  lg_ret:x=>`Retour gagnant · <b>${x}</b>`, lg_ech:(x,n)=>`<b>${x}</b> gagne l'échange en ${n} frappes`, lg_pt:x=>`Point pour <b>${x}</b>`,
+  lg_break:(x,y)=>`Break ! <b>${x}</b> prend le service de ${y}`, lg_sauve:x=>`<b>${x}</b> sauve la balle de break`,
+  lg_blanc:x=>`Jeu blanc · <b>${x}</b>`, lg_set:(x,sc)=>`<b>${x}</b> remporte le set ${sc}`,
   a_fin:'JEU, SET ET MATCH', a_gagne:x=>`${x} gagne`,
   a_vs_t:n=>`L'algo a joué ce match <b>${fmt(n)}</b> fois.<br>Voici l'une d'elles.`,
   a_vs_top:n=>`L'algo a joué ce match <b>${fmt(n)}</b> fois.<br>Voici le type de match prévu, gagné par le favori.`,
@@ -854,6 +884,10 @@ const T = {
   a_live:'LIVE', a_sim:'SIMULATION', a_fois:n=>`×${fmt(n)}`, a_chance:'win chance',
   a_bb:'BREAK POINT', a_bs:'SET POINT', a_bm:'MATCH POINT', a_break:'BREAK!', a_tb:'TIEBREAK',
   a_set:n=>`SET ${n}`, a_pour:x=>`to ${x}`, a_combo:n=>`COMBO ×${n}`, a_ralenti:'SLOW-MO',
+  lg_ace:x=>`Ace by <b>${x}</b>`, lg_df:x=>`Double fault by <b>${x}</b>`, lg_srv:x=>`Unreturned serve · <b>${x}</b>`,
+  lg_ret:x=>`Return winner · <b>${x}</b>`, lg_ech:(x,n)=>`<b>${x}</b> wins a ${n}-shot rally`, lg_pt:x=>`Point to <b>${x}</b>`,
+  lg_break:(x,y)=>`Break! <b>${x}</b> breaks ${y}`, lg_sauve:x=>`<b>${x}</b> saves break point`,
+  lg_blanc:x=>`Love hold · <b>${x}</b>`, lg_set:(x,sc)=>`<b>${x}</b> takes the set ${sc}`,
   a_fin:'GAME, SET, MATCH', a_gagne:x=>`${x} wins`,
   a_vs_t:n=>`The algorithm played this match <b>${fmt(n)}</b> times.<br>Here's one of them.`,
   a_vs_top:n=>`The algorithm played this match <b>${fmt(n)}</b> times.<br>Here is the expected type of match, won by the favourite.`,
@@ -1422,7 +1456,8 @@ function Arcade(root, m, opts){
       <div class="score"><table><tbody><tr class="r1" data-sr="0"></tr><tr class="r2" data-sr="1"></tr></tbody></table></div>
       ${fp ? '<div class="stats" data-stats></div>' : ''}
       <div class="arene"><div class="court"><div class="cote haut" data-cote="1"></div><div class="cote bas" data-cote="0"></div>
-        <div class="filet"></div><div class="balle"></div></div></div>
+        <div class="filet"></div><div class="joueur j0">${esc(ini(noms[0]))}</div><div class="joueur j1">${esc(ini(noms[1]))}</div><div class="balle"></div></div></div>
+      <div class="legende vide" data-legende></div>
       <div class="pied">${esc(t('a_pied', nSim))}</div></div>
       <div class="annonce"></div><div class="mini"></div><div class="frappes"></div><div class="combo"></div><div class="ralenti">${esc(t('a_ralenti'))}</div>
       <div class="ecran intro">${opts.video ? `<div class="vs-h">${Math.max(p,1-p) < .55 ? esc(t('a_serre')) + ' · ' + pc0(Math.max(p,1-p))
@@ -1452,6 +1487,21 @@ function Arcade(root, m, opts){
     z.innerHTML = `<span>${esc(t('a_aces'))} <b class="c1">${ST[0][0]}</b> · <b class="c2">${ST[1][0]}</b></span>`
       + `<span>${esc(t('a_dfs'))} <b class="c1">${ST[0][1]}</b> · <b class="c2">${ST[1][1]}</b></span>`;
   }
+  function ini(n){ const w = String(n||'').trim().split(/\s+/); return (w[w.length-1]||'?').slice(0,2).toUpperCase(); }
+  // 05/11/2026 — légende du point : seulement ce que la simulation sait (ace, double faute, longueur de l'échange,
+  // break, balle de break sauvée, jeu blanc, set) — aucun coup droit / revers inventé
+  function legende(html, i){
+    const z = $('[data-legende]'); if (!z) return;
+    z.innerHTML = html ? `<span>${html}</span>` : ''; z.style.setProperty('--c', i == null ? '' : coul(i)); z.classList.toggle('vide', !html);
+  }
+  function placer(j, x, ms){                          // j : 0 bas, 1 haut ; x en % de la largeur du court
+    const el = $(`.joueur.j${j}`); if (!el) return;
+    el.style.transition = `left ${Math.max(0, ms)}ms cubic-bezier(.3,.1,.3,1)`; el.style.left = Math.max(8, Math.min(92, x)).toFixed(1) + '%';
+  }
+  function auService(sv, n){                         // côté égalité / avantage selon le nombre de points du jeu
+    const droite = n % 2 === 0, xs = sv === 0 ? (droite ? 58 : 42) : (droite ? 42 : 58);
+    placer(sv, xs, 160); placer(1 - sv, 100 - xs + (sv === 0 ? 8 : -8), 160);
+  }
   function mini(txt, couleur, ms){
     const a = $('.mini'); a.classList.remove('pop'); void a.offsetWidth;
     a.textContent = txt; a.style.color = couleur || ''; a.style.setProperty('--duree', Math.max(380, ms) + 'ms'); a.classList.add('pop');
@@ -1459,14 +1509,18 @@ function Arcade(root, m, opts){
   function balleVers(cote, ms, filet){                 // cote 0 = bas (joueur 1), 1 = haut (joueur 2)
     const b = $('.balle'), alea = (a,z) => a + (z-a) * Rv();
     b.style.transition = `left ${ms}ms cubic-bezier(.3,.1,.3,1), top ${ms}ms cubic-bezier(.3,.1,.3,1)`;
-    b.style.left = alea(18, 82).toFixed(1) + '%';
+    const x = alea(18, 82);
+    b.style.left = x.toFixed(1) + '%';
     b.style.top = (filet ? 50 + (cote ? -2 : 2) : cote === 0 ? alea(60, 92) : alea(8, 40)).toFixed(1) + '%';
+    if (!filet) placer(cote, x, ms);                  // celui qui reçoit court vers la balle
   }
   function frappe(h, ms){
     const b = $('.balle'), perdant = 1 - h, alea = (a,z) => a + (z-a) * R();
     b.style.transition = `left ${ms}ms cubic-bezier(.3,.1,.3,1), top ${ms}ms cubic-bezier(.3,.1,.3,1)`;
-    b.style.left = alea(14, 86).toFixed(1) + '%';
+    const x = alea(14, 86), j = $(`.joueur.j${perdant}`), x0 = j ? parseFloat(j.style.left) || 50 : 50;
+    b.style.left = x.toFixed(1) + '%';
     b.style.top = (perdant === 0 ? alea(60, 92) : alea(8, 40)).toFixed(1) + '%';
+    placer(perdant, x0 + (x - x0) * 0.55, ms);        // le perdant du point court… sans l'atteindre
     const c = $(`[data-cote="${perdant}"]`), base = 'cote ' + (perdant ? 'haut' : 'bas');
     c.className = base + ' eclat-p' + (h+1); setTimeout(()=>{ c.className = base; }, Math.max(120, ms));
     const pj = $(`[data-pj="${h}"]`); pj.classList.add('flash'); setTimeout(()=>pj.classList.remove('flash'), Math.max(120, ms));
@@ -1552,7 +1606,8 @@ function Arcade(root, m, opts){
         await z(600 * f); ms = 330 * f;
         if (!vivant()) return;
       }
-      const avant = { sets: S.sets[0]+S.sets[1], jeux: S.jeux[0]+S.jeux[1], srv: M.serveur(S), tb: S.tb };
+      const avant = { sets: S.sets[0]+S.sets[1], jeux: S.jeux[0]+S.jeux[1], srv: M.serveur(S), tb: S.tb, pts: S.pts.slice() };
+      auService(avant.srv, avant.pts[0] + avant.pts[1]);
       const h = pointSuivant(S, R, false);
       // 04/11/2026 — nature du point (affichage seul, tirage séparé) : ace, double faute ou échange de n frappes
       const sv = avant.srv, u = Rv();
@@ -1583,6 +1638,23 @@ function Arcade(root, m, opts){
       if (serie >= 4 && serie % 2 === 0) son('combo');
       const cb = $('.combo'); if (serie >= 4){ cb.textContent = t('a_combo', serie); cb.style.color = coul(h); cb.classList.add('on'); } else cb.classList.remove('on');
       jauges(pAff()); tableau();
+      {                                                // légende : le fait le plus marquant du point
+        const sets_ = S.sets[0]+S.sets[1], jeux_ = S.jeux[0]+S.jeux[1], nom = i => esc(noms[i]);
+        const setFini = sets_ > avant.sets || (S.fini && S.histo.length);
+        const jeuFini = setFini || jeux_ > avant.jeux;
+        let lg;
+        if (setFini){ const hs = S.histo[S.histo.length - 1] || [0,0]; lg = t('lg_set', nom(h), `${hs[h]}-${hs[1-h]}`); }
+        else if (jeuFini && !avant.tb && h !== sv) lg = t('lg_break', nom(h), nom(sv));
+        else if (e && e.k === 1 && h === sv) lg = t('lg_sauve', nom(sv));
+        else if (jeuFini && !avant.tb && h === sv && avant.pts[1 - sv] === 0) lg = t('lg_blanc', nom(sv));
+        else if (genre === 'ace') lg = t('lg_ace', nom(sv));
+        else if (genre === 'df') lg = t('lg_df', nom(sv));
+        else if (nf === 1) lg = t('lg_srv', nom(h));
+        else if (nf === 2) lg = t('lg_ret', nom(h));
+        else if (nf >= 3) lg = t('lg_ech', nom(h), nf);
+        else lg = t('lg_pt', nom(h));
+        legende(lg, h);
+      }
       await z(ms);
       if (!vivant()) return;
       $('.ralenti').classList.remove('on');
