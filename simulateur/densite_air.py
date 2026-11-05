@@ -18,6 +18,7 @@ et de l'humidité relative (%), formule de Tetens pour la vapeur saturante.
 Variable des facteurs : air_leger = (1,20 − densité) / 0,10. Niveau de la mer, 20 °C : ≈ 0 ;
 Bogota (2 640 m) : ≈ +3,3 ; Quito (2 850 m) : ≈ +3,6 ; 32 °C au bord de la mer : ≈ +0,55.
 """
+import datetime as dt
 import math
 
 RHO_REF = 1.20
@@ -58,3 +59,8 @@ def air_leger(lieu, met, interieur):
     """Variable des facteurs : 0 au niveau de la mer à 20 °C, positive quand l'air est plus léger ; 0 si lieu inconnu."""
     r = densite_match(lieu, met, interieur)
     return 0.0 if r is None or not math.isfinite(r) else (RHO_REF - r) / ECHELLE
+
+
+def jour_local(ts, lon):
+    """Jour du match à l'heure solaire du lieu (longitude / 15 h), pour lire la météo du bon jour (paquet 191)."""
+    return dt.datetime.fromtimestamp(ts + (lon or 0.0) / 15.0 * 3600, dt.timezone.utc).date().isoformat()
