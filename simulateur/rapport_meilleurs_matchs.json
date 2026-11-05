@@ -1,0 +1,8014 @@
+{
+ "genere_le": "2026-11-04T23:09:43+00:00",
+ "reference": {
+  "août–sept": {
+   "matchs": 3290,
+   "maitrise": 0.121,
+   "log_loss": 0.6094,
+   "reussite_pct": 67.1,
+   "annoncee_pct": 64.0,
+   "pente": 1.21
+  },
+  "oct–nov": {
+   "matchs": 2281,
+   "maitrise": 0.123,
+   "log_loss": 0.6078,
+   "reussite_pct": 66.6,
+   "annoncee_pct": 66.7,
+   "pente": 0.98
+  },
+  "tous": {
+   "matchs": 5571,
+   "maitrise": 0.122,
+   "log_loss": 0.6087,
+   "reussite_pct": 66.9,
+   "annoncee_pct": 65.1,
+   "pente": 1.1
+  }
+ },
+ "regle": "parmi les meilleurs : ≥ 150 matchs (≥ 60 par période), maîtrise au-dessus de l'ensemble sur les deux périodes, pente entre 0,8 et 1,25 sur les deux",
+ "meilleurs": [
+  {
+   "segment": "confiance : 80 % et plus · changement de surface : non",
+   "tous": {
+    "matchs": 570,
+    "maitrise": 0.444,
+    "log_loss": 0.3856,
+    "reussite_pct": 87.0,
+    "annoncee_pct": 85.8,
+    "pente": 1.04
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 258,
+     "maitrise": 0.505,
+     "log_loss": 0.3429,
+     "reussite_pct": 89.1,
+     "annoncee_pct": 85.2,
+     "pente": 1.21
+    },
+    "oct–nov": {
+     "matchs": 312,
+     "maitrise": 0.393,
+     "log_loss": 0.4209,
+     "reussite_pct": 85.3,
+     "annoncee_pct": 86.3,
+     "pente": 0.92
+    }
+   },
+   "parmi_les_meilleurs": true
+  },
+  {
+   "segment": "confiance : 80 % et plus · modèles : accord",
+   "tous": {
+    "matchs": 509,
+    "maitrise": 0.437,
+    "log_loss": 0.3905,
+    "reussite_pct": 86.6,
+    "annoncee_pct": 86.0,
+    "pente": 1.01
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 238,
+     "maitrise": 0.476,
+     "log_loss": 0.3629,
+     "reussite_pct": 87.8,
+     "annoncee_pct": 85.4,
+     "pente": 1.13
+    },
+    "oct–nov": {
+     "matchs": 271,
+     "maitrise": 0.402,
+     "log_loss": 0.4147,
+     "reussite_pct": 85.6,
+     "annoncee_pct": 86.5,
+     "pente": 0.92
+    }
+   },
+   "parmi_les_meilleurs": true
+  },
+  {
+   "segment": "confiance : 80 % et plus",
+   "tous": {
+    "matchs": 624,
+    "maitrise": 0.434,
+    "log_loss": 0.3922,
+    "reussite_pct": 86.5,
+    "annoncee_pct": 85.8,
+    "pente": 1.02
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 291,
+     "maitrise": 0.48,
+     "log_loss": 0.3607,
+     "reussite_pct": 88.0,
+     "annoncee_pct": 85.2,
+     "pente": 1.15
+    },
+    "oct–nov": {
+     "matchs": 333,
+     "maitrise": 0.394,
+     "log_loss": 0.4198,
+     "reussite_pct": 85.3,
+     "annoncee_pct": 86.3,
+     "pente": 0.92
+    }
+   },
+   "parmi_les_meilleurs": true
+  },
+  {
+   "segment": "confiance : 80 % et plus · expérience du favori : 60–150",
+   "tous": {
+    "matchs": 529,
+    "maitrise": 0.433,
+    "log_loss": 0.3928,
+    "reussite_pct": 86.4,
+    "annoncee_pct": 85.9,
+    "pente": 1.01
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 246,
+     "maitrise": 0.467,
+     "log_loss": 0.3692,
+     "reussite_pct": 87.4,
+     "annoncee_pct": 85.3,
+     "pente": 1.12
+    },
+    "oct–nov": {
+     "matchs": 283,
+     "maitrise": 0.404,
+     "log_loss": 0.4132,
+     "reussite_pct": 85.5,
+     "annoncee_pct": 86.4,
+     "pente": 0.93
+    }
+   },
+   "parmi_les_meilleurs": true
+  },
+  {
+   "segment": "confiance : 80 % et plus · âge du favori : 23–29 ans",
+   "tous": {
+    "matchs": 355,
+    "maitrise": 0.411,
+    "log_loss": 0.4086,
+    "reussite_pct": 86.2,
+    "annoncee_pct": 86.0,
+    "pente": 0.96
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 161,
+     "maitrise": 0.515,
+     "log_loss": 0.336,
+     "reussite_pct": 89.4,
+     "annoncee_pct": 85.4,
+     "pente": 1.22
+    },
+    "oct–nov": {
+     "matchs": 194,
+     "maitrise": 0.324,
+     "log_loss": 0.4688,
+     "reussite_pct": 83.5,
+     "annoncee_pct": 86.5,
+     "pente": 0.81
+    }
+   },
+   "parmi_les_meilleurs": true
+  },
+  {
+   "segment": "confiance : 80 % et plus · retour d'absence : non",
+   "tous": {
+    "matchs": 537,
+    "maitrise": 0.404,
+    "log_loss": 0.4133,
+    "reussite_pct": 85.5,
+    "annoncee_pct": 85.6,
+    "pente": 0.98
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 249,
+     "maitrise": 0.456,
+     "log_loss": 0.3769,
+     "reussite_pct": 87.1,
+     "annoncee_pct": 85.0,
+     "pente": 1.11
+    },
+    "oct–nov": {
+     "matchs": 288,
+     "maitrise": 0.358,
+     "log_loss": 0.4447,
+     "reussite_pct": 84.0,
+     "annoncee_pct": 86.1,
+     "pente": 0.88
+    }
+   },
+   "parmi_les_meilleurs": true
+  },
+  {
+   "segment": "confiance : 80 % et plus · expérience de l'outsider : 60–150",
+   "tous": {
+    "matchs": 438,
+    "maitrise": 0.371,
+    "log_loss": 0.436,
+    "reussite_pct": 84.2,
+    "annoncee_pct": 85.5,
+    "pente": 0.93
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 202,
+     "maitrise": 0.446,
+     "log_loss": 0.3842,
+     "reussite_pct": 86.1,
+     "annoncee_pct": 85.3,
+     "pente": 1.08
+    },
+    "oct–nov": {
+     "matchs": 236,
+     "maitrise": 0.307,
+     "log_loss": 0.4803,
+     "reussite_pct": 82.6,
+     "annoncee_pct": 85.7,
+     "pente": 0.82
+    }
+   },
+   "parmi_les_meilleurs": true
+  },
+  {
+   "segment": "circuit : CH · confiance : 80 % et plus",
+   "tous": {
+    "matchs": 284,
+    "maitrise": 0.359,
+    "log_loss": 0.4441,
+    "reussite_pct": 83.8,
+    "annoncee_pct": 84.7,
+    "pente": 0.95
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 127,
+     "maitrise": 0.319,
+     "log_loss": 0.4721,
+     "reussite_pct": 81.9,
+     "annoncee_pct": 84.1,
+     "pente": 0.9
+    },
+    "oct–nov": {
+     "matchs": 157,
+     "maitrise": 0.392,
+     "log_loss": 0.4214,
+     "reussite_pct": 85.4,
+     "annoncee_pct": 85.1,
+     "pente": 0.98
+    }
+   },
+   "parmi_les_meilleurs": true
+  },
+  {
+   "segment": "confiance : 70–80 % · modèles : accord",
+   "tous": {
+    "matchs": 728,
+    "maitrise": 0.234,
+    "log_loss": 0.5308,
+    "reussite_pct": 77.7,
+    "annoncee_pct": 74.7,
+    "pente": 1.15
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 391,
+     "maitrise": 0.241,
+     "log_loss": 0.5259,
+     "reussite_pct": 78.3,
+     "annoncee_pct": 74.6,
+     "pente": 1.19
+    },
+    "oct–nov": {
+     "matchs": 337,
+     "maitrise": 0.226,
+     "log_loss": 0.5363,
+     "reussite_pct": 77.2,
+     "annoncee_pct": 74.8,
+     "pente": 1.12
+    }
+   },
+   "parmi_les_meilleurs": true
+  },
+  {
+   "segment": "confiance : 70–80 % · âge du favori : 30 ans et plus",
+   "tous": {
+    "matchs": 187,
+    "maitrise": 0.234,
+    "log_loss": 0.5312,
+    "reussite_pct": 77.5,
+    "annoncee_pct": 74.7,
+    "pente": 1.15
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 107,
+     "maitrise": 0.259,
+     "log_loss": 0.5138,
+     "reussite_pct": 79.4,
+     "annoncee_pct": 74.7,
+     "pente": 1.24
+    },
+    "oct–nov": {
+     "matchs": 80,
+     "maitrise": 0.2,
+     "log_loss": 0.5544,
+     "reussite_pct": 75.0,
+     "annoncee_pct": 74.6,
+     "pente": 1.05
+    }
+   },
+   "parmi_les_meilleurs": true
+  },
+  {
+   "segment": "confiance : 70–80 % · expérience du favori : 60–150",
+   "tous": {
+    "matchs": 936,
+    "maitrise": 0.231,
+    "log_loss": 0.5328,
+    "reussite_pct": 77.6,
+    "annoncee_pct": 74.6,
+    "pente": 1.15
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 505,
+     "maitrise": 0.239,
+     "log_loss": 0.5272,
+     "reussite_pct": 78.2,
+     "annoncee_pct": 74.5,
+     "pente": 1.18
+    },
+    "oct–nov": {
+     "matchs": 431,
+     "maitrise": 0.222,
+     "log_loss": 0.5394,
+     "reussite_pct": 76.8,
+     "annoncee_pct": 74.8,
+     "pente": 1.11
+    }
+   },
+   "parmi_les_meilleurs": true
+  },
+  {
+   "segment": "confiance : 70–80 %",
+   "tous": {
+    "matchs": 1073,
+    "maitrise": 0.226,
+    "log_loss": 0.5368,
+    "reussite_pct": 77.2,
+    "annoncee_pct": 74.6,
+    "pente": 1.13
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 579,
+     "maitrise": 0.233,
+     "log_loss": 0.5314,
+     "reussite_pct": 77.7,
+     "annoncee_pct": 74.5,
+     "pente": 1.16
+    },
+    "oct–nov": {
+     "matchs": 494,
+     "maitrise": 0.216,
+     "log_loss": 0.5431,
+     "reussite_pct": 76.5,
+     "annoncee_pct": 74.6,
+     "pente": 1.1
+    }
+   },
+   "parmi_les_meilleurs": true
+  },
+  {
+   "segment": "confiance : 70–80 % · expérience de l'outsider : 60–150",
+   "tous": {
+    "matchs": 822,
+    "maitrise": 0.225,
+    "log_loss": 0.5375,
+    "reussite_pct": 77.1,
+    "annoncee_pct": 74.6,
+    "pente": 1.13
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 443,
+     "maitrise": 0.224,
+     "log_loss": 0.5382,
+     "reussite_pct": 77.2,
+     "annoncee_pct": 74.5,
+     "pente": 1.13
+    },
+    "oct–nov": {
+     "matchs": 379,
+     "maitrise": 0.226,
+     "log_loss": 0.5366,
+     "reussite_pct": 77.0,
+     "annoncee_pct": 74.6,
+     "pente": 1.13
+    }
+   },
+   "parmi_les_meilleurs": true
+  },
+  {
+   "segment": "confiance : 70–80 % · retour d'absence : non",
+   "tous": {
+    "matchs": 963,
+    "maitrise": 0.224,
+    "log_loss": 0.5376,
+    "reussite_pct": 77.2,
+    "annoncee_pct": 74.6,
+    "pente": 1.13
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 513,
+     "maitrise": 0.222,
+     "log_loss": 0.5394,
+     "reussite_pct": 77.0,
+     "annoncee_pct": 74.4,
+     "pente": 1.13
+    },
+    "oct–nov": {
+     "matchs": 450,
+     "maitrise": 0.228,
+     "log_loss": 0.5354,
+     "reussite_pct": 77.3,
+     "annoncee_pct": 74.7,
+     "pente": 1.13
+    }
+   },
+   "parmi_les_meilleurs": true
+  },
+  {
+   "segment": "surface : Hard · confiance : 70–80 %",
+   "tous": {
+    "matchs": 780,
+    "maitrise": 0.22,
+    "log_loss": 0.5409,
+    "reussite_pct": 76.8,
+    "annoncee_pct": 74.5,
+    "pente": 1.11
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 432,
+     "maitrise": 0.238,
+     "log_loss": 0.5285,
+     "reussite_pct": 78.0,
+     "annoncee_pct": 74.5,
+     "pente": 1.18
+    },
+    "oct–nov": {
+     "matchs": 348,
+     "maitrise": 0.197,
+     "log_loss": 0.5563,
+     "reussite_pct": 75.3,
+     "annoncee_pct": 74.6,
+     "pente": 1.04
+    }
+   },
+   "parmi_les_meilleurs": true
+  },
+  {
+   "segment": "confiance : 70–80 % · changement de surface : non",
+   "tous": {
+    "matchs": 958,
+    "maitrise": 0.22,
+    "log_loss": 0.5407,
+    "reussite_pct": 76.8,
+    "annoncee_pct": 74.6,
+    "pente": 1.11
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 506,
+     "maitrise": 0.228,
+     "log_loss": 0.5351,
+     "reussite_pct": 77.5,
+     "annoncee_pct": 74.5,
+     "pente": 1.14
+    },
+    "oct–nov": {
+     "matchs": 452,
+     "maitrise": 0.211,
+     "log_loss": 0.5471,
+     "reussite_pct": 76.1,
+     "annoncee_pct": 74.7,
+     "pente": 1.08
+    }
+   },
+   "parmi_les_meilleurs": true
+  },
+  {
+   "segment": "circuit : CH · confiance : 70–80 %",
+   "tous": {
+    "matchs": 631,
+    "maitrise": 0.209,
+    "log_loss": 0.5481,
+    "reussite_pct": 76.1,
+    "annoncee_pct": 74.5,
+    "pente": 1.08
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 345,
+     "maitrise": 0.185,
+     "log_loss": 0.5646,
+     "reussite_pct": 74.8,
+     "annoncee_pct": 74.5,
+     "pente": 1.0
+    },
+    "oct–nov": {
+     "matchs": 286,
+     "maitrise": 0.238,
+     "log_loss": 0.5282,
+     "reussite_pct": 77.6,
+     "annoncee_pct": 74.4,
+     "pente": 1.19
+    }
+   },
+   "parmi_les_meilleurs": true
+  },
+  {
+   "segment": "confiance : 70–80 % · âge du favori : 23–29 ans",
+   "tous": {
+    "matchs": 600,
+    "maitrise": 0.207,
+    "log_loss": 0.5497,
+    "reussite_pct": 76.0,
+    "annoncee_pct": 74.6,
+    "pente": 1.07
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 321,
+     "maitrise": 0.207,
+     "log_loss": 0.55,
+     "reussite_pct": 76.0,
+     "annoncee_pct": 74.4,
+     "pente": 1.08
+    },
+    "oct–nov": {
+     "matchs": 279,
+     "maitrise": 0.207,
+     "log_loss": 0.5494,
+     "reussite_pct": 76.0,
+     "annoncee_pct": 74.8,
+     "pente": 1.06
+    }
+   },
+   "parmi_les_meilleurs": true
+  },
+  {
+   "segment": "confiance : 70–80 % · modèles : écart ≥ 10 pts",
+   "tous": {
+    "matchs": 343,
+    "maitrise": 0.205,
+    "log_loss": 0.5509,
+    "reussite_pct": 75.8,
+    "annoncee_pct": 74.3,
+    "pente": 1.08
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 187,
+     "maitrise": 0.215,
+     "log_loss": 0.544,
+     "reussite_pct": 76.5,
+     "annoncee_pct": 74.3,
+     "pente": 1.11
+    },
+    "oct–nov": {
+     "matchs": 156,
+     "maitrise": 0.193,
+     "log_loss": 0.5591,
+     "reussite_pct": 75.0,
+     "annoncee_pct": 74.2,
+     "pente": 1.05
+    }
+   },
+   "parmi_les_meilleurs": true
+  },
+  {
+   "segment": "circuit : ATP · confiance : 70–80 %",
+   "tous": {
+    "matchs": 207,
+    "maitrise": 0.197,
+    "log_loss": 0.5566,
+    "reussite_pct": 75.4,
+    "annoncee_pct": 74.8,
+    "pente": 1.03
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 114,
+     "maitrise": 0.251,
+     "log_loss": 0.5193,
+     "reussite_pct": 78.9,
+     "annoncee_pct": 74.4,
+     "pente": 1.23
+    },
+    "oct–nov": {
+     "matchs": 93,
+     "maitrise": 0.131,
+     "log_loss": 0.6023,
+     "reussite_pct": 71.0,
+     "annoncee_pct": 75.3,
+     "pente": 0.81
+    }
+   },
+   "parmi_les_meilleurs": true
+  },
+  {
+   "segment": "modèles : accord · expérience du favori : 60–150",
+   "tous": {
+    "matchs": 2808,
+    "maitrise": 0.157,
+    "log_loss": 0.5843,
+    "reussite_pct": 70.2,
+    "annoncee_pct": 67.6,
+    "pente": 1.12
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 1594,
+     "maitrise": 0.155,
+     "log_loss": 0.5857,
+     "reussite_pct": 70.8,
+     "annoncee_pct": 66.6,
+     "pente": 1.22
+    },
+    "oct–nov": {
+     "matchs": 1214,
+     "maitrise": 0.16,
+     "log_loss": 0.5825,
+     "reussite_pct": 69.3,
+     "annoncee_pct": 69.1,
+     "pente": 1.02
+    }
+   },
+   "parmi_les_meilleurs": true
+  },
+  {
+   "segment": "surface : Hard · modèles : accord",
+   "tous": {
+    "matchs": 2379,
+    "maitrise": 0.153,
+    "log_loss": 0.587,
+    "reussite_pct": 69.2,
+    "annoncee_pct": 67.6,
+    "pente": 1.09
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 1367,
+     "maitrise": 0.161,
+     "log_loss": 0.5819,
+     "reussite_pct": 69.5,
+     "annoncee_pct": 66.6,
+     "pente": 1.22
+    },
+    "oct–nov": {
+     "matchs": 1012,
+     "maitrise": 0.143,
+     "log_loss": 0.5938,
+     "reussite_pct": 68.9,
+     "annoncee_pct": 69.0,
+     "pente": 0.95
+    }
+   },
+   "parmi_les_meilleurs": true
+  },
+  {
+   "segment": "modèles : accord · âge du favori : 30 ans et plus",
+   "tous": {
+    "matchs": 567,
+    "maitrise": 0.152,
+    "log_loss": 0.588,
+    "reussite_pct": 67.5,
+    "annoncee_pct": 68.3,
+    "pente": 1.04
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 329,
+     "maitrise": 0.144,
+     "log_loss": 0.5934,
+     "reussite_pct": 67.2,
+     "annoncee_pct": 67.7,
+     "pente": 1.04
+    },
+    "oct–nov": {
+     "matchs": 238,
+     "maitrise": 0.162,
+     "log_loss": 0.5806,
+     "reussite_pct": 68.1,
+     "annoncee_pct": 69.2,
+     "pente": 1.04
+    }
+   },
+   "parmi_les_meilleurs": true
+  },
+  {
+   "segment": "modèles : accord · changement de surface : non",
+   "tous": {
+    "matchs": 2998,
+    "maitrise": 0.151,
+    "log_loss": 0.5881,
+    "reussite_pct": 69.1,
+    "annoncee_pct": 67.4,
+    "pente": 1.1
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 1676,
+     "maitrise": 0.152,
+     "log_loss": 0.5881,
+     "reussite_pct": 69.7,
+     "annoncee_pct": 66.2,
+     "pente": 1.22
+    },
+    "oct–nov": {
+     "matchs": 1322,
+     "maitrise": 0.151,
+     "log_loss": 0.5882,
+     "reussite_pct": 68.4,
+     "annoncee_pct": 68.9,
+     "pente": 0.99
+    }
+   },
+   "parmi_les_meilleurs": true
+  },
+  {
+   "segment": "modèles : accord",
+   "tous": {
+    "matchs": 3274,
+    "maitrise": 0.15,
+    "log_loss": 0.5893,
+    "reussite_pct": 69.2,
+    "annoncee_pct": 67.5,
+    "pente": 1.09
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 1864,
+     "maitrise": 0.148,
+     "log_loss": 0.5908,
+     "reussite_pct": 69.6,
+     "annoncee_pct": 66.3,
+     "pente": 1.19
+    },
+    "oct–nov": {
+     "matchs": 1410,
+     "maitrise": 0.153,
+     "log_loss": 0.5874,
+     "reussite_pct": 68.8,
+     "annoncee_pct": 69.0,
+     "pente": 0.99
+    }
+   },
+   "parmi_les_meilleurs": true
+  },
+  {
+   "segment": "circuit : ATP · modèles : accord",
+   "tous": {
+    "matchs": 646,
+    "maitrise": 0.146,
+    "log_loss": 0.5919,
+    "reussite_pct": 69.8,
+    "annoncee_pct": 67.8,
+    "pente": 1.02
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 373,
+     "maitrise": 0.161,
+     "log_loss": 0.5813,
+     "reussite_pct": 72.7,
+     "annoncee_pct": 66.8,
+     "pente": 1.2
+    },
+    "oct–nov": {
+     "matchs": 273,
+     "maitrise": 0.125,
+     "log_loss": 0.6064,
+     "reussite_pct": 65.9,
+     "annoncee_pct": 69.2,
+     "pente": 0.85
+    }
+   },
+   "parmi_les_meilleurs": true
+  },
+  {
+   "segment": "circuit : ATP · modèles : écart ≥ 10 pts",
+   "tous": {
+    "matchs": 258,
+    "maitrise": 0.145,
+    "log_loss": 0.5927,
+    "reussite_pct": 68.2,
+    "annoncee_pct": 68.4,
+    "pente": 1.08
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 172,
+     "maitrise": 0.141,
+     "log_loss": 0.5954,
+     "reussite_pct": 67.4,
+     "annoncee_pct": 67.1,
+     "pente": 1.15
+    },
+    "oct–nov": {
+     "matchs": 86,
+     "maitrise": 0.153,
+     "log_loss": 0.5871,
+     "reussite_pct": 69.8,
+     "annoncee_pct": 70.9,
+     "pente": 0.99
+    }
+   },
+   "parmi_les_meilleurs": true
+  },
+  {
+   "segment": "modèles : accord · âge du favori : 23–29 ans",
+   "tous": {
+    "matchs": 1804,
+    "maitrise": 0.144,
+    "log_loss": 0.593,
+    "reussite_pct": 69.1,
+    "annoncee_pct": 67.5,
+    "pente": 1.05
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 1010,
+     "maitrise": 0.146,
+     "log_loss": 0.5917,
+     "reussite_pct": 69.5,
+     "annoncee_pct": 66.4,
+     "pente": 1.17
+    },
+    "oct–nov": {
+     "matchs": 794,
+     "maitrise": 0.142,
+     "log_loss": 0.5948,
+     "reussite_pct": 68.6,
+     "annoncee_pct": 69.0,
+     "pente": 0.94
+    }
+   },
+   "parmi_les_meilleurs": true
+  },
+  {
+   "segment": "modèles : accord · retour d'absence : non",
+   "tous": {
+    "matchs": 2961,
+    "maitrise": 0.14,
+    "log_loss": 0.5961,
+    "reussite_pct": 68.9,
+    "annoncee_pct": 67.2,
+    "pente": 1.06
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 1688,
+     "maitrise": 0.137,
+     "log_loss": 0.5985,
+     "reussite_pct": 69.1,
+     "annoncee_pct": 66.0,
+     "pente": 1.15
+    },
+    "oct–nov": {
+     "matchs": 1273,
+     "maitrise": 0.144,
+     "log_loss": 0.593,
+     "reussite_pct": 68.6,
+     "annoncee_pct": 68.8,
+     "pente": 0.97
+    }
+   },
+   "parmi_les_meilleurs": true
+  },
+  {
+   "segment": "surface : Hard · modèles : écart ≥ 10 pts",
+   "tous": {
+    "matchs": 959,
+    "maitrise": 0.137,
+    "log_loss": 0.5983,
+    "reussite_pct": 70.1,
+    "annoncee_pct": 67.5,
+    "pente": 1.11
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 604,
+     "maitrise": 0.141,
+     "log_loss": 0.5953,
+     "reussite_pct": 70.5,
+     "annoncee_pct": 66.3,
+     "pente": 1.25
+    },
+    "oct–nov": {
+     "matchs": 355,
+     "maitrise": 0.13,
+     "log_loss": 0.6033,
+     "reussite_pct": 69.3,
+     "annoncee_pct": 69.6,
+     "pente": 0.95
+    }
+   },
+   "parmi_les_meilleurs": true
+  },
+  {
+   "segment": "modèles : écart ≥ 10 pts",
+   "tous": {
+    "matchs": 1341,
+    "maitrise": 0.133,
+    "log_loss": 0.6011,
+    "reussite_pct": 70.2,
+    "annoncee_pct": 67.3,
+    "pente": 1.11
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 825,
+     "maitrise": 0.134,
+     "log_loss": 0.6,
+     "reussite_pct": 70.4,
+     "annoncee_pct": 66.2,
+     "pente": 1.22
+    },
+    "oct–nov": {
+     "matchs": 516,
+     "maitrise": 0.13,
+     "log_loss": 0.603,
+     "reussite_pct": 69.8,
+     "annoncee_pct": 69.1,
+     "pente": 0.98
+    }
+   },
+   "parmi_les_meilleurs": true
+  },
+  {
+   "segment": "âge du favori : 30 ans et plus · changement de surface : non",
+   "tous": {
+    "matchs": 835,
+    "maitrise": 0.132,
+    "log_loss": 0.6015,
+    "reussite_pct": 65.9,
+    "annoncee_pct": 66.0,
+    "pente": 1.08
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 490,
+     "maitrise": 0.123,
+     "log_loss": 0.6077,
+     "reussite_pct": 64.5,
+     "annoncee_pct": 65.3,
+     "pente": 1.09
+    },
+    "oct–nov": {
+     "matchs": 345,
+     "maitrise": 0.145,
+     "log_loss": 0.5926,
+     "reussite_pct": 67.8,
+     "annoncee_pct": 67.1,
+     "pente": 1.07
+    }
+   },
+   "parmi_les_meilleurs": true
+  },
+  {
+   "segment": "modèles : accord · expérience de l'outsider : 60–150",
+   "tous": {
+    "matchs": 2517,
+    "maitrise": 0.131,
+    "log_loss": 0.6025,
+    "reussite_pct": 67.3,
+    "annoncee_pct": 67.0,
+    "pente": 1.03
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 1424,
+     "maitrise": 0.132,
+     "log_loss": 0.6019,
+     "reussite_pct": 67.7,
+     "annoncee_pct": 66.0,
+     "pente": 1.12
+    },
+    "oct–nov": {
+     "matchs": 1093,
+     "maitrise": 0.13,
+     "log_loss": 0.6032,
+     "reussite_pct": 66.9,
+     "annoncee_pct": 68.3,
+     "pente": 0.94
+    }
+   },
+   "parmi_les_meilleurs": true
+  },
+  {
+   "segment": "modèles : écart ≥ 10 pts · retour d'absence : non",
+   "tous": {
+    "matchs": 1219,
+    "maitrise": 0.129,
+    "log_loss": 0.6034,
+    "reussite_pct": 70.1,
+    "annoncee_pct": 67.1,
+    "pente": 1.11
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 749,
+     "maitrise": 0.13,
+     "log_loss": 0.6033,
+     "reussite_pct": 70.0,
+     "annoncee_pct": 66.0,
+     "pente": 1.21
+    },
+    "oct–nov": {
+     "matchs": 470,
+     "maitrise": 0.129,
+     "log_loss": 0.6036,
+     "reussite_pct": 70.2,
+     "annoncee_pct": 68.9,
+     "pente": 0.99
+    }
+   },
+   "parmi_les_meilleurs": true
+  },
+  {
+   "segment": "modèles : écart ≥ 10 pts · expérience du favori : 60–150",
+   "tous": {
+    "matchs": 1142,
+    "maitrise": 0.128,
+    "log_loss": 0.6043,
+    "reussite_pct": 69.8,
+    "annoncee_pct": 67.4,
+    "pente": 1.08
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 704,
+     "maitrise": 0.13,
+     "log_loss": 0.603,
+     "reussite_pct": 70.0,
+     "annoncee_pct": 66.3,
+     "pente": 1.18
+    },
+    "oct–nov": {
+     "matchs": 438,
+     "maitrise": 0.125,
+     "log_loss": 0.6064,
+     "reussite_pct": 69.4,
+     "annoncee_pct": 69.1,
+     "pente": 0.95
+    }
+   },
+   "parmi_les_meilleurs": true
+  },
+  {
+   "segment": "expérience du favori : 60–150",
+   "tous": {
+    "matchs": 4733,
+    "maitrise": 0.126,
+    "log_loss": 0.6058,
+    "reussite_pct": 67.4,
+    "annoncee_pct": 65.3,
+    "pente": 1.11
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 2789,
+     "maitrise": 0.125,
+     "log_loss": 0.6065,
+     "reussite_pct": 67.7,
+     "annoncee_pct": 64.3,
+     "pente": 1.22
+    },
+    "oct–nov": {
+     "matchs": 1944,
+     "maitrise": 0.127,
+     "log_loss": 0.6049,
+     "reussite_pct": 66.9,
+     "annoncee_pct": 66.9,
+     "pente": 0.99
+    }
+   },
+   "parmi_les_meilleurs": true
+  },
+  {
+   "segment": "expérience du favori : 60–150 · changement de surface : non",
+   "tous": {
+    "matchs": 4300,
+    "maitrise": 0.124,
+    "log_loss": 0.6075,
+    "reussite_pct": 66.9,
+    "annoncee_pct": 65.3,
+    "pente": 1.09
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 2488,
+     "maitrise": 0.123,
+     "log_loss": 0.608,
+     "reussite_pct": 67.4,
+     "annoncee_pct": 64.3,
+     "pente": 1.2
+    },
+    "oct–nov": {
+     "matchs": 1812,
+     "maitrise": 0.125,
+     "log_loss": 0.6068,
+     "reussite_pct": 66.3,
+     "annoncee_pct": 66.8,
+     "pente": 0.98
+    }
+   },
+   "parmi_les_meilleurs": true
+  }
+ ],
+ "tous_les_segments": [
+  {
+   "segment": "confiance : 80 % et plus · expérience de l'outsider : < 60 matchs",
+   "tous": {
+    "matchs": 150,
+    "maitrise": 0.677,
+    "log_loss": 0.224,
+    "reussite_pct": 95.3,
+    "annoncee_pct": 86.6,
+    "pente": 1.68
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 67,
+     "maitrise": 0.619,
+     "log_loss": 0.2644,
+     "reussite_pct": 94.0,
+     "annoncee_pct": 84.9,
+     "pente": 1.61
+    },
+    "oct–nov": {
+     "matchs": 83,
+     "maitrise": 0.724,
+     "log_loss": 0.1915,
+     "reussite_pct": 96.4,
+     "annoncee_pct": 87.9,
+     "pente": 1.76
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "circuit : WTA · confiance : 80 % et plus",
+   "tous": {
+    "matchs": 200,
+    "maitrise": 0.511,
+    "log_loss": 0.3388,
+    "reussite_pct": 89.0,
+    "annoncee_pct": 87.0,
+    "pente": 1.1
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 90,
+     "maitrise": 0.683,
+     "log_loss": 0.2199,
+     "reussite_pct": 95.6,
+     "annoncee_pct": 86.2,
+     "pente": 1.76
+    },
+    "oct–nov": {
+     "matchs": 110,
+     "maitrise": 0.371,
+     "log_loss": 0.436,
+     "reussite_pct": 83.6,
+     "annoncee_pct": 87.6,
+     "pente": 0.83
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "surface : Hard · confiance : 80 % et plus",
+   "tous": {
+    "matchs": 475,
+    "maitrise": 0.467,
+    "log_loss": 0.3697,
+    "reussite_pct": 88.0,
+    "annoncee_pct": 86.0,
+    "pente": 1.07
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 233,
+     "maitrise": 0.566,
+     "log_loss": 0.3011,
+     "reussite_pct": 91.4,
+     "annoncee_pct": 85.5,
+     "pente": 1.35
+    },
+    "oct–nov": {
+     "matchs": 242,
+     "maitrise": 0.371,
+     "log_loss": 0.4357,
+     "reussite_pct": 84.7,
+     "annoncee_pct": 86.5,
+     "pente": 0.88
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "confiance : 80 % et plus · changement de surface : non",
+   "tous": {
+    "matchs": 570,
+    "maitrise": 0.444,
+    "log_loss": 0.3856,
+    "reussite_pct": 87.0,
+    "annoncee_pct": 85.8,
+    "pente": 1.04
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 258,
+     "maitrise": 0.505,
+     "log_loss": 0.3429,
+     "reussite_pct": 89.1,
+     "annoncee_pct": 85.2,
+     "pente": 1.21
+    },
+    "oct–nov": {
+     "matchs": 312,
+     "maitrise": 0.393,
+     "log_loss": 0.4209,
+     "reussite_pct": 85.3,
+     "annoncee_pct": 86.3,
+     "pente": 0.92
+    }
+   },
+   "parmi_les_meilleurs": true
+  },
+  {
+   "segment": "confiance : 80 % et plus · modèles : accord",
+   "tous": {
+    "matchs": 509,
+    "maitrise": 0.437,
+    "log_loss": 0.3905,
+    "reussite_pct": 86.6,
+    "annoncee_pct": 86.0,
+    "pente": 1.01
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 238,
+     "maitrise": 0.476,
+     "log_loss": 0.3629,
+     "reussite_pct": 87.8,
+     "annoncee_pct": 85.4,
+     "pente": 1.13
+    },
+    "oct–nov": {
+     "matchs": 271,
+     "maitrise": 0.402,
+     "log_loss": 0.4147,
+     "reussite_pct": 85.6,
+     "annoncee_pct": 86.5,
+     "pente": 0.92
+    }
+   },
+   "parmi_les_meilleurs": true
+  },
+  {
+   "segment": "confiance : 80 % et plus",
+   "tous": {
+    "matchs": 624,
+    "maitrise": 0.434,
+    "log_loss": 0.3922,
+    "reussite_pct": 86.5,
+    "annoncee_pct": 85.8,
+    "pente": 1.02
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 291,
+     "maitrise": 0.48,
+     "log_loss": 0.3607,
+     "reussite_pct": 88.0,
+     "annoncee_pct": 85.2,
+     "pente": 1.15
+    },
+    "oct–nov": {
+     "matchs": 333,
+     "maitrise": 0.394,
+     "log_loss": 0.4198,
+     "reussite_pct": 85.3,
+     "annoncee_pct": 86.3,
+     "pente": 0.92
+    }
+   },
+   "parmi_les_meilleurs": true
+  },
+  {
+   "segment": "confiance : 80 % et plus · expérience du favori : 60–150",
+   "tous": {
+    "matchs": 529,
+    "maitrise": 0.433,
+    "log_loss": 0.3928,
+    "reussite_pct": 86.4,
+    "annoncee_pct": 85.9,
+    "pente": 1.01
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 246,
+     "maitrise": 0.467,
+     "log_loss": 0.3692,
+     "reussite_pct": 87.4,
+     "annoncee_pct": 85.3,
+     "pente": 1.12
+    },
+    "oct–nov": {
+     "matchs": 283,
+     "maitrise": 0.404,
+     "log_loss": 0.4132,
+     "reussite_pct": 85.5,
+     "annoncee_pct": 86.4,
+     "pente": 0.93
+    }
+   },
+   "parmi_les_meilleurs": true
+  },
+  {
+   "segment": "confiance : 80 % et plus · âge du favori : 23–29 ans",
+   "tous": {
+    "matchs": 355,
+    "maitrise": 0.411,
+    "log_loss": 0.4086,
+    "reussite_pct": 86.2,
+    "annoncee_pct": 86.0,
+    "pente": 0.96
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 161,
+     "maitrise": 0.515,
+     "log_loss": 0.336,
+     "reussite_pct": 89.4,
+     "annoncee_pct": 85.4,
+     "pente": 1.22
+    },
+    "oct–nov": {
+     "matchs": 194,
+     "maitrise": 0.324,
+     "log_loss": 0.4688,
+     "reussite_pct": 83.5,
+     "annoncee_pct": 86.5,
+     "pente": 0.81
+    }
+   },
+   "parmi_les_meilleurs": true
+  },
+  {
+   "segment": "confiance : 80 % et plus · retour d'absence : non",
+   "tous": {
+    "matchs": 537,
+    "maitrise": 0.404,
+    "log_loss": 0.4133,
+    "reussite_pct": 85.5,
+    "annoncee_pct": 85.6,
+    "pente": 0.98
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 249,
+     "maitrise": 0.456,
+     "log_loss": 0.3769,
+     "reussite_pct": 87.1,
+     "annoncee_pct": 85.0,
+     "pente": 1.11
+    },
+    "oct–nov": {
+     "matchs": 288,
+     "maitrise": 0.358,
+     "log_loss": 0.4447,
+     "reussite_pct": 84.0,
+     "annoncee_pct": 86.1,
+     "pente": 0.88
+    }
+   },
+   "parmi_les_meilleurs": true
+  },
+  {
+   "segment": "confiance : 80 % et plus · expérience de l'outsider : 60–150",
+   "tous": {
+    "matchs": 438,
+    "maitrise": 0.371,
+    "log_loss": 0.436,
+    "reussite_pct": 84.2,
+    "annoncee_pct": 85.5,
+    "pente": 0.93
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 202,
+     "maitrise": 0.446,
+     "log_loss": 0.3842,
+     "reussite_pct": 86.1,
+     "annoncee_pct": 85.3,
+     "pente": 1.08
+    },
+    "oct–nov": {
+     "matchs": 236,
+     "maitrise": 0.307,
+     "log_loss": 0.4803,
+     "reussite_pct": 82.6,
+     "annoncee_pct": 85.7,
+     "pente": 0.82
+    }
+   },
+   "parmi_les_meilleurs": true
+  },
+  {
+   "segment": "circuit : CH · confiance : 80 % et plus",
+   "tous": {
+    "matchs": 284,
+    "maitrise": 0.359,
+    "log_loss": 0.4441,
+    "reussite_pct": 83.8,
+    "annoncee_pct": 84.7,
+    "pente": 0.95
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 127,
+     "maitrise": 0.319,
+     "log_loss": 0.4721,
+     "reussite_pct": 81.9,
+     "annoncee_pct": 84.1,
+     "pente": 0.9
+    },
+    "oct–nov": {
+     "matchs": 157,
+     "maitrise": 0.392,
+     "log_loss": 0.4214,
+     "reussite_pct": 85.4,
+     "annoncee_pct": 85.1,
+     "pente": 0.98
+    }
+   },
+   "parmi_les_meilleurs": true
+  },
+  {
+   "segment": "expérience de l'outsider : < 60 matchs · retour d'absence : oui",
+   "tous": {
+    "matchs": 222,
+    "maitrise": 0.338,
+    "log_loss": 0.4589,
+    "reussite_pct": 83.3,
+    "annoncee_pct": 70.6,
+    "pente": 1.97
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 126,
+     "maitrise": 0.32,
+     "log_loss": 0.4716,
+     "reussite_pct": 82.5,
+     "annoncee_pct": 69.7,
+     "pente": 2.03
+    },
+    "oct–nov": {
+     "matchs": 96,
+     "maitrise": 0.362,
+     "log_loss": 0.4423,
+     "reussite_pct": 84.4,
+     "annoncee_pct": 71.8,
+     "pente": 1.9
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "circuit : WTA · expérience de l'outsider : < 60 matchs",
+   "tous": {
+    "matchs": 180,
+    "maitrise": 0.335,
+    "log_loss": 0.4608,
+    "reussite_pct": 76.1,
+    "annoncee_pct": 74.9,
+    "pente": 1.29
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 85,
+     "maitrise": 0.311,
+     "log_loss": 0.4778,
+     "reussite_pct": 74.1,
+     "annoncee_pct": 73.1,
+     "pente": 1.39
+    },
+    "oct–nov": {
+     "matchs": 95,
+     "maitrise": 0.357,
+     "log_loss": 0.4455,
+     "reussite_pct": 77.9,
+     "annoncee_pct": 76.4,
+     "pente": 1.21
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "circuit : WTA · confiance : 70–80 %",
+   "tous": {
+    "matchs": 235,
+    "maitrise": 0.294,
+    "log_loss": 0.489,
+    "reussite_pct": 81.7,
+    "annoncee_pct": 74.6,
+    "pente": 1.39
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 120,
+     "maitrise": 0.354,
+     "log_loss": 0.4476,
+     "reussite_pct": 85.0,
+     "annoncee_pct": 74.5,
+     "pente": 1.66
+    },
+    "oct–nov": {
+     "matchs": 115,
+     "maitrise": 0.232,
+     "log_loss": 0.5322,
+     "reussite_pct": 78.3,
+     "annoncee_pct": 74.6,
+     "pente": 1.15
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "surface : Clay · expérience de l'outsider : < 60 matchs",
+   "tous": {
+    "matchs": 267,
+    "maitrise": 0.294,
+    "log_loss": 0.4895,
+    "reussite_pct": 80.5,
+    "annoncee_pct": 68.1,
+    "pente": 2.08
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 144,
+     "maitrise": 0.236,
+     "log_loss": 0.5299,
+     "reussite_pct": 79.2,
+     "annoncee_pct": 65.2,
+     "pente": 2.2
+    },
+    "oct–nov": {
+     "matchs": 123,
+     "maitrise": 0.362,
+     "log_loss": 0.4422,
+     "reussite_pct": 82.1,
+     "annoncee_pct": 71.5,
+     "pente": 1.96
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "modèles : accord · expérience de l'outsider : < 60 matchs",
+   "tous": {
+    "matchs": 529,
+    "maitrise": 0.274,
+    "log_loss": 0.5034,
+    "reussite_pct": 78.3,
+    "annoncee_pct": 70.4,
+    "pente": 1.5
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 312,
+     "maitrise": 0.229,
+     "log_loss": 0.5341,
+     "reussite_pct": 76.3,
+     "annoncee_pct": 68.5,
+     "pente": 1.49
+    },
+    "oct–nov": {
+     "matchs": 217,
+     "maitrise": 0.338,
+     "log_loss": 0.4592,
+     "reussite_pct": 81.1,
+     "annoncee_pct": 73.2,
+     "pente": 1.52
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "circuit : WTA · retour d'absence : oui",
+   "tous": {
+    "matchs": 164,
+    "maitrise": 0.265,
+    "log_loss": 0.5095,
+    "reussite_pct": 73.2,
+    "annoncee_pct": 69.7,
+    "pente": 1.42
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 69,
+     "maitrise": 0.281,
+     "log_loss": 0.4984,
+     "reussite_pct": 72.5,
+     "annoncee_pct": 68.7,
+     "pente": 1.73
+    },
+    "oct–nov": {
+     "matchs": 95,
+     "maitrise": 0.253,
+     "log_loss": 0.5175,
+     "reussite_pct": 73.7,
+     "annoncee_pct": 70.4,
+     "pente": 1.24
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "confiance : 70–80 % · expérience de l'outsider : < 60 matchs",
+   "tous": {
+    "matchs": 186,
+    "maitrise": 0.26,
+    "log_loss": 0.5131,
+    "reussite_pct": 79.6,
+    "annoncee_pct": 74.6,
+    "pente": 1.25
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 108,
+     "maitrise": 0.285,
+     "log_loss": 0.4959,
+     "reussite_pct": 80.6,
+     "annoncee_pct": 74.5,
+     "pente": 1.36
+    },
+    "oct–nov": {
+     "matchs": 78,
+     "maitrise": 0.226,
+     "log_loss": 0.5368,
+     "reussite_pct": 78.2,
+     "annoncee_pct": 74.7,
+     "pente": 1.13
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "expérience du favori : 60–150 · expérience de l'outsider : < 60 matchs",
+   "tous": {
+    "matchs": 670,
+    "maitrise": 0.255,
+    "log_loss": 0.5161,
+    "reussite_pct": 78.4,
+    "annoncee_pct": 69.2,
+    "pente": 1.54
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 414,
+     "maitrise": 0.22,
+     "log_loss": 0.5405,
+     "reussite_pct": 77.8,
+     "annoncee_pct": 67.3,
+     "pente": 1.58
+    },
+    "oct–nov": {
+     "matchs": 256,
+     "maitrise": 0.312,
+     "log_loss": 0.4766,
+     "reussite_pct": 79.3,
+     "annoncee_pct": 72.2,
+     "pente": 1.48
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "modèles : écart ≥ 10 pts · expérience de l'outsider : < 60 matchs",
+   "tous": {
+    "matchs": 198,
+    "maitrise": 0.248,
+    "log_loss": 0.5215,
+    "reussite_pct": 79.3,
+    "annoncee_pct": 69.5,
+    "pente": 1.57
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 131,
+     "maitrise": 0.228,
+     "log_loss": 0.5349,
+     "reussite_pct": 78.6,
+     "annoncee_pct": 68.0,
+     "pente": 1.68
+    },
+    "oct–nov": {
+     "matchs": 67,
+     "maitrise": 0.285,
+     "log_loss": 0.4953,
+     "reussite_pct": 80.6,
+     "annoncee_pct": 72.5,
+     "pente": 1.4
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "expérience de l'outsider : < 60 matchs",
+   "tous": {
+    "matchs": 810,
+    "maitrise": 0.245,
+    "log_loss": 0.5235,
+    "reussite_pct": 77.4,
+    "annoncee_pct": 68.6,
+    "pente": 1.55
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 498,
+     "maitrise": 0.21,
+     "log_loss": 0.5475,
+     "reussite_pct": 76.1,
+     "annoncee_pct": 66.8,
+     "pente": 1.58
+    },
+    "oct–nov": {
+     "matchs": 312,
+     "maitrise": 0.3,
+     "log_loss": 0.4851,
+     "reussite_pct": 79.5,
+     "annoncee_pct": 71.4,
+     "pente": 1.5
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "modèles : accord · retour d'absence : oui",
+   "tous": {
+    "matchs": 313,
+    "maitrise": 0.243,
+    "log_loss": 0.5247,
+    "reussite_pct": 72.8,
+    "annoncee_pct": 69.7,
+    "pente": 1.37
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 176,
+     "maitrise": 0.254,
+     "log_loss": 0.5168,
+     "reussite_pct": 74.4,
+     "annoncee_pct": 69.3,
+     "pente": 1.51
+    },
+    "oct–nov": {
+     "matchs": 137,
+     "maitrise": 0.228,
+     "log_loss": 0.5349,
+     "reussite_pct": 70.8,
+     "annoncee_pct": 70.2,
+     "pente": 1.21
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "confiance : 70–80 % · âge du favori : < 23 ans",
+   "tous": {
+    "matchs": 250,
+    "maitrise": 0.242,
+    "log_loss": 0.5252,
+    "reussite_pct": 78.4,
+    "annoncee_pct": 74.4,
+    "pente": 1.2
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 134,
+     "maitrise": 0.265,
+     "log_loss": 0.5093,
+     "reussite_pct": 79.9,
+     "annoncee_pct": 74.4,
+     "pente": 1.29
+    },
+    "oct–nov": {
+     "matchs": 116,
+     "maitrise": 0.216,
+     "log_loss": 0.5437,
+     "reussite_pct": 76.7,
+     "annoncee_pct": 74.4,
+     "pente": 1.11
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "surface : Clay · confiance : 70–80 %",
+   "tous": {
+    "matchs": 293,
+    "maitrise": 0.241,
+    "log_loss": 0.5258,
+    "reussite_pct": 78.2,
+    "annoncee_pct": 74.6,
+    "pente": 1.19
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 147,
+     "maitrise": 0.221,
+     "log_loss": 0.5401,
+     "reussite_pct": 76.9,
+     "annoncee_pct": 74.5,
+     "pente": 1.12
+    },
+    "oct–nov": {
+     "matchs": 146,
+     "maitrise": 0.262,
+     "log_loss": 0.5115,
+     "reussite_pct": 79.5,
+     "annoncee_pct": 74.6,
+     "pente": 1.26
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "expérience de l'outsider : < 60 matchs · âge du favori : 23–29 ans",
+   "tous": {
+    "matchs": 435,
+    "maitrise": 0.238,
+    "log_loss": 0.5284,
+    "reussite_pct": 77.5,
+    "annoncee_pct": 68.5,
+    "pente": 1.5
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 276,
+     "maitrise": 0.22,
+     "log_loss": 0.5406,
+     "reussite_pct": 77.2,
+     "annoncee_pct": 66.8,
+     "pente": 1.66
+    },
+    "oct–nov": {
+     "matchs": 159,
+     "maitrise": 0.268,
+     "log_loss": 0.5072,
+     "reussite_pct": 78.0,
+     "annoncee_pct": 71.5,
+     "pente": 1.3
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "expérience de l'outsider : < 60 matchs · changement de surface : non",
+   "tous": {
+    "matchs": 721,
+    "maitrise": 0.238,
+    "log_loss": 0.5284,
+    "reussite_pct": 76.3,
+    "annoncee_pct": 68.7,
+    "pente": 1.48
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 447,
+     "maitrise": 0.207,
+     "log_loss": 0.55,
+     "reussite_pct": 75.2,
+     "annoncee_pct": 67.0,
+     "pente": 1.52
+    },
+    "oct–nov": {
+     "matchs": 274,
+     "maitrise": 0.288,
+     "log_loss": 0.4932,
+     "reussite_pct": 78.1,
+     "annoncee_pct": 71.5,
+     "pente": 1.42
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "confiance : 70–80 % · modèles : accord",
+   "tous": {
+    "matchs": 728,
+    "maitrise": 0.234,
+    "log_loss": 0.5308,
+    "reussite_pct": 77.7,
+    "annoncee_pct": 74.7,
+    "pente": 1.15
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 391,
+     "maitrise": 0.241,
+     "log_loss": 0.5259,
+     "reussite_pct": 78.3,
+     "annoncee_pct": 74.6,
+     "pente": 1.19
+    },
+    "oct–nov": {
+     "matchs": 337,
+     "maitrise": 0.226,
+     "log_loss": 0.5363,
+     "reussite_pct": 77.2,
+     "annoncee_pct": 74.8,
+     "pente": 1.12
+    }
+   },
+   "parmi_les_meilleurs": true
+  },
+  {
+   "segment": "confiance : 70–80 % · âge du favori : 30 ans et plus",
+   "tous": {
+    "matchs": 187,
+    "maitrise": 0.234,
+    "log_loss": 0.5312,
+    "reussite_pct": 77.5,
+    "annoncee_pct": 74.7,
+    "pente": 1.15
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 107,
+     "maitrise": 0.259,
+     "log_loss": 0.5138,
+     "reussite_pct": 79.4,
+     "annoncee_pct": 74.7,
+     "pente": 1.24
+    },
+    "oct–nov": {
+     "matchs": 80,
+     "maitrise": 0.2,
+     "log_loss": 0.5544,
+     "reussite_pct": 75.0,
+     "annoncee_pct": 74.6,
+     "pente": 1.05
+    }
+   },
+   "parmi_les_meilleurs": true
+  },
+  {
+   "segment": "expérience de l'outsider : < 60 matchs · âge du favori : < 23 ans",
+   "tous": {
+    "matchs": 198,
+    "maitrise": 0.234,
+    "log_loss": 0.5308,
+    "reussite_pct": 77.3,
+    "annoncee_pct": 67.8,
+    "pente": 1.59
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 120,
+     "maitrise": 0.188,
+     "log_loss": 0.5629,
+     "reussite_pct": 75.8,
+     "annoncee_pct": 65.9,
+     "pente": 1.54
+    },
+    "oct–nov": {
+     "matchs": 78,
+     "maitrise": 0.306,
+     "log_loss": 0.4813,
+     "reussite_pct": 79.5,
+     "annoncee_pct": 70.7,
+     "pente": 1.66
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "confiance : 70–80 % · expérience du favori : 60–150",
+   "tous": {
+    "matchs": 936,
+    "maitrise": 0.231,
+    "log_loss": 0.5328,
+    "reussite_pct": 77.6,
+    "annoncee_pct": 74.6,
+    "pente": 1.15
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 505,
+     "maitrise": 0.239,
+     "log_loss": 0.5272,
+     "reussite_pct": 78.2,
+     "annoncee_pct": 74.5,
+     "pente": 1.18
+    },
+    "oct–nov": {
+     "matchs": 431,
+     "maitrise": 0.222,
+     "log_loss": 0.5394,
+     "reussite_pct": 76.8,
+     "annoncee_pct": 74.8,
+     "pente": 1.11
+    }
+   },
+   "parmi_les_meilleurs": true
+  },
+  {
+   "segment": "confiance : 70–80 %",
+   "tous": {
+    "matchs": 1073,
+    "maitrise": 0.226,
+    "log_loss": 0.5368,
+    "reussite_pct": 77.2,
+    "annoncee_pct": 74.6,
+    "pente": 1.13
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 579,
+     "maitrise": 0.233,
+     "log_loss": 0.5314,
+     "reussite_pct": 77.7,
+     "annoncee_pct": 74.5,
+     "pente": 1.16
+    },
+    "oct–nov": {
+     "matchs": 494,
+     "maitrise": 0.216,
+     "log_loss": 0.5431,
+     "reussite_pct": 76.5,
+     "annoncee_pct": 74.6,
+     "pente": 1.1
+    }
+   },
+   "parmi_les_meilleurs": true
+  },
+  {
+   "segment": "confiance : 70–80 % · expérience de l'outsider : 60–150",
+   "tous": {
+    "matchs": 822,
+    "maitrise": 0.225,
+    "log_loss": 0.5375,
+    "reussite_pct": 77.1,
+    "annoncee_pct": 74.6,
+    "pente": 1.13
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 443,
+     "maitrise": 0.224,
+     "log_loss": 0.5382,
+     "reussite_pct": 77.2,
+     "annoncee_pct": 74.5,
+     "pente": 1.13
+    },
+    "oct–nov": {
+     "matchs": 379,
+     "maitrise": 0.226,
+     "log_loss": 0.5366,
+     "reussite_pct": 77.0,
+     "annoncee_pct": 74.6,
+     "pente": 1.13
+    }
+   },
+   "parmi_les_meilleurs": true
+  },
+  {
+   "segment": "confiance : 70–80 % · retour d'absence : non",
+   "tous": {
+    "matchs": 963,
+    "maitrise": 0.224,
+    "log_loss": 0.5376,
+    "reussite_pct": 77.2,
+    "annoncee_pct": 74.6,
+    "pente": 1.13
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 513,
+     "maitrise": 0.222,
+     "log_loss": 0.5394,
+     "reussite_pct": 77.0,
+     "annoncee_pct": 74.4,
+     "pente": 1.13
+    },
+    "oct–nov": {
+     "matchs": 450,
+     "maitrise": 0.228,
+     "log_loss": 0.5354,
+     "reussite_pct": 77.3,
+     "annoncee_pct": 74.7,
+     "pente": 1.13
+    }
+   },
+   "parmi_les_meilleurs": true
+  },
+  {
+   "segment": "circuit : CH · expérience de l'outsider : < 60 matchs",
+   "tous": {
+    "matchs": 566,
+    "maitrise": 0.222,
+    "log_loss": 0.5395,
+    "reussite_pct": 78.3,
+    "annoncee_pct": 66.4,
+    "pente": 1.75
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 359,
+     "maitrise": 0.195,
+     "log_loss": 0.558,
+     "reussite_pct": 77.2,
+     "annoncee_pct": 64.9,
+     "pente": 1.82
+    },
+    "oct–nov": {
+     "matchs": 207,
+     "maitrise": 0.268,
+     "log_loss": 0.5076,
+     "reussite_pct": 80.2,
+     "annoncee_pct": 69.0,
+     "pente": 1.67
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "surface : Hard · expérience de l'outsider : < 60 matchs",
+   "tous": {
+    "matchs": 543,
+    "maitrise": 0.221,
+    "log_loss": 0.5402,
+    "reussite_pct": 75.9,
+    "annoncee_pct": 68.8,
+    "pente": 1.35
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 354,
+     "maitrise": 0.2,
+     "log_loss": 0.5546,
+     "reussite_pct": 74.9,
+     "annoncee_pct": 67.4,
+     "pente": 1.4
+    },
+    "oct–nov": {
+     "matchs": 189,
+     "maitrise": 0.26,
+     "log_loss": 0.513,
+     "reussite_pct": 77.8,
+     "annoncee_pct": 71.4,
+     "pente": 1.28
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "surface : Hard · confiance : 70–80 %",
+   "tous": {
+    "matchs": 780,
+    "maitrise": 0.22,
+    "log_loss": 0.5409,
+    "reussite_pct": 76.8,
+    "annoncee_pct": 74.5,
+    "pente": 1.11
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 432,
+     "maitrise": 0.238,
+     "log_loss": 0.5285,
+     "reussite_pct": 78.0,
+     "annoncee_pct": 74.5,
+     "pente": 1.18
+    },
+    "oct–nov": {
+     "matchs": 348,
+     "maitrise": 0.197,
+     "log_loss": 0.5563,
+     "reussite_pct": 75.3,
+     "annoncee_pct": 74.6,
+     "pente": 1.04
+    }
+   },
+   "parmi_les_meilleurs": true
+  },
+  {
+   "segment": "confiance : 70–80 % · changement de surface : non",
+   "tous": {
+    "matchs": 958,
+    "maitrise": 0.22,
+    "log_loss": 0.5407,
+    "reussite_pct": 76.8,
+    "annoncee_pct": 74.6,
+    "pente": 1.11
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 506,
+     "maitrise": 0.228,
+     "log_loss": 0.5351,
+     "reussite_pct": 77.5,
+     "annoncee_pct": 74.5,
+     "pente": 1.14
+    },
+    "oct–nov": {
+     "matchs": 452,
+     "maitrise": 0.211,
+     "log_loss": 0.5471,
+     "reussite_pct": 76.1,
+     "annoncee_pct": 74.7,
+     "pente": 1.08
+    }
+   },
+   "parmi_les_meilleurs": true
+  },
+  {
+   "segment": "circuit : WTA · âge du favori : 30 ans et plus",
+   "tous": {
+    "matchs": 254,
+    "maitrise": 0.21,
+    "log_loss": 0.5475,
+    "reussite_pct": 72.8,
+    "annoncee_pct": 67.6,
+    "pente": 1.36
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 143,
+     "maitrise": 0.217,
+     "log_loss": 0.543,
+     "reussite_pct": 70.6,
+     "annoncee_pct": 67.0,
+     "pente": 1.48
+    },
+    "oct–nov": {
+     "matchs": 111,
+     "maitrise": 0.202,
+     "log_loss": 0.5533,
+     "reussite_pct": 75.7,
+     "annoncee_pct": 68.3,
+     "pente": 1.23
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "expérience de l'outsider : < 60 matchs · retour d'absence : non",
+   "tous": {
+    "matchs": 588,
+    "maitrise": 0.21,
+    "log_loss": 0.5478,
+    "reussite_pct": 75.2,
+    "annoncee_pct": 67.8,
+    "pente": 1.4
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 372,
+     "maitrise": 0.173,
+     "log_loss": 0.5732,
+     "reussite_pct": 73.9,
+     "annoncee_pct": 65.8,
+     "pente": 1.43
+    },
+    "oct–nov": {
+     "matchs": 216,
+     "maitrise": 0.273,
+     "log_loss": 0.5041,
+     "reussite_pct": 77.3,
+     "annoncee_pct": 71.2,
+     "pente": 1.37
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "circuit : CH · confiance : 70–80 %",
+   "tous": {
+    "matchs": 631,
+    "maitrise": 0.209,
+    "log_loss": 0.5481,
+    "reussite_pct": 76.1,
+    "annoncee_pct": 74.5,
+    "pente": 1.08
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 345,
+     "maitrise": 0.185,
+     "log_loss": 0.5646,
+     "reussite_pct": 74.8,
+     "annoncee_pct": 74.5,
+     "pente": 1.0
+    },
+    "oct–nov": {
+     "matchs": 286,
+     "maitrise": 0.238,
+     "log_loss": 0.5282,
+     "reussite_pct": 77.6,
+     "annoncee_pct": 74.4,
+     "pente": 1.19
+    }
+   },
+   "parmi_les_meilleurs": true
+  },
+  {
+   "segment": "circuit : WTA · modèles : accord",
+   "tous": {
+    "matchs": 699,
+    "maitrise": 0.208,
+    "log_loss": 0.5493,
+    "reussite_pct": 71.0,
+    "annoncee_pct": 69.5,
+    "pente": 1.17
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 373,
+     "maitrise": 0.243,
+     "log_loss": 0.525,
+     "reussite_pct": 71.8,
+     "annoncee_pct": 68.5,
+     "pente": 1.51
+    },
+    "oct–nov": {
+     "matchs": 326,
+     "maitrise": 0.167,
+     "log_loss": 0.577,
+     "reussite_pct": 69.9,
+     "annoncee_pct": 70.7,
+     "pente": 0.91
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "confiance : 70–80 % · âge du favori : 23–29 ans",
+   "tous": {
+    "matchs": 600,
+    "maitrise": 0.207,
+    "log_loss": 0.5497,
+    "reussite_pct": 76.0,
+    "annoncee_pct": 74.6,
+    "pente": 1.07
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 321,
+     "maitrise": 0.207,
+     "log_loss": 0.55,
+     "reussite_pct": 76.0,
+     "annoncee_pct": 74.4,
+     "pente": 1.08
+    },
+    "oct–nov": {
+     "matchs": 279,
+     "maitrise": 0.207,
+     "log_loss": 0.5494,
+     "reussite_pct": 76.0,
+     "annoncee_pct": 74.8,
+     "pente": 1.06
+    }
+   },
+   "parmi_les_meilleurs": true
+  },
+  {
+   "segment": "circuit : WTA · âge du favori : < 23 ans",
+   "tous": {
+    "matchs": 311,
+    "maitrise": 0.205,
+    "log_loss": 0.5512,
+    "reussite_pct": 68.8,
+    "annoncee_pct": 67.6,
+    "pente": 1.37
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 165,
+     "maitrise": 0.221,
+     "log_loss": 0.54,
+     "reussite_pct": 68.5,
+     "annoncee_pct": 66.3,
+     "pente": 1.71
+    },
+    "oct–nov": {
+     "matchs": 146,
+     "maitrise": 0.186,
+     "log_loss": 0.564,
+     "reussite_pct": 69.2,
+     "annoncee_pct": 69.2,
+     "pente": 1.12
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "confiance : 70–80 % · modèles : écart ≥ 10 pts",
+   "tous": {
+    "matchs": 343,
+    "maitrise": 0.205,
+    "log_loss": 0.5509,
+    "reussite_pct": 75.8,
+    "annoncee_pct": 74.3,
+    "pente": 1.08
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 187,
+     "maitrise": 0.215,
+     "log_loss": 0.544,
+     "reussite_pct": 76.5,
+     "annoncee_pct": 74.3,
+     "pente": 1.11
+    },
+    "oct–nov": {
+     "matchs": 156,
+     "maitrise": 0.193,
+     "log_loss": 0.5591,
+     "reussite_pct": 75.0,
+     "annoncee_pct": 74.2,
+     "pente": 1.05
+    }
+   },
+   "parmi_les_meilleurs": true
+  },
+  {
+   "segment": "expérience du favori : 60–150 · retour d'absence : oui",
+   "tous": {
+    "matchs": 424,
+    "maitrise": 0.201,
+    "log_loss": 0.5538,
+    "reussite_pct": 71.5,
+    "annoncee_pct": 67.8,
+    "pente": 1.3
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 252,
+     "maitrise": 0.203,
+     "log_loss": 0.5527,
+     "reussite_pct": 72.2,
+     "annoncee_pct": 67.0,
+     "pente": 1.43
+    },
+    "oct–nov": {
+     "matchs": 172,
+     "maitrise": 0.199,
+     "log_loss": 0.5554,
+     "reussite_pct": 70.3,
+     "annoncee_pct": 69.0,
+     "pente": 1.14
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "circuit : ATP · confiance : 70–80 %",
+   "tous": {
+    "matchs": 207,
+    "maitrise": 0.197,
+    "log_loss": 0.5566,
+    "reussite_pct": 75.4,
+    "annoncee_pct": 74.8,
+    "pente": 1.03
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 114,
+     "maitrise": 0.251,
+     "log_loss": 0.5193,
+     "reussite_pct": 78.9,
+     "annoncee_pct": 74.4,
+     "pente": 1.23
+    },
+    "oct–nov": {
+     "matchs": 93,
+     "maitrise": 0.131,
+     "log_loss": 0.6023,
+     "reussite_pct": 71.0,
+     "annoncee_pct": 75.3,
+     "pente": 0.81
+    }
+   },
+   "parmi_les_meilleurs": true
+  },
+  {
+   "segment": "retour d'absence : oui",
+   "tous": {
+    "matchs": 521,
+    "maitrise": 0.19,
+    "log_loss": 0.5616,
+    "reussite_pct": 69.7,
+    "annoncee_pct": 67.1,
+    "pente": 1.31
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 307,
+     "maitrise": 0.196,
+     "log_loss": 0.5575,
+     "reussite_pct": 70.7,
+     "annoncee_pct": 66.5,
+     "pente": 1.46
+    },
+    "oct–nov": {
+     "matchs": 214,
+     "maitrise": 0.181,
+     "log_loss": 0.5675,
+     "reussite_pct": 68.2,
+     "annoncee_pct": 68.0,
+     "pente": 1.13
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "retour d'absence : oui · changement de surface : non",
+   "tous": {
+    "matchs": 467,
+    "maitrise": 0.183,
+    "log_loss": 0.566,
+    "reussite_pct": 69.0,
+    "annoncee_pct": 67.0,
+    "pente": 1.28
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 274,
+     "maitrise": 0.194,
+     "log_loss": 0.5584,
+     "reussite_pct": 70.4,
+     "annoncee_pct": 66.6,
+     "pente": 1.44
+    },
+    "oct–nov": {
+     "matchs": 193,
+     "maitrise": 0.168,
+     "log_loss": 0.5769,
+     "reussite_pct": 66.8,
+     "annoncee_pct": 67.7,
+     "pente": 1.08
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "surface : Hard · retour d'absence : oui",
+   "tous": {
+    "matchs": 389,
+    "maitrise": 0.181,
+    "log_loss": 0.5679,
+    "reussite_pct": 68.9,
+    "annoncee_pct": 67.4,
+    "pente": 1.21
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 234,
+     "maitrise": 0.184,
+     "log_loss": 0.5656,
+     "reussite_pct": 68.8,
+     "annoncee_pct": 67.3,
+     "pente": 1.28
+    },
+    "oct–nov": {
+     "matchs": 155,
+     "maitrise": 0.176,
+     "log_loss": 0.5714,
+     "reussite_pct": 69.0,
+     "annoncee_pct": 67.7,
+     "pente": 1.12
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "âge du favori : 23–29 ans · retour d'absence : oui",
+   "tous": {
+    "matchs": 271,
+    "maitrise": 0.178,
+    "log_loss": 0.57,
+    "reussite_pct": 71.6,
+    "annoncee_pct": 67.1,
+    "pente": 1.25
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 161,
+     "maitrise": 0.21,
+     "log_loss": 0.5475,
+     "reussite_pct": 75.2,
+     "annoncee_pct": 66.8,
+     "pente": 1.54
+    },
+    "oct–nov": {
+     "matchs": 110,
+     "maitrise": 0.13,
+     "log_loss": 0.6029,
+     "reussite_pct": 66.4,
+     "annoncee_pct": 67.4,
+     "pente": 0.94
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "surface : Hard · expérience du favori : 150 et plus",
+   "tous": {
+    "matchs": 300,
+    "maitrise": 0.174,
+    "log_loss": 0.5726,
+    "reussite_pct": 70.7,
+    "annoncee_pct": 66.3,
+    "pente": 1.26
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 168,
+     "maitrise": 0.194,
+     "log_loss": 0.5584,
+     "reussite_pct": 72.6,
+     "annoncee_pct": 65.1,
+     "pente": 1.59
+    },
+    "oct–nov": {
+     "matchs": 132,
+     "maitrise": 0.148,
+     "log_loss": 0.5908,
+     "reussite_pct": 68.2,
+     "annoncee_pct": 67.8,
+     "pente": 1.0
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "modèles : accord · âge du favori : < 23 ans",
+   "tous": {
+    "matchs": 767,
+    "maitrise": 0.174,
+    "log_loss": 0.5728,
+    "reussite_pct": 72.8,
+    "annoncee_pct": 67.3,
+    "pente": 1.25
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 444,
+     "maitrise": 0.167,
+     "log_loss": 0.5772,
+     "reussite_pct": 74.1,
+     "annoncee_pct": 65.9,
+     "pente": 1.4
+    },
+    "oct–nov": {
+     "matchs": 323,
+     "maitrise": 0.182,
+     "log_loss": 0.5667,
+     "reussite_pct": 70.9,
+     "annoncee_pct": 69.3,
+     "pente": 1.12
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "circuit : WTA · expérience du favori : 60–150",
+   "tous": {
+    "matchs": 1113,
+    "maitrise": 0.166,
+    "log_loss": 0.5783,
+    "reussite_pct": 68.2,
+    "annoncee_pct": 66.8,
+    "pente": 1.16
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 613,
+     "maitrise": 0.189,
+     "log_loss": 0.562,
+     "reussite_pct": 68.7,
+     "annoncee_pct": 65.7,
+     "pente": 1.48
+    },
+    "oct–nov": {
+     "matchs": 500,
+     "maitrise": 0.137,
+     "log_loss": 0.5983,
+     "reussite_pct": 67.6,
+     "annoncee_pct": 68.3,
+     "pente": 0.91
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "circuit : WTA",
+   "tous": {
+    "matchs": 1193,
+    "maitrise": 0.164,
+    "log_loss": 0.5792,
+    "reussite_pct": 68.2,
+    "annoncee_pct": 66.6,
+    "pente": 1.17
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 658,
+     "maitrise": 0.185,
+     "log_loss": 0.5649,
+     "reussite_pct": 68.5,
+     "annoncee_pct": 65.3,
+     "pente": 1.5
+    },
+    "oct–nov": {
+     "matchs": 535,
+     "maitrise": 0.139,
+     "log_loss": 0.5969,
+     "reussite_pct": 67.9,
+     "annoncee_pct": 68.2,
+     "pente": 0.92
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "circuit : WTA · changement de surface : non",
+   "tous": {
+    "matchs": 1105,
+    "maitrise": 0.164,
+    "log_loss": 0.5796,
+    "reussite_pct": 68.2,
+    "annoncee_pct": 66.6,
+    "pente": 1.17
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 606,
+     "maitrise": 0.187,
+     "log_loss": 0.5636,
+     "reussite_pct": 68.8,
+     "annoncee_pct": 65.4,
+     "pente": 1.49
+    },
+    "oct–nov": {
+     "matchs": 499,
+     "maitrise": 0.136,
+     "log_loss": 0.5989,
+     "reussite_pct": 67.5,
+     "annoncee_pct": 68.0,
+     "pente": 0.92
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "modèles : écart ≥ 10 pts · âge du favori : 30 ans et plus",
+   "tous": {
+    "matchs": 224,
+    "maitrise": 0.164,
+    "log_loss": 0.5796,
+    "reussite_pct": 70.5,
+    "annoncee_pct": 68.1,
+    "pente": 1.21
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 142,
+     "maitrise": 0.129,
+     "log_loss": 0.6036,
+     "reussite_pct": 67.6,
+     "annoncee_pct": 66.9,
+     "pente": 1.13
+    },
+    "oct–nov": {
+     "matchs": 82,
+     "maitrise": 0.224,
+     "log_loss": 0.5382,
+     "reussite_pct": 75.6,
+     "annoncee_pct": 70.3,
+     "pente": 1.32
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "circuit : WTA · modèles : écart ≥ 10 pts",
+   "tous": {
+    "matchs": 284,
+    "maitrise": 0.163,
+    "log_loss": 0.5799,
+    "reussite_pct": 70.8,
+    "annoncee_pct": 68.7,
+    "pente": 1.14
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 153,
+     "maitrise": 0.175,
+     "log_loss": 0.5719,
+     "reussite_pct": 71.9,
+     "annoncee_pct": 67.3,
+     "pente": 1.39
+    },
+    "oct–nov": {
+     "matchs": 131,
+     "maitrise": 0.15,
+     "log_loss": 0.5892,
+     "reussite_pct": 69.5,
+     "annoncee_pct": 70.3,
+     "pente": 0.95
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "circuit : WTA · surface : Hard",
+   "tous": {
+    "matchs": 1106,
+    "maitrise": 0.162,
+    "log_loss": 0.5806,
+    "reussite_pct": 67.7,
+    "annoncee_pct": 66.2,
+    "pente": 1.21
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 658,
+     "maitrise": 0.185,
+     "log_loss": 0.5649,
+     "reussite_pct": 68.5,
+     "annoncee_pct": 65.3,
+     "pente": 1.5
+    },
+    "oct–nov": {
+     "matchs": 448,
+     "maitrise": 0.129,
+     "log_loss": 0.6038,
+     "reussite_pct": 66.5,
+     "annoncee_pct": 67.6,
+     "pente": 0.92
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "surface : Clay · âge du favori : 30 ans et plus",
+   "tous": {
+    "matchs": 248,
+    "maitrise": 0.161,
+    "log_loss": 0.5815,
+    "reussite_pct": 68.1,
+    "annoncee_pct": 66.5,
+    "pente": 1.24
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 145,
+     "maitrise": 0.143,
+     "log_loss": 0.5943,
+     "reussite_pct": 67.6,
+     "annoncee_pct": 65.6,
+     "pente": 1.23
+    },
+    "oct–nov": {
+     "matchs": 103,
+     "maitrise": 0.187,
+     "log_loss": 0.5634,
+     "reussite_pct": 68.9,
+     "annoncee_pct": 67.9,
+     "pente": 1.26
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "surface : Hard · âge du favori : < 23 ans",
+   "tous": {
+    "matchs": 890,
+    "maitrise": 0.157,
+    "log_loss": 0.584,
+    "reussite_pct": 68.9,
+    "annoncee_pct": 65.3,
+    "pente": 1.34
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 531,
+     "maitrise": 0.166,
+     "log_loss": 0.578,
+     "reussite_pct": 70.1,
+     "annoncee_pct": 64.3,
+     "pente": 1.56
+    },
+    "oct–nov": {
+     "matchs": 359,
+     "maitrise": 0.145,
+     "log_loss": 0.593,
+     "reussite_pct": 67.1,
+     "annoncee_pct": 66.9,
+     "pente": 1.1
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "modèles : accord · expérience du favori : 60–150",
+   "tous": {
+    "matchs": 2808,
+    "maitrise": 0.157,
+    "log_loss": 0.5843,
+    "reussite_pct": 70.2,
+    "annoncee_pct": 67.6,
+    "pente": 1.12
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 1594,
+     "maitrise": 0.155,
+     "log_loss": 0.5857,
+     "reussite_pct": 70.8,
+     "annoncee_pct": 66.6,
+     "pente": 1.22
+    },
+    "oct–nov": {
+     "matchs": 1214,
+     "maitrise": 0.16,
+     "log_loss": 0.5825,
+     "reussite_pct": 69.3,
+     "annoncee_pct": 69.1,
+     "pente": 1.02
+    }
+   },
+   "parmi_les_meilleurs": true
+  },
+  {
+   "segment": "surface : Hard · modèles : accord",
+   "tous": {
+    "matchs": 2379,
+    "maitrise": 0.153,
+    "log_loss": 0.587,
+    "reussite_pct": 69.2,
+    "annoncee_pct": 67.6,
+    "pente": 1.09
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 1367,
+     "maitrise": 0.161,
+     "log_loss": 0.5819,
+     "reussite_pct": 69.5,
+     "annoncee_pct": 66.6,
+     "pente": 1.22
+    },
+    "oct–nov": {
+     "matchs": 1012,
+     "maitrise": 0.143,
+     "log_loss": 0.5938,
+     "reussite_pct": 68.9,
+     "annoncee_pct": 69.0,
+     "pente": 0.95
+    }
+   },
+   "parmi_les_meilleurs": true
+  },
+  {
+   "segment": "modèles : accord · âge du favori : 30 ans et plus",
+   "tous": {
+    "matchs": 567,
+    "maitrise": 0.152,
+    "log_loss": 0.588,
+    "reussite_pct": 67.5,
+    "annoncee_pct": 68.3,
+    "pente": 1.04
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 329,
+     "maitrise": 0.144,
+     "log_loss": 0.5934,
+     "reussite_pct": 67.2,
+     "annoncee_pct": 67.7,
+     "pente": 1.04
+    },
+    "oct–nov": {
+     "matchs": 238,
+     "maitrise": 0.162,
+     "log_loss": 0.5806,
+     "reussite_pct": 68.1,
+     "annoncee_pct": 69.2,
+     "pente": 1.04
+    }
+   },
+   "parmi_les_meilleurs": true
+  },
+  {
+   "segment": "modèles : accord · changement de surface : non",
+   "tous": {
+    "matchs": 2998,
+    "maitrise": 0.151,
+    "log_loss": 0.5881,
+    "reussite_pct": 69.1,
+    "annoncee_pct": 67.4,
+    "pente": 1.1
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 1676,
+     "maitrise": 0.152,
+     "log_loss": 0.5881,
+     "reussite_pct": 69.7,
+     "annoncee_pct": 66.2,
+     "pente": 1.22
+    },
+    "oct–nov": {
+     "matchs": 1322,
+     "maitrise": 0.151,
+     "log_loss": 0.5882,
+     "reussite_pct": 68.4,
+     "annoncee_pct": 68.9,
+     "pente": 0.99
+    }
+   },
+   "parmi_les_meilleurs": true
+  },
+  {
+   "segment": "modèles : accord",
+   "tous": {
+    "matchs": 3274,
+    "maitrise": 0.15,
+    "log_loss": 0.5893,
+    "reussite_pct": 69.2,
+    "annoncee_pct": 67.5,
+    "pente": 1.09
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 1864,
+     "maitrise": 0.148,
+     "log_loss": 0.5908,
+     "reussite_pct": 69.6,
+     "annoncee_pct": 66.3,
+     "pente": 1.19
+    },
+    "oct–nov": {
+     "matchs": 1410,
+     "maitrise": 0.153,
+     "log_loss": 0.5874,
+     "reussite_pct": 68.8,
+     "annoncee_pct": 69.0,
+     "pente": 0.99
+    }
+   },
+   "parmi_les_meilleurs": true
+  },
+  {
+   "segment": "surface : Hard · changement de surface : oui",
+   "tous": {
+    "matchs": 331,
+    "maitrise": 0.15,
+    "log_loss": 0.589,
+    "reussite_pct": 70.7,
+    "annoncee_pct": 64.2,
+    "pente": 1.43
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 259,
+     "maitrise": 0.139,
+     "log_loss": 0.5969,
+     "reussite_pct": 69.1,
+     "annoncee_pct": 63.8,
+     "pente": 1.39
+    },
+    "oct–nov": {
+     "matchs": 72,
+     "maitrise": 0.191,
+     "log_loss": 0.5607,
+     "reussite_pct": 76.4,
+     "annoncee_pct": 65.9,
+     "pente": 1.56
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "expérience du favori : 60–150 · changement de surface : oui",
+   "tous": {
+    "matchs": 433,
+    "maitrise": 0.15,
+    "log_loss": 0.5894,
+    "reussite_pct": 71.8,
+    "annoncee_pct": 65.6,
+    "pente": 1.25
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 301,
+     "maitrise": 0.143,
+     "log_loss": 0.5941,
+     "reussite_pct": 70.4,
+     "annoncee_pct": 64.5,
+     "pente": 1.32
+    },
+    "oct–nov": {
+     "matchs": 132,
+     "maitrise": 0.165,
+     "log_loss": 0.5788,
+     "reussite_pct": 75.0,
+     "annoncee_pct": 68.0,
+     "pente": 1.13
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "circuit : WTA · retour d'absence : non",
+   "tous": {
+    "matchs": 1029,
+    "maitrise": 0.148,
+    "log_loss": 0.5904,
+    "reussite_pct": 67.4,
+    "annoncee_pct": 66.1,
+    "pente": 1.13
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 589,
+     "maitrise": 0.174,
+     "log_loss": 0.5726,
+     "reussite_pct": 68.1,
+     "annoncee_pct": 64.9,
+     "pente": 1.47
+    },
+    "oct–nov": {
+     "matchs": 440,
+     "maitrise": 0.114,
+     "log_loss": 0.6141,
+     "reussite_pct": 66.6,
+     "annoncee_pct": 67.8,
+     "pente": 0.85
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "âge du favori : 23–29 ans · changement de surface : oui",
+   "tous": {
+    "matchs": 250,
+    "maitrise": 0.147,
+    "log_loss": 0.5914,
+    "reussite_pct": 72.0,
+    "annoncee_pct": 65.9,
+    "pente": 1.19
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 176,
+     "maitrise": 0.162,
+     "log_loss": 0.5807,
+     "reussite_pct": 72.2,
+     "annoncee_pct": 65.0,
+     "pente": 1.41
+    },
+    "oct–nov": {
+     "matchs": 74,
+     "maitrise": 0.11,
+     "log_loss": 0.6167,
+     "reussite_pct": 71.6,
+     "annoncee_pct": 68.1,
+     "pente": 0.87
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "circuit : ATP · modèles : accord",
+   "tous": {
+    "matchs": 646,
+    "maitrise": 0.146,
+    "log_loss": 0.5919,
+    "reussite_pct": 69.8,
+    "annoncee_pct": 67.8,
+    "pente": 1.02
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 373,
+     "maitrise": 0.161,
+     "log_loss": 0.5813,
+     "reussite_pct": 72.7,
+     "annoncee_pct": 66.8,
+     "pente": 1.2
+    },
+    "oct–nov": {
+     "matchs": 273,
+     "maitrise": 0.125,
+     "log_loss": 0.6064,
+     "reussite_pct": 65.9,
+     "annoncee_pct": 69.2,
+     "pente": 0.85
+    }
+   },
+   "parmi_les_meilleurs": true
+  },
+  {
+   "segment": "circuit : CH · changement de surface : oui",
+   "tous": {
+    "matchs": 317,
+    "maitrise": 0.146,
+    "log_loss": 0.5922,
+    "reussite_pct": 73.5,
+    "annoncee_pct": 65.3,
+    "pente": 1.28
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 204,
+     "maitrise": 0.113,
+     "log_loss": 0.6146,
+     "reussite_pct": 70.1,
+     "annoncee_pct": 64.8,
+     "pente": 1.08
+    },
+    "oct–nov": {
+     "matchs": 113,
+     "maitrise": 0.204,
+     "log_loss": 0.5517,
+     "reussite_pct": 79.6,
+     "annoncee_pct": 66.1,
+     "pente": 1.67
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "circuit : ATP · modèles : écart ≥ 10 pts",
+   "tous": {
+    "matchs": 258,
+    "maitrise": 0.145,
+    "log_loss": 0.5927,
+    "reussite_pct": 68.2,
+    "annoncee_pct": 68.4,
+    "pente": 1.08
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 172,
+     "maitrise": 0.141,
+     "log_loss": 0.5954,
+     "reussite_pct": 67.4,
+     "annoncee_pct": 67.1,
+     "pente": 1.15
+    },
+    "oct–nov": {
+     "matchs": 86,
+     "maitrise": 0.153,
+     "log_loss": 0.5871,
+     "reussite_pct": 69.8,
+     "annoncee_pct": 70.9,
+     "pente": 0.99
+    }
+   },
+   "parmi_les_meilleurs": true
+  },
+  {
+   "segment": "modèles : accord · expérience du favori : 150 et plus",
+   "tous": {
+    "matchs": 264,
+    "maitrise": 0.144,
+    "log_loss": 0.5932,
+    "reussite_pct": 68.2,
+    "annoncee_pct": 68.3,
+    "pente": 0.98
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 142,
+     "maitrise": 0.163,
+     "log_loss": 0.5802,
+     "reussite_pct": 69.7,
+     "annoncee_pct": 67.1,
+     "pente": 1.15
+    },
+    "oct–nov": {
+     "matchs": 122,
+     "maitrise": 0.122,
+     "log_loss": 0.6083,
+     "reussite_pct": 66.4,
+     "annoncee_pct": 69.6,
+     "pente": 0.83
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "modèles : accord · âge du favori : 23–29 ans",
+   "tous": {
+    "matchs": 1804,
+    "maitrise": 0.144,
+    "log_loss": 0.593,
+    "reussite_pct": 69.1,
+    "annoncee_pct": 67.5,
+    "pente": 1.05
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 1010,
+     "maitrise": 0.146,
+     "log_loss": 0.5917,
+     "reussite_pct": 69.5,
+     "annoncee_pct": 66.4,
+     "pente": 1.17
+    },
+    "oct–nov": {
+     "matchs": 794,
+     "maitrise": 0.142,
+     "log_loss": 0.5948,
+     "reussite_pct": 68.6,
+     "annoncee_pct": 69.0,
+     "pente": 0.94
+    }
+   },
+   "parmi_les_meilleurs": true
+  },
+  {
+   "segment": "changement de surface : oui",
+   "tous": {
+    "matchs": 509,
+    "maitrise": 0.142,
+    "log_loss": 0.595,
+    "reussite_pct": 71.1,
+    "annoncee_pct": 65.4,
+    "pente": 1.21
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 352,
+     "maitrise": 0.123,
+     "log_loss": 0.6082,
+     "reussite_pct": 68.8,
+     "annoncee_pct": 64.4,
+     "pente": 1.17
+    },
+    "oct–nov": {
+     "matchs": 157,
+     "maitrise": 0.184,
+     "log_loss": 0.5653,
+     "reussite_pct": 76.4,
+     "annoncee_pct": 67.4,
+     "pente": 1.3
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "surface : Clay · modèles : accord",
+   "tous": {
+    "matchs": 895,
+    "maitrise": 0.141,
+    "log_loss": 0.5956,
+    "reussite_pct": 69.3,
+    "annoncee_pct": 67.1,
+    "pente": 1.09
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 497,
+     "maitrise": 0.112,
+     "log_loss": 0.6152,
+     "reussite_pct": 69.8,
+     "annoncee_pct": 65.5,
+     "pente": 1.08
+    },
+    "oct–nov": {
+     "matchs": 398,
+     "maitrise": 0.176,
+     "log_loss": 0.5711,
+     "reussite_pct": 68.6,
+     "annoncee_pct": 69.0,
+     "pente": 1.11
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "confiance : 60–70 % · expérience de l'outsider : < 60 matchs",
+   "tous": {
+    "matchs": 262,
+    "maitrise": 0.141,
+    "log_loss": 0.5957,
+    "reussite_pct": 72.9,
+    "annoncee_pct": 65.0,
+    "pente": 1.6
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 174,
+     "maitrise": 0.139,
+     "log_loss": 0.5966,
+     "reussite_pct": 73.0,
+     "annoncee_pct": 65.1,
+     "pente": 1.58
+    },
+    "oct–nov": {
+     "matchs": 88,
+     "maitrise": 0.143,
+     "log_loss": 0.594,
+     "reussite_pct": 72.7,
+     "annoncee_pct": 64.9,
+     "pente": 1.63
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "modèles : écart ≥ 10 pts · âge du favori : < 23 ans",
+   "tous": {
+    "matchs": 307,
+    "maitrise": 0.141,
+    "log_loss": 0.5957,
+    "reussite_pct": 70.7,
+    "annoncee_pct": 67.0,
+    "pente": 1.2
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 183,
+     "maitrise": 0.15,
+     "log_loss": 0.5891,
+     "reussite_pct": 71.0,
+     "annoncee_pct": 66.6,
+     "pente": 1.3
+    },
+    "oct–nov": {
+     "matchs": 124,
+     "maitrise": 0.126,
+     "log_loss": 0.6056,
+     "reussite_pct": 70.2,
+     "annoncee_pct": 67.5,
+     "pente": 1.08
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "modèles : accord · retour d'absence : non",
+   "tous": {
+    "matchs": 2961,
+    "maitrise": 0.14,
+    "log_loss": 0.5961,
+    "reussite_pct": 68.9,
+    "annoncee_pct": 67.2,
+    "pente": 1.06
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 1688,
+     "maitrise": 0.137,
+     "log_loss": 0.5985,
+     "reussite_pct": 69.1,
+     "annoncee_pct": 66.0,
+     "pente": 1.15
+    },
+    "oct–nov": {
+     "matchs": 1273,
+     "maitrise": 0.144,
+     "log_loss": 0.593,
+     "reussite_pct": 68.6,
+     "annoncee_pct": 68.8,
+     "pente": 0.97
+    }
+   },
+   "parmi_les_meilleurs": true
+  },
+  {
+   "segment": "circuit : CH · retour d'absence : oui",
+   "tous": {
+    "matchs": 295,
+    "maitrise": 0.137,
+    "log_loss": 0.5983,
+    "reussite_pct": 67.5,
+    "annoncee_pct": 65.1,
+    "pente": 1.25
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 196,
+     "maitrise": 0.153,
+     "log_loss": 0.5868,
+     "reussite_pct": 69.4,
+     "annoncee_pct": 64.5,
+     "pente": 1.46
+    },
+    "oct–nov": {
+     "matchs": 99,
+     "maitrise": 0.104,
+     "log_loss": 0.621,
+     "reussite_pct": 63.6,
+     "annoncee_pct": 66.1,
+     "pente": 0.95
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "surface : Hard · modèles : écart ≥ 10 pts",
+   "tous": {
+    "matchs": 959,
+    "maitrise": 0.137,
+    "log_loss": 0.5983,
+    "reussite_pct": 70.1,
+    "annoncee_pct": 67.5,
+    "pente": 1.11
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 604,
+     "maitrise": 0.141,
+     "log_loss": 0.5953,
+     "reussite_pct": 70.5,
+     "annoncee_pct": 66.3,
+     "pente": 1.25
+    },
+    "oct–nov": {
+     "matchs": 355,
+     "maitrise": 0.13,
+     "log_loss": 0.6033,
+     "reussite_pct": 69.3,
+     "annoncee_pct": 69.6,
+     "pente": 0.95
+    }
+   },
+   "parmi_les_meilleurs": true
+  },
+  {
+   "segment": "expérience du favori : 60–150 · âge du favori : 30 ans et plus",
+   "tous": {
+    "matchs": 857,
+    "maitrise": 0.137,
+    "log_loss": 0.5979,
+    "reussite_pct": 67.1,
+    "annoncee_pct": 66.2,
+    "pente": 1.1
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 511,
+     "maitrise": 0.115,
+     "log_loss": 0.6136,
+     "reussite_pct": 65.4,
+     "annoncee_pct": 65.5,
+     "pente": 1.03
+    },
+    "oct–nov": {
+     "matchs": 346,
+     "maitrise": 0.171,
+     "log_loss": 0.5747,
+     "reussite_pct": 69.7,
+     "annoncee_pct": 67.3,
+     "pente": 1.2
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "âge du favori : < 23 ans",
+   "tous": {
+    "matchs": 1289,
+    "maitrise": 0.135,
+    "log_loss": 0.5998,
+    "reussite_pct": 68.0,
+    "annoncee_pct": 65.0,
+    "pente": 1.21
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 761,
+     "maitrise": 0.132,
+     "log_loss": 0.6013,
+     "reussite_pct": 68.9,
+     "annoncee_pct": 63.9,
+     "pente": 1.33
+    },
+    "oct–nov": {
+     "matchs": 528,
+     "maitrise": 0.138,
+     "log_loss": 0.5977,
+     "reussite_pct": 66.9,
+     "annoncee_pct": 66.7,
+     "pente": 1.07
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "circuit : ATP · âge du favori : 23–29 ans",
+   "tous": {
+    "matchs": 675,
+    "maitrise": 0.135,
+    "log_loss": 0.5993,
+    "reussite_pct": 67.3,
+    "annoncee_pct": 66.2,
+    "pente": 1.07
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 395,
+     "maitrise": 0.156,
+     "log_loss": 0.5852,
+     "reussite_pct": 69.9,
+     "annoncee_pct": 65.6,
+     "pente": 1.28
+    },
+    "oct–nov": {
+     "matchs": 280,
+     "maitrise": 0.107,
+     "log_loss": 0.6192,
+     "reussite_pct": 63.6,
+     "annoncee_pct": 67.2,
+     "pente": 0.86
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "expérience du favori : 60–150 · âge du favori : < 23 ans",
+   "tous": {
+    "matchs": 1071,
+    "maitrise": 0.135,
+    "log_loss": 0.5998,
+    "reussite_pct": 67.7,
+    "annoncee_pct": 65.2,
+    "pente": 1.2
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 640,
+     "maitrise": 0.137,
+     "log_loss": 0.5981,
+     "reussite_pct": 68.8,
+     "annoncee_pct": 64.0,
+     "pente": 1.37
+    },
+    "oct–nov": {
+     "matchs": 431,
+     "maitrise": 0.131,
+     "log_loss": 0.6023,
+     "reussite_pct": 66.1,
+     "annoncee_pct": 66.9,
+     "pente": 1.02
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "circuit : WTA · expérience de l'outsider : 60–150",
+   "tous": {
+    "matchs": 1006,
+    "maitrise": 0.134,
+    "log_loss": 0.6003,
+    "reussite_pct": 67.0,
+    "annoncee_pct": 65.2,
+    "pente": 1.14
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 566,
+     "maitrise": 0.167,
+     "log_loss": 0.5775,
+     "reussite_pct": 68.0,
+     "annoncee_pct": 64.2,
+     "pente": 1.53
+    },
+    "oct–nov": {
+     "matchs": 440,
+     "maitrise": 0.092,
+     "log_loss": 0.6296,
+     "reussite_pct": 65.7,
+     "annoncee_pct": 66.5,
+     "pente": 0.83
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "âge du favori : < 23 ans · changement de surface : non",
+   "tous": {
+    "matchs": 1162,
+    "maitrise": 0.134,
+    "log_loss": 0.6004,
+    "reussite_pct": 67.7,
+    "annoncee_pct": 65.1,
+    "pente": 1.2
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 674,
+     "maitrise": 0.137,
+     "log_loss": 0.5981,
+     "reussite_pct": 69.3,
+     "annoncee_pct": 63.9,
+     "pente": 1.38
+    },
+    "oct–nov": {
+     "matchs": 488,
+     "maitrise": 0.129,
+     "log_loss": 0.6036,
+     "reussite_pct": 65.6,
+     "annoncee_pct": 66.6,
+     "pente": 1.02
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "modèles : écart ≥ 10 pts",
+   "tous": {
+    "matchs": 1341,
+    "maitrise": 0.133,
+    "log_loss": 0.6011,
+    "reussite_pct": 70.2,
+    "annoncee_pct": 67.3,
+    "pente": 1.11
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 825,
+     "maitrise": 0.134,
+     "log_loss": 0.6,
+     "reussite_pct": 70.4,
+     "annoncee_pct": 66.2,
+     "pente": 1.22
+    },
+    "oct–nov": {
+     "matchs": 516,
+     "maitrise": 0.13,
+     "log_loss": 0.603,
+     "reussite_pct": 69.8,
+     "annoncee_pct": 69.1,
+     "pente": 0.98
+    }
+   },
+   "parmi_les_meilleurs": true
+  },
+  {
+   "segment": "âge du favori : 30 ans et plus",
+   "tous": {
+    "matchs": 937,
+    "maitrise": 0.133,
+    "log_loss": 0.6009,
+    "reussite_pct": 66.4,
+    "annoncee_pct": 66.0,
+    "pente": 1.09
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 562,
+     "maitrise": 0.119,
+     "log_loss": 0.6108,
+     "reussite_pct": 64.9,
+     "annoncee_pct": 65.2,
+     "pente": 1.07
+    },
+    "oct–nov": {
+     "matchs": 375,
+     "maitrise": 0.155,
+     "log_loss": 0.586,
+     "reussite_pct": 68.5,
+     "annoncee_pct": 67.1,
+     "pente": 1.12
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "âge du favori : 30 ans et plus · changement de surface : non",
+   "tous": {
+    "matchs": 835,
+    "maitrise": 0.132,
+    "log_loss": 0.6015,
+    "reussite_pct": 65.9,
+    "annoncee_pct": 66.0,
+    "pente": 1.08
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 490,
+     "maitrise": 0.123,
+     "log_loss": 0.6077,
+     "reussite_pct": 64.5,
+     "annoncee_pct": 65.3,
+     "pente": 1.09
+    },
+    "oct–nov": {
+     "matchs": 345,
+     "maitrise": 0.145,
+     "log_loss": 0.5926,
+     "reussite_pct": 67.8,
+     "annoncee_pct": 67.1,
+     "pente": 1.07
+    }
+   },
+   "parmi_les_meilleurs": true
+  },
+  {
+   "segment": "modèles : accord · expérience de l'outsider : 60–150",
+   "tous": {
+    "matchs": 2517,
+    "maitrise": 0.131,
+    "log_loss": 0.6025,
+    "reussite_pct": 67.3,
+    "annoncee_pct": 67.0,
+    "pente": 1.03
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 1424,
+     "maitrise": 0.132,
+     "log_loss": 0.6019,
+     "reussite_pct": 67.7,
+     "annoncee_pct": 66.0,
+     "pente": 1.12
+    },
+    "oct–nov": {
+     "matchs": 1093,
+     "maitrise": 0.13,
+     "log_loss": 0.6032,
+     "reussite_pct": 66.9,
+     "annoncee_pct": 68.3,
+     "pente": 0.94
+    }
+   },
+   "parmi_les_meilleurs": true
+  },
+  {
+   "segment": "modèles : accord · changement de surface : oui",
+   "tous": {
+    "matchs": 276,
+    "maitrise": 0.131,
+    "log_loss": 0.602,
+    "reussite_pct": 70.7,
+    "annoncee_pct": 68.0,
+    "pente": 0.99
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 188,
+     "maitrise": 0.113,
+     "log_loss": 0.6148,
+     "reussite_pct": 68.6,
+     "annoncee_pct": 67.0,
+     "pente": 0.94
+    },
+    "oct–nov": {
+     "matchs": 88,
+     "maitrise": 0.171,
+     "log_loss": 0.5747,
+     "reussite_pct": 75.0,
+     "annoncee_pct": 70.1,
+     "pente": 1.06
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "circuit : CH · modèles : accord",
+   "tous": {
+    "matchs": 1929,
+    "maitrise": 0.13,
+    "log_loss": 0.6029,
+    "reussite_pct": 68.4,
+    "annoncee_pct": 66.6,
+    "pente": 1.08
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 1118,
+     "maitrise": 0.112,
+     "log_loss": 0.6159,
+     "reussite_pct": 67.8,
+     "annoncee_pct": 65.4,
+     "pente": 1.07
+    },
+    "oct–nov": {
+     "matchs": 811,
+     "maitrise": 0.156,
+     "log_loss": 0.5851,
+     "reussite_pct": 69.3,
+     "annoncee_pct": 68.2,
+     "pente": 1.09
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "circuit : ATP · âge du favori : < 23 ans",
+   "tous": {
+    "matchs": 192,
+    "maitrise": 0.129,
+    "log_loss": 0.6036,
+    "reussite_pct": 66.7,
+    "annoncee_pct": 64.8,
+    "pente": 1.18
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 122,
+     "maitrise": 0.145,
+     "log_loss": 0.5925,
+     "reussite_pct": 69.7,
+     "annoncee_pct": 63.3,
+     "pente": 1.55
+    },
+    "oct–nov": {
+     "matchs": 70,
+     "maitrise": 0.101,
+     "log_loss": 0.6229,
+     "reussite_pct": 61.4,
+     "annoncee_pct": 67.6,
+     "pente": 0.83
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "surface : Clay · expérience du favori : 60–150",
+   "tous": {
+    "matchs": 1284,
+    "maitrise": 0.129,
+    "log_loss": 0.6037,
+    "reussite_pct": 68.5,
+    "annoncee_pct": 65.3,
+    "pente": 1.16
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 737,
+     "maitrise": 0.104,
+     "log_loss": 0.6213,
+     "reussite_pct": 68.5,
+     "annoncee_pct": 63.8,
+     "pente": 1.14
+    },
+    "oct–nov": {
+     "matchs": 547,
+     "maitrise": 0.163,
+     "log_loss": 0.5799,
+     "reussite_pct": 68.4,
+     "annoncee_pct": 67.2,
+     "pente": 1.18
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "modèles : écart ≥ 10 pts · retour d'absence : non",
+   "tous": {
+    "matchs": 1219,
+    "maitrise": 0.129,
+    "log_loss": 0.6034,
+    "reussite_pct": 70.1,
+    "annoncee_pct": 67.1,
+    "pente": 1.11
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 749,
+     "maitrise": 0.13,
+     "log_loss": 0.6033,
+     "reussite_pct": 70.0,
+     "annoncee_pct": 66.0,
+     "pente": 1.21
+    },
+    "oct–nov": {
+     "matchs": 470,
+     "maitrise": 0.129,
+     "log_loss": 0.6036,
+     "reussite_pct": 70.2,
+     "annoncee_pct": 68.9,
+     "pente": 0.99
+    }
+   },
+   "parmi_les_meilleurs": true
+  },
+  {
+   "segment": "expérience du favori : 150 et plus · changement de surface : non",
+   "tous": {
+    "matchs": 403,
+    "maitrise": 0.129,
+    "log_loss": 0.6039,
+    "reussite_pct": 66.5,
+    "annoncee_pct": 65.5,
+    "pente": 1.07
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 219,
+     "maitrise": 0.167,
+     "log_loss": 0.5771,
+     "reussite_pct": 69.9,
+     "annoncee_pct": 64.4,
+     "pente": 1.48
+    },
+    "oct–nov": {
+     "matchs": 184,
+     "maitrise": 0.083,
+     "log_loss": 0.6357,
+     "reussite_pct": 62.5,
+     "annoncee_pct": 66.9,
+     "pente": 0.77
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "retour d'absence : non · changement de surface : oui",
+   "tous": {
+    "matchs": 455,
+    "maitrise": 0.129,
+    "log_loss": 0.6035,
+    "reussite_pct": 70.5,
+    "annoncee_pct": 65.1,
+    "pente": 1.17
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 319,
+     "maitrise": 0.114,
+     "log_loss": 0.6142,
+     "reussite_pct": 68.3,
+     "annoncee_pct": 64.3,
+     "pente": 1.12
+    },
+    "oct–nov": {
+     "matchs": 136,
+     "maitrise": 0.166,
+     "log_loss": 0.5783,
+     "reussite_pct": 75.7,
+     "annoncee_pct": 66.9,
+     "pente": 1.25
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "modèles : écart ≥ 10 pts · expérience du favori : 60–150",
+   "tous": {
+    "matchs": 1142,
+    "maitrise": 0.128,
+    "log_loss": 0.6043,
+    "reussite_pct": 69.8,
+    "annoncee_pct": 67.4,
+    "pente": 1.08
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 704,
+     "maitrise": 0.13,
+     "log_loss": 0.603,
+     "reussite_pct": 70.0,
+     "annoncee_pct": 66.3,
+     "pente": 1.18
+    },
+    "oct–nov": {
+     "matchs": 438,
+     "maitrise": 0.125,
+     "log_loss": 0.6064,
+     "reussite_pct": 69.4,
+     "annoncee_pct": 69.1,
+     "pente": 0.95
+    }
+   },
+   "parmi_les_meilleurs": true
+  },
+  {
+   "segment": "âge du favori : 30 ans et plus · retour d'absence : non",
+   "tous": {
+    "matchs": 844,
+    "maitrise": 0.128,
+    "log_loss": 0.6043,
+    "reussite_pct": 66.4,
+    "annoncee_pct": 65.5,
+    "pente": 1.11
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 506,
+     "maitrise": 0.114,
+     "log_loss": 0.6139,
+     "reussite_pct": 65.2,
+     "annoncee_pct": 64.7,
+     "pente": 1.08
+    },
+    "oct–nov": {
+     "matchs": 338,
+     "maitrise": 0.149,
+     "log_loss": 0.5898,
+     "reussite_pct": 68.0,
+     "annoncee_pct": 66.7,
+     "pente": 1.14
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "expérience du favori : 60–150",
+   "tous": {
+    "matchs": 4733,
+    "maitrise": 0.126,
+    "log_loss": 0.6058,
+    "reussite_pct": 67.4,
+    "annoncee_pct": 65.3,
+    "pente": 1.11
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 2789,
+     "maitrise": 0.125,
+     "log_loss": 0.6065,
+     "reussite_pct": 67.7,
+     "annoncee_pct": 64.3,
+     "pente": 1.22
+    },
+    "oct–nov": {
+     "matchs": 1944,
+     "maitrise": 0.127,
+     "log_loss": 0.6049,
+     "reussite_pct": 66.9,
+     "annoncee_pct": 66.9,
+     "pente": 0.99
+    }
+   },
+   "parmi_les_meilleurs": true
+  },
+  {
+   "segment": "circuit : WTA · âge du favori : 23–29 ans",
+   "tous": {
+    "matchs": 610,
+    "maitrise": 0.126,
+    "log_loss": 0.6056,
+    "reussite_pct": 65.7,
+    "annoncee_pct": 66.0,
+    "pente": 0.98
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 341,
+     "maitrise": 0.157,
+     "log_loss": 0.5845,
+     "reussite_pct": 67.4,
+     "annoncee_pct": 64.3,
+     "pente": 1.38
+    },
+    "oct–nov": {
+     "matchs": 269,
+     "maitrise": 0.088,
+     "log_loss": 0.6324,
+     "reussite_pct": 63.6,
+     "annoncee_pct": 68.0,
+     "pente": 0.72
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "surface : Clay · changement de surface : oui",
+   "tous": {
+    "matchs": 178,
+    "maitrise": 0.126,
+    "log_loss": 0.606,
+    "reussite_pct": 71.9,
+    "annoncee_pct": 67.4,
+    "pente": 0.97
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 93,
+     "maitrise": 0.077,
+     "log_loss": 0.6397,
+     "reussite_pct": 67.7,
+     "annoncee_pct": 66.3,
+     "pente": 0.79
+    },
+    "oct–nov": {
+     "matchs": 85,
+     "maitrise": 0.179,
+     "log_loss": 0.5692,
+     "reussite_pct": 76.5,
+     "annoncee_pct": 68.7,
+     "pente": 1.15
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "modèles : écart ≥ 10 pts · âge du favori : 23–29 ans",
+   "tous": {
+    "matchs": 753,
+    "maitrise": 0.126,
+    "log_loss": 0.606,
+    "reussite_pct": 70.4,
+    "annoncee_pct": 67.4,
+    "pente": 1.06
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 463,
+     "maitrise": 0.141,
+     "log_loss": 0.5951,
+     "reussite_pct": 71.9,
+     "annoncee_pct": 66.0,
+     "pente": 1.28
+    },
+    "oct–nov": {
+     "matchs": 290,
+     "maitrise": 0.101,
+     "log_loss": 0.6234,
+     "reussite_pct": 67.9,
+     "annoncee_pct": 69.5,
+     "pente": 0.84
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "surface : Hard",
+   "tous": {
+    "matchs": 4050,
+    "maitrise": 0.125,
+    "log_loss": 0.6066,
+    "reussite_pct": 67.0,
+    "annoncee_pct": 65.2,
+    "pente": 1.1
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 2426,
+     "maitrise": 0.13,
+     "log_loss": 0.6029,
+     "reussite_pct": 67.2,
+     "annoncee_pct": 64.2,
+     "pente": 1.25
+    },
+    "oct–nov": {
+     "matchs": 1624,
+     "maitrise": 0.117,
+     "log_loss": 0.6121,
+     "reussite_pct": 66.6,
+     "annoncee_pct": 66.8,
+     "pente": 0.94
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "surface : Hard · expérience du favori : 60–150",
+   "tous": {
+    "matchs": 3449,
+    "maitrise": 0.125,
+    "log_loss": 0.6067,
+    "reussite_pct": 67.0,
+    "annoncee_pct": 65.4,
+    "pente": 1.09
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 2052,
+     "maitrise": 0.133,
+     "log_loss": 0.6012,
+     "reussite_pct": 67.4,
+     "annoncee_pct": 64.5,
+     "pente": 1.24
+    },
+    "oct–nov": {
+     "matchs": 1397,
+     "maitrise": 0.113,
+     "log_loss": 0.6146,
+     "reussite_pct": 66.4,
+     "annoncee_pct": 66.7,
+     "pente": 0.92
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "expérience du favori : 60–150 · changement de surface : non",
+   "tous": {
+    "matchs": 4300,
+    "maitrise": 0.124,
+    "log_loss": 0.6075,
+    "reussite_pct": 66.9,
+    "annoncee_pct": 65.3,
+    "pente": 1.09
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 2488,
+     "maitrise": 0.123,
+     "log_loss": 0.608,
+     "reussite_pct": 67.4,
+     "annoncee_pct": 64.3,
+     "pente": 1.2
+    },
+    "oct–nov": {
+     "matchs": 1812,
+     "maitrise": 0.125,
+     "log_loss": 0.6068,
+     "reussite_pct": 66.3,
+     "annoncee_pct": 66.8,
+     "pente": 0.98
+    }
+   },
+   "parmi_les_meilleurs": true
+  },
+  {
+   "segment": "expérience de l'outsider : 60–150 · changement de surface : oui",
+   "tous": {
+    "matchs": 380,
+    "maitrise": 0.124,
+    "log_loss": 0.6072,
+    "reussite_pct": 68.7,
+    "annoncee_pct": 65.0,
+    "pente": 1.14
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 270,
+     "maitrise": 0.109,
+     "log_loss": 0.6178,
+     "reussite_pct": 66.7,
+     "annoncee_pct": 64.4,
+     "pente": 1.07
+    },
+    "oct–nov": {
+     "matchs": 110,
+     "maitrise": 0.162,
+     "log_loss": 0.5811,
+     "reussite_pct": 73.6,
+     "annoncee_pct": 66.2,
+     "pente": 1.32
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "circuit : ATP · changement de surface : non",
+   "tous": {
+    "matchs": 986,
+    "maitrise": 0.123,
+    "log_loss": 0.6081,
+    "reussite_pct": 66.1,
+    "annoncee_pct": 65.8,
+    "pente": 1.03
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 562,
+     "maitrise": 0.131,
+     "log_loss": 0.6021,
+     "reussite_pct": 67.8,
+     "annoncee_pct": 64.8,
+     "pente": 1.19
+    },
+    "oct–nov": {
+     "matchs": 424,
+     "maitrise": 0.111,
+     "log_loss": 0.6161,
+     "reussite_pct": 63.9,
+     "annoncee_pct": 67.1,
+     "pente": 0.89
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "surface : Hard · âge du favori : 30 ans et plus",
+   "tous": {
+    "matchs": 689,
+    "maitrise": 0.123,
+    "log_loss": 0.6079,
+    "reussite_pct": 65.7,
+    "annoncee_pct": 65.8,
+    "pente": 1.04
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 417,
+     "maitrise": 0.11,
+     "log_loss": 0.6166,
+     "reussite_pct": 64.0,
+     "annoncee_pct": 65.1,
+     "pente": 1.01
+    },
+    "oct–nov": {
+     "matchs": 272,
+     "maitrise": 0.142,
+     "log_loss": 0.5945,
+     "reussite_pct": 68.4,
+     "annoncee_pct": 66.8,
+     "pente": 1.07
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "surface : Hard · changement de surface : non",
+   "tous": {
+    "matchs": 3719,
+    "maitrise": 0.123,
+    "log_loss": 0.6081,
+    "reussite_pct": 66.6,
+    "annoncee_pct": 65.3,
+    "pente": 1.08
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 2167,
+     "maitrise": 0.129,
+     "log_loss": 0.6036,
+     "reussite_pct": 67.0,
+     "annoncee_pct": 64.2,
+     "pente": 1.23
+    },
+    "oct–nov": {
+     "matchs": 1552,
+     "maitrise": 0.114,
+     "log_loss": 0.6144,
+     "reussite_pct": 66.2,
+     "annoncee_pct": 66.8,
+     "pente": 0.92
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "surface : Clay · modèles : écart ≥ 10 pts",
+   "tous": {
+    "matchs": 382,
+    "maitrise": 0.122,
+    "log_loss": 0.6084,
+    "reussite_pct": 70.4,
+    "annoncee_pct": 66.8,
+    "pente": 1.1
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 221,
+     "maitrise": 0.116,
+     "log_loss": 0.6128,
+     "reussite_pct": 70.1,
+     "annoncee_pct": 65.9,
+     "pente": 1.14
+    },
+    "oct–nov": {
+     "matchs": 161,
+     "maitrise": 0.131,
+     "log_loss": 0.6023,
+     "reussite_pct": 70.8,
+     "annoncee_pct": 68.0,
+     "pente": 1.06
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "expérience du favori : 150 et plus · âge du favori : 23–29 ans",
+   "tous": {
+    "matchs": 299,
+    "maitrise": 0.122,
+    "log_loss": 0.6087,
+    "reussite_pct": 66.9,
+    "annoncee_pct": 65.7,
+    "pente": 1.02
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 175,
+     "maitrise": 0.145,
+     "log_loss": 0.5924,
+     "reussite_pct": 68.6,
+     "annoncee_pct": 64.5,
+     "pente": 1.27
+    },
+    "oct–nov": {
+     "matchs": 124,
+     "maitrise": 0.089,
+     "log_loss": 0.6317,
+     "reussite_pct": 64.5,
+     "annoncee_pct": 67.5,
+     "pente": 0.78
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "âge du favori : < 23 ans · retour d'absence : non",
+   "tous": {
+    "matchs": 1161,
+    "maitrise": 0.122,
+    "log_loss": 0.6084,
+    "reussite_pct": 67.7,
+    "annoncee_pct": 64.9,
+    "pente": 1.14
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 687,
+     "maitrise": 0.123,
+     "log_loss": 0.6078,
+     "reussite_pct": 68.6,
+     "annoncee_pct": 63.8,
+     "pente": 1.27
+    },
+    "oct–nov": {
+     "matchs": 474,
+     "maitrise": 0.121,
+     "log_loss": 0.6094,
+     "reussite_pct": 66.5,
+     "annoncee_pct": 66.4,
+     "pente": 1.01
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "circuit : ATP",
+   "tous": {
+    "matchs": 1090,
+    "maitrise": 0.121,
+    "log_loss": 0.6093,
+    "reussite_pct": 66.1,
+    "annoncee_pct": 65.7,
+    "pente": 1.03
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 658,
+     "maitrise": 0.13,
+     "log_loss": 0.6033,
+     "reussite_pct": 67.8,
+     "annoncee_pct": 64.7,
+     "pente": 1.18
+    },
+    "oct–nov": {
+     "matchs": 432,
+     "maitrise": 0.108,
+     "log_loss": 0.6185,
+     "reussite_pct": 63.7,
+     "annoncee_pct": 67.1,
+     "pente": 0.87
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "expérience du favori : 150 et plus",
+   "tous": {
+    "matchs": 446,
+    "maitrise": 0.121,
+    "log_loss": 0.6094,
+    "reussite_pct": 66.4,
+    "annoncee_pct": 65.6,
+    "pente": 1.03
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 250,
+     "maitrise": 0.138,
+     "log_loss": 0.5976,
+     "reussite_pct": 68.4,
+     "annoncee_pct": 64.5,
+     "pente": 1.22
+    },
+    "oct–nov": {
+     "matchs": 196,
+     "maitrise": 0.099,
+     "log_loss": 0.6244,
+     "reussite_pct": 63.8,
+     "annoncee_pct": 66.9,
+     "pente": 0.85
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "circuit : ATP · surface : Hard",
+   "tous": {
+    "matchs": 1090,
+    "maitrise": 0.121,
+    "log_loss": 0.6093,
+    "reussite_pct": 66.1,
+    "annoncee_pct": 65.7,
+    "pente": 1.03
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 658,
+     "maitrise": 0.13,
+     "log_loss": 0.6033,
+     "reussite_pct": 67.8,
+     "annoncee_pct": 64.7,
+     "pente": 1.18
+    },
+    "oct–nov": {
+     "matchs": 432,
+     "maitrise": 0.108,
+     "log_loss": 0.6185,
+     "reussite_pct": 63.7,
+     "annoncee_pct": 67.1,
+     "pente": 0.87
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "circuit : ATP · expérience de l'outsider : 60–150",
+   "tous": {
+    "matchs": 906,
+    "maitrise": 0.121,
+    "log_loss": 0.6092,
+    "reussite_pct": 65.8,
+    "annoncee_pct": 65.4,
+    "pente": 1.06
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 532,
+     "maitrise": 0.127,
+     "log_loss": 0.6049,
+     "reussite_pct": 67.3,
+     "annoncee_pct": 64.2,
+     "pente": 1.22
+    },
+    "oct–nov": {
+     "matchs": 374,
+     "maitrise": 0.112,
+     "log_loss": 0.6153,
+     "reussite_pct": 63.6,
+     "annoncee_pct": 67.0,
+     "pente": 0.9
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "modèles : écart ≥ 10 pts · changement de surface : non",
+   "tous": {
+    "matchs": 1207,
+    "maitrise": 0.121,
+    "log_loss": 0.6095,
+    "reussite_pct": 69.3,
+    "annoncee_pct": 67.2,
+    "pente": 1.05
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 731,
+     "maitrise": 0.124,
+     "log_loss": 0.6074,
+     "reussite_pct": 69.6,
+     "annoncee_pct": 66.1,
+     "pente": 1.16
+    },
+    "oct–nov": {
+     "matchs": 476,
+     "maitrise": 0.116,
+     "log_loss": 0.6126,
+     "reussite_pct": 68.9,
+     "annoncee_pct": 68.9,
+     "pente": 0.93
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "expérience de l'outsider : 60–150 · âge du favori : < 23 ans",
+   "tous": {
+    "matchs": 1012,
+    "maitrise": 0.121,
+    "log_loss": 0.6093,
+    "reussite_pct": 66.6,
+    "annoncee_pct": 64.6,
+    "pente": 1.17
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 593,
+     "maitrise": 0.125,
+     "log_loss": 0.6062,
+     "reussite_pct": 68.3,
+     "annoncee_pct": 63.7,
+     "pente": 1.31
+    },
+    "oct–nov": {
+     "matchs": 419,
+     "maitrise": 0.115,
+     "log_loss": 0.6137,
+     "reussite_pct": 64.2,
+     "annoncee_pct": 65.9,
+     "pente": 1.01
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "changement de surface : non",
+   "tous": {
+    "matchs": 5062,
+    "maitrise": 0.12,
+    "log_loss": 0.6101,
+    "reussite_pct": 66.4,
+    "annoncee_pct": 65.1,
+    "pente": 1.08
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 2938,
+     "maitrise": 0.121,
+     "log_loss": 0.6095,
+     "reussite_pct": 66.8,
+     "annoncee_pct": 64.0,
+     "pente": 1.21
+    },
+    "oct–nov": {
+     "matchs": 2124,
+     "maitrise": 0.119,
+     "log_loss": 0.6109,
+     "reussite_pct": 65.9,
+     "annoncee_pct": 66.7,
+     "pente": 0.96
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "surface : Hard · âge du favori : 23–29 ans",
+   "tous": {
+    "matchs": 2313,
+    "maitrise": 0.12,
+    "log_loss": 0.61,
+    "reussite_pct": 67.1,
+    "annoncee_pct": 65.3,
+    "pente": 1.05
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 1385,
+     "maitrise": 0.13,
+     "log_loss": 0.6032,
+     "reussite_pct": 67.6,
+     "annoncee_pct": 64.2,
+     "pente": 1.24
+    },
+    "oct–nov": {
+     "matchs": 928,
+     "maitrise": 0.105,
+     "log_loss": 0.6201,
+     "reussite_pct": 66.5,
+     "annoncee_pct": 67.0,
+     "pente": 0.87
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "circuit : CH · âge du favori : 30 ans et plus",
+   "tous": {
+    "matchs": 478,
+    "maitrise": 0.119,
+    "log_loss": 0.6105,
+    "reussite_pct": 65.1,
+    "annoncee_pct": 65.4,
+    "pente": 1.09
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 294,
+     "maitrise": 0.105,
+     "log_loss": 0.6205,
+     "reussite_pct": 65.0,
+     "annoncee_pct": 64.6,
+     "pente": 1.07
+    },
+    "oct–nov": {
+     "matchs": 184,
+     "maitrise": 0.142,
+     "log_loss": 0.5945,
+     "reussite_pct": 65.2,
+     "annoncee_pct": 66.8,
+     "pente": 1.13
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "surface : Hard · retour d'absence : non",
+   "tous": {
+    "matchs": 3661,
+    "maitrise": 0.119,
+    "log_loss": 0.6107,
+    "reussite_pct": 66.8,
+    "annoncee_pct": 65.0,
+    "pente": 1.09
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 2192,
+     "maitrise": 0.124,
+     "log_loss": 0.6069,
+     "reussite_pct": 67.0,
+     "annoncee_pct": 63.8,
+     "pente": 1.25
+    },
+    "oct–nov": {
+     "matchs": 1469,
+     "maitrise": 0.111,
+     "log_loss": 0.6164,
+     "reussite_pct": 66.4,
+     "annoncee_pct": 66.7,
+     "pente": 0.92
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "expérience du favori : 60–150 · âge du favori : 23–29 ans",
+   "tous": {
+    "matchs": 2688,
+    "maitrise": 0.119,
+    "log_loss": 0.6106,
+    "reussite_pct": 67.4,
+    "annoncee_pct": 65.2,
+    "pente": 1.07
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 1570,
+     "maitrise": 0.123,
+     "log_loss": 0.6076,
+     "reussite_pct": 68.0,
+     "annoncee_pct": 64.0,
+     "pente": 1.23
+    },
+    "oct–nov": {
+     "matchs": 1118,
+     "maitrise": 0.113,
+     "log_loss": 0.6148,
+     "reussite_pct": 66.6,
+     "annoncee_pct": 66.8,
+     "pente": 0.92
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "expérience du favori : 60–150 · retour d'absence : non",
+   "tous": {
+    "matchs": 4309,
+    "maitrise": 0.119,
+    "log_loss": 0.611,
+    "reussite_pct": 67.0,
+    "annoncee_pct": 65.1,
+    "pente": 1.09
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 2537,
+     "maitrise": 0.117,
+     "log_loss": 0.6119,
+     "reussite_pct": 67.2,
+     "annoncee_pct": 64.0,
+     "pente": 1.19
+    },
+    "oct–nov": {
+     "matchs": 1772,
+     "maitrise": 0.12,
+     "log_loss": 0.6097,
+     "reussite_pct": 66.6,
+     "annoncee_pct": 66.6,
+     "pente": 0.98
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "âge du favori : 23–29 ans",
+   "tous": {
+    "matchs": 3089,
+    "maitrise": 0.118,
+    "log_loss": 0.6114,
+    "reussite_pct": 67.1,
+    "annoncee_pct": 65.2,
+    "pente": 1.06
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 1813,
+     "maitrise": 0.123,
+     "log_loss": 0.6079,
+     "reussite_pct": 67.7,
+     "annoncee_pct": 64.0,
+     "pente": 1.22
+    },
+    "oct–nov": {
+     "matchs": 1276,
+     "maitrise": 0.111,
+     "log_loss": 0.6163,
+     "reussite_pct": 66.4,
+     "annoncee_pct": 66.9,
+     "pente": 0.9
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "circuit : CH · modèles : écart ≥ 10 pts",
+   "tous": {
+    "matchs": 799,
+    "maitrise": 0.118,
+    "log_loss": 0.6114,
+    "reussite_pct": 70.6,
+    "annoncee_pct": 66.5,
+    "pente": 1.11
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 500,
+     "maitrise": 0.12,
+     "log_loss": 0.6101,
+     "reussite_pct": 71.0,
+     "annoncee_pct": 65.6,
+     "pente": 1.19
+    },
+    "oct–nov": {
+     "matchs": 299,
+     "maitrise": 0.115,
+     "log_loss": 0.6137,
+     "reussite_pct": 69.9,
+     "annoncee_pct": 68.0,
+     "pente": 0.99
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "circuit : ATP · expérience du favori : 60–150",
+   "tous": {
+    "matchs": 959,
+    "maitrise": 0.116,
+    "log_loss": 0.6127,
+    "reussite_pct": 65.7,
+    "annoncee_pct": 65.7,
+    "pente": 1.01
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 577,
+     "maitrise": 0.129,
+     "log_loss": 0.6038,
+     "reussite_pct": 67.8,
+     "annoncee_pct": 65.0,
+     "pente": 1.16
+    },
+    "oct–nov": {
+     "matchs": 382,
+     "maitrise": 0.097,
+     "log_loss": 0.6261,
+     "reussite_pct": 62.6,
+     "annoncee_pct": 66.8,
+     "pente": 0.84
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "retour d'absence : non",
+   "tous": {
+    "matchs": 5050,
+    "maitrise": 0.115,
+    "log_loss": 0.6136,
+    "reussite_pct": 66.6,
+    "annoncee_pct": 64.9,
+    "pente": 1.07
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 2983,
+     "maitrise": 0.113,
+     "log_loss": 0.6147,
+     "reussite_pct": 66.7,
+     "annoncee_pct": 63.8,
+     "pente": 1.18
+    },
+    "oct–nov": {
+     "matchs": 2067,
+     "maitrise": 0.117,
+     "log_loss": 0.6119,
+     "reussite_pct": 66.4,
+     "annoncee_pct": 66.6,
+     "pente": 0.96
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "âge du favori : 23–29 ans · changement de surface : non",
+   "tous": {
+    "matchs": 2839,
+    "maitrise": 0.115,
+    "log_loss": 0.6131,
+    "reussite_pct": 66.7,
+    "annoncee_pct": 65.1,
+    "pente": 1.05
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 1637,
+     "maitrise": 0.119,
+     "log_loss": 0.6108,
+     "reussite_pct": 67.2,
+     "annoncee_pct": 63.9,
+     "pente": 1.2
+    },
+    "oct–nov": {
+     "matchs": 1202,
+     "maitrise": 0.111,
+     "log_loss": 0.6163,
+     "reussite_pct": 66.1,
+     "annoncee_pct": 66.8,
+     "pente": 0.91
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "surface : Clay",
+   "tous": {
+    "matchs": 1521,
+    "maitrise": 0.114,
+    "log_loss": 0.6144,
+    "reussite_pct": 66.6,
+    "annoncee_pct": 64.9,
+    "pente": 1.09
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 864,
+     "maitrise": 0.095,
+     "log_loss": 0.6276,
+     "reussite_pct": 66.7,
+     "annoncee_pct": 63.6,
+     "pente": 1.09
+    },
+    "oct–nov": {
+     "matchs": 657,
+     "maitrise": 0.138,
+     "log_loss": 0.5972,
+     "reussite_pct": 66.5,
+     "annoncee_pct": 66.6,
+     "pente": 1.08
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "circuit : ATP · retour d'absence : non",
+   "tous": {
+    "matchs": 1028,
+    "maitrise": 0.114,
+    "log_loss": 0.6144,
+    "reussite_pct": 65.9,
+    "annoncee_pct": 65.4,
+    "pente": 1.01
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 616,
+     "maitrise": 0.121,
+     "log_loss": 0.6091,
+     "reussite_pct": 67.4,
+     "annoncee_pct": 64.2,
+     "pente": 1.18
+    },
+    "oct–nov": {
+     "matchs": 412,
+     "maitrise": 0.102,
+     "log_loss": 0.6222,
+     "reussite_pct": 63.6,
+     "annoncee_pct": 67.1,
+     "pente": 0.85
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "circuit : CH · expérience du favori : 60–150",
+   "tous": {
+    "matchs": 2661,
+    "maitrise": 0.113,
+    "log_loss": 0.6149,
+    "reussite_pct": 67.6,
+    "annoncee_pct": 64.6,
+    "pente": 1.12
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 1599,
+     "maitrise": 0.099,
+     "log_loss": 0.6246,
+     "reussite_pct": 67.3,
+     "annoncee_pct": 63.5,
+     "pente": 1.13
+    },
+    "oct–nov": {
+     "matchs": 1062,
+     "maitrise": 0.134,
+     "log_loss": 0.6003,
+     "reussite_pct": 68.2,
+     "annoncee_pct": 66.2,
+     "pente": 1.11
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "retour d'absence : non · changement de surface : non",
+   "tous": {
+    "matchs": 4595,
+    "maitrise": 0.113,
+    "log_loss": 0.6146,
+    "reussite_pct": 66.2,
+    "annoncee_pct": 64.9,
+    "pente": 1.06
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 2664,
+     "maitrise": 0.113,
+     "log_loss": 0.6148,
+     "reussite_pct": 66.5,
+     "annoncee_pct": 63.7,
+     "pente": 1.18
+    },
+    "oct–nov": {
+     "matchs": 1931,
+     "maitrise": 0.114,
+     "log_loss": 0.6143,
+     "reussite_pct": 65.8,
+     "annoncee_pct": 66.6,
+     "pente": 0.94
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "surface : Hard · expérience de l'outsider : 60–150",
+   "tous": {
+    "matchs": 3235,
+    "maitrise": 0.112,
+    "log_loss": 0.6156,
+    "reussite_pct": 65.3,
+    "annoncee_pct": 64.7,
+    "pente": 1.06
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 1918,
+     "maitrise": 0.116,
+     "log_loss": 0.6126,
+     "reussite_pct": 65.4,
+     "annoncee_pct": 63.6,
+     "pente": 1.2
+    },
+    "oct–nov": {
+     "matchs": 1317,
+     "maitrise": 0.105,
+     "log_loss": 0.6201,
+     "reussite_pct": 65.3,
+     "annoncee_pct": 66.2,
+     "pente": 0.92
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "surface : Clay · âge du favori : 23–29 ans",
+   "tous": {
+    "matchs": 776,
+    "maitrise": 0.112,
+    "log_loss": 0.6155,
+    "reussite_pct": 67.1,
+    "annoncee_pct": 64.8,
+    "pente": 1.08
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 428,
+     "maitrise": 0.101,
+     "log_loss": 0.6231,
+     "reussite_pct": 68.0,
+     "annoncee_pct": 63.3,
+     "pente": 1.17
+    },
+    "oct–nov": {
+     "matchs": 348,
+     "maitrise": 0.126,
+     "log_loss": 0.6061,
+     "reussite_pct": 66.1,
+     "annoncee_pct": 66.7,
+     "pente": 1.0
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "surface : Clay · changement de surface : non",
+   "tous": {
+    "matchs": 1343,
+    "maitrise": 0.112,
+    "log_loss": 0.6156,
+    "reussite_pct": 65.9,
+    "annoncee_pct": 64.5,
+    "pente": 1.11
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 771,
+     "maitrise": 0.097,
+     "log_loss": 0.6261,
+     "reussite_pct": 66.5,
+     "annoncee_pct": 63.3,
+     "pente": 1.14
+    },
+    "oct–nov": {
+     "matchs": 572,
+     "maitrise": 0.132,
+     "log_loss": 0.6014,
+     "reussite_pct": 65.0,
+     "annoncee_pct": 66.2,
+     "pente": 1.07
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "âge du favori : 23–29 ans · retour d'absence : non",
+   "tous": {
+    "matchs": 2818,
+    "maitrise": 0.112,
+    "log_loss": 0.6154,
+    "reussite_pct": 66.7,
+    "annoncee_pct": 65.0,
+    "pente": 1.04
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 1652,
+     "maitrise": 0.114,
+     "log_loss": 0.6138,
+     "reussite_pct": 66.9,
+     "annoncee_pct": 63.7,
+     "pente": 1.19
+    },
+    "oct–nov": {
+     "matchs": 1166,
+     "maitrise": 0.109,
+     "log_loss": 0.6175,
+     "reussite_pct": 66.4,
+     "annoncee_pct": 66.9,
+     "pente": 0.9
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "modèles : écart ≥ 10 pts · expérience de l'outsider : 60–150",
+   "tous": {
+    "matchs": 1045,
+    "maitrise": 0.111,
+    "log_loss": 0.616,
+    "reussite_pct": 68.6,
+    "annoncee_pct": 67.0,
+    "pente": 1.02
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 636,
+     "maitrise": 0.116,
+     "log_loss": 0.613,
+     "reussite_pct": 68.9,
+     "annoncee_pct": 65.9,
+     "pente": 1.13
+    },
+    "oct–nov": {
+     "matchs": 409,
+     "maitrise": 0.105,
+     "log_loss": 0.6207,
+     "reussite_pct": 68.2,
+     "annoncee_pct": 68.7,
+     "pente": 0.9
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "expérience du favori : 150 et plus · retour d'absence : non",
+   "tous": {
+    "matchs": 423,
+    "maitrise": 0.111,
+    "log_loss": 0.6165,
+    "reussite_pct": 65.7,
+    "annoncee_pct": 65.3,
+    "pente": 0.98
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 234,
+     "maitrise": 0.126,
+     "log_loss": 0.6055,
+     "reussite_pct": 67.5,
+     "annoncee_pct": 64.2,
+     "pente": 1.17
+    },
+    "oct–nov": {
+     "matchs": 189,
+     "maitrise": 0.091,
+     "log_loss": 0.6302,
+     "reussite_pct": 63.5,
+     "annoncee_pct": 66.8,
+     "pente": 0.81
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "circuit : CH · surface : Clay",
+   "tous": {
+    "matchs": 1434,
+    "maitrise": 0.109,
+    "log_loss": 0.6176,
+    "reussite_pct": 66.1,
+    "annoncee_pct": 64.5,
+    "pente": 1.1
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 864,
+     "maitrise": 0.095,
+     "log_loss": 0.6276,
+     "reussite_pct": 66.7,
+     "annoncee_pct": 63.6,
+     "pente": 1.09
+    },
+    "oct–nov": {
+     "matchs": 570,
+     "maitrise": 0.131,
+     "log_loss": 0.6026,
+     "reussite_pct": 65.3,
+     "annoncee_pct": 65.8,
+     "pente": 1.13
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "circuit : CH · âge du favori : 23–29 ans",
+   "tous": {
+    "matchs": 1804,
+    "maitrise": 0.109,
+    "log_loss": 0.6178,
+    "reussite_pct": 67.6,
+    "annoncee_pct": 64.5,
+    "pente": 1.08
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 1077,
+     "maitrise": 0.1,
+     "log_loss": 0.6237,
+     "reussite_pct": 66.9,
+     "annoncee_pct": 63.3,
+     "pente": 1.15
+    },
+    "oct–nov": {
+     "matchs": 727,
+     "maitrise": 0.121,
+     "log_loss": 0.6092,
+     "reussite_pct": 68.5,
+     "annoncee_pct": 66.4,
+     "pente": 1.02
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "expérience du favori : 150 et plus · expérience de l'outsider : 60–150",
+   "tous": {
+    "matchs": 354,
+    "maitrise": 0.109,
+    "log_loss": 0.6175,
+    "reussite_pct": 64.4,
+    "annoncee_pct": 65.4,
+    "pente": 0.96
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 197,
+     "maitrise": 0.132,
+     "log_loss": 0.6015,
+     "reussite_pct": 67.0,
+     "annoncee_pct": 64.5,
+     "pente": 1.18
+    },
+    "oct–nov": {
+     "matchs": 157,
+     "maitrise": 0.08,
+     "log_loss": 0.6377,
+     "reussite_pct": 61.1,
+     "annoncee_pct": 66.4,
+     "pente": 0.77
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "circuit : CH · âge du favori : < 23 ans",
+   "tous": {
+    "matchs": 786,
+    "maitrise": 0.108,
+    "log_loss": 0.6181,
+    "reussite_pct": 68.1,
+    "annoncee_pct": 64.1,
+    "pente": 1.14
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 474,
+     "maitrise": 0.098,
+     "log_loss": 0.6249,
+     "reussite_pct": 68.8,
+     "annoncee_pct": 63.3,
+     "pente": 1.15
+    },
+    "oct–nov": {
+     "matchs": 312,
+     "maitrise": 0.123,
+     "log_loss": 0.6078,
+     "reussite_pct": 67.0,
+     "annoncee_pct": 65.3,
+     "pente": 1.12
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "circuit : CH",
+   "tous": {
+    "matchs": 3288,
+    "maitrise": 0.107,
+    "log_loss": 0.6192,
+    "reussite_pct": 66.6,
+    "annoncee_pct": 64.4,
+    "pente": 1.09
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 1974,
+     "maitrise": 0.097,
+     "log_loss": 0.6262,
+     "reussite_pct": 66.3,
+     "annoncee_pct": 63.4,
+     "pente": 1.11
+    },
+    "oct–nov": {
+     "matchs": 1314,
+     "maitrise": 0.122,
+     "log_loss": 0.6087,
+     "reussite_pct": 67.0,
+     "annoncee_pct": 66.0,
+     "pente": 1.05
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "expérience du favori : 60–150 · expérience de l'outsider : 60–150",
+   "tous": {
+    "matchs": 3735,
+    "maitrise": 0.107,
+    "log_loss": 0.6189,
+    "reussite_pct": 65.5,
+    "annoncee_pct": 64.8,
+    "pente": 1.04
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 2182,
+     "maitrise": 0.108,
+     "log_loss": 0.6183,
+     "reussite_pct": 65.8,
+     "annoncee_pct": 63.8,
+     "pente": 1.14
+    },
+    "oct–nov": {
+     "matchs": 1553,
+     "maitrise": 0.106,
+     "log_loss": 0.6199,
+     "reussite_pct": 65.2,
+     "annoncee_pct": 66.1,
+     "pente": 0.94
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "expérience de l'outsider : 60–150 · âge du favori : 30 ans et plus",
+   "tous": {
+    "matchs": 733,
+    "maitrise": 0.106,
+    "log_loss": 0.6199,
+    "reussite_pct": 63.8,
+    "annoncee_pct": 65.2,
+    "pente": 1.01
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 444,
+     "maitrise": 0.102,
+     "log_loss": 0.6226,
+     "reussite_pct": 63.1,
+     "annoncee_pct": 64.7,
+     "pente": 1.02
+    },
+    "oct–nov": {
+     "matchs": 289,
+     "maitrise": 0.112,
+     "log_loss": 0.6158,
+     "reussite_pct": 65.1,
+     "annoncee_pct": 66.0,
+     "pente": 0.99
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "circuit : CH · surface : Hard",
+   "tous": {
+    "matchs": 1854,
+    "maitrise": 0.105,
+    "log_loss": 0.6204,
+    "reussite_pct": 67.0,
+    "annoncee_pct": 64.4,
+    "pente": 1.07
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 1110,
+     "maitrise": 0.098,
+     "log_loss": 0.6252,
+     "reussite_pct": 66.0,
+     "annoncee_pct": 63.2,
+     "pente": 1.14
+    },
+    "oct–nov": {
+     "matchs": 744,
+     "maitrise": 0.115,
+     "log_loss": 0.6133,
+     "reussite_pct": 68.4,
+     "annoncee_pct": 66.1,
+     "pente": 1.0
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "expérience de l'outsider : 60–150 · retour d'absence : non",
+   "tous": {
+    "matchs": 4080,
+    "maitrise": 0.105,
+    "log_loss": 0.6202,
+    "reussite_pct": 65.4,
+    "annoncee_pct": 64.6,
+    "pente": 1.04
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 2385,
+     "maitrise": 0.105,
+     "log_loss": 0.6207,
+     "reussite_pct": 65.4,
+     "annoncee_pct": 63.6,
+     "pente": 1.13
+    },
+    "oct–nov": {
+     "matchs": 1695,
+     "maitrise": 0.106,
+     "log_loss": 0.6196,
+     "reussite_pct": 65.3,
+     "annoncee_pct": 66.1,
+     "pente": 0.94
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "circuit : CH · retour d'absence : non",
+   "tous": {
+    "matchs": 2993,
+    "maitrise": 0.104,
+    "log_loss": 0.6213,
+    "reussite_pct": 66.5,
+    "annoncee_pct": 64.3,
+    "pente": 1.07
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 1778,
+     "maitrise": 0.09,
+     "log_loss": 0.6306,
+     "reussite_pct": 66.0,
+     "annoncee_pct": 63.2,
+     "pente": 1.08
+    },
+    "oct–nov": {
+     "matchs": 1215,
+     "maitrise": 0.123,
+     "log_loss": 0.6077,
+     "reussite_pct": 67.3,
+     "annoncee_pct": 66.0,
+     "pente": 1.06
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "surface : Clay · retour d'absence : non",
+   "tous": {
+    "matchs": 1389,
+    "maitrise": 0.104,
+    "log_loss": 0.6212,
+    "reussite_pct": 66.1,
+    "annoncee_pct": 64.8,
+    "pente": 1.03
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 791,
+     "maitrise": 0.082,
+     "log_loss": 0.6364,
+     "reussite_pct": 65.7,
+     "annoncee_pct": 63.6,
+     "pente": 1.0
+    },
+    "oct–nov": {
+     "matchs": 598,
+     "maitrise": 0.133,
+     "log_loss": 0.6011,
+     "reussite_pct": 66.6,
+     "annoncee_pct": 66.3,
+     "pente": 1.07
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "confiance : 60–70 % · âge du favori : < 23 ans",
+   "tous": {
+    "matchs": 428,
+    "maitrise": 0.104,
+    "log_loss": 0.6214,
+    "reussite_pct": 68.2,
+    "annoncee_pct": 64.6,
+    "pente": 1.32
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 259,
+     "maitrise": 0.121,
+     "log_loss": 0.6092,
+     "reussite_pct": 70.3,
+     "annoncee_pct": 64.6,
+     "pente": 1.48
+    },
+    "oct–nov": {
+     "matchs": 169,
+     "maitrise": 0.077,
+     "log_loss": 0.6401,
+     "reussite_pct": 65.1,
+     "annoncee_pct": 64.6,
+     "pente": 1.09
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "expérience de l'outsider : 60–150",
+   "tous": {
+    "matchs": 4367,
+    "maitrise": 0.103,
+    "log_loss": 0.6215,
+    "reussite_pct": 65.0,
+    "annoncee_pct": 64.6,
+    "pente": 1.02
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 2559,
+     "maitrise": 0.105,
+     "log_loss": 0.6206,
+     "reussite_pct": 65.2,
+     "annoncee_pct": 63.6,
+     "pente": 1.12
+    },
+    "oct–nov": {
+     "matchs": 1808,
+     "maitrise": 0.102,
+     "log_loss": 0.6228,
+     "reussite_pct": 64.7,
+     "annoncee_pct": 66.0,
+     "pente": 0.92
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "circuit : CH · expérience du favori : 150 et plus",
+   "tous": {
+    "matchs": 331,
+    "maitrise": 0.103,
+    "log_loss": 0.6219,
+    "reussite_pct": 65.9,
+    "annoncee_pct": 65.2,
+    "pente": 0.97
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 183,
+     "maitrise": 0.131,
+     "log_loss": 0.6022,
+     "reussite_pct": 69.4,
+     "annoncee_pct": 64.6,
+     "pente": 1.18
+    },
+    "oct–nov": {
+     "matchs": 148,
+     "maitrise": 0.068,
+     "log_loss": 0.6461,
+     "reussite_pct": 61.5,
+     "annoncee_pct": 65.9,
+     "pente": 0.77
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "circuit : CH · changement de surface : non",
+   "tous": {
+    "matchs": 2971,
+    "maitrise": 0.102,
+    "log_loss": 0.6221,
+    "reussite_pct": 65.9,
+    "annoncee_pct": 64.3,
+    "pente": 1.07
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 1770,
+     "maitrise": 0.095,
+     "log_loss": 0.6276,
+     "reussite_pct": 65.9,
+     "annoncee_pct": 63.2,
+     "pente": 1.12
+    },
+    "oct–nov": {
+     "matchs": 1201,
+     "maitrise": 0.114,
+     "log_loss": 0.6141,
+     "reussite_pct": 65.9,
+     "annoncee_pct": 66.0,
+     "pente": 1.01
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "expérience de l'outsider : 60–150 · changement de surface : non",
+   "tous": {
+    "matchs": 3987,
+    "maitrise": 0.101,
+    "log_loss": 0.6229,
+    "reussite_pct": 64.6,
+    "annoncee_pct": 64.6,
+    "pente": 1.01
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 2289,
+     "maitrise": 0.104,
+     "log_loss": 0.621,
+     "reussite_pct": 65.1,
+     "annoncee_pct": 63.5,
+     "pente": 1.13
+    },
+    "oct–nov": {
+     "matchs": 1698,
+     "maitrise": 0.098,
+     "log_loss": 0.6255,
+     "reussite_pct": 64.1,
+     "annoncee_pct": 66.0,
+     "pente": 0.9
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "expérience de l'outsider : 60–150 · âge du favori : 23–29 ans",
+   "tous": {
+    "matchs": 2425,
+    "maitrise": 0.1,
+    "log_loss": 0.6239,
+    "reussite_pct": 65.3,
+    "annoncee_pct": 64.7,
+    "pente": 0.98
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 1403,
+     "maitrise": 0.103,
+     "log_loss": 0.6221,
+     "reussite_pct": 65.4,
+     "annoncee_pct": 63.5,
+     "pente": 1.11
+    },
+    "oct–nov": {
+     "matchs": 1022,
+     "maitrise": 0.096,
+     "log_loss": 0.6264,
+     "reussite_pct": 65.3,
+     "annoncee_pct": 66.3,
+     "pente": 0.87
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "surface : Hard · expérience de l'outsider : 150 et plus",
+   "tous": {
+    "matchs": 272,
+    "maitrise": 0.089,
+    "log_loss": 0.6313,
+    "reussite_pct": 68.4,
+    "annoncee_pct": 64.7,
+    "pente": 0.91
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 154,
+     "maitrise": 0.144,
+     "log_loss": 0.5931,
+     "reussite_pct": 72.1,
+     "annoncee_pct": 64.0,
+     "pente": 1.35
+    },
+    "oct–nov": {
+     "matchs": 118,
+     "maitrise": 0.017,
+     "log_loss": 0.6811,
+     "reussite_pct": 63.6,
+     "annoncee_pct": 65.6,
+     "pente": 0.54
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "expérience de l'outsider : 150 et plus · changement de surface : non",
+   "tous": {
+    "matchs": 354,
+    "maitrise": 0.088,
+    "log_loss": 0.6324,
+    "reussite_pct": 66.7,
+    "annoncee_pct": 63.6,
+    "pente": 0.98
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 202,
+     "maitrise": 0.118,
+     "log_loss": 0.6115,
+     "reussite_pct": 68.8,
+     "annoncee_pct": 62.3,
+     "pente": 1.36
+    },
+    "oct–nov": {
+     "matchs": 152,
+     "maitrise": 0.047,
+     "log_loss": 0.6603,
+     "reussite_pct": 63.8,
+     "annoncee_pct": 65.4,
+     "pente": 0.69
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "surface : Clay · confiance : 60–70 %",
+   "tous": {
+    "matchs": 495,
+    "maitrise": 0.086,
+    "log_loss": 0.6338,
+    "reussite_pct": 67.3,
+    "annoncee_pct": 64.7,
+    "pente": 1.16
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 297,
+     "maitrise": 0.105,
+     "log_loss": 0.6202,
+     "reussite_pct": 69.7,
+     "annoncee_pct": 64.8,
+     "pente": 1.32
+    },
+    "oct–nov": {
+     "matchs": 198,
+     "maitrise": 0.056,
+     "log_loss": 0.6542,
+     "reussite_pct": 63.6,
+     "annoncee_pct": 64.5,
+     "pente": 0.94
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "circuit : CH · expérience de l'outsider : 60–150",
+   "tous": {
+    "matchs": 2455,
+    "maitrise": 0.084,
+    "log_loss": 0.6348,
+    "reussite_pct": 63.9,
+    "annoncee_pct": 64.1,
+    "pente": 0.96
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 1461,
+     "maitrise": 0.072,
+     "log_loss": 0.6431,
+     "reussite_pct": 63.4,
+     "annoncee_pct": 63.2,
+     "pente": 0.94
+    },
+    "oct–nov": {
+     "matchs": 994,
+     "maitrise": 0.102,
+     "log_loss": 0.6226,
+     "reussite_pct": 64.6,
+     "annoncee_pct": 65.5,
+     "pente": 0.98
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "surface : Clay · âge du favori : < 23 ans",
+   "tous": {
+    "matchs": 399,
+    "maitrise": 0.084,
+    "log_loss": 0.6351,
+    "reussite_pct": 66.2,
+    "annoncee_pct": 64.4,
+    "pente": 0.94
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 230,
+     "maitrise": 0.055,
+     "log_loss": 0.6553,
+     "reussite_pct": 66.1,
+     "annoncee_pct": 63.0,
+     "pente": 0.85
+    },
+    "oct–nov": {
+     "matchs": 169,
+     "maitrise": 0.123,
+     "log_loss": 0.6076,
+     "reussite_pct": 66.3,
+     "annoncee_pct": 66.3,
+     "pente": 1.02
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "expérience de l'outsider : 150 et plus · âge du favori : 23–29 ans",
+   "tous": {
+    "matchs": 229,
+    "maitrise": 0.082,
+    "log_loss": 0.6366,
+    "reussite_pct": 66.8,
+    "annoncee_pct": 63.8,
+    "pente": 0.93
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 134,
+     "maitrise": 0.136,
+     "log_loss": 0.5987,
+     "reussite_pct": 72.4,
+     "annoncee_pct": 62.6,
+     "pente": 1.52
+    },
+    "oct–nov": {
+     "matchs": 95,
+     "maitrise": 0.004,
+     "log_loss": 0.6902,
+     "reussite_pct": 58.9,
+     "annoncee_pct": 65.5,
+     "pente": 0.49
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "circuit : CH · confiance : 60–70 %",
+   "tous": {
+    "matchs": 1089,
+    "maitrise": 0.081,
+    "log_loss": 0.6368,
+    "reussite_pct": 66.5,
+    "annoncee_pct": 64.5,
+    "pente": 1.15
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 663,
+     "maitrise": 0.096,
+     "log_loss": 0.6268,
+     "reussite_pct": 68.2,
+     "annoncee_pct": 64.4,
+     "pente": 1.28
+    },
+    "oct–nov": {
+     "matchs": 426,
+     "maitrise": 0.059,
+     "log_loss": 0.6523,
+     "reussite_pct": 63.8,
+     "annoncee_pct": 64.6,
+     "pente": 0.95
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "confiance : 60–70 % · expérience du favori : 60–150",
+   "tous": {
+    "matchs": 1500,
+    "maitrise": 0.08,
+    "log_loss": 0.6375,
+    "reussite_pct": 66.5,
+    "annoncee_pct": 64.6,
+    "pente": 1.12
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 918,
+     "maitrise": 0.094,
+     "log_loss": 0.6278,
+     "reussite_pct": 68.1,
+     "annoncee_pct": 64.6,
+     "pente": 1.25
+    },
+    "oct–nov": {
+     "matchs": 582,
+     "maitrise": 0.058,
+     "log_loss": 0.6527,
+     "reussite_pct": 63.9,
+     "annoncee_pct": 64.7,
+     "pente": 0.94
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "surface : Clay · expérience de l'outsider : 60–150",
+   "tous": {
+    "matchs": 1132,
+    "maitrise": 0.079,
+    "log_loss": 0.6384,
+    "reussite_pct": 64.0,
+    "annoncee_pct": 64.5,
+    "pente": 0.91
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 641,
+     "maitrise": 0.07,
+     "log_loss": 0.6447,
+     "reussite_pct": 64.7,
+     "annoncee_pct": 63.8,
+     "pente": 0.9
+    },
+    "oct–nov": {
+     "matchs": 491,
+     "maitrise": 0.091,
+     "log_loss": 0.6301,
+     "reussite_pct": 62.9,
+     "annoncee_pct": 65.4,
+     "pente": 0.91
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "surface : Hard · expérience du favori : < 60 matchs",
+   "tous": {
+    "matchs": 301,
+    "maitrise": 0.078,
+    "log_loss": 0.6393,
+    "reussite_pct": 63.1,
+    "annoncee_pct": 62.2,
+    "pente": 1.04
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 206,
+     "maitrise": 0.054,
+     "log_loss": 0.6558,
+     "reussite_pct": 60.7,
+     "annoncee_pct": 60.4,
+     "pente": 0.99
+    },
+    "oct–nov": {
+     "matchs": 95,
+     "maitrise": 0.129,
+     "log_loss": 0.6035,
+     "reussite_pct": 68.4,
+     "annoncee_pct": 66.2,
+     "pente": 1.11
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "confiance : 60–70 % · modèles : écart ≥ 10 pts",
+   "tous": {
+    "matchs": 606,
+    "maitrise": 0.077,
+    "log_loss": 0.6395,
+    "reussite_pct": 66.8,
+    "annoncee_pct": 64.7,
+    "pente": 1.09
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 382,
+     "maitrise": 0.094,
+     "log_loss": 0.6278,
+     "reussite_pct": 68.6,
+     "annoncee_pct": 64.7,
+     "pente": 1.24
+    },
+    "oct–nov": {
+     "matchs": 224,
+     "maitrise": 0.049,
+     "log_loss": 0.6594,
+     "reussite_pct": 63.8,
+     "annoncee_pct": 64.8,
+     "pente": 0.86
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "expérience du favori : 60–150 · expérience de l'outsider : 150 et plus",
+   "tous": {
+    "matchs": 328,
+    "maitrise": 0.077,
+    "log_loss": 0.6399,
+    "reussite_pct": 65.9,
+    "annoncee_pct": 64.0,
+    "pente": 0.89
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 193,
+     "maitrise": 0.113,
+     "log_loss": 0.615,
+     "reussite_pct": 67.9,
+     "annoncee_pct": 63.2,
+     "pente": 1.2
+    },
+    "oct–nov": {
+     "matchs": 135,
+     "maitrise": 0.026,
+     "log_loss": 0.6754,
+     "reussite_pct": 63.0,
+     "annoncee_pct": 65.1,
+     "pente": 0.59
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "expérience de l'outsider : 60–150 · retour d'absence : oui",
+   "tous": {
+    "matchs": 287,
+    "maitrise": 0.076,
+    "log_loss": 0.6401,
+    "reussite_pct": 59.6,
+    "annoncee_pct": 64.6,
+    "pente": 0.84
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 174,
+     "maitrise": 0.105,
+     "log_loss": 0.6202,
+     "reussite_pct": 62.6,
+     "annoncee_pct": 64.3,
+     "pente": 1.03
+    },
+    "oct–nov": {
+     "matchs": 113,
+     "maitrise": 0.032,
+     "log_loss": 0.6709,
+     "reussite_pct": 54.9,
+     "annoncee_pct": 65.2,
+     "pente": 0.61
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "confiance : 60–70 %",
+   "tous": {
+    "matchs": 1726,
+    "maitrise": 0.075,
+    "log_loss": 0.6409,
+    "reussite_pct": 65.8,
+    "annoncee_pct": 64.6,
+    "pente": 1.09
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 1042,
+     "maitrise": 0.088,
+     "log_loss": 0.6318,
+     "reussite_pct": 67.4,
+     "annoncee_pct": 64.5,
+     "pente": 1.2
+    },
+    "oct–nov": {
+     "matchs": 684,
+     "maitrise": 0.055,
+     "log_loss": 0.6548,
+     "reussite_pct": 63.5,
+     "annoncee_pct": 64.6,
+     "pente": 0.92
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "confiance : 60–70 % · âge du favori : 23–29 ans",
+   "tous": {
+    "matchs": 935,
+    "maitrise": 0.075,
+    "log_loss": 0.6409,
+    "reussite_pct": 66.0,
+    "annoncee_pct": 64.5,
+    "pente": 1.1
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 563,
+     "maitrise": 0.094,
+     "log_loss": 0.6279,
+     "reussite_pct": 68.2,
+     "annoncee_pct": 64.4,
+     "pente": 1.27
+    },
+    "oct–nov": {
+     "matchs": 372,
+     "maitrise": 0.047,
+     "log_loss": 0.6607,
+     "reussite_pct": 62.6,
+     "annoncee_pct": 64.6,
+     "pente": 0.86
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "expérience de l'outsider : 150 et plus",
+   "tous": {
+    "matchs": 394,
+    "maitrise": 0.074,
+    "log_loss": 0.642,
+    "reussite_pct": 66.0,
+    "annoncee_pct": 63.7,
+    "pente": 0.88
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 233,
+     "maitrise": 0.109,
+     "log_loss": 0.6179,
+     "reussite_pct": 67.8,
+     "annoncee_pct": 62.5,
+     "pente": 1.23
+    },
+    "oct–nov": {
+     "matchs": 161,
+     "maitrise": 0.023,
+     "log_loss": 0.6769,
+     "reussite_pct": 63.4,
+     "annoncee_pct": 65.5,
+     "pente": 0.58
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "confiance : 60–70 % · modèles : accord",
+   "tous": {
+    "matchs": 1038,
+    "maitrise": 0.074,
+    "log_loss": 0.6418,
+    "reussite_pct": 65.1,
+    "annoncee_pct": 64.6,
+    "pente": 1.08
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 608,
+     "maitrise": 0.08,
+     "log_loss": 0.6377,
+     "reussite_pct": 66.0,
+     "annoncee_pct": 64.5,
+     "pente": 1.13
+    },
+    "oct–nov": {
+     "matchs": 430,
+     "maitrise": 0.066,
+     "log_loss": 0.6475,
+     "reussite_pct": 64.0,
+     "annoncee_pct": 64.6,
+     "pente": 1.0
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "expérience du favori : < 60 matchs",
+   "tous": {
+    "matchs": 392,
+    "maitrise": 0.073,
+    "log_loss": 0.6426,
+    "reussite_pct": 61.2,
+    "annoncee_pct": 61.9,
+    "pente": 1.02
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 251,
+     "maitrise": 0.059,
+     "log_loss": 0.6525,
+     "reussite_pct": 58.6,
+     "annoncee_pct": 60.4,
+     "pente": 1.03
+    },
+    "oct–nov": {
+     "matchs": 141,
+     "maitrise": 0.099,
+     "log_loss": 0.6249,
+     "reussite_pct": 66.0,
+     "annoncee_pct": 64.6,
+     "pente": 1.01
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "confiance : 60–70 % · changement de surface : non",
+   "tous": {
+    "matchs": 1572,
+    "maitrise": 0.073,
+    "log_loss": 0.6428,
+    "reussite_pct": 65.4,
+    "annoncee_pct": 64.6,
+    "pente": 1.07
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 940,
+     "maitrise": 0.089,
+     "log_loss": 0.6317,
+     "reussite_pct": 67.3,
+     "annoncee_pct": 64.5,
+     "pente": 1.21
+    },
+    "oct–nov": {
+     "matchs": 632,
+     "maitrise": 0.049,
+     "log_loss": 0.6593,
+     "reussite_pct": 62.5,
+     "annoncee_pct": 64.6,
+     "pente": 0.87
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "confiance : 60–70 % · retour d'absence : non",
+   "tous": {
+    "matchs": 1586,
+    "maitrise": 0.072,
+    "log_loss": 0.6433,
+    "reussite_pct": 65.5,
+    "annoncee_pct": 64.5,
+    "pente": 1.06
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 953,
+     "maitrise": 0.086,
+     "log_loss": 0.6334,
+     "reussite_pct": 67.3,
+     "annoncee_pct": 64.5,
+     "pente": 1.19
+    },
+    "oct–nov": {
+     "matchs": 633,
+     "maitrise": 0.05,
+     "log_loss": 0.6582,
+     "reussite_pct": 62.9,
+     "annoncee_pct": 64.7,
+     "pente": 0.88
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "modèles : accord · expérience de l'outsider : 150 et plus",
+   "tous": {
+    "matchs": 228,
+    "maitrise": 0.072,
+    "log_loss": 0.6433,
+    "reussite_pct": 69.3,
+    "annoncee_pct": 65.7,
+    "pente": 0.79
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 128,
+     "maitrise": 0.128,
+     "log_loss": 0.6045,
+     "reussite_pct": 74.2,
+     "annoncee_pct": 64.4,
+     "pente": 1.18
+    },
+    "oct–nov": {
+     "matchs": 100,
+     "maitrise": 0.0,
+     "log_loss": 0.6931,
+     "reussite_pct": 63.0,
+     "annoncee_pct": 67.3,
+     "pente": 0.48
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "surface : Hard · confiance : 60–70 %",
+   "tous": {
+    "matchs": 1231,
+    "maitrise": 0.071,
+    "log_loss": 0.6438,
+    "reussite_pct": 65.2,
+    "annoncee_pct": 64.5,
+    "pente": 1.06
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 745,
+     "maitrise": 0.082,
+     "log_loss": 0.6364,
+     "reussite_pct": 66.4,
+     "annoncee_pct": 64.4,
+     "pente": 1.16
+    },
+    "oct–nov": {
+     "matchs": 486,
+     "maitrise": 0.055,
+     "log_loss": 0.655,
+     "reussite_pct": 63.4,
+     "annoncee_pct": 64.7,
+     "pente": 0.91
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "expérience de l'outsider : 150 et plus · retour d'absence : non",
+   "tous": {
+    "matchs": 382,
+    "maitrise": 0.071,
+    "log_loss": 0.6439,
+    "reussite_pct": 66.2,
+    "annoncee_pct": 63.8,
+    "pente": 0.86
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 226,
+     "maitrise": 0.105,
+     "log_loss": 0.6202,
+     "reussite_pct": 68.1,
+     "annoncee_pct": 62.5,
+     "pente": 1.21
+    },
+    "oct–nov": {
+     "matchs": 156,
+     "maitrise": 0.022,
+     "log_loss": 0.6782,
+     "reussite_pct": 63.5,
+     "annoncee_pct": 65.7,
+     "pente": 0.57
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "circuit : ATP · âge du favori : 30 ans et plus",
+   "tous": {
+    "matchs": 205,
+    "maitrise": 0.07,
+    "log_loss": 0.6446,
+    "reussite_pct": 61.5,
+    "annoncee_pct": 65.3,
+    "pente": 0.78
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 125,
+     "maitrise": 0.04,
+     "log_loss": 0.6656,
+     "reussite_pct": 58.4,
+     "annoncee_pct": 64.6,
+     "pente": 0.66
+    },
+    "oct–nov": {
+     "matchs": 80,
+     "maitrise": 0.117,
+     "log_loss": 0.6118,
+     "reussite_pct": 66.2,
+     "annoncee_pct": 66.3,
+     "pente": 0.95
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "expérience du favori : < 60 matchs · retour d'absence : non",
+   "tous": {
+    "matchs": 318,
+    "maitrise": 0.07,
+    "log_loss": 0.6449,
+    "reussite_pct": 62.3,
+    "annoncee_pct": 61.9,
+    "pente": 0.99
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 212,
+     "maitrise": 0.05,
+     "log_loss": 0.6587,
+     "reussite_pct": 59.0,
+     "annoncee_pct": 60.2,
+     "pente": 0.95
+    },
+    "oct–nov": {
+     "matchs": 106,
+     "maitrise": 0.109,
+     "log_loss": 0.6174,
+     "reussite_pct": 68.9,
+     "annoncee_pct": 65.3,
+     "pente": 1.05
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "circuit : WTA · confiance : 60–70 %",
+   "tous": {
+    "matchs": 308,
+    "maitrise": 0.069,
+    "log_loss": 0.6454,
+    "reussite_pct": 65.6,
+    "annoncee_pct": 64.7,
+    "pente": 1.03
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 174,
+     "maitrise": 0.089,
+     "log_loss": 0.6312,
+     "reussite_pct": 67.8,
+     "annoncee_pct": 64.7,
+     "pente": 1.19
+    },
+    "oct–nov": {
+     "matchs": 134,
+     "maitrise": 0.042,
+     "log_loss": 0.6638,
+     "reussite_pct": 62.7,
+     "annoncee_pct": 64.6,
+     "pente": 0.82
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "circuit : CH · expérience de l'outsider : 150 et plus",
+   "tous": {
+    "matchs": 267,
+    "maitrise": 0.069,
+    "log_loss": 0.6451,
+    "reussite_pct": 67.0,
+    "annoncee_pct": 63.0,
+    "pente": 0.9
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 154,
+     "maitrise": 0.097,
+     "log_loss": 0.6257,
+     "reussite_pct": 68.8,
+     "annoncee_pct": 61.5,
+     "pente": 1.28
+    },
+    "oct–nov": {
+     "matchs": 113,
+     "maitrise": 0.031,
+     "log_loss": 0.6715,
+     "reussite_pct": 64.6,
+     "annoncee_pct": 64.9,
+     "pente": 0.62
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "expérience du favori : < 60 matchs · changement de surface : non",
+   "tous": {
+    "matchs": 359,
+    "maitrise": 0.065,
+    "log_loss": 0.6482,
+    "reussite_pct": 60.4,
+    "annoncee_pct": 62.0,
+    "pente": 0.95
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 231,
+     "maitrise": 0.054,
+     "log_loss": 0.656,
+     "reussite_pct": 58.4,
+     "annoncee_pct": 60.3,
+     "pente": 0.99
+    },
+    "oct–nov": {
+     "matchs": 128,
+     "maitrise": 0.085,
+     "log_loss": 0.6342,
+     "reussite_pct": 64.1,
+     "annoncee_pct": 64.9,
+     "pente": 0.91
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "confiance : 60–70 % · expérience de l'outsider : 60–150",
+   "tous": {
+    "matchs": 1343,
+    "maitrise": 0.064,
+    "log_loss": 0.6485,
+    "reussite_pct": 64.6,
+    "annoncee_pct": 64.5,
+    "pente": 1.0
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 800,
+     "maitrise": 0.076,
+     "log_loss": 0.6402,
+     "reussite_pct": 66.0,
+     "annoncee_pct": 64.4,
+     "pente": 1.11
+    },
+    "oct–nov": {
+     "matchs": 543,
+     "maitrise": 0.047,
+     "log_loss": 0.6606,
+     "reussite_pct": 62.6,
+     "annoncee_pct": 64.6,
+     "pente": 0.86
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "âge du favori : ?",
+   "tous": {
+    "matchs": 256,
+    "maitrise": 0.062,
+    "log_loss": 0.65,
+    "reussite_pct": 59.4,
+    "annoncee_pct": 61.5,
+    "pente": 0.98
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 154,
+     "maitrise": 0.047,
+     "log_loss": 0.6606,
+     "reussite_pct": 58.4,
+     "annoncee_pct": 60.6,
+     "pente": 0.92
+    },
+    "oct–nov": {
+     "matchs": 102,
+     "maitrise": 0.085,
+     "log_loss": 0.6339,
+     "reussite_pct": 60.8,
+     "annoncee_pct": 63.0,
+     "pente": 1.05
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "circuit : ATP · confiance : 60–70 %",
+   "tous": {
+    "matchs": 329,
+    "maitrise": 0.062,
+    "log_loss": 0.6504,
+    "reussite_pct": 63.8,
+    "annoncee_pct": 64.7,
+    "pente": 0.97
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 205,
+     "maitrise": 0.064,
+     "log_loss": 0.6486,
+     "reussite_pct": 64.4,
+     "annoncee_pct": 64.7,
+     "pente": 0.99
+    },
+    "oct–nov": {
+     "matchs": 124,
+     "maitrise": 0.057,
+     "log_loss": 0.6534,
+     "reussite_pct": 62.9,
+     "annoncee_pct": 64.8,
+     "pente": 0.93
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "âge du favori : ? · retour d'absence : non",
+   "tous": {
+    "matchs": 227,
+    "maitrise": 0.059,
+    "log_loss": 0.6524,
+    "reussite_pct": 59.9,
+    "annoncee_pct": 61.8,
+    "pente": 0.93
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 138,
+     "maitrise": 0.044,
+     "log_loss": 0.6628,
+     "reussite_pct": 59.4,
+     "annoncee_pct": 60.7,
+     "pente": 0.88
+    },
+    "oct–nov": {
+     "matchs": 89,
+     "maitrise": 0.082,
+     "log_loss": 0.6361,
+     "reussite_pct": 60.7,
+     "annoncee_pct": 63.6,
+     "pente": 0.99
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "circuit : CH · âge du favori : ?",
+   "tous": {
+    "matchs": 220,
+    "maitrise": 0.057,
+    "log_loss": 0.6533,
+    "reussite_pct": 56.8,
+    "annoncee_pct": 62.4,
+    "pente": 0.9
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 129,
+     "maitrise": 0.04,
+     "log_loss": 0.6653,
+     "reussite_pct": 55.0,
+     "annoncee_pct": 61.6,
+     "pente": 0.8
+    },
+    "oct–nov": {
+     "matchs": 91,
+     "maitrise": 0.082,
+     "log_loss": 0.6365,
+     "reussite_pct": 59.3,
+     "annoncee_pct": 63.3,
+     "pente": 1.0
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "modèles : accord · expérience du favori : < 60 matchs",
+   "tous": {
+    "matchs": 202,
+    "maitrise": 0.057,
+    "log_loss": 0.6539,
+    "reussite_pct": 57.9,
+    "annoncee_pct": 64.0,
+    "pente": 0.8
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 128,
+     "maitrise": 0.04,
+     "log_loss": 0.6654,
+     "reussite_pct": 53.9,
+     "annoncee_pct": 62.5,
+     "pente": 0.75
+    },
+    "oct–nov": {
+     "matchs": 74,
+     "maitrise": 0.086,
+     "log_loss": 0.6339,
+     "reussite_pct": 64.9,
+     "annoncee_pct": 66.7,
+     "pente": 0.85
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "âge du favori : ? · changement de surface : non",
+   "tous": {
+    "matchs": 226,
+    "maitrise": 0.057,
+    "log_loss": 0.6534,
+    "reussite_pct": 58.4,
+    "annoncee_pct": 61.5,
+    "pente": 0.95
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 137,
+     "maitrise": 0.054,
+     "log_loss": 0.6557,
+     "reussite_pct": 59.1,
+     "annoncee_pct": 60.6,
+     "pente": 1.0
+    },
+    "oct–nov": {
+     "matchs": 89,
+     "maitrise": 0.062,
+     "log_loss": 0.6499,
+     "reussite_pct": 57.3,
+     "annoncee_pct": 62.8,
+     "pente": 0.89
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "circuit : CH · expérience du favori : < 60 matchs",
+   "tous": {
+    "matchs": 296,
+    "maitrise": 0.055,
+    "log_loss": 0.655,
+    "reussite_pct": 58.1,
+    "annoncee_pct": 61.8,
+    "pente": 0.9
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 192,
+     "maitrise": 0.044,
+     "log_loss": 0.6627,
+     "reussite_pct": 55.2,
+     "annoncee_pct": 60.8,
+     "pente": 0.86
+    },
+    "oct–nov": {
+     "matchs": 104,
+     "maitrise": 0.076,
+     "log_loss": 0.6408,
+     "reussite_pct": 63.5,
+     "annoncee_pct": 63.6,
+     "pente": 0.94
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "confiance : 50–60 % · expérience de l'outsider : < 60 matchs",
+   "tous": {
+    "matchs": 212,
+    "maitrise": 0.055,
+    "log_loss": 0.6551,
+    "reussite_pct": 68.4,
+    "annoncee_pct": 54.9,
+    "pente": 3.77
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 149,
+     "maitrise": 0.055,
+     "log_loss": 0.6548,
+     "reussite_pct": 68.5,
+     "annoncee_pct": 55.0,
+     "pente": 3.7
+    },
+    "oct–nov": {
+     "matchs": 63,
+     "maitrise": 0.054,
+     "log_loss": 0.6558,
+     "reussite_pct": 68.3,
+     "annoncee_pct": 54.7,
+     "pente": 3.95
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "expérience du favori : < 60 matchs · expérience de l'outsider : 60–150",
+   "tous": {
+    "matchs": 278,
+    "maitrise": 0.046,
+    "log_loss": 0.6612,
+    "reussite_pct": 58.3,
+    "annoncee_pct": 61.5,
+    "pente": 0.84
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 180,
+     "maitrise": 0.034,
+     "log_loss": 0.6698,
+     "reussite_pct": 56.7,
+     "annoncee_pct": 60.3,
+     "pente": 0.79
+    },
+    "oct–nov": {
+     "matchs": 98,
+     "maitrise": 0.069,
+     "log_loss": 0.6452,
+     "reussite_pct": 61.2,
+     "annoncee_pct": 63.8,
+     "pente": 0.9
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "expérience de l'outsider : 60–150 · âge du favori : ?",
+   "tous": {
+    "matchs": 197,
+    "maitrise": 0.046,
+    "log_loss": 0.6614,
+    "reussite_pct": 56.9,
+    "annoncee_pct": 61.4,
+    "pente": 0.85
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 119,
+     "maitrise": 0.036,
+     "log_loss": 0.6684,
+     "reussite_pct": 56.3,
+     "annoncee_pct": 60.5,
+     "pente": 0.81
+    },
+    "oct–nov": {
+     "matchs": 78,
+     "maitrise": 0.061,
+     "log_loss": 0.6506,
+     "reussite_pct": 57.7,
+     "annoncee_pct": 62.8,
+     "pente": 0.89
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "confiance : 50–60 % · modèles : écart ≥ 10 pts",
+   "tous": {
+    "matchs": 277,
+    "maitrise": 0.044,
+    "log_loss": 0.663,
+    "reussite_pct": 63.9,
+    "annoncee_pct": 57.1,
+    "pente": 1.95
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 203,
+     "maitrise": 0.042,
+     "log_loss": 0.6642,
+     "reussite_pct": 63.5,
+     "annoncee_pct": 56.9,
+     "pente": 1.96
+    },
+    "oct–nov": {
+     "matchs": 74,
+     "maitrise": 0.048,
+     "log_loss": 0.6597,
+     "reussite_pct": 64.9,
+     "annoncee_pct": 57.6,
+     "pente": 1.92
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "confiance : 60–70 % · âge du favori : 30 ans et plus",
+   "tous": {
+    "matchs": 287,
+    "maitrise": 0.043,
+    "log_loss": 0.663,
+    "reussite_pct": 63.1,
+    "annoncee_pct": 64.8,
+    "pente": 0.82
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 172,
+     "maitrise": 0.034,
+     "log_loss": 0.6698,
+     "reussite_pct": 62.2,
+     "annoncee_pct": 64.9,
+     "pente": 0.74
+    },
+    "oct–nov": {
+     "matchs": 115,
+     "maitrise": 0.058,
+     "log_loss": 0.653,
+     "reussite_pct": 64.3,
+     "annoncee_pct": 64.8,
+     "pente": 0.93
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "confiance : 50–60 % · expérience du favori : 150 et plus",
+   "tous": {
+    "matchs": 178,
+    "maitrise": 0.025,
+    "log_loss": 0.6757,
+    "reussite_pct": 57.3,
+    "annoncee_pct": 54.7,
+    "pente": 2.01
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 110,
+     "maitrise": 0.031,
+     "log_loss": 0.6718,
+     "reussite_pct": 59.1,
+     "annoncee_pct": 54.5,
+     "pente": 2.57
+    },
+    "oct–nov": {
+     "matchs": 68,
+     "maitrise": 0.016,
+     "log_loss": 0.682,
+     "reussite_pct": 54.4,
+     "annoncee_pct": 55.1,
+     "pente": 1.32
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "surface : Hard · âge du favori : ?",
+   "tous": {
+    "matchs": 158,
+    "maitrise": 0.023,
+    "log_loss": 0.6774,
+    "reussite_pct": 58.9,
+    "annoncee_pct": 60.5,
+    "pente": 0.69
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 93,
+     "maitrise": 0.021,
+     "log_loss": 0.6783,
+     "reussite_pct": 59.1,
+     "annoncee_pct": 58.6,
+     "pente": 0.79
+    },
+    "oct–nov": {
+     "matchs": 65,
+     "maitrise": 0.024,
+     "log_loss": 0.6762,
+     "reussite_pct": 58.5,
+     "annoncee_pct": 63.2,
+     "pente": 0.63
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "confiance : 50–60 % · âge du favori : < 23 ans",
+   "tous": {
+    "matchs": 479,
+    "maitrise": 0.023,
+    "log_loss": 0.6775,
+    "reussite_pct": 57.6,
+    "annoncee_pct": 54.9,
+    "pente": 1.75
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 308,
+     "maitrise": 0.031,
+     "log_loss": 0.6718,
+     "reussite_pct": 59.7,
+     "annoncee_pct": 54.8,
+     "pente": 2.33
+    },
+    "oct–nov": {
+     "matchs": 171,
+     "maitrise": 0.008,
+     "log_loss": 0.6877,
+     "reussite_pct": 53.8,
+     "annoncee_pct": 55.2,
+     "pente": 0.89
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "circuit : CH · confiance : 50–60 %",
+   "tous": {
+    "matchs": 1284,
+    "maitrise": 0.022,
+    "log_loss": 0.678,
+    "reussite_pct": 58.3,
+    "annoncee_pct": 54.9,
+    "pente": 1.69
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 839,
+     "maitrise": 0.027,
+     "log_loss": 0.6744,
+     "reussite_pct": 59.0,
+     "annoncee_pct": 54.8,
+     "pente": 2.03
+    },
+    "oct–nov": {
+     "matchs": 445,
+     "maitrise": 0.012,
+     "log_loss": 0.6847,
+     "reussite_pct": 56.9,
+     "annoncee_pct": 55.1,
+     "pente": 1.12
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "circuit : WTA · modèles : favoris opposés",
+   "tous": {
+    "matchs": 210,
+    "maitrise": 0.022,
+    "log_loss": 0.6781,
+    "reussite_pct": 55.7,
+    "annoncee_pct": 54.0,
+    "pente": 1.7
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 132,
+     "maitrise": 0.035,
+     "log_loss": 0.6692,
+     "reussite_pct": 55.3,
+     "annoncee_pct": 53.9,
+     "pente": 2.66
+    },
+    "oct–nov": {
+     "matchs": 78,
+     "maitrise": 0.0,
+     "log_loss": 0.6931,
+     "reussite_pct": 56.4,
+     "annoncee_pct": 54.2,
+     "pente": 0.5
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "confiance : 50–60 % · modèles : accord",
+   "tous": {
+    "matchs": 999,
+    "maitrise": 0.021,
+    "log_loss": 0.6788,
+    "reussite_pct": 58.5,
+    "annoncee_pct": 55.7,
+    "pente": 1.43
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 627,
+     "maitrise": 0.03,
+     "log_loss": 0.6722,
+     "reussite_pct": 60.8,
+     "annoncee_pct": 55.7,
+     "pente": 1.91
+    },
+    "oct–nov": {
+     "matchs": 372,
+     "maitrise": 0.005,
+     "log_loss": 0.6899,
+     "reussite_pct": 54.6,
+     "annoncee_pct": 55.9,
+     "pente": 0.7
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "confiance : 50–60 % · âge du favori : 23–29 ans",
+   "tous": {
+    "matchs": 1199,
+    "maitrise": 0.02,
+    "log_loss": 0.6792,
+    "reussite_pct": 58.0,
+    "annoncee_pct": 54.9,
+    "pente": 1.6
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 768,
+     "maitrise": 0.027,
+     "log_loss": 0.6745,
+     "reussite_pct": 59.2,
+     "annoncee_pct": 54.8,
+     "pente": 2.02
+    },
+    "oct–nov": {
+     "matchs": 431,
+     "maitrise": 0.008,
+     "log_loss": 0.6876,
+     "reussite_pct": 55.7,
+     "annoncee_pct": 55.0,
+     "pente": 0.91
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "surface : Clay · confiance : 50–60 %",
+   "tous": {
+    "matchs": 584,
+    "maitrise": 0.018,
+    "log_loss": 0.6808,
+    "reussite_pct": 56.3,
+    "annoncee_pct": 55.1,
+    "pente": 1.42
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 362,
+     "maitrise": 0.028,
+     "log_loss": 0.6735,
+     "reussite_pct": 58.8,
+     "annoncee_pct": 55.0,
+     "pente": 2.03
+    },
+    "oct–nov": {
+     "matchs": 222,
+     "maitrise": 0.001,
+     "log_loss": 0.6928,
+     "reussite_pct": 52.3,
+     "annoncee_pct": 55.2,
+     "pente": 0.53
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "confiance : 50–60 %",
+   "tous": {
+    "matchs": 2148,
+    "maitrise": 0.017,
+    "log_loss": 0.6816,
+    "reussite_pct": 56.8,
+    "annoncee_pct": 54.9,
+    "pente": 1.41
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 1378,
+     "maitrise": 0.022,
+     "log_loss": 0.6776,
+     "reussite_pct": 57.9,
+     "annoncee_pct": 54.8,
+     "pente": 1.78
+    },
+    "oct–nov": {
+     "matchs": 770,
+     "maitrise": 0.006,
+     "log_loss": 0.6888,
+     "reussite_pct": 54.9,
+     "annoncee_pct": 55.0,
+     "pente": 0.82
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "confiance : 50–60 % · expérience du favori : 60–150",
+   "tous": {
+    "matchs": 1768,
+    "maitrise": 0.017,
+    "log_loss": 0.6814,
+    "reussite_pct": 57.1,
+    "annoncee_pct": 54.9,
+    "pente": 1.42
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 1120,
+     "maitrise": 0.023,
+     "log_loss": 0.677,
+     "reussite_pct": 58.3,
+     "annoncee_pct": 54.8,
+     "pente": 1.82
+    },
+    "oct–nov": {
+     "matchs": 648,
+     "maitrise": 0.006,
+     "log_loss": 0.6891,
+     "reussite_pct": 54.9,
+     "annoncee_pct": 55.0,
+     "pente": 0.8
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "confiance : 50–60 % · retour d'absence : non",
+   "tous": {
+    "matchs": 1964,
+    "maitrise": 0.017,
+    "log_loss": 0.6816,
+    "reussite_pct": 57.1,
+    "annoncee_pct": 54.8,
+    "pente": 1.43
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 1268,
+     "maitrise": 0.022,
+     "log_loss": 0.6778,
+     "reussite_pct": 58.0,
+     "annoncee_pct": 54.7,
+     "pente": 1.78
+    },
+    "oct–nov": {
+     "matchs": 696,
+     "maitrise": 0.007,
+     "log_loss": 0.6885,
+     "reussite_pct": 55.3,
+     "annoncee_pct": 55.0,
+     "pente": 0.85
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "modèles : favoris opposés · âge du favori : 23–29 ans",
+   "tous": {
+    "matchs": 532,
+    "maitrise": 0.017,
+    "log_loss": 0.6812,
+    "reussite_pct": 55.8,
+    "annoncee_pct": 54.1,
+    "pente": 1.43
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 340,
+     "maitrise": 0.028,
+     "log_loss": 0.6736,
+     "reussite_pct": 56.5,
+     "annoncee_pct": 53.9,
+     "pente": 2.24
+    },
+    "oct–nov": {
+     "matchs": 192,
+     "maitrise": -0.002,
+     "log_loss": 0.6945,
+     "reussite_pct": 54.7,
+     "annoncee_pct": 54.5,
+     "pente": 0.41
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "surface : Hard · confiance : 50–60 %",
+   "tous": {
+    "matchs": 1564,
+    "maitrise": 0.016,
+    "log_loss": 0.682,
+    "reussite_pct": 57.0,
+    "annoncee_pct": 54.8,
+    "pente": 1.41
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 1016,
+     "maitrise": 0.02,
+     "log_loss": 0.6791,
+     "reussite_pct": 57.6,
+     "annoncee_pct": 54.7,
+     "pente": 1.69
+    },
+    "oct–nov": {
+     "matchs": 548,
+     "maitrise": 0.009,
+     "log_loss": 0.6872,
+     "reussite_pct": 56.0,
+     "annoncee_pct": 55.0,
+     "pente": 0.95
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "confiance : 50–60 % · retour d'absence : oui",
+   "tous": {
+    "matchs": 184,
+    "maitrise": 0.016,
+    "log_loss": 0.6821,
+    "reussite_pct": 54.3,
+    "annoncee_pct": 55.2,
+    "pente": 1.29
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 110,
+     "maitrise": 0.025,
+     "log_loss": 0.6757,
+     "reussite_pct": 56.4,
+     "annoncee_pct": 55.1,
+     "pente": 1.78
+    },
+    "oct–nov": {
+     "matchs": 74,
+     "maitrise": 0.002,
+     "log_loss": 0.6916,
+     "reussite_pct": 51.4,
+     "annoncee_pct": 55.3,
+     "pente": 0.6
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "confiance : 50–60 % · changement de surface : non",
+   "tous": {
+    "matchs": 1962,
+    "maitrise": 0.015,
+    "log_loss": 0.683,
+    "reussite_pct": 56.2,
+    "annoncee_pct": 54.9,
+    "pente": 1.3
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 1234,
+     "maitrise": 0.021,
+     "log_loss": 0.6788,
+     "reussite_pct": 57.5,
+     "annoncee_pct": 54.8,
+     "pente": 1.67
+    },
+    "oct–nov": {
+     "matchs": 728,
+     "maitrise": 0.005,
+     "log_loss": 0.69,
+     "reussite_pct": 54.1,
+     "annoncee_pct": 55.0,
+     "pente": 0.74
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "surface : Hard · modèles : favoris opposés",
+   "tous": {
+    "matchs": 712,
+    "maitrise": 0.014,
+    "log_loss": 0.6832,
+    "reussite_pct": 55.2,
+    "annoncee_pct": 54.1,
+    "pente": 1.29
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 455,
+     "maitrise": 0.025,
+     "log_loss": 0.676,
+     "reussite_pct": 55.8,
+     "annoncee_pct": 53.9,
+     "pente": 2.0
+    },
+    "oct–nov": {
+     "matchs": 257,
+     "maitrise": -0.004,
+     "log_loss": 0.696,
+     "reussite_pct": 54.1,
+     "annoncee_pct": 54.3,
+     "pente": 0.29
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "modèles : favoris opposés",
+   "tous": {
+    "matchs": 956,
+    "maitrise": 0.011,
+    "log_loss": 0.6858,
+    "reussite_pct": 54.1,
+    "annoncee_pct": 54.0,
+    "pente": 1.09
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 601,
+     "maitrise": 0.019,
+     "log_loss": 0.6799,
+     "reussite_pct": 54.6,
+     "annoncee_pct": 53.9,
+     "pente": 1.66
+    },
+    "oct–nov": {
+     "matchs": 355,
+     "maitrise": -0.004,
+     "log_loss": 0.6957,
+     "reussite_pct": 53.2,
+     "annoncee_pct": 54.3,
+     "pente": 0.32
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "modèles : favoris opposés · expérience du favori : 60–150",
+   "tous": {
+    "matchs": 783,
+    "maitrise": 0.011,
+    "log_loss": 0.6853,
+    "reussite_pct": 53.9,
+    "annoncee_pct": 54.1,
+    "pente": 1.11
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 491,
+     "maitrise": 0.02,
+     "log_loss": 0.6792,
+     "reussite_pct": 54.2,
+     "annoncee_pct": 54.0,
+     "pente": 1.65
+    },
+    "oct–nov": {
+     "matchs": 292,
+     "maitrise": -0.004,
+     "log_loss": 0.6957,
+     "reussite_pct": 53.4,
+     "annoncee_pct": 54.3,
+     "pente": 0.31
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "circuit : ATP · confiance : 50–60 %",
+   "tous": {
+    "matchs": 414,
+    "maitrise": 0.01,
+    "log_loss": 0.6861,
+    "reussite_pct": 55.8,
+    "annoncee_pct": 54.8,
+    "pente": 1.07
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 265,
+     "maitrise": 0.022,
+     "log_loss": 0.6776,
+     "reussite_pct": 59.6,
+     "annoncee_pct": 54.7,
+     "pente": 1.84
+    },
+    "oct–nov": {
+     "matchs": 149,
+     "maitrise": -0.011,
+     "log_loss": 0.7011,
+     "reussite_pct": 49.0,
+     "annoncee_pct": 55.1,
+     "pente": -0.09
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "circuit : CH · modèles : favoris opposés",
+   "tous": {
+    "matchs": 560,
+    "maitrise": 0.01,
+    "log_loss": 0.6864,
+    "reussite_pct": 54.6,
+    "annoncee_pct": 54.0,
+    "pente": 1.07
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 356,
+     "maitrise": 0.017,
+     "log_loss": 0.6814,
+     "reussite_pct": 55.1,
+     "annoncee_pct": 53.8,
+     "pente": 1.55
+    },
+    "oct–nov": {
+     "matchs": 204,
+     "maitrise": -0.003,
+     "log_loss": 0.695,
+     "reussite_pct": 53.9,
+     "annoncee_pct": 54.2,
+     "pente": 0.36
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "confiance : 50–60 % · expérience de l'outsider : 60–150",
+   "tous": {
+    "matchs": 1764,
+    "maitrise": 0.01,
+    "log_loss": 0.6863,
+    "reussite_pct": 54.8,
+    "annoncee_pct": 54.9,
+    "pente": 1.04
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 1114,
+     "maitrise": 0.016,
+     "log_loss": 0.6822,
+     "reussite_pct": 56.1,
+     "annoncee_pct": 54.8,
+     "pente": 1.39
+    },
+    "oct–nov": {
+     "matchs": 650,
+     "maitrise": -0.0,
+     "log_loss": 0.6933,
+     "reussite_pct": 52.6,
+     "annoncee_pct": 55.0,
+     "pente": 0.49
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "modèles : favoris opposés · retour d'absence : non",
+   "tous": {
+    "matchs": 870,
+    "maitrise": 0.009,
+    "log_loss": 0.6872,
+    "reussite_pct": 53.9,
+    "annoncee_pct": 54.0,
+    "pente": 0.98
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 546,
+     "maitrise": 0.018,
+     "log_loss": 0.6805,
+     "reussite_pct": 54.8,
+     "annoncee_pct": 53.8,
+     "pente": 1.65
+    },
+    "oct–nov": {
+     "matchs": 324,
+     "maitrise": -0.008,
+     "log_loss": 0.6984,
+     "reussite_pct": 52.5,
+     "annoncee_pct": 54.4,
+     "pente": 0.14
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "modèles : favoris opposés · changement de surface : non",
+   "tous": {
+    "matchs": 857,
+    "maitrise": 0.008,
+    "log_loss": 0.6878,
+    "reussite_pct": 53.0,
+    "annoncee_pct": 54.0,
+    "pente": 0.93
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 531,
+     "maitrise": 0.019,
+     "log_loss": 0.68,
+     "reussite_pct": 54.0,
+     "annoncee_pct": 53.9,
+     "pente": 1.65
+    },
+    "oct–nov": {
+     "matchs": 326,
+     "maitrise": -0.011,
+     "log_loss": 0.7005,
+     "reussite_pct": 51.2,
+     "annoncee_pct": 54.3,
+     "pente": -0.04
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "circuit : WTA · confiance : 50–60 %",
+   "tous": {
+    "matchs": 450,
+    "maitrise": 0.007,
+    "log_loss": 0.688,
+    "reussite_pct": 53.8,
+    "annoncee_pct": 54.7,
+    "pente": 0.92
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 274,
+     "maitrise": 0.008,
+     "log_loss": 0.6874,
+     "reussite_pct": 52.9,
+     "annoncee_pct": 54.7,
+     "pente": 0.97
+    },
+    "oct–nov": {
+     "matchs": 176,
+     "maitrise": 0.006,
+     "log_loss": 0.6889,
+     "reussite_pct": 55.1,
+     "annoncee_pct": 54.7,
+     "pente": 0.85
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "modèles : favoris opposés · expérience de l'outsider : 60–150",
+   "tous": {
+    "matchs": 805,
+    "maitrise": 0.007,
+    "log_loss": 0.6883,
+    "reussite_pct": 52.9,
+    "annoncee_pct": 54.1,
+    "pente": 0.88
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 499,
+     "maitrise": 0.014,
+     "log_loss": 0.6837,
+     "reussite_pct": 53.5,
+     "annoncee_pct": 53.9,
+     "pente": 1.28
+    },
+    "oct–nov": {
+     "matchs": 306,
+     "maitrise": -0.004,
+     "log_loss": 0.6957,
+     "reussite_pct": 52.0,
+     "annoncee_pct": 54.3,
+     "pente": 0.31
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "confiance : 50–60 % · âge du favori : 30 ans et plus",
+   "tous": {
+    "matchs": 336,
+    "maitrise": 0.006,
+    "log_loss": 0.6888,
+    "reussite_pct": 54.2,
+    "annoncee_pct": 54.7,
+    "pente": 0.86
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 216,
+     "maitrise": 0.006,
+     "log_loss": 0.6893,
+     "reussite_pct": 52.8,
+     "annoncee_pct": 54.6,
+     "pente": 0.83
+    },
+    "oct–nov": {
+     "matchs": 120,
+     "maitrise": 0.008,
+     "log_loss": 0.6879,
+     "reussite_pct": 56.7,
+     "annoncee_pct": 54.9,
+     "pente": 0.91
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "confiance : 50–60 % · modèles : favoris opposés",
+   "tous": {
+    "matchs": 872,
+    "maitrise": 0.003,
+    "log_loss": 0.6909,
+    "reussite_pct": 52.8,
+    "annoncee_pct": 53.1,
+    "pente": 0.84
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 548,
+     "maitrise": 0.006,
+     "log_loss": 0.6889,
+     "reussite_pct": 52.6,
+     "annoncee_pct": 53.0,
+     "pente": 1.2
+    },
+    "oct–nov": {
+     "matchs": 324,
+     "maitrise": -0.002,
+     "log_loss": 0.6943,
+     "reussite_pct": 53.1,
+     "annoncee_pct": 53.4,
+     "pente": 0.35
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "circuit : ATP · modèles : favoris opposés",
+   "tous": {
+    "matchs": 186,
+    "maitrise": 0.001,
+    "log_loss": 0.6926,
+    "reussite_pct": 50.5,
+    "annoncee_pct": 54.3,
+    "pente": 0.53
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 113,
+     "maitrise": 0.008,
+     "log_loss": 0.6876,
+     "reussite_pct": 52.2,
+     "annoncee_pct": 54.0,
+     "pente": 0.95
+    },
+    "oct–nov": {
+     "matchs": 73,
+     "maitrise": -0.011,
+     "log_loss": 0.7004,
+     "reussite_pct": 47.9,
+     "annoncee_pct": 54.8,
+     "pente": 0.07
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "surface : Clay · modèles : favoris opposés",
+   "tous": {
+    "matchs": 244,
+    "maitrise": -0.0,
+    "log_loss": 0.6932,
+    "reussite_pct": 50.8,
+    "annoncee_pct": 54.0,
+    "pente": 0.5
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 146,
+     "maitrise": 0.002,
+     "log_loss": 0.6921,
+     "reussite_pct": 50.7,
+     "annoncee_pct": 53.7,
+     "pente": 0.6
+    },
+    "oct–nov": {
+     "matchs": 98,
+     "maitrise": -0.002,
+     "log_loss": 0.6948,
+     "reussite_pct": 51.0,
+     "annoncee_pct": 54.3,
+     "pente": 0.38
+    }
+   },
+   "parmi_les_meilleurs": false
+  },
+  {
+   "segment": "modèles : favoris opposés · âge du favori : < 23 ans",
+   "tous": {
+    "matchs": 215,
+    "maitrise": -0.013,
+    "log_loss": 0.7021,
+    "reussite_pct": 47.4,
+    "annoncee_pct": 54.2,
+    "pente": -0.17
+   },
+   "periodes": {
+    "août–sept": {
+     "matchs": 134,
+     "maitrise": -0.007,
+     "log_loss": 0.698,
+     "reussite_pct": 48.5,
+     "annoncee_pct": 53.8,
+     "pente": 0.06
+    },
+    "oct–nov": {
+     "matchs": 81,
+     "maitrise": -0.023,
+     "log_loss": 0.7088,
+     "reussite_pct": 45.7,
+     "annoncee_pct": 54.9,
+     "pente": -0.41
+    }
+   },
+   "parmi_les_meilleurs": false
+  }
+ ]
+}
