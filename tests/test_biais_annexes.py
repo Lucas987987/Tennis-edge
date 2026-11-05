@@ -39,5 +39,14 @@ class Biais(unittest.TestCase):
         self.assertEqual(BA.vigilance(doc, 'WTA', [300, 300]), [])
 
 
+class VigilanceRecalee(unittest.TestCase):
+    def test_ignore_les_stats_recalees(self):
+        import biais_annexes as BA_
+        st = lambda b: {'signal': True, 'sens': 'sous-estimé', 'biais': b, 'fourchette': None, 'dans_fourchette_pct': 80}
+        doc = {'circuits': {'ATP': {'stats': {'aces': st(0.9), 'gagnes_1re_pct': st(1.3)}}}}
+        v = BA_.vigilance(doc, 'ATP', recales={'ATP': {'aces': {}}})
+        self.assertEqual([x['cle'] for x in v], ['gagnes_1re_pct'])
+
+
 if __name__ == '__main__':
     unittest.main()
