@@ -2,6 +2,27 @@
  "regle": "Chaque changement du modèle est noté ici avec sa date, ce qu'il change et ce qu'il a gagné au test (log loss, négatif = mieux prévu). Les changements mis en production par décision, sans attendre la 2e semaine, restent sous le garde-fou du jugement hebdomadaire.",
  "changements": [
   {
+   "date": "2026-11-05",
+   "titre": "Type de match affiché sur chaque fiche : fiable, standard ou fragile",
+   "statut": "production",
+   "decision": true,
+   "mesure": "fiable = Elo et simulation d'accord (moins de 10 points) et favori à 70 % ou plus (77,7 à 86,6 % de favoris gagnants sur nos pronostics rejoués, % qui se réalisent) ; fragile = critère de fragilité en vigueur ; standard = le reste ; aucune entrée du modèle"
+  },
+  {
+   "date": "2026-11-05",
+   "titre": "Favori sous-estimé (deux cas) — modèle fantôme par circuit",
+   "statut": "candidat",
+   "decision": false,
+   "mesure": "repéré sur 5 571 pronostics rejoués, vrai sur les deux périodes : modèles d'accord à 70–80 % (77,7 % pour 74,7 %), même favori avec écart ≥ 10 points à 50–60 % (63,9 % pour 57,1 %) ; décalages figés ; seuls les nouveaux matchs jugent, deux semaines gagnantes par circuit"
+  },
+  {
+   "date": "2026-11-05",
+   "titre": "Dans quels matchs nos pronostics sont-ils les plus justes ? (descriptif)",
+   "statut": "etude",
+   "decision": false,
+   "mesure": "5 571 pronostics rejoués, segments retenus seulement s'ils font mieux sur août–sept ET oct–nov : les meilleurs sont les matchs où Elo et simulation sont d'accord avec un favori à 70 % ou plus (77,7 % de gagnants pour 74,7 % annoncés entre 70 et 80 % ; 86,6 % pour 86,0 % au-delà) ; deux cas où le favori gagne plus que prévu sur les deux périodes : accord à 70–80 %, et même favori avec écart ≥ 10 points annoncé à 50–60 % (63,9 % pour 57,1 %)"
+  },
+  {
    "date": "2026-11-04",
    "titre": "Fragilité revérifiée chaque semaine (favoris opposés, cinq autres critères, note v3)",
    "statut": "production",

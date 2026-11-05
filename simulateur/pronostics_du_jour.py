@@ -691,6 +691,29 @@ def controle_role(p_home, p_elo, c, h, a):
     return {'p_home': round(sig(lg(p_home) + d), 4), 'x': round(x, 4), 'decalage': round(d, 4)}
 
 
+# 05/11/2026 — FANTÔME « FAVORI SOUS-ESTIMÉ » (etude_meilleurs_matchs.py, 5 571 pronostics rejoués, vrai sur août–sept ET
+# oct–nov) : (1) Elo et simulation d'accord (même favori, < 10 points d'écart), favori affiché entre 70 et 80 % : il
+# gagne 77,7 % pour 74,7 % annoncés → +0,1656 en logit vers lui ; (2) même favori mais écart ≥ 10 points, favori
+# affiché entre 50 et 60 % : il gagne 63,9 % pour 57,1 % → +0,2851. Décalages FIGÉS (repérés sur ces matchs-là :
+# seuls les NOUVEAUX matchs jugent, fantomes_circuits.py, circuit par circuit, deux semaines gagnantes).
+DECALAGE_FAVORI_ACCORD_70, DECALAGE_FAVORI_ECART_50 = 0.1656, 0.2851
+
+
+def controle_favori_sous_estime(p_home, p_elo, p_sim):
+    if p_home is None or p_elo is None or p_sim is None or (p_elo >= .5) != (p_sim >= .5):
+        return None
+    pf, ecart = max(p_home, 1 - p_home), abs(p_elo - p_sim)
+    if ecart < .10 and .70 <= pf < .80:
+        d, cas = DECALAGE_FAVORI_ACCORD_70, 'accord_70_80'
+    elif ecart >= .10 and .50 <= pf < .60:
+        d, cas = DECALAGE_FAVORI_ECART_50, 'ecart_50_60'
+    else:
+        return None
+    d = d if p_home >= .5 else -d                          # vers le favori affiché
+    lg = lambda q: math.log(min(max(q, 1e-6), 1 - 1e-6) / (1 - min(max(q, 1e-6), 1 - 1e-6)))
+    return {'p_home': round(sig(lg(p_home) + d), 4), 'cas': cas, 'decalage': round(d, 4)}
+
+
 def _role_sur(p_home, p_elo, c, h, a):
     try:
         return controle_role(p_home, p_elo, c, h, a)
@@ -724,7 +747,7 @@ def _changement_surface_sur(p_home, c, h, a, surface, debut):
 
 
 def signaux_du_match(c, p_base, fsv_ctl, ent_ctl, srv_ctl, sr_ctl, cs_ctl=None, ra_ctl=None, age_ctl=None, role_ctl=None,
-                     pt_ctl=None):
+                     pt_ctl=None, fse_ctl=None):
     """04/11/2026 — décalages (logit) des signaux ADOPTÉS SUR CE CIRCUIT (fantomes_circuits.py) ; {signal: décalage}."""
     if not SIGNAUX_CIRCUIT or p_base is None:
         return {}
@@ -733,7 +756,8 @@ def signaux_du_match(c, p_base, fsv_ctl, ent_ctl, srv_ctl, sr_ctl, cs_ctl=None, 
             'entree': (ent_ctl or {}).get('decalage'), 'serveuses_wta': (srv_ctl or {}).get('decalage'),
             'elo_service_retour': (sr_ctl or {}).get('decalage'), 'changement_surface': (cs_ctl or {}).get('decalage'),
             'retour_absence': (ra_ctl or {}).get('decalage'), 'age': (age_ctl or {}).get('decalage'),
-            'favori_outsider': (role_ctl or {}).get('decalage'), 'parcours_tournoi': (pt_ctl or {}).get('decalage')}
+            'favori_outsider': (role_ctl or {}).get('decalage'), 'parcours_tournoi': (pt_ctl or {}).get('decalage'),
+            'favori_sous_estime': (fse_ctl or {}).get('decalage')}
     return {k: v for k, v in cand.items() if v and c in (SIGNAUX_CIRCUIT.get(k) or [])}
 
 
@@ -1276,7 +1300,8 @@ def construire(racine, maintenant=None):
                                        _retour_absence_sur(p_base, c, h, a, x['debut']),
                                        _age_sur(p_base, c, h, a, x['debut']),
                                        _role_sur(p_base, stats['p_home'], c, h, a),
-                                       controle_parcours(p_base, c, h, a, x['tournoi'], x['debut']))
+                                       controle_parcours(p_base, c, h, a, x['tournoi'], x['debut']),
+                                       controle_favori_sous_estime(p_base, stats['p_home'], p_sim))
                 adoptes_ici = tuple(k for k, v in SIGNAUX_CIRCUIT.items() if c in (v or []))
                 if sh_:
                     q_ = min(max(p_base, 1e-6), 1 - 1e-6)
@@ -1321,7 +1346,7 @@ def construire(racine, maintenant=None):
                     'forme_service': fsv if fsv and (fsv[0] or fsv[1]) else None,
                     'echanges': _echanges(h, a, x['debut']),
                     'entree': entree_du_match(h, a, x['debut']),
-                    'controle': _avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_serveuses(
+                    'controle': _avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_serveuses(
                         _avec_entree(_avec_service(_avec_forme(controle_fantome(elo, elo_ref, ref_etat, etat, h, a, c, s,
                                                                                 elo_fem, fem_etat), forme_ctl),
                                                    None if 'forme_service' in adoptes_ici else fsv_ctl),
@@ -1340,7 +1365,10 @@ def construire(racine, maintenant=None):
                         _retour_absence_sur((combinaison or {}).get('p_home'), c, h, a, x['debut'])),
                         'age', None if 'age' in adoptes_ici else _age_sur((combinaison or {}).get('p_home'), c, h, a, x['debut'])),
                         'favori_outsider', None if 'favori_outsider' in adoptes_ici else
-                        _role_sur((combinaison or {}).get('p_home'), (stats or {}).get('p_home'), c, h, a))})
+                        _role_sur((combinaison or {}).get('p_home'), (stats or {}).get('p_home'), c, h, a)),
+                        'favori_sous_estime', None if 'favori_sous_estime' in adoptes_ici else
+                        controle_favori_sous_estime((combinaison or {}).get('p_home'), (combinaison or {}).get('p_elo'),
+                                                    (combinaison or {}).get('p_simulation')))})
     doc = {'genere_le': maintenant.isoformat(timespec='seconds') + 'Z', 'elo_au': etat.get('dernier_match'),
             'horizon_h': HORIZON_H, 'sigma': SIGMA, 'simulations': SIMULATIONS if PR is not None else 0,
             'qualite_horodatages': couverture_horodatages,

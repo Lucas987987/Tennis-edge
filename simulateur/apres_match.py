@@ -280,6 +280,10 @@ def bilan_match(uid, f, reel, duree_reelle=None):
     if rol.get('p_home') is not None and isinstance(p, (int, float)):
         # 04/11/2026 : pronostic affiché contre le même corrigé du profil favori / outsider du joueur
         E['fantome_favori_outsider'] = {'ll_elo': lp_(p), 'll_reference': lp_(rol['p_home'])}
+    fse = ct.get('favori_sous_estime') or {}
+    if fse.get('p_home') is not None and isinstance(p, (int, float)):
+        # 05/11/2026 : pronostic affiché contre le même avec le favori sous-estimé corrigé
+        E['fantome_favori_sous_estime'] = {'ll_elo': lp_(p), 'll_reference': lp_(fse['p_home'])}
     fsm = ct.get('forme_set') or {}
     S_ = _sets((reel or {}).get('score'))
     if fsm.get('base') and fsm.get('variante') and S_ and len(S_) in (2, 3):
@@ -565,7 +569,7 @@ def analyser(B):
         for cle_f in ('fantome', 'fantome_itf_femmes', 'fantome_sigma', 'fantome_forme_service', 'fantome_entree',
                       'fantome_serveuses_wta', 'fantome_elo_service_retour', 'fantome_forme_set',
                       'fantome_changement_surface', 'fantome_retour_absence', 'fantome_age',
-                      'fantome_favori_outsider'):
+                      'fantome_favori_outsider', 'fantome_favori_sous_estime'):
             fa = [e[cle_f] for e in E if cle_f in e]
             if fa:
                 a_, b_ = _moy([x['ll_elo'] for x in fa]), _moy([x['ll_reference'] for x in fa])
