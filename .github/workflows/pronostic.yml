@@ -134,6 +134,13 @@ jobs:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: python simulateur/surveillance_fragilite.py . --telegram
+      # 05/11/2026 : un seul message pour tout ce qui a été adopté directement (signaux, tie-breaks, recalage) — Telegram privé
+      - name: Adoptions directes — état de la semaine
+        continue-on-error: true
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python simulateur/tableau_adoptions.py . --telegram
       - name: Apprentissage continu (mélange simulation + Elo appris sur nos matchs joués)
         run: python simulateur/apprentissage_continu.py .
       - name: Ablation appariée sur les mêmes pronostics figés
