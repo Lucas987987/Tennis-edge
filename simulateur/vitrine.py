@@ -192,7 +192,7 @@ def ligne_match(m, complet):
            'fiabilite': m.get('fiabilite'), 'cotes_justes': [cote(p), cote(1 - p)], 'type_match': type_de_match(m, p)}
     if BIAIS_ANNEXES:                           # 05/11/2026 : points de vigilance (erreurs probables des prévisions annexes)
         import biais_annexes as BA
-        vg = BA.vigilance(BIAIS_ANNEXES, m.get('circuit'), m.get('matchs_joues'))
+        vg = BA.vigilance(BIAIS_ANNEXES, m.get('circuit'), m.get('matchs_joues'), recales=RECALAGE_STATS)
         if vg:
             out['vigilance'] = vg
     if m.get('controle'):

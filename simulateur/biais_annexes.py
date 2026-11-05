@@ -98,12 +98,17 @@ def calculer(racine, aujourdhui):
             'circuits': out}
 
 
-def vigilance(doc, circuit, matchs_joues=None, tour=None):
-    """Liste de points de vigilance pour un match (codes + chiffres ; le site écrit les phrases en FR / EN)."""
+def vigilance(doc, circuit, matchs_joues=None, tour=None, recales=None):
+    """Liste de points de vigilance pour un match (codes + chiffres ; le site écrit les phrases en FR / EN).
+    recales (05/11/2026) : {circuit: {stat: …}} déjà recalés sur le site (recalage_stats) — leur biais mesuré sur les
+    6 semaines passées porte sur des valeurs AVANT recalage : on ne le signale plus, la fiche affiche déjà la correction."""
     C = (doc or {}).get('circuits') or {}
     c = C.get(circuit) or {}
+    deja = set(((recales or {}).get(circuit) or {}).keys())
     out = []
     for st, v in (c.get('stats') or {}).items():
+        if st in deja:
+            continue
         # sur la fiche : seulement ce qui peut surprendre — un biais d'au moins 0,5 ou une fourchette trop étroite
         if v.get('signal') and ((v.get('sens') and abs(v['biais']) >= 0.5) or v.get('fourchette') == 'trop étroite'):
             out.append({'type': 'stat', 'cle': st, 'sens': v.get('sens'), 'biais': v['biais'],
