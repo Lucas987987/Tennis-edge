@@ -31,7 +31,11 @@ def circuit_de(categorie):
         return 'WTA'
     if 'billie jean' in c or 'bjk' in c:          # 30/10/2026 : compétition par équipes féminine → WTA (Coupe Davis → ATP)
         return 'WTA'
-    return CIRCUITS.get(c, 'ATP')
+    if 'davis' in c:                               # Coupe Davis → ATP (choix du 30/10/2026, gardé)
+        return 'ATP'
+    # 05/11/2026 (paquet 191) : une catégorie INCONNUE (exhibition, United Cup, nouvelle catégorie TennisApi…) n'est plus
+    # rangée d'office en ATP — elle sort des bilans et des apprentissages ATP / WTA / Challenger.
+    return CIRCUITS.get(c, 'AUTRE')
 
 
 def surface_de(texte):

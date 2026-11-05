@@ -235,7 +235,9 @@ def pression_du_match(jeux, p_srv):
 MCP_DIR = os.environ.get('MCP_DIR', '/tmp/mcp')
 ABSENCE_J = 45
 # Code pays des joueurs (TennisApi, ISO alpha-3) → ISO alpha-2 (géocodage des tournois).
-ISO3_2 = {'ARG': 'AR', 'AUS': 'AU', 'AUT': 'AT', 'BEL': 'BE', 'BGR': 'BG', 'BIH': 'BA', 'BLR': 'BY', 'BOL': 'BO', 'BRA': 'BR',
+ISO3_2 = {'DZA': 'DZ', 'CIV': 'CI', 'MNP': 'MP', 'AGO': 'AO', 'IRN': 'IR', 'SMR': 'SM', 'GHA': 'GH', 'BDI': 'BI',
+          'COD': 'CD', 'BMU': 'BM', 'BWA': 'BW', 'SUR': 'SR', 'ATG': 'AG', 'BHS': 'BS', 'MOZ': 'MZ',
+          'KGZ': 'KG', 'LAO': 'LA', 'NCL': 'NC', 'LKA': 'LK', 'XKX': 'XK', 'NPL': 'NP', 'PNG': 'PG', 'LIE': 'LI', 'ARG': 'AR', 'AUS': 'AU', 'AUT': 'AT', 'BEL': 'BE', 'BGR': 'BG', 'BIH': 'BA', 'BLR': 'BY', 'BOL': 'BO', 'BRA': 'BR',
           'CAN': 'CA', 'CHE': 'CH', 'CHL': 'CL', 'CHN': 'CN', 'COL': 'CO', 'CRI': 'CR', 'CYP': 'CY', 'CZE': 'CZ', 'DEU': 'DE',
           'DNK': 'DK', 'DOM': 'DO', 'ECU': 'EC', 'EGY': 'EG', 'ESP': 'ES', 'EST': 'EE', 'FIN': 'FI', 'FRA': 'FR', 'GBR': 'GB',
           'GEO': 'GE', 'GRC': 'GR', 'HKG': 'HK', 'HRV': 'HR', 'HUN': 'HU', 'IDN': 'ID', 'IND': 'IN', 'IRL': 'IE', 'ISR': 'IL',
@@ -485,12 +487,16 @@ class Historique:
         v = self.vit.get(tournoi) or [0.0, 0.0, 0.0, 0.0]
         cj, ca = self.clutch.get(j) or [0, 0, 0, 0], self.clutch.get(adv) or [0, 0, 0, 0]
         ij, ia = infos.get(j) or {}, infos.get(adv) or {}
-        g_j, g_a = 1.0 if ij.get('main') == 'gauche' else 0.0, 1.0 if ia.get('main') == 'gauche' else 0.0
+        # 05/11/2026 (paquet 191) : main inconnue (11 % des joueuses WTA) = part des gauchers, plus « droitier »
+        g_j = (1.0 if ij.get('main') == 'gauche' else 0.0) if ij.get('main') else PF_CENTRE[5]
+        g_a = (1.0 if ia.get('main') == 'gauche' else 0.0) if ia.get('main') else PF_CENTRE[5]
         taille = taille_centree
         lieu = self.lieux.get(tournoi) or {}
         inter = 1.0 if (lieu.get('interieur') or self.interieur.get(tournoi)) else 0.0
         jour = dt.datetime.fromtimestamp(t, dt.timezone.utc).date().isoformat()
-        met = (self.meteo.get(tournoi) or {}).get(jour)
+        # 05/11/2026 (paquet 191) : météo du jour LOCAL (le soir aux Amériques, le jour UTC est déjà le lendemain)
+        met = ((self.meteo.get(tournoi) or {}).get(DA.jour_local(t, lieu.get('lon'))) if lieu.get('lon') is not None else None) \
+            or (self.meteo.get(tournoi) or {}).get(jour)
 
         def domicile(p):
             c = ISO3_2.get(str(self.pays.get(p) or '').upper())

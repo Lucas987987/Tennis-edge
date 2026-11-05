@@ -662,6 +662,12 @@
    "quoi": "LIEUX DES TOURNOIS corrigés : les qualifications (« Jinan, China, Qualifying ») étaient situées au centre du pays (Chine à 1 982 m, Mexique à 2 062 m) — 132 tournois sur 218, 6 385 feuilles sur 10 460 ; altitude et météo fausses pour le facteur « conditions ». Re-géocodage et météo redemandée au bon endroit. Nouvelle étude : DENSITÉ DE L'AIR (pression, température, humidité de 11 h à 20 h ; salle à 20 °C avec la pression du lieu) sur les aces et les points de service, groupe « densite_air » des facteurs ; règle fixée avant résultats : règle des groupes + pas moins bien sur ATP, WTA ni Challenger (100 matchs de jugement au moins), puis deux semaines de suite.",
    "statut": "etude",
    "paquet": 190
+  },
+  {
+   "date": "2026-11-05",
+   "quoi": "CONTRÔLES DES FEUILLES (10 460) : statistiques de service cohérentes (0 erreur sur 19 256), dates et naissances justes, scores de set bizarres = super tie-breaks ITF (normal), pas de double comptage archive/feuilles (feuilles prises seulement après la fin de l'archive). CORRIGÉ : météo lue au jour LOCAL (4 % des matchs, le soir aux Amériques, prenaient celle du lendemain) ; main inconnue (11 % des joueuses WTA, 3 % Challenger, 2 % ATP) = part des gauchers au lieu de « droitier » ; 23 codes pays ajoutés pour le facteur domicile ; une catégorie TennisApi inconnue n'est plus rangée d'office en ATP. Limite connue : surface absente en Coupe Davis (95 matchs) comptée dur.",
+   "statut": "production",
+   "paquet": 191
   }
  ]
 }
