@@ -28,6 +28,11 @@ on:
         description: "Vide = le scénario représentatif des 20 000 simulations (défaut). Un nombre = un autre tirage."
         required: false
         default: ''
+      format:
+        description: "Format : 9x16 (Reels / Shorts) ou 4x5 (le plus grand dans le fil de X)"
+        type: choice
+        options: ['9x16', '4x5']
+        default: '9x16'
   schedule:
     - cron: '5 7 * * *'
 
@@ -112,7 +117,7 @@ jobs:
         if: steps.mdj.outputs.ok == '1'
         run: |
           for lang in fr en; do
-            python scripts/video_simulation.py --lang "$lang" --uid "${{ inputs.uid }}" --seed "${{ inputs.seed }}" ${{ inputs.adresse && '--adresse' || '' }} --sortie videos
+            python scripts/video_simulation.py --lang "$lang" --uid "${{ inputs.uid }}" --seed "${{ inputs.seed }}" --format "${{ inputs.format || '9x16' }}" ${{ inputs.adresse && '--adresse' || '' }} --sortie videos
             # 24/10/2026 : carte de stats du match (PNG pour X, en réponse à la vidéo)
             python scripts/video_simulation.py --lang "$lang" --uid "${{ inputs.uid }}" --carte --sortie videos || echo "::warning::carte ${lang} non faite"
           done
@@ -127,12 +132,13 @@ jobs:
           TOURNOI: ${{ steps.mdj.outputs.tournoi }}
         run: |
           if [ -z "${TELEGRAM_TOKEN}" ] || [ -z "${TELEGRAM_CHAT_ID}" ]; then echo '::error::Telegram non configuré : vidéos non envoyées.'; exit 1; fi
+          suffixe=""; [ "${{ inputs.format || '9x16' }}" = "4x5" ] && suffixe="_4x5"
           for lang in fr en; do
-            test -s "videos/simulation_${lang}.mp4"
+            test -s "videos/simulation_${lang}${suffixe}.mp4"
             curl --fail-with-body -sS -o /dev/null -w "Telegram ${lang} : HTTP %{http_code}\n" \
               -F chat_id="${TELEGRAM_CHAT_ID}" -F supports_streaming=true \
-              -F caption="🎬 Simulation (${lang}) — ${TITRE} · ${TOURNOI}" \
-              -F video=@"videos/simulation_${lang}.mp4" \
+              -F caption="🎬 Simulation (${lang}${suffixe}) — ${TITRE} · ${TOURNOI}" \
+              -F video=@"videos/simulation_${lang}${suffixe}.mp4" \
               "https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendVideo"
             if [ -f "videos/stats_${lang}.png" ]; then
               curl --fail-with-body -sS -o /dev/null -w "Telegram carte ${lang} : HTTP %{http_code}\n" \
