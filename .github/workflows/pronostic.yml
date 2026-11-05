@@ -120,6 +120,13 @@ jobs:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: python simulateur/fantomes_circuits.py . --telegram
+      # 05/11/2026 : biais des prévisions annexes (stats, sets, lignes) sur 6 semaines → points de vigilance des fiches
+      - name: Prévisions annexes — biais de la semaine
+        continue-on-error: true
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python simulateur/biais_annexes.py . --telegram
       # 04/11/2026 : fragilité revérifiée chaque semaine (favoris opposés, autres critères, note v3) — Telegram privé
       - name: Fragilité — vérification de la semaine
         continue-on-error: true
@@ -216,6 +223,7 @@ jobs:
           if [ -f simulateur/recalage_stats.json ]; then git add -- simulateur/recalage_stats.json; fi
           if [ -f simulateur/fantomes_circuits.json ]; then git add -- simulateur/fantomes_circuits.json; fi
           if [ -f simulateur/surveillance_fragilite.json ]; then git add -- simulateur/surveillance_fragilite.json; fi
+          if [ -f simulateur/biais_annexes.json ]; then git add -- simulateur/biais_annexes.json; fi
           if git diff --cached --quiet; then echo 'Rien de nouveau.'; exit 0; fi
           git commit -m 'Pronostic : test du modèle (vainqueur, sets)'
           # fichiers écrits hors du checkout partiel (ex. live/joueurs_service.json.gz, contexte des

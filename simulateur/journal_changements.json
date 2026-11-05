@@ -2,6 +2,55 @@
  "regle": "Chaque changement du modèle est noté ici avec sa date, ce qu'il change et ce qu'il a gagné au test (log loss, négatif = mieux prévu). Les changements mis en production par décision, sans attendre la 2e semaine, restent sous le garde-fou du jugement hebdomadaire.",
  "changements": [
   {
+   "date": "2026-11-05",
+   "titre": "Suivi après match élargi : balles de break obtenues (le retour), % de jeux de service gagnés, points gagnés dans le match",
+   "statut": "production",
+   "decision": true,
+   "mesure": "prévus par la simulation mais jamais comparés au réel jusqu'ici ; comparés à partir des pronostics du 05/11, puis dans les points de vigilance dès 200 valeurs par circuit ; effet des biais de service actuels sur le % de victoire : 0,05 point en moyenne (biais présents chez les deux joueurs, pourcentage ancré sur l'Elo)"
+  },
+  {
+   "date": "2026-11-05",
+   "titre": "Points de vigilance sur chaque fiche : où nos prévisions annexes se trompent (recalculé chaque lundi)",
+   "statut": "production",
+   "decision": true,
+   "mesure": "833 matchs jugés (1 666 statistiques) et 447 pour les lignes : % de 1res balles sous-estimé (ATP +3,9 pts, WTA +3,7, Challenger +1,1 ; fourchette respectée 63 à 71 % du temps au lieu de 80 %), aces ATP sous-estimés (+0,9), doubles fautes surestimées (−0,5 à −0,75), points gagnés derrière la 1re balle sous-estimés ; joueurs à moins de 100 matchs : statistiques de service moins sûres ; affiché sur le circuit concerné, aucun pronostic modifié"
+  },
+  {
+   "date": "2026-11-05",
+   "titre": "En étude : tie-break sous-estimé (ATP 44 → 52 %, WTA 25 → 30 %) et 1er set",
+   "statut": "etude",
+   "decision": false,
+   "mesure": "tie-break : pas encore significatif sur 93 et 98 matchs (z 1,4), suivi chaque lundi par biais_annexes ; 1er set : l'écart du joueur cité en premier est du hasard d'échantillon (51,3 % sur 4 698 fiches) — le vrai facteur est le premier serveur (57 % des 1ers sets), inconnu avant le match ; % de 1res balles : correction déjà en jugement (recalage_stats, verdict lundi)"
+  },
+  {
+   "date": "2026-11-05",
+   "titre": "Six critères de plus pour repérer nos matchs fragiles ou réussis (descriptif)",
+   "statut": "etude",
+   "decision": false,
+   "mesure": "rejoué (5 571 matchs) : huitièmes de finale fragiles sur les deux périodes (pente 0,96 contre 1,24 puis 0,68 contre 1,04 ; 62,5 % de favoris gagnants pour 64–67 % annoncés) → ajoutés à la vérification du lundi (en direct : pente 0,32 contre 1,04 sur 110 matchs, 1re semaine justifiée) ; niveau du tournoi, salle / plein air, qualifications, quarts et au-delà : rien de stable ; en direct : pronostic qui bouge de 5 points (22 matchs, 36 % de favoris gagnants) et matchs similaires : trop peu de matchs pour conclure ; documentation des profils : non testable (non gardée)"
+  },
+  {
+   "date": "2026-11-05",
+   "titre": "Type de match affiché sur chaque fiche : fiable, standard ou fragile",
+   "statut": "production",
+   "decision": true,
+   "mesure": "fiable = Elo et simulation d'accord (moins de 10 points) et favori à 70 % ou plus (77,7 à 86,6 % de favoris gagnants sur nos pronostics rejoués, % qui se réalisent) ; fragile = critère de fragilité en vigueur ; standard = le reste ; aucune entrée du modèle"
+  },
+  {
+   "date": "2026-11-05",
+   "titre": "Favori sous-estimé (deux cas) — modèle fantôme par circuit",
+   "statut": "candidat",
+   "decision": false,
+   "mesure": "repéré sur 5 571 pronostics rejoués, vrai sur les deux périodes : modèles d'accord à 70–80 % (77,7 % pour 74,7 %), même favori avec écart ≥ 10 points à 50–60 % (63,9 % pour 57,1 %) ; décalages figés ; seuls les nouveaux matchs jugent, deux semaines gagnantes par circuit"
+  },
+  {
+   "date": "2026-11-05",
+   "titre": "Dans quels matchs nos pronostics sont-ils les plus justes ? (descriptif)",
+   "statut": "etude",
+   "decision": false,
+   "mesure": "5 571 pronostics rejoués, segments retenus seulement s'ils font mieux sur août–sept ET oct–nov : les meilleurs sont les matchs où Elo et simulation sont d'accord avec un favori à 70 % ou plus (77,7 % de gagnants pour 74,7 % annoncés entre 70 et 80 % ; 86,6 % pour 86,0 % au-delà) ; deux cas où le favori gagne plus que prévu sur les deux périodes : accord à 70–80 %, et même favori avec écart ≥ 10 points annoncé à 50–60 % (63,9 % pour 57,1 %)"
+  },
+  {
    "date": "2026-11-04",
    "titre": "Fragilité revérifiée chaque semaine (favoris opposés, cinq autres critères, note v3)",
    "statut": "production",

@@ -48,7 +48,7 @@ def criteres_fragiles(match, p, p_elo, p_sim):
     if 'a' not in _ACTIFS:
         _ACTIFS['a'] = SF.actifs(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
     mj = [x for x in (match.get('matchs_joues') or []) if x is not None]
-    r = {'p': float(p), 'pe': p_elo, 'ps': p_sim, 'xp': min(mj) if len(mj) == 2 else None}
+    r = {'p': float(p), 'pe': p_elo, 'ps': p_sim, 'xp': min(mj) if len(mj) == 2 else None, 'tour': match.get('tour')}
     return sorted(k for k in _ACTIFS['a'] if k in SF.CRITERES and SF.CRITERES[k][1](r))
 
 
