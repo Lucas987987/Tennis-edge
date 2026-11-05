@@ -44,6 +44,11 @@ class Noms(unittest.TestCase):
         self.assertEqual(LT.choisir_resultat(R2, 'USA')['country'], 'United States')
         self.assertIsNone(LT.choisir_resultat([], 'Italy'))
 
+    def test_jour_local(self):
+        import datetime as dt
+        ts = dt.datetime(2026, 10, 3, 2, 30, tzinfo=dt.timezone.utc).timestamp()
+        self.assertEqual(LT.jour_local(ts, -74.0), '2026-10-02')
+
     def test_semaines(self):
         S = LT.semaines({'2026-09-01', '2026-09-02', '2026-09-05', '2026-09-20'})
         self.assertEqual(S, [(dt.date(2026, 9, 1), dt.date(2026, 9, 5)), (dt.date(2026, 9, 20), dt.date(2026, 9, 20))])
