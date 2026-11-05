@@ -180,6 +180,7 @@ def main(argv):
     ap.add_argument('--muet', action='store_true', help='sans bande-son')
     ap.add_argument('--adresse', action='store_true', help="afficher l'adresse du site en fin de vidéo (non par défaut)")
     ap.add_argument('--carte', action='store_true', help='carte de stats (PNG) au lieu de la vidéo')
+    ap.add_argument('--semaine', action='store_true', help='carte du bilan de la semaine (lit algo/semaine.json)')
     ap.add_argument('--bilan', action='store_true', help='carte bilan prévu / réel (PNG) du match du jour ou de la veille')
     ap.add_argument('--capture', default='images', choices=['images', 'ecran'],
                     help="images : image par image, sans saccade (défaut) ; ecran : ancien enregistrement d'écran")
@@ -191,6 +192,15 @@ def main(argv):
         print('algo/donnees.json absent : lancer simulateur/vitrine.py d\'abord.')
         return 1
     srv = servir(algo)
+    if a.semaine:
+        os.makedirs(a.sortie, exist_ok=True)
+        png = os.path.join(a.sortie, f"semaine_{a.lang}.png")
+        try:
+            ok = carte_bilan(f"http://127.0.0.1:{srv.server_address[1]}/index.html?semaine=1&lang={a.lang}", png)
+        finally:
+            srv.shutdown()
+        print(f"Semaine : {png}" if os.path.exists(png) else 'Semaine : algo/semaine.json absent')
+        return 0
     if a.bilan:
         os.makedirs(a.sortie, exist_ok=True)
         png = os.path.join(a.sortie, f"bilan_{a.lang}.png")
