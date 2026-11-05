@@ -140,6 +140,11 @@ def conditions_horaires(hh):
     return {j: (round(a[1] / a[0], 1), round(a[2] / a[0], 1), round(a[3] / a[0])) for j, a in acc.items() if a[0]}
 
 
+def jour_local(ts, lon):
+    """Jour du match à l'heure solaire du lieu (longitude / 15 h) : un match du soir aux Amériques reste ce jour-là."""
+    return dt.datetime.fromtimestamp(ts + (lon or 0.0) / 15.0 * 3600, dt.timezone.utc).date().isoformat()
+
+
 def tournois_des_feuilles():
     """{id: {'nom': nom complet, 'jours': set, 'interieur': bool}}."""
     out = {}
@@ -151,8 +156,11 @@ def tournois_des_feuilles():
                     i = str(r.get('tournoi_id') or r.get('tournoi') or '')
                     if not i or not r.get('jour'):
                         continue
-                    e = out.setdefault(i, {'nom': r.get('tournoi') or r.get('tournoi_unique'), 'jours': set(), 'interieur': False})
+                    e = out.setdefault(i, {'nom': r.get('tournoi') or r.get('tournoi_unique'), 'jours': set(), 'interieur': False,
+                                           'debuts': set()})
                     e['jours'].add(r['jour'])
+                    if r.get('debut'):
+                        e['debuts'].add(int(r['debut']))
                     e['interieur'] |= 'indoor' in str(r.get('surface') or '').lower()
         except (OSError, ValueError):
             continue
@@ -211,6 +219,8 @@ def main(argv):
             if t.get('lat') is None:
                 continue
             M = MET.setdefault(i, {})
+            # 05/11/2026 (paquet 191) : jours LOCAUX — 4 % des matchs (le soir aux Amériques) prenaient la météo du lendemain
+            e['jours'] = e['jours'] | {jour_local(ts, t.get('lon')) for ts in e.get('debuts') or ()}
             for d0, d1 in semaines(e['jours']):
                 manque = [d for d in (d0 + dt.timedelta(days=k) for k in range((d1 - d0).days + 1))
                           if d.isoformat() in e['jours'] and (d.isoformat() not in M or M[d.isoformat()][2] == 'prevision'
