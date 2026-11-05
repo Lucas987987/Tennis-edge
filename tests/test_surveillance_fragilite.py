@@ -34,6 +34,12 @@ class Decision(unittest.TestCase):
         self.assertTrue(SF.CRITERES['match_serre'][1](r))
         self.assertFalse(SF.CRITERES['gros_favori'][1](r))
 
+    def test_pronostic_bouge(self):
+        f = SF.CRITERES['pronostic_bouge'][1]
+        self.assertTrue(f({'p': .6, 'p0': .60, 'p1': .66}))
+        self.assertFalse(f({'p': .6, 'p0': .60, 'p1': .63}))
+        self.assertFalse(f({'p': .6, 'p0': None, 'p1': .70}))
+
     def test_huitiemes(self):
         self.assertTrue(SF.CRITERES['huitiemes'][1]({'p': .6, 'tour': 'Round of 16'}))
         self.assertFalse(SF.CRITERES['huitiemes'][1]({'p': .6, 'tour': 'Round of 32'}))
