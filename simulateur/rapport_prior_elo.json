@@ -1,0 +1,336 @@
+{
+ "genere_le": "2026-11-05T09:34:46+00:00",
+ "beta": {
+  "f": {
+   "S": 0.01288,
+   "R": 0.00338
+  },
+  "a": {
+   "S": 0.08189,
+   "R": 0.08636
+  },
+  "w1": {
+   "S": 0.06437,
+   "R": 0.05108
+  },
+  "d": {
+   "S": -0.02092,
+   "R": 0.00335
+  },
+  "w2j": {
+   "S": 0.03714,
+   "R": 0.04049
+  }
+ },
+ "regle": "par circuit : log-vraisemblance des points plus basse sur les 5 dates jugeables ET −0,002 en moyenne chez les serveurs peu vus (< 2 000 points pondérés)",
+ "dates": [
+  {
+   "date": "2024-01-01",
+   "CH|tous": {
+    "actuel": 0.53696,
+    "prior_elo": 0.53697,
+    "gain": -1e-05,
+    "points": 1597363
+   },
+   "CH|vu": {
+    "actuel": 0.53701,
+    "prior_elo": 0.53701,
+    "gain": 1e-05,
+    "points": 1112480
+   },
+   "CH|peu_vu": {
+    "actuel": 0.53683,
+    "prior_elo": 0.53689,
+    "gain": -6e-05,
+    "points": 484883
+   },
+   "WTA|tous": {
+    "actuel": 0.52854,
+    "prior_elo": 0.52848,
+    "gain": 6e-05,
+    "points": 431634
+   },
+   "WTA|peu_vu": {
+    "actuel": 0.53006,
+    "prior_elo": 0.52982,
+    "gain": 0.00025,
+    "points": 53733
+   },
+   "WTA|vu": {
+    "actuel": 0.52833,
+    "prior_elo": 0.5283,
+    "gain": 3e-05,
+    "points": 377901
+   },
+   "ATP|tous": {
+    "actuel": 0.53565,
+    "prior_elo": 0.53564,
+    "gain": 1e-05,
+    "points": 577021
+   },
+   "ATP|vu": {
+    "actuel": 0.53509,
+    "prior_elo": 0.53511,
+    "gain": -2e-05,
+    "points": 545868
+   },
+   "ATP|peu_vu": {
+    "actuel": 0.54544,
+    "prior_elo": 0.5449,
+    "gain": 0.00055,
+    "points": 31153
+   }
+  },
+  {
+   "date": "2024-07-01",
+   "CH|tous": {
+    "actuel": 0.54335,
+    "prior_elo": 0.5434,
+    "gain": -5e-05,
+    "points": 1939862
+   },
+   "CH|peu_vu": {
+    "actuel": 0.54689,
+    "prior_elo": 0.54715,
+    "gain": -0.00026,
+    "points": 722859
+   },
+   "CH|vu": {
+    "actuel": 0.54124,
+    "prior_elo": 0.54117,
+    "gain": 7e-05,
+    "points": 1217003
+   },
+   "ATP|tous": {
+    "actuel": 0.54528,
+    "prior_elo": 0.54527,
+    "gain": 1e-05,
+    "points": 586985
+   },
+   "ATP|vu": {
+    "actuel": 0.54547,
+    "prior_elo": 0.54543,
+    "gain": 4e-05,
+    "points": 556714
+   },
+   "WTA|tous": {
+    "actuel": 0.5368,
+    "prior_elo": 0.53673,
+    "gain": 7e-05,
+    "points": 458799
+   },
+   "WTA|vu": {
+    "actuel": 0.53755,
+    "prior_elo": 0.53748,
+    "gain": 7e-05,
+    "points": 392487
+   },
+   "WTA|peu_vu": {
+    "actuel": 0.53238,
+    "prior_elo": 0.53229,
+    "gain": 9e-05,
+    "points": 66312
+   },
+   "ATP|peu_vu": {
+    "actuel": 0.54193,
+    "prior_elo": 0.54236,
+    "gain": -0.00043,
+    "points": 30271
+   }
+  },
+  {
+   "date": "2025-01-01",
+   "CH|tous": {
+    "actuel": 0.53737,
+    "prior_elo": 0.53736,
+    "gain": 2e-05,
+    "points": 1590646
+   },
+   "CH|peu_vu": {
+    "actuel": 0.54395,
+    "prior_elo": 0.54401,
+    "gain": -6e-05,
+    "points": 489673
+   },
+   "CH|vu": {
+    "actuel": 0.53445,
+    "prior_elo": 0.5344,
+    "gain": 5e-05,
+    "points": 1100973
+   },
+   "WTA|tous": {
+    "actuel": 0.53546,
+    "prior_elo": 0.53544,
+    "gain": 3e-05,
+    "points": 383307
+   },
+   "WTA|vu": {
+    "actuel": 0.53591,
+    "prior_elo": 0.5359,
+    "gain": 2e-05,
+    "points": 344826
+   },
+   "WTA|peu_vu": {
+    "actuel": 0.53145,
+    "prior_elo": 0.53132,
+    "gain": 0.00012,
+    "points": 38481
+   },
+   "ATP|tous": {
+    "actuel": 0.53727,
+    "prior_elo": 0.53723,
+    "gain": 5e-05,
+    "points": 458319
+   },
+   "ATP|vu": {
+    "actuel": 0.53761,
+    "prior_elo": 0.53757,
+    "gain": 5e-05,
+    "points": 449584
+   },
+   "ATP|peu_vu": {
+    "actuel": 0.51975,
+    "prior_elo": 0.51978,
+    "gain": -3e-05,
+    "points": 8735
+   }
+  },
+  {
+   "date": "2025-07-01",
+   "CH|tous": {
+    "actuel": 0.54094,
+    "prior_elo": 0.54088,
+    "gain": 6e-05,
+    "points": 1848396
+   },
+   "CH|vu": {
+    "actuel": 0.53873,
+    "prior_elo": 0.53866,
+    "gain": 7e-05,
+    "points": 1137049
+   },
+   "CH|peu_vu": {
+    "actuel": 0.54448,
+    "prior_elo": 0.54444,
+    "gain": 4e-05,
+    "points": 711347
+   },
+   "WTA|tous": {
+    "actuel": 0.539,
+    "prior_elo": 0.53889,
+    "gain": 0.00011,
+    "points": 438209
+   },
+   "WTA|vu": {
+    "actuel": 0.5417,
+    "prior_elo": 0.54167,
+    "gain": 3e-05,
+    "points": 356727
+   },
+   "WTA|peu_vu": {
+    "actuel": 0.52715,
+    "prior_elo": 0.52671,
+    "gain": 0.00044,
+    "points": 81482
+   },
+   "ATP|tous": {
+    "actuel": 0.55115,
+    "prior_elo": 0.55112,
+    "gain": 3e-05,
+    "points": 438418
+   },
+   "ATP|vu": {
+    "actuel": 0.5514,
+    "prior_elo": 0.55137,
+    "gain": 3e-05,
+    "points": 430524
+   },
+   "ATP|peu_vu": {
+    "actuel": 0.53756,
+    "prior_elo": 0.53752,
+    "gain": 4e-05,
+    "points": 7894
+   }
+  },
+  {
+   "date": "2026-01-01",
+   "CH|tous": {
+    "actuel": 0.53805,
+    "prior_elo": 0.53796,
+    "gain": 8e-05,
+    "points": 1892708
+   },
+   "CH|vu": {
+    "actuel": 0.53731,
+    "prior_elo": 0.53724,
+    "gain": 7e-05,
+    "points": 1283890
+   },
+   "CH|peu_vu": {
+    "actuel": 0.5396,
+    "prior_elo": 0.53948,
+    "gain": 0.00011,
+    "points": 608818
+   },
+   "WTA|tous": {
+    "actuel": 0.53368,
+    "prior_elo": 0.5336,
+    "gain": 8e-05,
+    "points": 402032
+   },
+   "WTA|vu": {
+    "actuel": 0.53372,
+    "prior_elo": 0.53364,
+    "gain": 8e-05,
+    "points": 388030
+   },
+   "ATP|tous": {
+    "actuel": 0.5391,
+    "prior_elo": 0.5391,
+    "gain": 1e-05,
+    "points": 470810
+   },
+   "ATP|vu": {
+    "actuel": 0.53916,
+    "prior_elo": 0.53915,
+    "gain": 1e-05,
+    "points": 466568
+   },
+   "ATP|peu_vu": {
+    "actuel": 0.53308,
+    "prior_elo": 0.53274,
+    "gain": 0.00035,
+    "points": 4242
+   },
+   "WTA|peu_vu": {
+    "actuel": 0.53243,
+    "prior_elo": 0.53237,
+    "gain": 6e-05,
+    "points": 14002
+   }
+  }
+ ],
+ "verdict": {
+  "ATP": {
+   "dates_gagnantes": 5,
+   "sur": 5,
+   "gain_moyen_tous": 2e-05,
+   "gain_moyen_peu_vus": 0.0001,
+   "retenu_pour_fantome": false
+  },
+  "WTA": {
+   "dates_gagnantes": 5,
+   "sur": 5,
+   "gain_moyen_tous": 7e-05,
+   "gain_moyen_peu_vus": 0.00019,
+   "retenu_pour_fantome": false
+  },
+  "CH": {
+   "dates_gagnantes": 3,
+   "sur": 5,
+   "gain_moyen_tous": 2e-05,
+   "gain_moyen_peu_vus": -5e-05,
+   "retenu_pour_fantome": false
+  }
+ }
+}
