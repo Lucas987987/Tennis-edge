@@ -317,6 +317,15 @@ body.video #video{display:block;width:100vw;height:100vh}
 }
 
 
+/* 05/11/2026 — vitesse du court : jauge (échelle CPI) + historique des éditions du tournoi */
+.panel .pad{padding:0 16px 14px}
+.panel.vit .jauge{position:relative;height:14px;border-radius:99px;margin:14px 0 6px;background:linear-gradient(90deg,#E8913A,#E9D44A 45%,#7BE07A)}
+.panel.vit .jauge i{position:absolute;top:50%;width:22px;height:22px;margin:-11px 0 0 -11px;border-radius:50%;background:#F4F1FF;border:3px solid #160E33;box-shadow:0 0 12px rgba(255,255,255,.5)}
+.panel.vit .echelle{display:flex;justify-content:space-between;font-size:.78rem;color:var(--dim)}
+.panel.vit .vit-l{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:baseline;margin-top:10px}
+.panel.vit .vit-l b{font-family:var(--disp);font-weight:400;font-size:1.35rem}
+.panel.vit svg{display:block;width:100%;height:auto;margin-top:12px}
+.panel.vit svg text{fill:var(--dim);font-size:10px;font-family:inherit}
 /* 05/11/2026 — « Demande à l'algo » : une question, la réponse des simulations */
 .panel.qa select,.panel.qa input{background:rgba(255,255,255,.04);color:inherit;border:1px solid var(--line2);border-radius:999px;padding:8px 12px;font:inherit}
 .panel.qa .qa-l{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px}
@@ -718,6 +727,9 @@ const T = {
   a_ace:'ACE !', a_df:'DOUBLE FAUTE', a_aces:'Aces', a_dfs:'Doubles fautes', a_frappes:n=>`${n} frappes`,
   a_fin_stats:(a1,a2,e1,e2)=>`Aces dans ce match : <b>${a1} – ${a2}</b> (l'algo en prévoit ${e1} – ${e2}).`,
   lg_total:k=>`+ de ${k} jeux`, lg_tb:'Un tie-break', lg_3s:n=>`${n} sets`, lg_hand:(x,k)=>`${x} −${k} jeux`,
+  vit_titre:'Vitesse du court', vit_echelle:['Lent','Moyen','Rapide'], vit_cpi:(o,an)=>`CPI ${o?'officiel':'estimé'} ${an}`,
+  vit_ecart:d=>`${d>0?'+':''}${dec(d,1)} vs l'an dernier`, vit_hist:n=>`Les ${n} dernières éditions`, vit_leg:'● CPI officiel · ○ estimé par l’algo',
+  vit_note:'Notre mesure retire le niveau des joueurs du tableau : elle mesure le court, pas le plateau. Information : la vitesse sert à prévoir aces et service, pas le vainqueur.',
   qa_titre:'Demande à l’algo', qa_sous:n=>`Choisis une question : la réponse vient des ${fmt(n)} simulations du match, sans aucune cote.`,
   qa_q:{deux:'gagne sans perdre de set', un_set:'gagne au moins un set', s1m:'gagne le 1er set et le match', jeux_j:'gagne plus de … jeux', ecart:'gagne avec plus de … jeux d’écart', total:'Plus de … jeux dans le match', tb:'Au moins un tie-break'},
   qa_rep:(q,c)=>`<b>${q}</b> des simulations · cote juste ${c}`, qa_joueur:'Joueur', qa_n:'Nombre',
@@ -942,6 +954,9 @@ const T = {
   a_ace:'ACE!', a_df:'DOUBLE FAULT', a_aces:'Aces', a_dfs:'Double faults', a_frappes:n=>`${n}-shot rally`,
   a_fin_stats:(a1,a2,e1,e2)=>`Aces in this match: <b>${a1} – ${a2}</b> (the algorithm expects ${e1} – ${e2}).`,
   lg_total:k=>`Over ${k} games`, lg_tb:'A tie-break', lg_3s:n=>`${n} sets`, lg_hand:(x,k)=>`${x} −${k} games`,
+  vit_titre:'Court speed', vit_echelle:['Slow','Medium','Fast'], vit_cpi:(o,an)=>`${o?'Official':'Estimated'} CPI ${an}`,
+  vit_ecart:d=>`${d>0?'+':''}${dec(d,1)} vs last year`, vit_hist:n=>`Last ${n} editions`, vit_leg:'● official CPI · ○ estimated by the algorithm',
+  vit_note:'Our measure removes the players’ level: it measures the court, not the field. Information only: speed helps forecast aces and serve, not the winner.',
   qa_titre:'Ask the algorithm', qa_sous:n=>`Pick a question: the answer comes from the match’s ${fmt(n)} simulations, no odds involved.`,
   qa_q:{deux:'wins without dropping a set', un_set:'wins at least one set', s1m:'wins the 1st set and the match', jeux_j:'wins more than … games', ecart:'wins by more than … games', total:'Over … games in the match', tb:'At least one tie-break'},
   qa_rep:(q,c)=>`<b>${q}</b> of simulations · fair odds ${c}`, qa_joueur:'Player', qa_n:'Number',
@@ -992,14 +1007,40 @@ function repondre(m, q, j, n){
     case 'tb': return Z.tb;
   } return null;
 }
+// 05/11/2026 — vitesse du court en visuel : jauge sur l'échelle du CPI (20 = lent, 50+ = très rapide), écart avec l'an
+// dernier, courbe des éditions (CPI officiel plein, estimé creux). Données : vitrine (vitesse_courts.historique).
+function rendVitesse(m){
+  const vc = m.vitesse_court; if (!vc) return '';
+  const v = vc.cpi_officiel != null ? vc.cpi_officiel : vc.cpi_estime; if (v == null) return '';
+  const pos = x => Math.max(0, Math.min(100, (x - 20) / 35 * 100));
+  const cl = L==='fr' ? vc.classe : ({lente:'slow','moyennement lente':'medium-slow',moyenne:'medium','moyennement rapide':'medium-fast',rapide:'fast'})[vc.classe]||vc.classe;
+  const H = vc.historique || [], prec = H.find(x => x.an === vc.annee - 1);
+  const ecart = prec ? Math.round((v - prec.cpi) * 10) / 10 : null;
+  let svg = '';
+  if (H.length >= 2){
+    const W = 320, Ht = 110, g = 22, lo = Math.min(...H.map(x=>x.cpi)) - 3, hi = Math.max(...H.map(x=>x.cpi)) + 3;
+    const X = i => g + i * (W - 2*g) / (H.length - 1), Y = c => 12 + (Ht - 34) * (1 - (c - lo) / Math.max(1, hi - lo));
+    const pts = H.map((x,i)=>`${X(i).toFixed(1)},${Y(x.cpi).toFixed(1)}`).join(' ');
+    svg = `<svg viewBox="0 0 ${W} ${Ht}" role="img" aria-label="${esc(t('vit_hist', H.length))}">
+      <polyline points="${pts}" fill="none" stroke="#7BE07A" stroke-width="2" stroke-linejoin="round"/>
+      ${H.map((x,i)=>`<circle cx="${X(i).toFixed(1)}" cy="${Y(x.cpi).toFixed(1)}" r="${x.an===vc.annee?5:3.5}" fill="${x.officiel?'#7BE07A':'#160E33'}" stroke="#7BE07A" stroke-width="2"/>`
+        + ((i % Math.ceil(H.length/8) === 0 || i === H.length-1) ? `<text x="${X(i).toFixed(1)}" y="${Ht-4}" text-anchor="middle">${String(x.an).slice(2)}</text><text x="${X(i).toFixed(1)}" y="${(Y(x.cpi)-8).toFixed(1)}" text-anchor="middle">${Math.round(x.cpi)}</text>` : '')).join('')}
+    </svg><p class="aide" style="margin:2px 0 0">${esc(t('vit_hist', H.length))} · ${esc(t('vit_leg'))}</p>`;
+  }
+  return `<div class="panel vit"><h3>🎾 ${esc(t('vit_titre'))}</h3><div class="pad">
+    <div class="vit-l"><b>${esc(cl.charAt(0).toUpperCase() + cl.slice(1))}</b><span>${esc(t('vit_cpi', vc.cpi_officiel != null, vc.annee))} : <b style="font-size:1.1rem">${dec(v,1)}</b></span>${ecart != null ? `<span class="aide">${esc(t('vit_ecart', ecart))}</span>` : ''}</div>
+    <div class="jauge" aria-hidden="true"><i style="left:${pos(v).toFixed(1)}%"></i></div>
+    <div class="echelle">${t('vit_echelle').map(x=>`<span>${esc(x)}</span>`).join('')}</div>
+    ${svg}<p class="aide">${esc(t('vit_note'))}</p></div></div>`;
+}
 function rendQuestion(m){
   if (!m.questions) return '';
   const nSim = Math.max(1, Math.round(Number(m.simulation && m.simulation.n) || Number(D.simulations) || 0)), Qs = t('qa_q');
-  return `<div class="panel qa"><h3>💬 ${esc(t('qa_titre'))}</h3><p class="aide">${esc(t('qa_sous', nSim))}</p>
+  return `<div class="panel qa"><h3>💬 ${esc(t('qa_titre'))}</h3><div class="pad"><p class="aide">${esc(t('qa_sous', nSim))}</p>
     <div class="qa-l"><select id="qa-j" aria-label="${esc(t('qa_joueur'))}"><option value="0">${esc(court(m.home))}</option><option value="1">${esc(court(m.away))}</option></select>
       <select id="qa-q">${Object.entries(Qs).map(([k,v])=>`<option value="${k}">${esc(v)}</option>`).join('')}</select>
       <input id="qa-n" type="number" step="1" min="0" max="65" value="21" aria-label="${esc(t('qa_n'))}" style="width:5.5em"></div>
-    <p class="qa-r" id="qa-r" aria-live="polite"></p></div>`;
+    <p class="qa-r" id="qa-r" aria-live="polite"></p></div></div>`;
 }
 function brancherQuestion(m){
   const q = document.getElementById('qa-q'); if (!q) return;
@@ -2054,6 +2095,7 @@ function rendMdj(){
         <p class="ligne" style="margin-top:8px;gap:10px;justify-content:flex-start;align-items:center"><button type="button" class="btn" id="post-copier">Copier</button><small id="post-nb"></small><small id="post-ok" aria-live="polite"></small></p>
       </div>
       ${rendEssentiel(m)}
+      ${rendVitesse(m)}
       ${rendStylesDescriptifs(m.styles_descriptifs,m)}
       <div class="duo">
         ${bo ? `<div class="panel"><h3>${esc(t('sets_titre'))}</h3><div class="bars">${bo}</div></div>` : ''}

@@ -658,6 +658,10 @@ def construire(racine, maintenant=None):
                 v_ = None
             if v_:
                 ligne['vitesse_court'] = {k: v_.get(k) for k in ('cpi_estime', 'cpi_officiel', 'classe', 'annee', 'points')}
+                # 05/11/2026 : historique du tournoi pour le visuel (jauge + courbe des éditions)
+                h_ = VC.historique(vit_doc, ligne.get('circuit'), ligne.get('tournoi'), v_.get('annee'))
+                if len(h_) >= 2:
+                    ligne['vitesse_court']['historique'] = h_
     # 28/10/2026 — lignes de paris calculées par l'algo (distribution exacte) et duel service ↔ retour
     import lignes_algo as MD
     duel = MD.Duel.charger(racine)
