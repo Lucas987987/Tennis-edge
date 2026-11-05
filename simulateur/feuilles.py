@@ -170,7 +170,12 @@ def feuille_reelle(r, inverse=False):
 
     def f(d, o, jeux):
         sv, in1, w1, w2, ace, df, bpf, bps, sg = d
-        return {'aces': ace, 'doubles_fautes': df, 'premiere_pct': 100 * in1 / sv, 'gagnes_1re_pct': 100 * w1 / in1,
-                'gagnes_2e_pct': 100 * w2 / (sv - in1), 'balles_break_obtenues': o[6], 'breaks': o[6] - o[7], 'jeux': jeux}
+        out = {'aces': ace, 'doubles_fautes': df, 'premiere_pct': 100 * in1 / sv, 'gagnes_1re_pct': 100 * w1 / in1,
+               'gagnes_2e_pct': 100 * w2 / (sv - in1), 'balles_break_obtenues': o[6], 'breaks': o[6] - o[7], 'jeux': jeux}
+        # 05/11/2026 : points gagnés dans le match (au service + au retour) et jeux de service gagnés
+        out['points_gagnes'] = (w1 + w2) + (o[0] - o[2] - o[3])
+        if sg:
+            out['jeux_service_gagnes_pct'] = 100 * (sg - (bpf - bps)) / sg
+        return out
     out = [f(dh, da, jh), f(da, dh, ja)]
     return (out[::-1] if inverse else out), jh + ja

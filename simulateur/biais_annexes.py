@@ -26,7 +26,8 @@ sys.path.insert(0, ICI)
 SEMAINES = 6
 MIN_STAT, MIN_LIGNE = 200, 80
 SORTIE = os.path.join('simulateur', 'biais_annexes.json')
-STATS = ('aces', 'doubles_fautes', 'breaks', 'premiere_pct', 'gagnes_1re_pct', 'gagnes_2e_pct', 'jeux')
+STATS = ('aces', 'doubles_fautes', 'breaks', 'premiere_pct', 'gagnes_1re_pct', 'gagnes_2e_pct', 'jeux',
+         'balles_break_obtenues', 'jeux_service_gagnes_pct', 'points_gagnes')     # 3 derniers : suivis depuis le 05/11
 # 05/11/2026 : « 1er set du joueur cité en premier » retiré : sur 4 698 fiches, ce joueur gagne le 1er set 51,3 % du temps
 # (et le match 52,1 %) ; l'écart vu sur nos 443 matchs suivait leur part de victoires (53 %) — du hasard d'échantillon.
 # Ce qui compte vraiment pour le 1er set, c'est le PREMIER SERVEUR (57,0 % des 1ers sets), inconnu avant le match.
