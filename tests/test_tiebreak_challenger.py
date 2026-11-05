@@ -21,6 +21,18 @@ class TestTiebreakChallenger(unittest.TestCase):
         self.assertEqual(r['tie_break_brut'], 0.30)
         self.assertGreater(r['tie_break'], 0.30)
 
+    def test_adopte_directement_sur_challenger(self):
+        import tempfile, json
+        import fantomes_circuits as FC
+        with tempfile.TemporaryDirectory() as d:
+            os.makedirs(os.path.join(d, 'simulateur'))
+            with open(os.path.join(d, 'simulateur', 'rapport_tiebreaks.json'), 'w') as f:
+                json.dump({'circuits': {'CH': {'retenu_pour_fantome': True}, 'ATP': {'retenu_pour_fantome': False}}}, f)
+            self.assertEqual(FC.lire(d).get('tiebreak'), ['CH'])
+            with open(os.path.join(d, FC.SORTIE), 'w') as f:
+                json.dump({'decisions': {'tiebreak|CH': {'adopte': False, 'retire': True}}}, f)
+            self.assertIsNone(FC.lire(d).get('tiebreak'))
+
     def test_calcul_rapide_egal_modele(self):
         import modele as M
         a, b = M.ancrer_forme(0.66, 0.62, 0.6, 2, 0.15, iterations=20)
