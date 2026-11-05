@@ -1,0 +1,153 @@
+{
+ "genere_le": "2026-11-05T10:02:12+00:00",
+ "regle": "par circuit : δ appris 2023–2024 ; fantôme si −0,001 de log loss sur ≥ 1 000 matchs 2025 → et écart de même signe sur les deux périodes",
+ "circuits": {
+  "ATP": {
+   "2023–2024": {
+    "matchs": 4749,
+    "prevu_pct": 37.7,
+    "reel_pct": 39.3,
+    "ecart_pts": 1.6,
+    "z": 2.3
+   },
+   "2025 → juin 2026": {
+    "matchs": 3246,
+    "prevu_pct": 37.8,
+    "reel_pct": 38.0,
+    "ecart_pts": 0.2,
+    "z": 0.2
+   },
+   "delta_appris": 0.0707,
+   "gain_log_loss_juge": -0.00043,
+   "retenu_pour_fantome": false,
+   "etalonnage_juge": [
+    {
+     "tranche": "10–20 %",
+     "matchs": 60,
+     "prevu": 16.6,
+     "reel": 23.3
+    },
+    {
+     "tranche": "20–30 %",
+     "matchs": 529,
+     "prevu": 26.6,
+     "reel": 26.1
+    },
+    {
+     "tranche": "30–40 %",
+     "matchs": 1454,
+     "prevu": 35.2,
+     "reel": 36.0
+    },
+    {
+     "tranche": "40–50 %",
+     "matchs": 915,
+     "prevu": 44.1,
+     "reel": 43.4
+    },
+    {
+     "tranche": "50–60 %",
+     "matchs": 212,
+     "prevu": 53.8,
+     "reel": 52.8
+    },
+    {
+     "tranche": "60–70 %",
+     "matchs": 63,
+     "prevu": 63.8,
+     "reel": 68.3
+    }
+   ]
+  },
+  "WTA": {
+   "2023–2024": {
+    "matchs": 5365,
+    "prevu_pct": 25.1,
+    "reel_pct": 23.2,
+    "ecart_pts": -1.9,
+    "z": -3.3
+   },
+   "2025 → juin 2026": {
+    "matchs": 3849,
+    "prevu_pct": 24.8,
+    "reel_pct": 23.7,
+    "ecart_pts": -1.1,
+    "z": -1.6
+   },
+   "delta_appris": -0.1066,
+   "gain_log_loss_juge": 0.00015,
+   "retenu_pour_fantome": false,
+   "etalonnage_juge": [
+    {
+     "tranche": "10–20 %",
+     "matchs": 398,
+     "prevu": 17.2,
+     "reel": 14.1
+    },
+    {
+     "tranche": "20–30 %",
+     "matchs": 3144,
+     "prevu": 25.1,
+     "reel": 24.3
+    },
+    {
+     "tranche": "30–40 %",
+     "matchs": 297,
+     "prevu": 32.1,
+     "reel": 31.0
+    }
+   ]
+  },
+  "CH": {
+   "2023–2024": {
+    "matchs": 17643,
+    "prevu_pct": 28.5,
+    "reel_pct": 31.6,
+    "ecart_pts": 3.1,
+    "z": 9.1
+   },
+   "2025 → juin 2026": {
+    "matchs": 13752,
+    "prevu_pct": 28.1,
+    "reel_pct": 31.8,
+    "ecart_pts": 3.8,
+    "z": 9.8
+   },
+   "delta_appris": 0.1497,
+   "gain_log_loss_juge": 0.00338,
+   "retenu_pour_fantome": true,
+   "etalonnage_juge": [
+    {
+     "tranche": "10–20 %",
+     "matchs": 1001,
+     "prevu": 17.3,
+     "reel": 18.6
+    },
+    {
+     "tranche": "20–30 %",
+     "matchs": 8148,
+     "prevu": 25.5,
+     "reel": 28.7
+    },
+    {
+     "tranche": "30–40 %",
+     "matchs": 4006,
+     "prevu": 33.7,
+     "reel": 39.2
+    },
+    {
+     "tranche": "40–50 %",
+     "matchs": 536,
+     "prevu": 43.1,
+     "reel": 49.1
+    },
+    {
+     "tranche": "50–60 %",
+     "matchs": 43,
+     "prevu": 52.5,
+     "reel": 51.2
+    }
+   ]
+  }
+ }
+}
