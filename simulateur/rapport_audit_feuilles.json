@@ -1,0 +1,222 @@
+{
+ "genere_le": "2026-11-05T12:46:25+00:00",
+ "matchs_complets": 8681,
+ "regle": "faux si plus de 5 % des matchs diffèrent (jeux : tolérance 0 ; points : ±2)",
+ "champs": {
+  "sets": {
+   "compares": 8842,
+   "differents": 161,
+   "differents_pct": 1.82,
+   "faux": false,
+   "exemples": [
+    {
+     "id": 16198546,
+     "feuille": [
+      [
+       3,
+       6
+      ],
+      [
+       6,
+       2
+      ],
+      [
+       2,
+       6
+      ]
+     ],
+     "points": [
+      [
+       3,
+       6
+      ],
+      [
+       7,
+       2
+      ],
+      [
+       2,
+       6
+      ]
+     ]
+    },
+    {
+     "id": 16198589,
+     "feuille": [
+      [
+       6,
+       7
+      ],
+      [
+       4,
+       6
+      ]
+     ],
+     "points": [
+      [
+       6,
+       6
+      ],
+      [
+       4,
+       6
+      ]
+     ]
+    },
+    {
+     "id": 16198591,
+     "feuille": [
+      [
+       1,
+       6
+      ],
+      [
+       3,
+       6
+      ]
+     ],
+     "points": [
+      [
+       1,
+       6
+      ],
+      [
+       3,
+       5
+      ]
+     ]
+    }
+   ]
+  },
+  "svpt": {
+   "compares": 17362,
+   "differents": 641,
+   "differents_pct": 3.69,
+   "faux": false,
+   "exemples": [
+    {
+     "id": 16198515,
+     "joueur": 0,
+     "feuille": 97,
+     "points": 93
+    },
+    {
+     "id": 16257554,
+     "joueur": 1,
+     "feuille": 50,
+     "points": 54
+    },
+    {
+     "id": 16260079,
+     "joueur": 0,
+     "feuille": 80,
+     "points": 86
+    }
+   ]
+  },
+  "points_gagnes": {
+   "compares": 17362,
+   "differents": 622,
+   "differents_pct": 3.58,
+   "faux": false,
+   "exemples": [
+    {
+     "id": 16198519,
+     "joueur": 0,
+     "feuille": 93,
+     "points": 98
+    },
+    {
+     "id": 16198519,
+     "joueur": 1,
+     "feuille": 78,
+     "points": 74
+    },
+    {
+     "id": 16257554,
+     "joueur": 0,
+     "feuille": 35,
+     "points": 38
+    }
+   ]
+  },
+  "sg": {
+   "compares": 17362,
+   "differents": 8184,
+   "differents_pct": 47.14,
+   "faux": true,
+   "exemples": [
+    {
+     "id": 16198484,
+     "joueur": 0,
+     "feuille": 21,
+     "points": 20
+    },
+    {
+     "id": 16198484,
+     "joueur": 1,
+     "feuille": 20,
+     "points": 21
+    },
+    {
+     "id": 16198515,
+     "joueur": 0,
+     "feuille": 17,
+     "points": 16
+    }
+   ]
+  },
+  "breaks_concedes": {
+   "compares": 17362,
+   "differents": 1472,
+   "differents_pct": 8.48,
+   "faux": true,
+   "exemples": [
+    {
+     "id": 16257400,
+     "joueur": 0,
+     "feuille": 1,
+     "points": 2
+    },
+    {
+     "id": 16257400,
+     "joueur": 1,
+     "feuille": 1,
+     "points": 3
+    },
+    {
+     "id": 16257402,
+     "joueur": 0,
+     "feuille": 1,
+     "points": 3
+    }
+   ]
+  },
+  "bpf": {
+   "compares": 17362,
+   "differents": 1465,
+   "differents_pct": 8.44,
+   "faux": true,
+   "exemples": [
+    {
+     "id": 16257400,
+     "joueur": 0,
+     "feuille": 8,
+     "points": 10
+    },
+    {
+     "id": 16257400,
+     "joueur": 1,
+     "feuille": 6,
+     "points": 9
+    },
+    {
+     "id": 16257404,
+     "joueur": 0,
+     "feuille": 4,
+     "points": 5
+    }
+   ]
+  }
+ }
+}
