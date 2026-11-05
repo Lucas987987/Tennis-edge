@@ -1652,6 +1652,8 @@ def bilan(racine, maintenant=None):
                 out.append({'tranche': f"{lo}–{lo + 10} %", 'n': len(g), 'prevu': round(100 * sum(p for p, _ in g) / len(g), 1),
                             'reel': round(100 * sum(w for _, w in g) / len(g), 1)})
         return out
+    # 05/11/2026 : un même match sous deux uid ne compte qu'une fois (voir dedoublonner)
+    L = [x for x in dedoublonner([dict(x, reel={'gagnant': x['gagnant']}) for x in L])]
     VERS = (('combinaison', 'combinaison'), ('simulation', 'simulation'), ('stats_seules', 'stats'))
     depuis7 = (maintenant - dt.timedelta(days=7)).date().isoformat()
     L7 = [x for x in L if x['debut'] >= depuis7]
@@ -1816,6 +1818,22 @@ def interruption(fi):
     return None
 
 
+def pronostic_tardif(fi, passage, marge_min=10):
+    """05/11/2026 — True si le dernier pronostic a été fait plus de 10 minutes APRÈS le vrai début du match (horaire
+    de la feuille TennisApi) : un match affiché le lendemain de sa vraie date était jugé sur un pronostic qui
+    connaissait déjà son résultat (1 cas sur 904 au 05/11)."""
+    try:
+        debut = (fi or {}).get('debut')
+        if not passage or debut is None or not str(debut).isdigit():
+            return False
+        reel = dt.datetime.fromtimestamp(int(debut), dt.timezone.utc)
+        t = dt.datetime.fromisoformat(str(passage).replace('Z', '+00:00'))
+        t = t if t.tzinfo else t.replace(tzinfo=dt.timezone.utc)
+        return (t - reel).total_seconds() > 60 * marge_min
+    except (TypeError, ValueError, OverflowError):
+        return False
+
+
 def dedoublonner(R):
     """05/11/2026 — un même match pronostiqué sous DEUX uid (affiché un jour, joué le lendemain : programme décalé,
     match reporté, passage de minuit) recevait deux fois le même résultat réel : 14,7 % des bilans après match étaient
@@ -1906,6 +1924,8 @@ def resoudre(racine, maintenant=None):
                    if fi and (not score_brut or score) else None)
         avant = [x for x in inst.get(r['uid'], []) if x['passage'][:16] < r['debut'][:16]]
         dernier = avant[-1] if avant else None
+        if pronostic_tardif(fi, (dernier or {}).get('passage') or r.get('pronostique_le')):
+            continue                     # 05/11/2026 : pronostic figé APRÈS le vrai début du match (fuite) — écarté
         premier = r.get('detail') or {k: r.get(k) for k in VERSIONS}
         p_affiche = next(((premier.get(k) or {}).get('p_home') for k in VERSIONS
                           if (premier.get(k) or {}).get('p_home') is not None), None)

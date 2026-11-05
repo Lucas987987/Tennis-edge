@@ -621,6 +621,21 @@
    "date": "2026-11-05",
    "quoi": "recalage direct du % de 1res balles étendu au Challenger : sur 211 matchs présents dans Sackmann ET TennisApi, mêmes points et mêmes aces mais +0,9 pt de 1res balles chez TennisApi — le biais est un écart de mesure entre les deux sources",
    "paquet": 184
+  },
+  {
+   "date": "2026-11-05",
+   "quoi": "suivi « qui a raison, l'algo ou Pinnacle » : la clôture prenait le DERNIER relevé, parfois capté après l'heure de début (17 % des matchs : cotes en direct ou match retardé) — désormais le dernier relevé avant le début",
+   "paquet": 185
+  },
+  {
+   "date": "2026-11-05",
+   "quoi": "bilan des pronostics (journal) dédoublonné comme les résultats ; pronostic figé APRÈS le vrai début du match (horaire TennisApi) écarté du jugement (fuite : 1 cas sur 904)",
+   "paquet": 185
+  },
+  {
+   "date": "2026-11-05",
+   "quoi": "vérifié sans changement : forfaits dans l'Elo (2 899 dans l'archive ; les retirer change la log loss de ±0,0002 : rien), joueurs ITF en double sous un nom abrégé (59, 237 matchs : impact minime), cohérence vainqueur / score / sets, sens home/away des cotes, mots interdits dans les données publiques",
+   "paquet": 185
   }
  ]
 }
