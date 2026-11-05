@@ -44,6 +44,10 @@ CRITERES = {
     # 05/11/2026 : huitièmes de finale — moins fiables sur nos pronostics rejoués, sur les deux périodes
     # (etude_criteres_matchs.py : pente 0,96 contre 1,24 puis 0,68 contre 1,04) ; entre seulement si la semaine le confirme
     'huitiemes': ("huitièmes de finale", lambda r: _tour(r.get('tour')) == 'huitièmes'),
+    # 05/11/2026 (accord de Lucas) : le pronostic a bougé d'au moins 5 points entre sa première publication et la
+    # dernière avant le match (etude_criteres_matchs.py, « pronostic qui bouge ») ; entre seulement si la semaine le confirme
+    'pronostic_bouge': ("pronostic qui a bougé de 5 points ou plus",
+                        lambda r: r.get('p0') is not None and r.get('p1') is not None and abs(r['p1'] - r['p0']) >= .05),
 }
 
 
@@ -119,7 +123,9 @@ def lignes(racine, aujourdhui):
         out.append({'c': m.get('circuit'), 'p': _c(p), 'y': int(reel['gagnant'] == 'home'),
                     'pe': (pr.get('stats') or {}).get('p_home'), 'ps': (pr.get('simulation') or {}).get('p_home'),
                     'xp': min(mj) if len(mj) == 2 else None, 'note_v3': f_.get('note_v3'),
-                    'tour': m.get('tour') or _tour_fiche(tours, jour, m)})
+                    'tour': m.get('tour') or _tour_fiche(tours, jour, m),
+                    'p0': ((m.get('premier') or {}).get('combinaison') or {}).get('p_home'),
+                    'p1': ((m.get('dernier') or {}).get('combinaison') or {}).get('p_home')})
     return out
 
 

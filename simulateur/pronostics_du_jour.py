@@ -1529,6 +1529,24 @@ def lire_instantanes(racine, depuis=None):
     return out
 
 
+def premiers_pronostics(racine, uids):
+    """p_home de la combinaison à la PREMIÈRE publication de chaque match (journal), ou None."""
+    voulus, vus = set(uids), {}
+    try:
+        with open(os.path.join(racine, LOG), encoding='utf-8') as f:
+            for l in f:
+                try:
+                    r = json.loads(l)
+                except ValueError:
+                    continue
+                u = r.get('uid')
+                if u in voulus and u not in vus:
+                    vus[u] = (r.get('combinaison') or {}).get('p_home')
+    except OSError:
+        pass
+    return [vus.get(u) for u in uids]
+
+
 def journaliser(racine, doc):
     chemin = os.path.join(racine, LOG)
     deja = set()
@@ -1864,6 +1882,9 @@ def main(argv):
             anciens_resultats = json.load(f)
     except (OSError, ValueError):
         anciens_resultats = {}
+    # 05/11/2026 : première publication de chaque match (journal), pour le critère « pronostic qui bouge »
+    for m, p0 in zip(doc['matchs'], premiers_pronostics(racine, [m['uid'] for m in doc['matchs']])):
+        m['p_premier'] = p0
     FI.ajouter(doc['matchs'], anciens_resultats)
     os.makedirs(os.path.join(racine, 'Tennis_Edge_Lab', 'live'), exist_ok=True)
     with open(os.path.join(racine, SORTIE), 'w', encoding='utf-8') as f:
