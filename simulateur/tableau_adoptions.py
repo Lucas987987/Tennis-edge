@@ -16,7 +16,7 @@ ICI = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, ICI)
 NOMS = {'changement_surface': 'changement de surface', 'retour_absence': "retour d'absence", 'age': 'âge',
         'favori_outsider': 'profil favori / outsider', 'parcours_tournoi': 'parcours dans le tournoi',
-        'tiebreak': 'tie-breaks (ligne)', 'montee_petits_tournois': 'montée des petits tournois'}
+        'tiebreak': 'tie-breaks (ligne)', 'documentation_faible': 'matchs peu documentés (< 500 balles)', 'montee_petits_tournois': 'montée des petits tournois'}
 STATS = {'premiere_pct': '% de 1res balles', 'aces': 'aces', 'doubles_fautes': 'doubles fautes', 'breaks': 'breaks'}
 
 
