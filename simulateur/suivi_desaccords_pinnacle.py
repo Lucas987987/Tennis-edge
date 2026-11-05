@@ -58,7 +58,12 @@ def relier(pronos, fiches, closing, cle):
         v = idx.get((x.get('jour'), frozenset((h, a))))
         if not v:
             continue
-        po, pc = _p(v['history'][0]), _p(v['history'][-1])
+        # 05/11/2026 : clôture = dernier relevé AVANT le début (17 % des matchs ont des relevés après l'heure prévue :
+        # cotes en direct ou match retardé — jamais une clôture)
+        avant = [h for h in v['history'] if h.get('mins_before') is None or h['mins_before'] >= 0]
+        if not avant:
+            continue
+        po, pc = _p(avant[0]), _p(avant[-1])
         if po is None or pc is None:
             continue
         if cle(v['home']) != h:
