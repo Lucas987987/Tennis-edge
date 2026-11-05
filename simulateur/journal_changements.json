@@ -576,6 +576,26 @@
    "date": "2026-11-05",
    "quoi": "vidéos : deux joueurs sur le court (placement au service, course vers la balle), légende de chaque point limitée à ce que la simulation sait (ace, double faute, service gagnant, retour gagnant, échange de n frappes, break, balle de break sauvée, jeu blanc, set) ; format 4:5 (1080×1350) en option dans le workflow ; pas de courbe de momentum (décision de Lucas)",
    "paquet": 178
+  },
+  {
+   "date": "2026-11-05",
+   "quoi": "recalage des statistiques annoncées ADOPTÉ DIRECTEMENT (décision de Lucas) sur les cases au biais net et stable chaque semaine : % de 1res balles ATP (+3,85 pts, 342 cas, z 11,4) et WTA (+3,7, 372, z 8,2), aces ATP (+0,9, z 4,0). Coefficients réappris à chaque mise à jour ; retrait d'une case après deux semaines de suite pires (écart moyen). Challenger et autres statistiques : règle hebdomadaire inchangée. Le % de victoire n'est pas touché.",
+   "paquet": 179
+  },
+  {
+   "date": "2026-11-05",
+   "quoi": "carte BILAN du match du jour (prévu contre réel, même mise en forme gagné ou perdu ✅ / ❌ : vainqueur et %, score réel, scénario de la vidéo et score exact, score en sets, aces de la vidéo, stats prévues → réelles) envoyée chaque matin sur le Telegram privé (workflow bilan_match_du_jour, ou à la main) ; aces WTA ajoutés au recalage direct (−0,4 chaque semaine, z −3,2)",
+   "paquet": 180
+  },
+  {
+   "date": "2026-11-05",
+   "quoi": "vidéo : 4 lignes de l'algo en bas (plus de N jeux, tie-break, 3 sets, handicap du favori ; % des simulations, aucune cote), cochées ✅ dès que le scénario les atteint, ✖ à la fin sinon. Site : « Demande à l'algo » sur chaque fiche (sans perdre de set, au moins un set, 1er set et match, plus de N jeux, écart de jeux, total, tie-break) — réponses calculées sur la distribution complète des scores (vitrine.questions), avec la cote juste",
+   "paquet": 181
+  },
+  {
+   "date": "2026-11-05",
+   "quoi": "Telegram privé : (1) chaque matin, liste des matchs du jour où l'algo contredit Pinnacle (favoris opposés ou ≥ 10 points ; cotes = loupe, jamais une entrée de l'algo ; une fois par jour via un repère dans le coffre) ; (2) chaque lundi, carte de la semaine (tous les matchs ATP/WTA/Challenger jugés, bons vainqueurs contre annoncé par circuit, favoris à 70 %+, plus gros ratés, scores exacts)",
+   "paquet": 182
   }
  ]
 }

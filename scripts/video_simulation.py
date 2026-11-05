@@ -155,6 +155,22 @@ def carte(url, chemin):
     return chemin
 
 
+def carte_bilan(url, chemin):
+    """05/11/2026 — carte bilan (PNG 1080×1350) : prévu contre réel du match du jour (ou de la veille) ; None si le
+    résultat n'est pas encore disponible."""
+    from playwright.sync_api import sync_playwright
+    with sync_playwright() as p:
+        nav = p.chromium.launch()
+        page = nav.new_page(viewport={'width': 1080, 'height': 1350}, device_scale_factor=1)
+        page.goto(url)
+        page.wait_for_function('window.__fini === true', timeout=30000, polling=200)
+        vide, uid = page.evaluate('window.__vide === true'), page.evaluate('window.__uid || null')
+        if not vide:
+            page.screenshot(path=chemin)
+        nav.close()
+    return None if vide else uid
+
+
 def main(argv):
     ap = argparse.ArgumentParser()
     ap.add_argument('--lang', default='fr', choices=['fr', 'en'])
@@ -164,6 +180,8 @@ def main(argv):
     ap.add_argument('--muet', action='store_true', help='sans bande-son')
     ap.add_argument('--adresse', action='store_true', help="afficher l'adresse du site en fin de vidéo (non par défaut)")
     ap.add_argument('--carte', action='store_true', help='carte de stats (PNG) au lieu de la vidéo')
+    ap.add_argument('--semaine', action='store_true', help='carte du bilan de la semaine (lit algo/semaine.json)')
+    ap.add_argument('--bilan', action='store_true', help='carte bilan prévu / réel (PNG) du match du jour ou de la veille')
     ap.add_argument('--capture', default='images', choices=['images', 'ecran'],
                     help="images : image par image, sans saccade (défaut) ; ecran : ancien enregistrement d'écran")
     ap.add_argument('--format', default='9x16', choices=sorted(FORMATS), help='9x16 (défaut) ou 4x5 (fil de X)')
@@ -174,6 +192,25 @@ def main(argv):
         print('algo/donnees.json absent : lancer simulateur/vitrine.py d\'abord.')
         return 1
     srv = servir(algo)
+    if a.semaine:
+        os.makedirs(a.sortie, exist_ok=True)
+        png = os.path.join(a.sortie, f"semaine_{a.lang}.png")
+        try:
+            ok = carte_bilan(f"http://127.0.0.1:{srv.server_address[1]}/index.html?semaine=1&lang={a.lang}", png)
+        finally:
+            srv.shutdown()
+        print(f"Semaine : {png}" if os.path.exists(png) else 'Semaine : algo/semaine.json absent')
+        return 0
+    if a.bilan:
+        os.makedirs(a.sortie, exist_ok=True)
+        png = os.path.join(a.sortie, f"bilan_{a.lang}.png")
+        try:
+            uid = carte_bilan(f"http://127.0.0.1:{srv.server_address[1]}/index.html?bilan=1&lang={a.lang}"
+                              + (f"&uid={a.uid}" if a.uid else ''), png)
+        finally:
+            srv.shutdown()
+        print(f"Bilan : {png} ({uid})" if uid else 'Bilan : résultat pas encore disponible')
+        return 0
     if a.carte:
         os.makedirs(a.sortie, exist_ok=True)
         png = os.path.join(a.sortie, f"stats_{a.lang}.png")

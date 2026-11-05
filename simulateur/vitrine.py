@@ -625,9 +625,13 @@ def construire(racine, maintenant=None):
     sys.path.insert(0, ICI)
     import elo as E
     etat = E.migrer_etat(etat)
-    precedent = (_lire(os.path.join(racine, SORTIE), {}) or {}).get('match_du_jour')
+    ancien_doc = _lire(os.path.join(racine, SORTIE), {}) or {}
+    precedent = ancien_doc.get('match_du_jour')
     matchs = [m for m in pron.get('matchs') or [] if m.get('circuit') in CIRCUITS and version(m)[1] and connu(m)]
     mdj = choisir_match_du_jour(matchs, etat, maintenant, precedent)
+    # 05/11/2026 : le match du jour de la VEILLE, pour la carte bilan du matin (scripts/video_simulation.py --bilan)
+    veille = (precedent if precedent and (not mdj or precedent.get('jour') != mdj.get('jour'))
+              else ancien_doc.get('match_du_jour_veille'))
     a_venir = sorted((m for m in matchs if _utc(m['debut']) > maintenant - dt.timedelta(hours=3)),
                      key=lambda m: (m['debut'], m['uid']))
     lignes = [ligne_match(m, complet=True) for m in a_venir]
@@ -713,7 +717,7 @@ def construire(racine, maintenant=None):
     except Exception as e:  # noqa: BLE001
         print(f'::warning::après-match non calculé : {type(e).__name__}: {e}')
     return {'genere_le': maintenant.isoformat(timespec='seconds'), 'pronostics_du': pron.get('genere_le'),
-            'simulations': pron.get('simulations') or 20000, 'match_du_jour': mdj,
+            'simulations': pron.get('simulations') or 20000, 'match_du_jour': mdj, 'match_du_jour_veille': veille,
             'qualite_horodatages': pron.get('qualite_horodatages'),
             'styles_descriptifs_source': ({'archive_jusqu_au': styles_doc.get('archive_jusqu_au'),
                                            'feuilles_recentes': styles_doc.get('feuilles_recentes'),
@@ -731,6 +735,44 @@ def construire(racine, maintenant=None):
 DISTRIBUTION_P_MIN = 0.001
 
 
+def questions(D_):
+    """05/11/2026 — « Demande à l'algo » : réponses calculées sur la distribution COMPLÈTE (avant compactage), pour
+    chaque joueur j (0 = home) : sans perdre de set, au moins un set, 1er set et match, plus de n jeux (n = 0…24),
+    victoire avec plus de n jeux d'écart (n = 0…15) ; pour le match : plus de n jeux (n = 12…45), au moins un tie-break."""
+    tot = sum(float(r['probabilite']) for r in D_ or [])
+    if not tot:
+        return None
+    out = {'j': [{'deux': 0.0, 'un_set': 0.0, 's1m': 0.0, 'jeux_j': [0.0] * 25, 'ecart': [0.0] * 16} for _ in (0, 1)],
+           'total': [0.0] * 34, 'total_debut': 12, 'tb': 0.0}
+    for r in D_:
+        q, sc, v = float(r['probabilite']) / tot, [tuple(x) for x in r['score']], r.get('vainqueur')
+        jeux = [sum(h[i] for h in sc) for i in (0, 1)]
+        if any(max(h) == 7 and min(h) == 6 for h in sc):
+            out['tb'] += q
+        for n in range(34):
+            if jeux[0] + jeux[1] > 12 + n:
+                out['total'][n] += q
+        for j in (0, 1):
+            o = out['j'][j]
+            sets_j = sum(h[j] > h[1 - j] for h in sc)
+            o['deux'] += q if v == j and sets_j == len(sc) else 0.0
+            o['un_set'] += q if sets_j >= 1 else 0.0
+            o['s1m'] += q if v == j and sc[0][j] > sc[0][1 - j] else 0.0
+            for n in range(25):
+                if jeux[j] > n:
+                    o['jeux_j'][n] += q
+            for n in range(16):
+                if v == j and jeux[j] - jeux[1 - j] > n:
+                    o['ecart'][n] += q
+    r4 = lambda x: round(x, 4)
+    for o in out['j']:
+        for k in ('deux', 'un_set', 's1m'):
+            o[k] = r4(o[k])
+        o['jeux_j'], o['ecart'] = [r4(x) for x in o['jeux_j']], [r4(x) for x in o['ecart']]
+    out['total'], out['tb'] = [r4(x) for x in out['total']], r4(out['tb'])
+    return out
+
+
 def compacter(doc, p_min=DISTRIBUTION_P_MIN):
     """29/10/2026 — la distribution exacte compte ~1 470 scores par match (6,6 Mo sur 7,6 Mo pour le fichier) ; le site
     n'en lit aucune ligne. Tout ce qui s'en sert (lignes de l'algo, rythme, fiches figées) tourne AVANT, sur la
@@ -740,6 +782,7 @@ def compacter(doc, p_min=DISTRIBUTION_P_MIN):
         D_ = m.get('distribution_scores')
         if not D_:
             continue
+        m['questions'] = questions(D_)          # 05/11/2026 : sur la distribution complète, avant de la couper
         garde = [r for r in D_ if float(r['probabilite']) >= p_min] or D_[:1]
         m['distribution_scores'] = garde
         m['distribution_reste'] = round(1.0 - sum(float(r['probabilite']) for r in garde), 12)
