@@ -119,7 +119,19 @@ def fiche(ligne, maintenant, version):
             'feuille_brute': ligne.get('feuille_prevue_brute'), 'fourchette_brute': ligne.get('feuille_fourchette_brute'),
             'duree': ({k: pv.get(k) for k in ('minutes', 'minutes_p10', 'minutes_p90', 'points')} if pv else None),
             'lignes': ligne.get('lignes_algo'), 'documentation': ligne.get('documentation'),
-            'controle': ligne.get('controle'), 'modeles': ligne.get('modeles')}
+            'controle': ligne.get('controle'), 'modeles': ligne.get('modeles'),
+            # 05/11/2026 : score du scénario montré en vidéo (pour la carte bilan)
+            'scenario': _scenario(ligne)}
+
+
+def _scenario(ligne):
+    """Score et aces du scénario montré en vidéo, ou None."""
+    sc = ((ligne.get('simulation') or {}).get('scenario')) or {}
+    if not sc.get('score'):
+        return None
+    fe = sc.get('feuille') or []
+    aces = [j.get('aces') for j in fe[:2]] if len(fe) >= 2 else None
+    return {'score': sc['score'], 'aces': aces}
 
 
 def figer(lignes, racine, maintenant, version):
@@ -192,7 +204,8 @@ def bilan_match(uid, f, reel, duree_reelle=None):
     out = {'uid': uid, 'debut': f.get('debut'), 'circuit': f.get('circuit'), 'surface': f.get('surface'),
            'home': f.get('home'), 'away': f.get('away'), 'fige_le': d.get('fige_le'),
            'prevu': {'p_home': p, 'sets': d.get('sets'), 'scores': (d.get('scores') or [])[:3],
-                     'feuille': d.get('feuille'), 'duree': d.get('duree'), 'fiabilite': d.get('fiabilite')},
+                     'feuille': d.get('feuille'), 'duree': d.get('duree'), 'fiabilite': d.get('fiabilite'),
+                     'scenario': d.get('scenario')},
            'reel': {'gagnant': reel['gagnant'], 'score': reel.get('score'), 'sets': reel.get('sets'),
                     'feuille': reel.get('feuille'), 'minutes': duree_reelle},
            'ecarts': {}}
