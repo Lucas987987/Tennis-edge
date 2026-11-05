@@ -1,0 +1,97 @@
+{
+ "genere_le": "2026-11-05T19:42:54+00:00",
+ "regle": "par circuit et par mesure : β appris 2018–2022 ; retenue si −0,001 de log loss sur ≥ 1 000 tie-breaks 2023 → juin 2026 et β de même signe sur les deux périodes",
+ "fidelite_pair_impair": {
+  "joueurs": 792,
+  "correlation": 0.002
+ },
+ "circuits": {
+  "ATP": {
+   "tiebreaks": {
+    "2018–2022": 5926,
+    "2023 → juin 2026": 4830
+   },
+   "alpha": 0.507,
+   "brut": {
+    "beta_2018_2022": 0.3,
+    "beta_2023_2026": 0.27,
+    "gain_log_loss_juge": 6e-05,
+    "retenue": false,
+    "gros_ecarts_juges": {
+     "tiebreaks": 1038,
+     "meilleur_bilan_gagne_pct": 55.3,
+     "attendu_pct": 54.9
+    }
+   },
+   "ajuste": {
+    "beta_2018_2022": 0.07,
+    "beta_2023_2026": 0.357,
+    "gain_log_loss_juge": 3e-05,
+    "retenue": false,
+    "gros_ecarts_juges": {
+     "tiebreaks": 821,
+     "meilleur_bilan_gagne_pct": 50.9,
+     "attendu_pct": 51.3
+    }
+   }
+  },
+  "WTA": {
+   "tiebreaks": {
+    "2018–2022": 2786,
+    "2023 → juin 2026": 2365
+   },
+   "alpha": 0.395,
+   "brut": {
+    "beta_2018_2022": 0.031,
+    "beta_2023_2026": 0.057,
+    "gain_log_loss_juge": 0.0,
+    "retenue": false,
+    "gros_ecarts_juges": {
+     "tiebreaks": 411,
+     "meilleur_bilan_gagne_pct": 52.3,
+     "attendu_pct": 53.4
+    }
+   },
+   "ajuste": {
+    "beta_2018_2022": 0.064,
+    "beta_2023_2026": -0.212,
+    "gain_log_loss_juge": -3e-05,
+    "retenue": false,
+    "gros_ecarts_juges": {
+     "tiebreaks": 392,
+     "meilleur_bilan_gagne_pct": 52.6,
+     "attendu_pct": 51.8
+    }
+   }
+  },
+  "CH": {
+   "tiebreaks": {
+    "2018–2022": 11933,
+    "2023 → juin 2026": 11486
+   },
+   "alpha": 0.401,
+   "brut": {
+    "beta_2018_2022": 0.031,
+    "beta_2023_2026": -0.12,
+    "gain_log_loss_juge": -1e-05,
+    "retenue": false,
+    "gros_ecarts_juges": {
+     "tiebreaks": 2341,
+     "meilleur_bilan_gagne_pct": 52.2,
+     "attendu_pct": 51.8
+    }
+   },
+   "ajuste": {
+    "beta_2018_2022": 0.11,
+    "beta_2023_2026": -0.112,
+    "gain_log_loss_juge": -3e-05,
+    "retenue": false,
+    "gros_ecarts_juges": {
+     "tiebreaks": 2231,
+     "meilleur_bilan_gagne_pct": 50.9,
+     "attendu_pct": 50.9
+    }
+   }
+  }
+ }
+}
