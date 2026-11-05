@@ -646,6 +646,11 @@
    "date": "2026-11-05",
    "quoi": "MATCHS PEU DOCUMENTÉS (joueur le moins vu sous 500 points de service cumulés) : l'algo était trop prudent (favoris gagnant 72–79 % pour 64–69 % annoncés, pente 1,6–1,7 sur deux périodes). Challenger : pente 1,84 apprise août–sept, −0,030 de log loss en oct–nov (156 matchs) → ADOPTÉ DIRECTEMENT (décision de Lucas), p' = σ(1,84 · logit p) ; retrait après deux semaines pires. ATP et WTA : 20 et 49 matchs de ce type en trois mois, trop peu pour juger — la situation est presque propre au Challenger. Au passage, la tranche « 500 à 1 500 balles » du site (53,9 % sur 102 matchs) est du hasard : pente 1,06 puis 0,92 sur 650 matchs rejoués.",
    "paquet": 187
+  },
+  {
+   "date": "2026-11-05",
+   "quoi": "fiche du match : panneau « Vitesse du court » — jauge sur l'échelle du CPI, écart avec l'an dernier, courbe des éditions du tournoi (CPI officiel plein, estimé par l'algo creux). Information seulement : la vitesse sert déjà à prévoir aces et service, elle n'aide pas à trouver le vainqueur (testé)",
+   "paquet": 188
   }
  ]
 }
