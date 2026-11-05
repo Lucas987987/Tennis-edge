@@ -321,6 +321,11 @@ body.video #video{display:block;width:100vw;height:100vh}
 .panel.qa select,.panel.qa input{background:rgba(255,255,255,.04);color:inherit;border:1px solid var(--line2);border-radius:999px;padding:8px 12px;font:inherit}
 .panel.qa .qa-l{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px}
 .panel.qa .qa-r{margin-top:12px;font-size:1.05rem} .panel.qa .qa-r b{font-size:1.5rem;color:var(--p1,#2EE6FF)}
+/* carte de la semaine (?semaine=1, 05/11/2026) */
+.ca .sm{display:grid;grid-template-columns:1.1fr 1fr 1fr;gap:4px 16px;align-items:baseline;font-variant-numeric:tabular-nums}
+.ca .sm .h{font-size:23px;color:#ABA3D6;font-weight:600} .ca .sm .c{font-family:var(--disp);font-size:34px}
+.ca .sm .v{font-family:var(--disp);font-size:44px;color:#D4FF3A} .ca .sm .a{font-size:30px;color:#ABA3D6}
+.ca .liste{font-size:27px;line-height:1.35;margin:4px 0 0;padding-left:0;list-style:none} .ca .liste b{font-family:var(--disp);font-weight:400}
 /* carte bilan (?bilan=1) : prévu contre réel, même format et même mise en forme gagné ou perdu (05/11/2026) */
 .ca .verdict{display:flex;align-items:center;gap:22px;border-radius:24px;padding:20px 26px;margin:6px 0 20px;border:3px solid}
 .ca .verdict.ok{background:rgba(212,255,58,.08);border-color:rgba(212,255,58,.5)} .ca .verdict.ko{background:rgba(255,79,174,.08);border-color:rgba(255,79,174,.5)}
@@ -715,6 +720,10 @@ const T = {
   qa_titre:'Demande à l’algo', qa_sous:n=>`Choisis une question : la réponse vient des ${fmt(n)} simulations du match, sans aucune cote.`,
   qa_q:{deux:'gagne sans perdre de set', un_set:'gagne au moins un set', s1m:'gagne le 1er set et le match', jeux_j:'gagne plus de … jeux', ecart:'gagne avec plus de … jeux d’écart', total:'Plus de … jeux dans le match', tb:'Au moins un tie-break'},
   qa_rep:(q,c)=>`<b>${q}</b> des simulations · cote juste ${c}`, qa_joueur:'Joueur', qa_n:'Nombre',
+  s_titre:'Le bilan de la semaine', s_du:(a,b)=>`du ${a} au ${b} · tous les matchs ATP, WTA et Challenger`, s_circ:'Circuit',
+  s_justes:'Bons vainqueurs', s_annonce:'Annoncé', s_tous:'Tous', s_fav70:n=>`Favoris annoncés à 70 % ou plus (${n} matchs)`,
+  s_fav70_v:(r,a)=>`ont gagné <b>${r}</b> · annoncé ${a}`, s_rates:'Plus gros ratés', s_rate:(m,f,p,sc)=>`${m} : ${f} annoncé à <b>${p} %</b>, battu ${sc}`,
+  s_exacts:n=>`Score exact = score n° 1 de l'algo : <b>${n}</b> match${n>1?'s':''}`, s_pied:'Rien n\'est trié : chaque match pronostiqué compte, gagné ou perdu · aucune cote',
   b_titre:'Le bilan de l\'algo', b_ok:'Bon vainqueur', b_ko:'Raté', b_vainq:(x,q)=>`${x} gagne · l'algo lui donnait ${q}`,
   b_reel:'Score réel', b_video:'Scénario de la vidéo', b_exact:'score exact', b_sets:'Score en sets', b_sets_v:q=>`prévu à ${q}`,
   b_stats:'Prévu → réel', b_pied:'Même bilan, gagné ou perdu · prévisions figées avant le match, aucune cote utilisée',
@@ -934,6 +943,10 @@ const T = {
   qa_titre:'Ask the algorithm', qa_sous:n=>`Pick a question: the answer comes from the match’s ${fmt(n)} simulations, no odds involved.`,
   qa_q:{deux:'wins without dropping a set', un_set:'wins at least one set', s1m:'wins the 1st set and the match', jeux_j:'wins more than … games', ecart:'wins by more than … games', total:'Over … games in the match', tb:'At least one tie-break'},
   qa_rep:(q,c)=>`<b>${q}</b> of simulations · fair odds ${c}`, qa_joueur:'Player', qa_n:'Number',
+  s_titre:'The week in review', s_du:(a,b)=>`${a} to ${b} · every ATP, WTA and Challenger match`, s_circ:'Tour',
+  s_justes:'Right winner', s_annonce:'Forecast', s_tous:'All', s_fav70:n=>`Favourites forecast at 70% or more (${n} matches)`,
+  s_fav70_v:(r,a)=>`won <b>${r}</b> · forecast ${a}`, s_rates:'Biggest misses', s_rate:(m,f,p,sc)=>`${m}: ${f} forecast at <b>${p}%</b>, lost ${sc}`,
+  s_exacts:n=>`Exact score = the algorithm's no. 1 score: <b>${n}</b> match${n>1?'es':''}`, s_pied:'Nothing is filtered: every forecast match counts, win or lose · no odds',
   b_titre:'The algorithm\'s report', b_ok:'Right winner', b_ko:'Missed', b_vainq:(x,q)=>`${x} wins · the algorithm gave ${q}`,
   b_reel:'Final score', b_video:'Video scenario', b_exact:'exact score', b_sets:'Score in sets', b_sets_v:q=>`forecast at ${q}`,
   b_stats:'Forecast → actual', b_pied:'Same report, win or lose · forecasts frozen before the match, no odds used',
@@ -2320,7 +2333,7 @@ document.querySelectorAll('.circuits button').forEach(b=>b.addEventListener('cli
   circuit=b.dataset.circuit; nListe=30; rendTextes(); rendListe();
 }));
 window.addEventListener('hashchange',()=>{
-  if (!D || Q.get('carte') || Q.get('video') || Q.get('bilan')) return;
+  if (!D || Q.get('carte') || Q.get('video') || Q.get('bilan') || Q.get('semaine')) return;
   selectionId = matchDemande() || (D.match_du_jour && D.match_du_jour.uid);
   rendMdj(); rendListe();
 });
@@ -2408,11 +2421,32 @@ function modeBilan(){
   Promise.race([(document.fonts && document.fonts.ready) || Promise.resolve(), dort(3000)]).then(()=>{ window.__fini = true; });
 }
 
+/* ───────────── carte de la semaine (?semaine=1) : lit semaine.json (simulateur/bilan_semaine.py) ───────────── */
+function modeSemaine(){
+  document.body.classList.add('carte');
+  const V = document.getElementById('video');
+  fetch('semaine.json?v=' + Date.now()).then(r=>r.json()).then(S=>{
+    const d = x => new Date(x + 'T12:00:00Z').toLocaleDateString(loc(), {day:'numeric', month:'long', timeZone:'Europe/Paris'});
+    const ligne = (lib, b) => b && b.matchs ? `<span class="c">${esc(lib)} <small style="font-size:22px;color:#ABA3D6">${b.matchs}</small></span><span class="v">${pc(b.justes_pct)}</span><span class="a">${pc(b.annonce_pct)}</span>` : '';
+    const C = S.circuits || {};
+    V.innerHTML = `<div class="ca">
+      <div class="haut"><span>${esc(t('s_titre'))}</span><span><b>${esc(t('a_sim'))}</b> ${esc(t('a_fois', D.simulations))}</span></div>
+      <p class="ctx" style="margin-top:14px">${esc(t('s_du', d(S.debut), d(S.fin)))}</p>
+      <div class="bloc"><div class="sm"><span class="h">${esc(t('s_circ'))}</span><span class="h">${esc(t('s_justes'))}</span><span class="h">${esc(t('s_annonce'))}</span>
+        ${ligne('ATP', C.ATP)}${ligne('WTA', C.WTA)}${ligne('Challenger', C.CH)}${ligne(t('s_tous'), S.tous)}</div></div>
+      ${S.favoris_70 && S.favoris_70.matchs ? `<div class="bloc" style="margin-top:20px"><h2>${esc(t('s_fav70', S.favoris_70.matchs))}</h2><p class="liste">${t('s_fav70_v', pc(S.favoris_70.justes_pct), pc(S.favoris_70.annonce_pct))}</p></div>` : ''}
+      ${(S.pires_rates||[]).length ? `<div class="bloc" style="margin-top:20px"><h2>❌ ${esc(t('s_rates'))}</h2><ul class="liste">${S.pires_rates.map(x=>`<li>${t('s_rate', esc(x.match), esc(x.favori), x.p, esc(x.score||''))}</li>`).join('')}</ul></div>` : ''}
+      <div class="bloc" style="margin-top:20px"><p class="liste">🎯 ${t('s_exacts', S.scores_exacts || 0)}</p></div>
+      <div class="pied" style="margin-top:auto">${esc(t('s_pied'))}</div></div>`;
+    Promise.race([(document.fonts && document.fonts.ready) || Promise.resolve(), dort(3000)]).then(()=>{ window.__fini = true; });
+  }).catch(()=>{ window.__vide = true; window.__fini = true; });
+}
+
 rendTextes();
 fetch('donnees.json?v=' + Date.now()).then(r=>r.json()).then(d=>{
   D = d;
   selectionId = matchDemande() || (D.match_du_jour && D.match_du_jour.uid);
-  if (Q.get('bilan')) modeBilan(); else if (Q.get('carte')) modeCarte(); else if (Q.get('video')) modeVideo(); else rendTout();
+  if (Q.get('semaine')) modeSemaine(); else if (Q.get('bilan')) modeBilan(); else if (Q.get('carte')) modeCarte(); else if (Q.get('video')) modeVideo(); else rendTout();
 }).catch(()=>{ document.getElementById('mdj-zone').innerHTML = '<div class="panel empty">Données indisponibles / Data unavailable.</div>'; });
 })();
 </script>
