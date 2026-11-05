@@ -171,10 +171,13 @@ def ajuster_recent(matchs, date, cle, fond, n0=N0, demi_vie=90.0, annees=1, depa
 
 
 def ajuster(matchs, date, cle, n0=N0, depart=None, tours=6, demi_vie=DEMI_VIE, annees=ANNEES, base=None,
-            n0_par_composante=None):
+            n0_par_composante=None, centre=None):
     """Effets au `date` (exclu). depart : ajustement précédent (démarrage à chaud, moins de tours).
     base : un Ajuste servant de niveau de fond (offset) — les effets estimés sont alors des écarts
-    à ce fond, et les moyennes mu restent à 0."""
+    à ce fond, et les moyennes mu restent à 0.
+    centre (05/11/2026, étude Ingram, etude_prior_elo.py) : {composante: {'S': {joueur: m}, 'R': {joueur: m}}} —
+    les effets S et R d'un joueur sont ramenés vers m (ce que son niveau Elo laisse attendre) au lieu de 0.
+    Par défaut (None) : ramenés vers 0, comme avant."""
     obs = observations(matchs, date, cle, demi_vie, annees)
     eff = {}
     off_cache = {}
@@ -218,9 +221,13 @@ def ajuster(matchs, date, cle, n0=N0, depart=None, tours=6, demi_vie=DEMI_VIE, a
                             mu[x] += grad[x] / hess[x]
                     continue
                 T, L = {'S': (S, lam), 'Ss': (Ss, lam_s), 'R': (R, lam), 'Rs': (Rs, lam_s)}[etape]
+                C = ((centre or {}).get(c) or {}).get(etape) or {}
                 for x in grad:
                     v = T.get(x, 0.0)
-                    T[x] = v + (grad[x] - L * v) / (hess[x] + L)
+                    T[x] = v + (grad[x] - L * (v - C.get(x, 0.0))) / (hess[x] + L)
+        for etape, T in (('S', S), ('R', R)):            # joueur sans feuille : ce que son niveau laisse attendre
+            for x, m in (((centre or {}).get(c) or {}).get(etape) or {}).items():
+                T.setdefault(x, m)
         eff[c] = {'mu': mu, 'S': S, 'Ss': Ss, 'R': R, 'Rs': Rs}
     return Ajuste(date, eff)
 
