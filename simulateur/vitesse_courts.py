@@ -247,6 +247,21 @@ def vitesse_du_match(doc, circuit, tournoi, jour):
     return dict(v, annee=int(an) if an in ed else jour.year - 1)
 
 
+def historique(doc, circuit, tournoi, jusqu_a=None, n=16):
+    """05/11/2026 — pour le visuel de la fiche : [{an, cpi, officiel}] des éditions du tournoi (CPI officiel s'il existe,
+    sinon notre CPI estimé), les n dernières jusqu'à l'année jusqu_a comprise."""
+    ed = ((doc or {}).get('tournois') or {}).get(f'{circuit}|{norme(tournoi)}') or {}
+    out = []
+    for an, v in sorted(ed.items()):
+        if jusqu_a and int(an) > jusqu_a:
+            continue
+        off = v.get('cpi_officiel')
+        cpi = off if off is not None else v.get('cpi_estime')
+        if cpi is not None:
+            out.append({'an': int(an), 'cpi': round(float(cpi), 1), 'officiel': off is not None})
+    return out[-n:]
+
+
 def main(argv):
     archive = argv[1]
     racine = argv[2] if len(argv) > 2 else os.path.join(ICI, '..')
