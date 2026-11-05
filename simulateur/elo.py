@@ -189,6 +189,11 @@ def _sous_suite(court, long_):
     return i == len(court)
 
 
+def _meme_prenom(x, y):
+    """Même premier mot, ou l'un est l'initiale de l'autre (« b » / « benjamin »)."""
+    return x == y or (len(x) == 1 and y.startswith(x)) or (len(y) == 1 and x.startswith(y))
+
+
 def unifier_strict(connus, nouveaux, sexe_connus=None, sexe_nouveaux=None):
     """28/10/2026 — version STRICTE de unifier(), pour les noms venus des résultats ITF (données seulement).
     Audit du 28/10 : sur 52 liens créés par les noms ITF, plusieurs fusionnaient deux joueurs différents
@@ -222,7 +227,14 @@ def unifier_strict(connus, nouveaux, sexe_connus=None, sexe_nouveaux=None):
         bons = set()
         for c in cands:
             a_, b_ = (t, toks[c]) if len(t) <= len(toks[c]) else (toks[c], t)
-            if len(a_) < 2 or a_[0] != b_[0] or a_[-1] != b_[-1] or not _sous_suite(a_, b_):
+            # 05/11/2026 : prénom abrégé en initiale (« B. Perez Mora » des résultats ITF = « Benjamín Pérez Mora »)
+            if len(a_) < 2 or not _meme_prenom(a_[0], b_[0]) or a_[-1] != b_[-1] or not _sous_suite(a_[1:], b_[1:]):
+                continue
+            # avec une initiale, TOUS les autres mots du nom abrégé doivent être dans le nom complet
+            # (« R. Ferro Duarte » n'est pas « Rodrigo Duarte »)
+            ab_, pl_ = (t, toks[c]) if len(t[0]) == 1 and len(toks[c][0]) > 1 else \
+                (toks[c], t) if len(toks[c][0]) == 1 and len(t[0]) > 1 else (None, None)
+            if ab_ is not None and not _sous_suite(ab_[1:], pl_[1:]):
                 continue
             if len(a_) == 2 and nom_famille.get(a_[-1], 0) > 5:
                 continue
