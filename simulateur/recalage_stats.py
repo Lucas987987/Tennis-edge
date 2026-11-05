@@ -45,14 +45,14 @@ SORTIE = os.path.join('simulateur', 'recalage_stats.json')
 # 05/11/2026 (décision de Lucas) — ADOPTION DIRECTE des cases au biais net et stable chaque semaine (nos matchs suivis
 # du 19/10 au 04/11, réel − annoncé, par joueur et par match) :
 #   % de 1res balles ATP +3,8 / +3,8 / +4,0 pts (342 cas, z 11,4) ; WTA +6,8 / +3,3 / +2,2 (372, z 8,2) ;
-#   aces ATP +0,6 / +1,1 / +0,8 (342, z 4,0).
+#   aces ATP +0,6 / +1,1 / +0,8 (342, z 4,0) ; aces WTA −0,6 / −0,2 / −0,5 (372, z −3,2 : annoncés trop haut).
 # Cause probable : les profils viennent de l'archive Sackmann, les feuilles réelles de TennisApi (comptage différent).
 # Les coefficients sont réappris à chaque mise à jour (apprendre, tous les matchs joués) ; repli figé si les données
 # manquent. RETRAIT d'une case : deux semaines de suite (≥ 30 cas) où, sur la semaine jugée, l'écart moyen
 # |annoncé − réel| avec recalage est PIRE que sans. Les autres cases restent soumises à la règle ci-dessus.
-CASES_DIRECTES = (('ATP', 'premiere_pct'), ('WTA', 'premiere_pct'), ('ATP', 'aces'))
+CASES_DIRECTES = (('ATP', 'premiere_pct'), ('WTA', 'premiere_pct'), ('ATP', 'aces'), ('WTA', 'aces'))
 REPLI_DIRECT = {'ATP': {'premiere_pct': {'delta': 2.98, 'largeur': 1.0}, 'aces': {'delta': 0.72, 'largeur': 1.0}},
-                'WTA': {'premiere_pct': {'delta': 2.92, 'largeur': 1.0}}}
+                'WTA': {'premiere_pct': {'delta': 2.92, 'largeur': 1.0}, 'aces': {'delta': -0.30, 'largeur': 1.0}}}
 
 
 def lignes(fiches, reels):
