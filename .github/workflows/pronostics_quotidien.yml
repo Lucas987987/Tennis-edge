@@ -120,6 +120,10 @@ jobs:
         run: python simulateur/recap_apprentissage.py --racine .
       - name: Pronostics des 36 prochaines heures
         run: python simulateur/pronostics_du_jour.py .
+      # 06/11/2026 (paquet 210) : séries, face-à-face, réussite par rapport aux chances d'avant match (descriptif, fiche)
+      - name: Infos d'avant match (séries, face-à-face, réussite)
+        continue-on-error: true
+        run: python simulateur/infos_avant_match.py /tmp/sackmann .
       # 05/11/2026 : liste PRIVÉE des matchs du jour où l'algo contredit Pinnacle (loupe, jamais une entrée de l'algo) ;
       # une fois par jour à partir de 7 h à Paris (repère dans le coffre R2) ; jamais bloquant
       - name: Désaccords du jour (Telegram privé)

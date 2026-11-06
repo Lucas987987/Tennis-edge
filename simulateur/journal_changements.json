@@ -773,6 +773,24 @@
    "quoi": "INFOS DES TOURNOIS (TennisApi) : ville et pays hôtes, nombre de joueurs du tableau, dotation et points du vainqueur, relevés une fois par tournoi. Le lieu hôte sert désormais en priorité pour situer chaque tournoi (météo, densité de l'air, voyage), le nom du tournoi ne servant plus qu'en secours ; tous les tournois sont re-situés une fois. Nouveau groupe de facteurs « dotation » (niveau de dotation du tournoi, et joueur qui joue plus gros ou plus petit que d'habitude), jugé chaque semaine circuit par circuit comme les autres. Deuxième sonde : où trouver le tableau des tournois.",
    "statut": "candidat",
    "paquet": 208
+  },
+  {
+   "date": "2026-11-06",
+   "quoi": "Les matchs COMMENCÉS restent sur le site 6 heures, avec le dernier % affiché avant le match, leurs scores et leurs statistiques en direct : un match en cours disparaissait au passage suivant des pronostics (Fritz – Alcaraz ce soir).",
+   "statut": "production",
+   "paquet": 209
+  },
+  {
+   "date": "2026-11-06",
+   "quoi": "NOUVEL AFFICHAGE DU DIRECT. Dans la liste : un tableau des scores (sets, tie-breaks, points, serveur) et la barre du % qui bouge avec un trait au % d'avant match. Dans la fiche : grand tableau d'affichage, courbe du % de l'algo jeu après jeu (forme du jour lue dans les points joués), moments clés (breaks, sets) et jeu par jeu, tirés du point par point ; statistiques en duel avec un trait vert pour ce que l'algo avait prévu. Nouveau panneau « Forme et face-à-face » : séries en cours, face-à-face, et victoires réelles contre victoires attendues d'après ses chances d'avant match (descriptif, sans effet sur le %).",
+   "statut": "production",
+   "paquet": 210
+  },
+  {
+   "date": "2026-11-06",
+   "quoi": "Correction du 209 : un match commencé gardé sur le site garde le nombre de simulations du passage où il a été calculé ; le contrôle du site ne le compare plus à celui du passage en cours (la chaîne courte de test, à 300 simulations, était rouge).",
+   "statut": "production",
+   "paquet": 211
   }
  ]
 }
