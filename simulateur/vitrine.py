@@ -642,6 +642,18 @@ def retirer_annules(matchs, racine, maintenant):
     return out
 
 
+def live_reevaluation(racine):
+    """06/11/2026 — σ de la forme du jour lue pendant le match, par circuit (0 = circuit retiré) : la page s'en sert
+    pour réévaluer le % en direct (simulateur/etude_live_reevaluation.py, suivi chaque semaine)."""
+    try:
+        with open(os.path.join(racine, 'simulateur', 'live_reevaluation.json'), encoding='utf-8') as f:
+            e = json.load(f)
+        return {'sigma': {c: (float(e['sigma'].get(c, 0.0)) if e['en_place'].get(c) else 0.0)
+                          for c in ('ATP', 'WTA', 'CH')}}
+    except (OSError, ValueError, KeyError, TypeError, AttributeError):
+        return {'sigma': {'ATP': 0.0, 'WTA': 0.0, 'CH': 0.0}}
+
+
 def construire(racine, maintenant=None):
     maintenant = maintenant or dt.datetime.now(dt.timezone.utc)
     global BIAIS_ANNEXES
@@ -777,7 +789,8 @@ def construire(racine, maintenant=None):
             'desaccords': desaccords(racine, analyse_am),
             'validation_fiabilite': validation_fiabilite(resultats),
             'qualite_donnees': qualite_donnees(racine, resultats),
-            'rejoue': rejoue(racine)}
+            'rejoue': rejoue(racine),
+            'live_reevaluation': live_reevaluation(racine)}
 
 
 DISTRIBUTION_P_MIN = 0.001
