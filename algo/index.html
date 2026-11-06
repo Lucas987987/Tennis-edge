@@ -432,6 +432,11 @@ body.carte #video{display:block;width:1080px;height:1350px}
 .lv-jeux{margin-top:10px}.lv-jeux summary{cursor:pointer;font-size:.85rem;color:var(--dim);padding:6px 0}
 .lv-g{display:grid;grid-template-columns:44px 14px 1fr;gap:6px;align-items:center;padding:3px 0;font-size:.8rem;font-family:var(--cond)}
 .lv-g .sc{color:var(--ink)}.lv-g.br .sc{color:var(--ball);font-weight:700}
+.lv-jeux-t{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:2px 0 4px}.lv-jeux-t .btn{padding:6px 12px;font-size:.8rem}
+.lv-tous{display:flex;flex-wrap:wrap;gap:4px;margin:0 0 8px 64px}
+.lv-c{font-family:var(--cond);font-size:.8rem;padding:2px 7px;border-radius:7px;background:rgba(255,255,255,.05);color:var(--ink);white-space:nowrap;font-variant-numeric:tabular-nums}
+.lv-c.imp{background:rgba(212,255,58,.1);border:1px solid rgba(212,255,58,.35)}.lv-c b{font-weight:700;margin-left:2px}.lv-c b.a{color:var(--p1)}.lv-c b.b{color:var(--p2)}
+.lv-c em{font-style:normal;margin-left:4px;color:var(--dim)}.lv-c.fin{background:transparent;font-weight:600}.lv-c.fin.a{color:var(--p1)}.lv-c.fin.b{color:var(--p2)}
 .lv-dots{display:flex;flex-wrap:wrap;gap:3px}.lv-dots i{width:9px;height:9px;border-radius:2px;background:var(--p2)}.lv-dots i.h{background:var(--p1)}
 .lv-duel{margin:9px 0}.lv-duel .k{font-size:.8rem;color:var(--dim);text-align:center}
 .lv-duel .v{display:flex;justify-content:space-between;font-family:var(--cond);font-size:1.05rem;font-weight:700;margin:1px 0 3px}
@@ -798,7 +803,10 @@ const T = {
   lv_courbe:n=>`Le % de ${n} jeu après jeu`, lv_courbe_aide:'Calculé par l’algo après chaque jeu, avec la forme du jour lue dans les points déjà joués. Pointillé : le % d’avant match.',
   lv_leg:(a,b)=>`● break de ${a} · ● break de ${b} · ● fin de set`, lv_moments:'Moments clés', lv_jeux:'Jeu par jeu',
   lv_m_break:'BREAK', lv_m_set:'SET', lv_m_tb:'TIE-BREAK', lv_m_breakt:(n,s)=>`${n} breake : ${s}`, lv_m_sett:(n,s)=>`${n} gagne le set ${s}`,
-  lv_attente:'Le déroulé point par point arrive dès les premiers jeux.', lv_grp_srv:'SERVICE', lv_grp_ret:'RETOUR ET PRESSION',
+  lv_attente:'Le déroulé point par point arrive dès les premiers jeux.',
+  lv_tous_on:'Tous les points', lv_tous_off:'Masquer les points', lv_abbr_BB:'BB', lv_abbr_BS:'BS', lv_abbr_BM:'BM',
+  lv_imp_BB:(n,ok)=>`Balle de break pour ${n} : ${ok?'convertie':'sauvée'}`, lv_imp_BS:(n,ok)=>`Balle de set pour ${n} : ${ok?'convertie':'sauvée'}`,
+  lv_imp_BM:(n,ok)=>`Balle de match pour ${n} : ${ok?'convertie':'sauvée'}`, lv_jeu_pour:n=>`jeu ${n}`, lv_tb_pour:n=>`tie-break ${n}`, lv_grp_srv:'SERVICE', lv_grp_ret:'RETOUR ET PRESSION',
   am_titre:'Forme et face-à-face', am_serie_v:(n,s)=>`${n} victoire${n>1?'s':''} de suite${s?` · ${s} set${s>1?'s':''} gagné${s>1?'s':''} de suite`:''}`,
   am_serie_d:(n,s)=>`${n} défaite${n>1?'s':''} de suite${s?` · ${s} set${s>1?'s':''} perdu${s>1?'s':''} de suite`:''}`,
   am_reussite:(v,n,a)=>`${v} victoires sur ses ${n} derniers matchs, pour ${a} attendues`, am_ecart:e=>`${e>0?'+':''}${e} par rapport à ses chances`,
@@ -1047,7 +1055,10 @@ const T = {
   lv_courbe:n=>`${n}'s % game by game`, lv_courbe_aide:'Computed by the algorithm after each game, with the form of the day read from the points already played. Dotted: the pre-match %.',
   lv_leg:(a,b)=>`● ${a} breaks · ● ${b} breaks · ● end of set`, lv_moments:'Key moments', lv_jeux:'Game by game',
   lv_m_break:'BREAK', lv_m_set:'SET', lv_m_tb:'TIEBREAK', lv_m_breakt:(n,s)=>`${n} breaks: ${s}`, lv_m_sett:(n,s)=>`${n} wins the set ${s}`,
-  lv_attente:'The point-by-point feed arrives after the first games.', lv_grp_srv:'SERVE', lv_grp_ret:'RETURN AND PRESSURE',
+  lv_attente:'The point-by-point feed arrives after the first games.',
+  lv_tous_on:'All points', lv_tous_off:'Hide points', lv_abbr_BB:'BP', lv_abbr_BS:'SP', lv_abbr_BM:'MP',
+  lv_imp_BB:(n,ok)=>`Break point for ${n}: ${ok?'converted':'saved'}`, lv_imp_BS:(n,ok)=>`Set point for ${n}: ${ok?'converted':'saved'}`,
+  lv_imp_BM:(n,ok)=>`Match point for ${n}: ${ok?'converted':'saved'}`, lv_jeu_pour:n=>`game ${n}`, lv_tb_pour:n=>`tiebreak ${n}`, lv_grp_srv:'SERVE', lv_grp_ret:'RETURN AND PRESSURE',
   am_titre:'Form and head-to-head', am_serie_v:(n,s)=>`${n} win${n>1?'s':''} in a row${s?` · ${s} set${s>1?'s':''} won in a row`:''}`,
   am_serie_d:(n,s)=>`${n} loss${n>1?'es':''} in a row${s?` · ${s} set${s>1?'s':''} lost in a row`:''}`,
   am_reussite:(v,n,a)=>`${v} wins in the last ${n} matches, for ${a} expected`, am_ecart:e=>`${e>0?'+':''}${e} versus the odds of winning`,
@@ -2243,7 +2254,7 @@ function matchsFiltres(){
 }
 // 06/11/2026 — SCORES EN DIRECT : la page interroge /live (worker, 30 s de cache, TennisApi) toutes les 30 s tant
 // qu'un match de la liste peut être en cours et que l'onglet est visible. Le % affiché reste celui d'avant match.
-const LIVE = { par_uid: {}, vus: {}, minuterie: null, moteurs: {}, stats: {}, attente: {}, formes: {}, reeval: {}, essai: {}, points: {}, cal: {} };
+const LIVE = { par_uid: {}, vus: {}, minuterie: null, moteurs: {}, stats: {}, attente: {}, formes: {}, reeval: {}, essai: {}, points: {}, cal: {}, ouverts: {}, tousPoints: false };
 function motsNom(n){ return new Set(String(n||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase()
   .replace(/[^a-z\s-]/g,' ').split(/[\s-]+/).filter(w=>w.length>=2)); }
 function memeJoueur(a,b){ const A=motsNom(a); for (const w of motsNom(b)) if (A.has(w)) return true; return false; }
@@ -2493,7 +2504,7 @@ function rendStatsLive(){
 function chargerPoints(){
   const el = document.querySelector('[data-live-match]'); if (!el || document.hidden) return;
   const uid = el.getAttribute('data-live-match'), r = LIVE.par_uid[uid];
-  if (!r || !r.x.id || LIVE.attente['p'+uid] || Date.now() - (LIVE.essai['p'+uid] || 0) < 55000) return;
+  if (!r || !r.x.id || LIVE.attente['p'+uid] || Date.now() - (LIVE.essai['p'+uid] || 0) < 25000) return;
   LIVE.attente['p'+uid] = true; LIVE.essai['p'+uid] = Date.now();
   fetch('/live/points?id=' + encodeURIComponent(r.x.id), {cache:'no-store'}).then(x=>x.ok ? x.json() : null).then(o=>{
     if (o && Array.isArray(o.jeux)) LIVE.points[uid] = o.jeux;
@@ -2516,6 +2527,43 @@ function pAvecPoints(m, S, srv, pts){
   const M = LIVE.moteurs[m.uid] || (LIVE.moteurs[m.uid] = Moteur(calibre(m.simulation, m.p_home)));
   return M.pLive(etat);
 }
+// 06/11/2026 (paquet 215) — TOUS LES POINTS : le score après chaque point du jeu (15-0, 30-0… ; points en tie-break),
+// et les points importants : balle de break (le relanceur gagne le jeu s'il gagne ce point), balle de set, balle de
+// match — chacune dite « sauvée » ou « convertie » d'après le point suivant.
+function detailJeu(pts, srv, tb, cible, jeux, sets, N){
+  // une puce par point : le score APRÈS ce point ; si le point SUIVANT est important (balle de break, de set, de match),
+  // la puce de ce score le dit, avec ✓ (convertie) ou ✗ (sauvée). Le point qui conclut le jeu donne « jeu X ».
+  const c = [0,0], out = [];
+  const lib = (a, b) => {
+    if (tb) return `${a}-${b}`;
+    if (a >= 3 && b >= 3) return a === b ? '40-40' : (a > b ? 'AD-40' : '40-AD');
+    return `${['0','15','30','40'][Math.min(a,3)]}-${['0','15','30','40'][Math.min(b,3)]}`;
+  };
+  const fini = () => tb ? ((c[0] >= cible || c[1] >= cible) && Math.abs(c[0]-c[1]) >= 2) : ((c[0] >= 4 || c[1] >= 4) && Math.abs(c[0]-c[1]) >= 2);
+  const enjeu = () => {                                   // importance du prochain point, dans l'état actuel
+    let marque = null, qui = null;
+    for (const y of [0,1]) {
+      const gagne = tb ? (c[y] >= cible-1 && c[y] > c[1-y]) : (c[y] >= 3 && c[y] > c[1-y]);
+      if (!gagne) continue;
+      const g = jeux[y] + 1, o = jeux[1-y];
+      const set = tb || (g >= 6 && g - o >= 2) || g === 7;
+      const m_ = set && sets[y] + 1 >= N ? 'BM' : (set ? 'BS' : (!tb && y !== srv ? 'BB' : null));
+      if (m_ && (!marque || ['BB','BS','BM'].indexOf(m_) > ['BB','BS','BM'].indexOf(marque))) { marque = m_; qui = y; }
+    }
+    return {marque, qui};
+  };
+  const debut = enjeu();                                  // 0-0 : seulement en tie-break (jamais en pratique)
+  pts.forEach((x, k) => {
+    c[x]++;
+    const f = fini();
+    const e = f ? {marque:null, qui:null} : enjeu();
+    const suivant = pts[k+1];
+    out.push({sc: f ? null : lib(c[0], c[1]), fin: f ? x : null, marque: e.marque, qui: e.qui,
+              ok: e.marque && suivant !== undefined ? suivant === e.qui : null});
+  });
+  if (debut.marque && out.length) out.unshift({sc: tb ? '0-0' : '0-0', marque: debut.marque, qui: debut.qui, ok: pts[0] === debut.qui});
+  return out;
+}
 function derouleLive(m, r, jeux){
   // jeux : [[set, jeu, serveur (1 = home TennisApi), « HAHA… », vainqueur | null]] → points de la courbe et moments
   const inv = r.inverse, N = (m.simulation && m.simulation.sets_gagnants) || 2;
@@ -2524,12 +2572,14 @@ function derouleLive(m, r, jeux){
   for (const [st, , serving, seq, vq] of jeux) {
     const srv = ((serving === 1) !== inv) ? 0 : 1;               // 0 = home du site
     const tb = S.jeux[0]===6 && S.jeux[1]===6;
+    const cible = tb && S.sets[0]===N-1 && S.sets[1]===N-1 ? ((m.simulation && m.simulation.tb_final) || 7) : 7;
     const pts = [...seq].map(c => ((c === 'H') !== inv) ? 0 : 1);
+    const det = detailJeu(pts, srv, tb, cible, [...S.jeux], [...S.sets], N);
     let gagne = vq ? (((vq === 1) !== inv) ? 0 : 1) : null;
     if (gagne === null) {                                         // vainqueur absent : jeu fini seulement s'il est complet
       const c = [0,0]; let fin = null;
-      pts.forEach(x => { c[x]++; const cib = tb ? 7 : 4; if (fin === null && (c[0]>=cib || c[1]>=cib) && Math.abs(c[0]-c[1])>=2) fin = c[0]>c[1]?0:1; });
-      if (fin === null) { (parSet[st] = parSet[st] || []).push({srv, pts, enCours:true, sc:`${S.jeux[0]}-${S.jeux[1]}`}); break; }
+      pts.forEach(x => { c[x]++; const cib = tb ? cible : 4; if (fin === null && (c[0]>=cib || c[1]>=cib) && Math.abs(c[0]-c[1])>=2) fin = c[0]>c[1]?0:1; });
+      if (fin === null) { (parSet[st] = parSet[st] || []).push({srv, pts, det, tb, enCours:true, sc:`${S.jeux[0]}-${S.jeux[1]}`}); break; }
       gagne = fin;
     }
     pts.forEach((x, k) => {                                       // points de service de chacun
@@ -2541,7 +2591,7 @@ function derouleLive(m, r, jeux){
     let finSet = false;
     if ((S.jeux[gagne] >= 6 && S.jeux[gagne]-S.jeux[1-gagne] >= 2) || S.jeux[gagne] === 7) finSet = true;
     const scSet = `${S.jeux[0]}-${S.jeux[1]}`;
-    (parSet[st] = parSet[st] || []).push({srv, pts, br: brk, sc: scSet, tb});
+    (parSet[st] = parSet[st] || []).push({srv, pts, det, gagne, br: brk, sc: scSet, tb});
     if (finSet) { S.sets[gagne]++; S.jeux = [0,0]; }
     const fini = S.sets[0] >= N || S.sets[1] >= N;
     const p = fini ? (S.sets[0] >= N ? 1 : 0) : pAvecPoints(m, S, 1 - srv, [sv.A, sv.B]);
@@ -2579,12 +2629,18 @@ function rendMatchLive(){
     if (dr && dr.courbe.length > 1) {
       const nom = q => court(q === 0 ? m.home : m.away);
       const mom = dr.moments.slice(-8).reverse().map(x => `<li><span class="t">${esc(x.set===1 ? t('lv_set1') : t('lv_set', x.set))}</span><span><span class="lv-tag ${x.type==='br' ? (x.qui===0?'a':'b') : 's'}">${esc(t(x.type==='br'?'lv_m_break':(x.type==='tb'?'lv_m_tb':'lv_m_set')))}</span>${esc(x.type==='br' ? t('lv_m_breakt', nom(x.qui), x.sc) : t('lv_m_sett', nom(x.qui), x.sc))} → ${pc0(x.p)}</span></li>`).join('');
-      const sets = Object.keys(dr.parSet).sort((a,b)=>b-a).map((st, k) => `<details${k===0?' open':''}><summary>${esc(+st===1 ? t('lv_set1') : t('lv_set', st))}</summary>${
-        dr.parSet[st].map(g_ => `<div class="lv-g${g_.br?' br':''}"><span class="sc">${esc(g_.sc)}${g_.enCours?' …':''}</span><span class="lv-srv" style="background:${g_.srv===0?'var(--p1)':'var(--p2)'};box-shadow:none"></span><span class="lv-dots">${g_.pts.map(x=>`<i class="${x===0?'h':''}"></i>`).join('')}</span></div>`).reverse().join('')}</details>`).join('');
+      const ouverts = LIVE.ouverts[uid] || {};
+      const tous = !!LIVE.tousPoints;
+      const puce = d => d.fin !== null && d.fin !== undefined
+        ? `<span class="lv-c fin ${d.fin===0?'a':'b'}">${esc(t('lv_jeu_pour', nom(d.fin)))}</span>`
+        : `<span class="lv-c${d.marque ? ' imp' : ''}" title="${d.marque ? esc(t('lv_imp_' + d.marque, nom(d.qui), d.ok)) : ''}">${esc(d.sc)}${d.marque ? ` <b class="${d.qui===0?'a':'b'}">${esc(t('lv_abbr_' + d.marque))}</b>${d.ok === null ? '' : `<em>${d.ok ? '✓' : '✗'}</em>`}` : ''}</span>`;
+      const ligneTous = g_ => !tous || !g_.det ? '' : `<div class="lv-tous">${g_.det.map(puce).join('')}</div>`;
+      const sets = Object.keys(dr.parSet).sort((a,b)=>b-a).map((st, k) => `<details data-set="${esc(st)}"${(ouverts[st] ?? k===0) ? ' open' : ''}><summary>${esc(+st===1 ? t('lv_set1') : t('lv_set', st))}</summary>${
+        dr.parSet[st].map(g_ => `<div class="lv-g${g_.br?' br':''}"><span class="sc">${esc(g_.sc)}${g_.enCours?' …':''}</span><span class="lv-srv" style="background:${g_.srv===0?'var(--p1)':'var(--p2)'};box-shadow:none"></span><span class="lv-dots">${g_.pts.map(x=>`<i class="${x===0?'h':''}"></i>`).join('')}</span></div>${ligneTous(g_)}`).reverse().join('')}</details>`).join('');
       corps = `<div class="lv-courbe"><div class="lv-grp" style="margin-top:4px" title="${esc(t('lv_courbe_aide'))}">${esc(t('lv_courbe', court(m.home)).toUpperCase())}</div>${svgCourbe(m, dr.courbe)}
         <p class="lv-leg">${t('lv_leg', esc(court(m.home)), esc(court(m.away))).split(' · ').map((x,i)=>`<span style="white-space:nowrap"><span style="color:${['var(--p1)','var(--p2)','var(--ball)'][i]}">●</span>${x.replace('●','')}</span>`).join(' · ')}</p></div>
         ${mom ? `<div class="lv-grp">${esc(t('lv_moments').toUpperCase())}</div><ul class="lv-mom">${mom}</ul>` : ''}
-        <div class="lv-jeux"><div class="lv-grp">${esc(t('lv_jeux').toUpperCase())}</div>${sets}</div>`;
+        <div class="lv-jeux"><div class="lv-jeux-t"><span class="lv-grp" style="margin:0">${esc(t('lv_jeux').toUpperCase())}</span><button type="button" class="btn lv-btn-tous" aria-pressed="${tous}">${esc(t(tous ? 'lv_tous_off' : 'lv_tous_on'))}</button></div>${sets}</div>`;
     }
   }
   if (!corps && !fini) corps = `<p class="styles-note" style="margin:10px 0 0">${esc(t('lv_attente'))}</p>`;
@@ -2592,6 +2648,10 @@ function rendMatchLive(){
   el.innerHTML = `<h3>🎾 ${esc(t(fini ? 'lv_titre_fin' : 'lv_titre'))}</h3><div style="padding:0 14px 14px">
     <div class="lv-top" style="margin-top:0">${fini ? `<span class="lv-fin">${esc(t('live_termine'))}</span>` : `<span class="lv-on">${esc(t('live_en_cours'))}</span>`}</div>
     ${terrainLive(m, r, fini)}${tableauLive(m, r, fini, true)}${barreLive(m, r, fini, true)}${corps}</div>`;
+  const bt = el.querySelector('.lv-btn-tous');
+  if (bt) bt.onclick = () => { LIVE.tousPoints = !LIVE.tousPoints; rendMatchLive(); };
+  el.querySelectorAll('details[data-set]').forEach(d => d.addEventListener('toggle', () => {
+    (LIVE.ouverts[uid] = LIVE.ouverts[uid] || {})[d.dataset.set] = d.open; }));
 }
 // 06/11/2026 (paquet 210) — FORME ET FACE-À-FACE (descriptif, avant le match) : séries, réussite par rapport aux chances
 function rendAvantMatch(m){
