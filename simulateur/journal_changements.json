@@ -749,6 +749,12 @@
    "quoi": "% EN DIRECT RÉÉVALUÉ : pendant le match, la forme du jour de chaque joueur est lue dans les points de service déjà joués (statistiques du match), au lieu de garder les probabilités d'avant match. Mesuré sur 8 970 matchs point par point (juin → novembre 2026, réglage appris sur juin → août, jugé sur septembre → novembre) : log loss du vainqueur −0,018 en Challenger, −0,011 en ATP, −0,011 en WTA, avec le même réglage sur les deux périodes. Adopté directement sur les trois circuits ; chaque lundi, la semaine écoulée est rejugée par circuit : retrait après deux semaines de suite moins bonnes, retour après deux meilleures. Les statistiques en direct sont désormais chargées pour chaque match en cours de la liste.",
    "statut": "production",
    "paquet": 204
+  },
+  {
+   "date": "2026-11-06",
+   "quoi": "ÉTUDE (non retenue) — la forme lue dans le match de la veille ou de l'avant-veille n'aide pas le pronostic d'avant match : sur 9 462 matchs (juin → novembre 2026), elle n'apporte rien en plus de la forme des 30 derniers jours, ni pour le vainqueur ni pour les points de service du match, sur aucun circuit. La forme sur 30 jours, elle, est déjà dans l'algorithme (facteur forme et fatigue). Rien ne change.",
+   "statut": "etude",
+   "paquet": 205
   }
  ]
 }

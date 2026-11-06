@@ -1,0 +1,187 @@
+{
+ "genere_le": "2026-11-06T18:53:58+00:00",
+ "regle": "veille retenue si « 30 jours + veille » bat « 30 jours seuls » sur sept. → nov. 2026 d'au moins 0,001 (vainqueur, par match) ou 0,0005 (déroulement, par point de service), sur ≥ 1 000 matchs jugés, coefficient de la veille de même signe appris sur le jugement",
+ "matchs": 9462,
+ "circuits": {
+  "ATP": {
+   "matchs": {
+    "appr": 1192,
+    "juge": 686
+   },
+   "part_avec_un_match_dans_les_4_jours_pct": 72.3,
+   "vainqueur": {
+    "coef_30j_seul": 2.1095,
+    "coefs_30j_veille": [
+     1.9031,
+     0.3573
+    ],
+    "coefs_30j_veille_appris_sur_le_jugement": [
+     3.7963,
+     -0.2794
+    ],
+    "log_loss_juge": {
+     "avant_match": 0.59234,
+     "30_jours": 0.58988,
+     "30_jours_et_veille": 0.59013
+    },
+    "gain_30_jours_seuls": 0.00246,
+    "gain_veille_en_plus": -0.00025,
+    "verdict": "en attente (moins de 1 000 matchs jugés)"
+   },
+   "deroulement": {
+    "coef_30j_seul": 0.6127,
+    "coefs_30j_veille": [
+     0.528,
+     0.1441
+    ],
+    "coefs_30j_veille_appris_sur_le_jugement": [
+     0.5632,
+     0.0017
+    ],
+    "log_loss_juge": {
+     "avant_match": 0.64355,
+     "30_jours": 0.64347,
+     "30_jours_et_veille": 0.64349
+    },
+    "gain_30_jours_seuls": 8e-05,
+    "gain_veille_en_plus": -2e-05,
+    "verdict": "en attente (moins de 1 000 matchs jugés)"
+   }
+  },
+  "WTA": {
+   "matchs": {
+    "appr": 1172,
+    "juge": 841
+   },
+   "part_avec_un_match_dans_les_4_jours_pct": 63.9,
+   "vainqueur": {
+    "coef_30j_seul": 2.2305,
+    "coefs_30j_veille": [
+     2.6777,
+     -0.4847
+    ],
+    "coefs_30j_veille_appris_sur_le_jugement": [
+     2.5736,
+     -0.5349
+    ],
+    "log_loss_juge": {
+     "avant_match": 0.56959,
+     "30_jours": 0.56915,
+     "30_jours_et_veille": 0.56897
+    },
+    "gain_30_jours_seuls": 0.00044,
+    "gain_veille_en_plus": 0.00018,
+    "verdict": "en attente (moins de 1 000 matchs jugés)"
+   },
+   "deroulement": {
+    "coef_30j_seul": 0.2496,
+    "coefs_30j_veille": [
+     0.2931,
+     -0.0474
+    ],
+    "coefs_30j_veille_appris_sur_le_jugement": [
+     0.4637,
+     -0.0865
+    ],
+    "log_loss_juge": {
+     "avant_match": 0.68271,
+     "30_jours": 0.6827,
+     "30_jours_et_veille": 0.68269
+    },
+    "gain_30_jours_seuls": 2e-05,
+    "gain_veille_en_plus": 0.0,
+    "verdict": "en attente (moins de 1 000 matchs jugés)"
+   }
+  },
+  "CH": {
+   "matchs": {
+    "appr": 3104,
+    "juge": 2467
+   },
+   "part_avec_un_match_dans_les_4_jours_pct": 63.3,
+   "vainqueur": {
+    "coef_30j_seul": 1.9848,
+    "coefs_30j_veille": [
+     2.2076,
+     -0.2104
+    ],
+    "coefs_30j_veille_appris_sur_le_jugement": [
+     2.3462,
+     0.1481
+    ],
+    "log_loss_juge": {
+     "avant_match": 0.63918,
+     "30_jours": 0.63683,
+     "30_jours_et_veille": 0.63702
+    },
+    "gain_30_jours_seuls": 0.00236,
+    "gain_veille_en_plus": -0.00019,
+    "verdict": "non retenue"
+   },
+   "deroulement": {
+    "coef_30j_seul": 0.419,
+    "coefs_30j_veille": [
+     0.3942,
+     0.0234
+    ],
+    "coefs_30j_veille_appris_sur_le_jugement": [
+     0.3986,
+     0.0447
+    ],
+    "log_loss_juge": {
+     "avant_match": 0.66405,
+     "30_jours": 0.66396,
+     "30_jours_et_veille": 0.66396
+    },
+    "gain_30_jours_seuls": 8e-05,
+    "gain_veille_en_plus": 0.0,
+    "verdict": "non retenue"
+   }
+  },
+  "tous": {
+   "matchs": {
+    "appr": 5468,
+    "juge": 3994
+   },
+   "part_avec_un_match_dans_les_4_jours_pct": 65.0,
+   "vainqueur": {
+    "coef_30j_seul": 2.0302,
+    "coefs_30j_veille": [
+     2.1743,
+     -0.1506
+    ],
+    "coefs_30j_veille_appris_sur_le_jugement": [
+     2.5589,
+     0.0353
+    ],
+    "log_loss_juge": {
+     "avant_match": 0.61648,
+     "30_jours": 0.61451,
+     "30_jours_et_veille": 0.61456
+    },
+    "gain_30_jours_seuls": 0.00197,
+    "gain_veille_en_plus": -5e-05,
+    "verdict": "information"
+   },
+   "deroulement": {
+    "coef_30j_seul": 0.4417,
+    "coefs_30j_veille": [
+     0.4098,
+     0.0334
+    ],
+    "coefs_30j_veille_appris_sur_le_jugement": [
+     0.4283,
+     0.0266
+    ],
+    "log_loss_juge": {
+     "avant_match": 0.66408,
+     "30_jours": 0.66401,
+     "30_jours_et_veille": 0.66401
+    },
+    "gain_30_jours_seuls": 7e-05,
+    "gain_veille_en_plus": 0.0,
+    "verdict": "information"
+   }
+  }
+ }
+}
