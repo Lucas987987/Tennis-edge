@@ -722,6 +722,20 @@ def construire(racine, maintenant=None):
             ligne['documentation'] = [b_de(ligne.get('home')), b_de(ligne.get('away'))]
     except Exception as e:  # noqa: BLE001
         print(f'::warning::documentation des joueurs non calculée : {type(e).__name__}: {e}')
+    # 06/11/2026 (paquet 196) — fourchette à 80 % autour du % : incertitude sur le NIVEAU des joueurs (fourchette.py) ;
+    # information seule, le % ne change pas. Contrôle du 06/11 : la clôture Pinnacle tombe dedans 72 % du temps
+    # (760 matchs) et l'écart algo / clôture grandit avec la largeur (5,3 → 7,7 points du tiers étroit au tiers large).
+    try:
+        import fourchette as FO
+        mj = {m['uid']: m.get('matchs_joues') for m in a_venir}
+        for ligne in lignes:
+            s_ = ligne.get('simulation') or {}
+            fo = FO.fourchette(ligne.get('p_home'), s_.get('a'), s_.get('b'), ligne.get('documentation'),
+                               mj.get(ligne['uid']), s_.get('sets_gagnants') or 2, s_.get('tb_final'), graine=ligne['uid'])
+            if fo:
+                ligne['fourchette'] = list(fo)
+    except Exception as e:  # noqa: BLE001
+        print(f'::warning::fourchettes non calculées : {type(e).__name__}: {e}')
     resultats = _lire(os.path.join(racine, 'Tennis_Edge_Lab', 'live', 'pronostics_resultats.json'), {})
     # 28/10/2026 — fiches figées (premier et dernier pronostic avant le match), évolution, bilans après match
     apres, analyse_am = {}, None
