@@ -399,6 +399,50 @@ body.carte #video{display:block;width:1080px;height:1350px}
 .essentiel ul{list-style:none;margin:0;padding:4px 16px 16px;display:grid;gap:6px}.essentiel li{padding:7px 10px;border-radius:9px;background:rgba(255,255,255,.04);border-left:3px solid var(--dim);font-size:.92rem;line-height:1.4}.essentiel li.plus{border-left-color:var(--ok)}.essentiel li.moins{border-left-color:var(--ko)}.essentiel li.info{border-left-color:var(--ball)}
 .evol{margin:6px 0 0;color:var(--dim);font-size:.82rem}
 .live-l:empty{display:none}.live-l{display:block;margin:6px 0 0;font-size:.85rem;font-variant-numeric:tabular-nums;color:var(--txt,inherit)}.live-l .rouge{color:var(--ko);font-weight:700}.live-l .fin{color:var(--dim);font-weight:700}.live-l sup{font-size:.7em}.live-l .avant{color:var(--dim)}
+/* 06/11/2026 (paquet 210) — direct : tableau d'affichage, courbe du %, moments clés, duel de statistiques */
+.lv-top{display:flex;justify-content:space-between;gap:8px;font-size:.75rem;color:var(--dim);margin-top:8px}
+.lv-on{color:var(--ko);font-weight:700;letter-spacing:.3px}.lv-on:before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--ko);margin-right:6px;box-shadow:0 0 0 3px rgba(255,107,134,.2);animation:lvp 1.6s ease-in-out infinite}
+@keyframes lvp{50%{box-shadow:0 0 0 6px rgba(255,107,134,0)}}@media (prefers-reduced-motion:reduce){.lv-on:before{animation:none}}
+.lv-fin{color:var(--dim);font-weight:700}
+.lv-sb{display:grid;grid-template-columns:minmax(0,1fr) repeat(var(--ns,3),24px) 40px;gap:2px 6px;align-items:center;margin-top:6px;font-family:var(--cond);font-size:1.15rem;font-variant-numeric:tabular-nums}
+.lv-sb .n{font-family:inherit;font-size:.95rem;font-weight:600;display:flex;align-items:center;gap:6px;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.lv-sb .n.a{color:var(--p1)}.lv-sb .n.b{color:var(--p2)}
+.lv-srv{flex:none;width:8px;height:8px;border-radius:50%;background:var(--ball);box-shadow:0 0 7px var(--ball)}
+.lv-s{text-align:center;color:var(--dim)}.lv-s.w{color:var(--ink);font-weight:700}.lv-s.cur{color:var(--ball);font-weight:700}.lv-s sup{font-size:.6em;color:var(--dim);margin-left:1px}
+.lv-pt{justify-self:end;min-width:38px;text-align:center;border-radius:7px;background:rgba(212,255,58,.12);color:var(--ball);font-weight:700}
+.lv-hd{font-size:.68rem;color:var(--dim);text-align:center;font-family:var(--cond)}
+.lv-bar{position:relative;height:7px;border-radius:5px;background:var(--p2);margin:10px 0 4px}
+.lv-bar i{position:absolute;left:0;top:0;bottom:0;border-radius:5px 0 0 5px;background:var(--p1);transition:width .6s}
+.lv-bar .gh{position:absolute;top:-4px;bottom:-4px;width:2px;background:#fff;opacity:.6}
+.lv-pc{display:flex;justify-content:space-between;gap:8px;font-size:.82rem;flex-wrap:wrap}.lv-pc b{font-family:var(--disp);font-size:1rem}
+.lv-up{color:var(--ok)}.lv-down{color:var(--ko)}.lv-dim{color:var(--dim)}
+.live-match .lv-sb{grid-template-columns:minmax(0,1fr) repeat(var(--ns,3),32px) 50px;font-family:var(--disp);font-size:1.35rem;gap:6px 8px}
+.live-match .lv-sb .n{font-size:1.05rem}.live-match .lv-pt{font-size:1.2rem;padding:2px 0}
+.lv-courbe{margin-top:12px}.lv-courbe svg{display:block;width:100%;height:auto}.lv-courbe text{font-family:var(--cond);fill:var(--dim);font-size:11px}
+.lv-leg{font-size:.75rem;color:var(--dim);margin:4px 0 0}
+.lv-mom{list-style:none;margin:10px 0 0;padding:0}.lv-mom li{display:flex;gap:10px;align-items:baseline;padding:7px 0;border-top:1px solid var(--line);font-size:.86rem}
+.lv-mom .t{font-family:var(--cond);color:var(--dim);min-width:48px}
+.lv-tag{font-size:.68rem;border-radius:999px;padding:1px 8px;font-weight:700;margin-right:6px;white-space:nowrap}
+.lv-tag.a{background:rgba(46,230,255,.14);color:var(--p1)}.lv-tag.b{background:rgba(255,79,174,.16);color:var(--p2)}.lv-tag.s{background:rgba(212,255,58,.14);color:var(--ball)}
+.lv-jeux{margin-top:10px}.lv-jeux summary{cursor:pointer;font-size:.85rem;color:var(--dim);padding:6px 0}
+.lv-g{display:grid;grid-template-columns:44px 14px 1fr;gap:6px;align-items:center;padding:3px 0;font-size:.8rem;font-family:var(--cond)}
+.lv-g .sc{color:var(--ink)}.lv-g.br .sc{color:var(--ball);font-weight:700}
+.lv-dots{display:flex;flex-wrap:wrap;gap:3px}.lv-dots i{width:9px;height:9px;border-radius:2px;background:var(--p2)}.lv-dots i.h{background:var(--p1)}
+.lv-duel{margin:9px 0}.lv-duel .k{font-size:.8rem;color:var(--dim);text-align:center}
+.lv-duel .v{display:flex;justify-content:space-between;font-family:var(--cond);font-size:1.05rem;font-weight:700;margin:1px 0 3px}
+.lv-duel .v small{font-weight:500;color:var(--dim);font-size:.75rem;margin:0 4px}
+.lv-tr{display:grid;grid-template-columns:1fr 1fr;gap:3px;height:9px}
+.lv-tr>span{position:relative;background:rgba(255,255,255,.07);border-radius:5px}
+.lv-tr .l i{position:absolute;right:0;top:0;bottom:0;background:var(--p1);border-radius:5px}
+.lv-tr .r i{position:absolute;left:0;top:0;bottom:0;background:var(--p2);border-radius:5px}
+.lv-tr .tk{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ball)}
+.lv-grp{font-family:var(--disp);font-size:.72rem;color:var(--dim);letter-spacing:.5px;margin-top:12px}
+.lv-hors{color:var(--ko)!important}
+.am-j{display:grid;grid-template-columns:1fr 1fr;gap:10px}.am-j>div{background:rgba(255,255,255,.04);border-radius:12px;padding:10px}
+.am-j .nm{font-weight:600}.am-j .nm.a{color:var(--p1)}.am-j .nm.b{color:var(--p2)}.am-j p{margin:4px 0 0;font-size:.83rem}
+.am-h2h{margin-top:12px}.am-h2h .bil{font-family:var(--disp);font-size:1.3rem;text-align:center}
+.am-h2h ul{list-style:none;margin:6px 0 0;padding:0}.am-h2h li{display:flex;justify-content:space-between;gap:8px;border-top:1px solid var(--line);padding:6px 0;font-size:.82rem}
+.am-h2h .gw{font-weight:600}
 .live-stats .prevu{display:block;white-space:nowrap;font-size:.72rem;color:var(--dim);font-weight:400}.live-stats .hors{color:var(--ko);font-weight:700}
 .live-stats table.sheet td,.live-stats table.sheet th{padding:7px 10px;vertical-align:top}.live-stats .styles-note{margin:8px 10px 10px}.badge.peu{background:rgba(255,107,134,.16);color:var(--ko)}
 .res li.avec-am{grid-template-columns:1.8em 1fr auto}.res li .am{grid-column:1/-1}.am summary{cursor:pointer;font-weight:600;font-size:.88rem;color:var(--ball);min-height:36px;display:flex;align-items:center}.am h4{margin:10px 0 4px;font-size:.88rem}.am-t{font-size:.85rem;width:100%}.am-t td{vertical-align:top}.am-t th,.am-t td:first-child{text-align:left}.am-t td+td{text-align:right}.am-ok{color:var(--ok)}.am-ko{color:var(--ko)}.am .d{color:var(--dim);font-size:.8rem}
@@ -733,8 +777,19 @@ const T = {
   a_fin_stats:(a1,a2,e1,e2)=>`Aces dans ce match : <b>${a1} – ${a2}</b> (l'algo en prévoit ${e1} – ${e2}).`,
   lg_total:k=>`+ de ${k} jeux`, lg_tb:'Un tie-break', lg_3s:n=>`${n} sets`, lg_hand:(x,k)=>`${x} −${k} jeux`,
   live_en_cours:'En direct', live_termine:'Terminé', live_sert:n=>`${n} au service`,
+  lv_titre:'Le match en direct', lv_titre_fin:'Le match (terminé)', lv_set:n=>`${n}e set`, lv_set1:'1er set', lv_pts:'Points',
+  lv_delta:(d)=>`${d>0?'▲ +':'▼ −'}${Math.abs(d)} pts depuis le début`, lv_avant:p=>`avant : ${p}`,
+  lv_courbe:n=>`Le % de ${n} jeu après jeu`, lv_courbe_aide:'Calculé par l’algo après chaque jeu, avec la forme du jour lue dans les points déjà joués. Pointillé : le % d’avant match.',
+  lv_leg:(a,b)=>`● break de ${a} · ● break de ${b} · ● fin de set`, lv_moments:'Moments clés', lv_jeux:'Jeu par jeu',
+  lv_m_break:'BREAK', lv_m_set:'SET', lv_m_tb:'TIE-BREAK', lv_m_breakt:(n,s)=>`${n} breake : ${s}`, lv_m_sett:(n,s)=>`${n} gagne le set ${s}`,
+  lv_attente:'Le déroulé point par point arrive dès les premiers jeux.', lv_grp_srv:'SERVICE', lv_grp_ret:'RETOUR ET PRESSION',
+  am_titre:'Forme et face-à-face', am_serie_v:(n,s)=>`${n} victoire${n>1?'s':''} de suite${s?` · ${s} set${s>1?'s':''} gagné${s>1?'s':''} de suite`:''}`,
+  am_serie_d:(n,s)=>`${n} défaite${n>1?'s':''} de suite${s?` · ${s} set${s>1?'s':''} perdu${s>1?'s':''} de suite`:''}`,
+  am_reussite:(v,n,a)=>`${v} victoires sur ses ${n} derniers matchs, pour ${a} attendues`, am_ecart:e=>`${e>0?'+':''}${e} par rapport à ses chances`,
+  am_h2h:'Face-à-face', am_h2h_vide:'Jamais affrontés dans nos données.',
+  am_note:'Attendues : la somme de ses chances d’avant match (Elo de l’algo) sur ces matchs, abandons exclus. Repères descriptifs : ils ne changent pas le %.',
   ls_titre:'Statistiques en direct', ls_titre_fin:'Statistiques du match (terminé)',
-  ls_note:'Mises à jour chaque minute. « Prévu » : la feuille calculée avant le match, pour le match entier (fourchette : 8 fois sur 10). En rouge : déjà au-delà de la fourchette, ou nettement hors fourchette après 20 premières balles.',
+  ls_note:'Mises à jour chaque minute. Trait vert : ce que l’algo avait prévu avant le match, pour le match entier. En rouge : déjà au-delà de sa fourchette (8 fois sur 10), ou nettement hors fourchette après 20 premières balles.',
   ls_attente:'Statistiques pas encore disponibles pour ce match.', ls_plafond:'Statistiques en pause jusqu’à demain (plafond journalier atteint).',
   ls_prevu:(v,a,b)=>a==null?`prévu ${v}`:`prévu ${v} · fourchette ${a}–${b}`,
   ls_l:{aces:'Aces', df:'Doubles fautes', prem:'1res balles', g1:'Points gagnés derrière la 1re', g2:'Points gagnés derrière la 2e', bs:'Balles de break sauvées', bc:'Balles de break converties', breaks:'Breaks', jsg:'Jeux de service gagnés', ret:'Points gagnés au retour', pts:'Points gagnés au total', serie:'Plus longue série de points'},
@@ -971,8 +1026,19 @@ const T = {
   a_fin_stats:(a1,a2,e1,e2)=>`Aces in this match: <b>${a1} – ${a2}</b> (the algorithm expects ${e1} – ${e2}).`,
   lg_total:k=>`Over ${k} games`, lg_tb:'A tie-break', lg_3s:n=>`${n} sets`, lg_hand:(x,k)=>`${x} −${k} games`,
   live_en_cours:'Live', live_termine:'Finished', live_sert:n=>`${n} serving`,
+  lv_titre:'The match, live', lv_titre_fin:'The match (finished)', lv_set:n=>`Set ${n}`, lv_set1:'Set 1', lv_pts:'Points',
+  lv_delta:(d)=>`${d>0?'▲ +':'▼ −'}${Math.abs(d)} pts since the start`, lv_avant:p=>`before: ${p}`,
+  lv_courbe:n=>`${n}'s % game by game`, lv_courbe_aide:'Computed by the algorithm after each game, with the form of the day read from the points already played. Dotted: the pre-match %.',
+  lv_leg:(a,b)=>`● ${a} breaks · ● ${b} breaks · ● end of set`, lv_moments:'Key moments', lv_jeux:'Game by game',
+  lv_m_break:'BREAK', lv_m_set:'SET', lv_m_tb:'TIEBREAK', lv_m_breakt:(n,s)=>`${n} breaks: ${s}`, lv_m_sett:(n,s)=>`${n} wins the set ${s}`,
+  lv_attente:'The point-by-point feed arrives after the first games.', lv_grp_srv:'SERVE', lv_grp_ret:'RETURN AND PRESSURE',
+  am_titre:'Form and head-to-head', am_serie_v:(n,s)=>`${n} win${n>1?'s':''} in a row${s?` · ${s} set${s>1?'s':''} won in a row`:''}`,
+  am_serie_d:(n,s)=>`${n} loss${n>1?'es':''} in a row${s?` · ${s} set${s>1?'s':''} lost in a row`:''}`,
+  am_reussite:(v,n,a)=>`${v} wins in the last ${n} matches, for ${a} expected`, am_ecart:e=>`${e>0?'+':''}${e} versus the odds of winning`,
+  am_h2h:'Head-to-head', am_h2h_vide:'Never met in our data.',
+  am_note:'Expected: the sum of the pre-match chances (the algorithm’s Elo) over those matches, retirements excluded. Descriptive only: they do not change the %.',
   ls_titre:'Live stats', ls_titre_fin:'Match stats (finished)',
-  ls_note:'Updated every minute. “Expected”: the sheet computed before the match, for the whole match (range: 8 times out of 10). In red: already beyond the range, or clearly outside it after 20 first serves.',
+  ls_note:'Updated every minute. Green mark: what the algorithm expected before the match, for the whole match. In red: already beyond its range (8 times out of 10), or clearly outside it after 20 first serves.',
   ls_attente:'No stats available yet for this match.', ls_plafond:'Stats paused until tomorrow (daily limit reached).',
   ls_prevu:(v,a,b)=>a==null?`expected ${v}`:`expected ${v} · range ${a}–${b}`,
   ls_l:{aces:'Aces', df:'Double faults', prem:'1st serves in', g1:'1st serve points won', g2:'2nd serve points won', bs:'Break points saved', bc:'Break points converted', breaks:'Breaks', jsg:'Service games won', ret:'Return points won', pts:'Total points won', serie:'Longest run of points'},
@@ -2107,7 +2173,7 @@ function rendMdj(){
         <div class="tir" aria-hidden="true"><i style="width:${(p*100).toFixed(1)}%"></i></div>
         <div class="ligne l2"><span class="nm">${esc(m.away)}</span><span class="pc">${pc0(1-p)}</span></div>
         <div class="ligne" style="margin-top:8px"><span class="cj">${esc(t('cote_juste'))} ${odds(m.cotes_justes[0])}</span><span class="cj">${esc(t('cote_juste'))} ${odds(m.cotes_justes[1])}</span></div>
-        <p class="live-l" data-live="${esc(m.uid)}" aria-live="polite"></p>
+
         ${Array.isArray(m.fourchette) ? `<p class="evol" title="${esc(t('fourchette_aide'))}">${esc(t('fourchette', court(m.home), pc0(m.fourchette[0]), pc0(m.fourchette[1])))}</p>` : ''}
         ${m.evolution && Math.abs(m.evolution.ecart_pts) >= 1 ? `<p class="evol">${esc(t('es_premier', pc0(m.evolution.premier_p_home), court(m.home), m.evolution.premier_le ? dateHeure(m.evolution.premier_le) : ''))}</p>` : ''}
         ${rendType(m)}${rendFiabilite(m.fiabilite, true)}
@@ -2115,6 +2181,7 @@ function rendMdj(){
         <div id="video-zone" hidden style="margin-top:8px"><p class="ligne" style="gap:8px;justify-content:flex-start;flex-wrap:wrap;align-items:center"><input id="video-cle" type="password" autocomplete="off" placeholder="Clé privée" aria-label="Clé privée" style="flex:1;min-width:160px;background:rgba(255,255,255,.04);color:inherit;border:1px solid var(--line2);border-radius:999px;padding:9px 14px;font:inherit"><button type="button" class="btn" id="video-ok">Lancer</button></p></div>
         <p id="video-msg" class="aide" aria-live="polite"></p>
       </div>
+      <div class="panel live-match" data-live-match="${esc(m.uid)}" hidden></div>
       <div class="panel live-stats" data-live-stats="${esc(m.uid)}" hidden></div>
       <div class="panel" id="post-zone" hidden>
         <h3>Post X</h3>
@@ -2123,6 +2190,7 @@ function rendMdj(){
         <p class="ligne" style="margin-top:8px;gap:10px;justify-content:flex-start;align-items:center"><button type="button" class="btn" id="post-copier">Copier</button><small id="post-nb"></small><small id="post-ok" aria-live="polite"></small></p>
       </div>
       ${rendEssentiel(m)}
+      ${rendAvantMatch(m)}
       ${rendVitesse(m)}
       ${rendStylesDescriptifs(m.styles_descriptifs,m)}
       <div class="duo">
@@ -2159,7 +2227,7 @@ function matchsFiltres(){
 }
 // 06/11/2026 — SCORES EN DIRECT : la page interroge /live (worker, 30 s de cache, TennisApi) toutes les 30 s tant
 // qu'un match de la liste peut être en cours et que l'onglet est visible. Le % affiché reste celui d'avant match.
-const LIVE = { par_uid: {}, vus: {}, minuterie: null, moteurs: {}, stats: {}, attente: {}, formes: {}, reeval: {}, essai: {} };
+const LIVE = { par_uid: {}, vus: {}, minuterie: null, moteurs: {}, stats: {}, attente: {}, formes: {}, reeval: {}, essai: {}, points: {} };
 function motsNom(n){ return new Set(String(n||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase()
   .replace(/[^a-z\s-]/g,' ').split(/[\s-]+/).filter(w=>w.length>=2)); }
 function memeJoueur(a,b){ const A=motsNom(a); for (const w of motsNom(b)) if (A.has(w)) return true; return false; }
@@ -2175,16 +2243,42 @@ function relierLive(matchs){
   }
   return out;
 }
-function texteLive(m, r, fini){
+// 06/11/2026 (paquet 210) — TABLEAU D'AFFICHAGE : une colonne par set (tie-break en exposant), le set en cours en
+// jaune balle, les points dans une pastille, un point lumineux devant le serveur ; dessous, la barre du % qui bouge
+// avec un trait fixe au % d'avant match.
+function cotesLive(r){
   const x = r.x, h = r.inverse ? x.score_away : x.score_home, a = r.inverse ? x.score_home : x.score_away;
-  const sets = (h.sets||[]).map((g,i)=>`${g}-${(a.sets||[])[i]??0}${h.tb&&h.tb[i]!=null&&(a.tb||[])[i]!=null?`<sup>${Math.min(h.tb[i],a.tb[i])}</sup>`:''}`).join(' ');
-  const pt = !fini && h.point!=null && a.point!=null ? ` (${esc(h.point)}-${esc(a.point)})` : '';
-  const sv = x.serveur ? ((x.serveur==='home') !== r.inverse ? m.home : m.away) : null;
-  const tete = fini ? `<span class="fin">${esc(t('live_termine'))}</span>` : `<span class="rouge">🔴 ${esc(t('live_en_cours'))}</span>`;
-  let pl = '';
-  if (!fini){ const p = pctLive(m, r);
-    if (p != null) pl = `<br><b title="${esc(t(LIVE.reeval[m.uid] ? 'live_aide' : 'live_aide_fixe'))}">${esc(t('live_pct', court(m.home), pc0(p)))}</b> <span class="avant">(${esc(t('live_avant', pc0(m.p_home)))})</span>`; }
-  return `${tete} · ${sets||'0-0'}${pt}${!fini && sv ? ` · 🎾 ${esc(t('live_sert', court(sv)))}` : ''}${pl}`;
+  const srv = x.serveur ? (((x.serveur==='home') !== r.inverse) ? 0 : 1) : null;
+  return {h, a, srv};
+}
+function tableauLive(m, r, fini, grand){
+  const {h, a, srv} = cotesLive(r);
+  const SH = h.sets || [], SA = a.sets || [], ns = Math.max(SH.length, (m.simulation && m.simulation.sets_gagnants === 3) ? 5 : 3);
+  const cur = fini ? -1 : SH.length - 1;
+  const cell = (i, mine, autre, tb) => {
+    if (i >= SH.length) return `<span class="lv-s">·</span>`;
+    const g = +mine[i] || 0, o = +autre[i] || 0;
+    const w = i !== cur && g > o, sup = tb && tb[i] != null && (g === 6 || g === 7) && (o === 6 || o === 7) ? `<sup>${esc(tb[i])}</sup>` : '';
+    return `<span class="lv-s${i===cur?' cur':(w?' w':'')}">${g}${sup}</span>`;
+  };
+  const ligne = (k, nom, mine, autre, tb, pt) => `<span class="n ${k===0?'a':'b'}">${esc(court(nom))}${!fini && srv===k ? '<span class="lv-srv" aria-label="au service"></span>' : ''}</span>`
+    + Array.from({length: ns}, (_, i) => cell(i, mine, autre, tb)).join('')
+    + (fini ? '<span></span>' : `<span class="lv-pt">${esc(pt ?? '0')}</span>`);
+  const tete = grand ? `<span></span>${Array.from({length: ns}, (_, i) => `<span class="lv-hd">${i+1}</span>`).join('')}<span class="lv-hd">${esc(t('lv_pts'))}</span>` : '';
+  return `<div class="lv-sb" style="--ns:${ns}">${tete}${ligne(0, m.home, SH, SA, h.tb, h.point)}${ligne(1, m.away, SA, SH, a.tb, a.point)}</div>`;
+}
+function barreLive(m, r, fini, grand){
+  if (fini) return '';
+  const p = pctLive(m, r); if (p == null) return '';
+  const d = Math.round(100*p) - Math.round(100*m.p_home);
+  const aide = t(LIVE.reeval[m.uid] ? 'live_aide' : 'live_aide_fixe');
+  return `<div class="lv-bar" title="${esc(aide)}"><i style="width:${(100*p).toFixed(1)}%"></i><span class="gh" style="left:${(100*m.p_home).toFixed(1)}%"></span></div>
+    <div class="lv-pc"><span><b style="color:var(--p1)">${esc(court(m.home))} ${pc0(p)}</b> ${d ? `<span class="${d>0?'lv-up':'lv-down'}">${esc(grand ? t('lv_delta', d) : `${d>0?'▲ +':'▼ −'}${Math.abs(d)} pts`)}</span>` : ''}</span><span class="lv-dim">${esc(t('lv_avant', pc0(m.p_home)))}</span></div>`;
+}
+function texteLive(m, r, fini){
+  const x = r.x, n = (cotesLive(r).h.sets || []).length;
+  const ou = fini ? `<span class="lv-fin">${esc(t('live_termine'))}</span>` : `<span class="lv-on">${esc(t('live_en_cours'))}${n ? ' · ' + esc(n===1 ? t('lv_set1') : t('lv_set', n)) : ''}</span>`;
+  return `<span class="lv-top">${ou}</span>${tableauLive(m, r, fini, false)}${barreLive(m, r, fini)}`;
 }
 // 06/11/2026 — % RECALCULÉ EN DIRECT : le moteur de la page (Moteur + calibre, celui de « Jouer le match »)
 // repart de l'état réel du match (sets, jeux, points, serveur). À 0-0 il redonne exactement le % d'avant match.
@@ -2282,39 +2376,171 @@ function rendStatsLive(){
   if (!m || !r || !st){ el.hidden = true; el.innerHTML = ''; return; }
   const fini = !LIVE.par_uid[uid], S = st.o.stats, inv = r.inverse;
   const g = k => { const v = S && S[k]; if (!v) return null; return inv ? [v[2],v[3],v[0],v[1]] : v; };
-  const pcs = (a,b) => b ? `${Math.round(100*a/b)}${L==='fr'?'\u00a0%':'%'}<span class="prevu">${a}/${b}</span>` : (a==null ? '—' : esc(String(a)));
+  const pctTxt = (a,b) => b ? `${Math.round(100*a/b)}${L==='fr'?' %':'%'}` : '—';
   const fp = m.feuille_prevue || [], ff = m.feuille_fourchette || [];
-  const prevu = (i, cle, pct) => { const v = fp[i] && fp[i][cle]; if (v==null) return '';
-    const f = ff[i] && ff[i][cle]; const d0 = x => dec(x, pct ? 0 : 1).replace(/[.,]0$/,'');
-    return `<span class="prevu">${esc(t('ls_prevu', d0(v)+(pct?(L==='fr'?'\u00a0%':'%'):''), f?d0(f[0]):null, f?d0(f[1]):null)).replace(' · ','</span><span class="prevu">')}</span>`; };
-  const horsCompte = (i, cle, n) => { const f = ff[i] && ff[i][cle]; return f && n > f[1]; };
-  const horsPct = (i, cle, a, b) => { const f = ff[i] && ff[i][cle]; return f && b >= 20 && (100*a/b < f[0]-5 || 100*a/b > f[1]+5); };
-  const lignes = [];
-  const ligne = (lib, c0, c1) => lignes.push(`<tr><th>${esc(t('ls_l')[lib])}</th><td>${c0}</td><td>${c1}</td></tr>`);
-  const cell = (html, hors, pv) => `<span class="${hors?'hors':''}">${html}</span>${pv||''}`;
-  const compte = (cleApi, lib, cleP) => { const v = g(cleApi); if (!v) return;
-    ligne(lib, cell(esc(String(v[0]??0)), cleP && horsCompte(0,cleP,v[0]), cleP ? prevu(0,cleP) : ''),
-               cell(esc(String(v[2]??0)), cleP && horsCompte(1,cleP,v[2]), cleP ? prevu(1,cleP) : '')); };
-  const ratio = (cleApi, lib, cleP) => { const v = g(cleApi); if (!v) return;
-    ligne(lib, cell(pcs(v[0],v[1]), cleP && horsPct(0,cleP,v[0],v[1]), cleP ? prevu(0,cleP,true) : ''),
-               cell(pcs(v[2],v[3]), cleP && horsPct(1,cleP,v[2],v[3]), cleP ? prevu(1,cleP,true) : '')); };
-  compte('aces','aces','aces'); compte('doubleFaults','df','doubles_fautes');
-  ratio('firstServeAccuracy','prem','premiere_pct'); ratio('firstServePointsAccuracy','g1'); ratio('secondServePointsAccuracy','g2');
-  const bs = g('breakPointsSaved'), bk = g('breakPointsScored');
-  if (bs) ligne('bs', pcs(bs[0],bs[1]), pcs(bs[2],bs[3]));
-  if (bk && bs) ligne('bc', pcs(bk[0], bs[3]), pcs(bk[2], bs[1]));
-  compte('breakPointsScored','breaks','breaks');
+  // une ligne de duel : valeurs, barres depuis le centre, trait vert = prévu par l'algo ; rouge = hors fourchette
+  const duel = (lib, v0, v1, f0, f1, opts={}) => {
+    const max = opts.max || Math.max(v0.x, v1.x, opts.p0||0, opts.p1||0, 1);
+    const larg = x => Math.max(0, Math.min(100, 100*x/max));
+    const tk = (pv, cote) => pv == null ? '' : `<span class="tk" style="${cote}:${larg(pv).toFixed(1)}%"></span>`;
+    return `<div class="lv-duel"><div class="k">${esc(lib)}</div>
+      <div class="v"><span class="${f0?'lv-hors':''}">${v0.txt}${v0.det?`<small>${v0.det}</small>`:''}</span><span class="${f1?'lv-hors':''}">${v1.det?`<small>${v1.det}</small>`:''}${v1.txt}</span></div>
+      <div class="lv-tr"><span class="l"><i style="width:${larg(v0.x).toFixed(1)}%"></i>${tk(opts.p0,'right')}</span><span class="r"><i style="width:${larg(v1.x).toFixed(1)}%"></i>${tk(opts.p1,'left')}</span></div></div>`;
+  };
+  const prevu = (i, cle) => fp[i] && fp[i][cle] != null ? +fp[i][cle] : null;
+  const hors = (i, cle, x, pct, n) => { const f = ff[i] && ff[i][cle]; if (!f) return false; return pct ? (n >= 20 && (x < f[0]-5 || x > f[1]+5)) : x > f[1]; };
+  const L1 = [], L2 = [];
+  const compte = (dest, cleApi, lib, cleP) => { const v = g(cleApi); if (!v) return;
+    const a = +v[0]||0, b = +v[2]||0;
+    dest.push(duel(lib, {x:a, txt:String(a)}, {x:b, txt:String(b)}, cleP && hors(0,cleP,a), cleP && hors(1,cleP,b),
+      {p0: cleP ? prevu(0,cleP) : null, p1: cleP ? prevu(1,cleP) : null})); };
+  const ratio = (dest, v, lib, cleP, n0, d0, n1, d1) => { if (!v) return;
+    const x0 = d0 ? 100*n0/d0 : 0, x1 = d1 ? 100*n1/d1 : 0;
+    dest.push(duel(lib, {x:x0, txt:pctTxt(n0,d0), det:d0?`${n0}/${d0}`:''}, {x:x1, txt:pctTxt(n1,d1), det:d1?`${n1}/${d1}`:''},
+      cleP && hors(0,cleP,x0,true,d0), cleP && hors(1,cleP,x1,true,d1), {max:100, p0: cleP ? prevu(0,cleP) : null, p1: cleP ? prevu(1,cleP) : null})); };
+  const LL = t('ls_l');
+  compte(L1,'aces',LL.aces,'aces'); compte(L1,'doubleFaults',LL.df,'doubles_fautes');
+  const fs = g('firstServeAccuracy'), f1 = g('firstServePointsAccuracy'), f2 = g('secondServePointsAccuracy');
+  if (fs) ratio(L1, fs, LL.prem, 'premiere_pct', fs[0], fs[1], fs[2], fs[3]);
+  if (f1) ratio(L1, f1, LL.g1, null, f1[0], f1[1], f1[2], f1[3]);
+  if (f2) ratio(L1, f2, LL.g2, null, f2[0], f2[1], f2[2], f2[3]);
   const sg = g('serviceGamesWon'), stt = g('serviceGamesTotal');
-  if (sg && stt) ligne('jsg', pcs(sg[0],stt[0]) + prevu(0,'jeux_service_gagnes_pct',true), pcs(sg[2],stt[2]) + prevu(1,'jeux_service_gagnes_pct',true));
-  const rp = g('receiverPointsScored'), fs = g('firstServeAccuracy');
-  if (rp && fs) ligne('ret', pcs(rp[0], fs[3]), pcs(rp[2], fs[1]));
-  const pt = g('pointsTotal'); if (pt){ const tot = (pt[0]||0)+(pt[2]||0); ligne('pts', pcs(pt[0],tot), pcs(pt[2],tot)); }
-  compte('maxPointsInRow','serie');
+  if (sg && stt) ratio(L1, sg, LL.jsg, 'jeux_service_gagnes_pct', sg[0], stt[0], sg[2], stt[2]);
+  const bs = g('breakPointsSaved'), bk = g('breakPointsScored');
+  if (bk && bs) ratio(L2, bk, LL.bc, null, bk[0], bs[3], bk[2], bs[1]);
+  if (bs) ratio(L2, bs, LL.bs, null, bs[0], bs[1], bs[2], bs[3]);
+  compte(L2,'breakPointsScored',LL.breaks,'breaks');
+  const rp = g('receiverPointsScored');
+  if (rp && fs) ratio(L2, rp, LL.ret, null, rp[0], fs[3], rp[2], fs[1]);
+  const pt = g('pointsTotal'); if (pt){ const tot = (+pt[0]||0)+(+pt[2]||0); ratio(L2, pt, LL.pts, null, +pt[0]||0, tot, +pt[2]||0, tot); }
+  compte(L2,'maxPointsInRow',LL.serie);
   const msg = st.o.plafond ? t('ls_plafond') : (!S ? t('ls_attente') : '');
   el.hidden = false;
-  el.innerHTML = `<h3>📊 ${esc(t(fini ? 'ls_titre_fin' : 'ls_titre'))}</h3>${msg ? `<p class="styles-note">${esc(msg)}</p>` : ''}
-    ${lignes.length ? `<table class="sheet"><thead><tr><th></th><th class="c1">${esc(court(m.home))}</th><th class="c2">${esc(court(m.away))}</th></tr></thead><tbody>${lignes.join('')}</tbody></table>
-    <p class="styles-note">${esc(t('ls_note'))}</p>` : ''}`;
+  el.innerHTML = `<h3>📊 ${esc(t(fini ? 'ls_titre_fin' : 'ls_titre'))}</h3><div class="pad" style="padding:0 14px 12px">${msg ? `<p class="styles-note">${esc(msg)}</p>` : ''}
+    ${L1.length ? `<div class="lv-pc" style="margin-top:4px"><b style="color:var(--p1);font-family:inherit">${esc(court(m.home))}</b><b style="color:var(--p2);font-family:inherit">${esc(court(m.away))}</b></div>
+    <div class="lv-grp">${esc(t('lv_grp_srv'))}</div>${L1.join('')}<div class="lv-grp">${esc(t('lv_grp_ret'))}</div>${L2.join('')}
+    <p class="styles-note" style="margin:8px 0 0">${esc(t('ls_note'))}</p>` : ''}</div>`;
+}
+// 06/11/2026 (paquet 210) — LE MATCH EN DIRECT (fiche) : grand tableau d'affichage, courbe du % jeu après jeu tirée du
+// point par point (/live/points), moments clés (breaks, sets) et jeu par jeu.
+function chargerPoints(){
+  const el = document.querySelector('[data-live-match]'); if (!el || document.hidden) return;
+  const uid = el.getAttribute('data-live-match'), r = LIVE.par_uid[uid];
+  if (!r || !r.x.id || LIVE.attente['p'+uid] || Date.now() - (LIVE.essai['p'+uid] || 0) < 55000) return;
+  LIVE.attente['p'+uid] = true; LIVE.essai['p'+uid] = Date.now();
+  fetch('/live/points?id=' + encodeURIComponent(r.x.id), {cache:'no-store'}).then(x=>x.ok ? x.json() : null).then(o=>{
+    if (o && Array.isArray(o.jeux)) LIVE.points[uid] = o.jeux;
+  }).catch(()=>{}).finally(()=>{ LIVE.attente['p'+uid] = false; rendMatchLive(); });
+}
+function pAvecPoints(m, S, srv, pts){
+  // % de home au début d'un jeu (état S, serveur srv), forme du jour lue dans les points de service déjà joués
+  const etat = {...S, pts:[0,0], jeux:[...S.jeux], sets:[...S.sets], srv, tb: S.jeux[0]===6 && S.jeux[1]===6, tbS0: srv,
+                tbCible: 7, histo:[], fini:false, vainqueur:null};
+  const N = (m.simulation && m.simulation.sets_gagnants) || 2;
+  if (etat.tb && etat.sets[0]===N-1 && etat.sets[1]===N-1) etat.tbCible = (m.simulation && m.simulation.tb_final) || 7;
+  const sigma = sigmaLive(m);
+  if (sigma > 0 && pts){
+    const F = formesLive(m, sigma), [A, B] = pts;
+    const lw = F.map(f => Math.log(f.w) + A.w*Math.log(f.a) + (A.n-A.w)*Math.log(1-f.a) + B.w*Math.log(f.b) + (B.n-B.w)*Math.log(1-f.b));
+    const mx = Math.max(...lw); let tot = 0, v = 0;
+    F.forEach((f,i) => { const x = Math.exp(lw[i]-mx); tot += x; v += x*f.M.pLive(etat); });
+    return v / tot;
+  }
+  const M = LIVE.moteurs[m.uid] || (LIVE.moteurs[m.uid] = Moteur(calibre(m.simulation, m.p_home)));
+  return M.pLive(etat);
+}
+function derouleLive(m, r, jeux){
+  // jeux : [[set, jeu, serveur (1 = home TennisApi), « HAHA… », vainqueur | null]] → points de la courbe et moments
+  const inv = r.inverse, N = (m.simulation && m.simulation.sets_gagnants) || 2;
+  const S = {sets:[0,0], jeux:[0,0]}, sv = {A:{n:0,w:0}, B:{n:0,w:0}};
+  const courbe = [{p: m.p_home, set: 1}], moments = [], parSet = {};
+  for (const [st, , serving, seq, vq] of jeux) {
+    const srv = ((serving === 1) !== inv) ? 0 : 1;               // 0 = home du site
+    const tb = S.jeux[0]===6 && S.jeux[1]===6;
+    const pts = [...seq].map(c => ((c === 'H') !== inv) ? 0 : 1);
+    let gagne = vq ? (((vq === 1) !== inv) ? 0 : 1) : null;
+    if (gagne === null) {                                         // vainqueur absent : jeu fini seulement s'il est complet
+      const c = [0,0]; let fin = null;
+      pts.forEach(x => { c[x]++; const cib = tb ? 7 : 4; if (fin === null && (c[0]>=cib || c[1]>=cib) && Math.abs(c[0]-c[1])>=2) fin = c[0]>c[1]?0:1; });
+      if (fin === null) { (parSet[st] = parSet[st] || []).push({srv, pts, enCours:true, sc:`${S.jeux[0]}-${S.jeux[1]}`}); break; }
+      gagne = fin;
+    }
+    pts.forEach((x, k) => {                                       // points de service de chacun
+      const s_ = tb ? (k === 0 || ((k-1)>>1)%2 === 1 ? srv : 1-srv) : srv;
+      const o = s_ === 0 ? sv.A : sv.B; o.n++; if (x === s_) o.w++;
+    });
+    S.jeux[gagne]++;
+    const brk = !tb && gagne !== srv;
+    let finSet = false;
+    if ((S.jeux[gagne] >= 6 && S.jeux[gagne]-S.jeux[1-gagne] >= 2) || S.jeux[gagne] === 7) finSet = true;
+    const scSet = `${S.jeux[0]}-${S.jeux[1]}`;
+    (parSet[st] = parSet[st] || []).push({srv, pts, br: brk, sc: scSet, tb});
+    if (finSet) { S.sets[gagne]++; S.jeux = [0,0]; }
+    const fini = S.sets[0] >= N || S.sets[1] >= N;
+    const p = fini ? (S.sets[0] >= N ? 1 : 0) : pAvecPoints(m, S, 1 - srv, [sv.A, sv.B]);
+    courbe.push({p, set: st, br: brk ? gagne : null, fin: finSet});
+    if (brk) moments.push({set: st, type:'br', qui: gagne, sc: scSet, p});
+    if (finSet) moments.push({set: st, type: tb ? 'tb' : 'set', qui: gagne, sc: scSet, p});
+    if (fini) break;
+  }
+  return {courbe, moments, parSet};
+}
+function svgCourbe(m, courbe){
+  const W = 340, H = 170, x0 = 30, x1 = 330, y = p => 160 - p*150, n = Math.max(courbe.length - 1, 1);
+  const X = i => x0 + (x1-x0)*i/n;
+  const pts = courbe.map((c,i) => `${X(i).toFixed(1)},${y(c.p).toFixed(1)}`).join(' ');
+  const sep = courbe.map((c,i) => c.fin ? `<line x1="${X(i)}" x2="${X(i)}" y1="10" y2="160" stroke="rgba(212,255,58,.3)"/>` : '').join('');
+  const pastilles = courbe.map((c,i) => c.fin ? `<circle cx="${X(i)}" cy="${y(c.p)}" r="4.5" fill="#D4FF3A"/>`
+    : c.br != null ? `<circle cx="${X(i)}" cy="${y(c.p)}" r="3.8" fill="${c.br===0?'#2EE6FF':'#FF4FAE'}"/>` : '').join('');
+  const der = courbe[courbe.length-1];
+  return `<svg viewBox="0 0 ${W} ${H+8}" role="img" aria-label="${esc(t('lv_courbe', court(m.home)))}">
+    <text x="0" y="14">100 %</text><text x="0" y="89">50 %</text><text x="0" y="163">0 %</text>
+    <line x1="${x0}" x2="${x1}" y1="${y(.5)}" y2="${y(.5)}" stroke="rgba(255,255,255,.16)" stroke-dasharray="3 4"/>
+    <line x1="${x0}" x2="${x1}" y1="${y(m.p_home)}" y2="${y(m.p_home)}" stroke="#fff" stroke-opacity=".35" stroke-dasharray="1 3"/>
+    ${sep}<polyline fill="none" stroke="#2EE6FF" stroke-width="2.5" stroke-linejoin="round" points="${pts}"/>${pastilles}
+    <text x="${Math.min(X(courbe.length-1)+4, W-34)}" y="${Math.max(y(der.p)-6, 12)}" style="fill:#2EE6FF;font-size:13px;font-weight:700">${pc0(der.p)}</text></svg>`;
+}
+function rendMatchLive(){
+  const el = document.querySelector('[data-live-match]'); if (!el) return;
+  const uid = el.getAttribute('data-live-match'), m = ((D && D.matchs) || []).find(x=>x.uid===uid);
+  const r = LIVE.par_uid[uid] || LIVE.vus[uid];
+  if (!m || !r){ el.hidden = true; el.innerHTML = ''; return; }
+  const fini = !LIVE.par_uid[uid], jeux = LIVE.points[uid];
+  let corps = '';
+  if (jeux && jeux.length && m.simulation) {
+    let dr = null; try { dr = derouleLive(m, r, jeux); } catch(e) { dr = null; }
+    if (dr && dr.courbe.length > 1) {
+      const nom = q => court(q === 0 ? m.home : m.away);
+      const mom = dr.moments.slice(-8).reverse().map(x => `<li><span class="t">${esc(x.set===1 ? t('lv_set1') : t('lv_set', x.set))}</span><span><span class="lv-tag ${x.type==='br' ? (x.qui===0?'a':'b') : 's'}">${esc(t(x.type==='br'?'lv_m_break':(x.type==='tb'?'lv_m_tb':'lv_m_set')))}</span>${esc(x.type==='br' ? t('lv_m_breakt', nom(x.qui), x.sc) : t('lv_m_sett', nom(x.qui), x.sc))} → ${pc0(x.p)}</span></li>`).join('');
+      const sets = Object.keys(dr.parSet).sort((a,b)=>b-a).map((st, k) => `<details${k===0?' open':''}><summary>${esc(+st===1 ? t('lv_set1') : t('lv_set', st))}</summary>${
+        dr.parSet[st].map(g_ => `<div class="lv-g${g_.br?' br':''}"><span class="sc">${esc(g_.sc)}${g_.enCours?' …':''}</span><span class="lv-srv" style="background:${g_.srv===0?'var(--p1)':'var(--p2)'};box-shadow:none"></span><span class="lv-dots">${g_.pts.map(x=>`<i class="${x===0?'h':''}"></i>`).join('')}</span></div>`).reverse().join('')}</details>`).join('');
+      corps = `<div class="lv-courbe"><div class="lv-grp" style="margin-top:4px" title="${esc(t('lv_courbe_aide'))}">${esc(t('lv_courbe', court(m.home)).toUpperCase())}</div>${svgCourbe(m, dr.courbe)}
+        <p class="lv-leg">${t('lv_leg', esc(court(m.home)), esc(court(m.away))).split(' · ').map((x,i)=>`<span style="white-space:nowrap"><span style="color:${['var(--p1)','var(--p2)','var(--ball)'][i]}">●</span>${x.replace('●','')}</span>`).join(' · ')}</p></div>
+        ${mom ? `<div class="lv-grp">${esc(t('lv_moments').toUpperCase())}</div><ul class="lv-mom">${mom}</ul>` : ''}
+        <div class="lv-jeux"><div class="lv-grp">${esc(t('lv_jeux').toUpperCase())}</div>${sets}</div>`;
+    }
+  }
+  if (!corps && !fini) corps = `<p class="styles-note" style="margin:10px 0 0">${esc(t('lv_attente'))}</p>`;
+  el.hidden = false;
+  el.innerHTML = `<h3>🎾 ${esc(t(fini ? 'lv_titre_fin' : 'lv_titre'))}</h3><div style="padding:0 14px 14px">
+    <div class="lv-top" style="margin-top:0">${fini ? `<span class="lv-fin">${esc(t('live_termine'))}</span>` : `<span class="lv-on">${esc(t('live_en_cours'))}</span>`}</div>
+    ${tableauLive(m, r, fini, true)}${barreLive(m, r, fini, true)}${corps}</div>`;
+}
+// 06/11/2026 (paquet 210) — FORME ET FACE-À-FACE (descriptif, avant le match) : séries, réussite par rapport aux chances
+function rendAvantMatch(m){
+  const A = m.avant_match; if (!A) return '';
+  const j = (x, k) => { if (!x) return `<div><span class="nm ${k}">${esc(court(k==='a'?m.home:m.away))}</span><p class="lv-dim">—</p></div>`;
+    const se = x.serie || {}, re = x.reussite;
+    const ser = se.n ? (se.type === 'victoires' ? t('am_serie_v', se.n, se.sets_n) : t('am_serie_d', se.n, se.sets_n)) : '';
+    return `<div><span class="nm ${k}">${esc(court(k==='a'?m.home:m.away))}</span>${ser ? `<p>${esc(ser)}</p>` : ''}
+      ${re ? `<p>${esc(t('am_reussite', re.victoires, re.matchs, dec(re.attendu,1)))} : <b class="${re.ecart>=1?'lv-up':(re.ecart<=-1?'lv-down':'')}">${esc(t('am_ecart', dec(re.ecart,1)))}</b></p>` : ''}</div>`; };
+  const F = A.face_a_face;
+  const h2h = F ? `<div class="am-h2h"><div class="lv-grp">${esc(t('am_h2h').toUpperCase())}</div>
+      <div class="bil"><span style="color:var(--p1)">${F.home}</span> – <span style="color:var(--p2)">${F.away}</span></div>
+      <ul>${(F.derniers||[]).map(x => `<li><span class="lv-dim">${esc(dateLong(x.date))} · ${esc(x.tournoi||'')}</span><span><span class="gw" style="color:${x.vainqueur==='home'?'var(--p1)':'var(--p2)'}">${esc(court(x.vainqueur==='home'?m.home:m.away))}</span> ${esc(x.score||'')}</span></li>`).join('')}</ul></div>`
+    : `<p class="lv-dim" style="margin-top:10px">${esc(t('am_h2h_vide'))}</p>`;
+  return `<div class="panel"><h3>🔁 ${esc(t('am_titre'))}</h3><div style="padding:0 14px 14px"><div class="am-j">${j(A.home,'a')}${j(A.away,'b')}</div>${h2h}
+    <p class="styles-note" style="margin:10px 0 0">${esc(t('am_note'))}</p></div></div>`;
 }
 function majLive(){
   const parUid = {}; for (const m of (D && D.matchs) || []) parUid[m.uid] = m;
@@ -2323,7 +2549,7 @@ function majLive(){
     const r = LIVE.par_uid[uid] || LIVE.vus[uid];
     el.innerHTML = m && r ? texteLive(m, r, !LIVE.par_uid[uid]) : '';
   });
-  rendStatsLive(); statsFiche();
+  rendStatsLive(); rendMatchLive(); statsFiche(); chargerPoints();
 }
 function liveUtile(){
   const now = Date.now();

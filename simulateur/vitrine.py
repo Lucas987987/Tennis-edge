@@ -642,6 +642,25 @@ def retirer_annules(matchs, racine, maintenant):
     return out
 
 
+GARDER_COMMENCES_H = 6
+
+
+def garder_commences(lignes, ancien_doc, maintenant, racine=None):
+    """06/11/2026 (paquet 209) — un match COMMENCÉ disparaît des pronostics du passage suivant (la source des matchs à
+    venir ne le donne plus) : Fritz – Alcaraz, en cours, n'était plus sur le site, ni ses scores en direct. On garde
+    donc, tel qu'il était affiché (le dernier % d'avant match), chaque match de la version précédente du site qui a
+    commencé depuis moins de 6 h et que le nouveau passage n'a plus. Forfaits et annulations connus : retirés.
+    Marqué « commence_garde » : validation_vitrine.py ne lui demande pas le nombre de simulations du passage en cours
+    (il a été simulé, et contrôlé, au passage précédent)."""
+    vus = {l.get('uid') for l in lignes}
+    garde = [dict(l, commence_garde=True) for l in (ancien_doc or {}).get('matchs') or []
+             if l.get('uid') and l['uid'] not in vus and l.get('debut')
+             and maintenant - dt.timedelta(hours=GARDER_COMMENCES_H) < _utc(l['debut']) <= maintenant]
+    if garde and racine:
+        garde = retirer_annules(garde, racine, maintenant)
+    return sorted(lignes + garde, key=lambda l: (str(l.get('debut')), str(l.get('uid'))))
+
+
 def live_reevaluation(racine):
     """06/11/2026 — σ de la forme du jour lue pendant le match, par circuit (0 = circuit retiré) : la page s'en sert
     pour réévaluer le % en direct (simulateur/etude_live_reevaluation.py, suivi chaque semaine)."""
@@ -688,6 +707,11 @@ def construire(racine, maintenant=None):
     except Exception:
         alias = {}
     ajouter_rythme(lignes, rythme_doc, alias)
+    # 06/11/2026 (paquet 210) : séries, face-à-face, réussite par rapport aux chances (infos_avant_match.py) ; descriptif
+    avant = (_lire(os.path.join(racine, 'simulateur', 'infos_avant_match.json'), {}) or {}).get('matchs') or {}
+    for ligne in lignes:
+        if avant.get(ligne.get('uid')):
+            ligne['avant_match'] = avant[ligne['uid']]
     # 04/11/2026 — vitesse du court (vitesse_courts.py : CPI officiel quand il existe, sinon estimé) ; information seule
     vit_doc = _lire(os.path.join(racine, 'simulateur', 'vitesse_courts.json'), {}) or {}
     if vit_doc.get('tournois'):
@@ -776,6 +800,7 @@ def construire(racine, maintenant=None):
             json.dump(analyse_am, f, ensure_ascii=False, indent=1)
     except Exception as e:  # noqa: BLE001
         print(f'::warning::après-match non calculé : {type(e).__name__}: {e}')
+    lignes = garder_commences(lignes, ancien_doc, maintenant, racine)
     return {'genere_le': maintenant.isoformat(timespec='seconds'), 'pronostics_du': pron.get('genere_le'),
             'simulations': pron.get('simulations') or 20000, 'match_du_jour': mdj, 'match_du_jour_veille': veille,
             'qualite_horodatages': pron.get('qualite_horodatages'),
