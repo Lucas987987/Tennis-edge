@@ -45,8 +45,8 @@ concurrency:
 
 jobs:
   video:
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
+    runs-on: ubuntu-24.04   # 05/11/2026 : image figée (ubuntu-latest est passé à 26.04)
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v5
         with:
@@ -55,6 +55,7 @@ jobs:
           sparse-checkout: |
             /algo/
             /scripts/video_simulation.py
+            /scripts/installer_video.sh
             /scripts/sons.py
 
       - uses: actions/setup-python@v6
@@ -63,13 +64,8 @@ jobs:
 
       - name: Navigateur (Chromium)
         run: |
-          pip install --quiet playwright==1.48.0
-          python -m playwright install --with-deps chromium
-          # 24/10/2026 : ffmpeg (conversion MP4 + bande-son) n'est pas garanti sur l'image ubuntu-latest
-          command -v ffmpeg >/dev/null || { sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg; }
-          # 04/11/2026 : drapeaux des joueurs (emoji en couleur) dans la vidéo
-          fc-list | grep -qi 'Noto Color Emoji' || { sudo apt-get update -qq && sudo apt-get install -y -qq fonts-noto-color-emoji && fc-cache -f; }
-          ffmpeg -version | head -1
+          # 05/11/2026 (paquet 194) : plus d'apt (miroir Ubuntu trop lent, vidéo annulée) — voir le script.
+          bash scripts/installer_video.sh
 
       - name: Y a-t-il un match du jour ?
         id: mdj

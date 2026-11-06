@@ -682,6 +682,12 @@
    "statut": "etude",
    "decision": false,
    "paquet": 193
+  },
+  {
+   "date": "2026-11-05",
+   "quoi": "VIDÉO À LA DEMANDE ANNULÉE (run du 05/11 à 21:57 UTC) : ubuntu-latest est passé à Ubuntu 26.04 et le miroir apt tournait à 43 ko/s — 8 min 30 pour des polices, puis l'installation de ffmpeg a dépassé les 20 min du job. Corrigé pour la vidéo, la carte bilan et la carte de la semaine : image figée ubuntu-24.04, plus aucun apt (Chromium par Playwright, ffmpeg statique de PyPI, police emoji depuis GitHub ; apt seulement en secours si Chromium ne démarre pas, 6 min au plus), délai de la vidéo porté à 30 min.",
+   "statut": "production",
+   "paquet": 194
   }
  ]
 }
