@@ -1,0 +1,2521 @@
+{
+ "genere_le": "2026-11-06T20:06:52+00:00",
+ "tableau": {
+  "CH": {
+   "match": "Juan Manuel La Serna – Carlos Maria Zarate (Villa Maria, Argentina, 2026-11-06)",
+   "requetes": [
+    {
+     "chemin": "/api/tennis/event/17427295",
+     "http": 200,
+     "cles": [
+      "event"
+     ],
+     "reponse": null
+    },
+    {
+     "chemin": "/api/tennis/tournament/206927/season/96711/cuptrees",
+     "http": 404,
+     "cles": null,
+     "reponse": null
+    },
+    {
+     "chemin": "/api/tennis/tournament/19268/season/96711/rounds",
+     "http": 200,
+     "cles": [
+      "currentRound",
+      "rounds"
+     ],
+     "reponse": {
+      "currentRound": {
+       "round": 27,
+       "name": "Quarterfinals",
+       "slug": "quarterfinals"
+      },
+      "rounds": [
+       {
+        "round": 1,
+        "name": "Qualification Round 1",
+        "slug": "qualification-round-1"
+       },
+       {
+        "round": 250,
+        "name": "Qualification Final",
+        "slug": "qualification-final"
+       },
+       {
+        "round": 6,
+        "name": "Round of 32",
+        "slug": "round-of-32"
+       },
+       "… 7 éléments au total"
+      ]
+     }
+    },
+    {
+     "chemin": "/api/tennis/tournament/19268/season/96711/events/round/27",
+     "http": 404,
+     "cles": null,
+     "reponse": null
+    },
+    {
+     "chemin": "/api/tennis/tournament/19268/season/96711/events/next/0",
+     "http": 200,
+     "cles": [
+      "events",
+      "hasNextPage"
+     ],
+     "reponse": {
+      "events": [
+       {
+        "homeTeamSeed": "1",
+        "awayTeamSeed": "8",
+        "tournament": {
+         "name": "Villa Maria, Argentina",
+         "slug": "villa-maria-argentina",
+         "category": {
+          "name": "Challenger",
+          "slug": "challenger",
+          "sport": {
+           "name": "Tennis",
+           "slug": "tennis",
+           "id": 5
+          },
+          "priority": 6,
+          "country": {},
+          "id": 72,
+          "flag": "challenger",
+          "fieldTranslations": {
+           "nameTranslation": {
+            "bn": "…",
+            "ar": "…",
+            "hi": "…",
+            "ru": "…"
+           },
+           "shortNameTranslation": {}
+          }
+         },
+         "uniqueTournament": {
+          "name": "Villa Maria, Argentina",
+          "slug": "atp-challenger-villa-maria-argentina-men-singles",
+          "category": {
+           "name": "Challenger",
+           "slug": "challenger",
+           "sport": {
+            "name": "…",
+            "slug": "…",
+            "id": "…"
+           },
+           "priority": 6,
+           "country": {},
+           "id": 72,
+           "flag": "challenger",
+           "fieldTranslations": {
+            "nameTranslation": "…",
+            "shortNameTranslation": "…"
+           }
+          },
+          "userCount": 190,
+          "groundType": "Red clay",
+          "hasPerformanceGraphFeature": false,
+          "liveActivityEnabled": false,
+          "country": {},
+          "id": 19268,
+          "hasEventPlayerStatistics": false,
+          "displayInverseHomeAwayTeams": false,
+          "fieldTranslations": {
+           "nameTranslation": {
+            "ar": "…",
+            "ru": "…"
+           },
+           "shortNameTranslation": {}
+          }
+         },
+         "priority": 0,
+         "isGroup": false,
+         "id": 206927,
+         "endTimestamp": 1794096000,
+         "startTimestamp": 1793577600
+        },
+        "season": {
+         "name": "ATP Challenger Villa Maria, Argentina Men Singles 2026",
+         "year": "2026",
+         "editor": false,
+         "id": 96711
+        },
+        "roundInfo": {
+         "round": 28,
+         "name": "Semifinals",
+         "slug": "semifinals",
+         "cupRoundType": 2
+        },
+        "customId": "LwBsRNbd",
+        "status": {
+         "code": 0,
+         "description": "Not started",
+         "type": "notstarted"
+        },
+        "venue": {
+         "city": {
+          "name": "Villa Maria",
+          "country": {
+           "alpha2": "AR",
+           "alpha3": "ARG",
+           "name": "Argentina",
+           "slug": "argentina"
+          },
+          "id": 21101
+         },
+         "hidden": true,
+         "slug": "cancha-central",
+         "name": "Cancha Central",
+         "country": {
+          "alpha2": "AR",
+          "alpha3": "ARG",
+          "name": "Argentina",
+          "slug": "argentina"
+         },
+         "id": 68032,
+         "stadium": {
+          "name": "Cancha Central"
+         }
+        },
+        "homeTeam": {
+         "name": "Juan Manuel La Serna",
+         "slug": "la-serna-juan-manuel",
+         "shortName": "J. La Serna",
+         "gender": "M",
+         "sport": {
+          "name": "Tennis",
+          "slug": "tennis",
+          "id": 5
+         },
+         "userCount": 1248,
+         "playerTeamInfo": {
+          "id": 5714
+         },
+         "nameCode": "LA",
+         "ranking": 254,
+         "national": false,
+         "type": 1,
+         "country": {
+          "alpha2": "AR",
+          "alpha3": "ARG",
+          "name": "Argentina",
+          "slug": "argentina"
+         },
+         "id": 379442,
+         "subTeams": [],
+         "teamColors": {
+          "primary": "#374df5",
+          "secondary": "#374df5",
+          "text": "#ffffff"
+         },
+         "fieldTranslations": {
+          "nameTranslation": {
+           "ar": "خوان مانويل لا سيرنا",
+           "ru": "Хуан Мануэль Ла Серна"
+          },
+          "shortNameTranslation": {
+           "ar": "خ. لا سيرنا",
+           "ru": "Х. Серна"
+          }
+         }
+        },
+        "awayTeam": {
+         "name": "Nicolas Kicker",
+         "slug": "kicker-nicolas",
+         "shortName": "N. Kicker",
+         "gender": "M",
+         "sport": {
+          "name": "Tennis",
+          "slug": "tennis",
+          "id": 5
+         },
+         "userCount": 1974,
+         "playerTeamInfo": {
+          "id": 416
+         },
+         "nameCode": "KIC",
+         "ranking": 340,
+         "national": false,
+         "type": 1,
+         "country": {
+          "alpha2": "AR",
+          "alpha3": "ARG",
+          "name": "Argentina",
+          "slug": "argentina"
+         },
+         "id": 66086,
+         "subTeams": [],
+         "teamColors": {
+          "primary": "#374df5",
+          "secondary": "#374df5",
+          "text": "#ffffff"
+         },
+         "fieldTranslations": {
+          "nameTranslation": {
+           "ar": "نيكولاس كيكير",
+           "bn": "নিকোলাস কিকার",
+           "hi": "निकोलस किकर",
+           "ru": "Кикер, Николас"
+          },
+          "shortNameTranslation": {
+           "ar": "ن. كيكير"
+          }
+         }
+        },
+        "homeScore": {},
+        "awayScore": {},
+        "time": {},
+        "changes": {
+         "changeTimestamp": 0
+        },
+        "hasGlobalHighlights": false,
+        "crowdsourcingDataDisplayEnabled": false,
+        "id": 17427298,
+        "slug": "juan-manuel-la-serna-nicolas-kicker",
+        "startTimestamp": 1794060000,
+        "periods": {
+         "point": "Game",
+         "current": "Match",
+         "period1": "1st set",
+         "period2": "2nd set",
+         "period3": "3rd set",
+         "period4": "4th set",
+         "period5": "5th set"
+        },
+        "finalResultOnly": false,
+        "feedLocked": false,
+        "groundType": "Red clay",
+        "isEditor": false,
+        "eventFilters": {
+         "category": [
+          "singles"
+         ],
+         "level": [
+          "pro"
+         ],
+         "tournament": [
+          "lower"
+         ],
+         "gender": [
+          "M"
+         ]
+        }
+       }
+      ],
+      "hasNextPage": false
+     }
+    },
+    {
+     "chemin": "/api/tennis/tournament/19268/season/96711/events/last/0",
+     "http": 200,
+     "cles": [
+      "events",
+      "hasNextPage"
+     ],
+     "reponse": {
+      "events": [
+       {
+        "firstToServe": 2,
+        "homeTeamSeed": "4",
+        "tournament": {
+         "name": "Villa Maria, Argentina, Qualifying",
+         "slug": "villa-maria-argentina-qualifying",
+         "category": {
+          "name": "Challenger",
+          "slug": "challenger",
+          "sport": {
+           "name": "Tennis",
+           "slug": "tennis",
+           "id": 5
+          },
+          "priority": 6,
+          "country": {},
+          "id": 72,
+          "flag": "challenger",
+          "fieldTranslations": {
+           "nameTranslation": {
+            "bn": "…",
+            "ar": "…",
+            "hi": "…",
+            "ru": "…"
+           },
+           "shortNameTranslation": {}
+          }
+         },
+         "uniqueTournament": {
+          "name": "Villa Maria, Argentina",
+          "slug": "atp-challenger-villa-maria-argentina-men-singles",
+          "category": {
+           "name": "Challenger",
+           "slug": "challenger",
+           "sport": {
+            "name": "…",
+            "slug": "…",
+            "id": "…"
+           },
+           "priority": 6,
+           "country": {},
+           "id": 72,
+           "flag": "challenger",
+           "fieldTranslations": {
+            "nameTranslation": "…",
+            "shortNameTranslation": "…"
+           }
+          },
+          "userCount": 190,
+          "groundType": "Red clay",
+          "hasPerformanceGraphFeature": false,
+          "liveActivityEnabled": false,
+          "country": {},
+          "id": 19268,
+          "hasEventPlayerStatistics": false,
+          "displayInverseHomeAwayTeams": false,
+          "fieldTranslations": {
+           "nameTranslation": {
+            "ar": "…",
+            "ru": "…"
+           },
+           "shortNameTranslation": {}
+          }
+         },
+         "priority": 0,
+         "isGroup": false,
+         "id": 207539,
+         "endTimestamp": 1793577600,
+         "startTimestamp": 1793491200,
+         "qualificationOrPreliminary": true
+        },
+        "season": {
+         "name": "ATP Challenger Villa Maria, Argentina Men Singles 2026",
+         "year": "2026",
+         "editor": false,
+         "id": 96711
+        },
+        "roundInfo": {
+         "round": 250,
+         "name": "Qualification Final",
+         "slug": "qualification-final"
+        },
+        "customId": "VNbdserde",
+        "status": {
+         "code": 100,
+         "description": "Ended",
+         "type": "finished"
+        },
+        "winnerCode": 2,
+        "venue": {
+         "city": {
+          "name": "Villa Maria",
+          "country": {
+           "alpha2": "AR",
+           "alpha3": "ARG",
+           "name": "Argentina",
+           "slug": "argentina"
+          },
+          "id": 21101
+         },
+         "hidden": true,
+         "slug": "cancha-3",
+         "name": "Cancha 3",
+         "country": {
+          "alpha2": "AR",
+          "alpha3": "ARG",
+          "name": "Argentina",
+          "slug": "argentina"
+         },
+         "id": 68034,
+         "stadium": {
+          "name": "Cancha 3"
+         }
+        },
+        "homeTeam": {
+         "name": "Victor Hugo Remondy Pagotto",
+         "slug": "remondy-pagotto-victor-hugo",
+         "shortName": "V. Remondy Pagotto",
+         "gender": "M",
+         "sport": {
+          "name": "Tennis",
+          "slug": "tennis",
+          "id": 5
+         },
+         "userCount": 287,
+         "playerTeamInfo": {
+          "id": 27087
+         },
+         "nameCode": "REM",
+         "ranking": 780,
+         "disabled": false,
+         "national": false,
+         "type": 1,
+         "country": {
+          "alpha2": "BR",
+          "alpha3": "BRA",
+          "name": "Brazil",
+          "slug": "brazil"
+         },
+         "id": 508354,
+         "subTeams": [],
+         "teamColors": {
+          "primary": "#374df5",
+          "secondary": "#374df5",
+          "text": "#ffffff"
+         },
+         "fieldTranslations": {
+          "nameTranslation": {
+           "ar": "فيكتور هوغو ريموندي باغوتو",
+           "ru": "Виктор Уго Ремонди Паготто"
+          },
+          "shortNameTranslation": {
+           "ar": "ف. باغوتو",
+           "ru": "В. Паготто"
+          }
+         }
+        },
+        "awayTeam": {
+         "name": "Ivan Dreycopp",
+         "slug": "dreycopp-ivan",
+         "shortName": "I. Dreycopp",
+         "gender": "M",
+         "sport": {
+          "name": "Tennis",
+          "slug": "tennis",
+          "id": 5
+         },
+         "userCount": 142,
+         "playerTeamInfo": {
+          "id": 32673
+         },
+         "nameCode": "DRE",
+         "ranking": 1461,
+         "national": false,
+         "type": 1,
+         "country": {
+          "alpha2": "AR",
+          "alpha3": "ARG",
+          "name": "Argentina",
+          "slug": "argentina"
+         },
+         "id": 379445,
+         "subTeams": [],
+         "teamColors": {
+          "primary": "#374df5",
+          "secondary": "#374df5",
+          "text": "#ffffff"
+         },
+         "fieldTranslations": {
+          "nameTranslation": {
+           "ar": "إيفان دريكوبي",
+           "ru": "Иван Дрейкопп"
+          },
+          "shortNameTranslation": {
+           "ar": "إ. دريكوبي",
+           "ru": "И. Дрейкопп"
+          }
+         }
+        },
+        "homeScore": {
+         "current": 0,
+         "display": 0,
+         "period1": 4,
+         "period2": 2,
+         "normaltime": 0
+        },
+        "awayScore": {
+         "current": 2,
+         "display": 2,
+         "period1": 6,
+         "period2": 6,
+         "normaltime": 2
+        },
+        "time": {
+         "period1": 2968,
+         "period2": 2868,
+         "currentPeriodStartTimestamp": 1793636753
+        },
+        "changes": {
+         "changes": [
+          "homeScore.point",
+          "awayScore.point"
+         ],
+         "changeTimestamp": 1793707273
+        },
+        "hasGlobalHighlights": false,
+        "crowdsourcingDataDisplayEnabled": false,
+        "id": 17469854,
+        "slug": "victor-hugo-remondy-pagotto-ivan-dreycopp",
+        "startTimestamp": 1793633400,
+        "periods": {
+         "point": "Game",
+         "current": "Match",
+         "period1": "1st set",
+         "period2": "2nd set",
+         "period3": "3rd set",
+         "period4": "4th set",
+         "period5": "5th set"
+        },
+        "finalResultOnly": false,
+        "feedLocked": false,
+        "groundType": "Red clay",
+        "isEditor": false,
+        "eventFilters": {
+         "category": [
+          "singles"
+         ],
+         "level": [
+          "pro"
+         ],
+         "tournament": [
+          "lower"
+         ],
+         "gender": [
+          "M"
+         ]
+        }
+       },
+       {
+        "firstToServe": 2,
+        "awayTeamSeed": "8",
+        "tournament": {
+         "name": "Villa Maria, Argentina",
+         "slug": "villa-maria-argentina",
+         "category": {
+          "name": "Challenger",
+          "slug": "challenger",
+          "sport": {
+           "name": "Tennis",
+           "slug": "tennis",
+           "id": 5
+          },
+          "priority": 6,
+          "country": {},
+          "id": 72,
+          "flag": "challenger",
+          "fieldTranslations": {
+           "nameTranslation": {
+            "bn": "…",
+            "ar": "…",
+            "hi": "…",
+            "ru": "…"
+           },
+           "shortNameTranslation": {}
+          }
+         },
+         "uniqueTournament": {
+          "name": "Villa Maria, Argentina",
+          "slug": "atp-challenger-villa-maria-argentina-men-singles",
+          "category": {
+           "name": "Challenger",
+           "slug": "challenger",
+           "sport": {
+            "name": "…",
+            "slug": "…",
+            "id": "…"
+           },
+           "priority": 6,
+           "country": {},
+           "id": 72,
+           "flag": "challenger",
+           "fieldTranslations": {
+            "nameTranslation": "…",
+            "shortNameTranslation": "…"
+           }
+          },
+          "userCount": 190,
+          "groundType": "Red clay",
+          "hasPerformanceGraphFeature": false,
+          "liveActivityEnabled": false,
+          "country": {},
+          "id": 19268,
+          "hasEventPlayerStatistics": false,
+          "displayInverseHomeAwayTeams": false,
+          "fieldTranslations": {
+           "nameTranslation": {
+            "ar": "…",
+            "ru": "…"
+           },
+           "shortNameTranslation": {}
+          }
+         },
+         "priority": 0,
+         "isGroup": false,
+         "id": 206927,
+         "endTimestamp": 1794096000,
+         "startTimestamp": 1793577600
+        },
+        "season": {
+         "name": "ATP Challenger Villa Maria, Argentina Men Singles 2026",
+         "year": "2026",
+         "editor": false,
+         "id": 96711
+        },
+        "roundInfo": {
+         "round": 6,
+         "name": "Round of 32",
+         "slug": "round-of-32",
+         "cupRoundType": 16
+        },
+        "customId": "LwBsGxhd",
+        "status": {
+         "code": 100,
+         "description": "Ended",
+         "type": "finished"
+        },
+        "winnerCode": 2,
+        "venue": {
+         "city": {
+          "name": "Villa Maria",
+          "country": {
+           "alpha2": "AR",
+           "alpha3": "ARG",
+           "name": "Argentina",
+           "slug": "argentina"
+          },
+          "id": 21101
+         },
+         "hidden": true,
+         "slug": "cancha-central",
+         "name": "Cancha Central",
+         "country": {
+          "alpha2": "AR",
+          "alpha3": "ARG",
+          "name": "Argentina",
+          "slug": "argentina"
+         },
+         "id": 68032,
+         "stadium": {
+          "name": "Cancha Central"
+         }
+        },
+        "homeTeam": {
+         "name": "Bruno Fernandez",
+         "slug": "fernandez-bruno",
+         "shortName": "B. Fernandez",
+         "gender": "M",
+         "sport": {
+          "name": "Tennis",
+          "slug": "tennis",
+          "id": 5
+         },
+         "userCount": 505,
+         "playerTeamInfo": {
+          "id": 13152
+         },
+         "nameCode": "FER",
+         "ranking": 553,
+         "national": false,
+         "type": 1,
+         "country": {
+          "alpha2": "BR",
+          "alpha3": "BRA",
+          "name": "Brazil",
+          "slug": "brazil"
+         },
+         "id": 393631,
+         "subTeams": [],
+         "teamColors": {
+          "primary": "#374df5",
+          "secondary": "#374df5",
+          "text": "#ffffff"
+         },
+         "fieldTranslations": {
+          "nameTranslation": {
+           "ar": "برونو فيرنانديز",
+           "ru": "Бруно Фернандес"
+          },
+          "shortNameTranslation": {
+           "ar": "ب. فيرنانديز",
+           "ru": "Б. Фернандес"
+          }
+         }
+        },
+        "awayTeam": {
+         "name": "Nicolas Kicker",
+         "slug": "kicker-nicolas",
+         "shortName": "N. Kicker",
+         "gender": "M",
+         "sport": {
+          "name": "Tennis",
+          "slug": "tennis",
+          "id": 5
+         },
+         "userCount": 1974,
+         "playerTeamInfo": {
+          "id": 416
+         },
+         "nameCode": "KIC",
+         "ranking": 340,
+         "national": false,
+         "type": 1,
+         "country": {
+          "alpha2": "AR",
+          "alpha3": "ARG",
+          "name": "Argentina",
+          "slug": "argentina"
+         },
+         "id": 66086,
+         "subTeams": [],
+         "teamColors": {
+          "primary": "#374df5",
+          "secondary": "#374df5",
+          "text": "#ffffff"
+         },
+         "fieldTranslations": {
+          "nameTranslation": {
+           "ar": "نيكولاس كيكير",
+           "bn": "নিকোলাস কিকার",
+           "hi": "निकोलस किकर",
+           "ru": "Кикер, Николас"
+          },
+          "shortNameTranslation": {
+           "ar": "ن. كيكير"
+          }
+         }
+        },
+        "homeScore": {
+         "current": 1,
+         "display": 1,
+         "period1": 4,
+         "period2": 6,
+         "period3": 1,
+         "normaltime": 1
+        },
+        "awayScore": {
+         "current": 2,
+         "display": 2,
+         "period1": 6,
+         "period2": 3,
+         "period3": 6,
+         "normaltime": 2
+        },
+        "time": {
+         "period1": 2914,
+         "period2": 3038,
+         "period3": 2294,
+         "currentPeriodStartTimestamp": 1793645233
+        },
+        "changes": {
+         "changes": [
+          "homeScore.point",
+          "awayScore.point"
+         ],
+         "changeTimestamp": 1793707275
+        },
+        "hasGlobalHighlights": false,
+        "crowdsourcingDataDisplayEnabled": false,
+        "id": 17456574,
+        "slug": "bruno-fernandez-nicolas-kicker",
+        "startTimestamp": 1793639100,
+        "periods": {
+         "point": "Game",
+         "current": "Match",
+         "period1": "1st set",
+         "period2": "2nd set",
+         "period3": "3rd set",
+         "period4": "4th set",
+         "period5": "5th set"
+        },
+        "finalResultOnly": false,
+        "feedLocked": false,
+        "groundType": "Red clay",
+        "isEditor": false,
+        "eventFilters": {
+         "category": [
+          "singles"
+         ],
+         "level": [
+          "pro"
+         ],
+         "tournament": [
+          "lower"
+         ],
+         "gender": [
+          "M"
+         ]
+        }
+       },
+       {
+        "firstToServe": 1,
+        "tournament": {
+         "name": "Villa Maria, Argentina",
+         "slug": "villa-maria-argentina",
+         "category": {
+          "name": "Challenger",
+          "slug": "challenger",
+          "sport": {
+           "name": "Tennis",
+           "slug": "tennis",
+           "id": 5
+          },
+          "priority": 6,
+          "country": {},
+          "id": 72,
+          "flag": "challenger",
+          "fieldTranslations": {
+           "nameTranslation": {
+            "bn": "…",
+            "ar": "…",
+            "hi": "…",
+            "ru": "…"
+           },
+           "shortNameTranslation": {}
+          }
+         },
+         "uniqueTournament": {
+          "name": "Villa Maria, Argentina",
+          "slug": "atp-challenger-villa-maria-argentina-men-singles",
+          "category": {
+           "name": "Challenger",
+           "slug": "challenger",
+           "sport": {
+            "name": "…",
+            "slug": "…",
+            "id": "…"
+           },
+           "priority": 6,
+           "country": {},
+           "id": 72,
+           "flag": "challenger",
+           "fieldTranslations": {
+            "nameTranslation": "…",
+            "shortNameTranslation": "…"
+           }
+          },
+          "userCount": 190,
+          "groundType": "Red clay",
+          "hasPerformanceGraphFeature": false,
+          "liveActivityEnabled": false,
+          "country": {},
+          "id": 19268,
+          "hasEventPlayerStatistics": false,
+          "displayInverseHomeAwayTeams": false,
+          "fieldTranslations": {
+           "nameTranslation": {
+            "ar": "…",
+            "ru": "…"
+           },
+           "shortNameTranslation": {}
+          }
+         },
+         "priority": 0,
+         "isGroup": false,
+         "id": 206927,
+         "endTimestamp": 1794096000,
+         "startTimestamp": 1793577600
+        },
+        "season": {
+         "name": "ATP Challenger Villa Maria, Argentina Men Singles 2026",
+         "year": "2026",
+         "editor": false,
+         "id": 96711
+        },
+        "roundInfo": {
+         "round": 6,
+         "name": "Round of 32",
+         "slug": "round-of-32",
+         "cupRoundType": 16
+        },
+        "customId": "zcmdsUfJd",
+        "status": {
+         "code": 100,
+         "description": "Ended",
+         "type": "finished"
+        },
+        "winnerCode": 1,
+        "venue": {
+         "city": {
+          "name": "Villa Maria",
+          "country": {
+           "alpha2": "AR",
+           "alpha3": "ARG",
+           "name": "Argentina",
+           "slug": "argentina"
+          },
+          "id": 21101
+         },
+         "hidden": true,
+         "slug": "cancha-central",
+         "name": "Cancha Central",
+         "country": {
+          "alpha2": "AR",
+          "alpha3": "ARG",
+          "name": "Argentina",
+          "slug": "argentina"
+         },
+         "id": 68032,
+         "stadium": {
+          "name": "Cancha Central"
+         }
+        },
+        "homeTeam": {
+         "name": "Lucio Ratti",
+         "slug": "ratti-lucio",
+         "shortName": "L. Ratti",
+         "gender": "M",
+         "sport": {
+          "name": "Tennis",
+          "slug": "tennis",
+          "id": 5
+         },
+         "userCount": 750,
+         "playerTeamInfo": {
+          "id": 5767
+         },
+         "nameCode": "RAT",
+         "ranking": 371,
+         "national": false,
+         "type": 1,
+         "country": {
+          "alpha2": "AR",
+          "alpha3": "ARG",
+          "name": "Argentina",
+          "slug": "argentina"
+         },
+         "id": 405124,
+         "subTeams": [],
+         "teamColors": {
+          "primary": "#374df5",
+          "secondary": "#374df5",
+          "text": "#ffffff"
+         },
+         "fieldTranslations": {
+          "nameTranslation": {
+           "ar": "لوتشيو راتي",
+           "ru": "Лучо Ратти"
+          },
+          "shortNameTranslation": {
+           "ar": "ل. راتي",
+           "ru": "Л. Ратти"
+          }
+         }
+        },
+        "awayTeam": {
+         "name": "Maximo Zeitune",
+         "slug": "zeitune-maximo",
+         "shortName": "M. Zeitune",
+         "gender": "M",
+         "sport": {
+          "name": "Tennis",
+          "slug": "tennis",
+          "id": 5
+         },
+         "userCount": 619,
+         "playerTeamInfo": {
+          "id": 22202
+         },
+         "nameCode": "ZEI",
+         "ranking": 516,
+         "national": false,
+         "type": 1,
+         "country": {
+          "alpha2": "AR",
+          "alpha3": "ARG",
+          "name": "Argentina",
+          "slug": "argentina"
+         },
+         "id": 460294,
+         "subTeams": [],
+         "teamColors": {
+          "primary": "#374df5",
+          "secondary": "#374df5",
+          "text": "#ffffff"
+         },
+         "fieldTranslations": {
+          "nameTranslation": {
+           "ar": "ماكسيمو زيتون",
+           "ru": "Максимо Зейтун"
+          },
+          "shortNameTranslation": {
+           "ar": "م. زيتون",
+           "ru": "М. Зейтун"
+          }
+         }
+        },
+        "homeScore": {
+         "current": 2,
+         "display": 2,
+         "period1": 6,
+         "period2": 4,
+         "period3": 6,
+         "normaltime": 2
+        },
+        "awayScore": {
+         "current": 1,
+         "display": 1,
+         "period1": 4,
+         "period2": 6,
+         "period3": 3,
+         "normaltime": 1
+        },
+        "time": {
+         "period1": 2413,
+         "period2": 3410,
+         "period3": 2837,
+         "currentPeriodStartTimestamp": 1793654514
+        },
+        "changes": {
+         "changes": [
+          "homeScore.point",
+          "awayScore.point"
+         ],
+         "changeTimestamp": 1793707282
+        },
+        "hasGlobalHighlights": false,
+        "crowdsourcingDataDisplayEnabled": false,
+        "id": 17456577,
+        "slug": "maximo-zeitune-lucio-ratti",
+        "startTimestamp": 1793648400,
+        "periods": {
+         "point": "Game",
+         "current": "Match",
+         "period1": "1st set",
+         "period2": "2nd set",
+         "period3": "3rd set",
+         "period4": "4th set",
+         "period5": "5th set"
+        },
+        "finalResultOnly": false,
+        "feedLocked": false,
+        "groundType": "Red clay",
+        "isEditor": false,
+        "eventFilters": {
+         "category": [
+          "singles"
+         ],
+         "level": [
+          "pro"
+         ],
+         "tournament": [
+          "lower"
+         ],
+         "gender": [
+          "M"
+         ]
+        }
+       },
+       "… 30 éléments au total"
+      ],
+      "hasNextPage": true
+     }
+    }
+   ],
+   "tournament_id": 206927,
+   "unique_id": 19268,
+   "season_id": 96711,
+   "round": {
+    "round": 27,
+    "name": "Quarterfinals",
+    "slug": "quarterfinals",
+    "cupRoundType": 4
+   }
+  },
+  "ATP": {
+   "match": "Ben Shelton – Tommy Paul (Paris, France, 2026-11-06)",
+   "requetes": [
+    {
+     "chemin": "/api/tennis/event/17428201",
+     "http": 200,
+     "cles": [
+      "event"
+     ],
+     "reponse": null
+    },
+    {
+     "chemin": "/api/tennis/tournament/206962/season/82442/cuptrees",
+     "http": 404,
+     "cles": null,
+     "reponse": null
+    },
+    {
+     "chemin": "/api/tennis/tournament/2404/season/82442/rounds",
+     "http": 200,
+     "cles": [
+      "currentRound",
+      "rounds"
+     ],
+     "reponse": {
+      "currentRound": {
+       "round": 27,
+       "name": "Quarterfinals",
+       "slug": "quarterfinals"
+      },
+      "rounds": [
+       {
+        "round": 1,
+        "name": "Qualification Round 1",
+        "slug": "qualification-round-1"
+       },
+       {
+        "round": 250,
+        "name": "Qualification Final",
+        "slug": "qualification-final"
+       },
+       {
+        "round": 32,
+        "name": "Round of 64",
+        "slug": "round-of-64"
+       },
+       "… 8 éléments au total"
+      ]
+     }
+    },
+    {
+     "chemin": "/api/tennis/tournament/2404/season/82442/events/round/27",
+     "http": 404,
+     "cles": null,
+     "reponse": null
+    },
+    {
+     "chemin": "/api/tennis/tournament/2404/season/82442/events/next/0",
+     "http": 200,
+     "cles": [
+      "events",
+      "hasNextPage"
+     ],
+     "reponse": {
+      "events": [
+       {
+        "awayTeamSeed": "LL",
+        "tournament": {
+         "name": "Paris, France",
+         "slug": "paris-france",
+         "category": {
+          "name": "ATP",
+          "slug": "atp",
+          "sport": {
+           "name": "Tennis",
+           "slug": "tennis",
+           "id": 5
+          },
+          "priority": 8,
+          "country": {},
+          "id": 3,
+          "flag": "atp",
+          "fieldTranslations": {
+           "nameTranslation": {
+            "bn": "…",
+            "hi": "…",
+            "ar": "…",
+            "ru": "…"
+           },
+           "shortNameTranslation": {}
+          }
+         },
+         "uniqueTournament": {
+          "name": "Paris",
+          "slug": "paris",
+          "primaryColorHex": "#174742",
+          "secondaryColorHex": "#2b7064",
+          "category": {
+           "name": "ATP",
+           "slug": "atp",
+           "sport": {
+            "name": "…",
+            "slug": "…",
+            "id": "…"
+           },
+           "priority": 8,
+           "country": {},
+           "id": 3,
+           "flag": "atp",
+           "fieldTranslations": {
+            "nameTranslation": "…",
+            "shortNameTranslation": "…"
+           }
+          },
+          "userCount": 6851,
+          "groundType": "Hardcourt indoor",
+          "tennisPoints": 1000,
+          "hasPerformanceGraphFeature": false,
+          "liveActivityEnabled": true,
+          "country": {},
+          "id": 2404,
+          "hasEventPlayerStatistics": false,
+          "displayInverseHomeAwayTeams": false,
+          "fieldTranslations": {
+           "nameTranslation": {
+            "ar": "…",
+            "hi": "…",
+            "bn": "…",
+            "ru": "…"
+           },
+           "shortNameTranslation": {}
+          }
+         },
+         "priority": 0,
+         "isGroup": false,
+         "id": 206962,
+         "endTimestamp": 1794096000,
+         "startTimestamp": 1793577600
+        },
+        "season": {
+         "name": "ATP Paris, France Men Singles 2026",
+         "year": "2026",
+         "editor": false,
+         "id": 82442
+        },
+        "roundInfo": {
+         "round": 27,
+         "name": "Quarterfinals",
+         "slug": "quarterfinals",
+         "cupRoundType": 4
+        },
+        "customId": "YJXsgaab",
+        "status": {
+         "code": 0,
+         "description": "Not started",
+         "type": "notstarted"
+        },
+        "venue": {
+         "city": {
+          "name": "Paris",
+          "country": {
+           "alpha2": "FR",
+           "alpha3": "FRA",
+           "name": "France",
+           "slug": "france"
+          },
+          "id": 17983
+         },
+         "hidden": true,
+         "slug": "court-central",
+         "name": "Court Central",
+         "country": {
+          "alpha2": "FR",
+          "alpha3": "FRA",
+          "name": "France",
+          "slug": "france"
+         },
+         "id": 52442,
+         "stadium": {
+          "name": "Court Central"
+         }
+        },
+        "homeTeam": {
+         "name": "Casper Ruud",
+         "slug": "ruud-casper",
+         "shortName": "C. Ruud",
+         "gender": "M",
+         "sport": {
+          "name": "Tennis",
+          "slug": "tennis",
+          "id": 5
+         },
+         "userCount": 35822,
+         "playerTeamInfo": {
+          "id": 118
+         },
+         "nameCode": "RUU",
+         "ranking": 23,
+         "disabled": false,
+         "national": false,
+         "type": 1,
+         "country": {
+          "alpha2": "NO",
+          "alpha3": "NOR",
+          "name": "Norway",
+          "slug": "norway"
+         },
+         "id": 119248,
+         "subTeams": [],
+         "teamColors": {
+          "primary": "#374df5",
+          "secondary": "#374df5",
+          "text": "#ffffff"
+         },
+         "fieldTranslations": {
+          "nameTranslation": {
+           "ar": "كاسبر رود",
+           "ru": "Каспер Рууд"
+          },
+          "shortNameTranslation": {
+           "ar": "ك. رود",
+           "bn": "সি. রুদ",
+           "hi": "सी. रूड",
+           "ru": "К. Рууд"
+          }
+         }
+        },
+        "awayTeam": {
+         "name": "Nuno Borges",
+         "slug": "borges-nuno",
+         "shortName": "N. Borges",
+         "gender": "M",
+         "sport": {
+          "name": "Tennis",
+          "slug": "tennis",
+          "id": 5
+         },
+         "userCount": 14288,
+         "playerTeamInfo": {
+          "id": 2152
+         },
+         "nameCode": "BOR",
+         "ranking": 49,
+         "disabled": false,
+         "national": false,
+         "type": 1,
+         "country": {
+          "alpha2": "PT",
+          "alpha3": "PRT",
+          "name": "Portugal",
+          "slug": "portugal"
+         },
+         "id": 125006,
+         "subTeams": [],
+         "teamColors": {
+          "primary": "#374df5",
+          "secondary": "#374df5",
+          "text": "#ffffff"
+         },
+         "fieldTranslations": {
+          "nameTranslation": {
+           "ar": "نونو بورغيس",
+           "ru": "Нуну Боржеш"
+          },
+          "shortNameTranslation": {
+           "ar": "ن. بورغيس",
+           "bn": "এন. বোর্হেস",
+           "hi": "एन. बोर्गेस",
+           "ru": "Н. Боржеш"
+          }
+         }
+        },
+        "homeScore": {},
+        "awayScore": {},
+        "time": {},
+        "changes": {
+         "changeTimestamp": 0
+        },
+        "hasGlobalHighlights": false,
+        "crowdsourcingDataDisplayEnabled": false,
+        "id": 17428209,
+        "slug": "nuno-borges-casper-ruud",
+        "startTimestamp": 1793995800,
+        "periods": {
+         "point": "Game",
+         "current": "Match",
+         "period1": "1st set",
+         "period2": "2nd set",
+         "period3": "3rd set",
+         "period4": "4th set",
+         "period5": "5th set"
+        },
+        "finalResultOnly": false,
+        "feedLocked": false,
+        "groundType": "Hardcourt indoor",
+        "isEditor": false,
+        "eventFilters": {
+         "category": [
+          "singles"
+         ],
+         "level": [
+          "pro"
+         ],
+         "tournament": [
+          "p1000"
+         ],
+         "gender": [
+          "M"
+         ]
+        }
+       },
+       {
+        "awayTeamSeed": "3",
+        "tournament": {
+         "name": "Paris, France",
+         "slug": "paris-france",
+         "category": {
+          "name": "ATP",
+          "slug": "atp",
+          "sport": {
+           "name": "Tennis",
+           "slug": "tennis",
+           "id": 5
+          },
+          "priority": 8,
+          "country": {},
+          "id": 3,
+          "flag": "atp",
+          "fieldTranslations": {
+           "nameTranslation": {
+            "bn": "…",
+            "hi": "…",
+            "ar": "…",
+            "ru": "…"
+           },
+           "shortNameTranslation": {}
+          }
+         },
+         "uniqueTournament": {
+          "name": "Paris",
+          "slug": "paris",
+          "primaryColorHex": "#174742",
+          "secondaryColorHex": "#2b7064",
+          "category": {
+           "name": "ATP",
+           "slug": "atp",
+           "sport": {
+            "name": "…",
+            "slug": "…",
+            "id": "…"
+           },
+           "priority": 8,
+           "country": {},
+           "id": 3,
+           "flag": "atp",
+           "fieldTranslations": {
+            "nameTranslation": "…",
+            "shortNameTranslation": "…"
+           }
+          },
+          "userCount": 6851,
+          "groundType": "Hardcourt indoor",
+          "tennisPoints": 1000,
+          "hasPerformanceGraphFeature": false,
+          "liveActivityEnabled": true,
+          "country": {},
+          "id": 2404,
+          "hasEventPlayerStatistics": false,
+          "displayInverseHomeAwayTeams": false,
+          "fieldTranslations": {
+           "nameTranslation": {
+            "ar": "…",
+            "hi": "…",
+            "bn": "…",
+            "ru": "…"
+           },
+           "shortNameTranslation": {}
+          }
+         },
+         "priority": 0,
+         "isGroup": false,
+         "id": 206962,
+         "endTimestamp": 1794096000,
+         "startTimestamp": 1793577600
+        },
+        "season": {
+         "name": "ATP Paris, France Men Singles 2026",
+         "year": "2026",
+         "editor": false,
+         "id": 82442
+        },
+        "roundInfo": {
+         "round": 28,
+         "name": "Semifinals",
+         "slug": "semifinals",
+         "cupRoundType": 2
+        },
+        "customId": "ccJcsKjed",
+        "status": {
+         "code": 0,
+         "description": "Not started",
+         "type": "notstarted"
+        },
+        "venue": {
+         "city": {
+          "name": "Paris",
+          "country": {
+           "alpha2": "FR",
+           "alpha3": "FRA",
+           "name": "France",
+           "slug": "france"
+          },
+          "id": 17983
+         },
+         "hidden": true,
+         "slug": "court-central",
+         "name": "Court Central",
+         "country": {
+          "alpha2": "FR",
+          "alpha3": "FRA",
+          "name": "France",
+          "slug": "france"
+         },
+         "id": 52442,
+         "stadium": {
+          "name": "Court Central"
+         }
+        },
+        "homeTeam": {
+         "name": "Luca Van Assche",
+         "slug": "van-assche-luca",
+         "shortName": "L. Van Assche",
+         "gender": "M",
+         "sport": {
+          "name": "Tennis",
+          "slug": "tennis",
+          "id": 5
+         },
+         "userCount": 6358,
+         "playerTeamInfo": {
+          "id": 4788
+         },
+         "nameCode": "VAN",
+         "ranking": 47,
+         "disabled": false,
+         "national": false,
+         "type": 1,
+         "country": {
+          "alpha2": "FR",
+          "alpha3": "FRA",
+          "name": "France",
+          "slug": "france"
+         },
+         "id": 335102,
+         "subTeams": [],
+         "teamColors": {
+          "primary": "#374df5",
+          "secondary": "#374df5",
+          "text": "#ffffff"
+         },
+         "fieldTranslations": {
+          "nameTranslation": {
+           "ar": "لوكا فان أسيش",
+           "ru": "Люка ван Аш"
+          },
+          "shortNameTranslation": {
+           "ar": "ل. فان أسيش",
+           "bn": "এল. ভ্যান অ্যাশে",
+           "hi": "एल. वान एस्च",
+           "ru": "Л. ван Аш"
+          }
+         }
+        },
+        "awayTeam": {
+         "name": "Ben Shelton",
+         "slug": "shelton-ben",
+         "shortName": "B. Shelton",
+         "gender": "M",
+         "sport": {
+          "name": "Tennis",
+          "slug": "tennis",
+          "id": 5
+         },
+         "userCount": 47801,
+         "playerTeamInfo": {
+          "id": 4948
+         },
+         "nameCode": "SHE",
+         "ranking": 4,
+         "disabled": false,
+         "national": false,
+         "type": 1,
+         "country": {
+          "alpha2": "US",
+          "alpha3": "USA",
+          "name": "USA",
+          "slug": "usa"
+         },
+         "id": 385485,
+         "subTeams": [],
+         "teamColors": {
+          "primary": "#374df5",
+          "secondary": "#374df5",
+          "text": "#ffffff"
+         },
+         "fieldTranslations": {
+          "nameTranslation": {
+           "ar": "بن شيلتون",
+           "ru": "Бен Шелтон"
+          },
+          "shortNameTranslation": {
+           "ar": "ب. شيلتون",
+           "bn": "বি. শেলটন,",
+           "hi": "बी. शेल्टन",
+           "ru": "Б. Шелтон"
+          }
+         }
+        },
+        "homeScore": {},
+        "awayScore": {},
+        "time": {},
+        "changes": {
+         "changeTimestamp": 0
+        },
+        "hasGlobalHighlights": false,
+        "crowdsourcingDataDisplayEnabled": false,
+        "id": 17428205,
+        "slug": "ben-shelton-luca-van-assche",
+        "startTimestamp": 1794058200,
+        "periods": {
+         "point": "Game",
+         "current": "Match",
+         "period1": "1st set",
+         "period2": "2nd set",
+         "period3": "3rd set",
+         "period4": "4th set",
+         "period5": "5th set"
+        },
+        "finalResultOnly": false,
+        "feedLocked": false,
+        "groundType": "Hardcourt indoor",
+        "isEditor": false,
+        "eventFilters": {
+         "category": [
+          "singles"
+         ],
+         "level": [
+          "pro"
+         ],
+         "tournament": [
+          "p1000"
+         ],
+         "gender": [
+          "M"
+         ]
+        }
+       }
+      ],
+      "hasNextPage": false
+     }
+    },
+    {
+     "chemin": "/api/tennis/tournament/2404/season/82442/events/last/0",
+     "http": 200,
+     "cles": [
+      "events",
+      "hasNextPage"
+     ],
+     "reponse": {
+      "events": [
+       {
+        "firstToServe": 1,
+        "tournament": {
+         "name": "Paris, France",
+         "slug": "paris-france",
+         "category": {
+          "name": "ATP",
+          "slug": "atp",
+          "sport": {
+           "name": "Tennis",
+           "slug": "tennis",
+           "id": 5
+          },
+          "priority": 8,
+          "country": {},
+          "id": 3,
+          "flag": "atp",
+          "fieldTranslations": {
+           "nameTranslation": {
+            "bn": "…",
+            "hi": "…",
+            "ar": "…",
+            "ru": "…"
+           },
+           "shortNameTranslation": {}
+          }
+         },
+         "uniqueTournament": {
+          "name": "Paris",
+          "slug": "paris",
+          "primaryColorHex": "#174742",
+          "secondaryColorHex": "#2b7064",
+          "category": {
+           "name": "ATP",
+           "slug": "atp",
+           "sport": {
+            "name": "…",
+            "slug": "…",
+            "id": "…"
+           },
+           "priority": 8,
+           "country": {},
+           "id": 3,
+           "flag": "atp",
+           "fieldTranslations": {
+            "nameTranslation": "…",
+            "shortNameTranslation": "…"
+           }
+          },
+          "userCount": 6851,
+          "groundType": "Hardcourt indoor",
+          "tennisPoints": 1000,
+          "hasPerformanceGraphFeature": false,
+          "liveActivityEnabled": true,
+          "country": {},
+          "id": 2404,
+          "hasEventPlayerStatistics": false,
+          "displayInverseHomeAwayTeams": false,
+          "fieldTranslations": {
+           "nameTranslation": {
+            "ar": "…",
+            "hi": "…",
+            "bn": "…",
+            "ru": "…"
+           },
+           "shortNameTranslation": {}
+          }
+         },
+         "priority": 0,
+         "isGroup": false,
+         "id": 206962,
+         "endTimestamp": 1794096000,
+         "startTimestamp": 1793577600
+        },
+        "season": {
+         "name": "ATP Paris, France Men Singles 2026",
+         "year": "2026",
+         "editor": false,
+         "id": 82442
+        },
+        "roundInfo": {
+         "round": 32,
+         "name": "Round of 64",
+         "slug": "round-of-64"
+        },
+        "customId": "RUbcsDJmd",
+        "status": {
+         "code": 100,
+         "description": "Ended",
+         "type": "finished"
+        },
+        "winnerCode": 1,
+        "venue": {
+         "city": {
+          "name": "Paris",
+          "country": {
+           "alpha2": "FR",
+           "alpha3": "FRA",
+           "name": "France",
+           "slug": "france"
+          },
+          "id": 17983
+         },
+         "hidden": true,
+         "slug": "court-2",
+         "name": "Court 2",
+         "country": {
+          "alpha2": "FR",
+          "alpha3": "FRA",
+          "name": "France",
+          "slug": "france"
+         },
+         "id": 52565,
+         "stadium": {
+          "name": "Court 2"
+         }
+        },
+        "homeTeam": {
+         "name": "Alex Michelsen",
+         "slug": "michelsen-alex",
+         "shortName": "A. Michelsen",
+         "gender": "M",
+         "sport": {
+          "name": "Tennis",
+          "slug": "tennis",
+          "id": 5
+         },
+         "userCount": 8844,
+         "playerTeamInfo": {
+          "id": 5333
+         },
+         "nameCode": "MIC",
+         "ranking": 35,
+         "disabled": false,
+         "national": false,
+         "type": 1,
+         "country": {
+          "alpha2": "US",
+          "alpha3": "USA",
+          "name": "USA",
+          "slug": "usa"
+         },
+         "id": 406728,
+         "subTeams": [],
+         "teamColors": {
+          "primary": "#374df5",
+          "secondary": "#374df5",
+          "text": "#ffffff"
+         },
+         "fieldTranslations": {
+          "nameTranslation": {
+           "ar": "أليكس ميشيلسن",
+           "bn": "অ্যালেক্স মিশেলসেন",
+           "hi": "एलेक्स मिकेलसन",
+           "ru": "Алекс Микельсен"
+          },
+          "shortNameTranslation": {
+           "ar": "أ. ميشيلسن",
+           "ru": "А. Микельсен"
+          }
+         }
+        },
+        "awayTeam": {
+         "name": "Jiri Lehečka",
+         "slug": "lehecka-jiri",
+         "shortName": "J. Lehečka",
+         "gender": "M",
+         "sport": {
+          "name": "Tennis",
+          "slug": "tennis",
+          "id": 5
+         },
+         "userCount": 15016,
+         "playerTeamInfo": {
+          "id": 3050
+         },
+         "nameCode": "LEH",
+         "ranking": 15,
+         "disabled": false,
+         "national": false,
+         "type": 1,
+         "country": {
+          "alpha2": "CZ",
+          "alpha3": "CZE",
+          "name": "Czechia",
+          "slug": "czechia"
+         },
+         "id": 254742,
+         "subTeams": [],
+         "teamColors": {
+          "primary": "#374df5",
+          "secondary": "#374df5",
+          "text": "#ffffff"
+         },
+         "fieldTranslations": {
+          "nameTranslation": {
+           "ar": "ييري ليهتشكا",
+           "ru": "Иржи Лехечка"
+          },
+          "shortNameTranslation": {
+           "ar": "ي. ليهتشكا",
+           "bn": "জে. লেহেকা",
+           "hi": "जे. लेहका",
+           "ru": "И. Лехечка"
+          }
+         }
+        },
+        "homeScore": {
+         "current": 2,
+         "display": 2,
+         "period1": 6,
+         "period2": 6,
+         "period3": 6,
+         "period1TieBreak": 5,
+         "normaltime": 2
+        },
+        "awayScore": {
+         "current": 1,
+         "display": 1,
+         "period1": 7,
+         "period2": 2,
+         "period3": 4,
+         "period1TieBreak": 7,
+         "normaltime": 1
+        },
+        "time": {
+         "period1": 3575,
+         "period2": 2527,
+         "period3": 2124,
+         "currentPeriodStartTimestamp": 1793727278
+        },
+        "changes": {
+         "changes": [
+          "homeScore.point",
+          "awayScore.point",
+          "time.currentPeriodStart",
+          "… 4 éléments au total"
+         ],
+         "changeTimestamp": 1793729435
+        },
+        "hasGlobalHighlights": false,
+        "crowdsourcingDataDisplayEnabled": false,
+        "correctAiInsight": false,
+        "id": 17449506,
+        "slug": "alex-michelsen-jiri-lehecka",
+        "startTimestamp": 1793720700,
+        "periods": {
+         "point": "Game",
+         "current": "Match",
+         "period1": "1st set",
+         "period2": "2nd set",
+         "period3": "3rd set",
+         "period4": "4th set",
+         "period5": "5th set"
+        },
+        "finalResultOnly": false,
+        "feedLocked": false,
+        "groundType": "Hardcourt indoor",
+        "isEditor": false,
+        "eventFilters": {
+         "category": [
+          "singles"
+         ],
+         "level": [
+          "pro"
+         ],
+         "tournament": [
+          "p1000"
+         ],
+         "gender": [
+          "M"
+         ]
+        }
+       },
+       {
+        "firstToServe": 2,
+        "homeTeamSeed": "Q",
+        "awayTeamSeed": "11",
+        "tournament": {
+         "name": "Paris, France",
+         "slug": "paris-france",
+         "category": {
+          "name": "ATP",
+          "slug": "atp",
+          "sport": {
+           "name": "Tennis",
+           "slug": "tennis",
+           "id": 5
+          },
+          "priority": 8,
+          "country": {},
+          "id": 3,
+          "flag": "atp",
+          "fieldTranslations": {
+           "nameTranslation": {
+            "bn": "…",
+            "hi": "…",
+            "ar": "…",
+            "ru": "…"
+           },
+           "shortNameTranslation": {}
+          }
+         },
+         "uniqueTournament": {
+          "name": "Paris",
+          "slug": "paris",
+          "primaryColorHex": "#174742",
+          "secondaryColorHex": "#2b7064",
+          "category": {
+           "name": "ATP",
+           "slug": "atp",
+           "sport": {
+            "name": "…",
+            "slug": "…",
+            "id": "…"
+           },
+           "priority": 8,
+           "country": {},
+           "id": 3,
+           "flag": "atp",
+           "fieldTranslations": {
+            "nameTranslation": "…",
+            "shortNameTranslation": "…"
+           }
+          },
+          "userCount": 6851,
+          "groundType": "Hardcourt indoor",
+          "tennisPoints": 1000,
+          "hasPerformanceGraphFeature": false,
+          "liveActivityEnabled": true,
+          "country": {},
+          "id": 2404,
+          "hasEventPlayerStatistics": false,
+          "displayInverseHomeAwayTeams": false,
+          "fieldTranslations": {
+           "nameTranslation": {
+            "ar": "…",
+            "hi": "…",
+            "bn": "…",
+            "ru": "…"
+           },
+           "shortNameTranslation": {}
+          }
+         },
+         "priority": 0,
+         "isGroup": false,
+         "id": 206962,
+         "endTimestamp": 1794096000,
+         "startTimestamp": 1793577600
+        },
+        "season": {
+         "name": "ATP Paris, France Men Singles 2026",
+         "year": "2026",
+         "editor": false,
+         "id": 82442
+        },
+        "roundInfo": {
+         "round": 32,
+         "name": "Round of 64",
+         "slug": "round-of-64"
+        },
+        "customId": "KOMsRveb",
+        "status": {
+         "code": 100,
+         "description": "Ended",
+         "type": "finished"
+        },
+        "winnerCode": 2,
+        "venue": {
+         "city": {
+          "name": "Paris",
+          "country": {
+           "alpha2": "FR",
+           "alpha3": "FRA",
+           "name": "France",
+           "slug": "france"
+          },
+          "id": 17983
+         },
+         "hidden": true,
+         "slug": "court-1",
+         "name": "Court 1",
+         "country": {
+          "alpha2": "FR",
+          "alpha3": "FRA",
+          "name": "France",
+          "slug": "france"
+         },
+         "id": 52446,
+         "stadium": {
+          "name": "Court 1"
+         }
+        },
+        "homeTeam": {
+         "name": "Benjamin Bonzi",
+         "slug": "bonzi-benjamin",
+         "shortName": "B. Bonzi",
+         "gender": "M",
+         "sport": {
+          "name": "Tennis",
+          "slug": "tennis",
+          "id": 5
+         },
+         "userCount": 5979,
+         "playerTeamInfo": {
+          "id": 375
+         },
+         "nameCode": "BON",
+         "ranking": 95,
+         "disabled": false,
+         "national": false,
+         "type": 1,
+         "country": {
+          "alpha2": "FR",
+          "alpha3": "FRA",
+          "name": "France",
+          "slug": "france"
+         },
+         "id": 94485,
+         "subTeams": [],
+         "teamColors": {
+          "primary": "#374df5",
+          "secondary": "#374df5",
+          "text": "#ffffff"
+         },
+         "fieldTranslations": {
+          "nameTranslation": {
+           "ar": "بنجامين بونزي",
+           "ru": "Бенжамен Бонзи"
+          },
+          "shortNameTranslation": {
+           "ar": "ب. بونزي",
+           "bn": "বি. বনজি",
+           "hi": "बी. बॉन्ज़ी",
+           "ru": "Б. Бонзи"
+          }
+         }
+        },
+        "awayTeam": {
+         "name": "Taylor Fritz",
+         "slug": "fritz-taylor",
+         "shortName": "T. Fritz",
+         "gender": "M",
+         "sport": {
+          "name": "Tennis",
+          "slug": "tennis",
+          "id": 5
+         },
+         "userCount": 37936,
+         "playerTeamInfo": {
+          "id": 46
+         },
+         "nameCode": "FRI",
+         "ranking": 12,
+         "disabled": false,
+         "national": false,
+         "type": 1,
+         "country": {
+          "alpha2": "US",
+          "alpha3": "USA",
+          "name": "USA",
+          "slug": "usa"
+         },
+         "id": 136042,
+         "subTeams": [],
+         "teamColors": {
+          "primary": "#374df5",
+          "secondary": "#374df5",
+          "text": "#ffffff"
+         },
+         "fieldTranslations": {
+          "nameTranslation": {
+           "ar": "تايلور فريتز",
+           "ru": "Те́йлор Фриц"
+          },
+          "shortNameTranslation": {
+           "ar": "ت. فريتز",
+           "bn": "টি. ফ্রিটজ",
+           "hi": "टी. फ्रिट्ज",
+           "ru": "Т. Фриц"
+          }
+         }
+        },
+        "homeScore": {
+         "current": 1,
+         "display": 1,
+         "period1": 6,
+         "period2": 3,
+         "period3": 4,
+         "normaltime": 1
+        },
+        "awayScore": {
+         "current": 2,
+         "display": 2,
+         "period1": 3,
+         "period2": 6,
+         "period3": 6,
+         "normaltime": 2
+        },
+        "time": {
+         "period1": 1938,
+         "period2": 2093,
+         "period3": 2034,
+         "currentPeriodStartTimestamp": 1793727488
+        },
+        "changes": {
+         "changes": [
+          "homeScore.point",
+          "awayScore.point",
+          "time.currentPeriodStart",
+          "… 4 éléments au total"
+         ],
+         "changeTimestamp": 1793729557
+        },
+        "hasGlobalHighlights": false,
+        "crowdsourcingDataDisplayEnabled": false,
+        "correctAiInsight": true,
+        "id": 17468325,
+        "slug": "taylor-fritz-benjamin-bonzi",
+        "startTimestamp": 1793723400,
+        "periods": {
+         "point": "Game",
+         "current": "Match",
+         "period1": "1st set",
+         "period2": "2nd set",
+         "period3": "3rd set",
+         "period4": "4th set",
+         "period5": "5th set"
+        },
+        "finalResultOnly": false,
+        "feedLocked": false,
+        "groundType": "Hardcourt indoor",
+        "isEditor": false,
+        "eventFilters": {
+         "category": [
+          "singles"
+         ],
+         "level": [
+          "pro"
+         ],
+         "tournament": [
+          "p1000"
+         ],
+         "gender": [
+          "M"
+         ]
+        }
+       },
+       {
+        "firstToServe": 1,
+        "homeTeamSeed": "3",
+        "tournament": {
+         "name": "Paris, France",
+         "slug": "paris-france",
+         "category": {
+          "name": "ATP",
+          "slug": "atp",
+          "sport": {
+           "name": "Tennis",
+           "slug": "tennis",
+           "id": 5
+          },
+          "priority": 8,
+          "country": {},
+          "id": 3,
+          "flag": "atp",
+          "fieldTranslations": {
+           "nameTranslation": {
+            "bn": "…",
+            "hi": "…",
+            "ar": "…",
+            "ru": "…"
+           },
+           "shortNameTranslation": {}
+          }
+         },
+         "uniqueTournament": {
+          "name": "Paris",
+          "slug": "paris",
+          "primaryColorHex": "#174742",
+          "secondaryColorHex": "#2b7064",
+          "category": {
+           "name": "ATP",
+           "slug": "atp",
+           "sport": {
+            "name": "…",
+            "slug": "…",
+            "id": "…"
+           },
+           "priority": 8,
+           "country": {},
+           "id": 3,
+           "flag": "atp",
+           "fieldTranslations": {
+            "nameTranslation": "…",
+            "shortNameTranslation": "…"
+           }
+          },
+          "userCount": 6851,
+          "groundType": "Hardcourt indoor",
+          "tennisPoints": 1000,
+          "hasPerformanceGraphFeature": false,
+          "liveActivityEnabled": true,
+          "country": {},
+          "id": 2404,
+          "hasEventPlayerStatistics": false,
+          "displayInverseHomeAwayTeams": false,
+          "fieldTranslations": {
+           "nameTranslation": {
+            "ar": "…",
+            "hi": "…",
+            "bn": "…",
+            "ru": "…"
+           },
+           "shortNameTranslation": {}
+          }
+         },
+         "priority": 0,
+         "isGroup": false,
+         "id": 206962,
+         "endTimestamp": 1794096000,
+         "startTimestamp": 1793577600
+        },
+        "season": {
+         "name": "ATP Paris, France Men Singles 2026",
+         "year": "2026",
+         "editor": false,
+         "id": 82442
+        },
+        "roundInfo": {
+         "round": 6,
+         "name": "Round of 32",
+         "slug": "round-of-32",
+         "cupRoundType": 16
+        },
+        "customId": "KtNsKjed",
+        "status": {
+         "code": 100,
+         "description": "Ended",
+         "type": "finished"
+        },
+        "winnerCode": 1,
+        "venue": {
+         "city": {
+          "name": "Paris",
+          "country": {
+           "alpha2": "FR",
+           "alpha3": "FRA",
+           "name": "France",
+           "slug": "france"
+          },
+          "id": 17983
+         },
+         "hidden": true,
+         "slug": "court-central",
+         "name": "Court Central",
+         "country": {
+          "alpha2": "FR",
+          "alpha3": "FRA",
+          "name": "France",
+          "slug": "france"
+         },
+         "id": 52442,
+         "stadium": {
+          "name": "Court Central"
+         }
+        },
+        "homeTeam": {
+         "name": "Ben Shelton",
+         "slug": "shelton-ben",
+         "shortName": "B. Shelton",
+         "gender": "M",
+         "sport": {
+          "name": "Tennis",
+          "slug": "tennis",
+          "id": 5
+         },
+         "userCount": 47801,
+         "playerTeamInfo": {
+          "id": 4948
+         },
+         "nameCode": "SHE",
+         "ranking": 4,
+         "disabled": false,
+         "national": false,
+         "type": 1,
+         "country": {
+          "alpha2": "US",
+          "alpha3": "USA",
+          "name": "USA",
+          "slug": "usa"
+         },
+         "id": 385485,
+         "subTeams": [],
+         "teamColors": {
+          "primary": "#374df5",
+          "secondary": "#374df5",
+          "text": "#ffffff"
+         },
+         "fieldTranslations": {
+          "nameTranslation": {
+           "ar": "بن شيلتون",
+           "ru": "Бен Шелтон"
+          },
+          "shortNameTranslation": {
+           "ar": "ب. شيلتون",
+           "bn": "বি. শেলটন,",
+           "hi": "बी. शेल्टन",
+           "ru": "Б. Шелтон"
+          }
+         }
+        },
+        "awayTeam": {
+         "name": "Cameron Norrie",
+         "slug": "norrie-cameron",
+         "shortName": "C. Norrie",
+         "gender": "M",
+         "sport": {
+          "name": "Tennis",
+          "slug": "tennis",
+          "id": 5
+         },
+         "userCount": 14156,
+         "playerTeamInfo": {
+          "id": 64
+         },
+         "nameCode": "NOR",
+         "ranking": 45,
+         "disabled": false,
+         "national": false,
+         "type": 1,
+         "country": {
+          "alpha2": "GB",
+          "alpha3": "GBR",
+          "name": "United Kingdom",
+          "slug": "united-kingdom"
+         },
+         "id": 95935,
+         "subTeams": [],
+         "teamColors": {
+          "primary": "#374df5",
+          "secondary": "#374df5",
+          "text": "#ffffff"
+         },
+         "fieldTranslations": {
+          "nameTranslation": {
+           "ar": "كاميرون نورري",
+           "ru": "Кэмерон Норри"
+          },
+          "shortNameTranslation": {
+           "ar": "ك. نورري",
+           "bn": "​​সি. নরি",
+           "hi": "सी. नॉरी",
+           "ru": "К. Норри"
+          }
+         }
+        },
+        "homeScore": {
+         "current": 2,
+         "display": 2,
+         "period1": 6,
+         "period2": 6,
+         "normaltime": 2
+        },
+        "awayScore": {
+         "current": 0,
+         "display": 0,
+         "period1": 3,
+         "period2": 4,
+         "normaltime": 0
+        },
+        "time": {
+         "period1": 1617,
+         "period2": 2686,
+         "currentPeriodStartTimestamp": 1793731002
+        },
+        "changes": {
+         "changes": [
+          "homeScore.point",
+          "awayScore.point",
+          "time.currentPeriodStart",
+          "… 12 éléments au total"
+         ],
+         "changeTimestamp": 1793733699
+        },
+        "hasGlobalHighlights": false,
+        "crowdsourcingDataDisplayEnabled": false,
+        "correctAiInsight": true,
+        "id": 17428202,
+        "slug": "ben-shelton-cameron-norrie",
+        "startTimestamp": 1793728800,
+        "periods": {
+         "point": "Game",
+         "current": "Match",
+         "period1": "1st set",
+         "period2": "2nd set",
+         "period3": "3rd set",
+         "period4": "4th set",
+         "period5": "5th set"
+        },
+        "finalResultOnly": false,
+        "feedLocked": false,
+        "groundType": "Hardcourt indoor",
+        "isEditor": false,
+        "eventFilters": {
+         "category": [
+          "singles"
+         ],
+         "level": [
+          "pro"
+         ],
+         "tournament": [
+          "p1000"
+         ],
+         "gender": [
+          "M"
+         ]
+        }
+       },
+       "… 30 éléments au total"
+      ],
+      "hasNextPage": true
+     }
+    }
+   ],
+   "tournament_id": 206962,
+   "unique_id": 2404,
+   "season_id": 82442,
+   "round": {
+    "round": 27,
+    "name": "Quarterfinals",
+    "slug": "quarterfinals",
+    "cupRoundType": 4
+   }
+  }
+ },
+ "requetes": 12,
+ "quota_restant": 14832
+}

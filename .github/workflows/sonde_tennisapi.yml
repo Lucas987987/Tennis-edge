@@ -3,6 +3,10 @@
 name: Sonde TennisApi
 on:
   workflow_dispatch:
+    inputs:
+      mode:
+        description: 'lieu (1re sonde) ou tableau (2e sonde, paquet 208)'
+        default: 'tableau'
 permissions:
   contents: write
 concurrency:
@@ -29,7 +33,9 @@ jobs:
       - name: Sonde
         env:
           RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
-        run: python scripts/sonde_tennisapi.py
+          MODE: ${{ github.event.inputs.mode }}
+        run: |
+          if [ "$MODE" = "lieu" ]; then python scripts/sonde_tennisapi.py; else python scripts/sonde_tennisapi.py --tableau; fi
       - name: Publier
         run: |
           set -euo pipefail

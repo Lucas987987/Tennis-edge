@@ -767,6 +767,12 @@
    "quoi": "CORRECTION des scores en direct : aucun match n'apparaissait, parce que TennisApi décrit un joueur de simple avec une liste d'équipiers VIDE, que le filtre « simples seulement » prenait pour un double. Les matchs de simple en cours s'affichent désormais.",
    "statut": "production",
    "paquet": 207
+  },
+  {
+   "date": "2026-11-06",
+   "quoi": "INFOS DES TOURNOIS (TennisApi) : ville et pays hôtes, nombre de joueurs du tableau, dotation et points du vainqueur, relevés une fois par tournoi. Le lieu hôte sert désormais en priorité pour situer chaque tournoi (météo, densité de l'air, voyage), le nom du tournoi ne servant plus qu'en secours ; tous les tournois sont re-situés une fois. Nouveau groupe de facteurs « dotation » (niveau de dotation du tournoi, et joueur qui joue plus gros ou plus petit que d'habitude), jugé chaque semaine circuit par circuit comme les autres. Deuxième sonde : où trouver le tableau des tournois.",
+   "statut": "candidat",
+   "paquet": 208
   }
  ]
 }
