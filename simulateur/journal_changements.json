@@ -731,6 +731,18 @@
    "quoi": "SCORES EN DIRECT sur le site de l'algo : quand un match de la liste est en cours, sa ligne et sa fiche affichent le score set par set (tie-breaks compris), les points du jeu et le joueur au service, mis à jour toutes les 30 secondes ; « Terminé » avec le dernier score quand il s'achève. Source TennisApi via le worker (une seule requête toutes les 30 s quel que soit le nombre de visiteurs). Le % affiché reste celui calculé avant le match.",
    "statut": "production",
    "paquet": 201
+  },
+  {
+   "date": "2026-11-06",
+   "quoi": "% RECALCULÉ EN DIRECT : pendant un match, sous le score, les chances du joueur recalculées avec le score réel (sets, jeux, points, serveur), à côté du % d'avant match. Même modèle que la simulation point par point de la fiche, repris depuis l'état du match ; à 0-0 il redonne exactement le % d'avant match ; jamais 0 ni 100 % tant que le match se joue. Le niveau des joueurs n'est pas réévalué en cours de match.",
+   "statut": "production",
+   "paquet": 202
+  },
+  {
+   "date": "2026-11-06",
+   "quoi": "STATISTIQUES EN DIRECT dans la fiche d'un match en cours : aces, doubles fautes, premières balles, points gagnés derrière la 1re et la 2e, balles de break sauvées et converties, breaks, jeux de service gagnés, points au retour et au total, plus longue série de points ; mises à jour chaque minute, à côté de la feuille prévue avant le match et de sa fourchette (en rouge quand le réel en sort). Chargées seulement pour la fiche ouverte, une requête par minute et par match quel que soit le nombre de visiteurs, plafond journalier réglable.",
+   "statut": "production",
+   "paquet": 203
   }
  ]
 }
