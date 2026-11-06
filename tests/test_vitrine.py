@@ -149,3 +149,21 @@ class Publication(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class TestGarderCommences(unittest.TestCase):
+    """06/11/2026 (paquet 209) : un match commencé reste affiché quelques heures (scores en direct)."""
+
+    def test_match_commence_garde_6_heures(self):
+        import datetime as dt_
+        import vitrine as V
+        now = dt_.datetime(2026, 11, 6, 19, 50, tzinfo=dt_.timezone.utc)
+        ancien = {'matchs': [{'uid': 'fritz_alcaraz', 'debut': '2026-11-06T18:00', 'home': 'Taylor Fritz'},
+                             {'uid': 'vieux', 'debut': '2026-11-06T12:00'},
+                             {'uid': 'futur_disparu', 'debut': '2026-11-06T22:00'},
+                             {'uid': 'ruud_borges', 'debut': '2026-11-06T19:30', 'p_home': 0.5}]}
+        nouveau = [{'uid': 'ruud_borges', 'debut': '2026-11-06T19:30', 'p_home': 0.61}]
+        L = V.garder_commences(nouveau, ancien, now)
+        self.assertEqual([l['uid'] for l in L], ['fritz_alcaraz', 'ruud_borges'])
+        self.assertEqual(L[1]['p_home'], 0.61)          # la version nouvelle d'un match l'emporte
+        self.assertTrue(L[0].get('commence_garde')) ; self.assertNotIn('commence_garde', L[1])
