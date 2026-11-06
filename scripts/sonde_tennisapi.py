@@ -7,7 +7,8 @@ sonde_tennisapi.py — SONDE de deux pistes TennisApi (06/11/2026, demande de Lu
   2. LE TABLEAU du tournoi (pour le mode tournoi) : saisons, puis « cuptrees » (tableau à élimination directe).
 Pour UN match récent par circuit (ATP, WTA, Challenger) des feuilles : ~6 requêtes par circuit, 20 au plus.
 Rien n'est modifié dans le pipeline : la réponse (raccourcie, sans clé) est écrite dans sondes/tennisapi_AAAA-MM-JJ.json
-pour être lue à la main. Usage : python scripts/sonde_tennisapi.py
+pour être lue à la main. Usage : python scripts/sonde_tennisapi.py [--tableau]
+06/11/2026 (paquet 208) : --tableau = 2e sonde, sur le tableau (autre identifiant de tournoi, tours, matchs par tour).
 """
 import datetime as dt
 import glob
@@ -67,7 +68,60 @@ def matchs_recents():
     return vus
 
 
+def sonde_tableau(c, doc):
+    """06/11/2026 (paquet 208) — 2e sonde : où est le TABLEAU ? « cuptrees » répondait 404 avec l'identifiant du
+    tournoi « unique ». On essaie l'autre identifiant (event.tournament.id), les tours, et les matchs par tour."""
+    for circ, r in matchs_recents().items():
+        if circ == 'WTA':
+            continue
+        bloc = {'match': f"{r['home'].get('nom')} – {r['away'].get('nom')} ({r.get('tournoi')}, {r.get('jour')})",
+                'requetes': []}
+
+        def essai(chemin, garder=True):
+            try:
+                code, d = c.get(chemin)
+            except FM.QuotaAtteint as e:
+                bloc['requetes'].append({'chemin': chemin, 'http': f'arrêt : {e}'})
+                return None
+            bloc['requetes'].append({'chemin': chemin, 'http': code,
+                                     'cles': sorted(d.keys()) if isinstance(d, dict) else None,
+                                     'reponse': raccourcir(d) if garder and d else None})
+            print(f"{circ} · HTTP {code} · {chemin}", flush=True)
+            return d
+
+        ev = (essai(f"/api/tennis/event/{r['id']}", garder=False) or {}).get('event') or {}
+        tid = (ev.get('tournament') or {}).get('id')
+        utid = ((ev.get('tournament') or {}).get('uniqueTournament') or {}).get('id') or r.get('tournoi_id')
+        sid = (ev.get('season') or {}).get('id')
+        rnd = (ev.get('roundInfo') or {})
+        bloc.update(tournament_id=tid, unique_id=utid, season_id=sid, round=rnd)
+        if tid and sid:
+            essai(f"/api/tennis/tournament/{tid}/season/{sid}/cuptrees")
+        if utid and sid:
+            essai(f"/api/tennis/tournament/{utid}/season/{sid}/rounds")
+            if rnd.get('round') is not None:
+                essai(f"/api/tennis/tournament/{utid}/season/{sid}/events/round/{rnd['round']}")
+            essai(f"/api/tennis/tournament/{utid}/season/{sid}/events/next/0")
+            essai(f"/api/tennis/tournament/{utid}/season/{sid}/events/last/0")
+        doc['tableau'][circ] = bloc
+
+
 def main():
+    if '--tableau' in sys.argv:
+        cle = os.environ.get('RAPIDAPI_KEY', '').strip()
+        if not cle:
+            print('RAPIDAPI_KEY absent : rien à faire.')
+            return 0
+        c = FM.Client(cle, budget=16)
+        doc = {'genere_le': dt.datetime.now(dt.timezone.utc).isoformat(timespec='seconds'), 'tableau': {}}
+        sonde_tableau(c, doc)
+        doc['requetes'], doc['quota_restant'] = c.n, c.restant
+        os.makedirs(SORTIE, exist_ok=True)
+        chemin = os.path.join(SORTIE, f"tennisapi_tableau_{dt.date.today().isoformat()}.json")
+        with open(chemin, 'w', encoding='utf-8') as f:
+            json.dump(doc, f, ensure_ascii=False, indent=1)
+        print(f"{c.n} requêtes · {chemin}")
+        return 0
     cle = os.environ.get('RAPIDAPI_KEY', '').strip()
     if not cle:
         print('RAPIDAPI_KEY absent : rien à faire.')
