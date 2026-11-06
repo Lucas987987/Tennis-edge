@@ -739,7 +739,8 @@ const T = {
   ls_prevu:(v,a,b)=>a==null?`prévu ${v}`:`prévu ${v} · fourchette ${a}–${b}`,
   ls_l:{aces:'Aces', df:'Doubles fautes', prem:'1res balles', g1:'Points gagnés derrière la 1re', g2:'Points gagnés derrière la 2e', bs:'Balles de break sauvées', bc:'Balles de break converties', breaks:'Breaks', jsg:'Jeux de service gagnés', ret:'Points gagnés au retour', pts:'Points gagnés au total', serie:'Plus longue série de points'},
   live_pct:(n,p)=>`${n} ${p} avec le score`, live_avant:p=>`avant le match : ${p}`,
-  live_aide:'Même modèle qu’avant le match, repris depuis le score actuel : chaque point restant est simulé avec les mêmes probabilités au service. Le niveau des joueurs n’est pas réévalué pendant le match.',
+  live_aide:'Même modèle qu’avant le match, repris depuis le score actuel. La forme du jour de chaque joueur est réévaluée avec les points de service déjà joués (mesuré sur 8 970 matchs de juin à novembre 2026 : plus juste que le % figé sur les trois circuits).',
+  live_aide_fixe:'Même modèle qu’avant le match, repris depuis le score actuel, avec les probabilités au service d’avant match (statistiques du match pas encore disponibles).',
   vit_titre:'Vitesse du court', vit_echelle:['Lent','Moyen','Rapide'], vit_cpi:(o,an)=>`CPI ${o?'officiel':'estimé'} ${an}`,
   vit_ecart:d=>`${d>0?'+':''}${dec(d,1)} vs l'an dernier`, vit_hist:n=>`Les ${n} dernières éditions`, vit_leg:'● CPI officiel · ○ estimé par l’algo',
   vit_note:'Notre mesure retire le niveau des joueurs du tableau : elle mesure le court, pas le plateau. Information : la vitesse sert à prévoir aces et service, pas le vainqueur.',
@@ -976,7 +977,8 @@ const T = {
   ls_prevu:(v,a,b)=>a==null?`expected ${v}`:`expected ${v} · range ${a}–${b}`,
   ls_l:{aces:'Aces', df:'Double faults', prem:'1st serves in', g1:'1st serve points won', g2:'2nd serve points won', bs:'Break points saved', bc:'Break points converted', breaks:'Breaks', jsg:'Service games won', ret:'Return points won', pts:'Total points won', serie:'Longest run of points'},
   live_pct:(n,p)=>`${n} ${p} given the score`, live_avant:p=>`before the match: ${p}`,
-  live_aide:'Same model as before the match, restarted from the current score: every remaining point is simulated with the same serve probabilities. The players’ level is not re-rated during the match.',
+  live_aide:'Same model as before the match, restarted from the current score. Each player’s form on the day is re-rated from the serve points already played (measured on 8,970 matches from June to November 2026: more accurate than the frozen % on all three tours).',
+  live_aide_fixe:'Same model as before the match, restarted from the current score, with the pre-match serve probabilities (match stats not available yet).',
   vit_titre:'Court speed', vit_echelle:['Slow','Medium','Fast'], vit_cpi:(o,an)=>`${o?'Official':'Estimated'} CPI ${an}`,
   vit_ecart:d=>`${d>0?'+':''}${dec(d,1)} vs last year`, vit_hist:n=>`Last ${n} editions`, vit_leg:'● official CPI · ○ estimated by the algorithm',
   vit_note:'Our measure removes the players’ level: it measures the court, not the field. Information only: speed helps forecast aces and serve, not the winner.',
@@ -2157,7 +2159,7 @@ function matchsFiltres(){
 }
 // 06/11/2026 — SCORES EN DIRECT : la page interroge /live (worker, 30 s de cache, TennisApi) toutes les 30 s tant
 // qu'un match de la liste peut être en cours et que l'onglet est visible. Le % affiché reste celui d'avant match.
-const LIVE = { par_uid: {}, vus: {}, minuterie: null, moteurs: {}, stats: {}, attente: {} };
+const LIVE = { par_uid: {}, vus: {}, minuterie: null, moteurs: {}, stats: {}, attente: {}, formes: {}, reeval: {}, essai: {} };
 function motsNom(n){ return new Set(String(n||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase()
   .replace(/[^a-z\s-]/g,' ').split(/[\s-]+/).filter(w=>w.length>=2)); }
 function memeJoueur(a,b){ const A=motsNom(a); for (const w of motsNom(b)) if (A.has(w)) return true; return false; }
@@ -2181,7 +2183,7 @@ function texteLive(m, r, fini){
   const tete = fini ? `<span class="fin">${esc(t('live_termine'))}</span>` : `<span class="rouge">🔴 ${esc(t('live_en_cours'))}</span>`;
   let pl = '';
   if (!fini){ const p = pctLive(m, r);
-    if (p != null) pl = `<br><b title="${esc(t('live_aide'))}">${esc(t('live_pct', court(m.home), pc0(p)))}</b> <span class="avant">(${esc(t('live_avant', pc0(m.p_home)))})</span>`; }
+    if (p != null) pl = `<br><b title="${esc(t(LIVE.reeval[m.uid] ? 'live_aide' : 'live_aide_fixe'))}">${esc(t('live_pct', court(m.home), pc0(p)))}</b> <span class="avant">(${esc(t('live_avant', pc0(m.p_home)))})</span>`; }
   return `${tete} · ${sets||'0-0'}${pt}${!fini && sv ? ` · 🎾 ${esc(t('live_sert', court(sv)))}` : ''}${pl}`;
 }
 // 06/11/2026 — % RECALCULÉ EN DIRECT : le moteur de la page (Moteur + calibre, celui de « Jouer le match »)
@@ -2213,26 +2215,65 @@ function etatLive(m, r){
   }
   return {S, sv};
 }
+// 06/11/2026 (soir) — RÉÉVALUATION : la « forme du jour » (décalage z en logit : service de home + z, de away − z,
+// loi a priori normale de σ par circuit) est lue dans les points de service déjà joués (statistiques du match) :
+// poids de chaque forme ∝ a priori × vraisemblance des points gagnés et perdus sur le service de chacun.
+// σ vient de donnees.json (live_reevaluation, suivi chaque semaine ; 0 = circuit retiré → % figé ci-dessus).
+const GH9 = [[-4.5127458633997,2.23458440077e-05],[-3.2054290028565,0.00278914132123],[-2.0768479786779,0.0499164067652],
+  [-1.0232556637891,0.244097502895],[0,0.406349206349],[1.0232556637891,0.244097502895],[2.0768479786779,0.0499164067652],
+  [3.2054290028565,0.00278914132123],[4.5127458633997,2.23458440077e-05]];
+function sigmaLive(m){ const s = D && D.live_reevaluation && D.live_reevaluation.sigma; return (s && +s[m.circuit]) || 0; }
+function formesLive(m, sigma){
+  const cle = m.uid + '|' + sigma; if (LIVE.formes[cle]) return LIVE.formes[cle];
+  const sim = m.simulation, la = logit(sim.a), lb = logit(sim.b), p = m.p_home;
+  const avant = M => (M.pLive(M.etat(0)) + M.pLive(M.etat(1))) / 2;
+  const v = d => GH9.reduce((t,[z,w]) => t + w*avant(Moteur({...sim, a: sig(la+d+sigma*z), b: sig(lb-d-sigma*z)})), 0);
+  let lo = -4, hi = 4;
+  for (let k=0;k<22;k++){ const mid=(lo+hi)/2; if (v(mid) < p) lo = mid; else hi = mid; }
+  const d = (lo+hi)/2;
+  return (LIVE.formes[cle] = GH9.map(([z,w]) => { const a = sig(la+d+sigma*z), b = sig(lb-d-sigma*z);
+    return {w, a, b, M: Moteur({...sim, a, b})}; }));
+}
+function pointsServiceLive(uid, inverse){
+  const st = LIVE.stats[uid], S = st && st.o && st.o.stats; if (!S) return null;
+  const fs = S.firstServeAccuracy, sp = S.servicePointsScored; if (!fs || !sp || fs[1]==null || fs[3]==null) return null;
+  const h = {n:+fs[1]||0, w:+sp[0]||0}, a = {n:+fs[3]||0, w:+sp[2]||0};
+  return inverse ? [a, h] : [h, a];
+}
 function pctLive(m, r){
   const e = etatLive(m, r); if (!e) return null;
   try {
-    const M = LIVE.moteurs[m.uid] || (LIVE.moteurs[m.uid] = Moteur(calibre(m.simulation, m.p_home)));
-    const unServeur = s => { const S = {...e.S, pts:[...e.S.pts], jeux:[...e.S.jeux], sets:[...e.S.sets]};
+    const avec = M => { const unServeur = s => { const S = {...e.S, pts:[...e.S.pts], jeux:[...e.S.jeux], sets:[...e.S.sets]};
       S.srv = s; if (S.tb){ const k=S.pts[0]+S.pts[1]; S.tbS0 = k===0 ? s : ((((k-1)>>1)%2)===0 ? 1-s : s); } return M.pLive(S); };
-    const p = e.sv==null ? (unServeur(0)+unServeur(1))/2 : unServeur(e.sv);
+      return e.sv==null ? (unServeur(0)+unServeur(1))/2 : unServeur(e.sv); };
+    const sigma = sigmaLive(m), pts = sigma > 0 ? pointsServiceLive(m.uid, r.inverse) : null;
+    let p;
+    if (pts){
+      const F = formesLive(m, sigma), [A, B] = pts;
+      const lw = F.map(f => Math.log(f.w) + A.w*Math.log(f.a) + (A.n-A.w)*Math.log(1-f.a) + B.w*Math.log(f.b) + (B.n-B.w)*Math.log(1-f.b));
+      const mx = Math.max(...lw); let tot = 0, v = 0;
+      F.forEach((f,i) => { const x = Math.exp(lw[i]-mx); tot += x; v += x*avec(f.M); });
+      p = v / tot; LIVE.reeval[m.uid] = true;
+    } else {
+      const M = LIVE.moteurs[m.uid] || (LIVE.moteurs[m.uid] = Moteur(calibre(m.simulation, m.p_home)));
+      p = avec(M); LIVE.reeval[m.uid] = false;
+    }
     return Number.isFinite(p) ? Math.min(0.99, Math.max(0.01, p)) : null;   // jamais « 100 % » tant que ça se joue
   } catch(err){ return null; }
 }
-// 06/11/2026 — STATISTIQUES EN DIRECT : seulement pour la fiche ouverte d'un match en cours (/live/stats, 60 s).
+// 06/11/2026 — STATISTIQUES EN DIRECT (/live/stats, 60 s de cache au worker). Le soir même : chargées pour CHAQUE
+// match en cours de la liste (elles nourrissent la réévaluation du %), pas seulement pour la fiche ouverte.
 function statsFiche(){
-  const el = document.querySelector('[data-live-stats]'); if (!el || document.hidden) return;
-  const uid = el.getAttribute('data-live-stats'), r = LIVE.par_uid[uid];
-  if (!r || !r.x.id || LIVE.attente[uid]) return;
-  const deja = LIVE.stats[uid]; if (deja && Date.now() - deja.t < 55000) return;
-  LIVE.attente[uid] = true;
-  fetch('/live/stats?id=' + encodeURIComponent(r.x.id), {cache:'no-store'}).then(x=>x.ok ? x.json() : null).then(o=>{
-    if (o) LIVE.stats[uid] = {o: (o.stats || !deja) ? o : {...o, stats: deja.o.stats}, t: Date.now()};
-  }).catch(()=>{}).finally(()=>{ LIVE.attente[uid] = false; rendStatsLive(); });
+  if (document.hidden) return;
+  for (const [uid, r] of Object.entries(LIVE.par_uid)) {
+    if (!r || !r.x.id || LIVE.attente[uid]) continue;
+    const deja = LIVE.stats[uid];
+    if (Date.now() - (LIVE.essai[uid] || 0) < 55000) continue;     // un essai par minute, réussi ou non
+    LIVE.attente[uid] = true; LIVE.essai[uid] = Date.now();
+    fetch('/live/stats?id=' + encodeURIComponent(r.x.id), {cache:'no-store'}).then(x=>x.ok ? x.json() : null).then(o=>{
+      if (o) LIVE.stats[uid] = {o: (o.stats || !deja) ? o : {...o, stats: deja.o.stats}, t: Date.now()};
+    }).catch(()=>{}).finally(()=>{ LIVE.attente[uid] = false; majLive(); });
+  }
 }
 function rendStatsLive(){
   const el = document.querySelector('[data-live-stats]'); if (!el) return;
