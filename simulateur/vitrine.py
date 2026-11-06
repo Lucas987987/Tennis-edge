@@ -147,6 +147,27 @@ def recaler_feuille(c, fp, fq, coefs=None):
     return fp2, fq2
 
 
+CLES_PLUS = ('gagnes_1re_pct', 'gagnes_2e_pct', 'jeux_service_gagnes_pct', 'balles_break_obtenues', 'breaks',
+             'points_gagnes')
+
+
+def _feuille_plus(v):
+    """06/11/2026 (paquet 214) — [{clé: [moyenne, 10e centile, 90e centile]}] par joueur, des 20 000 simulations, pour
+    les statistiques que la feuille publiée ne montrait pas (points derrière la 1re et la 2e, jeux de service, balles
+    de break, points). Affichage du direct seulement : ni recalage, ni suivi après match."""
+    f = ((v.get('match_simule') or {}).get('feuille')) or []
+    out = []
+    for j in f[:2]:
+        d = {}
+        for k in CLES_PLUS:
+            x = j.get(k)
+            if isinstance(x, dict) and x.get('moy') is not None:
+                d[k] = [round(x['moy'], 1), (round(x['p10'], 1) if x.get('p10') is not None else None),
+                        (round(x['p90'], 1) if x.get('p90') is not None else None)]
+        out.append(d)
+    return out if len(out) == 2 and any(out) else None
+
+
 def _feuille_fourchette(v):
     """29/10/2026 — fourchette 80 % (10e–90e centile des simulations) de chaque statistique annoncée, par joueur :
     sert à mesurer après le match si ce qui est annoncé tient (apres_match.py)."""
@@ -227,6 +248,8 @@ def ligne_match(m, complet):
         'set1_home': v.get('set1_home'),
         'feuille_prevue': recaler_feuille(m.get('circuit'), _feuille_prevue(v), _feuille_fourchette(v))[0],
         'feuille_fourchette': recaler_feuille(m.get('circuit'), _feuille_prevue(v), _feuille_fourchette(v))[1],
+        # 06/11/2026 (paquet 214) : les autres statistiques simulées, pour le duel des statistiques en direct
+        'feuille_plus': _feuille_plus(v),
         # 04/11/2026 : valeurs avant recalage, gardées pour l'apprentissage (recalage_stats.py) une fois adopté
         **({'feuille_prevue_brute': _feuille_prevue(v), 'feuille_fourchette_brute': _feuille_fourchette(v)}
            if RECALAGE_STATS else {}),
