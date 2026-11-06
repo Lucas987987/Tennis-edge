@@ -458,10 +458,10 @@ body.carte #video{display:block;width:1080px;height:1350px}
 @media (min-width:820px){
   .wrap{max-width:1280px}
   .mdj{grid-template-columns:minmax(320px,400px) minmax(0,1fr);grid-auto-flow:row dense;align-items:start}
-  .mdj > div:first-child{grid-column:1;grid-row:1 / span 4}
+  .mdj > div:first-child{grid-column:1;grid-row:1 / span 2}
   .mdj > .fiche{display:contents}
   .mdj > .fiche > *{grid-column:1 / -1;min-width:0}
-  .mdj > .fiche > .duelx, .mdj > .fiche > #post-zone, .mdj > .fiche > .essentiel{grid-column:2}
+  .mdj > .fiche > .duelx, .mdj > .fiche > #post-zone{grid-column:2}
 }
 </style>
 </head>
@@ -805,7 +805,7 @@ const T = {
   am_h2h:'Face-à-face', am_h2h_vide:'Jamais affrontés dans nos données.',
   am_note:'Attendues : la somme de ses chances d’avant match (Elo de l’algo) sur ces matchs, abandons exclus. Repères descriptifs : ils ne changent pas le %.',
   ls_titre:'Statistiques en direct', ls_titre_fin:'Statistiques du match (terminé)',
-  ls_note:'Mises à jour chaque minute. Trait vert : ce que l’algo avait prévu avant le match, pour le match entier. En rouge : déjà au-delà de sa fourchette (8 fois sur 10), ou nettement hors fourchette après 20 premières balles.',
+  ls_note:'Mises à jour chaque minute. Trait vert : ce que l’algo avait prévu avant le match (20 000 simulations), pour le match entier. En rouge : déjà au-delà de sa fourchette (8 fois sur 10), ou nettement hors fourchette après 20 points. Pas de prévision pour la plus longue série de points.',
   ls_attente:'Statistiques pas encore disponibles pour ce match.', ls_plafond:'Statistiques en pause jusqu’à demain (plafond journalier atteint).',
   ls_prevu:(v,a,b)=>a==null?`prévu ${v}`:`prévu ${v} · fourchette ${a}–${b}`,
   ls_l:{aces:'Aces', df:'Doubles fautes', prem:'1res balles', g1:'Points gagnés derrière la 1re', g2:'Points gagnés derrière la 2e', bs:'Balles de break sauvées', bc:'Balles de break converties', breaks:'Breaks', jsg:'Jeux de service gagnés', ret:'Points gagnés au retour', pts:'Points gagnés au total', serie:'Plus longue série de points'},
@@ -1054,7 +1054,7 @@ const T = {
   am_h2h:'Head-to-head', am_h2h_vide:'Never met in our data.',
   am_note:'Expected: the sum of the pre-match chances (the algorithm’s Elo) over those matches, retirements excluded. Descriptive only: they do not change the %.',
   ls_titre:'Live stats', ls_titre_fin:'Match stats (finished)',
-  ls_note:'Updated every minute. Green mark: what the algorithm expected before the match, for the whole match. In red: already beyond its range (8 times out of 10), or clearly outside it after 20 first serves.',
+  ls_note:'Updated every minute. Green mark: what the algorithm expected before the match (20,000 simulations), for the whole match. In red: already beyond its range (8 times out of 10), or clearly outside it after 20 points. No forecast for the longest run of points.',
   ls_attente:'No stats available yet for this match.', ls_plafond:'Stats paused until tomorrow (daily limit reached).',
   ls_prevu:(v,a,b)=>a==null?`expected ${v}`:`expected ${v} · range ${a}–${b}`,
   ls_l:{aces:'Aces', df:'Double faults', prem:'1st serves in', g1:'1st serve points won', g2:'2nd serve points won', bs:'Break points saved', bc:'Break points converted', breaks:'Breaks', jsg:'Service games won', ret:'Return points won', pts:'Total points won', serie:'Longest run of points'},
@@ -2243,7 +2243,7 @@ function matchsFiltres(){
 }
 // 06/11/2026 — SCORES EN DIRECT : la page interroge /live (worker, 30 s de cache, TennisApi) toutes les 30 s tant
 // qu'un match de la liste peut être en cours et que l'onglet est visible. Le % affiché reste celui d'avant match.
-const LIVE = { par_uid: {}, vus: {}, minuterie: null, moteurs: {}, stats: {}, attente: {}, formes: {}, reeval: {}, essai: {}, points: {} };
+const LIVE = { par_uid: {}, vus: {}, minuterie: null, moteurs: {}, stats: {}, attente: {}, formes: {}, reeval: {}, essai: {}, points: {}, cal: {} };
 function motsNom(n){ return new Set(String(n||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase()
   .replace(/[^a-z\s-]/g,' ').split(/[\s-]+/).filter(w=>w.length>=2)); }
 function memeJoueur(a,b){ const A=motsNom(a); for (const w of motsNom(b)) if (A.has(w)) return true; return false; }
@@ -2441,32 +2441,45 @@ function rendStatsLive(){
       <div class="v"><span class="${f0?'lv-hors':''}">${v0.txt}${v0.det?`<small>${v0.det}</small>`:''}</span><span class="${f1?'lv-hors':''}">${v1.det?`<small>${v1.det}</small>`:''}${v1.txt}</span></div>
       <div class="lv-tr"><span class="l"><i style="width:${larg(v0.x).toFixed(1)}%"></i>${tk(opts.p0,'right')}</span><span class="r"><i style="width:${larg(v1.x).toFixed(1)}%"></i>${tk(opts.p1,'left')}</span></div></div>`;
   };
-  const prevu = (i, cle) => fp[i] && fp[i][cle] != null ? +fp[i][cle] : null;
-  const hors = (i, cle, x, pct, n) => { const f = ff[i] && ff[i][cle]; if (!f) return false; return pct ? (n >= 20 && (x < f[0]-5 || x > f[1]+5)) : x > f[1]; };
+  // 06/11/2026 (paquet 214) : prévu et fourchette aussi pour les points derrière la 1re / la 2e, les jeux de service
+  // (feuille_plus : 20 000 simulations), et, par calcul, balles de break, points au retour et points au total.
+  const fx = m.feuille_plus || [];
+  const prevu = (i, cle) => fp[i] && fp[i][cle] != null ? +fp[i][cle] : (fx[i] && fx[i][cle] ? +fx[i][cle][0] : null);
+  const fourch = (i, cle) => (ff[i] && ff[i][cle]) || (fx[i] && fx[i][cle] && fx[i][cle][1] != null ? [fx[i][cle][1], fx[i][cle][2]] : null);
+  const hors = (i, cle, x, pct, n) => { const f = fourch(i, cle); if (!f) return false; return pct ? (n >= 20 && (x < f[0]-5 || x > f[1]+5)) : x > f[1]; };
+  const moyP = (i, cle) => fx[i] && fx[i][cle] ? +fx[i][cle][0] : null;
+  const conv = i => { const b = moyP(i,'breaks'), o = moyP(i,'balles_break_obtenues'); return b != null && o ? 100*b/o : null; };
+  const pts0 = moyP(0,'points_gagnes'), pts1 = moyP(1,'points_gagnes');
+  let srvP = null;
+  try { const c = LIVE.cal[m.uid] || (LIVE.cal[m.uid] = calibre(m.simulation, m.p_home)); srvP = [100*c.a, 100*c.b]; } catch(e) { srvP = null; }
   const L1 = [], L2 = [];
   const compte = (dest, cleApi, lib, cleP) => { const v = g(cleApi); if (!v) return;
     const a = +v[0]||0, b = +v[2]||0;
     dest.push(duel(lib, {x:a, txt:String(a)}, {x:b, txt:String(b)}, cleP && hors(0,cleP,a), cleP && hors(1,cleP,b),
       {p0: cleP ? prevu(0,cleP) : null, p1: cleP ? prevu(1,cleP) : null})); };
-  const ratio = (dest, v, lib, cleP, n0, d0, n1, d1) => { if (!v) return;
+  const ratio = (dest, v, lib, cleP, n0, d0, n1, d1, pv) => { if (!v) return;
     const x0 = d0 ? 100*n0/d0 : 0, x1 = d1 ? 100*n1/d1 : 0;
     dest.push(duel(lib, {x:x0, txt:pctTxt(n0,d0), det:d0?`${n0}/${d0}`:''}, {x:x1, txt:pctTxt(n1,d1), det:d1?`${n1}/${d1}`:''},
-      cleP && hors(0,cleP,x0,true,d0), cleP && hors(1,cleP,x1,true,d1), {max:100, p0: cleP ? prevu(0,cleP) : null, p1: cleP ? prevu(1,cleP) : null})); };
+      cleP && hors(0,cleP,x0,true,d0), cleP && hors(1,cleP,x1,true,d1),
+      {max:100, p0: pv ? pv[0] : (cleP ? prevu(0,cleP) : null), p1: pv ? pv[1] : (cleP ? prevu(1,cleP) : null)})); };
   const LL = t('ls_l');
   compte(L1,'aces',LL.aces,'aces'); compte(L1,'doubleFaults',LL.df,'doubles_fautes');
   const fs = g('firstServeAccuracy'), f1 = g('firstServePointsAccuracy'), f2 = g('secondServePointsAccuracy');
   if (fs) ratio(L1, fs, LL.prem, 'premiere_pct', fs[0], fs[1], fs[2], fs[3]);
-  if (f1) ratio(L1, f1, LL.g1, null, f1[0], f1[1], f1[2], f1[3]);
-  if (f2) ratio(L1, f2, LL.g2, null, f2[0], f2[1], f2[2], f2[3]);
+  if (f1) ratio(L1, f1, LL.g1, 'gagnes_1re_pct', f1[0], f1[1], f1[2], f1[3]);
+  if (f2) ratio(L1, f2, LL.g2, 'gagnes_2e_pct', f2[0], f2[1], f2[2], f2[3]);
   const sg = g('serviceGamesWon'), stt = g('serviceGamesTotal');
   if (sg && stt) ratio(L1, sg, LL.jsg, 'jeux_service_gagnes_pct', sg[0], stt[0], sg[2], stt[2]);
   const bs = g('breakPointsSaved'), bk = g('breakPointsScored');
-  if (bk && bs) ratio(L2, bk, LL.bc, null, bk[0], bs[3], bk[2], bs[1]);
-  if (bs) ratio(L2, bs, LL.bs, null, bs[0], bs[1], bs[2], bs[3]);
+  const c0 = conv(0), c1 = conv(1);
+  if (bk && bs) ratio(L2, bk, LL.bc, null, bk[0], bs[3], bk[2], bs[1], [c0, c1]);
+  if (bs) ratio(L2, bs, LL.bs, null, bs[0], bs[1], bs[2], bs[3], [c1 == null ? null : 100 - c1, c0 == null ? null : 100 - c0]);
   compte(L2,'breakPointsScored',LL.breaks,'breaks');
   const rp = g('receiverPointsScored');
-  if (rp && fs) ratio(L2, rp, LL.ret, null, rp[0], fs[3], rp[2], fs[1]);
-  const pt = g('pointsTotal'); if (pt){ const tot = (+pt[0]||0)+(+pt[2]||0); ratio(L2, pt, LL.pts, null, +pt[0]||0, tot, +pt[2]||0, tot); }
+  if (rp && fs) ratio(L2, rp, LL.ret, null, rp[0], fs[3], rp[2], fs[1], srvP ? [100 - srvP[1], 100 - srvP[0]] : null);
+  const pt = g('pointsTotal'); if (pt){ const tot = (+pt[0]||0)+(+pt[2]||0);
+    const pp = pts0 != null && pts1 != null && pts0 + pts1 > 0 ? [100*pts0/(pts0+pts1), 100*pts1/(pts0+pts1)] : null;
+    ratio(L2, pt, LL.pts, null, +pt[0]||0, tot, +pt[2]||0, tot, pp); }
   compte(L2,'maxPointsInRow',LL.serie);
   const msg = st.o.plafond ? t('ls_plafond') : (!S ? t('ls_attente') : '');
   el.hidden = false;
