@@ -58,6 +58,7 @@ h2{font-family:var(--disp);font-weight:400;font-size:1.45rem;line-height:1.15;ma
 /* match du jour : borne d'arcade + détails */
 .mdj{display:grid;gap:16px}
 @media (min-width:820px){.mdj{grid-template-columns:minmax(320px,420px) 1fr;align-items:start}}
+
 .borne{border-radius:var(--r-lg);padding:10px;background:linear-gradient(160deg,#2A1A6E,#120B30);border:1px solid var(--line2);box-shadow:0 0 0 1px rgba(46,230,255,.08),0 20px 50px rgba(0,0,0,.45)}
 .ecran-jeu{aspect-ratio:9/15;border-radius:12px;overflow:hidden}
 .commandes{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
@@ -416,9 +417,13 @@ body.carte #video{display:block;width:1080px;height:1350px}
 .lv-bar .gh{position:absolute;top:-4px;bottom:-4px;width:2px;background:#fff;opacity:.6}
 .lv-pc{display:flex;justify-content:space-between;gap:8px;font-size:.82rem;flex-wrap:wrap}.lv-pc b{font-family:var(--disp);font-size:1rem}
 .lv-up{color:var(--ok)}.lv-down{color:var(--ko)}.lv-dim{color:var(--dim)}
+.lv-terrain{margin:6px 0 10px}.lv-terrain svg{display:block;width:100%;height:auto;max-width:620px;margin:0 auto}
+.lv-terrain .tn{font:600 13px Barlow,system-ui,sans-serif}.lv-terrain .tg{font:26px var(--disp);fill:#F4F1FF;letter-spacing:6px}
+.lv-terrain .tl{font:600 10px var(--cond);fill:#ABA3D6;letter-spacing:1px;text-transform:uppercase}.lv-terrain .tp{font:20px var(--disp)}
+@media (prefers-reduced-motion:reduce){.lv-terrain animate{display:none}}
 .live-match .lv-sb{grid-template-columns:minmax(0,1fr) repeat(var(--ns,3),32px) 50px;font-family:var(--disp);font-size:1.35rem;gap:6px 8px}
 .live-match .lv-sb .n{font-size:1.05rem}.live-match .lv-pt{font-size:1.2rem;padding:2px 0}
-.lv-courbe{margin-top:12px}.lv-courbe svg{display:block;width:100%;height:auto}.lv-courbe text{font-family:var(--cond);fill:var(--dim);font-size:11px}
+.lv-courbe{margin-top:12px}.lv-courbe svg{display:block;width:100%;height:auto;max-width:760px;margin:0 auto}.lv-courbe text{font-family:var(--cond);fill:var(--dim);font-size:11px}
 .lv-leg{font-size:.75rem;color:var(--dim);margin:4px 0 0}
 .lv-mom{list-style:none;margin:10px 0 0;padding:0}.lv-mom li{display:flex;gap:10px;align-items:baseline;padding:7px 0;border-top:1px solid var(--line);font-size:.86rem}
 .lv-mom .t{font-family:var(--cond);color:var(--dim);min-width:48px}
@@ -447,6 +452,17 @@ body.carte #video{display:block;width:1080px;height:1350px}
 .live-stats table.sheet td,.live-stats table.sheet th{padding:7px 10px;vertical-align:top}.live-stats .styles-note{margin:8px 10px 10px}.badge.peu{background:rgba(255,107,134,.16);color:var(--ko)}
 .res li.avec-am{grid-template-columns:1.8em 1fr auto}.res li .am{grid-column:1/-1}.am summary{cursor:pointer;font-weight:600;font-size:.88rem;color:var(--ball);min-height:36px;display:flex;align-items:center}.am h4{margin:10px 0 4px;font-size:.88rem}.am-t{font-size:.85rem;width:100%}.am-t td{vertical-align:top}.am-t th,.am-t td:first-child{text-align:left}.am-t td+td{text-align:right}.am-ok{color:var(--ok)}.am-ko{color:var(--ko)}.am .d{color:var(--dim);font-size:.8rem}
 .jc{list-style:none;margin:0;padding:0}.jc li{display:grid;grid-template-columns:auto 1fr;gap:10px;padding:10px 16px;border-top:1px solid var(--line);font-size:.9rem;align-items:start}.jc .d{color:var(--dim);font-size:.82rem}.jc-st{font-size:.72rem;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap;margin-top:2px}.jc-st.production{background:rgba(69,240,160,.16);color:var(--ok)}.jc-st.candidat{background:rgba(212,255,58,.14);color:var(--ball)}.jc-st.rejete{background:rgba(255,255,255,.07);color:var(--dim)}.jc-fan{margin:0;padding:12px 16px;font-size:.9rem}.jc-fans{margin:0 0 6px;padding:0 16px 0 34px;font-size:.88rem;line-height:1.45}.jc-fans li{margin:0 0 6px}
+/* 06/11/2026 (paquet 213) — ÉCRAN LARGE, UNE SEULE COLONNE D'INFORMATIONS : la simulation et l'en-tête du match
+   côte à côte en haut, puis TOUT le reste de la fiche sur toute la largeur (la colonne de gauche n'est plus vide).
+   Mobile inchangé (sous 820 px, tout s'empile comme avant). */
+@media (min-width:820px){
+  .wrap{max-width:1280px}
+  .mdj{grid-template-columns:minmax(320px,400px) minmax(0,1fr);grid-auto-flow:row dense;align-items:start}
+  .mdj > div:first-child{grid-column:1;grid-row:1 / span 4}
+  .mdj > .fiche{display:contents}
+  .mdj > .fiche > *{grid-column:1 / -1;min-width:0}
+  .mdj > .fiche > .duelx, .mdj > .fiche > #post-zone, .mdj > .fiche > .essentiel{grid-column:2}
+}
 </style>
 </head>
 <body>
@@ -2267,6 +2283,44 @@ function tableauLive(m, r, fini, grand){
   const tete = grand ? `<span></span>${Array.from({length: ns}, (_, i) => `<span class="lv-hd">${i+1}</span>`).join('')}<span class="lv-hd">${esc(t('lv_pts'))}</span>` : '';
   return `<div class="lv-sb" style="--ns:${ns}">${tete}${ligne(0, m.home, SH, SA, h.tb, h.point)}${ligne(1, m.away, SA, SH, a.tb, a.point)}</div>`;
 }
+// 06/11/2026 (paquet 213) — LE TERRAIN : vue de dessus, home à gauche (cyan), away à droite (rose). Au centre, les jeux
+// du set en cours ; sur chaque moitié, le nom et les points du joueur ; la balle jaune chez le serveur, du côté où il
+// sert (égalité à droite du serveur quand le nombre de points joués dans le jeu est pair, avantage sinon).
+function terrainLive(m, r, fini){
+  const {h, a, srv} = cotesLive(r);
+  const SH = h.sets || [], SA = a.sets || [], i = SH.length - 1;
+  const gh = i >= 0 ? (+SH[i] || 0) : 0, ga = i >= 0 ? (+SA[i] || 0) : 0;
+  const tb = gh === 6 && ga === 6;
+  const val = x => { const v = String(x ?? '0').toUpperCase(); return ({'0':0,'15':1,'30':2,'40':3,'A':4,'AD':4})[v] ?? (parseInt(v,10) || 0); };
+  const joues = tb ? (parseInt(h.point,10)||0) + (parseInt(a.point,10)||0) : val(h.point) + val(a.point);
+  const egalite = joues % 2 === 0;
+  // terrain 360 × 200 : lignes de fond x = 20 et 340, filet x = 180 ; couloirs y = 30 et 170 (simple : 45 – 155)
+  const W = 360, Hh = 200;
+  let balle = '';
+  if (!fini && srv !== null) {
+    // le serveur de gauche regarde vers la droite : sa droite est en BAS ; celui de droite regarde vers la gauche : sa droite est en HAUT
+    const bas = srv === 0 ? egalite : !egalite;
+    const bx = srv === 0 ? 12 : 348, by = bas ? 132 : 68;
+    balle = `<circle cx="${bx}" cy="${by}" r="6" fill="#D4FF3A"><animate attributeName="r" values="6;7.5;6" dur="1.6s" repeatCount="indefinite"/></circle>`;
+  }
+  const ptsTxt = (v, x, c) => fini ? '' : `<g><rect x="${x-26}" y="120" width="52" height="32" rx="9" fill="rgba(14,10,36,.78)" stroke="${c}" stroke-opacity=".7"/><text x="${x}" y="143" text-anchor="middle" class="tp" style="fill:${c}">${esc(v ?? '0')}</text></g>`;
+  return `<div class="lv-terrain"><svg viewBox="0 0 ${W} ${Hh}" role="img" aria-label="${esc(court(m.home))} ${gh} – ${ga} ${esc(court(m.away))}">
+    <defs><linearGradient id="lvsol" x1="0" x2="1"><stop offset="0" stop-color="#1f2a6b"/><stop offset=".5" stop-color="#26307a"/><stop offset="1" stop-color="#1f2a6b"/></linearGradient></defs>
+    <rect x="0" y="0" width="${W}" height="${Hh}" rx="14" fill="#141040"/>
+    <rect x="20" y="30" width="320" height="140" fill="url(#lvsol)" stroke="rgba(255,255,255,.75)" stroke-width="1.6"/>
+    <line x1="20" x2="340" y1="45" y2="45" stroke="rgba(255,255,255,.6)" stroke-width="1.2"/><line x1="20" x2="340" y1="155" y2="155" stroke="rgba(255,255,255,.6)" stroke-width="1.2"/>
+    <line x1="95" x2="95" y1="45" y2="155" stroke="rgba(255,255,255,.6)" stroke-width="1.2"/><line x1="265" x2="265" y1="45" y2="155" stroke="rgba(255,255,255,.6)" stroke-width="1.2"/>
+    <line x1="95" x2="265" y1="100" y2="100" stroke="rgba(255,255,255,.6)" stroke-width="1.2"/>
+    <line x1="20" x2="26" y1="100" y2="100" stroke="rgba(255,255,255,.75)" stroke-width="1.6"/><line x1="334" x2="340" y1="100" y2="100" stroke="rgba(255,255,255,.75)" stroke-width="1.6"/>
+    <line x1="180" x2="180" y1="22" y2="178" stroke="#fff" stroke-width="2.5" stroke-dasharray="2 2"/>
+    <rect x="0" y="0" width="180" height="${Hh}" fill="#2EE6FF" opacity="${!fini && srv===0 ? .06 : 0}"/><rect x="180" y="0" width="180" height="${Hh}" fill="#FF4FAE" opacity="${!fini && srv===1 ? .06 : 0}"/>
+    <text x="100" y="20" text-anchor="middle" class="tn" style="fill:#2EE6FF">${esc(court(m.home))}</text>
+    <text x="260" y="20" text-anchor="middle" class="tn" style="fill:#FF4FAE">${esc(court(m.away))}</text>
+    <rect x="134" y="48" width="92" height="50" rx="10" fill="rgba(14,10,36,.88)" stroke="rgba(212,255,58,.35)"/>
+    <text x="180" y="90" text-anchor="middle" class="tg">${gh}  ${ga}</text>
+    <text x="180" y="63" text-anchor="middle" class="tl">${esc(fini ? t('live_termine') : (tb ? t('lv_m_tb') : (i <= 0 ? t('lv_set1') : t('lv_set', i+1))))}</text>
+    ${ptsTxt(h.point, 100, '#2EE6FF')}${ptsTxt(a.point, 260, '#FF4FAE')}${balle}</svg></div>`;
+}
 function barreLive(m, r, fini, grand){
   if (fini) return '';
   const p = pctLive(m, r); if (p == null) return '';
@@ -2524,7 +2578,7 @@ function rendMatchLive(){
   el.hidden = false;
   el.innerHTML = `<h3>🎾 ${esc(t(fini ? 'lv_titre_fin' : 'lv_titre'))}</h3><div style="padding:0 14px 14px">
     <div class="lv-top" style="margin-top:0">${fini ? `<span class="lv-fin">${esc(t('live_termine'))}</span>` : `<span class="lv-on">${esc(t('live_en_cours'))}</span>`}</div>
-    ${tableauLive(m, r, fini, true)}${barreLive(m, r, fini, true)}${corps}</div>`;
+    ${terrainLive(m, r, fini)}${tableauLive(m, r, fini, true)}${barreLive(m, r, fini, true)}${corps}</div>`;
 }
 // 06/11/2026 (paquet 210) — FORME ET FACE-À-FACE (descriptif, avant le match) : séries, réussite par rapport aux chances
 function rendAvantMatch(m){
