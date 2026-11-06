@@ -25,7 +25,7 @@ concurrency:
 
 jobs:
   bilan:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04   # 05/11/2026 : image figée (ubuntu-latest est passé à 26.04)
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v5
@@ -35,6 +35,7 @@ jobs:
           sparse-checkout: |
             /algo/
             /scripts/video_simulation.py
+            /scripts/installer_video.sh
             /scripts/sons.py
 
       - uses: actions/setup-python@v6
@@ -43,9 +44,8 @@ jobs:
 
       - name: Navigateur (Chromium)
         run: |
-          pip install --quiet playwright==1.48.0
-          python -m playwright install --with-deps chromium
-          fc-list | grep -qi 'Noto Color Emoji' || { sudo apt-get update -qq && sudo apt-get install -y -qq fonts-noto-color-emoji && fc-cache -f; }
+          # 05/11/2026 (paquet 194) : plus d'apt (miroir Ubuntu trop lent, vidéo annulée) — voir le script.
+          bash scripts/installer_video.sh
 
       - name: Carte bilan (FR puis EN)
         id: carte
