@@ -761,6 +761,12 @@
    "quoi": "SONDE TennisApi (à lancer à la main, une fois) : lieu exact de chaque match (ville, stade) dans le détail du match, et tableau du tournoi, pour préparer un lieu plus sûr (voyage, densité de l'air) et le mode tournoi. Rien ne change dans le pipeline.",
    "statut": "etude",
    "paquet": 206
+  },
+  {
+   "date": "2026-11-06",
+   "quoi": "CORRECTION des scores en direct : aucun match n'apparaissait, parce que TennisApi décrit un joueur de simple avec une liste d'équipiers VIDE, que le filtre « simples seulement » prenait pour un double. Les matchs de simple en cours s'affichent désormais.",
+   "statut": "production",
+   "paquet": 207
   }
  ]
 }
