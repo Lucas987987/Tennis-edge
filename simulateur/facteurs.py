@@ -143,6 +143,13 @@ MIN_MATCHS_CIRCUIT = 100
 #  · adversaires_communs : sur les adversaires que les deux joueurs ont affrontés (archive 4 ans + feuilles),
 #    qui a gagné le plus de points au-delà de l'attendu — un face-à-face indirect.
 GROUPES['matchup'] = {'service': ['mu_srv', 'mu_ret_adv'], 'aces': ['mu_srv']}
+# 06/11/2026 (paquet 208) — DOTATION du tournoi (TennisApi, scripts/tournois_infos.py, en dollars) :
+#  · dotation_niveau : log10 de la dotation − 5,5 (les deux serveurs : un tournoi plus riche = plateau plus relevé,
+#    services plus forts ?) ;
+#  · dot_ecart : le joueur joue-t-il PLUS GROS que d'habitude (dotation ici − moyenne de ses tournois des 60 derniers
+#    jours, en log10) — le qualifié qui monte de Challenger en ATP, le joueur ATP qui redescend en Challenger.
+# Même règle que les autres groupes, jugée circuit par circuit (199).
+GROUPES['dotation'] = {'service': ['dotation_niveau', 'dot_ecart_srv', 'dot_ecart_adv']}
 GROUPES['adversaires_communs'] = {'service': ['communs_srv']}
 K_MU = 20.0                      # ~6 matchs avant d'y croire (n × force² ≈ 3 par match)
 K_COM = 300.0                    # points communs avant d'y croire
@@ -257,15 +264,21 @@ ISO3_2 = {'DZA': 'DZ', 'CIV': 'CI', 'MNP': 'MP', 'AGO': 'AO', 'IRN': 'IR', 'SMR'
 
 
 def charger_lieux(racine):
-    """(tournois, météo) écrits par scripts/lieux_tournois.py ; vides si absents."""
+    """(tournois, météo) écrits par scripts/lieux_tournois.py ; vides si absents.
+    06/11/2026 (paquet 208) : chaque tournoi reçoit aussi « dotations » {année: dollars} de scripts/tournois_infos.py."""
     out = []
-    for nom in ('tournois.json', 'meteo.json'):
+    for nom in ('tournois.json', 'meteo.json', 'tournois_infos.json'):
         try:
             with open(os.path.join(racine, 'feuilles', nom), encoding='utf-8') as f:
                 out.append(json.load(f))
         except (OSError, ValueError):
             out.append({})
-    return tuple(out)
+    T, M, INF = out
+    for i, d in (INF or {}).items():
+        dots = {an: x['dotation_usd'] for an, x in d.items() if an.isdigit() and isinstance(x, dict) and x.get('dotation_usd')}
+        if dots:
+            T.setdefault(i, {'nom': d.get('nom')})['dotations'] = dots
+    return T, M
 K_H2H = 150.0
 STYLE_COMPS = (('a', 'S'), ('w1', 'S'), ('w2j', 'S'), ('w1', 'R'), ('w2j', 'R'))
 
@@ -533,7 +546,25 @@ class Historique:
             return min(ici, 4) / 4, absence, min(ailleurs, 5) / 5, voyage, km
         ici_j, abs_j, ench_j, voy_j, km_j = parcours(j)
         ici_a, abs_a, ench_a, voy_a, km_a = parcours(adv)
+
+        def dot(tr, tt):
+            D = (self.lieux.get(tr) or {}).get('dotations') or {}
+            if not D:
+                return None
+            an = str(dt.datetime.fromtimestamp(tt, dt.timezone.utc).year)
+            v = D.get(an) or D[max(D)]
+            return math.log10(v) if v and v > 0 else None
+        d_ici = dot(tournoi, t)
+
+        def dot_ecart(p):
+            if d_ici is None:
+                return 0.0
+            V = [x for x in (dot(tr, tt) for tt, tr in self.parcours.get(p, ())
+                             if tr != tournoi and t - 60 * 86400 <= tt < t) if x is not None]
+            return max(min(d_ici - sum(V) / len(V), 2.0), -2.0) if V else 0.0
         cond = {'altitude': (lieu.get('altitude') or 0.0) / 1000.0, 'interieur': inter,
+                'dotation_niveau': (d_ici - 5.5) if d_ici is not None else 0.0,
+                'dot_ecart_srv': dot_ecart(j), 'dot_ecart_adv': dot_ecart(adv),
                 'air_leger': DA.air_leger(lieu, met, inter),
                 'chaleur': (1 - inter) * ((met[0] - 25.0) / 10.0) if met else 0.0,
                 'vent': (1 - inter) * ((met[1] - 15.0) / 10.0) if met else 0.0,
