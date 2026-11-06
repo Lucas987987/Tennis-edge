@@ -130,6 +130,10 @@ K_PRESSION = 60.0
 # MIN_MATCHS_CIRCUIT matchs de jugement), les points concernés pas moins bien prédits ; puis la stabilité
 # (deux semaines de suite). Un seul coefficient pour tous les circuits : la physique de la balle est la même.
 GROUPES['densite_air'] = {'service': ['air_leger'], 'aces': ['air_leger']}
+# 06/11/2026 (paquet 199) — VOYAGE, groupe à part (avant, noyé dans « conditions » et mesuré sur des lieux faux
+# jusqu'au paquet 190) : décalage horaire ET distance depuis le tournoi précédent, s'il a été joué dans les 10 jours.
+# Les joueurs de Challenger changent de continent presque chaque semaine. Même règle que les autres groupes.
+GROUPES['voyage'] = {'service': ['voyage_srv', 'voyage_adv', 'voyage_km_srv', 'voyage_km_adv']}
 GROUPES_PAR_CIRCUIT = {'densite_air'}
 MIN_MATCHS_CIRCUIT = 100
 # 24/10/2026 — MATCHUP (cas Li – Krueger : « Li ne supporte pas les grosses serveuses ») et ADVERSAIRES COMMUNS.
@@ -290,6 +294,14 @@ def _sg(z):
 
 
 # ------------------------------------------------------------------ historique (accumulateurs point-in-time)
+def distance_km(la1, lo1, la2, lo2):
+    """Distance à vol d'oiseau (km)."""
+    p1, p2 = math.radians(la1), math.radians(la2)
+    dp, dl = p2 - p1, math.radians(lo2 - lo1)
+    a = math.sin(dp / 2) ** 2 + math.cos(p1) * math.cos(p2) * math.sin(dl / 2) ** 2
+    return 2 * 6371.0 * math.asin(min(1.0, math.sqrt(a)))
+
+
 class Historique:
     """Ce qu'on sait de chaque joueur et de chaque tournoi à un instant donné."""
 
@@ -505,25 +517,28 @@ class Historique:
         def parcours(p):
             L = [e for e in self.parcours.get(p, ()) if e[0] < t]
             if not L:
-                return 0.0, 0.0, 0.0, 0.0
+                return 0.0, 0.0, 0.0, 0.0, 0.0
             der = L[-1]
             absence = 1.0 if t - der[0] > ABSENCE_J * 86400 else 0.0
             ici = sum(1 for tt, tr in L if tr == tournoi and t - tt <= 14 * 86400)
             ailleurs = sum(1 for tt, tr in L if tr != tournoi and t - tt <= 10 * 86400)
-            voyage = 0.0
+            voyage = km = 0.0
             if der[1] != tournoi and t - der[0] <= 10 * 86400:
                 l0 = self.lieux.get(der[1]) or {}
                 if l0.get('lon') is not None and lieu.get('lon') is not None:
                     dlon = abs(l0['lon'] - lieu['lon'])
                     voyage = min(min(dlon, 360 - dlon) / 15.0, 12.0) / 6.0          # heures de décalage / 6
-            return min(ici, 4) / 4, absence, min(ailleurs, 5) / 5, voyage
-        ici_j, abs_j, ench_j, voy_j = parcours(j)
-        ici_a, abs_a, ench_a, voy_a = parcours(adv)
+                    if l0.get('lat') is not None and lieu.get('lat') is not None:
+                        km = min(distance_km(l0['lat'], l0['lon'], lieu['lat'], lieu['lon']), 15000.0) / 5000.0
+            return min(ici, 4) / 4, absence, min(ailleurs, 5) / 5, voyage, km
+        ici_j, abs_j, ench_j, voy_j, km_j = parcours(j)
+        ici_a, abs_a, ench_a, voy_a, km_a = parcours(adv)
         cond = {'altitude': (lieu.get('altitude') or 0.0) / 1000.0, 'interieur': inter,
                 'air_leger': DA.air_leger(lieu, met, inter),
                 'chaleur': (1 - inter) * ((met[0] - 25.0) / 10.0) if met else 0.0,
                 'vent': (1 - inter) * ((met[1] - 15.0) / 10.0) if met else 0.0,
                 'domicile_srv': domicile(j), 'domicile_adv': domicile(adv), 'voyage_srv': voy_j, 'voyage_adv': voy_a,
+                'voyage_km_srv': km_j, 'voyage_km_adv': km_a,
                 'deja_ici_srv': ici_j, 'deja_ici_adv': ici_a, 'absence_srv': abs_j, 'absence_adv': abs_a,
                 'enchaine_srv': ench_j, 'enchaine_adv': ench_a}
         def blessure(p):
@@ -895,6 +910,53 @@ def juger_groupe(appr, juge, g):
     return rapport
 
 
+MIN_CIRCUIT_APPR, MIN_CIRCUIT_JUGE = 300, 300
+ADOPTION_DIRECTE_PAR_CIRCUIT = True
+# 06/11/2026 — décision de Lucas : le groupe VOYAGE entre tout de suite (sans la deuxième semaine) ; il sort, comme
+# les autres, après deux semaines de suite moins bien.
+DIRECTS = {'voyage'}
+
+
+def juger_par_circuit(appr, juge, doc):
+    """{circuit: {adoptes, coefs, groupes, matchs}} — voir la règle dans main (paquet 199)."""
+    import stabilite as ST
+    try:
+        with open(SORTIE, encoding='utf-8') as f:
+            prec = json.load(f)
+    except (OSError, ValueError):
+        prec = {}
+    global_en_place = set(prec.get('adoptes') or [])
+    out = {}
+    etat_st = ST.lire()
+    for circ in ('ATP', 'WTA', 'CH'):
+        A = [x for x in appr if x.get('circuit') == circ]
+        J = [x for x in juge if x.get('circuit') == circ]
+        if len(A) < MIN_CIRCUIT_APPR or len(J) < MIN_CIRCUIT_JUGE:
+            out[circ] = {'matchs': {'apprentissage': len(A), 'jugement': len(J)}, 'adoptes': list(doc.get('adoptes') or []),
+                         'note': f"trop peu de matchs ({len(A)} / {len(J)}) : décision globale"}
+            continue
+        p_prec = (prec.get('par_circuit') or {}).get(circ) or {}
+        premier = not ('adoptes' in p_prec and not p_prec.get('note'))
+        en_place = global_en_place if premier else set(p_prec['adoptes'])
+        G = {}
+        for g in GROUPES:
+            r = juger_groupe(A, J, g)
+            if premier and ADOPTION_DIRECTE_PAR_CIRCUIT:
+                # 06/11/2026 — décision de Lucas : le PREMIER verdict par circuit s'applique tout de suite (entrées
+                # comme sorties) ; ensuite la stabilité habituelle, donc retrait après deux semaines moins bien.
+                etat_st[f"facteur:{g}:{circ}"] = {'adopte': bool(r['adopte']), 'semaine': None, 'serie_avant': 0, 'serie': 0}
+                G[g] = {'adopte_brut': r['adopte'], 'adopte': r['adopte'], 'stabilite': 'adoption directe (06/11)',
+                        'raison': r['raison']}
+                continue
+            ok, note = ST.decider(etat_st, f"facteur:{g}:{circ}", g in en_place, r['adopte'])
+            G[g] = {'adopte_brut': r['adopte'], 'adopte': ok, 'stabilite': note, 'raison': r['raison']}
+        adoptes = [g for g, r in G.items() if r['adopte']]
+        out[circ] = {'matchs': {'apprentissage': len(A), 'jugement': len(J)}, 'adoptes': adoptes,
+                     'coefs': apprendre(A + J, adoptes) if adoptes else {}, 'groupes': G}
+    ST.ecrire(etat_st)
+    return out
+
+
 # ------------------------------------------------------------------ 28/10/2026 : MODÈLE COMPLET (« rien n'écarter »)
 # Toutes les variables de tous les groupes — adoptés ou non — données d'un coup à des arbres (arbres.py, boosting
 # binomial sur les points de service, départ = base ajustée aux adversaires). Les arbres trouvent eux-mêmes ce qui
@@ -1178,6 +1240,11 @@ def main(argv):
                 en_place = set(json.load(f).get('adoptes') or [])
         except (OSError, ValueError):
             en_place = set()
+        for g in DIRECTS:
+            if g not in en_place and (doc['groupes'].get(g) or {}).get('adopte') and not etat_st.get(f"facteur:{g}:direct"):
+                en_place.add(g)                                 # décision directe : une seule fois
+                etat_st[f"facteur:{g}"] = {'adopte': True, 'semaine': None, 'serie_avant': 0, 'serie': 0}
+                etat_st[f"facteur:{g}:direct"] = True
         for g, r in doc['groupes'].items():
             ok, note = ST.decider(etat_st, f"facteur:{g}", g in en_place, r['adopte'])
             r['adopte_brut'], r['adopte'], r['stabilite'] = r['adopte'], ok, note
@@ -1192,6 +1259,19 @@ def main(argv):
             doc['ensemble_sur_le_jugement'] = {'base': {'log_loss': ll0, 'reussite_pct': ok0},
                                                'avec': {'log_loss': ll1, 'reussite_pct': ok1}}
         doc['verdict'] = f"groupes adoptés : {', '.join(doc['adoptes']) or 'aucun'}"
+        # 06/11/2026 (paquet 199) — décision de Lucas (04/11) : « un signal positif sur un circuit doit être utilisé
+        # sur ce circuit ». RÈGLE FIXÉE LE 06/11/2026, AVANT TOUT RÉSULTAT : chaque groupe est AUSSI jugé circuit par
+        # circuit, appris et jugé sur les seules feuilles du circuit (mêmes fenêtres, même règle que ci-dessus),
+        # quand le circuit a au moins MIN_CIRCUIT_APPR matchs d'apprentissage et MIN_CIRCUIT_JUGE de jugement ;
+        # stabilité propre au circuit (deux semaines de suite pour entrer comme pour sortir), départ = la décision
+        # globale en place (rien ne bascule d'un coup). Coefficients ré-appris sur les feuilles du circuit.
+        # Circuit trop petit : la décision globale s'applique.
+        try:
+            doc['par_circuit'] = juger_par_circuit(appr, juge, doc)
+            for circ, b in doc['par_circuit'].items():
+                print(f"  par circuit {circ:<10} {b.get('note') or ', '.join(b['adoptes']) or 'aucun'}", flush=True)
+        except Exception as e:  # noqa: BLE001 — la décision globale reste valable
+            print(f"::warning::jugement par circuit non fait : {type(e).__name__}: {e}")
         # 28/10/2026 — modèle complet (toutes les variables, arbres) contre les groupes en place
         try:
             try:
