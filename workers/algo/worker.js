@@ -8,6 +8,7 @@
 //    CLE_PRIVEE du worker). Le Lab la lit via Tennis_Edge_Lab/prive.js. Sans clé : 401, et rien ne fuit.
 //
 // 4. SCORES EN DIRECT : /live (voir plus bas).
+// 5. STATISTIQUES EN DIRECT : /live/stats?id= (voir plus bas).
 //
 // Déployé par .github/workflows/deploy_algo.yml (secrets CLE_PRIVEE, GH_TOKEN et RAPIDAPI_KEY posés depuis les
 // secrets GitHub).
@@ -166,9 +167,75 @@ export async function live(req, env) {
   return rep(o);
 }
 
+// 5. STATISTIQUES EN DIRECT (06/11/2026) : GET /live/stats?id=<id TennisApi> → la feuille du match en cours
+//    (/api/tennis/event/{id}/statistics, période « ALL »), gardée 60 s par match en mémoire et au coffre : 100 visiteurs
+//    sur la même fiche = 1 requête par minute. La page ne la demande que pour la fiche ouverte d'un match en cours.
+//    Plafond de requêtes TennisApi par jour (UTC) : variable LIVE_STATS_PLAFOND du worker, 6 000 par défaut ;
+//    au-delà, la dernière feuille connue est renvoyée avec plafond: true jusqu'au lendemain (les scores continuent).
+export const STATS_TTL_MS = 60 * 1000;
+const STATS_MEMOIRE = new Map();
+const COMPTEUR = { jour: null, n: 0 };
+
+export function compacterStats(doc) {
+  for (const p of (doc && doc.statistics) || []) {
+    if (String(p.period || 'ALL') !== 'ALL') continue;
+    const out = {};
+    for (const g of p.groups || []) for (const it of g.statisticsItems || []) {
+      const k = it.key || it.name;
+      if (k) out[k] = [it.homeValue ?? null, it.homeTotal ?? null, it.awayValue ?? null, it.awayTotal ?? null];
+    }
+    return Object.keys(out).length ? out : null;
+  }
+  return null;
+}
+
+async function compter(env) {
+  const jour = new Date().toISOString().slice(0, 10), cle = `live/compteur/${jour}.json`;
+  if (COMPTEUR.jour !== jour) {
+    COMPTEUR.jour = jour; COMPTEUR.n = 0;
+    if (env.COFFRE) { try { const o = await env.COFFRE.get(cle); if (o) COMPTEUR.n = JSON.parse(await o.text()).n || 0; } catch (e) { /* 0 */ } }
+  }
+  return { jour, cle };
+}
+
+export async function liveStats(req, env, url) {
+  const h = { ...SECURITE, 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'public, max-age=30' };
+  const rep = (o, status = 200) => new Response(JSON.stringify(o), { status, headers: h });
+  const id = url.searchParams.get('id') || '';
+  if (!/^\d{1,12}$/.test(id)) return rep({ ok: false, message: 'id invalide' }, 400);
+  const cleR2 = `live/stats/${id}.json`;
+  let connu = STATS_MEMOIRE.get(id) || null;
+  if (connu && Date.now() - connu.maj < STATS_TTL_MS) return rep(connu);
+  if (env.COFFRE) {
+    try { const o = await env.COFFRE.get(cleR2); if (o) { const x = JSON.parse(await o.text()); if (!connu || x.maj > connu.maj) connu = x; } } catch (e) { /* rien */ }
+    if (connu && Date.now() - connu.maj < STATS_TTL_MS) { STATS_MEMOIRE.set(id, connu); return rep(connu); }
+  }
+  const plafond = parseInt(env.LIVE_STATS_PLAFOND, 10) || 6000;
+  const { cle } = await compter(env);
+  if (COMPTEUR.n >= plafond) return rep({ ...(connu || { ok: false, stats: null }), plafond: true });
+  if (!env.RAPIDAPI_KEY) return rep({ ok: false, message: 'clé TennisApi absente', stats: null });
+  let o;
+  try {
+    COMPTEUR.n++;
+    if (env.COFFRE) { try { await env.COFFRE.put(cle, JSON.stringify({ n: COMPTEUR.n })); } catch (e) { /* mémoire seule */ } }
+    const r = await fetch(`https://${HOTE_TENNIS}/api/tennis/event/${id}/statistics`, {
+      headers: { 'X-RapidAPI-Key': env.RAPIDAPI_KEY, 'X-RapidAPI-Host': HOTE_TENNIS, Accept: 'application/json' } });
+    o = r.ok ? { ok: true, id: +id, maj: Date.now(), stats: compacterStats(await r.json()) }
+      // 404 = pas encore de statistiques (début de match) : on le garde 60 s comme une réponse normale
+             : { ok: r.status === 404, id: +id, maj: Date.now(), stats: connu ? connu.stats : null, message: `TennisApi : HTTP ${r.status}` };
+  } catch (e) {
+    o = { ok: false, id: +id, maj: Date.now(), stats: connu ? connu.stats : null, message: 'TennisApi injoignable.' };
+  }
+  STATS_MEMOIRE.set(id, o);
+  if (STATS_MEMOIRE.size > 300) STATS_MEMOIRE.delete(STATS_MEMOIRE.keys().next().value);
+  if (env.COFFRE) { try { await env.COFFRE.put(cleR2, JSON.stringify(o)); } catch (e) { /* mémoire seule */ } }
+  return rep(o);
+}
+
 export default {
   async fetch(req, env) {
     const url = new URL(req.url);
+    if (url.pathname === '/live/stats') return liveStats(req, env, url);
     if (url.pathname === '/live') return live(req, env);
     if (url.pathname === '/video') return video(req, env);
     if (url.pathname.startsWith('/prive/')) return prive(req, env, decodeURIComponent(url.pathname.slice(7)));

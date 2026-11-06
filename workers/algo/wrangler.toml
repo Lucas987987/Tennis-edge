@@ -11,3 +11,8 @@ keep_vars = true
 [[r2_buckets]]
 binding = "COFFRE"
 bucket_name = "tennis-edge-courbes"
+
+# 06/11/2026 : plafond journalier des requêtes TennisApi pour les statistiques en direct (/live/stats).
+# Pour l'augmenter : changer le nombre ici (le déploiement suit tout seul).
+[vars]
+LIVE_STATS_PLAFOND = "6000"

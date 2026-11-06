@@ -116,3 +116,31 @@ test('live : sans clé → réponse vide expliquée, pas d’erreur', async () =
   const o = await (await live(req('/live'), {})).json();
   assert.ok(Array.isArray(o.matchs));
 });
+
+// 06/11/2026 — statistiques en direct
+import { compacterStats } from './worker.js';
+const DOC_STATS = { statistics: [
+  { period: 'ALL', groups: [{ statisticsItems: [{ key: 'aces', homeValue: 3, awayValue: 1 }, { key: 'firstServeAccuracy', homeValue: 20, homeTotal: 30, awayValue: 18, awayTotal: 25 }] }] },
+  { period: '1ST', groups: [{ statisticsItems: [{ key: 'aces', homeValue: 2, awayValue: 0 }] }] }] };
+
+test('stats : période ALL seulement, valeurs et totaux', () => {
+  const s = compacterStats(DOC_STATS);
+  assert.deepEqual(s.aces, [3, null, 1, null]);
+  assert.deepEqual(s.firstServeAccuracy, [20, 30, 18, 25]);
+  assert.equal(compacterStats({}), null);
+});
+
+test('stats : id douteux → 400 ; une requête par minute et par match ; plafond respecté', async () => {
+  let appels = 0; const stock = {};
+  const envS = { RAPIDAPI_KEY: 'k', LIVE_STATS_PLAFOND: '2', COFFRE: { get: async k => (k in stock ? { text: async () => stock[k] } : null), put: async (k, v) => { stock[k] = v; } } };
+  globalThis.fetch = async (u) => { appels++; assert.match(u, /\/api\/tennis\/event\/\d+\/statistics$/); return new Response(JSON.stringify(DOC_STATS), { status: 200 }); };
+  assert.equal((await worker.fetch(req('/live/stats?id=../x'), envS)).status, 400);
+  const a = await (await worker.fetch(req('/live/stats?id=11'), envS)).json();
+  await worker.fetch(req('/live/stats?id=11'), envS);
+  assert.equal(appels, 1);
+  assert.equal(a.stats.aces[0], 3);
+  await worker.fetch(req('/live/stats?id=12'), envS);
+  const c = await (await worker.fetch(req('/live/stats?id=13'), envS)).json();
+  assert.equal(appels, 2);
+  assert.equal(c.plafond, true);
+});
