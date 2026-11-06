@@ -211,6 +211,16 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           SUIVI_DESACCORDS_SORTIE: ${{ runner.temp }}/suivi_desaccords_pinnacle.json
         run: python simulateur/suivi_desaccords_pinnacle.py . --telegram
+      # 06/11/2026 (paquet 196) : l'algo apporte-t-il une information que la clôture n'a pas ? Règle fixée avant,
+      # par circuit — Telegram privé, rapport hors du dépôt. Rien ne change dans l'algo.
+      - name: Algo contre clôture (Telegram, canal privé)
+        if: always()
+        continue-on-error: true
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          ALGO_CLOTURE_SORTIE: ${{ runner.temp }}/rapport_algo_cloture.json
+        run: python simulateur/etude_algo_cloture.py . --telegram
       - name: Publier
         run: |
           set -euo pipefail
