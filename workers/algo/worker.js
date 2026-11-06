@@ -256,11 +256,13 @@ async function liveDetail(req, env, url, genre) {
   const id = url.searchParams.get('id') || '';
   if (!/^\d{1,12}$/.test(id)) return rep({ ok: false, message: 'id invalide' }, 400);
   const cleR2 = `live/${genre}/${id}.json`, cleM = `${genre}:${id}`;
+  // 06/11/2026 (paquet 215) : le point par point de la fiche ouverte se rafraîchit toutes les 30 s (stats : 60 s)
+  const TTL = genre === 'points' ? 30 * 1000 : STATS_TTL_MS;
   let connu = STATS_MEMOIRE.get(cleM) || null;
-  if (connu && Date.now() - connu.maj < STATS_TTL_MS) return rep(connu);
+  if (connu && Date.now() - connu.maj < TTL) return rep(connu);
   if (env.COFFRE) {
     try { const o = await env.COFFRE.get(cleR2); if (o) { const x = JSON.parse(await o.text()); if (!connu || x.maj > connu.maj) connu = x; } } catch (e) { /* rien */ }
-    if (connu && Date.now() - connu.maj < STATS_TTL_MS) { STATS_MEMOIRE.set(cleM, connu); return rep(connu); }
+    if (connu && Date.now() - connu.maj < TTL) { STATS_MEMOIRE.set(cleM, connu); return rep(connu); }
   }
   const plafond = parseInt(env.LIVE_STATS_PLAFOND, 10) || 6000;
   const { cle } = await compter(env);
