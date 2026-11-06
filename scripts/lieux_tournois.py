@@ -46,7 +46,7 @@ PREVISION = 'https://api.open-meteo.com/v1/forecast'
 DAILY = 'temperature_2m_max,wind_speed_10m_max'
 HOURLY = 'temperature_2m,relative_humidity_2m,surface_pressure'
 HEURES_JEU = range(11, 21)          # 11 h → 20 h, heure locale
-GEO_V = 2
+GEO_V = 3          # 06/11/2026 (paquet 208) : lieu HÔTE donné par TennisApi (tournois_infos.py) avant le nom
 # Résultats de géocodage qui ne sont pas une ville : pays, région, continent.
 CODES_NON_VILLE = ('PCL', 'ADM1', 'ADM2', 'CONT', 'RGN')
 DELAI_ARCHIVE_J = 6
@@ -89,6 +89,19 @@ def ville_pays(nom):
     if ville and pays and ville.lower() == pays.lower():
         ville = None
     return ville or None, pays
+
+
+F_INFOS = os.path.join(DOSSIER, 'tournois_infos.json')
+
+
+def lieu_hote(infos, i):
+    """(ville, pays) hôtes de la saison la plus récente connue (scripts/tournois_infos.py), ou (None, None)."""
+    d = infos.get(str(i)) or {}
+    for an in sorted((k for k in d if k.isdigit()), reverse=True):
+        x = d[an] or {}
+        if x.get('ville'):
+            return x['ville'], x.get('pays')
+    return None, None
 
 
 def choisir_resultat(resultats, pays):
@@ -184,6 +197,7 @@ def semaines(jours):
 def main(argv):
     budget = int(argv[1]) if len(argv) > 1 and argv[1] else 400
     T, MET = lire(F_TOURNOIS, {}), lire(F_METEO, {})
+    INFOS = lire(F_INFOS, {})
     vus = tournois_des_feuilles()
     c = Client(budget)
     aujourd = dt.datetime.now(dt.timezone.utc).date()
@@ -191,10 +205,14 @@ def main(argv):
     try:
         for i, e in vus.items():
             t0 = T.get(i) or {}
-            if t0.get('geo_v') == GEO_V and (t0.get('lat') is not None or t0.get('essais', 0) >= 2):
+            vh, ph = lieu_hote(INFOS, i)
+            a_jour = t0.get('geo_v') == GEO_V and (t0.get('lat') is not None or t0.get('essais', 0) >= 2)
+            if a_jour and not (vh and t0.get('source') != 'hote'):   # le lieu hôte arrivé après coup : on refait
                 t0['interieur'] = e['interieur']
                 continue
-            ville, pays = ville_pays(e['nom'])
+            # 06/11/2026 (paquet 208) : la ville et le pays HÔTES de TennisApi passent avant le nom du tournoi
+            ville, pays = (vh, ph) if vh else ville_pays(e['nom'])
+            source = 'hote' if vh else 'nom'
             if not ville:
                 T[i] = {'nom': e['nom'], 'essais': 2, 'geo_v': GEO_V, 'interieur': e['interieur']}
                 MET.pop(i, None)
@@ -207,12 +225,13 @@ def main(argv):
             if r:
                 T[i] = {'nom': e['nom'], 'ville': ville, 'pays': r.get('country'), 'code': r.get('country_code'),
                         'lat': r.get('latitude'), 'lon': r.get('longitude'), 'altitude': r.get('elevation'),
-                        'fuseau': r.get('timezone'), 'interieur': e['interieur'], 'geo_v': GEO_V}
+                        'fuseau': r.get('timezone'), 'interieur': e['interieur'], 'geo_v': GEO_V, 'source': source}
                 if (t0.get('lat'), t0.get('lon')) != (r.get('latitude'), r.get('longitude')):
                     MET.pop(i, None)                               # météo prise ailleurs : à redemander
             else:
                 ess = (t0.get('essais', 0) if t0.get('geo_v') == GEO_V else 0) + 1
-                T[i] = {'nom': e['nom'], 'ville': ville, 'essais': ess, 'geo_v': GEO_V, 'interieur': e['interieur']}
+                T[i] = {'nom': e['nom'], 'ville': ville, 'essais': ess, 'geo_v': GEO_V, 'interieur': e['interieur'],
+                        'source': source}
                 MET.pop(i, None)
         for i, e in vus.items():
             t = T.get(i) or {}
