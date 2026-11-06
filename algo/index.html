@@ -398,7 +398,7 @@ body.carte #video{display:block;width:1080px;height:1350px}
 .cv-h{font-size:1rem;margin:18px 0 4px}.cv-p{color:var(--dim);font-size:.85rem;margin:0 0 8px}.cv-wrap{overflow-x:auto}.cv{font-size:.85rem;width:100%}.cv td,.cv th{padding:6px 5px}.cv td:not(:first-child),.cv th:not(:first-child){text-align:right;white-space:nowrap}.cv-n{color:var(--dim);font-size:.75rem}.ds-t{table-layout:fixed}.ds-t th:first-child,.ds-t td:first-child{width:40%;white-space:normal}.ds-t th{font-size:.78rem}.fs-t{table-layout:fixed}.fs-t .jc-st{white-space:normal;display:inline-block;text-align:center;line-height:1.2;max-width:100%}.fs-t th:first-child,.fs-t td:first-child{width:52%;white-space:normal;overflow-wrap:anywhere}.fs-t td:not(:first-child),.fs-t th:not(:first-child){white-space:normal}
 .essentiel ul{list-style:none;margin:0;padding:4px 16px 16px;display:grid;gap:6px}.essentiel li{padding:7px 10px;border-radius:9px;background:rgba(255,255,255,.04);border-left:3px solid var(--dim);font-size:.92rem;line-height:1.4}.essentiel li.plus{border-left-color:var(--ok)}.essentiel li.moins{border-left-color:var(--ko)}.essentiel li.info{border-left-color:var(--ball)}
 .evol{margin:6px 0 0;color:var(--dim);font-size:.82rem}
-.live-l:empty{display:none}.live-l{display:block;margin:6px 0 0;font-size:.85rem;font-variant-numeric:tabular-nums;color:var(--txt,inherit)}.live-l .rouge{color:var(--ko);font-weight:700}.live-l .fin{color:var(--dim);font-weight:700}.live-l sup{font-size:.7em}.badge.peu{background:rgba(255,107,134,.16);color:var(--ko)}
+.live-l:empty{display:none}.live-l{display:block;margin:6px 0 0;font-size:.85rem;font-variant-numeric:tabular-nums;color:var(--txt,inherit)}.live-l .rouge{color:var(--ko);font-weight:700}.live-l .fin{color:var(--dim);font-weight:700}.live-l sup{font-size:.7em}.live-l .avant{color:var(--dim)}.badge.peu{background:rgba(255,107,134,.16);color:var(--ko)}
 .res li.avec-am{grid-template-columns:1.8em 1fr auto}.res li .am{grid-column:1/-1}.am summary{cursor:pointer;font-weight:600;font-size:.88rem;color:var(--ball);min-height:36px;display:flex;align-items:center}.am h4{margin:10px 0 4px;font-size:.88rem}.am-t{font-size:.85rem;width:100%}.am-t td{vertical-align:top}.am-t th,.am-t td:first-child{text-align:left}.am-t td+td{text-align:right}.am-ok{color:var(--ok)}.am-ko{color:var(--ko)}.am .d{color:var(--dim);font-size:.8rem}
 .jc{list-style:none;margin:0;padding:0}.jc li{display:grid;grid-template-columns:auto 1fr;gap:10px;padding:10px 16px;border-top:1px solid var(--line);font-size:.9rem;align-items:start}.jc .d{color:var(--dim);font-size:.82rem}.jc-st{font-size:.72rem;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap;margin-top:2px}.jc-st.production{background:rgba(69,240,160,.16);color:var(--ok)}.jc-st.candidat{background:rgba(212,255,58,.14);color:var(--ball)}.jc-st.rejete{background:rgba(255,255,255,.07);color:var(--dim)}.jc-fan{margin:0;padding:12px 16px;font-size:.9rem}.jc-fans{margin:0 0 6px;padding:0 16px 0 34px;font-size:.88rem;line-height:1.45}.jc-fans li{margin:0 0 6px}
 </style>
@@ -731,6 +731,8 @@ const T = {
   a_fin_stats:(a1,a2,e1,e2)=>`Aces dans ce match : <b>${a1} – ${a2}</b> (l'algo en prévoit ${e1} – ${e2}).`,
   lg_total:k=>`+ de ${k} jeux`, lg_tb:'Un tie-break', lg_3s:n=>`${n} sets`, lg_hand:(x,k)=>`${x} −${k} jeux`,
   live_en_cours:'En direct', live_termine:'Terminé', live_sert:n=>`${n} au service`,
+  live_pct:(n,p)=>`${n} ${p} avec le score`, live_avant:p=>`avant le match : ${p}`,
+  live_aide:'Même modèle qu’avant le match, repris depuis le score actuel : chaque point restant est simulé avec les mêmes probabilités au service. Le niveau des joueurs n’est pas réévalué pendant le match.',
   vit_titre:'Vitesse du court', vit_echelle:['Lent','Moyen','Rapide'], vit_cpi:(o,an)=>`CPI ${o?'officiel':'estimé'} ${an}`,
   vit_ecart:d=>`${d>0?'+':''}${dec(d,1)} vs l'an dernier`, vit_hist:n=>`Les ${n} dernières éditions`, vit_leg:'● CPI officiel · ○ estimé par l’algo',
   vit_note:'Notre mesure retire le niveau des joueurs du tableau : elle mesure le court, pas le plateau. Information : la vitesse sert à prévoir aces et service, pas le vainqueur.',
@@ -961,6 +963,8 @@ const T = {
   a_fin_stats:(a1,a2,e1,e2)=>`Aces in this match: <b>${a1} – ${a2}</b> (the algorithm expects ${e1} – ${e2}).`,
   lg_total:k=>`Over ${k} games`, lg_tb:'A tie-break', lg_3s:n=>`${n} sets`, lg_hand:(x,k)=>`${x} −${k} games`,
   live_en_cours:'Live', live_termine:'Finished', live_sert:n=>`${n} serving`,
+  live_pct:(n,p)=>`${n} ${p} given the score`, live_avant:p=>`before the match: ${p}`,
+  live_aide:'Same model as before the match, restarted from the current score: every remaining point is simulated with the same serve probabilities. The players’ level is not re-rated during the match.',
   vit_titre:'Court speed', vit_echelle:['Slow','Medium','Fast'], vit_cpi:(o,an)=>`${o?'Official':'Estimated'} CPI ${an}`,
   vit_ecart:d=>`${d>0?'+':''}${dec(d,1)} vs last year`, vit_hist:n=>`Last ${n} editions`, vit_leg:'● official CPI · ○ estimated by the algorithm',
   vit_note:'Our measure removes the players’ level: it measures the court, not the field. Information only: speed helps forecast aces and serve, not the winner.',
@@ -2140,7 +2144,7 @@ function matchsFiltres(){
 }
 // 06/11/2026 — SCORES EN DIRECT : la page interroge /live (worker, 30 s de cache, TennisApi) toutes les 30 s tant
 // qu'un match de la liste peut être en cours et que l'onglet est visible. Le % affiché reste celui d'avant match.
-const LIVE = { par_uid: {}, vus: {}, minuterie: null };
+const LIVE = { par_uid: {}, vus: {}, minuterie: null, moteurs: {} };
 function motsNom(n){ return new Set(String(n||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase()
   .replace(/[^a-z\s-]/g,' ').split(/[\s-]+/).filter(w=>w.length>=2)); }
 function memeJoueur(a,b){ const A=motsNom(a); for (const w of motsNom(b)) if (A.has(w)) return true; return false; }
@@ -2162,7 +2166,49 @@ function texteLive(m, r, fini){
   const pt = !fini && h.point!=null && a.point!=null ? ` (${esc(h.point)}-${esc(a.point)})` : '';
   const sv = x.serveur ? ((x.serveur==='home') !== r.inverse ? m.home : m.away) : null;
   const tete = fini ? `<span class="fin">${esc(t('live_termine'))}</span>` : `<span class="rouge">🔴 ${esc(t('live_en_cours'))}</span>`;
-  return `${tete} · ${sets||'0-0'}${pt}${!fini && sv ? ` · 🎾 ${esc(t('live_sert', court(sv)))}` : ''}`;
+  let pl = '';
+  if (!fini){ const p = pctLive(m, r);
+    if (p != null) pl = `<br><b title="${esc(t('live_aide'))}">${esc(t('live_pct', court(m.home), pc0(p)))}</b> <span class="avant">(${esc(t('live_avant', pc0(m.p_home)))})</span>`; }
+  return `${tete} · ${sets||'0-0'}${pt}${!fini && sv ? ` · 🎾 ${esc(t('live_sert', court(sv)))}` : ''}${pl}`;
+}
+// 06/11/2026 — % RECALCULÉ EN DIRECT : le moteur de la page (Moteur + calibre, celui de « Jouer le match »)
+// repart de l'état réel du match (sets, jeux, points, serveur). À 0-0 il redonne exactement le % d'avant match.
+const PT_LIVE = {'0':0,'15':1,'30':2,'40':3,'A':4,'AD':4};
+function setFini(g,o,dernierTb){ return (g>=6 && g-o>=2) || (g===7 && o<=6) || (dernierTb && g===7 && o===6); }
+function etatLive(m, r){
+  const sim = m.simulation; if (!sim || !sim.a || !sim.b) return null;
+  const x = r.x, h = r.inverse ? x.score_away : x.score_home, a = r.inverse ? x.score_home : x.score_away;
+  const N = sim.sets_gagnants || 2, TBF = sim.tb_final || 7;
+  const SH = h.sets || [], SA = a.sets || [];
+  const S = {sets:[0,0], jeux:[0,0], pts:[0,0], srv:0, tb:false, tbS0:0, tbCible:7, histo:[], fini:false, vainqueur:null};
+  for (let i=0;i<SH.length;i++){
+    const gh = +SH[i]||0, ga = +(SA[i]??0)||0;
+    if (setFini(gh,ga) || setFini(ga,gh)) { S.sets[gh>ga?0:1]++; continue; }
+    if (i < SH.length-1) return null;                // set non fini suivi d'un autre : score illisible
+    S.jeux = [gh, ga];
+  }
+  if (S.sets[0]>=N || S.sets[1]>=N) return null;     // match fini (le dernier score reste affiché)
+  const fin = S.sets[0]===N-1 && S.sets[1]===N-1;
+  const sv = x.serveur ? ((x.serveur==='home') !== r.inverse ? 0 : 1) : null;
+  if (S.jeux[0]===6 && S.jeux[1]===6){
+    S.tb = true; S.tbCible = fin ? TBF : 7;
+    S.pts = [parseInt(h.point,10)||0, parseInt(a.point,10)||0];
+  } else {
+    let ph = PT_LIVE[String(h.point??'0').toUpperCase()] ?? 0, pa = PT_LIVE[String(a.point??'0').toUpperCase()] ?? 0;
+    if (ph===4 && pa<3) pa = 3; if (pa===4 && ph<3) ph = 3;
+    S.pts = [ph, pa];
+  }
+  return {S, sv};
+}
+function pctLive(m, r){
+  const e = etatLive(m, r); if (!e) return null;
+  try {
+    const M = LIVE.moteurs[m.uid] || (LIVE.moteurs[m.uid] = Moteur(calibre(m.simulation, m.p_home)));
+    const unServeur = s => { const S = {...e.S, pts:[...e.S.pts], jeux:[...e.S.jeux], sets:[...e.S.sets]};
+      S.srv = s; if (S.tb){ const k=S.pts[0]+S.pts[1]; S.tbS0 = k===0 ? s : ((((k-1)>>1)%2)===0 ? 1-s : s); } return M.pLive(S); };
+    const p = e.sv==null ? (unServeur(0)+unServeur(1))/2 : unServeur(e.sv);
+    return Number.isFinite(p) ? Math.min(0.99, Math.max(0.01, p)) : null;   // jamais « 100 % » tant que ça se joue
+  } catch(err){ return null; }
 }
 function majLive(){
   const parUid = {}; for (const m of (D && D.matchs) || []) parUid[m.uid] = m;
