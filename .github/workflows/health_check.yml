@@ -22,6 +22,9 @@ permissions:
   # PERDU à chaque run -- il ne vivait plus que dans le log, exactement le
   # mode de panne corrigé le 30/08 en créant repo_size_status.json.
   contents: write
+  # 06/11/2026 (paquet 200) : lire les runs des dernières 24 h (échecs, annulations) — sans ce droit, l'API refusait
+  # et la ligne « statut workflows indisponible » remplaçait la liste.
+  actions: read
 
 jobs:
   health:

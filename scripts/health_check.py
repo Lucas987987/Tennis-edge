@@ -279,30 +279,32 @@ for i in range(1, 8):  # jusqu'à 7 clés
     else:
         key_lines.append(f"✅ Clé {i}: {rem} req")
 
-# ── 4. Statut des derniers workflows (si GH_TOKEN dispo) ──
+# ── 4. Workflows ratés ou annulés sur 24 h ──────────────
+# 06/11/2026 (paquet 200) : avant, seuls les 10 derniers runs TOUS workflows confondus étaient lus (quelques minutes
+# d'activité : la capture tourne en continu) ; un échec du matin passait inaperçu, et un run ANNULÉ (la vidéo du
+# 05/11, délai dépassé) ne comptait pas. Le jeton du run a maintenant le droit « actions: read » (health_check.yml).
 if GH_TOKEN:
     try:
-        url = f"https://api.github.com/repos/{GH_OWNER}/{GH_REPO}/actions/runs?per_page=10"
-        req = urllib.request.Request(url, headers={
-            'Authorization': f'Bearer {GH_TOKEN}',
-            'Accept': 'application/vnd.github+json',
-            'User-Agent': 'tennis-edge-health',
-        })
-        with urllib.request.urlopen(req, timeout=15) as r:
-            runs = json.loads(r.read()).get('workflow_runs', [])
-        # Dernier statut par workflow
-        seen = {}
-        for run in runs:
-            name = run.get('name', '?')
-            if name in seen: continue
-            seen[name] = run.get('conclusion', '?')
-        for name, concl in seen.items():
-            if concl == 'failure':
-                alerts.append(f"❌ Workflow '{name}' a échoué au dernier run")
-            elif concl == 'success':
-                infos.append(f"✅ {name}: OK")
+        import sante_algo
+        n_runs, echecs = sante_algo.echecs_workflows(GH_OWNER, GH_REPO, GH_TOKEN)
+        if echecs:
+            for nom, concl, n, lien in echecs[:8]:
+                mot = {'failure': 'échoué', 'cancelled': 'annulé', 'timed_out': 'délai dépassé'}.get(concl, concl)
+                alerts.append(f"❌ « {_esc(nom)} » : {n} run(s) {mot} en 24 h — <a href=\"{_esc(lien)}\">dernier</a>")
+        else:
+            infos.append(f"✅ Workflows : {n_runs} runs en 24 h, aucun échec")
     except Exception as e:
         infos.append(f"(statut workflows indisponible: {_esc(e)})")
+
+# ── 5. L'algo et ses données (sante_algo.py, 06/11/2026) ──
+algo_lines = []
+try:
+    import sante_algo
+    _a, _i = sante_algo.controles('.', datetime.datetime.now(datetime.timezone.utc))
+    alerts.extend(_esc(x) for x in _a)
+    algo_lines = [_esc(x) for x in _i]
+except Exception as e:
+    alerts.append(f"⚠️ Contrôles de l'algo impossibles : {_esc(e)}")
 
 # ── Construction du message ──────────────────────────────
 header = "🔴 <b>HEALTH CHECK — Problèmes détectés</b>" if alerts else "🟢 <b>HEALTH CHECK — Tout va bien</b>"
@@ -334,6 +336,11 @@ try:
         parts.append("")
 except Exception:
     pass
+
+if algo_lines:
+    parts.append("<b>Algo :</b>")
+    parts.extend(algo_lines)
+    parts.append("")
 
 parts.append("<b>Composants :</b>")
 parts.extend(infos)
