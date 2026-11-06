@@ -7,7 +7,10 @@
 //    verdicts H19/H20, pronostic complet du jour) — SEULEMENT avec la clé privée (en-tête X-Cle = secret
 //    CLE_PRIVEE du worker). Le Lab la lit via Tennis_Edge_Lab/prive.js. Sans clé : 401, et rien ne fuit.
 //
-// Déployé par .github/workflows/deploy_algo.yml (secrets CLE_PRIVEE et GH_TOKEN posés depuis les secrets GitHub).
+// 4. SCORES EN DIRECT : /live (voir plus bas).
+//
+// Déployé par .github/workflows/deploy_algo.yml (secrets CLE_PRIVEE, GH_TOKEN et RAPIDAPI_KEY posés depuis les
+// secrets GitHub).
 
 const ORIGINE = 'https://lucas987987.github.io/Tennis-edge/algo/';
 const LAB = 'https://lucas987987.github.io';
@@ -99,9 +102,74 @@ export async function video(req, env) {
   return rep(202, { ok: true, message: 'Vidéo lancée : elle arrive sur ton Telegram privé dans 5 à 10 minutes.' });
 }
 
+// 4. SCORES EN DIRECT (06/11/2026, demande de Lucas) : GET /live → les matchs de simple en cours (TennisApi,
+//    /api/tennis/events/live), compactés : score par set, points du jeu, serveur. Une requête TennisApi toutes les
+//    30 s AU PLUS quel que soit le nombre de visiteurs (≈ 2 900 par jour pour un quota de 15 000) : réponse gardée en
+//    mémoire et au coffre R2 (le cache HTTP de Cloudflare ne marche pas sur *.workers.dev). Clé : secret RAPIDAPI_KEY
+//    du worker, jamais exposée. Aucune cote, aucun pronostic : la page relie elle-même les matchs à ses % figés.
+const HOTE_TENNIS = 'tennisapi1.p.rapidapi.com';
+export const LIVE_TTL_MS = 30 * 1000;
+const LIVE_R2 = 'live/en_cours.json';
+let LIVE_MEMOIRE = null;
+
+function scoreSets(s) {
+  s = s || {};
+  const sets = [], tb = [];
+  for (let i = 1; i <= 5; i++) {
+    if (s['period' + i] == null) break;
+    sets.push(s['period' + i]);
+    tb.push(s['period' + i + 'TieBreak'] ?? null);
+  }
+  return { sets, tb, gagnes: s.current ?? null, point: s.point ?? null };
+}
+
+export function compacterLive(events) {
+  return (events || []).filter(e => {
+    const h = e.homeTeam || {}, a = e.awayTeam || {};
+    return !h.subTeams && !a.subTeams && !String((h.name || '') + (a.name || '')).includes('/');
+  }).map(e => ({
+    id: e.id, debut: e.startTimestamp || null,
+    categorie: ((e.tournament || {}).category || {}).name || null, tournoi: (e.tournament || {}).name || null,
+    home: (e.homeTeam || {}).name || '', away: (e.awayTeam || {}).name || '',
+    statut: { type: (e.status || {}).type || null, texte: (e.status || {}).description || null },
+    // firstToServe = serveur du jeu en cours/dernier jeu (vérifié le 05/11/2026 sur 9 304 matchs : 93 %)
+    serveur: e.firstToServe === 1 ? 'home' : e.firstToServe === 2 ? 'away' : null,
+    score_home: scoreSets(e.homeScore), score_away: scoreSets(e.awayScore),
+  }));
+}
+
+export async function live(req, env) {
+  const h = { ...SECURITE, 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'public, max-age=15' };
+  const rep = o => new Response(JSON.stringify(o), { headers: h });
+  const frais = o => o && Date.now() - (o.maj || 0) < LIVE_TTL_MS;
+  if (frais(LIVE_MEMOIRE)) return rep(LIVE_MEMOIRE);
+  if (env.COFFRE) {
+    try {
+      const obj = await env.COFFRE.get(LIVE_R2);
+      if (obj) { const o = JSON.parse(await obj.text()); if (frais(o)) { LIVE_MEMOIRE = o; return rep(o); } }
+    } catch (e) { /* on interroge TennisApi */ }
+  }
+  let o;
+  if (!env.RAPIDAPI_KEY) o = { ok: false, maj: Date.now(), message: 'Scores en direct : clé TennisApi du worker absente.', matchs: [] };
+  else {
+    try {
+      const r = await fetch(`https://${HOTE_TENNIS}/api/tennis/events/live`, {
+        headers: { 'X-RapidAPI-Key': env.RAPIDAPI_KEY, 'X-RapidAPI-Host': HOTE_TENNIS, Accept: 'application/json' } });
+      o = r.ok ? { ok: true, maj: Date.now(), matchs: compacterLive((await r.json()).events) }
+               : { ok: false, maj: Date.now(), message: `TennisApi : HTTP ${r.status}`, matchs: [] };
+    } catch (e) {
+      o = { ok: false, maj: Date.now(), message: 'TennisApi injoignable.', matchs: [] };
+    }
+  }
+  LIVE_MEMOIRE = o;
+  if (env.COFFRE) { try { await env.COFFRE.put(LIVE_R2, JSON.stringify(o)); } catch (e) { /* mémoire seule */ } }
+  return rep(o);
+}
+
 export default {
   async fetch(req, env) {
     const url = new URL(req.url);
+    if (url.pathname === '/live') return live(req, env);
     if (url.pathname === '/video') return video(req, env);
     if (url.pathname.startsWith('/prive/')) return prive(req, env, decodeURIComponent(url.pathname.slice(7)));
     if (req.method !== 'GET' && req.method !== 'HEAD') return new Response(null, { status: 405, headers: SECURITE });

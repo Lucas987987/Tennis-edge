@@ -57,6 +57,8 @@ jobs:
           # 04/11/2026 : bouton « vidéo » du site — jeton GitHub du worker (droit Actions en écriture) : le secret
           # VIDEO_TOKEN s'il existe (conseillé : jeton limité à Actions), sinon PAQUET_TOKEN
           GH_TOKEN: ${{ secrets.VIDEO_TOKEN || secrets.PAQUET_TOKEN }}
+          # 06/11/2026 : scores en direct (/live) — la même clé TennisApi que la collecte des feuilles
+          RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -65,3 +67,4 @@ jobs:
           secrets: |
             CLE_PRIVEE
             GH_TOKEN
+            RAPIDAPI_KEY
