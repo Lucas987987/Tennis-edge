@@ -63,6 +63,7 @@ jobs:
             /scripts/feuilles_match.py
             /scripts/joueurs_infos.py
             /scripts/lieux_tournois.py
+            /scripts/tournois_infos.py
             /scripts/points_match.py
             /scripts/classements_tennisapi.py
             /scripts/durees_matchs.py
@@ -119,6 +120,15 @@ jobs:
           RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
           FEUILLES_RESERVE: '1500'
         run: python scripts/joueurs_infos.py 500
+      # 06/11/2026 (paquet 208) : ville et pays HÔTES, joueurs du tableau, dotation (sonde du 06/11) — 3 requêtes par
+      # tournoi nouveau, une seule fois ; ~700 la première fois pour tout l'historique (par tranches de 300).
+      - name: Infos des tournois (lieu hôte, tableau, dotation) — une fois par tournoi
+        if: always()
+        timeout-minutes: 15
+        env:
+          RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
+          FEUILLES_RESERVE: '3000'
+        run: python scripts/tournois_infos.py 300
       - name: Lieux et météo des tournois (Open-Meteo, gratuit, sans clé)
         if: always()
         timeout-minutes: 20
