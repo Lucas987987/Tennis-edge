@@ -88,6 +88,12 @@ const EV = { id: 7, startTimestamp: 1793990000, tournament: { name: 'Paris', cat
   awayScore: { current: 0, period1: 4, period2: 2, point: '15' } };
 const DOUBLE = { ...EV, id: 8, homeTeam: { name: 'A / B', subTeams: [{}] }, awayTeam: { name: 'C / D' } };
 
+test('live : un simple avec « subTeams: [] » (format réel de TennisApi) est gardé', () => {
+  const simple = { ...EV, id: 9, homeTeam: { name: 'Kimmer Coppejans', subTeams: [] }, awayTeam: { name: 'Jurij Rodionov', subTeams: [] } };
+  const double = { ...EV, id: 10, homeTeam: { name: 'A / B', subTeams: [{ name: 'A' }, { name: 'B' }] }, awayTeam: { name: 'C / D', subTeams: [{}, {}] } };
+  assert.deepEqual(compacterLive([simple, double]).map(m => m.id), [9]);
+});
+
 test('live : simples seulement, score compacté, serveur', () => {
   const [m, ...reste] = compacterLive([EV, DOUBLE]);
   assert.equal(reste.length, 0);

@@ -127,7 +127,10 @@ function scoreSets(s) {
 export function compacterLive(events) {
   return (events || []).filter(e => {
     const h = e.homeTeam || {}, a = e.awayTeam || {};
-    return !h.subTeams && !a.subTeams && !String((h.name || '') + (a.name || '')).includes('/');
+    // 06/11/2026 (soir) : en simple, TennisApi envoie « subTeams: [] » — un tableau vide est VRAI en JavaScript :
+    // le premier filtre (!h.subTeams) écartait donc TOUS les matchs. On compte les éléments, comme est_simple() en Python.
+    const equipes = t => Array.isArray(t.subTeams) ? t.subTeams.length > 0 : !!t.subTeams;
+    return !equipes(h) && !equipes(a) && !String((h.name || '') + (a.name || '')).includes('/');
   }).map(e => ({
     id: e.id, debut: e.startTimestamp || null,
     categorie: ((e.tournament || {}).category || {}).name || null, tournoi: (e.tournament || {}).name || null,
@@ -156,7 +159,10 @@ export async function live(req, env) {
     try {
       const r = await fetch(`https://${HOTE_TENNIS}/api/tennis/events/live`, {
         headers: { 'X-RapidAPI-Key': env.RAPIDAPI_KEY, 'X-RapidAPI-Host': HOTE_TENNIS, Accept: 'application/json' } });
-      o = r.ok ? { ok: true, maj: Date.now(), matchs: compacterLive((await r.json()).events) }
+      // brut : nombre de matchs reçus de TennisApi avant le filtre (simples seulement) — pour vérifier d'un coup d'œil
+      const doc = r.ok ? await r.json() : null;
+      const ev = doc ? (doc.events || []) : [];
+      o = r.ok ? { ok: true, maj: Date.now(), brut: ev.length, matchs: compacterLive(ev) }
                : { ok: false, maj: Date.now(), message: `TennisApi : HTTP ${r.status}`, matchs: [] };
     } catch (e) {
       o = { ok: false, maj: Date.now(), message: 'TennisApi injoignable.', matchs: [] };
