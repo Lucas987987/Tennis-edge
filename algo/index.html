@@ -397,7 +397,8 @@ body.carte #video{display:block;width:1080px;height:1350px}
 }
 .cv-h{font-size:1rem;margin:18px 0 4px}.cv-p{color:var(--dim);font-size:.85rem;margin:0 0 8px}.cv-wrap{overflow-x:auto}.cv{font-size:.85rem;width:100%}.cv td,.cv th{padding:6px 5px}.cv td:not(:first-child),.cv th:not(:first-child){text-align:right;white-space:nowrap}.cv-n{color:var(--dim);font-size:.75rem}.ds-t{table-layout:fixed}.ds-t th:first-child,.ds-t td:first-child{width:40%;white-space:normal}.ds-t th{font-size:.78rem}.fs-t{table-layout:fixed}.fs-t .jc-st{white-space:normal;display:inline-block;text-align:center;line-height:1.2;max-width:100%}.fs-t th:first-child,.fs-t td:first-child{width:52%;white-space:normal;overflow-wrap:anywhere}.fs-t td:not(:first-child),.fs-t th:not(:first-child){white-space:normal}
 .essentiel ul{list-style:none;margin:0;padding:4px 16px 16px;display:grid;gap:6px}.essentiel li{padding:7px 10px;border-radius:9px;background:rgba(255,255,255,.04);border-left:3px solid var(--dim);font-size:.92rem;line-height:1.4}.essentiel li.plus{border-left-color:var(--ok)}.essentiel li.moins{border-left-color:var(--ko)}.essentiel li.info{border-left-color:var(--ball)}
-.evol{margin:6px 0 0;color:var(--dim);font-size:.82rem}.badge.peu{background:rgba(255,107,134,.16);color:var(--ko)}
+.evol{margin:6px 0 0;color:var(--dim);font-size:.82rem}
+.live-l:empty{display:none}.live-l{display:block;margin:6px 0 0;font-size:.85rem;font-variant-numeric:tabular-nums;color:var(--txt,inherit)}.live-l .rouge{color:var(--ko);font-weight:700}.live-l .fin{color:var(--dim);font-weight:700}.live-l sup{font-size:.7em}.badge.peu{background:rgba(255,107,134,.16);color:var(--ko)}
 .res li.avec-am{grid-template-columns:1.8em 1fr auto}.res li .am{grid-column:1/-1}.am summary{cursor:pointer;font-weight:600;font-size:.88rem;color:var(--ball);min-height:36px;display:flex;align-items:center}.am h4{margin:10px 0 4px;font-size:.88rem}.am-t{font-size:.85rem;width:100%}.am-t td{vertical-align:top}.am-t th,.am-t td:first-child{text-align:left}.am-t td+td{text-align:right}.am-ok{color:var(--ok)}.am-ko{color:var(--ko)}.am .d{color:var(--dim);font-size:.8rem}
 .jc{list-style:none;margin:0;padding:0}.jc li{display:grid;grid-template-columns:auto 1fr;gap:10px;padding:10px 16px;border-top:1px solid var(--line);font-size:.9rem;align-items:start}.jc .d{color:var(--dim);font-size:.82rem}.jc-st{font-size:.72rem;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap;margin-top:2px}.jc-st.production{background:rgba(69,240,160,.16);color:var(--ok)}.jc-st.candidat{background:rgba(212,255,58,.14);color:var(--ball)}.jc-st.rejete{background:rgba(255,255,255,.07);color:var(--dim)}.jc-fan{margin:0;padding:12px 16px;font-size:.9rem}.jc-fans{margin:0 0 6px;padding:0 16px 0 34px;font-size:.88rem;line-height:1.45}.jc-fans li{margin:0 0 6px}
 </style>
@@ -729,6 +730,7 @@ const T = {
   a_ace:'ACE !', a_df:'DOUBLE FAUTE', a_aces:'Aces', a_dfs:'Doubles fautes', a_frappes:n=>`${n} frappes`,
   a_fin_stats:(a1,a2,e1,e2)=>`Aces dans ce match : <b>${a1} – ${a2}</b> (l'algo en prévoit ${e1} – ${e2}).`,
   lg_total:k=>`+ de ${k} jeux`, lg_tb:'Un tie-break', lg_3s:n=>`${n} sets`, lg_hand:(x,k)=>`${x} −${k} jeux`,
+  live_en_cours:'En direct', live_termine:'Terminé', live_sert:n=>`${n} au service`,
   vit_titre:'Vitesse du court', vit_echelle:['Lent','Moyen','Rapide'], vit_cpi:(o,an)=>`CPI ${o?'officiel':'estimé'} ${an}`,
   vit_ecart:d=>`${d>0?'+':''}${dec(d,1)} vs l'an dernier`, vit_hist:n=>`Les ${n} dernières éditions`, vit_leg:'● CPI officiel · ○ estimé par l’algo',
   vit_note:'Notre mesure retire le niveau des joueurs du tableau : elle mesure le court, pas le plateau. Information : la vitesse sert à prévoir aces et service, pas le vainqueur.',
@@ -958,6 +960,7 @@ const T = {
   a_ace:'ACE!', a_df:'DOUBLE FAULT', a_aces:'Aces', a_dfs:'Double faults', a_frappes:n=>`${n}-shot rally`,
   a_fin_stats:(a1,a2,e1,e2)=>`Aces in this match: <b>${a1} – ${a2}</b> (the algorithm expects ${e1} – ${e2}).`,
   lg_total:k=>`Over ${k} games`, lg_tb:'A tie-break', lg_3s:n=>`${n} sets`, lg_hand:(x,k)=>`${x} −${k} games`,
+  live_en_cours:'Live', live_termine:'Finished', live_sert:n=>`${n} serving`,
   vit_titre:'Court speed', vit_echelle:['Slow','Medium','Fast'], vit_cpi:(o,an)=>`${o?'Official':'Estimated'} CPI ${an}`,
   vit_ecart:d=>`${d>0?'+':''}${dec(d,1)} vs last year`, vit_hist:n=>`Last ${n} editions`, vit_leg:'● official CPI · ○ estimated by the algorithm',
   vit_note:'Our measure removes the players’ level: it measures the court, not the field. Information only: speed helps forecast aces and serve, not the winner.',
@@ -2086,6 +2089,7 @@ function rendMdj(){
         <div class="tir" aria-hidden="true"><i style="width:${(p*100).toFixed(1)}%"></i></div>
         <div class="ligne l2"><span class="nm">${esc(m.away)}</span><span class="pc">${pc0(1-p)}</span></div>
         <div class="ligne" style="margin-top:8px"><span class="cj">${esc(t('cote_juste'))} ${odds(m.cotes_justes[0])}</span><span class="cj">${esc(t('cote_juste'))} ${odds(m.cotes_justes[1])}</span></div>
+        <p class="live-l" data-live="${esc(m.uid)}" aria-live="polite"></p>
         ${Array.isArray(m.fourchette) ? `<p class="evol" title="${esc(t('fourchette_aide'))}">${esc(t('fourchette', court(m.home), pc0(m.fourchette[0]), pc0(m.fourchette[1])))}</p>` : ''}
         ${m.evolution && Math.abs(m.evolution.ecart_pts) >= 1 ? `<p class="evol">${esc(t('es_premier', pc0(m.evolution.premier_p_home), court(m.home), m.evolution.premier_le ? dateHeure(m.evolution.premier_le) : ''))}</p>` : ''}
         ${rendType(m)}${rendFiabilite(m.fiabilite, true)}
@@ -2134,6 +2138,61 @@ function matchsFiltres(){
     (circuit==='TOUS' || m.circuit===circuit) &&
     (!q || `${m.home} ${m.away} ${m.tournoi}`.toLocaleLowerCase(loc()).includes(q)));
 }
+// 06/11/2026 — SCORES EN DIRECT : la page interroge /live (worker, 30 s de cache, TennisApi) toutes les 30 s tant
+// qu'un match de la liste peut être en cours et que l'onglet est visible. Le % affiché reste celui d'avant match.
+const LIVE = { par_uid: {}, vus: {}, minuterie: null };
+function motsNom(n){ return new Set(String(n||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase()
+  .replace(/[^a-z\s-]/g,' ').split(/[\s-]+/).filter(w=>w.length>=2)); }
+function memeJoueur(a,b){ const A=motsNom(a); for (const w of motsNom(b)) if (A.has(w)) return true; return false; }
+function relierLive(matchs){
+  const out = {};
+  for (const m of (D && D.matchs) || []) {
+    const t0 = utc(m.debut).getTime();
+    for (const x of matchs) {
+      if (x.debut && Math.abs(x.debut*1000 - t0) > 8*3600e3) continue;
+      if (memeJoueur(m.home,x.home) && memeJoueur(m.away,x.away)) { out[m.uid] = {x, inverse:false}; break; }
+      if (memeJoueur(m.home,x.away) && memeJoueur(m.away,x.home)) { out[m.uid] = {x, inverse:true}; break; }
+    }
+  }
+  return out;
+}
+function texteLive(m, r, fini){
+  const x = r.x, h = r.inverse ? x.score_away : x.score_home, a = r.inverse ? x.score_home : x.score_away;
+  const sets = (h.sets||[]).map((g,i)=>`${g}-${(a.sets||[])[i]??0}${h.tb&&h.tb[i]!=null&&(a.tb||[])[i]!=null?`<sup>${Math.min(h.tb[i],a.tb[i])}</sup>`:''}`).join(' ');
+  const pt = !fini && h.point!=null && a.point!=null ? ` (${esc(h.point)}-${esc(a.point)})` : '';
+  const sv = x.serveur ? ((x.serveur==='home') !== r.inverse ? m.home : m.away) : null;
+  const tete = fini ? `<span class="fin">${esc(t('live_termine'))}</span>` : `<span class="rouge">🔴 ${esc(t('live_en_cours'))}</span>`;
+  return `${tete} · ${sets||'0-0'}${pt}${!fini && sv ? ` · 🎾 ${esc(t('live_sert', court(sv)))}` : ''}`;
+}
+function majLive(){
+  const parUid = {}; for (const m of (D && D.matchs) || []) parUid[m.uid] = m;
+  document.querySelectorAll('[data-live]').forEach(el=>{
+    const uid = el.getAttribute('data-live'), m = parUid[uid];
+    const r = LIVE.par_uid[uid] || LIVE.vus[uid];
+    el.innerHTML = m && r ? texteLive(m, r, !LIVE.par_uid[uid]) : '';
+  });
+}
+function liveUtile(){
+  const now = Date.now();
+  return ((D && D.matchs) || []).some(m=>{ const d = utc(m.debut).getTime() - now; return d < 15*60e3 && d > -6*3600e3; })
+    || Object.keys(LIVE.par_uid).length > 0;
+}
+function chargerLive(){
+  if (document.hidden || !liveUtile()) return;
+  fetch('/live', {cache:'no-store'}).then(r=>r.ok ? r.json() : null).then(o=>{
+    if (!o || !Array.isArray(o.matchs) || o.ok === false) return;
+    const nouveau = relierLive(o.matchs);
+    for (const [uid, r] of Object.entries(nouveau)) LIVE.vus[uid] = r;
+    LIVE.par_uid = nouveau;
+    majLive();
+  }).catch(()=>{});
+}
+function demarrerLive(){
+  // /live n'existe que derrière le worker « algo » : ailleurs (GitHub Pages) la requête échoue sans rien afficher.
+  chargerLive();
+  LIVE.minuterie = setInterval(chargerLive, 30000);
+  document.addEventListener('visibilitychange', ()=>{ if (!document.hidden) chargerLive(); });
+}
 function rendListe(){
   const ul = document.getElementById('list'), mdj = D.match_du_jour && D.match_du_jour.uid;
   const tous = matchsFiltres(), visibles = tous.slice(0,nListe);
@@ -2151,12 +2210,14 @@ function rendListe(){
       <span class="pl a"><span>${esc(m.home)}</span><b>${pc0(p)}</b></span>
       <span class="pl b"><span>${esc(m.away)}</span><b>${pc0(1-p)}</b></span>
       <span class="mini" aria-hidden="true"><i style="width:${(p*100).toFixed(1)}%"></i></span>
+      <span class="live-l" data-live="${esc(m.uid)}"></span>
       <span class="meta"><span>${esc(t('cote_juste'))} ${odds(m.cotes_justes[0])} / ${odds(m.cotes_justes[1])}</span><span class="ouvrir">${esc(selection ? t('simulation_affichee') : t('voir_simulation'))}</span></span>
       ${rendType(m)}${rendFiabilite(m.fiabilite)}
     </span></a></li>`; }).join('');
   const more = document.getElementById('liste-more');
   more.hidden = visibles.length >= tous.length;
   more.textContent = t('voir_matchs',Math.min(30,tous.length-visibles.length));
+  majLive();
 }
 function courbeSvg(c){
   if (c.length < 2) return '';
@@ -2496,7 +2557,7 @@ rendTextes();
 fetch('donnees.json?v=' + Date.now()).then(r=>r.json()).then(d=>{
   D = d;
   selectionId = matchDemande() || (D.match_du_jour && D.match_du_jour.uid);
-  if (Q.get('semaine')) modeSemaine(); else if (Q.get('bilan')) modeBilan(); else if (Q.get('carte')) modeCarte(); else if (Q.get('video')) modeVideo(); else rendTout();
+  if (Q.get('semaine')) modeSemaine(); else if (Q.get('bilan')) modeBilan(); else if (Q.get('carte')) modeCarte(); else if (Q.get('video')) modeVideo(); else { rendTout(); demarrerLive(); }
 }).catch(()=>{ document.getElementById('mdj-zone').innerHTML = '<div class="panel empty">Données indisponibles / Data unavailable.</div>'; });
 })();
 </script>

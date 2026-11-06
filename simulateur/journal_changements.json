@@ -725,6 +725,12 @@
    "quoi": "CONTRÔLE DE SANTÉ QUOTIDIEN (8 h 37, Telegram privé) élargi : tous les runs ratés, annulés ou hors délai des 24 dernières heures (avant : les 10 derniers runs seulement, sans les annulations), et une partie « Algo » — fraîcheur du site et des feuilles, matchs sans simulation, matchs d'hier comparés au résultat, tournois récents sans lieu, catégories inconnues, forfaits encore en ligne, facteurs pas rejugés depuis plus de 8 jours.",
    "statut": "production",
    "paquet": 200
+  },
+  {
+   "date": "2026-11-06",
+   "quoi": "SCORES EN DIRECT sur le site de l'algo : quand un match de la liste est en cours, sa ligne et sa fiche affichent le score set par set (tie-breaks compris), les points du jeu et le joueur au service, mis à jour toutes les 30 secondes ; « Terminé » avec le dernier score quand il s'achève. Source TennisApi via le worker (une seule requête toutes les 30 s quel que soit le nombre de visiteurs). Le % affiché reste celui calculé avant le match.",
+   "statut": "production",
+   "paquet": 201
   }
  ]
 }

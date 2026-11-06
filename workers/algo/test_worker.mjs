@@ -79,3 +79,40 @@ test('vidéo : bonne clé → workflow vidéo lancé pour ce match, puis 3 minut
   assert.equal((await worker.fetch(post({ uid: UID }, { 'X-Cle': CLE }), env2)).status, 429);
   assert.equal(appels.length, 1);
 });
+
+// 06/11/2026 — scores en direct
+import { compacterLive, live } from './worker.js';
+const EV = { id: 7, startTimestamp: 1793990000, tournament: { name: 'Paris', category: { name: 'ATP' } },
+  homeTeam: { name: 'Taylor Fritz' }, awayTeam: { name: 'Carlos Alcaraz' }, status: { type: 'inprogress', description: '2nd set' },
+  firstToServe: 2, homeScore: { current: 1, period1: 6, period2: 3, point: '30' },
+  awayScore: { current: 0, period1: 4, period2: 2, point: '15' } };
+const DOUBLE = { ...EV, id: 8, homeTeam: { name: 'A / B', subTeams: [{}] }, awayTeam: { name: 'C / D' } };
+
+test('live : simples seulement, score compacté, serveur', () => {
+  const [m, ...reste] = compacterLive([EV, DOUBLE]);
+  assert.equal(reste.length, 0);
+  assert.deepEqual(m.score_home, { sets: [6, 3], tb: [null, null], gagnes: 1, point: '30' });
+  assert.equal(m.serveur, 'away');
+  assert.equal(m.statut.type, 'inprogress');
+});
+
+test('live : une requête TennisApi pour plusieurs visiteurs, clé jamais renvoyée', async () => {
+  let appels = 0;
+  const stock = {};
+  const envL = { RAPIDAPI_KEY: 'secret-tennis', COFFRE: { get: async k => (k in stock ? { text: async () => stock[k] } : null),
+                                                         put: async (k, v) => { stock[k] = v; } } };
+  globalThis.fetch = async (u, o) => { appels++; assert.equal(o.headers['X-RapidAPI-Key'], 'secret-tennis');
+    return new Response(JSON.stringify({ events: [EV] }), { status: 200 }); };
+  const r1 = await worker.fetch(req('/live'), envL);
+  const r2 = await worker.fetch(req('/live'), envL);
+  const t = await r2.text();
+  assert.equal(appels, 1);
+  assert.ok(!t.includes('secret-tennis'));
+  assert.equal(JSON.parse(t).matchs[0].home, 'Taylor Fritz');
+  assert.equal(r1.status, 200);
+});
+
+test('live : sans clé → réponse vide expliquée, pas d’erreur', async () => {
+  const o = await (await live(req('/live'), {})).json();
+  assert.ok(Array.isArray(o.matchs));
+});
