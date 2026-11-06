@@ -107,6 +107,11 @@ jobs:
         run: python simulateur/profils_service.py /tmp/sackmann .
       - name: Facteurs du match (forme, fatigue, court, gaucher/taille, points importants, styles, face-à-face, conditions, contexte, Match Charting)
         run: python simulateur/facteurs.py /tmp/sackmann . /tmp/mcp
+      # 06/11/2026 : % EN DIRECT réévalué (forme du jour lue dans les points joués) — la dernière semaine complète jugée
+      # par circuit ; retrait après 2 semaines de suite moins bonnes, retour après 2 meilleures.
+      - name: Suivi du % en direct réévalué
+        continue-on-error: true
+        run: python simulateur/etude_live_reevaluation.py /tmp/sackmann . --suivi
       # 04/11/2026 : recalage des statistiques annoncées (aces, doubles fautes, 1res balles, breaks) par circuit —
       # appris avant la dernière semaine complète, jugé sur elle ; adopté après deux semaines gagnantes de suite.
       - name: Recalage des statistiques annoncées
@@ -241,6 +246,7 @@ jobs:
           if [ -f simulateur/fantomes_circuits.json ]; then git add -- simulateur/fantomes_circuits.json; fi
           if [ -f simulateur/surveillance_fragilite.json ]; then git add -- simulateur/surveillance_fragilite.json; fi
           if [ -f simulateur/biais_annexes.json ]; then git add -- simulateur/biais_annexes.json; fi
+          if [ -f simulateur/live_reevaluation.json ]; then git add -- simulateur/live_reevaluation.json; fi
           if git diff --cached --quiet; then echo 'Rien de nouveau.'; exit 0; fi
           git commit -m 'Pronostic : test du modèle (vainqueur, sets)'
           # fichiers écrits hors du checkout partiel (ex. live/joueurs_service.json.gz, contexte des

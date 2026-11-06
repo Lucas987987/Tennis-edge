@@ -743,6 +743,12 @@
    "quoi": "STATISTIQUES EN DIRECT dans la fiche d'un match en cours : aces, doubles fautes, premières balles, points gagnés derrière la 1re et la 2e, balles de break sauvées et converties, breaks, jeux de service gagnés, points au retour et au total, plus longue série de points ; mises à jour chaque minute, à côté de la feuille prévue avant le match et de sa fourchette (en rouge quand le réel en sort). Chargées seulement pour la fiche ouverte, une requête par minute et par match quel que soit le nombre de visiteurs, plafond journalier réglable.",
    "statut": "production",
    "paquet": 203
+  },
+  {
+   "date": "2026-11-06",
+   "quoi": "% EN DIRECT RÉÉVALUÉ : pendant le match, la forme du jour de chaque joueur est lue dans les points de service déjà joués (statistiques du match), au lieu de garder les probabilités d'avant match. Mesuré sur 8 970 matchs point par point (juin → novembre 2026, réglage appris sur juin → août, jugé sur septembre → novembre) : log loss du vainqueur −0,018 en Challenger, −0,011 en ATP, −0,011 en WTA, avec le même réglage sur les deux périodes. Adopté directement sur les trois circuits ; chaque lundi, la semaine écoulée est rejugée par circuit : retrait après deux semaines de suite moins bonnes, retour après deux meilleures. Les statistiques en direct sont désormais chargées pour chaque match en cours de la liste.",
+   "statut": "production",
+   "paquet": 204
   }
  ]
 }
