@@ -525,7 +525,9 @@ const T = {
   retour_mdj:'Retour au match du jour',
   mdj_vide:"Pas de match du jour pour l'instant : il est choisi parmi les matchs pas encore commencés de la journée.",
   sim_indisponible:"Cette simulation n'est pas disponible dans les données publiées. Actualise la page ou reviens au match du jour.",
-  vs:'contre', cote_juste:'cote juste', sur_sims:n=>`Sur ${n} simulations`,
+  vs:'contre', cote_juste:'cote juste',
+  fourchette:(n,a,b)=>`${n} : entre ${a} et ${b} selon l'incertitude sur le niveau des joueurs (8 fois sur 10)`,
+  fourchette_aide:"Les 20 000 simulations mesurent le hasard du match. La fourchette ajoute l'incertitude sur le niveau des joueurs : plus ils ont peu joué, plus elle est large. Le % affiché ne change pas.", sur_sims:n=>`Sur ${n} simulations`,
   vg_titre:'Points de vigilance', vg_aide:'Où nos prévisions de ce type de match se sont trompées ces 6 dernières semaines (recalculé chaque lundi). Pour lire les chiffres de la fiche avec le bon recul.',
   vg_stats:{aces:'Aces', doubles_fautes:'Doubles fautes', breaks:'Breaks', premiere_pct:'% de premières balles', gagnes_1re_pct:'Points gagnés derrière la 1re balle', gagnes_2e_pct:'Points gagnés derrière la 2e balle', jeux:'Jeux gagnés', balles_break_obtenues:'Balles de break obtenues (le retour)', jeux_service_gagnes_pct:'% de jeux de service gagnés', points_gagnes:'Points gagnés dans le match'},
   vg_pts:' pt', vg_bas:x=>`nos prévisions sont en moyenne trop basses de ${x}`, vg_haut:x=>`nos prévisions sont en moyenne trop hautes de ${x}`,
@@ -752,7 +754,9 @@ const T = {
   retour_mdj:'Back to match of the day',
   mdj_vide:"No match of the day yet: it is picked among today's matches that haven't started.",
   sim_indisponible:'This simulation is unavailable in the published data. Refresh the page or return to the match of the day.',
-  vs:'vs', cote_juste:'fair odds', sur_sims:n=>`Across ${n} simulations`,
+  vs:'vs', cote_juste:'fair odds',
+  fourchette:(n,a,b)=>`${n}: between ${a} and ${b} given the uncertainty on the players' level (8 times out of 10)`,
+  fourchette_aide:"The 20,000 simulations measure the randomness of the match. The range adds the uncertainty on the players' level: the less they have played, the wider it gets. The displayed % does not change.", sur_sims:n=>`Across ${n} simulations`,
   vg_titre:'Watch-outs', vg_aide:'Where our forecasts for this type of match have been off over the last 6 weeks (recomputed every Monday). Read the numbers on this page with that in mind.',
   vg_stats:{aces:'Aces', doubles_fautes:'Double faults', breaks:'Breaks', premiere_pct:'First-serve %', gagnes_1re_pct:'Points won behind the 1st serve', gagnes_2e_pct:'Points won behind the 2nd serve', jeux:'Games won', balles_break_obtenues:'Break points earned (return)', jeux_service_gagnes_pct:'Service games won %', points_gagnes:'Points won in the match'},
   vg_pts:' pt', vg_bas:x=>`our forecasts are too low by ${x} on average`, vg_haut:x=>`our forecasts are too high by ${x} on average`,
@@ -2082,6 +2086,7 @@ function rendMdj(){
         <div class="tir" aria-hidden="true"><i style="width:${(p*100).toFixed(1)}%"></i></div>
         <div class="ligne l2"><span class="nm">${esc(m.away)}</span><span class="pc">${pc0(1-p)}</span></div>
         <div class="ligne" style="margin-top:8px"><span class="cj">${esc(t('cote_juste'))} ${odds(m.cotes_justes[0])}</span><span class="cj">${esc(t('cote_juste'))} ${odds(m.cotes_justes[1])}</span></div>
+        ${Array.isArray(m.fourchette) ? `<p class="evol" title="${esc(t('fourchette_aide'))}">${esc(t('fourchette', court(m.home), pc0(m.fourchette[0]), pc0(m.fourchette[1])))}</p>` : ''}
         ${m.evolution && Math.abs(m.evolution.ecart_pts) >= 1 ? `<p class="evol">${esc(t('es_premier', pc0(m.evolution.premier_p_home), court(m.home), m.evolution.premier_le ? dateHeure(m.evolution.premier_le) : ''))}</p>` : ''}
         ${rendType(m)}${rendFiabilite(m.fiabilite, true)}
         <p style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn" id="b-post">📝 Générer le post X</button>${VIDEO_ICI ? '<button type="button" class="btn" id="b-video">🎬 Générer la vidéo</button>' : ''}</p>
