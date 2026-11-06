@@ -616,6 +616,32 @@ def ajouter_pays(lignes, racine, alias=None):
             x['pays'] = v
 
 
+ANNULES = ('walkover', 'canceled', 'cancelled', 'postponed')
+
+
+def retirer_annules(matchs, racine, maintenant):
+    """Matchs sans les forfaits / annulations / reports connus des feuilles TennisApi (jour du match ± 1)."""
+    try:
+        import feuilles as FE
+        depuis = (maintenant.date() - dt.timedelta(days=2)).isoformat()
+        idx = FE.Index(FE.lire(racine, depuis=depuis))
+    except Exception as e:  # noqa: BLE001
+        print(f'::warning::feuilles illisibles, forfaits non filtrés : {e}')
+        return matchs
+    out = []
+    for m in matchs:
+        try:
+            fi, _ = idx.trouver(str(m['debut'])[:10], m.get('home'), m.get('away'))
+        except Exception:  # noqa: BLE001
+            fi = None
+        txt = str(((fi or {}).get('statut') or {}).get('texte') or '').lower()
+        if txt in ANNULES:
+            print(f"Retiré de la liste du jour ({txt}) : {m.get('home')} – {m.get('away')}")
+            continue
+        out.append(m)
+    return out
+
+
 def construire(racine, maintenant=None):
     maintenant = maintenant or dt.datetime.now(dt.timezone.utc)
     global BIAIS_ANNEXES
@@ -628,6 +654,10 @@ def construire(racine, maintenant=None):
     ancien_doc = _lire(os.path.join(racine, SORTIE), {}) or {}
     precedent = ancien_doc.get('match_du_jour')
     matchs = [m for m in pron.get('matchs') or [] if m.get('circuit') in CIRCUITS and version(m)[1] and connu(m)]
+    # 06/11/2026 (paquet 195) : un match ANNULÉ avant d'être joué (forfait, annulé, reporté d'après la feuille TennisApi)
+    # sort de la liste du jour — Berrettini – Alcaraz (forfait) restait affiché et dans les classements. Le choix du
+    # match du jour n'est pas modifié : il se fait, comme avant, parmi les matchs qui auront vraiment lieu.
+    matchs = retirer_annules(matchs, racine, maintenant)
     mdj = choisir_match_du_jour(matchs, etat, maintenant, precedent)
     # 05/11/2026 : le match du jour de la VEILLE, pour la carte bilan du matin (scripts/video_simulation.py --bilan)
     veille = (precedent if precedent and (not mdj or precedent.get('jour') != mdj.get('jour'))
