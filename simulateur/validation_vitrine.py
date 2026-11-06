@@ -138,7 +138,12 @@ def valider(doc, simulations_attendues=20000):
             if m.get('simulation_disponible') is not True:
                 raise ValueError('le match n’est pas marqué comme accessible en simulation')
             n = sim.get('n')
-            if n != n_global or n != simulations_attendues:
+            # 06/11/2026 (paquet 211) : un match commencé GARDÉ de la version précédente (vitrine.garder_commences) a été
+            # simulé et contrôlé à ce passage-là ; son nombre de simulations peut différer (chaîne courte : 300).
+            if m.get('commence_garde'):
+                if not isinstance(n, int) or n <= 0:
+                    raise ValueError(f'n={n!r} invalide (match commencé gardé)')
+            elif n != n_global or n != simulations_attendues:
                 raise ValueError(f'n={n!r}, attendu {simulations_attendues}')
             if sim.get('version') not in VERSIONS:
                 raise ValueError('variante du scénario absente ou inconnue')
@@ -173,7 +178,7 @@ def valider(doc, simulations_attendues=20000):
             if scenario.get('vainqueur') not in favoris or reel['vainqueur'] != scenario.get('vainqueur'):
                 raise ValueError('le scénario représentatif ne suit pas le vainqueur favori de la variante')
             stabilite = sim.get('stabilite_score')
-            if stabilite is not None:
+            if stabilite is not None and not m.get('commence_garde'):
                 if stabilite.get('statut') not in ('stable', 'fragile', 'instable', 'non_controle'):
                     raise ValueError('statut de stabilité du score inconnu')
                 scores_simules = m.get('scores_simules') or []

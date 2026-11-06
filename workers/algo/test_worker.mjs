@@ -150,3 +150,24 @@ test('stats : id douteux → 400 ; une requête par minute et par match ; plafon
   assert.equal(appels, 2);
   assert.equal(c.plafond, true);
 });
+
+// 06/11/2026 (paquet 210) — point par point en direct
+import { compacterPoints } from './worker.js';
+test('points : suite des points comme points_match.py, jeu en cours sans vainqueur', () => {
+  const doc = { pointByPoint: [{ set: 1, games: [
+    { game: 1, score: { serving: 1, scoring: 1 }, points: [{ homePoint: '15', awayPoint: '0' }, { homePoint: '30', awayPoint: '0' }, { homePoint: '40', awayPoint: '0' }] },
+    { game: 2, score: { serving: 2, scoring: -1 }, points: [{ homePoint: '0', awayPoint: '15' }, { homePoint: '15', awayPoint: '15' }] }] }] };
+  assert.deepEqual(compacterPoints(doc), [[1, 1, 1, 'HHHH', 1], [1, 2, 2, 'AH', null]]);
+  assert.equal(compacterPoints({}), null);
+});
+
+test('points : /live/points passe par le même cache et le même plafond', async () => {
+  let appels = 0; const stock = {};
+  const envP = { RAPIDAPI_KEY: 'k', COFFRE: { get: async k => (k in stock ? { text: async () => stock[k] } : null), put: async (k, v) => { stock[k] = v; } } };
+  globalThis.fetch = async (u) => { appels++; assert.match(u, /\/point-by-point$/); return new Response(JSON.stringify({ pointByPoint: [] }), { status: 200 }); };
+  const o = await (await worker.fetch(req('/live/points?id=77'), envP)).json();
+  await worker.fetch(req('/live/points?id=77'), envP);
+  assert.equal(appels, 1);
+  assert.equal(o.ok, true);
+  assert.equal(o.jeux, null);
+});
