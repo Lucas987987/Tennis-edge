@@ -1,16 +1,16 @@
 {
  "schema_version": 2,
- "generated_at": "2026-11-05T12:51:09+00:00",
+ "generated_at": "2026-11-06T12:33:34+00:00",
  "sources": {
   "worker": {
    "source": "API Worker D1 /api/hypotheses (fetch_worker_snapshot.py)",
    "fichier": "worker_hypotheses_capture.json",
    "status": "ok",
-   "fetched_at": "2026-11-05T12:51:04Z",
-   "worker_generated_at": "2026-11-05T07:24:46Z"
+   "fetched_at": "2026-11-06T12:33:29Z",
+   "worker_generated_at": "2026-11-06T07:24:11Z"
   },
-  "suivi_officiel": "alertes en direct : h*_signal_log.jsonl + suivi_direct/resultats.json (verdicts_direct.json du 2026-11-05T12:51:08Z)",
-  "reconstruction": "moves_detail_hist.csv filtré par les règles gelées de validation_report.py (lignes jusqu'au 2026-10-31) — contrôle, ne juge pas",
+  "suivi_officiel": "alertes en direct : h*_signal_log.jsonl + suivi_direct/resultats.json (verdicts_direct.json du 2026-11-06T12:33:33Z)",
+  "reconstruction": "moves_detail_hist.csv filtré par les règles gelées de validation_report.py (lignes jusqu'au 2026-11-01) — contrôle, ne juge pas",
   "rapprochement": "uid + joueur normalisé ; à défaut paire de joueurs + date ±1 jour"
  },
  "raisons": {
@@ -80,34 +80,34 @@
    "worker": {
     "gele_le": "2026-09-06",
     "out_of_sample": {
-     "n": 325,
-     "gains": 139,
+     "n": 327,
+     "gains": 140,
      "taux": 42.8,
-     "seuil": 41.6,
+     "seuil": 41.7,
      "ecart": 1.2,
      "roi": 3.3,
-     "pnl": 10.7,
-     "cote_moyenne": 2.44,
+     "pnl": 10.9,
+     "cote_moyenne": 2.43,
      "clv_moyen": -1.7,
      "clv_pin_moyen": -1.7,
      "clv_pin_p": 0.9999,
-     "clv_n": 333,
-     "clv_positif": 36.6,
+     "clv_n": 334,
+     "clv_positif": 36.5,
      "lead_moyen_h": 8.2,
-     "periode": "2026-09-07 -> 2026-11-04",
+     "periode": "2026-09-07 -> 2026-11-05",
      "verdict": "ne tranche pas",
-     "n_detectees": 337,
-     "n_envoyees": 336,
+     "n_detectees": 339,
+     "n_envoyees": 338,
      "n_doublons": 0,
      "n_non_envoyees_autres": 1,
-     "n_denouees": 325,
-     "n_commencees": 337,
+     "n_denouees": 327,
+     "n_commencees": 339,
      "n_sans_resultat": 12,
-     "sans_resultat_pct": 3.6,
+     "sans_resultat_pct": 3.5,
      "verrouillable": true,
      "statut": "verrouillable (résultats complets à 96 %)"
     },
-    "n": 325,
+    "n": 327,
     "roi": 3.3
    },
    "suivi_officiel": {
@@ -120,15 +120,15 @@
      -2.6,
      -0.9
     ],
-    "clv_n": 333,
-    "n_detectees": 338,
-    "n_envoyees": 337,
+    "clv_n": 334,
+    "n_detectees": 340,
+    "n_envoyees": 339,
     "n_doublons": 0,
     "source": "verdicts_direct.json (recalculé : journal plus récent)",
-    "sans_resultat_pct": 39.5,
-    "statut": "en attente de résultats (39,5 % sans résultat)",
+    "sans_resultat_pct": 39.8,
+    "statut": "en attente de résultats (39,8 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-11-05T12:51:08Z"
+    "genere_le": "2026-11-06T12:33:33Z"
    },
    "reconstruction": {
     "n": 243,
@@ -146,25 +146,25 @@
     "egal_validation_report": true
    },
    "entonnoir": {
-    "direct_detectees": 338,
-    "direct_envoyees": 337,
+    "direct_detectees": 340,
+    "direct_envoyees": 339,
     "direct_doublons": 0,
     "direct_non_envoyees_autres": 1,
     "direct_denouees": 204,
-    "reconstruction_detectees": 478,
+    "reconstruction_detectees": 489,
     "reconstruction_reglees": 243,
-    "communes": 134,
-    "reconstruction_seule": 344,
+    "communes": 139,
+    "reconstruction_seule": 350,
     "reconstruction_seule_raisons": {
-     "apres_coup": 343,
+     "apres_coup": 349,
      "cote_opposee_live": 1
     },
-    "direct_seule": 204,
+    "direct_seule": 201,
     "direct_seule_raisons": {
-     "absent_reconstruction": 99,
-     "cote_opposee_reco": 61,
+     "absent_reconstruction": 102,
+     "cote_opposee_reco": 62,
      "prix_different": 11,
-     "pas_encore_reconstruit": 33
+     "pas_encore_reconstruit": 26
     },
     "inexpliques": 0
    },
@@ -7320,26 +7320,54 @@
      "explique": true
     },
     {
+     "sens": "reconstruction seule",
+     "date": "2026-10-31",
+     "match": "Daniel Altmaier – Alex Molcan",
+     "joueur": "Daniel Altmaier",
+     "uid": "2026-10-31_alex_molcan_daniel_altmaier",
+     "cote": 2.08,
+     "book": "unibet",
+     "statut": "non réglée",
+     "raison": "apres_coup",
+     "libelle": "Vue seulement après coup (absente du journal en direct)",
+     "detail": "match absent de tous les journaux en direct",
+     "explique": true
+    },
+    {
+     "sens": "reconstruction seule",
+     "date": "2026-10-31",
+     "match": "Daniil Medvedev – Carlos Alcaraz",
+     "joueur": "Daniil Medvedev",
+     "uid": "2026-10-31_daniil_medvedev_carlos_alcaraz",
+     "cote": 3.0,
+     "book": "bet365",
+     "statut": "non réglée",
+     "raison": "apres_coup",
+     "libelle": "Vue seulement après coup (absente du journal en direct)",
+     "detail": "match absent de tous les journaux en direct",
+     "explique": true
+    },
+    {
+     "sens": "reconstruction seule",
+     "date": "2026-10-31",
+     "match": "Pablo Carreno Busta – Mattia Bellucci",
+     "joueur": "Pablo Carreno Busta",
+     "uid": "2026-10-31_pablo_carreno_busta_mattia_bellucci",
+     "cote": 2.1,
+     "book": "bet365",
+     "statut": "non réglée",
+     "raison": "apres_coup",
+     "libelle": "Vue seulement après coup (absente du journal en direct)",
+     "detail": "match vu en direct par H16, H16B",
+     "explique": true
+    },
+    {
      "sens": "direct seule",
      "date": "2026-10-31",
      "match": "Petr Bar Biryukov – Liam Broady",
      "joueur": "Petr Bar Biryukov",
      "uid": "2026-10-31_petr_bar_biryukov_liam_broady",
      "cote": 2.75,
-     "book": "bet365",
-     "statut": "non dénouée",
-     "raison": "absent_reconstruction",
-     "libelle": "Absent de la reconstruction (aucun mouvement retenu)",
-     "detail": "move_audit n'a retenu aucun mouvement sur ce match",
-     "explique": true
-    },
-    {
-     "sens": "direct seule",
-     "date": "2026-10-31",
-     "match": "Yaroslav Demin – Yu Hsiou Hsu",
-     "joueur": "Yaroslav Demin",
-     "uid": "2026-10-31_yaroslav_demin_yu_hsiou_hsu",
-     "cote": 2.37,
      "book": "bet365",
      "statut": "non dénouée",
      "raison": "absent_reconstruction",
@@ -7364,71 +7392,15 @@
     {
      "sens": "direct seule",
      "date": "2026-10-31",
-     "match": "Sebastian Dominko – Liam Draxl",
-     "joueur": "Sebastian Dominko",
-     "uid": "2026-10-31_liam_draxl_sebastian_dominko",
-     "cote": 2.3,
-     "book": "bwin",
-     "statut": "non dénouée",
-     "raison": "absent_reconstruction",
-     "libelle": "Absent de la reconstruction (aucun mouvement retenu)",
-     "detail": "move_audit n'a retenu aucun mouvement sur ce match",
-     "explique": true
-    },
-    {
-     "sens": "direct seule",
-     "date": "2026-10-31",
-     "match": "Vit Kopriva – Hugo Gaston",
-     "joueur": "Vit Kopriva",
-     "uid": "2026-10-31_hugo_gaston_vit_kopriva",
-     "cote": 2.8,
-     "book": "unibet",
-     "statut": "non dénouée",
-     "raison": "absent_reconstruction",
-     "libelle": "Absent de la reconstruction (aucun mouvement retenu)",
-     "detail": "move_audit n'a retenu aucun mouvement sur ce match",
-     "explique": true
-    },
-    {
-     "sens": "direct seule",
-     "date": "2026-10-31",
-     "match": "Adrian Mannarino – Nuno Borges",
-     "joueur": "Adrian Mannarino",
-     "uid": "2026-10-31_nuno_borges_adrian_mannarino",
-     "cote": 2.37,
-     "book": "bet365",
-     "statut": "non dénouée",
-     "raison": "absent_reconstruction",
-     "libelle": "Absent de la reconstruction (aucun mouvement retenu)",
-     "detail": "move_audit n'a retenu aucun mouvement sur ce match",
-     "explique": true
-    },
-    {
-     "sens": "direct seule",
-     "date": "2026-10-31",
-     "match": "Lorenzo Sonego – Jaume Munar",
-     "joueur": "Lorenzo Sonego",
-     "uid": "2026-10-31_lorenzo_sonego_jaume_munar",
-     "cote": 2.33,
-     "book": "unibet",
-     "statut": "non dénouée",
-     "raison": "absent_reconstruction",
-     "libelle": "Absent de la reconstruction (aucun mouvement retenu)",
-     "detail": "move_audit n'a retenu aucun mouvement sur ce match",
-     "explique": true
-    },
-    {
-     "sens": "direct seule",
-     "date": "2026-10-31",
      "match": "Jan-Lennard Struff – Jiri Lehecka",
      "joueur": "Jan-Lennard Struff",
      "uid": "2026-10-31_jiri_lehecka_jan_lennard_struff",
      "cote": 2.75,
      "book": "bwin",
      "statut": "non dénouée",
-     "raison": "absent_reconstruction",
-     "libelle": "Absent de la reconstruction (aucun mouvement retenu)",
-     "detail": "move_audit n'a retenu aucun mouvement sur ce match",
+     "raison": "cote_opposee_reco",
+     "libelle": "Reconstruction sur l'autre joueur",
+     "detail": "reconstruction sur Jiri Lehecka à 1.46 (unibet)",
      "explique": true
     },
     {
@@ -7446,6 +7418,48 @@
      "explique": true
     },
     {
+     "sens": "reconstruction seule",
+     "date": "2026-11-01",
+     "match": "Andrea Colombo – Adrian Andreev",
+     "joueur": "Andrea Colombo",
+     "uid": "2026-11-01_andrea_colombo_adrian_andreev",
+     "cote": 2.5,
+     "book": "bet365",
+     "statut": "non réglée",
+     "raison": "apres_coup",
+     "libelle": "Vue seulement après coup (absente du journal en direct)",
+     "detail": "match absent de tous les journaux en direct",
+     "explique": true
+    },
+    {
+     "sens": "reconstruction seule",
+     "date": "2026-11-01",
+     "match": "Marcus Walters – Radu Albot",
+     "joueur": "Marcus Walters",
+     "uid": "2026-11-01_marcus_walters_radu_albot",
+     "cote": 3.0,
+     "book": "bet365",
+     "statut": "non réglée",
+     "raison": "apres_coup",
+     "libelle": "Vue seulement après coup (absente du journal en direct)",
+     "detail": "match absent de tous les journaux en direct",
+     "explique": true
+    },
+    {
+     "sens": "reconstruction seule",
+     "date": "2026-11-01",
+     "match": "Rafael Izquierdo Luque – Ziga Sesko",
+     "joueur": "Rafael Izquierdo Luque",
+     "uid": "2026-11-01_rafael_izquierdo_luque_ziga_sesko",
+     "cote": 2.37,
+     "book": "bet365",
+     "statut": "non réglée",
+     "raison": "apres_coup",
+     "libelle": "Vue seulement après coup (absente du journal en direct)",
+     "detail": "match absent de tous les journaux en direct",
+     "explique": true
+    },
+    {
      "sens": "direct seule",
      "date": "2026-11-01",
      "match": "Momoko Kobori – Kyoka Okamura",
@@ -7454,9 +7468,9 @@
      "cote": 3.0,
      "book": "bet365",
      "statut": "non dénouée",
-     "raison": "pas_encore_reconstruit",
-     "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-01, reconstruction arrêtée au 2026-10-31",
+     "raison": "absent_reconstruction",
+     "libelle": "Absent de la reconstruction (aucun mouvement retenu)",
+     "detail": "move_audit n'a retenu aucun mouvement sur ce match",
      "explique": true
     },
     {
@@ -7468,9 +7482,9 @@
      "cote": 2.2,
      "book": "bwin",
      "statut": "non dénouée",
-     "raison": "pas_encore_reconstruit",
-     "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-01, reconstruction arrêtée au 2026-10-31",
+     "raison": "absent_reconstruction",
+     "libelle": "Absent de la reconstruction (aucun mouvement retenu)",
+     "detail": "move_audit n'a retenu aucun mouvement sur ce match",
      "explique": true
     },
     {
@@ -7482,9 +7496,9 @@
      "cote": 2.0,
      "book": "bwin",
      "statut": "non dénouée",
-     "raison": "pas_encore_reconstruit",
-     "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-01, reconstruction arrêtée au 2026-10-31",
+     "raison": "absent_reconstruction",
+     "libelle": "Absent de la reconstruction (aucun mouvement retenu)",
+     "detail": "move_audit n'a retenu aucun mouvement sur ce match",
      "explique": true
     },
     {
@@ -7496,9 +7510,9 @@
      "cote": 2.5,
      "book": "bet365",
      "statut": "non dénouée",
-     "raison": "pas_encore_reconstruit",
-     "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-01, reconstruction arrêtée au 2026-10-31",
+     "raison": "absent_reconstruction",
+     "libelle": "Absent de la reconstruction (aucun mouvement retenu)",
+     "detail": "move_audit n'a retenu aucun mouvement sur ce match",
      "explique": true
     },
     {
@@ -7510,9 +7524,9 @@
      "cote": 2.25,
      "book": "bet365",
      "statut": "non dénouée",
-     "raison": "pas_encore_reconstruit",
-     "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-01, reconstruction arrêtée au 2026-10-31",
+     "raison": "absent_reconstruction",
+     "libelle": "Absent de la reconstruction (aucun mouvement retenu)",
+     "detail": "move_audit n'a retenu aucun mouvement sur ce match",
      "explique": true
     },
     {
@@ -7524,9 +7538,9 @@
      "cote": 2.5,
      "book": "bet365",
      "statut": "non dénouée",
-     "raison": "pas_encore_reconstruit",
-     "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-01, reconstruction arrêtée au 2026-10-31",
+     "raison": "absent_reconstruction",
+     "libelle": "Absent de la reconstruction (aucun mouvement retenu)",
+     "detail": "move_audit n'a retenu aucun mouvement sur ce match",
      "explique": true
     },
     {
@@ -7538,9 +7552,9 @@
      "cote": 2.1,
      "book": "bet365",
      "statut": "non dénouée",
-     "raison": "pas_encore_reconstruit",
-     "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-01, reconstruction arrêtée au 2026-10-31",
+     "raison": "absent_reconstruction",
+     "libelle": "Absent de la reconstruction (aucun mouvement retenu)",
+     "detail": "move_audit n'a retenu aucun mouvement sur ce match",
      "explique": true
     },
     {
@@ -7552,9 +7566,9 @@
      "cote": 2.62,
      "book": "bet365",
      "statut": "non dénouée",
-     "raison": "pas_encore_reconstruit",
-     "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-01, reconstruction arrêtée au 2026-10-31",
+     "raison": "absent_reconstruction",
+     "libelle": "Absent de la reconstruction (aucun mouvement retenu)",
+     "detail": "move_audit n'a retenu aucun mouvement sur ce match",
      "explique": true
     },
     {
@@ -7566,9 +7580,9 @@
      "cote": 2.62,
      "book": "bet365",
      "statut": "non dénouée",
-     "raison": "pas_encore_reconstruit",
-     "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-01, reconstruction arrêtée au 2026-10-31",
+     "raison": "absent_reconstruction",
+     "libelle": "Absent de la reconstruction (aucun mouvement retenu)",
+     "detail": "move_audit n'a retenu aucun mouvement sur ce match",
      "explique": true
     },
     {
@@ -7582,7 +7596,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -7596,7 +7610,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -7610,7 +7624,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -7624,7 +7638,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -7638,7 +7652,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -7652,7 +7666,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -7666,7 +7680,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -7680,7 +7694,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -7694,7 +7708,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -7708,7 +7722,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -7722,7 +7736,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -7736,7 +7750,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -7750,7 +7764,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -7764,7 +7778,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -7778,7 +7792,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -7792,7 +7806,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -7806,7 +7820,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-04, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-04, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -7820,7 +7834,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-04, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-04, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -7834,7 +7848,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-04, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-04, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -7848,7 +7862,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-04, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-04, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -7862,7 +7876,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-04, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-04, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -7876,7 +7890,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-04, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-04, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -7890,7 +7904,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-04, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-04, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -7904,7 +7918,35 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-05, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-05, reconstruction arrêtée au 2026-11-01",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-11-06",
+     "match": "Jan Kumstat – Harold Mayot",
+     "joueur": "Jan Kumstat",
+     "uid": "2026-11-06_jan_kumstat_harold_mayot",
+     "cote": 2.26,
+     "book": "betsson",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-11-06, reconstruction arrêtée au 2026-11-01",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-11-06",
+     "match": "Sumit Nagal – Kilian Feldbausch",
+     "joueur": "Sumit Nagal",
+     "uid": "2026-11-06_kilian_feldbausch_sumit_nagal",
+     "cote": 2.23,
+     "book": "unibet",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-11-06, reconstruction arrêtée au 2026-11-01",
      "explique": true
     }
    ]
@@ -7917,55 +7959,55 @@
    "worker": {
     "gele_le": "2026-10-02",
     "out_of_sample": {
-     "n": 102,
-     "gains": 46,
-     "taux": 45.1,
-     "seuil": 40,
-     "ecart": 5.1,
-     "roi": 11.5,
-     "pnl": 11.7,
-     "cote_moyenne": 3.04,
-     "clv_moyen": -0.4,
-     "clv_pin_moyen": -0.4,
-     "clv_pin_p": 0.6287,
-     "clv_n": 107,
-     "clv_positif": 43,
+     "n": 106,
+     "gains": 49,
+     "taux": 46.2,
+     "seuil": 40.5,
+     "ecart": 5.7,
+     "roi": 12.7,
+     "pnl": 13.5,
+     "cote_moyenne": 3,
+     "clv_moyen": -0.5,
+     "clv_pin_moyen": -0.5,
+     "clv_pin_p": 0.6652,
+     "clv_n": 110,
+     "clv_positif": 41.8,
      "lead_moyen_h": 12.3,
-     "periode": "2026-10-16 -> 2026-11-04",
+     "periode": "2026-10-16 -> 2026-11-05",
      "verdict": "ne tranche pas",
-     "n_detectees": 108,
-     "n_envoyees": 37,
-     "n_doublons": 71,
+     "n_detectees": 115,
+     "n_envoyees": 40,
+     "n_doublons": 75,
      "n_non_envoyees_autres": 0,
-     "n_denouees": 102,
-     "n_commencees": 108,
+     "n_denouees": 106,
+     "n_commencees": 112,
      "n_sans_resultat": 6,
-     "sans_resultat_pct": 5.6,
+     "sans_resultat_pct": 5.4,
      "verrouillable": true,
-     "statut": "verrouillable (résultats complets à 94 %)"
+     "statut": "verrouillable (résultats complets à 95 %)"
     },
-    "n": 102,
-    "roi": 11.5
+    "n": 106,
+    "roi": 12.7
    },
    "suivi_officiel": {
     "n": 10,
     "gagnes": 4,
     "roi": -13.8,
     "pts": 4.0,
-    "clv_pin": -0.4,
+    "clv_pin": -0.5,
     "clv_pin_ic95": [
-     -2.5,
-     1.8
+     -2.6,
+     1.7
     ],
-    "clv_n": 107,
-    "n_detectees": 110,
-    "n_envoyees": 38,
-    "n_doublons": 72,
+    "clv_n": 110,
+    "n_detectees": 115,
+    "n_envoyees": 40,
+    "n_doublons": 75,
     "source": "verdicts_direct.json (recalculé : journal plus récent)",
-    "sans_resultat_pct": 90.7,
-    "statut": "en attente de résultats (90,7 % sans résultat)",
+    "sans_resultat_pct": 91.1,
+    "statut": "en attente de résultats (91,1 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-11-05T12:51:08Z"
+    "genere_le": "2026-11-06T12:33:33Z"
    },
    "reconstruction": {
     "n": 193,
@@ -7983,26 +8025,26 @@
     "egal_validation_report": true
    },
    "entonnoir": {
-    "direct_detectees": 110,
-    "direct_envoyees": 38,
-    "direct_doublons": 72,
+    "direct_detectees": 115,
+    "direct_envoyees": 40,
+    "direct_doublons": 75,
     "direct_non_envoyees_autres": 0,
     "direct_denouees": 10,
-    "reconstruction_detectees": 331,
+    "reconstruction_detectees": 335,
     "reconstruction_reglees": 193,
-    "communes": 22,
-    "reconstruction_seule": 309,
+    "communes": 24,
+    "reconstruction_seule": 311,
     "reconstruction_seule_raisons": {
-     "apres_coup": 117,
+     "apres_coup": 119,
      "avant_canal": 189,
      "cote_opposee_live": 3
     },
-    "direct_seule": 88,
+    "direct_seule": 91,
     "direct_seule_raisons": {
      "cote_opposee_reco": 14,
-     "absent_reconstruction": 30,
+     "absent_reconstruction": 37,
      "prix_different": 14,
-     "pas_encore_reconstruit": 30
+     "pas_encore_reconstruit": 26
     },
     "inexpliques": 0
    },
@@ -13158,10 +13200,38 @@
     {
      "sens": "reconstruction seule",
      "date": "2026-10-31",
+     "match": "Jensi Dipakbhai Kanabar – Weronika Falkowska",
+     "joueur": "Jensi Dipakbhai Kanabar",
+     "uid": "2026-10-31_jensi_dipakbhai_kanabar_weronika_falkowska",
+     "cote": 9.0,
+     "book": "bet365",
+     "statut": "non réglée",
+     "raison": "apres_coup",
+     "libelle": "Vue seulement après coup (absente du journal en direct)",
+     "detail": "match absent de tous les journaux en direct",
+     "explique": true
+    },
+    {
+     "sens": "reconstruction seule",
+     "date": "2026-10-31",
      "match": "Heather Watson – Emerson Jones",
      "joueur": "Heather Watson",
      "uid": "2026-10-31_emerson_jones_heather_watson",
      "cote": 3.25,
+     "book": "bet365",
+     "statut": "non réglée",
+     "raison": "apres_coup",
+     "libelle": "Vue seulement après coup (absente du journal en direct)",
+     "detail": "match absent de tous les journaux en direct",
+     "explique": true
+    },
+    {
+     "sens": "reconstruction seule",
+     "date": "2026-10-31",
+     "match": "Daniil Medvedev – Carlos Alcaraz",
+     "joueur": "Daniil Medvedev",
+     "uid": "2026-10-31_daniil_medvedev_carlos_alcaraz",
+     "cote": 3.0,
      "book": "bet365",
      "statut": "non réglée",
      "raison": "apres_coup",
@@ -13185,34 +13255,6 @@
     },
     {
      "sens": "direct seule",
-     "date": "2026-10-31",
-     "match": "Yaroslav Demin – Yu Hsiou Hsu",
-     "joueur": "Yaroslav Demin",
-     "uid": "2026-10-31_yaroslav_demin_yu_hsiou_hsu",
-     "cote": 2.37,
-     "book": "bet365",
-     "statut": "non dénouée",
-     "raison": "absent_reconstruction",
-     "libelle": "Absent de la reconstruction (aucun mouvement retenu)",
-     "detail": "move_audit n'a retenu aucun mouvement sur ce match",
-     "explique": true
-    },
-    {
-     "sens": "direct seule",
-     "date": "2026-10-31",
-     "match": "Sebastian Dominko – Liam Draxl",
-     "joueur": "Sebastian Dominko",
-     "uid": "2026-10-31_liam_draxl_sebastian_dominko",
-     "cote": 2.3,
-     "book": "bwin",
-     "statut": "non dénouée",
-     "raison": "absent_reconstruction",
-     "libelle": "Absent de la reconstruction (aucun mouvement retenu)",
-     "detail": "move_audit n'a retenu aucun mouvement sur ce match",
-     "explique": true
-    },
-    {
-     "sens": "direct seule",
      "date": "2026-11-01",
      "match": "Momoko Kobori – Kyoka Okamura",
      "joueur": "Momoko Kobori",
@@ -13220,9 +13262,9 @@
      "cote": 3.0,
      "book": "bet365",
      "statut": "non dénouée",
-     "raison": "pas_encore_reconstruit",
-     "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-01, reconstruction arrêtée au 2026-10-31",
+     "raison": "absent_reconstruction",
+     "libelle": "Absent de la reconstruction (aucun mouvement retenu)",
+     "detail": "move_audit n'a retenu aucun mouvement sur ce match",
      "explique": true
     },
     {
@@ -13234,9 +13276,9 @@
      "cote": 2.2,
      "book": "bwin",
      "statut": "non dénouée",
-     "raison": "pas_encore_reconstruit",
-     "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-01, reconstruction arrêtée au 2026-10-31",
+     "raison": "absent_reconstruction",
+     "libelle": "Absent de la reconstruction (aucun mouvement retenu)",
+     "detail": "move_audit n'a retenu aucun mouvement sur ce match",
      "explique": true
     },
     {
@@ -13248,9 +13290,9 @@
      "cote": 2.0,
      "book": "bwin",
      "statut": "non dénouée",
-     "raison": "pas_encore_reconstruit",
-     "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-01, reconstruction arrêtée au 2026-10-31",
+     "raison": "absent_reconstruction",
+     "libelle": "Absent de la reconstruction (aucun mouvement retenu)",
+     "detail": "move_audit n'a retenu aucun mouvement sur ce match",
      "explique": true
     },
     {
@@ -13262,9 +13304,9 @@
      "cote": 3.25,
      "book": "bet365",
      "statut": "non dénouée",
-     "raison": "pas_encore_reconstruit",
-     "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-01, reconstruction arrêtée au 2026-10-31",
+     "raison": "absent_reconstruction",
+     "libelle": "Absent de la reconstruction (aucun mouvement retenu)",
+     "detail": "move_audit n'a retenu aucun mouvement sur ce match",
      "explique": true
     },
     {
@@ -13276,9 +13318,9 @@
      "cote": 3.4,
      "book": "bet365",
      "statut": "non dénouée",
-     "raison": "pas_encore_reconstruit",
-     "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-01, reconstruction arrêtée au 2026-10-31",
+     "raison": "absent_reconstruction",
+     "libelle": "Absent de la reconstruction (aucun mouvement retenu)",
+     "detail": "move_audit n'a retenu aucun mouvement sur ce match",
      "explique": true
     },
     {
@@ -13290,9 +13332,9 @@
      "cote": 1.3,
      "book": "bet365",
      "statut": "non dénouée",
-     "raison": "pas_encore_reconstruit",
-     "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-01, reconstruction arrêtée au 2026-10-31",
+     "raison": "absent_reconstruction",
+     "libelle": "Absent de la reconstruction (aucun mouvement retenu)",
+     "detail": "move_audit n'a retenu aucun mouvement sur ce match",
      "explique": true
     },
     {
@@ -13304,9 +13346,9 @@
      "cote": 2.25,
      "book": "bet365",
      "statut": "non dénouée",
-     "raison": "pas_encore_reconstruit",
-     "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-01, reconstruction arrêtée au 2026-10-31",
+     "raison": "absent_reconstruction",
+     "libelle": "Absent de la reconstruction (aucun mouvement retenu)",
+     "detail": "move_audit n'a retenu aucun mouvement sur ce match",
      "explique": true
     },
     {
@@ -13318,9 +13360,9 @@
      "cote": 2.5,
      "book": "bet365",
      "statut": "non dénouée",
-     "raison": "pas_encore_reconstruit",
-     "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-01, reconstruction arrêtée au 2026-10-31",
+     "raison": "absent_reconstruction",
+     "libelle": "Absent de la reconstruction (aucun mouvement retenu)",
+     "detail": "move_audit n'a retenu aucun mouvement sur ce match",
      "explique": true
     },
     {
@@ -13332,9 +13374,9 @@
      "cote": 6.0,
      "book": "bet365",
      "statut": "non dénouée",
-     "raison": "pas_encore_reconstruit",
-     "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-01, reconstruction arrêtée au 2026-10-31",
+     "raison": "absent_reconstruction",
+     "libelle": "Absent de la reconstruction (aucun mouvement retenu)",
+     "detail": "move_audit n'a retenu aucun mouvement sur ce match",
      "explique": true
     },
     {
@@ -13348,7 +13390,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -13362,7 +13404,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -13376,7 +13418,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -13390,7 +13432,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -13404,7 +13446,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -13418,7 +13460,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -13432,7 +13474,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -13446,7 +13488,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -13460,7 +13502,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -13474,7 +13516,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -13488,7 +13530,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -13502,7 +13544,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -13516,7 +13558,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-04, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-04, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -13530,7 +13572,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-04, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-04, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -13544,7 +13586,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-04, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-04, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -13558,7 +13600,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-04, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-04, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -13572,7 +13614,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-04, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-04, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -13586,7 +13628,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-04, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-04, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -13600,7 +13642,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-04, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-04, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -13614,7 +13656,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-05, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-05, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -13628,7 +13670,77 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-05, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-05, reconstruction arrêtée au 2026-11-01",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-11-06",
+     "match": "Yuta Shimizu – Omar Jasika",
+     "joueur": "Yuta Shimizu",
+     "uid": "2026-11-06_yuta_shimizu_omar_jasika",
+     "cote": 1.53,
+     "book": "betsson",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-11-06, reconstruction arrêtée au 2026-11-01",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-11-06",
+     "match": "Jan Kumstat – Harold Mayot",
+     "joueur": "Jan Kumstat",
+     "uid": "2026-11-06_jan_kumstat_harold_mayot",
+     "cote": 2.26,
+     "book": "betsson",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-11-06, reconstruction arrêtée au 2026-11-01",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-11-06",
+     "match": "Stefan Kozlov – Braden Shick",
+     "joueur": "Stefan Kozlov",
+     "uid": "2026-11-06_stefan_kozlov_braden_shick",
+     "cote": 1.77,
+     "book": "bet365",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-11-06, reconstruction arrêtée au 2026-11-01",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-11-06",
+     "match": "Anastasia Zakharova – Lucrezia Stefanini",
+     "joueur": "Anastasia Zakharova",
+     "uid": "2026-11-06_anastasia_zakharova_lucrezia_stefanini",
+     "cote": 1.99,
+     "book": "betsson",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-11-06, reconstruction arrêtée au 2026-11-01",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-11-06",
+     "match": "Marco Cecchinato – Facundo Diaz Acosta",
+     "joueur": "Marco Cecchinato",
+     "uid": "2026-11-06_facundo_diaz_acosta_marco_cecchinato",
+     "cote": 3.25,
+     "book": "betsson",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-11-06, reconstruction arrêtée au 2026-11-01",
      "explique": true
     }
    ]
@@ -13689,7 +13801,7 @@
     "sans_resultat_pct": 68.2,
     "statut": "en attente de résultats (68,2 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-11-05T12:51:08Z"
+    "genere_le": "2026-11-06T12:33:33Z"
    },
    "reconstruction": {
     "n": 96,
@@ -13712,19 +13824,19 @@
     "direct_doublons": 110,
     "direct_non_envoyees_autres": 0,
     "direct_denouees": 35,
-    "reconstruction_detectees": 177,
+    "reconstruction_detectees": 181,
     "reconstruction_reglees": 96,
-    "communes": 43,
-    "reconstruction_seule": 134,
+    "communes": 44,
+    "reconstruction_seule": 137,
     "reconstruction_seule_raisons": {
-     "apres_coup": 134
+     "apres_coup": 137
     },
-    "direct_seule": 67,
+    "direct_seule": 66,
     "direct_seule_raisons": {
-     "absent_reconstruction": 21,
-     "cote_opposee_reco": 15,
+     "absent_reconstruction": 24,
+     "cote_opposee_reco": 16,
      "prix_different": 6,
-     "pas_encore_reconstruit": 25
+     "pas_encore_reconstruit": 20
     },
     "inexpliques": 0
    },
@@ -16204,6 +16316,20 @@
      "explique": true
     },
     {
+     "sens": "reconstruction seule",
+     "date": "2026-10-31",
+     "match": "Daniil Medvedev – Carlos Alcaraz",
+     "joueur": "Daniil Medvedev",
+     "uid": "2026-10-31_daniil_medvedev_carlos_alcaraz",
+     "cote": 3.0,
+     "book": "bet365",
+     "statut": "non réglée",
+     "raison": "apres_coup",
+     "libelle": "Vue seulement après coup (absente du journal en direct)",
+     "detail": "match absent de tous les journaux en direct",
+     "explique": true
+    },
+    {
      "sens": "direct seule",
      "date": "2026-10-31",
      "match": "Petr Bar Biryukov – Liam Broady",
@@ -16234,29 +16360,43 @@
     {
      "sens": "direct seule",
      "date": "2026-10-31",
-     "match": "Vit Kopriva – Hugo Gaston",
-     "joueur": "Vit Kopriva",
-     "uid": "2026-10-31_hugo_gaston_vit_kopriva",
-     "cote": 2.8,
-     "book": "unibet",
-     "statut": "non dénouée",
-     "raison": "absent_reconstruction",
-     "libelle": "Absent de la reconstruction (aucun mouvement retenu)",
-     "detail": "move_audit n'a retenu aucun mouvement sur ce match",
-     "explique": true
-    },
-    {
-     "sens": "direct seule",
-     "date": "2026-10-31",
      "match": "Jan-Lennard Struff – Jiri Lehecka",
      "joueur": "Jan-Lennard Struff",
      "uid": "2026-10-31_jiri_lehecka_jan_lennard_struff",
      "cote": 2.75,
      "book": "bwin",
      "statut": "non dénouée",
-     "raison": "absent_reconstruction",
-     "libelle": "Absent de la reconstruction (aucun mouvement retenu)",
-     "detail": "move_audit n'a retenu aucun mouvement sur ce match",
+     "raison": "cote_opposee_reco",
+     "libelle": "Reconstruction sur l'autre joueur",
+     "detail": "reconstruction sur Jiri Lehecka à 1.46 (unibet)",
+     "explique": true
+    },
+    {
+     "sens": "reconstruction seule",
+     "date": "2026-11-01",
+     "match": "Andrea Colombo – Adrian Andreev",
+     "joueur": "Andrea Colombo",
+     "uid": "2026-11-01_andrea_colombo_adrian_andreev",
+     "cote": 2.5,
+     "book": "bet365",
+     "statut": "non réglée",
+     "raison": "apres_coup",
+     "libelle": "Vue seulement après coup (absente du journal en direct)",
+     "detail": "match absent de tous les journaux en direct",
+     "explique": true
+    },
+    {
+     "sens": "reconstruction seule",
+     "date": "2026-11-01",
+     "match": "Marcus Walters – Radu Albot",
+     "joueur": "Marcus Walters",
+     "uid": "2026-11-01_marcus_walters_radu_albot",
+     "cote": 3.0,
+     "book": "bet365",
+     "statut": "non réglée",
+     "raison": "apres_coup",
+     "libelle": "Vue seulement après coup (absente du journal en direct)",
+     "detail": "match absent de tous les journaux en direct",
      "explique": true
     },
     {
@@ -16268,9 +16408,9 @@
      "cote": 3.0,
      "book": "bet365",
      "statut": "non dénouée",
-     "raison": "pas_encore_reconstruit",
-     "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-01, reconstruction arrêtée au 2026-10-31",
+     "raison": "absent_reconstruction",
+     "libelle": "Absent de la reconstruction (aucun mouvement retenu)",
+     "detail": "move_audit n'a retenu aucun mouvement sur ce match",
      "explique": true
     },
     {
@@ -16282,9 +16422,9 @@
      "cote": 2.5,
      "book": "bet365",
      "statut": "non dénouée",
-     "raison": "pas_encore_reconstruit",
-     "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-01, reconstruction arrêtée au 2026-10-31",
+     "raison": "absent_reconstruction",
+     "libelle": "Absent de la reconstruction (aucun mouvement retenu)",
+     "detail": "move_audit n'a retenu aucun mouvement sur ce match",
      "explique": true
     },
     {
@@ -16296,9 +16436,9 @@
      "cote": 2.5,
      "book": "bet365",
      "statut": "non dénouée",
-     "raison": "pas_encore_reconstruit",
-     "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-01, reconstruction arrêtée au 2026-10-31",
+     "raison": "absent_reconstruction",
+     "libelle": "Absent de la reconstruction (aucun mouvement retenu)",
+     "detail": "move_audit n'a retenu aucun mouvement sur ce match",
      "explique": true
     },
     {
@@ -16310,9 +16450,9 @@
      "cote": 2.62,
      "book": "bet365",
      "statut": "non dénouée",
-     "raison": "pas_encore_reconstruit",
-     "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-01, reconstruction arrêtée au 2026-10-31",
+     "raison": "absent_reconstruction",
+     "libelle": "Absent de la reconstruction (aucun mouvement retenu)",
+     "detail": "move_audit n'a retenu aucun mouvement sur ce match",
      "explique": true
     },
     {
@@ -16324,9 +16464,9 @@
      "cote": 2.62,
      "book": "bet365",
      "statut": "non dénouée",
-     "raison": "pas_encore_reconstruit",
-     "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-01, reconstruction arrêtée au 2026-10-31",
+     "raison": "absent_reconstruction",
+     "libelle": "Absent de la reconstruction (aucun mouvement retenu)",
+     "detail": "move_audit n'a retenu aucun mouvement sur ce match",
      "explique": true
     },
     {
@@ -16340,7 +16480,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -16354,7 +16494,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -16368,7 +16508,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -16382,7 +16522,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -16396,7 +16536,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -16410,7 +16550,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -16424,7 +16564,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -16438,7 +16578,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -16452,7 +16592,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -16466,7 +16606,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -16480,7 +16620,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -16494,7 +16634,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -16508,7 +16648,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -16522,7 +16662,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -16536,7 +16676,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-04, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-04, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -16550,7 +16690,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-04, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-04, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -16564,7 +16704,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-04, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-04, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -16578,7 +16718,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-04, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-04, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -16592,7 +16732,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-04, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-04, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -16606,7 +16746,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-04, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-04, reconstruction arrêtée au 2026-11-01",
      "explique": true
     }
    ]
@@ -16619,35 +16759,35 @@
    "worker": {
     "gele_le": "2026-09-25",
     "out_of_sample": {
-     "n": 241,
-     "gains": 164,
-     "taux": 68,
+     "n": 249,
+     "gains": 170,
+     "taux": 68.3,
      "seuil": 67.9,
-     "ecart": 0.1,
-     "roi": 0,
-     "pnl": 0.1,
+     "ecart": 0.4,
+     "roi": 0.3,
+     "pnl": 0.9,
      "cote_moyenne": 1.49,
      "clv_moyen": -0.6,
      "clv_pin_moyen": -0.6,
-     "clv_pin_p": 0.9867,
-     "clv_n": 253,
-     "clv_positif": 39.5,
-     "lead_moyen_h": 7.8,
-     "periode": "2026-09-26 -> 2026-11-04",
+     "clv_pin_p": 0.9779,
+     "clv_n": 261,
+     "clv_positif": 40.2,
+     "lead_moyen_h": 7.7,
+     "periode": "2026-09-26 -> 2026-11-05",
      "verdict": "ne tranche pas",
-     "n_detectees": 258,
-     "n_envoyees": 258,
+     "n_detectees": 265,
+     "n_envoyees": 265,
      "n_doublons": 0,
      "n_non_envoyees_autres": 0,
-     "n_denouees": 241,
-     "n_commencees": 257,
-     "n_sans_resultat": 16,
-     "sans_resultat_pct": 6.2,
+     "n_denouees": 249,
+     "n_commencees": 263,
+     "n_sans_resultat": 14,
+     "sans_resultat_pct": 5.3,
      "verrouillable": true,
-     "statut": "verrouillable (résultats complets à 94 %)"
+     "statut": "verrouillable (résultats complets à 95 %)"
     },
-    "n": 241,
-    "roi": 0
+    "n": 249,
+    "roi": 0.3
    },
    "suivi_officiel": {
     "n": 117,
@@ -16656,18 +16796,18 @@
     "pts": 1.9,
     "clv_pin": -0.6,
     "clv_pin_ic95": [
-     -1.2,
-     -0.1
+     -1.1,
+     -0.0
     ],
-    "clv_n": 253,
-    "n_detectees": 260,
-    "n_envoyees": 260,
+    "clv_n": 261,
+    "n_detectees": 265,
+    "n_envoyees": 265,
     "n_doublons": 0,
     "source": "verdicts_direct.json (recalculé : journal plus récent)",
-    "sans_resultat_pct": 54.7,
-    "statut": "en attente de résultats (54,7 % sans résultat)",
+    "sans_resultat_pct": 55.7,
+    "statut": "en attente de résultats (55,7 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-11-05T12:51:08Z"
+    "genere_le": "2026-11-06T12:33:33Z"
    },
    "reconstruction": {
     "n": 264,
@@ -16685,24 +16825,24 @@
     "egal_validation_report": true
    },
    "entonnoir": {
-    "direct_detectees": 260,
-    "direct_envoyees": 260,
+    "direct_detectees": 265,
+    "direct_envoyees": 265,
     "direct_doublons": 0,
     "direct_non_envoyees_autres": 0,
     "direct_denouees": 117,
-    "reconstruction_detectees": 414,
+    "reconstruction_detectees": 424,
     "reconstruction_reglees": 264,
-    "communes": 100,
-    "reconstruction_seule": 314,
+    "communes": 103,
+    "reconstruction_seule": 321,
     "reconstruction_seule_raisons": {
-     "apres_coup": 314
+     "apres_coup": 321
     },
-    "direct_seule": 160,
+    "direct_seule": 162,
     "direct_seule_raisons": {
-     "cote_opposee_reco": 54,
-     "absent_reconstruction": 54,
+     "cote_opposee_reco": 55,
+     "absent_reconstruction": 62,
      "prix_different": 7,
-     "pas_encore_reconstruit": 45
+     "pas_encore_reconstruit": 38
     },
     "inexpliques": 0
    },
@@ -22698,11 +22838,53 @@
     {
      "sens": "reconstruction seule",
      "date": "2026-10-31",
+     "match": "Jiri Lehecka – Jan-Lennard Struff",
+     "joueur": "Jiri Lehecka",
+     "uid": "2026-10-31_jiri_lehecka_jan_lennard_struff",
+     "cote": 1.46,
+     "book": "unibet",
+     "statut": "non réglée",
+     "raison": "apres_coup",
+     "libelle": "Vue seulement après coup (absente du journal en direct)",
+     "detail": "match vu en direct par H13, H15",
+     "explique": true
+    },
+    {
+     "sens": "reconstruction seule",
+     "date": "2026-10-31",
+     "match": "Tallon Griekspoor – Benjamin Bonzi",
+     "joueur": "Tallon Griekspoor",
+     "uid": "2026-10-31_tallon_griekspoor_benjamin_bonzi",
+     "cote": 1.54,
+     "book": "unibet",
+     "statut": "non réglée",
+     "raison": "apres_coup",
+     "libelle": "Vue seulement après coup (absente du journal en direct)",
+     "detail": "match absent de tous les journaux en direct",
+     "explique": true
+    },
+    {
+     "sens": "reconstruction seule",
+     "date": "2026-10-31",
      "match": "Coleman Wong – Omar Jasika",
      "joueur": "Coleman Wong",
      "uid": "2026-10-31_coleman_wong_omar_jasika",
      "cote": 1.21,
      "book": "unibet",
+     "statut": "non réglée",
+     "raison": "apres_coup",
+     "libelle": "Vue seulement après coup (absente du journal en direct)",
+     "detail": "match absent de tous les journaux en direct",
+     "explique": true
+    },
+    {
+     "sens": "reconstruction seule",
+     "date": "2026-10-31",
+     "match": "Hugo Dellien – Valerio Aboian",
+     "joueur": "Hugo Dellien",
+     "uid": "2026-10-31_valerio_aboian_hugo_dellien",
+     "cote": 1.17,
+     "book": "bet365",
      "statut": "non réglée",
      "raison": "apres_coup",
      "libelle": "Vue seulement après coup (absente du journal en direct)",
@@ -22716,20 +22898,6 @@
      "joueur": "Diana Shnaider",
      "uid": "2026-10-31_diana_shnaider_mia_pohankova",
      "cote": 1.37,
-     "book": "bet365",
-     "statut": "non dénouée",
-     "raison": "absent_reconstruction",
-     "libelle": "Absent de la reconstruction (aucun mouvement retenu)",
-     "detail": "move_audit n'a retenu aucun mouvement sur ce match",
-     "explique": true
-    },
-    {
-     "sens": "direct seule",
-     "date": "2026-10-31",
-     "match": "Otto Virtanen – Moise Kouame",
-     "joueur": "Otto Virtanen",
-     "uid": "2026-10-31_moise_kouame_otto_virtanen",
-     "cote": 1.77,
      "book": "bet365",
      "statut": "non dénouée",
      "raison": "absent_reconstruction",
@@ -22760,23 +22928,65 @@
      "cote": 1.68,
      "book": "unibet",
      "statut": "non dénouée",
-     "raison": "absent_reconstruction",
-     "libelle": "Absent de la reconstruction (aucun mouvement retenu)",
-     "detail": "move_audit n'a retenu aucun mouvement sur ce match",
+     "raison": "cote_opposee_reco",
+     "libelle": "Reconstruction sur l'autre joueur",
+     "detail": "reconstruction sur Pablo Carreno Busta à 2.1 (bet365)",
      "explique": true
     },
     {
-     "sens": "direct seule",
-     "date": "2026-10-31",
-     "match": "Damir Dzumhur – Sebastian Baez",
-     "joueur": "Damir Dzumhur",
-     "uid": "2026-10-31_sebastian_baez_damir_dzumhur",
-     "cote": 1.69,
+     "sens": "reconstruction seule",
+     "date": "2026-11-01",
+     "match": "Manas Dhamne – Loann Massard",
+     "joueur": "Manas Dhamne",
+     "uid": "2026-11-01_manas_dhamne_loann_massard",
+     "cote": 1.37,
      "book": "bet365",
-     "statut": "non dénouée",
-     "raison": "absent_reconstruction",
-     "libelle": "Absent de la reconstruction (aucun mouvement retenu)",
-     "detail": "move_audit n'a retenu aucun mouvement sur ce match",
+     "statut": "non réglée",
+     "raison": "apres_coup",
+     "libelle": "Vue seulement après coup (absente du journal en direct)",
+     "detail": "match absent de tous les journaux en direct",
+     "explique": true
+    },
+    {
+     "sens": "reconstruction seule",
+     "date": "2026-11-01",
+     "match": "Jake Delaney – Kai-I Wang",
+     "joueur": "Jake Delaney",
+     "uid": "2026-11-01_jake_delaney_kai_i_wang",
+     "cote": 1.09,
+     "book": "bet365",
+     "statut": "non réglée",
+     "raison": "apres_coup",
+     "libelle": "Vue seulement après coup (absente du journal en direct)",
+     "detail": "match absent de tous les journaux en direct",
+     "explique": true
+    },
+    {
+     "sens": "reconstruction seule",
+     "date": "2026-11-01",
+     "match": "Tiago Pereira – Filiberto Fumagalli",
+     "joueur": "Tiago Pereira",
+     "uid": "2026-11-01_tiago_pereira_filiberto_fumagalli",
+     "cote": 1.13,
+     "book": "bet365",
+     "statut": "non réglée",
+     "raison": "apres_coup",
+     "libelle": "Vue seulement après coup (absente du journal en direct)",
+     "detail": "match absent de tous les journaux en direct",
+     "explique": true
+    },
+    {
+     "sens": "reconstruction seule",
+     "date": "2026-11-01",
+     "match": "Nico Hipfl – Leonardo Borrelli",
+     "joueur": "Nico Hipfl",
+     "uid": "2026-11-01_leonardo_borrelli_nico_hipfl",
+     "cote": 1.13,
+     "book": "bet365",
+     "statut": "non réglée",
+     "raison": "apres_coup",
+     "libelle": "Vue seulement après coup (absente du journal en direct)",
+     "detail": "match absent de tous les journaux en direct",
      "explique": true
     },
     {
@@ -22788,9 +22998,9 @@
      "cote": 1.38,
      "book": "betway",
      "statut": "non dénouée",
-     "raison": "pas_encore_reconstruit",
-     "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-01, reconstruction arrêtée au 2026-10-31",
+     "raison": "absent_reconstruction",
+     "libelle": "Absent de la reconstruction (aucun mouvement retenu)",
+     "detail": "move_audit n'a retenu aucun mouvement sur ce match",
      "explique": true
     },
     {
@@ -22802,9 +23012,9 @@
      "cote": 1.16,
      "book": "bwin",
      "statut": "non dénouée",
-     "raison": "pas_encore_reconstruit",
-     "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-01, reconstruction arrêtée au 2026-10-31",
+     "raison": "absent_reconstruction",
+     "libelle": "Absent de la reconstruction (aucun mouvement retenu)",
+     "detail": "move_audit n'a retenu aucun mouvement sur ce match",
      "explique": true
     },
     {
@@ -22816,9 +23026,9 @@
      "cote": 1.7,
      "book": "bwin",
      "statut": "non dénouée",
-     "raison": "pas_encore_reconstruit",
-     "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-01, reconstruction arrêtée au 2026-10-31",
+     "raison": "absent_reconstruction",
+     "libelle": "Absent de la reconstruction (aucun mouvement retenu)",
+     "detail": "move_audit n'a retenu aucun mouvement sur ce match",
      "explique": true
     },
     {
@@ -22830,9 +23040,9 @@
      "cote": 1.4,
      "book": "bwin",
      "statut": "non dénouée",
-     "raison": "pas_encore_reconstruit",
-     "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-01, reconstruction arrêtée au 2026-10-31",
+     "raison": "absent_reconstruction",
+     "libelle": "Absent de la reconstruction (aucun mouvement retenu)",
+     "detail": "move_audit n'a retenu aucun mouvement sur ce match",
      "explique": true
     },
     {
@@ -22844,9 +23054,9 @@
      "cote": 1.3,
      "book": "bet365",
      "statut": "non dénouée",
-     "raison": "pas_encore_reconstruit",
-     "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-01, reconstruction arrêtée au 2026-10-31",
+     "raison": "absent_reconstruction",
+     "libelle": "Absent de la reconstruction (aucun mouvement retenu)",
+     "detail": "move_audit n'a retenu aucun mouvement sur ce match",
      "explique": true
     },
     {
@@ -22858,23 +23068,9 @@
      "cote": 1.87,
      "book": "bet365",
      "statut": "non dénouée",
-     "raison": "pas_encore_reconstruit",
-     "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-01, reconstruction arrêtée au 2026-10-31",
-     "explique": true
-    },
-    {
-     "sens": "direct seule",
-     "date": "2026-11-01",
-     "match": "Niels Visker – Faris Zakaria",
-     "joueur": "Niels Visker",
-     "uid": "2026-11-01_faris_zakaria_niels_visker",
-     "cote": 1.15,
-     "book": "unibet",
-     "statut": "non dénouée",
-     "raison": "pas_encore_reconstruit",
-     "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-01, reconstruction arrêtée au 2026-10-31",
+     "raison": "absent_reconstruction",
+     "libelle": "Absent de la reconstruction (aucun mouvement retenu)",
+     "detail": "move_audit n'a retenu aucun mouvement sur ce match",
      "explique": true
     },
     {
@@ -22886,9 +23082,9 @@
      "cote": 1.25,
      "book": "bwin",
      "statut": "non dénouée",
-     "raison": "pas_encore_reconstruit",
-     "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-01, reconstruction arrêtée au 2026-10-31",
+     "raison": "absent_reconstruction",
+     "libelle": "Absent de la reconstruction (aucun mouvement retenu)",
+     "detail": "move_audit n'a retenu aucun mouvement sur ce match",
      "explique": true
     },
     {
@@ -22900,9 +23096,9 @@
      "cote": 1.33,
      "book": "bet365",
      "statut": "non dénouée",
-     "raison": "pas_encore_reconstruit",
-     "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-01, reconstruction arrêtée au 2026-10-31",
+     "raison": "absent_reconstruction",
+     "libelle": "Absent de la reconstruction (aucun mouvement retenu)",
+     "detail": "move_audit n'a retenu aucun mouvement sur ce match",
      "explique": true
     },
     {
@@ -22914,9 +23110,9 @@
      "cote": 1.22,
      "book": "bet365",
      "statut": "non dénouée",
-     "raison": "pas_encore_reconstruit",
-     "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-01, reconstruction arrêtée au 2026-10-31",
+     "raison": "absent_reconstruction",
+     "libelle": "Absent de la reconstruction (aucun mouvement retenu)",
+     "detail": "move_audit n'a retenu aucun mouvement sur ce match",
      "explique": true
     },
     {
@@ -22928,9 +23124,9 @@
      "cote": 1.444,
      "book": "betway",
      "statut": "non dénouée",
-     "raison": "pas_encore_reconstruit",
-     "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-01, reconstruction arrêtée au 2026-10-31",
+     "raison": "absent_reconstruction",
+     "libelle": "Absent de la reconstruction (aucun mouvement retenu)",
+     "detail": "move_audit n'a retenu aucun mouvement sur ce match",
      "explique": true
     },
     {
@@ -22942,9 +23138,9 @@
      "cote": 1.062,
      "book": "888sport",
      "statut": "non dénouée",
-     "raison": "pas_encore_reconstruit",
-     "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-01, reconstruction arrêtée au 2026-10-31",
+     "raison": "absent_reconstruction",
+     "libelle": "Absent de la reconstruction (aucun mouvement retenu)",
+     "detail": "move_audit n'a retenu aucun mouvement sur ce match",
      "explique": true
     },
     {
@@ -22958,7 +23154,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -22972,7 +23168,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -22986,7 +23182,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -23000,7 +23196,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -23014,7 +23210,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -23028,7 +23224,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -23042,7 +23238,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -23056,7 +23252,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -23070,7 +23266,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -23084,7 +23280,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -23098,7 +23294,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -23112,7 +23308,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -23126,7 +23322,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -23140,7 +23336,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -23154,7 +23350,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -23168,7 +23364,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -23182,7 +23378,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -23196,7 +23392,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -23210,7 +23406,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -23224,7 +23420,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -23238,7 +23434,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -23252,7 +23448,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -23266,7 +23462,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-04, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-04, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -23280,7 +23476,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-04, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-04, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -23294,7 +23490,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-04, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-04, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -23308,7 +23504,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-04, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-04, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -23322,7 +23518,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-04, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-04, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -23336,7 +23532,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-04, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-04, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -23350,7 +23546,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-05, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-05, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -23364,7 +23560,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-05, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-05, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -23378,7 +23574,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-05, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-05, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -23392,7 +23588,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-05, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-05, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -23406,7 +23602,77 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-05, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-05, reconstruction arrêtée au 2026-11-01",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-11-05",
+     "match": "Casper Ruud – Jan-Lennard Struff",
+     "joueur": "Casper Ruud",
+     "uid": "2026-11-05_jan_lennard_struff_casper_ruud",
+     "cote": 1.53,
+     "book": "unibet",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-11-05, reconstruction arrêtée au 2026-11-01",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-11-05",
+     "match": "Arthur Fils – Taylor Fritz",
+     "joueur": "Arthur Fils",
+     "uid": "2026-11-05_arthur_fils_taylor_fritz",
+     "cote": 1.71,
+     "book": "unibet",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-11-05, reconstruction arrêtée au 2026-11-01",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-11-06",
+     "match": "Yuta Shimizu – Omar Jasika",
+     "joueur": "Yuta Shimizu",
+     "uid": "2026-11-06_yuta_shimizu_omar_jasika",
+     "cote": 1.53,
+     "book": "betsson",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-11-06, reconstruction arrêtée au 2026-11-01",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-11-06",
+     "match": "Stefan Kozlov – Braden Shick",
+     "joueur": "Stefan Kozlov",
+     "uid": "2026-11-06_stefan_kozlov_braden_shick",
+     "cote": 1.77,
+     "book": "bet365",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-11-06, reconstruction arrêtée au 2026-11-01",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-11-06",
+     "match": "Maria Sakkari – Aliaksandra Sasnovich",
+     "joueur": "Maria Sakkari",
+     "uid": "2026-11-06_aliaksandra_sasnovich_maria_sakkari",
+     "cote": 1.65,
+     "book": "unibet",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-11-06, reconstruction arrêtée au 2026-11-01",
      "explique": true
     }
    ]
@@ -23419,35 +23685,35 @@
    "worker": {
     "gele_le": "2026-09-27",
     "out_of_sample": {
-     "n": 210,
-     "gains": 139,
-     "taux": 66.2,
-     "seuil": 66,
-     "ecart": 0.2,
-     "roi": 0.2,
-     "pnl": 0.5,
+     "n": 217,
+     "gains": 144,
+     "taux": 66.4,
+     "seuil": 65.9,
+     "ecart": 0.4,
+     "roi": 0.5,
+     "pnl": 1.1,
      "cote_moyenne": 1.53,
      "clv_moyen": -0.7,
      "clv_pin_moyen": -0.7,
-     "clv_pin_p": 0.9905,
-     "clv_n": 221,
-     "clv_positif": 37.6,
+     "clv_pin_p": 0.983,
+     "clv_n": 228,
+     "clv_positif": 38.6,
      "lead_moyen_h": 7.9,
-     "periode": "2026-09-29 -> 2026-11-04",
+     "periode": "2026-09-29 -> 2026-11-05",
      "verdict": "ne tranche pas",
-     "n_detectees": 223,
-     "n_envoyees": 223,
+     "n_detectees": 230,
+     "n_envoyees": 230,
      "n_doublons": 0,
      "n_non_envoyees_autres": 0,
-     "n_denouees": 210,
-     "n_commencees": 223,
-     "n_sans_resultat": 13,
-     "sans_resultat_pct": 5.8,
+     "n_denouees": 217,
+     "n_commencees": 228,
+     "n_sans_resultat": 11,
+     "sans_resultat_pct": 4.8,
      "verrouillable": true,
-     "statut": "verrouillable (résultats complets à 94 %)"
+     "statut": "verrouillable (résultats complets à 95 %)"
     },
-    "n": 210,
-    "roi": 0.2
+    "n": 217,
+    "roi": 0.5
    },
    "suivi_officiel": {
     "n": 99,
@@ -23459,15 +23725,15 @@
      -1.3,
      -0.1
     ],
-    "clv_n": 221,
-    "n_detectees": 225,
-    "n_envoyees": 225,
+    "clv_n": 228,
+    "n_detectees": 230,
+    "n_envoyees": 230,
     "n_doublons": 0,
     "source": "verdicts_direct.json (recalculé : journal plus récent)",
-    "sans_resultat_pct": 55.6,
-    "statut": "en attente de résultats (55,6 % sans résultat)",
+    "sans_resultat_pct": 56.8,
+    "statut": "en attente de résultats (56,8 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-11-05T12:51:08Z"
+    "genere_le": "2026-11-06T12:33:33Z"
    },
    "reconstruction": {
     "n": 225,
@@ -23485,24 +23751,24 @@
     "egal_validation_report": true
    },
    "entonnoir": {
-    "direct_detectees": 225,
-    "direct_envoyees": 225,
+    "direct_detectees": 230,
+    "direct_envoyees": 230,
     "direct_doublons": 0,
     "direct_non_envoyees_autres": 0,
     "direct_denouees": 99,
-    "reconstruction_detectees": 343,
+    "reconstruction_detectees": 348,
     "reconstruction_reglees": 225,
-    "communes": 89,
-    "reconstruction_seule": 254,
+    "communes": 91,
+    "reconstruction_seule": 257,
     "reconstruction_seule_raisons": {
-     "apres_coup": 254
+     "apres_coup": 257
     },
-    "direct_seule": 136,
+    "direct_seule": 139,
     "direct_seule_raisons": {
-     "cote_opposee_reco": 49,
+     "cote_opposee_reco": 50,
      "prix_different": 7,
-     "absent_reconstruction": 47,
-     "pas_encore_reconstruit": 33
+     "absent_reconstruction": 50,
+     "pas_encore_reconstruit": 32
     },
     "inexpliques": 0
    },
@@ -28502,26 +28768,40 @@
      "explique": true
     },
     {
+     "sens": "reconstruction seule",
+     "date": "2026-10-31",
+     "match": "Jiri Lehecka – Jan-Lennard Struff",
+     "joueur": "Jiri Lehecka",
+     "uid": "2026-10-31_jiri_lehecka_jan_lennard_struff",
+     "cote": 1.46,
+     "book": "unibet",
+     "statut": "non réglée",
+     "raison": "apres_coup",
+     "libelle": "Vue seulement après coup (absente du journal en direct)",
+     "detail": "match vu en direct par H13, H15",
+     "explique": true
+    },
+    {
+     "sens": "reconstruction seule",
+     "date": "2026-10-31",
+     "match": "Tallon Griekspoor – Benjamin Bonzi",
+     "joueur": "Tallon Griekspoor",
+     "uid": "2026-10-31_tallon_griekspoor_benjamin_bonzi",
+     "cote": 1.54,
+     "book": "unibet",
+     "statut": "non réglée",
+     "raison": "apres_coup",
+     "libelle": "Vue seulement après coup (absente du journal en direct)",
+     "detail": "match absent de tous les journaux en direct",
+     "explique": true
+    },
+    {
      "sens": "direct seule",
      "date": "2026-10-31",
      "match": "Diana Shnaider – Mia Pohankova",
      "joueur": "Diana Shnaider",
      "uid": "2026-10-31_diana_shnaider_mia_pohankova",
      "cote": 1.37,
-     "book": "bet365",
-     "statut": "non dénouée",
-     "raison": "absent_reconstruction",
-     "libelle": "Absent de la reconstruction (aucun mouvement retenu)",
-     "detail": "move_audit n'a retenu aucun mouvement sur ce match",
-     "explique": true
-    },
-    {
-     "sens": "direct seule",
-     "date": "2026-10-31",
-     "match": "Otto Virtanen – Moise Kouame",
-     "joueur": "Otto Virtanen",
-     "uid": "2026-10-31_moise_kouame_otto_virtanen",
-     "cote": 1.77,
      "book": "bet365",
      "statut": "non dénouée",
      "raison": "absent_reconstruction",
@@ -28552,23 +28832,23 @@
      "cote": 1.68,
      "book": "unibet",
      "statut": "non dénouée",
-     "raison": "absent_reconstruction",
-     "libelle": "Absent de la reconstruction (aucun mouvement retenu)",
-     "detail": "move_audit n'a retenu aucun mouvement sur ce match",
+     "raison": "cote_opposee_reco",
+     "libelle": "Reconstruction sur l'autre joueur",
+     "detail": "reconstruction sur Pablo Carreno Busta à 2.1 (bet365)",
      "explique": true
     },
     {
-     "sens": "direct seule",
-     "date": "2026-10-31",
-     "match": "Damir Dzumhur – Sebastian Baez",
-     "joueur": "Damir Dzumhur",
-     "uid": "2026-10-31_sebastian_baez_damir_dzumhur",
-     "cote": 1.69,
+     "sens": "reconstruction seule",
+     "date": "2026-11-01",
+     "match": "Manas Dhamne – Loann Massard",
+     "joueur": "Manas Dhamne",
+     "uid": "2026-11-01_manas_dhamne_loann_massard",
+     "cote": 1.37,
      "book": "bet365",
-     "statut": "non dénouée",
-     "raison": "absent_reconstruction",
-     "libelle": "Absent de la reconstruction (aucun mouvement retenu)",
-     "detail": "move_audit n'a retenu aucun mouvement sur ce match",
+     "statut": "non réglée",
+     "raison": "apres_coup",
+     "libelle": "Vue seulement après coup (absente du journal en direct)",
+     "detail": "match absent de tous les journaux en direct",
      "explique": true
     },
     {
@@ -28580,9 +28860,9 @@
      "cote": 1.38,
      "book": "betway",
      "statut": "non dénouée",
-     "raison": "pas_encore_reconstruit",
-     "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-01, reconstruction arrêtée au 2026-10-31",
+     "raison": "absent_reconstruction",
+     "libelle": "Absent de la reconstruction (aucun mouvement retenu)",
+     "detail": "move_audit n'a retenu aucun mouvement sur ce match",
      "explique": true
     },
     {
@@ -28594,9 +28874,9 @@
      "cote": 1.7,
      "book": "bwin",
      "statut": "non dénouée",
-     "raison": "pas_encore_reconstruit",
-     "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-01, reconstruction arrêtée au 2026-10-31",
+     "raison": "absent_reconstruction",
+     "libelle": "Absent de la reconstruction (aucun mouvement retenu)",
+     "detail": "move_audit n'a retenu aucun mouvement sur ce match",
      "explique": true
     },
     {
@@ -28608,9 +28888,9 @@
      "cote": 1.4,
      "book": "bwin",
      "statut": "non dénouée",
-     "raison": "pas_encore_reconstruit",
-     "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-01, reconstruction arrêtée au 2026-10-31",
+     "raison": "absent_reconstruction",
+     "libelle": "Absent de la reconstruction (aucun mouvement retenu)",
+     "detail": "move_audit n'a retenu aucun mouvement sur ce match",
      "explique": true
     },
     {
@@ -28622,9 +28902,9 @@
      "cote": 1.3,
      "book": "bet365",
      "statut": "non dénouée",
-     "raison": "pas_encore_reconstruit",
-     "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-01, reconstruction arrêtée au 2026-10-31",
+     "raison": "absent_reconstruction",
+     "libelle": "Absent de la reconstruction (aucun mouvement retenu)",
+     "detail": "move_audit n'a retenu aucun mouvement sur ce match",
      "explique": true
     },
     {
@@ -28636,9 +28916,9 @@
      "cote": 1.87,
      "book": "bet365",
      "statut": "non dénouée",
-     "raison": "pas_encore_reconstruit",
-     "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-01, reconstruction arrêtée au 2026-10-31",
+     "raison": "absent_reconstruction",
+     "libelle": "Absent de la reconstruction (aucun mouvement retenu)",
+     "detail": "move_audit n'a retenu aucun mouvement sur ce match",
      "explique": true
     },
     {
@@ -28650,9 +28930,9 @@
      "cote": 1.444,
      "book": "betway",
      "statut": "non dénouée",
-     "raison": "pas_encore_reconstruit",
-     "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-01, reconstruction arrêtée au 2026-10-31",
+     "raison": "absent_reconstruction",
+     "libelle": "Absent de la reconstruction (aucun mouvement retenu)",
+     "detail": "move_audit n'a retenu aucun mouvement sur ce match",
      "explique": true
     },
     {
@@ -28666,7 +28946,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -28680,7 +28960,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -28694,7 +28974,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -28708,7 +28988,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -28722,7 +29002,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -28736,7 +29016,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -28750,7 +29030,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -28764,7 +29044,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -28778,7 +29058,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -28792,7 +29072,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -28806,7 +29086,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -28820,7 +29100,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -28834,7 +29114,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -28848,7 +29128,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -28862,7 +29142,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -28876,7 +29156,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -28890,7 +29170,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -28904,7 +29184,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -28918,7 +29198,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-04, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-04, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -28932,7 +29212,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-04, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-04, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -28946,7 +29226,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-04, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-04, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -28960,7 +29240,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-04, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-04, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -28974,7 +29254,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-04, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-04, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -28988,7 +29268,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-05, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-05, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -29002,7 +29282,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-05, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-05, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -29016,7 +29296,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-05, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-05, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -29030,7 +29310,77 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-05, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-05, reconstruction arrêtée au 2026-11-01",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-11-05",
+     "match": "Casper Ruud – Jan-Lennard Struff",
+     "joueur": "Casper Ruud",
+     "uid": "2026-11-05_jan_lennard_struff_casper_ruud",
+     "cote": 1.53,
+     "book": "unibet",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-11-05, reconstruction arrêtée au 2026-11-01",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-11-05",
+     "match": "Arthur Fils – Taylor Fritz",
+     "joueur": "Arthur Fils",
+     "uid": "2026-11-05_arthur_fils_taylor_fritz",
+     "cote": 1.71,
+     "book": "unibet",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-11-05, reconstruction arrêtée au 2026-11-01",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-11-06",
+     "match": "Yuta Shimizu – Omar Jasika",
+     "joueur": "Yuta Shimizu",
+     "uid": "2026-11-06_yuta_shimizu_omar_jasika",
+     "cote": 1.53,
+     "book": "betsson",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-11-06, reconstruction arrêtée au 2026-11-01",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-11-06",
+     "match": "Stefan Kozlov – Braden Shick",
+     "joueur": "Stefan Kozlov",
+     "uid": "2026-11-06_stefan_kozlov_braden_shick",
+     "cote": 1.77,
+     "book": "bet365",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-11-06, reconstruction arrêtée au 2026-11-01",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-11-06",
+     "match": "Maria Sakkari – Aliaksandra Sasnovich",
+     "joueur": "Maria Sakkari",
+     "uid": "2026-11-06_aliaksandra_sasnovich_maria_sakkari",
+     "cote": 1.65,
+     "book": "unibet",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-11-06, reconstruction arrêtée au 2026-11-01",
      "explique": true
     }
    ]
@@ -29043,55 +29393,55 @@
    "worker": {
     "gele_le": "2026-09-25",
     "out_of_sample": {
-     "n": 83,
-     "gains": 45,
-     "taux": 54.2,
-     "seuil": 45.8,
-     "ecart": 8.4,
-     "roi": 22.4,
-     "pnl": 18.6,
-     "cote_moyenne": 2.69,
-     "clv_moyen": 2.7,
-     "clv_pin_moyen": 2.7,
+     "n": 85,
+     "gains": 46,
+     "taux": 54.1,
+     "seuil": 46,
+     "ecart": 8.1,
+     "roi": 21.8,
+     "pnl": 18.5,
+     "cote_moyenne": 2.67,
+     "clv_moyen": 2.8,
+     "clv_pin_moyen": 2.8,
      "clv_pin_p": 0,
-     "clv_n": 85,
-     "clv_positif": 69.4,
-     "lead_moyen_h": 7.8,
-     "periode": "2026-09-27 -> 2026-11-04",
+     "clv_n": 87,
+     "clv_positif": 70.1,
+     "lead_moyen_h": 7.7,
+     "periode": "2026-09-27 -> 2026-11-05",
      "verdict": "ne tranche pas",
-     "n_detectees": 87,
-     "n_envoyees": 52,
+     "n_detectees": 89,
+     "n_envoyees": 54,
      "n_doublons": 35,
      "n_non_envoyees_autres": 0,
-     "n_denouees": 83,
-     "n_commencees": 87,
+     "n_denouees": 85,
+     "n_commencees": 89,
      "n_sans_resultat": 4,
-     "sans_resultat_pct": 4.6,
+     "sans_resultat_pct": 4.5,
      "verrouillable": true,
-     "statut": "verrouillable (résultats complets à 95 %)"
+     "statut": "verrouillable (résultats complets à 96 %)"
     },
-    "n": 83,
-    "roi": 22.4
+    "n": 85,
+    "roi": 21.8
    },
    "suivi_officiel": {
     "n": 40,
     "gagnes": 24,
     "roi": 20.4,
     "pts": 12.4,
-    "clv_pin": 2.7,
+    "clv_pin": 2.8,
     "clv_pin_ic95": [
-     1.4,
+     1.5,
      4.0
     ],
-    "clv_n": 85,
-    "n_detectees": 87,
-    "n_envoyees": 52,
+    "clv_n": 87,
+    "n_detectees": 89,
+    "n_envoyees": 54,
     "n_doublons": 35,
     "source": "verdicts_direct.json (recalculé : journal plus récent)",
-    "sans_resultat_pct": 54.0,
-    "statut": "en attente de résultats (54,0 % sans résultat)",
+    "sans_resultat_pct": 55.1,
+    "statut": "en attente de résultats (55,1 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-11-05T12:51:08Z"
+    "genere_le": "2026-11-06T12:33:33Z"
    },
    "reconstruction": {
     "n": 112,
@@ -29109,21 +29459,21 @@
     "egal_validation_report": true
    },
    "entonnoir": {
-    "direct_detectees": 87,
-    "direct_envoyees": 52,
+    "direct_detectees": 89,
+    "direct_envoyees": 54,
     "direct_doublons": 35,
     "direct_non_envoyees_autres": 0,
     "direct_denouees": 40,
-    "reconstruction_detectees": 192,
+    "reconstruction_detectees": 198,
     "reconstruction_reglees": 112,
-    "communes": 13,
-    "reconstruction_seule": 179,
+    "communes": 14,
+    "reconstruction_seule": 184,
     "reconstruction_seule_raisons": {
-     "apres_coup": 179
+     "apres_coup": 184
     },
-    "direct_seule": 74,
+    "direct_seule": 75,
     "direct_seule_raisons": {
-     "absent_reconstruction": 16,
+     "absent_reconstruction": 17,
      "prix_different": 35,
      "cote_opposee_reco": 11,
      "pas_encore_reconstruit": 12
@@ -32546,6 +32896,62 @@
     {
      "sens": "reconstruction seule",
      "date": "2026-10-31",
+     "match": "Daniil Medvedev – Carlos Alcaraz",
+     "joueur": "Daniil Medvedev",
+     "uid": "2026-10-31_daniil_medvedev_carlos_alcaraz",
+     "cote": 3.0,
+     "book": "bet365",
+     "statut": "non réglée",
+     "raison": "apres_coup",
+     "libelle": "Vue seulement après coup (absente du journal en direct)",
+     "detail": "match absent de tous les journaux en direct",
+     "explique": true
+    },
+    {
+     "sens": "reconstruction seule",
+     "date": "2026-10-31",
+     "match": "Adrian Mannarino – Nuno Borges",
+     "joueur": "Adrian Mannarino",
+     "uid": "2026-10-31_nuno_borges_adrian_mannarino",
+     "cote": 2.37,
+     "book": "bet365",
+     "statut": "non réglée",
+     "raison": "apres_coup",
+     "libelle": "Vue seulement après coup (absente du journal en direct)",
+     "detail": "match vu en direct par H13",
+     "explique": true
+    },
+    {
+     "sens": "reconstruction seule",
+     "date": "2026-10-31",
+     "match": "Grigor Dimitrov – Adolfo Daniel Vallejo",
+     "joueur": "Grigor Dimitrov",
+     "uid": "2026-10-31_adolfo_daniel_vallejo_grigor_dimitrov",
+     "cote": 1.97,
+     "book": "bet365",
+     "statut": "non réglée",
+     "raison": "apres_coup",
+     "libelle": "Vue seulement après coup (absente du journal en direct)",
+     "detail": "match absent de tous les journaux en direct",
+     "explique": true
+    },
+    {
+     "sens": "reconstruction seule",
+     "date": "2026-10-31",
+     "match": "Damir Dzumhur – Sebastian Baez",
+     "joueur": "Damir Dzumhur",
+     "uid": "2026-10-31_sebastian_baez_damir_dzumhur",
+     "cote": 1.69,
+     "book": "bet365",
+     "statut": "non réglée",
+     "raison": "apres_coup",
+     "libelle": "Vue seulement après coup (absente du journal en direct)",
+     "detail": "match vu en direct par H16, H16B",
+     "explique": true
+    },
+    {
+     "sens": "reconstruction seule",
+     "date": "2026-10-31",
      "match": "Coleman Wong – Omar Jasika",
      "joueur": "Coleman Wong",
      "uid": "2026-10-31_coleman_wong_omar_jasika",
@@ -32558,17 +32964,17 @@
      "explique": true
     },
     {
-     "sens": "direct seule",
-     "date": "2026-10-31",
-     "match": "Yaroslav Demin – Yu Hsiou Hsu",
-     "joueur": "Yaroslav Demin",
-     "uid": "2026-10-31_yaroslav_demin_yu_hsiou_hsu",
-     "cote": 2.37,
+     "sens": "reconstruction seule",
+     "date": "2026-11-01",
+     "match": "Nico Hipfl – Leonardo Borrelli",
+     "joueur": "Nico Hipfl",
+     "uid": "2026-11-01_leonardo_borrelli_nico_hipfl",
+     "cote": 1.13,
      "book": "bet365",
-     "statut": "non dénouée",
-     "raison": "absent_reconstruction",
-     "libelle": "Absent de la reconstruction (aucun mouvement retenu)",
-     "detail": "move_audit n'a retenu aucun mouvement sur ce match",
+     "statut": "non réglée",
+     "raison": "apres_coup",
+     "libelle": "Vue seulement après coup (absente du journal en direct)",
+     "detail": "match absent de tous les journaux en direct",
      "explique": true
     },
     {
@@ -32580,9 +32986,9 @@
      "cote": 1.38,
      "book": "betway",
      "statut": "non dénouée",
-     "raison": "pas_encore_reconstruit",
-     "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-01, reconstruction arrêtée au 2026-10-31",
+     "raison": "absent_reconstruction",
+     "libelle": "Absent de la reconstruction (aucun mouvement retenu)",
+     "detail": "move_audit n'a retenu aucun mouvement sur ce match",
      "explique": true
     },
     {
@@ -32594,9 +33000,9 @@
      "cote": 2.62,
      "book": "bet365",
      "statut": "non dénouée",
-     "raison": "pas_encore_reconstruit",
-     "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-01, reconstruction arrêtée au 2026-10-31",
+     "raison": "absent_reconstruction",
+     "libelle": "Absent de la reconstruction (aucun mouvement retenu)",
+     "detail": "move_audit n'a retenu aucun mouvement sur ce match",
      "explique": true
     },
     {
@@ -32610,7 +33016,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -32624,7 +33030,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -32638,7 +33044,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-02, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -32652,7 +33058,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -32666,7 +33072,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -32680,7 +33086,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-03, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -32694,7 +33100,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-04, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-04, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -32708,7 +33114,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-04, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-04, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -32722,7 +33128,7 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-04, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-04, reconstruction arrêtée au 2026-11-01",
      "explique": true
     },
     {
@@ -32736,7 +33142,35 @@
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
-     "detail": "match du 2026-11-05, reconstruction arrêtée au 2026-10-31",
+     "detail": "match du 2026-11-05, reconstruction arrêtée au 2026-11-01",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-11-05",
+     "match": "Max Hans Rehberg – Daniel Milavsky",
+     "joueur": "Max Hans Rehberg",
+     "uid": "2026-11-05_daniel_milavsky_max_hans_rehberg",
+     "cote": 1.95,
+     "book": "bwin",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-11-05, reconstruction arrêtée au 2026-11-01",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-11-06",
+     "match": "Claire Liu – Zeynep Sonmez",
+     "joueur": "Claire Liu",
+     "uid": "2026-11-06_zeynep_sonmez_claire_liu",
+     "cote": 1.89,
+     "book": "unibet",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-11-06, reconstruction arrêtée au 2026-11-01",
      "explique": true
     }
    ]
@@ -32749,35 +33183,35 @@
    "worker": {
     "gele_le": "2026-09-27",
     "out_of_sample": {
-     "n": 26,
+     "n": 27,
      "gains": 21,
-     "taux": 80.8,
-     "seuil": 67.6,
-     "ecart": 13.2,
-     "roi": 20.6,
-     "pnl": 5.3,
-     "cote_moyenne": 1.5,
-     "clv_moyen": 1.6,
-     "clv_pin_moyen": 1.6,
-     "clv_pin_p": 0.0047,
-     "clv_n": 27,
-     "clv_positif": 70.4,
-     "lead_moyen_h": 8.3,
-     "periode": "2026-09-29 -> 2026-11-04",
+     "taux": 77.8,
+     "seuil": 67.2,
+     "ecart": 10.6,
+     "roi": 16.1,
+     "pnl": 4.3,
+     "cote_moyenne": 1.51,
+     "clv_moyen": 1.7,
+     "clv_pin_moyen": 1.7,
+     "clv_pin_p": 0.0027,
+     "clv_n": 28,
+     "clv_positif": 71.4,
+     "lead_moyen_h": 8,
+     "periode": "2026-09-29 -> 2026-11-05",
      "verdict": "ne tranche pas",
      "n_detectees": 28,
      "n_envoyees": 28,
      "n_doublons": 0,
      "n_non_envoyees_autres": 0,
-     "n_denouees": 26,
+     "n_denouees": 27,
      "n_commencees": 28,
-     "n_sans_resultat": 2,
-     "sans_resultat_pct": 7.1,
+     "n_sans_resultat": 1,
+     "sans_resultat_pct": 3.6,
      "verrouillable": true,
-     "statut": "verrouillable (résultats complets à 93 %)"
+     "statut": "verrouillable (résultats complets à 96 %)"
     },
-    "n": 26,
-    "roi": 20.6
+    "n": 27,
+    "roi": 16.1
    },
    "suivi_officiel": {
     "n": 0,
@@ -32794,7 +33228,7 @@
     "sans_resultat_pct": 0.0,
     "statut": "verrouillable (résultats complets à 100 %)",
     "verrouillable": true,
-    "genere_le": "2026-11-05T12:51:08Z"
+    "genere_le": "2026-11-06T12:33:33Z"
    },
    "reconstruction": {
     "n": 51,
@@ -32817,12 +33251,12 @@
     "direct_doublons": 0,
     "direct_non_envoyees_autres": 0,
     "direct_denouees": 0,
-    "reconstruction_detectees": 79,
+    "reconstruction_detectees": 81,
     "reconstruction_reglees": 51,
     "communes": 0,
-    "reconstruction_seule": 79,
+    "reconstruction_seule": 81,
     "reconstruction_seule_raisons": {
-     "avant_canal": 79
+     "avant_canal": 81
     },
     "direct_seule": 0,
     "direct_seule_raisons": {},
@@ -33990,11 +34424,39 @@
     {
      "sens": "reconstruction seule",
      "date": "2026-10-31",
+     "match": "Damir Dzumhur – Sebastian Baez",
+     "joueur": "Damir Dzumhur",
+     "uid": "2026-10-31_sebastian_baez_damir_dzumhur",
+     "cote": 1.69,
+     "book": "bet365",
+     "statut": "non réglée",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "journal vide",
+     "explique": true
+    },
+    {
+     "sens": "reconstruction seule",
+     "date": "2026-10-31",
      "match": "Coleman Wong – Omar Jasika",
      "joueur": "Coleman Wong",
      "uid": "2026-10-31_coleman_wong_omar_jasika",
      "cote": 1.21,
      "book": "unibet",
+     "statut": "non réglée",
+     "raison": "avant_canal",
+     "libelle": "Avant la mise en service du canal",
+     "detail": "journal vide",
+     "explique": true
+    },
+    {
+     "sens": "reconstruction seule",
+     "date": "2026-11-01",
+     "match": "Nico Hipfl – Leonardo Borrelli",
+     "joueur": "Nico Hipfl",
+     "uid": "2026-11-01_leonardo_borrelli_nico_hipfl",
+     "cote": 1.13,
+     "book": "bet365",
      "statut": "non réglée",
      "raison": "avant_canal",
      "libelle": "Avant la mise en service du canal",
