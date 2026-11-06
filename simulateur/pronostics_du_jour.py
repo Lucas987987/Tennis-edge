@@ -495,7 +495,8 @@ def charger_facteurs(racine):
     try:
         with open(os.path.join(racine, 'simulateur', 'facteurs.json'), encoding='utf-8') as f:
             doc = json.load(f)
-        if not doc.get('adoptes') or not doc.get('coefs'):
+        par_c = any((b or {}).get('adoptes') for b in (doc.get('par_circuit') or {}).values())
+        if (not doc.get('adoptes') or not doc.get('coefs')) and not par_c:
             return None, None
         import facteurs as FA
         with open(os.path.join(racine, 'simulateur', 'facteurs_contexte.json'), encoding='utf-8') as f:
@@ -916,16 +917,29 @@ def composantes_du_match(P, h, a, c, s, pure=False):
     return cH, cA, nh, na
 
 
-def facteurs_du_match(h, a, tournoi, debut, adj=None):
+def facteurs_en_place(circuit=None):
+    """(groupes, coefs) du circuit (paquet 199 : jugement par circuit) ; sinon la décision globale. Le modèle
+    complet (arbres), quand il est adopté, reste global."""
+    if not FACTEURS:
+        return [], {}
+    b = (FACTEURS.get('par_circuit') or {}).get(circuit) or {}
+    if b.get('coefs') is not None and 'groupes' in b and not (FACTEURS.get('coefs') or {}).get('_arbres_service'):
+        return list(b.get('adoptes') or []), b.get('coefs') or {}
+    return list(FACTEURS.get('adoptes') or []), FACTEURS.get('coefs') or {}
+
+
+def facteurs_du_match(h, a, tournoi, debut, adj=None, circuit=None):
     """{groupe adopté: ((d_service, d_aces, d_bp) home, (…) away)} en logit, + variables lues."""
     if not FACTEURS or CONTEXTE is None:
         return None
     import facteurs as FA
+    adoptes, coefs = facteurs_en_place(circuit)
+    if not adoptes or not coefs:
+        return None
     ts = debut.replace(tzinfo=dt.timezone.utc).timestamp() if debut.tzinfo is None else debut.timestamp()
     vH, vA = CONTEXTE.variables(h, a, tournoi, ts, adj), CONTEXTE.variables(a, h, tournoi, ts, adj)
-    coefs = FACTEURS['coefs']
     par_groupe = {}
-    for g in FACTEURS['adoptes']:
+    for g in adoptes:
         cg = {m: {f: b for f, b in (coefs.get(m) or {}).items() if f in FA.GROUPES[g].get(m, [])} for m in coefs}
         par_groupe[g] = (FA.deltas(vH, cg), FA.deltas(vA, cg))
     return {'groupes': par_groupe, 'total': (FA.deltas(vH, coefs), FA.deltas(vA, coefs))}
@@ -1269,7 +1283,7 @@ def construire(racine, maintenant=None):
             # 22/10/2026 — SIMULATION PURE : le match joué SIMULATIONS fois avec les seuls taux des deux
             # joueurs (1re balle, aces, doubles fautes, points gagnés derrière la 1re et la 2e, retour),
             # sans Elo ni cote : c'est la simulation qui dit qui gagne.
-            fct = facteurs_du_match(h, a, x['tournoi'], x['debut'], getattr(PR, 'ajuste', None))
+            fct = facteurs_du_match(h, a, x['tournoi'], x['debut'], getattr(PR, 'ajuste', None), circuit=c)
             r = match_simule(PR, h, a, c, s, sg, None, f"{uid}|simulation", fct)
             exact_simulation = distribution_exacte_du_match(PR, h, a, c, s, sg, r['victoire_A'], fct, pure=True)
             simulation = {'p_home': r['victoire_A'], 'sets': r['sets'],
