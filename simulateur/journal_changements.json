@@ -700,6 +700,13 @@
    "quoi": "FOURCHETTE à 80 % autour du % sur chaque fiche : les 20 000 simulations mesurent le hasard du match ; la fourchette ajoute l'incertitude sur le niveau des joueurs (points de service observés, matchs joués) — plus ils ont peu joué, plus elle est large. Le % affiché ne change pas. Contrôle sur 760 matchs : plus la fourchette est large, plus une estimation indépendante s'écarte de la nôtre.",
    "statut": "production",
    "paquet": 196
+  },
+  {
+   "date": "2026-11-06",
+   "quoi": "ÉTUDE : les « bilans par contexte » affichés par d'autres sites — bilan sur courts rapides / lents (vitesse de l'édition précédente du tournoi), % de victoires au tournoi, bilan par catégorie de tournoi — prédisent-ils le prochain match ? Archive 2018 → juin 2026, ATP, WTA, Challenger ; règle fixée avant (−0,001 de log loss sur ≥ 1 000 matchs jugés, même signe sur les deux périodes). NON RETENU, nulle part : meilleurs gains Challenger catégorie +0,0008 et vitesse +0,0006 en bilan brut, mais en sens inverse (un bon bilan brut fait MOINS bien que prévu : il mesure surtout le niveau, déjà compté) ; courts rapides seuls : ATP +0,0002 (2 302 matchs), Challenger −0,0005, WTA aucun court rapide. Le niveau Elo contient déjà ces bilans.",
+   "statut": "etude",
+   "decision": false,
+   "paquet": 197
   }
  ]
 }
