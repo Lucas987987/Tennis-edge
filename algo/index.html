@@ -400,6 +400,34 @@ body.carte #video{display:block;width:1080px;height:1350px}
 .essentiel ul{list-style:none;margin:0;padding:4px 16px 16px;display:grid;gap:6px}.essentiel li{padding:7px 10px;border-radius:9px;background:rgba(255,255,255,.04);border-left:3px solid var(--dim);font-size:.92rem;line-height:1.4}.essentiel li.plus{border-left-color:var(--ok)}.essentiel li.moins{border-left-color:var(--ko)}.essentiel li.info{border-left-color:var(--ball)}
 .evol{margin:6px 0 0;color:var(--dim);font-size:.82rem}
 .live-l:empty{display:none}.live-l{display:block;margin:6px 0 0;font-size:.85rem;font-variant-numeric:tabular-nums;color:var(--txt,inherit)}.live-l .rouge{color:var(--ko);font-weight:700}.live-l .fin{color:var(--dim);font-weight:700}.live-l sup{font-size:.7em}.live-l .avant{color:var(--dim)}
+/* 07/11/2026 (paquet 216) — cartes des joueurs : note Elo, six attributs, surfaces, identité ; radar superposé */
+.cartes .cj-g{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px}
+.cj-c{--t1:#C9D3E6;--t2:#5B6478;position:relative;border-radius:16px;padding:2px;background:linear-gradient(155deg,var(--t1),var(--t2) 55%,var(--t1));box-shadow:0 0 22px -6px var(--t1)}
+.cj-c.or{--t1:#FFD54A;--t2:#8A5A00}.cj-c.ag{--t1:#DDE5F2;--t2:#566079}.cj-c.bz{--t1:#E8A46B;--t2:#6B3A1A}
+.cj-in{border-radius:14px;padding:10px 10px 9px;background:radial-gradient(120% 70% at 50% 0%,rgba(255,255,255,.10),transparent 60%),linear-gradient(180deg,#1E1550,#110A2E);min-height:100%;box-sizing:border-box;display:flex;flex-direction:column;gap:6px}
+.cj-c.p1 .cj-in{box-shadow:inset 0 3px 0 var(--p1)}.cj-c.p2 .cj-in{box-shadow:inset 0 3px 0 var(--p2)}
+.cj-h{display:flex;justify-content:space-between;align-items:flex-start;gap:6px}
+.cj-n{font-family:var(--disp);font-size:2.3rem;line-height:.9;color:var(--t1);text-shadow:0 0 14px color-mix(in srgb,var(--t1) 45%,transparent)}
+.cj-n small{display:block;font-family:var(--cond);font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);text-shadow:none;margin-top:4px}
+.cj-id{text-align:right;font-family:var(--cond);font-size:.82rem;color:var(--dim);line-height:1.25}.cj-id b{display:block;font-size:1.25rem;line-height:1}
+.cj-m{width:54px;height:54px;margin:2px auto 0;border-radius:50%;display:grid;place-items:center;font-family:var(--disp);font-size:1.15rem;color:#120B30;background:radial-gradient(circle at 35% 30%,#F2FF9A,var(--ball) 55%,#9BBF16);position:relative;overflow:hidden}
+.cj-m:before,.cj-m:after{content:"";position:absolute;width:54px;height:54px;border:2px solid rgba(255,255,255,.75);border-radius:50%;top:0;left:-38px}.cj-m:after{left:38px}
+.cj-m span{position:relative}
+.cj-nom{text-align:center;font-family:var(--cond);font-weight:700;font-size:1.02rem;text-transform:uppercase;letter-spacing:.04em;line-height:1.1;overflow-wrap:anywhere}
+.cj-st{text-align:center;font-size:.74rem;color:var(--dim);margin-top:-3px}
+.cj-a{display:grid;grid-template-columns:1fr 1fr;gap:3px 10px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:6px 2px}
+.cj-a span{display:flex;align-items:baseline;gap:5px;font-family:var(--cond);font-size:.8rem;color:var(--dim);letter-spacing:.05em}
+.cj-a b{font-family:var(--cond);font-size:1.12rem;font-weight:700;color:var(--ink);min-width:1.4em;text-align:right;font-variant-numeric:tabular-nums}
+.cj-a b.h{color:var(--ok)}.cj-a b.l{color:var(--ko)}
+.cj-s{display:flex;justify-content:space-between;gap:4px;font-family:var(--cond);font-size:.76rem;color:var(--dim)}.cj-s span.ici{color:var(--ink);font-weight:700}
+.cj-s b{font-size:.92rem;color:inherit}
+.cj-vide{font-size:.78rem;color:var(--dim);text-align:center;padding:10px 0}
+.cartes .cj-r{display:block;width:100%;max-width:360px;height:auto;margin:14px auto 0}
+.cartes .cj-r text{font-family:var(--cond);font-size:12px;fill:var(--dim);letter-spacing:.06em}
+.cartes .cj-leg{display:flex;justify-content:center;gap:16px;font-size:.84rem;margin-top:4px}.cartes .cj-leg i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.cartes details{margin-top:12px;font-size:.84rem;color:var(--dim)}.cartes details summary{cursor:pointer;color:var(--ink)}.cartes details dl{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;margin:8px 0 0}.cartes details dt{font-family:var(--cond);font-weight:700;color:var(--ink)}.cartes details dd{margin:0}
+@media (max-width:360px){.cj-n{font-size:1.9rem}.cj-a{gap:2px 6px}}
+@media (min-width:820px){.cartes .cj-corps{display:grid;grid-template-columns:minmax(0,500px) minmax(280px,1fr);gap:24px;align-items:center}.cartes .cj-corps .cj-r{margin-top:0}}
 /* 06/11/2026 (paquet 210) — direct : tableau d'affichage, courbe du %, moments clés, duel de statistiques */
 .lv-top{display:flex;justify-content:space-between;gap:8px;font-size:.75rem;color:var(--dim);margin-top:8px}
 .lv-on{color:var(--ko);font-weight:700;letter-spacing:.3px}.lv-on:before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--ko);margin-right:6px;box-shadow:0 0 0 3px rgba(255,107,134,.2);animation:lvp 1.6s ease-in-out infinite}
@@ -720,6 +748,18 @@ const T = {
   mk_decisif:'Set décisif joué', mk_set1:n=>`${n} gagne le 1er set`, mk_jeux:j=>`${dec(j,1)} jeux en moyenne`,
   mk_titre_total:'Total de jeux', mk_titre_handicap:'Handicap de jeux (favori)', mk_titre_forme:'Forme du match',
   mk_note:"Chaque ligne est figée avant le match puis comparée au score réel. Vérifiées sur 2 468 matchs : meilleures qu'un taux fixe, avec un léger biais connu (matchs prévus un peu trop longs), corrigé dès que la correction en cours de jugement est adoptée.",
+  cj_titre:'Cartes des joueurs', cj_sous:(g)=>`Note = niveau Elo sur la surface du match. Attributs de 1 à 99 = rang parmi ${g==='femmes'?'les joueuses actives de la WTA (99 = la meilleure)':'les joueurs actifs ATP et Challenger (99 = le meilleur)'}.`,
+  cj_note:'Descriptif seulement : ces cartes ne changent pas le %.', cj_vide:'Profil service / retour pas encore assez documenté.',
+  cj_or:'or', cj_ag:'argent', cj_bz:'bronze', cj_rang:(r)=>`n° ${r}`, cj_ans:(a)=>`${a} ans`, cj_droitier:'droitier', cj_gaucher:'gaucher', cj_droitiere:'droitière', cj_gauchere:'gauchère',
+  cj_lib:{ser:'SER',ret:'RET',ace:'ACE',pre:'PRÉ',df:'2E',for:'FOR'}, cj_surf:{Hard:'Dur',Clay:'Terre',Grass:'Gazon'},
+  cj_lire:'Comment lire la carte',
+  cj_def:{note:'Elo de l’algo sur la surface du match : 99 − (2400 − Elo) / 22. Or ≥ 80, argent 70–79, bronze < 70.',
+    ser:'Elo au service : points gagnés au service, ajustés à la force des relanceurs affrontés.',
+    ret:'Elo au retour : points gagnés au retour, ajustés à la force des serveurs affrontés.',
+    ace:'Aces par 1re balle dans le court.', pre:'% de 1res balles dans le court.',
+    df:'Sûreté de la 2e balle : moins de doubles fautes = note plus haute.',
+    for:'Forme : victoires réelles contre victoires attendues sur les 40 derniers matchs (50 = comme prévu).',
+    surf:'Note Elo sur chaque surface, même échelle.'},
   du_titre:'Duel service ↔ retour', du_sous:(s)=>`Indice 0–100 = rang parmi les joueurs du circuit sur ${s} (au moins 200 points joués).`,
   du_ligne:(a,b)=>`${a} au service contre ${b} au retour`, du_srv:'Service', du_ret:'Retour', du_pts:p=>`${pc(p)} des points`,
   du_avantage:(n)=>`avantage ${n}`, du_equilibre:'équilibré',
@@ -972,6 +1012,18 @@ const T = {
   mk_decisif:'Deciding set played', mk_set1:n=>`${n} wins set 1`, mk_jeux:j=>`${dec(j,1)} games on average`,
   mk_titre_total:'Total games', mk_titre_handicap:'Game handicap (favourite)', mk_titre_forme:'Match shape',
   mk_note:'Each line is frozen before the match and checked against the final score. Checked on 2,468 matches: better than a fixed rate, with a small known bias (matches predicted slightly too long), removed once the correction under review is adopted.',
+  cj_titre:'Player cards', cj_sous:(g)=>`Rating = Elo level on the match surface. Attributes 1–99 = rank among ${g==='femmes'?'active WTA players':'active ATP and Challenger players'} (99 = best).`,
+  cj_note:'Descriptive only: these cards do not change the %.', cj_vide:'Serve / return profile not documented enough yet.',
+  cj_or:'gold', cj_ag:'silver', cj_bz:'bronze', cj_rang:(r)=>`No. ${r}`, cj_ans:(a)=>`${a} y/o`, cj_droitier:'righty', cj_gaucher:'lefty', cj_droitiere:'righty', cj_gauchere:'lefty',
+  cj_lib:{ser:'SRV',ret:'RET',ace:'ACE',pre:'1ST',df:'2ND',for:'FRM'}, cj_surf:{Hard:'Hard',Clay:'Clay',Grass:'Grass'},
+  cj_lire:'How to read the card',
+  cj_def:{note:'The algo’s Elo on the match surface: 99 − (2400 − Elo) / 22. Gold ≥ 80, silver 70–79, bronze < 70.',
+    ser:'Serve Elo: serve points won, adjusted for the returners faced.',
+    ret:'Return Elo: return points won, adjusted for the servers faced.',
+    ace:'Aces per first serve in.', pre:'First serves in (%).',
+    df:'Second-serve safety: fewer double faults = higher rating.',
+    for:'Form: actual wins vs expected wins over the last 40 matches (50 = as expected).',
+    surf:'Elo rating on each surface, same scale.'},
   du_titre:'Serve ↔ return duel', du_sous:(s)=>`Index 0–100 = rank among players on the same tour on ${s} (at least 200 points played).`,
   du_ligne:(a,b)=>`${a} serving against ${b} returning`, du_srv:'Serve', du_ret:'Return', du_pts:p=>`${pc(p)} of points`,
   du_avantage:(n)=>`edge ${n}`, du_equilibre:'even',
@@ -2217,6 +2269,7 @@ function rendMdj(){
         <p class="ligne" style="margin-top:8px;gap:10px;justify-content:flex-start;align-items:center"><button type="button" class="btn" id="post-copier">Copier</button><small id="post-nb"></small><small id="post-ok" aria-live="polite"></small></p>
       </div>
       ${rendEssentiel(m)}
+      ${rendCartes(m)}
       ${rendAvantMatch(m)}
       ${rendVitesse(m)}
       ${rendStylesDescriptifs(m.styles_descriptifs,m)}
@@ -2654,6 +2707,49 @@ function rendMatchLive(){
     (LIVE.ouverts[uid] = LIVE.ouverts[uid] || {})[d.dataset.set] = d.open; }));
 }
 // 06/11/2026 (paquet 210) — FORME ET FACE-À-FACE (descriptif, avant le match) : séries, réussite par rapport aux chances
+// 07/11/2026 (paquet 216) — cartes des joueurs (simulateur/cartes_joueurs.py) : descriptif, le % ne change pas.
+const CJ_AXES = ['ser','ret','ace','pre','df','for'];
+function cjTier(n){ return n>=80 ? 'or' : n>=70 ? 'ag' : 'bz'; }
+function cjInitiales(nom){ const p = String(nom||'').trim().split(/\s+/); return ((p[0]||'')[0]||'') + ((p.length>1 ? p[p.length-1] : '')[0]||''); }
+function carteJoueur(c, i, surface, femme){
+  const tier = cjTier(c.note), lib = t('cj_lib'), sl = t('cj_surf');
+  const d = drapeau(c.pays);
+  const id = [c.age!=null ? t('cj_ans',c.age) : '', c.taille_cm ? (L==='fr' ? dec(c.taille_cm/100,2)+' m' : c.taille_cm+' cm') : '',
+              c.main ? t(c.main==='gauche' ? (femme?'cj_gauchere':'cj_gaucher') : (femme?'cj_droitiere':'cj_droitier')) : ''].filter(Boolean).join(' · ');
+  const at = c.attributs ? `<div class="cj-a">${CJ_AXES.map(k=>{ const v=c.attributs[k];
+      return `<span title="${esc(t('cj_def')[k])}"><b class="${v>=80?'h':v<=20?'l':''}">${v}</b>${esc(lib[k])}</span>`; }).join('')}</div>`
+    : `<p class="cj-vide">${esc(t('cj_vide'))}</p>`;
+  const su = c.surfaces ? `<div class="cj-s">${['Hard','Clay','Grass'].filter(s=>c.surfaces[s]!=null).map(s=>`<span class="${s===surface?'ici':''}">${esc(sl[s])} <b>${c.surfaces[s]}</b></span>`).join('')}</div>` : '';
+  return `<div class="cj-c ${tier} p${i+1}"><div class="cj-in">
+    <div class="cj-h"><div class="cj-n">${c.note}<small>${esc(t('cj_'+tier))}</small></div>
+      <div class="cj-id">${d ? `<b>${d}</b>` : ''}${c.rang ? esc(t('cj_rang',c.rang)) : ''}</div></div>
+    <div class="cj-m" aria-hidden="true"><span>${esc(cjInitiales(c.nom).toUpperCase())}</span></div>
+    <div class="cj-nom">${esc(c.nom)}</div>${id ? `<div class="cj-st">${esc(id)}</div>` : ''}
+    ${at}${su}</div></div>`;
+}
+function radarCartes(J){
+  if (!J.every(c=>c.attributs)) return '';
+  const W=320, H=300, cx=W/2, cy=H/2+4, R=108, n=CJ_AXES.length, lib=t('cj_lib');
+  const pt = (k,v) => { const a = -Math.PI/2 + 2*Math.PI*k/n, r = R*v/100; return [cx+r*Math.cos(a), cy+r*Math.sin(a)]; };
+  const grille = [25,50,75,100].map(v=>`<polygon points="${CJ_AXES.map((_,k)=>pt(k,v).map(x=>x.toFixed(1)).join(',')).join(' ')}" fill="none" stroke="rgba(255,255,255,${v===100?.22:.1})"/>`).join('');
+  const rayons = CJ_AXES.map((_,k)=>{ const [x,y]=pt(k,100); return `<line x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="rgba(255,255,255,.1)"/>`; }).join('');
+  const noms = CJ_AXES.map((k,i)=>{ const [x,y]=pt(i,122); return `<text x="${x.toFixed(1)}" y="${(y+4).toFixed(1)}" text-anchor="middle">${esc(lib[k])}</text>`; }).join('');
+  const poly = J.map((c,i)=>{ const col = i===0 ? 'var(--p1)' : 'var(--p2)';
+    const P = CJ_AXES.map((k,j)=>pt(j, Math.max(4,c.attributs[k])));
+    return `<polygon points="${P.map(p=>p.map(x=>x.toFixed(1)).join(',')).join(' ')}" fill="${col}" fill-opacity=".16" stroke="${col}" stroke-width="2" stroke-linejoin="round"/>`
+      + P.map(p=>`<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="2.6" fill="${col}"/>`).join(''); }).join('');
+  return `<svg class="cj-r" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(t('cj_titre'))}">${grille}${rayons}${poly}${noms}</svg>
+    <div class="cj-leg"><span><i style="background:var(--p1)"></i>${esc(court(J[0].nom))}</span><span><i style="background:var(--p2)"></i>${esc(court(J[1].nom))}</span></div>`;
+}
+function rendCartes(m){
+  const C = m && m.cartes;
+  if (!C || C.descriptif_seulement !== true || !Array.isArray(C.joueurs) || C.joueurs.length !== 2) return '';
+  const femme = C.groupe === 'femmes', D_ = t('cj_def'), lib = t('cj_lib');
+  const defs = `<details><summary>${esc(t('cj_lire'))}</summary><dl><dt>${esc(L==='fr'?'Note':'Rating')}</dt><dd>${esc(D_.note)}</dd>${CJ_AXES.map(k=>`<dt>${esc(lib[k])}</dt><dd>${esc(D_[k])}</dd>`).join('')}<dt>${esc(t('cj_surf').Hard)} · ${esc(t('cj_surf').Clay)} · ${esc(t('cj_surf').Grass)}</dt><dd>${esc(D_.surf)}</dd></dl></details>`;
+  return `<div class="panel cartes" style="padding:16px"><h3 style="margin:0">${esc(t('cj_titre'))}</h3><p class="styles-intro">${esc(t('cj_sous', C.groupe))}</p>
+    <div class="cj-corps"><div class="cj-g">${C.joueurs.map((c,i)=>carteJoueur(c,i,C.surface,femme)).join('')}</div>
+    <div>${radarCartes(C.joueurs)}</div></div>${defs}<p class="styles-note">${esc(t('cj_note'))}</p></div>`;
+}
 function rendAvantMatch(m){
   const A = m.avant_match; if (!A) return '';
   const j = (x, k) => { if (!x) return `<div><span class="nm ${k}">${esc(court(k==='a'?m.home:m.away))}</span><p class="lv-dim">—</p></div>`;
