@@ -12,17 +12,19 @@ compte) ; femmes = joueuses actives dont le circuit principal est la WTA.
     (1 − poids_surface) × Elo général + poids_surface × Elo surface), sur une échelle FIXE commune à tous :
     note = 99 − (2400 − Elo) / 22, arrondie et bornée (repères au 07/11 : n° 1 mondiaux ≈ 92–97,
     100e ATP ≈ 69, 300e ≈ 59) ; un point de note = 22 points d'Elo ;
-  — six attributs (1 à 99) :
-      SER  Elo au service (elo_service_retour.py : ajusté à la force des relanceurs affrontés), centile
-      RET  Elo au retour (ajusté à la force des serveurs affrontés), centile
-      ACE  aces par 1re balle dans le court, centile (profil tous terrains, fiches_service.py)
-      PRÉ  % de 1res balles, centile (même profil)
+  — six attributs (1 à 99), tirés des PROFILS AJUSTÉS de la simulation en production (profils_service.json,
+    bloc « ajuste » : ajustement.py, choix_simulation.json = « ajustees »), sur le circuit et la surface du match :
+      SER  points gagnés au service face à un relanceur moyen (« __moyen__ »), centile
+      RET  points gagnés au retour face à un serveur moyen, centile
+      ACE  aces par 1re balle dans le court face à un relanceur moyen, centile
+      PRÉ  % de 1res balles, centile
       2E   sûreté de la 2e balle : centile inversé des doubles fautes par 2e balle (moins = mieux)
       FOR  forme : 50 + 200 × (victoires − victoires attendues) / matchs, sur les 40 derniers matchs
            (infos_avant_match.py, attendues = chances Elo d'avant chaque match), bornée à 1–99 ;
-    les centiles bruts (points gagnés au service ou au retour) ne sont PAS utilisés pour SER et RET : un joueur
-    qui joue surtout des Challengers y paraît meilleur relanceur qu'il ne l'est (contrôle du 07/11 : Dzumhur,
-    Brunold, Montes-de la Torre au-delà du 94e centile ATP au retour brut) ;
+    les taux bruts des feuilles ne sont PAS utilisés : un joueur qui joue surtout des Challengers y paraît
+    meilleur relanceur qu'il ne l'est (contrôle du 07/11 : Dzumhur, Brunold, Montes-de la Torre au-delà du
+    94e centile ATP au retour brut). Les centiles sont pris parmi les joueurs actifs du groupe (fiches
+    service / retour, Tennis_Edge_Lab/live/joueurs_service.json.gz) connus de l'ajustement ;
   — niveau par surface (dur, terre, gazon) : même échelle, Elo mélangé avec chaque surface ;
   — identité (TennisApi) : classement du jour, pays, âge, taille, main.
 
@@ -37,8 +39,8 @@ import json
 import os
 
 ATTRIBUTS = ('ser', 'ret', 'ace', 'pre', 'df', 'for')
-SOURCE = {'ace': 'a', 'pre': 'f', 'df': 'd'}                  # profil tous terrains (fiches_service.py)
 INVERSES = ('df',)                                             # moins = mieux
+MOYEN = '__moyen__'                                            # adversaire moyen (ajustement.py)
 FORME_PENTE, FORME_MIN_MATCHS = 200.0, 10
 SURFACES = ('Hard', 'Clay', 'Grass')
 ELO_HAUT, ELO_PAR_POINT, NOTE_MIN, NOTE_MAX = 2400.0, 22.0, 40, 99
@@ -85,65 +87,78 @@ def elo_match(j, surface, poids):
     return g if s is None else (1 - poids) * g + poids * float(s)
 
 
+def _p_service(c):
+    return c['f'] * c['w1'] + (1 - c['f']) * (1 - c['d']) * c['w2j']
+
+
 class Cartes:
-    def __init__(self, service_doc, etat, infos=None, classement=None, sr=None):
+    def __init__(self, service_doc, etat, infos=None, classement=None, ajuste=None):
+        """ajuste : objet ajustement (Ajuste / AjusteDeux), celui de la simulation."""
         self.S = (service_doc or {}).get('joueurs') or {}
-        self.SR = (sr or {}).get('joueurs') or {}
+        self.A = ajuste
         self.E = (etat or {}).get('joueurs') or {}
         self.poids = float(((etat or {}).get('options') or {}).get('poids_surface') or 0.3)
         self.infos = infos or {}
         self.rangs = classement or {}
-        self.ref = {}
-        for k, f in self.S.items():
-            c = GROUPES.get(f.get('circuit'))
-            if not c:
-                continue
-            j = ((f.get('surfaces') or {}).get('all') or {}).get('joueur') or {}
-            for a, src in SOURCE.items():
-                if j.get(src) is not None:
-                    self.ref.setdefault((c, a), []).append(j[src])
-            n = self.SR.get(k)
-            if n:
-                self.ref.setdefault((c, 'ser'), []).append(n[0])
-                self.ref.setdefault((c, 'ret'), []).append(n[1])
-        for k in self.ref:
-            self.ref[k].sort()
+        self._ref, self._cache = {}, {}
+
+    def valeurs(self, k, circuit, surface):
+        """{'ser', 'ret', 'ace', 'pre', 'df'} du profil ajusté, ou None si le joueur est inconnu de l'ajustement."""
+        if self.A is None or not self.A.connu(k):
+            return None
+        cle = (k, circuit, surface)
+        if cle not in self._cache:
+            import match_simule as MS
+            sv = MS.borner(self.A.taux(k, MOYEN, circuit, surface))
+            rt = MS.borner(self.A.taux(MOYEN, k, circuit, surface))
+            self._cache[cle] = {'ser': _p_service(sv), 'ret': 1 - _p_service(rt), 'ace': sv['a'], 'pre': sv['f'], 'df': sv['d']}
+        return self._cache[cle]
+
+    def reference(self, groupe, circuit, surface):
+        cle = (groupe, circuit, surface)
+        if cle not in self._ref:
+            R = {a: [] for a in ('ser', 'ret', 'ace', 'pre', 'df')}
+            for k, f in self.S.items():
+                if GROUPES.get(f.get('circuit')) != groupe:
+                    continue
+                v = self.valeurs(k, circuit, surface)
+                if v:
+                    for a in R:
+                        R[a].append(v[a])
+            for a in R:
+                R[a].sort()
+            self._ref[cle] = R
+        return self._ref[cle]
 
     def carte(self, cle, nom, circuit, surface, jour=None, reussite=None):
-        e, f = self.E.get(cle), self.S.get(cle)
-        if not e and not f:
+        e = self.E.get(cle)
+        groupe = GROUPES.get(circuit)
+        if not e or not groupe:
             return None
         out = {'nom': nom}
-        circuit = GROUPES.get(circuit)
         n_ = note_elo(elo_match(e, surface, self.poids))
         if n_ is not None:
             out['note'] = n_
         surf = {s_: note_elo(elo_match(e, s_, self.poids)) for s_ in SURFACES
-                if e and (e.get('surfaces') or {}).get(s_) is not None}
+                if (e.get('surfaces') or {}).get(s_) is not None}
         if surf:
             out['surfaces'] = surf
-        j = (((f or {}).get('surfaces') or {}).get('all') or {}).get('joueur') or {}
         at = {}
-        sr = self.SR.get(cle)
-        if sr:
-            for i, a in ((0, 'ser'), (1, 'ret')):
-                v = _borne(centile(self.ref.get((circuit, a)) or [], sr[i]))
-                if v is not None:
-                    at[a] = v
-        for a, src in SOURCE.items():
-            c_ = centile(self.ref.get((circuit, a)) or [], j.get(src))
-            if c_ is not None:
-                at[a] = _borne(100 - c_ if a in INVERSES else c_)
+        v = self.valeurs(cle, circuit, surface)
+        if v:
+            R = self.reference(groupe, circuit, surface)
+            for a, x in v.items():
+                c_ = centile(R[a], x)
+                if c_ is not None:
+                    at[a] = _borne(100 - c_ if a in INVERSES else c_)
         r = reussite or {}
         if (r.get('matchs') or 0) >= FORME_MIN_MATCHS and r.get('ecart') is not None:
             at['for'] = _borne(50 + FORME_PENTE * float(r['ecart']) / r['matchs'])
         if len(at) == len(ATTRIBUTS):
             out['attributs'] = at
-            out['balles'] = f.get('balles')
-            out['valeurs'] = {'ace': round(100 * j['a'], 1), 'pre': round(100 * j['f'], 1), 'df': round(100 * j['d'], 1),
-                              'ser': round(100 * j['serv'], 1), 'ret': round(100 * j['ret'], 1)}
-            if r:
-                out['valeurs']['for'] = [r.get('victoires'), r.get('attendu'), r.get('matchs')]
+            out['valeurs'] = {a: round(100 * x, 1) for a, x in v.items()}
+            if (self.S.get(cle) or {}).get('balles'):
+                out['balles'] = self.S[cle]['balles']
         rang = self.rangs.get(cle)
         if rang:
             out['rang'] = rang
@@ -178,8 +193,12 @@ def charger(racine, etat):
             for k, v in (doc.get(circ) or {}).items():
                 if isinstance(v, list) and v:
                     rangs[k] = {'circuit': circ, 'rang': v[0]}
-    sr = _lire_json(os.path.join(racine, 'Tennis_Edge_Lab', 'live', 'elo_service_retour.json'), {})
-    return Cartes(service, etat, infos, {k: v['rang'] for k, v in rangs.items()}, sr)
+    ajuste = None
+    prof = _lire_json(os.path.join(racine, 'simulateur', 'profils_service.json'), {}) or {}
+    if prof.get('ajuste'):
+        import ajustement as AJ
+        ajuste = AJ.importer(prof['ajuste'])
+    return Cartes(service, etat, infos, {k: v['rang'] for k, v in rangs.items()}, ajuste)
 
 
 def ajouter_cartes(lignes, racine, etat):
