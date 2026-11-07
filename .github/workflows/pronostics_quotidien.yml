@@ -152,6 +152,7 @@ jobs:
           python scripts/coffre.py retirer --groupe pronostics || true
           git add -- Tennis_Edge_Lab/live/pronostics_bilan.json \
                      Tennis_Edge_Lab/live/joueurs_service.json.gz \
+                     Tennis_Edge_Lab/live/elo_service_retour.json \
                      simulateur/pronostics_log.jsonl simulateur/rapport_pronostic.json \
                      simulateur/choix_simulation.json simulateur/stabilite.json \
                      simulateur/gouvernance_etat.json simulateur/rapport_gouvernance.json \
