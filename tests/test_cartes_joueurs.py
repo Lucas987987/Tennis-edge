@@ -26,8 +26,15 @@ class Cartes(unittest.TestCase):
         os.makedirs(os.path.join(self.d, 'Tennis_Edge_Lab', 'live'))
         with gzip.open(os.path.join(self.d, 'Tennis_Edge_Lab', 'live', 'joueurs_service.json.gz'), 'wt') as f:
             json.dump({'joueurs': J}, f)
-        with open(os.path.join(self.d, 'Tennis_Edge_Lab', 'live', 'elo_service_retour.json'), 'w') as f:
-            json.dump({'joueurs': {E.cle(n): [i / 100, -i / 100, 50] for i, n in enumerate(noms)}}, f)
+        # profils ajustés de la simulation : le joueur i sert et relance mieux quand i grandit, moins de doubles fautes
+        aj = {'date': '2026-11-06'}
+        for comp, signe in (('f', 1), ('a', 1), ('w1', 1), ('d', -1), ('w2j', 1)):
+            aj[comp] = {'mu': {'ATP|Hard': 0.3, 'CH|Hard': 0.2}, 'Ss': {}, 'Rs': {},
+                        'S': {E.cle(n): signe * i / 40 for i, n in enumerate(noms)},
+                        'R': {E.cle(n): i / 40 for i, n in enumerate(noms)}}
+        os.makedirs(os.path.join(self.d, 'simulateur'))
+        with open(os.path.join(self.d, 'simulateur', 'profils_service.json'), 'w') as f:
+            json.dump({'ajuste': aj}, f)
         os.makedirs(os.path.join(self.d, 'feuilles', 'classements'))
         with open(os.path.join(self.d, 'feuilles', 'joueurs.json'), 'w') as f:
             json.dump({'1': {'nom': noms[39], 'naissance': '2000-11-08', 'taille_cm': 190, 'main': 'gauche',
@@ -59,8 +66,9 @@ class Cartes(unittest.TestCase):
         self.assertEqual(set(h['attributs']), set(CJ.ATTRIBUTS))
         self.assertTrue(all(1 <= v <= 99 for v in h['attributs'].values()))
         self.assertGreater(h['attributs']['ser'], a['attributs']['ser'])
-        self.assertGreater(a['attributs']['ret'], h['attributs']['ret'])
+        self.assertGreater(h['attributs']['ret'], a['attributs']['ret'])
         self.assertGreater(h['attributs']['df'], a['attributs']['df'])    # moins de doubles fautes = mieux
+        self.assertEqual(h['attributs']['ser'], 99)
         self.assertEqual(h['attributs']['for'], 70)                       # 50 + 200 × 4 / 40
         self.assertEqual(a['attributs']['for'], 50)
         self.assertEqual((h['rang'], h['age'], h['taille_cm'], h['main'], h['pays']), (12, 25, 190, 'gauche', 'FRA'))
@@ -70,8 +78,8 @@ class Cartes(unittest.TestCase):
         CJ.ajouter_cartes(L, self.d, self.etat)
         self.assertNotIn('cartes', L[0])
 
-    def test_sans_notes_service_retour_pas_d_attributs(self):
-        os.remove(os.path.join(self.d, 'Tennis_Edge_Lab', 'live', 'elo_service_retour.json'))
+    def test_sans_profils_ajustes_pas_d_attributs(self):
+        os.remove(os.path.join(self.d, 'simulateur', 'profils_service.json'))
         L = [{'home': self.noms[3], 'away': self.noms[5], 'circuit': 'CH', 'surface': 'Hard', 'debut': '2026-11-07'}]
         CJ.ajouter_cartes(L, self.d, self.etat)
         self.assertNotIn('attributs', L[0]['cartes']['joueurs'][0])
