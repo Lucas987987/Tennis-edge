@@ -809,6 +809,12 @@
    "quoi": "Match en direct : bouton « Tous les points ». Chaque jeu se déplie en score point par point (15-0, 30-0, 40-15… puis le vainqueur du jeu) ; les balles de break, de set et de match sont marquées sur le score où elles se jouent, avec ✓ si elle est convertie et ✗ si elle est sauvée. Le point par point de la fiche ouverte se rafraîchit toutes les 30 secondes.",
    "statut": "production",
    "paquet": 215
+  },
+  {
+   "date": "2026-11-07",
+   "quoi": "Fiche du match : cartes des joueurs. Chaque joueur a une note de 40 à 99 tirée de son Elo sur la surface du match (même échelle pour tous : or à partir de 80, argent de 70 à 79, bronze en dessous), six attributs de 1 à 99 rangés parmi les joueurs actifs ATP et Challenger, ou parmi les joueuses WTA (service et retour ajustés à la force des adversaires affrontés, aces, % de 1res balles, sûreté de la 2e balle, forme sur les 40 derniers matchs), sa note sur dur, terre et gazon, son classement, son âge, sa taille et sa main. Un radar superpose les deux joueurs. Descriptif seulement : le % ne change pas.",
+   "statut": "production",
+   "paquet": 216
   }
  ]
 }

@@ -128,6 +128,31 @@ def construire(M, avant, eta=0.0015):
     return el
 
 
+SORTIE_NOTES = os.path.join('Tennis_Edge_Lab', 'live', 'elo_service_retour.json')
+
+
+def exporter(el, racine, avant, n_min=10):
+    """07/11/2026 (paquet 216) — notes S et R du jour pour les cartes joueurs du site (descriptif) :
+    {joueur: [S, R, matchs]} pour les joueurs d'au moins n_min matchs, limités aux joueurs actifs des fiches
+    service / retour (Tennis_Edge_Lab/live/joueurs_service.json.gz) quand elles existent (taille du dépôt). Aucune cote."""
+    import gzip
+    import json
+    try:
+        with gzip.open(os.path.join(racine, 'Tennis_Edge_Lab', 'live', 'joueurs_service.json.gz'), 'rt',
+                       encoding='utf-8') as f:
+            actifs = set((json.load(f).get('joueurs') or {}))
+    except (OSError, ValueError):
+        actifs = None
+    J = {k: [round(el.S.get(k, 0.0), 4), round(el.R.get(k, 0.0), 4), n] for k, n in el.n.items()
+         if n >= n_min and (not actifs or k in actifs)}
+    p = os.path.join(racine, SORTIE_NOTES)
+    os.makedirs(os.path.dirname(p), exist_ok=True)
+    with open(p, 'w', encoding='utf-8') as f:
+        json.dump({'avant': avant.isoformat(), 'eta': el.eta, 'n_min': n_min, 'joueurs': J}, f,
+                  ensure_ascii=False, separators=(',', ':'), sort_keys=True)
+    return p
+
+
 def log_loss_archive(M, eta, debut, fin, circuits=('ATP', 'WTA', 'CH')):
     """Réglage de η : log loss du VAINQUEUR sur [debut, fin[, notes d'avant chaque jour."""
     el, tot, n, i, jour = EloSR(eta), 0.0, 0, 0, None

@@ -1149,6 +1149,11 @@ def construire(racine, maintenant=None):
         import elo_service_retour as ESR
         _M_sr = ESR.matchs(os.environ.get('SACKMANN_DIR', '/tmp/sackmann'), racine)
         ELO_SR = ESR.construire(_M_sr, dt.date.today()) if _M_sr else None
+        if ELO_SR is not None:      # 07/11/2026 (paquet 216) : notes du jour pour les cartes joueurs du site
+            try:
+                ESR.exporter(ELO_SR, racine, dt.date.today())
+            except OSError as e_:
+                print(f"::warning::notes service / retour non exportées : {e_}")
     except Exception as e_:  # noqa: BLE001
         print(f"::warning::Elo service / retour non chargé : {type(e_).__name__}: {e_}")
         ELO_SR = None

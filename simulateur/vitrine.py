@@ -807,6 +807,12 @@ def construire(racine, maintenant=None):
         ajouter_pays(lignes, racine, alias)
     except Exception as e:  # noqa: BLE001
         print(f'::warning::pays des joueurs non calculés : {type(e).__name__}: {e}')
+    # 07/11/2026 (paquet 216) — cartes des joueurs (note, six attributs, surfaces, identité) ; descriptif seulement
+    try:
+        import cartes_joueurs as CJ
+        CJ.ajouter_cartes(lignes, racine, etat)
+    except Exception as e:  # noqa: BLE001
+        print(f'::warning::cartes des joueurs non calculées : {type(e).__name__}: {e}')
     try:
         import apres_match as AM
         facteurs_doc = _lire(os.path.join(racine, 'simulateur', 'facteurs.json'), {}) or {}
