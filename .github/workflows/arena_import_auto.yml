@@ -6,8 +6,10 @@ on:
         description: "Simulation sans écriture D1"
         type: boolean
         default: true
-  schedule:
-    - cron: '17 */3 * * *'
+      diagnostic:
+        description: "Tester l’accès public au Worker sans écriture ni jeton"
+        type: boolean
+        default: false
 permissions:
   contents: read
 concurrency:
@@ -23,4 +25,5 @@ jobs:
         env:
           ARENA_ADMIN_TOKEN: ${{ secrets.ARENA_ADMIN_TOKEN }}
           DRY_RUN: ${{ inputs.dry_run }}
+          ARENA_DIAGNOSTIC: ${{ inputs.diagnostic }}
         run: python3 arena/tools/import_matches.py
