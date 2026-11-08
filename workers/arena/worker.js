@@ -14,6 +14,12 @@ async function body(req){if(Number(req.headers.get('content-length')||0)>4096)th
 export default {async fetch(request,env){const headers=cors(request,env);if(request.method==='OPTIONS')return new Response(null,{status:204,headers});if(!env.ARENA_DB)return fail('ARENA_DB binding missing',503,headers);const url=new URL(request.url),path=url.pathname;try{
 if(request.method==='GET'&&path==='/api/arena/challenges'){const r=await env.ARENA_DB.prepare("SELECT id,title,player_a,player_b,starts_at,closes_at,status FROM arena_challenges WHERE status='open' AND closes_at>datetime('now') ORDER BY starts_at LIMIT 50").all();return json({challenges:r.results},200,headers);}
 if(request.method==='GET'&&path==='/api/arena/leaderboard'){const r=await env.ARENA_DB.prepare('SELECT display_name,xp FROM arena_users ORDER BY xp DESC,id LIMIT 100').all();return json({leaders:r.results},200,headers);}
+
+if(request.method==='GET'&&path==='/api/arena/rankings'){
+ const weekly=await env.ARENA_DB.prepare("SELECT u.display_name,SUM(e.xp_delta) xp FROM arena_point_events e JOIN arena_users u ON u.id=e.user_id WHERE e.created_at>=datetime('now','-7 days') GROUP BY e.user_id ORDER BY xp DESC LIMIT 20").all();
+ const monthly=await env.ARENA_DB.prepare("SELECT u.display_name,SUM(e.xp_delta) xp FROM arena_point_events e JOIN arena_users u ON u.id=e.user_id WHERE e.created_at>=datetime('now','start of month') GROUP BY e.user_id ORDER BY xp DESC LIMIT 20").all();
+ return json({weekly:weekly.results,monthly:monthly.results},200,headers);
+}
 if(request.method==='GET'&&path==='/api/arena/rewards'){const r=await env.ARENA_DB.prepare('SELECT id,title,cost,stock FROM arena_rewards WHERE enabled=1 ORDER BY cost').all();return json({rewards:r.results},200,headers);}
 
 if(request.method==='POST'&&path==='/api/arena/test-login'){
@@ -26,6 +32,24 @@ if(request.method==='POST'&&path==='/api/arena/test-login'){
  await env.ARENA_DB.prepare('INSERT OR IGNORE INTO arena_users(id,display_name) VALUES(?,?)').bind(sub,'Testeur Arena').run();
  const payload=b64url(enc.encode(JSON.stringify({sub,exp:Math.floor(Date.now()/1000)+3600})));
  return json({token:payload+'.'+await hmac(env.ARENA_SESSION_SECRET,payload)},200,headers);
+}
+
+if(request.method==='POST'&&path==='/api/arena/admin/challenge'){
+ const supplied=request.headers.get('x-arena-admin-token')||'';
+ if(!env.ARENA_ADMIN_TOKEN||supplied!==env.ARENA_ADMIN_TOKEN)return fail('Forbidden',403,headers);
+ const d=await body(request);
+ const title=String(d.title||'').trim(),a=String(d.player_a||'').trim(),b=String(d.player_b||'').trim();
+ const circuit=String(d.circuit||'').trim().toUpperCase();
+ if(!['ATP','WTA','CHALLENGER'].includes(circuit)||title.length<5||title.length>100||a.length<2||a.length>80||b.length<2||b.length>80||a===b)return fail('Invalid challenge',400,headers);
+ const start=String(d.starts_at||'');
+ if(!/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$/.test(start))return fail('Use UTC ISO timestamp',400,headers);
+ const ts=Date.parse(start);
+ if(!Number.isFinite(ts)||ts<Date.now()+10*60000||ts>Date.now()+30*86400000)return fail('Start must be 10 min to 30 days in future',400,headers);
+ const id='real-'+crypto.randomUUID();
+ const close=new Date(ts-5*60000).toISOString().slice(0,19).replace('T',' ');
+ const startSql=new Date(ts).toISOString().slice(0,19).replace('T',' ');
+ await env.ARENA_DB.prepare("INSERT INTO arena_challenges(id,title,player_a,player_b,starts_at,closes_at,status) VALUES(?,?,?,?,?,?,'open')").bind(id,circuit+' · '+title,a,b,startSql,close).run();
+ return json({ok:true,id,closes_at:close},201,headers);
 }
 const user=await auth(request,env);if(!user)return fail('Authentication required',401,headers);
 if(request.method==='GET'&&path==='/api/arena/me'){const r=await env.ARENA_DB.prepare('SELECT id,display_name,xp,points FROM arena_users WHERE id=?').bind(user).first();return json({profile:r},200,headers);}
