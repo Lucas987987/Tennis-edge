@@ -821,6 +821,12 @@
    "quoi": "Page de l'algo : choix du thème clair, sombre ou automatique (réglage de l'appareil), mémorisé sur le téléphone ; sombre par défaut. La borne de simulation, les cartes des joueurs et les images X restent sombres dans les deux thèmes. Cartes des joueurs : le radar se place sous les deux cartes, centré avec sa légende, quand la place manque à côté (il n'est plus coupé), et reste à droite quand le bloc est assez large. Description de la page : « indépendant des cotes ». Un test vérifie désormais que la page publique ne contient pas le mot interdit. Descriptif seulement : le % ne change pas.",
    "statut": "production",
    "paquet": 217
+  },
+  {
+   "date": "2026-11-08",
+   "quoi": "Fiche du match : chaque bloc devient un tiroir. « Le match » (score, courbe du %, moments clés, jeu par jeu, « Tous les points ») et « Statistiques du match » (réel contre prévu de l'algo) restent ouverts ; les autres sont repliés avec une ligne-résumé, et un bouton « Tout ouvrir / Tout replier » les gère ensemble. Un match commencé reste affiché 24 h au lieu de 6 h, et quand le direct n'est plus disponible la fiche montre le bilan après match (score et statistiques réelles contre le prévu) dès qu'il est calculé. Nouveau bouton « Générer le post X · résultat », à côté du post d'avant match. Titre « nouvelle victoire » seulement si le favori de l'algo a gagné, sinon « le bilan du match », erreurs comprises ; ✅ sur une statistique quand le réel des deux joueurs tombe dans la fourchette prévue (8 fois sur 10), règle fixée avant les résultats. Le post d'avant match suit désormais le modèle : sans ligne de surface, sans bloc des probabilités, sans note de fiabilité ni « ce que l'algo relève ». Le bouton « Générer la vidéo » est conservé. Descriptif seulement : le % ne change pas.",
+   "statut": "production",
+   "paquet": 218
   }
  ]
 }

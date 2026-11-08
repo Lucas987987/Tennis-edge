@@ -665,14 +665,14 @@ def retirer_annules(matchs, racine, maintenant):
     return out
 
 
-GARDER_COMMENCES_H = 6
+GARDER_COMMENCES_H = 24
 
 
 def garder_commences(lignes, ancien_doc, maintenant, racine=None):
     """06/11/2026 (paquet 209) — un match COMMENCÉ disparaît des pronostics du passage suivant (la source des matchs à
     venir ne le donne plus) : Fritz – Alcaraz, en cours, n'était plus sur le site, ni ses scores en direct. On garde
     donc, tel qu'il était affiché (le dernier % d'avant match), chaque match de la version précédente du site qui a
-    commencé depuis moins de 6 h et que le nouveau passage n'a plus. Forfaits et annulations connus : retirés.
+    commencé depuis moins de 24 h (6 h jusqu'au paquet 217 ; 24 h pour garder les statistiques après le match) et que le nouveau passage n'a plus. Forfaits et annulations connus : retirés.
     Marqué « commence_garde » : validation_vitrine.py ne lui demande pas le nombre de simulations du passage en cours
     (il a été simulé, et contrôlé, au passage précédent)."""
     vus = {l.get('uid') for l in lignes}
