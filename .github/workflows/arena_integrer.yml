@@ -1,0 +1,51 @@
+name: Arena - Integrer au site
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['arena/**', '.github/workflows/arena_integrer.yml']
+permissions:
+  contents: read
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          token: ${{ secrets.PAQUET_TOKEN }}
+      - name: Integrer Arena dans Pages et le menu
+        run: |
+          python3 - <<'PYCODE'
+          from pathlib import Path
+          p=Path('.github/workflows/pages.yml')
+          s=p.read_text()
+          if "      - 'arena/**'" not in s:
+              assert "      - 'algo/**'" in s
+              s=s.replace("      - 'algo/**'", "      - 'algo/**'\n      - 'arena/**'",1)
+          if '            /arena/' not in s:
+              assert '            /algo/' in s
+              s=s.replace('            /algo/', '            /algo/\n            /arena/',1)
+          if 'cp arena/index.html arena/arena.js _site/arena/' not in s:
+              marker='          mkdir -p _site/Tennis_Edge_Lab'
+              assert marker in s
+              s=s.replace(marker, '          mkdir -p _site/arena\n          cp arena/index.html arena/arena.js _site/arena/\n\n'+marker,1)
+          p.write_text(s)
+          p=Path('algo/index.html')
+          s=p.read_text()
+          if 'href="../arena/"' not in s:
+              assert '</body>' in s
+              s=s.replace('</body>', '<a href="../arena/" style="position:fixed;bottom:18px;right:18px;z-index:9999;background:#b6f365;color:#13220b;padding:12px 17px;border-radius:999px;font:700 15px system-ui;text-decoration:none">🏟️ Arena</a></body>',1)
+          p.write_text(s)
+          PYCODE
+      - name: Commit integration
+        env:
+          GH_TOKEN: ${{ secrets.PAQUET_TOKEN }}
+        run: |
+          set -e
+          test -n "$GH_TOKEN"
+          git config user.name arena-bot
+          git config user.email arena-bot@users.noreply.github.com
+          git add .github/workflows/pages.yml algo/index.html
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "Integrer Arena a GitHub Pages"
+          git push origin HEAD:main
