@@ -826,7 +826,7 @@ def settlement_result(fixture_id):
     (Pas de secours possible pour set1 : 2-1 ne dit pas qui a pris le 1er set.)
     """
     out = {"finished": False, "winner": None, "set1": None, "set2": None,
-           "p1_sets": None, "p2_sets": None, "status_name": None}
+           "p1_sets": None, "p2_sets": None, "status_name": None, "winner_from_market": False}
     data = settlement(fixture_id)
     if not isinstance(data, dict):
         return out
@@ -850,8 +850,10 @@ def settlement_result(fixture_id):
         if mid == str(MW_MARKET) and out["winner"] is None:
             if oid == str(OUT_HOME):
                 out["winner"] = "home"
+                out["winner_from_market"] = True
             elif oid == str(OUT_AWAY):
                 out["winner"] = "away"
+                out["winner_from_market"] = True
         elif mid == str(SET1_MARKET) and out["set1"] is None:
             if oid == str(SET1_HOME):
                 out["set1"] = "home"
