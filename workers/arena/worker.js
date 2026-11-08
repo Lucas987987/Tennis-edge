@@ -11,16 +11,34 @@ async function auth(request,env){const token=(request.headers.get('authorization
 function cors(req,env){const origin=req.headers.get('origin');return origin&&origin===env.ARENA_ORIGIN?{'access-control-allow-origin':origin,'vary':'Origin','access-control-allow-headers':'authorization,content-type','access-control-allow-methods':'GET,POST,OPTIONS'}:{};}
 const fail=(message,status=400,h={})=>json({error:message},status,h);
 async function body(req){if(Number(req.headers.get('content-length')||0)>4096)throw Error('Payload too large');const s=await req.text();if(s.length>4096)throw Error('Payload too large');return JSON.parse(s);}
-export default {async fetch(request,env){const headers=cors(request,env);if(request.method==='OPTIONS')return new Response(null,{status:204,headers});if(!env.ARENA_DB)return fail('ARENA_DB binding missing',503,headers);const url=new URL(request.url),path=url.pathname;try{
-if(request.method==='GET'&&path==='/api/arena/challenges'){const r=await env.ARENA_DB.prepare("SELECT id,title,player_a,player_b,starts_at,closes_at,status FROM arena_challenges WHERE status='open' AND closes_at>datetime('now') ORDER BY starts_at LIMIT 50").all();return json({challenges:r.results},200,headers);}
-if(request.method==='GET'&&path==='/api/arena/leaderboard'){const r=await env.ARENA_DB.prepare('SELECT display_name,xp FROM arena_users ORDER BY xp DESC,id LIMIT 100').all();return json({leaders:r.results},200,headers);}
+const PUBLIC_TTLS={'/api/arena/challenges':45,'/api/arena/leaderboard':180,'/api/arena/rankings':180,'/api/arena/rewards':300};
+async function publicCacheGet(request,path,headers){
+ const ttl=PUBLIC_TTLS[path];if(!ttl||request.method!=='GET')return null;
+ try{const cached=await caches.default.match(new Request(new URL(path,new URL(request.url).origin).toString()));
+  if(!cached)return null;
+  const h=new Headers(cached.headers);for(const [k,v] of Object.entries(headers))h.set(k,v);
+  h.set('x-arena-cache','HIT');h.set('cache-control','no-store');
+  return new Response(cached.body,{status:cached.status,headers:h});
+ }catch{return null;}
+}
+async function publicCachePut(request,path,response,ctx){
+ const ttl=PUBLIC_TTLS[path];if(!ttl||!response.ok||!ctx?.waitUntil)return;
+ try{const key=new Request(new URL(path,new URL(request.url).origin).toString());
+  const h=new Headers({'content-type':'application/json; charset=utf-8','cache-control':`public, max-age=${ttl}`});
+  const stored=new Response(response.clone().body,{status:200,headers:h});
+  ctx.waitUntil(caches.default.put(key,stored).catch(()=>{}));
+ }catch{}
+}
+export default {async fetch(request,env,ctx){const headers=cors(request,env);if(request.method==='OPTIONS')return new Response(null,{status:204,headers});if(!env.ARENA_DB)return fail('ARENA_DB binding missing',503,headers);const url=new URL(request.url),path=url.pathname;const hit=await publicCacheGet(request,path,headers);if(hit)return hit;try{
+if(request.method==='GET'&&path==='/api/arena/challenges'){const r=await env.ARENA_DB.prepare("SELECT id,title,player_a,player_b,starts_at,closes_at,status FROM arena_challenges WHERE status='open' AND closes_at>datetime('now') ORDER BY starts_at LIMIT 50").all();const response=json({challenges:r.results},200,headers);await publicCachePut(request,path,response,ctx);return response;}
+if(request.method==='GET'&&path==='/api/arena/leaderboard'){const r=await env.ARENA_DB.prepare('SELECT display_name,xp FROM arena_users ORDER BY xp DESC,id LIMIT 100').all();const response=json({leaders:r.results},200,headers);await publicCachePut(request,path,response,ctx);return response;}
 
 if(request.method==='GET'&&path==='/api/arena/rankings'){
  const weekly=await env.ARENA_DB.prepare("SELECT u.display_name,SUM(e.xp_delta) xp FROM arena_point_events e JOIN arena_users u ON u.id=e.user_id WHERE e.created_at>=datetime('now','-7 days') GROUP BY e.user_id ORDER BY xp DESC LIMIT 20").all();
  const monthly=await env.ARENA_DB.prepare("SELECT u.display_name,SUM(e.xp_delta) xp FROM arena_point_events e JOIN arena_users u ON u.id=e.user_id WHERE e.created_at>=datetime('now','start of month') GROUP BY e.user_id ORDER BY xp DESC LIMIT 20").all();
- return json({weekly:weekly.results,monthly:monthly.results},200,headers);
+ const response=json({weekly:weekly.results,monthly:monthly.results},200,headers);await publicCachePut(request,path,response,ctx);return response;
 }
-if(request.method==='GET'&&path==='/api/arena/rewards'){const r=await env.ARENA_DB.prepare('SELECT id,title,cost,stock FROM arena_rewards WHERE enabled=1 ORDER BY cost').all();return json({rewards:r.results},200,headers);}
+if(request.method==='GET'&&path==='/api/arena/rewards'){const r=await env.ARENA_DB.prepare('SELECT id,title,cost,stock FROM arena_rewards WHERE enabled=1 ORDER BY cost').all();const response=json({rewards:r.results},200,headers);await publicCachePut(request,path,response,ctx);return response;}
 
 if(request.method==='POST'&&path==='/api/arena/test-login'){
  if(!env.ARENA_TEST_ACCESS_KEY||env.ARENA_TEST_ACCESS_KEY.length<32)return fail('Private test disabled',403,headers);
@@ -42,7 +60,7 @@ if(request.method==='POST'&&path==='/api/arena/admin/challenge'){
  const circuit=String(d.circuit||'').trim().toUpperCase();
  if(!['ATP','WTA','CHALLENGER'].includes(circuit)||title.length<5||title.length>100||a.length<2||a.length>80||b.length<2||b.length>80||a===b)return fail('Invalid challenge',400,headers);
  const start=String(d.starts_at||'');
- if(!/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$/.test(start))return fail('Use UTC ISO timestamp',400,headers);
+ if(!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/.test(start))return fail('Use UTC ISO timestamp',400,headers);
  const ts=Date.parse(start);
  if(!Number.isFinite(ts)||ts<Date.now()+10*60000||ts>Date.now()+30*86400000)return fail('Start must be 10 min to 30 days in future',400,headers);
  const id='real-'+crypto.randomUUID();
