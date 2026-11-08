@@ -1,5 +1,5 @@
 // Configure API_URL to your dedicated Arena Worker endpoint after deployment.
-const API_URL=globalThis.ARENA_API_URL||location.origin;
+const API_URL=globalThis.ARENA_API_URL||'';\nif(!API_URL||API_URL.includes('YOUR-SUBDOMAIN')){document.addEventListener('DOMContentLoaded',()=>{document.querySelector('#challenges').textContent='Arena en attente de configuration Cloudflare (arena/config.js).';});}
 const token=()=>sessionStorage.getItem('arena_session')||'';
 const el=id=>document.getElementById(id);
 const safe=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));

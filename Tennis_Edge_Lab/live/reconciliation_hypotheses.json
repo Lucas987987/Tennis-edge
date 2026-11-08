@@ -1,15 +1,15 @@
 {
  "schema_version": 2,
- "generated_at": "2026-11-07T11:43:54+00:00",
+ "generated_at": "2026-11-08T11:43:04+00:00",
  "sources": {
   "worker": {
    "source": "API Worker D1 /api/hypotheses (fetch_worker_snapshot.py)",
    "fichier": "worker_hypotheses_capture.json",
    "status": "ok",
-   "fetched_at": "2026-11-07T11:43:47Z",
-   "worker_generated_at": "2026-11-07T06:35:35Z"
+   "fetched_at": "2026-11-08T11:42:59Z",
+   "worker_generated_at": "2026-11-08T06:37:19Z"
   },
-  "suivi_officiel": "alertes en direct : h*_signal_log.jsonl + suivi_direct/resultats.json (verdicts_direct.json du 2026-11-07T11:43:54Z)",
+  "suivi_officiel": "alertes en direct : h*_signal_log.jsonl + suivi_direct/resultats.json (verdicts_direct.json du 2026-11-08T11:43:04Z)",
   "reconstruction": "moves_detail_hist.csv filtré par les règles gelées de validation_report.py (lignes jusqu'au 2026-11-01) — contrôle, ne juge pas",
   "rapprochement": "uid + joueur normalisé ; à défaut paire de joueurs + date ±1 jour"
  },
@@ -80,35 +80,35 @@
    "worker": {
     "gele_le": "2026-09-06",
     "out_of_sample": {
-     "n": 328,
-     "gains": 140,
-     "taux": 42.7,
+     "n": 332,
+     "gains": 141,
+     "taux": 42.5,
      "seuil": 41.7,
-     "ecart": 1,
-     "roi": 3,
-     "pnl": 9.9,
+     "ecart": 0.8,
+     "roi": 2.5,
+     "pnl": 8.3,
      "cote_moyenne": 2.43,
      "clv_moyen": -1.8,
      "clv_pin_moyen": -1.8,
      "clv_pin_p": 1,
-     "clv_n": 336,
-     "clv_positif": 36.3,
+     "clv_n": 340,
+     "clv_positif": 36.2,
      "lead_moyen_h": 8.2,
-     "periode": "2026-09-07 -> 2026-11-06",
+     "periode": "2026-09-07 -> 2026-11-07",
      "verdict": "ne tranche pas",
-     "n_detectees": 343,
-     "n_envoyees": 342,
+     "n_detectees": 344,
+     "n_envoyees": 343,
      "n_doublons": 0,
      "n_non_envoyees_autres": 1,
-     "n_denouees": 328,
-     "n_commencees": 340,
+     "n_denouees": 332,
+     "n_commencees": 344,
      "n_sans_resultat": 12,
      "sans_resultat_pct": 3.5,
      "verrouillable": true,
      "statut": "verrouillable (résultats complets à 96 %)"
     },
-    "n": 328,
-    "roi": 3
+    "n": 332,
+    "roi": 2.5
    },
    "suivi_officiel": {
     "n": 204,
@@ -120,15 +120,15 @@
      -2.6,
      -0.9
     ],
-    "clv_n": 336,
+    "clv_n": 340,
     "n_detectees": 344,
     "n_envoyees": 343,
     "n_doublons": 0,
     "source": "verdicts_direct.json (recalculé : journal plus récent)",
-    "sans_resultat_pct": 40.2,
-    "statut": "en attente de résultats (40,2 % sans résultat)",
+    "sans_resultat_pct": 40.7,
+    "statut": "en attente de résultats (40,7 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-11-07T11:43:54Z"
+    "genere_le": "2026-11-08T11:43:04Z"
    },
    "reconstruction": {
     "n": 243,
@@ -8015,55 +8015,55 @@
    "worker": {
     "gele_le": "2026-10-02",
     "out_of_sample": {
-     "n": 108,
+     "n": 110,
      "gains": 50,
-     "taux": 46.3,
-     "seuil": 40.6,
-     "ecart": 5.7,
-     "roi": 12.3,
-     "pnl": 13.3,
-     "cote_moyenne": 2.99,
-     "clv_moyen": -0.5,
-     "clv_pin_moyen": -0.5,
-     "clv_pin_p": 0.694,
-     "clv_n": 114,
-     "clv_positif": 41.2,
+     "taux": 45.5,
+     "seuil": 40.8,
+     "ecart": 4.6,
+     "roi": 10.2,
+     "pnl": 11.3,
+     "cote_moyenne": 2.97,
+     "clv_moyen": -0.6,
+     "clv_pin_moyen": -0.6,
+     "clv_pin_p": 0.7126,
+     "clv_n": 116,
+     "clv_positif": 40.5,
      "lead_moyen_h": 12.3,
-     "periode": "2026-10-16 -> 2026-11-06",
+     "periode": "2026-10-16 -> 2026-11-07",
      "verdict": "ne tranche pas",
      "n_detectees": 117,
      "n_envoyees": 41,
      "n_doublons": 76,
      "n_non_envoyees_autres": 0,
-     "n_denouees": 108,
-     "n_commencees": 116,
-     "n_sans_resultat": 8,
-     "sans_resultat_pct": 6.9,
+     "n_denouees": 110,
+     "n_commencees": 117,
+     "n_sans_resultat": 7,
+     "sans_resultat_pct": 6,
      "verrouillable": true,
-     "statut": "verrouillable (résultats complets à 93 %)"
+     "statut": "verrouillable (résultats complets à 94 %)"
     },
-    "n": 108,
-    "roi": 12.3
+    "n": 110,
+    "roi": 10.2
    },
    "suivi_officiel": {
     "n": 10,
     "gagnes": 4,
     "roi": -13.8,
     "pts": 4.0,
-    "clv_pin": -0.5,
+    "clv_pin": -0.6,
     "clv_pin_ic95": [
      -2.6,
      1.5
     ],
-    "clv_n": 114,
+    "clv_n": 116,
     "n_detectees": 117,
     "n_envoyees": 41,
     "n_doublons": 76,
     "source": "verdicts_direct.json (recalculé : journal plus récent)",
-    "sans_resultat_pct": 91.4,
-    "statut": "en attente de résultats (91,4 % sans résultat)",
+    "sans_resultat_pct": 91.5,
+    "statut": "en attente de résultats (91,5 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-11-07T11:43:54Z"
+    "genere_le": "2026-11-08T11:43:04Z"
    },
    "reconstruction": {
     "n": 193,
@@ -13885,7 +13885,7 @@
     "sans_resultat_pct": 68.2,
     "statut": "en attente de résultats (68,2 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-11-07T11:43:54Z"
+    "genere_le": "2026-11-08T11:43:04Z"
    },
    "reconstruction": {
     "n": 96,
@@ -16843,35 +16843,35 @@
    "worker": {
     "gele_le": "2026-09-25",
     "out_of_sample": {
-     "n": 253,
-     "gains": 173,
-     "taux": 68.4,
+     "n": 254,
+     "gains": 174,
+     "taux": 68.5,
      "seuil": 67.8,
-     "ecart": 0.6,
-     "roi": 0.7,
-     "pnl": 1.7,
+     "ecart": 0.7,
+     "roi": 0.9,
+     "pnl": 2.2,
      "cote_moyenne": 1.49,
      "clv_moyen": -0.5,
      "clv_pin_moyen": -0.5,
-     "clv_pin_p": 0.9676,
-     "clv_n": 265,
-     "clv_positif": 40,
+     "clv_pin_p": 0.9694,
+     "clv_n": 266,
+     "clv_positif": 39.8,
      "lead_moyen_h": 7.7,
-     "periode": "2026-09-26 -> 2026-11-06",
+     "periode": "2026-09-26 -> 2026-11-07",
      "verdict": "ne tranche pas",
-     "n_detectees": 267,
-     "n_envoyees": 267,
+     "n_detectees": 268,
+     "n_envoyees": 268,
      "n_doublons": 0,
      "n_non_envoyees_autres": 0,
-     "n_denouees": 253,
-     "n_commencees": 267,
+     "n_denouees": 254,
+     "n_commencees": 268,
      "n_sans_resultat": 14,
      "sans_resultat_pct": 5.2,
      "verrouillable": true,
      "statut": "verrouillable (résultats complets à 95 %)"
     },
-    "n": 253,
-    "roi": 0.7
+    "n": 254,
+    "roi": 0.9
    },
    "suivi_officiel": {
     "n": 117,
@@ -16883,7 +16883,7 @@
      -1.1,
      0.0
     ],
-    "clv_n": 265,
+    "clv_n": 266,
     "n_detectees": 268,
     "n_envoyees": 268,
     "n_doublons": 0,
@@ -16891,7 +16891,7 @@
     "sans_resultat_pct": 56.3,
     "statut": "en attente de résultats (56,3 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-11-07T11:43:54Z"
+    "genere_le": "2026-11-08T11:43:04Z"
    },
    "reconstruction": {
     "n": 264,
@@ -23811,35 +23811,35 @@
    "worker": {
     "gele_le": "2026-09-27",
     "out_of_sample": {
-     "n": 221,
-     "gains": 147,
-     "taux": 66.5,
+     "n": 222,
+     "gains": 148,
+     "taux": 66.7,
      "seuil": 65.9,
-     "ecart": 0.7,
-     "roi": 0.9,
-     "pnl": 2,
+     "ecart": 0.8,
+     "roi": 1.1,
+     "pnl": 2.4,
      "cote_moyenne": 1.53,
      "clv_moyen": -0.6,
      "clv_pin_moyen": -0.6,
-     "clv_pin_p": 0.9737,
-     "clv_n": 232,
-     "clv_positif": 38.4,
+     "clv_pin_p": 0.9753,
+     "clv_n": 233,
+     "clv_positif": 38.2,
      "lead_moyen_h": 7.8,
-     "periode": "2026-09-29 -> 2026-11-06",
+     "periode": "2026-09-29 -> 2026-11-07",
      "verdict": "ne tranche pas",
-     "n_detectees": 232,
-     "n_envoyees": 232,
+     "n_detectees": 233,
+     "n_envoyees": 233,
      "n_doublons": 0,
      "n_non_envoyees_autres": 0,
-     "n_denouees": 221,
-     "n_commencees": 232,
+     "n_denouees": 222,
+     "n_commencees": 233,
      "n_sans_resultat": 11,
      "sans_resultat_pct": 4.7,
      "verrouillable": true,
      "statut": "verrouillable (résultats complets à 95 %)"
     },
-    "n": 221,
-    "roi": 0.9
+    "n": 222,
+    "roi": 1.1
    },
    "suivi_officiel": {
     "n": 99,
@@ -23849,9 +23849,9 @@
     "clv_pin": -0.6,
     "clv_pin_ic95": [
      -1.2,
-     0.0
+     -0.0
     ],
-    "clv_n": 232,
+    "clv_n": 233,
     "n_detectees": 233,
     "n_envoyees": 233,
     "n_doublons": 0,
@@ -23859,7 +23859,7 @@
     "sans_resultat_pct": 57.5,
     "statut": "en attente de résultats (57,5 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-11-07T11:43:54Z"
+    "genere_le": "2026-11-08T11:43:04Z"
    },
    "reconstruction": {
     "n": 225,
@@ -29609,7 +29609,7 @@
     "sans_resultat_pct": 55.1,
     "statut": "en attente de résultats (55,1 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-11-07T11:43:54Z"
+    "genere_le": "2026-11-08T11:43:04Z"
    },
    "reconstruction": {
     "n": 112,
@@ -33396,7 +33396,7 @@
     "sans_resultat_pct": 0.0,
     "statut": "verrouillable (résultats complets à 100 %)",
     "verrouillable": true,
-    "genere_le": "2026-11-07T11:43:54Z"
+    "genere_le": "2026-11-08T11:43:04Z"
    },
    "reconstruction": {
     "n": 51,
