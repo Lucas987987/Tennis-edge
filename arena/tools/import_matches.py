@@ -3,13 +3,49 @@
 import datetime as dt, json, os, sys, urllib.request, urllib.error
 from pathlib import Path
 from urllib.parse import urlparse
-import collections, re
+import collections, re, unicodedata
 
 API='https://tennis-edge-arena.tennis-edge.workers.dev/api/arena/admin/challenge'
 MAX_MATCHES=30
 
+
+def is_placeholder(name):
+    """Refuse les têtes de série non renseignées et les codes de tableau."""
+    n=unicodedata.normalize('NFKC',name).strip().casefold()
+    compact=re.sub(r'[\s._-]+','',n)
+    if re.fullmatch(r'(?:r\d{1,3}p\d{1,3}|q\d{1,3}|qualifier\d*|tbd|bye|unknown|player\d+|joueur\d+|seed\d+)',compact):return True
+    if re.search(r'\b(?:tbd|to be determined|winner of|vainqueur de|qualifier|qualifié à déterminer)\b',n):return True
+    return False
+
+def auth_diagnostic(token):
+    """Le Worker valide le jeton avant de valider le JSON. {} => 400 sans D1 si auth OK."""
+    url=API
+    req=urllib.request.Request(url,data=b'{}',headers={
+        'Content-Type':'application/json','Accept':'application/json',
+        'x-arena-admin-token':token,'User-Agent':'TennisEdgeArenaAuthCheck/1.7.3'
+    },method='POST')
+    try:
+        with urllib.request.urlopen(req,timeout=20) as r:
+            status=r.status; content=r.read(500).decode('utf-8','replace');ctype=r.headers.get('content-type','')
+    except urllib.error.HTTPError as e:
+        status=e.code;content=e.read(500).decode('utf-8','replace');ctype=e.headers.get('content-type','')
+        print('AUTH diagnostic HTTP',status,'type:',ctype,'cf-ray:',e.headers.get('cf-ray','?'))
+    if status==400 and 'Invalid challenge' in content:
+        print('AUTH OK : jeton accepté par le Worker, JSON volontairement invalide. AUCUNE écriture D1.')
+        return
+    if status==403 and 'Forbidden' in content and 'application/json' in ctype:
+        raise SystemExit('AUTH REFUSÉE PAR WORKER : vérifier ARENA_ADMIN_TOKEN dans GitHub ET Cloudflare (sans divulguer le secret).')
+    if status==403 and ('1010' in content or 'text/html' in ctype):
+        raise SystemExit('BLOCAGE CLOUDFLARE AVANT WORKER : HTTP 403, possiblement code 1010. Inspecter événements sécurité/Access/Bot.')
+    raise SystemExit(f'Réponse inattendue à la sonde auth : HTTP {status}, type {ctype}. Aucune écriture demandée.')
+
 def main():
     dry=os.environ.get('DRY_RUN','').lower() in ('true','1','yes')
+    if os.environ.get('ARENA_DIAGNOSTIC','').lower() in ('true','1','yes') and not dry:
+        token=os.environ.get('ARENA_ADMIN_TOKEN','')
+        if not token:raise SystemExit('Secret ARENA_ADMIN_TOKEN manquant dans GitHub Actions')
+        auth_diagnostic(token)
+        return
     now=dt.datetime.now(dt.timezone.utc)
     source=Path('matches_oddspapi.json')
     meta_path=Path('matches_oddspapi_meta.json')
@@ -44,6 +80,7 @@ def main():
         a=str(m.get('home_team') or '').strip()
         b=str(m.get('away_team') or '').strip()
         if not m.get('id') or not a or not b:continue
+        if is_placeholder(a) or is_placeholder(b):continue
         status=str(m.get('status') or m.get('fixture_status') or '').lower()
         if status in ('live','inplay','in_play','started','finished','ended','cancelled','canceled','postponed','abandoned','retired','walkover'):continue
         normalized.append({'circuit':circuit,'title':tournament,'player_a':a,'player_b':b,'starts_at':start})
@@ -86,16 +123,6 @@ def main():
     print(f'Flux lu: {len(matches)} entrées, {len(selected)} matchs éligibles (maximum {MAX_MATCHES} par exécution).')
     if dry:
         for m in selected:print('SIMULATION',m['circuit'],m['title'],m['player_a'],'vs',m['player_b'],m['starts_at'])
-        return
-    # Vérification réseau sans écriture : ne transmet jamais le jeton.
-    if os.environ.get('ARENA_DIAGNOSTIC','').lower() in ('true','1','yes'):
-        probe=urllib.request.Request('https://tennis-edge-arena.tennis-edge.workers.dev/api/arena/challenges',headers={'Accept':'application/json','User-Agent':'TennisEdgeArenaImporter/1.7.2'})
-        try:
-            with urllib.request.urlopen(probe,timeout=20) as r:
-                print('DIAGNOSTIC GET public:',r.status,'server:',r.headers.get('server','?'),'cf-ray:',r.headers.get('cf-ray','?'))
-        except urllib.error.HTTPError as e:
-            print('DIAGNOSTIC GET public:',e.code,'server:',e.headers.get('server','?'),'cf-ray:',e.headers.get('cf-ray','?'),'content-type:',e.headers.get('content-type','?'))
-        print('DIAGNOSTIC terminé : aucune écriture ni requête POST.')
         return
     token=os.environ.get('ARENA_ADMIN_TOKEN','')
     if not token:raise SystemExit('Secret ARENA_ADMIN_TOKEN manquant')
