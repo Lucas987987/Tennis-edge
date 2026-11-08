@@ -10,3 +10,27 @@ document.addEventListener('click',async e=>{const b=e.target.closest('button');i
 el('join').addEventListener('click',async()=>{try{await api('/api/arena/join',{method:'POST',body:JSON.stringify({display_name:el('name').value})});el('me').textContent='Inscription confirmée';}catch(e){el('me').textContent=e.message;}});load();
 
 document.getElementById('test-login').addEventListener('click',async()=>{const field=document.getElementById('test-key'),state=document.getElementById('test-state');try{const result=await api('/api/arena/test-login',{method:'POST',body:JSON.stringify({access_key:field.value})});sessionStorage.setItem('arena_session',result.token);field.value='';state.textContent='Mode test activé pour une heure';await load();}catch(e){state.textContent=e.message;}});
+
+const demoNames=[['arena-demo-1','Joueur Alpha','Joueur Bêta'],['arena-demo-2','Joueur Gamma','Joueur Delta'],['arena-demo-3','Joueur Epsilon','Joueur Zêta']];
+async function refreshDemo(){
+ const settled=await api('/api/arena/challenges');
+ const openIds=new Set(settled.challenges.map(x=>x.id));
+ el('demo-settle').innerHTML=demoNames.map(([id,a,b])=>`<article class="card"><strong>${safe(id.replace('arena-demo-','Duel '))}</strong><p>${openIds.has(id)?'En attente de validation':'Terminé ou indisponible'}</p>${openIds.has(id)?`<button data-demo-id="${id}" data-winner="a">🏆 ${safe(a)}</button> <button data-demo-id="${id}" data-winner="b">🏆 ${safe(b)}</button>`:''}</article>`).join('');
+ if(!token())return;
+ try{const [me,cards]=await Promise.all([api('/api/arena/me'),api('/api/arena/me/cards')]);
+ el('profile').textContent=me.profile?`⭐ ${me.profile.xp} XP · 🪙 ${me.profile.points} points`:'Profil non trouvé';
+ el('my-cards').innerHTML=cards.cards.map(c=>`<div class="card">🃏 <strong>${safe(c.player_name)}</strong><p>Carte gagnée</p></div>`).join('')||'Aucune carte débloquée pour le moment.';
+ }catch(e){el('profile').textContent=e.message;}
+}
+document.addEventListener('click',async e=>{
+ const b=e.target.closest('button[data-demo-id]');if(!b)return;
+ if(!token()){el('demo-state').textContent='Active d’abord le mode test privé.';return;}
+ if(!confirm('Valider définitivement ce résultat fictif ?'))return;
+ b.disabled=true;
+ try{await api('/api/arena/test/settle',{method:'POST',body:JSON.stringify({challenge_id:b.dataset.demoId,winner:b.dataset.winner})});el('demo-state').textContent='Résultat validé. Points et XP calculés.';await load();await refreshDemo();}
+ catch(err){el('demo-state').textContent='Erreur : '+err.message;b.disabled=false;}
+});
+// Refresh after login, join, and on first page load.
+el('test-login').addEventListener('click',()=>setTimeout(refreshDemo,350));
+el('join').addEventListener('click',()=>setTimeout(async()=>{await load();await refreshDemo();},350));
+refreshDemo();
