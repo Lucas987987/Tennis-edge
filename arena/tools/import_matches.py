@@ -3,17 +3,11 @@
 import datetime as dt, json, os, sys, urllib.request, urllib.error
 from pathlib import Path
 from urllib.parse import urlparse
-import collections, re, unicodedata, subprocess, tempfile
+import collections, re, unicodedata, subprocess, tempfile, time
 
 API='https://tennis-edge-arena.tennis-edge.workers.dev/api/arena/admin/challenge'
-MAX_MATCHES=30
-# Par défaut : un seul défi lors du premier import réel.
-try:
-    REQUESTED_LIMIT=int(os.environ.get("ARENA_IMPORT_LIMIT", "1"))
-except ValueError:
-    raise SystemExit("ARENA_IMPORT_LIMIT doit être un entier")
-if not 1 <= REQUESTED_LIMIT <= MAX_MATCHES:
-    raise SystemExit("ARENA_IMPORT_LIMIT doit être entre 1 et 30")
+# V1.8 : aucun plafond sur le nombre de matchs éligibles.
+# Les limites restantes portent uniquement sur la validité sportive et temporelle.
 
 
 def is_placeholder(name):
@@ -126,8 +120,8 @@ def main():
                     blocked.update((idx,jdx))
                     print('CONFLIT :',player,selected[idx]['title'],selected[idx]['starts_at'], '/',selected[jdx]['title'],selected[jdx]['starts_at'])
     if blocked:print(f'Sécurité : {len(blocked)} défis contradictoires exclus.')
-    selected=[m for i,m in enumerate(selected) if i not in blocked][:REQUESTED_LIMIT]
-    print(f'Flux lu: {len(matches)} entrées, {len(selected)} matchs éligibles (limite demandée {REQUESTED_LIMIT} par exécution).')
+    selected=[m for i,m in enumerate(selected) if i not in blocked]
+    print(f'Flux lu: {len(matches)} entrées, {len(selected)} matchs éligibles (aucun plafond numérique).')
     if dry:
         for m in selected:print('SIMULATION',m['circuit'],m['title'],m['player_a'],'vs',m['player_b'],m['starts_at'])
         return
@@ -137,8 +131,8 @@ def main():
     # Cloudflare 1010 sans modifier les protections Cloudflare.
     # Le secret ne figure jamais dans les arguments du processus ni dans les logs.
     created=existing=0
-    for m in selected:
-        print('IMPORT CIBLE :',m['circuit'],m['title'],m['player_a'],'vs',m['player_b'],m['starts_at'],flush=True)
+    for index,m in enumerate(selected,1):
+        print(f'IMPORT {index}/{len(selected)} :',m['circuit'],m['title'],m['player_a'],'vs',m['player_b'],m['starts_at'],flush=True)
         payload=json.dumps(m,ensure_ascii=False,separators=(',',':'))
         with tempfile.TemporaryDirectory(prefix='arena-import-') as tmp:
             body_file=Path(tmp)/'payload.json'
@@ -152,7 +146,7 @@ def main():
                 'header = "Content-Type: application/json"',
                 'header = "Accept: application/json"',
                 'header = '+json.dumps('x-arena-admin-token: '+token),
-                'user-agent = "TennisEdgeArena/1.7.5"',
+                'user-agent = "TennisEdgeArena/1.8"',
                 'connect-timeout = 10',
                 'max-time = 25',
                 'retry = 0',
@@ -186,5 +180,6 @@ def main():
             created+=bool(result.get('created',status==201))
             existing+=not bool(result.get('created',status==201))
             print('WORKER OK : défi',result['id'],'créé' if result.get('created',status==201) else 'déjà présent')
+            if index < len(selected): time.sleep(0.3)
     print(f'Import terminé : {created} créés, {existing} déjà présents.')
 if __name__=='__main__':main()
