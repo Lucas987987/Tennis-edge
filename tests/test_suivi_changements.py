@@ -37,6 +37,21 @@ class TestFantome(unittest.TestCase):
         self.assertNotIn('marche ', txt)
 
 
+class TestSitePublic(unittest.TestCase):
+    def test_page_publique_sans_mot_interdit(self):
+        racine = os.path.join(ICI, '..')
+        vus = 0
+        for f in ('algo/index.html', 'algo/donnees.json'):
+            p = os.path.join(racine, f)
+            if not os.path.exists(p):
+                continue
+            vus += 1
+            with open(p, encoding='utf-8') as fh:
+                txt = fh.read().lower()
+            self.assertNotIn('marché', txt, f)
+        self.assertGreaterEqual(vus, 1)
+
+
 class TestAbandons(unittest.TestCase):
     def test_abandon_dans_les_90_jours(self):
         with tempfile.TemporaryDirectory() as d:
