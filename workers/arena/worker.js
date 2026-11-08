@@ -15,6 +15,18 @@ export default {async fetch(request,env){const headers=cors(request,env);if(requ
 if(request.method==='GET'&&path==='/api/arena/challenges'){const r=await env.ARENA_DB.prepare("SELECT id,title,player_a,player_b,starts_at,closes_at,status FROM arena_challenges WHERE status='open' AND closes_at>datetime('now') ORDER BY starts_at LIMIT 50").all();return json({challenges:r.results},200,headers);}
 if(request.method==='GET'&&path==='/api/arena/leaderboard'){const r=await env.ARENA_DB.prepare('SELECT display_name,xp FROM arena_users ORDER BY xp DESC,id LIMIT 100').all();return json({leaders:r.results},200,headers);}
 if(request.method==='GET'&&path==='/api/arena/rewards'){const r=await env.ARENA_DB.prepare('SELECT id,title,cost,stock FROM arena_rewards WHERE enabled=1 ORDER BY cost').all();return json({rewards:r.results},200,headers);}
+
+if(request.method==='POST'&&path==='/api/arena/test-login'){
+ if(!env.ARENA_TEST_ACCESS_KEY||env.ARENA_TEST_ACCESS_KEY.length<32)return fail('Private test disabled',403,headers);
+ const data=await body(request),supplied=String(data.access_key||'');
+ const a=enc.encode(supplied),b=enc.encode(env.ARENA_TEST_ACCESS_KEY);let diff=a.length^b.length;
+ for(let i=0;i<Math.max(a.length,b.length)&&i<4096;i++)diff|=(a[i]||0)^(b[i]||0);
+ if(diff!==0)return fail('Invalid test key',403,headers);
+ const sub='arena-private-tester';
+ await env.ARENA_DB.prepare('INSERT OR IGNORE INTO arena_users(id,display_name) VALUES(?,?)').bind(sub,'Testeur Arena').run();
+ const payload=b64url(enc.encode(JSON.stringify({sub,exp:Math.floor(Date.now()/1000)+3600})));
+ return json({token:payload+'.'+await hmac(env.ARENA_SESSION_SECRET,payload)},200,headers);
+}
 const user=await auth(request,env);if(!user)return fail('Authentication required',401,headers);
 if(request.method==='GET'&&path==='/api/arena/me'){const r=await env.ARENA_DB.prepare('SELECT id,display_name,xp,points FROM arena_users WHERE id=?').bind(user).first();return json({profile:r},200,headers);}
 if(request.method==='POST'&&path==='/api/arena/join'){const data=await body(request);const name=String(data.display_name||'').trim();if(name.length<2||name.length>32||!/^[-\p{L}\p{N} ._]+$/u.test(name))return fail('Invalid name',400,headers);await env.ARENA_DB.prepare('INSERT OR IGNORE INTO arena_users(id,display_name) VALUES(?,?)').bind(user,name).run();return json({ok:true},200,headers);}
