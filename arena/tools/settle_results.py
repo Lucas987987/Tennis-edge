@@ -12,7 +12,7 @@ import unicodedata
 from pathlib import Path
 
 API = 'https://tennis-edge-arena.tennis-edge.workers.dev'
-SOURCE = Path('arena/data/results_confirmed.json')
+SOURCE = Path('resultats_oddspapi.json')
 
 
 def norm(s):
@@ -50,22 +50,23 @@ def request(method, path, token, payload=None):
 
 
 def verified_results():
+    """Read existing OddsPapi settlement archive; only explicit finished market wins qualify."""
     if not SOURCE.exists():
-        print('Aucune source de résultats confirmés : zéro attribution.');return []
-    d=json.loads(SOURCE.read_text(encoding='utf-8'))
-    if not isinstance(d,dict) or d.get('schema_version')!=1 or not isinstance(d.get('results'),list):
-        raise ValueError('Format des résultats confirmés invalide')
+        print('Archive OddsPapi absente : aucune attribution.'); return []
+    data=json.loads(SOURCE.read_text(encoding='utf-8'))
+    if not isinstance(data,dict):raise ValueError('Archive OddsPapi invalide')
     out=[]
-    for x in d['results']:
+    for fixture_id,x in data.items():
         if not isinstance(x,dict):continue
-        # Explicit independent verification; imported odds-derived provisional files NEVER qualify.
-        if x.get('verified') is not True or x.get('provisional') is not False:continue
-        if x.get('source') not in ('official', 'manual_verified'):continue
-        if x.get('status')!='completed' or x.get('winner') not in ('a','b'):continue
-        try: day=iso_date(x['date'])
+        # Older records are provisional and cannot be retroactively certified.
+        if x.get('source')!='oddspapi_settlement' or x.get('provisional') is not False:continue
+        if x.get('status_name')!='Finished' or x.get('winner_from_market') is not True:continue
+        if x.get('winner') not in ('home','away'):continue
+        try: day=iso_date(x['resolved_at'])
         except (ValueError,KeyError):continue
-        if not all(isinstance(x.get(k),str) and x[k].strip() for k in ('tournament','player_a','player_b')):continue
-        out.append((x,day))
+        if not all(isinstance(x.get(k),str) and x[k].strip() for k in ('tournament','home','away')):continue
+        out.append(({'tournament':x['tournament'],'player_a':x['home'],
+                     'player_b':x['away'],'winner':'a' if x['winner']=='home' else 'b'},day))
     return out
 
 
