@@ -1,1 +1,1 @@
-// Adresse publique du Worker Arena. A remplacer par votre vraie URL apres deploiement.\nwindow.ARENA_API_URL = 'https://tennis-edge-arena.YOUR-SUBDOMAIN.workers.dev';\n
+window.ARENA_API_URL = 'https://tennis-edge-arena.tennis-edge.workers.dev';
