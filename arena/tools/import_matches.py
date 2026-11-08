@@ -3,7 +3,7 @@
 import datetime as dt, json, os, sys, urllib.request, urllib.error
 from pathlib import Path
 from urllib.parse import urlparse
-import collections, re, unicodedata
+import collections, re, unicodedata, subprocess, tempfile
 
 API='https://tennis-edge-arena.tennis-edge.workers.dev/api/arena/admin/challenge'
 MAX_MATCHES=30
@@ -133,15 +133,58 @@ def main():
         return
     token=os.environ.get('ARENA_ADMIN_TOKEN','')
     if not token:raise SystemExit('Secret ARENA_ADMIN_TOKEN manquant')
+    # Utilise curl (pile TLS/HTTP différente d'urllib) pour tester le blocage
+    # Cloudflare 1010 sans modifier les protections Cloudflare.
+    # Le secret ne figure jamais dans les arguments du processus ni dans les logs.
     created=existing=0
     for m in selected:
         print('IMPORT CIBLE :',m['circuit'],m['title'],m['player_a'],'vs',m['player_b'],m['starts_at'],flush=True)
-        req=urllib.request.Request(API,data=json.dumps(m,ensure_ascii=False).encode(),headers={'Content-Type':'application/json','x-arena-admin-token':token},method='POST')
-        try:
-            with urllib.request.urlopen(req,timeout=20) as r: result=json.load(r)
-        except urllib.error.HTTPError as e:
-            print('Erreur import HTTP',e.code,'content-type:',e.headers.get('content-type','?'),'server:',e.headers.get('server','?'),'cf-ray:',e.headers.get('cf-ray','?'),'body:',e.read(200).decode('utf-8','replace'))
-            raise SystemExit(1)
-        created+=bool(result.get('created',True));existing+=not result.get('created',True)
+        payload=json.dumps(m,ensure_ascii=False,separators=(',',':'))
+        with tempfile.TemporaryDirectory(prefix='arena-import-') as tmp:
+            body_file=Path(tmp)/'payload.json'
+            response_file=Path(tmp)/'response.json'
+            header_file=Path(tmp)/'headers.txt'
+            body_file.write_text(payload,encoding='utf-8')
+            # curl lit la configuration sensible sur stdin; jamais sur la ligne de commande.
+            config='\n'.join([
+                'url = '+json.dumps(API),
+                'request = "POST"',
+                'header = "Content-Type: application/json"',
+                'header = "Accept: application/json"',
+                'header = '+json.dumps('x-arena-admin-token: '+token),
+                'user-agent = "TennisEdgeArena/1.7.5"',
+                'connect-timeout = 10',
+                'max-time = 25',
+                'retry = 0',
+                'silent',
+                'show-error',
+            ])+'\n'
+            cmd=['curl','--config','-','--data-binary','@'+str(body_file),
+                 '--output',str(response_file),'--dump-header',str(header_file),
+                 '--write-out','%{http_code}']
+            try:
+                res=subprocess.run(cmd,input=config,text=True,capture_output=True,timeout=35,check=False)
+            except (subprocess.TimeoutExpired,OSError) as e:
+                raise SystemExit('Transport curl indisponible ou expiré : import arrêté.') from e
+            if res.returncode:
+                raise SystemExit('Erreur réseau curl (code '+str(res.returncode)+'). Aucun nouvel essai automatique.')
+            status=int(res.stdout.strip() or '0')
+            response=response_file.read_text(encoding='utf-8',errors='replace')[:600]
+            if status not in (200,201):
+                ray=re.search(r'(?im)^cf-ray:\s*([^\r\n]+)',header_file.read_text(errors='replace'))
+                print('ÉCHEC IMPORT HTTP',status,'cf-ray:',ray.group(1) if ray else 'absent',
+                      'réponse:',response[:200],flush=True)
+                if status==403 and '1010' in response:
+                    raise SystemExit('Blocage Cloudflare 1010 persistant avec curl. Ne pas désactiver la sécurité : inspecter la règle Cloudflare ou prévoir un canal interne authentifié.')
+                if status==403:
+                    raise SystemExit('403 Worker/Cloudflare : vérifier le corps et les événements de sécurité.')
+                raise SystemExit('Import refusé : HTTP '+str(status))
+            try:result=json.loads(response_file.read_text(encoding='utf-8'))
+            except ValueError:raise SystemExit('Réponse Worker non JSON : import arrêté.')
+            if result.get('ok') is not True or not result.get('id'):
+                raise SystemExit('Réponse Worker inattendue : import arrêté.')
+            created+=bool(result.get('created',status==201))
+            existing+=not bool(result.get('created',status==201))
+            print('WORKER OK : défi',result['id'],'créé' if result.get('created',status==201) else 'déjà présent')
     print(f'Import terminé : {created} créés, {existing} déjà présents.')
 if __name__=='__main__':main()
