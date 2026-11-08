@@ -35,6 +35,23 @@ if(request.method==='POST'&&path==='/api/arena/redeem'){const data=await body(re
 const id=crypto.randomUUID();try{await env.ARENA_DB.prepare('INSERT INTO arena_redemptions(id,user_id,reward_id,cost) VALUES(?,?,?,?)').bind(id,user,data.reward_id,reward.cost).run();}catch{return fail('Insufficient points or unavailable',409,headers);}
 return json({ok:true,redemption_id:id},201,headers);
 }
+if(request.method==='GET'&&path==='/api/arena/me/cards'){
+ const r=await env.ARENA_DB.prepare('SELECT card_id,player_name,earned_at FROM arena_cards WHERE user_id=? ORDER BY earned_at DESC').bind(user).all();
+ return json({cards:r.results},200,headers);
+}
+if(request.method==='POST'&&path==='/api/arena/test/settle'){
+ if(user!=='arena-private-tester'||!env.ARENA_TEST_ACCESS_KEY)return fail('Forbidden',403,headers);
+ const data=await body(request);
+ if(!['arena-demo-1','arena-demo-2','arena-demo-3'].includes(data.challenge_id)||!['a','b'].includes(data.winner))return fail('Invalid demo result',400,headers);
+ const existing=await env.ARENA_DB.prepare('SELECT status FROM arena_challenges WHERE id=?').bind(data.challenge_id).first();
+ if(!existing||existing.status!=='open')return fail('Demo already settled',409,headers);
+ // Close a fictional challenge before settlement. The D1 settlement trigger awards XP and points atomically.
+ await env.ARENA_DB.prepare("UPDATE arena_challenges SET closes_at=datetime('now','-1 minute') WHERE id=? AND status='open'").bind(data.challenge_id).run();
+ try{await env.ARENA_DB.prepare('INSERT INTO arena_settlements(challenge_id,winner) VALUES(?,?)').bind(data.challenge_id,data.winner).run();}
+ catch{return fail('Demo settlement failed or already completed',409,headers);}
+ const result=await env.ARENA_DB.prepare('SELECT id,status,winner FROM arena_challenges WHERE id=?').bind(data.challenge_id).first();
+ return json({ok:true,challenge:result},200,headers);
+}
 if(request.method==='POST'&&path==='/api/arena/admin/settle'){if(!env.ARENA_ADMIN_TOKEN||request.headers.get('x-arena-admin-token')!==env.ARENA_ADMIN_TOKEN)return fail('Forbidden',403,headers);const data=await body(request);if(typeof data.challenge_id!=='string'||!['a','b'].includes(data.winner))return fail('Invalid result',400,headers);const challenge=await env.ARENA_DB.prepare("SELECT id FROM arena_challenges WHERE id=? AND closes_at<=datetime('now')").bind(data.challenge_id).first();if(!challenge)return fail('Not ready',409,headers);try{await env.ARENA_DB.prepare('INSERT INTO arena_settlements(challenge_id,winner) VALUES(?,?)').bind(data.challenge_id,data.winner).run();}catch{return fail('Already settled',409,headers);}return json({ok:true},200,headers);}
 return fail('Not found',404,headers);
 }catch(e){return fail(e instanceof SyntaxError?'Invalid JSON':'Request failed',e instanceof SyntaxError?400:500,headers);}}};
