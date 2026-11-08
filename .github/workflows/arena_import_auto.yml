@@ -7,7 +7,7 @@ on:
         type: boolean
         default: true
       diagnostic:
-        description: "Tester l’accès public au Worker sans écriture ni jeton"
+        description: "Tester le jeton admin via POST invalide sans écriture D1"
         type: boolean
         default: false
 permissions:
