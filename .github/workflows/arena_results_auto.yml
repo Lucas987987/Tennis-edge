@@ -22,5 +22,5 @@ jobs:
       - name: Rapprocher les résultats confirmés et les défis
         env:
           ARENA_ADMIN_TOKEN: ${{ secrets.ARENA_ADMIN_TOKEN }}
-          DRY_RUN: ${{ github.event_name == 'schedule' && 'false' || inputs.dry_run }}
+          DRY_RUN: ${{ github.event_name == 'schedule' && 'true' || inputs.dry_run }}
         run: python3 arena/tools/settle_results.py
