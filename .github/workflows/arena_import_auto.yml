@@ -6,15 +6,6 @@ on:
         description: "Simulation sans écriture D1"
         type: boolean
         default: true
-      max_matches:
-        description: "Nombre maximum de matchs à importer (1 recommandé pour le premier essai)"
-        type: choice
-        options:
-          - "1"
-          - "5"
-          - "10"
-          - "30"
-        default: "1"
       diagnostic:
         description: "Tester le jeton admin via POST invalide sans écriture D1"
         type: boolean
@@ -27,7 +18,7 @@ concurrency:
 jobs:
   import:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - name: Vérifier le calendrier Tennis Edge local et importer les matchs
@@ -35,5 +26,4 @@ jobs:
           ARENA_ADMIN_TOKEN: ${{ secrets.ARENA_ADMIN_TOKEN }}
           DRY_RUN: ${{ inputs.dry_run }}
           ARENA_DIAGNOSTIC: ${{ inputs.diagnostic }}
-          ARENA_IMPORT_LIMIT: ${{ inputs.max_matches }}
         run: python3 arena/tools/import_matches.py
