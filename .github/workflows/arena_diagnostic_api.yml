@@ -1,0 +1,63 @@
+name: Arena - Diagnostic API et CORS
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  diagnostic:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Tester les routes publiques et CORS sans modifier D1
+        env:
+          API_BASE: https://tennis-edge-arena.tennis-edge.workers.dev
+          SITE_ORIGIN: https://lucas987987.github.io
+        run: |
+          python3 - <<'PY'
+          import os, urllib.request, urllib.error, json
+          base=os.environ['API_BASE']; origin=os.environ['SITE_ORIGIN']
+          endpoints=['/api/arena/challenges','/api/arena/leaderboard','/api/arena/rankings','/api/arena/rewards']
+          errors=[]
+          for endpoint in endpoints:
+              print('\n=== GET '+endpoint+' ===',flush=True)
+              req=urllib.request.Request(base+endpoint,headers={'Origin':origin,'Accept':'application/json','User-Agent':'Arena-GitHub-Diagnostic/1.0'})
+              try:
+                  resp=urllib.request.urlopen(req,timeout=15)
+              except urllib.error.HTTPError as exc:
+                  resp=exc
+              except Exception as exc:
+                  print('CONNECTION_ERROR:',type(exc).__name__,str(exc)[:250]);errors.append(endpoint);continue
+              with resp:
+                  status=resp.status
+                  allow=resp.headers.get('Access-Control-Allow-Origin','<absent>')
+                  typ=resp.headers.get('Content-Type','<absent>')
+                  raw=resp.read(4096).decode('utf-8','replace')
+              print('HTTP:',status,'Content-Type:',typ)
+              print('Access-Control-Allow-Origin:',allow)
+              try:
+                  data=json.loads(raw)
+                  print('JSON keys:',list(data)[:12] if isinstance(data,dict) else type(data).__name__)
+                  if isinstance(data,dict) and 'error' in data: print('API error:',str(data['error'])[:250])
+              except ValueError:
+                  print('Non-JSON response preview:',raw[:200].replace('\n',' '))
+              if status!=200 or allow!=origin:
+                  errors.append(endpoint)
+          print('\n=== OPTIONS preflight /api/arena/test-login ===')
+          req=urllib.request.Request(base+'/api/arena/test-login',method='OPTIONS',headers={'Origin':origin,'Access-Control-Request-Method':'POST','Access-Control-Request-Headers':'content-type'})
+          try:resp=urllib.request.urlopen(req,timeout=15)
+          except urllib.error.HTTPError as exc:resp=exc
+          except Exception as exc:
+              print('PREFLIGHT_CONNECTION_ERROR:',type(exc).__name__,str(exc)[:250]);errors.append('preflight')
+          else:pass
+          if 'resp' in locals():
+              with resp:
+                  print('HTTP:',resp.status)
+                  for h in ['Access-Control-Allow-Origin','Access-Control-Allow-Methods','Access-Control-Allow-Headers']:
+                      print(h+':',resp.headers.get(h,'<absent>'))
+                  if resp.status!=204 or resp.headers.get('Access-Control-Allow-Origin')!=origin:errors.append('preflight')
+          print('\n=== RESULTAT ===')
+          if errors:
+              print('ECHEC sur:',', '.join(errors))
+              raise SystemExit(1)
+          print('SUCCES: toutes les routes publiques et le preflight CORS sont accessibles.')
+          PY
