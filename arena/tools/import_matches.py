@@ -3,6 +3,7 @@
 import datetime as dt, json, os, sys, urllib.request, urllib.error
 from pathlib import Path
 from urllib.parse import urlparse
+import collections, re
 
 API='https://tennis-edge-arena.tennis-edge.workers.dev/api/arena/admin/challenge'
 MAX_MATCHES=30
@@ -63,10 +64,38 @@ def main():
         key=(circuit,title.casefold(),a.casefold(),b.casefold(),stamp)
         if key in seen:continue
         seen.add(key);selected.append(payload)
-    selected.sort(key=lambda x:x['starts_at']);selected=selected[:MAX_MATCHES]
+    # Bloquer les rencontres contradictoires : même joueur dans deux matchs
+    # programmés au même instant ou à moins de 2 h (même circuit).
+    selected.sort(key=lambda x:x['starts_at'])
+    blocked=set()
+    by_player=collections.defaultdict(list)
+    def player_key(name):
+        return re.sub(r'\s+',' ',name.casefold().strip())
+    for idx,m in enumerate(selected):
+        when=dt.datetime.fromisoformat(m['starts_at'].replace('Z','+00:00'))
+        for player in (m['player_a'],m['player_b']):
+            by_player[(m['circuit'],player_key(player))].append((idx,when))
+    for (_,player),entries in by_player.items():
+        for pos,(idx,when) in enumerate(entries):
+            for jdx,other in entries[pos+1:]:
+                if abs((when-other).total_seconds())<7200:
+                    blocked.update((idx,jdx))
+                    print('CONFLIT :',player,selected[idx]['title'],selected[idx]['starts_at'], '/',selected[jdx]['title'],selected[jdx]['starts_at'])
+    if blocked:print(f'Sécurité : {len(blocked)} défis contradictoires exclus.')
+    selected=[m for i,m in enumerate(selected) if i not in blocked][:MAX_MATCHES]
     print(f'Flux lu: {len(matches)} entrées, {len(selected)} matchs éligibles (maximum {MAX_MATCHES} par exécution).')
     if dry:
         for m in selected:print('SIMULATION',m['circuit'],m['title'],m['player_a'],'vs',m['player_b'],m['starts_at'])
+        return
+    # Vérification réseau sans écriture : ne transmet jamais le jeton.
+    if os.environ.get('ARENA_DIAGNOSTIC','').lower() in ('true','1','yes'):
+        probe=urllib.request.Request('https://tennis-edge-arena.tennis-edge.workers.dev/api/arena/challenges',headers={'Accept':'application/json','User-Agent':'TennisEdgeArenaImporter/1.7.2'})
+        try:
+            with urllib.request.urlopen(probe,timeout=20) as r:
+                print('DIAGNOSTIC GET public:',r.status,'server:',r.headers.get('server','?'),'cf-ray:',r.headers.get('cf-ray','?'))
+        except urllib.error.HTTPError as e:
+            print('DIAGNOSTIC GET public:',e.code,'server:',e.headers.get('server','?'),'cf-ray:',e.headers.get('cf-ray','?'),'content-type:',e.headers.get('content-type','?'))
+        print('DIAGNOSTIC terminé : aucune écriture ni requête POST.')
         return
     token=os.environ.get('ARENA_ADMIN_TOKEN','')
     if not token:raise SystemExit('Secret ARENA_ADMIN_TOKEN manquant')
@@ -76,7 +105,7 @@ def main():
         try:
             with urllib.request.urlopen(req,timeout=20) as r: result=json.load(r)
         except urllib.error.HTTPError as e:
-            print('Erreur import HTTP',e.code,e.read(200).decode('utf-8','replace'))
+            print('Erreur import HTTP',e.code,'content-type:',e.headers.get('content-type','?'),'server:',e.headers.get('server','?'),'cf-ray:',e.headers.get('cf-ray','?'),'body:',e.read(200).decode('utf-8','replace'))
             raise SystemExit(1)
         created+=bool(result.get('created',True));existing+=not result.get('created',True)
     print(f'Import terminé : {created} créés, {existing} déjà présents.')
