@@ -34,3 +34,14 @@ document.addEventListener('click',async e=>{
 el('test-login').addEventListener('click',()=>setTimeout(refreshDemo,350));
 el('join').addEventListener('click',()=>setTimeout(async()=>{await load();await refreshDemo();},350));
 refreshDemo();
+
+async function loadRankings(){
+ try{
+  const data=await api('/api/arena/rankings');
+  for(const key of ['weekly','monthly']){
+   el(key).innerHTML=(data[key]||[]).map((u,i)=>`<p>${i+1}. ${safe(u.display_name)} — ${Number(u.xp)} XP</p>`).join('')||'Aucun XP sur cette période.';
+  }
+ }catch(e){el('weekly').textContent=e.message;el('monthly').textContent=e.message;}
+}
+loadRankings();
+document.addEventListener('click',e=>{if(e.target.closest('button[data-demo-id]'))setTimeout(loadRankings,600);});
