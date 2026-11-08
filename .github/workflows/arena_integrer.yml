@@ -29,6 +29,11 @@ jobs:
               marker='          mkdir -p _site/Tennis_Edge_Lab'
               assert marker in s
               s=s.replace(marker, '          mkdir -p _site/arena\n          cp arena/index.html arena/arena.js _site/arena/\n\n'+marker,1)
+          if 'ARENA_API_URL: ${{ vars.ARENA_API_URL }}' not in s:
+              s=s.replace("          # --- Pages et script ---", "          # --- Pages et script ---",1)
+              s=s.replace("          mkdir -p _site/arena", "          mkdir -p _site/arena",1)
+          if "          cp arena/index.html arena/arena.js _site/arena/" in s and "arena/config.js" not in s:
+              s=s.replace("          cp arena/index.html arena/arena.js _site/arena/", "          cp arena/index.html arena/arena.js arena/config.js _site/arena/",1)
           p.write_text(s)
           p=Path('algo/index.html')
           s=p.read_text()
