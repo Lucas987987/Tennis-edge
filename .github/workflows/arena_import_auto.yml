@@ -19,9 +19,8 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
-      - name: Vérifier le flux et importer les matchs validés
+      - name: Vérifier le calendrier Tennis Edge local et importer les matchs
         env:
-          ARENA_MATCH_FEED_URL: ${{ vars.ARENA_MATCH_FEED_URL }}
           ARENA_ADMIN_TOKEN: ${{ secrets.ARENA_ADMIN_TOKEN }}
           DRY_RUN: ${{ inputs.dry_run }}
         run: python3 arena/tools/import_matches.py
