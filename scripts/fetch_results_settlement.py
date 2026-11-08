@@ -163,7 +163,10 @@ def main():
             'set2': r.get('set2'),           # 'home'/'away'/None (vainqueur du 2e set, marche 125)
             'sets': sets,
             'p1_sets': r['p1_sets'], 'p2_sets': r['p2_sets'],
-            'source': 'oddspapi_settlement', 'provisional': True,
+            'source': 'oddspapi_settlement',
+            'provisional': not (r.get('status_name') == 'Finished' and r.get('winner_from_market') is True),
+            'status_name': r.get('status_name'),
+            'winner_from_market': r.get('winner_from_market', False),
             'resolved_at': now.isoformat(),
         }
         parsed.append((m['home'], m['away'], winner_name))
