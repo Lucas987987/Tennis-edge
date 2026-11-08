@@ -63,11 +63,14 @@ if(request.method==='POST'&&path==='/api/arena/admin/challenge'){
  if(!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/.test(start))return fail('Use UTC ISO timestamp',400,headers);
  const ts=Date.parse(start);
  if(!Number.isFinite(ts)||ts<Date.now()+10*60000||ts>Date.now()+30*86400000)return fail('Start must be 10 min to 30 days in future',400,headers);
- const id='real-'+crypto.randomUUID();
+ // Identifiant stable : une réimportation du même match ne crée aucun doublon.
+ const normalized=[circuit,title,a,b,start].map(x=>String(x).trim().normalize('NFKC').toLowerCase()).join('\u001f');
+ const digest=new Uint8Array(await crypto.subtle.digest('SHA-256',enc.encode(normalized)));
+ const id='real-'+Array.from(digest.slice(0,16),x=>x.toString(16).padStart(2,'0')).join('');
  const close=new Date(ts-5*60000).toISOString().slice(0,19).replace('T',' ');
  const startSql=new Date(ts).toISOString().slice(0,19).replace('T',' ');
- await env.ARENA_DB.prepare("INSERT INTO arena_challenges(id,title,player_a,player_b,starts_at,closes_at,status) VALUES(?,?,?,?,?,?,'open')").bind(id,circuit+' · '+title,a,b,startSql,close).run();
- return json({ok:true,id,closes_at:close},201,headers);
+ const insert=await env.ARENA_DB.prepare("INSERT OR IGNORE INTO arena_challenges(id,title,player_a,player_b,starts_at,closes_at,status) VALUES(?,?,?,?,?,?,'open')").bind(id,circuit+' · '+title,a,b,startSql,close).run();
+ return json({ok:true,id,created:insert.meta.changes===1,closes_at:close},insert.meta.changes===1?201:200,headers);
 }
 const user=await auth(request,env);if(!user)return fail('Authentication required',401,headers);
 if(request.method==='GET'&&path==='/api/arena/me'){const r=await env.ARENA_DB.prepare('SELECT id,display_name,xp,points FROM arena_users WHERE id=?').bind(user).first();return json({profile:r},200,headers);}
