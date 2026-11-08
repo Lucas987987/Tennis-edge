@@ -521,6 +521,11 @@ body.carte #video{display:block;width:1080px;height:1350px}
   .mdj > .fiche > *{grid-column:1 / -1;min-width:0}
   .mdj > .fiche > .duelx, .mdj > .fiche > #post-zone, .mdj > .fiche > .cartes{grid-column:2}
 }
+
+/* Arena : bouton visible dans la barre du haut, y compris sur mobile */
+.arena-nav{display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;min-height:34px;padding:7px 13px;border-radius:999px;background:#d4ff3a;color:#141225!important;text-decoration:none!important;font:800 13px system-ui,sans-serif;box-shadow:0 2px 12px rgba(130,170,0,.3)}
+.arena-nav:hover,.arena-nav:focus-visible{background:#eaff88;outline:2px solid #80b000;outline-offset:2px}
+@media(max-width:520px){.arena-nav{padding:7px 11px;font-size:12px}.reglages{gap:5px}}
 </style>
 </head>
 <body>
@@ -529,6 +534,7 @@ body.carte #video{display:block;width:1080px;height:1350px}
   <header class="top">
     <p class="logo"><span class="b" aria-hidden="true"></span>Tennis Edge <small data-t="marque"></small></p>
     <div class="reglages">
+      <a class="arena-nav" href="https://lucas987987.github.io/Tennis-edge/arena/" title="Jouer gratuitement à Tennis Edge Arena">🏟️ Arena</a>
       <button type="button" class="ico" id="b-son" aria-pressed="false"></button>
       <div class="seg" role="group" aria-label="Langue / Language">
         <button type="button" data-lang="fr" aria-pressed="true">FR</button>
@@ -3367,5 +3373,5 @@ fetch('donnees.json?v=' + Date.now()).then(r=>r.json()).then(d=>{
 }).catch(()=>{ document.getElementById('mdj-zone').innerHTML = '<div class="panel empty">Données indisponibles / Data unavailable.</div>'; });
 })();
 </script>
-<a href="../arena/" style="position:fixed;bottom:18px;right:18px;z-index:9999;background:#b6f365;color:#13220b;padding:12px 17px;border-radius:999px;font:700 15px system-ui;text-decoration:none">🏟️ Arena</a></body>
+</body>
 </html>
