@@ -242,7 +242,7 @@ jobs:
           cp algo/donnees.json _site/algo/ 2>/dev/null || echo "⚠️ algo/donnees.json absent (prochain passage des pronostics)"
 
           mkdir -p _site/arena
-          cp arena/index.html arena/arena.js _site/arena/
+          cp arena/index.html arena/arena.js arena/config.js _site/arena/
 
           mkdir -p _site/Tennis_Edge_Lab
           for f in index.html style.css app.js data.js; do
