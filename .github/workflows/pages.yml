@@ -1,17 +1,6 @@
 # .github/workflows/pages.yml
-#
-# Prérequis (déjà fait) : Settings > Pages > Source = "GitHub Actions".
-#
-# Contenu vérifié directement dans le repo :
-#   site    -> index.html, division10.html, confidence.js
-#   données -> les 8 fichiers lus par le front en relatif
-#              (window.location.origin + pathname + '<fichier>?t=' + Date.now())
-# Tout le reste (parts/ 244 Mo, clv_history 26 Mo, closing_lines 6 Mo,
-# scripts/, tests/, les .md, les .zip) n'est PAS publié : le front ne le
-# lit jamais. C'est ce qui rend le déploiement rapide.
-
+# Publication GitHub Pages Tennis Edge (incluant Arena V1.9.2)
 name: Deploy Pages
-
 on:
   push:
     branches: [main]
@@ -21,15 +10,8 @@ on:
       - 'confidence.js'
       - '.github/workflows/pages.yml'
       - 'Tennis_Edge_Lab/**'
-      # 24/10/2026 : le site public de l'algo (page + données) se redéploie dès qu'il change
       - 'algo/**'
       - 'arena/**'
-  # V6.6 : rafraîchissement HORAIRE et léger (minute 7, hors pic). Les calculs
-  # lourds (scan V5, stabilité 16 ans, propositions, V6.3) tournent une fois par
-  # jour dans lab_quotidien.yml ; ici on ne fait que recopier leurs JSON.
-  # Les commits créés avec GITHUB_TOKEN ne déclenchent pas un autre workflow « push ».
-  # Ce déclencheur publie donc explicitement le nouveau algo/donnees.json après chaque
-  # génération réussie : le worker Cloudflare relit ensuite GitHub Pages (cache 60 s).
   workflow_run:
     workflows: ['Pronostics du jour']
     types: [completed]
@@ -37,17 +19,14 @@ on:
   schedule:
     - cron: '7 * * * *'
   workflow_dispatch:
-
 permissions:
   contents: read
   actions: read
   pages: write
   id-token: write
-
 concurrency:
   group: pages
   cancel-in-progress: true
-
 jobs:
   deploy:
     if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
@@ -159,7 +138,6 @@ jobs:
             h16_signal_log.jsonl
             h16b_signal_log.jsonl
             h17_signal_log.jsonl
-
       - name: Reconstruire les données Tennis Edge Lab
         env:
           LAB_CHECK_PREVIOUS: '1'
@@ -174,17 +152,14 @@ jobs:
           assert manifest['row_count']>=200
           print('✅ Jeu vérifié:',manifest['row_count'],'observations, hash',manifest['dataset_sha256'][:12])
           PYCODE
-
       - name: Recherche statistique autonome (lecture seule)
         run: |
           if python3 Tennis_Edge_Lab/autoresearch.py . && python3 -c "import json,pathlib; p=pathlib.Path('Tennis_Edge_Lab/live/research.json'); x=json.loads(p.read_text()); assert x['schema_version']==1 and x['row_counts']['settled_quality_ok']>=200 and len(x['frozen_hypotheses'])==7"; then
             echo 'Analyse autonome valide.'
           else
-            # Aucun stub : publish_guard conserve la version publiée valide ou signale l'erreur.
             echo '::warning::Analyse autonome indisponible ; rapport précédent conservé si valide.'
             rm -f Tennis_Edge_Lab/live/research.json Tennis_Edge_Lab/live/matches_index.json
           fi
-
       - name: Évaluer les pistes gelées uniquement sur les nouveaux matchs
         run: |
           python3 Tennis_Edge_Lab/candidate_registry.py evaluate --root .
@@ -194,10 +169,8 @@ jobs:
           assert o['schema_version']==1 and isinstance(o['models'],list)
           print('✅ Pistes prospectives:',len(o['models']))
           PY
-
       - name: Capturer le bilan public D1 (lecture seule, sans bloquer Pages)
         run: python Tennis_Edge_Lab/fetch_worker_snapshot.py Tennis_Edge_Lab/worker_hypotheses.json
-
       - name: Date de la dernière tâche quotidienne réussie (fraîcheur)
         id: daily
         env:
@@ -206,7 +179,6 @@ jobs:
           at=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow lab_quotidien.yml --status success --limit 1 --json updatedAt --jq '.[0].updatedAt' 2>/dev/null || true)
           echo "at=${at}" >> "$GITHUB_OUTPUT"
           echo "Dernière tâche quotidienne réussie : ${at:-inconnue}"
-
       - name: Construire _site
         env:
           GITHUB_EVENT_REPO_NAME: ${{ github.event.repository.name }}
@@ -215,13 +187,9 @@ jobs:
           set -e
           mkdir -p _site
           touch _site/.nojekyll
-
-          # --- Pages et script ---
           for f in index.html division10.html confidence.js; do
             cp -f "$f" _site/ || echo "❌ MANQUANT (fichier de site) : $f"
           done
-
-          # --- Données lues par le front (relevées dans index.html/confidence.js) ---
           for f in \
             matches_oddspapi.json \
             resultats.json \
@@ -234,18 +202,16 @@ jobs:
           ; do
             cp -f "$f" _site/ || echo "⚠️ absent : $f"
           done
-
-          # --- Analyse indépendante en sous-répertoire, sans écraser le site existant ---
-          # 23/10/2026 : site public de l'algo (FR/EN) — page + données publiques seulement
           mkdir -p _site/algo
           cp algo/index.html _site/algo/ || echo "❌ MANQUANT : algo/index.html"
           cp algo/donnees.json _site/algo/ 2>/dev/null || echo "⚠️ algo/donnees.json absent (prochain passage des pronostics)"
 
+          # Arena V1.9.2 : publier aussi les ressources CSS/JS utilisées par index.html.
           mkdir -p _site/arena
-          cp arena/index.html arena/arena.js arena/config.js _site/arena/
-
-          mkdir -p _site/arena
-          cp arena/index.html arena/arena.js _site/arena/
+          cp arena/index.html arena/arena.js arena/config.js arena/arena-ui.css arena/arena-ui.js _site/arena/
+          test -s _site/arena/arena-ui.css
+          test -s _site/arena/arena-ui.js
+          echo 'Arena : CSS et JS publiés avec succès.'
 
           mkdir -p _site/Tennis_Edge_Lab
           for f in index.html style.css app.js data.js; do
@@ -254,43 +220,32 @@ jobs:
           for f in research.html research.js research_v61.js research_v63.js research_v66.js research_explorer.js research_profils.js research_reconciliation.js research_direct.js research_registre.js research_h18_h20.js freshness.js prive.js research.css research_v632.css research_v66.css research_explorer.css research_profils.css research_reconciliation.css research_direct.css research_registre.css v4.js v6.js; do
             cp "Tennis_Edge_Lab/$f" "_site/Tennis_Edge_Lab/$f"
           done
-          # Rapports : copie fidèle, état de fraîcheur explicite, jamais de remplacement
-          # d'un rapport valide déjà publié par un fichier absent, vide, pending ou error.
           python Tennis_Edge_Lab/publish_guard.py --root . --site _site \
             --previous-base "https://${GITHUB_REPOSITORY_OWNER}.github.io/${GITHUB_EVENT_REPO_NAME}/Tennis_Edge_Lab/live" \
             --daily-run-at "${DAILY_RUN_AT}"
-          # Explorateur : .json.gz (lu via DecompressionStream) + copie .json décompressée
-          # en secours pour les navigateurs sans DecompressionStream (non committée).
           for x in explorateur_alertes explorateur_histo explorateur_matchs explorateur_detections; do
             if [ -f "Tennis_Edge_Lab/live/$x.json.gz" ]; then
               cp "Tennis_Edge_Lab/live/$x.json.gz" "_site/Tennis_Edge_Lab/live/$x.json.gz"
               gunzip -c "Tennis_Edge_Lab/live/$x.json.gz" > "_site/Tennis_Edge_Lab/live/$x.json"
             fi
           done
-          # V7.3 Base des matchs : registre mensuel (.json.gz, lu via DecompressionStream) + évaluation.
           if [ -d Tennis_Edge_Lab/live/registre ]; then
             mkdir -p _site/Tennis_Edge_Lab/live/registre
             cp Tennis_Edge_Lab/live/registre/* _site/Tennis_Edge_Lab/live/registre/
           fi
           cp Tennis_Edge_Lab/live/lectures_profils.json _site/Tennis_Edge_Lab/live/ 2>/dev/null || echo "⚠️ lectures_profils.json absent"
-          # 23/10/2026 : valeur.json (H19) et pronostics.json (complet) ne sont plus publiés : coffre privé,
-          # lus par le Lab via le worker « algo » avec la clé privée (Tennis_Edge_Lab/prive.js).
           cp Tennis_Edge_Lab/live/delai_alertes.json _site/Tennis_Edge_Lab/live/ 2>/dev/null || echo "⚠️ delai_alertes.json absent"
           cp Tennis_Edge_Lab/live/croisements.json _site/Tennis_Edge_Lab/live/ 2>/dev/null || echo "⚠️ croisements.json absent"
           cp Tennis_Edge_Lab/live/pronostics_bilan.json _site/Tennis_Edge_Lab/live/ 2>/dev/null || echo "⚠️ bilan des pronostics absent"
           cp Tennis_Edge_Lab/live/joueurs_service.json.gz _site/Tennis_Edge_Lab/live/ 2>/dev/null || echo "⚠️ fiches service/retour absentes"
-          # Archive annuelle tennis-data (onglet Sources) : fichiers statiques.
           mkdir -p _site/Tennis_Edge_Lab/live/archive
           cp Tennis_Edge_Lab/cache/archive/20*.json _site/Tennis_Edge_Lab/live/archive/ 2>/dev/null || echo "⚠️ archive annuelle absente"
           echo "--- contenu publié ---"
           du -sh _site
           ls -la _site
-
       - uses: actions/configure-pages@v6
-
       - uses: actions/upload-pages-artifact@v5
         with:
           path: _site
-
       - id: deployment
         uses: actions/deploy-pages@v5
