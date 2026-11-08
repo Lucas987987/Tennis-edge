@@ -28,3 +28,25 @@ def test_desaccord_des_deux_modeles_explique():
     assert "t('es_modeles'" in f and 'mo.p_elo' in f and '.10' in f
     assert 'es_modeles:' in HTML.split("es_titre:'Key points'")[0]          # version française
     assert 'Taux BRUTS' in HTML                                                # le duel dit qu'il est brut
+
+
+def test_post_resultat_regles():
+    # 08/11/2026 (paquet 218) : post du résultat — mêmes interdits que le post d'avant match, titre neutre si le favori perd
+    f = _fonction('postResultat')
+    assert not re.search(r'https?://|workers\.dev|github\.io|\.com', f)
+    assert not re.search(r'march[ée]', f, re.I)
+    assert "L = 'fr'" in f and 'finally { L = Ls; }' in f
+    assert 'LE BILAN DU MATCH' in f and 'NOUVELLE VICTOIRE' in f
+    assert 'id="b-post-res"' in HTML and "ouvrirPost(m, 'resultat')" in HTML
+
+
+def test_post_avant_match_suit_le_modele():
+    f = _fonction('postX')
+    for ligne in ('Surface :', 'PROBABILITÉS DE VICTOIRE', 'Fiabilité de l', 'CE QUE L'):
+        assert ligne not in f
+
+
+def test_tiroirs_et_video_conserves():
+    assert 'function tiroirsFiche(' in HTML and 'tiroirsFiche(m);' in HTML
+    assert 'id="b-video"' in HTML and 'function lancerVideo(' in HTML
+    assert 'data-live-stats' in HTML and 'rendApresMatch(bil)' in HTML
