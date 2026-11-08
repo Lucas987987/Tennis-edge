@@ -815,6 +815,12 @@
    "quoi": "Fiche du match : cartes des joueurs, juste sous les deux joueurs et leur %. Chaque joueur a une note de 40 à 99 tirée de son Elo sur la surface du match (même échelle pour tous : or à partir de 80, argent de 70 à 79, bronze en dessous), six attributs de 1 à 99 rangés parmi les joueurs actifs ATP et Challenger, ou parmi les joueuses WTA (service, retour, aces, % de 1res balles et sûreté de la 2e balle tirés des profils ajustés à la force des adversaires qu'utilise la simulation ; forme sur les 40 derniers matchs), sa note sur dur, terre et gazon, son classement, son âge, sa taille et sa main. Un radar superpose les deux joueurs. Descriptif seulement : le % ne change pas.",
    "statut": "production",
    "paquet": 216
+  },
+  {
+   "date": "2026-11-07",
+   "quoi": "Page de l'algo : choix du thème clair, sombre ou automatique (réglage de l'appareil), mémorisé sur le téléphone ; sombre par défaut. La borne de simulation, les cartes des joueurs et les images X restent sombres dans les deux thèmes. Cartes des joueurs : le radar se place sous les deux cartes, centré avec sa légende, quand la place manque à côté (il n'est plus coupé), et reste à droite quand le bloc est assez large. Description de la page : « indépendant des cotes ». Un test vérifie désormais que la page publique ne contient pas le mot interdit. Descriptif seulement : le % ne change pas.",
+   "statut": "production",
+   "paquet": 217
   }
  ]
 }
