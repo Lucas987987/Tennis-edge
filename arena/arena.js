@@ -8,7 +8,8 @@ const publicMemo=new Map();
 async function api(path,options={}){
  if(!options.method&&['/api/arena/challenges','/api/arena/leaderboard','/api/arena/rankings','/api/arena/rewards'].includes(path)){const item=publicMemo.get(path);if(item&&Date.now()-item.at<30000)return item.data;}
  const method=(options.method||'GET').toUpperCase();
- const headers={...(method==='GET'?{}:{'content-type':'application/json'}),...(method==='GET'?{}:token()?{authorization:'Bearer '+token()}:{})};
+ const privateRoute=path==='/api/arena/me'||path==='/api/arena/me/cards';
+ const headers={...(method==='GET'?{}:{'content-type':'application/json'}),...((method!=='GET'||privateRoute)&&token()?{authorization:'Bearer '+token()}: {})};
  if(method!=='GET')publicMemo.clear();
  const response=await fetch(API_URL+path,{...options,headers:{...headers,...(options.headers||{})}});
  const data=await response.json();if(!response.ok){if(response.status===500)throw Error('Service temporairement indisponible (quota Cloudflare possible).');throw Error(data.error||'Erreur');}if(method==='GET'&&['/api/arena/challenges','/api/arena/leaderboard','/api/arena/rankings','/api/arena/rewards'].includes(path))publicMemo.set(path,{at:Date.now(),data});return data;
