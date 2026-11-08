@@ -23,6 +23,7 @@ on:
       - 'Tennis_Edge_Lab/**'
       # 24/10/2026 : le site public de l'algo (page + données) se redéploie dès qu'il change
       - 'algo/**'
+      - 'arena/**'
   # V6.6 : rafraîchissement HORAIRE et léger (minute 7, hors pic). Les calculs
   # lourds (scan V5, stabilité 16 ans, propositions, V6.3) tournent une fois par
   # jour dans lab_quotidien.yml ; ici on ne fait que recopier leurs JSON.
@@ -65,6 +66,7 @@ jobs:
             division10.html
             confidence.js
             /algo/
+            /arena/
             matches_oddspapi.json
             resultats.json
             resultats_fast.json
@@ -238,6 +240,9 @@ jobs:
           mkdir -p _site/algo
           cp algo/index.html _site/algo/ || echo "❌ MANQUANT : algo/index.html"
           cp algo/donnees.json _site/algo/ 2>/dev/null || echo "⚠️ algo/donnees.json absent (prochain passage des pronostics)"
+
+          mkdir -p _site/arena
+          cp arena/index.html arena/arena.js _site/arena/
 
           mkdir -p _site/Tennis_Edge_Lab
           for f in index.html style.css app.js data.js; do
