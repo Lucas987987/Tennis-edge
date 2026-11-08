@@ -24,7 +24,62 @@ const cardMarkup=(name,{unlocked=false,rarity}={})=>{
   <div class="player-card-art" aria-hidden="true"><svg viewBox="0 0 240 190" xmlns="http://www.w3.org/2000/svg" role="img"><defs><linearGradient id="court-${r}" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#183e53"/><stop offset="1" stop-color="#092033"/></linearGradient></defs><rect x="9" y="9" width="222" height="172" rx="15" fill="url(#court-${r})"/><path d="M22 55h196M22 140h196M120 22v145" stroke="#a7f6cc" stroke-width="2" opacity=".35"/><circle cx="120" cy="88" r="57" fill="#a9f36b" opacity=".12"/><path d="M91 65c0-18 14-32 31-32s31 14 31 32-14 30-31 30-31-12-31-30ZM62 160c3-34 23-54 60-54s57 20 60 54" fill="#d8f4ff" opacity=".9"/><circle cx="185" cy="53" r="19" fill="#c4f96e"/><path d="M171 40c16 7 21 19 24 26M197 41c-17 6-23 17-25 26" fill="none" stroke="#fff" stroke-width="2"/></svg></div>
   <div class="player-card-footer"><strong>${safe(name)}</strong><span>${unlocked?'✓ DÉBLOQUÉE':'APERÇU · À GAGNER'}</span></div></article>`;
 };
-async function load(){for(const [path,id,draw] of [['/api/arena/challenges','challenges',d=>{el('challenges').innerHTML=d.challenges.map(c=>`<article class="card"><h3>${safe(c.title)}</h3><p>${safe(c.player_a)} ⚔️ ${safe(c.player_b)}</p><small>Fermeture : ${safe(c.closes_at)}</small><p><button data-id="${safe(c.id)}" data-pick="a">${safe(c.player_a)}</button> <button data-id="${safe(c.id)}" data-pick="b">${safe(c.player_b)}</button></p></article>`).join('')||'Aucun défi ouvert.';el('cards').innerHTML=d.challenges.flatMap(c=>[c.player_a,c.player_b]).filter((v,i,a)=>a.indexOf(v)===i).map(n=>cardMarkup(n)).join('')||'Aucune carte à découvrir pour le moment.';}],['/api/arena/leaderboard','leaders',d=>{el('leaders').innerHTML=d.leaders.map((u,i)=>`<p>${i+1}. ${safe(u.display_name)} — ${Number(u.xp)} XP</p>`).join('')||'Pas encore de participants.';}],['/api/arena/rewards','rewards',d=>{el('rewards').innerHTML=d.rewards.map(r=>`<div class="card"><h3>${safe(r.title)}</h3><p>${Number(r.cost)} points · Stock ${Number(r.stock)}</p><button data-reward="${safe(r.id)}">Échanger</button></div>`).join('')||'Boutique en préparation.';}]]){try{draw(await api(path));}catch(e){el(id).textContent='Données indisponibles : '+e.message;}}}
+
+// Arena V1.6 : défis réels, filtres et compte à rebours sans lectures D1 supplémentaires.
+let arenaChallenges=[];
+let arenaCircuit='ALL';
+const circuitOf=c=>{
+ const t=String(c.title||'').toUpperCase();
+ if(t.startsWith('WTA ·'))return 'WTA';
+ if(t.startsWith('CHALLENGER ·'))return 'CHALLENGER';
+ if(t.startsWith('ATP ·'))return 'ATP';
+ return 'DEMO';
+};
+const isReal=c=>circuitOf(c)!=='DEMO';
+function prettyDate(value){
+ const date=new Date(String(value||'').includes('T')?value:String(value||'').replace(' ','T')+'Z');
+ return Number.isFinite(date.getTime())?new Intl.DateTimeFormat('fr-FR',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit',timeZone:'Europe/Paris'}).format(date):String(value||'');
+}
+function drawChallenges(){
+ const target=el('challenges');if(!target)return;
+ const list=arenaChallenges.filter(c=>arenaCircuit==='ALL'||circuitOf(c)===arenaCircuit);
+ target.innerHTML=list.map(c=>{
+   const circuit=circuitOf(c),real=isReal(c);
+   const close=new Date(String(c.closes_at||'').replace(' ','T')+'Z').getTime();
+   const closed=Number.isFinite(close)&&close<=Date.now();
+   return `<article class="card arena-match"><div class="arena-match-top"><span class="arena-chip">${safe(real?circuit:'DÉMO')}</span><span class="arena-chip arena-chip-muted">${real?'MATCH RÉEL':'TEST PRIVÉ'}</span></div>
+   <h3>${safe(c.title)}</h3><p class="arena-versus">${safe(c.player_a)} <span>VS</span> ${safe(c.player_b)}</p>
+   <small>Clôture des prédictions : ${safe(prettyDate(c.closes_at))} (Paris)</small>
+   <p class="arena-clock" data-closes="${safe(c.closes_at)}">${closed?'Défi clôturé':'Calcul du temps restant…'}</p>
+   <div class="arena-choices"><button data-id="${safe(c.id)}" data-pick="a" ${closed?'disabled':''}>${safe(c.player_a)}</button><button data-id="${safe(c.id)}" data-pick="b" ${closed?'disabled':''}>${safe(c.player_b)}</button></div></article>`;
+ }).join('')||'Aucun défi disponible pour ce filtre.';
+ const names=list.flatMap(c=>[c.player_a,c.player_b]).filter((v,i,a)=>a.indexOf(v)===i);
+ el('cards').innerHTML=names.map(n=>cardMarkup(n)).join('')||'Aucune carte à découvrir pour ce filtre.';
+ updateClocks();
+}
+function updateClocks(){
+ document.querySelectorAll('.arena-clock[data-closes]').forEach(node=>{
+  const time=new Date(String(node.dataset.closes).replace(' ','T')+'Z').getTime();
+  if(!Number.isFinite(time)){node.textContent='Horaire indisponible';return;}
+  const remain=Math.max(0,Math.ceil((time-Date.now())/60000));
+  node.textContent=remain===0?'🔒 Prédictions closes':`⏳ Encore ${Math.floor(remain/1440)?Math.floor(remain/1440)+' j ':''}${Math.floor(remain%1440/60)} h ${remain%60} min`;
+  if(remain===0)node.closest('.arena-match')?.querySelectorAll('button[data-pick]').forEach(b=>b.disabled=true);
+ });
+}
+document.querySelectorAll('[data-arena-circuit]').forEach(b=>b.addEventListener('click',()=>{
+ arenaCircuit=b.dataset.arenaCircuit;
+ document.querySelectorAll('[data-arena-circuit]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));
+ drawChallenges();
+}));
+setInterval(updateClocks,60000);
+async function load(){
+ for(const [path,id,draw] of [
+ ['/api/arena/challenges','challenges',d=>{arenaChallenges=d.challenges||[];drawChallenges();}],
+ ['/api/arena/leaderboard','leaders',d=>{el('leaders').innerHTML=d.leaders.map((u,i)=>`<p>${i+1}. ${safe(u.display_name)} — ${Number(u.xp)} XP</p>`).join('')||'Pas encore de participants.';}],
+ ['/api/arena/rewards','rewards',d=>{el('rewards').innerHTML=d.rewards.map(r=>`<div class="card"><h3>${safe(r.title)}</h3><p>${Number(r.cost)} points · Stock ${Number(r.stock)}</p><button data-reward="${safe(r.id)}">Échanger</button></div>`).join('')||'Boutique en préparation.';}]
+ ]){try{draw(await api(path));}catch(e){el(id).textContent='Données indisponibles : '+e.message;}}
+}
+
 document.addEventListener('click',async e=>{const b=e.target.closest('button');if(!b)return;try{if(b.dataset.id){await api('/api/arena/predict',{method:'POST',body:JSON.stringify({challenge_id:b.dataset.id,pick:b.dataset.pick})});alert('Prédiction enregistrée !');}else if(b.dataset.reward){await api('/api/arena/redeem',{method:'POST',body:JSON.stringify({reward_id:b.dataset.reward})});alert('Récompense réservée !');load();}}catch(err){alert(err.message);}});
 el('join').addEventListener('click',async()=>{try{await api('/api/arena/join',{method:'POST',body:JSON.stringify({display_name:el('name').value})});el('me').textContent='Inscription confirmée';await refreshMyCollection();}catch(e){el('me').textContent=e.message;}});load();
 
