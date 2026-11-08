@@ -1,29 +1,52 @@
 #!/usr/bin/env python3
 """Importateur Arena V1.7. Source JSON explicitement configurée, sans cotes."""
 import datetime as dt, json, os, sys, urllib.request, urllib.error
+from pathlib import Path
 from urllib.parse import urlparse
 
 API='https://tennis-edge-arena.tennis-edge.workers.dev/api/arena/admin/challenge'
 MAX_MATCHES=30
 
 def main():
-    url=os.environ.get('ARENA_MATCH_FEED_URL','').strip()
     dry=os.environ.get('DRY_RUN','').lower() in ('true','1','yes')
-    if not url:
-        print('Import désactivé : configurer la variable GitHub ARENA_MATCH_FEED_URL (URL HTTPS du calendrier JSON).')
-        return
-    parsed=urlparse(url)
-    if parsed.scheme!='https' or not parsed.hostname or parsed.username or parsed.password:
-        raise SystemExit('Flux invalide : URL HTTPS publique requise.')
-    req=urllib.request.Request(url,headers={'User-Agent':'TennisEdgeArena/1.7','Accept':'application/json'})
-    with urllib.request.urlopen(req,timeout=20) as r:
-        if int(r.headers.get('content-length','0'))>500_000: raise SystemExit('Flux trop volumineux')
-        data=r.read(500_001)
-    if len(data)>500_000: raise SystemExit('Flux trop volumineux')
-    feed=json.loads(data)
-    matches=feed.get('matches',[]) if isinstance(feed,dict) else feed
-    if not isinstance(matches,list):raise SystemExit('Format JSON attendu: {"matches":[...]}')
     now=dt.datetime.now(dt.timezone.utc)
+    source=Path('matches_oddspapi.json')
+    meta_path=Path('matches_oddspapi_meta.json')
+    if not source.is_file() or not meta_path.is_file():
+        raise SystemExit('Fichiers Tennis Edge absents : import arrêté sans écriture.')
+    meta=json.loads(meta_path.read_text(encoding='utf-8'))
+    written=str(meta.get('last_write','')).strip()
+    try:
+        snapshot=dt.datetime.fromisoformat(written.replace('Z','+00:00'))
+        if snapshot.tzinfo is None:snapshot=snapshot.replace(tzinfo=dt.timezone.utc)
+        snapshot=snapshot.astimezone(dt.timezone.utc)
+    except (ValueError,TypeError):
+        raise SystemExit('Horodatage du snapshot invalide : import arrêté.')
+    age=(now-snapshot).total_seconds()/60
+    if not (-3 <= age <= 240):
+        print(f'Snapshot trop ancien ou futur ({age:.0f} minutes). Import ignoré pour sécurité.')
+        return
+    matches=json.loads(source.read_text(encoding='utf-8'))
+    if not isinstance(matches,list):raise SystemExit('Source tennis : liste JSON attendue.')
+    print(f'Source Tennis Edge locale : {len(matches)} matchs, snapshot âgé de {age:.0f} minutes.')
+    # On extrait seulement les champs sportifs : aucune cote, aucun bookmaker.
+    normalized=[]
+    for m in matches:
+        if not isinstance(m,dict):continue
+        tournament=str(m.get('sport_title') or '').strip()
+        upper=tournament.upper()
+        if 'CHALLENGER' in upper:circuit='CHALLENGER'
+        elif upper.startswith('WTA ') or upper=='WTA':circuit='WTA'
+        elif upper.startswith('ATP ') or upper=='ATP':circuit='ATP'
+        else:continue
+        start=str(m.get('commence_time') or '').strip()
+        a=str(m.get('home_team') or '').strip()
+        b=str(m.get('away_team') or '').strip()
+        if not m.get('id') or not a or not b:continue
+        status=str(m.get('status') or m.get('fixture_status') or '').lower()
+        if status in ('live','inplay','in_play','started','finished','ended','cancelled','canceled','postponed','abandoned','retired','walkover'):continue
+        normalized.append({'circuit':circuit,'title':tournament,'player_a':a,'player_b':b,'starts_at':start})
+    matches=normalized
     selected=[];seen=set()
     for m in matches:
         if not isinstance(m,dict):continue
@@ -31,12 +54,13 @@ def main():
         title=str(m.get('title','')).strip()
         a=str(m.get('player_a','')).strip();b=str(m.get('player_b','')).strip()
         stamp=str(m.get('starts_at','')).strip()
-        try: start=dt.datetime.strptime(stamp,'%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=dt.timezone.utc)
-        except ValueError:continue
+        try: start=dt.datetime.fromisoformat(stamp.replace('Z','+00:00')).astimezone(dt.timezone.utc)
+        except (ValueError,TypeError):continue
+        stamp=start.strftime('%Y-%m-%dT%H:%M:%SZ')
         if circuit not in ('ATP','WTA','CHALLENGER') or not 5<=len(title)<=100 or not 2<=len(a)<=80 or not 2<=len(b)<=80 or a==b:continue
         if not now+dt.timedelta(minutes=20)<start<now+dt.timedelta(days=7):continue
         payload=dict(circuit=circuit,title=title,player_a=a,player_b=b,starts_at=stamp)
-        key=tuple(payload.values())
+        key=(circuit,title.casefold(),a.casefold(),b.casefold(),stamp)
         if key in seen:continue
         seen.add(key);selected.append(payload)
     selected.sort(key=lambda x:x['starts_at']);selected=selected[:MAX_MATCHES]
