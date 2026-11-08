@@ -1,0 +1,27 @@
+name: Arena - Import automatique des matchs
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Simulation sans écriture D1"
+        type: boolean
+        default: true
+  schedule:
+    - cron: '17 */3 * * *'
+permissions:
+  contents: read
+concurrency:
+  group: arena-auto-import
+  cancel-in-progress: false
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Vérifier le flux et importer les matchs validés
+        env:
+          ARENA_MATCH_FEED_URL: ${{ vars.ARENA_MATCH_FEED_URL }}
+          ARENA_ADMIN_TOKEN: ${{ secrets.ARENA_ADMIN_TOKEN }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: python3 arena/tools/import_matches.py
