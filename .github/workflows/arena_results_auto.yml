@@ -1,0 +1,26 @@
+name: Arena - Valider les résultats confirmés
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Simulation sans attribution de points"
+        type: boolean
+        default: true
+  schedule:
+    - cron: '23 */3 * * *'
+permissions:
+  contents: read
+concurrency:
+  group: arena-results-v20
+  cancel-in-progress: false
+jobs:
+  settle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+      - name: Rapprocher les résultats confirmés et les défis
+        env:
+          ARENA_ADMIN_TOKEN: ${{ secrets.ARENA_ADMIN_TOKEN }}
+          DRY_RUN: ${{ github.event_name == 'schedule' && 'false' || inputs.dry_run }}
+        run: python3 arena/tools/settle_results.py

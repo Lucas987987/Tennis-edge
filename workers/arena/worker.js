@@ -52,6 +52,16 @@ if(request.method==='POST'&&path==='/api/arena/test-login'){
  return json({token:payload+'.'+await hmac(env.ARENA_SESSION_SECRET,payload)},200,headers);
 }
 
+if(request.method==='GET'&&path==='/api/arena/admin/pending-settlements'){
+ const supplied=request.headers.get('x-arena-admin-token')||'';
+ if(!env.ARENA_ADMIN_TOKEN||supplied!==env.ARENA_ADMIN_TOKEN)return fail('Forbidden',403,headers);
+ // Paginated, read-only administrative inventory; no player or prediction data exposed.
+ const cursor=url.searchParams.get('cursor')||'';
+ if(cursor.length>128)return fail('Invalid cursor',400,headers);
+ const r=await env.ARENA_DB.prepare("SELECT id,title,player_a,player_b,starts_at,closes_at FROM arena_challenges WHERE id>? AND status='open' AND starts_at<datetime('now','-3 hours') ORDER BY id LIMIT 101").bind(cursor).all();
+ const rows=r.results||[];
+ return json({challenges:rows.slice(0,100),next_cursor:rows.length>100?rows[99].id:null},200,headers);
+}
 if(request.method==='POST'&&path==='/api/arena/admin/challenge'){
  const supplied=request.headers.get('x-arena-admin-token')||'';
  if(!env.ARENA_ADMIN_TOKEN||supplied!==env.ARENA_ADMIN_TOKEN)return fail('Forbidden',403,headers);
@@ -97,6 +107,6 @@ if(request.method==='POST'&&path==='/api/arena/test/settle'){
  const result=await env.ARENA_DB.prepare('SELECT id,status,winner FROM arena_challenges WHERE id=?').bind(data.challenge_id).first();
  return json({ok:true,challenge:result},200,headers);
 }
-if(request.method==='POST'&&path==='/api/arena/admin/settle'){if(!env.ARENA_ADMIN_TOKEN||request.headers.get('x-arena-admin-token')!==env.ARENA_ADMIN_TOKEN)return fail('Forbidden',403,headers);const data=await body(request);if(typeof data.challenge_id!=='string'||!['a','b'].includes(data.winner))return fail('Invalid result',400,headers);const challenge=await env.ARENA_DB.prepare("SELECT id FROM arena_challenges WHERE id=? AND closes_at<=datetime('now')").bind(data.challenge_id).first();if(!challenge)return fail('Not ready',409,headers);try{await env.ARENA_DB.prepare('INSERT INTO arena_settlements(challenge_id,winner) VALUES(?,?)').bind(data.challenge_id,data.winner).run();}catch{return fail('Already settled',409,headers);}return json({ok:true},200,headers);}
+if(request.method==='POST'&&path==='/api/arena/admin/settle'){if(!env.ARENA_ADMIN_TOKEN||request.headers.get('x-arena-admin-token')!==env.ARENA_ADMIN_TOKEN)return fail('Forbidden',403,headers);const data=await body(request);if(typeof data.challenge_id!=='string'||!['a','b'].includes(data.winner))return fail('Invalid result',400,headers);const challenge=await env.ARENA_DB.prepare("SELECT id FROM arena_challenges WHERE id=? AND starts_at<datetime('now','-3 hours') AND closes_at<=datetime('now') AND status='open'").bind(data.challenge_id).first();if(!challenge)return fail('Not ready',409,headers);try{await env.ARENA_DB.prepare('INSERT INTO arena_settlements(challenge_id,winner) VALUES(?,?)').bind(data.challenge_id,data.winner).run();}catch{return fail('Already settled',409,headers);}return json({ok:true},200,headers);}
 return fail('Not found',404,headers);
 }catch(e){return fail(e instanceof SyntaxError?'Invalid JSON':'Request failed',e instanceof SyntaxError?400:500,headers);}}};
