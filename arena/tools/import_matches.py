@@ -7,6 +7,13 @@ import collections, re, unicodedata
 
 API='https://tennis-edge-arena.tennis-edge.workers.dev/api/arena/admin/challenge'
 MAX_MATCHES=30
+# Par défaut : un seul défi lors du premier import réel.
+try:
+    REQUESTED_LIMIT=int(os.environ.get("ARENA_IMPORT_LIMIT", "1"))
+except ValueError:
+    raise SystemExit("ARENA_IMPORT_LIMIT doit être un entier")
+if not 1 <= REQUESTED_LIMIT <= MAX_MATCHES:
+    raise SystemExit("ARENA_IMPORT_LIMIT doit être entre 1 et 30")
 
 
 def is_placeholder(name):
@@ -119,8 +126,8 @@ def main():
                     blocked.update((idx,jdx))
                     print('CONFLIT :',player,selected[idx]['title'],selected[idx]['starts_at'], '/',selected[jdx]['title'],selected[jdx]['starts_at'])
     if blocked:print(f'Sécurité : {len(blocked)} défis contradictoires exclus.')
-    selected=[m for i,m in enumerate(selected) if i not in blocked][:MAX_MATCHES]
-    print(f'Flux lu: {len(matches)} entrées, {len(selected)} matchs éligibles (maximum {MAX_MATCHES} par exécution).')
+    selected=[m for i,m in enumerate(selected) if i not in blocked][:REQUESTED_LIMIT]
+    print(f'Flux lu: {len(matches)} entrées, {len(selected)} matchs éligibles (limite demandée {REQUESTED_LIMIT} par exécution).')
     if dry:
         for m in selected:print('SIMULATION',m['circuit'],m['title'],m['player_a'],'vs',m['player_b'],m['starts_at'])
         return
@@ -128,6 +135,7 @@ def main():
     if not token:raise SystemExit('Secret ARENA_ADMIN_TOKEN manquant')
     created=existing=0
     for m in selected:
+        print('IMPORT CIBLE :',m['circuit'],m['title'],m['player_a'],'vs',m['player_b'],m['starts_at'],flush=True)
         req=urllib.request.Request(API,data=json.dumps(m,ensure_ascii=False).encode(),headers={'Content-Type':'application/json','x-arena-admin-token':token},method='POST')
         try:
             with urllib.request.urlopen(req,timeout=20) as r: result=json.load(r)
