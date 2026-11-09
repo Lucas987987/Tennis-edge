@@ -1,42 +1,42 @@
 {
- "genere_le": "2026-11-04T10:42:10+00:00",
+ "genere_le": "2026-11-09T11:29:56+00:00",
  "sigma_modele": 0.15,
- "matchs_avec_sets": 9361,
- "joueur_matchs": 17395,
+ "matchs_avec_sets": 9666,
+ "joueur_matchs": 18010,
  "mesures_brutes": {
-  "A_meme_match": 0.003794,
-  "A_temoin": -0.000279,
-  "B_meme_set": -0.003787,
-  "B_temoin": -8.3e-05,
-  "C_meme_match": 0.004012,
-  "C_temoin": -0.000438,
-  "n_joueur_match": 17395,
-  "n_paires_B": 19667
+  "A_meme_match": 0.003859,
+  "A_temoin": -0.000426,
+  "B_meme_set": -0.003813,
+  "B_temoin": 0.000187,
+  "C_meme_match": 0.004013,
+  "C_temoin": -0.000395,
+  "n_joueur_match": 18010,
+  "n_paires_B": 20360
  },
  "forme_du_jour_service": {
-  "variance": 0.004073,
+  "variance": 0.004284,
   "ic95": [
-   0.003706,
-   0.004246
+   0.00376,
+   0.004303
   ],
-  "sigma_logit": 0.271,
+  "sigma_logit": 0.278,
   "attendu_par_le_modele_variance": 0.001245
  },
  "adversaires_meme_set": {
-  "covariance": -0.003704,
+  "covariance": -0.004001,
   "ic95": [
-   -0.004147,
-   -0.003441
+   -0.00417,
+   -0.003486
   ],
   "lecture": "négatif : un joueur en forme fait moins bien servir l'autre (ce que suppose le modèle)"
  },
  "premiere_balle": {
-  "variance": 0.00445,
+  "variance": 0.004408,
   "ic95": [
-   0.003915,
-   0.004508
+   0.003876,
+   0.004491
   ],
-  "sigma_logit": 0.293
+  "sigma_logit": 0.292
  },
- "verdict": "forme du jour au service : σ ≈ 0.271 en logit (modèle : 0.15) ; plus forte que le modèle ; adversaires au même set : négatif : un joueur en forme fait moins bien servir l'autre (ce que suppose le modèle) ; 1re balle d'un match à l'autre : σ ≈ 0.293 en logit"
+ "verdict": "forme du jour au service : σ ≈ 0.278 en logit (modèle : 0.15) ; plus forte que le modèle ; adversaires au même set : négatif : un joueur en forme fait moins bien servir l'autre (ce que suppose le modèle) ; 1re balle d'un match à l'autre : σ ≈ 0.292 en logit"
 }

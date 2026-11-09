@@ -1,0 +1,322 @@
+{
+ "genere_le": "2026-11-09T12:35:49+00:00",
+ "regle": "appris avant la dernière semaine complète, jugé sur elle ; gagnant si l'erreur de couverture baisse d'au moins 2 points, l'écart moyen ne monte pas et aucune case ne s'éloigne de 80 % de plus de 5 points ; adopté après deux semaines gagnantes de suite",
+ "cas": {
+  "apprentissage": 1344,
+  "jugement": 2920,
+  "total": 4416
+ },
+ "jugement": {
+  "sans_recalage": {
+   "cases": {
+    "ATP|aces": {
+     "n": 128,
+     "couverture": 82.0,
+     "ecart": 2.887
+    },
+    "ATP|doubles_fautes": {
+     "n": 128,
+     "couverture": 92.2,
+     "ecart": 1.429
+    },
+    "ATP|premiere_pct": {
+     "n": 128,
+     "couverture": 74.2,
+     "ecart": 6.279
+    },
+    "ATP|breaks": {
+     "n": 128,
+     "couverture": 90.6,
+     "ecart": 1.207
+    },
+    "WTA|aces": {
+     "n": 110,
+     "couverture": 89.1,
+     "ecart": 1.454
+    },
+    "WTA|doubles_fautes": {
+     "n": 110,
+     "couverture": 84.5,
+     "ecart": 1.944
+    },
+    "WTA|premiere_pct": {
+     "n": 110,
+     "couverture": 67.3,
+     "ecart": 7.241
+    },
+    "WTA|breaks": {
+     "n": 110,
+     "couverture": 90.0,
+     "ecart": 1.425
+    },
+    "CH|aces": {
+     "n": 492,
+     "couverture": 80.3,
+     "ecart": 2.213
+    },
+    "CH|doubles_fautes": {
+     "n": 492,
+     "couverture": 90.4,
+     "ecart": 1.389
+    },
+    "CH|premiere_pct": {
+     "n": 492,
+     "couverture": 80.5,
+     "ecart": 5.831
+    },
+    "CH|breaks": {
+     "n": 492,
+     "couverture": 92.3,
+     "ecart": 1.358
+    }
+   },
+   "erreur_couverture": 7.53,
+   "ecart_moyen": 2.8881
+  },
+  "avec_recalage": {
+   "cases": {
+    "ATP|aces": {
+     "n": 128,
+     "couverture": 89.8,
+     "ecart": 2.894
+    },
+    "ATP|doubles_fautes": {
+     "n": 128,
+     "couverture": 79.7,
+     "ecart": 1.273
+    },
+    "ATP|premiere_pct": {
+     "n": 128,
+     "couverture": 81.2,
+     "ecart": 5.356
+    },
+    "ATP|breaks": {
+     "n": 128,
+     "couverture": 75.8,
+     "ecart": 1.207
+    },
+    "WTA|aces": {
+     "n": 110,
+     "couverture": 84.5,
+     "ecart": 1.434
+    },
+    "WTA|doubles_fautes": {
+     "n": 110,
+     "couverture": 84.5,
+     "ecart": 1.885
+    },
+    "WTA|premiere_pct": {
+     "n": 110,
+     "couverture": 80.9,
+     "ecart": 6.918
+    },
+    "WTA|breaks": {
+     "n": 110,
+     "couverture": 90.0,
+     "ecart": 1.425
+    },
+    "CH|aces": {
+     "n": 492,
+     "couverture": 80.3,
+     "ecart": 2.225
+    },
+    "CH|doubles_fautes": {
+     "n": 492,
+     "couverture": 82.7,
+     "ecart": 1.329
+    },
+    "CH|premiere_pct": {
+     "n": 492,
+     "couverture": 81.7,
+     "ecart": 5.659
+    },
+    "CH|breaks": {
+     "n": 492,
+     "couverture": 80.3,
+     "ecart": 1.355
+    }
+   },
+   "erreur_couverture": 3.37,
+   "ecart_moyen": 2.7467
+  },
+  "coefs_juges": {
+   "ATP": {
+    "aces": {
+     "delta": 0.549,
+     "largeur": 1.25,
+     "n": 84
+    },
+    "doubles_fautes": {
+     "delta": -0.289,
+     "largeur": 0.65,
+     "n": 84
+    },
+    "premiere_pct": {
+     "delta": 2.077,
+     "largeur": 1.05,
+     "n": 84
+    },
+    "breaks": {
+     "delta": -0.046,
+     "largeur": 0.7,
+     "n": 84
+    }
+   },
+   "WTA": {
+    "aces": {
+     "delta": -0.115,
+     "largeur": 0.8,
+     "n": 70
+    },
+    "doubles_fautes": {
+     "delta": -0.288,
+     "largeur": 1.0,
+     "n": 70
+    },
+    "premiere_pct": {
+     "delta": 1.678,
+     "largeur": 1.3,
+     "n": 70
+    },
+    "breaks": {
+     "delta": 0.046,
+     "largeur": 1.0,
+     "n": 70
+    }
+   },
+   "CH": {
+    "aces": {
+     "delta": 0.091,
+     "largeur": 1.0,
+     "n": 182
+    },
+    "doubles_fautes": {
+     "delta": -0.302,
+     "largeur": 0.7,
+     "n": 182
+    },
+    "premiere_pct": {
+     "delta": 1.146,
+     "largeur": 1.0,
+     "n": 182
+    },
+    "breaks": {
+     "delta": -0.204,
+     "largeur": 0.75,
+     "n": 182
+    }
+   }
+  }
+ },
+ "direct": {
+  "ATP|premiere_pct": {
+   "cas_semaine": 128,
+   "ecart_sans": 6.279,
+   "ecart_avec": 5.356,
+   "semaines_pires": 0,
+   "retire": false
+  },
+  "WTA|premiere_pct": {
+   "cas_semaine": 110,
+   "ecart_sans": 7.241,
+   "ecart_avec": 6.918,
+   "semaines_pires": 0,
+   "retire": false
+  },
+  "CH|premiere_pct": {
+   "cas_semaine": 492,
+   "ecart_sans": 5.831,
+   "ecart_avec": 5.659,
+   "semaines_pires": 0,
+   "retire": false
+  },
+  "ATP|aces": {
+   "cas_semaine": 128,
+   "ecart_sans": 2.887,
+   "ecart_avec": 2.894,
+   "semaines_pires": 1,
+   "retire": false
+  },
+  "WTA|aces": {
+   "cas_semaine": 110,
+   "ecart_sans": 1.454,
+   "ecart_avec": 1.434,
+   "semaines_pires": 0,
+   "retire": false
+  }
+ },
+ "decision": {
+  "adopte": false,
+  "raison": "semaine du 2026-11-02 (2920 cas) : erreur de couverture 7.53 → 3.37 (gain +4.16) ; écart moyen 2.8881 → 2.7467 ; pire case +7.8 pts — pas adopté",
+  "coefs": {
+   "ATP": {
+    "aces": {
+     "delta": 0.535,
+     "largeur": 1.0,
+     "n": 212
+    },
+    "doubles_fautes": {
+     "delta": -0.56,
+     "largeur": 0.55,
+     "n": 212
+    },
+    "premiere_pct": {
+     "delta": 3.024,
+     "largeur": 1.0,
+     "n": 212
+    },
+    "breaks": {
+     "delta": -0.108,
+     "largeur": 0.7,
+     "n": 212
+    }
+   },
+   "WTA": {
+    "aces": {
+     "delta": -0.122,
+     "largeur": 0.75,
+     "n": 180
+    },
+    "doubles_fautes": {
+     "delta": -0.423,
+     "largeur": 1.0,
+     "n": 180
+    },
+    "premiere_pct": {
+     "delta": 2.012,
+     "largeur": 1.3,
+     "n": 180
+    },
+    "breaks": {
+     "delta": -0.013,
+     "largeur": 0.8,
+     "n": 180
+    }
+   },
+   "CH": {
+    "aces": {
+     "delta": 0.142,
+     "largeur": 1.0,
+     "n": 674
+    },
+    "doubles_fautes": {
+     "delta": -0.423,
+     "largeur": 0.65,
+     "n": 674
+    },
+    "premiere_pct": {
+     "delta": 1.364,
+     "largeur": 0.95,
+     "n": 674
+    },
+    "breaks": {
+     "delta": -0.175,
+     "largeur": 0.75,
+     "n": 674
+    }
+   }
+  },
+  "adopte_brut": false,
+  "stabilite": "pas adopté"
+ }
+}

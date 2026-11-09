@@ -1,5 +1,5 @@
 {
-  "genere_le": "2026-11-04T09:54:48.046409+00:00",
+  "genere_le": "2026-11-09T10:29:36.304196+00:00",
   "coupure_decouverte_confirmation": "2025-01-01",
   "matchs_selectionnes": 2000,
   "regle": "Challenger choisi sur découverte ; adoption seulement après confirmation, marge et deux semaines.",
@@ -327,8 +327,8 @@
     }
   },
   "decision": {
-    "adopte": false,
-    "raison": "gain confirmation +0.001709 ; profils peu documentés validés — candidat (1/2) : adopté s'il fait encore mieux la semaine prochaine",
+    "adopte": true,
+    "raison": "gain confirmation +0.001709 ; profils peu documentés validés — adopté : mieux 2 semaines de suite",
     "ll": {
       "avec": 0.657239,
       "sans": 0.658948
@@ -357,6 +357,6 @@
     "prior_mult": 1.0,
     "challenger": "recent",
     "adopte_brut": true,
-    "stabilite": "candidat (1/2) : adopté s'il fait encore mieux la semaine prochaine"
+    "stabilite": "adopté : mieux 2 semaines de suite"
   }
 }
