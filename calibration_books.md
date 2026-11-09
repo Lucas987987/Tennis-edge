@@ -1,6 +1,6 @@
 # Les bookmakers sont-ils bien calibrés sur le tennis ?
 
-*Mesuré sur 2190 matchs dénoués. Mise à jour du 2026-11-02.*
+*Mesuré sur 2190 matchs dénoués. Mise à jour du 2026-11-09.*
 
 Quand une cote implique 30 % de chances, le joueur gagne-t-il vraiment 30 % du temps ? Les probabilités ci-dessous sont **dévigées** : la marge de l'opérateur est retirée, sinon on mesurerait surtout ce qu'il prélève.
 
