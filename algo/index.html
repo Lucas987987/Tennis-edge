@@ -472,10 +472,12 @@ body.carte #video{display:block;width:1080px;height:1350px}
 .lv-up{color:var(--ok)}.lv-down{color:var(--ko)}.lv-dim{color:var(--dim)}
 .lv-terrain{margin:6px 0 10px}.lv-terrain svg{display:block;width:100%;height:auto;max-width:620px;margin:0 auto}
 .lv-terrain .lv-ball-glow{filter:drop-shadow(0 0 3px #D4FF3A)}
+.lv-terrain .lv-player{filter:drop-shadow(0 1px 3px rgba(0,0,0,.65))}
+.lv-terrain .lv-toss{pointer-events:none}
 .lv-terrain .lv-illustration{font:600 8px Barlow,system-ui,sans-serif;fill:#B6B2D2;letter-spacing:.3px}
 .lv-terrain .tn{font:600 13px Barlow,system-ui,sans-serif}.lv-terrain .tg{font:26px var(--disp);fill:#F4F1FF;letter-spacing:6px}
 .lv-terrain .tl{font:600 10px var(--cond);fill:#ABA3D6;letter-spacing:1px;text-transform:uppercase}.lv-terrain .tp{font:20px var(--disp)}
-@media (prefers-reduced-motion:reduce){.lv-terrain animate{display:none}.lv-terrain .lv-ball-glow{filter:none}}
+@media (prefers-reduced-motion:reduce){.lv-terrain animate,.lv-terrain animateMotion{display:none}.lv-terrain .lv-ball-glow{filter:none}}
 .live-match .lv-sb{grid-template-columns:minmax(0,1fr) repeat(var(--ns,3),32px) 50px;font-family:var(--disp);font-size:1.35rem;gap:6px 8px}
 .live-match .lv-sb .n{font-size:1.05rem}.live-match .lv-pt{font-size:1.2rem;padding:2px 0}
 .lv-courbe{margin-top:12px}.lv-courbe svg{display:block;width:100%;height:auto;max-width:760px;margin:0 auto}.lv-courbe text{font-family:var(--cond);fill:var(--dim);font-size:11px}
@@ -524,6 +526,14 @@ body.carte #video{display:block;width:1080px;height:1350px}
   .mdj > .fiche > .duelx, .mdj > .fiche > #post-zone, .mdj > .fiche > .cartes{grid-column:2}
 }
 
+/* Les rencontres terminées restent consultables dans une section repliable. */
+.list .finished-group{border-top:1px solid var(--line);list-style:none}
+.list .finished-group > details > summary{cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px 16px;font-weight:700;color:var(--ink);list-style:none}
+.list .finished-group > details > summary::-webkit-details-marker{display:none}
+.list .finished-group > details > summary:after{content:'▾';color:var(--dim);transition:transform .2s}
+.list .finished-group > details[open] > summary:after{transform:rotate(180deg)}
+.list .finished-group > details > .list{margin:0;padding:0;list-style:none;border-top:1px solid var(--line)}
+.list .finished-group > details > .list > li{border-top:1px solid var(--line)}
 /* Arena : bouton visible dans la barre du haut, y compris sur mobile */
 .arena-nav{display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;min-height:34px;padding:7px 13px;border-radius:999px;background:#d4ff3a;color:#141225!important;text-decoration:none!important;font:800 13px system-ui,sans-serif;box-shadow:0 2px 12px rgba(130,170,0,.3)}
 .arena-nav:hover,.arena-nav:focus-visible{background:#eaff88;outline:2px solid #80b000;outline-offset:2px}
@@ -2544,44 +2554,70 @@ function tableauLive(m, r, fini, grand){
   if (typeof window === 'undefined' || window.__tennisLiveBallVariety) return;
   window.__tennisLiveBallVariety = true;
   const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)');
-  const rand = (a,b) => a + Math.random() * (b-a);
+  const rand = (a,b) => a + Math.random()*(b-a);
   const fmt = n => Math.round(n);
   const last = new WeakMap();
-  function pathFor(motion){
+  // Toutes les positions sont des illustrations, jamais des positions de tracking.
+  function sequence(motion){
     const srv = Number(motion.dataset.srv) === 1 ? 1 : 0;
     const side = Number(motion.dataset.side) === 1;
     const fromX = srv === 0 ? 15 : 345;
     const fromY = side ? 133 : 67;
-    const targetX = srv === 0 ? rand(258,327) : rand(33,102);
-    const targetY = rand(53,147);
-    const exchanges = Math.floor(rand(2,6));
-    let path = `M ${fromX} ${fromY}`;
-    let x = fromX, y = fromY;
-    // Chaque frappe traverse le filet, avec une direction et une longueur différentes.
-    for(let i=0;i<exchanges;i++){
-      const nextX = i===0 ? targetX : (x<180 ? rand(265,333) : rand(27,95));
-      const nextY = rand(53,147);
-      const midX = (x+nextX)/2;
-      const midY = (y+nextY)/2 + rand(-22,22);
-      path += ` Q ${fmt(midX)} ${fmt(midY)} ${fmt(nextX)} ${fmt(nextY)}`;
-      x=nextX; y=nextY;
+    const hits = Math.floor(rand(2,7));
+    const points = [{x:fromX,y:fromY}];
+    for(let i=0;i<hits;i++){
+      const prev = points[points.length-1];
+      const nextX = prev.x < 180 ? rand(263,329) : rand(31,97);
+      const nextY = rand(54,146);
+      points.push({x:nextX,y:nextY});
     }
-    return path;
+    let path=`M ${fmt(fromX)} ${fmt(fromY)}`;
+    for(let i=1;i<points.length;i++){
+      const p=points[i-1],q=points[i];
+      path+=` Q ${fmt((p.x+q.x)/2)} ${fmt((p.y+q.y)/2+rand(-18,18))} ${fmt(q.x)} ${fmt(q.y)}`;
+    }
+    return {path,points,hits,duration:rand(4.8,8.4)};
+  }
+  function updateMotion(el,path,duration){
+    if(!el) return;
+    el.setAttribute('path',path);
+    el.setAttribute('dur',duration.toFixed(2)+'s');
+    try {el.beginElement();} catch(_) {}
   }
   function renew(){
     if(document.hidden || (reduce && reduce.matches)) return;
-    document.querySelectorAll('.lv-terrain .lv-ball-motion').forEach(motion => {
-      // La durée varie, tout comme le nombre de frappes et les angles.
-      const previous = last.get(motion) || 0;
-      if(Date.now()-previous < 3200) return;
+    document.querySelectorAll('.lv-terrain .lv-ball-motion').forEach(motion=>{
+      const previous=last.get(motion)||0;
+      if(Date.now()-previous<4000) return;
+      const seq=sequence(motion);
       last.set(motion,Date.now());
-      motion.setAttribute('path',pathFor(motion));
-      motion.setAttribute('dur',`${rand(4.3,7.1).toFixed(1)}s`);
-      try { motion.beginElement(); } catch (_) { /* navigateur sans SMIL */ }
+      const svg=motion.closest('svg');
+      if(!svg) return;
+      updateMotion(motion,seq.path,seq.duration);
+      // Les silhouettes rejoignent le point de frappe puis reviennent se replacer.
+      for(let player=0;player<2;player++){
+        const startX=player===0?51:309;
+        const startY=100;
+        const targets=seq.points.filter((p,i)=>i>0 && (p.x<180?0:1)===player);
+        const t=targets.length?targets[Math.floor(rand(0,targets.length))]:null;
+        const tx=t?Math.max(34,Math.min(150,t.x+(player===0?13:-13))):startX;
+        const ty=t?Math.max(52,Math.min(148,t.y)):startY;
+        const pp=`M ${startX} ${startY} Q ${fmt((startX+tx)/2)} ${fmt(ty)} ${fmt(tx)} ${fmt(ty)} Q ${fmt((startX+tx)/2)} ${fmt(startY)} ${startX} ${startY}`;
+        updateMotion(svg.querySelector('.lv-player-motion-'+player),pp,seq.duration);
+      }
+      const bounce=svg.querySelector('.lv-bounce-motion');
+      if(bounce){
+        bounce.setAttribute('dur',(seq.duration/seq.hits).toFixed(2)+'s');
+        try{bounce.beginElement();}catch(_){}
+      }
+      const toss=svg.querySelector('.lv-toss-motion');
+      if(toss){
+        toss.setAttribute('dur','0.8s');
+        try{toss.beginElement();}catch(_){}
+      }
     });
   }
-  // Le timer ne déclenche aucune requête API et ne touche pas aux scores.
-  window.setInterval(renew, 5700);
+  window.setInterval(renew,5700);
 })();
 
 function terrainLive(m, r, fini){
@@ -2606,7 +2642,12 @@ function terrainLive(m, r, fini){
     const y1 = by + (bas ? -34 : 34), y2 = by + (bas ? -52 : 52);
     // Trajectoire de départ ; un animateur JS léger renouvelle ensuite le parcours.
     const parcours = `M ${bx} ${by} Q ${x1} ${y1} 180 100 Q ${x2} ${y2} ${360-bx} ${200-by}`;
-    balle = `<g class="lv-ball-glow"><circle cx="0" cy="0" r="5" fill="#D4FF3A"><animateMotion class="lv-ball-motion" data-srv="${srv}" data-side="${bas ? 1 : 0}" path="${parcours}" dur="5s" repeatCount="indefinite" calcMode="paced"/></circle></g>`;
+    balle = `<g class="lv-live-actors" aria-hidden="true">
+      <g class="lv-player lv-player-home"><circle r="8" fill="#2EE6FF" stroke="#fff" stroke-width="1.4"/><circle cy="-2" r="2.5" fill="#103047"/><animateMotion class="lv-player-motion-0" path="M 51 100 L 51 100" dur="5s" repeatCount="indefinite"/></g>
+      <g class="lv-player lv-player-away"><circle r="8" fill="#FF4FAE" stroke="#fff" stroke-width="1.4"/><circle cy="-2" r="2.5" fill="#4a1433"/><animateMotion class="lv-player-motion-1" path="M 309 100 L 309 100" dur="5s" repeatCount="indefinite"/></g>
+      <g class="lv-toss" opacity=".7"><circle cx="0" cy="0" r="3" fill="#D4FF3A"><animateMotion class="lv-toss-motion" path="M ${bx} ${by} q 0 -22 0 -4" dur="0.8s" repeatCount="1" fill="freeze"/></circle></g>
+      <g class="lv-ball-glow"><circle cx="0" cy="0" r="5" fill="#D4FF3A"><animate attributeName="r" class="lv-bounce-motion" values="5;3;5" dur="1.2s" repeatCount="indefinite"/><animateMotion class="lv-ball-motion" data-srv="${srv}" data-side="${bas ? 1 : 0}" path="${parcours}" dur="5s" repeatCount="indefinite" calcMode="paced"/></circle></g>
+    </g>`;
   }
   const ptsTxt = (v, x, c) => fini ? '' : `<g><rect x="${x-26}" y="120" width="52" height="32" rx="9" fill="rgba(14,10,36,.78)" stroke="${c}" stroke-opacity=".7"/><text x="${x}" y="143" text-anchor="middle" class="tp" style="fill:${c}">${esc(v ?? '0')}</text></g>`;
   return `<div class="lv-terrain"><svg viewBox="0 0 ${W} ${Hh}" role="img" aria-label="${esc(court(m.home))} ${gh} – ${ga} ${esc(court(m.away))}">
@@ -3040,8 +3081,10 @@ function chargerLive(){
     if (!o || !Array.isArray(o.matchs) || o.ok === false) return;
     const nouveau = relierLive(o.matchs);
     for (const [uid, r] of Object.entries(nouveau)) LIVE.vus[uid] = r;
+    const avant = Object.keys(LIVE.par_uid).sort().join('|');
     LIVE.par_uid = nouveau;
-    majLive();
+    const apres = Object.keys(nouveau).sort().join('|');
+    if (avant !== apres) rendListe(); else majLive();
   }).catch(()=>{}).finally(()=>{ liveRequeteEnCours = false; });
 }
 function demarrerLive(){
@@ -3052,7 +3095,16 @@ function demarrerLive(){
 }
 function rendListe(){
   const ul = document.getElementById('list'), mdj = D.match_du_jour && D.match_du_jour.uid;
-  const tous = matchsFiltres(), visibles = tous.slice(0,nListe);
+  const tous = matchsFiltres();
+  // Un match est terminé uniquement si son résultat est archivé ou si le flux live
+  // l'a déjà vu puis ne le signale plus. Un match à venir n'est jamais replié.
+  const estTermine = m => !!(D.apres_match && D.apres_match[m.uid] && D.apres_match[m.uid].reel)
+    || (!!LIVE.vus[m.uid] && !LIVE.par_uid[m.uid]);
+  const enCours = tous.filter(m => !estTermine(m));
+  const termines = tous.filter(estTermine);
+  const visibles = enCours.slice(0,nListe);
+  const visiblesFinis = termines.slice(0,Math.max(0,nListe-visibles.length));
+  const etaitOuvert = !!document.querySelector('#list .finished-group details[open]');
   const total = D.matchs.filter(m=>m.simulation && m.simulation_disponible !== false).length;
   document.getElementById('liste-compte').textContent = t('compte_matchs',tous.length,total);
   if (!tous.length){
@@ -3060,7 +3112,7 @@ function rendListe(){
     document.getElementById('liste-more').hidden = true;
     return;
   }
-  ul.innerHTML = visibles.map(m=>{ const p=m.p_home, star=m.uid===mdj, selection=m.uid===(selectionId||mdj);
+  const ligneMatch = m=>{ const p=m.p_home, star=m.uid===mdj, selection=m.uid===(selectionId||mdj);
     return `<li class="${star?'star ':''}${selection?'selectionne':''}"><a class="match-open" href="${m.uid===mdj?'#':'#match='+encodeURIComponent(m.uid)}" data-uid="${esc(m.uid)}" data-circuit="${esc(m.circuit)}" aria-current="${selection?'true':'false'}" aria-label="${esc(t('voir_simulation'))} ${esc(m.home)} – ${esc(m.away)}">
       <span class="time">${esc(heure(m.debut))}</span><span>
       <span class="tour">${esc(m.tournoi)} · ${esc(SURF[L][m.surface]||m.surface||'')}${star ? `<span class="badge">${esc(L==='fr'?'du jour':'of the day')}</span>` : ''}${peuDocumentes(m).length ? `<span class="badge peu" title="${esc(t('es_badge_aide'))}">${esc(t('es_badge'))}</span>` : ''}</span>
@@ -3070,10 +3122,11 @@ function rendListe(){
       <span class="live-l" data-live="${esc(m.uid)}"></span>
       <span class="meta"><span>${esc(t('cote_juste'))} ${odds(m.cotes_justes[0])} / ${odds(m.cotes_justes[1])}</span><span class="ouvrir">${esc(selection ? t('simulation_affichee') : t('voir_simulation'))}</span></span>
       ${rendType(m)}${rendFiabilite(m.fiabilite)}
-    </span></a></li>`; }).join('');
+    </span></a></li>`; };
+  ul.innerHTML = visibles.map(ligneMatch).join('') + (termines.length ? `<li class="finished-group"><details ${etaitOuvert?'open':''}><summary>${esc(L==='fr'?'Matchs terminés':'Finished matches')} (${termines.length})</summary><ul class="list">${visiblesFinis.map(ligneMatch).join('')}</ul></details></li>` : '');
   const more = document.getElementById('liste-more');
-  more.hidden = visibles.length >= tous.length;
-  more.textContent = t('voir_matchs',Math.min(30,tous.length-visibles.length));
+  more.hidden = visibles.length + visiblesFinis.length >= tous.length;
+  more.textContent = t('voir_matchs',Math.min(30,tous.length-visibles.length-visiblesFinis.length));
   majLive();
 }
 function courbeSvg(c){
@@ -3432,5 +3485,5 @@ fetch('donnees.json?v=' + Date.now()).then(r=>r.json()).then(d=>{
 }).catch(()=>{ document.getElementById('mdj-zone').innerHTML = '<div class="panel empty">Données indisponibles / Data unavailable.</div>'; });
 })();
 </script>
-<a href="../arena/" style="position:fixed;bottom:18px;right:18px;z-index:9999;background:#b6f365;color:#13220b;padding:12px 17px;border-radius:999px;font:700 15px system-ui;text-decoration:none">🏟️ Arena</a></body>
+</body>
 </html>
