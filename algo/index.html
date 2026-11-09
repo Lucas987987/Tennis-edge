@@ -3031,20 +3031,23 @@ function liveUtile(){
   return ((D && D.matchs) || []).some(m=>{ const d = utc(m.debut).getTime() - now; return d < 15*60e3 && d > -6*3600e3; })
     || Object.keys(LIVE.par_uid).length > 0;
 }
+// Un seul appel /live à la fois, même si le réseau met plus de 10 secondes à répondre.
+let liveRequeteEnCours = false;
 function chargerLive(){
-  if (document.hidden || !liveUtile()) return;
+  if (document.hidden || !liveUtile() || liveRequeteEnCours) return;
+  liveRequeteEnCours = true;
   fetch('/live', {cache:'no-store'}).then(r=>r.ok ? r.json() : null).then(o=>{
     if (!o || !Array.isArray(o.matchs) || o.ok === false) return;
     const nouveau = relierLive(o.matchs);
     for (const [uid, r] of Object.entries(nouveau)) LIVE.vus[uid] = r;
     LIVE.par_uid = nouveau;
     majLive();
-  }).catch(()=>{});
+  }).catch(()=>{}).finally(()=>{ liveRequeteEnCours = false; });
 }
 function demarrerLive(){
   // /live n'existe que derrière le worker « algo » : ailleurs (GitHub Pages) la requête échoue sans rien afficher.
   chargerLive();
-  LIVE.minuterie = setInterval(chargerLive, 30000);
+  LIVE.minuterie = setInterval(chargerLive, 10000);
   document.addEventListener('visibilitychange', ()=>{ if (!document.hidden) chargerLive(); });
 }
 function rendListe(){
