@@ -2692,116 +2692,201 @@ function tableauLive(m, r, fini, grand){
 })();
 
 
-  // Tennis Edge Live V7 — autonomous WebGL 3D engine, no CDN, graceful 2D fallback.
+// V6.2 — Terrain TV horizontal / vue immersive, autonome (Canvas 2D, sans CDN).
 (function(){
- const running=new WeakMap();let view='tv';
- const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
- const rnd=(a,b)=>a+Math.random()*(b-a);
- function boot(host){
-  const cv=document.createElement('canvas');cv.style.cssText='width:100%;height:100%;display:block';
-  const gl=cv.getContext('webgl',{antialias:true,alpha:false,depth:true,powerPreference:'default'})||cv.getContext('experimental-webgl',{antialias:true,alpha:false,depth:true});
-  if(!gl)throw Error('WebGL indisponible sur ce navigateur');
-  const vs='attribute vec3 p;attribute vec3 c;uniform mat4 m;varying vec3 col;void main(){col=c;gl_Position=m*vec4(p,1.0);}';
-  const fs='precision mediump float;varying vec3 col;void main(){gl_FragColor=vec4(col,1.0);}';
-  function shader(type,source){const s=gl.createShader(type);gl.shaderSource(s,source);gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS))throw Error('Shader 3D: '+gl.getShaderInfoLog(s));return s;}
-  const prog=gl.createProgram();gl.attachShader(prog,shader(gl.VERTEX_SHADER,vs));gl.attachShader(prog,shader(gl.FRAGMENT_SHADER,fs));gl.linkProgram(prog);
-  if(!gl.getProgramParameter(prog,gl.LINK_STATUS))throw Error('Programme 3D: '+gl.getProgramInfoLog(prog));
-  gl.useProgram(prog);const locP=gl.getAttribLocation(prog,'p'),locC=gl.getAttribLocation(prog,'c'),locM=gl.getUniformLocation(prog,'m');
-  const pb=gl.createBuffer(),cb=gl.createBuffer();gl.enableVertexAttribArray(locP);gl.enableVertexAttribArray(locC);gl.enable(gl.DEPTH_TEST);gl.depthFunc(gl.LEQUAL);
-  let active=true,frame=0,t0=performance.now(),points=[],total=0;
-  const colors={court:[.15,.43,.70],outer:[.10,.26,.42],line:[.94,.97,.99],net:[.75,.84,.92],sky:[.06,.11,.19],skin:[.83,.58,.40],hair:[.15,.12,.14],cyan:[.10,.79,.94],pink:[.95,.20,.48],yellow:[.83,.99,.12],white:[.92,.95,.97],shoe:[.92,.94,.99],shadow:[.08,.24,.36],navy:[.12,.19,.34],pole:[.55,.64,.72]};
-  let verts=[],cols=[];
-  function tri(a,b,c,color){for(const p of [a,b,c]){verts.push(...p);cols.push(...color);}}
-  function quad(a,b,c,d,color){tri(a,b,c,color);tri(a,c,d,color);}
-  function box(x,y,z,w,h,d,color){const x0=x-w/2,x1=x+w/2,y0=y-h/2,y1=y+h/2,z0=z-d/2,z1=z+d/2;
-   const v=[[x0,y0,z0],[x1,y0,z0],[x1,y1,z0],[x0,y1,z0],[x0,y0,z1],[x1,y0,z1],[x1,y1,z1],[x0,y1,z1]];
-   for(const face of [[0,1,2,3],[5,4,7,6],[4,0,3,7],[1,5,6,2],[3,2,6,7],[4,5,1,0]])quad(v[face[0]],v[face[1]],v[face[2]],v[face[3]],color);
+  const sessions=new WeakMap();
+  let mode='tv';
+  const rnd=(a,b)=>a+Math.random()*(b-a);
+  function start(host,svg){
+    const canvas=document.createElement('canvas');
+    canvas.setAttribute('aria-label','Animation tennis vue '+(mode==='tv'?'TV':'immersive'));
+    canvas.style.cssText='display:block;width:100%;height:100%';
+    host.replaceChildren(canvas);
+    const ctx=canvas.getContext('2d',{alpha:false});
+    if(!ctx)throw Error('Canvas 2D indisponible');
+    let active=true,raf=0,t0=performance.now(),shots=[],duration=0;
+    const durationShot=1.65;
+    let priorL=0,priorR=0;
+    const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+    const ease=t=>t*t*(3-2*t);
+    function sequence(){
+      // Every ball impact, bounce and player position comes from the same rally timeline.
+      const server=Math.random()<.5?-1:1;
+      shots=[];
+      const n=5+Math.floor(Math.random()*5);
+      let lane=rnd(-.36,.36);
+      for(let i=0;i<n;i++){
+        const next=clamp(lane+rnd(-.72,.72),-.62,.62);
+        shots.push({side:i%2===0?server:-server,lane:next,kind:Math.random(),serve:i===0});
+        lane=next;
+      }
+      duration=(n-1)*durationShot+1.1;
+      t0=performance.now();
+    }
+    // World coordinates: x is distance along the court (-1 left, +1 right), y is lateral.
+    function project(x,y,z,w,h){
+      if(mode==='tv'){
+        const sc=Math.min(w/2.75,h/1.55);
+        return [w*.5+x*sc*1.10+y*sc*.17,h*.51+y*sc*.65-z*sc*.72,sc];
+      }
+      const depth=(1-x)/2,scale=.39+depth*.73;
+      return [w*.5+y*w*.30*scale,h*(.18+depth*.69)-z*h*.21*scale,w*.085*scale];
+    }
+    function path(points,color,width,fill){
+      ctx.beginPath();points.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));
+      if(fill){ctx.closePath();ctx.fillStyle=fill;ctx.fill();}
+      if(color){ctx.strokeStyle=color;ctx.lineWidth=width;ctx.stroke();}
+    }
+    function seg(x1,y1,x2,y2,w,h,color,width=1.4,z=0){
+      path([project(x1,y1,z,w,h),project(x2,y2,z,w,h)],color,width);
+    }
+    function player(x,y,w,h,color,phase,hit,run,serve){
+      const p=project(x,y,0,w,h),size=mode==='tv'?Math.max(12,w*.040):Math.max(8,p[2]*1.06);
+      const px=p[0],py=p[1],s=size;
+      ctx.fillStyle='rgba(0,7,22,.32)';ctx.beginPath();ctx.ellipse(px+2,py+4,s*.55,s*.16,0,0,Math.PI*2);ctx.fill();
+      const stride=run*Math.sin(phase*2)*s*.21,lean=run*Math.sin(phase)*s*.11;
+      ctx.lineCap='round';ctx.lineJoin='round';ctx.lineWidth=Math.max(2,s*.15);ctx.strokeStyle='#e5ae83';
+      ctx.beginPath();ctx.moveTo(px-s*.12,py-s*.48);ctx.lineTo(px-s*.24+stride,py+s*.05);
+      ctx.moveTo(px+s*.12,py-s*.48);ctx.lineTo(px+s*.25-stride,py+s*.05);ctx.stroke();
+      ctx.fillStyle='#f6f7fb';ctx.beginPath();ctx.ellipse(px-s*.24+stride,py+s*.09,s*.18,s*.09,-.2,0,Math.PI*2);ctx.ellipse(px+s*.25-stride,py+s*.09,s*.18,s*.09,.2,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle=color;ctx.beginPath();ctx.roundRect(px-s*.28+lean,py-s*1.18,s*.56,s*.77,s*.15);ctx.fill();
+      ctx.fillStyle='rgba(255,255,255,.38)';ctx.fillRect(px-s*.12+lean,py-s*1.14,s*.24,s*.08);
+      ctx.fillStyle=color==='#2de6ff'?'#176b91':'#a72c68';
+      ctx.beginPath();ctx.roundRect(px-s*.26+lean,py-s*.52,s*.52,s*.20,s*.05);ctx.fill();
+      ctx.fillStyle='#e7b48b';ctx.beginPath();ctx.arc(px+lean,py-s*1.39,s*.25,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle='#322b35';ctx.beginPath();ctx.arc(px+lean,py-s*1.49,s*.24,Math.PI*1.05,Math.PI*1.95);ctx.fill();
+      const dir=x<0?1:-1;
+      const swing=serve?1.4:hit?1.0:.28;
+      const handX=px+dir*s*(.48+.16*swing),handY=py-s*(.85+.42*swing);
+      ctx.strokeStyle='#e7b48b';ctx.lineWidth=Math.max(2,s*.12);ctx.beginPath();ctx.moveTo(px+dir*s*.25,py-s*1.03);ctx.lineTo(handX,handY);ctx.stroke();
+      ctx.strokeStyle='#dfeaff';ctx.lineWidth=Math.max(1.5,s*.09);ctx.beginPath();ctx.moveTo(handX,handY);ctx.lineTo(handX+dir*s*.28,handY-s*.22);ctx.stroke();
+      ctx.strokeStyle='#f3f8ff';ctx.lineWidth=Math.max(1.5,s*.085);ctx.beginPath();ctx.ellipse(handX+dir*s*.38,handY-s*.40,s*.24,s*.35,dir*.3,0,Math.PI*2);ctx.stroke();
+    }
+    function draw(now){
+      if(!active||!host.isConnected||host.dataset.active!=='1')return;
+      if(document.hidden){raf=requestAnimationFrame(draw);return;}
+      const box=host.getBoundingClientRect(),w=Math.max(240,box.width),h=Math.max(150,box.height);
+      const dpr=Math.min(window.devicePixelRatio||1,2);
+      if(canvas.width!==Math.round(w*dpr)||canvas.height!==Math.round(h*dpr)){
+        canvas.width=Math.round(w*dpr);canvas.height=Math.round(h*dpr);
+      }
+      ctx.setTransform(dpr,0,0,dpr,0,0);
+      const bg=ctx.createLinearGradient(0,0,0,h);bg.addColorStop(0,'#142745');bg.addColorStop(1,'#071529');
+      ctx.fillStyle=bg;ctx.fillRect(0,0,w,h);
+      ctx.fillStyle='rgba(94,151,201,.07)';ctx.fillRect(0,h*.1,w,h*.12);
+      for(let i=0;i<9;i++){ctx.fillStyle='rgba(230,241,255,.07)';ctx.fillRect(i*w/9,h*.15,Math.max(2,w*.003),h*.022);}
+      const outer=[project(-1.11,-.92,0,w,h),project(1.11,-.92,0,w,h),project(1.11,.92,0,w,h),project(-1.11,.92,0,w,h)];
+      path(outer,'#a7d4f8',1.5,'#245b89');
+      const court=[project(-1,-.80,0,w,h),project(1,-.80,0,w,h),project(1,.80,0,w,h),project(-1,.80,0,w,h)];
+      path(court,'#eaf6ff',2,'#347fc0');
+      for(let i=1;i<9;i++){
+        seg(-1,-.8+i*.16,1,-.8+i*.16,w,h,'rgba(255,255,255,.018)',.7);
+      }
+      for(const y of [-.66,.66])seg(-1,y,1,y,w,h,'#f5fbff',1.5);
+      for(const x of [-.55,.55])seg(x,-.66,x,.66,w,h,'#f5fbff',1.4);
+      seg(-.55,0,.55,0,w,h,'#f5fbff',1.2);
+      for(const x of [-1,1])seg(x,-.80,x,.80,w,h,'#f5fbff',1.8);
+      // Mesh and posts: the net lies between the players.
+      const nl=project(0,-.88,.15,w,h),nr=project(0,.88,.15,w,h);
+      const bl=project(0,-.88,0,w,h),br=project(0,.88,0,w,h);
+      path([nl,nr,br,bl],'rgba(240,250,255,.8)',1,'rgba(225,242,255,.16)');
+      for(let i=0;i<=18;i++){
+        const y=-.88+i*1.76/18;
+        const a=project(0,y,.15,w,h),b=project(0,y,0,w,h);
+        path([a,b],'rgba(235,245,255,.37)',.55);
+      }
+      for(let j=1;j<4;j++){
+        const a=project(0,-.88,.15*j/4,w,h),b=project(0,.88,.15*j/4,w,h);
+        path([a,b],'rgba(235,245,255,.28)',.6);
+      }
+      for(const y of [-.88,.88]){
+        const a=project(0,y,0,w,h),b=project(0,y,.20,w,h);
+        path([a,b],'#e4ebf6',3);
+      }
+      let elapsed=(now-t0)/1000;
+      if(elapsed>=duration){sequence();elapsed=0;priorL=0;priorR=0;}
+      // A short serve preparation, then alternating groundstrokes.
+      const prep=1.1;
+      const rallyTime=Math.max(0,elapsed-prep);
+      const k=Math.min(shots.length-2,Math.floor(rallyTime/durationShot));
+      const u=clamp((rallyTime-k*durationShot)/durationShot,0,1);
+      const a=shots[k],b=shots[k+1];
+      const fromX=a.side*.84,toX=b.side*.84;
+      const move=u<.5?2*u*u:1-2*(1-u)*(1-u);
+      const bx=fromX+(toX-fromX)*move;
+      const by=a.lane+(b.lane-a.lane)*move;
+      // Ball arc has a visible descending phase and one ground bounce near the receiver.
+      const arc=Math.sin(Math.PI*u)*(.25+(a.kind*.18));
+      const bounce=u>.78?Math.sin(Math.PI*clamp((u-.78)/.22,0,1))*.075:0;
+      const height=elapsed<prep?.15+Math.sin(Math.PI*elapsed/prep)*.17:.045+arc+bounce;
+      // The player who is about to receive moves towards the incoming landing lane.
+      // The hitter stays near the previous contact and recovers towards centre afterwards.
+      const targetL=(b.side<0?b.lane:a.side<0?a.lane:0);
+      const targetR=(b.side>0?b.lane:a.side>0?a.lane:0);
+      const approach=ease(clamp((u-.12)/.74,0,1));
+      const recovering=ease(clamp((u-.08)/.80,0,1));
+      const leftY=b.side<0?priorL+(targetL-priorL)*approach:
+        a.side<0?a.lane*(1-recovering*.48):priorL;
+      const rightY=b.side>0?priorR+(targetR-priorR)*approach:
+        a.side>0?a.lane*(1-recovering*.48):priorR;
+      if(u>.985){priorL=leftY;priorR=rightY;}
+      const leftHit=(a.side<0&&u<.14)||(b.side<0&&u>.88);
+      const rightHit=(a.side>0&&u<.14)||(b.side>0&&u>.88);
+      const serve=elapsed<prep;
+      const shadow=project(bx,by,0,w,h),ball=project(bx,by,height,w,h);
+      ctx.fillStyle='rgba(1,9,25,.27)';ctx.beginPath();ctx.ellipse(shadow[0],shadow[1],Math.max(3,w*.010),Math.max(2,w*.004),0,0,Math.PI*2);ctx.fill();
+      const runL=Math.abs(targetL-priorL)>.14?.95:.3;
+      const runR=Math.abs(targetR-priorR)>.14?.95:.3;
+      // Render the farther player first in the immersive camera.
+      if(mode==='immersive'){
+        player(.84,rightY,w,h,'#ff529d',elapsed*8,rightHit,runR,serve&&a.side>0);
+        player(-.84,leftY,w,h,'#2de6ff',elapsed*8+.8,leftHit,runL,serve&&a.side<0);
+      }else{
+        player(-.84,leftY,w,h,'#2de6ff',elapsed*8+.8,leftHit,runL,serve&&a.side<0);
+        player(.84,rightY,w,h,'#ff529d',elapsed*8,rightHit,runR,serve&&a.side>0);
+      }
+      if(u>.91){
+        const p=project(toX,b.lane,.06,w,h),radius=(1-u)*30+5;
+        ctx.strokeStyle='rgba(236,255,157,'+((1-u)*.7)+')';
+        ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(p[0],p[1],radius,0,Math.PI*2);ctx.stroke();
+      }
+      const tail=project(bx-(toX-fromX)*.06,by-(b.lane-a.lane)*.06,Math.max(.02,height-.03),w,h);
+      ctx.strokeStyle='rgba(224,255,95,.22)';ctx.lineWidth=Math.max(2,w*.007);
+      ctx.beginPath();ctx.moveTo(tail[0],tail[1]);ctx.lineTo(ball[0],ball[1]);ctx.stroke();
+      ctx.shadowColor='#e4ff5b';ctx.shadowBlur=9;ctx.fillStyle='#dfff39';
+      ctx.beginPath();ctx.arc(ball[0],ball[1],Math.max(3.4,w*.010),0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;
+      raf=requestAnimationFrame(draw);
+    }
+    sequence();host.dataset.active='1';draw(performance.now());
+    sessions.set(host,()=>{active=false;host.dataset.active='0';cancelAnimationFrame(raf);canvas.remove();});
   }
-  function ball(x,y,z,r,color){const lat=7,lon=10;for(let i=0;i<lat;i++)for(let j=0;j<lon;j++){
-   function pt(a,b){const t=Math.PI*a/lat,f=2*Math.PI*b/lon;return [x+r*Math.sin(t)*Math.cos(f),y+r*Math.cos(t),z+r*Math.sin(t)*Math.sin(f)];}
-   const a=pt(i,j),b=pt(i+1,j),c=pt(i+1,j+1),d=pt(i,j+1);tri(a,b,c,color);tri(a,c,d,color);
-  }}
-  function line(x1,y1,z1,x2,y2,z2,width,color){const dx=x2-x1,dz=z2-z1,len=Math.hypot(dx,dz);if(len<.001){box(x1,(y1+y2)/2,z1,width,Math.abs(y2-y1),width,color);return;}
-   const nx=-dz/len*width/2,nz=dx/len*width/2;
-   quad([x1+nx,y1,z1+nz],[x2+nx,y2,z2+nz],[x2-nx,y2,z2-nz],[x1-nx,y1,z1-nz],color);
-  }
-  function player(x,z,shirt,phase,hit,serve){
-   const step=Math.sin(phase*9)*.17;box(x,.06,z,.67,.08,.36,colors.shadow);
-   box(x-.22,.34,z+step,.20,.57,.22,colors.skin);box(x+.22,.34,z-step,.20,.57,.22,colors.skin);
-   box(x-.22,.075,z+step+.08,.31,.14,.46,colors.shoe);box(x+.22,.075,z-step+.08,.31,.14,.46,colors.shoe);
-   box(x,.91,z,.80,.83,.43,shirt);box(x,.61,z,.70,.28,.44,colors.navy);
-   box(x,1.52,z,.25,.22,.24,colors.skin);ball(x,1.84,z,.29,colors.skin);
-   box(x,2.08,z-.04,.49,.12,.49,colors.hair);
-   const armX=x+(x<0?.54:-.54),armY=hit?1.88:serve?2.14:1.10;
-   line(x+(x<0?.36:-.36),1.22,z,armX,armY,z+.10,.15,colors.skin);
-   line(armX,armY,z+.10,armX+(x<0?.18:-.18),armY+.54,z+.10,.065,colors.pole);
-   // Racket head, approximated by a flat hoop and strings.
-   const rx=armX+(x<0?.18:-.18),ry=armY+.79;
-   for(let i=0;i<12;i++){const a=i*Math.PI/6,b=(i+1)*Math.PI/6;line(rx+Math.cos(a)*.26,ry+Math.sin(a)*.34,z+.1,rx+Math.cos(b)*.26,ry+Math.sin(b)*.34,z+.1,.035,colors.white);}
-   for(let i=-1;i<=1;i++){line(rx+i*.11,ry-.26,z+.1,rx+i*.11,ry+.26,z+.1,.012,colors.net);}
-  }
-  function sequence(){const n=5+Math.floor(Math.random()*5);points=[];let x=rnd(-1.4,1.4);for(let i=0;i<n;i++){x=clamp(x+rnd(-2.2,2.2),-3.2,3.2);points.push({x,z:i%2?6.8:-6.8});}total=(n-1)*1.55+.8;t0=performance.now();}
-  function normalize(a){const n=Math.hypot(...a)||1;return a.map(v=>v/n);}
-  function cross(a,b){return [a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];}
-  function camera(w,h){const eye=view==='tv'?[15,16,21]:[0,8,19],target=[0,0,0],f=normalize(target.map((v,i)=>v-eye[i])),right=normalize(cross(f,[0,1,0])),up=cross(right,f);
-   const aspect=w/h,t=1/Math.tan((view==='tv'?48:52)*Math.PI/360),near=.1,far=90;
-   const perspective=[t/aspect,0,0,0,0,t,0,0,0,0,-(far+near)/(far-near),-1,0,0,-2*far*near/(far-near),0];
-   const viewmat=[right[0],up[0],-f[0],0,right[1],up[1],-f[1],0,right[2],up[2],-f[2],0,-right.reduce((s,v,i)=>s+v*eye[i],0),-up.reduce((s,v,i)=>s+v*eye[i],0),f.reduce((s,v,i)=>s+v*eye[i],0),1];
-   const out=new Float32Array(16);for(let c=0;c<4;c++)for(let r=0;r<4;r++)for(let k=0;k<4;k++)out[c*4+r]+=perspective[k*4+r]*viewmat[c*4+k];return out;
-  }
-  function draw(now){if(!active||!host.isConnected||host.dataset.active!=='1')return;
-   if(document.hidden){frame=requestAnimationFrame(draw);return;}
-   const w=Math.max(260,host.clientWidth),h=Math.max(150,host.clientHeight),dpr=Math.min(devicePixelRatio||1,1.8);
-   const cw=Math.round(w*dpr),ch=Math.round(h*dpr);if(cv.width!==cw||cv.height!==ch){cv.width=cw;cv.height=ch;}
-   gl.viewport(0,0,cw,ch);gl.clearColor(.055,.10,.17,1);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
-   verts=[];cols=[];
-   box(0,-.20,0,18,.28,29,colors.outer);box(0,-.035,0,10.97,.09,23.77,colors.court);
-   const W=5.48,L=11.885;
-   for(const x of [-W,W,-4.115,4.115])line(x,.022,-L,x,.022,L,.065,colors.line);
-   for(const z of [-L,L,-6.4,6.4])line(-W,.022,z,W,.022,z,.065,colors.line);
-   line(0,.022,-6.4,0,.022,6.4,.06,colors.line);
-   // Actual mesh with 24 vertical and 7 horizontal strands.
-   for(let i=0;i<=24;i++){const x=-W+i*2*W/24;line(x,0,0,x,.90,0,.017,colors.net);}
-   for(let j=0;j<=7;j++)line(-W,.11+j*.11,0,W,.11+j*.11,0,.016,colors.net);
-   line(-W,.94,0,W,.94,0,.045,colors.white);
-   for(const x of [-W,W])box(x,.60,0,.12,1.20,.12,colors.pole);
-   let elapsed=(now-t0)/1000;if(elapsed>total){sequence();elapsed=0;}
-   const k=Math.min(points.length-2,Math.floor(elapsed/1.55)),u=clamp((elapsed-k*1.55)/1.55,0,1);
-   const a=points[k],b=points[k+1],smooth=u*u*(3-2*u);
-   const bx=a.x+(b.x-a.x)*smooth,bz=a.z+(b.z-a.z)*smooth;
-   const by=.18+Math.sin(Math.PI*u)*2.1;
-   const near=points.filter(p=>p.z>0),far=points.filter(p=>p.z<0);
-   const nearTarget=(b.z>0?b:a).x,farTarget=(b.z<0?b:a).x;
-   const nearX=clamp(nearTarget*.83,-3.5,3.5),farX=clamp(farTarget*.83,-3.5,3.5);
-   player(nearX,8.0,colors.cyan,elapsed,u>.84&&b.z>0,elapsed<.7&&a.z>0);
-   player(farX,-8.0,colors.pink,elapsed+.3,u>.84&&b.z<0,elapsed<.7&&a.z<0);
-   ball(bx,.06,bz,.20,colors.shadow);ball(bx,by,bz,.16,colors.yellow);
-   gl.uniformMatrix4fv(locM,false,camera(w,h));
-   gl.bindBuffer(gl.ARRAY_BUFFER,pb);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(verts),gl.DYNAMIC_DRAW);gl.vertexAttribPointer(locP,3,gl.FLOAT,false,0,0);
-   gl.bindBuffer(gl.ARRAY_BUFFER,cb);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(cols),gl.DYNAMIC_DRAW);gl.vertexAttribPointer(locC,3,gl.FLOAT,false,0,0);
-   gl.drawArrays(gl.TRIANGLES,0,verts.length/3);
-   frame=requestAnimationFrame(draw);
-  }
-  cv.addEventListener('webglcontextlost',e=>{e.preventDefault();active=false;host.dataset.active='0';host.dispatchEvent(new CustomEvent('tennis-3d-lost',{bubbles:true}));});
-  host.replaceChildren(cv);host.dataset.active='1';sequence();draw(performance.now());
-  running.set(host,()=>{active=false;host.dataset.active='0';cancelAnimationFrame(frame);cv.remove();gl.deleteBuffer(pb);gl.deleteBuffer(cb);gl.deleteProgram(prog);});
- }
- document.addEventListener('click',e=>{
-  const btn=e.target.closest('.lv-3d-toggle,.lv-v6-mode');if(!btn)return;
-  const wrap=btn.closest('.lv-terrain'),host=wrap?.querySelector('.lv-3d-host'),svg=wrap?.querySelector('svg');if(!host||!svg)return;
-  const toggle=wrap.querySelector('.lv-3d-toggle'),diag=wrap.querySelector('.lv-3d-diagnostic');
-  if(diag){diag.hidden=true;diag.textContent='';}
-  if(btn.classList.contains('lv-v6-mode')){
-   view=view==='tv'?'immersive':'tv';btn.textContent=view==='tv'?'📺 Vue TV':'🎥 Vue immersive';
-   if(host.dataset.active==='1'){running.get(host)?.();try{boot(host);}catch(err){fail(err);}}
-   return;
-  }
-  if(host.dataset.active==='1'){running.get(host)?.();host.hidden=true;svg.hidden=false;toggle.textContent='🎾 Tester la vue 3D';return;}
-  try{host.hidden=false;svg.hidden=true;boot(host);toggle.textContent='↩ Revenir à la vue 2D';}
-  catch(err){fail(err);}
-  function fail(err){running.get(host)?.();host.replaceChildren();host.hidden=true;svg.hidden=false;toggle.textContent='⚠️ WebGL indisponible — réessayer';if(diag){diag.hidden=false;diag.textContent='V7 : '+String(err?.message||err).slice(0,240);}console.error('[Tennis Edge V7]',err);}
- });
- document.addEventListener('tennis-3d-lost',e=>{const host=e.target,wrap=host.closest('.lv-terrain');if(!wrap)return;host.hidden=true;wrap.querySelector('svg').hidden=false;const diag=wrap.querySelector('.lv-3d-diagnostic');if(diag){diag.hidden=false;diag.textContent='Contexte WebGL perdu : vue 2D restaurée';}});
+  document.addEventListener('click',e=>{
+    const btn=e.target.closest('.lv-3d-toggle,.lv-v6-mode');
+    if(!btn)return;
+    const wrapper=btn.closest('.lv-terrain'),svg=wrapper?.querySelector('svg'),host=wrapper?.querySelector('.lv-3d-host');
+    if(!wrapper||!svg||!host)return;
+    const toggle=wrapper.querySelector('.lv-3d-toggle'),diag=wrapper.querySelector('.lv-3d-diagnostic');
+    if(diag){diag.hidden=true;diag.textContent='';}
+    if(btn.classList.contains('lv-v6-mode')){
+      mode=mode==='tv'?'immersive':'tv';
+      btn.textContent=mode==='tv'?'🎥 Vue immersive':'📺 Vue TV';
+      if(host.dataset.active==='1'){sessions.get(host)?.();try{start(host,svg);}catch(err){fail(err);}}
+      return;
+    }
+    if(host.dataset.active==='1'){
+      sessions.get(host)?.();host.hidden=true;svg.hidden=false;toggle.textContent='🎾 Tester la vue TV';return;
+    }
+    try{
+      host.hidden=false;svg.hidden=true;start(host,svg);
+      toggle.textContent='↩ Revenir à la vue 2D';
+    }catch(err){fail(err);}
+    function fail(err){
+      console.error('[Tennis Edge V6]',err);
+      sessions.get(host)?.();host.replaceChildren();host.hidden=true;svg.hidden=false;
+      toggle.textContent='⚠️ Vue indisponible — diagnostic V6';
+      if(diag){diag.hidden=false;diag.textContent='V6 : '+String(err?.stack||err?.message||err).slice(0,550);}
+    }
+  });
 })();
 
 function terrainLive(m, r, fini){
@@ -2835,7 +2920,7 @@ function terrainLive(m, r, fini){
     </g>`;
   }
   const ptsTxt = (v, x, c) => fini ? '' : `<g><rect x="${x-26}" y="120" width="52" height="32" rx="9" fill="rgba(14,10,36,.78)" stroke="${c}" stroke-opacity=".7"/><text x="${x}" y="143" text-anchor="middle" class="tp" style="fill:${c}">${esc(v ?? '0')}</text></g>`;
-  return `<div class="lv-terrain">${!fini ? '<div class="lv-3d-version">Tennis Edge Live V7 · WebGL 3D</div><button type="button" class="lv-3d-toggle">🎾 Tester la vue 3D</button><button type="button" class="lv-v6-mode">🎥 Vue immersive</button><div class="lv-3d-diagnostic" hidden role="alert"></div><div class="lv-3d-host" hidden><span class="lv-3d-caption">Animation WebGL 3D illustrative · score réel</span></div>' : ''}<svg data-live-uid="${esc(m.uid)}" data-live-score="${esc([SH.join(','),SA.join(','),h.point,a.point,srv].join('|'))}" viewBox="0 0 ${W} ${Hh}" role="img" aria-label="${esc(court(m.home))} ${gh} – ${ga} ${esc(court(m.away))}">
+  return `<div class="lv-terrain">${!fini ? '<div class="lv-3d-version">Tennis Edge Live V7.1 · Vue stable</div><button type="button" class="lv-3d-toggle">🎾 Tester la vue TV</button><button type="button" class="lv-v6-mode">🎥 Vue immersive</button><div class="lv-3d-diagnostic" hidden role="alert"></div><div class="lv-3d-host" hidden><span class="lv-3d-caption">Animation en perspective illustrative · score réel</span></div>' : ''}<svg data-live-uid="${esc(m.uid)}" data-live-score="${esc([SH.join(','),SA.join(','),h.point,a.point,srv].join('|'))}" viewBox="0 0 ${W} ${Hh}" role="img" aria-label="${esc(court(m.home))} ${gh} – ${ga} ${esc(court(m.away))}">
     <defs><linearGradient id="lvsol" x1="0" x2="1"><stop offset="0" stop-color="#1f2a6b"/><stop offset=".5" stop-color="#26307a"/><stop offset="1" stop-color="#1f2a6b"/></linearGradient></defs>
     <rect x="0" y="0" width="${W}" height="${Hh}" rx="14" fill="#141040"/>
     <rect x="20" y="30" width="320" height="140" fill="url(#lvsol)" stroke="rgba(255,255,255,.75)" stroke-width="1.6"/>
