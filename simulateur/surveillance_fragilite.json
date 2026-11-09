@@ -1,0 +1,111 @@
+{
+ "genere_le": "2026-11-09T12:35:50+00:00",
+ "jour": "2026-11-09",
+ "regle": "groupe justifié si pente ≤ reste − 0,10 avec ≥ 100 matchs (6 semaines) ; deux semaines de suite pour entrer comme pour sortir ; semaine trop pauvre : inchangé",
+ "matchs": 922,
+ "semaine": {
+  "favoris_opposes": {
+   "matchs": 152,
+   "assez": true,
+   "pente_groupe": 0.643,
+   "pente_reste": 1.035,
+   "justifie": true,
+   "reussite_groupe_pct": 49.3
+  },
+  "ecart_modeles_10": {
+   "matchs": 229,
+   "assez": true,
+   "pente_groupe": 1.015,
+   "pente_reste": 1.015,
+   "justifie": false,
+   "reussite_groupe_pct": 69.0
+  },
+  "experience_30": {
+   "matchs": 48,
+   "assez": false
+  },
+  "experience_60": {
+   "matchs": 109,
+   "assez": true,
+   "pente_groupe": 0.84,
+   "pente_reste": 1.059,
+   "justifie": true,
+   "reussite_groupe_pct": 68.8
+  },
+  "match_serre": {
+   "matchs": 280,
+   "assez": true,
+   "pente_groupe": 0.989,
+   "pente_reste": 1.015,
+   "justifie": false,
+   "reussite_groupe_pct": 52.5
+  },
+  "gros_favori": {
+   "matchs": 124,
+   "assez": true,
+   "pente_groupe": 1.1,
+   "pente_reste": 0.96,
+   "justifie": false,
+   "reussite_groupe_pct": 89.5
+  },
+  "huitiemes": {
+   "matchs": 161,
+   "assez": true,
+   "pente_groupe": 0.596,
+   "pente_reste": 1.128,
+   "justifie": true,
+   "reussite_groupe_pct": 64.6
+  },
+  "pronostic_bouge": {
+   "matchs": 37,
+   "assez": false
+  }
+ },
+ "decisions": {
+  "favoris_opposes": {
+   "actif": true,
+   "serie": 0,
+   "note": "actif"
+  },
+  "ecart_modeles_10": {
+   "actif": false,
+   "serie": 0,
+   "note": "inactif"
+  },
+  "experience_30": {
+   "actif": false,
+   "serie": 0,
+   "note": "trop peu de matchs : inchangé"
+  },
+  "experience_60": {
+   "actif": false,
+   "serie": 1,
+   "note": "inactif ; 1/2 vers le changement"
+  },
+  "match_serre": {
+   "actif": false,
+   "serie": 0,
+   "note": "inactif"
+  },
+  "gros_favori": {
+   "actif": false,
+   "serie": 0,
+   "note": "inactif"
+  },
+  "huitiemes": {
+   "actif": false,
+   "serie": 1,
+   "note": "inactif ; 1/2 vers le changement"
+  },
+  "pronostic_bouge": {
+   "actif": false,
+   "serie": 0,
+   "note": "trop peu de matchs : inchangé"
+  }
+ },
+ "note_v3": {
+  "matchs": 144,
+  "assez": false,
+  "alerte": false
+ }
+}

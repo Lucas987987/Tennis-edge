@@ -1,21 +1,21 @@
 {
   "version": "combinaison",
   "statut": "accumulation",
-  "n": 787,
-  "rejetes": 61,
-  "date_de_reference": "2026-11-04",
+  "n": 886,
+  "rejetes": 67,
+  "date_de_reference": "2026-11-09",
   "fenetres": {
     "4_semaines": {
       "courant": {
-        "n": 787,
-        "semaines": 3,
+        "n": 886,
+        "semaines": 4,
         "du": "2026-10-23",
-        "au": "2026-11-04",
-        "log_loss": 0.60906,
-        "brier": 0.211389,
-        "exactitude": 0.664549,
-        "confiance_moyenne": 0.657025,
-        "ecart_confiance_exactitude": -0.007524
+        "au": "2026-11-09",
+        "log_loss": 0.607769,
+        "brier": 0.21128,
+        "exactitude": 0.65237,
+        "confiance_moyenne": 0.657686,
+        "ecart_confiance_exactitude": 0.005315
       },
       "precedent": {
         "n": 0,
@@ -26,15 +26,15 @@
     },
     "8_semaines": {
       "courant": {
-        "n": 787,
-        "semaines": 3,
+        "n": 886,
+        "semaines": 4,
         "du": "2026-10-23",
-        "au": "2026-11-04",
-        "log_loss": 0.60906,
-        "brier": 0.211389,
-        "exactitude": 0.664549,
-        "confiance_moyenne": 0.657025,
-        "ecart_confiance_exactitude": -0.007524
+        "au": "2026-11-09",
+        "log_loss": 0.607769,
+        "brier": 0.21128,
+        "exactitude": 0.65237,
+        "confiance_moyenne": 0.657686,
+        "ecart_confiance_exactitude": 0.005315
       },
       "precedent": {
         "n": 0,
@@ -45,15 +45,15 @@
     },
     "12_semaines": {
       "courant": {
-        "n": 787,
-        "semaines": 3,
+        "n": 886,
+        "semaines": 4,
         "du": "2026-10-23",
-        "au": "2026-11-04",
-        "log_loss": 0.60906,
-        "brier": 0.211389,
-        "exactitude": 0.664549,
-        "confiance_moyenne": 0.657025,
-        "ecart_confiance_exactitude": -0.007524
+        "au": "2026-11-09",
+        "log_loss": 0.607769,
+        "brier": 0.21128,
+        "exactitude": 0.65237,
+        "confiance_moyenne": 0.657686,
+        "ecart_confiance_exactitude": 0.005315
       },
       "precedent": {
         "n": 0,
@@ -66,15 +66,15 @@
   "groupes_12_semaines": {
     "global": {
       "courant": {
-        "n": 787,
-        "semaines": 3,
+        "n": 886,
+        "semaines": 4,
         "du": "2026-10-23",
-        "au": "2026-11-04",
-        "log_loss": 0.60906,
-        "brier": 0.211389,
-        "exactitude": 0.664549,
-        "confiance_moyenne": 0.657025,
-        "ecart_confiance_exactitude": -0.007524
+        "au": "2026-11-09",
+        "log_loss": 0.607769,
+        "brier": 0.21128,
+        "exactitude": 0.65237,
+        "confiance_moyenne": 0.657686,
+        "ecart_confiance_exactitude": 0.005315
       },
       "precedent": {
         "n": 0,
@@ -85,15 +85,15 @@
     },
     "surface:Clay": {
       "courant": {
-        "n": 194,
+        "n": 213,
         "semaines": 3,
         "du": "2026-10-23",
-        "au": "2026-11-03",
-        "log_loss": 0.610509,
-        "brier": 0.211159,
-        "exactitude": 0.659794,
-        "confiance_moyenne": 0.663995,
-        "ecart_confiance_exactitude": 0.004202
+        "au": "2026-11-08",
+        "log_loss": 0.600124,
+        "brier": 0.207457,
+        "exactitude": 0.647887,
+        "confiance_moyenne": 0.657138,
+        "ecart_confiance_exactitude": 0.009251
       },
       "precedent": {
         "n": 0,
@@ -104,15 +104,15 @@
     },
     "surface:Hard": {
       "courant": {
-        "n": 591,
-        "semaines": 3,
+        "n": 671,
+        "semaines": 4,
         "du": "2026-10-23",
-        "au": "2026-11-04",
-        "log_loss": 0.609579,
-        "brier": 0.211841,
-        "exactitude": 0.664975,
-        "confiance_moyenne": 0.654396,
-        "ecart_confiance_exactitude": -0.010579
+        "au": "2026-11-09",
+        "log_loss": 0.611068,
+        "brier": 0.212825,
+        "exactitude": 0.652757,
+        "confiance_moyenne": 0.657561,
+        "ecart_confiance_exactitude": 0.004804
       },
       "precedent": {
         "n": 0,
@@ -142,15 +142,15 @@
     },
     "circuit:ATP": {
       "courant": {
-        "n": 158,
+        "n": 166,
         "semaines": 3,
         "du": "2026-10-23",
-        "au": "2026-11-03",
-        "log_loss": 0.605198,
-        "brier": 0.210457,
-        "exactitude": 0.651899,
-        "confiance_moyenne": 0.661797,
-        "ecart_confiance_exactitude": 0.009898
+        "au": "2026-11-08",
+        "log_loss": 0.630156,
+        "brier": 0.219896,
+        "exactitude": 0.644578,
+        "confiance_moyenne": 0.669651,
+        "ecart_confiance_exactitude": 0.025073
       },
       "precedent": {
         "n": 0,
@@ -161,15 +161,15 @@
     },
     "circuit:CH": {
       "courant": {
-        "n": 451,
-        "semaines": 3,
+        "n": 547,
+        "semaines": 4,
         "du": "2026-10-23",
-        "au": "2026-11-04",
-        "log_loss": 0.623227,
-        "brier": 0.216234,
-        "exactitude": 0.665188,
-        "confiance_moyenne": 0.655723,
-        "ecart_confiance_exactitude": -0.009466
+        "au": "2026-11-09",
+        "log_loss": 0.609745,
+        "brier": 0.211937,
+        "exactitude": 0.645338,
+        "confiance_moyenne": 0.655174,
+        "ecart_confiance_exactitude": 0.009836
       },
       "precedent": {
         "n": 0,
@@ -180,15 +180,15 @@
     },
     "circuit:WTA": {
       "courant": {
-        "n": 178,
-        "semaines": 3,
+        "n": 173,
+        "semaines": 4,
         "du": "2026-10-23",
-        "au": "2026-11-03",
-        "log_loss": 0.576592,
-        "brier": 0.199943,
-        "exactitude": 0.674157,
-        "confiance_moyenne": 0.656088,
-        "ecart_confiance_exactitude": -0.01807
+        "au": "2026-11-09",
+        "log_loss": 0.580037,
+        "brier": 0.200935,
+        "exactitude": 0.682081,
+        "confiance_moyenne": 0.654145,
+        "ecart_confiance_exactitude": -0.027936
       },
       "precedent": {
         "n": 0,
@@ -199,15 +199,15 @@
     },
     "format:BO3": {
       "courant": {
-        "n": 787,
-        "semaines": 3,
+        "n": 886,
+        "semaines": 4,
         "du": "2026-10-23",
-        "au": "2026-11-04",
-        "log_loss": 0.60906,
-        "brier": 0.211389,
-        "exactitude": 0.664549,
-        "confiance_moyenne": 0.657025,
-        "ecart_confiance_exactitude": -0.007524
+        "au": "2026-11-09",
+        "log_loss": 0.607769,
+        "brier": 0.21128,
+        "exactitude": 0.65237,
+        "confiance_moyenne": 0.657686,
+        "ecart_confiance_exactitude": 0.005315
       },
       "precedent": {
         "n": 0,
@@ -225,5 +225,5 @@
   },
   "regle": "Dégradation signalée si log loss et Brier franchissent tous deux leurs seuils ; sur/sous-confiance si |confiance - exactitude| >= 0,10. Sous-groupes sur 12 semaines.",
   "action": "Alerte diagnostique seulement : réévaluation contrôlée, jamais de modification automatique du champion.",
-  "genere_le": "2026-11-04T11:16:37+00:00"
+  "genere_le": "2026-11-09T12:36:22+00:00"
 }

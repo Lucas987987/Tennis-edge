@@ -12,18 +12,46 @@
  "series": {
   "ATP": {
    "pire": 0,
-   "mieux": 0
+   "mieux": 1
   },
   "WTA": {
    "pire": 0,
-   "mieux": 0
+   "mieux": 1
   },
   "CH": {
    "pire": 0,
-   "mieux": 0
+   "mieux": 1
   }
  },
- "semaines": [],
+ "semaines": [
+  {
+   "semaine": "2026-11-02",
+   "circuits": {
+    "ATP": {
+     "matchs": 66,
+     "log_loss_actuel": 0.47554,
+     "log_loss_reevalue": 0.46752,
+     "gain": 0.00802,
+     "en_place": true
+    },
+    "WTA": {
+     "matchs": 117,
+     "log_loss_actuel": 0.38569,
+     "log_loss_reevalue": 0.36972,
+     "gain": 0.01597,
+     "en_place": true
+    },
+    "CH": {
+     "matchs": 281,
+     "log_loss_actuel": 0.42353,
+     "log_loss_reevalue": 0.39134,
+     "gain": 0.03219,
+     "en_place": true
+    }
+   }
+  }
+ ],
  "adopte_le": "2026-11-06",
- "source": "étude du 06/11/2026 (rapport_live_reevaluation.json) : log loss −0,018 Challenger, −0,011 ATP, −0,011 WTA ; adoption directe sur les trois circuits (décision de Lucas), retrait après 2 semaines de suite moins bonnes"
+ "source": "étude du 06/11/2026 (rapport_live_reevaluation.json) : log loss −0,018 Challenger, −0,011 ATP, −0,011 WTA ; adoption directe sur les trois circuits (décision de Lucas), retrait après 2 semaines de suite moins bonnes",
+ "maj": "2026-11-09T12:35:48+00:00"
 }
