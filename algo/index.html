@@ -2926,7 +2926,7 @@ function terrainLive(m, r, fini){
     </g>`;
   }
   const ptsTxt = (v, x, c) => fini ? '' : `<g><rect x="${x-26}" y="120" width="52" height="32" rx="9" fill="rgba(14,10,36,.78)" stroke="${c}" stroke-opacity=".7"/><text x="${x}" y="143" text-anchor="middle" class="tp" style="fill:${c}">${esc(v ?? '0')}</text></g>`;
-  return `<div class="lv-terrain">${!fini ? '<div class="lv-3d-version">Tennis Edge Live V7.1 · Vue stable</div><button type="button" class="lv-3d-toggle">🎾 Tester la vue TV</button><button type="button" class="lv-v9-toggle">✨ Tester V9.2 · 3D locale</button><button type="button" class="lv-v6-mode">🎥 Vue immersive</button><div class="lv-3d-diagnostic" hidden role="alert"></div><div class="lv-3d-host" hidden><span class="lv-3d-caption">Animation en perspective illustrative · score réel</span></div>' : ''}<svg data-live-uid="${esc(m.uid)}" data-live-score="${esc([SH.join(','),SA.join(','),h.point,a.point,srv].join('|'))}" viewBox="0 0 ${W} ${Hh}" role="img" aria-label="${esc(court(m.home))} ${gh} – ${ga} ${esc(court(m.away))}">
+  return `<div class="lv-terrain">${!fini ? '<div class="lv-3d-version">Tennis Edge Live V7.1 · Vue stable</div><button type="button" class="lv-3d-toggle">🎾 Tester la vue TV</button><button type="button" class="lv-v9-toggle">✨ Tester V9.4 · 3D autonome</button><button type="button" class="lv-v6-mode">🎥 Vue immersive</button><div class="lv-3d-diagnostic" hidden role="alert"></div><div class="lv-3d-host" hidden><span class="lv-3d-caption">Animation en perspective illustrative · score réel</span></div>' : ''}<svg data-live-uid="${esc(m.uid)}" data-live-score="${esc([SH.join(','),SA.join(','),h.point,a.point,srv].join('|'))}" viewBox="0 0 ${W} ${Hh}" role="img" aria-label="${esc(court(m.home))} ${gh} – ${ga} ${esc(court(m.away))}">
     <defs><linearGradient id="lvsol" x1="0" x2="1"><stop offset="0" stop-color="#1f2a6b"/><stop offset=".5" stop-color="#26307a"/><stop offset="1" stop-color="#1f2a6b"/></linearGradient></defs>
     <rect x="0" y="0" width="${W}" height="${Hh}" rx="14" fill="#141040"/>
     <rect x="20" y="30" width="320" height="140" fill="url(#lvsol)" stroke="rgba(255,255,255,.75)" stroke-width="1.6"/>
@@ -3768,7 +3768,7 @@ fetch('donnees.json?v=' + Date.now()).then(r=>r.json()).then(d=>{
   let loadPromise=null;
   const SOURCES={
     core:['/vendor/babylon.js'],
-    loaders:['/vendor/babylonjs.loaders.min.js']
+    loaders:[]
   };
   function script(url){
     return new Promise((resolve,reject)=>{
@@ -3789,8 +3789,7 @@ fetch('donnees.json?v=' + Date.now()).then(r=>r.json()).then(d=>{
   async function libraries(){
     if(!loadPromise)loadPromise=(async()=>{
       if(!window.BABYLON?.Engine)await firstAvailable(SOURCES.core,()=>!!window.BABYLON?.Engine);
-      if(!window.BABYLON?.SceneLoader)throw Error('Babylon.js incomplet');
-      await firstAvailable(SOURCES.loaders,()=>!!window.BABYLON?.GLTFFileLoader);
+      // No external loader required: procedural meshes only.
       return window.BABYLON;
     })().catch(e=>{loadPromise=null;throw e;});
     return loadPromise;
@@ -3801,11 +3800,11 @@ fetch('donnees.json?v=' + Date.now()).then(r=>r.json()).then(d=>{
   }
   async function start(wrapper,button){
     const old=wrapper.querySelector('.lv-v9-host');
-    if(old){dispose(old);old.remove();button.textContent='✨ Tester V9.2 · 3D locale';return;}
+    if(old){dispose(old);old.remove();button.textContent='✨ Tester V9.4 · 3D autonome';return;}
     const host=document.createElement('div');host.className='lv-v9-host';
     const canvas=document.createElement('canvas');host.appendChild(canvas);
     const msg=document.createElement('div');msg.className='lv-v9-message';
-    msg.textContent='Chargement du moteur 3D et des personnages…';host.appendChild(msg);
+    msg.textContent='Chargement de la scène 3D autonome…';host.appendChild(msg);
     const controls=document.createElement('div');controls.className='lv-v9-controls';
     controls.innerHTML='<button type="button" data-cam="tv">TV</button><button type="button" data-cam="back">Fond</button><button type="button" data-cam="side">Côté</button>';
     host.appendChild(controls);
@@ -3827,7 +3826,7 @@ fetch('donnees.json?v=' + Date.now()).then(r=>r.json()).then(d=>{
       controls.addEventListener('click',e=>{const b=e.target.closest('[data-cam]');if(b)mode=b.dataset.cam;});
       const hemi=new B.HemisphericLight('ambient',new B.Vector3(0,1,0),scene);hemi.intensity=.85;
       const sun=new B.DirectionalLight('sun',new B.Vector3(-.4,-1,.25),scene);sun.intensity=1.4;
-      const shadow=new B.ShadowGenerator(1024,sun);shadow.useBlurExponentialShadowMap=true;
+      const shadow=new B.ShadowGenerator(512,sun);shadow.useBlurExponentialShadowMap=true;
       const material=(name,color)=>{const m=new B.PBRMaterial(name,scene);m.albedoColor=B.Color3.FromHexString(color);m.metallic=.03;m.roughness=.86;return m;};
       const blue=material('court','#2c81c0'),dark=material('surround','#143c66'),white=material('lines','#e9f5ff');
       function slab(name,w,h,d,x,y,z,mat){
@@ -3856,32 +3855,55 @@ fetch('donnees.json?v=' + Date.now()).then(r=>r.json()).then(d=>{
           for(let k=0;k<17;k++)slab('seat',.7,.16,1.3,side*(14+row*1.05),.43+row*.55,-15+k*1.8,seat);
         }
       }
+      // V9.4: all characters are native Babylon meshes, with no GLB, texture or blob URL.
+      // Low-poly meshes keep the scene lightweight on Android GPUs.
       const playerRoots=[];
-      // Public Three.js example Soldier.glb includes skinned human model and animations.
-      // Testing only: third-party asset must be licensed/attributed before production use.
-      const modelUrls=['/vendor/Soldier.glb'];
-      for(let i=0;i<2;i++){
-        if(cancelled)break;
-        let result=null, modelError=null;
-        for(const modelUrl of modelUrls){
-          try{result=await B.SceneLoader.ImportMeshAsync('', '/vendor/', 'Soldier.glb', scene);break;}
-          catch(e){modelError=e;}
-        }
-        if(!result)throw Error('Modèle 3D indisponible : '+String(modelError?.message||modelError).slice(0,100));
-        const root=new B.TransformNode('player-root-'+i,scene);
-        for(const m of result.meshes){
-          if(!m.parent)m.parent=root;
-          if(m.getTotalVertices&&m.getTotalVertices()>0){m.receiveShadows=true;shadow.addShadowCaster(m);}
-        }
-        root.position=new B.Vector3(i===0?-.4:.4,0,i===0?9.8:-9.8);
-        root.rotation.y=i===0?Math.PI:0;
-        // Soldier sample is approximately 2m tall.
-        root.scaling.setAll(1);
-        const animations=result.animationGroups||[];
-        const idle=animations.find(x=>/idle/i.test(x.name))||animations[0];
-        if(idle)idle.start(true,1,0,idle.to);
-        playerRoots.push({root,idle,animations});
+      const skin=material('skin','#d9a17b');
+      const hair=material('hair','#382a30');
+      const cyan=material('shirt-cyan','#15d8f4');
+      const magenta=material('shirt-pink','#f7469a');
+      const shorts=material('shorts','#26355e');
+      const shoe=material('shoes','#f3f5ff');
+      const racketMat=material('racket','#dce9ff');
+      const gripMat=material('grip','#23314d');
+      function part(name,kind,opts,parent,mat,pos){
+        const mesh=kind==='sphere'?B.MeshBuilder.CreateSphere(name,opts,scene):
+          kind==='cylinder'?B.MeshBuilder.CreateCylinder(name,opts,scene):
+          kind==='torus'?B.MeshBuilder.CreateTorus(name,opts,scene):
+          B.MeshBuilder.CreateBox(name,opts,scene);
+        mesh.parent=parent;mesh.position.set(...pos);mesh.material=mat;
+        return mesh;
       }
+      function player(i){
+        const root=new B.TransformNode('athlete-'+i,scene);
+        root.position.set(i===0?-.4:.4,0,i===0?9.7:-9.7);
+        root.rotation.y=i===0?Math.PI:0;
+        const jersey=i===0?cyan:magenta;
+        part('torso','box',{width:.65,height:.78,depth:.34},root,jersey,[0,1.38,0]);
+        part('neck','cylinder',{diameter:.17,height:.17,tessellation:8},root,skin,[0,1.85,0]);
+        part('head','sphere',{diameter:.39,segments:12},root,skin,[0,2.12,0]);
+        part('hair','sphere',{diameter:.40,segments:12},root,hair,[0,2.27,-.035]);
+        part('shorts','box',{width:.63,height:.35,depth:.37},root,shorts,[0,.84,0]);
+        const limbs=[];
+        for(const sign of [-1,1]){
+          const leg=new B.TransformNode('leg-'+i+'-'+sign,scene);leg.parent=root;leg.position.set(sign*.18,.70,0);
+          part('leg','cylinder',{diameter:.16,height:.62,tessellation:8},leg,skin,[0,-.31,0]);
+          part('sock','cylinder',{diameter:.19,height:.14,tessellation:8},leg,shoe,[0,-.61,0]);
+          part('shoe','box',{width:.24,height:.12,depth:.36},leg,shoe,[0,-.72,-.08]);
+          const arm=new B.TransformNode('arm-'+i+'-'+sign,scene);arm.parent=root;arm.position.set(sign*.4,1.7,0);
+          part('arm','cylinder',{diameter:.15,height:.64,tessellation:8},arm,skin,[sign*.05,-.33,0]);
+          arm.rotation.z=sign*.18;
+          limbs.push({leg,arm,sign});
+        }
+        const hand=new B.TransformNode('racket-hand-'+i,scene);hand.parent=root;hand.position.set(.60,1.31,-.04);
+        hand.rotation.z=-.52;
+        part('racket-handle','cylinder',{diameter:.065,height:.58,tessellation:8},hand,gripMat,[0,.30,0]);
+        part('racket-head','torus',{diameter:.58,thickness:.045,tessellation:18},hand,racketMat,[0,.88,0]);
+        for(let k=-2;k<=2;k++)part('strings-v','box',{width:.009,height:.46,depth:.009},hand,racketMat,[k*.09,.88,0]);
+        for(let k=-2;k<=2;k++)part('strings-h','box',{width:.43,height:.009,depth:.009},hand,racketMat,[0,.88+k*.09,0]);
+        return {root,limbs,hand};
+      }
+      for(let i=0;i<2;i++)playerRoots.push(player(i));
       if(cancelled||!host.isConnected){dispose(host);return;}
       const ball=B.MeshBuilder.CreateSphere('ball',{diameter:.15,segments:12},scene);
       const ballMat=new B.StandardMaterial('ball-yellow',scene);ballMat.diffuseColor=new B.Color3(.85,1,.05);ballMat.emissiveColor=new B.Color3(.25,.32,.01);ball.material=ballMat;
@@ -3899,19 +3921,27 @@ fetch('donnees.json?v=' + Date.now()).then(r=>r.json()).then(d=>{
         playerRoots.forEach((p,i)=>{
           const target=(i===0?to.z>0:to.z<0)?to.x:(i===0?from.z>0:from.z<0)?from.x:0;
           p.root.position.x+=Math.max(-.07,Math.min(.07,(target-p.root.position.x)*dt*5));
+          const phase=t*7+i*1.6;
+          const effort=Math.min(1,Math.abs(target-p.root.position.x)/2+.22);
+          p.limbs.forEach(({leg,arm,sign})=>{
+            leg.rotation.x=Math.sin(phase+(sign>0?Math.PI:0))*.30*effort;
+            arm.rotation.x=Math.sin(phase+(sign>0?0:Math.PI))*.26*effort;
+          });
+          p.hand.rotation.z=-.52+.18*Math.sin(phase*.72);
+          p.root.rotation.y=(i===0?Math.PI:0)+.10*Math.sin(phase*.38);
         });
         camera.position=B.Vector3.Lerp(camera.position,cameras[mode],Math.min(1,dt*3));
         camera.setTarget(new B.Vector3(0,0,0));
         scene.render();
         frames++;
-        if(performance.now()-last>2500){msg.textContent='V9 · '+Math.round(frames*1000/(performance.now()-last))+' FPS · animation illustrative, score réel affiché dessous';last=performance.now();frames=0;}
+        if(performance.now()-last>2500){msg.textContent='V9.4 · '+Math.round(frames*1000/(performance.now()-last))+' FPS · animation illustrative, score réel affiché dessous';last=performance.now();frames=0;}
       });
       resize=()=>engine&&engine.resize();window.addEventListener('resize',resize);resize();
-      msg.textContent='V9 active · modèles GLB chargés · animation illustrative';
+      msg.textContent='V9.4 active · joueurs 3D autonomes · animation illustrative';
     }catch(e){
       console.error('[Tennis Edge V9]',e);
       if(engine){engine.stopRenderLoop();engine.dispose();engine=null;}
-      msg.textContent='V9.1 indisponible : '+String(e.message||e).slice(0,160)+' · La V7.1 reste utilisable.';
+      msg.textContent='V9.4 indisponible : '+String(e.message||e).slice(0,160)+' · La V7.1 reste utilisable.';
       controls.remove();
     }
   }
