@@ -1,14 +1,14 @@
 {
  "schema_version": 1,
- "genere_le": "2026-11-05T07:24:46Z",
+ "genere_le": "2026-11-09T07:13:29Z",
  "canaux": {
   "MISER": {
    "libelle": "🎯 MISER — steam, EV ≥ seuil vs Pinnacle juste (vainqueur du match)",
    "source": "miser_signal_log.jsonl (messages envoyés) + ajouts de suivi_direct",
    "regle": "première alerte de chaque match, au book et au prix du message ; relances non recomptées",
    "debut": "2026-10-22",
-   "n_alertes": 27,
-   "n_matchs": 27,
+   "n_alertes": 28,
+   "n_matchs": 28,
    "n_relances": 0,
    "n_denoues": 23,
    "bilan": {
@@ -259,6 +259,14 @@
      "pin_close_adv": 1.699,
      "clv_pin": 6.7,
      "source_resultat": "feuille de match (TennisApi)"
+    },
+    "2026-11-10_enzo_aguiard_akira_santillan": {
+     "gagne": null,
+     "pnl": null,
+     "pin_close": null,
+     "pin_close_adv": null,
+     "clv_pin": null,
+     "source_resultat": "inconnu"
     }
    }
   }
