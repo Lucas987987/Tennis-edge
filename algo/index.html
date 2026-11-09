@@ -2538,6 +2538,52 @@ function tableauLive(m, r, fini, grand){
 // 06/11/2026 (paquet 213) — LE TERRAIN : vue de dessus, home à gauche (cyan), away à droite (rose). Au centre, les jeux
 // du set en cours ; sur chaque moitié, le nom et les points du joueur ; la balle jaune chez le serveur, du côté où il
 // sert (égalité à droite du serveur quand le nombre de points joués dans le jeu est pair, avantage sinon).
+// Arena Live V2 : trajectoires d'ambiance renouvelées, indépendantes du score.
+// Elles ne prétendent PAS reproduire les frappes réelles (aucune donnée de tracking).
+(function initLiveBallVariety(){
+  if (typeof window === 'undefined' || window.__tennisLiveBallVariety) return;
+  window.__tennisLiveBallVariety = true;
+  const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)');
+  const rand = (a,b) => a + Math.random() * (b-a);
+  const fmt = n => Math.round(n);
+  const last = new WeakMap();
+  function pathFor(motion){
+    const srv = Number(motion.dataset.srv) === 1 ? 1 : 0;
+    const side = Number(motion.dataset.side) === 1;
+    const fromX = srv === 0 ? 15 : 345;
+    const fromY = side ? 133 : 67;
+    const targetX = srv === 0 ? rand(258,327) : rand(33,102);
+    const targetY = rand(53,147);
+    const exchanges = Math.floor(rand(2,6));
+    let path = `M ${fromX} ${fromY}`;
+    let x = fromX, y = fromY;
+    // Chaque frappe traverse le filet, avec une direction et une longueur différentes.
+    for(let i=0;i<exchanges;i++){
+      const nextX = i===0 ? targetX : (x<180 ? rand(265,333) : rand(27,95));
+      const nextY = rand(53,147);
+      const midX = (x+nextX)/2;
+      const midY = (y+nextY)/2 + rand(-22,22);
+      path += ` Q ${fmt(midX)} ${fmt(midY)} ${fmt(nextX)} ${fmt(nextY)}`;
+      x=nextX; y=nextY;
+    }
+    return path;
+  }
+  function renew(){
+    if(document.hidden || (reduce && reduce.matches)) return;
+    document.querySelectorAll('.lv-terrain .lv-ball-motion').forEach(motion => {
+      // La durée varie, tout comme le nombre de frappes et les angles.
+      const previous = last.get(motion) || 0;
+      if(Date.now()-previous < 3200) return;
+      last.set(motion,Date.now());
+      motion.setAttribute('path',pathFor(motion));
+      motion.setAttribute('dur',`${rand(4.3,7.1).toFixed(1)}s`);
+      try { motion.beginElement(); } catch (_) { /* navigateur sans SMIL */ }
+    });
+  }
+  // Le timer ne déclenche aucune requête API et ne touche pas aux scores.
+  window.setInterval(renew, 5700);
+})();
+
 function terrainLive(m, r, fini){
   const {h, a, srv} = cotesLive(r);
   const SH = h.sets || [], SA = a.sets || [], i = SH.length - 1;
@@ -2558,8 +2604,9 @@ function terrainLive(m, r, fini){
     const sens = srv === 0 ? 1 : -1;
     const x1 = bx + sens * 75, x2 = bx + sens * 250;
     const y1 = by + (bas ? -34 : 34), y2 = by + (bas ? -52 : 52);
-    const parcours = `M ${bx} ${by} Q ${x1} ${y1} 180 100 Q ${x2} ${y2} ${360-bx} ${200-by} Q 180 100 ${bx} ${by}`;
-    balle = `<g class="lv-ball-glow"><circle cx="0" cy="0" r="5" fill="#D4FF3A"><animateMotion path="${parcours}" dur="4.8s" repeatCount="indefinite" calcMode="paced"/></circle></g>`;
+    // Trajectoire de départ ; un animateur JS léger renouvelle ensuite le parcours.
+    const parcours = `M ${bx} ${by} Q ${x1} ${y1} 180 100 Q ${x2} ${y2} ${360-bx} ${200-by}`;
+    balle = `<g class="lv-ball-glow"><circle cx="0" cy="0" r="5" fill="#D4FF3A"><animateMotion class="lv-ball-motion" data-srv="${srv}" data-side="${bas ? 1 : 0}" path="${parcours}" dur="5s" repeatCount="indefinite" calcMode="paced"/></circle></g>`;
   }
   const ptsTxt = (v, x, c) => fini ? '' : `<g><rect x="${x-26}" y="120" width="52" height="32" rx="9" fill="rgba(14,10,36,.78)" stroke="${c}" stroke-opacity=".7"/><text x="${x}" y="143" text-anchor="middle" class="tp" style="fill:${c}">${esc(v ?? '0')}</text></g>`;
   return `<div class="lv-terrain"><svg viewBox="0 0 ${W} ${Hh}" role="img" aria-label="${esc(court(m.home))} ${gh} – ${ga} ${esc(court(m.away))}">
