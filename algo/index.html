@@ -526,6 +526,14 @@ body.carte #video{display:block;width:1080px;height:1350px}
   .mdj > .fiche > .duelx, .mdj > .fiche > #post-zone, .mdj > .fiche > .cartes{grid-column:2}
 }
 
+/* Les rencontres terminées restent consultables dans une section repliable. */
+.list .finished-group{border-top:1px solid var(--line);list-style:none}
+.list .finished-group > details > summary{cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px 16px;font-weight:700;color:var(--ink);list-style:none}
+.list .finished-group > details > summary::-webkit-details-marker{display:none}
+.list .finished-group > details > summary:after{content:'▾';color:var(--dim);transition:transform .2s}
+.list .finished-group > details[open] > summary:after{transform:rotate(180deg)}
+.list .finished-group > details > .list{margin:0;padding:0;list-style:none;border-top:1px solid var(--line)}
+.list .finished-group > details > .list > li{border-top:1px solid var(--line)}
 /* Arena : bouton visible dans la barre du haut, y compris sur mobile */
 .arena-nav{display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;min-height:34px;padding:7px 13px;border-radius:999px;background:#d4ff3a;color:#141225!important;text-decoration:none!important;font:800 13px system-ui,sans-serif;box-shadow:0 2px 12px rgba(130,170,0,.3)}
 .arena-nav:hover,.arena-nav:focus-visible{background:#eaff88;outline:2px solid #80b000;outline-offset:2px}
@@ -3073,8 +3081,10 @@ function chargerLive(){
     if (!o || !Array.isArray(o.matchs) || o.ok === false) return;
     const nouveau = relierLive(o.matchs);
     for (const [uid, r] of Object.entries(nouveau)) LIVE.vus[uid] = r;
+    const avant = Object.keys(LIVE.par_uid).sort().join('|');
     LIVE.par_uid = nouveau;
-    majLive();
+    const apres = Object.keys(nouveau).sort().join('|');
+    if (avant !== apres) rendListe(); else majLive();
   }).catch(()=>{}).finally(()=>{ liveRequeteEnCours = false; });
 }
 function demarrerLive(){
@@ -3085,7 +3095,16 @@ function demarrerLive(){
 }
 function rendListe(){
   const ul = document.getElementById('list'), mdj = D.match_du_jour && D.match_du_jour.uid;
-  const tous = matchsFiltres(), visibles = tous.slice(0,nListe);
+  const tous = matchsFiltres();
+  // Un match est terminé uniquement si son résultat est archivé ou si le flux live
+  // l'a déjà vu puis ne le signale plus. Un match à venir n'est jamais replié.
+  const estTermine = m => !!(D.apres_match && D.apres_match[m.uid] && D.apres_match[m.uid].reel)
+    || (!!LIVE.vus[m.uid] && !LIVE.par_uid[m.uid]);
+  const enCours = tous.filter(m => !estTermine(m));
+  const termines = tous.filter(estTermine);
+  const visibles = enCours.slice(0,nListe);
+  const visiblesFinis = termines.slice(0,Math.max(0,nListe-visibles.length));
+  const etaitOuvert = !!document.querySelector('#list .finished-group details[open]');
   const total = D.matchs.filter(m=>m.simulation && m.simulation_disponible !== false).length;
   document.getElementById('liste-compte').textContent = t('compte_matchs',tous.length,total);
   if (!tous.length){
@@ -3093,7 +3112,7 @@ function rendListe(){
     document.getElementById('liste-more').hidden = true;
     return;
   }
-  ul.innerHTML = visibles.map(m=>{ const p=m.p_home, star=m.uid===mdj, selection=m.uid===(selectionId||mdj);
+  const ligneMatch = m=>{ const p=m.p_home, star=m.uid===mdj, selection=m.uid===(selectionId||mdj);
     return `<li class="${star?'star ':''}${selection?'selectionne':''}"><a class="match-open" href="${m.uid===mdj?'#':'#match='+encodeURIComponent(m.uid)}" data-uid="${esc(m.uid)}" data-circuit="${esc(m.circuit)}" aria-current="${selection?'true':'false'}" aria-label="${esc(t('voir_simulation'))} ${esc(m.home)} – ${esc(m.away)}">
       <span class="time">${esc(heure(m.debut))}</span><span>
       <span class="tour">${esc(m.tournoi)} · ${esc(SURF[L][m.surface]||m.surface||'')}${star ? `<span class="badge">${esc(L==='fr'?'du jour':'of the day')}</span>` : ''}${peuDocumentes(m).length ? `<span class="badge peu" title="${esc(t('es_badge_aide'))}">${esc(t('es_badge'))}</span>` : ''}</span>
@@ -3103,10 +3122,11 @@ function rendListe(){
       <span class="live-l" data-live="${esc(m.uid)}"></span>
       <span class="meta"><span>${esc(t('cote_juste'))} ${odds(m.cotes_justes[0])} / ${odds(m.cotes_justes[1])}</span><span class="ouvrir">${esc(selection ? t('simulation_affichee') : t('voir_simulation'))}</span></span>
       ${rendType(m)}${rendFiabilite(m.fiabilite)}
-    </span></a></li>`; }).join('');
+    </span></a></li>`; };
+  ul.innerHTML = visibles.map(ligneMatch).join('') + (termines.length ? `<li class="finished-group"><details ${etaitOuvert?'open':''}><summary>${esc(L==='fr'?'Matchs terminés':'Finished matches')} (${termines.length})</summary><ul class="list">${visiblesFinis.map(ligneMatch).join('')}</ul></details></li>` : '');
   const more = document.getElementById('liste-more');
-  more.hidden = visibles.length >= tous.length;
-  more.textContent = t('voir_matchs',Math.min(30,tous.length-visibles.length));
+  more.hidden = visibles.length + visiblesFinis.length >= tous.length;
+  more.textContent = t('voir_matchs',Math.min(30,tous.length-visibles.length-visiblesFinis.length));
   majLive();
 }
 function courbeSvg(c){
@@ -3465,5 +3485,5 @@ fetch('donnees.json?v=' + Date.now()).then(r=>r.json()).then(d=>{
 }).catch(()=>{ document.getElementById('mdj-zone').innerHTML = '<div class="panel empty">Données indisponibles / Data unavailable.</div>'; });
 })();
 </script>
-<a href="../arena/" style="position:fixed;bottom:18px;right:18px;z-index:9999;background:#b6f365;color:#13220b;padding:12px 17px;border-radius:999px;font:700 15px system-ui;text-decoration:none">🏟️ Arena</a></body>
+</body>
 </html>
