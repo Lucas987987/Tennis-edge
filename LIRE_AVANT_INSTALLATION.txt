@@ -1,15 +1,12 @@
-Tennis Edge V9.2 — chargement 3D même origine Cloudflare
+TENNIS EDGE V9.3 — Correction des ressources 3D Cloudflare
 
-INSTALLATION
-1. Appliquer ce ZIP via « Appliquer un paquet » et fusionner la PR.
-2. Attendre « Deploy Pages » VERT : il télécharge Babylon.js, les loaders et le modèle Soldier.glb, puis les publie dans /algo/vendor/.
-3. Attendre « Déployer le worker algo » VERT : il autorise /vendor/babylon.js, /vendor/babylonjs.loaders.min.js et /vendor/Soldier.glb.
-4. Vérifier sur Cloudflare : https://algo.tennis-edge.workers.dev/vendor/babylon.js (JavaScript, pas 404/502).
-5. Ouvrir un match en direct, puis « Tester V9.2 · 3D locale ».
+1. Importer ce ZIP avec le workflow « Appliquer un paquet ».
+2. Fusionner la PR créée par le workflow.
+3. Vérifier le workflow de déploiement du Worker algo (deploy_algo.yml).
+4. Ouvrir https://algo.tennis-edge.workers.dev/vendor/status : affiche les codes HTTP des 3 ressources sur GitHub Pages et les sources de secours.
+5. Tester https://algo.tennis-edge.workers.dev/vendor/babylon.js : le navigateur affiche du JavaScript.
+6. Tester la vue V9.2 sur un match en direct, en cliquant « Tester V9.2 - 3D locale ».
 
-IMPORTANT
-- Le ZIP contient le code et le workflow de récupération des ressources, PAS les binaires 3D. GitHub Actions les récupère pendant Deploy Pages. Sans accès réseau GitHub ou si un package change, le run Pages échouera explicitement.
-- Le modèle Soldier est un personnage de démonstration, PAS un tennisman réaliste ; usage commercial/licence à vérifier avant production.
-- Animation illustrative, données live inchangées. Aucun changement OddsPapi/TennisApi.
-- La V7.1 reste disponible et visible sous la vue V9.2.
-- En cas de 502, vérifier que Deploy Pages a terminé avant le worker et patienter 60 secondes pour le cache.
+Ce paquet ne change ni le flux live, ni les pronostics, ni la vue 2D.
+Si la V9.2 n'est pas installée, installer d'abord la V9.2 : ce correctif ne contient que le Worker.
+Les sources de secours sont récupérées côté Worker. Leur disponibilité dépend du réseau Cloudflare et des fournisseurs.

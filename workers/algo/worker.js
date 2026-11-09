@@ -68,28 +68,79 @@ export async function publique(req, chemin) {
 }
 
 
-// V9.2 : ressources 3D publiques depuis Pages, servies sous la même origine Cloudflare.
-// Liste blanche stricte : aucune route arbitraire et aucun accès au coffre.
+// V9.3 : passerelle 3D résiliente. Les trois ressources sont publiques et explicitement autorisées.
+// Les CDN ne sont contactés que côté Worker : aucune dépendance externe dans la CSP du navigateur.
 export const VENDOR_3D = Object.freeze({
-  '/vendor/babylon.js': 'application/javascript; charset=utf-8',
-  '/vendor/babylonjs.loaders.min.js': 'application/javascript; charset=utf-8',
-  '/vendor/Soldier.glb': 'model/gltf-binary',
+  '/vendor/babylon.js': { type: 'application/javascript; charset=utf-8', min: 100000,
+    sources: ['https://cdn.jsdelivr.net/npm/babylonjs@7.54.3/babylon.js',
+      'https://unpkg.com/babylonjs@7.54.3/babylon.js'] },
+  '/vendor/babylonjs.loaders.min.js': { type: 'application/javascript; charset=utf-8', min: 10000,
+    sources: ['https://cdn.jsdelivr.net/npm/babylonjs-loaders@7.54.3/babylonjs.loaders.min.js',
+      'https://unpkg.com/babylonjs-loaders@7.54.3/babylonjs.loaders.min.js'] },
+  '/vendor/Soldier.glb': { type: 'model/gltf-binary', min: 10000,
+    sources: ['https://raw.githubusercontent.com/mrdoob/three.js/r164/examples/models/gltf/Soldier.glb'] },
 });
-export async function vendor3D(req, pathname) {
-  const type = VENDOR_3D[pathname];
-  if (!type) return new Response('Ressource inconnue.', { status: 404, headers: SECURITE });
+const VENDOR_CACHE_SECONDS = 300;
+function vendorSources(pathname) {
   const name = pathname.slice('/vendor/'.length);
-  try {
-    const upstream = await fetch(ORIGINE + 'vendor/' + name, { cf: { cacheTtl: 3600, cacheEverything: true } });
-    if (!upstream.ok) return new Response('Ressource 3D absente de GitHub Pages.', { status: 502, headers: SECURITE });
-    return new Response(req.method === 'HEAD' ? null : upstream.body, {
-      status: 200,
-      headers: { ...SECURITE, 'Content-Type': type, 'Cache-Control': 'public, max-age=3600',
-        'Cross-Origin-Resource-Policy': 'same-origin' },
-    });
-  } catch (_) {
-    return new Response('Ressource 3D temporairement inaccessible.', { status: 502, headers: SECURITE });
+  return [ORIGINE + 'vendor/' + name, ...VENDOR_3D[pathname].sources];
+}
+async function vendorFetch(source, method = 'GET') {
+  // Aucun cache forcé pour les erreurs Pages : un 404 ancien ne doit pas bloquer la correction.
+  return fetch(source, { method, redirect: 'follow', headers: { Accept: '*/*' } });
+}
+export async function vendor3D(req, pathname) {
+  const cfg = VENDOR_3D[pathname];
+  if (!cfg) return new Response('Ressource inconnue.', { status: 404, headers: SECURITE });
+  if (req.method !== 'GET' && req.method !== 'HEAD')
+    return new Response(null, { status: 405, headers: SECURITE });
+  const attempts = [];
+  for (const [i, source] of vendorSources(pathname).entries()) {
+    try {
+      // GET même pour HEAD : certains hébergeurs ne gèrent pas HEAD comme GET.
+      const upstream = await vendorFetch(source);
+      const length = Number(upstream.headers.get('content-length')) || 0;
+      const contentType = (upstream.headers.get('content-type') || '').toLowerCase();
+      if (!upstream.ok || contentType.includes('text/html') || (length && length < cfg.min)) {
+        attempts.push(`${i === 0 ? 'pages' : 'secours'+i}:${upstream.status}`);
+        if (upstream.body) await upstream.body.cancel();
+        continue;
+      }
+      const headers = { ...SECURITE, 'Content-Type': cfg.type,
+        'Cache-Control': `public, max-age=${VENDOR_CACHE_SECONDS}`,
+        'Cross-Origin-Resource-Policy': 'same-origin',
+        'X-Tennis-3D-Source': i === 0 ? 'github-pages' : `fallback-${i}`,
+        'X-Tennis-3D-Version': '9.3' };
+      return new Response(req.method === 'HEAD' ? null : upstream.body,
+        { status: 200, headers });
+    } catch (err) { attempts.push(`${i === 0 ? 'pages' : 'secours'+i}:network`); }
   }
+  return new Response('Ressource 3D indisponible. ' + attempts.join(', '), {
+    status: 502, headers: { ...SECURITE, 'Content-Type': 'text/plain; charset=utf-8',
+      'Cache-Control': 'no-store', 'X-Tennis-3D-Version': '9.3' },
+  });
+}
+// Diagnostic léger : teste l'accessibilité des sources sans télécharger les modèles complets.
+export async function vendorStatus(req) {
+  if (req.method !== 'GET' && req.method !== 'HEAD')
+    return new Response(null, { status: 405, headers: SECURITE });
+  const results = {};
+  for (const pathname of Object.keys(VENDOR_3D)) {
+    const attempts = [];
+    for (const [i, source] of vendorSources(pathname).entries()) {
+      try {
+        const r = await vendorFetch(source, 'HEAD');
+        attempts.push({ source: i === 0 ? 'github-pages' : `fallback-${i}`,
+          status: r.status, type: r.headers.get('content-type') || null,
+          bytes: r.headers.get('content-length') || null });
+        if (r.body) await r.body.cancel();
+      } catch (_) { attempts.push({ source: i === 0 ? 'github-pages' : `fallback-${i}`, status: 'network-error' }); }
+    }
+    results[pathname] = attempts;
+  }
+  return new Response(req.method === 'HEAD' ? null : JSON.stringify({ ok: true, version: '9.3', files: results }), {
+    headers: { ...SECURITE, 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' },
+  });
 }
 
 // 3. VIDÉO À LA DEMANDE (04/11/2026, demande de Lucas) : POST /video {uid} lance le workflow « Vidéo — simulation du
@@ -316,6 +367,7 @@ export const livePoints = (req, env, url) => liveDetail(req, env, url, 'points')
 export default {
   async fetch(req, env) {
     const url = new URL(req.url);
+    if (url.pathname === '/vendor/status') return vendorStatus(req);
     if (url.pathname in VENDOR_3D) return vendor3D(req, url.pathname);
     if (url.pathname === '/live/stats') return liveStats(req, env, url);
     if (url.pathname === '/live/points') return livePoints(req, env, url);
