@@ -1,7 +1,7 @@
 {
   "schema": "recap_apprentissage_v1",
   "semaine": "2026-W46",
-  "genere_le": "2026-11-09T12:36:28+00:00",
+  "genere_le": "2026-11-09T13:18:43+00:00",
   "statut": "a_verifier",
   "lecture_seule": true,
   "modifie_apprentissage": false,
@@ -33,7 +33,7 @@
     },
     "gouvernance": {
       "disponible": true,
-      "genere_le": "2026-11-09T12:36:28.155255+00:00"
+      "genere_le": "2026-11-09T13:18:43.610488+00:00"
     }
   },
   "sources_manquantes": [],
@@ -105,10 +105,10 @@
     "population": "évaluation des facteurs, distincte des seuls pronostics directs récents"
   },
   "apprentissage_continu": {
-    "n": 890,
+    "n": 893,
     "minimum_n": 400,
     "adopte": false,
-    "raison": "en attente : 7 nouveaux matchs depuis le dernier jugement (il en faut 30)",
+    "raison": "en attente : 10 nouveaux matchs depuis le dernier jugement (il en faut 30)",
     "poids": null,
     "poids_appris": null,
     "jugement": {},
@@ -203,19 +203,12 @@
   "champion": {
     "statut_gouvernance": "a_verifier",
     "initialisation": false,
-    "empreinte_avant": "4d4190fbf235faedaf4de5a0800532b6dcd02ee3e9462597fc96a7ddf0eaf5cf",
-    "empreinte_apres": "d4ea6edf9145e5adb4fff63754970891e567341951e7a2715746e50f0dbc6927",
+    "empreinte_avant": "d4ea6edf9145e5adb4fff63754970891e567341951e7a2715746e50f0dbc6927",
+    "empreinte_apres": "784d4dca9cd1ecae979e06f5d61174eff81886046c43a0fb14d55173884fc995",
     "modifie_cette_semaine": true,
-    "promotions_demande_es": [
-      "classement_relatif",
-      "profils_hierarchiques"
-    ],
-    "promotions_retenues": [
-      "classement_relatif"
-    ],
-    "promotions_differees": [
-      "profils_hierarchiques"
-    ],
+    "promotions_demande_es": [],
+    "promotions_retenues": [],
+    "promotions_differees": [],
     "periodes": {
       "juge_jusqua": "2026-11-09T01:00",
       "jugement_courant": {},
