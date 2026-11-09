@@ -1,0 +1,49 @@
+name: V11 - Préparer les vrais personnages 3D
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Installer Blender
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y blender
+      - name: Télécharger Nathan et Sophia (fichiers existants)
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/v11source /tmp/v11output
+          for name in nathan sophia; do
+            for ext in fbx png; do
+              curl -fL --retry 3 --connect-timeout 15 --max-time 120 \
+                "https://raw.githubusercontent.com/s0ck3t/VideoIntoBlenderModel/main/assets/rigs/renderpeople_${name}.${ext}" \
+                -o "/tmp/v11source/renderpeople_${name}.${ext}"
+            done
+          done
+          test "$(wc -c < /tmp/v11source/renderpeople_nathan.fbx)" -gt 1000000
+          test "$(wc -c < /tmp/v11source/renderpeople_sophia.fbx)" -gt 1000000
+      - name: Convertir les personnages FBX vers GLB
+        run: blender -b -t 2 --python scripts/build_real_players.py -- /tmp/v11source /tmp/v11output
+      - name: Vérifier les GLB produits
+        run: |
+          python - <<'PY'
+          import json,struct,pathlib
+          for p in sorted(pathlib.Path('/tmp/v11output').glob('*.glb')):
+              b=p.read_bytes()
+              assert b[:4]==b'glTF' and len(b)>100000,(p,len(b))
+              length=struct.unpack_from('<I',b,8)[0]
+              assert length==len(b)
+              chunk_length=struct.unpack_from('<I',b,12)[0]
+              obj=json.loads(b[20:20+chunk_length]); assert obj.get('meshes') and obj.get('skins'),(p,'no skinned mesh')
+              print(p.name,'bytes',len(b),'meshes',len(obj['meshes']),'skins',len(obj['skins']),'animations',len(obj.get('animations',[])))
+          assert len(list(pathlib.Path('/tmp/v11output').glob('*.glb')))==2
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tennis-edge-v11-real-players-glb
+          path: /tmp/v11output/*.glb
+          retention-days: 7

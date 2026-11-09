@@ -1,9 +1,8 @@
-Tennis Edge Arena - Diagnostic API/CORS
-
-1. Envoyer ce ZIP dans le workflow « Appliquer un paquet » et fusionner.
-2. GitHub > Actions > « Arena - Diagnostic API et CORS » > Run workflow.
-3. Si le run est rouge, ouvrir le détail de l'étape « Tester les routes publiques et CORS » et transmettre les logs.
-4. Si le run est vert, ouvrir Arena en navigation privée. Si le problème persiste, il faudra vérifier la configuration de l'URL API côté navigateur.
-
-Ce paquet ne remplace aucun fichier Arena existant. Il ajoute uniquement un workflow de diagnostic.
-Il ne lit aucun secret, ne fait aucune écriture en base, ne modifie aucun Worker.
+Tennis Edge V11 — préparation de personnages 3D humains existants.
+Ce paquet ajoute uniquement un workflow manuel et un script Blender.
+Il ne modifie pas le live, le site public, ni Deploy Pages.
+Après application, GitHub Actions > V11 - Préparer les vrais personnages 3D > Run workflow.
+Le workflow télécharge Nathan et Sophia, convertit en GLB et vérifie que chaque fichier contient une peau et un squelette. Il produit un artifact ZIP avec player_a.glb et player_b.glb.
+IMPORTANT : cette étape ne publie PAS encore les personnages. Leur rendu, la présence d'animations de tennis et les droits de redistribution doivent être validés avant publication publique.
+Source: https://github.com/s0ck3t/VideoIntoBlenderModel
+Consulter assets/LICENCES.md dans le dépôt source avant redistribution.
