@@ -1,1 +1,10 @@
-V9 test Cloudflare: button Tester V9 on each live match. V7.1 remains default. Babylon CDN and public Soldier GLB from Three.js are loaded only on button click. These third-party assets are for technical evaluation, NOT cleared for commercial production. If they fail to load, V7.1 remains visible. No odds/data APIs touched.
+Tennis Edge V9.1 — correction du chargement Babylon.js
+
+Installation : Appliquer un paquet > merge > deploy Cloudflare.
+Ouvrir un match en direct et cliquer Tester V9.1.
+
+Le moteur et son chargeur essaient plusieurs CDN. Le modèle humain essaie aussi plusieurs sources.
+ATTENTION : ce paquet N'INCLUT PAS les fichiers Babylon.js ou GLB : les téléchargements directs sont indisponibles dans cet environnement. Il n'est donc PAS autonome.
+Si Cloudflare bloque les scripts externes via CSP ou si le téléphone bloque tous les CDN, ce correctif ne pourra pas fonctionner.
+La V7.1 et les API sont inchangées.
+Pour une version 100 % autonome, placer dans algo/vendor/ les trois fichiers babylon.js, babylonjs.loaders.min.js et Soldier.glb (avec licences validées), puis les publier via le workflow Cloudflare.
