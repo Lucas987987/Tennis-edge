@@ -1,21 +1,2 @@
-TENNIS EDGE V10 — STUDIO 3D INDÉPENDANT (SOCLE TECHNIQUE)
-
-Ce paquet n'améliore PAS automatiquement les graphismes du site actuel.
-Il crée un laboratoire séparé : algo/v10/index.html.
-
-IMPORTANT : les fichiers professionnels player_a.glb et player_b.glb ne sont PAS inclus.
-Ils nécessitent des modèles licenciés avec squelettes et animations de tennis.
-Le studio ne dessine volontairement aucun faux personnage de remplacement.
-
-Pour tester en local : placer des GLB dans algo/v10/assets/, lancer un serveur HTTP,
-puis ouvrir /algo/v10/. Les modèles doivent être orientés et mis à l'échelle
-pour un terrain de 23,77 mètres. Le studio signale explicitement les fichiers manquants.
-
-Pour publier sur GitHub Pages : ajouter au workflow pages.yml la copie de
-algo/v10/ vers _site/algo/v10/ ; ce paquet ne modifie pas le workflow existant.
-
-Dépendance : Babylon.js + loader GLB. Le studio tente d'abord les ressources
-locales, puis le CDN officiel Babylon. Il faut autoriser le chargement réseau.
-
-Ce prototype n'est PAS une V10 visuelle finalisée. Il permet de valider les
-véritables modèles et les performances Android avant intégration dans le live.
+Correctif 404 V10. Installer avec Appliquer un paquet, fusionner la PR puis attendre Deploy Pages vert. URL : https://lucas987987.github.io/Tennis-edge/algo/v10/
+Le workflow Pages inclus conserve les ressources V9.2 et ajoute la publication V10.
