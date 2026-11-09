@@ -1,12 +1,15 @@
-TENNIS EDGE V9.3 — Correction des ressources 3D Cloudflare
+TENNIS EDGE LIVE V9.4 - 3D AUTONOME
 
-1. Importer ce ZIP avec le workflow « Appliquer un paquet ».
-2. Fusionner la PR créée par le workflow.
-3. Vérifier le workflow de déploiement du Worker algo (deploy_algo.yml).
-4. Ouvrir https://algo.tennis-edge.workers.dev/vendor/status : affiche les codes HTTP des 3 ressources sur GitHub Pages et les sources de secours.
-5. Tester https://algo.tennis-edge.workers.dev/vendor/babylon.js : le navigateur affiche du JavaScript.
-6. Tester la vue V9.2 sur un match en direct, en cliquant « Tester V9.2 - 3D locale ».
+Installation : GitHub Actions > Appliquer un paquet > importer ce ZIP > fusionner la PR.
 
-Ce paquet ne change ni le flux live, ni les pronostics, ni la vue 2D.
-Si la V9.2 n'est pas installée, installer d'abord la V9.2 : ce correctif ne contient que le Worker.
-Les sources de secours sont récupérées côté Worker. Leur disponibilité dépend du réseau Cloudflare et des fournisseurs.
+Contenu : algo/index.html uniquement.
+
+Correctif : joueurs 3D generes dans Babylon.js, sans Soldier.glb, sans GLTF, sans texture externe.
+Terrain, filet, raquettes, balle et mouvements legers inclus.
+Les vues TV/Fond/Cote sont conservees. Vue 2D stable disponible en secours.
+
+IMPORTANT : le moteur Babylon.js local /vendor/babylon.js doit toujours etre accessible.
+Le ZIP ne modifie ni Cloudflare Worker, ni workflows, ni donnees des matchs.
+Les trajectoires 3D sont illustratives, les scores proviennent du flux live.
+
+Si GitHub Actions est encore en panne, attendre son retablissement avant installation.
