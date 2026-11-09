@@ -218,13 +218,21 @@ jobs:
           mkdir -p _site/algo
           cp algo/index.html _site/algo/ || echo "❌ MANQUANT : algo/index.html"
           cp algo/donnees.json _site/algo/ 2>/dev/null || echo "⚠️ algo/donnees.json absent (prochain passage des pronostics)"
+
           # V9.2 : 3D auto-hébergée ; échec explicite si les fichiers sont absents.
           mkdir -p _site/algo/vendor
           cp algo/vendor/babylon.js algo/vendor/babylonjs.loaders.min.js algo/vendor/Soldier.glb _site/algo/vendor/
           test -s _site/algo/vendor/babylon.js
           test -s _site/algo/vendor/babylonjs.loaders.min.js
           test -s _site/algo/vendor/Soldier.glb
-          echo 'V9.2 : ressources 3D locales publiées.' 
+          echo 'V9.2 : ressources 3D locales publiées.'
+
+          # V10 : publier le studio 3D autonome, ses scripts et ses ressources.
+          test -s algo/v10/index.html
+          mkdir -p _site/algo/v10
+          cp -R algo/v10/. _site/algo/v10/
+          test -s _site/algo/v10/index.html
+          echo 'V10 : studio 3D publie.'
 
           # Arena V1.9.2 : publier aussi les ressources CSS/JS utilisées par index.html.
           mkdir -p _site/arena
