@@ -471,9 +471,11 @@ body.carte #video{display:block;width:1080px;height:1350px}
 .lv-pc{display:flex;justify-content:space-between;gap:8px;font-size:.82rem;flex-wrap:wrap}.lv-pc b{font-family:var(--disp);font-size:1rem}
 .lv-up{color:var(--ok)}.lv-down{color:var(--ko)}.lv-dim{color:var(--dim)}
 .lv-terrain{margin:6px 0 10px}.lv-terrain svg{display:block;width:100%;height:auto;max-width:620px;margin:0 auto}
+.lv-terrain .lv-ball-glow{filter:drop-shadow(0 0 3px #D4FF3A)}
+.lv-terrain .lv-illustration{font:600 8px Barlow,system-ui,sans-serif;fill:#B6B2D2;letter-spacing:.3px}
 .lv-terrain .tn{font:600 13px Barlow,system-ui,sans-serif}.lv-terrain .tg{font:26px var(--disp);fill:#F4F1FF;letter-spacing:6px}
 .lv-terrain .tl{font:600 10px var(--cond);fill:#ABA3D6;letter-spacing:1px;text-transform:uppercase}.lv-terrain .tp{font:20px var(--disp)}
-@media (prefers-reduced-motion:reduce){.lv-terrain animate{display:none}}
+@media (prefers-reduced-motion:reduce){.lv-terrain animate{display:none}.lv-terrain .lv-ball-glow{filter:none}}
 .live-match .lv-sb{grid-template-columns:minmax(0,1fr) repeat(var(--ns,3),32px) 50px;font-family:var(--disp);font-size:1.35rem;gap:6px 8px}
 .live-match .lv-sb .n{font-size:1.05rem}.live-match .lv-pt{font-size:1.2rem;padding:2px 0}
 .lv-courbe{margin-top:12px}.lv-courbe svg{display:block;width:100%;height:auto;max-width:760px;margin:0 auto}.lv-courbe text{font-family:var(--cond);fill:var(--dim);font-size:11px}
@@ -2551,7 +2553,13 @@ function terrainLive(m, r, fini){
     // le serveur de gauche regarde vers la droite : sa droite est en BAS ; celui de droite regarde vers la gauche : sa droite est en HAUT
     const bas = srv === 0 ? egalite : !egalite;
     const bx = srv === 0 ? 12 : 348, by = bas ? 132 : 68;
-    balle = `<circle cx="${bx}" cy="${by}" r="6" fill="#D4FF3A"><animate attributeName="r" values="6;7.5;6" dur="1.6s" repeatCount="indefinite"/></circle>`;
+    // Mouvement d'ambiance uniquement : les trajectoires réelles ne sont pas fournies par /live.
+    // SVG SMIL est indépendant des rafraîchissements du score et n'effectue aucun appel réseau.
+    const sens = srv === 0 ? 1 : -1;
+    const x1 = bx + sens * 75, x2 = bx + sens * 250;
+    const y1 = by + (bas ? -34 : 34), y2 = by + (bas ? -52 : 52);
+    const parcours = `M ${bx} ${by} Q ${x1} ${y1} 180 100 Q ${x2} ${y2} ${360-bx} ${200-by} Q 180 100 ${bx} ${by}`;
+    balle = `<g class="lv-ball-glow"><circle cx="0" cy="0" r="5" fill="#D4FF3A"><animateMotion path="${parcours}" dur="4.8s" repeatCount="indefinite" calcMode="paced"/></circle></g>`;
   }
   const ptsTxt = (v, x, c) => fini ? '' : `<g><rect x="${x-26}" y="120" width="52" height="32" rx="9" fill="rgba(14,10,36,.78)" stroke="${c}" stroke-opacity=".7"/><text x="${x}" y="143" text-anchor="middle" class="tp" style="fill:${c}">${esc(v ?? '0')}</text></g>`;
   return `<div class="lv-terrain"><svg viewBox="0 0 ${W} ${Hh}" role="img" aria-label="${esc(court(m.home))} ${gh} – ${ga} ${esc(court(m.away))}">
@@ -2569,7 +2577,8 @@ function terrainLive(m, r, fini){
     <rect x="134" y="48" width="92" height="50" rx="10" fill="rgba(14,10,36,.88)" stroke="rgba(212,255,58,.35)"/>
     <text x="180" y="90" text-anchor="middle" class="tg">${gh}  ${ga}</text>
     <text x="180" y="63" text-anchor="middle" class="tl">${esc(fini ? t('live_termine') : (tb ? t('lv_m_tb') : (i <= 0 ? t('lv_set1') : t('lv_set', i+1))))}</text>
-    ${ptsTxt(h.point, 100, '#2EE6FF')}${ptsTxt(a.point, 260, '#FF4FAE')}${balle}</svg></div>`;
+    ${ptsTxt(h.point, 100, '#2EE6FF')}${ptsTxt(a.point, 260, '#FF4FAE')}${balle}
+    ${!fini ? '<text x="180" y="192" text-anchor="middle" class="lv-illustration">Animation illustrative · score réel</text>' : ''}</svg></div>`;
 }
 function barreLive(m, r, fini, grand){
   if (fini) return '';
