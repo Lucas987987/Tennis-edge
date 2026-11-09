@@ -6,43 +6,44 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-24.04
-    timeout-minutes: 35
-    container:
-      image: blender/blender:4.2.3
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
-      - name: Vérifier Blender préinstallé
-        run: blender --version
-      - name: Télécharger les modèles existants
+      - name: Installer Blender officiel sans Docker
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p /tmp/v11source /tmp/v11output
-          python3 - <<'PYDL'
-          import urllib.request,pathlib,time
-          base='https://raw.githubusercontent.com/s0ck3t/VideoIntoBlenderModel/main/assets/rigs/'
-          out=pathlib.Path('/tmp/v11source')
-          for name in ('nathan','sophia'):
-              for ext in ('fbx','png'):
-                  file=f'renderpeople_{name}.{ext}'
-                  for attempt in range(3):
-                      try:
-                          urllib.request.urlretrieve(base+file,out/file)
-                          break
-                      except Exception:
-                          if attempt==2: raise
-                          time.sleep(3)
-                  print(file,(out/file).stat().st_size,flush=True)
-          PYDL
+          URL="https://download.blender.org/release/Blender4.2/blender-4.2.3-linux-x64.tar.xz"
+          curl -fL --retry 5 --retry-delay 5 --connect-timeout 30 --max-time 1200 "$URL" -o "$RUNNER_TEMP/blender.tar.xz"
+          mkdir -p "$RUNNER_TEMP/blender"
+          tar -xJf "$RUNNER_TEMP/blender.tar.xz" -C "$RUNNER_TEMP/blender" --strip-components=1
+          echo "$RUNNER_TEMP/blender" >> "$GITHUB_PATH"
+          "$RUNNER_TEMP/blender/blender" --version
+      - name: Télécharger Nathan et Sophia
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/v11source" "$RUNNER_TEMP/v11output"
+          for name in nathan sophia; do
+            for ext in fbx png; do
+              file="renderpeople_${name}.${ext}"
+              curl -fL --retry 5 --retry-delay 4 "https://raw.githubusercontent.com/s0ck3t/VideoIntoBlenderModel/main/assets/rigs/${file}" -o "$RUNNER_TEMP/v11source/$file"
+              test -s "$RUNNER_TEMP/v11source/$file"
+              ls -lh "$RUNNER_TEMP/v11source/$file"
+            done
+          done
       - name: Convertir les personnages en GLB
-        run: blender -b -t 2 --python scripts/build_real_players.py -- /tmp/v11source /tmp/v11output
+        shell: bash
+        run: |
+          set -euo pipefail
+          blender -b -t 2 --python scripts/build_real_players.py -- "$RUNNER_TEMP/v11source" "$RUNNER_TEMP/v11output"
       - name: Vérifier les GLB
         shell: bash
         run: |
           python3 - <<'PYVERIFY'
-          import pathlib,json,struct
-          files=sorted(pathlib.Path('/tmp/v11output').glob('*.glb'))
-          assert len(files)==2,files
+          import pathlib,json,struct,os
+          files=sorted(pathlib.Path(os.environ['RUNNER_TEMP'],'v11output').glob('*.glb'))
+          assert {p.name for p in files}=={'player_a.glb','player_b.glb'},files
           for p in files:
               b=p.read_bytes(); assert b[:4]==b'glTF' and len(b)>100000
               assert struct.unpack_from('<I',b,8)[0]==len(b)
@@ -53,5 +54,5 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: tennis-edge-v11-real-players-glb
-          path: /tmp/v11output/*.glb
+          path: ${{ runner.temp }}/v11output/*.glb
           retention-days: 7
