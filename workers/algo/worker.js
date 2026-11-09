@@ -67,6 +67,31 @@ export async function publique(req, chemin) {
   return new Response(r.body, { headers: h });
 }
 
+
+// V9.2 : ressources 3D publiques depuis Pages, servies sous la même origine Cloudflare.
+// Liste blanche stricte : aucune route arbitraire et aucun accès au coffre.
+export const VENDOR_3D = Object.freeze({
+  '/vendor/babylon.js': 'application/javascript; charset=utf-8',
+  '/vendor/babylonjs.loaders.min.js': 'application/javascript; charset=utf-8',
+  '/vendor/Soldier.glb': 'model/gltf-binary',
+});
+export async function vendor3D(req, pathname) {
+  const type = VENDOR_3D[pathname];
+  if (!type) return new Response('Ressource inconnue.', { status: 404, headers: SECURITE });
+  const name = pathname.slice('/vendor/'.length);
+  try {
+    const upstream = await fetch(ORIGINE + 'vendor/' + name, { cf: { cacheTtl: 3600, cacheEverything: true } });
+    if (!upstream.ok) return new Response('Ressource 3D absente de GitHub Pages.', { status: 502, headers: SECURITE });
+    return new Response(req.method === 'HEAD' ? null : upstream.body, {
+      status: 200,
+      headers: { ...SECURITE, 'Content-Type': type, 'Cache-Control': 'public, max-age=3600',
+        'Cross-Origin-Resource-Policy': 'same-origin' },
+    });
+  } catch (_) {
+    return new Response('Ressource 3D temporairement inaccessible.', { status: 502, headers: SECURITE });
+  }
+}
+
 // 3. VIDÉO À LA DEMANDE (04/11/2026, demande de Lucas) : POST /video {uid} lance le workflow « Vidéo — simulation du
 //    match du jour » (video_simulation.yml) pour ce match ; la vidéo arrive sur le Telegram PRIVÉ, comme chaque matin.
 //    Même clé privée que le coffre (en-tête X-Cle) ; jeton GitHub (secret GH_TOKEN du worker, droit « Actions » en
@@ -291,6 +316,7 @@ export const livePoints = (req, env, url) => liveDetail(req, env, url, 'points')
 export default {
   async fetch(req, env) {
     const url = new URL(req.url);
+    if (url.pathname in VENDOR_3D) return vendor3D(req, url.pathname);
     if (url.pathname === '/live/stats') return liveStats(req, env, url);
     if (url.pathname === '/live/points') return livePoints(req, env, url);
     if (url.pathname === '/live') return live(req, env);
