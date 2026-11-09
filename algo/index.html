@@ -2926,7 +2926,7 @@ function terrainLive(m, r, fini){
     </g>`;
   }
   const ptsTxt = (v, x, c) => fini ? '' : `<g><rect x="${x-26}" y="120" width="52" height="32" rx="9" fill="rgba(14,10,36,.78)" stroke="${c}" stroke-opacity=".7"/><text x="${x}" y="143" text-anchor="middle" class="tp" style="fill:${c}">${esc(v ?? '0')}</text></g>`;
-  return `<div class="lv-terrain">${!fini ? '<div class="lv-3d-version">Tennis Edge Live V7.1 · Vue stable</div><button type="button" class="lv-3d-toggle">🎾 Tester la vue TV</button><button type="button" class="lv-v9-toggle">✨ Tester V9.1 · Modèles 3D</button><button type="button" class="lv-v6-mode">🎥 Vue immersive</button><div class="lv-3d-diagnostic" hidden role="alert"></div><div class="lv-3d-host" hidden><span class="lv-3d-caption">Animation en perspective illustrative · score réel</span></div>' : ''}<svg data-live-uid="${esc(m.uid)}" data-live-score="${esc([SH.join(','),SA.join(','),h.point,a.point,srv].join('|'))}" viewBox="0 0 ${W} ${Hh}" role="img" aria-label="${esc(court(m.home))} ${gh} – ${ga} ${esc(court(m.away))}">
+  return `<div class="lv-terrain">${!fini ? '<div class="lv-3d-version">Tennis Edge Live V7.1 · Vue stable</div><button type="button" class="lv-3d-toggle">🎾 Tester la vue TV</button><button type="button" class="lv-v9-toggle">✨ Tester V9.2 · 3D locale</button><button type="button" class="lv-v6-mode">🎥 Vue immersive</button><div class="lv-3d-diagnostic" hidden role="alert"></div><div class="lv-3d-host" hidden><span class="lv-3d-caption">Animation en perspective illustrative · score réel</span></div>' : ''}<svg data-live-uid="${esc(m.uid)}" data-live-score="${esc([SH.join(','),SA.join(','),h.point,a.point,srv].join('|'))}" viewBox="0 0 ${W} ${Hh}" role="img" aria-label="${esc(court(m.home))} ${gh} – ${ga} ${esc(court(m.away))}">
     <defs><linearGradient id="lvsol" x1="0" x2="1"><stop offset="0" stop-color="#1f2a6b"/><stop offset=".5" stop-color="#26307a"/><stop offset="1" stop-color="#1f2a6b"/></linearGradient></defs>
     <rect x="0" y="0" width="${W}" height="${Hh}" rx="14" fill="#141040"/>
     <rect x="20" y="30" width="320" height="140" fill="url(#lvsol)" stroke="rgba(255,255,255,.75)" stroke-width="1.6"/>
@@ -3767,8 +3767,8 @@ fetch('donnees.json?v=' + Date.now()).then(r=>r.json()).then(d=>{
   const sessions=new WeakMap();
   let loadPromise=null;
   const SOURCES={
-    core:['./vendor/babylon.js','https://cdn.jsdelivr.net/npm/babylonjs@7.54.3/babylon.js','https://unpkg.com/babylonjs@7.54.3/babylon.js','https://cdn.babylonjs.com/babylon.js'],
-    loaders:['./vendor/babylonjs.loaders.min.js','https://cdn.jsdelivr.net/npm/babylonjs-loaders@7.54.3/babylonjs.loaders.min.js','https://unpkg.com/babylonjs-loaders@7.54.3/babylonjs.loaders.min.js','https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js']
+    core:['/vendor/babylon.js'],
+    loaders:['/vendor/babylonjs.loaders.min.js']
   };
   function script(url){
     return new Promise((resolve,reject)=>{
@@ -3784,7 +3784,7 @@ fetch('donnees.json?v=' + Date.now()).then(r=>r.json()).then(d=>{
       try{await script(url);if(!verify||verify())return url;errors.push('Chargé mais invalide : '+url);}
       catch(e){errors.push(e.message);}
     }
-    throw new Error('Aucune source autorisée pour le moteur 3D. Vérifier CSP et réseau. '+errors.slice(0,2).join(' | '));
+    throw new Error('Fichiers 3D locaux indisponibles : vérifier le déploiement Pages et Worker. '+errors.slice(0,2).join(' | '));
   }
   async function libraries(){
     if(!loadPromise)loadPromise=(async()=>{
@@ -3801,7 +3801,7 @@ fetch('donnees.json?v=' + Date.now()).then(r=>r.json()).then(d=>{
   }
   async function start(wrapper,button){
     const old=wrapper.querySelector('.lv-v9-host');
-    if(old){dispose(old);old.remove();button.textContent='✨ Tester V9.1 · Modèles 3D';return;}
+    if(old){dispose(old);old.remove();button.textContent='✨ Tester V9.2 · 3D locale';return;}
     const host=document.createElement('div');host.className='lv-v9-host';
     const canvas=document.createElement('canvas');host.appendChild(canvas);
     const msg=document.createElement('div');msg.className='lv-v9-message';
@@ -3859,12 +3859,12 @@ fetch('donnees.json?v=' + Date.now()).then(r=>r.json()).then(d=>{
       const playerRoots=[];
       // Public Three.js example Soldier.glb includes skinned human model and animations.
       // Testing only: third-party asset must be licensed/attributed before production use.
-      const modelUrls=['./vendor/Soldier.glb','https://cdn.jsdelivr.net/gh/mrdoob/three.js@r164/examples/models/gltf/Soldier.glb','https://raw.githubusercontent.com/mrdoob/three.js/r164/examples/models/gltf/Soldier.glb'];
+      const modelUrls=['/vendor/Soldier.glb'];
       for(let i=0;i<2;i++){
         if(cancelled)break;
         let result=null, modelError=null;
         for(const modelUrl of modelUrls){
-          try{result=await B.SceneLoader.ImportMeshAsync('',modelUrl,undefined,scene);break;}
+          try{result=await B.SceneLoader.ImportMeshAsync('', '/vendor/', 'Soldier.glb', scene);break;}
           catch(e){modelError=e;}
         }
         if(!result)throw Error('Modèle 3D indisponible : '+String(modelError?.message||modelError).slice(0,100));
