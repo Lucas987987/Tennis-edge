@@ -538,6 +538,13 @@ body.carte #video{display:block;width:1080px;height:1350px}
 .arena-nav{display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;min-height:34px;padding:7px 13px;border-radius:999px;background:#d4ff3a;color:#141225!important;text-decoration:none!important;font:800 13px system-ui,sans-serif;box-shadow:0 2px 12px rgba(130,170,0,.3)}
 .arena-nav:hover,.arena-nav:focus-visible{background:#eaff88;outline:2px solid #80b000;outline-offset:2px}
 @media(max-width:520px){.arena-nav{padding:7px 11px;font-size:12px}.reglages{gap:5px}}
+
+/* Tennis Edge Live V5 — 3D facultative : modèle procédural, aucune donnée de tracking inventée. */
+.lv-3d-toggle{display:block;margin:5px auto 8px;padding:7px 15px;border:1px solid #a8b5ff;border-radius:9px;background:#202451;color:#fff;font:600 13px system-ui;cursor:pointer}
+.lv-3d-host{width:100%;max-width:620px;margin:auto;aspect-ratio:1.6;background:#11182c;border-radius:12px;overflow:hidden;position:relative}
+.lv-3d-host canvas{width:100%;height:100%;display:block}
+.lv-3d-caption{position:absolute;bottom:5px;left:8px;font:10px system-ui;color:#e6e8ff;background:#111827a8;padding:3px 6px;border-radius:5px;pointer-events:none}
+
 </style>
 </head>
 <body>
@@ -2679,6 +2686,107 @@ function tableauLive(m, r, fini, grand){
   requestAnimationFrame(frame);
 })();
 
+
+// Tennis Edge Live V5: démo 3D à activer volontairement, sans modifier le flux /live.
+(function(){
+  let threePromise=null;
+  function loadThree(){
+    if(window.THREE)return Promise.resolve(window.THREE);
+    if(threePromise)return threePromise;
+    threePromise=new Promise((resolve,reject)=>{
+      const s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.1/three.min.js';
+      s.onload=()=>window.THREE?resolve(window.THREE):reject(Error('Three.js indisponible'));
+      s.onerror=()=>reject(Error('Chargement 3D impossible'));document.head.appendChild(s);
+    });return threePromise;
+  }
+  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+  function launch(host,svg,T){
+    const scene=new T.Scene();scene.background=new T.Color(0x111b32);
+    const camera=new T.PerspectiveCamera(44,1.6,.1,100);camera.position.set(0,13,22);camera.lookAt(0,0,-1);
+    const renderer=new T.WebGLRenderer({antialias:true,alpha:false,powerPreference:'low-power'});
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.5));host.appendChild(renderer.domElement);
+    const amb=new T.HemisphereLight(0xffffff,0x344462,2.1);scene.add(amb);
+    const sun=new T.DirectionalLight(0xffffff,2.2);sun.position.set(-5,13,8);scene.add(sun);
+    const mat=(c)=>new T.MeshStandardMaterial({color:c,roughness:.85});
+    const blue=mat(0x3977bc),blue2=mat(0x285d9b),white=mat(0xf7f7f4),dark=mat(0x1b2945);
+    function box(w,h,d,m,x,y,z){const o=new T.Mesh(new T.BoxGeometry(w,h,d),m);o.position.set(x,y,z);scene.add(o);return o;}
+    box(24,.08,35,mat(0x263f66),0,-.10,0);
+    box(12,.07,24,blue,0,0,0);
+    const line=(x1,z1,x2,z2)=>{const dx=x2-x1,dz=z2-z1,len=Math.hypot(dx,dz);const o=box(.075,.015,len,white,(x1+x2)/2,.06,(z1+z2)/2);o.rotation.y=Math.atan2(dx,dz);};
+    for(const z of [-12,12,-6.4,6.4])line(-6,z,6,z);
+    for(const x of [-6,-4.55,0,4.55,6]){if(x===0){line(0,-6.4,0,6.4);}else line(x,-12,x,12);}
+    const net=box(12.8,1.05,.045,new T.MeshStandardMaterial({color:0xe2e8ef,transparent:true,opacity:.43}),0,.55,0);
+    for(let x=-6;x<=6;x+=.38)box(.013,1.03,.07,white,x,.55,0);
+    for(let y=.15;y<=1.05;y+=.23)box(12.7,.012,.07,white,0,y,0);
+    box(.12,1.28,.12,dark,-6.4,.64,0);box(.12,1.28,.12,dark,6.4,.64,0);
+    function player(color,z){
+      const root=new T.Group();scene.add(root);root.position.z=z;
+      const cloth=mat(color),skin=mat(0xe8b78e),shorts=mat(0x17233c);
+      const torso=new T.Mesh(new T.CapsuleGeometry(.34,.8,4,8),cloth);torso.position.y=1.36;root.add(torso);
+      const head=new T.Mesh(new T.SphereGeometry(.26,12,10),skin);head.position.y=2.18;root.add(head);
+      for(const side of [-1,1]){
+        const leg=new T.Mesh(new T.CapsuleGeometry(.13,.65,3,6),shorts);leg.position.set(side*.20,.53,0);root.add(leg);
+        const arm=new T.Mesh(new T.CapsuleGeometry(.105,.48,3,6),skin);arm.position.set(side*.48,1.35,0);arm.rotation.z=side*.4;root.add(arm);
+      }
+      const racket=new T.Group();root.add(racket);racket.position.set(.82,1.1,.10);
+      const handle=new T.Mesh(new T.CylinderGeometry(.045,.045,.8,7),dark);handle.position.y=.32;racket.add(handle);
+      const ring=new T.Mesh(new T.TorusGeometry(.36,.047,7,16),white);ring.position.y=.94;racket.add(ring);
+      root.userData.racket=racket;return root;
+    }
+    const near=player(0x2ee6ff,8.4),far=player(0xff4fae,-8.4);
+    const ball=new T.Mesh(new T.SphereGeometry(.17,12,8),mat(0xd4ff3a));scene.add(ball);
+    const shadow=new T.Mesh(new T.CircleGeometry(.23,14),new T.MeshBasicMaterial({color:0x0b2242,transparent:true,opacity:.35}));shadow.rotation.x=-Math.PI/2;scene.add(shadow);
+    let start=performance.now(),lastW=0,lastH=0,raf=0,seq=null;
+    function newSeq(){
+      const server=svg.querySelector('.lv-ball-core')?.dataset.srv==='1'?1:0;
+      const hits=[];let x=(Math.random()-.5)*4;
+      for(let i=0;i<Math.floor(4+Math.random()*5);i++){
+        x=clamp(x+(Math.random()-.5)*7,-4.2,4.2);
+        hits.push({x,z:(i+server)%2===0?8.4:-8.4});
+      }
+      seq=hits;start=performance.now();
+    }
+    newSeq();
+    function frame(now){
+      if(!host.isConnected || host.dataset.active!=='1'){renderer.dispose();renderer.domElement.remove();return;}
+      if(document.hidden){raf=requestAnimationFrame(frame);return;}
+      const w=host.clientWidth,h=host.clientHeight;
+      if(w!==lastW||h!==lastH){renderer.setSize(w,h,false);camera.aspect=w/Math.max(h,1);camera.updateProjectionMatrix();lastW=w;lastH=h;}
+      const t=(now-start)/1000,interval=1.35,idx=Math.floor(t/interval);
+      if(idx>=seq.length-1){newSeq();raf=requestAnimationFrame(frame);return;}
+      const a=seq[idx],b=seq[idx+1],u=clamp((t%interval)/interval,0,1),arc=Math.sin(Math.PI*u);
+      ball.position.set(a.x+(b.x-a.x)*u,.22+arc*(1.4+Math.abs(b.x-a.x)*.15),a.z+(b.z-a.z)*u);
+      shadow.position.set(ball.position.x,.10,ball.position.z);
+      const contact=(p,z)=>{
+        let target=0;
+        if(a.z===z)target=a.x;
+        else if(b.z===z)target=b.x;
+        p.position.x+=(target-p.position.x)*.09;
+        p.position.z=z+Math.sin(now*.003)*.13;
+        p.userData.racket.rotation.z=Math.sin((u+(a.z===z?0:.5))*Math.PI*2)*.45;
+      };
+      contact(near,8.4);contact(far,-8.4);
+      renderer.render(scene,camera);raf=requestAnimationFrame(frame);
+    }
+    host.dataset.active='1';raf=requestAnimationFrame(frame);
+    return ()=>{host.dataset.active='0';cancelAnimationFrame(raf);renderer.dispose();};
+  }
+  document.addEventListener('click',async e=>{
+    const btn=e.target.closest('.lv-3d-toggle');if(!btn)return;
+    const wrapper=btn.closest('.lv-terrain'),svg=wrapper?.querySelector('svg'),host=wrapper?.querySelector('.lv-3d-host');
+    if(!svg||!host)return;
+    if(host.dataset.active==='1'){
+      host.dataset.active='0';host.hidden=true;svg.hidden=false;btn.textContent='🎾 Tester la vue 3D';return;
+    }
+    btn.disabled=true;btn.textContent='Chargement de la 3D…';
+    try{
+      const T=await loadThree();host.hidden=false;svg.hidden=true;
+      launch(host,svg,T);btn.textContent='↩ Revenir à la vue 2D';
+    }catch(err){host.hidden=true;svg.hidden=false;btn.textContent='3D indisponible — réessayer';}
+    finally{btn.disabled=false;}
+  });
+})();
+
 function terrainLive(m, r, fini){
   const {h, a, srv} = cotesLive(r);
   const SH = h.sets || [], SA = a.sets || [], i = SH.length - 1;
@@ -2710,7 +2818,7 @@ function terrainLive(m, r, fini){
     </g>`;
   }
   const ptsTxt = (v, x, c) => fini ? '' : `<g><rect x="${x-26}" y="120" width="52" height="32" rx="9" fill="rgba(14,10,36,.78)" stroke="${c}" stroke-opacity=".7"/><text x="${x}" y="143" text-anchor="middle" class="tp" style="fill:${c}">${esc(v ?? '0')}</text></g>`;
-  return `<div class="lv-terrain"><svg data-live-uid="${esc(m.uid)}" data-live-score="${esc([SH.join(','),SA.join(','),h.point,a.point,srv].join('|'))}" viewBox="0 0 ${W} ${Hh}" role="img" aria-label="${esc(court(m.home))} ${gh} – ${ga} ${esc(court(m.away))}">
+  return `<div class="lv-terrain">${!fini ? '<button type="button" class="lv-3d-toggle">🎾 Tester la vue 3D</button><div class="lv-3d-host" hidden><span class="lv-3d-caption">Animation 3D illustrative · score réel</span></div>' : ''}<svg data-live-uid="${esc(m.uid)}" data-live-score="${esc([SH.join(','),SA.join(','),h.point,a.point,srv].join('|'))}" viewBox="0 0 ${W} ${Hh}" role="img" aria-label="${esc(court(m.home))} ${gh} – ${ga} ${esc(court(m.away))}">
     <defs><linearGradient id="lvsol" x1="0" x2="1"><stop offset="0" stop-color="#1f2a6b"/><stop offset=".5" stop-color="#26307a"/><stop offset="1" stop-color="#1f2a6b"/></linearGradient></defs>
     <rect x="0" y="0" width="${W}" height="${Hh}" rx="14" fill="#141040"/>
     <rect x="20" y="30" width="320" height="140" fill="url(#lvsol)" stroke="rgba(255,255,255,.75)" stroke-width="1.6"/>
