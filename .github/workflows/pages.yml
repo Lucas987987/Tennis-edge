@@ -179,6 +179,19 @@ jobs:
           at=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow lab_quotidien.yml --status success --limit 1 --json updatedAt --jq '.[0].updatedAt' 2>/dev/null || true)
           echo "at=${at}" >> "$GITHUB_OUTPUT"
           echo "Dernière tâche quotidienne réussie : ${at:-inconnue}"
+      - name: Préparer les ressources 3D locales V9.2
+        run: |
+          set -euo pipefail
+          mkdir -p algo/vendor
+          # Fichiers récupérés UNE FOIS lors du build, jamais depuis le téléphone.
+          npm install --no-save --no-audit --no-fund --prefix /tmp/tennis-edge-v92 babylonjs@7.54.3 babylonjs-loaders@7.54.3
+          cp /tmp/tennis-edge-v92/node_modules/babylonjs/babylon.js algo/vendor/babylon.js
+          cp /tmp/tennis-edge-v92/node_modules/babylonjs-loaders/babylonjs.loaders.min.js algo/vendor/babylonjs.loaders.min.js
+          curl --fail --location --retry 3 --silent --show-error --output algo/vendor/Soldier.glb \
+            https://raw.githubusercontent.com/mrdoob/three.js/r164/examples/models/gltf/Soldier.glb
+          test "$(wc -c < algo/vendor/Soldier.glb)" -gt 10000
+          file algo/vendor/Soldier.glb
+          du -h algo/vendor/*
       - name: Construire _site
         env:
           GITHUB_EVENT_REPO_NAME: ${{ github.event.repository.name }}
@@ -205,6 +218,13 @@ jobs:
           mkdir -p _site/algo
           cp algo/index.html _site/algo/ || echo "❌ MANQUANT : algo/index.html"
           cp algo/donnees.json _site/algo/ 2>/dev/null || echo "⚠️ algo/donnees.json absent (prochain passage des pronostics)"
+          # V9.2 : 3D auto-hébergée ; échec explicite si les fichiers sont absents.
+          mkdir -p _site/algo/vendor
+          cp algo/vendor/babylon.js algo/vendor/babylonjs.loaders.min.js algo/vendor/Soldier.glb _site/algo/vendor/
+          test -s _site/algo/vendor/babylon.js
+          test -s _site/algo/vendor/babylonjs.loaders.min.js
+          test -s _site/algo/vendor/Soldier.glb
+          echo 'V9.2 : ressources 3D locales publiées.' 
 
           # Arena V1.9.2 : publier aussi les ressources CSS/JS utilisées par index.html.
           mkdir -p _site/arena
@@ -212,9 +232,6 @@ jobs:
           test -s _site/arena/arena-ui.css
           test -s _site/arena/arena-ui.js
           echo 'Arena : CSS et JS publiés avec succès.'
-
-          mkdir -p _site/arena
-          cp arena/index.html arena/arena.js _site/arena/
 
           mkdir -p _site/Tennis_Edge_Lab
           for f in index.html style.css app.js data.js; do
