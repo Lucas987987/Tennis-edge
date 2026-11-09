@@ -1,15 +1,21 @@
-TENNIS EDGE LIVE V9.4 - 3D AUTONOME
+TENNIS EDGE V10 — STUDIO 3D INDÉPENDANT (SOCLE TECHNIQUE)
 
-Installation : GitHub Actions > Appliquer un paquet > importer ce ZIP > fusionner la PR.
+Ce paquet n'améliore PAS automatiquement les graphismes du site actuel.
+Il crée un laboratoire séparé : algo/v10/index.html.
 
-Contenu : algo/index.html uniquement.
+IMPORTANT : les fichiers professionnels player_a.glb et player_b.glb ne sont PAS inclus.
+Ils nécessitent des modèles licenciés avec squelettes et animations de tennis.
+Le studio ne dessine volontairement aucun faux personnage de remplacement.
 
-Correctif : joueurs 3D generes dans Babylon.js, sans Soldier.glb, sans GLTF, sans texture externe.
-Terrain, filet, raquettes, balle et mouvements legers inclus.
-Les vues TV/Fond/Cote sont conservees. Vue 2D stable disponible en secours.
+Pour tester en local : placer des GLB dans algo/v10/assets/, lancer un serveur HTTP,
+puis ouvrir /algo/v10/. Les modèles doivent être orientés et mis à l'échelle
+pour un terrain de 23,77 mètres. Le studio signale explicitement les fichiers manquants.
 
-IMPORTANT : le moteur Babylon.js local /vendor/babylon.js doit toujours etre accessible.
-Le ZIP ne modifie ni Cloudflare Worker, ni workflows, ni donnees des matchs.
-Les trajectoires 3D sont illustratives, les scores proviennent du flux live.
+Pour publier sur GitHub Pages : ajouter au workflow pages.yml la copie de
+algo/v10/ vers _site/algo/v10/ ; ce paquet ne modifie pas le workflow existant.
 
-Si GitHub Actions est encore en panne, attendre son retablissement avant installation.
+Dépendance : Babylon.js + loader GLB. Le studio tente d'abord les ressources
+locales, puis le CDN officiel Babylon. Il faut autoriser le chargement réseau.
+
+Ce prototype n'est PAS une V10 visuelle finalisée. Il permet de valider les
+véritables modèles et les performances Android avant intégration dans le live.
