@@ -2692,7 +2692,7 @@ function tableauLive(m, r, fini, grand){
 })();
 
 
-  // V6 — Terrain TV horizontal / vue immersive, autonome (Canvas 2D, sans CDN).
+  // V6.1 — Terrain TV horizontal / vue immersive, autonome (Canvas 2D, sans CDN).
 (function(){
   const sessions=new WeakMap();
   let mode='tv';
@@ -2705,13 +2705,23 @@ function tableauLive(m, r, fini, grand){
     const ctx=canvas.getContext('2d',{alpha:false});
     if(!ctx)throw Error('Canvas 2D indisponible');
     let active=true,raf=0,t0=performance.now(),shots=[],duration=0;
+    const durationShot=1.65;
+    let priorL=0,priorR=0;
     const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
     const ease=t=>t*t*(3-2*t);
     function sequence(){
-      const serve=svg.querySelector('.lv-ball-core')?.dataset.srv==='1'?1:0;
-      shots=[];const n=4+Math.floor(Math.random()*5);
-      for(let i=0;i<n;i++)shots.push({side:(i+serve)%2===0?-1:1,lane:rnd(-.72,.72),kind:Math.random()});
-      duration=(n-1)*1.32;t0=performance.now();
+      // Every ball impact, bounce and player position comes from the same rally timeline.
+      const server=Math.random()<.5?-1:1;
+      shots=[];
+      const n=5+Math.floor(Math.random()*5);
+      let lane=rnd(-.36,.36);
+      for(let i=0;i<n;i++){
+        const next=clamp(lane+rnd(-.72,.72),-.62,.62);
+        shots.push({side:i%2===0?server:-server,lane:next,kind:Math.random(),serve:i===0});
+        lane=next;
+      }
+      duration=(n-1)*durationShot+1.1;
+      t0=performance.now();
     }
     // World coordinates: x is distance along the court (-1 left, +1 right), y is lateral.
     function project(x,y,z,w,h){
@@ -2730,22 +2740,24 @@ function tableauLive(m, r, fini, grand){
     function seg(x1,y1,x2,y2,w,h,color,width=1.4,z=0){
       path([project(x1,y1,z,w,h),project(x2,y2,z,w,h)],color,width);
     }
-    function player(x,y,w,h,color,phase,hit){
-      const p=project(x,y,0,w,h),size=mode==='tv'?Math.max(10,w*.033):Math.max(7,p[2]*.9);
+    function player(x,y,w,h,color,phase,hit,run,serve){
+      const p=project(x,y,0,w,h),size=mode==='tv'?Math.max(12,w*.040):Math.max(8,p[2]*1.06);
       const px=p[0],py=p[1],s=size;
-      ctx.fillStyle='rgba(0,7,22,.30)';ctx.beginPath();ctx.ellipse(px+3,py+4,s*.53,s*.17,0,0,Math.PI*2);ctx.fill();
-      const lean=Math.sin(phase)*s*.07;
+      ctx.fillStyle='rgba(0,7,22,.32)';ctx.beginPath();ctx.ellipse(px+2,py+4,s*.55,s*.16,0,0,Math.PI*2);ctx.fill();
+      const stride=run*Math.sin(phase*2)*s*.21,lean=run*Math.sin(phase)*s*.11;
       ctx.lineCap='round';ctx.lineJoin='round';ctx.lineWidth=Math.max(2,s*.15);ctx.strokeStyle='#e5ae83';
-      ctx.beginPath();ctx.moveTo(px-s*.12,py-s*.48);ctx.lineTo(px-s*.24+lean,py+s*.05);
-      ctx.moveTo(px+s*.12,py-s*.48);ctx.lineTo(px+s*.25-lean,py+s*.05);ctx.stroke();
-      ctx.fillStyle='#f6f7fb';ctx.beginPath();ctx.ellipse(px-s*.24+lean,py+s*.09,s*.18,s*.09,-.2,0,Math.PI*2);ctx.ellipse(px+s*.25-lean,py+s*.09,s*.18,s*.09,.2,0,Math.PI*2);ctx.fill();
-      ctx.fillStyle=color;ctx.beginPath();ctx.roundRect(px-s*.28,py-s*1.18,s*.56,s*.77,s*.15);ctx.fill();
-      ctx.fillStyle='#e7b48b';ctx.beginPath();ctx.arc(px,py-s*1.39,s*.25,0,Math.PI*2);ctx.fill();
-      ctx.fillStyle='#322b35';ctx.beginPath();ctx.arc(px,py-s*1.49,s*.24,Math.PI*1.05,Math.PI*1.95);ctx.fill();
-      const handX=px+(x<0?1:-1)*s*.60,handY=py-s*(hit?1.30:.78);
-      ctx.strokeStyle='#e7b48b';ctx.lineWidth=Math.max(2,s*.12);ctx.beginPath();ctx.moveTo(px+(x<0?1:-1)*s*.25,py-s*1.03);ctx.lineTo(handX,handY);ctx.stroke();
-      ctx.strokeStyle='#dfeaff';ctx.lineWidth=Math.max(1.5,s*.09);ctx.beginPath();ctx.moveTo(handX,handY);ctx.lineTo(handX+(x<0?1:-1)*s*.28,handY-s*.22);ctx.stroke();
-      ctx.strokeStyle='#f3f8ff';ctx.lineWidth=Math.max(1.5,s*.085);ctx.beginPath();ctx.ellipse(handX+(x<0?1:-1)*s*.38,handY-s*.40,s*.24,s*.35,(x<0?-.3:.3),0,Math.PI*2);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(px-s*.12,py-s*.48);ctx.lineTo(px-s*.24+stride,py+s*.05);
+      ctx.moveTo(px+s*.12,py-s*.48);ctx.lineTo(px+s*.25-stride,py+s*.05);ctx.stroke();
+      ctx.fillStyle='#f6f7fb';ctx.beginPath();ctx.ellipse(px-s*.24+stride,py+s*.09,s*.18,s*.09,-.2,0,Math.PI*2);ctx.ellipse(px+s*.25-stride,py+s*.09,s*.18,s*.09,.2,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle=color;ctx.beginPath();ctx.roundRect(px-s*.28+lean,py-s*1.18,s*.56,s*.77,s*.15);ctx.fill();
+      ctx.fillStyle='#e7b48b';ctx.beginPath();ctx.arc(px+lean,py-s*1.39,s*.25,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle='#322b35';ctx.beginPath();ctx.arc(px+lean,py-s*1.49,s*.24,Math.PI*1.05,Math.PI*1.95);ctx.fill();
+      const dir=x<0?1:-1;
+      const swing=serve?1.4:hit?1.0:.28;
+      const handX=px+dir*s*(.48+.16*swing),handY=py-s*(.85+.42*swing);
+      ctx.strokeStyle='#e7b48b';ctx.lineWidth=Math.max(2,s*.12);ctx.beginPath();ctx.moveTo(px+dir*s*.25,py-s*1.03);ctx.lineTo(handX,handY);ctx.stroke();
+      ctx.strokeStyle='#dfeaff';ctx.lineWidth=Math.max(1.5,s*.09);ctx.beginPath();ctx.moveTo(handX,handY);ctx.lineTo(handX+dir*s*.28,handY-s*.22);ctx.stroke();
+      ctx.strokeStyle='#f3f8ff';ctx.lineWidth=Math.max(1.5,s*.085);ctx.beginPath();ctx.ellipse(handX+dir*s*.38,handY-s*.40,s*.24,s*.35,dir*.3,0,Math.PI*2);ctx.stroke();
     }
     function draw(now){
       if(!active||!host.isConnected||host.dataset.active!=='1')return;
@@ -2784,22 +2796,47 @@ function tableauLive(m, r, fini, grand){
         path([a,b],'#e4ebf6',3);
       }
       let elapsed=(now-t0)/1000;
-      if(elapsed>=duration){sequence();elapsed=0;}
-      const k=Math.min(shots.length-2,Math.floor(elapsed/1.32));
-      const u=clamp((elapsed-k*1.32)/1.32,0,1),a=shots[k],b=shots[k+1];
-      const bx=a.side*.86+(b.side-a.side)*.86*ease(u);
-      const by=a.lane+(b.lane-a.lane)*ease(u);
-      const height=.035+Math.sin(Math.PI*u)*.48;
-      const leftShot=a.side<0?a:b.side<0?b:null,rightShot=a.side>0?a:b.side>0?b:null;
-      const lx=-.86,rx=.86;
-      const leftY=leftShot?leftShot.lane:0,rightY=rightShot?rightShot.lane:0;
-      // Both players' targets derive from the same ball trajectory, not independent motion.
-      const contact=u<.16||u>.84;
-      const pL=project(lx,leftY,0,w,h),pR=project(rx,rightY,0,w,h);
+      if(elapsed>=duration){sequence();elapsed=0;priorL=0;priorR=0;}
+      // A short serve preparation, then alternating groundstrokes.
+      const prep=1.1;
+      const rallyTime=Math.max(0,elapsed-prep);
+      const k=Math.min(shots.length-2,Math.floor(rallyTime/durationShot));
+      const u=clamp((rallyTime-k*durationShot)/durationShot,0,1);
+      const a=shots[k],b=shots[k+1];
+      const fromX=a.side*.84,toX=b.side*.84;
+      const move=ease(u);
+      const bx=fromX+(toX-fromX)*move;
+      const by=a.lane+(b.lane-a.lane)*move;
+      // Ball arc has a visible descending phase and one ground bounce near the receiver.
+      const arc=Math.sin(Math.PI*u)*(.27+(a.kind*.20));
+      const bounce=u>.82?Math.sin(Math.PI*clamp((u-.82)/.18,0,1))*.055:0;
+      const height=elapsed<prep?.15+Math.sin(Math.PI*elapsed/prep)*.17:.045+arc+bounce;
+      // The player who is about to receive moves towards the incoming landing lane.
+      // The hitter stays near the previous contact and recovers towards centre afterwards.
+      const targetL=(b.side<0?b.lane:a.side<0?a.lane:0);
+      const targetR=(b.side>0?b.lane:a.side>0?a.lane:0);
+      const approach=ease(clamp((u-.12)/.74,0,1));
+      const recovering=ease(clamp((u-.08)/.80,0,1));
+      const leftY=b.side<0?priorL+(targetL-priorL)*approach:
+        a.side<0?a.lane*(1-recovering*.48):priorL;
+      const rightY=b.side>0?priorR+(targetR-priorR)*approach:
+        a.side>0?a.lane*(1-recovering*.48):priorR;
+      if(u>.985){priorL=leftY;priorR=rightY;}
+      const leftHit=(a.side<0&&u<.14)||(b.side<0&&u>.88);
+      const rightHit=(a.side>0&&u<.14)||(b.side>0&&u>.88);
+      const serve=elapsed<prep;
       const shadow=project(bx,by,0,w,h),ball=project(bx,by,height,w,h);
       ctx.fillStyle='rgba(1,9,25,.27)';ctx.beginPath();ctx.ellipse(shadow[0],shadow[1],Math.max(3,w*.010),Math.max(2,w*.004),0,0,Math.PI*2);ctx.fill();
-      if(mode==='immersive'){player(rx,rightY,w,h,'#ff529d',elapsed*5,contact);player(lx,leftY,w,h,'#2de6ff',elapsed*5+.8,contact);}
-      else{player(lx,leftY,w,h,'#2de6ff',elapsed*5+.8,contact);player(rx,rightY,w,h,'#ff529d',elapsed*5,contact);}
+      const runL=Math.abs(targetL-priorL)>.14?.95:.3;
+      const runR=Math.abs(targetR-priorR)>.14?.95:.3;
+      // Render the farther player first in the immersive camera.
+      if(mode==='immersive'){
+        player(.84,rightY,w,h,'#ff529d',elapsed*8,rightHit,runR,serve&&a.side>0);
+        player(-.84,leftY,w,h,'#2de6ff',elapsed*8+.8,leftHit,runL,serve&&a.side<0);
+      }else{
+        player(-.84,leftY,w,h,'#2de6ff',elapsed*8+.8,leftHit,runL,serve&&a.side<0);
+        player(.84,rightY,w,h,'#ff529d',elapsed*8,rightHit,runR,serve&&a.side>0);
+      }
       ctx.shadowColor='#e4ff5b';ctx.shadowBlur=9;ctx.fillStyle='#dfff39';
       ctx.beginPath();ctx.arc(ball[0],ball[1],Math.max(3.4,w*.010),0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;
       raf=requestAnimationFrame(draw);
@@ -2867,7 +2904,7 @@ function terrainLive(m, r, fini){
     </g>`;
   }
   const ptsTxt = (v, x, c) => fini ? '' : `<g><rect x="${x-26}" y="120" width="52" height="32" rx="9" fill="rgba(14,10,36,.78)" stroke="${c}" stroke-opacity=".7"/><text x="${x}" y="143" text-anchor="middle" class="tp" style="fill:${c}">${esc(v ?? '0')}</text></g>`;
-  return `<div class="lv-terrain">${!fini ? '<div class="lv-3d-version">Tennis Edge Live V6 · Vue TV</div><button type="button" class="lv-3d-toggle">🎾 Tester la vue TV</button><button type="button" class="lv-v6-mode">🎥 Vue immersive</button><div class="lv-3d-diagnostic" hidden role="alert"></div><div class="lv-3d-host" hidden><span class="lv-3d-caption">Animation TV illustrative · score réel</span></div>' : ''}<svg data-live-uid="${esc(m.uid)}" data-live-score="${esc([SH.join(','),SA.join(','),h.point,a.point,srv].join('|'))}" viewBox="0 0 ${W} ${Hh}" role="img" aria-label="${esc(court(m.home))} ${gh} – ${ga} ${esc(court(m.away))}">
+  return `<div class="lv-terrain">${!fini ? '<div class="lv-3d-version">Tennis Edge Live V6.1 · Mouvements</div><button type="button" class="lv-3d-toggle">🎾 Tester la vue TV</button><button type="button" class="lv-v6-mode">🎥 Vue immersive</button><div class="lv-3d-diagnostic" hidden role="alert"></div><div class="lv-3d-host" hidden><span class="lv-3d-caption">Animation TV illustrative · score réel</span></div>' : ''}<svg data-live-uid="${esc(m.uid)}" data-live-score="${esc([SH.join(','),SA.join(','),h.point,a.point,srv].join('|'))}" viewBox="0 0 ${W} ${Hh}" role="img" aria-label="${esc(court(m.home))} ${gh} – ${ga} ${esc(court(m.away))}">
     <defs><linearGradient id="lvsol" x1="0" x2="1"><stop offset="0" stop-color="#1f2a6b"/><stop offset=".5" stop-color="#26307a"/><stop offset="1" stop-color="#1f2a6b"/></linearGradient></defs>
     <rect x="0" y="0" width="${W}" height="${Hh}" rx="14" fill="#141040"/>
     <rect x="20" y="30" width="320" height="140" fill="url(#lvsol)" stroke="rgba(255,255,255,.75)" stroke-width="1.6"/>
