@@ -1,0 +1,38 @@
+name: Retirer les tests 3D du direct
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Masquer les vues experimentales du direct
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('algo/index.html')
+          s=p.read_text(encoding='utf-8')
+          marker='te-disable-live-3d-tests'
+          css='''<style id="te-disable-live-3d-tests">\n/* Tests 3D desactives sur les matchs en direct */\n.lv-3d-version,.lv-3d-toggle,.lv-v9-toggle,.lv-v6-mode,.lv-3d-diagnostic,.lv-3d-host{display:none!important}\n</style>\n'''
+          if marker not in s:
+              assert '</head>' in s, 'Balise head absente'
+              s=s.replace('</head>',css+'</head>',1)
+              p.write_text(s,encoding='utf-8')
+          assert marker in p.read_text(encoding='utf-8')
+          print('Tests 3D masques, scores et probabilites conserves')
+          PY
+      - name: Enregistrer la modification
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add algo/index.html
+          if git diff --cached --quiet; then
+            echo 'Deja applique'
+          else
+            git commit -m 'Masquer les tests 3D sur les matchs en direct'
+            git push
+          fi
