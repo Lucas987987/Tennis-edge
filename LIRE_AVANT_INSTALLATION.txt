@@ -1,10 +1,15 @@
-Tennis Edge V9.1 — correction du chargement Babylon.js
+Tennis Edge V9.2 — chargement 3D même origine Cloudflare
 
-Installation : Appliquer un paquet > merge > deploy Cloudflare.
-Ouvrir un match en direct et cliquer Tester V9.1.
+INSTALLATION
+1. Appliquer ce ZIP via « Appliquer un paquet » et fusionner la PR.
+2. Attendre « Deploy Pages » VERT : il télécharge Babylon.js, les loaders et le modèle Soldier.glb, puis les publie dans /algo/vendor/.
+3. Attendre « Déployer le worker algo » VERT : il autorise /vendor/babylon.js, /vendor/babylonjs.loaders.min.js et /vendor/Soldier.glb.
+4. Vérifier sur Cloudflare : https://algo.tennis-edge.workers.dev/vendor/babylon.js (JavaScript, pas 404/502).
+5. Ouvrir un match en direct, puis « Tester V9.2 · 3D locale ».
 
-Le moteur et son chargeur essaient plusieurs CDN. Le modèle humain essaie aussi plusieurs sources.
-ATTENTION : ce paquet N'INCLUT PAS les fichiers Babylon.js ou GLB : les téléchargements directs sont indisponibles dans cet environnement. Il n'est donc PAS autonome.
-Si Cloudflare bloque les scripts externes via CSP ou si le téléphone bloque tous les CDN, ce correctif ne pourra pas fonctionner.
-La V7.1 et les API sont inchangées.
-Pour une version 100 % autonome, placer dans algo/vendor/ les trois fichiers babylon.js, babylonjs.loaders.min.js et Soldier.glb (avec licences validées), puis les publier via le workflow Cloudflare.
+IMPORTANT
+- Le ZIP contient le code et le workflow de récupération des ressources, PAS les binaires 3D. GitHub Actions les récupère pendant Deploy Pages. Sans accès réseau GitHub ou si un package change, le run Pages échouera explicitement.
+- Le modèle Soldier est un personnage de démonstration, PAS un tennisman réaliste ; usage commercial/licence à vérifier avant production.
+- Animation illustrative, données live inchangées. Aucun changement OddsPapi/TennisApi.
+- La V7.1 reste disponible et visible sous la vue V9.2.
+- En cas de 502, vérifier que Deploy Pages a terminé avant le worker et patienter 60 secondes pour le cache.
