@@ -2693,11 +2693,25 @@ function tableauLive(m, r, fini, grand){
   function loadThree(){
     if(window.THREE)return Promise.resolve(window.THREE);
     if(threePromise)return threePromise;
+    // Three.js r160+ ne distribue plus build/three.min.js (script global).
+    // r150 fournit encore cette distribution classique, compatible avec le code V5.
+    const urls=[
+      'https://cdnjs.cloudflare.com/ajax/libs/three.js/0.150.1/three.min.js',
+      'https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.min.js',
+      'https://unpkg.com/three@0.150.1/build/three.min.js'
+    ];
     threePromise=new Promise((resolve,reject)=>{
-      const s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.1/three.min.js';
-      s.onload=()=>window.THREE?resolve(window.THREE):reject(Error('Three.js indisponible'));
-      s.onerror=()=>reject(Error('Chargement 3D impossible'));document.head.appendChild(s);
-    });return threePromise;
+      let i=0;
+      function attempt(){
+        if(i>=urls.length){reject(Error('Impossible de charger Three.js depuis les CDN'));return;}
+        const script=document.createElement('script');script.src=urls[i++];
+        script.onload=()=>window.THREE?resolve(window.THREE):attempt();
+        script.onerror=()=>{script.remove();attempt();};
+        document.head.appendChild(script);
+      }
+      attempt();
+    }).catch(err=>{threePromise=null;throw err;});
+    return threePromise;
   }
   const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
   function launch(host,svg,T){
@@ -2782,7 +2796,7 @@ function tableauLive(m, r, fini, grand){
     try{
       const T=await loadThree();host.hidden=false;svg.hidden=true;
       launch(host,svg,T);btn.textContent='↩ Revenir à la vue 2D';
-    }catch(err){host.hidden=true;svg.hidden=false;btn.textContent='3D indisponible — réessayer';}
+    }catch(err){console.error('[Tennis Edge Live 3D]',err);host.hidden=true;svg.hidden=false;btn.textContent='3D indisponible — réessayer';btn.title=String(err?.message||err);}
     finally{btn.disabled=false;}
   });
 })();
