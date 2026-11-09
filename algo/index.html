@@ -2554,70 +2554,102 @@ function tableauLive(m, r, fini, grand){
   if (typeof window === 'undefined' || window.__tennisLiveBallVariety) return;
   window.__tennisLiveBallVariety = true;
   const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)');
-  const rand = (a,b) => a + Math.random()*(b-a);
-  const fmt = n => Math.round(n);
-  const last = new WeakMap();
-  // Toutes les positions sont des illustrations, jamais des positions de tracking.
-  function sequence(motion){
-    const srv = Number(motion.dataset.srv) === 1 ? 1 : 0;
-    const side = Number(motion.dataset.side) === 1;
-    const fromX = srv === 0 ? 15 : 345;
-    const fromY = side ? 133 : 67;
-    const hits = Math.floor(rand(2,7));
-    const points = [{x:fromX,y:fromY}];
-    for(let i=0;i<hits;i++){
-      const prev = points[points.length-1];
-      const nextX = prev.x < 180 ? rand(263,329) : rand(31,97);
-      const nextY = rand(54,146);
-      points.push({x:nextX,y:nextY});
+  const states = new WeakMap();
+  const rand=(a,b)=>a+Math.random()*(b-a);
+  const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
+  const mix=(a,b,t)=>a+(b-a)*t;
+  const ease=t=>t*t*(3-2*t);
+  const position=(p)=>`${p.x.toFixed(1)} ${p.y.toFixed(1)}`;
+  // Chaque échange possède une seule chronologie : les joueurs et la balle suivent les mêmes frappes.
+  function makeRally(svg){
+    const ball=svg.querySelector('.lv-ball-core');
+    if(!ball)return null;
+    const server=Number(ball.dataset.srv)===1?1:0;
+    const side=ball.dataset.side==='1';
+    const n=2+Math.floor(rand(0,5));
+    const shots=[];
+    let x=server===0?38:322;
+    let y=side?133:67;
+    shots.push({x,y,player:server});
+    for(let i=0;i<n;i++){
+      const player=1-shots[shots.length-1].player;
+      x=player===0?rand(34,83):rand(277,326);
+      y=rand(60,140);
+      shots.push({x,y,player});
     }
-    let path=`M ${fmt(fromX)} ${fmt(fromY)}`;
-    for(let i=1;i<points.length;i++){
-      const p=points[i-1],q=points[i];
-      path+=` Q ${fmt((p.x+q.x)/2)} ${fmt((p.y+q.y)/2+rand(-18,18))} ${fmt(q.x)} ${fmt(q.y)}`;
+    const legs=shots.slice(1).map(()=>rand(0.8,1.45));
+    const duration=0.8+legs.reduce((a,b)=>a+b,0)+rand(0.5,1.1);
+    return {shots,legs,duration,server,side,ball,
+      players:[svg.querySelector('.lv-player-home'),svg.querySelector('.lv-player-away')],
+      toss:svg.querySelector('.lv-toss-core'), start:performance.now()};
+  }
+  function update(svg,now){
+    if(document.hidden)return;
+    let st=states.get(svg);
+    if(!st){st=makeRally(svg);if(!st)return;states.set(svg,st);}
+    let t=(now-st.start)/1000;
+    if(t>=st.duration){st=makeRally(svg);states.set(svg,st);t=0;}
+    if(reduce&&reduce.matches){
+      st.ball.setAttribute('transform',`translate(${position(st.shots[0])})`);
+      st.players.forEach((p,i)=>p&&p.setAttribute('transform',`translate(${i===0?55:305} 100)`));
+      if(st.toss)st.toss.setAttribute('visibility','hidden');
+      return;
     }
-    return {path,points,hits,duration:rand(4.8,8.4)};
-  }
-  function updateMotion(el,path,duration){
-    if(!el) return;
-    el.setAttribute('path',path);
-    el.setAttribute('dur',duration.toFixed(2)+'s');
-    try {el.beginElement();} catch(_) {}
-  }
-  function renew(){
-    if(document.hidden || (reduce && reduce.matches)) return;
-    document.querySelectorAll('.lv-terrain .lv-ball-motion').forEach(motion=>{
-      const previous=last.get(motion)||0;
-      if(Date.now()-previous<4000) return;
-      const seq=sequence(motion);
-      last.set(motion,Date.now());
-      const svg=motion.closest('svg');
-      if(!svg) return;
-      updateMotion(motion,seq.path,seq.duration);
-      // Les silhouettes rejoignent le point de frappe puis reviennent se replacer.
-      for(let player=0;player<2;player++){
-        const startX=player===0?51:309;
-        const startY=100;
-        const targets=seq.points.filter((p,i)=>i>0 && (p.x<180?0:1)===player);
-        const t=targets.length?targets[Math.floor(rand(0,targets.length))]:null;
-        const tx=t?Math.max(34,Math.min(150,t.x+(player===0?13:-13))):startX;
-        const ty=t?Math.max(52,Math.min(148,t.y)):startY;
-        const pp=`M ${startX} ${startY} Q ${fmt((startX+tx)/2)} ${fmt(ty)} ${fmt(tx)} ${fmt(ty)} Q ${fmt((startX+tx)/2)} ${fmt(startY)} ${startX} ${startY}`;
-        updateMotion(svg.querySelector('.lv-player-motion-'+player),pp,seq.duration);
+    const lead=0.8;
+    let leg=0,elapsed=Math.max(0,t-lead);
+    while(leg<st.legs.length-1 && elapsed>st.legs[leg]){elapsed-=st.legs[leg];leg++;}
+    const a=st.shots[leg],b=st.shots[leg+1];
+    const u=clamp(elapsed/st.legs[leg],0,1);
+    let ballPos;
+    if(t<lead){
+      const q=clamp(t/lead,0,1);
+      ballPos={x:a.x,y:a.y-21*Math.sin(Math.PI*q)};
+    }else{
+      // Un rebond par traversée : la balle accélère puis ralentit près de la réception.
+      const f=ease(u);
+      ballPos={x:mix(a.x,b.x,f),y:mix(a.y,b.y,f)-13*Math.sin(Math.PI*u)};
+    }
+    st.ball.setAttribute('transform',`translate(${position(ballPos)})`);
+    const r=4.2+1.3*Math.abs(Math.sin(Math.PI*u));
+    const circle=st.ball.querySelector('circle');if(circle)circle.setAttribute('r',r.toFixed(1));
+    // Chaque joueur est au point de frappe exactement quand la balle arrive.
+    st.players.forEach((player,i)=>{
+      if(!player)return;
+      const home={x:i===0?55:305,y:100};
+      let pos=home;
+      if(t<lead){
+        const goal=st.shots[0].player===i?st.shots[0]:home;
+        const f=ease(clamp(t/lead,0,1));
+        pos={x:mix(home.x,goal.x,f),y:mix(home.y,goal.y,f)};
+      }else{
+        const current=st.shots[leg],next=st.shots[leg+1];
+        const prev=leg?st.shots[leg-1]:null;
+        if(next.player===i){
+          // Arriver sur la balle au moment exact du contact.
+          const from=prev&&prev.player===i?prev:home;
+          const f=ease(clamp(u*1.08,0,1));
+          pos={x:mix(from.x,next.x,f),y:mix(from.y,next.y,f)};
+        }else if(current.player===i){
+          // Après la frappe, se replacer progressivement.
+          const f=ease(clamp(u,0,1));
+          pos={x:mix(current.x,home.x,f),y:mix(current.y,home.y,f)};
+        }
       }
-      const bounce=svg.querySelector('.lv-bounce-motion');
-      if(bounce){
-        bounce.setAttribute('dur',(seq.duration/seq.hits).toFixed(2)+'s');
-        try{bounce.beginElement();}catch(_){}
-      }
-      const toss=svg.querySelector('.lv-toss-motion');
-      if(toss){
-        toss.setAttribute('dur','0.8s');
-        try{toss.beginElement();}catch(_){}
-      }
+      player.setAttribute('transform',`translate(${position(pos)})`);
     });
+    if(st.toss)st.toss.setAttribute('visibility','hidden');
   }
-  window.setInterval(renew,5700);
+  let lastFrame=0;
+  function frame(now){
+    if(now-lastFrame>=32){
+      document.querySelectorAll('.lv-terrain svg').forEach(svg=>{
+        if(svg.querySelector('.lv-ball-core'))update(svg,now);
+      });
+      lastFrame=now;
+    }
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
 })();
 
 function terrainLive(m, r, fini){
@@ -2643,10 +2675,10 @@ function terrainLive(m, r, fini){
     // Trajectoire de départ ; un animateur JS léger renouvelle ensuite le parcours.
     const parcours = `M ${bx} ${by} Q ${x1} ${y1} 180 100 Q ${x2} ${y2} ${360-bx} ${200-by}`;
     balle = `<g class="lv-live-actors" aria-hidden="true">
-      <g class="lv-player lv-player-home"><circle r="8" fill="#2EE6FF" stroke="#fff" stroke-width="1.4"/><circle cy="-2" r="2.5" fill="#103047"/><animateMotion class="lv-player-motion-0" path="M 51 100 L 51 100" dur="5s" repeatCount="indefinite"/></g>
-      <g class="lv-player lv-player-away"><circle r="8" fill="#FF4FAE" stroke="#fff" stroke-width="1.4"/><circle cy="-2" r="2.5" fill="#4a1433"/><animateMotion class="lv-player-motion-1" path="M 309 100 L 309 100" dur="5s" repeatCount="indefinite"/></g>
-      <g class="lv-toss" opacity=".7"><circle cx="0" cy="0" r="3" fill="#D4FF3A"><animateMotion class="lv-toss-motion" path="M ${bx} ${by} q 0 -22 0 -4" dur="0.8s" repeatCount="1" fill="freeze"/></circle></g>
-      <g class="lv-ball-glow"><circle cx="0" cy="0" r="5" fill="#D4FF3A"><animate attributeName="r" class="lv-bounce-motion" values="5;3;5" dur="1.2s" repeatCount="indefinite"/><animateMotion class="lv-ball-motion" data-srv="${srv}" data-side="${bas ? 1 : 0}" path="${parcours}" dur="5s" repeatCount="indefinite" calcMode="paced"/></circle></g>
+      <g class="lv-player lv-player-home" transform="translate(55 100)"><circle r="8" fill="#2EE6FF" stroke="#fff" stroke-width="1.4"/><circle cy="-2" r="2.5" fill="#103047"/></g>
+      <g class="lv-player lv-player-away" transform="translate(305 100)"><circle r="8" fill="#FF4FAE" stroke="#fff" stroke-width="1.4"/><circle cy="-2" r="2.5" fill="#4a1433"/></g>
+      <g class="lv-toss-core" visibility="hidden"></g>
+      <g class="lv-ball-glow lv-ball-core" data-srv="${srv}" data-side="${bas ? 1 : 0}" transform="translate(${bx} ${by})"><circle r="5" fill="#D4FF3A"/></g>
     </g>`;
   }
   const ptsTxt = (v, x, c) => fini ? '' : `<g><rect x="${x-26}" y="120" width="52" height="32" rx="9" fill="rgba(14,10,36,.78)" stroke="${c}" stroke-opacity=".7"/><text x="${x}" y="143" text-anchor="middle" class="tp" style="fill:${c}">${esc(v ?? '0')}</text></g>`;
