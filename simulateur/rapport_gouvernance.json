@@ -1,9 +1,16 @@
 {
   "semaine": "2026-W46",
   "initialisation": false,
-  "promotions_demande_es": [],
-  "promotions_retenues": [],
-  "promotions_differees": [],
+  "promotions_demande_es": [
+    "classement_relatif",
+    "profils_hierarchiques"
+  ],
+  "promotions_retenues": [
+    "classement_relatif"
+  ],
+  "promotions_differees": [
+    "profils_hierarchiques"
+  ],
   "regle_promotion": "Au plus une nouvelle règle adoptée par semaine ; priorité au plus grand gain de log loss.",
   "periodes": {
     "juge_jusqua": "2026-11-09T01:00",
@@ -13,9 +20,15 @@
     "ok": true,
     "problemes": []
   },
-  "decisions_sans_trace_stabilite": [],
-  "champion_avant": "40e9be20f5f8f9b1d3f07851fd5fd38e8f9ad3fb79a98d442a0c889070720b47",
-  "champion_apres": "dd073a8c2316b47117bfb919812f4ce688c38480e116f65932475f15de637bb4",
-  "statut": "ok",
-  "genere_le": "2026-11-09T10:11:06.336996+00:00"
+  "decisions_sans_trace_stabilite": [
+    "nouveaux_venus",
+    "modele_arbres",
+    "classement",
+    "modele_arbres_points",
+    "classement_relatif"
+  ],
+  "champion_avant": "4d4190fbf235faedaf4de5a0800532b6dcd02ee3e9462597fc96a7ddf0eaf5cf",
+  "champion_apres": "d4ea6edf9145e5adb4fff63754970891e567341951e7a2715746e50f0dbc6927",
+  "statut": "a_verifier",
+  "genere_le": "2026-11-09T12:36:28.155255+00:00"
 }

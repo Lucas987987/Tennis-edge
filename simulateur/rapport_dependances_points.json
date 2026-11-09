@@ -1,25 +1,25 @@
 {
   "statut": "evalue",
-  "matchs": 9328,
-  "points": 686190,
+  "matchs": 9627,
+  "points": 707650,
   "candidats": {
     "momentum": {
       "variables": [
         "precedent"
       ],
       "coefficients_decouverte": [
-        0.25678
+        0.258932
       ],
       "decouverte": {
-        "n_points": 347065,
-        "log_loss_base": 0.773763,
-        "log_loss_avec": 0.766066
+        "n_points": 357710,
+        "log_loss_base": 0.774515,
+        "log_loss_avec": 0.766694
       },
       "confirmation": {
-        "n_points": 339125,
-        "log_loss_base": 0.772785,
-        "log_loss_avec": 0.764582,
-        "gain": 0.00820307,
+        "n_points": 349940,
+        "log_loss_base": 0.771096,
+        "log_loss_avec": 0.763083,
+        "gain": 0.00801292,
         "bootstrap_matchs": {
           "ic95": [
             0.0,
@@ -34,18 +34,18 @@
         "tiebreak"
       ],
       "coefficients_decouverte": [
-        -0.576403
+        -0.580186
       ],
       "decouverte": {
-        "n_points": 347065,
-        "log_loss_base": 0.773763,
-        "log_loss_avec": 0.772416
+        "n_points": 357710,
+        "log_loss_base": 0.774515,
+        "log_loss_avec": 0.773157
       },
       "confirmation": {
-        "n_points": 339125,
-        "log_loss_base": 0.772785,
-        "log_loss_avec": 0.771383,
-        "gain": 0.00140187,
+        "n_points": 349940,
+        "log_loss_base": 0.771096,
+        "log_loss_avec": 0.769649,
+        "gain": 0.00144666,
         "bootstrap_matchs": {
           "ic95": [
             0.0,
@@ -61,19 +61,19 @@
         "points_100_bo5"
       ],
       "coefficients_decouverte": [
-        -1.509982,
+        -1.523285,
         0.0
       ],
       "decouverte": {
-        "n_points": 347065,
-        "log_loss_base": 0.773763,
-        "log_loss_avec": 0.708484
+        "n_points": 357710,
+        "log_loss_base": 0.774515,
+        "log_loss_avec": 0.708356
       },
       "confirmation": {
-        "n_points": 339125,
-        "log_loss_base": 0.772785,
-        "log_loss_avec": 0.708428,
-        "gain": 0.06435729,
+        "n_points": 349940,
+        "log_loss_base": 0.771096,
+        "log_loss_avec": 0.707865,
+        "gain": 0.06323029,
         "bootstrap_matchs": {
           "ic95": [
             0.0,
@@ -88,18 +88,18 @@
         "set_avance"
       ],
       "coefficients_decouverte": [
-        -1.210762
+        -1.220552
       ],
       "decouverte": {
-        "n_points": 347065,
-        "log_loss_base": 0.773763,
-        "log_loss_avec": 0.723622
+        "n_points": 357710,
+        "log_loss_base": 0.774515,
+        "log_loss_avec": 0.72375
       },
       "confirmation": {
-        "n_points": 339125,
-        "log_loss_base": 0.772785,
-        "log_loss_avec": 0.7239,
-        "gain": 0.04888543,
+        "n_points": 349940,
+        "log_loss_base": 0.771096,
+        "log_loss_avec": 0.723092,
+        "gain": 0.04800351,
         "bootstrap_matchs": {
           "ic95": [
             0.0,
@@ -118,22 +118,22 @@
         "set_avance"
       ],
       "coefficients_decouverte": [
-        0.123149,
-        0.682529,
-        -2.242755,
+        0.123607,
+        0.690459,
+        -2.263298,
         0.0,
-        0.70106
+        0.708009
       ],
       "decouverte": {
-        "n_points": 347065,
-        "log_loss_base": 0.773763,
-        "log_loss_avec": 0.703766
+        "n_points": 357710,
+        "log_loss_base": 0.774515,
+        "log_loss_avec": 0.703568
       },
       "confirmation": {
-        "n_points": 339125,
-        "log_loss_base": 0.772785,
-        "log_loss_avec": 0.703654,
-        "gain": 0.06913103,
+        "n_points": 349940,
+        "log_loss_base": 0.771096,
+        "log_loss_avec": 0.703275,
+        "gain": 0.06782016,
         "bootstrap_matchs": {
           "ic95": [
             0.0,
@@ -146,5 +146,5 @@
   },
   "decouverte_confirmation": "première moitié chronologique / seconde moitié",
   "publication": "interdite à ce stade : validation du vainqueur encore requise",
-  "genere_le": "2026-11-04T11:13:46.720641+00:00"
+  "genere_le": "2026-11-09T12:23:34.729122+00:00"
 }
