@@ -548,6 +548,8 @@ body.carte #video{display:block;width:1080px;height:1350px}
 .lv-3d-host canvas{width:100%;height:100%;display:block}
 .lv-3d-caption{position:absolute;bottom:5px;left:8px;font:10px system-ui;color:#e6e8ff;background:#111827a8;padding:3px 6px;border-radius:5px;pointer-events:none}
 
+.lv-v6-mode{display:block;margin:0 auto 8px;padding:6px 12px;border:1px solid #80b9e4;border-radius:8px;background:#182d4b;color:#effbff;font:600 12px system-ui;cursor:pointer}
+.lv-3d-host{aspect-ratio:1.65}
 </style>
 </head>
 <body>
@@ -2690,92 +2692,146 @@ function tableauLive(m, r, fini, grand){
 })();
 
 
-  // V5.2 — Perspective autonome : aucune bibliothèque ni requête CDN.
+  // V6 — Terrain TV horizontal / vue immersive, autonome (Canvas 2D, sans CDN).
 (function(){
   const sessions=new WeakMap();
+  let mode='tv';
+  const rnd=(a,b)=>a+Math.random()*(b-a);
   function start(host,svg){
-    const canvas=document.createElement('canvas');canvas.setAttribute('aria-label','Court de tennis animé en perspective');
-    canvas.style.cssText='display:block;width:100%;height:100%;';host.appendChild(canvas);
-    const ctx=canvas.getContext('2d');if(!ctx)throw Error('Canvas 2D indisponible');
-    let raf=0,active=true,startTime=performance.now(),seq=[],seqDuration=0;
-    const rnd=(a,b)=>a+Math.random()*(b-a);
+    const canvas=document.createElement('canvas');
+    canvas.setAttribute('aria-label','Animation tennis vue '+(mode==='tv'?'TV':'immersive'));
+    canvas.style.cssText='display:block;width:100%;height:100%';
+    host.replaceChildren(canvas);
+    const ctx=canvas.getContext('2d',{alpha:false});
+    if(!ctx)throw Error('Canvas 2D indisponible');
+    let active=true,raf=0,t0=performance.now(),shots=[],duration=0;
+    const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+    const ease=t=>t*t*(3-2*t);
     function sequence(){
-      const server=svg.querySelector('.lv-ball-core')?.dataset.srv==='1'?1:0;
-      seq=[];const n=4+Math.floor(Math.random()*5);
-      for(let i=0;i<n;i++)seq.push({x:rnd(-3.5,3.5),z:(i+server)%2? -8:8});
-      seqDuration=(n-1)*1.25;startTime=performance.now();
+      const serve=svg.querySelector('.lv-ball-core')?.dataset.srv==='1'?1:0;
+      shots=[];const n=4+Math.floor(Math.random()*5);
+      for(let i=0;i<n;i++)shots.push({side:(i+serve)%2===0?-1:1,lane:rnd(-.72,.72),kind:Math.random()});
+      duration=(n-1)*1.32;t0=performance.now();
     }
+    // World coordinates: x is distance along the court (-1 left, +1 right), y is lateral.
     function project(x,y,z,w,h){
-      const t=(z+13)/26,depth=1-t;
-      const cx=w*.5,cy=h*(.18+depth*.70),scale=(.28+depth*.73)*w/14;
-      return [cx+x*scale,cy-y*scale,scale];
+      if(mode==='tv'){
+        const sc=Math.min(w/2.75,h/1.55);
+        return [w*.5+x*sc*1.10+y*sc*.12,h*.51+y*sc*.65-z*sc*.72,sc];
+      }
+      const depth=(1-x)/2,scale=.39+depth*.73;
+      return [w*.5+y*w*.30*scale,h*(.18+depth*.69)-z*h*.21*scale,w*.085*scale];
     }
-    function line(x1,z1,x2,z2,w,h,color,width=2){
-      const a=project(x1,0,z1,w,h),b=project(x2,0,z2,w,h);
-      ctx.strokeStyle=color;ctx.lineWidth=width;ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.stroke();
+    function path(points,color,width,fill){
+      ctx.beginPath();points.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));
+      if(fill){ctx.closePath();ctx.fillStyle=fill;ctx.fill();}
+      if(color){ctx.strokeStyle=color;ctx.lineWidth=width;ctx.stroke();}
     }
-    function person(x,z,w,h,color,phase){
-      const [px,py,sc]=project(x,0,z,w,h),unit=Math.max(5,sc*.85);
-      ctx.fillStyle='rgba(0,0,0,.24)';ctx.beginPath();ctx.ellipse(px,py,unit*.40,unit*.12,0,0,Math.PI*2);ctx.fill();
-      ctx.strokeStyle='#d8b38f';ctx.lineWidth=Math.max(2,unit*.13);ctx.lineCap='round';
-      const swing=Math.sin(phase)*unit*.14;
-      ctx.beginPath();ctx.moveTo(px-unit*.13,py-unit*.64);ctx.lineTo(px-unit*.22+swing,py-unit*.12);ctx.moveTo(px+unit*.13,py-unit*.64);ctx.lineTo(px+unit*.24-swing,py-unit*.12);ctx.stroke();
-      ctx.fillStyle=color;ctx.beginPath();ctx.roundRect(px-unit*.30,py-unit*1.42,unit*.60,unit*.82,unit*.16);ctx.fill();
-      ctx.fillStyle='#e7b992';ctx.beginPath();ctx.arc(px,py-unit*1.68,unit*.24,0,Math.PI*2);ctx.fill();
-      ctx.strokeStyle='#e7b992';ctx.lineWidth=Math.max(2,unit*.12);ctx.beginPath();ctx.moveTo(px+unit*.25,py-unit*1.22);ctx.lineTo(px+unit*.62,py-unit*(.93+Math.sin(phase)*.13));ctx.stroke();
-      ctx.strokeStyle='#f6f6ff';ctx.lineWidth=Math.max(1,unit*.07);ctx.beginPath();ctx.ellipse(px+unit*.82,py-unit*.78,unit*.24,unit*.37,-.25,0,Math.PI*2);ctx.stroke();
+    function seg(x1,y1,x2,y2,w,h,color,width=1.4,z=0){
+      path([project(x1,y1,z,w,h),project(x2,y2,z,w,h)],color,width);
     }
-    function frame(now){
+    function player(x,y,w,h,color,phase,hit){
+      const p=project(x,y,0,w,h),size=mode==='tv'?Math.max(10,w*.033):Math.max(7,p[2]*.9);
+      const px=p[0],py=p[1],s=size;
+      ctx.fillStyle='rgba(0,7,22,.30)';ctx.beginPath();ctx.ellipse(px+3,py+4,s*.53,s*.17,0,0,Math.PI*2);ctx.fill();
+      const lean=Math.sin(phase)*s*.07;
+      ctx.lineCap='round';ctx.lineJoin='round';ctx.lineWidth=Math.max(2,s*.15);ctx.strokeStyle='#e5ae83';
+      ctx.beginPath();ctx.moveTo(px-s*.12,py-s*.48);ctx.lineTo(px-s*.24+lean,py+s*.05);
+      ctx.moveTo(px+s*.12,py-s*.48);ctx.lineTo(px+s*.25-lean,py+s*.05);ctx.stroke();
+      ctx.fillStyle='#f6f7fb';ctx.beginPath();ctx.ellipse(px-s*.24+lean,py+s*.09,s*.18,s*.09,-.2,0,Math.PI*2);ctx.ellipse(px+s*.25-lean,py+s*.09,s*.18,s*.09,.2,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle=color;ctx.beginPath();ctx.roundRect(px-s*.28,py-s*1.18,s*.56,s*.77,s*.15);ctx.fill();
+      ctx.fillStyle='#e7b48b';ctx.beginPath();ctx.arc(px,py-s*1.39,s*.25,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle='#322b35';ctx.beginPath();ctx.arc(px,py-s*1.49,s*.24,Math.PI*1.05,Math.PI*1.95);ctx.fill();
+      const handX=px+(x<0?1:-1)*s*.60,handY=py-s*(hit?1.30:.78);
+      ctx.strokeStyle='#e7b48b';ctx.lineWidth=Math.max(2,s*.12);ctx.beginPath();ctx.moveTo(px+(x<0?1:-1)*s*.25,py-s*1.03);ctx.lineTo(handX,handY);ctx.stroke();
+      ctx.strokeStyle='#dfeaff';ctx.lineWidth=Math.max(1.5,s*.09);ctx.beginPath();ctx.moveTo(handX,handY);ctx.lineTo(handX+(x<0?1:-1)*s*.28,handY-s*.22);ctx.stroke();
+      ctx.strokeStyle='#f3f8ff';ctx.lineWidth=Math.max(1.5,s*.085);ctx.beginPath();ctx.ellipse(handX+(x<0?1:-1)*s*.38,handY-s*.40,s*.24,s*.35,(x<0?-.3:.3),0,Math.PI*2);ctx.stroke();
+    }
+    function draw(now){
       if(!active||!host.isConnected||host.dataset.active!=='1')return;
-      if(document.hidden){raf=requestAnimationFrame(frame);return;}
-      const rect=host.getBoundingClientRect(),w=Math.max(220,rect.width),h=Math.max(150,rect.height);
-      const dpr=Math.min(devicePixelRatio||1,2),pw=Math.round(w*dpr),ph=Math.round(h*dpr);
-      if(canvas.width!==pw||canvas.height!==ph){canvas.width=pw;canvas.height=ph;}
+      if(document.hidden){raf=requestAnimationFrame(draw);return;}
+      const box=host.getBoundingClientRect(),w=Math.max(240,box.width),h=Math.max(150,box.height);
+      const dpr=Math.min(window.devicePixelRatio||1,2);
+      if(canvas.width!==Math.round(w*dpr)||canvas.height!==Math.round(h*dpr)){
+        canvas.width=Math.round(w*dpr);canvas.height=Math.round(h*dpr);
+      }
       ctx.setTransform(dpr,0,0,dpr,0,0);
-      const bg=ctx.createLinearGradient(0,0,0,h);bg.addColorStop(0,'#172b52');bg.addColorStop(1,'#0c1732');ctx.fillStyle=bg;ctx.fillRect(0,0,w,h);
-      const court=[project(-6,0,-12,w,h),project(6,0,-12,w,h),project(6,0,12,w,h),project(-6,0,12,w,h)];
-      ctx.fillStyle='#397cc0';ctx.beginPath();court.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.closePath();ctx.fill();
-      for(const z of [-12,-6.4,6.4,12])line(-6,z,6,z,w,h,'#f4f7ff',1.5);
-      for(const x of [-6,-4.5,4.5,6])line(x,-12,x,12,w,h,'#f4f7ff',1.5);
-      line(0,-6.4,0,6.4,w,h,'#f4f7ff',1.3);
-      const nl=project(-6.5,.9,0,w,h),nr=project(6.5,.9,0,w,h),bl=project(-6.5,0,0,w,h),br=project(6.5,0,0,w,h);
-      ctx.fillStyle='rgba(225,235,255,.19)';ctx.beginPath();ctx.moveTo(nl[0],nl[1]);ctx.lineTo(nr[0],nr[1]);ctx.lineTo(br[0],br[1]);ctx.lineTo(bl[0],bl[1]);ctx.closePath();ctx.fill();
-      ctx.strokeStyle='#e6eaff';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(nl[0],nl[1]);ctx.lineTo(nr[0],nr[1]);ctx.stroke();
-      for(let i=0;i<=18;i++){const x=-6.5+i*13/18;const t=project(x,.9,0,w,h),bot=project(x,0,0,w,h);ctx.strokeStyle='rgba(255,255,255,.3)';ctx.lineWidth=.6;ctx.beginPath();ctx.moveTo(t[0],t[1]);ctx.lineTo(bot[0],bot[1]);ctx.stroke();}
-      let elapsed=(now-startTime)/1000;if(elapsed>=seqDuration){sequence();elapsed=0;}
-      const idx=Math.min(seq.length-2,Math.floor(elapsed/1.25)),u=Math.min(1,(elapsed%1.25)/1.25),a=seq[idx],b=seq[idx+1];
-      const bx=a.x+(b.x-a.x)*u,bz=a.z+(b.z-a.z)*u,by=.20+Math.sin(Math.PI*u)*3.0;
-      const nearX=(a.z>0?a.x:b.z>0?b.x:0),farX=(a.z<0?a.x:b.z<0?b.x:0);
-      person(farX,-8,w,h,'#ff4fae',elapsed*5);
-      const shadow=project(bx,0,bz,w,h),ball=project(bx,by,bz,w,h);
-      ctx.fillStyle='rgba(0,0,0,.22)';ctx.beginPath();ctx.ellipse(shadow[0],shadow[1],Math.max(3,shadow[2]*.19),Math.max(2,shadow[2]*.08),0,0,Math.PI*2);ctx.fill();
-      ctx.fillStyle='#dbff41';ctx.shadowColor='#d4ff3a';ctx.shadowBlur=8;ctx.beginPath();ctx.arc(ball[0],ball[1],Math.max(3,ball[2]*.13),0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;
-      person(nearX,8,w,h,'#2ee6ff',elapsed*5+1);
-      raf=requestAnimationFrame(frame);
+      const bg=ctx.createLinearGradient(0,0,0,h);bg.addColorStop(0,'#142745');bg.addColorStop(1,'#071529');
+      ctx.fillStyle=bg;ctx.fillRect(0,0,w,h);
+      const outer=[project(-1.11,-.92,0,w,h),project(1.11,-.92,0,w,h),project(1.11,.92,0,w,h),project(-1.11,.92,0,w,h)];
+      path(outer,'#a7d4f8',1.5,'#245b89');
+      const court=[project(-1,-.80,0,w,h),project(1,-.80,0,w,h),project(1,.80,0,w,h),project(-1,.80,0,w,h)];
+      path(court,'#eaf6ff',2,'#347fc0');
+      for(const y of [-.66,.66])seg(-1,y,1,y,w,h,'#f5fbff',1.5);
+      for(const x of [-.55,.55])seg(x,-.66,x,.66,w,h,'#f5fbff',1.4);
+      seg(-.55,0,.55,0,w,h,'#f5fbff',1.2);
+      for(const x of [-1,1])seg(x,-.80,x,.80,w,h,'#f5fbff',1.8);
+      // Mesh and posts: the net lies between the players.
+      const nl=project(0,-.88,.15,w,h),nr=project(0,.88,.15,w,h);
+      const bl=project(0,-.88,0,w,h),br=project(0,.88,0,w,h);
+      path([nl,nr,br,bl],'rgba(240,250,255,.8)',1,'rgba(225,242,255,.16)');
+      for(let i=0;i<=18;i++){
+        const y=-.88+i*1.76/18;
+        const a=project(0,y,.15,w,h),b=project(0,y,0,w,h);
+        path([a,b],'rgba(235,245,255,.37)',.55);
+      }
+      for(let j=1;j<4;j++){
+        const a=project(0,-.88,.15*j/4,w,h),b=project(0,.88,.15*j/4,w,h);
+        path([a,b],'rgba(235,245,255,.28)',.6);
+      }
+      for(const y of [-.88,.88]){
+        const a=project(0,y,0,w,h),b=project(0,y,.20,w,h);
+        path([a,b],'#e4ebf6',3);
+      }
+      let elapsed=(now-t0)/1000;
+      if(elapsed>=duration){sequence();elapsed=0;}
+      const k=Math.min(shots.length-2,Math.floor(elapsed/1.32));
+      const u=clamp((elapsed-k*1.32)/1.32,0,1),a=shots[k],b=shots[k+1];
+      const bx=a.side*.86+(b.side-a.side)*.86*ease(u);
+      const by=a.lane+(b.lane-a.lane)*ease(u);
+      const height=.035+Math.sin(Math.PI*u)*.48;
+      const leftShot=a.side<0?a:b.side<0?b:null,rightShot=a.side>0?a:b.side>0?b:null;
+      const lx=-.86,rx=.86;
+      const leftY=leftShot?leftShot.lane:0,rightY=rightShot?rightShot.lane:0;
+      // Both players' targets derive from the same ball trajectory, not independent motion.
+      const contact=u<.16||u>.84;
+      const pL=project(lx,leftY,0,w,h),pR=project(rx,rightY,0,w,h);
+      const shadow=project(bx,by,0,w,h),ball=project(bx,by,height,w,h);
+      ctx.fillStyle='rgba(1,9,25,.27)';ctx.beginPath();ctx.ellipse(shadow[0],shadow[1],Math.max(3,w*.010),Math.max(2,w*.004),0,0,Math.PI*2);ctx.fill();
+      if(mode==='immersive'){player(rx,rightY,w,h,'#ff529d',elapsed*5,contact);player(lx,leftY,w,h,'#2de6ff',elapsed*5+.8,contact);}
+      else{player(lx,leftY,w,h,'#2de6ff',elapsed*5+.8,contact);player(rx,rightY,w,h,'#ff529d',elapsed*5,contact);}
+      ctx.shadowColor='#e4ff5b';ctx.shadowBlur=9;ctx.fillStyle='#dfff39';
+      ctx.beginPath();ctx.arc(ball[0],ball[1],Math.max(3.4,w*.010),0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;
+      raf=requestAnimationFrame(draw);
     }
-    sequence();host.dataset.active='1';
-    // Un rendu initial synchrone permet de détecter les erreurs Canvas immédiatement.
-    frame(performance.now());
-    const stop=()=>{active=false;host.dataset.active='0';cancelAnimationFrame(raf);canvas.remove();};sessions.set(host,stop);
+    sequence();host.dataset.active='1';draw(performance.now());
+    sessions.set(host,()=>{active=false;host.dataset.active='0';cancelAnimationFrame(raf);canvas.remove();});
   }
   document.addEventListener('click',e=>{
-    const btn=e.target.closest('.lv-3d-toggle');if(!btn)return;
+    const btn=e.target.closest('.lv-3d-toggle,.lv-v6-mode');
+    if(!btn)return;
     const wrapper=btn.closest('.lv-terrain'),svg=wrapper?.querySelector('svg'),host=wrapper?.querySelector('.lv-3d-host');
-    if(!svg||!host)return;
-    const diag=wrapper.querySelector('.lv-3d-diagnostic');
+    if(!wrapper||!svg||!host)return;
+    const toggle=wrapper.querySelector('.lv-3d-toggle'),diag=wrapper.querySelector('.lv-3d-diagnostic');
     if(diag){diag.hidden=true;diag.textContent='';}
+    if(btn.classList.contains('lv-v6-mode')){
+      mode=mode==='tv'?'immersive':'tv';
+      btn.textContent=mode==='tv'?'🎥 Vue immersive':'📺 Vue TV';
+      if(host.dataset.active==='1'){sessions.get(host)?.();try{start(host,svg);}catch(err){fail(err);}}
+      return;
+    }
     if(host.dataset.active==='1'){
-      sessions.get(host)?.();host.hidden=true;svg.hidden=false;btn.textContent='🎾 Tester la vue en perspective';return;
+      sessions.get(host)?.();host.hidden=true;svg.hidden=false;toggle.textContent='🎾 Tester la vue TV';return;
     }
     try{
       host.hidden=false;svg.hidden=true;start(host,svg);
-      btn.textContent='↩ Revenir à la vue 2D';btn.title='Vue en perspective autonome, sans Three.js';
-    }catch(err){
-      console.error('[Tennis Edge Perspective V5.3]',err);
+      toggle.textContent='↩ Revenir à la vue 2D';
+    }catch(err){fail(err);}
+    function fail(err){
+      console.error('[Tennis Edge V6]',err);
       sessions.get(host)?.();host.replaceChildren();host.hidden=true;svg.hidden=false;
-      btn.textContent='⚠️ Vue indisponible — diagnostic V5.3';
-      const msg=String(err?.stack||err?.message||err||'Erreur inconnue').slice(0,700);
-      if(diag){diag.hidden=false;diag.textContent='Diagnostic V5.3\n'+msg+'\nNavigateur : '+navigator.userAgent.slice(0,150);}
+      toggle.textContent='⚠️ Vue indisponible — diagnostic V6';
+      if(diag){diag.hidden=false;diag.textContent='V6 : '+String(err?.stack||err?.message||err).slice(0,550);}
     }
   });
 })();
@@ -2811,7 +2867,7 @@ function terrainLive(m, r, fini){
     </g>`;
   }
   const ptsTxt = (v, x, c) => fini ? '' : `<g><rect x="${x-26}" y="120" width="52" height="32" rx="9" fill="rgba(14,10,36,.78)" stroke="${c}" stroke-opacity=".7"/><text x="${x}" y="143" text-anchor="middle" class="tp" style="fill:${c}">${esc(v ?? '0')}</text></g>`;
-  return `<div class="lv-terrain">${!fini ? '<div class="lv-3d-version">Tennis Edge Live V5.3 · diagnostic</div><button type="button" class="lv-3d-toggle">🎾 Tester la vue en perspective</button><div class="lv-3d-diagnostic" hidden role="alert"></div><div class="lv-3d-host" hidden><span class="lv-3d-caption">Animation en perspective illustrative · score réel</span></div>' : ''}<svg data-live-uid="${esc(m.uid)}" data-live-score="${esc([SH.join(','),SA.join(','),h.point,a.point,srv].join('|'))}" viewBox="0 0 ${W} ${Hh}" role="img" aria-label="${esc(court(m.home))} ${gh} – ${ga} ${esc(court(m.away))}">
+  return `<div class="lv-terrain">${!fini ? '<div class="lv-3d-version">Tennis Edge Live V6 · Vue TV</div><button type="button" class="lv-3d-toggle">🎾 Tester la vue TV</button><button type="button" class="lv-v6-mode">🎥 Vue immersive</button><div class="lv-3d-diagnostic" hidden role="alert"></div><div class="lv-3d-host" hidden><span class="lv-3d-caption">Animation TV illustrative · score réel</span></div>' : ''}<svg data-live-uid="${esc(m.uid)}" data-live-score="${esc([SH.join(','),SA.join(','),h.point,a.point,srv].join('|'))}" viewBox="0 0 ${W} ${Hh}" role="img" aria-label="${esc(court(m.home))} ${gh} – ${ga} ${esc(court(m.away))}">
     <defs><linearGradient id="lvsol" x1="0" x2="1"><stop offset="0" stop-color="#1f2a6b"/><stop offset=".5" stop-color="#26307a"/><stop offset="1" stop-color="#1f2a6b"/></linearGradient></defs>
     <rect x="0" y="0" width="${W}" height="${Hh}" rx="14" fill="#141040"/>
     <rect x="20" y="30" width="320" height="140" fill="url(#lvsol)" stroke="rgba(255,255,255,.75)" stroke-width="1.6"/>
