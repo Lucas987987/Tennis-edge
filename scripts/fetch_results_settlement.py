@@ -96,10 +96,13 @@ def main():
 
     # candidats = suivis en CLV, probablement finis, pas trop vieux, pas deja resolus
     todo = []
+    reverify = []   # Arena V2.2: ancienne résolution provisoire à recontrôler
     backfill = []   # deja resolus MAIS sans set1 (donnee ajoutee apres coup) -> 1 requete pour completer
     for fid, m in matches.items():
         prev = store.get(fid)
         if prev and (prev.get('winner') or prev.get('void')):
+            if prev.get('winner') in ('home','away') and prev.get('provisional') is not False and not prev.get('arena_recheck_attempted'):
+                reverify.append((fid,m))
             # Backfill set1/set2 : entree resolue avant l'ajout des champs. On
             # re-interroge UNE fois puis on marque (False = indispo definitif).
             # RETRY_FALSE=1 (env) : re-tente AUSSI les entrees marquees False —
@@ -123,9 +126,12 @@ def main():
 
     print(f"[i] {len(matches)} matchs suivis | {len(store)} deja resolus | "
           f"{len(todo)} a interroger | {len(backfill)} backfill set1")
-    # Budget : les nouveaux matchs d'abord, le backfill avec le reliquat.
+    # Budget: nouveaux matchs d'abord, puis revalidation ciblée, puis sets.
     todo = todo[:MAX_CALLS]
-    backfill = backfill[:max(0, MAX_CALLS - len(todo))]
+    remaining = max(0, MAX_CALLS-len(todo))
+    reverify = reverify[:min(remaining, max(0,int(os.environ.get('ARENA_REVERIFY_LIMIT','20'))))]
+    backfill = backfill[:max(0,remaining-len(reverify))]
+    print(f'[Arena V2.2] {len(reverify)} anciens résultats provisoires à revérifier via API (budget partagé).')
 
     resolved = 0
     voided = 0
@@ -168,11 +174,27 @@ def main():
             'status_name': r.get('status_name'),
             'winner_from_market': r.get('winner_from_market', False),
             'resolved_at': now.isoformat(),
+            'commence_time': m.get('commence_time',''),
         }
         parsed.append((m['home'], m['away'], winner_name))
         resolved += 1
         s1 = {'home': m['home'], 'away': m['away']}.get(r.get('set1'), '?')
         print(f"  OK {fid} {m['home']} v {m['away']} -> {winner_name} ({sets}) | set1: {s1}")
+
+    # Ne certifier une ancienne entrée qu'après une NOUVELLE réponse explicite /settlement.
+    for fid,m in reverify:
+        r=ov.settlement_result(fid)
+        old=store[fid]
+        old['arena_recheck_attempted']=now.isoformat()
+        if (r.get('status_name')=='Finished' and r.get('winner_from_market') is True
+                and r.get('winner') in ('home','away') and r['winner']==old.get('winner')):
+            old.update(provisional=False,status_name='Finished',winner_from_market=True,
+                       commence_time=m.get('commence_time',''),
+                       arena_confirmed_at=now.isoformat())
+            print('  ARENA CONFIRMÉ:',fid,m['home'],'vs',m['away'])
+        else:
+            print('  ARENA EN ATTENTE:',fid,'statut=',r.get('status_name'),
+                  'marché=',r.get('winner_from_market'),'concordance=',r.get('winner')==old.get('winner'))
 
     # Backfill set1 sur les entrees deja resolues (1 requete chacune, borné)
     for fid, m in backfill:
