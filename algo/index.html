@@ -539,6 +539,9 @@ body.carte #video{display:block;width:1080px;height:1350px}
 .arena-nav:hover,.arena-nav:focus-visible{background:#eaff88;outline:2px solid #80b000;outline-offset:2px}
 @media(max-width:520px){.arena-nav{padding:7px 11px;font-size:12px}.reglages{gap:5px}}
 
+/* V5.3 — diagnostic local de perspective, sans requête externe. */
+.lv-3d-diagnostic{max-width:620px;margin:7px auto 10px;padding:10px 12px;border:1px solid #c08c46;border-radius:9px;background:#fff6e6;color:#4d2e0d;font:12px/1.55 system-ui,sans-serif;overflow-wrap:anywhere;white-space:pre-wrap}
+.lv-3d-version{font:600 10px system-ui;color:var(--dim);text-align:center;margin:0 0 4px}
 /* Tennis Edge Live V5 — 3D facultative : modèle procédural, aucune donnée de tracking inventée. */
 .lv-3d-toggle{display:block;margin:5px auto 8px;padding:7px 15px;border:1px solid #a8b5ff;border-radius:9px;background:#202451;color:#fff;font:600 13px system-ui;cursor:pointer}
 .lv-3d-host{width:100%;max-width:620px;margin:auto;aspect-ratio:1.6;background:#11182c;border-radius:12px;overflow:hidden;position:relative}
@@ -2750,20 +2753,30 @@ function tableauLive(m, r, fini, grand){
       person(nearX,8,w,h,'#2ee6ff',elapsed*5+1);
       raf=requestAnimationFrame(frame);
     }
-    sequence();host.dataset.active='1';raf=requestAnimationFrame(frame);
+    sequence();host.dataset.active='1';
+    // Un rendu initial synchrone permet de détecter les erreurs Canvas immédiatement.
+    frame(performance.now());
     const stop=()=>{active=false;host.dataset.active='0';cancelAnimationFrame(raf);canvas.remove();};sessions.set(host,stop);
   }
   document.addEventListener('click',e=>{
     const btn=e.target.closest('.lv-3d-toggle');if(!btn)return;
     const wrapper=btn.closest('.lv-terrain'),svg=wrapper?.querySelector('svg'),host=wrapper?.querySelector('.lv-3d-host');
     if(!svg||!host)return;
+    const diag=wrapper.querySelector('.lv-3d-diagnostic');
+    if(diag){diag.hidden=true;diag.textContent='';}
     if(host.dataset.active==='1'){
       sessions.get(host)?.();host.hidden=true;svg.hidden=false;btn.textContent='🎾 Tester la vue en perspective';return;
     }
     try{
       host.hidden=false;svg.hidden=true;start(host,svg);
       btn.textContent='↩ Revenir à la vue 2D';btn.title='Vue en perspective autonome, sans Three.js';
-    }catch(err){console.error('[Tennis Edge Perspective]',err);host.hidden=true;svg.hidden=false;btn.textContent='Vue indisponible';btn.title=String(err?.message||err);}
+    }catch(err){
+      console.error('[Tennis Edge Perspective V5.3]',err);
+      sessions.get(host)?.();host.replaceChildren();host.hidden=true;svg.hidden=false;
+      btn.textContent='⚠️ Vue indisponible — diagnostic V5.3';
+      const msg=String(err?.stack||err?.message||err||'Erreur inconnue').slice(0,700);
+      if(diag){diag.hidden=false;diag.textContent='Diagnostic V5.3\n'+msg+'\nNavigateur : '+navigator.userAgent.slice(0,150);}
+    }
   });
 })();
 
@@ -2798,7 +2811,7 @@ function terrainLive(m, r, fini){
     </g>`;
   }
   const ptsTxt = (v, x, c) => fini ? '' : `<g><rect x="${x-26}" y="120" width="52" height="32" rx="9" fill="rgba(14,10,36,.78)" stroke="${c}" stroke-opacity=".7"/><text x="${x}" y="143" text-anchor="middle" class="tp" style="fill:${c}">${esc(v ?? '0')}</text></g>`;
-  return `<div class="lv-terrain">${!fini ? '<button type="button" class="lv-3d-toggle">🎾 Tester la vue en perspective</button><div class="lv-3d-host" hidden><span class="lv-3d-caption">Animation 3D illustrative · score réel</span></div>' : ''}<svg data-live-uid="${esc(m.uid)}" data-live-score="${esc([SH.join(','),SA.join(','),h.point,a.point,srv].join('|'))}" viewBox="0 0 ${W} ${Hh}" role="img" aria-label="${esc(court(m.home))} ${gh} – ${ga} ${esc(court(m.away))}">
+  return `<div class="lv-terrain">${!fini ? '<div class="lv-3d-version">Tennis Edge Live V5.3 · diagnostic</div><button type="button" class="lv-3d-toggle">🎾 Tester la vue en perspective</button><div class="lv-3d-diagnostic" hidden role="alert"></div><div class="lv-3d-host" hidden><span class="lv-3d-caption">Animation en perspective illustrative · score réel</span></div>' : ''}<svg data-live-uid="${esc(m.uid)}" data-live-score="${esc([SH.join(','),SA.join(','),h.point,a.point,srv].join('|'))}" viewBox="0 0 ${W} ${Hh}" role="img" aria-label="${esc(court(m.home))} ${gh} – ${ga} ${esc(court(m.away))}">
     <defs><linearGradient id="lvsol" x1="0" x2="1"><stop offset="0" stop-color="#1f2a6b"/><stop offset=".5" stop-color="#26307a"/><stop offset="1" stop-color="#1f2a6b"/></linearGradient></defs>
     <rect x="0" y="0" width="${W}" height="${Hh}" rx="14" fill="#141040"/>
     <rect x="20" y="30" width="320" height="140" fill="url(#lvsol)" stroke="rgba(255,255,255,.75)" stroke-width="1.6"/>
