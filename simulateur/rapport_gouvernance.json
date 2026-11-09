@@ -6,16 +6,28 @@
   "promotions_differees": [],
   "regle_promotion": "Au plus une nouvelle règle adoptée par semaine ; priorité au plus grand gain de log loss.",
   "periodes": {
-    "juge_jusqua": "2026-11-08T13:00",
-    "jugement_courant": {},
+    "juge_jusqua": "2026-11-09T01:00",
+    "jugement_courant": {
+      "n": 32,
+      "depuis": "2026-11-08T14:00",
+      "jusqua": "2026-11-09T01:00",
+      "log_loss_continu": 0.53777,
+      "log_loss_poids_archive": 0.53186,
+      "log_loss_elo_seul": 0.52689,
+      "brier_continu": 0.18004,
+      "brier_poids_archive": 0.17786,
+      "brier_elo_seul": 0.17671,
+      "gain_log_loss": -0.005904,
+      "marge_requise": 0.001
+    },
     "minimum_nouveaux_matchs": 30,
-    "n_nouveaux": null,
+    "n_nouveaux": 32,
     "ok": true,
     "problemes": []
   },
   "decisions_sans_trace_stabilite": [],
-  "champion_avant": "cae5d34038f9ab26a906ddcb2da37d015d6e78869eaeba5f6aaa8145fcff60b7",
-  "champion_apres": "6adde53643f4cad0848a97dc7bd1acb8fbd79e85238674a6f0a7ae768a79d85d",
+  "champion_avant": "6adde53643f4cad0848a97dc7bd1acb8fbd79e85238674a6f0a7ae768a79d85d",
+  "champion_apres": "b64c17bee9453af3258213b6d4f863a467dbc1fcc9eb92c535c0f31b801935e6",
   "statut": "ok",
-  "genere_le": "2026-11-09T03:56:10.556935+00:00"
+  "genere_le": "2026-11-09T05:58:11.743692+00:00"
 }
