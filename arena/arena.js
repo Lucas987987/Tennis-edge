@@ -14,9 +14,21 @@ async function api(path,options={}){
  const response=await fetch(API_URL+path,{...options,headers:{...headers,...(options.headers||{})}});
  const data=await response.json();if(!response.ok){if(response.status===500)throw Error('Service temporairement indisponible (quota Cloudflare possible).');throw Error(data.error||'Erreur');}if(method==='GET'&&['/api/arena/challenges','/api/arena/leaderboard','/api/arena/rankings','/api/arena/rewards'].includes(path))publicMemo.set(path,{at:Date.now(),data});return data;
 }
+/* ARENA_REUSE_EXISTING_CARDS_V1 */
+const teCardData={};
+const teCardKey=s=>String(s||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');
+const teStatsCard=(name,unlocked)=>{
+ const c=teCardData[teCardKey(name)];if(!c)return null;
+ const attributes=Object.entries(c.attrs||{}).filter(([k,v])=>Number.isFinite(Number(v))).slice(0,6).map(([k,v])=>`<span><b>${Math.round(Number(v))}</b> ${safe(k.toUpperCase().slice(0,5))}</span>`).join('');
+ const surfaces=Object.entries(c.surfaces||{}).filter(([k,v])=>Number.isFinite(Number(v))).map(([k,v])=>`<span>${safe(k)} <b>${Math.round(Number(v))}</b></span>`).join('');
+ const initials=String(name).trim().split(/\s+/).slice(0,2).map(x=>x[0]||'').join('').toUpperCase();
+ return `<article class="te-stat-card"><div class="te-stat-head"><strong>${Math.round(c.note)}</strong><span>${safe(c.country)}</span></div><div class="te-stat-ball">${safe(initials)}</div><h3>${safe(name)}</h3><div class="te-stat-attrs">${attributes||'Statistiques non disponibles'}</div><div class="te-stat-surfaces">${surfaces}</div><small>${unlocked?'✓ Débloquée':'À gagner'}</small></article>`;
+};
+fetch('./player_cards.json?v=1').then(r=>r.ok?r.json():{}).then(d=>{Object.assign(teCardData,d);drawChallenges();if(token())refreshMyCollection();}).catch(()=>{});
 const rarityFor=name=>{const n=String(name||'');if(/Gamma/i.test(n))return 'rare';if(/Epsilon|Zêta/i.test(n))return 'epique';return 'commune';};
 const rarityLabels={commune:'COMMUNE',rare:'RARE',epique:'ÉPIQUE',legendaire:'LÉGENDAIRE'};
 const cardMarkup=(name,{unlocked=false,rarity}={})=>{
+ const existing=teStatsCard(name,unlocked);if(existing)return existing;
  const r=['commune','rare','epique','legendaire'].includes(rarity)?rarity:rarityFor(name);
  const label=rarityLabels[r];
  return `<article class="player-card rarity-${r} ${unlocked?'is-unlocked':'is-preview'}" aria-label="Carte ${safe(name)} ${label}">
