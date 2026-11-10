@@ -1,0 +1,24 @@
+name: Tennis Edge - Animation live fluide
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Ameliorer animation 2D illustrative
+        run: python scripts/ameliorer_live.py
+      - name: Enregistrer le correctif
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add algo/index.html
+          if ! git diff --cached --quiet; then
+            git commit -m 'Live: animations plus lentes et echanges prolonges'
+            git push
+          fi
