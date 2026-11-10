@@ -1,6 +1,12 @@
-Correctif V3 : installer ce ZIP avec « Appliquer un paquet », puis lancer le workflow
-« Correctif V3 - ancrage distribution exacte » et ensuite « Pronostics du jour ».
-Cause : le moteur borne p_victoire à 0.005–0.995, le contrôle comparait à p_home brut.
-Le workflow vérifie la présence de la borne dans le moteur, modifie uniquement
-simulateur/pronostics_du_jour.py et pousse un commit si nécessaire.
-Si la branche est protégée, le push échouera et nécessitera une PR.
+Tennis Edge — modification interface des matchs
+1. Importer ce ZIP avec « Appliquer un paquet », puis fusionner la PR.
+2. Actions > « Tennis Edge - Appliquer interface matchs » > Run workflow.
+3. Attendre la publication habituelle du site.
+
+Modifications ciblées dans algo/index.html :
+- cartes + radar juste après les informations de fiabilité du duel, avant les boutons;
+- tiroir des matchs terminés en haut;
+- filtre LIVE fondé uniquement sur LIVE.par_uid (matchs confirmés en direct).
+
+Le script s'arrête si le code source ne correspond plus à la version inspectée.
+Il n'altère ni les calculs de simulation ni les données.

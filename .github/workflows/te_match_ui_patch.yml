@@ -1,0 +1,21 @@
+name: Tennis Edge - Appliquer interface matchs
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Appliquer les changements (contrôles stricts)
+        run: python3 scripts/patch_match_ui.py
+      - name: Vérifier et enregistrer
+        run: |
+          git diff --check
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add algo/index.html
+          if git diff --cached --quiet; then echo 'Déjà appliqué'; else git commit -m 'Réorganiser les cartes, matchs terminés et filtre LIVE'; git push; fi
