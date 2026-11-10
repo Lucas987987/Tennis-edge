@@ -3,22 +3,46 @@ on:
   workflow_dispatch:
 permissions:
   contents: write
+concurrency:
+  group: tennis-edge-live-motion-main
+  cancel-in-progress: false
 jobs:
   patch:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 1
+          persist-credentials: true
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Ameliorer animation 2D illustrative
-        run: python scripts/ameliorer_live.py
-      - name: Enregistrer le correctif
+      - name: Appliquer le correctif sur la branche main la plus récente
+        shell: bash
         run: |
+          set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add algo/index.html
-          if ! git diff --cached --quiet; then
+          # Un autre workflow peut modifier main entre checkout et push.
+          # On repart donc de main et on réapplique le patch, au plus 5 fois.
+          for attempt in 1 2 3 4 5; do
+            echo "Tentative ${attempt}/5"
+            git fetch origin main
+            git reset --hard origin/main
+            python scripts/ameliorer_live.py
+            git add algo/index.html
+            if git diff --cached --quiet; then
+              echo 'Animation déjà à jour.'
+              exit 0
+            fi
             git commit -m 'Live: animations plus lentes et echanges prolonges'
-            git push
-          fi
+            if git push origin HEAD:main; then
+              echo 'Correctif publié.'
+              exit 0
+            fi
+            echo 'Branche main modifiée entretemps ; nouvelle tentative.'
+            sleep $((attempt * 2))
+          done
+          echo 'Impossible de publier après 5 tentatives (modifications concurrentes).'
+          exit 1
