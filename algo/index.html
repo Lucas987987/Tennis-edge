@@ -2612,8 +2612,8 @@ function tableauLive(m, r, fini, grand){
   function rally(svg){
     const ball=svg.querySelector('.lv-ball-core');if(!ball)return null;
     const server=ball.dataset.srv==='1'?1:0,side=ball.dataset.side==='1';
-    const n=Math.floor(rand(3,8)), shots=[];
-    shots.push({player:server,x:server===0?34:326,y:side?132:68,type:'service'});
+    const n=Math.floor(rand(7,14)), shots=[];
+    shots.push({player:server,x:server===0?15:345,y:side?132:68,type:'service'});
     for(let j=0;j<n;j++){
       const player=1-shots[j].player, kind=Math.random();
       const type=kind<.13?'amortie':kind<.30?'lob':kind<.56?'ligne':'croise';
@@ -2626,9 +2626,9 @@ function tableauLive(m, r, fini, grand){
     }
     const legs=shots.slice(1).map((shot,i)=>{
       const d=Math.abs(shot.x-shots[i].x);
-      return clamp(d/235*rand(.85,1.35),.70,1.7);
+      return clamp(d/235*rand(1.65,2.35),1.45,3.15);
     });
-    const lead=.75, end=.65, duration=lead+legs.reduce((a,b)=>a+b,0)+end;
+    const lead=2.2, end=1.25, duration=lead+legs.reduce((a,b)=>a+b,0)+end;
     const times=[lead];for(const d of legs)times.push(times[times.length-1]+d);
     return {svg,ball,shots,legs,times,lead,end,duration,start:performance.now(),
       players:[svg.querySelector('.lv-player-home'),svg.querySelector('.lv-player-away')],
@@ -2643,9 +2643,9 @@ function tableauLive(m, r, fini, grand){
       const hit=st.times[j],shot=shots[j];
       if(shot.player!==i)continue;
       const previous=key[key.length-1], distance=Math.hypot(shot.x-previous.p.x,shot.y-previous.p.y);
-      const travel=clamp(distance/105,.20,.90);
+      const travel=clamp(distance/72,.32,1.45);
       const arrival=Math.max(previous.time+.06,hit-Math.min(travel,(hit-previous.time)*.80));
-      const recover=base(i), recoverTime=Math.min(hit+.48,st.duration-.05);
+      const recover=base(i), recoverTime=Math.min(hit+.85,st.duration-.05);
       key.push({time:arrival,p:{x:shot.x,y:shot.y}});
       key.push({time:hit,p:{x:shot.x,y:shot.y}});
       // Recentrage seulement s'il reste du temps avant la prochaine frappe du même joueur.
@@ -2672,7 +2672,7 @@ function tableauLive(m, r, fini, grand){
     let p=shots[0],height=0;
     if(t<st.lead){
       const u=clamp(t/st.lead,0,1);
-      height=24*Math.sin(Math.PI*u);p={x:shots[0].x,y:shots[0].y-height};
+      height=22*Math.sin(Math.PI*Math.max(0,(u-.40)/.60));p={x:shots[0].x,y:shots[0].y-height};
     }else if(t<st.times[st.times.length-1]){
       let j=0;while(j<st.legs.length-1&&t>st.times[j+1])j++;
       const a=shots[j],b=shots[j+1],u=clamp((t-st.times[j])/st.legs[j],0,1);
@@ -2680,7 +2680,7 @@ function tableauLive(m, r, fini, grand){
       const bounce=.62;
       const arc=u<bounce?Math.sin(Math.PI*u/bounce):Math.sin(Math.PI*(u-bounce)/(1-bounce));
       height=(u<bounce?14:8)*Math.max(0,arc);
-      const eased=u<.5?2*u*u:1-2*(1-u)*(1-u);
+      const eased=u;
       p={x:lerp(a.x,b.x,eased),y:lerp(a.y,b.y,eased)-height};
     }else{
       p=shots[shots.length-1];
@@ -2711,7 +2711,7 @@ function tableauLive(m, r, fini, grand){
   }
   let last=0;
   function frame(now){
-    if(!document.hidden&&now-last>=33){
+    if(!document.hidden&&now-last>=16){
       document.querySelectorAll('.lv-terrain svg').forEach(svg=>{
         pointNotice(svg,now);
         if(!svg.querySelector('.lv-ball-core'))return;
