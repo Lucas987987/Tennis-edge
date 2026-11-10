@@ -2,7 +2,11 @@ from pathlib import Path
 p=Path('algo/index.html')
 s=p.read_text()
 old="const n=Math.floor(rand(3,8)), shots=[];"
-assert old in s
+if old not in s:
+    if "const n=Math.floor(rand(7,14)), shots=[];" in s:
+        print("Animation déjà mise à jour : aucune modification nécessaire")
+        raise SystemExit(0)
+    raise RuntimeError("Version inattendue de l’animation : arrêt sans modification")
 s=s.replace(old,"const n=Math.floor(rand(7,14)), shots=[];",1)
 s=s.replace("const lead=.75, end=.65, duration=lead+legs.reduce((a,b)=>a+b,0)+end;","const lead=2.2, end=1.25, duration=lead+legs.reduce((a,b)=>a+b,0)+end;",1)
 s=s.replace("return clamp(d/235*rand(.85,1.35),.70,1.7);","return clamp(d/235*rand(1.65,2.35),1.45,3.15);",1)
