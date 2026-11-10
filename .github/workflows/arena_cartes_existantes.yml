@@ -1,0 +1,28 @@
+name: Arena - Cartes existantes
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  installer:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - run: python3 scripts/arena_cards.py
+      - name: Publier
+        run: |
+          git config user.name tennis-edge-bot
+          git config user.email tennis-edge-bot@users.noreply.github.com
+          git add arena/arena.js arena/arena-ui.css arena/player_cards.json
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "Arena : reprendre les cartes de l algorithme"
+          for n in 1 2 3 4 5; do
+            git fetch origin main
+            git rebase origin/main || exit 1
+            if git push origin HEAD:main; then exit 0; fi
+            sleep 8
+          done
+          exit 1
