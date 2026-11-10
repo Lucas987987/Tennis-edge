@@ -241,6 +241,9 @@ jobs:
           test -s _site/arena/arena-ui.js
           echo 'Arena : CSS et JS publiés avec succès.'
 
+          mkdir -p _site/arena
+          cp arena/index.html arena/arena.js _site/arena/
+
           mkdir -p _site/Tennis_Edge_Lab
           for f in index.html style.css app.js data.js; do
             cp "Tennis_Edge_Lab/$f" "_site/Tennis_Edge_Lab/$f"
