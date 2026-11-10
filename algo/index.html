@@ -597,7 +597,17 @@ body.carte #video{display:block;width:1080px;height:1350px}
 .mdj > .fiche > .cartes .cj-r{max-width:460px}
 @media(max-width:650px){.mdj > .fiche > .cartes .cj-corps{grid-template-columns:1fr}.mdj > .fiche > .cartes .cj-r{max-width:320px}}
 @media(min-width:820px){.mdj > .fiche > .duelx{grid-column:2;grid-row:1}}
-</style></head>
+</style><style>/* te-incertitude-fiabilite-v1 */
+.te-fiab-incertitude{display:flex;align-items:flex-start;gap:10px 22px;flex-wrap:wrap;margin:12px 0}
+.te-fiab-incertitude>.fiab{margin:0}
+.te-uncertainty{display:inline-flex;align-items:center;gap:7px;flex-wrap:wrap;font-size:.93em;padding:3px 0;max-width:100%}
+.te-uncertainty b{font-weight:800;color:var(--ink,inherit)}
+.te-uncertainty-amp{opacity:.7;font-size:.86em}
+.te-uncertainty-scale{display:block;position:relative;flex-basis:100%;height:5px;border-radius:8px;background:rgba(125,140,165,.2);overflow:hidden}
+.te-uncertainty-scale i{position:absolute;top:0;bottom:0;background:#1699b7;border-radius:8px}
+@media(max-width:600px){.te-fiab-incertitude{gap:8px 12px}.te-uncertainty-amp{display:none}}
+</style>
+</head>
 <body>
 <div class="page">
 <div class="wrap">
@@ -2252,6 +2262,19 @@ function rendType(m){
   const k = m && m.type_match; if (!k) return '';
   return `<span class="typem ${esc(k)}" title="${esc(t('typem_aide_' + k))}">${esc(t('typem_' + k))}</span>`;
 }
+// te-incertitude-fiabilite-v1 : indicateur de sensibilité propre au match.
+function rendIncertitude(m){
+  if (!Array.isArray(m?.fourchette) || m.fourchette.length < 2) return '';
+  const vals = m.fourchette.slice(0,2).map(Number);
+  if (!vals.every(Number.isFinite)) return '';
+  const [lo,hi] = vals.map(v=>v<=1 ? v*100 : v).sort((a,b)=>a-b);
+  if (lo<0 || hi>100) return '';
+  const amp = hi-lo;
+  const label = L==='fr' ? 'Incertitude' : 'Uncertainty';
+  const amplitude = L==='fr' ? 'points d’amplitude' : 'percentage-point range';
+  const detail = L==='fr' ? 'Fourchette de sensibilité du modèle, pas un intervalle de confiance validé.' : 'Model sensitivity range, not a validated confidence interval.';
+  return `<span class="te-uncertainty" title="${esc(detail)}"><span>${esc(label)}</span><b>${Math.round(lo)}–${Math.round(hi)} %</b><span class="te-uncertainty-amp">· ${Math.round(amp)} ${esc(amplitude)}</span><span class="te-uncertainty-scale" aria-hidden="true"><i style="left:${lo}%;width:${amp}%"></i></span></span>`;
+}
 function rendFiabilite(f, detail=false){
   if (!f || !Number.isFinite(Number(f.note))) return '';
   const niveaux = L==='fr' ? {fragile:'fragile',prudent:'prudent',correct:'correcte',solide:'solide'} : {fragile:'fragile',prudent:'cautious',correct:'fair',solide:'strong'};
@@ -2464,7 +2487,7 @@ function rendMdj(){
 
         ${Array.isArray(m.fourchette) ? `<p class="evol" title="${esc(t('fourchette_aide'))}">${esc(t('fourchette', court(m.home), pc0(m.fourchette[0]), pc0(m.fourchette[1])))}</p>` : ''}
         ${m.evolution && Math.abs(m.evolution.ecart_pts) >= 1 ? `<p class="evol">${esc(t('es_premier', pc0(m.evolution.premier_p_home), court(m.home), m.evolution.premier_le ? dateHeure(m.evolution.premier_le) : ''))}</p>` : ''}
-        ${rendType(m)}${rendFiabilite(m.fiabilite, true)}
+        ${rendType(m)}<div class="te-fiab-incertitude">${rendFiabilite(m.fiabilite, true)}${rendIncertitude(m)}</div>
         ${rendCartes(m)}
         <p style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn" id="b-post">📝 Générer le post X · avant match</button><button type="button" class="btn" id="b-analyse-detaillee" aria-expanded="false" aria-controls="te-analyse-detaillee">📊 Analyse détaillée</button>${utc(m.debut).getTime() <= Date.now() ? '<button type="button" class="btn" id="b-post-res">🏁 Générer le post X · résultat</button>' : ''}${VIDEO_ICI ? '<button type="button" class="btn" id="b-video">🎬 Générer la vidéo</button>' : ''}</p>
         <section id="te-analyse-detaillee" class="te-analyse-detaillee" hidden aria-live="polite"></section>
