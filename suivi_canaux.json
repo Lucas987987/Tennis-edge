@@ -1,47 +1,47 @@
 {
  "schema_version": 1,
- "genere_le": "2026-11-09T07:13:29Z",
+ "genere_le": "2026-11-10T07:52:33Z",
  "canaux": {
   "MISER": {
    "libelle": "🎯 MISER — steam, EV ≥ seuil vs Pinnacle juste (vainqueur du match)",
    "source": "miser_signal_log.jsonl (messages envoyés) + ajouts de suivi_direct",
    "regle": "première alerte de chaque match, au book et au prix du message ; relances non recomptées",
    "debut": "2026-10-22",
-   "n_alertes": 28,
-   "n_matchs": 28,
+   "n_alertes": 30,
+   "n_matchs": 30,
    "n_relances": 0,
-   "n_denoues": 23,
+   "n_denoues": 26,
    "bilan": {
-    "n": 23,
-    "gains": 8,
-    "taux": 34.8,
-    "seuil": 40.8,
-    "ecart": -6.0,
+    "n": 26,
+    "gains": 9,
+    "taux": 34.6,
+    "seuil": 41.4,
+    "ecart": -6.8,
     "ic95": [
-     18.8,
-     55.1
+     19.4,
+     53.8
     ],
-    "roi": -4.7,
-    "pnl": -1.1,
-    "cote_moyenne": 2.83,
-    "clv_moyen": 6.8,
-    "clv_pin_moyen": 6.8,
+    "roi": -8.8,
+    "pnl": -2.3,
+    "cote_moyenne": 2.78,
+    "clv_moyen": 7.0,
+    "clv_pin_moyen": 7.0,
     "clv_pin_ic95": [
-     3.3,
-     10.3
+     3.8,
+     10.2
     ],
-    "clv_pin_p": 0.0001,
-    "clv_n": 27,
-    "clv_positif": 81.5,
-    "lead_moyen_h": 8.1,
-    "periode": "2026-10-22 -> 2026-11-04",
+    "clv_pin_p": 0.0,
+    "clv_n": 29,
+    "clv_positif": 82.8,
+    "lead_moyen_h": 8.7,
+    "periode": "2026-10-22 -> 2026-11-09",
     "verdict": "ne tranche pas",
     "clv_mediane": 6.7,
-    "n_commencees": 27,
+    "n_commencees": 30,
     "n_sans_resultat": 4,
-    "sans_resultat_pct": 14.8,
+    "sans_resultat_pct": 13.3,
     "verrouillable": false,
-    "statut": "en attente de résultats (14,8 % sans résultat)"
+    "statut": "en attente de résultats (13,3 % sans résultat)"
    },
    "paris": {
     "2026-10-22_valerio_aboian_matias_soto": {
@@ -260,13 +260,29 @@
      "clv_pin": 6.7,
      "source_resultat": "feuille de match (TennisApi)"
     },
+    "2026-11-09_benjamin_kittay_adrien_gobat": {
+     "gagne": 0,
+     "pnl": -1.0,
+     "pin_close": 2.94,
+     "pin_close_adv": 1.421,
+     "clv_pin": 17.83,
+     "source_resultat": "feuille de match (TennisApi)"
+    },
+    "2026-11-09_mitchell_krueger_lui_maxted": {
+     "gagne": 0,
+     "pnl": -1.0,
+     "pin_close": 1.684,
+     "pin_close_adv": 2.16,
+     "clv_pin": 2.111,
+     "source_resultat": "feuille de match (TennisApi)"
+    },
     "2026-11-10_enzo_aguiard_akira_santillan": {
-     "gagne": null,
-     "pnl": null,
+     "gagne": 1,
+     "pnl": 0.8,
      "pin_close": null,
      "pin_close_adv": null,
      "clv_pin": null,
-     "source_resultat": "inconnu"
+     "source_resultat": "feuille de match (TennisApi)"
     }
    }
   }
