@@ -1,0 +1,32 @@
+name: Tennis Edge - Incertitude a cote fiabilite
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: tennis-edge-incertitude-fiabilite
+  cancel-in-progress: false
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Appliquer le correctif
+        run: |
+          set -e
+          git config user.name tennis-edge-bot
+          git config user.email tennis-edge-bot@users.noreply.github.com
+          for i in 1 2 3 4 5; do
+            git fetch origin main
+            git reset --hard origin/main
+            python3 scripts/patch_uncertainty.py
+            if git diff --quiet -- algo/index.html; then exit 0; fi
+            git add algo/index.html
+            git commit -m "Afficher incertitude a cote de fiabilite"
+            if git push origin HEAD:main; then exit 0; fi
+            sleep 8
+          done
+          exit 1
