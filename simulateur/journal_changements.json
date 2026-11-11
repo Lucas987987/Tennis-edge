@@ -911,6 +911,12 @@
    "quoi": "Fiche du match : nouveau bouton « Post X · analyse complète », à côté du post d'avant match. Il génère un texte à copier qui reprend tout ce que la fiche sait du match : favori, fourchette et fiabilité, score en sets, les 6 scénarios et leur contrôle sur nos matchs, scores exacts, duel service / retour, statistiques prédites et projections, face au style adverse, forme récente, face-à-face, météo à l'heure du match et conditions, vitesse du court et rythme, ce qu'il faut retenir, point de vigilance. Il existe en version complète et en version courte. Un bloc sans donnée n'est pas écrit, et les parties descriptives disent qu'elles ne changent pas le %.",
    "statut": "production",
    "paquet": 224
+  },
+  {
+   "date": "2026-11-11",
+   "quoi": "Statistiques annoncées : le recalage des fourchettes passe case par case (circuit × statistique), en adoption directe avec une règle de retrait. L'ancienne règle d'ensemble échouait à cause d'une seule case (aces ATP) et bloquait les autres. Sur la semaine jugée du 02/11, les fourchettes recalées ramènent la part du réel dans la fourchette vers 80 % : doubles fautes ATP 92 → 80 %, breaks ATP 91 → 76 %, % de 1res balles ATP 74 → 81 % et WTA 67 → 81 %, aces WTA 89 → 85 %, doubles fautes Challenger 90 → 83 %, breaks Challenger 92 → 80 %. Les aces ATP ne sont plus élargis. Chaque lundi, une case passe à la meilleure variante (rien, décalage seul, ou décalage et largeur) si elle rapproche la couverture de 80 % d'au moins 2 points sans augmenter l'écart moyen ; elle est retirée après deux semaines de suite pires que sans recalage. Le tableau du site indique les fourchettes recalées, leur date et leur couverture depuis. Le % de victoire ne change pas.",
+   "statut": "production",
+   "paquet": 225
   }
  ]
 }
