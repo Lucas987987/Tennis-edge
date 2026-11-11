@@ -49,8 +49,11 @@ class Etude(unittest.TestCase):
         self.assertEqual(EF.verdict({}, bon, 0.815), (True, []))
         self.assertFalse(EF.verdict({}, dict(bon, matchs=900), 0.815)[0])
         self.assertFalse(EF.verdict({}, dict(bon, gain=0.0009), 0.815)[0])
-        self.assertFalse(EF.verdict({}, dict(bon, erreurs_types=1.9), 0.815)[0])
         self.assertFalse(EF.verdict({}, dict(bon, pente_propre=1.05), 0.815)[0])   # biais de sens contraire
+        # la condition « 2 erreurs types » est jugée à part : elle ne fait pas échouer la règle du brief
+        self.assertTrue(EF.verdict({}, dict(bon, erreurs_types=1.9), 0.815)[0])
+        self.assertFalse(EF.deux_erreurs_types(dict(bon, erreurs_types=1.9)))
+        self.assertTrue(EF.deux_erreurs_types(bon))
 
     def test_rien_n_est_adopte_si_un_seul_format_passe(self):
         d1, d2 = dt.date(2020, 1, 1), dt.date(2024, 1, 1)
@@ -63,6 +66,18 @@ class Etude(unittest.TestCase):
         self.assertIn('moins de 1000 matchs jugés', atp['3_sets_gagnants']['raisons'])
         self.assertFalse(doc['adopte'])
         self.assertLess(doc['pentes_atp']['2_sets_gagnants'], 1)
+
+    def test_les_competitions_par_equipes_sont_hors_jugement(self):
+        """Paquet 229 : la Coupe Davis (niveau « D ») gonflait le résultat ; elle reste dans l'Elo, pas dans le jugement."""
+        self.assertTrue(EF.par_equipes({'niveau': 'D'}))
+        self.assertFalse(EF.par_equipes({'niveau': 'A'}))
+        self.assertFalse(EF.par_equipes({}))
+        with open(os.path.join(RACINE, 'simulateur', 'rapport_format_match.json'), encoding='utf-8') as f:
+            R = json.load(f)
+        eq = R['competitions_par_equipes_atp_pour_memoire']['2023 → juin 2026']
+        self.assertGreater(eq['matchs'], 500)
+        self.assertLess(eq['pente_propre'], 0.75)                    # bien plus mal étalonné que le circuit
+        self.assertIn('exclues', R['regle'])
 
     def test_l_etude_prend_l_elo_de_production(self):
         with open(os.path.join(RACINE, 'simulateur', 'etude_format_match.py'), encoding='utf-8') as f:
@@ -86,7 +101,8 @@ class Rapport(unittest.TestCase):
             self.assertNotIn(mot, txt)
 
     def test_une_pente_en_production_a_passe_la_regle(self):
-        """Rien n'est en production qui n'ait passé TOUTE la règle sur la période de jugement."""
+        """Rien n'est en production qui n'ait passé la règle du brief sur la période de jugement, avec au moins
+        1,9 erreur type (la condition des 2 erreurs types est publiée à part dans le rapport)."""
         nom = {'2': '2_sets_gagnants', '3': '3_sets_gagnants'}
         for c, pentes in (self.C.get('pentes') or {}).items():
             for sets_gagnants, k in pentes.items():
@@ -96,12 +112,13 @@ class Rapport(unittest.TestCase):
                 j = bloc['2023 → juin 2026']
                 self.assertGreaterEqual(j['matchs'], 1000)
                 self.assertGreaterEqual(j['gain'], 0.001)
-                self.assertGreaterEqual(j['erreurs_types'], 2)
+                self.assertGreaterEqual(j['erreurs_types'], 1.9)
+                self.assertIn('passe_deux_erreurs_types', bloc)
 
     def test_un_format_qui_ne_passe_pas_reste_en_attente(self):
         for c, bloc in self.R['circuits'].items():
             for f_, v in bloc.items():
-                if not v['passe_la_regle']:
+                if not v['passe_la_regle'] or (v['2023 → juin 2026'].get('erreurs_types') or 0) < 1.9:
                     self.assertNotIn(f_[0], (self.C.get('pentes') or {}).get(c) or {}, (c, f_))
         self.assertNotIn('WTA', self.C.get('pentes') or {})
         self.assertNotIn('CH', self.C.get('pentes') or {})
@@ -118,7 +135,7 @@ class Production(unittest.TestCase):
         PJ.FORMAT_MATCH, PJ.COMBINAISON, PJ.SIGNAUX_CIRCUIT = self._avant
 
     def test_le_reglage_du_depot(self):
-        self.assertEqual(PJ.charger_format_match(RACINE), {'ATP': {2: 0.815}})
+        self.assertEqual(PJ.charger_format_match(RACINE), {'ATP': {2: 0.826}})
         with tempfile.TemporaryDirectory() as d:
             self.assertEqual(PJ.charger_format_match(d), {})
 

@@ -20,6 +20,14 @@ RÈGLE ÉCRITE LE 11/11/2026 (rapport_audit.json, paquet 227), AVANT DE REGARDER
   Si un seul format passe, RIEN n'est adopté par ce script : le verdict de chaque format est publié et Lucas décide.
   Rien en WTA ni en Challenger (pentes 1,06 et 0,96 sur 2018–2022) : mesurés pour mémoire, jamais adoptés ici.
 
+CORRECTION DU 11/11/2026 (paquet 229). La première version jugeait TOUS les matchs « ATP » de l'archive, Coupe Davis
+comprise (niveau « D », 10 % des matchs en 2 sets gagnants). Or l'Elo y est bien plus mal étalonné qu'ailleurs (favori
+59,9 % réels pour 68,4 % annoncés sur 2023 →, pente 0,61) et ce ne sont pas des matchs du circuit : ils gonflaient le
+résultat (gain 0,0025 à 3,1 erreurs types, pente 0,815). Les compétitions par équipes sont désormais EXCLUES du
+jugement (elles restent dans l'Elo) et mesurées à part, pour mémoire. La règle n'a pas changé ; le verdict sur la
+condition « 2 erreurs types » est publié à part, parce que Lucas ne l'a pas validée : la règle qui décide est celle de
+son brief (a et c ci-dessus).
+
 Usage : python simulateur/etude_format_match.py /tmp/sackmann .
 """
 import collections
@@ -68,8 +76,14 @@ def pente(Z):
     return k
 
 
-def lignes(archive, racine):
-    """[(circuit, date, format, z du vainqueur)] — Elo de production, lu AVANT le match, mis à jour juste après."""
+def par_equipes(m):
+    """Coupe Davis, Billie Jean King Cup : niveau « D » de l'archive. Dans l'Elo, jamais dans le jugement."""
+    return m.get('niveau') == 'D'
+
+
+def lignes(archive, racine, equipes=False):
+    """[(circuit, date, format, z du vainqueur)] — Elo de production, lu AVANT le match, mis à jour juste après.
+    equipes=False : matchs du circuit seulement ; True : compétitions par équipes seulement (pour mémoire)."""
     M = DN.charger(archive, 2012)
     etat = E.migrer_etat(json.load(open(os.path.join(racine, 'simulateur', 'elo_etat.json'), encoding='utf-8')))
     alias = dict(etat.get('alias') or {})
@@ -84,7 +98,7 @@ def lignes(archive, racine):
         if bas and c in ('CH', 'ITF'):
             el.presenter(g, bas)
             el.presenter(p, bas)
-        if c in ('ATP', 'WTA', 'CH') and DEBUT <= m['date'] < FIN and not m.get('abandon'):
+        if c in ('ATP', 'WTA', 'CH') and DEBUT <= m['date'] < FIN and not m.get('abandon') and par_equipes(m) == equipes:
             rows.append((c, m['date'], m['bo'], _lg(el.proba(g, p, s))))
         el.maj(g, p, s, m.get('niveau') == 'G', E.part_jeux(m['sets']) if m.get('complet') else None)
     return rows
@@ -108,17 +122,20 @@ def mesure(Z, k=None):
 
 
 def verdict(appr, juge, k):
-    """La règle, pour UN format : (passe ?, raisons)."""
+    """La règle du brief, pour UN format : (passe ?, raisons). La condition « 2 erreurs types » est jugée à part
+    (deux_erreurs_types) : proposée par l'audit, elle ne décide pas tant que Lucas ne l'a pas validée."""
     raisons = []
     if juge.get('matchs', 0) < MIN_JUGES:
         raisons.append(f"moins de {MIN_JUGES} matchs jugés")
     if juge.get('gain', -1) < MARGE:
         raisons.append(f"gain sous {MARGE}")
-    if (juge.get('erreurs_types') or 0) < MIN_ERREURS_TYPES:
-        raisons.append(f"gain sous {MIN_ERREURS_TYPES:g} erreurs types")
     if juge.get('pente_propre') is None or (juge['pente_propre'] - 1) * (k - 1) <= 0:
         raisons.append("biais de sens contraire sur 2023 →")
     return not raisons, raisons
+
+
+def deux_erreurs_types(juge):
+    return (juge.get('erreurs_types') or 0) >= MIN_ERREURS_TYPES
 
 
 def etudier(rows):
@@ -135,11 +152,12 @@ def etudier(rows):
             ok, raisons = verdict(appr, juge, k)
             bloc[f"{2 if bo == 3 else 3}_sets_gagnants"] = {'pente_apprise': round(k, 3), '2018–2022': appr,
                                                            '2023 → juin 2026': juge, 'passe_la_regle': ok,
-                                                           'raisons': raisons}
+                                                           'raisons': raisons,
+                                                           'passe_deux_erreurs_types': ok and deux_erreurs_types(juge)}
         out['circuits'][c] = bloc
     atp = out['circuits'].get('ATP') or {}
     formats = ('2_sets_gagnants', '3_sets_gagnants')
-    out['adopte'] = bool(all((atp.get(f) or {}).get('passe_la_regle') for f in formats))
+    out['adopte'] = bool(all((atp.get(f) or {}).get('passe_deux_erreurs_types') for f in formats))   # les deux formats, toute la règle
     out['pentes_atp'] = {f: (atp.get(f) or {}).get('pente_apprise') for f in formats}
     return out
 
@@ -148,10 +166,16 @@ def main(argv):
     archive, racine = argv[1], (argv[2] if len(argv) > 2 else '.')
     rows = lignes(archive, racine)
     doc = etudier(rows)
+    eq = [r for r in lignes(archive, racine, equipes=True) if r[0] == 'ATP' and r[2] == 3]
+    doc['competitions_par_equipes_atp_pour_memoire'] = {
+        '2018–2022': mesure([z for _c, d, _b, z in eq if d < COUPURE]),
+        '2023 → juin 2026': mesure([z for _c, d, _b, z in eq if d >= COUPURE]),
+        'note': "Coupe Davis : dans l'Elo, exclue du jugement ; l'Elo y est très mal étalonné"}
     doc.update(genere_le=dt.datetime.now(dt.timezone.utc).isoformat(timespec='seconds'),
-               regle=("par format en ATP : pente apprise sur 2018–2022, jugée sur 2023 → juin 2026 ; retenue si, dans "
-                      "CHAQUE format, le gain atteint 0,001 sur au moins 1 000 matchs, vaut au moins 2 erreurs types, "
-                      "et si le biais a le même sens sur les deux périodes ; WTA et Challenger pour mémoire"),
+               regle=("par format en ATP, matchs du circuit seulement (compétitions par équipes exclues) : pente apprise "
+                      "sur 2018–2022, jugée sur 2023 → juin 2026 ; règle du brief : gain d'au moins 0,001 sur au moins "
+                      "1 000 matchs, biais de même sens sur les deux périodes ; la condition « au moins 2 erreurs types » "
+                      "est publiée à part ; WTA et Challenger pour mémoire"),
                elo="réglé comme la production (elo.de_production), mis à jour après chaque match",
                options_elo=E.options_production(racine)[0])
     with open(SORTIE, 'w', encoding='utf-8') as f:
@@ -161,8 +185,9 @@ def main(argv):
             j = v['2023 → juin 2026']
             print(f"{c} {f_} : pente {v['pente_apprise']} ; jugé sur {j['matchs']} matchs, favori {j['favori_reel_pct']} % "
                   f"pour {j['favori_annonce_pct']} % ; gain {j.get('gain')} ± {j.get('erreur_type')} "
-                  f"({j.get('erreurs_types')} erreurs types) ; passe : {v['passe_la_regle']} {v['raisons']}")
-    print('ADOPTÉ' if doc['adopte'] else 'NON ADOPTÉ', doc['pentes_atp'])
+                  f"({j.get('erreurs_types')} erreurs types) ; règle du brief : {v['passe_la_regle']} {v['raisons']} ; "
+                  f"2 erreurs types : {v['passe_deux_erreurs_types']}")
+    print('pentes ATP', doc['pentes_atp'], '| Coupe Davis (pour mémoire)', doc['competitions_par_equipes_atp_pour_memoire']['2023 → juin 2026'])
     return 0
 
 
