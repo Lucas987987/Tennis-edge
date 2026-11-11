@@ -1,0 +1,95 @@
+{
+ "genere_le": "2026-11-11T11:15:48+00:00",
+ "matchs": 756,
+ "regle": "— grille σ = 0,10 · 0,15 · 0,20 · 0,25 · 0,30 · 0,40, circuit par circuit (ATP, WTA, Challenger) ;\n  — mesure : log loss de l'ÉCART DE JEUX réel (jeux du joueur 1 − jeux du joueur 2) ;\n  — σ choisi sur les matchs commencés AVANT le 04/11/2026, jugé sur ceux du 04/11 au 11/11/2026 ;\n  — ADOPTÉ pour un circuit si, sur le jugement, la log loss de l'écart baisse d'au moins 0,005 par rapport au σ en\n    place, avec au moins 30 matchs jugés, si le gain va dans le même sens sur l'apprentissage, et si la log loss du\n    score en sets (4 issues) ne se dégrade pas de plus de 0,002. Sinon rejeté.",
+ "circuits": {
+  "ATP": {
+   "apprentissage": 78,
+   "jugement": 54,
+   "sigma_en_place": 0.15,
+   "sigma_choisi": 0.15,
+   "log_loss_ecart_apprentissage": {
+    "0.1": 2.6761,
+    "0.15": 2.6721,
+    "0.2": 2.6882,
+    "0.25": 2.7239,
+    "0.3": 2.7741,
+    "0.4": 2.8986
+   },
+   "jugement_log_loss_ecart": {
+    "en_place": 2.8007,
+    "choisi": 2.8007,
+    "gain": 0.0
+   },
+   "jugement_log_loss_sets": {
+    "en_place": 1.2283,
+    "choisi": 1.2283
+   },
+   "favori_plus_4_5_jeux_jugement": {
+    "annonce_en_place": 33.2,
+    "annonce_choisi": 33.2,
+    "reel": 33.3
+   },
+   "adopte": false
+  },
+  "WTA": {
+   "apprentissage": 72,
+   "jugement": 35,
+   "sigma_en_place": 0.15,
+   "sigma_choisi": 0.15,
+   "log_loss_ecart_apprentissage": {
+    "0.1": 2.7901,
+    "0.15": 2.7758,
+    "0.2": 2.7901,
+    "0.25": 2.8294,
+    "0.3": 2.8858,
+    "0.4": 3.0234
+   },
+   "jugement_log_loss_ecart": {
+    "en_place": 2.8421,
+    "choisi": 2.8421,
+    "gain": 0.0
+   },
+   "jugement_log_loss_sets": {
+    "en_place": 1.2545,
+    "choisi": 1.2545
+   },
+   "favori_plus_4_5_jeux_jugement": {
+    "annonce_en_place": 38.5,
+    "annonce_choisi": 38.5,
+    "reel": 40.0
+   },
+   "adopte": false
+  },
+  "CH": {
+   "apprentissage": 205,
+   "jugement": 312,
+   "sigma_en_place": 0.209,
+   "sigma_choisi": 0.2,
+   "log_loss_ecart_apprentissage": {
+    "0.1": 2.8632,
+    "0.15": 2.8214,
+    "0.2": 2.8044,
+    "0.209": 2.8042,
+    "0.25": 2.8134,
+    "0.3": 2.8427,
+    "0.4": 2.9377
+   },
+   "jugement_log_loss_ecart": {
+    "en_place": 2.8311,
+    "choisi": 2.8281,
+    "gain": 0.0031
+   },
+   "jugement_log_loss_sets": {
+    "en_place": 1.228,
+    "choisi": 1.2269
+   },
+   "favori_plus_4_5_jeux_jugement": {
+    "annonce_en_place": 41.4,
+    "annonce_choisi": 40.9,
+    "reel": 38.8
+   },
+   "adopte": false
+  }
+ }
+}
