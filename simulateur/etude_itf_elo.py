@@ -127,14 +127,15 @@ def rejouer(tout, cle_c, juge):
     """{indice du match jugé: (p du vainqueur, matchs min. des deux joueurs avant)} — prédiction AVANT la mise à jour."""
     import elo as E
     e = E.Elo(**OPTIONS)
+    departs = E.departs_en_place()     # 11/11/2026 (paquet 230) : mêmes départs que la production (ITF hommes à 1000)
     out = {}
     for m in tout:
         g, p = cle_c(m['nom_g']), cle_c(m['nom_p'])
         if not g or not p or g == p:
             continue
         if m['circuit'] in BAS:
-            e.presenter(g, DEPART_BAS)
-            e.presenter(p, DEPART_BAS)
+            e.presenter(g, E.depart_du_niveau(m['circuit'], DEPART_BAS, departs))
+            e.presenter(p, E.depart_du_niveau(m['circuit'], DEPART_BAS, departs))
         k = juge(m)
         if k is not None:
             out[k] = (e.proba(g, p, m['surface']), min(e.matchs(g), e.matchs(p)))

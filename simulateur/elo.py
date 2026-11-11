@@ -289,6 +289,63 @@ def unifier(connus, nouveaux):
     return alias
 
 
+# ------------------------------------------------------------------ Départ propre à un niveau (11/11/2026, paquet 230)
+# etude_depart_itf.py : un joueur vu d'abord en ITF hommes partait à 1200, comme un joueur vu d'abord en Challenger,
+# alors que le niveau est plus bas. À 1000, le Challenger gagne 0,0057 ± 0,0007 de log loss sur 7 722 matchs jugés
+# (01/10/2025 → juin 2026), l'ATP ne bouge pas. Lu par le classement de production (backtest_pronostic.py), par
+# l'étude hebdomadaire de l'ITF (etude_itf_elo.py) et par les études qui rejouent l'ITF.
+# RETRAIT (écrit le 11/11/2026, avant tout match suivi) : à chaque passage, le classement est rejoué une fois de plus
+# avec l'ancien départ (1200) ; sur nos matchs Challenger joués à partir du 12/11/2026, dès 300 matchs, si le gain
+# cumulé de log loss est négatif de plus de 2 erreurs types, le départ revient à 1200 (backtest_pronostic.py, étape 5).
+DEPARTS_PAR_NIVEAU = {'ITFH': 1000.0}
+DEPARTS_SUIVI_DEPUIS = '2026-11-12'
+DEPARTS_RETRAIT_MIN_MATCHS, DEPARTS_RETRAIT_ERREURS_TYPES = 300, 2.0
+
+
+def depart_du_niveau(circuit, depart_bas, departs=None):
+    """Note de départ d'un joueur vu d'abord à ce niveau : celle du niveau s'il en a une, sinon le départ bas commun.
+    departs : {niveau: note} ; None = DEPARTS_PAR_NIVEAU ; {} = aucun départ propre (l'ancien réglage)."""
+    return (DEPARTS_PAR_NIVEAU if departs is None else departs).get(circuit, depart_bas)
+
+
+def departs_en_place(racine=None):
+    """Départs propres à un niveau RÉELLEMENT en place : ceux que le dernier classement a écrits dans elo_etat.json
+    (vides s'il les a retirés). État absent ou d'avant le paquet 230 : DEPARTS_PAR_NIVEAU."""
+    import json
+    import os
+    chemin = os.path.join(racine, 'simulateur', 'elo_etat.json') if racine else \
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), 'elo_etat.json')
+    try:
+        with open(chemin, encoding='utf-8') as f:
+            d = json.load(f).get('departs_par_niveau')
+    except (OSError, ValueError):
+        d = None
+    return dict(DEPARTS_PAR_NIVEAU) if d is None else {k: float(v) for k, v in d.items()}
+
+
+def suivi_departs(avec, sans, depuis=DEPARTS_SUIVI_DEPUIS):
+    """Gain cumulé du départ propre à un niveau. avec, sans : [(date ISO, p du vainqueur)] des MÊMES matchs, dans le
+    même ordre, avec le départ en place et avec l'ancien. Renvoie matchs, gain de log loss, erreur type, Brier, retrait."""
+    D, b0, b1 = [], 0.0, 0.0
+    for (d, p1), (_d, p0) in zip(avec, sans):
+        if str(d) < depuis:
+            continue
+        D.append(log_loss(p0, 1) - log_loss(p1, 1))
+        b0 += (1 - p0) ** 2
+        b1 += (1 - p1) ** 2
+    n = len(D)
+    out = {'depuis': depuis, 'matchs': n}
+    if n:
+        g = sum(D) / n
+        se = math.sqrt(sum((x - g) ** 2 for x in D) / (n - 1) / n) if n > 1 else 0.0
+        out.update({'gain_log_loss': round(g, 5), 'erreur_type': round(se, 5),
+                    'brier_avant': round(b0 / n, 5), 'brier': round(b1 / n, 5)})
+        out['retrait'] = bool(n >= DEPARTS_RETRAIT_MIN_MATCHS and g < -DEPARTS_RETRAIT_ERREURS_TYPES * se)
+    else:
+        out['retrait'] = False
+    return out
+
+
 # ------------------------------------------------------------------ Elo réglé comme la production (11/11/2026, paquet 227)
 # Audit du 11/11/2026 : 19 études rejouaient l'archive avec « Elo() » sans réglage (surface 0,5, sans score pondéré ni
 # incertitude), alors que la production tourne avec les options de elo_etat.json (surface 0,3, score pondéré,
