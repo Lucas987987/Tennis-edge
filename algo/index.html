@@ -540,7 +540,7 @@ body.carte #video{display:block;width:1080px;height:1350px}
 @media(max-width:520px){.arena-nav{padding:7px 11px;font-size:12px}.reglages{gap:5px}}
 
 .panel.meteo{padding:16px}.tiroir>.panel.meteo{padding:0 16px 16px}.meteo .mt-l{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;margin:10px 0 6px}.meteo .mt-l dt{color:var(--dim);font-size:.9rem}.meteo .mt-l dd{margin:0;font-variant-numeric:tabular-nums}
-.panel.scen{padding:16px}.tiroir>.panel.scen{padding:0 16px 16px}.sc-barre{display:flex;height:14px;border-radius:8px;overflow:hidden;margin:10px 0 12px;gap:2px}.sc-barre i{display:block;height:100%}.sc-l{list-style:none;margin:0;padding:0;display:grid;gap:8px}.sc-l li{display:grid;grid-template-columns:12px 1fr auto;gap:10px;align-items:center}.sc-pt{width:12px;height:12px;border-radius:4px}.sc-n small{display:block;color:var(--dim);font-size:.8rem}.sc-l b{font-variant-numeric:tabular-nums;font-size:1.05rem}.sc-r{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;margin:14px 0 8px;padding-top:12px;border-top:1px solid var(--line)}.sc-r dt{color:var(--dim);font-size:.9rem}.sc-r dd{margin:0}.sc-ex{margin:8px 0}.sc-ctl td{white-space:nowrap}.sc-ctl td.ok{color:var(--ok)}.sc-ctl td.ko{color:var(--ko)}.sc-ctl small{display:inline;color:var(--dim)}.sc-ex summary{cursor:pointer;color:var(--dim)}
+.panel.scen{padding:16px}.tiroir>.panel.scen{padding:0 16px 16px}.sc-barre{display:flex;height:14px;border-radius:8px;overflow:hidden;margin:10px 0 12px;gap:2px}.sc-barre i{display:block;height:100%}.sc-l{list-style:none;margin:0;padding:0;display:grid;gap:8px}.sc-l li{display:grid;grid-template-columns:12px 1fr auto;gap:10px;align-items:center}.sc-pt{width:12px;height:12px;border-radius:4px}.sc-n small{display:block;color:var(--dim);font-size:.8rem}.sc-l b{font-variant-numeric:tabular-nums;font-size:1.05rem}.sc-r{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;margin:14px 0 8px;padding-top:12px;border-top:1px solid var(--line)}.sc-r dt{color:var(--dim);font-size:.9rem}.sc-r dd{margin:0}.sc-ex{margin:8px 0}.fs-rc{color:var(--ok)}.sc-ctl td{white-space:nowrap}.sc-ctl td.ok{color:var(--ok)}.sc-ctl td.ko{color:var(--ko)}.sc-ctl small{display:inline;color:var(--dim)}.sc-ex summary{cursor:pointer;color:var(--dim)}
 .s1{margin:14px 0 4px;padding-top:12px;border-top:1px solid var(--line)}.s1 h4{margin:0 0 4px}.s1-t{width:100%;border-collapse:collapse;margin:10px 0;font-variant-numeric:tabular-nums;font-size:.92rem}.s1-t th,.s1-t td{padding:5px 4px;text-align:right;vertical-align:top}.s1-t thead th{font-size:.75rem;color:var(--dim);font-weight:600}.s1-t thead th.s1-n{text-align:left;font-size:.95rem;font-weight:700}.s1-t tbody th{text-align:left;font-weight:500;color:var(--dim)}.s1-t tbody tr+tr{border-top:1px solid var(--line)}.s1-t small{display:block;color:var(--dim);font-size:.72rem}.s1-t .dim{color:var(--dim)}
 .cj-cond{margin:14px 0 4px;padding-top:12px;border-top:1px solid var(--line)}.cj-cond h4{margin:0 0 4px}.en-clair{border-left:3px solid var(--ok);padding:6px 10px;margin:10px 0;background:rgba(var(--wl),.04);border-radius:0 8px 8px 0}.en-clair p{margin:4px 0;font-size:.92rem}.en-clair b{font-size:.75rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ok)}.cj-ct td b{display:block}.cj-ct td b.ok{color:var(--ok)}.cj-ct td b.ko{color:var(--ko)}.cj-ct tbody th{font-size:.88rem}
 </style>
@@ -3703,12 +3703,16 @@ function libEvt(k){
   return k;
 }
 function fiabTag(f){ return `<span class="jc-st ${f==='fiable'?'production':f==='rien'?'rejete':'candidat'}">${esc(t('fs_f')[f]||f)}</span>`; }
-function tableStats(S){
+function tableStats(S, R){
+  // 11/11/2026 (paquet 225) : R = recalage case par case du circuit (variante en place, couverture depuis)
   const L = t('fs_l'), rows = Object.entries(S||{}).map(([k,v])=>{
     const sous = [t(k==='total_jeux'?'fs_matchs':'fs_cas', v.n)];
+    const r = R && R[k] && R[k].variante && R[k].variante !== 'sans' ? R[k] : null;
     if (v.erreur_moyenne!=null) sous.push(t('fs_err_v', dec(v.erreur_moyenne,1)));
     if (v.gain_vs_naif_pct!=null) sous.push(t('fs_apport_v', (v.gain_vs_naif_pct>0?'+':'')+dec(v.gain_vs_naif_pct,0)));
-    return `<tr><td>${esc(L[k]||k)}<br><span class="cv-n">${esc(sous.join(' · '))}</span></td>
+    const fr = t('html_lang') === 'fr', dateCourte = d => new Date(d + 'T12:00:00Z').toLocaleDateString(loc(), {day:'numeric', month:'short', timeZone:'UTC'});
+    const rc = r ? `<br><span class="cv-n fs-rc">${esc(fr ? `Fourchette recalée le ${dateCourte(r.depuis)}` : `Range recalibrated on ${dateCourte(r.depuis)}`)}${r.semaine_jugee ? esc(fr ? ` (semaine jugée : ${dec(r.semaine_jugee.sans,0)} % → ${dec(r.semaine_jugee.avec,0)} %)` : ` (week tested: ${dec(r.semaine_jugee.sans,0)}% → ${dec(r.semaine_jugee.avec,0)}%)`) : ''}${esc(r.n >= 30 ? (fr ? ` · depuis : ${dec(r.couverture,1)} % sur ${r.n} cas` : ` · since: ${dec(r.couverture,1)}% over ${r.n} cases`) : (fr ? ` · depuis : ${r.n} cas, trop tôt` : ` · since: ${r.n} cases, too early`))}</span>` : '';
+    return `<tr><td>${esc(L[k]||k)}<br><span class="cv-n">${esc(sous.join(' · '))}</span>${rc}</td>
     <td>${v.dans_fourchette_pct==null?'—':`<b>${pc(v.dans_fourchette_pct)}</b>`}</td><td>${fiabTag(v.fiabilite)}</td></tr>`; }).join('');
   const apport = Object.values(S||{}).some(v=>v.gain_vs_naif_pct!=null);
   return rows ? `<div class="cv-wrap"><table class="calib cv fs-t"><thead><tr><th>${esc(t('fs_stat'))}</th><th>${esc(t('fs_dans'))}</th><th>${esc(t('fs_fiab'))}</th></tr></thead><tbody>${rows}</tbody></table></div>${apport?`<p class="cv-p">${esc(t('fs_apport_note'))}</p>`:''}` : '';
@@ -3722,7 +3726,7 @@ function rendFiabStats(){
   if (g && (Object.keys(g.stats||{}).length || Object.keys(g.lignes||{}).length)){
     const ev = Object.entries(g.lignes||{}).map(([k,v])=>`<tr><td>${esc(libEvt(k))}<br><span class="cv-n">${esc(t('fs_evt_sous', v.n, pc(v.reussite_pct)))}</span></td>
       <td>${pc(v.prevu_pct)} → <b>${pc(v.reel_pct)}</b></td><td>${fiabTag(v.fiabilite)}</td></tr>`).join('');
-    h += `<h3 class="cv-h">${esc(t('fs_direct', g.matchs))}</h3>${tableStats(g.stats)}
+    h += `<h3 class="cv-h">${esc(t('fs_direct', g.matchs))}</h3>${tableStats(g.stats, (F.recalage||{})[circFs])}
       ${ev?`<div class="cv-wrap"><table class="calib cv fs-t"><thead><tr><th>${esc(t('fs_evt'))}</th><th>${esc(t('fs_annonce_arrive'))}</th><th>${esc(t('fs_fiab'))}</th></tr></thead><tbody>${ev}</tbody></table></div>`:''}`;
   } else h += `<p class="cv-p">${esc(t('fs_vide'))}</p>`;
   if (F.test && circFs === 'TOUS') h += `<h3 class="cv-h">${esc(t('fs_test', F.test.periode||'', F.test.matchs))}</h3>${tableStats(F.test.stats)}`;
