@@ -539,6 +539,7 @@ body.carte #video{display:block;width:1080px;height:1350px}
 .arena-nav:hover,.arena-nav:focus-visible{background:#eaff88;outline:2px solid #80b000;outline-offset:2px}
 @media(max-width:520px){.arena-nav{padding:7px 11px;font-size:12px}.reglages{gap:5px}}
 
+.panel.meteo{padding:16px}.tiroir>.panel.meteo{padding:0 16px 16px}.meteo .mt-l{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;margin:10px 0 6px}.meteo .mt-l dt{color:var(--dim);font-size:.9rem}.meteo .mt-l dd{margin:0;font-variant-numeric:tabular-nums}
 </style>
 <!-- TE_MATCH_UI_2026_11 -->
 
@@ -1266,6 +1267,53 @@ function repondre(m, q, j, n){
     case 'total': return pick(Z.total, n, Z.total_debut);
     case 'tb': return Z.tb;
   } return null;
+}
+// 11/11/2026 (paquet 220) — MÉTÉO ET CONDITIONS (simulateur/meteo_match.py) : lieu du tournoi, météo du jour local
+// (Open-Meteo), densité de l'air ; on dit honnêtement ce qui entre dans le % sur ce circuit.
+function meteoIndice(mt){
+  if (!mt) return '';
+  if (mt.interieur) return L==='fr' ? 'En salle' : 'Indoors';
+  if (mt.t_max == null) return '';
+  return `${dec(mt.t_max,0)} °C · ${L==='fr'?'vent':'wind'} ${dec(mt.vent_max,0)} km/h`;
+}
+function rendMeteo(m){
+  const mt = m.meteo; if (!mt) return '';
+  const fr = L==='fr';
+  let pays = mt.pays || '';
+  try { if (mt.code) pays = new Intl.DisplayNames([fr?'fr':'en'], {type:'region'}).of(String(mt.code).toUpperCase()) || pays; } catch(e){}
+  const lieu = [mt.ville, pays].filter(Boolean).join(', ');
+  const alt = mt.altitude_m != null ? (fr ? `altitude ${fmt(mt.altitude_m)} m` : `altitude ${fmt(mt.altitude_m)} m`) : '';
+  const cadre = mt.interieur ? (fr ? 'en salle' : 'indoors') : (fr ? 'en plein air' : 'outdoors');
+  const jour = (()=>{ try { return new Date(mt.jour+'T12:00:00Z').toLocaleDateString(loc(), {weekday:'long', day:'numeric', month:'long', timeZone:'UTC'}); } catch(e){ return mt.jour; } })();
+  const lignes = [];
+  if (!mt.interieur && mt.t_max != null) {
+    lignes.push([fr?'Température maximale':'Max temperature', `${dec(mt.t_max,1)} °C`]);
+    lignes.push([fr?'Vent maximal':'Max wind', `${dec(mt.vent_max,0)} km/h`]);
+    if (mt.temperature != null) lignes.push([fr?'De 11 h à 20 h':'11am to 8pm', `${dec(mt.temperature,1)} °C · ${fr?'humidité':'humidity'} ${fmt(mt.humidite)}${fr?' %':'%'} · ${fmt(Math.round(mt.pression))} hPa`]);
+  } else if (mt.interieur) {
+    lignes.push([fr?'Météo':'Weather', fr ? 'sans effet en salle (20 °C et 50 % d’humidité supposés)' : 'no effect indoors (20 °C and 50% humidity assumed)']);
+    if (mt.t_max != null) lignes.push([fr?'Dehors':'Outside', `${dec(mt.t_max,0)} °C · ${fr?'vent':'wind'} ${dec(mt.vent_max,0)} km/h`]);
+  } else {
+    lignes.push([fr?'Météo':'Weather', fr ? 'pas encore de relevé pour ce jour' : 'no reading yet for this day']);
+  }
+  if (mt.densite != null) {
+    const al = mt.air_leger || 0;
+    const sens = al >= 0.3 ? (fr ? 'air plus léger que la référence (en principe, balle un peu plus rapide)' : 'lighter air than reference (in principle, a slightly faster ball)')
+      : al <= -0.3 ? (fr ? 'air plus lourd que la référence (en principe, balle un peu plus lente)' : 'heavier air than reference (in principle, a slightly slower ball)')
+      : (fr ? 'proche de la référence (niveau de la mer, 20 °C)' : 'close to reference (sea level, 20 °C)');
+    lignes.push([fr?'Densité de l’air':'Air density', `${dec(mt.densite,3)} kg/m³ — ${sens}`]);
+  }
+  const dans = mt.dans_le_pct || {};
+  const note = dans.densite_air
+    ? (fr ? 'Sur ce circuit, la densité de l’air entre dans le % (elle a passé le jugement chaque lundi). La chaleur et le vent seuls, non : ils n’ont pas passé le jugement.'
+          : 'On this tour, air density is part of the % (it passed the weekly test). Heat and wind alone are not: they did not pass.')
+    : (fr ? 'Information seulement : sur ce circuit, la météo ne change pas le % (elle n’a pas passé le jugement du lundi).'
+          : 'Information only: on this tour, the weather does not change the % (it did not pass the Monday test).');
+  const src = mt.source === 'releve' ? (fr ? 'relevé' : 'recorded') : (fr ? 'prévision' : 'forecast');
+  return `<div class="panel meteo"><h3>${esc(fr?'Météo et conditions':'Weather and conditions')}</h3>
+    <p class="styles-intro">${esc(lieu)}${alt ? ' · ' + esc(alt) : ''} · ${esc(cadre)} · ${esc(jour)}</p>
+    <dl class="mt-l">${lignes.map(([k,v])=>`<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join('')}</dl>
+    <p class="styles-note">${esc(note)} ${esc(fr?'Source :':'Source:')} Open-Meteo (${esc(src)}), ${esc(fr?'jour local du match':'local match day')}.</p></div>`;
 }
 // 05/11/2026 — vitesse du court en visuel : jauge sur l'échelle du CPI (20 = lent, 50+ = très rapide), écart avec l'an
 // dernier, courbe des éditions (CPI officiel plein, estimé creux). Données : vitrine (vitesse_courts.historique).
@@ -2466,6 +2514,7 @@ function rendMdj(){
       ${rendEssentiel(m)}
       ${rendAvantMatch(m)}
       ${rendVitesse(m)}
+      ${rendMeteo(m)}
       ${rendStylesDescriptifs(m.styles_descriptifs,m)}
       <div class="duo">
         ${bo ? `<div class="panel"><h3>${esc(t('sets_titre'))}</h3><div class="bars">${bo}</div></div>` : ''}
@@ -2525,6 +2574,7 @@ function tiroirsFiche(m){
     let indice = '';
     if (el.classList.contains('cartes') && m.cartes && Array.isArray(m.cartes.joueurs)) indice = m.cartes.joueurs.map(c => c.note).join(' · ');
     else if (el.classList.contains('essentiel')) { const n = el.querySelectorAll('li').length; if (n) indice = t('tr_constats', n); }
+    else if (el.classList.contains('meteo')) indice = meteoIndice(m.meteo);
     enveloppe(el, titre, titre, indice);
   });
   // ordre : l'en-tête du match, le post X, le bouton « tout ouvrir », puis le direct et les statistiques

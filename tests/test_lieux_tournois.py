@@ -23,6 +23,11 @@ class Noms(unittest.TestCase):
         self.assertEqual(LT.ville_pays('Jinan, China, Qualifying'), ('Jinan', 'China'))
         self.assertEqual(LT.ville_pays('Buenos Aires 2, Argentina, Qualifying'), ('Buenos Aires', 'Argentina'))
         self.assertEqual(LT.ville_pays('Bari, Italy , Qualifying'), ('Bari', 'Italy'))
+        # 11/11/2026 (paquet 220) : 35 tournois, surtout ITF, n'étaient pas situés (« W35 Monastir 8 »)
+        self.assertEqual(LT.ville_pays('ITF W35 Monastir 8 Women'), ('Monastir', None))
+        self.assertEqual(LT.ville_pays('ITF M25 Santa Margherita di Pula 11 Men'), ('Santa Margherita di Pula', None))
+        self.assertEqual(LT.ville_pays('ITF W35 Bakersfield, CA Women'), ('Bakersfield', 'United States'))
+        self.assertEqual(LT.ville_pays('ITF W50 Cherbourg-en-Cotentin Women'), ('Cherbourg-en-Cotentin', None))
 
     def test_pays_refuse(self):
         R = [{'name': 'Mexico', 'country': 'Mexico', 'feature_code': 'PCLI', 'population': 1.3e8, 'elevation': 2062},

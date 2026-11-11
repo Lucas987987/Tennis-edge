@@ -857,6 +857,30 @@
    "quoi": "NETTOYAGE de la page de l'algo : l'étiquette « Incertitude » à côté de la fiabilité est retirée (la fourchette « entre x % et y % selon l'incertitude sur le niveau des joueurs, 8 fois sur 10 » reste, seule formulation) ; le bouton Arena en double, fixé en bas de l'écran, est retiré (celui du haut reste) ; le code des essais 3D, masqué mais toujours chargé, est retiré de la page (plus léger, moins de batterie) ; l'« Analyse détaillée » existe aussi en anglais et décrit la fourchette comme la fiche. Descriptif seulement : le % ne change pas.",
    "statut": "production",
    "paquet": 219
+  },
+  {
+   "date": "2026-11-11",
+   "quoi": "Fiche du match : nouveau tiroir « Météo et conditions ». Lieu du tournoi (ville, pays, altitude, salle ou plein air) et météo du jour local du match (température maximale, vent maximal, température, humidité et pression de 11 h à 20 h, source Open-Meteo, prévision ou relevé), densité de l'air. Le tiroir dit ce qui entre dans le % : sur le Challenger la densité de l'air y entre (elle a passé le jugement du lundi) ; la chaleur, le vent et les autres circuits restent une information. Le % ne change pas.",
+   "statut": "production",
+   "paquet": 220
+  },
+  {
+   "date": "2026-11-11",
+   "quoi": "Lieux des tournois : 35 tournois sur 228, surtout ITF (« ITF W35 Monastir 8 Women »), n'étaient pas situés, faute de lire la ville dans leur nom ; ils sont réessayés avec une lecture corrigée. Cela donne aussi la météo, la densité de l'air et les distances de voyage pour ces tournois.",
+   "statut": "production",
+   "paquet": 220
+  },
+  {
+   "date": "2026-11-11",
+   "quoi": "ÉTUDE de la fourchette du % (part Elo) : comparée à l'Elo des mêmes joueurs 90 jours plus tard sur l'archive (2023 → juin 2026), la fourchette actuelle contient l'estimation ultérieure 83 % du temps en ATP et en WTA et 80 % en Challenger, pour une cible de 80 %. Elle n'est donc pas trop large : la resserrer la rendrait trompeuse. La variante apprise sur 2018–2022 est plus large (92 %) en ATP et en WTA, et quasi identique en Challenger : rien n'est changé. Pour la resserrer honnêtement, il faut mieux connaître le niveau des joueurs (plus de matchs et de points observés).",
+   "statut": "rejete",
+   "paquet": 220
+  },
+  {
+   "date": "2026-11-11",
+   "quoi": "ÉTUDE des scénarios du match sur 755 de nos pronostics figés (2 sets gagnants) : le set décisif était prévu dans 34,6 % des matchs et a eu lieu dans 34,7 % ; le tie-break était prévu dans 31,8 % et a eu lieu dans 33,5 % ; les jeux, 22,7 prévus contre 22,8 réels. Deux corrections apprises avant le 01/11 (set décisif, tie-break, par circuit) dégradent le jugement du 01 au 11/11 : rejetées. Les scénarios sont déjà justes en moyenne ; le score exact reste rare par nature (2,5 % de scores exacts).",
+   "statut": "rejete",
+   "paquet": 220
   }
  ]
 }
