@@ -40,11 +40,14 @@ ICI = os.path.dirname(os.path.abspath(__file__))
 DOSSIER = os.path.join(ICI, '..', 'feuilles')
 F_TOURNOIS = os.path.join(DOSSIER, 'tournois.json')
 F_METEO = os.path.join(DOSSIER, 'meteo.json')
+# 11/11/2026 (paquet 223) : météo HEURE PAR HEURE des jours récents et à venir, pour la météo à l'heure du match
+F_HORAIRE = os.path.join(DOSSIER, 'meteo_horaire.json')
+HORAIRE_JOURS = 3            # jours passés gardés (le reste est déjà résumé dans meteo.json)
 GEO = 'https://geocoding-api.open-meteo.com/v1/search'
 ARCHIVE = 'https://archive-api.open-meteo.com/v1/archive'
 PREVISION = 'https://api.open-meteo.com/v1/forecast'
 DAILY = 'temperature_2m_max,wind_speed_10m_max'
-HOURLY = 'temperature_2m,relative_humidity_2m,surface_pressure'
+HOURLY = 'temperature_2m,relative_humidity_2m,surface_pressure,wind_speed_10m'
 HEURES_JEU = range(11, 21)          # 11 h → 20 h, heure locale
 GEO_V = 3          # 06/11/2026 (paquet 208) : lieu HÔTE donné par TennisApi (tournois_infos.py) avant le nom
 # Résultats de géocodage qui ne sont pas une ville : pays, région, continent.
@@ -150,6 +153,17 @@ class Client:
         return None
 
 
+def heures(hh):
+    """{jour: {"HH": [température °C, humidité %, pression hPa, vent km/h]}} — heure locale (timezone=auto)."""
+    out = {}
+    for h, tc, rh, ps, w in zip(hh.get('time') or [], hh.get('temperature_2m') or [], hh.get('relative_humidity_2m') or [],
+                                hh.get('surface_pressure') or [], hh.get('wind_speed_10m') or []):
+        if None in (tc, rh, ps) or len(h) < 13:
+            continue
+        out.setdefault(h[:10], {})[h[11:13]] = [round(tc, 1), round(rh), round(ps, 1), round(w or 0.0, 1)]
+    return out
+
+
 def conditions_horaires(hh):
     """{jour: (pression hPa, température °C, humidité %)} — moyennes de 11 h à 20 h, heure locale."""
     acc = {}
@@ -209,6 +223,8 @@ def semaines(jours):
 def main(argv):
     budget = int(argv[1]) if len(argv) > 1 and argv[1] else 400
     T, MET = lire(F_TOURNOIS, {}), lire(F_METEO, {})
+    f_horaire = os.path.join(os.path.dirname(F_METEO), 'meteo_horaire.json')   # à côté de meteo.json (tests)
+    MH = lire(f_horaire, {})
     INFOS = lire(F_INFOS, {})
     vus = tournois_des_feuilles()
     c = Client(budget)
@@ -274,6 +290,8 @@ def main(argv):
                 n_met += 1
                 dd = (doc or {}).get('daily') or {}
                 hh = conditions_horaires((doc or {}).get('hourly') or {})
+                if src == 'prevision':          # 11/11/2026 (paquet 223) : heure par heure, jours récents et à venir
+                    MH.setdefault(i, {}).update(heures((doc or {}).get('hourly') or {}))
                 for j, tx, vx in zip(dd.get('time') or [], dd.get('temperature_2m_max') or [], dd.get('wind_speed_10m_max') or []):
                     if tx is not None and (j in e['jours'] or src == 'prevision'):
                         if src == 'archive' or j not in M or M[j][2] == 'prevision' or len(M[j]) < 6:
@@ -282,6 +300,9 @@ def main(argv):
         print(f"::warning::Arrêt : {e}")
     ecrire(F_TOURNOIS, T)
     ecrire(F_METEO, MET)
+    garde = (aujourd - dt.timedelta(days=HORAIRE_JOURS)).isoformat()
+    MH = {i: {j: v for j, v in d.items() if j >= garde} for i, d in MH.items()}
+    ecrire(f_horaire, {i: d for i, d in MH.items() if d})
     alt = sorted(((v.get('altitude') or 0, v.get('ville')) for v in T.values() if v.get('lat') is not None), reverse=True)[:5]
     print(f"Tournois : {len(vus)} dans les feuilles · {sum(1 for v in T.values() if v.get('lat') is not None)} situés · "
           f"géocodages {n_geo} · requêtes météo {n_met} · total {c.n} requêtes · plus hauts : {alt}")

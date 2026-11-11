@@ -12,6 +12,8 @@ Le tournoi est retrouvé comme le fait l'algo (facteurs.Contexte.tournoi : le no
 Ce qui entre dans le % est dit honnêtement, circuit par circuit, d'après simulateur/facteurs.json :
   — densité de l'air : seulement là où le groupe « densite_air » est adopté (Challenger au 11/11) ;
   — conditions (chaleur, vent, altitude, salle) : groupe non adopté → information seule.
+11/11/2026 (paquet 223) : météo À L'HEURE DU MATCH (feuilles/meteo_horaire.json, heure locale du tournoi) et cases
+« dans ces conditions » du match (conditions_joueurs.cases) pour les bilans des joueurs.
 Aucune cote.
 """
 import datetime as dt
@@ -59,7 +61,15 @@ def groupes_adoptes(racine):
     return {c: set((b or {}).get('adoptes') or []) for c, b in pc.items()}
 
 
-def meteo_ligne(ligne, lieux, meteo, noms, adoptes):
+def heure_locale(t, fuseau, lon):
+    try:
+        from zoneinfo import ZoneInfo
+        return t.astimezone(ZoneInfo(fuseau))
+    except Exception:  # noqa: BLE001
+        return t + dt.timedelta(hours=round((lon or 0.0) / 15.0))
+
+
+def meteo_ligne(ligne, lieux, meteo, noms, adoptes, horaire=None):
     tid = trouver(ligne.get('tournoi'), noms)
     lieu = lieux.get(tid) if tid else None
     if not lieu or lieu.get('lat') is None:
@@ -82,6 +92,15 @@ def meteo_ligne(ligne, lieux, meteo, noms, adoptes):
         out['t_max'], out['vent_max'] = met[0], met[1]
         if len(met) >= 6 and None not in met[3:6]:
             out['pression'], out['temperature'], out['humidite'] = met[3], met[4], met[5]
+    loc = heure_locale(t, lieu.get('fuseau'), lieu.get('lon'))
+    hh = ((horaire or {}).get(tid) or {}).get(loc.date().isoformat()) or {}
+    x = hh.get(f'{loc.hour:02d}')
+    if x:
+        out['heure'] = {'h': loc.hour, 'temperature': x[0], 'humidite': x[1], 'vent': x[3] if len(x) > 3 else None}
+    import conditions_joueurs as CJ
+    out['cases'] = CJ.cases(lieu.get('code'), lieu.get('altitude'), loc.month, inter,
+                            met[0] if met else None, met[1] if met else None,
+                            met[5] if met and len(met) >= 6 else None)
     rho = DA.densite_match(lieu, met, 1.0 if inter else 0.0)
     if rho is not None:
         out['densite'] = round(rho, 3)
@@ -97,9 +116,10 @@ def ajouter_meteo(lignes, racine):
     lieux, meteo = FA.charger_lieux(racine)
     noms = noms_tournois(racine)
     adoptes = groupes_adoptes(racine)
+    horaire = _lire(os.path.join(racine, 'feuilles', 'meteo_horaire.json'), {}) or {}
     n = 0
     for x in lignes:
-        m = meteo_ligne(x, lieux or {}, meteo or {}, noms, adoptes)
+        m = meteo_ligne(x, lieux or {}, meteo or {}, noms, adoptes, horaire)
         if m:
             x['meteo'] = m
             n += 1

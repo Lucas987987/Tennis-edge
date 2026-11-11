@@ -51,6 +51,8 @@ jobs:
             /simulateur/
             /feuilles_points/
             /scripts/feuilles_match.py
+            /scripts/lieux_tournois.py
+            /scripts/lieux_archive.py
             /scripts/resultats_itf.py
             /resultats_itf/
             /resultats_itf_femmes/
@@ -121,6 +123,12 @@ jobs:
       - name: Pronostics des 36 prochaines heures
         run: python simulateur/pronostics_du_jour.py .
       # 06/11/2026 (paquet 210) : séries, face-à-face, réussite par rapport aux chances d'avant match (descriptif, fiche)
+      # 11/11/2026 (paquet 223) : lieu des tournois de l'archive (une fois par tournoi, Open-Meteo, gratuit) pour les
+      # bilans « dans ces conditions » des joueurs (pays, continent, altitude) — descriptif, jamais bloquant
+      - name: Lieux des tournois de l'archive
+        continue-on-error: true
+        timeout-minutes: 10
+        run: python scripts/lieux_archive.py /tmp/sackmann 250
       - name: Infos d'avant match (séries, face-à-face, réussite)
         continue-on-error: true
         run: python simulateur/infos_avant_match.py /tmp/sackmann .
@@ -161,6 +169,7 @@ jobs:
                      algo/donnees.json
           # 28/10/2026 : analyse après match (descriptive, pour l'algo) — publiée si elle a été écrite
           if [ -e simulateur/analyse_apres_match.json ]; then git add -- simulateur/analyse_apres_match.json; fi
+          if [ -e feuilles/lieux_archive.json ]; then git add -- feuilles/lieux_archive.json; fi
           if git diff --cached --quiet; then echo 'Rien de nouveau.'; exit 0; fi
           git commit -m "Pronostics du jour $(date -u +%FT%TZ)"
           # fichiers écrits hors du checkout partiel (ex. live/joueurs_service.json.gz, contexte des
