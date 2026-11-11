@@ -403,7 +403,8 @@
   "facteurs hebdomadaires non rejoués groupe par groupe"
  ],
  "suites": {
-  "228": "format du match en ATP : simulateur/rapport_format_match.json (2 sets gagnants en place ; 3 sets gagnants en attente)"
+  "228": "format du match en ATP : simulateur/rapport_format_match.json — CORRIGÉ au paquet 229 (Coupe Davis exclue du jugement) : 2 sets gagnants en place avec la pente 0,826 (gain 0,0016 ± 0,0008) ; 3 sets gagnants en attente",
+  "229": "vitesse de l'Elo en WTA et départ des petits niveaux : simulateur/rapport_vitesse_elo.json — les deux REJETÉS sur 2023 → juin 2026"
  },
  "pistes_ajoutees_le_11_11": {
   "regardé": "2018–2022 seulement, par-dessus l'Elo de production corrigé du format en ATP et les trois signaux solides (surface, absence, âge)",
@@ -482,6 +483,98 @@
      "CH": 0.0005
     }
    }
+  ]
+ },
+ "correction_du_11_11": "Les mesures « ATP » de ce rapport (constats format_atp, elo_wta_et_depart, elo_des_etudes) comptaient la Coupe Davis, rangée avec l'ATP dans l'archive. Elle pèse 10 % des matchs en 2 sets gagnants et l'Elo y est très mal étalonné : les chiffres du circuit seul sont plus modestes (format : pente 0,826 au lieu de 0,815 ; départ à 1300 : gain disparu). Depuis le paquet 229, toute étude exclut les compétitions par équipes du jugement.",
+ "outsiders_le_11_11": {
+  "regardé": "2018–2022 seulement, matchs du circuit (sans compétitions par équipes), outsiders annoncés entre 15 et 45 % après les corrections en place",
+  "mesures": {
+   "ATP": {
+    "tous": {
+     "n": 8590,
+     "annonce_pct": 32.9,
+     "reel_pct": 31.5
+    },
+    "deux_premiers_tours_de_grand_chelem": {
+     "n": 1449,
+     "annonce_pct": 30.5,
+     "reel_pct": 26.9,
+     "erreurs_types": -3.0
+    }
+   },
+   "WTA": {
+    "tous": {
+     "n": 8035,
+     "annonce_pct": 32.4,
+     "reel_pct": 31.4
+    },
+    "deux_premiers_tours_de_grand_chelem": {
+     "n": 1541,
+     "annonce_pct": 30.7,
+     "reel_pct": 27.8,
+     "erreurs_types": -2.5
+    },
+    "en_recul": {
+     "n": 3945,
+     "annonce_pct": 29.8,
+     "reel_pct": 26.7,
+     "erreurs_types": -4.4,
+     "note": "même effet que l'Elo rapide, rejeté hors échantillon au paquet 229"
+    }
+   },
+   "CH": {
+    "tous": {
+     "n": 29030,
+     "annonce_pct": 32.9,
+     "reel_pct": 33.8,
+     "erreurs_types": 3.6
+    },
+    "en_progression": {
+     "n": 2831,
+     "annonce_pct": 36.8,
+     "reel_pct": 39.8,
+     "erreurs_types": 3.3
+    },
+    "jeune_contre_plus_age": {
+     "n": 2570,
+     "annonce_pct": 31.4,
+     "reel_pct": 33.7,
+     "erreurs_types": 2.5
+    },
+    "issu_des_qualifications": {
+     "n": 2513,
+     "annonce_pct": 32.0,
+     "reel_pct": 34.5,
+     "erreurs_types": 2.8
+    },
+    "invite": {
+     "n": 3911,
+     "annonce_pct": 29.8,
+     "reel_pct": 28.2,
+     "erreurs_types": -2.2
+    }
+   }
+  },
+  "a_juger": [
+   {
+    "id": "grand_chelem_wta",
+    "paquet_prevu": 230,
+    "regle": "la règle déjà écrite plus haut (pistes_ajoutees_le_11_11) s'applique telle quelle, l'étude de l'Elo WTA étant close"
+   },
+   {
+    "id": "outsider_challenger",
+    "paquet_prevu": 230,
+    "regle": "en Challenger, deux décalages (logit) vers l'outsider, appris ENSEMBLE sur 2018–2022 : (a) son Elo rapide (vitesse × 2,5) dépasse son Elo d'au moins 0,25 en logit ; (b) il sort des qualifications. Jugés une seule fois sur 2023 → juin 2026, sur les matchs concernés par l'un ou l'autre : gain d'au moins 0,001 sur au moins 1 000 matchs, même sens sur les deux périodes ; erreur type et Brier publiés"
+   }
+  ],
+  "sans_suite": [
+   "gaucher",
+   "face-à-face",
+   "vétéran",
+   "repêché",
+   "demies et finales",
+   "spécialiste de la surface",
+   "favori hors de forme"
   ]
  }
 }

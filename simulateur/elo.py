@@ -88,6 +88,7 @@ class Elo:
         self.depart = depart
         self.poids_surface, self.welo, self.incertitude = float(poids_surface), welo, float(incertitude)
         self.g, self.s, self.n, self.ns, self.dep = {}, {}, {}, {}, {}
+        self.vit = {}          # 11/11/2026 (paquet 229) : {joueur: multiplicateur de la vitesse K}, vide = 1 pour tous
 
     def options(self):
         return {'poids_surface': self.poids_surface, 'welo': self.welo, 'incertitude': self.incertitude}
@@ -96,6 +97,14 @@ class Elo:
         """Note de départ d'un joueur jamais vu (ex. 1200 s'il débute en Challenger/ITF)."""
         if j not in self.g and j not in self.dep:
             self.dep[j] = valeur
+
+    def regler_vitesse(self, j, v):
+        """11/11/2026 (paquet 229) — vitesse propre à un joueur : ses notes bougent v fois plus vite (1 = inchangé).
+        Sert à donner une vitesse à tout un circuit (etude_vitesse_elo.py) ; sans appel, rien ne change."""
+        if v and v != 1.0:
+            self.vit[j] = float(v)
+        else:
+            self.vit.pop(j, None)
 
     def _g(self, j):
         return self.g.get(j, self.dep.get(j, self.depart))
@@ -134,7 +143,8 @@ class Elo:
             f *= part / PART_JEUX_MOY
         gw, gl = self._g(w), self._g(l)
         e = 1 / (1 + 10 ** ((gl - gw) / 400))
-        kw, kl = f * self._k(self.n.get(w, 0)), f * self._k(self.n.get(l, 0))
+        fw, fl = f * self.vit.get(w, 1.0), f * self.vit.get(l, 1.0)
+        kw, kl = fw * self._k(self.n.get(w, 0)), fl * self._k(self.n.get(l, 0))
         self.g[w] = gw + kw * (1 - e)
         self.g[l] = gl - kl * (1 - e)
         self.n[w] = self.n.get(w, 0) + 1
@@ -143,7 +153,7 @@ class Elo:
             sw, sl = (w, surface), (l, surface)
             vw, vl = self._s(w, surface), self._s(l, surface)
             e = 1 / (1 + 10 ** ((vl - vw) / 400))
-            kw, kl = f * self._k(self.ns.get(sw, 0)), f * self._k(self.ns.get(sl, 0))
+            kw, kl = fw * self._k(self.ns.get(sw, 0)), fl * self._k(self.ns.get(sl, 0))
             self.s[sw] = vw + kw * (1 - e)
             self.s[sl] = vl - kl * (1 - e)
             self.ns[sw] = self.ns.get(sw, 0) + 1
