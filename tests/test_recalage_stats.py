@@ -57,12 +57,43 @@ def test_lire_coefs_seulement_si_adopte(tmp_path):
     p = tmp_path / 'simulateur' / 'recalage_stats.json'
     p.write_text(json.dumps({'decision': {'adopte': False, 'coefs': {'ATP': {}}}}), encoding='utf-8')
     # 05/11/2026 : non adopté → seulement les cases adoptées directement (repli figé faute de données)
-    assert RS.lire_coefs(str(tmp_path)) == RS.REPLI_DIRECT
+    assert RS.lire_coefs_ancien(str(tmp_path)) == RS.REPLI_DIRECT
     p.write_text(json.dumps({'decision': {'adopte': False}, 'direct': {'ATP|aces': {'retire': True}}}), encoding='utf-8')
-    assert 'aces' not in RS.lire_coefs(str(tmp_path))['ATP']
+    assert 'aces' not in RS.lire_coefs_ancien(str(tmp_path))['ATP']
     p.write_text(json.dumps({'decision': {'adopte': True, 'coefs': {'ATP': {'breaks': {'delta': 0, 'largeur': .75}}}}}),
                  encoding='utf-8')
-    assert RS.lire_coefs(str(tmp_path)) == {'ATP': {'breaks': {'delta': 0, 'largeur': .75}}}
+    assert RS.lire_coefs_ancien(str(tmp_path)) == {'ATP': {'breaks': {'delta': 0, 'largeur': .75}}}
+
+
+def test_lire_coefs_case_par_case(tmp_path):
+    # 11/11/2026 (paquet 225) : variante en place de chaque case ; sans données, repli figé (largeur 1)
+    (tmp_path / 'simulateur').mkdir()
+    co = RS.lire_coefs(str(tmp_path))
+    assert co['ATP']['premiere_pct'] == RS.REPLI_DIRECT['ATP']['premiere_pct']
+    assert 'aces' not in co['ATP']                               # « sans » au départ
+    p = tmp_path / 'simulateur' / 'recalage_stats.json'
+    p.write_text(json.dumps({'cases': {'ATP|aces': {'variante': 'delta'}}}), encoding='utf-8')
+    assert RS.lire_coefs(str(tmp_path)) == {'ATP': {'aces': {'delta': RS.REPLI_DIRECT['ATP']['aces']['delta'], 'largeur': 1.0}}}
+
+
+def _lignes(n, reel, p10=0.0, p90=8.0, moy=4.0, jour='2026-11-02'):
+    return [{'c': 'ATP', 'k': 'breaks', 'moy': moy, 'p10': p10, 'p90': p90, 'reel': reel(i), 'jour': jour} for i in range(n)]
+
+
+def test_decider_cases_passe_a_la_meilleure_et_retire():
+    # fourchette [0 ; 8] beaucoup trop large : le réel vaut 4 huit fois sur dix, 0 ou 8 sinon (décalage nul)
+    sym = lambda i: 0.0 if i % 10 == 0 else 8.0 if i % 10 == 5 else 4.0  # noqa: E731
+    appr, juge = _lignes(200, sym, jour='2026-10-26'), _lignes(60, sym)
+    d = RS.decider_cases({'ATP|breaks': {'variante': 'sans', 'semaines_pires': 0}}, appr, juge, '2026-11-09')
+    assert d['ATP|breaks']['variante'] == 'complet' and d['ATP|breaks']['depuis'] == '2026-11-09'
+    # « delta » en place (décalage appris non nul) mais réel toujours au centre : même couverture, écart pire que
+    # « sans » → une semaine pire, puis retrait à la deuxième
+    appr2 = _lignes(200, lambda i: 8.0 if i % 5 == 0 else 4.0, jour='2026-10-26')
+    juge2 = _lignes(60, lambda i: 4.0)
+    d1 = RS.decider_cases({'ATP|breaks': {'variante': 'delta', 'semaines_pires': 0}}, appr2, juge2, '2026-11-16')
+    assert d1['ATP|breaks']['variante'] == 'delta' and d1['ATP|breaks']['semaines_pires'] == 1
+    d2 = RS.decider_cases(d1, appr2, juge2, '2026-11-23')
+    assert d2['ATP|breaks']['variante'] == 'sans' and d2['ATP|breaks']['retiree'] == 'delta'
 
 
 def test_vitrine_recaler_feuille():
