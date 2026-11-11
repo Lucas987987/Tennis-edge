@@ -2,41 +2,42 @@
  "circuits": {
   "ATP": {
    "2_sets_gagnants": {
-    "pente_apprise": 0.815,
+    "pente_apprise": 0.826,
     "2018–2022": {
-     "matchs": 10045,
-     "favori_annonce_pct": 67.3,
+     "matchs": 9257,
+     "favori_annonce_pct": 67.1,
      "favori_reel_pct": 64.5,
-     "log_loss": 0.62556,
-     "pente_propre": 0.815,
-     "gain": 0.00272,
-     "erreur_type": 0.00075,
-     "erreurs_types": 3.61
+     "log_loss": 0.62641,
+     "pente_propre": 0.826,
+     "gain": 0.00234,
+     "erreur_type": 0.00073,
+     "erreurs_types": 3.2
     },
     "2023 → juin 2026": {
-     "matchs": 8335,
-     "favori_annonce_pct": 67.4,
-     "favori_reel_pct": 64.5,
-     "log_loss": 0.62413,
-     "pente_propre": 0.822,
-     "gain": 0.0025,
-     "erreur_type": 0.00082,
-     "erreurs_types": 3.06
+     "matchs": 7490,
+     "favori_annonce_pct": 67.3,
+     "favori_reel_pct": 65.0,
+     "log_loss": 0.62043,
+     "pente_propre": 0.853,
+     "gain": 0.0016,
+     "erreur_type": 0.00081,
+     "erreurs_types": 1.98
     },
     "passe_la_regle": true,
-    "raisons": []
+    "raisons": [],
+    "passe_deux_erreurs_types": false
    },
    "3_sets_gagnants": {
-    "pente_apprise": 1.21,
+    "pente_apprise": 1.219,
     "2018–2022": {
-     "matchs": 2401,
-     "favori_annonce_pct": 71.0,
-     "favori_reel_pct": 74.0,
-     "log_loss": 0.52372,
-     "pente_propre": 1.21,
-     "gain": 0.00344,
-     "erreur_type": 0.00162,
-     "erreurs_types": 2.12
+     "matchs": 2344,
+     "favori_annonce_pct": 70.9,
+     "favori_reel_pct": 73.8,
+     "log_loss": 0.52345,
+     "pente_propre": 1.219,
+     "gain": 0.00373,
+     "erreur_type": 0.00168,
+     "erreurs_types": 2.21
     },
     "2023 → juin 2026": {
      "matchs": 1743,
@@ -44,43 +45,43 @@
      "favori_reel_pct": 72.2,
      "log_loss": 0.53896,
      "pente_propre": 1.15,
-     "gain": 0.00153,
-     "erreur_type": 0.00192,
-     "erreurs_types": 0.8
+     "gain": 0.00144,
+     "erreur_type": 0.00201,
+     "erreurs_types": 0.72
     },
-    "passe_la_regle": false,
-    "raisons": [
-     "gain sous 2 erreurs types"
-    ]
+    "passe_la_regle": true,
+    "raisons": [],
+    "passe_deux_erreurs_types": false
    }
   },
   "WTA": {
    "2_sets_gagnants": {
-    "pente_apprise": 1.064,
+    "pente_apprise": 1.066,
     "2018–2022": {
-     "matchs": 11515,
-     "favori_annonce_pct": 66.8,
-     "favori_reel_pct": 67.3,
-     "log_loss": 0.59693,
-     "pente_propre": 1.064,
-     "gain": 0.00027,
-     "erreur_type": 0.00021,
-     "erreurs_types": 1.28
+     "matchs": 10529,
+     "favori_annonce_pct": 66.4,
+     "favori_reel_pct": 66.9,
+     "log_loss": 0.60129,
+     "pente_propre": 1.066,
+     "gain": 0.00028,
+     "erreur_type": 0.00022,
+     "erreurs_types": 1.24
     },
     "2023 → juin 2026": {
-     "matchs": 9252,
-     "favori_annonce_pct": 66.6,
-     "favori_reel_pct": 67.5,
-     "log_loss": 0.59263,
-     "pente_propre": 1.097,
-     "gain": 0.00053,
-     "erreur_type": 0.00023,
-     "erreurs_types": 2.31
+     "matchs": 8837,
+     "favori_annonce_pct": 66.5,
+     "favori_reel_pct": 67.2,
+     "log_loss": 0.59618,
+     "pente_propre": 1.086,
+     "gain": 0.00044,
+     "erreur_type": 0.00024,
+     "erreurs_types": 1.84
     },
     "passe_la_regle": false,
     "raisons": [
      "gain sous 0.001"
-    ]
+    ],
+    "passe_deux_erreurs_types": false
    }
   },
   "CH": {
@@ -108,19 +109,36 @@
     },
     "passe_la_regle": false,
     "raisons": [
-     "gain sous 0.001",
-     "gain sous 2 erreurs types"
-    ]
+     "gain sous 0.001"
+    ],
+    "passe_deux_erreurs_types": false
    }
   }
  },
  "adopte": false,
  "pentes_atp": {
-  "2_sets_gagnants": 0.815,
-  "3_sets_gagnants": 1.21
+  "2_sets_gagnants": 0.826,
+  "3_sets_gagnants": 1.219
  },
- "genere_le": "2026-11-11T17:30:03+00:00",
- "regle": "par format en ATP : pente apprise sur 2018–2022, jugée sur 2023 → juin 2026 ; retenue si, dans CHAQUE format, le gain atteint 0,001 sur au moins 1 000 matchs, vaut au moins 2 erreurs types, et si le biais a le même sens sur les deux périodes ; WTA et Challenger pour mémoire",
+ "competitions_par_equipes_atp_pour_memoire": {
+  "2018–2022": {
+   "matchs": 788,
+   "favori_annonce_pct": 70.4,
+   "favori_reel_pct": 64.8,
+   "log_loss": 0.61565,
+   "pente_propre": 0.727
+  },
+  "2023 → juin 2026": {
+   "matchs": 845,
+   "favori_annonce_pct": 68.4,
+   "favori_reel_pct": 59.9,
+   "log_loss": 0.6569,
+   "pente_propre": 0.608
+  },
+  "note": "Coupe Davis : dans l'Elo, exclue du jugement ; l'Elo y est très mal étalonné"
+ },
+ "genere_le": "2026-11-11T17:49:08+00:00",
+ "regle": "par format en ATP, matchs du circuit seulement (compétitions par équipes exclues) : pente apprise sur 2018–2022, jugée sur 2023 → juin 2026 ; règle du brief : gain d'au moins 0,001 sur au moins 1 000 matchs, biais de même sens sur les deux périodes ; la condition « au moins 2 erreurs types » est publiée à part ; WTA et Challenger pour mémoire",
  "elo": "réglé comme la production (elo.de_production), mis à jour après chaque match",
  "options_elo": {
   "poids_surface": 0.3,
