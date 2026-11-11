@@ -827,6 +827,36 @@
    "quoi": "Fiche du match : chaque bloc devient un tiroir. « Le match » (score, courbe du %, moments clés, jeu par jeu, « Tous les points ») et « Statistiques du match » (réel contre prévu de l'algo) restent ouverts ; les autres sont repliés avec une ligne-résumé, et un bouton « Tout ouvrir / Tout replier » les gère ensemble. Un match commencé reste affiché 24 h au lieu de 6 h, et quand le direct n'est plus disponible la fiche montre le bilan après match (score et statistiques réelles contre le prévu) dès qu'il est calculé. Nouveau bouton « Générer le post X · résultat », à côté du post d'avant match. Titre « nouvelle victoire » seulement si le favori de l'algo a gagné, sinon « le bilan du match », erreurs comprises ; ✅ sur une statistique quand le réel des deux joueurs tombe dans la fourchette prévue (8 fois sur 10), règle fixée avant les résultats. Le post d'avant match suit désormais le modèle : sans ligne de surface, sans bloc des probabilités, sans note de fiabilité ni « ce que l'algo relève ». Le bouton « Générer la vidéo » est conservé. Descriptif seulement : le % ne change pas.",
    "statut": "production",
    "paquet": 218
+  },
+  {
+   "date": "2026-11-08",
+   "quoi": "ARENA : jeu de pronostics gratuit, séparé de l'algo (un choix par match avant le début, points et XP, cartes de joueurs à débloquer). En test privé, pas encore ouvert au public. Bouton « Arena » en haut de la page de l'algo. Le % de l'algo ne change pas. (Entrée de rattrapage ajoutée le 11/11 : ce changement avait été appliqué sans entrée au journal.)",
+   "statut": "candidat",
+   "paquet": null
+  },
+  {
+   "date": "2026-11-09",
+   "quoi": "ESSAIS 3D du direct (vue TV, vue immersive, joueurs en 3D) : testés puis retirés de la page du direct le 09/11 ; le terrain vu de dessus reste la seule vue. (Entrée de rattrapage ajoutée le 11/11 : ce changement avait été appliqué sans entrée au journal.)",
+   "statut": "rejete",
+   "paquet": null
+  },
+  {
+   "date": "2026-11-10",
+   "quoi": "DIRECT ET FICHE : sur le terrain, la balle et les joueurs bougent (animation illustrative, aucune trajectoire réelle : le score affiché, lui, est réel) ; matchs terminés repliés et filtre LIVE dans la liste ; cartes des joueurs horizontales, radar sur toute la largeur et consultable pendant le direct ; bouton « Analyse détaillée » (texte descriptif tiré du %, de la fourchette, de la fiabilité, des cartes et des scores probables) ; Arena reprend les cartes des joueurs. Descriptif seulement : le % ne change pas. (Entrée de rattrapage ajoutée le 11/11 : ce changement avait été appliqué sans entrée au journal.)",
+   "statut": "production",
+   "paquet": null
+  },
+  {
+   "date": "2026-11-10",
+   "quoi": "Étiquette « Incertitude » ajoutée à côté de la note de fiabilité (retirée le 11/11, paquet 219, car elle doublait la fourchette déjà affichée). (Entrée de rattrapage ajoutée le 11/11 : ce changement avait été appliqué sans entrée au journal.)",
+   "statut": "rejete",
+   "paquet": null
+  },
+  {
+   "date": "2026-11-11",
+   "quoi": "NETTOYAGE de la page de l'algo : l'étiquette « Incertitude » à côté de la fiabilité est retirée (la fourchette « entre x % et y % selon l'incertitude sur le niveau des joueurs, 8 fois sur 10 » reste, seule formulation) ; le bouton Arena en double, fixé en bas de l'écran, est retiré (celui du haut reste) ; le code des essais 3D, masqué mais toujours chargé, est retiré de la page (plus léger, moins de batterie) ; l'« Analyse détaillée » existe aussi en anglais et décrit la fourchette comme la fiche. Descriptif seulement : le % ne change pas.",
+   "statut": "production",
+   "paquet": 219
   }
  ]
 }
