@@ -893,6 +893,18 @@
    "quoi": "Scénarios du match CONTRÔLÉS sur nos matchs réels : le dernier pronostic affiché avant chaque match contre le score réel, avec une règle fixée à l'avance (« juste » si l'écart reste dans ± 1,96 erreur type, à partir de 30 matchs). Sur 667 matchs en 2 sets gagnants, les 5 scénarios sont justes sur les 3 circuits. En tout : sans trembler 9,9 % prévus contre 9,5 % réels ; accrochés 22,2 % contre 22,5 % ; en 3 sets 17,9 % contre 18,0 % ; remontée après le 1er set perdu 9,2 % contre 8,2 % ; victoire après le 1er set gagné 81,6 % contre 83,5 %. Pour les matchs d'avant le 11/11, les scénarios sont reconstitués depuis le score en sets et les scores exacts figés ; ils sont désormais figés tels qu'affichés. Le contrôle s'affiche dans le tiroir et se met à jour à chaque passage.",
    "statut": "production",
    "paquet": 222
+  },
+  {
+   "date": "2026-11-11",
+   "quoi": "Tiroir « Météo et conditions » : la météo À L'HEURE DU MATCH (heure locale du tournoi : température, vent, humidité), relevée heure par heure par Open-Meteo pour les jours récents et à venir. C'est elle que montre la ligne-résumé.",
+   "statut": "production",
+   "paquet": 223
+  },
+  {
+   "date": "2026-11-11",
+   "quoi": "Nouveau bloc « Bilans dans ces conditions », avec une phrase « En clair ». Pour les conditions du match seulement (pays, continent, altitude, mois, salle ou plein air, chaleur, vent, humidité), il indique si chaque joueur fait mieux ou moins bien que d'habitude, à niveau d'adversaires égal : victoires réelles contre victoires attendues d'après l'Elo, comparées à son écart habituel. Ainsi, un joueur qui dépasse ses chances partout ne paraît pas fort dans un pays en particulier. Chiffré à partir de 15 matchs, en couleur seulement quand l'écart dépasse le bruit de l'échantillon. Lieux depuis 2016 : les tournois de l'archive sont situés une fois chacun. La météo ne remonte qu'à juin 2026, d'où peu de matchs pour l'instant. Descriptif : le % ne change pas.",
+   "statut": "production",
+   "paquet": 223
   }
  ]
 }
