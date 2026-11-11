@@ -542,6 +542,7 @@ body.carte #video{display:block;width:1080px;height:1350px}
 .panel.meteo{padding:16px}.tiroir>.panel.meteo{padding:0 16px 16px}.meteo .mt-l{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;margin:10px 0 6px}.meteo .mt-l dt{color:var(--dim);font-size:.9rem}.meteo .mt-l dd{margin:0;font-variant-numeric:tabular-nums}
 .panel.scen{padding:16px}.tiroir>.panel.scen{padding:0 16px 16px}.sc-barre{display:flex;height:14px;border-radius:8px;overflow:hidden;margin:10px 0 12px;gap:2px}.sc-barre i{display:block;height:100%}.sc-l{list-style:none;margin:0;padding:0;display:grid;gap:8px}.sc-l li{display:grid;grid-template-columns:12px 1fr auto;gap:10px;align-items:center}.sc-pt{width:12px;height:12px;border-radius:4px}.sc-n small{display:block;color:var(--dim);font-size:.8rem}.sc-l b{font-variant-numeric:tabular-nums;font-size:1.05rem}.sc-r{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;margin:14px 0 8px;padding-top:12px;border-top:1px solid var(--line)}.sc-r dt{color:var(--dim);font-size:.9rem}.sc-r dd{margin:0}.sc-ex{margin:8px 0}.sc-ctl td{white-space:nowrap}.sc-ctl td.ok{color:var(--ok)}.sc-ctl td.ko{color:var(--ko)}.sc-ctl small{display:inline;color:var(--dim)}.sc-ex summary{cursor:pointer;color:var(--dim)}
 .s1{margin:14px 0 4px;padding-top:12px;border-top:1px solid var(--line)}.s1 h4{margin:0 0 4px}.s1-t{width:100%;border-collapse:collapse;margin:10px 0;font-variant-numeric:tabular-nums;font-size:.92rem}.s1-t th,.s1-t td{padding:5px 4px;text-align:right;vertical-align:top}.s1-t thead th{font-size:.75rem;color:var(--dim);font-weight:600}.s1-t thead th.s1-n{text-align:left;font-size:.95rem;font-weight:700}.s1-t tbody th{text-align:left;font-weight:500;color:var(--dim)}.s1-t tbody tr+tr{border-top:1px solid var(--line)}.s1-t small{display:block;color:var(--dim);font-size:.72rem}.s1-t .dim{color:var(--dim)}
+.cj-cond{margin:14px 0 4px;padding-top:12px;border-top:1px solid var(--line)}.cj-cond h4{margin:0 0 4px}.en-clair{border-left:3px solid var(--ok);padding:6px 10px;margin:10px 0;background:rgba(var(--wl),.04);border-radius:0 8px 8px 0}.en-clair p{margin:4px 0;font-size:.92rem}.en-clair b{font-size:.75rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ok)}.cj-ct td b{display:block}.cj-ct td b.ok{color:var(--ok)}.cj-ct td b.ko{color:var(--ko)}.cj-ct tbody th{font-size:.88rem}
 </style>
 <!-- TE_MATCH_UI_2026_11 -->
 
@@ -1351,11 +1352,63 @@ function rendScenarios(m, sc){
     ${rendControleScenarios(m)}
     <p class="styles-note">${esc(fr?'Les mêmes 20 000 simulations que le % : ces scénarios ne le changent pas.':'The same 20,000 simulations as the %: these scenarios do not change it.')}</p></div>`;
 }
+// 11/11/2026 (paquet 223) — BILANS « DANS CES CONDITIONS » (conditions_joueurs.py) : pour les conditions du match
+// seulement, victoires réelles contre victoires attendues (Elo d'avant chaque match), à partir de 15 matchs.
+function drapeau2(a2){ a2 = String(a2||'').toUpperCase(); return /^[A-Z]{2}$/.test(a2) ? String.fromCodePoint(...[...a2].map(ch => 0x1F1E6 + ch.charCodeAt(0) - 65)) : ''; }
+function conditionsLignes(m){
+  const mt = m.meteo, C = mt && mt.cases, A = m.avant_match || {}; if (!C) return null;
+  const fr = L==='fr';
+  let pays = C.pays || '';
+  try { if (C.pays) pays = new Intl.DisplayNames([fr?'fr':'en'], {type:'region'}).of(C.pays) || pays; } catch(e){}
+  const mois = C.mois ? new Date(Date.UTC(2026, Number(C.mois)-1, 15)).toLocaleDateString(loc(), {month:'long', timeZone:'UTC'}) : '';
+  const lib = {
+    pays: pays ? `${drapeau2(C.pays)} ${pays}`.trim() : null,
+    continent: ({europe: 'Europe', amerique_nord: fr?'Amérique du Nord':'North America', amerique_sud: fr?'Amérique du Sud':'South America',
+                 asie: fr?'Asie':'Asia', oceanie: fr?'Océanie':'Oceania', afrique: fr?'Afrique':'Africa'})[C.continent],
+    altitude: ({plaine: fr?'En plaine (< 500 m)':'Lowland (< 500 m)', moyenne: fr?'Altitude moyenne (500–1 000 m)':'Mid altitude (500–1,000 m)', haute: fr?'En altitude (> 1 000 m)':'High altitude (> 1,000 m)'})[C.altitude],
+    mois: mois ? (fr ? `En ${mois}` : `In ${mois[0].toUpperCase()+mois.slice(1)}`) : null,
+    salle: ({salle: fr?'En salle':'Indoors', plein_air: fr?'En plein air':'Outdoors'})[C.salle],
+    chaleur: ({frais: fr?'Par temps frais (< 18 °C)':'Cool (< 18 °C)', tempere: fr?'Par temps tempéré (18–28 °C)':'Mild (18–28 °C)', chaud: fr?'Par temps chaud (> 28 °C)':'Hot (> 28 °C)'})[C.chaleur],
+    vent: ({calme: fr?'Vent calme (< 15 km/h)':'Light wind (< 15 km/h)', modere: fr?'Vent modéré (15–30 km/h)':'Moderate wind (15–30 km/h)', fort: fr?'Vent fort (> 30 km/h)':'Strong wind (> 30 km/h)'})[C.vent],
+    humidite: ({sec: fr?'Air sec (< 50 %)':'Dry air (< 50%)', humide: fr?'Air humide (50–75 %)':'Humid (50–75%)', tres_humide: fr?'Air très humide (> 75 %)':'Very humid (> 75%)'})[C.humidite]};
+  const out = [];
+  for (const d of ['pays','continent','altitude','mois','salle','chaleur','vent','humidite']) {
+    if (!C[d] || !lib[d]) continue;
+    const cel = ['home','away'].map(c => { const b = (((A[c]||{}).conditions||{})[d]||{})[C[d]]; return b ? {n:b[0], v:b[1], att:b[2]} : {n:0}; });
+    out.push({d, lib: lib[d], cel});
+  }
+  return out;
+}
+function rendConditionsJoueurs(m){
+  const R = conditionsLignes(m); if (!R || !R.length) return '';
+  const fr = L==='fr', N = [court(m.home), court(m.away)], MIN = 15, A = m.avant_match || {};
+  if (!R.some(r => r.cel.some(c => c.n > 0))) return '';
+  const ref = ['home','away'].map(c => (((A[c]||{}).conditions||{}).tout||{}).tout);
+  const habit = i => ref[i] && ref[i][0] ? 100 * (ref[i][1] - ref[i][2]) / ref[i][0] : 0;
+  const pts = (c, i) => 100 * (c.v - c.att) / c.n - habit(i);
+  const bruit = n => 100 / Math.sqrt(n);          // ≈ 2 erreurs types : en dessous, c'est du bruit
+  const pl = x => Math.abs(Math.round(x)) >= 2 ? 'pts' : 'pt';
+  const cel = (c, i) => c.n >= MIN ? `<b class="${pts(c,i)>=bruit(c.n)?'ok':pts(c,i)<=-bruit(c.n)?'ko':''}">${pts(c,i)>0?'+':''}${dec(pts(c,i),0)} ${pl(pts(c,i))}</b><small>${pc0(c.v/c.n)} · ${fmt(c.n)} ${fr?'m.':'m.'}</small>`
+                               : `<span class="dim">—</span><small>${c.n ? fmt(c.n)+' '+(fr?'m.':'m.') : (fr?'jamais':'never')}</small>`;
+  // « En clair » : l'écart le plus net de chaque joueur (15 matchs au moins)
+  const clair = [0,1].map(i => { const best = R.map(r=>({r, c:r.cel[i]})).filter(x=>x.c.n>=MIN && Math.abs(pts(x.c,i)) >= bruit(x.c.n)).sort((a,b)=>Math.abs(pts(b.c,i))-Math.abs(pts(a.c,i)))[0];
+    if (!best) return fr ? `${N[i]} : rien de marquant, dans ces conditions il fait comme d’habitude.` : `${N[i]}: nothing notable, same as usual in these conditions.`;
+    const p = pts(best.c,i), l = best.r.lib.replace(/^[\u{1F1E6}-\u{1F1FF}]{2}\s*/u,'');
+    return fr ? `${N[i]} : ${p>0?'+':''}${dec(p,0)} pts par rapport à son habitude — ${l} (${fmt(best.c.n)} matchs).`
+              : `${N[i]}: ${p>0?'+':''}${dec(p,0)} pts vs their usual — ${l} (${fmt(best.c.n)} matches).`; });
+  return `<div class="cj-cond"><h4>${esc(fr?'Bilans dans ces conditions':'Record in these conditions')}</h4>
+    <p class="styles-note" style="margin-top:0">${esc(fr?'Pour chaque condition de ce match : fait-il mieux ou moins bien que d’habitude, à niveau d’adversaires égal (victoires réelles contre attendues d’après l’Elo, comparées à son écart habituel) ? +5 pts = 5 victoires de plus sur 100 matchs que d’habitude.':'For each condition of this match: better or worse than usual, opponents’ level accounted for (actual vs Elo-expected wins, compared with their usual gap)? +5 pts = 5 more wins per 100 matches than usual.')}</p>
+    <div class="en-clair"><b>${esc(fr?'En clair':'In short')}</b>${clair.map(t_=>`<p>${esc(t_)}</p>`).join('')}</div>
+    <table class="s1-t cj-ct"><thead><tr><th></th><th style="color:var(--p1)">${esc(N[0])}</th><th style="color:var(--p2)">${esc(N[1])}</th></tr></thead>
+    <tbody>${R.map(r=>`<tr><th>${esc(r.lib)}</th><td>${cel(r.cel[0],0)}</td><td>${cel(r.cel[1],1)}</td></tr>`).join('')}</tbody></table>
+    <p class="styles-note">${esc(fr?'Descriptif : la météo et le lieu ne changent pas le % (ils n’ont pas passé le jugement du lundi, sauf la densité de l’air en Challenger). Lieux depuis 2016 ; météo seulement depuis juin 2026, d’où peu de matchs pour l’instant. Moins de 15 matchs : non chiffré. En couleur seulement quand l’écart dépasse le bruit de l’échantillon (deux erreurs types).':'Descriptive: weather and venue do not change the % (they did not pass the Monday test, except air density on the Challenger tour). Venues since 2016; weather only since June 2026, hence few matches so far. Fewer than 15 matches: not rated. Coloured only when the gap exceeds sample noise (two standard errors).')}</p></div>`;
+}
 // 11/11/2026 (paquet 220) — MÉTÉO ET CONDITIONS (simulateur/meteo_match.py) : lieu du tournoi, météo du jour local
 // (Open-Meteo), densité de l'air ; on dit honnêtement ce qui entre dans le % sur ce circuit.
 function meteoIndice(mt){
   if (!mt) return '';
   if (mt.interieur) return L==='fr' ? 'En salle' : 'Indoors';
+  if (mt.heure) return `${dec(mt.heure.temperature,0)} °C · ${L==='fr'?'vent':'wind'} ${dec(mt.heure.vent||0,0)} km/h`;
   if (mt.t_max == null) return '';
   return `${dec(mt.t_max,0)} °C · ${L==='fr'?'vent':'wind'} ${dec(mt.vent_max,0)} km/h`;
 }
@@ -1369,6 +1422,7 @@ function rendMeteo(m){
   const cadre = mt.interieur ? (fr ? 'en salle' : 'indoors') : (fr ? 'en plein air' : 'outdoors');
   const jour = (()=>{ try { return new Date(mt.jour+'T12:00:00Z').toLocaleDateString(loc(), {weekday:'long', day:'numeric', month:'long', timeZone:'UTC'}); } catch(e){ return mt.jour; } })();
   const lignes = [];
+  if (mt.heure && !mt.interieur) lignes.push([fr ? `À ${mt.heure.h} h (heure locale)` : `At ${mt.heure.h}:00 (local time)`, `${dec(mt.heure.temperature,0)} °C · ${fr?'vent':'wind'} ${dec(mt.heure.vent||0,0)} km/h · ${fr?'humidité':'humidity'} ${fmt(mt.heure.humidite)}${fr?' %':'%'}`]);
   if (!mt.interieur && mt.t_max != null) {
     lignes.push([fr?'Température maximale':'Max temperature', `${dec(mt.t_max,1)} °C`]);
     lignes.push([fr?'Vent maximal':'Max wind', `${dec(mt.vent_max,0)} km/h`]);
@@ -1396,7 +1450,8 @@ function rendMeteo(m){
   return `<div class="panel meteo"><h3>${esc(fr?'Météo et conditions':'Weather and conditions')}</h3>
     <p class="styles-intro">${esc(lieu)}${alt ? ' · ' + esc(alt) : ''} · ${esc(cadre)} · ${esc(jour)}</p>
     <dl class="mt-l">${lignes.map(([k,v])=>`<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join('')}</dl>
-    <p class="styles-note">${esc(note)} ${esc(fr?'Source :':'Source:')} Open-Meteo (${esc(src)}), ${esc(fr?'jour local du match':'local match day')}.</p></div>`;
+    <p class="styles-note">${esc(note)} ${esc(fr?'Source :':'Source:')} Open-Meteo (${esc(src)}), ${esc(fr?'jour local du match':'local match day')}.</p>
+    ${rendConditionsJoueurs(m)}</div>`;
 }
 // 05/11/2026 — vitesse du court en visuel : jauge sur l'échelle du CPI (20 = lent, 50+ = très rapide), écart avec l'an
 // dernier, courbe des éditions (CPI officiel plein, estimé creux). Données : vitrine (vitesse_courts.historique).
