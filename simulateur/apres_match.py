@@ -121,7 +121,17 @@ def fiche(ligne, maintenant, version):
             'lignes': ligne.get('lignes_algo'), 'documentation': ligne.get('documentation'),
             'controle': ligne.get('controle'), 'modeles': ligne.get('modeles'),
             # 05/11/2026 : score du scénario montré en vidéo (pour la carte bilan)
-            'scenario': _scenario(ligne)}
+            'scenario': _scenario(ligne),
+            # 11/11/2026 (paquet 222) : les 6 scénarios affichés, figés pour leur contrôle (scenarios_match.controle)
+            'scenarios': _scenarios(ligne)}
+
+
+def _scenarios(ligne):
+    try:
+        import scenarios_match as SM
+        return ligne.get('scenarios') or SM.scenarios(ligne.get('distribution_scores'))
+    except Exception:  # noqa: BLE001
+        return None
 
 
 def _scenario(ligne):
