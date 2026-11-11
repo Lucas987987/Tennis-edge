@@ -406,7 +406,8 @@
   "228": "format du match en ATP : simulateur/rapport_format_match.json — CORRIGÉ au paquet 229 (Coupe Davis exclue du jugement) : 2 sets gagnants en place avec la pente 0,826 (gain 0,0016 ± 0,0008) ; 3 sets gagnants en attente",
   "229": "vitesse de l'Elo en WTA et départ des petits niveaux : simulateur/rapport_vitesse_elo.json — les deux REJETÉS sur 2023 → juin 2026",
   "230": "départ des joueurs vus d'abord en ITF hommes : simulateur/rapport_depart_itf.json — RETENU et en production (1000 au lieu de 1200 ; Challenger : gain 0,0057 ± 0,0007 sur 7 722 matchs jugés, 0,0077 ± 0,0021 sur nos 912 matchs) ; Grand Chelem en WTA et outsider en Challenger : simulateur/rapport_outsiders.json — non retenus ; joueurs peu vus en Challenger : simulateur/rapport_joueurs_peu_vus.json — passe sur l'archive, échoue avec l'Elo de production, pas en production",
-  "231": "pente Grand Chelem commune ATP + WTA (1,235) : simulateur/rapport_grand_chelem.json — en place PAR DÉCISION DE LUCAS, la règle écrite n'étant pas passée ; retrait par la règle cumulée. Départ des joueuses vues d'abord en ITF : simulateur/rapport_depart_itf_femmes.json — REJETÉ"
+  "231": "pente Grand Chelem commune ATP + WTA (1,235) : simulateur/rapport_grand_chelem.json — en place PAR DÉCISION DE LUCAS, la règle écrite n'étant pas passée ; retrait par la règle cumulée. Départ des joueuses vues d'abord en ITF : simulateur/rapport_depart_itf_femmes.json — REJETÉ",
+  "232": "qualifications de Grand Chelem : format corrigé chez les hommes (2 sets gagnants) ; pente de l'Elo chez les femmes RETENUE et en place (1,247 ; gain 0,0047 ± 0,0017 sur 1 435 matchs jugés), rejetée chez les hommes : simulateur/rapport_qualifs_grand_chelem.json"
  },
  "pistes_ajoutees_le_11_11": {
   "regardé": "2018–2022 seulement, par-dessus l'Elo de production corrigé du format en ATP et les trois signaux solides (surface, absence, âge)",
@@ -629,7 +630,8 @@
     "id": "qualifications_grand_chelem",
     "paquet_prevu": 232,
     "constat": "nos matchs de qualifications de Grand Chelem portent le même nom de tournoi que le tableau principal (US Open 2026 : 224 matchs du 24 au 28/08). Conséquences : chez les hommes ils sont simulés et lus en 3 sets gagnants alors qu'ils se jouent en 2 ; ils reçoivent la vitesse Elo des Grands Chelems ; ils sont rangés avec l'ATP ou la WTA dans nos bilans alors que l'archive les range avec le Challenger ou l'ITF",
-    "regle": "correction de donnée, pas un réglage : le tour du programme du jour dit si le match est une qualification. Avant mise en production, le classement complet est rejoué avant / après : nos matchs ne doivent pas faire moins bien (tolérance 0,001)"
+    "regle": "correction de donnée, pas un réglage : le tour du programme du jour dit si le match est une qualification. Avant mise en production, le classement complet est rejoué avant / après : nos matchs ne doivent pas faire moins bien (tolérance 0,001)",
+    "suite": "fait au paquet 232 pour le format (2 sets gagnants chez les hommes, par le tour du programme du jour). Vérifié dans l'archive : les qualifications y ont bien le niveau Grand Chelem, la vitesse Elo est donc cohérente et n'est pas changée. Le rangement par circuit n'est pas changé : il toucherait le départ, les signaux et l'incertitude de ces matchs, ce qui demande une étude"
    }
   ],
   "a_juger": [
@@ -641,8 +643,38 @@
      "favori_reel_pct": 68.2,
      "favori_annonce_pct": 62.2
     },
-    "regle": "vu sur 280 de nos matchs seulement : à surveiller. Dans l'archive ces matchs sont rangés avec le Challenger et l'ITF : pente propre aux qualifications de Grand Chelem apprise sur 2018–2022, jugée une fois sur 2023 → juin 2026, au moins 0,001 sur au moins 1 000 matchs, même sens, après la correction ci-dessus"
+    "regle": "vu sur 280 de nos matchs seulement : à surveiller. Dans l'archive ces matchs sont rangés avec le Challenger et l'ITF : pente propre aux qualifications de Grand Chelem apprise sur 2018–2022, jugée une fois sur 2023 → juin 2026, au moins 0,001 sur au moins 1 000 matchs, même sens, après la correction ci-dessus",
+    "suite": "jugé au paquet 232 : retenu chez les femmes, rejeté chez les hommes"
    }
   ]
+ },
+ "paquet_232_le_11_11": {
+  "en_production": [
+   {
+    "id": "format_qualifications_grand_chelem_hommes",
+    "nature": "correction de donnée"
+   },
+   {
+    "id": "pente_qualifications_grand_chelem_femmes",
+    "pente": 1.247,
+    "retrait": "dès 300 matchs de qualifications suivis, gain propre négatif de plus de 2 erreurs types"
+   }
+  ],
+  "a_surveiller": [
+   {
+    "id": "qualifications_grand_chelem_hommes_nos_matchs",
+    "mesure_nos_matchs_2026": {
+     "matchs": 171,
+     "favori_reel_pct": 73.1,
+     "favori_annonce_pct": 62.6
+    },
+    "regle": "l'archive ne montre rien, nos matchs si : pas de conclusion sur 171 matchs. Sera relu avec le départ ITF hommes plus bas (règle écrite au paquet 230), sur nos matchs à venir"
+   },
+   {
+    "id": "rangement_des_qualifications_par_circuit",
+    "regle": "nos qualifications de Grand Chelem sont rangées avec l'ATP et la WTA, l'archive avec le Challenger et l'ITF : les signaux par circuit appris sur l'archive ne les ont donc jamais vues sous ce nom. À étudier : mêmes signaux, appris sur 2018–2022, jugés sur les qualifications de 2023 → juin 2026, au moins 0,001 sur au moins 1 000 matchs"
+   }
+  ],
+  "hors_perimetre_signale": "scripts/scenarios.py, simulateur/marches_sets.py et Tennis_Edge_Lab/croisements.py lisent encore le format par le nom du tournoi : ils écartent ou traitent les qualifications masculines comme des matchs en 3 sets gagnants. Outils privés, non modifiés ici"
  }
 }

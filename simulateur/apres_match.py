@@ -347,6 +347,10 @@ def bilan_match(uid, f, reel, duree_reelle=None):
     if gch.get('p_home') is not None and isinstance(p, (int, float)):
         # 11/11/2026 (paquet 231) : pronostic affiché contre le même avec la pente Grand Chelem (tant qu'elle n'est pas appliquée)
         E['fantome_grand_chelem'] = {'ll_elo': lp_(p), 'll_reference': lp_(gch['p_home'])}
+    qgc = ct.get('qualifs_grand_chelem') or {}
+    if qgc.get('p_home') is not None and isinstance(p, (int, float)):
+        # 11/11/2026 (paquet 232) : pronostic affiché contre le même avec la pente des qualifications de Grand Chelem
+        E['fantome_qualifs_grand_chelem'] = {'ll_elo': lp_(p), 'll_reference': lp_(qgc['p_home'])}
     srv = ct.get('serveuses_wta') or {}
     if srv.get('p_home') is not None and isinstance(p, (int, float)):
         # 01/11/2026 : pronostic affiché contre le même corrigé du duel serveuse / non-serveuse en WTA
@@ -621,7 +625,8 @@ def analyser(B):
                       'fantome_serveuses_wta', 'fantome_elo_service_retour', 'fantome_forme_set',
                       'fantome_changement_surface', 'fantome_retour_absence', 'fantome_age',
                       'fantome_favori_outsider', 'fantome_favori_sous_estime', 'fantome_tiebreak',
-                      'fantome_documentation_faible', 'fantome_format_match', 'fantome_grand_chelem'):
+                      'fantome_documentation_faible', 'fantome_format_match', 'fantome_grand_chelem',
+                      'fantome_qualifs_grand_chelem'):
             fa = [e[cle_f] for e in E if cle_f in e]
             if fa:
                 a_, b_ = _moy([x['ll_elo'] for x in fa]), _moy([x['ll_reference'] for x in fa])
