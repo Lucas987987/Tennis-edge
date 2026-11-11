@@ -1,0 +1,158 @@
+{
+ "genere_le": "2026-11-11T18:30:30+00:00",
+ "regle": "A — Grand Chelem en WTA : pente apprise sur 2018–2022, jugée une fois sur 2023 → juin 2026 (gain ≥ 0,001 sur ≥ 1 000 matchs, ≥ 2 erreurs types, même sens). B — outsider en Challenger (15 à 45 %), en progression ou issu des qualifications : deux décalages appris ensemble sur 2018–2022, jugés une fois sur 2023 → juin 2026 sur les matchs concernés (gain ≥ 0,001 sur ≥ 1 000 matchs, outsider au-dessus de l'annoncé sur les deux périodes)",
+ "elo": "réglé comme la production (elo.de_production), mis à jour après chaque match ; compétitions par équipes exclues",
+ "base": {
+  "signaux": [
+   "changement_surface",
+   "retour_absence_court",
+   "retour_absence_long",
+   "age_vieux",
+   "age_jeune"
+  ],
+  "betas_2018_2022": {
+   "ATP": [
+    -0.2087,
+    -0.492,
+    -1.1333,
+    -0.0469,
+    0.0688
+   ],
+   "WTA": [
+    -0.1702,
+    -0.2908,
+    -0.8726,
+    -0.0386,
+    0.0311
+   ],
+   "CH": [
+    -0.189,
+    -0.2456,
+    -0.5714,
+    -0.0622,
+    0.0064
+   ]
+  }
+ },
+ "grand_chelem_wta": {
+  "pente_apprise": 1.232,
+  "pente_sur_2023": 1.211,
+  "2018–2022": {
+   "matchs": 2372,
+   "gain": 0.00373,
+   "erreur_type": 0.00165,
+   "erreurs_types": 2.25,
+   "log_loss_base": 0.55452,
+   "log_loss": 0.5508,
+   "brier_base": 0.18768,
+   "brier": 0.18684,
+   "favori_annonce_pct": 68.7,
+   "favori_reel_pct": 71.5
+  },
+  "2023 → juin 2026": {
+   "matchs": 1742,
+   "gain": 0.00317,
+   "erreur_type": 0.00198,
+   "erreurs_types": 1.61,
+   "log_loss_base": 0.55104,
+   "log_loss": 0.54786,
+   "brier_base": 0.18632,
+   "brier": 0.18561,
+   "favori_annonce_pct": 69.2,
+   "favori_reel_pct": 71.7
+  },
+  "retenue": false,
+  "raisons": [
+   "gain sous 2 erreurs types"
+  ]
+ },
+ "grand_chelem_atp_pour_memoire": {
+  "pente_apprise": 1.238,
+  "pente_sur_2023": 1.207,
+  "2018–2022": {
+   "matchs": 2329,
+   "gain": 0.0044,
+   "erreur_type": 0.00182,
+   "erreurs_types": 2.41,
+   "log_loss_base": 0.51852,
+   "log_loss": 0.51412,
+   "brier_base": 0.17307,
+   "brier": 0.17196,
+   "favori_annonce_pct": 71.2,
+   "favori_reel_pct": 74.3
+  },
+  "2023 → juin 2026": {
+   "matchs": 1700,
+   "gain": 0.00327,
+   "erreur_type": 0.00217,
+   "erreurs_types": 1.5,
+   "log_loss_base": 0.52694,
+   "log_loss": 0.52367,
+   "brier_base": 0.17647,
+   "brier": 0.17568,
+   "favori_annonce_pct": 70.8,
+   "favori_reel_pct": 72.4
+  },
+  "retenue": false,
+  "raisons": [
+   "gain sous 2 erreurs types"
+  ]
+ },
+ "outsider_challenger": {
+  "decalages_appris": {
+   "en_progression": 0.1125,
+   "issu_des_qualifications": 0.0934
+  },
+  "outsider_2018_2022": {
+   "annonce_pct": 34.4,
+   "reel_pct": 37.1
+  },
+  "outsider_2023": {
+   "annonce_pct": 33.7,
+   "reel_pct": 34.9
+  },
+  "detail_2023": {
+   "en_progression": {
+    "matchs": 2826,
+    "annonce_pct": 36.9,
+    "reel_pct": 40.1
+   },
+   "issu_des_qualifications": {
+    "matchs": 3752,
+    "annonce_pct": 31.6,
+    "reel_pct": 30.9
+   }
+  },
+  "2018–2022": {
+   "matchs": 4824,
+   "gain": 0.00162,
+   "erreur_type": 0.00082,
+   "erreurs_types": 1.98,
+   "log_loss_base": 0.64685,
+   "log_loss": 0.64522,
+   "brier_base": 0.22756,
+   "brier": 0.22683,
+   "favori_annonce_pct": 65.6,
+   "favori_reel_pct": 62.9
+  },
+  "2023 → juin 2026": {
+   "matchs": 5954,
+   "gain": -0.00024,
+   "erreur_type": 0.00072,
+   "erreurs_types": -0.33,
+   "log_loss_base": 0.63567,
+   "log_loss": 0.63591,
+   "brier_base": 0.2224,
+   "brier": 0.22258,
+   "favori_annonce_pct": 66.3,
+   "favori_reel_pct": 65.1
+  },
+  "retenu": false,
+  "raisons": [
+   "gain sous 0.001"
+  ],
+  "passe_deux_erreurs_types": false
+ },
+ "en_production": false,
+ "a_surveiller": "Grand Chelem : quatre pentes voisines (WTA 1,23 puis 1,21 ; ATP 1,24 puis 1,21), mais aucun circuit ne franchit seul les 2 erreurs types écrites dans la règle. Outsider en progression en Challenger : au-dessus de l'annoncé sur les deux périodes, mais le décalage appris ne fait pas gagner 0,001. Rien n'entre en production."
+}
