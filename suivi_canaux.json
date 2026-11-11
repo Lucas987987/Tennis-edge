@@ -1,47 +1,47 @@
 {
  "schema_version": 1,
- "genere_le": "2026-11-10T07:52:33Z",
+ "genere_le": "2026-11-11T07:03:07Z",
  "canaux": {
   "MISER": {
    "libelle": "🎯 MISER — steam, EV ≥ seuil vs Pinnacle juste (vainqueur du match)",
    "source": "miser_signal_log.jsonl (messages envoyés) + ajouts de suivi_direct",
    "regle": "première alerte de chaque match, au book et au prix du message ; relances non recomptées",
    "debut": "2026-10-22",
-   "n_alertes": 30,
-   "n_matchs": 30,
+   "n_alertes": 36,
+   "n_matchs": 36,
    "n_relances": 0,
-   "n_denoues": 26,
+   "n_denoues": 30,
    "bilan": {
-    "n": 26,
-    "gains": 9,
-    "taux": 34.6,
-    "seuil": 41.4,
-    "ecart": -6.8,
+    "n": 30,
+    "gains": 12,
+    "taux": 40.0,
+    "seuil": 42.2,
+    "ecart": -2.2,
     "ic95": [
-     19.4,
-     53.8
+     24.6,
+     57.7
     ],
-    "roi": -8.8,
-    "pnl": -2.3,
-    "cote_moyenne": 2.78,
-    "clv_moyen": 7.0,
-    "clv_pin_moyen": 7.0,
+    "roi": -0.3,
+    "pnl": -0.1,
+    "cote_moyenne": 2.74,
+    "clv_moyen": 7.8,
+    "clv_pin_moyen": 7.8,
     "clv_pin_ic95": [
-     3.8,
-     10.2
+     5.0,
+     10.5
     ],
     "clv_pin_p": 0.0,
-    "clv_n": 29,
-    "clv_positif": 82.8,
-    "lead_moyen_h": 8.7,
-    "periode": "2026-10-22 -> 2026-11-09",
+    "clv_n": 36,
+    "clv_positif": 86.1,
+    "lead_moyen_h": 8.3,
+    "periode": "2026-10-22 -> 2026-11-10",
     "verdict": "ne tranche pas",
     "clv_mediane": 6.7,
-    "n_commencees": 30,
-    "n_sans_resultat": 4,
-    "sans_resultat_pct": 13.3,
+    "n_commencees": 36,
+    "n_sans_resultat": 6,
+    "sans_resultat_pct": 16.7,
     "verrouillable": false,
-    "statut": "en attente de résultats (13,3 % sans résultat)"
+    "statut": "en attente de résultats (16,7 % sans résultat)"
    },
    "paris": {
     "2026-10-22_valerio_aboian_matias_soto": {
@@ -276,12 +276,60 @@
      "clv_pin": 2.111,
      "source_resultat": "feuille de match (TennisApi)"
     },
+    "2026-11-10_braden_shick_andres_andrade": {
+     "gagne": null,
+     "pnl": null,
+     "pin_close": 2.12,
+     "pin_close_adv": 1.735,
+     "clv_pin": 22.769,
+     "source_resultat": "inconnu"
+    },
+    "2026-11-10_buvaysar_gadamauri_dusan_lajovic": {
+     "gagne": null,
+     "pnl": null,
+     "pin_close": 1.781,
+     "pin_close_adv": 2.12,
+     "clv_pin": 7.483,
+     "source_resultat": "inconnu"
+    },
     "2026-11-10_enzo_aguiard_akira_santillan": {
      "gagne": 1,
      "pnl": 0.8,
-     "pin_close": null,
-     "pin_close_adv": null,
-     "clv_pin": null,
+     "pin_close": 1.636,
+     "pin_close_adv": 2.32,
+     "clv_pin": 6.552,
+     "source_resultat": "feuille de match (TennisApi)"
+    },
+    "2026-11-10_juan_pablo_varillas_marcelo_tomas_barrios_vera": {
+     "gagne": 1,
+     "pnl": 2.0,
+     "pin_close": 2.54,
+     "pin_close_adv": 1.54,
+     "clv_pin": 10.842,
+     "source_resultat": "feuille de match (TennisApi)"
+    },
+    "2026-11-10_lui_maxted_hynek_barton": {
+     "gagne": 1,
+     "pnl": 0.8,
+     "pin_close": 1.662,
+     "pin_close_adv": 2.24,
+     "clv_pin": 4.303,
+     "source_resultat": "feuille de match (TennisApi)"
+    },
+    "2026-11-10_marvin_moeller_nikolai_barsukov": {
+     "gagne": 0,
+     "pnl": -1.0,
+     "pin_close": 2.75,
+     "pin_close_adv": 1.471,
+     "clv_pin": 18.478,
+     "source_resultat": "feuille de match (TennisApi)"
+    },
+    "2026-11-10_orel_kimhi_filip_jeff_planinsek": {
+     "gagne": 1,
+     "pnl": 0.39,
+     "pin_close": 1.284,
+     "pin_close_adv": 3.7,
+     "clv_pin": 5.756,
      "source_resultat": "feuille de match (TennisApi)"
     }
    }
