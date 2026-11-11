@@ -935,6 +935,12 @@
    "quoi": "AUDIT COMPLET de l'algo (simulateur/rapport_audit.json : ce qui a été trouvé, et la règle de chaque étude à venir écrite à l'avance ; seule la période d'avant 2023 de l'archive a été regardée, la période de jugement reste intacte). Premiers correctifs, sans effet sur le % : (1) le journal publié sur le site ne reprend plus les entrées de travail interne (champ « prive », 6 entrées) et un test contrôle désormais le journal tel qu'il est publié ; (2) garde-fou pour les études : une étude qui rejoue l'archive doit prendre l'Elo réglé comme celui de la production (elo.de_production) — l'audit a montré que 19 études utilisaient un Elo sans réglage, ce qui fausse le dosage d'un signal appris contre l'un puis ajouté à l'autre ; un test refuse désormais tout nouveau cas, et ces 19 études seront reprises une à une.",
    "statut": "production",
    "paquet": 227
+  },
+  {
+   "date": "2026-11-11",
+   "quoi": "FORMAT DU MATCH en ATP (etude_format_match.py, règle écrite avant ; première étude issue de l'audit). L'Elo donne le même % en 2 et en 3 sets gagnants. Une pente par format, apprise sur 2018–2022 et jugée sur 2023 → juin 2026, avec l'Elo réglé comme la production. En 2 sets gagnants : favori 64,5 % réels pour 67,4 % annoncés sur 8 335 matchs jugés, pente 0,815 (0,822 réapprise sur la période de jugement), gain 0,0025 ± 0,0008 (3,1 erreurs types) — passe toute la règle. En 3 sets gagnants : pente 1,21, même sens (72,2 % pour 70,5 % sur 1 743 matchs) mais gain 0,0015 ± 0,0019, sous 2 erreurs types — en attente, non appliqué. WTA (+0,0005) et Challenger (+0,0002) : rien à corriger, comme prévu. EN PLACE en ATP, 2 sets gagnants seulement : la part de l'Elo du % est multipliée par 0,815 (un favori à 70 % passe à 67 %). Confirmation sur 1 085 pronostics ATP rejoués depuis juillet : +0,0020 ± 0,0018 sur le mélange Elo + simulation. RETRAIT : nouvelle règle cumulée, jugée sur l'effet propre du signal — retiré si, sur au moins 300 matchs ATP depuis l'adoption, le gain est négatif d'au moins 2 erreurs types (l'audit a montré que la règle « deux semaines de suite » retire presque au hasard). Autres pistes cherchées sur 2018–2022 seulement : l'Elo WTA trop lent se confirme (un Elo rapide ajouté au nôtre : +0,0023, 3,7 erreurs types), à juger dans la prochaine étude ; rien pour l'abandon au match précédent, le face-à-face, les minutes déjà jouées dans le tournoi ni le tour du tableau.",
+   "statut": "production",
+   "paquet": 228
   }
  ]
 }
