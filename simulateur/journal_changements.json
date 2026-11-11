@@ -917,6 +917,12 @@
    "quoi": "Statistiques annoncées : le recalage des fourchettes passe case par case (circuit × statistique), en adoption directe avec une règle de retrait. L'ancienne règle d'ensemble échouait à cause d'une seule case (aces ATP) et bloquait les autres. Sur la semaine jugée du 02/11, les fourchettes recalées ramènent la part du réel dans la fourchette vers 80 % : doubles fautes ATP 92 → 80 %, breaks ATP 91 → 76 %, % de 1res balles ATP 74 → 81 % et WTA 67 → 81 %, aces WTA 89 → 85 %, doubles fautes Challenger 90 → 83 %, breaks Challenger 92 → 80 %. Les aces ATP ne sont plus élargis. Chaque lundi, une case passe à la meilleure variante (rien, décalage seul, ou décalage et largeur) si elle rapproche la couverture de 80 % d'au moins 2 points sans augmenter l'écart moyen ; elle est retirée après deux semaines de suite pires que sans recalage. Le tableau du site indique les fourchettes recalées, leur date et leur couverture depuis. Le % de victoire ne change pas.",
    "statut": "production",
    "paquet": 225
+  },
+  {
+   "date": "2026-11-11",
+   "quoi": "Étude des écarts de jeux (règle fixée avant) : en WTA, le favori gagne de plus de 4,5 jeux dans 48 % des matchs pour 41 % annoncés (107 matchs). L'hypothèse d'une forme du jour trop faible est testée circuit par circuit, σ de 0,10 à 0,40, appris avant le 04/11 et jugé du 04/11 au 11/11. Rejeté sur les trois circuits : le σ en place (0,15 en ATP et WTA, 0,20 environ en Challenger) donne déjà la meilleure log loss de l'écart de jeux exact. Un σ de 0,25 en WTA corrigerait la ligne de 4,5 jeux (47 % annoncés) mais dégrade l'écart exact (2,776 → 2,829), car il ajoute aussi des larges victoires de l'outsider, qu'on ne voit pas. L'écart de 41 % contre 48 % reste dans le bruit (1,4 erreur type sur 107 matchs). Rien ne change ; à revoir au-delà de 300 matchs WTA.",
+   "statut": "rejete",
+   "paquet": 226
   }
  ]
 }
