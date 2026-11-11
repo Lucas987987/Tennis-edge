@@ -74,18 +74,30 @@ def ecrire(chemin, doc):
     os.replace(chemin + '.tmp', chemin)
 
 
+ETATS_US = {'AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA', 'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA',
+            'ME', 'MD', 'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ', 'NM', 'NY', 'NC', 'ND', 'OH', 'OK',
+            'OR', 'PA', 'RI', 'SC', 'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY'}
+MOTS_CIRCUIT = r'\b(WTA|ATP|ITF|Challenger|Open|Men|Women|Singles|Doubles)\b'
+NOM_V = 2          # 11/11/2026 (paquet 220) : lecture des noms ITF corrigée — les tournois non situés sont réessayés
+
+
 def ville_pays(nom):
-    """(ville, pays) depuis « Genoa, Italy », « US Open, New York, USA », « Phan Thiet 3, Vietnam »."""
+    """(ville, pays) depuis « Genoa, Italy », « US Open, New York, USA », « Phan Thiet 3, Vietnam »,
+    « ITF W35 Monastir 8 Women » (→ Monastir), « ITF W35 Bakersfield, CA Women » (→ Bakersfield, United States)."""
     parts = [p.strip() for p in str(nom or '').split(',') if p.strip()]
     if not parts:
         return None, None
     while len(parts) >= 2 and re.fullmatch(r'(qualifying|qualification|qualifiers?|q)', parts[-1], flags=re.I):
         parts = parts[:-1]                                         # « Jinan, China, Qualifying » → Jinan, China
+    # 11/11/2026 (paquet 220) : « Men » / « Women » collés à la fin (« CA Women ») retirés AVANT de lire le pays
+    parts = [re.sub(r'\s+(Men|Women)$', '', p, flags=re.I).strip() for p in parts]
     pays = parts[-1] if len(parts) >= 2 else None
+    if pays and pays.upper() in ETATS_US:
+        pays = 'United States'
     ville = parts[-2] if len(parts) >= 2 else parts[0]
-    ville = re.sub(r'\s+\d+$', '', ville).strip()                 # « Phan Thiet 3 » → « Phan Thiet »
+    ville = re.sub(MOTS_CIRCUIT, '', ville, flags=re.I).strip(' -')
     ville = re.sub(r'^[MW]\d+\s+', '', ville).strip()              # « M15 Bol » → « Bol »
-    ville = re.sub(r'\b(WTA|ATP|ITF|Challenger|Open|Men|Women|Singles|Doubles)\b', '', ville, flags=re.I).strip(' -')
+    ville = re.sub(r'\s+\d+$', '', ville).strip()                 # « Phan Thiet 3 » → « Phan Thiet »
     if ville and pays and ville.lower() == pays.lower():
         ville = None
     return ville or None, pays
@@ -206,7 +218,8 @@ def main(argv):
         for i, e in vus.items():
             t0 = T.get(i) or {}
             vh, ph = lieu_hote(INFOS, i)
-            a_jour = t0.get('geo_v') == GEO_V and (t0.get('lat') is not None or t0.get('essais', 0) >= 2)
+            a_jour = t0.get('geo_v') == GEO_V and (t0.get('lat') is not None or
+                                                   (t0.get('essais', 0) >= 2 and t0.get('nom_v') == NOM_V))
             if a_jour and not (vh and t0.get('source') != 'hote'):   # le lieu hôte arrivé après coup : on refait
                 t0['interieur'] = e['interieur']
                 continue
@@ -214,7 +227,7 @@ def main(argv):
             ville, pays = (vh, ph) if vh else ville_pays(e['nom'])
             source = 'hote' if vh else 'nom'
             if not ville:
-                T[i] = {'nom': e['nom'], 'essais': 2, 'geo_v': GEO_V, 'interieur': e['interieur']}
+                T[i] = {'nom': e['nom'], 'essais': 2, 'geo_v': GEO_V, 'nom_v': NOM_V, 'interieur': e['interieur']}
                 MET.pop(i, None)
                 continue
             doc = c.get(GEO, {'name': ville, 'count': 10, 'language': 'en', 'format': 'json'})
@@ -229,9 +242,9 @@ def main(argv):
                 if (t0.get('lat'), t0.get('lon')) != (r.get('latitude'), r.get('longitude')):
                     MET.pop(i, None)                               # météo prise ailleurs : à redemander
             else:
-                ess = (t0.get('essais', 0) if t0.get('geo_v') == GEO_V else 0) + 1
-                T[i] = {'nom': e['nom'], 'ville': ville, 'essais': ess, 'geo_v': GEO_V, 'interieur': e['interieur'],
-                        'source': source}
+                ess = (t0.get('essais', 0) if t0.get('geo_v') == GEO_V and t0.get('nom_v') == NOM_V else 0) + 1
+                T[i] = {'nom': e['nom'], 'ville': ville, 'essais': ess, 'geo_v': GEO_V, 'nom_v': NOM_V,
+                        'interieur': e['interieur'], 'source': source}
                 MET.pop(i, None)
         for i, e in vus.items():
             t = T.get(i) or {}
