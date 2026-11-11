@@ -50,3 +50,25 @@ class Scenarios(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class Controle(unittest.TestCase):
+    def test_reconstituer_respecte_les_sets(self):
+        import scenarios_match as SM
+        d = {'sets': {'2-0': 0.4, '2-1': 0.2, '1-2': 0.15, '0-2': 0.25},
+             'scores': [['6-2 6-1', 0.1], ['7-5 6-4', 0.1], ['4-6 6-3 6-4', 0.05], ['6-4 3-6 6-2', 0.05],
+                        ['6-3 4-6 4-6', 0.04], ['3-6 6-4 4-6', 0.04], ['2-6 3-6', 0.08], ['6-7 5-7', 0.08]]}
+        r = SM.reconstituer(d)
+        h, a = r['j']
+        self.assertAlmostEqual(h['net'] + h['accroche'], 0.4)
+        self.assertAlmostEqual(h['net'], 0.2)
+        self.assertAlmostEqual(h['long'], 0.2)
+        self.assertAlmostEqual(h['remontee'], 0.1)
+        self.assertAlmostEqual(a['net'], 0.125)
+        self.assertAlmostEqual(a['long'], 0.15)
+
+    def test_verdict(self):
+        import scenarios_match as SM
+        self.assertEqual(SM._verdict([0.5] * 10, [1.0] * 10)['verdict'], 'trop tot')
+        self.assertEqual(SM._verdict([0.5] * 100, [1.0] * 50 + [0.0] * 50)['verdict'], 'juste')
+        self.assertEqual(SM._verdict([0.2] * 100, [1.0] * 50 + [0.0] * 50)['verdict'], 'trop bas')
