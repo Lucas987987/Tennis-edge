@@ -541,7 +541,14 @@ def fiabilite_stats(racine, analyse=None):
             test['stats'][k] = {'n': n, 'dans_fourchette_pct': dans, 'sous_pct': sous, 'dessus_pct': dessus,
                                 'erreur_moyenne': x.get('mae'), 'gain_vs_naif_pct': x.get('gain_vs_naif_pct'),
                                 'correlation': x.get('correlation'), 'fiabilite': fi}
-    return {'en_direct': direct, 'test': test}
+    # 11/11/2026 (paquet 225) : recalage case par case — variante en place et couverture depuis sa mise en place
+    try:
+        import recalage_stats as RS
+        recal = RS.etat_pour_le_site(racine)
+    except Exception as e:  # noqa: BLE001
+        print(f'::warning::état du recalage non lu : {type(e).__name__}: {e}')
+        recal = None
+    return {'en_direct': direct, 'test': test, 'recalage': recal}
 
 
 def desaccords(racine, analyse=None):

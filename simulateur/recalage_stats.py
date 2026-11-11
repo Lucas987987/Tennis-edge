@@ -54,6 +54,26 @@ SORTIE = os.path.join('simulateur', 'recalage_stats.json')
 # manquent. RETRAIT d'une case : deux semaines de suite (≥ 30 cas) où, sur la semaine jugée, l'écart moyen
 # |annoncé − réel| avec recalage est PIRE que sans. Les autres cases restent soumises à la règle ci-dessus.
 CASES_DIRECTES = (('ATP', 'premiere_pct'), ('WTA', 'premiere_pct'), ('CH', 'premiere_pct'), ('ATP', 'aces'), ('WTA', 'aces'))
+# 11/11/2026 (paquet 225, décision de Lucas : « il faut améliorer ça ») — RECALAGE CASE PAR CASE, adoption directe avec
+# règle de retrait. La règle d'ensemble ci-dessus échouait à cause d'UNE case (aces ATP : 82 % → 90 %), et bloquait
+# les autres, nettement meilleures. Désormais chaque case (circuit × statistique) a sa VARIANTE en place :
+#   « sans » (rien), « delta » (décalage seul) ou « complet » (décalage + largeur), apprise sur les matchs d'avant la
+#   semaine jugée. RÈGLE (fixée le 11/11/2026), chaque lundi, sur la dernière semaine complète, case d'au moins 30 cas :
+#   — on passe à la meilleure variante si elle rapproche la couverture de 80 % d'au moins 2 points par rapport à la
+#     variante en place, sans augmenter l'écart moyen |annoncé − réel| ;
+#   — une variante en place (autre que « sans ») qui fait PIRE que « sans » (couverture plus loin de 80 %, ou écart
+#     moyen plus grand) deux semaines de suite est retirée (retour à « sans »).
+# Point de départ (jugement de la semaine du 02/11, 2 920 cas — voir recalage_stats.json) : complet pour doubles fautes
+# ATP (92 % → 80 %), breaks ATP (91 % → 76 %), % 1res balles ATP (74 % → 81 %), aces WTA (89 % → 85 %), % 1res balles
+# WTA (67 % → 81 %), doubles fautes Challenger (90 % → 83 %), breaks Challenger (92 % → 80 %) ; delta pour % 1res balles
+# Challenger (écart de mesure entre sources, confirmé le 05/11) ; sans pour aces ATP (le recalage l'élargissait trop),
+# doubles fautes et breaks WTA, aces Challenger (aucun gain).
+DEPART_CASES = {
+    'ATP|doubles_fautes': 'complet', 'ATP|breaks': 'complet', 'ATP|premiere_pct': 'complet', 'ATP|aces': 'sans',
+    'WTA|aces': 'complet', 'WTA|premiere_pct': 'complet', 'WTA|doubles_fautes': 'sans', 'WTA|breaks': 'sans',
+    'CH|doubles_fautes': 'complet', 'CH|breaks': 'complet', 'CH|premiere_pct': 'delta', 'CH|aces': 'sans'}
+DEPART_LE = '2026-11-11'
+VARIANTES = ('sans', 'delta', 'complet')
 REPLI_DIRECT = {'ATP': {'premiere_pct': {'delta': 2.98, 'largeur': 1.0}, 'aces': {'delta': 0.72, 'largeur': 1.0}},
                 'WTA': {'premiere_pct': {'delta': 2.92, 'largeur': 1.0}, 'aces': {'delta': -0.30, 'largeur': 1.0}},
                 'CH': {'premiere_pct': {'delta': 1.02, 'largeur': 1.0}}}
@@ -172,9 +192,126 @@ def charger(racine):
     return lignes(AM.toutes_les_fiches(racine), reels)
 
 
+def coef_variante(co, variante):
+    if not co or variante == 'sans':
+        return None
+    return {'delta': co['delta'], 'largeur': co['largeur'] if variante == 'complet' else 1.0}
+
+
+def cases_en_place(doc):
+    """{'c|k': {'variante', 'depuis', ...}} : l'état de la règle case par case (paquet 225), ou le point de départ."""
+    cases = (doc or {}).get('cases')
+    if cases:
+        return cases
+    return {k: {'variante': v, 'depuis': DEPART_LE, 'semaines_pires': 0} for k, v in DEPART_CASES.items()}
+
+
+def decider_cases(ancien, appr, juge, fin):
+    """Règle case par case (fixée le 11/11/2026, voir DEPART_CASES)."""
+    co = apprendre(appr)
+    out = {}
+    for c in CIRCUITS:
+        for k in STATS:
+            cle = f'{c}|{k}'
+            prec = dict((ancien or {}).get(cle) or {'variante': 'sans', 'depuis': None, 'semaines_pires': 0})
+            R = [r for r in juge if r['c'] == c and r['k'] == k]
+            cc = (co.get(c) or {}).get(k)
+            if len(R) < MIN_CAS or not cc:
+                out[cle] = dict(prec, note=f'semaine : {len(R)} cas, inchangé')
+                continue
+            m = {}
+            for v in VARIANTES:
+                coef = coef_variante(cc, v)
+                dans = sum(lo <= r['reel'] <= hi for r in R for _, lo, hi in [recaler(coef, k, r['moy'], r['p10'], r['p90'])])
+                ec = sum(abs(recaler(coef, k, r['moy'], r['p10'], r['p90'])[0] - r['reel']) for r in R) / len(R)
+                m[v] = (abs(100.0 * dans / len(R) - CIBLE), ec, round(100.0 * dans / len(R), 1))
+            v0 = prec.get('variante') or 'sans'
+            best = min(VARIANTES, key=lambda v: (m[v][0], m[v][1]))
+            mesure = {v: {'couverture': m[v][2], 'ecart': round(m[v][1], 3)} for v in VARIANTES}
+            if best != v0 and m[best][0] <= m[v0][0] - 2.0 and m[best][1] <= m[v0][1] + 1e-9:
+                out[cle] = {'variante': best, 'depuis': fin, 'semaines_pires': 0, 'semaine': mesure}
+                continue
+            pire = v0 != 'sans' and (m[v0][0] > m['sans'][0] or m[v0][1] > m['sans'][1] + 1e-9)
+            n_p = (prec.get('semaines_pires', 0) + 1) if pire else 0
+            if n_p >= 2:
+                out[cle] = {'variante': 'sans', 'depuis': fin, 'semaines_pires': 0, 'retiree': v0, 'semaine': mesure}
+            else:
+                out[cle] = dict(prec, semaines_pires=n_p, semaine=mesure)
+    return out
+
+
 def lire_coefs(racine):
-    """Coefficients à appliquer sur le site : tous s'ils sont adoptés par la règle hebdomadaire ; sinon les cases
-    adoptées directement (CASES_DIRECTES), sauf celles retirées."""
+    """Coefficients à appliquer sur le site. Depuis le 11/11/2026 (paquet 225) : la variante en place de CHAQUE case
+    (cases_en_place), apprise sur tous les matchs joués."""
+    try:
+        with open(os.path.join(racine, SORTIE), encoding='utf-8') as f:
+            doc = json.load(f)
+    except (OSError, ValueError):
+        doc = {}
+    cases = cases_en_place(doc)
+    try:
+        appris = apprendre(charger(racine))
+    except Exception:  # noqa: BLE001
+        appris = {}
+    out = {}
+    for cle, e in cases.items():
+        c, k = cle.split('|')
+        co = (appris.get(c) or {}).get(k) or (REPLI_DIRECT.get(c) or {}).get(k)
+        coef = coef_variante(co, e.get('variante')) if co else None
+        if coef:
+            out.setdefault(c, {})[k] = coef
+    return out or None
+
+
+def etat_pour_le_site(racine):
+    """{circuit: {stat: {variante, depuis, n, couverture}}} : la variante en place et la part du réel dans la fourchette
+    AFFICHÉE depuis sa mise en place (fiches figées), pour le tableau « Statistiques annoncées » du site."""
+    try:
+        with open(os.path.join(racine, SORTIE), encoding='utf-8') as f:
+            doc = json.load(f)
+    except (OSError, ValueError):
+        doc = {}
+    cases = cases_en_place(doc)
+    import apres_match as AM
+    try:
+        with open(os.path.join(racine, 'Tennis_Edge_Lab', 'live', 'pronostics_resultats.json'), encoding='utf-8') as f:
+            reels = {m['uid']: m.get('reel') for m in json.load(f).get('matchs') or [] if m.get('uid')}
+    except (OSError, ValueError):
+        reels = {}
+    F = AM.toutes_les_fiches(racine)
+    out = {}
+    for cle, e in cases.items():
+        c, k = cle.split('|')
+        depuis = e.get('depuis') or DEPART_LE
+        n = dans = 0
+        for uid, f in F.items():
+            if f.get('circuit') != c or str(f.get('debut'))[:10] < depuis:
+                continue
+            q, r = (f.get('dernier') or {}).get('fourchette'), ((reels.get(uid) or {}).get('feuille'))
+            if not q or not r or len(q) != 2 or len(r) != 2:
+                continue
+            for i in (0, 1):
+                b, x = (q[i] or {}).get(k), (r[i] or {}).get(k)
+                if b and len(b) == 2 and isinstance(x, (int, float)):
+                    n += 1
+                    dans += b[0] <= x <= b[1]
+        sem = None
+        v = e.get('variante')
+        if e.get('semaine') and v in e['semaine']:
+            sem = {'sans': e['semaine']['sans']['couverture'], 'avec': e['semaine'][v]['couverture']}
+        elif v == 'complet':
+            j = doc.get('jugement') or {}
+            a, b = ((j.get('sans_recalage') or {}).get('cases') or {}).get(cle), ((j.get('avec_recalage') or {}).get('cases') or {}).get(cle)
+            if a and b:
+                sem = {'sans': a['couverture'], 'avec': b['couverture']}
+        out.setdefault(c, {})[k] = {'variante': v, 'depuis': depuis, 'n': n, 'semaine_jugee': sem,
+                                    'couverture': round(100.0 * dans / n, 1) if n else None}
+    return out
+
+
+def lire_coefs_ancien(racine):
+    """Avant le 11/11/2026 : tous les coefficients s'ils sont adoptés par la règle hebdomadaire ; sinon les cases
+    adoptées directement (CASES_DIRECTES), sauf celles retirées. Gardé pour mémoire."""
     try:
         with open(os.path.join(racine, SORTIE), encoding='utf-8') as f:
             doc = json.load(f)
@@ -246,6 +383,8 @@ def main(argv):
         ancien_doc = {}
     ancien = ancien_doc.get('decision') or {}
     doc['direct'] = suivre_directes(ancien_doc.get('direct'), appr, juge)
+    # 11/11/2026 (paquet 225) : la règle case par case décide de ce qui s'applique sur le site
+    doc['cases'] = decider_cases(cases_en_place(ancien_doc), appr, juge, fin.isoformat())
     if '--sans-decision' in argv:
         doc['decision'] = dict(ancien, verdict_semaine=verdict)
     else:
