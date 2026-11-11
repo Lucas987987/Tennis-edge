@@ -69,7 +69,8 @@
    "titre": "Loupe : quand nous et la clôture ne sommes pas d'accord, qui a raison ? (descriptif)",
    "statut": "etude",
    "decision": false,
-   "mesure": "ATP et WTA 2023 → : l'Elo seul perdait contre la clôture dans ses désaccords (ATP outsiders vus +10 pts : 31,1 % réels pour 34,0 % Pinnacle) ; avec les signaux, le réel colle à la clôture (ATP 32,2 % pour 31,7 %) ; aucun cas au-dessus de la clôture avec z ≥ 2 ; seule piste à suivre en direct : outsiders WTA vus +10 pts (32,9 % pour 30,8 %, z 1,5, 1 042 matchs)"
+   "mesure": "ATP et WTA 2023 → : l'Elo seul perdait contre la clôture dans ses désaccords (ATP outsiders vus +10 pts : 31,1 % réels pour 34,0 % Pinnacle) ; avec les signaux, le réel colle à la clôture (ATP 32,2 % pour 31,7 %) ; aucun cas au-dessus de la clôture avec z ≥ 2 ; seule piste à suivre en direct : outsiders WTA vus +10 pts (32,9 % pour 30,8 %, z 1,5, 1 042 matchs)",
+   "prive": true
   },
   {
    "date": "2026-11-04",
@@ -160,7 +161,8 @@
    "titre": "Loupe : où la clôture prévoit mieux que notre Elo (descriptif)",
    "statut": "etude",
    "decision": false,
-   "mesure": "ATP et WTA depuis 2022 : écart moyen 0,026 / 0,020 de log loss ; plus gros trou : retour après 45 jours d'absence (×2,9 en ATP, ×2,2 en WTA), puis changement de surface ; la cote ne sert qu'à mesurer après coup"
+   "mesure": "ATP et WTA depuis 2022 : écart moyen 0,026 / 0,020 de log loss ; plus gros trou : retour après 45 jours d'absence (×2,9 en ATP, ×2,2 en WTA), puis changement de surface ; la cote ne sert qu'à mesurer après coup",
+   "prive": true
   },
   {
    "date": "2026-11-04",
@@ -195,7 +197,8 @@
    "titre": "Taille du dépôt : les fichiers de cotes réécrits à chaque capture passent par R2, git n'en garde qu'une photo toutes les 2 h",
    "statut": "production",
    "decision": true,
-   "mesure": "closing_lines, matches_oddspapi, live_odds et les deux états d'alertes étaient republiés ~470 fois par jour (dépôt à 6,5 Go, 4 publications refusées) ; mode « double » d'abord (copie R2 en plus, git inchangé), puis variable ETAT_CHAUD=on ; sans R2, comportement d'avant"
+   "mesure": "closing_lines, matches_oddspapi, live_odds et les deux états d'alertes étaient republiés ~470 fois par jour (dépôt à 6,5 Go, 4 publications refusées) ; mode « double » d'abord (copie R2 en plus, git inchangé), puis variable ETAT_CHAUD=on ; sans R2, comportement d'avant",
+   "prive": true
   },
   {
    "date": "2026-11-04",
@@ -595,7 +598,8 @@
   {
    "date": "2026-11-05",
    "quoi": "Telegram privé : (1) chaque matin, liste des matchs du jour où l'algo contredit Pinnacle (favoris opposés ou ≥ 10 points ; cotes = loupe, jamais une entrée de l'algo ; une fois par jour via un repère dans le coffre) ; (2) chaque lundi, carte de la semaine (tous les matchs ATP/WTA/Challenger jugés, bons vainqueurs contre annoncé par circuit, favoris à 70 %+, plus gros ratés, scores exacts)",
-   "paquet": 182
+   "paquet": 182,
+   "prive": true
   },
   {
    "date": "2026-11-05",
@@ -625,7 +629,8 @@
   {
    "date": "2026-11-05",
    "quoi": "suivi « qui a raison, l'algo ou Pinnacle » : la clôture prenait le DERNIER relevé, parfois capté après l'heure de début (17 % des matchs : cotes en direct ou match retardé) — désormais le dernier relevé avant le début",
-   "paquet": 185
+   "paquet": 185,
+   "prive": true
   },
   {
    "date": "2026-11-05",
@@ -635,7 +640,8 @@
   {
    "date": "2026-11-05",
    "quoi": "vérifié sans changement : forfaits dans l'Elo (2 899 dans l'archive ; les retirer change la log loss de ±0,0002 : rien), joueurs ITF en double sous un nom abrégé (59, 237 matchs : impact minime), cohérence vainqueur / score / sets, sens home/away des cotes, mots interdits dans les données publiques",
-   "paquet": 185
+   "paquet": 185,
+   "prive": true
   },
   {
    "date": "2026-11-05",
@@ -923,6 +929,12 @@
    "quoi": "Étude des écarts de jeux (règle fixée avant) : en WTA, le favori gagne de plus de 4,5 jeux dans 48 % des matchs pour 41 % annoncés (107 matchs). L'hypothèse d'une forme du jour trop faible est testée circuit par circuit, σ de 0,10 à 0,40, appris avant le 04/11 et jugé du 04/11 au 11/11. Rejeté sur les trois circuits : le σ en place (0,15 en ATP et WTA, 0,20 environ en Challenger) donne déjà la meilleure log loss de l'écart de jeux exact. Un σ de 0,25 en WTA corrigerait la ligne de 4,5 jeux (47 % annoncés) mais dégrade l'écart exact (2,776 → 2,829), car il ajoute aussi des larges victoires de l'outsider, qu'on ne voit pas. L'écart de 41 % contre 48 % reste dans le bruit (1,4 erreur type sur 107 matchs). Rien ne change ; à revoir au-delà de 300 matchs WTA.",
    "statut": "rejete",
    "paquet": 226
+  },
+  {
+   "date": "2026-11-11",
+   "quoi": "AUDIT COMPLET de l'algo (simulateur/rapport_audit.json : ce qui a été trouvé, et la règle de chaque étude à venir écrite à l'avance ; seule la période d'avant 2023 de l'archive a été regardée, la période de jugement reste intacte). Premiers correctifs, sans effet sur le % : (1) le journal publié sur le site ne reprend plus les entrées de travail interne (champ « prive », 6 entrées) et un test contrôle désormais le journal tel qu'il est publié ; (2) garde-fou pour les études : une étude qui rejoue l'archive doit prendre l'Elo réglé comme celui de la production (elo.de_production) — l'audit a montré que 19 études utilisaient un Elo sans réglage, ce qui fausse le dosage d'un signal appris contre l'un puis ajouté à l'autre ; un test refuse désormais tout nouveau cas, et ces 19 études seront reprises une à une.",
+   "statut": "production",
+   "paquet": 227
   }
  ]
 }
