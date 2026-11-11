@@ -765,8 +765,8 @@ def charger_format_match(racine):
 
 def controle_format(p_home, p_elo, c, sg):
     """11/11/2026 (paquet 228, etude_format_match.py) — l'Elo donne le même % quel que soit le format. En ATP, en 2 sets
-    gagnants, il est trop sûr de lui : favori 64,5 % réels pour 67,4 % annoncés sur 8 335 matchs jugés (2023 → juin
-    2026), pente 0,815 apprise sur 2018–2022. La pente ne touche que la PART DE L'ELO du % : décalage (logit) =
+    gagnants, il est trop sûr de lui : favori 65,0 % réels pour 67,3 % annoncés sur 7 490 matchs du circuit jugés
+    (2023 → juin 2026, Coupe Davis exclue), pente 0,826 apprise sur 2018–2022. Seule la PART DE L'ELO du % bouge : décalage (logit) =
     poids de l'Elo dans le mélange × (pente − 1) × logit(p Elo). None si rien n'est prévu pour ce circuit et ce format."""
     k = (FORMAT_MATCH.get(c) or {}).get(int(sg)) if sg else None
     if not k or p_home is None or p_elo is None:
