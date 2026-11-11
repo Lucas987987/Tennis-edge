@@ -539,27 +539,6 @@ body.carte #video{display:block;width:1080px;height:1350px}
 .arena-nav:hover,.arena-nav:focus-visible{background:#eaff88;outline:2px solid #80b000;outline-offset:2px}
 @media(max-width:520px){.arena-nav{padding:7px 11px;font-size:12px}.reglages{gap:5px}}
 
-/* V5.3 — diagnostic local de perspective, sans requête externe. */
-.lv-3d-diagnostic{max-width:620px;margin:7px auto 10px;padding:10px 12px;border:1px solid #c08c46;border-radius:9px;background:#fff6e6;color:#4d2e0d;font:12px/1.55 system-ui,sans-serif;overflow-wrap:anywhere;white-space:pre-wrap}
-.lv-3d-version{font:600 10px system-ui;color:var(--dim);text-align:center;margin:0 0 4px}
-/* Tennis Edge Live V5 — 3D facultative : modèle procédural, aucune donnée de tracking inventée. */
-.lv-3d-toggle{display:block;margin:5px auto 8px;padding:7px 15px;border:1px solid #a8b5ff;border-radius:9px;background:#202451;color:#fff;font:600 13px system-ui;cursor:pointer}
-.lv-3d-host{width:100%;max-width:620px;margin:auto;aspect-ratio:1.6;background:#11182c;border-radius:12px;overflow:hidden;position:relative}
-.lv-3d-host canvas{width:100%;height:100%;display:block}
-.lv-3d-caption{position:absolute;bottom:5px;left:8px;font:10px system-ui;color:#e6e8ff;background:#111827a8;padding:3px 6px;border-radius:5px;pointer-events:none}
-
-.lv-v6-mode{display:block;margin:0 auto 8px;padding:6px 12px;border:1px solid #80b9e4;border-radius:8px;background:#182d4b;color:#effbff;font:600 12px system-ui;cursor:pointer}
-.lv-3d-host{aspect-ratio:1.65}
-.lv-v9-toggle{display:block;margin:5px auto 8px;padding:9px 14px;border:1px solid #65dce7;border-radius:9px;background:linear-gradient(100deg,#155078,#193365);color:white;font:700 12px system-ui;cursor:pointer}
-.lv-v9-host{width:100%;max-width:620px;margin:6px auto;aspect-ratio:1.5;min-height:240px;position:relative;border-radius:12px;overflow:hidden;background:#071528}
-.lv-v9-host canvas{width:100%;height:100%;display:block;touch-action:pan-y}
-.lv-v9-message{position:absolute;left:8px;bottom:7px;right:8px;background:#061322d9;color:#e7faff;padding:6px;border-radius:6px;font:11px system-ui;pointer-events:none}
-.lv-v9-controls{position:absolute;right:8px;top:8px;display:flex;gap:5px;z-index:2}
-.lv-v9-controls button{background:#173f67;color:#fff;border:1px solid #75bbde;border-radius:6px;padding:6px;font:11px system-ui}
-</style>
-<style id="te-disable-live-3d-tests">
-/* Tests 3D desactives sur les matchs en direct */
-.lv-3d-version,.lv-3d-toggle,.lv-v9-toggle,.lv-v6-mode,.lv-3d-diagnostic,.lv-3d-host{display:none!important}
 </style>
 <!-- TE_MATCH_UI_2026_11 -->
 
@@ -600,12 +579,6 @@ body.carte #video{display:block;width:1080px;height:1350px}
 </style><style>/* te-incertitude-fiabilite-v1 */
 .te-fiab-incertitude{display:flex;align-items:flex-start;gap:10px 22px;flex-wrap:wrap;margin:12px 0}
 .te-fiab-incertitude>.fiab{margin:0}
-.te-uncertainty{display:inline-flex;align-items:center;gap:7px;flex-wrap:wrap;font-size:.93em;padding:3px 0;max-width:100%}
-.te-uncertainty b{font-weight:800;color:var(--ink,inherit)}
-.te-uncertainty-amp{opacity:.7;font-size:.86em}
-.te-uncertainty-scale{display:block;position:relative;flex-basis:100%;height:5px;border-radius:8px;background:rgba(125,140,165,.2);overflow:hidden}
-.te-uncertainty-scale i{position:absolute;top:0;bottom:0;background:#1699b7;border-radius:8px}
-@media(max-width:600px){.te-fiab-incertitude{gap:8px 12px}.te-uncertainty-amp{display:none}}
 </style>
 </head>
 <body>
@@ -2263,18 +2236,6 @@ function rendType(m){
   return `<span class="typem ${esc(k)}" title="${esc(t('typem_aide_' + k))}">${esc(t('typem_' + k))}</span>`;
 }
 // te-incertitude-fiabilite-v1 : indicateur de sensibilité propre au match.
-function rendIncertitude(m){
-  if (!Array.isArray(m?.fourchette) || m.fourchette.length < 2) return '';
-  const vals = m.fourchette.slice(0,2).map(Number);
-  if (!vals.every(Number.isFinite)) return '';
-  const [lo,hi] = vals.map(v=>v<=1 ? v*100 : v).sort((a,b)=>a-b);
-  if (lo<0 || hi>100) return '';
-  const amp = hi-lo;
-  const label = L==='fr' ? 'Incertitude' : 'Uncertainty';
-  const amplitude = L==='fr' ? 'points d’amplitude' : 'percentage-point range';
-  const detail = L==='fr' ? 'Fourchette de sensibilité du modèle, pas un intervalle de confiance validé.' : 'Model sensitivity range, not a validated confidence interval.';
-  return `<span class="te-uncertainty" title="${esc(detail)}"><span>${esc(label)}</span><b>${Math.round(lo)}–${Math.round(hi)} %</b><span class="te-uncertainty-amp">· ${Math.round(amp)} ${esc(amplitude)}</span><span class="te-uncertainty-scale" aria-hidden="true"><i style="left:${lo}%;width:${amp}%"></i></span></span>`;
-}
 function rendFiabilite(f, detail=false){
   if (!f || !Number.isFinite(Number(f.note))) return '';
   const niveaux = L==='fr' ? {fragile:'fragile',prudent:'prudent',correct:'correcte',solide:'solide'} : {fragile:'fragile',prudent:'cautious',correct:'fair',solide:'strong'};
@@ -2487,9 +2448,9 @@ function rendMdj(){
 
         ${Array.isArray(m.fourchette) ? `<p class="evol" title="${esc(t('fourchette_aide'))}">${esc(t('fourchette', court(m.home), pc0(m.fourchette[0]), pc0(m.fourchette[1])))}</p>` : ''}
         ${m.evolution && Math.abs(m.evolution.ecart_pts) >= 1 ? `<p class="evol">${esc(t('es_premier', pc0(m.evolution.premier_p_home), court(m.home), m.evolution.premier_le ? dateHeure(m.evolution.premier_le) : ''))}</p>` : ''}
-        ${rendType(m)}<div class="te-fiab-incertitude">${rendFiabilite(m.fiabilite, true)}${rendIncertitude(m)}</div>
+        ${rendType(m)}<div class="te-fiab-incertitude">${rendFiabilite(m.fiabilite, true)}</div>
         ${rendCartes(m)}
-        <p style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn" id="b-post">📝 Générer le post X · avant match</button><button type="button" class="btn" id="b-analyse-detaillee" aria-expanded="false" aria-controls="te-analyse-detaillee">📊 Analyse détaillée</button>${utc(m.debut).getTime() <= Date.now() ? '<button type="button" class="btn" id="b-post-res">🏁 Générer le post X · résultat</button>' : ''}${VIDEO_ICI ? '<button type="button" class="btn" id="b-video">🎬 Générer la vidéo</button>' : ''}</p>
+        <p style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn" id="b-post">📝 Générer le post X · avant match</button><button type="button" class="btn" id="b-analyse-detaillee" aria-expanded="false" aria-controls="te-analyse-detaillee">📊 ${L==='fr' ? 'Analyse détaillée' : 'Detailed analysis'}</button>${utc(m.debut).getTime() <= Date.now() ? '<button type="button" class="btn" id="b-post-res">🏁 Générer le post X · résultat</button>' : ''}${VIDEO_ICI ? '<button type="button" class="btn" id="b-video">🎬 Générer la vidéo</button>' : ''}</p>
         <section id="te-analyse-detaillee" class="te-analyse-detaillee" hidden aria-live="polite"></section>
         <div id="video-zone" hidden style="margin-top:8px"><p class="ligne" style="gap:8px;justify-content:flex-start;flex-wrap:wrap;align-items:center"><input id="video-cle" type="password" autocomplete="off" placeholder="Clé privée" aria-label="Clé privée" style="flex:1;min-width:160px;background:rgba(var(--wv),.04);color:inherit;border:1px solid var(--line2);border-radius:999px;padding:9px 14px;font:inherit"><button type="button" class="btn" id="video-ok">Lancer</button></p></div>
         <p id="video-msg" class="aide" aria-live="polite"></p>
@@ -2768,202 +2729,6 @@ function tableauLive(m, r, fini, grand){
 })();
 
 
-// V6.2 — Terrain TV horizontal / vue immersive, autonome (Canvas 2D, sans CDN).
-(function(){
-  const sessions=new WeakMap();
-  let mode='tv';
-  const rnd=(a,b)=>a+Math.random()*(b-a);
-  function start(host,svg){
-    const canvas=document.createElement('canvas');
-    canvas.setAttribute('aria-label','Animation tennis vue '+(mode==='tv'?'TV':'immersive'));
-    canvas.style.cssText='display:block;width:100%;height:100%';
-    host.replaceChildren(canvas);
-    const ctx=canvas.getContext('2d',{alpha:false});
-    if(!ctx)throw Error('Canvas 2D indisponible');
-    let active=true,raf=0,t0=performance.now(),shots=[],duration=0;
-    const durationShot=1.65;
-    let priorL=0,priorR=0;
-    const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
-    const ease=t=>t*t*(3-2*t);
-    function sequence(){
-      // Every ball impact, bounce and player position comes from the same rally timeline.
-      const server=Math.random()<.5?-1:1;
-      shots=[];
-      const n=5+Math.floor(Math.random()*5);
-      let lane=rnd(-.36,.36);
-      for(let i=0;i<n;i++){
-        const next=clamp(lane+rnd(-.72,.72),-.62,.62);
-        shots.push({side:i%2===0?server:-server,lane:next,kind:Math.random(),serve:i===0});
-        lane=next;
-      }
-      duration=(n-1)*durationShot+1.1;
-      t0=performance.now();
-    }
-    // World coordinates: x is distance along the court (-1 left, +1 right), y is lateral.
-    function project(x,y,z,w,h){
-      if(mode==='tv'){
-        const sc=Math.min(w/2.75,h/1.55);
-        return [w*.5+x*sc*1.10+y*sc*.17,h*.51+y*sc*.65-z*sc*.72,sc];
-      }
-      const depth=(1-x)/2,scale=.39+depth*.73;
-      return [w*.5+y*w*.30*scale,h*(.18+depth*.69)-z*h*.21*scale,w*.085*scale];
-    }
-    function path(points,color,width,fill){
-      ctx.beginPath();points.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));
-      if(fill){ctx.closePath();ctx.fillStyle=fill;ctx.fill();}
-      if(color){ctx.strokeStyle=color;ctx.lineWidth=width;ctx.stroke();}
-    }
-    function seg(x1,y1,x2,y2,w,h,color,width=1.4,z=0){
-      path([project(x1,y1,z,w,h),project(x2,y2,z,w,h)],color,width);
-    }
-    function player(x,y,w,h,color,phase,hit,run,serve){
-      const p=project(x,y,0,w,h),size=mode==='tv'?Math.max(12,w*.040):Math.max(8,p[2]*1.06);
-      const px=p[0],py=p[1],s=size;
-      ctx.fillStyle='rgba(0,7,22,.32)';ctx.beginPath();ctx.ellipse(px+2,py+4,s*.55,s*.16,0,0,Math.PI*2);ctx.fill();
-      const stride=run*Math.sin(phase*2)*s*.21,lean=run*Math.sin(phase)*s*.11;
-      ctx.lineCap='round';ctx.lineJoin='round';ctx.lineWidth=Math.max(2,s*.15);ctx.strokeStyle='#e5ae83';
-      ctx.beginPath();ctx.moveTo(px-s*.12,py-s*.48);ctx.lineTo(px-s*.24+stride,py+s*.05);
-      ctx.moveTo(px+s*.12,py-s*.48);ctx.lineTo(px+s*.25-stride,py+s*.05);ctx.stroke();
-      ctx.fillStyle='#f6f7fb';ctx.beginPath();ctx.ellipse(px-s*.24+stride,py+s*.09,s*.18,s*.09,-.2,0,Math.PI*2);ctx.ellipse(px+s*.25-stride,py+s*.09,s*.18,s*.09,.2,0,Math.PI*2);ctx.fill();
-      ctx.fillStyle=color;ctx.beginPath();ctx.roundRect(px-s*.28+lean,py-s*1.18,s*.56,s*.77,s*.15);ctx.fill();
-      ctx.fillStyle='rgba(255,255,255,.38)';ctx.fillRect(px-s*.12+lean,py-s*1.14,s*.24,s*.08);
-      ctx.fillStyle=color==='#2de6ff'?'#176b91':'#a72c68';
-      ctx.beginPath();ctx.roundRect(px-s*.26+lean,py-s*.52,s*.52,s*.20,s*.05);ctx.fill();
-      ctx.fillStyle='#e7b48b';ctx.beginPath();ctx.arc(px+lean,py-s*1.39,s*.25,0,Math.PI*2);ctx.fill();
-      ctx.fillStyle='#322b35';ctx.beginPath();ctx.arc(px+lean,py-s*1.49,s*.24,Math.PI*1.05,Math.PI*1.95);ctx.fill();
-      const dir=x<0?1:-1;
-      const swing=serve?1.4:hit?1.0:.28;
-      const handX=px+dir*s*(.48+.16*swing),handY=py-s*(.85+.42*swing);
-      ctx.strokeStyle='#e7b48b';ctx.lineWidth=Math.max(2,s*.12);ctx.beginPath();ctx.moveTo(px+dir*s*.25,py-s*1.03);ctx.lineTo(handX,handY);ctx.stroke();
-      ctx.strokeStyle='#dfeaff';ctx.lineWidth=Math.max(1.5,s*.09);ctx.beginPath();ctx.moveTo(handX,handY);ctx.lineTo(handX+dir*s*.28,handY-s*.22);ctx.stroke();
-      ctx.strokeStyle='#f3f8ff';ctx.lineWidth=Math.max(1.5,s*.085);ctx.beginPath();ctx.ellipse(handX+dir*s*.38,handY-s*.40,s*.24,s*.35,dir*.3,0,Math.PI*2);ctx.stroke();
-    }
-    function draw(now){
-      if(!active||!host.isConnected||host.dataset.active!=='1')return;
-      if(document.hidden){raf=requestAnimationFrame(draw);return;}
-      const box=host.getBoundingClientRect(),w=Math.max(240,box.width),h=Math.max(150,box.height);
-      const dpr=Math.min(window.devicePixelRatio||1,2);
-      if(canvas.width!==Math.round(w*dpr)||canvas.height!==Math.round(h*dpr)){
-        canvas.width=Math.round(w*dpr);canvas.height=Math.round(h*dpr);
-      }
-      ctx.setTransform(dpr,0,0,dpr,0,0);
-      const bg=ctx.createLinearGradient(0,0,0,h);bg.addColorStop(0,'#142745');bg.addColorStop(1,'#071529');
-      ctx.fillStyle=bg;ctx.fillRect(0,0,w,h);
-      ctx.fillStyle='rgba(94,151,201,.07)';ctx.fillRect(0,h*.1,w,h*.12);
-      for(let i=0;i<9;i++){ctx.fillStyle='rgba(230,241,255,.07)';ctx.fillRect(i*w/9,h*.15,Math.max(2,w*.003),h*.022);}
-      const outer=[project(-1.11,-.92,0,w,h),project(1.11,-.92,0,w,h),project(1.11,.92,0,w,h),project(-1.11,.92,0,w,h)];
-      path(outer,'#a7d4f8',1.5,'#245b89');
-      const court=[project(-1,-.80,0,w,h),project(1,-.80,0,w,h),project(1,.80,0,w,h),project(-1,.80,0,w,h)];
-      path(court,'#eaf6ff',2,'#347fc0');
-      for(let i=1;i<9;i++){
-        seg(-1,-.8+i*.16,1,-.8+i*.16,w,h,'rgba(255,255,255,.018)',.7);
-      }
-      for(const y of [-.66,.66])seg(-1,y,1,y,w,h,'#f5fbff',1.5);
-      for(const x of [-.55,.55])seg(x,-.66,x,.66,w,h,'#f5fbff',1.4);
-      seg(-.55,0,.55,0,w,h,'#f5fbff',1.2);
-      for(const x of [-1,1])seg(x,-.80,x,.80,w,h,'#f5fbff',1.8);
-      // Mesh and posts: the net lies between the players.
-      const nl=project(0,-.88,.15,w,h),nr=project(0,.88,.15,w,h);
-      const bl=project(0,-.88,0,w,h),br=project(0,.88,0,w,h);
-      path([nl,nr,br,bl],'rgba(240,250,255,.8)',1,'rgba(225,242,255,.16)');
-      for(let i=0;i<=18;i++){
-        const y=-.88+i*1.76/18;
-        const a=project(0,y,.15,w,h),b=project(0,y,0,w,h);
-        path([a,b],'rgba(235,245,255,.37)',.55);
-      }
-      for(let j=1;j<4;j++){
-        const a=project(0,-.88,.15*j/4,w,h),b=project(0,.88,.15*j/4,w,h);
-        path([a,b],'rgba(235,245,255,.28)',.6);
-      }
-      for(const y of [-.88,.88]){
-        const a=project(0,y,0,w,h),b=project(0,y,.20,w,h);
-        path([a,b],'#e4ebf6',3);
-      }
-      let elapsed=(now-t0)/1000;
-      if(elapsed>=duration){sequence();elapsed=0;priorL=0;priorR=0;}
-      // A short serve preparation, then alternating groundstrokes.
-      const prep=1.1;
-      const rallyTime=Math.max(0,elapsed-prep);
-      const k=Math.min(shots.length-2,Math.floor(rallyTime/durationShot));
-      const u=clamp((rallyTime-k*durationShot)/durationShot,0,1);
-      const a=shots[k],b=shots[k+1];
-      const fromX=a.side*.84,toX=b.side*.84;
-      const move=u<.5?2*u*u:1-2*(1-u)*(1-u);
-      const bx=fromX+(toX-fromX)*move;
-      const by=a.lane+(b.lane-a.lane)*move;
-      // Ball arc has a visible descending phase and one ground bounce near the receiver.
-      const arc=Math.sin(Math.PI*u)*(.25+(a.kind*.18));
-      const bounce=u>.78?Math.sin(Math.PI*clamp((u-.78)/.22,0,1))*.075:0;
-      const height=elapsed<prep?.15+Math.sin(Math.PI*elapsed/prep)*.17:.045+arc+bounce;
-      // The player who is about to receive moves towards the incoming landing lane.
-      // The hitter stays near the previous contact and recovers towards centre afterwards.
-      const targetL=(b.side<0?b.lane:a.side<0?a.lane:0);
-      const targetR=(b.side>0?b.lane:a.side>0?a.lane:0);
-      const approach=ease(clamp((u-.12)/.74,0,1));
-      const recovering=ease(clamp((u-.08)/.80,0,1));
-      const leftY=b.side<0?priorL+(targetL-priorL)*approach:
-        a.side<0?a.lane*(1-recovering*.48):priorL;
-      const rightY=b.side>0?priorR+(targetR-priorR)*approach:
-        a.side>0?a.lane*(1-recovering*.48):priorR;
-      if(u>.985){priorL=leftY;priorR=rightY;}
-      const leftHit=(a.side<0&&u<.14)||(b.side<0&&u>.88);
-      const rightHit=(a.side>0&&u<.14)||(b.side>0&&u>.88);
-      const serve=elapsed<prep;
-      const shadow=project(bx,by,0,w,h),ball=project(bx,by,height,w,h);
-      ctx.fillStyle='rgba(1,9,25,.27)';ctx.beginPath();ctx.ellipse(shadow[0],shadow[1],Math.max(3,w*.010),Math.max(2,w*.004),0,0,Math.PI*2);ctx.fill();
-      const runL=Math.abs(targetL-priorL)>.14?.95:.3;
-      const runR=Math.abs(targetR-priorR)>.14?.95:.3;
-      // Render the farther player first in the immersive camera.
-      if(mode==='immersive'){
-        player(.84,rightY,w,h,'#ff529d',elapsed*8,rightHit,runR,serve&&a.side>0);
-        player(-.84,leftY,w,h,'#2de6ff',elapsed*8+.8,leftHit,runL,serve&&a.side<0);
-      }else{
-        player(-.84,leftY,w,h,'#2de6ff',elapsed*8+.8,leftHit,runL,serve&&a.side<0);
-        player(.84,rightY,w,h,'#ff529d',elapsed*8,rightHit,runR,serve&&a.side>0);
-      }
-      if(u>.91){
-        const p=project(toX,b.lane,.06,w,h),radius=(1-u)*30+5;
-        ctx.strokeStyle='rgba(236,255,157,'+((1-u)*.7)+')';
-        ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(p[0],p[1],radius,0,Math.PI*2);ctx.stroke();
-      }
-      const tail=project(bx-(toX-fromX)*.06,by-(b.lane-a.lane)*.06,Math.max(.02,height-.03),w,h);
-      ctx.strokeStyle='rgba(224,255,95,.22)';ctx.lineWidth=Math.max(2,w*.007);
-      ctx.beginPath();ctx.moveTo(tail[0],tail[1]);ctx.lineTo(ball[0],ball[1]);ctx.stroke();
-      ctx.shadowColor='#e4ff5b';ctx.shadowBlur=9;ctx.fillStyle='#dfff39';
-      ctx.beginPath();ctx.arc(ball[0],ball[1],Math.max(3.4,w*.010),0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;
-      raf=requestAnimationFrame(draw);
-    }
-    sequence();host.dataset.active='1';draw(performance.now());
-    sessions.set(host,()=>{active=false;host.dataset.active='0';cancelAnimationFrame(raf);canvas.remove();});
-  }
-  document.addEventListener('click',e=>{
-    const btn=e.target.closest('.lv-3d-toggle,.lv-v6-mode');
-    if(!btn)return;
-    const wrapper=btn.closest('.lv-terrain'),svg=wrapper?.querySelector('svg'),host=wrapper?.querySelector('.lv-3d-host');
-    if(!wrapper||!svg||!host)return;
-    const toggle=wrapper.querySelector('.lv-3d-toggle'),diag=wrapper.querySelector('.lv-3d-diagnostic');
-    if(diag){diag.hidden=true;diag.textContent='';}
-    if(btn.classList.contains('lv-v6-mode')){
-      mode=mode==='tv'?'immersive':'tv';
-      btn.textContent=mode==='tv'?'🎥 Vue immersive':'📺 Vue TV';
-      if(host.dataset.active==='1'){sessions.get(host)?.();try{start(host,svg);}catch(err){fail(err);}}
-      return;
-    }
-    if(host.dataset.active==='1'){
-      sessions.get(host)?.();host.hidden=true;svg.hidden=false;toggle.textContent='🎾 Tester la vue TV';return;
-    }
-    try{
-      host.hidden=false;svg.hidden=true;start(host,svg);
-      toggle.textContent='↩ Revenir à la vue 2D';
-    }catch(err){fail(err);}
-    function fail(err){
-      console.error('[Tennis Edge V6]',err);
-      sessions.get(host)?.();host.replaceChildren();host.hidden=true;svg.hidden=false;
-      toggle.textContent='⚠️ Vue indisponible — diagnostic V6';
-      if(diag){diag.hidden=false;diag.textContent='V6 : '+String(err?.stack||err?.message||err).slice(0,550);}
-    }
-  });
-})();
 
 function terrainLive(m, r, fini){
   const {h, a, srv} = cotesLive(r);
@@ -2996,7 +2761,7 @@ function terrainLive(m, r, fini){
     </g>`;
   }
   const ptsTxt = (v, x, c) => fini ? '' : `<g><rect x="${x-26}" y="120" width="52" height="32" rx="9" fill="rgba(14,10,36,.78)" stroke="${c}" stroke-opacity=".7"/><text x="${x}" y="143" text-anchor="middle" class="tp" style="fill:${c}">${esc(v ?? '0')}</text></g>`;
-  return `<div class="lv-terrain">${!fini ? '<div class="lv-3d-version">Tennis Edge Live V7.1 · Vue stable</div><button type="button" class="lv-3d-toggle">🎾 Tester la vue TV</button><button type="button" class="lv-v9-toggle">✨ Tester V9.4 · 3D autonome</button><button type="button" class="lv-v6-mode">🎥 Vue immersive</button><div class="lv-3d-diagnostic" hidden role="alert"></div><div class="lv-3d-host" hidden><span class="lv-3d-caption">Animation en perspective illustrative · score réel</span></div>' : ''}<svg data-live-uid="${esc(m.uid)}" data-live-score="${esc([SH.join(','),SA.join(','),h.point,a.point,srv].join('|'))}" viewBox="0 0 ${W} ${Hh}" role="img" aria-label="${esc(court(m.home))} ${gh} – ${ga} ${esc(court(m.away))}">
+  return `<div class="lv-terrain"><svg data-live-uid="${esc(m.uid)}" data-live-score="${esc([SH.join(','),SA.join(','),h.point,a.point,srv].join('|'))}" viewBox="0 0 ${W} ${Hh}" role="img" aria-label="${esc(court(m.home))} ${gh} – ${ga} ${esc(court(m.away))}">
     <defs><linearGradient id="lvsol" x1="0" x2="1"><stop offset="0" stop-color="#1f2a6b"/><stop offset=".5" stop-color="#26307a"/><stop offset="1" stop-color="#1f2a6b"/></linearGradient></defs>
     <rect x="0" y="0" width="${W}" height="${Hh}" rx="14" fill="#141040"/>
     <rect x="20" y="30" width="320" height="140" fill="url(#lvsol)" stroke="rgba(255,255,255,.75)" stroke-width="1.6"/>
@@ -3391,55 +3156,77 @@ function rendCartes(m){
 }
 // te-analyse-detaillee-v1 — synthèse descriptive à partir des données du match, sans appel IA.
 function ouvrirAnalyseDetaillee(m){
+  // 11/11/2026 (paquet 219) : bilingue ; la fourchette est décrite comme dans la fiche (niveau des joueurs, 8 fois sur 10).
   const zone=document.getElementById('te-analyse-detaillee');
   const btn=document.getElementById('b-analyse-detaillee');
   if(!zone||!btn)return;
   if(!zone.hidden){zone.hidden=true;btn.setAttribute('aria-expanded','false');return;}
+  const fr=L==='fr', tx=(a,b)=>fr?a:b;
   const num=x=>Number.isFinite(Number(x))?Number(x):null;
-  const pct=x=>Math.round(100*x)+' %';
+  const pct=x=>Math.round(100*x)+(fr?' %':'%');
   const p=num(m.p_home), q=p===null?null:1-p;
   const f=m.fiabilite||{}, C=m.cartes, J=C&&Array.isArray(C.joueurs)?C.joueurs:[];
   const safe=x=>esc(String(x==null?'':x));
   const section=(titre,contenu)=>'<section class="te-analyse-part"><h4>'+safe(titre)+'</h4><p>'+contenu+'</p></section>';
   const h=m.home,a=m.away;
-  let out='<h3>📊 Analyse détaillée · '+safe(h)+' / '+safe(a)+'</h3>';
-  out+='<p class="te-analyse-disclaimer">Analyse descriptive générée à partir des données Tennis Edge. Les pourcentages sont des estimations, pas des certitudes. Les statistiques des cartes sont établies avant le match.</p>';
+  let out='<h3>📊 '+tx('Analyse détaillée','Detailed analysis')+' · '+safe(h)+' / '+safe(a)+'</h3>';
+  out+='<p class="te-analyse-disclaimer">'+tx('Analyse descriptive générée à partir des données Tennis Edge. Les pourcentages sont des estimations, pas des certitudes. Les statistiques des cartes sont établies avant le match.',
+    'Descriptive analysis generated from Tennis Edge data. Percentages are estimates, not certainties. Card statistics are set before the match.')+'</p>';
   if(p!==null){
-    const fav=p>=.5?h:a, fp=Math.max(p,q);
-    out+=section('Lecture du duel','Le modèle attribue <strong>'+pct(p)+'</strong> à '+safe(h)+' et <strong>'+pct(q)+'</strong> à '+safe(a)+'. '+(Math.abs(p-.5)<.06?'La confrontation est très équilibrée.':safe(fav)+' possède un avantage estimé de '+Math.round(Math.abs(p-q)*100)+' points de probabilité.')+' Même le favori peut perdre : '+safe(fav)+' est battu dans environ '+Math.round((1-fp)*100)+' simulations sur 100.');
+    const fav=p>=.5?h:a, fp=Math.max(p,q), ecart=Math.round(Math.abs(p-q)*100), perd=Math.round((1-fp)*100);
+    out+=section(tx('Lecture du duel','Reading the matchup'),
+      tx('Le modèle attribue <strong>'+pct(p)+'</strong> à '+safe(h)+' et <strong>'+pct(q)+'</strong> à '+safe(a)+'. ',
+         'The model gives <strong>'+pct(p)+'</strong> to '+safe(h)+' and <strong>'+pct(q)+'</strong> to '+safe(a)+'. ')
+      +(Math.abs(p-.5)<.06 ? tx('La confrontation est très équilibrée.','The matchup is very even.')
+         : tx(safe(fav)+' possède un avantage estimé de '+ecart+' points de probabilité.', safe(fav)+' has an estimated edge of '+ecart+' percentage points.'))
+      +tx(' Même le favori peut perdre : '+safe(fav)+' perd environ '+perd+' simulations sur 100.',
+          ' Even the favourite can lose: '+safe(fav)+' is beaten in about '+perd+' simulations out of 100.'));
   }
   if(Array.isArray(m.fourchette)&&m.fourchette.length>=2){
     const lo=num(m.fourchette[0]),hi=num(m.fourchette[1]);
-    if(lo!==null&&hi!==null)out+=section('Incertitude du modèle','Selon les hypothèses de niveau des joueurs, la chance estimée de '+safe(h)+' varie entre <strong>'+pct(lo)+'</strong> et <strong>'+pct(hi)+'</strong>. Cette fourchette souligne la sensibilité de la prévision.');
+    if(lo!==null&&hi!==null)out+=section(tx('Fourchette','Range'),
+      tx('Selon l’incertitude sur le niveau des joueurs, la chance estimée pour '+safe(h)+' se situe entre <strong>'+pct(lo)+'</strong> et <strong>'+pct(hi)+'</strong> (8 fois sur 10).',
+         'Given the uncertainty about the players’ level, '+safe(h)+'’s chance lies between <strong>'+pct(lo)+'</strong> and <strong>'+pct(hi)+'</strong> (8 times out of 10).'));
   }
-  if(f.note!=null){out+=section('Fiabilité de la prévision','Indice affiché : <strong>'+safe(f.note)+'/100</strong>'+(f.niveau?' ('+safe(f.niveau)+')':'')+'. Cet indice décrit la calibration historique de ce type de rencontre ; il ne garantit pas la victoire du favori.');}
+  if(f.note!=null){out+=section(tx('Fiabilité de la prévision','Forecast reliability'),
+    tx('Indice affiché : ','Displayed score: ')+'<strong>'+safe(f.note)+'/100</strong>'+(f.niveau?' ('+safe(f.niveau)+')':'')+'. '
+    +tx('Cet indice décrit la calibration historique de ce type de rencontre ; il ne garantit pas la victoire du favori.',
+        'It describes how well-calibrated past forecasts were for this type of match; it does not guarantee the favourite wins.'));}
   if(J.length===2){
-    const keys=[['ser','service'],['ret','retour'],['ace','aces'],['pre','première balle'],['df','deuxième balle'],['for','forme']];
+    const keys=[['ser',tx('service','serve')],['ret',tx('retour','return')],['ace','aces'],['pre',tx('première balle','first serve')],['df',tx('deuxième balle','second serve')],['for',tx('forme','form')]];
     let lines=[];
     for(const [k,label] of keys){
       const x=num((J[0]&&J[0].attributs&&J[0].attributs[k]) ?? (J[0]&&J[0][k]));
       const y=num((J[1]&&J[1].attributs&&J[1].attributs[k]) ?? (J[1]&&J[1][k]));
       if(x===null||y===null)continue;
       const delta=Math.abs(x-y);
-      lines.push('<li><strong>'+safe(label)+'</strong> : '+safe(h)+' '+x+' / '+safe(a)+' '+y+(delta>=8?' — avantage '+safe(x>y?h:a):' — niveaux proches')+'</li>');
+      lines.push('<li><strong>'+safe(label)+'</strong> : '+safe(h)+' '+x+' / '+safe(a)+' '+y+(delta>=8?tx(' — avantage ',' — edge ')+safe(x>y?h:a):tx(' — niveaux proches',' — close'))+'</li>');
     }
-    if(lines.length)out+='<section class="te-analyse-part"><h4>Forces et faiblesses comparées</h4><ul>'+lines.join('')+'</ul><p>Notes relatives au circuit, pas des probabilités de gagner chaque point.</p></section>';
+    if(lines.length)out+='<section class="te-analyse-part"><h4>'+tx('Forces et faiblesses comparées','Strengths and weaknesses')+'</h4><ul>'+lines.join('')+'</ul><p>'
+      +tx('Notes relatives au circuit, pas des probabilités de gagner chaque point.','Ratings relative to the tour, not probabilities of winning each point.')+'</p></section>';
   }
   const scores=Array.isArray(m.scores_probables)?m.scores_probables.slice(0,4):[];
   if(scores.length){
     const items=scores.filter(x=>Array.isArray(x)&&x.length>=2).map(x=>'<li>'+safe(x[0])+' : '+(num(x[1])!==null?pct(x[1]):'—')+'</li>');
-    if(items.length)out+='<section class="te-analyse-part"><h4>Scénarios de score les plus fréquents</h4><ul>'+items.join('')+'</ul><p>Chaque score exact reste un scénario minoritaire ; les probabilités ne doivent pas être additionnées comme des issues indépendantes.</p></section>';
+    if(items.length)out+='<section class="te-analyse-part"><h4>'+tx('Scénarios de score les plus fréquents','Most frequent score scenarios')+'</h4><ul>'+items.join('')+'</ul><p>'
+      +tx('Chaque score exact reste un scénario minoritaire ; les probabilités ne doivent pas être additionnées comme des issues indépendantes.',
+          'Each exact score remains a minority scenario; these probabilities should not be added up as independent outcomes.')+'</p></section>';
   }
   const live=typeof LIVE!=='undefined'&&LIVE.par_uid&&LIVE.par_uid[m.uid];
   if(live){
     const current=typeof pctLive==='function'?pctLive(m,live):null;
-    out+=section('Situation en direct','Match actuellement signalé en direct.'+(current!==null?' La probabilité recalculée de '+safe(h)+' est de <strong>'+pct(current)+'</strong>, contre '+(p!==null?pct(p):'—')+' avant match.':' Le score et les probabilités actualisés figurent dans le panneau LIVE.')+' Les caractéristiques ci-dessus restent celles d’avant-match.');
+    out+=section(tx('Situation en direct','Live situation'),tx('Match actuellement signalé en direct.','Match currently live.')
+      +(current!==null ? tx(' La probabilité recalculée de '+safe(h)+' est de <strong>'+pct(current)+'</strong>, contre '+(p!==null?pct(p):'—')+' avant match.',
+                            ' '+safe(h)+'’s recalculated chance is <strong>'+pct(current)+'</strong>, against '+(p!==null?pct(p):'—')+' before the match.')
+                       : tx(' Le score et les probabilités actualisés figurent dans le panneau LIVE.',' The updated score and chances are in the LIVE panel.'))
+      +tx(' Les caractéristiques ci-dessus restent celles d’avant-match.',' The characteristics above are the pre-match ones.'));
   }
-  out+=section('Conclusion','Cette analyse aide à comprendre les facteurs du modèle et les scénarios possibles. Elle ne prédit ni les trajectoires réelles ni le déroulement exact des points.');
+  out+=section(tx('Conclusion','Conclusion'),tx('Cette analyse aide à comprendre les facteurs du modèle et les scénarios possibles. Elle ne prédit ni les trajectoires réelles ni le déroulement exact des points.',
+    'This analysis helps understand the model’s factors and possible scenarios. It does not predict actual rallies or how points will unfold.'));
   zone.innerHTML=out;
   zone.hidden=false;btn.setAttribute('aria-expanded','true');
-  zone.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
+
 
 function rendAvantMatch(m){
   const A = m.avant_match; if (!A) return '';
@@ -3883,204 +3670,5 @@ fetch('donnees.json?v=' + Date.now()).then(r=>r.json()).then(d=>{
 }).catch(()=>{ document.getElementById('mdj-zone').innerHTML = '<div class="panel empty">Données indisponibles / Data unavailable.</div>'; });
 })();
 </script>
-<script>
-(function(){
-  'use strict';
-  const sessions=new WeakMap();
-  let loadPromise=null;
-  const SOURCES={
-    core:['/vendor/babylon.js'],
-    loaders:[]
-  };
-  function script(url){
-    return new Promise((resolve,reject)=>{
-      const s=document.createElement('script');s.src=url;s.async=true;
-      s.onload=()=>resolve(url);
-      s.onerror=()=>{s.remove();reject(new Error('Ressource inaccessible : '+url));};
-      document.head.appendChild(s);
-    });
-  }
-  async function firstAvailable(urls,verify){
-    const errors=[];
-    for(const url of urls){
-      try{await script(url);if(!verify||verify())return url;errors.push('Chargé mais invalide : '+url);}
-      catch(e){errors.push(e.message);}
-    }
-    throw new Error('Fichiers 3D locaux indisponibles : vérifier le déploiement Pages et Worker. '+errors.slice(0,2).join(' | '));
-  }
-  async function libraries(){
-    if(!loadPromise)loadPromise=(async()=>{
-      if(!window.BABYLON?.Engine)await firstAvailable(SOURCES.core,()=>!!window.BABYLON?.Engine);
-      // No external loader required: procedural meshes only.
-      return window.BABYLON;
-    })().catch(e=>{loadPromise=null;throw e;});
-    return loadPromise;
-  }
-  function dispose(host){
-    const stop=sessions.get(host);if(stop)stop();sessions.delete(host);
-    host.replaceChildren();
-  }
-  async function start(wrapper,button){
-    const old=wrapper.querySelector('.lv-v9-host');
-    if(old){dispose(old);old.remove();button.textContent='✨ Tester V9.4 · 3D autonome';return;}
-    const host=document.createElement('div');host.className='lv-v9-host';
-    const canvas=document.createElement('canvas');host.appendChild(canvas);
-    const msg=document.createElement('div');msg.className='lv-v9-message';
-    msg.textContent='Chargement de la scène 3D autonome…';host.appendChild(msg);
-    const controls=document.createElement('div');controls.className='lv-v9-controls';
-    controls.innerHTML='<button type="button" data-cam="tv">TV</button><button type="button" data-cam="back">Fond</button><button type="button" data-cam="side">Côté</button>';
-    host.appendChild(controls);
-    const anchor=wrapper.querySelector('.lv-3d-host');
-    if(anchor)anchor.insertAdjacentElement('beforebegin',host);else wrapper.appendChild(host);
-    button.textContent='✕ Fermer le test V9';
-    let cancelled=false,engine=null,resize=null;
-    sessions.set(host,()=>{cancelled=true;if(resize)window.removeEventListener('resize',resize);if(engine){engine.stopRenderLoop();engine.dispose();engine=null;}});
-    try{
-      const B=await libraries();if(cancelled||!host.isConnected)return;
-      engine=new B.Engine(canvas,true,{preserveDrawingBuffer:false,stencil:true,disableWebGL2Support:false},true);
-      if(!engine.getRenderingCanvas())throw Error('WebGL non disponible');
-      const scene=new B.Scene(engine);scene.clearColor=new B.Color4(.035,.085,.16,1);
-      scene.ambientColor=new B.Color3(.6,.6,.6);
-      const camera=new B.FreeCamera('camera',new B.Vector3(15,15,24),scene);
-      camera.setTarget(new B.Vector3(0,0,0));camera.fov=.72;
-      const cameras={tv:new B.Vector3(15,17,22),back:new B.Vector3(0,6.5,21),side:new B.Vector3(26,10,1)};
-      let mode='back';
-      controls.addEventListener('click',e=>{const b=e.target.closest('[data-cam]');if(b)mode=b.dataset.cam;});
-      const hemi=new B.HemisphericLight('ambient',new B.Vector3(0,1,0),scene);hemi.intensity=.85;
-      const sun=new B.DirectionalLight('sun',new B.Vector3(-.4,-1,.25),scene);sun.intensity=1.4;
-      const shadow=new B.ShadowGenerator(512,sun);shadow.useBlurExponentialShadowMap=true;
-      const material=(name,color)=>{const m=new B.PBRMaterial(name,scene);m.albedoColor=B.Color3.FromHexString(color);m.metallic=.03;m.roughness=.86;return m;};
-      const blue=material('court','#2c81c0'),dark=material('surround','#143c66'),white=material('lines','#e9f5ff');
-      function slab(name,w,h,d,x,y,z,mat){
-        const m=B.MeshBuilder.CreateBox(name,{width:w,height:h,depth:d},scene);
-        m.position.set(x,y,z);m.material=mat;m.receiveShadows=true;return m;
-      }
-      slab('surround',27,.08,41,0,-.06,0,dark);
-      slab('court',10.97,.035,23.77,0,.01,0,blue);
-      function line(w,d,x,z){slab('line',w,.025,d,x,.05,z,white);}
-      for(const x of [-5.485,5.485,-4.115,4.115])line(.055,23.77,x,0);
-      for(const z of [-11.885,11.885])line(10.97,.055,0,z);
-      for(const z of [-6.4,6.4])line(8.23,.055,0,z);
-      line(.05,12.8,0,0);
-      // Net with real depth and a fine, visible mesh.
-      const netMat=material('net','#d9ebf6');netMat.alpha=.63;
-      for(let x=-5.48;x<=5.5;x+=.24)slab('net-v',.012,.91,.012,x,.51,0,netMat);
-      for(let y=.13;y<=.98;y+=.15)slab('net-h',11,.012,.012,0,y,0,netMat);
-      slab('net-tape',11.2,.035,.05,0,.99,0,white);
-      for(const x of [-5.55,5.55])slab('post',.08,1.14,.08,x,.57,0,white);
-      // Stadium tiers / barriers. Characters are external GLB assets, not primitive cylinders.
-      const stand=material('stand','#243b56'),seat=material('seat','#36577b');
-      for(const side of [-1,1]){
-        slab('board',.25,1.2,38,side*13,.6,0,stand);
-        for(let row=0;row<4;row++){
-          slab('tribune',1.0,.4,37,side*(14+row*1.05),.15+row*.55,0,stand);
-          for(let k=0;k<17;k++)slab('seat',.7,.16,1.3,side*(14+row*1.05),.43+row*.55,-15+k*1.8,seat);
-        }
-      }
-      // V9.4: all characters are native Babylon meshes, with no GLB, texture or blob URL.
-      // Low-poly meshes keep the scene lightweight on Android GPUs.
-      const playerRoots=[];
-      const skin=material('skin','#d9a17b');
-      const hair=material('hair','#382a30');
-      const cyan=material('shirt-cyan','#15d8f4');
-      const magenta=material('shirt-pink','#f7469a');
-      const shorts=material('shorts','#26355e');
-      const shoe=material('shoes','#f3f5ff');
-      const racketMat=material('racket','#dce9ff');
-      const gripMat=material('grip','#23314d');
-      function part(name,kind,opts,parent,mat,pos){
-        const mesh=kind==='sphere'?B.MeshBuilder.CreateSphere(name,opts,scene):
-          kind==='cylinder'?B.MeshBuilder.CreateCylinder(name,opts,scene):
-          kind==='torus'?B.MeshBuilder.CreateTorus(name,opts,scene):
-          B.MeshBuilder.CreateBox(name,opts,scene);
-        mesh.parent=parent;mesh.position.set(...pos);mesh.material=mat;
-        return mesh;
-      }
-      function player(i){
-        const root=new B.TransformNode('athlete-'+i,scene);
-        root.position.set(i===0?-.4:.4,0,i===0?9.7:-9.7);
-        root.rotation.y=i===0?Math.PI:0;
-        const jersey=i===0?cyan:magenta;
-        part('torso','box',{width:.65,height:.78,depth:.34},root,jersey,[0,1.38,0]);
-        part('neck','cylinder',{diameter:.17,height:.17,tessellation:8},root,skin,[0,1.85,0]);
-        part('head','sphere',{diameter:.39,segments:12},root,skin,[0,2.12,0]);
-        part('hair','sphere',{diameter:.40,segments:12},root,hair,[0,2.27,-.035]);
-        part('shorts','box',{width:.63,height:.35,depth:.37},root,shorts,[0,.84,0]);
-        const limbs=[];
-        for(const sign of [-1,1]){
-          const leg=new B.TransformNode('leg-'+i+'-'+sign,scene);leg.parent=root;leg.position.set(sign*.18,.70,0);
-          part('leg','cylinder',{diameter:.16,height:.62,tessellation:8},leg,skin,[0,-.31,0]);
-          part('sock','cylinder',{diameter:.19,height:.14,tessellation:8},leg,shoe,[0,-.61,0]);
-          part('shoe','box',{width:.24,height:.12,depth:.36},leg,shoe,[0,-.72,-.08]);
-          const arm=new B.TransformNode('arm-'+i+'-'+sign,scene);arm.parent=root;arm.position.set(sign*.4,1.7,0);
-          part('arm','cylinder',{diameter:.15,height:.64,tessellation:8},arm,skin,[sign*.05,-.33,0]);
-          arm.rotation.z=sign*.18;
-          limbs.push({leg,arm,sign});
-        }
-        const hand=new B.TransformNode('racket-hand-'+i,scene);hand.parent=root;hand.position.set(.60,1.31,-.04);
-        hand.rotation.z=-.52;
-        part('racket-handle','cylinder',{diameter:.065,height:.58,tessellation:8},hand,gripMat,[0,.30,0]);
-        part('racket-head','torus',{diameter:.58,thickness:.045,tessellation:18},hand,racketMat,[0,.88,0]);
-        for(let k=-2;k<=2;k++)part('strings-v','box',{width:.009,height:.46,depth:.009},hand,racketMat,[k*.09,.88,0]);
-        for(let k=-2;k<=2;k++)part('strings-h','box',{width:.43,height:.009,depth:.009},hand,racketMat,[0,.88+k*.09,0]);
-        return {root,limbs,hand};
-      }
-      for(let i=0;i<2;i++)playerRoots.push(player(i));
-      if(cancelled||!host.isConnected){dispose(host);return;}
-      const ball=B.MeshBuilder.CreateSphere('ball',{diameter:.15,segments:12},scene);
-      const ballMat=new B.StandardMaterial('ball-yellow',scene);ballMat.diffuseColor=new B.Color3(.85,1,.05);ballMat.emissiveColor=new B.Color3(.25,.32,.01);ball.material=ballMat;
-      const path=[];function rally(){
-        path.length=0;let x=0;for(let i=0;i<8;i++){x=Math.max(-3.2,Math.min(3.2,x+(Math.random()-.5)*4.7));path.push({x,z:i%2? -9:9});}
-      }rally();
-      let t=0,frames=0,last=performance.now();
-      engine.runRenderLoop(()=>{
-        if(cancelled)return;
-        const dt=Math.min(.05,engine.getDeltaTime()/1000);t+=dt;
-        const per=1.55;if(t>per*(path.length-1)){t=0;rally();}
-        const k=Math.min(path.length-2,Math.floor(t/per)),u=(t/per)-k;
-        const from=path[k],to=path[k+1],ease=u*u*(3-2*u);
-        ball.position.set(from.x+(to.x-from.x)*ease,.16+2.6*Math.sin(Math.PI*u),from.z+(to.z-from.z)*ease);
-        playerRoots.forEach((p,i)=>{
-          const target=(i===0?to.z>0:to.z<0)?to.x:(i===0?from.z>0:from.z<0)?from.x:0;
-          p.root.position.x+=Math.max(-.07,Math.min(.07,(target-p.root.position.x)*dt*5));
-          const phase=t*7+i*1.6;
-          const effort=Math.min(1,Math.abs(target-p.root.position.x)/2+.22);
-          p.limbs.forEach(({leg,arm,sign})=>{
-            leg.rotation.x=Math.sin(phase+(sign>0?Math.PI:0))*.30*effort;
-            arm.rotation.x=Math.sin(phase+(sign>0?0:Math.PI))*.26*effort;
-          });
-          p.hand.rotation.z=-.52+.18*Math.sin(phase*.72);
-          p.root.rotation.y=(i===0?Math.PI:0)+.10*Math.sin(phase*.38);
-        });
-        camera.position=B.Vector3.Lerp(camera.position,cameras[mode],Math.min(1,dt*3));
-        camera.setTarget(new B.Vector3(0,0,0));
-        scene.render();
-        frames++;
-        if(performance.now()-last>2500){msg.textContent='V9.4 · '+Math.round(frames*1000/(performance.now()-last))+' FPS · animation illustrative, score réel affiché dessous';last=performance.now();frames=0;}
-      });
-      resize=()=>engine&&engine.resize();window.addEventListener('resize',resize);resize();
-      msg.textContent='V9.4 active · joueurs 3D autonomes · animation illustrative';
-    }catch(e){
-      console.error('[Tennis Edge V9]',e);
-      if(engine){engine.stopRenderLoop();engine.dispose();engine=null;}
-      msg.textContent='V9.4 indisponible : '+String(e.message||e).slice(0,160)+' · La V7.1 reste utilisable.';
-      controls.remove();
-    }
-  }
-  document.addEventListener('click',e=>{
-    const button=e.target.closest('.lv-v9-toggle');
-    if(button){const wrap=button.closest('.lv-terrain');if(wrap)start(wrap,button);}
-  });
-  // When a live card is re-rendered, dispose stale engines (avoids leaked WebGL contexts).
-  const observer=new MutationObserver(()=>{
-    for(const [host,stop] of [...activeHosts]){if(!host.isConnected){stop();activeHosts.delete(host);}}
-  });
-  // WeakMap cannot be iterated; track only mounted sessions in this Set.
-  const activeHosts=new Map();
-  const origSet=sessions.set.bind(sessions);
-  sessions.set=(host,stop)=>{activeHosts.set(host,stop);return origSet(host,stop);};
-  observer.observe(document.body,{childList:true,subtree:true});
-})();
-</script>
-<a href="../arena/" style="position:fixed;bottom:18px;right:18px;z-index:9999;background:#b6f365;color:#13220b;padding:12px 17px;border-radius:999px;font:700 15px system-ui;text-decoration:none">🏟️ Arena</a></body>
+</body>
 </html>
