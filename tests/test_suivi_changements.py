@@ -16,6 +16,10 @@ import vitrine as V  # noqa: E402
 import roi_algo as RA  # noqa: E402
 import taille_depot as TD  # noqa: E402
 
+# 11/11/2026 (paquet 227) — mots qui ne doivent jamais sortir dans le journal PUBLIÉ sur le site : la comparaison aux
+# cotes reste privée. « cote » seul n'y est pas : « aucune cote », « indépendant des cotes » sont le message voulu.
+INTERDITS_JOURNAL = ('marché', 'marche ', 'pinnacle', 'clôture', 'cloture', 'closing', 'oddspapi')
+
 
 class TestFantome(unittest.TestCase):
     def test_comparaison_apres_match(self):
@@ -33,8 +37,30 @@ class TestFantome(unittest.TestCase):
         self.assertTrue(J['changements'])
         self.assertEqual(J['fantome']['TOUS']['matchs'], 3)
         txt = json.dumps(J, ensure_ascii=False).lower()
-        self.assertNotIn('marché', txt)
-        self.assertNotIn('marche ', txt)
+        for mot in INTERDITS_JOURNAL:                      # 11/11/2026 (paquet 227) : plus seulement « marché »
+            self.assertNotIn(mot, txt, f"« {mot} » dans le journal publié : marquer l'entrée « prive »")
+
+    def test_entrees_internes_jamais_publiees(self):
+        """11/11/2026 (paquet 227) — une entrée « prive » reste dans le fichier mais ne sort pas sur le site."""
+        racine = os.path.join(ICI, '..')
+        with open(os.path.join(racine, 'simulateur', 'journal_changements.json'), encoding='utf-8') as fh:
+            source = json.load(fh)['changements']
+        prives = [c for c in source if c.get('prive')]
+        self.assertTrue(prives, "le journal doit garder ses entrées internes, marquées « prive »")
+        J = V.journal_changements(racine)
+        self.assertTrue(J['entrees_internes_masquees'])
+        self.assertEqual(len(J['changements']), len(source) - len(prives))
+        self.assertFalse([c for c in J['changements'] if c.get('prive')])
+
+    def test_filtre_sur_un_journal_fictif(self):
+        with tempfile.TemporaryDirectory() as d:
+            os.makedirs(os.path.join(d, 'simulateur'))
+            with open(os.path.join(d, 'simulateur', 'journal_changements.json'), 'w', encoding='utf-8') as fh:
+                json.dump({'regle': 'r', 'changements': [{'quoi': 'public', 'statut': 'production'},
+                                                         {'quoi': 'interne', 'statut': 'etude', 'prive': True}]}, fh)
+            J = V.journal_changements(d)
+            self.assertEqual([c['quoi'] for c in J['changements']], ['public'])
+            self.assertEqual(J['regle'], 'r')
 
 
 class TestSitePublic(unittest.TestCase):
@@ -50,6 +76,22 @@ class TestSitePublic(unittest.TestCase):
                 txt = fh.read().lower()
             self.assertNotIn('marché', txt, f)
         self.assertGreaterEqual(vus, 1)
+
+    def test_journal_des_donnees_publiques(self):
+        """11/11/2026 (paquet 227) — le journal embarqué dans algo/donnees.json, dès qu'il a été produit par la vitrine
+        filtrée (repère entrees_internes_masquees), ne contient aucun mot réservé aux outils privés. Un fichier produit
+        avant le paquet n'a pas le repère : il n'est pas jugé, il sera remplacé au prochain passage."""
+        p = os.path.join(ICI, '..', 'algo', 'donnees.json')
+        if not os.path.exists(p):
+            self.skipTest('algo/donnees.json absent')
+        with open(p, encoding='utf-8') as fh:
+            J = (json.load(fh) or {}).get('journal_changements') or {}
+        if not J.get('entrees_internes_masquees'):
+            self.skipTest("algo/donnees.json produit avant le filtre du journal : jugé au prochain passage")
+        txt = json.dumps(J, ensure_ascii=False).lower()
+        for mot in INTERDITS_JOURNAL:
+            self.assertNotIn(mot, txt, mot)
+        self.assertFalse([c for c in J.get('changements') or [] if c.get('prive')])
 
 
 class TestAbandons(unittest.TestCase):

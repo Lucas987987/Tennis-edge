@@ -584,6 +584,10 @@ def journal_changements(racine, analyse=None):
     doc = _lire(os.path.join(racine, 'simulateur', 'journal_changements.json'), {}) or {}
     if not doc:
         return None
+    # 11/11/2026 (paquet 227) : le journal est PUBLIÉ sur le site. Une entrée de travail interne (champ « prive ») reste
+    # dans le fichier, lue par les outils privés, mais n'est jamais publiée ; le repère dit que le filtre est passé.
+    doc = dict(doc, changements=[c for c in doc.get('changements') or [] if not (isinstance(c, dict) and c.get('prive'))],
+               entrees_internes_masquees=True)
     g = ((analyse or {}).get('groupes') or {})
     doc['fantome'] = {k: v['fantome'] for k, v in g.items() if isinstance(v, dict) and v.get('fantome')}
     # 29/10/2026 : un fantôme par changement (ITF hommes + femmes ensemble, ITF femmes seules, σ du Challenger)
