@@ -540,7 +540,7 @@ body.carte #video{display:block;width:1080px;height:1350px}
 @media(max-width:520px){.arena-nav{padding:7px 11px;font-size:12px}.reglages{gap:5px}}
 
 .panel.meteo{padding:16px}.tiroir>.panel.meteo{padding:0 16px 16px}.meteo .mt-l{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;margin:10px 0 6px}.meteo .mt-l dt{color:var(--dim);font-size:.9rem}.meteo .mt-l dd{margin:0;font-variant-numeric:tabular-nums}
-.panel.scen{padding:16px}.tiroir>.panel.scen{padding:0 16px 16px}.sc-barre{display:flex;height:14px;border-radius:8px;overflow:hidden;margin:10px 0 12px;gap:2px}.sc-barre i{display:block;height:100%}.sc-l{list-style:none;margin:0;padding:0;display:grid;gap:8px}.sc-l li{display:grid;grid-template-columns:12px 1fr auto;gap:10px;align-items:center}.sc-pt{width:12px;height:12px;border-radius:4px}.sc-n small{display:block;color:var(--dim);font-size:.8rem}.sc-l b{font-variant-numeric:tabular-nums;font-size:1.05rem}.sc-r{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;margin:14px 0 8px;padding-top:12px;border-top:1px solid var(--line)}.sc-r dt{color:var(--dim);font-size:.9rem}.sc-r dd{margin:0}.sc-ex{margin:8px 0}.sc-ex summary{cursor:pointer;color:var(--dim)}
+.panel.scen{padding:16px}.tiroir>.panel.scen{padding:0 16px 16px}.sc-barre{display:flex;height:14px;border-radius:8px;overflow:hidden;margin:10px 0 12px;gap:2px}.sc-barre i{display:block;height:100%}.sc-l{list-style:none;margin:0;padding:0;display:grid;gap:8px}.sc-l li{display:grid;grid-template-columns:12px 1fr auto;gap:10px;align-items:center}.sc-pt{width:12px;height:12px;border-radius:4px}.sc-n small{display:block;color:var(--dim);font-size:.8rem}.sc-l b{font-variant-numeric:tabular-nums;font-size:1.05rem}.sc-r{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;margin:14px 0 8px;padding-top:12px;border-top:1px solid var(--line)}.sc-r dt{color:var(--dim);font-size:.9rem}.sc-r dd{margin:0}.sc-ex{margin:8px 0}.sc-ctl td{white-space:nowrap}.sc-ctl td.ok{color:var(--ok)}.sc-ctl td.ko{color:var(--ko)}.sc-ctl small{display:inline;color:var(--dim)}.sc-ex summary{cursor:pointer;color:var(--dim)}
 .s1{margin:14px 0 4px;padding-top:12px;border-top:1px solid var(--line)}.s1 h4{margin:0 0 4px}.s1-t{width:100%;border-collapse:collapse;margin:10px 0;font-variant-numeric:tabular-nums;font-size:.92rem}.s1-t th,.s1-t td{padding:5px 4px;text-align:right;vertical-align:top}.s1-t thead th{font-size:.75rem;color:var(--dim);font-weight:600}.s1-t thead th.s1-n{text-align:left;font-size:.95rem;font-weight:700}.s1-t tbody th{text-align:left;font-weight:500;color:var(--dim)}.s1-t tbody tr+tr{border-top:1px solid var(--line)}.s1-t small{display:block;color:var(--dim);font-size:.72rem}.s1-t .dim{color:var(--dim)}
 </style>
 <!-- TE_MATCH_UI_2026_11 -->
@@ -1292,6 +1292,27 @@ function scenarioIndice(m){
   const k = {net: fr?'2 sets nets':'2 easy sets', accroche: fr?'2 sets serrés':'2 tight sets', long: fr?'3 sets':'3 sets'}[b.k];
   return `${court(b.i ? m.away : m.home)}, ${k} · ${pc0(b.p)}`;
 }
+// 11/11/2026 (paquet 222) — contrôle des scénarios sur nos matchs réels (scenarios_match.controle), circuit du match
+function rendControleScenarios(m){
+  const C = D && D.controle_scenarios; if (!C || !C.groupes) return '';
+  const fr = L==='fr', g = C.groupes[m.circuit] && C.groupes[m.circuit].net && C.groupes[m.circuit].net.verdict !== 'trop tot' ? m.circuit : 'tous';
+  const G = C.groupes[g]; if (!G) return '';
+  const lib = {net: fr?'En 2 sets, sans trembler':'Straight sets, comfortably', accroche: fr?'En 2 sets accrochés':'Two tight sets',
+    long: fr?'En 3 sets':'In three sets', remontee: fr?'Après avoir perdu le 1er set':'After losing the 1st set',
+    gagne_apres_set1: fr?'Gagne après avoir gagné le 1er set':'Wins after winning the 1st set'};
+  const ver = v => ({juste: fr?'juste':'on target', 'trop bas': fr?'prévu trop bas':'forecast too low', 'trop haut': fr?'prévu trop haut':'forecast too high', 'trop tot': fr?'trop tôt':'too early'})[v] || v;
+  const cles = Object.keys(lib).filter(k => G[k]);
+  const ok = cles.filter(k => G[k].verdict === 'juste').length;
+  const nM = Math.max(...cles.map(k => k === 'gagne_apres_set1' ? G[k].n : G[k].n / 2));
+  const qui = g === 'tous' ? (fr?'tous circuits':'all tours') : (g==='CH'?'Challenger':g);
+  const titre = fr ? `Vérifié sur ${fmt(nM)} de nos matchs (${qui}) : ${ok} scénario${ok>1?'s':''} sur ${cles.length} dans la marge d’erreur`
+                   : `Checked on ${fmt(nM)} of our matches (${qui}): ${ok} of ${cles.length} scenarios within the margin of error`;
+  const lignes = cles.map(k => { const x = G[k];
+    return `<tr><th>${esc(lib[k])}</th><td>${x.prevu_pct!=null?dec(x.prevu_pct,1)+(fr?' %':'%'):'—'}</td><td>${x.reel_pct!=null?dec(x.reel_pct,1)+(fr?' %':'%'):'—'}</td><td class="${x.verdict==='juste'?'ok':'ko'}">${esc(ver(x.verdict))}${x.marge_pts!=null?` <small>± ${dec(x.marge_pts,1)}</small>`:''}</td></tr>`; }).join('');
+  return `<details class="sc-ex sc-ctl"><summary>${esc(titre)}</summary>
+    <table class="s1-t"><thead><tr><th></th><th>${esc(fr?'Prévu':'Forecast')}</th><th>${esc(fr?'Réel':'Actual')}</th><th>${esc(fr?'Verdict':'Verdict')}</th></tr></thead><tbody>${lignes}</tbody></table>
+    <p class="styles-note">${esc(fr?'Dernier pronostic affiché avant chaque match, contre le score réel. Règle fixée à l’avance : « juste » si l’écart reste dans la marge d’erreur (± 1,96 erreur type), à partir de 30 matchs. Les scénarios des matchs d’avant le 11/11 sont reconstitués depuis le score en sets et les scores exacts figés.':'Last forecast shown before each match, against the actual score. Rule set in advance: “on target” if the gap stays within the margin of error (± 1.96 standard errors), from 30 matches. Scenarios for matches before 11/11 are rebuilt from the frozen set scores and exact scores.')}</p></details>`;
+}
 function rendApresSet1(m){
   const S = m.scenarios, A = m.avant_match || {}, C = A.set1_circuit, fr = L==='fr';
   if (!S || !Array.isArray(S.j)) return '';
@@ -1327,7 +1348,8 @@ function rendScenarios(m, sc){
     <dl class="sc-r">${reperes.map(([k,v])=>`<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join('')}</dl>
     ${rendApresSet1(m)}
     ${sc ? `<details class="sc-ex"><summary>${esc(fr?'Scores exacts les plus probables':'Likeliest exact scores')}</summary><div class="bars">${sc}</div><p class="styles-note">${esc(fr?'Chaque score exact reste rare, même le plus probable : c’est pourquoi les scénarios ci-dessus les regroupent.':'Each exact score stays rare, even the likeliest: that is why the scenarios above group them.')}</p></details>` : ''}
-    <p class="styles-note">${esc(fr?'Les mêmes 20 000 simulations que le % : ces scénarios ne le changent pas. Contrôle sur 755 de nos matchs : set décisif prévu 34,6 %, réel 34,7 % ; tie-break prévu 31,8 %, réel 33,5 %.':'The same 20,000 simulations as the %: these scenarios do not change it. Check on 755 of our matches: deciding set forecast 34.6%, actual 34.7%; tie-break forecast 31.8%, actual 33.5%.')}</p></div>`;
+    ${rendControleScenarios(m)}
+    <p class="styles-note">${esc(fr?'Les mêmes 20 000 simulations que le % : ces scénarios ne le changent pas.':'The same 20,000 simulations as the %: these scenarios do not change it.')}</p></div>`;
 }
 // 11/11/2026 (paquet 220) — MÉTÉO ET CONDITIONS (simulateur/meteo_match.py) : lieu du tournoi, météo du jour local
 // (Open-Meteo), densité de l'air ; on dit honnêtement ce qui entre dans le % sur ce circuit.

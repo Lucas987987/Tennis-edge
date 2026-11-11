@@ -843,6 +843,7 @@ def construire(racine, maintenant=None):
                                            'feuilles_recentes': styles_doc.get('feuilles_recentes'),
                                            'regle': styles_doc.get('regle')} if styles else None),
             'matchs': lignes, 'bilan': bilan(resultats), 'apres_match': apres,
+            'controle_scenarios': controle_scenarios(racine),
             'journal_changements': journal_changements(racine, analyse_am),
             'bilan_lignes': bilan_lignes(racine, resultats),
             'fiabilite_stats': fiabilite_stats(racine, analyse_am),
@@ -895,56 +896,20 @@ def questions(D_):
 
 
 def scenarios(D_):
-    """11/11/2026 (paquet 221) — « Comment le match peut tourner » : les 6 issues regroupées, calculées sur la
-    distribution COMPLÈTE des scores exacts (avant compactage). Pour chaque joueur j (0 = home) :
-      — net     : victoire sans perdre de set, chaque set gagné avec au moins 3 jeux d'écart (6-3 ou mieux) ;
-      — accroché: victoire sans perdre de set, au moins un set gagné 6-4, 7-5 ou 7-6 ;
-      — long    : victoire en perdant au moins un set, dont « remontée » = victoire après avoir perdu le 1er set.
-    Pour le match : au moins un tie-break, au moins un set à 6-0 ou 6-1, jeux totaux (médiane, 10e et 90e centiles).
-    Pour chaque joueur, selon les simulations de CE match : chance de gagner s'il gagne le 1er set, et s'il le perd.
-    La somme des 6 issues vaut 1. Descriptif : mêmes 20 000 simulations que le %, rien de nouveau dans le %."""
-    tot = sum(float(r['probabilite']) for r in D_ or [])
-    if not tot:
-        return None
-    J = [{'net': 0.0, 'accroche': 0.0, 'long': 0.0, 'remontee': 0.0} for _ in (0, 1)]
-    tb = sec = 0.0
-    jeux = {}
-    s1 = [[0.0, 0.0], [0.0, 0.0]]          # [masse « j gagne le 1er set », masse « … et le match »]
-    for r in D_:
-        q, sc, v = float(r['probabilite']) / tot, [tuple(x) for x in r['score']], r.get('vainqueur')
-        if v not in (0, 1) or not sc:
-            continue
-        if any(max(h) == 7 and min(h) == 6 for h in sc):
-            tb += q
-        if any(max(h) == 6 and min(h) <= 1 for h in sc):
-            sec += q
-        n = sum(a + b for a, b in sc)
-        jeux[n] = jeux.get(n, 0.0) + q
-        w1 = 0 if sc[0][0] > sc[0][1] else 1
-        s1[w1][0] += q
-        s1[w1][1] += q if v == w1 else 0.0
-        perdus = sum(h[v] < h[1 - v] for h in sc)
-        if perdus == 0:
-            J[v]['net' if all(h[v] - h[1 - v] >= 3 for h in sc) else 'accroche'] += q
-        else:
-            J[v]['long'] += q
-            if sc[0][v] < sc[0][1 - v]:
-                J[v]['remontee'] += q
+    """11/11/2026 (paquet 221) — « Scénarios du match » : voir simulateur/scenarios_match.py (paquet 222)."""
+    import scenarios_match as SM
+    return SM.scenarios(D_)
 
-    def centile(c):
-        acc = 0.0
-        for k in sorted(jeux):
-            acc += jeux[k]
-            if acc >= c - 1e-9:
-                return k
-        return max(jeux) if jeux else None
-    r4 = lambda x: round(x, 4)
-    for j in (0, 1):
-        o = 1 - j
-        J[j]['si_set1_gagne'] = s1[j][1] / s1[j][0] if s1[j][0] > 0 else None
-        J[j]['si_set1_perdu'] = (s1[o][0] - s1[o][1]) / s1[o][0] if s1[o][0] > 0 else None
-    return {'j': [{k: (r4(v) if v is not None else None) for k, v in o.items()} for o in J], 'tiebreak': r4(tb), 'set_sec': r4(sec),
-            'jeux': {'p10': centile(0.10), 'mediane': centile(0.50), 'p90': centile(0.90)}}
+
+def controle_scenarios(racine):
+    """11/11/2026 (paquet 222) — contrôle des scénarios sur nos matchs réels (scenarios_match.controle), résumé."""
+    try:
+        import scenarios_match as SM
+        c = SM.controle(racine)
+    except Exception as e:  # noqa: BLE001
+        print(f'::warning::contrôle des scénarios non calculé : {type(e).__name__}: {e}')
+        return None
+    return {'matchs': c['matchs'], 'groupes': c['groupes']} if c.get('matchs') else None
 
 
 def compacter(doc, p_min=DISTRIBUTION_P_MIN):
