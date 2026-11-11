@@ -41,7 +41,7 @@ ICI = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, ICI)
 
 SIGNAUX = ('forme_service', 'entree', 'serveuses_wta', 'elo_service_retour', 'forme_set', 'changement_surface', 'retour_absence', 'age',
-           'favori_outsider', 'parcours_tournoi', 'favori_sous_estime', 'tiebreak', 'documentation_faible')
+           'favori_outsider', 'parcours_tournoi', 'favori_sous_estime', 'tiebreak', 'documentation_faible', 'format_match')
 CIRCUITS = ('ATP', 'WTA', 'CH')
 MIN_MATCHS, MARGE = 30, 0.001
 SORTIE = os.path.join('simulateur', 'fantomes_circuits.json')
@@ -50,6 +50,14 @@ SORTIE = os.path.join('simulateur', 'fantomes_circuits.json')
 # RETRAIT : deux semaines de suite où, avec au moins 30 matchs concernés, la log loss affichée est PIRE d'au moins 0,001
 # que sans eux (une semaine trop pauvre en matchs ne compte ni pour ni contre).
 COMBINES = os.path.join('simulateur', 'rapport_signaux_combines.json')
+# 11/11/2026 (paquet 228) — RÈGLE CUMULÉE pour les signaux listés ici. L'audit a montré que la règle « deux semaines de
+# suite » retire à tort un signal qui vaut vraiment +0,005 dans 71 % des cas en 12 semaines (30 matchs par semaine) :
+# son seuil de 0,001 est 17 fois sous le hasard d'une semaine. Pour ces signaux, jugés sur leur EFFET PROPRE :
+#   RETIRÉ si, depuis l'adoption, sur au moins 300 matchs concernés, le gain est négatif d'au moins 2 erreurs types ;
+#   sinon il reste en place. Une semaine isolée ne décide de rien.
+REGLE_CUMULEE = ('format_match',)
+CUMUL_MIN_MATCHS, CUMUL_ERREURS_TYPES = 300, 2.0
+FORMAT = os.path.join('simulateur', 'format_match.json')
 SIGNAUX_COMBINES = ('changement_surface', 'retour_absence', 'age', 'favori_outsider')
 
 
@@ -85,7 +93,22 @@ def directs(racine):
                 out.add(('tiebreak', c))
     except (OSError, ValueError):
         pass
+    try:                                                    # 11/11/2026 (paquet 228) : pente de l'Elo selon le format du match
+        with open(os.path.join(racine, FORMAT), encoding='utf-8') as f:
+            for c, v in (json.load(f).get('pentes') or {}).items():
+                if v:
+                    out.add(('format_match', c))
+    except (OSError, ValueError, AttributeError):
+        pass
     return out
+
+
+def retrait_cumule(v):
+    """Règle cumulée (REGLE_CUMULEE) : True si le signal doit être retiré d'après son bilan depuis l'adoption."""
+    n, g, et = v.get('matchs_total') or 0, v.get('gain_total'), v.get('erreur_type_total')
+    return bool(n >= CUMUL_MIN_MATCHS and g is not None and et is not None and g + CUMUL_ERREURS_TYPES * et < 0)
+
+
 DOSSIER_BILANS = os.path.join('simulateur', 'journal_pronostics', 'apres_match')
 
 
@@ -97,6 +120,9 @@ def paires(bilan, signal):
         return f['ll_elo'], f['ll_reference']
     sc = e.get('signaux_circuit') or {}
     if signal in (sc.get('appliques') or []) and sc.get('ll_sans') is not None and sc.get('ll_affiche') is not None:
+        if signal in REGLE_CUMULEE:                         # jugé sur son effet propre, pas sur celui de tous les signaux
+            seul = (sc.get('sans_chacun') or {}).get(signal)
+            return (seul, sc['ll_affiche']) if seul is not None else None
         return sc['ll_sans'], sc['ll_affiche']
     return None
 
@@ -136,8 +162,13 @@ def verdicts(bilans, aujourdhui):
             g = lambda L: round(sum(a - b for a, b in L) / len(L), 5) if L else None
             gs, gt = g(sem), g(tout)
             ok = len(sem) >= MIN_MATCHS and gs is not None and gs >= MARGE and gt is not None and gt >= MARGE
+            et = None                                       # 11/11/2026 : erreur type du gain depuis le début (règle cumulée)
+            if len(tout) >= 2:
+                d_ = [a - b for a, b in tout]
+                m_ = sum(d_) / len(d_)
+                et = round((sum((x - m_) ** 2 for x in d_) / len(d_)) ** .5 / len(d_) ** .5, 5)
             out[f'{sgn}|{c}'] = {'adopte': ok, 'matchs_semaine': len(sem), 'gain_semaine': gs,
-                                 'matchs_total': len(tout), 'gain_total': gt,
+                                 'matchs_total': len(tout), 'gain_total': gt, 'erreur_type_total': et,
                                  'raison': (f"{c} · semaine du {debut.isoformat()} : {len(sem)} matchs, gain {gs} ; "
                                             f"depuis le début : {len(tout)} matchs, gain {gt}")}
     return out
@@ -195,6 +226,16 @@ def main(argv):
             k_st = 'circuit|' + cle
             if k_st not in etat or not (ancien.get(cle) or {}).get('direct'):
                 etat[k_st] = {'adopte': True, 'semaine': None, 'serie_avant': 0, 'serie': 0}
+            if sgn in REGLE_CUMULEE:                        # 11/11/2026 : bilan cumulé depuis l'adoption, effet propre
+                if retrait_cumule(v):
+                    etat[k_st] = dict(etat[k_st], adopte=False)
+                    dec[cle] = dict(ancien.get(cle) or {}, adopte=False, direct=True, retire=True,
+                                    raison=v['raison'] + f" — erreur type {v.get('erreur_type_total')} : négatif de "
+                                                         f"{CUMUL_ERREURS_TYPES:g} erreurs types sur ≥ {CUMUL_MIN_MATCHS} matchs, retiré")
+                else:
+                    dec[cle] = dict(ancien.get(cle) or {}, adopte=True, direct=True,
+                                    raison=v['raison'] + f" — règle cumulée (erreur type {v.get('erreur_type_total')}) : en place")
+                continue
             if v['matchs_semaine'] < MIN_MATCHS:
                 dec[cle] = dict(ancien.get(cle) or {}, adopte=True, direct=True, raison=v['raison'] + ' — trop peu de matchs cette semaine : en place')
                 continue

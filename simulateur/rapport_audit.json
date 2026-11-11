@@ -401,5 +401,87 @@
   "19 études anciennes balayées mais non rejouées",
   "profils sur gazon",
   "facteurs hebdomadaires non rejoués groupe par groupe"
- ]
+ ],
+ "suites": {
+  "228": "format du match en ATP : simulateur/rapport_format_match.json (2 sets gagnants en place ; 3 sets gagnants en attente)"
+ },
+ "pistes_ajoutees_le_11_11": {
+  "regardé": "2018–2022 seulement, par-dessus l'Elo de production corrigé du format en ATP et les trois signaux solides (surface, absence, âge)",
+  "a_juger": [
+   {
+    "id": "elo_rapide_wta",
+    "paquet_prevu": 229,
+    "mesure_2018_2022": {
+     "WTA": {
+      "beta": 0.351,
+      "gain": 0.0023,
+      "erreur_type": 0.0006
+     },
+     "ATP": {
+      "beta": 0.169,
+      "gain": 0.0005,
+      "erreur_type": 0.0003
+     },
+     "CH": {
+      "beta": 0.067,
+      "gain": 0.0001,
+      "erreur_type": 0.0001
+     }
+    },
+    "regle": "même étude que la vitesse de l'Elo en WTA : la forme (vitesse dans la grille 1,0 · 1,1 · 1,25 · 1,4, ou Elo rapide à vitesse × 2,5 ajouté avec un β appris) est CHOISIE sur 2018–2022, puis jugée une seule fois sur 2023 → juin 2026 : au moins 0,001 sur au moins 1 000 matchs WTA, au moins 2 erreurs types, même sens sur les deux périodes"
+   },
+   {
+    "id": "grand_chelem_wta",
+    "paquet_prevu": null,
+    "mesure_2018_2022": {
+     "pente": 1.23,
+     "matchs": 2372,
+     "erreurs_types": 2.2
+    },
+    "regle": "à rejuger APRÈS l'étude de l'Elo WTA (un Elo plus rapide peut suffire) : pente propre aux Grands Chelems en WTA, apprise sur 2018–2022, jugée sur 2023 → ; au moins 0,001 sur au moins 1 000 matchs concernés, au moins 2 erreurs types, même sens"
+   }
+  ],
+  "sans_suite": [
+   {
+    "id": "abandon_au_match_precedent",
+    "gain_2018_2022": {
+     "ATP": 0.0,
+     "WTA": 0.0,
+     "CH": 0.0001
+    }
+   },
+   {
+    "id": "face_a_face",
+    "gain_2018_2022": {
+     "ATP": 0.0001,
+     "WTA": 0.0002,
+     "CH": 0.0
+    }
+   },
+   {
+    "id": "minutes_deja_jouees_dans_le_tournoi",
+    "gain_2018_2022": {
+     "ATP": 0.0,
+     "WTA": 0.0,
+     "CH": 0.0001
+    }
+   },
+   {
+    "id": "deja_reussi_dans_ce_tournoi",
+    "gain_2018_2022": {
+     "ATP": 0.0004,
+     "WTA": 0.0004,
+     "CH": 0.0002
+    }
+   },
+   {
+    "id": "tour_du_tableau",
+    "gain_2018_2022": {
+     "ATP": 0.0001,
+     "WTA": 0.0005,
+     "CH": 0.0005
+    }
+   }
+  ]
+ }
 }
