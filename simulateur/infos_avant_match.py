@@ -12,6 +12,8 @@ Archive Sackmann (2016 →) + feuilles TennisApi collectées depuis, rejouées d
   — APRÈS LE 1er SET (11/11/2026, paquet 221) : sur ses matchs des 24 derniers mois (abandons exclus), part des
     matchs gagnés quand il a GAGNÉ le 1er set, et quand il l'a PERDU (remontées), à côté de la moyenne de son
     circuit sur la même période. Descriptif (l'étude du set décisif du 05/11 : aucun apport au-delà de l'Elo).
+  — DANS CES CONDITIONS (11/11/2026, paquet 223) : victoires réelles et attendues par pays, continent, altitude, mois,
+    salle, chaleur, vent, humidité (conditions_joueurs.py). Descriptif, rien n'entre dans le %.
     « +3,1 » = 3 victoires de plus que ses chances ne le laissaient prévoir. Descriptif : les études du 05/11/2026
     (set décisif, tie-breaks) ont montré que ce genre d'écart ne prédit pas le match suivant — rien n'entre dans le %.
 Sortie : simulateur/infos_avant_match.json {uid: {'home': {...}, 'away': {...}, 'face_a_face': {...}}}, fusionnée
@@ -37,7 +39,7 @@ def score_txt(sets):
     return ' '.join(f'{a}-{b}' for a, b in sets or [])
 
 
-def rejouer(tout, alias=None):
+def rejouer(tout, alias=None, lieux=None):
     """Historique par joueur [(date, gagné, attendu|None, sets gagnés, sets perdus, adversaire, abandon)] et
     face-à-face {(a, b) trié: [(date, tournoi, vainqueur, score)]}."""
     import elo as E
@@ -66,8 +68,9 @@ def rejouer(tout, alias=None):
             sg = sum(1 for a, b in sets if a > b)
             sp = len(sets) - sg
             seq = tuple(1 if a > b else 0 for a, b in sets)       # sets du vainqueur, dans l'ordre
-            H[g].append((d, 1, pe, sg, sp, p, ab, seq, m['circuit']))
-            H[p].append((d, 0, None if pe is None else 1 - pe, sp, sg, g, ab, tuple(1 - x for x in seq), m['circuit']))
+            ctx = lieux.cases_du_match(m) if lieux is not None else None   # 11/11/2026 (paquet 223)
+            H[g].append((d, 1, pe, sg, sp, p, ab, seq, m['circuit'], ctx))
+            H[p].append((d, 0, None if pe is None else 1 - pe, sp, sg, g, ab, tuple(1 - x for x in seq), m['circuit'], ctx))
             F[tuple(sorted((g, p)))].append((d, m.get('tournoi'), g, score_txt(sets) + (' ab.' if ab else '')))
         attente.append((g, p, s, m.get('niveau') == 'G'))
     return H, F, k
@@ -132,7 +135,16 @@ def fiche_joueur(H, j, aujourdhui):
         n += 1
     sens, ns = sets_de_suite(L)
     return {'serie': {'type': 'victoires' if der else 'defaites', 'n': n, 'sets': sens, 'sets_n': ns},
-            'reussite': reussite(L, aujourdhui), 'apres_set1': apres_set1(L, aujourdhui)}
+            'reussite': reussite(L, aujourdhui), 'apres_set1': apres_set1(L, aujourdhui), 'conditions': conditions(L)}
+
+
+def conditions(L):
+    """Bilans « dans ces conditions » (conditions_joueurs.bilans), pays rares (< 3 matchs) retirés pour la taille."""
+    import conditions_joueurs as CJ
+    b = CJ.bilans(L)
+    if 'pays' in b:
+        b['pays'] = {k: v for k, v in b['pays'].items() if v[0] >= 3}
+    return b or None
 
 
 def face_a_face(F, a, b):
@@ -175,7 +187,8 @@ def main(argv):
             alias = dict(E.migrer_etat(json.load(f)).get('alias') or {})
     except (OSError, ValueError):
         alias = {}
-    H, F, k = rejouer(tout, alias)
+    import conditions_joueurs as CJ
+    H, F, k = rejouer(tout, alias, CJ.Lieux(racine))
     try:
         with open(os.path.join(racine, 'Tennis_Edge_Lab', 'live', 'pronostics.json'), encoding='utf-8') as f:
             matchs = json.load(f).get('matchs') or []
