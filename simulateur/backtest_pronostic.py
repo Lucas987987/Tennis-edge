@@ -229,17 +229,18 @@ def itf_en_production(racine):
         return True
 
 
-def rejouer(M, nous, td_rows, cle_c, idx, depart_bas, nouveaux=False, options=None, feuilles=None):
+def rejouer(M, nous, td_rows, cle_c, idx, depart_bas, nouveaux=False, options=None, feuilles=None, departs=None):
     """Rejoue tout dans l'ordre ; renvoie classement, pronostics de l'archive et de nos matchs.
     nouveaux : un nom tennis-data inconnu partout (ni Sackmann ni nos matchs) devient un nouveau
     joueur au lieu de faire jeter le match ; un nom ambigu reste écarté.
-    options : options de l'Elo (elo.Elo : poids_surface, welo, incertitude)."""
+    options : options de l'Elo (elo.Elo : poids_surface, welo, incertitude).
+    departs : départs propres à un niveau (elo.DEPARTS_PAR_NIVEAU par défaut ; {} = l'ancien réglage, pour le suivi)."""
     elo, noms, pred_sack = E.Elo(**(options or {})), {}, {}
     bas, tot = collections.Counter(), collections.Counter()
 
     def voir(k, circ):
         if depart_bas and circ in BAS:
-            elo.presenter(k, DEPART_BAS)
+            elo.presenter(k, E.depart_du_niveau(circ, DEPART_BAS, departs))   # 11/11/2026 (paquet 230) : ITF hommes à 1000
         tot[k] += 1
         bas[k] += circ in BAS
 
@@ -616,6 +617,8 @@ def main(argv):
     reference = None              # 29/10/2026 : variante AVANT l'ITF, gardée pour le modèle fantôme (comparaison en direct)
     reference_femmes = None       # 29/10/2026 : variante sans les seuls résultats ITF femmes (fantôme propre à ce changement)
     fantome_femmes = None         # 29/10/2026 (correctif) : gardée HORS de V — V ne contient que des variantes évaluées
+    departs_places = dict(E.DEPARTS_PAR_NIVEAU)   # 11/11/2026 (paquet 230) : vidé si le suivi retire le départ ITF
+    depart_itf = {'en_place': False, 'raison': "résultats ITF hommes absents de l'Elo"}
     if itf_rows and itf_en_production(racine):
         avant = sorted([m for m in itf_rows if m['date'] <= fin_sack and m['circuit'] != 'ITF'],   # ITF femmes : déjà dans l'archive
                        key=lambda m: m['date'])
@@ -625,6 +628,29 @@ def main(argv):
         V[nom5] = rejouer(M5, nous, td_rows, cle_c, idx, not retenue.startswith('depart_1500'),
                           nouveaux='+nouveaux_joueurs' in retenue, options=V[retenue]['options'],
                           feuilles=(fe_rows if '+feuilles' in retenue else []) + apres)
+        # 11/11/2026 (paquet 230) — DÉPART DES JOUEURS VUS D'ABORD EN ITF HOMMES : 1000 au lieu de 1200
+        # (etude_depart_itf.py). Suivi et retrait, règle écrite avant tout match suivi (elo.py) : le même classement
+        # est rejoué avec l'ancien départ ; sur nos matchs Challenger depuis le 12/11/2026, dès 300 matchs, gain cumulé
+        # négatif de plus de 2 erreurs types → retour à 1200. Jamais affiché comme pronostic.
+        if departs_places:
+            temoin = rejouer(M5, nous, td_rows, cle_c, idx, not retenue.startswith('depart_1500'),
+                             nouveaux='+nouveaux_joueurs' in retenue, options=V[retenue]['options'],
+                             feuilles=(fe_rows if '+feuilles' in retenue else []) + apres, departs={})
+            vp = lambda b: b['p_elo'] if b['gagnant'] == 'home' else 1 - b['p_elo']
+            ch = [k for k, b in enumerate(V[nom5]['B']) if b['gagnant'] in ('home', 'away') and circuit(b['tournoi']) == 'CH']
+            paires = [[(str(R_['B'][k]['date']), vp(R_['B'][k])) for k in ch] for R_ in (V[nom5], temoin)]
+            depart_itf = dict(E.suivi_departs(*paires), depart={k: v for k, v in departs_places.items()}, ancien_depart=DEPART_BAS,
+                              regle=(f"retour à {DEPART_BAS:g} si, sur nos matchs Challenger depuis le {E.DEPARTS_SUIVI_DEPUIS}, dès "
+                                     f"{E.DEPARTS_RETRAIT_MIN_MATCHS} matchs, le gain cumulé de log loss est négatif de plus de "
+                                     f"{E.DEPARTS_RETRAIT_ERREURS_TYPES:g} erreurs types"),
+                              tous_nos_matchs_challenger_pour_memoire=E.suivi_departs(*paires, depuis='0000'))
+            depart_itf['tous_nos_matchs_challenger_pour_memoire'].pop('retrait', None)
+            depart_itf['en_place'] = not depart_itf['retrait']
+            if depart_itf['retrait']:
+                V[nom5], departs_places = temoin, {}
+            print(f"Départ ITF hommes à {E.DEPARTS_PAR_NIVEAU.get('ITFH', DEPART_BAS):g} : "
+                  f"{'EN PLACE' if depart_itf['en_place'] else 'RETIRÉ'} — suivi {depart_itf['matchs']} matchs Challenger, gain "
+                  f"{depart_itf.get('gain_log_loss')} ± {depart_itf.get('erreur_type')}", flush=True)
         V[nom5]['rapA'], V[nom5]['rapB'], V[nom5]['A'] = evaluer(V[nom5], M5, td, T)
         b0, b1 = V[retenue]['rapB']['tous']['stats_seules'], V[nom5]['rapB']['tous']['stats_seules']
         a0, a1 = V[retenue]['rapA']['tous']['stats_seules'], V[nom5]['rapA']['tous']['stats_seules']
@@ -641,7 +667,8 @@ def main(argv):
             nom5h = nom5 + '-femmes'
             fantome_femmes = rejouer(M5, nous, td_rows, cle_c, idx, not retenue.startswith('depart_1500'),
                                nouveaux='+nouveaux_joueurs' in retenue, options=V[retenue]['options'],
-                               feuilles=(fe_rows if '+feuilles' in retenue else []) + [m for m in apres if m['circuit'] != 'ITF'])
+                               feuilles=(fe_rows if '+feuilles' in retenue else []) + [m for m in apres if m['circuit'] != 'ITF'],
+                               departs=departs_places)
             reference_femmes = nom5h
         reference, retenue = retenue, nom5
     elif itf_rows:
@@ -659,6 +686,7 @@ def main(argv):
            'elo_ameliore': elo_ameliore,
            'feuilles_dans_elo': feuilles_elo,
            'itf_dans_elo': itf_elo,
+           'depart_itf_hommes': depart_itf,
            'stabilite': stab,
            'joueurs_relies_nom_different': len(alias),
            'sackmann_jusqu_au': fin_sack.isoformat(), 'nos_matchs': len(nous),
@@ -675,6 +703,7 @@ def main(argv):
     with open(os.path.join(ICI, 'elo_etat.json'), 'w', encoding='utf-8') as f:
         json.dump({'genere_le': rap['genere_le'], 'dernier_match': str(nous[-1]['date'] if nous else fin_sack),
                    'variante': retenue, 'options': W['options'], 'depart_bas': DEPART_BAS if not retenue.startswith('depart_1500') else None,
+                   'departs_par_niveau': departs_places if depart_itf.get('en_place') else {},
                    'surfaces_tournois': table_surf, 'alias': alias, 'joueurs': elo.exporter(W['noms'])},
                   f, ensure_ascii=False, separators=(',', ':'))
     # 29/10/2026 — MODÈLE FANTÔME : l'Elo d'avant l'ITF, calculé à chaque passage, jamais affiché comme pronostic ;
