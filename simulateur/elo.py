@@ -277,3 +277,35 @@ def unifier(connus, nouveaux):
         if len(bons) == 1:
             alias[k] = next(iter(bons))
     return alias
+
+
+# ------------------------------------------------------------------ Elo réglé comme la production (11/11/2026, paquet 227)
+# Audit du 11/11/2026 : 19 études rejouaient l'archive avec « Elo() » sans réglage (surface 0,5, sans score pondéré ni
+# incertitude), alors que la production tourne avec les options de elo_etat.json (surface 0,3, score pondéré,
+# incertitude 5). Un signal appris contre l'un puis ajouté à l'autre est mal dosé (favori / outsider : β appris 1,2 à
+# 1,5, β juste 0,5 à 0,7 sur 2016–2022). Toute NOUVELLE étude sur l'archive prend donc son Elo ici ; le test
+# tests/test_parite_elo.py refuse un « Elo() » sans réglage dans une étude qui n'est pas dans sa liste figée.
+def options_production(racine=None):
+    """(options, départ bas) de l'Elo EN PLACE, lus dans simulateur/elo_etat.json.
+    options : {'poids_surface', 'welo', 'incertitude'} ; départ bas : note de départ des joueurs vus d'abord en
+    Challenger ou en ITF (None si la variante en place ne l'utilise pas)."""
+    import json
+    import os
+    racine = racine or os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
+    with open(os.path.join(racine, 'simulateur', 'elo_etat.json'), encoding='utf-8') as f:
+        etat = json.load(f)
+    return dict(etat.get('options') or {}), etat.get('depart_bas')
+
+
+def de_production(racine=None):
+    """(Elo vide, départ bas) : un classement neuf, réglé comme celui de la production, à rejouer sur l'archive.
+    À mettre à jour APRÈS CHAQUE MATCH (maj() juste après la prédiction), comme la production : la date de l'archive
+    est celle du début du tournoi, attendre le changement de date fige l'Elo pendant tout le tournoi.
+    Usage :
+        el, bas = E.de_production(racine)
+        if bas and circuit in ('CH', 'ITF'):
+            el.presenter(joueur, bas)
+        p = el.proba(a, b, surface)
+        el.maj(gagnant, perdant, surface, grand_chelem, E.part_jeux(sets) if complet else None)"""
+    options, depart_bas = options_production(racine)
+    return Elo(**options), depart_bas
