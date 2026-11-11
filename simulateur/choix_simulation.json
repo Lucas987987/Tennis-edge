@@ -38,33 +38,12 @@
   "stabilite": "en place"
  },
  "combinaison_continue": {
-  "n": 1052,
+  "n": 1056,
   "min": 400,
   "adopte": false,
-  "poids": {
-   "elo": 0.7028,
-   "simulation": 0.4077
-  },
-  "poids_appris": {
-   "elo": 0.7028,
-   "simulation": 0.4077
-  },
-  "jugement": {
-   "n": 30,
-   "depuis": "2026-11-10T15:30",
-   "jusqua": "2026-11-11T12:00",
-   "log_loss_continu": 0.68183,
-   "log_loss_poids_archive": 0.68186,
-   "log_loss_elo_seul": 0.69306,
-   "brier_continu": 0.24221,
-   "brier_poids_archive": 0.24345,
-   "brier_elo_seul": 0.24944,
-   "gain_log_loss": 3.4e-05,
-   "marge_requise": 0.001
-  },
   "juge_jusqua": "2026-11-11T12:00",
-  "raison": "sur les 30 matchs joués les plus récents : poids appris sur nos matchs 0.6818 contre poids de l'archive 0.6819 (Elo seul 0.6931) ; marge exigée 0.001 et Brier non dégradé",
-  "genere_le": "2026-11-11T17:32:57+00:00"
+  "raison": "en attente : 2 nouveaux matchs depuis le dernier jugement (il en faut 30)",
+  "genere_le": "2026-11-11T17:58:39+00:00"
  },
  "combinaison_feuilles": {
   "adopte": false,
