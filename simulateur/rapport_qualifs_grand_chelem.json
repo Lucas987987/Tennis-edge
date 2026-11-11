@@ -1,0 +1,92 @@
+{
+ "genere_le": "2026-11-11T19:19:34+00:00",
+ "regle": "pente propre aux qualifications de Grand Chelem apprise sur 2018–2022, jugée une seule fois sur 2023 → juin 2026 : gain ≥ 0,001 sur ≥ 1 000 matchs, même sens sur les deux périodes ; hommes et femmes à part",
+ "elo": "réglé comme la production (elo.de_production), mis à jour après chaque match",
+ "groupes": {
+  "hommes": {
+   "pente_apprise": 0.877,
+   "pente_sur_2023": 0.963,
+   "2018–2022": {
+    "matchs": 1991,
+    "gain": 0.00068,
+    "erreur_type": 0.00085,
+    "erreurs_types": 0.8,
+    "log_loss_base": 0.65389,
+    "log_loss": 0.65321,
+    "brier_base": 0.23081,
+    "brier": 0.23061,
+    "favori_annonce_pct": 62.7,
+    "favori_reel_pct": 62.4
+   },
+   "2023 → juin 2026": {
+    "matchs": 1425,
+    "gain": -0.0003,
+    "erreur_type": 0.00103,
+    "erreurs_types": -0.29,
+    "log_loss_base": 0.63888,
+    "log_loss": 0.63918,
+    "brier_base": 0.2242,
+    "brier": 0.22431,
+    "favori_annonce_pct": 63.7,
+    "favori_reel_pct": 64.0
+   },
+   "retenue": false,
+   "raisons": [
+    "gain sous 0.001"
+   ],
+   "passe_deux_erreurs_types": false
+  },
+  "femmes": {
+   "pente_apprise": 1.247,
+   "pente_sur_2023": 1.363,
+   "2018–2022": {
+    "matchs": 1861,
+    "gain": 0.00263,
+    "erreur_type": 0.00171,
+    "erreurs_types": 1.54,
+    "log_loss_base": 0.61476,
+    "log_loss": 0.61213,
+    "brier_base": 0.21274,
+    "brier": 0.21148,
+    "favori_annonce_pct": 63.5,
+    "favori_reel_pct": 66.6
+   },
+   "2023 → juin 2026": {
+    "matchs": 1435,
+    "gain": 0.00473,
+    "erreur_type": 0.00174,
+    "erreurs_types": 2.72,
+    "log_loss_base": 0.60816,
+    "log_loss": 0.60342,
+    "brier_base": 0.21047,
+    "brier": 0.20883,
+    "favori_annonce_pct": 63.2,
+    "favori_reel_pct": 67.9
+   },
+   "retenue": true,
+   "raisons": [],
+   "passe_deux_erreurs_types": true
+  }
+ },
+ "controle_nos_matchs": {
+  "fait_le": "2026-11-11",
+  "femmes": {
+   "matchs": 109,
+   "pente_propre": 1.2,
+   "gain_de_la_pente": 0.00121,
+   "erreur_type": 0.00541,
+   "lecture": "même sens que l'archive, ne fait pas moins bien ; trop peu de matchs pour conclure seul"
+  },
+  "hommes": {
+   "matchs": 171,
+   "favori_reel_pct": 73.1,
+   "favori_annonce_pct": 62.6,
+   "pente_propre": 1.6,
+   "lecture": "l'archive ne montre rien (pente 0,88 puis 0,96), nos 171 matchs de 2026 montrent un Elo trop prudent : à surveiller. Piste : le classement de production contient les résultats ITF hommes, pas l'archive ; le départ ITF plus bas (règle écrite au paquet 230) sera jugé sur les matchs à venir"
+  }
+ },
+ "en_production": {
+  "hommes": false,
+  "femmes": true
+ }
+}
