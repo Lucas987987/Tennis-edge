@@ -540,6 +540,8 @@ body.carte #video{display:block;width:1080px;height:1350px}
 @media(max-width:520px){.arena-nav{padding:7px 11px;font-size:12px}.reglages{gap:5px}}
 
 .panel.meteo{padding:16px}.tiroir>.panel.meteo{padding:0 16px 16px}.meteo .mt-l{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;margin:10px 0 6px}.meteo .mt-l dt{color:var(--dim);font-size:.9rem}.meteo .mt-l dd{margin:0;font-variant-numeric:tabular-nums}
+.panel.scen{padding:16px}.tiroir>.panel.scen{padding:0 16px 16px}.sc-barre{display:flex;height:14px;border-radius:8px;overflow:hidden;margin:10px 0 12px;gap:2px}.sc-barre i{display:block;height:100%}.sc-l{list-style:none;margin:0;padding:0;display:grid;gap:8px}.sc-l li{display:grid;grid-template-columns:12px 1fr auto;gap:10px;align-items:center}.sc-pt{width:12px;height:12px;border-radius:4px}.sc-n small{display:block;color:var(--dim);font-size:.8rem}.sc-l b{font-variant-numeric:tabular-nums;font-size:1.05rem}.sc-r{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;margin:14px 0 8px;padding-top:12px;border-top:1px solid var(--line)}.sc-r dt{color:var(--dim);font-size:.9rem}.sc-r dd{margin:0}.sc-ex{margin:8px 0}.sc-ex summary{cursor:pointer;color:var(--dim)}
+.s1{margin:14px 0 4px;padding-top:12px;border-top:1px solid var(--line)}.s1 h4{margin:0 0 4px}.s1-t{width:100%;border-collapse:collapse;margin:10px 0;font-variant-numeric:tabular-nums;font-size:.92rem}.s1-t th,.s1-t td{padding:5px 4px;text-align:right;vertical-align:top}.s1-t thead th{font-size:.75rem;color:var(--dim);font-weight:600}.s1-t thead th.s1-n{text-align:left;font-size:.95rem;font-weight:700}.s1-t tbody th{text-align:left;font-weight:500;color:var(--dim)}.s1-t tbody tr+tr{border-top:1px solid var(--line)}.s1-t small{display:block;color:var(--dim);font-size:.72rem}.s1-t .dim{color:var(--dim)}
 </style>
 <!-- TE_MATCH_UI_2026_11 -->
 
@@ -1267,6 +1269,65 @@ function repondre(m, q, j, n){
     case 'total': return pick(Z.total, n, Z.total_debut);
     case 'tb': return Z.tb;
   } return null;
+}
+// 11/11/2026 (paquet 221) — COMMENT LE MATCH PEUT TOURNER (vitrine.scenarios) : les 6 issues regroupées (somme 100 %),
+// au lieu d'une liste de scores exacts à 3-4 % chacun. Mêmes 20 000 simulations que le % : rien ne change dans le %.
+function scenariosListe(m){
+  const S = m.scenarios; if (!S || !Array.isArray(S.j) || S.j.length !== 2) return null;
+  const fr = L==='fr', N = [court(m.home), court(m.away)];
+  const lib = {
+    net: n => fr ? `${n} en 2 sets, sans trembler` : `${n} in straight sets, comfortably`,
+    accroche: n => fr ? `${n} en 2 sets accrochés` : `${n} in two tight sets`,
+    long: n => fr ? `${n} en 3 sets` : `${n} in three sets`};
+  const aide = {net: fr ? 'chaque set à 6-3 ou mieux' : 'every set 6-3 or better',
+                accroche: fr ? 'au moins un set à 6-4, 7-5 ou 7-6' : 'at least one set 6-4, 7-5 or 7-6'};
+  const L_ = [];
+  S.j.forEach((o,i)=>['net','accroche','long'].forEach(k=>L_.push({i, k, p:o[k], nom:lib[k](N[i]),
+    aide: k==='long' ? (o.remontee >= 0.005 ? (fr ? `dont ${pc0(o.remontee)} après avoir perdu le 1er set` : `incl. ${pc0(o.remontee)} after losing the 1st set`) : '') : aide[k]})));
+  return L_;
+}
+function scenarioIndice(m){
+  const L_ = scenariosListe(m); if (!L_) return '';
+  const b = L_.reduce((a,x)=>x.p>a.p?x:a), fr = L==='fr';
+  const k = {net: fr?'2 sets nets':'2 easy sets', accroche: fr?'2 sets serrés':'2 tight sets', long: fr?'3 sets':'3 sets'}[b.k];
+  return `${court(b.i ? m.away : m.home)}, ${k} · ${pc0(b.p)}`;
+}
+function rendApresSet1(m){
+  const S = m.scenarios, A = m.avant_match || {}, C = A.set1_circuit, fr = L==='fr';
+  if (!S || !Array.isArray(S.j)) return '';
+  const cel = (c) => c && c[1] >= 8 ? `${pc0(c[0]/c[1])}<small>${fmt(c[1])} ${fr?'matchs':'matches'}</small>` : `<span class="dim">—</span>`;
+  const bloc = (i) => {
+    const nom = court(i ? m.away : m.home), o = S.j[i] || {}, h = ((A[i ? 'away' : 'home'] || {}).apres_set1) || null;
+    if (o.si_set1_gagne == null) return '';
+    return `<table class="s1-t"><thead><tr><th class="s1-n" style="color:var(--p${i+1})">${esc(nom)}</th><th>${esc(fr?'Ce match':'This match')}</th><th>${esc(fr?'Ses 24 mois':'Last 24 months')}</th>${C ? `<th>${esc(fr?'Moyenne':'Average')} ${esc(C.circuit==='CH'?'Challenger':C.circuit)}</th>` : ''}</tr></thead>
+      <tbody><tr><th>${esc(fr?'1er set gagné':'Wins 1st set')}</th><td><b>${pc0(o.si_set1_gagne)}</b></td><td>${cel(h && h.gagne)}</td>${C ? `<td>${pc0(C.gagne)}</td>` : ''}</tr>
+      <tr><th>${esc(fr?'1er set perdu':'Loses 1st set')}</th><td><b>${pc0(o.si_set1_perdu)}</b></td><td>${cel(h && h.perdu)}</td>${C ? `<td>${pc0(C.perdu)}</td>` : ''}</tr></tbody></table>`;
+  };
+  return `<div class="s1"><h4>${esc(fr?'Après le 1er set':'After the 1st set')}</h4>
+    <p class="styles-note" style="margin-top:0">${esc(fr?'Chance de gagner le match selon l’issue du 1er set : pour ce match (les simulations), dans ses matchs des 24 derniers mois, et en moyenne sur le circuit.':'Chance of winning the match depending on the 1st set: in this match (the simulations), in their matches of the last 24 months, and on average on the tour.')}</p>
+    ${bloc(0)}${bloc(1)}
+    <p class="styles-note">${esc(fr?'L’historique est descriptif : nos études ont montré qu’il ne prédit pas mieux que le niveau des joueurs, il ne change donc pas le %. Moins de 8 matchs : non affiché.':'History is descriptive: our studies showed it does not predict better than the players’ level, so it does not change the %. Fewer than 8 matches: not shown.')}</p></div>`;
+}
+function rendScenarios(m, sc){
+  const L_ = scenariosListe(m); if (!L_) return '';
+  const S = m.scenarios, fr = L==='fr';
+  const ordre = [...L_].sort((a,b)=>b.p-a.p);
+  const teinte = {net:1, accroche:.7, long:.45};
+  const barre = L_.map(x=>`<i title="${esc(x.nom)} · ${pc0(x.p)}" style="width:${(x.p*100).toFixed(2)}%;background:var(--p${x.i+1});opacity:${teinte[x.k]}"></i>`).join('');
+  const lignes = ordre.map(x=>`<li><span class="sc-pt" style="background:var(--p${x.i+1});opacity:${teinte[x.k]}"></span><span class="sc-n">${esc(x.nom)}${x.aide ? `<small>${esc(x.aide)}</small>` : ''}</span><b>${pc0(x.p)}</b></li>`).join('');
+  const J = S.jeux || {};
+  const reperes = [
+    [fr?'Au moins un tie-break':'At least one tie-break', pc0(S.tiebreak)],
+    [fr?'Un set à 6-0 ou 6-1':'A set at 6-0 or 6-1', pc0(S.set_sec)],
+    J.mediane != null ? [fr?'Jeux dans le match':'Games in the match', fr ? `${J.mediane} le plus souvent ; entre ${J.p10} et ${J.p90} dans 8 matchs sur 10` : `${J.mediane} most often; between ${J.p10} and ${J.p90} in 8 matches out of 10`] : null
+  ].filter(Boolean);
+  return `<div class="panel scen"><h3>${esc(fr?'Scénarios du match':'Match scenarios')}</h3>
+    <div class="sc-barre" aria-hidden="true">${barre}</div>
+    <ul class="sc-l">${lignes}</ul>
+    <dl class="sc-r">${reperes.map(([k,v])=>`<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join('')}</dl>
+    ${rendApresSet1(m)}
+    ${sc ? `<details class="sc-ex"><summary>${esc(fr?'Scores exacts les plus probables':'Likeliest exact scores')}</summary><div class="bars">${sc}</div><p class="styles-note">${esc(fr?'Chaque score exact reste rare, même le plus probable : c’est pourquoi les scénarios ci-dessus les regroupent.':'Each exact score stays rare, even the likeliest: that is why the scenarios above group them.')}</p></details>` : ''}
+    <p class="styles-note">${esc(fr?'Les mêmes 20 000 simulations que le % : ces scénarios ne le changent pas. Contrôle sur 755 de nos matchs : set décisif prévu 34,6 %, réel 34,7 % ; tie-break prévu 31,8 %, réel 33,5 %.':'The same 20,000 simulations as the %: these scenarios do not change it. Check on 755 of our matches: deciding set forecast 34.6%, actual 34.7%; tie-break forecast 31.8%, actual 33.5%.')}</p></div>`;
 }
 // 11/11/2026 (paquet 220) — MÉTÉO ET CONDITIONS (simulateur/meteo_match.py) : lieu du tournoi, météo du jour local
 // (Open-Meteo), densité de l'air ; on dit honnêtement ce qui entre dans le % sur ce circuit.
@@ -2516,10 +2577,10 @@ function rendMdj(){
       ${rendVitesse(m)}
       ${rendMeteo(m)}
       ${rendStylesDescriptifs(m.styles_descriptifs,m)}
-      <div class="duo">
+      ${m.scenarios ? rendScenarios(m, sc) : `<div class="duo">
         ${bo ? `<div class="panel"><h3>${esc(t('sets_titre'))}</h3><div class="bars">${bo}</div></div>` : ''}
         ${sc ? `<div class="panel"><h3>${esc(t('scores_titre'))}</h3><div class="bars">${sc}</div></div>` : ''}
-      </div>
+      </div>`}
       ${lignes ? `<div class="panel"><h3>${esc(t('feuille_titre', nSim))}</h3><table class="sheet"><thead><tr><th></th><th class="c1">${esc(court(m.home))}</th><th class="c2">${esc(court(m.away))}</th></tr></thead><tbody>${lignes}</tbody></table></div>` : ''}
       ${rendDuel(m.duel,m)}
       ${rendQuestion(m)}
@@ -2575,6 +2636,7 @@ function tiroirsFiche(m){
     if (el.classList.contains('cartes') && m.cartes && Array.isArray(m.cartes.joueurs)) indice = m.cartes.joueurs.map(c => c.note).join(' · ');
     else if (el.classList.contains('essentiel')) { const n = el.querySelectorAll('li').length; if (n) indice = t('tr_constats', n); }
     else if (el.classList.contains('meteo')) indice = meteoIndice(m.meteo);
+    else if (el.classList.contains('scen')) indice = scenarioIndice(m);
     enveloppe(el, titre, titre, indice);
   });
   // ordre : l'en-tête du match, le post X, le bouton « tout ouvrir », puis le direct et les statistiques

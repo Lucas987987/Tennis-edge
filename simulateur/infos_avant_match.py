@@ -9,6 +9,9 @@ Archive Sackmann (2016 →) + feuilles TennisApi collectées depuis, rejouées d
   — FACE-À-FACE : bilan de toutes les rencontres connues et les 5 dernières (date, tournoi, vainqueur, score) ;
   — RÉUSSITE : sur ses 40 derniers matchs des 12 derniers mois (abandons et forfaits exclus), victoires RÉELLES contre
     victoires ATTENDUES, l'attendu étant la probabilité Elo d'avant chaque match (le cœur du % de l'algo, point-in-time).
+  — APRÈS LE 1er SET (11/11/2026, paquet 221) : sur ses matchs des 24 derniers mois (abandons exclus), part des
+    matchs gagnés quand il a GAGNÉ le 1er set, et quand il l'a PERDU (remontées), à côté de la moyenne de son
+    circuit sur la même période. Descriptif (l'étude du set décisif du 05/11 : aucun apport au-delà de l'Elo).
     « +3,1 » = 3 victoires de plus que ses chances ne le laissaient prévoir. Descriptif : les études du 05/11/2026
     (set décisif, tie-breaks) ont montré que ce genre d'écart ne prédit pas le match suivant — rien n'entre dans le %.
 Sortie : simulateur/infos_avant_match.json {uid: {'home': {...}, 'away': {...}, 'face_a_face': {...}}}, fusionnée
@@ -26,6 +29,7 @@ sys.path.insert(0, ICI)
 
 SORTIE = os.path.join(ICI, 'infos_avant_match.json')
 REUSSITE_N, REUSSITE_J = 40, 365
+SET1_J, SET1_MIN = 730, 8
 H2H_N = 5
 
 
@@ -62,8 +66,8 @@ def rejouer(tout, alias=None):
             sg = sum(1 for a, b in sets if a > b)
             sp = len(sets) - sg
             seq = tuple(1 if a > b else 0 for a, b in sets)       # sets du vainqueur, dans l'ordre
-            H[g].append((d, 1, pe, sg, sp, p, ab, seq))
-            H[p].append((d, 0, None if pe is None else 1 - pe, sp, sg, g, ab, tuple(1 - x for x in seq)))
+            H[g].append((d, 1, pe, sg, sp, p, ab, seq, m['circuit']))
+            H[p].append((d, 0, None if pe is None else 1 - pe, sp, sg, g, ab, tuple(1 - x for x in seq), m['circuit']))
             F[tuple(sorted((g, p)))].append((d, m.get('tournoi'), g, score_txt(sets) + (' ab.' if ab else '')))
         attente.append((g, p, s, m.get('niveau') == 'G'))
     return H, F, k
@@ -92,6 +96,30 @@ def reussite(L, aujourdhui):
     return {'matchs': len(R), 'victoires': v, 'attendu': round(att, 1), 'ecart': round(v - att, 1)}
 
 
+def apres_set1(L, aujourdhui):
+    """{'gagne': [matchs gagnés, matchs], 'perdu': [...]} après avoir gagné / perdu le 1er set, 24 derniers mois."""
+    out = {'gagne': [0, 0], 'perdu': [0, 0]}
+    for e in L:
+        if e[6] or not e[7] or (aujourdhui - e[0]).days > SET1_J:
+            continue
+        c = out['gagne' if e[7][0] == 1 else 'perdu']
+        c[0] += e[1]
+        c[1] += 1
+    return out
+
+
+def moyennes_set1(H, aujourdhui):
+    """Moyenne par circuit (ATP, WTA, CH) : un match compté une fois, du côté du joueur qui a gagné le 1er set."""
+    acc = collections.defaultdict(lambda: [0, 0])
+    for L in H.values():
+        for e in L:
+            if e[6] or not e[7] or e[7][0] != 1 or (aujourdhui - e[0]).days > SET1_J or len(e) < 9:
+                continue
+            acc[e[8]][0] += e[1]
+            acc[e[8]][1] += 1
+    return {c: round(v / n, 4) for c, (v, n) in acc.items() if c in ('ATP', 'WTA', 'CH') and n >= 100}
+
+
 def fiche_joueur(H, j, aujourdhui):
     L = H.get(j) or []
     if not L:
@@ -104,7 +132,7 @@ def fiche_joueur(H, j, aujourdhui):
         n += 1
     sens, ns = sets_de_suite(L)
     return {'serie': {'type': 'victoires' if der else 'defaites', 'n': n, 'sets': sens, 'sets_n': ns},
-            'reussite': reussite(L, aujourdhui)}
+            'reussite': reussite(L, aujourdhui), 'apres_set1': apres_set1(L, aujourdhui)}
 
 
 def face_a_face(F, a, b):
@@ -119,12 +147,16 @@ def face_a_face(F, a, b):
 
 def construire(matchs, H, F, k, aujourdhui):
     out = {}
+    moy = moyennes_set1(H, aujourdhui)
     for m in matchs:
         a, b = k(m.get('home')), k(m.get('away'))
         if not a or not b or not m.get('uid'):
             continue
         out[m['uid']] = {'home': fiche_joueur(H, a, aujourdhui), 'away': fiche_joueur(H, b, aujourdhui),
                          'face_a_face': face_a_face(F, a, b)}
+        c = m.get('circuit')
+        if c in moy:            # 11/11/2026 (paquet 221) : P(gagner | 1er set gagné) moyenne du circuit ; perdu = 1 − ce chiffre
+            out[m['uid']]['set1_circuit'] = {'circuit': c, 'gagne': moy[c], 'perdu': round(1 - moy[c], 4)}
     return out
 
 
