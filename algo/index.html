@@ -1909,11 +1909,162 @@ function brancherVideo(m){
     lancerVideo(m);
   };
 }
+// 11/11/2026 (paquet 224) — ANALYSE COMPLÈTE pour X : tout ce que la fiche sait du match, en un texte à copier.
+// Règles : aucune adresse du site, aucune cote, jamais « value » ni conseil de pari ; les blocs descriptifs disent
+// qu'ils ne changent pas le % ; un bloc sans donnée n'est pas écrit ; un bilan sous 15 matchs n'est pas chiffré.
+function analyseComplete(m, court_){
+  const Ls = L; L = 'fr';
+  try {
+    const n = Math.round(Number(m.simulation && m.simulation.n) || Number(D.simulations) || 0);
+    const nf = n.toLocaleString('fr-FR').replace(/ | /g,' ');
+    const H = court(m.home), A = court(m.away), N = [H, A], p = m.p_home, favH = p >= .5, fi = favH ? 0 : 1;
+    const fH = drapeau((m.pays||[])[0]), fA = drapeau((m.pays||[])[1]);
+    const pct = v => Math.round(v*100) + ' %', pct1 = v => (Math.round(v*1000)/10).toFixed(1).replace('.', ',') + ' %';
+    const d1 = v => Number(v).toFixed(1).replace('.', ','), sg = x => (x > 0 ? '+' : x < 0 ? '−' : '') + Math.abs(Math.round(x));
+    const tag = m.circuit === 'CH' ? '#ATPChallenger' : '#' + m.circuit;
+    const date = utc(m.debut).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
+    const hr = utc(m.debut).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}).replace(':','h');
+    const S = m.sets || {}, k = m.lignes_algo || {}, pf = Math.max(p, 1-p), fav = N[fi], out = N[1-fi];
+    const mt = m.meteo, sd = m.styles_descriptifs, av = m.avant_match || {}, Sc = m.scenarios;
+    const T = [], retenir = [];
+    const bloc = (...l) => { T.push(...l, ''); };
+    // en-tête
+    const lieu = mt ? [mt.ville, drapeau2(mt.code)].filter(Boolean).join(' ') : '';
+    T.push('🎾 ANALYSE COMPLÈTE · TENNIS EDGE 🧠', '');
+    T.push(`🏟️ ${m.tournoi}${lieu ? ' · ' + lieu : ''}`, '');
+    T.push(`${fH ? fH + ' ' : ''}${m.home} 🆚 ${m.away}${fA ? ' ' + fA : ''}`, '');
+    T.push(`📅 ${date.charAt(0).toUpperCase()+date.slice(1)} – ${hr}`, '');
+    T.push(pf < .55 ? `⚖️ MATCH TRÈS SERRÉ : ${fav} à peine devant (${pct(pf)})` : `🏆 FAVORI DE L'ALGO : ${(favH ? m.home : m.away).toUpperCase()} (${pct(pf)})`);
+    if (Array.isArray(m.fourchette)) T.push(`📏 Selon l'incertitude sur le niveau des joueurs : entre ${pct(fi ? 1-m.fourchette[1] : m.fourchette[0])} et ${pct(fi ? 1-m.fourchette[0] : m.fourchette[1])} (8 fois sur 10)`);
+    if (m.fiabilite && m.fiabilite.note != null) T.push(`🔒 Fiabilité : ${m.fiabilite.note}/100 (${m.fiabilite.niveau})`);
+    T.push('');
+    retenir.push(`✅ ${fav} favori avec ${pct(pf)} de chances de victoire.`);
+    // sets et scénarios
+    if (Object.keys(S).length){
+      const sF = favH ? ['2-0','2-1'] : ['0-2','1-2'];
+      const st = x => { const [a,b] = x.split('-').map(Number); return Math.max(a,b) + '-' + Math.min(a,b); };
+      bloc('📊 SCORES EN SETS', ...sF.filter(x=>S[x]!=null).map(x=>`✅ ${fav} ${st(x)} : ${pct(S[x])}`), `↩️ Victoire de ${out} : ${pct(1-pf)}`);
+    }
+    const LS = scenariosListe(m);
+    if (LS){
+      const o = [...LS].sort((a,b)=>b.p-a.p);
+      bloc('🧭 LES SCÉNARIOS DU MATCH', ...o.map(x=>`• ${x.nom} : ${pct(x.p)}${x.aide && x.k==='long' ? ' (' + x.aide + ')' : ''}`),
+        '« Sans trembler » = chaque set à 6-3 ou mieux ; « accrochés » = au moins un set à 6-4, 7-5 ou 7-6.');
+      retenir.push(`✅ Scénario le plus probable : ${o[0].nom} (${pct(o[0].p)}).`);
+      const C = D.controle_scenarios && D.controle_scenarios.groupes, G = C && (C[m.circuit] || C.tous);
+      if (G && G.net && G.net.n >= 60) T.splice(T.length - 1, 0, `🔍 Vérifié sur nos matchs passés : ${['net','accroche','long','remontee','gagne_apres_set1'].filter(x=>G[x] && G[x].verdict==='juste').length} scénarios sur 5 tombent juste.`);
+    }
+    const sc = (m.scores_probables||[]).slice(0,3);
+    if (sc.length && !court_) bloc('🎯 Scores exacts les plus fréquents :', ...sc.map(([x,v])=>`• ${x} : ${pct1(v)}`));
+    // duel service / retour
+    const du = m.duel;
+    if (du && Array.isArray(du.joueurs) && du.joueurs.length === 2){
+      const J = du.joueurs, surf = (SURF.fr[du.surface] || '').toLowerCase();
+      const l = ['⚔️ DUEL SERVICE / RETOUR', `📊 Indices de niveau${surf ? ' sur ' + surf : ''}, sur 100 (rang parmi les joueurs du circuit).`, ''];
+      const avantages = [];
+      [0,1].forEach(i => { const sv = J[i].serv_indice, rt = J[1-i].ret_indice; if (sv == null || rt == null) return;
+        const e = sv - rt; avantages.push(e);
+        l.push(`🎾 ${N[i]} au service face au retour de ${N[1-i]} :`, `🔹 Service ${N[i]} : ${sv}/100`, `🔹 Retour ${N[1-i]} : ${rt}/100`,
+          `${e >= 0 ? '✅ Avantage ' + N[i] : '✅ Avantage ' + N[1-i]} : ${Math.abs(e)} points.`, ''); });
+      l.push('Ces indices sont des classements relatifs au circuit, pas des probabilités de victoire.');
+      bloc(...l);
+      if (avantages.length === 2 && avantages[0] > 0 && avantages[1] < 0) retenir.push(`✅ ${H} a l'avantage dans les deux duels service / retour.`);
+      else if (avantages.length === 2 && avantages[0] < 0 && avantages[1] > 0) retenir.push(`✅ ${A} a l'avantage dans les deux duels service / retour.`);
+    }
+    // statistiques prédites et projections
+    const f = m.feuille_prevue;
+    if (f && f[0] && f[1]){
+      const l = ['📈 STATISTIQUES PRÉDITES', `${H} / ${A}`];
+      [['aces','🎾 Aces',d1],['breaks','💥 Breaks',d1],['premiere_pct','⚡ Premières balles',v=>d1(v)+' %'],
+       ['jeux_service_gagnes_pct','🔒 Jeux de service gagnés',v=>d1(v)+' %']].forEach(([c,lib,fm])=>{
+        if (f[0][c]!=null && f[1][c]!=null) l.push(`${lib} : ${fm(f[0][c])} / ${fm(f[1][c])}`); });
+      bloc(...l);
+    }
+    const proj = [];
+    if (k['handicap_favori_1.5'] != null) proj.push(`▪️ ${fav} gagne de plus de 1,5 jeu : ${pct1(k['handicap_favori_1.5'])}`);
+    if (k['total_plus_20.5'] != null) proj.push(`▪️ Plus de 20,5 jeux : ${pct1(k['total_plus_20.5'])}`);
+    if (k.set_decisif != null) proj.push(`▪️ Match en 3 sets : ${pct1(k.set_decisif)}`);
+    if (k.tie_break != null) proj.push(`▪️ Au moins un tie-break : ${pct1(k.tie_break)}`);
+    const pv = m.rythme && m.rythme.prevision;
+    if (pv && pv.minutes) proj.push(`▪️ Durée prévue : ${hm(pv.minutes)}`);
+    if (proj.length) bloc('📊 AUTRES PROJECTIONS', ...proj);
+    // styles
+    if (!court_ && sd && Array.isArray(sd.joueurs)){
+      const l = ['🔬 FACE AU STYLE ADVERSE'];
+      sd.joueurs.forEach((j, i) => { const g = j.global; if (!g || !g.n || !j.style_adverse) return;
+        l.push('', `${i ? (fA||'') : (fH||'')} ${N[i].toUpperCase()} FACE AUX ${styleLibPluriel(j.style_adverse).toUpperCase()}`.trim());
+        l.push(`📊 Tous terrains : ${g.victoires} victoires en ${g.n} matchs (${Math.round(g.pct)} %)${g.attendu_pct!=null ? ' · attendu : ' + Math.round(g.attendu_pct) + ' %' : ''}`);
+        const su = j.surface; if (su && su.n >= 15) l.push(`🎾 Sur ${(SURF.fr[m.surface]||'').toLowerCase()} : ${su.victoires} victoires en ${su.n} matchs (${Math.round(su.pct)} %)${su.attendu_pct!=null ? ' · attendu : ' + Math.round(su.attendu_pct) + ' %' : ''}`);
+        const der = (g.derniers||[]).slice(0,5); if (der.length >= 3){ const v = der.filter(x=>x.victoire).length; l.push(`${v >= 3 ? '✅' : '⚠️'} Ses ${der.length} derniers matchs contre ce style : ${v} victoire${v>1?'s':''} / ${der.length - v} défaite${der.length-v>1?'s':''}.`); }
+        if (g.attendu_pct != null && Math.abs(g.pct - g.attendu_pct) >= 5 && g.n >= 30) retenir.push(`${g.pct > g.attendu_pct ? '✅' : '⚠️'} ${N[i]} ${g.pct > g.attendu_pct ? 'fait mieux' : 'fait moins bien'} que prévu face aux ${styleLibPluriel(j.style_adverse)} (${sg(g.pct - g.attendu_pct)} pts sur ${g.n} matchs).`); });
+      if (l.length > 1) bloc(...l, '', 'Taux attendu = d’après le niveau des adversaires affrontés.');
+    }
+    // forme et face-à-face
+    const re = [0,1].map(i => (av[i?'away':'home']||{}).reussite);
+    if (re.some(Boolean)){
+      const l = ['📈 FORME RÉCENTE'];
+      re.forEach((r, i) => { if (r) l.push(`${r.ecart >= 1 ? '✅' : r.ecart <= -1 ? '⚠️' : '▪️'} ${N[i]} : ${r.victoires} victoires sur ses ${r.matchs} derniers matchs, pour ${d1(r.attendu)} attendues.`); });
+      bloc(...l);
+      const meilleur = re[0] && re[1] ? (re[0].ecart - re[1].ecart >= 2 ? 0 : re[1].ecart - re[0].ecart >= 2 ? 1 : null) : null;
+      if (meilleur != null) retenir.push(`✅ ${N[meilleur]} présente la meilleure dynamique récente.`);
+    }
+    const h2 = av.face_a_face;
+    if (h2 && h2.rencontres) bloc('🤝 FACE-À-FACE', h2.home === h2.away ? `⚖️ Égalité ${h2.home}-${h2.away}.` : `🏆 ${h2.home > h2.away ? H : A} mène ${Math.max(h2.home,h2.away)} victoire${Math.max(h2.home,h2.away)>1?'s':''} à ${Math.min(h2.home,h2.away)}.`);
+    // météo et conditions
+    if (mt){
+      const l = ['🌤️ MÉTÉO ET CONDITIONS'];
+      if (mt.interieur) l.push('🏟️ En salle : la météo extérieure ne joue pas.');
+      else if (mt.heure) l.push(`🕘 À ${mt.heure.h} h (heure locale) : ${Math.round(mt.heure.temperature)} °C, vent ${Math.round(mt.heure.vent||0)} km/h, humidité ${mt.heure.humidite} %`);
+      else if (mt.t_max != null) l.push(`🌡️ Jusqu'à ${Math.round(mt.t_max)} °C, vent jusqu'à ${Math.round(mt.vent_max)} km/h`);
+      if (mt.altitude_m != null) l.push(`⛰️ Altitude : ${mt.altitude_m} m`);
+      const R = conditionsLignes(m);
+      if (R && !court_){
+        const ref = [0,1].map(i => (((av[i?'away':'home']||{}).conditions||{}).tout||{}).tout);
+        const habit = i => ref[i] && ref[i][0] ? 100 * (ref[i][1] - ref[i][2]) / ref[i][0] : 0;
+        [0,1].forEach(i => { const b = R.map(r=>({r, c:r.cel[i]})).filter(x=>x.c.n>=15).map(x=>({...x, e: 100*(x.c.v-x.c.att)/x.c.n - habit(i)}))
+            .filter(x=>Math.abs(x.e) >= 100/Math.sqrt(x.c.n)).sort((a,b)=>Math.abs(b.e)-Math.abs(a.e))[0];
+          l.push(b ? `${b.e > 0 ? '✅' : '⚠️'} ${N[i]} : ${sg(b.e)} pts par rapport à son habitude — ${b.r.lib.replace(/^[\u{1F1E6}-\u{1F1FF}]{2}\s*/u,'')} (${b.c.n} matchs)`
+                   : `▪️ ${N[i]} : rien de marquant dans ces conditions.`); });
+      }
+      const dans = mt.dans_le_pct || {};
+      l.push(dans.densite_air ? 'La densité de l’air entre dans le % sur ce circuit ; le reste est descriptif.' : 'Descriptif : la météo ne change pas le %.');
+      bloc(...l);
+    }
+    // vitesse et rythme
+    const vc = m.vitesse_court, ry = m.rythme;
+    if (vc || ry){
+      const l = ['⚡ VITESSE DU COURT ET RYTHME'];
+      const v = vc && (vc.cpi_officiel != null ? vc.cpi_officiel : vc.cpi_estime);
+      if (v != null){ const prec = (vc.historique||[]).find(x => x.an === vc.annee - 1);
+        l.push(`🏟️ CPI ${vc.cpi_officiel != null ? 'officiel' : 'estimé'} : ${d1(v)} (${vc.classe})${prec ? ` · ${v - prec.cpi >= 0 ? '+' : '−'}${d1(Math.abs(v - prec.cpi))} par rapport à l'édition précédente` : ''}`); }
+      if (ry && Array.isArray(ry.joueurs) && ry.joueurs.every(j => j && j.tiebreak_pct != null)){
+        l.push('🎾 Matchs avec tie-break dans leur historique :', `• ${H} : ${d1(ry.joueurs[0].tiebreak_pct)} %`, `• ${A} : ${d1(ry.joueurs[1].tiebreak_pct)} %`);
+        if (ry.reference && ry.reference.tiebreak_pct != null) l.push(`• Référence circuit : ${Math.round(ry.reference.tiebreak_pct)} %`);
+      }
+      if (l.length > 1) bloc(...l);
+    }
+    // à retenir
+    retenir.push(`⚠️ Mais ${out} garde ${pct(1-pf)} de chances de victoire.`);
+    bloc('🎯 CE QU\'IL FAUT RETENIR', ...retenir, '', '⚠️ Forme, styles, conditions et vitesse du court sont descriptifs : ils ne modifient pas les probabilités affichées.');
+    // vigilance
+    const vg = (m.vigilance||[]).find(x => x.type === 'stat' && x.biais != null);
+    if (vg && !court_){
+      const [lib, acc] = ({doubles_fautes:['les doubles fautes','es'], aces:['les aces','s'], breaks:['les breaks','s'], premiere_pct:['le % de premières balles',''], gagnes_1re_pct:['les points gagnés derrière la 1re balle','s'], gagnes_2e_pct:['les points gagnés derrière la 2e balle','s']})[vg.cle] || [vg.cle, ''];
+      bloc('🔬 POINT DE VIGILANCE DU MODÈLE', `Sur les six dernières semaines, ${lib} ${acc ? 'ont' : 'a'} été ${vg.biais < 0 ? 'surestimé' : 'sous-estimé'}${acc} de ${d1(Math.abs(vg.biais))} en moyenne (${m.circuit === 'CH' ? 'Challenger' : m.circuit}). Un écart que nous surveillons.`);
+    }
+    T.push(`🎥 Un scénario simulé point par point parmi les ${nf} réalisés, en vidéo.`);
+    T.push('📊 Après le match, nous comparerons les projections aux statistiques réelles.', '');
+    T.push(`🧠 ${nf} simulations indépendantes des cotes des bookmakers.`, '');
+    T.push(`${tag} #TennisEdge #Tennis #Prediction`);
+    return T.join('\n').replace(/\n{3,}/g, '\n\n');
+  } finally { L = Ls; }
+}
 function ouvrirPost(m, mode){
   const z = document.getElementById('post-zone'); if (!z) return;
   const res = mode === 'resultat';
-  const titre = z.querySelector('h3'); if (titre) titre.textContent = res ? 'Post X · résultat' : 'Post X · avant match';
-  const montre = v => { document.getElementById('post-txt').value = res ? postResultat(m, v === 'court') : postX(m, v === 'court');
+  const ana = mode === 'analyse';
+  const titre = z.querySelector('h3'); if (titre) titre.textContent = res ? 'Post X · résultat' : ana ? 'Post X · analyse complète' : 'Post X · avant match';
+  const montre = v => { document.getElementById('post-txt').value = res ? postResultat(m, v === 'court') : ana ? analyseComplete(m, v === 'court') : postX(m, v === 'court');
     document.getElementById('post-nb').textContent = document.getElementById('post-txt').value.length + ' caractères';
     z.querySelectorAll('[data-post]').forEach(b=>b.setAttribute('aria-pressed', String(b.dataset.post === v))); };
   z.hidden = false; montre('long');
@@ -2636,7 +2787,7 @@ function rendMdj(){
         ${m.evolution && Math.abs(m.evolution.ecart_pts) >= 1 ? `<p class="evol">${esc(t('es_premier', pc0(m.evolution.premier_p_home), court(m.home), m.evolution.premier_le ? dateHeure(m.evolution.premier_le) : ''))}</p>` : ''}
         ${rendType(m)}<div class="te-fiab-incertitude">${rendFiabilite(m.fiabilite, true)}</div>
         ${rendCartes(m)}
-        <p style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn" id="b-post">📝 Générer le post X · avant match</button><button type="button" class="btn" id="b-analyse-detaillee" aria-expanded="false" aria-controls="te-analyse-detaillee">📊 ${L==='fr' ? 'Analyse détaillée' : 'Detailed analysis'}</button>${utc(m.debut).getTime() <= Date.now() ? '<button type="button" class="btn" id="b-post-res">🏁 Générer le post X · résultat</button>' : ''}${VIDEO_ICI ? '<button type="button" class="btn" id="b-video">🎬 Générer la vidéo</button>' : ''}</p>
+        <p style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn" id="b-post">📝 Générer le post X · avant match</button><button type="button" class="btn" id="b-analyse-x">🧾 Post X · analyse complète</button><button type="button" class="btn" id="b-analyse-detaillee" aria-expanded="false" aria-controls="te-analyse-detaillee">📊 ${L==='fr' ? 'Analyse détaillée' : 'Detailed analysis'}</button>${utc(m.debut).getTime() <= Date.now() ? '<button type="button" class="btn" id="b-post-res">🏁 Générer le post X · résultat</button>' : ''}${VIDEO_ICI ? '<button type="button" class="btn" id="b-video">🎬 Générer la vidéo</button>' : ''}</p>
         <section id="te-analyse-detaillee" class="te-analyse-detaillee" hidden aria-live="polite"></section>
         <div id="video-zone" hidden style="margin-top:8px"><p class="ligne" style="gap:8px;justify-content:flex-start;flex-wrap:wrap;align-items:center"><input id="video-cle" type="password" autocomplete="off" placeholder="Clé privée" aria-label="Clé privée" style="flex:1;min-width:160px;background:rgba(var(--wv),.04);color:inherit;border:1px solid var(--line2);border-radius:999px;padding:9px 14px;font:inherit"><button type="button" class="btn" id="video-ok">Lancer</button></p></div>
         <p id="video-msg" class="aide" aria-live="polite"></p>
@@ -2671,6 +2822,7 @@ function rendMdj(){
   if (bAnalyse) bAnalyse.onclick = () => ouvrirAnalyseDetaillee(m);
   const bPost = document.getElementById('b-post'); if (bPost) bPost.onclick = () => ouvrirPost(m);
   const bPostRes = document.getElementById('b-post-res'); if (bPostRes) bPostRes.onclick = () => ouvrirPost(m, 'resultat');
+  const bAna = document.getElementById('b-analyse-x'); if (bAna) bAna.onclick = () => ouvrirPost(m, 'analyse');
   brancherQuestion(m);
   brancherVideo(m);
   tiroirsFiche(m);
