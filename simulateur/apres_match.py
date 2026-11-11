@@ -333,6 +333,16 @@ def bilan_match(uid, f, reel, duree_reelle=None):
     if sgc.get('p_home_sans') is not None and isinstance(p, (int, float)):
         # 04/11/2026 : signaux adoptés sur ce circuit — log loss affichée (avec) contre sans eux
         E['signaux_circuit'] = {'appliques': sgc.get('appliques') or [], 'll_affiche': lp_(p), 'll_sans': lp_(sgc['p_home_sans'])}
+        # 11/11/2026 (paquet 228) : log loss sans CHAQUE signal pris seul (le % affiché, son décalage retiré), pour
+        # juger un signal sur son effet propre et non sur l'effet de tous les signaux du match
+        if isinstance(sgc.get('decalages'), dict) and 0 < p < 1:
+            z_ = math.log(p / (1 - p))
+            E['signaux_circuit']['sans_chacun'] = {k_: lp_(1 / (1 + math.exp(-(z_ - float(d_)))))
+                                                   for k_, d_ in sgc['decalages'].items() if isinstance(d_, (int, float))}
+    fmt = ct.get('format_match') or {}
+    if fmt.get('p_home') is not None and isinstance(p, (int, float)):
+        # 11/11/2026 (paquet 228) : pronostic affiché contre le même avec la pente du format (tant qu'elle n'est pas appliquée)
+        E['fantome_format_match'] = {'ll_elo': lp_(p), 'll_reference': lp_(fmt['p_home'])}
     srv = ct.get('serveuses_wta') or {}
     if srv.get('p_home') is not None and isinstance(p, (int, float)):
         # 01/11/2026 : pronostic affiché contre le même corrigé du duel serveuse / non-serveuse en WTA
@@ -607,7 +617,7 @@ def analyser(B):
                       'fantome_serveuses_wta', 'fantome_elo_service_retour', 'fantome_forme_set',
                       'fantome_changement_surface', 'fantome_retour_absence', 'fantome_age',
                       'fantome_favori_outsider', 'fantome_favori_sous_estime', 'fantome_tiebreak',
-                      'fantome_documentation_faible'):
+                      'fantome_documentation_faible', 'fantome_format_match'):
             fa = [e[cle_f] for e in E if cle_f in e]
             if fa:
                 a_, b_ = _moy([x['ll_elo'] for x in fa]), _moy([x['ll_reference'] for x in fa])
