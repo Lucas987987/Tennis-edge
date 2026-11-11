@@ -813,6 +813,12 @@ def construire(racine, maintenant=None):
         CJ.ajouter_cartes(lignes, racine, etat)
     except Exception as e:  # noqa: BLE001
         print(f'::warning::cartes des joueurs non calculées : {type(e).__name__}: {e}')
+    # 11/11/2026 (paquet 220) — météo et conditions du lieu (tiroir de la fiche) ; dit ce qui entre dans le %
+    try:
+        import meteo_match as MM
+        MM.ajouter_meteo(lignes, racine)
+    except Exception as e:  # noqa: BLE001
+        print(f'::warning::météo des matchs non calculée : {type(e).__name__}: {e}')
     try:
         import apres_match as AM
         facteurs_doc = _lire(os.path.join(racine, 'simulateur', 'facteurs.json'), {}) or {}
