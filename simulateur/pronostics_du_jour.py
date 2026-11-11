@@ -194,6 +194,7 @@ ECHANGES = None       # 30/10/2026 : longueur des échanges (Match Charting Proj
 STYLES_MATCHS = {}    # 01/11/2026 : styles service–retour figés avant match (styles_descriptifs.json), fantôme seul
 ELO_SR = None         # 04/11/2026 : Elo au service et au retour (elo_service_retour.py), fantôme seul
 SIGNAUX_CIRCUIT = {}  # 04/11/2026 : {signal: [circuits]} adoptés par circuit (fantomes_circuits.py)
+QUALIFS_GC = {}       # 11/11/2026 (paquet 232) : {circuit: pente de l'Elo en qualifications de Grand Chelem} (simulateur/qualifs_grand_chelem.json)
 GRAND_CHELEM = {}     # 11/11/2026 (paquet 231) : {circuit: pente de l'Elo en Grand Chelem, tableau principal} (simulateur/grand_chelem.json)
 FORMAT_MATCH = {}     # 11/11/2026 (paquet 228) : {circuit: {sets gagnants: pente de l'Elo}} (simulateur/format_match.json)
 # 04/11/2026 — changement de surface (etude_changement_surface.py, archive 2016–2022 → jugé 2023 →, positif sur les
@@ -809,8 +810,48 @@ def controle_grand_chelem(p_home, p_elo, c, tournoi, tour):
     return {'p_home': round(sig(lg(p_home) + d), 4), 'decalage': round(d, 4), 'pente': k, 'tour': str(tour)}
 
 
+def qualification_gc(tournoi, tour):
+    """11/11/2026 (paquet 232) — vrai si ce match est un match de QUALIFICATIONS de Grand Chelem. Dans nos données, les
+    qualifications portent le même nom de tournoi que le tableau principal : seul le tour (programme du jour) les
+    distingue. Tour inconnu : faux (le match est traité comme avant, en tableau principal)."""
+    return bool(NR.grand_chelem(tournoi) and 'qualif' in str(tour or '').lower())
+
+
+def sets_gagnants(tournoi, tour):
+    """11/11/2026 (paquet 232) — 3 sets gagnants dans le tableau principal d'un Grand Chelem masculin, 2 partout
+    ailleurs. CORRECTION : les qualifications d'un Grand Chelem masculin se jouent en 2 sets gagnants (toutes, depuis
+    2022) ; elles étaient simulées en 3."""
+    return 3 if NR.cinq_sets(tournoi) and not qualification_gc(tournoi, tour) else 2
+
+
+def charger_qualifs_gc(racine):
+    """11/11/2026 (paquet 232) — {circuit: pente} en production, {} si le fichier manque."""
+    try:
+        with open(os.path.join(racine, 'simulateur', 'qualifs_grand_chelem.json'), encoding='utf-8') as f:
+            doc = json.load(f)
+        return {c: float(v) for c, v in (doc.get('pentes') or {}).items() if v}
+    except (OSError, ValueError, TypeError):
+        return {}
+
+
+def controle_qualifs_gc(p_home, p_elo, c, tournoi, tour):
+    """11/11/2026 (paquet 232, etude_qualifs_grand_chelem.py) — en qualifications de Grand Chelem chez les femmes, le
+    favori gagne plus souvent que l'Elo ne l'annonce : 67,9 % réels pour 63,2 % annoncés sur 1 435 matchs jugés (2023 →
+    juin 2026), pente 1,247 apprise sur 2018–2022, gain 0,0047 ± 0,0017. Rien chez les hommes (étude rejetée). Seule la
+    PART DE L'ELO du % bouge, comme pour le format et le Grand Chelem. None hors qualifications de Grand Chelem."""
+    k = QUALIFS_GC.get(c)
+    if not k or p_home is None or p_elo is None or not qualification_gc(tournoi, tour):
+        return None
+    lg = lambda q: math.log(min(max(q, 1e-6), 1 - 1e-6) / (1 - min(max(q, 1e-6), 1 - 1e-6)))
+    w = float((COMBINAISON or {}).get('elo', 1.0))
+    d = w * (k - 1.0) * lg(p_elo)
+    if abs(d) < 1e-4:
+        return None
+    return {'p_home': round(sig(lg(p_home) + d), 4), 'decalage': round(d, 4), 'pente': k, 'tour': str(tour)}
+
+
 def signaux_du_match(c, p_base, fsv_ctl, ent_ctl, srv_ctl, sr_ctl, cs_ctl=None, ra_ctl=None, age_ctl=None, role_ctl=None,
-                     pt_ctl=None, fse_ctl=None, doc_ctl=None, fmt_ctl=None, gc_ctl=None):
+                     pt_ctl=None, fse_ctl=None, doc_ctl=None, fmt_ctl=None, gc_ctl=None, qgc_ctl=None):
     """04/11/2026 — décalages (logit) des signaux ADOPTÉS SUR CE CIRCUIT (fantomes_circuits.py) ; {signal: décalage}."""
     if not SIGNAUX_CIRCUIT or p_base is None:
         return {}
@@ -823,7 +864,8 @@ def signaux_du_match(c, p_base, fsv_ctl, ent_ctl, srv_ctl, sr_ctl, cs_ctl=None, 
             'favori_sous_estime': (fse_ctl or {}).get('decalage'),
             'documentation_faible': (doc_ctl or {}).get('decalage'),
             'format_match': (fmt_ctl or {}).get('decalage'),
-            'grand_chelem': (gc_ctl or {}).get('decalage')}
+            'grand_chelem': (gc_ctl or {}).get('decalage'),
+            'qualifs_grand_chelem': (qgc_ctl or {}).get('decalage')}
     return {k: v for k, v in cand.items() if v and c in (SIGNAUX_CIRCUIT.get(k) or [])}
 
 
@@ -1195,7 +1237,8 @@ def construire(racine, maintenant=None):
     except (OSError, ValueError, KeyError):
         fem_etat, elo_fem = None, None
     global ACTIVITE, PROGRAMME, FORME_SERVICE, ECHANGES, STYLES_MATCHS, ELO_SR, SIGNAUX_CIRCUIT, DATES_MATCHS, SEUILS_FORME, NAISSANCES, RESIDUS_ROLE, BETAS_COMBINES, PARCOURS
-    global FORMAT_MATCH, GRAND_CHELEM
+    global FORMAT_MATCH, GRAND_CHELEM, QUALIFS_GC
+    QUALIFS_GC = charger_qualifs_gc(racine)                 # 11/11/2026 (paquet 232) : pente de l'Elo en qualifications de Grand Chelem
     GRAND_CHELEM = charger_grand_chelem(racine)             # 11/11/2026 (paquet 231) : pente de l'Elo en Grand Chelem
     FORMAT_MATCH = charger_format_match(racine)             # 11/11/2026 (paquet 228) : pente de l'Elo selon le format
     STYLES_MATCHS = charger_styles_matchs(racine)
@@ -1333,7 +1376,9 @@ def construire(racine, maintenant=None):
         if s not in E.SURFACES:
             rejets.append({'home': x['home'], 'away': x['away'], 'tournoi': x['tournoi'], 'raison': 'surface_inconnue'})
             continue
-        sg = 3 if NR.cinq_sets(x['tournoi']) else 2
+        tour_ = tour_du_match(h, a, x['debut'])
+        sg = sets_gagnants(x['tournoi'], tour_)              # 11/11/2026 (paquet 232) : qualifications de Grand Chelem en 2 sets gagnants
+        sg_fmt = None if qualification_gc(x['tournoi'], tour_) else sg     # la pente du format n'a pas été étudiée en qualifications
         pa0, pb0 = S.service(h, a, c, s)
         stats = pronostic(elo.proba(h, a, s), c, sg, pa0, pb0)
         uid = f"{x['debut'].date()}_{NR.slug(x['home'])}_{NR.slug(x['away'])}"
@@ -1416,8 +1461,9 @@ def construire(racine, maintenant=None):
                                        controle_parcours(p_base, c, h, a, x['tournoi'], x['debut']),
                                        controle_favori_sous_estime(p_base, stats['p_home'], p_sim),
                                        controle_documentation(p_base, c, h, a),
-                                       controle_format(p_base, stats['p_home'], c, sg),
-                                       controle_grand_chelem(p_base, stats['p_home'], c, x['tournoi'], tour_du_match(h, a, x['debut'])))
+                                       controle_format(p_base, stats['p_home'], c, sg_fmt),
+                                       controle_grand_chelem(p_base, stats['p_home'], c, x['tournoi'], tour_),
+                                       controle_qualifs_gc(p_base, stats['p_home'], c, x['tournoi'], tour_))
                 adoptes_ici = tuple(k for k, v in SIGNAUX_CIRCUIT.items() if c in (v or []))
                 if sh_:
                     q_ = min(max(p_base, 1e-6), 1 - 1e-6)
@@ -1463,7 +1509,7 @@ def construire(racine, maintenant=None):
                     'echanges': _echanges(h, a, x['debut']),
                     'entree': entree_du_match(h, a, x['debut']),
                     'tour': tour_du_match(h, a, x['debut']),     # 05/11/2026 : tour du tableau (critère de fragilité)
-                    'controle': _avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_serveuses(
+                    'controle': _avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_serveuses(
                         _avec_entree(_avec_service(_avec_forme(controle_fantome(elo, elo_ref, ref_etat, etat, h, a, c, s,
                                                                                 elo_fem, fem_etat), forme_ctl),
                                                    None if 'forme_service' in adoptes_ici else fsv_ctl),
@@ -1489,10 +1535,11 @@ def construire(racine, maintenant=None):
                         'documentation_faible', None if 'documentation_faible' in adoptes_ici else
                         controle_documentation((combinaison or {}).get('p_home'), c, h, a)),
                         'format_match', None if 'format_match' in adoptes_ici else
-                        controle_format((combinaison or {}).get('p_home'), (combinaison or {}).get('p_elo'), c, sg)),
+                        controle_format((combinaison or {}).get('p_home'), (combinaison or {}).get('p_elo'), c, sg_fmt)),
                         'grand_chelem', None if 'grand_chelem' in adoptes_ici else
-                        controle_grand_chelem((combinaison or {}).get('p_home'), (combinaison or {}).get('p_elo'), c, x['tournoi'],
-                                              tour_du_match(h, a, x['debut'])))})
+                        controle_grand_chelem((combinaison or {}).get('p_home'), (combinaison or {}).get('p_elo'), c, x['tournoi'], tour_)),
+                        'qualifs_grand_chelem', None if 'qualifs_grand_chelem' in adoptes_ici else
+                        controle_qualifs_gc((combinaison or {}).get('p_home'), (combinaison or {}).get('p_elo'), c, x['tournoi'], tour_))})
     doc = {'genere_le': maintenant.isoformat(timespec='seconds') + 'Z', 'elo_au': etat.get('dernier_match'),
             'horizon_h': HORIZON_H, 'sigma': SIGMA, 'simulations': SIMULATIONS if PR is not None else 0,
             'qualite_horodatages': couverture_horodatages,

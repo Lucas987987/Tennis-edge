@@ -42,7 +42,7 @@ sys.path.insert(0, ICI)
 
 SIGNAUX = ('forme_service', 'entree', 'serveuses_wta', 'elo_service_retour', 'forme_set', 'changement_surface', 'retour_absence', 'age',
            'favori_outsider', 'parcours_tournoi', 'favori_sous_estime', 'tiebreak', 'documentation_faible', 'format_match',
-           'grand_chelem')
+           'grand_chelem', 'qualifs_grand_chelem')
 CIRCUITS = ('ATP', 'WTA', 'CH')
 MIN_MATCHS, MARGE = 30, 0.001
 SORTIE = os.path.join('simulateur', 'fantomes_circuits.json')
@@ -56,10 +56,11 @@ COMBINES = os.path.join('simulateur', 'rapport_signaux_combines.json')
 # son seuil de 0,001 est 17 fois sous le hasard d'une semaine. Pour ces signaux, jugés sur leur EFFET PROPRE :
 #   RETIRÉ si, depuis l'adoption, sur au moins 300 matchs concernés, le gain est négatif d'au moins 2 erreurs types ;
 #   sinon il reste en place. Une semaine isolée ne décide de rien.
-REGLE_CUMULEE = ('format_match', 'grand_chelem')     # 11/11/2026 (paquet 231) : + pente Grand Chelem (décision de Lucas)
+REGLE_CUMULEE = ('format_match', 'grand_chelem', 'qualifs_grand_chelem')     # 11/11/2026 (paquet 231) : + pente Grand Chelem (décision de Lucas)
 CUMUL_MIN_MATCHS, CUMUL_ERREURS_TYPES = 300, 2.0
 FORMAT = os.path.join('simulateur', 'format_match.json')
 GRAND_CHELEM = os.path.join('simulateur', 'grand_chelem.json')
+QUALIFS_GC = os.path.join('simulateur', 'qualifs_grand_chelem.json')
 SIGNAUX_COMBINES = ('changement_surface', 'retour_absence', 'age', 'favori_outsider')
 
 
@@ -107,6 +108,13 @@ def directs(racine):
             for c, v in (json.load(f).get('pentes') or {}).items():
                 if v:
                     out.add(('grand_chelem', c))
+    except (OSError, ValueError, AttributeError):
+        pass
+    try:                                                    # 11/11/2026 (paquet 232) : pente des qualifications de Grand Chelem
+        with open(os.path.join(racine, QUALIFS_GC), encoding='utf-8') as f:
+            for c, v in (json.load(f).get('pentes') or {}).items():
+                if v:
+                    out.add(('qualifs_grand_chelem', c))
     except (OSError, ValueError, AttributeError):
         pass
     return out
