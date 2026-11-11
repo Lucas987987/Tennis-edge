@@ -597,7 +597,8 @@ def journal_changements(racine, analyse=None):
                                                  'fantome_forme_set', 'fantome_changement_surface',
                                                  'fantome_retour_absence', 'fantome_age',
                                                  'fantome_favori_outsider', 'fantome_favori_sous_estime',
-                                                 'fantome_tiebreak', 'fantome_documentation_faible', 'fantome_format_match') if T.get(k)]
+                                                 'fantome_tiebreak', 'fantome_documentation_faible', 'fantome_format_match',
+                                                 'fantome_grand_chelem') if T.get(k)]
     return doc
 
 

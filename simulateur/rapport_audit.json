@@ -405,7 +405,8 @@
  "suites": {
   "228": "format du match en ATP : simulateur/rapport_format_match.json — CORRIGÉ au paquet 229 (Coupe Davis exclue du jugement) : 2 sets gagnants en place avec la pente 0,826 (gain 0,0016 ± 0,0008) ; 3 sets gagnants en attente",
   "229": "vitesse de l'Elo en WTA et départ des petits niveaux : simulateur/rapport_vitesse_elo.json — les deux REJETÉS sur 2023 → juin 2026",
-  "230": "départ des joueurs vus d'abord en ITF hommes : simulateur/rapport_depart_itf.json — RETENU et en production (1000 au lieu de 1200 ; Challenger : gain 0,0057 ± 0,0007 sur 7 722 matchs jugés, 0,0077 ± 0,0021 sur nos 912 matchs) ; Grand Chelem en WTA et outsider en Challenger : simulateur/rapport_outsiders.json — non retenus ; joueurs peu vus en Challenger : simulateur/rapport_joueurs_peu_vus.json — passe sur l'archive, échoue avec l'Elo de production, pas en production"
+  "230": "départ des joueurs vus d'abord en ITF hommes : simulateur/rapport_depart_itf.json — RETENU et en production (1000 au lieu de 1200 ; Challenger : gain 0,0057 ± 0,0007 sur 7 722 matchs jugés, 0,0077 ± 0,0021 sur nos 912 matchs) ; Grand Chelem en WTA et outsider en Challenger : simulateur/rapport_outsiders.json — non retenus ; joueurs peu vus en Challenger : simulateur/rapport_joueurs_peu_vus.json — passe sur l'archive, échoue avec l'Elo de production, pas en production",
+  "231": "pente Grand Chelem commune ATP + WTA (1,235) : simulateur/rapport_grand_chelem.json — en place PAR DÉCISION DE LUCAS, la règle écrite n'étant pas passée ; retrait par la règle cumulée. Départ des joueuses vues d'abord en ITF : simulateur/rapport_depart_itf_femmes.json — REJETÉ"
  },
  "pistes_ajoutees_le_11_11": {
   "regardé": "2018–2022 seulement, par-dessus l'Elo de production corrigé du format en ATP et les trois signaux solides (surface, absence, âge)",
@@ -595,17 +596,52 @@
    {
     "id": "depart_itf_femmes",
     "paquet_prevu": 231,
-    "regle": "même question chez les femmes, où l'archive a l'ITF depuis toujours : les joueuses vues d'abord en ITF partent de 1200. Forme (départ à 1150, 1100, 1050, 1000 ou 950) CHOISIE sur 2018–2022 sur les matchs WTA, jugée une seule fois sur 2023 → juin 2026 : au moins 0,001 sur au moins 1 000 matchs WTA, même sens sur les deux périodes ; puis contrôle sur le classement complet rejoué : nos matchs ne doivent pas faire moins bien"
+    "regle": "même question chez les femmes, où l'archive a l'ITF depuis toujours : les joueuses vues d'abord en ITF partent de 1200. Forme (départ à 1150, 1100, 1050, 1000 ou 950) CHOISIE sur 2018–2022 sur les matchs WTA, jugée une seule fois sur 2023 → juin 2026 : au moins 0,001 sur au moins 1 000 matchs WTA, même sens sur les deux périodes ; puis contrôle sur le classement complet rejoué : nos matchs ne doivent pas faire moins bien",
+    "suite": "jugé au paquet 231 : rejeté (aucun départ plus bas ne fait mieux, sur aucune des deux périodes)"
    },
    {
     "id": "grand_chelem",
     "paquet_prevu": null,
-    "regle": "WTA jugé au paquet 230 : gain 0,0032 ± 0,0020, sous les 2 erreurs types de sa règle — non retenu. Les quatre pentes mesurées sont voisines (WTA 1,23 puis 1,21 ; ATP 1,24 puis 1,21). Une pente commune aux deux circuits n'était pas écrite à l'avance : elle ne peut plus être jugée sur 2023 → juin 2026. Elle le sera sur les Grands Chelems à venir (à surveiller), ou mise en place par décision de Lucas, dite comme telle"
+    "regle": "WTA jugé au paquet 230 : gain 0,0032 ± 0,0020, sous les 2 erreurs types de sa règle — non retenu. Les quatre pentes mesurées sont voisines (WTA 1,23 puis 1,21 ; ATP 1,24 puis 1,21). Une pente commune aux deux circuits n'était pas écrite à l'avance : elle ne peut plus être jugée sur 2023 → juin 2026. Elle le sera sur les Grands Chelems à venir (à surveiller), ou mise en place par décision de Lucas, dite comme telle",
+    "suite": "décision de Lucas le 11/11/2026 : pente commune 1,235 en place au paquet 231, suivie avec / sans"
    },
    {
     "id": "outsider_en_progression_challenger",
     "paquet_prevu": null,
     "regle": "rejeté au paquet 230 comme correction (−0,0002 ± 0,0007), mais l'outsider en progression gagne plus qu'annoncé sur les deux périodes (39,8 % pour 36,8 %, puis 40,1 % pour 36,9 %). À rejuger une fois le départ ITF en place, qui change la note de ces joueurs : même règle, écrite au paquet 229"
+   }
+  ]
+ },
+ "paquet_231_le_11_11": {
+  "decision_de_lucas": {
+   "id": "grand_chelem",
+   "pente": 1.235,
+   "circuits": [
+    "ATP",
+    "WTA"
+   ],
+   "statut": "pas une étude qui passe sa règle ; chiffres de 2023 → juin 2026 publiés pour mémoire",
+   "retrait": "par circuit, dès 300 matchs de Grand Chelem suivis, gain propre négatif de plus de 2 erreurs types"
+  },
+  "a_verifier_au_premier_grand_chelem": "le signal ne s'applique que si le tour du match est connu (programme du jour) : au premier jour de l'Open d'Australie, vérifier que les matchs du tableau principal portent bien le signal",
+  "a_corriger": [
+   {
+    "id": "qualifications_grand_chelem",
+    "paquet_prevu": 232,
+    "constat": "nos matchs de qualifications de Grand Chelem portent le même nom de tournoi que le tableau principal (US Open 2026 : 224 matchs du 24 au 28/08). Conséquences : chez les hommes ils sont simulés et lus en 3 sets gagnants alors qu'ils se jouent en 2 ; ils reçoivent la vitesse Elo des Grands Chelems ; ils sont rangés avec l'ATP ou la WTA dans nos bilans alors que l'archive les range avec le Challenger ou l'ITF",
+    "regle": "correction de donnée, pas un réglage : le tour du programme du jour dit si le match est une qualification. Avant mise en production, le classement complet est rejoué avant / après : nos matchs ne doivent pas faire moins bien (tolérance 0,001)"
+   }
+  ],
+  "a_juger": [
+   {
+    "id": "elo_trop_prudent_en_qualifications_de_grand_chelem",
+    "paquet_prevu": null,
+    "mesure_nos_matchs_2026": {
+     "matchs": 280,
+     "favori_reel_pct": 68.2,
+     "favori_annonce_pct": 62.2
+    },
+    "regle": "vu sur 280 de nos matchs seulement : à surveiller. Dans l'archive ces matchs sont rangés avec le Challenger et l'ITF : pente propre aux qualifications de Grand Chelem apprise sur 2018–2022, jugée une fois sur 2023 → juin 2026, au moins 0,001 sur au moins 1 000 matchs, même sens, après la correction ci-dessus"
    }
   ]
  }
