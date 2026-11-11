@@ -7,11 +7,12 @@
    "2": 0.826
   }
  },
- "en_attente": {
-  "ATP": {
-   "3": 1.219
-  }
- },
+ "en_attente": {},
  "decision": "Corrigé au paquet 229 : la Coupe Davis est exclue du jugement. 2 sets gagnants : gain 0.0016 ± 0.00081 sur 7490 matchs du circuit (2023 → juin 2026), soit 1.98 erreurs types — passe la règle du brief (0,001 sur 1 000 matchs, même sens), reste juste sous la condition proposée des 2 erreurs types : EN PLACE, pente 0.826. 3 sets gagnants : gain 0.00144 ± 0.00201 sur 1743 matchs (0.72 erreur type) — passe la règle du brief sur le papier mais le gain est plus petit que son incertitude : EN ATTENTE de la décision de Lucas, non appliqué.",
- "retrait": "règle cumulée (fantomes_circuits.REGLE_CUMULEE) : retiré si, depuis l'adoption, sur au moins 300 matchs ATP concernés, le gain propre du signal est négatif d'au moins 2 erreurs types. Pour l'enlever à la main : vider « pentes »."
+ "retrait": "règle cumulée (fantomes_circuits.REGLE_CUMULEE) : retiré si, depuis l'adoption, sur au moins 300 matchs ATP concernés, le gain propre du signal est négatif d'au moins 2 erreurs types. Pour l'enlever à la main : vider « pentes ».",
+ "remplace": {
+  "ATP": {
+   "3": "3 sets gagnants en ATP = Grand Chelem : remplacé le 11/11/2026 (paquet 231) par la pente Grand Chelem commune ATP + WTA (simulateur/grand_chelem.json, décision de Lucas) ; la pente 1,219 mesurée ici n'est pas appliquée en plus"
+  }
+ }
 }
