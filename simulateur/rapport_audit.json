@@ -423,7 +423,8 @@
   "241": "règles du lundi sur 42 jours glissants : simulateur/rapport_regles_fenetres.json — règle cumulée retenue (9.4 % de semaines dans le mauvais état contre 12.7 %), en place pour les corrections de situation, nouveaux venus et arbres (circuits_regles.py)",
   "242": "poids du mélange en règle cumulée : simulateur/rapport_poids_cumules.json — détail par match fourni aux cinq poids du lundi ; contrôle sans décision (aucun match compté deux fois, rien ne bouge à l'installation)",
   "243": "forme du jour σ : simulateur/rapport_sigma_archive.json — 12 084 matchs de l'archive, grille 0,15 → 0,22 et variante asymétrique : rien ne passe la règle ; courbe plate entre 0,15 et 0,18, dégradée au-delà",
-  "244": "vidéo fidèle aux scénarios du post (demande de Lucas, hors audit) : match_simule.match_type choisit, à forme égale, le scénario le plus fréquent du favori ; 60 vidéos sur 123 ne l'étaient pas"
+  "244": "vidéo fidèle aux scénarios du post (demande de Lucas, hors audit) : match_simule.match_type choisit, à forme égale, le scénario le plus fréquent du favori ; 60 vidéos sur 123 ne l'étaient pas",
+  "245": "forme du jour σ du lundi : règle cumulée circuit par circuit (sigma_circuit.decider) — simulateur/rapport_sigma_cumule.json ; rien ne bouge à l'installation"
  },
  "pistes_ajoutees_le_11_11": {
   "regardé": "2018–2022 seulement, par-dessus l'Elo de production corrigé du format en ATP et les trois signaux solides (surface, absence, âge)",
@@ -893,6 +894,7 @@
   "a_surveiller": [
    "σ ≥ 0,22 choisi par le jugement du lundi (sigma_circuit.py) : contredit par l'archive (0,22 coûte 0,012 en Challenger, 0,024 en ATP sur l'écart de jeux)",
    "κ au bord de sa grille (−0,2) en WTA et en Challenger, sans gain suffisant"
-  ]
+  ],
+  "suite": "paquet 245 : le jugement du lundi passe à la règle cumulée, circuit par circuit"
  }
 }

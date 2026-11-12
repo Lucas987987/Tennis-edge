@@ -1,0 +1,40 @@
+{
+ "genere_le": "2026-11-12T21:05:02+00:00",
+ "paquet": 245,
+ "statut": "controle",
+ "regle": "règle cumulée du paquet 241 appliquée à σ, circuit par circuit (≥ 300 matchs, 2 erreurs types, chaque match compté une fois) ; aucune décision sur ce contrôle",
+ "regle_d_avant": "gain total ≥ 0,001 deux semaines de suite, aucun circuit sous −0,001 ; sortie après deux semaines moins bien",
+ "circuits": {
+  "ATP": {
+   "sigma_en_place": 0.15,
+   "en_place": false,
+   "dernier_jugement": {
+    "n": 493,
+    "sigma_choisi": 0.15,
+    "gain": 0.0
+   },
+   "au_premier_lundi": "reste à 0,15 : le σ choisi est 0,15, aucun gain possible"
+  },
+  "WTA": {
+   "sigma_en_place": 0.15,
+   "en_place": false,
+   "dernier_jugement": {
+    "n": 622,
+    "sigma_choisi": 0.15,
+    "gain": 0.0
+   },
+   "au_premier_lundi": "reste à 0,15 : le σ choisi est 0,15, aucun gain possible"
+  },
+  "CH": {
+   "sigma_en_place": 0.18,
+   "en_place": true,
+   "dernier_jugement": {
+    "n": 1562,
+    "sigma_choisi": 0.18,
+    "gain": 0.017068
+   },
+   "au_premier_lundi": "reste en place : il ne sort que si le gain cumulé devient négatif de plus de 2 erreurs types sur au moins 300 matchs"
+  }
+ },
+ "a_surveiller": "à relire quand chaque circuit aura cumulé 1 000 matchs ; l'archive (paquet 243) dit que σ ≥ 0,22 dégrade l'écart de jeux"
+}

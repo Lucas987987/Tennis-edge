@@ -52,10 +52,15 @@ def _un(args):
     return {sg: _masses(ca, cb, sg) for sg in grille}
 
 
+def retenus(lignes, scores_reels):
+    """Les matchs jugés : au meilleur des 3, score réel complet, circuit connu (dans l'ordre des lignes)."""
+    return [x for x in lignes if x.get('bo') == 3 and scores_reels.get(x.get('id')) and x.get('circuit') in CIRCUITS]
+
+
 def jeu(lignes, scores_reels, max_par_circuit=None, graine=7, grille=GRILLE):
     """[(circuit, {σ: masses}, observation)] pour les matchs au meilleur des 3 avec score réel complet."""
     import forme_scores as FS
-    L = [x for x in lignes if x.get('bo') == 3 and scores_reels.get(x.get('id')) and x.get('circuit') in CIRCUITS]
+    L = retenus(lignes, scores_reels)
     if max_par_circuit:
         rng, garde = random.Random(graine), []
         for c in CIRCUITS:
@@ -107,11 +112,46 @@ def juger(appr, juge, scores_reels):
     l0, l1 = log_vrais(Dj, {}), log_vrais(Dj, sig)
     gain = (l0 - l1) if l0 is not None and l1 is not None else None
     par = {}
+    jours = [str(x.get('jour')) for x in retenus(juge, scores_reels)]   # même ordre que Dj (pas de tirage au jugement)
     for c in CIRCUITS:
-        D_ = [x for x in Dj if x[0] == c]
-        if D_:
-            par[c] = {'n': len(D_), 'sigma': sig.get(c, BASE), 'gain': round(log_vrais(D_, {}) - log_vrais(D_, sig), 6)}
+        ix = [i for i, x in enumerate(Dj) if x[0] == c]
+        if ix:
+            D_ = [Dj[i] for i in ix]
+            par[c] = {'n': len(D_), 'sigma': sig.get(c, BASE), 'gain': round(log_vrais(D_, {}) - log_vrais(D_, sig), 6),
+                      # 12/11/2026 (paquet 245) : détail par match pour la règle cumulée (jamais enregistré)
+                      'paires': [(jours[i], round(_ll(Dj[i][1][BASE], Dj[i][2]), 6),
+                                  round(_ll(Dj[i][1][sig.get(c, BASE)], Dj[i][2]), 6)) for i in ix]}
     return {'sigmas': sig, 'apprentissage': len(Da), 'jugement': len(Dj), 'par_circuit': par,
             'gain': round(gain, 6) if gain is not None else None, 'adopte': verdict(gain, par),
-            'regle': ("σ de la forme du jour choisi par circuit sur l'apprentissage ; jugé contre 0,15 partout : gain total "
-                      "≥ 0,001 et aucun circuit qui perd plus de 0,001 ; deux semaines de suite (série sigma_circuit)")}
+            'regle': ("σ de la forme du jour choisi par circuit sur l'apprentissage, jugé contre 0,15 ; depuis le 12/11/2026 "
+                      "(paquet 245), circuit par circuit, règle cumulée : chaque match compté une fois, entrer si le gain "
+                      "dépasse 2 erreurs types sur au moins 300 matchs, sortir s'il est négatif de plus de 2 erreurs types")}
+
+
+def decider(etat, rs, prec):
+    """12/11/2026 (paquet 245) — décision CIRCUIT PAR CIRCUIT avec la règle cumulée (stabilite.decider_cumule).
+    Avant : un verdict commun (gain total ≥ 0,001, aucun circuit sous −0,001), deux semaines de suite, sur six semaines
+    glissantes dont cinq déjà vues (audit, paquet 241 ; etude_sigma_archive.py, paquet 243 : σ au-delà de 0,18 dégrade
+    l'écart de jeux sur l'archive). rs : verdict de juger() (modifié et renvoyé, sans le détail par match) ;
+    prec : sigma_circuit de la semaine d'avant (facteurs.json). En place au départ : le σ d'avant s'il n'est pas 0,15.
+    Un circuit en place garde son σ d'avant tant que la semaine ne trouve pas mieux que 0,15 avec le σ choisi."""
+    import stabilite as ST
+    prec = prec or {}
+    avant = (prec.get('sigmas') or DECISION) if prec.get('adopte', True) else {}
+    sigmas, notes = {}, {}
+    for c in CIRCUITS:
+        p = (rs.get('par_circuit') or {}).get(c) or {}
+        paires = p.pop('paires', None) or []
+        en_place = sigma_de(avant, c) != BASE
+        ok, note = ST.decider_cumule(etat, f"sigma_circuit:{c}", en_place, paires)
+        nouveau = p.get('sigma', BASE)
+        if ok:
+            sigmas[c] = nouveau if (nouveau != BASE and (p.get('gain') or 0) > 0) else sigma_de(avant, c)
+        else:
+            sigmas[c] = BASE
+        notes[c] = note
+    rs['adopte_brut'] = rs.get('adopte')
+    rs['adopte'] = any(v != BASE for v in sigmas.values())
+    rs['sigmas'] = sigmas
+    rs['stabilite'] = notes
+    return rs

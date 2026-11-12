@@ -1352,12 +1352,10 @@ def main(argv):
                 import sigma_circuit as SGC
                 rs = SGC.juger(appr, juge, reels)
                 etat_st = ST.lire()
-                # 28/10/2026 : en production par décision de Lucas → part « en place » ; sort après 2 semaines moins bien
-                ok_s, note_s = ST.decider(etat_st, 'sigma_circuit_production', bool(sg_prec.get('adopte', True)), rs['adopte'])
+                # 12/11/2026 (paquet 245) : circuit par circuit, règle cumulée (sigma_circuit.decider)
+                rs = SGC.decider(etat_st, rs, sg_prec)
                 ST.ecrire(etat_st)
-                rs['adopte_brut'], rs['adopte'], rs['stabilite'] = rs['adopte'], ok_s, note_s
-                if ok_s and not rs['adopte_brut']:              # en place, pas encore sorti : on garde les σ en place
-                    rs['sigmas'] = sg_prec.get('sigmas') or dict(SGC.DECISION)
+                ok_s, note_s = rs['adopte'], rs['stabilite']
                 doc['sigma_circuit'] = rs
                 sigmas_en_place = rs['sigmas'] if ok_s else None
                 print(f"  sigma_circuit      {'ADOPTÉ' if ok_s else 'non adopté'} — gain {rs['gain']} · σ {rs['sigmas']} · "
