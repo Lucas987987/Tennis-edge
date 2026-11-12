@@ -260,7 +260,8 @@
    "impact_attendu": "affichage seulement",
    "confiance": "moyenne",
    "effort": "moyen",
-   "regle": "décalages et largeurs appris sur l'archive rejouée (profil contre réel, par circuit et par statistique, 2018–2022), jugés sur 2023 → : couverture entre 78 et 82 % sur au moins 1 000 cas par case"
+   "regle": "décalages et largeurs appris sur l'archive rejouée (profil contre réel, par circuit et par statistique, 2018–2022), jugés sur 2023 → : couverture entre 78 et 82 % sur au moins 1 000 cas par case",
+   "suite_paquet_237": "le « reste inexpliqué » du biais des 1res balles n'est pas dans le profil : contre l'archive le modèle est juste. Il vient de la saison (salle en octobre-novembre) et de la source des feuilles en direct"
   },
   {
    "id": "profils",
@@ -412,7 +413,9 @@
   "233": "signaux par circuit réappris sur l'Elo de production : simulateur/rapport_signaux_reappris.json — ATP et Challenger adoptés (favori / outsider et parcours écartés, β réappris), WTA inchangée ; tie-breaks rejoués avec l'Elo de production : même verdict, décalage Challenger 0,1305",
   "234": "règle « deux semaines de suite » contre règle cumulée : simulateur/rapport_regle_hebdomadaire.json — la règle cumulée fait moins d'erreurs (26 % de semaines dans le mauvais état contre 38 %) : en place pour tous les signaux par circuit",
   "235": "taille du dépôt : scripts/croissance_depot.py mesure le coût réel dans git par fichier (le chiffre de l'audit, 384 Mo par jour, est un majorant ; la taille n'a monté que d'environ 57 Mo par jour). Aucun fichier déplacé : le correctif attend la première mesure",
-  "236": "balayage de 54 cases d'étalonnage sur les périodes d'apprentissage : simulateur/rapport_balayage_pistes.json — aucune n'atteint le seuil pour être portée au jugement ; rien en production"
+  "236": "balayage de 54 cases d'étalonnage sur les périodes d'apprentissage : simulateur/rapport_balayage_pistes.json — aucune n'atteint le seuil pour être portée au jugement ; rien en production",
+  "237": "statistiques annoncées rejouées sur l'archive : simulateur/rapport_statistiques_annoncees.json — le modèle n'a pas de biais d'ensemble contre l'archive ; onze cases sur douze réglées sur l'archive, deux seulement (WTA breaks et aces) passent le contrôle en direct et sont en place ; décalage saisonnier du % de 1res balles REJETÉ",
+  "238": "1res balles en salle : simulateur/rapport_premieres_balles_salle.json — RETENU en ATP (1res balles +1,22, doubles fautes −0,49 en salle) et en place via la surface des feuilles ; WTA trop peu de cas, Challenger non étudiable"
  },
  "pistes_ajoutees_le_11_11": {
   "regardé": "2018–2022 seulement, par-dessus l'Elo de production corrigé du format en ATP et les trois signaux solides (surface, absence, âge)",
@@ -761,5 +764,44 @@
    "une information que l'Elo et les signaux n'ont pas (aucune n'est disponible dans l'archive aujourd'hui)"
   ],
   "a_ne_pas_refaire": "les 54 cases du rapport : mesurées sur la période d'apprentissage, sous le seuil même en majorant"
+ },
+ "paquet_237_le_12_11": {
+  "en_production": {
+   "cases_archive": [
+    "WTA|breaks",
+    "WTA|aces"
+   ],
+   "retrait": "dès 300 cas en direct depuis le 12/11/2026, couverture plus loin de 80 % que sans recalage de plus de 5 points"
+  },
+  "rejete": "décalage par mois du % de 1res balles (réduit le biais mensuel de 18 à 26 %, la règle demandait un tiers)",
+  "a_juger": [
+   {
+    "id": "premieres_balles_en_salle",
+    "paquet_prevu": null,
+    "regle": "le biais du % de 1res balles suit la saison (salle). L'archive ne dit pas si un tournoi se joue en salle. Si une table des tournois en salle est constituée (nom du tournoi → salle ou plein air, écrite sans regarder les résultats), décalage « en salle » appris sur 2019–2022, jugé une fois sur 2023 → juin 2026 : retenu si le biais en salle baisse d'au moins moitié et si l'écart moyen ne monte pas, sur au moins 1 000 cas",
+    "suite": "jugé au paquet 238 : retenu en ATP pour les 1res balles et les doubles fautes"
+   },
+   {
+    "id": "ecart_entre_sources_des_feuilles",
+    "paquet_prevu": null,
+    "regle": "mesurer, sur les matchs présents dans les deux sources, l'écart de % de 1res balles, d'aces et de doubles fautes entre les feuilles en direct et l'archive (au moins 300 matchs par circuit) : s'il est stable, il devient un décalage fixe de source, appliqué avant le recalage hebdomadaire",
+    "suite": "mesuré au paquet 238 : Challenger +0,93 ± 0,12 point de 1res balles en direct (211 matchs) ; pas de match commun ATP/WTA (l'archive s'arrête en juin 2026) ; reste corrigé par le recalage en direct"
+   }
+  ],
+  "lecon": "une statistique annoncée se règle contre la source qui sert à la juger : l'archive règle les largeurs, pas les décalages vus en direct"
+ },
+ "paquet_238_le_12_11": {
+  "en_production": {
+   "ATP|premiere_pct": {
+    "salle": 1.22,
+    "plein_air": 0.024
+   },
+   "ATP|doubles_fautes": {
+    "salle": -0.485,
+    "plein_air": -0.079
+   }
+  },
+  "retrait": "dès 300 cas en salle en direct depuis le 12/11/2026, écart moyen avec le décalage plus grand que sans → retiré",
+  "a_surveiller": "WTA en salle : +1,19 point sur 496 cas jugés, sous les 1 000 de la règle ; à rejuger quand l'archive aura assez de cas"
  }
 }
