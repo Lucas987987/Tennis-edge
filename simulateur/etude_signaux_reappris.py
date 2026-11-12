@@ -93,7 +93,7 @@ def betas_en_place(racine):
     return out
 
 
-def lignes(M, racine, naiss=None, cle=None):
+def lignes(M, racine, naiss=None, cle=None, details=False):
     """Une ligne par match jugé, vue du vainqueur : circuit, date, z de base (Elo de production × pente en place), les
     sept variables, et la variable du rôle telle que la production la calcule aujourd'hui (contre l'Elo figé)."""
     k = cle or (lambda n: E.cle(n) if n else None)
@@ -131,6 +131,9 @@ def lignes(M, racine, naiss=None, cle=None):
             rows.append({'d': d, 'c': c, 'z': pente_du_match(m, fmt, gc) * EO._lg(pe),
                          'x': (float(xs), xa[0], xa[1], xg[0], xg[1], RS.moy(g, role_g) - RS.moy(p, role_p), float(x_tour)),
                          'role_en_place': RS0.moy(g, role_g) - RS0.moy(p, role_p)})   # résidus de l'Elo figé, rôle lu sur le vrai Elo
+            if details:                                    # 12/11/2026 (paquet 236) : de quoi balayer d'autres pistes
+                rows[-1].update(g=g, p=p, niveau=m.get('niveau'), surface=s, tour=m.get('tour'), n_min=min(el.matchs(g), el.matchs(p)),
+                                entree_g=m.get('entree_g'), entree_p=m.get('entree_p'))
         su.jouer(g, d, s)
         su.jouer(p, d, s)
         rt.jouer(g, d)
