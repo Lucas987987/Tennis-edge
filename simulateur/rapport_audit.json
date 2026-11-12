@@ -424,7 +424,8 @@
   "242": "poids du mélange en règle cumulée : simulateur/rapport_poids_cumules.json — détail par match fourni aux cinq poids du lundi ; contrôle sans décision (aucun match compté deux fois, rien ne bouge à l'installation)",
   "243": "forme du jour σ : simulateur/rapport_sigma_archive.json — 12 084 matchs de l'archive, grille 0,15 → 0,22 et variante asymétrique : rien ne passe la règle ; courbe plate entre 0,15 et 0,18, dégradée au-delà",
   "244": "vidéo fidèle aux scénarios du post (demande de Lucas, hors audit) : match_simule.match_type choisit, à forme égale, le scénario le plus fréquent du favori ; 60 vidéos sur 123 ne l'étaient pas",
-  "245": "forme du jour σ du lundi : règle cumulée circuit par circuit (sigma_circuit.decider) — simulateur/rapport_sigma_cumule.json ; rien ne bouge à l'installation"
+  "245": "forme du jour σ du lundi : règle cumulée circuit par circuit (sigma_circuit.decider) — simulateur/rapport_sigma_cumule.json ; rien ne bouge à l'installation",
+  "246": "facteurs du lundi en règle cumulée à deux mesures (stabilite.decider_cumule_double) — simulateur/rapport_facteurs_cumules.json ; contrôle sans rejeu"
  },
  "pistes_ajoutees_le_11_11": {
   "regardé": "2018–2022 seulement, par-dessus l'Elo de production corrigé du format en ATP et les trois signaux solides (surface, absence, âge)",
@@ -747,7 +748,8 @@
    {
     "id": "regles_hebdomadaires_des_poids_et_des_facteurs",
     "paquet_prevu": null,
-    "regle": "entrainement_progressif.py et facteurs.py rejugent encore chaque lundi sur des fenêtres de 42 jours qui se chevauchent (stabilite.py). Même étude à faire sur leurs séries : la règle en place contre une règle cumulée, un réglage connu bon et un réglage au hasard, part des semaines dans le mauvais état ; est gardée celle qui fait le moins d'erreurs"
+    "regle": "entrainement_progressif.py et facteurs.py rejugent encore chaque lundi sur des fenêtres de 42 jours qui se chevauchent (stabilite.py). Même étude à faire sur leurs séries : la règle en place contre une règle cumulée, un réglage connu bon et un réglage au hasard, part des semaines dans le mauvais état ; est gardée celle qui fait le moins d'erreurs",
+    "fait": "étude au paquet 241 ; poids au 242, forme du jour au 245, facteurs (groupes, modèle complet, forme des scores) au 246"
    },
    {
     "id": "seuil_de_la_regle_cumulee",

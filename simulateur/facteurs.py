@@ -888,6 +888,57 @@ def log_loss_vainqueur(lignes, coefs):
     return round(ll, 5), round(100 * ok, 1)
 
 
+def _ll_v(p):
+    return -math.log(min(max(p, 1e-6), 1 - 1e-6))
+
+
+def pertes_points(x, coefs, complet=None):
+    """12/11/2026 (paquet 246) — perte moyenne par point d'UN match (service, aces, balles de break), avec les
+    coefficients donnés ; complet : modèle d'arbres qui remplace la partie « service » (modele_complet)."""
+    tot, n_tot = 0.0, 0
+    for modele, c in coefs.items():
+        if modele.startswith('_'):
+            continue
+        for n, k, off, xs in lignes_modele([x], modele, list(c)):
+            z = off + sum(b * v for b, v in zip(c.values(), xs))
+            p = min(max(_sg(z), 1e-9), 1 - 1e-9)
+            tot -= k * math.log(p) + (n - k) * math.log(1 - p)
+            n_tot += n
+    if complet is not None:
+        import arbres as A
+        for n, k, off, xs in lignes_modele([x], 'service', complet['variables']):
+            p = min(max(_sg(off + A.correction(complet, xs)), 1e-9), 1 - 1e-9)
+            tot -= k * math.log(p) + (n - k) * math.log(1 - p)
+            n_tot += n
+    return tot / n_tot if n_tot else None
+
+
+def paires_facteur(lignes, coefs_sans, coefs_avec, v_sans, v_avec, complet_avec=None, modeles=None):
+    """12/11/2026 (paquet 246) — détail par match pour la règle cumulée à deux mesures (stabilite.decider_cumule_double) :
+    {'points': [(jour, perte sans, perte avec)], 'vainqueur': [(jour, log loss sans, log loss avec)]}.
+    Les coefficients « sans » couvrent les mêmes variables que « avec », à zéro (ou ceux en place pour le modèle complet).
+    v_sans / v_avec : probabilités du vrai vainqueur, match par match (déjà calculées pour la log loss)."""
+    pts, vq = [], []
+    for x, a, b in zip(lignes, v_sans, v_avec):
+        j = str(x.get('jour'))
+        ps = pertes_points(x, {m: c for m, c in coefs_sans.items() if not modeles or m in modeles})
+        pa = pertes_points(x, {m: c for m, c in coefs_avec.items() if not modeles or m in modeles}, complet_avec)
+        if ps is not None and pa is not None:
+            pts.append((j, round(ps, 6), round(pa, 6)))
+        vq.append((j, round(_ll_v(a), 6), round(_ll_v(b), 6)))
+    return {'points': pts, 'vainqueur': vq}
+
+
+def _vainqueur(lignes, coefs):
+    """(log loss, réussite %, [p du vrai vainqueur]) — comme log_loss_vainqueur, avec le détail par match."""
+    L = [victoire_ligne(x, coefs) for x in lignes]
+    if not L:
+        return None, None, []
+    ll = sum(_ll_v(p) for p in L) / len(L)
+    ok = sum(1.0 if p > 0.5 else 0.5 if p == 0.5 else 0.0 for p in L) / len(L)
+    return round(ll, 5), round(100 * ok, 1), L
+
+
 def apprendre(lignes, groupes):
     """Coefficients {modèle: {variable: β}} pour un ensemble de groupes."""
     coefs = {}
@@ -913,9 +964,11 @@ def juger_groupe(appr, juge, g):
         rapport['points'][modele] = {'base': round(base, 6) if base else None, 'avec': round(avec, 6) if avec else None}
         if base is None or avec is None or avec >= base:
             mieux_points = False
-    ll0, ok0 = log_loss_vainqueur(juge, {})
-    ll1, ok1 = log_loss_vainqueur(juge, coefs)
+    ll0, ok0, v0 = _vainqueur(juge, {})
+    ll1, ok1, v1 = _vainqueur(juge, coefs)
     rapport['vainqueur'] = {'base': {'log_loss': ll0, 'reussite_pct': ok0}, 'avec': {'log_loss': ll1, 'reussite_pct': ok1}}
+    # 12/11/2026 (paquet 246) : détail par match pour la règle cumulée (lu puis retiré : jamais enregistré)
+    rapport['paires'] = paires_facteur(juge, {m: {f: 0.0 for f in c} for m, c in coefs.items()}, coefs, v0, v1)
     rapport['adopte'] = bool(mieux_points and ll0 is not None and ll1 <= ll0 + TOLERANCE_VAINQUEUR)
     rapport['vainqueur_mieux_trouve'] = bool(ll0 is not None and ll1 < ll0)
     rapport['raison'] = (f"points {'mieux' if mieux_points else 'pas mieux'} ; vainqueur log loss {ll0} → {ll1} "
@@ -972,6 +1025,7 @@ def juger_par_circuit(appr, juge, doc):
         G = {}
         for g in GROUPES:
             r = juger_groupe(A, J, g)
+            P_ = r.pop('paires', None) or {}                # 12/11/2026 (paquet 246)
             if premier and ADOPTION_DIRECTE_PAR_CIRCUIT:
                 # 06/11/2026 — décision de Lucas : le PREMIER verdict par circuit s'applique tout de suite (entrées
                 # comme sorties) ; ensuite la stabilité habituelle, donc retrait après deux semaines moins bien.
@@ -979,7 +1033,8 @@ def juger_par_circuit(appr, juge, doc):
                 G[g] = {'adopte_brut': r['adopte'], 'adopte': r['adopte'], 'stabilite': 'adoption directe (06/11)',
                         'raison': r['raison']}
                 continue
-            ok, note = ST.decider(etat_st, f"facteur:{g}:{circ}", g in en_place, r['adopte'])
+            ok, note = ST.decider_cumule_double(etat_st, f"facteur:{g}:{circ}", g in en_place, P_.get('points'),
+                                                P_.get('vainqueur'))
             G[g] = {'adopte_brut': r['adopte'], 'adopte': ok, 'stabilite': note, 'raison': r['raison']}
         adoptes = [g for g, r in G.items() if r['adopte']]
         out[circ] = {'matchs': {'apprentissage': len(A), 'jugement': len(J)}, 'adoptes': adoptes,
@@ -1043,14 +1098,17 @@ def juger_complet(appr, juge, adoptes):
     pts_ch, pts_co = log_vrais(Lj, b_ch), log_vrais_complet(Lj, m)
     complet = {k: v for k, v in champion.items() if k != 'service'}
     complet['_arbres_service'] = m
-    ll_ch, ok_ch = log_loss_vainqueur(juge, champion)
-    ll_co, ok_co = log_loss_vainqueur(juge, complet)
+    ll_ch, ok_ch, v_ch = _vainqueur(juge, champion)
+    ll_co, ok_co, v_co = _vainqueur(juge, complet)
     adopte = bool(pts_ch is not None and pts_co is not None and pts_co < pts_ch
                   and ll_ch is not None and ll_co is not None and ll_co <= ll_ch - MARGE_COMPLET)
     return {'variables': len(noms), 'groupes_en_place': list(adoptes),
             'points_service': {'en_place': round(pts_ch, 6) if pts_ch else None, 'complet': round(pts_co, 6) if pts_co else None},
             'vainqueur': {'en_place': {'log_loss': ll_ch, 'reussite_pct': ok_ch}, 'complet': {'log_loss': ll_co, 'reussite_pct': ok_co}},
             'importance': dict(list(m['importance'].items())[:25]), 'reglages': m['reglages'], 'adopte': adopte,
+            # 12/11/2026 (paquet 246) : détail par match ; la mesure principale est le vainqueur, les points en garde
+            'paires': paires_facteur(juge, {'service': {f: c_srv.get(f, 0.0) for f in noms}}, {}, v_ch, v_co,
+                                     complet_avec=m, modeles=('service',)),
             'raison': (f"points de service {pts_ch and round(pts_ch, 6)} → {pts_co and round(pts_co, 6)} ; vainqueur log loss "
                        f"{ll_ch} → {ll_co} (réussite {ok_ch} % → {ok_co} %) ; marge exigée {MARGE_COMPLET}")}
 
@@ -1277,7 +1335,9 @@ def main(argv):
                 etat_st[f"facteur:{g}"] = {'adopte': True, 'semaine': None, 'serie_avant': 0, 'serie': 0}
                 etat_st[f"facteur:{g}:direct"] = True
         for g, r in doc['groupes'].items():
-            ok, note = ST.decider(etat_st, f"facteur:{g}", g in en_place, r['adopte'])
+            # 12/11/2026 (paquet 246) : règle cumulée à deux mesures (points pour entrer, vainqueur en garde)
+            P_ = r.pop('paires', None) or {}
+            ok, note = ST.decider_cumule_double(etat_st, f"facteur:{g}", g in en_place, P_.get('points'), P_.get('vainqueur'))
             r['adopte_brut'], r['adopte'], r['stabilite'] = r['adopte'], ok, note
             if ok != r['adopte_brut'] or g in en_place:
                 print(f"    {g:<18} → {'en place' if ok else 'hors du modèle'} ({note})", flush=True)
@@ -1312,7 +1372,9 @@ def main(argv):
                 complet_en_place = False
             rc = juger_complet(appr, juge, doc['adoptes'])
             etat_st = ST.lire()
-            ok, note = ST.decider(etat_st, 'facteur:modele_complet', complet_en_place, rc['adopte'])
+            P_ = rc.pop('paires', None) or {}               # 12/11/2026 (paquet 246) : vainqueur pour entrer, points en garde
+            ok, note = ST.decider_cumule_double(etat_st, 'facteur:modele_complet', complet_en_place, P_.get('vainqueur'),
+                                                P_.get('points'))
             ST.ecrire(etat_st)
             rc['adopte_brut'], rc['adopte'], rc['stabilite'] = rc['adopte'], ok, note
             if ok:
@@ -1366,7 +1428,8 @@ def main(argv):
             rf = FS.juger(appr, juge, prof_a, prof_j, reels, sigmas=sigmas_en_place)
             print(f"  (forme des scores jugée en {round((time.time() - t_fs) / 60, 1)} min)", flush=True)
             etat_st = ST.lire()
-            ok, note = ST.decider(etat_st, 'forme_scores_v3', fs_en_place, rf['adopte'])     # 28/10/2026 : v3 par circuit, série neuve
+            # 12/11/2026 (paquet 246) : règle cumulée (forme_scores.juger donne le détail par match)
+            ok, note = ST.decider(etat_st, 'forme_scores_v3', fs_en_place, rf['adopte'], paires=rf.pop('paires', None))
             ST.ecrire(etat_st)
             rf['adopte_brut'], rf['adopte'], rf['stabilite'] = rf['adopte'], ok, note
             doc['forme_scores'] = rf

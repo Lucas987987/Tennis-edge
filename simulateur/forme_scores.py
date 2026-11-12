@@ -226,6 +226,10 @@ def juger(appr, juge, profils_appr, profils_juge, scores_reels, sigmas=None):
     Dj = jeu_de_donnees(juge, profils_juge, scores_reels, references=PR.references_circuit(profils_juge), sigmas=sigmas)
     c = apprendre(Da)
     l0, l1 = log_vrais(Dj, [0.0] * N_COEFS), log_vrais(Dj, c)
+    # 12/11/2026 (paquet 246) : détail par match pour la règle cumulée (même ordre que Dj : pas de tirage au jugement)
+    jours = [str(x.get('jour')) for x in juge if x.get('bo') == 3 and scores_reels.get(x.get('id'))]
+    paires = [(j, round(-math.log(_proba_obs(x[0], x[1], x[2], [0.0] * N_COEFS, x[3])), 6),
+               round(-math.log(_proba_obs(x[0], x[1], x[2], c, x[3])), 6)) for j, x in zip(jours, Dj)]
     gain = (l0 - l1) if l0 is not None and l1 is not None else None
     par_circuit = {}
     for k in CIRCUITS_V3:
@@ -238,7 +242,7 @@ def juger(appr, juge, profils_appr, profils_juge, scores_reels, sigmas=None):
             'references': PR.references_circuit(profils_juge),
             'log_vrais': {'sans': round(l0, 6) if l0 else None, 'avec': round(l1, 6) if l1 else None},
             'gain': round(gain, 6) if gain is not None else None,
-            'adopte': verdict(gain, par_circuit),
+            'adopte': verdict(gain, par_circuit), 'paires': paires,
             'regle': ("forme réelle (camp × tie-break × 3 sets × total de jeux) mieux prédite d'au moins 0,001 sur le "
                       "jugement ; vainqueur inchangé par construction ; base propre à chaque circuit, profils centrés sur leur circuit ; "
                       "deux semaines de suite (série forme_scores_v3)")}
