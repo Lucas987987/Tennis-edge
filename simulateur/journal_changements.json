@@ -1034,6 +1034,12 @@
    "quoi": "Forme du jour rejouée sur l'archive (paquet 243, étude) — le % de victoire ne change pas. La forme du jour règle l'allure du match (deux ou trois sets, écart de jeux), pas le vainqueur. Elle est jugée chaque lundi sur quelques centaines de nos matchs par circuit. Règle écrite à l'audit : une grille de 0,15 à 0,22, circuit par circuit, avec les vrais profils, choisie sur 2019–2022 et jugée sur 2023 → juin 2026 ; retenue si l'écart de jeux exact gagne au moins 0,005 sans perdre plus de 0,002 sur le score en sets, sur au moins 1 000 matchs. Une variante asymétrique (les bons jours du favori plus ou moins marqués que ses mauvais jours) est jugée avec la même règle. 12 084 matchs rejoués. Résultat : aucun circuit ne passe (meilleur gain 0,0023 en WTA) ; les réglages en place restent (ATP 0,15, WTA 0,15, Challenger 0,18). La courbe est plate entre 0,15 et 0,18 ; au-delà, l'écart de jeux se dégrade (0,22 coûte 0,012 en Challenger). La variante asymétrique ne fait pas mieux. À surveiller : si le jugement du lundi choisit de nouveau 0,22 ou plus, l'archive dit le contraire.",
    "statut": "etude",
    "paquet": 243
+  },
+  {
+   "date": "2026-11-12",
+   "quoi": "Vidéo du match fidèle aux scénarios (paquet 244) — le % de victoire ne change pas. La vidéo rejoue un match réellement tiré parmi les simulations : le favori gagne, avec le nombre de sets et le tie-break prévus. Elle ne regardait pas le scénario : un 6-2 6-3 « sans trembler » pouvait être montré alors que le post donnait « 2 sets accrochés » trois fois plus probable. Sur les matchs publiés, 60 vidéos sur 123 ne tombaient pas dans le scénario le plus fréquent du favori pour leur forme. Maintenant, à forme égale, la vidéo est choisie dans ce scénario (mêmes groupes que le post : sets secs sans trembler ou accrochés ; en 3 sets, après avoir gagné ou perdu le 1er set), puis au plus près des jeux et statistiques médians. Contrôle sur 30 matchs d'essai, comparés à la distribution exacte qui donne les scénarios du post : 30 sur 30 fidèles. La règle de forme du 04/11 (3 sets et tie-break selon la moyenne du circuit) ne change pas.",
+   "statut": "production",
+   "paquet": 244
   }
  ]
 }
