@@ -1072,6 +1072,12 @@
    "quoi": "Tiroir « Points marqués » sur la fiche (paquet 249, demande de Lucas) — le % de victoire ne change pas. Pour chaque joueur : le nombre de points gagnés prévu par les simulations, avec sa fourchette 8 fois sur 10. Pour un joueur relevé coup par coup sur au moins 10 matchs des trois dernières années (Match Charting Project, bénévoles, licence CC BY-NC-SA) : comment il marque, ses habitudes appliquées à ce total — aces, services non retournés, coup droit, revers, volée et smash, amorti, lob, fautes provoquées, fautes directes et doubles fautes de l'adversaire — et ses montées au filet gagnées. Sur les matchs relevés, ces catégories font exactement les points gagnés (96 % à l'unité près). Couverture : 154 joueurs, surtout le haut du classement ATP et WTA, presque aucun Challenger ; un joueur peu relevé n'a que le total, ses aces et les doubles fautes adverses, jamais une moyenne du circuit à la place.",
    "statut": "production",
    "paquet": 249
+  },
+  {
+   "date": "2026-11-12",
+   "quoi": "Duels de coups (paquet 250, étude) — le % de victoire ne change pas. Question de Lucas : le détail des coups (Match Charting Project) donne-t-il un avantage à l'un des joueurs, au-delà de ce que l'algo sait déjà ? Cinq duels écrits avant tout calcul : le filet (celui qui monte et gagne au filet contre celui qui passe mal), l'amorti, le service rapide (points de service gagnés en trois frappes contre le retour adverse), les coups gagnants et les fautes directes. Jugés sur les matchs où les deux joueurs ont au moins 10 matchs relevés dans les 3 ans d'avant : 6 207 en ATP, 3 280 en WTA ; appris sur 2018–2022, jugés sur 2023 → juin 2026. Résultat : aucun ne passe (le meilleur, le service rapide en ATP, gagne 0,0005). Ce que montrent les coups est déjà dans le niveau des joueurs. Un passage intermédiaire avait donné huit duels gagnants : c'était une erreur de calcul (une constante favorable au vainqueur), repérée et corrigée avant de conclure. Les duels restent une information.",
+   "statut": "etude",
+   "paquet": 250
   }
  ]
 }
