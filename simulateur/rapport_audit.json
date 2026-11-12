@@ -407,7 +407,8 @@
   "229": "vitesse de l'Elo en WTA et départ des petits niveaux : simulateur/rapport_vitesse_elo.json — les deux REJETÉS sur 2023 → juin 2026",
   "230": "départ des joueurs vus d'abord en ITF hommes : simulateur/rapport_depart_itf.json — RETENU et en production (1000 au lieu de 1200 ; Challenger : gain 0,0057 ± 0,0007 sur 7 722 matchs jugés, 0,0077 ± 0,0021 sur nos 912 matchs) ; Grand Chelem en WTA et outsider en Challenger : simulateur/rapport_outsiders.json — non retenus ; joueurs peu vus en Challenger : simulateur/rapport_joueurs_peu_vus.json — passe sur l'archive, échoue avec l'Elo de production, pas en production",
   "231": "pente Grand Chelem commune ATP + WTA (1,235) : simulateur/rapport_grand_chelem.json — en place PAR DÉCISION DE LUCAS, la règle écrite n'étant pas passée ; retrait par la règle cumulée. Départ des joueuses vues d'abord en ITF : simulateur/rapport_depart_itf_femmes.json — REJETÉ",
-  "232": "qualifications de Grand Chelem : format corrigé chez les hommes (2 sets gagnants) ; pente de l'Elo chez les femmes RETENUE et en place (1,247 ; gain 0,0047 ± 0,0017 sur 1 435 matchs jugés), rejetée chez les hommes : simulateur/rapport_qualifs_grand_chelem.json"
+  "232": "qualifications de Grand Chelem : format corrigé chez les hommes (2 sets gagnants) ; pente de l'Elo chez les femmes RETENUE et en place (1,247 ; gain 0,0047 ± 0,0017 sur 1 435 matchs jugés), rejetée chez les hommes : simulateur/rapport_qualifs_grand_chelem.json",
+  "233": "signaux par circuit réappris sur l'Elo de production : simulateur/rapport_signaux_reappris.json — ATP et Challenger adoptés (favori / outsider et parcours écartés, β réappris), WTA inchangée ; tie-breaks rejoués avec l'Elo de production : même verdict, décalage Challenger 0,1305"
  },
  "pistes_ajoutees_le_11_11": {
   "regardé": "2018–2022 seulement, par-dessus l'Elo de production corrigé du format en ATP et les trois signaux solides (surface, absence, âge)",
@@ -676,5 +677,51 @@
    }
   ],
   "hors_perimetre_signale": "scripts/scenarios.py, simulateur/marches_sets.py et Tennis_Edge_Lab/croisements.py lisent encore le format par le nom du tournoi : ils écartent ou traitent les qualifications masculines comme des matchs en 3 sets gagnants. Outils privés, non modifiés ici"
+ },
+ "paquet_233_le_12_11": {
+  "en_production": {
+   "ATP": {
+    "signaux": [
+     "changement_surface",
+     "age",
+     "retour_absence (en sursis)"
+    ],
+    "ecartes": [
+     "favori_outsider",
+     "parcours_tournoi"
+    ],
+    "gain_contre_avant": 0.00263,
+    "erreur_type": 0.00087
+   },
+   "CH": {
+    "signaux": [
+     "changement_surface",
+     "retour_absence",
+     "age"
+    ],
+    "ecartes": [
+     "favori_outsider",
+     "parcours_tournoi"
+    ],
+    "gain_contre_avant": 0.00022,
+    "erreur_type": 0.00028
+   },
+   "WTA": "inchangée : la configuration réapprise n'y fait pas mieux (−0,00064 ± 0,00067)"
+  },
+  "ecart_a_la_regle_a_valider_par_lucas": "retour d'absence en ATP : 757 matchs concernés sur la période jugée (règle : 1 000), mais le retirer coûte 0,022 ± 0,005 sur ces matchs. Gardé « en sursis ». Décidé après avoir vu le résultat. Pour appliquer la règle à la lettre : retirer « retour_absence » de signaux_en_sursis et de betas pour l'ATP dans rapport_signaux_reappris.json (gain ATP ramené de 0,0026 à 0,0006)",
+  "direct_pour_memoire": "audit, 727 pronostics figés du 28/10 au 11/11/2026 : retirer les décalages « favori / outsider » et « parcours » y gagnait 0,0075 ± 0,0051 sur 351 matchs touchés — confirmation seulement",
+  "a_juger": [
+   {
+    "id": "wta_favori_outsider_et_age",
+    "paquet_prevu": null,
+    "regle": "en WTA, la configuration d'avant reste en place alors que deux de ses signaux ne passent pas la règle contre l'Elo du site (âge : coût du retrait 0,0006 ± 0,0006 ; favori / outsider : 0,0001 ± 0,0004). À rejuger sur nos matchs WTA : configuration réapprise contre configuration en place, au moins 1 000 matchs joués à partir du 12/11/2026, la réapprise remplace si elle ne fait pas moins bien"
+   },
+   {
+    "id": "retour_absence_wta",
+    "paquet_prevu": null,
+    "regle": "808 matchs concernés, coût du retrait 0,016 ± 0,004 : même situation qu'en ATP ; rien ne change puisque la WTA garde sa configuration"
+   }
+  ],
+  "etudes_encore_sur_l_elo_sans_reglage": 18
  }
 }

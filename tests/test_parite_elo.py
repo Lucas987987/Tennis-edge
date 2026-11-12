@@ -28,8 +28,10 @@ AVANT_AUDIT = frozenset((
     'etude_5_derniers_styles', 'etude_age', 'etude_bilans_contexte', 'etude_changement_surface',
     'etude_classement_serie', 'etude_cpi', 'etude_duels_styles', 'etude_ecart_pinnacle', 'etude_live_reevaluation',
     'etude_pistes_saison', 'etude_pistes_tournoi', 'etude_prior_elo', 'etude_profils_contexte', 'etude_retour_absence',
-    'etude_set_decisif', 'etude_signaux_combines', 'etude_statistiques_styles', 'etude_tiebreaks',
-    'etude_tiebreaks_joueurs'))
+    'etude_set_decisif', 'etude_signaux_combines', 'etude_statistiques_styles', 'etude_tiebreaks_joueurs'))
+# Études qui JUGENT sur l'Elo de production mais recréent exprès l'Elo sans réglage comme TÉMOIN, pour mesurer la
+# configuration en place telle qu'elle a été apprise (12/11/2026, paquet 233). Chaque ajout se justifie ici.
+TEMOINS = frozenset(('etude_signaux_reappris',))
 ELO_NU = re.compile(r'\bElo\(\s*\)')
 
 
@@ -87,7 +89,7 @@ class EloDeProduction(unittest.TestCase):
 
 class EtudesSurLEloDeProduction(unittest.TestCase):
     def test_aucune_nouvelle_etude_sur_un_elo_sans_reglage(self):
-        nouvelles = etudes_sur_elo_nu(os.path.join(RACINE, 'simulateur')) - AVANT_AUDIT
+        nouvelles = etudes_sur_elo_nu(os.path.join(RACINE, 'simulateur')) - AVANT_AUDIT - TEMOINS
         self.assertFalse(nouvelles, f"{sorted(nouvelles)} : remplacer « E.Elo() » par « E.de_production(racine) » "
                                     f"(même réglage que la production, mise à jour après chaque match)")
 
@@ -96,7 +98,14 @@ class EtudesSurLEloDeProduction(unittest.TestCase):
         encore = etudes_sur_elo_nu(os.path.join(RACINE, 'simulateur'))
         reprises = AVANT_AUDIT - encore
         self.assertFalse(reprises, f"{sorted(reprises)} n'utilisent plus un Elo sans réglage : les retirer de AVANT_AUDIT")
-        self.assertLessEqual(len(AVANT_AUDIT), 19)
+        self.assertLessEqual(len(AVANT_AUDIT), 18)
+
+    def test_un_temoin_juge_quand_meme_sur_l_elo_de_production(self):
+        for nom in TEMOINS:
+            with open(os.path.join(RACINE, 'simulateur', nom + '.py'), encoding='utf-8') as f:
+                src = f.read()
+            self.assertIn('E.de_production(racine)', src, nom)
+            self.assertEqual(len(ELO_NU.findall('\n'.join(l.split('#', 1)[0] for l in src.splitlines()))), 1, nom)
 
     def test_la_detection_voit_un_elo_nu_et_ignore_les_commentaires(self):
         import tempfile

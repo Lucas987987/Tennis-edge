@@ -15,6 +15,10 @@ RÈGLE FIXÉE LE 05/11/2026, AVANT DE REGARDER LE RÉSULTAT, circuit par circuit
   « tie-break » (jugé ensuite en direct, deux semaines) si sur 2025 → juin 2026 :
     a) la log loss de l'événement « au moins un tie-break » baisse d'au moins 0,001 sur au moins 1 000 matchs, ET
     b) l'écart réel − prévu a le même signe sur les deux périodes.
+
+12/11/2026 (audit, paquet 233) — REJOUÉE AVEC L'ELO DE PRODUCTION, règle inchangée. Le rejeu d'origine ancrait le niveau
+sur un Elo sans réglage, figé pendant le tournoi (la date de l'archive est celle du début du tournoi). Il prend
+désormais elo.de_production (réglages du site), échauffé depuis 2012 et mis à jour après chaque match.
 Usage : python simulateur/etude_tiebreaks.py /tmp/sackmann .
 """
 import collections
@@ -96,9 +100,10 @@ def a_un_tb(sets):
     return any((a, b) in ((7, 6), (6, 7)) for a, b in sets)
 
 
-def lignes(archive):
+def lignes(archive, racine=None):
     import donnees as DN
     import elo as E
+    racine = racine or os.path.join(ICI, '..')
     with open(os.path.join(ICI, 'choix_simulation.json'), encoding='utf-8') as f:
         ch = json.load(f)
     n0, n0c = float(ch.get('n0') or AJ.N0), ch.get('n0_par_composante') or None
@@ -106,13 +111,24 @@ def lignes(archive):
     Mt.sort(key=lambda m: (m['date'], m.get('tour', 0), m.get('num', 0)))
     T = trimestres()
     k = E.cle
-    el, jour, attente, rows, A, ti = E.Elo(), None, [], [], None, -1
+    el, bas = E.de_production(racine)                       # 12/11/2026 : l'Elo du site, plus l'Elo sans réglage
+    debut_mt = Mt[0]['date'] if Mt else None
+
+    def maj(m):
+        g, p = k(m.get('nom_g')), k(m.get('nom_p'))
+        if not g or not p or g == p:
+            return
+        if bas and m['circuit'] in ('CH', 'ITF'):
+            el.presenter(g, bas)
+            el.presenter(p, bas)
+        el.maj(g, p, m['surface'], m.get('niveau') == 'G', E.part_jeux(m['sets']) if m.get('complet') and m.get('sets') else None)
+
+    for m in sorted((x for x in DN.charger(archive, 2012) if debut_mt and x['date'] < debut_mt),
+                    key=lambda x: (x['date'], x.get('tour', 0), x.get('num', 0))):
+        maj(m)                                              # échauffement 2012 → 2017, comme le classement du site
+    rows, A, ti = [], None, -1
     for m in Mt:
         d = m['date']
-        if d != jour:
-            for g, p, s, gc in attente:
-                el.maj(g, p, s, gc, None)
-            attente, jour = [], d
         while ti + 1 < len(T) and d >= T[ti + 1]:
             ti += 1
             A = AJ.ajuster(Mt, T[ti], k, n0=n0, n0_par_composante=n0c)
@@ -121,9 +137,9 @@ def lignes(archive):
         if not g or not p or g == p:
             continue
         c, s = m['circuit'], m['surface']
-        if c in ('CH', 'ITF'):
-            el.presenter(g, 1200.0)
-            el.presenter(p, 1200.0)
+        if bas and c in ('CH', 'ITF'):
+            el.presenter(g, bas)
+            el.presenter(p, bas)
         if (A is not None and DEBUT <= d < FIN and c in SIGMA and m.get('bo') == 3 and m.get('complet')
                 and not m.get('abandon') and m.get('sets') and el.matchs(g) >= 10 and el.matchs(p) >= 10):
             pe = el.proba(g, p, s)
@@ -132,7 +148,7 @@ def lignes(archive):
             a, b = MS.ancrer_rapide(pa0, pb0, min(max(pe, 0.01), 0.99), 2, SIGMA[c], iterations=20)
             ptb = p_tiebreak_match(a, b, SIGMA[c])
             rows.append({'d': d, 'c': c, 'p': ptb, 'y': int(a_un_tb(m['sets']))})
-        attente.append((g, p, s, m.get('niveau') == 'G'))
+        maj(m)                                              # après chaque match, plus au changement de date
     return rows
 
 
@@ -180,11 +196,12 @@ def juger(rows):
 
 
 def main(argv):
-    archive = argv[1]
+    archive, racine = argv[1], (argv[2] if len(argv) > 2 else os.path.join(ICI, '..'))
     doc = {'genere_le': dt.datetime.now(dt.timezone.utc).isoformat(timespec='seconds'),
            'regle': ("par circuit : δ appris 2023–2024 ; fantôme si −0,001 de log loss sur ≥ 1 000 matchs 2025 → et "
                      "écart de même signe sur les deux périodes"),
-           'circuits': juger(lignes(archive))}
+           'elo': "réglé comme la production (elo.de_production), échauffé depuis 2012, mis à jour après chaque match",
+           'circuits': juger(lignes(archive, racine))}
     with open(SORTIE, 'w', encoding='utf-8') as f:
         json.dump(doc, f, ensure_ascii=False, indent=1)
     print(json.dumps(doc, ensure_ascii=False, indent=1))

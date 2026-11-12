@@ -1,67 +1,68 @@
 {
- "genere_le": "2026-11-05T10:02:12+00:00",
+ "genere_le": "2026-11-12T04:35:57+00:00",
  "regle": "par circuit : δ appris 2023–2024 ; fantôme si −0,001 de log loss sur ≥ 1 000 matchs 2025 → et écart de même signe sur les deux périodes",
+ "elo": "réglé comme la production (elo.de_production), échauffé depuis 2012, mis à jour après chaque match",
  "circuits": {
   "ATP": {
    "2023–2024": {
-    "matchs": 4749,
-    "prevu_pct": 37.7,
+    "matchs": 4756,
+    "prevu_pct": 38.0,
     "reel_pct": 39.3,
-    "ecart_pts": 1.6,
-    "z": 2.3
+    "ecart_pts": 1.2,
+    "z": 1.8
    },
    "2025 → juin 2026": {
-    "matchs": 3246,
-    "prevu_pct": 37.8,
+    "matchs": 3250,
+    "prevu_pct": 38.2,
     "reel_pct": 38.0,
-    "ecart_pts": 0.2,
-    "z": 0.2
+    "ecart_pts": -0.2,
+    "z": -0.2
    },
-   "delta_appris": 0.0707,
-   "gain_log_loss_juge": -0.00043,
+   "delta_appris": 0.0544,
+   "gain_log_loss_juge": -0.00042,
    "retenu_pour_fantome": false,
    "etalonnage_juge": [
     {
      "tranche": "10–20 %",
-     "matchs": 60,
-     "prevu": 16.6,
-     "reel": 23.3
+     "matchs": 54,
+     "prevu": 16.7,
+     "reel": 25.9
     },
     {
      "tranche": "20–30 %",
-     "matchs": 529,
-     "prevu": 26.6,
-     "reel": 26.1
+     "matchs": 493,
+     "prevu": 26.7,
+     "reel": 25.2
     },
     {
      "tranche": "30–40 %",
-     "matchs": 1454,
-     "prevu": 35.2,
-     "reel": 36.0
+     "matchs": 1462,
+     "prevu": 35.3,
+     "reel": 35.6
     },
     {
      "tranche": "40–50 %",
-     "matchs": 915,
+     "matchs": 946,
      "prevu": 44.1,
-     "reel": 43.4
+     "reel": 43.2
     },
     {
      "tranche": "50–60 %",
-     "matchs": 212,
+     "matchs": 219,
      "prevu": 53.8,
-     "reel": 52.8
+     "reel": 53.4
     },
     {
      "tranche": "60–70 %",
-     "matchs": 63,
-     "prevu": 63.8,
-     "reel": 68.3
+     "matchs": 65,
+     "prevu": 64.0,
+     "reel": 67.7
     }
    ]
   },
   "WTA": {
    "2023–2024": {
-    "matchs": 5365,
+    "matchs": 5369,
     "prevu_pct": 25.1,
     "reel_pct": 23.2,
     "ecart_pts": -1.9,
@@ -69,83 +70,83 @@
    },
    "2025 → juin 2026": {
     "matchs": 3849,
-    "prevu_pct": 24.8,
+    "prevu_pct": 24.9,
     "reel_pct": 23.7,
-    "ecart_pts": -1.1,
-    "z": -1.6
+    "ecart_pts": -1.2,
+    "z": -1.7
    },
    "delta_appris": -0.1066,
-   "gain_log_loss_juge": 0.00015,
+   "gain_log_loss_juge": 0.00019,
    "retenu_pour_fantome": false,
    "etalonnage_juge": [
     {
      "tranche": "10–20 %",
-     "matchs": 398,
-     "prevu": 17.2,
-     "reel": 14.1
+     "matchs": 377,
+     "prevu": 17.1,
+     "reel": 15.4
     },
     {
      "tranche": "20–30 %",
-     "matchs": 3144,
+     "matchs": 3158,
      "prevu": 25.1,
-     "reel": 24.3
+     "reel": 24.1
     },
     {
      "tranche": "30–40 %",
-     "matchs": 297,
+     "matchs": 302,
      "prevu": 32.1,
-     "reel": 31.0
+     "reel": 31.5
     }
    ]
   },
   "CH": {
    "2023–2024": {
-    "matchs": 17643,
-    "prevu_pct": 28.5,
-    "reel_pct": 31.6,
-    "ecart_pts": 3.1,
-    "z": 9.1
+    "matchs": 17913,
+    "prevu_pct": 28.8,
+    "reel_pct": 31.5,
+    "ecart_pts": 2.7,
+    "z": 8.0
    },
    "2025 → juin 2026": {
-    "matchs": 13752,
-    "prevu_pct": 28.1,
+    "matchs": 13926,
+    "prevu_pct": 28.4,
     "reel_pct": 31.8,
-    "ecart_pts": 3.8,
-    "z": 9.8
+    "ecart_pts": 3.4,
+    "z": 8.9
    },
-   "delta_appris": 0.1497,
-   "gain_log_loss_juge": 0.00338,
+   "delta_appris": 0.1305,
+   "gain_log_loss_juge": 0.00271,
    "retenu_pour_fantome": true,
    "etalonnage_juge": [
     {
      "tranche": "10–20 %",
-     "matchs": 1001,
-     "prevu": 17.3,
-     "reel": 18.6
+     "matchs": 812,
+     "prevu": 17.4,
+     "reel": 17.5
     },
     {
      "tranche": "20–30 %",
-     "matchs": 8148,
-     "prevu": 25.5,
-     "reel": 28.7
+     "matchs": 8252,
+     "prevu": 25.6,
+     "reel": 28.2
     },
     {
      "tranche": "30–40 %",
-     "matchs": 4006,
+     "matchs": 4248,
      "prevu": 33.7,
-     "reel": 39.2
+     "reel": 38.8
     },
     {
      "tranche": "40–50 %",
-     "matchs": 536,
+     "matchs": 561,
      "prevu": 43.1,
-     "reel": 49.1
+     "reel": 49.9
     },
     {
      "tranche": "50–60 %",
-     "matchs": 43,
-     "prevu": 52.5,
-     "reel": 51.2
+     "matchs": 44,
+     "prevu": 52.6,
+     "reel": 54.5
     }
    ]
   }
