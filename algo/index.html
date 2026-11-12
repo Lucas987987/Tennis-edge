@@ -859,7 +859,7 @@ const T = {
     df:'Sûreté de la 2e balle : moins de doubles fautes = note plus haute.',
     for:'Forme : victoires réelles contre victoires attendues sur les 40 derniers matchs (50 = comme prévu).',
     surf:'Note Elo sur chaque surface, même échelle.'},
-  du_titre:'Duel service ↔ retour', du_sous:(s)=>`Indice 0–100 = rang parmi les joueurs du circuit sur ${s} (au moins 200 points joués).`,
+  du_titre:'Duel service ↔ retour', du_sous:(s,g)=>g ? `Indice 0–100 = rang sur ${s} parmi ${g==='femmes'?'les joueuses actives de la WTA':'les joueurs actifs ATP et Challenger'}, d’après les profils ajustés au niveau des adversaires — la même échelle que les cartes des joueurs.` : `Indice 0–100 = rang parmi les joueurs du circuit sur ${s} (au moins 200 points joués).`,
   du_ligne:(a,b)=>`${a} au service contre ${b} au retour`, du_srv:'Service', du_ret:'Retour', du_pts:p=>`${pc(p)} des points`,
   du_avantage:(n)=>`avantage ${n}`, du_equilibre:'équilibré',
   du_p_retours:'Deux retours au-dessus des services adverses : beaucoup de breaks attendus des deux côtés.',
@@ -1128,7 +1128,7 @@ const T = {
     df:'Second-serve safety: fewer double faults = higher rating.',
     for:'Form: actual wins vs expected wins over the last 40 matches (50 = as expected).',
     surf:'Elo rating on each surface, same scale.'},
-  du_titre:'Serve ↔ return duel', du_sous:(s)=>`Index 0–100 = rank among players on the same tour on ${s} (at least 200 points played).`,
+  du_titre:'Serve ↔ return duel', du_sous:(s,g)=>g ? `Index 0–100 = rank on ${s} among ${g==='femmes'?'active WTA players':'active ATP and Challenger players'}, from profiles adjusted for opponent strength — the same scale as the player cards.` : `Index 0–100 = rank among players on the same tour on ${s} (at least 200 points played).`,
   du_ligne:(a,b)=>`${a} serving against ${b} returning`, du_srv:'Serve', du_ret:'Return', du_pts:p=>`${pc(p)} of points`,
   du_avantage:(n)=>`edge ${n}`, du_equilibre:'even',
   du_p_retours:'Both returns are stronger than the opposing serves: plenty of breaks expected on both sides.',
@@ -1525,7 +1525,7 @@ function rendDuel(d,m){
   const lig = d.duels.map(x=>{ const s=x.service, r=1-s, e=x.ecart;
     const verdict = Math.abs(e)<10 ? t('du_equilibre') : t('du_avantage', e>0 ? N[s] : N[r]);
     return `<div class="du-l"><p>${esc(t('du_ligne',N[s],N[r]))}</p><div class="du-v"><span class="${s===0?'c1':'c2'}"><b>${J[s].serv_indice}</b> ${esc(t('du_srv'))} · ${esc(t('du_pts',J[s].serv_pct))}</span><em>vs</em><span class="${r===0?'c1':'c2'}"><b>${J[r].ret_indice}</b> ${esc(t('du_ret'))} · ${esc(t('du_pts',J[r].ret_pct))}</span></div><small>${esc(verdict)}${Math.abs(e)>=10?` (${Math.abs(e)} pts)`:''}</small></div>`;}).join('');
-  return `<div class="panel duel-sr"><h3>${esc(t('du_titre'))}</h3><p class="styles-intro">${esc(t('du_sous', SURF[L][d.surface]||d.surface))}</p>${phraseDuel(d,N)}${lig}<p class="styles-note">${esc(t('du_p_lire'))}</p></div>`;
+  return `<div class="panel duel-sr"><h3>${esc(t('du_titre'))}</h3><p class="styles-intro">${esc(t('du_sous', SURF[L][d.surface]||d.surface, d.source==='cartes' ? d.groupe : null))}</p>${phraseDuel(d,N)}${lig}<p class="styles-note">${esc(t('du_p_lire'))}</p></div>`;
 }
 // 28/10/2026 — phrases en clair : on ne dit quelque chose que si l'écart est net (seuils fixes ci-dessous),
 // sinon « rien ne sort de l'ordinaire ». Duel : écart de 10 points d'indice (même seuil que les lignes).
@@ -1973,13 +1973,15 @@ function analyseComplete(m, court_){
     const du = m.duel;
     if (du && Array.isArray(du.joueurs) && du.joueurs.length === 2){
       const J = du.joueurs, surf = (SURF.fr[du.surface] || '').toLowerCase();
-      const l = ['⚔️ DUEL SERVICE / RETOUR', `📊 Indices de niveau${surf ? ' sur ' + surf : ''}, sur 100 (rang parmi les joueurs du circuit).`, ''];
+      const l = ['⚔️ DUEL SERVICE / RETOUR', du.source==='cartes'
+        ? `📊 Indices de niveau${surf ? ' sur ' + surf : ''}, sur 100 (rang parmi ${du.groupe==='femmes' ? 'les joueuses actives de la WTA' : 'les joueurs actifs ATP et Challenger'}, à niveau d'adversaire égal ; mêmes chiffres que les cartes des joueurs).`
+        : `📊 Indices de niveau${surf ? ' sur ' + surf : ''}, sur 100 (rang parmi les joueurs du circuit).`, ''];
       const avantages = [];
       [0,1].forEach(i => { const sv = J[i].serv_indice, rt = J[1-i].ret_indice; if (sv == null || rt == null) return;
         const e = sv - rt; avantages.push(e);
         l.push(`🎾 ${N[i]} au service face au retour de ${N[1-i]} :`, `🔹 Service ${N[i]} : ${sv}/100`, `🔹 Retour ${N[1-i]} : ${rt}/100`,
           Math.abs(e) < 10 ? `⚖️ Duel équilibré : écart de ${Math.abs(e)} points.` : `✅ Avantage ${e >= 0 ? N[i] : N[1-i]} : ${Math.abs(e)} points.`, ''); });
-      l.push('Ces indices sont des classements relatifs au circuit, pas des probabilités de victoire.');
+      l.push(du.source==='cartes' ? 'Ces indices sont des classements, pas des probabilités de victoire.' : 'Ces indices sont des classements relatifs au circuit, pas des probabilités de victoire.');
       bloc(...l);
       if (avantages.length === 2 && avantages[0] >= 10 && avantages[1] <= -10) retenir.push(`✅ ${H} a l'avantage dans les deux duels service / retour.`);
       else if (avantages.length === 2 && avantages[0] <= -10 && avantages[1] >= 10) retenir.push(`✅ ${A} a l'avantage dans les deux duels service / retour.`);
