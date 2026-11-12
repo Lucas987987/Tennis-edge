@@ -319,6 +319,67 @@ def ajouter_rythme(lignes, document, alias=None):
     return lignes
 
 
+def _repartir(total, poids):
+    """Entiers ≥ 0 de somme `total`, proportionnels à `poids` (plus forts restes)."""
+    tot = sum(poids)
+    if total <= 0 or tot <= 0:
+        return [0] * len(poids)
+    brut = [total * w / tot for w in poids]
+    ent = [int(x) for x in brut]
+    for i in sorted(range(len(poids)), key=lambda i: brut[i] - ent[i], reverse=True)[:total - sum(ent)]:
+        ent[i] += 1
+    return ent
+
+
+def points_marques(ligne, doc, cle_c):
+    """12/11/2026 (paquet 249) — tiroir « Points marqués » : total de points prévu par les simulations (feuille_plus),
+    aces et doubles fautes adverses de la feuille publiée, et, pour un joueur relevé au moins coups_joueurs.MIN_MATCHS
+    fois, le reste réparti selon ses habitudes (coups_joueurs.json). DESCRIPTIF : ne change pas le % de victoire."""
+    import coups_joueurs as CJ
+    fp, fpl = ligne.get('feuille_prevue') or [], ligne.get('feuille_plus') or []
+    if len(fp) < 2 or len(fpl) < 2 or not all((fpl[i] or {}).get('points_gagnes') for i in (0, 1)):
+        return None
+    J = (doc or {}).get('joueurs') or {}
+    tot = [int(round(fpl[i]['points_gagnes'][0])) for i in (0, 1)]
+    joueurs = []
+    for i, nom in enumerate((ligne.get('home'), ligne.get('away'))):
+        pg = fpl[i]['points_gagnes']
+        aces = int(round(fp[i].get('aces') or 0))
+        dfa = int(round(fp[1 - i].get('doubles_fautes') or 0))
+        reste = max(tot[i] - aces - dfa, 0)
+        j = {'total': tot[i], 'fourchette': [pg[1], pg[2]] if len(pg) > 2 else None, 'aces': aces,
+             'doubles_fautes_adverses': dfa, 'echange': reste, 'detail': None}
+        e = J.get(cle_c(nom)) if nom else None
+        if e and (e.get('matchs') or 0) >= CJ.MIN_MATCHS:
+            c = e['comptes']
+            autres = [k for k in CJ.CATEGORIES if k not in ('aces', 'doubles_fautes_adverses')]
+            n = _repartir(reste, [c.get(k, 0) for k in autres])
+            det = dict(zip(autres, n), aces=aces, doubles_fautes_adverses=dfa)
+            pj = tot[0] + tot[1]
+            mt = round(pj * c['montees'] / c['points_joues']) if c.get('points_joues') else None
+            mg = round(mt * c['montees_gagnees'] / c['montees']) if mt is not None and c.get('montees') else None
+            j.update(detail={k: det[k] for k in CJ.CATEGORIES}, montees=mt, montees_gagnees=mg, matchs_releves=e['matchs'])
+        else:
+            j['matchs_releves'] = (e or {}).get('matchs') or 0
+        joueurs.append(j)
+    return {'descriptif_seulement': True, 'joueurs': joueurs, 'min_matchs': CJ.MIN_MATCHS}
+
+
+def ajouter_points_marques(lignes, doc, alias=None):
+    import elo as E
+    alias = alias or {}
+    cle_c = lambda n: alias.get(E.cle(n), E.cle(n)) if n else None  # noqa: E731
+    for ligne in lignes:
+        try:
+            pm = points_marques(ligne, doc, cle_c)
+        except Exception as e:  # noqa: BLE001 — un descriptif ne bloque jamais la page
+            print(f"::warning::points marqués non calculés ({ligne.get('uid')}) : {type(e).__name__}: {e}")
+            pm = None
+        if pm:
+            ligne['points_marques'] = pm
+    return lignes
+
+
 def bilan_lignes(racine, resultats):
     """28/10/2026 : lignes figées avant le match (lignes_algo.journaliser) contre les scores réels."""
     import lignes_algo as MD
@@ -760,6 +821,8 @@ def construire(racine, maintenant=None):
     except Exception:
         alias = {}
     ajouter_rythme(lignes, rythme_doc, alias)
+    # 12/11/2026 (paquet 249) : points marqués et comment (coups_joueurs.json, Match Charting Project) ; descriptif
+    ajouter_points_marques(lignes, _lire(os.path.join(racine, 'simulateur', 'coups_joueurs.json'), {}) or {}, alias)
     # 06/11/2026 (paquet 210) : séries, face-à-face, réussite par rapport aux chances (infos_avant_match.py) ; descriptif
     avant = (_lire(os.path.join(racine, 'simulateur', 'infos_avant_match.json'), {}) or {}).get('matchs') or {}
     for ligne in lignes:
