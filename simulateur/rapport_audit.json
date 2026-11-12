@@ -408,7 +408,8 @@
   "230": "départ des joueurs vus d'abord en ITF hommes : simulateur/rapport_depart_itf.json — RETENU et en production (1000 au lieu de 1200 ; Challenger : gain 0,0057 ± 0,0007 sur 7 722 matchs jugés, 0,0077 ± 0,0021 sur nos 912 matchs) ; Grand Chelem en WTA et outsider en Challenger : simulateur/rapport_outsiders.json — non retenus ; joueurs peu vus en Challenger : simulateur/rapport_joueurs_peu_vus.json — passe sur l'archive, échoue avec l'Elo de production, pas en production",
   "231": "pente Grand Chelem commune ATP + WTA (1,235) : simulateur/rapport_grand_chelem.json — en place PAR DÉCISION DE LUCAS, la règle écrite n'étant pas passée ; retrait par la règle cumulée. Départ des joueuses vues d'abord en ITF : simulateur/rapport_depart_itf_femmes.json — REJETÉ",
   "232": "qualifications de Grand Chelem : format corrigé chez les hommes (2 sets gagnants) ; pente de l'Elo chez les femmes RETENUE et en place (1,247 ; gain 0,0047 ± 0,0017 sur 1 435 matchs jugés), rejetée chez les hommes : simulateur/rapport_qualifs_grand_chelem.json",
-  "233": "signaux par circuit réappris sur l'Elo de production : simulateur/rapport_signaux_reappris.json — ATP et Challenger adoptés (favori / outsider et parcours écartés, β réappris), WTA inchangée ; tie-breaks rejoués avec l'Elo de production : même verdict, décalage Challenger 0,1305"
+  "233": "signaux par circuit réappris sur l'Elo de production : simulateur/rapport_signaux_reappris.json — ATP et Challenger adoptés (favori / outsider et parcours écartés, β réappris), WTA inchangée ; tie-breaks rejoués avec l'Elo de production : même verdict, décalage Challenger 0,1305",
+  "234": "règle « deux semaines de suite » contre règle cumulée : simulateur/rapport_regle_hebdomadaire.json — la règle cumulée fait moins d'erreurs (26 % de semaines dans le mauvais état contre 38 %) : en place pour tous les signaux par circuit"
  },
  "pistes_ajoutees_le_11_11": {
   "regardé": "2018–2022 seulement, par-dessus l'Elo de production corrigé du format en ATP et les trois signaux solides (surface, absence, âge)",
@@ -723,5 +724,21 @@
    }
   ],
   "etudes_encore_sur_l_elo_sans_reglage": 18
+ },
+ "paquet_234_le_12_11": {
+  "en_production": "règle cumulée pour tous les signaux par circuit (fantomes_circuits.py) : retrait et entrée à 2 erreurs types sur au moins 300 matchs concernés, compteurs depuis le 12/11/2026",
+  "limite": "lente pour un signal rare : 300 matchs concernés demandent environ 40 semaines pour le retour d'absence en ATP",
+  "a_juger": [
+   {
+    "id": "regles_hebdomadaires_des_poids_et_des_facteurs",
+    "paquet_prevu": null,
+    "regle": "entrainement_progressif.py et facteurs.py rejugent encore chaque lundi sur des fenêtres de 42 jours qui se chevauchent (stabilite.py). Même étude à faire sur leurs séries : la règle en place contre une règle cumulée, un réglage connu bon et un réglage au hasard, part des semaines dans le mauvais état ; est gardée celle qui fait le moins d'erreurs"
+   },
+   {
+    "id": "seuil_de_la_regle_cumulee",
+    "paquet_prevu": null,
+    "regle": "300 matchs et 2 erreurs types ont été fixés à l'audit et non cherchés. Une grille (150, 300, 600 matchs ; 1,5 · 2 · 2,5 erreurs types) ne pourra être jugée que sur d'autres signaux que ceux de l'étude : à surveiller, rien à changer"
+   }
+  ]
  }
 }
