@@ -371,7 +371,8 @@
     "commits_en_24_h": 894,
     "trois_fichiers_reecrits_11_a_14_fois_par_jour_mo": 216
    },
-   "correctif": "passer ces trois fichiers par le stockage externe, n'en garder dans git qu'une photo par jour"
+   "correctif": "passer ces trois fichiers par le stockage externe, n'en garder dans git qu'une photo par jour",
+   "suite_paquet_235": "le correctif écrit ici (« passer ces trois fichiers par le stockage externe ») reposait sur le classement brut : il n'est PAS appliqué tel quel. Mesure réelle ajoutée ; décision après la première lecture"
   },
   {
    "id": "workflows_et_code_mort",
@@ -409,7 +410,9 @@
   "231": "pente Grand Chelem commune ATP + WTA (1,235) : simulateur/rapport_grand_chelem.json — en place PAR DÉCISION DE LUCAS, la règle écrite n'étant pas passée ; retrait par la règle cumulée. Départ des joueuses vues d'abord en ITF : simulateur/rapport_depart_itf_femmes.json — REJETÉ",
   "232": "qualifications de Grand Chelem : format corrigé chez les hommes (2 sets gagnants) ; pente de l'Elo chez les femmes RETENUE et en place (1,247 ; gain 0,0047 ± 0,0017 sur 1 435 matchs jugés), rejetée chez les hommes : simulateur/rapport_qualifs_grand_chelem.json",
   "233": "signaux par circuit réappris sur l'Elo de production : simulateur/rapport_signaux_reappris.json — ATP et Challenger adoptés (favori / outsider et parcours écartés, β réappris), WTA inchangée ; tie-breaks rejoués avec l'Elo de production : même verdict, décalage Challenger 0,1305",
-  "234": "règle « deux semaines de suite » contre règle cumulée : simulateur/rapport_regle_hebdomadaire.json — la règle cumulée fait moins d'erreurs (26 % de semaines dans le mauvais état contre 38 %) : en place pour tous les signaux par circuit"
+  "234": "règle « deux semaines de suite » contre règle cumulée : simulateur/rapport_regle_hebdomadaire.json — la règle cumulée fait moins d'erreurs (26 % de semaines dans le mauvais état contre 38 %) : en place pour tous les signaux par circuit",
+  "235": "taille du dépôt : scripts/croissance_depot.py mesure le coût réel dans git par fichier (le chiffre de l'audit, 384 Mo par jour, est un majorant ; la taille n'a monté que d'environ 57 Mo par jour). Aucun fichier déplacé : le correctif attend la première mesure",
+  "236": "balayage de 54 cases d'étalonnage sur les périodes d'apprentissage : simulateur/rapport_balayage_pistes.json — aucune n'atteint le seuil pour être portée au jugement ; rien en production"
  },
  "pistes_ajoutees_le_11_11": {
   "regardé": "2018–2022 seulement, par-dessus l'Elo de production corrigé du format en ATP et les trois signaux solides (surface, absence, âge)",
@@ -740,5 +743,23 @@
     "regle": "300 matchs et 2 erreurs types ont été fixés à l'audit et non cherchés. Une grille (150, 300, 600 matchs ; 1,5 · 2 · 2,5 erreurs types) ne pourra être jugée que sur d'autres signaux que ceux de l'étude : à surveiller, rien à changer"
    }
   ]
+ },
+ "paquet_235_le_12_11": {
+  "fait": "mesure du coût réel dans git, par famille de fichiers, dans le rapport quotidien (croissance_depot.json : octets_reels, top_reel)",
+  "a_decider_apres_la_premiere_mesure": [
+   "fichiers dont le coût réel dépasse 5 Mo par jour : les sortir de git (stockage externe, une photo par jour) ou réduire leur fréquence",
+   "fichiers compressés réécrits plusieurs fois par jour : les écrire en clair (git saura n'en garder que la différence) ou par tranches",
+   "historique déjà accumulé (6,84 Go) : seule la procédure « Dépôt neuf » (docs/README_DEPOT_NEUF.md) le reprend, sans push forcé"
+  ],
+  "regle": "un fichier n'est déplacé que si la mesure réelle, sur au moins 3 jours, lui attribue plus de 5 Mo par jour ; le gain attendu est écrit avant, la mesure d'après le confirme"
+ },
+ "paquet_236_le_12_11": {
+  "constat": "après les paquets 228 à 234, le % de victoire est étalonné sur tous les axes simples testables : niveau du tournoi, surface, saison, tour, expérience, entrée dans le tableau, charge de la semaine précédente (ATP et WTA sur 2018–2022 ; Challenger avec les résultats ITF hommes sur janvier–septembre 2025)",
+  "ce_qui_reste_a_gagner_sur_le_pourcentage": [
+   "départ ITF hommes plus bas (950, 900, 850) : règle écrite au paquet 230, jugé sur nos matchs Challenger à venir (1 000 matchs)",
+   "configuration des signaux en WTA : règle écrite au paquet 233, jugée sur nos matchs WTA à venir (1 000 matchs)",
+   "une information que l'Elo et les signaux n'ont pas (aucune n'est disponible dans l'archive aujourd'hui)"
+  ],
+  "a_ne_pas_refaire": "les 54 cases du rapport : mesurées sur la période d'apprentissage, sous le seuil même en majorant"
  }
 }
