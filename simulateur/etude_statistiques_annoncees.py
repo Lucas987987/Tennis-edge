@@ -67,7 +67,7 @@ def reels(det_j, det_adv):
             'breaks': float(det_adv[6] - det_adv[7])}
 
 
-def lignes(archive, racine, n_sim=N_SIM, pas=None, journal=True, simuler=True):
+def lignes(archive, racine, n_sim=N_SIM, pas=None, journal=True, simuler=True, amplif=None, debut=None):
     """simuler=False : les mêmes matchs dans le même ordre, sans profil ni simulation (une ligne par match : jour, circuit,
     tournoi, surface) — pour rattacher une information du match aux lignes déjà rejouées."""
     import ajustement as AJ
@@ -118,7 +118,7 @@ def lignes(archive, racine, n_sim=N_SIM, pas=None, journal=True, simuler=True):
             el.presenter(g, bas)
             el.presenter(p, bas)
         det = m.get('detail')
-        if (A is not None and c in pas and DEBUT <= d < FIN and m.get('complet') and not m.get('abandon') and m.get('sets')
+        if (A is not None and c in pas and (debut or DEBUT) <= d < FIN and m.get('complet') and not m.get('abandon') and m.get('sets')
                 and m.get('niveau') != 'D' and det and det.get('w') and det.get('l') and det['w'][0] and det['l'][0]
                 and int(m.get('num') or 0) % pas[c] == 0 and el.matchs(g) >= 10 and el.matchs(p) >= 10):
             if not simuler:
@@ -129,6 +129,9 @@ def lignes(archive, racine, n_sim=N_SIM, pas=None, journal=True, simuler=True):
             pg = min(max(pg, 0.02), 0.98)
             sg = 3 if m.get('bo') == 5 else 2
             cG, cP = MS.composantes_ajustees(A, g, p, c, s), MS.composantes_ajustees(A, p, g, c, s)
+            if amplif and amplif.get(c):              # 12/11/2026 (paquet 240) : amplification des profils, comme en production
+                moy = MS.borner(A.taux('__moyen__', '__moyen__', c, s))
+                cG, cP = MS.amplifier_composantes(cG, moy, amplif[c]), MS.amplifier_composantes(cP, moy, amplif[c])
             r = MS.simuler(cG, cP, pg, sg, n_sim, sigmas.get(c, PJ.SIGMA), cle=f"{m.get('tournoi_id')}|{m.get('num')}",
                            reglages=reglages, circuit=c)
             for i, (dj, da) in enumerate(((det['w'], det['l']), (det['l'], det['w']))):

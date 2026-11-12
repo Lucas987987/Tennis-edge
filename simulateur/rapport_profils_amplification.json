@@ -1,0 +1,487 @@
+{
+ "genere_le": "2026-11-12T15:02:03+00:00",
+ "regle": "amplification par circuit et par composante, apprise sur 2019–2022, jugée sur 2023 → juin 2026 : au moins 1 000 lignes, gain de vraisemblance des points positif, pente jugée du même côté de 1 ; puis contrôle du vainqueur",
+ "lignes": 1005306,
+ "circuits": {
+  "ATP": {
+   "f": {
+    "k_appris": 0.921,
+    "k_sur_2023": 0.88,
+    "lignes": {
+     "2019_2022": 17696,
+     "2023": 18216
+    },
+    "gain_par_point_2019_2022": 0.0151,
+    "gain_par_point_2023": 0.0311,
+    "erreur_type_2023": 0.0058,
+    "unite_des_gains": "millièmes de log-vraisemblance par point",
+    "taux_moyen_2023": {
+     "prevu": 62.67,
+     "prevu_amplifie": 62.65,
+     "reel": 62.6
+    },
+    "retenue": true,
+    "raisons": []
+   },
+   "a": {
+    "k_appris": 1.061,
+    "k_sur_2023": 0.986,
+    "lignes": {
+     "2019_2022": 17696,
+     "2023": 18216
+    },
+    "gain_par_point_2019_2022": 0.0664,
+    "gain_par_point_2023": -0.0758,
+    "erreur_type_2023": 0.0152,
+    "unite_des_gains": "millièmes de log-vraisemblance par point",
+    "taux_moyen_2023": {
+     "prevu": 12.3,
+     "prevu_amplifie": 12.36,
+     "reel": 12.73
+    },
+    "retenue": false,
+    "raisons": [
+     "pas de gain sur 2023 →",
+     "pente jugée de l'autre côté de 1"
+    ]
+   },
+   "w1": {
+    "k_appris": 1.117,
+    "k_sur_2023": 1.054,
+    "lignes": {
+     "2019_2022": 17696,
+     "2023": 18216
+    },
+    "gain_par_point_2019_2022": 0.0551,
+    "gain_par_point_2023": -0.0039,
+    "erreur_type_2023": 0.0124,
+    "unite_des_gains": "millièmes de log-vraisemblance par point",
+    "taux_moyen_2023": {
+     "prevu": 71.5,
+     "prevu_amplifie": 71.48,
+     "reel": 71.87
+    },
+    "retenue": false,
+    "raisons": [
+     "pas de gain sur 2023 →"
+    ]
+   },
+   "d": {
+    "k_appris": 1.075,
+    "k_sur_2023": 1.048,
+    "lignes": {
+     "2019_2022": 17696,
+     "2023": 18216
+    },
+    "gain_par_point_2019_2022": 0.0221,
+    "gain_par_point_2023": 0.0061,
+    "erreur_type_2023": 0.0104,
+    "unite_des_gains": "millièmes de log-vraisemblance par point",
+    "taux_moyen_2023": {
+     "prevu": 9.28,
+     "prevu_amplifie": 9.25,
+     "reel": 9.2
+    },
+    "retenue": true,
+    "raisons": []
+   },
+   "w2j": {
+    "k_appris": 1.108,
+    "k_sur_2023": 1.093,
+    "lignes": {
+     "2019_2022": 17696,
+     "2023": 18216
+    },
+    "gain_par_point_2019_2022": 0.0271,
+    "gain_par_point_2023": 0.0187,
+    "erreur_type_2023": 0.011,
+    "unite_des_gains": "millièmes de log-vraisemblance par point",
+    "taux_moyen_2023": {
+     "prevu": 56.1,
+     "prevu_amplifie": 56.02,
+     "reel": 56.18
+    },
+    "retenue": true,
+    "raisons": []
+   }
+  },
+  "WTA": {
+   "f": {
+    "k_appris": 0.956,
+    "k_sur_2023": 0.938,
+    "lignes": {
+     "2019_2022": 15900,
+     "2023": 17324
+    },
+    "gain_par_point_2019_2022": 0.0067,
+    "gain_par_point_2023": 0.0147,
+    "erreur_type_2023": 0.0046,
+    "unite_des_gains": "millièmes de log-vraisemblance par point",
+    "taux_moyen_2023": {
+     "prevu": 62.33,
+     "prevu_amplifie": 62.35,
+     "reel": 62.54
+    },
+    "retenue": true,
+    "raisons": []
+   },
+   "a": {
+    "k_appris": 1.139,
+    "k_sur_2023": 1.062,
+    "lignes": {
+     "2019_2022": 15900,
+     "2023": 17324
+    },
+    "gain_par_point_2019_2022": 0.2188,
+    "gain_par_point_2023": -0.0319,
+    "erreur_type_2023": 0.0359,
+    "unite_des_gains": "millièmes de log-vraisemblance par point",
+    "taux_moyen_2023": {
+     "prevu": 6.27,
+     "prevu_amplifie": 6.55,
+     "reel": 6.17
+    },
+    "retenue": false,
+    "raisons": [
+     "pas de gain sur 2023 →"
+    ]
+   },
+   "w1": {
+    "k_appris": 1.117,
+    "k_sur_2023": 1.084,
+    "lignes": {
+     "2019_2022": 15900,
+     "2023": 17324
+    },
+    "gain_par_point_2019_2022": 0.0446,
+    "gain_par_point_2023": 0.0215,
+    "erreur_type_2023": 0.0131,
+    "unite_des_gains": "millièmes de log-vraisemblance par point",
+    "taux_moyen_2023": {
+     "prevu": 63.45,
+     "prevu_amplifie": 63.48,
+     "reel": 63.45
+    },
+    "retenue": true,
+    "raisons": []
+   },
+   "d": {
+    "k_appris": 1.062,
+    "k_sur_2023": 1.053,
+    "lignes": {
+     "2019_2022": 15900,
+     "2023": 17324
+    },
+    "gain_par_point_2019_2022": 0.0172,
+    "gain_par_point_2023": 0.0138,
+    "erreur_type_2023": 0.0106,
+    "unite_des_gains": "millièmes de log-vraisemblance par point",
+    "taux_moyen_2023": {
+     "prevu": 13.71,
+     "prevu_amplifie": 13.71,
+     "reel": 13.74
+    },
+    "retenue": true,
+    "raisons": []
+   },
+   "w2j": {
+    "k_appris": 1.023,
+    "k_sur_2023": 1.035,
+    "lignes": {
+     "2019_2022": 15900,
+     "2023": 17322
+    },
+    "gain_par_point_2019_2022": 0.0008,
+    "gain_par_point_2023": 0.0018,
+    "erreur_type_2023": 0.0022,
+    "unite_des_gains": "millièmes de log-vraisemblance par point",
+    "taux_moyen_2023": {
+     "prevu": 52.74,
+     "prevu_amplifie": 52.74,
+     "reel": 52.5
+    },
+    "retenue": true,
+    "raisons": []
+   }
+  },
+  "CH": {
+   "f": {
+    "k_appris": 0.912,
+    "k_sur_2023": 0.866,
+    "lignes": {
+     "2019_2022": 56650,
+     "2023": 75276
+    },
+    "gain_par_point_2019_2022": 0.0213,
+    "gain_par_point_2023": 0.0442,
+    "erreur_type_2023": 0.0038,
+    "unite_des_gains": "millièmes de log-vraisemblance par point",
+    "taux_moyen_2023": {
+     "prevu": 61.6,
+     "prevu_amplifie": 61.61,
+     "reel": 61.65
+    },
+    "retenue": true,
+    "raisons": []
+   },
+   "a": {
+    "k_appris": 1.105,
+    "k_sur_2023": 1.093,
+    "lignes": {
+     "2019_2022": 56650,
+     "2023": 75276
+    },
+    "gain_par_point_2019_2022": 0.0936,
+    "gain_par_point_2023": 0.0763,
+    "erreur_type_2023": 0.0112,
+    "unite_des_gains": "millièmes de log-vraisemblance par point",
+    "taux_moyen_2023": {
+     "prevu": 9.38,
+     "prevu_amplifie": 9.4,
+     "reel": 9.5
+    },
+    "retenue": true,
+    "raisons": []
+   },
+   "w1": {
+    "k_appris": 1.042,
+    "k_sur_2023": 1.046,
+    "lignes": {
+     "2019_2022": 56650,
+     "2023": 75276
+    },
+    "gain_par_point_2019_2022": 0.0048,
+    "gain_par_point_2023": 0.006,
+    "erreur_type_2023": 0.0021,
+    "unite_des_gains": "millièmes de log-vraisemblance par point",
+    "taux_moyen_2023": {
+     "prevu": 68.37,
+     "prevu_amplifie": 68.33,
+     "reel": 68.54
+    },
+    "retenue": true,
+    "raisons": []
+   },
+   "d": {
+    "k_appris": 1.028,
+    "k_sur_2023": 1.047,
+    "lignes": {
+     "2019_2022": 56650,
+     "2023": 75276
+    },
+    "gain_par_point_2019_2022": 0.0022,
+    "gain_par_point_2023": 0.0056,
+    "erreur_type_2023": 0.0017,
+    "unite_des_gains": "millièmes de log-vraisemblance par point",
+    "taux_moyen_2023": {
+     "prevu": 10.65,
+     "prevu_amplifie": 10.65,
+     "reel": 10.65
+    },
+    "retenue": true,
+    "raisons": []
+   },
+   "w2j": {
+    "k_appris": 1.007,
+    "k_sur_2023": 1.022,
+    "lignes": {
+     "2019_2022": 56650,
+     "2023": 75274
+    },
+    "gain_par_point_2019_2022": 0.0001,
+    "gain_par_point_2023": 0.0004,
+    "erreur_type_2023": 0.0003,
+    "unite_des_gains": "millièmes de log-vraisemblance par point",
+    "taux_moyen_2023": {
+     "prevu": 55.29,
+     "prevu_amplifie": 55.29,
+     "reel": 55.33
+    },
+    "retenue": true,
+    "raisons": []
+   }
+  }
+ },
+ "retenues": {
+  "ATP": {
+   "f": 0.921,
+   "d": 1.075,
+   "w2j": 1.108
+  },
+  "WTA": {
+   "f": 0.956,
+   "w1": 1.117,
+   "d": 1.062,
+   "w2j": 1.023
+  },
+  "CH": {
+   "f": 0.912,
+   "a": 1.105,
+   "w1": 1.042,
+   "d": 1.028,
+   "w2j": 1.007
+  }
+ },
+ "controle_statistiques_annoncees": {
+  "periode": "2023 → juin 2026, un match sur 6 (ATP, WTA) et sur 24 (Challenger)",
+  "methode": "feuille annoncée rejouée (etude_statistiques_annoncees.py) avec et sans les amplifications retenues, sur les mêmes matchs",
+  "cases": {
+   "ATP|aces": {
+    "cas": 3182,
+    "ecart_sans": 2.768,
+    "ecart_avec": 2.764,
+    "diff": -0.0039,
+    "erreur_type": 0.0031,
+    "pente_sans": 0.984,
+    "pente_avec": 0.983,
+    "couverture_sans": 79.8,
+    "couverture_avec": 80.3
+   },
+   "ATP|doubles_fautes": {
+    "cas": 3182,
+    "ecart_sans": 1.607,
+    "ecart_avec": 1.605,
+    "diff": -0.0012,
+    "erreur_type": 0.002,
+    "pente_sans": 0.987,
+    "pente_avec": 0.949,
+    "couverture_sans": 87.0,
+    "couverture_avec": 86.8
+   },
+   "ATP|premiere_pct": {
+    "cas": 3182,
+    "ecart_sans": 5.417,
+    "ecart_avec": 5.408,
+    "diff": -0.0087,
+    "erreur_type": 0.0066,
+    "pente_sans": 0.831,
+    "pente_avec": 0.894,
+    "couverture_sans": 79.5,
+    "couverture_avec": 79.8
+   },
+   "ATP|breaks": {
+    "cas": 3182,
+    "ecart_sans": 1.313,
+    "ecart_avec": 1.31,
+    "diff": -0.0021,
+    "erreur_type": 0.0016,
+    "pente_sans": 1.001,
+    "pente_avec": 0.996,
+    "couverture_sans": 89.8,
+    "couverture_avec": 90.0
+   },
+   "WTA|aces": {
+    "cas": 3090,
+    "ecart_sans": 1.655,
+    "ecart_avec": 1.656,
+    "diff": 0.0005,
+    "erreur_type": 0.0018,
+    "pente_sans": 0.98,
+    "pente_avec": 0.98,
+    "couverture_sans": 85.8,
+    "couverture_avec": 85.7
+   },
+   "WTA|doubles_fautes": {
+    "cas": 3090,
+    "ecart_sans": 1.898,
+    "ecart_avec": 1.899,
+    "diff": 0.0006,
+    "erreur_type": 0.0024,
+    "pente_sans": 0.935,
+    "pente_avec": 0.901,
+    "couverture_sans": 85.0,
+    "couverture_avec": 85.1
+   },
+   "WTA|premiere_pct": {
+    "cas": 3090,
+    "ecart_sans": 5.646,
+    "ecart_avec": 5.64,
+    "diff": -0.0064,
+    "erreur_type": 0.0063,
+    "pente_sans": 0.913,
+    "pente_avec": 0.953,
+    "couverture_sans": 79.9,
+    "couverture_avec": 79.6
+   },
+   "WTA|breaks": {
+    "cas": 3090,
+    "ecart_sans": 1.598,
+    "ecart_avec": 1.599,
+    "diff": 0.0017,
+    "erreur_type": 0.0021,
+    "pente_sans": 0.941,
+    "pente_avec": 0.911,
+    "couverture_sans": 85.8,
+    "couverture_avec": 85.6
+   },
+   "CH|aces": {
+    "cas": 2552,
+    "ecart_sans": 2.226,
+    "ecart_avec": 2.22,
+    "diff": -0.0062,
+    "erreur_type": 0.0049,
+    "pente_sans": 1.064,
+    "pente_avec": 0.982,
+    "couverture_sans": 80.4,
+    "couverture_avec": 80.5
+   },
+   "CH|doubles_fautes": {
+    "cas": 2552,
+    "ecart_sans": 1.677,
+    "ecart_avec": 1.678,
+    "diff": 0.0007,
+    "erreur_type": 0.002,
+    "pente_sans": 0.953,
+    "pente_avec": 0.94,
+    "couverture_sans": 85.7,
+    "couverture_avec": 85.1
+   },
+   "CH|premiere_pct": {
+    "cas": 2552,
+    "ecart_sans": 5.92,
+    "ecart_avec": 5.922,
+    "diff": 0.0017,
+    "erreur_type": 0.0083,
+    "pente_sans": 0.935,
+    "pente_avec": 1.021,
+    "couverture_sans": 78.7,
+    "couverture_avec": 78.4
+   },
+   "CH|breaks": {
+    "cas": 2552,
+    "ecart_sans": 1.4,
+    "ecart_avec": 1.402,
+    "diff": 0.0022,
+    "erreur_type": 0.0018,
+    "pente_sans": 0.928,
+    "pente_avec": 0.908,
+    "couverture_sans": 89.4,
+    "couverture_avec": 89.5
+   }
+  },
+  "retirees_par_la_regle_de_retrait": [
+   "CH|w1",
+   "CH|w2j",
+   "WTA|d",
+   "WTA|w1",
+   "WTA|w2j"
+  ],
+  "lecture": "l'effet sur les statistiques annoncées est petit (écart moyen |annoncé − réel| changé de moins de 0,01) ; la 1re balle dedans resserrée rapproche de 1 la pente du % de 1res balles (ATP 0,83 → 0,89, WTA 0,91 → 0,95, Challenger 0,94 → 1,02) ; amplifier les points gagnés (w1, w2j) et les doubles fautes en WTA rend les breaks et les doubles fautes trop dispersés : retiré",
+  "pourcentage_de_victoire": "inchangé par construction : l'amplification ne touche que la simulation ancrée sur le % affiché"
+ },
+ "en_production": {
+  "ATP": {
+   "f": 0.921,
+   "d": 1.075,
+   "w2j": 1.108
+  },
+  "WTA": {
+   "f": 0.956
+  },
+  "CH": {
+   "f": 0.912,
+   "a": 1.105,
+   "d": 1.028
+  }
+ }
+}

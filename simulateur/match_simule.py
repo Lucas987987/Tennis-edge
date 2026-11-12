@@ -457,6 +457,19 @@ def amplifier(c, moyen, k):
     return borner(out)
 
 
+def amplifier_composantes(c, moyen, ks):
+    """12/11/2026 (paquet 240, etude_profils_amplification.py) — comme amplifier, mais un k PAR COMPOSANTE :
+    ks = {'f': 0.92, 'w2j': 1.11, …} ; une composante absente de ks n'est pas touchée."""
+    if not ks:
+        return c
+    out = dict(c)
+    for x, k in ks.items():
+        if x in c and x in moyen and k and k != 1.0:
+            m = _lg(min(max(moyen[x], 1e-4), 1 - 1e-4))
+            out[x] = _sg(m + float(k) * (_lg(min(max(c[x], 1e-4), 1 - 1e-4)) - m))
+    return borner(out)
+
+
 def melange(poids, p_elo, p_sim):
     """Combinaison simulation + Elo (backtest_match_simule.combinaison) : σ(a·logit p_elo + b·logit p_sim)."""
     z = poids['elo'] * _lg(min(max(p_elo, 1e-6), 1 - 1e-6)) + poids['simulation'] * _lg(min(max(p_sim, 1e-6), 1 - 1e-6))
