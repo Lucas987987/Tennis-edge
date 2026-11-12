@@ -339,6 +339,38 @@ def charger_programme(racine, jours=4):
     return out
 
 
+SALLES = {}           # 12/11/2026 (paquet 238) : {nom du tournoi (feuilles) : en salle ?} — feuilles/tournois.json
+
+
+def charger_salles(racine):
+    """{nom du tournoi sans « Qualifying » : True (en salle) / False (plein air)} d'après les feuilles déjà reçues de
+    ce tournoi (surface « Hardcourt indoor »). Un tournoi sans feuille encore : absent."""
+    import re
+    try:
+        with open(os.path.join(racine, 'feuilles', 'tournois.json'), encoding='utf-8') as f:
+            T = json.load(f)
+    except (OSError, ValueError):
+        return {}
+    sans = lambda nom: re.sub(r',\s*(Qualifying|Qualification|Qualifiers?)\s*$', '', str(nom or '').strip(), flags=re.I)
+    out = {}
+    for v in T.values():
+        if isinstance(v, dict) and v.get('nom') and 'interieur' in v:
+            out[sans(v['nom'])] = bool(out.get(sans(v['nom']))) or bool(v['interieur'])
+    return out
+
+
+def salle_du_match(h, a, debut):
+    """12/11/2026 (paquet 238) — True si le match se joue en salle, False en plein air, None si on ne le sait pas (match
+    absent du programme, ou tournoi dont aucune feuille n'est encore arrivée). Sert aux statistiques annoncées ; ne
+    change pas le % de victoire."""
+    import re
+    j = (debut.date() if isinstance(debut, dt.datetime) else debut).isoformat()
+    r = (PROGRAMME or {}).get((j, *sorted((h, a))))
+    if not isinstance(r, dict) or not r.get('tournoi'):
+        return None
+    return SALLES.get(re.sub(r',\s*(Qualifying|Qualification|Qualifiers?)\s*$', '', str(r['tournoi']).strip(), flags=re.I))
+
+
 def tour_du_match(h, a, debut):
     """Nom du tour (« Round of 32 »…) d'un match à venir, ou None ; h, a : clés des joueurs."""
     j = (debut.date() if isinstance(debut, dt.datetime) else debut).isoformat()
@@ -1325,6 +1357,8 @@ def construire(racine, maintenant=None):
         print(f"::warning::longueur des échanges non chargée : {type(e_).__name__}: {e_}")
         ECHANGES = None
     PROGRAMME = charger_programme(racine)
+    SALLES.clear()                                          # 12/11/2026 (paquet 238) : tournois en salle (feuilles)
+    SALLES.update(charger_salles(racine))
     try:
         fiches_ = FE.lire(racine)
     except Exception:  # noqa: BLE001
@@ -1519,6 +1553,7 @@ def construire(racine, maintenant=None):
                     'echanges': _echanges(h, a, x['debut']),
                     'entree': entree_du_match(h, a, x['debut']),
                     'tour': tour_du_match(h, a, x['debut']),     # 05/11/2026 : tour du tableau (critère de fragilité)
+                    'en_salle': salle_du_match(h, a, x['debut']),   # 12/11/2026 : pour les statistiques annoncées
                     'controle': _avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_serveuses(
                         _avec_entree(_avec_service(_avec_forme(controle_fantome(elo, elo_ref, ref_etat, etat, h, a, c, s,
                                                                                 elo_fem, fem_etat), forme_ctl),
