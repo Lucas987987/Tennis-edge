@@ -1,0 +1,50 @@
+{
+ "genere_le": "2026-11-12T22:53:21+00:00",
+ "paquet": 251,
+ "statut": "etude",
+ "regle": "par circuit : effet propre à chaque joueur contre chaque style d'adversaire (résidu rétréci contre ce style moins contre tous), β appris sur 2018–2022, jugé sur 2023 → juin 2026 ; retenu si −0,001 de log loss sur au moins 1 000 matchs concernés et β de même signe ; Challenger non concluant",
+ "circuits": {
+  "ATP": {
+   "matchs_concernes": {
+    "2018–2022": 11512,
+    "2023 → juin 2026": 9180
+   },
+   "matchs_du_circuit": 20726,
+   "beta_2018_2022": 0.044,
+   "beta_2023": 0.003,
+   "gain": -0.00014,
+   "erreur_type": 0.0002,
+   "erreurs_types": -0.74,
+   "retenu": false
+  },
+  "WTA": {
+   "matchs_concernes": {
+    "2018–2022": 9964,
+    "2023 → juin 2026": 8490
+   },
+   "matchs_du_circuit": 19345,
+   "beta_2018_2022": -0.007,
+   "beta_2023": -0.025,
+   "gain": 3e-05,
+   "erreur_type": 3e-05,
+   "erreurs_types": 0.85,
+   "retenu": false
+  },
+  "CH": {
+   "matchs_concernes": {
+    "2018–2022": 30171,
+    "2023 → juin 2026": 29587
+   },
+   "matchs_du_circuit": 64560,
+   "beta_2018_2022": 0.04,
+   "beta_2023": 0.006,
+   "gain": -0.00012,
+   "erreur_type": 0.00011,
+   "erreurs_types": -1.08,
+   "retenu": false,
+   "note": "non concluant : l'archive n'a pas les résultats ITF hommes du classement de production"
+  }
+ },
+ "retenus": [],
+ "conclusion": "aucun effet propre aux joueurs contre un style d'adversaire ne passe la règle : ATP −0,0001, WTA +0,00003 sur 9 180 et 8 490 matchs concernés jugés ; le Challenger, non concluant, ne fait pas mieux. Les duels du tiroir restent une description"
+}

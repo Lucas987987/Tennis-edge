@@ -1078,6 +1078,12 @@
    "quoi": "Duels de coups (paquet 250, étude) — le % de victoire ne change pas. Question de Lucas : le détail des coups (Match Charting Project) donne-t-il un avantage à l'un des joueurs, au-delà de ce que l'algo sait déjà ? Cinq duels écrits avant tout calcul : le filet (celui qui monte et gagne au filet contre celui qui passe mal), l'amorti, le service rapide (points de service gagnés en trois frappes contre le retour adverse), les coups gagnants et les fautes directes. Jugés sur les matchs où les deux joueurs ont au moins 10 matchs relevés dans les 3 ans d'avant : 6 207 en ATP, 3 280 en WTA ; appris sur 2018–2022, jugés sur 2023 → juin 2026. Résultat : aucun ne passe (le meilleur, le service rapide en ATP, gagne 0,0005). Ce que montrent les coups est déjà dans le niveau des joueurs. Un passage intermédiaire avait donné huit duels gagnants : c'était une erreur de calcul (une constante favorable au vainqueur), repérée et corrigée avant de conclure. Les duels restent une information.",
    "statut": "etude",
    "paquet": 250
+  },
+  {
+   "date": "2026-11-12",
+   "quoi": "Duel des coups, joueur par joueur (paquet 251) — le % de victoire ne change pas. Question de Lucas : au lieu d'un effet commun à tous, chaque joueur a-t-il son adversaire type ? Pour chaque joueur, ce qu'il fait de plus ou de moins que prévu contre chaque style d'adversaire (grand serveur, serveur attaquant, retourneur pressant, contreur, équilibré), sur ses seuls matchs passés, rétréci quand il a peu de matchs ; règle écrite avant tout calcul, apprise sur 2018–2022 et jugée sur 2023 → juin 2026. Résultat : rien en ATP (−0,0001 sur 9 180 matchs) ni en WTA (+0,00003 sur 8 490). Sur le site, le tiroir « Points marqués » gagne un « Duel des coups » quand les deux joueurs sont relevés : montées au filet et réussite contre ce que l'adversaire laisse au filet, service rapide contre le retour adverse, amorti pour qui en joue plus que la moyenne, coups gagnants et fautes directes pour 100 points, toujours face à la moyenne du circuit, avec la mention que nos études n'y trouvent pas d'avantage qui prédise le vainqueur.",
+   "statut": "production",
+   "paquet": 251
   }
  ]
 }

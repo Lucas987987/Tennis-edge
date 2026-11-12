@@ -331,7 +331,27 @@ def _repartir(total, poids):
     return ent
 
 
-def points_marques(ligne, doc, cle_c):
+def taux_duel(c):
+    """12/11/2026 (paquet 251) — les parts qui décrivent un joueur dans les duels (None quand le dénominateur manque)."""
+    r = lambda a, b, f=1.0: round(f * c.get(a, 0) / c[b], 4) if c.get(b) else None  # noqa: E731
+    return {'filet_freq': r('montees', 'points_joues'), 'filet_reussite': r('montees_gagnees', 'montees'),
+            'filet_concede': r('adv_montees_gagnees', 'adv_montees'),
+            'amorti_freq': r('amortis_joues', 'points_joues'), 'amorti_reussite': r('amortis_reussis', 'amortis_joues'),
+            'amorti_concede': r('adv_amortis_reussis', 'adv_amortis_joues'),
+            'service_rapide': r('srv_rapides', 'srv_pts'), 'service_rapide_concede': r('adv_srv_rapides', 'adv_srv_pts'),
+            'gagnants': r('gagnants_provoques', 'points_joues'), 'fautes': r('fautes_directes', 'points_joues')}
+
+
+def moyennes_duel(doc):
+    """{'m' | 'w': parts du circuit} sur tous les joueurs relevés (sommes des comptes)."""
+    import collections
+    S = collections.defaultdict(collections.Counter)
+    for e in ((doc or {}).get('joueurs') or {}).values():
+        S[e.get('circuit')].update(e.get('comptes') or {})
+    return {g: taux_duel(v) for g, v in S.items() if g}
+
+
+def points_marques(ligne, doc, cle_c, moyennes=None):
     """12/11/2026 (paquet 249) — tiroir « Points marqués » : total de points prévu par les simulations (feuille_plus),
     aces et doubles fautes adverses de la feuille publiée, et, pour un joueur relevé au moins coups_joueurs.MIN_MATCHS
     fois, le reste réparti selon ses habitudes (coups_joueurs.json). DESCRIPTIF : ne change pas le % de victoire."""
@@ -362,16 +382,25 @@ def points_marques(ligne, doc, cle_c):
         else:
             j['matchs_releves'] = (e or {}).get('matchs') or 0
         joueurs.append(j)
-    return {'descriptif_seulement': True, 'joueurs': joueurs, 'min_matchs': CJ.MIN_MATCHS}
+    out = {'descriptif_seulement': True, 'joueurs': joueurs, 'min_matchs': CJ.MIN_MATCHS}
+    # 12/11/2026 (paquet 251) : duel des coups, descriptif (études 250 et 251 : aucune valeur de prévision au-delà de l'algo)
+    E_ = [J.get(cle_c(n)) if n else None for n in (ligne.get('home'), ligne.get('away'))]
+    if all(j['detail'] for j in joueurs) and all(E_):
+        g = E_[0].get('circuit')
+        m = (moyennes if moyennes is not None else moyennes_duel(doc)).get(g)
+        if m and E_[1].get('circuit') == g:
+            out['duel'] = {'joueurs': [taux_duel(e['comptes']) for e in E_], 'circuit': m}
+    return out
 
 
 def ajouter_points_marques(lignes, doc, alias=None):
     import elo as E
     alias = alias or {}
     cle_c = lambda n: alias.get(E.cle(n), E.cle(n)) if n else None  # noqa: E731
+    moy = moyennes_duel(doc)
     for ligne in lignes:
         try:
-            pm = points_marques(ligne, doc, cle_c)
+            pm = points_marques(ligne, doc, cle_c, moy)
         except Exception as e:  # noqa: BLE001 — un descriptif ne bloque jamais la page
             print(f"::warning::points marqués non calculés ({ligne.get('uid')}) : {type(e).__name__}: {e}")
             pm = None
