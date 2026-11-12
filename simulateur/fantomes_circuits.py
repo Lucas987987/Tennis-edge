@@ -73,6 +73,7 @@ CUMUL_MIN_MATCHS, CUMUL_ERREURS_TYPES = 300, 2.0
 FORMAT = os.path.join('simulateur', 'format_match.json')
 GRAND_CHELEM = os.path.join('simulateur', 'grand_chelem.json')
 QUALIFS_GC = os.path.join('simulateur', 'qualifs_grand_chelem.json')
+SERVEUSES = os.path.join('simulateur', 'serveuses_wta.json')
 SIGNAUX_COMBINES = ('changement_surface', 'retour_absence', 'age', 'favori_outsider')
 
 
@@ -145,6 +146,12 @@ def _directs(racine):
             for c, v in (json.load(f).get('pentes') or {}).items():
                 if v:
                     out.add(('grand_chelem', c))
+    except (OSError, ValueError, AttributeError):
+        pass
+    try:                                                    # 12/11/2026 (paquet 248) : serveuses WTA (décision de Lucas)
+        with open(os.path.join(racine, SERVEUSES), encoding='utf-8') as f:
+            for c in json.load(f).get('circuits') or []:
+                out.add(('serveuses_wta', c))
     except (OSError, ValueError, AttributeError):
         pass
     try:                                                    # 11/11/2026 (paquet 232) : pente des qualifications de Grand Chelem
