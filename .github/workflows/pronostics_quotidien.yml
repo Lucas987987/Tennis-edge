@@ -96,13 +96,18 @@ jobs:
           set -euo pipefail
           git clone --depth 1 --filter=blob:none --sparse https://github.com/JeffSackmann/tennis_MatchChartingProject.git /tmp/mcp
           cd /tmp/mcp
-          git sparse-checkout set --no-cone 'charting-*-matches.csv' 'charting-*-stats-ServeBasics.csv' 'charting-*-stats-ReturnOutcomes.csv' 'charting-*-stats-Rally.csv'
+          git sparse-checkout set --no-cone 'charting-*-matches.csv' 'charting-*-stats-ServeBasics.csv' 'charting-*-stats-ReturnOutcomes.csv' 'charting-*-stats-Rally.csv' \
+            'charting-*-stats-Overview.csv' 'charting-*-stats-ShotTypes.csv' 'charting-*-stats-NetPoints.csv'
       - name: Classement (tous les résultats)
         run: python simulateur/backtest_pronostic.py /tmp/sackmann .
       - name: Profils de service (archive + feuilles collectées depuis)
         run: python simulateur/profils_service.py /tmp/sackmann .
       - name: Bilans descriptifs contre les styles service–retour
         run: python simulateur/styles_descriptifs.py /tmp/sackmann .
+      # 12/11/2026 (paquet 249) : comment chaque joueur marque ses points (tiroir « Points marqués ») — descriptif
+      - name: Coups des joueurs (Match Charting Project)
+        continue-on-error: true
+        run: python simulateur/coups_joueurs.py /tmp/mcp .
       # 04/11/2026 : vitesse de chaque tournoi sur l'échelle du CPI (officiel s'il est publié, sinon estimé) — information
       - name: Vitesse des courts (CPI officiel ou estimé)
         continue-on-error: true
