@@ -1,4 +1,4 @@
-"""Adoption directe des signaux combinés (04/11/2026) : en place d'emblée, retrait après deux semaines de perte."""
+"""Adoption directe des signaux combinés (04/11/2026) : en place d'emblée ; retrait par la règle cumulée (12/11/2026)."""
 import datetime as dt
 import gzip
 import json
@@ -23,7 +23,8 @@ def racine(adopte_atp=True):
 
 def bilans(d, jour, n, ll_sans, ll_affiche):
     B = {str(i): {'circuit': 'ATP', 'debut': jour, 'ecarts': {'signaux_circuit': {
-        'appliques': ['age', 'favori_outsider', 'changement_surface', 'retour_absence'], 'll_sans': ll_sans, 'll_affiche': ll_affiche}}}
+        'appliques': ['age', 'favori_outsider', 'changement_surface', 'retour_absence'], 'll_sans': ll_sans, 'll_affiche': ll_affiche + (0.01 if i % 2 else -0.01),
+        'sans_chacun': {'age': ll_sans}}}}
         for i in range(n)}
     with gzip.open(os.path.join(d, 'simulateur', 'journal_pronostics', 'apres_match', f'{jour}.json.gz'), 'wt') as f:
         json.dump(B, f)
@@ -48,16 +49,23 @@ class Adoption(unittest.TestCase):
         finally:
             PD.BETAS_COMBINES = ancien
 
-    def test_retrait_apres_deux_semaines_de_perte(self):
+    def test_retrait_par_la_regle_cumulee(self):
+        """12/11/2026 (paquet 234) : deux semaines perdantes sur 80 matchs ne retirent plus ; 300 matchs nettement
+        négatifs, si. Seul le signal mesuré sur son effet propre (ici « age ») est jugé."""
         d = racine()
-        bilans(d, '2026-11-03', 40, 0.60, 0.62)               # semaine 1 : pire de 0,02
-        os.environ['FANTOMES_JOUR'] = '2026-11-10'
+        bilans(d, '2026-11-12', 40, 0.60, 0.62)               # semaine 1 : pire de 0,02
+        os.environ['FANTOMES_JOUR'] = '2026-11-16'
         FC.main(['x', d])
-        self.assertIn('ATP', FC.lire(d).get('age', []))       # 1 semaine : toujours en place
-        bilans(d, '2026-11-12', 40, 0.60, 0.62)
-        os.environ['FANTOMES_JOUR'] = '2026-11-17'
+        self.assertIn('ATP', FC.lire(d).get('age', []))
+        bilans(d, '2026-11-17', 40, 0.60, 0.62)               # semaine 2 : encore pire — 80 matchs, toujours en place
+        os.environ['FANTOMES_JOUR'] = '2026-11-23'
         FC.main(['x', d])
-        self.assertNotIn('ATP', FC.lire(d).get('age', []))    # 2 semaines de perte : retiré
+        self.assertIn('ATP', FC.lire(d).get('age', []))
+        bilans(d, '2026-11-24', 300, 0.60, 0.62)              # 380 matchs, perte de 0,02 ± 0,0005 : retiré
+        os.environ['FANTOMES_JOUR'] = '2026-11-30'
+        FC.main(['x', d])
+        self.assertNotIn('ATP', FC.lire(d).get('age', []))
+        self.assertIn('ATP', FC.lire(d).get('favori_outsider', []))   # pas de mesure propre : pas jugé, reste en place
         os.environ.pop('FANTOMES_JOUR')
 
     def test_semaine_pauvre_ne_compte_pas(self):

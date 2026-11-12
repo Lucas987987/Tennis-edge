@@ -199,7 +199,7 @@ class Suivi(unittest.TestCase):
     def test_le_signal_est_juge_sur_son_effet_propre(self):
         b = bilan('ATP', '2026-11-12', 0.60, 0.62, '1')
         self.assertEqual(FC.paires(b, 'format_match'), (0.62, 0.60))        # pas le 9,9 de tous les signaux
-        self.assertEqual(FC.paires(b, 'age'), (9.9, 0.60))                  # les autres : inchangé
+        self.assertEqual(FC.paires(b, 'age'), (5.5, 0.60))                  # 12/11/2026 : les autres aussi, sur leur effet propre
         del b['ecarts']['signaux_circuit']['sans_chacun']
         self.assertIsNone(FC.paires(b, 'format_match'))                     # bilan d'avant le paquet : pas compté
 
@@ -248,7 +248,7 @@ class Suivi(unittest.TestCase):
 
     def test_retire_quand_le_bilan_cumule_est_nettement_negatif(self):
         rnd = random.Random(9)
-        B = [bilan('ATP', '2026-11-%02d' % (2 + i % 14), 0.65, 0.65 - 0.02 + rnd.gauss(0, 0.05), str(i)) for i in range(400)]
+        B = [bilan('ATP', '2026-11-%02d' % (12 + i % 4), 0.65, 0.65 - 0.02 + rnd.gauss(0, 0.05), str(i)) for i in range(400)]
         doc, lus = self._jouer(B, '2026-11-17')
         d = doc['decisions']['format_match|ATP']
         self.assertFalse(d['adopte'])
@@ -257,7 +257,7 @@ class Suivi(unittest.TestCase):
 
     def test_garde_quand_le_bilan_cumule_est_positif(self):
         rnd = random.Random(10)
-        B = [bilan('ATP', '2026-11-%02d' % (2 + i % 14), 0.65, 0.65 + 0.003 + rnd.gauss(0, 0.05), str(i)) for i in range(400)]
+        B = [bilan('ATP', '2026-11-%02d' % (12 + i % 4), 0.65, 0.65 + 0.003 + rnd.gauss(0, 0.05), str(i)) for i in range(400)]
         doc, lus = self._jouer(B, '2026-11-17')
         self.assertTrue(doc['decisions']['format_match|ATP']['adopte'])
         self.assertIn('ATP', lus['format_match'])
