@@ -123,7 +123,22 @@ def _feuille_prevue(v):
     return out or None
 
 
+SALLE_STATS = None      # 12/11/2026 (paquet 238) : décalages « en salle / plein air » des statistiques annoncées (salle_stats.json)
 RECALAGE_STATS = None   # 04/11/2026 : recalage des statistiques annoncées (recalage_stats.py), seulement s'il est adopté
+
+
+def decaler_salle(c, salle, fp, fq, dec=None):
+    """12/11/2026 (paquet 238) — feuille prévue et fourchette décalées selon que le match se joue en salle (True) ou en
+    plein air (False) ; inchangées si on ne le sait pas (None) ou si rien n'est réglé pour ce circuit. Appliqué AVANT
+    le recalage appris en direct. Renvoie (fp, fq, appliqué ?, valeurs d'avant pour les statistiques touchées)."""
+    dec = SALLE_STATS if dec is None else dec
+    if not dec or not dec.get(c) or salle is None or not fp or not fq:
+        return fp, fq, False, None
+    import recalage_stats as RS
+    fp2, fq2, ok = RS.decaler_feuille(dec, c, bool(salle), fp, fq)
+    avant = [{k: [fp[i].get(k), (fq[i] or {}).get(k, [None, None])[0], (fq[i] or {}).get(k, [None, None])[1]] for k in dec[c]
+              if isinstance(fp[i].get(k), (int, float)) and (fq[i] or {}).get(k)} for i in range(min(len(fp), len(fq)))] if ok else None
+    return fp2, fq2, ok, avant
 
 
 def recaler_feuille(c, fp, fq, coefs=None):
@@ -236,6 +251,7 @@ def ligne_match(m, complet):
     d = m.get('direct') or {}
     sim = v.get('match_simule') or {}
     exact = v.get('scores_exact') or {}
+    fp0, fq0, salle_ok, salle_avant = decaler_salle(m.get('circuit'), m.get('en_salle'), _feuille_prevue(v), _feuille_fourchette(v))
     out.update({
         'simulation_disponible': bool(d.get('a') and d.get('b') and sim.get('match_type')),
         'sets': v.get('sets'),
@@ -246,12 +262,14 @@ def ligne_match(m, complet):
         'jeux_moyen': v.get('jeux_moyen'),
         'tiebreak': v.get('tiebreak'),
         'set1_home': v.get('set1_home'),
-        'feuille_prevue': recaler_feuille(m.get('circuit'), _feuille_prevue(v), _feuille_fourchette(v))[0],
-        'feuille_fourchette': recaler_feuille(m.get('circuit'), _feuille_prevue(v), _feuille_fourchette(v))[1],
+        'feuille_prevue': recaler_feuille(m.get('circuit'), fp0, fq0)[0],
+        'feuille_fourchette': recaler_feuille(m.get('circuit'), fp0, fq0)[1],
+        # 12/11/2026 (paquet 238) : en salle ou en plein air (feuille du tournoi), et si le décalage a été appliqué
+        'en_salle': m.get('en_salle'), 'salle_appliquee': salle_ok, **({'salle_brut': salle_avant} if salle_ok else {}),
         # 06/11/2026 (paquet 214) : les autres statistiques simulées, pour le duel des statistiques en direct
         'feuille_plus': _feuille_plus(v),
         # 04/11/2026 : valeurs avant recalage, gardées pour l'apprentissage (recalage_stats.py) une fois adopté
-        **({'feuille_prevue_brute': _feuille_prevue(v), 'feuille_fourchette_brute': _feuille_fourchette(v)}
+        **({'feuille_prevue_brute': fp0, 'feuille_fourchette_brute': fq0}
            if RECALAGE_STATS else {}),
         'simulation': ({'a': round(d['a'], 4), 'b': round(d['b'], 4),
                         'sets_gagnants': int(d.get('sets_gagnants') or (3 if m.get('meilleur_des') == 5 else 2)),
@@ -947,6 +965,8 @@ def main(argv):
     try:                                # 04/11/2026 : recalage des statistiques annoncées, s'il est adopté
         import recalage_stats as RS
         RECALAGE_STATS = RS.lire_coefs(racine)
+        global SALLE_STATS
+        SALLE_STATS = RS.decalages_salle(racine, RS.salle_retiree(racine)) or None
     except Exception as e:  # noqa: BLE001
         print(f'::warning::recalage des statistiques non lu : {type(e).__name__}: {e}')
         RECALAGE_STATS = None
