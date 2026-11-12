@@ -1,0 +1,184 @@
+{
+ "genere_le": "2026-11-12T19:23:47+00:00",
+ "paquet": 243,
+ "regle": "grille σ 0,15 → 0,22 (pas 0,01) et variante asymétrique (κ −0,2 → +0,2) choisies sur 2019–2022, jugées sur 2023 → juin 2026 contre σ en place : retenu si l'écart de jeux exact gagne au moins 0,005 et le score en sets ne perd pas plus de 0,002, sur au moins 1 000 matchs",
+ "pas": {
+  "ATP": 5,
+  "WTA": 5,
+  "CH": 11
+ },
+ "grille": [
+  0.15,
+  0.16,
+  0.17,
+  0.18,
+  0.19,
+  0.2,
+  0.21,
+  0.22
+ ],
+ "kappas": [
+  -0.2,
+  -0.1,
+  0.0,
+  0.1,
+  0.2
+ ],
+ "sigma_en_place": {
+  "ATP": 0.15,
+  "WTA": 0.15,
+  "CH": 0.18
+ },
+ "circuits": {
+  "ATP": {
+   "matchs_apprentissage": 1421,
+   "matchs_jugement": 1549,
+   "grille_apprentissage": {
+    "0.15": 2.76778,
+    "0.16": 2.76697,
+    "0.17": 2.76708,
+    "0.18": 2.76812,
+    "0.19": 2.77008,
+    "0.2": 2.77294,
+    "0.21": 2.77668,
+    "0.22": 2.78125
+   },
+   "grille_jugement": {
+    "0.15": 2.7602,
+    "0.16": 2.76091,
+    "0.17": 2.76253,
+    "0.18": 2.76505,
+    "0.19": 2.76845,
+    "0.2": 2.77272,
+    "0.21": 2.77782,
+    "0.22": 2.78371
+   },
+   "sigma_choisi": 0.16,
+   "au_bord_de_la_grille": false,
+   "kappa_choisi": 0.0,
+   "kappas_apprentissage": {
+    "-0.2": 2.76771,
+    "-0.1": 2.76714,
+    "0.0": 2.76697,
+    "0.1": 2.7672,
+    "0.2": 2.7678
+   },
+   "trois_sets_reel_pct_jugement": 36.4,
+   "symetrique": {
+    "gain_ecart_de_jeux": -0.00072,
+    "gain_score_en_sets": 0.00066,
+    "retenu": false,
+    "meme_sens_en_apprentissage": true
+   },
+   "asymetrique": {
+    "gain_ecart_de_jeux": -0.00072,
+    "gain_score_en_sets": 0.00066,
+    "retenu": false,
+    "meme_sens_en_apprentissage": true
+   },
+   "decision": "σ en place"
+  },
+  "WTA": {
+   "matchs_apprentissage": 1693,
+   "matchs_jugement": 1838,
+   "grille_apprentissage": {
+    "0.15": 2.85911,
+    "0.16": 2.85871,
+    "0.17": 2.85949,
+    "0.18": 2.86141,
+    "0.19": 2.86445,
+    "0.2": 2.86856,
+    "0.21": 2.87368,
+    "0.22": 2.87974
+   },
+   "grille_jugement": {
+    "0.15": 2.89357,
+    "0.16": 2.89124,
+    "0.17": 2.8901,
+    "0.18": 2.89014,
+    "0.19": 2.89133,
+    "0.2": 2.89362,
+    "0.21": 2.89697,
+    "0.22": 2.90132
+   },
+   "sigma_choisi": 0.16,
+   "au_bord_de_la_grille": false,
+   "kappa_choisi": -0.2,
+   "kappas_apprentissage": {
+    "-0.2": 2.85804,
+    "-0.1": 2.85806,
+    "0.0": 2.85871,
+    "0.1": 2.85999,
+    "0.2": 2.86183
+   },
+   "trois_sets_reel_pct_jugement": 33.8,
+   "symetrique": {
+    "gain_ecart_de_jeux": 0.00232,
+    "gain_score_en_sets": 0.00077,
+    "retenu": false,
+    "meme_sens_en_apprentissage": true
+   },
+   "asymetrique": {
+    "gain_ecart_de_jeux": 0.00195,
+    "gain_score_en_sets": 0.00127,
+    "retenu": false,
+    "meme_sens_en_apprentissage": true
+   },
+   "decision": "σ en place"
+  },
+  "CH": {
+   "matchs_apprentissage": 2347,
+   "matchs_jugement": 3236,
+   "grille_apprentissage": {
+    "0.15": 2.83009,
+    "0.16": 2.82988,
+    "0.17": 2.83063,
+    "0.18": 2.83236,
+    "0.19": 2.83504,
+    "0.2": 2.83863,
+    "0.21": 2.84311,
+    "0.22": 2.84843
+   },
+   "grille_jugement": {
+    "0.15": 2.84454,
+    "0.16": 2.84316,
+    "0.17": 2.84279,
+    "0.18": 2.84343,
+    "0.19": 2.84505,
+    "0.2": 2.84763,
+    "0.21": 2.85114,
+    "0.22": 2.85553
+   },
+   "sigma_choisi": 0.16,
+   "au_bord_de_la_grille": false,
+   "kappa_choisi": -0.2,
+   "kappas_apprentissage": {
+    "-0.2": 2.82895,
+    "-0.1": 2.82917,
+    "0.0": 2.82988,
+    "0.1": 2.83104,
+    "0.2": 2.83264
+   },
+   "trois_sets_reel_pct_jugement": 36.1,
+   "symetrique": {
+    "gain_ecart_de_jeux": 0.00027,
+    "gain_score_en_sets": -0.00033,
+    "retenu": false,
+    "meme_sens_en_apprentissage": true
+   },
+   "asymetrique": {
+    "gain_ecart_de_jeux": 0.00029,
+    "gain_score_en_sets": 0.00043,
+    "retenu": false,
+    "meme_sens_en_apprentissage": true
+   },
+   "decision": "σ en place"
+  }
+ },
+ "statut": "etude",
+ "conclusion": "aucun circuit ne passe la règle : σ en place gardé partout (ATP 0,15, WTA 0,15, Challenger 0,18). La courbe est plate entre 0,15 et 0,18 (écarts de 0,001 à 0,002) ; au-delà elle se dégrade : sur le jugement, 0,22 coûte 0,012 en Challenger, 0,024 en ATP et 0,008 en WTA sur l'écart de jeux. La variante asymétrique ne gagne pas plus que la symétrique",
+ "a_surveiller": [
+  "le jugement hebdomadaire (sigma_circuit.py) peut encore choisir 0,22 ou 0,26 : l'archive dit que ces valeurs dégradent l'écart de jeux ; à relire si cela arrive",
+  "κ choisi au bord de sa grille (−0,2) en WTA et en Challenger, sans gain suffisant : la grille n'est pas élargie après coup"
+ ]
+}
