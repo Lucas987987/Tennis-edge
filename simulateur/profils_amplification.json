@@ -1,0 +1,42 @@
+{
+ "date": "2026-11-12",
+ "paquet": 240,
+ "quoi": "Amplification par circuit et par composante des profils service / retour, dans la simulation qui produit les statistiques annoncées (etude_profils_amplification.py, rapport_profils_amplification.json). Le % de victoire ne change pas.",
+ "composantes": {
+  "f": "1re balle dans le court",
+  "a": "ace (par 1re dans le court)",
+  "w1": "point gagné derrière la 1re",
+  "d": "double faute (par 2e)",
+  "w2j": "point gagné sur 2e jouée"
+ },
+ "amplifications": {
+  "ATP": {
+   "f": 0.921,
+   "d": 1.075,
+   "w2j": 1.108
+  },
+  "WTA": {
+   "f": 0.956,
+   "w1": 1.117,
+   "d": 1.062,
+   "w2j": 1.023
+  },
+  "CH": {
+   "f": 0.912,
+   "a": 1.105,
+   "w1": 1.042,
+   "d": 1.028,
+   "w2j": 1.007
+  }
+ },
+ "retirees": [
+  "CH|w1",
+  "CH|w2j",
+  "WTA|d",
+  "WTA|w1",
+  "WTA|w2j"
+ ],
+ "regle": "k appris sur 2019–2022 ; retenu si, sur 2023 → juin 2026, au moins 1 000 lignes, gain de vraisemblance des points positif et pente jugée du même côté de 1",
+ "retrait": "profils_amplification.py : chaque lundi, sur nos cas depuis le 12/11/2026, dès 300 cas par circuit et statistique, si la pente du réel contre l'annoncé est du mauvais côté de 1 de plus de 2 erreurs types, les composantes liées sont retirées sur ce circuit. Pour l'enlever à la main : ajouter « circuit|composante » à « retirees ».",
+ "retirees_raison": "retirées dès la mise en place par la règle de retrait elle-même (écrite avant le contrôle), appliquée au contrôle sur l'archive 2023 → juin 2026 : la statistique liée (doubles fautes, breaks) y devient trop dispersée, pente du réel contre l'annoncé sous 1 de plus de 2 erreurs types"
+}

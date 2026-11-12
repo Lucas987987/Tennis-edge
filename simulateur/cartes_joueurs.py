@@ -201,6 +201,27 @@ def charger(racine, etat):
     return Cartes(service, etat, infos, {k: v['rang'] for k, v in rangs.items()}, ajuste)
 
 
+def duel_des_cartes(cartes, circuit, surface):
+    """12/11/2026 (paquet 240) — le duel service ↔ retour sur la MÊME échelle que les cartes.
+    Le duel lisait les taux BRUTS des feuilles et se rangeait parmi les seuls joueurs du circuit du match ; les cartes
+    lisent les profils AJUSTÉS au niveau des adversaires, rangés parmi les joueurs actifs du groupe (ATP + Challenger,
+    ou WTA). D'où des contradictions visibles (« Retour Humbert 27/100 » dans le post, « 87 RET » sur sa carte). Quand
+    les deux cartes ont leurs attributs, le duel en est tiré ; sinon None (le duel d'avant reste)."""
+    J = []
+    for c in cartes or []:
+        at, v = (c or {}).get('attributs') or {}, (c or {}).get('valeurs') or {}
+        if at.get('ser') is None or at.get('ret') is None or v.get('ser') is None or v.get('ret') is None:
+            return None
+        J.append({'serv_indice': at['ser'], 'ret_indice': at['ret'], 'serv_pct': v['ser'], 'ret_pct': v['ret'],
+                  **({'balles': c['balles']} if c.get('balles') else {})})
+    if len(J) != 2:
+        return None
+    return {'descriptif_seulement': True, 'source': 'cartes', 'groupe': GROUPES.get(circuit), 'joueurs': J,
+            'circuit': circuit, 'surface': surface,
+            'duels': [{'service': 0, 'ecart': J[0]['serv_indice'] - J[1]['ret_indice']},
+                      {'service': 1, 'ecart': J[1]['serv_indice'] - J[0]['ret_indice']}]}
+
+
 def ajouter_cartes(lignes, racine, etat):
     """ligne['cartes'] = {descriptif_seulement, circuit, joueurs: [carte home, carte away]} si les deux existent."""
     import elo as E
@@ -216,3 +237,6 @@ def ajouter_cartes(lignes, racine, etat):
         if all(cs) and all('note' in c for c in cs):
             x['cartes'] = {'descriptif_seulement': True, 'groupe': GROUPES.get(x.get('circuit')), 'surface': x.get('surface'),
                            'joueurs': cs}
+            du = duel_des_cartes(cs, x.get('circuit'), x.get('surface'))
+            if du:                                          # 12/11/2026 (paquet 240) : une seule échelle sur tout le site
+                x['duel'] = du
