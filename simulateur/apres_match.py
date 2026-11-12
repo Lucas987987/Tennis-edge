@@ -117,6 +117,8 @@ def fiche(ligne, maintenant, version):
             'jeux_moyen': ligne.get('jeux_moyen'), 'tiebreak': ligne.get('tiebreak'), 'set1_home': ligne.get('set1_home'),
             'feuille': ligne.get('feuille_prevue'), 'fourchette': ligne.get('feuille_fourchette'),
             'feuille_brute': ligne.get('feuille_prevue_brute'), 'fourchette_brute': ligne.get('feuille_fourchette_brute'),
+            # 12/11/2026 (paquet 238) : en salle ? décalage appliqué ? valeurs d'avant (pour le suivi du décalage)
+            'en_salle': ligne.get('en_salle'), 'salle_appliquee': ligne.get('salle_appliquee'), 'salle_brut': ligne.get('salle_brut'),
             'duree': ({k: pv.get(k) for k in ('minutes', 'minutes_p10', 'minutes_p90', 'points')} if pv else None),
             'lignes': ligne.get('lignes_algo'), 'documentation': ligne.get('documentation'),
             'controle': ligne.get('controle'), 'modeles': ligne.get('modeles'),

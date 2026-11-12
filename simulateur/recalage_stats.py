@@ -79,11 +79,152 @@ REPLI_DIRECT = {'ATP': {'premiere_pct': {'delta': 2.98, 'largeur': 1.0}, 'aces':
                 'CH': {'premiere_pct': {'delta': 1.02, 'largeur': 1.0}}}
 
 
-def lignes(fiches, reels):
-    """[{jour, c, k, moy, p10, p90, reel}] : une ligne par joueur, match et statistique."""
+# 12/11/2026 (audit, paquet 237) — CASES RÉGLÉES SUR L'ARCHIVE (etude_statistiques_annoncees.py). Le recalage appris sur
+# nos matchs repose sur quelques centaines de cas par case. L'étude a rejoué les statistiques annoncées sur l'archive
+# (9 000 cas par case) : décalage et largeur appris sur 2019–2022, couverture entre 78 et 82 % sur 2023 → juin 2026.
+# Ces coefficients ne remplacent ceux d'ici QUE pour les cases où, sur nos matchs suivis, ils ne font pas moins bien
+# (recalage_stats_archive.json) : variante « archive », coefficients FIXES. RETRAIT (écrit avant) : sur nos cas joués
+# depuis ARCHIVE_DEPUIS, dès 300 cas, si la couverture est plus loin de 80 % que sans recalage de plus de 5 points,
+# la case revient à « sans » et à la règle hebdomadaire.
+ARCHIVE = os.path.join('simulateur', 'recalage_stats_archive.json')
+ARCHIVE_DEPUIS = '2026-11-12'
+ARCHIVE_MIN_CAS, ARCHIVE_TOLERANCE = 300, 5.0
+
+
+def coefs_archive(racine):
+    """{'circuit|stat': {'delta', 'largeur'}} des cases réglées sur l'archive ; {} si le fichier manque."""
+    try:
+        with open(os.path.join(racine, ARCHIVE), encoding='utf-8') as f:
+            doc = json.load(f)
+        return {cle: {'delta': float(v['delta']), 'largeur': float(v['largeur'])} for cle, v in (doc.get('cases') or {}).items()}
+    except (OSError, ValueError, KeyError, TypeError):
+        return {}
+
+
+def avec_archive(cases, arch):
+    """Les cases réglées sur l'archive prennent la variante « archive », sauf celles que le suivi a retirées."""
+    out = dict(cases or {})
+    for cle in arch or {}:
+        e = out.get(cle) or {}
+        if e.get('archive_retiree') or e.get('variante') == 'archive':
+            continue
+        out[cle] = {'variante': 'archive', 'depuis': ARCHIVE_DEPUIS, 'semaines_pires': 0}
+    return out
+
+
+def suivi_archive(rows, c, k, coef):
+    """Nos cas depuis ARCHIVE_DEPUIS pour cette case : nombre, couverture sans recalage et avec les coefficients de
+    l'archive, et verdict de retrait."""
+    R = [r for r in rows if r['c'] == c and r['k'] == k and r['jour'] >= ARCHIVE_DEPUIS]
+    if not R:
+        return {'cas': 0, 'retrait': False}
+    sans = 100.0 * sum(r['p10'] <= r['reel'] <= r['p90'] for r in R) / len(R)
+    avec = 100.0 * sum(lo <= r['reel'] <= hi for r in R for _, lo, hi in [recaler(coef, k, r['moy'], r['p10'], r['p90'])]) / len(R)
+    return {'cas': len(R), 'couverture_sans': round(sans, 1), 'couverture_archive': round(avec, 1),
+            'retrait': bool(len(R) >= ARCHIVE_MIN_CAS and abs(avec - CIBLE) > abs(sans - CIBLE) + ARCHIVE_TOLERANCE)}
+
+
+# 12/11/2026 (audit, paquet 238) — EN SALLE OU EN PLEIN AIR (etude_premieres_balles_salle.py). En salle, le serveur passe
+# plus de 1res balles et fait moins de doubles fautes que son profil d'ensemble ne l'annonce (ATP : +1,2 point et −0,5
+# double faute, appris sur 2019–2022, jugés sur 2023 → juin 2026). Le décalage (salle_stats.json) s'applique AVANT le
+# recalage appris ici, à l'affichage (vitrine.py) comme à l'apprentissage (lignes) : une fiche figée avant le 12/11 n'a
+# pas le décalage dans ses valeurs, il lui est ajouté ici ; une fiche d'après le porte déjà (« salle_appliquee »).
+# RETRAIT (écrit avant) : sur nos cas EN SALLE joués depuis SALLE_DEPUIS, dès 300 cas, si l'écart moyen |annoncé − réel|
+# avec le décalage dépasse celui sans, le décalage de cette statistique est retiré (suivi_salle, clé « salle » du rapport).
+SALLE = os.path.join('simulateur', 'salle_stats.json')
+SALLE_DEPUIS = '2026-11-12'
+SALLE_MIN_CAS = 300
+
+
+def decalages_salle(racine, retires=None):
+    """{circuit: {stat: {'salle': δ, 'plein_air': δ}}} ; {} si le fichier manque. retires : {'ATP|premiere_pct', …}."""
+    try:
+        with open(os.path.join(racine, SALLE), encoding='utf-8') as f:
+            doc = json.load(f)
+    except (OSError, ValueError):
+        return {}
+    out = {}
+    for c, d in (doc.get('decalages') or {}).items():
+        for k, v in (d or {}).items():
+            if f'{c}|{k}' not in (retires or ()):
+                out.setdefault(c, {})[k] = {'salle': float(v.get('salle', 0.0)), 'plein_air': float(v.get('plein_air', 0.0))}
+    return out
+
+
+def salle_retiree(racine):
+    """Statistiques dont le décalage « en salle » a été retiré par le suivi (rapport du lundi)."""
+    try:
+        with open(os.path.join(racine, SORTIE), encoding='utf-8') as f:
+            return {cle for cle, v in ((json.load(f).get('salle') or {}).get('cases') or {}).items() if (v or {}).get('retire')}
+    except (OSError, ValueError):
+        return set()
+
+
+def decaler_salle(dec, c, k, salle, moy, p10, p90):
+    """(moyenne, p10, p90) décalés selon salle (True) ou plein air (False) ; inchangés si salle est None ou sans décalage."""
+    d = ((dec or {}).get(c) or {}).get(k)
+    if not d or salle is None:
+        return moy, p10, p90
+    x = d['salle'] if salle else d['plein_air']
+    if k == 'premiere_pct':
+        f = lambda v: round(max(0.0, min(100.0, v + x)), 1)
+        return f(moy), f(p10), f(p90)
+    return round(max(0.0, moy + x), 2), float(round(max(0.0, p10 + x))), float(round(max(0.0, p90 + x)))
+
+
+def decaler_feuille(dec, c, salle, fp, fq):
+    """Feuille prévue et fourchette d'un match (deux joueurs), décalées. Renvoie (fp, fq, appliqué ?)."""
+    if not (dec or {}).get(c) or salle is None or not fp or not fq:
+        return fp, fq, False
+    fp2, fq2 = [dict(j) for j in fp], [dict(j or {}) for j in fq]
+    for i in range(min(len(fp2), len(fq2))):
+        for k in dec[c]:
+            m, q = fp2[i].get(k), fq2[i].get(k)
+            if isinstance(m, (int, float)) and q and len(q) == 2:
+                m2, lo, hi = decaler_salle(dec, c, k, salle, float(m), float(q[0]), float(q[1]))
+                fp2[i][k], fq2[i][k] = m2, [lo, hi]
+    return fp2, fq2, True
+
+
+def salles_des_matchs(racine):
+    """{(jour, joueur, joueur): en salle ?} d'après la surface des feuilles (« Hardcourt indoor »)."""
+    import elo as E
+    import feuilles as FE
+    out = {}
+    for r in FE.lire(racine):
+        h, a, s = (r.get('home') or {}).get('nom'), (r.get('away') or {}).get('nom'), str(r.get('surface') or '')
+        if h and a and s and s.lower() != 'none' and r.get('jour'):
+            out[(str(r['jour']), *sorted((E.cle(h), E.cle(a))))] = 'indoor' in s.lower()
+    return out
+
+
+def salle_de_la_fiche(f, salles):
+    """En salle ? — ce que la fiche a noté au pronostic, sinon la feuille du match (jour même, veille ou lendemain)."""
+    d = f.get('dernier') or {}
+    if d.get('en_salle') is not None:
+        return bool(d['en_salle'])
+    if not salles or not f.get('home') or not f.get('away') or not f.get('debut'):
+        return None
+    import elo as E
+    cles = sorted((E.cle(f['home']), E.cle(f['away'])))
+    try:
+        j0 = dt.date.fromisoformat(str(f['debut'])[:10])
+    except ValueError:
+        return None
+    for dj in (0, -1, 1):
+        v = salles.get(((j0 + dt.timedelta(days=dj)).isoformat(), *cles))
+        if v is not None:
+            return v
+    return None
+
+
+def lignes(fiches, reels, salles=None, dec=None, sans_decalage=False):
+    """[{jour, c, k, moy, p10, p90, reel, salle}] : une ligne par joueur, match et statistique. dec : décalages « en
+    salle » ajoutés aux fiches qui ne les portent pas déjà ; sans_decalage=True : valeurs sans aucun décalage (suivi)."""
     out = []
     for uid, f in fiches.items():
         r, d = reels.get(uid) or {}, (f.get('dernier') or {})
+        salle = salle_de_la_fiche(f, salles)
         # valeurs AVANT recalage quand il est en place (sinon on recalerait par-dessus le recalage)
         fp, fq, fr = d.get('feuille_brute') or d.get('feuille'), d.get('fourchette_brute') or d.get('fourchette'), r.get('feuille')
         c = f.get('circuit')
@@ -93,9 +234,46 @@ def lignes(fiches, reels):
             for k in STATS:
                 m, q, x = fp[i].get(k), (fq[i] or {}).get(k), fr[i].get(k)
                 if isinstance(m, (int, float)) and isinstance(x, (int, float)) and q and len(q) == 2:
-                    out.append({'jour': str(f.get('debut'))[:10], 'c': c, 'k': k, 'moy': float(m),
-                                'p10': float(q[0]), 'p90': float(q[1]), 'reel': float(x)})
+                    m, lo, hi = float(m), float(q[0]), float(q[1])
+                    brut = (m, lo, hi)
+                    deja = bool(d.get('salle_appliquee'))
+                    if dec and not deja and not sans_decalage:
+                        m, lo, hi = decaler_salle(dec, c, k, salle, m, lo, hi)
+                    elif sans_decalage and deja and (d.get('salle_brut') or [{}, {}])[i].get(k):
+                        m, lo, hi = (float(v) for v in d['salle_brut'][i][k])      # valeurs d'avant le décalage, gardées
+                    out.append({'jour': str(f.get('debut'))[:10], 'c': c, 'k': k, 'moy': m, 'p10': lo, 'p90': hi,
+                                'reel': float(x), 'salle': salle, 'avant_decalage': brut if not deja else None})
     return out
+
+
+def suivi_salle(racine, ancien=None):
+    """{'cases': {'ATP|premiere_pct': {cas en salle, écart avec, écart sans, retire}}} sur nos cas en salle joués
+    depuis SALLE_DEPUIS. Un décalage retiré le reste (ancien)."""
+    import apres_match as AM
+    dec_tous = decalages_salle(racine)
+    if not dec_tous:
+        return {'cases': {}}
+    try:
+        with open(os.path.join(racine, 'Tennis_Edge_Lab', 'live', 'pronostics_resultats.json'), encoding='utf-8') as f:
+            reels = {m['uid']: m.get('reel') for m in json.load(f).get('matchs') or [] if m.get('uid')}
+    except (OSError, ValueError):
+        reels = {}
+    fiches, salles = AM.toutes_les_fiches(racine), salles_des_matchs(racine)
+    avec, sans = lignes(fiches, reels, salles, dec_tous), lignes(fiches, reels, salles, None, sans_decalage=True)
+    cases = {}
+    for c, d in dec_tous.items():
+        for k in d:
+            cle = f'{c}|{k}'
+            A = [r for r in avec if r['c'] == c and r['k'] == k and r['salle'] and r['jour'] >= SALLE_DEPUIS]
+            S = [r for r in sans if r['c'] == c and r['k'] == k and r['salle'] and r['jour'] >= SALLE_DEPUIS]
+            n = min(len(A), len(S))
+            e1 = sum(abs(r['moy'] - r['reel']) for r in A) / len(A) if A else None
+            e0 = sum(abs(r['moy'] - r['reel']) for r in S) / len(S) if S else None
+            deja = bool((((ancien or {}).get('cases') or {}).get(cle) or {}).get('retire'))
+            cases[cle] = {'cas_en_salle': n, 'ecart_avec': round(e1, 3) if e1 is not None else None,
+                          'ecart_sans': round(e0, 3) if e0 is not None else None,
+                          'retire': bool(deja or (n >= SALLE_MIN_CAS and e1 is not None and e0 is not None and e1 > e0))}
+    return {'depuis': SALLE_DEPUIS, 'cases': cases}
 
 
 def borner(k, lo, hi):
@@ -189,7 +367,8 @@ def charger(racine):
     except (OSError, ValueError):
         res = {}
     reels = {m['uid']: m.get('reel') for m in res.get('matchs') or [] if m.get('uid')}
-    return lignes(AM.toutes_les_fiches(racine), reels)
+    dec = decalages_salle(racine, salle_retiree(racine))      # 12/11/2026 : appris sur les valeurs décalées « en salle »
+    return lignes(AM.toutes_les_fiches(racine), reels, salles_des_matchs(racine) if dec else None, dec)
 
 
 def coef_variante(co, variante):
@@ -206,14 +385,23 @@ def cases_en_place(doc):
     return {k: {'variante': v, 'depuis': DEPART_LE, 'semaines_pires': 0} for k, v in DEPART_CASES.items()}
 
 
-def decider_cases(ancien, appr, juge, fin):
-    """Règle case par case (fixée le 11/11/2026, voir DEPART_CASES)."""
+def decider_cases(ancien, appr, juge, fin, arch=None):
+    """Règle case par case (fixée le 11/11/2026, voir DEPART_CASES). arch : cases réglées sur l'archive (12/11/2026)."""
     co = apprendre(appr)
     out = {}
     for c in CIRCUITS:
         for k in STATS:
             cle = f'{c}|{k}'
             prec = dict((ancien or {}).get(cle) or {'variante': 'sans', 'depuis': None, 'semaines_pires': 0})
+            if cle in (arch or {}) and not prec.get('archive_retiree'):      # coefficients fixes, suivi cumulé
+                s = suivi_archive(list(appr) + list(juge), c, k, arch[cle])
+                if s['retrait']:
+                    out[cle] = {'variante': 'sans', 'depuis': fin, 'semaines_pires': 0, 'archive_retiree': True,
+                                'retiree': 'archive', 'cumul': s}
+                else:
+                    out[cle] = {'variante': 'archive', 'semaines_pires': 0, 'cumul': s,
+                                'depuis': prec.get('depuis') if prec.get('variante') == 'archive' and prec.get('depuis') else ARCHIVE_DEPUIS}
+                continue
             R = [r for r in juge if r['c'] == c and r['k'] == k]
             cc = (co.get(c) or {}).get(k)
             if len(R) < MIN_CAS or not cc:
@@ -248,7 +436,8 @@ def lire_coefs(racine):
             doc = json.load(f)
     except (OSError, ValueError):
         doc = {}
-    cases = cases_en_place(doc)
+    arch = coefs_archive(racine)
+    cases = avec_archive(cases_en_place(doc), arch)
     try:
         appris = apprendre(charger(racine))
     except Exception:  # noqa: BLE001
@@ -258,6 +447,8 @@ def lire_coefs(racine):
         c, k = cle.split('|')
         co = (appris.get(c) or {}).get(k) or (REPLI_DIRECT.get(c) or {}).get(k)
         coef = coef_variante(co, e.get('variante')) if co else None
+        if e.get('variante') == 'archive':                  # 12/11/2026 : coefficients fixes de l'archive
+            coef = dict(arch[cle]) if cle in arch else None
         if coef:
             out.setdefault(c, {})[k] = coef
     return out or None
@@ -271,7 +462,7 @@ def etat_pour_le_site(racine):
             doc = json.load(f)
     except (OSError, ValueError):
         doc = {}
-    cases = cases_en_place(doc)
+    cases = avec_archive(cases_en_place(doc), coefs_archive(racine))
     import apres_match as AM
     try:
         with open(os.path.join(racine, 'Tennis_Edge_Lab', 'live', 'pronostics_resultats.json'), encoding='utf-8') as f:
@@ -384,7 +575,9 @@ def main(argv):
     ancien = ancien_doc.get('decision') or {}
     doc['direct'] = suivre_directes(ancien_doc.get('direct'), appr, juge)
     # 11/11/2026 (paquet 225) : la règle case par case décide de ce qui s'applique sur le site
-    doc['cases'] = decider_cases(cases_en_place(ancien_doc), appr, juge, fin.isoformat())
+    doc['salle'] = suivi_salle(racine, ancien_doc.get('salle'))      # 12/11/2026 : décalage « en salle », suivi et retrait
+    arch = coefs_archive(racine)
+    doc['cases'] = decider_cases(avec_archive(cases_en_place(ancien_doc), arch), appr, juge, fin.isoformat(), arch)
     if '--sans-decision' in argv:
         doc['decision'] = dict(ancien, verdict_semaine=verdict)
     else:
