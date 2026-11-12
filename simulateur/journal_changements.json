@@ -1040,6 +1040,13 @@
    "quoi": "Vidéo du match fidèle aux scénarios (paquet 244) — le % de victoire ne change pas. La vidéo rejoue un match réellement tiré parmi les simulations : le favori gagne, avec le nombre de sets et le tie-break prévus. Elle ne regardait pas le scénario : un 6-2 6-3 « sans trembler » pouvait être montré alors que le post donnait « 2 sets accrochés » trois fois plus probable. Sur les matchs publiés, 60 vidéos sur 123 ne tombaient pas dans le scénario le plus fréquent du favori pour leur forme. Maintenant, à forme égale, la vidéo est choisie dans ce scénario (mêmes groupes que le post : sets secs sans trembler ou accrochés ; en 3 sets, après avoir gagné ou perdu le 1er set), puis au plus près des jeux et statistiques médians. Contrôle sur 30 matchs d'essai, comparés à la distribution exacte qui donne les scénarios du post : 30 sur 30 fidèles. La règle de forme du 04/11 (3 sets et tie-break selon la moyenne du circuit) ne change pas.",
    "statut": "production",
    "paquet": 244
+  },
+  {
+   "date": "2026-11-12",
+   "quoi": "Forme du jour du lundi jugée avec la règle cumulée, circuit par circuit (paquet 245, travail interne) — le % de victoire ne change pas. σ était choisi chaque lundi et adopté si le gain total dépassait 0,001 deux semaines de suite sur six semaines glissantes, dont cinq déjà vues : la règle que le paquet 241 a remplacée ailleurs, et trop permissive pour un réglage dont le gain est petit et instable (paquet 243). Maintenant chaque match jugé donne sa paire (perte avec 0,15, perte avec le σ choisi) et chaque circuit décide seul : entrer si, depuis le dernier changement, sur au moins 300 matchs, le gain dépasse 2 erreurs types ; sortir s'il est négatif de plus de 2 erreurs types ; chaque match compté une fois. Un circuit en place garde son σ d'avant tant que la semaine ne trouve pas mieux que 0,15. Au premier lundi, rien ne bouge : Challenger reste à 0,18 (gain du dernier jugement 0,017 sur 1 562 matchs), ATP et WTA restent à 0,15. Retrait : revenir à la règle d'avant si, à 1 000 matchs cumulés, un circuit garde un σ dont le gain cumulé est négatif.",
+   "statut": "production",
+   "prive": true,
+   "paquet": 245
   }
  ]
 }
