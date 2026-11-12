@@ -202,7 +202,8 @@
    "impact_attendu": "environ +0,0005 ; retire des écarts de 2 à 5 points sans information sur la moitié des matchs",
    "confiance": "haute sur le diagnostic",
    "effort": "petit",
-   "regle": "les sept β réappris ENSEMBLE sur l'Elo de production corrigé (paquets 228 à 230), 2018–2022, jugés sur 2023 → ; un signal reste sur un circuit seulement si le retirer coûte au moins 0,001 sur au moins 1 000 matchs concernés, même sens sur les deux périodes ; etude_tiebreaks.py rejouée avec cet Elo, règle inchangée"
+   "regle": "les sept β réappris ENSEMBLE sur l'Elo de production corrigé (paquets 228 à 230), 2018–2022, jugés sur 2023 → ; un signal reste sur un circuit seulement si le retirer coûte au moins 0,001 sur au moins 1 000 matchs concernés, même sens sur les deux périodes ; etude_tiebreaks.py rejouée avec cet Elo, règle inchangée",
+   "suite_paquet_247": "13 études relancées telles quelles avec l'Elo de production : aucun positif nouveau ; deux négatifs (ATP parcours, ATP favori / outsider) déjà hors production ; suivi du % en direct corrigé"
   },
   {
    "id": "regle_hebdomadaire",
@@ -402,9 +403,9 @@
   "génération des vidéos",
   "Arena",
   "partie du Lab qui ne concerne pas l'algo",
-  "19 études anciennes balayées mais non rejouées",
   "profils sur gazon",
-  "facteurs hebdomadaires non rejoués groupe par groupe"
+  "facteurs hebdomadaires non rejoués groupe par groupe",
+  "4 études non rejouées (recherche ou Elo déjà à jour) : voir rapport_anciennes_etudes.json"
  ],
  "suites": {
   "228": "format du match en ATP : simulateur/rapport_format_match.json — CORRIGÉ au paquet 229 (Coupe Davis exclue du jugement) : 2 sets gagnants en place avec la pente 0,826 (gain 0,0016 ± 0,0008) ; 3 sets gagnants en attente",
@@ -425,7 +426,8 @@
   "243": "forme du jour σ : simulateur/rapport_sigma_archive.json — 12 084 matchs de l'archive, grille 0,15 → 0,22 et variante asymétrique : rien ne passe la règle ; courbe plate entre 0,15 et 0,18, dégradée au-delà",
   "244": "vidéo fidèle aux scénarios du post (demande de Lucas, hors audit) : match_simule.match_type choisit, à forme égale, le scénario le plus fréquent du favori ; 60 vidéos sur 123 ne l'étaient pas",
   "245": "forme du jour σ du lundi : règle cumulée circuit par circuit (sigma_circuit.decider) — simulateur/rapport_sigma_cumule.json ; rien ne bouge à l'installation",
-  "246": "facteurs du lundi en règle cumulée à deux mesures (stabilite.decider_cumule_double) — simulateur/rapport_facteurs_cumules.json ; contrôle sans rejeu"
+  "246": "facteurs du lundi en règle cumulée à deux mesures (stabilite.decider_cumule_double) — simulateur/rapport_facteurs_cumules.json ; contrôle sans rejeu",
+  "247": "anciennes études avec l'Elo de production : simulateur/rapport_anciennes_etudes.json — aucun verdict final positif nouveau ; ce qui est en production reste justifié ; évolution du classement proche du seuil, à surveiller"
  },
  "pistes_ajoutees_le_11_11": {
   "regardé": "2018–2022 seulement, par-dessus l'Elo de production corrigé du format en ATP et les trois signaux solides (surface, absence, âge)",
