@@ -43,6 +43,23 @@ def _ok(L):
     return sum(1.0 if p > 0.5 else 0.5 if p == 0.5 else 0.0 for p in L) / len(L) if L else None
 
 
+def paires_match(jours, sans, avec):
+    """12/11/2026 (paquet 242) — détail par match pour la règle cumulée de stabilite.py : [(jour, log loss sans,
+    log loss avec)]. Lu par stabilite.appliquer puis retiré : jamais enregistré."""
+    lp = lambda p: -math.log(min(max(p, 1e-6), 1 - 1e-6))
+    return [(str(j), round(lp(a), 6), round(lp(b), 6)) for j, a, b in zip(jours, sans, avec)]
+
+
+def pour_stabilite(r, cles):
+    """12/11/2026 (paquet 242) — le verdict d'une règle tel que stabilite.appliquer le lit : les clés demandées,
+    plus le détail par match (« paires ») quand la règle le fournit."""
+    r = r or {}
+    out = {k: r.get(k) for k in cles}
+    if r.get('paires') is not None:
+        out['paires'] = r['paires']
+    return out
+
+
 def elo_au_moment(M, lignes, options=None, depart_bas=None, experience=None):
     """P(vrai vainqueur) selon l'Elo AVANT chaque match des feuilles (archive rejouée, puis feuilles).
     experience (dict, facultatif) : rempli avec id(ligne) -> (matchs du vrai vainqueur, matchs du perdant)
@@ -103,20 +120,24 @@ def poids_circuit(hors, P, lim, ajuster_poids, circuit='CH'):
     à la WTA le 29/10/2026, avant le jugement hebdomadaire) : des poids propres au circuit, appris sur ses matchs avant
     les 6 dernières semaines, remplacent les poids communs pour ce circuit s'ils trouvent mieux le vainqueur (log loss
     plus basse) sur ses matchs des 6 dernières semaines. Il faut au moins 300 matchs avant et 150 dans le jugement.
-    Puis la stabilité (stabilite.py) : mieux d'au moins 0,001 deux semaines de suite.
+    Puis la stabilité (stabilite.py) : mieux d'au moins 0,001 deux semaines de suite ; depuis le 12/11/2026 (paquet 242),
+    la règle cumulée (≥ 300 matchs, 2 erreurs types, chaque match compté une fois).
     Test du 29/10/2026 sur les pronostics hors échantillon (jugement depuis le 14/09) : ATP 0,6113 → 0,6126 (−0,0013),
     WTA 0,5937 → 0,6029 (−0,0092), Challenger 0,6049 → 0,6046 : non adoptés ; jugés de nouveau chaque semaine."""
     lib = dict(CIRCUITS).get(circuit, circuit)
     g = [h for h in hors if h[0]['circuit'] == circuit]
     av, ju = [h for h in g if h[0]['jour'] < lim], [h for h in g if h[0]['jour'] >= lim]
     if len(av) < MIN_CH_AVANT or len(ju) < MIN_CH_JUGE or not P:
-        return {'adopte': False, 'raison': f"pas assez de matchs {lib} ({len(av)} avant, {len(ju)} à juger)"}
+        return {'adopte': False, 'raison': f"pas assez de matchs {lib} ({len(av)} avant, {len(ju)} à juger)",
+                'paires': []}                      # 12/11/2026 (paquet 242) : règle cumulée, rien ne bouge
     w = ajuster_poids([[_lg(pe), _lg(ps)] for _, ps, pe in av])
     Pc = {'elo': w[0], 'simulation': w[1]}
-    l_ch, l_co = _ll([S.melange(Pc, pe, ps) for _, ps, pe in ju]), _ll([S.melange(P, pe, ps) for _, ps, pe in ju])
+    p_ch, p_co = [S.melange(Pc, pe, ps) for _, ps, pe in ju], [S.melange(P, pe, ps) for _, ps, pe in ju]
+    l_ch, l_co = _ll(p_ch), _ll(p_co)
     ok = l_ch < l_co
     out = {'adopte': bool(ok), 'n_juge': len(ju), 'poids_appris_avant': {k: round(v, 4) for k, v in Pc.items()},
            'll': {'avec': l_ch, 'sans': l_co},
+           'paires': paires_match([h[0]['jour'] for h in ju], p_co, p_ch),     # 12/11/2026 (paquet 242)
            'raison': (f"{lib} des 6 dernières semaines ({len(ju)} matchs) : poids propres {round(l_ch, 4)} contre poids "
                       f"communs {round(l_co, 4)} ; part de la simulation {part_simulation(Pc)} % contre {part_simulation(P)} %")}
     if ok:
@@ -425,10 +446,10 @@ def desaccord_wta(hors, P, lim, ajuster_poids, experience, situations, poids_fin
     désaccords WTA d'avant les 6 dernières semaines (au moins 80), remplace le pronostic de production (les arbres,
     appris sur la même période). Jugé sur les 6 dernières semaines (au moins 50 désaccords WTA) : adopté si la log
     loss du vainqueur baisse sur l'ensemble des matchs jugés ; puis stabilité (stabilite.py) : mieux d'au moins
-    0,001 deux semaines de suite. Aperçu du 29/10 sur le mélange simple : 0,0000 (rien à gagner pour l'instant)."""
+    0,001 deux semaines de suite ; depuis le 12/11/2026 (paquet 242), la règle cumulée sur les seuls désaccords. Aperçu du 29/10 sur le mélange simple : 0,0000 (rien à gagner pour l'instant)."""
     import arbres as A
     if not P or not experience:
-        return {'adopte': False, 'raison': 'pas de mélange ou pas de compte de matchs'}
+        return {'adopte': False, 'raison': 'pas de mélange ou pas de compte de matchs', 'paires': []}
     lignes = []
     for x, ps, pe in hors:
         e = experience.get(id(x))
@@ -443,7 +464,8 @@ def desaccord_wta(hors, P, lim, ajuster_poids, experience, situations, poids_fin
     ju = [l for l in lignes if l[0]]
     d_av, d_ju = [l for l in av if l[3]], [l for l in ju if l[3]]
     if len(d_av) < MIN_DESACCORD_AVANT or len(d_ju) < MIN_DESACCORD_JUGE or len(av) < 1500:
-        return {'adopte': False, 'raison': f"pas assez de désaccords WTA ({len(d_av)} avant, {len(d_ju)} à juger)"}
+        return {'adopte': False, 'raison': f"pas assez de désaccords WTA ({len(d_av)} avant, {len(d_ju)} à juger)",
+                'paires': []}
     off = lambda Pw, h: _lg(S.melange(Pw, h[2], h[1]))
     X0, y0, o0 = A.symetriser([(v0, off(P, h), ECARTS) for _, v0, h, _ in av])
     M0 = A.apprendre(X0, y0, o0)
@@ -455,6 +477,8 @@ def desaccord_wta(hors, P, lim, ajuster_poids, experience, situations, poids_fin
     ix = [i for i, l in enumerate(ju) if l[3]]
     ok = l1 < l0
     out = {'adopte': bool(ok), 'n_juge': len(ju), 'n_desaccords_juges': len(ix), 'll': {'avec': l1, 'sans': l0},
+           # 12/11/2026 (paquet 242) : détail des seuls désaccords (ailleurs avec = sans, le gain est nul)
+           'paires': paires_match([ju[i][2][0]['jour'] for i in ix], [sans[i] for i in ix], [avec[i] for i in ix]),
            'poids_appris_avant': {k: round(v, 4) for k, v in Pd.items()},
            'raison': (f"{len(ix)} désaccords WTA jugés (6 dernières semaines) : log loss sur eux "
                       f"{round(_ll([avec[i] for i in ix]), 4)} contre {round(_ll([sans[i] for i in ix]), 4)} ; vainqueurs "
@@ -526,7 +550,7 @@ def rejouer_saison(lignes, p_elo, groupes, apprendre, victoire_ligne, ajuster_po
            'total': {'simulation': {'reussite_pct': round(100 * _ok([h[1] for h in hors]), 1), 'log_loss': round(_ll([h[1] for h in hors]), 4)},
                      'elo': {'reussite_pct': round(100 * _ok([h[2] for h in hors]), 1), 'log_loss': round(_ll([h[2] for h in hors]), 4)}}}
     if len(avant) < 300 or len(juge) < 200:
-        return dict(out, adopte=False, raison='pas assez de matchs pour juger')
+        return dict(out, adopte=False, raison='pas assez de matchs pour juger', paires=[])
     wa = ajuster_poids([[_lg(pe), _lg(ps)] for _, ps, pe in avant])
     P = {'elo': wa[0], 'simulation': wa[1]}
     out['par_circuit'] = par_circuit(hors, P, lim)
@@ -568,8 +592,12 @@ def rejouer_saison(lignes, p_elo, groupes, apprendre, victoire_ligne, ajuster_po
     out['desaccord_wta'] = desaccord_wta(hors, P, lim, ajuster_poids, experience, situations, final)
     for cle_c in CANDIDATS_ARBRES:                     # 29/10/2026 : activité récente, tour du tableau
         out[cle_c] = modele_arbres_candidat(cle_c, hors, P, lim, experience, situations, out.get('nouveaux_venus'), final)
-    l_new = _ll([S.melange(P, pe, ps) for _, ps, pe in juge])
-    l_arch = _ll([S.melange(poids_archive, pe, ps) for _, ps, pe in juge]) if poids_archive else None
+    p_new = [S.melange(P, pe, ps) for _, ps, pe in juge]
+    p_arch = [S.melange(poids_archive, pe, ps) for _, ps, pe in juge] if poids_archive else None
+    l_new = _ll(p_new)
+    l_arch = _ll(p_arch) if p_arch else None
+    if p_arch:                                     # 12/11/2026 (paquet 242) : détail par match, règle cumulée
+        out['paires'] = paires_match([h[0]['jour'] for h in juge], p_arch, p_new)
     l_elo = _ll([pe for _, _, pe in juge])
     ok = l_arch is None or l_new < l_arch
     return dict(out, adopte=bool(ok), ll={'avec': l_new, 'sans': l_arch},

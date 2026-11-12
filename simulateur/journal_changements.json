@@ -1021,6 +1021,13 @@
    "statut": "production",
    "prive": true,
    "paquet": 241
+  },
+  {
+   "date": "2026-11-12",
+   "quoi": "Poids du mélange jugés eux aussi avec la règle cumulée (paquet 242, travail interne). Les poids appris sur les feuilles (contre ceux de l'archive), les poids propres ATP, WTA et Challenger (contre les poids communs) et le mélange propre aux désaccords WTA gardaient la règle d'avant (0,001 deux semaines de suite) parce qu'ils ne donnaient qu'un chiffre par semaine. Ils fournissent maintenant le détail par match (entrainement_progressif.paires_match ; pour les désaccords WTA, les seuls désaccords, ailleurs rien ne change) et passent à la règle cumulée retenue au paquet 241 : chaque match compté une fois, entrer si, depuis le dernier changement, sur au moins 300 matchs, le gain dépasse 2 erreurs types, sortir s'il est négatif de plus de 2 erreurs types. Quand il y a trop peu de matchs, rien ne bouge (avant, un poids en place pouvait sortir faute de jugement). Contrôle etude_poids_cumules.py, sans décision : 10 lundis rejoués sur les pronostics hors échantillon, aucun match compté deux fois ; installée sur l'un des quatre derniers lundis, la règle n'aurait rien changé (les cinq poids restent non adoptés, comme aujourd'hui). Limite vue au rejeu : installés sur une seule fenêtre favorable, les poids propres WTA (12/10) puis Challenger (19/10) seraient entrés et auraient ensuite fait moins bien ; c'est le prix de la règle (13 à 23 % des semaines en attente, quelques entrées à tort) — à surveiller. La combinaison Elo + simulation de l'archive n'est pas concernée : elle est jugée sur une période fixe, la même chaque semaine. Le % de victoire ne change pas par ce paquet lui-même. Retrait : revenir à la règle d'avant pour ces cinq poids si, à 1 000 matchs cumulés par poids, la règle cumulée a gardé en place un poids dont le gain cumulé est négatif.",
+   "statut": "production",
+   "prive": true,
+   "paquet": 242
   }
  ]
 }
