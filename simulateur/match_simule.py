@@ -639,10 +639,22 @@ def match_type(brut, traces=None, vainqueur=0, moyennes=None):
         tb = 2 * avec_tb > len(meme_sets)
         regle = {'regle': 'forme la plus fréquente des victoires du favori'}
     candidats = [c for c in meme_sets if a_un_tiebreak(c[1][4]) == tb] or meme_sets
+    # 12/11/2026 (paquet 244, demande de Lucas : « les vidéos fidèles aux scénarios du match ») — à forme égale, le
+    # SCÉNARIO le plus fréquent du favori (mêmes groupes que les scénarios publiés, scenarios_match.issue) : en sets
+    # secs, « sans trembler » (chaque set à 6-3 ou mieux) ou « accrochés » ; en 3 sets, après avoir gagné ou perdu le 1er.
+    import scenarios_match as SM
+    part_forme = round(100.0 * len(candidats) / len(brut), 1)
+    par = {}
+    for c in candidats:
+        g, rem = SM.issue([tuple(x) for x in c[1][4]], vainqueur)
+        par.setdefault('remontee' if rem else g, []).append(c)
+    scen = max(par, key=lambda k: (len(par[k]), k == 'accroche')) if par else None
+    part_scen = round(100.0 * len(par[scen]) / len(brut), 1) if scen else None
+    candidats = par.get(scen) or candidats
     forme = dict(regle, sets=n_sets, tie_break=tb,
                  part_sets_pct=round(100.0 * nb[n_sets] / sum(nb.values()), 1),
                  part_tie_break_pct=round(100.0 * avec_tb / len(meme_sets), 1),
-                 part_forme_pct=round(100.0 * len(candidats) / len(brut), 1))
+                 part_forme_pct=part_forme, scenario=scen, part_scenario_pct=part_scen)
     groupe = [ligne for _, ligne in candidats]
     F = []
     for j in (0, 1):
