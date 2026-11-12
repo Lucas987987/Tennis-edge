@@ -29,3 +29,32 @@ class ImageX(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class ImageXEcart(unittest.TestCase):
+    """Paquet 239 : encadré « l'écart à l'attendu » et duel équilibré dans le post."""
+    def setUp(self):
+        with open(os.path.join(ICI, '..', 'algo', 'index.html'), encoding='utf-8') as f:
+            self.h = f.read()
+
+    def test_encadre_et_pied_fr_en(self):
+        for k in ('x_ex_t:', 'x_ex_txt:', 'x_ex_ex:', 'x_ex_sur:'):
+            self.assertEqual(self.h.count(k), 2, k)
+        self.assertEqual(self.h.count('Descriptif seulement : ces bilans ne changent pas le % de l’algo'), 1)
+        self.assertEqual(self.h.count('Descriptive only: these records do not change the algo’s %'), 1)
+
+    def test_hauteur_suit_le_texte(self):
+        a = self.h.index('async function imageX(m)')
+        b = self.h.index("document.addEventListener('click', e=>{", a)
+        code = self.h[a:b]
+        self.assertIn('let H = 1350', code)
+        self.assertIn('H = Math.max(1350,', code)
+        self.assertIn("t('x_ex_t')", code)
+
+    def test_duel_equilibre_sous_10_points(self):
+        a = self.h.index('// duel service / retour')
+        b = self.h.index('// statistiques prédites et projections', a)
+        code = self.h[a:b]
+        self.assertIn('Math.abs(e) < 10 ? `⚖️ Duel équilibré', code)
+        self.assertIn('avantages[0] >= 10 && avantages[1] <= -10', code)
+        self.assertIn('avantages[0] <= -10 && avantages[1] >= 10', code)
