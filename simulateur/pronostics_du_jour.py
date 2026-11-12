@@ -602,6 +602,23 @@ def _echanges(h, a, debut):
 STYLES_SERVEURS = ('grand_serveur', 'serveur_attaquant')
 STYLES_NON_SERVEURS = ('retourneur_pressant', 'contreur', 'equilibre')
 DECALAGE_SERVEUSES_WTA = math.log(0.5255 / 0.4745)
+# 12/11/2026 (paquet 248) — DÉCISION DE LUCAS : en place en WTA sans attendre le fantôme (simulateur/serveuses_wta.json).
+# Décalage ramené à l'écart mesuré avec l'Elo DU SITE (etude_anciennes_etudes.py, paquet 247) : +2,24 points à 50 %,
+# moyenne pondérée de 2018–2022 (+2,05) et 2023 → juin 2026 (+2,47). Retrait : règle cumulée (fantomes_circuits.py).
+
+
+def _decalage_serveuses(racine=None):
+    try:
+        with open(os.path.join(racine or os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'), 'simulateur',
+                               'serveuses_wta.json'), encoding='utf-8') as f:
+            pts = float(json.load(f)['points_a_50_pct'])
+        q = 0.5 + pts / 100.0
+        return math.log(q / (1 - q))
+    except (OSError, ValueError, KeyError, TypeError):
+        return math.log(0.5255 / 0.4745)
+
+
+DECALAGE_SERVEUSES_WTA = _decalage_serveuses()
 
 
 def charger_styles_matchs(racine):
