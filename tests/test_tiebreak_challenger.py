@@ -30,8 +30,11 @@ class TestTiebreakChallenger(unittest.TestCase):
                 json.dump({'circuits': {'CH': {'retenu_pour_fantome': True}, 'ATP': {'retenu_pour_fantome': False}}}, f)
             self.assertEqual(FC.lire(d).get('tiebreak'), ['CH'])
             with open(os.path.join(d, FC.SORTIE), 'w') as f:
+                json.dump({'decisions': {'tiebreak|CH': {'adopte': False, 'retire': True, 'depuis': '2026-11-23'}}}, f)
+            self.assertIsNone(FC.lire(d).get('tiebreak'))                    # retiré par la règle cumulée : il le reste
+            with open(os.path.join(d, FC.SORTIE), 'w') as f:
                 json.dump({'decisions': {'tiebreak|CH': {'adopte': False, 'retire': True}}}, f)
-            self.assertIsNone(FC.lire(d).get('tiebreak'))
+            self.assertEqual(FC.lire(d).get('tiebreak'), ['CH'])             # 12/11/2026 : retrait de l'ancienne règle annulé
 
     def test_calcul_rapide_egal_modele(self):
         import modele as M
