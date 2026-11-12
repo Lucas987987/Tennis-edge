@@ -36,19 +36,22 @@ def appliquer(etat, cle, ancien, verdict, params=(), semaine=None):
         ll = p.get('ll') or {}
         assez = (p.get('n') or 0) >= MIN_N and ll.get('avec') is not None and ll.get('sans') is not None
         v = {'adopte': bool(assez and ll['avec'] < ll['sans']), 'll': ll if assez else None,
+             **({'paires': p['paires']} if p.get('paires') is not None else {}),
              'raison': (f"{c} : {p.get('n')} matchs, {round(ll['avec'], 4)} avec contre {round(ll['sans'], 4)} sans"
                         if assez else f"{c} : pas assez de matchs ({p.get('n') or 0})")}
         k = f'{cle}|{c}'
         if k not in etat and cle in etat:
             etat[k] = dict(etat[cle])
         anc = anciens_c.get(c) or ({'adopte': bool(ancien.get('adopte'))} if ancien else None)
-        if not assez:           # trop peu de matchs cette semaine sur ce circuit : ni succès ni échec, rien ne bouge
+        if not assez and p.get('paires') is None:   # trop peu de matchs (règle d'avant) : ni succès ni échec, rien ne bouge
             dec[c] = {'adopte': bool((anc or {}).get('adopte')), 'adopte_brut': False,
                       'stabilite': 'inchangé (pas assez de matchs cette semaine)', 'raison': v['raison']}
             continue
         d = ST.appliquer(etat, k, anc, v, semaine=semaine)
         dec[c] = {x: d.get(x) for x in ('adopte', 'adopte_brut', 'stabilite', 'raison')}
     out = {x: y for x, y in verdict.items() if x not in params}
+    if isinstance(out.get('par_circuit'), dict):            # 12/11/2026 : le détail par match n'est jamais enregistré
+        out['par_circuit'] = {c: {k_: v_ for k_, v_ in (d_ or {}).items() if k_ != 'paires'} for c, d_ in out['par_circuit'].items()}
     for x in params:
         out[x] = verdict.get(x) if verdict.get(x) is not None else ancien.get(x)
     out['circuits'] = dec
