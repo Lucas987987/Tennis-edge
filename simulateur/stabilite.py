@@ -101,6 +101,59 @@ def decider_cumule(etat, cle, en_place, paires):
     return e['adopte'], note
 
 
+def _cumuler(c, paires):
+    """Ajoute au compteur c les matchs des jours pas encore vus ; renvoie (n, moyenne, erreur type)."""
+    import math
+    vu = c.get('vu')
+    nouveaux = [(j, l0, l1) for j, l0, l1 in paires or () if vu is None or str(j) > vu]
+    for _, l0, l1 in nouveaux:
+        d = float(l0) - float(l1)
+        c['n'] += 1
+        c['s'] += d
+        c['s2'] += d * d
+    if nouveaux:
+        c['vu'] = max(str(j) for j, _, _ in nouveaux)
+    n = c['n']
+    m = c['s'] / n if n else 0.0
+    se = math.sqrt(max(c['s2'] / n - m * m, 0.0) / n) if n else 0.0
+    return n, m, se
+
+
+def decider_cumule_double(etat, cle, en_place, principale, garde):
+    """12/11/2026 (paquet 246) — règle cumulée à DEUX mesures, pour les facteurs du lundi (facteurs.py).
+    principale : [(jour, perte sans, perte avec)] de la mesure qui doit GAGNER pour entrer ;
+    garde      : [(jour, perte sans, perte avec)] de la mesure qui ne doit pas PERDRE.
+    ENTRER : au moins CUMUL_MIN matchs, principale positive de plus de CUMUL_ET erreurs types ET garde pas négative de
+             plus de CUMUL_ET erreurs types ;
+    SORTIR : au moins CUMUL_MIN matchs, principale OU garde négative de plus de CUMUL_ET erreurs types.
+    Chaque match compté une fois ; compteurs remis à zéro à chaque changement. Renvoie (adopté, note)."""
+    e = etat.get(cle)
+    if e is None:
+        e = {'adopte': bool(en_place)}
+    vide = lambda: {'vu': None, 'n': 0, 's': 0.0, 's2': 0.0}  # noqa: E731
+    cp, cg = e.get('cumul') or vide(), e.get('cumul_garde') or vide()
+    n, m, se = _cumuler(cp, principale)
+    ng, mg, seg = _cumuler(cg, garde)
+    g_neg = ng >= CUMUL_MIN and mg + CUMUL_ET * seg < 0
+    txt = f"gain {m:+.4f} ± {se:.4f}, garde {mg:+.4f} ± {seg:.4f}, sur {n} matchs"
+    if n >= CUMUL_MIN and e['adopte'] and (m + CUMUL_ET * se < 0 or g_neg):
+        e['adopte'], note = False, f"sorti : {txt}"
+        cp.update(n=0, s=0.0, s2=0.0)                  # les jours déjà vus ne sont pas recomptés
+        cg.update(n=0, s=0.0, s2=0.0)
+    elif n >= CUMUL_MIN and not e['adopte'] and m - CUMUL_ET * se > 0 and not g_neg:
+        e['adopte'], note = True, f"adopté : {txt}"
+        cp.update(n=0, s=0.0, s2=0.0)
+        cg.update(n=0, s=0.0, s2=0.0)
+    else:
+        note = (f"{'en place' if e['adopte'] else 'pas adopté'} (cumul : {txt if n else '0 match'} ; il en faut "
+                f"{CUMUL_MIN} et {CUMUL_ET:g} erreurs types)")
+    e['cumul'], e['cumul_garde'] = cp, cg
+    e['regle'] = 'cumulee_double'
+    e['gain'] = round(m, 5) if n else None
+    etat[cle] = e
+    return e['adopte'], note
+
+
 def decider(etat, cle, en_place, brut, ll_nouveau=None, ll_actuel=None, semaine=None, paires=None):
     """Décision stabilisée de la règle `cle`.
     en_place : adopté aujourd'hui (choix précédent) — point de départ si la règle est inconnue ;
