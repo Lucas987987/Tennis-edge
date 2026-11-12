@@ -260,7 +260,9 @@ def lignes_matchs(archive, racine):
     import elo as E
     import facteurs as FC
     import feuilles as FE
-    M = donnees.charger(archive, 2016)
+    # 12/11/2026 (paquet 247, audit « elo_des_etudes ») : archive décalée d'un jour par tour (l'Elo n'est plus figé
+    # pendant le tournoi) et Elo réglé comme la production : le % d'avant-match est celui du site.
+    M = donnees.decaler_par_tour(donnees.charger(archive, 2016))
     fiches = FE.lire(racine)
     fin_sack = max(x['date'] for x in M) if M else None
     F = [m for m in FE.charger(racine) if fin_sack is None or m['date'] > fin_sack]
@@ -288,7 +290,7 @@ def lignes_matchs(archive, racine):
     L = [x for x in FC.preparer(fiches, adj_pour) if x['jour'] >= dt.date(2026, 6, 1)]
     # Elo d'avant le jour du match
     L.sort(key=lambda x: x['jour'])
-    el, i, jour, attente = E.Elo(), 0, None, []
+    (el, bas), i, jour, attente = E.de_production(racine), 0, None, []
     k = E.cle
     for m in tout:
         d = m['date']
@@ -304,8 +306,8 @@ def lignes_matchs(archive, racine):
         if not g or not p or g == p:
             continue
         if m['circuit'] in ('CH', 'ITF'):
-            el.presenter(g, 1200.0)
-            el.presenter(p, 1200.0)
+            el.presenter(g, bas or 1200.0)
+            el.presenter(p, bas or 1200.0)
         attente.append((g, p, m['surface'], m.get('niveau') == 'G'))
     for g, p, s, gc in attente:
         el.maj(g, p, s, gc, None)
