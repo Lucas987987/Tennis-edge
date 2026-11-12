@@ -41,3 +41,22 @@ class TestTiebreakChallenger(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class TestRejeuSurLEloDeProduction(unittest.TestCase):
+    """12/11/2026 (paquet 233) — l'étude est rejouée avec l'Elo du site ; le décalage en place est celui du rapport."""
+
+    def test_le_decalage_en_place_est_celui_du_rapport(self):
+        import json
+        racine = os.path.join(os.path.dirname(__file__), '..')
+        with open(os.path.join(racine, 'simulateur', 'rapport_tiebreaks.json'), encoding='utf-8') as f:
+            R = json.load(f)
+        self.assertIn('elo.de_production', R['elo'])
+        retenus = {c: v['delta_appris'] for c, v in R['circuits'].items() if v['retenu_pour_fantome']}
+        self.assertEqual(LA.DECALAGE_TIEBREAK, retenus)
+
+    def test_l_etude_ne_cree_plus_d_elo_sans_reglage(self):
+        with open(ET.__file__, encoding='utf-8') as f:
+            src = f.read()
+        self.assertIn('E.de_production(racine)', src)
+        self.assertNotRegex(src, r'\bElo\(\s*\)')

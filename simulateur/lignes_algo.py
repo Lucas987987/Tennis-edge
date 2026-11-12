@@ -30,7 +30,10 @@ JOURNAL = os.path.join('simulateur', 'journal_pronostics', 'lignes_algo_v1.jsonl
 # 2023–2024, 28,1 % pour 31,8 % en 2025 → juin 2026, z ≈ 9) : décalage δ appris sur 2023–2024, FIGÉ ; ATP et WTA sans
 # biais durable. 05/11/2026 (Lucas) : ADOPTÉ DIRECTEMENT sur le Challenger vu la solidité de l'archive (fantomes_circuits.
 # directs) ; RETRAIT : deux semaines de suite (≥ 30 matchs) où la ligne corrigée fait PIRE d'au moins 0,001 que sans.
-DECALAGE_TIEBREAK = {'CH': 0.1497}
+# 12/11/2026 (audit, paquet 233) : étude rejouée avec l'Elo DE PRODUCTION (l'ancienne ancrait le niveau sur un Elo sans
+# réglage, figé pendant le tournoi) — même verdict, règle inchangée : Challenger 28,8 % prévus pour 31,5 % réels, puis
+# 28,4 % pour 31,8 % ; δ 0,1497 → 0,1305 ; ATP et WTA toujours non retenus.
+DECALAGE_TIEBREAK = {'CH': 0.1305}
 
 
 def tiebreak_corrige(p, circuit):

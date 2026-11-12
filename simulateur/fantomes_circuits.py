@@ -64,8 +64,33 @@ QUALIFS_GC = os.path.join('simulateur', 'qualifs_grand_chelem.json')
 SIGNAUX_COMBINES = ('changement_surface', 'retour_absence', 'age', 'favori_outsider')
 
 
+REAPPRIS = os.path.join('simulateur', 'rapport_signaux_reappris.json')
+
+
+def reappris(racine):
+    """12/11/2026 (paquet 233, etude_signaux_reappris.py) — ({(signal, circuit)} en place, {(signal, circuit)} écartés)
+    sur les circuits où la configuration réapprise contre l'Elo de production est adoptée. Un signal écarté n'est plus
+    appliqué sur ce circuit et la règle hebdomadaire ne peut pas le réadopter : il faudrait une nouvelle étude."""
+    try:
+        with open(os.path.join(racine, REAPPRIS), encoding='utf-8') as f:
+            doc = json.load(f)
+    except (OSError, ValueError):
+        return set(), set()
+    places, ecartes = set(), set()
+    for c, v in (doc.get('circuits') or {}).items():
+        if not (v or {}).get('adopte'):
+            continue
+        places |= {(s, c) for s in (v.get('signaux_gardes') or []) + (v.get('signaux_en_sursis') or [])}
+        ecartes |= {(s, c) for s in (v.get('signaux_ecartes') or [])}
+    return places, ecartes
+
+
 def directs(racine):
     """{(signal, circuit)} adoptés directement par l'étude combinée."""
+    return (_directs(racine) | reappris(racine)[0]) - reappris(racine)[1]
+
+
+def _directs(racine):
     try:
         with open(os.path.join(racine, COMBINES), encoding='utf-8') as f:
             doc = json.load(f)
@@ -200,10 +225,12 @@ def lire(racine):
         doc = {}
     out = {}
     dec = doc.get('decisions') or {}
+    ecartes = reappris(racine)[1]                           # 12/11/2026 : écartés par l'étude des signaux réappris
     for cle, d in dec.items():
         if (d or {}).get('adopte'):
             sgn, c = cle.split('|')
-            out.setdefault(sgn, []).append(c)
+            if (sgn, c) not in ecartes:
+                out.setdefault(sgn, []).append(c)
     for sgn, c in sorted(directs(racine)):                 # adoption directe, sauf retrait constaté
         if not (dec.get(f'{sgn}|{c}') or {}).get('retire') and c not in out.get(sgn, []):
             out.setdefault(sgn, []).append(c)
@@ -237,8 +264,14 @@ def main(argv):
     lundi_juge = semaine_jugee(aujourdhui)[0].isocalendar()
     sem = f'{lundi_juge[0]}-W{lundi_juge[1]:02d}'           # la semaine JUGÉE (rejouable, une décision par semaine)
     dec = {}
+    ecartes = reappris(racine)[1]
     for cle, v in V.items():
         sgn, c = cle.split('|')
+        if (sgn, c) in ecartes:                             # 12/11/2026 (paquet 233) : ni appliqué, ni réadoptable
+            dec[cle] = {'adopte': False, 'ecarte': True,
+                        'raison': "écarté par l'étude des signaux réappris sur l'Elo de production (rapport_signaux_reappris.json)"}
+            etat.pop('circuit|' + cle, None)
+            continue
         if (sgn, c) in D and not (ancien.get(cle) or {}).get('retire'):
             k_st = 'circuit|' + cle
             if k_st not in etat or not (ancien.get(cle) or {}).get('direct'):
