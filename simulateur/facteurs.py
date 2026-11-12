@@ -1507,6 +1507,7 @@ def main(argv):
             print(f"{EP.SITUATIONS[cle_s]} : {'correction ADOPTÉE' if choix[cle_s]['adopte'] else 'pas de correction'} — "
                   f"{choix[cle_s]['raison']}", flush=True)
         ST.ecrire(etat_st)
+        doc['entrainement_progressif'] = ep = ST.sans_paires(ep)     # 12/11/2026 (paquet 241) : rien d'enregistré
         for c, b in (ep.get('par_circuit') or {}).items():
             sx = b['six_dernieres_semaines']
             print(f"  {b['circuit']:<10} simulation {b['simulation']['reussite_pct']} % · Elo {b['elo']['reussite_pct']} % "
