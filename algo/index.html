@@ -779,7 +779,9 @@ const T = {
   x_bouton:'Image pour X (duel des styles)', x_contre:'contre', x_face:'face aux', x_tous:'Tous terrains', x_sur:s=>`Sur ${s}`,
   x_vict:(v,n)=>`${v} victoire${v>1?'s':''} sur ${n}`, x_attendu:'attendu', x_comme:'comme attendu', x_faible:'échantillon faible',
   x_derniers:'Derniers matchs contre ce style', x_v:'V', x_d:'D',
-  x_pied:'Attendu : la chance de victoire d’avant-match, en moyenne, sur ces mêmes matchs. Battre des joueurs qu’on devait battre ne prouve rien ; c’est l’écart à l’attendu qui compte.',
+  x_pied:'Descriptif seulement : ces bilans ne changent pas le % de l’algo. Battre des joueurs qu’on devait battre ne prouve rien ; c’est l’écart à l’attendu qui compte.',
+  x_ex_t:'LE CHIFFRE QUI COMPTE : L’ÉCART À L’ATTENDU, PAS LE %', x_ex_txt:'Le % brut mélange la force des adversaires rencontrés. « Attendu » = la chance que l’algo donnait avant chaque match, en moyenne. L’écart dit si le joueur fait mieux ou moins bien que prévu.',
+  x_ex_ex:(n,p,a,e)=>`Ex. ${n} : ${p} de victoires pour ${a} attendus → ${e}`, x_ex_sur:(e,s)=>`, et ${e} sur ${s}`,
   sv_niv_titre:'Par niveau de fiabilité', sv_niv_sous:'Confiance annoncée → vainqueurs trouvés, et l’erreur en trop par rapport à l’erreur normale vu la confiance (log loss). Proche de 0 : l’annonce tient ; positif : plus d’erreurs que prévu. Les notes hautes vont souvent à des matchs serrés : c’est cette colonne qu’il faut comparer, pas le taux de vainqueurs.',
   sv_v2_titre:'Note v2 en essai (sans la calibration)', sv_v2_sous:d=>`Calculée à côté de la note affichée, jamais montrée sur les matchs. Jugée seulement sur les matchs pronostiqués depuis le ${dateLong(d)}, avec la même règle que la note en place.`, sv_v2_vide:'Pas encore de match jugé pour la note v2.',
   sv_niveau:'Niveau', sv_conf_trouves:'Confiance → trouvés', sv_exces:'Erreur en trop',
@@ -1046,7 +1048,9 @@ const T = {
   x_bouton:'Image for X (style duel)', x_contre:'vs', x_face:'against', x_tous:'All surfaces', x_sur:s=>`On ${s}`,
   x_vict:(v,n)=>`${v} win${v>1?'s':''} out of ${n}`, x_attendu:'expected', x_comme:'as expected', x_faible:'small sample',
   x_derniers:'Last matches against this style', x_v:'W', x_d:'L',
-  x_pied:'Expected: the pre-match win chance, on average, over these same matches. Beating players you were supposed to beat proves nothing; the gap to expected is what counts.',
+  x_pied:'Descriptive only: these records do not change the algo’s %. Beating players you were supposed to beat proves nothing; the gap to expected is what counts.',
+  x_ex_t:'WHAT MATTERS: THE GAP TO EXPECTED, NOT THE RAW %', x_ex_txt:'The raw % mixes in the strength of the opponents faced. “Expected” = the chance the algo gave before each match, on average. The gap shows whether a player does better or worse than predicted.',
+  x_ex_ex:(n,p,a,e)=>`E.g. ${n}: ${p} wins vs ${a} expected → ${e}`, x_ex_sur:(e,s)=>`, and ${e} on ${s}`,
   sv_niv_titre:'By reliability level', sv_niv_sous:'Announced confidence → winners called, and the error above the normal error for that confidence (log loss). Near 0: the forecast holds; positive: more errors than expected. High scores often go to close matches: compare this column, not the hit rate.',
   sv_v2_titre:'Score v2 on trial (without calibration)', sv_v2_sous:d=>`Computed next to the published score, never shown on matches. Judged only on matches forecast since ${dateLong(d)}, with the same rule as the current score.`, sv_v2_vide:'No match judged for score v2 yet.',
   sv_niveau:'Level', sv_conf_trouves:'Confidence → called', sv_exces:'Excess error',
@@ -1974,11 +1978,11 @@ function analyseComplete(m, court_){
       [0,1].forEach(i => { const sv = J[i].serv_indice, rt = J[1-i].ret_indice; if (sv == null || rt == null) return;
         const e = sv - rt; avantages.push(e);
         l.push(`🎾 ${N[i]} au service face au retour de ${N[1-i]} :`, `🔹 Service ${N[i]} : ${sv}/100`, `🔹 Retour ${N[1-i]} : ${rt}/100`,
-          `${e >= 0 ? '✅ Avantage ' + N[i] : '✅ Avantage ' + N[1-i]} : ${Math.abs(e)} points.`, ''); });
+          Math.abs(e) < 10 ? `⚖️ Duel équilibré : écart de ${Math.abs(e)} points.` : `✅ Avantage ${e >= 0 ? N[i] : N[1-i]} : ${Math.abs(e)} points.`, ''); });
       l.push('Ces indices sont des classements relatifs au circuit, pas des probabilités de victoire.');
       bloc(...l);
-      if (avantages.length === 2 && avantages[0] > 0 && avantages[1] < 0) retenir.push(`✅ ${H} a l'avantage dans les deux duels service / retour.`);
-      else if (avantages.length === 2 && avantages[0] < 0 && avantages[1] > 0) retenir.push(`✅ ${A} a l'avantage dans les deux duels service / retour.`);
+      if (avantages.length === 2 && avantages[0] >= 10 && avantages[1] <= -10) retenir.push(`✅ ${H} a l'avantage dans les deux duels service / retour.`);
+      else if (avantages.length === 2 && avantages[0] <= -10 && avantages[1] >= 10) retenir.push(`✅ ${A} a l'avantage dans les deux duels service / retour.`);
     }
     // statistiques prédites et projections
     const f = m.feuille_prevue;
@@ -2702,7 +2706,7 @@ function styleLibPluriel(code){
   return (lib[code]||{})[L] || styleLib(code);
 }
 async function imageX(m){
-  const W = 1080, H = 1350, c = document.createElement('canvas'); c.width = W; c.height = H;
+  const W = 1080; let H = 1350; const c = document.createElement('canvas'); c.width = W; c.height = H;
   const g = c.getContext('2d'), sd = m.styles_descriptifs, S_ = SURF[L][m.surface] || m.surface || '';
   try { await Promise.all(['700 80px "Barlow Condensed"','600 40px Barlow','400 26px Barlow'].map(f=>document.fonts.load(f))); } catch(e){}
   const C = {bg:'#0E0A24', panel:'#1B1342', line:'rgba(255,255,255,.12)', ink:'#F4F1FF', dim:'#ABA3D6', p1:'#2EE6FF', p2:'#FF4FAE', ball:'#D4FF3A', ok:'#45F0A0', ko:'#FF6B86'};
@@ -2710,6 +2714,22 @@ async function imageX(m){
   const rr = (x,y,w,h,r,fill,stroke) => { g.beginPath(); g.moveTo(x+r,y); g.arcTo(x+w,y,x+w,y+h,r); g.arcTo(x+w,y+h,x,y+h,r); g.arcTo(x,y+h,x,y,r); g.arcTo(x,y,x+w,y,r); g.closePath(); if (fill){ g.fillStyle=fill; g.fill(); } if (stroke){ g.strokeStyle=stroke; g.lineWidth=2; g.stroke(); } };
   const txt = (s,x,y,font,col,align) => { g.font=font; g.fillStyle=col; g.textAlign=align||'left'; g.fillText(s,x,y); return g.measureText(s).width; };
   const pcX = v => `${Math.round(v)} %`;
+  // 12/11/2026 (paquet 239) — encadré « le chiffre qui compte : l'écart à l'attendu, pas le % » ; la hauteur suit le texte (1350 au moins)
+  const mots = (s_, w_, font) => { g.font = font; const L_ = []; let l_ = ''; for (const mo of s_.split(' ')){ const e_ = l_ ? l_ + ' ' + mo : mo; if (g.measureText(e_).width > w_){ L_.push(l_); l_ = mo; } else l_ = e_; } if (l_) L_.push(l_); return L_; };
+  const sgn = e_ => `${e_>0?'+':'−'}${Math.round(Math.abs(e_))} pts`;
+  const j0 = sd.joueurs[0], b0 = j0.global, s0 = j0.surface;
+  let exemple = '';
+  if (b0 && b0.n){
+    exemple = t('x_ex_ex', court(m.home), pcX(b0.pct), pcX(b0.attendu_pct), Math.abs(b0.ecart_pts||0) >= 1 ? sgn(b0.ecart_pts) : t('x_comme'));
+    if (s0 && s0.n && Math.abs(s0.ecart_pts||0) >= 1) exemple += t('x_ex_sur', sgn(s0.ecart_pts), S_);
+  }
+  const lBan = mots(t('x_ex_txt'), W-128-76, F(400,24)), lEx = exemple ? mots(exemple, W-128-76, F(400,22)) : [];
+  const yB = 198, base0 = yB + 82, baseTxt = base0 + (lBan.length-1)*31;
+  const baseEx = baseTxt + 36, baseFin = lEx.length ? baseEx + (lEx.length-1)*29 : baseTxt;
+  const hBan = baseFin - yB + 24, HB = 418;
+  const y1 = yB + hBan + 18, y2 = y1 + HB + 20, yF = y2 + HB + 16;
+  const lPied = mots(t('x_pied'), W-128, F(400,22));
+  H = Math.max(1350, yF + 34 + (lPied.length-1)*29 + 30); c.height = H;
   g.fillStyle = C.bg; g.fillRect(0,0,W,H);
   const grd = g.createRadialGradient(W/2,-120,0,W/2,-120,900); grd.addColorStop(0,'#3A1F8F'); grd.addColorStop(.7,'rgba(58,31,143,0)');
   g.fillStyle = grd; g.fillRect(0,0,W,H);
@@ -2718,34 +2738,39 @@ async function imageX(m){
   txt(d.toLocaleDateString(loc(),{day:'2-digit',month:'2-digit'}), W-64, 92, F(400,28), C.dim, 'right');
   let x = 64; const yT = 172;
   x += txt(court(m.home), x, yT, F(700,74,'c'), C.ink); x += txt(` ${t('x_contre')} `, x, yT, F(400,44), C.dim); txt(court(m.away), x, yT, F(700,74,'c'), C.ink);
+  // encadré
+  rr(64,yB,W-128,hBan,18,'rgba(212,255,58,.07)'); g.fillStyle = C.ball; g.fillRect(64,yB+14,8,hBan-28);
+  txt(t('x_ex_t'), 96, yB+44, F(600,26), C.ball);
+  lBan.forEach((l_,i_) => txt(l_, 96, base0+i_*31, F(400,24), '#E6E2FF'));
+  lEx.forEach((l_,i_) => txt(l_, 96, baseEx+i_*29, F(400,22), C.dim));
   const bloc = (j, nom, col, y0) => {
-    const h = 480; rr(64,y0,W-128,h,28,C.panel,C.line); g.fillStyle = col; g.fillRect(64,y0+24,8,h-48);
-    txt(nom, 104, y0+66, F(600,42), col);
-    let xx = 104; xx += txt(`${styleLib(j.style).toLocaleLowerCase(loc())}, ${t('x_face')} `, xx, y0+108, F(400,28), C.dim);
-    txt(styleLibPluriel(j.style_adverse), xx, y0+108, F(600,28), C.ink);
+    const h = HB; rr(64,y0,W-128,h,28,C.panel,C.line); g.fillStyle = col; g.fillRect(64,y0+24,8,h-48);
+    txt(nom, 104, y0+62, F(600,42), col);
+    let xx = 104; xx += txt(`${styleLib(j.style).toLocaleLowerCase(loc())}, ${t('x_face')} `, xx, y0+102, F(400,28), C.dim);
+    txt(styleLibPluriel(j.style_adverse), xx, y0+102, F(600,28), C.ink);
     [[j.global, t('x_tous')], [j.surface, t('x_sur', S_)]].forEach(([b, lib], k) => {
-      const tx = 104 + k*444, ty = y0+138, tw = 420, th = 250;
+      const tx = 104 + k*444, ty = y0+120, tw = 420, th = 226;
       rr(tx,ty,tw,th,20,null,C.line);
-      if (!b || !b.n){ txt(lib, tx+24, ty+44, F(400,24), C.dim); txt('—', tx+24, ty+130, F(700,84,'c'), C.dim); return; }
-      txt(lib, tx+24, ty+44, F(400,24), C.dim);
-      txt(pcX(b.pct), tx+24, ty+130, F(700,96,'c'), C.ink);
-      txt(t('x_vict', b.victoires, b.n), tx+24, ty+170, F(400,24), C.dim);
+      if (!b || !b.n){ txt(lib, tx+24, ty+40, F(400,24), C.dim); txt('—', tx+24, ty+118, F(700,84,'c'), C.dim); return; }
+      txt(lib, tx+24, ty+40, F(400,24), C.dim);
+      txt(pcX(b.pct), tx+24, ty+118, F(700,88,'c'), C.ink);
+      txt(t('x_vict', b.victoires, b.n), tx+24, ty+152, F(400,24), C.dim);
       const ec = b.ecart_pts || 0, cl = ec >= 5 ? C.ok : ec <= -5 ? C.ko : C.ink;
-      let x2 = tx+24; x2 += txt(`${t('x_attendu')} ${pcX(b.attendu_pct)} · `, x2, ty+206, F(400,26), C.ink);
-      txt(Math.abs(ec) >= 1 ? `${ec>0?'+':'−'}${Math.round(Math.abs(ec))} pts` : t('x_comme'), x2, ty+206, F(600,26), cl);
-      if (b.n < 30){ g.font = F(600,20); const w_ = g.measureText(t('x_faible')).width + 24; rr(tx+24, ty+218, w_, 26, 13, C.ball); txt(t('x_faible'), tx+36, ty+238, F(600,20), '#1a1300'); }
+      let x2 = tx+24; x2 += txt(`${t('x_attendu')} ${pcX(b.attendu_pct)}`, x2, ty+186, F(400,26), C.ink) + 26;
+      const tec = Math.abs(ec) >= 1 ? sgn(ec) : t('x_comme'); g.font = F(600,26); const wec = g.measureText(tec).width;
+      rr(x2-12, ty+186-26, wec+24, 36, 18, null, cl);                       // pastille autour de l'écart : c'est lui qui compte
+      txt(tec, x2, ty+186, F(600,26), cl);
+      if (b.n < 30){ g.font = F(600,20); const w_ = g.measureText(t('x_faible')).width + 24; rr(tx+24, ty+196, w_, 24, 12, C.ball); txt(t('x_faible'), tx+36, ty+214, F(600,19), '#1a1300'); }
     });
-    let xd = 104 + txt(t('x_derniers'), 104, y0+436, F(400,25), C.dim) + 16;
+    let xd = 104 + txt(t('x_derniers'), 104, y0+h-38, F(400,25), C.dim) + 16;
     ((j.global||{}).derniers||[]).slice(0,5).forEach(r_ => {
-      g.beginPath(); g.arc(xd+21, y0+427, 21, 0, Math.PI*2); g.fillStyle = r_.victoire ? 'rgba(69,240,160,.18)' : 'rgba(255,107,134,.18)'; g.fill();
-      txt(r_.victoire ? t('x_v') : t('x_d'), xd+21, y0+435, F(700,21), r_.victoire ? C.ok : C.ko, 'center'); xd += 52; });
+      g.beginPath(); g.arc(xd+21, y0+h-47, 21, 0, Math.PI*2); g.fillStyle = r_.victoire ? 'rgba(69,240,160,.18)' : 'rgba(255,107,134,.18)'; g.fill();
+      txt(r_.victoire ? t('x_v') : t('x_d'), xd+21, y0+h-39, F(700,21), r_.victoire ? C.ok : C.ko, 'center'); xd += 52; });
   };
-  bloc(sd.joueurs[0], m.home, C.p1, 222);
-  bloc(sd.joueurs[1], m.away, C.p2, 728);
-  g.fillStyle = C.line; g.fillRect(64, 1228, W-128, 1);
-  const pied = t('x_pied'); g.font = F(400,22); let ligne = '', yy = 1262;
-  for (const mot of pied.split(' ')){ const essai = ligne ? ligne + ' ' + mot : mot; if (g.measureText(essai).width > W-128){ txt(ligne, 64, yy, F(400,22), C.dim); ligne = mot; yy += 29; } else ligne = essai; }
-  if (ligne) txt(ligne, 64, yy, F(400,22), C.dim);
+  bloc(sd.joueurs[0], m.home, C.p1, y1);
+  bloc(sd.joueurs[1], m.away, C.p2, y2);
+  g.fillStyle = C.line; g.fillRect(64, yF, W-128, 1);
+  lPied.forEach((l_,i_) => txt(l_, 64, yF+34+i_*29, F(400,22), C.dim));
   const blob = await new Promise(r=>c.toBlob(r,'image/png'));
   const nomF = `duel-${m.uid}.png`, file = new File([blob], nomF, {type:'image/png'});
   if (navigator.canShare && navigator.canShare({files:[file]})) { try { await navigator.share({files:[file]}); return; } catch(e){ if (e && e.name === 'AbortError') return; } }
