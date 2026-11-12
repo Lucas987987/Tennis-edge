@@ -76,6 +76,21 @@ def fichiers(racine, annee_min=2018):
     return sorted(out)
 
 
+def decaler_par_tour(M):
+    """12/11/2026 (paquet 247) — date de chaque match décalée d'un jour par tour (Q1 = jour du début … finale = jour
+    10), bornée à la fin du tournoi ; ordre (date, tour, num) gardé. Pour les rejeux qui mettent l'Elo à jour au
+    changement de date : la date de l'archive est celle du début du tournoi, l'Elo y resterait figé tout le tournoi
+    (un joueur ne joue qu'un match par tour). Modifie et renvoie la liste."""
+    import datetime as _dt
+    for m in M:
+        if m.get('date') and m.get('tour') is not None:
+            d = m['date'] + _dt.timedelta(days=int(m.get('tour') or 0))
+            fin = m.get('fin')
+            m['date'] = min(d, fin) if fin and fin >= m['date'] else d
+    M.sort(key=lambda m: (m['date'], m.get('tour', 0), m.get('num', 0)))
+    return M
+
+
 def charger(racine, annee_min=2018):
     """Liste de matchs : dict(date, fin, circuit, surface, bo, gagnant, perdant, noms, stats, sets, complet)."""
     out = []

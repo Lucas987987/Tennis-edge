@@ -1054,6 +1054,12 @@
    "statut": "production",
    "prive": true,
    "paquet": 246
+  },
+  {
+   "date": "2026-11-12",
+   "quoi": "Les études d'avant l'audit rejouées avec l'Elo du site (paquet 247) — le % de victoire ne change pas. 18 études avaient été faites avec un Elo sans réglage et, pour la plupart, figé pendant tout le tournoi. Treize sont relancées telles quelles (mêmes variables, même règle, mêmes périodes), avec l'Elo réglé comme la production et mis à jour à chaque tour ; chacune garde sa règle. Résultat : aucun verdict ne devient positif ; deux deviennent négatifs (parcours dans le tournoi et favori / outsider, en ATP), tous deux déjà hors de l'algo depuis le paquet 233. Ce qui reste dans l'algo et vient de ces études tient avec l'Elo du site : les signaux combinés sur les trois circuits, et favori / outsider en WTA (gain 0,0011). L'effet des serveuses en WTA (suivi à part) tient aussi : +2,1 et +2,5 points sur les deux périodes. Une piste s'approche du seuil sans le passer : l'évolution du classement sur trois mois (0,0007 à 0,0009), à surveiller. Le suivi du % en direct tournait encore sur l'Elo sans réglage : il est corrigé. Quatre études ne sont pas rejouées (recherche sans effet sur l'algo, ou Elo déjà à jour), raison écrite dans le rapport.",
+   "statut": "production",
+   "paquet": 247
   }
  ]
 }
