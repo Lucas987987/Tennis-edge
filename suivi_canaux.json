@@ -1,47 +1,47 @@
 {
  "schema_version": 1,
- "genere_le": "2026-11-11T07:03:07Z",
+ "genere_le": "2026-11-12T07:46:23Z",
  "canaux": {
   "MISER": {
    "libelle": "🎯 MISER — steam, EV ≥ seuil vs Pinnacle juste (vainqueur du match)",
    "source": "miser_signal_log.jsonl (messages envoyés) + ajouts de suivi_direct",
    "regle": "première alerte de chaque match, au book et au prix du message ; relances non recomptées",
    "debut": "2026-10-22",
-   "n_alertes": 36,
-   "n_matchs": 36,
+   "n_alertes": 37,
+   "n_matchs": 37,
    "n_relances": 0,
-   "n_denoues": 30,
+   "n_denoues": 31,
    "bilan": {
-    "n": 30,
-    "gains": 12,
-    "taux": 40.0,
-    "seuil": 42.2,
-    "ecart": -2.2,
+    "n": 31,
+    "gains": 13,
+    "taux": 41.9,
+    "seuil": 43.3,
+    "ecart": -1.3,
     "ic95": [
-     24.6,
-     57.7
+     26.4,
+     59.2
     ],
-    "roi": -0.3,
-    "pnl": -0.1,
-    "cote_moyenne": 2.74,
-    "clv_moyen": 7.8,
-    "clv_pin_moyen": 7.8,
+    "roi": 0.8,
+    "pnl": 0.2,
+    "cote_moyenne": 2.69,
+    "clv_moyen": 7.7,
+    "clv_pin_moyen": 7.7,
     "clv_pin_ic95": [
      5.0,
-     10.5
+     10.4
     ],
     "clv_pin_p": 0.0,
-    "clv_n": 36,
-    "clv_positif": 86.1,
-    "lead_moyen_h": 8.3,
-    "periode": "2026-10-22 -> 2026-11-10",
+    "clv_n": 37,
+    "clv_positif": 86.5,
+    "lead_moyen_h": 8.2,
+    "periode": "2026-10-22 -> 2026-11-11",
     "verdict": "ne tranche pas",
     "clv_mediane": 6.7,
-    "n_commencees": 36,
+    "n_commencees": 37,
     "n_sans_resultat": 6,
-    "sans_resultat_pct": 16.7,
+    "sans_resultat_pct": 16.2,
     "verrouillable": false,
-    "statut": "en attente de résultats (16,7 % sans résultat)"
+    "statut": "en attente de résultats (16,2 % sans résultat)"
    },
    "paris": {
     "2026-10-22_valerio_aboian_matias_soto": {
@@ -330,6 +330,14 @@
      "pin_close": 1.284,
      "pin_close_adv": 3.7,
      "clv_pin": 5.756,
+     "source_resultat": "feuille de match (TennisApi)"
+    },
+    "2026-11-11_liam_draxl_pyotr_nesterov": {
+     "gagne": 1,
+     "pnl": 0.333,
+     "pin_close": 1.241,
+     "pin_close_adv": 4.21,
+     "clv_pin": 5.395,
      "source_resultat": "feuille de match (TennisApi)"
     }
    }
