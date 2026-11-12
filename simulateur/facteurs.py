@@ -1461,14 +1461,14 @@ def main(argv):
                                            'desaccord_wta',
                                            'qualifies', 'transition', 'classement', 'classement_relatif')}
         choix['combinaison_feuilles'] = ST.appliquer(etat_st, 'combinaison_feuilles', avant['combinaison_feuilles'],
-                                                     {k: ep.get(k) for k in ('adopte', 'poids', 'raison', 'poids_simulation_pct', 'll')},
+                                                     EP.pour_stabilite(ep, ('adopte', 'poids', 'raison', 'poids_simulation_pct', 'll')),
                                                      ('poids', 'poids_simulation_pct'))
         choix['poids_challenger'] = ST.appliquer(etat_st, 'poids_challenger', avant['poids_challenger'],
-                                                 {k: (ep.get('poids_challenger') or {}).get(k) for k in ('adopte', 'poids', 'raison', 'll')},
+                                                 EP.pour_stabilite(ep.get('poids_challenger'), ('adopte', 'poids', 'raison', 'll')),
                                                  ('poids',))
         for c_ in ('ATP', 'WTA'):                          # 29/10/2026 : poids propres, même règle que les Challenger
             choix['poids_' + c_] = ST.appliquer(etat_st, 'poids_' + c_, avant['poids_' + c_],
-                                                {k: (ep.get('poids_' + c_) or {}).get(k) for k in ('adopte', 'poids', 'raison', 'll')},
+                                                EP.pour_stabilite(ep.get('poids_' + c_), ('adopte', 'poids', 'raison', 'll')),
                                                 ('poids',))
         import circuits_regles as CR
         choix['nouveaux_venus'] = CR.appliquer(etat_st, 'nouveaux_venus', avant['nouveaux_venus'],
@@ -1487,7 +1487,7 @@ def main(argv):
               f"{choix['modele_arbres']['raison']}", flush=True)
         dw_ = ep.get('desaccord_wta') or {}                     # 29/10/2026 : désaccords Elo / simulation en WTA
         choix['desaccord_wta'] = ST.appliquer(etat_st, 'desaccord_wta', avant['desaccord_wta'],
-                                              {k: dw_.get(k) for k in ('adopte', 'poids', 'raison', 'll')}, ('poids',))
+                                              EP.pour_stabilite(dw_, ('adopte', 'poids', 'raison', 'll')), ('poids',))
         print(f"Désaccords Elo / simulation en WTA : {'ADOPTÉ' if choix['desaccord_wta']['adopte'] else 'non adopté'} — "
               f"{choix['desaccord_wta']['raison']}", flush=True)
         for cle_c, lib_c in (('modele_arbres_activite', 'Arbres + activité récente'), ('modele_arbres_tour', 'Arbres + tour du tableau'),
@@ -1525,6 +1525,8 @@ def main(argv):
     except Exception as e:  # l'étude des facteurs reste valable sans cette partie
         print(f"::warning::Entraînement progressif non fait : {type(e).__name__}: {e}")
     doc['duree_s'] = round(time.time() - t0)
+    import stabilite as ST_
+    doc = ST_.sans_paires(doc)                         # 12/11/2026 (paquet 242) : aussi si le rejeu a échoué en route
     with open(SORTIE, 'w', encoding='utf-8') as f:
         json.dump(doc, f, ensure_ascii=False, indent=1)
     print(doc['verdict'])
