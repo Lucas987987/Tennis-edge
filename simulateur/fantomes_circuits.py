@@ -29,6 +29,17 @@ RÈGLE FIXÉE LE 04/11/2026, AVANT TOUT RÉSULTAT DE CETTE PROCÉDURE, pour chaq
   (garde-fou contre une bonne semaine de hasard : 4 signaux × 3 circuits = 12 essais chaque semaine) ;
   ADOPTÉ sur ce circuit après deux semaines gagnantes de suite (stabilite.py, série « circuit|signal|circuit ») ;
   RETIRÉ après deux semaines de suite sans gain (même série). Un signal adopté ne touche QUE son circuit.
+
+12/11/2026 (audit, paquet 234) — CETTE RÈGLE EST REMPLACÉE PAR LA RÈGLE CUMULÉE, pour tous les signaux.
+etude_regle_hebdomadaire.py a rejoué les deux règles semaine par semaine sur 2023 → juin 2026, avec un signal connu bon
+(retour d'absence) et un signal au hasard de même taille : part des semaines passées dans le mauvais état, 38 % pour
+« deux semaines de suite », 26 % pour la règle cumulée (en Challenger, le bon signal en place passait 78 % des semaines
+HORS de l'algo avec l'ancienne règle, 1 % avec la nouvelle). La règle, pour chaque couple (signal, circuit) :
+  EN PLACE → RETIRÉ dès que, depuis son adoption, sur au moins 300 matchs concernés, gain + 2 erreurs types < 0 ;
+  EN ATTENTE → ADOPTÉ dès que, depuis le début du suivi (ou son dernier retrait), sur au moins 300 matchs concernés,
+  gain − 2 erreurs types > 0 ; les compteurs repartent de zéro à chaque changement d'état ; entre les deux, rien ne
+  change. Le gain est le gain PROPRE du signal (log loss sans lui − avec lui, les autres signaux en place).
+  Départ des compteurs : 12/11/2026 (DEBUT_CUMUL). Un signal écarté par etude_signaux_reappris.py reste écarté.
 """
 import datetime as dt
 import glob
@@ -56,7 +67,8 @@ COMBINES = os.path.join('simulateur', 'rapport_signaux_combines.json')
 # son seuil de 0,001 est 17 fois sous le hasard d'une semaine. Pour ces signaux, jugés sur leur EFFET PROPRE :
 #   RETIRÉ si, depuis l'adoption, sur au moins 300 matchs concernés, le gain est négatif d'au moins 2 erreurs types ;
 #   sinon il reste en place. Une semaine isolée ne décide de rien.
-REGLE_CUMULEE = ('format_match', 'grand_chelem', 'qualifs_grand_chelem')     # 11/11/2026 (paquet 231) : + pente Grand Chelem (décision de Lucas)
+REGLE_CUMULEE = SIGNAUX                                 # 12/11/2026 (paquet 234) : tous les signaux
+DEBUT_CUMUL = '2026-11-12'                              # départ des compteurs de la règle cumulée     # 11/11/2026 (paquet 231) : + pente Grand Chelem (décision de Lucas)
 CUMUL_MIN_MATCHS, CUMUL_ERREURS_TYPES = 300, 2.0
 FORMAT = os.path.join('simulateur', 'format_match.json')
 GRAND_CHELEM = os.path.join('simulateur', 'grand_chelem.json')
@@ -151,6 +163,13 @@ def retrait_cumule(v):
     return bool(n >= CUMUL_MIN_MATCHS and g is not None and et is not None and g + CUMUL_ERREURS_TYPES * et < 0)
 
 
+def entree_cumulee(v):
+    """12/11/2026 (paquet 234) — entrée d'un signal en attente : au moins 300 matchs concernés depuis le début de son
+    suivi (ou son dernier retrait) et gain propre positif de plus de 2 erreurs types."""
+    n, g, et = v.get('matchs_total') or 0, v.get('gain_total'), v.get('erreur_type_total')
+    return bool(n >= CUMUL_MIN_MATCHS and g is not None and et is not None and g - CUMUL_ERREURS_TYPES * et > 0)
+
+
 DOSSIER_BILANS = os.path.join('simulateur', 'journal_pronostics', 'apres_match')
 
 
@@ -185,18 +204,20 @@ def semaine_jugee(aujourdhui):
     return lundi - dt.timedelta(days=7), lundi
 
 
-def verdicts(bilans, aujourdhui):
+def verdicts(bilans, aujourdhui, depuis=None):
+    """depuis : {« signal|circuit »: date ISO} — début du compteur cumulé de ce couple (DEBUT_CUMUL par défaut)."""
     debut, fin = semaine_jugee(aujourdhui)
     out = {}
     for sgn in SIGNAUX:
         for c in CIRCUITS:
             tout, sem = [], []
+            depuis_ = (depuis or {}).get(f'{sgn}|{c}') or DEBUT_CUMUL
             for b in bilans:
                 if b.get('circuit') != c:
                     continue
                 pr = paires(b, sgn)
                 jour = str(b.get('debut') or '')[:10]
-                if pr is None or not jour or jour >= fin.isoformat():
+                if pr is None or not jour or jour >= fin.isoformat() or jour < depuis_:
                     continue
                 tout.append(pr)
                 if jour >= debut.isoformat():
@@ -209,11 +230,18 @@ def verdicts(bilans, aujourdhui):
                 d_ = [a - b for a, b in tout]
                 m_ = sum(d_) / len(d_)
                 et = round((sum((x - m_) ** 2 for x in d_) / len(d_)) ** .5 / len(d_) ** .5, 5)
-            out[f'{sgn}|{c}'] = {'adopte': ok, 'matchs_semaine': len(sem), 'gain_semaine': gs,
+            out[f'{sgn}|{c}'] = {'adopte': ok, 'matchs_semaine': len(sem), 'gain_semaine': gs, 'depuis': depuis_,
                                  'matchs_total': len(tout), 'gain_total': gt, 'erreur_type_total': et,
                                  'raison': (f"{c} · semaine du {debut.isoformat()} : {len(sem)} matchs, gain {gs} ; "
                                             f"depuis le début : {len(tout)} matchs, gain {gt}")}
     return out
+
+
+def _retire(d):
+    """Retrait qui compte : celui de la règle cumulée (il porte la date « depuis »). Un retrait prononcé par l'ancienne
+    règle « deux semaines de suite » (sans date) est annulé le 12/11/2026 (paquet 234) : l'étude montre qu'elle sortait
+    un bon signal par hasard ; le signal revient à son adoption directe et la règle cumulée le juge depuis DEBUT_CUMUL."""
+    return bool((d or {}).get('retire') and (d or {}).get('depuis'))
 
 
 def lire(racine):
@@ -232,7 +260,7 @@ def lire(racine):
             if (sgn, c) not in ecartes:
                 out.setdefault(sgn, []).append(c)
     for sgn, c in sorted(directs(racine)):                 # adoption directe, sauf retrait constaté
-        if not (dec.get(f'{sgn}|{c}') or {}).get('retire') and c not in out.get(sgn, []):
+        if not _retire(dec.get(f'{sgn}|{c}')) and c not in out.get(sgn, []):
             out.setdefault(sgn, []).append(c)
     return out
 
@@ -251,58 +279,44 @@ def main(argv):
     args = [a for a in argv[1:] if not a.startswith('--')]
     racine = args[0] if args else os.path.join(ICI, '..')
     aujourdhui = dt.date.fromisoformat(os.environ['FANTOMES_JOUR']) if os.environ.get('FANTOMES_JOUR') else dt.date.today()
-    import stabilite as ST
     chemin = os.path.join(racine, SORTIE)
     try:
         ancien = json.load(open(chemin, encoding='utf-8')).get('decisions') or {}
     except (OSError, ValueError):
         ancien = {}
-    V = verdicts(lire_bilans(racine), aujourdhui)
-    etat_path = os.path.join(racine, 'simulateur', 'stabilite.json')
-    etat = ST.lire(etat_path)
     D = directs(racine)
-    lundi_juge = semaine_jugee(aujourdhui)[0].isocalendar()
-    sem = f'{lundi_juge[0]}-W{lundi_juge[1]:02d}'           # la semaine JUGÉE (rejouable, une décision par semaine)
-    dec = {}
     ecartes = reappris(racine)[1]
+    fin = semaine_jugee(aujourdhui)[1].isoformat()
+    V = verdicts(lire_bilans(racine), aujourdhui, {cle: (d or {}).get('depuis') for cle, d in ancien.items()})
+    dec = {}
     for cle, v in V.items():
         sgn, c = cle.split('|')
+        a = ancien.get(cle) or {}
         if (sgn, c) in ecartes:                             # 12/11/2026 (paquet 233) : ni appliqué, ni réadoptable
             dec[cle] = {'adopte': False, 'ecarte': True,
                         'raison': "écarté par l'étude des signaux réappris sur l'Elo de production (rapport_signaux_reappris.json)"}
-            etat.pop('circuit|' + cle, None)
             continue
-        if (sgn, c) in D and not (ancien.get(cle) or {}).get('retire'):
-            k_st = 'circuit|' + cle
-            if k_st not in etat or not (ancien.get(cle) or {}).get('direct'):
-                etat[k_st] = {'adopte': True, 'semaine': None, 'serie_avant': 0, 'serie': 0}
-            if sgn in REGLE_CUMULEE:                        # 11/11/2026 : bilan cumulé depuis l'adoption, effet propre
-                if retrait_cumule(v):
-                    etat[k_st] = dict(etat[k_st], adopte=False)
-                    dec[cle] = dict(ancien.get(cle) or {}, adopte=False, direct=True, retire=True,
-                                    raison=v['raison'] + f" — erreur type {v.get('erreur_type_total')} : négatif de "
-                                                         f"{CUMUL_ERREURS_TYPES:g} erreurs types sur ≥ {CUMUL_MIN_MATCHS} matchs, retiré")
-                else:
-                    dec[cle] = dict(ancien.get(cle) or {}, adopte=True, direct=True,
-                                    raison=v['raison'] + f" — règle cumulée (erreur type {v.get('erreur_type_total')}) : en place")
-                continue
-            if v['matchs_semaine'] < MIN_MATCHS:
-                dec[cle] = dict(ancien.get(cle) or {}, adopte=True, direct=True, raison=v['raison'] + ' — trop peu de matchs cette semaine : en place')
-                continue
-            perte = -(v['gain_semaine'] or 0.0)
-            v_ = dict(v, adopte=perte < MARGE, ll={'avec': 1.0 + perte, 'sans': 1.0})
-            d_ = ST.appliquer(etat, k_st, {'adopte': True}, v_, semaine=sem)
-            d_['direct'] = True
-            if not d_['adopte']:
-                d_['retire'] = True
-            dec[cle] = d_
+        # 12/11/2026 (paquet 234) — RÈGLE CUMULÉE pour tous les signaux (etude_regle_hebdomadaire.py)
+        direct = (sgn, c) in D and not _retire(a)
+        en_place = direct or bool(a.get('adopte'))
+        bilan = f"{v['raison']} — depuis le {v['depuis']}, erreur type {v.get('erreur_type_total')}"
+        garde = dict({'depuis': a['depuis']} if a.get('depuis') else {}, **({'retire': True} if _retire(a) else {}))
+        if en_place and retrait_cumule(v):
+            dec[cle] = {'adopte': False, 'retire': True, 'depuis': fin, 'stabilite': 'retiré',
+                        'raison': bilan + f" : négatif de {CUMUL_ERREURS_TYPES:g} erreurs types sur ≥ {CUMUL_MIN_MATCHS} matchs, retiré"}
+        elif en_place:
+            dec[cle] = dict(garde, adopte=True, direct=direct, stabilite='en place', raison=bilan + ' : en place')
+        elif entree_cumulee(v):
+            dec[cle] = dict(garde, adopte=True, depuis=fin, stabilite='adopté',
+                            raison=bilan + f" : positif de {CUMUL_ERREURS_TYPES:g} erreurs types sur ≥ {CUMUL_MIN_MATCHS} matchs, adopté")
         else:
-            dec[cle] = ST.appliquer(etat, 'circuit|' + cle, ancien.get(cle), v)
-    ST.ecrire(etat, etat_path)
+            dec[cle] = dict(garde, adopte=False, stabilite='en attente', raison=bilan + ' : en attente')
     doc = {'genere_le': dt.datetime.now(dt.timezone.utc).isoformat(timespec='seconds'),
-           'regle': ("par signal et par circuit : semaine gagnante si ≥ 30 matchs, gain ≥ 0,001 sur la semaine et ≥ 0,001 "
-                     "depuis le début ; adopté après deux semaines gagnantes de suite, retiré après deux sans gain ; "
-                     "un signal adopté ne touche que son circuit"),
+           'regle': (f"par signal et par circuit, règle cumulée : en place → retiré si, depuis son adoption, sur au moins "
+                     f"{CUMUL_MIN_MATCHS} matchs concernés, le gain propre est négatif de plus de {CUMUL_ERREURS_TYPES:g} erreurs "
+                     f"types ; en attente → adopté si, sur au moins {CUMUL_MIN_MATCHS} matchs, il est positif de plus de "
+                     f"{CUMUL_ERREURS_TYPES:g} erreurs types ; compteurs remis à zéro à chaque changement ; un signal adopté ne "
+                     "touche que son circuit"),
            'semaine': V, 'decisions': dec}
     with open(chemin, 'w', encoding='utf-8') as f:
         json.dump(doc, f, ensure_ascii=False, indent=1)

@@ -1,0 +1,207 @@
+{
+ "genere_le": "2026-11-12T06:08:12+00:00",
+ "regle": "la règle en place (deux semaines de suite, ≥ 30 matchs, seuil 0,001) et la règle cumulée (≥ 300 matchs, 2 erreurs types, compteurs remis à zéro à chaque changement d'état) rejouées semaine par semaine sur 2023 → juin 2026, avec le retour d'absence (signal bon) et un signal au hasard de même taille ; erreur = part des semaines passées dans le mauvais état ; est gardée la règle dont l'erreur est la plus basse",
+ "tirages": 300,
+ "circuits": {
+  "ATP": {
+   "semaines": 105,
+   "matchs_concernes": 757,
+   "matchs_par_semaine": 7.2,
+   "semaines_d_au_moins_30_matchs": 8,
+   "gain_propre_du_signal_bon": 0.0226,
+   "en_place": {
+    "depart_en_place": {
+     "signal_bon": {
+      "histoire_reelle_part_hors_algo": 0.0,
+      "part_hors_algo": 0.032,
+      "hors_algo_a_la_fin_pct": 7.3,
+      "change_d_etat_au_moins_une_fois_pct": 7.3
+     },
+     "signal_au_hasard": {
+      "part_dans_l_algo": 0.259,
+      "dans_l_algo_a_la_fin_pct": 4.7,
+      "change_d_etat_au_moins_une_fois_pct": 95.3
+     }
+    },
+    "depart_en_attente": {
+     "signal_bon": {
+      "histoire_reelle_part_hors_algo": 0.971,
+      "part_hors_algo": 0.99,
+      "hors_algo_a_la_fin_pct": 98.7,
+      "change_d_etat_au_moins_une_fois_pct": 37.3
+     },
+     "signal_au_hasard": {
+      "part_dans_l_algo": 0.001,
+      "dans_l_algo_a_la_fin_pct": 0.0,
+      "change_d_etat_au_moins_une_fois_pct": 4.0
+     }
+    },
+    "erreur": 0.3205
+   },
+   "cumulee": {
+    "depart_en_place": {
+     "signal_bon": {
+      "histoire_reelle_part_hors_algo": 0.0,
+      "part_hors_algo": 0.0,
+      "hors_algo_a_la_fin_pct": 0.0,
+      "change_d_etat_au_moins_une_fois_pct": 0.0
+     },
+     "signal_au_hasard": {
+      "part_dans_l_algo": 0.656,
+      "dans_l_algo_a_la_fin_pct": 34.7,
+      "change_d_etat_au_moins_une_fois_pct": 65.3
+     }
+    },
+    "depart_en_attente": {
+     "signal_bon": {
+      "histoire_reelle_part_hors_algo": 0.314,
+      "part_hors_algo": 0.441,
+      "hors_algo_a_la_fin_pct": 1.0,
+      "change_d_etat_au_moins_une_fois_pct": 99.0
+     },
+     "signal_au_hasard": {
+      "part_dans_l_algo": 0.0,
+      "dans_l_algo_a_la_fin_pct": 0.0,
+      "change_d_etat_au_moins_une_fois_pct": 0.0
+     }
+    },
+    "erreur": 0.2742
+   }
+  },
+  "WTA": {
+   "semaines": 106,
+   "matchs_concernes": 808,
+   "matchs_par_semaine": 7.6,
+   "semaines_d_au_moins_30_matchs": 6,
+   "gain_propre_du_signal_bon": 0.01789,
+   "en_place": {
+    "depart_en_place": {
+     "signal_bon": {
+      "histoire_reelle_part_hors_algo": 0.0,
+      "part_hors_algo": 0.217,
+      "hors_algo_a_la_fin_pct": 43.3,
+      "change_d_etat_au_moins_une_fois_pct": 43.3
+     },
+     "signal_au_hasard": {
+      "part_dans_l_algo": 0.465,
+      "dans_l_algo_a_la_fin_pct": 17.3,
+      "change_d_etat_au_moins_une_fois_pct": 82.7
+     }
+    },
+    "depart_en_attente": {
+     "signal_bon": {
+      "histoire_reelle_part_hors_algo": 0.981,
+      "part_hors_algo": 0.998,
+      "hors_algo_a_la_fin_pct": 100.0,
+      "change_d_etat_au_moins_une_fois_pct": 10.3
+     },
+     "signal_au_hasard": {
+      "part_dans_l_algo": 0.0,
+      "dans_l_algo_a_la_fin_pct": 0.0,
+      "change_d_etat_au_moins_une_fois_pct": 2.0
+     }
+    },
+    "erreur": 0.42
+   },
+   "cumulee": {
+    "depart_en_place": {
+     "signal_bon": {
+      "histoire_reelle_part_hors_algo": 0.0,
+      "part_hors_algo": 0.0,
+      "hors_algo_a_la_fin_pct": 0.0,
+      "change_d_etat_au_moins_une_fois_pct": 0.0
+     },
+     "signal_au_hasard": {
+      "part_dans_l_algo": 0.701,
+      "dans_l_algo_a_la_fin_pct": 43.3,
+      "change_d_etat_au_moins_une_fois_pct": 56.7
+     }
+    },
+    "depart_en_attente": {
+     "signal_bon": {
+      "histoire_reelle_part_hors_algo": 0.311,
+      "part_hors_algo": 0.414,
+      "hors_algo_a_la_fin_pct": 0.0,
+      "change_d_etat_au_moins_une_fois_pct": 100.0
+     },
+     "signal_au_hasard": {
+      "part_dans_l_algo": 0.002,
+      "dans_l_algo_a_la_fin_pct": 0.3,
+      "change_d_etat_au_moins_une_fois_pct": 0.3
+     }
+    },
+    "erreur": 0.2792
+   }
+  },
+  "CH": {
+   "semaines": 168,
+   "matchs_concernes": 6976,
+   "matchs_par_semaine": 41.5,
+   "semaines_d_au_moins_30_matchs": 114,
+   "gain_propre_du_signal_bon": 0.00208,
+   "en_place": {
+    "depart_en_place": {
+     "signal_bon": {
+      "histoire_reelle_part_hors_algo": 0.738,
+      "part_hors_algo": 0.783,
+      "hors_algo_a_la_fin_pct": 80.3,
+      "change_d_etat_au_moins_une_fois_pct": 100.0
+     },
+     "signal_au_hasard": {
+      "part_dans_l_algo": 0.031,
+      "dans_l_algo_a_la_fin_pct": 0.0,
+      "change_d_etat_au_moins_une_fois_pct": 100.0
+     }
+    },
+    "depart_en_attente": {
+     "signal_bon": {
+      "histoire_reelle_part_hors_algo": 0.75,
+      "part_hors_algo": 0.822,
+      "hors_algo_a_la_fin_pct": 80.3,
+      "change_d_etat_au_moins_une_fois_pct": 94.3
+     },
+     "signal_au_hasard": {
+      "part_dans_l_algo": 0.002,
+      "dans_l_algo_a_la_fin_pct": 0.0,
+      "change_d_etat_au_moins_une_fois_pct": 12.3
+     }
+    },
+    "erreur": 0.4095
+   },
+   "cumulee": {
+    "depart_en_place": {
+     "signal_bon": {
+      "histoire_reelle_part_hors_algo": 0.0,
+      "part_hors_algo": 0.012,
+      "hors_algo_a_la_fin_pct": 1.3,
+      "change_d_etat_au_moins_une_fois_pct": 1.7
+     },
+     "signal_au_hasard": {
+      "part_dans_l_algo": 0.16,
+      "dans_l_algo_a_la_fin_pct": 0.0,
+      "change_d_etat_au_moins_une_fois_pct": 100.0
+     }
+    },
+    "depart_en_attente": {
+     "signal_bon": {
+      "histoire_reelle_part_hors_algo": 1.0,
+      "part_hors_algo": 0.684,
+      "hors_algo_a_la_fin_pct": 50.3,
+      "change_d_etat_au_moins_une_fois_pct": 50.3
+     },
+     "signal_au_hasard": {
+      "part_dans_l_algo": 0.0,
+      "dans_l_algo_a_la_fin_pct": 0.0,
+      "change_d_etat_au_moins_une_fois_pct": 0.3
+     }
+    },
+    "erreur": 0.214
+   }
+  }
+ },
+ "erreur_par_regle": {
+  "en_place": 0.3833,
+  "cumulee": 0.2558
+ },
+ "regle_gardee": "cumulee"
+}
