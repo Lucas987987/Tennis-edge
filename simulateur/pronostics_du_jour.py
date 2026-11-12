@@ -1033,6 +1033,13 @@ def charger_reglage_simulation(racine):
 
 
 REGLAGE_SIM = None
+AMPLIF_PROFILS = {}   # 12/11/2026 (paquet 240) : {circuit: {composante: k}} (simulateur/profils_amplification.json)
+
+
+def charger_amplification_profils(racine):
+    """{circuit: {composante: k}} des amplifications en place, moins celles que le suivi a retirées ; {} sinon."""
+    import profils_amplification as PA
+    return PA.en_place(racine)
 
 
 def sigma_sim():
@@ -1055,6 +1062,12 @@ def composantes_du_match(P, h, a, c, s, pure=False):
         if pure and REGLAGE_SIM and REGLAGE_SIM['k'] != 1.0:
             moy = MS.borner(P.ajuste.taux('__moyen__', '__moyen__', c, s))
             cH, cA = MS.amplifier(cH, moy, REGLAGE_SIM['k']), MS.amplifier(cA, moy, REGLAGE_SIM['k'])
+        if not pure and AMPLIF_PROFILS.get(c):
+            # 12/11/2026 (paquet 240) : profils un peu trop ramenés vers la moyenne (ou trop marqués pour la 1re balle
+            # dedans) — amplification par composante, SEULEMENT dans la simulation ancrée qui produit les statistiques
+            # annoncées : le % de victoire (simulation pure, mélange) ne change pas.
+            moy = MS.borner(P.ajuste.taux('__moyen__', '__moyen__', c, s))
+            cH, cA = MS.amplifier_composantes(cH, moy, AMPLIF_PROFILS[c]), MS.amplifier_composantes(cA, moy, AMPLIF_PROFILS[c])
     else:
         cH, cA = MS.composantes(ph, pa, mu), MS.composantes(pa, ph, mu)
     return cH, cA, nh, na
@@ -1391,6 +1404,8 @@ def construire(racine, maintenant=None):
     except Exception:  # noqa: BLE001 — sans classement, la correction ne s'applique pas
         CLASSEMENTS = None
     REGLAGE_SIM = charger_reglage_simulation(racine)
+    AMPLIF_PROFILS.clear()
+    AMPLIF_PROFILS.update(charger_amplification_profils(racine))
     FACTEURS, CONTEXTE = charger_facteurs(racine)
     global FORME_SCORES
     FORME_SCORES = charger_forme_scores(racine)

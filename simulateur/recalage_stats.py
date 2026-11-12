@@ -575,6 +575,12 @@ def main(argv):
     ancien = ancien_doc.get('decision') or {}
     doc['direct'] = suivre_directes(ancien_doc.get('direct'), appr, juge)
     # 11/11/2026 (paquet 225) : la règle case par case décide de ce qui s'applique sur le site
+    try:                                                    # 12/11/2026 (paquet 240) : amplification des profils, suivi et retrait
+        import profils_amplification as PA
+        doc['amplification_profils'] = PA.suivi(appr + juge, PA.lire(racine).get('amplifications') or {},
+                                                (ancien_doc.get('amplification_profils') or {}).get('retirees'))
+    except Exception as e_:  # noqa: BLE001
+        print(f'::warning::suivi de l\'amplification des profils non fait : {e_}')
     doc['salle'] = suivi_salle(racine, ancien_doc.get('salle'))      # 12/11/2026 : décalage « en salle », suivi et retrait
     arch = coefs_archive(racine)
     doc['cases'] = decider_cases(avec_archive(cases_en_place(ancien_doc), arch), appr, juge, fin.isoformat(), arch)
