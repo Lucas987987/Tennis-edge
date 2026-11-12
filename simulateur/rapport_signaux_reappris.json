@@ -1,0 +1,685 @@
+{
+ "genere_le": "2026-11-12T04:37:05+00:00",
+ "regle": "les sept β réappris ensemble sur 2018–2022 contre l'Elo de production, jugés sur 2023 → juin 2026 ; un signal reste sur un circuit seulement si le retirer coûte au moins 0,001 sur au moins 1 000 matchs concernés, même sens sur les deux périodes ; β définitifs réappris avec les seuls signaux gardés ; la configuration réapprise remplace celle en place sur un circuit si elle n'y fait pas moins bien sur 2023 → juin 2026",
+ "elo": "réglé comme la production (elo.de_production), mis à jour après chaque match, corrigé des pentes en place (format du match, Grand Chelem) ; compétitions par équipes exclues",
+ "pentes_en_place": {
+  "format": {
+   "ATP": {
+    "2": 0.826
+   }
+  },
+  "grand_chelem": {
+   "ATP": 1.235,
+   "WTA": 1.235
+  }
+ },
+ "circuits": {
+  "ATP": {
+   "appris": 11538,
+   "juges": 9188,
+   "signaux": {
+    "changement_surface": {
+     "betas_2018_2022": {
+      "changement_surface": -0.1428
+     },
+     "betas_2023": {
+      "changement_surface": -0.2476
+     },
+     "cout_du_retrait_2018_2022": {
+      "concernes": 1822,
+      "gain": 0.00219,
+      "erreur_type": 0.00156
+     },
+     "cout_du_retrait_2023": {
+      "concernes": 1408,
+      "gain": 0.00515,
+      "erreur_type": 0.00172,
+      "erreurs_types": 2.99
+     },
+     "cout_du_retrait_2023_sur_tous_les_matchs": 0.00079,
+     "garde": true,
+     "en_sursis": false,
+     "raisons": []
+    },
+    "retour_absence": {
+     "betas_2018_2022": {
+      "retour_absence_court": -0.4194,
+      "retour_absence_long": -0.9373
+     },
+     "betas_2023": {
+      "retour_absence_court": -0.6971,
+      "retour_absence_long": -1.2387
+     },
+     "cout_du_retrait_2018_2022": {
+      "concernes": 1262,
+      "gain": 0.0117,
+      "erreur_type": 0.0043
+     },
+     "cout_du_retrait_2023": {
+      "concernes": 757,
+      "gain": 0.02185,
+      "erreur_type": 0.00525,
+      "erreurs_types": 4.16
+     },
+     "cout_du_retrait_2023_sur_tous_les_matchs": 0.0018,
+     "garde": false,
+     "en_sursis": true,
+     "raisons": [
+      "moins de 1000 matchs concernés"
+     ]
+    },
+    "age": {
+     "betas_2018_2022": {
+      "age_vieux": -0.0436,
+      "age_jeune": 0.0724
+     },
+     "betas_2023": {
+      "age_vieux": -0.0436,
+      "age_jeune": 0.0666
+     },
+     "cout_du_retrait_2018_2022": {
+      "concernes": 8680,
+      "gain": 0.00353,
+      "erreur_type": 0.00092
+     },
+     "cout_du_retrait_2023": {
+      "concernes": 5438,
+      "gain": 0.00342,
+      "erreur_type": 0.00123,
+      "erreurs_types": 2.78
+     },
+     "cout_du_retrait_2023_sur_tous_les_matchs": 0.00202,
+     "garde": true,
+     "en_sursis": false,
+     "raisons": []
+    },
+    "favori_outsider": {
+     "betas_2018_2022": {
+      "favori_outsider": 0.124
+     },
+     "betas_2023": {
+      "favori_outsider": -0.5459
+     },
+     "cout_du_retrait_2018_2022": {
+      "concernes": 11538,
+      "gain": 1e-05,
+      "erreur_type": 3e-05
+     },
+     "cout_du_retrait_2023": {
+      "concernes": 9188,
+      "gain": -5e-05,
+      "erreur_type": 3e-05,
+      "erreurs_types": -1.43
+     },
+     "cout_du_retrait_2023_sur_tous_les_matchs": -5e-05,
+     "garde": false,
+     "en_sursis": false,
+     "raisons": [
+      "le retirer coûte moins de 0.001",
+      "un β change de signe sur 2023 →"
+     ]
+    },
+    "parcours_tournoi": {
+     "betas_2018_2022": {
+      "parcours_tournoi": 0.0301
+     },
+     "betas_2023": {
+      "parcours_tournoi": 0.036
+     },
+     "cout_du_retrait_2018_2022": {
+      "concernes": 4697,
+      "gain": 0.0003,
+      "erreur_type": 0.00036
+     },
+     "cout_du_retrait_2023": {
+      "concernes": 3957,
+      "gain": 0.00055,
+      "erreur_type": 0.00039,
+      "erreurs_types": 1.4
+     },
+     "cout_du_retrait_2023_sur_tous_les_matchs": 0.00024,
+     "garde": false,
+     "en_sursis": false,
+     "raisons": [
+      "le retirer coûte moins de 0.001"
+     ]
+    }
+   },
+   "signaux_gardes": [
+    "changement_surface",
+    "age"
+   ],
+   "signaux_en_sursis": [
+    "retour_absence"
+   ],
+   "signaux_retires": [
+    "favori_outsider",
+    "parcours_tournoi"
+   ],
+   "signaux_ecartes": [
+    "favori_outsider",
+    "parcours_tournoi"
+   ],
+   "betas": {
+    "changement_surface": -0.1655,
+    "age_vieux": -0.0449,
+    "age_jeune": 0.0739,
+    "retour_absence_court": -0.4471,
+    "retour_absence_long": -0.9643
+   },
+   "betas_en_place": {
+    "changement_surface": -0.0926,
+    "retour_absence_court": -0.4362,
+    "retour_absence_long": -0.7866,
+    "age_vieux": -0.0402,
+    "age_jeune": 0.0679,
+    "favori_outsider": 1.0362,
+    "parcours_tournoi": 0.1218
+   },
+   "contre_l_elo_seul_2023": {
+    "matchs": 9188,
+    "gain": 0.00526,
+    "erreur_type": 0.00096,
+    "erreurs_types": 5.47,
+    "log_loss_base": 0.60505,
+    "log_loss": 0.59979,
+    "brier_base": 0.20967,
+    "brier": 0.20744,
+    "favori_annonce_pct": 66.4,
+    "favori_reel_pct": 66.3
+   },
+   "en_place_contre_l_elo_seul_2023": {
+    "matchs": 9188,
+    "gain": 0.00263,
+    "erreur_type": 0.00137,
+    "erreurs_types": 1.92,
+    "log_loss_base": 0.60505,
+    "log_loss": 0.60241,
+    "brier_base": 0.20967,
+    "brier": 0.20859,
+    "favori_annonce_pct": 66.4,
+    "favori_reel_pct": 66.3
+   },
+   "en_place_cout_du_retrait_du_role_2023": {
+    "matchs": 9188,
+    "gain": -0.00179,
+    "erreur_type": 0.0004,
+    "erreurs_types": -4.43,
+    "log_loss_base": 0.60062,
+    "log_loss": 0.60241,
+    "brier_base": 0.2078,
+    "brier": 0.20859,
+    "favori_annonce_pct": 65.6,
+    "favori_reel_pct": 66.9
+   },
+   "contre_la_configuration_en_place_2023": {
+    "matchs": 9188,
+    "gain": 0.00263,
+    "erreur_type": 0.00087,
+    "erreurs_types": 3.01,
+    "log_loss_base": 0.60241,
+    "log_loss": 0.59979,
+    "brier_base": 0.20859,
+    "brier": 0.20744,
+    "favori_annonce_pct": 64.6,
+    "favori_reel_pct": 66.4
+   },
+   "regle_a_la_lettre_contre_en_place_2023": {
+    "matchs": 9188,
+    "gain": 0.00062,
+    "erreur_type": 0.00102,
+    "erreurs_types": 0.61,
+    "log_loss_base": 0.60241,
+    "log_loss": 0.60179,
+    "brier_base": 0.20859,
+    "brier": 0.20831,
+    "favori_annonce_pct": 64.6,
+    "favori_reel_pct": 66.4
+   },
+   "adopte": true
+  },
+  "WTA": {
+   "appris": 10524,
+   "juges": 8827,
+   "signaux": {
+    "changement_surface": {
+     "betas_2018_2022": {
+      "changement_surface": -0.1589
+     },
+     "betas_2023": {
+      "changement_surface": -0.2954
+     },
+     "cout_du_retrait_2018_2022": {
+      "concernes": 1374,
+      "gain": 0.0026,
+      "erreur_type": 0.0019
+     },
+     "cout_du_retrait_2023": {
+      "concernes": 1113,
+      "gain": 0.0061,
+      "erreur_type": 0.00214,
+      "erreurs_types": 2.85
+     },
+     "cout_du_retrait_2023_sur_tous_les_matchs": 0.00077,
+     "garde": true,
+     "en_sursis": false,
+     "raisons": []
+    },
+    "retour_absence": {
+     "betas_2018_2022": {
+      "retour_absence_court": -0.2804,
+      "retour_absence_long": -0.8567
+     },
+     "betas_2023": {
+      "retour_absence_court": -0.52,
+      "retour_absence_long": -1.2566
+     },
+     "cout_du_retrait_2018_2022": {
+      "concernes": 1263,
+      "gain": 0.01098,
+      "erreur_type": 0.00403
+     },
+     "cout_du_retrait_2023": {
+      "concernes": 808,
+      "gain": 0.01573,
+      "erreur_type": 0.00426,
+      "erreurs_types": 3.69
+     },
+     "cout_du_retrait_2023_sur_tous_les_matchs": 0.00144,
+     "garde": false,
+     "en_sursis": true,
+     "raisons": [
+      "moins de 1000 matchs concernés"
+     ]
+    },
+    "age": {
+     "betas_2018_2022": {
+      "age_vieux": -0.0369,
+      "age_jeune": 0.0176
+     },
+     "betas_2023": {
+      "age_vieux": -0.0276,
+      "age_jeune": 0.0312
+     },
+     "cout_du_retrait_2018_2022": {
+      "concernes": 6920,
+      "gain": 0.00094,
+      "erreur_type": 0.00052
+     },
+     "cout_du_retrait_2023": {
+      "concernes": 5970,
+      "gain": 0.00062,
+      "erreur_type": 0.00061,
+      "erreurs_types": 1.01
+     },
+     "cout_du_retrait_2023_sur_tous_les_matchs": 0.00042,
+     "garde": false,
+     "en_sursis": false,
+     "raisons": [
+      "le retirer coûte moins de 0.001"
+     ]
+    },
+    "favori_outsider": {
+     "betas_2018_2022": {
+      "favori_outsider": 1.8384
+     },
+     "betas_2023": {
+      "favori_outsider": 0.77
+     },
+     "cout_du_retrait_2018_2022": {
+      "concernes": 10524,
+      "gain": 0.0011,
+      "erreur_type": 0.00038
+     },
+     "cout_du_retrait_2023": {
+      "concernes": 8827,
+      "gain": 6e-05,
+      "erreur_type": 0.00044,
+      "erreurs_types": 0.13
+     },
+     "cout_du_retrait_2023_sur_tous_les_matchs": 6e-05,
+     "garde": false,
+     "en_sursis": false,
+     "raisons": [
+      "le retirer coûte moins de 0.001"
+     ]
+    },
+    "parcours_tournoi": {
+     "betas_2018_2022": {
+      "parcours_tournoi": 0.0321
+     },
+     "betas_2023": {
+      "parcours_tournoi": -0.0029
+     },
+     "cout_du_retrait_2018_2022": {
+      "concernes": 3639,
+      "gain": 0.00041,
+      "erreur_type": 0.00048
+     },
+     "cout_du_retrait_2023": {
+      "concernes": 3467,
+      "gain": 4e-05,
+      "erreur_type": 0.00044,
+      "erreurs_types": 0.09
+     },
+     "cout_du_retrait_2023_sur_tous_les_matchs": 2e-05,
+     "garde": false,
+     "en_sursis": false,
+     "raisons": [
+      "le retirer coûte moins de 0.001",
+      "un β change de signe sur 2023 →"
+     ]
+    }
+   },
+   "signaux_gardes": [
+    "changement_surface"
+   ],
+   "signaux_en_sursis": [
+    "retour_absence"
+   ],
+   "signaux_retires": [
+    "age",
+    "favori_outsider"
+   ],
+   "signaux_ecartes": [
+    "age",
+    "favori_outsider",
+    "parcours_tournoi"
+   ],
+   "betas": {
+    "changement_surface": -0.1801,
+    "retour_absence_court": -0.3206,
+    "retour_absence_long": -0.9293
+   },
+   "betas_en_place": {
+    "changement_surface": -0.1203,
+    "retour_absence_court": -0.3938,
+    "retour_absence_long": -1.0248,
+    "age_vieux": -0.0335,
+    "age_jeune": 0.0265,
+    "favori_outsider": 1.4668
+   },
+   "contre_l_elo_seul_2023": {
+    "matchs": 8827,
+    "gain": 0.00259,
+    "erreur_type": 0.00051,
+    "erreurs_types": 5.02,
+    "log_loss_base": 0.59598,
+    "log_loss": 0.5934,
+    "brier_base": 0.2059,
+    "brier": 0.20476,
+    "favori_annonce_pct": 67.1,
+    "favori_reel_pct": 67.2
+   },
+   "en_place_contre_l_elo_seul_2023": {
+    "matchs": 8827,
+    "gain": 0.00323,
+    "erreur_type": 0.00087,
+    "erreurs_types": 3.72,
+    "log_loss_base": 0.59598,
+    "log_loss": 0.59275,
+    "brier_base": 0.2059,
+    "brier": 0.20451,
+    "favori_annonce_pct": 67.1,
+    "favori_reel_pct": 67.2
+   },
+   "en_place_cout_du_retrait_du_role_2023": {
+    "matchs": 8827,
+    "gain": -0.00016,
+    "erreur_type": 0.00037,
+    "erreurs_types": -0.42,
+    "log_loss_base": 0.5926,
+    "log_loss": 0.59275,
+    "brier_base": 0.20443,
+    "brier": 0.20451,
+    "favori_annonce_pct": 67.1,
+    "favori_reel_pct": 67.4
+   },
+   "contre_la_configuration_en_place_2023": {
+    "matchs": 8827,
+    "gain": -0.00064,
+    "erreur_type": 0.00067,
+    "erreurs_types": -0.96,
+    "log_loss_base": 0.59275,
+    "log_loss": 0.5934,
+    "brier_base": 0.20451,
+    "brier": 0.20476,
+    "favori_annonce_pct": 66.8,
+    "favori_reel_pct": 67.4
+   },
+   "regle_a_la_lettre_contre_en_place_2023": {
+    "matchs": 8827,
+    "gain": -0.00242,
+    "erreur_type": 0.00085,
+    "erreurs_types": -2.84,
+    "log_loss_base": 0.59275,
+    "log_loss": 0.59518,
+    "brier_base": 0.20451,
+    "brier": 0.20555,
+    "favori_annonce_pct": 66.8,
+    "favori_reel_pct": 67.4
+   },
+   "adopte": false
+  },
+  "CH": {
+   "appris": 32808,
+   "juges": 31883,
+   "signaux": {
+    "changement_surface": {
+     "betas_2018_2022": {
+      "changement_surface": -0.2372
+     },
+     "betas_2023": {
+      "changement_surface": -0.1633
+     },
+     "cout_du_retrait_2018_2022": {
+      "concernes": 6197,
+      "gain": 0.00601,
+      "erreur_type": 0.0014
+     },
+     "cout_du_retrait_2023": {
+      "concernes": 5197,
+      "gain": 0.00201,
+      "erreur_type": 0.00153,
+      "erreurs_types": 1.31
+     },
+     "cout_du_retrait_2023_sur_tous_les_matchs": 0.00033,
+     "garde": true,
+     "en_sursis": false,
+     "raisons": []
+    },
+    "retour_absence": {
+     "betas_2018_2022": {
+      "retour_absence_court": -0.359,
+      "retour_absence_long": -0.6139
+     },
+     "betas_2023": {
+      "retour_absence_court": -0.2118,
+      "retour_absence_long": -0.3688
+     },
+     "cout_du_retrait_2018_2022": {
+      "concernes": 6855,
+      "gain": 0.00859,
+      "erreur_type": 0.00159
+     },
+     "cout_du_retrait_2023": {
+      "concernes": 6976,
+      "gain": 0.002,
+      "erreur_type": 0.00156,
+      "erreurs_types": 1.28
+     },
+     "cout_du_retrait_2023_sur_tous_les_matchs": 0.00044,
+     "garde": true,
+     "en_sursis": false,
+     "raisons": []
+    },
+    "age": {
+     "betas_2018_2022": {
+      "age_vieux": -0.0583,
+      "age_jeune": 0.0575
+     },
+     "betas_2023": {
+      "age_vieux": -0.0411,
+      "age_jeune": 0.0535
+     },
+     "cout_du_retrait_2018_2022": {
+      "concernes": 22397,
+      "gain": 0.00382,
+      "erreur_type": 0.00059
+     },
+     "cout_du_retrait_2023": {
+      "concernes": 22352,
+      "gain": 0.00235,
+      "erreur_type": 0.00057,
+      "erreurs_types": 4.09
+     },
+     "cout_du_retrait_2023_sur_tous_les_matchs": 0.00165,
+     "garde": true,
+     "en_sursis": false,
+     "raisons": []
+    },
+    "favori_outsider": {
+     "betas_2018_2022": {
+      "favori_outsider": -0.6562
+     },
+     "betas_2023": {
+      "favori_outsider": 0.3768
+     },
+     "cout_du_retrait_2018_2022": {
+      "concernes": 32808,
+      "gain": 0.00012,
+      "erreur_type": 8e-05
+     },
+     "cout_du_retrait_2023": {
+      "concernes": 31883,
+      "gain": -0.0002,
+      "erreur_type": 9e-05,
+      "erreurs_types": -2.21
+     },
+     "cout_du_retrait_2023_sur_tous_les_matchs": -0.0002,
+     "garde": false,
+     "en_sursis": false,
+     "raisons": [
+      "le retirer coûte moins de 0.001",
+      "un β change de signe sur 2023 →"
+     ]
+    },
+    "parcours_tournoi": {
+     "betas_2018_2022": {
+      "parcours_tournoi": 0.0343
+     },
+     "betas_2023": {
+      "parcours_tournoi": -0.0422
+     },
+     "cout_du_retrait_2018_2022": {
+      "concernes": 8561,
+      "gain": 0.00032,
+      "erreur_type": 0.00028
+     },
+     "cout_du_retrait_2023": {
+      "concernes": 6622,
+      "gain": -0.00148,
+      "erreur_type": 0.00035,
+      "erreurs_types": -4.23
+     },
+     "cout_du_retrait_2023_sur_tous_les_matchs": -0.00031,
+     "garde": false,
+     "en_sursis": false,
+     "raisons": [
+      "le retirer coûte moins de 0.001",
+      "un β change de signe sur 2023 →"
+     ]
+    }
+   },
+   "signaux_gardes": [
+    "changement_surface",
+    "retour_absence",
+    "age"
+   ],
+   "signaux_en_sursis": [],
+   "signaux_retires": [
+    "favori_outsider"
+   ],
+   "signaux_ecartes": [
+    "favori_outsider",
+    "parcours_tournoi"
+   ],
+   "betas": {
+    "changement_surface": -0.2475,
+    "retour_absence_court": -0.3626,
+    "retour_absence_long": -0.613,
+    "age_vieux": -0.0567,
+    "age_jeune": 0.0568
+   },
+   "betas_en_place": {
+    "changement_surface": -0.2018,
+    "retour_absence_court": -0.3111,
+    "retour_absence_long": -0.5296,
+    "age_vieux": -0.0493,
+    "age_jeune": 0.0583,
+    "favori_outsider": 1.4499
+   },
+   "contre_l_elo_seul_2023": {
+    "matchs": 31883,
+    "gain": 0.00209,
+    "erreur_type": 0.00056,
+    "erreurs_types": 3.72,
+    "log_loss_base": 0.63434,
+    "log_loss": 0.63225,
+    "brier_base": 0.22188,
+    "brier": 0.22096,
+    "favori_annonce_pct": 65.1,
+    "favori_reel_pct": 64.1
+   },
+   "en_place_contre_l_elo_seul_2023": {
+    "matchs": 31883,
+    "gain": 0.00187,
+    "erreur_type": 0.0006,
+    "erreurs_types": 3.1,
+    "log_loss_base": 0.63434,
+    "log_loss": 0.63247,
+    "brier_base": 0.22188,
+    "brier": 0.22116,
+    "favori_annonce_pct": 65.1,
+    "favori_reel_pct": 64.1
+   },
+   "en_place_cout_du_retrait_du_role_2023": {
+    "matchs": 31883,
+    "gain": -0.00053,
+    "erreur_type": 0.00028,
+    "erreurs_types": -1.92,
+    "log_loss_base": 0.63194,
+    "log_loss": 0.63247,
+    "brier_base": 0.22083,
+    "brier": 0.22116,
+    "favori_annonce_pct": 65.5,
+    "favori_reel_pct": 64.2
+   },
+   "contre_la_configuration_en_place_2023": {
+    "matchs": 31883,
+    "gain": 0.00022,
+    "erreur_type": 0.00028,
+    "erreurs_types": 0.78,
+    "log_loss_base": 0.63247,
+    "log_loss": 0.63225,
+    "brier_base": 0.22116,
+    "brier": 0.22096,
+    "favori_annonce_pct": 64.4,
+    "favori_reel_pct": 63.9
+   },
+   "regle_a_la_lettre_contre_en_place_2023": {
+    "matchs": 31883,
+    "gain": 0.00022,
+    "erreur_type": 0.00028,
+    "erreurs_types": 0.78,
+    "log_loss_base": 0.63247,
+    "log_loss": 0.63225,
+    "brier_base": 0.22116,
+    "brier": 0.22096,
+    "favori_annonce_pct": 64.4,
+    "favori_reel_pct": 63.9
+   },
+   "adopte": true
+  }
+ }
+}

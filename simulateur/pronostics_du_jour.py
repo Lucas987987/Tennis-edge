@@ -252,6 +252,16 @@ def charger_betas_combines(racine):
                     out[c] = dict(zip(ESC_.NOMS + (nom,), b7))
     except (OSError, ValueError, KeyError, ImportError):
         pass
+    # 12/11/2026 (paquet 233, etude_signaux_reappris.py) — là où la configuration réapprise sur l'Elo DE PRODUCTION est
+    # adoptée, ses β remplacent ceux appris contre l'Elo des études ; un signal écarté n'y a plus de β combiné (et
+    # fantomes_circuits.py ne l'applique plus).
+    try:
+        with open(os.path.join(racine, 'simulateur', 'rapport_signaux_reappris.json'), encoding='utf-8') as f:
+            for c, v in (json.load(f).get('circuits') or {}).items():
+                if v.get('adopte') and v.get('betas'):
+                    out[c] = {n: float(b) for n, b in v['betas'].items()}
+    except (OSError, ValueError, TypeError, AttributeError):
+        pass
     return out
 
 
