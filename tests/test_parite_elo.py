@@ -26,7 +26,7 @@ import elo as E  # noqa: E402
 # Études d'avant l'audit qui créent un « Elo() » sans réglage (figé le 11/11/2026). NE RIEN AJOUTER ICI.
 AVANT_AUDIT = frozenset((
     'etude_5_derniers_styles', 'etude_age', 'etude_bilans_contexte', 'etude_changement_surface',
-    'etude_classement_serie', 'etude_cpi', 'etude_duels_styles', 'etude_ecart_pinnacle', 'etude_live_reevaluation',
+    'etude_classement_serie', 'etude_cpi', 'etude_duels_styles', 'etude_ecart_pinnacle',
     'etude_pistes_saison', 'etude_pistes_tournoi', 'etude_prior_elo', 'etude_profils_contexte', 'etude_retour_absence',
     'etude_set_decisif', 'etude_signaux_combines', 'etude_statistiques_styles', 'etude_tiebreaks_joueurs'))
 # Études qui JUGENT sur l'Elo de production mais recréent exprès l'Elo sans réglage comme TÉMOIN, pour mesurer la
