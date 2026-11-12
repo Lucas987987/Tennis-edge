@@ -36,6 +36,8 @@ MIN_MATCHS, FENETRE_J = 10, 3 * 365
 CATEGORIES = ('aces', 'services_non_retournes', 'coup_droit', 'revers', 'filet', 'amorti', 'lob',
               'fautes_provoquees', 'fautes_directes_adverses', 'doubles_fautes_adverses')
 CODES = {'coup_droit': 'FR', 'revers': 'BS', 'filet': 'VZOPHIJK', 'amorti': 'UY', 'lob': 'LM'}
+DUEL = ('amortis_joues', 'amortis_reussis', 'adv_amortis_joues', 'adv_amortis_reussis', 'adv_montees', 'adv_montees_gagnees',
+        'srv_pts', 'srv_rapides', 'adv_srv_pts', 'adv_srv_rapides', 'gagnants_provoques', 'fautes_directes')
 
 
 def _lire(chemin):
@@ -53,7 +55,7 @@ def _i(x):
         return 0
 
 
-def comptes_du_match(ov, ov_adv, st, st_adv, sb, net):
+def comptes_du_match(ov, ov_adv, st, st_adv, sb, net, sb_adv=None, net_adv=None):
     """Comptes d'UN joueur dans UN match (dictionnaires bruts des fichiers ; st : {ligne: dict})."""
     tot = st.get('Total') or {}
     c = {'aces': _i(sb.get('aces')),
@@ -67,6 +69,14 @@ def comptes_du_match(ov, ov_adv, st, st_adv, sb, net):
     c['points_joues'] = _i(ov.get('serve_pts')) + _i(ov.get('return_pts'))
     c['montees'] = _i((net or {}).get('net_pts'))
     c['montees_gagnees'] = _i((net or {}).get('pts_won'))
+    # 12/11/2026 (paquet 251) : de quoi décrire les duels (ce qu'il fait, ce que ses adversaires font contre lui)
+    dr = lambda S, col: sum(_i((S.get(k) or {}).get(col)) for k in 'UY')  # noqa: E731
+    c.update(amortis_joues=dr(st, 'shots'), amortis_reussis=dr(st, 'winners') + dr(st, 'induced_forced'),
+             adv_amortis_joues=dr(st_adv, 'shots'), adv_amortis_reussis=dr(st_adv, 'winners') + dr(st_adv, 'induced_forced'),
+             adv_montees=_i((net_adv or {}).get('net_pts')), adv_montees_gagnees=_i((net_adv or {}).get('pts_won')),
+             srv_pts=_i(sb.get('pts')), srv_rapides=_i(sb.get('pts_won_lte_3_shots')),
+             adv_srv_pts=_i((sb_adv or {}).get('pts')), adv_srv_rapides=_i((sb_adv or {}).get('pts_won_lte_3_shots')),
+             gagnants_provoques=_i(tot.get('winners')) + _i(tot.get('induced_forced')), fautes_directes=_i(tot.get('unforced')))
     return c
 
 
@@ -98,7 +108,9 @@ def charger(dossier):
                 p, q = ps[i], ps[1 - i]
                 if (mid, p) not in st or (mid, q) not in st or (mid, p) not in sb:
                     continue
-                c = comptes_du_match(ov[(mid, p)], ov[(mid, q)], st[(mid, p)], st[(mid, q)], sb[(mid, p)], net.get((mid, p)))
+                c = comptes_du_match(ov[(mid, p)], ov[(mid, q)], st[(mid, p)], st[(mid, q)], sb[(mid, p)], net.get((mid, p)),
+                                     sb.get((mid, q)), net.get((mid, q)))
+                c['_g'] = g
                 if c['points_gagnes'] <= 0 or sum(c[k] for k in CATEGORIES) <= 0:
                     continue
                 out[p].append((dates[mid], c))
@@ -120,9 +132,11 @@ def exporter(par_joueur, jour, cle):
             continue
         s = collections.Counter()
         for _, c in L:
-            s.update(c)
+            s.update({x: v for x, v in c.items() if not x.startswith('_')})
+        g = collections.Counter(c.get('_g') for _, c in L).most_common(1)[0][0]
         out[k] = {'matchs': len(L), 'depuis': min(d for d, _ in L).isoformat(), 'jusqu_au': max(d for d, _ in L).isoformat(),
-                  'comptes': {x: s[x] for x in CATEGORIES + ('points_gagnes', 'points_joues', 'montees', 'montees_gagnees')}}
+                  'circuit': g, 'comptes': {x: s[x] for x in CATEGORIES + ('points_gagnes', 'points_joues', 'montees',
+                                                                              'montees_gagnees') + DUEL}}
     return out
 
 
