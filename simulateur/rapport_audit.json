@@ -418,7 +418,8 @@
   "237": "statistiques annoncées rejouées sur l'archive : simulateur/rapport_statistiques_annoncees.json — le modèle n'a pas de biais d'ensemble contre l'archive ; onze cases sur douze réglées sur l'archive, deux seulement (WTA breaks et aces) passent le contrôle en direct et sont en place ; décalage saisonnier du % de 1res balles REJETÉ",
   "238": "1res balles en salle : simulateur/rapport_premieres_balles_salle.json — RETENU en ATP (1res balles +1,22, doubles fautes −0,49 en salle) et en place via la surface des feuilles ; WTA trop peu de cas, Challenger non étudiable",
   "239": "image pour X : encadré en haut et « duel équilibré » sous 10 points (paquet appliqué entre-temps, hors audit)",
-  "240": "profils service / retour : simulateur/rapport_profils_amplification.json — amplification par composante en place (statistiques seulement), 5 cases retirées d'emblée par la règle de retrait ; duel service / retour tiré des cartes"
+  "240": "profils service / retour : simulateur/rapport_profils_amplification.json — amplification par composante en place (statistiques seulement), 5 cases retirées d'emblée par la règle de retrait ; duel service / retour tiré des cartes",
+  "241": "règles du lundi sur 42 jours glissants : simulateur/rapport_regles_fenetres.json — règle cumulée retenue (9.4 % de semaines dans le mauvais état contre 12.7 %), en place pour les corrections de situation, nouveaux venus et arbres (circuits_regles.py)"
  },
  "pistes_ajoutees_le_11_11": {
   "regardé": "2018–2022 seulement, par-dessus l'Elo de production corrigé du format en ATP et les trois signaux solides (surface, absence, âge)",
@@ -831,6 +832,20 @@
     "id": "aces_atp_en_direct",
     "paquet_prevu": null,
     "regle": "aces ATP sous-estimés de 0,9 en direct, pas sur l'archive : mesurer l'écart de source sur les matchs communs (comme pour les 1res balles au paquet 238) quand l'archive aura des matchs ATP communs avec nos feuilles ; d'ici là, le recalage en direct corrige"
+   }
+  ]
+ },
+ "paquet_241_le_12_11": {
+  "en_production": "stabilite.decider_cumule, appelé quand la règle fournit le détail par match (entrainement_progressif.ll_par_circuit)",
+  "pas_encore": [
+   "poids du mélange (combinaison, poids_challenger, poids_ATP, poids_WTA, combinaison_feuilles) et réglages de la simulation : décision sur un seul chiffre, sans détail par match — gardent la règle d'avant",
+   "facteurs (vraisemblance des points, sans log loss) et règles du classement Elo (jugées sur tous nos matchs, pas sur une fenêtre)"
+  ],
+  "a_juger": [
+   {
+    "id": "poids_du_melange_en_cumule",
+    "paquet_prevu": null,
+    "regle": "fournir le détail par match aux décisions des poids (backtest_match_simule.combinaison, entrainement_progressif.poids_circuit), puis même règle cumulée"
    }
   ]
  }

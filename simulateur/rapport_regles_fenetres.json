@@ -1,0 +1,166 @@
+{
+ "genere_le": "2026-11-12T15:46:35+00:00",
+ "regle": "règle en place (42 jours glissants, 0,001, deux semaines), règle cumulée (≥ 300 matchs, 2 erreurs types) et fenêtre à 2 erreurs types rejouées semaine par semaine sur 2023 → juin 2026, avec un réglage connu bon et un réglage au hasard de même taille ; erreur = part des semaines dans le mauvais état ; est gardée la plus basse",
+ "tirages": 300,
+ "circuits": {
+  "ATP": {
+   "semaines": 124,
+   "matchs": 9188,
+   "matchs_par_semaine": 74.1,
+   "gain_du_reglage_bon": 0.00526,
+   "en_place": {
+    "depart_en_place": {
+     "reglage_bon_hors_algo": 0.065,
+     "reglage_bon_histoire_reelle": 0.121,
+     "reglage_au_hasard_dans_l_algo": 0.158,
+     "changements_par_an_reglage_au_hasard": 2.72
+    },
+    "depart_en_attente": {
+     "reglage_bon_hors_algo": 0.078,
+     "reglage_bon_histoire_reelle": 0.129,
+     "reglage_au_hasard_dans_l_algo": 0.147,
+     "changements_par_an_reglage_au_hasard": 2.49
+    },
+    "erreur": 0.112
+   },
+   "cumulee": {
+    "depart_en_place": {
+     "reglage_bon_hors_algo": 0.0,
+     "reglage_bon_histoire_reelle": 0.0,
+     "reglage_au_hasard_dans_l_algo": 0.201,
+     "changements_par_an_reglage_au_hasard": 0.42
+    },
+    "depart_en_attente": {
+     "reglage_bon_hors_algo": 0.129,
+     "reglage_bon_histoire_reelle": 0.024,
+     "reglage_au_hasard_dans_l_algo": 0.0,
+     "changements_par_an_reglage_au_hasard": 0.0
+    },
+    "erreur": 0.0825
+   },
+   "fenetre_2se": {
+    "depart_en_place": {
+     "reglage_bon_hors_algo": 0.0,
+     "reglage_bon_histoire_reelle": 0.0,
+     "reglage_au_hasard_dans_l_algo": 0.246,
+     "changements_par_an_reglage_au_hasard": 0.44
+    },
+    "depart_en_attente": {
+     "reglage_bon_hors_algo": 0.191,
+     "reglage_bon_histoire_reelle": 0.024,
+     "reglage_au_hasard_dans_l_algo": 0.008,
+     "changements_par_an_reglage_au_hasard": 0.03
+    },
+    "erreur": 0.1113
+   }
+  },
+  "WTA": {
+   "semaines": 123,
+   "matchs": 8827,
+   "matchs_par_semaine": 71.8,
+   "gain_du_reglage_bon": 0.00349,
+   "en_place": {
+    "depart_en_place": {
+     "reglage_bon_hors_algo": 0.118,
+     "reglage_bon_histoire_reelle": 0.073,
+     "reglage_au_hasard_dans_l_algo": 0.197,
+     "changements_par_an_reglage_au_hasard": 3.0
+    },
+    "depart_en_attente": {
+     "reglage_bon_hors_algo": 0.132,
+     "reglage_bon_histoire_reelle": 0.081,
+     "reglage_au_hasard_dans_l_algo": 0.185,
+     "changements_par_an_reglage_au_hasard": 2.8
+    },
+    "erreur": 0.158
+   },
+   "cumulee": {
+    "depart_en_place": {
+     "reglage_bon_hors_algo": 0.002,
+     "reglage_bon_histoire_reelle": 0.0,
+     "reglage_au_hasard_dans_l_algo": 0.296,
+     "changements_par_an_reglage_au_hasard": 0.42
+    },
+    "depart_en_attente": {
+     "reglage_bon_hors_algo": 0.193,
+     "reglage_bon_histoire_reelle": 0.244,
+     "reglage_au_hasard_dans_l_algo": 0.004,
+     "changements_par_an_reglage_au_hasard": 0.01
+    },
+    "erreur": 0.1237
+   },
+   "fenetre_2se": {
+    "depart_en_place": {
+     "reglage_bon_hors_algo": 0.007,
+     "reglage_bon_histoire_reelle": 0.0,
+     "reglage_au_hasard_dans_l_algo": 0.311,
+     "changements_par_an_reglage_au_hasard": 0.44
+    },
+    "depart_en_attente": {
+     "reglage_bon_hors_algo": 0.249,
+     "reglage_bon_histoire_reelle": 0.138,
+     "reglage_au_hasard_dans_l_algo": 0.023,
+     "changements_par_an_reglage_au_hasard": 0.06
+    },
+    "erreur": 0.1475
+   }
+  },
+  "CH": {
+   "semaines": 168,
+   "matchs": 31883,
+   "matchs_par_semaine": 189.8,
+   "gain_du_reglage_bon": 0.00209,
+   "en_place": {
+    "depart_en_place": {
+     "reglage_bon_hors_algo": 0.178,
+     "reglage_bon_histoire_reelle": 0.19,
+     "reglage_au_hasard_dans_l_algo": 0.041,
+     "changements_par_an_reglage_au_hasard": 0.88
+    },
+    "depart_en_attente": {
+     "reglage_bon_hors_algo": 0.19,
+     "reglage_bon_histoire_reelle": 0.196,
+     "reglage_au_hasard_dans_l_algo": 0.03,
+     "changements_par_an_reglage_au_hasard": 0.66
+    },
+    "erreur": 0.1098
+   },
+   "cumulee": {
+    "depart_en_place": {
+     "reglage_bon_hors_algo": 0.002,
+     "reglage_bon_histoire_reelle": 0.0,
+     "reglage_au_hasard_dans_l_algo": 0.066,
+     "changements_par_an_reglage_au_hasard": 0.31
+    },
+    "depart_en_attente": {
+     "reglage_bon_hors_algo": 0.233,
+     "reglage_bon_histoire_reelle": 0.018,
+     "reglage_au_hasard_dans_l_algo": 0.0,
+     "changements_par_an_reglage_au_hasard": 0.0
+    },
+    "erreur": 0.0753
+   },
+   "fenetre_2se": {
+    "depart_en_place": {
+     "reglage_bon_hors_algo": 0.008,
+     "reglage_bon_histoire_reelle": 0.0,
+     "reglage_au_hasard_dans_l_algo": 0.091,
+     "changements_par_an_reglage_au_hasard": 0.31
+    },
+    "depart_en_attente": {
+     "reglage_bon_hors_algo": 0.271,
+     "reglage_bon_histoire_reelle": 0.119,
+     "reglage_au_hasard_dans_l_algo": 0.0,
+     "changements_par_an_reglage_au_hasard": 0.0
+    },
+    "erreur": 0.0925
+   }
+  }
+ },
+ "erreur_par_regle": {
+  "en_place": 0.1266,
+  "cumulee": 0.0938,
+  "fenetre_2se": 0.1171
+ },
+ "regle_gardee": "cumulee"
+}
