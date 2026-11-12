@@ -173,14 +173,19 @@ def rang_relatif(n1, n2, r1, r2):
     return w * (math.log(r2) - math.log(r1))
 
 
-def ll_par_circuit(circuits, sans, avec):
-    """04/11/2026 — {circuit: {'n', 'll': {'avec', 'sans'}, 'gain'}} sur les matchs jugés (règles jugées par circuit)."""
+def ll_par_circuit(circuits, sans, avec, jours=None):
+    """04/11/2026 — {circuit: {'n', 'll': {'avec', 'sans'}, 'gain'}} sur les matchs jugés (règles jugées par circuit).
+    12/11/2026 (paquet 241) : jours donnés → aussi 'paires' [(jour, log loss sans, log loss avec)] par match, pour la
+    règle cumulée de stabilite.py (lues puis retirées avant tout enregistrement)."""
     out = {}
     for c, _ in CIRCUITS:
         ix = [i for i, x in enumerate(circuits) if x == c]
         if ix:
             l0, l1 = _ll([sans[i] for i in ix]), _ll([avec[i] for i in ix])
             out[c] = {'n': len(ix), 'll': {'avec': l1, 'sans': l0}, 'gain': round(l0 - l1, 5)}
+            if jours is not None:
+                lp = lambda p: -math.log(min(max(p, 1e-6), 1 - 1e-6))
+                out[c]['paires'] = [(str(jours[i]), round(lp(sans[i]), 6), round(lp(avec[i]), 6)) for i in ix]
     return out
 
 
@@ -205,6 +210,7 @@ def correction_situation(hors, P, lim, valeur, cle_s, poids_finaux=None, min_ava
     av = [(o, f) for j, o, f, _ in rows if not j]
     ju = [(o, f) for j, o, f, _ in rows if j and f != 0]
     ju_c = [h[0].get('circuit') for j, o, f, h in rows if j and f != 0]
+    ju_j = [h[0].get('jour') for j, o, f, h in rows if j and f != 0]
     n_av = sum(1 for _, f in av if f != 0)
     if n_av < min_avant or len(ju) < min_juge:
         return {'adopte': False, 'raison': f"pas assez de matchs concernés ({n_av} avant, {len(ju)} à juger)"}
@@ -213,7 +219,7 @@ def correction_situation(hors, P, lim, valeur, cle_s, poids_finaux=None, min_ava
     l0, l1 = _ll([sg_(o) for o, _ in ju]), _ll([sg_(o + d * f) for o, f in ju])
     att = sum(1 for o, f in ju if f > 0) / len(ju)          # part des matchs gagnés par celui qui est dans la situation
     ok = l1 < l0
-    par = ll_par_circuit(ju_c, [sg_(o) for o, _ in ju], [sg_(o + d * f) for o, f in ju])
+    par = ll_par_circuit(ju_c, [sg_(o) for o, _ in ju], [sg_(o + d * f) for o, f in ju], ju_j)
     out = {'adopte': bool(ok), 'delta_appris_avant': round(d, 4), 'n_juge': len(ju), 'll': {'avec': l1, 'sans': l0},
            'par_circuit': par,
            'raison': (f"{len(ju)} matchs concernés (6 dernières semaines) : log loss {round(l1, 4)} corrigée contre "
@@ -287,7 +293,7 @@ def modele_arbres(hors, P, lim, experience, situations, nv, poids_finaux=None):
     neuf = [A.predire_symetrique(M, v, off(P, h), ECARTS) for _, v, h, _ in ju]
     l0, l1 = _ll(actuel), _ll(neuf)
     ok = l1 < l0
-    par = ll_par_circuit([h[0].get('circuit') for _, v, h, _ in ju], actuel, neuf)
+    par = ll_par_circuit([h[0].get('circuit') for _, v, h, _ in ju], actuel, neuf, [h[0].get('jour') for _, v, h, _ in ju])
     out = {'adopte': bool(ok), 'n_juge': len(ju), 'variables': list(VARIABLES), 'll': {'avec': l1, 'sans': l0},
            'par_circuit': par,
            'jugement': {'actuel': _bilan(actuel), 'arbres': _bilan(neuf)},
@@ -386,7 +392,7 @@ def modele_arbres_candidat(cle, hors, P, lim, experience, situations, nv, poids_
     sans = [A.predire_symetrique(M0, v0, off(P, h), ECARTS) for _, v0, _, h, _ in ju]
     avec = [A.predire_symetrique(M1, v1, off(P, h), ec1) for _, _, v1, h, _ in ju]
     l0, l1 = _ll(sans), _ll(avec)
-    par = ll_par_circuit([l[3][0].get('circuit') for l in ju], sans, avec)     # 04/11/2026 : log loss par circuit
+    par = ll_par_circuit([l[3][0].get('circuit') for l in ju], sans, avec, [l[3][0].get('jour') for l in ju])     # 04/11/2026 : log loss par circuit
     pire = min((v['gain'] for v in par.values()), default=0.0)
     ok = l1 < l0 and pire >= -0.001
     out = {'adopte': bool(ok), 'n_juge': len(ju), 'variables': list(VARIABLES) + [f'{sit_k}_{i}' for i in range(n_k)],
