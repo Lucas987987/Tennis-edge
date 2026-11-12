@@ -1,0 +1,239 @@
+{
+ "genere_le": "2026-11-12T21:12:51+00:00",
+ "paquet": 246,
+ "statut": "controle",
+ "regle": "règle cumulée à deux mesures (≥ 300 matchs, 2 erreurs types, chaque match compté une fois) : groupes — points pour entrer, vainqueur en garde ; modèle complet — vainqueur pour entrer, points en garde ; forme des scores — règle cumulée simple ; aucune décision sur ce contrôle",
+ "regle_d_avant": "points mieux prédits (sans seuil) et vainqueur pas plus de 0,001 moins bien, deux semaines de suite, sur six semaines glissantes dont cinq déjà vues",
+ "dernier_jugement": {
+  "apprentissage": 6949,
+  "jugement": 2681
+ },
+ "groupes": {
+  "forme_fatigue": {
+   "en_place": true,
+   "gain_points_par_modele": {
+    "service": 0.00017
+   },
+   "gain_vainqueur": 0.00647,
+   "au_premier_lundi": "reste en place : ne sort que si les points ou le vainqueur perdent plus de 2 erreurs types sur au moins 300 matchs"
+  },
+  "vitesse_court": {
+   "en_place": true,
+   "gain_points_par_modele": {
+    "service": 0.000132,
+    "aces": 0.000974
+   },
+   "gain_vainqueur": -8e-05,
+   "au_premier_lundi": "reste en place : ne sort que si les points ou le vainqueur perdent plus de 2 erreurs types sur au moins 300 matchs"
+  },
+  "morphologie": {
+   "en_place": true,
+   "gain_points_par_modele": {
+    "service": 1e-05,
+    "aces": 8e-06
+   },
+   "gain_vainqueur": -0.00081,
+   "au_premier_lundi": "reste en place : ne sort que si les points ou le vainqueur perdent plus de 2 erreurs types sur au moins 300 matchs"
+  },
+  "points_importants": {
+   "en_place": true,
+   "gain_points_par_modele": {
+    "bp": 0.000416
+   },
+   "gain_vainqueur": 0.00025,
+   "au_premier_lundi": "reste en place : ne sort que si les points ou le vainqueur perdent plus de 2 erreurs types sur au moins 300 matchs"
+  },
+  "styles": {
+   "en_place": true,
+   "gain_points_par_modele": {
+    "service": 8e-06,
+    "aces": 5e-06
+   },
+   "gain_vainqueur": 0.00038,
+   "au_premier_lundi": "reste en place : ne sort que si les points ou le vainqueur perdent plus de 2 erreurs types sur au moins 300 matchs"
+  },
+  "face_a_face": {
+   "en_place": true,
+   "gain_points_par_modele": {
+    "service": 0.0
+   },
+   "gain_vainqueur": 0.00161,
+   "au_premier_lundi": "reste en place : ne sort que si les points ou le vainqueur perdent plus de 2 erreurs types sur au moins 300 matchs"
+  },
+  "conditions": {
+   "en_place": false,
+   "gain_points_par_modele": {
+    "service": 1.6e-05,
+    "aces": -0.000256
+   },
+   "gain_vainqueur": 0.00015,
+   "au_premier_lundi": "entre seulement si les points gagnent plus de 2 erreurs types sur au moins 300 matchs, sans que le vainqueur perde plus de 2 erreurs types"
+  },
+  "contexte_tournoi": {
+   "en_place": true,
+   "gain_points_par_modele": {
+    "service": 0.000101
+   },
+   "gain_vainqueur": 0.0061,
+   "au_premier_lundi": "reste en place : ne sort que si les points ou le vainqueur perdent plus de 2 erreurs types sur au moins 300 matchs"
+  },
+  "charting": {
+   "en_place": false,
+   "gain_points_par_modele": {
+    "service": -5e-06,
+    "aces": -6e-06
+   },
+   "gain_vainqueur": -0.00037,
+   "au_premier_lundi": "entre seulement si les points gagnent plus de 2 erreurs types sur au moins 300 matchs, sans que le vainqueur perde plus de 2 erreurs types"
+  },
+  "blessure": {
+   "en_place": false,
+   "gain_points_par_modele": {
+    "service": -5e-06
+   },
+   "gain_vainqueur": -0.00039,
+   "au_premier_lundi": "entre seulement si les points gagnent plus de 2 erreurs types sur au moins 300 matchs, sans que le vainqueur perde plus de 2 erreurs types"
+  },
+  "pression": {
+   "en_place": true,
+   "gain_points_par_modele": {
+    "service": 2e-06
+   },
+   "gain_vainqueur": -6e-05,
+   "au_premier_lundi": "reste en place : ne sort que si les points ou le vainqueur perdent plus de 2 erreurs types sur au moins 300 matchs"
+  },
+  "duree": {
+   "en_place": true,
+   "gain_points_par_modele": {
+    "service": 9.7e-05
+   },
+   "gain_vainqueur": 0.00504,
+   "au_premier_lundi": "reste en place : ne sort que si les points ou le vainqueur perdent plus de 2 erreurs types sur au moins 300 matchs"
+  },
+  "densite_air": {
+   "en_place": false,
+   "gain_points_par_modele": {
+    "service": 1.3e-05,
+    "aces": 3e-05
+   },
+   "gain_vainqueur": -0.00011,
+   "au_premier_lundi": "entre seulement si les points gagnent plus de 2 erreurs types sur au moins 300 matchs, sans que le vainqueur perde plus de 2 erreurs types"
+  },
+  "voyage": {
+   "en_place": true,
+   "gain_points_par_modele": {
+    "service": 4.8e-05
+   },
+   "gain_vainqueur": 0.00158,
+   "au_premier_lundi": "reste en place : ne sort que si les points ou le vainqueur perdent plus de 2 erreurs types sur au moins 300 matchs"
+  },
+  "matchup": {
+   "en_place": true,
+   "gain_points_par_modele": {
+    "service": 2.1e-05,
+    "aces": 1.9e-05
+   },
+   "gain_vainqueur": 0.00092,
+   "au_premier_lundi": "reste en place : ne sort que si les points ou le vainqueur perdent plus de 2 erreurs types sur au moins 300 matchs"
+  },
+  "dotation": {
+   "en_place": false,
+   "gain_points_par_modele": {
+    "service": 6.8e-05
+   },
+   "gain_vainqueur": 0.0024,
+   "au_premier_lundi": "entre seulement si les points gagnent plus de 2 erreurs types sur au moins 300 matchs, sans que le vainqueur perde plus de 2 erreurs types"
+  },
+  "adversaires_communs": {
+   "en_place": true,
+   "gain_points_par_modele": {
+    "service": 2.6e-05
+   },
+   "gain_vainqueur": 0.00089,
+   "au_premier_lundi": "reste en place : ne sort que si les points ou le vainqueur perdent plus de 2 erreurs types sur au moins 300 matchs"
+  },
+  "profil": {
+   "en_place": true,
+   "gain_points_par_modele": {
+    "service": 5.2e-05
+   },
+   "gain_vainqueur": 0.00337,
+   "au_premier_lundi": "reste en place : ne sort que si les points ou le vainqueur perdent plus de 2 erreurs types sur au moins 300 matchs"
+  }
+ },
+ "en_place_aujourd_hui": {
+  "global": [
+   "forme_fatigue",
+   "vitesse_court",
+   "morphologie",
+   "points_importants",
+   "styles",
+   "face_a_face",
+   "contexte_tournoi",
+   "pression",
+   "duree",
+   "voyage",
+   "matchup",
+   "adversaires_communs",
+   "profil"
+  ],
+  "par_circuit": {
+   "ATP": {
+    "en_place": [
+     "forme_fatigue",
+     "vitesse_court",
+     "matchup",
+     "dotation",
+     "profil"
+    ],
+    "matchs": {
+     "apprentissage": 1405,
+     "jugement": 493
+    }
+   },
+   "WTA": {
+    "en_place": [
+     "forme_fatigue",
+     "vitesse_court",
+     "points_importants",
+     "face_a_face",
+     "contexte_tournoi",
+     "charting",
+     "pression",
+     "duree",
+     "voyage",
+     "matchup",
+     "profil"
+    ],
+    "matchs": {
+     "apprentissage": 1411,
+     "jugement": 622
+    }
+   },
+   "CH": {
+    "en_place": [
+     "forme_fatigue",
+     "vitesse_court",
+     "morphologie",
+     "points_importants",
+     "contexte_tournoi",
+     "pression",
+     "duree",
+     "densite_air",
+     "voyage",
+     "dotation",
+     "adversaires_communs",
+     "profil"
+    ],
+    "matchs": {
+     "apprentissage": 4133,
+     "jugement": 1566
+    }
+   }
+  },
+  "modele_complet": true,
+  "forme_des_scores": false
+ },
+ "ce_qui_peut_changer": "en place : sortie seulement sur une perte nette (plus de 2 erreurs types) ; hors place (conditions, charting, blessure, densité de l'air, dotation en global) : entrée seulement sur un gain net des points sans perte nette sur le vainqueur. Les gains de quelques millionièmes par point ne suffisent plus pour entrer.",
+ "a_surveiller": "premier lundi : noter les entrées et sorties ; à relire quand chaque décision aura 1 000 matchs cumulés"
+}
