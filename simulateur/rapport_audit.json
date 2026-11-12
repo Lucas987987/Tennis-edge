@@ -285,7 +285,8 @@
    "impact_attendu": "presque nul sur le % ; aces mieux annoncés",
    "confiance": "moyenne",
    "effort": "moyen",
-   "regle": "une amplification par composante (aces, 1re gagnée, 2e gagnée), choisie sur 2018–2022, jugée sur 2023 → : meilleure vraisemblance des points sur les deux périodes, sans dégrader le vainqueur de plus de 0,001"
+   "regle": "une amplification par composante (aces, 1re gagnée, 2e gagnée), choisie sur 2018–2022, jugée sur 2023 → : meilleure vraisemblance des points sur les deux périodes, sans dégrader le vainqueur de plus de 0,001",
+   "suite_paquet_240": "jugé : la 1re balle dedans est trop marquée (k < 1), les points gagnés un peu trop ramenés vers la moyenne ; effet sur les statistiques annoncées petit ; aces ATP non retenus"
   },
   {
    "id": "forme_du_jour",
@@ -415,7 +416,9 @@
   "235": "taille du dépôt : scripts/croissance_depot.py mesure le coût réel dans git par fichier (le chiffre de l'audit, 384 Mo par jour, est un majorant ; la taille n'a monté que d'environ 57 Mo par jour). Aucun fichier déplacé : le correctif attend la première mesure",
   "236": "balayage de 54 cases d'étalonnage sur les périodes d'apprentissage : simulateur/rapport_balayage_pistes.json — aucune n'atteint le seuil pour être portée au jugement ; rien en production",
   "237": "statistiques annoncées rejouées sur l'archive : simulateur/rapport_statistiques_annoncees.json — le modèle n'a pas de biais d'ensemble contre l'archive ; onze cases sur douze réglées sur l'archive, deux seulement (WTA breaks et aces) passent le contrôle en direct et sont en place ; décalage saisonnier du % de 1res balles REJETÉ",
-  "238": "1res balles en salle : simulateur/rapport_premieres_balles_salle.json — RETENU en ATP (1res balles +1,22, doubles fautes −0,49 en salle) et en place via la surface des feuilles ; WTA trop peu de cas, Challenger non étudiable"
+  "238": "1res balles en salle : simulateur/rapport_premieres_balles_salle.json — RETENU en ATP (1res balles +1,22, doubles fautes −0,49 en salle) et en place via la surface des feuilles ; WTA trop peu de cas, Challenger non étudiable",
+  "239": "image pour X : encadré en haut et « duel équilibré » sous 10 points (paquet appliqué entre-temps, hors audit)",
+  "240": "profils service / retour : simulateur/rapport_profils_amplification.json — amplification par composante en place (statistiques seulement), 5 cases retirées d'emblée par la règle de retrait ; duel service / retour tiré des cartes"
  },
  "pistes_ajoutees_le_11_11": {
   "regardé": "2018–2022 seulement, par-dessus l'Elo de production corrigé du format en ATP et les trois signaux solides (surface, absence, âge)",
@@ -803,5 +806,32 @@
   },
   "retrait": "dès 300 cas en salle en direct depuis le 12/11/2026, écart moyen avec le décalage plus grand que sans → retiré",
   "a_surveiller": "WTA en salle : +1,19 point sur 496 cas jugés, sous les 1 000 de la règle ; à rejuger quand l'archive aura assez de cas"
+ },
+ "paquet_240_le_12_11": {
+  "en_production": {
+   "amplification": {
+    "ATP": {
+     "f": 0.921,
+     "d": 1.075,
+     "w2j": 1.108
+    },
+    "WTA": {
+     "f": 0.956
+    },
+    "CH": {
+     "f": 0.912,
+     "a": 1.105,
+     "d": 1.028
+    }
+   },
+   "duel": "tiré des cartes des joueurs (profils ajustés, groupe ATP + Challenger ou WTA)"
+  },
+  "a_juger": [
+   {
+    "id": "aces_atp_en_direct",
+    "paquet_prevu": null,
+    "regle": "aces ATP sous-estimés de 0,9 en direct, pas sur l'archive : mesurer l'écart de source sur les matchs communs (comme pour les 1res balles au paquet 238) quand l'archive aura des matchs ATP communs avec nos feuilles ; d'ici là, le recalage en direct corrige"
+   }
+  ]
  }
 }
