@@ -8,7 +8,8 @@ Matchs ATP et WTA de l'archive Sackmann où les DEUX joueurs ont un style de jeu
 relevés coup par coup dans les 3 ans d'avant). Base : Elo réglé comme la production, mis à jour après chaque match.
 
 DEUX VARIABLES, ÉCRITES LE 13/11/2026 AVANT TOUT CALCUL (style = la première étiquette, la plus marquée) :
-  paire     un écart par paire de styles, appris sur 2018–2022 : t(a, b) = moyenne rétrécie (n + 20) du résultat moins
+  paire     un écart par paire de styles, appris sur 2018–2022 CIRCUIT PAR CIRCUIT (paquet 253 ; au paquet 252, une table
+            commune à l'ATP et à la WTA, même conclusion) : t(a, b) = moyenne rétrécie (n + 20) du résultat moins
             l'Elo pour le style a contre le style b, rendue antisymétrique (t(a, b) − t(b, a)) / 2 ; x = t(style A, style B)
   joueur    effet propre au joueur (comme etude_profils_individuels.py) : son résidu contre ce style d'adversaire moins
             son résidu contre tous, rétrécis (n + 20), sur ses seuls matchs passés ; x = effet(A, style B) − effet(B, style A)
@@ -109,9 +110,11 @@ def main(argv):
     racine = argv[2] if len(argv) > 2 else os.path.join(ICI, '..')
     mcp = argv[3] if len(argv) > 3 else '/tmp/mcp'
     rows = lignes(archive, racine, mcp)
-    T = table_paires(rows)
-    for r in rows:
-        r['paire'] = T.get((r['sg'], r['sp']), 0.0)
+    for c in CIRCUITS:                                   # 13/11/2026 (paquet 253) : une table par circuit (question de Lucas)
+        T = table_paires([r for r in rows if r['c'] == c])
+        for r in rows:
+            if r['c'] == c:
+                r['paire'] = T.get((r['sg'], r['sp']), 0.0)
     doc = {'genere_le': dt.datetime.now(dt.timezone.utc).isoformat(timespec='seconds'), 'paquet': 252, 'statut': 'etude',
            'regle': ("par variable (paire de styles, effet propre au joueur) et par circuit : β appris sur 2018–2022, jugé "
                      "sur 2023 → juin 2026 ; retenu si −0,001 de log loss sur au moins 1 000 matchs concernés et β de même "
