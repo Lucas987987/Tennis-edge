@@ -171,3 +171,77 @@ test('points : /live/points passe par le même cache et le même plafond', async
   assert.equal(o.ok, true);
   assert.equal(o.jeux, null);
 });
+
+// 13/11/2026 (paquet 256) — fraîcheur du direct adaptée au quota TennisApi du jour
+import { fraicheurLive, LIVE_TTL_MS, LIVE_TTL_MIN_MS, LIVE_TTL_MAX_MS } from './worker.js';
+
+test('direct : 3 s quand le quota est large, plus long quand il se resserre, 60 s sous la réserve', () => {
+  assert.equal(fraicheurLive(14000, 4 * 3600, 3000), LIVE_TTL_MIN_MS);             // 11 000 dispo sur 4 h → 1,3 s, borné à 3
+  assert.equal(fraicheurLive(4000, 20 * 3600, 3000), 60000);                       // 1 000 dispo sur 20 h → 72 s, borné à 60
+  assert.equal(fraicheurLive(13000, 24 * 3600, 3000), 8640);                        // 10 000 dispo sur 24 h → 8,64 s
+  assert.equal(fraicheurLive(13000, 2 * 3600, 3000), LIVE_TTL_MIN_MS);              // renouvellement proche → 3 s
+  assert.equal(fraicheurLive(2500, 3600, 3000), LIVE_TTL_MAX_MS);                   // sous la réserve
+  assert.equal(fraicheurLive(NaN, 3600, 3000), LIVE_TTL_MS);                        // en-têtes absents → 10 s
+  for (const r of [0, 3001, 5000, 9000, 15000]) for (const s of [0, 60, 3600, 86400]) {
+    const t = fraicheurLive(r, s, 3000);
+    assert.ok(t >= LIVE_TTL_MIN_MS && t <= LIVE_TTL_MAX_MS);
+  }
+});
+
+test('direct : le quota ne peut pas descendre sous la réserve à cause du direct', () => {
+  // simulation d'une journée de 24 h regardée sans interruption, collecte à part : 1 000 requêtes réparties
+  let restant = 15000, t = 0, collecte = 0;
+  const FIN = 24 * 3600 * 1000;
+  while (t < FIN) {
+    restant--;                                                                     // une requête /live
+    const pas = fraicheurLive(restant, (FIN - t) / 1000, 3000);
+    const c = Math.floor((t + pas) / 86400) - Math.floor(t / 86400);              // ≈ 1 000 par jour
+    restant -= c; collecte += c; t += pas;
+  }
+  assert.ok(collecte >= 990);
+  assert.ok(restant >= 1500, `restant ${restant}`);                                // la réserve des feuilles de match tient
+});
+
+test('direct : la fraîcheur vient des en-têtes de TennisApi, jamais la clé ni le quota dans la réponse', async () => {
+  const stock = {};
+  const envL = { RAPIDAPI_KEY: 'secret-tennis', COFFRE: { get: async k => (k in stock ? { text: async () => stock[k] } : null),
+                                                         put: async (k, v) => { stock[k] = v; } } };
+  const vrai = Date.now; let decal = 0;
+  Date.now = () => vrai() + decal;
+  try {
+    let appels = 0;
+    globalThis.fetch = async () => { appels++; return new Response(JSON.stringify({ events: [EV] }), { status: 200,
+      headers: { 'x-ratelimit-requests-remaining': '12345', 'x-ratelimit-requests-reset': '3600' } }); };
+    decal = 10 * 60 * 1000;                                                        // copie précédente périmée
+    const o = await (await worker.fetch(req('/live'), envL)).json();
+    assert.equal(appels, 1);
+    assert.equal(o.ttl, LIVE_TTL_MIN_MS);
+    assert.ok(!JSON.stringify(o).includes('12345') && !JSON.stringify(o).includes('secret-tennis'));
+    decal += 2000; await worker.fetch(req('/live'), envL); assert.equal(appels, 1); // 2 s plus tard : même copie
+    decal += 1500; await worker.fetch(req('/live'), envL); assert.equal(appels, 2); // 3,5 s : nouvelle requête
+  } finally { Date.now = vrai; }
+});
+
+test('direct : la page redemande les scores toutes les 3 s', () => {
+  const page = fs.readFileSync(new URL('../../algo/index.html', import.meta.url), 'utf-8');
+  assert.match(page, /setInterval\(chargerLive, 3000\)/);
+});
+
+test('direct : statistiques et point par point s’arrêtent quand le quota lu passe sous la réserve', async () => {
+  const { QUOTA_VU } = await import('./worker.js');
+  const stock = {};
+  const envS = { RAPIDAPI_KEY: 'k', COFFRE: { get: async k => (k in stock ? { text: async () => stock[k] } : null), put: async (k, v) => { stock[k] = v; } } };
+  let appels = 0;
+  globalThis.fetch = async () => { appels++; return new Response(JSON.stringify(DOC_STATS), { status: 200,
+    headers: { 'x-ratelimit-requests-remaining': '2999' } }); };
+  const avant = QUOTA_VU.restant;
+  try {
+    QUOTA_VU.restant = 9000;
+    await worker.fetch(req('/live/stats?id=9001'), envS);
+    assert.equal(appels, 1);
+    assert.equal(QUOTA_VU.restant, 2999);                                          // relu dans la réponse
+    const o = await (await worker.fetch(req('/live/stats?id=9002'), envS)).json();
+    assert.equal(appels, 1);
+    assert.equal(o.plafond, true);
+  } finally { QUOTA_VU.restant = avant; }
+});

@@ -3034,8 +3034,10 @@ function matchsFiltres(){
     (circuit==='TOUS' || (circuit==='LIVE' ? !!LIVE.par_uid[m.uid] : m.circuit===circuit)) &&
     (!q || `${m.home} ${m.away} ${m.tournoi}`.toLocaleLowerCase(loc()).includes(q)));
 }
-// 06/11/2026 — SCORES EN DIRECT : la page interroge /live (worker, 30 s de cache, TennisApi) toutes les 30 s tant
-// qu'un match de la liste peut être en cours et que l'onglet est visible. Le % affiché reste celui d'avant match.
+// 06/11/2026 — SCORES EN DIRECT : la page interroge /live (worker, TennisApi) tant qu'un match de la liste peut être
+// en cours et que l'onglet est visible. Le % affiché reste celui d'avant match.
+// 13/11/2026 (paquet 256) : toutes les 3 s ; le worker sert sa copie de 3 s au plus (plus longue si le quota du jour
+// se resserre), donc 100 visiteurs = toujours une seule requête TennisApi.
 const LIVE = { par_uid: {}, vus: {}, minuterie: null, moteurs: {}, stats: {}, attente: {}, formes: {}, reeval: {}, essai: {}, points: {}, cal: {}, ouverts: {}, tousPoints: false };
 function motsNom(n){ return new Set(String(n||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase()
   .replace(/[^a-z\s-]/g,' ').split(/[\s-]+/).filter(w=>w.length>=2)); }
@@ -3757,7 +3759,7 @@ function chargerLive(){
 function demarrerLive(){
   // /live n'existe que derrière le worker « algo » : ailleurs (GitHub Pages) la requête échoue sans rien afficher.
   chargerLive();
-  LIVE.minuterie = setInterval(chargerLive, 10000);
+  LIVE.minuterie = setInterval(chargerLive, 3000);
   document.addEventListener('visibilitychange', ()=>{ if (!document.hidden) chargerLive(); });
 }
 function rendListe(){
