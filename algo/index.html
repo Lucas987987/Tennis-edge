@@ -959,7 +959,7 @@ const T = {
   lv_imp_BB:(n,ok)=>`Balle de break pour ${n} : ${ok?'convertie':'sauvée'}`, lv_imp_BS:(n,ok)=>`Balle de set pour ${n} : ${ok?'convertie':'sauvée'}`,
   t3_tv:'TV', t3_joueur:'Près', t3_cote:'Côté', t3_haut:'Dessus', t3_2d:'Vue 2D', t3_3d:'Vue 3D',
   t3_note:'Glisse pour tourner autour du terrain · score réel ; chaque point est rejoué avec son vrai vainqueur, la façon de le gagner suit ses habitudes, les trajectoires sont reconstituées',
-  g3_rejoue:'▶ Le point qui vient de se jouer', g3_point:n=>`Point ${n}`, g3_attente:'En attente du prochain point',
+  g3_rejoue:'▶ Le point qui vient de se jouer', g3_point:n=>`Point ${n}`, g3_attente:'En attente du prochain point', g3_ralenti:'↺ Ralenti du point',
   fl_titre:'Fil du match', fl_now:'EN CE MOMENT', fl_tout:n=>`Tout le fil (${n})`, fl_moins:'Réduire le fil',
   fl_now_BB:(n,sc)=>`Balle de break pour ${n} (${sc})`, fl_now_BS:(n,sc)=>`Balle de set pour ${n} (${sc})`, fl_now_BM:(n,sc)=>`Balle de match pour ${n} (${sc})`,
   fl_break:(n,o,sc,k)=>`Break ! ${n} prend le service ${/^[aeiouyàâéèêëîïôûh]/i.test(o)?'d’':'de '}${o}${k>1?` à sa ${k}e balle de break`:''} : ${sc}`,
@@ -1246,7 +1246,7 @@ const T = {
   lv_imp_BB:(n,ok)=>`Break point for ${n}: ${ok?'converted':'saved'}`, lv_imp_BS:(n,ok)=>`Set point for ${n}: ${ok?'converted':'saved'}`,
   t3_tv:'TV', t3_joueur:'Close', t3_cote:'Side', t3_haut:'Top', t3_2d:'2D view', t3_3d:'3D view',
   t3_note:'Swipe to turn around the court · real score; each point is replayed with its real winner, how it is won follows the player’s habits, paths are reconstructed',
-  g3_rejoue:'▶ The point just played', g3_point:n=>`Point ${n}`, g3_attente:'Waiting for the next point',
+  g3_rejoue:'▶ The point just played', g3_point:n=>`Point ${n}`, g3_attente:'Waiting for the next point', g3_ralenti:'↺ Slow-motion replay',
   fl_titre:'Match feed', fl_now:'RIGHT NOW', fl_tout:n=>`Full feed (${n})`, fl_moins:'Shorter feed',
   fl_now_BB:(n,sc)=>`Break point for ${n} (${sc})`, fl_now_BS:(n,sc)=>`Set point for ${n} (${sc})`, fl_now_BM:(n,sc)=>`Match point for ${n} (${sc})`,
   fl_break:(n,o,sc,k)=>`Break! ${n} breaks ${o}${k>1?` on break point no. ${k}`:''}: ${sc}`,
@@ -3551,7 +3551,8 @@ const T3D = (() => {
 // vainqueur, vrai serveur, vrai côté) ; seules les trajectoires sont reconstituées, et l'écran le dit. Paquet 261 :
 // anti-crénelage, halo des lumières, vignettage, bandeau LED, écrans géants avec le vrai score, public redessiné ;
 // qualité « basse » automatique si l'appareil peine (moins de 22 images par seconde). Paquet 262 : joueurs d'un
-// seul tenant pliés aux articulations (habillage par os), visage, cheveux, tenue, raquette ; mouvements lissés. Sans WebGL 2, la vue 3D simple (T3D) prend le relais.
+// seul tenant pliés aux articulations (habillage par os), visage, cheveux, tenue, raquette ; mouvements lissés.
+// Paquet 263 : après chaque vrai point, son ralenti vu du bord du court (rythme de télévision). Sans WebGL 2, la vue 3D simple (T3D) prend le relais.
 // Descriptif : le % ne change pas.
 const G3D = (() => {
   'use strict';
@@ -4353,7 +4354,7 @@ const G3D = (() => {
         else pousse(finVol(der));
       }
     }
-    R = { vols, gagnant: g, fin, lancer: t0, debut: t0, finT: t + 1.2, annonce: false };
+    R = { vols, gagnant: g, fin, lancer: t0, debut: t0, finT: t + 1.2, annonce: false, J0: J.map(j => ({ x: j.x, z: j.z, cap: j.cap })) };
   }
   function posBalle(t) {
     if (!R) return null;
@@ -4461,9 +4462,43 @@ const G3D = (() => {
   }
   // la boucle des points : on rejoue le dernier point arrivé ; sinon on attend
   function avancer(t, dt) {
-    if (R && t > R.finT) { if (!R.annonce) { R.annonce = true; E.dernier = { gagnant: R.gagnant, t }; applaudir = t; } R = null; }
+    if (R && t > R.finT) {
+      if (!R.annonce) { R.annonce = true; E.dernier = { gagnant: R.gagnant, t }; applaudir = t; }
+      if (!R.ralenti) RAL.prevu = { at: t + 1.8, R };                               // le ralenti suivra
+      R = null;
+    }
     if (!R && FILE.length) { const P = FILE.splice(0, FILE.length).pop(); nouveauPoint(P, t); }
     bouger(t, dt);
+  }
+
+  // ── LE RALENTI (paquet 263, Lucas : « ça manque de rythme ») ──────────────────────────────────────────────
+  // Comme à la télévision : après chaque vrai point, il est rejoué au ralenti sous un autre angle, caméra qui suit la
+  // balle ; puis les joueurs se replacent. Un nouveau point arrivé pendant le ralenti passe toujours devant.
+  const RAL = { actif: false, prevu: null, t0: 0, base: 0, fin: 0, cam: null };
+  const VITESSE_RALENTI = 0.42;
+  function debutRalenti(t) {
+    const src = RAL.prevu.R; RAL.prevu = null;
+    src.J0.forEach((p, i) => Object.assign(J[i], p, { vx: 0, vz: 0 }));
+    R = { ...src, annonce: true, ralenti: true };
+    Object.assign(RAL, { actif: true, t0: t, base: src.debut + 0.25, fin: src.finT - 0.5, cam: { ...cam } });
+    const s = Math.random() < 0.5 ? -1 : 1;
+    Object.assign(cam, { fov: 0.5, suivre: false, balle: true, cote: s, haut: rnd(1.4, 2.4) });          // caméra basse, au bord du court
+    delete cam.focus;
+  }
+  function finRalenti() {
+    RAL.actif = false; R = null;
+    if (RAL.cam) { for (const k of Object.keys(cam)) delete cam[k]; Object.assign(cam, RAL.cam); RAL.cam = null; }
+  }
+  // le temps du jeu : le vrai temps, ou le temps ralenti pendant un ralenti
+  function horloge(t, dt) {
+    if (RAL.actif) {
+      const tj = RAL.base + (t - RAL.t0) * VITESSE_RALENTI;
+      if (FILE.length || tj > RAL.fin || E.fini) finRalenti();
+      else return [tj, dt * VITESSE_RALENTI];
+    }
+    if (RAL.prevu && !R && !FILE.length && !E.fini && t >= RAL.prevu.at) { debutRalenti(t); return [RAL.base, 0]; }
+    if (FILE.length) RAL.prevu = null;
+    return [t, dt];
   }
 
   // ── caméra et rendu ───────────────────────────────────────────────────────────────────────────────────────
@@ -4506,7 +4541,9 @@ const G3D = (() => {
       cible = [cam.fx * 0.8, 0.9, cam.fz + 5];
     }
     if (cam.vise) cible = [J[cam.vise[0]].x, cam.vise[1], J[cam.vise[0]].z];        // (tests) caméra sur un joueur
-    const eye = [cible[0] + cam.dist * cp * Math.sin(cam.yaw), cam.dist * sp + 0.5, cible[2] - cam.dist * cp * Math.cos(cam.yaw)];
+    if (cam.balle) cible = [cam.bx || 0, 0.7, cam.bz || 0];                              // ralenti : la caméra suit la balle
+    let eye = [cible[0] + cam.dist * cp * Math.sin(cam.yaw), cam.dist * sp + 0.5, cible[2] - cam.dist * cp * Math.cos(cam.yaw)];
+    if (cam.balle) eye = [cam.cote * 8.4, cam.haut, cl((cam.bz || 0) * 0.45, -7, 7)];           // ralenti : depuis le bord du court
     const vp = M4.mul(M4.persp(cam.fov, w / h, 0.5, 200), M4.look(eye, cible, [0, 1, 0]));
     const lc = [SOLEIL[0] * 40, SOLEIL[1] * 40, SOLEIL[2] * 40];
     const lvp = M4.mul(M4.ortho(-22, 22, -26, 26, 1, 100), M4.look(lc, [0, 0, 0], [0, 1, 0]));
@@ -4521,11 +4558,13 @@ const G3D = (() => {
   function dessiner(t, dt) {
     const w = cv.width, h = cv.height; if (!w || !h) return;
     if (surfaceFaite !== E.surface) construireDecor(E.surface);
+    const tReel = t; [t, dt] = horloge(t, dt);
     avancer(t, dt);
     const bv = E.fini ? null : posBalle(t), b = bv || (R ? null : balleEnMain(t));
+    if (cam.balle) { const c = bv || { x: (J[0].x + J[1].x) / 2, z: 0 }; cam.bx = lerp(cam.bx ?? c.x, c.x, 0.08); cam.bz = lerp(cam.bz ?? c.z, c.z, 0.08); }
     if (bv) { TRACE.push(bv); if (TRACE.length > 9) TRACE.shift(); } else TRACE.length = 0;
     cam.cx = lerp(cam.cx || 0, cam.suivre && bv ? cl(bv.x * 0.35, -3, 3) : 0, 0.04);
-    message(t);
+    message(t, tReel);
     const { vp, lvp, eye } = matrices(w, h);
     // ce qui bouge : les deux joueurs, la balle
     const dyn = [];
@@ -4554,7 +4593,7 @@ const G3D = (() => {
     gl.useProgram(prog);
     gl.uniformMatrix4fv(U.uVP, false, vp); gl.uniformMatrix4fv(U.uLVP, false, lvp); gl.uniform3fv(U.uSun, SOLEIL); gl.uniform3fv(U.uEye, eye);
     gl.uniform3fv(U.uCiel, [0.62, 0.64, 0.82]); gl.uniform3fv(U.uSol, [0.28, 0.26, 0.36]); gl.uniform3fv(U.uBrume, [0.08, 0.07, 0.2]);
-    gl.uniform1f(U.uT, t); gl.uniform1f(U.uClap, cl(Math.exp(-(t - applaudir) * 0.7), 0, 1));
+    gl.uniform1f(U.uT, tReel); gl.uniform1f(U.uClap, RAL.actif ? 0 : cl(Math.exp(-(t - applaudir) * 0.7), 0, 1));
     gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, smTex); gl.uniform1i(U.uSM, 1); gl.uniform1i(U.uTx, 0);
     const passe = (o, mat, inst) => { uniformes(o, inst); gl.uniformMatrix4fv(U.uM, false, mat);
       gl.uniform1i(U.uPeau, o.peau ? 1 : 0); if (o.peau) gl.uniformMatrix4fv(U.uOs, false, o.peau); gl.bindVertexArray(o.m.vao);
@@ -4629,7 +4668,8 @@ const G3D = (() => {
   function message(t) {
     if (!msgEl) return;
     let txt = '';
-    if (R && t >= R.debut) txt = tr('g3_rejoue');
+    if (RAL.actif) txt = tr('g3_ralenti');
+    else if (R && t >= R.debut) txt = tr('g3_rejoue');
     else if (E.dernier && t - E.dernier.t < 4) txt = tr('g3_point', E.noms[E.dernier.gagnant]);
     else if (!E.dernier && !E.fini) txt = tr('g3_attente');
     if (msgEl.textContent !== txt) { msgEl.textContent = txt; msgEl.hidden = !txt; }
@@ -4705,14 +4745,15 @@ const G3D = (() => {
     vue(nom) { const v = VUES[nom] || VUES.tv; delete cam.focus; cam.fx = cam.fz = undefined; Object.assign(cam, v); },
     // tests : image à l'instant t, sans la boucle
     _image(t) { if (!this.disponible()) return false; taille();
-      for (let u = (this._t || 0); u < t; u += 0.03) avancer(u, 0.03);
+      for (let u = (this._t || 0); u < t; u += 0.03) { const [tj, dtj] = horloge(u, 0.03); avancer(tj, dtj); }
       this._t = t; dessiner(t, 0); return true; },
     _simuler(t) {
       for (let u = (this._t || 0); u < t; u += 0.03) avancer(u, 0.03);
       this._t = t; return { R, J, balle: posBalle(t), enMain: balleEnMain(t), poses: [poseDe(0, t), poseDe(1, t)], dernier: E.dernier, file: FILE.length }; },
     _point(gagnant) { FILE.push({ gagnant, srv: E.srv, droite: E.droite }); },
     _gagnant: gagnantPoint, _etatDe: etatDe, _tirage: tirage,
-    _reinit() { R = null; FILE.length = 0; E.dernier = null; this._t = 0; J[0].x = 0; J[0].z = -HL - 0.8; J[1].x = 0; J[1].z = HL + 0.8; J[0].vx = J[0].vz = J[1].vx = J[1].vz = 0; },
+    _etape(t, dt) { const [tj, dtj] = horloge(t, dt); avancer(tj, dtj); return { ralenti: RAL.actif, prevu: !!RAL.prevu, R: !!R, tj }; },
+    _reinit() { R = null; FILE.length = 0; RAL.actif = false; RAL.prevu = null; E.dernier = null; this._t = 0; J[0].x = 0; J[0].z = -HL - 0.8; J[1].x = 0; J[1].z = HL + 0.8; J[0].vx = J[0].vz = J[1].vx = J[1].vz = 0; },
     _post: () => !!(POST.ok && POST.ms && QUALITE === 'haute'),
     _squelette: (pose) => os({ x: 0, z: 0, cap: 0 }, pose || POSE0()), _inverse: inverseRigide,
     _cam: cam, _maj: maj, _etat: E, _J: J, _R: () => R, _poses: { poseAttente, poseCourse, poseCoupDroit, poseRevers, poseService },
