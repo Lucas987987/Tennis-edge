@@ -142,8 +142,9 @@ class MoteurWebGL(unittest.TestCase):
         self.assertTrue(self.S['poses_finies'])
 
     def test_rien_ne_vient_d_ailleurs(self):
-        for motif in ('http', 'fetch(', 'import(', 'XMLHttpRequest', '.glb', 'new Image', 'src='):
+        for motif in ('http', 'import(', 'XMLHttpRequest', '.glb', 'new Image', 'src='):
             self.assertNotIn(motif, BLOC)
+        self.assertEqual(re.findall(r"fetch\('([^']*)'", BLOC), ['modeles/joueurs3d.bin?v=264'])   # seul fichier lu : sur le site
         for mot in ('marché', 'pinnacle'):
             self.assertNotIn(mot, BLOC.lower())
         self.assertIn('G3D.monter(h3, m, r, fini) && !T3D.monter(h3, m, r, fini)', HTML)   # repli sur la 3D simple
@@ -164,7 +165,7 @@ console.log(JSON.stringify({ n: rep.length, ecart, sym: [x(10) + x(13), x(11) + 
         self.assertLess(S['ecart'], 1e-5)
         for v in S['sym']:
             self.assertLess(abs(v), 0.03)                                                   # gauche = miroir de droite
-        for x in ('uniform mat4 uOs[16]', 'aWt.x', 'function poseLisse'):
+        for x in ('uniform mat4 uOs[24]', 'aWt / max(dot(aWt', 'function poseLisse'):
             self.assertIn(x, BLOC)
 
     def test_ralenti_apres_chaque_point(self):
@@ -176,9 +177,9 @@ global.court = n => n; global.esc = x => x; eval(src.slice(a, b).replace('const 
 const m = { uid: 'u', home: 'A B', away: 'C D', surface: 'Hard' };
 const r = (p, q) => ({ inverse: false, x: { serveur: 'home', score_home: { sets: [6, 3], point: p }, score_away: { sets: [4, 2], point: q } } });
 G3D._reinit(); G3D._maj(m, r('30', '15'), false); G3D._maj(m, r('40', '15'), false);
-const etats = []; let prec = '', coupe = null;
-for (let t = 0; t < 40; t += 0.05) {
-  if (t > 12 && coupe === null && G3D._etape(t, 0).ralenti) { G3D._maj(m, r('40', '30'), false); coupe = t; }
+const etats = []; let prec = '', coupe = null, nL = 0;
+for (let t = 0; t < 60; t += 0.05) {
+  if (prec === 'PL' && ++nL > 20 && coupe === null) { G3D._maj(m, r('40', '30'), false); coupe = t; }   // nouveau point pendant le ralenti
   const o = G3D._etape(t, 0.05), k = (o.R ? 'P' : '') + (o.ralenti ? 'L' : '') + (o.prevu ? 'A' : '');
   if (k !== prec) { etats.push(k || '-'); prec = k; }
 }
@@ -188,6 +189,45 @@ console.log(JSON.stringify({ etats }));
         self.assertEqual(e[:3], ['P', 'A', 'PL'])                                           # point, pause annoncée, ralenti
         self.assertIn('P', e[3:])                                                          # le nouveau point passe devant le ralenti
         self.assertNotIn('PL', e[3:4])
+
+    def test_modeles_des_joueurs(self):
+        # paquet 264 : fichier servi par le site, licence CC0, squelette de 23 os ; bras en croix = pose de repos
+        import struct
+        b = (RACINE / 'algo' / 'modeles' / 'joueurs3d.bin').read_bytes()
+        self.assertEqual(b[:4], b'TEJ3')
+        self.assertLess(len(b), 3_000_000)                                                   # léger pour le téléphone
+        n = struct.unpack('<I', b[4:8])[0]
+        J = json.loads(b[8:8 + n])
+        self.assertEqual(len(J['os']['noms']), 23)
+        self.assertEqual(set(J['corps']), {'H', 'F'})
+        self.assertIn('CC0', J['licence'])
+        self.assertIn('CC0', (RACINE / 'algo' / 'modeles' / 'LICENCE.txt').read_text(encoding='utf-8'))
+        S = json.loads(subprocess.run(['node', '-e', r'''
+const fs = require('fs'), src = fs.readFileSync(process.argv[1], 'utf-8');
+const a = src.indexOf('const G3D = (() => {'), b = src.indexOf('// Vue du direct choisie par le visiteur');
+global.court = n => n; global.esc = x => x; eval(src.slice(a, b).replace('const G3D =', 'global.G3D ='));
+const f = fs.readFileSync(process.argv[2]), buf = f.buffer.slice(f.byteOffset, f.byteOffset + f.length);
+const T = G3D._modele(buf).skin, k0 = Array.from(T.slice(0, 16));
+let ecart = 0; for (let k = 1; k < 23; k++) for (let i = 0; i < 16; i++) ecart = Math.max(ecart, Math.abs(T[k * 16 + i] - k0[i]));
+const P = G3D._modele(buf, G3D._poses.poseCoupDroit(0.5));
+const fini = Array.from(P.skin).every(Number.isFinite) && !!P.raquette && P.raquette.every(Number.isFinite);
+console.log(JSON.stringify({ ecart, fini }));
+''', str(RACINE / 'algo' / 'index.html'), str(RACINE / 'algo' / 'modeles' / 'joueurs3d.bin')], capture_output=True, text=True, check=True).stdout)
+        self.assertLess(S['ecart'], 1e-3)                                                    # même transformation pour tous les os : rien ne se tord
+        self.assertTrue(S['fini'])
+        self.assertIn("fetch('modeles/joueurs3d.bin?v=264')", BLOC)
+        self.assertIn("MOD.etat === 'pret'", BLOC)                                           # sinon, les joueurs dessinés par le code
+        A = json.loads(subprocess.run(['node', '-e', r'''
+const fs = require('fs'), src = fs.readFileSync(process.argv[1], 'utf-8');
+const a = src.indexOf('const G3D = (() => {'), b = src.indexOf('// Vue du direct choisie par le visiteur');
+global.court = n => n; global.esc = x => x; eval(src.slice(a, b).replace('const G3D =', 'global.G3D ='));
+const noms = ['Adrian Mannarino', 'Aleksandr Shevchenko', 'Iga Swiatek', 'Zzzz Zzzzzzzzzzzzzzzzzz', 'Ñ', ''];
+const out = noms.map(n => G3D._allure({ home: n, away: n, circuit: n.startsWith('Iga') ? 'WTA' : 'ATP' }, 0));
+console.log(JSON.stringify(out.map(x => [x.sexe, x.cheveux.every(Number.isFinite), x.tenue.flat().every(Number.isFinite)])));
+''', str(RACINE / 'algo' / 'index.html')], capture_output=True, text=True, check=True).stdout)
+        self.assertEqual(A[2][0], 'F')
+        for sexe, cheveux_ok, tenue_ok in A:                                                  # tous les noms donnent une allure valable
+            self.assertTrue(cheveux_ok and tenue_ok)
 
     def test_qualite_et_ecran(self):
         self.assertIn("localStorage.setItem('te_3d_qualite', 'basse')", BLOC)          # repli automatique si ça rame

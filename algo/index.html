@@ -3552,7 +3552,8 @@ const T3D = (() => {
 // anti-crénelage, halo des lumières, vignettage, bandeau LED, écrans géants avec le vrai score, public redessiné ;
 // qualité « basse » automatique si l'appareil peine (moins de 22 images par seconde). Paquet 262 : joueurs d'un
 // seul tenant pliés aux articulations (habillage par os), visage, cheveux, tenue, raquette ; mouvements lissés.
-// Paquet 263 : après chaque vrai point, son ralenti vu du bord du court (rythme de télévision). Sans WebGL 2, la vue 3D simple (T3D) prend le relais.
+// Paquet 263 : après chaque vrai point, son ralenti vu du bord du court (rythme de télévision).
+// Paquet 264 : vrais modèles de joueurs (Quaternius, CC0), servis par le site (modeles/joueurs3d.bin). Sans WebGL 2, la vue 3D simple (T3D) prend le relais.
 // Descriptif : le % ne change pas.
 const G3D = (() => {
   'use strict';
@@ -3670,22 +3671,23 @@ const G3D = (() => {
   // ── WebGL ──────────────────────────────────────────────────────────────────────────────────────────────────
   const VS = `#version 300 es
   layout(location=0) in vec3 aP; layout(location=1) in vec3 aN; layout(location=2) in vec3 aC; layout(location=3) in vec2 aU;
-  layout(location=4) in vec4 aI; layout(location=5) in vec3 aIC; layout(location=6) in vec2 aB; layout(location=7) in vec2 aWt;
-  uniform mat4 uOs[16]; uniform int uPeau;
+  layout(location=4) in vec4 aI; layout(location=5) in vec3 aIC; layout(location=6) in vec4 aB; layout(location=7) in vec4 aWt; layout(location=8) in float aCls;
+  uniform mat4 uOs[24]; uniform int uPeau;
   uniform mat4 uM, uVP, uLVP; uniform int uInst; uniform float uT, uClap; uniform vec2 uDecal;
-  out vec3 vW, vN, vC; out vec2 vU; out vec4 vL;
+  out vec3 vW, vN, vC, vB; out vec2 vU; out vec4 vL; out float vCls;
   void main(){
     vec3 p = aP; vec3 c = aC;
     if (uInst == 1) { p = p * aI.w + aI.xyz + vec3(0.0, max(0.0, sin(uT * (3.0 + uClap * 9.0) + aI.x * 1.7 + aI.z)) * (0.05 + uClap * 0.16), 0.0); c = aC * aIC; }
     vec3 nn = aN;
-    if (uPeau == 1) { mat4 S = uOs[int(aB.x)] * aWt.x + uOs[int(aB.y)] * aWt.y; p = (S * vec4(p, 1.0)).xyz; nn = mat3(S) * aN; }
+    if (uPeau == 1) { vec4 wt = aWt / max(dot(aWt, vec4(1.0)), 1e-4); mat4 S = uOs[int(aB.x)] * wt.x + uOs[int(aB.y)] * wt.y + uOs[int(aB.z)] * wt.z + uOs[int(aB.w)] * wt.w; p = (S * vec4(p, 1.0)).xyz; nn = mat3(S) * aN; }
     vec4 w = uM * vec4(p, 1.0);
-    vW = w.xyz; vN = normalize(mat3(uM) * nn); vC = c; vU = aU + uDecal; vL = uLVP * w;
+    vW = w.xyz; vN = normalize(mat3(uM) * nn); vC = c; vU = aU + uDecal; vL = uLVP * w; vCls = aCls; vB = aP;
     gl_Position = uVP * w;
   }`;
   const FS = `#version 300 es
   precision highp float; precision highp sampler2DShadow;
-  in vec3 vW, vN, vC; in vec2 vU; in vec4 vL;
+  in vec3 vW, vN, vC, vB; in vec2 vU; in vec4 vL; in float vCls;
+  uniform int uHabit; uniform vec3 uTenue[8];
   uniform vec3 uCol, uSun, uEye, uCiel, uSol, uBrume; uniform float uAlpha, uSpec, uEmis; uniform int uTex, uOmbre;
   uniform sampler2D uTx; uniform sampler2DShadow uSM;
   layout(location=0) out vec4 o; layout(location=1) out vec4 oE;
@@ -3700,7 +3702,21 @@ const G3D = (() => {
   void main(){
     vec3 n = normalize(vN); if (!gl_FrontFacing) n = -n;
     vec3 base = vC * uCol; float a = uAlpha;
-    if (uTex == 1) { vec4 t = texture(uTx, vU); base *= t.rgb; a *= t.a; }
+    bool tissu = false;
+    if (uHabit == 1) {
+      int k = int(vCls + 0.5);
+      // bords nets du maillot (col rond, manches) et du short, calculés sur la pose de repos (bras en croix)
+      float ax = abs(vB.x), rCou = length(vec2(vB.x, vB.z + 0.03));
+      bool torse = ax < 0.355 && vB.y > 0.99 && (vB.y < 1.43 || (rCou > 0.088 && vB.y < 1.56));
+      if ((k == 0 || k == 1 || k == 2) && vB.y > 0.99 && vB.y < 1.75) {
+        k = torse ? 1 : 0;
+        if (k == 1 && (ax > 0.33 || (abs(vB.z + 0.02) < 0.035 && ax > 0.125 && vB.y < 1.4))) k = 2;   // côtés, bord de manche
+      }
+      if (k == 3 || k == 4) k = (vB.y < uTenue[0].x + 0.035 || (ax > 0.15 && abs(vB.z + 0.03) < 0.028 && vB.y < 1.0)) ? 4 : 3;   // liseré du short
+      if (k == 0 || k == 7) k = (vB.y > uTenue[0].y && vB.y < uTenue[0].y + 0.032 && vB.z < 0.1 && vB.z > -0.14) ? 7 : 0;   // bandeau net
+      if (k > 0 && !(k == 7 && uTenue[7].x < 0.0)) { base = uTenue[k]; tissu = true; }
+    }
+    if (uTex == 1 && !tissu) { vec4 t = texture(uTx, vU); base *= t.rgb; a *= t.a; }
     if (a < 0.03) discard;
     float d = max(dot(n, uSun), 0.0), sh = uOmbre == 1 ? ombre() : 1.0;
     vec3 amb = mix(uSol, uCiel, n.y * 0.5 + 0.5);
@@ -3715,10 +3731,10 @@ const G3D = (() => {
     oE = vec4(clamp(base * uEmis * 0.9, 0.0, 1.0) * a, a);
   }`;
   const VS_OMBRE = `#version 300 es
-  layout(location=0) in vec3 aP; layout(location=4) in vec4 aI; layout(location=6) in vec2 aB; layout(location=7) in vec2 aWt;
-  uniform mat4 uM, uLVP; uniform int uInst, uPeau; uniform mat4 uOs[16];
+  layout(location=0) in vec3 aP; layout(location=4) in vec4 aI; layout(location=6) in vec4 aB; layout(location=7) in vec4 aWt;
+  uniform mat4 uM, uLVP; uniform int uInst, uPeau; uniform mat4 uOs[24];
   void main(){ vec3 p = aP; if (uInst == 1) p = p * aI.w + aI.xyz;
-    if (uPeau == 1) { mat4 S = uOs[int(aB.x)] * aWt.x + uOs[int(aB.y)] * aWt.y; p = (S * vec4(p, 1.0)).xyz; }
+    if (uPeau == 1) { vec4 wt = aWt / max(dot(aWt, vec4(1.0)), 1e-4); mat4 S = uOs[int(aB.x)] * wt.x + uOs[int(aB.y)] * wt.y + uOs[int(aB.z)] * wt.z + uOs[int(aB.w)] * wt.w; p = (S * vec4(p, 1.0)).xyz; }
     gl_Position = uLVP * uM * vec4(p, 1.0); }`;
   const FS_OMBRE = `#version 300 es
   precision mediump float; out vec4 o; void main(){ o = vec4(1.0); }`;
@@ -3759,7 +3775,8 @@ const G3D = (() => {
     const buf = (loc, data, n) => { const b = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, b);
       gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.STATIC_DRAW); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, n, gl.FLOAT, false, 0, 0); };
     buf(0, g.p, 3); buf(1, g.n, 3); buf(2, g.c, 3); buf(3, g.u, 2);
-    if (g.b) { buf(6, g.b, 2); buf(7, g.w, 2); } else { gl.vertexAttrib2f(6, 0, 0); gl.vertexAttrib2f(7, 1, 0); }
+    if (g.b) { buf(6, g.b, 4); buf(7, g.w, 4); } else { gl.vertexAttrib4f(6, 0, 0, 0, 0); gl.vertexAttrib4f(7, 1, 0, 0, 0); }
+    gl.vertexAttrib1f(8, 0);
     let ni = 0;
     if (inst) { // inst : [x, y, z, échelle] + couleur
       const b = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, b); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(inst.pos), gl.STATIC_DRAW);
@@ -4112,7 +4129,7 @@ const G3D = (() => {
       for (let k = 0; k < g.p.length / 3; k++) {
         let wp = 0;
         if (parent >= 0 && zone > 0) { const d = sens * g.p[k * 3 + 1]; wp = cl(0.5 - 0.5 * d / zone, 0, 1); }
-        corps.b.push(b, parent >= 0 ? parent : b); corps.w.push(1 - wp, wp);
+        corps.b.push(b, parent >= 0 ? parent : b, 0, 0); corps.w.push(1 - wp, wp, 0, 0);
       }
     }
     const P = { corps: maillage(corps), inv: repos.map(inverseRigide) };
@@ -4219,6 +4236,125 @@ const G3D = (() => {
     const out = [[P.corps, M4.id(), false, peau]];
     if (raquette) out.push([P.raquette, raquette], [P.cordage, raquette, true]);
     return out;
+  }
+
+
+  // ── LES VRAIS MODÈLES (paquet 264) ─────────────────────────────────────────────────────────────────────────
+  // Personnages « Universal Base Characters » de Quaternius (CC0, domaine public), préparés une fois pour toutes par
+  // scripts/modeles_joueurs.py et servis par le site (modeles/joueurs3d.bin, 1,2 Mo) : homme pour l'ATP et les
+  // Challengers, femme pour la WTA ; peau claire ou foncée, coiffure et bandeau varient d'un joueur à l'autre.
+  // Leur squelette (23 os) suit mes poses de tennis : pour chaque os, la rotation de mon squelette par rapport à sa
+  // pose « bras en croix » est appliquée à la pose de repos du modèle (même repère : +z devant, +x à sa gauche).
+  // Tant que le fichier n'est pas chargé (ou s'il manque), les joueurs dessinés par le code prennent le relais.
+  const MOD = { etat: 'rien', os: null, corps: {}, cheveux: {}, tex: {}, ref: null };
+  const CORRESP = { pelvis: [0], spine_01: [0, 1, 0.35], spine_02: [0, 1, 0.7], spine_03: [1], neck_01: [1, 2, 0.5], Head: [2],
+    clavicle_l: [1], clavicle_r: [1], upperarm_r: [3], lowerarm_r: [4], hand_r: [5], upperarm_l: [6], lowerarm_l: [7], hand_l: [8],
+    thigh_r: [9], calf_r: [10], foot_r: [11], ball_r: [11], thigh_l: [12], calf_l: [13], foot_l: [14], ball_l: [14] };
+  const q2m = q => { const [x, y, z, w] = q; return [1 - 2 * (y * y + z * z), 2 * (x * y + z * w), 2 * (x * z - y * w), 2 * (x * y - z * w), 1 - 2 * (x * x + z * z), 2 * (y * z + x * w), 2 * (x * z + y * w), 2 * (y * z - x * w), 1 - 2 * (x * x + y * y)]; };
+  const m2q = m => {                                                   // m : 3×3 colonne par colonne
+    const [a, b, c, d, e, f, g, h, i] = m, tr = a + e + i;
+    if (tr > 0) { const s = Math.sqrt(tr + 1) * 2; return [(f - h) / s, (g - c) / s, (b - d) / s, 0.25 * s]; }
+    if (a > e && a > i) { const s = Math.sqrt(1 + a - e - i) * 2; return [0.25 * s, (d + b) / s, (g + c) / s, (f - h) / s]; }
+    if (e > i) { const s = Math.sqrt(1 + e - a - i) * 2; return [(d + b) / s, 0.25 * s, (h + f) / s, (g - c) / s]; }
+    const s = Math.sqrt(1 + i - a - e) * 2; return [(g + c) / s, (h + f) / s, 0.25 * s, (b - d) / s];
+  };
+  const slerp = (p, q, t) => { let d = p[0] * q[0] + p[1] * q[1] + p[2] * q[2] + p[3] * q[3]; if (d < 0) { q = q.map(v => -v); d = -d; }
+    if (d > 0.9995) { const r = p.map((v, k) => v + (q[k] - v) * t), n = Math.hypot(...r); return r.map(v => v / n); }
+    const th = Math.acos(d), s = Math.sin(th); return p.map((v, k) => (v * Math.sin((1 - t) * th) + q[k] * Math.sin(t * th)) / s); };
+  const rot3 = m => [m[0], m[1], m[2], m[4], m[5], m[6], m[8], m[9], m[10]];
+  const mul3 = (a, b) => { const o = new Array(9); for (let c = 0; c < 3; c++) for (let r = 0; r < 3; r++) o[c * 3 + r] = a[r] * b[c * 3] + a[3 + r] * b[c * 3 + 1] + a[6 + r] * b[c * 3 + 2]; return o; };
+  const trans3 = m => [m[0], m[3], m[6], m[1], m[4], m[7], m[2], m[5], m[8]];
+  const POSE_T = () => { const p = POSE0(); p.epD = [0, 0, -Math.PI / 2]; p.epG = [0, 0, -Math.PI / 2]; return p; };
+  function lireOs(J, buf, B) {
+    const O = J.os;
+    MOD.os = { noms: O.noms, parents: O.parents, t: O.t, q: O.q, ibm: new Float32Array(buf.slice(B + O.ibm, B + O.ibm + O.noms.length * 64)),
+               repos: O.q.map(q2m) };
+    MOD.os.rp = O.noms.map((_, k) => { const m = MOD.os.ibm.subarray(k * 16, k * 16 + 16), R = rot3(m);      // position monde de repos
+      return [0, 1, 2].map(i => -(R[i * 3] * m[12] + R[i * 3 + 1] * m[13] + R[i * 3 + 2] * m[14])); });
+    MOD.os.reposMonde = [];                                                            // rotations monde de repos du modèle
+    O.noms.forEach((_, k) => { const p = O.parents[k]; MOD.os.reposMonde[k] = p < 0 ? MOD.os.repos[k] : mul3(MOD.os.reposMonde[p], MOD.os.repos[k]); });
+    MOD.ref = os({ x: 0, z: 0, cap: 0 }, POSE_T()).M.map(rot3);         // mon squelette, bras en croix
+  }
+  async function chargerModeles() {
+    if (MOD.etat !== 'rien') return; MOD.etat = 'charge';
+    try {
+      const r = await fetch('modeles/joueurs3d.bin?v=264');
+      if (!r.ok) throw new Error('statut ' + r.status);
+      const buf = await r.arrayBuffer(), dv = new DataView(buf);
+      if (String.fromCharCode(...new Uint8Array(buf, 0, 4)) !== 'TEJ3') throw new Error('format');
+      const n = dv.getUint32(4, true), J = JSON.parse(new TextDecoder().decode(new Uint8Array(buf, 8, n))), B = 8 + n;
+      const prim = q => {
+        const vao = gl.createVertexArray(); gl.bindVertexArray(vao);
+        const att = (loc, Type, off, nb, typeGl, norm) => { const b = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, b);
+          gl.bufferData(gl.ARRAY_BUFFER, new Type(buf, B + off, q.n * nb), gl.STATIC_DRAW); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, nb, typeGl, norm, 0, 0); };
+        att(0, Float32Array, q.pos, 3, gl.FLOAT, false); att(1, Int8Array, q.nor, 3, gl.BYTE, true); att(3, Uint16Array, q.uv, 2, gl.UNSIGNED_SHORT, true);
+        att(6, Uint8Array, q.jnt, 4, gl.UNSIGNED_BYTE, false); att(7, Uint8Array, q.wgt, 4, gl.UNSIGNED_BYTE, true); att(8, Uint8Array, q.cls, 1, gl.UNSIGNED_BYTE, false);
+        gl.vertexAttrib3f(2, 1, 1, 1); gl.vertexAttrib4f(4, 0, 0, 0, 1); gl.vertexAttrib3f(5, 1, 1, 1);
+        const ib = gl.createBuffer(); gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ib);
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, q.i32 ? new Uint32Array(buf, B + q.idx, q.ni) : new Uint16Array(buf, B + q.idx, q.ni), gl.STATIC_DRAW);
+        gl.bindVertexArray(null);
+        return { vao, n: q.ni, type: q.i32 ? gl.UNSIGNED_INT : gl.UNSIGNED_SHORT, tex: q.tex };
+      };
+      for (const s in J.corps) MOD.corps[s] = { corps: prim(J.corps[s].corps), yeux: prim(J.corps[s].yeux) };
+      for (const c in J.cheveux) MOD.cheveux[c] = prim(J.cheveux[c]);
+      for (const [nom, [off, len]] of Object.entries(J.images)) {
+        const img = await createImageBitmap(new Blob([new Uint8Array(buf, B + off, len)], { type: 'image/jpeg' }));
+        MOD.tex[nom] = texture(img, false);
+      }
+      lireOs(J, buf, B);
+      MOD.etat = 'pret';
+    } catch (e) { MOD.etat = 'absent'; }
+  }
+  // tenue et allure d'un joueur : maillot, côtés, short, liseré, blanc, semelle, bandeau (null = peau)
+  function allure(m, i) {
+    const nom = String(i ? m.away : m.home || ''), h = [...nom].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7);
+    const femme = /WTA/i.test(m.circuit || '') || /WTA/i.test(m.tournoi || '');
+    const sexe = femme ? 'F' : 'H', fonce = h % 3 === 0;
+    const coiffe = femme ? (h % 2 ? 'chignon' : 'long') : (h % 2 ? 'court' : 'ras');
+    const T = i === 0 ? ['#20bcd6', '#0d6f80', '#16244f', '#7fe9ff', '#f4f4f8', '#2f2f3a', '#f4f4f8']
+                      : ['#e0479a', '#8c1d58', '#f2f2f6', '#ff9fd0', '#f4f4f8', '#2f2f3a', '#f4f4f8'];
+    return { sexe, peau: `peau_${sexe}_${fonce ? 'fonce' : 'clair'}`, coiffe, sourcils: 'sourcils_' + sexe,
+             tenue: [[femme ? 0.66 : 0.6, femme ? 1.668 : 1.752, 0], ...T.map(hex)], bandeau: (h >>> 3) % 2 === 0,
+             cheveux: hex(['#3a2618', '#1b1410', '#5a3a1e', '#b88a4a', '#2a1a10'][(h >>> 5) % 5]).map(v => v * 1.9) };   // texture grise teintée
+  }
+  // matrices de peau du modèle pour une pose de mon squelette
+  function osModele(j, pose) {
+    const O = MOD.os, n = O.noms.length;
+    const mien = os({ x: 0, z: 0, cap: 0 }, pose), R = mien.M.map(rot3);
+    const delta = k => mul3(R[k], trans3(MOD.ref[k]));
+    const Y = rot3(M4.ry(j.cap));
+    const qd = {};
+    const monde = new Array(n), skin = new Float32Array(24 * 16);
+    for (let k = 0; k < n; k++) {
+      const nom = O.noms[k], c = CORRESP[nom], p = O.parents[k];
+      let rot;
+      if (!c) rot = p < 0 ? mul3(Y, O.reposMonde[k]) : mul3(rot3(monde[p]), O.repos[k]);
+      else {
+        let d;
+        if (c.length === 1) d = delta(c[0]);
+        else { const a = qd[c[0]] || (qd[c[0]] = m2q(delta(c[0]))), b = qd[c[1]] || (qd[c[1]] = m2q(delta(c[1]))); d = q2m(slerp(a, b, c[2])); }
+        rot = mul3(Y, mul3(d, O.reposMonde[k]));
+      }
+      let pos;
+      const place = M4.mul(M4.tr(j.x, 0, j.z), M4.ry(j.cap));
+      if (p < 0) pos = M4.pt(place, O.rp[k]);
+      else if (nom === 'pelvis') pos = M4.pt(place, [O.rp[k][0], mien.M[0][13] - 0.031, O.rp[k][2]]);   // hauteur : la mienne (flexion)
+      else { const P = monde[p]; pos = M4.pt(P, O.t[k]); }
+      const m = M4.id(); m[0] = rot[0]; m[1] = rot[1]; m[2] = rot[2]; m[4] = rot[3]; m[5] = rot[4]; m[6] = rot[5]; m[8] = rot[6]; m[9] = rot[7]; m[10] = rot[8];
+      m[12] = pos[0]; m[13] = pos[1]; m[14] = pos[2];
+      monde[k] = m;
+      skin.set(M4.mul(m, O.ibm.subarray(k * 16, k * 16 + 16)), k * 16);
+    }
+    // la raquette : orientation de ma main, posée dans la main droite du modèle
+    let raquette = null;
+    if (mien.raquette) {
+      const L = M4.mul(inverseRigide(mien.M[5]), mien.raquette), main = monde[O.noms.indexOf('hand_r')];
+      const Rm = rot3(mien.M[5]), RY = mul3(Y, Rm), m = M4.id();
+      m[0] = RY[0]; m[1] = RY[1]; m[2] = RY[2]; m[4] = RY[3]; m[5] = RY[4]; m[6] = RY[5]; m[8] = RY[6]; m[9] = RY[7]; m[10] = RY[8];
+      m[12] = main[12]; m[13] = main[13]; m[14] = main[14];
+      raquette = M4.mul(m, L);
+    }
+    return { skin, raquette };
   }
 
   // ── LES POINTS : le vrai vainqueur, rejoué ─────────────────────────────────────────────────────────────────
@@ -4512,7 +4648,7 @@ const G3D = (() => {
     gl = cv.getContext('webgl2', { antialias: true, alpha: false, powerPreference: 'high-performance' });
     if (!gl) return false;
     prog = shader(VS, FS); progO = shader(VS_OMBRE, FS_OMBRE);
-    for (const k of ['uM', 'uVP', 'uLVP', 'uInst', 'uPeau', 'uOs', 'uT', 'uClap', 'uDecal', 'uCol', 'uSun', 'uEye', 'uCiel', 'uSol', 'uBrume', 'uAlpha', 'uSpec', 'uEmis', 'uTex', 'uOmbre', 'uTx', 'uSM']) U[k] = gl.getUniformLocation(prog, k);
+    for (const k of ['uM', 'uVP', 'uLVP', 'uInst', 'uPeau', 'uOs', 'uHabit', 'uTenue', 'uT', 'uClap', 'uDecal', 'uCol', 'uSun', 'uEye', 'uCiel', 'uSol', 'uBrume', 'uAlpha', 'uSpec', 'uEmis', 'uTex', 'uOmbre', 'uTx', 'uSM']) U[k] = gl.getUniformLocation(prog, k);
     for (const k of ['uM', 'uLVP', 'uInst', 'uPeau', 'uOs']) UO[k] = gl.getUniformLocation(progO, k);
     try {
       POST.reduit = shader(VS_ECRAN, FS_REDUIT); POST.flou = shader(VS_ECRAN, FS_FLOU); POST.final = shader(VS_ECRAN, FS_FINAL);
@@ -4543,7 +4679,8 @@ const G3D = (() => {
     if (cam.vise) cible = [J[cam.vise[0]].x, cam.vise[1], J[cam.vise[0]].z];        // (tests) caméra sur un joueur
     if (cam.balle) cible = [cam.bx || 0, 0.7, cam.bz || 0];                              // ralenti : la caméra suit la balle
     let eye = [cible[0] + cam.dist * cp * Math.sin(cam.yaw), cam.dist * sp + 0.5, cible[2] - cam.dist * cp * Math.cos(cam.yaw)];
-    if (cam.balle) eye = [cam.cote * 8.4, cam.haut, cl((cam.bz || 0) * 0.45, -7, 7)];           // ralenti : depuis le bord du court
+    if (cam.balle) eye = [cam.cote * 8.4, cam.haut, cl((cam.bz || 0) * 0.45, -7, 7)];
+    if (cam.vise) eye[1] = cible[1] + cam.dist * sp;           // ralenti : depuis le bord du court
     const vp = M4.mul(M4.persp(cam.fov, w / h, 0.5, 200), M4.look(eye, cible, [0, 1, 0]));
     const lc = [SOLEIL[0] * 40, SOLEIL[1] * 40, SOLEIL[2] * 40];
     const lvp = M4.mul(M4.ortho(-22, 22, -26, 26, 1, 100), M4.look(lc, [0, 0, 0], [0, 1, 0]));
@@ -4553,6 +4690,7 @@ const G3D = (() => {
     gl.uniform3fv(U.uCol, o.col || [1, 1, 1]); gl.uniform1f(U.uAlpha, o.alpha || 1); gl.uniform1f(U.uSpec, o.spec ?? 0.2);
     gl.uniform1f(U.uEmis, o.emis || 0); gl.uniform1i(U.uInst, inst ? 1 : 0); gl.uniform2fv(U.uDecal, o.decal || [0, 0]);
     gl.uniform1i(U.uOmbre, o.recoit === false ? 0 : 1);
+    gl.uniform1i(U.uHabit, o.tenue ? 1 : 0); if (o.tenue) gl.uniform3fv(U.uTenue, o.tenue.flat());
     if (o.tex) { gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, o.tex); gl.uniform1i(U.uTex, 1); } else gl.uniform1i(U.uTex, 0);
   }
   function dessiner(t, dt) {
@@ -4568,14 +4706,23 @@ const G3D = (() => {
     const { vp, lvp, eye } = matrices(w, h);
     // ce qui bouge : les deux joueurs, la balle
     const dyn = [];
-    for (const i of [0, 1]) for (const x of dessinerJoueur(PERSOS[i], J[i], poseLisse(i, t, dt))) dyn.push(x);
+    for (const i of [0, 1]) {
+      const pose = poseLisse(i, t, dt);
+      if (MOD.etat === 'pret' && MATCH) {
+        const A = ALLURE[i] || (ALLURE[i] = allure(MATCH, i)), { skin, raquette } = osModele(J[i], pose), C = MOD.corps[A.sexe];
+        const tenue = A.tenue.map((c, k) => k === 7 && !A.bandeau ? [-1, -1, -1] : c);
+        dyn.push([C.corps, M4.id(), false, skin, { tex: MOD.tex[A.peau], tenue }], [C.yeux, M4.id(), false, skin, { tex: MOD.tex.yeux }]);
+        for (const c of [A.coiffe, A.sourcils]) { const H = MOD.cheveux[c]; if (H) dyn.push([H, M4.id(), false, skin, { tex: MOD.tex[H.tex], col: A.cheveux }]); }
+        if (raquette) dyn.push([PERSOS[i].raquette, raquette], [PERSOS[i].cordage, raquette, true]);
+      } else for (const x of dessinerJoueur(PERSOS[i], J[i], pose)) dyn.push(x);
+    }
     // 1) ombres
     gl.bindFramebuffer(gl.FRAMEBUFFER, smFbo); gl.viewport(0, 0, SM, SM); gl.clear(gl.DEPTH_BUFFER_BIT);
     gl.useProgram(progO); gl.uniformMatrix4fv(UO.uLVP, false, lvp); gl.enable(gl.DEPTH_TEST); gl.disable(gl.CULL_FACE);
     gl.enable(gl.POLYGON_OFFSET_FILL); gl.polygonOffset(1.5, 2.0);
     gl.uniform1i(UO.uInst, 0);
     const passeO = (m, mat, peau) => { gl.uniformMatrix4fv(UO.uM, false, mat); gl.uniform1i(UO.uPeau, peau ? 1 : 0); if (peau) gl.uniformMatrix4fv(UO.uOs, false, peau);
-      gl.bindVertexArray(m.vao); gl.drawElements(gl.TRIANGLES, m.n, gl.UNSIGNED_INT, 0); };
+      gl.bindVertexArray(m.vao); gl.drawElements(gl.TRIANGLES, m.n, m.type || gl.UNSIGNED_INT, 0); };
     for (const o of scene.fixes) if (o.ombre) passeO(o.m, M4.id());
     for (const o of scene.transp) if (o.ombre) passeO(o.m, M4.id());
     for (const [m, mat, tr, peau] of dyn) if (!tr) passeO(m, mat, peau);
@@ -4597,12 +4744,16 @@ const G3D = (() => {
     gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, smTex); gl.uniform1i(U.uSM, 1); gl.uniform1i(U.uTx, 0);
     const passe = (o, mat, inst) => { uniformes(o, inst); gl.uniformMatrix4fv(U.uM, false, mat);
       gl.uniform1i(U.uPeau, o.peau ? 1 : 0); if (o.peau) gl.uniformMatrix4fv(U.uOs, false, o.peau); gl.bindVertexArray(o.m.vao);
-      if (inst) gl.drawElementsInstanced(gl.TRIANGLES, o.m.n, gl.UNSIGNED_INT, 0, o.m.ni); else gl.drawElements(gl.TRIANGLES, o.m.n, gl.UNSIGNED_INT, 0); };
+      if (inst) gl.drawElementsInstanced(gl.TRIANGLES, o.m.n, gl.UNSIGNED_INT, 0, o.m.ni); else gl.drawElements(gl.TRIANGLES, o.m.n, o.m.type || gl.UNSIGNED_INT, 0); };
     for (const o of scene.fixes) passe(o, M4.id());
     passe({ ...scene.public, recoit: false }, M4.id(), true);
     if (scene.led) passe({ ...scene.led, decal: [-(t * 0.06) % 1, 0] }, M4.id());
     if (scene.ecran) { majEcran(); passe(scene.ecran, M4.id()); }
-    for (const [m, mat, tr, peau] of dyn) if (!tr) passe({ m, spec: 0.07, peau }, mat);
+    for (const [m, mat, tr, peau, opt] of dyn) if (!tr) {
+      if (opt) gl.enable(gl.CULL_FACE);                                                  // modèles fermés : faces arrière cachées
+      passe({ m, spec: opt ? 0.12 : 0.07, peau, recoit: !opt, ...(opt || {}) }, mat);
+      if (opt) gl.disable(gl.CULL_FACE);
+    }
     if (b) passe({ m: BALLE, spec: 0.5, emis: 0.35 }, M4.tr(b.x, b.y, b.z));
     // 3) transparents : mailles du filet, cordages
     gl.enable(gl.BLEND); gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA); gl.depthMask(false);
@@ -4715,7 +4866,11 @@ const G3D = (() => {
     raf = requestAnimationFrame(boucle);
     return true;
   }
+  let MATCH = null; const ALLURE = [null, null];
   function maj(m, r, fini) {
+    if (!MATCH || MATCH.uid !== m.uid) { ALLURE[0] = ALLURE[1] = null; }
+    MATCH = m;
+    if (gl && MOD.etat === 'rien') chargerModeles();
     const x = r.x, H = r.inverse ? x.score_away : x.score_home, A = r.inverse ? x.score_home : x.score_away;
     E.noms = [court(m.home), court(m.away)]; E.sets = [H.sets || [], A.sets || []]; E.pts = [H.point ?? '0', A.point ?? '0'];
     E.srv = x.serveur ? (((x.serveur === 'home') !== r.inverse) ? 0 : 1) : null; E.fini = !!fini; E.surface = SURFACES[m.surface] ? m.surface : 'Hard';
@@ -4754,6 +4909,9 @@ const G3D = (() => {
     _gagnant: gagnantPoint, _etatDe: etatDe, _tirage: tirage,
     _etape(t, dt) { const [tj, dtj] = horloge(t, dt); avancer(tj, dtj); return { ralenti: RAL.actif, prevu: !!RAL.prevu, R: !!R, tj }; },
     _reinit() { R = null; FILE.length = 0; RAL.actif = false; RAL.prevu = null; E.dernier = null; this._t = 0; J[0].x = 0; J[0].z = -HL - 0.8; J[1].x = 0; J[1].z = HL + 0.8; J[0].vx = J[0].vz = J[1].vx = J[1].vz = 0; },
+    _allure: allure,
+    _modele(buf, pose) { const dv = new DataView(buf), n = dv.getUint32(4, true), J = JSON.parse(new TextDecoder().decode(new Uint8Array(buf, 8, n)));
+      lireOs(J, buf, 8 + n); return osModele({ x: 0, z: 0, cap: 0 }, pose || POSE_T()); },
     _post: () => !!(POST.ok && POST.ms && QUALITE === 'haute'),
     _squelette: (pose) => os({ x: 0, z: 0, cap: 0 }, pose || POSE0()), _inverse: inverseRigide,
     _cam: cam, _maj: maj, _etat: E, _J: J, _R: () => R, _poses: { poseAttente, poseCourse, poseCoupDroit, poseRevers, poseService },
