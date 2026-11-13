@@ -1,6 +1,6 @@
 # Récapitulatif de l’apprentissage — 2026-W46
 
-Généré le 2026-11-13T05:25:01+00:00 · état **a_verifier**.
+Généré le 2026-11-13T07:29:45+00:00 · état **a_verifier**.
 
 > Lecture seule des rapports hebdomadaires. Les populations restent séparées ; aucune adoption nouvelle n’est déclenchée par ce document et aucun gain de ROI n’est déduit.
 
@@ -8,7 +8,7 @@ Généré le 2026-11-13T05:25:01+00:00 · état **a_verifier**.
 
 - **Facteurs adoptés** : Adversaires communs, Contexte du tournoi, Durée, Face-à-face, Forme et fatigue, Matchup, Morphologie, Points importants, Pression, Profil de réaction, Styles, Vitesse du court, voyage.
 - **Candidats encore en attente** : dotation.
-- **Apprentissage sur nos propres pronostics** : non_adopte — 1103/400 matchs documentés ; en attente : 7 nouveaux matchs depuis le dernier jugement (il en faut 30)
+- **Apprentissage sur nos propres pronostics** : non_adopte — 1106/400 matchs documentés ; en attente : 10 nouveaux matchs depuis le dernier jugement (il en faut 30)
 - **Pronostics récents évalués** : 886 matchs ; exactitude de la combinaison 65.24 %.
 - **Dérive** : accumulation ; 0 alerte(s).
 - **Champion modifié cette semaine** : oui.
@@ -59,7 +59,7 @@ Direct : **890** pronostics sur **4** semaine(s). Rejoué : **5870** pronostics 
 - **Promotions retenues** : aucune.
 - **Promotions différées** : aucune.
 - **Dérive** : accumulation, sur 886 matchs ; alertes : aucune.
-- **Empreinte du champion** : `578cd5e704a13b8797412f6fee0b3d6c65bc3854140decec65ff942df5e0d6bb`.
+- **Empreinte du champion** : `235659e756b74b93750988a540e634cb862f4a97b6029d8ccc10421896a17962`.
 - **Sources manquantes** : aucune.
 
 Ce récapitulatif décrit l’apprentissage et ses contrôles. Il ne constitue ni une preuve prospective supplémentaire ni une promesse d’amélioration future des vainqueurs, des scores ou du ROI.
