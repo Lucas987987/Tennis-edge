@@ -97,7 +97,7 @@ async def main():
           const c = document.querySelector('.g3d-cv'), gl = c.getContext('webgl2'), px = new Uint8Array(4 * 64);
           const couleurs = new Set();
           for (let k = 0; k < 64; k++) { gl.readPixels(Math.floor(c.width * (k % 8 + .5) / 8), Math.floor(c.height * (Math.floor(k / 8) + .5) / 8), 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px.subarray(k * 4)); couleurs.add(px.slice(k * 4, k * 4 + 3).join(',')); }
-          return { couleurs: couleurs.size, tableau: document.querySelector('.g3d-tab').textContent }; }''')
+          return { couleurs: couleurs.size, tableau: document.querySelector('.g3d-tab').textContent, post: G3D._post() }; }''')
         print(json.dumps({'res': res, 'erreurs': erreurs}))
         await b.close()
 asyncio.run(main())
@@ -148,6 +148,11 @@ class MoteurWebGL(unittest.TestCase):
             self.assertNotIn(mot, BLOC.lower())
         self.assertIn('G3D.monter(h3, m, r, fini) && !T3D.monter(h3, m, r, fini)', HTML)   # repli sur la 3D simple
 
+    def test_qualite_et_ecran(self):
+        self.assertIn("localStorage.setItem('te_3d_qualite', 'basse')", BLOC)          # repli automatique si ça rame
+        self.assertIn('renderbufferStorageMultisample', BLOC)
+        self.assertIn('function dessinerEcran', BLOC)                                    # écrans géants : le vrai score
+
     def test_page_valide(self):
         for js in re.findall(r'<script>([\s\S]*?)</script>', HTML):
             with tempfile.NamedTemporaryFile('w', suffix='.js', delete=False, encoding='utf-8') as f:
@@ -176,6 +181,7 @@ class MoteurWebGL(unittest.TestCase):
         if o['res'] is None:
             self.skipTest('WebGL 2 indisponible dans ce navigateur')
         self.assertGreater(o['res']['couleurs'], 20)                                # une vraie image, pas un aplat
+        self.assertTrue(o['res']['post'])                                           # paquet 261 : anti-crénelage et halo
         self.assertIn('Un', o['res']['tableau'])
 
 
