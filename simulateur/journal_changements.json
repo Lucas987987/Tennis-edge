@@ -1116,6 +1116,13 @@
    "paquet": 256,
    "quoi": "SCORES EN DIRECT PLUS FRAIS (paquet 256, demande de Lucas). Le score affiché pendant un match se met à jour toutes les 3 secondes au lieu d'environ 30 : la page redemande les scores toutes les 3 s et le service qui les relit garde sa copie 3 s au plus (avant : 10 s et 30 s). La fréquence suit le crédit de requêtes du jour de la source des scores : relevé du 6 au 13 novembre, 800 à 1 800 requêtes utilisées par jour sur 15 000, donc 3 s presque tout le temps ; si le direct est très regardé, la mise à jour s'espace toute seule (jusqu'à 60 s) pour garder 3 000 requêtes à la collecte des feuilles de match. Il reste le délai propre à la source, quelques secondes. Le % de victoire ne change pas.",
    "garde_fou": "Remettre 30 s de fraîcheur minimale au service des scores (workers/algo/worker.js, LIVE_TTL_MIN_MS) et 10 s à la page (algo/index.html, chargerLive)."
+  },
+  {
+   "date": "2026-11-13",
+   "statut": "production",
+   "paquet": 257,
+   "quoi": "FIL DU MATCH en direct (paquet 257, demande de Lucas). Dans la fiche d'un match en cours, à la place des « moments clés », le récit du match, le plus récent en haut : breaks (et à quelle balle de break), breaks blancs, balles de break sauvées, retour de 0-40, balles de set et de match sauvées, sets et tie-breaks, victoire, jeux blancs, jeux à rallonge (3 égalités ou plus), séries de 7 points ou de 4 jeux de suite, aces et doubles fautes. En tête, « en ce moment » : balle de break, de set ou de match, lue dans le score en direct (toutes les 3 s). Les aces et doubles fautes sont repérés d'une mise à jour des statistiques à l'autre (une par minute) et placés dans le jeu en cours à ce moment-là. Le détail des coups (coup droit gagnant, montée au filet…) n'est fourni en direct par aucune source abordable : rien n'est inventé. Aucune requête de plus vers la source des scores. Descriptif : le % ne change pas.",
+   "garde_fou": "Retrait : dans algo/index.html, rendMatchLive revient aux « moments clés » si l'on retire l'appel à rendFil."
   }
  ]
 }
