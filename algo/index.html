@@ -492,6 +492,7 @@ body.carte #video{display:block;width:1080px;height:1350px}
 .g3d-l{display:flex;align-items:center;gap:5px}.g3d-n{min-width:60px;max-width:96px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 .g3d-l.a .g3d-n{color:#2EE6FF}.g3d-l.b .g3d-n{color:#FF4FAE}.g3d-srv{width:8px;color:#D4FF3A;font-size:.6rem}
 .g3d-s{min-width:12px;text-align:center;color:#ABA3D6}.g3d-s.c{color:#F4F1FF}.g3d-p{min-width:18px;text-align:center;color:#D4FF3A;background:rgba(212,255,58,.14);border-radius:4px}
+.g3d-son{position:absolute;right:6px;bottom:6px;width:34px;height:34px;border-radius:50%;border:1px solid rgba(255,255,255,.18);background:rgba(10,8,30,.82);color:#F4F1FF;font-size:16px;line-height:1;cursor:pointer}
 .g3d-msg{position:absolute;right:6px;top:6px;max-width:58%;background:rgba(10,8,30,.82);border:1px solid rgba(212,255,58,.35);border-radius:6px;padding:2px 7px;font:600 11px/1.4 Barlow,system-ui,sans-serif;color:#D4FF3A;pointer-events:none}
 .te3d-vues{display:flex;gap:6px}.te3d-v,.te3d-bascule{padding:3px 10px;font-size:.72rem}.te3d-bascule{margin-left:auto}
 .lv-fil li.fl-now{border-top-color:var(--ball);color:var(--ball);font-weight:600}.lv-btn-fil{margin-top:8px}
@@ -959,7 +960,7 @@ const T = {
   lv_imp_BB:(n,ok)=>`Balle de break pour ${n} : ${ok?'convertie':'sauvée'}`, lv_imp_BS:(n,ok)=>`Balle de set pour ${n} : ${ok?'convertie':'sauvée'}`,
   t3_tv:'TV', t3_joueur:'Près', t3_cote:'Côté', t3_haut:'Dessus', t3_2d:'Vue 2D', t3_3d:'Vue 3D',
   t3_note:'Glisse pour tourner autour du terrain · score réel ; chaque point est rejoué avec son vrai vainqueur, la façon de le gagner suit ses habitudes, les trajectoires sont reconstituées',
-  g3_rejoue:'▶ Le point qui vient de se jouer', g3_point:n=>`Point ${n}`, g3_attente:'En attente du prochain point', g3_ralenti:'↺ Ralenti du point',
+  g3_rejoue:'▶ Le point qui vient de se jouer', g3_point:n=>`Point ${n}`, g3_attente:'En attente du prochain point', g3_ralenti:'↺ Ralenti du point', g3_son_on:'Activer le son du direct 3D', g3_son_off:'Couper le son du direct 3D',
   fl_titre:'Fil du match', fl_now:'EN CE MOMENT', fl_tout:n=>`Tout le fil (${n})`, fl_moins:'Réduire le fil',
   fl_now_BB:(n,sc)=>`Balle de break pour ${n} (${sc})`, fl_now_BS:(n,sc)=>`Balle de set pour ${n} (${sc})`, fl_now_BM:(n,sc)=>`Balle de match pour ${n} (${sc})`,
   fl_break:(n,o,sc,k)=>`Break ! ${n} prend le service ${/^[aeiouyàâéèêëîïôûh]/i.test(o)?'d’':'de '}${o}${k>1?` à sa ${k}e balle de break`:''} : ${sc}`,
@@ -1246,7 +1247,7 @@ const T = {
   lv_imp_BB:(n,ok)=>`Break point for ${n}: ${ok?'converted':'saved'}`, lv_imp_BS:(n,ok)=>`Set point for ${n}: ${ok?'converted':'saved'}`,
   t3_tv:'TV', t3_joueur:'Close', t3_cote:'Side', t3_haut:'Top', t3_2d:'2D view', t3_3d:'3D view',
   t3_note:'Swipe to turn around the court · real score; each point is replayed with its real winner, how it is won follows the player’s habits, paths are reconstructed',
-  g3_rejoue:'▶ The point just played', g3_point:n=>`Point ${n}`, g3_attente:'Waiting for the next point', g3_ralenti:'↺ Slow-motion replay',
+  g3_rejoue:'▶ The point just played', g3_point:n=>`Point ${n}`, g3_attente:'Waiting for the next point', g3_ralenti:'↺ Slow-motion replay', g3_son_on:'Turn on the 3D live sound', g3_son_off:'Turn off the 3D live sound',
   fl_titre:'Match feed', fl_now:'RIGHT NOW', fl_tout:n=>`Full feed (${n})`, fl_moins:'Shorter feed',
   fl_now_BB:(n,sc)=>`Break point for ${n} (${sc})`, fl_now_BS:(n,sc)=>`Set point for ${n} (${sc})`, fl_now_BM:(n,sc)=>`Match point for ${n} (${sc})`,
   fl_break:(n,o,sc,k)=>`Break! ${n} breaks ${o}${k>1?` on break point no. ${k}`:''}: ${sc}`,
@@ -3996,10 +3997,12 @@ const G3D = (() => {
     ch.ajoute(boite(0.9, 0.08, 0.9, vert), M4.tr(cx, 2.0, 0)); ch.ajoute(boite(0.08, 0.7, 0.9, vert), M4.tr(cx - 0.42, 2.35, 0));
     ch.ajoute(boite(0.12, 0.9, 0.9, hex('#e9e9f2')), M4.tr(cx + 0.47, 1.6, 0));
     for (let k = 0; k < 6; k++) ch.ajoute(boite(0.5, 0.04, 0.05, vert), M4.tr(cx + 0.55, 0.3 + k * 0.3, 0.3));
-    // arbitre assis (tenue sombre, chemise claire)
-    ch.ajoute(boite(0.38, 0.5, 0.3, hex('#e8e8f2')), M4.tr(cx, 2.38, 0)); ch.ajoute(sphere(0.12, 10, hex('#d9a988')), M4.tr(cx, 2.78, 0));
-    ch.ajoute(boite(0.4, 0.14, 0.4, hex('#20203a')), M4.tr(cx + 0.12, 2.13, 0));
-    for (const s of [-1, 1]) ch.ajoute(boite(0.13, 0.5, 0.13, hex('#20203a')), M4.tr(cx + 0.33, 1.9, s * 0.1));
+    // arbitre assis, en blocs : seulement tant que le vrai modèle n'est pas chargé (paquet 266)
+    const arb = new Geo();
+    arb.ajoute(boite(0.38, 0.5, 0.3, hex('#e8e8f2')), M4.tr(cx, 2.38, 0)); arb.ajoute(sphere(0.12, 10, hex('#d9a988')), M4.tr(cx, 2.78, 0));
+    arb.ajoute(boite(0.4, 0.14, 0.4, hex('#20203a')), M4.tr(cx + 0.12, 2.13, 0));
+    for (const s of [-1, 1]) arb.ajoute(boite(0.13, 0.5, 0.13, hex('#20203a')), M4.tr(cx + 0.33, 1.9, s * 0.1));
+    scene.arbitre = { m: maillage(arb), spec: 0.15, ombre: true, recoit: true };
     // bancs des joueurs, de l'autre côté
     for (const s of [-1, 1]) { ch.ajoute(boite(0.6, 0.45, 1.6, hex('#2b2b55')), M4.tr(xP + 2.4, 0.22, s * 1.6)); ch.ajoute(boite(0.12, 0.5, 1.6, hex('#2b2b55')), M4.tr(xP + 2.68, 0.7, s * 1.6)); }
     // ramasseurs : accroupis au filet, debout au fond
@@ -4066,7 +4069,7 @@ const G3D = (() => {
     const R = (a) => chaine(M4.ry(a[1]), M4.rx(a[0]), M4.rz(a[2]));
     const M = new Array(NOS);
     const racine = chaine(M4.tr(j.x, pose.saut || 0, j.z), M4.ry(j.cap));
-    M[0] = chaine(racine, M4.tr(0, 0.98 - pose.accroupi * 1.4, 0), R(pose.bassin));
+    M[0] = chaine(racine, M4.tr(pose.lat || 0, 0.98 - pose.accroupi * 1.4, pose.avance || 0), R(pose.bassin));   // lat, avance : le poids qui passe d'un pied à l'autre
     M[1] = chaine(M[0], M4.tr(0, 0.08, 0), R(pose.tronc));
     M[2] = chaine(M[1], M4.tr(0, 0.73, 0.01), R(pose.tete));
     let raquette = null;
@@ -4197,7 +4200,7 @@ const G3D = (() => {
   }
   const POSE0 = () => ({ tronc: [0, 0, 0], bassin: [0, 0, 0], tete: [0, 0, 0],
     epD: [0, 0, 0], coudeD: 0, poignetD: [0, 0, 0], epG: [0, 0, 0], coudeG: 0,
-    hancheD: [0, 0, 0], genouD: 0, hancheG: [0, 0, 0], genouG: 0, piedD: 0, piedG: 0, accroupi: 0, saut: 0, coup: 0 });
+    hancheD: [0, 0, 0], genouD: 0, hancheG: [0, 0, 0], genouG: 0, piedD: 0, piedG: 0, accroupi: 0, saut: 0, coup: 0, lat: 0, avance: 0 });
   function melange(a, b, t) {
     const o = POSE0();
     for (const k in o) o[k] = Array.isArray(o[k]) ? a[k].map((v, i) => lerp(v, b[k][i], t)) : lerp(a[k], b[k], t);
@@ -4221,47 +4224,84 @@ const G3D = (() => {
     p.epD = [-0.5 + Math.sin(ph) * 0.4 * a, 0.2, 0.3]; p.coudeD = 1.1;
     return p;
   }
-  // coups : u de 0 (préparation) à 1 (fin d'accompagnement), frappe à u = 0.5
-  function poseCoupDroit(u) {
-    const p = poseAttente(0), k = [[0, 0], [0.42, 1], [0.5, 1.15], [1, 2]];
-    const ph = u < 0.42 ? lisse(u / 0.42) : u < 0.5 ? 1 + lisse((u - 0.42) / 0.08) : 2;
-    const f = u < 0.5 ? 0 : lisse((u - 0.5) / 0.5);
-    const prep = Math.min(ph, 1), frappe = cl(ph - 1, 0, 1);
-    p.tronc = [0.25, lerp(lerp(0, 1.1, prep), -0.5, frappe) - 0.5 * f, 0];
-    p.bassin = [0, lerp(lerp(0, 0.6, prep), -0.3, frappe), 0];
-    p.epD = [lerp(lerp(-0.75, 0.2, prep), -1.2, frappe) - 0.9 * f, lerp(lerp(0.25, -1.4, prep), 0.1, frappe) + 1.1 * f, lerp(0.25, 1.2, prep) * (1 - frappe) + 0.4 * frappe];
-    p.coudeD = lerp(lerp(1.25, 0.6, prep), 0.25, frappe) + 1.3 * f;
-    p.poignetD = [lerp(0.4, -0.2, prep), 0, lerp(0.7, 1.4, prep) * (1 - frappe) + 1.5 * frappe];
-    p.epG = [lerp(-0.75, -1.4, prep) + 0.8 * frappe, lerp(-0.25, 0.9, prep) * (1 - frappe), -0.3]; p.coudeG = 0.5 + 0.8 * frappe;
-    p.hancheD = [-0.6, 0, 0.2]; p.genouD = 0.9 - 0.4 * frappe; p.hancheG = [-0.45, 0, -0.2]; p.genouG = 0.7;
-    p.accroupi = 0.14 - 0.08 * frappe;
+  // ── LES COUPS (paquet 266, Lucas : « les mouvements ne sont pas bons… passer à un stade supérieur ») ─────────────
+  // Aucun mouvement capté de tennis n'est libre de droits : les coups sont donc réglés à la main, comme en animation.
+  // Pour chaque instant clé on a fixé où va la main, dans quelle direction pointe la raquette, la rotation du bassin
+  // et des épaules, les appuis et le transfert du poids ; les angles des bras ont été calculés une fois pour toutes
+  // (cinématique inverse) et sont interpolés en douceur (courbes d'Hermite). Coup droit lifté en appuis ouverts
+  // (épaules à 90°, raquette qui tombe sous la balle, frappe devant, accompagnement par-dessus l'épaule gauche),
+  // revers à deux mains, revers slicé (de haut en bas, bras gauche en balancier), volées, service (lancer, « trophée »,
+  // armé dans le dos, frappe en extension, retombée dans le court). Les jambes sont posées au sol à chaque instant.
+  const CHAMPS_COUP = ['tronc', 'bassin', 'accroupi', 'lat', 'avance', 'epD', 'coudeD', 'poignetD', 'epG', 'coudeG', 'pd', 'pg'];
+  const COUPS = {
+    cd: [[0,[.28,0,0],[0,0,0],.12,0,0,[.67,-.882,-.998],1.408,[-.251,0,1.902],[-.154,-1.044,-.511],1.202,[-.248,.086],[.248,.086]], [.3,[.2,-.9,.05],[0,-.5,0],.15,-.08,0,[-.612,.488,-.606],2.034,[-1.302,0,1.061],[-.235,.291,-.157],2.443,[-.42,-.05],[.22,.2]], [.47,[.22,-.9,.12],[0,-.4,0],.2,-.12,0,[.171,1.059,.165],1.768,[-.911,0,.305],[.103,1.136,-.288],2.163,[-.42,-.05],[.22,.2]], [.55,[.2,-.3,0],[0,.2,0],.12,-.02,.06,[-.245,-.042,-.483],1.077,[-1.29,0,1.116],[.566,1.601,.09],2.063,[-.42,-.05],[.22,.2]], [.68,[.15,.45,0],[0,.45,0],.09,.08,.08,[-.282,.45,-1.434],1.974,[-1.303,0,.997],[.779,1.601,.515],1.851,[-.42,-.05],[.22,.2]], [.82,[.15,.95,0],[0,.55,0],.09,.1,.06,[-.812,-1.033,.531],2.192,[.091,0,.215],[-.522,-1.602,-.424],2.138,[-.42,-.05],[.22,.2]], [1,[.28,.1,0],[0,.1,0],.12,0,0,[.618,-.61,-1.015],1.695,[-.312,0,1.904],[-.246,-1.232,-.578],1.231,[-.248,.086],[.248,.086]]],
+    rv: [[0,[.28,0,0],[0,0,0],.12,0,0,[.67,-.882,-.998],1.408,[-.251,0,1.902],[-1.049,-.99,0],.108,[-.248,.086],[.248,.086]], [.3,[.2,.9,0],[0,.6,0],.15,.08,0,[.614,-1.708,-1.153],1.887,[.583,0,1.94],[.091,-1.601,-.651],1.752,[-.15,.25],[.42,-.05]], [.47,[.22,.9,-.1],[0,.5,0],.2,.12,0,[.156,-.89,.251],1.415,[-1.23,0,-.184],[.144,-1.602,-.356],1.621,[-.15,.25],[.42,-.05]], [.55,[.2,.7,0],[0,-.1,0],.12,0,.08,[-.168,.497,.594],1.117,[-1.301,0,-1.083],[-.611,-1.464,-.623],.583,[-.15,.25],[.42,-.05]], [.68,[.15,-.45,0],[0,-.35,0],.09,-.06,.08,[.021,-.035,1.663],.967,[-1.31,0,-1.266],[-.807,-.26,-.632],2.508,[-.15,.25],[.42,-.05]], [.82,[.15,-.95,0],[0,-.45,0],.09,-.08,.06,[-.909,-.645,.029],2.325,[-.354,0,1.972],[-.756,-.893,.454],2.264,[-.15,.25],[.42,-.05]], [1,[.28,-.1,0],[0,0,0],.12,0,0,[.415,-.939,-1.041],1.561,[.294,0,1.902],[-.626,-1.186,-.361],.821,[-.248,.086],[.248,.086]]],
+    sl: [[0,[.28,0,0],[0,0,0],.12,0,0,[.67,-.882,-.998],1.408,[-.251,0,1.902],[-1.049,-.99,0],.108,[-.248,.086],[.248,.086]], [.35,[.2,.95,0],[0,.55,0],.14,.08,0,[.072,-1.638,-1.8],2.31,[-.489,0,.997],[-.306,-1.171,-.685],2.445,[-.12,.3],[.4,-.08]], [.55,[.25,.7,0],[0,.2,0],.2,.02,.1,[.412,-.921,-1.197],1.569,[-1.302,0,1.061],[-.265,1.601,.479],1.731,[-.12,.3],[.4,-.08]], [.75,[.25,.4,0],[0,.1,0],.17,-.02,.12,[-.328,-.33,-.526],1.615,[-1.235,0,.598],[-.637,1.601,-.138],.927,[-.12,.3],[.4,-.08]], [1,[.28,0,0],[0,0,0],.12,0,0,[.47,-.819,-1.025],1.618,[.137,0,1.902],[.906,1.369,.762],.049,[-.248,.086],[.248,.086]]],
+    vd: [[0,[.3,0,0],[0,0,0],.14,0,0,[.36,-.491,-1.234],1.815,[.751,0,1.902],[-.328,-1.07,-.587],1.507,[-.248,.086],[.248,.086]], [.4,[.3,-.35,0],[0,-.25,0],.17,-.05,.05,[-.005,-.085,-1.305],2.509,[1.31,0,1.784],[-.569,-.664,-.494],2.013,[-.3,.05],[.15,.35]], [.55,[.32,-.2,0],[0,-.1,0],.18,-.02,.1,[-.664,-.366,-.727],1.805,[-1.097,0,.657],[.693,-1.203,-.306],2.576,[-.3,.05],[.15,.35]], [.75,[.3,-.1,0],[0,0,0],.16,0,.1,[-.472,-.304,-.684],1.683,[-1.297,0,.596],[.864,-.916,-.561],2.515,[-.3,.05],[.15,.35]], [1,[.3,0,0],[0,0,0],.14,0,0,[.36,-.492,-1.234],1.815,[.751,0,1.902],[-.306,-1.102,-.629],1.507,[-.248,.086],[.248,.086]]],
+    vr: [[0,[.3,0,0],[0,0,0],.14,0,0,[.36,-.491,-1.234],1.815,[.751,0,1.902],[-.812,-1.445,-.56],.808,[-.248,.086],[.248,.086]], [.4,[.3,.6,0],[0,.3,0],.17,.05,.05,[-.296,-1.609,-1.144],2.244,[1.307,0,1.908],[-.539,-1.604,-.481],2.512,[-.15,.35],[.3,.05]], [.55,[.32,.3,0],[0,.1,0],.18,.02,.1,[-.639,-.884,-.574],1.849,[-1.264,0,.365],[.086,1.604,-.106],2.074,[-.15,.35],[.3,.05]], [.75,[.3,.15,0],[0,0,0],.16,0,.1,[-.374,-1.475,-1.094],1.141,[-1.301,0,.802],[-.145,1.603,-.417],1.385,[-.15,.35],[.3,.05]], [1,[.3,0,0],[0,0,0],.14,0,0,[.36,-.491,-1.234],1.815,[.751,0,1.902],[-.817,-.891,-.03],.913,[-.248,.086],[.248,.086]]],
+    sv: [[0,[.1,-.2,0],[0,-1.3,0],.04,0,-.05,[-.21,.013,.434],.845,[-1.3,0,-1.411],[-.184,-.394,.118],1.117,[-.28,-.3],[.02,.18]], [.3,[-.05,-.25,.1],[0,-1.3,0],.1,0,.04,[-1.613,1.077,-.338],1.003,[-1.344,0,.067],[-2.915,-.295,-.276],.276,[-.28,-.3],[.02,.18]], [.5,[-.3,-.3,.3],[0,-1.3,0],.24,-.04,0,[-2.377,1.602,.69],1.433,[-1.014,0,.263],[-2.358,.084,-.577],.049,[-.28,-.3],[.02,.18]], [.58,[-.25,-.2,.2],[0,-1,0],.15,0,.04,[-2.49,.479,-.608],2.567,[-.109,0,1.955],[.262,.644,-1.804],2.386,[-.28,-.3],[.02,.18]], [.625,[.15,.3,.05],[0,-.5,0],.02,0,.12,[-2.831,.694,.29],.851,[-.747,0,-.144],[1.168,.115,-.724],1.804,[-.28,-.3],[.02,.18]], [.75,[.5,.3,0],[0,.1,0],.1,0,.12,[-.14,-.484,-.551],2.309,[-.312,0,.24],[.919,-1.602,-.032],1.801,[-.15,.15],[.02,.18]], [1,[.4,.5,0],[0,.3,0],.13,0,.05,[-.227,-.815,-.204],1.042,[-1.039,0,-.242],[.197,-1.57,-.748],1.492,[-.25,.3],[.2,.2]]],
+  };
+  const CLES_COUPS = {};                                                               // clés → listes de nombres
+  for (const [nom, K] of Object.entries(COUPS)) CLES_COUPS[nom] = { u: K.map(k => k[0]), v: K.map(k => k.slice(1).flat()) };
+  function hermite(u, xs, ys) {                                                          // passe par les clés, sans à-coup
+    const n = xs.length; if (u <= xs[0]) return ys[0]; if (u >= xs[n - 1]) return ys[n - 1];
+    let k = 0; while (u > xs[k + 1]) k++;
+    const h = xs[k + 1] - xs[k], s = (u - xs[k]) / h;
+    const m = i => (i <= 0 || i >= n - 1) ? 0 : (ys[i + 1] - ys[i - 1]) / (xs[i + 1] - xs[i - 1]);
+    const s2 = s * s, s3 = s2 * s;
+    return (2 * s3 - 3 * s2 + 1) * ys[k] + (s3 - 2 * s2 + s) * h * m(k) + (-2 * s3 + 3 * s2) * ys[k + 1] + (s3 - s2) * h * m(k + 1);
+  }
+  // une jambe qui va de la hanche à un pied posé au sol (cheville en x, z ; repère du joueur) : angles de hanche et de genou
+  function jambe(p, s, pied) {
+    const c = Math.cos(p.bassin[1]), sn = Math.sin(p.bassin[1]), Y = 0.98 - p.accroupi * 1.4;
+    const dx = pied[0] - (p.lat || 0), dz = pied[1] - (p.avance || 0);
+    const v = [c * dx - sn * dz - s * 0.1, -0.05 - Y + 0.06, sn * dx + c * dz];          // dans le repère du bassin
+    const D = cl(Math.hypot(v[0], v[1], v[2]), 0.35, 0.895);
+    const ge = Math.acos(cl((D * D - 0.3956) / 0.4048, -1, 1)), ay = -0.44 - 0.46 * Math.cos(ge), az = -0.46 * Math.sin(ge);
+    const th = Math.asin(cl(-v[0] / ay, -1, 1));
+    const al = Math.atan2(v[2], v[1]) - Math.atan2(az, ay * Math.cos(th));
+    return [[Math.atan2(Math.sin(al), Math.cos(al)), 0, -th], ge];
+  }
+  function poseCle(nom, u) {
+    const C = CLES_COUPS[nom], x = cl(u, 0, 1), v = C.v[0].map((_, i) => hermite(x, C.u, C.v.map(r => r[i])));
+    const p = poseAttente(0); let i = 0;
+    const lit = n => { const o = v.slice(i, i + n); i += n; return n === 1 ? o[0] : o; };
+    p.tronc = lit(3); p.bassin = lit(3); p.accroupi = lit(1); p.lat = lit(1); p.avance = lit(1);
+    p.epD = lit(3); p.coudeD = lit(1); p.poignetD = lit(3); p.epG = lit(3); p.coudeG = lit(1);
+    const pd = lit(2), pg = lit(2);
+    [p.hancheD, p.genouD] = jambe(p, -1, pd); [p.hancheG, p.genouG] = jambe(p, 1, pg);
+    p.piedD = p.piedG = 0;
     return p;
   }
-  function poseRevers(u) {
-    const p = poseAttente(0);
-    const prep = lisse(cl(u / 0.42, 0, 1)), frappe = lisse(cl((u - 0.42) / 0.08, 0, 1)), f = lisse(cl((u - 0.5) / 0.5, 0, 1));
-    p.tronc = [0.25, lerp(lerp(0, -1.3, prep), 0.4, frappe) + 0.5 * f, 0];
-    p.bassin = [0, lerp(lerp(0, -0.7, prep), 0.2, frappe), 0];
-    const bras = [lerp(lerp(-0.75, -0.2, prep), -1.0, frappe) - 1.0 * f, lerp(lerp(0.25, 1.1, prep), -0.2, frappe) - 0.9 * f, 0.2];
-    p.epD = bras; p.coudeD = lerp(1.25, 0.5, prep) + 0.9 * f; p.poignetD = [0.2, 0, lerp(0.7, -1.2, prep) * (1 - frappe) - 1.1 * frappe];
-    p.epG = [bras[0], bras[1] + 0.35, -0.1]; p.coudeG = p.coudeD + 0.3;
-    p.hancheD = [-0.45, 0, 0.2]; p.genouD = 0.7; p.hancheG = [-0.6, 0, -0.2]; p.genouG = 0.9 - 0.4 * frappe;
-    p.accroupi = 0.14 - 0.08 * frappe;
+  // frappe à u = 0,55 (coups du fond, volées), 0,625 (service)
+  const poseCoupDroit = u => poseCle('cd', u), poseRevers = u => poseCle('rv', u), poseSlice = u => poseCle('sl', u);
+  const poseVolee = (u, cd) => poseCle(cd ? 'vd' : 'vr', u), poseService = u => poseCle('sv', u);
+  // ── LES GESTES APRÈS LE POINT (paquet 266) : poing serré, « allez ! » sur les grands points ; tête basse, main sur la
+  // hanche, bras écartés puis mains sur la tête après une faute. Même méthode que les coups ; seul le haut du corps
+  // bouge, les jambes continuent de marcher vers la place suivante.
+  const GESTES = {
+    joie: [[0,[.25,0,0],[0,0,0],.1,[.519,-1.604,-.249],.701,[-1.303,0,.961],[.543,-1.497,-.23],.87], [.18,[.45,.15,0],[.2,0,0],.2,[.855,-1.6,-.202],1.182,[-.925,0,.802],[-.069,-.563,-.76],2.501], [.36,[-.15,-.1,0],[-.45,0,0],.12,[.587,-1.264,-.421],.851,[-1.259,0,.413],[-2.028,1.601,.608],1.227], [.52,[.4,.15,0],[.15,0,0],.18,[.792,-1.487,-.241],1.101,[-1.076,0,.742],[.025,-.546,-.723],2.452], [.7,[-.1,-.1,0],[-.35,0,0],.1,[.563,-1.314,-.346],.768,[-1.301,0,.519],[-2.027,1.601,.482],1.409], [1,[.2,0,0],[0,0,0],.08,[.392,-1.622,-.168],.56,[-1.316,0,.976],[-.105,1.316,.1],.049]],
+    poing: [[0,[.25,0,0],[0,0,0],.1,[.519,-1.604,-.249],.701,[-1.303,0,.961],[.543,-1.497,-.23],.87], [.3,[.35,.2,0],[.3,0,0],.12,[.451,-1.508,-.146],.544,[-1.3,0,.844],[-.064,-.869,-.653],2.26], [.6,[.3,.15,0],[.25,0,0],.1,[.364,-1.607,-.122],.384,[-1.307,0,.806],[.178,-.76,-.571],2.005], [1,[.2,0,0],[0,0,0],.08,[.391,-1.623,-.168],.559,[-1.316,0,.976],[.214,-1.6,-.127],.229]],
+    depit: [[0,[.25,0,0],[0,0,0],.1,[.519,-1.604,-.249],.701,[-1.303,0,.961],[.543,-1.497,-.23],.87], [.3,[.35,0,0],[.6,0,0],.06,[.305,-1.616,-.162],.46,[-1.341,0,.406],[.538,-.875,.088],1.01], [.7,[.3,0,0],[.55,0,0],.06,[.307,-1.614,-.187],.464,[-1.343,0,.333],[.546,-.875,.088],1.026], [1,[.2,0,0],[0,0,0],.08,[.391,-1.622,-.168],.559,[-1.316,0,.976],[.21,-1.579,-.129],.226]],
+    rage: [[0,[.25,0,0],[0,0,0],.1,[.519,-1.604,-.249],.701,[-1.303,0,.961],[.543,-1.497,-.23],.87], [.25,[-.05,0,0],[-.3,0,0],.1,[.36,-.941,-.79],.082,[-1.3,0,1.438],[.701,-1.382,-.611],.049], [.5,[.1,0,0],[-.1,0,0],.08,[-1.531,-1.478,.303],2.42,[.155,0,-.448],[-1.704,-1.6,.18],2.346], [.75,[.35,0,0],[.5,0,0],.06,[.341,-1.613,-.195],.518,[-1.332,0,.377],[-.131,.317,-.052],.049], [1,[.2,0,0],[0,0,0],.08,[.391,-1.622,-.168],.559,[-1.316,0,.976],[-.115,.106,-.084],.05]],
+  };
+  const CLES_GESTES = {};
+  for (const [nom, K] of Object.entries(GESTES)) CLES_GESTES[nom] = { u: K.map(k => k[0]), v: K.map(k => k.slice(1).flat()) };
+  const HAUT = ['tronc', 'tete', 'epD', 'coudeD', 'poignetD', 'epG', 'coudeG'];
+  function poseGeste(nom, u) {
+    const C = CLES_GESTES[nom], x = cl(u, 0, 1), v = C.v[0].map((_, i) => hermite(x, C.u, C.v.map(r => r[i])));
+    const p = poseAttente(0); let i = 0;
+    const lit = n => { const o = v.slice(i, i + n); i += n; return n === 1 ? o[0] : o; };
+    p.tronc = lit(3); p.tete = lit(3); p.accroupi = lit(1); p.epD = lit(3); p.coudeD = lit(1); p.poignetD = lit(3); p.epG = lit(3); p.coudeG = lit(1);
+    if (nom === 'rage' && x > 0.55 && x < 0.95) p.tete[1] += 0.32 * Math.sin((x - 0.55) * 38);         // il secoue la tête
     return p;
   }
-  function poseService(u) {
-    // 0 → 0,35 lancer de balle et armé ; 0,35 → 0,6 « trophée », flexion ; 0,62 frappe ; puis accompagnement
-    const p = poseAttente(0);
-    const a = lisse(cl(u / 0.35, 0, 1)), b = lisse(cl((u - 0.35) / 0.25, 0, 1)), c = lisse(cl((u - 0.6) / 0.06, 0, 1)), d = lisse(cl((u - 0.66) / 0.34, 0, 1));
-    p.accroupi = 0.04 + 0.22 * b * (1 - c) - 0.12 * c * (1 - d);
-    p.tronc = [lerp(0.05, -0.35, b) + 0.9 * c - 0.4 * d, lerp(0, -0.8, a) + 0.9 * c, 0];
-    p.bassin = [0, lerp(0, -0.6, a) + 0.7 * c, 0];
-    p.epG = [lerp(-0.3, -2.9, a) + 2.2 * c, 0, -0.2]; p.coudeG = 0.1 + 1.0 * c;
-    p.epD = [lerp(-0.3, -1.6, a) - 1.2 * b + (-0.4) * c + 2.6 * d, lerp(0, 1.2, a) - 0.4 * c - 0.6 * d, lerp(0.2, 1.3, a) - 1.1 * c];
-    p.coudeD = lerp(0.3, 2.2, b) * (1 - c) + 0.15 * c + 0.4 * d; p.poignetD = [0, 0, lerp(0.3, 1.2, b) * (1 - c) + 0.4 * c];
-    p.hancheD = [-0.2 - 0.5 * b, 0, 0.1]; p.genouD = 0.2 + 1.0 * b * (1 - c); p.hancheG = [-0.2 - 0.5 * b, 0, -0.1]; p.genouG = 0.2 + 1.0 * b * (1 - c);
-    p.piedD = -0.6 * c * (1 - d); p.piedG = -0.6 * c * (1 - d);
-    return p;
+  const GESTE = [null, null];
+  // le geste de chacun, d'après la façon dont le point s'est fini
+  function choisirGestes(t, Rf, grand) {
+    const g = Rf.gagnant, p = 1 - g, faute = ['fautes_directes_adverses', 'doubles_fautes_adverses'].includes(Rf.fin);
+    GESTE[g] = grand ? { nom: 'joie', t0: t + 0.2, d: 2.3 } : Math.random() < 0.65 ? { nom: 'poing', t0: t + 0.25, d: 1.7 } : null;
+    GESTE[p] = faute && Math.random() < 0.6 ? { nom: 'rage', t0: t + 0.2, d: 2.2 } : Math.random() < 0.7 ? { nom: 'depit', t0: t + 0.3, d: 1.9 } : null;
   }
   // matrices de peau d'un joueur (os de la pose × inverse de la pose de repos) et place de la raquette
   function dessinerJoueur(P, j, pose) {
@@ -4409,11 +4449,11 @@ const G3D = (() => {
       const place = M4.mul(M4.tr(j.x, 0, j.z), M4.ry(j.cap));
       if (p < 0) pos = M4.pt(place, O.rp[k]);
       else if (nom === 'pelvis') {
-        let hy = mien.M[0][13] - 0.031;                                               // hauteur : la mienne (flexion)…
+        let hy = mien.M[0][13] - (pose.saut || 0) - 0.031;                            // (le saut est ajouté une seule fois, plus bas)                                               // hauteur : la mienne (flexion)…
         if (loco && loco.w > 0.01) { let hc = 0, tot = 0;                             // … ou celle du mouvement capté
           for (const [nomC, wc] of loco.mix) { hc += wc * clipT(nomC, loco.phase); tot += wc; }
           hy = lerp(hy, O.rp[k][1] + (tot ? hc / tot : 0) * O.rp[k][1] / (MOD.clipsBassin || 0.917), loco.w); }
-        pos = M4.pt(place, [O.rp[k][0], hy + (pose.saut || 0), O.rp[k][2]]);
+        pos = M4.pt(place, [O.rp[k][0] + mien.M[0][12], hy + (pose.saut || 0), O.rp[k][2] + mien.M[0][14]]);
       }
       else { const P = monde[p]; pos = M4.pt(P, O.t[k]); }
       const m = M4.id(); m[0] = rot[0]; m[1] = rot[1]; m[2] = rot[2]; m[4] = rot[3]; m[5] = rot[4]; m[6] = rot[5]; m[8] = rot[6]; m[9] = rot[7]; m[10] = rot[8];
@@ -4505,6 +4545,7 @@ const G3D = (() => {
     return { a, b, h: bon || !filet ? 0.35 : 0.1, d: 0.6, qui: s, type: 'service', faute: !bon, t };
   }
   function nouveauPoint(P, t0) {
+    PLANS.length = 0; GESTE[0] = GESTE[1] = null;
     const s = P.srv === null || P.srv === undefined ? 0 : P.srv, g = P.gagnant, perd = 1 - g;
     const fin = tirage(E.profils[g], g === s);
     const vols = [];
@@ -4634,12 +4675,25 @@ const G3D = (() => {
       j.cap = j.capL;
     }
   }
+  // volée près du filet, balle haute ; revers slicé pour l'amorti, les balles basses ou de défense (au hasard, 1 sur 4)
+  function genreCoup(v, cd) {
+    if (Math.abs(v.a.z) < 4.5 && v.a.y > 0.8) return 'volee';
+    if (!cd && (R && R.fin === 'amorti' && v === R.vols.filter(x => x.qui >= 0).pop() || v.a.y < 0.8 || Math.random() < 0.25)) return 'slice';
+    return 'lift';
+  }
   function poseDe(i, t) {
     const j = J[i], v = Math.hypot(j.vx, j.vz);
     let p = v > 0.6 ? melange(poseAttente(t), poseCourse(t, v), cl((v - 0.6) / 2, 0, 1)) : poseAttente(t);
     if (!R || t > R.finT) {
       // entre les points : le serveur fait rebondir la balle, le relanceur se balance
       if (E.srv === i && v < 0.3 && !E.fini) { p.epG = [-0.5 + Math.abs(Math.sin(t * 4)) * 0.4, 0, -0.2]; p.coudeG = 0.6; p.accroupi = 0.05; p.tronc = [0.2, 0, 0]; }
+      const G = GESTE[i];
+      if (G && t >= G.t0 && t < G.t0 + G.d) {
+        const u = (t - G.t0) / G.d, g = poseGeste(G.nom, u), w = cl(Math.min(u * 6, (1 - u) * 4), 0, 1);
+        for (const k of HAUT) p[k] = Array.isArray(p[k]) ? p[k].map((x, n) => lerp(x, g[k][n], w)) : lerp(p[k], g[k], w);
+        if (v < 0.6) p.accroupi = lerp(p.accroupi, g.accroupi, w);
+        p.coup = w; p.geste = 1;
+      }
       return p;
     }
     for (const vol of R.vols) {
@@ -4648,11 +4702,12 @@ const G3D = (() => {
         const u = cl((t - (vol.t - 1.25)) / 2.0, 0, 1);
         if (t > vol.t - 1.25 && t < vol.t + 0.75) { const sv = poseService(u); sv.coup = 1; return sv; }
       } else {
-        const u = (t - (vol.t - 0.45)) / 0.9;
+        const u = (t - vol.t) / 1.1 + 0.55;                                          // préparation 0,6 s, frappe, accompagnement 0,5 s
         if (u > 0 && u < 1) {
           const cd = vol.cd !== undefined ? vol.cd : (vol.cd = coupDe(i, vol).cd);
-          const c = cd ? poseCoupDroit(u) : poseRevers(u); c.coup = 1;
-          return melange(p, c, cl(Math.min(u * 5, (1 - u) * 5), 0, 1));
+          if (vol.genre === undefined) vol.genre = genreCoup(vol, cd);
+          const c = vol.genre === 'volee' ? poseVolee(u, cd) : cd ? poseCoupDroit(u) : vol.genre === 'slice' ? poseSlice(u) : poseRevers(u); c.coup = 1;
+          return melange(p, c, cl(Math.min(u * 4, (1 - u) * 5), 0, 1));
         }
       }
     }
@@ -4675,7 +4730,7 @@ const G3D = (() => {
     majLoco(i, dt);
     const cible = poseDe(i, t), j = J[i], face = i === 0 ? 1 : -1;
     const b = posBalle(t) || balleEnMain(t);
-    if (b) {
+    if (b && !cible.geste) {
       const dx = (b.x - j.x), dz = (b.z - j.z) * face, d = Math.hypot(dx, dz) || 1;
       const lacet = cl(Math.atan2(dx * face, dz), -0.9, 0.9);                         // vers la balle, dans son repère
       cible.tete = [cible.tete[0] + cl(-Math.atan2(b.y - 1.65, d) * 0.6, -0.5, 0.6), cible.tete[1] + lacet * 0.6 - cible.tronc[1] * 0.5, cible.tete[2]];
@@ -4694,14 +4749,17 @@ const G3D = (() => {
     if (E.srv === null || E.fini) return null;
     const j = J[E.srv], face = E.srv === 0 ? 1 : -1;
     if (Math.hypot(j.vx, j.vz) > 0.3) return null;
+    const G = GESTE[E.srv]; if (G && t >= G.t0 && t < G.t0 + G.d) return null;           // pas de rebond pendant un geste
     const u = Math.abs(Math.sin(t * 4));
     return { x: j.x + face * 0.0 + (E.srv === 0 ? 0.25 : -0.25), y: 0.05 + u * 0.95, z: j.z + face * 0.35 };
   }
   // la boucle des points : on rejoue le dernier point arrivé ; sinon on attend
   function avancer(t, dt) {
     if (R && t > R.finT) {
-      if (!R.annonce) { R.annonce = true; E.dernier = { gagnant: R.gagnant, t }; applaudir = t; grandPoint = R.vols.length > 9 || ['amorti', 'lob', 'filet'].includes(R.fin) || !!R.grand; }
-      if (!R.ralenti) RAL.prevu = { at: t + 1.8, R };                               // le ralenti suivra
+      let pause = 1.8;
+      if (!R.annonce) { R.annonce = true; E.dernier = { gagnant: R.gagnant, t }; applaudir = t; grandPoint = R.vols.length > 9 || ['amorti', 'lob', 'filet'].includes(R.fin) || !!R.grand;
+        choisirGestes(t, R, grandPoint); pause = planifier(t, R, grandPoint); SON.point(R, grandPoint); }
+      if (!R.ralenti) RAL.prevu = { at: t + pause, R };                             // le ralenti suivra
       R = null;
     }
     if (!R && FILE.length) { const P = FILE.splice(0, FILE.length).pop(); nouveauPoint(P, t); }
@@ -4738,9 +4796,142 @@ const G3D = (() => {
     return [t, dt];
   }
 
+  // ── LE SON (paquet 266) : tout est fabriqué par le code (Web Audio), aucun fichier ni site extérieur. Frappe,
+  // rebond, filet, rumeur et applaudissements du public ; « Out ! », « Fault ! » et le score annoncés par la voix
+  // de synthèse de l'appareil. Coupé par défaut : le visiteur l'allume d'un toucher (bouton 🔈).
+  const SON = (() => {
+    let ac = null, sortie = null, bruit = null, rumeur = null, actif = false, voix = null;
+    const LS = 'te_3d_son';
+    function init() {
+      if (ac) return true;
+      const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return false;
+      ac = new AC(); sortie = ac.createGain(); sortie.gain.value = 0.8;
+      const comp = ac.createDynamicsCompressor(); sortie.connect(comp); comp.connect(ac.destination);
+      bruit = ac.createBuffer(1, ac.sampleRate * 2, ac.sampleRate);
+      const d = bruit.getChannelData(0); for (let k = 0; k < d.length; k++) d[k] = Math.random() * 2 - 1;
+      const src = ac.createBufferSource(); src.buffer = bruit; src.loop = true;                       // rumeur de la foule
+      const f = ac.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 420;
+      rumeur = ac.createGain(); rumeur.gain.value = 0; src.connect(f); f.connect(rumeur); rumeur.connect(sortie); src.start();
+      return true;
+    }
+    function choisirVoix() {
+      try { const L = speechSynthesis.getVoices(); voix = L.find(v => /^en-GB/i.test(v.lang) && v.localService) || L.find(v => /^en/i.test(v.lang)) || null; } catch (e) { voix = null; }
+    }
+    function eclat(t, dur, freq, q, gain, pan) {                                                     // un bruit bref filtré
+      const s = ac.createBufferSource(); s.buffer = bruit; const f = ac.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = freq; f.Q.value = q;
+      const g = ac.createGain(); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(gain, t + 0.002); g.gain.exponentialRampToValueAtTime(0.0008, t + dur);
+      let n = g; if (ac.createStereoPanner) { const p = ac.createStereoPanner(); p.pan.value = cl(pan || 0, -1, 1); g.connect(p); n = p; }
+      s.connect(f); f.connect(g); n.connect(sortie); s.start(t, Math.random() * 1.5, dur + 0.05);
+    }
+    function ton(t, f0, f1, dur, gain, type) {
+      const o = ac.createOscillator(); o.type = type || 'sine'; o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(f1, t + dur);
+      const g = ac.createGain(); g.gain.setValueAtTime(gain, t); g.gain.exponentialRampToValueAtTime(0.0008, t + dur);
+      o.connect(g); g.connect(sortie); o.start(t); o.stop(t + dur + 0.02);
+    }
+    function dire(txt, delai) {
+      if (!actif || !window.speechSynthesis) return;
+      setTimeout(() => { try { if (!voix) choisirVoix(); const u = new SpeechSynthesisUtterance(txt); u.lang = 'en-GB'; if (voix) u.voice = voix;
+        u.rate = 1.05; u.pitch = 0.85; u.volume = 0.9; speechSynthesis.speak(u); } catch (e) {} }, (delai || 0) * 1000);
+    }
+    const prets = () => actif && ac && ac.state === 'running';
+    return {
+      get actif() { return actif; },
+      basculer(on) {
+        actif = on === undefined ? !actif : !!on;
+        try { localStorage.setItem(LS, actif ? '1' : '0'); } catch (e) {}
+        if (actif && init()) { ac.resume(); rumeur.gain.setTargetAtTime(0.05, ac.currentTime, 0.5); choisirVoix(); }
+        else if (ac) { rumeur.gain.setTargetAtTime(0, ac.currentTime, 0.1); try { speechSynthesis.cancel(); } catch (e) {} }
+        return actif;
+      },
+      voulu() { try { return localStorage.getItem(LS) === '1'; } catch (e) { return false; } },
+      frappe(force, pan) { if (!prets()) return; const t = ac.currentTime;                          // cordage : claquement + « pop »
+        eclat(t, 0.05, 2600, 1.2, 0.5 * force, pan); ton(t, 700, 330, 0.06, 0.25 * force); },
+      rebond(pan, terre) { if (!prets()) return; const t = ac.currentTime;
+        eclat(t, terre ? 0.07 : 0.04, terre ? 700 : 1100, 1.0, 0.28, pan); ton(t, 210, 120, 0.05, 0.18); },
+      filet(pan) { if (!prets()) return; const t = ac.currentTime; eclat(t, 0.12, 400, 0.7, 0.35, pan); },
+      applaudir(force) { if (!prets()) return; const t0 = ac.currentTime, n = Math.round(60 + 140 * force), D = 1.6 + 2.2 * force;
+        for (let k = 0; k < n; k++) { const t = t0 + Math.pow(Math.random(), 1.6) * D; eclat(t, 0.025, 900 + Math.random() * 2200, 1.4, 0.06 + 0.05 * Math.random(), Math.random() * 2 - 1); }
+        rumeur.gain.cancelScheduledValues(t0); rumeur.gain.setTargetAtTime(0.05 + 0.12 * force, t0, 0.15); rumeur.gain.setTargetAtTime(0.05, t0 + D, 0.8); },
+      annonce: dire,
+      // à la fin d'un vrai point : applaudissements, puis le score par l'arbitre
+      point(Rf, grand) { if (!prets()) return; this.applaudir(grand ? 1 : 0.45); const s = scoreParle(); if (s) dire(s, grand ? 2.2 : 1.4); },
+    };
+  })();
+  // le score annoncé (en anglais, comme sur le circuit) : serveur d'abord ; rien au jeu décisif
+  function scoreParle() {
+    const s = E.srv ?? 0, a = String(E.pts[s] ?? '0').toUpperCase(), b = String(E.pts[1 - s] ?? '0').toUpperCase();
+    const MOT = { '0': 'love', '15': 'fifteen', '30': 'thirty', '40': 'forty' };
+    const nom = i => String(E.noms[i] || '').split(/\s+/).pop();
+    if (a === '0' && b === '0') return E.dernier ? 'Game, ' + nom(E.dernier.gagnant) : '';
+    if (a === 'A' || a === 'AD') return 'Advantage, ' + nom(s);
+    if (b === 'A' || b === 'AD') return 'Advantage, ' + nom(1 - s);
+    if (!(a in MOT) || !(b in MOT)) return '';
+    if (a === b) return a === '40' ? 'Deuce' : MOT[a] + ' all';
+    return MOT[a] + ' ' + MOT[b];
+  }
+  // les sons du point en cours, au moment où ils arrivent (pas pendant le ralenti)
+  let tSon = 0;
+  function sonsDuPoint(t) {
+    const t0 = tSon; tSon = t;
+    if (!SON.actif || !R || R.ralenti || RAL.actif || t <= t0 || t - t0 > 0.5) return;
+    const pan = x => cl(x / 9, -1, 1), dedans = v => Math.abs(v.b.x) <= S / 2 + 0.05 && Math.abs(v.b.z) <= (v.type === 'service' ? SL : HL) + 0.05;
+    R.vols.forEach((v, k) => {
+      if (v.qui >= 0 && t0 < v.t && v.t <= t) SON.frappe(v.type === 'service' ? 1 : 0.8, pan(v.a.x));
+      const ta = v.t + v.d;
+      if (t0 < ta && ta <= t) {
+        if (v.b.y > 0.3 && Math.abs(v.b.z) < 0.5) SON.filet(pan(v.b.x));
+        else if (v.b.y === 0 && Math.abs(v.b.z) < HL + 3) {
+          SON.rebond(pan(v.b.x), E.surface === 'Clay');
+          if (v.qui >= 0 && !dedans(v)) SON.annonce(v.type === 'service' ? 'Fault!' : 'Out!', 0.05);
+        }
+      }
+    });
+  }
+
+  // ── LA RÉALISATION (paquet 266) : comme à la télévision, après le point on coupe sur le vainqueur en plan serré
+  // (son geste), puis, une fois sur deux ou sur les grands points, sur le public debout, l'arbitre ou le perdant ;
+  // vient ensuite le ralenti. Seulement dans la vue « TV » : les autres vues restent celles choisies par le visiteur.
+  const PLANS = [];
+  function planifier(t, Rf, grand) {
+    const g = Rf.gagnant, s = Math.random() < 0.5 ? -1 : 1;
+    PLANS.length = 0;
+    PLANS.push({ type: 'gros', i: g, t0: t + 0.45, t1: t + 2.35, cote: s });
+    if (grand || Math.random() < 0.5) {
+      const r = Math.random(), type = grand && r < 0.6 ? 'public' : r < 0.5 ? 'arbitre' : 'gros';
+      PLANS.push({ type, i: 1 - g, t0: t + 2.35, t1: t + 3.45, cote: -s, s: Math.random() < 0.5 ? -1 : 1, z: rnd(-6, 6) });
+      return 3.5;
+    }
+    return 2.4;
+  }
+  function vuePlan(pl, t) {
+    const u = cl((t - pl.t0) / (pl.t1 - pl.t0), 0, 1);
+    if (pl.type === 'gros') {
+      const j = J[pl.i], f = [Math.sin(j.cap), Math.cos(j.cap)];                       // face au joueur, un peu de biais
+      const ce = [j.x, 1.3 - 0.1 * u, j.z], oe = [j.x + f[0] * 5.2 - f[1] * pl.cote * 1.7, 1.55, j.z + f[1] * 5.2 + f[0] * pl.cote * 1.7];
+      if (!pl.e) { pl.e = oe; pl.c = ce; } else { pl.e = pl.e.map((v, k) => lerp(v, oe[k], 0.06)); pl.c = pl.c.map((v, k) => lerp(v, ce[k], 0.2)); }
+      return { eye: pl.e, cible: pl.c, fov: 0.3 };
+    }
+    if (pl.type === 'arbitre') return { eye: [-4.4, 2.75 + 0.1 * u, 2.4 - 0.5 * u], cible: [-8.0, 2.62, 0], fov: 0.3 };
+    return { eye: [pl.s * 3.6, 1.3, pl.z], cible: [pl.s * 16, 4.6 + u * 0.6, pl.z + 3 * u - 1.5], fov: 0.62 };   // le public
+  }
+  // ── l'arbitre de chaise (paquet 266) : le même modèle que les joueurs, assis, la tête qui suit la balle
+  const ARBITRE = { x: -(W / 2 + 0.914 + 1.6), z: 0, cap: Math.PI / 2, vx: 0, vz: 0 };
+  const ALLURE_ARBITRE = { sexe: 'H', peau: 'peau_H_clair', coiffe: 'court', sourcils: 'sourcils_H', bandeau: false,
+    tenue: [[0.6, 1.752, 0], ...['#1d2444', '#141a33', '#262b40', '#c9a227', '#20203a', '#17171f', '#f4f4f8'].map(hex)], cheveux: hex('#2a2a2a').map(v => v * 1.9) };
+  function poseArbitre(t, b) {
+    const p = POSE0();
+    p.saut = 1.16; p.tronc = [0.12, 0, 0];
+    p.hancheD = [-1.45, 0, 0.12]; p.genouD = 1.5; p.hancheG = [-1.45, 0, -0.12]; p.genouG = 1.5; p.piedD = p.piedG = 0;
+    p.epD = [-0.3, 0.1, 0.1]; p.coudeD = 1.15; p.epG = [-0.3, 0.1, 0.1]; p.coudeG = 1.15;      // avant-bras sur les cuisses
+    const lacet = b ? cl(Math.atan2(-(b.z - ARBITRE.z), b.x - ARBITRE.x), -1.2, 1.2) : 0.15 * Math.sin(t * 0.4);
+    p.tete = [b ? cl(-Math.atan2(b.y - 2.7, Math.abs(b.x - ARBITRE.x)) * 0.6, -0.4, 0.4) : 0.05, lacet, 0];
+    return p;
+  }
+  let teteArbitre = 0;
+
   // ── caméra et rendu ───────────────────────────────────────────────────────────────────────────────────────
-  const VUES = { tv: { yaw: 0, pitch: 0.47, dist: 33, fov: 0.62, suivre: true }, cote: { yaw: 0.95, pitch: 0.36, dist: 33, fov: 0.62, suivre: false }, haut: { yaw: Math.PI / 2, pitch: 1.3, dist: 38, fov: 0.62, suivre: false },
-    joueur: { yaw: 0, pitch: 0.22, dist: 9.5, fov: 0.75, suivre: false, focus: 0 } };
+  const VUES = { tv: { yaw: 0, pitch: 0.47, dist: 33, fov: 0.62, suivre: true, real: true }, cote: { yaw: 0.95, pitch: 0.36, dist: 33, fov: 0.62, suivre: false, real: false }, haut: { yaw: Math.PI / 2, pitch: 1.3, dist: 38, fov: 0.62, suivre: false, real: false },
+    joueur: { yaw: 0, pitch: 0.22, dist: 9.5, fov: 0.75, suivre: false, focus: 0, real: false } };
   const cam = { ...VUES.tv };
   const COULEURS = [{ maillot: '#22c8e0', short: '#14234f', cheveux: '#3a2a20', peau: '#d09a78' }, { maillot: '#e2449a', short: '#ececf2', cheveux: '#1d1712', peau: '#b07850' }];
   let PERSOS = null, BALLE = null, OMBRE_BALLE = null;
@@ -4770,7 +4961,9 @@ const G3D = (() => {
     return true;
   }
   const SOLEIL = nrm([-0.45, 0.85, -0.35]);
-  function matrices(w, h) {
+  function matrices(w, h, t) {
+    const pl = cam.real && !cam.vise && !RAL.actif && t !== undefined ? PLANS.find(p => t >= p.t0 && t < p.t1) : null;
+    if (pl) { const v = vuePlan(pl, t); return projeter(w, h, v.eye, v.cible, v.fov); }
     const cp = Math.cos(cam.pitch), sp = Math.sin(cam.pitch);
     let cible = [cam.cx || 0, 0, -1.5 + Math.sin(cam.pitch) * 0.8];
     if (cam.focus !== undefined) {                                                // vue « près » : derrière le joueur proche
@@ -4782,7 +4975,10 @@ const G3D = (() => {
     let eye = [cible[0] + cam.dist * cp * Math.sin(cam.yaw), cam.dist * sp + 0.5, cible[2] - cam.dist * cp * Math.cos(cam.yaw)];
     if (cam.balle) eye = [cam.cote * 8.4, cam.haut, cl((cam.bz || 0) * 0.45, -7, 7)];
     if (cam.vise) eye[1] = cible[1] + cam.dist * sp;           // ralenti : depuis le bord du court
-    const vp = M4.mul(M4.persp(cam.fov, w / h, 0.5, 200), M4.look(eye, cible, [0, 1, 0]));
+    return projeter(w, h, eye, cible, cam.fov);
+  }
+  function projeter(w, h, eye, cible, fov) {
+    const vp = M4.mul(M4.persp(fov, w / h, 0.5, 200), M4.look(eye, cible, [0, 1, 0]));
     const lc = [SOLEIL[0] * 40, SOLEIL[1] * 40, SOLEIL[2] * 40];
     const lvp = M4.mul(M4.ortho(-22, 22, -26, 26, 1, 100), M4.look(lc, [0, 0, 0], [0, 1, 0]));
     return { vp, lvp, eye };
@@ -4804,7 +5000,8 @@ const G3D = (() => {
     if (bv) { TRACE.push(bv); if (TRACE.length > 9) TRACE.shift(); } else TRACE.length = 0;
     cam.cx = lerp(cam.cx || 0, cam.suivre && bv ? cl(bv.x * 0.35, -3, 3) : 0, 0.04);
     message(t, tReel);
-    const { vp, lvp, eye } = matrices(w, h);
+    sonsDuPoint(t);
+    const { vp, lvp, eye } = matrices(w, h, t);
     // ce qui bouge : les deux joueurs, la balle
     const dyn = [];
     for (const i of [0, 1]) {
@@ -4817,6 +5014,13 @@ const G3D = (() => {
         if (raquette) dyn.push([PERSOS[i].raquette, raquette], [PERSOS[i].cordage, raquette, true]);
       } else for (const x of dessinerJoueur(PERSOS[i], J[i], pose)) dyn.push(x);
     }
+    if (MOD.etat === 'pret' && MATCH) {
+      const pa = poseArbitre(tReel, bv), k = dt > 0 ? 1 - Math.exp(-dt * 5) : 1;
+      teteArbitre = lerp(teteArbitre, pa.tete[1], k); pa.tete[1] = teteArbitre;
+      const A = ALLURE_ARBITRE, { skin } = osModele(ARBITRE, pa, null), C = MOD.corps.H;
+      dyn.push([C.corps, M4.id(), false, skin, { tex: MOD.tex[A.peau], tenue: A.tenue.map((c, k) => k === 7 ? [-1, -1, -1] : c) }], [C.yeux, M4.id(), false, skin, { tex: MOD.tex.yeux }]);
+      for (const c of [A.coiffe, A.sourcils]) { const H = MOD.cheveux[c]; if (H) dyn.push([H, M4.id(), false, skin, { tex: MOD.tex[H.tex], col: A.cheveux }]); }
+    }
     // 1) ombres
     gl.bindFramebuffer(gl.FRAMEBUFFER, smFbo); gl.viewport(0, 0, SM, SM); gl.clear(gl.DEPTH_BUFFER_BIT);
     gl.useProgram(progO); gl.uniformMatrix4fv(UO.uLVP, false, lvp); gl.enable(gl.DEPTH_TEST); gl.disable(gl.CULL_FACE);
@@ -4825,6 +5029,7 @@ const G3D = (() => {
     const passeO = (m, mat, peau) => { gl.uniformMatrix4fv(UO.uM, false, mat); gl.uniform1i(UO.uPeau, peau ? 1 : 0); if (peau) gl.uniformMatrix4fv(UO.uOs, false, peau);
       gl.bindVertexArray(m.vao); gl.drawElements(gl.TRIANGLES, m.n, m.type || gl.UNSIGNED_INT, 0); };
     for (const o of scene.fixes) if (o.ombre) passeO(o.m, M4.id());
+    const arbBlocs = scene.arbitre && !(MOD.etat === 'pret' && MATCH); if (arbBlocs) passeO(scene.arbitre.m, M4.id());
     for (const o of scene.transp) if (o.ombre) passeO(o.m, M4.id());
     for (const [m, mat, tr, peau] of dyn) if (!tr) passeO(m, mat, peau);
     if (b) passeO(BALLE, M4.tr(b.x, b.y, b.z));
@@ -4850,6 +5055,7 @@ const G3D = (() => {
       gl.uniform1i(U.uPeau, o.peau ? 1 : 0); if (o.peau) gl.uniformMatrix4fv(U.uOs, false, o.peau); gl.bindVertexArray(o.m.vao);
       if (inst) gl.drawElementsInstanced(gl.TRIANGLES, o.m.n, gl.UNSIGNED_INT, 0, o.m.ni); else gl.drawElements(gl.TRIANGLES, o.m.n, o.m.type || gl.UNSIGNED_INT, 0); };
     for (const o of scene.fixes) passe(o, M4.id());
+    if (arbBlocs) passe(scene.arbitre, M4.id());
     passe({ ...scene.public, recoit: false }, M4.id(), true);
     if (scene.led) passe({ ...scene.led, decal: [-(t * 0.06) % 1, 0] }, M4.id());
     if (scene.ecran) { majEcran(); passe(scene.ecran, M4.id()); }
@@ -4974,7 +5180,11 @@ const G3D = (() => {
     boite3d = document.createElement('div'); boite3d.className = 'g3d';
     tab = document.createElement('div'); tab.className = 'g3d-tab';
     msgEl = document.createElement('div'); msgEl.className = 'g3d-msg'; msgEl.hidden = true;
-    boite3d.append(cv, tab, msgEl);
+    const bSon = document.createElement('button'); bSon.type = 'button'; bSon.className = 'g3d-son';
+    const majSon = () => { bSon.textContent = SON.actif ? '🔊' : '🔈'; bSon.setAttribute('aria-label', tr(SON.actif ? 'g3_son_off' : 'g3_son_on')); bSon.setAttribute('aria-pressed', SON.actif ? 'true' : 'false'); };
+    bSon.addEventListener('click', e => { e.stopPropagation(); SON.basculer(); majSon(); }); majSon();
+    if (SON.voulu()) boite3d.addEventListener('pointerdown', () => { if (!SON.actif) { SON.basculer(true); majSon(); } }, { once: true });   // l'audio n'a le droit de démarrer qu'après un toucher
+    boite3d.append(cv, tab, msgEl, bSon);
     cv.addEventListener('pointerdown', e => { drag = { x: e.clientX, y: e.clientY, yaw: cam.yaw, pitch: cam.pitch }; });
     cv.addEventListener('pointermove', e => { if (!drag) return;
       cam.yaw = drag.yaw - (e.clientX - drag.x) * 0.008; cam.pitch = cl(drag.pitch + (e.clientY - drag.y) * 0.006, 0.08, 1.4); });
@@ -5036,7 +5246,8 @@ const G3D = (() => {
       return osModele({ x: 0, z: 0, cap: 0 }, pose || POSE_T(), arguments[2]); },
     _post: () => !!(POST.ok && POST.ms && QUALITE === 'haute'),
     _squelette: (pose) => os({ x: 0, z: 0, cap: 0 }, pose || POSE0()), _inverse: inverseRigide,
-    _cam: cam, _maj: maj, _etat: E, _J: J, _R: () => R, _poses: { poseAttente, poseCourse, poseCoupDroit, poseRevers, poseService },
+    _plans: PLANS, _gestes: GESTE, _son: SON, _scoreParle: scoreParle, _poseGeste: poseGeste,
+    _cam: cam, _maj: maj, _etat: E, _J: J, _R: () => R, _poses: { poseAttente, poseCourse, poseCoupDroit, poseRevers, poseService, poseSlice, poseVolee },
   };
 })();
 // Vue du direct choisie par le visiteur (3D par défaut), gardée dans ce navigateur.
