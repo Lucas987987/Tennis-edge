@@ -1123,6 +1123,13 @@
    "paquet": 257,
    "quoi": "FIL DU MATCH en direct (paquet 257, demande de Lucas). Dans la fiche d'un match en cours, à la place des « moments clés », le récit du match, le plus récent en haut : breaks (et à quelle balle de break), breaks blancs, balles de break sauvées, retour de 0-40, balles de set et de match sauvées, sets et tie-breaks, victoire, jeux blancs, jeux à rallonge (3 égalités ou plus), séries de 7 points ou de 4 jeux de suite, aces et doubles fautes. En tête, « en ce moment » : balle de break, de set ou de match, lue dans le score en direct (toutes les 3 s). Les aces et doubles fautes sont repérés d'une mise à jour des statistiques à l'autre (une par minute) et placés dans le jeu en cours à ce moment-là. Le détail des coups (coup droit gagnant, montée au filet…) n'est fourni en direct par aucune source abordable : rien n'est inventé. Aucune requête de plus vers la source des scores. Descriptif : le % ne change pas.",
    "garde_fou": "Retrait : dans algo/index.html, rendMatchLive revient aux « moments clés » si l'on retire l'appel à rendFil."
+  },
+  {
+   "date": "2026-11-13",
+   "statut": "production",
+   "paquet": 258,
+   "quoi": "LE DIRECT EN 3D (paquet 258, demande de Lucas). Dans la fiche d'un match en cours, le terrain passe en 3D : court aux vraies dimensions et à la couleur de la surface (dur, terre battue, gazon), filet, deux joueurs, balle et ombres, tableau d'affichage. On tourne autour du terrain au doigt, avec trois vues toutes faites (TV, côté, dessus) ; un bouton revient à la vue 2D (choix gardé dans le navigateur). Le score, le serveur et le côté de service (égalité ou avantage) sont réels et suivent le direct toutes les 3 s ; les échanges sont illustratifs (service en diagonale dans le bon carré, puis frappes croisées, le long de la ligne, amorties ou lobées) et l'écran le dit, car aucune source ne fournit les trajectoires en direct. Dessiné sans bibliothèque : rien à télécharger, l'animation s'arrête quand la vue n'est pas à l'écran. Descriptif : le % ne change pas.",
+   "garde_fou": "Retrait : dans algo/index.html, vue3dLive() renvoie false (la vue 2D d'avant revient pour tous)."
   }
  ]
 }
