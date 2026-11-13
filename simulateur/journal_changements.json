@@ -1130,6 +1130,20 @@
    "paquet": 258,
    "quoi": "LE DIRECT EN 3D (paquet 258, demande de Lucas). Dans la fiche d'un match en cours, le terrain passe en 3D : court aux vraies dimensions et à la couleur de la surface (dur, terre battue, gazon), filet, deux joueurs, balle et ombres, tableau d'affichage. On tourne autour du terrain au doigt, avec trois vues toutes faites (TV, côté, dessus) ; un bouton revient à la vue 2D (choix gardé dans le navigateur). Le score, le serveur et le côté de service (égalité ou avantage) sont réels et suivent le direct toutes les 3 s ; les échanges sont illustratifs (service en diagonale dans le bon carré, puis frappes croisées, le long de la ligne, amorties ou lobées) et l'écran le dit, car aucune source ne fournit les trajectoires en direct. Dessiné sans bibliothèque : rien à télécharger, l'animation s'arrête quand la vue n'est pas à l'écran. Descriptif : le % ne change pas.",
    "garde_fou": "Retrait : dans algo/index.html, vue3dLive() renvoie false (la vue 2D d'avant revient pour tous)."
+  },
+  {
+   "date": "2026-11-13",
+   "statut": "production",
+   "paquet": 259,
+   "quoi": "LE DIRECT EN 3D, VERSION STADE (paquet 259, demande de Lucas : un rendu nettement meilleur, sans dépendre d'autres sites). Un moteur 3D écrit pour le site (WebGL, aucune bibliothèque, aucun modèle ni image venus d'ailleurs) : court texturé à la couleur de la surface, lignes nettes, filet à mailles, stade avec gradins et public qui bouge, bâches, chaise et arbitre, juges de ligne, ramasseurs, bancs, projecteurs ; lumière du soleil et ombres portées ; deux joueurs articulés et animés (attente, course, coup droit, revers à deux mains, service avec lancer de balle). Quatre vues (TV, près, côté, dessus) et la caméra tourne au doigt. Score, serveur et côté de service réels, mis à jour toutes les 3 s ; échanges illustratifs, l'écran le dit. Sur un appareil sans WebGL 2, la vue 3D simple du paquet 258 prend le relais. Descriptif : le % ne change pas.",
+   "garde_fou": "Retrait : dans rendMatchLive (algo/index.html), retirer l'appel à G3D.monter : la vue 3D simple revient."
+  },
+  {
+   "date": "2026-11-13",
+   "statut": "production",
+   "paquet": 260,
+   "quoi": "LE DIRECT EN 3D REJOUE LES VRAIS POINTS (paquet 260, demande de Lucas : « est-ce que les échanges peuvent être réels ? »). À chaque changement du score en direct, la 3D sait qui a gagné le point, qui servait et de quel côté : elle rejoue ce point-là, avec ce vainqueur, puis affiche « Point X » ; entre deux points, les joueurs se replacent et le serveur fait rebondir sa balle, comme à la télévision ; aucun point n'est inventé (« En attente du prochain point » à l'ouverture). La façon de gagner le point (ace, service non retourné, coup droit ou revers gagnant, volée, amorti, lob, faute provoquée, faute directe, double faute) est tirée des habitudes réelles du vainqueur (tiroir « Points marqués ») ; les trajectoires restent reconstituées, faute de source en direct, et l'écran le dit. Rendu amélioré : bras et jambes modelés, chaussettes, poignets, semelles, bandeau ou casquette, couleurs plus justes, traînée de la balle, public qui applaudit après chaque point, vue « Près » qui suit le joueur. Descriptif : le % ne change pas.",
+   "garde_fou": "Retrait : dans algo/index.html, remettre l'ancien bloc G3D (paquet 259) ou retirer l'appel à G3D.monter (la 3D simple revient)."
   }
  ]
 }
