@@ -2690,7 +2690,11 @@ function styleLib(code){
     retourneur_pressant:{fr:'Retourneur pressant',en:'Pressing returner'},
     contreur:{fr:'Contreur',en:'Counterpuncher'},
     equilibre:{fr:'Profil équilibré',en:'Balanced profile'},
-    indetermine:{fr:'Style indéterminé',en:'Undetermined style'}
+    indetermine:{fr:'Style indéterminé',en:'Undetermined style'},
+    // 13/11/2026 (paquet 252) — styles de jeu (styles_jeu.py, d'après les coups)
+    joueur_de_filet:{fr:'Joueur de filet',en:'Net player'}, attaquant_coup_droit:{fr:'Attaquant de coup droit',en:'Forehand attacker'},
+    attaquant_revers:{fr:'Attaquant de revers',en:'Backhand attacker'}, joueur_de_toucher:{fr:'Joueur de toucher',en:'Touch player'},
+    regulier:{fr:'Régulier',en:'Consistent'}, complet:{fr:'Complet',en:'All-round'}
   };
   return (lib[code]||{})[L] || code || lib.indetermine[L];
 }
@@ -2759,6 +2763,25 @@ function rendDerniersStyle(b,titre){
     return `<li><span class="issue ${win?'v':'d'}" role="img" aria-label="${esc(t(win?'styles_victoire':'styles_defaite'))}">${L==='fr'?(win?'V':'D'):(win?'W':'L')}</span><span><b>${esc(r.adversaire)}</b><small>${esc(jourCourt(r.date))} · ${esc(r.tournoi||'')}${typeof r.attendu_pct==='number'?` · ${esc(t('styles_att_match',r.attendu_pct))}`:''}</small></span><span class="score">${esc(r.score||'—')}</span></li>`;
   }).join('')}</ul></details>`;
 }
+// 13/11/2026 (paquet 252) — STYLES DE JEU d'après les coups : étiquettes de chacun et bilan contre le style de jeu de
+// l'adversaire (même présentation que le duel des styles). Descriptif : ne change pas le %.
+function rendStylesJeu(m){
+  const sj = m.styles_jeu; if (!sj || sj.descriptif_seulement !== true || !Array.isArray(sj.joueurs) || sj.joueurs.length !== 2) return '';
+  const fr = L==='fr', S_ = SURF[L][m.surface]||m.surface||'';
+  const tags = st => Array.isArray(st) && st.length ? st.map(x=>`<span class="style-etiquette">${esc(styleLib(x))}</span>`).join(' ') : `<span class="style-etiquette">${esc(fr?'Pas assez de matchs relevés':'Not enough charted matches')}</span>`;
+  const joueurs = sj.joueurs.map((j,i)=>{
+    const adv = Array.isArray(j.style_adverse) && j.style_adverse.length ? j.style_adverse[0] : null;
+    return `<section class="style-joueur ${i===0?'home':'away'}">
+      <div class="style-tete"><h4>${esc(i===0?m.home:m.away)}</h4>${tags(j.style)}</div>
+      ${j.style && adv ? `<p class="style-contre">${esc(fr?`Face aux ${styleLibPluriel(adv)}`:`Against ${styleLibPluriel(adv)}`)}</p>
+      ${phraseStyle(j,S_)}
+      <div class="style-chiffres">${rendStyleBilan(j.global,t('styles_global'))}${rendStyleBilan(j.surface,t('styles_surface',S_))}</div>
+      ${rendDerniersStyle(j.global,t('styles_derniers'))}` : ''}
+    </section>`; }).join('');
+  return `<div class="panel styles-descriptifs styles-jeu"><h3>${esc(fr?'Styles de jeu':'Playing styles')}</h3><p class="styles-intro">${esc(fr
+    ? "Comment chacun gagne ses points dans l'échange, d'après ses matchs relevés coup par coup (Match Charting Project), face à la moyenne du circuit. Le chiffre qui compte est l'écart à l'attendu. Descriptif : nos études n'y trouvent pas d'effet sur le vainqueur au-delà de l'algo, il ne change pas le %."
+    : "How each player wins points in rallies, from charted matches (Match Charting Project), against the tour average. What counts is the gap to the expected rate. Descriptive: our studies find no effect on the winner beyond the algorithm; it does not change the %.")}</p><div class="styles-joueurs">${joueurs}</div></div>`;
+}
 function rendStylesDescriptifs(sd,m){
   if (!sd || sd.descriptif_seulement !== true || !Array.isArray(sd.joueurs) || sd.joueurs.length!==2) return '';
   const joueurs = sd.joueurs.map((j,i)=>`<section class="style-joueur ${i===0?'home':'away'}">
@@ -2780,7 +2803,10 @@ function rendStylesDescriptifs(sd,m){
 function styleLibPluriel(code){
   const lib = {grand_serveur:{fr:'grands serveurs',en:'big servers'}, serveur_attaquant:{fr:'serveurs attaquants',en:'attacking servers'},
     retourneur_pressant:{fr:'retourneurs pressants',en:'pressing returners'}, contreur:{fr:'contreurs',en:'counterpunchers'},
-    equilibre:{fr:'profils équilibrés',en:'balanced profiles'}};
+    equilibre:{fr:'profils équilibrés',en:'balanced profiles'},
+    joueur_de_filet:{fr:'joueurs de filet',en:'net players'}, attaquant_coup_droit:{fr:'attaquants de coup droit',en:'forehand attackers'},
+    attaquant_revers:{fr:'attaquants de revers',en:'backhand attackers'}, joueur_de_toucher:{fr:'joueurs de toucher',en:'touch players'},
+    regulier:{fr:'joueurs réguliers',en:'consistent players'}, complet:{fr:'joueurs complets',en:'all-round players'}};
   return (lib[code]||{})[L] || styleLib(code);
 }
 async function imageX(m){
@@ -2917,6 +2943,7 @@ function rendMdj(){
       ${rendVitesse(m)}
       ${rendMeteo(m)}
       ${rendStylesDescriptifs(m.styles_descriptifs,m)}
+      ${rendStylesJeu(m)}
       ${m.scenarios ? rendScenarios(m, sc) : `<div class="duo">
         ${bo ? `<div class="panel"><h3>${esc(t('sets_titre'))}</h3><div class="bars">${bo}</div></div>` : ''}
         ${sc ? `<div class="panel"><h3>${esc(t('scores_titre'))}</h3><div class="bars">${sc}</div></div>` : ''}

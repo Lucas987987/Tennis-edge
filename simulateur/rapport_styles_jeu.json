@@ -1,0 +1,74 @@
+{
+ "genere_le": "2026-11-12T23:07:13+00:00",
+ "paquet": 252,
+ "statut": "etude",
+ "regle": "par variable (paire de styles, effet propre au joueur) et par circuit : β appris sur 2018–2022, jugé sur 2023 → juin 2026 ; retenu si −0,001 de log loss sur au moins 1 000 matchs concernés et β de même signe",
+ "matchs_avec_deux_styles": {
+  "ATP": 6207,
+  "WTA": 3280
+ },
+ "repartition": {
+  "complet": 9702,
+  "attaquant_revers": 2851,
+  "regulier": 2199,
+  "attaquant_coup_droit": 1080,
+  "joueur_de_toucher": 2775,
+  "joueur_de_filet": 367
+ },
+ "variables": {
+  "paire": {
+   "ATP": {
+    "matchs_concernes": {
+     "2018–2022": 1564,
+     "2023 → juin 2026": 2438
+    },
+    "beta_2018_2022": 0.178,
+    "beta_2023": 0.01,
+    "gain": -0.00264,
+    "erreur_type": 0.00158,
+    "erreurs_types": -1.67,
+    "retenu": false
+   },
+   "WTA": {
+    "matchs_concernes": {
+     "2018–2022": 763,
+     "2023 → juin 2026": 1634
+    },
+    "beta_2018_2022": 0.192,
+    "beta_2023": -0.05,
+    "gain": -0.00619,
+    "erreur_type": 0.00224,
+    "erreurs_types": -2.77,
+    "retenu": false
+   }
+  },
+  "joueur": {
+   "ATP": {
+    "matchs_concernes": {
+     "2018–2022": 2483,
+     "2023 → juin 2026": 3724
+    },
+    "beta_2018_2022": 0.017,
+    "beta_2023": 0.03,
+    "gain": 7e-05,
+    "erreur_type": 0.00013,
+    "erreurs_types": 0.56,
+    "retenu": false
+   },
+   "WTA": {
+    "matchs_concernes": {
+     "2018–2022": 988,
+     "2023 → juin 2026": 2292
+    },
+    "beta_2018_2022": -0.06,
+    "beta_2023": -0.08,
+    "gain": 0.0007,
+    "erreur_type": 0.0006,
+    "erreurs_types": 1.16,
+    "retenu": false
+   }
+  }
+ },
+ "retenus": [],
+ "conclusion": "aucune des deux variables ne passe : la table des paires de styles fait moins bien qu'avant (ATP −0,003, WTA −0,006 : elle apprend du bruit), l'effet propre au joueur ne gagne rien de net (ATP +0,0001, WTA +0,0007 ± 0,0006). Les styles de jeu restent une information"
+}
