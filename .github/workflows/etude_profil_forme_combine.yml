@@ -1,0 +1,28 @@
+name: Etude - Profil adverse et forme recente (backtest)
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  backtest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Dependances
+        run: python -m pip install numpy
+      - name: Archive historique Sackmann
+        run: |
+          git clone --depth 1 --filter=blob:none --sparse https://github.com/Aneeshers/tennis-sackmann-archive.git /tmp/sackmann
+          cd /tmp/sackmann
+          git sparse-checkout set --no-cone 'atp_matches_20*.csv' 'atp_matches_qual_chall_20*.csv' 'wta_matches_20*.csv' 'wta_matches_qual_itf_20*.csv'
+      - name: Backtest sans modifier les pronostics
+        run: python simulateur/etude_profil_forme_combine.py /tmp/sackmann --sortie rapport_profil_forme_combine.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rapport-profil-forme-combine
+          path: rapport_profil_forme_combine.json
+          if-no-files-found: error
