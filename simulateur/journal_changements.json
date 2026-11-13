@@ -1151,6 +1151,13 @@
    "paquet": 261,
    "quoi": "IMAGE DE LA 3D AMÉLIORÉE (paquet 261, demande de Lucas). Anti-crénelage (bords nets), halo autour des projecteurs, de la balle et des panneaux lumineux, vignettage et couleurs étalonnées ; bandeau LED qui défile autour du court ; deux écrans géants au-dessus des tribunes qui affichent le vrai score et le serveur ; public redessiné (épaules, bras, cheveux, sièges) ; davantage de projecteurs. Sur un téléphone qui peine (moins de 22 images par seconde), la 3D passe seule en qualité « basse » (sans halo ni anti-crénelage, résolution normale) et s'en souvient. Toujours sans rien charger d'ailleurs. Descriptif : le % ne change pas.",
    "garde_fou": "Retrait : dans algo/index.html, QUALITE = 'basse' d'emblée (rendu du paquet 260)."
+  },
+  {
+   "date": "2026-11-13",
+   "statut": "production",
+   "paquet": 262,
+   "quoi": "JOUEURS 3D AU MAXIMUM DE CE QUE PERMET LE SITE (paquet 262, demande de Lucas). Chaque joueur est désormais un corps d'un seul tenant qui se plie aux articulations (épaules, coudes, poignets, hanches, genoux, chevilles), sans coutures : la carte graphique déforme la peau selon les os. Visage (yeux, sourcils, nez, bouche, oreilles), cheveux, bandeau ou casquette ; maillot à bandes latérales et col, short ample à liseré, poignets éponge, chaussettes, chaussures avec semelle et bande de couleur ; raquette avec grip, cœur en V et cadre décoré. Mouvements plus souples : transitions lissées, tête qui suit la balle, petit pas d'ajustement quand l'adversaire frappe, impulsion au service, position d'attente jambes écartées. Toujours dessiné par le code du site, sans rien charger d'ailleurs. Descriptif : le % ne change pas.",
+   "garde_fou": "Retrait : remettre le bloc G3D du paquet 261 dans algo/index.html."
   }
  ]
 }
