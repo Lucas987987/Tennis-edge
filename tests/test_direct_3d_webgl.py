@@ -167,6 +167,28 @@ console.log(JSON.stringify({ n: rep.length, ecart, sym: [x(10) + x(13), x(11) + 
         for x in ('uniform mat4 uOs[16]', 'aWt.x', 'function poseLisse'):
             self.assertIn(x, BLOC)
 
+    def test_ralenti_apres_chaque_point(self):
+        # paquet 263 : point rejoué, pause « Point X », ralenti, puis attente ; un nouveau point coupe le ralenti
+        S = json.loads(subprocess.run(['node', '-e', r'''
+const src = require('fs').readFileSync(process.argv[1], 'utf-8');
+const a = src.indexOf('const G3D = (() => {'), b = src.indexOf('// Vue du direct choisie par le visiteur');
+global.court = n => n; global.esc = x => x; eval(src.slice(a, b).replace('const G3D =', 'global.G3D ='));
+const m = { uid: 'u', home: 'A B', away: 'C D', surface: 'Hard' };
+const r = (p, q) => ({ inverse: false, x: { serveur: 'home', score_home: { sets: [6, 3], point: p }, score_away: { sets: [4, 2], point: q } } });
+G3D._reinit(); G3D._maj(m, r('30', '15'), false); G3D._maj(m, r('40', '15'), false);
+const etats = []; let prec = '', coupe = null;
+for (let t = 0; t < 40; t += 0.05) {
+  if (t > 12 && coupe === null && G3D._etape(t, 0).ralenti) { G3D._maj(m, r('40', '30'), false); coupe = t; }
+  const o = G3D._etape(t, 0.05), k = (o.R ? 'P' : '') + (o.ralenti ? 'L' : '') + (o.prevu ? 'A' : '');
+  if (k !== prec) { etats.push(k || '-'); prec = k; }
+}
+console.log(JSON.stringify({ etats }));
+''', str(RACINE / 'algo' / 'index.html')], capture_output=True, text=True, check=True).stdout)
+        e = S['etats']
+        self.assertEqual(e[:3], ['P', 'A', 'PL'])                                           # point, pause annoncée, ralenti
+        self.assertIn('P', e[3:])                                                          # le nouveau point passe devant le ralenti
+        self.assertNotIn('PL', e[3:4])
+
     def test_qualite_et_ecran(self):
         self.assertIn("localStorage.setItem('te_3d_qualite', 'basse')", BLOC)          # repli automatique si ça rame
         self.assertIn('renderbufferStorageMultisample', BLOC)

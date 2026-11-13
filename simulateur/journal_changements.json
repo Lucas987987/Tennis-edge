@@ -1158,6 +1158,13 @@
    "paquet": 262,
    "quoi": "JOUEURS 3D AU MAXIMUM DE CE QUE PERMET LE SITE (paquet 262, demande de Lucas). Chaque joueur est désormais un corps d'un seul tenant qui se plie aux articulations (épaules, coudes, poignets, hanches, genoux, chevilles), sans coutures : la carte graphique déforme la peau selon les os. Visage (yeux, sourcils, nez, bouche, oreilles), cheveux, bandeau ou casquette ; maillot à bandes latérales et col, short ample à liseré, poignets éponge, chaussettes, chaussures avec semelle et bande de couleur ; raquette avec grip, cœur en V et cadre décoré. Mouvements plus souples : transitions lissées, tête qui suit la balle, petit pas d'ajustement quand l'adversaire frappe, impulsion au service, position d'attente jambes écartées. Toujours dessiné par le code du site, sans rien charger d'ailleurs. Descriptif : le % ne change pas.",
    "garde_fou": "Retrait : remettre le bloc G3D du paquet 261 dans algo/index.html."
+  },
+  {
+   "date": "2026-11-13",
+   "statut": "production",
+   "paquet": 263,
+   "quoi": "LE DIRECT EN 3D PREND LE RYTHME DE LA TÉLÉVISION (paquet 263, Lucas : « ça manque de rythme »). Après chaque vrai point rejoué, la 3D annonce « Point X », puis le repasse au ralenti, vu d'une caméra basse au bord du court qui suit la balle ; ensuite les joueurs se replacent pour le point suivant. Un nouveau point arrivé pendant un ralenti passe toujours devant. Les points eux-mêmes ne peuvent pas arriver plus vite : la 3D suit le score en direct dès qu'il change. Descriptif : le % ne change pas.",
+   "garde_fou": "Retrait : dans algo/index.html, avancer() ne programme plus RAL.prevu (plus de ralenti)."
   }
  ]
 }
