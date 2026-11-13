@@ -3548,7 +3548,9 @@ const T3D = (() => {
 // ramasseurs, joueurs articulés et animés (attente, course, coup droit, revers à deux mains, service), lumière du
 // soleil, ombres portées, brouillard. Aucune bibliothèque, aucun modèle ni image chargés d'ailleurs. Le SCORE, le
 // SERVEUR et le CÔTÉ DE SERVICE sont réels (/live, 3 s). Paquet 260 : chaque point rejoué est le VRAI point (vrai
-// vainqueur, vrai serveur, vrai côté) ; seules les trajectoires sont reconstituées, et l'écran le dit. Sans WebGL 2, la vue 3D simple (T3D) prend le relais.
+// vainqueur, vrai serveur, vrai côté) ; seules les trajectoires sont reconstituées, et l'écran le dit. Paquet 261 :
+// anti-crénelage, halo des lumières, vignettage, bandeau LED, écrans géants avec le vrai score, public redessiné ;
+// qualité « basse » automatique si l'appareil peine (moins de 22 images par seconde). Sans WebGL 2, la vue 3D simple (T3D) prend le relais.
 // Descriptif : le % ne change pas.
 const G3D = (() => {
   'use strict';
@@ -3667,13 +3669,13 @@ const G3D = (() => {
   const VS = `#version 300 es
   layout(location=0) in vec3 aP; layout(location=1) in vec3 aN; layout(location=2) in vec3 aC; layout(location=3) in vec2 aU;
   layout(location=4) in vec4 aI; layout(location=5) in vec3 aIC;
-  uniform mat4 uM, uVP, uLVP; uniform int uInst; uniform float uT, uClap;
+  uniform mat4 uM, uVP, uLVP; uniform int uInst; uniform float uT, uClap; uniform vec2 uDecal;
   out vec3 vW, vN, vC; out vec2 vU; out vec4 vL;
   void main(){
     vec3 p = aP; vec3 c = aC;
     if (uInst == 1) { p = p * aI.w + aI.xyz + vec3(0.0, max(0.0, sin(uT * (3.0 + uClap * 9.0) + aI.x * 1.7 + aI.z)) * (0.05 + uClap * 0.16), 0.0); c = aC * aIC; }
     vec4 w = uM * vec4(p, 1.0);
-    vW = w.xyz; vN = normalize(mat3(uM) * aN); vC = c; vU = aU; vL = uLVP * w;
+    vW = w.xyz; vN = normalize(mat3(uM) * aN); vC = c; vU = aU + uDecal; vL = uLVP * w;
     gl_Position = uVP * w;
   }`;
   const FS = `#version 300 es
@@ -3681,7 +3683,7 @@ const G3D = (() => {
   in vec3 vW, vN, vC; in vec2 vU; in vec4 vL;
   uniform vec3 uCol, uSun, uEye, uCiel, uSol, uBrume; uniform float uAlpha, uSpec, uEmis; uniform int uTex, uOmbre;
   uniform sampler2D uTx; uniform sampler2DShadow uSM;
-  out vec4 o;
+  layout(location=0) out vec4 o; layout(location=1) out vec4 oE;
   float ombre(){
     vec3 p = vL.xyz / vL.w * 0.5 + 0.5;
     if (p.x < 0.0 || p.x > 1.0 || p.y < 0.0 || p.y > 1.0 || p.z > 1.0) return 1.0;
@@ -3705,14 +3707,37 @@ const G3D = (() => {
     col = pow(col, vec3(2.2)) * 1.08;
     col = clamp((col * (2.51 * col + 0.03)) / (col * (2.43 * col + 0.59) + 0.14), 0.0, 1.0);
     o = vec4(pow(col, vec3(1.0 / 2.2)), a);
+    oE = vec4(clamp(base * uEmis * 0.9, 0.0, 1.0) * a, a);
   }`;
   const VS_OMBRE = `#version 300 es
   layout(location=0) in vec3 aP; layout(location=4) in vec4 aI; uniform mat4 uM, uLVP; uniform int uInst;
   void main(){ vec3 p = aP; if (uInst == 1) p = p * aI.w + aI.xyz; gl_Position = uLVP * uM * vec4(p, 1.0); }`;
   const FS_OMBRE = `#version 300 es
   precision mediump float; out vec4 o; void main(){ o = vec4(1.0); }`;
+  // post-traitement : halo (bloom) des lumières, vignettage, étalonnage
+  const VS_ECRAN = `#version 300 es
+  out vec2 vU; void main(){ vec2 p = vec2((gl_VertexID << 1) & 2, gl_VertexID & 2); vU = p; gl_Position = vec4(p * 2.0 - 1.0, 0.0, 1.0); }`;
+  const FS_REDUIT = `#version 300 es
+  precision mediump float; in vec2 vU; uniform sampler2D uA; uniform vec2 uPx; out vec4 o;
+  void main(){ vec3 c = texture(uA, vU + uPx * vec2(-1,-1)).rgb + texture(uA, vU + uPx * vec2(1,-1)).rgb + texture(uA, vU + uPx * vec2(-1,1)).rgb + texture(uA, vU + uPx * vec2(1,1)).rgb; o = vec4(c * 0.25, 1.0); }`;
+  const FS_FLOU = `#version 300 es
+  precision mediump float; in vec2 vU; uniform sampler2D uA; uniform vec2 uDir; out vec4 o;
+  void main(){ vec3 c = texture(uA, vU).rgb * 0.227;
+    c += (texture(uA, vU + uDir * 1.385).rgb + texture(uA, vU - uDir * 1.385).rgb) * 0.316;
+    c += (texture(uA, vU + uDir * 3.231).rgb + texture(uA, vU - uDir * 3.231).rgb) * 0.070; o = vec4(c, 1.0); }`;
+  const FS_FINAL = `#version 300 es
+  precision mediump float; in vec2 vU; uniform sampler2D uA, uB; uniform float uHalo; out vec4 o;
+  void main(){ vec3 c = texture(uA, vU).rgb + texture(uB, vU).rgb * uHalo;
+    float l = dot(c, vec3(0.299, 0.587, 0.114)); c = mix(vec3(l), c, 1.08);                 // un peu plus de couleur
+    c = (c - 0.5) * 1.04 + 0.5;                                                           // un peu plus de contraste
+    vec2 d = vU - 0.5; c *= 1.0 - dot(d, d) * 0.55;                                       // vignettage
+    o = vec4(clamp(c, 0.0, 1.0), 1.0); }`;
 
   let gl = null, cv = null, prog = null, progO = null, U = {}, UO = {}, smFbo = null, smTex = null, SM = 2048;
+  // qualité : « haute » (anti-crénelage, halo, écran à 2×) ; passe seule en « basse » si l'appareil peine
+  const POST = { ok: true, w: 0, h: 0, samples: 0 };
+  let QUALITE = 'haute';
+  try { if (localStorage.getItem('te_3d_qualite') === 'basse') QUALITE = 'basse'; } catch (e) {}
   let scene = { fixes: [], transp: [] }, raf = 0, dernier = 0, visible = true;
   function shader(vs, fs) {
     const mk = (t, s) => { const sh = gl.createShader(t); gl.shaderSource(sh, s); gl.compileShader(sh);
@@ -3801,6 +3826,42 @@ const G3D = (() => {
     });
   }
 
+  function texLed() {
+    return toile(1024, 32, (c, w, h) => {
+      const g = c.createLinearGradient(0, 0, w, 0);
+      const C = ['#0b0a24', '#2EE6FF', '#0b0a24', '#D4FF3A', '#0b0a24', '#FF4FAE', '#0b0a24'];
+      C.forEach((x, k) => g.addColorStop(k / (C.length - 1), x));
+      c.fillStyle = g; c.fillRect(0, 0, w, h);
+      c.fillStyle = 'rgba(0,0,0,.35)'; for (let x = 0; x < w; x += 4) c.fillRect(x, 0, 1, h);       // les diodes
+      c.fillStyle = 'rgba(0,0,0,.5)'; c.fillRect(0, 0, w, 3); c.fillRect(0, h - 3, w, 3);
+    });
+  }
+  const ECRAN = { canvas: null, tex: null, cle: '' };
+  function dessinerEcran() {
+    if (!ECRAN.canvas) { ECRAN.canvas = document.createElement('canvas'); ECRAN.canvas.width = 512; ECRAN.canvas.height = 224; }
+    const c = ECRAN.canvas.getContext('2d'), w = 512, h = 224;
+    c.fillStyle = '#07061a'; c.fillRect(0, 0, w, h);
+    c.fillStyle = '#D4FF3A'; c.fillRect(0, 0, w, 6);
+    c.font = '700 22px Barlow, system-ui, sans-serif'; c.fillStyle = '#ABA3D6'; c.textBaseline = 'middle';
+    c.fillText(E.fini ? tr('live_termine') : tr('live_en_cours'), 18, 30);
+    const ns = Math.max(E.sets[0].length, E.sets[1].length, 1);
+    for (const i of [0, 1]) {
+      const y = 92 + i * 70;
+      c.fillStyle = i ? '#FF4FAE' : '#2EE6FF'; c.font = '700 38px Barlow, system-ui, sans-serif';
+      c.fillText(String(E.noms[i] || '').slice(0, 14).toUpperCase(), 18, y);
+      if (E.srv === i && !E.fini) { c.fillStyle = '#D4FF3A'; c.beginPath(); c.arc(w - 236 - ns * 40, y, 8, 0, 7); c.fill(); }
+      c.font = '700 40px Barlow, system-ui, sans-serif';
+      for (let k = 0; k < ns; k++) { c.fillStyle = k === ns - 1 && !E.fini ? '#ffffff' : '#ABA3D6'; c.fillText(String(E.sets[i][k] ?? ''), w - 210 - (ns - 1 - k) * 40, y); }
+      if (!E.fini) { c.fillStyle = 'rgba(212,255,58,.16)'; c.fillRect(w - 128, y - 28, 108, 56); c.fillStyle = '#D4FF3A'; c.textAlign = 'center'; c.fillText(String(E.pts[i] ?? ''), w - 74, y + 2); c.textAlign = 'left'; }
+    }
+    return ECRAN.canvas;
+  }
+  function majEcran() {
+    if (!gl || !ECRAN.tex) return;
+    const cle = JSON.stringify([E.noms, E.sets, E.pts, E.srv, E.fini]); if (cle === ECRAN.cle) return; ECRAN.cle = cle;
+    gl.bindTexture(gl.TEXTURE_2D, ECRAN.tex); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, dessinerEcran()); gl.generateMipmap(gl.TEXTURE_2D);
+  }
+
   // ── le stade ──────────────────────────────────────────────────────────────────────────────────────────────
   let TX = {}, surfaceFaite = null;
   function construireDecor(surface) {
@@ -3838,8 +3899,11 @@ const G3D = (() => {
     scene.fixes.push({ m: maillage(trib), spec: 0.05, recoit: true });
     // le public : une silhouette (buste + tête) répétée, couleurs variées, qui bouge un peu
     const fig = new Geo();
-    fig.ajoute(cylindre(0.17, 0.2, 0.55, 7, BLANC), M4.mul(M4.tr(0, 0.02, 0), M4.sc(1, 1, 0.7)));
-    fig.ajoute(sphere(0.12, 8, hex('#e6c2a0')), M4.tr(0, 0.7, 0));
+    fig.ajoute(tour([[0.0, 0.0], [0.15, 0.0], [0.16, 0.25], [0.2, 0.45], [0.16, 0.55], [0.05, 0.58], [0.0, 0.59]], 8, BLANC, 0.65), M4.id());
+    for (const s_ of [-1, 1]) fig.ajoute(cylindre(0.05, 0.045, 0.4, 5, BLANC), chaine(M4.tr(s_ * 0.2, 0.12, 0.02), M4.rz(s_ * 0.12)));
+    fig.ajoute(sphere(0.11, 7, hex('#e2bc98'), 1.12), M4.tr(0, 0.7, 0.01));
+    fig.ajoute(sphere(0.115, 7, hex('#3a2c22'), 0.8), M4.tr(0, 0.75, -0.02));
+    fig.ajoute(boite(0.46, 0.5, 0.06, hex('#3d3a6a')), M4.tr(0, 0.25, -0.24));                 // dossier du siège
     const pos = [], col = [];
     const tons = ['#d8d8e0', '#e8e4dc', '#2c2c3a', '#3b4a6b', '#7a2f35', '#c9a227', '#2f5f8f', '#f0f0f0', '#1b1b24', '#6b6f78', '#a65d2e', '#4a7a5a', '#9fb8d8', '#d07080'];
     for (let cote = 0; cote < 4; cote++) for (let r = 0; r < rangs; r++) {
@@ -3905,8 +3969,29 @@ const G3D = (() => {
     scene.fixes.push({ m: maillage(ch), spec: 0.15, ombre: true, recoit: true });
     // projecteurs du toit (petits disques lumineux)
     const proj = new Geo();
-    for (const s of [-1, 1]) for (let k = -4; k <= 4; k++) proj.ajoute(boite(0.6, 0.15, 0.6, BLANC), M4.tr(s * (bx + 1.2 + rangs * pas), 1.1 + rangs * haut + 1.8, k * 4));
-    scene.fixes.push({ m: maillage(proj), emis: 1.2, spec: 0 });
+    const yToit = 1.1 + rangs * haut + 1.8;
+    for (const s of [-1, 1]) for (let k = -6; k <= 6; k++) proj.ajoute(boite(0.7, 0.18, 0.5, BLANC), M4.tr(s * (bx + 1.2 + rangs * pas), yToit, k * 3.1));
+    for (const s of [-1, 1]) for (let k = -3; k <= 3; k++) proj.ajoute(boite(0.5, 0.18, 0.7, BLANC), M4.tr(k * 3.2, yToit, s * (bz + 1.2 + rangs * pas)));
+    scene.fixes.push({ m: maillage(proj), emis: 1.6, spec: 0 });
+    // bandeau LED tout autour du court, au-dessus des bâches (il défile)
+    TX.led = texture(texLed(), true);
+    const led = new Geo(), hL = 0.22;
+    const bandeau = (x, z, lx, lz, rot) => led.ajoute(plan(lx, hL, BLANC, Math.max(lx, lz) / 6, 1), chaine(M4.tr(x, 1.0 + hL / 2, z), M4.ry(rot), M4.rx(Math.PI / 2)));
+    bandeau(0, -bz + 0.13, LX + 0.6, 0, 0); bandeau(0, bz - 0.13, LX + 0.6, 0, Math.PI);
+    bandeau(-bx + 0.13, 0, LZ + 0.6, 0, -Math.PI / 2); bandeau(bx - 0.13, 0, LZ + 0.6, 0, Math.PI / 2);
+    scene.led = { m: maillage(led), tex: TX.led, emis: 0.9, spec: 0, recoit: false };
+    // deux écrans géants au-dessus des tribunes du fond : le vrai score, le serveur
+    ECRAN.tex = texture(dessinerEcran(), false); ECRAN.cle = '';
+    const ecr = new Geo(), cadreE = new Geo();
+    for (const s of [-1, 1]) {
+      const z = s * (bz + 1.6 + rangs * pas), y = 1.1 + rangs * haut + 3.4, rot = s > 0 ? Math.PI : 0;
+      ecr.ajoute(plan(7.2, 3.15, BLANC), chaine(M4.tr(0, y, z - s * 0.08), M4.ry(rot), M4.rx(-Math.PI / 2)));
+      cadreE.ajoute(boite(7.7, 3.6, 0.3, hex('#101024')), M4.tr(0, y, z + s * 0.1));
+      cadreE.ajoute(boite(0.3, y - 2, 0.3, hex('#101024')), M4.tr(0, (y - 2) / 2, z + s * 0.3));
+    }
+    for (let k = 1; k < ecr.u.length; k += 2) ecr.u[k] = 1 - ecr.u[k];                   // texte à l'endroit
+    scene.ecran = { m: maillage(ecr), tex: ECRAN.tex, emis: 0.95, spec: 0, recoit: false };
+    scene.fixes.push({ m: maillage(cadreE), spec: 0.1 });
     surfaceFaite = surface;
   }
 
@@ -4316,8 +4401,13 @@ const G3D = (() => {
     gl = cv.getContext('webgl2', { antialias: true, alpha: false, powerPreference: 'high-performance' });
     if (!gl) return false;
     prog = shader(VS, FS); progO = shader(VS_OMBRE, FS_OMBRE);
-    for (const k of ['uM', 'uVP', 'uLVP', 'uInst', 'uT', 'uClap', 'uCol', 'uSun', 'uEye', 'uCiel', 'uSol', 'uBrume', 'uAlpha', 'uSpec', 'uEmis', 'uTex', 'uOmbre', 'uTx', 'uSM']) U[k] = gl.getUniformLocation(prog, k);
+    for (const k of ['uM', 'uVP', 'uLVP', 'uInst', 'uT', 'uClap', 'uDecal', 'uCol', 'uSun', 'uEye', 'uCiel', 'uSol', 'uBrume', 'uAlpha', 'uSpec', 'uEmis', 'uTex', 'uOmbre', 'uTx', 'uSM']) U[k] = gl.getUniformLocation(prog, k);
     for (const k of ['uM', 'uLVP', 'uInst']) UO[k] = gl.getUniformLocation(progO, k);
+    try {
+      POST.reduit = shader(VS_ECRAN, FS_REDUIT); POST.flou = shader(VS_ECRAN, FS_FLOU); POST.final = shader(VS_ECRAN, FS_FINAL);
+      POST.vao = gl.createVertexArray();
+      POST.samples = Math.min(4, gl.getParameter(gl.MAX_SAMPLES) || 0);
+    } catch (e) { POST.ok = false; }
     smTex = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, smTex);
     gl.texStorage2D(gl.TEXTURE_2D, 1, gl.DEPTH_COMPONENT24, SM, SM);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
@@ -4347,7 +4437,7 @@ const G3D = (() => {
   }
   function uniformes(o, inst) {
     gl.uniform3fv(U.uCol, o.col || [1, 1, 1]); gl.uniform1f(U.uAlpha, o.alpha || 1); gl.uniform1f(U.uSpec, o.spec ?? 0.2);
-    gl.uniform1f(U.uEmis, o.emis || 0); gl.uniform1i(U.uInst, inst ? 1 : 0);
+    gl.uniform1f(U.uEmis, o.emis || 0); gl.uniform1i(U.uInst, inst ? 1 : 0); gl.uniform2fv(U.uDecal, o.decal || [0, 0]);
     gl.uniform1i(U.uOmbre, o.recoit === false ? 0 : 1);
     if (o.tex) { gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, o.tex); gl.uniform1i(U.uTex, 1); } else gl.uniform1i(U.uTex, 0);
   }
@@ -4374,9 +4464,15 @@ const G3D = (() => {
     for (const [m, mat, tr] of dyn) if (!tr) passeO(m, mat);
     if (b) passeO(BALLE, M4.tr(b.x, b.y, b.z));
     gl.disable(gl.POLYGON_OFFSET_FILL);
-    // 2) image
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null); gl.viewport(0, 0, w, h);
-    gl.clearColor(0.06, 0.05, 0.16, 1); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    // 2) image (dans une image anti-crénelée à deux sorties : couleur + lumières, pour le halo)
+    const post = POST.ok && QUALITE === 'haute' && cibles(w, h);
+    if (post) {
+      gl.bindFramebuffer(gl.FRAMEBUFFER, POST.ms); gl.drawBuffers([gl.COLOR_ATTACHMENT0, gl.COLOR_ATTACHMENT1]); gl.viewport(0, 0, w, h);
+      gl.clearBufferfv(gl.COLOR, 0, [0.06, 0.05, 0.16, 1]); gl.clearBufferfv(gl.COLOR, 1, [0, 0, 0, 1]); gl.clear(gl.DEPTH_BUFFER_BIT);
+    } else {
+      gl.bindFramebuffer(gl.FRAMEBUFFER, null); gl.viewport(0, 0, w, h);
+      gl.clearColor(0.06, 0.05, 0.16, 1); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    }
     gl.useProgram(prog);
     gl.uniformMatrix4fv(U.uVP, false, vp); gl.uniformMatrix4fv(U.uLVP, false, lvp); gl.uniform3fv(U.uSun, SOLEIL); gl.uniform3fv(U.uEye, eye);
     gl.uniform3fv(U.uCiel, [0.62, 0.64, 0.82]); gl.uniform3fv(U.uSol, [0.28, 0.26, 0.36]); gl.uniform3fv(U.uBrume, [0.08, 0.07, 0.2]);
@@ -4386,6 +4482,8 @@ const G3D = (() => {
       if (inst) gl.drawElementsInstanced(gl.TRIANGLES, o.m.n, gl.UNSIGNED_INT, 0, o.m.ni); else gl.drawElements(gl.TRIANGLES, o.m.n, gl.UNSIGNED_INT, 0); };
     for (const o of scene.fixes) passe(o, M4.id());
     passe({ ...scene.public, recoit: false }, M4.id(), true);
+    if (scene.led) passe({ ...scene.led, decal: [-(t * 0.06) % 1, 0] }, M4.id());
+    if (scene.ecran) { majEcran(); passe(scene.ecran, M4.id()); }
     for (const [m, mat, tr] of dyn) if (!tr) passe({ m, spec: 0.25 }, mat);
     if (b) passe({ m: BALLE, spec: 0.5, emis: 0.35 }, M4.tr(b.x, b.y, b.z));
     // 3) transparents : mailles du filet, cordages
@@ -4395,7 +4493,56 @@ const G3D = (() => {
     for (const [m, mat, tr] of dyn) if (tr) passe({ m, tex: TX.cordage, alpha: 0.8, spec: 0 }, mat);
     TRACE.forEach((p, k) => passe({ m: BALLE, alpha: 0.05 + 0.3 * k / TRACE.length, emis: 0.8, spec: 0, recoit: false }, chaine(M4.tr(p.x, p.y, p.z), M4.sc(0.8, 0.8, 0.8))));
     gl.depthMask(true); gl.disable(gl.BLEND);
+    if (post) posttraitement(w, h);
     gl.bindVertexArray(null);
+  }
+  function cibles(w, h) {
+    if (POST.w === w && POST.h === h && POST.ms) return true;
+    for (const k of ['ms', 'fScene', 'fEmis', 'fa', 'fb']) if (POST[k]) gl.deleteFramebuffer(POST[k]);
+    for (const k of ['scene', 'emis', 'a', 'b']) if (POST[k]) gl.deleteTexture(POST[k]);
+    for (const r of POST.rbs || []) gl.deleteRenderbuffer(r);
+    POST.rbs = [];
+    const rb = (fmt, att) => { const r = gl.createRenderbuffer(); gl.bindRenderbuffer(gl.RENDERBUFFER, r);
+      if (POST.samples) gl.renderbufferStorageMultisample(gl.RENDERBUFFER, POST.samples, fmt, w, h); else gl.renderbufferStorage(gl.RENDERBUFFER, fmt, w, h);
+      gl.framebufferRenderbuffer(gl.FRAMEBUFFER, att, gl.RENDERBUFFER, r); POST.rbs.push(r); };
+    const tex = (tw, th) => { const t = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, t); gl.texStorage2D(gl.TEXTURE_2D, 1, gl.RGBA8, tw, th);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE); return t; };
+    const fboTex = t => { const f = gl.createFramebuffer(); gl.bindFramebuffer(gl.FRAMEBUFFER, f); gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, t, 0);
+      return gl.checkFramebufferStatus(gl.FRAMEBUFFER) === gl.FRAMEBUFFER_COMPLETE ? f : null; };
+    POST.ms = gl.createFramebuffer(); gl.bindFramebuffer(gl.FRAMEBUFFER, POST.ms);
+    rb(gl.RGBA8, gl.COLOR_ATTACHMENT0); rb(gl.RGBA8, gl.COLOR_ATTACHMENT1); rb(gl.DEPTH_COMPONENT24, gl.DEPTH_ATTACHMENT);
+    const okMs = gl.checkFramebufferStatus(gl.FRAMEBUFFER) === gl.FRAMEBUFFER_COMPLETE;
+    POST.qw = Math.max(1, w >> 2); POST.qh = Math.max(1, h >> 2);
+    POST.scene = tex(w, h); POST.emis = tex(w, h); POST.a = tex(POST.qw, POST.qh); POST.b = tex(POST.qw, POST.qh);
+    POST.fScene = fboTex(POST.scene); POST.fEmis = fboTex(POST.emis); POST.fa = fboTex(POST.a); POST.fb = fboTex(POST.b);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    if (!okMs || !POST.fScene || !POST.fEmis || !POST.fa || !POST.fb) { POST.ok = false; return false; }
+    POST.w = w; POST.h = h; return true;
+  }
+  const LOCS = new Map();
+  const loc = (p, n) => { const k = p; let m = LOCS.get(k); if (!m) LOCS.set(k, m = {}); return m[n] ?? (m[n] = gl.getUniformLocation(p, n)); };
+  function posttraitement(w, h) {
+    for (const [i, f] of [[0, POST.fScene], [1, POST.fEmis]]) {                       // résolution de l'anti-crénelage
+      gl.bindFramebuffer(gl.READ_FRAMEBUFFER, POST.ms); gl.readBuffer(gl.COLOR_ATTACHMENT0 + i);
+      gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, f); gl.drawBuffers([gl.COLOR_ATTACHMENT0]);
+      gl.blitFramebuffer(0, 0, w, h, 0, 0, w, h, gl.COLOR_BUFFER_BIT, gl.LINEAR);
+    }
+    gl.bindFramebuffer(gl.READ_FRAMEBUFFER, null); gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, null);
+    gl.disable(gl.DEPTH_TEST); gl.bindVertexArray(POST.vao);
+    const plein = (p, cible, vw, vh, texs, uni) => {
+      gl.bindFramebuffer(gl.FRAMEBUFFER, cible); gl.viewport(0, 0, vw, vh); gl.useProgram(p);
+      texs.forEach((t, k) => { gl.activeTexture(gl.TEXTURE0 + k); gl.bindTexture(gl.TEXTURE_2D, t); gl.uniform1i(loc(p, k ? 'uB' : 'uA'), k); });
+      if (uni) uni(p); gl.drawArrays(gl.TRIANGLES, 0, 3);
+    };
+    const { qw, qh } = POST;
+    plein(POST.reduit, POST.fa, qw, qh, [POST.emis], p => gl.uniform2f(loc(p, 'uPx'), 1.5 / w, 1.5 / h));
+    for (let k = 0; k < 2; k++) {
+      plein(POST.flou, POST.fb, qw, qh, [POST.a], p => gl.uniform2f(loc(p, 'uDir'), (1 + k) / qw, 0));
+      plein(POST.flou, POST.fa, qw, qh, [POST.b], p => gl.uniform2f(loc(p, 'uDir'), 0, (1 + k) / qh));
+    }
+    plein(POST.final, null, w, h, [POST.scene, POST.a], p => gl.uniform1f(loc(p, 'uHalo'), 1.4));
+    gl.enable(gl.DEPTH_TEST);
   }
 
   // ── tableau d'affichage (HTML par-dessus la 3D) ───────────────────────────────────────────────────────────
@@ -4421,14 +4568,18 @@ const G3D = (() => {
     if (!cv || !cv.isConnected || document.hidden || !visible) return;
     if (ms - dernier < 30) return;
     const dt = dernier ? Math.min(0.1, (ms - dernier) / 1000) : 0.03; dernier = ms;
+    const t0 = performance.now();
     taille(); dessiner(ms / 1000, dt);
+    // si l'appareil peine (plus de 45 ms par image en moyenne), on passe en qualité « basse », une fois pour toutes
+    PERF.n++; PERF.moy = PERF.moy * 0.95 + (performance.now() - t0 + dt * 1000 * 0.25) * 0.05;
+    if (QUALITE === 'haute' && PERF.n > 90 && PERF.moy > 45) { QUALITE = 'basse'; try { localStorage.setItem('te_3d_qualite', 'basse'); } catch (e) {} }
   }
   function taille() {
-    const r = cv.getBoundingClientRect(), d = Math.min(2, window.devicePixelRatio || 1);
+    const r = cv.getBoundingClientRect(), d = QUALITE === 'haute' ? Math.min(2, window.devicePixelRatio || 1) : 1;
     const w = Math.round(r.width * d), h = Math.round(r.height * d);
     if (w && (cv.width !== w || cv.height !== h)) { cv.width = w; cv.height = h; }
   }
-  let drag = null;
+  let drag = null; const PERF = { n: 0, moy: 0 };
   function creer() {
     if (!initGL()) return false;
     boite3d = document.createElement('div'); boite3d.className = 'g3d';
@@ -4483,6 +4634,7 @@ const G3D = (() => {
     _point(gagnant) { FILE.push({ gagnant, srv: E.srv, droite: E.droite }); },
     _gagnant: gagnantPoint, _etatDe: etatDe, _tirage: tirage,
     _reinit() { R = null; FILE.length = 0; E.dernier = null; this._t = 0; J[0].x = 0; J[0].z = -HL - 0.8; J[1].x = 0; J[1].z = HL + 0.8; J[0].vx = J[0].vz = J[1].vx = J[1].vz = 0; },
+    _post: () => !!(POST.ok && POST.ms && QUALITE === 'haute'),
     _cam: cam, _maj: maj, _etat: E, _J: J, _R: () => R, _poses: { poseAttente, poseCourse, poseCoupDroit, poseRevers, poseService },
   };
 })();
