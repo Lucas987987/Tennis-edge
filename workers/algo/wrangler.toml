@@ -16,3 +16,7 @@ bucket_name = "tennis-edge-courbes"
 # Pour l'augmenter : changer le nombre ici (le déploiement suit tout seul).
 [vars]
 LIVE_STATS_PLAFOND = "6000"
+
+# 13/11/2026 (paquet 256) : requêtes TennisApi jamais utilisées par les scores en direct (/live), gardées pour la
+# collecte habituelle et la réserve des feuilles de match. La fraîcheur du direct (3 à 60 s) s'adapte au reste.
+LIVE_RESERVE = "3000"
