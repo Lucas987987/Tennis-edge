@@ -1,15 +1,15 @@
 {
  "schema_version": 2,
- "generated_at": "2026-11-12T13:19:57+00:00",
+ "generated_at": "2026-11-13T12:41:44+00:00",
  "sources": {
   "worker": {
    "source": "API Worker D1 /api/hypotheses (fetch_worker_snapshot.py)",
    "fichier": "worker_hypotheses_capture.json",
    "status": "ok",
-   "fetched_at": "2026-11-12T13:19:51Z",
-   "worker_generated_at": "2026-11-12T07:46:23Z"
+   "fetched_at": "2026-11-13T12:41:39Z",
+   "worker_generated_at": "2026-11-13T07:19:51Z"
   },
-  "suivi_officiel": "alertes en direct : h*_signal_log.jsonl + suivi_direct/resultats.json (verdicts_direct.json du 2026-11-12T13:19:56Z)",
+  "suivi_officiel": "alertes en direct : h*_signal_log.jsonl + suivi_direct/resultats.json (verdicts_direct.json du 2026-11-13T12:41:44Z)",
   "reconstruction": "moves_detail_hist.csv filtré par les règles gelées de validation_report.py (lignes jusqu'au 2026-11-01) — contrôle, ne juge pas",
   "rapprochement": "uid + joueur normalisé ; à défaut paire de joueurs + date ±1 jour"
  },
@@ -80,35 +80,35 @@
    "worker": {
     "gele_le": "2026-09-06",
     "out_of_sample": {
-     "n": 356,
+     "n": 359,
      "gains": 152,
-     "taux": 42.7,
+     "taux": 42.3,
      "seuil": 41.7,
-     "ecart": 1,
-     "roi": 3.1,
-     "pnl": 11.1,
+     "ecart": 0.7,
+     "roi": 2.2,
+     "pnl": 8.1,
      "cote_moyenne": 2.43,
      "clv_moyen": -1.7,
      "clv_pin_moyen": -1.7,
      "clv_pin_p": 1,
-     "clv_n": 366,
-     "clv_positif": 36.6,
+     "clv_n": 370,
+     "clv_positif": 36.2,
      "lead_moyen_h": 8.3,
-     "periode": "2026-09-07 -> 2026-11-11",
+     "periode": "2026-09-07 -> 2026-11-12",
      "verdict": "ne tranche pas",
-     "n_detectees": 373,
-     "n_envoyees": 372,
+     "n_detectees": 375,
+     "n_envoyees": 374,
      "n_doublons": 0,
      "n_non_envoyees_autres": 1,
-     "n_denouees": 356,
-     "n_commencees": 370,
-     "n_sans_resultat": 14,
-     "sans_resultat_pct": 3.8,
+     "n_denouees": 359,
+     "n_commencees": 374,
+     "n_sans_resultat": 15,
+     "sans_resultat_pct": 4,
      "verrouillable": true,
      "statut": "verrouillable (résultats complets à 96 %)"
     },
-    "n": 356,
-    "roi": 3.1
+    "n": 359,
+    "roi": 2.2
    },
    "suivi_officiel": {
     "n": 204,
@@ -118,17 +118,17 @@
     "clv_pin": -1.7,
     "clv_pin_ic95": [
      -2.5,
-     -0.8
+     -0.9
     ],
-    "clv_n": 366,
-    "n_detectees": 373,
-    "n_envoyees": 372,
+    "clv_n": 370,
+    "n_detectees": 375,
+    "n_envoyees": 374,
     "n_doublons": 0,
     "source": "verdicts_direct.json (recalculé : journal plus récent)",
-    "sans_resultat_pct": 44.9,
-    "statut": "en attente de résultats (44,9 % sans résultat)",
+    "sans_resultat_pct": 45.5,
+    "statut": "en attente de résultats (45,5 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-11-12T13:19:56Z"
+    "genere_le": "2026-11-13T12:41:44Z"
    },
    "reconstruction": {
     "n": 243,
@@ -146,8 +146,8 @@
     "egal_validation_report": true
    },
    "entonnoir": {
-    "direct_detectees": 373,
-    "direct_envoyees": 372,
+    "direct_detectees": 375,
+    "direct_envoyees": 374,
     "direct_doublons": 0,
     "direct_non_envoyees_autres": 1,
     "direct_denouees": 204,
@@ -159,12 +159,12 @@
      "apres_coup": 349,
      "cote_opposee_live": 1
     },
-    "direct_seule": 234,
+    "direct_seule": 236,
     "direct_seule_raisons": {
      "absent_reconstruction": 102,
      "cote_opposee_reco": 62,
      "prix_different": 11,
-     "pas_encore_reconstruit": 59
+     "pas_encore_reconstruit": 61
     },
     "inexpliques": 0
    },
@@ -8399,12 +8399,40 @@
     },
     {
      "sens": "direct seule",
+     "date": "2026-11-12",
+     "match": "Ugo Humbert – Lorenzo Musetti",
+     "joueur": "Ugo Humbert",
+     "uid": "2026-11-12_lorenzo_musetti_ugo_humbert",
+     "cote": 2.75,
+     "book": "bet365",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-11-12, reconstruction arrêtée au 2026-11-01",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
      "date": "2026-11-13",
      "match": "Alex Bolt – Sebastian Gorzny",
      "joueur": "Alex Bolt",
      "uid": "2026-11-13_sebastian_gorzny_alex_bolt",
      "cote": 2.0,
      "book": "bwin",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-11-13, reconstruction arrêtée au 2026-11-01",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-11-13",
+     "match": "Liam Draxl – Clement Chidekh",
+     "joueur": "Liam Draxl",
+     "uid": "2026-11-13_liam_draxl_clement_chidekh",
+     "cote": 2.8,
+     "book": "unibet",
      "statut": "non dénouée",
      "raison": "pas_encore_reconstruit",
      "libelle": "Pas encore dans la reconstruction",
@@ -8421,35 +8449,35 @@
    "worker": {
     "gele_le": "2026-10-02",
     "out_of_sample": {
-     "n": 123,
-     "gains": 56,
-     "taux": 45.5,
-     "seuil": 40.9,
-     "ecart": 4.7,
-     "roi": 11.2,
-     "pnl": 13.8,
-     "cote_moyenne": 2.92,
+     "n": 126,
+     "gains": 57,
+     "taux": 45.2,
+     "seuil": 40.7,
+     "ecart": 4.5,
+     "roi": 10.1,
+     "pnl": 12.8,
+     "cote_moyenne": 2.93,
      "clv_moyen": -0.3,
      "clv_pin_moyen": -0.3,
-     "clv_pin_p": 0.6359,
-     "clv_n": 132,
-     "clv_positif": 42.4,
+     "clv_pin_p": 0.6404,
+     "clv_n": 135,
+     "clv_positif": 42.2,
      "lead_moyen_h": 12.5,
      "periode": "2026-10-16 -> 2026-11-11",
      "verdict": "ne tranche pas",
-     "n_detectees": 136,
-     "n_envoyees": 46,
-     "n_doublons": 90,
+     "n_detectees": 138,
+     "n_envoyees": 47,
+     "n_doublons": 91,
      "n_non_envoyees_autres": 0,
-     "n_denouees": 123,
-     "n_commencees": 133,
+     "n_denouees": 126,
+     "n_commencees": 136,
      "n_sans_resultat": 10,
-     "sans_resultat_pct": 7.5,
+     "sans_resultat_pct": 7.4,
      "verrouillable": true,
-     "statut": "verrouillable (résultats complets à 92 %)"
+     "statut": "verrouillable (résultats complets à 93 %)"
     },
-    "n": 123,
-    "roi": 11.2
+    "n": 126,
+    "roi": 10.1
    },
    "suivi_officiel": {
     "n": 10,
@@ -8458,18 +8486,18 @@
     "pts": 4.0,
     "clv_pin": -0.3,
     "clv_pin_ic95": [
-     -2.2,
+     -2.1,
      1.5
     ],
-    "clv_n": 132,
-    "n_detectees": 136,
-    "n_envoyees": 46,
-    "n_doublons": 90,
+    "clv_n": 135,
+    "n_detectees": 138,
+    "n_envoyees": 47,
+    "n_doublons": 91,
     "source": "verdicts_direct.json (recalculé : journal plus récent)",
-    "sans_resultat_pct": 92.5,
-    "statut": "en attente de résultats (92,5 % sans résultat)",
+    "sans_resultat_pct": 92.7,
+    "statut": "en attente de résultats (92,7 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-11-12T13:19:56Z"
+    "genere_le": "2026-11-13T12:41:44Z"
    },
    "reconstruction": {
     "n": 193,
@@ -8487,9 +8515,9 @@
     "egal_validation_report": true
    },
    "entonnoir": {
-    "direct_detectees": 136,
-    "direct_envoyees": 46,
-    "direct_doublons": 90,
+    "direct_detectees": 138,
+    "direct_envoyees": 47,
+    "direct_doublons": 91,
     "direct_non_envoyees_autres": 0,
     "direct_denouees": 10,
     "reconstruction_detectees": 335,
@@ -8501,12 +8529,12 @@
      "avant_canal": 189,
      "cote_opposee_live": 3
     },
-    "direct_seule": 112,
+    "direct_seule": 114,
     "direct_seule_raisons": {
      "cote_opposee_reco": 14,
      "absent_reconstruction": 37,
      "prix_different": 14,
-     "pas_encore_reconstruit": 47
+     "pas_encore_reconstruit": 49
     },
     "inexpliques": 0
    },
@@ -14498,6 +14526,34 @@
      "libelle": "Pas encore dans la reconstruction",
      "detail": "match du 2026-11-12, reconstruction arrêtée au 2026-11-01",
      "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-11-13",
+     "match": "Liam Draxl – Clement Chidekh",
+     "joueur": "Liam Draxl",
+     "uid": "2026-11-13_liam_draxl_clement_chidekh",
+     "cote": 2.8,
+     "book": "unibet",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-11-13, reconstruction arrêtée au 2026-11-01",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-11-13",
+     "match": "Lorenzo Giustino – Marvin Moeller",
+     "joueur": "Lorenzo Giustino",
+     "uid": "2026-11-13_marvin_moeller_lorenzo_giustino",
+     "cote": 1.67,
+     "book": "unibet",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-11-13, reconstruction arrêtée au 2026-11-01",
+     "explique": true
     }
    ]
   },
@@ -14509,35 +14565,35 @@
    "worker": {
     "gele_le": "2026-09-25",
     "out_of_sample": {
-     "n": 116,
+     "n": 118,
      "gains": 45,
-     "taux": 38.8,
+     "taux": 38.1,
      "seuil": 36.9,
-     "ecart": 1.9,
-     "roi": 5,
-     "pnl": 5.9,
-     "cote_moyenne": 2.72,
+     "ecart": 1.2,
+     "roi": 3.3,
+     "pnl": 3.9,
+     "cote_moyenne": 2.73,
      "clv_moyen": -1.5,
      "clv_pin_moyen": -1.5,
-     "clv_pin_p": 0.9908,
-     "clv_n": 123,
-     "clv_positif": 38.2,
-     "lead_moyen_h": 9,
-     "periode": "2026-09-26 -> 2026-11-11",
+     "clv_pin_p": 0.9938,
+     "clv_n": 126,
+     "clv_positif": 37.3,
+     "lead_moyen_h": 9.1,
+     "periode": "2026-09-26 -> 2026-11-12",
      "verdict": "ne tranche pas",
-     "n_detectees": 127,
+     "n_detectees": 129,
      "n_envoyees": 0,
-     "n_doublons": 127,
+     "n_doublons": 129,
      "n_non_envoyees_autres": 0,
-     "n_denouees": 116,
-     "n_commencees": 125,
-     "n_sans_resultat": 9,
-     "sans_resultat_pct": 7.2,
+     "n_denouees": 118,
+     "n_commencees": 128,
+     "n_sans_resultat": 10,
+     "sans_resultat_pct": 7.8,
      "verrouillable": true,
-     "statut": "verrouillable (résultats complets à 93 %)"
+     "statut": "verrouillable (résultats complets à 92 %)"
     },
-    "n": 116,
-    "roi": 5
+    "n": 118,
+    "roi": 3.3
    },
    "suivi_officiel": {
     "n": 35,
@@ -14546,18 +14602,18 @@
     "pts": 11.2,
     "clv_pin": -1.5,
     "clv_pin_ic95": [
-     -2.7,
+     -2.8,
      -0.3
     ],
-    "clv_n": 123,
-    "n_detectees": 127,
+    "clv_n": 126,
+    "n_detectees": 129,
     "n_envoyees": 0,
-    "n_doublons": 127,
+    "n_doublons": 129,
     "source": "verdicts_direct.json (recalculé : journal plus récent)",
-    "sans_resultat_pct": 72.0,
-    "statut": "en attente de résultats (72,0 % sans résultat)",
+    "sans_resultat_pct": 72.7,
+    "statut": "en attente de résultats (72,7 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-11-12T13:19:56Z"
+    "genere_le": "2026-11-13T12:41:44Z"
    },
    "reconstruction": {
     "n": 96,
@@ -14575,9 +14631,9 @@
     "egal_validation_report": true
    },
    "entonnoir": {
-    "direct_detectees": 127,
+    "direct_detectees": 129,
     "direct_envoyees": 0,
-    "direct_doublons": 127,
+    "direct_doublons": 129,
     "direct_non_envoyees_autres": 0,
     "direct_denouees": 35,
     "reconstruction_detectees": 181,
@@ -14587,12 +14643,12 @@
     "reconstruction_seule_raisons": {
      "apres_coup": 137
     },
-    "direct_seule": 83,
+    "direct_seule": 85,
     "direct_seule_raisons": {
      "absent_reconstruction": 24,
      "cote_opposee_reco": 16,
      "prix_different": 6,
-     "pas_encore_reconstruit": 37
+     "pas_encore_reconstruit": 39
     },
     "inexpliques": 0
    },
@@ -17742,6 +17798,34 @@
      "libelle": "Pas encore dans la reconstruction",
      "detail": "match du 2026-11-12, reconstruction arrêtée au 2026-11-01",
      "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-11-12",
+     "match": "Ugo Humbert – Lorenzo Musetti",
+     "joueur": "Ugo Humbert",
+     "uid": "2026-11-12_lorenzo_musetti_ugo_humbert",
+     "cote": 2.75,
+     "book": "bet365",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-11-12, reconstruction arrêtée au 2026-11-01",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-11-13",
+     "match": "Liam Draxl – Clement Chidekh",
+     "joueur": "Liam Draxl",
+     "uid": "2026-11-13_liam_draxl_clement_chidekh",
+     "cote": 2.8,
+     "book": "unibet",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-11-13, reconstruction arrêtée au 2026-11-01",
+     "explique": true
     }
    ]
   },
@@ -17753,35 +17837,35 @@
    "worker": {
     "gele_le": "2026-09-25",
     "out_of_sample": {
-     "n": 288,
-     "gains": 196,
-     "taux": 68.1,
+     "n": 292,
+     "gains": 198,
+     "taux": 67.8,
      "seuil": 67.9,
-     "ecart": 0.2,
-     "roi": 0.2,
-     "pnl": 0.6,
+     "ecart": -0.1,
+     "roi": -0.2,
+     "pnl": -0.5,
      "cote_moyenne": 1.49,
      "clv_moyen": -0.5,
      "clv_pin_moyen": -0.5,
-     "clv_pin_p": 0.9834,
-     "clv_n": 299,
-     "clv_positif": 40.8,
+     "clv_pin_p": 0.9801,
+     "clv_n": 303,
+     "clv_positif": 40.6,
      "lead_moyen_h": 7.7,
-     "periode": "2026-09-26 -> 2026-11-11",
+     "periode": "2026-09-26 -> 2026-11-12",
      "verdict": "ne tranche pas",
-     "n_detectees": 304,
-     "n_envoyees": 304,
+     "n_detectees": 307,
+     "n_envoyees": 307,
      "n_doublons": 0,
      "n_non_envoyees_autres": 0,
-     "n_denouees": 288,
-     "n_commencees": 302,
+     "n_denouees": 292,
+     "n_commencees": 306,
      "n_sans_resultat": 14,
      "sans_resultat_pct": 4.6,
      "verrouillable": true,
      "statut": "verrouillable (résultats complets à 95 %)"
     },
-    "n": 288,
-    "roi": 0.2
+    "n": 292,
+    "roi": -0.2
    },
    "suivi_officiel": {
     "n": 117,
@@ -17793,15 +17877,15 @@
      -1.0,
      -0.0
     ],
-    "clv_n": 299,
-    "n_detectees": 305,
-    "n_envoyees": 305,
+    "clv_n": 303,
+    "n_detectees": 309,
+    "n_envoyees": 309,
     "n_doublons": 0,
     "source": "verdicts_direct.json (recalculé : journal plus récent)",
-    "sans_resultat_pct": 61.5,
-    "statut": "en attente de résultats (61,5 % sans résultat)",
+    "sans_resultat_pct": 61.9,
+    "statut": "en attente de résultats (61,9 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-11-12T13:19:56Z"
+    "genere_le": "2026-11-13T12:41:44Z"
    },
    "reconstruction": {
     "n": 264,
@@ -17819,8 +17903,8 @@
     "egal_validation_report": true
    },
    "entonnoir": {
-    "direct_detectees": 305,
-    "direct_envoyees": 305,
+    "direct_detectees": 309,
+    "direct_envoyees": 309,
     "direct_doublons": 0,
     "direct_non_envoyees_autres": 0,
     "direct_denouees": 117,
@@ -17831,12 +17915,12 @@
     "reconstruction_seule_raisons": {
      "apres_coup": 321
     },
-    "direct_seule": 202,
+    "direct_seule": 206,
     "direct_seule_raisons": {
      "cote_opposee_reco": 55,
      "absent_reconstruction": 62,
      "prix_different": 7,
-     "pas_encore_reconstruit": 78
+     "pas_encore_reconstruit": 82
     },
     "inexpliques": 0
    },
@@ -25228,6 +25312,62 @@
      "libelle": "Pas encore dans la reconstruction",
      "detail": "match du 2026-11-12, reconstruction arrêtée au 2026-11-01",
      "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-11-13",
+     "match": "Mirra Andreeva – Karolina Muchova",
+     "joueur": "Mirra Andreeva",
+     "uid": "2026-11-13_mirra_andreeva_karolina_muchova",
+     "cote": 1.38,
+     "book": "betsson",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-11-13, reconstruction arrêtée au 2026-11-01",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-11-13",
+     "match": "Juncheng Shang – Dane Sweeny",
+     "joueur": "Juncheng Shang",
+     "uid": "2026-11-13_dane_sweeny_juncheng_shang",
+     "cote": 1.5,
+     "book": "betsson",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-11-13, reconstruction arrêtée au 2026-11-01",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-11-13",
+     "match": "Daniel Altmaier – Zsombor Piros",
+     "joueur": "Daniel Altmaier",
+     "uid": "2026-11-13_zsombor_piros_daniel_altmaier",
+     "cote": 1.68,
+     "book": "unibet",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-11-13, reconstruction arrêtée au 2026-11-01",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-11-13",
+     "match": "Alejandro Tabilo – Thiago Agustin Tirante",
+     "joueur": "Alejandro Tabilo",
+     "uid": "2026-11-13_alejandro_tabilo_thiago_agustin_tirante",
+     "cote": 1.68,
+     "book": "unibet",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-11-13, reconstruction arrêtée au 2026-11-01",
+     "explique": true
     }
    ]
   },
@@ -25239,34 +25379,34 @@
    "worker": {
     "gele_le": "2026-09-27",
     "out_of_sample": {
-     "n": 252,
-     "gains": 168,
+     "n": 255,
+     "gains": 170,
      "taux": 66.7,
      "seuil": 66,
      "ecart": 0.7,
      "roi": 0.9,
-     "pnl": 2.3,
+     "pnl": 2.2,
      "cote_moyenne": 1.53,
      "clv_moyen": -0.6,
      "clv_pin_moyen": -0.6,
-     "clv_pin_p": 0.9886,
-     "clv_n": 262,
+     "clv_pin_p": 0.9853,
+     "clv_n": 265,
      "clv_positif": 38.9,
      "lead_moyen_h": 7.9,
-     "periode": "2026-09-29 -> 2026-11-11",
+     "periode": "2026-09-29 -> 2026-11-12",
      "verdict": "ne tranche pas",
-     "n_detectees": 265,
-     "n_envoyees": 265,
+     "n_detectees": 267,
+     "n_envoyees": 267,
      "n_doublons": 0,
      "n_non_envoyees_autres": 0,
-     "n_denouees": 252,
-     "n_commencees": 263,
+     "n_denouees": 255,
+     "n_commencees": 266,
      "n_sans_resultat": 11,
-     "sans_resultat_pct": 4.2,
+     "sans_resultat_pct": 4.1,
      "verrouillable": true,
      "statut": "verrouillable (résultats complets à 96 %)"
     },
-    "n": 252,
+    "n": 255,
     "roi": 0.9
    },
    "suivi_officiel": {
@@ -25279,15 +25419,15 @@
      -1.2,
      -0.1
     ],
-    "clv_n": 262,
-    "n_detectees": 265,
-    "n_envoyees": 265,
+    "clv_n": 265,
+    "n_detectees": 269,
+    "n_envoyees": 269,
     "n_doublons": 0,
     "source": "verdicts_direct.json (recalculé : journal plus récent)",
-    "sans_resultat_pct": 62.5,
-    "statut": "en attente de résultats (62,5 % sans résultat)",
+    "sans_resultat_pct": 62.9,
+    "statut": "en attente de résultats (62,9 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-11-12T13:19:56Z"
+    "genere_le": "2026-11-13T12:41:44Z"
    },
    "reconstruction": {
     "n": 225,
@@ -25305,8 +25445,8 @@
     "egal_validation_report": true
    },
    "entonnoir": {
-    "direct_detectees": 265,
-    "direct_envoyees": 265,
+    "direct_detectees": 269,
+    "direct_envoyees": 269,
     "direct_doublons": 0,
     "direct_non_envoyees_autres": 0,
     "direct_denouees": 99,
@@ -25317,12 +25457,12 @@
     "reconstruction_seule_raisons": {
      "apres_coup": 257
     },
-    "direct_seule": 174,
+    "direct_seule": 178,
     "direct_seule_raisons": {
      "cote_opposee_reco": 50,
      "prix_different": 7,
      "absent_reconstruction": 50,
-     "pas_encore_reconstruit": 67
+     "pas_encore_reconstruit": 71
     },
     "inexpliques": 0
    },
@@ -31426,6 +31566,62 @@
      "libelle": "Pas encore dans la reconstruction",
      "detail": "match du 2026-11-12, reconstruction arrêtée au 2026-11-01",
      "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-11-13",
+     "match": "Mirra Andreeva – Karolina Muchova",
+     "joueur": "Mirra Andreeva",
+     "uid": "2026-11-13_mirra_andreeva_karolina_muchova",
+     "cote": 1.38,
+     "book": "betsson",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-11-13, reconstruction arrêtée au 2026-11-01",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-11-13",
+     "match": "Juncheng Shang – Dane Sweeny",
+     "joueur": "Juncheng Shang",
+     "uid": "2026-11-13_dane_sweeny_juncheng_shang",
+     "cote": 1.5,
+     "book": "betsson",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-11-13, reconstruction arrêtée au 2026-11-01",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-11-13",
+     "match": "Daniel Altmaier – Zsombor Piros",
+     "joueur": "Daniel Altmaier",
+     "uid": "2026-11-13_zsombor_piros_daniel_altmaier",
+     "cote": 1.68,
+     "book": "unibet",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-11-13, reconstruction arrêtée au 2026-11-01",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-11-13",
+     "match": "Alejandro Tabilo – Thiago Agustin Tirante",
+     "joueur": "Alejandro Tabilo",
+     "uid": "2026-11-13_alejandro_tabilo_thiago_agustin_tirante",
+     "cote": 1.68,
+     "book": "unibet",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-11-13, reconstruction arrêtée au 2026-11-01",
+     "explique": true
     }
    ]
   },
@@ -31445,11 +31641,11 @@
      "roi": 27.4,
      "pnl": 26.6,
      "cote_moyenne": 2.6,
-     "clv_moyen": 2.7,
-     "clv_pin_moyen": 2.7,
+     "clv_moyen": 2.6,
+     "clv_pin_moyen": 2.6,
      "clv_pin_p": 0,
-     "clv_n": 99,
-     "clv_positif": 70.7,
+     "clv_n": 100,
+     "clv_positif": 70,
      "lead_moyen_h": 7.5,
      "periode": "2026-09-27 -> 2026-11-11",
      "verdict": "SURVIT",
@@ -31458,11 +31654,11 @@
      "n_doublons": 39,
      "n_non_envoyees_autres": 0,
      "n_denouees": 97,
-     "n_commencees": 100,
-     "n_sans_resultat": 3,
-     "sans_resultat_pct": 3,
+     "n_commencees": 101,
+     "n_sans_resultat": 4,
+     "sans_resultat_pct": 4,
      "verrouillable": true,
-     "statut": "verrouillable (résultats complets à 97 %)"
+     "statut": "verrouillable (résultats complets à 96 %)"
     },
     "n": 97,
     "roi": 27.4
@@ -31472,20 +31668,20 @@
     "gagnes": 24,
     "roi": 20.4,
     "pts": 12.4,
-    "clv_pin": 2.7,
+    "clv_pin": 2.6,
     "clv_pin_ic95": [
      1.5,
      3.8
     ],
-    "clv_n": 99,
+    "clv_n": 100,
     "n_detectees": 101,
     "n_envoyees": 62,
     "n_doublons": 39,
     "source": "verdicts_direct.json (recalculé : journal plus récent)",
-    "sans_resultat_pct": 60.0,
-    "statut": "en attente de résultats (60,0 % sans résultat)",
+    "sans_resultat_pct": 60.4,
+    "statut": "en attente de résultats (60,4 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-11-12T13:19:56Z"
+    "genere_le": "2026-11-13T12:41:44Z"
    },
    "reconstruction": {
     "n": 112,
@@ -35440,7 +35636,7 @@
     "sans_resultat_pct": 0.0,
     "statut": "verrouillable (résultats complets à 100 %)",
     "verrouillable": true,
-    "genere_le": "2026-11-12T13:19:56Z"
+    "genere_le": "2026-11-13T12:41:44Z"
    },
    "reconstruction": {
     "n": 51,
