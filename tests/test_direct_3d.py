@@ -88,8 +88,9 @@ class Direct3D(unittest.TestCase):
     def test_page(self):
         for x in ("T3D.monter(h3, m, r, fini)", "te_direct_vue", "te3d-bascule", "data-vue=\"${v}\""):
             self.assertIn(x, HTML)
-        self.assertIn('échanges illustratifs, score réel', HTML)
-        self.assertIn('illustrative rallies, real score', HTML)
+        self.assertIn('score réel ; chaque point est rejoué avec son vrai vainqueur', HTML)       # paquet 260
+        self.assertIn('les trajectoires sont reconstituées', HTML)
+        self.assertIn('real score; each point is replayed with its real winner', HTML)
         bloc = HTML[HTML.index('const T3D = (() => {'):HTML.index('// Vue du direct choisie par le visiteur')]
         for mot in ('marché', 'pinnacle', 'http'):
             self.assertNotIn(mot, bloc.lower())                                     # rien de chargé ailleurs
