@@ -1144,6 +1144,13 @@
    "paquet": 260,
    "quoi": "LE DIRECT EN 3D REJOUE LES VRAIS POINTS (paquet 260, demande de Lucas : « est-ce que les échanges peuvent être réels ? »). À chaque changement du score en direct, la 3D sait qui a gagné le point, qui servait et de quel côté : elle rejoue ce point-là, avec ce vainqueur, puis affiche « Point X » ; entre deux points, les joueurs se replacent et le serveur fait rebondir sa balle, comme à la télévision ; aucun point n'est inventé (« En attente du prochain point » à l'ouverture). La façon de gagner le point (ace, service non retourné, coup droit ou revers gagnant, volée, amorti, lob, faute provoquée, faute directe, double faute) est tirée des habitudes réelles du vainqueur (tiroir « Points marqués ») ; les trajectoires restent reconstituées, faute de source en direct, et l'écran le dit. Rendu amélioré : bras et jambes modelés, chaussettes, poignets, semelles, bandeau ou casquette, couleurs plus justes, traînée de la balle, public qui applaudit après chaque point, vue « Près » qui suit le joueur. Descriptif : le % ne change pas.",
    "garde_fou": "Retrait : dans algo/index.html, remettre l'ancien bloc G3D (paquet 259) ou retirer l'appel à G3D.monter (la 3D simple revient)."
+  },
+  {
+   "date": "2026-11-13",
+   "statut": "production",
+   "paquet": 261,
+   "quoi": "IMAGE DE LA 3D AMÉLIORÉE (paquet 261, demande de Lucas). Anti-crénelage (bords nets), halo autour des projecteurs, de la balle et des panneaux lumineux, vignettage et couleurs étalonnées ; bandeau LED qui défile autour du court ; deux écrans géants au-dessus des tribunes qui affichent le vrai score et le serveur ; public redessiné (épaules, bras, cheveux, sièges) ; davantage de projecteurs. Sur un téléphone qui peine (moins de 22 images par seconde), la 3D passe seule en qualité « basse » (sans halo ni anti-crénelage, résolution normale) et s'en souvient. Toujours sans rien charger d'ailleurs. Descriptif : le % ne change pas.",
+   "garde_fou": "Retrait : dans algo/index.html, QUALITE = 'basse' d'emblée (rendu du paquet 260)."
   }
  ]
 }
