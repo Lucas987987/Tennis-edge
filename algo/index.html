@@ -484,6 +484,7 @@ body.carte #video{display:block;width:1080px;height:1350px}
 .lv-leg{font-size:.75rem;color:var(--dim);margin:4px 0 0}
 .lv-mom{list-style:none;margin:10px 0 0;padding:0}.lv-mom li{display:flex;gap:10px;align-items:baseline;padding:7px 0;border-top:1px solid var(--line);font-size:.86rem}
 .lv-mom .t{font-family:var(--cond);color:var(--dim);min-width:48px}
+.lv-fil li.fl-now{border-top-color:var(--ball);color:var(--ball);font-weight:600}.lv-btn-fil{margin-top:8px}
 .lv-tag{font-size:.68rem;border-radius:999px;padding:1px 8px;font-weight:700;margin-right:6px;white-space:nowrap}
 .lv-tag.a{background:rgba(46,230,255,.14);color:var(--p1)}.lv-tag.b{background:rgba(255,79,174,.16);color:var(--p2)}.lv-tag.s{background:rgba(212,255,58,.14);color:var(--ball)}
 .lv-jeux{margin-top:10px}.lv-jeux summary{cursor:pointer;font-size:.85rem;color:var(--dim);padding:6px 0}
@@ -946,6 +947,21 @@ const T = {
   lv_attente:'Le déroulé point par point arrive dès les premiers jeux.',
   lv_tous_on:'Tous les points', lv_tous_off:'Masquer les points', lv_abbr_BB:'BB', lv_abbr_BS:'BS', lv_abbr_BM:'BM',
   lv_imp_BB:(n,ok)=>`Balle de break pour ${n} : ${ok?'convertie':'sauvée'}`, lv_imp_BS:(n,ok)=>`Balle de set pour ${n} : ${ok?'convertie':'sauvée'}`,
+  fl_titre:'Fil du match', fl_now:'EN CE MOMENT', fl_tout:n=>`Tout le fil (${n})`, fl_moins:'Réduire le fil',
+  fl_now_BB:(n,sc)=>`Balle de break pour ${n} (${sc})`, fl_now_BS:(n,sc)=>`Balle de set pour ${n} (${sc})`, fl_now_BM:(n,sc)=>`Balle de match pour ${n} (${sc})`,
+  fl_break:(n,o,sc,k)=>`Break ! ${n} prend le service ${/^[aeiouyàâéèêëîïôûh]/i.test(o)?'d’':'de '}${o}${k>1?` à sa ${k}e balle de break`:''} : ${sc}`,
+  fl_break_blanc:(n,o,sc)=>`Break blanc : ${n} prend le service ${/^[aeiouyàâéèêëîïôûh]/i.test(o)?'d’':'de '}${o} sans lui laisser un point : ${sc}`,
+  fl_sauve:(n,k,sc)=>`${n} sauve ${k>1?`${k} balles`:'une balle'} de break et tient son service : ${sc}`,
+  fl_040:(n,sc)=>`${n} revient de 0-40 et tient son service : ${sc}`,
+  fl_bs:(n,k)=>`${n} sauve ${k>1?`${k} balles`:'une balle'} de set`, fl_bm:(n,k)=>`${n} sauve ${k>1?`${k} balles`:'une balle'} de match`,
+  fl_set:(n,ord,sc)=>`${n} remporte le ${ord} ${sc}`, fl_set_tb:(n,ord,sc,tb)=>`${n} remporte le ${ord} ${sc} (tie-break ${tb})`,
+  fl_match:(n,sc)=>`Victoire ${/^[aeiouyàâéèêëîïôûh]/i.test(n)?'d’':'de '}${n} : ${sc}`, fl_blanc:(n,sc)=>`Jeu blanc ${/^[aeiouyàâéèêëîïôûh]/i.test(n)?'d’':'de '}${n} : ${sc}`,
+  fl_long:(n,k,p,brk,sc)=>`Jeu à rallonge : ${k} égalités, ${p} points ; ${n} ${brk?'finit par breaker':'tient son service'} : ${sc}`,
+  fl_serie_pts:(n,k)=>`${n} enchaîne ${k} points de suite`, fl_serie_jeux:(n,k)=>`${n} enchaîne ${k} jeux de suite`,
+  fl_ace:(n,k,tot)=>k>1?`${k} aces ${/^[aeiouyàâéèêëîïôûh]/i.test(n)?'d’':'de '}${n} (${tot} dans le match)`:`Ace ${/^[aeiouyàâéèêëîïôûh]/i.test(n)?'d’':'de '}${n} (${tot}${tot===1?'er':'e'} du match)`,
+  fl_df:(n,k,tot)=>k>1?`${k} doubles fautes ${/^[aeiouyàâéèêëîïôûh]/i.test(n)?'d’':'de '}${n} (${tot} dans le match)`:`Double faute ${/^[aeiouyàâéèêëîïôûh]/i.test(n)?'d’':'de '}${n} (${tot}${tot===1?'re':'e'} du match)`,
+  fl_tag:{br:'BREAK', set:'SET', match:'MATCH', sauve:'SAUVÉ', blanc:'JEU BLANC', long:'MARATHON', serie:'SÉRIE', ace:'ACE', df:'DOUBLE FAUTE', now:'EN JEU'},
+  fl_note:'Tiré du point par point et des statistiques en direct. Aces et doubles fautes : repérés d’une mise à jour des statistiques à l’autre (une par minute) et placés dans le jeu en cours à ce moment-là. Descriptif : le fil ne change pas le %.',
   lv_imp_BM:(n,ok)=>`Balle de match pour ${n} : ${ok?'convertie':'sauvée'}`, lv_jeu_pour:n=>`jeu ${n}`, lv_tb_pour:n=>`tie-break ${n}`, lv_grp_srv:'SERVICE', lv_grp_ret:'RETOUR ET PRESSION',
   am_titre:'Forme et face-à-face', am_serie_v:(n,s)=>`${n} victoire${n>1?'s':''} de suite${s?` · ${s} set${s>1?'s':''} gagné${s>1?'s':''} de suite`:''}`,
   am_serie_d:(n,s)=>`${n} défaite${n>1?'s':''} de suite${s?` · ${s} set${s>1?'s':''} perdu${s>1?'s':''} de suite`:''}`,
@@ -1215,6 +1231,21 @@ const T = {
   lv_attente:'The point-by-point feed arrives after the first games.',
   lv_tous_on:'All points', lv_tous_off:'Hide points', lv_abbr_BB:'BP', lv_abbr_BS:'SP', lv_abbr_BM:'MP',
   lv_imp_BB:(n,ok)=>`Break point for ${n}: ${ok?'converted':'saved'}`, lv_imp_BS:(n,ok)=>`Set point for ${n}: ${ok?'converted':'saved'}`,
+  fl_titre:'Match feed', fl_now:'RIGHT NOW', fl_tout:n=>`Full feed (${n})`, fl_moins:'Shorter feed',
+  fl_now_BB:(n,sc)=>`Break point for ${n} (${sc})`, fl_now_BS:(n,sc)=>`Set point for ${n} (${sc})`, fl_now_BM:(n,sc)=>`Match point for ${n} (${sc})`,
+  fl_break:(n,o,sc,k)=>`Break! ${n} breaks ${o}${k>1?` on break point no. ${k}`:''}: ${sc}`,
+  fl_break_blanc:(n,o,sc)=>`Love break: ${n} breaks ${o} without dropping a point: ${sc}`,
+  fl_sauve:(n,k,sc)=>`${n} saves ${k>1?`${k} break points`:'a break point'} and holds: ${sc}`,
+  fl_040:(n,sc)=>`${n} comes back from 0-40 to hold: ${sc}`,
+  fl_bs:(n,k)=>`${n} saves ${k>1?`${k} set points`:'a set point'}`, fl_bm:(n,k)=>`${n} saves ${k>1?`${k} match points`:'a match point'}`,
+  fl_set:(n,ord,sc)=>`${n} wins ${ord} ${sc}`, fl_set_tb:(n,ord,sc,tb)=>`${n} wins ${ord} ${sc} (tiebreak ${tb})`,
+  fl_match:(n,sc)=>`${n} wins: ${sc}`, fl_blanc:(n,sc)=>`Love game for ${n}: ${sc}`,
+  fl_long:(n,k,p,brk,sc)=>`Marathon game: ${k} deuces, ${p} points; ${n} ${brk?'breaks in the end':'holds'}: ${sc}`,
+  fl_serie_pts:(n,k)=>`${n} wins ${k} points in a row`, fl_serie_jeux:(n,k)=>`${n} wins ${k} games in a row`,
+  fl_ace:(n,k,tot)=>k>1?`${k} aces by ${n} (${tot} in the match)`:`Ace by ${n} (no. ${tot} in the match)`,
+  fl_df:(n,k,tot)=>k>1?`${k} double faults by ${n} (${tot} in the match)`:`Double fault by ${n} (no. ${tot} in the match)`,
+  fl_tag:{br:'BREAK', set:'SET', match:'MATCH', sauve:'SAVED', blanc:'LOVE', long:'MARATHON', serie:'RUN', ace:'ACE', df:'DOUBLE FAULT', now:'LIVE'},
+  fl_note:'Built from the live point-by-point and statistics. Aces and double faults: spotted from one statistics update to the next (once a minute) and placed in the game being played at that moment. Descriptive: the feed does not change the %.',
   lv_imp_BM:(n,ok)=>`Match point for ${n}: ${ok?'converted':'saved'}`, lv_jeu_pour:n=>`game ${n}`, lv_tb_pour:n=>`tiebreak ${n}`, lv_grp_srv:'SERVE', lv_grp_ret:'RETURN AND PRESSURE',
   am_titre:'Form and head-to-head', am_serie_v:(n,s)=>`${n} win${n>1?'s':''} in a row${s?` · ${s} set${s>1?'s':''} won in a row`:''}`,
   am_serie_d:(n,s)=>`${n} loss${n>1?'es':''} in a row${s?` · ${s} set${s>1?'s':''} lost in a row`:''}`,
@@ -3038,7 +3069,7 @@ function matchsFiltres(){
 // en cours et que l'onglet est visible. Le % affiché reste celui d'avant match.
 // 13/11/2026 (paquet 256) : toutes les 3 s ; le worker sert sa copie de 3 s au plus (plus longue si le quota du jour
 // se resserre), donc 100 visiteurs = toujours une seule requête TennisApi.
-const LIVE = { par_uid: {}, vus: {}, minuterie: null, moteurs: {}, stats: {}, attente: {}, formes: {}, reeval: {}, essai: {}, points: {}, cal: {}, ouverts: {}, tousPoints: false };
+const LIVE = { par_uid: {}, vus: {}, minuterie: null, moteurs: {}, stats: {}, attente: {}, formes: {}, reeval: {}, essai: {}, points: {}, cal: {}, ouverts: {}, tousPoints: false, filSt: {}, filTout: false };
 function motsNom(n){ return new Set(String(n||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase()
   .replace(/[^a-z\s-]/g,' ').split(/[\s-]+/).filter(w=>w.length>=2)); }
 function memeJoueur(a,b){ const A=motsNom(a); for (const w of motsNom(b)) if (A.has(w)) return true; return false; }
@@ -3361,6 +3392,7 @@ function statsFiche(){
     if (Date.now() - (LIVE.essai[uid] || 0) < 55000) continue;     // un essai par minute, réussi ou non
     LIVE.attente[uid] = true; LIVE.essai[uid] = Date.now();
     fetch('/live/stats?id=' + encodeURIComponent(r.x.id), {cache:'no-store'}).then(x=>x.ok ? x.json() : null).then(o=>{
+      if (o && o.stats && deja && deja.o && deja.o.stats) { try { noterFilStats(uid, r, deja.o.stats, o.stats); } catch(e) { /* fil seulement */ } }
       if (o) LIVE.stats[uid] = {o: (o.stats || !deja) ? o : {...o, stats: deja.o.stats}, t: Date.now()};
     }).catch(()=>{}).finally(()=>{ LIVE.attente[uid] = false; majLive(); });
   }
@@ -3543,6 +3575,115 @@ function derouleLive(m, r, jeux){
   }
   return {courbe, moments, parSet};
 }
+// 13/11/2026 (paquet 257, demande de Lucas) — FIL DU MATCH : le récit du match en direct, le plus récent en haut.
+// Tiré du point par point (breaks, balles de break sauvées, retour de 0-40, sets, tie-breaks, jeux blancs, jeux à
+// rallonge, séries de points et de jeux), du score en direct (« en ce moment » : balle de break / de set / de match,
+// rafraîchi toutes les 3 s) et des statistiques (aces, doubles fautes repérés d'une mise à jour à l'autre). Les coups
+// eux-mêmes (coup droit gagnant, montée au filet…) ne sont fournis en direct par aucune source abordable : rien n'est
+// inventé. Descriptif : le fil ne change pas le %.
+function noterFilStats(uid, r, avant, apres){
+  const jeux = LIVE.points[uid] || [];
+  const der = jeux[jeux.length - 1];
+  const g = !der ? 0 : (der[4] ? jeux.length : jeux.length - 1);    // jeu en cours au moment où on le voit
+  const L = LIVE.filSt[uid] = LIVE.filSt[uid] || [];
+  for (const [cle, type] of [['aces','ace'], ['doubleFaults','df']]) {
+    const a = avant[cle], b = apres[cle]; if (!a || !b) continue;
+    for (const [k, i] of [[0, 0], [1, 2]]) {
+      const n = (+b[i] || 0) - (+a[i] || 0); if (n <= 0 || n > 6) continue;     // > 6 en une minute : relevé incohérent
+      L.push({g, type, qui: r.inverse ? 1 - k : k, n, tot: +b[i] || 0});
+    }
+  }
+  if (L.length > 200) L.splice(0, L.length - 200);
+}
+function enjeuDirect(m, r){
+  // « en ce moment » depuis le score en direct (/live, 3 s) : balle de break, de set ou de match pour qui ?
+  const x = r.x, H = r.inverse ? x.score_away : x.score_home, A = r.inverse ? x.score_home : x.score_away;
+  if (!H || !A || !x.serveur || !Array.isArray(H.sets) || !H.sets.length) return null;
+  const srv = ((x.serveur === 'home') !== r.inverse) ? 0 : 1;
+  const N = (m.simulation && m.simulation.sets_gagnants) || 2;
+  const jeux = [+H.sets[H.sets.length-1] || 0, +A.sets[A.sets.length-1] || 0];
+  const sets = [+H.gagnes || 0, +A.gagnes || 0];
+  const tb = jeux[0] === 6 && jeux[1] === 6;
+  const val = p => { const s_ = String(p ?? '').toUpperCase(); if (tb) { const n = parseInt(s_, 10); return Number.isFinite(n) ? n : null; }
+    return {'0':0,'15':1,'30':2,'40':3,'A':4,'AD':4}[s_] ?? null; };
+  const c = [val(H.point), val(A.point)]; if (c[0] === null || c[1] === null) return null;
+  const cible = tb && sets[0] === N-1 && sets[1] === N-1 ? ((m.simulation && m.simulation.tb_final) || 7) : 7;
+  let marque = null, qui = null;
+  for (const y of [0,1]) {
+    const gagne = tb ? (c[y] >= cible-1 && c[y] > c[1-y]) : (c[y] >= 3 && c[y] > c[1-y]);
+    if (!gagne) continue;
+    const g = jeux[y] + 1, o = jeux[1-y];
+    const set = tb || (g >= 6 && g - o >= 2) || g === 7;
+    const m_ = set && sets[y] + 1 >= N ? 'BM' : (set ? 'BS' : (!tb && y !== srv ? 'BB' : null));
+    if (m_ && (!marque || ['BB','BS','BM'].indexOf(m_) > ['BB','BS','BM'].indexOf(marque))) { marque = m_; qui = y; }
+  }
+  if (!marque) return null;
+  const sc = tb ? `${c[0]}-${c[1]}` : (c[0] >= 3 && c[1] >= 3 ? (c[0] > c[1] ? 'AD-40' : '40-AD') : `${['0','15','30','40'][c[0]]}-${['0','15','30','40'][c[1]]}`);
+  return {marque, qui, sc};
+}
+function filDuMatch(m, r, dr, filSt, fini){
+  // → [{g, o, tag, qui, txt, p}] dans l'ordre du match (g = rang du jeu, o = ordre dans le jeu)
+  const N = (m.simulation && m.simulation.sets_gagnants) || 2;
+  const nom = q => court(q === 0 ? m.home : m.away);
+  const ord = st => (+st === 1 ? t('lv_set1') : t('lv_set', st));
+  const out = [], sets = [0,0], scoresSets = [];
+  const jeuxPlats = [];
+  for (const st of Object.keys(dr.parSet).sort((a,b)=>a-b)) for (const g_ of dr.parSet[st]) jeuxPlats.push({...g_, set: +st});
+  let fait = 0, serieJ = {qui: null, n: 0}, serieP = {qui: null, n: 0, g: 0};
+  const finSerieP = g => { if (serieP.n >= 7) out.push({g, o: 3, tag: 'serie', qui: serieP.qui, txt: t('fl_serie_pts', nom(serieP.qui), serieP.n)}); };
+  jeuxPlats.forEach((g_, k) => {
+    for (const x of g_.pts) { if (x === serieP.qui) serieP.n++; else { finSerieP(k); serieP = {qui: x, n: 1}; } }
+    if (g_.enCours) return;
+    fait++;
+    const p = dr.courbe[fait] ? dr.courbe[fait].p : null;
+    const srv = g_.srv, rec = 1 - srv, gagne = g_.gagne;
+    const det = g_.det || [];
+    const comp = (mq, q) => det.filter(d => d.marque === mq && d.qui === q && d.ok !== null);
+    if (!g_.tb) {
+      const bb = comp('BB', rec), bbSauv = bb.filter(d => !d.ok).length;
+      const c = [0,0]; let de040 = false, egal = 0;
+      for (const x of g_.pts) { c[x]++; if (c[srv] === 0 && c[rec] === 3) de040 = true; if (c[0] >= 3 && c[0] === c[1]) egal++; }
+      if (gagne === rec) {
+        const blanc = g_.pts.every(x => x === rec);
+        out.push({g: k, o: 1, tag: 'br', qui: gagne, p, txt: blanc ? t('fl_break_blanc', nom(gagne), nom(srv), g_.sc) : t('fl_break', nom(gagne), nom(srv), g_.sc, bb.length)});
+      } else if (de040) out.push({g: k, o: 1, tag: 'sauve', qui: srv, p, txt: t('fl_040', nom(srv), g_.sc)});
+      else if (bbSauv) out.push({g: k, o: 1, tag: 'sauve', qui: srv, p, txt: t('fl_sauve', nom(srv), bbSauv, g_.sc)});
+      else if (g_.pts.length === 4 && g_.pts.every(x => x === srv)) out.push({g: k, o: 1, tag: 'blanc', qui: srv, txt: t('fl_blanc', nom(srv), g_.sc)});
+      if (egal >= 3) out.push({g: k, o: 0, tag: 'long', qui: gagne, txt: t('fl_long', nom(gagne), egal, g_.pts.length, gagne === rec, g_.sc)});
+    }
+    for (const [mq, cle] of [['BS','fl_bs'], ['BM','fl_bm']]) for (const q of [0,1]) {
+      const sv = comp(mq, q).filter(d => !d.ok).length;
+      if (sv) out.push({g: k, o: 0.5, tag: 'sauve', qui: 1 - q, txt: t(cle, nom(1 - q), sv)});
+    }
+    if (gagne === serieJ.qui) serieJ.n++; else serieJ = {qui: gagne, n: 1};
+    if (serieJ.n >= 4 && (k === jeuxPlats.length - 1 || jeuxPlats[k+1].enCours || jeuxPlats[k+1].gagne !== gagne))
+      out.push({g: k, o: 4, tag: 'serie', qui: gagne, txt: t('fl_serie_jeux', nom(gagne), serieJ.n)});
+    const [a, b] = g_.sc.split('-').map(Number);
+    const finSet = ((a >= 6 || b >= 6) && Math.abs(a - b) >= 2) || a === 7 || b === 7;
+    if (finSet) {
+      sets[gagne]++; scoresSets.push(g_.sc);
+      let tbTxt = null;
+      if (g_.tb) { const c = [0,0]; g_.pts.forEach(x => c[x]++); tbTxt = `${Math.max(...c)}-${Math.min(...c)}`; }
+      if (sets[gagne] >= N) out.push({g: k, o: 5, tag: 'match', qui: gagne, p: gagne === 0 ? 1 : 0, txt: t('fl_match', nom(gagne), scoresSets.join(' '))});
+      else out.push({g: k, o: 5, tag: 'set', qui: gagne, p, txt: tbTxt ? t('fl_set_tb', nom(gagne), ord(g_.set), g_.sc, tbTxt) : t('fl_set', nom(gagne), ord(g_.set), g_.sc)});
+    }
+  });
+  if (serieP.n >= 7) out.push({g: Math.max(0, jeuxPlats.length - 1), o: 3.5, tag: 'serie', qui: serieP.qui, txt: t('fl_serie_pts', nom(serieP.qui), serieP.n)});
+  for (const e of filSt || []) out.push({g: e.g, o: -1, tag: e.type, qui: e.qui, txt: t(e.type === 'ace' ? 'fl_ace' : 'fl_df', nom(e.qui), e.n, e.tot)});
+  out.sort((x, y) => (x.g - y.g) || (x.o - y.o));
+  if (!fini) { const e = enjeuDirect(m, r); if (e) out.push({g: 1e9, o: 0, tag: 'now', qui: e.qui, txt: t('fl_now_' + e.marque, nom(e.qui), e.sc)}); }
+  return out;
+}
+function rendFil(m, r, dr, fini){
+  const items = filDuMatch(m, r, dr, LIVE.filSt[m.uid], fini).reverse();
+  if (!items.length) return '';
+  const tous = !!LIVE.filTout, vus = tous ? items : items.slice(0, 10);
+  const T = t('fl_tag');
+  const li = x => `<li class="${x.tag === 'now' ? 'fl-now' : ''}"><span><span class="lv-tag ${x.tag === 'now' ? 's' : (['set','match','serie','long'].includes(x.tag) && x.qui == null ? 's' : (x.qui === 0 ? 'a' : 'b'))}">${esc(T[x.tag] || '')}</span>${esc(x.txt)}${x.p != null && x.tag !== 'match' ? ` → ${pc0(x.p)}` : ''}</span></li>`;
+  return `<div class="lv-grp">${esc(t('fl_titre').toUpperCase())}</div><ul class="lv-mom lv-fil">${vus.map(li).join('')}</ul>
+    ${items.length > 10 ? `<button type="button" class="btn lv-btn-fil" aria-pressed="${tous}">${esc(tous ? t('fl_moins') : t('fl_tout', items.length))}</button>` : ''}
+    <p class="styles-note" style="margin:6px 0 0">${esc(t('fl_note'))}</p>`;
+}
 function svgCourbe(m, courbe){
   const W = 340, H = 170, x0 = 30, x1 = 330, y = p => 160 - p*150, n = Math.max(courbe.length - 1, 1);
   const X = i => x0 + (x1-x0)*i/n;
@@ -3580,7 +3721,7 @@ function rendMatchLive(){
         dr.parSet[st].map(g_ => `<div class="lv-g${g_.br?' br':''}"><span class="sc">${esc(g_.sc)}${g_.enCours?' …':''}</span><span class="lv-srv" style="background:${g_.srv===0?'var(--p1)':'var(--p2)'};box-shadow:none"></span><span class="lv-dots">${g_.pts.map(x=>`<i class="${x===0?'h':''}"></i>`).join('')}</span></div>${ligneTous(g_)}`).reverse().join('')}</details>`).join('');
       corps = `<div class="lv-courbe"><div class="lv-grp" style="margin-top:4px" title="${esc(t('lv_courbe_aide'))}">${esc(t('lv_courbe', court(m.home)).toUpperCase())}</div>${svgCourbe(m, dr.courbe)}
         <p class="lv-leg">${t('lv_leg', esc(court(m.home)), esc(court(m.away))).split(' · ').map((x,i)=>`<span style="white-space:nowrap"><span style="color:${['var(--p1)','var(--p2)','var(--ball)'][i]}">●</span>${x.replace('●','')}</span>`).join(' · ')}</p></div>
-        ${mom ? `<div class="lv-grp">${esc(t('lv_moments').toUpperCase())}</div><ul class="lv-mom">${mom}</ul>` : ''}
+        ${rendFil(m, r, dr, fini) || (mom ? `<div class="lv-grp">${esc(t('lv_moments').toUpperCase())}</div><ul class="lv-mom">${mom}</ul>` : '')}
         <div class="lv-jeux"><div class="lv-jeux-t"><span class="lv-grp" style="margin:0">${esc(t('lv_jeux').toUpperCase())}</span><button type="button" class="btn lv-btn-tous" aria-pressed="${tous}">${esc(t(tous ? 'lv_tous_off' : 'lv_tous_on'))}</button></div>${sets}</div>`;
     }
   }
@@ -3591,6 +3732,8 @@ function rendMatchLive(){
     ${terrainLive(m, r, fini)}${tableauLive(m, r, fini, true)}${barreLive(m, r, fini, true)}${corps}</div>`;
   const bt = el.querySelector('.lv-btn-tous');
   if (bt) bt.onclick = () => { LIVE.tousPoints = !LIVE.tousPoints; rendMatchLive(); };
+  const bf = el.querySelector('.lv-btn-fil');
+  if (bf) bf.onclick = () => { LIVE.filTout = !LIVE.filTout; rendMatchLive(); };
   el.querySelectorAll('details[data-set]').forEach(d => d.addEventListener('toggle', () => {
     (LIVE.ouverts[uid] = LIVE.ouverts[uid] || {})[d.dataset.set] = d.open; }));
 }
