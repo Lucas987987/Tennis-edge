@@ -1090,6 +1090,12 @@
    "quoi": "Styles de jeu d'après les coups (paquet 252, demande de Lucas) — le % de victoire ne change pas. En plus du style service / retour, chaque joueur relevé coup par coup (au moins 10 matchs sur 3 ans, Match Charting Project) reçoit un ou deux styles de jeu, d'après la façon dont il gagne ses points dans l'échange face à la moyenne du circuit : joueur de filet, attaquant de coup droit, attaquant de revers, joueur de toucher, régulier, sinon complet. Seuils écrits avant de regarder un seul joueur. Sur la fiche, une partie « Styles de jeu » montre les étiquettes de chacun et son bilan contre le style de jeu de l'adversaire : victoires, attendu, écart à l'attendu, derniers matchs, comme le duel des styles ; le style de l'adversaire est figé à la date de chaque match. Étude : ni la paire de styles, ni l'effet propre à chaque joueur ne prédit le vainqueur au-delà de l'algo (matchs ATP et WTA où les deux joueurs ont un style).",
    "statut": "production",
    "paquet": 252
+  },
+  {
+   "date": "2026-11-13",
+   "statut": "etude",
+   "paquet": 253,
+   "quoi": "Styles de jeu, circuit par circuit (paquet 253, étude) — le % de victoire ne change pas. Question de Lucas : l'avantage d'un style sur un autre est-il propre à l'ATP ou à la WTA ? L'écart par paire de styles est maintenant appris séparément sur chaque circuit (2018–2022) et jugé sur 2023 → juin 2026 : il fait toujours moins bien que l'algo seul (ATP -0.0024, WTA -0.0083) ; en WTA, le sens s'inverse d'une période à l'autre. Aucun style ne bat un autre plus souvent que le niveau des joueurs ne le prévoit, sur aucun des deux circuits."
   }
  ]
 }
