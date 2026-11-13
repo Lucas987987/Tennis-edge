@@ -245,3 +245,18 @@ test('direct : statistiques et point par point s’arrêtent quand le quota lu p
     assert.equal(o.plafond, true);
   } finally { QUOTA_VU.restant = avant; }
 });
+
+
+// 13/11/2026 (paquet 264) — modèles des joueurs 3D : servis depuis la copie du site, jamais d'ailleurs
+test('modèles 3D : relus sur la copie GitHub Pages du site, binaire, sinon 502', async () => {
+  const vus = [];
+  globalThis.fetch = async (u) => { vus.push(String(u)); return new Response(new Uint8Array(200000), { status: 200, headers: { 'content-length': '200000', 'content-type': 'application/octet-stream' } }); };
+  const r = await worker.fetch(req('/modeles/joueurs3d.bin'), {});
+  assert.equal(r.status, 200);
+  assert.equal(r.headers.get('content-type'), 'application/octet-stream');
+  assert.equal(vus.length, 1);
+  assert.ok(vus[0].startsWith('https://lucas987987.github.io/Tennis-edge/algo/modeles/joueurs3d.bin'));
+  globalThis.fetch = async () => new Response('<html>404</html>', { status: 404, headers: { 'content-type': 'text/html' } });
+  assert.equal((await worker.fetch(req('/modeles/joueurs3d.bin'), {})).status, 502);
+  assert.equal((await worker.fetch(req('/modeles/autre.bin'), {})).status, 404);
+});

@@ -80,6 +80,22 @@ export const VENDOR_3D = Object.freeze({
   '/vendor/Soldier.glb': { type: 'model/gltf-binary', min: 10000,
     sources: ['https://raw.githubusercontent.com/mrdoob/three.js/r164/examples/models/gltf/Soldier.glb'] },
 });
+// 13/11/2026 (paquet 264) : les modèles des joueurs 3D (CC0, préparés par scripts/modeles_joueurs.py), servis
+// depuis la copie GitHub Pages du site et rien d'autre ; gardés 1 jour (le nom de fichier change avec la version).
+export const MODELES = Object.freeze({ '/modeles/joueurs3d.bin': { type: 'application/octet-stream', min: 100000 } });
+export async function modele(req, pathname) {
+  const cfg = MODELES[pathname];
+  if (req.method !== 'GET' && req.method !== 'HEAD') return new Response(null, { status: 405, headers: SECURITE });
+  try {
+    const r = await fetch(ORIGINE + pathname.slice(1), { cf: { cacheTtl: 86400, cacheEverything: true } });
+    const n = Number(r.headers.get('content-length')) || 0;
+    if (r.ok && !(n && n < cfg.min) && !(r.headers.get('content-type') || '').includes('text/html'))
+      return new Response(req.method === 'HEAD' ? null : r.body, { headers: { ...SECURITE, 'Content-Type': cfg.type,
+        'Cache-Control': 'public, max-age=86400', 'Cross-Origin-Resource-Policy': 'same-origin' } });
+    if (r.body) await r.body.cancel();
+  } catch (e) { /* plus bas */ }
+  return new Response('Modèle indisponible.', { status: 502, headers: { ...SECURITE, 'Cache-Control': 'no-store' } });
+}
 const VENDOR_CACHE_SECONDS = 300;
 function vendorSources(pathname) {
   const name = pathname.slice('/vendor/'.length);
@@ -399,6 +415,7 @@ export default {
     const url = new URL(req.url);
     if (url.pathname === '/vendor/status') return vendorStatus(req);
     if (url.pathname in VENDOR_3D) return vendor3D(req, url.pathname);
+    if (url.pathname in MODELES) return modele(req, url.pathname);
     if (url.pathname === '/live/stats') return liveStats(req, env, url);
     if (url.pathname === '/live/points') return livePoints(req, env, url);
     if (url.pathname === '/live') return live(req, env);
