@@ -843,6 +843,12 @@ def construire(racine, maintenant=None):
     styles_doc = _lire(os.path.join(racine, 'simulateur', 'styles_descriptifs.json'), {}) or {}
     styles = styles_doc.get('matchs') or {}
     ajouter_styles_descriptifs(lignes, styles_doc)
+    # 13/11/2026 (paquet 252) : style de jeu d'après les coups (styles_jeu.py, Match Charting Project) ; descriptif
+    jeu_doc = (_lire(os.path.join(racine, 'simulateur', 'styles_jeu.json'), {}) or {}).get('matchs') or {}
+    for ligne in lignes:
+        b_ = jeu_doc.get(ligne.get('uid'))
+        if b_ and b_.get('descriptif_seulement') is True and len(b_.get('joueurs') or []) == 2:
+            ligne['styles_jeu'] = b_
     rythme_doc = _lire(os.path.join(racine, 'simulateur', 'profil_rythme.json'), {}) or {}
     try:
         import elo as E
