@@ -1165,6 +1165,13 @@
    "paquet": 263,
    "quoi": "LE DIRECT EN 3D PREND LE RYTHME DE LA TÉLÉVISION (paquet 263, Lucas : « ça manque de rythme »). Après chaque vrai point rejoué, la 3D annonce « Point X », puis le repasse au ralenti, vu d'une caméra basse au bord du court qui suit la balle ; ensuite les joueurs se replacent pour le point suivant. Un nouveau point arrivé pendant un ralenti passe toujours devant. Les points eux-mêmes ne peuvent pas arriver plus vite : la 3D suit le score en direct dès qu'il change. Descriptif : le % ne change pas.",
    "garde_fou": "Retrait : dans algo/index.html, avancer() ne programme plus RAL.prevu (plus de ralenti)."
+  },
+  {
+   "date": "2026-11-13",
+   "statut": "production",
+   "paquet": 264,
+   "quoi": "VRAIS MODÈLES DE JOUEURS DANS LE DIRECT EN 3D (paquet 264, demande de Lucas). Les joueurs sont désormais des personnages modelés par un artiste (« Universal Base Characters » de Quaternius, licence CC0 : domaine public, usage commercial libre) : corps sculpté, visage, yeux, cheveux en volume ; homme pour l'ATP et les Challengers, femme pour la WTA ; teint, coiffure et bandeau varient d'un joueur à l'autre. Ils portent la tenue du site (maillot à bandes, short à liseré, chaussettes, chaussures, poignets) et la raquette, et jouent les mêmes coups (attente, course, coup droit, revers, service, ralenti). Le fichier (1,2 Mo, modeles/joueurs3d.bin) est préparé une fois par scripts/modeles_joueurs.py et servi par le site lui-même : rien n'est chargé ailleurs. Tant qu'il n'est pas chargé, ou s'il manque, les joueurs dessinés par le code prennent le relais. Descriptif : le % ne change pas.",
+   "garde_fou": "Retrait : supprimer algo/modeles/joueurs3d.bin (les joueurs dessinés par le code reviennent d'eux-mêmes)."
   }
  ]
 }
