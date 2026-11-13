@@ -484,6 +484,10 @@ body.carte #video{display:block;width:1080px;height:1350px}
 .lv-leg{font-size:.75rem;color:var(--dim);margin:4px 0 0}
 .lv-mom{list-style:none;margin:10px 0 0;padding:0}.lv-mom li{display:flex;gap:10px;align-items:baseline;padding:7px 0;border-top:1px solid var(--line);font-size:.86rem}
 .lv-mom .t{font-family:var(--cond);color:var(--dim);min-width:48px}
+.te3d{margin-top:8px;border-radius:14px;overflow:hidden;background:#120c33;border:1px solid var(--line)}
+.te3d-cv{display:block;width:100%;aspect-ratio:13/10;max-height:460px;touch-action:pan-y;cursor:grab}.te3d-cv:active{cursor:grabbing}
+.te3d-bas{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;justify-content:space-between;padding:7px 10px;font-size:.72rem;color:#ABA3D6}
+.te3d-vues{display:flex;gap:6px}.te3d-v,.te3d-bascule{padding:3px 10px;font-size:.72rem}.te3d-bascule{margin-left:auto}
 .lv-fil li.fl-now{border-top-color:var(--ball);color:var(--ball);font-weight:600}.lv-btn-fil{margin-top:8px}
 .lv-tag{font-size:.68rem;border-radius:999px;padding:1px 8px;font-weight:700;margin-right:6px;white-space:nowrap}
 .lv-tag.a{background:rgba(46,230,255,.14);color:var(--p1)}.lv-tag.b{background:rgba(255,79,174,.16);color:var(--p2)}.lv-tag.s{background:rgba(212,255,58,.14);color:var(--ball)}
@@ -947,6 +951,8 @@ const T = {
   lv_attente:'Le déroulé point par point arrive dès les premiers jeux.',
   lv_tous_on:'Tous les points', lv_tous_off:'Masquer les points', lv_abbr_BB:'BB', lv_abbr_BS:'BS', lv_abbr_BM:'BM',
   lv_imp_BB:(n,ok)=>`Balle de break pour ${n} : ${ok?'convertie':'sauvée'}`, lv_imp_BS:(n,ok)=>`Balle de set pour ${n} : ${ok?'convertie':'sauvée'}`,
+  t3_tv:'TV', t3_cote:'Côté', t3_haut:'Dessus', t3_2d:'Vue 2D', t3_3d:'Vue 3D',
+  t3_note:'Glisse pour tourner autour du terrain · échanges illustratifs, score réel', 
   fl_titre:'Fil du match', fl_now:'EN CE MOMENT', fl_tout:n=>`Tout le fil (${n})`, fl_moins:'Réduire le fil',
   fl_now_BB:(n,sc)=>`Balle de break pour ${n} (${sc})`, fl_now_BS:(n,sc)=>`Balle de set pour ${n} (${sc})`, fl_now_BM:(n,sc)=>`Balle de match pour ${n} (${sc})`,
   fl_break:(n,o,sc,k)=>`Break ! ${n} prend le service ${/^[aeiouyàâéèêëîïôûh]/i.test(o)?'d’':'de '}${o}${k>1?` à sa ${k}e balle de break`:''} : ${sc}`,
@@ -1231,6 +1237,8 @@ const T = {
   lv_attente:'The point-by-point feed arrives after the first games.',
   lv_tous_on:'All points', lv_tous_off:'Hide points', lv_abbr_BB:'BP', lv_abbr_BS:'SP', lv_abbr_BM:'MP',
   lv_imp_BB:(n,ok)=>`Break point for ${n}: ${ok?'converted':'saved'}`, lv_imp_BS:(n,ok)=>`Set point for ${n}: ${ok?'converted':'saved'}`,
+  t3_tv:'TV', t3_cote:'Side', t3_haut:'Top', t3_2d:'2D view', t3_3d:'3D view',
+  t3_note:'Swipe to turn around the court · illustrative rallies, real score', 
   fl_titre:'Match feed', fl_now:'RIGHT NOW', fl_tout:n=>`Full feed (${n})`, fl_moins:'Shorter feed',
   fl_now_BB:(n,sc)=>`Break point for ${n} (${sc})`, fl_now_BS:(n,sc)=>`Set point for ${n} (${sc})`, fl_now_BM:(n,sc)=>`Match point for ${n} (${sc})`,
   fl_break:(n,o,sc,k)=>`Break! ${n} breaks ${o}${k>1?` on break point no. ${k}`:''}: ${sc}`,
@@ -3245,6 +3253,294 @@ function tableauLive(m, r, fini, grand){
 
 
 
+// 13/11/2026 (paquet 258, demande de Lucas) — LE DIRECT EN 3D. Terrain, filet et joueurs en vraie perspective,
+// dessinés sans bibliothèque (canvas 2D + projection 3D) : rien à télécharger, fluide sur téléphone. On fait tourner
+// la caméra au doigt ; trois vues toutes faites (TV, côté, dessus). Le SCORE, le SERVEUR et le CÔTÉ DE SERVICE sont
+// réels (/live, 3 s) ; les échanges sont ILLUSTRATIFS (aucune source ne donne les trajectoires en direct) et le
+// disent à l'écran. Descriptif : le % ne change pas.
+const T3D = (() => {
+  const L = 23.77, W = 10.97, S = 8.23, SL = 6.40, HL = L / 2;
+  const SURF3D = { Clay: ['#c4643c', '#a24f2e'], Grass: ['#4c9a48', '#3a7a37'], Carpet: ['#3d6e8f', '#2d5470'], Hard: ['#2f62b5', '#22467f'] };
+  const VUES = { tv: { yaw: 0, pitch: 0.36, dist: 31 }, cote: { yaw: 1.0, pitch: 0.32, dist: 36 }, haut: { yaw: Math.PI / 2, pitch: 1.38, dist: 36 } };
+  let cv = null, ctx = null, raf = 0, dernier = 0, visible = true, obs = null;
+  const cam = { ...VUES.tv, cible: { x: 0, y: 0, z: -1 } };
+  const E = { noms: ['', ''], sets: [[], []], pts: ['0', '0'], srv: null, droite: true, fini: false, surface: 'Hard' };
+  const J = [{ x: 0, z: -HL - 0.8, vx: 0, vz: 0, frappe: -9, cible: null }, { x: 0, z: HL + 0.8, vx: 0, vz: 0, frappe: -9, cible: null }];
+  let R = null;                                   // l'échange illustratif en cours
+  const reduit = (() => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } })();
+  const rnd = (a, b) => a + Math.random() * (b - a), cl = (v, a, b) => Math.max(a, Math.min(b, v));
+
+  // ── caméra ────────────────────────────────────────────────────────────────────────────────────────────────
+  function base() {
+    const cp = Math.cos(cam.pitch), sp = Math.sin(cam.pitch);
+    const eye = { x: cam.dist * cp * Math.sin(cam.yaw), y: cam.dist * sp, z: -cam.dist * cp * Math.cos(cam.yaw) };
+    const f = norm({ x: cam.cible.x - eye.x, y: cam.cible.y - eye.y, z: cam.cible.z - eye.z });
+    const r = norm(cross(f, { x: 0, y: 1, z: 0 })), u = cross(r, f);
+    return { eye, f, r, u };
+  }
+  function norm(v) { const n = Math.hypot(v.x, v.y, v.z) || 1; return { x: v.x / n, y: v.y / n, z: v.z / n }; }
+  function cross(a, b) { return { x: a.y * b.z - a.z * b.y, y: a.z * b.x - a.x * b.z, z: a.x * b.y - a.y * b.x }; }
+  let B = null, FOC = 1, CX = 0, CY = 0;
+  function P(x, y, z) {
+    const dx = x - B.eye.x, dy = y - B.eye.y, dz = z - B.eye.z;
+    const zc = dx * B.f.x + dy * B.f.y + dz * B.f.z; if (zc < 0.3) return null;
+    const k = FOC / zc;
+    return { x: CX - (dx * B.r.x + dy * B.r.y + dz * B.r.z) * k, y: CY - (dx * B.u.x + dy * B.u.y + dz * B.u.z) * k, z: zc, k };
+  }
+
+  // ── dessin ────────────────────────────────────────────────────────────────────────────────────────────────
+  function poly(pts, fill, stroke, lw) {
+    const q = pts.map(p => P(p[0], p[1], p[2])); if (q.some(p => !p)) return;
+    ctx.beginPath(); q.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)); ctx.closePath();
+    if (fill) { ctx.fillStyle = fill; ctx.fill(); } if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = lw || 1; ctx.stroke(); }
+  }
+  function seg(a, b, larg, coul) {
+    const p = P(...a), q = P(...b); if (!p || !q) return;
+    ctx.strokeStyle = coul; ctx.lineWidth = Math.max(1, larg * (p.k + q.k) / 2); ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(q.x, q.y); ctx.stroke();
+  }
+  function sol() {
+    const [c1, c2] = SURF3D[E.surface] || SURF3D.Hard;
+    poly([[-W / 2 - 4, 0, -HL - 6.5], [W / 2 + 4, 0, -HL - 6.5], [W / 2 + 4, 0, HL + 6.5], [-W / 2 - 4, 0, HL + 6.5]], c2);
+    poly([[-W / 2, 0, -HL], [W / 2, 0, -HL], [W / 2, 0, HL], [-W / 2, 0, HL]], c1);
+    const bl = 'rgba(255,255,255,.92)', e = 0.05;
+    for (const z of [-HL, HL]) seg([-W / 2, 0.005, z], [W / 2, 0.005, z], e, bl);
+    for (const x of [-W / 2, W / 2, -S / 2, S / 2]) seg([x, 0.005, -HL], [x, 0.005, HL], e, bl);
+    for (const z of [-SL, SL]) seg([-S / 2, 0.005, z], [S / 2, 0.005, z], e, bl);
+    seg([0, 0.005, -SL], [0, 0.005, SL], e, bl);
+    for (const z of [-HL, HL]) seg([0, 0.005, z], [0, 0.005, z + (z < 0 ? 0.2 : -0.2)], e, bl);
+  }
+  function filet() {
+    const n = 24, haut = x => 0.914 + (1.07 - 0.914) * Math.pow(Math.abs(x) / (W / 2 + 0.91), 2);
+    const pts = [];
+    for (let i = 0; i <= n; i++) { const x = -W / 2 - 0.91 + (W + 1.82) * i / n; pts.push([x, haut(x), 0]); }
+    poly([[-W / 2 - 0.91, 0, 0], ...pts, [W / 2 + 0.91, 0, 0]], 'rgba(12,12,24,.55)');
+    for (let i = 0; i <= 44; i++) { const x = -W / 2 - 0.91 + (W + 1.82) * i / 44; seg([x, 0, 0], [x, haut(x), 0], 0.008, 'rgba(255,255,255,.18)'); }
+    for (let y = 0.1; y < 0.9; y += 0.1) seg([-W / 2 - 0.91, y, 0], [W / 2 + 0.91, y, 0], 0.008, 'rgba(255,255,255,.14)');
+    for (let i = 0; i < n; i++) seg(pts[i], pts[i + 1], 0.05, '#f4f1ff');
+    for (const s of [-1, 1]) seg([s * (W / 2 + 0.91), 0, 0], [s * (W / 2 + 0.91), 1.07, 0], 0.07, '#d8d4ee');
+  }
+  function sphere(x, y, z, r, c1, c2) {
+    const p = P(x, y, z); if (!p) return; const rr = Math.max(1.5, r * p.k);
+    const g = ctx.createRadialGradient(p.x - rr * .35, p.y - rr * .35, rr * .1, p.x, p.y, rr);
+    g.addColorStop(0, c1); g.addColorStop(1, c2); ctx.fillStyle = g;
+    ctx.beginPath(); ctx.arc(p.x, p.y, rr, 0, 7); ctx.fill();
+  }
+  function joueur(i, t) {
+    // un joueur stylisé : jambes, short, maillot, bras, raquette, tête ; il regarde le filet
+    const j = J[i], face = i === 0 ? 1 : -1, dr = -face;              // « droite » du joueur sur l'axe x
+    const v = Math.hypot(j.vx, j.vz), pas = Math.sin(t * 11) * cl(v / 4, 0, 1) * 0.28;
+    const coul = i === 0 ? ['#7ff3ff', '#139fbb'] : ['#ff9fd4', '#c22f7f'];
+    const peau = ['#f2c9a8', '#b98463'];
+    const sw = cl((t - j.frappe) / 0.35, 0, 1), elan = sw < 1 ? Math.sin(sw * Math.PI) : 0;
+    const items = [];
+    const ajoute = (z, f) => items.push({ z, f });
+    const po = P(j.x, 0.005, j.z);
+    if (po) items.push({ z: { z: po.z + 40 }, f: () => { ctx.fillStyle = 'rgba(0,0,0,.28)'; ctx.beginPath();
+      ctx.ellipse(po.x, po.y, Math.max(3, 0.42 * po.k), Math.max(1.2, 0.16 * po.k), 0, 0, 7); ctx.fill(); } });
+    const X = (dx, dz) => [j.x + dx, j.z + dz * face];
+    for (const s of [-1, 1]) {
+      const [hx, hz] = X(s * 0.12, 0), [fx, fz] = X(s * 0.16, s * pas);
+      ajoute(P(hx, 0.5, hz), () => seg([hx, 0.9, hz], [fx, 0.06, fz], 0.13, peau[1]));
+      ajoute(P(fx, 0.03, fz), () => sphere(fx, 0.05, fz, 0.08, '#ffffff', '#9a96b5'));
+    }
+    const [tx, tz] = X(0, 0);
+    ajoute(P(tx, 1.0, tz), () => seg([tx, 0.86, tz], [tx, 0.98, tz], 0.36, '#1c1840'));
+    ajoute(P(tx, 1.25, tz), () => seg([tx, 1.0, tz], [tx, 1.42, tz], 0.34, coul[1]));
+    ajoute(P(tx, 1.3, tz - 0.01 * face), () => seg([tx, 1.04, tz - 0.05 * face], [tx, 1.4, tz - 0.05 * face], 0.2, coul[0]));
+    ajoute(P(tx, 1.62, tz), () => sphere(tx, 1.63, tz, 0.13, peau[0], peau[1]));
+    const [ox, oz] = X(-dr * 0.22, 0);
+    ajoute(P(ox, 1.2, oz), () => seg([ox, 1.4, oz], [ox - dr * 0.08, 1.05, oz + 0.12 * face], 0.09, peau[1]));
+    const [sx, sz] = X(dr * 0.22, 0);
+    const ang = -0.9 + elan * 2.4, [mx, mz] = [sx + dr * 0.32 * Math.cos(ang), sz + 0.32 * Math.sin(ang) * face];
+    const my = 1.12 + elan * 0.25, [rx, rz] = [mx + dr * 0.45 * Math.cos(ang), mz + 0.45 * Math.sin(ang) * face];
+    ajoute(P(mx, my, mz), () => {
+      seg([sx, 1.4, sz], [mx, my, mz], 0.09, peau[1]);
+      seg([mx, my, mz], [rx, my + 0.05, rz], 0.03, '#222');
+      const p = P(rx, my + 0.05, rz); if (p) { ctx.strokeStyle = '#f4f1ff'; ctx.lineWidth = Math.max(1, 0.025 * p.k);
+        ctx.beginPath(); ctx.ellipse(p.x, p.y, Math.max(2, 0.16 * p.k), Math.max(1.5, 0.12 * p.k), 0, 0, 7); ctx.stroke(); }
+    });
+    return items.filter(x => x.z).map(x => ({ z: x.z.z, f: x.f }));
+  }
+  function balle(t) {
+    if (!R || reduit) return [];
+    const b = posBalle(t); if (!b) return [];
+    const out = [];
+    const ombre = P(b.x, 0.01, b.z);
+    if (ombre) out.push({ z: ombre.z + 50, f: () => { ctx.fillStyle = `rgba(0,0,0,${cl(0.45 - b.y * 0.06, 0.12, 0.45)})`;
+      ctx.beginPath(); ctx.ellipse(ombre.x, ombre.y, Math.max(2, 0.09 * ombre.k), Math.max(1, 0.035 * ombre.k), 0, 0, 7); ctx.fill(); } });
+    const p = P(b.x, b.y, b.z);
+    if (p) out.push({ z: p.z - 0.05, f: () => { const rr = Math.max(3, 0.07 * p.k);
+      ctx.shadowColor = '#D4FF3A'; ctx.shadowBlur = rr * 2.5; sphere(b.x, b.y, b.z, Math.max(0.07, 3 / p.k), '#f4ffb0', '#b6dd16'); ctx.shadowBlur = 0; } });
+    return out;
+  }
+
+  // ── l'échange illustratif ──────────────────────────────────────────────────────────────────────────────────
+  // Service du bon joueur, du bon côté (égalité / avantage), dans le bon carré ; puis des frappes croisées, le long
+  // de la ligne, amorties ou lobées ; l'échange finit par un coup gagnant ou une faute. Positions inventées.
+  function nouvelEchange(t0) {
+    const s = E.srv === null ? 0 : E.srv, sens = s === 0 ? 1 : -1, droiteX = -sens;          // droite du serveur
+    const cote = E.droite ? 1 : -1;
+    const depart = { x: droiteX * cote * rnd(0.4, 1.2), y: 2.75, z: -sens * (HL + 0.15) };
+    const ciblX = -droiteX * cote * rnd(0.7, S / 2 - 0.4), ciblZ = sens * rnd(SL - 1.6, SL - 0.3);
+    const vols = [{ a: depart, b: { x: ciblX, y: 0, z: ciblZ }, h: 0.35, d: 0.62, qui: s, type: 'service' }];
+    const n = Math.floor(rnd(2, 10));
+    let pos = { x: ciblX, z: ciblZ }, qui = 1 - s;
+    for (let k = 0; k <= n; k++) {
+      const sq = qui === 0 ? 1 : -1;
+      const prev = vols[vols.length - 1];
+      const dx = prev.b.x - prev.a.x, dz = prev.b.z - prev.a.z, dn = Math.hypot(dx, dz) || 1, ext = prev.type === 'service' ? rnd(5.2, 7) : rnd(2.2, 4.2);
+      const ex = { x: cl(pos.x + dx / dn * ext, -W / 2 - 1.5, W / 2 + 1.5), y: rnd(0.75, 1.1), z: cl(pos.z + dz / dn * ext, -HL - 3, HL + 3) };
+      vols.push({ a: prev.b, b: ex, h: rnd(0.5, 1.0), d: rnd(0.26, 0.38), qui: -1, type: 'rebond' });
+      const fin = k === n, type = Math.random();
+      let tx = Math.random() < 0.55 ? -ex.x * rnd(0.6, 1.1) : ex.x * rnd(0.5, 1), tz = sq * rnd(HL - 4.5, HL - 0.8), h = rnd(1.5, 2.5), d = rnd(0.78, 1.0);
+      if (type < 0.1) { tz = sq * rnd(1.2, 3); h = rnd(1.2, 1.6); d = rnd(0.95, 1.2); }
+      else if (type < 0.18) { h = rnd(5, 7); d = rnd(1.6, 2.0); }
+      if (fin && Math.random() < 0.45) {                                 // faute : dans le filet ou dehors
+        if (Math.random() < 0.5) { tz = sq * 0.05; h = 0.6; d = 0.55; } else { tz = sq * rnd(HL + 0.4, HL + 1.6); }
+      }
+      tx = cl(tx, -S / 2 - (fin ? 0.9 : -0.25), S / 2 + (fin ? 0.9 : -0.25));
+      vols.push({ a: ex, b: { x: tx, y: 0, z: tz }, h, d, qui, type: 'frappe' });
+      pos = { x: tx, z: tz }; qui = 1 - qui;
+    }
+    const der = vols[vols.length - 1];
+    const fx = der.b.x - der.a.x, fz = der.b.z - der.a.z, fn = Math.hypot(fx, fz) || 1, fl = Math.min(3, fn * 0.35);
+    vols.push({ a: der.b, b: { x: der.b.x + fx / fn * fl, y: 0, z: der.b.z + fz / fn * fl }, h: 0.7, d: 0.6, qui: -1, type: 'fin' });
+    let t = t0 + 1.1; for (const v of vols) { v.t = t; t += v.d; }
+    R = { vols, t0, lancer: t0, fin: t + 1.4 };
+  }
+  function posBalle(t) {
+    if (t < R.lancer) return null;
+    const v0 = R.vols[0];
+    if (t < v0.t) { const u = (t - R.lancer) / (v0.t - R.lancer); return { x: v0.a.x, y: 1.2 + Math.sin(u * Math.PI) * 1.9 * (u < .5 ? 1 : 1) + (v0.a.y - 1.2) * u, z: v0.a.z }; }
+    for (const v of R.vols) if (t < v.t + v.d) {
+      const u = (t - v.t) / v.d;
+      return { x: v.a.x + (v.b.x - v.a.x) * u, y: v.a.y + (v.b.y - v.a.y) * u + 4 * v.h * u * (1 - u), z: v.a.z + (v.b.z - v.a.z) * u };
+    }
+    return null;
+  }
+  function bouger(t, dt) {
+    if (!R) return;
+    for (const i of [0, 1]) {
+      const j = J[i], sens = i === 0 ? -1 : 1;
+      let cible = { x: 0, z: sens * (HL + 0.9) };
+      const prochaine = R.vols.find(v => v.qui === i && v.t > t - 0.05);
+      if (prochaine && prochaine.type === 'service') cible = { x: prochaine.a.x, z: prochaine.a.z };
+      else if (prochaine) cible = { x: prochaine.a.x - (i === 0 ? 0.45 : -0.45) * 0, z: prochaine.a.z + sens * 0.35 };
+      else if (t < R.vols[0].t && E.srv !== null && i !== E.srv) {     // le relanceur attend dans le bon carré
+        const s = E.srv, cote = E.droite ? 1 : -1, droiteX = s === 0 ? -1 : 1;
+        cible = { x: -droiteX * cote * 2.6, z: sens * (HL + 0.6) };
+      }
+      const frappe = R.vols.find(v => v.qui === i && Math.abs(v.t - t) < dt * 1.5);
+      if (frappe) j.frappe = t;
+      const urg = prochaine ? cl(prochaine.t - t, 0.15, 3) : 1.5;
+      const vmax = 7.5, dx = cible.x - j.x, dz = cible.z - j.z, dist = Math.hypot(dx, dz);
+      const v = Math.min(vmax, dist / urg * 1.2), k = dist > 0.01 ? v / dist : 0;
+      j.vx = dx * k; j.vz = dz * k; j.x += j.vx * dt; j.z += j.vz * dt;
+    }
+  }
+
+  // ── tableau d'affichage ─────────────────────────────────────────────────────────────────────────
+  function tableau(w) {
+    const pad = 10 * dprC, lh = 22 * dprC, x0 = pad, y0 = pad;
+    const ns = Math.max(E.sets[0].length, E.sets[1].length, 1);
+    const larg = 150 * dprC + ns * 20 * dprC + 40 * dprC;
+    ctx.fillStyle = 'rgba(14,10,36,.82)'; ctx.strokeStyle = 'rgba(212,255,58,.35)'; ctx.lineWidth = 1;
+    rond(x0, y0, larg, lh * 2 + 8 * dprC, 8 * dprC); ctx.fill(); ctx.stroke();
+    ctx.textBaseline = 'middle';
+    for (const i of [0, 1]) {
+      const y = y0 + 4 * dprC + lh * i + lh / 2;
+      ctx.fillStyle = i === 0 ? '#2EE6FF' : '#FF4FAE'; ctx.font = `600 ${13 * dprC}px Barlow, system-ui, sans-serif`;
+      ctx.fillText(E.noms[i].slice(0, 16), x0 + 18 * dprC, y);
+      if (E.srv === i && !E.fini) { ctx.fillStyle = '#D4FF3A'; ctx.beginPath(); ctx.arc(x0 + 9 * dprC, y, 3.5 * dprC, 0, 7); ctx.fill(); }
+      ctx.font = `700 ${14 * dprC}px "Barlow Condensed", system-ui, sans-serif`;
+      for (let k = 0; k < ns; k++) {
+        const v = E.sets[i][k] ?? '', o = E.sets[1 - i][k] ?? '';
+        ctx.fillStyle = k === ns - 1 && !E.fini ? '#D4FF3A' : (+v > +o ? '#F4F1FF' : '#ABA3D6');
+        ctx.fillText(String(v), x0 + 150 * dprC + k * 20 * dprC, y);
+      }
+      if (!E.fini) { const px = x0 + 150 * dprC + ns * 20 * dprC + 4 * dprC;
+        ctx.fillStyle = 'rgba(212,255,58,.14)'; rond(px - 3 * dprC, y - 9 * dprC, 30 * dprC, 18 * dprC, 6 * dprC); ctx.fill();
+        ctx.fillStyle = '#D4FF3A'; ctx.textAlign = 'center'; ctx.fillText(String(E.pts[i] ?? ''), px + 12 * dprC, y); ctx.textAlign = 'left'; }
+    }
+  }
+  function rond(x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
+  let dprC = 1;
+
+  // ── boucle ────────────────────────────────────────────────────────────────────────────────────────────────
+  function dessiner(t, dt) {
+    const w = cv.width, h = cv.height;
+    if (!w || !h) return;
+    B = base(); FOC = Math.min(h * 1.45, w * 1.1); CX = w / 2; CY = h * 0.54;
+    const g = ctx.createLinearGradient(0, 0, 0, h); g.addColorStop(0, '#120c33'); g.addColorStop(1, '#1d1550');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+    sol();
+    if (!E.fini && !reduit) { if (!R || t > R.fin) nouvelEchange(t); bouger(t, dt); }
+    const items = [...joueur(0, t), ...joueur(1, t), ...balle(t)];
+    const pf = P(0, 0.5, 0); if (pf) items.push({ z: pf.z, f: filet });
+    items.sort((a, b) => b.z - a.z).forEach(x => x.f());
+    tableau(w);
+  }
+  function boucle(ms) {
+    raf = requestAnimationFrame(boucle);
+    if (!cv || !cv.isConnected || document.hidden || !visible) return;
+    if (ms - dernier < 30) return;
+    const dt = dernier ? Math.min(0.1, (ms - dernier) / 1000) : 0.03; dernier = ms;
+    taille(); dessiner(ms / 1000, dt);
+  }
+  function taille() {
+    const r = cv.getBoundingClientRect(); dprC = Math.min(2, window.devicePixelRatio || 1);
+    const w = Math.round(r.width * dprC), h = Math.round(r.height * dprC);
+    if (w && (cv.width !== w || cv.height !== h)) { cv.width = w; cv.height = h; }
+  }
+  function creer() {
+    cv = document.createElement('canvas'); cv.className = 'te3d-cv'; ctx = cv.getContext && cv.getContext('2d');
+    if (!ctx) { cv = null; return false; }
+    cv.setAttribute('role', 'img');
+    cv.addEventListener('pointerdown', e => { cv.setPointerCapture(e.pointerId); drag = { x: e.clientX, y: e.clientY, yaw: cam.yaw, pitch: cam.pitch }; });
+    cv.addEventListener('pointermove', e => { if (!drag) return;
+      cam.yaw = drag.yaw - (e.clientX - drag.x) * 0.008; cam.pitch = cl(drag.pitch + (e.clientY - drag.y) * 0.006, 0.12, 1.4); });
+    const fin = () => { drag = null; }; cv.addEventListener('pointerup', fin); cv.addEventListener('pointercancel', fin);
+    cv.addEventListener('wheel', e => { e.preventDefault(); cam.dist = cl(cam.dist * (e.deltaY > 0 ? 1.08 : 0.93), 14, 45); }, { passive: false });
+    try { obs = new IntersectionObserver(es => { visible = es.some(x => x.isIntersecting); }); obs.observe(cv); } catch (e) { visible = true; }
+    raf = requestAnimationFrame(boucle);
+    return true;
+  }
+  let drag = null;
+  function maj(m, r, fini) {
+    const x = r.x, H = r.inverse ? x.score_away : x.score_home, A = r.inverse ? x.score_home : x.score_away;
+    E.noms = [court(m.home), court(m.away)]; E.sets = [H.sets || [], A.sets || []]; E.pts = [H.point ?? '0', A.point ?? '0'];
+    E.srv = x.serveur ? (((x.serveur === 'home') !== r.inverse) ? 0 : 1) : null; E.fini = !!fini; E.surface = m.surface || 'Hard';
+    const i = E.sets[0].length - 1, tb = +E.sets[0][i] === 6 && +E.sets[1][i] === 6;
+    const v = s => { const u = String(s ?? '0').toUpperCase(); return tb ? (parseInt(u, 10) || 0) : ({ '0': 0, '15': 1, '30': 2, '40': 3, 'A': 4, 'AD': 4 })[u] ?? 0; };
+    const joues = v(E.pts[0]) + v(E.pts[1]); E.droite = tb ? (joues % 2 === 0) : (joues % 2 === 0);
+    if (cv) cv.setAttribute('aria-label', `${E.noms[0]} ${E.sets[0].join(' ')} – ${E.sets[1].join(' ')} ${E.noms[1]}`);
+  }
+  return {
+    monter(hote, m, r, fini) {
+      if (!cv && !creer()) return false;
+      maj(m, r, fini);
+      if (cv.parentNode !== hote) hote.appendChild(cv);
+      return true;
+    },
+    vue(nom) { Object.assign(cam, VUES[nom] || VUES.tv); },
+    // pour les tests : une image fixe à l'instant t
+    _image(t) { taille(); if (!R && !E.fini) nouvelEchange(0);
+      for (let u = (this._t || 0); u < t; u += 0.03) { if (R && u > R.fin) nouvelEchange(u); bouger(u, 0.03); }
+      this._t = t; B = base(); dessiner(t, 0); },
+    _simuler(t) { if (!R && !E.fini) nouvelEchange(0);
+      for (let u = (this._t || 0); u < t; u += 0.03) { if (R && u > R.fin) nouvelEchange(u); bouger(u, 0.03); }
+      this._t = t; return { R, J, balle: R ? posBalle(t) : null }; },
+    _reinit() { R = null; this._t = 0; J[0].x = 0; J[0].z = -HL - 0.8; J[1].x = 0; J[1].z = HL + 0.8; },
+    _maj: maj, _etat: E, _cam: cam,
+  };
+})();
+// Vue du direct choisie par le visiteur (3D par défaut), gardée dans ce navigateur.
+function vue3dLive(){ if (LIVE.vue3d === undefined) { try { LIVE.vue3d = localStorage.getItem('te_direct_vue') !== '2d'; } catch(e) { LIVE.vue3d = true; } } return LIVE.vue3d; }
+function terrain3dHtml(){
+  return `<div class="te3d"><div class="te3d-hote"></div><div class="te3d-bas"><span class="te3d-vues">${['tv','cote','haut'].map(v => `<button type="button" class="btn te3d-v" data-vue="${v}">${esc(t('t3_' + v))}</button>`).join('')}</span>
+    <span class="te3d-note">${esc(t('t3_note'))}</span></div></div>`;
+}
 function terrainLive(m, r, fini){
   const {h, a, srv} = cotesLive(r);
   const SH = h.sets || [], SA = a.sets || [], i = SH.length - 1;
@@ -3728,10 +4024,15 @@ function rendMatchLive(){
   if (!corps && !fini) corps = `<p class="styles-note" style="margin:10px 0 0">${esc(t('lv_attente'))}</p>`;
   el.hidden = false;
   el.innerHTML = `<h3>🎾 ${esc(t(fini ? 'lv_titre_fin' : 'lv_titre'))}</h3><div style="padding:0 14px 14px">
-    <div class="lv-top" style="margin-top:0">${fini ? `<span class="lv-fin">${esc(t('live_termine'))}</span>` : `<span class="lv-on">${esc(t('live_en_cours'))}</span>`}</div>
-    ${terrainLive(m, r, fini)}${tableauLive(m, r, fini, true)}${barreLive(m, r, fini, true)}${corps}</div>`;
+    <div class="lv-top" style="margin-top:0">${fini ? `<span class="lv-fin">${esc(t('live_termine'))}</span>` : `<span class="lv-on">${esc(t('live_en_cours'))}</span>`}<button type="button" class="btn te3d-bascule">${esc(t(vue3dLive() ? 't3_2d' : 't3_3d'))}</button></div>
+    ${vue3dLive() ? terrain3dHtml() : terrainLive(m, r, fini)}${tableauLive(m, r, fini, true)}${barreLive(m, r, fini, true)}${corps}</div>`;
   const bt = el.querySelector('.lv-btn-tous');
   if (bt) bt.onclick = () => { LIVE.tousPoints = !LIVE.tousPoints; rendMatchLive(); };
+  const h3 = el.querySelector('.te3d-hote');
+  if (h3 && !T3D.monter(h3, m, r, fini)) { LIVE.vue3d = false; rendMatchLive(); return; }   // pas de canvas : la 2D
+  el.querySelectorAll('.te3d-v').forEach(b => b.onclick = () => T3D.vue(b.dataset.vue));
+  const b3 = el.querySelector('.te3d-bascule');
+  if (b3) b3.onclick = () => { LIVE.vue3d = !vue3dLive(); try { localStorage.setItem('te_direct_vue', LIVE.vue3d ? '3d' : '2d'); } catch(e) {} rendMatchLive(); };
   const bf = el.querySelector('.lv-btn-fil');
   if (bf) bf.onclick = () => { LIVE.filTout = !LIVE.filTout; rendMatchLive(); };
   el.querySelectorAll('details[data-set]').forEach(d => d.addEventListener('toggle', () => {
