@@ -487,6 +487,12 @@ body.carte #video{display:block;width:1080px;height:1350px}
 .te3d{margin-top:8px;border-radius:14px;overflow:hidden;background:#120c33;border:1px solid var(--line)}
 .te3d-cv{display:block;width:100%;aspect-ratio:13/10;max-height:460px;touch-action:pan-y;cursor:grab}.te3d-cv:active{cursor:grabbing}
 .te3d-bas{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;justify-content:space-between;padding:7px 10px;font-size:.72rem;color:#ABA3D6}
+.g3d{position:relative}.g3d-cv{display:block;width:100%;aspect-ratio:16/10;max-height:480px;touch-action:pan-y;cursor:grab}.g3d-cv:active{cursor:grabbing}
+.g3d-tab{position:absolute;left:6px;top:6px;background:rgba(10,8,30,.82);border:1px solid rgba(255,255,255,.12);border-radius:6px;padding:2px 5px;font:600 11px/1.35 Barlow,system-ui,sans-serif;color:#F4F1FF;pointer-events:none}
+.g3d-l{display:flex;align-items:center;gap:5px}.g3d-n{min-width:60px;max-width:96px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.g3d-l.a .g3d-n{color:#2EE6FF}.g3d-l.b .g3d-n{color:#FF4FAE}.g3d-srv{width:8px;color:#D4FF3A;font-size:.6rem}
+.g3d-s{min-width:12px;text-align:center;color:#ABA3D6}.g3d-s.c{color:#F4F1FF}.g3d-p{min-width:18px;text-align:center;color:#D4FF3A;background:rgba(212,255,58,.14);border-radius:4px}
+.g3d-msg{position:absolute;right:6px;top:6px;max-width:58%;background:rgba(10,8,30,.82);border:1px solid rgba(212,255,58,.35);border-radius:6px;padding:2px 7px;font:600 11px/1.4 Barlow,system-ui,sans-serif;color:#D4FF3A;pointer-events:none}
 .te3d-vues{display:flex;gap:6px}.te3d-v,.te3d-bascule{padding:3px 10px;font-size:.72rem}.te3d-bascule{margin-left:auto}
 .lv-fil li.fl-now{border-top-color:var(--ball);color:var(--ball);font-weight:600}.lv-btn-fil{margin-top:8px}
 .lv-tag{font-size:.68rem;border-radius:999px;padding:1px 8px;font-weight:700;margin-right:6px;white-space:nowrap}
@@ -951,8 +957,9 @@ const T = {
   lv_attente:'Le déroulé point par point arrive dès les premiers jeux.',
   lv_tous_on:'Tous les points', lv_tous_off:'Masquer les points', lv_abbr_BB:'BB', lv_abbr_BS:'BS', lv_abbr_BM:'BM',
   lv_imp_BB:(n,ok)=>`Balle de break pour ${n} : ${ok?'convertie':'sauvée'}`, lv_imp_BS:(n,ok)=>`Balle de set pour ${n} : ${ok?'convertie':'sauvée'}`,
-  t3_tv:'TV', t3_cote:'Côté', t3_haut:'Dessus', t3_2d:'Vue 2D', t3_3d:'Vue 3D',
-  t3_note:'Glisse pour tourner autour du terrain · échanges illustratifs, score réel', 
+  t3_tv:'TV', t3_joueur:'Près', t3_cote:'Côté', t3_haut:'Dessus', t3_2d:'Vue 2D', t3_3d:'Vue 3D',
+  t3_note:'Glisse pour tourner autour du terrain · score réel ; chaque point est rejoué avec son vrai vainqueur, la façon de le gagner suit ses habitudes, les trajectoires sont reconstituées',
+  g3_rejoue:'▶ Le point qui vient de se jouer', g3_point:n=>`Point ${n}`, g3_attente:'En attente du prochain point',
   fl_titre:'Fil du match', fl_now:'EN CE MOMENT', fl_tout:n=>`Tout le fil (${n})`, fl_moins:'Réduire le fil',
   fl_now_BB:(n,sc)=>`Balle de break pour ${n} (${sc})`, fl_now_BS:(n,sc)=>`Balle de set pour ${n} (${sc})`, fl_now_BM:(n,sc)=>`Balle de match pour ${n} (${sc})`,
   fl_break:(n,o,sc,k)=>`Break ! ${n} prend le service ${/^[aeiouyàâéèêëîïôûh]/i.test(o)?'d’':'de '}${o}${k>1?` à sa ${k}e balle de break`:''} : ${sc}`,
@@ -1237,8 +1244,9 @@ const T = {
   lv_attente:'The point-by-point feed arrives after the first games.',
   lv_tous_on:'All points', lv_tous_off:'Hide points', lv_abbr_BB:'BP', lv_abbr_BS:'SP', lv_abbr_BM:'MP',
   lv_imp_BB:(n,ok)=>`Break point for ${n}: ${ok?'converted':'saved'}`, lv_imp_BS:(n,ok)=>`Set point for ${n}: ${ok?'converted':'saved'}`,
-  t3_tv:'TV', t3_cote:'Side', t3_haut:'Top', t3_2d:'2D view', t3_3d:'3D view',
-  t3_note:'Swipe to turn around the court · illustrative rallies, real score', 
+  t3_tv:'TV', t3_joueur:'Close', t3_cote:'Side', t3_haut:'Top', t3_2d:'2D view', t3_3d:'3D view',
+  t3_note:'Swipe to turn around the court · real score; each point is replayed with its real winner, how it is won follows the player’s habits, paths are reconstructed',
+  g3_rejoue:'▶ The point just played', g3_point:n=>`Point ${n}`, g3_attente:'Waiting for the next point',
   fl_titre:'Match feed', fl_now:'RIGHT NOW', fl_tout:n=>`Full feed (${n})`, fl_moins:'Shorter feed',
   fl_now_BB:(n,sc)=>`Break point for ${n} (${sc})`, fl_now_BS:(n,sc)=>`Set point for ${n} (${sc})`, fl_now_BM:(n,sc)=>`Match point for ${n} (${sc})`,
   fl_break:(n,o,sc,k)=>`Break! ${n} breaks ${o}${k>1?` on break point no. ${k}`:''}: ${sc}`,
@@ -3535,10 +3543,953 @@ const T3D = (() => {
     _maj: maj, _etat: E, _cam: cam,
   };
 })();
+// 13/11/2026 (paquet 259, demande de Lucas : « un rendu nettement mieux », sans dépendre d'autres sites) — LE DIRECT
+// EN 3D, MOTEUR WEBGL MAISON. Tout est construit par le code de cette page : court, filet, stade, public, arbitre,
+// ramasseurs, joueurs articulés et animés (attente, course, coup droit, revers à deux mains, service), lumière du
+// soleil, ombres portées, brouillard. Aucune bibliothèque, aucun modèle ni image chargés d'ailleurs. Le SCORE, le
+// SERVEUR et le CÔTÉ DE SERVICE sont réels (/live, 3 s). Paquet 260 : chaque point rejoué est le VRAI point (vrai
+// vainqueur, vrai serveur, vrai côté) ; seules les trajectoires sont reconstituées, et l'écran le dit. Sans WebGL 2, la vue 3D simple (T3D) prend le relais.
+// Descriptif : le % ne change pas.
+const G3D = (() => {
+  'use strict';
+  const L = 23.77, W = 10.97, S = 8.23, SL = 6.40, HL = L / 2;
+  const tr = (k, ...a) => { try { return t(k, ...a); } catch (e) { return k; } };   // textes de la page (fr / en)
+  const rnd = (a, b) => a + Math.random() * (b - a), cl = (v, a, b) => Math.max(a, Math.min(b, v));
+  const lerp = (a, b, t) => a + (b - a) * t, lisse = t => t * t * (3 - 2 * t);
+  const hex = h => { const n = parseInt(h.slice(1), 16); return [(n >> 16 & 255) / 255, (n >> 8 & 255) / 255, (n & 255) / 255]; };
+
+  // ── mathématiques (matrices 4×4 colonne par colonne, comme WebGL) ─────────────────────────────────────────
+  const M4 = {
+    id: () => new Float32Array([1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1]),
+    mul(a, b) { const o = new Float32Array(16);
+      for (let c = 0; c < 4; c++) for (let r = 0; r < 4; r++) { let s = 0; for (let k = 0; k < 4; k++) s += a[k * 4 + r] * b[c * 4 + k]; o[c * 4 + r] = s; }
+      return o; },
+    persp(fov, asp, n, f) { const t = 1 / Math.tan(fov / 2), o = new Float32Array(16);
+      o[0] = t / asp; o[5] = t; o[10] = (f + n) / (n - f); o[11] = -1; o[14] = 2 * f * n / (n - f); return o; },
+    ortho(l, r, b, t, n, f) { const o = M4.id(); o[0] = 2 / (r - l); o[5] = 2 / (t - b); o[10] = -2 / (f - n);
+      o[12] = -(r + l) / (r - l); o[13] = -(t + b) / (t - b); o[14] = -(f + n) / (f - n); return o; },
+    look(e, c, u) { const z = nrm([e[0] - c[0], e[1] - c[1], e[2] - c[2]]), x = nrm(crs(u, z)), y = crs(z, x);
+      return new Float32Array([x[0], y[0], z[0], 0, x[1], y[1], z[1], 0, x[2], y[2], z[2], 0,
+        -dot(x, e), -dot(y, e), -dot(z, e), 1]); },
+    tr(x, y, z) { const o = M4.id(); o[12] = x; o[13] = y; o[14] = z; return o; },
+    rx(a) { const c = Math.cos(a), s = Math.sin(a), o = M4.id(); o[5] = c; o[6] = s; o[9] = -s; o[10] = c; return o; },
+    ry(a) { const c = Math.cos(a), s = Math.sin(a), o = M4.id(); o[0] = c; o[2] = -s; o[8] = s; o[10] = c; return o; },
+    rz(a) { const c = Math.cos(a), s = Math.sin(a), o = M4.id(); o[0] = c; o[1] = s; o[4] = -s; o[5] = c; return o; },
+    sc(x, y, z) { const o = M4.id(); o[0] = x; o[5] = y; o[10] = z; return o; },
+    pt(m, p) { return [m[0] * p[0] + m[4] * p[1] + m[8] * p[2] + m[12], m[1] * p[0] + m[5] * p[1] + m[9] * p[2] + m[13], m[2] * p[0] + m[6] * p[1] + m[10] * p[2] + m[14]]; },
+  };
+  function nrm(v) { const n = Math.hypot(v[0], v[1], v[2]) || 1; return [v[0] / n, v[1] / n, v[2] / n]; }
+  function crs(a, b) { return [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]]; }
+  function dot(a, b) { return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]; }
+  const chaine = (...ms) => ms.reduce((a, b) => M4.mul(a, b));
+
+  // ── géométrie : petits constructeurs, fusionnés en gros maillages (peu d'appels de dessin) ───────────────
+  class Geo {
+    constructor() { this.p = []; this.n = []; this.c = []; this.u = []; this.i = []; }
+    v(p, n, c, u) { this.p.push(...p); this.n.push(...n); this.c.push(...c); this.u.push(...(u || [0, 0])); return this.p.length / 3 - 1; }
+    // ajoute une autre géométrie, transformée par m et teinte par col
+    ajoute(g, m, col) {
+      const base = this.p.length / 3, nm = m || M4.id();
+      for (let k = 0; k < g.p.length / 3; k++) {
+        const p = M4.pt(nm, [g.p[k * 3], g.p[k * 3 + 1], g.p[k * 3 + 2]]);
+        const q = M4.pt(nm, [g.n[k * 3], g.n[k * 3 + 1], g.n[k * 3 + 2]]), o = M4.pt(nm, [0, 0, 0]);
+        const nn = nrm([q[0] - o[0], q[1] - o[1], q[2] - o[2]]);
+        this.v(p, nn, col || [g.c[k * 3], g.c[k * 3 + 1], g.c[k * 3 + 2]], [g.u[k * 2], g.u[k * 2 + 1]]);
+      }
+      for (const x of g.i) this.i.push(x + base);
+      return this;
+    }
+  }
+  const BLANC = [1, 1, 1];
+  function boite(sx, sy, sz, col = BLANC) {
+    const g = new Geo(), h = [sx / 2, sy / 2, sz / 2];
+    const F = [[[1,0,0],[0,1,0],[0,0,1]], [[-1,0,0],[0,1,0],[0,0,-1]], [[0,1,0],[0,0,1],[1,0,0]], [[0,-1,0],[0,0,-1],[1,0,0]], [[0,0,1],[0,1,0],[-1,0,0]], [[0,0,-1],[0,1,0],[1,0,0]]];
+    for (const [n, a, b] of F) {
+      const c0 = g.p.length / 3;
+      for (const [s, t] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) {
+        const p = [0, 1, 2].map(k => (n[k] + a[k] * t + b[k] * s) * h[k]);
+        g.v(p, n, col, [(s + 1) / 2, (t + 1) / 2]);
+      }
+      g.i.push(c0, c0 + 1, c0 + 2, c0, c0 + 2, c0 + 3);
+    }
+    // ordre des sommets : on vérifie le sens après coup (les faces sont dessinées des deux côtés)
+    return g;
+  }
+  function cylindre(r0, r1, h, seg = 14, col = BLANC, ferme = true) {
+    const g = new Geo(), pente = (r0 - r1) / h;
+    for (let k = 0; k <= seg; k++) {
+      const a = k / seg * Math.PI * 2, cx = Math.cos(a), cz = Math.sin(a), n = nrm([cx, pente, cz]);
+      g.v([cx * r0, 0, cz * r0], n, col, [k / seg, 0]); g.v([cx * r1, h, cz * r1], n, col, [k / seg, 1]);
+      if (k < seg) { const b = k * 2; g.i.push(b, b + 1, b + 3, b, b + 3, b + 2); }
+    }
+    if (ferme) for (const [y, r, s] of [[0, r0, -1], [h, r1, 1]]) {
+      const c0 = g.v([0, y, 0], [0, s, 0], col);
+      for (let k = 0; k <= seg; k++) { const a = k / seg * Math.PI * 2; g.v([Math.cos(a) * r, y, Math.sin(a) * r], [0, s, 0], col); }
+      for (let k = 0; k < seg; k++) g.i.push(c0, c0 + 1 + k, c0 + 2 + k);
+    }
+    return g;
+  }
+  function sphere(r, seg = 14, col = BLANC, sy = 1) {
+    const g = new Geo();
+    for (let a = 0; a <= seg; a++) for (let b = 0; b <= seg; b++) {
+      const th = a / seg * Math.PI, ph = b / seg * Math.PI * 2;
+      const n = [Math.sin(th) * Math.cos(ph), Math.cos(th), Math.sin(th) * Math.sin(ph)];
+      g.v([n[0] * r, n[1] * r * sy, n[2] * r], nrm([n[0], n[1] / sy, n[2]]), col, [b / seg, a / seg]);
+      if (a < seg && b < seg) { const i = a * (seg + 1) + b; g.i.push(i, i + seg + 1, i + 1, i + 1, i + seg + 1, i + seg + 2); }
+    }
+    return g;
+  }
+  function tour(profil, seg = 16, col = BLANC, ez = 1) {        // surface de révolution : profil [[rayon, y], …]
+    const g = new Geo();
+    for (let k = 0; k < profil.length; k++) for (let a = 0; a <= seg; a++) {
+      const ang = a / seg * Math.PI * 2, [r, y] = profil[k];
+      const [r0, y0] = profil[Math.max(0, k - 1)], [r1, y1] = profil[Math.min(profil.length - 1, k + 1)];
+      const pente = (r1 - r0) / ((y1 - y0) || 1e-6);
+      g.v([Math.cos(ang) * r, y, Math.sin(ang) * r * ez], nrm([Math.cos(ang), -pente, Math.sin(ang) / ez]), col, [a / seg, k / (profil.length - 1)]);
+      if (k < profil.length - 1 && a < seg) { const i = k * (seg + 1) + a; g.i.push(i, i + seg + 1, i + 1, i + 1, i + seg + 1, i + seg + 2); }
+    }
+    return g;
+  }
+  function plan(sx, sz, col = BLANC, ru = 1, rv = 1) {
+    const g = new Geo();
+    g.v([-sx / 2, 0, -sz / 2], [0, 1, 0], col, [0, 0]); g.v([sx / 2, 0, -sz / 2], [0, 1, 0], col, [ru, 0]);
+    g.v([sx / 2, 0, sz / 2], [0, 1, 0], col, [ru, rv]); g.v([-sx / 2, 0, sz / 2], [0, 1, 0], col, [0, rv]);
+    g.i.push(0, 2, 1, 0, 3, 2); return g;
+  }
+  // membre « gélule » : cylindre effilé + bouts arrondis, de y = 0 à y = -h (pend vers le bas depuis l'articulation)
+  function membre(r0, r1, h, col) {
+    const g2 = new Geo(); g2.ajoute(cylindre(r1, r0, h, 12, col, false), M4.tr(0, -h, 0));
+    g2.ajoute(sphere(r0, 10, col), M4.id()); g2.ajoute(sphere(r1, 10, col), M4.tr(0, -h, 0));
+    return g2;
+  }
+
+  // ── WebGL ──────────────────────────────────────────────────────────────────────────────────────────────────
+  const VS = `#version 300 es
+  layout(location=0) in vec3 aP; layout(location=1) in vec3 aN; layout(location=2) in vec3 aC; layout(location=3) in vec2 aU;
+  layout(location=4) in vec4 aI; layout(location=5) in vec3 aIC;
+  uniform mat4 uM, uVP, uLVP; uniform int uInst; uniform float uT, uClap;
+  out vec3 vW, vN, vC; out vec2 vU; out vec4 vL;
+  void main(){
+    vec3 p = aP; vec3 c = aC;
+    if (uInst == 1) { p = p * aI.w + aI.xyz + vec3(0.0, max(0.0, sin(uT * (3.0 + uClap * 9.0) + aI.x * 1.7 + aI.z)) * (0.05 + uClap * 0.16), 0.0); c = aC * aIC; }
+    vec4 w = uM * vec4(p, 1.0);
+    vW = w.xyz; vN = normalize(mat3(uM) * aN); vC = c; vU = aU; vL = uLVP * w;
+    gl_Position = uVP * w;
+  }`;
+  const FS = `#version 300 es
+  precision highp float; precision highp sampler2DShadow;
+  in vec3 vW, vN, vC; in vec2 vU; in vec4 vL;
+  uniform vec3 uCol, uSun, uEye, uCiel, uSol, uBrume; uniform float uAlpha, uSpec, uEmis; uniform int uTex, uOmbre;
+  uniform sampler2D uTx; uniform sampler2DShadow uSM;
+  out vec4 o;
+  float ombre(){
+    vec3 p = vL.xyz / vL.w * 0.5 + 0.5;
+    if (p.x < 0.0 || p.x > 1.0 || p.y < 0.0 || p.y > 1.0 || p.z > 1.0) return 1.0;
+    float s = 0.0; vec2 t = vec2(1.0 / 2048.0);
+    float bias = max(0.003 * (1.0 - max(dot(normalize(vN), uSun), 0.0)), 0.0008);
+    for (int x = -1; x <= 1; x++) for (int y = -1; y <= 1; y++) s += texture(uSM, vec3(p.xy + vec2(x, y) * t, p.z - bias));
+    return s / 9.0;
+  }
+  void main(){
+    vec3 n = normalize(vN); if (!gl_FrontFacing) n = -n;
+    vec3 base = vC * uCol; float a = uAlpha;
+    if (uTex == 1) { vec4 t = texture(uTx, vU); base *= t.rgb; a *= t.a; }
+    if (a < 0.03) discard;
+    float d = max(dot(n, uSun), 0.0), sh = uOmbre == 1 ? ombre() : 1.0;
+    vec3 amb = mix(uSol, uCiel, n.y * 0.5 + 0.5);
+    vec3 v = normalize(uEye - vW), h = normalize(uSun + v);
+    float sp = pow(max(dot(n, h), 0.0), 48.0) * uSpec * sh;
+    vec3 col = base * (amb * 0.85 + d * sh * vec3(1.0, 0.96, 0.88) * 0.95) + sp + base * uEmis;
+    float f = clamp((length(uEye - vW) - 38.0) / 70.0, 0.0, 0.55);
+    col = mix(col, uBrume, f);
+    col = pow(col, vec3(2.2)) * 1.08;
+    col = clamp((col * (2.51 * col + 0.03)) / (col * (2.43 * col + 0.59) + 0.14), 0.0, 1.0);
+    o = vec4(pow(col, vec3(1.0 / 2.2)), a);
+  }`;
+  const VS_OMBRE = `#version 300 es
+  layout(location=0) in vec3 aP; layout(location=4) in vec4 aI; uniform mat4 uM, uLVP; uniform int uInst;
+  void main(){ vec3 p = aP; if (uInst == 1) p = p * aI.w + aI.xyz; gl_Position = uLVP * uM * vec4(p, 1.0); }`;
+  const FS_OMBRE = `#version 300 es
+  precision mediump float; out vec4 o; void main(){ o = vec4(1.0); }`;
+
+  let gl = null, cv = null, prog = null, progO = null, U = {}, UO = {}, smFbo = null, smTex = null, SM = 2048;
+  let scene = { fixes: [], transp: [] }, raf = 0, dernier = 0, visible = true;
+  function shader(vs, fs) {
+    const mk = (t, s) => { const sh = gl.createShader(t); gl.shaderSource(sh, s); gl.compileShader(sh);
+      if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(sh)); return sh; };
+    const p = gl.createProgram(); gl.attachShader(p, mk(gl.VERTEX_SHADER, vs)); gl.attachShader(p, mk(gl.FRAGMENT_SHADER, fs));
+    gl.linkProgram(p); if (!gl.getProgramParameter(p, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(p));
+    return p;
+  }
+  function maillage(g, inst) {
+    const vao = gl.createVertexArray(); gl.bindVertexArray(vao);
+    const buf = (loc, data, n) => { const b = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, b);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.STATIC_DRAW); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, n, gl.FLOAT, false, 0, 0); };
+    buf(0, g.p, 3); buf(1, g.n, 3); buf(2, g.c, 3); buf(3, g.u, 2);
+    let ni = 0;
+    if (inst) { // inst : [x, y, z, échelle] + couleur
+      const b = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, b); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(inst.pos), gl.STATIC_DRAW);
+      gl.enableVertexAttribArray(4); gl.vertexAttribPointer(4, 4, gl.FLOAT, false, 0, 0); gl.vertexAttribDivisor(4, 1);
+      const b2 = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, b2); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(inst.col), gl.STATIC_DRAW);
+      gl.enableVertexAttribArray(5); gl.vertexAttribPointer(5, 3, gl.FLOAT, false, 0, 0); gl.vertexAttribDivisor(5, 1);
+      ni = inst.pos.length / 4;
+    } else { gl.vertexAttrib4f(4, 0, 0, 0, 1); gl.vertexAttrib3f(5, 1, 1, 1); }
+    const ib = gl.createBuffer(); gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ib); gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint32Array(g.i), gl.STATIC_DRAW);
+    gl.bindVertexArray(null);
+    return { vao, n: g.i.length, ni };
+  }
+  function texture(canvas, repeter, mip = true) {
+    const t = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, t);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, canvas);
+    const w = repeter ? gl.REPEAT : gl.CLAMP_TO_EDGE;
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, w); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, w);
+    if (mip) { gl.generateMipmap(gl.TEXTURE_2D); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR); }
+    else gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    const ext = gl.getExtension('EXT_texture_filter_anisotropic');
+    if (ext) gl.texParameterf(gl.TEXTURE_2D, ext.TEXTURE_MAX_ANISOTROPY_EXT, 8);
+    return t;
+  }
+  function toile(w, h, f) { const c = document.createElement('canvas'); c.width = w; c.height = h; f(c.getContext('2d'), w, h); return c; }
+
+  // ── textures dessinées par le code ────────────────────────────────────────────────────────────────────────
+  const SURFACES = {
+    Hard: { in: '#1f4282', out: '#24599c', bruit: 9 }, Clay: { in: '#a9512e', out: '#a24c2b', bruit: 20 },
+    Grass: { in: '#4f8f45', out: '#47833e', bruit: 14, bandes: true }, Carpet: { in: '#3f6f8a', out: '#2f5a73', bruit: 8 },
+  };
+  function texSol(surface) {
+    const s = SURFACES[surface] || SURFACES.Hard, PX = 40;                       // 40 px par mètre
+    const LX = W + 8, LZ = L + 13;
+    return toile(Math.round(LX * PX / 2) * 2, Math.round(LZ * PX / 2) * 2, (c, w, h) => {
+      c.fillStyle = s.out; c.fillRect(0, 0, w, h);
+      const X = x => (x + LX / 2) * PX, Z = z => (z + LZ / 2) * PX;
+      c.fillStyle = s.in; c.fillRect(X(-W / 2 - 0.3), Z(-HL - 0.3), (W + 0.6) * PX, (L + 0.6) * PX);
+      if (s.bandes) for (let k = 0; k < 24; k++) { c.fillStyle = k % 2 ? 'rgba(0,0,0,.05)' : 'rgba(255,255,255,.04)'; c.fillRect(0, k * h / 24, w, h / 24); }
+      const im = c.getImageData(0, 0, w, h), d = im.data;
+      for (let k = 0; k < d.length; k += 4) { const v = (Math.random() - 0.5) * s.bruit; d[k] += v; d[k + 1] += v; d[k + 2] += v; }
+      c.putImageData(im, 0, 0);
+      if (surface === 'Clay') { c.fillStyle = 'rgba(120,50,20,.10)'; for (let k = 0; k < 400; k++) { c.beginPath(); c.ellipse(Math.random() * w, Math.random() * h, rnd(6, 30), rnd(2, 8), rnd(0, 3), 0, 7); c.fill(); } }
+      c.strokeStyle = 'rgba(255,255,255,.95)'; c.lineWidth = 0.05 * PX; c.lineCap = 'butt';
+      const ligne = (x1, z1, x2, z2) => { c.beginPath(); c.moveTo(X(x1), Z(z1)); c.lineTo(X(x2), Z(z2)); c.stroke(); };
+      ligne(-W / 2, -HL, W / 2, -HL); ligne(-W / 2, HL, W / 2, HL);
+      for (const x of [-W / 2, W / 2, -S / 2, S / 2]) ligne(x, -HL, x, HL);
+      ligne(-S / 2, -SL, S / 2, -SL); ligne(-S / 2, SL, S / 2, SL); ligne(0, -SL, 0, SL);
+      ligne(0, -HL, 0, -HL + 0.15); ligne(0, HL, 0, HL - 0.15);
+    });
+  }
+  function texFilet() {
+    return toile(512, 64, (c, w, h) => {
+      c.clearRect(0, 0, w, h); c.strokeStyle = 'rgba(20,20,26,.9)'; c.lineWidth = 1.4;
+      for (let x = 0; x <= w; x += 6) { c.beginPath(); c.moveTo(x, 0); c.lineTo(x, h); c.stroke(); }
+      for (let y = 0; y <= h; y += 6) { c.beginPath(); c.moveTo(0, y); c.lineTo(w, y); c.stroke(); }
+    });
+  }
+  function texCordage() {
+    return toile(64, 64, (c, w, h) => {
+      c.clearRect(0, 0, w, h); c.strokeStyle = 'rgba(240,240,240,.9)'; c.lineWidth = 1;
+      for (let x = 2; x < w; x += 5) { c.beginPath(); c.moveTo(x, 0); c.lineTo(x, h); c.stroke(); }
+      for (let y = 2; y < h; y += 5) { c.beginPath(); c.moveTo(0, y); c.lineTo(w, y); c.stroke(); }
+    });
+  }
+  function texPanneaux() {
+    // bâches neutres : aplats et filets, sans marque ni texte
+    return toile(1024, 64, (c, w, h) => {
+      c.fillStyle = '#16204a'; c.fillRect(0, 0, w, h);
+      for (let k = 0; k < 8; k++) { c.fillStyle = k % 2 ? '#1d2c66' : '#152056'; c.fillRect(k * w / 8, 0, w / 8, h); }
+      c.fillStyle = '#D4FF3A'; c.fillRect(0, h - 5, w, 3); c.fillStyle = 'rgba(255,255,255,.25)'; c.fillRect(0, 4, w, 2);
+      c.fillStyle = 'rgba(212,255,58,.5)';
+      for (let k = 0; k < 8; k++) { c.beginPath(); c.arc(k * w / 8 + w / 16, h / 2, 12, 0, 7); c.fill(); }
+    });
+  }
+
+  // ── le stade ──────────────────────────────────────────────────────────────────────────────────────────────
+  let TX = {}, surfaceFaite = null;
+  function construireDecor(surface) {
+    scene = { fixes: [], transp: [], persos: [] };
+    TX.sol = texture(texSol(surface), false);
+    TX.filet = texture(texFilet(), true); TX.cordage = texture(texCordage(), true); TX.pan = texture(texPanneaux(), true);
+    const LX = W + 8, LZ = L + 13;
+    // sol du court (texturé) + sol du stade autour
+    scene.fixes.push({ m: maillage(plan(LX, LZ, BLANC, 1, 1)), tex: TX.sol, spec: 0.08, recoit: true });
+    const autour = new Geo(), coulAut = hex((SURFACES[surface] || SURFACES.Hard).out).map(x => x * 0.82);
+    autour.ajoute(plan(80, 90, coulAut), M4.tr(0, -0.01, 0));
+    scene.fixes.push({ m: maillage(autour), spec: 0.02, recoit: true });
+    // murs bas avec bâches, tout autour
+    const mur = new Geo();
+    const bx = LX / 2 + 0.3, bz = LZ / 2 + 0.3;
+    for (const [x, z, lx, lz] of [[0, -bz, LX + 0.6, 0.25], [0, bz, LX + 0.6, 0.25], [-bx, 0, 0.25, LZ + 0.6], [bx, 0, 0.25, LZ + 0.6]])
+      mur.ajoute(boite(lx, 1.0, lz, BLANC), M4.tr(x, 0.5, z));
+    scene.fixes.push({ m: maillage(mur), tex: TX.pan, spec: 0.1, recoit: true, ombre: true });
+    // tribunes en gradins : côtés et fonds, sièges sombres
+    const trib = new Geo(), siege = hex('#26244a'), marche = hex('#3a3866');
+    const rangs = 14, pas = 0.8, haut = 0.42;
+    const gradins = (cote) => {             // cote : 0 = gauche (x<0), 1 = droite, 2 = fond loin (z>0), 3 = fond près
+      for (let r = 0; r < rangs; r++) {
+        const d = r * pas, y = 1.1 + r * haut;
+        if (cote < 2) { const s = cote ? 1 : -1; trib.ajoute(boite(pas, haut, LZ + 6 + d * 2, r % 2 ? siege : marche), M4.tr(s * (bx + 1.2 + d), y - haut / 2, 0)); }
+        else { const s = cote === 2 ? 1 : -1; trib.ajoute(boite(LX + 2.4 + d * 2, haut, pas, r % 2 ? siege : marche), M4.tr(0, y - haut / 2, s * (bz + 1.2 + d))); }
+      }
+      // base pleine sous les gradins
+      if (cote < 2) { const s = cote ? 1 : -1; trib.ajoute(boite(rangs * pas, 1.1, LZ + 6 + rangs * pas * 2, hex('#1a1838')), M4.tr(s * (bx + 0.8 + rangs * pas / 2), 0.55, 0)); }
+      else { const s = cote === 2 ? 1 : -1; trib.ajoute(boite(LX + 2.4 + rangs * pas * 2, 1.1, rangs * pas, hex('#1a1838')), M4.tr(0, 0.55, s * (bz + 0.8 + rangs * pas / 2))); }
+    };
+    [0, 1, 2, 3].forEach(gradins);
+    // toit et poutres (stade fermé, éclairage)
+    for (const s of [-1, 1]) trib.ajoute(boite(1.2, 0.6, LZ + 30, hex('#101028')), M4.tr(s * (bx + 1.2 + rangs * pas + 0.5), 1.1 + rangs * haut + 2.2, 0));
+    scene.fixes.push({ m: maillage(trib), spec: 0.05, recoit: true });
+    // le public : une silhouette (buste + tête) répétée, couleurs variées, qui bouge un peu
+    const fig = new Geo();
+    fig.ajoute(cylindre(0.17, 0.2, 0.55, 7, BLANC), M4.mul(M4.tr(0, 0.02, 0), M4.sc(1, 1, 0.7)));
+    fig.ajoute(sphere(0.12, 8, hex('#e6c2a0')), M4.tr(0, 0.7, 0));
+    const pos = [], col = [];
+    const tons = ['#d8d8e0', '#e8e4dc', '#2c2c3a', '#3b4a6b', '#7a2f35', '#c9a227', '#2f5f8f', '#f0f0f0', '#1b1b24', '#6b6f78', '#a65d2e', '#4a7a5a', '#9fb8d8', '#d07080'];
+    for (let cote = 0; cote < 4; cote++) for (let r = 0; r < rangs; r++) {
+      const d = r * pas, y = 1.1 + r * haut;
+      const longueur = cote < 2 ? LZ + 6 + d * 2 : LX + 2.4 + d * 2, n = Math.floor(longueur / 0.58);
+      for (let k = 0; k < n; k++) {
+        if (Math.random() < 0.12) continue;                                   // quelques places vides
+        const u = -longueur / 2 + (k + 0.5) * longueur / n + rnd(-0.08, 0.08);
+        const s = cote === 0 || cote === 3 ? -1 : 1;
+        const x = cote < 2 ? s * (bx + 1.2 + d) : u, z = cote < 2 ? u : s * (bz + 1.2 + d);
+        if (cote >= 2 && Math.abs(x) < 1.2 && r < 3) continue;                // passage
+        pos.push(x, y, z, rnd(0.88, 1.05)); const tc = hex(tons[Math.floor(Math.random() * tons.length)]), om = 0.55 + 0.25 * Math.random(); col.push(tc[0] * om, tc[1] * om, tc[2] * om);
+      }
+    }
+    scene.public = { m: maillage(fig, { pos, col }), spec: 0.05 };
+    // filet : poteaux, bande blanche, sangle centrale, mailles transparentes
+    const fil = new Geo(), gris = hex('#d9dbe6'), xP = W / 2 + 0.914;
+    for (const s of [-1, 1]) { fil.ajoute(cylindre(0.05, 0.05, 1.07, 12, gris), M4.tr(s * xP, 0, 0)); fil.ajoute(sphere(0.06, 8, gris), M4.tr(s * xP, 1.07, 0)); }
+    const nB = 30;
+    for (let k = 0; k < nB; k++) {                                           // bande du haut, en chaînette
+      const x0 = -xP + 2 * xP * k / nB, x1 = -xP + 2 * xP * (k + 1) / nB, h = x => 0.914 + 0.156 * Math.pow(Math.abs(x) / xP, 2);
+      const xm = (x0 + x1) / 2, ang = Math.atan2(h(x1) - h(x0), x1 - x0);
+      fil.ajoute(boite(x1 - x0 + 0.01, 0.06, 0.035, BLANC), chaine(M4.tr(xm, h(xm) - 0.03, 0), M4.rz(ang)));
+    }
+    fil.ajoute(boite(0.05, 0.914, 0.03, BLANC), M4.tr(0, 0.457, 0));
+    scene.fixes.push({ m: maillage(fil), spec: 0.3, ombre: true, recoit: true });
+    const mailles = new Geo();
+    const N = 40;
+    for (let k = 0; k < N; k++) {
+      const x0 = -xP + 2 * xP * k / N, x1 = -xP + 2 * xP * (k + 1) / N, h = x => 0.88 + 0.156 * Math.pow(Math.abs(x) / xP, 2);
+      const b = mailles.p.length / 3;
+      mailles.v([x0, 0, 0], [0, 0, 1], BLANC, [k * 8 / N * 3, 0]); mailles.v([x1, 0, 0], [0, 0, 1], BLANC, [(k + 1) * 8 / N * 3, 0]);
+      mailles.v([x1, h(x1), 0], [0, 0, 1], BLANC, [(k + 1) * 8 / N * 3, 1]); mailles.v([x0, h(x0), 0], [0, 0, 1], BLANC, [k * 8 / N * 3, 1]);
+      mailles.i.push(b, b + 1, b + 2, b, b + 2, b + 3);
+    }
+    scene.transp.push({ m: maillage(mailles), tex: TX.filet, alpha: 0.95, spec: 0, ombre: true });
+    // chaise d'arbitre et arbitre, au filet
+    const ch = new Geo(), vert = hex('#1d4d3a');
+    const cx = -(xP + 1.6);
+    for (const [dx, dz] of [[-0.35, -0.35], [0.35, -0.35], [-0.35, 0.35], [0.35, 0.35]]) ch.ajoute(boite(0.07, 2.0, 0.07, vert), M4.tr(cx + dx, 1.0, dz));
+    ch.ajoute(boite(0.9, 0.08, 0.9, vert), M4.tr(cx, 2.0, 0)); ch.ajoute(boite(0.08, 0.7, 0.9, vert), M4.tr(cx - 0.42, 2.35, 0));
+    ch.ajoute(boite(0.12, 0.9, 0.9, hex('#e9e9f2')), M4.tr(cx + 0.47, 1.6, 0));
+    for (let k = 0; k < 6; k++) ch.ajoute(boite(0.5, 0.04, 0.05, vert), M4.tr(cx + 0.55, 0.3 + k * 0.3, 0.3));
+    // arbitre assis (tenue sombre, chemise claire)
+    ch.ajoute(boite(0.38, 0.5, 0.3, hex('#e8e8f2')), M4.tr(cx, 2.38, 0)); ch.ajoute(sphere(0.12, 10, hex('#d9a988')), M4.tr(cx, 2.78, 0));
+    ch.ajoute(boite(0.4, 0.14, 0.4, hex('#20203a')), M4.tr(cx + 0.12, 2.13, 0));
+    for (const s of [-1, 1]) ch.ajoute(boite(0.13, 0.5, 0.13, hex('#20203a')), M4.tr(cx + 0.33, 1.9, s * 0.1));
+    // bancs des joueurs, de l'autre côté
+    for (const s of [-1, 1]) { ch.ajoute(boite(0.6, 0.45, 1.6, hex('#2b2b55')), M4.tr(xP + 2.4, 0.22, s * 1.6)); ch.ajoute(boite(0.12, 0.5, 1.6, hex('#2b2b55')), M4.tr(xP + 2.68, 0.7, s * 1.6)); }
+    // ramasseurs : accroupis au filet, debout au fond
+    const ram = (x, z, accroupi) => {
+      const y = accroupi ? 0 : 0.35;
+      ch.ajoute(boite(0.34, 0.42, 0.26, hex('#2EE6FF').map(v => v * 0.75)), M4.tr(x, 0.55 + y, z));
+      ch.ajoute(sphere(0.11, 8, hex('#c99474')), M4.tr(x, 0.88 + y, z));
+      ch.ajoute(boite(0.32, accroupi ? 0.34 : 0.7, 0.3, hex('#151530')), M4.tr(x, accroupi ? 0.17 : 0.35, z));
+    };
+    for (const s of [-1, 1]) { ram(s * (W / 2 + 1.1), 0.6, true); ram(s * (W / 2 + 1.1), -0.6, true); ram(s * 3.2, HL + 4.6, false); ram(s * 3.2, -HL - 4.6, false); }
+    // juges de ligne assis le long du court
+    for (const [x, z] of [[-(W / 2 + 2.6), -SL], [W / 2 + 2.6, SL], [-(W / 2 + 2.6), HL - 1], [W / 2 + 2.6, -HL + 1]]) {
+      ch.ajoute(boite(0.45, 0.45, 0.45, hex('#2b2b55')), M4.tr(x, 0.22, z));
+      ch.ajoute(boite(0.4, 0.55, 0.3, hex('#e8e8f2')), M4.tr(x, 0.72, z)); ch.ajoute(sphere(0.11, 8, hex('#d9a988')), M4.tr(x, 1.1, z));
+    }
+    scene.fixes.push({ m: maillage(ch), spec: 0.15, ombre: true, recoit: true });
+    // projecteurs du toit (petits disques lumineux)
+    const proj = new Geo();
+    for (const s of [-1, 1]) for (let k = -4; k <= 4; k++) proj.ajoute(boite(0.6, 0.15, 0.6, BLANC), M4.tr(s * (bx + 1.2 + rangs * pas), 1.1 + rangs * haut + 1.8, k * 4));
+    scene.fixes.push({ m: maillage(proj), emis: 1.2, spec: 0 });
+    surfaceFaite = surface;
+  }
+
+  // ── les joueurs : squelette et parties ─────────────────────────────────────────────────────────────────────
+  // Repère du joueur : y vers le haut, +z devant lui, +x à sa GAUCHE (main droite côté −x). Les angles des
+  // articulations sont en radians : flexion vers l'avant = rotation autour de x négative pour les bras.
+  function partiesJoueur(maillot, short, peau, chaussures, cheveux, casquette) {
+    const P = {};
+    const mk = g => maillage(g);
+    P.bassin = mk(new Geo().ajoute(boite(0.36, 0.22, 0.24, short), M4.tr(0, -0.02, 0)));
+    const torse = new Geo();
+    torse.ajoute(tour([[0.0, -0.02], [0.155, 0.0], [0.15, 0.12], [0.165, 0.26], [0.19, 0.38], [0.2, 0.46], [0.17, 0.53], [0.09, 0.58], [0.0, 0.59]], 18, maillot, 0.68), M4.id());
+    torse.ajoute(tour([[0.0, 0.5], [0.05, 0.52], [0.048, 0.66], [0.0, 0.67]], 10, peau), M4.id());
+    torse.ajoute(tour([[0.075, 0.535], [0.07, 0.565], [0.062, 0.575]], 14, hex('#f4f4f8'), 0.8), M4.id());
+    for (const s of [-1, 1]) torse.ajoute(sphere(0.07, 10, maillot), M4.tr(s * 0.205, 0.49, 0));
+    P.torse = mk(torse);
+    const tete = new Geo();
+    tete.ajoute(sphere(0.115, 14, peau, 1.12), M4.id());
+    tete.ajoute(sphere(0.12, 12, cheveux, 1.0), M4.mul(M4.tr(0, 0.035, -0.012), M4.sc(1, 0.85, 1.03)));
+    if (casquette) {
+      tete.ajoute(sphere(0.126, 14, maillot, 0.62), M4.tr(0, 0.04, -0.005));
+      tete.ajoute(boite(0.17, 0.012, 0.11, maillot), chaine(M4.tr(0, 0.035, 0.13), M4.rx(-0.12)));
+    } else tete.ajoute(cylindre(0.123, 0.123, 0.035, 16, hex('#f4f4f8'), false), M4.tr(0, 0.02, 0));
+    tete.ajoute(sphere(0.022, 6, peau, 1.3), M4.tr(0, -0.025, 0.112));
+    for (const s of [-1, 1]) tete.ajoute(sphere(0.025, 6, peau, 1.4), M4.tr(s * 0.112, -0.005, -0.005));
+    P.tete = mk(tete);
+    const profilBas = (pts, col, ez = 1) => { const g = tour(pts.map(([r, y]) => [r, -y]), 12, col, ez); return g; };
+    const brasG = profilBas([[0, -0.01], [0.05, 0], [0.058, 0.08], [0.052, 0.17], [0.043, 0.27], [0.04, 0.29], [0, 0.3]], peau, 0.9);
+    brasG.ajoute(sphere(0.052, 10, peau), M4.id());
+    P.bras = mk(brasG);
+    P.manche = mk(new Geo().ajoute(tour([[0.0, 0.01], [0.062, 0.0], [0.07, -0.06], [0.064, -0.13], [0.0, -0.131]], 12, maillot), M4.id()));
+    const ab = profilBas([[0, -0.01], [0.043, 0], [0.047, 0.07], [0.038, 0.18], [0.031, 0.25], [0, 0.27]], peau, 0.85);
+    ab.ajoute(sphere(0.041, 10, peau), M4.id());
+    ab.ajoute(cylindre(0.036, 0.036, 0.06, 10, hex('#f4f4f8')), M4.tr(0, -0.24, 0));          // poignet éponge
+    P.avantBras = mk(ab);
+    P.main = mk(sphere(0.045, 8, peau, 1.2));
+    const cu = profilBas([[0, -0.01], [0.085, 0], [0.09, 0.1], [0.08, 0.25], [0.062, 0.4], [0.055, 0.44], [0, 0.45]], peau, 0.95);
+    cu.ajoute(sphere(0.056, 10, peau), M4.tr(0, -0.44, 0));
+    P.cuisse = mk(cu);
+    P.cuisseShort = mk(new Geo().ajoute(cylindre(0.1, 0.092, 0.2, 12, short), M4.tr(0, -0.2, 0)));
+    const ja = profilBas([[0, -0.01], [0.052, 0], [0.063, 0.1], [0.058, 0.17], [0.042, 0.3], [0.036, 0.38], [0, 0.39]], peau, 0.95);
+    ja.ajoute(tour([[0.04, -0.3], [0.042, -0.3], [0.04, -0.44], [0.0, -0.45]], 12, hex('#f4f4f8')), M4.id());   // chaussette
+    P.jambe = mk(ja);
+    const pied = new Geo();
+    pied.ajoute(sphere(0.07, 12, chaussures, 0.6), chaine(M4.tr(0, -0.035, 0.07), M4.sc(0.8, 1, 2.0)));
+    pied.ajoute(boite(0.12, 0.022, 0.29, hex('#3a3a46')), M4.tr(0, -0.075, 0.07));          // semelle
+    pied.ajoute(sphere(0.03, 6, maillot), M4.tr(0.05, -0.02, 0.02));                          // virgule de couleur
+    P.pied = mk(pied);
+    // raquette : manche, cadre ovale, cordage transparent à part
+    const rq = new Geo(), cadre = hex('#202024');
+    rq.ajoute(cylindre(0.016, 0.016, 0.3, 8, hex('#f4f4f8')), M4.id());
+    for (let k = 0; k < 28; k++) {
+      const a0 = k / 28 * Math.PI * 2, a1 = (k + 1) / 28 * Math.PI * 2, ex = 0.125, ey = 0.16;
+      const p0 = [Math.cos(a0) * ex, 0.3 + 0.16 + Math.sin(a0) * ey], p1 = [Math.cos(a1) * ex, 0.3 + 0.16 + Math.sin(a1) * ey];
+      const lg = Math.hypot(p1[0] - p0[0], p1[1] - p0[1]), ang = Math.atan2(p1[1] - p0[1], p1[0] - p0[0]);
+      rq.ajoute(boite(lg + 0.004, 0.018, 0.022, cadre), chaine(M4.tr((p0[0] + p1[0]) / 2, (p0[1] + p1[1]) / 2, 0), M4.rz(ang)));
+    }
+    P.raquette = mk(rq);
+    const cord = new Geo();
+    for (let k = 0; k < 20; k++) {
+      const a0 = k / 20 * Math.PI * 2, a1 = (k + 1) / 20 * Math.PI * 2, b = cord.p.length / 3;
+      cord.v([0, 0.46, 0], [0, 0, 1], BLANC, [0.5, 0.5]);
+      cord.v([Math.cos(a0) * 0.118, 0.46 + Math.sin(a0) * 0.152, 0], [0, 0, 1], BLANC, [0.5 + Math.cos(a0) / 2, 0.5 + Math.sin(a0) / 2]);
+      cord.v([Math.cos(a1) * 0.118, 0.46 + Math.sin(a1) * 0.152, 0], [0, 0, 1], BLANC, [0.5 + Math.cos(a1) / 2, 0.5 + Math.sin(a1) / 2]);
+      cord.i.push(b, b + 1, b + 2);
+    }
+    P.cordage = mk(cord);
+    return P;
+  }
+  const POSE0 = () => ({ tronc: [0, 0, 0], bassin: [0, 0, 0], tete: [0, 0, 0],
+    epD: [0, 0, 0], coudeD: 0, poignetD: [0, 0, 0], epG: [0, 0, 0], coudeG: 0,
+    hancheD: [0, 0, 0], genouD: 0, hancheG: [0, 0, 0], genouG: 0, piedD: 0, piedG: 0, accroupi: 0 });
+  function melange(a, b, t) {
+    const o = POSE0();
+    for (const k in o) o[k] = Array.isArray(o[k]) ? a[k].map((v, i) => lerp(v, b[k][i], t)) : lerp(a[k], b[k], t);
+    return o;
+  }
+  // poses clés (repère du joueur droitier)
+  function poseAttente(t) {
+    const p = POSE0(), b = Math.sin(t * 6) * 0.03;
+    p.accroupi = 0.12 + b; p.tronc = [0.28, 0, 0]; p.tete = [-0.2, 0, 0];
+    p.hancheD = [-0.55, 0, 0.12]; p.genouD = 0.85; p.hancheG = [-0.55, 0, -0.12]; p.genouG = 0.85; p.piedD = -0.3; p.piedG = -0.3;
+    p.epD = [-0.75, 0.25, 0.25]; p.coudeD = 1.25; p.poignetD = [0.4, 0, 0.7];
+    p.epG = [-0.75, -0.25, -0.25]; p.coudeG = 1.3;
+    return p;
+  }
+  function poseCourse(t, v) {
+    const p = poseAttente(t), ph = t * 12, a = cl(v / 5, 0, 1);
+    p.accroupi = 0.06; p.tronc = [0.35 * a + 0.15, 0, 0];
+    p.hancheD = [-0.2 - Math.sin(ph) * 0.8 * a, 0, 0.08]; p.genouD = 0.4 + Math.max(0, Math.sin(ph + 1.2)) * 1.3 * a;
+    p.hancheG = [-0.2 + Math.sin(ph) * 0.8 * a, 0, -0.08]; p.genouG = 0.4 + Math.max(0, Math.sin(ph + 1.2 + Math.PI)) * 1.3 * a;
+    p.epG = [-0.4 - Math.sin(ph) * 0.6 * a, 0, -0.2]; p.coudeG = 1.4;
+    p.epD = [-0.5 + Math.sin(ph) * 0.4 * a, 0.2, 0.3]; p.coudeD = 1.1;
+    return p;
+  }
+  // coups : u de 0 (préparation) à 1 (fin d'accompagnement), frappe à u = 0.5
+  function poseCoupDroit(u) {
+    const p = poseAttente(0), k = [[0, 0], [0.42, 1], [0.5, 1.15], [1, 2]];
+    const ph = u < 0.42 ? lisse(u / 0.42) : u < 0.5 ? 1 + lisse((u - 0.42) / 0.08) : 2;
+    const f = u < 0.5 ? 0 : lisse((u - 0.5) / 0.5);
+    const prep = Math.min(ph, 1), frappe = cl(ph - 1, 0, 1);
+    p.tronc = [0.25, lerp(lerp(0, 1.1, prep), -0.5, frappe) - 0.5 * f, 0];
+    p.bassin = [0, lerp(lerp(0, 0.6, prep), -0.3, frappe), 0];
+    p.epD = [lerp(lerp(-0.75, 0.2, prep), -1.2, frappe) - 0.9 * f, lerp(lerp(0.25, -1.4, prep), 0.1, frappe) + 1.1 * f, lerp(0.25, 1.2, prep) * (1 - frappe) + 0.4 * frappe];
+    p.coudeD = lerp(lerp(1.25, 0.6, prep), 0.25, frappe) + 1.3 * f;
+    p.poignetD = [lerp(0.4, -0.2, prep), 0, lerp(0.7, 1.4, prep) * (1 - frappe) + 1.5 * frappe];
+    p.epG = [lerp(-0.75, -1.4, prep) + 0.8 * frappe, lerp(-0.25, 0.9, prep) * (1 - frappe), -0.3]; p.coudeG = 0.5 + 0.8 * frappe;
+    p.hancheD = [-0.6, 0, 0.2]; p.genouD = 0.9 - 0.4 * frappe; p.hancheG = [-0.45, 0, -0.2]; p.genouG = 0.7;
+    p.accroupi = 0.14 - 0.08 * frappe;
+    return p;
+  }
+  function poseRevers(u) {
+    const p = poseAttente(0);
+    const prep = lisse(cl(u / 0.42, 0, 1)), frappe = lisse(cl((u - 0.42) / 0.08, 0, 1)), f = lisse(cl((u - 0.5) / 0.5, 0, 1));
+    p.tronc = [0.25, lerp(lerp(0, -1.3, prep), 0.4, frappe) + 0.5 * f, 0];
+    p.bassin = [0, lerp(lerp(0, -0.7, prep), 0.2, frappe), 0];
+    const bras = [lerp(lerp(-0.75, -0.2, prep), -1.0, frappe) - 1.0 * f, lerp(lerp(0.25, 1.1, prep), -0.2, frappe) - 0.9 * f, 0.2];
+    p.epD = bras; p.coudeD = lerp(1.25, 0.5, prep) + 0.9 * f; p.poignetD = [0.2, 0, lerp(0.7, -1.2, prep) * (1 - frappe) - 1.1 * frappe];
+    p.epG = [bras[0], bras[1] + 0.35, -0.1]; p.coudeG = p.coudeD + 0.3;
+    p.hancheD = [-0.45, 0, 0.2]; p.genouD = 0.7; p.hancheG = [-0.6, 0, -0.2]; p.genouG = 0.9 - 0.4 * frappe;
+    p.accroupi = 0.14 - 0.08 * frappe;
+    return p;
+  }
+  function poseService(u) {
+    // 0 → 0,35 lancer de balle et armé ; 0,35 → 0,6 « trophée », flexion ; 0,62 frappe ; puis accompagnement
+    const p = poseAttente(0);
+    const a = lisse(cl(u / 0.35, 0, 1)), b = lisse(cl((u - 0.35) / 0.25, 0, 1)), c = lisse(cl((u - 0.6) / 0.06, 0, 1)), d = lisse(cl((u - 0.66) / 0.34, 0, 1));
+    p.accroupi = 0.04 + 0.22 * b * (1 - c) - 0.12 * c * (1 - d);
+    p.tronc = [lerp(0.05, -0.35, b) + 0.9 * c - 0.4 * d, lerp(0, -0.8, a) + 0.9 * c, 0];
+    p.bassin = [0, lerp(0, -0.6, a) + 0.7 * c, 0];
+    p.epG = [lerp(-0.3, -2.9, a) + 2.2 * c, 0, -0.2]; p.coudeG = 0.1 + 1.0 * c;
+    p.epD = [lerp(-0.3, -1.6, a) - 1.2 * b + (-0.4) * c + 2.6 * d, lerp(0, 1.2, a) - 0.4 * c - 0.6 * d, lerp(0.2, 1.3, a) - 1.1 * c];
+    p.coudeD = lerp(0.3, 2.2, b) * (1 - c) + 0.15 * c + 0.4 * d; p.poignetD = [0, 0, lerp(0.3, 1.2, b) * (1 - c) + 0.4 * c];
+    p.hancheD = [-0.2 - 0.5 * b, 0, 0.1]; p.genouD = 0.2 + 1.0 * b * (1 - c); p.hancheG = [-0.2 - 0.5 * b, 0, -0.1]; p.genouG = 0.2 + 1.0 * b * (1 - c);
+    p.piedD = -0.6 * c * (1 - d); p.piedG = -0.6 * c * (1 - d);
+    return p;
+  }
+  // matrices des parties pour une pose, un emplacement et une orientation donnés
+  function dessinerJoueur(P, j, pose, prog2, ombre) {
+    const R = (a) => chaine(M4.ry(a[1]), M4.rx(a[0]), M4.rz(a[2]));
+    const racine = chaine(M4.tr(j.x, 0, j.z), M4.ry(j.cap));
+    const hHanche = 0.98 - pose.accroupi * 1.4;
+    const bassin = chaine(racine, M4.tr(0, hHanche, 0), R(pose.bassin));
+    const out = [];
+    out.push([P.bassin, bassin]);
+    const torse = chaine(bassin, M4.tr(0, 0.08, 0), R(pose.tronc));
+    out.push([P.torse, torse]);
+    out.push([P.tete, chaine(torse, M4.tr(0, 0.73, 0.01), R(pose.tete))]);
+    for (const [s, ep, coude, poignet] of [[-1, pose.epD, pose.coudeD, pose.poignetD], [1, pose.epG, pose.coudeG, null]]) {
+      const epaule = chaine(torse, M4.tr(s * 0.215, 0.5, 0), M4.ry(ep[1] * -s * -1), M4.rx(ep[0]), M4.rz(ep[2] * s * -1));
+      out.push([P.bras, epaule], [P.manche, epaule]);
+      const coudeM = chaine(epaule, M4.tr(0, -0.29, 0), M4.rx(-coude));
+      out.push([P.avantBras, coudeM]);
+      const main = chaine(coudeM, M4.tr(0, -0.27, 0));
+      out.push([P.main, main]);
+      if (poignet) {
+        const rq = chaine(main, M4.rx(-Math.PI / 2 + poignet[0]), M4.rz(poignet[2]), M4.tr(0, -0.06, 0));
+        out.push([P.raquette, rq]); out.push([P.cordage, rq, true]);
+      }
+    }
+    for (const [s, ha, ge, pi] of [[-1, pose.hancheD, pose.genouD, pose.piedD], [1, pose.hancheG, pose.genouG, pose.piedG]]) {
+      const hanche = chaine(bassin, M4.tr(s * 0.1, -0.06, 0), M4.rx(ha[0]), M4.rz(ha[2] * -s));
+      out.push([P.cuisse, hanche], [P.cuisseShort, hanche]);
+      const genou = chaine(hanche, M4.tr(0, -0.44, 0), M4.rx(ge));
+      out.push([P.jambe, genou]);
+      // le pied reste à plat : on compense les angles de la jambe
+      out.push([P.pied, chaine(genou, M4.tr(0, -0.46, 0), M4.rx(-ha[0] - ge + pi))]);
+    }
+    return out;
+  }
+
+  // ── LES POINTS : le vrai vainqueur, rejoué ─────────────────────────────────────────────────────────────────
+  // 13/11/2026 (paquet 260, demande de Lucas : « est-ce que les échanges peuvent être réels ? »). À chaque changement
+  // du score en direct, on sait QUI a gagné le point, avec le vrai serveur et le vrai côté de service : le point est
+  // rejoué avec ce vainqueur. La FAÇON de le gagner (ace, service non retourné, coup droit ou revers gagnant, volée,
+  // amorti, lob, faute provoquée, faute directe, double faute) est tirée de ses habitudes réelles (tiroir « Points
+  // marqués », relevés coup par coup) ; à défaut, de moyennes du circuit. Les trajectoires restent reconstituées :
+  // aucune source ne les donne en direct. Entre deux points, les joueurs se replacent ; aucun point n'est inventé.
+  const E = { noms: ['', ''], sets: [[], []], pts: ['0', '0'], srv: null, droite: true, fini: false, surface: 'Hard',
+              avant: null, profils: [null, null], dernier: null, msg: null };
+  const J = [{ x: 0, z: -HL - 0.8, vx: 0, vz: 0, cap: 0 }, { x: 0, z: HL + 0.8, vx: 0, vz: 0, cap: Math.PI }];
+  const FILE = [];
+  let R = null, applaudir = -9;
+  const CATS = ['aces', 'services_non_retournes', 'coup_droit', 'revers', 'filet', 'amorti', 'lob', 'fautes_provoquees', 'fautes_directes_adverses', 'doubles_fautes_adverses'];
+  const DEFAUT = { aces: 6, services_non_retournes: 9, coup_droit: 17, revers: 9, filet: 6, amorti: 2, lob: 1, fautes_provoquees: 21, fautes_directes_adverses: 25, doubles_fautes_adverses: 3 };
+  const VAL = { '0': 0, '15': 1, '30': 2, '40': 3, 'A': 4, 'AD': 4 };
+  function etatDe(sets, pts, srv) {
+    const i = sets[0].length - 1, tb = +sets[0][i] === 6 && +sets[1][i] === 6;
+    const v = s => { const u = String(s ?? '0').toUpperCase(); return tb ? (parseInt(u, 10) || 0) : (VAL[u] ?? 0); };
+    const p = [v(pts[0]), v(pts[1])];
+    return { sets: sets.map(x => x.map(Number)), p, srv, tb, droite: (p[0] + p[1]) % 2 === 0 };
+  }
+  // qui a gagné le point entre deux états du score ? null si rien n'a changé ou si c'est illisible
+  function gagnantPoint(a, b) {
+    const jeux = e => e.sets.map(x => x.reduce((s, v) => s + (+v || 0), 0));
+    const ja = jeux(a), jb = jeux(b), dj = [jb[0] - ja[0], jb[1] - ja[1]];
+    if (dj[0] || dj[1]) {
+      if (dj[0] === 1 && dj[1] === 0) return 0;
+      if (dj[1] === 1 && dj[0] === 0) return 1;
+      return null;                                         // plusieurs jeux d'un coup (page en veille) : on ne rejoue rien
+    }
+    const d = [b.p[0] - a.p[0], b.p[1] - a.p[1]];
+    if (d[0] === 1 && d[1] === 0) return 0;
+    if (d[1] === 1 && d[0] === 0) return 1;
+    if (!a.tb && d[0] === -1 && d[1] === 0 && a.p[0] === 4) return 1;   // avantage perdu → égalité
+    if (!a.tb && d[1] === -1 && d[0] === 0 && a.p[1] === 4) return 0;
+    return null;
+  }
+  function tirage(prof, auService) {
+    const P = prof || DEFAUT, w = CATS.map(c => {
+      if ((c === 'aces' || c === 'services_non_retournes') && !auService) return 0;
+      if (c === 'doubles_fautes_adverses' && auService) return 0;
+      return Math.max(0, +P[c] || 0);
+    });
+    let s = w.reduce((a, b) => a + b, 0); if (s <= 0) return auService ? 'coup_droit' : 'fautes_directes_adverses';
+    let x = Math.random() * s;
+    for (let k = 0; k < CATS.length; k++) { x -= w[k]; if (x <= 0) return CATS[k]; }
+    return CATS[CATS.length - 1];
+  }
+  function profilDe(m, i) {
+    const J_ = m.points_marques && Array.isArray(m.points_marques.joueurs) ? m.points_marques.joueurs[i] : null;
+    if (J_ && J_.detail) return J_.detail;
+    const fp = Array.isArray(m.feuille_prevue) ? m.feuille_prevue : [];
+    const p = { ...DEFAUT };
+    if (fp[i] && fp[i].aces != null) p.aces = Math.max(0.5, +fp[i].aces);
+    if (fp[1 - i] && fp[1 - i].doubles_fautes != null) p.doubles_fautes_adverses = Math.max(0.3, +fp[1 - i].doubles_fautes);
+    return p;
+  }
+  // un service : depuis le bon côté, vers le carré en diagonale ; bon = dans le carré, sinon faute (filet ou long)
+  function service(s, droite, t, bon, filet) {
+    const sens = s === 0 ? 1 : -1, droiteX = -sens, cote = droite ? 1 : -1;
+    const a = { x: droiteX * cote * rnd(0.4, 1.0), y: 2.75, z: -sens * (HL + 0.15) };
+    const prec = Math.random() < 0.5 ? rnd(0.25, 0.9) : rnd(S / 2 - 1.1, S / 2 - 0.3);       // au T ou extérieur
+    let b = { x: -droiteX * cote * prec, y: 0, z: sens * rnd(SL - 1.4, SL - 0.25) };
+    if (!bon) b = filet ? { x: b.x * 0.6, y: 0.55, z: sens * 0.02 } : { x: b.x, y: 0, z: sens * rnd(SL + 0.3, SL + 1.2) };
+    return { a, b, h: bon || !filet ? 0.35 : 0.1, d: 0.6, qui: s, type: 'service', faute: !bon, t };
+  }
+  function nouveauPoint(P, t0) {
+    const s = P.srv === null || P.srv === undefined ? 0 : P.srv, g = P.gagnant, perd = 1 - g;
+    const fin = tirage(E.profils[g], g === s);
+    const vols = [];
+    let t = t0 + 1.3;
+    const pousse = v => { v.t = t; t += v.d; vols.push(v); return v; };
+    const finVol = (der, court) => {
+      const fx = der.b.x - der.a.x, fz = der.b.z - der.a.z, fn = Math.hypot(fx, fz) || 1, fl = court ? 0.9 : Math.min(3, fn * 0.35);
+      return { a: der.b, b: { x: der.b.x + fx / fn * fl, y: 0, z: der.b.z + fz / fn * fl }, h: court ? 0.35 : 0.7, d: court ? 0.45 : 0.6, qui: -1, type: 'fin' };
+    };
+    if (fin === 'doubles_fautes_adverses') {
+      const f1 = pousse(service(s, P.droite, 0, false, Math.random() < 0.6));
+      pousse({ a: f1.b, b: { x: f1.b.x, y: 0, z: f1.b.z * (f1.b.y > 0.3 ? 0.4 : 1.15) }, h: 0.2, d: 0.4, qui: -1, type: 'fin' });
+      t += 2.2;                                                                   // la balle suivante, le second service
+      const f2 = pousse(service(s, P.droite, 0, false, Math.random() < 0.4));
+      pousse(finVol(f2, f2.b.y > 0.3));
+    } else {
+      const sv = pousse(service(s, P.droite, 0, true));
+      if (fin === 'aces') { const f = finVol(sv); f.b = { x: f.b.x * 1.3, y: 0, z: f.a.z + (f.b.z - f.a.z) * 2.2 }; f.d = 0.7; pousse(f); }
+      else {
+        // longueur de l'échange : plus long sur terre battue, plus court sur gazon ; parité fixée par qui frappe en dernier
+        const moy = { Clay: 4.6, Hard: 3.6, Grass: 2.6, Carpet: 3 }[E.surface] || 3.6;
+        const erreur = fin === 'fautes_provoquees' || fin === 'fautes_directes_adverses' || fin === 'services_non_retournes';
+        const dernierFrappeur = erreur ? perd : g;
+        let L = fin === 'services_non_retournes' ? 1 : 1 + Math.floor(-Math.log(1 - Math.random()) * moy);
+        if (fin === 'filet' && L < 3) L = 3;
+        const frappeur = k => (k % 2 === 0 ? s : 1 - s);
+        if (frappeur(L) !== dernierFrappeur) L++;
+        let prev = sv;
+        for (let k = 1; k <= L; k++) {
+          const qui = frappeur(k), sq = qui === 0 ? 1 : -1, dernier = k === L;
+          const dx = prev.b.x - prev.a.x, dz = prev.b.z - prev.a.z, dn = Math.hypot(dx, dz) || 1;
+          let ex;
+          if (dernier && fin === 'filet') {                                       // volée : sans rebond, près du filet
+            ex = { x: cl(prev.a.x + dx * 0.75, -S / 2, S / 2), y: rnd(0.9, 1.3), z: -sq * rnd(1.8, 2.8) };
+            prev.b = ex; prev.d = Math.max(prev.d, 1.05); prev.h = 0.9;
+          } else {
+            const ext = prev.type === 'service' ? rnd(5.2, 7) : rnd(2.2, 4.2);
+            ex = { x: cl(prev.b.x + dx / dn * ext, -W / 2 - 1.5, W / 2 + 1.5), y: rnd(0.75, 1.1), z: cl(prev.b.z + dz / dn * ext, -HL - 3, HL + 3) };
+            pousse({ a: prev.b, b: ex, h: rnd(0.5, 1.0), d: rnd(0.26, 0.38), qui: -1, type: 'rebond' });
+          }
+          let tx = Math.random() < 0.55 ? -ex.x * rnd(0.6, 1.1) : ex.x * rnd(0.5, 1), tz = sq * rnd(HL - 4.5, HL - 0.8), h = rnd(1.5, 2.5), d = rnd(0.78, 1.0);
+          let cd;
+          if (!dernier && fin === 'filet' && k === L - 2) { tz = sq * rnd(HL - 3, HL - 1.5); h = 1.6; d = 0.95; }        // la montée
+          if (!dernier && fin === 'fautes_provoquees' && k === L - 1) { tx = Math.sign(-ex.x || 1) * rnd(S / 2 - 1, S / 2 - 0.3); h = 1.2; d = 0.7; }
+          if (dernier) {
+            if (fin === 'coup_droit' || fin === 'revers') { tx = (Math.random() < 0.5 ? -1 : 1) * rnd(S / 2 - 0.9, S / 2 - 0.25); tz = sq * rnd(HL - 3.5, HL - 0.7); h = rnd(1.2, 1.7); d = rnd(0.62, 0.75); cd = fin === 'coup_droit'; }
+            else if (fin === 'filet') { tx = (Math.random() < 0.5 ? -1 : 1) * rnd(S / 2 - 1.6, S / 2 - 0.3); tz = sq * rnd(3, 7); h = 0.5; d = 0.45; }
+            else if (fin === 'amorti') { tz = sq * rnd(1.0, 2.2); h = rnd(1.0, 1.4); d = rnd(1.0, 1.25); tx = cl(tx, -S / 2 + 0.5, S / 2 - 0.5); }
+            else if (fin === 'lob') { tz = sq * rnd(HL - 2.2, HL - 0.8); h = rnd(5.5, 7); d = rnd(1.7, 2.1); }
+            else if (erreur) {
+              if (Math.random() < 0.45) { tz = sq * 0.02; h = 0.55; d = 0.5; }                                  // dans le filet
+              else if (Math.random() < 0.6) tz = sq * rnd(HL + 0.3, HL + 1.4);                               // long
+              else { tx = Math.sign(tx || 1) * rnd(S / 2 + 0.3, S / 2 + 1.1); }                               // large
+            }
+          }
+          if (!(dernier && (erreur))) tx = cl(tx, -S / 2 + 0.25, S / 2 - 0.25);
+          const v = pousse({ a: ex, b: { x: tx, y: tz === sq * 0.02 ? 0.5 : 0, z: tz }, h, d, qui, type: 'frappe' });
+          if (cd !== undefined) v.cd = cd;
+          prev = v;
+        }
+        const der = vols[vols.length - 1];
+        if (der.b.y > 0.3) pousse({ a: der.b, b: { x: der.b.x, y: 0, z: der.b.z * 4 + (der.b.z > 0 ? -0.3 : 0.3) }, h: 0.1, d: 0.35, qui: -1, type: 'fin' });
+        else if (fin === 'amorti') { const f = finVol(der, true); pousse(f); pousse(finVol(f, true)); }
+        else pousse(finVol(der));
+      }
+    }
+    R = { vols, gagnant: g, fin, lancer: t0, debut: t0, finT: t + 1.2, annonce: false };
+  }
+  function posBalle(t) {
+    if (!R) return null;
+    for (const v of R.vols) {
+      if (v.type === 'service' && t >= v.t - 0.95 && t < v.t) {                       // lancer de balle
+        const u = (t - (v.t - 0.95)) / 0.95;
+        return { x: v.a.x + 0.05, y: 1.3 + Math.sin(u * Math.PI) * 2.2 * (1 - u * 0.25) + (v.a.y - 1.3) * u * u, z: v.a.z + 0.25 * (v.a.z < 0 ? 1 : -1) * (1 - u) };
+      }
+      if (t >= v.t && t < v.t + v.d) {
+        const u = (t - v.t) / v.d;
+        return { x: v.a.x + (v.b.x - v.a.x) * u, y: v.a.y + (v.b.y - v.a.y) * u + 4 * v.h * u * (1 - u), z: v.a.z + (v.b.z - v.a.z) * u };
+      }
+    }
+    return null;
+  }
+  // où se placer pour frapper : la balle à 0,75 m sur le côté (coup droit à droite, revers à gauche)
+  function coupDe(i, v) {
+    const j = J[i], face = i === 0 ? 1 : -1, droiteX = -face;
+    const cd = v.cd !== undefined ? v.cd : (v.a.x - j.x) * droiteX >= -0.2;
+    return { cd, x: v.a.x - droiteX * (cd ? 0.78 : -0.72), z: v.a.z - face * 0.25 };
+  }
+  // places entre deux points : le serveur à sa ligne de fond, du bon côté ; le relanceur en face, en diagonale
+  function placesAttente(i) {
+    const face = i === 0 ? 1 : -1;
+    if (E.srv === null) return { x: 0, z: -face * (HL + 0.9) };
+    const s = E.srv, cote = E.droite ? 1 : -1, droiteX = s === 0 ? -1 : 1;
+    if (i === s) return { x: droiteX * cote * 0.8, z: -face * (HL + 0.15) };
+    return { x: -droiteX * cote * 2.6, z: -face * (HL + 0.7) };
+  }
+  function bouger(t, dt) {
+    const enJeu = R && t < R.finT;
+    for (const i of [0, 1]) {
+      const j = J[i], face = i === 0 ? 1 : -1;
+      let cible = placesAttente(i), urg = 2.5, vmax = 2.2;                       // entre les points : on marche
+      if (enJeu) {
+        vmax = 7.5; urg = 1.5; cible = { x: 0, z: -face * (HL + 0.9) };
+        const proch = R.vols.find(v => v.qui === i && v.t > t - 0.05);
+        if (proch && proch.type === 'service') cible = { x: proch.a.x, z: proch.a.z - face * 0.05 };
+        else if (proch) cible = coupDe(i, proch);
+        else if (t < R.vols[0].t) cible = placesAttente(i);
+        else if (i !== R.gagnant) {                                              // le perdant court après la dernière balle
+          const b = posBalle(t); if (b && Math.sign(b.z) === -face) cible = { x: b.x, z: b.z }; else cible = { x: j.x, z: j.z };
+        }
+        if (proch) urg = cl(proch.t - t, 0.15, 3);
+      }
+      const dx = cible.x - j.x, dz = cible.z - j.z, dist = Math.hypot(dx, dz);
+      const v = Math.min(vmax, dist / urg * 1.2), k = dist > 0.01 ? v / dist : 0;
+      j.vx = lerp(j.vx, dx * k, 0.25); j.vz = lerp(j.vz, dz * k, 0.25);
+      j.x += j.vx * dt; j.z += j.vz * dt;
+      const b = posBalle(t), capBase = i === 0 ? 0 : Math.PI;
+      const vise = b ? Math.atan2(b.x - j.x, (b.z - j.z) * face) * 0.35 : 0;
+      j.cap = capBase + cl(vise, -0.6, 0.6) * (i === 0 ? 1 : -1);
+    }
+  }
+  function poseDe(i, t) {
+    const j = J[i], v = Math.hypot(j.vx, j.vz);
+    let p = v > 0.6 ? melange(poseAttente(t), poseCourse(t, v), cl((v - 0.6) / 2, 0, 1)) : poseAttente(t);
+    if (!R || t > R.finT) {
+      // entre les points : le serveur fait rebondir la balle, le relanceur se balance
+      if (E.srv === i && v < 0.3 && !E.fini) { p.epG = [-0.5 + Math.abs(Math.sin(t * 4)) * 0.4, 0, -0.2]; p.coudeG = 0.6; p.accroupi = 0.05; p.tronc = [0.2, 0, 0]; }
+      return p;
+    }
+    for (const vol of R.vols) {
+      if (vol.qui !== i) continue;
+      if (vol.type === 'service') {
+        const u = cl((t - (vol.t - 1.25)) / 2.0, 0, 1);
+        if (t > vol.t - 1.25 && t < vol.t + 0.75) return poseService(u);
+      } else {
+        const u = (t - (vol.t - 0.45)) / 0.9;
+        if (u > 0 && u < 1) {
+          const cd = vol.cd !== undefined ? vol.cd : (vol.cd = coupDe(i, vol).cd);
+          const c = cd ? poseCoupDroit(u) : poseRevers(u);
+          return melange(p, c, cl(Math.min(u * 5, (1 - u) * 5), 0, 1));
+        }
+      }
+    }
+    return p;
+  }
+  // la balle tenue par le serveur entre les points (rebonds avant de servir)
+  function balleEnMain(t) {
+    if (E.srv === null || E.fini) return null;
+    const j = J[E.srv], face = E.srv === 0 ? 1 : -1;
+    if (Math.hypot(j.vx, j.vz) > 0.3) return null;
+    const u = Math.abs(Math.sin(t * 4));
+    return { x: j.x + face * 0.0 + (E.srv === 0 ? 0.25 : -0.25), y: 0.05 + u * 0.95, z: j.z + face * 0.35 };
+  }
+  // la boucle des points : on rejoue le dernier point arrivé ; sinon on attend
+  function avancer(t, dt) {
+    if (R && t > R.finT) { if (!R.annonce) { R.annonce = true; E.dernier = { gagnant: R.gagnant, t }; applaudir = t; } R = null; }
+    if (!R && FILE.length) { const P = FILE.splice(0, FILE.length).pop(); nouveauPoint(P, t); }
+    bouger(t, dt);
+  }
+
+  // ── caméra et rendu ───────────────────────────────────────────────────────────────────────────────────────
+  const VUES = { tv: { yaw: 0, pitch: 0.47, dist: 33, fov: 0.62, suivre: true }, cote: { yaw: 0.95, pitch: 0.36, dist: 33, fov: 0.62, suivre: false }, haut: { yaw: Math.PI / 2, pitch: 1.3, dist: 38, fov: 0.62, suivre: false },
+    joueur: { yaw: 0, pitch: 0.22, dist: 9.5, fov: 0.75, suivre: false, focus: 0 } };
+  const cam = { ...VUES.tv };
+  const COULEURS = [{ maillot: '#2EE6FF', short: '#14234f', cheveux: '#3a2a20', peau: '#e8b896' }, { maillot: '#FF4FAE', short: '#f4f4f8', cheveux: '#1d1712', peau: '#c98d64' }];
+  let PERSOS = null, BALLE = null, OMBRE_BALLE = null;
+  function initGL() {
+    cv = document.createElement('canvas'); cv.className = 'g3d-cv';
+    gl = cv.getContext('webgl2', { antialias: true, alpha: false, powerPreference: 'high-performance' });
+    if (!gl) return false;
+    prog = shader(VS, FS); progO = shader(VS_OMBRE, FS_OMBRE);
+    for (const k of ['uM', 'uVP', 'uLVP', 'uInst', 'uT', 'uClap', 'uCol', 'uSun', 'uEye', 'uCiel', 'uSol', 'uBrume', 'uAlpha', 'uSpec', 'uEmis', 'uTex', 'uOmbre', 'uTx', 'uSM']) U[k] = gl.getUniformLocation(prog, k);
+    for (const k of ['uM', 'uLVP', 'uInst']) UO[k] = gl.getUniformLocation(progO, k);
+    smTex = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, smTex);
+    gl.texStorage2D(gl.TEXTURE_2D, 1, gl.DEPTH_COMPONENT24, SM, SM);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_MODE, gl.COMPARE_REF_TO_TEXTURE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_FUNC, gl.LEQUAL);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    smFbo = gl.createFramebuffer(); gl.bindFramebuffer(gl.FRAMEBUFFER, smFbo);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, smTex, 0);
+    gl.drawBuffers([gl.NONE]); gl.readBuffer(gl.NONE); gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    PERSOS = COULEURS.map((c, i) => partiesJoueur(hex(c.maillot), hex(c.short), hex(c.peau), hex('#f4f4f8'), hex(c.cheveux), i === 1));
+    BALLE = maillage(sphere(0.06, 14, hex('#d8ff3a')));
+    const ob = new Geo(); ob.ajoute(sphere(1, 10, [0, 0, 0], 0.02), M4.id()); OMBRE_BALLE = maillage(ob);
+    return true;
+  }
+  const SOLEIL = nrm([-0.45, 0.85, -0.35]);
+  function matrices(w, h) {
+    const cp = Math.cos(cam.pitch), sp = Math.sin(cam.pitch);
+    let cible = [cam.cx || 0, 0, -1.5 + Math.sin(cam.pitch) * 0.8];
+    if (cam.focus !== undefined) {                                                // vue « près » : derrière le joueur proche
+      const j = J[cam.focus]; cam.fx = lerp(cam.fx ?? j.x, j.x, 0.08); cam.fz = lerp(cam.fz ?? j.z, j.z, 0.08);
+      cible = [cam.fx * 0.8, 0.9, cam.fz + 5];
+    }
+    const eye = [cible[0] + cam.dist * cp * Math.sin(cam.yaw), cam.dist * sp + 0.5, cible[2] - cam.dist * cp * Math.cos(cam.yaw)];
+    const vp = M4.mul(M4.persp(cam.fov, w / h, 0.5, 200), M4.look(eye, cible, [0, 1, 0]));
+    const lc = [SOLEIL[0] * 40, SOLEIL[1] * 40, SOLEIL[2] * 40];
+    const lvp = M4.mul(M4.ortho(-22, 22, -26, 26, 1, 100), M4.look(lc, [0, 0, 0], [0, 1, 0]));
+    return { vp, lvp, eye };
+  }
+  function uniformes(o, inst) {
+    gl.uniform3fv(U.uCol, o.col || [1, 1, 1]); gl.uniform1f(U.uAlpha, o.alpha || 1); gl.uniform1f(U.uSpec, o.spec ?? 0.2);
+    gl.uniform1f(U.uEmis, o.emis || 0); gl.uniform1i(U.uInst, inst ? 1 : 0);
+    gl.uniform1i(U.uOmbre, o.recoit === false ? 0 : 1);
+    if (o.tex) { gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, o.tex); gl.uniform1i(U.uTex, 1); } else gl.uniform1i(U.uTex, 0);
+  }
+  function dessiner(t, dt) {
+    const w = cv.width, h = cv.height; if (!w || !h) return;
+    if (surfaceFaite !== E.surface) construireDecor(E.surface);
+    avancer(t, dt);
+    const bv = E.fini ? null : posBalle(t), b = bv || (R ? null : balleEnMain(t));
+    if (bv) { TRACE.push(bv); if (TRACE.length > 9) TRACE.shift(); } else TRACE.length = 0;
+    cam.cx = lerp(cam.cx || 0, cam.suivre && bv ? cl(bv.x * 0.35, -3, 3) : 0, 0.04);
+    message(t);
+    const { vp, lvp, eye } = matrices(w, h);
+    // ce qui bouge : les deux joueurs, la balle
+    const dyn = [];
+    for (const i of [0, 1]) for (const x of dessinerJoueur(PERSOS[i], J[i], poseDe(i, t))) dyn.push(x);
+    // 1) ombres
+    gl.bindFramebuffer(gl.FRAMEBUFFER, smFbo); gl.viewport(0, 0, SM, SM); gl.clear(gl.DEPTH_BUFFER_BIT);
+    gl.useProgram(progO); gl.uniformMatrix4fv(UO.uLVP, false, lvp); gl.enable(gl.DEPTH_TEST); gl.disable(gl.CULL_FACE);
+    gl.enable(gl.POLYGON_OFFSET_FILL); gl.polygonOffset(1.5, 2.0);
+    gl.uniform1i(UO.uInst, 0);
+    const passeO = (m, mat) => { gl.uniformMatrix4fv(UO.uM, false, mat); gl.bindVertexArray(m.vao); gl.drawElements(gl.TRIANGLES, m.n, gl.UNSIGNED_INT, 0); };
+    for (const o of scene.fixes) if (o.ombre) passeO(o.m, M4.id());
+    for (const o of scene.transp) if (o.ombre) passeO(o.m, M4.id());
+    for (const [m, mat, tr] of dyn) if (!tr) passeO(m, mat);
+    if (b) passeO(BALLE, M4.tr(b.x, b.y, b.z));
+    gl.disable(gl.POLYGON_OFFSET_FILL);
+    // 2) image
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null); gl.viewport(0, 0, w, h);
+    gl.clearColor(0.06, 0.05, 0.16, 1); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    gl.useProgram(prog);
+    gl.uniformMatrix4fv(U.uVP, false, vp); gl.uniformMatrix4fv(U.uLVP, false, lvp); gl.uniform3fv(U.uSun, SOLEIL); gl.uniform3fv(U.uEye, eye);
+    gl.uniform3fv(U.uCiel, [0.62, 0.64, 0.82]); gl.uniform3fv(U.uSol, [0.28, 0.26, 0.36]); gl.uniform3fv(U.uBrume, [0.08, 0.07, 0.2]);
+    gl.uniform1f(U.uT, t); gl.uniform1f(U.uClap, cl(Math.exp(-(t - applaudir) * 0.7), 0, 1));
+    gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, smTex); gl.uniform1i(U.uSM, 1); gl.uniform1i(U.uTx, 0);
+    const passe = (o, mat, inst) => { uniformes(o, inst); gl.uniformMatrix4fv(U.uM, false, mat); gl.bindVertexArray(o.m.vao);
+      if (inst) gl.drawElementsInstanced(gl.TRIANGLES, o.m.n, gl.UNSIGNED_INT, 0, o.m.ni); else gl.drawElements(gl.TRIANGLES, o.m.n, gl.UNSIGNED_INT, 0); };
+    for (const o of scene.fixes) passe(o, M4.id());
+    passe({ ...scene.public, recoit: false }, M4.id(), true);
+    for (const [m, mat, tr] of dyn) if (!tr) passe({ m, spec: 0.25 }, mat);
+    if (b) passe({ m: BALLE, spec: 0.5, emis: 0.35 }, M4.tr(b.x, b.y, b.z));
+    // 3) transparents : mailles du filet, cordages
+    gl.enable(gl.BLEND); gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA); gl.depthMask(false);
+    for (const o of scene.transp) passe(o, M4.id());
+    gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, TX.cordage);
+    for (const [m, mat, tr] of dyn) if (tr) passe({ m, tex: TX.cordage, alpha: 0.8, spec: 0 }, mat);
+    TRACE.forEach((p, k) => passe({ m: BALLE, alpha: 0.05 + 0.3 * k / TRACE.length, emis: 0.8, spec: 0, recoit: false }, chaine(M4.tr(p.x, p.y, p.z), M4.sc(0.8, 0.8, 0.8))));
+    gl.depthMask(true); gl.disable(gl.BLEND);
+    gl.bindVertexArray(null);
+  }
+
+  // ── tableau d'affichage (HTML par-dessus la 3D) ───────────────────────────────────────────────────────────
+  let boite3d = null, tab = null, msgEl = null; const TRACE = [];
+  function message(t) {
+    if (!msgEl) return;
+    let txt = '';
+    if (R && t >= R.debut) txt = tr('g3_rejoue');
+    else if (E.dernier && t - E.dernier.t < 4) txt = tr('g3_point', E.noms[E.dernier.gagnant]);
+    else if (!E.dernier && !E.fini) txt = tr('g3_attente');
+    if (msgEl.textContent !== txt) { msgEl.textContent = txt; msgEl.hidden = !txt; }
+  }
+  function tableau() {
+    if (!tab) return;
+    const ns = Math.max(E.sets[0].length, E.sets[1].length, 1);
+    const ligne = i => `<div class="g3d-l ${i ? 'b' : 'a'}"><span class="g3d-srv">${E.srv === i && !E.fini ? '●' : ''}</span><span class="g3d-n">${esc(E.noms[i])}</span>${
+      Array.from({ length: ns }, (_, k) => `<span class="g3d-s${k === ns - 1 && !E.fini ? ' c' : ''}">${esc(String(E.sets[i][k] ?? ''))}</span>`).join('')}${E.fini ? '' : `<span class="g3d-p">${esc(String(E.pts[i] ?? ''))}</span>`}</div>`;
+    const html = ligne(0) + ligne(1);
+    if (tab.innerHTML !== html) tab.innerHTML = html;
+  }
+  function boucle(ms) {
+    raf = requestAnimationFrame(boucle);
+    if (!cv || !cv.isConnected || document.hidden || !visible) return;
+    if (ms - dernier < 30) return;
+    const dt = dernier ? Math.min(0.1, (ms - dernier) / 1000) : 0.03; dernier = ms;
+    taille(); dessiner(ms / 1000, dt);
+  }
+  function taille() {
+    const r = cv.getBoundingClientRect(), d = Math.min(2, window.devicePixelRatio || 1);
+    const w = Math.round(r.width * d), h = Math.round(r.height * d);
+    if (w && (cv.width !== w || cv.height !== h)) { cv.width = w; cv.height = h; }
+  }
+  let drag = null;
+  function creer() {
+    if (!initGL()) return false;
+    boite3d = document.createElement('div'); boite3d.className = 'g3d';
+    tab = document.createElement('div'); tab.className = 'g3d-tab';
+    msgEl = document.createElement('div'); msgEl.className = 'g3d-msg'; msgEl.hidden = true;
+    boite3d.append(cv, tab, msgEl);
+    cv.addEventListener('pointerdown', e => { drag = { x: e.clientX, y: e.clientY, yaw: cam.yaw, pitch: cam.pitch }; });
+    cv.addEventListener('pointermove', e => { if (!drag) return;
+      cam.yaw = drag.yaw - (e.clientX - drag.x) * 0.008; cam.pitch = cl(drag.pitch + (e.clientY - drag.y) * 0.006, 0.08, 1.4); });
+    const fin = () => { drag = null; }; cv.addEventListener('pointerup', fin); cv.addEventListener('pointercancel', fin); cv.addEventListener('pointerleave', fin);
+    cv.addEventListener('wheel', e => { e.preventDefault(); cam.dist = cl(cam.dist * (e.deltaY > 0 ? 1.08 : 0.93), 12, 55); }, { passive: false });
+    cv.addEventListener('webglcontextlost', e => { e.preventDefault(); });
+    try { new IntersectionObserver(es => { visible = es.some(x => x.isIntersecting); }).observe(boite3d); } catch (e) { visible = true; }
+    raf = requestAnimationFrame(boucle);
+    return true;
+  }
+  function maj(m, r, fini) {
+    const x = r.x, H = r.inverse ? x.score_away : x.score_home, A = r.inverse ? x.score_home : x.score_away;
+    E.noms = [court(m.home), court(m.away)]; E.sets = [H.sets || [], A.sets || []]; E.pts = [H.point ?? '0', A.point ?? '0'];
+    E.srv = x.serveur ? (((x.serveur === 'home') !== r.inverse) ? 0 : 1) : null; E.fini = !!fini; E.surface = SURFACES[m.surface] ? m.surface : 'Hard';
+    const i = E.sets[0].length - 1, tb = +E.sets[0][i] === 6 && +E.sets[1][i] === 6;
+    const v = s => { const u = String(s ?? '0').toUpperCase(); return tb ? (parseInt(u, 10) || 0) : ({ '0': 0, '15': 1, '30': 2, '40': 3, 'A': 4, 'AD': 4 })[u] ?? 0; };
+    E.droite = (v(E.pts[0]) + v(E.pts[1])) % 2 === 0;
+    E.profils = [profilDe(m, 0), profilDe(m, 1)];
+    const etat = etatDe(E.sets, E.pts, E.srv), id = m.uid || (m.home + m.away);
+    if (E.id !== id) { E.id = id; E.avant = null; E.dernier = null; FILE.length = 0; }
+    if (E.avant && !E.fini) {
+      const g = gagnantPoint(E.avant, etat);
+      if (g !== null) FILE.push({ gagnant: g, srv: E.avant.srv, droite: E.avant.droite });
+    }
+    E.avant = etat;
+    if (cv) cv.setAttribute('aria-label', `${E.noms[0]} ${E.sets[0].join(' ')} – ${E.sets[1].join(' ')} ${E.noms[1]}`);
+    tableau();
+  }
+  let essaye = false, ok = false;
+  return {
+    disponible() { if (!essaye) { essaye = true; try { ok = creer(); } catch (e) { ok = false; } } return ok; },
+    monter(hote, m, r, fini) {
+      if (!this.disponible()) return false;
+      maj(m, r, fini);
+      if (boite3d.parentNode !== hote) hote.appendChild(boite3d);
+      return true;
+    },
+    vue(nom) { const v = VUES[nom] || VUES.tv; delete cam.focus; cam.fx = cam.fz = undefined; Object.assign(cam, v); },
+    // tests : image à l'instant t, sans la boucle
+    _image(t) { if (!this.disponible()) return false; taille();
+      for (let u = (this._t || 0); u < t; u += 0.03) avancer(u, 0.03);
+      this._t = t; dessiner(t, 0); return true; },
+    _simuler(t) {
+      for (let u = (this._t || 0); u < t; u += 0.03) avancer(u, 0.03);
+      this._t = t; return { R, J, balle: posBalle(t), enMain: balleEnMain(t), poses: [poseDe(0, t), poseDe(1, t)], dernier: E.dernier, file: FILE.length }; },
+    _point(gagnant) { FILE.push({ gagnant, srv: E.srv, droite: E.droite }); },
+    _gagnant: gagnantPoint, _etatDe: etatDe, _tirage: tirage,
+    _reinit() { R = null; FILE.length = 0; E.dernier = null; this._t = 0; J[0].x = 0; J[0].z = -HL - 0.8; J[1].x = 0; J[1].z = HL + 0.8; J[0].vx = J[0].vz = J[1].vx = J[1].vz = 0; },
+    _cam: cam, _maj: maj, _etat: E, _J: J, _R: () => R, _poses: { poseAttente, poseCourse, poseCoupDroit, poseRevers, poseService },
+  };
+})();
 // Vue du direct choisie par le visiteur (3D par défaut), gardée dans ce navigateur.
 function vue3dLive(){ if (LIVE.vue3d === undefined) { try { LIVE.vue3d = localStorage.getItem('te_direct_vue') !== '2d'; } catch(e) { LIVE.vue3d = true; } } return LIVE.vue3d; }
 function terrain3dHtml(){
-  return `<div class="te3d"><div class="te3d-hote"></div><div class="te3d-bas"><span class="te3d-vues">${['tv','cote','haut'].map(v => `<button type="button" class="btn te3d-v" data-vue="${v}">${esc(t('t3_' + v))}</button>`).join('')}</span>
+  return `<div class="te3d"><div class="te3d-hote"></div><div class="te3d-bas"><span class="te3d-vues">${['tv','joueur','cote','haut'].map(v => `<button type="button" class="btn te3d-v" data-vue="${v}">${esc(t('t3_' + v))}</button>`).join('')}</span>
     <span class="te3d-note">${esc(t('t3_note'))}</span></div></div>`;
 }
 function terrainLive(m, r, fini){
@@ -4029,8 +4980,9 @@ function rendMatchLive(){
   const bt = el.querySelector('.lv-btn-tous');
   if (bt) bt.onclick = () => { LIVE.tousPoints = !LIVE.tousPoints; rendMatchLive(); };
   const h3 = el.querySelector('.te3d-hote');
-  if (h3 && !T3D.monter(h3, m, r, fini)) { LIVE.vue3d = false; rendMatchLive(); return; }   // pas de canvas : la 2D
-  el.querySelectorAll('.te3d-v').forEach(b => b.onclick = () => T3D.vue(b.dataset.vue));
+  // 13/11/2026 (paquet 259) : le moteur WebGL d'abord ; sans WebGL 2, la 3D simple ; sans canvas, la 2D
+  if (h3 && !G3D.monter(h3, m, r, fini) && !T3D.monter(h3, m, r, fini)) { LIVE.vue3d = false; rendMatchLive(); return; }
+  el.querySelectorAll('.te3d-v').forEach(b => b.onclick = () => { G3D.vue(b.dataset.vue); T3D.vue(b.dataset.vue); });
   const b3 = el.querySelector('.te3d-bascule');
   if (b3) b3.onclick = () => { LIVE.vue3d = !vue3dLive(); try { localStorage.setItem('te_direct_vue', LIVE.vue3d ? '3d' : '2d'); } catch(e) {} rendMatchLive(); };
   const bf = el.querySelector('.lv-btn-fil');
