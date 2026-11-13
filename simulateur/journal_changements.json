@@ -1179,6 +1179,13 @@
    "paquet": 265,
    "quoi": "LE DIRECT EN 3D BOUGE COMME DE VRAIS JOUEURS (paquet 265, demande de Lucas : mouvements, déplacements, tenue de la raquette, stade, public, lumières, en restant gratuit). Les déplacements viennent de mouvements captés (« Universal Animation Library » de Quaternius, licence CC0) : pas tranquilles entre les points, footing et sprint pendant l'échange, le joueur se tourne vers sa course puis revient face au filet, les pas sont calés sur la vitesse (pas de glissade). Les coups restent les mouvements du site, la raquette est tenue dans la paume pendant la course. Le public est tourné vers le court, suit la balle de la tête et se lève bras en l'air après les beaux points ; des faisceaux de lumière tombent des projecteurs ; sur terre battue, les rebonds laissent leur marque et soulèvent un peu de poussière (aussi sur gazon). Tout reste dans le fichier du site (1,2 Mo), rien n'est chargé ailleurs. Descriptif : le % ne change pas.",
    "garde_fou": "Retrait : relancer scripts/modeles_joueurs.py sans le troisième argument (fichier sans mouvements captés : les poses du site reviennent)."
+  },
+  {
+   "date": "2026-11-13",
+   "statut": "production",
+   "paquet": 266,
+   "quoi": "LE DIRECT EN 3D GAGNE DES COUPS RETRAVAILLÉS, UNE RÉALISATION TÉLÉ ET DU SON (paquet 266, demande de Lucas : « l'ensemble », en restant gratuit). Coups réglés à la main comme en animation, faute de mouvements de tennis captés libres de droits : coup droit lifté en appuis ouverts (épaules tournées, raquette qui tombe sous la balle, frappe devant, accompagnement par-dessus l'épaule), revers à deux mains, revers slicé, volées, service (lancer, armé, frappe bras tendu, retombée dans le court) ; pieds posés au sol et poids qui passe d'une jambe à l'autre. Après chaque point : geste du vainqueur (poing serré, « allez ! » sur les beaux points) et du perdant (tête basse, mains sur la tête après une faute) ; en vue TV, gros plan sur le vainqueur puis, une fois sur deux, plan sur le public, l'arbitre ou le perdant, avant le ralenti. L'arbitre de chaise utilise le même modèle que les joueurs. Son fabriqué par le code, coupé par défaut (bouton 🔈) : frappes, rebonds, filet, rumeur et applaudissements, « Out ! », « Fault ! » et le score annoncé par la voix de synthèse de l'appareil. Rien n'est chargé ailleurs. Descriptif : le % ne change pas.",
+   "garde_fou": "Retrait : remettre algo/index.html du paquet 265 (coups, gestes, plans et son sont tous dans le bloc G3D)."
   }
  ]
 }

@@ -271,6 +271,80 @@ console.log(JSON.stringify(out.map(x => [x.sexe, x.cheveux.every(Number.isFinite
         self.assertTrue(o['res']['post'])                                           # paquet 261 : anti-crénelage et halo
         self.assertIn('Un', o['res']['tableau'])
 
+    def test_coups_regles_a_la_main(self):
+        # paquet 266 : coups par poses clés ; frappe devant le corps, raquette du bon côté, pieds au sol, poids transféré
+        S = json.loads(subprocess.run(['node', '-e', r"""
+const src = require('fs').readFileSync(process.argv[1], 'utf-8');
+const a = src.indexOf('const G3D = (() => {'), b = src.indexOf('// Vue du direct choisie par le visiteur');
+global.court = n => n; global.esc = x => x; eval(src.slice(a, b).replace('const G3D =', 'global.G3D ='));
+const P = G3D._poses, pt = (m, v) => [0, 1, 2].map(r => m[r] * v[0] + m[4 + r] * v[1] + m[8 + r] * v[2] + m[12 + r]);
+const info = p => { const S = G3D._squelette(p), M = S.M, r0 = pt(S.raquette, [0, 0, 0]), r1 = pt(S.raquette, [0, 1, 0]);
+  return { main: [M[5][12], M[5][13], M[5][14]], epaule: [M[3][12], M[3][13], M[3][14]], pieds: [M[11][13], M[14][13]],
+           raq: [r1[0] - r0[0], r1[1] - r0[1], r1[2] - r0[2]], finie: Object.values(p).every(v => (Array.isArray(v) ? v : [v]).every(Number.isFinite)) }; };
+const o = {};
+for (const [nom, f] of [['cd', P.poseCoupDroit], ['rv', P.poseRevers], ['sl', P.poseSlice], ['vd', u => P.poseVolee(u, true)], ['vr', u => P.poseVolee(u, false)]])
+  o[nom] = { frappe: info(f(0.55)), fin: info(f(nom === 'sl' ? 0.75 : 0.82)), arme: info(f(0.3)), serie: [0.3, 0.4, 0.5, 0.6, 0.7].map(u => info(f(u))) };
+o.sv = { frappe: info(P.poseService(0.625)), trophee: info(P.poseService(0.5)) };
+console.log(JSON.stringify(o));
+""", str(RACINE / 'algo' / 'index.html')], capture_output=True, text=True, check=True).stdout)
+        for nom in ('cd', 'rv', 'sl', 'vd', 'vr'):
+            c = S[nom]
+            self.assertGreater(c['frappe']['main'][2], c['frappe']['epaule'][2])          # la balle se frappe devant
+            for x in c['serie']:
+                self.assertTrue(x['finie'])
+                bas, haut = min(x['pieds']), max(x['pieds'])
+                self.assertLess(abs(bas + 0.056), 0.03)                                     # un pied d'appui au sol
+                self.assertLess(haut + 0.056, 0.1)                                          # l'autre au plus sur la pointe
+        self.assertLess(S['cd']['frappe']['raq'][0], -0.5)                                  # coup droit : raquette à droite
+        self.assertGreater(S['rv']['frappe']['raq'][0], 0.5)                                # revers : à gauche
+        self.assertGreater(S['cd']['fin']['main'][0], 0)                                    # accompagnement par-dessus l'épaule gauche
+        self.assertLess(S['rv']['fin']['main'][0], 0)
+        self.assertLess(S['cd']['arme']['main'][2], 0)                                      # préparation : raquette en arrière
+        self.assertGreater(S['sv']['frappe']['main'][1], 1.9)                               # service : frappe bras tendu, en haut
+        self.assertGreater(S['sv']['trophee']['raq'][1], 0.5)                               # « trophée » : raquette dressée
+        self.assertIn('function hermite', BLOC)
+        self.assertIn('function jambe(', BLOC)
+
+    def test_gestes_et_realisation(self):
+        # paquet 266 : après le point, geste du vainqueur et du perdant ; gros plan sur le vainqueur, plans de coupe,
+        # puis ralenti ; seulement dans la vue « TV »
+        S = json.loads(subprocess.run(['node', '-e', r"""
+const src = require('fs').readFileSync(process.argv[1], 'utf-8');
+const a = src.indexOf('const G3D = (() => {'), b = src.indexOf('// Vue du direct choisie par le visiteur');
+global.court = n => n; global.esc = x => x; eval(src.slice(a, b).replace('const G3D =', 'global.G3D ='));
+const m = { uid: 'u', home: 'Jannik Sinner', away: 'Carlos Alcaraz', surface: 'Hard' };
+const r = (p, q) => ({ inverse: false, x: { serveur: 'home', score_home: { sets: [6, 3], point: p }, score_away: { sets: [4, 2], point: q } } });
+const o = { cas: [], gestes: {} };
+for (let k = 0; k < 12; k++) {
+  G3D._reinit(); G3D._maj(m, r('30', '15'), false); G3D._maj(m, r('40', '15'), false);
+  let plans = null, finT = null;
+  for (let t = 0; t < 40 && !plans; t += 0.05) { const e = G3D._etape(t, 0.05); if (!e.R && G3D._plans.length) plans = G3D._plans.map(p => ({ type: p.type, i: p.i, d: p.t1 - p.t0 })); }
+  o.cas.push({ plans, gestes: G3D._gestes.map(g => g && g.nom) });
+}
+for (const n of ['joie', 'poing', 'depit', 'rage']) o.gestes[n] = [0, 0.2, 0.4, 0.6, 0.8, 1].every(u => Object.values(G3D._poseGeste(n, u)).every(v => (Array.isArray(v) ? v : [v]).every(Number.isFinite)));
+const E = G3D._etat; E.noms = ['Jannik Sinner', 'Carlos Alcaraz']; E.srv = 0; E.dernier = null;
+o.score = [['30', '15'], ['40', '40'], ['A', '40'], ['15', '30'], ['15', '15'], ['5', '3']].map(([x, y]) => { E.pts = [x, y]; return G3D._scoreParle(); });
+E.pts = ['0', '0']; E.dernier = { gagnant: 1 }; o.score.push(G3D._scoreParle());
+o.son = G3D._son.actif;
+console.log(JSON.stringify(o));
+""", str(RACINE / 'algo' / 'index.html')], capture_output=True, text=True, check=True).stdout)
+        for c in S['cas']:
+            self.assertTrue(c['plans'])
+            self.assertEqual(c['plans'][0]['type'], 'gros')
+            self.assertEqual(c['plans'][0]['i'], 0)                                         # gros plan sur le vrai vainqueur
+            self.assertLessEqual(sum(p['d'] for p in c['plans']), 3.2)                      # puis le ralenti, sans traîner
+            self.assertIn(c['gestes'][0], (None, 'joie', 'poing'))
+            self.assertIn(c['gestes'][1], (None, 'depit', 'rage'))
+        self.assertTrue(all(S['gestes'].values()))
+        self.assertEqual(S['score'], ['thirty fifteen', 'Deuce', 'Advantage, Sinner', 'fifteen thirty', 'fifteen all', '', 'Game, Alcaraz'])
+        self.assertFalse(S['son'])                                                          # son coupé par défaut
+        self.assertIn('cam.real && !cam.vise && !RAL.actif', BLOC)                         # la réalisation : vue TV seulement
+        self.assertIn("tv: { yaw: 0, pitch: 0.47, dist: 33, fov: 0.62, suivre: true, real: true }", BLOC)
+        for v in ('cote', 'haut', 'joueur'):
+            self.assertRegex(BLOC, v + r': \{[^}]*real: false')
+        self.assertIn('createBufferSource', BLOC)                                           # son fabriqué par le code
+        self.assertIn("g3_son_on:", HTML)
+
 
 if __name__ == '__main__':
     unittest.main()
