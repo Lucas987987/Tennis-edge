@@ -3550,7 +3550,8 @@ const T3D = (() => {
 // SERVEUR et le CÔTÉ DE SERVICE sont réels (/live, 3 s). Paquet 260 : chaque point rejoué est le VRAI point (vrai
 // vainqueur, vrai serveur, vrai côté) ; seules les trajectoires sont reconstituées, et l'écran le dit. Paquet 261 :
 // anti-crénelage, halo des lumières, vignettage, bandeau LED, écrans géants avec le vrai score, public redessiné ;
-// qualité « basse » automatique si l'appareil peine (moins de 22 images par seconde). Sans WebGL 2, la vue 3D simple (T3D) prend le relais.
+// qualité « basse » automatique si l'appareil peine (moins de 22 images par seconde). Paquet 262 : joueurs d'un
+// seul tenant pliés aux articulations (habillage par os), visage, cheveux, tenue, raquette ; mouvements lissés. Sans WebGL 2, la vue 3D simple (T3D) prend le relais.
 // Descriptif : le % ne change pas.
 const G3D = (() => {
   'use strict';
@@ -3668,14 +3669,17 @@ const G3D = (() => {
   // ── WebGL ──────────────────────────────────────────────────────────────────────────────────────────────────
   const VS = `#version 300 es
   layout(location=0) in vec3 aP; layout(location=1) in vec3 aN; layout(location=2) in vec3 aC; layout(location=3) in vec2 aU;
-  layout(location=4) in vec4 aI; layout(location=5) in vec3 aIC;
+  layout(location=4) in vec4 aI; layout(location=5) in vec3 aIC; layout(location=6) in vec2 aB; layout(location=7) in vec2 aWt;
+  uniform mat4 uOs[16]; uniform int uPeau;
   uniform mat4 uM, uVP, uLVP; uniform int uInst; uniform float uT, uClap; uniform vec2 uDecal;
   out vec3 vW, vN, vC; out vec2 vU; out vec4 vL;
   void main(){
     vec3 p = aP; vec3 c = aC;
     if (uInst == 1) { p = p * aI.w + aI.xyz + vec3(0.0, max(0.0, sin(uT * (3.0 + uClap * 9.0) + aI.x * 1.7 + aI.z)) * (0.05 + uClap * 0.16), 0.0); c = aC * aIC; }
+    vec3 nn = aN;
+    if (uPeau == 1) { mat4 S = uOs[int(aB.x)] * aWt.x + uOs[int(aB.y)] * aWt.y; p = (S * vec4(p, 1.0)).xyz; nn = mat3(S) * aN; }
     vec4 w = uM * vec4(p, 1.0);
-    vW = w.xyz; vN = normalize(mat3(uM) * aN); vC = c; vU = aU + uDecal; vL = uLVP * w;
+    vW = w.xyz; vN = normalize(mat3(uM) * nn); vC = c; vU = aU + uDecal; vL = uLVP * w;
     gl_Position = uVP * w;
   }`;
   const FS = `#version 300 es
@@ -3710,8 +3714,11 @@ const G3D = (() => {
     oE = vec4(clamp(base * uEmis * 0.9, 0.0, 1.0) * a, a);
   }`;
   const VS_OMBRE = `#version 300 es
-  layout(location=0) in vec3 aP; layout(location=4) in vec4 aI; uniform mat4 uM, uLVP; uniform int uInst;
-  void main(){ vec3 p = aP; if (uInst == 1) p = p * aI.w + aI.xyz; gl_Position = uLVP * uM * vec4(p, 1.0); }`;
+  layout(location=0) in vec3 aP; layout(location=4) in vec4 aI; layout(location=6) in vec2 aB; layout(location=7) in vec2 aWt;
+  uniform mat4 uM, uLVP; uniform int uInst, uPeau; uniform mat4 uOs[16];
+  void main(){ vec3 p = aP; if (uInst == 1) p = p * aI.w + aI.xyz;
+    if (uPeau == 1) { mat4 S = uOs[int(aB.x)] * aWt.x + uOs[int(aB.y)] * aWt.y; p = (S * vec4(p, 1.0)).xyz; }
+    gl_Position = uLVP * uM * vec4(p, 1.0); }`;
   const FS_OMBRE = `#version 300 es
   precision mediump float; out vec4 o; void main(){ o = vec4(1.0); }`;
   // post-traitement : halo (bloom) des lumières, vignettage, étalonnage
@@ -3751,6 +3758,7 @@ const G3D = (() => {
     const buf = (loc, data, n) => { const b = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, b);
       gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.STATIC_DRAW); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, n, gl.FLOAT, false, 0, 0); };
     buf(0, g.p, 3); buf(1, g.n, 3); buf(2, g.c, 3); buf(3, g.u, 2);
+    if (g.b) { buf(6, g.b, 2); buf(7, g.w, 2); } else { gl.vertexAttrib2f(6, 0, 0); gl.vertexAttrib2f(7, 1, 0); }
     let ni = 0;
     if (inst) { // inst : [x, y, z, échelle] + couleur
       const b = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, b); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(inst.pos), gl.STATIC_DRAW);
@@ -3995,75 +4003,149 @@ const G3D = (() => {
     surfaceFaite = surface;
   }
 
-  // ── les joueurs : squelette et parties ─────────────────────────────────────────────────────────────────────
-  // Repère du joueur : y vers le haut, +z devant lui, +x à sa GAUCHE (main droite côté −x). Les angles des
-  // articulations sont en radians : flexion vers l'avant = rotation autour de x négative pour les bras.
+  // ── LES JOUEURS (paquet 262) : un corps d'un seul tenant qui se plie aux articulations ─────────────────────
+  // Chaque partie (bassin, torse, tête, bras, avant-bras, mains, cuisses, jambes, pieds) suit son « os ». Près d'une
+  // articulation, la peau suit à moitié l'os parent, à moitié l'enfant : coudes, genoux, épaules et hanches se plient
+  // sans couture (habillage par os, calculé par la carte graphique). Visage, cheveux, tenue et raquette détaillés.
+  // Os : 0 bassin, 1 torse, 2 tête, 3-5 bras droit (épaule, coude, main), 6-8 bras gauche, 9-11 jambe droite
+  // (hanche, genou, pied), 12-14 jambe gauche. Repère du joueur : +z devant lui, +x à sa GAUCHE.
+  const NOS = 15;
+  function os(j, pose) {
+    const R = (a) => chaine(M4.ry(a[1]), M4.rx(a[0]), M4.rz(a[2]));
+    const M = new Array(NOS);
+    const racine = chaine(M4.tr(j.x, pose.saut || 0, j.z), M4.ry(j.cap));
+    M[0] = chaine(racine, M4.tr(0, 0.98 - pose.accroupi * 1.4, 0), R(pose.bassin));
+    M[1] = chaine(M[0], M4.tr(0, 0.08, 0), R(pose.tronc));
+    M[2] = chaine(M[1], M4.tr(0, 0.73, 0.01), R(pose.tete));
+    let raquette = null;
+    [[-1, pose.epD, pose.coudeD, pose.poignetD, 3], [1, pose.epG, pose.coudeG, null, 6]].forEach(([s, ep, coude, poignet, b]) => {
+      M[b] = chaine(M[1], M4.tr(s * 0.215, 0.5, 0), M4.ry(ep[1] * s), M4.rx(ep[0]), M4.rz(-ep[2] * s));
+      M[b + 1] = chaine(M[b], M4.tr(0, -0.29, 0), M4.rx(-coude));
+      M[b + 2] = chaine(M[b + 1], M4.tr(0, -0.27, 0));
+      if (poignet) raquette = chaine(M[b + 2], M4.rx(-Math.PI / 2 + poignet[0]), M4.rz(poignet[2]), M4.tr(0, -0.06, 0));
+    });
+    [[-1, pose.hancheD, pose.genouD, pose.piedD, 9], [1, pose.hancheG, pose.genouG, pose.piedG, 12]].forEach(([s, ha, ge, pi, b]) => {
+      M[b] = chaine(M[0], M4.tr(s * 0.1, -0.06, 0), M4.rx(ha[0]), M4.rz(-ha[2]));     // jambe droite vers −x, gauche vers +x (écartées)
+      M[b + 1] = chaine(M[b], M4.tr(0, -0.44, 0), M4.rx(ge));
+      M[b + 2] = chaine(M[b + 1], M4.tr(0, -0.46, 0), M4.rx(-ha[0] - ge + pi));     // le pied reste à plat
+    });
+    return { M, raquette };
+  }
+  function inverseRigide(m) {                                                          // rotation + translation
+    const o = M4.id();
+    for (let r = 0; r < 3; r++) for (let c = 0; c < 3; c++) o[c * 4 + r] = m[r * 4 + c];
+    for (let r = 0; r < 3; r++) o[12 + r] = -(o[r] * m[12] + o[4 + r] * m[13] + o[8 + r] * m[14]);
+    return o;
+  }
+  // bandes de couleur selon l'angle autour de l'axe (côtés du maillot, liseré du short)
+  function teinte(g, f) { for (let k = 0; k < g.p.length / 3; k++) { const c = f(g.p[k * 3], g.p[k * 3 + 1], g.p[k * 3 + 2]); if (c) g.c.splice(k * 3, 3, ...c); } return g; }
   function partiesJoueur(maillot, short, peau, chaussures, cheveux, casquette) {
-    const P = {};
-    const mk = g => maillage(g);
-    P.bassin = mk(new Geo().ajoute(boite(0.36, 0.22, 0.24, short), M4.tr(0, -0.02, 0)));
-    const torse = new Geo();
-    torse.ajoute(tour([[0.0, -0.02], [0.155, 0.0], [0.15, 0.12], [0.165, 0.26], [0.19, 0.38], [0.2, 0.46], [0.17, 0.53], [0.09, 0.58], [0.0, 0.59]], 18, maillot, 0.68), M4.id());
-    torse.ajoute(tour([[0.0, 0.5], [0.05, 0.52], [0.048, 0.66], [0.0, 0.67]], 10, peau), M4.id());
-    torse.ajoute(tour([[0.075, 0.535], [0.07, 0.565], [0.062, 0.575]], 14, hex('#f4f4f8'), 0.8), M4.id());
-    for (const s of [-1, 1]) torse.ajoute(sphere(0.07, 10, maillot), M4.tr(s * 0.205, 0.49, 0));
-    P.torse = mk(torse);
-    const tete = new Geo();
-    tete.ajoute(sphere(0.115, 14, peau, 1.12), M4.id());
-    tete.ajoute(sphere(0.12, 12, cheveux, 1.0), M4.mul(M4.tr(0, 0.035, -0.012), M4.sc(1, 0.85, 1.03)));
-    if (casquette) {
-      tete.ajoute(sphere(0.126, 14, maillot, 0.62), M4.tr(0, 0.04, -0.005));
-      tete.ajoute(boite(0.17, 0.012, 0.11, maillot), chaine(M4.tr(0, 0.035, 0.13), M4.rx(-0.12)));
-    } else tete.ajoute(cylindre(0.123, 0.123, 0.035, 16, hex('#f4f4f8'), false), M4.tr(0, 0.02, 0));
-    tete.ajoute(sphere(0.022, 6, peau, 1.3), M4.tr(0, -0.025, 0.112));
-    for (const s of [-1, 1]) tete.ajoute(sphere(0.025, 6, peau, 1.4), M4.tr(s * 0.112, -0.005, -0.005));
-    P.tete = mk(tete);
-    const profilBas = (pts, col, ez = 1) => { const g = tour(pts.map(([r, y]) => [r, -y]), 12, col, ez); return g; };
-    const brasG = profilBas([[0, -0.01], [0.05, 0], [0.058, 0.08], [0.052, 0.17], [0.043, 0.27], [0.04, 0.29], [0, 0.3]], peau, 0.9);
-    brasG.ajoute(sphere(0.052, 10, peau), M4.id());
-    P.bras = mk(brasG);
-    P.manche = mk(new Geo().ajoute(tour([[0.0, 0.01], [0.062, 0.0], [0.07, -0.06], [0.064, -0.13], [0.0, -0.131]], 12, maillot), M4.id()));
-    const ab = profilBas([[0, -0.01], [0.043, 0], [0.047, 0.07], [0.038, 0.18], [0.031, 0.25], [0, 0.27]], peau, 0.85);
-    ab.ajoute(sphere(0.041, 10, peau), M4.id());
-    ab.ajoute(cylindre(0.036, 0.036, 0.06, 10, hex('#f4f4f8')), M4.tr(0, -0.24, 0));          // poignet éponge
-    P.avantBras = mk(ab);
-    P.main = mk(sphere(0.045, 8, peau, 1.2));
-    const cu = profilBas([[0, -0.01], [0.085, 0], [0.09, 0.1], [0.08, 0.25], [0.062, 0.4], [0.055, 0.44], [0, 0.45]], peau, 0.95);
-    cu.ajoute(sphere(0.056, 10, peau), M4.tr(0, -0.44, 0));
-    P.cuisse = mk(cu);
-    P.cuisseShort = mk(new Geo().ajoute(cylindre(0.1, 0.092, 0.2, 12, short), M4.tr(0, -0.2, 0)));
-    const ja = profilBas([[0, -0.01], [0.052, 0], [0.063, 0.1], [0.058, 0.17], [0.042, 0.3], [0.036, 0.38], [0, 0.39]], peau, 0.95);
-    ja.ajoute(tour([[0.04, -0.3], [0.042, -0.3], [0.04, -0.44], [0.0, -0.45]], 12, hex('#f4f4f8')), M4.id());   // chaussette
-    P.jambe = mk(ja);
-    const pied = new Geo();
-    pied.ajoute(sphere(0.07, 12, chaussures, 0.6), chaine(M4.tr(0, -0.035, 0.07), M4.sc(0.8, 1, 2.0)));
-    pied.ajoute(boite(0.12, 0.022, 0.29, hex('#3a3a46')), M4.tr(0, -0.075, 0.07));          // semelle
-    pied.ajoute(sphere(0.03, 6, maillot), M4.tr(0.05, -0.02, 0.02));                          // virgule de couleur
-    P.pied = mk(pied);
-    // raquette : manche, cadre ovale, cordage transparent à part
-    const rq = new Geo(), cadre = hex('#202024');
-    rq.ajoute(cylindre(0.016, 0.016, 0.3, 8, hex('#f4f4f8')), M4.id());
-    for (let k = 0; k < 28; k++) {
-      const a0 = k / 28 * Math.PI * 2, a1 = (k + 1) / 28 * Math.PI * 2, ex = 0.125, ey = 0.16;
-      const p0 = [Math.cos(a0) * ex, 0.3 + 0.16 + Math.sin(a0) * ey], p1 = [Math.cos(a1) * ex, 0.3 + 0.16 + Math.sin(a1) * ey];
-      const lg = Math.hypot(p1[0] - p0[0], p1[1] - p0[1]), ang = Math.atan2(p1[1] - p0[1], p1[0] - p0[0]);
-      rq.ajoute(boite(lg + 0.004, 0.018, 0.022, cadre), chaine(M4.tr((p0[0] + p1[0]) / 2, (p0[1] + p1[1]) / 2, 0), M4.rz(ang)));
+    const fonce = c => c.map(v => v * 0.55), clair = c => c.map(v => Math.min(1, v * 0.35 + 0.65));
+    const BL = hex('#f4f4f8'), NOIR = hex('#17171f');
+    const parts = [];                                                                   // [géométrie locale, os, parent, zone, sens]
+    const ajoute = (g, b, parent = -1, zone = 0, sens = -1) => parts.push({ g, b, parent, zone, sens });
+    const bas = (pts, col, ez = 1, seg = 14) => tour(pts.map(([r, y]) => [r, -y]), seg, col, ez);
+    // bassin et short (ample, liseré clair sur les côtés)
+    const sh = tour([[0.0, 0.1], [0.16, 0.09], [0.185, 0.0], [0.195, -0.08], [0.19, -0.1], [0, -0.1]], 18, short, 0.72);
+    ajoute(teinte(sh, (x, y, z) => Math.abs(z) < 0.03 && Math.abs(x) > 0.15 ? clair(short) : null), 0);
+    // torse : poitrine, dos, épaules en pente ; maillot à bandes latérales ; col
+    const to = tour([[0.0, -0.06], [0.17, -0.05], [0.168, 0.1], [0.172, 0.24], [0.195, 0.36], [0.205, 0.44], [0.19, 0.5], [0.14, 0.555], [0.07, 0.58], [0.0, 0.585]], 22, maillot, 0.66);
+    ajoute(teinte(to, (x, y, z) => Math.abs(z) < 0.035 && y > 0.0 && y < 0.45 ? fonce(maillot) : (y < -0.035 ? fonce(maillot) : null)), 1, 0, 0.1, 1);
+    const cou = tour([[0.0, 0.5], [0.052, 0.51], [0.05, 0.6], [0.046, 0.68], [0.0, 0.69]], 12, peau);
+    cou.ajoute(tour([[0.074, 0.535], [0.068, 0.57], [0.06, 0.58]], 16, BL, 0.8), M4.id());
+    for (const s of [-1, 1]) cou.ajoute(sphere(0.06, 12, maillot), M4.mul(M4.tr(s * 0.19, 0.47, 0), M4.sc(1, 0.85, 0.9)));   // deltoïdes
+    ajoute(cou, 1);
+    // tête : crâne, mâchoire, visage, cheveux, bandeau ou casquette
+    const te = new Geo();
+    te.ajoute(sphere(0.1, 18, peau), M4.mul(M4.tr(0, 0.0, -0.005), M4.sc(1.0, 1.18, 1.08)));
+    te.ajoute(sphere(0.068, 14, peau), M4.mul(M4.tr(0, -0.055, 0.028), M4.sc(1.0, 0.85, 1.0)));                    // mâchoire
+    te.ajoute(sphere(0.02, 8, peau), M4.mul(M4.tr(0, -0.01, 0.112), M4.sc(0.8, 1.3, 1.0)));                          // nez
+    for (const s of [-1, 1]) {
+      te.ajoute(sphere(0.012, 8, hex('#ece6dc')), M4.mul(M4.tr(s * 0.035, 0.02, 0.097), M4.sc(1.25, 0.8, 0.6)));   // yeux
+      te.ajoute(sphere(0.0075, 6, hex('#2a1d14')), M4.tr(s * 0.034, 0.017, 0.104));
+      te.ajoute(boite(0.032, 0.006, 0.008, fonce(cheveux)), chaine(M4.tr(s * 0.036, 0.04, 0.101), M4.rz(s * 0.06))); // sourcils
+      te.ajoute(sphere(0.026, 8, peau, 1.5), M4.mul(M4.tr(s * 0.103, 0.0, -0.005), M4.sc(0.45, 1, 0.8)));          // oreilles
     }
-    P.raquette = mk(rq);
+    te.ajoute(boite(0.028, 0.005, 0.006, hex('#a0605a')), M4.tr(0, -0.05, 0.096));                                  // bouche
+    te.ajoute(sphere(0.108, 16, cheveux), M4.mul(M4.tr(0, 0.035, -0.02), M4.sc(1.02, 1.0, 1.06)));                  // cheveux
+    if (casquette) {
+      te.ajoute(sphere(0.112, 16, maillot), M4.mul(M4.tr(0, 0.05, -0.01), M4.sc(1.0, 0.72, 1.06)));
+      te.ajoute(tour([[0.0, 0.0], [0.08, 0.0], [0.08, 0.008], [0, 0.008]], 16, maillot, 0.7), chaine(M4.tr(0, 0.045, 0.11), M4.rx(0.18)));   // visière
+    } else te.ajoute(tour([[0.111, 0.03], [0.113, 0.06], [0.108, 0.07]], 20, BL, 1.08), M4.tr(0, 0, -0.005));        // bandeau
+    { const t2 = new Geo(); t2.ajoute(te, M4.sc(0.92, 0.92, 0.92)); ajoute(t2, 2); }                                // tête un peu plus petite
+    // bras : épaule (manche), biceps, avant-bras, poignet éponge, main fermée sur le manche
+    for (const [b, s] of [[3, -1], [6, 1]]) {
+      const br = bas([[0, -0.03], [0.052, -0.02], [0.058, 0.06], [0.054, 0.15], [0.046, 0.25], [0.042, 0.29], [0, 0.3]], peau, 0.92);
+      br.ajoute(bas([[0.0, -0.04], [0.068, -0.03], [0.072, 0.04], [0.066, 0.12], [0.0, 0.121]], maillot, 0.95), M4.id());
+      ajoute(br, b, 1, 0.07);
+      const ab = bas([[0, -0.03], [0.043, -0.02], [0.048, 0.06], [0.04, 0.17], [0.032, 0.25], [0, 0.27]], peau, 0.85);
+      ab.ajoute(tour([[0.038, -0.2], [0.039, -0.25], [0.0, -0.251]], 12, BL), M4.id());
+      ajoute(ab, b + 1, b, 0.05);
+      const ma = new Geo();
+      ma.ajoute(sphere(0.042, 10, peau), M4.mul(M4.tr(0, -0.05, 0.005), M4.sc(0.85, 1.25, 1.0)));
+      ma.ajoute(sphere(0.018, 6, peau), M4.mul(M4.tr(s * -0.03, -0.035, 0.03), M4.sc(1, 1.6, 1)));                   // pouce
+      ajoute(ma, b + 2, b + 1, 0.03);
+    }
+    // jambes : cuisse (bas du short), genou, mollet, chaussette, chaussure
+    for (const [b, s] of [[9, -1], [12, 1]]) {
+      const cu = bas([[0, -0.04], [0.088, -0.03], [0.092, 0.1], [0.08, 0.26], [0.062, 0.4], [0.056, 0.44], [0, 0.45]], peau, 0.95);
+      const jsh = bas([[0.0, -0.06], [0.1, -0.05], [0.106, 0.1], [0.11, 0.2], [0.0, 0.201]], short, 1.0);
+      cu.ajoute(teinte(jsh, (x, y, z) => x * s > 0.085 ? clair(short) : null), M4.id());
+      ajoute(cu, b, 0, 0.09);
+      const ja = bas([[0, -0.03], [0.054, -0.02], [0.064, 0.1], [0.06, 0.17], [0.043, 0.3], [0.037, 0.38], [0, 0.4]], peau, 0.95);
+      ja.ajoute(tour([[0.0, -0.3], [0.043, -0.3], [0.041, -0.46], [0.0, -0.461]], 14, BL), M4.id());
+      ajoute(ja, b + 1, b, 0.06);
+      const pi = new Geo();
+      pi.ajoute(sphere(0.06, 14, chaussures), M4.mul(M4.tr(0, -0.035, 0.065), M4.sc(0.9, 0.75, 2.05)));
+      pi.ajoute(sphere(0.064, 12, chaussures), M4.mul(M4.tr(0, -0.02, -0.01), M4.sc(0.85, 1.0, 1.0)));
+      pi.ajoute(boite(0.11, 0.025, 0.29, hex('#3b3b48')), M4.tr(0, -0.075, 0.06));                                    // semelle
+      pi.ajoute(boite(0.008, 0.03, 0.12, maillot), M4.tr(s * -0.054, -0.045, 0.05));                                   // bande de couleur
+      ajoute(pi, b + 2, b + 1, 0.03);
+    }
+    // assemblage dans la pose de repos, poids des os près des articulations
+    const repos = os({ x: 0, z: 0, cap: 0 }, POSE0()).M;
+    const corps = new Geo(); corps.b = []; corps.w = [];
+    for (const { g, b, parent, zone, sens } of parts) {
+      const base = corps.p.length / 3;
+      corps.ajoute(g, repos[b]);
+      for (let k = 0; k < g.p.length / 3; k++) {
+        let wp = 0;
+        if (parent >= 0 && zone > 0) { const d = sens * g.p[k * 3 + 1]; wp = cl(0.5 - 0.5 * d / zone, 0, 1); }
+        corps.b.push(b, parent >= 0 ? parent : b); corps.w.push(1 - wp, wp);
+      }
+    }
+    const P = { corps: maillage(corps), inv: repos.map(inverseRigide) };
+    // raquette : manche avec grip et talon, cœur en V, cadre effilé, cordage à part (transparent)
+    const rq = new Geo(), cadre = hex('#1f2024'), deco = maillot;
+    rq.ajoute(cylindre(0.017, 0.016, 0.2, 8, NOIR), M4.tr(0, -0.02, 0));
+    rq.ajoute(cylindre(0.02, 0.02, 0.02, 8, cadre), M4.tr(0, -0.03, 0));
+    for (const s of [-1, 1]) {
+      const a = [s * 0.012, 0.18], c2 = [s * 0.1, 0.33];
+      const lg = Math.hypot(c2[0] - a[0], c2[1] - a[1]), ang = Math.atan2(c2[1] - a[1], c2[0] - a[0]);
+      rq.ajoute(boite(lg, 0.016, 0.02, cadre), chaine(M4.tr((a[0] + c2[0]) / 2, (a[1] + c2[1]) / 2, 0), M4.rz(ang)));
+    }
+    for (let k = 0; k < 36; k++) {
+      const a0 = k / 36 * Math.PI * 2, a1 = (k + 1) / 36 * Math.PI * 2, ex = 0.125, ey = 0.16;
+      const p0 = [Math.cos(a0) * ex, 0.46 + Math.sin(a0) * ey], p1 = [Math.cos(a1) * ex, 0.46 + Math.sin(a1) * ey];
+      const lg = Math.hypot(p1[0] - p0[0], p1[1] - p0[1]), ang = Math.atan2(p1[1] - p0[1], p1[0] - p0[0]);
+      const ep = 0.016 + 0.006 * Math.abs(Math.sin(a0)), col = (k % 9 === 2 || k % 9 === 3) ? deco : cadre;
+      rq.ajoute(boite(lg + 0.004, ep, 0.022, col), chaine(M4.tr((p0[0] + p1[0]) / 2, (p0[1] + p1[1]) / 2, 0), M4.rz(ang)));
+    }
+    P.raquette = maillage(rq);
     const cord = new Geo();
-    for (let k = 0; k < 20; k++) {
-      const a0 = k / 20 * Math.PI * 2, a1 = (k + 1) / 20 * Math.PI * 2, b = cord.p.length / 3;
+    for (let k = 0; k < 24; k++) {
+      const a0 = k / 24 * Math.PI * 2, a1 = (k + 1) / 24 * Math.PI * 2, b = cord.p.length / 3;
       cord.v([0, 0.46, 0], [0, 0, 1], BLANC, [0.5, 0.5]);
       cord.v([Math.cos(a0) * 0.118, 0.46 + Math.sin(a0) * 0.152, 0], [0, 0, 1], BLANC, [0.5 + Math.cos(a0) / 2, 0.5 + Math.sin(a0) / 2]);
       cord.v([Math.cos(a1) * 0.118, 0.46 + Math.sin(a1) * 0.152, 0], [0, 0, 1], BLANC, [0.5 + Math.cos(a1) / 2, 0.5 + Math.sin(a1) / 2]);
       cord.i.push(b, b + 1, b + 2);
     }
-    P.cordage = mk(cord);
+    P.cordage = maillage(cord);
     return P;
   }
   const POSE0 = () => ({ tronc: [0, 0, 0], bassin: [0, 0, 0], tete: [0, 0, 0],
     epD: [0, 0, 0], coudeD: 0, poignetD: [0, 0, 0], epG: [0, 0, 0], coudeG: 0,
-    hancheD: [0, 0, 0], genouD: 0, hancheG: [0, 0, 0], genouG: 0, piedD: 0, piedG: 0, accroupi: 0 });
+    hancheD: [0, 0, 0], genouD: 0, hancheG: [0, 0, 0], genouG: 0, piedD: 0, piedG: 0, accroupi: 0, saut: 0 });
   function melange(a, b, t) {
     const o = POSE0();
     for (const k in o) o[k] = Array.isArray(o[k]) ? a[k].map((v, i) => lerp(v, b[k][i], t)) : lerp(a[k], b[k], t);
@@ -4073,9 +4155,9 @@ const G3D = (() => {
   function poseAttente(t) {
     const p = POSE0(), b = Math.sin(t * 6) * 0.03;
     p.accroupi = 0.12 + b; p.tronc = [0.28, 0, 0]; p.tete = [-0.2, 0, 0];
-    p.hancheD = [-0.55, 0, 0.12]; p.genouD = 0.85; p.hancheG = [-0.55, 0, -0.12]; p.genouG = 0.85; p.piedD = -0.3; p.piedG = -0.3;
+    p.hancheD = [-0.55, 0, 0.2]; p.genouD = 0.85; p.hancheG = [-0.55, 0, -0.2]; p.genouG = 0.85; p.piedD = -0.3; p.piedG = -0.3;
     p.epD = [-0.75, 0.25, 0.25]; p.coudeD = 1.25; p.poignetD = [0.4, 0, 0.7];
-    p.epG = [-0.75, -0.25, -0.25]; p.coudeG = 1.3;
+    p.epG = [-0.75, 0.25, 0.25]; p.coudeG = 1.3;                                    // symétrique du bras droit
     return p;
   }
   function poseCourse(t, v) {
@@ -4129,37 +4211,12 @@ const G3D = (() => {
     p.piedD = -0.6 * c * (1 - d); p.piedG = -0.6 * c * (1 - d);
     return p;
   }
-  // matrices des parties pour une pose, un emplacement et une orientation donnés
-  function dessinerJoueur(P, j, pose, prog2, ombre) {
-    const R = (a) => chaine(M4.ry(a[1]), M4.rx(a[0]), M4.rz(a[2]));
-    const racine = chaine(M4.tr(j.x, 0, j.z), M4.ry(j.cap));
-    const hHanche = 0.98 - pose.accroupi * 1.4;
-    const bassin = chaine(racine, M4.tr(0, hHanche, 0), R(pose.bassin));
-    const out = [];
-    out.push([P.bassin, bassin]);
-    const torse = chaine(bassin, M4.tr(0, 0.08, 0), R(pose.tronc));
-    out.push([P.torse, torse]);
-    out.push([P.tete, chaine(torse, M4.tr(0, 0.73, 0.01), R(pose.tete))]);
-    for (const [s, ep, coude, poignet] of [[-1, pose.epD, pose.coudeD, pose.poignetD], [1, pose.epG, pose.coudeG, null]]) {
-      const epaule = chaine(torse, M4.tr(s * 0.215, 0.5, 0), M4.ry(ep[1] * -s * -1), M4.rx(ep[0]), M4.rz(ep[2] * s * -1));
-      out.push([P.bras, epaule], [P.manche, epaule]);
-      const coudeM = chaine(epaule, M4.tr(0, -0.29, 0), M4.rx(-coude));
-      out.push([P.avantBras, coudeM]);
-      const main = chaine(coudeM, M4.tr(0, -0.27, 0));
-      out.push([P.main, main]);
-      if (poignet) {
-        const rq = chaine(main, M4.rx(-Math.PI / 2 + poignet[0]), M4.rz(poignet[2]), M4.tr(0, -0.06, 0));
-        out.push([P.raquette, rq]); out.push([P.cordage, rq, true]);
-      }
-    }
-    for (const [s, ha, ge, pi] of [[-1, pose.hancheD, pose.genouD, pose.piedD], [1, pose.hancheG, pose.genouG, pose.piedG]]) {
-      const hanche = chaine(bassin, M4.tr(s * 0.1, -0.06, 0), M4.rx(ha[0]), M4.rz(ha[2] * -s));
-      out.push([P.cuisse, hanche], [P.cuisseShort, hanche]);
-      const genou = chaine(hanche, M4.tr(0, -0.44, 0), M4.rx(ge));
-      out.push([P.jambe, genou]);
-      // le pied reste à plat : on compense les angles de la jambe
-      out.push([P.pied, chaine(genou, M4.tr(0, -0.46, 0), M4.rx(-ha[0] - ge + pi))]);
-    }
+  // matrices de peau d'un joueur (os de la pose × inverse de la pose de repos) et place de la raquette
+  function dessinerJoueur(P, j, pose) {
+    const { M, raquette } = os(j, pose), peau = new Float32Array(16 * 16);
+    for (let k = 0; k < NOS; k++) peau.set(M4.mul(M[k], P.inv[k]), k * 16);
+    const out = [[P.corps, M4.id(), false, peau]];
+    if (raquette) out.push([P.raquette, raquette], [P.cordage, raquette, true]);
     return out;
   }
 
@@ -4375,6 +4432,25 @@ const G3D = (() => {
     }
     return p;
   }
+  // poses lissées (pas d'à-coups), tête tournée vers la balle, pas d'ajustement quand l'adversaire frappe
+  const LISSE = [null, null];
+  function poseLisse(i, t, dt) {
+    const cible = poseDe(i, t), j = J[i], face = i === 0 ? 1 : -1;
+    const b = posBalle(t) || balleEnMain(t);
+    if (b) {
+      const dx = (b.x - j.x), dz = (b.z - j.z) * face, d = Math.hypot(dx, dz) || 1;
+      const lacet = cl(Math.atan2(dx * face, dz), -0.9, 0.9);                         // vers la balle, dans son repère
+      cible.tete = [cible.tete[0] + cl(-Math.atan2(b.y - 1.65, d) * 0.6, -0.5, 0.6), cible.tete[1] + lacet * 0.6 - cible.tronc[1] * 0.5, cible.tete[2]];
+    }
+    if (R) for (const v of R.vols) {
+      if (v.qui === 1 - i && v.type !== 'service' && Math.abs(t - v.t) < 0.18) cible.saut = Math.max(cible.saut || 0, 0.07 * Math.cos((t - v.t) / 0.18 * Math.PI / 2));
+      if (v.qui === i && v.type === 'service') { const u = (t - v.t) / 0.35; if (u > -0.3 && u < 1) cible.saut = Math.max(cible.saut || 0, 0.22 * Math.sin(cl(u + 0.3, 0, 1) / 1.3 * Math.PI)); }
+    }
+    const p = LISSE[i], k = dt > 0 ? 1 - Math.exp(-dt * 16) : 1;
+    if (!p) return (LISSE[i] = cible);
+    for (const c in cible) p[c] = Array.isArray(cible[c]) ? p[c].map((v, n) => lerp(v, cible[c][n], k)) : lerp(p[c] || 0, cible[c] || 0, k);
+    return p;
+  }
   // la balle tenue par le serveur entre les points (rebonds avant de servir)
   function balleEnMain(t) {
     if (E.srv === null || E.fini) return null;
@@ -4394,15 +4470,15 @@ const G3D = (() => {
   const VUES = { tv: { yaw: 0, pitch: 0.47, dist: 33, fov: 0.62, suivre: true }, cote: { yaw: 0.95, pitch: 0.36, dist: 33, fov: 0.62, suivre: false }, haut: { yaw: Math.PI / 2, pitch: 1.3, dist: 38, fov: 0.62, suivre: false },
     joueur: { yaw: 0, pitch: 0.22, dist: 9.5, fov: 0.75, suivre: false, focus: 0 } };
   const cam = { ...VUES.tv };
-  const COULEURS = [{ maillot: '#2EE6FF', short: '#14234f', cheveux: '#3a2a20', peau: '#e8b896' }, { maillot: '#FF4FAE', short: '#f4f4f8', cheveux: '#1d1712', peau: '#c98d64' }];
+  const COULEURS = [{ maillot: '#22c8e0', short: '#14234f', cheveux: '#3a2a20', peau: '#d09a78' }, { maillot: '#e2449a', short: '#ececf2', cheveux: '#1d1712', peau: '#b07850' }];
   let PERSOS = null, BALLE = null, OMBRE_BALLE = null;
   function initGL() {
     cv = document.createElement('canvas'); cv.className = 'g3d-cv';
     gl = cv.getContext('webgl2', { antialias: true, alpha: false, powerPreference: 'high-performance' });
     if (!gl) return false;
     prog = shader(VS, FS); progO = shader(VS_OMBRE, FS_OMBRE);
-    for (const k of ['uM', 'uVP', 'uLVP', 'uInst', 'uT', 'uClap', 'uDecal', 'uCol', 'uSun', 'uEye', 'uCiel', 'uSol', 'uBrume', 'uAlpha', 'uSpec', 'uEmis', 'uTex', 'uOmbre', 'uTx', 'uSM']) U[k] = gl.getUniformLocation(prog, k);
-    for (const k of ['uM', 'uLVP', 'uInst']) UO[k] = gl.getUniformLocation(progO, k);
+    for (const k of ['uM', 'uVP', 'uLVP', 'uInst', 'uPeau', 'uOs', 'uT', 'uClap', 'uDecal', 'uCol', 'uSun', 'uEye', 'uCiel', 'uSol', 'uBrume', 'uAlpha', 'uSpec', 'uEmis', 'uTex', 'uOmbre', 'uTx', 'uSM']) U[k] = gl.getUniformLocation(prog, k);
+    for (const k of ['uM', 'uLVP', 'uInst', 'uPeau', 'uOs']) UO[k] = gl.getUniformLocation(progO, k);
     try {
       POST.reduit = shader(VS_ECRAN, FS_REDUIT); POST.flou = shader(VS_ECRAN, FS_FLOU); POST.final = shader(VS_ECRAN, FS_FINAL);
       POST.vao = gl.createVertexArray();
@@ -4429,6 +4505,7 @@ const G3D = (() => {
       const j = J[cam.focus]; cam.fx = lerp(cam.fx ?? j.x, j.x, 0.08); cam.fz = lerp(cam.fz ?? j.z, j.z, 0.08);
       cible = [cam.fx * 0.8, 0.9, cam.fz + 5];
     }
+    if (cam.vise) cible = [J[cam.vise[0]].x, cam.vise[1], J[cam.vise[0]].z];        // (tests) caméra sur un joueur
     const eye = [cible[0] + cam.dist * cp * Math.sin(cam.yaw), cam.dist * sp + 0.5, cible[2] - cam.dist * cp * Math.cos(cam.yaw)];
     const vp = M4.mul(M4.persp(cam.fov, w / h, 0.5, 200), M4.look(eye, cible, [0, 1, 0]));
     const lc = [SOLEIL[0] * 40, SOLEIL[1] * 40, SOLEIL[2] * 40];
@@ -4452,16 +4529,17 @@ const G3D = (() => {
     const { vp, lvp, eye } = matrices(w, h);
     // ce qui bouge : les deux joueurs, la balle
     const dyn = [];
-    for (const i of [0, 1]) for (const x of dessinerJoueur(PERSOS[i], J[i], poseDe(i, t))) dyn.push(x);
+    for (const i of [0, 1]) for (const x of dessinerJoueur(PERSOS[i], J[i], poseLisse(i, t, dt))) dyn.push(x);
     // 1) ombres
     gl.bindFramebuffer(gl.FRAMEBUFFER, smFbo); gl.viewport(0, 0, SM, SM); gl.clear(gl.DEPTH_BUFFER_BIT);
     gl.useProgram(progO); gl.uniformMatrix4fv(UO.uLVP, false, lvp); gl.enable(gl.DEPTH_TEST); gl.disable(gl.CULL_FACE);
     gl.enable(gl.POLYGON_OFFSET_FILL); gl.polygonOffset(1.5, 2.0);
     gl.uniform1i(UO.uInst, 0);
-    const passeO = (m, mat) => { gl.uniformMatrix4fv(UO.uM, false, mat); gl.bindVertexArray(m.vao); gl.drawElements(gl.TRIANGLES, m.n, gl.UNSIGNED_INT, 0); };
+    const passeO = (m, mat, peau) => { gl.uniformMatrix4fv(UO.uM, false, mat); gl.uniform1i(UO.uPeau, peau ? 1 : 0); if (peau) gl.uniformMatrix4fv(UO.uOs, false, peau);
+      gl.bindVertexArray(m.vao); gl.drawElements(gl.TRIANGLES, m.n, gl.UNSIGNED_INT, 0); };
     for (const o of scene.fixes) if (o.ombre) passeO(o.m, M4.id());
     for (const o of scene.transp) if (o.ombre) passeO(o.m, M4.id());
-    for (const [m, mat, tr] of dyn) if (!tr) passeO(m, mat);
+    for (const [m, mat, tr, peau] of dyn) if (!tr) passeO(m, mat, peau);
     if (b) passeO(BALLE, M4.tr(b.x, b.y, b.z));
     gl.disable(gl.POLYGON_OFFSET_FILL);
     // 2) image (dans une image anti-crénelée à deux sorties : couleur + lumières, pour le halo)
@@ -4478,13 +4556,14 @@ const G3D = (() => {
     gl.uniform3fv(U.uCiel, [0.62, 0.64, 0.82]); gl.uniform3fv(U.uSol, [0.28, 0.26, 0.36]); gl.uniform3fv(U.uBrume, [0.08, 0.07, 0.2]);
     gl.uniform1f(U.uT, t); gl.uniform1f(U.uClap, cl(Math.exp(-(t - applaudir) * 0.7), 0, 1));
     gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, smTex); gl.uniform1i(U.uSM, 1); gl.uniform1i(U.uTx, 0);
-    const passe = (o, mat, inst) => { uniformes(o, inst); gl.uniformMatrix4fv(U.uM, false, mat); gl.bindVertexArray(o.m.vao);
+    const passe = (o, mat, inst) => { uniformes(o, inst); gl.uniformMatrix4fv(U.uM, false, mat);
+      gl.uniform1i(U.uPeau, o.peau ? 1 : 0); if (o.peau) gl.uniformMatrix4fv(U.uOs, false, o.peau); gl.bindVertexArray(o.m.vao);
       if (inst) gl.drawElementsInstanced(gl.TRIANGLES, o.m.n, gl.UNSIGNED_INT, 0, o.m.ni); else gl.drawElements(gl.TRIANGLES, o.m.n, gl.UNSIGNED_INT, 0); };
     for (const o of scene.fixes) passe(o, M4.id());
     passe({ ...scene.public, recoit: false }, M4.id(), true);
     if (scene.led) passe({ ...scene.led, decal: [-(t * 0.06) % 1, 0] }, M4.id());
     if (scene.ecran) { majEcran(); passe(scene.ecran, M4.id()); }
-    for (const [m, mat, tr] of dyn) if (!tr) passe({ m, spec: 0.25 }, mat);
+    for (const [m, mat, tr, peau] of dyn) if (!tr) passe({ m, spec: 0.07, peau }, mat);
     if (b) passe({ m: BALLE, spec: 0.5, emis: 0.35 }, M4.tr(b.x, b.y, b.z));
     // 3) transparents : mailles du filet, cordages
     gl.enable(gl.BLEND); gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA); gl.depthMask(false);
@@ -4635,6 +4714,7 @@ const G3D = (() => {
     _gagnant: gagnantPoint, _etatDe: etatDe, _tirage: tirage,
     _reinit() { R = null; FILE.length = 0; E.dernier = null; this._t = 0; J[0].x = 0; J[0].z = -HL - 0.8; J[1].x = 0; J[1].z = HL + 0.8; J[0].vx = J[0].vz = J[1].vx = J[1].vz = 0; },
     _post: () => !!(POST.ok && POST.ms && QUALITE === 'haute'),
+    _squelette: (pose) => os({ x: 0, z: 0, cap: 0 }, pose || POSE0()), _inverse: inverseRigide,
     _cam: cam, _maj: maj, _etat: E, _J: J, _R: () => R, _poses: { poseAttente, poseCourse, poseCoupDroit, poseRevers, poseService },
   };
 })();
