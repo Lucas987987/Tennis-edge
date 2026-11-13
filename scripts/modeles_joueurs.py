@@ -13,7 +13,13 @@ Ce que fait le script, une fois pour toutes (la page n'a plus qu'à lire le rés
      (short ample, évasé en bas) ; les couleurs sont choisies dans la page, joueur par joueur ;
   4. réduit les textures (peau 1024 px, cheveux 512 px, JPEG) et écrit un seul fichier binaire.
 
-Usage : python3 scripts/modeles_joueurs.py "<dossier Universal Base Characters[Standard]>" algo/modeles/joueurs3d.bin
+Paquet 265 : les mouvements captés de « Universal Animation Library » (Quaternius, CC0) — attente, marche, footing,
+sprint, impulsion — sont ajoutés au même fichier : pour chaque os, la rotation par rapport à la pose de repos (en
+repère du monde, donc indépendante des petites différences entre les deux squelettes) et la hauteur du bassin ; la
+vitesse au sol de chaque boucle vient de la version « root motion » (pieds qui ne glissent pas).
+
+Usage : python3 scripts/modeles_joueurs.py "<dossier Universal Base Characters[Standard]>" algo/modeles/joueurs3d.bin \
+          ["<dossier Universal Animation Library[Standard]>"]
 """
 import io
 import json
@@ -244,6 +250,73 @@ def jpeg(chemin, taille, qualite=82):
     b = io.BytesIO(); im.save(b, 'JPEG', quality=qualite, optimize=True); return b.getvalue()
 
 
+# ── mouvements captés (paquet 265) ──
+TYPES_ = {5120: np.int8, 5121: np.uint8, 5122: np.int16, 5123: np.uint16, 5125: np.uint32, 5126: np.float32}
+NB_ = {'SCALAR': 1, 'VEC2': 2, 'VEC3': 3, 'VEC4': 4, 'MAT4': 16}
+def lire_glb(p):
+    b = open(p, 'rb').read(); n = struct.unpack('<I', b[12:16])[0]; g = json.loads(b[20:20 + n])
+    off = 20 + n; ln = struct.unpack('<I', b[off:off + 4])[0]; binc = b[off + 8: off + 8 + ln]
+    def acc(i):
+        a = g['accessors'][i]; bv = g['bufferViews'][a['bufferView']]
+        t, k = TYPES_[a['componentType']], NB_[a['type']]
+        o = bv.get('byteOffset', 0) + a.get('byteOffset', 0)
+        v = np.frombuffer(binc, dtype=t, count=a['count'] * k, offset=o).reshape(a['count'], k).astype(np.float64)
+        if a.get('normalized'): v = v / np.iinfo(t).max
+        return v
+    return g, acc
+def qmul(a, b):
+    x1, y1, z1, w1 = a; x2, y2, z2, w2 = b
+    return np.array([w1*x2 + x1*w2 + y1*z2 - z1*y2, w1*y2 - x1*z2 + y1*w2 + z1*x2, w1*z2 + x1*y2 - y1*x2 + z1*w2, w1*w2 - x1*x2 - y1*y2 - z1*z2])
+def qinv(q): return np.array([-q[0], -q[1], -q[2], q[3]])
+def qrot(q, v): return qmul(qmul(q, np.array([*v, 0.0])), qinv(q))[:3]
+def interp(t, ts, vs, quat):
+    if t <= ts[0]: return vs[0]
+    if t >= ts[-1]: return vs[-1]
+    i = np.searchsorted(ts, t) - 1; u = (t - ts[i]) / (ts[i + 1] - ts[i]); a, b = vs[i], vs[i + 1]
+    if quat:
+        if np.dot(a, b) < 0: b = -b
+        r = a * (1 - u) + b * u; return r / np.linalg.norm(r)
+    return a * (1 - u) + b * u
+def extraire(chemin, noms_clips, fps=30):
+    g, acc = lire_glb(chemin); N = g['nodes']
+    idx = {n['name']: i for i, n in enumerate(N)}
+    par = {c: i for i, n in enumerate(N) for c in n.get('children', [])}
+    parent = [GARDES.index(N[par[idx[b]]]['name']) if N[par[idx[b]]]['name'] in GARDES else -1 for b in GARDES]
+    repos_q = [np.array(N[idx[b]].get('rotation', [0, 0, 0, 1]), float) for b in GARDES]
+    repos_t = [np.array(N[idx[b]].get('translation', [0, 0, 0]), float) for b in GARDES]
+    def monde(qs, ts):
+        W, P = [None] * len(GARDES), [None] * len(GARDES)
+        for k in range(len(GARDES)):
+            p = parent[k]
+            if p < 0: W[k], P[k] = qs[k], ts[k]
+            else: W[k] = qmul(W[p], qs[k]); P[k] = P[p] + qrot(W[p], ts[k])
+        return W, P
+    W0, P0 = monde(repos_q, repos_t)
+    out = {}
+    for a in g['animations']:
+        if a['name'] not in noms_clips: continue
+        pistes = {}
+        dur = 0
+        for c in a['channels']:
+            nd = N[c['target']['node']]['name']
+            if nd not in GARDES or c['target']['path'] not in ('rotation', 'translation'): continue
+            s = a['samplers'][c['sampler']]; ts = acc(s['input'])[:, 0]; vs = acc(s['output'])
+            pistes[(nd, c['target']['path'])] = (ts, vs); dur = max(dur, ts[-1])
+        nf = max(2, int(round(dur * fps)) + 1)
+        Q = np.zeros((nf, len(GARDES), 4)); T = np.zeros((nf, 3))
+        for f in range(nf):
+            t = f / fps
+            qs = [interp(t, *pistes[(b, 'rotation')], True) if (b, 'rotation') in pistes else repos_q[k] for k, b in enumerate(GARDES)]
+            ts_ = [interp(t, *pistes[(b, 'translation')], False) if (b, 'translation') in pistes else repos_t[k] for k, b in enumerate(GARDES)]
+            W, P = monde(qs, ts_)
+            for k in range(len(GARDES)): Q[f, k] = qmul(W[k], qinv(W0[k]))        # delta monde
+            T[f] = P[1] - P0[1]                                                    # déplacement du bassin
+        out[a['name']] = {'dur': dur, 'fps': fps, 'Q': Q, 'T': T}
+    return out, P0[1]
+
+CLIPS = ['Idle_Loop', 'Walk_Loop', 'Jog_Fwd_Loop', 'Sprint_Loop', 'Jump_Start', 'Jump_Land']
+
+
 class Ecrivain:
     def __init__(self):
         self.blob = bytearray(); self.json = {}
@@ -273,7 +346,7 @@ class Ecrivain:
             f.write(b'TEJ3' + struct.pack('<I', len(js)) + js + bytes(self.blob))
 
 
-def principal(src, sortie):
+def principal(src, sortie, anim=None):
     base = os.path.join(src, 'Base Characters', 'Godot - UE')
     coif = os.path.join(src, 'Hairstyles', 'Rigged to Head Bone', 'glTF (Godot -Unreal)')
     tex = os.path.join(src, 'Base Characters', 'Textures')
@@ -306,10 +379,23 @@ def principal(src, sortie):
         b = jpeg(os.path.join(tex, f), t)
         E.json['images'][nom] = [E.morceau(np.frombuffer(b, dtype=np.uint8)), len(b)]
     E.json['licence'] = 'Quaternius, Universal Base Characters : CC0 1.0 (domaine public)'
+    if anim:
+        base_a = os.path.join(anim, 'Unreal-Godot')
+        sans, h_ual = extraire(os.path.join(base_a, 'UAL1_Standard.glb'), CLIPS)
+        avec, _ = extraire(os.path.join(base_a, 'UAL1_Standard_RM.glb'), CLIPS)
+        E.json['clips'] = {}
+        for nom, c in sans.items():
+            d = avec[nom]['T'][-1] - avec[nom]['T'][0]
+            vit = float(np.hypot(d[0], d[2]) / c['dur']) if c['dur'] > 0 else 0.0
+            q = np.clip(np.round(c['Q'] * 32767), -32767, 32767).astype(np.int16)
+            E.json['clips'][nom] = {'dur': float(c['dur']), 'fps': c['fps'], 'nf': int(c['Q'].shape[0]), 'vitesse': round(vit, 3),
+                                    'q': E.morceau(q), 't': E.morceau(c['T'].astype(np.float32))}
+        E.json['clips_bassin'] = float(h_ual[1])
+        E.json['licence'] += ' ; mouvements : Universal Animation Library, CC0 1.0'
     os.makedirs(os.path.dirname(os.path.abspath(sortie)), exist_ok=True)
     E.ecrire(sortie)
     print(f'{sortie} : {os.path.getsize(sortie) / 1e6:.2f} Mo')
 
 
 if __name__ == '__main__':
-    principal(sys.argv[1], sys.argv[2])
+    principal(sys.argv[1], sys.argv[2], sys.argv[3] if len(sys.argv) > 3 else None)
