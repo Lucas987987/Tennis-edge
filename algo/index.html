@@ -3553,7 +3553,9 @@ const T3D = (() => {
 // qualité « basse » automatique si l'appareil peine (moins de 22 images par seconde). Paquet 262 : joueurs d'un
 // seul tenant pliés aux articulations (habillage par os), visage, cheveux, tenue, raquette ; mouvements lissés.
 // Paquet 263 : après chaque vrai point, son ralenti vu du bord du court (rythme de télévision).
-// Paquet 264 : vrais modèles de joueurs (Quaternius, CC0), servis par le site (modeles/joueurs3d.bin). Sans WebGL 2, la vue 3D simple (T3D) prend le relais.
+// Paquet 264 : vrais modèles de joueurs (Quaternius, CC0), servis par le site (modeles/joueurs3d.bin).
+// Paquet 265 : déplacements captés (marche, footing, sprint ; Quaternius, CC0), prise de raquette, public tourné vers le
+// court qui suit la balle et se lève sur les grands points, faisceaux des projecteurs, poussière et marques des rebonds. Sans WebGL 2, la vue 3D simple (T3D) prend le relais.
 // Descriptif : le % ne change pas.
 const G3D = (() => {
   'use strict';
@@ -3673,12 +3675,29 @@ const G3D = (() => {
   layout(location=0) in vec3 aP; layout(location=1) in vec3 aN; layout(location=2) in vec3 aC; layout(location=3) in vec2 aU;
   layout(location=4) in vec4 aI; layout(location=5) in vec3 aIC; layout(location=6) in vec4 aB; layout(location=7) in vec4 aWt; layout(location=8) in float aCls;
   uniform mat4 uOs[24]; uniform int uPeau;
-  uniform mat4 uM, uVP, uLVP; uniform int uInst; uniform float uT, uClap; uniform vec2 uDecal;
+  uniform mat4 uM, uVP, uLVP; uniform int uInst; uniform float uT, uClap, uDebout; uniform vec2 uDecal; uniform vec3 uBalle;
   out vec3 vW, vN, vC, vB; out vec2 vU; out vec4 vL; out float vCls;
   void main(){
     vec3 p = aP; vec3 c = aC;
-    if (uInst == 1) { p = p * aI.w + aI.xyz + vec3(0.0, max(0.0, sin(uT * (3.0 + uClap * 9.0) + aI.x * 1.7 + aI.z)) * (0.05 + uClap * 0.16), 0.0); c = aC * aIC; }
-    vec3 nn = aN;
+    vec3 nI = aN;
+    if (uInst == 1) {
+      // chacun regarde le court ; la tête suit la balle (paquet 265) ; sur un grand point, une partie se lève
+      float corps = atan(-aI.x, -aI.z * 0.35);
+      if (abs(aI.x) < 9.0) corps = aI.z > 0.0 ? 3.14159 : 0.0;
+      float h = fract(sin(dot(aI.xz, vec2(12.9898, 78.233))) * 43758.5453);
+      float teteA = clamp(atan(uBalle.x - aI.x, uBalle.z - aI.z) - corps, -1.1, 1.1);
+      teteA = mod(teteA + 3.14159, 6.28318) - 3.14159; teteA = clamp(teteA, -1.0, 1.0);
+      vec3 q = p;
+      if (q.y > 0.6) { float a = teteA; vec3 o = vec3(0.0, 0.62, 0.0); vec3 r = q - o; q = o + vec3(cos(a) * r.x + sin(a) * r.z, r.y, -sin(a) * r.x + cos(a) * r.z); }
+      float leve = step(0.55, h) * uDebout;
+      if (q.y < 0.56 && abs(q.x) > 0.17 && q.y > 0.05) { q.y += leve * (0.5 + q.y * 0.8); q.x *= 1.0 - leve * 0.35; }  // bras levés
+      q.y += leve * 0.25;                                                                   // debout
+      float c1 = cos(corps), s1 = sin(corps);
+      q = vec3(c1 * q.x + s1 * q.z, q.y, -s1 * q.x + c1 * q.z);
+      nI = vec3(c1 * nI.x + s1 * nI.z, nI.y, -s1 * nI.x + c1 * nI.z);
+      p = q * aI.w + aI.xyz + vec3(0.0, max(0.0, sin(uT * (3.0 + uClap * 9.0) + aI.x * 1.7 + aI.z)) * (0.05 + uClap * 0.16), 0.0); c = aC * aIC;
+    }
+    vec3 nn = nI;
     if (uPeau == 1) { vec4 wt = aWt / max(dot(aWt, vec4(1.0)), 1e-4); mat4 S = uOs[int(aB.x)] * wt.x + uOs[int(aB.y)] * wt.y + uOs[int(aB.z)] * wt.z + uOs[int(aB.w)] * wt.w; p = (S * vec4(p, 1.0)).xyz; nn = mat3(S) * aN; }
     vec4 w = uM * vec4(p, 1.0);
     vW = w.xyz; vN = normalize(mat3(uM) * nn); vC = c; vU = aU + uDecal; vL = uLVP * w; vCls = aCls; vB = aP;
@@ -3687,7 +3706,7 @@ const G3D = (() => {
   const FS = `#version 300 es
   precision highp float; precision highp sampler2DShadow;
   in vec3 vW, vN, vC, vB; in vec2 vU; in vec4 vL; in float vCls;
-  uniform int uHabit; uniform vec3 uTenue[8];
+  uniform int uHabit, uFaisceau; uniform vec3 uTenue[8];
   uniform vec3 uCol, uSun, uEye, uCiel, uSol, uBrume; uniform float uAlpha, uSpec, uEmis; uniform int uTex, uOmbre;
   uniform sampler2D uTx; uniform sampler2DShadow uSM;
   layout(location=0) out vec4 o; layout(location=1) out vec4 oE;
@@ -3700,6 +3719,10 @@ const G3D = (() => {
     return s / 9.0;
   }
   void main(){
+    if (uFaisceau == 1) {                                                                  // cône de lumière : doux sur les bords
+      float f = pow(abs(dot(normalize(vN), normalize(uEye - vW))), 2.0) * smoothstep(0.0, 0.9, vU.y);
+      o = vec4(vec3(0.78, 0.86, 1.0), f * 0.07); oE = vec4(vec3(0.78, 0.86, 1.0) * f * 0.02, 1.0); return;
+    }
     vec3 n = normalize(vN); if (!gl_FrontFacing) n = -n;
     vec3 base = vC * uCol; float a = uAlpha;
     bool tissu = false;
@@ -3999,6 +4022,17 @@ const G3D = (() => {
     for (const s of [-1, 1]) for (let k = -6; k <= 6; k++) proj.ajoute(boite(0.7, 0.18, 0.5, BLANC), M4.tr(s * (bx + 1.2 + rangs * pas), yToit, k * 3.1));
     for (const s of [-1, 1]) for (let k = -3; k <= 3; k++) proj.ajoute(boite(0.5, 0.18, 0.7, BLANC), M4.tr(k * 3.2, yToit, s * (bz + 1.2 + rangs * pas)));
     scene.fixes.push({ m: maillage(proj), emis: 1.6, spec: 0 });
+    // faisceaux : cônes de lumière très légers des projecteurs vers le court (ajoutés à l'image, sans écrire la profondeur)
+    const fx = new Geo(), cone = cylindre(1.0, 0.25, 1, 18, BLANC, false);
+    const faisceau = (src, dst, r) => { const d = [dst[0] - src[0], dst[1] - src[1], dst[2] - src[2]], L = Math.hypot(...d), u = nrm(d);
+      const ax = nrm(crs([0, 1, 0], u.map(v => -v))), an = Math.acos(cl(-u[1], -1, 1));
+      const R = Math.hypot(...ax) > 1e-6 ? (() => { const [x, y, z] = ax, c = Math.cos(an), s_ = Math.sin(an), m = M4.id();
+        m[0] = c + x * x * (1 - c); m[1] = y * x * (1 - c) + z * s_; m[2] = z * x * (1 - c) - y * s_;
+        m[4] = x * y * (1 - c) - z * s_; m[5] = c + y * y * (1 - c); m[6] = z * y * (1 - c) + x * s_;
+        m[8] = x * z * (1 - c) + y * s_; m[9] = y * z * (1 - c) - x * s_; m[10] = c + z * z * (1 - c); return m; })() : M4.id();
+      fx.ajoute(cone, chaine(M4.tr(dst[0], dst[1], dst[2]), R, M4.sc(r, L, r))); };
+    for (const s of [-1, 1]) for (let k = -6; k <= 6; k += 2) faisceau([s * (bx + 1.2 + rangs * pas), yToit, k * 3.1], [s * 2.5, 0, k * 2.2], 2.6);
+    scene.faisceaux = { m: maillage(fx) };
     // bandeau LED tout autour du court, au-dessus des bâches (il défile)
     TX.led = texture(texLed(), true);
     const led = new Geo(), hL = 0.22;
@@ -4163,7 +4197,7 @@ const G3D = (() => {
   }
   const POSE0 = () => ({ tronc: [0, 0, 0], bassin: [0, 0, 0], tete: [0, 0, 0],
     epD: [0, 0, 0], coudeD: 0, poignetD: [0, 0, 0], epG: [0, 0, 0], coudeG: 0,
-    hancheD: [0, 0, 0], genouD: 0, hancheG: [0, 0, 0], genouG: 0, piedD: 0, piedG: 0, accroupi: 0, saut: 0 });
+    hancheD: [0, 0, 0], genouD: 0, hancheG: [0, 0, 0], genouG: 0, piedD: 0, piedG: 0, accroupi: 0, saut: 0, coup: 0 });
   function melange(a, b, t) {
     const o = POSE0();
     for (const k in o) o[k] = Array.isArray(o[k]) ? a[k].map((v, i) => lerp(v, b[k][i], t)) : lerp(a[k], b[k], t);
@@ -4278,7 +4312,7 @@ const G3D = (() => {
   async function chargerModeles() {
     if (MOD.etat !== 'rien') return; MOD.etat = 'charge';
     try {
-      const r = await fetch('modeles/joueurs3d.bin?v=264');
+      const r = await fetch('modeles/joueurs3d.bin?v=265');
       if (!r.ok) throw new Error('statut ' + r.status);
       const buf = await r.arrayBuffer(), dv = new DataView(buf);
       if (String.fromCharCode(...new Uint8Array(buf, 0, 4)) !== 'TEJ3') throw new Error('format');
@@ -4302,6 +4336,10 @@ const G3D = (() => {
         MOD.tex[nom] = texture(img, false);
       }
       lireOs(J, buf, B);
+      MOD.clips = {};
+      for (const [nom, c] of Object.entries(J.clips || {}))
+        MOD.clips[nom] = { ...c, Q: new Int16Array(buf.slice(B + c.q, B + c.q + c.nf * 23 * 8)), T: new Float32Array(buf.slice(B + c.t, B + c.t + c.nf * 12)) };
+      MOD.clipsBassin = J.clips_bassin || 0.917;
       MOD.etat = 'pret';
     } catch (e) { MOD.etat = 'absent'; }
   }
@@ -4318,7 +4356,32 @@ const G3D = (() => {
              cheveux: hex(['#3a2618', '#1b1410', '#5a3a1e', '#b88a4a', '#2a1a10'][(h >>> 5) % 5]).map(v => v * 1.9) };   // texture grise teintée
   }
   // matrices de peau du modèle pour une pose de mon squelette
-  function osModele(j, pose) {
+  // ── mouvements captés (paquet 265) : marche, footing, sprint de la Universal Animation Library (CC0) ─────────
+  // Pour chaque os, rotation du monde par rapport au repos, interpolée entre deux images, puis mélangée à ma pose :
+  // jambes, bassin et dos suivent le mouvement capté dès que le joueur court ; les bras aussi, sauf pendant un coup.
+  // repère de la raquette dans la main droite du modèle (os hand_r : y vers les doigts, x hors de la paume) :
+  // le manche traverse la paume vers le pouce, tête un peu relevée, tamis dans le plan de la paume
+  const PRISE = (() => { const Yr = nrm([0.0, 0.5, 1.0]), Zr = [1, 0, 0], Xr = crs(Yr, Zr), p = [-0.03, 0.085, 0.0];
+    const m = M4.id(); m[0] = Xr[0]; m[1] = Xr[1]; m[2] = Xr[2]; m[4] = Yr[0]; m[5] = Yr[1]; m[6] = Yr[2]; m[8] = Zr[0]; m[9] = Zr[1]; m[10] = Zr[2];
+    m[12] = p[0] - Yr[0] * 0.07; m[13] = p[1] - Yr[1] * 0.07; m[14] = p[2] - Yr[2] * 0.07; return m; })();
+  const BRAS = new Set(['clavicle_l', 'upperarm_l', 'lowerarm_l', 'hand_l', 'clavicle_r', 'upperarm_r', 'lowerarm_r', 'hand_r']);
+  function clipQ(nom, phase, k) {
+    const c = MOD.clips && MOD.clips[nom]; if (!c) return null;
+    const x = ((phase % 1) + 1) % 1 * (c.nf - 1), f0 = Math.floor(x), f1 = Math.min(c.nf - 1, f0 + 1), u = x - f0;
+    const q = f => { const o = (f * 23 + k) * 4; return [c.Q[o] / 32767, c.Q[o + 1] / 32767, c.Q[o + 2] / 32767, c.Q[o + 3] / 32767]; };
+    return slerp(q(f0), q(f1), u);
+  }
+  function clipT(nom, phase) {
+    const c = MOD.clips && MOD.clips[nom]; if (!c) return 0;
+    const x = ((phase % 1) + 1) % 1 * (c.nf - 1), f0 = Math.floor(x), f1 = Math.min(c.nf - 1, f0 + 1), u = x - f0;
+    return lerp(c.T[f0 * 3 + 1], c.T[f1 * 3 + 1], u);
+  }
+  // mélange des boucles selon la vitesse : [nom, poids] ; même phase pour toutes (cycles de pas alignés)
+  function boucles(v, enJeu) {
+    if (enJeu) { const s = cl((v - 5.4) / 2.8, 0, 1); return [['Jog_Fwd_Loop', 1 - s], ['Sprint_Loop', s]]; }
+    const s = cl((v - 1.2) / 2.5, 0, 1); return [['Walk_Loop', 1 - s], ['Jog_Fwd_Loop', s]];
+  }
+  function osModele(j, pose, loco) {
     const O = MOD.os, n = O.noms.length;
     const mien = os({ x: 0, z: 0, cap: 0 }, pose), R = mien.M.map(rot3);
     const delta = k => mul3(R[k], trans3(MOD.ref[k]));
@@ -4333,12 +4396,25 @@ const G3D = (() => {
         let d;
         if (c.length === 1) d = delta(c[0]);
         else { const a = qd[c[0]] || (qd[c[0]] = m2q(delta(c[0]))), b = qd[c[1]] || (qd[c[1]] = m2q(delta(c[1]))); d = q2m(slerp(a, b, c[2])); }
+        if (loco && loco.w > 0.01) {
+          let qc = null, tot = 0;
+          for (const [nomC, wc] of loco.mix) { if (wc < 0.01) continue; const q = clipQ(nomC, loco.phase, k); if (!q) continue;
+            qc = qc ? slerp(qc, q, wc / (tot + wc)) : q; tot += wc; }
+          if (qc) { const wk = BRAS.has(nom) ? loco.w * (1 - (pose.coup || 0)) : loco.w;
+            if (wk > 0.01) d = q2m(slerp(m2q(d), qc, wk)); }
+        }
         rot = mul3(Y, mul3(d, O.reposMonde[k]));
       }
       let pos;
       const place = M4.mul(M4.tr(j.x, 0, j.z), M4.ry(j.cap));
       if (p < 0) pos = M4.pt(place, O.rp[k]);
-      else if (nom === 'pelvis') pos = M4.pt(place, [O.rp[k][0], mien.M[0][13] - 0.031, O.rp[k][2]]);   // hauteur : la mienne (flexion)
+      else if (nom === 'pelvis') {
+        let hy = mien.M[0][13] - 0.031;                                               // hauteur : la mienne (flexion)…
+        if (loco && loco.w > 0.01) { let hc = 0, tot = 0;                             // … ou celle du mouvement capté
+          for (const [nomC, wc] of loco.mix) { hc += wc * clipT(nomC, loco.phase); tot += wc; }
+          hy = lerp(hy, O.rp[k][1] + (tot ? hc / tot : 0) * O.rp[k][1] / (MOD.clipsBassin || 0.917), loco.w); }
+        pos = M4.pt(place, [O.rp[k][0], hy + (pose.saut || 0), O.rp[k][2]]);
+      }
       else { const P = monde[p]; pos = M4.pt(P, O.t[k]); }
       const m = M4.id(); m[0] = rot[0]; m[1] = rot[1]; m[2] = rot[2]; m[4] = rot[3]; m[5] = rot[4]; m[6] = rot[5]; m[8] = rot[6]; m[9] = rot[7]; m[10] = rot[8];
       m[12] = pos[0]; m[13] = pos[1]; m[14] = pos[2];
@@ -4347,7 +4423,11 @@ const G3D = (() => {
     }
     // la raquette : orientation de ma main, posée dans la main droite du modèle
     let raquette = null;
-    if (mien.raquette) {
+    const brasCapte = loco ? loco.w * (1 - (pose.coup || 0)) : 0;
+    if (mien.raquette && brasCapte > 0.5) {                                             // prise « eastern » dans la paume
+      const main = monde[O.noms.indexOf('hand_r')];
+      raquette = M4.mul(main, PRISE);
+    } else if (mien.raquette) {
       const L = M4.mul(inverseRigide(mien.M[5]), mien.raquette), main = monde[O.noms.indexOf('hand_r')];
       const Rm = rot3(mien.M[5]), RY = mul3(Y, Rm), m = M4.id();
       m[0] = RY[0]; m[1] = RY[1]; m[2] = RY[2]; m[4] = RY[3]; m[5] = RY[4]; m[6] = RY[5]; m[8] = RY[6]; m[9] = RY[7]; m[10] = RY[8];
@@ -4368,6 +4448,7 @@ const G3D = (() => {
               avant: null, profils: [null, null], dernier: null, msg: null };
   const J = [{ x: 0, z: -HL - 0.8, vx: 0, vz: 0, cap: 0 }, { x: 0, z: HL + 0.8, vx: 0, vz: 0, cap: Math.PI }];
   const FILE = [];
+  const BALLE_VUE = { x: 0, z: 0 }; let grandPoint = false;
   let R = null, applaudir = -9;
   const CATS = ['aces', 'services_non_retournes', 'coup_droit', 'revers', 'filet', 'amorti', 'lob', 'fautes_provoquees', 'fautes_directes_adverses', 'doubles_fautes_adverses'];
   const DEFAUT = { aces: 6, services_non_retournes: 9, coup_droit: 17, revers: 9, filet: 6, amorti: 2, lob: 1, fautes_provoquees: 21, fautes_directes_adverses: 25, doubles_fautes_adverses: 3 };
@@ -4490,7 +4571,9 @@ const G3D = (() => {
         else pousse(finVol(der));
       }
     }
-    R = { vols, gagnant: g, fin, lancer: t0, debut: t0, finT: t + 1.2, annonce: false, J0: J.map(j => ({ x: j.x, z: j.z, cap: j.cap })) };
+    R = { vols, gagnant: g, fin, lancer: t0, debut: t0, finT: t + 1.2, annonce: false, J0: J.map(j => ({ x: j.x, z: j.z, cap: j.cap })),
+          rebonds: vols.filter(v => v.b.y === 0 && v.type !== 'fin' && Math.abs(v.b.z) < HL + 3).map(v => ({ x: v.b.x, z: v.b.z, t: v.t + v.d, a: Math.atan2(v.b.x - v.a.x, v.b.z - v.a.z) })),
+          grand: P.grand };
   }
   function posBalle(t) {
     if (!R) return null;
@@ -4542,7 +4625,13 @@ const G3D = (() => {
       j.x += j.vx * dt; j.z += j.vz * dt;
       const b = posBalle(t), capBase = i === 0 ? 0 : Math.PI;
       const vise = b ? Math.atan2(b.x - j.x, (b.z - j.z) * face) * 0.35 : 0;
-      j.cap = capBase + cl(vise, -0.6, 0.6) * (i === 0 ? 1 : -1);
+      const capFilet = capBase + cl(vise, -0.6, 0.6) * (i === 0 ? 1 : -1), vit = Math.hypot(j.vx, j.vz);
+      const wc = (MOD.etat === 'pret') ? (enJeu ? cl((vit - 2.0) / 1.2, 0, 1) : cl((vit - 0.5) / 0.5, 0, 1)) : 0;
+      let capCourse = Math.atan2(j.vx, j.vz), dA = capCourse - capFilet; dA = Math.atan2(Math.sin(dA), Math.cos(dA));
+      const vise2 = capFilet + dA * wc;                                                // tourné vers sa course quand il court
+      let dc = vise2 - (j.capL ?? vise2); dc = Math.atan2(Math.sin(dc), Math.cos(dc));
+      j.capL = (j.capL ?? vise2) + dc * (dt > 0 ? 1 - Math.exp(-dt * 9) : 1);
+      j.cap = j.capL;
     }
   }
   function poseDe(i, t) {
@@ -4557,12 +4646,12 @@ const G3D = (() => {
       if (vol.qui !== i) continue;
       if (vol.type === 'service') {
         const u = cl((t - (vol.t - 1.25)) / 2.0, 0, 1);
-        if (t > vol.t - 1.25 && t < vol.t + 0.75) return poseService(u);
+        if (t > vol.t - 1.25 && t < vol.t + 0.75) { const sv = poseService(u); sv.coup = 1; return sv; }
       } else {
         const u = (t - (vol.t - 0.45)) / 0.9;
         if (u > 0 && u < 1) {
           const cd = vol.cd !== undefined ? vol.cd : (vol.cd = coupDe(i, vol).cd);
-          const c = cd ? poseCoupDroit(u) : poseRevers(u);
+          const c = cd ? poseCoupDroit(u) : poseRevers(u); c.coup = 1;
           return melange(p, c, cl(Math.min(u * 5, (1 - u) * 5), 0, 1));
         }
       }
@@ -4571,7 +4660,19 @@ const G3D = (() => {
   }
   // poses lissées (pas d'à-coups), tête tournée vers la balle, pas d'ajustement quand l'adversaire frappe
   const LISSE = [null, null];
+  const LOCO = [{ phase: 0, w: 0, mix: [] }, { phase: 0, w: 0, mix: [] }];
+  function majLoco(i, dt) {
+    const j = J[i], v = Math.hypot(j.vx, j.vz), L = LOCO[i], enJeu = !!R;
+    L.mix = boucles(v, enJeu);
+    let vc = 0, tot = 0; for (const [nom, w] of L.mix) { const c = MOD.clips && MOD.clips[nom]; if (c) { vc += w * c.vitesse; tot += w; } }
+    vc = tot ? vc / tot : 1;
+    const dur = (MOD.clips && MOD.clips[L.mix[0][0]] ? MOD.clips[L.mix[0][0]].dur : 1);
+    L.phase += dt * Math.max(v, 0.3) / Math.max(vc * dur, 0.3);                     // pas calés sur la vitesse : pas de glissade
+    const cible = enJeu ? cl((v - 2.0) / 1.2, 0, 1) : cl((v - 0.5) / 0.5, 0, 1);       // en jeu : on court (sinon pas chassés)
+    L.w = lerp(L.w, cible, dt > 0 ? 1 - Math.exp(-dt * 10) : 1);
+  }
   function poseLisse(i, t, dt) {
+    majLoco(i, dt);
     const cible = poseDe(i, t), j = J[i], face = i === 0 ? 1 : -1;
     const b = posBalle(t) || balleEnMain(t);
     if (b) {
@@ -4599,7 +4700,7 @@ const G3D = (() => {
   // la boucle des points : on rejoue le dernier point arrivé ; sinon on attend
   function avancer(t, dt) {
     if (R && t > R.finT) {
-      if (!R.annonce) { R.annonce = true; E.dernier = { gagnant: R.gagnant, t }; applaudir = t; }
+      if (!R.annonce) { R.annonce = true; E.dernier = { gagnant: R.gagnant, t }; applaudir = t; grandPoint = R.vols.length > 9 || ['amorti', 'lob', 'filet'].includes(R.fin) || !!R.grand; }
       if (!R.ralenti) RAL.prevu = { at: t + 1.8, R };                               // le ralenti suivra
       R = null;
     }
@@ -4648,7 +4749,7 @@ const G3D = (() => {
     gl = cv.getContext('webgl2', { antialias: true, alpha: false, powerPreference: 'high-performance' });
     if (!gl) return false;
     prog = shader(VS, FS); progO = shader(VS_OMBRE, FS_OMBRE);
-    for (const k of ['uM', 'uVP', 'uLVP', 'uInst', 'uPeau', 'uOs', 'uHabit', 'uTenue', 'uT', 'uClap', 'uDecal', 'uCol', 'uSun', 'uEye', 'uCiel', 'uSol', 'uBrume', 'uAlpha', 'uSpec', 'uEmis', 'uTex', 'uOmbre', 'uTx', 'uSM']) U[k] = gl.getUniformLocation(prog, k);
+    for (const k of ['uM', 'uVP', 'uLVP', 'uInst', 'uPeau', 'uOs', 'uHabit', 'uTenue', 'uT', 'uClap', 'uDebout', 'uBalle', 'uFaisceau', 'uDecal', 'uCol', 'uSun', 'uEye', 'uCiel', 'uSol', 'uBrume', 'uAlpha', 'uSpec', 'uEmis', 'uTex', 'uOmbre', 'uTx', 'uSM']) U[k] = gl.getUniformLocation(prog, k);
     for (const k of ['uM', 'uLVP', 'uInst', 'uPeau', 'uOs']) UO[k] = gl.getUniformLocation(progO, k);
     try {
       POST.reduit = shader(VS_ECRAN, FS_REDUIT); POST.flou = shader(VS_ECRAN, FS_FLOU); POST.final = shader(VS_ECRAN, FS_FINAL);
@@ -4709,7 +4810,7 @@ const G3D = (() => {
     for (const i of [0, 1]) {
       const pose = poseLisse(i, t, dt);
       if (MOD.etat === 'pret' && MATCH) {
-        const A = ALLURE[i] || (ALLURE[i] = allure(MATCH, i)), { skin, raquette } = osModele(J[i], pose), C = MOD.corps[A.sexe];
+        const A = ALLURE[i] || (ALLURE[i] = allure(MATCH, i)), { skin, raquette } = osModele(J[i], pose, LOCO[i]), C = MOD.corps[A.sexe];
         const tenue = A.tenue.map((c, k) => k === 7 && !A.bandeau ? [-1, -1, -1] : c);
         dyn.push([C.corps, M4.id(), false, skin, { tex: MOD.tex[A.peau], tenue }], [C.yeux, M4.id(), false, skin, { tex: MOD.tex.yeux }]);
         for (const c of [A.coiffe, A.sourcils]) { const H = MOD.cheveux[c]; if (H) dyn.push([H, M4.id(), false, skin, { tex: MOD.tex[H.tex], col: A.cheveux }]); }
@@ -4741,6 +4842,9 @@ const G3D = (() => {
     gl.uniformMatrix4fv(U.uVP, false, vp); gl.uniformMatrix4fv(U.uLVP, false, lvp); gl.uniform3fv(U.uSun, SOLEIL); gl.uniform3fv(U.uEye, eye);
     gl.uniform3fv(U.uCiel, [0.62, 0.64, 0.82]); gl.uniform3fv(U.uSol, [0.28, 0.26, 0.36]); gl.uniform3fv(U.uBrume, [0.08, 0.07, 0.2]);
     gl.uniform1f(U.uT, tReel); gl.uniform1f(U.uClap, RAL.actif ? 0 : cl(Math.exp(-(t - applaudir) * 0.7), 0, 1));
+    gl.uniform1f(U.uDebout, RAL.actif ? 0 : cl(Math.exp(-(t - applaudir) * 0.5), 0, 1) * (grandPoint ? 1 : 0));
+    const bAff = bv || { x: (J[0].x + J[1].x) / 2, y: 1, z: 0 }; BALLE_VUE.x = lerp(BALLE_VUE.x, bAff.x, 0.15); BALLE_VUE.z = lerp(BALLE_VUE.z, bAff.z, 0.15);
+    gl.uniform3fv(U.uBalle, [BALLE_VUE.x, 1, BALLE_VUE.z]); gl.uniform1i(U.uFaisceau, 0);
     gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, smTex); gl.uniform1i(U.uSM, 1); gl.uniform1i(U.uTx, 0);
     const passe = (o, mat, inst) => { uniformes(o, inst); gl.uniformMatrix4fv(U.uM, false, mat);
       gl.uniform1i(U.uPeau, o.peau ? 1 : 0); if (o.peau) gl.uniformMatrix4fv(U.uOs, false, o.peau); gl.bindVertexArray(o.m.vao);
@@ -4761,6 +4865,21 @@ const G3D = (() => {
     gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, TX.cordage);
     for (const [m, mat, tr] of dyn) if (tr) passe({ m, tex: TX.cordage, alpha: 0.8, spec: 0 }, mat);
     TRACE.forEach((p, k) => passe({ m: BALLE, alpha: 0.05 + 0.3 * k / TRACE.length, emis: 0.8, spec: 0, recoit: false }, chaine(M4.tr(p.x, p.y, p.z), M4.sc(0.8, 0.8, 0.8))));
+    // rebonds : marque au sol (terre battue) et petit nuage de poussière (terre battue, gazon)
+    if (R && R.rebonds) for (const rb of R.rebonds) {
+      if (t < rb.t) continue;
+      if (E.surface === 'Clay') passe({ m: BALLE, col: [0.55, 0.24, 0.12], alpha: 0.55, spec: 0, recoit: false }, chaine(M4.tr(rb.x, 0.004, rb.z), M4.ry(rb.a), M4.sc(1.3, 0.03, 2.2)));
+      const age = t - rb.t; if (age > 0.9 || E.surface === 'Hard' || E.surface === 'Carpet') continue;
+      const col = E.surface === 'Clay' ? [0.85, 0.48, 0.3] : [0.75, 0.85, 0.6];
+      for (let k = 0; k < 5; k++) { const a = k * 1.256 + rb.a, r = 0.08 + age * 0.5;
+        passe({ m: BALLE, col, alpha: 0.35 * (1 - age / 0.9), spec: 0, recoit: false },
+          chaine(M4.tr(rb.x + Math.cos(a) * r, 0.04 + age * 0.25, rb.z + Math.sin(a) * r), M4.sc(1.5 + age * 6, 1.2 + age * 4, 1.5 + age * 6))); }
+    }
+    if (scene.faisceaux && QUALITE === 'haute') {
+      gl.blendFunc(gl.SRC_ALPHA, gl.ONE); gl.uniform1i(U.uFaisceau, 1);
+      passe({ m: scene.faisceaux.m, recoit: false, spec: 0 }, M4.id());
+      gl.uniform1i(U.uFaisceau, 0); gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+    }
     gl.depthMask(true); gl.disable(gl.BLEND);
     if (post) posttraitement(w, h);
     gl.bindVertexArray(null);
@@ -4911,7 +5030,10 @@ const G3D = (() => {
     _reinit() { R = null; FILE.length = 0; RAL.actif = false; RAL.prevu = null; E.dernier = null; this._t = 0; J[0].x = 0; J[0].z = -HL - 0.8; J[1].x = 0; J[1].z = HL + 0.8; J[0].vx = J[0].vz = J[1].vx = J[1].vz = 0; },
     _allure: allure,
     _modele(buf, pose) { const dv = new DataView(buf), n = dv.getUint32(4, true), J = JSON.parse(new TextDecoder().decode(new Uint8Array(buf, 8, n)));
-      lireOs(J, buf, 8 + n); return osModele({ x: 0, z: 0, cap: 0 }, pose || POSE_T()); },
+      lireOs(J, buf, 8 + n); MOD.clips = {}; const B = 8 + n;
+      for (const [nom, c] of Object.entries(J.clips || {})) MOD.clips[nom] = { ...c, Q: new Int16Array(buf.slice(B + c.q, B + c.q + c.nf * 23 * 8)), T: new Float32Array(buf.slice(B + c.t, B + c.t + c.nf * 12)) };
+      MOD.clipsBassin = J.clips_bassin || 0.917;
+      return osModele({ x: 0, z: 0, cap: 0 }, pose || POSE_T(), arguments[2]); },
     _post: () => !!(POST.ok && POST.ms && QUALITE === 'haute'),
     _squelette: (pose) => os({ x: 0, z: 0, cap: 0 }, pose || POSE0()), _inverse: inverseRigide,
     _cam: cam, _maj: maj, _etat: E, _J: J, _R: () => R, _poses: { poseAttente, poseCourse, poseCoupDroit, poseRevers, poseService },

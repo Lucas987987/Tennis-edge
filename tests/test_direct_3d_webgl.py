@@ -144,7 +144,7 @@ class MoteurWebGL(unittest.TestCase):
     def test_rien_ne_vient_d_ailleurs(self):
         for motif in ('http', 'import(', 'XMLHttpRequest', '.glb', 'new Image', 'src='):
             self.assertNotIn(motif, BLOC)
-        self.assertEqual(re.findall(r"fetch\('([^']*)'", BLOC), ['modeles/joueurs3d.bin?v=264'])   # seul fichier lu : sur le site
+        self.assertEqual(re.findall(r"fetch\('([^']*)'", BLOC), ['modeles/joueurs3d.bin?v=265'])   # seul fichier lu : sur le site
         for mot in ('marché', 'pinnacle'):
             self.assertNotIn(mot, BLOC.lower())
         self.assertIn('G3D.monter(h3, m, r, fini) && !T3D.monter(h3, m, r, fini)', HTML)   # repli sur la 3D simple
@@ -201,6 +201,8 @@ console.log(JSON.stringify({ etats }));
         self.assertEqual(len(J['os']['noms']), 23)
         self.assertEqual(set(J['corps']), {'H', 'F'})
         self.assertIn('CC0', J['licence'])
+        self.assertTrue({'Walk_Loop', 'Jog_Fwd_Loop', 'Sprint_Loop'} <= set(J['clips']))         # paquet 265 : déplacements captés
+        self.assertGreater(J['clips']['Jog_Fwd_Loop']['vitesse'], 4)
         self.assertIn('CC0', (RACINE / 'algo' / 'modeles' / 'LICENCE.txt').read_text(encoding='utf-8'))
         S = json.loads(subprocess.run(['node', '-e', r'''
 const fs = require('fs'), src = fs.readFileSync(process.argv[1], 'utf-8');
@@ -211,11 +213,15 @@ const T = G3D._modele(buf).skin, k0 = Array.from(T.slice(0, 16));
 let ecart = 0; for (let k = 1; k < 23; k++) for (let i = 0; i < 16; i++) ecart = Math.max(ecart, Math.abs(T[k * 16 + i] - k0[i]));
 const P = G3D._modele(buf, G3D._poses.poseCoupDroit(0.5));
 const fini = Array.from(P.skin).every(Number.isFinite) && !!P.raquette && P.raquette.every(Number.isFinite);
-console.log(JSON.stringify({ ecart, fini }));
+const C = G3D._modele(buf, G3D._poses.poseAttente(0), { w: 1, phase: 0.3, mix: [['Jog_Fwd_Loop', 0.5], ['Sprint_Loop', 0.5]] });
+const course = Array.from(C.skin).every(Number.isFinite) && !!C.raquette && C.raquette.every(Number.isFinite);
+const pied = k => [C.skin[k * 16 + 12], C.skin[k * 16 + 13], C.skin[k * 16 + 14]];
+console.log(JSON.stringify({ ecart, fini, course }));
 ''', str(RACINE / 'algo' / 'index.html'), str(RACINE / 'algo' / 'modeles' / 'joueurs3d.bin')], capture_output=True, text=True, check=True).stdout)
         self.assertLess(S['ecart'], 1e-3)                                                    # même transformation pour tous les os : rien ne se tord
         self.assertTrue(S['fini'])
-        self.assertIn("fetch('modeles/joueurs3d.bin?v=264')", BLOC)
+        self.assertTrue(S['course'])                                                          # en course, mouvement capté + raquette en main
+        self.assertIn("fetch('modeles/joueurs3d.bin?v=265')", BLOC)
         self.assertIn("MOD.etat === 'pret'", BLOC)                                           # sinon, les joueurs dessinés par le code
         A = json.loads(subprocess.run(['node', '-e', r'''
 const fs = require('fs'), src = fs.readFileSync(process.argv[1], 'utf-8');
