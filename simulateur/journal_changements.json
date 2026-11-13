@@ -1103,6 +1103,12 @@
    "prive": true,
    "paquet": 254,
    "quoi": "Forme des scores : garde-fou par circuit rétabli (paquet 254, travail interne) — le % de victoire ne change pas. Relecture des études de la nuit, circuit par circuit, à la demande de Lucas. Au paquet 246, la forme des scores était passée à la règle cumulée sur l'ensemble des matchs ; la règle d'avant exigeait en plus qu'aucun circuit ne perde, et ce garde-fou avait été perdu. Il revient : chaque circuit a son compteur cumulé ; un circuit dont la perte dépasse 2 erreurs types sur au moins 300 matchs bloque l'adoption ou fait sortir. Les autres décisions vérifiées étaient déjà prises circuit par circuit, ou communes par construction comme avant (modèle complet, poids appris sur les feuilles)."
+  },
+  {
+   "date": "2026-11-13",
+   "statut": "production",
+   "paquet": 255,
+   "quoi": "Ce qui restait commun aux circuits, jugé circuit par circuit (paquet 255, demande de Lucas : « chaque circuit est différent »). Inventaire relu : la plupart des réglages étaient déjà propres à chaque circuit. Trois choses restaient communes. (A) Les deux réglages de l'Elo au moment du pronostic (poids de la surface, prudence pour les joueurs peu vus), rejoués sur l'archive 2018 → juin 2026 : aucun réglage propre ne fait mieux (ATP +0,0001, WTA −0,0001 ; Challenger non concluant). (B) Les poids du mélange Elo + simulation appris sur l'archive : en ATP, des poids propres avec plus de simulation passent la règle (+0,0014 sur 2 259 matchs de 2025), pas en WTA ; rien n'est changé : le suivi sur nos propres matchs va dans l'autre sens, c'est une décision à prendre. (C) Le modèle complet des facteurs : un modèle propre à chaque circuit est désormais suivi en fantôme chaque lundi, sans effet sur le % tant qu'il n'est pas adopté. Le % de victoire ne change pas par ce paquet."
   }
  ]
 }

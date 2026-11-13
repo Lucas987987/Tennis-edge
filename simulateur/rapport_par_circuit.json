@@ -1,0 +1,107 @@
+{
+ "genere_le": "2026-11-12T23:27:10+00:00",
+ "paquet": 255,
+ "statut": "etude",
+ "regle": "circuit par circuit : réglage propre choisi sur la période d'apprentissage, jugé sur la période suivante contre le réglage commun ; retenu si −0,001 de log loss sur au moins 1 000 matchs jugés et gain aussi sur l'apprentissage ; Challenger non concluant sur l'archive",
+ "A_elo_au_moment_du_pronostic": {
+  "ATP": {
+   "matchs": {
+    "2018–2022": 11538,
+    "2023 → juin 2026": 9188
+   },
+   "choisi": {
+    "poids_surface": 0.4,
+    "incertitude": 10.0
+   },
+   "en_place": {
+    "poids_surface": 0.3,
+    "incertitude": 5.0
+   },
+   "gain_apprentissage": 0.00024,
+   "gain_jugement": 0.00012,
+   "erreur_type": 0.0003,
+   "retenu": false
+  },
+  "WTA": {
+   "matchs": {
+    "2018–2022": 10524,
+    "2023 → juin 2026": 8827
+   },
+   "choisi": {
+    "poids_surface": 0.3,
+    "incertitude": 7.5
+   },
+   "en_place": {
+    "poids_surface": 0.3,
+    "incertitude": 5.0
+   },
+   "gain_apprentissage": 1e-05,
+   "gain_jugement": -5e-05,
+   "erreur_type": 3e-05,
+   "retenu": false
+  },
+  "CH": {
+   "matchs": {
+    "2018–2022": 32808,
+    "2023 → juin 2026": 31883
+   },
+   "choisi": {
+    "poids_surface": 0.4,
+    "incertitude": 15.0
+   },
+   "en_place": {
+    "poids_surface": 0.3,
+    "incertitude": 5.0
+   },
+   "gain_apprentissage": 0.00078,
+   "gain_jugement": 0.00049,
+   "erreur_type": 0.00024,
+   "retenu": false,
+   "note": "non concluant : l'archive n'a pas les résultats ITF hommes du classement de production"
+  }
+ },
+ "B_poids_du_melange_archive": {
+  "poids_communs_2024": {
+   "elo": 0.8538,
+   "simulation": 0.236
+  },
+  "ATP": {
+   "matchs": {
+    "2024": 2475,
+    "2025 → janvier 2026": 2259
+   },
+   "poids_du_circuit": {
+    "elo": 0.7339,
+    "simulation": 0.3036
+   },
+   "gain_apprentissage": 0.00037,
+   "gain_jugement": 0.00137,
+   "erreur_type": 0.00063,
+   "retenu": true
+  },
+  "WTA": {
+   "matchs": {
+    "2024": 2303,
+    "2025 → janvier 2026": 2230
+   },
+   "poids_du_circuit": {
+    "elo": 1.0478,
+    "simulation": 0.1273
+   },
+   "gain_apprentissage": 0.00067,
+   "gain_jugement": -0.00169,
+   "erreur_type": 0.00078,
+   "retenu": false
+  }
+ },
+ "C_modele_complet_des_facteurs": "fantôme par circuit dans le flux du lundi (facteurs.py), règle cumulée à deux mesures",
+ "restent_communs": {
+  "welo et vitesse du classement": "le classement est commun : un joueur passe d'un circuit à l'autre",
+  "n0 des profils de service": "réglé par composante ; le rejeu complet des profils est hors de ce paquet",
+  "règle de stabilité": "seuil de décision, pas un réglage du modèle"
+ },
+ "retenus": [
+  "B · ATP"
+ ],
+ "conclusion": "A — réglages de l'Elo au moment du pronostic : rien ne passe (ATP +0,0001, WTA −0,0001 ; Challenger +0,0005, non concluant). B — poids du mélange sur l'archive : l'ATP passe la règle (poids propres 0,73 / 0,30, plus de simulation que les poids communs : +0,0014 ± 0,0006 sur 2 259 matchs jugés, +0,0004 sur 2024) ; la WTA non (−0,0017). Attention : le jugement hebdomadaire sur nos matchs suivis (poids propres ATP, paquet 242) va dans l'autre sens (moins de simulation) ; candidat ATP à décider par Lucas ou à suivre en fantôme. C — modèle complet par circuit : fantôme dans le flux du lundi"
+}
