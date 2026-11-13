@@ -108,6 +108,10 @@ jobs:
       - name: Coups des joueurs (Match Charting Project)
         continue-on-error: true
         run: python simulateur/coups_joueurs.py /tmp/mcp .
+      # 13/11/2026 (paquet 252) : style de jeu d'après les coups et bilans contre chaque style — descriptif
+      - name: Styles de jeu (Match Charting Project)
+        continue-on-error: true
+        run: python simulateur/styles_jeu.py /tmp/sackmann . /tmp/mcp
       # 04/11/2026 : vitesse de chaque tournoi sur l'échelle du CPI (officiel s'il est publié, sinon estimé) — information
       - name: Vitesse des courts (CPI officiel ou estimé)
         continue-on-error: true
