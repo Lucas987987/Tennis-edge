@@ -1,5 +1,5 @@
 {
- "genere_le": "2026-11-12T23:07:13+00:00",
+ "genere_le": "2026-11-12T23:16:47+00:00",
  "paquet": 252,
  "statut": "etude",
  "regle": "par variable (paire de styles, effet propre au joueur) et par circuit : β appris sur 2018–2022, jugé sur 2023 → juin 2026 ; retenu si −0,001 de log loss sur au moins 1 000 matchs concernés et β de même signe",
@@ -22,11 +22,11 @@
      "2018–2022": 1564,
      "2023 → juin 2026": 2438
     },
-    "beta_2018_2022": 0.178,
-    "beta_2023": 0.01,
-    "gain": -0.00264,
-    "erreur_type": 0.00158,
-    "erreurs_types": -1.67,
+    "beta_2018_2022": 0.184,
+    "beta_2023": 0.021,
+    "gain": -0.00244,
+    "erreur_type": 0.00162,
+    "erreurs_types": -1.51,
     "retenu": false
    },
    "WTA": {
@@ -34,11 +34,11 @@
      "2018–2022": 763,
      "2023 → juin 2026": 1634
     },
-    "beta_2018_2022": 0.192,
-    "beta_2023": -0.05,
-    "gain": -0.00619,
-    "erreur_type": 0.00224,
-    "erreurs_types": -2.77,
+    "beta_2018_2022": 0.234,
+    "beta_2023": -0.037,
+    "gain": -0.00832,
+    "erreur_type": 0.0028,
+    "erreurs_types": -2.98,
     "retenu": false
    }
   },
@@ -70,5 +70,5 @@
   }
  },
  "retenus": [],
- "conclusion": "aucune des deux variables ne passe : la table des paires de styles fait moins bien qu'avant (ATP −0,003, WTA −0,006 : elle apprend du bruit), l'effet propre au joueur ne gagne rien de net (ATP +0,0001, WTA +0,0007 ± 0,0006). Les styles de jeu restent une information"
+ "conclusion": "aucune des deux variables ne passe : la table des paires de styles, apprise circuit par circuit, fait moins bien qu'avant (ATP -0.0024, WTA -0.0083 : les écarts de 2018–2022 ne se répètent pas, β s'inverse en WTA) ; l'effet propre au joueur ne gagne rien de net (ATP +0.0001, WTA +0.0007). Les styles de jeu restent une information"
 }
