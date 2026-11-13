@@ -4,7 +4,7 @@
 scenarios_match.py — les SCÉNARIOS du match et leur CONTRÔLE sur nos matchs réels (11/11/2026, paquets 221–222).
 
 1. scenarios(distribution) : les 6 issues regroupées (chaque joueur gagne en 2 sets « sans trembler » = chaque set à
-   6-3 ou mieux, en 2 sets « accrochés » = au moins un set à 6-4, 7-5 ou 7-6, ou en 3 sets — dont « remontée » après
+   6-2 ou mieux, en 2 sets « accrochés » = au moins un set à 6-3, 6-4, 7-5 ou 7-6, ou en 3 sets — dont « remontée » après
    avoir perdu le 1er set), tie-break, set à 6-0 / 6-1, jeux (médiane, 10e et 90e centiles), et pour chaque joueur
    la chance de gagner s'il gagne / perd le 1er set. Calculé sur la distribution COMPLÈTE des scores exacts.
 
@@ -24,6 +24,14 @@ import math
 import os
 
 GROUPES = ('net', 'accroche', 'long')
+# 13/11/2026 (paquet 267, remarque d'un abonné relevée par Lucas) : un 6-3 peut ne compter qu'UN break, comme un 6-4
+# (6-3 quand le vainqueur sert en premier : il garde ses 5 services, l'autre perd 1 de ses 4). Le score seul ne dit pas
+# qui servait en premier ; seul un 6-2 ou mieux garantit au moins deux breaks d'avance. Donc « sans trembler » = chaque
+# set à 6-2 ou mieux (au moins 2 breaks d'avance à coup sûr), « accrochés » = au moins un set à 6-3, 6-4, 7-5 ou 7-6
+# (un seul break a pu suffire). DEFINITION = 2 ; les scénarios figés avant (sans ce numéro) sont reconstitués depuis
+# les scores exacts de la fiche, pour que prévu et réel suivent la même définition.
+DEFINITION = 2
+ECART_NET = 4                                                       # 6-2 : écart de 4 jeux
 CIRCUITS = ('ATP', 'WTA', 'CH')
 N_MIN, Z = 30, 1.96
 
@@ -66,7 +74,7 @@ def scenarios(D_):
         J[j]['si_set1_gagne'] = s1[j][1] / s1[j][0] if s1[j][0] > 0 else None
         J[j]['si_set1_perdu'] = (s1[o][0] - s1[o][1]) / s1[o][0] if s1[o][0] > 0 else None
     r4 = lambda x: round(x, 4) if x is not None else None  # noqa: E731
-    return {'j': [{k: r4(v) for k, v in o.items()} for o in J], 'tiebreak': r4(tb), 'set_sec': r4(sec),
+    return {'definition': DEFINITION, 'j': [{k: r4(v) for k, v in o.items()} for o in J], 'tiebreak': r4(tb), 'set_sec': r4(sec),
             'jeux': {'p10': centile(0.10), 'mediane': centile(0.50), 'p90': centile(0.90)}}
 
 
@@ -74,7 +82,7 @@ def issue(sc, v):
     """(groupe, remontée) du vainqueur v (0 = home) pour un score [(jeux home, jeux away), ...]."""
     perdus = sum(h[v] < h[1 - v] for h in sc)
     if perdus == 0:
-        return ('net' if all(h[v] - h[1 - v] >= 3 for h in sc) else 'accroche'), False
+        return ('net' if all(h[v] - h[1 - v] >= ECART_NET for h in sc) else 'accroche'), False
     return 'long', sc[0][v] < sc[0][1 - v]
 
 
@@ -155,6 +163,8 @@ def cas(racine):
             continue
         sc, v = sr
         prev = d.get('scenarios')
+        if prev and prev.get('definition') != DEFINITION:      # figé avec l'ancienne définition (6-3 « net »)
+            prev = None
         source = 'fige' if prev else 'reconstitue'
         prev = prev or reconstituer(d)
         if not prev:

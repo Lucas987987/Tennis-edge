@@ -1339,8 +1339,9 @@ function scenariosListe(m){
     net: n => fr ? `${n} en 2 sets, sans trembler` : `${n} in straight sets, comfortably`,
     accroche: n => fr ? `${n} en 2 sets accrochés` : `${n} in two tight sets`,
     long: n => fr ? `${n} en 3 sets` : `${n} in three sets`};
-  const aide = {net: fr ? 'chaque set à 6-3 ou mieux' : 'every set 6-3 or better',
-                accroche: fr ? 'au moins un set à 6-4, 7-5 ou 7-6' : 'at least one set 6-4, 7-5 or 7-6'};
+  // 13/11/2026 (paquet 267) : un 6-3 peut ne compter qu'un break, comme un 6-4 → il passe dans « accrochés »
+  const aide = {net: fr ? 'chaque set à 6-2 ou mieux : au moins 2 breaks d\'avance' : 'every set 6-2 or better: at least 2 breaks up',
+                accroche: fr ? 'au moins un set à 6-3, 6-4, 7-5 ou 7-6 : un seul break a pu suffire' : 'at least one set 6-3, 6-4, 7-5 or 7-6: a single break may have been enough'};
   const L_ = [];
   S.j.forEach((o,i)=>['net','accroche','long'].forEach(k=>L_.push({i, k, p:o[k], nom:lib[k](N[i]),
     aide: k==='long' ? (o.remontee >= 0.005 ? (fr ? `dont ${pc0(o.remontee)} après avoir perdu le 1er set` : `incl. ${pc0(o.remontee)} after losing the 1st set`) : '') : aide[k]})));
@@ -2011,7 +2012,7 @@ function analyseComplete(m, court_){
     if (LS){
       const o = [...LS].sort((a,b)=>b.p-a.p);
       bloc('🧭 LES SCÉNARIOS DU MATCH', ...o.map(x=>`• ${x.nom} : ${pct(x.p)}${x.aide && x.k==='long' ? ' (' + x.aide + ')' : ''}`),
-        '« Sans trembler » = chaque set à 6-3 ou mieux ; « accrochés » = au moins un set à 6-4, 7-5 ou 7-6.');
+        '« Sans trembler » = chaque set à 6-2 ou mieux (au moins 2 breaks d\'avance) ; « accrochés » = au moins un set à 6-3, 6-4, 7-5 ou 7-6 (un seul break a pu suffire).');
       retenir.push(`✅ Scénario le plus probable : ${o[0].nom} (${pct(o[0].p)}).`);
       const C = D.controle_scenarios && D.controle_scenarios.groupes, G = C && (C[m.circuit] || C.tous);
       if (G && G.net && G.net.n >= 60) T.splice(T.length - 1, 0, `🔍 Vérifié sur nos matchs passés : ${['net','accroche','long','remontee','gagne_apres_set1'].filter(x=>G[x] && G[x].verdict==='juste').length} scénarios sur 5 tombent juste.`);
