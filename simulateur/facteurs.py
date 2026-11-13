@@ -1430,6 +1430,18 @@ def main(argv):
             etat_st = ST.lire()
             # 12/11/2026 (paquet 246) : règle cumulée (forme_scores.juger donne le détail par match)
             ok, note = ST.decider(etat_st, 'forme_scores_v3', fs_en_place, rf['adopte'], paires=rf.pop('paires', None))
+            # 13/11/2026 (paquet 254) — garde-fou par circuit, perdu au paquet 246 : la règle d'avant exigeait « aucun
+            # circuit qui perd plus de 0,001 ». Chaque circuit a son compteur cumulé (départ : sans perte) ; un circuit
+            # dont la perte cumulée dépasse 2 erreurs types sur au moins 300 matchs bloque l'adoption, ou fait sortir.
+            pc_ = rf.pop('paires_par_circuit', None) or {}
+            perdants = []
+            for circ_, pp_ in sorted(pc_.items()):
+                ok_c, _ = ST.decider_cumule(etat_st, f'forme_scores_v3|{circ_}', True, pp_)
+                if not ok_c:
+                    perdants.append(circ_)
+            if perdants:
+                ok, note = False, f"{note} ; bloqué : perte nette sur {', '.join(perdants)}"
+                etat_st['forme_scores_v3']['adopte'] = False
             ST.ecrire(etat_st)
             rf['adopte_brut'], rf['adopte'], rf['stabilite'] = rf['adopte'], ok, note
             doc['forme_scores'] = rf
