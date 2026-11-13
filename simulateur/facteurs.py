@@ -913,7 +913,7 @@ def pertes_points(x, coefs, complet=None):
     return tot / n_tot if n_tot else None
 
 
-def paires_facteur(lignes, coefs_sans, coefs_avec, v_sans, v_avec, complet_avec=None, modeles=None):
+def paires_facteur(lignes, coefs_sans, coefs_avec, v_sans, v_avec, complet_avec=None, modeles=None, complet_sans=None):
     """12/11/2026 (paquet 246) — détail par match pour la règle cumulée à deux mesures (stabilite.decider_cumule_double) :
     {'points': [(jour, perte sans, perte avec)], 'vainqueur': [(jour, log loss sans, log loss avec)]}.
     Les coefficients « sans » couvrent les mêmes variables que « avec », à zéro (ou ceux en place pour le modèle complet).
@@ -921,7 +921,7 @@ def paires_facteur(lignes, coefs_sans, coefs_avec, v_sans, v_avec, complet_avec=
     pts, vq = [], []
     for x, a, b in zip(lignes, v_sans, v_avec):
         j = str(x.get('jour'))
-        ps = pertes_points(x, {m: c for m, c in coefs_sans.items() if not modeles or m in modeles})
+        ps = pertes_points(x, {m: c for m, c in coefs_sans.items() if not modeles or m in modeles}, complet_sans)
         pa = pertes_points(x, {m: c for m, c in coefs_avec.items() if not modeles or m in modeles}, complet_avec)
         if ps is not None and pa is not None:
             pts.append((j, round(ps, 6), round(pa, 6)))
@@ -1087,6 +1087,31 @@ def log_vrais_complet(L, m):
     return tot / n_tot if n_tot else None
 
 
+MIN_COMPLET_CIRCUIT = 300
+
+
+def complet_par_circuit(appr, juge, adoptes, m_commun):
+    """13/11/2026 (paquet 255, etude_par_circuit.py, partie C) — FANTÔME : le modèle complet appris sur les seules
+    feuilles d'un circuit contre le modèle complet commun, sur les matchs de ce circuit. Règle écrite avant tout
+    résultat : règle cumulée à deux mesures (stabilite.decider_cumule_double), vainqueur pour « entrer », points de
+    service en garde ; un fantôme adopté n'est PAS appliqué : il signale le circuit, la mise en place se décide à part."""
+    champion = apprendre(appr, adoptes) if adoptes else {}
+    reste = {k: v for k, v in champion.items() if k != 'service'}
+    out = {}
+    for circ in ('ATP', 'WTA', 'CH'):
+        A = [x for x in appr if x.get('circuit') == circ]
+        J = [x for x in juge if x.get('circuit') == circ]
+        if len(A) < MIN_COMPLET_CIRCUIT or len(J) < MIN_COMPLET_CIRCUIT:
+            out[circ] = {'matchs': [len(A), len(J)], 'paires': None}
+            continue
+        m_c = apprendre_complet(A, m_commun['variables'])
+        _, _, v0 = _vainqueur(J, dict(reste, _arbres_service=m_commun))
+        _, _, v1 = _vainqueur(J, dict(reste, _arbres_service=m_c))
+        P_ = paires_facteur(J, {}, {}, v0, v1, complet_avec=m_c, modeles=('service',), complet_sans=m_commun)
+        out[circ] = {'matchs': [len(A), len(J)], 'paires': P_}
+    return out
+
+
 def juger_complet(appr, juge, adoptes):
     """Rapport du modèle complet contre les groupes en place (règle fixée ci-dessus), verdict BRUT."""
     champion = apprendre(appr, adoptes) if adoptes else {}
@@ -1106,6 +1131,7 @@ def juger_complet(appr, juge, adoptes):
             'points_service': {'en_place': round(pts_ch, 6) if pts_ch else None, 'complet': round(pts_co, 6) if pts_co else None},
             'vainqueur': {'en_place': {'log_loss': ll_ch, 'reussite_pct': ok_ch}, 'complet': {'log_loss': ll_co, 'reussite_pct': ok_co}},
             'importance': dict(list(m['importance'].items())[:25]), 'reglages': m['reglages'], 'adopte': adopte,
+            '_modele': m,                                  # 13/11/2026 (paquet 255) : pour le fantôme par circuit, retiré ensuite
             # 12/11/2026 (paquet 246) : détail par match ; la mesure principale est le vainqueur, les points en garde
             'paires': paires_facteur(juge, {'service': {f: c_srv.get(f, 0.0) for f in noms}}, {}, v_ch, v_co,
                                      complet_avec=m, modeles=('service',)),
@@ -1382,8 +1408,26 @@ def main(argv):
                 doc['coefs'] = {k: v for k, v in (doc.get('coefs') or {}).items() if k != 'service'}
                 doc['coefs']['_arbres_service'] = {k: m[k] for k in ('pas', 'arbres', 'variables', 'reglages')}
                 doc['verdict'] += ' + modèle complet (service)'
+            m_commun = rc.pop('_modele', None)
             doc['modele_complet'] = rc
             print(f"  modele_complet     {'ADOPTÉ' if ok else 'non adopté'} — {rc['raison']} ({note})", flush=True)
+            # 13/11/2026 (paquet 255) — fantôme : modèle complet propre à chaque circuit (jamais appliqué ici)
+            try:
+                fc = complet_par_circuit(appr, juge, doc['adoptes'], m_commun) if m_commun else {}
+                etat_st = ST.lire()
+                doc['modele_complet_par_circuit'] = {}
+                for circ, v in fc.items():
+                    if v.get('paires') is None:
+                        doc['modele_complet_par_circuit'][circ] = {'fantome': True, 'matchs': v['matchs'], 'note': 'trop peu de matchs'}
+                        continue
+                    ok_c, note_c = ST.decider_cumule_double(etat_st, f'facteur:modele_complet:{circ}', False,
+                                                            v['paires']['vainqueur'], v['paires']['points'])
+                    doc['modele_complet_par_circuit'][circ] = {'fantome': True, 'signale': ok_c, 'matchs': v['matchs'],
+                                                               'note': note_c}
+                    print(f"    complet propre au circuit {circ} (fantôme) : {note_c}", flush=True)
+                ST.ecrire(etat_st)
+            except Exception as e:  # noqa: BLE001 — un fantôme ne bloque rien
+                print(f"::warning::fantôme du modèle complet par circuit non jugé : {type(e).__name__}: {e}")
             print(f"    variables les plus utilisées : {list(rc['importance'])[:10]}", flush=True)
         except Exception as e:
             print(f"::warning::Modèle complet non jugé : {type(e).__name__}: {e}")
