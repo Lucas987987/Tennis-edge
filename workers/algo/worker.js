@@ -181,12 +181,37 @@ export async function video(req, env) {
 }
 
 // 4. SCORES EN DIRECT (06/11/2026, demande de Lucas) : GET /live → les matchs de simple en cours (TennisApi,
-//    /api/tennis/events/live), compactés : score par set, points du jeu, serveur. Une requête TennisApi toutes les
-//    30 s AU PLUS quel que soit le nombre de visiteurs (≈ 2 900 par jour pour un quota de 15 000) : réponse gardée en
-//    mémoire et au coffre R2 (le cache HTTP de Cloudflare ne marche pas sur *.workers.dev). Clé : secret RAPIDAPI_KEY
-//    du worker, jamais exposée. Aucune cote, aucun pronostic : la page relie elle-même les matchs à ses % figés.
+//    /api/tennis/events/live), compactés : score par set, points du jeu, serveur. Une seule requête TennisApi par
+//    période de fraîcheur, quel que soit le nombre de visiteurs : réponse gardée en mémoire et au coffre R2 (le cache
+//    HTTP de Cloudflare ne marche pas sur *.workers.dev). Clé : secret RAPIDAPI_KEY du worker, jamais exposée.
+//    Aucune cote, aucun pronostic : la page relie elle-même les matchs à ses % figés.
+// 13/11/2026 (paquet 256, demande de Lucas : « en direct », 2 ou 3 s si ça rentre dans la limite) : fraîcheur
+//    ADAPTÉE AU QUOTA au lieu de 30 s fixes. Chaque réponse TennisApi donne le quota restant du jour et le délai
+//    avant renouvellement (en-têtes x-ratelimit-requests-remaining / -reset). On garde LIVE_RESERVE requêtes
+//    (3 000 par défaut : collecte habituelle ≈ 1 000 par jour + réserve de 1 500 des feuilles de match) et on étale
+//    le reste jusqu'au renouvellement : fraîcheur = délai restant ÷ (restant − réserve), bornée à [3 s ; 60 s].
+//    Consommation relevée du 06 au 13/11 : 800 à 1 800 requêtes par jour sur 15 000 → 3 s presque toute la
+//    journée ; si le direct est très regardé, la fraîcheur s'allonge seule et la collecte n'est jamais privée.
+//    Statistiques et point par point : en plus de leur plafond, elles s'arrêtent dès que le quota lu passe sous la
+//    réserve (le dernier relevé fait foi ; il se remet à jour à chaque réponse de TennisApi).
+//    Retrait : remettre LIVE_TTL_MIN_MS à 30 s (ou LIVE_RESERVE très haut dans wrangler.toml).
 const HOTE_TENNIS = 'tennisapi1.p.rapidapi.com';
-export const LIVE_TTL_MS = 30 * 1000;
+export const LIVE_TTL_MS = 10 * 1000;          // quota inconnu (en-têtes absents) : 10 s
+export const LIVE_TTL_MIN_MS = 3 * 1000;
+export const LIVE_TTL_MAX_MS = 60 * 1000;
+// Dernier quota TennisApi lu (scores ou fiches) : les statistiques et le point par point s'arrêtent aussi sous la réserve.
+export const QUOTA_VU = { restant: NaN };
+function lireQuota(r) {
+  const v = r && r.headers && r.headers.get('x-ratelimit-requests-remaining');
+  if (v != null && v !== '' && Number.isFinite(Number(v))) QUOTA_VU.restant = Number(v);
+}
+const reserveLive = env => { const x = parseInt(env.LIVE_RESERVE, 10); return Number.isFinite(x) ? x : 3000; };
+export function fraicheurLive(restant, resetS, reserve = 3000) {
+  if (!Number.isFinite(restant) || !Number.isFinite(resetS) || resetS < 0) return LIVE_TTL_MS;
+  const dispo = restant - reserve;
+  if (dispo <= 0) return LIVE_TTL_MAX_MS;
+  return Math.min(LIVE_TTL_MAX_MS, Math.max(LIVE_TTL_MIN_MS, Math.round(resetS * 1000 / dispo)));
+}
 const LIVE_R2 = 'live/en_cours.json';
 let LIVE_MEMOIRE = null;
 
@@ -220,9 +245,9 @@ export function compacterLive(events) {
 }
 
 export async function live(req, env) {
-  const h = { ...SECURITE, 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'public, max-age=15' };
+  const h = { ...SECURITE, 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'public, max-age=2' };
   const rep = o => new Response(JSON.stringify(o), { headers: h });
-  const frais = o => o && Date.now() - (o.maj || 0) < LIVE_TTL_MS;
+  const frais = o => o && Date.now() - (o.maj || 0) < (o.ttl || LIVE_TTL_MS);
   if (frais(LIVE_MEMOIRE)) return rep(LIVE_MEMOIRE);
   if (env.COFFRE) {
     try {
@@ -239,10 +264,13 @@ export async function live(req, env) {
       // brut : nombre de matchs reçus de TennisApi avant le filtre (simples seulement) — pour vérifier d'un coup d'œil
       const doc = r.ok ? await r.json() : null;
       const ev = doc ? (doc.events || []) : [];
-      o = r.ok ? { ok: true, maj: Date.now(), brut: ev.length, matchs: compacterLive(ev) }
-               : { ok: false, maj: Date.now(), message: `TennisApi : HTTP ${r.status}`, matchs: [] };
+      const en = k => { const v = r.headers && r.headers.get(k); return v == null || v === '' ? NaN : Number(v); };
+      lireQuota(r);
+      const ttl = fraicheurLive(en('x-ratelimit-requests-remaining'), en('x-ratelimit-requests-reset'), reserveLive(env));
+      o = r.ok ? { ok: true, maj: Date.now(), ttl, brut: ev.length, matchs: compacterLive(ev) }
+               : { ok: false, maj: Date.now(), ttl: LIVE_TTL_MAX_MS, message: `TennisApi : HTTP ${r.status}`, matchs: [] };
     } catch (e) {
-      o = { ok: false, maj: Date.now(), message: 'TennisApi injoignable.', matchs: [] };
+      o = { ok: false, maj: Date.now(), ttl: LIVE_TTL_MS, message: 'TennisApi injoignable.', matchs: [] };
     }
   }
   LIVE_MEMOIRE = o;
@@ -342,7 +370,8 @@ async function liveDetail(req, env, url, genre) {
   }
   const plafond = parseInt(env.LIVE_STATS_PLAFOND, 10) || 6000;
   const { cle } = await compter(env);
-  if (COMPTEUR.n >= plafond) return rep({ ...(connu || { ok: false, [D.champ]: null }), plafond: true });
+  if (COMPTEUR.n >= plafond || QUOTA_VU.restant <= reserveLive(env))
+    return rep({ ...(connu || { ok: false, [D.champ]: null }), plafond: true });
   if (!env.RAPIDAPI_KEY) return rep({ ok: false, message: 'clé TennisApi absente', [D.champ]: null });
   let o;
   try {
@@ -350,6 +379,7 @@ async function liveDetail(req, env, url, genre) {
     if (env.COFFRE) { try { await env.COFFRE.put(cle, JSON.stringify({ n: COMPTEUR.n })); } catch (e) { /* mémoire seule */ } }
     const r = await fetch(`https://${HOTE_TENNIS}${D.chemin(id)}`, {
       headers: { 'X-RapidAPI-Key': env.RAPIDAPI_KEY, 'X-RapidAPI-Host': HOTE_TENNIS, Accept: 'application/json' } });
+    lireQuota(r);
     o = r.ok ? { ok: true, id: +id, maj: Date.now(), [D.champ]: D.compacter(await r.json()) }
       // 404 = pas encore de données (début de match) : on le garde 60 s comme une réponse normale
              : { ok: r.status === 404, id: +id, maj: Date.now(), [D.champ]: connu ? connu[D.champ] : null, message: `TennisApi : HTTP ${r.status}` };

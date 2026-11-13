@@ -1090,6 +1090,32 @@
    "quoi": "Styles de jeu d'après les coups (paquet 252, demande de Lucas) — le % de victoire ne change pas. En plus du style service / retour, chaque joueur relevé coup par coup (au moins 10 matchs sur 3 ans, Match Charting Project) reçoit un ou deux styles de jeu, d'après la façon dont il gagne ses points dans l'échange face à la moyenne du circuit : joueur de filet, attaquant de coup droit, attaquant de revers, joueur de toucher, régulier, sinon complet. Seuils écrits avant de regarder un seul joueur. Sur la fiche, une partie « Styles de jeu » montre les étiquettes de chacun et son bilan contre le style de jeu de l'adversaire : victoires, attendu, écart à l'attendu, derniers matchs, comme le duel des styles ; le style de l'adversaire est figé à la date de chaque match. Étude : ni la paire de styles, ni l'effet propre à chaque joueur ne prédit le vainqueur au-delà de l'algo (matchs ATP et WTA où les deux joueurs ont un style).",
    "statut": "production",
    "paquet": 252
+  },
+  {
+   "date": "2026-11-13",
+   "statut": "etude",
+   "paquet": 253,
+   "quoi": "Styles de jeu, circuit par circuit (paquet 253, étude) — le % de victoire ne change pas. Question de Lucas : l'avantage d'un style sur un autre est-il propre à l'ATP ou à la WTA ? L'écart par paire de styles est maintenant appris séparément sur chaque circuit (2018–2022) et jugé sur 2023 → juin 2026 : il fait toujours moins bien que l'algo seul (ATP -0.0024, WTA -0.0083) ; en WTA, le sens s'inverse d'une période à l'autre. Aucun style ne bat un autre plus souvent que le niveau des joueurs ne le prévoit, sur aucun des deux circuits."
+  },
+  {
+   "date": "2026-11-13",
+   "statut": "production",
+   "prive": true,
+   "paquet": 254,
+   "quoi": "Forme des scores : garde-fou par circuit rétabli (paquet 254, travail interne) — le % de victoire ne change pas. Relecture des études de la nuit, circuit par circuit, à la demande de Lucas. Au paquet 246, la forme des scores était passée à la règle cumulée sur l'ensemble des matchs ; la règle d'avant exigeait en plus qu'aucun circuit ne perde, et ce garde-fou avait été perdu. Il revient : chaque circuit a son compteur cumulé ; un circuit dont la perte dépasse 2 erreurs types sur au moins 300 matchs bloque l'adoption ou fait sortir. Les autres décisions vérifiées étaient déjà prises circuit par circuit, ou communes par construction comme avant (modèle complet, poids appris sur les feuilles)."
+  },
+  {
+   "date": "2026-11-13",
+   "statut": "production",
+   "paquet": 255,
+   "quoi": "Ce qui restait commun aux circuits, jugé circuit par circuit (paquet 255, demande de Lucas : « chaque circuit est différent »). Inventaire relu : la plupart des réglages étaient déjà propres à chaque circuit. Trois choses restaient communes. (A) Les deux réglages de l'Elo au moment du pronostic (poids de la surface, prudence pour les joueurs peu vus), rejoués sur l'archive 2018 → juin 2026 : aucun réglage propre ne fait mieux (ATP +0,0001, WTA −0,0001 ; Challenger non concluant). (B) Les poids du mélange Elo + simulation appris sur l'archive : en ATP, des poids propres avec plus de simulation passent la règle (+0,0014 sur 2 259 matchs de 2025), pas en WTA ; rien n'est changé : le suivi sur nos propres matchs va dans l'autre sens, c'est une décision à prendre. (C) Le modèle complet des facteurs : un modèle propre à chaque circuit est désormais suivi en fantôme chaque lundi, sans effet sur le % tant qu'il n'est pas adopté. Le % de victoire ne change pas par ce paquet."
+  },
+  {
+   "date": "2026-11-13",
+   "statut": "production",
+   "paquet": 256,
+   "quoi": "SCORES EN DIRECT PLUS FRAIS (paquet 256, demande de Lucas). Le score affiché pendant un match se met à jour toutes les 3 secondes au lieu d'environ 30 : la page redemande les scores toutes les 3 s et le service qui les relit garde sa copie 3 s au plus (avant : 10 s et 30 s). La fréquence suit le crédit de requêtes du jour de la source des scores : relevé du 6 au 13 novembre, 800 à 1 800 requêtes utilisées par jour sur 15 000, donc 3 s presque tout le temps ; si le direct est très regardé, la mise à jour s'espace toute seule (jusqu'à 60 s) pour garder 3 000 requêtes à la collecte des feuilles de match. Il reste le délai propre à la source, quelques secondes. Le % de victoire ne change pas.",
+   "garde_fou": "Remettre 30 s de fraîcheur minimale au service des scores (workers/algo/worker.js, LIVE_TTL_MIN_MS) et 10 s à la page (algo/index.html, chargerLive)."
   }
  ]
 }
