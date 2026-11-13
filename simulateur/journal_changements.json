@@ -1186,6 +1186,13 @@
    "paquet": 266,
    "quoi": "LE DIRECT EN 3D GAGNE DES COUPS RETRAVAILLÉS, UNE RÉALISATION TÉLÉ ET DU SON (paquet 266, demande de Lucas : « l'ensemble », en restant gratuit). Coups réglés à la main comme en animation, faute de mouvements de tennis captés libres de droits : coup droit lifté en appuis ouverts (épaules tournées, raquette qui tombe sous la balle, frappe devant, accompagnement par-dessus l'épaule), revers à deux mains, revers slicé, volées, service (lancer, armé, frappe bras tendu, retombée dans le court) ; pieds posés au sol et poids qui passe d'une jambe à l'autre. Après chaque point : geste du vainqueur (poing serré, « allez ! » sur les beaux points) et du perdant (tête basse, mains sur la tête après une faute) ; en vue TV, gros plan sur le vainqueur puis, une fois sur deux, plan sur le public, l'arbitre ou le perdant, avant le ralenti. L'arbitre de chaise utilise le même modèle que les joueurs. Son fabriqué par le code, coupé par défaut (bouton 🔈) : frappes, rebonds, filet, rumeur et applaudissements, « Out ! », « Fault ! » et le score annoncé par la voix de synthèse de l'appareil. Rien n'est chargé ailleurs. Descriptif : le % ne change pas.",
    "garde_fou": "Retrait : remettre algo/index.html du paquet 265 (coups, gestes, plans et son sont tous dans le bloc G3D)."
+  },
+  {
+   "date": "2026-11-13",
+   "statut": "production",
+   "paquet": 267,
+   "quoi": "SCÉNARIOS DU MATCH : UN 6-3 COMPTE COMME UN SET ACCROCHÉ (paquet 267, remarque d'un abonné relevée par Lucas). Un 6-3 peut ne compter qu'un break, comme un 6-4 : quand le vainqueur sert en premier, il garde ses 5 jeux de service et ne prend qu'un des 4 jeux adverses. Le score seul ne dit pas qui servait en premier, et seul un 6-2 ou mieux garantit au moins deux breaks d'avance. Désormais « sans trembler » = chaque set à 6-2 ou mieux, « accrochés » = au moins un set à 6-3, 6-4, 7-5 ou 7-6. Sur nos 748 victoires réelles en 2 sets, la part « sans trembler » passe de 29,8 % à 12,0 % (ATP 17,9 → 7,3 ; WTA 32,0 → 14,4 ; Challenger 32,2 → 12,6). Le contrôle des scénarios sur nos matchs réels reste « juste » partout avec la nouvelle définition (même règle qu'au paquet 222) ; les scénarios figés avec l'ancienne définition sont recalculés depuis les scores exacts de la fiche. Rapport public : simulateur/rapport_sets_accroches.json. Descriptif : le % de victoire ne change pas.",
+   "garde_fou": "Retrait : ECART_NET = 3 et DEFINITION = 1 dans simulateur/scenarios_match.py, et remettre les deux textes de algo/index.html."
   }
  ]
 }
