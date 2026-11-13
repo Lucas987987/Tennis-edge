@@ -148,6 +148,25 @@ class MoteurWebGL(unittest.TestCase):
             self.assertNotIn(mot, BLOC.lower())
         self.assertIn('G3D.monter(h3, m, r, fini) && !T3D.monter(h3, m, r, fini)', HTML)   # repli sur la 3D simple
 
+    def test_squelette(self):
+        # paquet 262 : au repos, la peau ne bouge pas (os × inverse = identité) ; en attente, jambes et bras symétriques
+        S = json.loads(subprocess.run(['node', '-e', r'''
+const src = require('fs').readFileSync(process.argv[1], 'utf-8');
+const a = src.indexOf('const G3D = (() => {'), b = src.indexOf('// Vue du direct choisie par le visiteur');
+global.court = n => n; global.esc = x => x; eval(src.slice(a, b).replace('const G3D =', 'global.G3D ='));
+const M4mul = (a, b) => { const o = new Array(16).fill(0); for (let c = 0; c < 4; c++) for (let r = 0; r < 4; r++) for (let k = 0; k < 4; k++) o[c*4+r] += a[k*4+r] * b[c*4+k]; return o; };
+const rep = G3D._squelette().M; let ecart = 0;
+for (const m of rep) { const p = M4mul(m, G3D._inverse(m)); for (let k = 0; k < 16; k++) ecart = Math.max(ecart, Math.abs(p[k] - (k % 5 === 0 ? 1 : 0))); }
+const att = G3D._squelette(G3D._poses.poseAttente(0)).M, x = k => att[k][12];
+console.log(JSON.stringify({ n: rep.length, ecart, sym: [x(10) + x(13), x(11) + x(14), x(4) + x(7), x(5) + x(8)] }));
+''', str(RACINE / 'algo' / 'index.html')], capture_output=True, text=True, check=True).stdout)
+        self.assertEqual(S['n'], 15)
+        self.assertLess(S['ecart'], 1e-5)
+        for v in S['sym']:
+            self.assertLess(abs(v), 0.03)                                                   # gauche = miroir de droite
+        for x in ('uniform mat4 uOs[16]', 'aWt.x', 'function poseLisse'):
+            self.assertIn(x, BLOC)
+
     def test_qualite_et_ecran(self):
         self.assertIn("localStorage.setItem('te_3d_qualite', 'basse')", BLOC)          # repli automatique si ça rame
         self.assertIn('renderbufferStorageMultisample', BLOC)
