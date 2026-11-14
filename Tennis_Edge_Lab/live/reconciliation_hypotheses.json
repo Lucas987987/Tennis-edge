@@ -1,15 +1,15 @@
 {
  "schema_version": 2,
- "generated_at": "2026-11-13T12:41:44+00:00",
+ "generated_at": "2026-11-14T11:56:48+00:00",
  "sources": {
   "worker": {
    "source": "API Worker D1 /api/hypotheses (fetch_worker_snapshot.py)",
    "fichier": "worker_hypotheses_capture.json",
    "status": "ok",
-   "fetched_at": "2026-11-13T12:41:39Z",
-   "worker_generated_at": "2026-11-13T07:19:51Z"
+   "fetched_at": "2026-11-14T11:56:43Z",
+   "worker_generated_at": "2026-11-14T06:59:34Z"
   },
-  "suivi_officiel": "alertes en direct : h*_signal_log.jsonl + suivi_direct/resultats.json (verdicts_direct.json du 2026-11-13T12:41:44Z)",
+  "suivi_officiel": "alertes en direct : h*_signal_log.jsonl + suivi_direct/resultats.json (verdicts_direct.json du 2026-11-14T11:56:48Z)",
   "reconstruction": "moves_detail_hist.csv filtré par les règles gelées de validation_report.py (lignes jusqu'au 2026-11-01) — contrôle, ne juge pas",
   "rapprochement": "uid + joueur normalisé ; à défaut paire de joueurs + date ±1 jour"
  },
@@ -80,19 +80,19 @@
    "worker": {
     "gele_le": "2026-09-06",
     "out_of_sample": {
-     "n": 359,
+     "n": 360,
      "gains": 152,
-     "taux": 42.3,
+     "taux": 42.2,
      "seuil": 41.7,
-     "ecart": 0.7,
-     "roi": 2.2,
-     "pnl": 8.1,
-     "cote_moyenne": 2.43,
+     "ecart": 0.6,
+     "roi": 2,
+     "pnl": 7.1,
+     "cote_moyenne": 2.44,
      "clv_moyen": -1.7,
      "clv_pin_moyen": -1.7,
      "clv_pin_p": 1,
-     "clv_n": 370,
-     "clv_positif": 36.2,
+     "clv_n": 371,
+     "clv_positif": 36.1,
      "lead_moyen_h": 8.3,
      "periode": "2026-09-07 -> 2026-11-12",
      "verdict": "ne tranche pas",
@@ -100,15 +100,15 @@
      "n_envoyees": 374,
      "n_doublons": 0,
      "n_non_envoyees_autres": 1,
-     "n_denouees": 359,
-     "n_commencees": 374,
+     "n_denouees": 360,
+     "n_commencees": 375,
      "n_sans_resultat": 15,
      "sans_resultat_pct": 4,
      "verrouillable": true,
      "statut": "verrouillable (résultats complets à 96 %)"
     },
-    "n": 359,
-    "roi": 2.2
+    "n": 360,
+    "roi": 2
    },
    "suivi_officiel": {
     "n": 204,
@@ -120,15 +120,15 @@
      -2.5,
      -0.9
     ],
-    "clv_n": 370,
+    "clv_n": 371,
     "n_detectees": 375,
     "n_envoyees": 374,
     "n_doublons": 0,
     "source": "verdicts_direct.json (recalculé : journal plus récent)",
-    "sans_resultat_pct": 45.5,
-    "statut": "en attente de résultats (45,5 % sans résultat)",
+    "sans_resultat_pct": 45.6,
+    "statut": "en attente de résultats (45,6 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-11-13T12:41:44Z"
+    "genere_le": "2026-11-14T11:56:48Z"
    },
    "reconstruction": {
     "n": 243,
@@ -8449,55 +8449,55 @@
    "worker": {
     "gele_le": "2026-10-02",
     "out_of_sample": {
-     "n": 126,
+     "n": 128,
      "gains": 57,
-     "taux": 45.2,
-     "seuil": 40.7,
-     "ecart": 4.5,
-     "roi": 10.1,
-     "pnl": 12.8,
-     "cote_moyenne": 2.93,
-     "clv_moyen": -0.3,
-     "clv_pin_moyen": -0.3,
-     "clv_pin_p": 0.6404,
-     "clv_n": 135,
-     "clv_positif": 42.2,
-     "lead_moyen_h": 12.5,
-     "periode": "2026-10-16 -> 2026-11-11",
+     "taux": 44.5,
+     "seuil": 40.8,
+     "ecart": 3.7,
+     "roi": 8.4,
+     "pnl": 10.8,
+     "cote_moyenne": 2.92,
+     "clv_moyen": -0.4,
+     "clv_pin_moyen": -0.4,
+     "clv_pin_p": 0.6519,
+     "clv_n": 137,
+     "clv_positif": 41.6,
+     "lead_moyen_h": 12.6,
+     "periode": "2026-10-16 -> 2026-11-13",
      "verdict": "ne tranche pas",
      "n_detectees": 138,
      "n_envoyees": 47,
      "n_doublons": 91,
      "n_non_envoyees_autres": 0,
-     "n_denouees": 126,
-     "n_commencees": 136,
+     "n_denouees": 128,
+     "n_commencees": 138,
      "n_sans_resultat": 10,
-     "sans_resultat_pct": 7.4,
+     "sans_resultat_pct": 7.2,
      "verrouillable": true,
      "statut": "verrouillable (résultats complets à 93 %)"
     },
-    "n": 126,
-    "roi": 10.1
+    "n": 128,
+    "roi": 8.4
    },
    "suivi_officiel": {
     "n": 10,
     "gagnes": 4,
     "roi": -13.8,
     "pts": 4.0,
-    "clv_pin": -0.3,
+    "clv_pin": -0.4,
     "clv_pin_ic95": [
      -2.1,
-     1.5
+     1.4
     ],
-    "clv_n": 135,
+    "clv_n": 137,
     "n_detectees": 138,
     "n_envoyees": 47,
     "n_doublons": 91,
     "source": "verdicts_direct.json (recalculé : journal plus récent)",
-    "sans_resultat_pct": 92.7,
-    "statut": "en attente de résultats (92,7 % sans résultat)",
+    "sans_resultat_pct": 92.8,
+    "statut": "en attente de résultats (92,8 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-11-13T12:41:44Z"
+    "genere_le": "2026-11-14T11:56:48Z"
    },
    "reconstruction": {
     "n": 193,
@@ -14565,19 +14565,19 @@
    "worker": {
     "gele_le": "2026-09-25",
     "out_of_sample": {
-     "n": 118,
+     "n": 119,
      "gains": 45,
-     "taux": 38.1,
+     "taux": 37.8,
      "seuil": 36.9,
-     "ecart": 1.2,
-     "roi": 3.3,
-     "pnl": 3.9,
+     "ecart": 0.9,
+     "roi": 2.4,
+     "pnl": 2.9,
      "cote_moyenne": 2.73,
-     "clv_moyen": -1.5,
-     "clv_pin_moyen": -1.5,
-     "clv_pin_p": 0.9938,
-     "clv_n": 126,
-     "clv_positif": 37.3,
+     "clv_moyen": -1.6,
+     "clv_pin_moyen": -1.6,
+     "clv_pin_p": 0.9945,
+     "clv_n": 127,
+     "clv_positif": 37,
      "lead_moyen_h": 9.1,
      "periode": "2026-09-26 -> 2026-11-12",
      "verdict": "ne tranche pas",
@@ -14585,35 +14585,35 @@
      "n_envoyees": 0,
      "n_doublons": 129,
      "n_non_envoyees_autres": 0,
-     "n_denouees": 118,
-     "n_commencees": 128,
+     "n_denouees": 119,
+     "n_commencees": 129,
      "n_sans_resultat": 10,
      "sans_resultat_pct": 7.8,
      "verrouillable": true,
      "statut": "verrouillable (résultats complets à 92 %)"
     },
-    "n": 118,
-    "roi": 3.3
+    "n": 119,
+    "roi": 2.4
    },
    "suivi_officiel": {
     "n": 35,
     "gagnes": 17,
     "roi": 30.4,
     "pts": 11.2,
-    "clv_pin": -1.5,
+    "clv_pin": -1.6,
     "clv_pin_ic95": [
      -2.8,
-     -0.3
+     -0.4
     ],
-    "clv_n": 126,
+    "clv_n": 127,
     "n_detectees": 129,
     "n_envoyees": 0,
     "n_doublons": 129,
     "source": "verdicts_direct.json (recalculé : journal plus récent)",
-    "sans_resultat_pct": 72.7,
-    "statut": "en attente de résultats (72,7 % sans résultat)",
+    "sans_resultat_pct": 72.9,
+    "statut": "en attente de résultats (72,9 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-11-13T12:41:44Z"
+    "genere_le": "2026-11-14T11:56:48Z"
    },
    "reconstruction": {
     "n": 96,
@@ -17837,55 +17837,55 @@
    "worker": {
     "gele_le": "2026-09-25",
     "out_of_sample": {
-     "n": 292,
-     "gains": 198,
-     "taux": 67.8,
-     "seuil": 67.9,
-     "ecart": -0.1,
-     "roi": -0.2,
-     "pnl": -0.5,
+     "n": 296,
+     "gains": 200,
+     "taux": 67.6,
+     "seuil": 67.8,
+     "ecart": -0.2,
+     "roi": -0.4,
+     "pnl": -1.3,
      "cote_moyenne": 1.49,
-     "clv_moyen": -0.5,
-     "clv_pin_moyen": -0.5,
-     "clv_pin_p": 0.9801,
-     "clv_n": 303,
-     "clv_positif": 40.6,
+     "clv_moyen": -0.6,
+     "clv_pin_moyen": -0.6,
+     "clv_pin_p": 0.9853,
+     "clv_n": 309,
+     "clv_positif": 40.1,
      "lead_moyen_h": 7.7,
-     "periode": "2026-09-26 -> 2026-11-12",
+     "periode": "2026-09-26 -> 2026-11-13",
      "verdict": "ne tranche pas",
-     "n_detectees": 307,
-     "n_envoyees": 307,
+     "n_detectees": 311,
+     "n_envoyees": 311,
      "n_doublons": 0,
      "n_non_envoyees_autres": 0,
-     "n_denouees": 292,
-     "n_commencees": 306,
-     "n_sans_resultat": 14,
-     "sans_resultat_pct": 4.6,
+     "n_denouees": 296,
+     "n_commencees": 311,
+     "n_sans_resultat": 15,
+     "sans_resultat_pct": 4.8,
      "verrouillable": true,
      "statut": "verrouillable (résultats complets à 95 %)"
     },
-    "n": 292,
-    "roi": -0.2
+    "n": 296,
+    "roi": -0.4
    },
    "suivi_officiel": {
     "n": 117,
     "gagnes": 82,
     "roi": 2.1,
     "pts": 1.9,
-    "clv_pin": -0.5,
+    "clv_pin": -0.6,
     "clv_pin_ic95": [
-     -1.0,
-     -0.0
+     -1.1,
+     -0.1
     ],
-    "clv_n": 303,
-    "n_detectees": 309,
-    "n_envoyees": 309,
+    "clv_n": 309,
+    "n_detectees": 311,
+    "n_envoyees": 311,
     "n_doublons": 0,
     "source": "verdicts_direct.json (recalculé : journal plus récent)",
-    "sans_resultat_pct": 61.9,
-    "statut": "en attente de résultats (61,9 % sans résultat)",
+    "sans_resultat_pct": 62.4,
+    "statut": "en attente de résultats (62,4 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-11-13T12:41:44Z"
+    "genere_le": "2026-11-14T11:56:48Z"
    },
    "reconstruction": {
     "n": 264,
@@ -17903,8 +17903,8 @@
     "egal_validation_report": true
    },
    "entonnoir": {
-    "direct_detectees": 309,
-    "direct_envoyees": 309,
+    "direct_detectees": 311,
+    "direct_envoyees": 311,
     "direct_doublons": 0,
     "direct_non_envoyees_autres": 0,
     "direct_denouees": 117,
@@ -17915,12 +17915,12 @@
     "reconstruction_seule_raisons": {
      "apres_coup": 321
     },
-    "direct_seule": 206,
+    "direct_seule": 208,
     "direct_seule_raisons": {
      "cote_opposee_reco": 55,
      "absent_reconstruction": 62,
      "prix_different": 7,
-     "pas_encore_reconstruit": 82
+     "pas_encore_reconstruit": 84
     },
     "inexpliques": 0
    },
@@ -25368,6 +25368,34 @@
      "libelle": "Pas encore dans la reconstruction",
      "detail": "match du 2026-11-13, reconstruction arrêtée au 2026-11-01",
      "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-11-13",
+     "match": "Michael Zheng – Stefan Kozlov",
+     "joueur": "Michael Zheng",
+     "uid": "2026-11-13_stefan_kozlov_michael_zheng",
+     "cote": 1.533,
+     "book": "888sport",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-11-13, reconstruction arrêtée au 2026-11-01",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-11-13",
+     "match": "Aryna Sabalenka – Elina Svitolina",
+     "joueur": "Aryna Sabalenka",
+     "uid": "2026-11-13_aryna_sabalenka_elina_svitolina",
+     "cote": 1.52,
+     "book": "unibet",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-11-13, reconstruction arrêtée au 2026-11-01",
+     "explique": true
     }
    ]
   },
@@ -25379,55 +25407,55 @@
    "worker": {
     "gele_le": "2026-09-27",
     "out_of_sample": {
-     "n": 255,
-     "gains": 170,
-     "taux": 66.7,
-     "seuil": 66,
-     "ecart": 0.7,
-     "roi": 0.9,
-     "pnl": 2.2,
+     "n": 259,
+     "gains": 172,
+     "taux": 66.4,
+     "seuil": 65.9,
+     "ecart": 0.5,
+     "roi": 0.6,
+     "pnl": 1.4,
      "cote_moyenne": 1.53,
-     "clv_moyen": -0.6,
-     "clv_pin_moyen": -0.6,
-     "clv_pin_p": 0.9853,
-     "clv_n": 265,
-     "clv_positif": 38.9,
-     "lead_moyen_h": 7.9,
-     "periode": "2026-09-29 -> 2026-11-12",
+     "clv_moyen": -0.7,
+     "clv_pin_moyen": -0.7,
+     "clv_pin_p": 0.9894,
+     "clv_n": 271,
+     "clv_positif": 38.4,
+     "lead_moyen_h": 7.8,
+     "periode": "2026-09-29 -> 2026-11-13",
      "verdict": "ne tranche pas",
-     "n_detectees": 267,
-     "n_envoyees": 267,
+     "n_detectees": 271,
+     "n_envoyees": 271,
      "n_doublons": 0,
      "n_non_envoyees_autres": 0,
-     "n_denouees": 255,
-     "n_commencees": 266,
-     "n_sans_resultat": 11,
-     "sans_resultat_pct": 4.1,
+     "n_denouees": 259,
+     "n_commencees": 271,
+     "n_sans_resultat": 12,
+     "sans_resultat_pct": 4.4,
      "verrouillable": true,
      "statut": "verrouillable (résultats complets à 96 %)"
     },
-    "n": 255,
-    "roi": 0.9
+    "n": 259,
+    "roi": 0.6
    },
    "suivi_officiel": {
     "n": 99,
     "gagnes": 66,
     "roi": 1.0,
     "pts": 0.8,
-    "clv_pin": -0.6,
+    "clv_pin": -0.7,
     "clv_pin_ic95": [
      -1.2,
      -0.1
     ],
-    "clv_n": 265,
-    "n_detectees": 269,
-    "n_envoyees": 269,
+    "clv_n": 271,
+    "n_detectees": 271,
+    "n_envoyees": 271,
     "n_doublons": 0,
     "source": "verdicts_direct.json (recalculé : journal plus récent)",
-    "sans_resultat_pct": 62.9,
-    "statut": "en attente de résultats (62,9 % sans résultat)",
+    "sans_resultat_pct": 63.5,
+    "statut": "en attente de résultats (63,5 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-11-13T12:41:44Z"
+    "genere_le": "2026-11-14T11:56:48Z"
    },
    "reconstruction": {
     "n": 225,
@@ -25445,8 +25473,8 @@
     "egal_validation_report": true
    },
    "entonnoir": {
-    "direct_detectees": 269,
-    "direct_envoyees": 269,
+    "direct_detectees": 271,
+    "direct_envoyees": 271,
     "direct_doublons": 0,
     "direct_non_envoyees_autres": 0,
     "direct_denouees": 99,
@@ -25457,12 +25485,12 @@
     "reconstruction_seule_raisons": {
      "apres_coup": 257
     },
-    "direct_seule": 178,
+    "direct_seule": 180,
     "direct_seule_raisons": {
      "cote_opposee_reco": 50,
      "prix_different": 7,
      "absent_reconstruction": 50,
-     "pas_encore_reconstruit": 71
+     "pas_encore_reconstruit": 73
     },
     "inexpliques": 0
    },
@@ -31622,6 +31650,34 @@
      "libelle": "Pas encore dans la reconstruction",
      "detail": "match du 2026-11-13, reconstruction arrêtée au 2026-11-01",
      "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-11-13",
+     "match": "Michael Zheng – Stefan Kozlov",
+     "joueur": "Michael Zheng",
+     "uid": "2026-11-13_stefan_kozlov_michael_zheng",
+     "cote": 1.533,
+     "book": "888sport",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-11-13, reconstruction arrêtée au 2026-11-01",
+     "explique": true
+    },
+    {
+     "sens": "direct seule",
+     "date": "2026-11-13",
+     "match": "Aryna Sabalenka – Elina Svitolina",
+     "joueur": "Aryna Sabalenka",
+     "uid": "2026-11-13_aryna_sabalenka_elina_svitolina",
+     "cote": 1.52,
+     "book": "unibet",
+     "statut": "non dénouée",
+     "raison": "pas_encore_reconstruit",
+     "libelle": "Pas encore dans la reconstruction",
+     "detail": "match du 2026-11-13, reconstruction arrêtée au 2026-11-01",
+     "explique": true
     }
    ]
   },
@@ -31681,7 +31737,7 @@
     "sans_resultat_pct": 60.4,
     "statut": "en attente de résultats (60,4 % sans résultat)",
     "verrouillable": false,
-    "genere_le": "2026-11-13T12:41:44Z"
+    "genere_le": "2026-11-14T11:56:48Z"
    },
    "reconstruction": {
     "n": 112,
@@ -35636,7 +35692,7 @@
     "sans_resultat_pct": 0.0,
     "statut": "verrouillable (résultats complets à 100 %)",
     "verrouillable": true,
-    "genere_le": "2026-11-13T12:41:44Z"
+    "genere_le": "2026-11-14T11:56:48Z"
    },
    "reconstruction": {
     "n": 51,
