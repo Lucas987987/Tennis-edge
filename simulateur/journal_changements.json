@@ -1508,6 +1508,13 @@
    "paquet": 313,
    "quoi": "ÉTUDE « LÀ OÙ L'ALGO HÉSITE » (paquet 313, décision de Lucas). Sur l'archive, dans les matchs où l'algo donne son favori entre 50 et 60 %, cinq indices connus avant le match ont été jugés circuit par circuit selon une règle écrite avant (apprendre sur 2018–2022, juger sur 2023 → juin 2026, gain ≥ 0,001 sur ≥ 1 000 matchs, ≥ 2 erreurs types, même sens sur les deux périodes). Retenus en Challenger seulement : l'écart de classement officiel (gain 0,0026, 7,1 erreurs types), l'expérience (matchs déjà joués ; gain 0,0033, 6,9 erreurs types) et l'invitation (favori invité moins fort qu'annoncé ; gain 0,0118 sur 1 767 matchs, 3,2 erreurs types). Ensemble, sur toute la zone Challenger (15 082 matchs, 40 % des Challengers) : gain 0,0041, Brier de la zone 0,2464 → 0,2444. Rien de retenu en ATP ni en WTA ; la qualification et le domicile ne passent nulle part.",
    "garde_fou": "Étude seulement : rien n'entre dans l'algo sans un paquet à part, avec sa règle de retrait. Rapport public simulateur/rapport_hesitation.json (aucun nom de joueur). Retrait : supprimer simulateur/etude_hesitation.py, simulateur/rapport_hesitation.json et tests/test_hesitation.py."
+  },
+  {
+   "date": "2026-11-20",
+   "statut": "production",
+   "paquet": 314,
+   "quoi": "ZONE D'HÉSITATION EN CHALLENGER (paquet 314, décision de Lucas après l'étude du paquet 313). Quand l'algo donne son favori entre 50 et 60 % en Challenger (après les signaux en place), deux indices connus avant le match corrigent le % : l'écart de classement officiel (favori mieux classé : un peu renforcé ; moins bien classé : un peu affaibli) et l'invitation (un favori invité est affaibli, un adversaire invité le renforce). Coefficients appris ensemble sur 2018–2022, jugés sur 2023 → juin 2026 : 15 082 matchs, gain de log loss 0,0028 (5,9 erreurs types), Brier de la zone 0,2464 → 0,2450. L'expérience, retenue aussi par l'étude, attend un compteur de matchs identique à celui de l'étude. Le site affiche l'indice appliqué (« match serré : écart de classement officiel », « match serré : joueur invité »).",
+   "garde_fou": "Retrait automatique chaque lundi (simulateur/outsiders_ch.py), indice par indice : avec au moins 200 matchs Challenger jugés où l'indice a joué, si la log loss AVEC dépasse celle SANS d'au moins 0,001, il est retiré (simulateur/hesitation_ch.json). Retrait à la main : « retire » à true dans simulateur/hesitation_ch.json."
   }
  ]
 }
