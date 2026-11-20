@@ -1,0 +1,68 @@
+name: Classements du jour (et vérification de la veille)
+
+# AJOUTÉ LE 06/11/2026 (demande de Lucas, paquet 195). Chaque matin, deux cartes PNG 1080×1350 pour X :
+#   — « Les classements d'hier, vérifiés » : aces, 3 sets, tie-break, favoris de la veille, prévu contre réel,
+#     juste ou faux avec la même mise en forme ;
+#   — « Les classements du jour » : le plus d'aces attendus, vers un 3e set, tie-break en vue, les plus nets favoris.
+# Tout vient de algo/donnees.json (après les pronostics de 8 h 23, heure de Paris). Aucune cote, aucune adresse de
+# site. Envoyées sur le Telegram PRIVÉ seulement ; rien de commité. Besoin du paquet 194 (scripts/installer_video.sh).
+
+on:
+  workflow_dispatch:
+    inputs:
+      jour:
+        description: "Jour de la carte du matin (AAAA-MM-JJ, vide = aujourd'hui)"
+        required: false
+        default: ''
+  schedule:
+    - cron: '53 7 * * *'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: classements-du-jour
+  cancel-in-progress: false
+
+jobs:
+  cartes:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /algo/donnees.json
+            /scripts/classements_du_jour.py
+            /scripts/installer_video.sh
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Navigateur (Chromium, sans apt)
+        run: bash scripts/installer_video.sh
+
+      - name: Cartes
+        id: cartes
+        run: |
+          python scripts/classements_du_jour.py --sortie classements --jour "${{ inputs.jour }}"
+          if ls classements/*.png >/dev/null 2>&1; then echo "ok=1" >> "$GITHUB_OUTPUT"; else echo "ok=0" >> "$GITHUB_OUTPUT"; fi
+
+      - name: Envoyer sur le Telegram privé
+        if: steps.cartes.outputs.ok == '1'
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          if [ -z "${TELEGRAM_TOKEN}" ] || [ -z "${TELEGRAM_CHAT_ID}" ]; then echo '::error::Telegram non configuré : cartes non envoyées.'; exit 1; fi
+          envoyer() {
+            [ -s "classements/$1.png" ] || return 0
+            curl --fail-with-body -sS -o /dev/null -w "Telegram $1 : HTTP %{http_code}\n" \
+              -F chat_id="${TELEGRAM_CHAT_ID}" -F caption="$2" -F photo=@"classements/$1.png" \
+              "https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendPhoto"
+          }
+          envoyer verification "✅ Les classements d'hier, vérifiés — prévu contre réel"
+          envoyer classements "📊 Les classements du jour"

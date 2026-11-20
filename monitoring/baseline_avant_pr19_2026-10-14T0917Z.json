@@ -1,0 +1,264 @@
+{
+ "genere_a": "2026-10-14T09:18:04.203432+00:00",
+ "deploy": "2026-10-14T09:14:44+00:00",
+ "providers": {
+  "kalshi": {
+   "fenetres": {
+    "A_avant_deploy_-48h_-24h": {
+     "debut": "2026-10-12T09:14:44+00:00",
+     "fin": "2026-10-13T09:14:44+00:00",
+     "duree_min": 1440,
+     "runs": {
+      "total": 405,
+      "success": 46,
+      "failure": 46,
+      "cancelled": 313,
+      "actifs_ou_en_attente": 0,
+      "echecs_a_l_etape_commit": 46,
+      "dispatch_manuels_workflow_dispatch": 405,
+      "dispatch_externes_repository_dispatch": 0,
+      "schedule": 0
+     },
+     "minutes_avec_ticks": 722,
+     "couverture_pct": 50.1,
+     "trous_ge_3min": 46,
+     "minutes_dans_trous": 718,
+     "plus_long_trou_min": 18,
+     "trous_top5": [
+      {
+       "de": "2026-10-12T19:47:00+00:00",
+       "a": "2026-10-12T20:06:00+00:00",
+       "min": 18
+      },
+      {
+       "de": "2026-10-12T10:21:00+00:00",
+       "a": "2026-10-12T10:38:00+00:00",
+       "min": 16
+      },
+      {
+       "de": "2026-10-12T11:24:00+00:00",
+       "a": "2026-10-12T11:41:00+00:00",
+       "min": 16
+      },
+      {
+       "de": "2026-10-12T11:55:00+00:00",
+       "a": "2026-10-12T12:12:00+00:00",
+       "min": 16
+      },
+      {
+       "de": "2026-10-12T12:27:00+00:00",
+       "a": "2026-10-12T12:44:00+00:00",
+       "min": 16
+      }
+     ]
+    },
+    "B_reference_-24h": {
+     "debut": "2026-10-13T09:14:44+00:00",
+     "fin": "2026-10-14T09:14:44+00:00",
+     "duree_min": 1440,
+     "runs": {
+      "total": 405,
+      "success": 45,
+      "failure": 45,
+      "cancelled": 313,
+      "actifs_ou_en_attente": 2,
+      "echecs_a_l_etape_commit": 45,
+      "dispatch_manuels_workflow_dispatch": 405,
+      "dispatch_externes_repository_dispatch": 0,
+      "schedule": 0
+     },
+     "minutes_avec_ticks": 724,
+     "couverture_pct": 50.3,
+     "trous_ge_3min": 46,
+     "minutes_dans_trous": 715,
+     "plus_long_trou_min": 17,
+     "trous_top5": [
+      {
+       "de": "2026-10-13T18:52:00+00:00",
+       "a": "2026-10-13T19:10:00+00:00",
+       "min": 17
+      },
+      {
+       "de": "2026-10-13T09:56:00+00:00",
+       "a": "2026-10-13T10:13:00+00:00",
+       "min": 16
+      },
+      {
+       "de": "2026-10-13T10:28:00+00:00",
+       "a": "2026-10-13T10:45:00+00:00",
+       "min": 16
+      },
+      {
+       "de": "2026-10-13T10:59:00+00:00",
+       "a": "2026-10-13T11:16:00+00:00",
+       "min": 16
+      },
+      {
+       "de": "2026-10-13T11:31:00+00:00",
+       "a": "2026-10-13T11:48:00+00:00",
+       "min": 16
+      }
+     ]
+    },
+    "C_apres_deploy": {
+     "debut": "2026-10-14T09:14:44+00:00",
+     "fin": "2026-10-14T09:18:04.203432+00:00",
+     "duree_min": 3,
+     "runs": {
+      "total": 0,
+      "success": 0,
+      "failure": 0,
+      "cancelled": 0,
+      "actifs_ou_en_attente": 0,
+      "echecs_a_l_etape_commit": 0,
+      "dispatch_manuels_workflow_dispatch": 0,
+      "dispatch_externes_repository_dispatch": 0,
+      "schedule": 0
+     },
+     "minutes_avec_ticks": 0,
+     "couverture_pct": 0.0,
+     "trous_ge_3min": 1,
+     "minutes_dans_trous": 3,
+     "plus_long_trou_min": 3,
+     "trous_top5": [
+      {
+       "de": "2026-10-14T09:14:44+00:00",
+       "a": "2026-10-14T09:18:04.203432+00:00",
+       "min": 3
+      }
+     ]
+    }
+   },
+   "derniere_publication": "2026-10-14T09:03:11Z|9e94059e6|Kalshi collector (09:03Z)"
+  },
+  "polymarket": {
+   "fenetres": {
+    "A_avant_deploy_-48h_-24h": {
+     "debut": "2026-10-12T09:14:44+00:00",
+     "fin": "2026-10-13T09:14:44+00:00",
+     "duree_min": 1440,
+     "runs": {
+      "total": 408,
+      "success": 45,
+      "failure": 45,
+      "cancelled": 318,
+      "actifs_ou_en_attente": 0,
+      "echecs_a_l_etape_commit": 45,
+      "dispatch_manuels_workflow_dispatch": 406,
+      "dispatch_externes_repository_dispatch": 2,
+      "schedule": 0
+     },
+     "minutes_avec_ticks": 727,
+     "couverture_pct": 50.5,
+     "trous_ge_3min": 45,
+     "minutes_dans_trous": 713,
+     "plus_long_trou_min": 17,
+     "trous_top5": [
+      {
+       "de": "2026-10-12T10:59:00+00:00",
+       "a": "2026-10-12T11:17:00+00:00",
+       "min": 17
+      },
+      {
+       "de": "2026-10-12T12:03:00+00:00",
+       "a": "2026-10-12T12:21:00+00:00",
+       "min": 17
+      },
+      {
+       "de": "2026-10-13T06:04:00+00:00",
+       "a": "2026-10-13T06:22:00+00:00",
+       "min": 17
+      },
+      {
+       "de": "2026-10-12T09:23:00+00:00",
+       "a": "2026-10-12T09:40:00+00:00",
+       "min": 16
+      },
+      {
+       "de": "2026-10-12T09:55:00+00:00",
+       "a": "2026-10-12T10:12:00+00:00",
+       "min": 16
+      }
+     ]
+    },
+    "B_reference_-24h": {
+     "debut": "2026-10-13T09:14:44+00:00",
+     "fin": "2026-10-14T09:14:44+00:00",
+     "duree_min": 1440,
+     "runs": {
+      "total": 408,
+      "success": 44,
+      "failure": 45,
+      "cancelled": 317,
+      "actifs_ou_en_attente": 2,
+      "echecs_a_l_etape_commit": 45,
+      "dispatch_manuels_workflow_dispatch": 408,
+      "dispatch_externes_repository_dispatch": 0,
+      "schedule": 0
+     },
+     "minutes_avec_ticks": 699,
+     "couverture_pct": 48.5,
+     "trous_ge_3min": 45,
+     "minutes_dans_trous": 740,
+     "plus_long_trou_min": 24,
+     "trous_top5": [
+      {
+       "de": "2026-10-14T08:49:00+00:00",
+       "a": "2026-10-14T09:14:44+00:00",
+       "min": 24
+      },
+      {
+       "de": "2026-10-13T09:15:00+00:00",
+       "a": "2026-10-13T09:36:00+00:00",
+       "min": 20
+      },
+      {
+       "de": "2026-10-13T10:55:00+00:00",
+       "a": "2026-10-13T11:13:00+00:00",
+       "min": 17
+      },
+      {
+       "de": "2026-10-13T16:48:00+00:00",
+       "a": "2026-10-13T17:06:00+00:00",
+       "min": 17
+      },
+      {
+       "de": "2026-10-13T18:24:00+00:00",
+       "a": "2026-10-13T18:42:00+00:00",
+       "min": 17
+      }
+     ]
+    },
+    "C_apres_deploy": {
+     "debut": "2026-10-14T09:14:44+00:00",
+     "fin": "2026-10-14T09:18:04.203432+00:00",
+     "duree_min": 3,
+     "runs": {
+      "total": 0,
+      "success": 0,
+      "failure": 0,
+      "cancelled": 0,
+      "actifs_ou_en_attente": 0,
+      "echecs_a_l_etape_commit": 0,
+      "dispatch_manuels_workflow_dispatch": 0,
+      "dispatch_externes_repository_dispatch": 0,
+      "schedule": 0
+     },
+     "minutes_avec_ticks": 0,
+     "couverture_pct": 0.0,
+     "trous_ge_3min": 1,
+     "minutes_dans_trous": 3,
+     "plus_long_trou_min": 3,
+     "trous_top5": [
+      {
+       "de": "2026-10-14T09:14:44+00:00",
+       "a": "2026-10-14T09:18:04.203432+00:00",
+       "min": 3
+      }
+     ]
+    }
+   },
+   "derniere_publication": "2026-10-14T08:49:38Z|13326b0fb|Polymarket collector (08:49Z)"
+  }
+ }
+}

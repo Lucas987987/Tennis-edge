@@ -1,0 +1,58 @@
+{
+ "genere_le": "2026-11-04T18:42:57+00:00",
+ "definition": "retour = match précédent à 45 jours ou plus ; poids 1, 1/2, 1/4 sur les 3 premiers matchs ; court < 120 jours ≤ long",
+ "regle": "β appris 2016–2022, jugé 2023 → ; positif si −0,001 de log loss sur ≥ 300 matchs concernés et gain positif sur tous les matchs, par circuit",
+ "circuits": {
+  "ATP": {
+   "appris_concernes": 1937,
+   "juges": 11595,
+   "juges_concernes": 1019,
+   "beta_court": -0.5811,
+   "beta_long": -0.8996,
+   "log_loss_concernes_sans": 0.60353,
+   "log_loss_concernes_avec": 0.58078,
+   "gain_concernes": 0.02275,
+   "gain_tous": 0.001999,
+   "positif": true,
+   "premier_match_retour": {
+    "matchs": 326,
+    "elo_pct": 49.3,
+    "reel_pct": 37.4
+   }
+  },
+  "WTA": {
+   "appris_concernes": 1973,
+   "juges": 11235,
+   "juges_concernes": 1330,
+   "beta_court": -0.4034,
+   "beta_long": -1.0571,
+   "log_loss_concernes_sans": 0.57353,
+   "log_loss_concernes_avec": 0.55953,
+   "gain_concernes": 0.014,
+   "gain_tous": 0.001657,
+   "positif": true,
+   "premier_match_retour": {
+    "matchs": 416,
+    "elo_pct": 45.6,
+    "reel_pct": 37.5
+   }
+  },
+  "CH": {
+   "appris_concernes": 9756,
+   "juges": 36086,
+   "juges_concernes": 7735,
+   "beta_court": -0.2545,
+   "beta_long": -0.4953,
+   "log_loss_concernes_sans": 0.62638,
+   "log_loss_concernes_avec": 0.62522,
+   "gain_concernes": 0.00116,
+   "gain_tous": 0.000248,
+   "positif": true,
+   "premier_match_retour": {
+    "matchs": 2329,
+    "elo_pct": 39.2,
+    "reel_pct": 35.3
+   }
+  }
+ }
+}

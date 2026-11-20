@@ -1,0 +1,31 @@
+name: Inspect set2
+
+# Lancement MANUEL. Valide le champ set2_open de book_curves.jsonl :
+# timing fin de set 1 plausible + accord des marqueurs 12542/12624.
+# Pré-requis : scripts/inspect_set2.py + book_curves.jsonl committé.
+
+on:
+  workflow_dispatch:
+    inputs:
+      path:
+        description: "Chemin du book_curves.jsonl"
+        default: "book_curves.jsonl"
+
+env:
+  # Étape 4 (16/10/2026) : l'historique FIGÉ des courbes (parts/hist_*) est
+  # servi par R2 ; les lecteurs rapatrient ce qui manque (scripts/hist_r2.py).
+  R2_HIST_MATERIALIZE: '1'
+  R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+  R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+  R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+      - name: Inspecter set2_open
+        run: python scripts/inspect_set2.py "${{ github.event.inputs.path }}"

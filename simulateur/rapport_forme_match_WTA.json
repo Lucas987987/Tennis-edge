@@ -1,0 +1,43 @@
+{
+ "genere_le": "2026-11-04T15:14:26+00:00",
+ "base": {
+  "sigma": 0.15,
+  "tb": 0.0,
+  "set": 0.0
+ },
+ "regle": "réglage choisi sur 2021–2022, jugé 2023 → ; retenu sur un circuit si −0,001 de log-vraisemblance de la forme",
+ "circuits": {
+  "WTA": {
+   "decouverte": 600,
+   "jugement": 1200,
+   "base_decouverte": 4.07105,
+   "base_jugement": 3.96401,
+   "sigma": {
+    "reglage": 0.15,
+    "gain": 0.0,
+    "retenu": false
+   },
+   "tb": {
+    "reglage": -0.35,
+    "log_vrais": 3.96355,
+    "gain": 0.00046,
+    "retenu": false
+   },
+   "set": {
+    "reglage": 0.0,
+    "gain": 0.0,
+    "retenu": false
+   },
+   "ensemble": {
+    "reglage": {
+     "sigma": 0.15,
+     "tb": -0.35,
+     "set": 0.0
+    },
+    "log_vrais": 3.96355,
+    "gain": 0.00046,
+    "retenu": false
+   }
+  }
+ }
+}

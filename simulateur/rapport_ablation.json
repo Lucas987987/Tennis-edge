@@ -1,0 +1,92 @@
+{
+ "n": 1248,
+ "semaines": 5,
+ "source": "premiers pronostics pré-match figés",
+ "population": "mêmes matchs pour les quatre modèles ; abandons, forfaits et entrées incomplètes exclus",
+ "combinaison_base": "mélange logit fixe 50 % Elo / 50 % simulation",
+ "bootstrap": {
+  "unite": "semaine ISO",
+  "repetitions": 2000
+ },
+ "avertissement": "Moins de 8 semaines : intervalles exploratoires, pas une preuve de supériorité.",
+ "modeles": {
+  "elo": {
+   "n": 1248,
+   "log_loss": 0.60983,
+   "brier": 0.2122,
+   "reussite_pct": 66.74679
+  },
+  "simulation": {
+   "n": 1248,
+   "log_loss": 0.6211,
+   "brier": 0.21668,
+   "reussite_pct": 64.98397
+  },
+  "combinaison_base": {
+   "n": 1248,
+   "log_loss": 0.60614,
+   "brier": 0.21012,
+   "reussite_pct": 65.94551
+  },
+  "pipeline_complet": {
+   "n": 1248,
+   "log_loss": 0.60319,
+   "brier": 0.2099,
+   "reussite_pct": 65.625
+  }
+ },
+ "comparaisons": {
+  "pipeline_complet_contre_elo": {
+   "difference": {
+    "log_loss": 0.00664,
+    "brier": 0.0023
+   },
+   "ic95": {
+    "log_loss": {
+     "bas": 0.0003,
+     "haut": 0.01293
+    },
+    "brier": {
+     "bas": -0.00099,
+     "haut": 0.00552
+    }
+   },
+   "sens": "positif = pipeline complet meilleur (perte de l’autre moins perte du pipeline)"
+  },
+  "pipeline_complet_contre_simulation": {
+   "difference": {
+    "log_loss": 0.01791,
+    "brier": 0.00679
+   },
+   "ic95": {
+    "log_loss": {
+     "bas": 0.00295,
+     "haut": 0.02416
+    },
+    "brier": {
+     "bas": 0.0013,
+     "haut": 0.009
+    }
+   },
+   "sens": "positif = pipeline complet meilleur (perte de l’autre moins perte du pipeline)"
+  },
+  "pipeline_complet_contre_combinaison_base": {
+   "difference": {
+    "log_loss": 0.00295,
+    "brier": 0.00022
+   },
+   "ic95": {
+    "log_loss": {
+     "bas": -0.00404,
+     "haut": 0.00736
+    },
+    "brier": {
+     "bas": -0.00286,
+     "haut": 0.00206
+    }
+   },
+   "sens": "positif = pipeline complet meilleur (perte de l’autre moins perte du pipeline)"
+  }
+ },
+ "genere_le": "2026-11-16T11:35:11+00:00"
+}

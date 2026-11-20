@@ -1,0 +1,73 @@
+name: Ménage — vieux zips de la racine
+
+# AJOUTÉ LE 28/10/2026. À lancer UNE fois à la main (Actions → « Ménage — vieux zips de la racine » → Run).
+# Retire du dépôt les anciens paquets .zip restés à la racine (déjà appliqués, inutiles aux workflows).
+# Seuls les fichiers listés ici sont touchés ; ils restent récupérables dans l'historique git.
+# Aucun push forcé : rebase puis push, 5 essais.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: menage-racine
+  cancel-in-progress: false
+
+jobs:
+  menage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /*.zip
+      - name: Retirer les zips listés
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          while IFS= read -r f; do
+            [ -z "$f" ] && continue
+            if git ls-files --error-unmatch -- "$f" >/dev/null 2>&1; then git rm -q -- "$f"; echo "retiré : $f"; fi
+          done <<'LISTE'
+          Tennis_Edge_Lab_D1_Bridge_V2_1.zip
+          Tennis_Edge_Lab_V1.zip
+          Tennis_Edge_Lab_V2_GitHub_Auto.zip
+          Tennis_Edge_Lab_V4_Autonomie.zip
+          Tennis_Edge_Lab_V6.2_Compact.zip
+          Tennis_Edge_Lab_V6.5.1_audit_codespaces.zip
+          Tennis_Edge_Lab_V6.5.2_Codespaces.zip
+          Tennis_Edge_Lab_V6.5.3_Codespaces.zip
+          Tennis_Edge_Lab_V6.5.4_Codespaces.zip
+          Tennis_Edge_Lab_V6.5.5_Codespaces.zip
+          Tennis_Edge_Lab_V6.5_preview_install.zip
+          Tennis_Edge_Lab_V631_Incremental.zip
+          Tennis_Edge_Lab_V632_UI.zip
+          Tennis_Edge_Lab_V64_Economic.zip
+          Tennis_Edge_Lab_correctif_V6_V61.zip
+          Tennis_Edge_Lab_correctif_auto.zip
+          correctif_fraicheur_v64.zip
+          correctif_pages_suivi_v64.zip
+          lab_livraison.zip
+          lab_livraison2.zip
+          lab_livraison3.zip
+          paquet_tennis_edge_catalogue_simulations_plus.zip
+          paquet_tennis_edge_correctif_video_20000(1).zip
+          paquet_tennis_edge_horodatages_scores_charting_atp_wta.zip
+          paquet_tennis_edge_independant(1).zip
+          paquet_tennis_edge_independant_v2.zip
+          tennis_edge_suivi_v64.zip
+          LISTE
+          if git diff --cached --quiet; then echo 'Rien à retirer.'; exit 0; fi
+          git commit -q -m 'Ménage : anciens paquets .zip retirés de la racine'
+          for i in 1 2 3 4 5; do
+            git pull -q --rebase origin main || { git rebase --abort || true; echo '::error::Conflit avec main'; exit 1; }
+            if git push -q origin HEAD:main; then echo 'Poussé.'; exit 0; fi
+            sleep $((i * 10))
+          done
+          echo '::error::Push impossible après 5 essais'; exit 1

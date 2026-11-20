@@ -1,0 +1,54 @@
+name: Déployer le worker tennis-edge-closing
+
+# CRÉÉ LE 22/10/2026. Même principe que deploy_joueurs.yml : modifier
+# workers/tennis-edge-closing/worker.js dans le dépôt suffit, ce workflow le
+# met en ligne. Ce worker déclenche TOUTES les collectes : un fichier qui ne
+# passe pas la vérification de syntaxe ou les tests ne part pas en ligne, la
+# version actuelle reste en place.
+#
+# Secrets (déjà utilisés par deploy_joueurs.yml) :
+#   CLOUDFLARE_API_TOKEN   jeton « Edit Cloudflare Workers »
+#   CLOUDFLARE_ACCOUNT_ID  identifiant du compte Cloudflare
+# Le jeton GitHub du worker (GH_TOKEN) et ses variables restent ceux du
+# tableau de bord Cloudflare : le déploiement n'y touche pas.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'workers/tennis-edge-closing/**'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-tennis-edge-closing
+  cancel-in-progress: false
+
+jobs:
+  deployer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+          sparse-checkout: workers/tennis-edge-closing
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Vérifier la syntaxe et les tests
+        run: |
+          node --check workers/tennis-edge-closing/worker.js
+          node --test workers/tennis-edge-closing/test_worker.mjs
+
+      - name: Déployer sur Cloudflare
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: workers/tennis-edge-closing
+          command: deploy

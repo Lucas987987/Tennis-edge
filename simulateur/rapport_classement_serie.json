@@ -1,0 +1,98 @@
+{
+ "genere_le": "2026-11-04T21:06:00+00:00",
+ "regle": "par piste et par circuit : β appris 2016–2022, jugé 2023 → ; positif si −0,001 de log loss sur ≥ 1 000 matchs jugés",
+ "evolution_classement": {
+  "definition": "ln(classement il y a 3 mois / classement actuel), écart entre les joueurs",
+  "circuits": {
+   "ATP": {
+    "appris": 15416,
+    "juges": 9641,
+    "beta": 0.0564,
+    "log_loss_sans": 0.61348,
+    "log_loss_avec": 0.61337,
+    "gain": 0.00011,
+    "positif": false,
+    "quart_le_plus_marque": {
+     "matchs": 2411,
+     "elo_pct": 51.6,
+     "reel_pct": 52.8
+    }
+   },
+   "WTA": {
+    "appris": 14189,
+    "juges": 8807,
+    "beta": 0.0966,
+    "log_loss_sans": 0.59739,
+    "log_loss_avec": 0.59704,
+    "gain": 0.00035,
+    "positif": false,
+    "quart_le_plus_marque": {
+     "matchs": 2202,
+     "elo_pct": 51.4,
+     "reel_pct": 53.1
+    }
+   },
+   "CH": {
+    "appris": 33855,
+    "juges": 25493,
+    "beta": -0.0411,
+    "log_loss_sans": 0.64094,
+    "log_loss_avec": 0.64106,
+    "gain": -0.00012,
+    "positif": false,
+    "quart_le_plus_marque": {
+     "matchs": 6374,
+     "elo_pct": 52.7,
+     "reel_pct": 54.0
+    }
+   }
+  }
+ },
+ "serie_10_matchs": {
+  "definition": "Σ (résultat − probabilité Elo) sur les 10 derniers matchs, écart entre les joueurs",
+  "circuits": {
+   "ATP": {
+    "appris": 17568,
+    "juges": 11592,
+    "beta": 0.0442,
+    "log_loss_sans": 0.61507,
+    "log_loss_avec": 0.61422,
+    "gain": 0.00085,
+    "positif": false,
+    "quart_le_plus_marque": {
+     "matchs": 2898,
+     "elo_pct": 47.5,
+     "reel_pct": 50.6
+    }
+   },
+   "WTA": {
+    "appris": 16710,
+    "juges": 11233,
+    "beta": 0.0428,
+    "log_loss_sans": 0.5976,
+    "log_loss_avec": 0.59698,
+    "gain": 0.00062,
+    "positif": false,
+    "quart_le_plus_marque": {
+     "matchs": 2809,
+     "elo_pct": 49.0,
+     "reel_pct": 51.7
+    }
+   },
+   "CH": {
+    "appris": 46142,
+    "juges": 35980,
+    "beta": 0.0233,
+    "log_loss_sans": 0.64058,
+    "log_loss_avec": 0.64048,
+    "gain": 0.0001,
+    "positif": false,
+    "quart_le_plus_marque": {
+     "matchs": 8995,
+     "elo_pct": 51.3,
+     "reel_pct": 52.7
+    }
+   }
+  }
+ }
+}

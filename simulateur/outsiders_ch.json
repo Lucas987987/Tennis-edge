@@ -1,0 +1,11 @@
+{
+ "paquet": 274,
+ "decision": "Lucas, 18/11/2026 (option A) : mettre en place tout de suite les deux situations retenues par etude_outsiders_gagnants.py (paquet 273), Challenger seulement",
+ "regle_retrait": "simulateur/outsiders_ch.py, chaque lundi, signal par signal : avec au moins 200 matchs Challenger jugés où le signal a joué, si la log loss AVEC le décalage dépasse celle SANS d'au moins 0,001, « retire » passe à true.",
+ "signaux": {
+  "favori_fatigue": {"beta": 0.1553, "active_le": "2026-11-18", "retire": false,
+                     "origine": "favori sorti d'un match en 3 sets dans ce tournoi, outsider non : 40,0 % réels pour 34,4 % annoncés sur 2 583 matchs (2023 → juin 2026), gain 0,0059 (3,95 erreurs types)"},
+  "outsider_mieux_classe": {"beta": 0.1559, "active_le": "2026-11-18", "retire": false,
+                            "origine": "outsider mieux classé que le favori : 43,1 % réels pour 37,0 % annoncés sur 5 244 matchs (2023 → juin 2026), gain 0,0066 (6,24 erreurs types)"}
+ }
+}

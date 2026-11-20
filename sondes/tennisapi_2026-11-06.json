@@ -1,0 +1,968 @@
+{
+ "genere_le": "2026-11-06T19:41:35+00:00",
+ "circuits": {
+  "CH": {
+   "match": "Juan Manuel La Serna – Carlos Maria Zarate (Villa Maria, Argentina, 2026-11-06)",
+   "event_id": 17427295,
+   "tournoi_id": 19268,
+   "requetes": [
+    {
+     "chemin": "/api/tennis/event/17427295",
+     "http": 200,
+     "cles": [
+      "event"
+     ],
+     "trouve": [
+      [
+       "event.tournament.category.country",
+       {}
+      ],
+      [
+       "event.tournament.uniqueTournament",
+       {
+        "name": "Villa Maria, Argentina",
+        "slug": "atp-challenger-villa-maria-argentina-men-singles",
+        "category": {
+         "name": "Challenger",
+         "slug": "challenger",
+         "sport": {
+          "name": "…",
+          "slug": "…",
+          "id": "…"
+         },
+         "priority": 6,
+         "country": {},
+         "id": 72,
+         "flag": "challenger",
+         "fieldTranslations": {
+          "nameTranslation": "…",
+          "shortNameTranslation": "…"
+         }
+        },
+        "userCount": 190,
+        "groundType": "Red clay",
+        "hasRounds": true,
+        "hasPerformanceGraphFeature": false,
+        "liveActivityEnabled": false,
+        "country": {},
+        "id": 19268,
+        "hasEventPlayerStatistics": false,
+        "displayInverseHomeAwayTeams": false,
+        "fieldTranslations": {
+         "nameTranslation": {
+          "ar": "…",
+          "ru": "…"
+         },
+         "shortNameTranslation": {}
+        }
+       }
+      ],
+      [
+       "event.tournament.uniqueTournament.category.country",
+       {}
+      ],
+      [
+       "event.tournament.uniqueTournament.groundType",
+       "Red clay"
+      ],
+      [
+       "event.tournament.uniqueTournament.country",
+       {}
+      ],
+      [
+       "event.season",
+       {
+        "name": "ATP Challenger Villa Maria, Argentina Men Singles 2026",
+        "year": "2026",
+        "editor": false,
+        "id": 96711
+       }
+      ],
+      [
+       "event.venue",
+       {
+        "city": {
+         "name": "Villa Maria",
+         "country": {
+          "alpha2": "…",
+          "alpha3": "…",
+          "name": "…",
+          "slug": "…"
+         },
+         "id": 21101
+        },
+        "hidden": true,
+        "slug": "cancha-central",
+        "name": "Cancha Central",
+        "country": {
+         "alpha2": "AR",
+         "alpha3": "ARG",
+         "name": "Argentina",
+         "slug": "argentina"
+        },
+        "id": 68032,
+        "stadium": {
+         "name": "Cancha Central"
+        }
+       }
+      ],
+      [
+       "event.venue.city",
+       {
+        "name": "Villa Maria",
+        "country": {
+         "alpha2": "AR",
+         "alpha3": "ARG",
+         "name": "Argentina",
+         "slug": "argentina"
+        },
+        "id": 21101
+       }
+      ],
+      [
+       "event.venue.city.country",
+       {
+        "alpha2": "AR",
+        "alpha3": "ARG",
+        "name": "Argentina",
+        "slug": "argentina"
+       }
+      ],
+      [
+       "event.venue.country",
+       {
+        "alpha2": "AR",
+        "alpha3": "ARG",
+        "name": "Argentina",
+        "slug": "argentina"
+       }
+      ],
+      [
+       "event.venue.stadium",
+       {
+        "name": "Cancha Central"
+       }
+      ],
+      [
+       "event.homeTeam.playerTeamInfo.birthCity",
+       {
+        "name": "Catamarca",
+        "country": {
+         "alpha2": "AR",
+         "alpha3": "ARG",
+         "name": "Argentina",
+         "slug": "argentina"
+        },
+        "id": 35192
+       }
+      ],
+      [
+       "event.homeTeam.playerTeamInfo.birthCity.country",
+       {
+        "alpha2": "AR",
+        "alpha3": "ARG",
+        "name": "Argentina",
+        "slug": "argentina"
+       }
+      ],
+      [
+       "event.homeTeam.country",
+       {
+        "alpha2": "AR",
+        "alpha3": "ARG",
+        "name": "Argentina",
+        "slug": "argentina"
+       }
+      ],
+      [
+       "event.awayTeam.playerTeamInfo.birthCity",
+       {
+        "name": "Corrientes",
+        "country": {
+         "alpha2": "AR",
+         "alpha3": "ARG",
+         "name": "Argentina",
+         "slug": "argentina"
+        },
+        "id": 18468
+       }
+      ],
+      [
+       "event.awayTeam.playerTeamInfo.birthCity.country",
+       {
+        "alpha2": "AR",
+        "alpha3": "ARG",
+        "name": "Argentina",
+        "slug": "argentina"
+       }
+      ],
+      [
+       "event.awayTeam.country",
+       {
+        "alpha2": "AR",
+        "alpha3": "ARG",
+        "name": "Argentina",
+        "slug": "argentina"
+       }
+      ],
+      [
+       "event.groundType",
+       "Red clay"
+      ]
+     ]
+    },
+    {
+     "chemin": "/api/tennis/tournament/19268/info",
+     "http": 200,
+     "cles": [
+      "meta"
+     ],
+     "trouve": [],
+     "reponse": {
+      "meta": {
+       "competitionName": "Villa Maria, Argentina",
+       "playingMonths": [
+        9
+       ],
+       "surfaceType": "Red clay",
+       "numberOfMainRoundsPlayed": 7,
+       "matchType": "singles",
+       "numberOfTeams": 50,
+       "uniqueTournament": {
+        "name": "Villa Maria, Argentina",
+        "slug": "atp-challenger-villa-maria-argentina-men-singles",
+        "category": {
+         "name": "Challenger",
+         "slug": "challenger",
+         "sport": {
+          "name": "Tennis",
+          "slug": "tennis",
+          "id": 5
+         },
+         "priority": 6,
+         "id": 72,
+         "flag": "challenger",
+         "fieldTranslations": {
+          "nameTranslation": {
+           "bn": "চ্যালেঞ্জার",
+           "ar": "تحدي (تنس)",
+           "hi": "डेनमार्क",
+           "ru": "Challenger"
+          },
+          "shortNameTranslation": {}
+         }
+        },
+        "userCount": 190,
+        "liveActivityEnabled": false,
+        "id": 19268,
+        "displayInverseHomeAwayTeams": false,
+        "fieldTranslations": {
+         "nameTranslation": {
+          "ar": "ATP تشالنجر فيلا ماريا، الأرجنتين، فردي الرجال",
+          "ru": "Челленджер АТП Вилла Мария, Аргентина, одиночный разряд"
+         },
+         "shortNameTranslation": {}
+        }
+       },
+       "gender": "M",
+       "ageCategory": "seniors",
+       "category": "Challenger",
+       "titleHolderName": "Emilio Nava"
+      }
+     }
+    },
+    {
+     "chemin": "/api/tennis/tournament/19268/season/96711/cuptrees",
+     "http": 404,
+     "cles": null
+    },
+    {
+     "chemin": "/api/tennis/tournament/19268/season/96711/info",
+     "http": 200,
+     "cles": [
+      "info"
+     ],
+     "reponse": {
+      "info": {
+       "season": {
+        "name": "ATP Challenger Villa Maria, Argentina Men Singles 2026",
+        "year": "2026",
+        "editor": false,
+        "id": 96711
+       },
+       "hostCities": [
+        "Villa Maria"
+       ],
+       "newcomersUpperDivision": [],
+       "newcomersLowerDivision": [],
+       "newcomersOther": [],
+       "numberOfCompetitors": 32,
+       "totalPrizeMoney": 63000,
+       "totalPrizeMoneyCurrency": "$",
+       "id": 67129,
+       "hostCountries": [
+        "Argentina"
+       ],
+       "hostCity": "Villa Maria",
+       "totalPrizeMoneyRaw": {
+        "value": 63000,
+        "currency": "$"
+       }
+      }
+     }
+    }
+   ],
+   "season_id": 96711
+  },
+  "WTA": {
+   "match": "Robin Montgomery – Maaya Rajeshwaran Revathi (Chennai, India, 2026-11-06)",
+   "event_id": 17427658,
+   "tournoi_id": 19246,
+   "requetes": [
+    {
+     "chemin": "/api/tennis/event/17427658",
+     "http": 200,
+     "cles": [
+      "event"
+     ],
+     "trouve": [
+      [
+       "event.tournament.category.country",
+       {}
+      ],
+      [
+       "event.tournament.uniqueTournament",
+       {
+        "name": "Chennai",
+        "slug": "chennai",
+        "category": {
+         "name": "WTA",
+         "slug": "wta",
+         "sport": {
+          "name": "…",
+          "slug": "…",
+          "id": "…"
+         },
+         "priority": 7,
+         "country": {},
+         "id": 6,
+         "flag": "wta",
+         "fieldTranslations": {
+          "nameTranslation": "…",
+          "shortNameTranslation": "…"
+         }
+        },
+        "userCount": 499,
+        "groundType": "Hardcourt outdoor",
+        "tennisPoints": 250,
+        "hasRounds": true,
+        "hasPerformanceGraphFeature": false,
+        "liveActivityEnabled": false,
+        "country": {},
+        "id": 19246,
+        "hasEventPlayerStatistics": false,
+        "displayInverseHomeAwayTeams": false,
+        "fieldTranslations": {
+         "nameTranslation": {
+          "ar": "…",
+          "ru": "…"
+         },
+         "shortNameTranslation": {}
+        }
+       }
+      ],
+      [
+       "event.tournament.uniqueTournament.category.country",
+       {}
+      ],
+      [
+       "event.tournament.uniqueTournament.groundType",
+       "Hardcourt outdoor"
+      ],
+      [
+       "event.tournament.uniqueTournament.country",
+       {}
+      ],
+      [
+       "event.season",
+       {
+        "name": "WTA Chennai, India, Women Singles 2026",
+        "year": "2026",
+        "editor": false,
+        "id": 85647
+       }
+      ],
+      [
+       "event.venue",
+       {
+        "city": {
+         "name": "Chennai",
+         "country": {
+          "alpha2": "…",
+          "alpha3": "…",
+          "name": "…",
+          "slug": "…"
+         },
+         "id": 18916
+        },
+        "hidden": true,
+        "slug": "centre",
+        "name": "Centre",
+        "country": {
+         "alpha2": "IN",
+         "alpha3": "IND",
+         "name": "India",
+         "slug": "india"
+        },
+        "id": 20413,
+        "fieldTranslations": {
+         "nameTranslation": {
+          "ar": "…",
+          "hi": "…",
+          "bn": "…"
+         },
+         "shortNameTranslation": {}
+        },
+        "stadium": {
+         "name": "Centre"
+        }
+       }
+      ],
+      [
+       "event.venue.city",
+       {
+        "name": "Chennai",
+        "country": {
+         "alpha2": "IN",
+         "alpha3": "IND",
+         "name": "India",
+         "slug": "india"
+        },
+        "id": 18916
+       }
+      ],
+      [
+       "event.venue.city.country",
+       {
+        "alpha2": "IN",
+        "alpha3": "IND",
+        "name": "India",
+        "slug": "india"
+       }
+      ],
+      [
+       "event.venue.country",
+       {
+        "alpha2": "IN",
+        "alpha3": "IND",
+        "name": "India",
+        "slug": "india"
+       }
+      ],
+      [
+       "event.venue.stadium",
+       {
+        "name": "Centre"
+       }
+      ],
+      [
+       "event.homeTeam.country",
+       {
+        "alpha2": "US",
+        "alpha3": "USA",
+        "name": "USA",
+        "slug": "usa"
+       }
+      ],
+      [
+       "event.awayTeam.country",
+       {
+        "alpha2": "IN",
+        "alpha3": "IND",
+        "name": "India",
+        "slug": "india"
+       }
+      ],
+      [
+       "event.groundType",
+       "Hardcourt outdoor"
+      ]
+     ]
+    },
+    {
+     "chemin": "/api/tennis/tournament/19246/info",
+     "http": 200,
+     "cles": [
+      "meta"
+     ],
+     "trouve": [],
+     "reponse": {
+      "meta": {
+       "competitionName": "Chennai",
+       "playingMonths": [
+        10,
+        11
+       ],
+       "surfaceType": "Hardcourt outdoor",
+       "numberOfMainRoundsPlayed": 7,
+       "matchType": "singles",
+       "numberOfTeams": 43,
+       "uniqueTournament": {
+        "name": "Chennai",
+        "slug": "chennai",
+        "category": {
+         "name": "WTA",
+         "slug": "wta",
+         "sport": {
+          "name": "Tennis",
+          "slug": "tennis",
+          "id": 5
+         },
+         "priority": 7,
+         "id": 6,
+         "flag": "wta",
+         "fieldTranslations": {
+          "nameTranslation": {
+           "ar": "رابطة لاعبات التنس",
+           "hi": "चैलेंजर",
+           "bn": "ডব্লিউটিএ",
+           "ru": "WTA"
+          },
+          "shortNameTranslation": {}
+         }
+        },
+        "userCount": 499,
+        "tennisPoints": 250,
+        "liveActivityEnabled": false,
+        "id": 19246,
+        "displayInverseHomeAwayTeams": false,
+        "fieldTranslations": {
+         "nameTranslation": {
+          "ar": "تشيناي",
+          "ru": "Ченнай"
+         },
+         "shortNameTranslation": {}
+        }
+       },
+       "gender": "F",
+       "ageCategory": "seniors",
+       "category": "WTA",
+       "titleHolderName": "Janice Tjen"
+      }
+     }
+    },
+    {
+     "chemin": "/api/tennis/tournament/19246/season/85647/cuptrees",
+     "http": 404,
+     "cles": null
+    },
+    {
+     "chemin": "/api/tennis/tournament/19246/season/85647/info",
+     "http": 200,
+     "cles": [
+      "info"
+     ],
+     "reponse": {
+      "info": {
+       "season": {
+        "name": "WTA Chennai, India, Women Singles 2026",
+        "year": "2026",
+        "editor": false,
+        "id": 85647
+       },
+       "hostCities": [
+        "Chennai"
+       ],
+       "newcomersUpperDivision": [],
+       "newcomersLowerDivision": [],
+       "newcomersOther": [],
+       "numberOfCompetitors": 32,
+       "totalPrizeMoney": 283347,
+       "totalPrizeMoneyCurrency": "$",
+       "id": 67138,
+       "hostCountries": [
+        "India"
+       ],
+       "hostCity": "Chennai",
+       "totalPrizeMoneyRaw": {
+        "value": 283347,
+        "currency": "$"
+       }
+      }
+     }
+    }
+   ],
+   "season_id": 85647
+  },
+  "ATP": {
+   "match": "Ben Shelton – Tommy Paul (Paris, France, 2026-11-06)",
+   "event_id": 17428201,
+   "tournoi_id": 2404,
+   "requetes": [
+    {
+     "chemin": "/api/tennis/event/17428201",
+     "http": 200,
+     "cles": [
+      "event"
+     ],
+     "trouve": [
+      [
+       "event.tournament.category.country",
+       {}
+      ],
+      [
+       "event.tournament.uniqueTournament",
+       {
+        "name": "Paris",
+        "slug": "paris",
+        "primaryColorHex": "#174742",
+        "secondaryColorHex": "#2b7064",
+        "category": {
+         "name": "ATP",
+         "slug": "atp",
+         "sport": {
+          "name": "…",
+          "slug": "…",
+          "id": "…"
+         },
+         "priority": 8,
+         "country": {},
+         "id": 3,
+         "flag": "atp",
+         "fieldTranslations": {
+          "nameTranslation": "…",
+          "shortNameTranslation": "…"
+         }
+        },
+        "userCount": 6851,
+        "groundType": "Hardcourt indoor",
+        "tennisPoints": 1000,
+        "hasRounds": true,
+        "hasPerformanceGraphFeature": false,
+        "liveActivityEnabled": true,
+        "country": {},
+        "id": 2404,
+        "hasEventPlayerStatistics": false,
+        "displayInverseHomeAwayTeams": false,
+        "fieldTranslations": {
+         "nameTranslation": {
+          "ar": "…",
+          "hi": "…",
+          "bn": "…",
+          "ru": "…"
+         },
+         "shortNameTranslation": {}
+        }
+       }
+      ],
+      [
+       "event.tournament.uniqueTournament.category.country",
+       {}
+      ],
+      [
+       "event.tournament.uniqueTournament.groundType",
+       "Hardcourt indoor"
+      ],
+      [
+       "event.tournament.uniqueTournament.country",
+       {}
+      ],
+      [
+       "event.season",
+       {
+        "name": "ATP Paris, France Men Singles 2026",
+        "year": "2026",
+        "editor": false,
+        "id": 82442
+       }
+      ],
+      [
+       "event.venue",
+       {
+        "city": {
+         "name": "Paris",
+         "country": {
+          "alpha2": "…",
+          "alpha3": "…",
+          "name": "…",
+          "slug": "…"
+         },
+         "id": 17983
+        },
+        "hidden": true,
+        "slug": "court-central",
+        "name": "Court Central",
+        "country": {
+         "alpha2": "FR",
+         "alpha3": "FRA",
+         "name": "France",
+         "slug": "france"
+        },
+        "id": 52442,
+        "stadium": {
+         "name": "Court Central"
+        }
+       }
+      ],
+      [
+       "event.venue.city",
+       {
+        "name": "Paris",
+        "country": {
+         "alpha2": "FR",
+         "alpha3": "FRA",
+         "name": "France",
+         "slug": "france"
+        },
+        "id": 17983
+       }
+      ],
+      [
+       "event.venue.city.country",
+       {
+        "alpha2": "FR",
+        "alpha3": "FRA",
+        "name": "France",
+        "slug": "france"
+       }
+      ],
+      [
+       "event.venue.country",
+       {
+        "alpha2": "FR",
+        "alpha3": "FRA",
+        "name": "France",
+        "slug": "france"
+       }
+      ],
+      [
+       "event.venue.stadium",
+       {
+        "name": "Court Central"
+       }
+      ],
+      [
+       "event.homeTeam.playerTeamInfo.birthCity",
+       {
+        "name": "Atlanta",
+        "state": "US-GA",
+        "country": {
+         "alpha2": "US",
+         "alpha3": "USA",
+         "name": "USA",
+         "slug": "usa"
+        },
+        "id": 24659
+       }
+      ],
+      [
+       "event.homeTeam.playerTeamInfo.birthCity.country",
+       {
+        "alpha2": "US",
+        "alpha3": "USA",
+        "name": "USA",
+        "slug": "usa"
+       }
+      ],
+      [
+       "event.homeTeam.country",
+       {
+        "alpha2": "US",
+        "alpha3": "USA",
+        "name": "USA",
+        "slug": "usa"
+       }
+      ],
+      [
+       "event.awayTeam.playerTeamInfo.birthCity",
+       {
+        "name": "Voorhees",
+        "state": "US-NJ",
+        "country": {
+         "alpha2": "US",
+         "alpha3": "USA",
+         "name": "USA",
+         "slug": "usa"
+        },
+        "id": 33255
+       }
+      ],
+      [
+       "event.awayTeam.playerTeamInfo.birthCity.country",
+       {
+        "alpha2": "US",
+        "alpha3": "USA",
+        "name": "USA",
+        "slug": "usa"
+       }
+      ],
+      [
+       "event.awayTeam.playerTeamInfo.residenceCity",
+       {
+        "name": "Greenville",
+        "state": "US-NC",
+        "country": {
+         "alpha2": "US",
+         "alpha3": "USA",
+         "name": "USA",
+         "slug": "usa"
+        },
+        "id": 23366
+       }
+      ],
+      [
+       "event.awayTeam.playerTeamInfo.residenceCity.country",
+       {
+        "alpha2": "US",
+        "alpha3": "USA",
+        "name": "USA",
+        "slug": "usa"
+       }
+      ],
+      [
+       "event.awayTeam.country",
+       {
+        "alpha2": "US",
+        "alpha3": "USA",
+        "name": "USA",
+        "slug": "usa"
+       }
+      ],
+      [
+       "event.bet365ExcludedCountryCodes",
+       [
+        "AN",
+        "CU",
+        "IR",
+        "… 10 éléments au total"
+       ]
+      ],
+      [
+       "event.groundType",
+       "Hardcourt indoor"
+      ]
+     ]
+    },
+    {
+     "chemin": "/api/tennis/tournament/2404/info",
+     "http": 200,
+     "cles": [
+      "meta"
+     ],
+     "trouve": [
+      [
+       "meta.cityName",
+       "Paris"
+      ]
+     ],
+     "reponse": {
+      "meta": {
+       "competitionName": "Paris",
+       "cityName": "Paris",
+       "playingMonths": [
+        10,
+        11
+       ],
+       "surfaceType": "Hardcourt indoor",
+       "numberOfMainRoundsPlayed": 8,
+       "tournamentPrizeMoney": "2603700 €",
+       "matchType": "singles",
+       "numberOfTeams": 64,
+       "uniqueTournament": {
+        "name": "Paris",
+        "slug": "paris",
+        "primaryColorHex": "#174742",
+        "secondaryColorHex": "#2b7064",
+        "category": {
+         "name": "ATP",
+         "slug": "atp",
+         "sport": {
+          "name": "Tennis",
+          "slug": "tennis",
+          "id": 5
+         },
+         "priority": 8,
+         "id": 3,
+         "flag": "atp",
+         "fieldTranslations": {
+          "nameTranslation": {
+           "bn": "এটিপি",
+           "hi": "डब्ल्यूटीए",
+           "ar": "رابطة محترفي التنس",
+           "ru": "ATP"
+          },
+          "shortNameTranslation": {}
+         }
+        },
+        "userCount": 6851,
+        "tennisPoints": 1000,
+        "liveActivityEnabled": true,
+        "id": 2404,
+        "displayInverseHomeAwayTeams": false,
+        "fieldTranslations": {
+         "nameTranslation": {
+          "ar": "باريس",
+          "hi": "पेरिस",
+          "bn": "প্যারিস",
+          "ru": "Париж"
+         },
+         "shortNameTranslation": {}
+        }
+       },
+       "gender": "M",
+       "ageCategory": "seniors",
+       "category": "ATP",
+       "titleHolderName": "Jannik Sinner",
+       "mostTitlesNames": [
+        "Novak Djokovic"
+       ]
+      }
+     }
+    },
+    {
+     "chemin": "/api/tennis/tournament/2404/season/82442/cuptrees",
+     "http": 404,
+     "cles": null
+    },
+    {
+     "chemin": "/api/tennis/tournament/2404/season/82442/info",
+     "http": 200,
+     "cles": [
+      "info"
+     ],
+     "reponse": {
+      "info": {
+       "season": {
+        "name": "ATP Paris, France Men Singles 2026",
+        "year": "2026",
+        "editor": false,
+        "id": 82442
+       },
+       "hostCities": [
+        "Paris"
+       ],
+       "newcomersUpperDivision": [],
+       "newcomersLowerDivision": [],
+       "newcomersOther": [],
+       "numberOfCompetitors": 57,
+       "totalPrizeMoney": 6309095,
+       "totalPrizeMoneyCurrency": "€",
+       "id": 67119,
+       "hostCountries": [
+        "France"
+       ],
+       "hostCity": "Paris",
+       "totalPrizeMoneyRaw": {
+        "value": 6309095,
+        "currency": "€"
+       }
+      }
+     }
+    }
+   ],
+   "season_id": 82442
+  }
+ },
+ "requetes": 12,
+ "quota_restant": 14840
+}

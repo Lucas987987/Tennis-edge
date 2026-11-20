@@ -1,0 +1,71 @@
+name: A ou B par niveau de fiabilité (Telegram privé)
+
+# AJOUTÉ LE 18/11/2026 (paquet 268). simulateur/etude_a_ou_b.py — règles fixées dans l'en-tête avant tout résultat.
+# Chaque lundi : la CLV de A (favori de l'algo au premier pronostic) et de B, par niveau de fiabilité et par circuit,
+# part sur le Telegram PRIVÉ (jamais écrite dans le dépôt) ; seul le rapport public sans cote ni nom
+# (simulateur/rapport_anatomie_defaites.json) est commité. Push normal, jamais forcé.
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 8 * * 1'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: a-ou-b
+  cancel-in-progress: false
+
+jobs:
+  etude:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /simulateur/
+            /scripts/closing_store.py
+            /Tennis_Edge_Lab/books.py
+            /Tennis_Edge_Lab/live/pronostics_resultats.json
+            /closing_lines.json
+            /closing_lines/
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - name: Étude (privé sur Telegram, public dans le dépôt)
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python simulateur/etude_a_ou_b.py . --telegram
+      # 18/11/2026 (paquet 269) : une étude par niveau de fiabilité (public, sans cote ni nom)
+      - name: Étude par niveau de fiabilité
+        run: python simulateur/etude_niveaux_fiabilite.py .
+      # 18/11/2026 (paquet 273) : règle de retrait des poids du mélange propres au circuit (ATP)
+      - name: Poids du mélange par circuit (retrait)
+        run: python simulateur/poids_circuit.py .
+      # 18/11/2026 (paquet 274) : règle de retrait des deux signaux d'outsider en Challenger
+      - name: Outsiders en Challenger (retrait)
+        run: python simulateur/outsiders_ch.py .
+      - name: Commit du rapport public (push normal, jamais forcé)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -- simulateur/rapport_anatomie_defaites.json simulateur/rapport_niveaux_fiabilite.json simulateur/correction_niveaux.json simulateur/poids_circuit.json simulateur/outsiders_ch.json
+          if git diff --staged --quiet; then echo "Rien à committer."; exit 0; fi
+          git commit -m "Anatomie des défaites et niveaux de fiabilité : rapports hebdomadaires (paquets 268-269)"
+          attente=2
+          for essai in 1 2 3 4 5 6; do
+            git fetch origin main || true
+            if git merge origin/main --no-edit; then :; else
+              git merge --abort 2>/dev/null || true
+              sleep "$attente"; attente=$((attente*2)); continue
+            fi
+            if git push origin HEAD:main; then echo "✅ PUSH OK"; exit 0; fi
+            sleep "$attente"; attente=$((attente*2))
+          done
+          echo "❌ push impossible — relancer le workflow."
+          exit 1

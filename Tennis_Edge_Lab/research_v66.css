@@ -1,0 +1,13 @@
+/* V6.6 : filtre des books, badges FR, sections Pistes V6.6 et Stabilité 16 ans */
+.book-filter{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0}
+.book-filter button{min-height:40px;padding:8px 12px;border-radius:999px;border:1px solid rgba(148,163,184,.5);background:transparent;color:inherit;font:inherit;cursor:pointer}
+.book-filter button.selected{background:#1d4ed8;border-color:#1d4ed8;color:#fff}
+.badge.fr{display:inline-block;padding:1px 6px;border-radius:6px;background:#1d4ed8;color:#fff;font-size:.75em;font-weight:700;vertical-align:middle}
+.badge.unsure{display:inline-block;padding:1px 6px;border-radius:6px;border:1px dashed #94a3b8;font-size:.75em;vertical-align:middle}
+#v66 code,#v66Frozen code{word-break:break-all}
+#history16 .table-wrap,#v66 .table-wrap{overflow-x:auto;max-width:100%}
+@media (max-width:480px){.book-filter button{flex:1 1 45%}}
+/* Correctif mobile : les grands tableaux défilent dans leur cadre, pas la page. */
+.panel,.view{min-width:0;max-width:100%}
+.table-wrap{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.notice,.explain,.kpi,.kpi b,.candidate{overflow-wrap:anywhere;min-width:0}

@@ -1,0 +1,35 @@
+name: 'Correctif V3 - ancrage distribution exacte'
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  corriger:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Vérifier la cohérence du correctif avec le moteur
+        run: |
+          grep -F 'min(max(p_victoire, 0.005), 0.995)' simulateur/match_simule.py
+      - name: Corriger le contrôle sans toucher au modèle
+        run: python scripts/correctif_ancrage_distribution_v3.py
+      - name: Vérifier syntaxe et diff
+        run: |
+          python -m py_compile simulateur/pronostics_du_jour.py
+          git diff --check
+          git diff -- simulateur/pronostics_du_jour.py
+      - name: Publier uniquement le correctif
+        run: |
+          if git diff --quiet -- simulateur/pronostics_du_jour.py; then
+            echo 'Déjà corrigé'; exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add simulateur/pronostics_du_jour.py
+          git commit -m 'fix: aligner ancrage distribution exacte sur borne moteur'
+          git push

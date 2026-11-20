@@ -1,0 +1,124 @@
+{
+ "genere_le": "2026-11-11T09:28:32+00:00",
+ "matchs": 755,
+ "coupure": "2026-11-01",
+ "constat": {
+  "ATP": {
+   "matchs": 132,
+   "set_decisif_prevu_pct": 38.5,
+   "set_decisif_reel_pct": 35.6,
+   "tiebreak_prevu_pct": 44.3,
+   "tiebreak_reel_pct": 45.5,
+   "jeux_prevus": 24.23,
+   "jeux_reels": 23.81,
+   "set1_prevu_pct": 48.5,
+   "set1_reel_pct": 50.0
+  },
+  "WTA": {
+   "matchs": 107,
+   "set_decisif_prevu_pct": 37.0,
+   "set_decisif_reel_pct": 33.6,
+   "tiebreak_prevu_pct": 25.9,
+   "tiebreak_reel_pct": 25.2,
+   "jeux_prevus": 22.5,
+   "jeux_reels": 22.29,
+   "set1_prevu_pct": 51.7,
+   "set1_reel_pct": 52.3
+  },
+  "CH": {
+   "matchs": 516,
+   "set_decisif_prevu_pct": 33.0,
+   "set_decisif_reel_pct": 34.7,
+   "tiebreak_prevu_pct": 29.8,
+   "tiebreak_reel_pct": 32.2,
+   "jeux_prevus": 22.37,
+   "jeux_reels": 22.64,
+   "set1_prevu_pct": 50.8,
+   "set1_reel_pct": 55.0
+  },
+  "tous": {
+   "matchs": 755,
+   "set_decisif_prevu_pct": 34.6,
+   "set_decisif_reel_pct": 34.7,
+   "tiebreak_prevu_pct": 31.8,
+   "tiebreak_reel_pct": 33.5,
+   "jeux_prevus": 22.71,
+   "jeux_reels": 22.79,
+   "set1_prevu_pct": 50.5,
+   "set1_reel_pct": 53.8
+  },
+  "tranches_set_decisif": [
+   {
+    "prevu_pct": 26.6,
+    "reel_pct": 22.8,
+    "n": 79
+   },
+   {
+    "prevu_pct": 35.4,
+    "reel_pct": 36.9,
+    "n": 537
+   },
+   {
+    "prevu_pct": 41.4,
+    "reel_pct": 37.2,
+    "n": 113
+   }
+  ]
+ },
+ "set_decisif": {
+  "correction": "set décisif",
+  "a_par_circuit": {
+   "ATP": 0.164,
+   "WTA": -0.375,
+   "CH": -0.383
+  },
+  "b": 0.82,
+  "apprentissage": 143,
+  "jugement": 612,
+  "gain_apprentissage": 0.0076,
+  "gain_jugement": -0.0163,
+  "jugement_par_circuit": {
+   "ATP": {
+    "n": 87,
+    "gain": -0.0265
+   },
+   "WTA": {
+    "n": 72,
+    "gain": -0.0063
+   },
+   "CH": {
+    "n": 453,
+    "gain": -0.016
+   }
+  },
+  "adopte": false
+ },
+ "tiebreak": {
+  "correction": "tie-break",
+  "a_par_circuit": {
+   "ATP": 0.188,
+   "WTA": -0.578,
+   "CH": -0.211
+  },
+  "b": 0.594,
+  "apprentissage": 143,
+  "jugement": 612,
+  "gain_apprentissage": 0.0067,
+  "gain_jugement": -0.0039,
+  "jugement_par_circuit": {
+   "ATP": {
+    "n": 87,
+    "gain": -0.023
+   },
+   "WTA": {
+    "n": 72,
+    "gain": 0.0018
+   },
+   "CH": {
+    "n": 453,
+    "gain": -0.0012
+   }
+  },
+  "adopte": false
+ }
+}

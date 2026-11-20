@@ -1,0 +1,49 @@
+{
+ "genere_le": "2026-11-04T18:02:00+00:00",
+ "definition": "nouveau = 1er ou 2e match sur la surface depuis un changement, match précédent à 45 jours au plus",
+ "regle": "β appris 2016–2022, jugé 2023 → ; positif si −0,001 de log loss sur ≥ 300 matchs concernés et gain positif sur tous les matchs, par circuit",
+ "circuits": {
+  "ATP": {
+   "appris_concernes": 2924,
+   "juges": 11595,
+   "juges_concernes": 1918,
+   "part_concernes_pct": 16.5,
+   "beta": -0.1724,
+   "log_loss_concernes_sans": 0.61713,
+   "log_loss_concernes_avec": 0.60861,
+   "gain_concernes": 0.00852,
+   "gain_tous": 0.001409,
+   "positif": true,
+   "nouveau_annonce_pct": 54.4,
+   "nouveau_reel_pct": 47.7
+  },
+  "WTA": {
+   "appris_concernes": 2256,
+   "juges": 11235,
+   "juges_concernes": 1623,
+   "part_concernes_pct": 14.4,
+   "beta": -0.1142,
+   "log_loss_concernes_sans": 0.58987,
+   "log_loss_concernes_avec": 0.58645,
+   "gain_concernes": 0.00342,
+   "gain_tous": 0.000493,
+   "positif": true,
+   "nouveau_annonce_pct": 55.7,
+   "nouveau_reel_pct": 51.6
+  },
+  "CH": {
+   "appris_concernes": 8573,
+   "juges": 36086,
+   "juges_concernes": 5958,
+   "part_concernes_pct": 16.5,
+   "beta": -0.1705,
+   "log_loss_concernes_sans": 0.629,
+   "log_loss_concernes_avec": 0.62753,
+   "gain_concernes": 0.00147,
+   "gain_tous": 0.000244,
+   "positif": true,
+   "nouveau_annonce_pct": 52.0,
+   "nouveau_reel_pct": 49.4
+  }
+ }
+}

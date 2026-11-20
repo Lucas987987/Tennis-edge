@@ -1,0 +1,67 @@
+name: Rattrapage marchés dérivés (Pinnacle, 60 jours)
+
+# 21/10/2026 — total de sets, handicap de sets, total et handicap de jeux pour
+# les matchs des 60 derniers jours déjà collectés (scripts/rattrapage_derives.py).
+# 1 requête par match (≈ 2 500 au total), du plus récent au plus ancien, avec
+# les MÊMES garde-fous de quota que la collecte des courbes. Manuel. Relançable :
+# un match déjà rattrapé ou sans réponse n'est jamais redemandé.
+env:
+  R2_HIST_MATERIALIZE: '1'
+  R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+  R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+  R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+  PYTHONDONTWRITEBYTECODE: '1'
+
+on:
+  workflow_dispatch:
+    inputs:
+      max:
+        description: "Requêtes au plus pour ce run"
+        default: "2600"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: rattrapage-derives
+  cancel-in-progress: false
+
+jobs:
+  rattrapage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 340
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - name: Restaurer les partitions de courbes archivées
+        run: python scripts/restore_curves.py || true
+      - name: Rattrapage
+        env:
+          RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
+          RATTRAPAGE_MAX: ${{ github.event.inputs.max }}
+        run: python scripts/rattrapage_derives.py
+      - name: Commit
+        run: |
+          find . -name '__pycache__' -type d -prune -exec rm -rf {} + 2>/dev/null || true
+          find . -name '*.pyc' -delete 2>/dev/null || true
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add -- parts/hist_derives_* 2>/dev/null || true
+          for f in derives_absences.json derives_rattrapage.json marches_oddspapi.json; do [ -f "$f" ] && git add -- "$f"; done
+          git diff --cached --quiet && { echo "Rien de nouveau."; exit 0; }
+          git commit -m "Marchés dérivés : rattrapage Pinnacle $(date -u +%FT%TZ)"
+          attente=2
+          for essai in 1 2 3 4 5 6; do
+            git fetch origin main || true
+            if git merge origin/main --no-edit; then
+              if git push; then echo "✅ PUSH OK"; exit 0; fi
+            else
+              echo "⚠️ merge en conflit — tentative $essai"
+              git merge --abort 2>/dev/null || true
+            fi
+            sleep "$attente"; attente=$((attente*2))
+          done
+          echo "❌ PUSH ÉCHOUÉ après 6 tentatives"
+          exit 1

@@ -1,0 +1,4330 @@
+{
+  "global": {
+    "combinaison": {
+      "matchs": 1244,
+      "victoire": {
+        "log_loss": {
+          "n": 1244,
+          "valeur": 0.602667
+        },
+        "brier": {
+          "n": 1244,
+          "valeur": 0.209654
+        },
+        "exact": {
+          "n": 1244,
+          "valeur": 0.657556
+        }
+      },
+      "sets": {
+        "log_loss": {
+          "n": 1243,
+          "valeur": 1.237685
+        },
+        "exact": {
+          "n": 1243,
+          "valeur": 0.463395
+        }
+      },
+      "scores": {
+        "exact": {
+          "n": 1241,
+          "valeur": 0.025786
+        },
+        "rang_reciproque": {
+          "n": 1241,
+          "valeur": 0.048885
+        },
+        "dans_top3": {
+          "n": 1241,
+          "valeur": 0.079774
+        }
+      },
+      "jeux": {
+        "mae": {
+          "n": 1241,
+          "valeur": 4.914343
+        }
+      },
+      "statistiques": {
+        "aces": {
+          "mae": {
+            "n": 1974,
+            "valeur": 2.328977
+          },
+          "biais": {
+            "n": 1974,
+            "valeur": -0.21773
+          },
+          "couverture80": {
+            "n": 1974,
+            "valeur": 0.809524
+          }
+        },
+        "breaks": {
+          "mae": {
+            "n": 1974,
+            "valeur": 1.33845
+          },
+          "biais": {
+            "n": 1974,
+            "valeur": 0.147974
+          },
+          "couverture80": {
+            "n": 1974,
+            "valeur": 0.908308
+          }
+        },
+        "doubles_fautes": {
+          "mae": {
+            "n": 1974,
+            "valeur": 1.557953
+          },
+          "biais": {
+            "n": 1974,
+            "valeur": 0.443465
+          },
+          "couverture80": {
+            "n": 1974,
+            "valeur": 0.879433
+          }
+        },
+        "gagnes_1re_pct": {
+          "mae": {
+            "n": 1974,
+            "valeur": 7.34691
+          },
+          "biais": {
+            "n": 1974,
+            "valeur": -0.658663
+          },
+          "couverture80": {
+            "n": 1974,
+            "valeur": 0.772543
+          }
+        },
+        "gagnes_2e_pct": {
+          "mae": {
+            "n": 1974,
+            "valeur": 9.229331
+          },
+          "biais": {
+            "n": 1974,
+            "valeur": -0.5577
+          },
+          "couverture80": {
+            "n": 1974,
+            "valeur": 0.787234
+          }
+        },
+        "jeux": {
+          "mae": {
+            "n": 1974,
+            "valeur": 2.916869
+          },
+          "biais": {
+            "n": 1974,
+            "valeur": -0.069149
+          },
+          "couverture80": {
+            "n": 1974,
+            "valeur": 0.852584
+          }
+        },
+        "premiere_pct": {
+          "mae": {
+            "n": 1974,
+            "valeur": 5.991641
+          },
+          "biais": {
+            "n": 1974,
+            "valeur": -1.766819
+          },
+          "couverture80": {
+            "n": 1974,
+            "valeur": 0.774063
+          }
+        }
+      }
+    },
+    "simulation": {
+      "matchs": 1244,
+      "victoire": {
+        "log_loss": {
+          "n": 1244,
+          "valeur": 0.620638
+        },
+        "brier": {
+          "n": 1244,
+          "valeur": 0.216462
+        },
+        "exact": {
+          "n": 1244,
+          "valeur": 0.651125
+        }
+      },
+      "sets": {
+        "log_loss": {
+          "n": 1243,
+          "valeur": 1.284786
+        },
+        "exact": {
+          "n": 1243,
+          "valeur": 0.442478
+        }
+      },
+      "scores": {
+        "exact": {
+          "n": 1241,
+          "valeur": 0.02498
+        },
+        "rang_reciproque": {
+          "n": 1241,
+          "valeur": 0.042036
+        },
+        "dans_top3": {
+          "n": 1241,
+          "valeur": 0.064464
+        }
+      },
+      "jeux": {
+        "mae": {
+          "n": 1241,
+          "valeur": 5.369218
+        }
+      },
+      "statistiques": {
+        "aces": {
+          "mae": {
+            "n": 496,
+            "valeur": 2.345766
+          },
+          "biais": {
+            "n": 496,
+            "valeur": -0.046976
+          },
+          "couverture80": {
+            "n": 496,
+            "valeur": 0.820565
+          }
+        },
+        "breaks": {
+          "mae": {
+            "n": 496,
+            "valeur": 1.409677
+          },
+          "biais": {
+            "n": 496,
+            "valeur": 0.343145
+          },
+          "couverture80": {
+            "n": 496,
+            "valeur": 0.868952
+          }
+        },
+        "doubles_fautes": {
+          "mae": {
+            "n": 496,
+            "valeur": 1.742339
+          },
+          "biais": {
+            "n": 496,
+            "valeur": 0.626613
+          },
+          "couverture80": {
+            "n": 496,
+            "valeur": 0.840726
+          }
+        },
+        "gagnes_1re_pct": {
+          "mae": {
+            "n": 496,
+            "valeur": 6.761694
+          },
+          "biais": {
+            "n": 496,
+            "valeur": -1.200403
+          },
+          "couverture80": {
+            "n": 496,
+            "valeur": 0.711694
+          }
+        },
+        "gagnes_2e_pct": {
+          "mae": {
+            "n": 496,
+            "valeur": 9.17379
+          },
+          "biais": {
+            "n": 496,
+            "valeur": -0.516935
+          },
+          "couverture80": {
+            "n": 496,
+            "valeur": 0.743952
+          }
+        },
+        "jeux": {
+          "mae": {
+            "n": 496,
+            "valeur": 3.057863
+          },
+          "biais": {
+            "n": 496,
+            "valeur": 0.723589
+          },
+          "couverture80": {
+            "n": 496,
+            "valeur": 0.796371
+          }
+        },
+        "premiere_pct": {
+          "mae": {
+            "n": 496,
+            "valeur": 6.369153
+          },
+          "biais": {
+            "n": 496,
+            "valeur": -1.971573
+          },
+          "couverture80": {
+            "n": 496,
+            "valeur": 0.631048
+          }
+        }
+      }
+    },
+    "stats": {
+      "matchs": 1244,
+      "victoire": {
+        "log_loss": {
+          "n": 1244,
+          "valeur": 0.610194
+        },
+        "brier": {
+          "n": 1244,
+          "valeur": 0.21238
+        },
+        "exact": {
+          "n": 1244,
+          "valeur": 0.667203
+        }
+      },
+      "sets": {
+        "log_loss": {
+          "n": 1243,
+          "valeur": 1.249895
+        },
+        "exact": {
+          "n": 1243,
+          "valeur": 0.463395
+        }
+      },
+      "scores": {
+        "exact": {
+          "n": 1241,
+          "valeur": 0.033038
+        },
+        "rang_reciproque": {
+          "n": 1241,
+          "valeur": 0.050497
+        },
+        "dans_top3": {
+          "n": 1241,
+          "valeur": 0.07494
+        }
+      },
+      "jeux": {
+        "mae": {
+          "n": 1241,
+          "valeur": 4.96809
+        }
+      },
+      "statistiques": {}
+    }
+  },
+  "par_surface": {
+    "Inconnue": {
+      "combinaison": {
+        "matchs": 2,
+        "victoire": {
+          "log_loss": {
+            "n": 2,
+            "valeur": 0.314939
+          },
+          "brier": {
+            "n": 2,
+            "valeur": 0.100162
+          },
+          "exact": {
+            "n": 2,
+            "valeur": 1.0
+          }
+        },
+        "sets": {
+          "log_loss": {
+            "n": 2,
+            "valeur": 1.621297
+          },
+          "exact": {
+            "n": 2,
+            "valeur": 0.5
+          }
+        },
+        "scores": {},
+        "jeux": {},
+        "statistiques": {}
+      },
+      "simulation": {
+        "matchs": 2,
+        "victoire": {
+          "log_loss": {
+            "n": 2,
+            "valeur": 0.379374
+          },
+          "brier": {
+            "n": 2,
+            "valeur": 0.118192
+          },
+          "exact": {
+            "n": 2,
+            "valeur": 1.0
+          }
+        },
+        "sets": {
+          "log_loss": {
+            "n": 2,
+            "valeur": 1.403229
+          },
+          "exact": {
+            "n": 2,
+            "valeur": 0.5
+          }
+        },
+        "scores": {},
+        "jeux": {},
+        "statistiques": {
+          "aces": {
+            "mae": {
+              "n": 4,
+              "valeur": 1.75
+            },
+            "biais": {
+              "n": 4,
+              "valeur": 0.6
+            },
+            "couverture80": {
+              "n": 4,
+              "valeur": 1.0
+            }
+          },
+          "breaks": {
+            "mae": {
+              "n": 4,
+              "valeur": 1.325
+            },
+            "biais": {
+              "n": 4,
+              "valeur": -0.625
+            },
+            "couverture80": {
+              "n": 4,
+              "valeur": 1.0
+            }
+          },
+          "doubles_fautes": {
+            "mae": {
+              "n": 4,
+              "valeur": 1.425
+            },
+            "biais": {
+              "n": 4,
+              "valeur": -0.725
+            },
+            "couverture80": {
+              "n": 4,
+              "valeur": 0.75
+            }
+          },
+          "gagnes_1re_pct": {
+            "mae": {
+              "n": 4,
+              "valeur": 4.85
+            },
+            "biais": {
+              "n": 4,
+              "valeur": -1.85
+            },
+            "couverture80": {
+              "n": 4,
+              "valeur": 0.75
+            }
+          },
+          "gagnes_2e_pct": {
+            "mae": {
+              "n": 4,
+              "valeur": 7.7
+            },
+            "biais": {
+              "n": 4,
+              "valeur": 2.4
+            },
+            "couverture80": {
+              "n": 4,
+              "valeur": 1.0
+            }
+          },
+          "jeux": {
+            "mae": {
+              "n": 4,
+              "valeur": 1.95
+            },
+            "biais": {
+              "n": 4,
+              "valeur": 0.6
+            },
+            "couverture80": {
+              "n": 4,
+              "valeur": 1.0
+            }
+          },
+          "premiere_pct": {
+            "mae": {
+              "n": 4,
+              "valeur": 4.425
+            },
+            "biais": {
+              "n": 4,
+              "valeur": 1.125
+            },
+            "couverture80": {
+              "n": 4,
+              "valeur": 1.0
+            }
+          }
+        }
+      },
+      "stats": {
+        "matchs": 2,
+        "victoire": {
+          "log_loss": {
+            "n": 2,
+            "valeur": 0.312608
+          },
+          "brier": {
+            "n": 2,
+            "valeur": 0.09912
+          },
+          "exact": {
+            "n": 2,
+            "valeur": 1.0
+          }
+        },
+        "sets": {
+          "log_loss": {
+            "n": 2,
+            "valeur": 1.621485
+          },
+          "exact": {
+            "n": 2,
+            "valeur": 0.5
+          }
+        },
+        "scores": {},
+        "jeux": {},
+        "statistiques": {}
+      }
+    },
+    "Hard": {
+      "combinaison": {
+        "matchs": 988,
+        "victoire": {
+          "log_loss": {
+            "n": 988,
+            "valeur": 0.60548
+          },
+          "brier": {
+            "n": 988,
+            "valeur": 0.210689
+          },
+          "exact": {
+            "n": 988,
+            "valeur": 0.658907
+          }
+        },
+        "sets": {
+          "log_loss": {
+            "n": 987,
+            "valeur": 1.244242
+          },
+          "exact": {
+            "n": 987,
+            "valeur": 0.458967
+          }
+        },
+        "scores": {
+          "exact": {
+            "n": 987,
+            "valeur": 0.021277
+          },
+          "rang_reciproque": {
+            "n": 987,
+            "valeur": 0.044917
+          },
+          "dans_top3": {
+            "n": 987,
+            "valeur": 0.075988
+          }
+        },
+        "jeux": {
+          "mae": {
+            "n": 987,
+            "valeur": 4.947822
+          }
+        },
+        "statistiques": {
+          "aces": {
+            "mae": {
+              "n": 1556,
+              "valeur": 2.486761
+            },
+            "biais": {
+              "n": 1556,
+              "valeur": -0.184704
+            },
+            "couverture80": {
+              "n": 1556,
+              "valeur": 0.811697
+            }
+          },
+          "breaks": {
+            "mae": {
+              "n": 1556,
+              "valeur": 1.320887
+            },
+            "biais": {
+              "n": 1556,
+              "valeur": 0.124357
+            },
+            "couverture80": {
+              "n": 1556,
+              "valeur": 0.905527
+            }
+          },
+          "doubles_fautes": {
+            "mae": {
+              "n": 1556,
+              "valeur": 1.596337
+            },
+            "biais": {
+              "n": 1556,
+              "valeur": 0.44518
+            },
+            "couverture80": {
+              "n": 1556,
+              "valeur": 0.872108
+            }
+          },
+          "gagnes_1re_pct": {
+            "mae": {
+              "n": 1556,
+              "valeur": 7.112275
+            },
+            "biais": {
+              "n": 1556,
+              "valeur": -0.453663
+            },
+            "couverture80": {
+              "n": 1556,
+              "valeur": 0.780206
+            }
+          },
+          "gagnes_2e_pct": {
+            "mae": {
+              "n": 1556,
+              "valeur": 9.119473
+            },
+            "biais": {
+              "n": 1556,
+              "valeur": -0.410604
+            },
+            "couverture80": {
+              "n": 1556,
+              "valeur": 0.793702
+            }
+          },
+          "jeux": {
+            "mae": {
+              "n": 1556,
+              "valeur": 2.910797
+            },
+            "biais": {
+              "n": 1556,
+              "valeur": -0.071208
+            },
+            "couverture80": {
+              "n": 1556,
+              "valeur": 0.85347
+            }
+          },
+          "premiere_pct": {
+            "mae": {
+              "n": 1556,
+              "valeur": 5.961632
+            },
+            "biais": {
+              "n": 1556,
+              "valeur": -1.807262
+            },
+            "couverture80": {
+              "n": 1556,
+              "valeur": 0.778278
+            }
+          }
+        }
+      },
+      "simulation": {
+        "matchs": 988,
+        "victoire": {
+          "log_loss": {
+            "n": 988,
+            "valeur": 0.62229
+          },
+          "brier": {
+            "n": 988,
+            "valeur": 0.217424
+          },
+          "exact": {
+            "n": 988,
+            "valeur": 0.647773
+          }
+        },
+        "sets": {
+          "log_loss": {
+            "n": 987,
+            "valeur": 1.285218
+          },
+          "exact": {
+            "n": 987,
+            "valeur": 0.436677
+          }
+        },
+        "scores": {
+          "exact": {
+            "n": 987,
+            "valeur": 0.025329
+          },
+          "rang_reciproque": {
+            "n": 987,
+            "valeur": 0.040696
+          },
+          "dans_top3": {
+            "n": 987,
+            "valeur": 0.06079
+          }
+        },
+        "jeux": {
+          "mae": {
+            "n": 987,
+            "valeur": 5.324316
+          }
+        },
+        "statistiques": {
+          "aces": {
+            "mae": {
+              "n": 402,
+              "valeur": 2.450249
+            },
+            "biais": {
+              "n": 402,
+              "valeur": 0.068657
+            },
+            "couverture80": {
+              "n": 402,
+              "valeur": 0.823383
+            }
+          },
+          "breaks": {
+            "mae": {
+              "n": 402,
+              "valeur": 1.410448
+            },
+            "biais": {
+              "n": 402,
+              "valeur": 0.330846
+            },
+            "couverture80": {
+              "n": 402,
+              "valeur": 0.865672
+            }
+          },
+          "doubles_fautes": {
+            "mae": {
+              "n": 402,
+              "valeur": 1.761443
+            },
+            "biais": {
+              "n": 402,
+              "valeur": 0.679851
+            },
+            "couverture80": {
+              "n": 402,
+              "valeur": 0.833333
+            }
+          },
+          "gagnes_1re_pct": {
+            "mae": {
+              "n": 402,
+              "valeur": 6.667662
+            },
+            "biais": {
+              "n": 402,
+              "valeur": -0.912935
+            },
+            "couverture80": {
+              "n": 402,
+              "valeur": 0.71393
+            }
+          },
+          "gagnes_2e_pct": {
+            "mae": {
+              "n": 402,
+              "valeur": 9.145522
+            },
+            "biais": {
+              "n": 402,
+              "valeur": -0.893284
+            },
+            "couverture80": {
+              "n": 402,
+              "valeur": 0.748756
+            }
+          },
+          "jeux": {
+            "mae": {
+              "n": 402,
+              "valeur": 3.050995
+            },
+            "biais": {
+              "n": 402,
+              "valeur": 0.699751
+            },
+            "couverture80": {
+              "n": 402,
+              "valeur": 0.798507
+            }
+          },
+          "premiere_pct": {
+            "mae": {
+              "n": 402,
+              "valeur": 6.506468
+            },
+            "biais": {
+              "n": 402,
+              "valeur": -2.174627
+            },
+            "couverture80": {
+              "n": 402,
+              "valeur": 0.624378
+            }
+          }
+        }
+      },
+      "stats": {
+        "matchs": 988,
+        "victoire": {
+          "log_loss": {
+            "n": 988,
+            "valeur": 0.610219
+          },
+          "brier": {
+            "n": 988,
+            "valeur": 0.21215
+          },
+          "exact": {
+            "n": 988,
+            "valeur": 0.674089
+          }
+        },
+        "sets": {
+          "log_loss": {
+            "n": 987,
+            "valeur": 1.253482
+          },
+          "exact": {
+            "n": 987,
+            "valeur": 0.460993
+          }
+        },
+        "scores": {
+          "exact": {
+            "n": 987,
+            "valeur": 0.032421
+          },
+          "rang_reciproque": {
+            "n": 987,
+            "valeur": 0.049308
+          },
+          "dans_top3": {
+            "n": 987,
+            "valeur": 0.072948
+          }
+        },
+        "jeux": {
+          "mae": {
+            "n": 987,
+            "valeur": 4.987741
+          }
+        },
+        "statistiques": {}
+      }
+    },
+    "Clay": {
+      "combinaison": {
+        "matchs": 254,
+        "victoire": {
+          "log_loss": {
+            "n": 254,
+            "valeur": 0.593993
+          },
+          "brier": {
+            "n": 254,
+            "valeur": 0.206493
+          },
+          "exact": {
+            "n": 254,
+            "valeur": 0.649606
+          }
+        },
+        "sets": {
+          "log_loss": {
+            "n": 254,
+            "valeur": 1.209182
+          },
+          "exact": {
+            "n": 254,
+            "valeur": 0.480315
+          }
+        },
+        "scores": {
+          "exact": {
+            "n": 254,
+            "valeur": 0.043307
+          },
+          "rang_reciproque": {
+            "n": 254,
+            "valeur": 0.064304
+          },
+          "dans_top3": {
+            "n": 254,
+            "valeur": 0.094488
+          }
+        },
+        "jeux": {
+          "mae": {
+            "n": 254,
+            "valeur": 4.784252
+          }
+        },
+        "statistiques": {
+          "aces": {
+            "mae": {
+              "n": 418,
+              "valeur": 1.741627
+            },
+            "biais": {
+              "n": 418,
+              "valeur": -0.34067
+            },
+            "couverture80": {
+              "n": 418,
+              "valeur": 0.801435
+            }
+          },
+          "breaks": {
+            "mae": {
+              "n": 418,
+              "valeur": 1.403828
+            },
+            "biais": {
+              "n": 418,
+              "valeur": 0.235885
+            },
+            "couverture80": {
+              "n": 418,
+              "valeur": 0.91866
+            }
+          },
+          "doubles_fautes": {
+            "mae": {
+              "n": 418,
+              "valeur": 1.415072
+            },
+            "biais": {
+              "n": 418,
+              "valeur": 0.437081
+            },
+            "couverture80": {
+              "n": 418,
+              "valeur": 0.906699
+            }
+          },
+          "gagnes_1re_pct": {
+            "mae": {
+              "n": 418,
+              "valeur": 8.220335
+            },
+            "biais": {
+              "n": 418,
+              "valeur": -1.42177
+            },
+            "couverture80": {
+              "n": 418,
+              "valeur": 0.744019
+            }
+          },
+          "gagnes_2e_pct": {
+            "mae": {
+              "n": 418,
+              "valeur": 9.638278
+            },
+            "biais": {
+              "n": 418,
+              "valeur": -1.105263
+            },
+            "couverture80": {
+              "n": 418,
+              "valeur": 0.763158
+            }
+          },
+          "jeux": {
+            "mae": {
+              "n": 418,
+              "valeur": 2.939474
+            },
+            "biais": {
+              "n": 418,
+              "valeur": -0.061483
+            },
+            "couverture80": {
+              "n": 418,
+              "valeur": 0.849282
+            }
+          },
+          "premiere_pct": {
+            "mae": {
+              "n": 418,
+              "valeur": 6.103349
+            },
+            "biais": {
+              "n": 418,
+              "valeur": -1.616268
+            },
+            "couverture80": {
+              "n": 418,
+              "valeur": 0.758373
+            }
+          }
+        }
+      },
+      "simulation": {
+        "matchs": 254,
+        "victoire": {
+          "log_loss": {
+            "n": 254,
+            "valeur": 0.61611
+          },
+          "brier": {
+            "n": 254,
+            "valeur": 0.213493
+          },
+          "exact": {
+            "n": 254,
+            "valeur": 0.661417
+          }
+        },
+        "sets": {
+          "log_loss": {
+            "n": 254,
+            "valeur": 1.282177
+          },
+          "exact": {
+            "n": 254,
+            "valeur": 0.464567
+          }
+        },
+        "scores": {
+          "exact": {
+            "n": 254,
+            "valeur": 0.023622
+          },
+          "rang_reciproque": {
+            "n": 254,
+            "valeur": 0.047244
+          },
+          "dans_top3": {
+            "n": 254,
+            "valeur": 0.07874
+          }
+        },
+        "jeux": {
+          "mae": {
+            "n": 254,
+            "valeur": 5.543701
+          }
+        },
+        "statistiques": {
+          "aces": {
+            "mae": {
+              "n": 90,
+              "valeur": 1.905556
+            },
+            "biais": {
+              "n": 90,
+              "valeur": -0.592222
+            },
+            "couverture80": {
+              "n": 90,
+              "valeur": 0.8
+            }
+          },
+          "breaks": {
+            "mae": {
+              "n": 90,
+              "valeur": 1.41
+            },
+            "biais": {
+              "n": 90,
+              "valeur": 0.441111
+            },
+            "couverture80": {
+              "n": 90,
+              "valeur": 0.877778
+            }
+          },
+          "doubles_fautes": {
+            "mae": {
+              "n": 90,
+              "valeur": 1.671111
+            },
+            "biais": {
+              "n": 90,
+              "valeur": 0.448889
+            },
+            "couverture80": {
+              "n": 90,
+              "valeur": 0.877778
+            }
+          },
+          "gagnes_1re_pct": {
+            "mae": {
+              "n": 90,
+              "valeur": 7.266667
+            },
+            "biais": {
+              "n": 90,
+              "valeur": -2.455556
+            },
+            "couverture80": {
+              "n": 90,
+              "valeur": 0.7
+            }
+          },
+          "gagnes_2e_pct": {
+            "mae": {
+              "n": 90,
+              "valeur": 9.365556
+            },
+            "biais": {
+              "n": 90,
+              "valeur": 1.034444
+            },
+            "couverture80": {
+              "n": 90,
+              "valeur": 0.711111
+            }
+          },
+          "jeux": {
+            "mae": {
+              "n": 90,
+              "valeur": 3.137778
+            },
+            "biais": {
+              "n": 90,
+              "valeur": 0.835556
+            },
+            "couverture80": {
+              "n": 90,
+              "valeur": 0.777778
+            }
+          },
+          "premiere_pct": {
+            "mae": {
+              "n": 90,
+              "valeur": 5.842222
+            },
+            "biais": {
+              "n": 90,
+              "valeur": -1.202222
+            },
+            "couverture80": {
+              "n": 90,
+              "valeur": 0.644444
+            }
+          }
+        }
+      },
+      "stats": {
+        "matchs": 254,
+        "victoire": {
+          "log_loss": {
+            "n": 254,
+            "valeur": 0.612439
+          },
+          "brier": {
+            "n": 254,
+            "valeur": 0.214168
+          },
+          "exact": {
+            "n": 254,
+            "valeur": 0.637795
+          }
+        },
+        "sets": {
+          "log_loss": {
+            "n": 254,
+            "valeur": 1.233028
+          },
+          "exact": {
+            "n": 254,
+            "valeur": 0.472441
+          }
+        },
+        "scores": {
+          "exact": {
+            "n": 254,
+            "valeur": 0.035433
+          },
+          "rang_reciproque": {
+            "n": 254,
+            "valeur": 0.055118
+          },
+          "dans_top3": {
+            "n": 254,
+            "valeur": 0.082677
+          }
+        },
+        "jeux": {
+          "mae": {
+            "n": 254,
+            "valeur": 4.891732
+          }
+        },
+        "statistiques": {}
+      }
+    }
+  },
+  "par_circuit": {
+    "CH": {
+      "combinaison": {
+        "matchs": 867,
+        "victoire": {
+          "log_loss": {
+            "n": 867,
+            "valeur": 0.601426
+          },
+          "brier": {
+            "n": 867,
+            "valeur": 0.20929
+          },
+          "exact": {
+            "n": 867,
+            "valeur": 0.655133
+          }
+        },
+        "sets": {
+          "log_loss": {
+            "n": 866,
+            "valeur": 1.230315
+          },
+          "exact": {
+            "n": 866,
+            "valeur": 0.467667
+          }
+        },
+        "scores": {
+          "exact": {
+            "n": 865,
+            "valeur": 0.027746
+          },
+          "rang_reciproque": {
+            "n": 865,
+            "valeur": 0.051638
+          },
+          "dans_top3": {
+            "n": 865,
+            "valeur": 0.085549
+          }
+        },
+        "jeux": {
+          "mae": {
+            "n": 865,
+            "valeur": 4.834335
+          }
+        },
+        "statistiques": {
+          "aces": {
+            "mae": {
+              "n": 1446,
+              "valeur": 2.308506
+            },
+            "biais": {
+              "n": 1446,
+              "valeur": -0.234647
+            },
+            "couverture80": {
+              "n": 1446,
+              "valeur": 0.801521
+            }
+          },
+          "breaks": {
+            "mae": {
+              "n": 1446,
+              "valeur": 1.347649
+            },
+            "biais": {
+              "n": 1446,
+              "valeur": 0.180014
+            },
+            "couverture80": {
+              "n": 1446,
+              "valeur": 0.907331
+            }
+          },
+          "doubles_fautes": {
+            "mae": {
+              "n": 1446,
+              "valeur": 1.516113
+            },
+            "biais": {
+              "n": 1446,
+              "valeur": 0.387344
+            },
+            "couverture80": {
+              "n": 1446,
+              "valeur": 0.878285
+            }
+          },
+          "gagnes_1re_pct": {
+            "mae": {
+              "n": 1446,
+              "valeur": 7.551867
+            },
+            "biais": {
+              "n": 1446,
+              "valeur": -0.855325
+            },
+            "couverture80": {
+              "n": 1446,
+              "valeur": 0.773167
+            }
+          },
+          "gagnes_2e_pct": {
+            "mae": {
+              "n": 1446,
+              "valeur": 9.197303
+            },
+            "biais": {
+              "n": 1446,
+              "valeur": -0.852628
+            },
+            "couverture80": {
+              "n": 1446,
+              "valeur": 0.786307
+            }
+          },
+          "jeux": {
+            "mae": {
+              "n": 1446,
+              "valeur": 2.924066
+            },
+            "biais": {
+              "n": 1446,
+              "valeur": -0.117704
+            },
+            "couverture80": {
+              "n": 1446,
+              "valeur": 0.853389
+            }
+          },
+          "premiere_pct": {
+            "mae": {
+              "n": 1446,
+              "valeur": 5.7361
+            },
+            "biais": {
+              "n": 1446,
+              "valeur": -1.139142
+            },
+            "couverture80": {
+              "n": 1446,
+              "valeur": 0.80083
+            }
+          }
+        }
+      },
+      "simulation": {
+        "matchs": 867,
+        "victoire": {
+          "log_loss": {
+            "n": 867,
+            "valeur": 0.627637
+          },
+          "brier": {
+            "n": 867,
+            "valeur": 0.219872
+          },
+          "exact": {
+            "n": 867,
+            "valeur": 0.637832
+          }
+        },
+        "sets": {
+          "log_loss": {
+            "n": 866,
+            "valeur": 1.292596
+          },
+          "exact": {
+            "n": 866,
+            "valeur": 0.442263
+          }
+        },
+        "scores": {
+          "exact": {
+            "n": 865,
+            "valeur": 0.028902
+          },
+          "rang_reciproque": {
+            "n": 865,
+            "valeur": 0.045857
+          },
+          "dans_top3": {
+            "n": 865,
+            "valeur": 0.068208
+          }
+        },
+        "jeux": {
+          "mae": {
+            "n": 865,
+            "valeur": 5.368208
+          }
+        },
+        "statistiques": {
+          "aces": {
+            "mae": {
+              "n": 278,
+              "valeur": 2.352158
+            },
+            "biais": {
+              "n": 278,
+              "valeur": 0.185252
+            },
+            "couverture80": {
+              "n": 278,
+              "valeur": 0.809353
+            }
+          },
+          "breaks": {
+            "mae": {
+              "n": 278,
+              "valeur": 1.380935
+            },
+            "biais": {
+              "n": 278,
+              "valeur": 0.240647
+            },
+            "couverture80": {
+              "n": 278,
+              "valeur": 0.866906
+            }
+          },
+          "doubles_fautes": {
+            "mae": {
+              "n": 278,
+              "valeur": 1.714388
+            },
+            "biais": {
+              "n": 278,
+              "valeur": 0.476259
+            },
+            "couverture80": {
+              "n": 278,
+              "valeur": 0.820144
+            }
+          },
+          "gagnes_1re_pct": {
+            "mae": {
+              "n": 278,
+              "valeur": 7.11295
+            },
+            "biais": {
+              "n": 278,
+              "valeur": -1.081295
+            },
+            "couverture80": {
+              "n": 278,
+              "valeur": 0.694245
+            }
+          },
+          "gagnes_2e_pct": {
+            "mae": {
+              "n": 278,
+              "valeur": 8.98777
+            },
+            "biais": {
+              "n": 278,
+              "valeur": -0.913669
+            },
+            "couverture80": {
+              "n": 278,
+              "valeur": 0.751799
+            }
+          },
+          "jeux": {
+            "mae": {
+              "n": 278,
+              "valeur": 3.078058
+            },
+            "biais": {
+              "n": 278,
+              "valeur": 0.844245
+            },
+            "couverture80": {
+              "n": 278,
+              "valeur": 0.802158
+            }
+          },
+          "premiere_pct": {
+            "mae": {
+              "n": 278,
+              "valeur": 5.783813
+            },
+            "biais": {
+              "n": 278,
+              "valeur": -0.358633
+            },
+            "couverture80": {
+              "n": 278,
+              "valeur": 0.654676
+            }
+          }
+        }
+      },
+      "stats": {
+        "matchs": 867,
+        "victoire": {
+          "log_loss": {
+            "n": 867,
+            "valeur": 0.607168
+          },
+          "brier": {
+            "n": 867,
+            "valeur": 0.210935
+          },
+          "exact": {
+            "n": 867,
+            "valeur": 0.67128
+          }
+        },
+        "sets": {
+          "log_loss": {
+            "n": 866,
+            "valeur": 1.239976
+          },
+          "exact": {
+            "n": 866,
+            "valeur": 0.474596
+          }
+        },
+        "scores": {
+          "exact": {
+            "n": 865,
+            "valeur": 0.036994
+          },
+          "rang_reciproque": {
+            "n": 865,
+            "valeur": 0.054143
+          },
+          "dans_top3": {
+            "n": 865,
+            "valeur": 0.079769
+          }
+        },
+        "jeux": {
+          "mae": {
+            "n": 865,
+            "valeur": 4.892486
+          }
+        },
+        "statistiques": {}
+      }
+    },
+    "ATP": {
+      "combinaison": {
+        "matchs": 191,
+        "victoire": {
+          "log_loss": {
+            "n": 191,
+            "valeur": 0.626399
+          },
+          "brier": {
+            "n": 191,
+            "valeur": 0.218305
+          },
+          "exact": {
+            "n": 191,
+            "valeur": 0.649215
+          }
+        },
+        "sets": {
+          "log_loss": {
+            "n": 191,
+            "valeur": 1.278421
+          },
+          "exact": {
+            "n": 191,
+            "valeur": 0.434555
+          }
+        },
+        "scores": {
+          "exact": {
+            "n": 191,
+            "valeur": 0.015707
+          },
+          "rang_reciproque": {
+            "n": 191,
+            "valeur": 0.041012
+          },
+          "dans_top3": {
+            "n": 191,
+            "valeur": 0.068063
+          }
+        },
+        "jeux": {
+          "mae": {
+            "n": 191,
+            "valeur": 5.231414
+          }
+        },
+        "statistiques": {
+          "aces": {
+            "mae": {
+              "n": 290,
+              "valeur": 2.947931
+            },
+            "biais": {
+              "n": 290,
+              "valeur": -0.527241
+            },
+            "couverture80": {
+              "n": 290,
+              "valeur": 0.8
+            }
+          },
+          "breaks": {
+            "mae": {
+              "n": 290,
+              "valeur": 1.113793
+            },
+            "biais": {
+              "n": 290,
+              "valeur": 0.149655
+            },
+            "couverture80": {
+              "n": 290,
+              "valeur": 0.92069
+            }
+          },
+          "doubles_fautes": {
+            "mae": {
+              "n": 290,
+              "valeur": 1.361034
+            },
+            "biais": {
+              "n": 290,
+              "valeur": 0.803103
+            },
+            "couverture80": {
+              "n": 290,
+              "valeur": 0.934483
+            }
+          },
+          "gagnes_1re_pct": {
+            "mae": {
+              "n": 290,
+              "valeur": 6.454483
+            },
+            "biais": {
+              "n": 290,
+              "valeur": -0.298621
+            },
+            "couverture80": {
+              "n": 290,
+              "valeur": 0.762069
+            }
+          },
+          "gagnes_2e_pct": {
+            "mae": {
+              "n": 290,
+              "valeur": 9.143448
+            },
+            "biais": {
+              "n": 290,
+              "valeur": 0.882759
+            },
+            "couverture80": {
+              "n": 290,
+              "valeur": 0.796552
+            }
+          },
+          "jeux": {
+            "mae": {
+              "n": 290,
+              "valeur": 2.874483
+            },
+            "biais": {
+              "n": 290,
+              "valeur": 0.075862
+            },
+            "couverture80": {
+              "n": 290,
+              "valeur": 0.855172
+            }
+          },
+          "premiere_pct": {
+            "mae": {
+              "n": 290,
+              "valeur": 6.222069
+            },
+            "biais": {
+              "n": 290,
+              "valeur": -3.906207
+            },
+            "couverture80": {
+              "n": 290,
+              "valeur": 0.727586
+            }
+          }
+        }
+      },
+      "simulation": {
+        "matchs": 191,
+        "victoire": {
+          "log_loss": {
+            "n": 191,
+            "valeur": 0.628014
+          },
+          "brier": {
+            "n": 191,
+            "valeur": 0.217217
+          },
+          "exact": {
+            "n": 191,
+            "valeur": 0.670157
+          }
+        },
+        "sets": {
+          "log_loss": {
+            "n": 191,
+            "valeur": 1.292202
+          },
+          "exact": {
+            "n": 191,
+            "valeur": 0.439791
+          }
+        },
+        "scores": {
+          "exact": {
+            "n": 191,
+            "valeur": 0.015707
+          },
+          "rang_reciproque": {
+            "n": 191,
+            "valeur": 0.04014
+          },
+          "dans_top3": {
+            "n": 191,
+            "valeur": 0.073298
+          }
+        },
+        "jeux": {
+          "mae": {
+            "n": 191,
+            "valeur": 5.399476
+          }
+        },
+        "statistiques": {
+          "aces": {
+            "mae": {
+              "n": 92,
+              "valeur": 3.208696
+            },
+            "biais": {
+              "n": 92,
+              "valeur": -1.441304
+            },
+            "couverture80": {
+              "n": 92,
+              "valeur": 0.73913
+            }
+          },
+          "breaks": {
+            "mae": {
+              "n": 92,
+              "valeur": 1.170652
+            },
+            "biais": {
+              "n": 92,
+              "valeur": 0.453261
+            },
+            "couverture80": {
+              "n": 92,
+              "valeur": 0.945652
+            }
+          },
+          "doubles_fautes": {
+            "mae": {
+              "n": 92,
+              "valeur": 1.305435
+            },
+            "biais": {
+              "n": 92,
+              "valeur": 0.781522
+            },
+            "couverture80": {
+              "n": 92,
+              "valeur": 0.945652
+            }
+          },
+          "gagnes_1re_pct": {
+            "mae": {
+              "n": 92,
+              "valeur": 5.877174
+            },
+            "biais": {
+              "n": 92,
+              "valeur": -1.98587
+            },
+            "couverture80": {
+              "n": 92,
+              "valeur": 0.782609
+            }
+          },
+          "gagnes_2e_pct": {
+            "mae": {
+              "n": 92,
+              "valeur": 8.923913
+            },
+            "biais": {
+              "n": 92,
+              "valeur": 0.136957
+            },
+            "couverture80": {
+              "n": 92,
+              "valeur": 0.73913
+            }
+          },
+          "jeux": {
+            "mae": {
+              "n": 92,
+              "valeur": 2.882609
+            },
+            "biais": {
+              "n": 92,
+              "valeur": -0.171739
+            },
+            "couverture80": {
+              "n": 92,
+              "valeur": 0.826087
+            }
+          },
+          "premiere_pct": {
+            "mae": {
+              "n": 92,
+              "valeur": 5.492391
+            },
+            "biais": {
+              "n": 92,
+              "valeur": -3.475
+            },
+            "couverture80": {
+              "n": 92,
+              "valeur": 0.684783
+            }
+          }
+        }
+      },
+      "stats": {
+        "matchs": 191,
+        "victoire": {
+          "log_loss": {
+            "n": 191,
+            "valeur": 0.637096
+          },
+          "brier": {
+            "n": 191,
+            "valeur": 0.222898
+          },
+          "exact": {
+            "n": 191,
+            "valeur": 0.643979
+          }
+        },
+        "sets": {
+          "log_loss": {
+            "n": 191,
+            "valeur": 1.294657
+          },
+          "exact": {
+            "n": 191,
+            "valeur": 0.413613
+          }
+        },
+        "scores": {
+          "exact": {
+            "n": 191,
+            "valeur": 0.010471
+          },
+          "rang_reciproque": {
+            "n": 191,
+            "valeur": 0.034904
+          },
+          "dans_top3": {
+            "n": 191,
+            "valeur": 0.062827
+          }
+        },
+        "jeux": {
+          "mae": {
+            "n": 191,
+            "valeur": 5.304712
+          }
+        },
+        "statistiques": {}
+      }
+    },
+    "WTA": {
+      "combinaison": {
+        "matchs": 186,
+        "victoire": {
+          "log_loss": {
+            "n": 186,
+            "valeur": 0.584083
+          },
+          "brier": {
+            "n": 186,
+            "valeur": 0.202467
+          },
+          "exact": {
+            "n": 186,
+            "valeur": 0.677419
+          }
+        },
+        "sets": {
+          "log_loss": {
+            "n": 186,
+            "valeur": 1.230164
+          },
+          "exact": {
+            "n": 186,
+            "valeur": 0.473118
+          }
+        },
+        "scores": {
+          "exact": {
+            "n": 185,
+            "valeur": 0.027027
+          },
+          "rang_reciproque": {
+            "n": 185,
+            "valeur": 0.044144
+          },
+          "dans_top3": {
+            "n": 185,
+            "valeur": 0.064865
+          }
+        },
+        "jeux": {
+          "mae": {
+            "n": 185,
+            "valeur": 4.961081
+          }
+        },
+        "statistiques": {
+          "aces": {
+            "mae": {
+              "n": 238,
+              "valeur": 1.69916
+            },
+            "biais": {
+              "n": 238,
+              "valeur": 0.262185
+            },
+            "couverture80": {
+              "n": 238,
+              "valeur": 0.869748
+            }
+          },
+          "breaks": {
+            "mae": {
+              "n": 238,
+              "valeur": 1.556303
+            },
+            "biais": {
+              "n": 238,
+              "valeur": -0.048739
+            },
+            "couverture80": {
+              "n": 238,
+              "valeur": 0.89916
+            }
+          },
+          "doubles_fautes": {
+            "mae": {
+              "n": 238,
+              "valeur": 2.052101
+            },
+            "biais": {
+              "n": 238,
+              "valeur": 0.346218
+            },
+            "couverture80": {
+              "n": 238,
+              "valeur": 0.819328
+            }
+          },
+          "gagnes_1re_pct": {
+            "mae": {
+              "n": 238,
+              "valeur": 7.189076
+            },
+            "biais": {
+              "n": 238,
+              "valeur": 0.097479
+            },
+            "couverture80": {
+              "n": 238,
+              "valeur": 0.781513
+            }
+          },
+          "gagnes_2e_pct": {
+            "mae": {
+              "n": 238,
+              "valeur": 9.528571
+            },
+            "biais": {
+              "n": 238,
+              "valeur": -0.521008
+            },
+            "couverture80": {
+              "n": 238,
+              "valeur": 0.781513
+            }
+          },
+          "jeux": {
+            "mae": {
+              "n": 238,
+              "valeur": 2.92479
+            },
+            "biais": {
+              "n": 238,
+              "valeur": 0.04916
+            },
+            "couverture80": {
+              "n": 238,
+              "valeur": 0.844538
+            }
+          },
+          "premiere_pct": {
+            "mae": {
+              "n": 238,
+              "valeur": 7.263445
+            },
+            "biais": {
+              "n": 238,
+              "valeur": -2.973529
+            },
+            "couverture80": {
+              "n": 238,
+              "valeur": 0.668067
+            }
+          }
+        }
+      },
+      "simulation": {
+        "matchs": 186,
+        "victoire": {
+          "log_loss": {
+            "n": 186,
+            "valeur": 0.58044
+          },
+          "brier": {
+            "n": 186,
+            "valeur": 0.199793
+          },
+          "exact": {
+            "n": 186,
+            "valeur": 0.693548
+          }
+        },
+        "sets": {
+          "log_loss": {
+            "n": 186,
+            "valeur": 1.240809
+          },
+          "exact": {
+            "n": 186,
+            "valeur": 0.446237
+          }
+        },
+        "scores": {
+          "exact": {
+            "n": 185,
+            "valeur": 0.016216
+          },
+          "rang_reciproque": {
+            "n": 185,
+            "valeur": 0.026126
+          },
+          "dans_top3": {
+            "n": 185,
+            "valeur": 0.037838
+          }
+        },
+        "jeux": {
+          "mae": {
+            "n": 185,
+            "valeur": 5.342703
+          }
+        },
+        "statistiques": {
+          "aces": {
+            "mae": {
+              "n": 126,
+              "valeur": 1.701587
+            },
+            "biais": {
+              "n": 126,
+              "valeur": 0.45873
+            },
+            "couverture80": {
+              "n": 126,
+              "valeur": 0.904762
+            }
+          },
+          "breaks": {
+            "mae": {
+              "n": 126,
+              "valeur": 1.647619
+            },
+            "biais": {
+              "n": 126,
+              "valeur": 0.488889
+            },
+            "couverture80": {
+              "n": 126,
+              "valeur": 0.81746
+            }
+          },
+          "doubles_fautes": {
+            "mae": {
+              "n": 126,
+              "valeur": 2.123016
+            },
+            "biais": {
+              "n": 126,
+              "valeur": 0.845238
+            },
+            "couverture80": {
+              "n": 126,
+              "valeur": 0.809524
+            }
+          },
+          "gagnes_1re_pct": {
+            "mae": {
+              "n": 126,
+              "valeur": 6.63254
+            },
+            "biais": {
+              "n": 126,
+              "valeur": -0.889683
+            },
+            "couverture80": {
+              "n": 126,
+              "valeur": 0.698413
+            }
+          },
+          "gagnes_2e_pct": {
+            "mae": {
+              "n": 126,
+              "valeur": 9.766667
+            },
+            "biais": {
+              "n": 126,
+              "valeur": -0.119048
+            },
+            "couverture80": {
+              "n": 126,
+              "valeur": 0.730159
+            }
+          },
+          "jeux": {
+            "mae": {
+              "n": 126,
+              "valeur": 3.14127
+            },
+            "biais": {
+              "n": 126,
+              "valeur": 1.111111
+            },
+            "couverture80": {
+              "n": 126,
+              "valeur": 0.761905
+            }
+          },
+          "premiere_pct": {
+            "mae": {
+              "n": 126,
+              "valeur": 8.300794
+            },
+            "biais": {
+              "n": 126,
+              "valeur": -4.43254
+            },
+            "couverture80": {
+              "n": 126,
+              "valeur": 0.539683
+            }
+          }
+        }
+      },
+      "stats": {
+        "matchs": 186,
+        "victoire": {
+          "log_loss": {
+            "n": 186,
+            "valeur": 0.59667
+          },
+          "brier": {
+            "n": 186,
+            "valeur": 0.208316
+          },
+          "exact": {
+            "n": 186,
+            "valeur": 0.672043
+          }
+        },
+        "sets": {
+          "log_loss": {
+            "n": 186,
+            "valeur": 1.250111
+          },
+          "exact": {
+            "n": 186,
+            "valeur": 0.462366
+          }
+        },
+        "scores": {
+          "exact": {
+            "n": 185,
+            "valeur": 0.037838
+          },
+          "rang_reciproque": {
+            "n": 185,
+            "valeur": 0.04955
+          },
+          "dans_top3": {
+            "n": 185,
+            "valeur": 0.064865
+          }
+        },
+        "jeux": {
+          "mae": {
+            "n": 185,
+            "valeur": 4.974054
+          }
+        },
+        "statistiques": {}
+      }
+    }
+  },
+  "par_fiabilite": {
+    "non_note": {
+      "combinaison": {
+        "matchs": 248,
+        "victoire": {
+          "log_loss": {
+            "n": 248,
+            "valeur": 0.621999
+          },
+          "brier": {
+            "n": 248,
+            "valeur": 0.217977
+          },
+          "exact": {
+            "n": 248,
+            "valeur": 0.641129
+          }
+        },
+        "sets": {
+          "log_loss": {
+            "n": 248,
+            "valeur": 1.288397
+          },
+          "exact": {
+            "n": 248,
+            "valeur": 0.431452
+          }
+        },
+        "scores": {
+          "exact": {
+            "n": 246,
+            "valeur": 0.04065
+          },
+          "rang_reciproque": {
+            "n": 246,
+            "valeur": 0.067751
+          },
+          "dans_top3": {
+            "n": 246,
+            "valeur": 0.101626
+          }
+        },
+        "jeux": {
+          "mae": {
+            "n": 246,
+            "valeur": 5.152846
+          }
+        },
+        "statistiques": {}
+      },
+      "simulation": {
+        "matchs": 248,
+        "victoire": {
+          "log_loss": {
+            "n": 248,
+            "valeur": 0.637059
+          },
+          "brier": {
+            "n": 248,
+            "valeur": 0.222972
+          },
+          "exact": {
+            "n": 248,
+            "valeur": 0.629032
+          }
+        },
+        "sets": {
+          "log_loss": {
+            "n": 248,
+            "valeur": 1.319909
+          },
+          "exact": {
+            "n": 248,
+            "valeur": 0.419355
+          }
+        },
+        "scores": {
+          "exact": {
+            "n": 246,
+            "valeur": 0.036585
+          },
+          "rang_reciproque": {
+            "n": 246,
+            "valeur": 0.063008
+          },
+          "dans_top3": {
+            "n": 246,
+            "valeur": 0.097561
+          }
+        },
+        "jeux": {
+          "mae": {
+            "n": 246,
+            "valeur": 5.487805
+          }
+        },
+        "statistiques": {
+          "aces": {
+            "mae": {
+              "n": 496,
+              "valeur": 2.345766
+            },
+            "biais": {
+              "n": 496,
+              "valeur": -0.046976
+            },
+            "couverture80": {
+              "n": 496,
+              "valeur": 0.820565
+            }
+          },
+          "breaks": {
+            "mae": {
+              "n": 496,
+              "valeur": 1.409677
+            },
+            "biais": {
+              "n": 496,
+              "valeur": 0.343145
+            },
+            "couverture80": {
+              "n": 496,
+              "valeur": 0.868952
+            }
+          },
+          "doubles_fautes": {
+            "mae": {
+              "n": 496,
+              "valeur": 1.742339
+            },
+            "biais": {
+              "n": 496,
+              "valeur": 0.626613
+            },
+            "couverture80": {
+              "n": 496,
+              "valeur": 0.840726
+            }
+          },
+          "gagnes_1re_pct": {
+            "mae": {
+              "n": 496,
+              "valeur": 6.761694
+            },
+            "biais": {
+              "n": 496,
+              "valeur": -1.200403
+            },
+            "couverture80": {
+              "n": 496,
+              "valeur": 0.711694
+            }
+          },
+          "gagnes_2e_pct": {
+            "mae": {
+              "n": 496,
+              "valeur": 9.17379
+            },
+            "biais": {
+              "n": 496,
+              "valeur": -0.516935
+            },
+            "couverture80": {
+              "n": 496,
+              "valeur": 0.743952
+            }
+          },
+          "jeux": {
+            "mae": {
+              "n": 496,
+              "valeur": 3.057863
+            },
+            "biais": {
+              "n": 496,
+              "valeur": 0.723589
+            },
+            "couverture80": {
+              "n": 496,
+              "valeur": 0.796371
+            }
+          },
+          "premiere_pct": {
+            "mae": {
+              "n": 496,
+              "valeur": 6.369153
+            },
+            "biais": {
+              "n": 496,
+              "valeur": -1.971573
+            },
+            "couverture80": {
+              "n": 496,
+              "valeur": 0.631048
+            }
+          }
+        }
+      },
+      "stats": {
+        "matchs": 248,
+        "victoire": {
+          "log_loss": {
+            "n": 248,
+            "valeur": 0.629409
+          },
+          "brier": {
+            "n": 248,
+            "valeur": 0.22233
+          },
+          "exact": {
+            "n": 248,
+            "valeur": 0.637097
+          }
+        },
+        "sets": {
+          "log_loss": {
+            "n": 248,
+            "valeur": 1.303327
+          },
+          "exact": {
+            "n": 248,
+            "valeur": 0.423387
+          }
+        },
+        "scores": {
+          "exact": {
+            "n": 246,
+            "valeur": 0.056911
+          },
+          "rang_reciproque": {
+            "n": 246,
+            "valeur": 0.071816
+          },
+          "dans_top3": {
+            "n": 246,
+            "valeur": 0.089431
+          }
+        },
+        "jeux": {
+          "mae": {
+            "n": 246,
+            "valeur": 5.235366
+          }
+        },
+        "statistiques": {}
+      }
+    },
+    "correct": {
+      "combinaison": {
+        "matchs": 505,
+        "victoire": {
+          "log_loss": {
+            "n": 505,
+            "valeur": 0.604813
+          },
+          "brier": {
+            "n": 505,
+            "valeur": 0.211172
+          },
+          "exact": {
+            "n": 505,
+            "valeur": 0.643564
+          }
+        },
+        "sets": {
+          "log_loss": {
+            "n": 504,
+            "valeur": 1.220197
+          },
+          "exact": {
+            "n": 504,
+            "valeur": 0.474206
+          }
+        },
+        "scores": {
+          "exact": {
+            "n": 504,
+            "valeur": 0.027778
+          },
+          "rang_reciproque": {
+            "n": 504,
+            "valeur": 0.048611
+          },
+          "dans_top3": {
+            "n": 504,
+            "valeur": 0.077381
+          }
+        },
+        "jeux": {
+          "mae": {
+            "n": 504,
+            "valeur": 4.694048
+          }
+        },
+        "statistiques": {
+          "aces": {
+            "mae": {
+              "n": 1002,
+              "valeur": 2.407685
+            },
+            "biais": {
+              "n": 1002,
+              "valeur": -0.3001
+            },
+            "couverture80": {
+              "n": 1002,
+              "valeur": 0.806387
+            }
+          },
+          "breaks": {
+            "mae": {
+              "n": 1002,
+              "valeur": 1.321457
+            },
+            "biais": {
+              "n": 1002,
+              "valeur": 0.171956
+            },
+            "couverture80": {
+              "n": 1002,
+              "valeur": 0.909182
+            }
+          },
+          "doubles_fautes": {
+            "mae": {
+              "n": 1002,
+              "valeur": 1.570459
+            },
+            "biais": {
+              "n": 1002,
+              "valeur": 0.434531
+            },
+            "couverture80": {
+              "n": 1002,
+              "valeur": 0.87525
+            }
+          },
+          "gagnes_1re_pct": {
+            "mae": {
+              "n": 1002,
+              "valeur": 7.265469
+            },
+            "biais": {
+              "n": 1002,
+              "valeur": -1.006986
+            },
+            "couverture80": {
+              "n": 1002,
+              "valeur": 0.772455
+            }
+          },
+          "gagnes_2e_pct": {
+            "mae": {
+              "n": 1002,
+              "valeur": 9.022156
+            },
+            "biais": {
+              "n": 1002,
+              "valeur": -0.452096
+            },
+            "couverture80": {
+              "n": 1002,
+              "valeur": 0.797405
+            }
+          },
+          "jeux": {
+            "mae": {
+              "n": 1002,
+              "valeur": 2.854591
+            },
+            "biais": {
+              "n": 1002,
+              "valeur": -0.076547
+            },
+            "couverture80": {
+              "n": 1002,
+              "valeur": 0.864271
+            }
+          },
+          "premiere_pct": {
+            "mae": {
+              "n": 1002,
+              "valeur": 5.879541
+            },
+            "biais": {
+              "n": 1002,
+              "valeur": -1.794311
+            },
+            "couverture80": {
+              "n": 1002,
+              "valeur": 0.766467
+            }
+          }
+        }
+      },
+      "simulation": {
+        "matchs": 505,
+        "victoire": {
+          "log_loss": {
+            "n": 505,
+            "valeur": 0.639427
+          },
+          "brier": {
+            "n": 505,
+            "valeur": 0.224925
+          },
+          "exact": {
+            "n": 505,
+            "valeur": 0.633663
+          }
+        },
+        "sets": {
+          "log_loss": {
+            "n": 504,
+            "valeur": 1.296397
+          },
+          "exact": {
+            "n": 504,
+            "valeur": 0.446429
+          }
+        },
+        "scores": {
+          "exact": {
+            "n": 504,
+            "valeur": 0.019841
+          },
+          "rang_reciproque": {
+            "n": 504,
+            "valeur": 0.036045
+          },
+          "dans_top3": {
+            "n": 504,
+            "valeur": 0.059524
+          }
+        },
+        "jeux": {
+          "mae": {
+            "n": 504,
+            "valeur": 5.255159
+          }
+        },
+        "statistiques": {}
+      },
+      "stats": {
+        "matchs": 505,
+        "victoire": {
+          "log_loss": {
+            "n": 505,
+            "valeur": 0.610616
+          },
+          "brier": {
+            "n": 505,
+            "valeur": 0.212568
+          },
+          "exact": {
+            "n": 505,
+            "valeur": 0.655446
+          }
+        },
+        "sets": {
+          "log_loss": {
+            "n": 504,
+            "valeur": 1.233153
+          },
+          "exact": {
+            "n": 504,
+            "valeur": 0.470238
+          }
+        },
+        "scores": {
+          "exact": {
+            "n": 504,
+            "valeur": 0.03373
+          },
+          "rang_reciproque": {
+            "n": 504,
+            "valeur": 0.048611
+          },
+          "dans_top3": {
+            "n": 504,
+            "valeur": 0.073413
+          }
+        },
+        "jeux": {
+          "mae": {
+            "n": 504,
+            "valeur": 4.779762
+          }
+        },
+        "statistiques": {}
+      }
+    },
+    "solide": {
+      "combinaison": {
+        "matchs": 419,
+        "victoire": {
+          "log_loss": {
+            "n": 419,
+            "valeur": 0.597422
+          },
+          "brier": {
+            "n": 419,
+            "valeur": 0.207109
+          },
+          "exact": {
+            "n": 419,
+            "valeur": 0.668258
+          }
+        },
+        "sets": {
+          "log_loss": {
+            "n": 419,
+            "valeur": 1.24808
+          },
+          "exact": {
+            "n": 419,
+            "valeur": 0.448687
+          }
+        },
+        "scores": {
+          "exact": {
+            "n": 419,
+            "valeur": 0.011933
+          },
+          "rang_reciproque": {
+            "n": 419,
+            "valeur": 0.036993
+          },
+          "dans_top3": {
+            "n": 419,
+            "valeur": 0.071599
+          }
+        },
+        "jeux": {
+          "mae": {
+            "n": 419,
+            "valeur": 5.080668
+          }
+        },
+        "statistiques": {
+          "aces": {
+            "mae": {
+              "n": 828,
+              "valeur": 2.255435
+            },
+            "biais": {
+              "n": 828,
+              "valeur": -0.205918
+            },
+            "couverture80": {
+              "n": 828,
+              "valeur": 0.81401
+            }
+          },
+          "breaks": {
+            "mae": {
+              "n": 828,
+              "valeur": 1.357609
+            },
+            "biais": {
+              "n": 828,
+              "valeur": 0.124034
+            },
+            "couverture80": {
+              "n": 828,
+              "valeur": 0.905797
+            }
+          },
+          "doubles_fautes": {
+            "mae": {
+              "n": 828,
+              "valeur": 1.549155
+            },
+            "biais": {
+              "n": 828,
+              "valeur": 0.441908
+            },
+            "couverture80": {
+              "n": 828,
+              "valeur": 0.885266
+            }
+          },
+          "gagnes_1re_pct": {
+            "mae": {
+              "n": 828,
+              "valeur": 7.252899
+            },
+            "biais": {
+              "n": 828,
+              "valeur": -0.541063
+            },
+            "couverture80": {
+              "n": 828,
+              "valeur": 0.785024
+            }
+          },
+          "gagnes_2e_pct": {
+            "mae": {
+              "n": 828,
+              "valeur": 9.335024
+            },
+            "biais": {
+              "n": 828,
+              "valeur": -0.546377
+            },
+            "couverture80": {
+              "n": 828,
+              "valeur": 0.780193
+            }
+          },
+          "jeux": {
+            "mae": {
+              "n": 828,
+              "valeur": 3.00628
+            },
+            "biais": {
+              "n": 828,
+              "valeur": -0.122464
+            },
+            "couverture80": {
+              "n": 828,
+              "valeur": 0.842995
+            }
+          },
+          "premiere_pct": {
+            "mae": {
+              "n": 828,
+              "valeur": 6.056763
+            },
+            "biais": {
+              "n": 828,
+              "valeur": -1.71087
+            },
+            "couverture80": {
+              "n": 828,
+              "valeur": 0.794686
+            }
+          }
+        }
+      },
+      "simulation": {
+        "matchs": 419,
+        "victoire": {
+          "log_loss": {
+            "n": 419,
+            "valeur": 0.593683
+          },
+          "brier": {
+            "n": 419,
+            "valeur": 0.205115
+          },
+          "exact": {
+            "n": 419,
+            "valeur": 0.682578
+          }
+        },
+        "sets": {
+          "log_loss": {
+            "n": 419,
+            "valeur": 1.260263
+          },
+          "exact": {
+            "n": 419,
+            "valeur": 0.443914
+          }
+        },
+        "scores": {
+          "exact": {
+            "n": 419,
+            "valeur": 0.026253
+          },
+          "rang_reciproque": {
+            "n": 419,
+            "valeur": 0.040573
+          },
+          "dans_top3": {
+            "n": 419,
+            "valeur": 0.057279
+          }
+        },
+        "jeux": {
+          "mae": {
+            "n": 419,
+            "valeur": 5.397613
+          }
+        },
+        "statistiques": {}
+      },
+      "stats": {
+        "matchs": 419,
+        "victoire": {
+          "log_loss": {
+            "n": 419,
+            "valeur": 0.607611
+          },
+          "brier": {
+            "n": 419,
+            "valeur": 0.21067
+          },
+          "exact": {
+            "n": 419,
+            "valeur": 0.684964
+          }
+        },
+        "sets": {
+          "log_loss": {
+            "n": 419,
+            "valeur": 1.259799
+          },
+          "exact": {
+            "n": 419,
+            "valeur": 0.455847
+          }
+        },
+        "scores": {
+          "exact": {
+            "n": 419,
+            "valeur": 0.016706
+          },
+          "rang_reciproque": {
+            "n": 419,
+            "valeur": 0.039379
+          },
+          "dans_top3": {
+            "n": 419,
+            "valeur": 0.069212
+          }
+        },
+        "jeux": {
+          "mae": {
+            "n": 419,
+            "valeur": 5.088783
+          }
+        },
+        "statistiques": {}
+      }
+    },
+    "prudent": {
+      "combinaison": {
+        "matchs": 71,
+        "victoire": {
+          "log_loss": {
+            "n": 71,
+            "valeur": 0.551631
+          },
+          "brier": {
+            "n": 71,
+            "valeur": 0.185268
+          },
+          "exact": {
+            "n": 71,
+            "valeur": 0.746479
+          }
+        },
+        "sets": {
+          "log_loss": {
+            "n": 71,
+            "valeur": 1.126314
+          },
+          "exact": {
+            "n": 71,
+            "valeur": 0.577465
+          }
+        },
+        "scores": {
+          "exact": {
+            "n": 71,
+            "valeur": 0.042254
+          },
+          "rang_reciproque": {
+            "n": 71,
+            "valeur": 0.056338
+          },
+          "dans_top3": {
+            "n": 71,
+            "valeur": 0.070423
+          }
+        },
+        "jeux": {
+          "mae": {
+            "n": 71,
+            "valeur": 4.704225
+          }
+        },
+        "statistiques": {
+          "aces": {
+            "mae": {
+              "n": 142,
+              "valeur": 2.195775
+            },
+            "biais": {
+              "n": 142,
+              "valeur": 0.252113
+            },
+            "couverture80": {
+              "n": 142,
+              "valeur": 0.809859
+            }
+          },
+          "breaks": {
+            "mae": {
+              "n": 142,
+              "valeur": 1.352817
+            },
+            "biais": {
+              "n": 142,
+              "valeur": 0.133099
+            },
+            "couverture80": {
+              "n": 142,
+              "valeur": 0.915493
+            }
+          },
+          "doubles_fautes": {
+            "mae": {
+              "n": 142,
+              "valeur": 1.511972
+            },
+            "biais": {
+              "n": 142,
+              "valeur": 0.552817
+            },
+            "couverture80": {
+              "n": 142,
+              "valeur": 0.873239
+            }
+          },
+          "gagnes_1re_pct": {
+            "mae": {
+              "n": 142,
+              "valeur": 8.398592
+            },
+            "biais": {
+              "n": 142,
+              "valeur": 0.929577
+            },
+            "couverture80": {
+              "n": 142,
+              "valeur": 0.711268
+            }
+          },
+          "gagnes_2e_pct": {
+            "mae": {
+              "n": 142,
+              "valeur": 10.170423
+            },
+            "biais": {
+              "n": 142,
+              "valeur": -1.364789
+            },
+            "couverture80": {
+              "n": 142,
+              "valeur": 0.753521
+            }
+          },
+          "jeux": {
+            "mae": {
+              "n": 142,
+              "valeur": 2.857042
+            },
+            "biais": {
+              "n": 142,
+              "valeur": 0.311972
+            },
+            "couverture80": {
+              "n": 142,
+              "valeur": 0.823944
+            }
+          },
+          "premiere_pct": {
+            "mae": {
+              "n": 142,
+              "valeur": 6.399296
+            },
+            "biais": {
+              "n": 142,
+              "valeur": -1.979577
+            },
+            "couverture80": {
+              "n": 142,
+              "valeur": 0.711268
+            }
+          }
+        }
+      },
+      "simulation": {
+        "matchs": 71,
+        "victoire": {
+          "log_loss": {
+            "n": 71,
+            "valeur": 0.589062
+          },
+          "brier": {
+            "n": 71,
+            "valeur": 0.200703
+          },
+          "exact": {
+            "n": 71,
+            "valeur": 0.661972
+          }
+        },
+        "sets": {
+          "log_loss": {
+            "n": 71,
+            "valeur": 1.224909
+          },
+          "exact": {
+            "n": 71,
+            "valeur": 0.478873
+          }
+        },
+        "scores": {
+          "exact": {
+            "n": 71,
+            "valeur": 0.014085
+          },
+          "rang_reciproque": {
+            "n": 71,
+            "valeur": 0.021127
+          },
+          "dans_top3": {
+            "n": 71,
+            "valeur": 0.028169
+          }
+        },
+        "jeux": {
+          "mae": {
+            "n": 71,
+            "valeur": 5.660563
+          }
+        },
+        "statistiques": {}
+      },
+      "stats": {
+        "matchs": 71,
+        "victoire": {
+          "log_loss": {
+            "n": 71,
+            "valeur": 0.556489
+          },
+          "brier": {
+            "n": 71,
+            "valeur": 0.187011
+          },
+          "exact": {
+            "n": 71,
+            "valeur": 0.746479
+          }
+        },
+        "sets": {
+          "log_loss": {
+            "n": 71,
+            "valeur": 1.12719
+          },
+          "exact": {
+            "n": 71,
+            "valeur": 0.591549
+          }
+        },
+        "scores": {
+          "exact": {
+            "n": 71,
+            "valeur": 0.042254
+          },
+          "rang_reciproque": {
+            "n": 71,
+            "valeur": 0.056338
+          },
+          "dans_top3": {
+            "n": 71,
+            "valeur": 0.070423
+          }
+        },
+        "jeux": {
+          "mae": {
+            "n": 71,
+            "valeur": 4.701408
+          }
+        },
+        "statistiques": {}
+      }
+    },
+    "fragile": {
+      "combinaison": {
+        "matchs": 1,
+        "victoire": {
+          "log_loss": {
+            "n": 1,
+            "valeur": 0.546107
+          },
+          "brier": {
+            "n": 1,
+            "valeur": 0.177073
+          },
+          "exact": {
+            "n": 1,
+            "valeur": 1.0
+          }
+        },
+        "sets": {
+          "log_loss": {
+            "n": 1,
+            "valeur": 1.026385
+          },
+          "exact": {
+            "n": 1,
+            "valeur": 1.0
+          }
+        },
+        "scores": {
+          "exact": {
+            "n": 1,
+            "valeur": 0.0
+          },
+          "rang_reciproque": {
+            "n": 1,
+            "valeur": 0.0
+          },
+          "dans_top3": {
+            "n": 1,
+            "valeur": 0.0
+          }
+        },
+        "jeux": {
+          "mae": {
+            "n": 1,
+            "valeur": 2.5
+          }
+        },
+        "statistiques": {
+          "aces": {
+            "mae": {
+              "n": 2,
+              "valeur": 2.8
+            },
+            "biais": {
+              "n": 2,
+              "valeur": 2.8
+            },
+            "couverture80": {
+              "n": 2,
+              "valeur": 0.5
+            }
+          },
+          "breaks": {
+            "mae": {
+              "n": 2,
+              "valeur": 0.9
+            },
+            "biais": {
+              "n": 2,
+              "valeur": -0.9
+            },
+            "couverture80": {
+              "n": 2,
+              "valeur": 1.0
+            }
+          },
+          "doubles_fautes": {
+            "mae": {
+              "n": 2,
+              "valeur": 2.2
+            },
+            "biais": {
+              "n": 2,
+              "valeur": -2.2
+            },
+            "couverture80": {
+              "n": 2,
+              "valeur": 1.0
+            }
+          },
+          "gagnes_1re_pct": {
+            "mae": {
+              "n": 2,
+              "valeur": 12.4
+            },
+            "biais": {
+              "n": 2,
+              "valeur": 12.4
+            },
+            "couverture80": {
+              "n": 2,
+              "valeur": 0.0
+            }
+          },
+          "gagnes_2e_pct": {
+            "mae": {
+              "n": 2,
+              "valeur": 2.45
+            },
+            "biais": {
+              "n": 2,
+              "valeur": -0.85
+            },
+            "couverture80": {
+              "n": 2,
+              "valeur": 1.0
+            }
+          },
+          "jeux": {
+            "mae": {
+              "n": 2,
+              "valeur": 1.35
+            },
+            "biais": {
+              "n": 2,
+              "valeur": -1.35
+            },
+            "couverture80": {
+              "n": 2,
+              "valeur": 1.0
+            }
+          },
+          "premiere_pct": {
+            "mae": {
+              "n": 2,
+              "valeur": 6.25
+            },
+            "biais": {
+              "n": 2,
+              "valeur": 3.95
+            },
+            "couverture80": {
+              "n": 2,
+              "valeur": 0.5
+            }
+          }
+        }
+      },
+      "simulation": {
+        "matchs": 1,
+        "victoire": {
+          "log_loss": {
+            "n": 1,
+            "valeur": 0.595658
+          },
+          "brier": {
+            "n": 1,
+            "valeur": 0.201421
+          },
+          "exact": {
+            "n": 1,
+            "valeur": 1.0
+          }
+        },
+        "sets": {
+          "log_loss": {
+            "n": 1,
+            "valeur": 1.24897
+          },
+          "exact": {
+            "n": 1,
+            "valeur": 1.0
+          }
+        },
+        "scores": {
+          "exact": {
+            "n": 1,
+            "valeur": 0.0
+          },
+          "rang_reciproque": {
+            "n": 1,
+            "valeur": 0.0
+          },
+          "dans_top3": {
+            "n": 1,
+            "valeur": 0.0
+          }
+        },
+        "jeux": {
+          "mae": {
+            "n": 1,
+            "valeur": 1.1
+          }
+        },
+        "statistiques": {}
+      },
+      "stats": {
+        "matchs": 1,
+        "victoire": {
+          "log_loss": {
+            "n": 1,
+            "valeur": 0.526108
+          },
+          "brier": {
+            "n": 1,
+            "valeur": 0.167363
+          },
+          "exact": {
+            "n": 1,
+            "valeur": 1.0
+          }
+        },
+        "sets": {
+          "log_loss": {
+            "n": 1,
+            "valeur": 0.998315
+          },
+          "exact": {
+            "n": 1,
+            "valeur": 1.0
+          }
+        },
+        "scores": {
+          "exact": {
+            "n": 1,
+            "valeur": 0.0
+          },
+          "rang_reciproque": {
+            "n": 1,
+            "valeur": 0.0
+          },
+          "dans_top3": {
+            "n": 1,
+            "valeur": 0.0
+          }
+        },
+        "jeux": {
+          "mae": {
+            "n": 1,
+            "valeur": 2.5
+          }
+        },
+        "statistiques": {}
+      }
+    }
+  },
+  "par_documentation": {
+    "tres_peu_documente": {
+      "combinaison": {
+        "matchs": 249,
+        "victoire": {
+          "log_loss": {
+            "n": 249,
+            "valeur": 0.621694
+          },
+          "brier": {
+            "n": 249,
+            "valeur": 0.217813
+          },
+          "exact": {
+            "n": 249,
+            "valeur": 0.64257
+          }
+        },
+        "sets": {
+          "log_loss": {
+            "n": 249,
+            "valeur": 1.287345
+          },
+          "exact": {
+            "n": 249,
+            "valeur": 0.433735
+          }
+        },
+        "scores": {
+          "exact": {
+            "n": 247,
+            "valeur": 0.040486
+          },
+          "rang_reciproque": {
+            "n": 247,
+            "valeur": 0.067476
+          },
+          "dans_top3": {
+            "n": 247,
+            "valeur": 0.101215
+          }
+        },
+        "jeux": {
+          "mae": {
+            "n": 247,
+            "valeur": 5.142105
+          }
+        },
+        "statistiques": {
+          "aces": {
+            "mae": {
+              "n": 2,
+              "valeur": 2.8
+            },
+            "biais": {
+              "n": 2,
+              "valeur": 2.8
+            },
+            "couverture80": {
+              "n": 2,
+              "valeur": 0.5
+            }
+          },
+          "breaks": {
+            "mae": {
+              "n": 2,
+              "valeur": 0.9
+            },
+            "biais": {
+              "n": 2,
+              "valeur": -0.9
+            },
+            "couverture80": {
+              "n": 2,
+              "valeur": 1.0
+            }
+          },
+          "doubles_fautes": {
+            "mae": {
+              "n": 2,
+              "valeur": 2.2
+            },
+            "biais": {
+              "n": 2,
+              "valeur": -2.2
+            },
+            "couverture80": {
+              "n": 2,
+              "valeur": 1.0
+            }
+          },
+          "gagnes_1re_pct": {
+            "mae": {
+              "n": 2,
+              "valeur": 12.4
+            },
+            "biais": {
+              "n": 2,
+              "valeur": 12.4
+            },
+            "couverture80": {
+              "n": 2,
+              "valeur": 0.0
+            }
+          },
+          "gagnes_2e_pct": {
+            "mae": {
+              "n": 2,
+              "valeur": 2.45
+            },
+            "biais": {
+              "n": 2,
+              "valeur": -0.85
+            },
+            "couverture80": {
+              "n": 2,
+              "valeur": 1.0
+            }
+          },
+          "jeux": {
+            "mae": {
+              "n": 2,
+              "valeur": 1.35
+            },
+            "biais": {
+              "n": 2,
+              "valeur": -1.35
+            },
+            "couverture80": {
+              "n": 2,
+              "valeur": 1.0
+            }
+          },
+          "premiere_pct": {
+            "mae": {
+              "n": 2,
+              "valeur": 6.25
+            },
+            "biais": {
+              "n": 2,
+              "valeur": 3.95
+            },
+            "couverture80": {
+              "n": 2,
+              "valeur": 0.5
+            }
+          }
+        }
+      },
+      "simulation": {
+        "matchs": 249,
+        "victoire": {
+          "log_loss": {
+            "n": 249,
+            "valeur": 0.636893
+          },
+          "brier": {
+            "n": 249,
+            "valeur": 0.222885
+          },
+          "exact": {
+            "n": 249,
+            "valeur": 0.630522
+          }
+        },
+        "sets": {
+          "log_loss": {
+            "n": 249,
+            "valeur": 1.319624
+          },
+          "exact": {
+            "n": 249,
+            "valeur": 0.421687
+          }
+        },
+        "scores": {
+          "exact": {
+            "n": 247,
+            "valeur": 0.036437
+          },
+          "rang_reciproque": {
+            "n": 247,
+            "valeur": 0.062753
+          },
+          "dans_top3": {
+            "n": 247,
+            "valeur": 0.097166
+          }
+        },
+        "jeux": {
+          "mae": {
+            "n": 247,
+            "valeur": 5.47004
+          }
+        },
+        "statistiques": {
+          "aces": {
+            "mae": {
+              "n": 496,
+              "valeur": 2.345766
+            },
+            "biais": {
+              "n": 496,
+              "valeur": -0.046976
+            },
+            "couverture80": {
+              "n": 496,
+              "valeur": 0.820565
+            }
+          },
+          "breaks": {
+            "mae": {
+              "n": 496,
+              "valeur": 1.409677
+            },
+            "biais": {
+              "n": 496,
+              "valeur": 0.343145
+            },
+            "couverture80": {
+              "n": 496,
+              "valeur": 0.868952
+            }
+          },
+          "doubles_fautes": {
+            "mae": {
+              "n": 496,
+              "valeur": 1.742339
+            },
+            "biais": {
+              "n": 496,
+              "valeur": 0.626613
+            },
+            "couverture80": {
+              "n": 496,
+              "valeur": 0.840726
+            }
+          },
+          "gagnes_1re_pct": {
+            "mae": {
+              "n": 496,
+              "valeur": 6.761694
+            },
+            "biais": {
+              "n": 496,
+              "valeur": -1.200403
+            },
+            "couverture80": {
+              "n": 496,
+              "valeur": 0.711694
+            }
+          },
+          "gagnes_2e_pct": {
+            "mae": {
+              "n": 496,
+              "valeur": 9.17379
+            },
+            "biais": {
+              "n": 496,
+              "valeur": -0.516935
+            },
+            "couverture80": {
+              "n": 496,
+              "valeur": 0.743952
+            }
+          },
+          "jeux": {
+            "mae": {
+              "n": 496,
+              "valeur": 3.057863
+            },
+            "biais": {
+              "n": 496,
+              "valeur": 0.723589
+            },
+            "couverture80": {
+              "n": 496,
+              "valeur": 0.796371
+            }
+          },
+          "premiere_pct": {
+            "mae": {
+              "n": 496,
+              "valeur": 6.369153
+            },
+            "biais": {
+              "n": 496,
+              "valeur": -1.971573
+            },
+            "couverture80": {
+              "n": 496,
+              "valeur": 0.631048
+            }
+          }
+        }
+      },
+      "stats": {
+        "matchs": 249,
+        "victoire": {
+          "log_loss": {
+            "n": 249,
+            "valeur": 0.628994
+          },
+          "brier": {
+            "n": 249,
+            "valeur": 0.222109
+          },
+          "exact": {
+            "n": 249,
+            "valeur": 0.638554
+          }
+        },
+        "sets": {
+          "log_loss": {
+            "n": 249,
+            "valeur": 1.302102
+          },
+          "exact": {
+            "n": 249,
+            "valeur": 0.425703
+          }
+        },
+        "scores": {
+          "exact": {
+            "n": 247,
+            "valeur": 0.05668
+          },
+          "rang_reciproque": {
+            "n": 247,
+            "valeur": 0.071525
+          },
+          "dans_top3": {
+            "n": 247,
+            "valeur": 0.089069
+          }
+        },
+        "jeux": {
+          "mae": {
+            "n": 247,
+            "valeur": 5.224291
+          }
+        },
+        "statistiques": {}
+      }
+    },
+    "documente": {
+      "combinaison": {
+        "matchs": 929,
+        "victoire": {
+          "log_loss": {
+            "n": 929,
+            "valeur": 0.612469
+          },
+          "brier": {
+            "n": 929,
+            "valeur": 0.213246
+          },
+          "exact": {
+            "n": 929,
+            "valeur": 0.650161
+          }
+        },
+        "sets": {
+          "log_loss": {
+            "n": 928,
+            "valeur": 1.249234
+          },
+          "exact": {
+            "n": 928,
+            "valeur": 0.454741
+          }
+        },
+        "scores": {
+          "exact": {
+            "n": 928,
+            "valeur": 0.022629
+          },
+          "rang_reciproque": {
+            "n": 928,
+            "valeur": 0.044001
+          },
+          "dans_top3": {
+            "n": 928,
+            "valeur": 0.073276
+          }
+        },
+        "jeux": {
+          "mae": {
+            "n": 928,
+            "valeur": 4.912608
+          }
+        },
+        "statistiques": {
+          "aces": {
+            "mae": {
+              "n": 1840,
+              "valeur": 2.347935
+            },
+            "biais": {
+              "n": 1840,
+              "valeur": -0.268043
+            },
+            "couverture80": {
+              "n": 1840,
+              "valeur": 0.810326
+            }
+          },
+          "breaks": {
+            "mae": {
+              "n": 1840,
+              "valeur": 1.336033
+            },
+            "biais": {
+              "n": 1840,
+              "valeur": 0.140707
+            },
+            "couverture80": {
+              "n": 1840,
+              "valeur": 0.910326
+            }
+          },
+          "doubles_fautes": {
+            "mae": {
+              "n": 1840,
+              "valeur": 1.546141
+            },
+            "biais": {
+              "n": 1840,
+              "valeur": 0.463098
+            },
+            "couverture80": {
+              "n": 1840,
+              "valeur": 0.883152
+            }
+          },
+          "gagnes_1re_pct": {
+            "mae": {
+              "n": 1840,
+              "valeur": 7.19875
+            },
+            "biais": {
+              "n": 1840,
+              "valeur": -0.715272
+            },
+            "couverture80": {
+              "n": 1840,
+              "valeur": 0.781522
+            }
+          },
+          "gagnes_2e_pct": {
+            "mae": {
+              "n": 1840,
+              "valeur": 9.133804
+            },
+            "biais": {
+              "n": 1840,
+              "valeur": -0.504022
+            },
+            "couverture80": {
+              "n": 1840,
+              "valeur": 0.791304
+            }
+          },
+          "jeux": {
+            "mae": {
+              "n": 1840,
+              "valeur": 2.945109
+            },
+            "biais": {
+              "n": 1840,
+              "valeur": -0.09087
+            },
+            "couverture80": {
+              "n": 1840,
+              "valeur": 0.853804
+            }
+          },
+          "premiere_pct": {
+            "mae": {
+              "n": 1840,
+              "valeur": 5.975
+            },
+            "biais": {
+              "n": 1840,
+              "valeur": -1.892609
+            },
+            "couverture80": {
+              "n": 1840,
+              "valeur": 0.772826
+            }
+          }
+        }
+      },
+      "simulation": {
+        "matchs": 929,
+        "victoire": {
+          "log_loss": {
+            "n": 929,
+            "valeur": 0.619816
+          },
+          "brier": {
+            "n": 929,
+            "valeur": 0.216059
+          },
+          "exact": {
+            "n": 929,
+            "valeur": 0.655544
+          }
+        },
+        "sets": {
+          "log_loss": {
+            "n": 928,
+            "valeur": 1.281016
+          },
+          "exact": {
+            "n": 928,
+            "valeur": 0.442888
+          }
+        },
+        "scores": {
+          "exact": {
+            "n": 928,
+            "valeur": 0.022629
+          },
+          "rang_reciproque": {
+            "n": 928,
+            "valeur": 0.037895
+          },
+          "dans_top3": {
+            "n": 928,
+            "valeur": 0.05819
+          }
+        },
+        "jeux": {
+          "mae": {
+            "n": 928,
+            "valeur": 5.305927
+          }
+        },
+        "statistiques": {}
+      },
+      "stats": {
+        "matchs": 929,
+        "victoire": {
+          "log_loss": {
+            "n": 929,
+            "valeur": 0.619629
+          },
+          "brier": {
+            "n": 929,
+            "valeur": 0.21587
+          },
+          "exact": {
+            "n": 929,
+            "valeur": 0.662002
+          }
+        },
+        "sets": {
+          "log_loss": {
+            "n": 928,
+            "valeur": 1.261063
+          },
+          "exact": {
+            "n": 928,
+            "valeur": 0.455819
+          }
+        },
+        "scores": {
+          "exact": {
+            "n": 928,
+            "valeur": 0.024784
+          },
+          "rang_reciproque": {
+            "n": 928,
+            "valeur": 0.043283
+          },
+          "dans_top3": {
+            "n": 928,
+            "valeur": 0.070043
+          }
+        },
+        "jeux": {
+          "mae": {
+            "n": 928,
+            "valeur": 4.939116
+          }
+        },
+        "statistiques": {}
+      }
+    },
+    "peu_documente": {
+      "combinaison": {
+        "matchs": 66,
+        "victoire": {
+          "log_loss": {
+            "n": 66,
+            "valeur": 0.392915
+          },
+          "brier": {
+            "n": 66,
+            "valeur": 0.128316
+          },
+          "exact": {
+            "n": 66,
+            "valeur": 0.818182
+          }
+        },
+        "sets": {
+          "log_loss": {
+            "n": 66,
+            "valeur": 0.887945
+          },
+          "exact": {
+            "n": 66,
+            "valeur": 0.69697
+          }
+        },
+        "scores": {
+          "exact": {
+            "n": 66,
+            "valeur": 0.015152
+          },
+          "rang_reciproque": {
+            "n": 66,
+            "valeur": 0.04798
+          },
+          "dans_top3": {
+            "n": 66,
+            "valeur": 0.090909
+          }
+        },
+        "jeux": {
+          "mae": {
+            "n": 66,
+            "valeur": 4.086364
+          }
+        },
+        "statistiques": {
+          "aces": {
+            "mae": {
+              "n": 132,
+              "valeur": 2.057576
+            },
+            "biais": {
+              "n": 132,
+              "valeur": 0.437879
+            },
+            "couverture80": {
+              "n": 132,
+              "valeur": 0.80303
+            }
+          },
+          "breaks": {
+            "mae": {
+              "n": 132,
+              "valeur": 1.378788
+            },
+            "biais": {
+              "n": 132,
+              "valeur": 0.265152
+            },
+            "couverture80": {
+              "n": 132,
+              "valeur": 0.878788
+            }
+          },
+          "doubles_fautes": {
+            "mae": {
+              "n": 132,
+              "valeur": 1.712879
+            },
+            "biais": {
+              "n": 132,
+              "valeur": 0.209848
+            },
+            "couverture80": {
+              "n": 132,
+              "valeur": 0.825758
+            }
+          },
+          "gagnes_1re_pct": {
+            "mae": {
+              "n": 132,
+              "valeur": 9.335606
+            },
+            "biais": {
+              "n": 132,
+              "valeur": -0.067424
+            },
+            "couverture80": {
+              "n": 132,
+              "valeur": 0.659091
+            }
+          },
+          "gagnes_2e_pct": {
+            "mae": {
+              "n": 132,
+              "valeur": 10.663636
+            },
+            "biais": {
+              "n": 132,
+              "valeur": -1.301515
+            },
+            "couverture80": {
+              "n": 132,
+              "valeur": 0.727273
+            }
+          },
+          "jeux": {
+            "mae": {
+              "n": 132,
+              "valeur": 2.54697
+            },
+            "biais": {
+              "n": 132,
+              "valeur": 0.25303
+            },
+            "couverture80": {
+              "n": 132,
+              "valeur": 0.833333
+            }
+          },
+          "premiere_pct": {
+            "mae": {
+              "n": 132,
+              "valeur": 6.219697
+            },
+            "biais": {
+              "n": 132,
+              "valeur": -0.1
+            },
+            "couverture80": {
+              "n": 132,
+              "valeur": 0.795455
+            }
+          }
+        }
+      },
+      "simulation": {
+        "matchs": 66,
+        "victoire": {
+          "log_loss": {
+            "n": 66,
+            "valeur": 0.570889
+          },
+          "brier": {
+            "n": 66,
+            "valeur": 0.197899
+          },
+          "exact": {
+            "n": 66,
+            "valeur": 0.666667
+          }
+        },
+        "sets": {
+          "log_loss": {
+            "n": 66,
+            "valeur": 1.206363
+          },
+          "exact": {
+            "n": 66,
+            "valeur": 0.515152
+          }
+        },
+        "scores": {
+          "exact": {
+            "n": 66,
+            "valeur": 0.015152
+          },
+          "rang_reciproque": {
+            "n": 66,
+            "valeur": 0.022727
+          },
+          "dans_top3": {
+            "n": 66,
+            "valeur": 0.030303
+          }
+        },
+        "jeux": {
+          "mae": {
+            "n": 66,
+            "valeur": 5.881818
+          }
+        },
+        "statistiques": {}
+      },
+      "stats": {
+        "matchs": 66,
+        "victoire": {
+          "log_loss": {
+            "n": 66,
+            "valeur": 0.406457
+          },
+          "brier": {
+            "n": 66,
+            "valeur": 0.126548
+          },
+          "exact": {
+            "n": 66,
+            "valeur": 0.848485
+          }
+        },
+        "sets": {
+          "log_loss": {
+            "n": 66,
+            "valeur": 0.895895
+          },
+          "exact": {
+            "n": 66,
+            "valeur": 0.712121
+          }
+        },
+        "scores": {
+          "exact": {
+            "n": 66,
+            "valeur": 0.060606
+          },
+          "rang_reciproque": {
+            "n": 66,
+            "valeur": 0.073232
+          },
+          "dans_top3": {
+            "n": 66,
+            "valeur": 0.090909
+          }
+        },
+        "jeux": {
+          "mae": {
+            "n": 66,
+            "valeur": 4.416667
+          }
+        },
+        "statistiques": {}
+      }
+    }
+  },
+  "matchs_retenus_vainqueur": 1244,
+  "entrees_ecartees": 67,
+  "genere_le": "2026-11-16T11:35:23.034952+00:00",
+  "source": "pronostics pré-match figés et résultats raccordés, sans marché",
+  "couverture_nominale": 0.8,
+  "note": "Le rang du score est nul-indexé ; les mesures indisponibles ne sont pas remplacées par zéro."
+}

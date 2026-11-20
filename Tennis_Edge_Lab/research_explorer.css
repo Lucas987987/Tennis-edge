@@ -1,0 +1,38 @@
+/* V6.7 Explorateur — mobile d'abord (412 px) */
+#explorer .xp-switch,#explorer .xp-presets,#explorer .xp-chips,#explorer .xp-controls{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+#explorer .xp-switch button,#explorer .xp-presets button,#explorer .xp-chip,#explorer .xp-freeze button{min-height:40px;padding:8px 12px;border-radius:10px;border:1px solid var(--line,#cbd5e1);background:#fff;color:inherit;font:inherit;cursor:pointer}
+#explorer .xp-switch button.selected{background:#17324b;color:#fff;border-color:#17324b}
+#explorer .xp-presets button{font-size:12px;flex:1 1 100%;text-align:left}
+#explorer .xp-chip{background:#e8f0fb;border-color:#b9cdea;font-size:12px}
+#explorer .xp-chip.clear{background:#fff}
+#explorer .xp-controls label{display:flex;flex-direction:column;gap:4px;font-size:12px;flex:1 1 45%;min-width:0}
+#explorer .xp-controls select{min-height:40px;font:inherit;padding:6px;border-radius:8px;border:1px solid var(--line,#cbd5e1);width:100%}
+#explorer table.xp-split{min-width:640px}
+#explorer table.xp-mini{min-width:0}
+#explorer .xp-row{cursor:pointer}
+#explorer .xp-row:hover,#explorer .xp-row:focus{background:#f1f6fd;outline:none}
+#explorer .xp-sig{font-weight:700}
+#explorer .xp-bar{display:inline-block;height:8px;background:#496f9e;border-radius:4px;vertical-align:middle}
+#explorer .xp-warn{display:inline-block;font-size:11px;padding:1px 6px;border-radius:6px;background:#fff4e5;color:#7a4a00;border:1px solid #f3c98b}
+#explorer .xp-luck{display:inline-block;font-size:12px;color:#b42318;font-weight:600}
+#explorer .xp-summary .stats strong{font-size:18px}
+#explorer .xp-compare{display:flex;gap:8px;align-items:center;margin-top:10px;font-size:13px}
+#explorer .xp-json{width:100%;font:12px/1.4 ui-monospace,Menlo,monospace;border-radius:8px;border:1px solid var(--line,#cbd5e1);padding:8px}
+#explorer .candidate{margin:12px 0;min-width:0;overflow-wrap:anywhere}
+#explorer .xp-cmp table{min-width:380px}
+/* V6.9 : panneau de filtres cumulatifs */
+#explorer .xp-switch button{flex:1 1 30%}
+#explorer .xp-entry{display:flex;flex-direction:column;gap:4px;font-size:12px;margin:6px 0}
+#explorer .xp-entry select{min-height:40px;font:inherit;border-radius:8px;border:1px solid var(--line,#cbd5e1);padding:6px}
+#explorer .xp-panel{border:1px solid var(--line,#cbd5e1);border-radius:12px;padding:8px 10px;margin:10px 0;background:#fff}
+#explorer .xp-panel>summary{cursor:pointer;font-size:13px;line-height:1.4;min-height:32px}
+#explorer .xp-crit{border-top:1px solid var(--line,#e2e8f0);padding:6px 0}
+#explorer .xp-crit summary{cursor:pointer;font-size:13px;min-height:32px;display:list-item}
+#explorer .xp-values{display:flex;flex-wrap:wrap;gap:6px 12px;max-height:220px;overflow-y:auto;padding:6px 2px}
+#explorer .xp-values label{display:flex;gap:6px;align-items:center;font-size:12px;min-height:32px}
+#explorer .xp-ranges{border-top:1px solid var(--line,#e2e8f0);padding-top:6px}
+#explorer .xp-range{display:grid;grid-template-columns:1fr 80px 80px;gap:6px;align-items:center;font-size:12px;margin:6px 0}
+#explorer .xp-range input{min-height:36px;width:100%;font:inherit;border:1px solid var(--line,#cbd5e1);border-radius:8px;padding:4px 6px;min-width:0}
+/* V7.0 : n des deux populations (suivi officiel / alertes envoyées) */
+#explorer .xp-pop{margin:8px 0;font-size:12px}
+#explorer .xp-pop summary{cursor:pointer;min-height:32px;line-height:32px}

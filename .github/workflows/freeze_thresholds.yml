@@ -1,0 +1,127 @@
+name: Freeze Adaptive Thresholds (9e hypothèse)
+
+# Déclenchement MANUEL UNIQUEMENT (workflow_dispatch) -- jamais de schedule.
+# freeze_thresholds.py fige la sélection ACTUELLE des seuils adaptatifs par
+# book pour un suivi out-of-sample (validation_report.py, adaptive_threshold_
+# watch()). Si ce workflow tournait automatiquement (cron), le gel se
+# réinitialiserait à chaque run, ce qui viderait le test de tout son sens :
+# on doit comparer une sélection FIGÉE à des résultats futurs, pas une
+# sélection qui bouge en même temps que les données qu'elle est censée
+# prédire.
+#
+# À lancer :
+#   - une première fois maintenant, pour créer frozen_thresholds.json
+#   - puis seulement si on décide consciemment de re-geler (walk-forward),
+#     auquel cas cocher "append" pour conserver l'historique des gels
+#     précédents plutôt que de l'écraser.
+
+# PYTHONDONTWRITEBYTECODE : aucun .pyc n'est plus genere. Les .pyc
+# regeneres a chaque run faisaient echouer le merge puis le push
+# (panne du 16/08/2026). Portee workflow = toutes les etapes.
+env:
+  # Étape 4 (16/10/2026) : l'historique FIGÉ des courbes (parts/hist_*) est
+  # servi par R2 ; les lecteurs rapatrient ce qui manque (scripts/hist_r2.py).
+  R2_HIST_MATERIALIZE: '1'
+  # R2 (15/10/2026) — voir README_MIGRATION_R2.md. off | double | on ;
+  # sans variable de dépôt : double (git fait foi, R2 reçoit une copie).
+  R2_PRIMARY: ${{ vars.R2_PRIMARY || 'double' }}
+  R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+  R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+  R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+  PYTHONDONTWRITEBYTECODE: '1'
+
+on:
+  workflow_dispatch:
+    inputs:
+      append:
+        description: "Conserver les gels précédents (walk-forward) au lieu d'écraser"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+jobs:
+  freeze:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      # RESTAURATION DES PARTITIONS ARCHIVEES.
+      #
+      # Ce workflow lance un script dont le resultat depend de
+      # l'historique COMPLET. Depuis que archive_curves sort les
+      # partitions de plus de 28 jours vers les releases curves-2026-*,
+      # elles ne sont plus dans le depot : sans cette etape, le job
+      # travaille sur un historique tronque SANS lever d'erreur.
+      #
+      # Constate le 02/10 sur book_index : 1 251 matchs au lieu de 1 863,
+      # et une reactivite devenue negative partout. Les chiffres
+      # changeaient sans que rien ne le signale.
+      #
+      # `|| true` : une panne de release ne doit pas bloquer le job.
+      # restore_curves interroge l'index ET les releases directement.
+      - name: Restaurer les partitions de courbes archivees
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python scripts/restore_curves.py || true
+
+      - name: Gel des seuils adaptatifs
+        run: |
+          if [ "${{ inputs.append }}" = "true" ]; then
+            python scripts/freeze_thresholds.py --append
+          else
+            python scripts/freeze_thresholds.py
+          fi
+
+      - name: Commit frozen_thresholds.json
+        run: |
+          # PANNE DU 16/08/2026 -- cause exacte, tracee par pipeline_status.
+          # Les .pyc sont SUIVIS par git (ajoutes avant le .gitignore, qui ne
+          # s'applique plus une fois un fichier suivi). capture_closing tourne
+          # toutes les 5-10 min avec "git add -A" et republie donc des .pyc
+          # neufs en continu. Quand un autre workflow tourne, il regenere les
+          # siens localement -> "git merge" ABANDONNE ("Your local changes to
+          # the following files would be overwritten") -> branche en retard ->
+          # push rejete en non-fast-forward. Resultat observe : 7 fichiers
+          # commites localement (dont 830 lignes de moves_detail_hist), jamais
+          # pousses. On efface donc les .pyc du disque avant toute action git.
+          find . -name '__pycache__' -type d -prune -exec rm -rf {} + 2>/dev/null || true
+          find . -name '*.pyc' -delete 2>/dev/null || true
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add frozen_thresholds.json
+          git diff --cached --quiet || git commit -m "gel seuils adaptatifs (9e hypothèse) $(date -u +%FT%TZ)"
+          # BOUCLE DE REPRISE AVEC FUSION DES CONFLITS JSON.
+          # Ce workflow tourne toutes les 5-10 min : deux exécutions se
+          # chevauchent régulièrement, et git tombe en conflit sur les JSON
+          # d'état (closing_lines, capture_state, matches_oddspapi...). Le run
+          # entier était alors perdu, y compris les partitions live qui,
+          # elles, avaient fusionné sans problème via merge=union.
+          # merge_json_state.py fusionne ces objets JSON clé par clé, sans rien
+          # perdre : closing_lines est un ACCUMULATEUR, prendre une version au
+          # hasard effacerait les matchs ajoutés par l'autre exécution.
+          attente=2
+          for essai in 1 2 3 4 5 6; do
+            git fetch origin main || true
+            if git merge origin/main --no-edit; then
+              :
+            else
+              echo "⚠️ conflit — tentative de fusion JSON (essai $essai)"
+              if python scripts/merge_json_state.py; then
+                git commit --no-edit || true
+              else
+                git merge --abort 2>/dev/null || true
+                sleep "$attente"; attente=$((attente*2))
+                continue
+              fi
+            fi
+            if git push; then echo "✅ PUSH OK"; exit 0; fi
+            sleep "$attente"; attente=$((attente*2))
+          done
+          echo "❌ PUSH ÉCHOUÉ après 6 tentatives (62 s cumulées) — commit local perdu avec le runner."
+          exit 1

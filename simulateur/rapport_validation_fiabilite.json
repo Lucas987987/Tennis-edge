@@ -1,0 +1,968 @@
+{
+  "version": "combinaison",
+  "n_avec_note": 996,
+  "global": {
+    "n": 996,
+    "semaines": 4,
+    "note_moyenne": 79.41,
+    "log_loss": 0.597854,
+    "brier": 0.207582,
+    "vainqueur_exact": 0.661647,
+    "ic95_exactitude_wilson": [
+      0.631691,
+      0.690361
+    ],
+    "exactitude_attendue": 0.658287,
+    "ecart_exactitude_moins_attendue": 0.003359,
+    "defaites_du_favori": 337,
+    "defaites_du_favori_pct": 33.84,
+    "calibration": [
+      {
+        "bas": 0.0,
+        "haut": 0.2,
+        "n": 61,
+        "prevu": 0.1132,
+        "reel": 0.1148
+      },
+      {
+        "bas": 0.2,
+        "haut": 0.4,
+        "n": 229,
+        "prevu": 0.3211,
+        "reel": 0.3013
+      },
+      {
+        "bas": 0.4,
+        "haut": 0.6,
+        "n": 391,
+        "prevu": 0.5021,
+        "reel": 0.5294
+      },
+      {
+        "bas": 0.6,
+        "haut": 0.8,
+        "n": 241,
+        "prevu": 0.6893,
+        "reel": 0.6763
+      },
+      {
+        "bas": 0.8,
+        "haut": 1.0,
+        "n": 75,
+        "prevu": 0.8817,
+        "reel": 0.9333
+      }
+    ]
+  },
+  "par_niveau": {
+    "fragile": {
+      "n": 1,
+      "semaines": 1,
+      "note_moyenne": 42.0,
+      "log_loss": 0.546107,
+      "brier": 0.177073,
+      "vainqueur_exact": 1.0,
+      "ic95_exactitude_wilson": [
+        0.206543,
+        1.0
+      ],
+      "exactitude_attendue": 0.5792,
+      "ecart_exactitude_moins_attendue": 0.4208,
+      "defaites_du_favori": 0,
+      "defaites_du_favori_pct": 0.0,
+      "calibration": [
+        {
+          "bas": 0.4,
+          "haut": 0.6,
+          "n": 1,
+          "prevu": 0.5792,
+          "reel": 1.0
+        }
+      ]
+    },
+    "prudent": {
+      "n": 71,
+      "semaines": 2,
+      "note_moyenne": 59.93,
+      "log_loss": 0.551631,
+      "brier": 0.185268,
+      "vainqueur_exact": 0.746479,
+      "ic95_exactitude_wilson": [
+        0.634459,
+        0.833196
+      ],
+      "exactitude_attendue": 0.718703,
+      "ecart_exactitude_moins_attendue": 0.027776,
+      "defaites_du_favori": 18,
+      "defaites_du_favori_pct": 25.35,
+      "calibration": [
+        {
+          "bas": 0.0,
+          "haut": 0.2,
+          "n": 11,
+          "prevu": 0.1307,
+          "reel": 0.2727
+        },
+        {
+          "bas": 0.2,
+          "haut": 0.4,
+          "n": 16,
+          "prevu": 0.2794,
+          "reel": 0.1875
+        },
+        {
+          "bas": 0.4,
+          "haut": 0.6,
+          "n": 19,
+          "prevu": 0.4937,
+          "reel": 0.5263
+        },
+        {
+          "bas": 0.6,
+          "haut": 0.8,
+          "n": 13,
+          "prevu": 0.7117,
+          "reel": 0.7692
+        },
+        {
+          "bas": 0.8,
+          "haut": 1.0,
+          "n": 12,
+          "prevu": 0.8609,
+          "reel": 0.9167
+        }
+      ]
+    },
+    "correct": {
+      "n": 505,
+      "semaines": 4,
+      "note_moyenne": 74.44,
+      "log_loss": 0.604813,
+      "brier": 0.211172,
+      "vainqueur_exact": 0.643564,
+      "ic95_exactitude_wilson": [
+        0.600851,
+        0.68411
+      ],
+      "exactitude_attendue": 0.657716,
+      "ecart_exactitude_moins_attendue": -0.014151,
+      "defaites_du_favori": 180,
+      "defaites_du_favori_pct": 35.64,
+      "calibration": [
+        {
+          "bas": 0.0,
+          "haut": 0.2,
+          "n": 30,
+          "prevu": 0.1205,
+          "reel": 0.1333
+        },
+        {
+          "bas": 0.2,
+          "haut": 0.4,
+          "n": 119,
+          "prevu": 0.3218,
+          "reel": 0.3613
+        },
+        {
+          "bas": 0.4,
+          "haut": 0.6,
+          "n": 203,
+          "prevu": 0.4998,
+          "reel": 0.5369
+        },
+        {
+          "bas": 0.6,
+          "haut": 0.8,
+          "n": 114,
+          "prevu": 0.6909,
+          "reel": 0.7018
+        },
+        {
+          "bas": 0.8,
+          "haut": 1.0,
+          "n": 39,
+          "prevu": 0.9054,
+          "reel": 0.9231
+        }
+      ]
+    },
+    "solide": {
+      "n": 419,
+      "semaines": 4,
+      "note_moyenne": 88.8,
+      "log_loss": 0.597422,
+      "brier": 0.207109,
+      "vainqueur_exact": 0.668258,
+      "ic95_exactitude_wilson": [
+        0.621824,
+        0.711634
+      ],
+      "exactitude_attendue": 0.648927,
+      "ecart_exactitude_moins_attendue": 0.01933,
+      "defaites_du_favori": 139,
+      "defaites_du_favori_pct": 33.17,
+      "calibration": [
+        {
+          "bas": 0.0,
+          "haut": 0.2,
+          "n": 20,
+          "prevu": 0.0926,
+          "reel": 0.0
+        },
+        {
+          "bas": 0.2,
+          "haut": 0.4,
+          "n": 94,
+          "prevu": 0.3272,
+          "reel": 0.2447
+        },
+        {
+          "bas": 0.4,
+          "haut": 0.6,
+          "n": 168,
+          "prevu": 0.5053,
+          "reel": 0.5179
+        },
+        {
+          "bas": 0.6,
+          "haut": 0.8,
+          "n": 114,
+          "prevu": 0.6851,
+          "reel": 0.6404
+        },
+        {
+          "bas": 0.8,
+          "haut": 1.0,
+          "n": 24,
+          "prevu": 0.8535,
+          "reel": 0.9583
+        }
+      ]
+    }
+  },
+  "par_categorie": {
+    "A_solide": {
+      "n": 33,
+      "semaines": 3,
+      "note_moyenne": 79.06,
+      "log_loss": 0.482224,
+      "brier": 0.16057,
+      "vainqueur_exact": 0.787879,
+      "ic95_exactitude_wilson": [
+        0.62248,
+        0.893241
+      ],
+      "exactitude_attendue": 0.781439,
+      "ecart_exactitude_moins_attendue": 0.006439,
+      "defaites_du_favori": 7,
+      "defaites_du_favori_pct": 21.21,
+      "calibration": [
+        {
+          "bas": 0.0,
+          "haut": 0.2,
+          "n": 4,
+          "prevu": 0.0871,
+          "reel": 0.0
+        },
+        {
+          "bas": 0.2,
+          "haut": 0.4,
+          "n": 2,
+          "prevu": 0.2826,
+          "reel": 0.5
+        },
+        {
+          "bas": 0.4,
+          "haut": 0.6,
+          "n": 5,
+          "prevu": 0.5273,
+          "reel": 0.2
+        },
+        {
+          "bas": 0.6,
+          "haut": 0.8,
+          "n": 11,
+          "prevu": 0.7371,
+          "reel": 0.7273
+        },
+        {
+          "bas": 0.8,
+          "haut": 1.0,
+          "n": 11,
+          "prevu": 0.8872,
+          "reel": 0.9091
+        }
+      ]
+    },
+    "B_incertain": {
+      "n": 781,
+      "semaines": 4,
+      "note_moyenne": 80.62,
+      "log_loss": 0.58524,
+      "brier": 0.2017,
+      "vainqueur_exact": 0.68758,
+      "ic95_exactitude_wilson": [
+        0.654223,
+        0.719101
+      ],
+      "exactitude_attendue": 0.672853,
+      "ecart_exactitude_moins_attendue": 0.014727,
+      "defaites_du_favori": 244,
+      "defaites_du_favori_pct": 31.24,
+      "calibration": [
+        {
+          "bas": 0.0,
+          "haut": 0.2,
+          "n": 52,
+          "prevu": 0.1158,
+          "reel": 0.1154
+        },
+        {
+          "bas": 0.2,
+          "haut": 0.4,
+          "n": 209,
+          "prevu": 0.3201,
+          "reel": 0.2919
+        },
+        {
+          "bas": 0.4,
+          "haut": 0.6,
+          "n": 243,
+          "prevu": 0.5047,
+          "reel": 0.5226
+        },
+        {
+          "bas": 0.6,
+          "haut": 0.8,
+          "n": 216,
+          "prevu": 0.688,
+          "reel": 0.6667
+        },
+        {
+          "bas": 0.8,
+          "haut": 1.0,
+          "n": 62,
+          "prevu": 0.8793,
+          "reel": 0.9355
+        }
+      ]
+    },
+    "C_fragile": {
+      "n": 178,
+      "semaines": 4,
+      "note_moyenne": 74.47,
+      "log_loss": 0.677734,
+      "brier": 0.243705,
+      "vainqueur_exact": 0.516854,
+      "ic95_exactitude_wilson": [
+        0.443864,
+        0.589132
+      ],
+      "exactitude_attendue": 0.572135,
+      "ecart_exactitude_moins_attendue": -0.055281,
+      "defaites_du_favori": 86,
+      "defaites_du_favori_pct": 48.31,
+      "calibration": [
+        {
+          "bas": 0.0,
+          "haut": 0.2,
+          "n": 5,
+          "prevu": 0.1072,
+          "reel": 0.2
+        },
+        {
+          "bas": 0.2,
+          "haut": 0.4,
+          "n": 17,
+          "prevu": 0.3361,
+          "reel": 0.4118
+        },
+        {
+          "bas": 0.4,
+          "haut": 0.6,
+          "n": 142,
+          "prevu": 0.4963,
+          "reel": 0.5493
+        },
+        {
+          "bas": 0.6,
+          "haut": 0.8,
+          "n": 12,
+          "prevu": 0.6747,
+          "reel": 0.75
+        },
+        {
+          "bas": 0.8,
+          "haut": 1.0,
+          "n": 2,
+          "prevu": 0.9264,
+          "reel": 1.0
+        }
+      ]
+    },
+    "D_non_controle": {
+      "n": 4,
+      "semaines": 1,
+      "note_moyenne": 66.75,
+      "log_loss": 0.459948,
+      "brier": 0.136335,
+      "vainqueur_exact": 1.0,
+      "ic95_exactitude_wilson": [
+        0.5101,
+        1.0
+      ],
+      "exactitude_attendue": 0.63215,
+      "ecart_exactitude_moins_attendue": 0.36785,
+      "defaites_du_favori": 0,
+      "defaites_du_favori_pct": 0.0,
+      "calibration": [
+        {
+          "bas": 0.2,
+          "haut": 0.4,
+          "n": 1,
+          "prevu": 0.3493,
+          "reel": 0.0
+        },
+        {
+          "bas": 0.4,
+          "haut": 0.6,
+          "n": 1,
+          "prevu": 0.5792,
+          "reel": 1.0
+        },
+        {
+          "bas": 0.6,
+          "haut": 0.8,
+          "n": 2,
+          "prevu": 0.6493,
+          "reel": 1.0
+        }
+      ]
+    }
+  },
+  "par_circuit": {
+    "ATP": {
+      "n": 145,
+      "semaines": 3,
+      "note_moyenne": 78.3,
+      "log_loss": 0.627974,
+      "brier": 0.218398,
+      "vainqueur_exact": 0.648276,
+      "ic95_exactitude_wilson": [
+        0.567639,
+        0.721258
+      ],
+      "exactitude_attendue": 0.663107,
+      "ecart_exactitude_moins_attendue": -0.014831,
+      "defaites_du_favori": 51,
+      "defaites_du_favori_pct": 35.17,
+      "calibration": [
+        {
+          "bas": 0.0,
+          "haut": 0.2,
+          "n": 14,
+          "prevu": 0.142,
+          "reel": 0.1429
+        },
+        {
+          "bas": 0.2,
+          "haut": 0.4,
+          "n": 36,
+          "prevu": 0.3151,
+          "reel": 0.3889
+        },
+        {
+          "bas": 0.4,
+          "haut": 0.6,
+          "n": 53,
+          "prevu": 0.5108,
+          "reel": 0.5283
+        },
+        {
+          "bas": 0.6,
+          "haut": 0.8,
+          "n": 34,
+          "prevu": 0.6898,
+          "reel": 0.6765
+        },
+        {
+          "bas": 0.8,
+          "haut": 1.0,
+          "n": 8,
+          "prevu": 0.8512,
+          "reel": 0.75
+        }
+      ]
+    },
+    "CH": {
+      "n": 728,
+      "semaines": 4,
+      "note_moyenne": 79.66,
+      "log_loss": 0.592951,
+      "brier": 0.205908,
+      "vainqueur_exact": 0.660714,
+      "ic95_exactitude_wilson": [
+        0.625557,
+        0.694184
+      ],
+      "exactitude_attendue": 0.65936,
+      "ecart_exactitude_moins_attendue": 0.001355,
+      "defaites_du_favori": 247,
+      "defaites_du_favori_pct": 33.93,
+      "calibration": [
+        {
+          "bas": 0.0,
+          "haut": 0.2,
+          "n": 43,
+          "prevu": 0.1037,
+          "reel": 0.1163
+        },
+        {
+          "bas": 0.2,
+          "haut": 0.4,
+          "n": 166,
+          "prevu": 0.3226,
+          "reel": 0.2771
+        },
+        {
+          "bas": 0.4,
+          "haut": 0.6,
+          "n": 287,
+          "prevu": 0.5028,
+          "reel": 0.5436
+        },
+        {
+          "bas": 0.6,
+          "haut": 0.8,
+          "n": 174,
+          "prevu": 0.6913,
+          "reel": 0.6782
+        },
+        {
+          "bas": 0.8,
+          "haut": 1.0,
+          "n": 59,
+          "prevu": 0.886,
+          "reel": 0.9492
+        }
+      ]
+    },
+    "WTA": {
+      "n": 123,
+      "semaines": 3,
+      "note_moyenne": 79.29,
+      "log_loss": 0.591362,
+      "brier": 0.204741,
+      "vainqueur_exact": 0.682927,
+      "ic95_exactitude_wilson": [
+        0.596215,
+        0.758559
+      ],
+      "exactitude_attendue": 0.646258,
+      "ecart_exactitude_moins_attendue": 0.036669,
+      "defaites_du_favori": 39,
+      "defaites_du_favori_pct": 31.71,
+      "calibration": [
+        {
+          "bas": 0.0,
+          "haut": 0.2,
+          "n": 4,
+          "prevu": 0.1145,
+          "reel": 0.0
+        },
+        {
+          "bas": 0.2,
+          "haut": 0.4,
+          "n": 27,
+          "prevu": 0.3195,
+          "reel": 0.3333
+        },
+        {
+          "bas": 0.4,
+          "haut": 0.6,
+          "n": 51,
+          "prevu": 0.4888,
+          "reel": 0.451
+        },
+        {
+          "bas": 0.6,
+          "haut": 0.8,
+          "n": 33,
+          "prevu": 0.6779,
+          "reel": 0.6667
+        },
+        {
+          "bas": 0.8,
+          "haut": 1.0,
+          "n": 8,
+          "prevu": 0.8801,
+          "reel": 1.0
+        }
+      ]
+    }
+  },
+  "par_surface": {
+    "Clay": {
+      "n": 209,
+      "semaines": 3,
+      "note_moyenne": 76.45,
+      "log_loss": 0.574539,
+      "brier": 0.198742,
+      "vainqueur_exact": 0.669856,
+      "ic95_exactitude_wilson": [
+        0.603538,
+        0.730044
+      ],
+      "exactitude_attendue": 0.66561,
+      "ecart_exactitude_moins_attendue": 0.004247,
+      "defaites_du_favori": 69,
+      "defaites_du_favori_pct": 33.01,
+      "calibration": [
+        {
+          "bas": 0.0,
+          "haut": 0.2,
+          "n": 13,
+          "prevu": 0.0775,
+          "reel": 0.0
+        },
+        {
+          "bas": 0.2,
+          "haut": 0.4,
+          "n": 55,
+          "prevu": 0.3183,
+          "reel": 0.2727
+        },
+        {
+          "bas": 0.4,
+          "haut": 0.6,
+          "n": 78,
+          "prevu": 0.5043,
+          "reel": 0.5256
+        },
+        {
+          "bas": 0.6,
+          "haut": 0.8,
+          "n": 47,
+          "prevu": 0.6921,
+          "reel": 0.6809
+        },
+        {
+          "bas": 0.8,
+          "haut": 1.0,
+          "n": 16,
+          "prevu": 0.8857,
+          "reel": 1.0
+        }
+      ]
+    },
+    "Hard": {
+      "n": 787,
+      "semaines": 4,
+      "note_moyenne": 80.2,
+      "log_loss": 0.604045,
+      "brier": 0.209929,
+      "vainqueur_exact": 0.659466,
+      "ic95_exactitude_wilson": [
+        0.625654,
+        0.691729
+      ],
+      "exactitude_attendue": 0.656343,
+      "ecart_exactitude_moins_attendue": 0.003124,
+      "defaites_du_favori": 268,
+      "defaites_du_favori_pct": 34.05,
+      "calibration": [
+        {
+          "bas": 0.0,
+          "haut": 0.2,
+          "n": 48,
+          "prevu": 0.1229,
+          "reel": 0.1458
+        },
+        {
+          "bas": 0.2,
+          "haut": 0.4,
+          "n": 174,
+          "prevu": 0.322,
+          "reel": 0.3103
+        },
+        {
+          "bas": 0.4,
+          "haut": 0.6,
+          "n": 313,
+          "prevu": 0.5015,
+          "reel": 0.5304
+        },
+        {
+          "bas": 0.6,
+          "haut": 0.8,
+          "n": 194,
+          "prevu": 0.6886,
+          "reel": 0.6753
+        },
+        {
+          "bas": 0.8,
+          "haut": 1.0,
+          "n": 59,
+          "prevu": 0.8806,
+          "reel": 0.9153
+        }
+      ]
+    }
+  },
+  "par_documentation": {
+    "tres_peu_documente": {
+      "n": 1,
+      "semaines": 1,
+      "note_moyenne": 42.0,
+      "log_loss": 0.546107,
+      "brier": 0.177073,
+      "vainqueur_exact": 1.0,
+      "ic95_exactitude_wilson": [
+        0.206543,
+        1.0
+      ],
+      "exactitude_attendue": 0.5792,
+      "ecart_exactitude_moins_attendue": 0.4208,
+      "defaites_du_favori": 0,
+      "defaites_du_favori_pct": 0.0,
+      "calibration": [
+        {
+          "bas": 0.4,
+          "haut": 0.6,
+          "n": 1,
+          "prevu": 0.5792,
+          "reel": 1.0
+        }
+      ]
+    },
+    "peu_documente": {
+      "n": 66,
+      "semaines": 4,
+      "note_moyenne": 67.89,
+      "log_loss": 0.392915,
+      "brier": 0.128316,
+      "vainqueur_exact": 0.818182,
+      "ic95_exactitude_wilson": [
+        0.708546,
+        0.892815
+      ],
+      "exactitude_attendue": 0.811541,
+      "ecart_exactitude_moins_attendue": 0.006641,
+      "defaites_du_favori": 12,
+      "defaites_du_favori_pct": 18.18,
+      "calibration": [
+        {
+          "bas": 0.0,
+          "haut": 0.2,
+          "n": 14,
+          "prevu": 0.0576,
+          "reel": 0.1429
+        },
+        {
+          "bas": 0.2,
+          "haut": 0.4,
+          "n": 14,
+          "prevu": 0.2807,
+          "reel": 0.3571
+        },
+        {
+          "bas": 0.4,
+          "haut": 0.6,
+          "n": 7,
+          "prevu": 0.4829,
+          "reel": 0.2857
+        },
+        {
+          "bas": 0.6,
+          "haut": 0.8,
+          "n": 9,
+          "prevu": 0.6993,
+          "reel": 0.8889
+        },
+        {
+          "bas": 0.8,
+          "haut": 1.0,
+          "n": 22,
+          "prevu": 0.9122,
+          "reel": 1.0
+        }
+      ]
+    },
+    "documente": {
+      "n": 929,
+      "semaines": 4,
+      "note_moyenne": 80.27,
+      "log_loss": 0.612469,
+      "brier": 0.213246,
+      "vainqueur_exact": 0.650161,
+      "ic95_exactitude_wilson": [
+        0.618932,
+        0.680155
+      ],
+      "exactitude_attendue": 0.647485,
+      "ecart_exactitude_moins_attendue": 0.002677,
+      "defaites_du_favori": 325,
+      "defaites_du_favori_pct": 34.98,
+      "calibration": [
+        {
+          "bas": 0.0,
+          "haut": 0.2,
+          "n": 47,
+          "prevu": 0.1298,
+          "reel": 0.1064
+        },
+        {
+          "bas": 0.2,
+          "haut": 0.4,
+          "n": 215,
+          "prevu": 0.3237,
+          "reel": 0.2977
+        },
+        {
+          "bas": 0.4,
+          "haut": 0.6,
+          "n": 383,
+          "prevu": 0.5022,
+          "reel": 0.5326
+        },
+        {
+          "bas": 0.6,
+          "haut": 0.8,
+          "n": 232,
+          "prevu": 0.6889,
+          "reel": 0.6681
+        },
+        {
+          "bas": 0.8,
+          "haut": 1.0,
+          "n": 53,
+          "prevu": 0.869,
+          "reel": 0.9057
+        }
+      ]
+    }
+  },
+  "par_desaccord_elo_simulation": {
+    "False": {
+      "n": 818,
+      "semaines": 4,
+      "note_moyenne": 80.49,
+      "log_loss": 0.580471,
+      "brier": 0.199721,
+      "vainqueur_exact": 0.693154,
+      "ic95_exactitude_wilson": [
+        0.660707,
+        0.723795
+      ],
+      "exactitude_attendue": 0.677034,
+      "ecart_exactitude_moins_attendue": 0.01612,
+      "defaites_du_favori": 251,
+      "defaites_du_favori_pct": 30.68,
+      "calibration": [
+        {
+          "bas": 0.0,
+          "haut": 0.2,
+          "n": 56,
+          "prevu": 0.1137,
+          "reel": 0.1071
+        },
+        {
+          "bas": 0.2,
+          "haut": 0.4,
+          "n": 212,
+          "prevu": 0.3199,
+          "reel": 0.2925
+        },
+        {
+          "bas": 0.4,
+          "haut": 0.6,
+          "n": 249,
+          "prevu": 0.5054,
+          "reel": 0.5181
+        },
+        {
+          "bas": 0.6,
+          "haut": 0.8,
+          "n": 229,
+          "prevu": 0.69,
+          "reel": 0.6725
+        },
+        {
+          "bas": 0.8,
+          "haut": 1.0,
+          "n": 73,
+          "prevu": 0.8805,
+          "reel": 0.9315
+        }
+      ]
+    },
+    "True": {
+      "n": 178,
+      "semaines": 4,
+      "note_moyenne": 74.47,
+      "log_loss": 0.677734,
+      "brier": 0.243705,
+      "vainqueur_exact": 0.516854,
+      "ic95_exactitude_wilson": [
+        0.443864,
+        0.589132
+      ],
+      "exactitude_attendue": 0.572135,
+      "ecart_exactitude_moins_attendue": -0.055281,
+      "defaites_du_favori": 86,
+      "defaites_du_favori_pct": 48.31,
+      "calibration": [
+        {
+          "bas": 0.0,
+          "haut": 0.2,
+          "n": 5,
+          "prevu": 0.1072,
+          "reel": 0.2
+        },
+        {
+          "bas": 0.2,
+          "haut": 0.4,
+          "n": 17,
+          "prevu": 0.3361,
+          "reel": 0.4118
+        },
+        {
+          "bas": 0.4,
+          "haut": 0.6,
+          "n": 142,
+          "prevu": 0.4963,
+          "reel": 0.5493
+        },
+        {
+          "bas": 0.6,
+          "haut": 0.8,
+          "n": 12,
+          "prevu": 0.6747,
+          "reel": 0.75
+        },
+        {
+          "bas": 0.8,
+          "haut": 1.0,
+          "n": 2,
+          "prevu": 0.9264,
+          "reel": 1.0
+        }
+      ]
+    }
+  },
+  "spearman_note_vs_perte_residuelle": 0.047805,
+  "contraste_correct_ou_solide_vs_fragile_ou_prudent": {
+    "n_boot": 0,
+    "raison": "moins de quatre semaines appariées"
+  },
+  "effectifs_contraste": {
+    "notes_fragile_ou_prudent": 72,
+    "notes_correct_ou_solide": 924
+  },
+  "spearman_note_vs_perte": 0.103195,
+  "statut": "accumulation",
+  "verdict_notes": "accumulation",
+  "regle": "Au moins 30 matchs dans chacun des deux groupes de notes et quatre semaines appariées. Notes confirmées seulement si P(hautes notes meilleures) >= 95 % et Spearman négatif ; contredites si cette probabilité <= 5 % ; non concluant sinon. Aucune modification automatique.",
+  "interpretation_spearman": "Une valeur négative est souhaitée : note haute, perte faible.",
+  "genere_le": "2026-11-16T11:35:23.161069+00:00"
+}

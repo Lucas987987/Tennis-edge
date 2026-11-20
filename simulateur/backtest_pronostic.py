@@ -1,0 +1,730 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+backtest_pronostic.py — le modèle devine-t-il le vainqueur ? (21/10/2026)
+
+Objectif fixé par Lucas : DEVINER l'issue (pas battre Pinnacle). Deux versions,
+jugées côte à côte sur les mêmes matchs :
+  * « stats seules »  : force Elo tirée des résultats (elo.py, paramètres
+    FiveThirtyEight jamais réglés ici) ;
+  * « stats + marché » : la cote Pinnacle de clôture, marge retirée.
+Le détail des sets (2-0, 2-1…) vient du moteur (forme du jour) appliqué au
+niveau de chaque version.
+
+PROTOCOLE : tous les résultats sont rejoués dans l'ordre (archive Sackmann,
+puis, depuis juin, nos matchs ET les résultats ATP/WTA de tennis-data,
+historique/tennis_data_resultats.csv.gz) ; chaque match est PRONOSTIQUÉ avant
+que son résultat ne mette le classement à jour. Un résultat tennis-data n'a
+que la date : il est placé en FIN de journée (il ne sert jamais à pronostiquer
+un match du même jour) et écarté s'il double l'un de nos matchs (même paire,
+± 2 jours). Aucun réglage : rien ne regarde le futur.
+
+Mesures : taux de vainqueurs devinés (une prédiction à 50 % compte pour ½),
+log loss, Brier, calibration ; sur nos matchs, aussi le score en sets
+(log score, « score le plus probable » juste ou non, 3 sets prévu / réel).
+  A. ATP + WTA principaux, 2024 → janvier 2026 (tennis-data : clôture Pinnacle) ;
+  B. nos matchs depuis juin 2026 (tous niveaux, Challengers et ITF compris).
+
+Usage : python simulateur/backtest_pronostic.py DOSSIER_SACKMANN [racine]
+Sorties : simulateur/rapport_pronostic.json, simulateur/elo_etat.json
+"""
+import collections
+import datetime as dt
+import json
+import math
+import os
+import sys
+import time
+
+ICI = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, ICI)
+import donnees  # noqa: E402
+import elo as E  # noqa: E402
+import nos_resultats as NR  # noqa: E402
+
+DEBUT_A, FIN_A = dt.date(2024, 1, 1), dt.date(2026, 2, 1)
+N_CONNU = 10            # « joueurs connus » : au moins 10 matchs chacun avant le match
+TABLE = os.path.join(ICI, 'table_sets.json')
+
+
+def circuit(t):
+    t = str(t or '').lower()
+    if 'wta' in t or 'women' in t:
+        return 'WTA'
+    if 'itf' in t:
+        return 'ITF'
+    if 'challenger' in t:
+        return 'CH'
+    return 'ATP'
+
+
+class Table:
+    def __init__(self, chemin=TABLE):
+        self.t = json.load(open(chemin, encoding='utf-8'))['circuits']
+
+    def __call__(self, c, p_fav):
+        L = self.t.get(c) or self.t['ATP']
+        p = min(max(p_fav, L[0][0]), L[-1][0])
+        i = min(int((p - L[0][0]) / 0.01), len(L) - 2)
+        a, b = L[i], L[i + 1]
+        w = (p - a[0]) / (b[0] - a[0]) if b[0] > a[0] else 0.0
+        return dict(zip(('2-0', '2-1', '1-2', '0-2', 'set1'), [a[k] + w * (b[k] - a[k]) for k in range(1, 6)]))
+
+
+def sets_home(T, c, p_home):
+    """Distribution des scores du point de vue de HOME depuis sa probabilité de victoire."""
+    fav = p_home >= 0.5
+    d = T(c, p_home if fav else 1 - p_home)
+    if fav:
+        return {k: d[k] for k in ('2-0', '2-1', '1-2', '0-2')}
+    return {'2-0': d['0-2'], '2-1': d['1-2'], '1-2': d['2-1'], '0-2': d['2-0']}
+
+
+def juste(c1, c2):
+    a, b = 1 / c1, 1 / c2
+    lo, hi = 1e-6, 1.0
+    f = lambda k: a ** k + b ** k - 1
+    while f(hi) > 0:
+        hi *= 2
+    for _ in range(80):
+        m = (lo + hi) / 2
+        lo, hi = (m, hi) if f(m) > 0 else (lo, m)
+    return a ** ((lo + hi) / 2)
+
+
+def bloc(items):
+    """items : [(p, y)] — p = probabilité que l'issue y=1 arrive."""
+    n = len(items)
+    if not n:
+        return {'n': 0}
+    acc = sum(1.0 if (p > 0.5) == bool(y) and p != 0.5 else (0.5 if p == 0.5 else 0.0) for p, y in items) / n
+    se = math.sqrt(acc * (1 - acc) / n)
+    return {'n': n, 'reussite_pct': round(100 * acc, 1), 'ic95_pct': [round(100 * (acc - 1.96 * se), 1), round(100 * (acc + 1.96 * se), 1)],
+            'log_loss': round(sum(E.log_loss(p, y) for p, y in items) / n, 4),
+            'brier': round(sum((p - y) ** 2 for p, y in items) / n, 4)}
+
+
+def calibration(items):
+    """Côté du favori de la version : prévu vs réel par tranche."""
+    out = []
+    for lo in (0.5, 0.6, 0.7, 0.8, 0.9):
+        g = [(max(p, 1 - p), y if p >= 0.5 else 1 - y) for p, y in items if lo <= max(p, 1 - p) < lo + 0.1 or (lo == 0.9 and max(p, 1 - p) == 1)]
+        if len(g) >= 30:
+            out.append({'tranche': f"{int(lo * 100)}–{int(lo * 100 + 10)} %", 'n': len(g),
+                        'prevu': round(100 * sum(p for p, _ in g) / len(g), 1), 'reel': round(100 * sum(y for _, y in g) / len(g), 1)})
+    return out
+
+
+def resultats_td(chemin, depuis):
+    """[(date, vainqueur, perdant, circuit)] des résultats tennis-data postérieurs à `depuis`."""
+    import csv
+    import gzip
+    out = []
+    try:
+        with gzip.open(chemin, 'rt', encoding='utf-8') as fh:
+            for r in csv.DictReader(fh):
+                try:
+                    d = dt.date.fromisoformat(r['date'])
+                except (KeyError, ValueError):
+                    continue
+                if d > depuis and r.get('vainqueur') and r.get('perdant'):
+                    out.append((d, r['vainqueur'], r['perdant'], r.get('circuit')))
+    except OSError:
+        pass
+    return out
+
+
+def index_td(noms_par_cle, sexe=None):
+    """(nom de famille, initiale) -> {(clé, mots du nom, sexe)} pour relier les noms tennis-data.
+    sexe : {clé: 'H' | 'F'} (circuits où le joueur a joué), pour départager les homonymes."""
+    sexe = sexe or {}
+    idx = collections.defaultdict(set)
+    for k, nm in noms_par_cle.items():
+        cles, t = donnees.cles_sackmann_etendues(nm)
+        for c in cles:
+            idx[c].add((k, tuple(t), sexe.get(k)))
+    return idx
+
+
+def lire_tennis_data(idx, nom, circuit_td=None):
+    """(clé, état) pour un nom tennis-data : état 'relie', 'absent' (aucun joueur connu de ce nom),
+    'ambigu' (plusieurs candidats) ou 'illisible'. circuit_td 'ATP' / 'WTA' écarte les homonymes
+    de l'autre circuit (« Nakashima B. »)."""
+    k = donnees.cle_td_prefixe(nom)
+    if not k:
+        return None, 'illisible'
+    s = {'ATP': 'H', 'WTA': 'F'}.get(str(circuit_td or '').upper())
+    cands = {c for c, t, sx in idx.get((k[0], k[1][0]), ())
+             if any(w.startswith(k[1]) for w in t) and (s is None or sx in (None, s))}
+    if len(cands) == 1:
+        return next(iter(cands)), 'relie'
+    return None, ('ambigu' if cands else 'absent')
+
+
+def cle_tennis_data(idx, nom, circuit_td=None):
+    """Clé du joueur pour « Wang Xin. » / « Mpetshi G. » ; None si inconnu ou ambigu."""
+    return lire_tennis_data(idx, nom, circuit_td)[0]
+
+
+def cle_nouveau(nom, circuit_td):
+    """Clé d'un joueur présent seulement dans tennis-data (22/10/2026) : circuit + nom tel qu'écrit."""
+    k = donnees.cle_td_prefixe(nom)
+    pref = ''.join(donnees.norm(str(nom).split()[-1].replace('.', ' ')))
+    return f"td:{str(circuit_td or '?').upper()}:{k[0]}:{pref}" if k else None
+
+
+def sexe_de_circuit(c):
+    return 'F' if c in ('WTA', 'ITF') else 'H'
+
+
+BAS = ('CH', 'ITF', 'ITFH')  # niveaux où un nouveau joueur part plus bas (règle Tennis Abstract ; ITFH = ITF hommes, 28/10/2026)
+DEPART_BAS = 1200.0
+
+
+def resultats_feuilles(racine, depuis):
+    """23/10/2026 — résultats des feuilles TennisApi (tous circuits collectés, Challenger compris) après
+    `depuis` : matchs au format donnees ; les forfaits (walkover) sont écartés, aucun jeu n'a été joué."""
+    import feuilles as FE
+    out = []
+    for r in FE.lire(racine):
+        if 'walkover' in str((r.get('statut') or {}).get('texte') or '').lower():
+            continue
+        m = FE.en_match(r)
+        if m and m['date'] > depuis and m['nom_g'] and m['nom_p']:
+            out.append(m)
+    out.sort(key=lambda m: m['date'])
+    return out
+
+
+def resultats_itf(racine, ids_feuilles=()):
+    """28/10/2026 — résultats ITF hommes collectés (scripts/resultats_itf.py → resultats_itf/), au format donnees ;
+    forfaits écartés ; un match déjà présent dans les feuilles (même identifiant TennisApi) n'est pas compté deux fois."""
+    import etude_itf_elo as EI
+    sys.path.insert(0, os.path.join(ICI, '..', 'scripts'))
+    try:
+        import resultats_itf as RI
+    except ImportError:
+        return []
+    ids = set(ids_feuilles or ())
+    brut = RI.lire_tout(racine)
+    if EI.itf_femmes_adoptees(racine):              # 28/10/2026 : ITF femmes seulement si l'étude les a adoptées
+        brut += RI.lire_tout(racine, RI.DOSSIER_FEMMES)
+    out = [m for m in (EI.match_itf(r) for r in brut) if m and m.get('id') not in ids]
+    out.sort(key=lambda m: m['date'])
+    return out
+
+
+def lier_itf(M, connus, itf_rows, deja):
+    """Alias des noms ITF par la règle stricte — définie dans etude_itf_elo (même règle pour l'étude et la production)."""
+    import etude_itf_elo as EI
+    return EI.lier_itf(M, connus, itf_rows, deja)
+
+
+def itf_en_production(racine):
+    """Vrai sauf si l'étude hebdomadaire a RETIRÉ l'ITF (simulateur/etude_itf_elo.json, « adopte » = false)."""
+    try:
+        with open(os.path.join(racine, 'simulateur', 'etude_itf_elo.json'), encoding='utf-8') as f:
+            return bool(json.load(f).get('adopte', True))
+    except (OSError, ValueError):
+        return True
+
+
+def rejouer(M, nous, td_rows, cle_c, idx, depart_bas, nouveaux=False, options=None, feuilles=None, departs=None):
+    """Rejoue tout dans l'ordre ; renvoie classement, pronostics de l'archive et de nos matchs.
+    nouveaux : un nom tennis-data inconnu partout (ni Sackmann ni nos matchs) devient un nouveau
+    joueur au lieu de faire jeter le match ; un nom ambigu reste écarté.
+    options : options de l'Elo (elo.Elo : poids_surface, welo, incertitude).
+    departs : départs propres à un niveau (elo.DEPARTS_PAR_NIVEAU par défaut ; {} = l'ancien réglage, pour le suivi)."""
+    elo, noms, pred_sack = E.Elo(**(options or {})), {}, {}
+    bas, tot = collections.Counter(), collections.Counter()
+
+    def voir(k, circ):
+        if depart_bas and circ in BAS:
+            elo.presenter(k, E.depart_du_niveau(circ, DEPART_BAS, departs))   # 11/11/2026 (paquet 230) : ITF hommes à 1000
+        tot[k] += 1
+        bas[k] += circ in BAS
+
+    for i, m in enumerate(M):
+        g, p = cle_c(m['nom_g']), cle_c(m['nom_p'])
+        noms[g], noms[p] = m['nom_g'], m['nom_p']
+        voir(g, m['circuit'])
+        voir(p, m['circuit'])
+        if DEBUT_A <= m['date'] < FIN_A and m['circuit'] in ('ATP', 'WTA'):
+            pred_sack[i] = (elo.proba(g, p, m['surface']), min(elo.matchs(g), elo.matchs(p)))
+        elo.maj(g, p, m['surface'], m.get('niveau') == 'G', E.part_jeux(m['sets']) if m.get('complet') else None)
+    paires_nous = collections.defaultdict(list)
+    for x in nous:
+        paires_nous[frozenset((cle_c(x['home']), cle_c(x['away'])))].append(x['date'])
+    ev, cpt, crees = [], collections.Counter({'ajoutes': 0, 'non_reconnus': 0, 'doublons_ecartes': 0}), set()
+    # 23/10/2026 : résultats des feuilles (Challenger et février → mai compris) — placés en fin de journée comme
+    # tennis-data ; écartés s'ils doublent l'un de nos matchs ; un résultat tennis-data qui double une feuille
+    # est écarté à son tour (la feuille a la surface).
+    paires_feuilles = collections.defaultdict(list)
+    for m in feuilles or []:
+        w_, l_ = cle_c(m['nom_g']), cle_c(m['nom_p'])
+        if any(abs((m['date'] - d2).days) <= 2 for d2 in paires_nous.get(frozenset((w_, l_)), [])):
+            cpt['feuilles_doublons'] += 1
+            continue
+        noms.setdefault(w_, m['nom_g'])
+        noms.setdefault(l_, m['nom_p'])
+        paires_feuilles[frozenset((w_, l_))].append(m['date'])
+        ev.append((dt.datetime.combine(m['date'], dt.time(23, 59, 58)), 'fe', m))
+        cpt['feuilles_ajoutees'] += 1
+    for d, w, l, _c in td_rows:
+        cles = []
+        for nm in (w, l):
+            k, etat = lire_tennis_data(idx, nm, _c)
+            if k is None and nouveaux and etat == 'absent':
+                k = cle_nouveau(nm, _c)
+                if k:
+                    crees.add(k)
+                    noms.setdefault(k, nm)
+            cpt[f"noms_{etat}"] += 1
+            cles.append(k)
+        w_, l_ = cles
+        if not w_ or not l_:
+            cpt['non_reconnus'] += 1
+            continue
+        if any(abs((d - d2).days) <= 2 for d2 in paires_nous.get(frozenset((w_, l_)), [])) or \
+                any(abs((d - d2).days) <= 2 for d2 in paires_feuilles.get(frozenset((w_, l_)), [])):
+            cpt['doublons_ecartes'] += 1
+            continue
+        ev.append((dt.datetime.combine(d, dt.time(23, 59, 59)), 'td', (w_, l_)))
+        cpt['ajoutes'] += 1
+    for x in nous:
+        ev.append((x['debut'], 'nous', x))
+    ev.sort(key=lambda e: (e[0], e[1] == 'td'))
+    B = []
+    for _t, src, x in ev:
+        if src == 'td':
+            elo.maj(x[0], x[1])                       # surface inconnue : Elo général seulement
+            continue
+        if src == 'fe':
+            w_, l_ = cle_c(x['nom_g']), cle_c(x['nom_p'])
+            voir(w_, x['circuit'])
+            voir(l_, x['circuit'])
+            elo.maj(w_, l_, x['surface'], False, E.part_jeux(x['sets']) if x.get('complet') else None)
+            continue
+        h, a = cle_c(x['home']), cle_c(x['away'])
+        noms.setdefault(h, x['home'])
+        noms.setdefault(a, x['away'])
+        c = circuit(x['tournoi'])
+        if depart_bas and c in BAS:
+            elo.presenter(h, DEPART_BAS)
+            elo.presenter(a, DEPART_BAS)
+        p = elo.proba(h, a, x['surface'])
+        fav = h if p >= 0.5 else a
+        B.append(dict(x, p_elo=p, connus=min(elo.matchs(h), elo.matchs(a)),
+                      part_bas_fav=(bas[fav] / tot[fav]) if tot[fav] else None))
+        tot[h] += 1; tot[a] += 1
+        bas[h] += c in BAS; bas[a] += c in BAS
+        if x['gagnant'] in ('home', 'away'):
+            w, l = (h, a) if x['gagnant'] == 'home' else (a, h)
+            elo.maj(w, l, x['surface'], x.get('grand_chelem', False))
+    cpt['nouveaux_joueurs'] = len(crees)
+    return {'options': elo.options(), 'elo': elo, 'noms': noms, 'pred_sack': pred_sack, 'B': B, 'td': dict(cpt)}
+
+
+# 22/10/2026 — Elo amélioré : grille d'options, choisie sur les matchs ATP/WTA de 2023 SEULEMENT
+# (aucun match de la période de jugement 2024–2026 n'entre dans le choix).
+GRILLE = {'poids_surface': (0.3, 0.5, 0.7), 'welo': (None, 'norme', 'brut'), 'incertitude': (0.0, 2.0, 5.0, 15.0)}
+CHOIX_DEBUT, CHOIX_FIN = dt.date(2023, 1, 1), dt.date(2024, 1, 1)
+
+
+def choisir_options(M, cle_c, depart_bas):
+    """{options: log loss sur 2023} et meilleures options (Elo rejoué sur l'archive jusqu'à fin 2023)."""
+    import itertools
+    G = [m for m in M if m['date'] < CHOIX_FIN]
+    K = [(cle_c(m['nom_g']), cle_c(m['nom_p'])) for m in G]
+    P = [E.part_jeux(m['sets']) if m.get('complet') else None for m in G]
+    scores = {}
+    for ps, w, c in itertools.product(*GRILLE.values()):
+        e = E.Elo(poids_surface=ps, welo=w, incertitude=c)
+        ll, n = 0.0, 0
+        for m, (g, p), pj in zip(G, K, P):
+            if depart_bas and m['circuit'] in BAS:
+                e.presenter(g, DEPART_BAS)
+                e.presenter(p, DEPART_BAS)
+            if m['date'] >= CHOIX_DEBUT and m['circuit'] in ('ATP', 'WTA'):
+                ll += E.log_loss(e.proba(g, p, m['surface']), 1)
+                n += 1
+            e.maj(g, p, m['surface'], m.get('niveau') == 'G', pj)
+        scores[(ps, w, c)] = ll / max(n, 1)
+    best = min(scores, key=scores.get)
+    return dict(zip(GRILLE, best)), {f"surface {k[0]:g} · welo {k[1] or 'non'} · incertitude {k[2]:g}": round(v, 5)
+                                     for k, v in sorted(scores.items(), key=lambda kv: kv[1])}
+
+
+def evaluer(V, M, td, T):
+    """Rapports A (ATP/WTA contre tennis-data) et B (nos matchs) d'une variante."""
+    idx = {id(m): i for i, m in enumerate(M)}
+    A = []
+    for t, m in donnees.joindre(td, M):
+        i = idx.get(id(m))
+        if i in V['pred_sack'] and t['date'] < FIN_A:
+            p, nc = V['pred_sack'][i]
+            A.append({'p_elo': p, 'p_pin': juste(t['psw'], t['psl']), 'connus': nc, 'circuit': m['circuit'],
+                      'bo': m['bo'], 'sets': m['sets'], 'complet': m['complet']})
+    rapA = {}
+    for nom, g in (('tous', A), ('joueurs connus (≥ 10 matchs)', [a for a in A if a['connus'] >= N_CONNU]),
+                   ('ATP', [a for a in A if a['circuit'] == 'ATP']), ('WTA', [a for a in A if a['circuit'] == 'WTA'])):
+        rapA[nom] = {'stats_seules': bloc([(a['p_elo'], 1) for a in g]), 'stats_plus_marche': bloc([(a['p_pin'], 1) for a in g])}
+    rapA['calibration_stats_seules'] = calibration([(a['p_elo'], 1) if k % 2 else (1 - a['p_elo'], 0) for k, a in enumerate(A)])
+    rapA['calibration_marche'] = calibration([(a['p_pin'], 1) if k % 2 else (1 - a['p_pin'], 0) for k, a in enumerate(A)])
+    rapA['matchs'] = len(A)
+    R = [b for b in V['B'] if b['gagnant'] in ('home', 'away')]
+    y = lambda b: int(b['gagnant'] == 'home')
+    rapB = {}
+    for nom, g in (('tous', R), ('joueurs connus (≥ 10 matchs)', [b for b in R if b['connus'] >= N_CONNU])) + tuple(
+            (c, [b for b in R if circuit(b['tournoi']) == c]) for c in ('ATP', 'CH', 'WTA', 'ITF')):
+        rapB[nom] = {'stats_seules': bloc([(b['p_elo'], y(b)) for b in g]),
+                     'stats_plus_marche': bloc([(b['pin'], y(b)) for b in g if b['pin']])}
+    rapB['calibration_stats_seules'] = calibration([(b['p_elo'], y(b)) for b in R])
+    rapB['calibration_marche'] = calibration([(b['pin'], y(b)) for b in R if b['pin']])
+    # ---- diagnostic (point 1) : où le classement se trompe-t-il de confiance ?
+    diag = {'par_circuit': {}, 'par_origine_du_favori': {}}
+    for c in ('ATP', 'CH', 'WTA'):
+        g = [b for b in R if circuit(b['tournoi']) == c]
+        diag['par_circuit'][c] = calibration([(b['p_elo'], y(b)) for b in g])
+    for nom, lo, hi in (('surtout ITF / Challenger (≥ 70 % de ses matchs)', 0.7, 1.01), ('mixte (30–70 %)', 0.3, 0.7),
+                        ('surtout grand circuit (< 30 %)', -0.01, 0.3)):
+        g = [b for b in R if b['part_bas_fav'] is not None and lo <= b['part_bas_fav'] < hi]
+        diag['par_origine_du_favori'][nom] = {'n': len(g), 'stats_seules': bloc([(b['p_elo'], y(b)) for b in g]),
+                                               'calibration': calibration([(b['p_elo'], y(b)) for b in g])}
+    rapB['diagnostic'] = diag
+    S = [b for b in R if b['bo'] == 3 and b['sets'] and b['pin']]
+    sc = {}
+    for nom, cle_p in (('stats_seules', 'p_elo'), ('stats_plus_marche', 'pin')):
+        ls, juste_, p3, r3 = 0.0, 0, 0.0, 0
+        for b in S:
+            d = sets_home(T, circuit(b['tournoi']), b[cle_p])
+            ls += -math.log(max(d[b['sets']], 1e-6))
+            juste_ += max(d, key=d.get) == b['sets']
+            p3 += d['2-1'] + d['1-2']
+            r3 += b['sets'] in ('2-1', '1-2')
+        n = len(S) or 1
+        sc[nom] = {'n': len(S), 'log_score': round(ls / n, 4), 'score_le_plus_probable_juste_pct': round(100 * juste_ / n, 1),
+                   'trois_sets_prevu_pct': round(100 * p3 / n, 1), 'trois_sets_reel_pct': round(100 * r3 / n, 1)}
+    rapB['scores_en_sets'] = sc
+    return rapA, rapB, A
+
+
+SERVICE_MOYEN = {'ATP': 0.646, 'WTA': 0.559}
+
+
+def scores_exacts(A):
+    """Point 4 : le score EXACT (set par set) des matchs ATP/WTA, deux versions."""
+    import modele as Mo
+    cache = {}
+
+    def dist(c, bo, pf):
+        k = (c, bo, round(min(max(pf, 0.5), 0.99), 2))
+        if k not in cache:
+            sg = 3 if bo == 5 else 2
+            a, b = Mo.ancrer_forme(SERVICE_MOYEN[c], SERVICE_MOYEN[c], k[2], sg, 0.15, iterations=20)
+            cache[k] = dict(Mo.scores_complets(a, b, sg, 0.15, top=10 ** 7, faisceau=1500)['scores'])
+        return cache[k]
+
+    def sets_de(s):
+        return [tuple(int(v) for v in x.split('-')) for x in s.split()]
+    EV = {'au moins un tie-break': lambda S: any({a, b} == {6, 7} for a, b in S),
+          'au moins un set à 6-0 ou 6-1': lambda S: any(min(a, b) <= 1 for a, b in S),
+          'match en 3 sets': lambda S: len(S) == 3,
+          'plus de 22,5 jeux': lambda S: sum(a + b for a, b in S) > 22.5}
+    out = {}
+    G = [a for a in A if a['complet'] and a['sets'] and a['circuit'] in SERVICE_MOYEN]
+    for nom, cle_p in (('stats_seules', 'p_elo'), ('stats_plus_marche', 'p_pin')):
+        r = {}
+        for bo in (3, 5):
+            g = [a for a in G if a['bo'] == bo]
+            if not g:
+                continue
+            pv, top1, top3, top10, ls = 0.0, 0, 0, 0, 0.0
+            ev = {k: [0.0, 0] for k in EV}
+            for a in g:
+                p = a[cle_p]                                   # probabilité du VAINQUEUR réel
+                fav = p >= 0.5
+                D = dist(a['circuit'], bo, p if fav else 1 - p)
+                s_reel = ' '.join(f"{x}-{y}" for x, y in a['sets'])          # vu du vainqueur
+                s_fav = s_reel if fav else ' '.join(f"{y}-{x}" for x, y in a['sets'])
+                q = D.get(s_fav, 0.0)
+                rang = 1 + sum(1 for v in D.values() if v > q)
+                pv += q
+                ls += -math.log(max(q, 1e-9))
+                top1 += rang == 1
+                top3 += rang <= 3
+                top10 += rang <= 10
+                if bo == 3:
+                    for k, f in EV.items():
+                        ev[k][0] += sum(v for s_, v in D.items() if f(sets_de(s_)))
+                        ev[k][1] += f(sets_de(s_fav))
+            n = len(g)
+            r[f'meilleur_des_{bo}'] = {'n': n, 'proba_moyenne_du_vrai_score_pct': round(100 * pv / n, 2), 'log_score': round(ls / n, 3),
+                                       'score_n1_juste_pct': round(100 * top1 / n, 1), 'dans_le_top3_pct': round(100 * top3 / n, 1),
+                                       'dans_le_top10_pct': round(100 * top10 / n, 1)}
+            if bo == 3:
+                r['evenements_meilleur_des_3'] = {k: {'prevu_pct': round(100 * v[0] / n, 1), 'reel_pct': round(100 * v[1] / n, 1)}
+                                                   for k, v in ev.items()}
+        out[nom] = r
+    return out
+
+
+def main(argv):
+    t0 = time.time()
+    args = [a for a in argv[1:] if not a.startswith('--')]
+    avec_scores = '--scores' in argv
+    dossier = args[0] if args else 'sackmann'
+    racine = args[1] if len(args) > 1 else os.path.join(ICI, '..')
+    M = donnees.charger(dossier, 2016)
+    if not M:
+        print(f"::error::aucun match Sackmann sous {dossier}")
+        return 1
+    fin_sack = max(m['date'] for m in M)
+    table_surf = NR.surfaces_tournois(M)
+    nous = [x for x in NR.charger(racine, table_surf) if x['date'] > fin_sack + dt.timedelta(days=3)]
+    print(f"Sackmann : {len(M)} matchs jusqu'au {fin_sack} · nos matchs ensuite : {len(nous)}", flush=True)
+    # Point 3 : un joueur = un classement, quel que soit l'écriture de son nom.
+    connus = {}
+    for m in M:
+        connus.setdefault(E.cle(m['nom_g']), m['nom_g'])
+        connus.setdefault(E.cle(m['nom_p']), m['nom_p'])
+    fe_rows = resultats_feuilles(racine, fin_sack + dt.timedelta(days=3))
+    print(f"Feuilles TennisApi après l'archive : {len(fe_rows)} résultats", flush=True)
+    itf_rows = resultats_itf(racine, {m.get('id') for m in fe_rows if m.get('id')})
+    print(f"Résultats ITF hommes (resultats_itf/) : {len(itf_rows)} matchs", flush=True)
+    base_noms = ({x['home'] for x in nous} | {x['away'] for x in nous}
+                 | {m['nom_g'] for m in fe_rows} | {m['nom_p'] for m in fe_rows})
+    alias = E.unifier(connus, base_noms)
+    # 28/10/2026 : les noms venus SEULEMENT des résultats ITF sont reliés par la règle stricte (audit : fusions à tort)
+    alias.update(lier_itf(M, connus, itf_rows, base_noms))
+    cle_c = lambda n: alias.get(E.cle(n), E.cle(n))
+    noms_c = dict(connus)
+    for x in nous:
+        for n in (x['home'], x['away']):
+            noms_c.setdefault(cle_c(n), n)
+    sexe = {}
+    for m in M:
+        for n in (m['nom_g'], m['nom_p']):
+            sexe.setdefault(cle_c(n), sexe_de_circuit(m['circuit']))
+    for x in nous:
+        sx = 'F' if circuit(x['tournoi']) == 'WTA' or 'women' in x['tournoi'].lower() else 'H'
+        for n in (x['home'], x['away']):
+            sexe.setdefault(cle_c(n), sx)
+    idx = index_td(noms_c, sexe)
+    td_rows = resultats_td(os.path.join(racine, 'historique', 'tennis_data_resultats.csv.gz'), fin_sack + dt.timedelta(days=3))
+    td = donnees.charger_td(os.path.join(racine, 'historique', 'tennis_data.csv.gz'), DEBUT_A.isoformat())
+    T = Table()
+    V = {}
+    for nom, bas_ in (('depart_1500', False), ('depart_1200_petits_niveaux', True)):
+        V[nom] = rejouer(M, nous, td_rows, cle_c, idx, bas_)
+        V[nom]['rapA'], V[nom]['rapB'], V[nom]['A'] = evaluer(V[nom], M, td, T)
+        print(f"{nom} : A {V[nom]['rapA']['tous']['stats_seules']} · B {V[nom]['rapB']['tous']['stats_seules']}", flush=True)
+    # Règle d'adoption fixée AVANT les résultats : la variante « départ bas » n'est retenue que si
+    # elle améliore nos matchs (log loss B) sans dégrader l'ATP/WTA (log loss A, tolérance 0,001).
+    a0, a1 = V['depart_1500']['rapA']['tous']['stats_seules'], V['depart_1200_petits_niveaux']['rapA']['tous']['stats_seules']
+    b0, b1 = V['depart_1500']['rapB']['tous']['stats_seules'], V['depart_1200_petits_niveaux']['rapB']['tous']['stats_seules']
+    a_ok = (a0.get('n', 0) == 0 and a1.get('n', 0) == 0) or \
+        ('log_loss' in a0 and 'log_loss' in a1 and a1['log_loss'] <= a0['log_loss'] + 0.001)
+    b_ok = 'log_loss' in b0 and 'log_loss' in b1 and b1['log_loss'] < b0['log_loss']
+    # 23/10/2026 : chaque étape passe par la règle de stabilité (stabilite.py) — marge 0,001 sur nos matchs (B),
+    # deux semaines de suite pour entrer comme pour sortir ; point de départ : la variante en place.
+    import stabilite as ST
+    etat_st = ST.lire()
+    try:
+        en_place = json.load(open(os.path.join(ICI, 'elo_etat.json'), encoding='utf-8')).get('variante') or ''
+    except (OSError, ValueError):
+        en_place = ''
+    stab = {}
+
+    def etape(cle, marque, brut, ll_b1, ll_b0):
+        ok, note = ST.decider(etat_st, cle, marque in en_place, brut, ll_b1, ll_b0)
+        stab[cle] = {'adopte_brut': bool(brut), 'adopte': ok, 'note': note}
+        print(f"  stabilité {cle} : {'retenu' if ok else 'non retenu'} ({note})", flush=True)
+        return ok
+    retenue = 'depart_1200_petits_niveaux' if etape('elo_depart_bas', 'depart_1200', a_ok and b_ok, b1.get('log_loss'), b0.get('log_loss')) \
+        else 'depart_1500'
+    # Étape 2 (22/10/2026), règle fixée AVANT les résultats, sur la variante de départ retenue :
+    # les joueurs absents de nos bases (connus seulement de tennis-data) deviennent de nouveaux
+    # joueurs ; retenu seulement si log loss B baisse et log loss A ne monte pas de plus de 0,001.
+    nom2 = retenue + '+nouveaux_joueurs'
+    V[nom2] = rejouer(M, nous, td_rows, cle_c, idx, retenue != 'depart_1500', nouveaux=True)
+    V[nom2]['rapA'], V[nom2]['rapB'], V[nom2]['A'] = evaluer(V[nom2], M, td, T)
+    print(f"{nom2} : A {V[nom2]['rapA']['tous']['stats_seules']} · B {V[nom2]['rapB']['tous']['stats_seules']}"
+          f" · tennis-data {V[nom2]['td']}", flush=True)
+    a0, a1 = V[retenue]['rapA']['tous']['stats_seules'], V[nom2]['rapA']['tous']['stats_seules']
+    b0, b1 = V[retenue]['rapB']['tous']['stats_seules'], V[nom2]['rapB']['tous']['stats_seules']
+    a_ok = (a0.get('n', 0) == 0 and a1.get('n', 0) == 0) or \
+        ('log_loss' in a0 and 'log_loss' in a1 and a1['log_loss'] <= a0['log_loss'] + 0.001)
+    b_ok = 'log_loss' in b0 and 'log_loss' in b1 and b1['log_loss'] < b0['log_loss']
+    if etape('elo_nouveaux_joueurs', '+nouveaux_joueurs', a_ok and b_ok, b1.get('log_loss'), b0.get('log_loss')):
+        retenue = nom2
+    # Étape 3 (22/10/2026), règle fixée AVANT les résultats : Elo amélioré (poids de la surface, Elo pondéré
+    # par le score, incertitude des joueurs peu vus), options choisies sur 2023 seulement ; retenu si la
+    # log loss A (ATP/WTA 2024–2026, contre la clôture des mêmes matchs) BAISSE et que la log loss B (nos
+    # matchs) ne monte pas de plus de 0,001.
+    t3 = time.time()
+    opts, grille = choisir_options(M, cle_c, not retenue.startswith('depart_1500'))
+    print(f"Elo amélioré : options choisies sur 2023 {opts} ({round(time.time() - t3)} s)", flush=True)
+    nom3 = retenue + '+elo_ameliore'
+    V[nom3] = rejouer(M, nous, td_rows, cle_c, idx, not retenue.startswith('depart_1500'),
+                      nouveaux=retenue.endswith('+nouveaux_joueurs'), options=opts)
+    V[nom3]['rapA'], V[nom3]['rapB'], V[nom3]['A'] = evaluer(V[nom3], M, td, T)
+    print(f"{nom3} : A {V[nom3]['rapA']['tous']['stats_seules']} · B {V[nom3]['rapB']['tous']['stats_seules']}", flush=True)
+    a0, a1 = V[retenue]['rapA']['tous']['stats_seules'], V[nom3]['rapA']['tous']['stats_seules']
+    b0, b1 = V[retenue]['rapB']['tous']['stats_seules'], V[nom3]['rapB']['tous']['stats_seules']
+    a_ok = 'log_loss' in a0 and 'log_loss' in a1 and a1['log_loss'] < a0['log_loss']
+    b_ok = (b0.get('n', 0) == 0 and b1.get('n', 0) == 0) or \
+        ('log_loss' in b0 and 'log_loss' in b1 and b1['log_loss'] <= b0['log_loss'] + 0.001)
+    elo_ameliore = {'options_choisies_sur_2023': opts, 'grille_2023_log_loss': dict(list(grille.items())[:12]),
+                    'adopte': bool(a_ok and b_ok),
+                    'raison': (f"log loss ATP/WTA 2024–2026 {a1.get('log_loss')} contre {a0.get('log_loss')} ; "
+                               f"nos matchs {b1.get('log_loss')} contre {b0.get('log_loss')}")}
+    # (étape 3 jugée sur l'ATP/WTA 2024–2026 : la marge porte sur la log loss A)
+    if etape('elo_ameliore', '+elo_ameliore', a_ok and b_ok, a1.get('log_loss'), a0.get('log_loss')):
+        retenue = nom3
+    # Étape 4 (23/10/2026), RÈGLE FIXÉE AVANT LES RÉSULTATS : les résultats des feuilles TennisApi (Challenger, et
+    # février → mai 2026 rattrapés) entrent dans le classement s'ils font baisser la log loss de nos matchs (B)
+    # sans faire monter celle de l'ATP/WTA 2024–2026 (A) de plus de 0,001.
+    feuilles_elo = {'adopte': False, 'raison': 'aucune feuille après l\'archive'}
+    if fe_rows:
+        nom4 = retenue + '+feuilles'
+        V[nom4] = rejouer(M, nous, td_rows, cle_c, idx, not retenue.startswith('depart_1500'),
+                          nouveaux='+nouveaux_joueurs' in retenue, options=V[retenue]['options'],
+                          feuilles=fe_rows)
+        V[nom4]['rapA'], V[nom4]['rapB'], V[nom4]['A'] = evaluer(V[nom4], M, td, T)
+        a0, a1 = V[retenue]['rapA']['tous']['stats_seules'], V[nom4]['rapA']['tous']['stats_seules']
+        b0, b1 = V[retenue]['rapB']['tous']['stats_seules'], V[nom4]['rapB']['tous']['stats_seules']
+        a_ok = (a0.get('n', 0) == 0 and a1.get('n', 0) == 0) or \
+            ('log_loss' in a0 and 'log_loss' in a1 and a1['log_loss'] <= a0['log_loss'] + 0.001)
+        b_ok = 'log_loss' in b0 and 'log_loss' in b1 and b1['log_loss'] < b0['log_loss']
+        feuilles_elo = {'adopte': bool(a_ok and b_ok), 'resultats': V[nom4]['td'],
+                        'raison': (f"nos matchs : log loss {b1.get('log_loss')} avec les feuilles contre {b0.get('log_loss')} sans "
+                                   f"(vainqueur {b1.get('reussite_pct')} % contre {b0.get('reussite_pct')} %) ; ATP/WTA 2024–2026 "
+                                   f"{a1.get('log_loss')} contre {a0.get('log_loss')}")}
+        print(f"Résultats des feuilles dans l'Elo : {'ADOPTÉS' if feuilles_elo['adopte'] else 'non adoptés'} — {feuilles_elo['raison']}",
+              flush=True)
+        feuilles_elo['adopte_brut'] = feuilles_elo['adopte']
+        feuilles_elo['adopte'] = etape('elo_feuilles', '+feuilles', feuilles_elo['adopte_brut'], b1.get('log_loss'), b0.get('log_loss'))
+        if feuilles_elo['adopte']:
+            retenue = nom4
+    ST.ecrire(etat_st)
+    # Étape 5 (28/10/2026) — RÉSULTATS ITF HOMMES (vainqueur, score ; pas de feuille). Mis en production le 28/10 PAR
+    # DÉCISION DE LUCAS, sans attendre la 2e semaine de stabilité, au vu de l'étude (simulateur/etude_itf_elo.py :
+    # log loss Challenger −0,0145 sur 22 530 matchs, ATP + WTA −0,0042, joueurs peu vus −0,035 ; règle : −0,001).
+    # Garde-fou : l'étude hebdomadaire continue ; si l'ITF fait moins bien deux semaines de suite, elle le retire
+    # (etude_itf_elo.json « adopte » = false) et cette étape n'est plus appliquée. ITF = DONNÉE seulement.
+    itf_elo = {'applique': False, 'matchs': len(itf_rows), 'raison': 'aucun résultat ITF'}
+    reference = None              # 29/10/2026 : variante AVANT l'ITF, gardée pour le modèle fantôme (comparaison en direct)
+    reference_femmes = None       # 29/10/2026 : variante sans les seuls résultats ITF femmes (fantôme propre à ce changement)
+    fantome_femmes = None         # 29/10/2026 (correctif) : gardée HORS de V — V ne contient que des variantes évaluées
+    departs_places = dict(E.DEPARTS_PAR_NIVEAU)   # 11/11/2026 (paquet 230) : vidé si le suivi retire le départ ITF
+    depart_itf = {'en_place': False, 'raison': "résultats ITF hommes absents de l'Elo"}
+    if itf_rows and itf_en_production(racine):
+        avant = sorted([m for m in itf_rows if m['date'] <= fin_sack and m['circuit'] != 'ITF'],   # ITF femmes : déjà dans l'archive
+                       key=lambda m: m['date'])
+        apres = [m for m in itf_rows if m['date'] > fin_sack]
+        M5 = sorted(M + avant, key=lambda m: (m['date'], m.get('tour', 0), m.get('num', 0)))
+        nom5 = retenue + '+itf'
+        V[nom5] = rejouer(M5, nous, td_rows, cle_c, idx, not retenue.startswith('depart_1500'),
+                          nouveaux='+nouveaux_joueurs' in retenue, options=V[retenue]['options'],
+                          feuilles=(fe_rows if '+feuilles' in retenue else []) + apres)
+        # 11/11/2026 (paquet 230) — DÉPART DES JOUEURS VUS D'ABORD EN ITF HOMMES : 1000 au lieu de 1200
+        # (etude_depart_itf.py). Suivi et retrait, règle écrite avant tout match suivi (elo.py) : le même classement
+        # est rejoué avec l'ancien départ ; sur nos matchs Challenger depuis le 12/11/2026, dès 300 matchs, gain cumulé
+        # négatif de plus de 2 erreurs types → retour à 1200. Jamais affiché comme pronostic.
+        if departs_places:
+            temoin = rejouer(M5, nous, td_rows, cle_c, idx, not retenue.startswith('depart_1500'),
+                             nouveaux='+nouveaux_joueurs' in retenue, options=V[retenue]['options'],
+                             feuilles=(fe_rows if '+feuilles' in retenue else []) + apres, departs={})
+            vp = lambda b: b['p_elo'] if b['gagnant'] == 'home' else 1 - b['p_elo']
+            ch = [k for k, b in enumerate(V[nom5]['B']) if b['gagnant'] in ('home', 'away') and circuit(b['tournoi']) == 'CH']
+            paires = [[(str(R_['B'][k]['date']), vp(R_['B'][k])) for k in ch] for R_ in (V[nom5], temoin)]
+            depart_itf = dict(E.suivi_departs(*paires), depart={k: v for k, v in departs_places.items()}, ancien_depart=DEPART_BAS,
+                              regle=(f"retour à {DEPART_BAS:g} si, sur nos matchs Challenger depuis le {E.DEPARTS_SUIVI_DEPUIS}, dès "
+                                     f"{E.DEPARTS_RETRAIT_MIN_MATCHS} matchs, le gain cumulé de log loss est négatif de plus de "
+                                     f"{E.DEPARTS_RETRAIT_ERREURS_TYPES:g} erreurs types"),
+                              tous_nos_matchs_challenger_pour_memoire=E.suivi_departs(*paires, depuis='0000'))
+            depart_itf['tous_nos_matchs_challenger_pour_memoire'].pop('retrait', None)
+            depart_itf['en_place'] = not depart_itf['retrait']
+            if depart_itf['retrait']:
+                V[nom5], departs_places = temoin, {}
+            print(f"Départ ITF hommes à {E.DEPARTS_PAR_NIVEAU.get('ITFH', DEPART_BAS):g} : "
+                  f"{'EN PLACE' if depart_itf['en_place'] else 'RETIRÉ'} — suivi {depart_itf['matchs']} matchs Challenger, gain "
+                  f"{depart_itf.get('gain_log_loss')} ± {depart_itf.get('erreur_type')}", flush=True)
+        V[nom5]['rapA'], V[nom5]['rapB'], V[nom5]['A'] = evaluer(V[nom5], M5, td, T)
+        b0, b1 = V[retenue]['rapB']['tous']['stats_seules'], V[nom5]['rapB']['tous']['stats_seules']
+        a0, a1 = V[retenue]['rapA']['tous']['stats_seules'], V[nom5]['rapA']['tous']['stats_seules']
+        itf_elo = {'applique': True, 'matchs': len(itf_rows), 'avant_archive': len(avant), 'apres_archive': len(apres),
+                   'decision': "Lucas, 28/10/2026 (étude : etude_itf_elo.json) ; retiré si l'étude échoue 2 semaines de suite",
+                   'suivi': (f"nos matchs : log loss {b1.get('log_loss')} avec l'ITF contre {b0.get('log_loss')} sans ; "
+                             f"ATP/WTA 2024–2026 {a1.get('log_loss')} contre {a0.get('log_loss')}")}
+        print(f"Résultats ITF dans l'Elo : APPLIQUÉS — {itf_elo['suivi']}", flush=True)
+        # 29/10/2026 — FANTÔME ITF FEMMES : le même Elo sans les seuls résultats ITF femmes (ajoutés le 29/10), pour
+        # juger ce changement à part sur les matchs WTA réels. Les hommes et les femmes ne se croisent jamais : pour
+        # les hommes, cet Elo est identique à celui en place.
+        fem = [m for m in apres if m['circuit'] == 'ITF']
+        if fem:
+            nom5h = nom5 + '-femmes'
+            fantome_femmes = rejouer(M5, nous, td_rows, cle_c, idx, not retenue.startswith('depart_1500'),
+                               nouveaux='+nouveaux_joueurs' in retenue, options=V[retenue]['options'],
+                               feuilles=(fe_rows if '+feuilles' in retenue else []) + [m for m in apres if m['circuit'] != 'ITF'],
+                               departs=departs_places)
+            reference_femmes = nom5h
+        reference, retenue = retenue, nom5
+    elif itf_rows:
+        itf_elo['raison'] = "retirés par l'étude hebdomadaire (moins bien deux semaines de suite)"
+        print(f"Résultats ITF dans l'Elo : non appliqués — {itf_elo['raison']}", flush=True)
+    W = V[retenue]
+    rap = {'genere_le': dt.datetime.now(dt.timezone.utc).isoformat(timespec='seconds'),
+           'objectif': 'deviner le vainqueur et le score (pas battre Pinnacle)',
+           'elo': 'FiveThirtyEight (Kovalchik 2016) : K = 250/(n+5)^0,4, ×1,1 en Grand Chelem ; général + surface à parts égales ; aucun réglage',
+           'variantes': {k: {'A': v['rapA']['tous']['stats_seules'], 'B': v['rapB']['tous']['stats_seules'],
+                             'B_calibration': v['rapB']['calibration_stats_seules'], 'tennis_data': v['td']} for k, v in V.items()},
+           'regle_adoption': "départ bas retenu seulement si log loss B baisse et log loss A ne monte pas de plus de 0,001 ; "
+                             "puis, même règle, nouveaux joueurs tennis-data sur la variante de départ retenue",
+           'variante_retenue': retenue,
+           'elo_ameliore': elo_ameliore,
+           'feuilles_dans_elo': feuilles_elo,
+           'itf_dans_elo': itf_elo,
+           'depart_itf_hommes': depart_itf,
+           'stabilite': stab,
+           'joueurs_relies_nom_different': len(alias),
+           'sackmann_jusqu_au': fin_sack.isoformat(), 'nos_matchs': len(nous),
+           'resultats_tennis_data_ajoutes': W['td'],
+           'A_atp_wta_2024_2026': dict(W['rapA'], periode=f"{DEBUT_A} → {FIN_A}"),
+           'B_nos_matchs': dict(W['rapB'], periode=f"{nous[0]['date'] if nous else '—'} → {nous[-1]['date'] if nous else '—'}")}
+    if avec_scores:
+        print("scores exacts…", flush=True)
+        rap['scores_exacts_atp_wta'] = scores_exacts(W['A'])
+    rap['duree_s'] = round(time.time() - t0)
+    with open(os.path.join(ICI, 'rapport_pronostic.json'), 'w', encoding='utf-8') as f:
+        json.dump(rap, f, ensure_ascii=False, indent=1)
+    elo = W['elo']
+    with open(os.path.join(ICI, 'elo_etat.json'), 'w', encoding='utf-8') as f:
+        json.dump({'genere_le': rap['genere_le'], 'dernier_match': str(nous[-1]['date'] if nous else fin_sack),
+                   'variante': retenue, 'options': W['options'], 'depart_bas': DEPART_BAS if not retenue.startswith('depart_1500') else None,
+                   'departs_par_niveau': departs_places if depart_itf.get('en_place') else {},
+                   'surfaces_tournois': table_surf, 'alias': alias, 'joueurs': elo.exporter(W['noms'])},
+                  f, ensure_ascii=False, separators=(',', ':'))
+    # 29/10/2026 — MODÈLE FANTÔME : l'Elo d'avant l'ITF, calculé à chaque passage, jamais affiché comme pronostic ;
+    # pronostics_du_jour.py en tire une probabilité de contrôle par match, comparée à l'Elo en place après le match.
+    if reference:
+        R_ = V[reference]
+        with open(os.path.join(ICI, 'elo_etat_reference.json'), 'w', encoding='utf-8') as f:
+            json.dump({'genere_le': rap['genere_le'], 'variante': reference, 'options': R_['options'],
+                       'depart_bas': DEPART_BAS if not reference.startswith('depart_1500') else None, 'alias': alias,
+                       'joueurs': R_['elo'].exporter(R_['noms'])}, f, ensure_ascii=False, separators=(',', ':'))
+    if reference_femmes:
+        R_ = fantome_femmes
+        with open(os.path.join(ICI, 'elo_etat_sans_itf_femmes.json'), 'w', encoding='utf-8') as f:
+            json.dump({'genere_le': rap['genere_le'], 'variante': reference_femmes, 'options': R_['options'],
+                       'depart_bas': DEPART_BAS if not reference_femmes.startswith('depart_1500') else None, 'alias': alias,
+                       'joueurs': R_['elo'].exporter(R_['noms'])}, f, ensure_ascii=False, separators=(',', ':'))
+    print(json.dumps({k: rap[k] for k in ('variantes', 'variante_retenue', 'elo_ameliore', 'joueurs_relies_nom_different')}, ensure_ascii=False, indent=1))
+    if avec_scores:
+        print(json.dumps(rap['scores_exacts_atp_wta'], ensure_ascii=False, indent=1))
+    return 0
+
+
+if __name__ == '__main__':
+    sys.exit(main(sys.argv))

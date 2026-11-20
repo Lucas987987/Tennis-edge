@@ -1,0 +1,212 @@
+{
+ "genere_le": "2026-11-11T17:50:25+00:00",
+ "regle": "étape 1 : forme de la vitesse WTA choisie sur 2018–2022, jugée une fois sur 2023 → juin 2026 (gain ≥ 0,001 sur ≥ 1 000 matchs, ≥ 2 erreurs types, positif sur les deux périodes) ; étape 2 : départ des petits niveaux choisi sur 2018–2022, même jugement sur l'ATP ou la WTA, aucun circuit dégradé de plus de 0,0005",
+ "elo": "réglé comme la production (elo.de_production), mis à jour après chaque match",
+ "vitesse_wta": {
+  "candidats_2018_2022": {
+   "vitesse × 1.1": {
+    "vitesse": 1.1,
+    "2018–2022": {
+     "matchs": 10529,
+     "log_loss_base": 0.60129,
+     "log_loss": 0.60063,
+     "gain": 0.00066,
+     "erreur_type": 0.00016,
+     "erreurs_types": 4.19,
+     "brier_base": 0.20774,
+     "brier": 0.2075
+    }
+   },
+   "vitesse × 1.25": {
+    "vitesse": 1.25,
+    "2018–2022": {
+     "matchs": 10529,
+     "log_loss_base": 0.60129,
+     "log_loss": 0.60012,
+     "gain": 0.00116,
+     "erreur_type": 0.00037,
+     "erreurs_types": 3.1,
+     "brier_base": 0.20774,
+     "brier": 0.20733
+    }
+   },
+   "vitesse × 1.4": {
+    "vitesse": 1.4,
+    "2018–2022": {
+     "matchs": 10529,
+     "log_loss_base": 0.60129,
+     "log_loss": 0.60006,
+     "gain": 0.00122,
+     "erreur_type": 0.00058,
+     "erreurs_types": 2.12,
+     "brier_base": 0.20774,
+     "brier": 0.20731
+    }
+   },
+   "Elo rapide": {
+    "beta": 0.3039,
+    "2018–2022": {
+     "matchs": 10529,
+     "log_loss_base": 0.60129,
+     "log_loss": 0.5997,
+     "gain": 0.00159,
+     "erreur_type": 0.00054,
+     "erreurs_types": 2.94,
+     "brier_base": 0.20774,
+     "brier": 0.20714
+    }
+   }
+  },
+  "forme_choisie": "Elo rapide",
+  "2023 → juin 2026": {
+   "matchs": 8837,
+   "log_loss_base": 0.59618,
+   "log_loss": 0.59573,
+   "gain": 0.00045,
+   "erreur_type": 0.00056,
+   "erreurs_types": 0.8,
+   "brier_base": 0.20589,
+   "brier": 0.20579
+  },
+  "retenue": false,
+  "raisons": [
+   "gain sous 0.001",
+   "gain sous 2 erreurs types"
+  ],
+  "autres_circuits_2023": {
+   "ATP": {
+    "matchs": 9233,
+    "log_loss_base": 0.60505,
+    "log_loss": 0.60505,
+    "gain": 0.0,
+    "erreur_type": 0.0,
+    "erreurs_types": null,
+    "brier_base": 0.20955,
+    "brier": 0.20955
+   },
+   "CH": {
+    "matchs": 37676,
+    "log_loss_base": 0.62534,
+    "log_loss": 0.62534,
+    "gain": 0.0,
+    "erreur_type": 0.0,
+    "erreurs_types": null,
+    "brier_base": 0.21786,
+    "brier": 0.21786
+   }
+  }
+ },
+ "vitesse_wta_en_place_pour_l_etape_2": 1.0,
+ "depart_petits_niveaux": {
+  "candidats_2018_2022": {
+   "1250": {
+    "gains": {
+     "ATP": 0.00014,
+     "WTA": 1e-05,
+     "CH": -2e-05
+    }
+   },
+   "1300": {
+    "gains": {
+     "ATP": 0.00026,
+     "WTA": 0.0,
+     "CH": -0.00012
+    }
+   },
+   "1350": {
+    "gains": {
+     "ATP": 0.00036,
+     "WTA": -1e-05,
+     "CH": -0.00027
+    }
+   }
+  },
+  "depart_choisi": 1350.0,
+  "2018–2022": {
+   "ATP": {
+    "matchs": 11601,
+    "log_loss_base": 0.60374,
+    "log_loss": 0.60338,
+    "gain": 0.00036,
+    "erreur_type": 0.00012,
+    "erreurs_types": 3.03,
+    "brier_base": 0.20907,
+    "brier": 0.20888
+   },
+   "WTA": {
+    "matchs": 10529,
+    "log_loss_base": 0.60129,
+    "log_loss": 0.6013,
+    "gain": -1e-05,
+    "erreur_type": 0.0001,
+    "erreurs_types": -0.14,
+    "brier_base": 0.20774,
+    "brier": 0.20772
+   },
+   "CH": {
+    "matchs": 38074,
+    "log_loss_base": 0.62784,
+    "log_loss": 0.62811,
+    "gain": -0.00027,
+    "erreur_type": 0.00012,
+    "erreurs_types": -2.26,
+    "brier_base": 0.21919,
+    "brier": 0.21933
+   }
+  },
+  "2023 → juin 2026": {
+   "ATP": {
+    "matchs": 9233,
+    "log_loss_base": 0.60381,
+    "log_loss": 0.60365,
+    "gain": 0.00016,
+    "erreur_type": 9e-05,
+    "erreurs_types": 1.81,
+    "brier_base": 0.2091,
+    "brier": 0.20902
+   },
+   "WTA": {
+    "matchs": 8837,
+    "log_loss_base": 0.59618,
+    "log_loss": 0.59616,
+    "gain": 2e-05,
+    "erreur_type": 8e-05,
+    "erreurs_types": 0.21,
+    "brier_base": 0.20589,
+    "brier": 0.20586
+   },
+   "CH": {
+    "matchs": 37676,
+    "log_loss_base": 0.62534,
+    "log_loss": 0.62546,
+    "gain": -0.00012,
+    "erreur_type": 0.00012,
+    "erreurs_types": -0.97,
+    "brier_base": 0.21786,
+    "brier": 0.21794
+   }
+  },
+  "passe_par_circuit": {
+   "ATP": {
+    "passe": false,
+    "raisons": [
+     "gain sous 0.001",
+     "gain sous 2 erreurs types"
+    ]
+   },
+   "WTA": {
+    "passe": false,
+    "raisons": [
+     "gain sous 0.001",
+     "gain sous 2 erreurs types",
+     "pas de gain sur 2018–2022"
+    ]
+   }
+  },
+  "retenu": false,
+  "raisons": [
+   "ATP : gain sous 0.001, gain sous 2 erreurs types",
+   "WTA : gain sous 0.001, gain sous 2 erreurs types, pas de gain sur 2018–2022"
+  ]
+ }
+}

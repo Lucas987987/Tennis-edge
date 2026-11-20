@@ -1,0 +1,65 @@
+{
+ "date": "2026-11-12",
+ "paquet": 248,
+ "circuits": [
+  "WTA"
+ ],
+ "decision": "décision de Lucas le 12/11/2026 : en place sans attendre le fantôme (15 matchs suivis depuis le 02/11), au vu de l'archive",
+ "points_a_50_pct": 2.24,
+ "definition": "en WTA, joueuse au profil serveur (grande serveuse, serveuse attaquante) contre joueuse au profil non serveur (retourneuse pressante, contreuse, équilibrée), styles figés avant le match (styles_descriptifs.classifier, au moins 500 points de service) ; décalage fixe en logit vers la serveuse",
+ "mesure_archive": {
+  "elo_du_site": {
+   "2018_2022": {
+    "matchs": 4404,
+    "ecart_pts": 2.05,
+    "z": 2.99
+   },
+   "2023_juin_2026": {
+    "matchs": 3628,
+    "ecart_pts": 2.47,
+    "z": 3.31
+   }
+  },
+  "elo_des_etudes": {
+   "2018_2022": {
+    "matchs": 4344,
+    "ecart_pts": 2.22,
+    "z": 3.21
+   },
+   "2023_juin_2026": {
+    "matchs": 3619,
+    "ecart_pts": 2.91,
+    "z": 3.88
+   }
+  },
+  "reproduire": "python simulateur/etude_anciennes_etudes.py /tmp/sackmann . --seulement=etude_duels_styles --dossier=<dossier>"
+ },
+ "autres_circuits": {
+  "ATP": {
+   "decouverte": {
+    "matchs": 4713,
+    "ecart_pts": 0.21,
+    "z": 0.33
+   },
+   "confirmation": {
+    "matchs": 3898,
+    "ecart_pts": -0.34,
+    "z": -0.49
+   }
+  },
+  "CH": {
+   "decouverte": {
+    "matchs": 10300,
+    "ecart_pts": -0.25,
+    "z": -0.53
+   },
+   "confirmation": {
+    "matchs": 10220,
+    "ecart_pts": 0.08,
+    "z": 0.18
+   }
+  }
+ },
+ "statut": "pas une étude qui passe sa règle : piste repérée en regardant les circuits, jugée en fantôme jusqu'ici ; mise en place par décision",
+ "retrait": "règle cumulée de fantomes_circuits.py : retiré si, depuis le 12/11/2026, sur au moins 300 matchs WTA concernés, son gain propre est négatif de plus de 2 erreurs types ; suivi avec / sans dans signaux_circuit"
+}

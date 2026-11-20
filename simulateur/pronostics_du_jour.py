@@ -1,0 +1,2429 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+pronostics_du_jour.py — pronostic de chaque match à venir, deux versions côte à côte (21/10/2026).
+
+  « stats seules »   : force Elo (elo_etat.json, refait chaque run depuis tous
+                        les résultats) + style service/retour de chaque joueur
+                        (notes_joueurs.json) + forme du jour, dans le moteur ;
+  « simulation pure » : profils service/retour ajustés aux adversaires ;
+  « combinaison »   : Elo + simulation + corrections apprises sur le passé.
+Aucune cote ni aucun mouvement de marché n'entre dans ces trois variantes.
+Pour chaque match : probabilité de victoire, 2-0 / 2-1 / 1-2 / 0-2 (ou en 5
+sets), les 3 scores complets les plus probables set par set dans l'ordre réel
+(ex. « 4-6 6-3 6-4 »), victoire après la perte du 1er set, set 1, total de jeux
+moyen, au moins un tie-break.
+
+JOURNAL : le PREMIER pronostic de chaque match est écrit une fois dans
+simulateur/pronostics_log.jsonl et jamais modifié ; le bilan (taux de
+vainqueurs devinés des deux versions, sur les matchs joués) se calcule sur ce
+journal — un vrai suivi en direct, sans retouche.
+
+MATCH SIMULÉ : chaque version est aussi jouée SIMULATIONS fois point
+par point (match_simule.py) avec le profil de service des deux joueurs
+(profils_service.json : % de 1re balle, aces, doubles fautes, points gagnés
+derrière la 1re et la 2e balle, qualité de retour), au niveau de la version.
+On en tire la feuille de stats prévue (moyenne et fourchette à 80 %) et un
+match type, set par set avec les breaks.
+
+Entrées : matches_oddspapi.json (matchs à venir), simulateur/elo_etat.json,
+simulateur/notes_joueurs.json, simulateur/profils_service.json, set_results.json (résultats).
+Sorties : Tennis_Edge_Lab/live/pronostics.json, Tennis_Edge_Lab/live/pronostics_bilan.json,
+simulateur/pronostics_log.jsonl. 0 requête API.
+"""
+import datetime as dt
+import json
+import math
+import os
+import re
+import sys
+
+ICI = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, ICI)
+import contexte_optionnel as CO  # noqa: E402
+import distribution_exacte as DE  # noqa: E402
+import elo as E  # noqa: E402
+import feuilles as FE  # noqa: E402
+import fiabilite as FI  # noqa: E402
+import match_simule as MS  # noqa: E402
+import modele as M  # noqa: E402
+import nos_resultats as NR  # noqa: E402
+import profils_service as PS  # noqa: E402
+import ajustement as AJ  # noqa: E402
+
+SIGMA = 0.15
+SIMULATIONS = int(os.environ.get('SIMULATIONS', '20000'))
+STABILITE_BLOCS = int(os.environ.get('STABILITE_BLOCS', '2'))
+BALLES_CONNU = 500          # profil « connu » : au moins 500 balles de service (pondérées) dans l'archive
+# 18/11/2026 (paquet 268-269, Lucas) : les matchs arrivent sur le site de l'algo dès qu'ils sortent en cote, jusqu'à
+# 3 jours avant (avant : 36 h). Surtout utile en début de tournoi ; ensuite les matchs sont fixés la veille. Plafond de
+# sécurité : au plus PLAFOND_MATCHS matchs par passage, les plus proches d'abord (le run reste sous son délai).
+HORIZON_H = int(os.environ.get('HORIZON_H', '72'))
+# 18/11/2026 (paquet 270, DÉCISION DE LUCAS après etude_niveaux_fiabilite.py) : correction par niveau de fiabilité et
+# par circuit (simulateur/correction_niveaux.json). Seule en place : Challenger « correct », pente 1,142 apprise sur la
+# 1re moitié de nos pronostics en direct et validée sur la 2de (log loss −0,0026). Le niveau est celui du pronostic SANS
+# la correction (pas de boucle) ; la pente s'applique en dernier, avant la simulation, donc sets, scores et feuille
+# suivent. Retrait automatique par etude_niveaux_fiabilite.py (règle dans son en-tête).
+CORRECTIONS_NIVEAUX = 'simulateur/correction_niveaux.json'
+PLAFOND_MATCHS = int(os.environ.get('PLAFOND_MATCHS', '220'))
+LOG = 'simulateur/pronostics_log.jsonl'
+# 22/10/2026 — TOUT est enregistré pour l'analyse a posteriori :
+#   INSTANTANES : chaque passage (toutes les 6 h), chaque match, chaque version (%, sets, scores,
+#                 jeux, tie-break, facteurs) — on voit le pronostic évoluer jusqu'au match ;
+#   RESULTATS   : chaque match joué, prédiction (1re et dernière avant le match) contre résultat réel
+#                 (vainqueur, score en sets et en jeux, feuille de stats), et ce qui était juste ou faux.
+INSTANTANES = 'simulateur/journal_pronostics'
+RESULTATS = 'Tennis_Edge_Lab/live/pronostics_resultats.json'
+VERSIONS = ('combinaison', 'simulation', 'stats')
+SORTIE = 'Tennis_Edge_Lab/live/pronostics.json'
+BILAN = 'Tennis_Edge_Lab/live/pronostics_bilan.json'
+
+
+def circuit(t):
+    t = str(t or '').lower()
+    if 'wta' in t or 'women' in t:
+        return 'WTA'
+    if 'itf' in t:
+        return 'ITF'
+    if 'challenger' in t:
+        return 'CH'
+    return 'ATP'
+
+
+def sig(z):
+    return 1 / (1 + math.exp(-z))
+
+
+class Styles:
+    """Service / retour de chaque joueur (notes Sackmann ajustées aux adversaires)."""
+
+    def __init__(self, chemin):
+        try:
+            doc = json.load(open(chemin, encoding='utf-8'))
+        except (OSError, ValueError):
+            doc = {}
+        self.mu = {}
+        for k, v in (doc.get('mu') or {}).items():
+            c, _, s = k.partition(' ')
+            self.mu[(c, s)] = v
+        self.j = {}
+        for v in (doc.get('joueurs') or {}).values():
+            k = E.cle(v.get('nom'))
+            if k and (k not in self.j or v.get('points', 0) > self.j[k][2]):
+                self.j[k] = (v.get('service', 0.0), v.get('retour', 0.0), v.get('points', 0))
+
+    def mu_de(self, c, s):
+        if (c, s) in self.mu:
+            return self.mu[(c, s)]
+        v = [x for (cc, _), x in self.mu.items() if cc == c]
+        return sum(v) / len(v) if v else 0.5
+
+    def service(self, a, b, c, s):
+        """P(A gagne un point sur son service contre B), avant ancrage au niveau."""
+        sa, ra = (self.j.get(a) or (0.0, 0.0, 0))[:2]
+        sb, rb = (self.j.get(b) or (0.0, 0.0, 0))[:2]
+        mu = self.mu_de(c, s)
+        return sig(mu + sa - rb), sig(mu + sb - ra)
+
+    def connu(self, a):
+        return a in self.j
+
+
+def pronostic(p_home, c, sg, pa0, pb0):
+    """Distribution complète, niveau ancré sur p_home, style (pa0, pb0).
+
+    Scores : les 3 scores COMPLETS les plus probables, set par set et dans l'ordre
+    réel (modele.scores_complets : rien n'est supposé — le vainqueur peut perdre le
+    1er set). Il y a ~1 500 scores possibles : même le premier dépasse rarement 4 %."""
+    sig = sigma_de(c)
+    a, b = M.ancrer_forme(pa0, pb0, min(max(p_home, 0.01), 0.99), sg, sig, iterations=20)
+    r = M.match_forme(a, b, sg, sig)
+    sc = M.scores_complets(a, b, sg, sig, top=3)
+    return {'p_home': round(r['victoire'], 4),
+            'sets': {k: round(v, 4) for k, v in r['sets'].items()},
+            'scores_probables': [[s_, round(p_, 4)] for s_, p_ in sc['scores']],
+            'remontee': {'home': round(sc['remontee_A'], 4), 'away': round(sc['remontee_B'], 4)},
+            'set1_home': round(r['set1'], 4),
+            'jeux_moyen': round(M.moyenne(r['total_jeux']), 1),
+            'tiebreak': round(r['tiebreak'], 3)}
+
+
+def charger_profils(racine):
+    try:
+        with open(os.path.join(racine, 'simulateur', 'profils_service.json'), encoding='utf-8') as f:
+            return PS.Profils.importer(json.load(f))
+    except (OSError, ValueError, KeyError):
+        return None
+
+
+def charger_reglages(racine):
+    """Réglages du match simulé, seulement s'ils ont été ADOPTÉS (reglage_match_simule.py)."""
+    try:
+        with open(os.path.join(racine, 'simulateur', 'reglages_match_simule.json'), encoding='utf-8') as f:
+            d = json.load(f)
+        return d['reglages'] if d.get('adopte') else None
+    except (OSError, ValueError, KeyError):
+        return None
+
+
+REGLAGES = None
+
+
+def charger_choix(racine):
+    """Composantes retenues par le test (backtest_match_simule.py) : 'ajustees' ou 'profils'."""
+    try:
+        with open(os.path.join(racine, 'simulateur', 'choix_simulation.json'), encoding='utf-8') as f:
+            return json.load(f).get('composantes', 'profils')
+    except (OSError, ValueError):
+        return 'profils'
+
+
+CHOIX = 'profils'
+
+
+def charger_combinaison(racine):
+    """Poids de la combinaison simulation + Elo si le test l'a adoptée (backtest_match_simule.py), sinon None."""
+    try:
+        with open(os.path.join(racine, 'simulateur', 'choix_simulation.json'), encoding='utf-8') as f:
+            choix = json.load(f)
+        cc = choix.get('combinaison_continue') or {}            # appris sur NOS matchs joués (apprentissage continu)
+        if cc.get('adopte') and cc.get('poids'):
+            return dict(cc['poids'], source='nos matchs joués')
+        cf = choix.get('combinaison_feuilles') or {}            # rejouée semaine après semaine sur les feuilles
+        if cf.get('adopte') and cf.get('poids'):
+            return dict(cf['poids'], source='les feuilles depuis juin (entraînement semaine après semaine)')
+        cb = choix.get('combinaison') or {}
+        return dict(cb['poids'], source='archive 2024–2026') if cb.get('adopte') and cb.get('poids') else None
+    except (OSError, ValueError, KeyError):
+        return None
+
+
+COMBINAISON = None
+# 18/11/2026 (paquet 273, DÉCISION DE LUCAS : étude « par circuit », paquet 255, partie B) — poids du mélange PROPRES
+# AU CIRCUIT (simulateur/poids_circuit.json) : ATP Elo 0,7339 / simulation 0,3036, appris sur 2024 et jugés sur
+# 2025 → janvier 2026 (log loss +0,0014 ± 0,0006 sur 2 259 matchs ; +0,0004 sur 2024). Les autres circuits gardent les
+# poids communs. Retrait automatique par simulateur/poids_circuit.py (règle dans son en-tête).
+POIDS_CIRCUIT = {}
+
+
+def charger_poids_circuit(racine):
+    try:
+        with open(os.path.join(racine, 'simulateur', 'poids_circuit.json'), encoding='utf-8') as f:
+            doc = json.load(f)
+    except (OSError, ValueError):
+        return {}
+    return {c: {'elo': float(v['elo']), 'simulation': float(v['simulation'])}
+            for c, v in (doc.get('circuits') or {}).items()
+            if isinstance(v, dict) and not v.get('retire') and v.get('elo') is not None and v.get('simulation') is not None}
+
+
+# 18/11/2026 (paquet 274, DÉCISION DE LUCAS après etude_outsiders_gagnants.py, paquet 273) — deux situations où
+# l'outsider (15 à 45 %) gagne plus qu'annoncé en CHALLENGER, apprises sur 2018–2022 et jugées sur 2023 → juin 2026 :
+#   favori fatigué : le favori sort d'un match en 3 sets dans ce tournoi, l'outsider non (40,0 % pour 34,4 %, 2 583 matchs) ;
+#   outsider mieux classé que le favori (43,1 % pour 37,0 %, 5 244 matchs).
+# Décalage (logit) vers l'outsider = β appris (simulateur/outsiders_ch.json). Retrait automatique : outsiders_ch.py.
+OUTSIDERS_CH = {}
+DERNIERS_MATCHS = None
+
+
+def charger_outsiders(racine):
+    try:
+        with open(os.path.join(racine, 'simulateur', 'outsiders_ch.json'), encoding='utf-8') as f:
+            doc = json.load(f)
+    except (OSError, ValueError):
+        return {}
+    return {k: float(v['beta']) for k, v in (doc.get('signaux') or {}).items()
+            if isinstance(v, dict) and v.get('beta') is not None and not v.get('retire')}
+
+
+def charger_derniers_matchs(racine, cle, aujourdhui=None):
+    """{joueur: [(début, ville, sets joués)]} des matchs terminés des 10 derniers jours (feuilles TennisApi)."""
+    import feuilles as FE_
+    debut = ((aujourdhui or dt.date.today()) - dt.timedelta(days=10)).isoformat()
+    out = {}
+    for r in FE_.lire(racine, depuis=debut):
+        if r.get('vainqueur') not in (1, 2) or not r.get('debut'):
+            continue
+        sh, sa = (r.get('score_home') or {}).get('sets') or [], (r.get('score_away') or {}).get('sets') or []
+        n = sum(1 for a, b in zip(sh, sa) if a is not None and b is not None and (a or b))
+        ville = str(r.get('tournoi') or '').split(',')[0].strip().lower()
+        for cote in ('home', 'away'):
+            k = cle((r.get(cote) or {}).get('nom'))
+            if k:
+                out.setdefault(k, []).append((float(r['debut']), ville, n))
+    for L in out.values():
+        L.sort()
+    return out
+
+
+def dernier_match_ici(k, tournoi, ts):
+    """Le match précédent du joueur s'il a eu lieu DANS CE tournoi (même ville) ces 10 derniers jours, sinon None."""
+    L = [x for x in (DERNIERS_MATCHS or {}).get(k) or () if x[0] < ts - 1800 and ts - x[0] <= 10 * 86400]
+    if not L or not L[-1][1] or L[-1][1] not in str(tournoi or '').lower():
+        return None
+    return L[-1]
+
+
+def signaux_outsiders(c, p_base, h, a, tournoi, debut):
+    """{signal: décalage logit vers home} des deux situations d'outsider en place (Challenger seulement)."""
+    if c != 'CH' or not OUTSIDERS_CH or p_base is None:
+        return {}
+    if 0.15 <= p_base <= 0.45:
+        o, f, s = h, a, 1.0
+    elif 0.55 <= p_base <= 0.85:
+        o, f, s = a, h, -1.0
+    else:
+        return {}
+    d = {}
+    ts = (debut.replace(tzinfo=dt.timezone.utc).timestamp() if debut.tzinfo is None else debut.timestamp()) \
+        if isinstance(debut, dt.datetime) else float(debut)
+    if 'favori_fatigue' in OUTSIDERS_CH and DERNIERS_MATCHS:
+        lf, lo = dernier_match_ici(f, tournoi, ts), dernier_match_ici(o, tournoi, ts)
+        if lf and lf[2] >= 3 and (lo is None or lo[2] < 3):
+            d['outsider_favori_fatigue'] = s * OUTSIDERS_CH['favori_fatigue']
+    if 'outsider_mieux_classe' in OUTSIDERS_CH:
+        r = rangs_actuels_du_match(h, a, debut)
+        if r and all(isinstance(v, int) and v > 0 for v in r):
+            ro, rf = (r[0], r[1]) if o == h else (r[1], r[0])
+            if ro < rf:
+                d['outsider_mieux_classe'] = s * OUTSIDERS_CH['outsider_mieux_classe']
+    return d
+
+
+def poids_de(c):
+    """Poids du mélange pour ce circuit : ceux du circuit s'ils sont en place, sinon les poids communs."""
+    if not COMBINAISON:
+        return COMBINAISON
+    return dict(COMBINAISON, **POIDS_CIRCUIT[c], source_circuit=c) if c in POIDS_CIRCUIT else COMBINAISON
+ACTIVITE = None       # 29/10/2026 : activité récente des joueurs (activite.py), chargée par construire()
+ECHANGES = None       # 30/10/2026 : longueur des échanges (Match Charting Project), affichage seul
+STYLES_MATCHS = {}    # 01/11/2026 : styles service–retour figés avant match (styles_descriptifs.json), fantôme seul
+ELO_SR = None         # 04/11/2026 : Elo au service et au retour (elo_service_retour.py), fantôme seul
+SIGNAUX_CIRCUIT = {}  # 04/11/2026 : {signal: [circuits]} adoptés par circuit (fantomes_circuits.py)
+QUALIFS_GC = {}       # 11/11/2026 (paquet 232) : {circuit: pente de l'Elo en qualifications de Grand Chelem} (simulateur/qualifs_grand_chelem.json)
+GRAND_CHELEM = {}     # 11/11/2026 (paquet 231) : {circuit: pente de l'Elo en Grand Chelem, tableau principal} (simulateur/grand_chelem.json)
+FORMAT_MATCH = {}     # 11/11/2026 (paquet 228) : {circuit: {sets gagnants: pente de l'Elo}} (simulateur/format_match.json)
+# 04/11/2026 — changement de surface (etude_changement_surface.py, archive 2016–2022 → jugé 2023 →, positif sur les
+# trois circuits) : β par circuit, z += β·(nouveau(home) − nouveau(away)) ; fantôme seul tant que non adopté.
+BETA_CHANGEMENT_SURFACE = {'ATP': -0.1724, 'WTA': -0.1142, 'CH': -0.1705}
+# 04/11/2026 — retour d'absence (etude_retour_absence.py, archive 2016–2022 → jugé 2023 →, positif sur les trois
+# circuits) : (β court 45–119 jours, β long 120 jours et plus) par circuit ; fantôme seul tant que non adopté.
+BETA_RETOUR_ABSENCE = {'ATP': (-0.5811, -0.8996), 'WTA': (-0.4034, -1.0571), 'CH': (-0.2545, -0.4953)}
+# 04/11/2026 — âge (etude_age.py, archive 2016–2022 → jugé 2023 →, positif sur les trois circuits : ATP +0,0027,
+# WTA +0,0017, Challenger +0,0025 de log loss sur tous les matchs) : (β par année au-delà de 30 ans, β par année sous
+# 23 ans) par circuit ; fantôme seul tant que non adopté.
+BETA_AGE = {'ATP': (-0.053, 0.0858), 'WTA': (-0.0442, 0.0435), 'CH': (-0.0602, 0.0675)}
+# 04/11/2026 — favori / outsider (etude_profils_contexte.py, archive 2016–2022 → jugé 2023 →, positif sur les trois
+# circuits : ATP +0,0032, WTA +0,0013, Challenger +0,0014) : résidu moyen rétréci de chaque joueur (résultat − Elo) dans
+# le rôle qu'il a dans ce match ; β par circuit ; fantôme seul tant que non adopté.
+BETA_ROLE = {'ATP': 2.2868, 'WTA': 1.9465, 'CH': 1.8818}
+RESIDUS_ROLE = None   # 04/11/2026 : {joueur: {'fav': résidu, 'out': résidu}} (etude_profils_contexte.residus_actuels)
+NAISSANCES = None     # 04/11/2026 : {joueur: date de naissance estimée} (etude_age.naissances)
+# 05/11/2026 — MATCHS PEU DOCUMENTÉS (etude_documentation.py) : sous 500 points de service cumulés pour le joueur le
+# moins vu, l'algo était trop prudent (Challenger : pente d'étalonnage 1,84 apprise août–sept, −0,030 de log loss en
+# oct–nov). p' = σ(a · logit p) sur les circuits adoptés (rapport_documentation.json).
+BALLES_CUMULEES = None   # {clé joueur: points de service cumulés jusqu'à aujourd'hui}
+PENTES_DOCUMENTATION = {}  # {circuit: a}
+DATES_MATCHS = None   # 04/11/2026 : {joueur: jours de ses matchs} (etude_retour_absence.dates_matchs)
+# 04/11/2026 — ADOPTION DIRECTE (décision de Lucas, etude_signaux_combines.py) : là où les quatre signaux appris
+# ENSEMBLE gagnent ≥ 0,001 sur 2023 → (ATP +0,0077, WTA +0,0043, Challenger +0,0039), ils sont appliqués avec les β
+# COMBINÉS (pas de double compte) ; ailleurs, les β séparés des fantômes. {circuit: {nom: β}} lu au démarrage.
+BETAS_COMBINES = {}
+
+
+def _beta(c, nom, separe):
+    """β du signal `nom` sur le circuit c : combiné si l'adoption directe vaut sur ce circuit, sinon séparé."""
+    b = (BETAS_COMBINES.get(c) or {}).get(nom)
+    return b if b is not None else separe
+
+
+def charger_betas_combines(racine):
+    try:
+        with open(os.path.join(racine, 'simulateur', 'rapport_signaux_combines.json'), encoding='utf-8') as f:
+            doc = json.load(f)
+    except (OSError, ValueError):
+        return {}
+    out = {c: dict(v['betas']) for c, v in (doc.get('circuits') or {}).items() if v.get('adopte') and v.get('betas')}
+    # 04/11/2026 — pistes ajoutées au combiné (etude_pistes_tournoi.py) : là où une piste est adoptée, les 7 β appris
+    # ENSEMBLE remplacent les 6 du combiné (ordre : NOMS du combiné, puis la piste)
+    try:
+        with open(os.path.join(racine, 'simulateur', 'rapport_pistes_tournoi.json'), encoding='utf-8') as f:
+            pistes = json.load(f)
+        import etude_signaux_combines as ESC_
+        for c, v in (pistes.get('circuits') or {}).items():
+            for nom in ('parcours_tournoi', 'montee_petits_tournois'):
+                x = v.get(nom) or {}
+                if x.get('adoptee') and c in out:
+                    b7 = x['ajoutee_au_combine']['betas_7']
+                    out[c] = dict(zip(ESC_.NOMS + (nom,), b7))
+    except (OSError, ValueError, KeyError, ImportError):
+        pass
+    # 12/11/2026 (paquet 233, etude_signaux_reappris.py) — là où la configuration réapprise sur l'Elo DE PRODUCTION est
+    # adoptée, ses β remplacent ceux appris contre l'Elo des études ; un signal écarté n'y a plus de β combiné (et
+    # fantomes_circuits.py ne l'applique plus).
+    try:
+        with open(os.path.join(racine, 'simulateur', 'rapport_signaux_reappris.json'), encoding='utf-8') as f:
+            for c, v in (json.load(f).get('circuits') or {}).items():
+                if v.get('adopte') and v.get('betas'):
+                    out[c] = {n: float(b) for n, b in v['betas'].items()}
+    except (OSError, ValueError, TypeError, AttributeError):
+        pass
+    return out
+
+
+PARCOURS = None   # 04/11/2026 : {joueur: [(début, tournoi_id, ville, gagné)]} des 20 derniers jours (feuilles)
+
+
+def charger_parcours(racine, aujourdhui=None, cle=None):
+    import feuilles as FE_
+    cle = cle or E.cle
+    debut = ((aujourdhui or dt.date.today()) - dt.timedelta(days=20)).isoformat()
+    out = {}
+    for r in FE_.lire(racine, depuis=debut):
+        if r.get('vainqueur') not in (1, 2) or not r.get('debut'):
+            continue
+        ville = str(r.get('tournoi') or '').split(',')[0].strip().lower()
+        for i, cote in ((1, 'home'), (2, 'away')):
+            k = cle((r.get(cote) or {}).get('nom'))
+            if k:
+                out.setdefault(k, []).append((float(r['debut']), r.get('tournoi_id'), ville, r['vainqueur'] == i))
+    for L in out.values():
+        L.sort()
+    return out
+
+
+def parcours_du_joueur(k, tournoi, debut_ts, plafond=6):
+    """Matchs déjà gagnés dans CE tournoi (qualifications comprises) : la série de victoires de son tournoi le plus
+    récent, si ce tournoi est celui du match (même ville) et si le joueur ne l'a pas perdu."""
+    L = [x for x in (PARCOURS or {}).get(k) or () if x[0] < debut_ts - 1800 and debut_ts - x[0] <= 16 * 86400]
+    if not L or not L[-1][3]:
+        return 0
+    tid, ville = L[-1][1], L[-1][2]
+    if not ville or ville not in str(tournoi or '').lower():
+        return 0
+    n = 0
+    for x in reversed(L):
+        if x[1] != tid or not x[3]:
+            break
+        n += 1
+    return min(n, plafond)
+
+
+def controle_parcours(p_home, c, h, a, tournoi, debut):
+    """04/11/2026 — « parcours dans le tournoi » (etude_pistes_tournoi.py) : celui qui a déjà gagné plus de matchs ici
+    (qualifications comprises) est sous-estimé par l'Elo. Seulement là où la piste est adoptée (β combinés)."""
+    b = (BETAS_COMBINES.get(c) or {}).get('parcours_tournoi')
+    if b is None or p_home is None or not PARCOURS:
+        return None
+    ts = (debut.replace(tzinfo=dt.timezone.utc).timestamp() if debut.tzinfo is None else debut.timestamp()) \
+        if isinstance(debut, dt.datetime) else float(debut)
+    x = parcours_du_joueur(h, tournoi, ts) - parcours_du_joueur(a, tournoi, ts)
+    if not x:
+        return None
+    lg = lambda q: math.log(min(max(q, 1e-6), 1 - 1e-6) / (1 - min(max(q, 1e-6), 1 - 1e-6)))
+    return {'p_home': round(sig(lg(p_home) + b * x), 4), 'x': x, 'decalage': round(b * x, 4)}
+
+
+BETA_ELO_SR = 0.284   # 04/11/2026 : poids de l'Elo service / retour (étude hors échantillon, dernière semaine apprise)
+FORME_SERVICE = None  # 29/10/2026 : service / retour du moment (forme_service.py), information + modèle fantôme
+PROGRAMME = {}        # 29/10/2026 : {(jour, clé, clé) triée: tour} — programme du jour relevé par feuilles_match.py
+
+
+def charger_programme(racine, jours=4):
+    """Programme des derniers jours (feuilles/programme/AAAA-MM-JJ.json) : le tour de chaque match à venir."""
+    import glob
+    out = {}
+    for p in sorted(glob.glob(os.path.join(racine, 'feuilles', 'programme', '20*.json')))[-jours:]:
+        try:
+            with open(p, encoding='utf-8') as f:
+                doc = json.load(f)
+        except (OSError, ValueError):
+            continue
+        for r in (doc.get('matchs') or {}).values():
+            if r.get('home') and r.get('away'):
+                out[(str(r.get('jour')), *sorted((E.cle(r['home']), E.cle(r['away']))))] = r     # 30/10 : la fiche entière
+    return out
+
+
+SALLES = {}           # 12/11/2026 (paquet 238) : {nom du tournoi (feuilles) : en salle ?} — feuilles/tournois.json
+
+
+def charger_salles(racine):
+    """{nom du tournoi sans « Qualifying » : True (en salle) / False (plein air)} d'après les feuilles déjà reçues de
+    ce tournoi (surface « Hardcourt indoor »). Un tournoi sans feuille encore : absent."""
+    import re
+    try:
+        with open(os.path.join(racine, 'feuilles', 'tournois.json'), encoding='utf-8') as f:
+            T = json.load(f)
+    except (OSError, ValueError):
+        return {}
+    sans = lambda nom: re.sub(r',\s*(Qualifying|Qualification|Qualifiers?)\s*$', '', str(nom or '').strip(), flags=re.I)
+    out = {}
+    for v in T.values():
+        if isinstance(v, dict) and v.get('nom') and 'interieur' in v:
+            out[sans(v['nom'])] = bool(out.get(sans(v['nom']))) or bool(v['interieur'])
+    return out
+
+
+def salle_du_match(h, a, debut):
+    """12/11/2026 (paquet 238) — True si le match se joue en salle, False en plein air, None si on ne le sait pas (match
+    absent du programme, ou tournoi dont aucune feuille n'est encore arrivée). Sert aux statistiques annoncées ; ne
+    change pas le % de victoire."""
+    import re
+    j = (debut.date() if isinstance(debut, dt.datetime) else debut).isoformat()
+    r = (PROGRAMME or {}).get((j, *sorted((h, a))))
+    if not isinstance(r, dict) or not r.get('tournoi'):
+        return None
+    return SALLES.get(re.sub(r',\s*(Qualifying|Qualification|Qualifiers?)\s*$', '', str(r['tournoi']).strip(), flags=re.I))
+
+
+def tour_du_match(h, a, debut):
+    """Nom du tour (« Round of 32 »…) d'un match à venir, ou None ; h, a : clés des joueurs."""
+    j = (debut.date() if isinstance(debut, dt.datetime) else debut).isoformat()
+    r = (PROGRAMME or {}).get((j, *sorted((h, a))))
+    return r.get('tour') if isinstance(r, dict) else r
+
+
+def entree_du_match(h, a, debut):
+    """30/10/2026 — [statut de h, statut de a] (« WC », « Q », « LL », numéro de tête de série…, ou None), lu dans le
+    programme (détail TennisApi) ; None si le match n'y est pas ou n'a pas encore été lu."""
+    j = (debut.date() if isinstance(debut, dt.datetime) else debut).isoformat()
+    r = (PROGRAMME or {}).get((j, *sorted((h, a))))
+    if not isinstance(r, dict) or not r.get('tetes'):
+        return None
+    t = r['tetes']
+    return t if E.cle(r['home']) == h else [t[1], t[0]]
+
+
+def rangs_actuels_du_match(h, a, debut):
+    """30/10/2026 — [rang actuel de h, de a] lus dans le détail TennisApi (programme), ou None."""
+    j = (debut.date() if isinstance(debut, dt.datetime) else debut).isoformat()
+    r = (PROGRAMME or {}).get((j, *sorted((h, a))))
+    if not isinstance(r, dict) or not r.get('rangs_actuels'):
+        return None
+    t = r['rangs_actuels']
+    return t if E.cle(r['home']) == h else [t[1], t[0]]
+
+
+# 30/10/2026 — FANTÔME « STATUT D'ENTRÉE ». Écarts mesurés à l'Elo, confirmés sur 2017–2022 (période non regardée) :
+# invité (WC) en Challenger −5,6 points (7 922 matchs, prévu 36,1 % → réel 30,5 %) ; qualifié en ATP +2,1 points
+# (2 780 matchs, 37,1 % → 39,2 %). Décalages FIGÉS en logit au point de mesure : WC Challenger ln(0,305/0,695) −
+# ln(0,361/0,639) ; Q ATP ln(0,392/0,608) − ln(0,371/0,629). Jamais affiché comme pronostic ; jugé après les matchs
+# (apres_match : fantome_entree) : rien avant 30 matchs concernés ; adopté seulement si −0,001 de log loss deux
+# semaines de suite sans circuit dégradé.
+DECALAGE_ENTREE = {('CH', 'WC'): math.log(0.305 / 0.695) - math.log(0.361 / 0.639),
+                   ('ATP', 'Q'): math.log(0.392 / 0.608) - math.log(0.371 / 0.629)}
+
+
+def controle_entree(p_home, c, statuts):
+    """{p_home, statuts, decalage} du fantôme, ou None si aucun des deux statuts ne compte sur ce circuit."""
+    if p_home is None or not statuts:
+        return None
+    norm_ = lambda s: str(s or '').strip().upper()
+    d = (DECALAGE_ENTREE.get((c, norm_(statuts[0])), 0.0) - DECALAGE_ENTREE.get((c, norm_(statuts[1])), 0.0))
+    if not d:
+        return None
+    q = min(max(float(p_home), 1e-6), 1 - 1e-6)
+    return {'p_home': round(sig(math.log(q / (1 - q)) + d), 4), 'statuts': [statuts[0], statuts[1]], 'decalage': round(d, 4)}
+CLASSEMENTS = None   # 23/10/2026 : classements (archive résumée + photos TennisApi), classements.py
+AJUSTEMENTS = {}      # 22/10/2026 : poids propres aux Challenger, correction des nouveaux venus (si adoptés)
+
+
+def charger_ajustements(racine):
+    """Décisions de l'entraînement semaine après semaine (facteurs.py → entrainement_progressif.py)."""
+    try:
+        with open(os.path.join(racine, 'simulateur', 'choix_simulation.json'), encoding='utf-8') as f:
+            choix = json.load(f)
+    except (OSError, ValueError):
+        return {}
+    out = {}
+    pc = choix.get('poids_challenger') or {}
+    if pc.get('adopte') and pc.get('poids'):
+        out['poids_CH'] = pc['poids']
+    for c_ in ('ATP', 'WTA'):                                  # 29/10/2026 : même règle que les Challenger
+        v = choix.get('poids_' + c_) or {}
+        if v.get('adopte') and v.get('poids'):
+            out['poids_' + c_] = v['poids']
+    # 04/11/2026 — chaque règle ne s'applique qu'aux circuits où elle est en place (circuits_regles.py)
+    import circuits_regles as CR
+    nv = choix.get('nouveaux_venus') or {}
+    if nv.get('adopte') and nv.get('delta') is not None:
+        out['delta_nouveaux'] = float(nv['delta'])
+        out['circuits_nouveaux'] = CR.circuits_de(nv)
+    ma = choix.get('modele_arbres') or {}                      # 23/10/2026 : arbres qui combinent tout (si adoptés)
+    if ma.get('adopte') and ma.get('modele') and ma.get('poids'):
+        out['arbres'] = {'modele': ma['modele'], 'poids': ma['poids'], 'circuits': CR.circuits_de(ma)}
+    # 29/10/2026 : candidats de la famille des arbres (activité récente, tour du tableau, points) ; 04/11/2026 : choisis
+    # CIRCUIT PAR CIRCUIT — sur chaque circuit, parmi ceux qui y sont en place, le meilleur gain sur ce circuit
+    par_c = {}
+    for cle_c in ('modele_arbres_activite', 'modele_arbres_tour', 'modele_arbres_points'):
+        v = choix.get(cle_c) or {}
+        if not (v.get('adopte') and v.get('modele') and v.get('poids')):
+            continue
+        for c_ in CR.circuits_de(v):
+            g_ = ((v.get('par_circuit') or {}).get(c_) or {}).get('gain')
+            g_ = g_ if g_ is not None else -((v.get('ll') or {}).get('avec') or 9.0)
+            if c_ not in par_c or g_ > par_c[c_][0]:
+                par_c[c_] = (g_, {'cle': cle_c, 'modele': v['modele'], 'poids': v['poids']})
+    if par_c:
+        out['arbres_candidats'] = {c_: x[1] for c_, x in par_c.items()}
+    dw = choix.get('desaccord_wta') or {}                      # 29/10/2026 : désaccords Elo / simulation en WTA
+    if dw.get('adopte') and dw.get('poids'):
+        out['poids_desaccord_wta'] = dw['poids']
+    for cle_s in ('qualifies', 'transition', 'classement', 'classement_relatif'):    # 22/10/2026 : même règle
+        v = choix.get(cle_s) or {}
+        if v.get('adopte') and v.get('delta') is not None:
+            out['delta_' + cle_s] = float(v['delta'])
+            out['circuits_' + cle_s] = CR.circuits_de(v)
+    return out
+
+
+def ajuster_combinaison(p_c, c, p_elo, p_sim, n_home, n_away, situations=None, surface=None, bo=3):
+    """Pronostic final ; 29/10/2026 : en WTA, si l'Elo et la simulation désignent deux vainqueurs différents et que
+    la règle desaccord_wta est adoptée, son mélange propre remplace le reste (entrainement_progressif.desaccord_wta)."""
+    pw = AJUSTEMENTS.get('poids_desaccord_wta')
+    if pw and c == 'WTA' and p_elo is not None and p_sim is not None and (p_elo >= .5) != (p_sim >= .5):
+        return MS.melange(pw, p_elo, p_sim)
+    return _ajuster_combinaison(p_c, c, p_elo, p_sim, n_home, n_away, situations, surface, bo)
+
+
+def _ajuster_combinaison(p_c, c, p_elo, p_sim, n_home, n_away, situations=None, surface=None, bo=3):
+    """Challenger : poids propres s'ils sont adoptés (remplacent le mélange commun) ; puis chaque situation
+    adoptée (règle de entrainement_progressif.correction_situation) : z += δ·(situation(home) − situation(away)).
+    Nouveaux venus : nouveau(n) = max(0, 1 − n/30) ; situations = {'qualifies': (h, a), 'transition': (h, a)}."""
+    ac_ = (AJUSTEMENTS.get('arbres_candidats') or {}).get(c) or AJUSTEMENTS.get('arbres_candidat')
+    if ac_:
+        # 29/10/2026 : arbres avec les variables d'un candidat adopté (activité récente ou tour du tableau) ; sans la
+        # donnée (tour inconnu…), sa valeur neutre, comme à l'apprentissage
+        import arbres as A
+        import entrainement_progressif as EP
+        sit = situations or {}
+        q, t = sit.get('qualifies') or (0.0, 0.0), sit.get('transition') or (0.0, 0.0)
+        sit_k = EP.CANDIDATS_ARBRES[ac_['cle']][0]
+        v = EP.variables_candidat(ac_['cle'], p_elo, p_sim, n_home or 0, n_away or 0, (q[0], t[0]), (q[1], t[1]), c, surface, bo,
+                                  sit.get('rangs'), sit.get(sit_k))
+        pm = MS.melange(ac_['poids'], p_elo, p_sim)
+        return A.predire_symetrique(ac_['modele'], v, math.log(pm / (1 - pm)), EP.ecarts_candidat(ac_['cle']))
+    if AJUSTEMENTS.get('arbres') and c in (AJUSTEMENTS['arbres'].get('circuits') or ('ATP', 'WTA', 'CH')):
+        # les arbres partent de LEUR mélange et contiennent déjà nouveaux venus, qualifiés, surface, circuit…
+        import arbres as A
+        import entrainement_progressif as EP
+        sit = situations or {}
+        q, t = sit.get('qualifies') or (0.0, 0.0), sit.get('transition') or (0.0, 0.0)
+        v = EP.variables_match(p_elo, p_sim, n_home or 0, n_away or 0, (q[0], t[0]), (q[1], t[1]), c, surface, bo,
+                               sit.get('rangs'))
+        o = math.log(MS.melange(AJUSTEMENTS['arbres']['poids'], p_elo, p_sim) / (1 - MS.melange(AJUSTEMENTS['arbres']['poids'], p_elo, p_sim)))
+        return A.predire_symetrique(AJUSTEMENTS['arbres']['modele'], v, o, EP.ECARTS)
+    if c in ('CH', 'ATP', 'WTA') and AJUSTEMENTS.get('poids_' + c):    # 29/10/2026 : ATP et WTA aussi
+        p_c = MS.melange(AJUSTEMENTS['poids_' + c], p_elo, p_sim)
+    ecarts = []
+    dans = lambda k: c in (AJUSTEMENTS.get('circuits_' + k) or ('ATP', 'WTA', 'CH'))   # 04/11/2026 : par circuit
+    if AJUSTEMENTS.get('delta_nouveaux') and n_home is not None and n_away is not None and dans('nouveaux'):
+        ecarts.append((AJUSTEMENTS['delta_nouveaux'], max(0.0, 1 - n_home / 30) - max(0.0, 1 - n_away / 30)))
+    for cle_s, (vh, va) in ((k, v) for k, v in (situations or {}).items() if k not in ('activite', 'rangs', 'tour', 'points')):
+        if AJUSTEMENTS.get('delta_' + cle_s) and dans(cle_s):
+            ecarts.append((AJUSTEMENTS['delta_' + cle_s], vh - va))
+    dz = sum(d * f for d, f in ecarts)
+    if dz:
+        q = min(max(p_c, 1e-6), 1 - 1e-6)
+        p_c = sig(max(min(math.log(q / (1 - q)) + dz, 30), -30))
+    return p_c
+
+
+def situations_du_match(h, a, tournoi, debut, surface):
+    """(qualifié, changement de surface) de chaque joueur, depuis le contexte des facteurs ; {} sans contexte."""
+    if CONTEXTE is None or not hasattr(CONTEXTE, 'qualifie'):
+        return {}
+    ts = (debut.replace(tzinfo=dt.timezone.utc).timestamp() if debut.tzinfo is None else debut.timestamp()) \
+        if isinstance(debut, dt.datetime) else float(debut)
+    return {'qualifies': (CONTEXTE.qualifie(h, tournoi, ts), CONTEXTE.qualifie(a, tournoi, ts)),
+            'transition': (CONTEXTE.transition(h, surface, ts), CONTEXTE.transition(a, surface, ts))}
+
+
+def charger_facteurs(racine):
+    """Facteurs du match ADOPTÉS par l'étude (facteurs.py, règle fixée d'avance) et contexte du jour
+    (forme, fatigue, vitesse des tournois, gaucher/taille, points importants). (None, None) sinon."""
+    try:
+        with open(os.path.join(racine, 'simulateur', 'facteurs.json'), encoding='utf-8') as f:
+            doc = json.load(f)
+        par_c = any((b or {}).get('adoptes') for b in (doc.get('par_circuit') or {}).values())
+        if (not doc.get('adoptes') or not doc.get('coefs')) and not par_c:
+            return None, None
+        import facteurs as FA
+        with open(os.path.join(racine, 'simulateur', 'facteurs_contexte.json'), encoding='utf-8') as f:
+            return doc, FA.Contexte(json.load(f))
+    except (OSError, ValueError, ImportError):
+        return None, None
+
+
+FACTEURS, CONTEXTE = None, None
+FORME_SCORES = None             # 28/10/2026 : (coefs, profils, repères par circuit) si la forme des scores est adoptée
+SIGMA_CIRCUIT = None            # 28/10/2026 : {circuit: σ} de la forme du jour si sigma_circuit.py l'a ADOPTÉ
+
+
+def controle_fantome(elo, elo_ref, ref_etat, etat, h, a, c, s, elo_fem=None, fem_etat=None):
+    """{p_elo, p_elo_reference, reference} : la probabilité Elo en place et celle du modèle fantôme (Elo d'avant les
+    changements), jamais affichée comme pronostic ; comparées après le match (apres_match.py).
+    29/10/2026 : + p_elo_sans_itf_femmes (matchs WTA) : l'Elo sans les seuls résultats ITF femmes."""
+    out = {}
+    for e_, et_, cle in ((elo_ref, ref_etat, 'p_elo_reference'), (elo_fem if c == 'WTA' else None, fem_etat, 'p_elo_sans_itf_femmes')):
+        if e_ is None:
+            continue
+        if (et_ or {}).get('depart_bas') and c in ('CH', 'ITF'):
+            e_.presenter(h, et_['depart_bas'])
+            e_.presenter(a, et_['depart_bas'])
+        out[cle] = round(e_.proba(h, a, s), 4)
+    if not out:
+        return None
+    out.update({'p_elo': round(elo.proba(h, a, s), 4), 'en_place': (etat or {}).get('variante')})
+    if 'p_elo_reference' in out:
+        out['reference'] = ref_etat.get('variante')
+    return out
+
+
+def _avec_forme(ct, forme):
+    if not forme:
+        return ct
+    return dict(ct or {}, forme=forme)
+
+
+def _echanges(h, a, debut):
+    """30/10/2026 : [profil home, profil away] de la longueur des échanges, ou None si aucun des deux n'est charté."""
+    if ECHANGES is None:
+        return None
+    try:
+        e = [ECHANGES.profil(k, debut) for k in (h, a)]
+    except Exception:  # noqa: BLE001 — affichage seul
+        return None
+    return e if any(e) else None
+
+
+# 01/11/2026 — FANTÔME « SERVEUSES WTA » (etude_duels_styles.py, archive 2018 → juin 2026, Elo d'avant-match retiré) :
+# en WTA, profil serveur (grand serveur, serveur attaquant) contre profil non serveur (retourneur pressant, contreur,
+# équilibré) : +2,2 points sur 2018–2022 (4 344 matchs, z 3,2) et +2,9 sur 2023–2026 (3 619 matchs, z 3,9) au-dessus
+# de l'Elo. ATP (+0,3 / −0,8) et Challenger (−0,3 / +0,1) : rien. Repéré APRÈS avoir regardé les circuits : seul le
+# fantôme tranche. Décalage FIGÉ : ln(0,5255/0,4745) en logit vers la serveuse (+2,55 points à 50 %).
+# RÈGLE FIXÉE AVANT RÉSULTAT : jugé sur les matchs WTA concernés pronostiqués à partir du 02/11/2026 ; rien avant
+# 30 matchs ; adopté seulement si la log loss baisse d'au moins 0,001 deux semaines de suite.
+STYLES_SERVEURS = ('grand_serveur', 'serveur_attaquant')
+STYLES_NON_SERVEURS = ('retourneur_pressant', 'contreur', 'equilibre')
+DECALAGE_SERVEUSES_WTA = math.log(0.5255 / 0.4745)
+# 12/11/2026 (paquet 248) — DÉCISION DE LUCAS : en place en WTA sans attendre le fantôme (simulateur/serveuses_wta.json).
+# Décalage ramené à l'écart mesuré avec l'Elo DU SITE (etude_anciennes_etudes.py, paquet 247) : +2,24 points à 50 %,
+# moyenne pondérée de 2018–2022 (+2,05) et 2023 → juin 2026 (+2,47). Retrait : règle cumulée (fantomes_circuits.py).
+
+
+def _decalage_serveuses(racine=None):
+    try:
+        with open(os.path.join(racine or os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'), 'simulateur',
+                               'serveuses_wta.json'), encoding='utf-8') as f:
+            pts = float(json.load(f)['points_a_50_pct'])
+        q = 0.5 + pts / 100.0
+        return math.log(q / (1 - q))
+    except (OSError, ValueError, KeyError, TypeError):
+        return math.log(0.5255 / 0.4745)
+
+
+DECALAGE_SERVEUSES_WTA = _decalage_serveuses()
+
+
+def charger_styles_matchs(racine):
+    """{uid: [style home, style away]} depuis simulateur/styles_descriptifs.json (régénéré juste avant)."""
+    try:
+        with open(os.path.join(racine, 'simulateur', 'styles_descriptifs.json'), encoding='utf-8') as f:
+            doc = json.load(f)
+    except (OSError, ValueError):
+        return {}
+    out = {}
+    for uid, b in (doc.get('matchs') or {}).items():
+        j = (b or {}).get('joueurs') or []
+        if len(j) == 2:
+            out[uid] = [j[0].get('style'), j[1].get('style')]
+    return out
+
+
+def controle_serveuses(p_home, c, styles):
+    """{p_home, styles, decalage} du fantôme « serveuses WTA », ou None si le match n'est pas concerné."""
+    if p_home is None or c != 'WTA' or not styles or len(styles) != 2:
+        return None
+    sh, sa = styles
+    if sh in STYLES_SERVEURS and sa in STYLES_NON_SERVEURS:
+        d = DECALAGE_SERVEUSES_WTA
+    elif sa in STYLES_SERVEURS and sh in STYLES_NON_SERVEURS:
+        d = -DECALAGE_SERVEUSES_WTA
+    else:
+        return None
+    q = min(max(float(p_home), 1e-6), 1 - 1e-6)
+    return {'p_home': round(sig(math.log(q / (1 - q)) + d), 4), 'styles': [sh, sa], 'decalage': round(d, 4)}
+
+
+def _avec_serveuses(ct, srv):
+    """01/11/2026 : le fantôme « serveuses WTA » dans le bloc de contrôle."""
+    return dict(ct or {}, serveuses_wta=srv) if srv else ct
+
+
+# 04/11/2026 — FANTÔME « FORME DU MATCH » (etude_forme_match.py, banc d'essai) : en ATP, le joueur qui mène d'un set
+# relâche un peu au service (δ = −0,05 en logit) ; jugé sur 2023–2026 : +0,0033 de log-vraisemblance de la forme
+# (vainqueur, nombre de sets, tie-break, jeux), rien en WTA ni en Challenger. Vainqueur inchangé (ré-ancré). Suivi sur les
+# nouveaux matchs ATP (cases vainqueur × sets × tie-break) ; adopté dans le calcul des scores après deux semaines gagnantes.
+DELTA_SET_ATP = -0.05
+
+
+def controle_forme_set(c, pa, pb, sg, sigma):
+    """{'base': {case: p}, 'variante': {case: p}} ; case « G|S|T » (home gagne, nombre de sets, tie-break) ; ATP, 3 sets."""
+    if c != 'ATP' or sg != 2 or pa is None or pb is None:
+        return None
+    import etude_forme_match as FM
+    base = FM.avec_forme(pa, pb, sigma, 0.0, 0.0)
+    var = FM.ancree(pa, pb, FM.victoire(base), sigma, 0.0, DELTA_SET_ATP)
+    cases = lambda d: {k: round(v, 5) for k, v in _cases_forme(d).items()}
+    return {'base': cases(base), 'variante': cases(var), 'delta_set': DELTA_SET_ATP}
+
+
+def _cases_forme(dist):
+    out = {}
+    for (g, n, t, _), v in dist.items():
+        k = f"{int(g)}|{n}|{int(t)}"
+        out[k] = out.get(k, 0.0) + v
+    return out
+
+
+def controle_elo_sr(p_home, h, a, c, s, sg):
+    """04/11/2026 — fantôme « Elo service / retour » : z = logit p + β·(logit p_sr − logit p), si les deux joueurs ont
+    au moins 5 matchs dans l'Elo service / retour ; sinon None."""
+    if ELO_SR is None or p_home is None or ELO_SR.connu(h) < 5 or ELO_SR.connu(a) < 5:
+        return None
+    psr = ELO_SR.proba(h, a, c, s, sg)
+    lg = lambda q: math.log(min(max(q, 1e-6), 1 - 1e-6) / (1 - min(max(q, 1e-6), 1 - 1e-6)))
+    d = BETA_ELO_SR * (lg(psr) - lg(p_home))
+    return {'p_home': round(sig(lg(p_home) + d), 4), 'p_sr': round(psr, 4), 'decalage': round(d, 4)}
+
+
+def controle_changement_surface(p_home, c, h, a, surface, debut):
+    """04/11/2026 — fantôme « changement de surface » : celui qui joue son 1er ou 2e match sur la surface depuis qu'il en
+    a changé (match précédent à 45 jours au plus) est moins fort que son Elo. None si personne n'est concerné."""
+    b = BETA_CHANGEMENT_SURFACE.get(c)
+    b = _beta(c, 'changement_surface', b) if b is not None else None
+    if b is None or p_home is None or CONTEXTE is None or not hasattr(CONTEXTE, 'nouveau_surface'):
+        return None
+    ts = (debut.replace(tzinfo=dt.timezone.utc).timestamp() if debut.tzinfo is None else debut.timestamp()) \
+        if isinstance(debut, dt.datetime) else float(debut)
+    x = CONTEXTE.nouveau_surface(h, surface, ts) - CONTEXTE.nouveau_surface(a, surface, ts)
+    if not x:
+        return None
+    lg = lambda q: math.log(min(max(q, 1e-6), 1 - 1e-6) / (1 - min(max(q, 1e-6), 1 - 1e-6)))
+    return {'p_home': round(sig(lg(p_home) + b * x), 4), 'x': x, 'decalage': round(b * x, 4)}
+
+
+def controle_retour_absence(p_home, c, h, a, debut):
+    """04/11/2026 — fantôme « retour d'absence » : celui qui revient après 45 jours ou plus sans match (poids 1, 1/2,
+    1/4 sur ses trois premiers matchs) est moins fort que son Elo. None si personne n'est concerné."""
+    b = BETA_RETOUR_ABSENCE.get(c)
+    b = (_beta(c, 'retour_absence_court', b[0]), _beta(c, 'retour_absence_long', b[1])) if b else None
+    if b is None or p_home is None or not DATES_MATCHS:
+        return None
+    import etude_retour_absence as ERA
+    jour = debut.date() if isinstance(debut, dt.datetime) else debut
+    x = ERA.variables(ERA.etat_au(DATES_MATCHS.get(h), jour), ERA.etat_au(DATES_MATCHS.get(a), jour))
+    if not (x[0] or x[1]):
+        return None
+    d = b[0] * x[0] + b[1] * x[1]
+    lg = lambda q: math.log(min(max(q, 1e-6), 1 - 1e-6) / (1 - min(max(q, 1e-6), 1 - 1e-6)))
+    return {'p_home': round(sig(lg(p_home) + d), 4), 'x': [x[0], x[1]], 'decalage': round(d, 4)}
+
+
+def controle_age(p_home, c, h, a, debut):
+    """04/11/2026 — fantôme « âge » : l'Elo retarde sur le déclin après 30 ans et sur la progression avant 23 ans.
+    None si un âge manque ou si la correction est nulle."""
+    b = BETA_AGE.get(c)
+    b = (_beta(c, 'age_vieux', b[0]), _beta(c, 'age_jeune', b[1])) if b else None
+    if b is None or p_home is None or not NAISSANCES:
+        return None
+    import etude_age as EA
+    jour = debut.date() if isinstance(debut, dt.datetime) else debut
+    x = EA.variables(EA.age_au(NAISSANCES, h, jour), EA.age_au(NAISSANCES, a, jour))
+    if x is None or not (x[0] or x[1]):
+        return None
+    d = b[0] * x[0] + b[1] * x[1]
+    lg = lambda q: math.log(min(max(q, 1e-6), 1 - 1e-6) / (1 - min(max(q, 1e-6), 1 - 1e-6)))
+    return {'p_home': round(sig(lg(p_home) + d), 4), 'x': [round(x[0], 2), round(x[1], 2)], 'decalage': round(d, 4)}
+
+
+def controle_role(p_home, p_elo, c, h, a):
+    """04/11/2026 — fantôme « favori / outsider » : certains joueurs font mieux (ou moins bien) que leur Elo quand ils
+    sont favoris, d'autres quand ils sont outsiders. None si la correction est nulle."""
+    b = BETA_ROLE.get(c)
+    b = _beta(c, 'favori_outsider', b) if b is not None else None
+    if b is None or p_home is None or p_elo is None or not RESIDUS_ROLE:
+        return None
+    import etude_profils_contexte as EPC
+    x = EPC.variable_role(RESIDUS_ROLE, h, a, p_elo)
+    if abs(x) < 1e-6:
+        return None
+    d = b * x
+    lg = lambda q: math.log(min(max(q, 1e-6), 1 - 1e-6) / (1 - min(max(q, 1e-6), 1 - 1e-6)))
+    return {'p_home': round(sig(lg(p_home) + d), 4), 'x': round(x, 4), 'decalage': round(d, 4)}
+
+
+# 05/11/2026 — FANTÔME « FAVORI SOUS-ESTIMÉ » (etude_meilleurs_matchs.py, 5 571 pronostics rejoués, vrai sur août–sept ET
+# oct–nov) : (1) Elo et simulation d'accord (même favori, < 10 points d'écart), favori affiché entre 70 et 80 % : il
+# gagne 77,7 % pour 74,7 % annoncés → +0,1656 en logit vers lui ; (2) même favori mais écart ≥ 10 points, favori
+# affiché entre 50 et 60 % : il gagne 63,9 % pour 57,1 % → +0,2851. Décalages FIGÉS (repérés sur ces matchs-là :
+# seuls les NOUVEAUX matchs jugent, fantomes_circuits.py, circuit par circuit, deux semaines gagnantes).
+DECALAGE_FAVORI_ACCORD_70, DECALAGE_FAVORI_ECART_50 = 0.1656, 0.2851
+
+
+def controle_favori_sous_estime(p_home, p_elo, p_sim):
+    if p_home is None or p_elo is None or p_sim is None or (p_elo >= .5) != (p_sim >= .5):
+        return None
+    pf, ecart = max(p_home, 1 - p_home), abs(p_elo - p_sim)
+    if ecart < .10 and .70 <= pf < .80:
+        d, cas = DECALAGE_FAVORI_ACCORD_70, 'accord_70_80'
+    elif ecart >= .10 and .50 <= pf < .60:
+        d, cas = DECALAGE_FAVORI_ECART_50, 'ecart_50_60'
+    else:
+        return None
+    d = d if p_home >= .5 else -d                          # vers le favori affiché
+    lg = lambda q: math.log(min(max(q, 1e-6), 1 - 1e-6) / (1 - min(max(q, 1e-6), 1 - 1e-6)))
+    return {'p_home': round(sig(lg(p_home) + d), 4), 'cas': cas, 'decalage': round(d, 4)}
+
+
+def _role_sur(p_home, p_elo, c, h, a):
+    try:
+        return controle_role(p_home, p_elo, c, h, a)
+    except Exception as e_:  # noqa: BLE001 — un fantôme ne bloque jamais un pronostic
+        print(f"::warning::fantôme favori / outsider non calculé : {type(e_).__name__}: {e_}")
+        return None
+
+
+def _age_sur(p_home, c, h, a, debut):
+    try:
+        return controle_age(p_home, c, h, a, debut)
+    except Exception as e_:  # noqa: BLE001 — un fantôme ne bloque jamais un pronostic
+        print(f"::warning::fantôme âge non calculé : {type(e_).__name__}: {e_}")
+        return None
+
+
+def _retour_absence_sur(p_home, c, h, a, debut):
+    try:
+        return controle_retour_absence(p_home, c, h, a, debut)
+    except Exception as e_:  # noqa: BLE001 — un fantôme ne bloque jamais un pronostic
+        print(f"::warning::fantôme retour d'absence non calculé : {type(e_).__name__}: {e_}")
+        return None
+
+
+def _changement_surface_sur(p_home, c, h, a, surface, debut):
+    try:
+        return controle_changement_surface(p_home, c, h, a, surface, debut)
+    except Exception as e_:  # noqa: BLE001 — un fantôme ne bloque jamais un pronostic
+        print(f"::warning::fantôme changement de surface non calculé : {type(e_).__name__}: {e_}")
+        return None
+
+
+def charger_format_match(racine):
+    """11/11/2026 (paquet 228) — {circuit: {sets gagnants (int): pente}} en production, {} si le fichier manque."""
+    try:
+        with open(os.path.join(racine, 'simulateur', 'format_match.json'), encoding='utf-8') as f:
+            doc = json.load(f)
+        return {c: {int(k): float(v) for k, v in (d or {}).items()} for c, d in (doc.get('pentes') or {}).items()}
+    except (OSError, ValueError, TypeError):
+        return {}
+
+
+def controle_format(p_home, p_elo, c, sg):
+    """11/11/2026 (paquet 228, etude_format_match.py) — l'Elo donne le même % quel que soit le format. En ATP, en 2 sets
+    gagnants, il est trop sûr de lui : favori 65,0 % réels pour 67,3 % annoncés sur 7 490 matchs du circuit jugés
+    (2023 → juin 2026, Coupe Davis exclue), pente 0,826 apprise sur 2018–2022. Seule la PART DE L'ELO du % bouge : décalage (logit) =
+    poids de l'Elo dans le mélange × (pente − 1) × logit(p Elo). None si rien n'est prévu pour ce circuit et ce format."""
+    k = (FORMAT_MATCH.get(c) or {}).get(int(sg)) if sg else None
+    if not k or p_home is None or p_elo is None:
+        return None
+    lg = lambda q: math.log(min(max(q, 1e-6), 1 - 1e-6) / (1 - min(max(q, 1e-6), 1 - 1e-6)))
+    w = float((poids_de(c) or {}).get('elo', 1.0))
+    d = w * (k - 1.0) * lg(p_elo)
+    if abs(d) < 1e-4:
+        return None
+    return {'p_home': round(sig(lg(p_home) + d), 4), 'decalage': round(d, 4), 'pente': k, 'sets_gagnants': int(sg)}
+
+
+def charger_grand_chelem(racine):
+    """11/11/2026 (paquet 231) — {circuit: pente} en production, {} si le fichier manque."""
+    try:
+        with open(os.path.join(racine, 'simulateur', 'grand_chelem.json'), encoding='utf-8') as f:
+            doc = json.load(f)
+        return {c: float(v) for c, v in (doc.get('pentes') or {}).items() if v}
+    except (OSError, ValueError, TypeError):
+        return {}
+
+
+def controle_grand_chelem(p_home, p_elo, c, tournoi, tour):
+    """11/11/2026 (paquet 231, etude_grand_chelem.py) — DÉCISION DE LUCAS. En Grand Chelem le favori gagne plus souvent
+    que l'Elo ne l'annonce, en ATP comme en WTA (72,0 % réels pour 70,0 % annoncés sur 3 442 matchs de 2023 à juin 2026) :
+    pente commune 1,235 apprise sur 2018–2022. Seule la PART DE L'ELO du % bouge : décalage (logit) = poids de l'Elo dans
+    le mélange × (pente − 1) × logit(p Elo). TABLEAU PRINCIPAL seulement : le tour doit être connu (programme du jour)
+    et ne pas être un tour de qualifications — sinon None (les qualifications n'ont pas été étudiées)."""
+    k = GRAND_CHELEM.get(c)
+    if not k or p_home is None or p_elo is None or not NR.grand_chelem(tournoi):
+        return None
+    if not tour or 'qualif' in str(tour).lower():
+        return None
+    lg = lambda q: math.log(min(max(q, 1e-6), 1 - 1e-6) / (1 - min(max(q, 1e-6), 1 - 1e-6)))
+    w = float((poids_de(c) or {}).get('elo', 1.0))
+    d = w * (k - 1.0) * lg(p_elo)
+    if abs(d) < 1e-4:
+        return None
+    return {'p_home': round(sig(lg(p_home) + d), 4), 'decalage': round(d, 4), 'pente': k, 'tour': str(tour)}
+
+
+def qualification_gc(tournoi, tour):
+    """11/11/2026 (paquet 232) — vrai si ce match est un match de QUALIFICATIONS de Grand Chelem. Dans nos données, les
+    qualifications portent le même nom de tournoi que le tableau principal : seul le tour (programme du jour) les
+    distingue. Tour inconnu : faux (le match est traité comme avant, en tableau principal)."""
+    return bool(NR.grand_chelem(tournoi) and 'qualif' in str(tour or '').lower())
+
+
+def sets_gagnants(tournoi, tour):
+    """11/11/2026 (paquet 232) — 3 sets gagnants dans le tableau principal d'un Grand Chelem masculin, 2 partout
+    ailleurs. CORRECTION : les qualifications d'un Grand Chelem masculin se jouent en 2 sets gagnants (toutes, depuis
+    2022) ; elles étaient simulées en 3."""
+    return 3 if NR.cinq_sets(tournoi) and not qualification_gc(tournoi, tour) else 2
+
+
+def charger_qualifs_gc(racine):
+    """11/11/2026 (paquet 232) — {circuit: pente} en production, {} si le fichier manque."""
+    try:
+        with open(os.path.join(racine, 'simulateur', 'qualifs_grand_chelem.json'), encoding='utf-8') as f:
+            doc = json.load(f)
+        return {c: float(v) for c, v in (doc.get('pentes') or {}).items() if v}
+    except (OSError, ValueError, TypeError):
+        return {}
+
+
+def controle_qualifs_gc(p_home, p_elo, c, tournoi, tour):
+    """11/11/2026 (paquet 232, etude_qualifs_grand_chelem.py) — en qualifications de Grand Chelem chez les femmes, le
+    favori gagne plus souvent que l'Elo ne l'annonce : 67,9 % réels pour 63,2 % annoncés sur 1 435 matchs jugés (2023 →
+    juin 2026), pente 1,247 apprise sur 2018–2022, gain 0,0047 ± 0,0017. Rien chez les hommes (étude rejetée). Seule la
+    PART DE L'ELO du % bouge, comme pour le format et le Grand Chelem. None hors qualifications de Grand Chelem."""
+    k = QUALIFS_GC.get(c)
+    if not k or p_home is None or p_elo is None or not qualification_gc(tournoi, tour):
+        return None
+    lg = lambda q: math.log(min(max(q, 1e-6), 1 - 1e-6) / (1 - min(max(q, 1e-6), 1 - 1e-6)))
+    w = float((poids_de(c) or {}).get('elo', 1.0))
+    d = w * (k - 1.0) * lg(p_elo)
+    if abs(d) < 1e-4:
+        return None
+    return {'p_home': round(sig(lg(p_home) + d), 4), 'decalage': round(d, 4), 'pente': k, 'tour': str(tour)}
+
+
+def signaux_du_match(c, p_base, fsv_ctl, ent_ctl, srv_ctl, sr_ctl, cs_ctl=None, ra_ctl=None, age_ctl=None, role_ctl=None,
+                     pt_ctl=None, fse_ctl=None, doc_ctl=None, fmt_ctl=None, gc_ctl=None, qgc_ctl=None):
+    """04/11/2026 — décalages (logit) des signaux ADOPTÉS SUR CE CIRCUIT (fantomes_circuits.py) ; {signal: décalage}."""
+    if not SIGNAUX_CIRCUIT or p_base is None:
+        return {}
+    lg = lambda q: math.log(min(max(q, 1e-6), 1 - 1e-6) / (1 - min(max(q, 1e-6), 1 - 1e-6)))
+    cand = {'forme_service': (lg(fsv_ctl['p_home']) - lg(p_base)) if (fsv_ctl or {}).get('p_home') is not None else None,
+            'entree': (ent_ctl or {}).get('decalage'), 'serveuses_wta': (srv_ctl or {}).get('decalage'),
+            'elo_service_retour': (sr_ctl or {}).get('decalage'), 'changement_surface': (cs_ctl or {}).get('decalage'),
+            'retour_absence': (ra_ctl or {}).get('decalage'), 'age': (age_ctl or {}).get('decalage'),
+            'favori_outsider': (role_ctl or {}).get('decalage'), 'parcours_tournoi': (pt_ctl or {}).get('decalage'),
+            'favori_sous_estime': (fse_ctl or {}).get('decalage'),
+            'documentation_faible': (doc_ctl or {}).get('decalage'),
+            'format_match': (fmt_ctl or {}).get('decalage'),
+            'grand_chelem': (gc_ctl or {}).get('decalage'),
+            'qualifs_grand_chelem': (qgc_ctl or {}).get('decalage')}
+    return {k: v for k, v in cand.items() if v and c in (SIGNAUX_CIRCUIT.get(k) or [])}
+
+
+def _forme_set_sur(c, direct, sg):
+    try:
+        return controle_forme_set(c, (direct or {}).get('a'), (direct or {}).get('b'), sg, (direct or {}).get('sigma') or 0.15)
+    except Exception as e_:  # noqa: BLE001 — un fantôme ne bloque jamais un pronostic
+        print(f"::warning::fantôme forme du match non calculé : {type(e_).__name__}: {e_}")
+        return None
+
+
+def controle_documentation(p_home, c, h, a):
+    """05/11/2026 — p étirée sur un match peu documenté (joueur le moins vu sous 500 points de service), ou None."""
+    k = PENTES_DOCUMENTATION.get(c)
+    if p_home is None or not k or BALLES_CUMULEES is None:
+        return None
+    import elo as E_
+    n = min(BALLES_CUMULEES.get(E_.cle(h), 0), BALLES_CUMULEES.get(E_.cle(a), 0))
+    import etude_documentation as EDO
+    if n >= EDO.SEUIL_BALLES:
+        return None
+    lg = lambda q: math.log(min(max(q, 1e-6), 1 - 1e-6) / (1 - min(max(q, 1e-6), 1 - 1e-6)))
+    z = lg(p_home)
+    return {'p_home': round(sig(k * z), 4), 'decalage': round((k - 1) * z, 4), 'balles': int(n), 'pente': k}
+
+
+def _avec_cle(ct, cle, val):
+    return dict(ct or {}, **{cle: val}) if val else ct
+
+
+def _avec_entree(ct, ent):
+    """30/10/2026 : le fantôme « statut d'entrée » dans le bloc de contrôle."""
+    return dict(ct or {}, entree=ent) if ent else ct
+
+
+def _avec_service(ct, fsv_ctl):
+    """29/10/2026 : le fantôme « forme du service » dans le bloc de contrôle (créé s'il n'existe pas)."""
+    if not fsv_ctl:
+        return ct
+    return dict(ct or {}, forme_service=fsv_ctl)
+
+
+def controle_forme(PR, h, a, c, s, sg, p_home, fct):
+    """29/10/2026 — FANTÔME DE LA FORME DU JOUR : pour un circuit dont le σ a changé (Challenger 0,22), la forme du
+    match (camp × tie-break × 3 sets × jeux) avec le σ en place et avec l'ancien (0,15), même vainqueur (ancrage).
+    Jamais affichée ; la forme réelle les départage après le match. None si σ inchangé ou match en 5 sets."""
+    import sigma_circuit as SGC
+    import forme_scores as FS
+    sig = sigma_de(c)
+    if sg != 2 or sig == SGC.BASE or p_home is None:
+        return None
+    m1 = FS.masses(distribution_exacte_du_match(PR, h, a, c, s, sg, p_home, fct, sigma=sig, brut=True))
+    m0 = FS.masses(distribution_exacte_du_match(PR, h, a, c, s, sg, p_home, fct, sigma=SGC.BASE, brut=True))
+    cles = sorted(set(m1) | set(m0))
+    return {'sigma': sig, 'sigma_reference': SGC.BASE,
+            'masses': [[int(k[0]), bool(k[1]), bool(k[2]), int(k[3]), round(m1.get(k, 0.0), 4), round(m0.get(k, 0.0), 4)]
+                       for k in cles if max(m1.get(k, 0.0), m0.get(k, 0.0)) >= 5e-4]}
+
+
+def controle_forme_service(cH, cA, vh, va, c, s, sg, p_elo, p_sim, n_h, n_a, sit):
+    """29/10/2026 — FANTÔME « FORME DU SERVICE » : la simulation rejouée avec le service et le retour du moment
+    (forme_service.decalages), puis le même mélange avec l'Elo et les mêmes ajustements que le pronostic affiché.
+    Jamais affiché comme pronostic ; jugé après les matchs (apres_match : fantome_forme_service). None sans écart."""
+    import forme_service as FSV
+    dh, da = FSV.decalages(vh, va)
+    if not (dh or da) or not COMBINAISON:
+        return None
+    cH2, cA2 = MS.appliquer_facteurs(cH, dh), MS.appliquer_facteurs(cA, da)
+    p_sim2 = MS.victoire_pure(cH2, cA2, sg, sigma_sim())
+    p2 = MS.melange_contexte(poids_de(c), MS.contexte_match(s, c, 2 * sg - 1), p_elo, p_sim2)
+    p2 = MS.calibrer(p2, COMBINAISON.get('calibration'))
+    p2 = ajuster_combinaison(p2, c, p_elo, p_sim2, n_h, n_a, sit, s, 2 * sg - 1)
+    return {'p_home': round(p2, 4), 'p_simulation': round(p_sim2, 4), 'p_simulation_sans': round(p_sim, 4),
+            'decalages': [round(dh, 4), round(da, 4)]}
+
+
+def charger_sigma_circuit(racine):
+    """{circuit: σ} de la forme du jour. 28/10/2026 : en production par décision de Lucas (sigma_circuit.DECISION,
+    Challenger 0,22) tant que le jugement hebdomadaire n'a rien dit ; ensuite ce que dit facteurs.json — σ appris si
+    en place, None (0,15 partout) s'il a été RETIRÉ (moins bien deux semaines de suite)."""
+    import sigma_circuit as SGC
+    try:
+        with open(os.path.join(racine, 'simulateur', 'facteurs.json'), encoding='utf-8') as f:
+            r = json.load(f).get('sigma_circuit')
+    except (OSError, ValueError):
+        r = None
+    if not r or 'adopte' not in r:
+        return dict(SGC.DECISION)
+    try:
+        return {k: float(v) for k, v in (r.get('sigmas') or SGC.DECISION).items()} if r.get('adopte') else None
+    except (TypeError, ValueError):
+        return dict(SGC.DECISION)
+
+
+def sigma_de(c):
+    """σ de la forme du jour pour un circuit (le vainqueur ne dépend pas de σ : seule la forme du match)."""
+    return (SIGMA_CIRCUIT or {}).get(c, SIGMA)
+
+
+def charger_forme_scores(racine):
+    """(coefs, profils, repères par circuit) si facteurs.json l'a ADOPTÉE (forme_scores.py v3, règle fixée,
+    stabilité), sinon None."""
+    try:
+        with open(os.path.join(racine, 'simulateur', 'facteurs.json'), encoding='utf-8') as f:
+            fs = json.load(f).get('forme_scores') or {}
+        if not fs.get('adopte') or not fs.get('coefs') or fs.get('version') != 3:
+            return None
+        with open(os.path.join(racine, 'simulateur', 'profil_rythme.json'), encoding='utf-8') as f:
+            doc = json.load(f)
+        return fs['coefs'], doc.get('joueurs') or {}, doc.get('references_circuit') or {}
+    except (OSError, ValueError):
+        return None
+
+
+def charger_reglage_simulation(racine):
+    """Réglage de la simulation pure adopté par le test (σ de la forme du jour, amplification k), ou None."""
+    try:
+        with open(os.path.join(racine, 'simulateur', 'choix_simulation.json'), encoding='utf-8') as f:
+            r = json.load(f).get('reglage_simulation') or {}
+        return {'sigma': float(r['sigma']), 'k': float(r['amplification']), 'jeux': float(r.get('jeux') or 0)} if r.get('adopte') else None
+    except (OSError, ValueError, KeyError, TypeError):
+        return None
+
+
+REGLAGE_SIM = None
+AMPLIF_PROFILS = {}   # 12/11/2026 (paquet 240) : {circuit: {composante: k}} (simulateur/profils_amplification.json)
+
+
+def charger_amplification_profils(racine):
+    """{circuit: {composante: k}} des amplifications en place, moins celles que le suivi a retirées ; {} sinon."""
+    import profils_amplification as PA
+    return PA.en_place(racine)
+
+
+def sigma_sim():
+    return REGLAGE_SIM['sigma'] if REGLAGE_SIM else SIGMA
+
+
+def composantes_du_match(P, h, a, c, s, pure=False):
+    """pure=True : la simulation pure (son réglage adopté s'applique) ; sinon versions ancrées (inchangées)."""
+    ph, nh = P.profil(h, c, s, P.jour_export)
+    pa, na = P.profil(a, c, s, P.jour_export)
+    mu = P.moyenne(c, s)
+    if CHOIX == 'ajustees' and getattr(P, 'ajuste', None) is not None:
+        cH, cA = MS.composantes_ajustees(P.ajuste, h, a, c, s), MS.composantes_ajustees(P.ajuste, a, h, c, s)
+        if pure and getattr(P, 'resultats', None):       # appris aussi de qui a gagné (matchs sans feuille, si adopté)
+            d = P.resultats.get(h, 0.0) - P.resultats.get(a, 0.0)
+            cH = MS.borner(dict(cH, w1=MS._sg(MS._lg(cH['w1']) + d), w2j=MS._sg(MS._lg(cH['w2j']) + d)))
+            cA = MS.borner(dict(cA, w1=MS._sg(MS._lg(cA['w1']) - d), w2j=MS._sg(MS._lg(cA['w2j']) - d)))
+        if pure and REGLAGE_SIM and getattr(P, 'jeux', None):            # appris aussi des scores sans feuille
+            cH, cA = MS.borner(AJ.avec_jeux(cH, P.jeux, h, a)), MS.borner(AJ.avec_jeux(cA, P.jeux, a, h))
+        if pure and REGLAGE_SIM and REGLAGE_SIM['k'] != 1.0:
+            moy = MS.borner(P.ajuste.taux('__moyen__', '__moyen__', c, s))
+            cH, cA = MS.amplifier(cH, moy, REGLAGE_SIM['k']), MS.amplifier(cA, moy, REGLAGE_SIM['k'])
+        if not pure and AMPLIF_PROFILS.get(c):
+            # 12/11/2026 (paquet 240) : profils un peu trop ramenés vers la moyenne (ou trop marqués pour la 1re balle
+            # dedans) — amplification par composante, SEULEMENT dans la simulation ancrée qui produit les statistiques
+            # annoncées : le % de victoire (simulation pure, mélange) ne change pas.
+            moy = MS.borner(P.ajuste.taux('__moyen__', '__moyen__', c, s))
+            cH, cA = MS.amplifier_composantes(cH, moy, AMPLIF_PROFILS[c]), MS.amplifier_composantes(cA, moy, AMPLIF_PROFILS[c])
+    else:
+        cH, cA = MS.composantes(ph, pa, mu), MS.composantes(pa, ph, mu)
+    return cH, cA, nh, na
+
+
+def facteurs_en_place(circuit=None):
+    """(groupes, coefs) du circuit (paquet 199 : jugement par circuit) ; sinon la décision globale. Le modèle
+    complet (arbres), quand il est adopté, reste global."""
+    if not FACTEURS:
+        return [], {}
+    b = (FACTEURS.get('par_circuit') or {}).get(circuit) or {}
+    if b.get('coefs') is not None and 'groupes' in b and not (FACTEURS.get('coefs') or {}).get('_arbres_service'):
+        return list(b.get('adoptes') or []), b.get('coefs') or {}
+    return list(FACTEURS.get('adoptes') or []), FACTEURS.get('coefs') or {}
+
+
+def facteurs_du_match(h, a, tournoi, debut, adj=None, circuit=None):
+    """{groupe adopté: ((d_service, d_aces, d_bp) home, (…) away)} en logit, + variables lues."""
+    if not FACTEURS or CONTEXTE is None:
+        return None
+    import facteurs as FA
+    adoptes, coefs = facteurs_en_place(circuit)
+    if not adoptes or not coefs:
+        return None
+    ts = debut.replace(tzinfo=dt.timezone.utc).timestamp() if debut.tzinfo is None else debut.timestamp()
+    vH, vA = CONTEXTE.variables(h, a, tournoi, ts, adj), CONTEXTE.variables(a, h, tournoi, ts, adj)
+    par_groupe = {}
+    for g in adoptes:
+        cg = {m: {f: b for f, b in (coefs.get(m) or {}).items() if f in FA.GROUPES[g].get(m, [])} for m in coefs}
+        par_groupe[g] = (FA.deltas(vH, cg), FA.deltas(vA, cg))
+    return {'groupes': par_groupe, 'total': (FA.deltas(vH, coefs), FA.deltas(vA, coefs))}
+
+
+def avec_facteurs(cH, cA, fct):
+    if not fct:
+        return cH, cA
+    dH, dA = fct['total']
+    return MS.appliquer_facteurs(cH, *dH), MS.appliquer_facteurs(cA, *dA)
+
+
+def impact_facteurs(cH, cA, sg, fct):
+    """Ce qui pèse : victoire home (simulation pure, limite exacte) sans facteurs, avec tous, et
+    l'écart dû à chaque groupe seul (en points de %)."""
+    if not fct:
+        return None
+    base = MS.victoire_pure(cH, cA, sg, sigma_sim())
+    tH, tA = avec_facteurs(cH, cA, fct)
+    out = {'sans': round(base, 4), 'avec': round(MS.victoire_pure(tH, tA, sg, sigma_sim()), 4), 'groupes': {}}
+    for g, (dH, dA) in fct['groupes'].items():
+        p = MS.victoire_pure(MS.appliquer_facteurs(cH, *dH), MS.appliquer_facteurs(cA, *dA), sg, sigma_sim())
+        out['groupes'][g] = round(100 * (p - base), 1)
+    return out
+
+
+SEUILS_FORME = {}    # 04/11/2026 : {circuit: (seuil 3 sets, seuil tie-break)} de la vidéo (seuils_forme)
+
+
+def seuils_forme(racine, jours=60, minimum=50, aujourdhui=None):
+    """04/11/2026 (Lucas) — la vidéo montre 3 sets (un tie-break) si la probabilité du match dépasse le seuil du circuit :
+    la moyenne réelle du circuit PLUS une marge. La marge est réglée sur NOS probabilités affichées des `jours` derniers
+    jours (bilans après match) : seuil = le quantile tel que la part de matchs au-dessus égale la part réelle du circuit
+    (MS.MOYENNES_FORME). Jamais sous la moyenne ; moins de `minimum` matchs : la moyenne seule."""
+    import glob
+    import gzip
+    debut = ((aujourdhui or dt.date.today()) - dt.timedelta(days=jours)).isoformat()
+    P = {}
+    for f in sorted(glob.glob(os.path.join(racine, 'simulateur', 'journal_pronostics', 'apres_match', '*.json.gz'))):
+        if os.path.basename(f)[:10] < debut:
+            continue
+        try:
+            B = json.load(gzip.open(f, 'rt', encoding='utf-8')).values()
+        except (OSError, ValueError):
+            continue
+        for b in B:
+            li = (b.get('ecarts') or {}).get('lignes') or {}
+            if (li.get('set_decisif') or [None])[0] is not None and (li.get('tie_break') or [None])[0] is not None:
+                P.setdefault(b.get('circuit'), []).append((li['set_decisif'][0], li['tie_break'][0]))
+    out = {}
+    for c, (m3, mtb) in MS.MOYENNES_FORME.items():
+        L = P.get(c) or []
+        if len(L) < minimum:
+            out[c] = (m3, mtb)
+            continue
+        q = lambda v, part: sorted(v)[min(len(v) - 1, int(len(v) * (1 - part)))]
+        out[c] = (max(m3, q([x[0] for x in L], m3)), max(mtb, q([x[1] for x in L], mtb)))
+    return out
+
+
+def match_simule(P, h, a, c, s, sg, p_home, cle, fct=None, controler_stabilite=False):
+    """Le match joué SIMULATIONS fois au niveau p_home, avec les profils de service des deux joueurs
+    (et les facteurs du match adoptés, s'il y en a)."""
+    cH, cA, nh, na = composantes_du_match(P, h, a, c, s, pure=p_home is None)
+    cH, cA = avec_facteurs(cH, cA, fct)
+    sigma = sigma_sim() if p_home is None else sigma_de(c)
+    r = MS.simuler(cH, cA, p_home, sg, SIMULATIONS, sigma, cle=cle, reglages=REGLAGES, circuit=c,
+                   seuils_forme=SEUILS_FORME.get(c))
+    if controler_stabilite and STABILITE_BLOCS > 0:
+        import stabilite_scores as SS
+        r['stabilite_score'] = SS.controler(cH, cA, p_home, r, sg, SIMULATIONS, sigma, cle,
+                                           reglages=REGLAGES, blocs=STABILITE_BLOCS)
+    r['reglages'] = REGLAGES
+    r['composantes'] = CHOIX if (CHOIX == 'ajustees' and getattr(P, 'ajuste', None) is not None) else 'profils'
+    r['profil_connu'] = [nh >= BALLES_CONNU, na >= BALLES_CONNU]
+    niveau = lambda n: 'tres_faible' if n < 100 else 'faible' if n < 500 else 'documente'
+    prior_service = 150 * getattr(P, 'prior_mult', 1.0)
+    r['profil_contexte'] = {
+        'n_balles_effectives': [round(nh, 1), round(na, 1)],
+        'niveau_documentation': [niveau(nh), niveau(na)],
+        'poids_donnees_service': [round(nh/(nh+prior_service), 4), round(na/(na+prior_service), 4)],
+    }
+    if CONTEXTE is not None:
+        try:
+            jour = P.jour_export
+            ts = dt.datetime.combine(jour, dt.time(), tzinfo=dt.timezone.utc).timestamp() if isinstance(jour, dt.date) and not isinstance(jour, dt.datetime) else jour.timestamp()
+            r['profil_contexte']['changement_surface'] = [bool(CONTEXTE.transition(h, s, ts)), bool(CONTEXTE.transition(a, s, ts))]
+        except (AttributeError, KeyError, TypeError, ValueError):
+            pass
+    return r
+
+
+def distribution_exacte_du_match(P, h, a, c, s, sg, p_home, fct=None, pure=False, sigma=None, brut=False):
+    """Distribution complète sans bruit Monte Carlo, ancrée sur CETTE variante.
+
+    Elle ne remplace ni les tirages, ni leur médoid, ni leurs statistiques. Le
+    contrôle de masse et de victoire est bloquant pour éviter un score trompeur.
+    """
+    cH, cA, _, _ = composantes_du_match(P, h, a, c, s, pure=pure)
+    cH, cA = avec_facteurs(cH, cA, fct)
+    sigma = sigma if sigma is not None else (sigma_sim() if pure else sigma_de(c))
+    distribution = DE.distribution_forme(cH, cA, sg, sigma, p_victoire=p_home)
+    if brut:                        # 29/10/2026 : distribution seule (fantôme de la forme du jour)
+        return distribution
+    forme = None
+    if FORME_SCORES and not pure and sg == 2:
+        # 28/10/2026 : forme du match selon les profils (tie-break, 3 sets) ; vainqueur inchangé par construction
+        import forme_scores as FS
+        f = FS.caracteristiques(FORME_SCORES[1].get(h), FORME_SCORES[1].get(a), FORME_SCORES[2].get(c))  # None : base seule
+        distribution = FS.reponderer(distribution, f, FORME_SCORES[0], c)          # base propre au circuit (v3)
+        forme = {'caracteristiques': [round(x, 4) for x in f] if f else None, 'coefs': FORME_SCORES[0]}
+    controle = DE.controle(distribution)
+    victoire = DE.victoire_depuis_distribution(distribution)
+    # L'ancrage de la distribution exacte sature à 0,5 % aux extrêmes.
+    # Une simulation Monte-Carlo peut renvoyer exactement 0 % ou 100 %.
+    # Ne tolérer CET écart connu que pour les cas limites, jamais ailleurs.
+    # Ancrage identique a match_simule.noeuds_de_forme : [0.005, 0.995].
+    cible_exacte = min(max(p_home, 0.005), 0.995) if p_home is not None else None
+    ecart = abs(victoire - cible_exacte) if cible_exacte is not None else 0.0
+    if not controle['ok'] or (cible_exacte is not None and ecart > 1e-8):
+        raise ValueError(f'Distribution exacte incohérente pour {h}–{a}: {controle}, victoire={victoire}, cible_exacte={cible_exacte}, simulation={p_home}')
+    if p_home is not None and cible_exacte != p_home:
+        print(f'::warning::Ancrage borne pour {h}–{a}: simulation={p_home}, cible_exacte={cible_exacte}')
+    rows = DE.scores_ordonnes(distribution)
+    scores = [(' '.join(f'{x}-{y}' for x, y in r['score']), r['probabilite']) for r in rows]
+    return {'source': 'exact', 'scores': [[score, round(p, 8)] for score, p in scores[:3]],
+            'distribution': [{'score': r['score'], 'vainqueur': r['vainqueur'],
+                              'probabilite': round(r['probabilite'], 12)} for r in rows],
+            'controle': {'somme': controle['somme'], 'n_scores': controle['n_scores'],
+                         'victoire_home': victoire, 'monte_carlo': False},
+            'forme_profils': forme}
+
+
+# 04/11/2026 — le programme annonce parfois le tour suivant avec des places vides : « R16P6 » (vainqueur de la partie 6 du
+# 2e tour), « Qf1 », « WQF2 », « WSF1 »… Un tel « joueur » inconnu partait de l'Elo de départ : pronostics à 96 %
+# affichés sur le site. Ces matchs sont écartés ; ils reviennent avec les vrais noms quand le tour précédent est joué.
+_FICTIF = re.compile(r'^(?:w?(?:r\d+p\d+|qf\d*|sf\d*|f\d*|q\d+|r\d+|tbd|tba|bye|winner.*|vainqueur.*|qualifier|qualifie|q|ll))$', re.I)
+
+
+def adversaire_fictif(nom):
+    return bool(_FICTIF.match(re.sub(r'[\s._-]+', '', str(nom or '')).strip()))
+
+
+def matchs_a_venir(racine, maintenant, avec_couverture=False):
+    try:
+        with open(os.path.join(racine, 'matches_oddspapi.json'), encoding='utf-8') as f:
+            L = json.load(f)
+    except (OSError, ValueError):
+        L = []
+    L = L if isinstance(L, list) else list(L.values())
+    out, invalides, valides = [], [], 0
+    for m in L:
+        try:
+            debut_utc = CO.instant(str(m['commence_time']))
+            debut = debut_utc.replace(tzinfo=None)       # comparaison historique en UTC naïf
+            valides += 1
+        except (KeyError, TypeError, ValueError):
+            invalides.append({'id': m.get('id'), 'raison': 'commence_time absent, invalide ou sans fuseau'})
+            continue
+        if not (maintenant < debut <= maintenant + dt.timedelta(hours=HORIZON_H)):
+            continue
+        h, a = m.get('home_team'), m.get('away_team')
+        if not h or not a:
+            continue
+        if adversaire_fictif(h) or adversaire_fictif(a):     # 04/11/2026 : « R16P6 », « Qf1 »… = vainqueur à venir
+            continue
+        out.append({'debut': debut, 'debut_utc': debut_utc.isoformat(),
+                    'horodatage': {'nature': 'debut_planifie', 'source': 'oddspapi.commence_time',
+                                   'fuseau': 'UTC', 'interpole': False, 'fin_utc': None},
+                    'home': h, 'away': a, 'tournoi': m.get('sport_title') or ''})
+    out.sort(key=lambda x: x['debut'])
+    coupes = max(0, len(out) - PLAFOND_MATCHS)
+    out = out[:PLAFOND_MATCHS]                                   # les plus lointains attendent le passage suivant
+    couverture = {'n_source': len(L), 'horodatages_valides': valides, 'horizon_h': HORIZON_H, 'coupes_par_plafond': coupes,
+                  'couverture_pct': round(100 * valides / len(L), 2) if L else None,
+                  'matchs_dans_fenetre': len(out), 'horodatages_invalides': invalides,
+                  'nature': 'débuts planifiés avec fuseau, pas heures de fin constatées',
+                  'repli': 'aucun : un match sans horodatage valide est exclu des pronostics à venir',
+                  'interpolation': False, 'dates_de_fin_inventees': False}
+    return (out, couverture) if avec_couverture else out
+
+
+def construire(racine, maintenant=None, uids=None, pentes_forcees=None):
+    """uids : ne refaire que ces matchs ; pentes_forcees : {uid: pente} de la correction par niveau (paquet 270)."""
+    maintenant = maintenant or dt.datetime.utcnow()
+    etat = E.migrer_etat(json.load(open(os.path.join(racine, 'simulateur', 'elo_etat.json'), encoding='utf-8')))
+    elo = E.Elo.importer(etat['joueurs'], etat.get('options'))
+    # 29/10/2026 — modèle fantôme : l'Elo d'avant les changements du 28-29/10 (sans ITF), pour comparer en direct
+    try:
+        ref_etat = E.migrer_etat(json.load(open(os.path.join(racine, 'simulateur', 'elo_etat_reference.json'), encoding='utf-8')))
+        elo_ref = E.Elo.importer(ref_etat['joueurs'], ref_etat.get('options'))
+    except (OSError, ValueError, KeyError):
+        ref_etat, elo_ref = None, None
+    try:                            # 29/10/2026 : fantôme propre aux résultats ITF femmes
+        fem_etat = E.migrer_etat(json.load(open(os.path.join(racine, 'simulateur', 'elo_etat_sans_itf_femmes.json'), encoding='utf-8')))
+        elo_fem = E.Elo.importer(fem_etat['joueurs'], fem_etat.get('options'))
+    except (OSError, ValueError, KeyError):
+        fem_etat, elo_fem = None, None
+    global ACTIVITE, PROGRAMME, FORME_SERVICE, ECHANGES, STYLES_MATCHS, ELO_SR, SIGNAUX_CIRCUIT, DATES_MATCHS, SEUILS_FORME, NAISSANCES, RESIDUS_ROLE, BETAS_COMBINES, PARCOURS
+    global FORMAT_MATCH, GRAND_CHELEM, QUALIFS_GC
+    QUALIFS_GC = charger_qualifs_gc(racine)                 # 11/11/2026 (paquet 232) : pente de l'Elo en qualifications de Grand Chelem
+    GRAND_CHELEM = charger_grand_chelem(racine)             # 11/11/2026 (paquet 231) : pente de l'Elo en Grand Chelem
+    FORMAT_MATCH = charger_format_match(racine)             # 11/11/2026 (paquet 228) : pente de l'Elo selon le format
+    STYLES_MATCHS = charger_styles_matchs(racine)
+    try:                            # 04/11/2026 : signaux adoptés circuit par circuit
+        import fantomes_circuits as FCI
+        SIGNAUX_CIRCUIT = FCI.lire(racine)
+        if SIGNAUX_CIRCUIT:
+            print(f"Signaux adoptés par circuit : {SIGNAUX_CIRCUIT}")
+    except Exception as e_:  # noqa: BLE001
+        print(f"::warning::signaux par circuit non lus : {type(e_).__name__}: {e_}")
+        SIGNAUX_CIRCUIT = {}
+    try:                            # 04/11/2026 : Elo au service et au retour (archive Sackmann clonée + feuilles)
+        import elo_service_retour as ESR
+        _M_sr = ESR.matchs(os.environ.get('SACKMANN_DIR', '/tmp/sackmann'), racine)
+        ELO_SR = ESR.construire(_M_sr, dt.date.today()) if _M_sr else None
+        if ELO_SR is not None:      # 07/11/2026 (paquet 216) : notes du jour pour les cartes joueurs du site
+            try:
+                ESR.exporter(ELO_SR, racine, dt.date.today())
+            except OSError as e_:
+                print(f"::warning::notes service / retour non exportées : {e_}")
+    except Exception as e_:  # noqa: BLE001
+        print(f"::warning::Elo service / retour non chargé : {type(e_).__name__}: {e_}")
+        ELO_SR = None
+    try:                            # 04/11/2026 : seuils de la forme montrée en vidéo (moyenne du circuit + marge)
+        SEUILS_FORME = seuils_forme(racine)
+        print(f"Seuils de la forme vidéo (3 sets, tie-break) : {SEUILS_FORME}")
+    except Exception as e_:  # noqa: BLE001
+        print(f"::warning::seuils de la forme vidéo non calculés : {type(e_).__name__}: {e_}")
+        SEUILS_FORME = {}
+    BETAS_COMBINES = charger_betas_combines(racine)      # 04/11/2026 : adoption directe des signaux combinés
+    try:                            # 04/11/2026 : parcours de chaque joueur dans son tournoi en cours (feuilles)
+        _alp = dict(etat.get('alias') or {})
+        PARCOURS = charger_parcours(racine, cle=lambda n: _alp.get(E.cle(n), E.cle(n)) if n else None)
+    except Exception as e_:  # noqa: BLE001
+        print(f"::warning::parcours dans le tournoi non chargés : {type(e_).__name__}: {e_}")
+        PARCOURS = None
+    if BETAS_COMBINES:
+        print(f"Signaux combinés adoptés (β appris ensemble) : {sorted(BETAS_COMBINES)}")
+    try:                            # 04/11/2026 : résidus favori / outsider de chaque joueur (archive rejouée, ~3 min)
+        import etude_profils_contexte as EPC
+        RESIDUS_ROLE = EPC.residus_actuels(os.environ.get('SACKMANN_DIR', '/tmp/sackmann'), racine)
+    except Exception as e_:  # noqa: BLE001
+        print(f"::warning::résidus favori / outsider non chargés : {type(e_).__name__}: {e_}")
+        RESIDUS_ROLE = None
+    try:                            # 05/11/2026 : points de service cumulés (matchs peu documentés)
+        global BALLES_CUMULEES, PENTES_DOCUMENTATION
+        import etude_documentation as EDO
+        with open(os.path.join(racine, 'simulateur', 'rapport_documentation.json'), encoding='utf-8') as f_:
+            PENTES_DOCUMENTATION = {c_: v['pente'] for c_, v in (json.load(f_).get('circuits') or {}).items()
+                                    if v.get('adopte') and v.get('pente', 0) > 1}
+        BALLES_CUMULEES = dict(EDO.Compteur(EDO.evenements(os.environ.get('SACKMANN_DIR', '/tmp/sackmann'), racine))
+                               .au((dt.date.today() + dt.timedelta(days=1)).isoformat()))
+    except Exception as e_:  # noqa: BLE001
+        print(f"::warning::documentation des joueurs (points cumulés) non chargée : {type(e_).__name__}: {e_}")
+        BALLES_CUMULEES = None
+    try:                            # 04/11/2026 : dates de naissance (fantôme « âge »), clés unifiées comme l'Elo
+        import etude_age as EAG
+        _al = dict(etat.get('alias') or {})
+        NAISSANCES = EAG.naissances(os.environ.get('SACKMANN_DIR', '/tmp/sackmann'),
+                                    lambda n: _al.get(E.cle(n), E.cle(n)) if n else None)
+    except Exception as e_:  # noqa: BLE001
+        print(f"::warning::dates de naissance non chargées : {type(e_).__name__}: {e_}")
+        NAISSANCES = None
+    try:                            # 04/11/2026 : jours des matchs de chaque joueur (fantôme « retour d'absence »)
+        import etude_retour_absence as ERA
+        DATES_MATCHS = ERA.dates_matchs(os.environ.get('SACKMANN_DIR', '/tmp/sackmann'), racine)
+    except Exception as e_:  # noqa: BLE001
+        print(f"::warning::jours des matchs non chargés : {type(e_).__name__}: {e_}")
+        DATES_MATCHS = None
+    try:                            # 30/10/2026 : longueur des échanges (affichage seul ; /tmp/mcp cloné par le workflow)
+        import echanges_joueur as EJ
+        ECHANGES = EJ.depuis(os.environ.get('MCP_DIR', '/tmp/mcp'))
+    except Exception as e_:  # noqa: BLE001
+        print(f"::warning::longueur des échanges non chargée : {type(e_).__name__}: {e_}")
+        ECHANGES = None
+    PROGRAMME = charger_programme(racine)
+    SALLES.clear()                                          # 12/11/2026 (paquet 238) : tournois en salle (feuilles)
+    SALLES.update(charger_salles(racine))
+    try:
+        fiches_ = FE.lire(racine)
+    except Exception:  # noqa: BLE001
+        fiches_ = None
+    try:                            # 29/10/2026 : service / retour du moment (information + fantôme)
+        import forme_service as FSV
+        FORME_SERVICE = FSV.FormeService.depuis(racine, fiches_)
+    except Exception as e_:  # noqa: BLE001
+        print(f"::warning::forme du service non chargée : {type(e_).__name__}: {e_}")
+        FORME_SERVICE = None
+    try:
+        import activite as ACT
+        ACTIVITE = ACT.Activite.depuis(racine, fiches_)
+    except Exception as e_:  # noqa: BLE001
+        print(f"::warning::activité des joueurs non chargée : {type(e_).__name__}: {e_}")
+        ACTIVITE = None
+    surf = etat.get('surfaces_tournois') or {}
+    S = Styles(os.path.join(racine, 'simulateur', 'notes_joueurs.json'))
+    PR = charger_profils(racine)
+    global REGLAGES, CHOIX, FACTEURS, CONTEXTE, COMBINAISON, REGLAGE_SIM
+    REGLAGES = charger_reglages(racine)
+    CHOIX = charger_choix(racine)
+    COMBINAISON = charger_combinaison(racine)
+    global POIDS_CIRCUIT, OUTSIDERS_CH, DERNIERS_MATCHS
+    POIDS_CIRCUIT = charger_poids_circuit(racine) if COMBINAISON else {}
+    OUTSIDERS_CH = charger_outsiders(racine)
+    try:
+        _ald = dict(etat.get('alias') or {})
+        DERNIERS_MATCHS = charger_derniers_matchs(racine, lambda n: _ald.get(E.cle(n), E.cle(n)) if n else None) if OUTSIDERS_CH else None
+    except Exception as e_:  # noqa: BLE001
+        print(f"::warning::derniers matchs (outsiders) non chargés : {type(e_).__name__}: {e_}")
+        DERNIERS_MATCHS = None
+    AJUSTEMENTS.clear()
+    AJUSTEMENTS.update(charger_ajustements(racine))
+    global CLASSEMENTS
+    try:
+        import classements as CLS
+        CLASSEMENTS = CLS.charger(None, racine)
+    except Exception:  # noqa: BLE001 — sans classement, la correction ne s'applique pas
+        CLASSEMENTS = None
+    REGLAGE_SIM = charger_reglage_simulation(racine)
+    AMPLIF_PROFILS.clear()
+    AMPLIF_PROFILS.update(charger_amplification_profils(racine))
+    FACTEURS, CONTEXTE = charger_facteurs(racine)
+    global FORME_SCORES
+    FORME_SCORES = charger_forme_scores(racine)
+    global SIGMA_CIRCUIT
+    SIGMA_CIRCUIT = charger_sigma_circuit(racine)
+    venir, couverture_horodatages = matchs_a_venir(racine, maintenant, avec_couverture=True)
+    if os.environ.get('PRONOSTICS_MAX'):            # 29/10/2026 : test de chaîne courte (appliquer_paquet.yml) seulement
+        venir = venir[:int(os.environ['PRONOSTICS_MAX'])]
+    # Un joueur = un classement : alias du dernier calcul, puis noms nouveaux reliés au joueur connu.
+    alias = dict(etat.get('alias') or {})
+    alias.update(E.unifier({k: v.get('nom', k) for k, v in etat['joueurs'].items()},
+                           [n for x in venir for n in (x['home'], x['away'])]))
+    cle_c = lambda n: alias.get(E.cle(n), E.cle(n))
+    noms = [v.get('nom', k) for k, v in etat['joueurs'].items()] + [n for x in venir for n in (x['home'], x['away'])]
+    ambigus = {c['cle'] for c in E.collisions_identite(noms)}
+    out, rejets = [], []
+    for x in venir:
+        h, a = cle_c(x['home']), cle_c(x['away'])
+        if not h or not a or h == a or h in ambigus or a in ambigus:
+            rejets.append({'home': x['home'], 'away': x['away'], 'raison': 'identite_ambigue'})
+            continue
+        c = circuit(x['tournoi'])
+        if etat.get('depart_bas') and c in ('CH', 'ITF'):
+            elo.presenter(h, etat['depart_bas'])
+            elo.presenter(a, etat['depart_bas'])
+        s = NR.surface_de(x['tournoi'], surf)
+        if s not in E.SURFACES:
+            rejets.append({'home': x['home'], 'away': x['away'], 'tournoi': x['tournoi'], 'raison': 'surface_inconnue'})
+            continue
+        tour_ = tour_du_match(h, a, x['debut'])
+        sg = sets_gagnants(x['tournoi'], tour_)              # 11/11/2026 (paquet 232) : qualifications de Grand Chelem en 2 sets gagnants
+        sg_fmt = None if qualification_gc(x['tournoi'], tour_) else sg     # la pente du format n'a pas été étudiée en qualifications
+        pa0, pb0 = S.service(h, a, c, s)
+        stats = pronostic(elo.proba(h, a, s), c, sg, pa0, pb0)
+        uid = f"{x['debut'].date()}_{NR.slug(x['home'])}_{NR.slug(x['away'])}"
+        if uids is not None and uid not in uids:
+            continue
+        simulation = combinaison = direct = forme_ctl = fsv_ctl = None
+        sig_ctl, adoptes_ici = None, ()
+        fsv = None
+        if FORME_SERVICE is not None:
+            try:
+                fsv = [FORME_SERVICE.variables(k_, x['debut'], s) for k_ in (h, a)]
+            except Exception as e_:  # noqa: BLE001 — information seule, ne bloque jamais un pronostic
+                print(f"::warning::forme du service non calculée ({h}–{a}) : {type(e_).__name__}: {e_}")
+                fsv = None
+        if PR is not None:
+            # 22/10/2026 — SIMULATION PURE : le match joué SIMULATIONS fois avec les seuls taux des deux
+            # joueurs (1re balle, aces, doubles fautes, points gagnés derrière la 1re et la 2e, retour),
+            # sans Elo ni cote : c'est la simulation qui dit qui gagne.
+            fct = facteurs_du_match(h, a, x['tournoi'], x['debut'], getattr(PR, 'ajuste', None), circuit=c)
+            r = match_simule(PR, h, a, c, s, sg, None, f"{uid}|simulation", fct)
+            exact_simulation = distribution_exacte_du_match(PR, h, a, c, s, sg, r['victoire_A'], fct, pure=True)
+            simulation = {'p_home': r['victoire_A'], 'sets': r['sets'],
+                          'scores_probables': exact_simulation['scores'], 'scores_exact': exact_simulation,
+                          'remontee': {'home': r['remontee'][0], 'away': r['remontee'][1]}, 'set1_home': r['set1_A'],
+                          'jeux_moyen': r['jeux']['moy'], 'tiebreak': r['tiebreak'], 'match_simule': r}
+            if fct:
+                cH, cA, _, _ = composantes_du_match(PR, h, a, c, s, pure=True)
+                simulation['facteurs'] = impact_facteurs(cH, cA, sg, fct)
+            if COMBINAISON:
+                # 22/10/2026 — SIMULATION + ELO : le % de la simulation (limite exacte) mélangé à celui de l'Elo,
+                # poids appris sur 2024 et adoptés parce qu'ils trouvent mieux le vainqueur en 2025–2026 ; le
+                # match est ensuite joué avec les statistiques des deux joueurs, à ce niveau.
+                cH, cA = avec_facteurs(*composantes_du_match(PR, h, a, c, s, pure=True)[:2], fct)
+                p_sim = MS.victoire_pure(cH, cA, sg, sigma_sim())
+                ctx_ = MS.contexte_match(s, c, 2 * sg - 1)
+                p_c = MS.melange_contexte(poids_de(c), ctx_, stats['p_home'], p_sim)
+                p_c = MS.calibrer(p_c, COMBINAISON.get('calibration'))     # excès de confiance (si adopté)
+                # 18/11/2026 (paquet 273) : le même % avec les poids communs, pour la règle de retrait des poids du circuit
+                d_poids_ = None
+                if c in POIDS_CIRCUIT:
+                    p_cc_ = MS.calibrer(MS.melange_contexte(COMBINAISON, ctx_, stats['p_home'], p_sim), COMBINAISON.get('calibration'))
+                    lgq_ = lambda q: math.log(min(max(q, 1e-6), 1 - 1e-6) / (1 - min(max(q, 1e-6), 1 - 1e-6)))  # noqa: E731
+                    d_poids_ = lgq_(p_c) - lgq_(p_cc_)
+                sit = situations_du_match(h, a, x['tournoi'], x['debut'], s)
+                tr_ = tour_du_match(h, a, x['debut'])            # 29/10/2026 : tour du tableau (programme TennisApi)
+                if tr_:
+                    import entrainement_progressif as EP_t
+                    sit['tour'] = EP_t.variables_tour(tr_)
+                if ACTIVITE is not None:                        # 29/10/2026 : (Δ tendance, Δ volume) vus de home
+                    import activite as ACT
+                    sit['activite'] = ACT.ecarts(ACTIVITE.variables(h, x['debut']), ACTIVITE.variables(a, x['debut']))
+                if CLASSEMENTS is not None:                     # 23/10/2026 : classement du joueur peu connu
+                    import classements as CLS
+                    sit['classement'] = tuple(CLS.niveau_inconnu(CLASSEMENTS.rang_au(j, x['debut']), elo.matchs(j)) for j in (h, a))
+                    # 28/10/2026 : classement relatif quand un joueur est peu connu (entrainement_progressif.rang_relatif)
+                    import entrainement_progressif as EP_
+                    rh_, ra_ = CLASSEMENTS.rang_au(h, x['debut']), CLASSEMENTS.rang_au(a, x['debut'])
+                    # 30/10/2026 : points ATP/WTA des deux joueurs (candidat des arbres en production par décision)
+                    ph_, pa_ = CLASSEMENTS.points_au(h, x['debut']), CLASSEMENTS.points_au(a, x['debut'])
+                    if ph_ is None or pa_ is None:      # 30/10/2026 : au-delà du top 500, points estimés depuis le rang actuel
+                        ra2 = rangs_actuels_du_match(h, a, x['debut']) or [None, None]
+                        ph_ = ph_ if ph_ is not None else CLASSEMENTS.points_depuis_rang(c, ra2[0])
+                        pa_ = pa_ if pa_ is not None else CLASSEMENTS.points_depuis_rang(c, ra2[1])
+                    pts_ = CLS.ecart_points(ph_, pa_)
+                    if pts_ is not None:
+                        sit['points'] = pts_
+                    if rh_ and ra_:
+                        w_rel = max(0.0, 1 - elo.matchs(h) / EP_.SEUIL_RANG_RELATIF, 1 - elo.matchs(a) / EP_.SEUIL_RANG_RELATIF)
+                        sit['rangs'] = (rh_, ra_)
+                        sit['classement_relatif'] = (-w_rel * math.log(rh_), -w_rel * math.log(ra_))
+                p_c = ajuster_combinaison(p_c, c, stats['p_home'], p_sim, elo.matchs(h), elo.matchs(a), sit, s, 2 * sg - 1)
+                combinaison = dict(pronostic(p_c, c, sg, MS.p_service(cH), MS.p_service(cA)),
+                                   p_simulation=round(p_sim, 4), p_elo=stats['p_home'])
+                if fsv and (fsv[0] or fsv[1]):
+                    try:
+                        fsv_ctl = controle_forme_service(cH, cA, fsv[0], fsv[1], c, s, sg, stats['p_home'], p_sim,
+                                                         elo.matchs(h), elo.matchs(a), sit)
+                    except Exception as e_:  # noqa: BLE001 — le fantôme ne doit jamais bloquer un pronostic
+                        print(f"::warning::fantôme forme du service non calculé ({h}–{a}) : {type(e_).__name__}: {e_}")
+                # 04/11/2026 — signaux adoptés SUR CE CIRCUIT : appliqués avant la simulation ; le fantôme correspondant
+                # n'est plus calculé sur ce circuit (on suit « avec contre sans » dans signaux_circuit)
+                p_base = combinaison['p_home']
+                sh_ = signaux_du_match(c, p_base, fsv_ctl, controle_entree(p_base, c, entree_du_match(h, a, x['debut'])),
+                                       controle_serveuses(p_base, c, STYLES_MATCHS.get(uid)), controle_elo_sr(p_base, h, a, c, s, sg),
+                                       _changement_surface_sur(p_base, c, h, a, s, x['debut']),
+                                       _retour_absence_sur(p_base, c, h, a, x['debut']),
+                                       _age_sur(p_base, c, h, a, x['debut']),
+                                       _role_sur(p_base, stats['p_home'], c, h, a),
+                                       controle_parcours(p_base, c, h, a, x['tournoi'], x['debut']),
+                                       controle_favori_sous_estime(p_base, stats['p_home'], p_sim),
+                                       controle_documentation(p_base, c, h, a),
+                                       controle_format(p_base, stats['p_home'], c, sg_fmt),
+                                       controle_grand_chelem(p_base, stats['p_home'], c, x['tournoi'], tour_),
+                                       controle_qualifs_gc(p_base, stats['p_home'], c, x['tournoi'], tour_))
+                adoptes_ici = tuple(k for k, v in SIGNAUX_CIRCUIT.items() if c in (v or []))
+                so_ = signaux_outsiders(c, p_base, h, a, x['tournoi'], x['debut'])      # paquet 274
+                if so_:
+                    sh_ = dict(sh_ or {}, **so_)
+                pf_ = (pentes_forcees or {}).get(uid)
+                if pf_:                     # 18/11/2026 (paquet 270) : correction du niveau de fiabilité, en dernier
+                    q0_ = min(max(p_base, 1e-6), 1 - 1e-6)
+                    L0_ = math.log(q0_ / (1 - q0_)) + sum((sh_ or {}).values())
+                    sh_ = dict(sh_ or {}, niveau_fiabilite=(float(pf_) - 1.0) * L0_)
+                if sh_:
+                    q_ = min(max(p_base, 1e-6), 1 - 1e-6)
+                    p_new = sig(math.log(q_ / (1 - q_)) + sum(sh_.values()))
+                    combinaison = dict(pronostic(p_new, c, sg, MS.p_service(cH), MS.p_service(cA)),
+                                       p_simulation=round(p_sim, 4), p_elo=stats['p_home'])
+                    sig_ctl = {'appliques': sorted(sh_), 'p_home_sans': round(p_base, 4),
+                               'decalages': {k: round(v, 4) for k, v in sh_.items()}}
+                if so_ and combinaison:          # paquet 274 : les deux %, gardés pour la règle de retrait
+                    qo_ = min(max(combinaison['p_home'], 1e-6), 1 - 1e-6)
+                    combinaison['outsiders'] = {'decalages': {k: round(v, 4) for k, v in so_.items()}, 'p_home_avec': combinaison['p_home'],
+                                                'p_home_sans': round(sig(math.log(qo_ / (1 - qo_)) - sum(so_.values())), 4)}
+                if d_poids_ is not None and combinaison:
+                    qf_ = min(max(combinaison['p_home'], 1e-6), 1 - 1e-6)
+                    combinaison['poids_circuit'] = {'circuit': c, 'poids': POIDS_CIRCUIT[c], 'p_home_avec': combinaison['p_home'],
+                                                    'p_home_poids_communs': round(sig(math.log(qf_ / (1 - qf_)) - d_poids_), 4)}
+            # 22/10/2026 — EN DIRECT (direct.py, Lab) : points de service des deux joueurs pour la version
+            # principale (simulation + Elo si adoptée, sinon simulation pure), avant toute forme du jour.
+            cH0, cA0 = avec_facteurs(*composantes_du_match(PR, h, a, c, s, pure=not combinaison)[:2], fct)
+            pa_s, pb_s = MS.p_service(cH0), MS.p_service(cA0)
+            if combinaison:
+                pa_s, pb_s = MS.ancrer_rapide(pa_s, pb_s, combinaison['p_home'], sg, sigma_de(c))
+            if combinaison:
+                try:
+                    forme_ctl = controle_forme(PR, h, a, c, s, sg, combinaison['p_home'], fct)
+                except Exception as e_:  # noqa: BLE001 — le contrôle ne doit jamais bloquer un pronostic
+                    print(f"::warning::fantôme de la forme du jour non calculé ({h}–{a}) : {type(e_).__name__}: {e_}")
+            direct = {'a': round(pa_s, 5), 'b': round(pb_s, 5), 'sigma': sigma_de(c) if combinaison else sigma_sim(), 'sets_gagnants': sg,
+                      'tb_final': 10 if sg == 3 else 7, 'version': 'combinaison' if combinaison else 'simulation'}
+            for nom_v, v in (('stats', stats), ('combinaison', combinaison)):
+                if v:
+                    v['match_simule'] = match_simule(PR, h, a, c, s, sg, v['p_home'], f"{uid}|{nom_v}", fct,
+                                                    controler_stabilite=(nom_v == 'combinaison'))
+                    v['scores_exact'] = distribution_exacte_du_match(PR, h, a, c, s, sg, v['p_home'], fct)
+                    v['scores_probables'] = v['scores_exact']['scores']
+                    if v['scores_exact'].get('forme_profils'):          # sets cohérents avec les scores inclinés
+                        sets = {}
+                        for row in v['scores_exact']['distribution']:
+                            k = f"{sum(x > y for x, y in row['score'])}-{sum(y > x for x, y in row['score'])}"
+                            sets[k] = sets.get(k, 0.0) + row['probabilite']
+                        ordre = ('2-0', '2-1', '1-2', '0-2')
+                        v['sets'] = {k: round(sets.get(k, 0.0), 4) for k in ordre}
+        out.append({'uid': uid,
+                    'debut': x['debut'].isoformat(timespec='minutes'), 'debut_utc': x['debut_utc'],
+                    'horodatage': x['horodatage'], 'tournoi': x['tournoi'], 'circuit': c,
+                    'surface': s, 'meilleur_des': 2 * sg - 1, 'home': x['home'], 'away': x['away'],
+                    'cles': [h, a], 'matchs_joues': [elo.matchs(h), elo.matchs(a)], 'style_connu': [S.connu(h), S.connu(a)],
+                    'combinaison': combinaison, 'simulation': simulation, 'stats': stats, 'direct': direct,
+                    'activite': ([ACTIVITE.variables(k_, x['debut'], relatif=True) for k_ in (h, a)] if ACTIVITE is not None else None),
+                    'forme_service': fsv if fsv and (fsv[0] or fsv[1]) else None,
+                    'echanges': _echanges(h, a, x['debut']),
+                    'entree': entree_du_match(h, a, x['debut']),
+                    'tour': tour_du_match(h, a, x['debut']),     # 05/11/2026 : tour du tableau (critère de fragilité)
+                    'en_salle': salle_du_match(h, a, x['debut']),   # 12/11/2026 : pour les statistiques annoncées
+                    'controle': _avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_cle(_avec_serveuses(
+                        _avec_entree(_avec_service(_avec_forme(controle_fantome(elo, elo_ref, ref_etat, etat, h, a, c, s,
+                                                                                elo_fem, fem_etat), forme_ctl),
+                                                   None if 'forme_service' in adoptes_ici else fsv_ctl),
+                                     None if 'entree' in adoptes_ici else
+                                     controle_entree((combinaison or simulation or stats or {}).get('p_home'), c,
+                                                     entree_du_match(h, a, x['debut']))),
+                        None if 'serveuses_wta' in adoptes_ici else
+                        controle_serveuses((combinaison or simulation or stats or {}).get('p_home'), c,
+                                           STYLES_MATCHS.get(uid))),
+                        'elo_service_retour', None if 'elo_service_retour' in adoptes_ici else
+                        controle_elo_sr((combinaison or {}).get('p_home'), h, a, c, s, sg)),
+                        'signaux_circuit', sig_ctl), 'forme_set', _forme_set_sur(c, direct, sg)),
+                        'changement_surface', None if 'changement_surface' in adoptes_ici else
+                        _changement_surface_sur((combinaison or {}).get('p_home'), c, h, a, s, x['debut'])),
+                        'retour_absence', None if 'retour_absence' in adoptes_ici else
+                        _retour_absence_sur((combinaison or {}).get('p_home'), c, h, a, x['debut'])),
+                        'age', None if 'age' in adoptes_ici else _age_sur((combinaison or {}).get('p_home'), c, h, a, x['debut'])),
+                        'favori_outsider', None if 'favori_outsider' in adoptes_ici else
+                        _role_sur((combinaison or {}).get('p_home'), (stats or {}).get('p_home'), c, h, a)),
+                        'favori_sous_estime', None if 'favori_sous_estime' in adoptes_ici else
+                        controle_favori_sous_estime((combinaison or {}).get('p_home'), (combinaison or {}).get('p_elo'),
+                                                    (combinaison or {}).get('p_simulation'))),
+                        'documentation_faible', None if 'documentation_faible' in adoptes_ici else
+                        controle_documentation((combinaison or {}).get('p_home'), c, h, a)),
+                        'format_match', None if 'format_match' in adoptes_ici else
+                        controle_format((combinaison or {}).get('p_home'), (combinaison or {}).get('p_elo'), c, sg_fmt)),
+                        'grand_chelem', None if 'grand_chelem' in adoptes_ici else
+                        controle_grand_chelem((combinaison or {}).get('p_home'), (combinaison or {}).get('p_elo'), c, x['tournoi'], tour_)),
+                        'qualifs_grand_chelem', None if 'qualifs_grand_chelem' in adoptes_ici else
+                        controle_qualifs_gc((combinaison or {}).get('p_home'), (combinaison or {}).get('p_elo'), c, x['tournoi'], tour_))})
+    doc = {'genere_le': maintenant.isoformat(timespec='seconds') + 'Z', 'elo_au': etat.get('dernier_match'),
+            'horizon_h': HORIZON_H, 'sigma': SIGMA, 'simulations': SIMULATIONS if PR is not None else 0,
+            'qualite_horodatages': couverture_horodatages,
+            'profils_au': PR.jour_export.isoformat() if PR is not None else None,
+            'facteurs_adoptes': (FACTEURS or {}).get('adoptes') or [], 'combinaison': COMBINAISON,
+            'reglage_simulation': REGLAGE_SIM, 'rejets_entrees': rejets,
+            'noeuds_forme': [[round(z, 6), round(w, 8)] for z, w in zip(M._Z, M._W)], 'matchs': out}
+    import charting_atp_wta as CAW
+    try:
+        doc['suivi_charting_atp_wta'] = CAW.journaliser(racine, doc, CONTEXTE)
+    except FileNotFoundError:
+        # Checkout de test ou ancien paquet : le suivi optionnel ne bloque pas le champion.
+        doc['suivi_charting_atp_wta'] = {'schema': CAW.SCHEMA, 'statut': 'modele_non_installe',
+                                         'nouveaux_figes': 0, 'activation': False}
+    import styles_ajustes as SA
+    try:
+        doc['suivi_styles_ajustes'] = SA.journaliser(racine, doc)
+    except FileNotFoundError:
+        doc['suivi_styles_ajustes'] = {'schema': SA.SCHEMA, 'statut': 'modele_non_installe',
+                                       'nouveaux_figes': 0, 'activation': False}
+    import styles_global as SG
+    try:
+        doc['suivi_styles_global'] = SG.journaliser(racine, doc)
+    except FileNotFoundError:
+        doc['suivi_styles_global'] = {'schema': SG.SCHEMA, 'statut': 'modele_non_installe',
+                                      'nouveaux_figes': 0, 'activation': False}
+    import statistiques_styles as SS
+    try:
+        doc['suivi_statistiques_styles_dur'] = SS.journaliser(racine, doc)
+    except FileNotFoundError:
+        doc['suivi_statistiques_styles_dur'] = {'schema': SS.SCHEMA, 'statut': 'modele_non_installe',
+                                                'nouveaux_figes': 0, 'activation': False}
+    import profils_orientes as PO
+    try:
+        doc['suivi_profils_orientes'] = PO.journaliser(racine, doc)
+    except FileNotFoundError:
+        doc['suivi_profils_orientes'] = {'schema': PO.SCHEMA, 'statut': 'modele_non_installe',
+                                         'nouveaux_figes': 0, 'activation': False}
+    return doc
+
+
+# 05/11/2026 : + balles de break obtenues (le RETOUR), jeux de service gagnés, points gagnés dans le match
+SUIVI_STATS = ('aces', 'doubles_fautes', 'premiere_pct', 'gagnes_1re_pct', 'gagnes_2e_pct', 'breaks', 'jeux',
+               'balles_break_obtenues', 'jeux_service_gagnes_pct', 'points_gagnes')
+
+
+def feuille_prevue(m):
+    """Feuille de la MÊME variante que le pronostic public, jamais celle d'une autre version."""
+    v = next((m[k] for k in VERSIONS if m.get(k) and m[k].get('match_simule')), None)
+    S = (v or {}).get('match_simule')
+    if not S:
+        return None
+    out = {'version': next(k for k in VERSIONS if m.get(k) is v)}
+    for k in SUIVI_STATS:
+        a, b = S['feuille'][0].get(k), S['feuille'][1].get(k)
+        if a and b:
+            out[k] = [[a['moy'], a['p10'], a['p90']], [b['moy'], b['p10'], b['p90']]]
+    if S.get('jeux'):
+        out['total_jeux'] = [S['jeux']['moy'], S['jeux']['p10'], S['jeux']['p90']]
+    return out
+
+
+def suivi_feuilles(racine, lignes):
+    """Match simulé contre la vraie feuille (feuilles/ collectées) : par statistique, prévu moyen,
+    réel moyen, écart moyen absolu et part des réels dans la fourchette à 80 % (bornes incluses)."""
+    avec = [r for r in lignes if r.get('feuille')]
+    if not avec:
+        return {'n': 0}
+    jours = sorted(r['debut'][:10] for r in avec)
+    debut = (dt.date.fromisoformat(jours[0]) - dt.timedelta(days=1)).isoformat()
+    idx = FE.Index(FE.lire(racine, depuis=debut))
+    acc = {k: [] for k in SUIVI_STATS + ('total_jeux',)}
+    n = 0
+    for r in avec:
+        fi, inv = idx.trouver(r['debut'][:10], r['home'], r['away'])
+        if not fi or str((fi.get('statut') or {}).get('texte') or '').lower() != 'ended':
+            continue
+        reel = FE.feuille_reelle(fi, inv, FE.points(racine).get(fi.get('id')))
+        if not reel:
+            continue
+        (fh, fa), tot = reel
+        n += 1
+        for k in SUIVI_STATS:
+            if k in r['feuille']:
+                for i, f in ((0, fh), (1, fa)):
+                    moy, lo, hi = r['feuille'][k][i]
+                    acc[k].append((moy, lo, hi, f[k]))
+        if 'total_jeux' in r['feuille']:
+            moy, lo, hi = r['feuille']['total_jeux']
+            acc['total_jeux'].append((moy, lo, hi, tot))
+    out = {'n': n, 'stats': {}}
+    for k, L in acc.items():
+        if L:
+            out['stats'][k] = {'n': len(L), 'prevu': round(sum(x[0] for x in L) / len(L), 2),
+                               'reel': round(sum(x[3] for x in L) / len(L), 2),
+                               'ecart_moyen': round(sum(abs(x[0] - x[3]) for x in L) / len(L), 2),
+                               'dans_fourchette_pct': round(100 * sum(x[1] <= x[3] <= x[2] for x in L) / len(L), 1)}
+    return out
+
+
+def resume_version(v):
+    """Ce qu'on garde d'une version pour l'analyse : %, sets, 3 scores, jeux, tie-break, 1er set."""
+    if not v:
+        return None
+    out = {k: v.get(k) for k in ('p_home', 'sets', 'scores_probables', 'jeux_moyen', 'tiebreak', 'set1_home') if v.get(k) is not None}
+    if v.get('scores_exact'):
+        out['scores_source'] = 'exact'
+        out['scores_exact_controle'] = v['scores_exact']['controle']
+    if v.get('facteurs'):
+        out['facteurs'] = v['facteurs']
+    return out
+
+
+def instantane(doc, m):
+    return {'passage': doc['genere_le'], 'uid': m['uid'], 'debut': m['debut'],
+            'debut_utc': m.get('debut_utc'), 'horodatage': m.get('horodatage'), 'home': m['home'], 'away': m['away'],
+            'tournoi': m['tournoi'], 'circuit': m['circuit'], 'surface': m['surface'], 'meilleur_des': m['meilleur_des'],
+            'pin_cotes': m.get('pin_cotes'), 'matchs_joues': m.get('matchs_joues'),
+            'modele': {'facteurs': doc.get('facteurs_adoptes') or [], 'combinaison': doc.get('combinaison'),
+                       'profils_au': doc.get('profils_au'), 'elo_au': doc.get('elo_au')},
+            **{k: resume_version(m.get(k)) for k in VERSIONS}, 'direct': m.get('direct')}
+
+
+def enregistrer_instantanes(racine, doc):
+    """Une ligne par match et par passage, dans simulateur/journal_pronostics/AAAA-MM-JJ.jsonl.gz
+    (jour UTC du passage ; fichier gzip complété à chaque passage)."""
+    import gzip
+    dossier = os.path.join(racine, INSTANTANES)
+    os.makedirs(dossier, exist_ok=True)
+    chemin = os.path.join(dossier, doc['genere_le'][:10] + '.jsonl.gz')
+    with gzip.open(chemin, 'at', encoding='utf-8') as f:
+        for m in doc['matchs']:
+            f.write(json.dumps(instantane(doc, m), ensure_ascii=False, separators=(',', ':')) + '\n')
+    return len(doc['matchs'])
+
+
+def lire_instantanes(racine, depuis=None):
+    """{uid: [instantanés dans l'ordre des passages]}."""
+    import glob
+    import gzip
+    out = {}
+    for p in sorted(glob.glob(os.path.join(racine, INSTANTANES, '*.jsonl.gz'))):
+        if depuis and os.path.basename(p)[:10] < depuis:
+            continue
+        try:
+            with gzip.open(p, 'rt', encoding='utf-8') as f:
+                for l in f:
+                    try:
+                        r = json.loads(l)
+                    except ValueError:
+                        continue
+                    out.setdefault(r['uid'], []).append(r)
+        except (OSError, EOFError):
+            continue
+    for L in out.values():
+        L.sort(key=lambda r: r['passage'])
+    return out
+
+
+def premiers_pronostics(racine, uids):
+    """p_home de la combinaison à la PREMIÈRE publication de chaque match (journal), ou None."""
+    voulus, vus = set(uids), {}
+    try:
+        with open(os.path.join(racine, LOG), encoding='utf-8') as f:
+            for l in f:
+                try:
+                    r = json.loads(l)
+                except ValueError:
+                    continue
+                u = r.get('uid')
+                if u in voulus and u not in vus:
+                    vus[u] = (r.get('combinaison') or {}).get('p_home')
+    except OSError:
+        pass
+    return [vus.get(u) for u in uids]
+
+
+def journaliser(racine, doc):
+    chemin = os.path.join(racine, LOG)
+    deja = set()
+    try:
+        with open(chemin, encoding='utf-8') as f:
+            for l in f:
+                try:
+                    deja.add(json.loads(l)['uid'])
+                except (ValueError, KeyError):
+                    continue
+    except OSError:
+        pass
+    n = 0
+    with open(chemin, 'a', encoding='utf-8') as f:
+        for m in doc['matchs']:
+            if m['uid'] in deja:
+                continue
+            f.write(json.dumps({'uid': m['uid'], 'pronostique_le': doc['genere_le'], 'debut': m['debut'],
+                                'debut_utc': m.get('debut_utc'), 'horodatage': m.get('horodatage'),
+                                'home': m['home'], 'away': m['away'], 'tournoi': m['tournoi'], 'circuit': m['circuit'],
+                                'stats': {'p_home': m['stats']['p_home'], 'sets': m['stats']['sets']},
+                                'simulation': ({'p_home': m['simulation']['p_home'], 'sets': m['simulation']['sets']}
+                                               if m.get('simulation') else None),
+                                'combinaison': ({'p_home': m['combinaison']['p_home'], 'sets': m['combinaison']['sets']}
+                                                if m.get('combinaison') else None),
+                                'detail': {k: resume_version(m.get(k)) for k in VERSIONS},
+                                'pin_cotes': m.get('pin_cotes'), 'surface': m.get('surface'),
+                                'meilleur_des': m.get('meilleur_des'), 'matchs_joues': m.get('matchs_joues'),
+                                'fiabilite': m.get('fiabilite'),
+                                'profil_contexte': (m.get('match_simule') or {}).get('profil_contexte'),
+                                'stabilite_score': (m.get('match_simule') or {}).get('stabilite_score'),
+                                'feuille': feuille_prevue(m)},
+                               ensure_ascii=False) + '\n')
+            n += 1
+    return n
+
+
+def bilan(racine, maintenant=None):
+    """Taux de vainqueurs devinés sur le journal (matchs joués, résultat connu)."""
+    maintenant = maintenant or dt.datetime.utcnow()
+    try:
+        sr = json.load(open(os.path.join(racine, 'set_results.json'), encoding='utf-8'))
+    except (OSError, ValueError):
+        sr = {}
+    vus, L, journal = set(), [], []
+    try:
+        lignes = open(os.path.join(racine, LOG), encoding='utf-8').read().splitlines()
+    except OSError:
+        lignes = []
+    try:
+        idx_b = FE.Index(FE.lire(racine, depuis=(maintenant - dt.timedelta(days=200)).date().isoformat()))
+    except Exception:  # noqa: BLE001 — sans feuilles, on garde tous les matchs
+        idx_b = None
+    for l in lignes:
+        try:
+            r = json.loads(l)
+        except ValueError:
+            continue
+        if r['uid'] in vus:
+            continue
+        vus.add(r['uid'])
+        journal.append(r)
+        d0 = dt.date.fromisoformat(r['debut'][:10])
+        res, sens = NR.resultat(sr, d0, r['home'], r['away'])
+        if not res:
+            continue
+        if idx_b is not None and interruption(idx_b.trouver(r['debut'][:10], r['home'], r['away'])[0]):
+            continue                                          # abandon ou forfait : ne juge pas le modèle
+        o = (lambda v: v) if sens == 1 else (lambda v: {'home': 'away', 'away': 'home'}.get(v))
+        g, s1, s2 = o(res.get('match')), o(res.get('set1')), o(res.get('set2'))
+        sets = None
+        if s1 in ('home', 'away') and s2 in ('home', 'away') and not (s1 == s2 and g != s1) and len(r['stats']['sets']) == 4:
+            sets = ('2-0' if g == 'home' else '0-2') if s1 == s2 else ('2-1' if g == 'home' else '1-2')
+        L.append(dict(r, gagnant=g, sets_reel=sets))
+
+    def bloc(items, cle):
+        it = [x for x in items if x.get(cle)]
+        n = len(it)
+        if not n:
+            return {'n': 0}
+        ok = sum(1.0 if (x[cle]['p_home'] > 0.5) == (x['gagnant'] == 'home') and x[cle]['p_home'] != 0.5 else
+                 (0.5 if x[cle]['p_home'] == 0.5 else 0.0) for x in it)
+        s = [x for x in it if x['sets_reel']]
+        sj = sum(max(x[cle]['sets'], key=x[cle]['sets'].get) == x['sets_reel'] for x in s)
+        ll = sum(-math.log(min(max(x[cle]['p_home'] if x['gagnant'] == 'home' else 1 - x[cle]['p_home'], 1e-6), 1))
+                 for x in it) / n
+        return {'n': n, 'reussite_pct': round(100 * ok / n, 1), 'log_loss': round(ll, 4),
+                'score_sets_juste_pct': round(100 * sj / len(s), 1) if s else None, 'n_sets': len(s)}
+
+    def calibration(items, cle):
+        """Point 9 : quand le favori est annoncé à 60 %, gagne-t-il 6 fois sur 10 ? (tranches de 10 points)"""
+        out = []
+        for lo in range(50, 100, 10):
+            g = []
+            for x in items:
+                v = x.get(cle)
+                if not v or x['gagnant'] not in ('home', 'away'):
+                    continue
+                pf = max(v['p_home'], 1 - v['p_home'])
+                if lo <= 100 * pf < lo + 10 or (lo == 90 and pf >= 1):
+                    g.append((pf, (v['p_home'] >= 0.5) == (x['gagnant'] == 'home')))
+            if g:
+                out.append({'tranche': f"{lo}–{lo + 10} %", 'n': len(g), 'prevu': round(100 * sum(p for p, _ in g) / len(g), 1),
+                            'reel': round(100 * sum(w for _, w in g) / len(g), 1)})
+        return out
+    # 05/11/2026 : un même match sous deux uid ne compte qu'une fois (voir dedoublonner)
+    L = [x for x in dedoublonner([dict(x, reel={'gagnant': x['gagnant']}) for x in L])]
+    VERS = (('combinaison', 'combinaison'), ('simulation', 'simulation'), ('stats_seules', 'stats'))
+    depuis7 = (maintenant - dt.timedelta(days=7)).date().isoformat()
+    L7 = [x for x in L if x['debut'] >= depuis7]
+    doc = {'genere_le': maintenant.isoformat(timespec='seconds') + 'Z', 'pronostiques': len(vus), 'joues_avec_resultat': len(L),
+           'tous': {k: bloc(L, c) for k, c in VERS},
+           '7_derniers_jours': {k: bloc(L7, c) for k, c in VERS},
+           'calibration': {k: calibration(L, c) for k, c in VERS},
+           'par_circuit': {ci: {k: bloc([x for x in L if x.get('circuit') == ci], c) for k, c in VERS}
+                           for ci in ('ATP', 'WTA', 'CH', 'ITF') if any(x.get('circuit') == ci for x in L)},
+           'derniers': [{'debut': x['debut'], 'home': x['home'], 'away': x['away'], 'gagnant': x['gagnant'],
+                         'combinaison': (x.get('combinaison') or {}).get('p_home'),
+                         'simulation': (x.get('simulation') or {}).get('p_home'),
+                         'stats': x['stats']['p_home']}
+                        for x in sorted(L, key=lambda x: x['debut'])[-30:]],
+           'match_simule_contre_feuille': suivi_feuilles(racine, journal)}
+    return doc
+
+
+def score_reel(fi, inverse):
+    """« 6-4 3-6 7-6 » du point de vue home du pronostic, depuis une feuille TennisApi ; None sinon."""
+    a, b = (fi.get('score_home') or {}).get('sets') or [], (fi.get('score_away') or {}).get('sets') or []
+    if not a or len(a) != len(b):
+        return None
+    if inverse:
+        a, b = b, a
+    return ' '.join(f"{x}-{y}" for x, y in zip(a, b))
+
+
+def juger(v, gagnant, sets, score, jeux):
+    """Ce qui était juste dans une version du pronostic."""
+    if not v or v.get('p_home') is None:
+        return None
+    p = v['p_home']
+    out = {'p_home': p, 'proba_du_vainqueur': round(p if gagnant == 'home' else 1 - p, 4),
+           'vainqueur_juste': None if p == 0.5 else ((p > 0.5) == (gagnant == 'home'))}
+    if sets and v.get('sets'):
+        out['sets_prevus'] = max(v['sets'], key=v['sets'].get)
+        out['sets_justes'] = out['sets_prevus'] == sets
+        out['proba_des_sets_reels'] = v['sets'].get(sets)
+    sc = [x[0] for x in v.get('scores_probables') or []]
+    if sc:
+        out['score_prevu'] = sc[0]
+        if score:
+            out['score_juste'] = sc[0] == score
+            out['rang_du_score_reel'] = sc.index(score) + 1 if score in sc else None
+    if jeux is not None and v.get('jeux_moyen') is not None:
+        out['jeux_prevus'], out['ecart_jeux'] = v['jeux_moyen'], round(jeux - v['jeux_moyen'], 1)
+    return out
+
+
+# ------------------------------------------------------------------ La feuille entière contre les simulations
+DIAG_STATS = ('premiere_pct', 'gagnes_1re_pct', 'gagnes_2e_pct', 'aces', 'doubles_fautes', 'breaks', 'jeux',
+              'balles_break_obtenues', 'jeux_service_gagnes_pct', 'points_gagnes')
+SERVICE_STATS = ('premiere_pct', 'gagnes_1re_pct', 'gagnes_2e_pct')
+DIAG_LIB = {'premiere_pct': '% de 1re balle', 'gagnes_1re_pct': 'points gagnés derrière la 1re',
+            'gagnes_2e_pct': 'points gagnés derrière la 2e', 'aces': 'aces', 'doubles_fautes': 'doubles fautes',
+            'breaks': 'breaks réussis', 'jeux': 'jeux gagnés'}
+
+
+def diagnostic(prevue, reelle, gagnant, p_home_sim):
+    """Chaque statistique de la vraie feuille placée dans la distribution des simulations (journal, 1re
+    prédiction) : prévu (moyenne), fourchette à 80 %, réel, écart réduit z = (réel − prévu) / écart type des
+    simulations. Puis CE QUI A FAIT LA DIFFÉRENCE : la statistique de service où un joueur s'est le plus écarté
+    de sa simulation dans le sens du vrai résultat (z orienté ≥ 1)."""
+    if not prevue or not reelle or gagnant not in ('home', 'away'):
+        return None
+    st = {}
+    for k in DIAG_STATS:
+        if k not in prevue:
+            continue
+        for i, cote in enumerate(('home', 'away')):
+            v = reelle[i].get(k)
+            if v is None:
+                continue
+            moy, lo, hi = prevue[k][i]
+            et = max((hi - lo) / 2.563, 1e-6)                  # p10–p90 d'une loi normale = 2,563 écarts types
+            st.setdefault(k, {})[cote] = {'prevu': round(moy, 1), 'bas': round(lo, 1), 'haut': round(hi, 1),
+                                          'reel': round(v, 1), 'z': round((v - moy) / et, 2), 'dans': lo <= v <= hi}
+    if not st:
+        return None
+    cases = [x for d in st.values() for x in d.values()]
+    out = {'stats': st, 'dans_fourchette_pct': round(100 * sum(x['dans'] for x in cases) / len(cases), 1),
+           'vainqueur_juste': ((p_home_sim >= 0.5) == (gagnant == 'home')) if p_home_sim is not None else None}
+    cand = []
+    for k in SERVICE_STATS:
+        for cote, x in (st.get(k) or {}).items():
+            cand.append(((x['z'] if cote == gagnant else -x['z']), k, cote))
+    cand.sort(reverse=True)
+    if cand and cand[0][0] >= 1:
+        z, k, cote = cand[0]
+        out['decisif'] = {'stat': k, 'joueur': cote, 'z': round(z, 2), 'prevu': st[k][cote]['prevu'], 'reel': st[k][cote]['reel']}
+    return out
+
+
+def biais(R, min_n=30):
+    """Là où la simulation a bon et pas bon, sur tous les matchs joués avec leur feuille : par statistique, écart
+    moyen (réel − prévu) et part des réels dans la fourchette, pour le FAVORI et l'OUTSIDER annoncés par la
+    simulation, par circuit ; et, quand le vainqueur est faux, la statistique qui a fait la différence.
+    Moins de 30 matchs : affiché, mais signalé « ne pas conclure »."""
+    D = [m for m in R if m.get('diagnostic') and not (m.get('reel') or {}).get('interrompu')]
+    if not D:
+        return {'n': 0}
+
+    def bloc(G):
+        out = {}
+        for k in DIAG_STATS:
+            for role in ('favori', 'outsider'):
+                xs = []
+                for m in G:
+                    ph = m.get('p_affiche', m.get('p_simulation'))
+                    if ph is None:
+                        continue
+                    cote = ('home' if ph >= 0.5 else 'away') if role == 'favori' else ('away' if ph >= 0.5 else 'home')
+                    x = (m['diagnostic']['stats'].get(k) or {}).get(cote)
+                    if x:
+                        xs.append(x)
+                if xs:
+                    out.setdefault(k, {})[role] = {'n': len(xs), 'ecart_moyen': round(sum(x['reel'] - x['prevu'] for x in xs) / len(xs), 2),
+                                                    'z_moyen': round(sum(x['z'] for x in xs) / len(xs), 2),
+                                                    'dans_fourchette_pct': round(100 * sum(x['dans'] for x in xs) / len(xs), 1)}
+        return out
+    faux = [m for m in D if m['diagnostic'].get('vainqueur_juste') is False]
+    dec = {}
+    for m in faux:
+        k = (m['diagnostic'].get('decisif') or {}).get('stat') or 'aucune stat nette'
+        dec[k] = dec.get(k, 0) + 1
+    return {'n': len(D), 'conclure': len(D) >= min_n, 'tous': bloc(D),
+            'par_circuit': {c: bloc([m for m in D if m.get('circuit') == c]) for c in ('ATP', 'WTA', 'CH')
+                            if any(m.get('circuit') == c for m in D)},
+            'erreurs': {'n': len(faux), 'stat_decisive': dict(sorted(dec.items(), key=lambda kv: -kv[1]))}}
+
+
+def score_complet(fi):
+    """05/11/2026 — le score d'une feuille « Ended » est-il celui d'un match allé à son terme ? Chaque set fini (6-x avec
+    x ≤ 4, 7-5, 7-6, set décisif à 2 jeux d'écart, super jeu décisif à 10) et le vainqueur à 2 sets (3 au meilleur des 5,
+    déduit si un joueur a 3 sets). None si pas de score."""
+    A, B = (fi.get('score_home') or {}).get('sets') or [], (fi.get('score_away') or {}).get('sets') or []
+    S = [(a, b) for a, b in zip(A, B) if a is not None and b is not None]
+    if not S:
+        return None
+    gagnes = max(sum(a > b for a, b in S), sum(b > a for a, b in S))
+    bo = 5 if (fi.get('meilleur_des') == 5 or gagnes >= 3) else 3
+
+    def fini(a, b, dernier):
+        m, n = max(a, b), min(a, b)
+        return (m == 6 and n <= 4) or (m == 7 and n in (5, 6)) or (dernier and m >= 6 and m - n >= 2) or (m >= 10 and m - n >= 2)
+    return all(fini(a, b, i == len(S) - 1) for i, (a, b) in enumerate(S)) and gagnes == bo // 2 + 1
+
+
+def interruption(fi):
+    """'abandon' (abandon, disqualification), 'forfait' (walkover) ou None, d'après la feuille TennisApi.
+    22/10/2026 : ces matchs ne jugent pas le modèle (un abandon à 3-1 n'est pas une erreur de pronostic).
+    05/11/2026 : TennisApi marque aussi « Ended » des matchs au score inachevé (3,4 % des feuilles : abandons non
+    signalés, scores tronqués) — « abandon_probable », écartés eux aussi."""
+    txt = str(((fi or {}).get('statut') or {}).get('texte') or '').lower()
+    if txt in ('retired', 'defaulted'):
+        return 'abandon'
+    if txt == 'walkover':
+        return 'forfait'
+    if txt == 'ended' and score_complet(fi) is False:
+        return 'abandon_probable'
+    return None
+
+
+def pronostic_tardif(fi, passage, marge_min=10):
+    """05/11/2026 — True si le dernier pronostic a été fait plus de 10 minutes APRÈS le vrai début du match (horaire
+    de la feuille TennisApi) : un match affiché le lendemain de sa vraie date était jugé sur un pronostic qui
+    connaissait déjà son résultat (1 cas sur 904 au 05/11)."""
+    try:
+        debut = (fi or {}).get('debut')
+        if not passage or debut is None or not str(debut).isdigit():
+            return False
+        reel = dt.datetime.fromtimestamp(int(debut), dt.timezone.utc)
+        t = dt.datetime.fromisoformat(str(passage).replace('Z', '+00:00'))
+        t = t if t.tzinfo else t.replace(tzinfo=dt.timezone.utc)
+        return (t - reel).total_seconds() > 60 * marge_min
+    except (TypeError, ValueError, OverflowError):
+        return False
+
+
+def dedoublonner(R):
+    """05/11/2026 — un même match pronostiqué sous DEUX uid (affiché un jour, joué le lendemain : programme décalé,
+    match reporté, passage de minuit) recevait deux fois le même résultat réel : 14,7 % des bilans après match étaient
+    des doublons (ATP : 7 sur 35 la semaine du 02/11). Même paire de joueurs, débuts à 3 jours ou moins, même score (ou
+    même vainqueur sans score) : seul le pronostic le PLUS RÉCENT compte (le dernier connu avant le vrai début)."""
+    import elo as E_
+    cle = lambda r: frozenset((E_.cle(r.get('home')), E_.cle(r.get('away'))))
+    groupes = {}
+    for r in R:
+        groupes.setdefault(cle(r), []).append(r)
+    jeter = set()
+    for L in groupes.values():
+        if len(L) < 2:
+            continue
+        L = sorted(L, key=lambda r: str(r.get('debut')))
+        for a, b in zip(L, L[1:]):
+            try:
+                ecart = (dt.date.fromisoformat(str(b['debut'])[:10]) - dt.date.fromisoformat(str(a['debut'])[:10])).days
+            except ValueError:
+                continue
+            ra, rb = a.get('reel') or {}, b.get('reel') or {}
+            meme = (ra.get('score') and ra.get('score') == rb.get('score')) or \
+                   (not ra.get('score') and not rb.get('score') and ra.get('gagnant') and
+                    {a.get('home'): ra.get('gagnant')} == {b.get('home'): rb.get('gagnant')})
+            if ecart <= 3 and meme:
+                jeter.add(id(a))
+    if jeter:
+        print(f"Doublons écartés (même match sous deux uid) : {len(jeter)}")
+    return [r for r in R if id(r) not in jeter]
+
+
+def resoudre(racine, maintenant=None):
+    """Chaque match du journal dont le résultat est connu : 1re prédiction, dernière avant le match,
+    résultat réel (vainqueur, sets, score en jeux, feuille de stats), et le jugement de chaque version."""
+    maintenant = maintenant or dt.datetime.utcnow()
+    try:
+        sr = json.load(open(os.path.join(racine, 'set_results.json'), encoding='utf-8'))
+    except (OSError, ValueError):
+        sr = {}
+    journal, vus = [], set()
+    try:
+        for l in open(os.path.join(racine, LOG), encoding='utf-8'):
+            try:
+                r = json.loads(l)
+            except ValueError:
+                continue
+            if r['uid'] not in vus:
+                vus.add(r['uid'])
+                journal.append(r)
+    except OSError:
+        pass
+    passes = [r for r in journal if dt.datetime.fromisoformat(r['debut']) < maintenant]
+    if not passes:
+        return []
+    debut_min = (dt.date.fromisoformat(min(r['debut'] for r in passes)[:10]) - dt.timedelta(days=1)).isoformat()
+    idx = FE.Index(FE.lire(racine, depuis=debut_min))
+    inst = lire_instantanes(racine, depuis=debut_min)
+    out = []
+    for r in passes:
+        d0 = dt.date.fromisoformat(r['debut'][:10])
+        res, sens = NR.resultat(sr, d0, r['home'], r['away'])
+        fi, inv = idx.trouver(r['debut'][:10], r['home'], r['away'])
+        interrompu = interruption(fi)
+        if fi is not None and str((fi.get('statut') or {}).get('texte') or '').lower() != 'ended':
+            fi = None
+        gagnant = sets = None
+        if res:
+            o = (lambda v: v) if sens == 1 else (lambda v: {'home': 'away', 'away': 'home'}.get(v))
+            gagnant = o(res.get('match'))
+            s1, s2 = o(res.get('set1')), o(res.get('set2'))
+            if r.get('meilleur_des', 3) == 3 and s1 in ('home', 'away') and s2 in ('home', 'away') and not (s1 == s2 and gagnant != s1):
+                sets = ('2-0' if gagnant == 'home' else '0-2') if s1 == s2 else ('2-1' if gagnant == 'home' else '1-2')
+        score = score_reel(fi, inv) if fi else None
+        if gagnant not in ('home', 'away') and fi and fi.get('vainqueur') in (1, 2):
+            gagnant = 'home' if (fi['vainqueur'] == 1) != inv else 'away'
+        if gagnant not in ('home', 'away'):
+            continue
+        score_brut = score
+        if score:
+            g_score = NR.gagnant_score(score, r.get('meilleur_des', 3))
+            if g_score == gagnant:
+                ns = [tuple(int(v) for v in x.split('-')) for x in score.split()]
+                sets = f"{sum(a > b for a, b in ns)}-{sum(b > a for a, b in ns)}"
+            else:
+                score = None                     # incomplet, impossible ou incohérent : jamais utilisé pour apprendre
+        jeux = sum(a + b for a, b in (tuple(int(v) for v in x.split('-')) for x in score.split())) if score else None
+        feuille = (FE.feuille_reelle(fi, inv, FE.points(racine).get(fi.get('id')))
+                   if fi and (not score_brut or score) else None)
+        avant = [x for x in inst.get(r['uid'], []) if x['passage'][:16] < r['debut'][:16]]
+        dernier = avant[-1] if avant else None
+        if pronostic_tardif(fi, (dernier or {}).get('passage') or r.get('pronostique_le')):
+            continue                     # 05/11/2026 : pronostic figé APRÈS le vrai début du match (fuite) — écarté
+        premier = r.get('detail') or {k: r.get(k) for k in VERSIONS}
+        p_affiche = next(((premier.get(k) or {}).get('p_home') for k in VERSIONS
+                          if (premier.get(k) or {}).get('p_home') is not None), None)
+        out.append({'uid': r['uid'], 'debut': r['debut'], 'home': r['home'], 'away': r['away'], 'tournoi': r['tournoi'],
+                    'circuit': r.get('circuit'), 'surface': r.get('surface'), 'meilleur_des': r.get('meilleur_des', 3),
+                    'pronostique_le': r.get('pronostique_le'), 'matchs_joues': r.get('matchs_joues'),
+                    'fiabilite': r.get('fiabilite'), 'profil_contexte': r.get('profil_contexte'),
+                    'stabilite_score': r.get('stabilite_score'),
+                    'dernier_passage': dernier['passage'] if dernier else None, 'n_passages': len(avant),
+                    'reel': {'gagnant': gagnant, 'sets': sets, 'score': score, 'jeux': jeux,
+                             'feuille': feuille[0] if feuille else None, 'interrompu': interrompu,
+                             'score_invalide': bool(score_brut and not score)},
+                    'premier': {k: juger(premier.get(k), gagnant, sets, score, jeux) for k in VERSIONS},
+                    'p_simulation': (premier.get('simulation') or {}).get('p_home'), 'p_affiche': p_affiche,
+                    'diagnostic': (diagnostic(r.get('feuille'), feuille[0], gagnant, p_affiche)
+                                   if feuille and not interrompu else None),
+                    'diagnostic_version': (r.get('feuille') or {}).get('version'),
+                    'dernier': ({k: juger(dernier.get(k), gagnant, sets, score, jeux) for k in VERSIONS} if dernier else None),
+                    'pin_cotes': r.get('pin_cotes')})
+    out.sort(key=lambda x: x['debut'], reverse=True)
+    return dedoublonner(out)
+
+
+def corrections_niveaux(racine):
+    """{circuit: {niveau: pente}} des corrections en place (non retirées), {} si le fichier manque."""
+    try:
+        with open(os.path.join(racine, CORRECTIONS_NIVEAUX), encoding='utf-8') as f:
+            doc = json.load(f)
+    except (OSError, ValueError):
+        return {}
+    out = {}
+    for c, nv in (doc.get('corrections') or {}).items():
+        for n, v in (nv or {}).items():
+            if isinstance(v, dict) and v.get('pente') and not v.get('retiree'):
+                out.setdefault(c, {})[n] = float(v['pente'])
+    return out
+
+
+def appliquer_corrections_niveaux(racine, doc, maintenant, anciens_resultats, construire_=None):
+    """Refait les matchs concernés avec leur pente ; garde la fiabilité du pronostic SANS correction (paquet 270)."""
+    C = corrections_niveaux(racine)
+    viser = {m['uid']: C[m.get('circuit')][(m.get('fiabilite') or {}).get('niveau')] for m in doc['matchs']
+             if m.get('combinaison') and (m.get('fiabilite') or {}).get('niveau') in C.get(m.get('circuit'), {})}
+    if not viser:
+        return 0
+    doc2 = (construire_ or construire)(racine, maintenant, uids=set(viser), pentes_forcees=viser)
+    par_uid = {m['uid']: m for m in doc2['matchs']}
+    for i, m in enumerate(doc['matchs']):
+        m2 = par_uid.get(m['uid'])
+        if not m2 or not m2.get('combinaison'):
+            continue
+        f = dict(m['fiabilite'])
+        f['correction_niveau'] = {'pente': viser[m['uid']], 'niveau': f.get('niveau'), 'circuit': m.get('circuit'),
+                                  'p_home_sans_correction': (m.get('combinaison') or {}).get('p_home'),
+                                  'p_home_avec_correction': m2['combinaison'].get('p_home'), 'source': CORRECTIONS_NIVEAUX}
+        m2['fiabilite'] = f
+        m2['p_premier'] = m.get('p_premier')
+        doc['matchs'][i] = m2
+    return len(viser)
+
+
+def main(argv):
+    racine = argv[1] if len(argv) > 1 else os.path.join(ICI, '..')
+    maintenant = dt.datetime.utcnow()
+    doc = construire(racine, maintenant)
+    # Seuls les résultats déjà publiés entrent dans la note : aucun résultat du match à venir,
+    # ni résolution nouvellement calculée pendant ce passage, ne peut fuiter dans le pronostic.
+    try:
+        with open(os.path.join(racine, RESULTATS), encoding='utf-8') as f:
+            anciens_resultats = json.load(f)
+    except (OSError, ValueError):
+        anciens_resultats = {}
+    # 05/11/2026 : première publication de chaque match (journal), pour le critère « pronostic qui bouge »
+    for m, p0 in zip(doc['matchs'], premiers_pronostics(racine, [m['uid'] for m in doc['matchs']])):
+        m['p_premier'] = p0
+    FI.ajouter(doc['matchs'], anciens_resultats)
+    try:
+        nc = appliquer_corrections_niveaux(racine, doc, maintenant, anciens_resultats)
+        if nc:
+            print(f"Correction par niveau de fiabilité : {nc} matchs refaits ({CORRECTIONS_NIVEAUX})")
+    except Exception as e:  # noqa: BLE001 — la correction ne doit jamais bloquer les pronostics
+        print(f"::warning::correction par niveau non appliquée : {type(e).__name__}: {e}")
+    for m in doc['matchs']:                  # 18/11/2026 (paquet 273) : les deux %, gardés pour la règle de retrait
+        pc_ = (m.get('combinaison') or {}).get('poids_circuit')
+        if pc_ and m.get('fiabilite'):
+            m['fiabilite'] = dict(m['fiabilite'], poids_circuit=pc_)
+        oc_ = (m.get('combinaison') or {}).get('outsiders')
+        if oc_ and m.get('fiabilite'):
+            m['fiabilite'] = dict(m['fiabilite'], outsiders=oc_)
+    os.makedirs(os.path.join(racine, 'Tennis_Edge_Lab', 'live'), exist_ok=True)
+    with open(os.path.join(racine, SORTIE), 'w', encoding='utf-8') as f:
+        json.dump(doc, f, ensure_ascii=False, indent=1)
+    n = journaliser(racine, doc)
+    ni = enregistrer_instantanes(racine, doc)
+    b = bilan(racine)
+    with open(os.path.join(racine, BILAN), 'w', encoding='utf-8') as f:
+        json.dump(b, f, ensure_ascii=False, indent=1)
+    R = resoudre(racine)
+    with open(os.path.join(racine, RESULTATS), 'w', encoding='utf-8') as f:
+        json.dump({'genere_le': doc['genere_le'], 'n': len(R), 'biais': biais(R), 'matchs': R}, f, ensure_ascii=False,
+                  separators=(',', ':'))
+    print(f"Enregistré : {ni} instantanés ({INSTANTANES}) · {len(R)} matchs joués prédit/réel ({RESULTATS})")
+    t = b['tous']
+    print(f"Pronostics : {len(doc['matchs'])} matchs dans les {HORIZON_H} h ({n} nouveaux au journal) · "
+          f"bilan sur {b['joues_avec_resultat']} matchs joués : stats {t['stats_seules'].get('reussite_pct')} % · "
+          f"combinaison {t['combinaison'].get('reussite_pct')} %")
+    return 0
+
+
+if __name__ == '__main__':
+    sys.exit(main(sys.argv))

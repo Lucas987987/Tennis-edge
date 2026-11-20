@@ -1,0 +1,229 @@
+{
+ "genere_le": "2026-11-05T08:18:03+00:00",
+ "regle": "par piste et par circuit : seule, −0,001 sur ≥ 300 matchs concernés et gain positif sur tous ; ET ajoutée au combiné, encore −0,001 sur tous les matchs jugés 2023 →",
+ "non_testables": {
+  "double_meme_semaine": "pas de doubles dans l'archive",
+  "heure_du_match": "pas d'heure dans l'archive ; feuilles horodatées depuis septembre 2026 seulement"
+ },
+ "circuits": {
+  "ATP": {
+   "juges": 9741,
+   "log_loss_combine_6": 0.60458,
+   "fin_de_saison": {
+    "seule": {
+     "beta": -0.057,
+     "concernes": 1209,
+     "gain_concernes": 0.00208,
+     "gain_tous": 0.000258,
+     "positive": true
+    },
+    "ajoutee_au_combine": {
+     "betas_7": [
+      -0.1702,
+      -0.5318,
+      -0.8677,
+      -0.0399,
+      0.0661,
+      1.5561,
+      0.0261
+     ],
+     "gain_en_plus": -7e-05,
+     "suffisant": false
+    },
+    "adoptee": false
+   },
+   "points_a_defendre": {
+    "seule": {
+     "beta": 0.0034,
+     "concernes": 4951,
+     "gain_concernes": -0.0001,
+     "gain_tous": -5.1e-05,
+     "positive": false
+    },
+    "ajoutee_au_combine": {
+     "betas_7": [
+      -0.1717,
+      -0.5362,
+      -0.8689,
+      -0.0398,
+      0.0674,
+      1.572,
+      0.0197
+     ],
+     "gain_en_plus": -0.00015,
+     "suffisant": false
+    },
+    "adoptee": false
+   },
+   "lucky_loser": {
+    "seule": {
+     "beta": 0.0272,
+     "concernes": 472,
+     "gain_concernes": 0.00056,
+     "gain_tous": 2.7e-05,
+     "positive": false
+    },
+    "ajoutee_au_combine": {
+     "betas_7": [
+      -0.1728,
+      -0.5345,
+      -0.8685,
+      -0.04,
+      0.0663,
+      1.5268,
+      -0.0546
+     ],
+     "gain_en_plus": -1e-05,
+     "suffisant": false
+    },
+    "adoptee": false
+   }
+  },
+  "WTA": {
+   "juges": 9218,
+   "log_loss_combine_6": 0.59394,
+   "fin_de_saison": {
+    "seule": {
+     "beta": -0.0504,
+     "concernes": 1020,
+     "gain_concernes": -0.00064,
+     "gain_tous": -7.1e-05,
+     "positive": false
+    },
+    "ajoutee_au_combine": {
+     "betas_7": [
+      -0.1203,
+      -0.3936,
+      -1.0248,
+      -0.0335,
+      0.0265,
+      1.4629,
+      -0.0046
+     ],
+     "gain_en_plus": -1e-05,
+     "suffisant": false
+    },
+    "adoptee": false
+   },
+   "points_a_defendre": {
+    "seule": {
+     "beta": 0.0008,
+     "concernes": 4300,
+     "gain_concernes": 1e-05,
+     "gain_tous": 3e-06,
+     "positive": false
+    },
+    "ajoutee_au_combine": {
+     "betas_7": [
+      -0.1216,
+      -0.3953,
+      -1.026,
+      -0.0334,
+      0.0269,
+      1.4892,
+      0.0104
+     ],
+     "gain_en_plus": 5e-05,
+     "suffisant": false
+    },
+    "adoptee": false
+   },
+   "lucky_loser": {
+    "seule": {
+     "beta": -0.3206,
+     "concernes": 455,
+     "gain_concernes": -0.01481,
+     "gain_tous": -0.000731,
+     "positive": false
+    },
+    "ajoutee_au_combine": {
+     "betas_7": [
+      -0.1396,
+      -0.4116,
+      -1.0495,
+      -0.0333,
+      0.0268,
+      1.49,
+      -0.3961
+     ],
+     "gain_en_plus": -0.00078,
+     "suffisant": false
+    },
+    "adoptee": false
+   }
+  },
+  "CH": {
+   "juges": 31606,
+   "log_loss_combine_6": 0.63607,
+   "fin_de_saison": {
+    "seule": {
+     "beta": -0.0997,
+     "concernes": 5117,
+     "gain_concernes": 0.00182,
+     "gain_tous": 0.000294,
+     "positive": true
+    },
+    "ajoutee_au_combine": {
+     "betas_7": [
+      -0.2026,
+      -0.3141,
+      -0.5335,
+      -0.0494,
+      0.0585,
+      1.3617,
+      -0.05
+     ],
+     "gain_en_plus": 7e-05,
+     "suffisant": false
+    },
+    "adoptee": false
+   },
+   "points_a_defendre": {
+    "seule": {
+     "beta": 0.0265,
+     "concernes": 8236,
+     "gain_concernes": 0.00034,
+     "gain_tous": 8.9e-05,
+     "positive": false
+    },
+    "ajoutee_au_combine": {
+     "betas_7": [
+      -0.2007,
+      -0.3088,
+      -0.5278,
+      -0.0493,
+      0.0592,
+      1.4741,
+      0.0323
+     ],
+     "gain_en_plus": 0.00017,
+     "suffisant": false
+    },
+    "adoptee": false
+   },
+   "lucky_loser": {
+    "seule": {
+     "beta": -0.0647,
+     "concernes": 700,
+     "gain_concernes": 0.00043,
+     "gain_tous": 1e-05,
+     "positive": false
+    },
+    "ajoutee_au_combine": {
+     "betas_7": [
+      -0.2036,
+      -0.3122,
+      -0.5306,
+      -0.0493,
+      0.0584,
+      1.4595,
+      -0.137
+     ],
+     "gain_en_plus": 2e-05,
+     "suffisant": false
+    },
+    "adoptee": false
+   }
+  }
+ }
+}

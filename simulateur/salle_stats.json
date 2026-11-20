@@ -1,0 +1,19 @@
+{
+ "date": "2026-11-12",
+ "paquet": 238,
+ "quoi": "Décalage des statistiques annoncées selon que le match se joue en salle ou en plein air (etude_premieres_balles_salle.py, rapport_premieres_balles_salle.json). Appliqué avant le recalage appris en direct, à l'affichage comme à l'apprentissage.",
+ "decalages": {
+  "ATP": {
+   "doubles_fautes": {
+    "salle": -0.485,
+    "plein_air": -0.079
+   },
+   "premiere_pct": {
+    "salle": 1.22,
+    "plein_air": 0.024
+   }
+  }
+ },
+ "regle": "appris sur 2019–2022, jugé une fois sur 2023 → juin 2026 : le biais en salle baisse d'au moins moitié et l'écart moyen ne monte pas, sur au moins 1 000 cas en salle",
+ "retrait": "sur nos cas en salle joués depuis le 12/11/2026 (au moins 300), si l'écart moyen |annoncé − réel| avec le décalage dépasse celui sans le décalage, le décalage de cette statistique est retiré (recalage_stats.py, suivi « salle »). Pour l'enlever à la main : vider « decalages »."
+}

@@ -1,0 +1,98 @@
+{
+ "pente_commune_apprise_sur_2018_2022": 1.235,
+ "2018–2022": {
+  "matchs": 4701,
+  "gain": 0.00406,
+  "erreur_type": 0.00123,
+  "erreurs_types": 3.3,
+  "log_loss_base": 0.53669,
+  "log_loss": 0.53263,
+  "brier_base": 0.18044,
+  "brier": 0.17947,
+  "favori_annonce_pct": 69.9,
+  "favori_reel_pct": 72.9
+ },
+ "pour_memoire_2023_juin_2026": {
+  "ATP + WTA": {
+   "matchs": 3442,
+   "gain": 0.00322,
+   "erreur_type": 0.00147,
+   "erreurs_types": 2.2,
+   "log_loss_base": 0.53913,
+   "log_loss": 0.53591,
+   "brier_base": 0.18146,
+   "brier": 0.1807,
+   "favori_annonce_pct": 70.0,
+   "favori_reel_pct": 72.0,
+   "pente_propre": 1.209
+  },
+  "ATP": {
+   "matchs": 1700,
+   "gain": 0.00328,
+   "erreur_type": 0.00215,
+   "erreurs_types": 1.53,
+   "log_loss_base": 0.52694,
+   "log_loss": 0.52365,
+   "brier_base": 0.17647,
+   "brier": 0.17567,
+   "favori_annonce_pct": 70.8,
+   "favori_reel_pct": 72.4,
+   "pente_propre": 1.207
+  },
+  "WTA": {
+   "matchs": 1742,
+   "gain": 0.00316,
+   "erreur_type": 0.002,
+   "erreurs_types": 1.58,
+   "log_loss_base": 0.55104,
+   "log_loss": 0.54787,
+   "brier_base": 0.18632,
+   "brier": 0.18561,
+   "favori_annonce_pct": 69.2,
+   "favori_reel_pct": 71.7,
+   "pente_propre": 1.211
+  }
+ },
+ "hors_grand_chelem_pente_propre_2018_2022": {
+  "ATP": {
+   "matchs": 9272,
+   "pente": 0.869
+  },
+  "WTA": {
+   "matchs": 8157,
+   "pente": 1.048
+  }
+ },
+ "genere_le": "2026-11-11T18:58:24+00:00",
+ "statut": "DÉCISION DE LUCAS (11/11/2026). La règle écrite à l'avance (WTA seule, 2 erreurs types) n'est pas passée au paquet 230. La pente commune n'était pas écrite à l'avance : les chiffres de 2023 → juin 2026 sont publiés pour mémoire, pas comme une preuve.",
+ "elo": "réglé comme la production (elo.de_production), mis à jour après chaque match ; compétitions par équipes exclues",
+ "controle_nos_matchs": {
+  "fait_le": "2026-11-11",
+  "tournoi": "US Open 2026, tableau principal",
+  "matchs": 196,
+  "favori_reel_pct": 76.0,
+  "favori_annonce_pct": 70.2,
+  "pente_propre": 1.25,
+  "gain_de_la_pente_commune": 0.00469,
+  "erreur_type": 0.0066,
+  "brier_avant": 0.17711,
+  "brier": 0.1749,
+  "lecture": "même sens que l'archive ; trop peu de matchs pour conclure (0,7 erreur type)",
+  "qualifications_pour_memoire": {
+   "matchs": 280,
+   "favori_reel_pct": 68.2,
+   "favori_annonce_pct": 62.2,
+   "lecture": "les qualifications ne sont pas dans l'étude et la pente ne s'y applique pas ; l'Elo y paraît lui aussi trop prudent : à étudier à part"
+  }
+ },
+ "production": {
+  "fichier": "simulateur/grand_chelem.json",
+  "pentes": {
+   "ATP": 1.235,
+   "WTA": 1.235
+  },
+  "ou": "tableau principal seulement : le tour doit être connu et ne pas être un tour de qualifications",
+  "comment": "décalage (logit) = poids de l'Elo dans le mélange × (pente − 1) × logit(p Elo)"
+ },
+ "retrait": "règle cumulée (fantomes_circuits.REGLE_CUMULEE), par circuit : dès 300 matchs de Grand Chelem suivis, si le gain propre du signal est négatif de plus de 2 erreurs types, il est retiré"
+}

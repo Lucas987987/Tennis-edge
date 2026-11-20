@@ -1,0 +1,166 @@
+name: Vidéo — simulation du match du jour
+
+# AJOUTÉ LE 23/10/2026. Vidéo verticale (1080×1920, MP4, ~25 s) du match du jour rejoué point par point par
+# l'algo, en français et en anglais, prête à poster sur X. Fin de vidéo : % sur 20 000 simulations.
+# 27/10/2026 : la vidéo montre un MATCH REPRÉSENTATIF des victoires du favori (médoid des sets, jeux et
+# statistiques), rejoué point par point ; un autre tirage seulement si un numéro est donné au lancement.
+# 24/10/2026 : AUCUNE adresse dans la vidéo par défaut (personne ne remonte la piste) ; l'adresse neutre
+# algo.tennis-edge.workers.dev ne s'affiche que si « adresse = oui » est choisi au lancement à la main.
+# Chaque matin à 07:05 UTC (09:05 à Paris) : le match du jour est choisi au premier passage des pronostics
+# de la journée. Les deux vidéos arrivent sur le Telegram PRIVÉ (TELEGRAM_CHAT_ID) et nulle part ailleurs :
+# pas d'artefact (le dépôt est public, les artefacts de ses runs se téléchargent), rien de commité. 0 requête d'API.
+# 24/10/2026 : + une CARTE DE STATS (PNG 1080×1350, FR et EN) à poster en réponse à la vidéo (X ne mélange pas
+# vidéo et image dans un même post).
+# Lancement à la main : choisir la langue, un autre match (uid du site) ou un autre tirage (seed).
+# 18/11/2026 (paquet 276) : VIDÉO EN 3D par défaut — les moments forts du match représentatif joués dans le stade 3D
+# du site, habillage télé, son de stade (~60–75 s). Rendu sans carte graphique, donc plus long : FR et EN tournent en
+# PARALLÈLE (deux jobs), 100 min au plus chacun (paquet 277). « rendu = 2d » remet l'ancienne vidéo (borne d'arcade).
+# Retrait : remettre ce fichier, scripts/video_simulation.py et scripts/sons.py du paquet 275 (la page garde la 2D).
+
+on:
+  workflow_dispatch:
+    inputs:
+      uid:
+        description: "Match (uid, vide = match du jour)"
+        required: false
+        default: ''
+      adresse:
+        description: "Afficher l'adresse du site à la fin de la vidéo"
+        type: boolean
+        default: false
+      seed:
+        description: "Vide = le scénario représentatif des 20 000 simulations (défaut). Un nombre = un autre tirage."
+        required: false
+        default: ''
+      format:
+        description: "Format : 9x16 (Reels / Shorts) ou 4x5 (le plus grand dans le fil de X)"
+        type: choice
+        options: ['9x16', '4x5']
+        default: '9x16'
+      arbitre:
+        description: "Vidéo 3D : la voix de l'arbitre (synthèse vocale)"
+        type: boolean
+        default: true
+      rendu:
+        description: "3d : le stade (défaut) ; 2d : la borne d'arcade"
+        type: choice
+        options: ['3d', '2d']
+        default: '3d'
+  schedule:
+    - cron: '5 7 * * *'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: video-simulation
+  cancel-in-progress: false
+
+jobs:
+  video:
+    runs-on: ubuntu-24.04   # 05/11/2026 : image figée (ubuntu-latest est passé à 26.04)
+    timeout-minutes: 100
+    strategy:
+      fail-fast: false
+      matrix:
+        lang: [fr, en]
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /algo/
+            /scripts/video_simulation.py
+            /scripts/installer_video.sh
+            /scripts/sons.py
+            /scripts/sons_stade.py
+            /scripts/voix.py
+            /sons/
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Navigateur (Chromium)
+        run: |
+          # 05/11/2026 (paquet 194) : plus d'apt (miroir Ubuntu trop lent, vidéo annulée) — voir le script.
+          bash scripts/installer_video.sh
+        env:
+          TE_SON_STADE: '1'     # 18/11/2026 (paquet 277) : bande-son de stade et voix de l'arbitre
+
+      - name: Y a-t-il un match du jour ?
+        id: mdj
+        run: |
+          python - <<'PY'
+          import json, os, urllib.request
+          chemin = 'algo/donnees.json'
+          with open(chemin, encoding='utf-8') as f:
+              d = json.load(f)
+          uid_demande = (os.environ.get('UID_DEMANDE') or '').strip()
+          uid = uid_demande or (d.get('match_du_jour') or {}).get('uid') or ''
+          def trouver(doc):
+              return next((x for x in doc.get('matchs', []) if x.get('uid') == uid and x.get('simulation')), None)
+          m = trouver(d)
+          # Un lancement manuel peut viser un match déjà publié mais pas encore commité dans main.
+          # Recharger alors le catalogue public ; ne jamais replacer silencieusement l'UID par le match du jour.
+          if uid_demande and not m:
+              for url in ('https://algo.tennis-edge.workers.dev/donnees.json',
+                          'https://lucas987987.github.io/Tennis-edge/algo/donnees.json'):
+                  try:
+                      req = urllib.request.Request(url, headers={'User-Agent': 'Tennis-Edge-Video/1.0'})
+                      with urllib.request.urlopen(req, timeout=45) as r:
+                          public = json.load(r)
+                      m = trouver(public)
+                      if m:
+                          d = public
+                          with open(chemin, 'w', encoding='utf-8') as f:
+                              json.dump(d, f, ensure_ascii=False, separators=(',', ':'))
+                          print('Catalogue public rechargé :', url)
+                          break
+                  except Exception as e:
+                      print('Catalogue public indisponible :', url, type(e).__name__)
+          if uid_demande and not m:
+              raise SystemExit(f"UID demandé introuvable ou sans simulation : {uid_demande}")
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+              f.write(f"ok={'1' if m else '0'}\n")
+              f.write(f"titre={(m['home'] + ' – ' + m['away']) if m else ''}\n")
+              f.write(f"tournoi={m['tournoi'] if m else ''}\n")
+          print('Match :', uid or 'aucun', '(simulation disponible)' if m else '(pas de simulation)')
+          PY
+        env:
+          UID_DEMANDE: ${{ inputs.uid }}
+
+      - name: Enregistrer (FR puis EN)
+        if: steps.mdj.outputs.ok == '1'
+        run: |
+          lang="${{ matrix.lang }}"
+          python scripts/video_simulation.py --lang "$lang" --uid "${{ inputs.uid }}" --seed "${{ inputs.seed }}" --format "${{ inputs.format || '9x16' }}" --rendu "${{ inputs.rendu || '3d' }}" --ips "${{ (inputs.rendu || '3d') == '3d' && '25' || '30' }}" ${{ inputs.adresse && '--adresse' || '' }} ${{ inputs.arbitre == false && '--sans-voix' || '' }} --sortie videos
+          # 24/10/2026 : carte de stats du match (PNG pour X, en réponse à la vidéo)
+          python scripts/video_simulation.py --lang "$lang" --uid "${{ inputs.uid }}" --carte --sortie videos || echo "::warning::carte ${lang} non faite"
+          ls -la videos
+
+      - name: Envoyer sur le Telegram privé
+        if: steps.mdj.outputs.ok == '1'
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          TITRE: ${{ steps.mdj.outputs.titre }}
+          TOURNOI: ${{ steps.mdj.outputs.tournoi }}
+        run: |
+          if [ -z "${TELEGRAM_TOKEN}" ] || [ -z "${TELEGRAM_CHAT_ID}" ]; then echo '::error::Telegram non configuré : vidéos non envoyées.'; exit 1; fi
+          suffixe=""; [ "${{ inputs.format || '9x16' }}" = "4x5" ] && suffixe="_4x5"
+          for lang in ${{ matrix.lang }}; do
+            test -s "videos/simulation_${lang}${suffixe}.mp4"
+            curl --fail-with-body -sS -o /dev/null -w "Telegram ${lang} : HTTP %{http_code}\n" \
+              -F chat_id="${TELEGRAM_CHAT_ID}" -F supports_streaming=true \
+              -F caption="🎬 Simulation (${lang}${suffixe}) — ${TITRE} · ${TOURNOI}" \
+              -F video=@"videos/simulation_${lang}${suffixe}.mp4" \
+              "https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendVideo"
+            if [ -f "videos/stats_${lang}.png" ]; then
+              curl --fail-with-body -sS -o /dev/null -w "Telegram carte ${lang} : HTTP %{http_code}\n" \
+                -F chat_id="${TELEGRAM_CHAT_ID}" -F caption="📊 Stats du match (${lang}) — à poster en réponse à la vidéo" \
+                -F photo=@"videos/stats_${lang}.png" \
+                "https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendPhoto"
+            fi
+          done

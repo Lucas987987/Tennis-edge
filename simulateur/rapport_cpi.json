@@ -1,0 +1,92 @@
+{
+ "genere_le": "2026-11-04T14:03:29+00:00",
+ "etalonnage_jusqu_2022": {
+  "coefs": [
+   34.1147,
+   -154.7833,
+   332.8468
+  ],
+  "editions": 67,
+  "erreur_moyenne_tournoi_de_cote": 4.35,
+  "erreur_moyenne_sans_indice": 5.64,
+  "correlation_tournoi_de_cote": 0.611,
+  "cpi_moyen": 34.2
+ },
+ "regle": "positif si −0,001 de log loss 2023 → avec les deux bases, ≥ 300 matchs jugés, par circuit",
+ "A_cpi_officiel": {
+  "ATP": {
+   "appris": 3494,
+   "juges": 3063,
+   "z_elo": {
+    "beta": -0.1103,
+    "log_loss_sans": 0.63543,
+    "log_loss_avec": 0.6354,
+    "gain": 3e-05
+   },
+   "z_mix": {
+    "beta": -0.081,
+    "log_loss_sans": 0.63175,
+    "log_loss_avec": 0.63173,
+    "gain": 2e-05
+   },
+   "positif": false,
+   "cpi_moyen_juge": 35.8
+  }
+ },
+ "B_cpi_estime": {
+  "ATP": {
+   "appris": 14048,
+   "juges": 10246,
+   "z_elo": {
+    "beta": 0.1063,
+    "log_loss_sans": 0.61484,
+    "log_loss_avec": 0.61484,
+    "gain": -0.0
+   },
+   "z_mix": {
+    "beta": 0.1922,
+    "log_loss_sans": 0.61167,
+    "log_loss_avec": 0.61167,
+    "gain": 0.0
+   },
+   "positif": false,
+   "cpi_moyen_juge": 35.7
+  },
+  "WTA": {
+   "appris": 10988,
+   "juges": 8993,
+   "z_elo": {
+    "beta": 0.188,
+    "log_loss_sans": 0.6106,
+    "log_loss_avec": 0.61064,
+    "gain": -4e-05
+   },
+   "z_mix": {
+    "beta": 0.3595,
+    "log_loss_sans": 0.60682,
+    "log_loss_avec": 0.60689,
+    "gain": -7e-05
+   },
+   "positif": false,
+   "cpi_moyen_juge": 34.7
+  },
+  "CH": {
+   "appris": 33366,
+   "juges": 30915,
+   "z_elo": {
+    "beta": 0.3652,
+    "log_loss_sans": 0.63892,
+    "log_loss_avec": 0.63884,
+    "gain": 9e-05
+   },
+   "z_mix": {
+    "beta": 0.4384,
+    "log_loss_sans": 0.63518,
+    "log_loss_avec": 0.63507,
+    "gain": 0.00011
+   },
+   "positif": false,
+   "cpi_moyen_juge": 34.2
+  }
+ }
+}

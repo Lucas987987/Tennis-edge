@@ -1,0 +1,74 @@
+name: Arena - Reparer D1 sans effacer les donnees
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '20'
+      - name: Installer Wrangler
+        run: npm install --no-save wrangler@4
+      - name: Configurer la base existante
+        env:
+          DB_ID: ${{ vars.ARENA_D1_DATABASE_ID }}
+          ORIGIN: ${{ vars.ARENA_ORIGIN }}
+        run: |
+          test -n "$DB_ID" && test -n "$ORIGIN"
+          cat > workers/arena/wrangler.toml <<EOF
+          name = "tennis-edge-arena"
+          main = "worker.js"
+          compatibility_date = "2026-11-01"
+          workers_dev = true
+          [vars]
+          ARENA_ORIGIN = "$ORIGIN"
+          [[d1_databases]]
+          binding = "ARENA_DB"
+          database_name = "tennis-edge-arena"
+          database_id = "$DB_ID"
+          EOF
+      - name: Inspecter les tables avant reparation
+        working-directory: workers/arena
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_ARENA_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: npx wrangler d1 execute tennis-edge-arena --remote --command="SELECT name FROM sqlite_master WHERE type='table' AND name LIKE 'arena_%' ORDER BY name;"
+      - name: Restaurer uniquement les tables et triggers manquants
+        working-directory: workers/arena
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_ARENA_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          npx wrangler d1 execute tennis-edge-arena --remote --file=schema.sql
+          npx wrangler d1 execute tennis-edge-arena --remote --file=arena_v12.sql
+          npx wrangler d1 execute tennis-edge-arena --remote --file=arena_v13.sql
+      - name: Verifier les tables et les lignes conservees
+        working-directory: workers/arena
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_ARENA_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          npx wrangler d1 execute tennis-edge-arena --remote --command="SELECT 'users' AS table_name, count(*) AS n FROM arena_users UNION ALL SELECT 'challenges',count(*) FROM arena_challenges UNION ALL SELECT 'rewards',count(*) FROM arena_rewards UNION ALL SELECT 'cards',count(*) FROM arena_cards UNION ALL SELECT 'events',count(*) FROM arena_point_events;"
+      - name: Tester les GET et OPTIONS
+        env:
+          ORIGIN: ${{ vars.ARENA_ORIGIN }}
+        run: |
+          python3 - <<'PY'
+          import os,urllib.request,urllib.error
+          base='https://tennis-edge-arena.tennis-edge.workers.dev'
+          origin=os.environ['ORIGIN']
+          for route in ['/api/arena/challenges','/api/arena/leaderboard','/api/arena/rankings','/api/arena/rewards']:
+              req=urllib.request.Request(base+route,headers={'Origin':origin})
+              try:resp=urllib.request.urlopen(req,timeout=20)
+              except urllib.error.HTTPError as e:resp=e
+              with resp:
+                  print(route,resp.status,resp.read(300).decode('utf-8','replace'))
+          req=urllib.request.Request(base+'/api/arena/test-login',method='OPTIONS',headers={'Origin':origin,'Access-Control-Request-Method':'POST','Access-Control-Request-Headers':'content-type'})
+          try:resp=urllib.request.urlopen(req,timeout=20)
+          except urllib.error.HTTPError as e:resp=e
+          with resp:print('OPTIONS',resp.status,'allow-origin=',resp.headers.get('Access-Control-Allow-Origin'))
+          PY

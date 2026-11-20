@@ -1,0 +1,288 @@
+# .github/workflows/pages.yml
+# Publication GitHub Pages Tennis Edge (incluant Arena V1.9.2)
+name: Deploy Pages
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'division10.html'
+      - 'confidence.js'
+      - '.github/workflows/pages.yml'
+      - 'Tennis_Edge_Lab/**'
+      - 'algo/**'
+      - 'arena/**'
+  workflow_run:
+    workflows: ['Pronostics du jour']
+    types: [completed]
+    branches: [main]
+  schedule:
+    - cron: '7 * * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: true
+jobs:
+  deploy:
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+          filter: blob:none
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            index.html
+            division10.html
+            confidence.js
+            /algo/
+            /arena/
+            matches_oddspapi.json
+            resultats.json
+            resultats_fast.json
+            players_data.json
+            elo_ratings_atp.json
+            elo_ratings_wta.json
+            confidence_calib.json
+            backtest_tennis.csv
+            Tennis_Edge_Lab/index.html
+            Tennis_Edge_Lab/style.css
+            Tennis_Edge_Lab/app.js
+            Tennis_Edge_Lab/data.js
+            Tennis_Edge_Lab/manifest.json
+            Tennis_Edge_Lab/build_data.py
+            Tennis_Edge_Lab/build_from_repo.py
+            Tennis_Edge_Lab/closing_source.py
+            Tennis_Edge_Lab/fetch_worker_snapshot.py
+            Tennis_Edge_Lab/autoresearch.py
+            Tennis_Edge_Lab/research.html
+            Tennis_Edge_Lab/research.css
+            Tennis_Edge_Lab/research.js
+            Tennis_Edge_Lab/research_v61.js
+            Tennis_Edge_Lab/research_v63.js
+            Tennis_Edge_Lab/research_v632.css
+            Tennis_Edge_Lab/research_v66.css
+            Tennis_Edge_Lab/research_v66.js
+            Tennis_Edge_Lab/research_explorer.js
+            Tennis_Edge_Lab/research_explorer.css
+            Tennis_Edge_Lab/research_profils.js
+            Tennis_Edge_Lab/research_profils.css
+            Tennis_Edge_Lab/research_reconciliation.js
+            Tennis_Edge_Lab/research_reconciliation.css
+            Tennis_Edge_Lab/research_direct.js
+            Tennis_Edge_Lab/research_direct.css
+            Tennis_Edge_Lab/research_registre.js
+            Tennis_Edge_Lab/research_h18_h20.js
+            Tennis_Edge_Lab/prive.js
+            Tennis_Edge_Lab/research_registre.css
+            Tennis_Edge_Lab/tennis_meta.py
+            Tennis_Edge_Lab/books.py
+            Tennis_Edge_Lab/clv_stats.py
+            Tennis_Edge_Lab/freshness.js
+            Tennis_Edge_Lab/publish_guard.py
+            Tennis_Edge_Lab/v4.js
+            Tennis_Edge_Lab/v6.js
+            Tennis_Edge_Lab/candidate_registry.py
+            Tennis_Edge_Lab/source_catalog.py
+            Tennis_Edge_Lab/cache
+            Tennis_Edge_Lab/live/bookmakers_sets.json
+            Tennis_Edge_Lab/live/bookmakers_sets_audit.json
+            Tennis_Edge_Lab/live/bookmakers_sets_prospective.json
+            Tennis_Edge_Lab/live/candidate_watch_v61_prospective.json
+            Tennis_Edge_Lab/live/candidate_watch_v61_prospective.json.gz
+            Tennis_Edge_Lab/live/candidate_watch_v62_prospective.json
+            Tennis_Edge_Lab/live/history_stability.json
+            Tennis_Edge_Lab/live/propositions_v66.json
+            Tennis_Edge_Lab/live/gel_v66_prospective.json
+            Tennis_Edge_Lab/live/gel_explorateur_prospective.json
+            Tennis_Edge_Lab/live/profils_hypotheses.json
+            Tennis_Edge_Lab/live/explorateur_alertes.json.gz
+            Tennis_Edge_Lab/live/explorateur_histo.json.gz
+            Tennis_Edge_Lab/live/explorateur_matchs.json.gz
+            Tennis_Edge_Lab/live/explorateur_detections.json.gz
+            Tennis_Edge_Lab/live/reconciliation_hypotheses.json
+            Tennis_Edge_Lab/live/registre
+            Tennis_Edge_Lab/live/lectures_profils.json
+            Tennis_Edge_Lab/live/delai_alertes.json
+            Tennis_Edge_Lab/live/croisements.json
+            Tennis_Edge_Lab/live/pronostics_bilan.json
+            Tennis_Edge_Lab/live/joueurs_service.json.gz
+            Tennis_Edge_Lab/live/archive/bookmakers_sets_v61/current
+            Tennis_Edge_Lab/registry
+            scripts/validation_report.py
+            set_results.json
+            moves_detail_hist.csv
+            moves_detail.csv
+            paper_trades_canal.jsonl
+            paper_trades_match.jsonl
+            canal_clv_detail.csv
+            closing_lines.json
+            closing_lines
+            scripts/closing_store.py
+            resultats_oddspapi.json
+            resultats_derived.json
+            pipeline_status.json
+            book_index.json
+            paper_canal_report.json
+            h13_signal_log.jsonl
+            h15_signal_log.jsonl
+            h16_signal_log.jsonl
+            h16b_signal_log.jsonl
+            h17_signal_log.jsonl
+      - name: Reconstruire les données Tennis Edge Lab
+        env:
+          LAB_CHECK_PREVIOUS: '1'
+        run: |
+          python Tennis_Edge_Lab/build_from_repo.py .
+          python - <<'PYCODE'
+          import json, pathlib, hashlib
+          p=pathlib.Path('Tennis_Edge_Lab')
+          manifest=json.loads((p/'manifest.json').read_text(encoding='utf8'))
+          data=(p/'data.json').read_bytes()
+          assert hashlib.sha256(data).hexdigest()==manifest['dataset_sha256']
+          assert manifest['row_count']>=200
+          print('✅ Jeu vérifié:',manifest['row_count'],'observations, hash',manifest['dataset_sha256'][:12])
+          PYCODE
+      - name: Recherche statistique autonome (lecture seule)
+        run: |
+          if python3 Tennis_Edge_Lab/autoresearch.py . && python3 -c "import json,pathlib; p=pathlib.Path('Tennis_Edge_Lab/live/research.json'); x=json.loads(p.read_text()); assert x['schema_version']==1 and x['row_counts']['settled_quality_ok']>=200 and len(x['frozen_hypotheses'])==7"; then
+            echo 'Analyse autonome valide.'
+          else
+            echo '::warning::Analyse autonome indisponible ; rapport précédent conservé si valide.'
+            rm -f Tennis_Edge_Lab/live/research.json Tennis_Edge_Lab/live/matches_index.json
+          fi
+      - name: Évaluer les pistes gelées uniquement sur les nouveaux matchs
+        run: |
+          python3 Tennis_Edge_Lab/candidate_registry.py evaluate --root .
+          python3 - <<'PY'
+          import json
+          o=json.load(open('Tennis_Edge_Lab/live/prospective.json'))
+          assert o['schema_version']==1 and isinstance(o['models'],list)
+          print('✅ Pistes prospectives:',len(o['models']))
+          PY
+      - name: Capturer le bilan public D1 (lecture seule, sans bloquer Pages)
+        run: python Tennis_Edge_Lab/fetch_worker_snapshot.py Tennis_Edge_Lab/worker_hypotheses.json
+      - name: Date de la dernière tâche quotidienne réussie (fraîcheur)
+        id: daily
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          at=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow lab_quotidien.yml --status success --limit 1 --json updatedAt --jq '.[0].updatedAt' 2>/dev/null || true)
+          echo "at=${at}" >> "$GITHUB_OUTPUT"
+          echo "Dernière tâche quotidienne réussie : ${at:-inconnue}"
+      - name: Préparer les ressources 3D locales V9.2
+        run: |
+          set -euo pipefail
+          mkdir -p algo/vendor
+          # Fichiers récupérés UNE FOIS lors du build, jamais depuis le téléphone.
+          npm install --no-save --no-audit --no-fund --prefix /tmp/tennis-edge-v92 babylonjs@7.54.3 babylonjs-loaders@7.54.3
+          cp /tmp/tennis-edge-v92/node_modules/babylonjs/babylon.js algo/vendor/babylon.js
+          cp /tmp/tennis-edge-v92/node_modules/babylonjs-loaders/babylonjs.loaders.min.js algo/vendor/babylonjs.loaders.min.js
+          curl --fail --location --retry 3 --silent --show-error --output algo/vendor/Soldier.glb \
+            https://raw.githubusercontent.com/mrdoob/three.js/r164/examples/models/gltf/Soldier.glb
+          test "$(wc -c < algo/vendor/Soldier.glb)" -gt 10000
+          file algo/vendor/Soldier.glb
+          du -h algo/vendor/*
+      - name: Construire _site
+        env:
+          GITHUB_EVENT_REPO_NAME: ${{ github.event.repository.name }}
+          DAILY_RUN_AT: ${{ steps.daily.outputs.at }}
+        run: |
+          set -e
+          mkdir -p _site
+          touch _site/.nojekyll
+          for f in index.html division10.html confidence.js; do
+            cp -f "$f" _site/ || echo "❌ MANQUANT (fichier de site) : $f"
+          done
+          for f in \
+            matches_oddspapi.json \
+            resultats.json \
+            resultats_fast.json \
+            players_data.json \
+            elo_ratings_atp.json \
+            elo_ratings_wta.json \
+            confidence_calib.json \
+            backtest_tennis.csv \
+          ; do
+            cp -f "$f" _site/ || echo "⚠️ absent : $f"
+          done
+          mkdir -p _site/algo
+          cp algo/index.html _site/algo/ || echo "❌ MANQUANT : algo/index.html"
+          cp algo/donnees.json _site/algo/ 2>/dev/null || echo "⚠️ algo/donnees.json absent (prochain passage des pronostics)"
+          # 18/11/2026 (paquet 282) : les modèles 3D des personnages (joueurs, arbitre, juges de ligne, ramasseurs).
+          # Ils n'avaient jamais été publiés : sur le site, le direct 3D restait en personnages simplifiés (les vidéos,
+          # faites depuis le dépôt, les avaient). Échec explicite s'ils manquent.
+          mkdir -p _site/algo/modeles
+          cp algo/modeles/joueurs3d.bin algo/modeles/LICENCE.txt _site/algo/modeles/
+          test -s _site/algo/modeles/joueurs3d.bin
+
+          # V9.2 : 3D auto-hébergée ; échec explicite si les fichiers sont absents.
+          mkdir -p _site/algo/vendor
+          cp algo/vendor/babylon.js algo/vendor/babylonjs.loaders.min.js algo/vendor/Soldier.glb _site/algo/vendor/
+          test -s _site/algo/vendor/babylon.js
+          test -s _site/algo/vendor/babylonjs.loaders.min.js
+          test -s _site/algo/vendor/Soldier.glb
+          echo 'V9.2 : ressources 3D locales publiées.'
+
+          # V10 : publier le studio 3D autonome, ses scripts et ses ressources.
+          test -s algo/v10/index.html
+          mkdir -p _site/algo/v10
+          cp -R algo/v10/. _site/algo/v10/
+          test -s _site/algo/v10/index.html
+          echo 'V10 : studio 3D publie.'
+
+          # Arena V1.9.2 : publier aussi les ressources CSS/JS utilisées par index.html.
+          mkdir -p _site/arena
+          cp arena/index.html arena/arena.js arena/config.js arena/arena-ui.css arena/arena-ui.js _site/arena/
+          test -s _site/arena/arena-ui.css
+          test -s _site/arena/arena-ui.js
+          echo 'Arena : CSS et JS publiés avec succès.'
+
+          mkdir -p _site/arena
+          cp arena/index.html arena/arena.js _site/arena/
+
+          mkdir -p _site/Tennis_Edge_Lab
+          for f in index.html style.css app.js data.js; do
+            cp "Tennis_Edge_Lab/$f" "_site/Tennis_Edge_Lab/$f"
+          done
+          for f in research.html research.js research_v61.js research_v63.js research_v66.js research_explorer.js research_profils.js research_reconciliation.js research_direct.js research_registre.js research_h18_h20.js freshness.js prive.js research.css research_v632.css research_v66.css research_explorer.css research_profils.css research_reconciliation.css research_direct.css research_registre.css v4.js v6.js; do
+            cp "Tennis_Edge_Lab/$f" "_site/Tennis_Edge_Lab/$f"
+          done
+          python Tennis_Edge_Lab/publish_guard.py --root . --site _site \
+            --previous-base "https://${GITHUB_REPOSITORY_OWNER}.github.io/${GITHUB_EVENT_REPO_NAME}/Tennis_Edge_Lab/live" \
+            --daily-run-at "${DAILY_RUN_AT}"
+          for x in explorateur_alertes explorateur_histo explorateur_matchs explorateur_detections; do
+            if [ -f "Tennis_Edge_Lab/live/$x.json.gz" ]; then
+              cp "Tennis_Edge_Lab/live/$x.json.gz" "_site/Tennis_Edge_Lab/live/$x.json.gz"
+              gunzip -c "Tennis_Edge_Lab/live/$x.json.gz" > "_site/Tennis_Edge_Lab/live/$x.json"
+            fi
+          done
+          if [ -d Tennis_Edge_Lab/live/registre ]; then
+            mkdir -p _site/Tennis_Edge_Lab/live/registre
+            cp Tennis_Edge_Lab/live/registre/* _site/Tennis_Edge_Lab/live/registre/
+          fi
+          cp Tennis_Edge_Lab/live/lectures_profils.json _site/Tennis_Edge_Lab/live/ 2>/dev/null || echo "⚠️ lectures_profils.json absent"
+          cp Tennis_Edge_Lab/live/delai_alertes.json _site/Tennis_Edge_Lab/live/ 2>/dev/null || echo "⚠️ delai_alertes.json absent"
+          cp Tennis_Edge_Lab/live/croisements.json _site/Tennis_Edge_Lab/live/ 2>/dev/null || echo "⚠️ croisements.json absent"
+          cp Tennis_Edge_Lab/live/pronostics_bilan.json _site/Tennis_Edge_Lab/live/ 2>/dev/null || echo "⚠️ bilan des pronostics absent"
+          cp Tennis_Edge_Lab/live/joueurs_service.json.gz _site/Tennis_Edge_Lab/live/ 2>/dev/null || echo "⚠️ fiches service/retour absentes"
+          mkdir -p _site/Tennis_Edge_Lab/live/archive
+          cp Tennis_Edge_Lab/cache/archive/20*.json _site/Tennis_Edge_Lab/live/archive/ 2>/dev/null || echo "⚠️ archive annuelle absente"
+          echo "--- contenu publié ---"
+          du -sh _site
+          ls -la _site
+      - uses: actions/configure-pages@v6
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v5

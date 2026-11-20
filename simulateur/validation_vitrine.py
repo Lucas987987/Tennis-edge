@@ -1,0 +1,208 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""Contrôles bloquants de algo/donnees.json avant sa publication.
+
+Le scénario vidéo est un vrai tirage du moteur : sa trace de points doit reproduire
+exactement le score représentatif exporté, sans recalibrage côté navigateur.
+"""
+import json
+import os
+import sys
+
+VERSIONS = ('combinaison', 'simulation', 'stats')
+
+
+def score_texte(sets):
+    return ' '.join(f'{a}-{b}' for a, b in sets)
+
+
+def rejouer_trace(points, sets_gagnants=2, tb_final=7, premier_serveur=True):
+    """Rejoue une trace 0=A / 1=B avec les mêmes règles que match_simule.un_match."""
+    if not isinstance(points, str) or not points or any(c not in '01' for c in points):
+        raise ValueError('trace de points absente ou invalide')
+    if sets_gagnants not in (2, 3):
+        raise ValueError('format de match invalide')
+    i, srv, sets, ss = 0, 0 if premier_serveur else 1, [], [0, 0]
+
+    def point():
+        nonlocal i
+        if i >= len(points):
+            raise ValueError('trace interrompue avant la fin du match')
+        v = int(points[i])
+        i += 1
+        return v
+
+    while ss[0] < sets_gagnants and ss[1] < sets_gagnants:
+        g = [0, 0]
+        decisif = ss[0] == sets_gagnants - 1 and ss[1] == sets_gagnants - 1
+        while True:
+            if g == [6, 6]:
+                cible, t, k = tb_final if decisif else 7, [0, 0], 0
+                while True:
+                    s = srv if ((k + 1) // 2) % 2 == 0 else 1 - srv
+                    v = point()
+                    t[v] += 1
+                    k += 1
+                    if t[v] >= cible and t[v] - t[1 - v] >= 2:
+                        break
+                g[v] += 1
+                srv = 1 - srv
+                break
+            ps = [0, 0]
+            while True:
+                v = point()
+                ps[0 if v == srv else 1] += 1
+                if ps[0] >= 4 and ps[0] - ps[1] >= 2:
+                    v = srv
+                    break
+                if ps[1] >= 4 and ps[1] - ps[0] >= 2:
+                    v = 1 - srv
+                    break
+            g[v] += 1
+            srv = 1 - srv
+            if max(g) >= 6 and abs(g[0] - g[1]) >= 2:
+                break
+        sets.append((g[0], g[1]))
+        ss[0 if g[0] > g[1] else 1] += 1
+    if i != len(points):
+        raise ValueError(f'{len(points) - i} points surnuméraires après la fin du match')
+    return {'score': score_texte(sets), 'sets': sets, 'vainqueur': 0 if ss[0] > ss[1] else 1}
+
+
+def supprimer_doublons_production(doc):
+    """Répare uniquement le flux public généré : un UID ne doit être publié qu'une fois.
+
+    Le calendrier OddsPapi peut exposer une même affiche plusieurs fois, y compris avec
+    des heures différentes. Choix déterministe : première heure annoncée (UTC), puis
+    premier ordre d'entrée. Aucun pronostic, scénario ni bilan n'est recalculé.
+
+    Les documents de test ou les documents sans provenance restent soumis au contrôle
+    strict des doublons dans valider(), afin de conserver le garde-fou historique.
+    """
+    if not isinstance(doc.get('pronostics_du'), str) or not doc['pronostics_du']:
+        return 0
+    matchs = doc.get('matchs')
+    if not isinstance(matchs, list) or len(matchs) < 2:
+        return 0
+    gardes = {}
+    ordre = []
+    doublons = 0
+    for rang, m in enumerate(matchs):
+        uid = m.get('uid')
+        if uid is None:
+            # La validation normale doit traiter une absence d'UID.
+            ordre.append((rang, m))
+            continue
+        if uid not in gardes:
+            gardes[uid] = (rang, m)
+            continue
+        doublons += 1
+        ancien_rang, ancien = gardes[uid]
+        # Les deux valeurs debut sont celles sorties par le moteur : format ISO UTC.
+        d1, d2 = str(ancien.get('debut') or ''), str(m.get('debut') or '')
+        if (d2, rang) < (d1, ancien_rang):
+            gardes[uid] = (rang, m)
+        if d1 != d2 or ancien.get('tournoi') != m.get('tournoi'):
+            print(f'::warning::Calendrier ambigu pour {uid}: ' +
+                  f"{d1} / {ancien.get('tournoi')} vs {d2} / {m.get('tournoi')}")
+    if doublons:
+        # Préserver l'ordre chronologique et la présentation habituelle du site.
+        ordre += list(gardes.values())
+        doc['matchs'] = [m for _, m in sorted(ordre, key=lambda item: (str(item[1].get('debut') or ''), item[0]))]
+        print(f'::notice::Vitrine : {doublons} entrée(s) de calendrier en double écartée(s), '
+              f"{len(doc['matchs'])} UID publiés")
+    return doublons
+
+
+def valider(doc, simulations_attendues=20000):
+    """Lève ValueError dès qu'une incohérence peut rendre la vitrine trompeuse."""
+    # Le document produit par vitrine.py provient du calendrier externe. Il est
+    # nettoyé avant le contrôle et avant l'écriture sur disque par vitrine.main().
+    supprimer_doublons_production(doc)
+    erreurs = []
+    n_global = doc.get('simulations')
+    if n_global != simulations_attendues:
+        erreurs.append(f'simulations globales {n_global!r} != {simulations_attendues}')
+    vus = set()
+    for m in doc.get('matchs') or []:
+        uid = m.get('uid', '?')
+        if uid in vus:
+            erreurs.append(f'{uid}: match publié en double')
+            continue
+        vus.add(uid)
+        sim = m.get('simulation')
+        if not sim:
+            erreurs.append(f'{uid}: simulation complète absente du catalogue')
+            continue
+        try:
+            if m.get('simulation_disponible') is not True:
+                raise ValueError('le match n’est pas marqué comme accessible en simulation')
+            n = sim.get('n')
+            # 06/11/2026 (paquet 211) : un match commencé GARDÉ de la version précédente (vitrine.garder_commences) a été
+            # simulé et contrôlé à ce passage-là ; son nombre de simulations peut différer (chaîne courte : 300).
+            if m.get('commence_garde'):
+                if not isinstance(n, int) or n <= 0:
+                    raise ValueError(f'n={n!r} invalide (match commencé gardé)')
+            elif n != n_global or n != simulations_attendues:
+                raise ValueError(f'n={n!r}, attendu {simulations_attendues}')
+            if sim.get('version') not in VERSIONS:
+                raise ValueError('variante du scénario absente ou inconnue')
+            scores = m.get('scores_probables') or []
+            scenario = sim.get('scenario') or {}
+            if not scores or scenario.get('selection') != 'representatif':
+                raise ValueError('le scénario représentatif est absent')
+            distribution = m.get('distribution_scores') or []
+            if m.get('scores_source') != 'exact' or not distribution:
+                raise ValueError('la distribution exacte des scores est absente')
+            # 29/10/2026 : publiée compacte (scores >= 0,1 %) + la masse restante ; la somme reste 1
+            if abs(sum(float(r['probabilite']) for r in distribution) + float(m.get('distribution_reste') or 0.0) - 1) > 1e-8:
+                raise ValueError('la distribution exacte publiée ne somme pas à 1')
+            premier = distribution[0]
+            texte_exact = ' '.join(f'{a}-{b}' for a, b in premier['score'])
+            if texte_exact != scores[0][0]:
+                raise ValueError('le premier score publié ne suit pas la distribution exacte')
+            index = scenario.get('simulation_index')
+            if not isinstance(index, int) or isinstance(index, bool) or not 0 <= index < n:
+                raise ValueError('simulation_index hors des tirages réalisés')
+            reel = rejouer_trace(scenario.get('points'), sim.get('sets_gagnants'),
+                                 sim.get('tb_final') or 7, scenario.get('premier_serveur'))
+            if reel['score'] != scenario.get('score'):
+                raise ValueError(f"trace={reel['score']}, score annoncé={scenario.get('score')}")
+            if scenario.get('sets') is not None and [tuple(x) for x in scenario['sets']] != reel['sets']:
+                raise ValueError('sets du scénario différents de la trace')
+            # 04/11/2026 : p_home est publié arrondi à 3 décimales ; une variante à 0,4996 donne « 0.5 » publié
+            # mais un favori « away » dans la simulation. Au point d'arrondi, les deux sens sont admis (le scénario
+            # doit toujours suivre sa propre trace, contrôlée plus haut).
+            p_pub = float(m.get('p_home', .5))
+            favoris = {0, 1} if abs(p_pub - .5) <= .0005 + 1e-12 else {0 if p_pub >= .5 else 1}
+            if scenario.get('vainqueur') not in favoris or reel['vainqueur'] != scenario.get('vainqueur'):
+                raise ValueError('le scénario représentatif ne suit pas le vainqueur favori de la variante')
+            stabilite = sim.get('stabilite_score')
+            if stabilite is not None and not m.get('commence_garde'):
+                if stabilite.get('statut') not in ('stable', 'fragile', 'instable', 'non_controle'):
+                    raise ValueError('statut de stabilité du score inconnu')
+                scores_simules = m.get('scores_simules') or []
+                if not scores_simules or stabilite.get('score_reference') != scores_simules[0][0]:
+                    raise ValueError('la stabilité ne contrôle pas le score modal des simulations')
+                if stabilite.get('n_par_bloc') != n:
+                    raise ValueError('blocs de stabilité différents du nombre de simulations publié')
+        except (TypeError, ValueError) as e:
+            erreurs.append(f'{uid}: {e}')
+    if erreurs:
+        raise ValueError('Vitrine incohérente :\n- ' + '\n- '.join(erreurs))
+    return True
+
+
+def main(argv):
+    racine = argv[1] if len(argv) > 1 else os.path.join(os.path.dirname(__file__), '..')
+    chemin = os.path.join(racine, 'algo', 'donnees.json')
+    with open(chemin, encoding='utf-8') as f:
+        doc = json.load(f)
+    attendu = int(os.environ.get('SIMULATIONS', '20000'))
+    valider(doc, attendu)
+    print(f"Vitrine validée : {attendu} simulations ; scores et traces vidéo cohérents.")
+    return 0
+
+
+if __name__ == '__main__':
+    sys.exit(main(sys.argv))

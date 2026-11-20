@@ -1,0 +1,220 @@
+{
+  "schema": "recap_apprentissage_v1",
+  "semaine": "2026-W47",
+  "genere_le": "2026-11-20T09:49:22+00:00",
+  "statut": "a_verifier",
+  "lecture_seule": true,
+  "modifie_apprentissage": false,
+  "marche_utilise": false,
+  "sources": {
+    "facteurs": {
+      "disponible": true,
+      "genere_le": "2026-11-16T10:56:28+00:00"
+    },
+    "choix": {
+      "disponible": true,
+      "genere_le": "2026-11-16T10:37:08+00:00"
+    },
+    "stabilite": {
+      "disponible": true,
+      "genere_le": null
+    },
+    "evaluation": {
+      "disponible": true,
+      "genere_le": "2026-11-16T11:35:23.034952+00:00"
+    },
+    "recalibrage": {
+      "disponible": true,
+      "genere_le": "2026-11-16T11:35:22.820739+00:00"
+    },
+    "derive": {
+      "disponible": true,
+      "genere_le": "2026-11-16T11:35:23+00:00"
+    },
+    "gouvernance": {
+      "disponible": true,
+      "genere_le": "2026-11-20T09:49:22.106586+00:00"
+    }
+  },
+  "sources_manquantes": [],
+  "facteurs": {
+    "apprentissage_n": 7417,
+    "jugement_n": 2606,
+    "fenetres": {
+      "apprentissage": "2026-06-01",
+      "jugement": "2026-10-05"
+    },
+    "adoptes": [
+      "adversaires_communs",
+      "conditions",
+      "contexte_tournoi",
+      "dotation",
+      "duree",
+      "face_a_face",
+      "forme_fatigue",
+      "matchup",
+      "morphologie",
+      "points_importants",
+      "pression",
+      "profil",
+      "styles",
+      "vitesse_court",
+      "voyage"
+    ],
+    "non_adoptes": [
+      {
+        "nom": "blessure",
+        "libelle": "Blessure",
+        "adopte_brut": true,
+        "statut": "pas adopté (cumul : gain -0.0000 ± 0.0000, garde -0.0002 ± 0.0002, sur 2606 matchs ; il en faut 300 et 2 erreurs types)"
+      },
+      {
+        "nom": "charting",
+        "libelle": "Match Charting",
+        "adopte_brut": false,
+        "statut": "pas adopté (cumul : gain -0.0000 ± 0.0000, garde -0.0003 ± 0.0005, sur 2606 matchs ; il en faut 300 et 2 erreurs types)"
+      },
+      {
+        "nom": "densite_air",
+        "libelle": "densite_air",
+        "adopte_brut": false,
+        "statut": "pas adopté (cumul : gain +0.0000 ± 0.0000, garde -0.0001 ± 0.0000, sur 2606 matchs ; il en faut 300 et 2 erreurs types)"
+      }
+    ],
+    "candidats_en_attente": [
+      "blessure"
+    ],
+    "avant_apres_jugement": {
+      "log_loss_avant": 0.63499,
+      "log_loss_apres": 0.6205,
+      "gain_log_loss": 0.01449,
+      "exactitude_avant_pct": 63.8,
+      "exactitude_apres_pct": 65.2,
+      "gain_exactitude_points": 1.4
+    },
+    "population": "évaluation des facteurs, distincte des seuls pronostics directs récents"
+  },
+  "apprentissage_continu": {
+    "n": 1451,
+    "minimum_n": 400,
+    "adopte": false,
+    "raison": "en attente : 8 nouveaux matchs depuis le dernier jugement (il en faut 30)",
+    "poids": null,
+    "poids_appris": null,
+    "jugement": {},
+    "statut": "non_adopte",
+    "population": "premiers pronostics figés avec simulation et Elo, résultats ultérieurs"
+  },
+  "performance_recente": {
+    "matchs": 1244,
+    "log_loss": 0.602667,
+    "brier": 0.209654,
+    "exactitude": 0.657556,
+    "score_exact": 0.025786,
+    "jeux_mae": 4.914343,
+    "population": "pronostics récents évalués ; ne pas confondre avec le jugement des facteurs"
+  },
+  "recalibrage": {
+    "direct": {
+      "n": 1248,
+      "semaines": 5,
+      "decisions": [
+        {
+          "nom": "contraction_hierarchique",
+          "libelle": "Contraction hiérarchique",
+          "adopte": false,
+          "statut": "accumulation",
+          "gain_log_loss_pondere": 7.7e-05,
+          "fenetres_positives": 1,
+          "fenetres": 1
+        },
+        {
+          "nom": "isotone",
+          "libelle": "Isotone",
+          "adopte": false,
+          "statut": "accumulation",
+          "gain_log_loss_pondere": -0.031115,
+          "fenetres_positives": 0,
+          "fenetres": 1
+        },
+        {
+          "nom": "logistique",
+          "libelle": "Régression logistique",
+          "adopte": false,
+          "statut": "accumulation",
+          "gain_log_loss_pondere": -0.000106,
+          "fenetres_positives": 0,
+          "fenetres": 1
+        }
+      ],
+      "champion_actif_modifie": false
+    },
+    "rejoue": {
+      "n": 6263,
+      "semaines": 16,
+      "decisions": [
+        {
+          "nom": "contraction_hierarchique",
+          "libelle": "Contraction hiérarchique",
+          "adopte": false,
+          "statut": "confirmation",
+          "gain_log_loss_pondere": -0.002251,
+          "fenetres_positives": 4,
+          "fenetres": 7
+        },
+        {
+          "nom": "isotone",
+          "libelle": "Isotone",
+          "adopte": false,
+          "statut": "confirmation",
+          "gain_log_loss_pondere": -0.05424,
+          "fenetres_positives": 0,
+          "fenetres": 7
+        },
+        {
+          "nom": "logistique",
+          "libelle": "Régression logistique",
+          "adopte": false,
+          "statut": "confirmation",
+          "gain_log_loss_pondere": -0.002291,
+          "fenetres_positives": 2,
+          "fenetres": 7
+        }
+      ]
+    },
+    "populations_separees": true
+  },
+  "derive": {
+    "statut": "accumulation",
+    "n": 1244,
+    "date_de_reference": "2026-11-16",
+    "alertes": []
+  },
+  "champion": {
+    "statut_gouvernance": "a_verifier",
+    "initialisation": false,
+    "empreinte_avant": "0bdfa6f63112a8cc044ecbed51d65ff443dd4733856c2811c5d1ac7a34c248aa",
+    "empreinte_apres": "448323c325810e769446b14a8922ca2ce87a9e66c6215418aa34996365b4e398",
+    "modifie_cette_semaine": true,
+    "promotions_demande_es": [],
+    "promotions_retenues": [],
+    "promotions_differees": [],
+    "periodes": {
+      "juge_jusqua": "2026-11-19T17:00",
+      "jugement_courant": {},
+      "minimum_nouveaux_matchs": 30,
+      "n_nouveaux": null,
+      "ok": true,
+      "problemes": []
+    },
+    "decisions_sans_trace_stabilite": [
+      "nouveaux_venus",
+      "modele_arbres",
+      "classement",
+      "modele_arbres_activite",
+      "modele_arbres_points",
+      "classement_relatif"
+    ]
+  },
+  "avertissement": "Synthèse descriptive des rapports existants. Les populations ne sont pas agrégées ; aucune adoption nouvelle et aucune promesse de taux de réussite ou de ROI."
+}

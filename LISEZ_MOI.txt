@@ -1,0 +1,8 @@
+Tennis Edge V11 — préparation de personnages 3D humains existants.
+Ce paquet ajoute uniquement un workflow manuel et un script Blender.
+Il ne modifie pas le live, le site public, ni Deploy Pages.
+Après application, GitHub Actions > V11 - Préparer les vrais personnages 3D > Run workflow.
+Le workflow télécharge Nathan et Sophia, convertit en GLB et vérifie que chaque fichier contient une peau et un squelette. Il produit un artifact ZIP avec player_a.glb et player_b.glb.
+IMPORTANT : cette étape ne publie PAS encore les personnages. Leur rendu, la présence d'animations de tennis et les droits de redistribution doivent être validés avant publication publique.
+Source: https://github.com/s0ck3t/VideoIntoBlenderModel
+Consulter assets/LICENCES.md dans le dépôt source avant redistribution.

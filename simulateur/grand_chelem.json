@@ -1,0 +1,11 @@
+{
+ "date": "2026-11-11",
+ "paquet": 231,
+ "quoi": "Pente appliquée à la part de l'Elo du %, en Grand Chelem, tableau principal, ATP et WTA (etude_grand_chelem.py, rapport_grand_chelem.json).",
+ "pentes": {
+  "ATP": 1.235,
+  "WTA": 1.235
+ },
+ "decision": "DÉCISION DE LUCAS, 11/11/2026. La règle écrite à l'avance (WTA seule : 0,001 sur 1 000 matchs, 2 erreurs types) n'est pas passée au paquet 230 (0,0032 ± 0,0020). Pente commune aux deux circuits apprise sur 2018–2022 seulement ; pour mémoire, sur 2023 → juin 2026 : 3442 matchs, favori 72.0 % réels pour 70.0 % annoncés, gain 0.00322 ± 0.00147 — chiffre vu avant la décision, donc pas une preuve.",
+ "retrait": "règle cumulée (fantomes_circuits.REGLE_CUMULEE), par circuit : retiré si, depuis l'adoption, sur au moins 300 matchs de Grand Chelem concernés, le gain propre du signal est négatif d'au moins 2 erreurs types. Pour l'enlever à la main : vider « pentes »."
+}

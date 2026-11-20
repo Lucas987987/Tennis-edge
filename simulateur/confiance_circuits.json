@@ -1,0 +1,43 @@
+{
+ "genere_le": "2026-11-04T17:29:33+00:00",
+ "matchs": 5571,
+ "regle": "k appris avant le 01/10/2026, jugé après ; positif si −0,001 de log loss sur ≥ 300 matchs jugés, par circuit ; positif → fantôme « confiance » (deux semaines gagnantes pour l'adopter)",
+ "circuits": {
+  "ATP": {
+   "appris": 677,
+   "juges": 413,
+   "k_appris": 1.46,
+   "log_loss_sans": 0.62047,
+   "log_loss_avec": 0.6256,
+   "gain": -0.00513,
+   "positif": false,
+   "k_fantome": null,
+   "calibration_jugee_sans": "70–80 % : n 88, 75.3 → 70.5 · 80–90 % : n 46, 84.4 → 89.1 · 90–100 % : n 18, 93.5 → 83.3",
+   "calibration_jugee_avec": "70–80 % : n 62, 75.5 → 67.7 · 80–90 % : n 55, 84.5 → 81.8 · 90–100 % : n 35, 94.7 → 88.6"
+  },
+  "WTA": {
+   "appris": 686,
+   "juges": 507,
+   "k_appris": 1.5,
+   "log_loss_sans": 0.59576,
+   "log_loss_avec": 0.60374,
+   "gain": -0.00798,
+   "positif": false,
+   "k_fantome": null,
+   "calibration_jugee_sans": "70–80 % : n 109, 74.6 → 77.1 · 80–90 % : n 71, 84.3 → 77.5 · 90–100 % : n 38, 93.7 → 94.7",
+   "calibration_jugee_avec": "70–80 % : n 80, 74.8 → 77.5 · 80–90 % : n 73, 84.8 → 80.8 · 90–100 % : n 65, 95.2 → 83.1"
+  },
+  "CH": {
+   "appris": 2069,
+   "juges": 1219,
+   "k_appris": 0.94,
+   "log_loss_sans": 0.6154,
+   "log_loss_avec": 0.61544,
+   "gain": -3e-05,
+   "positif": false,
+   "k_fantome": null,
+   "calibration_jugee_sans": "70–80 % : n 263, 74.4 → 77.2 · 80–90 % : n 125, 84.3 → 84.8 · 90–100 % : n 15, 92.0 → 80.0",
+   "calibration_jugee_avec": "70–80 % : n 269, 74.3 → 77.0 · 80–90 % : n 122, 84.0 → 84.4 · 90–100 % : n 12, 91.7 → 91.7"
+  }
+ }
+}

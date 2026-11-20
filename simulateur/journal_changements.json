@@ -1,0 +1,1443 @@
+{
+ "regle": "Chaque changement du modèle est noté ici avec sa date, ce qu'il change et ce qu'il a gagné au test (log loss, négatif = mieux prévu). Les changements mis en production par décision, sans attendre la 2e semaine, restent sous le garde-fou du jugement hebdomadaire.",
+ "changements": [
+  {
+   "date": "2026-11-05",
+   "titre": "Suivi après match élargi : balles de break obtenues (le retour), % de jeux de service gagnés, points gagnés dans le match",
+   "statut": "production",
+   "decision": true,
+   "mesure": "prévus par la simulation mais jamais comparés au réel jusqu'ici ; comparés à partir des pronostics du 05/11, puis dans les points de vigilance dès 200 valeurs par circuit ; effet des biais de service actuels sur le % de victoire : 0,05 point en moyenne (biais présents chez les deux joueurs, pourcentage ancré sur l'Elo)"
+  },
+  {
+   "date": "2026-11-05",
+   "titre": "Points de vigilance sur chaque fiche : où nos prévisions annexes se trompent (recalculé chaque lundi)",
+   "statut": "production",
+   "decision": true,
+   "mesure": "833 matchs jugés (1 666 statistiques) et 447 pour les lignes : % de 1res balles sous-estimé (ATP +3,9 pts, WTA +3,7, Challenger +1,1 ; fourchette respectée 63 à 71 % du temps au lieu de 80 %), aces ATP sous-estimés (+0,9), doubles fautes surestimées (−0,5 à −0,75), points gagnés derrière la 1re balle sous-estimés ; joueurs à moins de 100 matchs : statistiques de service moins sûres ; affiché sur le circuit concerné, aucun pronostic modifié"
+  },
+  {
+   "date": "2026-11-05",
+   "titre": "En étude : tie-break sous-estimé (ATP 44 → 52 %, WTA 25 → 30 %) et 1er set",
+   "statut": "etude",
+   "decision": false,
+   "mesure": "tie-break : pas encore significatif sur 93 et 98 matchs (z 1,4), suivi chaque lundi par biais_annexes ; 1er set : l'écart du joueur cité en premier est du hasard d'échantillon (51,3 % sur 4 698 fiches) — le vrai facteur est le premier serveur (57 % des 1ers sets), inconnu avant le match ; % de 1res balles : correction déjà en jugement (recalage_stats, verdict lundi)"
+  },
+  {
+   "date": "2026-11-05",
+   "titre": "Six critères de plus pour repérer nos matchs fragiles ou réussis (descriptif)",
+   "statut": "etude",
+   "decision": false,
+   "mesure": "rejoué (5 571 matchs) : huitièmes de finale fragiles sur les deux périodes (pente 0,96 contre 1,24 puis 0,68 contre 1,04 ; 62,5 % de favoris gagnants pour 64–67 % annoncés) → ajoutés à la vérification du lundi (en direct : pente 0,32 contre 1,04 sur 110 matchs, 1re semaine justifiée) ; niveau du tournoi, salle / plein air, qualifications, quarts et au-delà : rien de stable ; en direct : pronostic qui bouge de 5 points (22 matchs, 36 % de favoris gagnants) et matchs similaires : trop peu de matchs pour conclure ; documentation des profils : non testable (non gardée)"
+  },
+  {
+   "date": "2026-11-05",
+   "titre": "Type de match affiché sur chaque fiche : fiable, standard ou fragile",
+   "statut": "production",
+   "decision": true,
+   "mesure": "fiable = Elo et simulation d'accord (moins de 10 points) et favori à 70 % ou plus (77,7 à 86,6 % de favoris gagnants sur nos pronostics rejoués, % qui se réalisent) ; fragile = critère de fragilité en vigueur ; standard = le reste ; aucune entrée du modèle"
+  },
+  {
+   "date": "2026-11-05",
+   "titre": "Favori sous-estimé (deux cas) — modèle fantôme par circuit",
+   "statut": "candidat",
+   "decision": false,
+   "mesure": "repéré sur 5 571 pronostics rejoués, vrai sur les deux périodes : modèles d'accord à 70–80 % (77,7 % pour 74,7 %), même favori avec écart ≥ 10 points à 50–60 % (63,9 % pour 57,1 %) ; décalages figés ; seuls les nouveaux matchs jugent, deux semaines gagnantes par circuit"
+  },
+  {
+   "date": "2026-11-05",
+   "titre": "Dans quels matchs nos pronostics sont-ils les plus justes ? (descriptif)",
+   "statut": "etude",
+   "decision": false,
+   "mesure": "5 571 pronostics rejoués, segments retenus seulement s'ils font mieux sur août–sept ET oct–nov : les meilleurs sont les matchs où Elo et simulation sont d'accord avec un favori à 70 % ou plus (77,7 % de gagnants pour 74,7 % annoncés entre 70 et 80 % ; 86,6 % pour 86,0 % au-delà) ; deux cas où le favori gagne plus que prévu sur les deux périodes : accord à 70–80 %, et même favori avec écart ≥ 10 points annoncé à 50–60 % (63,9 % pour 57,1 %)"
+  },
+  {
+   "date": "2026-11-04",
+   "titre": "Fragilité revérifiée chaque semaine (favoris opposés, cinq autres critères, note v3)",
+   "statut": "production",
+   "decision": true,
+   "mesure": "chaque lundi, sur nos pronostics des 6 dernières semaines : un critère est justifié si sa pente d'étalonnage est inférieure d'au moins 0,10 à celle du reste (≥ 100 matchs) ; deux semaines de suite pour entrer comme pour sortir ; la note v3 doit garder un tiers haut plus juste que le tiers bas, sinon alerte Telegram ; au 05/11 : favoris opposés pente −0,01 contre 0,93 (144 matchs) — justifié"
+  },
+  {
+   "date": "2026-11-04",
+   "titre": "Fiabilité : « fragile » d'office quand l'Elo et la simulation désignent des favoris différents",
+   "statut": "production",
+   "decision": true,
+   "mesure": "décision de Lucas ; 17 % des matchs, 54 % de bons vainqueurs (5 571 pronostics rejoués), pente d'étalonnage 0,32 sur octobre–novembre (355 matchs) ; 10 autres critères testés (expérience, absence, surface, âge, match serré, gros favori…) : aucun moins fiable que le reste sur les deux périodes (règle fixée avant : pente ≤ reste − 0,10 en août–sept ET en oct–nov) ; peu d'expérience rend même nos % trop prudents, pas trop sûrs"
+  },
+  {
+   "date": "2026-11-04",
+   "titre": "Loupe : quand nous et la clôture ne sommes pas d'accord, qui a raison ? (descriptif)",
+   "statut": "etude",
+   "decision": false,
+   "mesure": "ATP et WTA 2023 → : l'Elo seul perdait contre la clôture dans ses désaccords (ATP outsiders vus +10 pts : 31,1 % réels pour 34,0 % Pinnacle) ; avec les signaux, le réel colle à la clôture (ATP 32,2 % pour 31,7 %) ; aucun cas au-dessus de la clôture avec z ≥ 2 ; seule piste à suivre en direct : outsiders WTA vus +10 pts (32,9 % pour 30,8 %, z 1,5, 1 042 matchs)",
+   "prive": true
+  },
+  {
+   "date": "2026-11-04",
+   "titre": "Note de fiabilité v3 affichée : plus elle est proche de 100, plus nos % sont la réalité",
+   "statut": "production",
+   "decision": true,
+   "mesure": "pente d'étalonnage de la case du match (circuit × expérience × ampleur des signaux), archive 2016–2022 ; jugée sur 2023 → (règle fixée avant) : tiers des notes hautes pente 0,98 et 0,5 point d'erreur d'étalonnage, tiers bas pente 0,76 et 3,1 points ; tient en ATP et en Challenger (WTA déjà juste partout) ; la v1 reste calculée à côté"
+  },
+  {
+   "date": "2026-11-04",
+   "titre": "Parcours dans le tournoi (matchs déjà gagnés ici, qualifications comprises) — ajouté au combiné en ATP",
+   "statut": "production",
+   "decision": true,
+   "mesure": "seul : ATP +0,0036, WTA +0,0006, Challenger +0,0001 ; ajouté au combiné : ATP +0,0011 de plus (adopté), WTA et Challenger rien de plus ; les 7 β ATP sont appris ensemble"
+  },
+  {
+   "date": "2026-11-04",
+   "titre": "Joueur qui monte des petits tournois (ITF / Challenger) — rejeté",
+   "statut": "rejete",
+   "decision": false,
+   "mesure": "seul : ATP +0,0020 mais seulement +0,0002 de plus que le combiné en place (l'âge et le profil favori / outsider le captent déjà) ; WTA et Challenger rien"
+  },
+  {
+   "date": "2026-11-04",
+   "titre": "Adoption directe : changement de surface, retour d'absence, âge et profil favori / outsider, appris ensemble",
+   "statut": "production",
+   "decision": true,
+   "mesure": "décision de Lucas (sans période de fantôme) ; les quatre signaux appris ENSEMBLE sur 2016–2022 (pas de double compte), jugés 2023 → : ATP +0,0077, WTA +0,0043, Challenger +0,0039 de log loss ; chaque signal garde une part positive ; retirés d'un circuit si deux semaines de suite (≥ 30 matchs) le pronostic affiché fait pire d'au moins 0,001 qu'avant eux ; écart moyen sur les matchs du 04/11 : 3 points"
+  },
+  {
+   "date": "2026-11-04",
+   "titre": "Profil du joueur en favori / en outsider — modèle fantôme par circuit",
+   "statut": "candidat",
+   "decision": false,
+   "mesure": "archive, β appris 2016–2022, jugé 2023 → sur tous les matchs : ATP +0,0032, WTA +0,0013, Challenger +0,0014 ; le même résidu sans distinguer le rôle fait moins bien en ATP (+0,0012) et en Challenger (0,0000) : le rôle compte ; adopté sur un circuit seulement après deux semaines gagnantes en direct"
+  },
+  {
+   "date": "2026-11-04",
+   "titre": "Bilan propre à chaque joueur contre gaucher — rejeté",
+   "statut": "rejete",
+   "decision": false,
+   "mesure": "archive, jugé 2023 → : ATP −0,0003, WTA −0,0000, Challenger +0,0001 sur les matchs concernés (seuil +0,001) ; l'effet général gaucher / droitier reste dans le facteur « morphologie »"
+  },
+  {
+   "date": "2026-11-04",
+   "titre": "Évolution du classement (3 mois) et série des 10 derniers matchs — rejetées",
+   "statut": "rejete",
+   "decision": false,
+   "mesure": "archive, β appris 2016–2022, jugé 2023 → (seuil +0,001) : classement ATP +0,0001, WTA +0,0004, Challenger −0,0001 ; série ATP +0,0009, WTA +0,0006, Challenger +0,0001 ; l'Elo suit déjà ces mouvements"
+  },
+  {
+   "date": "2026-11-04",
+   "titre": "Âge des joueurs (déclin après 30 ans, progression avant 23 ans) — modèle fantôme par circuit",
+   "statut": "candidat",
+   "decision": false,
+   "mesure": "archive, β appris 2016–2022, jugé 2023 → sur tous les matchs : ATP +0,0027 (11 544 matchs), WTA +0,0017 (11 169), Challenger +0,0025 (35 802) ; le joueur plus âgé de 4 ans (au-delà de 30) annoncé 52,5 % par l'Elo, gagne 45,9 % (ATP) ; adopté sur un circuit seulement après deux semaines gagnantes en direct"
+  },
+  {
+   "date": "2026-11-04",
+   "titre": "Bilan de la note de fiabilité (descriptif)",
+   "statut": "etude",
+   "decision": false,
+   "mesure": "501 matchs notés (27/10 → 04/11) : nos probabilités sont justes au global (64,9 % de favoris gagnants pour 65,5 % annoncés) mais la note ne distingue pas les pronostics plus ou moins sûrs (surprise +0,019 / −0,002 / +0,017 du tiers bas au tiers haut) ; la composante « performance du circuit » est à l'envers (tiers haut +0,09) ; l'ATP est en dessous (56,6 % pour 66,0 % annoncés, 106 matchs)"
+  },
+  {
+   "date": "2026-11-04",
+   "titre": "Vidéo : le type de match prévu (3 sets, tie-break) — moyenne du circuit + marge",
+   "statut": "production",
+   "decision": true,
+   "mesure": "avant, la forme la plus fréquente ne donnait jamais 3 sets (jamais majoritaire, plafond ~45–50 %) alors qu'un match sur trois y va ; maintenant 3 sets si la probabilité du match dépasse la moyenne réelle du circuit plus une marge réglée pour que la part de vidéos en 3 sets égale la part réelle (au 04/11 : ATP 41,5 %, WTA 39,9 %, Challenger 35,7 %), tie-break de même (ATP 48,1 %, WTA 27,9 %, Challenger 31,7 %) ; le favori gagne toujours ; en direct ATP, 3 sets réels 48 % quand la vidéo en montre 3 contre 37 % sinon"
+  },
+  {
+   "date": "2026-11-04",
+   "titre": "Vidéos : capture image par image, accroche, drapeaux, aces / doubles fautes / échanges",
+   "statut": "production",
+   "decision": true,
+   "mesure": "image par image à 30 i/s sur une horloge virtuelle (plus de saccade) ; favori et % dès la 1re image ; drapeaux ; aces et doubles fautes tirés des taux prévus de chaque joueur, échanges de longueur réaliste sur les points ralentis ; le score simulé ne change pas ; aucune cote, aucune adresse"
+  },
+  {
+   "date": "2026-11-04",
+   "titre": "Retour après 45 jours ou plus sans match — modèle fantôme par circuit",
+   "statut": "candidat",
+   "decision": false,
+   "mesure": "archive, β appris 2016–2022, jugé 2023 → : ATP +0,0228 sur 1 019 matchs concernés, WTA +0,0140 sur 1 330, Challenger +0,0012 sur 7 735 ; au 1er match du retour, ATP 49,3 % annoncés par l'Elo → 37,4 % réels, WTA 45,6 → 37,5 % ; adopté sur un circuit seulement après deux semaines gagnantes en direct"
+  },
+  {
+   "date": "2026-11-04",
+   "titre": "Loupe : où la clôture prévoit mieux que notre Elo (descriptif)",
+   "statut": "etude",
+   "decision": false,
+   "mesure": "ATP et WTA depuis 2022 : écart moyen 0,026 / 0,020 de log loss ; plus gros trou : retour après 45 jours d'absence (×2,9 en ATP, ×2,2 en WTA), puis changement de surface ; la cote ne sert qu'à mesurer après coup",
+   "prive": true
+  },
+  {
+   "date": "2026-11-04",
+   "titre": "Changement de surface (1er ou 2e match sur la surface) — modèle fantôme par circuit",
+   "statut": "candidat",
+   "decision": false,
+   "mesure": "archive, β appris 2016–2022, jugé 2023 → : positif sur les trois circuits (ATP +0,0085 sur 1 918 matchs concernés, WTA +0,0034 sur 1 623, Challenger +0,0015 sur 5 958) ; celui qui vient de changer de surface gagne moins que son Elo (ATP 54,4 % annoncés → 47,7 %) ; adopté sur un circuit seulement après deux semaines gagnantes en direct"
+  },
+  {
+   "date": "2026-11-04",
+   "titre": "Tie-breaks : serveurs qui craquent à 5-5 / 6-5 — rejeté",
+   "statut": "rejete",
+   "decision": false,
+   "mesure": "banc de la forme exacte, réglé 2021–2022, jugé 2023 → (1 200 matchs par circuit) : ATP aucun réglage meilleur, WTA −0,0006, Challenger −0,0020 (seuil +0,001) ; en direct, tie-breaks prévus contre réels : ATP 44,8 → 50,6 %, WTA 25,2 → 29,2 %, Challenger 29,7 → 29,3 % (pas de surestimation)"
+  },
+  {
+   "date": "2026-11-04",
+   "titre": "Drapeaux des joueurs dans le post X",
+   "statut": "production",
+   "decision": true,
+   "mesure": "pays tiré des fiches de match (94 joueurs sur 96 du site au 04/11) ; Russie et Biélorussie sans drapeau (joueurs neutres sur les circuits) ; aucune entrée du modèle"
+  },
+  {
+   "date": "2026-11-04",
+   "titre": "Pronostics forts (> 70 %) trop sûrs ou pas assez, circuit par circuit — rejeté",
+   "statut": "rejete",
+   "decision": false,
+   "mesure": "5 571 pronostics figés ; k appris avant le 01/10, jugé après : ATP −0,0051, WTA −0,0080, Challenger −0,00003 (seuil +0,001) ; pas d'excès de confiance net en direct : la queue 70–90 % reste en place"
+  },
+  {
+   "date": "2026-11-04",
+   "titre": "Taille du dépôt : les fichiers de cotes réécrits à chaque capture passent par R2, git n'en garde qu'une photo toutes les 2 h",
+   "statut": "production",
+   "decision": true,
+   "mesure": "closing_lines, matches_oddspapi, live_odds et les deux états d'alertes étaient republiés ~470 fois par jour (dépôt à 6,5 Go, 4 publications refusées) ; mode « double » d'abord (copie R2 en plus, git inchangé), puis variable ETAT_CHAUD=on ; sans R2, comportement d'avant",
+   "prive": true
+  },
+  {
+   "date": "2026-11-04",
+   "titre": "Forme des matchs : relâchement de celui qui mène d'un set en ATP — modèle fantôme",
+   "statut": "candidat",
+   "decision": false,
+   "mesure": "banc d'essai exact (vainqueur tenu fixe), réglé sur 2021–2022, jugé sur 1 200 matchs 2023–2026 par circuit : ATP +0,0033 de log-vraisemblance de la forme (δ = −0,05 au service du joueur qui mène d'un set : plus de matchs en 3 sets) ; WTA et Challenger rien ; forme du jour plus forte (σ 0,22–0,32) : rien nulle part ; serveur affaibli au tie-break : +0,0005 partout, sous le seuil ; suivi en fantôme sur les nouveaux matchs ATP, intégré au calcul des scores après deux semaines gagnantes"
+  },
+  {
+   "date": "2026-11-04",
+   "titre": "Correctif : plus de pronostics contre des places vides du tableau (« R16P6 », « Qf1 »…)",
+   "statut": "production",
+   "decision": true,
+   "mesure": "le programme annonce le tour suivant avec des places vides ; un tel « joueur » partait de l'Elo de départ (pronostics à 96 % sur le site) ; ces matchs sont écartés jusqu'à ce que les vrais noms arrivent"
+  },
+  {
+   "date": "2026-11-04",
+   "titre": "CPI (vitesse du court) comme variable du vainqueur — rejeté",
+   "statut": "rejete",
+   "decision": false,
+   "mesure": "interaction CPI × (avantage au service − avantage au retour), appris 2016–2022, jugé 2023–2026 ; CPI officiel (ATP, 3 063 matchs jugés) : +0,00003 ; CPI estimé avant le match : ATP 0,0000 (10 246), WTA −0,0001 (8 993), Challenger +0,0001 (30 915) ; rien ne passe le seuil de 0,001 : la vitesse reste une information et un facteur des statistiques (aces, service)"
+  },
+  {
+   "date": "2026-11-04",
+   "titre": "Vitesse des courts : CPI officiel quand il existe, CPI estimé pour tous les autres tournois",
+   "statut": "production",
+   "decision": true,
+   "mesure": "CPI officiel publié pour 14 tournois seulement (Grands Chelems, Masters 1000, ATP Finals ; 107 valeurs 2012–2026) ; notre indice (points de service et aces au-delà de l'attendu de l'Elo service / retour) étalonné dessus : corrélation 0,78 et erreur moyenne 3,1 points en « tournoi laissé de côté » (5,9 sans l'indice) ; Paris 2026 estimé 45,3 pour 47,9 officiel ; affiché sur la fiche et dans le post, n'entre pas dans le pronostic (la vitesse est déjà un facteur du modèle)"
+  },
+  {
+   "date": "2026-11-04",
+   "titre": "Tout l'entraînement hebdomadaire jugé circuit par circuit (arbres, candidats, corrections)",
+   "statut": "production",
+   "decision": true,
+   "mesure": "décision de Lucas : arbres, arbres + activité / tour / points, nouveaux venus, qualifiés, changement de surface, classement : une série de stabilité par circuit (ATP, WTA, Challenger), appliqués seulement où ils sont en place ; moins de 50 matchs jugés sur un circuit : la semaine ne compte pas ; première lecture : activité récente candidate en ATP (+0,0047), points en sursis sur les trois circuits"
+  },
+  {
+   "date": "2026-11-04",
+   "titre": "Bouton « Générer la vidéo » sur la fiche du match",
+   "statut": "production",
+   "decision": true,
+   "mesure": "le worker du site lance le workflow vidéo pour ce match (clé privée, une demande toutes les 3 minutes au plus) ; la vidéo arrive sur le Telegram privé ; aucun jeton dans la page"
+  },
+  {
+   "date": "2026-11-04",
+   "titre": "Signaux jugés circuit par circuit (ATP, WTA, Challenger séparément)",
+   "statut": "production",
+   "decision": true,
+   "mesure": "décision de Lucas : un signal positif sur un circuit est utilisé sur ce circuit ; chaque semaine, par signal et par circuit : ≥ 30 matchs, gain ≥ 0,001 sur la semaine et depuis le début ; adopté après deux semaines gagnantes, retiré après deux sans gain ; signaux suivis : forme du service, statut d'entrée, serveuses WTA, Elo service / retour (nouveau fantôme)"
+  },
+  {
+   "date": "2026-11-04",
+   "titre": "Elo au service et Elo au retour (3e modèle) — rejeté",
+   "statut": "rejete",
+   "decision": false,
+   "mesure": "réglage fixé sur 2023–2024 (η 0,0015) ; seul, il fait comme la simulation (0,620 contre 0,620) ; ajouté à l'algo sur 3 687 pronostics hors échantillon : −0,0004 au total, WTA −0,0056, ATP −0,0007, Challenger +0,0014 : pas positif selon la règle"
+  },
+  {
+   "date": "2026-11-04",
+   "titre": "Forme du service corrigée du niveau des adversaires — rejetée",
+   "statut": "rejete",
+   "decision": false,
+   "mesure": "écarts au service et au retour contre l'attendu de l'Elo service / retour, 30 jours ; 4 674 pronostics : −0,0009 au total (ATP +0,0017, WTA −0,0042, Challenger −0,0007) ; version apprise ±0,0000 : pas positif"
+  },
+  {
+   "date": "2026-11-04",
+   "titre": "Rapprocher de 50 % les matchs où l'Elo et la simulation divergent — rejeté",
+   "statut": "rejete",
+   "decision": false,
+   "mesure": "1 506 désaccords sur 3 687 pronostics : l'algo a raison 63,5 % pour 62,6 % de confiance moyenne (pas trop sûr de lui) ; correction −0,0008 au total : pas positif"
+  },
+  {
+   "date": "2026-11-04",
+   "titre": "Vidéo du match : le scénario suit la forme la plus probable (nombre de sets, tie-break ou non)",
+   "statut": "production",
+   "decision": true,
+   "mesure": "parmi les victoires simulées du favori : nombre de sets le plus fréquent, puis tie-break seulement s'il est majoritaire, puis le match médian (jeux, statistiques) ; affichage seul, aucune probabilité modifiée"
+  },
+  {
+   "date": "2026-11-04",
+   "titre": "Recalage des statistiques annoncées par circuit (1res balles, aces, doubles fautes, breaks) — candidat",
+   "statut": "candidat",
+   "decision": false,
+   "mesure": "nos matchs du 28/10 au 04/11 : 1res balles annoncées trop bas (−4,7 pts ATP, −3,5 WTA, −1,5 Challenger), fourchette des breaks trop large (90–93 % dedans au lieu de 80 %) ; décalage et largeur appris par circuit, jugés chaque semaine sur la semaine suivante ; 1er essai (appris jusqu'au 01/11, jugé du 02 au 04/11) : erreur de couverture 7,9 → 2,9 points mais aces ATP 82,8 → 89,7 % : pas gagnant selon la règle ; ne change pas la probabilité de victoire"
+  },
+  {
+   "date": "2026-11-01",
+   "titre": "Duels de profils de jeu : serveuses WTA contre non-serveuses — modèle fantôme",
+   "statut": "candidat",
+   "decision": false,
+   "mesure": "profils service–retour figés avant match, Elo retiré, 119 000 matchs 2018 → juin 2026 ; aucun des 10 duels confirmé au total ni par circuit (ATP, WTA, Challenger étudiés séparément) ; en WTA, profil serveur contre non-serveur +2,2 pts (2018–2022) et +2,9 pts (2023–2026), rien en ATP et Challenger ; repéré après avoir regardé : probabilité corrigée suivie à côté, jamais affichée ; rien avant 30 matchs concernés"
+  },
+  {
+   "date": "2026-10-30",
+   "titre": "Statut d'entrée (invité, qualifié) relevé avant chaque match — modèle fantôme",
+   "statut": "candidat",
+   "decision": false,
+   "mesure": "détail TennisApi des matchs à venir (une requête par match, une fois) ; invité en Challenger −5,6 pts et qualifié en ATP +2,1 pts, confirmés sur 2017–2022 ; probabilité corrigée suivie à côté, jamais affichée ; rien avant 30 matchs concernés"
+  },
+  {
+   "date": "2026-10-30",
+   "titre": "Points estimés au-delà du top 500 (rang actuel → points)",
+   "statut": "production",
+   "decision": true,
+   "mesure": "le rang actuel lu dans le détail TennisApi est converti en points par la courbe du dernier classement complet, remise à l'échelle du jour ; complète la variable « points » des arbres pour les joueurs Challenger"
+  },
+  {
+   "date": "2026-10-30",
+   "titre": "Points ATP/WTA de tous les joueurs dans les arbres",
+   "statut": "production",
+   "decision": true,
+   "mesure": "138 657 matchs, appris 2017–2022, jugé 2023–2026 : rang + points +0,0023 (Challenger +0,0034, ATP +0,0003, WTA +0,0001) ; rang seul +0,0005 (ATP −0,0010) ; en place dès le premier modèle appris (lundi), retiré si moins bien que les arbres sans les points deux semaines de suite",
+   "garde_fou": "jugement hebdomadaire contre les arbres sans les points"
+  },
+  {
+   "date": "2026-10-30",
+   "titre": "Contrecoup après un titre, période de la saison, intransitivité",
+   "statut": "rejete",
+   "decision": false,
+   "mesure": "même étude : titre la semaine d'avant 0,0000 (ATP −3,8 pts sur 781 matchs mais trop rare), saison 0,0000, intransitivité +0,0001 (ATP −0,0003)"
+  },
+  {
+   "date": "2026-10-30",
+   "titre": "Longueur des échanges (frappes par point) contre tie-breaks, jeux et 3 sets",
+   "statut": "rejete",
+   "decision": false,
+   "mesure": "18 825 matchs ATP et WTA, appris 2017–2021, jugé 2022–2024 : tie-break −0,0000, plus de 22,5 jeux −0,0000, 3 sets 0,0000 ; le service et le retour suffisent ; affichée sur la fiche (Match Charting Project), sans effet sur les probabilités"
+  },
+  {
+   "date": "2026-10-30",
+   "titre": "Forme du jour σ 0,22 pour l'ATP et la WTA (lignes de jeux)",
+   "statut": "candidat",
+   "decision": false,
+   "mesure": "2 391 matchs de jugement : ATP −0,0096 (rejeté, σ 0,15 reste), WTA +0,0024 ; laissé au jugement hebdomadaire de σ par circuit, qui avait gardé 0,15 en WTA le 28/10"
+  },
+  {
+   "date": "2026-10-30",
+   "titre": "1re balle variable d'un match à l'autre dans la simulation (σ 0,29 mesuré)",
+   "statut": "rejete",
+   "decision": false,
+   "mesure": "2 391 matchs : vainqueur −0,0004, lignes +0,0005 (ATP −0,0011) ; effet trop faible sur les points de service"
+  },
+  {
+   "date": "2026-10-30",
+   "titre": "Fourchette du % de 1res balles élargie (×1,23 autour de son milieu)",
+   "statut": "production",
+   "decision": true,
+   "mesure": "elle ne contenait que 70,3 % des cas sur 2 000 matchs passés et 65,5 % en direct (visée 80 %) ; la 1re balle varie d'un match à l'autre (σ ≈ 0,29) alors que la simulation la tient fixe ; affichage seul, vérifié au test du lundi et en direct"
+  },
+  {
+   "date": "2026-10-30",
+   "titre": "Forme du jour (σ) et lignes de jeux sur 2 391 matchs de jugement",
+   "statut": "rejete",
+   "decision": false,
+   "mesure": "constat seulement : au σ actuel, matchs prévus trop longs et favoris un peu trop serrés ; σ 0,22 calibre le mieux (lignes 0,6439 contre 0,6473) mais le direct (48 matchs) montre l'inverse — rien changé, suivi"
+  },
+  {
+   "date": "2026-10-29",
+   "titre": "Invités (WC) et qualifiés : écarts à l'Elo",
+   "statut": "candidat",
+   "decision": false,
+   "mesure": "ajoutés au pronostic : +0,0006 (rejeté) ; mais deux effets confirmés sur 2017–2022 : invité en Challenger −5,6 pts, qualifié en ATP +2,1 pts ; en attente d'une source du statut avant le match (sonde TennisApi)"
+  },
+  {
+   "date": "2026-10-29",
+   "titre": "Joueur à domicile (sur le vainqueur)",
+   "statut": "rejete",
+   "decision": false,
+   "mesure": "4 631 matchs : le joueur à domicile gagne 39,5 % pour 41,9 % prévus ; ajouté au pronostic 0,0000 (ATP −0,0010)"
+  },
+  {
+   "date": "2026-10-29",
+   "titre": "Âge et progression de l'Elo (10 versions)",
+   "statut": "rejete",
+   "decision": false,
+   "mesure": "bonus âge, écart d'âge, K +25/50/100 % pour les jeunes, jeunes peu vus, progression sur 6 et 12 mois : meilleur +0,0003 (seuil +0,001) ; l'Elo suit déjà la progression"
+  },
+  {
+   "date": "2026-10-29",
+   "titre": "Service et retour du moment (30 jours, même surface) dans la simulation — modèle fantôme",
+   "statut": "candidat",
+   "decision": false,
+   "mesure": "affiché en information sur chaque match ; probabilité « avec la forme du service » suivie à côté, jamais affichée comme pronostic ; test historique (2 811 matchs depuis le 27/07, règle fixée avant) : −0,0003, ATP −0,0015 → pas positif, suivi en direct maintenu ; jugée sur les matchs pronostiqués à partir du 30/10 : rien avant 30 matchs, adoptée seulement si −0,001 de log loss deux semaines de suite sans circuit dégradé"
+  },
+  {
+   "date": "2026-10-29",
+   "titre": "Désaccords Elo / simulation en WTA : mélange propre (plus de poids à l'Elo)",
+   "statut": "candidat",
+   "decision": false,
+   "mesure": "constat depuis juin : l'Elo a raison 60,8 % du temps sur ces matchs, l'algo affiché 57,5 % ; aperçu sur les 6 dernières semaines : 0,0000 ; jugé chaque lundi contre les arbres"
+  },
+  {
+   "date": "2026-10-29",
+   "titre": "Note de fiabilité v2 sans la composante « calibration » (en essai, non affichée)",
+   "statut": "candidat",
+   "decision": false,
+   "mesure": "jugée sur les matchs pronostiqués à partir du 30/10, même règle que la note en place"
+  },
+  {
+   "date": "2026-10-29",
+   "titre": "Tour du tableau dans les arbres (qualifications, 1er tour… finale)",
+   "statut": "candidat",
+   "decision": false,
+   "mesure": "étude sur les pronostics hors échantillon depuis le 14/09 : −0,0014 (WTA −0,0026, Challenger −0,0014, ATP +0,0002) ; jugé chaque lundi, deux semaines de suite"
+  },
+  {
+   "date": "2026-10-29",
+   "titre": "Niveau du tournoi (points) dans les arbres",
+   "statut": "rejete",
+   "decision": false,
+   "mesure": "même étude : 0,0000"
+  },
+  {
+   "date": "2026-10-29",
+   "titre": "Activité récente des joueurs dans les arbres (matchs sur 30 jours contre les 60 d'avant)",
+   "statut": "candidat",
+   "decision": false,
+   "mesure": "jugé chaque lundi contre les arbres actuels : log loss plus basse au total et aucun circuit qui perd plus de 0,001, deux semaines de suite"
+  },
+  {
+   "date": "2026-10-29",
+   "titre": "Activité récente ajoutée seule au mélange Elo + simulation",
+   "statut": "rejete",
+   "decision": false,
+   "mesure": "jugement depuis le 14/09 : −0,0026 (Challenger −0,0067) mais WTA +0,0081"
+  },
+  {
+   "date": "2026-10-29",
+   "titre": "Poids Elo / simulation propres à l'ATP et à la WTA",
+   "statut": "candidat",
+   "decision": false,
+   "mesure": "pronostics hors échantillon depuis le 14/09 : ATP +0,0013, WTA +0,0092 (moins bien) ; même règle que les Challenger, rejugé chaque lundi"
+  },
+  {
+   "date": "2026-10-29",
+   "titre": "Échelle de l'Elo propre à chaque circuit",
+   "statut": "rejete",
+   "decision": false,
+   "mesure": "choix sur 2025, jugement 2026 (17 506 matchs) : −0,0005, ATP +0,0003 ; seuil 0,001"
+  },
+  {
+   "date": "2026-10-29",
+   "titre": "Incertitude des joueurs peu vus propre à chaque circuit",
+   "statut": "rejete",
+   "decision": false,
+   "mesure": "choix sur 2025, jugement 2026 : −0,0008 (Challenger −0,0013, ATP et WTA 0) ; seuil 0,001"
+  },
+  {
+   "date": "2026-10-29",
+   "titre": "Vitesse de l'Elo (K) propre aux hommes et aux femmes",
+   "statut": "rejete",
+   "decision": false,
+   "mesure": "choix sur 2025 (hommes ×1,1, femmes ×1,0), jugement 2026 : −0,0006 ; seuil 0,001"
+  },
+  {
+   "date": "2026-10-29",
+   "titre": "Poids des Grands Chelems dans l'Elo propre à chaque sexe",
+   "statut": "rejete",
+   "decision": false,
+   "mesure": "choix sur 2025 (femmes ×1,25), jugement 2026 : +0,00003, WTA +0,0002"
+  },
+  {
+   "date": "2026-10-29",
+   "titre": "Résultats ITF femmes dans le classement Elo",
+   "statut": "production",
+   "decision": true,
+   "mesure": "WTA depuis juin : log loss −0,0034 (1 915 matchs) ; ATP et Challenger inchangés",
+   "garde_fou": "retiré si moins bien deux semaines de suite (étude du lundi)"
+  },
+  {
+   "date": "2026-10-28",
+   "titre": "Résultats ITF hommes dans le classement Elo",
+   "statut": "production",
+   "decision": true,
+   "mesure": "Challenger : log loss −0,0145 (22 530 matchs) ; ATP + WTA −0,0042 ; joueurs peu vus −0,035",
+   "garde_fou": "retiré si moins bien deux semaines de suite (étude du lundi)"
+  },
+  {
+   "date": "2026-10-28",
+   "titre": "Forme du jour plus contrastée en Challenger (σ 0,22 au lieu de 0,15)",
+   "statut": "production",
+   "decision": true,
+   "mesure": "forme des matchs (sets, tie-breaks, jeux) : Challenger −0,0216 ; ATP et WTA inchangés ; le vainqueur ne change pas",
+   "garde_fou": "jugé chaque lundi ; retiré si moins bien deux semaines de suite"
+  },
+  {
+   "date": "2026-10-28",
+   "titre": "Noms des joueurs ITF reliés par une règle stricte",
+   "statut": "production",
+   "decision": false,
+   "mesure": "52 liens audités, fusions à tort supprimées (ex. un joueur relié à une joueuse) ; 21 liens sûrs gardés ; gain de l'ITF inchangé"
+  },
+  {
+   "date": "2026-10-28",
+   "titre": "Taille des joueurs centrée sur la moyenne de leur circuit",
+   "statut": "production",
+   "decision": false,
+   "mesure": "correction : toutes les joueuses WTA passaient pour « petites » (centre 185 cm pour tous) ; coefficients réappris chaque lundi"
+  },
+  {
+   "date": "2026-10-28",
+   "titre": "Forme des scores par circuit (v3)",
+   "statut": "candidat",
+   "decision": false,
+   "mesure": "Challenger −0,014 mais ATP +0,0195 : bloquée par le garde-fou « aucun circuit dégradé »"
+  },
+  {
+   "date": "2026-10-29",
+   "titre": "Poids réduit des matchs ITF dans l'Elo (×0,75)",
+   "statut": "rejete",
+   "decision": false,
+   "mesure": "−0,00065 seulement (seuil 0,001)"
+  },
+  {
+   "date": "2026-10-29",
+   "titre": "Incertitude après une longue absence",
+   "statut": "rejete",
+   "decision": false,
+   "mesure": "aucun gain (2025 choisit « aucune »)"
+  },
+  {
+   "date": "2026-10-29",
+   "titre": "Poids de la surface par circuit dans l'Elo",
+   "statut": "rejete",
+   "decision": false,
+   "mesure": "WTA +0,0017 (moins bien)"
+  },
+  {
+   "date": "2026-10-28",
+   "titre": "Forme des scores par circuit × surface",
+   "statut": "rejete",
+   "decision": false,
+   "mesure": "ATP +0,026 et WTA +0,005 (moins bien)"
+  },
+  {
+   "date": "2026-10-28",
+   "titre": "Collecte des statistiques passées des joueurs peu documentés",
+   "statut": "rejete",
+   "decision": false,
+   "mesure": "sonde : +29,7 % de balles pour le joueur médian, seuil fixé 50 % ; leurs matchs manquants sont surtout ITF, sans statistiques"
+  },
+  {
+   "date": "2026-11-05",
+   "quoi": "feuilles : champ firstToServe renommé dernier_serveur (c'est le serveur du dernier jeu, 93,1 % sur 9 304 matchs, pas le premier) ; le vrai premier serveur gagne le 1er set 50,0 % — pas de correction à faire",
+   "paquet": 171
+  },
+  {
+   "date": "2026-11-05",
+   "quoi": "étude pistes saison (fin de saison, points à défendre, lucky loser), règle fixée avant : aucune adoptée — fin de saison positive seule en ATP et CH mais n'ajoute rien aux signaux combinés ; double et heure non testables faute de données ; donnees.charger lit le statut d'entrée (Q, LL, WC)",
+   "paquet": 172
+  },
+  {
+   "date": "2026-11-05",
+   "quoi": "surveillance de la fragilité : critère « pronostic qui a bougé de 5 points ou plus » (première publication contre dernière avant le match) ajouté à la vérification du lundi ; inactif au départ, entre seul s'il se confirme deux semaines de suite (≥ 100 matchs sur 6 semaines)",
+   "paquet": 173
+  },
+  {
+   "date": "2026-11-05",
+   "quoi": "étude part Elo / simulation : la part en place (23 % simulation) reste la meilleure sur 5 979 pronostics rejoués ; l'indice WTA vu sur 190 matchs ne tient pas ; part selon l'expérience des joueurs non retenue (règle fixée avant : apprise août–sept, jugée oct–nov, +0,001 sur ≥ 300 matchs) — aucun changement, pas de fantôme WTA",
+   "paquet": 174
+  },
+  {
+   "date": "2026-11-05",
+   "quoi": "étude piste Ingram : service / retour des joueurs peu vus ramenés vers ce que leur Elo laisse attendre (au lieu de la moyenne du circuit). Gains réguliers en ATP et WTA mais minuscules (+0,0001 à +0,0002 chez les peu vus, seuil 0,002) ; Challenger nul — non retenue. ajustement.ajuster accepte un centre optionnel (par défaut : inchangé)",
+   "paquet": 175
+  },
+  {
+   "date": "2026-11-05",
+   "quoi": "étude tie-breaks (archive 2023 → juin 2026, calcul de la fiche rejoué) : ATP sans biais durable (+0,2 pt sur 2025 →, l'écart vu en direct est du hasard), WTA légèrement surestimés (−1,1 pt, non retenu), Challenger SOUS-ESTIMÉS (28,1 % prévus pour 31,8 %, z 9,8, même sens sur les deux périodes, −0,0034 de log loss) → fantôme « tiebreak » sur le Challenger (décalage figé 0,1497), jugé par fantomes_circuits, appliqué à la ligne tie-break seulement si adopté",
+   "paquet": 176
+  },
+  {
+   "date": "2026-11-05",
+   "quoi": "tie-breaks du Challenger ADOPTÉS DIRECTEMENT (décision de Lucas, solidité de l'archive : z 9,8, même sens sur les deux périodes) : ligne tie-break corrigée (+0,1497 en logit) dès maintenant ; suivi « avec / sans » chaque semaine, retrait après deux semaines de suite (≥ 30 matchs) pires d'au moins 0,001",
+   "paquet": 177
+  },
+  {
+   "date": "2026-11-05",
+   "quoi": "vidéos : deux joueurs sur le court (placement au service, course vers la balle), légende de chaque point limitée à ce que la simulation sait (ace, double faute, service gagnant, retour gagnant, échange de n frappes, break, balle de break sauvée, jeu blanc, set) ; format 4:5 (1080×1350) en option dans le workflow ; pas de courbe de momentum (décision de Lucas)",
+   "paquet": 178
+  },
+  {
+   "date": "2026-11-05",
+   "quoi": "recalage des statistiques annoncées ADOPTÉ DIRECTEMENT (décision de Lucas) sur les cases au biais net et stable chaque semaine : % de 1res balles ATP (+3,85 pts, 342 cas, z 11,4) et WTA (+3,7, 372, z 8,2), aces ATP (+0,9, z 4,0). Coefficients réappris à chaque mise à jour ; retrait d'une case après deux semaines de suite pires (écart moyen). Challenger et autres statistiques : règle hebdomadaire inchangée. Le % de victoire n'est pas touché.",
+   "paquet": 179
+  },
+  {
+   "date": "2026-11-05",
+   "quoi": "carte BILAN du match du jour (prévu contre réel, même mise en forme gagné ou perdu ✅ / ❌ : vainqueur et %, score réel, scénario de la vidéo et score exact, score en sets, aces de la vidéo, stats prévues → réelles) envoyée chaque matin sur le Telegram privé (workflow bilan_match_du_jour, ou à la main) ; aces WTA ajoutés au recalage direct (−0,4 chaque semaine, z −3,2)",
+   "paquet": 180
+  },
+  {
+   "date": "2026-11-05",
+   "quoi": "vidéo : 4 lignes de l'algo en bas (plus de N jeux, tie-break, 3 sets, handicap du favori ; % des simulations, aucune cote), cochées ✅ dès que le scénario les atteint, ✖ à la fin sinon. Site : « Demande à l'algo » sur chaque fiche (sans perdre de set, au moins un set, 1er set et match, plus de N jeux, écart de jeux, total, tie-break) — réponses calculées sur la distribution complète des scores (vitrine.questions), avec la cote juste",
+   "paquet": 181
+  },
+  {
+   "date": "2026-11-05",
+   "quoi": "Telegram privé : (1) chaque matin, liste des matchs du jour où l'algo contredit Pinnacle (favoris opposés ou ≥ 10 points ; cotes = loupe, jamais une entrée de l'algo ; une fois par jour via un repère dans le coffre) ; (2) chaque lundi, carte de la semaine (tous les matchs ATP/WTA/Challenger jugés, bons vainqueurs contre annoncé par circuit, favoris à 70 %+, plus gros ratés, scores exacts)",
+   "paquet": 182,
+   "prive": true
+  },
+  {
+   "date": "2026-11-05",
+   "quoi": "DOUBLONS écartés de l'évaluation : un même match pronostiqué sous deux uid (affiché un jour, joué le lendemain) recevait deux fois son résultat — 14,7 % des bilans après match, 150 sur 904 résultats. Désormais seul le pronostic le plus récent compte (pronostics_du_jour.dedoublonner) : bilans, fantômes, biais, recalage et cartes sont recalculés sans eux. La « mauvaise semaine ATP » passe de 45,7 % sur 35 matchs à 51,9 % sur 27 (z −1,2 : dans le hasard d'une semaine de fin de saison).",
+   "paquet": 183
+  },
+  {
+   "date": "2026-11-05",
+   "quoi": "audit des feuilles TennisApi contre le point par point (8 842 matchs) : points, jeux et sets justes ; « jeux de service joués » faux par joueur dans 47 % des cas (±1 en miroir, suit le faux premier serveur) ; balles de break et breaks sous-comptés (−3,6 %). Tableau des adoptions directes chaque lundi (Telegram privé).",
+   "paquet": 183
+  },
+  {
+   "date": "2026-11-05",
+   "quoi": "feuilles : balles de break, breaks et jeux de service repris du POINT PAR POINT quand il concorde avec la feuille (mêmes jeux par set, points de service à ±2) — 4 632 feuilles sur 9 067 corrigées ; s'applique aux statistiques réelles des fiches et aux matchs qui nourrissent les profils",
+   "paquet": 184
+  },
+  {
+   "date": "2026-11-05",
+   "quoi": "abandons non signalés : TennisApi marque « Ended » des matchs au score inachevé (69 feuilles) — désormais « abandon_probable », écartés du jugement comme les abandons",
+   "paquet": 184
+  },
+  {
+   "date": "2026-11-05",
+   "quoi": "recalage direct du % de 1res balles étendu au Challenger : sur 211 matchs présents dans Sackmann ET TennisApi, mêmes points et mêmes aces mais +0,9 pt de 1res balles chez TennisApi — le biais est un écart de mesure entre les deux sources",
+   "paquet": 184
+  },
+  {
+   "date": "2026-11-05",
+   "quoi": "suivi « qui a raison, l'algo ou Pinnacle » : la clôture prenait le DERNIER relevé, parfois capté après l'heure de début (17 % des matchs : cotes en direct ou match retardé) — désormais le dernier relevé avant le début",
+   "paquet": 185,
+   "prive": true
+  },
+  {
+   "date": "2026-11-05",
+   "quoi": "bilan des pronostics (journal) dédoublonné comme les résultats ; pronostic figé APRÈS le vrai début du match (horaire TennisApi) écarté du jugement (fuite : 1 cas sur 904)",
+   "paquet": 185
+  },
+  {
+   "date": "2026-11-05",
+   "quoi": "vérifié sans changement : forfaits dans l'Elo (2 899 dans l'archive ; les retirer change la log loss de ±0,0002 : rien), joueurs ITF en double sous un nom abrégé (59, 237 matchs : impact minime), cohérence vainqueur / score / sets, sens home/away des cotes, mots interdits dans les données publiques",
+   "paquet": 185,
+   "prive": true
+  },
+  {
+   "date": "2026-11-05",
+   "quoi": "points de vigilance : une statistique déjà recalée sur le site (1res balles ATP/WTA/Challenger, aces ATP/WTA) n'est plus signalée — son biais des 6 semaines portait sur les valeurs d'avant le recalage",
+   "paquet": 186
+  },
+  {
+   "date": "2026-11-05",
+   "quoi": "MATCHS PEU DOCUMENTÉS (joueur le moins vu sous 500 points de service cumulés) : l'algo était trop prudent (favoris gagnant 72–79 % pour 64–69 % annoncés, pente 1,6–1,7 sur deux périodes). Challenger : pente 1,84 apprise août–sept, −0,030 de log loss en oct–nov (156 matchs) → ADOPTÉ DIRECTEMENT (décision de Lucas), p' = σ(1,84 · logit p) ; retrait après deux semaines pires. ATP et WTA : 20 et 49 matchs de ce type en trois mois, trop peu pour juger — la situation est presque propre au Challenger. Au passage, la tranche « 500 à 1 500 balles » du site (53,9 % sur 102 matchs) est du hasard : pente 1,06 puis 0,92 sur 650 matchs rejoués.",
+   "paquet": 187
+  },
+  {
+   "date": "2026-11-05",
+   "quoi": "fiche du match : panneau « Vitesse du court » — jauge sur l'échelle du CPI, écart avec l'an dernier, courbe des éditions du tournoi (CPI officiel plein, estimé par l'algo creux). Information seulement : la vitesse sert déjà à prévoir aces et service, elle n'aide pas à trouver le vainqueur (testé)",
+   "paquet": 188
+  },
+  {
+   "date": "2026-11-05",
+   "quoi": "joueurs en double sous un prénom abrégé (« B. Perez Mora » des résultats ITF = « Benjamín Pérez Mora ») : la règle stricte de rapprochement des noms accepte maintenant une initiale, si tous les autres mots du nom abrégé sont dans le nom complet, même dernier mot, même sexe, un seul candidat (56 fusions sur l'état actuel, aucune vers un nom plus court). Effectif au prochain recalcul de l'Elo",
+   "paquet": 189
+  },
+  {
+   "date": "2026-11-05",
+   "quoi": "LIEUX DES TOURNOIS corrigés : les qualifications (« Jinan, China, Qualifying ») étaient situées au centre du pays (Chine à 1 982 m, Mexique à 2 062 m) — 132 tournois sur 218, 6 385 feuilles sur 10 460 ; altitude et météo fausses pour le facteur « conditions ». Re-géocodage et météo redemandée au bon endroit. Nouvelle étude : DENSITÉ DE L'AIR (pression, température, humidité de 11 h à 20 h ; salle à 20 °C avec la pression du lieu) sur les aces et les points de service, groupe « densite_air » des facteurs ; règle fixée avant résultats : règle des groupes + pas moins bien sur ATP, WTA ni Challenger (100 matchs de jugement au moins), puis deux semaines de suite.",
+   "statut": "etude",
+   "paquet": 190
+  },
+  {
+   "date": "2026-11-05",
+   "quoi": "CONTRÔLES DES FEUILLES (10 460) : statistiques de service cohérentes (0 erreur sur 19 256), dates et naissances justes, scores de set bizarres = super tie-breaks ITF (normal), pas de double comptage archive/feuilles (feuilles prises seulement après la fin de l'archive). CORRIGÉ : météo lue au jour LOCAL (4 % des matchs, le soir aux Amériques, prenaient celle du lendemain) ; main inconnue (11 % des joueuses WTA, 3 % Challenger, 2 % ATP) = part des gauchers au lieu de « droitier » ; 23 codes pays ajoutés pour le facteur domicile ; une catégorie TennisApi inconnue n'est plus rangée d'office en ATP. Limite connue : surface absente en Coupe Davis (95 matchs) comptée dur.",
+   "statut": "production",
+   "paquet": 191
+  },
+  {
+   "date": "2026-11-05",
+   "quoi": "ÉTUDE : le bilan au set décisif (celui affiché par d'autres sites, ex. « 7V-1D ») prédit-il le prochain set décisif ? Archive 2018 → juin 2026, 29 000 sets décisifs ATP, WTA, Challenger ; règle fixée avant : −0,001 de log loss sur ≥ 1 000 sets décisifs jugés et même signe sur les deux périodes. NON RETENU sur aucun circuit, ni en bilan brut ni au-delà de l'attendu (gains négatifs, coefficients qui changent de signe) ; fidélité pair/impair sur 992 joueurs : 0,00. Le bilan au set décisif est du hasard une fois le niveau retiré. À noter : au set décisif, le favori gagne moins que son Elo par set le dit (ATP 58 % pour 62 %, WTA 58 % pour 61 %, Challenger 58 % pour 61 %) — l'effet « forme du jour » que la simulation modélise.",
+   "statut": "etude",
+   "decision": false,
+   "paquet": 192
+  },
+  {
+   "date": "2026-11-05",
+   "quoi": "ÉTUDE : un joueur a-t-il « l'habitude » de gagner ou de perdre les tie-breaks ? Archive 2018 → juin 2026, 40 000 tie-breaks ATP, WTA, Challenger ; même règle que pour le set décisif, fixée avant. NON RETENU sur aucun circuit (meilleur gain : ATP brut +0,00006 de log loss, pour 0,001 exigé) ; fidélité pair/impair sur 792 joueurs : 0,002. Quand deux joueurs ont des bilans de tie-break très opposés, le meilleur bilan gagne 50,9 à 55,3 % des tie-breaks, autant que son niveau le prévoyait. Le bilan en tie-break est du hasard une fois le niveau retiré.",
+   "statut": "etude",
+   "decision": false,
+   "paquet": 193
+  },
+  {
+   "date": "2026-11-05",
+   "quoi": "VIDÉO À LA DEMANDE ANNULÉE (run du 05/11 à 21:57 UTC) : ubuntu-latest est passé à Ubuntu 26.04 et le miroir apt tournait à 43 ko/s — 8 min 30 pour des polices, puis l'installation de ffmpeg a dépassé les 20 min du job. Corrigé pour la vidéo, la carte bilan et la carte de la semaine : image figée ubuntu-24.04, plus aucun apt (Chromium par Playwright, ffmpeg statique de PyPI, police emoji depuis GitHub ; apt seulement en secours si Chromium ne démarre pas, 6 min au plus), délai de la vidéo porté à 30 min.",
+   "statut": "production",
+   "paquet": 194
+  },
+  {
+   "date": "2026-11-06",
+   "quoi": "CLASSEMENTS DU JOUR : chaque matin (8 h 53, heure de Paris), deux cartes pour X sur le Telegram privé — les classements du jour (le plus d'aces attendus, vers un 3e set, tie-break en vue, les plus nets favoris) et ceux de la veille vérifiés (prévu contre réel, juste ou faux, même mise en forme). Aucune cote, aucun vocabulaire de pari, aucune adresse. CORRIGÉ : un match annulé avant d'être joué (forfait, annulé, reporté d'après TennisApi) sort de la liste du jour (Berrettini – Alcaraz, forfait, restait affiché).",
+   "statut": "production",
+   "paquet": 195
+  },
+  {
+   "date": "2026-11-06",
+   "quoi": "FOURCHETTE à 80 % autour du % sur chaque fiche : les 20 000 simulations mesurent le hasard du match ; la fourchette ajoute l'incertitude sur le niveau des joueurs (points de service observés, matchs joués) — plus ils ont peu joué, plus elle est large. Le % affiché ne change pas. Contrôle sur 760 matchs : plus la fourchette est large, plus une estimation indépendante s'écarte de la nôtre.",
+   "statut": "production",
+   "paquet": 196
+  },
+  {
+   "date": "2026-11-06",
+   "quoi": "ÉTUDE : les « bilans par contexte » affichés par d'autres sites — bilan sur courts rapides / lents (vitesse de l'édition précédente du tournoi), % de victoires au tournoi, bilan par catégorie de tournoi — prédisent-ils le prochain match ? Archive 2018 → juin 2026, ATP, WTA, Challenger ; règle fixée avant (−0,001 de log loss sur ≥ 1 000 matchs jugés, même signe sur les deux périodes). NON RETENU, nulle part : meilleurs gains Challenger catégorie +0,0008 et vitesse +0,0006 en bilan brut, mais en sens inverse (un bon bilan brut fait MOINS bien que prévu : il mesure surtout le niveau, déjà compté) ; courts rapides seuls : ATP +0,0002 (2 302 matchs), Challenger −0,0005, WTA aucun court rapide. Le niveau Elo contient déjà ces bilans.",
+   "statut": "etude",
+   "decision": false,
+   "paquet": 197
+  },
+  {
+   "date": "2026-11-06",
+   "quoi": "BILAN PAR VITESSE DE COURT sur la fiche (dans le bloc « Vitesse du court ») : pour chaque joueur, ses victoires et défaites des 3 dernières années sur la même classe de court (lent, moyen, rapide), comparées à ce que son niveau laissait attendre, avec la marge d'erreur et un verdict (trop peu de matchs, écart non significatif, au-dessus ou en dessous de son niveau). Information seule : l'étude du 06/11 ne lui trouve aucune valeur de prévision ; rien n'entre dans le %.",
+   "statut": "production",
+   "paquet": 198
+  },
+  {
+   "date": "2026-11-06",
+   "quoi": "FACTEURS JUGÉS PAR CIRCUIT (décision du 04/11 : un signal positif sur un circuit est utilisé sur ce circuit) : chaque groupe est aussi appris et jugé sur les seules feuilles ATP, WTA ou Challenger, même règle ; circuit trop petit (moins de 300 matchs d'apprentissage ou de jugement) = décision globale. Décision de Lucas (06/11) : le PREMIER verdict par circuit s'applique tout de suite, entrées comme sorties, puis la stabilité habituelle (retrait après deux semaines moins bien). Aperçu : en Challenger, durée, voyage, profil et densité de l'air entrent ; morphologie, styles, face-à-face et matchup sortent. Nouveau groupe VOYAGE (décalage horaire et distance depuis le tournoi précédent, 10 jours, lieux corrigés) : adopté directement (vainqueur 0,6290 → 0,6273 sur l'ensemble).",
+   "statut": "production",
+   "paquet": 199
+  },
+  {
+   "date": "2026-11-06",
+   "quoi": "CONTRÔLE DE SANTÉ QUOTIDIEN (8 h 37, Telegram privé) élargi : tous les runs ratés, annulés ou hors délai des 24 dernières heures (avant : les 10 derniers runs seulement, sans les annulations), et une partie « Algo » — fraîcheur du site et des feuilles, matchs sans simulation, matchs d'hier comparés au résultat, tournois récents sans lieu, catégories inconnues, forfaits encore en ligne, facteurs pas rejugés depuis plus de 8 jours.",
+   "statut": "production",
+   "paquet": 200
+  },
+  {
+   "date": "2026-11-06",
+   "quoi": "SCORES EN DIRECT sur le site de l'algo : quand un match de la liste est en cours, sa ligne et sa fiche affichent le score set par set (tie-breaks compris), les points du jeu et le joueur au service, mis à jour toutes les 30 secondes ; « Terminé » avec le dernier score quand il s'achève. Source TennisApi via le worker (une seule requête toutes les 30 s quel que soit le nombre de visiteurs). Le % affiché reste celui calculé avant le match.",
+   "statut": "production",
+   "paquet": 201
+  },
+  {
+   "date": "2026-11-06",
+   "quoi": "% RECALCULÉ EN DIRECT : pendant un match, sous le score, les chances du joueur recalculées avec le score réel (sets, jeux, points, serveur), à côté du % d'avant match. Même modèle que la simulation point par point de la fiche, repris depuis l'état du match ; à 0-0 il redonne exactement le % d'avant match ; jamais 0 ni 100 % tant que le match se joue. Le niveau des joueurs n'est pas réévalué en cours de match.",
+   "statut": "production",
+   "paquet": 202
+  },
+  {
+   "date": "2026-11-06",
+   "quoi": "STATISTIQUES EN DIRECT dans la fiche d'un match en cours : aces, doubles fautes, premières balles, points gagnés derrière la 1re et la 2e, balles de break sauvées et converties, breaks, jeux de service gagnés, points au retour et au total, plus longue série de points ; mises à jour chaque minute, à côté de la feuille prévue avant le match et de sa fourchette (en rouge quand le réel en sort). Chargées seulement pour la fiche ouverte, une requête par minute et par match quel que soit le nombre de visiteurs, plafond journalier réglable.",
+   "statut": "production",
+   "paquet": 203
+  },
+  {
+   "date": "2026-11-06",
+   "quoi": "% EN DIRECT RÉÉVALUÉ : pendant le match, la forme du jour de chaque joueur est lue dans les points de service déjà joués (statistiques du match), au lieu de garder les probabilités d'avant match. Mesuré sur 8 970 matchs point par point (juin → novembre 2026, réglage appris sur juin → août, jugé sur septembre → novembre) : log loss du vainqueur −0,018 en Challenger, −0,011 en ATP, −0,011 en WTA, avec le même réglage sur les deux périodes. Adopté directement sur les trois circuits ; chaque lundi, la semaine écoulée est rejugée par circuit : retrait après deux semaines de suite moins bonnes, retour après deux meilleures. Les statistiques en direct sont désormais chargées pour chaque match en cours de la liste.",
+   "statut": "production",
+   "paquet": 204
+  },
+  {
+   "date": "2026-11-06",
+   "quoi": "ÉTUDE (non retenue) — la forme lue dans le match de la veille ou de l'avant-veille n'aide pas le pronostic d'avant match : sur 9 462 matchs (juin → novembre 2026), elle n'apporte rien en plus de la forme des 30 derniers jours, ni pour le vainqueur ni pour les points de service du match, sur aucun circuit. La forme sur 30 jours, elle, est déjà dans l'algorithme (facteur forme et fatigue). Rien ne change.",
+   "statut": "etude",
+   "paquet": 205
+  },
+  {
+   "date": "2026-11-06",
+   "quoi": "SONDE TennisApi (à lancer à la main, une fois) : lieu exact de chaque match (ville, stade) dans le détail du match, et tableau du tournoi, pour préparer un lieu plus sûr (voyage, densité de l'air) et le mode tournoi. Rien ne change dans le pipeline.",
+   "statut": "etude",
+   "paquet": 206
+  },
+  {
+   "date": "2026-11-06",
+   "quoi": "CORRECTION des scores en direct : aucun match n'apparaissait, parce que TennisApi décrit un joueur de simple avec une liste d'équipiers VIDE, que le filtre « simples seulement » prenait pour un double. Les matchs de simple en cours s'affichent désormais.",
+   "statut": "production",
+   "paquet": 207
+  },
+  {
+   "date": "2026-11-06",
+   "quoi": "INFOS DES TOURNOIS (TennisApi) : ville et pays hôtes, nombre de joueurs du tableau, dotation et points du vainqueur, relevés une fois par tournoi. Le lieu hôte sert désormais en priorité pour situer chaque tournoi (météo, densité de l'air, voyage), le nom du tournoi ne servant plus qu'en secours ; tous les tournois sont re-situés une fois. Nouveau groupe de facteurs « dotation » (niveau de dotation du tournoi, et joueur qui joue plus gros ou plus petit que d'habitude), jugé chaque semaine circuit par circuit comme les autres. Deuxième sonde : où trouver le tableau des tournois.",
+   "statut": "candidat",
+   "paquet": 208
+  },
+  {
+   "date": "2026-11-06",
+   "quoi": "Les matchs COMMENCÉS restent sur le site 6 heures, avec le dernier % affiché avant le match, leurs scores et leurs statistiques en direct : un match en cours disparaissait au passage suivant des pronostics (Fritz – Alcaraz ce soir).",
+   "statut": "production",
+   "paquet": 209
+  },
+  {
+   "date": "2026-11-06",
+   "quoi": "NOUVEL AFFICHAGE DU DIRECT. Dans la liste : un tableau des scores (sets, tie-breaks, points, serveur) et la barre du % qui bouge avec un trait au % d'avant match. Dans la fiche : grand tableau d'affichage, courbe du % de l'algo jeu après jeu (forme du jour lue dans les points joués), moments clés (breaks, sets) et jeu par jeu, tirés du point par point ; statistiques en duel avec un trait vert pour ce que l'algo avait prévu. Nouveau panneau « Forme et face-à-face » : séries en cours, face-à-face, et victoires réelles contre victoires attendues d'après ses chances d'avant match (descriptif, sans effet sur le %).",
+   "statut": "production",
+   "paquet": 210
+  },
+  {
+   "date": "2026-11-06",
+   "quoi": "Correction du 209 : un match commencé gardé sur le site garde le nombre de simulations du passage où il a été calculé ; le contrôle du site ne le compare plus à celui du passage en cours (la chaîne courte de test, à 300 simulations, était rouge).",
+   "statut": "production",
+   "paquet": 211
+  },
+  {
+   "date": "2026-11-06",
+   "quoi": "MISE EN PAGE ORDINATEUR : la simulation et l'en-tête du match côte à côte en haut, puis toutes les informations de la fiche sur toute la largeur de l'écran (plus de colonne vide à gauche). Le match en direct s'ouvre sur un terrain de tennis vu de dessus : jeux du set en cours, points de chaque joueur, balle chez le serveur du côté où il sert ; le tableau des scores, le % et la courbe viennent en dessous. Mobile inchangé.",
+   "statut": "production",
+   "paquet": 213
+  },
+  {
+   "date": "2026-11-06",
+   "quoi": "Statistiques en direct : le prévu de l'algo (trait vert) et sa fourchette s'affichent maintenant aussi pour les points gagnés derrière la 1re et la 2e balle, les jeux de service gagnés, les balles de break converties et sauvées, les points gagnés au retour et au total (tirés des 20 000 simulations du match). Ordinateur : « L'essentiel » passe sous la simulation et l'en-tête du match, sur toute la largeur.",
+   "statut": "production",
+   "paquet": 214
+  },
+  {
+   "date": "2026-11-06",
+   "quoi": "Match en direct : bouton « Tous les points ». Chaque jeu se déplie en score point par point (15-0, 30-0, 40-15… puis le vainqueur du jeu) ; les balles de break, de set et de match sont marquées sur le score où elles se jouent, avec ✓ si elle est convertie et ✗ si elle est sauvée. Le point par point de la fiche ouverte se rafraîchit toutes les 30 secondes.",
+   "statut": "production",
+   "paquet": 215
+  },
+  {
+   "date": "2026-11-07",
+   "quoi": "Fiche du match : cartes des joueurs, juste sous les deux joueurs et leur %. Chaque joueur a une note de 40 à 99 tirée de son Elo sur la surface du match (même échelle pour tous : or à partir de 80, argent de 70 à 79, bronze en dessous), six attributs de 1 à 99 rangés parmi les joueurs actifs ATP et Challenger, ou parmi les joueuses WTA (service, retour, aces, % de 1res balles et sûreté de la 2e balle tirés des profils ajustés à la force des adversaires qu'utilise la simulation ; forme sur les 40 derniers matchs), sa note sur dur, terre et gazon, son classement, son âge, sa taille et sa main. Un radar superpose les deux joueurs. Descriptif seulement : le % ne change pas.",
+   "statut": "production",
+   "paquet": 216
+  },
+  {
+   "date": "2026-11-07",
+   "quoi": "Page de l'algo : choix du thème clair, sombre ou automatique (réglage de l'appareil), mémorisé sur le téléphone ; sombre par défaut. La borne de simulation, les cartes des joueurs et les images X restent sombres dans les deux thèmes. Cartes des joueurs : le radar se place sous les deux cartes, centré avec sa légende, quand la place manque à côté (il n'est plus coupé), et reste à droite quand le bloc est assez large. Description de la page : « indépendant des cotes ». Un test vérifie désormais que la page publique ne contient pas le mot interdit. Descriptif seulement : le % ne change pas.",
+   "statut": "production",
+   "paquet": 217
+  },
+  {
+   "date": "2026-11-08",
+   "quoi": "Fiche du match : chaque bloc devient un tiroir. « Le match » (score, courbe du %, moments clés, jeu par jeu, « Tous les points ») et « Statistiques du match » (réel contre prévu de l'algo) restent ouverts ; les autres sont repliés avec une ligne-résumé, et un bouton « Tout ouvrir / Tout replier » les gère ensemble. Un match commencé reste affiché 24 h au lieu de 6 h, et quand le direct n'est plus disponible la fiche montre le bilan après match (score et statistiques réelles contre le prévu) dès qu'il est calculé. Nouveau bouton « Générer le post X · résultat », à côté du post d'avant match. Titre « nouvelle victoire » seulement si le favori de l'algo a gagné, sinon « le bilan du match », erreurs comprises ; ✅ sur une statistique quand le réel des deux joueurs tombe dans la fourchette prévue (8 fois sur 10), règle fixée avant les résultats. Le post d'avant match suit désormais le modèle : sans ligne de surface, sans bloc des probabilités, sans note de fiabilité ni « ce que l'algo relève ». Le bouton « Générer la vidéo » est conservé. Descriptif seulement : le % ne change pas.",
+   "statut": "production",
+   "paquet": 218
+  },
+  {
+   "date": "2026-11-08",
+   "quoi": "ARENA : jeu de pronostics gratuit, séparé de l'algo (un choix par match avant le début, points et XP, cartes de joueurs à débloquer). En test privé, pas encore ouvert au public. Bouton « Arena » en haut de la page de l'algo. Le % de l'algo ne change pas. (Entrée de rattrapage ajoutée le 11/11 : ce changement avait été appliqué sans entrée au journal.)",
+   "statut": "candidat",
+   "paquet": null
+  },
+  {
+   "date": "2026-11-09",
+   "quoi": "ESSAIS 3D du direct (vue TV, vue immersive, joueurs en 3D) : testés puis retirés de la page du direct le 09/11 ; le terrain vu de dessus reste la seule vue. (Entrée de rattrapage ajoutée le 11/11 : ce changement avait été appliqué sans entrée au journal.)",
+   "statut": "rejete",
+   "paquet": null
+  },
+  {
+   "date": "2026-11-10",
+   "quoi": "DIRECT ET FICHE : sur le terrain, la balle et les joueurs bougent (animation illustrative, aucune trajectoire réelle : le score affiché, lui, est réel) ; matchs terminés repliés et filtre LIVE dans la liste ; cartes des joueurs horizontales, radar sur toute la largeur et consultable pendant le direct ; bouton « Analyse détaillée » (texte descriptif tiré du %, de la fourchette, de la fiabilité, des cartes et des scores probables) ; Arena reprend les cartes des joueurs. Descriptif seulement : le % ne change pas. (Entrée de rattrapage ajoutée le 11/11 : ce changement avait été appliqué sans entrée au journal.)",
+   "statut": "production",
+   "paquet": null
+  },
+  {
+   "date": "2026-11-10",
+   "quoi": "Étiquette « Incertitude » ajoutée à côté de la note de fiabilité (retirée le 11/11, paquet 219, car elle doublait la fourchette déjà affichée). (Entrée de rattrapage ajoutée le 11/11 : ce changement avait été appliqué sans entrée au journal.)",
+   "statut": "rejete",
+   "paquet": null
+  },
+  {
+   "date": "2026-11-11",
+   "quoi": "NETTOYAGE de la page de l'algo : l'étiquette « Incertitude » à côté de la fiabilité est retirée (la fourchette « entre x % et y % selon l'incertitude sur le niveau des joueurs, 8 fois sur 10 » reste, seule formulation) ; le bouton Arena en double, fixé en bas de l'écran, est retiré (celui du haut reste) ; le code des essais 3D, masqué mais toujours chargé, est retiré de la page (plus léger, moins de batterie) ; l'« Analyse détaillée » existe aussi en anglais et décrit la fourchette comme la fiche. Descriptif seulement : le % ne change pas.",
+   "statut": "production",
+   "paquet": 219
+  },
+  {
+   "date": "2026-11-11",
+   "quoi": "Fiche du match : nouveau tiroir « Météo et conditions ». Lieu du tournoi (ville, pays, altitude, salle ou plein air) et météo du jour local du match (température maximale, vent maximal, température, humidité et pression de 11 h à 20 h, source Open-Meteo, prévision ou relevé), densité de l'air. Le tiroir dit ce qui entre dans le % : sur le Challenger la densité de l'air y entre (elle a passé le jugement du lundi) ; la chaleur, le vent et les autres circuits restent une information. Le % ne change pas.",
+   "statut": "production",
+   "paquet": 220
+  },
+  {
+   "date": "2026-11-11",
+   "quoi": "Lieux des tournois : 35 tournois sur 228, surtout ITF (« ITF W35 Monastir 8 Women »), n'étaient pas situés, faute de lire la ville dans leur nom ; ils sont réessayés avec une lecture corrigée. Cela donne aussi la météo, la densité de l'air et les distances de voyage pour ces tournois.",
+   "statut": "production",
+   "paquet": 220
+  },
+  {
+   "date": "2026-11-11",
+   "quoi": "ÉTUDE de la fourchette du % (part Elo) : comparée à l'Elo des mêmes joueurs 90 jours plus tard sur l'archive (2023 → juin 2026), la fourchette actuelle contient l'estimation ultérieure 83 % du temps en ATP et en WTA et 80 % en Challenger, pour une cible de 80 %. Elle n'est donc pas trop large : la resserrer la rendrait trompeuse. La variante apprise sur 2018–2022 est plus large (92 %) en ATP et en WTA, et quasi identique en Challenger : rien n'est changé. Pour la resserrer honnêtement, il faut mieux connaître le niveau des joueurs (plus de matchs et de points observés).",
+   "statut": "rejete",
+   "paquet": 220
+  },
+  {
+   "date": "2026-11-11",
+   "quoi": "ÉTUDE des scénarios du match sur 755 de nos pronostics figés (2 sets gagnants) : le set décisif était prévu dans 34,6 % des matchs et a eu lieu dans 34,7 % ; le tie-break était prévu dans 31,8 % et a eu lieu dans 33,5 % ; les jeux, 22,7 prévus contre 22,8 réels. Deux corrections apprises avant le 01/11 (set décisif, tie-break, par circuit) dégradent le jugement du 01 au 11/11 : rejetées. Les scénarios sont déjà justes en moyenne ; le score exact reste rare par nature (2,5 % de scores exacts).",
+   "statut": "rejete",
+   "paquet": 220
+  },
+  {
+   "date": "2026-11-11",
+   "quoi": "Fiche du match : le tiroir « Score en sets et scores probables » devient « Scénarios du match ». Les 6 façons dont le match peut finir, qui font 100 % à elles deux : chaque joueur en 2 sets « sans trembler » (chaque set à 6-3 ou mieux), en 2 sets « accrochés » (au moins un set à 6-4, 7-5 ou 7-6) ou en 3 sets (dont après avoir perdu le 1er set). S'y ajoutent les repères tie-break, set à 6-0 ou 6-1 et nombre de jeux (le plus fréquent et la plage dans 8 matchs sur 10). Nouveau bloc « Après le 1er set » : pour chaque joueur, sa chance de gagner le match s'il gagne ou perd le 1er set, selon les simulations de ce match, selon ses matchs des 24 derniers mois et en moyenne sur son circuit. Les scores exacts restent disponibles, repliés. Descriptif : mêmes 20 000 simulations, le % ne change pas ; l'historique ne prédit pas mieux que le niveau des joueurs.",
+   "statut": "production",
+   "paquet": 221
+  },
+  {
+   "date": "2026-11-11",
+   "quoi": "Scénarios du match CONTRÔLÉS sur nos matchs réels : le dernier pronostic affiché avant chaque match contre le score réel, avec une règle fixée à l'avance (« juste » si l'écart reste dans ± 1,96 erreur type, à partir de 30 matchs). Sur 667 matchs en 2 sets gagnants, les 5 scénarios sont justes sur les 3 circuits. En tout : sans trembler 9,9 % prévus contre 9,5 % réels ; accrochés 22,2 % contre 22,5 % ; en 3 sets 17,9 % contre 18,0 % ; remontée après le 1er set perdu 9,2 % contre 8,2 % ; victoire après le 1er set gagné 81,6 % contre 83,5 %. Pour les matchs d'avant le 11/11, les scénarios sont reconstitués depuis le score en sets et les scores exacts figés ; ils sont désormais figés tels qu'affichés. Le contrôle s'affiche dans le tiroir et se met à jour à chaque passage.",
+   "statut": "production",
+   "paquet": 222
+  },
+  {
+   "date": "2026-11-11",
+   "quoi": "Tiroir « Météo et conditions » : la météo À L'HEURE DU MATCH (heure locale du tournoi : température, vent, humidité), relevée heure par heure par Open-Meteo pour les jours récents et à venir. C'est elle que montre la ligne-résumé.",
+   "statut": "production",
+   "paquet": 223
+  },
+  {
+   "date": "2026-11-11",
+   "quoi": "Nouveau bloc « Bilans dans ces conditions », avec une phrase « En clair ». Pour les conditions du match seulement (pays, continent, altitude, mois, salle ou plein air, chaleur, vent, humidité), il indique si chaque joueur fait mieux ou moins bien que d'habitude, à niveau d'adversaires égal : victoires réelles contre victoires attendues d'après l'Elo, comparées à son écart habituel. Ainsi, un joueur qui dépasse ses chances partout ne paraît pas fort dans un pays en particulier. Chiffré à partir de 15 matchs, en couleur seulement quand l'écart dépasse le bruit de l'échantillon. Lieux depuis 2016 : les tournois de l'archive sont situés une fois chacun. La météo ne remonte qu'à juin 2026, d'où peu de matchs pour l'instant. Descriptif : le % ne change pas.",
+   "statut": "production",
+   "paquet": 223
+  },
+  {
+   "date": "2026-11-11",
+   "quoi": "Fiche du match : nouveau bouton « Post X · analyse complète », à côté du post d'avant match. Il génère un texte à copier qui reprend tout ce que la fiche sait du match : favori, fourchette et fiabilité, score en sets, les 6 scénarios et leur contrôle sur nos matchs, scores exacts, duel service / retour, statistiques prédites et projections, face au style adverse, forme récente, face-à-face, météo à l'heure du match et conditions, vitesse du court et rythme, ce qu'il faut retenir, point de vigilance. Il existe en version complète et en version courte. Un bloc sans donnée n'est pas écrit, et les parties descriptives disent qu'elles ne changent pas le %.",
+   "statut": "production",
+   "paquet": 224
+  },
+  {
+   "date": "2026-11-11",
+   "quoi": "Statistiques annoncées : le recalage des fourchettes passe case par case (circuit × statistique), en adoption directe avec une règle de retrait. L'ancienne règle d'ensemble échouait à cause d'une seule case (aces ATP) et bloquait les autres. Sur la semaine jugée du 02/11, les fourchettes recalées ramènent la part du réel dans la fourchette vers 80 % : doubles fautes ATP 92 → 80 %, breaks ATP 91 → 76 %, % de 1res balles ATP 74 → 81 % et WTA 67 → 81 %, aces WTA 89 → 85 %, doubles fautes Challenger 90 → 83 %, breaks Challenger 92 → 80 %. Les aces ATP ne sont plus élargis. Chaque lundi, une case passe à la meilleure variante (rien, décalage seul, ou décalage et largeur) si elle rapproche la couverture de 80 % d'au moins 2 points sans augmenter l'écart moyen ; elle est retirée après deux semaines de suite pires que sans recalage. Le tableau du site indique les fourchettes recalées, leur date et leur couverture depuis. Le % de victoire ne change pas.",
+   "statut": "production",
+   "paquet": 225
+  },
+  {
+   "date": "2026-11-11",
+   "quoi": "Étude des écarts de jeux (règle fixée avant) : en WTA, le favori gagne de plus de 4,5 jeux dans 48 % des matchs pour 41 % annoncés (107 matchs). L'hypothèse d'une forme du jour trop faible est testée circuit par circuit, σ de 0,10 à 0,40, appris avant le 04/11 et jugé du 04/11 au 11/11. Rejeté sur les trois circuits : le σ en place (0,15 en ATP et WTA, 0,20 environ en Challenger) donne déjà la meilleure log loss de l'écart de jeux exact. Un σ de 0,25 en WTA corrigerait la ligne de 4,5 jeux (47 % annoncés) mais dégrade l'écart exact (2,776 → 2,829), car il ajoute aussi des larges victoires de l'outsider, qu'on ne voit pas. L'écart de 41 % contre 48 % reste dans le bruit (1,4 erreur type sur 107 matchs). Rien ne change ; à revoir au-delà de 300 matchs WTA.",
+   "statut": "rejete",
+   "paquet": 226
+  },
+  {
+   "date": "2026-11-11",
+   "quoi": "AUDIT COMPLET de l'algo (simulateur/rapport_audit.json : ce qui a été trouvé, et la règle de chaque étude à venir écrite à l'avance ; seule la période d'avant 2023 de l'archive a été regardée, la période de jugement reste intacte). Premiers correctifs, sans effet sur le % : (1) le journal publié sur le site ne reprend plus les entrées de travail interne (champ « prive », 6 entrées) et un test contrôle désormais le journal tel qu'il est publié ; (2) garde-fou pour les études : une étude qui rejoue l'archive doit prendre l'Elo réglé comme celui de la production (elo.de_production) — l'audit a montré que 19 études utilisaient un Elo sans réglage, ce qui fausse le dosage d'un signal appris contre l'un puis ajouté à l'autre ; un test refuse désormais tout nouveau cas, et ces 19 études seront reprises une à une.",
+   "statut": "production",
+   "paquet": 227
+  },
+  {
+   "date": "2026-11-11",
+   "quoi": "FORMAT DU MATCH en ATP (etude_format_match.py, règle écrite avant ; première étude issue de l'audit). L'Elo donne le même % en 2 et en 3 sets gagnants. Une pente par format, apprise sur 2018–2022 et jugée sur 2023 → juin 2026, avec l'Elo réglé comme la production. En 2 sets gagnants : favori 64,5 % réels pour 67,4 % annoncés sur 8 335 matchs jugés, pente 0,815 (0,822 réapprise sur la période de jugement), gain 0,0025 ± 0,0008 (3,1 erreurs types) — passe toute la règle. En 3 sets gagnants : pente 1,21, même sens (72,2 % pour 70,5 % sur 1 743 matchs) mais gain 0,0015 ± 0,0019, sous 2 erreurs types — en attente, non appliqué. WTA (+0,0005) et Challenger (+0,0002) : rien à corriger, comme prévu. EN PLACE en ATP, 2 sets gagnants seulement : la part de l'Elo du % est multipliée par 0,815 (un favori à 70 % passe à 67 %). Confirmation sur 1 085 pronostics ATP rejoués depuis juillet : +0,0020 ± 0,0018 sur le mélange Elo + simulation. RETRAIT : nouvelle règle cumulée, jugée sur l'effet propre du signal — retiré si, sur au moins 300 matchs ATP depuis l'adoption, le gain est négatif d'au moins 2 erreurs types (l'audit a montré que la règle « deux semaines de suite » retire presque au hasard). Autres pistes cherchées sur 2018–2022 seulement : l'Elo WTA trop lent se confirme (un Elo rapide ajouté au nôtre : +0,0023, 3,7 erreurs types), à juger dans la prochaine étude ; rien pour l'abandon au match précédent, le face-à-face, les minutes déjà jouées dans le tournoi ni le tour du tableau.",
+   "statut": "production",
+   "paquet": 228
+  },
+  {
+   "date": "2026-11-11",
+   "quoi": "CORRECTION du format du match, deux études rejetées et étude des outsiders (paquet 229). (1) L'étude du paquet 228 jugeait aussi la Coupe Davis, rangée avec l'ATP dans l'archive (10 % des matchs en 2 sets gagnants) : l'Elo y est très mal étalonné (favori 59,9 % réels pour 68,4 % annoncés) et cela gonflait le résultat. Les compétitions par équipes sont désormais exclues du jugement (elles restent dans l'Elo). Étude relancée : en 2 sets gagnants, favori 65,0 % réels pour 67,3 % annoncés sur 7 490 matchs du circuit, pente 0,826, gain 0,0016 ± 0,0008 (1,98 erreur type). La règle du brief passe ; la condition proposée des 2 erreurs types est manquée de peu. Le signal reste en place, pente ramenée de 0,815 à 0,826 ; le 3 sets gagnants (0,0014 ± 0,0020) reste en attente. (2) Vitesse de l'Elo en WTA (etude_vitesse_elo.py, règle écrite avant) : forme choisie sur 2018–2022 (un Elo rapide ajouté au nôtre, +0,0016), jugée une fois sur 2023 → juin 2026 : +0,0005 ± 0,0006 — REJETÉ. (3) Départ à 1350 au lieu de 1200 pour les joueurs venus des petits niveaux : +0,0002 en ATP, 0 en WTA — REJETÉ ; le gain vu à l'audit venait lui aussi de la Coupe Davis, et le classement de production rejoué avec 1350 fait moins bien sur nos matchs (0,6245 contre 0,6225). (4) OUTSIDERS, exploration sur 2018–2022 : aux deux premiers tours d'un Grand Chelem l'outsider gagne MOINS qu'annoncé (ATP 26,9 % pour 30,5 %, WTA 27,8 % pour 30,7 %) ; en Challenger il gagne PLUS (33,8 % pour 32,9 %), surtout s'il est en progression (39,8 % pour 36,8 %), jeune face à un joueur plus âgé (33,7 % pour 31,4 %) ou issu des qualifications (34,5 % pour 32,0 %) ; rien pour les gauchers, le face-à-face, les invités ni les repêchés. Deux règles sont écrites dans rapport_audit.json pour la prochaine étude. Le Brier est désormais publié à côté de la log loss.",
+   "statut": "production",
+   "paquet": 229
+  },
+  {
+   "date": "2026-11-11",
+   "quoi": "Classement Elo : un joueur vu d'abord en ITF hommes part de 1000 au lieu de 1200 (paquet 230). Il partait jusqu'ici de la même note qu'un joueur vu d'abord en Challenger, alors que le niveau est plus bas : il était trop bien noté face aux habitués du Challenger. Étude etude_depart_itf.py, règle écrite avant tout essai (les résultats ITF hommes n'existent que depuis juin 2024, donc 2018–2022 est impossible : forme choisie sur le Challenger de janvier à septembre 2025, jugée une seule fois d'octobre 2025 à juin 2026). Forme choisie : départ à 1000. Jugée sur 7 722 matchs Challenger : log loss 0,5959 → 0,5902 (gain 0,0057 ± 0,0007), Brier 0,2055 → 0,2030 ; ATP inchangé (+0,0001). Contrôle prévu par la règle, sur le classement complet rejoué : nos matchs d'août à octobre 2026, que l'étude n'a jamais vus, passent de 0,6225 à 0,6205 de log loss ; sur les 912 matchs Challenger, gain 0,0077 ± 0,0021 et Brier 0,2173 → 0,2141. Aucun pourcentage du circuit principal ne bouge de façon mesurable. Limite dite : 1000 est le bord de la grille essayée ; un départ plus bas sera jugé plus tard sur des matchs à venir, pas sur la période déjà utilisée. RETRAIT : à chaque passage le classement est rejoué une fois de plus avec l'ancien départ ; sur nos matchs Challenger à partir du 12/11/2026, dès 300 matchs, si le gain cumulé est négatif de plus de 2 erreurs types, le départ revient à 1200 (suivi dans rapport_pronostic.json). Trois autres études jugées dans le même paquet, RIEN en production : (1) Grand Chelem en WTA, pente 1,23 apprise sur 2018–2022 (le favori y gagne plus qu'annoncé : 71,7 % pour 69,2 % sur 1 742 matchs de 2023 à juin 2026), gain 0,0032 ± 0,0020, soit 1,6 erreur type : la règle en demandait 2 — non retenu ; même tableau en ATP (pente 1,24, gain 0,0033 ± 0,0022). (2) Outsider en Challenger en progression ou issu des qualifications : l'outsider en progression gagne bien plus qu'annoncé sur les deux périodes (40,1 % pour 36,9 % sur 2 826 matchs depuis 2023), mais le décalage appris ne fait rien gagner (−0,0002 ± 0,0007), et l'effet des qualifications s'inverse — REJETÉ. (3) Joueurs peu vus en Challenger, une pente par tranche d'expérience : passe sur l'archive (+0,0011 ± 0,0003), mais l'archive n'a pas les résultats ITF hommes que le classement utilise ; rejouées avec eux, ces pentes feraient perdre 0,0012 — PAS mises en production. C'est ce contrôle qui a mené à l'étude du départ ITF.",
+   "statut": "production",
+   "paquet": 230
+  },
+  {
+   "date": "2026-11-11",
+   "quoi": "Grand Chelem : part de l'Elo plus tranchée dans le tableau principal, en ATP et en WTA (paquet 231) — DÉCISION DE LUCAS, pas une étude qui passe sa règle. La règle écrite à l'avance (WTA seule : 0,001 sur 1 000 matchs, 2 erreurs types) a été jugée au paquet 230 et n'est pas passée (0,0032 ± 0,0020). Le constat est pourtant le même dans les deux circuits et sur les deux périodes : en Grand Chelem le favori gagne plus souvent que l'Elo ne l'annonce. Pente commune 1,235, apprise sur 2018–2022 seulement (4 701 matchs). Pour mémoire, sur 2023 → juin 2026 : 3 442 matchs, favori 72,0 % réels pour 70,0 % annoncés, log loss 0,5391 → 0,5359 (gain 0,0032 ± 0,0015), Brier 0,1815 → 0,1807 — chiffres vus avant la décision, donc pas une preuve. Sur notre US Open 2026 (196 matchs du tableau principal) : même sens, favori 76,0 % pour 70,2 %, gain 0,0047 ± 0,0066 — trop peu de matchs pour conclure. Seule la part de l'Elo du % bouge, comme pour le format du match ; les qualifications ne sont pas concernées (le tour doit être connu). En ATP, le 3 sets gagnants laissé en attente au paquet 229 est remplacé par cette pente : jamais deux pentes sur le même match. RETRAIT : règle cumulée, par circuit — dès 300 matchs de Grand Chelem suivis, si le gain propre du signal est négatif de plus de 2 erreurs types, il est retiré. Premier tournoi concerné : l'Open d'Australie. Étude jugée dans le même paquet : départ des joueuses vues d'abord en ITF (règle écrite au paquet 230) — sur 2018–2022 aucun départ plus bas que 1200 ne fait mieux (−0,00002 à −0,0003), et sur 2023 → juin 2026 le moins mauvais perd 0,00002 sur 8 837 matchs WTA : REJETÉ, les joueuses gardent leur départ. Le défaut corrigé au paquet 230 est donc propre aux hommes. Constat à traiter : nos matchs de qualifications de Grand Chelem portent le même nom de tournoi que le tableau principal ; chez les hommes ils sont simulés en 3 sets gagnants alors qu'ils se jouent en 2 (correction prévue au paquet suivant).",
+   "statut": "production",
+   "paquet": 231
+  },
+  {
+   "date": "2026-11-11",
+   "quoi": "Qualifications de Grand Chelem (paquet 232). (1) CORRECTION : dans nos données, les qualifications d'un Grand Chelem portent le même nom de tournoi que le tableau principal ; chez les hommes elles étaient donc simulées en 3 sets gagnants, avec des scores comme 3-1, alors qu'elles se jouent en 2 (toutes, depuis 2022). Le tour relevé dans le programme du jour les distingue désormais : 2 sets gagnants, scores et durée cohérents. L'effet sur le % de victoire est petit (seule la part simulée du % change : un favori à 70 % passe à environ 69 %). La pente du format du match ne s'y applique pas : elle n'a été étudiée que sur le circuit principal. Tour inconnu : le match est traité comme avant. (2) ÉTUDE, règle écrite au paquet 231 avant toute mesure sur l'archive : une pente de l'Elo propre aux qualifications de Grand Chelem, apprise sur 2018–2022, jugée une fois sur 2023 → juin 2026. FEMMES : pente 1,247 (le favori gagne plus souvent qu'annoncé : 67,9 % réels pour 63,2 % sur 1 435 matchs jugés), log loss 0,6106 → 0,6059 (gain 0,0047 ± 0,0017, soit 2,7 erreurs types), Brier 0,2105 → 0,2088 — RETENUE, en place ; sur nos 109 matchs de 2026, même sens (gain 0,0012 ± 0,0054, trop peu pour conclure seul). HOMMES : rien à corriger dans l'archive (pente 0,88 puis 0,96, gain −0,0003 ± 0,0010) — REJETÉ. Nos 171 matchs de 2026 y montrent pourtant un Elo trop prudent (favori 73,1 % réels pour 62,6 % annoncés) : classé à surveiller, le classement de production contenant les résultats ITF hommes que l'archive n'a pas. RETRAIT de la pente : règle cumulée — dès 300 matchs de qualifications suivis, si le gain propre du signal est négatif de plus de 2 erreurs types, il est retiré. Ce qui ne change pas : ces matchs gardent la vitesse Elo des Grands Chelems (l'archive fait de même) et restent rangés avec l'ATP et la WTA dans nos bilans.",
+   "statut": "production",
+   "paquet": 232
+  },
+  {
+   "date": "2026-11-12",
+   "quoi": "Signaux par circuit réappris sur l'Elo de production (paquet 233) — le défaut principal relevé par l'audit. Les signaux « changement de surface », « retour d'absence », « âge », « favori / outsider » et « parcours dans le tournoi » avaient été appris contre un Elo qui n'est pas celui du site : sans ses réglages, et figé pendant tout le tournoi (la date de l'archive est celle du début du tournoi). Étude etude_signaux_reappris.py, règle écrite à l'audit : les sept β réappris ensemble sur 2018–2022 contre l'Elo du site, jugés sur 2023 → juin 2026 ; un signal reste sur un circuit seulement si le retirer coûte au moins 0,001 sur au moins 1 000 matchs concernés, même sens sur les deux périodes. RÉSULTAT : « favori / outsider » et « parcours » ne tiennent sur AUCUN circuit contre le vrai Elo (leur β change de signe d'une période à l'autre ou ne vaut rien) ; ils mesuraient surtout le retard de l'Elo figé. En ATP, le « favori / outsider » en place faisait même perdre 0,0018 ± 0,0004. ATP : restent surface, âge et retour d'absence, β réappris — sur 9 188 matchs jugés, log loss 0,6024 → 0,5998 contre la configuration d'avant (gain 0,0026 ± 0,0009), Brier 0,2086 → 0,2074. CHALLENGER : restent surface, retour d'absence et âge, β réappris — 31 883 matchs, gain 0,0002 ± 0,0003 (ne fait pas moins bien, et retire des décalages sans information). WTA : la configuration réapprise ferait un peu moins bien que celle d'avant (−0,0006 ± 0,0007) : par le contrôle écrit avant de lancer l'étude, la WTA ne change pas. ÉCART À LA RÈGLE, dit comme tel et soumis à Lucas : en ATP le retour d'absence ne compte que 757 matchs concernés sur la période jugée, sous les 1 000 de la règle, alors que le retirer coûterait 0,022 ± 0,005 sur ces matchs (4 erreurs types) ; il est gardé « en sursis » au lieu d'être retiré. Appliquée à la lettre, la règle aurait donné 0,0006 ± 0,0010 de gain en ATP au lieu de 0,0026. Un signal écarté n'est plus appliqué sur son circuit et le suivi hebdomadaire ne peut pas le réadopter : il faudrait une nouvelle étude. Les signaux gardés restent suivis « avec / sans » comme avant. TIE-BREAKS : l'étude des tie-breaks sous-estimés a été rejouée avec l'Elo du site, règle inchangée — même verdict : Challenger retenu (28,4 % prévus pour 31,8 % réels sur 13 926 matchs jugés, gain 0,0027), décalage 0,1497 → 0,1305 ; ATP et WTA toujours non retenus.",
+   "statut": "production",
+   "paquet": 233
+  },
+  {
+   "date": "2026-11-12",
+   "quoi": "Suivi des signaux : la règle « deux semaines de suite » est remplacée par une règle cumulée (paquet 234). L'ancienne règle rejugeait chaque signal sur la seule semaine écoulée (au moins 30 matchs, seuil 0,001) : sur 30 matchs l'erreur type du gain vaut 0,017, dix-sept fois le seuil — elle réagissait surtout au hasard. Étude etude_regle_hebdomadaire.py, règle écrite à l'audit : les deux règles rejouées semaine par semaine sur 2023 → juin 2026, avec un signal connu bon (retour d'absence) et un signal au hasard de même taille, depuis les deux positions de départ (en place, en attente) ; est gardée celle qui passe le moins de semaines dans le mauvais état. RÉSULTAT : 38 % de semaines dans le mauvais état pour « deux semaines de suite », 26 % pour la règle cumulée. En Challenger, où le retour d'absence compte 41 matchs par semaine, l'ancienne règle laissait ce bon signal HORS de l'algo 78 % des semaines alors qu'il partait en place (74 % dans l'histoire réelle) ; la règle cumulée, 1 %. Et un bon signal en attente n'entrait presque jamais avec l'ancienne règle (hors de l'algo 82 à 99 % des semaines). Limite dite : la règle cumulée est lente — il lui faut 300 matchs concernés, soit des mois pour un signal rare ; un signal au hasard déjà en place y reste donc plus longtemps (16 % des semaines en Challenger, environ 70 % en ATP et en WTA où le signal ne touche que 7 matchs par semaine), et un bon signal en attente met longtemps à entrer. LA RÈGLE, pour chaque signal et chaque circuit : en place → retiré dès que, depuis son adoption, sur au moins 300 matchs concernés, son gain propre est négatif de plus de 2 erreurs types ; en attente → adopté dès que, sur au moins 300 matchs, il est positif de plus de 2 erreurs types ; les compteurs repartent de zéro à chaque changement. Chaque signal est jugé sur son effet PROPRE (log loss sans lui contre avec lui), plus sur l'effet de tous les signaux du match. Les compteurs partent du 12/11/2026. Un retrait prononcé par l'ancienne règle est annulé : le signal revient en place et la nouvelle règle le juge. Un signal écarté au paquet 233 reste écarté. Les autres règles hebdomadaires (poids, facteurs) ne sont pas touchées par ce paquet.",
+   "statut": "production",
+   "paquet": 234
+  },
+  {
+   "date": "2026-11-12",
+   "quoi": "Taille du dépôt : mesurer ce que chaque fichier coûte VRAIMENT avant d'en déplacer un (paquet 235, travail interne). Le rapport quotidien comptait « versions × taille » : 384 Mo par jour, dominés par trois fichiers réécrits 11 à 14 fois par jour. C'est un majorant : git ne garde que la différence entre deux versions d'un fichier texte, et la taille du dépôt n'a monté que d'environ 57 Mo par jour (6,5 Go le 04/11, 6,84 Go le 10/11). À l'inverse, un fichier compressé réécrit coûte sa taille entière à chaque version et n'apparaît pas en tête du classement brut. scripts/croissance_depot.py mesure désormais, pour les 40 familles de fichiers les plus lourdes, le coût réel : git compresse ensemble la version d'avant et les versions du jour, on retranche la version d'avant. Les contenus manquants sont rapatriés en un seul appel ; plafond de taille et de temps ; toute erreur laisse le rapport d'avant intact. Vérifié sur deux dépôts publics clonés sans contenus (261 contenus rapatriés en un appel ; 610 Ko bruts pour 47 Ko réels) et sur un dépôt fabriqué (un journal de 400 Ko qui s'allonge : presque rien ; un fichier compressé de 40 Ko : 40 Ko par version). Le résultat arrive dans le message quotidien et dans croissance_depot.json. Rien n'est déplacé dans ce paquet : le correctif visera les fichiers que la mesure désignera. L'historique déjà accumulé ne peut être repris que par la procédure « Dépôt neuf ».",
+   "statut": "production",
+   "prive": true,
+   "paquet": 235
+  },
+  {
+   "date": "2026-11-12",
+   "quoi": "Reste-t-il un défaut d'étalonnage du % de victoire ? Balayage de 54 cases, sur les périodes d'apprentissage seulement (paquet 236) — rien n'entre en production. Après les corrections des paquets 228 à 234, l'étude etude_balayage_pistes.py a cherché ce qui reste : une pente par niveau de tournoi, par surface, par saison, par tour et par expérience du joueur le moins vu ; un décalage pour l'entrée dans le tableau (qualifié, invité, repêché) et pour la charge de la semaine précédente. ATP et WTA sur l'archive 2018–2022 (22 062 matchs) ; Challenger « comme en production », avec les résultats ITF hommes dans l'Elo, du 01/01 au 30/09/2025 (8 749 matchs). Règle écrite avant : une piste n'est portée au jugement que si sa correction gagne au moins 0,001 sur au moins 1 000 matchs concernés avec au moins 2 erreurs types, mesuré là même où elle est apprise (un majorant). RÉSULTAT : aucune des 54 cases n'atteint ce seuil. En ATP et en WTA, les pentes par niveau, surface, saison et tour restent entre 0,90 et 1,09 sur les cases d'au moins 1 000 matchs, pour des gains de 0,0000 à 0,0008 ; qualifiés et invités sont un peu sous-estimés (décalage +0,03 à +0,07), mais pour 0,0001 à 0,0006 ± 0,0004 à 0,0010. En Challenger, avec le départ ITF à 1000 (paquet 230), l'Elo est étalonné : pente 1,005, favori 65,0 % réels pour 65,2 % annoncés, sans écart selon l'expérience, le niveau ou la surface. Seul reste visible le joueur vu d'abord en ITF, encore un peu surestimé (décalage −0,20 sur 753 matchs, gain 0,0035 ± 0,0031) : c'est la piste du départ ITF plus bas, dont la règle est déjà écrite et qui sera jugée sur nos matchs à venir. La période de jugement n'a pas été touchée. Ce rapport sert de registre : ces pistes n'ont pas à être rejouées.",
+   "statut": "etude",
+   "paquet": 236
+  },
+  {
+   "date": "2026-11-12",
+   "quoi": "Statistiques annoncées (aces, doubles fautes, % de 1res balles, breaks) rejouées sur l'archive (paquet 237) — le % de victoire ne change pas. Le recalage de ces statistiques est appris sur nos matchs suivis : quelques centaines de cas par case. L'étude etude_statistiques_annoncees.py a rejoué la feuille annoncée (profils ajustés chaque trimestre, match simulé 400 fois) sur 196 824 cas de l'archive, règle écrite à l'audit : décalage et largeur appris sur 2019–2022, couverture de la fourchette entre 78 et 82 % sur au moins 1 000 cas jugés (2023 → juin 2026). CE QU'ELLE MONTRE : (1) contre l'archive, le modèle n'a pas de biais d'ensemble — le % de 1res balles annoncé est juste à 0,1 point près sur la période jugée, sa fourchette couvre 79 % ; (2) les fourchettes des doubles fautes et des breaks sont trop larges partout (85 à 90 % de couverture au lieu de 80) ; une largeur de 0,75 à 0,85 les ramène entre 79,6 et 81,7 % sur l'archive, sauf les breaks en Challenger (85 %) ; en tout, onze cases sur douze sont réglées sur l'archive ; (3) en direct, c'est autre chose : fin octobre et début novembre, le % de 1res balles réel dépasse l'annoncé de 4,3 points en ATP, 3,0 en WTA, 1,4 en Challenger. Le biais vu en direct ne vient donc pas du profil des joueurs. Une part vient de la saison (voir plus bas), une part de la source des feuilles en direct, qui ne compte pas tout à fait comme l'archive. CONTRÔLE écrit avant le rejeu : les coefficients de l'archive ne remplacent ceux en place que s'ils ne font pas moins bien sur nos cas suivis. Deux cases passent, toutes deux en WTA : breaks (fourchette 88 % → 80,5 % sur nos 190 cas, largeur 0,8) et aces (82 %, égal à ce qui était en place, largeur 0,8). Elles prennent la variante « archive », aux coefficients fixes appris sur 8 800 cas. Les dix autres gardent le recalage appris en direct. RETRAIT : sur nos cas joués depuis le 12/11/2026, dès 300 cas, si la couverture est plus loin de 80 % que sans recalage de plus de 5 points, la case revient à « sans ». SECOND VOLET, REJETÉ : la saison. Sur 2019–2022 le % de 1res balles est plus haut que l'annoncé en janvier, octobre et novembre (tournois en salle : +1,6 à +1,9 point en ATP) et plus bas en juillet-août (−1,4 à −1,8). Un décalage par mois, jugé sur 2023 → juin 2026, réduit bien le biais mensuel (de 18 à 26 % selon le circuit) mais pas du tiers exigé par sa règle : non retenu. Le mois est un mauvais remplaçant de « en salle » ; l'information exacte n'est pas dans l'archive.",
+   "statut": "production",
+   "paquet": 237
+  },
+  {
+   "date": "2026-11-12",
+   "quoi": "1res balles en salle (paquet 238) — le % de victoire ne change pas. Le paquet 237 avait montré que le % de 1res balles annoncé suit la saison, sans pouvoir dire pourquoi : l'archive ne dit pas si un tournoi se joue en salle. Une table des tournois ATP et WTA en salle a été écrite depuis le calendrier (nom, mois, surface), sans regarder un résultat (tournois_en_salle.py ; les cas douteux sont écartés). Étude etude_premieres_balles_salle.py, règle écrite au paquet 237 : décalages « en salle » et « plein air » appris sur 2019–2022, jugés une fois sur 2023 → juin 2026 ; retenu si le biais en salle baisse d'au moins moitié et si l'écart moyen ne monte pas, sur au moins 1 000 cas en salle. RETENU EN ATP : en salle, le % de 1res balles réel dépasse l'annoncé de 1,83 point sur 1 240 cas jugés ; avec le décalage appris (+1,22), il ne reste que 0,61 point ; en plein air rien ne bouge. Et les doubles fautes en salle passent de −0,61 à −0,13 (décalage −0,49). Aces et breaks : non retenus. WTA : moins de 1 000 cas en salle jugés (496) — non retenu, le biais allait dans le même sens (+1,2 point). Challenger : l'archive ne permet pas de savoir qui joue en salle — non étudié. EN PRODUCTION, « en salle » vient de la feuille du tournoi (surface « Hardcourt indoor ») ; s'il n'y a pas encore de feuille, rien ne change. Le décalage s'applique AVANT le recalage appris sur nos matchs, à l'affichage comme à l'apprentissage, pour ne pas être compté deux fois : le recalage, qui corrigeait jusque-là la salle sans le savoir, se réajuste de lui-même au prochain passage. RETRAIT : sur nos cas en salle depuis le 12/11/2026, dès 300 cas, si l'écart moyen avec le décalage dépasse celui sans, il est retiré. L'AUTRE PART DU BIAIS EN DIRECT est mesurée : sur 211 matchs Challenger présents dans les deux sources, les feuilles en direct comptent 0,93 ± 0,12 point de 1res balles de plus que l'archive (même match, même joueur) ; aces et doubles fautes sont identiques. Cet écart de source reste corrigé par le recalage appris sur nos matchs, qui est jugé contre ces mêmes feuilles.",
+   "statut": "production",
+   "paquet": 238
+  },
+  {
+   "date": "2026-11-12",
+   "quoi": "Image pour X (duel des styles) : un encadré en haut rappelle que le chiffre qui compte est l'écart à l'attendu, pas le % brut (l'attendu = la chance que l'algo donnait avant chaque match, en moyenne), avec l'exemple du premier joueur ; l'écart est entouré d'une pastille ; le pied de page dit que ces bilans ne changent pas le % de l'algo. Les blocs sont resserrés et la hauteur de l'image suit le texte (1350 px au moins). Post « Analyse complète » : en dessous de 10 points d'écart, un duel service / retour est écrit « équilibré » au lieu d'un avantage (même règle que la page), et « a l'avantage dans les deux duels » n'apparaît que si les deux écarts atteignent 10 points. Les 5 derniers matchs contre le style restent affichés. Descriptif seulement : le % ne change pas.",
+   "statut": "production",
+   "paquet": 239
+  },
+  {
+   "date": "2026-11-12",
+   "quoi": "Profils service / retour (paquet 240) — le % de victoire ne change pas. (1) DUEL SERVICE / RETOUR : le duel de la fiche et du post lisait les taux bruts des feuilles, rangés parmi les seuls joueurs du circuit ; les cartes des joueurs lisent les profils ajustés au niveau des adversaires, rangés parmi les joueurs ATP et Challenger (ou WTA). D'où des chiffres contradictoires sur la même page (« Retour Humbert 27/100 » dans le post, « 87 RET » sur sa carte). Le duel est désormais tiré des cartes : une seule échelle sur tout le site, et le texte le dit. (2) AMPLIFICATION DES PROFILS. L'audit avait relevé des profils un peu trop ramenés vers la moyenne. Étude etude_profils_amplification.py, règle écrite à l'audit : une amplification par circuit et par composante du point, apprise sur 2019–2022, jugée sur 2023 → juin 2026 (1 005 306 lignes, profils ajustés chaque trimestre). Treize cases sur quinze passent. Surprise : la 1re balle dans le court est au contraire TROP marquée (k 0,91 à 0,96 sur les trois circuits) ; les points gagnés et les doubles fautes sont un peu trop ramenés vers la moyenne (k 1,01 à 1,12). Les aces en ATP ne passent pas (k 1,06 appris, 0,99 sur la période jugée). CONTRÔLE sur les statistiques annoncées (feuille rejouée avec et sans, mêmes matchs de 2023 → juin 2026) : l'effet est petit ; la 1re balle resserrée rend le % de 1res balles annoncé plus juste dans son étalement (ATP : pente du réel contre l'annoncé 0,83 → 0,89 ; WTA 0,91 → 0,95 ; Challenger 0,94 → 1,02). Mais amplifier les points gagnés en WTA et en Challenger, et les doubles fautes en WTA, rend les breaks et les doubles fautes trop dispersés : la règle de retrait, écrite avant le contrôle et appliquée à lui, les retire d'emblée. EN PLACE : ATP 1re dedans 0,921, doubles fautes 1,075, 2e gagnée 1,108 ; WTA 1re dedans 0,956 ; Challenger 1re dedans 0,912, aces 1,105, doubles fautes 1,028. L'amplification ne touche que la simulation qui produit les statistiques annoncées, ancrée sur le % affiché : le % de victoire ne bouge pas. RETRAIT : chaque lundi, sur nos cas depuis le 12/11/2026, dès 300 cas par circuit et statistique, si la pente du réel contre l'annoncé est du mauvais côté de 1 de plus de 2 erreurs types, les composantes liées sont retirées. Ce qui n'est pas réglé : les aces annoncés en ATP restent sous-estimés en direct (0,9 sur six semaines) alors qu'ils ne le sont pas sur l'archive (+0,1) : c'est la source ou la salle, pas le profil.",
+   "statut": "production",
+   "paquet": 240
+  },
+  {
+   "date": "2026-11-12",
+   "quoi": "Règles du lundi jugées sur 42 jours glissants (paquet 241, travail interne). Les corrections de situation (qualifiés, transition de circuit, classement, classement relatif), les nouveaux venus et les arbres sont rejugés chaque lundi sur les six dernières semaines, dont cinq déjà vues la semaine d'avant ; ils entraient après deux semaines à plus de 0,001 et sortaient après deux semaines à moins de −0,001. Deux fenêtres qui se chevauchent à 5/6 ne sont pas deux confirmations. Étude etude_regles_fenetres.py, règle écrite au paquet 234 : les règles rejouées semaine par semaine sur 2023 → juin 2026 avec un réglage connu bon (les signaux en place contre l'Elo seul) et un réglage au hasard de même taille, depuis les deux positions de départ. Part des semaines dans le mauvais état : 12.7 % pour la règle en place, 11.7 % pour une fenêtre à 2 erreurs types, 9.4 % pour la règle cumulée — retenue. Un réglage au hasard changeait d'état 2,5 à 3 fois par an en ATP et en WTA avec la règle en place, moins d'une fois par an avec la règle cumulée. EN PLACE pour ces règles : chaque match n'est compté qu'une fois (le jour où il entre dans la fenêtre) ; entrer si, depuis le dernier changement, sur au moins 300 matchs, le gain est positif de plus de 2 erreurs types ; sortir s'il est négatif de plus de 2 erreurs types ; compteurs remis à zéro à chaque changement. Ce qui est en place aujourd'hui le reste : rien ne bouge à l'installation. Limite : plus lente, elle laisse un bon réglage en attente plus longtemps (13 à 23 % des semaines). Les poids du mélange et les réglages jugés sur toute la période depuis 2025 gardent la règle d'avant : ils ne fournissent pas encore le détail par match.",
+   "statut": "production",
+   "prive": true,
+   "paquet": 241
+  },
+  {
+   "date": "2026-11-12",
+   "quoi": "Poids du mélange jugés eux aussi avec la règle cumulée (paquet 242, travail interne). Les poids appris sur les feuilles (contre ceux de l'archive), les poids propres ATP, WTA et Challenger (contre les poids communs) et le mélange propre aux désaccords WTA gardaient la règle d'avant (0,001 deux semaines de suite) parce qu'ils ne donnaient qu'un chiffre par semaine. Ils fournissent maintenant le détail par match (entrainement_progressif.paires_match ; pour les désaccords WTA, les seuls désaccords, ailleurs rien ne change) et passent à la règle cumulée retenue au paquet 241 : chaque match compté une fois, entrer si, depuis le dernier changement, sur au moins 300 matchs, le gain dépasse 2 erreurs types, sortir s'il est négatif de plus de 2 erreurs types. Quand il y a trop peu de matchs, rien ne bouge (avant, un poids en place pouvait sortir faute de jugement). Contrôle etude_poids_cumules.py, sans décision : 10 lundis rejoués sur les pronostics hors échantillon, aucun match compté deux fois ; installée sur l'un des quatre derniers lundis, la règle n'aurait rien changé (les cinq poids restent non adoptés, comme aujourd'hui). Limite vue au rejeu : installés sur une seule fenêtre favorable, les poids propres WTA (12/10) puis Challenger (19/10) seraient entrés et auraient ensuite fait moins bien ; c'est le prix de la règle (13 à 23 % des semaines en attente, quelques entrées à tort) — à surveiller. La combinaison Elo + simulation de l'archive n'est pas concernée : elle est jugée sur une période fixe, la même chaque semaine. Le % de victoire ne change pas par ce paquet lui-même. Retrait : revenir à la règle d'avant pour ces cinq poids si, à 1 000 matchs cumulés par poids, la règle cumulée a gardé en place un poids dont le gain cumulé est négatif.",
+   "statut": "production",
+   "prive": true,
+   "paquet": 242
+  },
+  {
+   "date": "2026-11-12",
+   "quoi": "Forme du jour rejouée sur l'archive (paquet 243, étude) — le % de victoire ne change pas. La forme du jour règle l'allure du match (deux ou trois sets, écart de jeux), pas le vainqueur. Elle est jugée chaque lundi sur quelques centaines de nos matchs par circuit. Règle écrite à l'audit : une grille de 0,15 à 0,22, circuit par circuit, avec les vrais profils, choisie sur 2019–2022 et jugée sur 2023 → juin 2026 ; retenue si l'écart de jeux exact gagne au moins 0,005 sans perdre plus de 0,002 sur le score en sets, sur au moins 1 000 matchs. Une variante asymétrique (les bons jours du favori plus ou moins marqués que ses mauvais jours) est jugée avec la même règle. 12 084 matchs rejoués. Résultat : aucun circuit ne passe (meilleur gain 0,0023 en WTA) ; les réglages en place restent (ATP 0,15, WTA 0,15, Challenger 0,18). La courbe est plate entre 0,15 et 0,18 ; au-delà, l'écart de jeux se dégrade (0,22 coûte 0,012 en Challenger). La variante asymétrique ne fait pas mieux. À surveiller : si le jugement du lundi choisit de nouveau 0,22 ou plus, l'archive dit le contraire.",
+   "statut": "etude",
+   "paquet": 243
+  },
+  {
+   "date": "2026-11-12",
+   "quoi": "Vidéo du match fidèle aux scénarios (paquet 244) — le % de victoire ne change pas. La vidéo rejoue un match réellement tiré parmi les simulations : le favori gagne, avec le nombre de sets et le tie-break prévus. Elle ne regardait pas le scénario : un 6-2 6-3 « sans trembler » pouvait être montré alors que le post donnait « 2 sets accrochés » trois fois plus probable. Sur les matchs publiés, 60 vidéos sur 123 ne tombaient pas dans le scénario le plus fréquent du favori pour leur forme. Maintenant, à forme égale, la vidéo est choisie dans ce scénario (mêmes groupes que le post : sets secs sans trembler ou accrochés ; en 3 sets, après avoir gagné ou perdu le 1er set), puis au plus près des jeux et statistiques médians. Contrôle sur 30 matchs d'essai, comparés à la distribution exacte qui donne les scénarios du post : 30 sur 30 fidèles. La règle de forme du 04/11 (3 sets et tie-break selon la moyenne du circuit) ne change pas.",
+   "statut": "production",
+   "paquet": 244
+  },
+  {
+   "date": "2026-11-12",
+   "quoi": "Forme du jour du lundi jugée avec la règle cumulée, circuit par circuit (paquet 245, travail interne) — le % de victoire ne change pas. σ était choisi chaque lundi et adopté si le gain total dépassait 0,001 deux semaines de suite sur six semaines glissantes, dont cinq déjà vues : la règle que le paquet 241 a remplacée ailleurs, et trop permissive pour un réglage dont le gain est petit et instable (paquet 243). Maintenant chaque match jugé donne sa paire (perte avec 0,15, perte avec le σ choisi) et chaque circuit décide seul : entrer si, depuis le dernier changement, sur au moins 300 matchs, le gain dépasse 2 erreurs types ; sortir s'il est négatif de plus de 2 erreurs types ; chaque match compté une fois. Un circuit en place garde son σ d'avant tant que la semaine ne trouve pas mieux que 0,15. Au premier lundi, rien ne bouge : Challenger reste à 0,18 (gain du dernier jugement 0,017 sur 1 562 matchs), ATP et WTA restent à 0,15. Retrait : revenir à la règle d'avant si, à 1 000 matchs cumulés, un circuit garde un σ dont le gain cumulé est négatif.",
+   "statut": "production",
+   "prive": true,
+   "paquet": 245
+  },
+  {
+   "date": "2026-11-12",
+   "quoi": "Facteurs du lundi jugés avec la règle cumulée (paquet 246, travail interne). Les groupes de facteurs (global et circuit par circuit), le modèle complet et la forme des scores étaient rejugés chaque lundi sur six semaines dont cinq déjà vues ; un groupe entrait si les points étaient mieux prédits, même de quelques millionièmes, deux semaines de suite. Règle écrite avant tout résultat, de la famille retenue au paquet 241 : chaque match jugé donne sa paire sur deux mesures. Pour les groupes, les points doivent gagner plus de 2 erreurs types sur au moins 300 matchs pour entrer, et le vainqueur ne doit pas perdre plus de 2 erreurs types ; un groupe sort si les points ou le vainqueur perdent plus de 2 erreurs types. Pour le modèle complet, c'est le vainqueur qui doit gagner, les points en garde. La forme des scores prend la règle cumulée simple. Chaque match compté une fois ; ce qui est en place le reste au départ ; les décisions directes (voyage, premier verdict par circuit) ne changent pas. Aucun rejeu possible ici : le premier lundi dira les entrées et sorties. Retrait : revenir à la règle d'avant si, à 1 000 matchs cumulés, un groupe en place a des points ou un vainqueur en perte cumulée.",
+   "statut": "production",
+   "prive": true,
+   "paquet": 246
+  },
+  {
+   "date": "2026-11-12",
+   "quoi": "Les études d'avant l'audit rejouées avec l'Elo du site (paquet 247) — le % de victoire ne change pas. 18 études avaient été faites avec un Elo sans réglage et, pour la plupart, figé pendant tout le tournoi. Treize sont relancées telles quelles (mêmes variables, même règle, mêmes périodes), avec l'Elo réglé comme la production et mis à jour à chaque tour ; chacune garde sa règle. Résultat : aucun verdict ne devient positif ; deux deviennent négatifs (parcours dans le tournoi et favori / outsider, en ATP), tous deux déjà hors de l'algo depuis le paquet 233. Ce qui reste dans l'algo et vient de ces études tient avec l'Elo du site : les signaux combinés sur les trois circuits, et favori / outsider en WTA (gain 0,0011). L'effet des serveuses en WTA (suivi à part) tient aussi : +2,1 et +2,5 points sur les deux périodes. Une piste s'approche du seuil sans le passer : l'évolution du classement sur trois mois (0,0007 à 0,0009), à surveiller. Le suivi du % en direct tournait encore sur l'Elo sans réglage : il est corrigé. Quatre études ne sont pas rejouées (recherche sans effet sur l'algo, ou Elo déjà à jour), raison écrite dans le rapport.",
+   "statut": "production",
+   "paquet": 247
+  },
+  {
+   "date": "2026-11-12",
+   "quoi": "Serveuses en WTA en place (paquet 248, décision de Lucas). En WTA, quand une joueuse au profil serveur (grande serveuse ou serveuse attaquante) affronte une joueuse au profil non serveur (retourneuse pressante, contreuse ou équilibrée), la serveuse gagne plus souvent que prévu : +2,1 points sur 2018–2022 et +2,5 sur 2023 → juin 2026, avec l'Elo du site (z proche de 3 sur chaque période). Rien de tel en ATP ni en Challenger. La piste était suivie en fantôme depuis le 02/11 (15 matchs) ; elle passe en place sans attendre, par décision, avec un décalage de +2,24 points à 50 % (une serveuse à 60 % passe à 62,1 %). Ce n'est pas une étude qui passe sa règle : la piste avait été repérée en regardant les circuits. Retrait : si, sur au moins 300 matchs WTA concernés depuis le 12/11, son gain propre est négatif de plus de 2 erreurs types ; le suivi avec / sans continue.",
+   "statut": "production",
+   "paquet": 248
+  },
+  {
+   "date": "2026-11-12",
+   "quoi": "Tiroir « Points marqués » sur la fiche (paquet 249, demande de Lucas) — le % de victoire ne change pas. Pour chaque joueur : le nombre de points gagnés prévu par les simulations, avec sa fourchette 8 fois sur 10. Pour un joueur relevé coup par coup sur au moins 10 matchs des trois dernières années (Match Charting Project, bénévoles, licence CC BY-NC-SA) : comment il marque, ses habitudes appliquées à ce total — aces, services non retournés, coup droit, revers, volée et smash, amorti, lob, fautes provoquées, fautes directes et doubles fautes de l'adversaire — et ses montées au filet gagnées. Sur les matchs relevés, ces catégories font exactement les points gagnés (96 % à l'unité près). Couverture : 154 joueurs, surtout le haut du classement ATP et WTA, presque aucun Challenger ; un joueur peu relevé n'a que le total, ses aces et les doubles fautes adverses, jamais une moyenne du circuit à la place.",
+   "statut": "production",
+   "paquet": 249
+  },
+  {
+   "date": "2026-11-12",
+   "quoi": "Duels de coups (paquet 250, étude) — le % de victoire ne change pas. Question de Lucas : le détail des coups (Match Charting Project) donne-t-il un avantage à l'un des joueurs, au-delà de ce que l'algo sait déjà ? Cinq duels écrits avant tout calcul : le filet (celui qui monte et gagne au filet contre celui qui passe mal), l'amorti, le service rapide (points de service gagnés en trois frappes contre le retour adverse), les coups gagnants et les fautes directes. Jugés sur les matchs où les deux joueurs ont au moins 10 matchs relevés dans les 3 ans d'avant : 6 207 en ATP, 3 280 en WTA ; appris sur 2018–2022, jugés sur 2023 → juin 2026. Résultat : aucun ne passe (le meilleur, le service rapide en ATP, gagne 0,0005). Ce que montrent les coups est déjà dans le niveau des joueurs. Un passage intermédiaire avait donné huit duels gagnants : c'était une erreur de calcul (une constante favorable au vainqueur), repérée et corrigée avant de conclure. Les duels restent une information.",
+   "statut": "etude",
+   "paquet": 250
+  },
+  {
+   "date": "2026-11-12",
+   "quoi": "Duel des coups, joueur par joueur (paquet 251) — le % de victoire ne change pas. Question de Lucas : au lieu d'un effet commun à tous, chaque joueur a-t-il son adversaire type ? Pour chaque joueur, ce qu'il fait de plus ou de moins que prévu contre chaque style d'adversaire (grand serveur, serveur attaquant, retourneur pressant, contreur, équilibré), sur ses seuls matchs passés, rétréci quand il a peu de matchs ; règle écrite avant tout calcul, apprise sur 2018–2022 et jugée sur 2023 → juin 2026. Résultat : rien en ATP (−0,0001 sur 9 180 matchs) ni en WTA (+0,00003 sur 8 490). Sur le site, le tiroir « Points marqués » gagne un « Duel des coups » quand les deux joueurs sont relevés : montées au filet et réussite contre ce que l'adversaire laisse au filet, service rapide contre le retour adverse, amorti pour qui en joue plus que la moyenne, coups gagnants et fautes directes pour 100 points, toujours face à la moyenne du circuit, avec la mention que nos études n'y trouvent pas d'avantage qui prédise le vainqueur.",
+   "statut": "production",
+   "paquet": 251
+  },
+  {
+   "date": "2026-11-13",
+   "quoi": "Styles de jeu d'après les coups (paquet 252, demande de Lucas) — le % de victoire ne change pas. En plus du style service / retour, chaque joueur relevé coup par coup (au moins 10 matchs sur 3 ans, Match Charting Project) reçoit un ou deux styles de jeu, d'après la façon dont il gagne ses points dans l'échange face à la moyenne du circuit : joueur de filet, attaquant de coup droit, attaquant de revers, joueur de toucher, régulier, sinon complet. Seuils écrits avant de regarder un seul joueur. Sur la fiche, une partie « Styles de jeu » montre les étiquettes de chacun et son bilan contre le style de jeu de l'adversaire : victoires, attendu, écart à l'attendu, derniers matchs, comme le duel des styles ; le style de l'adversaire est figé à la date de chaque match. Étude : ni la paire de styles, ni l'effet propre à chaque joueur ne prédit le vainqueur au-delà de l'algo (matchs ATP et WTA où les deux joueurs ont un style).",
+   "statut": "production",
+   "paquet": 252
+  },
+  {
+   "date": "2026-11-13",
+   "statut": "etude",
+   "paquet": 253,
+   "quoi": "Styles de jeu, circuit par circuit (paquet 253, étude) — le % de victoire ne change pas. Question de Lucas : l'avantage d'un style sur un autre est-il propre à l'ATP ou à la WTA ? L'écart par paire de styles est maintenant appris séparément sur chaque circuit (2018–2022) et jugé sur 2023 → juin 2026 : il fait toujours moins bien que l'algo seul (ATP -0.0024, WTA -0.0083) ; en WTA, le sens s'inverse d'une période à l'autre. Aucun style ne bat un autre plus souvent que le niveau des joueurs ne le prévoit, sur aucun des deux circuits."
+  },
+  {
+   "date": "2026-11-13",
+   "statut": "production",
+   "prive": true,
+   "paquet": 254,
+   "quoi": "Forme des scores : garde-fou par circuit rétabli (paquet 254, travail interne) — le % de victoire ne change pas. Relecture des études de la nuit, circuit par circuit, à la demande de Lucas. Au paquet 246, la forme des scores était passée à la règle cumulée sur l'ensemble des matchs ; la règle d'avant exigeait en plus qu'aucun circuit ne perde, et ce garde-fou avait été perdu. Il revient : chaque circuit a son compteur cumulé ; un circuit dont la perte dépasse 2 erreurs types sur au moins 300 matchs bloque l'adoption ou fait sortir. Les autres décisions vérifiées étaient déjà prises circuit par circuit, ou communes par construction comme avant (modèle complet, poids appris sur les feuilles)."
+  },
+  {
+   "date": "2026-11-13",
+   "statut": "production",
+   "paquet": 255,
+   "quoi": "Ce qui restait commun aux circuits, jugé circuit par circuit (paquet 255, demande de Lucas : « chaque circuit est différent »). Inventaire relu : la plupart des réglages étaient déjà propres à chaque circuit. Trois choses restaient communes. (A) Les deux réglages de l'Elo au moment du pronostic (poids de la surface, prudence pour les joueurs peu vus), rejoués sur l'archive 2018 → juin 2026 : aucun réglage propre ne fait mieux (ATP +0,0001, WTA −0,0001 ; Challenger non concluant). (B) Les poids du mélange Elo + simulation appris sur l'archive : en ATP, des poids propres avec plus de simulation passent la règle (+0,0014 sur 2 259 matchs de 2025), pas en WTA ; rien n'est changé : le suivi sur nos propres matchs va dans l'autre sens, c'est une décision à prendre. (C) Le modèle complet des facteurs : un modèle propre à chaque circuit est désormais suivi en fantôme chaque lundi, sans effet sur le % tant qu'il n'est pas adopté. Le % de victoire ne change pas par ce paquet."
+  },
+  {
+   "date": "2026-11-13",
+   "statut": "production",
+   "paquet": 256,
+   "quoi": "SCORES EN DIRECT PLUS FRAIS (paquet 256, demande de Lucas). Le score affiché pendant un match se met à jour toutes les 3 secondes au lieu d'environ 30 : la page redemande les scores toutes les 3 s et le service qui les relit garde sa copie 3 s au plus (avant : 10 s et 30 s). La fréquence suit le crédit de requêtes du jour de la source des scores : relevé du 6 au 13 novembre, 800 à 1 800 requêtes utilisées par jour sur 15 000, donc 3 s presque tout le temps ; si le direct est très regardé, la mise à jour s'espace toute seule (jusqu'à 60 s) pour garder 3 000 requêtes à la collecte des feuilles de match. Il reste le délai propre à la source, quelques secondes. Le % de victoire ne change pas.",
+   "garde_fou": "Remettre 30 s de fraîcheur minimale au service des scores (workers/algo/worker.js, LIVE_TTL_MIN_MS) et 10 s à la page (algo/index.html, chargerLive)."
+  },
+  {
+   "date": "2026-11-13",
+   "statut": "production",
+   "paquet": 257,
+   "quoi": "FIL DU MATCH en direct (paquet 257, demande de Lucas). Dans la fiche d'un match en cours, à la place des « moments clés », le récit du match, le plus récent en haut : breaks (et à quelle balle de break), breaks blancs, balles de break sauvées, retour de 0-40, balles de set et de match sauvées, sets et tie-breaks, victoire, jeux blancs, jeux à rallonge (3 égalités ou plus), séries de 7 points ou de 4 jeux de suite, aces et doubles fautes. En tête, « en ce moment » : balle de break, de set ou de match, lue dans le score en direct (toutes les 3 s). Les aces et doubles fautes sont repérés d'une mise à jour des statistiques à l'autre (une par minute) et placés dans le jeu en cours à ce moment-là. Le détail des coups (coup droit gagnant, montée au filet…) n'est fourni en direct par aucune source abordable : rien n'est inventé. Aucune requête de plus vers la source des scores. Descriptif : le % ne change pas.",
+   "garde_fou": "Retrait : dans algo/index.html, rendMatchLive revient aux « moments clés » si l'on retire l'appel à rendFil."
+  },
+  {
+   "date": "2026-11-13",
+   "statut": "production",
+   "paquet": 258,
+   "quoi": "LE DIRECT EN 3D (paquet 258, demande de Lucas). Dans la fiche d'un match en cours, le terrain passe en 3D : court aux vraies dimensions et à la couleur de la surface (dur, terre battue, gazon), filet, deux joueurs, balle et ombres, tableau d'affichage. On tourne autour du terrain au doigt, avec trois vues toutes faites (TV, côté, dessus) ; un bouton revient à la vue 2D (choix gardé dans le navigateur). Le score, le serveur et le côté de service (égalité ou avantage) sont réels et suivent le direct toutes les 3 s ; les échanges sont illustratifs (service en diagonale dans le bon carré, puis frappes croisées, le long de la ligne, amorties ou lobées) et l'écran le dit, car aucune source ne fournit les trajectoires en direct. Dessiné sans bibliothèque : rien à télécharger, l'animation s'arrête quand la vue n'est pas à l'écran. Descriptif : le % ne change pas.",
+   "garde_fou": "Retrait : dans algo/index.html, vue3dLive() renvoie false (la vue 2D d'avant revient pour tous)."
+  },
+  {
+   "date": "2026-11-13",
+   "statut": "production",
+   "paquet": 259,
+   "quoi": "LE DIRECT EN 3D, VERSION STADE (paquet 259, demande de Lucas : un rendu nettement meilleur, sans dépendre d'autres sites). Un moteur 3D écrit pour le site (WebGL, aucune bibliothèque, aucun modèle ni image venus d'ailleurs) : court texturé à la couleur de la surface, lignes nettes, filet à mailles, stade avec gradins et public qui bouge, bâches, chaise et arbitre, juges de ligne, ramasseurs, bancs, projecteurs ; lumière du soleil et ombres portées ; deux joueurs articulés et animés (attente, course, coup droit, revers à deux mains, service avec lancer de balle). Quatre vues (TV, près, côté, dessus) et la caméra tourne au doigt. Score, serveur et côté de service réels, mis à jour toutes les 3 s ; échanges illustratifs, l'écran le dit. Sur un appareil sans WebGL 2, la vue 3D simple du paquet 258 prend le relais. Descriptif : le % ne change pas.",
+   "garde_fou": "Retrait : dans rendMatchLive (algo/index.html), retirer l'appel à G3D.monter : la vue 3D simple revient."
+  },
+  {
+   "date": "2026-11-13",
+   "statut": "production",
+   "paquet": 260,
+   "quoi": "LE DIRECT EN 3D REJOUE LES VRAIS POINTS (paquet 260, demande de Lucas : « est-ce que les échanges peuvent être réels ? »). À chaque changement du score en direct, la 3D sait qui a gagné le point, qui servait et de quel côté : elle rejoue ce point-là, avec ce vainqueur, puis affiche « Point X » ; entre deux points, les joueurs se replacent et le serveur fait rebondir sa balle, comme à la télévision ; aucun point n'est inventé (« En attente du prochain point » à l'ouverture). La façon de gagner le point (ace, service non retourné, coup droit ou revers gagnant, volée, amorti, lob, faute provoquée, faute directe, double faute) est tirée des habitudes réelles du vainqueur (tiroir « Points marqués ») ; les trajectoires restent reconstituées, faute de source en direct, et l'écran le dit. Rendu amélioré : bras et jambes modelés, chaussettes, poignets, semelles, bandeau ou casquette, couleurs plus justes, traînée de la balle, public qui applaudit après chaque point, vue « Près » qui suit le joueur. Descriptif : le % ne change pas.",
+   "garde_fou": "Retrait : dans algo/index.html, remettre l'ancien bloc G3D (paquet 259) ou retirer l'appel à G3D.monter (la 3D simple revient)."
+  },
+  {
+   "date": "2026-11-13",
+   "statut": "production",
+   "paquet": 261,
+   "quoi": "IMAGE DE LA 3D AMÉLIORÉE (paquet 261, demande de Lucas). Anti-crénelage (bords nets), halo autour des projecteurs, de la balle et des panneaux lumineux, vignettage et couleurs étalonnées ; bandeau LED qui défile autour du court ; deux écrans géants au-dessus des tribunes qui affichent le vrai score et le serveur ; public redessiné (épaules, bras, cheveux, sièges) ; davantage de projecteurs. Sur un téléphone qui peine (moins de 22 images par seconde), la 3D passe seule en qualité « basse » (sans halo ni anti-crénelage, résolution normale) et s'en souvient. Toujours sans rien charger d'ailleurs. Descriptif : le % ne change pas.",
+   "garde_fou": "Retrait : dans algo/index.html, QUALITE = 'basse' d'emblée (rendu du paquet 260)."
+  },
+  {
+   "date": "2026-11-13",
+   "statut": "production",
+   "paquet": 262,
+   "quoi": "JOUEURS 3D AU MAXIMUM DE CE QUE PERMET LE SITE (paquet 262, demande de Lucas). Chaque joueur est désormais un corps d'un seul tenant qui se plie aux articulations (épaules, coudes, poignets, hanches, genoux, chevilles), sans coutures : la carte graphique déforme la peau selon les os. Visage (yeux, sourcils, nez, bouche, oreilles), cheveux, bandeau ou casquette ; maillot à bandes latérales et col, short ample à liseré, poignets éponge, chaussettes, chaussures avec semelle et bande de couleur ; raquette avec grip, cœur en V et cadre décoré. Mouvements plus souples : transitions lissées, tête qui suit la balle, petit pas d'ajustement quand l'adversaire frappe, impulsion au service, position d'attente jambes écartées. Toujours dessiné par le code du site, sans rien charger d'ailleurs. Descriptif : le % ne change pas.",
+   "garde_fou": "Retrait : remettre le bloc G3D du paquet 261 dans algo/index.html."
+  },
+  {
+   "date": "2026-11-13",
+   "statut": "production",
+   "paquet": 263,
+   "quoi": "LE DIRECT EN 3D PREND LE RYTHME DE LA TÉLÉVISION (paquet 263, Lucas : « ça manque de rythme »). Après chaque vrai point rejoué, la 3D annonce « Point X », puis le repasse au ralenti, vu d'une caméra basse au bord du court qui suit la balle ; ensuite les joueurs se replacent pour le point suivant. Un nouveau point arrivé pendant un ralenti passe toujours devant. Les points eux-mêmes ne peuvent pas arriver plus vite : la 3D suit le score en direct dès qu'il change. Descriptif : le % ne change pas.",
+   "garde_fou": "Retrait : dans algo/index.html, avancer() ne programme plus RAL.prevu (plus de ralenti)."
+  },
+  {
+   "date": "2026-11-13",
+   "statut": "production",
+   "paquet": 264,
+   "quoi": "VRAIS MODÈLES DE JOUEURS DANS LE DIRECT EN 3D (paquet 264, demande de Lucas). Les joueurs sont désormais des personnages modelés par un artiste (« Universal Base Characters » de Quaternius, licence CC0 : domaine public, usage commercial libre) : corps sculpté, visage, yeux, cheveux en volume ; homme pour l'ATP et les Challengers, femme pour la WTA ; teint, coiffure et bandeau varient d'un joueur à l'autre. Ils portent la tenue du site (maillot à bandes, short à liseré, chaussettes, chaussures, poignets) et la raquette, et jouent les mêmes coups (attente, course, coup droit, revers, service, ralenti). Le fichier (1,2 Mo, modeles/joueurs3d.bin) est préparé une fois par scripts/modeles_joueurs.py et servi par le site lui-même : rien n'est chargé ailleurs. Tant qu'il n'est pas chargé, ou s'il manque, les joueurs dessinés par le code prennent le relais. Descriptif : le % ne change pas.",
+   "garde_fou": "Retrait : supprimer algo/modeles/joueurs3d.bin (les joueurs dessinés par le code reviennent d'eux-mêmes)."
+  },
+  {
+   "date": "2026-11-13",
+   "statut": "production",
+   "paquet": 265,
+   "quoi": "LE DIRECT EN 3D BOUGE COMME DE VRAIS JOUEURS (paquet 265, demande de Lucas : mouvements, déplacements, tenue de la raquette, stade, public, lumières, en restant gratuit). Les déplacements viennent de mouvements captés (« Universal Animation Library » de Quaternius, licence CC0) : pas tranquilles entre les points, footing et sprint pendant l'échange, le joueur se tourne vers sa course puis revient face au filet, les pas sont calés sur la vitesse (pas de glissade). Les coups restent les mouvements du site, la raquette est tenue dans la paume pendant la course. Le public est tourné vers le court, suit la balle de la tête et se lève bras en l'air après les beaux points ; des faisceaux de lumière tombent des projecteurs ; sur terre battue, les rebonds laissent leur marque et soulèvent un peu de poussière (aussi sur gazon). Tout reste dans le fichier du site (1,2 Mo), rien n'est chargé ailleurs. Descriptif : le % ne change pas.",
+   "garde_fou": "Retrait : relancer scripts/modeles_joueurs.py sans le troisième argument (fichier sans mouvements captés : les poses du site reviennent)."
+  },
+  {
+   "date": "2026-11-13",
+   "statut": "production",
+   "paquet": 266,
+   "quoi": "LE DIRECT EN 3D GAGNE DES COUPS RETRAVAILLÉS, UNE RÉALISATION TÉLÉ ET DU SON (paquet 266, demande de Lucas : « l'ensemble », en restant gratuit). Coups réglés à la main comme en animation, faute de mouvements de tennis captés libres de droits : coup droit lifté en appuis ouverts (épaules tournées, raquette qui tombe sous la balle, frappe devant, accompagnement par-dessus l'épaule), revers à deux mains, revers slicé, volées, service (lancer, armé, frappe bras tendu, retombée dans le court) ; pieds posés au sol et poids qui passe d'une jambe à l'autre. Après chaque point : geste du vainqueur (poing serré, « allez ! » sur les beaux points) et du perdant (tête basse, mains sur la tête après une faute) ; en vue TV, gros plan sur le vainqueur puis, une fois sur deux, plan sur le public, l'arbitre ou le perdant, avant le ralenti. L'arbitre de chaise utilise le même modèle que les joueurs. Son fabriqué par le code, coupé par défaut (bouton 🔈) : frappes, rebonds, filet, rumeur et applaudissements, « Out ! », « Fault ! » et le score annoncé par la voix de synthèse de l'appareil. Rien n'est chargé ailleurs. Descriptif : le % ne change pas.",
+   "garde_fou": "Retrait : remettre algo/index.html du paquet 265 (coups, gestes, plans et son sont tous dans le bloc G3D)."
+  },
+  {
+   "date": "2026-11-13",
+   "statut": "production",
+   "paquet": 267,
+   "quoi": "SCÉNARIOS DU MATCH : UN 6-3 COMPTE COMME UN SET ACCROCHÉ (paquet 267, remarque d'un abonné relevée par Lucas). Un 6-3 peut ne compter qu'un break, comme un 6-4 : quand le vainqueur sert en premier, il garde ses 5 jeux de service et ne prend qu'un des 4 jeux adverses. Le score seul ne dit pas qui servait en premier, et seul un 6-2 ou mieux garantit au moins deux breaks d'avance. Désormais « sans trembler » = chaque set à 6-2 ou mieux, « accrochés » = au moins un set à 6-3, 6-4, 7-5 ou 7-6. Sur nos 748 victoires réelles en 2 sets, la part « sans trembler » passe de 29,8 % à 12,0 % (ATP 17,9 → 7,3 ; WTA 32,0 → 14,4 ; Challenger 32,2 → 12,6). Le contrôle des scénarios sur nos matchs réels reste « juste » partout avec la nouvelle définition (même règle qu'au paquet 222) ; les scénarios figés avec l'ancienne définition sont recalculés depuis les scores exacts de la fiche. Rapport public : simulateur/rapport_sets_accroches.json. Descriptif : le % de victoire ne change pas.",
+   "garde_fou": "Retrait : ECART_NET = 3 et DEFINITION = 1 dans simulateur/scenarios_match.py, et remettre les deux textes de algo/index.html."
+  },
+  {
+   "date": "2026-11-18",
+   "statut": "production",
+   "paquet": 268,
+   "quoi": "NOS RÉUSSITES ET NOS DÉFAITES, NIVEAU DE FIABILITÉ PAR NIVEAU (paquet 268, demande de Lucas : analyser les réussites et les échecs, voir si certaines défaites pouvaient être évitées, et comparer le favori de l'algo (A) à l'autre joueur (B) selon fragile, prudent, correct, solide). Nouvelle étude simulateur/etude_a_ou_b.py, règles écrites dans l'en-tête avant de regarder : A = joueur donné gagnant au premier pronostic ; chaque circuit jugé à part ; rien conclu sous 30 matchs ; un côté n'est retenu que s'il tient sur les deux moitiés de la période, et rien n'est appliqué automatiquement. Partie publique (simulateur/rapport_anatomie_defaites.json, sans nom) : réussite réelle contre réussite annoncée par niveau, tranche de %, désaccord Elo / simulation, joueurs peu connus, matchs similaires, score instable, surface. Premier bilan sur 1 130 matchs jugés : aucun critère ne dépasse encore le seuil fixé. Les plus en dessous : joueur à moins de 30 matchs (−6,1 points, n = 97), Elo et simulation en désaccord (−4,7, n = 195), niveau fragile (−3,7, n = 202) ; correct et solide font mieux qu'annoncé (+1,1 et +2,2). Un critère ne servira à écarter un match qu'après la règle de l'archive (2018–2022 puis 2023 → juin 2026, circuit par circuit). Le bilan financier reste privé (Telegram privé, chaque lundi). Descriptif : le % de victoire ne change pas.",
+   "garde_fou": "Retrait : supprimer simulateur/etude_a_ou_b.py, .github/workflows/a_ou_b.yml et simulateur/rapport_anatomie_defaites.json ; l'algo n'est pas touché."
+  },
+  {
+   "date": "2026-11-18",
+   "statut": "production",
+   "paquet": 269,
+   "quoi": "LES MATCHS ARRIVENT JUSQU'À 3 JOURS AVANT, ET UNE ÉTUDE PAR NIVEAU DE FIABILITÉ (paquet 269, demande de Lucas). 1) Le site de l'algo affiche les matchs dès qu'ils sont connus, jusqu'à 72 h avant le début (avant : 36 h) ; surtout utile en début de tournoi. La liste indique le jour quand ce n'est pas aujourd'hui. Plafond de sécurité : 220 matchs par passage, les plus proches d'abord. Le match du jour ne change pas (toujours parmi les matchs du jour, somme des Elo). 2) Nouvelle étude simulateur/etude_niveaux_fiabilite.py, une par niveau (fragile, prudent, correct, solide), en tout et circuit par circuit : réussite réelle contre annoncée, Brier, log loss, pente d'étalonnage (1 = % justes, < 1 = trop sûrs, > 1 = trop prudents), tranches de %, et anatomie des défaites à l'intérieur du niveau. Règles écrites avant de regarder : correction proposée seulement si la pente apprise sur la 1re moitié améliore la log loss de la 2de d'au moins 0,001 avec au moins 100 matchs par moitié, et dans le même sens sur les deux moitiés. Premier bilan sur 1 130 matchs : fragile trop sûr (pente 0,74) mais instable d'une moitié à l'autre, pas de correction ; prudent trop tôt ; correct et solide un peu trop prudents (pentes 1,13 et 1,37). Circuit par circuit, seul Challenger « correct » passe la règle (proposition : écarter un peu le % de 50 %) ; ATP et WTA trop tôt. Rien n'est appliqué automatiquement. Rapport public : simulateur/rapport_niveaux_fiabilite.json, refait chaque lundi. Descriptif : le % de victoire ne change pas.",
+   "garde_fou": "Retrait : HORIZON_H = 36 dans simulateur/pronostics_du_jour.py (ou variable d'environnement HORIZON_H=36) ; supprimer simulateur/etude_niveaux_fiabilite.py et son étape dans .github/workflows/a_ou_b.yml."
+  },
+  {
+   "date": "2026-11-18",
+   "statut": "production",
+   "paquet": 270,
+   "quoi": "CORRECTION DU NIVEAU « CORRECT » EN CHALLENGER (paquet 270, décision de Lucas après l'étude par niveau de fiabilité du paquet 269). Sur nos pronostics en direct, les matchs Challenger notés « correct » se réalisent un peu mieux qu'annoncé : l'algo y est trop prudent. La pente 1,142, apprise sur la 1re moitié (167 matchs) et vérifiée sur la 2de (167 matchs, log loss −0,0026), écarte un peu le % de 50 % : un 65 % devient 67 %, un 80 % devient 83 %. Elle s'applique en dernier, avant la simulation, donc les sets, les scores et la feuille de match suivent. Le niveau retenu est celui du pronostic sans la correction. Les deux % (avec et sans) sont gardés dans chaque fiche. ATP, WTA et les autres niveaux ne changent pas (trop tôt ou pas de correction). Le % de victoire change sur ces matchs.",
+   "garde_fou": "Retrait automatique (etude_niveaux_fiabilite.py, chaque lundi) : avec au moins 100 matchs corrigés jugés, si la log loss avec la correction dépasse celle sans d'au moins 0,001, « retiree » passe à true dans simulateur/correction_niveaux.json. Retrait à la main : mettre « retiree » à true dans ce fichier."
+  },
+  {
+   "date": "2026-11-18",
+   "statut": "production",
+   "paquet": 271,
+   "quoi": "« MATCHS TERMINÉS » ET JOURNAL DES CHANGEMENTS REPLIÉS PAR DÉFAUT (paquet 271, remarque de Lucas). Un match commencé depuis plus de 3 h et absent du direct compte désormais comme terminé, même si son résultat n'est pas encore reçu ou s'il a été reprogrammé sous un autre horaire. Avant, ces matchs restaient affichés sous le groupe replié, comme s'il ne se repliait pas. Le groupe est replié par défaut et ne reste ouvert que si le visiteur l'ouvre. Le journal des changements est lui aussi replié par défaut (« Voir le journal »). Le % de victoire ne change pas.",
+   "garde_fou": "Retrait : remettre algo/index.html du paquet 270."
+  },
+  {
+   "date": "2026-11-18",
+   "statut": "production",
+   "paquet": 272,
+   "quoi": "QUALITÉ DES DONNÉES : CONTRÔLE QUOTIDIEN ET DEUX RÉPARATIONS SUR LE SITE (paquet 272, demande de Lucas). Nouveau contrôle chaque matin (simulateur/controle_donnees.py) : chaque match pronostiqué des 30 derniers jours est rangé par cause, et le rapport public (simulateur/rapport_qualite_donnees.json) ne contient que des comptes. Premier bilan sur 2 152 matchs : 1 434 résolus ; 386 doublons d'un match reprogrammé (déjà comptés une seule fois dans les bilans) ; 178 restes d'adversaires fictifs d'avant le 04/11 ; 57 adversaires remplacés (le match annoncé n'a pas eu lieu) ; 55 abandons ou forfaits (volontairement non jugés) ; 42 sans aucune feuille, soit 2,6 % de vrais défauts. Aucune feuille terminée sans résultat, aucun match compté deux fois. Réparations sur le site : un match reprogrammé n'apparaît plus qu'une fois (le dernier horaire connu), et un match dont un joueur affronte en fait un autre adversaire au même horaire est retiré. Une alerte part sur le canal privé si les défauts de la veille dépassent 10 %. Descriptif : le % de victoire ne change pas.",
+   "garde_fou": "Retrait : remettre simulateur/vitrine.py du paquet 271 ; supprimer simulateur/controle_donnees.py et .github/workflows/qualite_donnees.yml."
+  },
+  {
+   "date": "2026-11-18",
+   "statut": "production",
+   "paquet": 273,
+   "quoi": "POIDS DU MÉLANGE PROPRES À L'ATP, ET CHANTIER « OUTSIDERS QUI GAGNENT » (paquet 273, décisions de Lucas). 1) En ATP, le % mélange désormais l'Elo et la simulation avec des poids propres au circuit (Elo 0,7339, simulation 0,3036, au lieu de 0,7815 et 0,2378 communs) : la simulation pèse un peu plus. Appris sur 2024, jugés sur 2025 → janvier 2026 : log loss +0,0014 ± 0,0006 sur 2 259 matchs ; même sens sur 2024. WTA et Challenger ne changent pas. Chaque pronostic ATP garde aussi le % qu'auraient donné les poids communs. 2) Nouvelle étude simulateur/etude_outsiders_gagnants.py, règle écrite avant de regarder (apprendre 2018–2022, juger 2023 → juin 2026, au moins 1 000 matchs, gain ≥ 0,001 et ≥ 2 erreurs types, l'outsider au-dessus de l'annoncé sur les deux périodes, circuit par circuit), sur six situations connues avant le match. Deux passent, en Challenger seulement. Quand le favori sort d'un match en 3 sets et l'outsider non, l'outsider gagne 40,0 % des matchs pour 34,4 % annoncés (2 583 matchs, gain 0,0059). Quand l'outsider est mieux classé que le favori, il gagne 43,1 % pour 37,0 % annoncés (5 244 matchs, gain 0,0066). Les quatre autres ne passent pas : domicile, gaucher, série de victoires, favori qui vient de gagner un titre. Rien de l'étude n'est mis en place dans ce paquet. Rapport public : simulateur/rapport_outsiders_gagnants.json. Le % change en ATP (poids) ; pas ailleurs.",
+   "garde_fou": "Poids ATP : retrait automatique chaque lundi (simulateur/poids_circuit.py) si, sur au moins 200 matchs ATP jugés, la log loss avec ces poids dépasse celle avec les poids communs d'au moins 0,001 ; à la main : « retire »: true dans simulateur/poids_circuit.json."
+  },
+  {
+   "date": "2026-11-18",
+   "statut": "production",
+   "paquet": 274,
+   "quoi": "DEUX SITUATIONS OÙ L'OUTSIDER EST REMONTÉ EN CHALLENGER (paquet 274, décision de Lucas après l'étude des outsiders, paquet 273). En Challenger, quand l'outsider est donné entre 15 et 45 %, son % monte dans deux cas connus avant le match. 1) Favori fatigué : le favori sort d'un match en 3 sets dans ce tournoi, l'outsider non (feuilles des 10 derniers jours). Sur l'archive, ces outsiders ont gagné 40,0 % des matchs pour 34,4 % annoncés (2 583 matchs, 2023 → juin 2026). 2) Outsider mieux classé que le favori (classement du jour) : 43,1 % pour 37,0 % annoncés (5 244 matchs). Décalages appris sur 2018–2022, d'environ +3 à +4 points à 35 % ; les deux s'additionnent quand ils jouent ensemble. Mis en place sans attendre la confirmation sur nos matchs en direct, par décision : sur nos premiers matchs (65 et 56), l'écart ne se voyait pas encore. Chaque fiche garde le % avec et sans ces signaux. Le % change sur ces matchs Challenger.",
+   "garde_fou": "Retrait automatique chaque lundi (simulateur/outsiders_ch.py), signal par signal : sur au moins 200 matchs Challenger jugés où le signal a joué, si la log loss avec le décalage dépasse celle sans d'au moins 0,001, « retire » passe à true dans simulateur/outsiders_ch.json. À la main : y mettre « retire »: true."
+  },
+  {
+   "date": "2026-11-18",
+   "statut": "production",
+   "paquet": 275,
+   "quoi": "LE DIRECT EN 3D GAGNE DES ÉCHANGES RÉALISTES, DES PAS CHASSÉS ET DES OFFICIELS DESSINÉS (paquet 275, Lucas : « la 3D est mauvaise » — mouvements des joueurs, rendu, réalisme des échanges). La balle suit maintenant une vraie trajectoire : pesanteur, freinage de l'air, effet (le lift plonge, le slice flotte), rebond qui dépend de la surface (terre battue lente et haute, gazon qui fuse). Les coups passent le filet d'environ 75 cm et l'adversaire prend la balle environ 1,4 m derrière sa ligne, à hauteur de hanche (avant : souvent à plus de 1,5 m, très loin derrière la ligne). Les fautes au filet touchent vraiment le filet. Joueurs : pas chassés de côté, face au filet, jusqu'à 3 m/s, puis course. Juges de ligne (assis) et ramasseurs (accroupis au filet, debout au fond) dessinés avec le même modèle que les joueurs, au lieu de blocs. Caméra télé plus basse et plus proche ; sol autour du court d'une autre couleur que le court ; usure claire derrière les lignes de fond. Contrôle : simulateur/controle_3d.py, rapport public simulateur/rapport_3d_echanges.json (150 coups par surface : 100 % au-dessus du filet et dans le court). Échanges illustratifs : le % ne change pas.",
+   "garde_fou": "Retrait : si sur une surface moins de 97 % des coups passent le filet, moins de 95 % tombent dans le court, ou si la prise de balle médiane sort de 0,8–1,6 m (simulateur/controle_3d.py), remettre algo/index.html du paquet 274 (tout est dans le bloc G3D)."
+  },
+  {
+   "date": "2026-11-18",
+   "statut": "production",
+   "paquet": 276,
+   "quoi": "LA VIDÉO DU JOUR PASSE EN 3D (paquet 276, Lucas : « On y va pour la vidéo du jour… se rapprocher de TopSpin… la regarder comme un divertissement »). Le match représentatif des simulations (le même que la vidéo 2D) est rejoué point par point par le moteur du match ; on garde ses moments forts (balles de break, breaks, sets, balles de match sauvées ou converties, un long échange s'il y a peu de moments) et le stade 3D du site les joue comme à la télévision : survol du stade et face-à-face en ouverture, plan derrière le serveur pendant qu'il fait rebondir la balle, vue télé pour l'échange, gros plan du vainqueur du point, ralenti de la balle de match vu de l'autre bout du court, puis le vainqueur et le verdict des simulations. Habillage télé maison (tableau de score, annonces, transitions) ; « SIMULATION ×N » affiché toute la vidéo ; aucune adresse, aucune cote, pas de % qui bouge. Son de stade fabriqué par le code (rumeur, raquette, rebonds, filet, applaudissements, ovation) au lieu de la musique 8 bits. Image 3D au format 4:5 au centre du cadre vertical (format 4:5 : plein cadre), calculée à 67 % puis agrandie car rendue sans carte graphique ; public dessiné en panneaux dans la vidéo seulement. FR et EN sont fabriquées en parallèle (25 images/s, 50 min au plus chacune). Sans WebGL, sans scénario tiré ou avec un autre tirage (seed), la page repasse seule à la vidéo 2D ; « rendu = 2d » au lancement aussi. ITF : jamais. Les échanges sont illustratifs : seul le vainqueur de chaque point vient de la simulation ; le % ne change pas.",
+   "garde_fou": "Retrait : si la vidéo 3D échoue deux matins de suite ou dépasse 50 min, remettre .github/workflows/video_simulation.yml, scripts/video_simulation.py et scripts/sons.py du paquet 275 (la page garde la 2D par défaut sans « rendu=3d ») ; le stade du site n'est pas touché hors vidéo."
+  },
+  {
+   "date": "2026-11-18",
+   "statut": "production",
+   "paquet": 277,
+   "quoi": "LA VIDÉO 3D PREND UNE FINITION DE RETRANSMISSION (paquet 277, Lucas : « tu peux largement faire mieux… utiliser d'autres logiciels »). Image : flou d'arrière-plan sur les plans serrés (le joueur net, le public flou, comme une caméra de télé), contre-jour des projecteurs sur les joueurs, caméra à l'épaule sur les gros plans, traînée de la balle plus continue ; ouverture refaite : chaque joueur présenté de face avec son nom et son % (algo), puis survol du stade. Ffmpeg étalonne l'image (netteté après agrandissement, contraste, couleurs un peu plus chaudes, grain très léger). Son (numpy, scipy) : bande-son STÉRÉO de stade — brouhaha du public, raquette et rebonds placés à gauche ou à droite selon l'image, crissement des semelles sur le dur, « ooooh » quand l'échange dure, applaudissements, ovation, réverbération de grande salle, jingles télé courts, nappe musicale en ouverture et en fin, volume réglé comme les réseaux sociaux (−16 LUFS). Voix de l'arbitre de chaise par synthèse vocale libre et hors ligne (Piper, voix génériques fr_FR-tom et en_GB-alan) : le score avant chaque moment, puis « Jeu, … », « Jeu et premier set, … », « Jeu, set et match, … » ; le public baisse quand elle parle. Chaque pièce a son repli : sans numpy/scipy, l'ancienne bande-son ; sans Piper, pas de voix ; case « arbitre » au lancement pour la couper. Rien de cela ne change le %. Les échanges sont tirés avec une graine fixée par le match : la vidéo FR et la vidéo EN montrent exactement les mêmes points. Rendu plus fin donc plus long : jusqu'à 100 min par langue (la vidéo peut arriver vers 10 h au lieu de 9 h).",
+   "garde_fou": "Retrait : si la voix sonne mal ou se trompe de score, décocher « arbitre » au lancement, ou supprimer scripts/voix.py ; si la bande-son de stade déplaît ou échoue, remettre scripts/video_simulation.py, scripts/installer_video.sh et .github/workflows/video_simulation.yml du paquet 276 (algo/index.html peut rester : les sons ajoutés sont alors ignorés)."
+  },
+  {
+   "date": "2026-11-18",
+   "statut": "essai",
+   "paquet": 278,
+   "quoi": "ESSAI BLENDER (paquet 278, Lucas : « Installe blender »). Blender ne peut pas s'installer dans la session de Claude (réseau fermé) ; il s'installe sur la machine gratuite de GitHub par le workflow « Essai — Blender pour la vidéo 3D » (lancement à la main). L'essai reconstruit notre court dans Blender (dimensions réglementaires, filet, tribunes, 3 000 spectateurs, deux joueurs en mannequins, balle en mouvement), de nuit et de jour, en vue télé et en gros plan avec flou d'arrière-plan, le rend avec Cycles sur le processeur (débruitage) puis tente EEVEE, et mesure les secondes par image. Résumé du run : les temps seulement ; images sur le Telegram privé. Rien ne change sur le site ni dans la vidéo du jour.",
+   "garde_fou": "Règle de décision écrite avant l'essai : Blender ne remplace le moteur du site pour la vidéo du jour que si une vidéo complète tient en moins de 3 h de machine par langue ET si l'image est jugée nettement meilleure ; sinon on garde le paquet 277. Retrait : supprimer .github/workflows/essai_blender.yml et scripts/blender_essai.py."
+  },
+  {
+   "date": "2026-11-18",
+   "statut": "abandon",
+   "paquet": 280,
+   "quoi": "PISTE BLENDER ABANDONNÉE (paquet 280, décision de Lucas après l'essai du paquet 278). Sur la machine gratuite de GitHub (4 processeurs, pas de carte graphique), Blender 4.2.3 rend la scène d'essai en 1080×1350 avec Cycles en 40,6 s (nuit, vue télé), 55,7 s (nuit, gros plan) et 37,2 s (jour, vue télé) par image : 44,5 s en moyenne, soit 26,3 h pour une vidéo de 85 s à 25 images/s, par langue. La règle écrite avant l'essai (3 h au plus) écarte Cycles ; EEVEE n'a pas démarré (bibliothèque libEGL absente). Les images d'essai (joueurs et public en formes simples, éclairage délavé) ont été jugées très mauvaises par Lucas : elles mesuraient le temps, pas ce que Blender peut rendre avec de vrais modèles, mais approcher TopSpin demanderait des joueurs modélisés et animés et un stade complet, pour un temps de rendu déjà hors règle. La vidéo du jour reste faite par le moteur 3D du site (paquets 276–277). Le 2e essai prévu (paquet 279) n'est pas appliqué. Les fichiers de l'essai sont retirés du dépôt à la main.",
+   "garde_fou": "Fichiers retirés à la main : .github/workflows/essai_blender.yml, scripts/blender_essai.py, tests/test_essai_blender.py. Le rapport simulateur/rapport_essai_blender.json garde les temps mesurés. Rouvrir la piste seulement avec une machine à carte graphique ou de vrais modèles 3D, et la même règle des 3 h par langue."
+  },
+  {
+   "date": "2026-11-18",
+   "statut": "production",
+   "paquet": 281,
+   "quoi": "DIRECT 3D : LES PERSONNAGES SE CHARGENT MIEUX, ET ON VOIT LA VERSION (paquet 281, Lucas : « je ne pense pas que ce soit la bonne version »). Le site sert bien le moteur des paquets 275–277 (sol vert autour du court), mais sur son téléphone les juges de ligne et les ramasseurs restaient en blocs : les modèles 3D des personnages (fichier de 1,2 Mo) n'étaient pas chargés, et un seul échec suffisait à garder la version simplifiée jusqu'au rechargement de la page. Le chargement est maintenant retenté 3 fois (après 1,5 s puis 4 s, sans cache au 2e essai). Une petite étiquette en bas à gauche de la vue 3D indique la version du moteur (v281) et l'état des joueurs : chargés, en cours de chargement, ou simplifiés si les modèles sont indisponibles. Pas dans la vidéo. Affichage seulement : le % ne change pas.",
+   "garde_fou": "Retrait : remettre algo/index.html du paquet 277 (fichier identique hors chargement des modèles et étiquette)."
+  },
+  {
+   "date": "2026-11-18",
+   "statut": "production",
+   "paquet": 282,
+   "quoi": "LES PERSONNAGES 3D ARRIVENT ENFIN SUR LE SITE (paquet 282). L'étiquette ajoutée au paquet 281 a montré « joueurs simplifiés : modèles 3D indisponibles » : le fichier des modèles (algo/modeles/joueurs3d.bin, 1,2 Mo, CC0) n'avait jamais été copié dans la publication GitHub Pages, seulement la page et ses données. Depuis le paquet 264, le direct 3D du site montrait donc les personnages simplifiés dessinés par le code (et des blocs pour les juges de ligne et les ramasseurs), alors que les vidéos, fabriquées depuis le dépôt, avaient les vrais modèles. La publication copie maintenant le dossier des modèles (échec explicite s'il manque) ; le worker ne garde plus en cache une absence du fichier (seules les réponses réussies sont gardées un jour). Affichage seulement : le % ne change pas.",
+   "garde_fou": "Vérification : l'étiquette de la vue 3D doit afficher « joueurs 3D chargés ». Retrait : remettre .github/workflows/pages.yml et workers/algo/worker.js du paquet 281 (le site repasse aux personnages simplifiés)."
+  },
+  {
+   "date": "2026-11-18",
+   "statut": "production",
+   "paquet": 283,
+   "quoi": "PERSONNAGES 3D DU SITE : DERNIER VERROU (paquet 283). Après le paquet 282, l'étiquette restait sur « chargement des joueurs 3D… ». Deux causes possibles, toutes deux traitées : 1) Cloudflare gardait en cache, jusqu'à un jour, l'ancienne réponse « fichier absent » de GitHub Pages ; le worker demande maintenant le fichier sous une nouvelle clé (?v=283), donc la version publiée ; 2) un téléchargement bloqué laissait « chargement… » sans fin : chaque essai abandonne au bout de 25 s, et l'étiquette affiche la cause en cas d'échec (délai dépassé, réseau, statut HTTP). Étiquette : v283. Affichage seulement : le % ne change pas.",
+   "garde_fou": "Vérification : l'étiquette doit afficher « 3D v283 · joueurs 3D chargés ». Retrait : remettre algo/index.html et workers/algo/worker.js du paquet 282."
+  },
+  {
+   "date": "2026-11-18",
+   "statut": "production",
+   "paquet": 284,
+   "quoi": "LE DÉPLOIEMENT DU WORKER REPASSE AU VERT (paquet 284). Le workflow « Déployer le worker algo » échouait avant d'atteindre Cloudflare : un de ses tests (« direct : la page redemande les scores toutes les 3 s ») lit algo/index.html, absent de la copie partielle du dépôt faite par le workflow. Conséquence : les changements du worker des paquets 282 et 283 (pas de cache pour un fichier absent, nouvelle clé pour les modèles 3D) n'étaient pas en ligne, d'où les personnages 3D toujours absents du site. La copie inclut maintenant la page. Rien d'autre ne change.",
+   "garde_fou": "Vérification : le run « Déployer le worker algo » est vert, puis l'étiquette de la vue 3D affiche « 3D v283 · joueurs 3D chargés ». Retrait : remettre .github/workflows/deploy_algo.yml du paquet 283."
+  },
+  {
+   "date": "2026-11-18",
+   "statut": "production",
+   "paquet": 285,
+   "quoi": "DIRECT 3D : LUMIÈRE DU JOUR, CAMÉRA PLUS PROCHE, JOUEURS QUI SE REPLACENT (paquet 285, Lucas : rendu du direct et mouvements des joueurs). 1) Les matchs en plein air joués entre 8 h et 18 h (heure locale, fiche météo du match) passent en lumière de jour : soleil plus franc, ciel et brume clairs, tribunes en béton et sièges clairs, néons atténués, sans faisceaux de projecteurs ; la nuit et la salle gardent l'ambiance de stade éclairé. 2) La caméra télé du direct est plus proche et cadre mieux le joueur du bas. 3) Entre deux frappes, chaque joueur se replace vers le milieu (un peu du côté où il a joué) puis part vers la balle quand l'adversaire frappe, au lieu de filer d'un coup au prochain point d'impact ; au filet, il reste au filet. Les vidéos profitent de la lumière du jour et du replacement. Étiquette : v285. Affichage seulement : le % ne change pas.",
+   "garde_fou": "Retrait : remettre algo/index.html du paquet 283 (l'étiquette repasse à v283)."
+  },
+  {
+   "date": "2026-11-18",
+   "statut": "production",
+   "paquet": 286,
+   "quoi": "LE PIPELINE DU SOIR NE PERD PLUS SES RÉSULTATS SUR UN PUSH REFUSÉ (paquet 286). Alerte Telegram du 18/11 : « Verdicts en direct : pas de mise à jour depuis 36 h ». Le run « Steam Pipeline » du 18/11 avait bien calculé les verdicts et les journaux, mais son unique tentative d'envoi a été refusée parce qu'un autre workflow venait de pousser sur le dépôt ; le commit est parti avec la machine du run (le message « récupérable au prochain run » était faux). L'envoi est maintenant retenté jusqu'à 6 fois (nouvelle synchro, puis envoi, attente croissante) ; jamais de push forcé ; en cas de conflit, arrêt sans rien écraser. Le prochain run régénère les verdicts. Note : le run reste rouge pour une autre raison, l'alerte de taille du dépôt (6,97 Go pour un seuil de 4 Go) du verrou qualité, sans lien avec les verdicts.",
+   "garde_fou": "Vérification : dans le journal du prochain run, « ✅ PUSH OK (essai n) » et l'alerte Telegram des verdicts disparaît. Retrait : remettre .github/workflows/steam_pipeline.yml du paquet 285."
+  },
+  {
+   "date": "2026-11-19",
+   "statut": "production",
+   "paquet": 287,
+   "quoi": "VIDÉO 3D : LE BANDEAU DU BAS ET LES LIGNES DE L'ALGO (paquet 287, Lucas : « il manque le bandeau en bas de la vidéo… reprendre les informations de ces stats… le scénario doit coller à la réalité »). Sous le tableau de score : une ligne de commentaire après chaque point, comme dans la vidéo 2D (« Break ! X prend le service de Y », « X sauve la balle de break », « X remporte le set 6-4 », ace, double faute, échange en n frappes) ; les 4 lignes de l'algo de la vidéo 2D (plus de N jeux, un tie-break, 3 sets, handicap de jeux du favori ; les % de l'algo, aucune cote), cochées dès que le match simulé les atteint ; le pied « Simulation point par point · une parmi 20 000 ». L'écran de fin reprend le score du match simulé et les 4 lignes, ✓ ou ✗ selon ce score : le scénario et les chiffres racontent la même histoire. Image 3D un peu moins haute pour laisser la place ; au format 4:5, les 4 lignes ne s'affichent qu'à la fin. Le % ne change pas.",
+   "garde_fou": "Retrait : remettre algo/index.html du paquet 285."
+  },
+  {
+   "date": "2026-11-19",
+   "statut": "production",
+   "paquet": 288,
+   "quoi": "3D : FINITIONS DE LA VIDÉO ET DU DIRECT (paquet 288, Lucas : « on est bon sur le temps de création des vidéos. On doit encore améliorer la 3D »). La vidéo passe en pleine définition (le temps gagné le permet : +55 % par image en local, le run prenait 26 min pour une limite de 100). Caméra télé plus basse et plus proche, qui glisse de côté et un peu en profondeur avec la balle : les joueurs sont plus grands à l'écran. La balle de match est rejouée deux fois : du bout opposé, puis caméra basse derrière le gagnant du point. Dans les gros plans, un juge de ligne ou un ramasseur posé entre la caméra et le joueur n'est plus dessiné, et la caméra du vainqueur se place côté intérieur du court. Ramasseurs du fond déplacés aux coins, contre le mur du fond (ils n'encombrent plus le bas de l'image). Poussière de terre battue plus fine et plus claire, qui monte et s'efface. Étiquette du direct : v288. Affichage seulement : le % ne change pas.",
+   "garde_fou": "Retrait : remettre algo/index.html, tests/test_direct_3d_version.py et simulateur/rapport_3d_site.json du paquet 287 (et supprimer tests/test_video_3d_finitions.py) si le run vidéo dépasse 60 min ou si une image est jugée moins bonne ; pour garder le reste, remettre seulement l'échelle à 0,67."
+  },
+  {
+   "date": "2026-11-19",
+   "statut": "etude",
+   "paquet": 289,
+   "quoi": "DUELS DE SERVEURS : L'ÉCART DE NIVEAU COMPTE-T-IL MOINS QUAND LES DEUX JOUEURS GARDENT FACILEMENT LEUR SERVICE ? (paquet 289, étude de fiabilité). Le % de l'Elo traduit un écart de niveau en chances de victoire de la même façon pour tous les matchs. Dans un duel de serveurs, les sets se jouent sur un break ou un tie-break : l'outsider devrait gagner plus souvent qu'annoncé ; dans un duel de retourneurs, moins. Nouvelle étude simulateur/etude_pente_service.py : indice du duel connu avant le match (points de service et de retour gagnés par les deux joueurs sur 365 jours, rapprochés de la moyenne du circuit), et une pente de l'Elo qui dépend de cet indice. Règle écrite dans l'en-tête avant tout résultat, circuit par circuit : appris sur 2018–2022, jugé une seule fois sur 2023 → juin 2026 ; retenu si le gain de log loss atteint 0,001 sur au moins 1 000 matchs, dans le même sens sur les deux périodes. Elo réglé comme la production, mis à jour après chaque match. Rapport public : simulateur/rapport_pente_service.json (comptes seulement, aucun nom). RÉSULTAT : ATP : β -1,606 (réappris -1,824), 9233 matchs jugés, gain 0,00021 ± 0,00019, Brier 0,2071 → 0,20702 ; duels de serveurs (quintile haut) : outsider 33,8 % réels pour 31,8 % annoncés — non retenu (gain sous 0,001) ; WTA : β -2,366 (réappris -0,697), 8837 matchs jugés, gain -0,00011 ± 0,00022, Brier 0,20441 → 0,20445 ; duels de serveurs (quintile haut) : outsider 33,1 % réels pour 32,9 % annoncés — non retenu (gain sous 0,001) ; Challenger : β -0,762 (réappris -1,637), 37676 matchs jugés, gain 0,00011 ± 4e-05, Brier 0,21711 → 0,21706 ; duels de serveurs (quintile haut) : outsider 36,5 % réels pour 34,3 % annoncés — non retenu (gain sous 0,001). Aucun circuit retenu : l'écart de niveau garde le même poids quel que soit le duel ; la piste est close et ne sera pas rejouée. Le % de victoire ne change pas.",
+   "garde_fou": "Étude seule : rien n'entre dans l'algo. Un circuit retenu sera proposé dans un paquet suivant avec la règle de retrait cumulée (300 matchs, 2 erreurs types). Retrait de l'étude : supprimer simulateur/etude_pente_service.py, simulateur/journal_ajouts/paquet_289.json et .github/workflows/etude_pente_service.yml."
+  },
+  {
+   "date": "2026-11-19",
+   "statut": "production",
+   "paquet": 290,
+   "quoi": "3D : REFLETS AU SOL ET GROS PLANS NETS (paquet 290, Lucas : « améliorons encore la 3D »). 1) Sur les courts durs et les moquettes, les joueurs, les officiels et la balle se reflètent dans le sol, comme sur un court verni de salle : reflet léger, éclairé comme l'objet, qui s'efface en s'éloignant du sol ; rien sur terre battue ni sur gazon. 2) Une ombre de contact douce sous chaque joueur : les pieds paraissent posés au sol. 3) Correction : dans la vidéo, le premier gros plan (présentation du premier joueur) était entièrement flou, et le public derrière les joueurs n'était flou que par accident ; la mise au point lisait une 2e image que le moteur de rendu du serveur ne remplissait pas toujours. La distance est maintenant gardée dans l'image elle-même : le joueur est net, l'arrière-plan flou selon sa distance. Rendu un peu plus long (+12 % par image en local). Étiquette du direct : v290. Affichage seulement : le % ne change pas.",
+   "garde_fou": "Retrait : remettre algo/index.html, tests/test_direct_3d_version.py, tests/test_video_3d_finitions.py et simulateur/rapport_3d_site.json du paquet 288 (et supprimer tests/test_direct_3d_reflets.py) si une image du direct ou de la vidéo est jugée moins bonne, ou si le run vidéo dépasse 60 min."
+  },
+  {
+   "date": "2026-11-19",
+   "statut": "production",
+   "paquet": 291,
+   "quoi": "VIDÉO DU JOUR : RUN ROUGE DU 19/11 CORRIGÉ (paquet 291). Les deux vidéos 3D étaient faites, mais Telegram les a refusées (« HTTP 413 ») : 73,6 Mo, alors que la limite est de 50 Mo. Cause : l'image plus nette du paquet 288 et le grain léger de l'étalonnage demandent beaucoup plus de données. Correction : au-delà de 48 Mo, la vidéo est réencodée au débit qui la fait tenir sous 48 Mo (son inchangé). Et la règle de retrait écrite au paquet 288 s'applique : la vidéo française a mis 65 min à se fabriquer (plus de 60 min) ; l'échelle de l'image 3D revient à 0,67, le reste du paquet 288 (caméra, double ralenti, ramasseurs, poussière) et le paquet 290 restent. Le % ne change pas.",
+   "garde_fou": "Retrait : remettre scripts/video_simulation.py du paquet 290 si une vidéo sous 48 Mo est abîmée par le réencodage (le réencodage ne touche que les vidéos de plus de 48 Mo)."
+  },
+  {
+   "date": "2026-11-19",
+   "statut": "production",
+   "paquet": 292,
+   "quoi": "3D : FILET ET IMPACTS (paquet 292, Lucas : « continue les améliorations »). 1) Le filet était dessiné avec des mailles beaucoup trop serrées en largeur et trop grandes en hauteur : de loin, il ressemblait à des rayures horizontales. Les mailles sont maintenant carrées, de 4,5 cm comme un vrai filet : de loin, un voile sombre régulier, la bande blanche par-dessus. 2) Un éclair bref (0,12 s) au contact de la raquette, à chaque frappe et à chaque service : on voit mieux qui frappe, surtout le joueur du fond. Direct et vidéo. Étiquette du direct : v292. Coût de rendu négligeable. Le % ne change pas.",
+   "garde_fou": "Retrait : remettre algo/index.html, tests/test_direct_3d_version.py, tests/test_direct_3d_reflets.py et simulateur/rapport_3d_site.json du paquet 291 (et supprimer tests/test_direct_3d_filet_impact.py) si le filet ou l'éclair est jugé moins bon."
+  },
+  {
+   "date": "2026-11-19",
+   "statut": "production",
+   "paquet": 293,
+   "quoi": "3D : MAINS, RAQUETTE ET FRONT (paquet 293, Lucas : « gros problème au niveau des mains, de la raquette, des doigts »). 1) Les « griffes » : dans le fichier des modèles, les doigts avaient été repliés en poing, mais les sommets du bout des doigts étaient restés à leur place d'origine ; de longues pointes fines partaient du poing. À la lecture du fichier, chacun de ces sommets rejoint son voisin resté dans le poing, de proche en proche (121 sommets par main chez les hommes, 131 chez les femmes) : la main est un poing fermé. 2) La raquette était tenue au poignet, les doigts à côté : le manche passe maintenant dans le poing (centre du poing mesuré sur chaque modèle). 3) Le front : entre la peau et le bandeau, la couleur passait par celles du maillot et du short (rayures roses et blanches) ; au-dessus du cou, seuls la peau et le bandeau existent. 4) Chez les femmes, le bandeau était posé sur les sourcils : il est remonté sur le front. Direct et vidéo. Étiquette du direct : v293. Le % ne change pas.",
+   "garde_fou": "Retrait : remettre algo/index.html, tests/test_direct_3d_version.py, tests/test_direct_3d_reflets.py et simulateur/rapport_3d_site.json du paquet 292 (et supprimer tests/test_direct_3d_mains.py) si les mains ou la raquette sont jugées moins bonnes."
+  },
+  {
+   "date": "2026-11-19",
+   "statut": "production",
+   "paquet": 294,
+   "quoi": "3D : LE POUCE (paquet 294, Lucas : « fais-le »). Après le paquet 293, le pouce restait tout droit hors du poing, fin et long. Il est maintenant replié contre le dessous des doigts, vers l'auriculaire, comme dans un vrai poing fermé : rotation autour de l'axe de la main à partir de sa base, en douceur sur les 12 premiers millimètres (aucune déchirure). Hommes et femmes, deux mains. Direct et vidéo. Étiquette du direct : v294. Le % ne change pas.",
+   "garde_fou": "Retrait : remettre algo/index.html, tests/test_direct_3d_version.py, tests/test_direct_3d_reflets.py, tests/test_direct_3d_mains.py et simulateur/rapport_3d_site.json du paquet 293 si le pouce est jugé moins bon."
+  },
+  {
+   "date": "2026-11-19",
+   "statut": "production",
+   "paquet": 295,
+   "quoi": "3D : POSITION D'ATTENTE ET POSITION DE PAUSE (paquet 295, Lucas : « il faut améliorer les mouvements et déplacements ; la position de pause n'est pas bonne »). 1) Pendant l'échange, la position d'attente est celle d'un joueur de tennis : appuis plus larges que les épaules, genoux fléchis avec les pieds posés au sol (calculés), buste penché vers l'avant, regard vers le filet, raquette DEVANT tenue à deux mains (poing gauche sur le cœur de la raquette), tête de raquette vers le filet ; petit rebond sur la pointe des pieds. Avant : jambes presque tendues, raquette pendante sur le côté. Les angles des bras ont été calculés une fois par cinématique inverse sur le modèle 3D lui-même. Les pas chassés gardent cette tenue de raquette. 2) Entre les points, le joueur se relâche : debout, raquette le long du corps tête vers le sol, respiration, poids qui passe d'un pied à l'autre ; passage en douceur (0,6 s pour se mettre en place au début du point, 0,8 s pour se relâcher après). Direct et vidéo. Étiquette du direct : v295. Le % ne change pas.",
+   "garde_fou": "Retrait : remettre algo/index.html, tests/test_direct_3d_version.py, tests/test_direct_3d_reflets.py, tests/test_direct_3d_webgl.py et simulateur/rapport_3d_site.json du paquet 294 (et supprimer tests/test_direct_3d_positions.py) si les positions sont jugées moins bonnes."
+  },
+  {
+   "date": "2026-11-19",
+   "statut": "production",
+   "paquet": 296,
+   "quoi": "3D : LES FRAPPES (paquet 296, Lucas : « frappes en gros plan »). Mesure au moment exact de chaque frappe, sur une minute de vidéo : le tamis passait 0,1 à 0,8 m sous la balle, et souvent derrière elle. 1) Le lissage des mouvements avait 60 ms de retard : au contact, la raquette était encore en haut de la préparation. Pendant une frappe, il suit maintenant le geste de près (14 ms) ; les entrées et sorties de frappe restent fondues. 2) Hauteur : balle basse, le joueur descend (genoux, buste) ; balle haute, il se grandit ; le reste par l'épaule, seulement autour de la frappe. Écart vertical tamis-balle : 0 à 0,17 m. 3) Placement : le point de contact est mesuré sur le modèle 3D pour chaque frappe (pose ajustée à la hauteur), et le décalage tourne avec le joueur quand il frappe de biais ; l'ancien squelette plaçait le tamis 5 à 15 cm plus loin. Direct et vidéo. Étiquette du direct : v296. Le % ne change pas.",
+   "garde_fou": "Retrait : remettre algo/index.html, tests/test_direct_3d_version.py, tests/test_direct_3d_reflets.py et simulateur/rapport_3d_site.json du paquet 295 (et supprimer tests/test_direct_3d_frappes.py) si les frappes sont jugées moins bonnes."
+  },
+  {
+   "date": "2026-11-19",
+   "statut": "essai",
+   "paquet": 297,
+   "quoi": "ESSAI GODOT (paquet 297, Lucas : « Pas bon. On doit essayer avec une autre application »). Nouveau workflow manuel « Essai — Godot pour la vidéo 3D » : Godot (moteur de jeu libre) s'installe sur la machine de GitHub et rend un point complet de 20 s environ (présentation du serveur, service, échange, coup gagnant, ralenti), en 1080 × 1920, image par image. Différences avec le moteur du site : les vrais squelettes des personnages (doigts compris : plus de griffes), les mouvements captés appliqués tels quels (course, attente, prise de la raquette à deux mains), des ombres et un éclairage de moteur de jeu ; les frappes sont construites comme une trajectoire du tamis (préparation, contact, accompagnement), le bras placé par cinématique inverse, et le corps descend ou se penche quand la balle est basse ou loin : au contact, le tamis est à 1 à 7 cm de la balle. Fichiers : dossier godot/ (scène, joueurs, personnages et mouvements CC0 de Quaternius, 1,6 Mo) et scripts/godot_actifs.py. La vidéo part sur le Telegram privé ; rien de public, aucune donnée de match. La vidéo du jour et le direct du site ne changent pas.",
+   "garde_fou": "Règle écrite avant l'essai : Godot ne remplace le moteur du site pour la vidéo du jour que si Lucas juge l'image nettement meilleure ET si une vidéo complète (85 s) tient en moins de 60 min de machine par langue. Retrait : supprimer .github/workflows/essai_godot.yml, le dossier godot/, scripts/godot_actifs.py, tests/test_essai_godot.py et simulateur/rapport_essai_godot.json."
+  },
+  {
+   "date": "2026-11-19",
+   "statut": "retiré",
+   "paquet": 298,
+   "quoi": "ESSAI GODOT : NON ADOPTÉ (paquet 298). Lucas a regardé le point rendu par Godot : « On perd beaucoup en qualité » (décor plus pauvre, public en pastilles, coutures en dents de scie sur la tenue). La règle écrite avant l'essai (image nettement meilleure ET moins de 60 min par langue) n'est pas remplie : on garde le moteur du site pour la vidéo et le direct. Constat : sans carte graphique sur la machine de GitHub, Godot dessine avec la même technique que le moteur du site (OpenGL logiciel) ; le plafond de qualité est le même, ce qui manque, ce sont des animations et des modèles. Ce que l'essai faisait mieux (raquette guidée sur la balle au contact, corps qui descend vers une balle basse) est déjà dans le moteur du site depuis le paquet 296 : vérifié, au contact le tamis est sur la balle à l'image près. Le paquet 297 n'est pas à appliquer ; s'il l'a été, ses fichiers sont à supprimer à la main (.github/workflows/essai_godot.yml, dossier godot/, scripts/godot_actifs.py, tests/test_essai_godot.py, simulateur/rapport_essai_godot.json).",
+   "garde_fou": "Rien à retirer : ce paquet ne change que le journal."
+  },
+  {
+   "date": "2026-11-19",
+   "statut": "essai",
+   "paquet": 299,
+   "quoi": "ESSAI GPU (paquet 299, Lucas : « Si tout est gratuit et que l'on fait un vrai bond de qualité, on y va »). Nouveau workflow manuel « Essai — rendu Blender sur carte graphique (Modal) » : un point de la vidéo du jour est exporté du moteur 3D du site (scripts/film_export.py : caméra, balle, os des personnages image par image, maillages et textures ; la page ne garde ces copies qu'avec ?video=1&export3d=1, rien ne change pour les visiteurs) puis rendu par Blender 4.2 (Cycles) sur une carte graphique louée chez Modal (scripts/modal_rendu.py, scripts/blender_film.py) : projecteurs avec ombres douces, lumière qui rebondit, reflets du court, tissu et peau, profondeur de champ, flou de mouvement de la balle et des raquettes. Mêmes mouvements et mêmes plans que le site (vérifié en local : personnages, officiels, balle et coins du court reprojetés par la caméra Blender tombent sur l'image du site). Le même point filmé par le site part avec, et une vidéo des deux ensemble, sur le Telegram privé. Moteur 3D du site : v299 (export seulement). Règle de décision écrite avant : Blender remplace le moteur du site pour la vidéo du jour seulement si Lucas juge l'image NETTEMENT meilleure ET si le coût projeté de la partie 3D (75 s à 25 images/s) reste sous 80 % des crédits gratuits mensuels de Modal (24 $ pour 30 $).",
+   "garde_fou": "Lancement à la main seulement ; 45 min et 400 images au plus par appel, une machine à la fois ; sans les secrets MODAL_TOKEN_ID / MODAL_TOKEN_SECRET le workflow s'arrête avant tout calcul. Retrait : supprimer .github/workflows/essai_gpu.yml, scripts/film_export.py, scripts/film_scene.py, scripts/blender_film.py, scripts/modal_rendu.py, tests/test_essai_gpu.py et simulateur/rapport_essai_gpu.json ; l'export du moteur reste inerte sans ?export3d=1."
+  },
+  {
+   "date": "2026-11-19",
+   "statut": "production",
+   "paquet": 300,
+   "quoi": "VIDÉO 3D — PUBLIC PLUS CLAIR (paquet 300, Lucas : « le bruit du public, ce n'est pas du tout clair »). Le public de la bande-son (scripts/sons_stade.py) était du bruit filtré : on n'y reconnaissait ni des voix ni des mains. Il est refait, toujours sans aucun enregistrement : (1) entre les points, 40 personnes qui parlent (voix synthétiques : hauteur d'homme ou de femme, voyelles, syllabes, consonnes discrètes, pauses), lointaines, sans grondement grave, un peu plus bas qu'avant pour laisser entendre le court et l'arbitre ; (2) applaudissements : chaque spectateur frappe à son rythme (3 à 5,5 fois par seconde) avec la résonance de ses mains, puis s'arrête à son moment ; (3) « ooooh » et cris de joie chantés par 60 à 70 voix sur une voyelle, deux sifflets dans les ovations. Le reste de la bande-son (raquette, rebonds, arbitre, jingles, salle) ne change pas.",
+   "garde_fou": "Retrait : remettre scripts/sons_stade.py du paquet 277 (ou d'avant ce paquet) et supprimer tests/test_public_stade.py. Sans numpy ou scipy, la vidéo garde l'ancienne bande-son (scripts/sons.py) comme avant."
+  },
+  {
+   "date": "2026-11-19",
+   "statut": "production",
+   "paquet": 301,
+   "quoi": "VIDÉO 3D — BRUIT DE LA FRAPPE (paquet 301, Lucas : « la balle ne fait pas le bruit d'une balle de tennis qui frappe »). L'ancien « pock » de scripts/sons_stade.py tenait une note pure pendant 18 ms (un « bip ») sur un « boum » grave. La frappe est refaite comme un choc bref et creux : contact sec, coque de la balle qui sonne quelques millisecondes (trois résonances non harmoniques, hauteur qui baisse en s'éteignant), « ping » court du tamis vers 550 Hz, petit coup sourd du cadre ; le service est plus sec et plus brillant. Le rebond suit la même logique, plus mat et plus grave. Mesuré : −20 dB en moins de 20 ms. Rien d'enregistré ; le reste de la bande-son ne change pas.",
+   "garde_fou": "Retrait : remettre scripts/sons_stade.py et tests/test_public_stade.py du paquet 300."
+  },
+  {
+   "date": "2026-11-20",
+   "statut": "production",
+   "paquet": 302,
+   "quoi": "VIDÉO 3D — VRAIS SONS (paquet 302, Lucas : « On doit pouvoir récupérer des sons déjà faits »). La bande-son (scripts/sons_stade.py) utilise maintenant de vrais enregistrements, tous sous licence Creative Commons 0 (domaine public), pris sur freesound.org par Lucas et découpés une fois (nouveau dossier sons/, sources dans sons/SOURCES.md) : 24 frappes, 19 services et 20 rebonds (jamesdrake89), le murmure et deux clameurs d'une vraie tribune (OroborosNZ), des applaudissements (thesandro). Mêmes niveaux qu'avant dans le mixage. Restent synthétiques : le « ooooh » du public, le filet, les semelles, les jingles. Si un fichier manque, les sons synthétiques des paquets 300 et 301 reprennent. Le workflow vidéo récupère aussi le dossier sons/.",
+   "garde_fou": "Retrait : supprimer le dossier sons/ (la bande-son repasse seule aux sons synthétiques), ou remettre scripts/sons_stade.py, tests/test_public_stade.py et .github/workflows/video_simulation.yml du paquet 301."
+  },
+  {
+   "date": "2026-11-20",
+   "statut": "production",
+   "paquet": 303,
+   "quoi": "DÉPÔT NEUF — « geler » réparé (paquet 303). Le premier « geler » réel (20/11) a mis 142 workflows en pause puis s'est arrêté sur la publication Pages, un workflow automatique de GitHub (chemin dynamic/…) qui ne se met jamais en pause (HTTP 422) ; la liste des workflows gelés n'avait donc pas été mémorisée. Désormais : les workflows automatiques sont sautés (aussi dans la vérification de « copier ») ; une pause refusée n'arrête plus la boucle (la liste est mémorisée d'abord, l'erreur vient après) ; les 142 workflows gelés le 20/11 sont repris de docs/depot_neuf_geles.txt, pour que « degeler » les réactive tous dans le nouveau dépôt.",
+   "garde_fou": "Aucun changement hors du workflow « Dépôt neuf ». Retrait : remettre .github/workflows/depot_neuf.yml et tests/test_depot_neuf.py d'avant ce paquet, supprimer docs/depot_neuf_geles.txt."
+  }
+ ]
+}

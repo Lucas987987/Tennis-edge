@@ -1,0 +1,67 @@
+{
+ "genere_le": "2026-11-04T20:34:50+00:00",
+ "definition": "vieux = années au-delà de 30 ans, jeune = années sous 23 ans ; écart entre les deux joueurs",
+ "regle": "β appris 2016–2022, jugé 2023 → ; positif si −0,001 de log loss sur ≥ 1 000 matchs jugés, par circuit",
+ "circuits": {
+  "ATP": {
+   "appris": 17573,
+   "juges": 11544,
+   "beta_vieux_par_an": -0.053,
+   "beta_jeune_par_an": 0.0858,
+   "log_loss_sans": 0.61452,
+   "log_loss_avec": 0.61178,
+   "gain": 0.00273,
+   "positif": true,
+   "plus_age_de_4_ans_au_dela_de_30": {
+    "matchs": 1554,
+    "elo_pct": 52.5,
+    "reel_pct": 45.9
+   },
+   "plus_jeune_de_2_ans_sous_23_ans": {
+    "matchs": 1446,
+    "elo_pct": 47.3,
+    "reel_pct": 52.1
+   }
+  },
+  "WTA": {
+   "appris": 16711,
+   "juges": 11169,
+   "beta_vieux_par_an": -0.0442,
+   "beta_jeune_par_an": 0.0435,
+   "log_loss_sans": 0.59809,
+   "log_loss_avec": 0.5964,
+   "gain": 0.00169,
+   "positif": true,
+   "plus_age_de_4_ans_au_dela_de_30": {
+    "matchs": 900,
+    "elo_pct": 46.7,
+    "reel_pct": 41.1
+   },
+   "plus_jeune_de_2_ans_sous_23_ans": {
+    "matchs": 2146,
+    "elo_pct": 47.6,
+    "reel_pct": 51.8
+   }
+  },
+  "CH": {
+   "appris": 46287,
+   "juges": 35802,
+   "beta_vieux_par_an": -0.0602,
+   "beta_jeune_par_an": 0.0675,
+   "log_loss_sans": 0.64011,
+   "log_loss_avec": 0.63757,
+   "gain": 0.00254,
+   "positif": true,
+   "plus_age_de_4_ans_au_dela_de_30": {
+    "matchs": 2600,
+    "elo_pct": 54.7,
+    "reel_pct": 47.9
+   },
+   "plus_jeune_de_2_ans_sous_23_ans": {
+    "matchs": 6313,
+    "elo_pct": 46.7,
+    "reel_pct": 51.3
+   }
+  }
+ }
+}

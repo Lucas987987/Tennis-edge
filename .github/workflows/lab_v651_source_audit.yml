@@ -1,0 +1,20 @@
+name: Tennis Edge Lab V6.5.1 - Audit sources
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Audit non destructif
+        run: python3 Tennis_Edge_Lab/v65/source_audit_v651.py --root . --output "$RUNNER_TEMP/v651_source_audit.json"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: v651-source-audit-${{ github.run_id }}
+          path: ${{ runner.temp }}/v651_source_audit.json
+          retention-days: 30

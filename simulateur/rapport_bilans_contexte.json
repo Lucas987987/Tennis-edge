@@ -1,0 +1,381 @@
+{
+ "genere_le": "2026-11-06T13:35:55+00:00",
+ "regle": "par circuit, contexte et mesure : β appris 2018–2022 ; retenu si −0,001 de log loss sur ≥ 1 000 matchs 2023 → juin 2026 et β de même signe sur les deux périodes ; courts rapides jugés à part",
+ "matchs": 106380,
+ "circuits": {
+  "ATP": {
+   "vitesse": {
+    "brut": {
+     "matchs": {
+      "2018–2022": 9206,
+      "2023 → juin 2026": 8545
+     },
+     "beta_2018_2022": -0.144,
+     "beta_2023_2026": 0.068,
+     "gain_log_loss_juge": -5e-05,
+     "retenue": false,
+     "gros_ecarts_juges": {
+      "matchs": 1651,
+      "meilleur_bilan_gagne_pct": 73.3,
+      "attendu_pct": 74.3
+     }
+    },
+    "ajuste": {
+     "matchs": {
+      "2018–2022": 9206,
+      "2023 → juin 2026": 8545
+     },
+     "beta_2018_2022": 0.34,
+     "beta_2023_2026": 0.663,
+     "gain_log_loss_juge": 0.00026,
+     "retenue": false,
+     "gros_ecarts_juges": {
+      "matchs": 680,
+      "meilleur_bilan_gagne_pct": 55.0,
+      "attendu_pct": 54.0
+     }
+    }
+   },
+   "tournoi": {
+    "brut": {
+     "matchs": {
+      "2018–2022": 12132,
+      "2023 → juin 2026": 9739
+     },
+     "beta_2018_2022": -0.207,
+     "beta_2023_2026": -0.184,
+     "gain_log_loss_juge": 2e-05,
+     "retenue": false,
+     "gros_ecarts_juges": {
+      "matchs": 95,
+      "meilleur_bilan_gagne_pct": 80.0,
+      "attendu_pct": 78.5
+     }
+    },
+    "ajuste": {
+     "matchs": {
+      "2018–2022": 12132,
+      "2023 → juin 2026": 9739
+     },
+     "beta_2018_2022": 0.227,
+     "beta_2023_2026": 0.382,
+     "gain_log_loss_juge": 6e-05,
+     "retenue": false,
+     "gros_ecarts_juges": {
+      "matchs": 61,
+      "meilleur_bilan_gagne_pct": 45.9,
+      "attendu_pct": 47.6
+     }
+    }
+   },
+   "niveau": {
+    "brut": {
+     "matchs": {
+      "2018–2022": 12132,
+      "2023 → juin 2026": 9739
+     },
+     "beta_2018_2022": -0.551,
+     "beta_2023_2026": -0.335,
+     "gain_log_loss_juge": 9e-05,
+     "retenue": false,
+     "gros_ecarts_juges": {
+      "matchs": 1848,
+      "meilleur_bilan_gagne_pct": 76.4,
+      "attendu_pct": 76.6
+     }
+    },
+    "ajuste": {
+     "matchs": {
+      "2018–2022": 12132,
+      "2023 → juin 2026": 9739
+     },
+     "beta_2018_2022": 0.38,
+     "beta_2023_2026": 0.63,
+     "gain_log_loss_juge": 0.00025,
+     "retenue": false,
+     "gros_ecarts_juges": {
+      "matchs": 572,
+      "meilleur_bilan_gagne_pct": 53.0,
+      "attendu_pct": 51.7
+     }
+    }
+   },
+   "courts_rapides": {
+    "brut": {
+     "matchs": {
+      "2018–2022": 1872,
+      "2023 → juin 2026": 2302
+     },
+     "beta_2018_2022": 0.29,
+     "beta_2023_2026": -0.506,
+     "gain_log_loss_juge": -0.00053,
+     "retenue": false,
+     "gros_ecarts_juges": {
+      "matchs": 522,
+      "meilleur_bilan_gagne_pct": 71.8,
+      "attendu_pct": 74.6
+     }
+    },
+    "ajuste": {
+     "matchs": {
+      "2018–2022": 1872,
+      "2023 → juin 2026": 2302
+     },
+     "beta_2018_2022": 0.233,
+     "beta_2023_2026": 0.575,
+     "gain_log_loss_juge": 0.00022,
+     "retenue": false,
+     "gros_ecarts_juges": {
+      "matchs": 259,
+      "meilleur_bilan_gagne_pct": 50.2,
+      "attendu_pct": 49.1
+     }
+    }
+   }
+  },
+  "WTA": {
+   "vitesse": {
+    "brut": {
+     "matchs": {
+      "2018–2022": 7660,
+      "2023 → juin 2026": 7445
+     },
+     "beta_2018_2022": -0.033,
+     "beta_2023_2026": 0.365,
+     "gain_log_loss_juge": -4e-05,
+     "retenue": false,
+     "gros_ecarts_juges": {
+      "matchs": 1491,
+      "meilleur_bilan_gagne_pct": 75.6,
+      "attendu_pct": 74.8
+     }
+    },
+    "ajuste": {
+     "matchs": {
+      "2018–2022": 7660,
+      "2023 → juin 2026": 7445
+     },
+     "beta_2018_2022": 0.116,
+     "beta_2023_2026": 0.342,
+     "gain_log_loss_juge": 5e-05,
+     "retenue": false,
+     "gros_ecarts_juges": {
+      "matchs": 427,
+      "meilleur_bilan_gagne_pct": 61.8,
+      "attendu_pct": 58.9
+     }
+    }
+   },
+   "tournoi": {
+    "brut": {
+     "matchs": {
+      "2018–2022": 11312,
+      "2023 → juin 2026": 9217
+     },
+     "beta_2018_2022": 0.267,
+     "beta_2023_2026": 0.432,
+     "gain_log_loss_juge": 0.0001,
+     "retenue": false,
+     "gros_ecarts_juges": {
+      "matchs": 87,
+      "meilleur_bilan_gagne_pct": 78.2,
+      "attendu_pct": 73.4
+     }
+    },
+    "ajuste": {
+     "matchs": {
+      "2018–2022": 11312,
+      "2023 → juin 2026": 9217
+     },
+     "beta_2018_2022": 0.153,
+     "beta_2023_2026": 0.022,
+     "gain_log_loss_juge": -1e-05,
+     "retenue": false,
+     "gros_ecarts_juges": {
+      "matchs": 55,
+      "meilleur_bilan_gagne_pct": 54.5,
+      "attendu_pct": 54.8
+     }
+    }
+   },
+   "niveau": {
+    "brut": {
+     "matchs": {
+      "2018–2022": 11312,
+      "2023 → juin 2026": 9217
+     },
+     "beta_2018_2022": 0.372,
+     "beta_2023_2026": 0.543,
+     "gain_log_loss_juge": 0.00037,
+     "retenue": false,
+     "gros_ecarts_juges": {
+      "matchs": 1398,
+      "meilleur_bilan_gagne_pct": 73.7,
+      "attendu_pct": 71.7
+     }
+    },
+    "ajuste": {
+     "matchs": {
+      "2018–2022": 11312,
+      "2023 → juin 2026": 9217
+     },
+     "beta_2018_2022": 0.799,
+     "beta_2023_2026": 0.69,
+     "gain_log_loss_juge": 0.00038,
+     "retenue": false,
+     "gros_ecarts_juges": {
+      "matchs": 582,
+      "meilleur_bilan_gagne_pct": 56.2,
+      "attendu_pct": 56.6
+     }
+    }
+   },
+   "courts_rapides": {
+    "brut": {
+     "matchs": {
+      "2018–2022": 29,
+      "2023 → juin 2026": 0
+     },
+     "note": "trop peu de matchs"
+    },
+    "ajuste": {
+     "matchs": {
+      "2018–2022": 29,
+      "2023 → juin 2026": 0
+     },
+     "note": "trop peu de matchs"
+    }
+   }
+  },
+  "CH": {
+   "vitesse": {
+    "brut": {
+     "matchs": {
+      "2018–2022": 20295,
+      "2023 → juin 2026": 24713
+     },
+     "beta_2018_2022": -0.653,
+     "beta_2023_2026": -0.781,
+     "gain_log_loss_juge": 0.00055,
+     "retenue": false,
+     "gros_ecarts_juges": {
+      "matchs": 2221,
+      "meilleur_bilan_gagne_pct": 65.4,
+      "attendu_pct": 69.0
+     }
+    },
+    "ajuste": {
+     "matchs": {
+      "2018–2022": 20295,
+      "2023 → juin 2026": 24713
+     },
+     "beta_2018_2022": 0.046,
+     "beta_2023_2026": -0.089,
+     "gain_log_loss_juge": -1e-05,
+     "retenue": false,
+     "gros_ecarts_juges": {
+      "matchs": 1490,
+      "meilleur_bilan_gagne_pct": 54.3,
+      "attendu_pct": 54.3
+     }
+    }
+   },
+   "tournoi": {
+    "brut": {
+     "matchs": {
+      "2018–2022": 32395,
+      "2023 → juin 2026": 31585
+     },
+     "beta_2018_2022": 0.298,
+     "beta_2023_2026": -0.124,
+     "gain_log_loss_juge": -5e-05,
+     "retenue": false,
+     "gros_ecarts_juges": {
+      "matchs": 14,
+      "meilleur_bilan_gagne_pct": 85.7,
+      "attendu_pct": 57.5
+     }
+    },
+    "ajuste": {
+     "matchs": {
+      "2018–2022": 32395,
+      "2023 → juin 2026": 31585
+     },
+     "beta_2018_2022": 0.706,
+     "beta_2023_2026": 0.312,
+     "gain_log_loss_juge": -2e-05,
+     "retenue": false,
+     "gros_ecarts_juges": {
+      "matchs": 9,
+      "meilleur_bilan_gagne_pct": 66.7,
+      "attendu_pct": 46.1
+     }
+    }
+   },
+   "niveau": {
+    "brut": {
+     "matchs": {
+      "2018–2022": 32395,
+      "2023 → juin 2026": 31585
+     },
+     "beta_2018_2022": -1.079,
+     "beta_2023_2026": -0.897,
+     "gain_log_loss_juge": 0.00077,
+     "retenue": false,
+     "gros_ecarts_juges": {
+      "matchs": 4005,
+      "meilleur_bilan_gagne_pct": 72.3,
+      "attendu_pct": 76.9
+     }
+    },
+    "ajuste": {
+     "matchs": {
+      "2018–2022": 32395,
+      "2023 → juin 2026": 31585
+     },
+     "beta_2018_2022": 0.05,
+     "beta_2023_2026": 0.288,
+     "gain_log_loss_juge": 2e-05,
+     "retenue": false,
+     "gros_ecarts_juges": {
+      "matchs": 1250,
+      "meilleur_bilan_gagne_pct": 57.0,
+      "attendu_pct": 55.9
+     }
+    }
+   },
+   "courts_rapides": {
+    "brut": {
+     "matchs": {
+      "2018–2022": 1677,
+      "2023 → juin 2026": 1941
+     },
+     "beta_2018_2022": 0.594,
+     "beta_2023_2026": -0.142,
+     "gain_log_loss_juge": -0.00051,
+     "retenue": false,
+     "gros_ecarts_juges": {
+      "matchs": 84,
+      "meilleur_bilan_gagne_pct": 52.4,
+      "attendu_pct": 55.2
+     }
+    },
+    "ajuste": {
+     "matchs": {
+      "2018–2022": 1677,
+      "2023 → juin 2026": 1941
+     },
+     "beta_2018_2022": 0.56,
+     "beta_2023_2026": 0.366,
+     "gain_log_loss_juge": 0.0001,
+     "retenue": false,
+     "gros_ecarts_juges": {
+      "matchs": 88,
+      "meilleur_bilan_gagne_pct": 51.1,
+      "attendu_pct": 51.9
+     }
+    }
+   }
+  }
+ }
+}

@@ -1,0 +1,31 @@
+name: Sonde basket (lecture seule)
+
+# 29/10/2026 — EuroLeague et Betclic Élite : cotes OddsPapi (2 requêtes au
+# plus, aucune nouvelle tentative), données publiques EuroLeague, site LNB.
+# Rien n'est écrit dans le dépôt : tout est dans le journal du run.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  ODDS_RETRIES: '0'
+
+jobs:
+  sonde:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          sparse-checkout: |
+            scripts
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - name: Sonde
+        env:
+          RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
+        run: python scripts/sonde_basket.py

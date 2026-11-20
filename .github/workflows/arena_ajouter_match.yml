@@ -1,0 +1,49 @@
+name: Arena - Ajouter un vrai match (manuel)
+on:
+  workflow_dispatch:
+    inputs:
+      circuit:
+        description: "Circuit"
+        required: true
+        type: choice
+        options: [ATP, WTA, CHALLENGER]
+      title:
+        description: "Tournoi et tour (ex: Paris - Quart de finale)"
+        required: true
+        type: string
+      player_a:
+        description: "Joueur A"
+        required: true
+        type: string
+      player_b:
+        description: "Joueur B"
+        required: true
+        type: string
+      starts_at:
+        description: "Début UTC ISO (ex: 2026-11-15T14:00:00Z)"
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Créer le défi sur Arena (aucune cote)
+        env:
+          TOKEN: ${{ secrets.ARENA_ADMIN_TOKEN }}
+          CIRCUIT: ${{ inputs.circuit }}
+          TITLE: ${{ inputs.title }}
+          A: ${{ inputs.player_a }}
+          B: ${{ inputs.player_b }}
+          START: ${{ inputs.starts_at }}
+        run: |
+          python3 - <<'PY'
+          import os,json,urllib.request,urllib.error
+          if not os.environ.get('TOKEN'):raise SystemExit('ARENA_ADMIN_TOKEN manquant')
+          payload={k:os.environ[v] for k,v in [('circuit','CIRCUIT'),('title','TITLE'),('player_a','A'),('player_b','B'),('starts_at','START')]}
+          req=urllib.request.Request('https://tennis-edge-arena.tennis-edge.workers.dev/api/arena/admin/challenge',data=json.dumps(payload).encode(),headers={'content-type':'application/json','x-arena-admin-token':os.environ['TOKEN']},method='POST')
+          try:
+           with urllib.request.urlopen(req,timeout=25) as r:print(r.read().decode())
+          except urllib.error.HTTPError as e:raise SystemExit(f'API {e.code}: {e.read().decode()}')
+          PY

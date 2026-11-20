@@ -1,0 +1,22 @@
+{
+ "paquet": 277,
+ "quoi": "Vidéo du jour en 3D : moments forts retenus sur 300 matchs tirés au hasard par le moteur du site.",
+ "note": "Échanges illustratifs : seul le vainqueur de chaque point vient de la simulation ; le % ne change pas.",
+ "matchs": 300,
+ "moments_par_video": {
+  "4": 107,
+  "5": 193
+ },
+ "types_de_moments": {
+  "set": 555,
+  "break": 425,
+  "match": 300,
+  "bm_sauvee": 86,
+  "bb_sauvee": 11,
+  "echange": 8,
+  "bs_sauvee": 8
+ },
+ "balle_de_match_toujours_en_dernier": true,
+ "retrait_declenche": false,
+ "regle_retrait": "Balle de match absente à la fin, ou moins de 2 / plus de 6 moments : retour à la vidéo 2D (paquet 275)."
+}

@@ -1,0 +1,36 @@
+name: Arena - Corriger bouton en haut
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/arena_bouton_haut.yml'
+      - 'arena/patch_bouton_haut.py'
+permissions:
+  contents: read
+  actions: write
+jobs:
+  corriger:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          token: ${{ secrets.PAQUET_TOKEN }}
+          persist-credentials: true
+      - name: Déplacer le bouton et corriger son URL
+        run: python3 arena/patch_bouton_haut.py
+      - name: Enregistrer la modification
+        env:
+          GH_TOKEN: ${{ secrets.PAQUET_TOKEN }}
+        run: |
+          test -n "$GH_TOKEN" || { echo "::error::Secret PAQUET_TOKEN requis"; exit 1; }
+          git config user.name "tennis-edge-arena-bot"
+          git config user.email "arena-bot@users.noreply.github.com"
+          git add algo/index.html
+          if git diff --cached --quiet; then echo "Déjà corrigé"; exit 0; fi
+          git commit -m "Arena: bouton visible en haut, lien GitHub Pages"
+          git push origin HEAD:main
+      - name: Déclencher la publication GitHub Pages
+        env:
+          GH_TOKEN: ${{ secrets.PAQUET_TOKEN }}
+        run: gh workflow run pages.yml --ref main

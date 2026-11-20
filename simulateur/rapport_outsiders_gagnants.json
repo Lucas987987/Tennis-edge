@@ -1,0 +1,786 @@
+{
+ "genere_le": "2026-11-18T11:22:47+00:00",
+ "paquet": 273,
+ "regle": "situation par situation et CIRCUIT PAR CIRCUIT : un décalage (logit) vers l'outsider est appris sur 2018–2022 sur les matchs concernés, puis jugé une seule fois sur 2023 → juin 2026 sur les matchs concernés. RETENU si : au moins 1 000 matchs concernés jugés ; gain de log loss ≥ 0,001 ; gain ≥ 2 erreurs types ; et l'outsider concerné gagne plus qu'annoncé sur les DEUX périodes. Un résultat retenu n'entre dans l'algo que par un paquet à part, avec sa règle de retrait. Rapport public : simulateur/rapport_outsiders_gagnants.json (aucun nom de joueur). Descriptif tant que rien n'est mis en place.",
+ "base": {
+  "elo": "réglé comme la production",
+  "signaux": "surface, absence, âge",
+  "betas_2018_2022": {
+   "ATP": [
+    -0.2087,
+    -0.492,
+    -1.1333,
+    -0.0469,
+    0.0688
+   ],
+   "WTA": [
+    -0.1702,
+    -0.2908,
+    -0.8726,
+    -0.0386,
+    0.0311
+   ],
+   "CH": [
+    -0.189,
+    -0.2456,
+    -0.5714,
+    -0.0622,
+    0.0064
+   ]
+  }
+ },
+ "couverture": {
+  "pays_tournoi": 112304,
+  "matchs": 115950
+ },
+ "situations": {
+  "favori_fatigue": {
+   "ATP": {
+    "decalage_appris": 0.0818,
+    "outsider_2018_2022": {
+     "annonce_pct": 33.6,
+     "reel_pct": 35.4
+    },
+    "outsider_2023": {
+     "annonce_pct": 33.1,
+     "reel_pct": 34.0
+    },
+    "2018–2022": {
+     "matchs": 854,
+     "gain": 0.00074,
+     "erreur_type": 0.00132,
+     "erreurs_types": 0.56,
+     "log_loss_base": 0.63476,
+     "log_loss": 0.63402,
+     "brier_base": 0.22188,
+     "brier": 0.22156,
+     "favori_annonce_pct": 66.4,
+     "favori_reel_pct": 64.6
+    },
+    "2023 → juin 2026": {
+     "matchs": 624,
+     "gain": 3e-05,
+     "erreur_type": 0.00153,
+     "erreurs_types": 0.02,
+     "log_loss_base": 0.62692,
+     "log_loss": 0.62689,
+     "brier_base": 0.21817,
+     "brier": 0.21819,
+     "favori_annonce_pct": 66.9,
+     "favori_reel_pct": 66.0
+    },
+    "retenu": false,
+    "raisons": [
+     "moins de 1000 matchs jugés",
+     "gain sous 0.001",
+     "gain sous 2 erreurs types"
+    ]
+   },
+   "WTA": {
+    "decalage_appris": 0.1149,
+    "outsider_2018_2022": {
+     "annonce_pct": 34.4,
+     "reel_pct": 37.0
+    },
+    "outsider_2023": {
+     "annonce_pct": 33.4,
+     "reel_pct": 34.9
+    },
+    "2018–2022": {
+     "matchs": 857,
+     "gain": 0.0015,
+     "erreur_type": 0.00187,
+     "erreurs_types": 0.8,
+     "log_loss_base": 0.64618,
+     "log_loss": 0.64468,
+     "brier_base": 0.22724,
+     "brier": 0.22657,
+     "favori_annonce_pct": 65.6,
+     "favori_reel_pct": 63.0
+    },
+    "2023 → juin 2026": {
+     "matchs": 628,
+     "gain": 0.0002,
+     "erreur_type": 0.00213,
+     "erreurs_types": 0.09,
+     "log_loss_base": 0.62219,
+     "log_loss": 0.622,
+     "brier_base": 0.21653,
+     "brier": 0.21629,
+     "favori_annonce_pct": 66.6,
+     "favori_reel_pct": 65.1
+    },
+    "retenu": false,
+    "raisons": [
+     "moins de 1000 matchs jugés",
+     "gain sous 0.001",
+     "gain sous 2 erreurs types"
+    ]
+   },
+   "CH": {
+    "decalage_appris": 0.1553,
+    "outsider_2018_2022": {
+     "annonce_pct": 34.5,
+     "reel_pct": 38.0
+    },
+    "outsider_2023": {
+     "annonce_pct": 34.4,
+     "reel_pct": 40.0
+    },
+    "2018–2022": {
+     "matchs": 2614,
+     "gain": 0.00274,
+     "erreur_type": 0.00145,
+     "erreurs_types": 1.88,
+     "log_loss_base": 0.65173,
+     "log_loss": 0.64899,
+     "brier_base": 0.23009,
+     "brier": 0.22882,
+     "favori_annonce_pct": 65.5,
+     "favori_reel_pct": 62.0
+    },
+    "2023 → juin 2026": {
+     "matchs": 2583,
+     "gain": 0.00586,
+     "erreur_type": 0.00148,
+     "erreurs_types": 3.95,
+     "log_loss_base": 0.67184,
+     "log_loss": 0.66598,
+     "brier_base": 0.23893,
+     "brier": 0.23644,
+     "favori_annonce_pct": 65.6,
+     "favori_reel_pct": 60.0
+    },
+    "retenu": true,
+    "raisons": []
+   }
+  },
+  "outsider_domicile": {
+   "ATP": {
+    "decalage_appris": 0.1552,
+    "outsider_2018_2022": {
+     "annonce_pct": 30.5,
+     "reel_pct": 33.8
+    },
+    "outsider_2023": {
+     "annonce_pct": 30.6,
+     "reel_pct": 33.2
+    },
+    "2018–2022": {
+     "matchs": 1039,
+     "gain": 0.00258,
+     "erreur_type": 0.00223,
+     "erreurs_types": 1.15,
+     "log_loss_base": 0.62255,
+     "log_loss": 0.61998,
+     "brier_base": 0.21646,
+     "brier": 0.2153,
+     "favori_annonce_pct": 69.5,
+     "favori_reel_pct": 66.2
+    },
+    "2023 → juin 2026": {
+     "matchs": 799,
+     "gain": 0.00144,
+     "erreur_type": 0.00253,
+     "erreurs_types": 0.57,
+     "log_loss_base": 0.61596,
+     "log_loss": 0.61451,
+     "brier_base": 0.21321,
+     "brier": 0.21256,
+     "favori_annonce_pct": 69.4,
+     "favori_reel_pct": 66.8
+    },
+    "retenu": false,
+    "raisons": [
+     "moins de 1000 matchs jugés",
+     "gain sous 2 erreurs types"
+    ]
+   },
+   "WTA": {
+    "decalage_appris": -0.0233,
+    "outsider_2018_2022": {
+     "annonce_pct": 30.9,
+     "reel_pct": 30.5
+    },
+    "outsider_2023": {
+     "annonce_pct": 31.4,
+     "reel_pct": 31.9
+    },
+    "2018–2022": {
+     "matchs": 972,
+     "gain": 6e-05,
+     "erreur_type": 0.00034,
+     "erreurs_types": 0.17,
+     "log_loss_base": 0.59342,
+     "log_loss": 0.59337,
+     "brier_base": 0.2032,
+     "brier": 0.20319,
+     "favori_annonce_pct": 69.1,
+     "favori_reel_pct": 69.5
+    },
+    "2023 → juin 2026": {
+     "matchs": 737,
+     "gain": -0.00018,
+     "erreur_type": 0.00039,
+     "erreurs_types": -0.46,
+     "log_loss_base": 0.60119,
+     "log_loss": 0.60137,
+     "brier_base": 0.20659,
+     "brier": 0.20669,
+     "favori_annonce_pct": 68.6,
+     "favori_reel_pct": 68.1
+    },
+    "retenu": false,
+    "raisons": [
+     "moins de 1000 matchs jugés",
+     "gain sous 0.001",
+     "gain sous 2 erreurs types",
+     "l'outsider ne gagne pas plus qu'annoncé sur les deux périodes"
+    ]
+   },
+   "CH": {
+    "decalage_appris": 0.0497,
+    "outsider_2018_2022": {
+     "annonce_pct": 31.2,
+     "reel_pct": 32.2
+    },
+    "outsider_2023": {
+     "annonce_pct": 30.8,
+     "reel_pct": 31.2
+    },
+    "2018–2022": {
+     "matchs": 5891,
+     "gain": 0.00026,
+     "erreur_type": 0.0003,
+     "erreurs_types": 0.87,
+     "log_loss_base": 0.61631,
+     "log_loss": 0.61605,
+     "brier_base": 0.21319,
+     "brier": 0.21311,
+     "favori_annonce_pct": 68.8,
+     "favori_reel_pct": 67.8
+    },
+    "2023 → juin 2026": {
+     "matchs": 5995,
+     "gain": -6e-05,
+     "erreur_type": 0.00029,
+     "erreurs_types": -0.22,
+     "log_loss_base": 0.61028,
+     "log_loss": 0.61035,
+     "brier_base": 0.21016,
+     "brier": 0.21025,
+     "favori_annonce_pct": 69.2,
+     "favori_reel_pct": 68.8
+    },
+    "retenu": false,
+    "raisons": [
+     "gain sous 0.001",
+     "gain sous 2 erreurs types"
+    ]
+   }
+  },
+  "outsider_gaucher": {
+   "ATP": {
+    "decalage_appris": 0.0549,
+    "outsider_2018_2022": {
+     "annonce_pct": 31.5,
+     "reel_pct": 32.7
+    },
+    "outsider_2023": {
+     "annonce_pct": 32.1,
+     "reel_pct": 31.8
+    },
+    "2018–2022": {
+     "matchs": 1163,
+     "gain": 0.00032,
+     "erreur_type": 0.00075,
+     "erreurs_types": 0.43,
+     "log_loss_base": 0.62591,
+     "log_loss": 0.62559,
+     "brier_base": 0.21734,
+     "brier": 0.21729,
+     "favori_annonce_pct": 68.5,
+     "favori_reel_pct": 67.3
+    },
+    "2023 → juin 2026": {
+     "matchs": 795,
+     "gain": -0.00045,
+     "erreur_type": 0.0009,
+     "erreurs_types": -0.5,
+     "log_loss_base": 0.61623,
+     "log_loss": 0.61668,
+     "brier_base": 0.21304,
+     "brier": 0.2133,
+     "favori_annonce_pct": 67.9,
+     "favori_reel_pct": 68.2
+    },
+    "retenu": false,
+    "raisons": [
+     "moins de 1000 matchs jugés",
+     "gain sous 0.001",
+     "gain sous 2 erreurs types",
+     "l'outsider ne gagne pas plus qu'annoncé sur les deux périodes"
+    ]
+   },
+   "WTA": {
+    "decalage_appris": -0.1064,
+    "outsider_2018_2022": {
+     "annonce_pct": 32.5,
+     "reel_pct": 30.2
+    },
+    "outsider_2023": {
+     "annonce_pct": 33.2,
+     "reel_pct": 32.2
+    },
+    "2018–2022": {
+     "matchs": 691,
+     "gain": 0.00119,
+     "erreur_type": 0.00184,
+     "erreurs_types": 0.65,
+     "log_loss_base": 0.60241,
+     "log_loss": 0.60122,
+     "brier_base": 0.20683,
+     "brier": 0.20626,
+     "favori_annonce_pct": 67.5,
+     "favori_reel_pct": 69.8
+    },
+    "2023 → juin 2026": {
+     "matchs": 580,
+     "gain": -0.00017,
+     "erreur_type": 0.00202,
+     "erreurs_types": -0.09,
+     "log_loss_base": 0.60862,
+     "log_loss": 0.6088,
+     "brier_base": 0.20967,
+     "brier": 0.20979,
+     "favori_annonce_pct": 66.8,
+     "favori_reel_pct": 67.8
+    },
+    "retenu": false,
+    "raisons": [
+     "moins de 1000 matchs jugés",
+     "gain sous 0.001",
+     "gain sous 2 erreurs types",
+     "l'outsider ne gagne pas plus qu'annoncé sur les deux périodes"
+    ]
+   },
+   "CH": {
+    "decalage_appris": -0.0303,
+    "outsider_2018_2022": {
+     "annonce_pct": 32.7,
+     "reel_pct": 32.1
+    },
+    "outsider_2023": {
+     "annonce_pct": 32.5,
+     "reel_pct": 34.2
+    },
+    "2018–2022": {
+     "matchs": 3294,
+     "gain": 0.0001,
+     "erreur_type": 0.00024,
+     "erreurs_types": 0.4,
+     "log_loss_base": 0.6165,
+     "log_loss": 0.6164,
+     "brier_base": 0.21339,
+     "brier": 0.21333,
+     "favori_annonce_pct": 67.3,
+     "favori_reel_pct": 67.9
+    },
+    "2023 → juin 2026": {
+     "matchs": 3151,
+     "gain": -0.00062,
+     "erreur_type": 0.00025,
+     "erreurs_types": -2.43,
+     "log_loss_base": 0.63689,
+     "log_loss": 0.63751,
+     "brier_base": 0.22238,
+     "brier": 0.2226,
+     "favori_annonce_pct": 67.5,
+     "favori_reel_pct": 65.8
+    },
+    "retenu": false,
+    "raisons": [
+     "gain sous 0.001",
+     "gain sous 2 erreurs types",
+     "l'outsider ne gagne pas plus qu'annoncé sur les deux périodes"
+    ]
+   }
+  },
+  "outsider_en_serie": {
+   "ATP": {
+    "decalage_appris": 0.0965,
+    "outsider_2018_2022": {
+     "annonce_pct": 31.6,
+     "reel_pct": 33.7
+    },
+    "outsider_2023": {
+     "annonce_pct": 31.3,
+     "reel_pct": 33.2
+    },
+    "2018–2022": {
+     "matchs": 2362,
+     "gain": 0.001,
+     "erreur_type": 0.00093,
+     "erreurs_types": 1.08,
+     "log_loss_base": 0.62824,
+     "log_loss": 0.62724,
+     "brier_base": 0.21875,
+     "brier": 0.21839,
+     "favori_annonce_pct": 68.4,
+     "favori_reel_pct": 66.3
+    },
+    "2023 → juin 2026": {
+     "matchs": 1881,
+     "gain": 0.00088,
+     "erreur_type": 0.00103,
+     "erreurs_types": 0.86,
+     "log_loss_base": 0.6164,
+     "log_loss": 0.61552,
+     "brier_base": 0.2136,
+     "brier": 0.21318,
+     "favori_annonce_pct": 68.7,
+     "favori_reel_pct": 66.8
+    },
+    "retenu": false,
+    "raisons": [
+     "gain sous 0.001",
+     "gain sous 2 erreurs types"
+    ]
+   },
+   "WTA": {
+    "decalage_appris": 0.0161,
+    "outsider_2018_2022": {
+     "annonce_pct": 32.5,
+     "reel_pct": 32.9
+    },
+    "outsider_2023": {
+     "annonce_pct": 32.4,
+     "reel_pct": 31.9
+    },
+    "2018–2022": {
+     "matchs": 2122,
+     "gain": 3e-05,
+     "erreur_type": 0.00016,
+     "erreurs_types": 0.17,
+     "log_loss_base": 0.61676,
+     "log_loss": 0.61673,
+     "brier_base": 0.2136,
+     "brier": 0.21358,
+     "favori_annonce_pct": 67.5,
+     "favori_reel_pct": 67.1
+    },
+    "2023 → juin 2026": {
+     "matchs": 1652,
+     "gain": -0.00011,
+     "erreur_type": 0.00018,
+     "erreurs_types": -0.63,
+     "log_loss_base": 0.60517,
+     "log_loss": 0.60529,
+     "brier_base": 0.20842,
+     "brier": 0.20845,
+     "favori_annonce_pct": 67.6,
+     "favori_reel_pct": 68.1
+    },
+    "retenu": false,
+    "raisons": [
+     "gain sous 0.001",
+     "gain sous 2 erreurs types",
+     "l'outsider ne gagne pas plus qu'annoncé sur les deux périodes"
+    ]
+   },
+   "CH": {
+    "decalage_appris": 0.0554,
+    "outsider_2018_2022": {
+     "annonce_pct": 34.8,
+     "reel_pct": 36.1
+    },
+    "outsider_2023": {
+     "annonce_pct": 34.6,
+     "reel_pct": 35.7
+    },
+    "2018–2022": {
+     "matchs": 3970,
+     "gain": 0.00034,
+     "erreur_type": 0.00042,
+     "erreurs_types": 0.82,
+     "log_loss_base": 0.64473,
+     "log_loss": 0.64438,
+     "brier_base": 0.22645,
+     "brier": 0.22632,
+     "favori_annonce_pct": 65.2,
+     "favori_reel_pct": 63.9
+    },
+    "2023 → juin 2026": {
+     "matchs": 3968,
+     "gain": 0.00023,
+     "erreur_type": 0.00042,
+     "erreurs_types": 0.56,
+     "log_loss_base": 0.64452,
+     "log_loss": 0.64428,
+     "brier_base": 0.22622,
+     "brier": 0.22616,
+     "favori_annonce_pct": 65.4,
+     "favori_reel_pct": 64.3
+    },
+    "retenu": false,
+    "raisons": [
+     "gain sous 0.001",
+     "gain sous 2 erreurs types"
+    ]
+   }
+  },
+  "favori_titre_recent": {
+   "ATP": {
+    "decalage_appris": 0.1598,
+    "outsider_2018_2022": {
+     "annonce_pct": 28.5,
+     "reel_pct": 31.8
+    },
+    "outsider_2023": {
+     "annonce_pct": 28.5,
+     "reel_pct": 33.3
+    },
+    "2018–2022": {
+     "matchs": 198,
+     "gain": 0.00275,
+     "erreur_type": 0.00514,
+     "erreurs_types": 0.53,
+     "log_loss_base": 0.59991,
+     "log_loss": 0.59716,
+     "brier_base": 0.20604,
+     "brier": 0.20467,
+     "favori_annonce_pct": 71.5,
+     "favori_reel_pct": 68.2
+    },
+    "2023 → juin 2026": {
+     "matchs": 162,
+     "gain": 0.00508,
+     "erreur_type": 0.00589,
+     "erreurs_types": 0.86,
+     "log_loss_base": 0.63691,
+     "log_loss": 0.63183,
+     "brier_base": 0.22202,
+     "brier": 0.22025,
+     "favori_annonce_pct": 71.5,
+     "favori_reel_pct": 66.7
+    },
+    "retenu": false,
+    "raisons": [
+     "moins de 1000 matchs jugés",
+     "gain sous 2 erreurs types"
+    ]
+   },
+   "WTA": {
+    "decalage_appris": -0.1075,
+    "outsider_2018_2022": {
+     "annonce_pct": 28.8,
+     "reel_pct": 26.6
+    },
+    "outsider_2023": {
+     "annonce_pct": 28.9,
+     "reel_pct": 27.4
+    },
+    "2018–2022": {
+     "matchs": 139,
+     "gain": 0.00119,
+     "erreur_type": 0.00392,
+     "erreurs_types": 0.3,
+     "log_loss_base": 0.55276,
+     "log_loss": 0.55156,
+     "brier_base": 0.185,
+     "brier": 0.18473,
+     "favori_annonce_pct": 71.2,
+     "favori_reel_pct": 73.4
+    },
+    "2023 → juin 2026": {
+     "matchs": 117,
+     "gain": 0.00058,
+     "erreur_type": 0.00442,
+     "erreurs_types": 0.13,
+     "log_loss_base": 0.58631,
+     "log_loss": 0.58573,
+     "brier_base": 0.19827,
+     "brier": 0.19774,
+     "favori_annonce_pct": 71.1,
+     "favori_reel_pct": 72.6
+    },
+    "retenu": false,
+    "raisons": [
+     "moins de 1000 matchs jugés",
+     "gain sous 0.001",
+     "gain sous 2 erreurs types",
+     "l'outsider ne gagne pas plus qu'annoncé sur les deux périodes"
+    ]
+   },
+   "CH": {
+    "decalage_appris": 0.1136,
+    "outsider_2018_2022": {
+     "annonce_pct": 28.2,
+     "reel_pct": 30.5
+    },
+    "outsider_2023": {
+     "annonce_pct": 28.4,
+     "reel_pct": 30.3
+    },
+    "2018–2022": {
+     "matchs": 370,
+     "gain": 0.00134,
+     "erreur_type": 0.00266,
+     "erreurs_types": 0.5,
+     "log_loss_base": 0.59592,
+     "log_loss": 0.59458,
+     "brier_base": 0.20382,
+     "brier": 0.20322,
+     "favori_annonce_pct": 71.8,
+     "favori_reel_pct": 69.5
+    },
+    "2023 → juin 2026": {
+     "matchs": 366,
+     "gain": 0.00089,
+     "erreur_type": 0.00273,
+     "erreurs_types": 0.32,
+     "log_loss_base": 0.61565,
+     "log_loss": 0.61477,
+     "brier_base": 0.21174,
+     "brier": 0.21171,
+     "favori_annonce_pct": 71.6,
+     "favori_reel_pct": 69.7
+    },
+    "retenu": false,
+    "raisons": [
+     "moins de 1000 matchs jugés",
+     "gain sous 0.001",
+     "gain sous 2 erreurs types"
+    ]
+   }
+  },
+  "outsider_mieux_classe": {
+   "ATP": {
+    "decalage_appris": -0.0252,
+    "outsider_2018_2022": {
+     "annonce_pct": 37.1,
+     "reel_pct": 36.5
+    },
+    "outsider_2023": {
+     "annonce_pct": 37.5,
+     "reel_pct": 38.2
+    },
+    "2018–2022": {
+     "matchs": 1394,
+     "gain": 7e-05,
+     "erreur_type": 0.00032,
+     "erreurs_types": 0.23,
+     "log_loss_base": 0.65116,
+     "log_loss": 0.65109,
+     "brier_base": 0.2294,
+     "brier": 0.22935,
+     "favori_annonce_pct": 62.9,
+     "favori_reel_pct": 63.5
+    },
+    "2023 → juin 2026": {
+     "matchs": 1013,
+     "gain": -0.00024,
+     "erreur_type": 0.00038,
+     "erreurs_types": -0.64,
+     "log_loss_base": 0.65253,
+     "log_loss": 0.65277,
+     "brier_base": 0.23027,
+     "brier": 0.23039,
+     "favori_annonce_pct": 62.5,
+     "favori_reel_pct": 61.8
+    },
+    "retenu": false,
+    "raisons": [
+     "gain sous 0.001",
+     "gain sous 2 erreurs types",
+     "l'outsider ne gagne pas plus qu'annoncé sur les deux périodes"
+    ]
+   },
+   "WTA": {
+    "decalage_appris": -0.0351,
+    "outsider_2018_2022": {
+     "annonce_pct": 38.4,
+     "reel_pct": 37.6
+    },
+    "outsider_2023": {
+     "annonce_pct": 38.0,
+     "reel_pct": 35.2
+    },
+    "2018–2022": {
+     "matchs": 1082,
+     "gain": 0.00014,
+     "erreur_type": 0.00052,
+     "erreurs_types": 0.28,
+     "log_loss_base": 0.65947,
+     "log_loss": 0.65933,
+     "brier_base": 0.23344,
+     "brier": 0.23335,
+     "favori_annonce_pct": 61.6,
+     "favori_reel_pct": 62.4
+    },
+    "2023 → juin 2026": {
+     "matchs": 962,
+     "gain": 0.00083,
+     "erreur_type": 0.00054,
+     "erreurs_types": 1.53,
+     "log_loss_base": 0.65261,
+     "log_loss": 0.65179,
+     "brier_base": 0.22999,
+     "brier": 0.22956,
+     "favori_annonce_pct": 62.0,
+     "favori_reel_pct": 64.8
+    },
+    "retenu": false,
+    "raisons": [
+     "moins de 1000 matchs jugés",
+     "gain sous 0.001",
+     "gain sous 2 erreurs types",
+     "l'outsider ne gagne pas plus qu'annoncé sur les deux périodes"
+    ]
+   },
+   "CH": {
+    "decalage_appris": 0.1559,
+    "outsider_2018_2022": {
+     "annonce_pct": 37.2,
+     "reel_pct": 40.8
+    },
+    "outsider_2023": {
+     "annonce_pct": 37.0,
+     "reel_pct": 43.1
+    },
+    "2018–2022": {
+     "matchs": 5526,
+     "gain": 0.00286,
+     "erreur_type": 0.00103,
+     "erreurs_types": 2.78,
+     "log_loss_base": 0.67545,
+     "log_loss": 0.67259,
+     "brier_base": 0.24108,
+     "brier": 0.23986,
+     "favori_annonce_pct": 62.8,
+     "favori_reel_pct": 59.2
+    },
+    "2023 → juin 2026": {
+     "matchs": 5244,
+     "gain": 0.00663,
+     "erreur_type": 0.00106,
+     "erreurs_types": 6.24,
+     "log_loss_base": 0.68945,
+     "log_loss": 0.68282,
+     "brier_base": 0.24772,
+     "brier": 0.24476,
+     "favori_annonce_pct": 63.0,
+     "favori_reel_pct": 56.9
+    },
+    "retenu": true,
+    "raisons": []
+   }
+  }
+ },
+ "retenus": [
+  "favori_fatigue · CH",
+  "outsider_mieux_classe · CH"
+ ],
+ "conclusion": "retenus : favori_fatigue · CH, outsider_mieux_classe · CH",
+ "descriptif": "le % de victoire ne change pas"
+}

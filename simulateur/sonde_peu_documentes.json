@@ -1,0 +1,783 @@
+{
+ "genere_le": "2026-10-28T16:58:27+00:00",
+ "depuis": "2024-06-01",
+ "joueurs_cibles": 58,
+ "joueurs_sondes": 58,
+ "requetes": 489,
+ "codes": {
+  "200": 434,
+  "204": 55
+ },
+ "quota_restant": 13031,
+ "arret": null,
+ "balles_moyennes_par_feuille": 67.6,
+ "par_categorie": {
+  "itf men": {
+   "matchs": 2192,
+   "connus": 0,
+   "manquants": 2192,
+   "sondes": 156,
+   "avec_feuille": 9,
+   "taux_feuilles": 0.058
+  },
+  "challenger": {
+   "matchs": 867,
+   "connus": 631,
+   "manquants": 236,
+   "sondes": 68,
+   "avec_feuille": 66,
+   "taux_feuilles": 0.971
+  },
+  "utr men": {
+   "matchs": 99,
+   "connus": 0,
+   "manquants": 99,
+   "sondes": 27,
+   "avec_feuille": 27,
+   "taux_feuilles": 1.0
+  },
+  "davis cup": {
+   "matchs": 8,
+   "connus": 0,
+   "manquants": 8,
+   "sondes": 8,
+   "avec_feuille": 7,
+   "taux_feuilles": 0.875
+  },
+  "atp": {
+   "matchs": 49,
+   "connus": 23,
+   "manquants": 26,
+   "sondes": 17,
+   "avec_feuille": 14,
+   "taux_feuilles": 0.824
+  },
+  "juniors": {
+   "matchs": 39,
+   "connus": 0,
+   "manquants": 39,
+   "sondes": 15,
+   "avec_feuille": 0,
+   "taux_feuilles": 0.0
+  },
+  "other": {
+   "matchs": 7,
+   "connus": 0,
+   "manquants": 7,
+   "sondes": 5,
+   "avec_feuille": 0,
+   "taux_feuilles": 0.0
+  },
+  "international": {
+   "matchs": 3,
+   "connus": 0,
+   "manquants": 3,
+   "sondes": 3,
+   "avec_feuille": 0,
+   "taux_feuilles": 0.0
+  }
+ },
+ "verdict": {
+  "feuilles_recuperables_estimees": 483,
+  "gain_median_balles": 0.297,
+  "collecte_justifiee": false,
+  "regle": "collecte seulement si ≥ 300 feuilles récupérables estimées ET gain médian ≥ 50 % de balles effectives (fixée le 28/10/2026, avant la sonde)"
+ },
+ "par_joueur": [
+  {
+   "nom": "Alafia Ayeni",
+   "balles": 943.5,
+   "connus": 15,
+   "manquants": {
+    "challenger": 35,
+    "itf men": 10,
+    "utr men": 5
+   },
+   "feuilles_recuperables_estimees": 39.5,
+   "balles_gagnees_estimees": 1731.9,
+   "gain_relatif": 1.836
+  },
+  {
+   "nom": "Khumoyun Sultanov",
+   "balles": 1138.5,
+   "connus": 19,
+   "manquants": {
+    "itf men": 37,
+    "challenger": 30,
+    "atp": 3,
+    "davis cup": 2
+   },
+   "feuilles_recuperables_estimees": 35.5,
+   "balles_gagnees_estimees": 997.9,
+   "gain_relatif": 0.877
+  },
+  {
+   "nom": "Alex Hernandez",
+   "balles": 1136.1,
+   "connus": 19,
+   "manquants": {
+    "itf men": 26,
+    "challenger": 32,
+    "atp": 1
+   },
+   "feuilles_recuperables_estimees": 33.4,
+   "balles_gagnees_estimees": 1295.0,
+   "gain_relatif": 1.14
+  },
+  {
+   "nom": "Sanhui Shin",
+   "balles": 321.2,
+   "connus": 4,
+   "manquants": {
+    "itf men": 64,
+    "challenger": 24
+   },
+   "feuilles_recuperables_estimees": 27.0,
+   "balles_gagnees_estimees": 1014.8,
+   "gain_relatif": 3.159
+  },
+  {
+   "nom": "Seongchan Hong",
+   "balles": 381.5,
+   "connus": 6,
+   "manquants": {
+    "challenger": 16,
+    "atp": 12,
+    "davis cup": 1,
+    "itf men": 4
+   },
+   "feuilles_recuperables_estimees": 26.5,
+   "balles_gagnees_estimees": 394.6,
+   "gain_relatif": 1.034
+  },
+  {
+   "nom": "Santiago Rodriguez Taverna",
+   "balles": 1480.5,
+   "connus": 24,
+   "manquants": {
+    "itf men": 15,
+    "challenger": 24,
+    "atp": 1
+   },
+   "feuilles_recuperables_estimees": 25.0,
+   "balles_gagnees_estimees": 1024.1,
+   "gain_relatif": 0.692
+  },
+  {
+   "nom": "Hunter Heck",
+   "balles": 932.4,
+   "connus": 16,
+   "manquants": {
+    "itf men": 49,
+    "utr men": 21
+   },
+   "feuilles_recuperables_estimees": 23.8,
+   "balles_gagnees_estimees": 1250.8,
+   "gain_relatif": 1.341
+  },
+  {
+   "nom": "Daniel de Jonge",
+   "balles": 623.3,
+   "connus": 9,
+   "manquants": {
+    "itf men": 41,
+    "utr men": 21
+   },
+   "feuilles_recuperables_estimees": 23.4,
+   "balles_gagnees_estimees": 885.5,
+   "gain_relatif": 1.421
+  },
+  {
+   "nom": "Daniel Salazar Martinez",
+   "balles": 1035.6,
+   "connus": 16,
+   "manquants": {
+    "itf men": 54,
+    "utr men": 16,
+    "challenger": 3
+   },
+   "feuilles_recuperables_estimees": 22.0,
+   "balles_gagnees_estimees": 1057.9,
+   "gain_relatif": 1.022
+  },
+  {
+   "nom": "Alexander Binda",
+   "balles": 1496.8,
+   "connus": 23,
+   "manquants": {
+    "itf men": 32,
+    "challenger": 20
+   },
+   "feuilles_recuperables_estimees": 21.3,
+   "balles_gagnees_estimees": 908.4,
+   "gain_relatif": 0.607
+  },
+  {
+   "nom": "Bernardo Munk Mesa",
+   "balles": 601.2,
+   "connus": 11,
+   "manquants": {
+    "itf men": 34,
+    "utr men": 16
+   },
+   "feuilles_recuperables_estimees": 18.0,
+   "balles_gagnees_estimees": 523.8,
+   "gain_relatif": 0.871
+  },
+  {
+   "nom": "Sebastian Dominko",
+   "balles": 541.9,
+   "connus": 11,
+   "manquants": {
+    "itf men": 64,
+    "utr men": 6,
+    "davis cup": 1
+   },
+   "feuilles_recuperables_estimees": 10.6,
+   "balles_gagnees_estimees": 408.1,
+   "gain_relatif": 0.753
+  },
+  {
+   "nom": "Younes Lalami Laaroussi",
+   "balles": 497.4,
+   "connus": 6,
+   "manquants": {
+    "itf men": 29,
+    "challenger": 3,
+    "utr men": 5
+   },
+   "feuilles_recuperables_estimees": 9.6,
+   "balles_gagnees_estimees": 386.6,
+   "gain_relatif": 0.777
+  },
+  {
+   "nom": "Shintaro Imai",
+   "balles": 918.4,
+   "connus": 17,
+   "manquants": {
+    "itf men": 70,
+    "challenger": 5
+   },
+   "feuilles_recuperables_estimees": 8.9,
+   "balles_gagnees_estimees": 269.2,
+   "gain_relatif": 0.293
+  },
+  {
+   "nom": "Rigele TE",
+   "balles": 1370.8,
+   "connus": 17,
+   "manquants": {
+    "itf men": 59,
+    "davis cup": 1,
+    "atp": 2,
+    "challenger": 2
+   },
+   "feuilles_recuperables_estimees": 7.9,
+   "balles_gagnees_estimees": 338.2,
+   "gain_relatif": 0.247
+  },
+  {
+   "nom": "Carl Emil Overbeck",
+   "balles": 1392.1,
+   "connus": 28,
+   "manquants": {
+    "itf men": 43,
+    "challenger": 5
+   },
+   "feuilles_recuperables_estimees": 7.3,
+   "balles_gagnees_estimees": 299.7,
+   "gain_relatif": 0.215
+  },
+  {
+   "nom": "Cooper Woestendick",
+   "balles": 214.4,
+   "connus": 5,
+   "manquants": {
+    "utr men": 6,
+    "itf men": 22,
+    "juniors": 7
+   },
+   "feuilles_recuperables_estimees": 7.3,
+   "balles_gagnees_estimees": 277.4,
+   "gain_relatif": 1.294
+  },
+  {
+   "nom": "Yun Seong Chung",
+   "balles": 361.6,
+   "connus": 4,
+   "manquants": {
+    "itf men": 51,
+    "challenger": 4
+   },
+   "feuilles_recuperables_estimees": 6.8,
+   "balles_gagnees_estimees": 293.9,
+   "gain_relatif": 0.813
+  },
+  {
+   "nom": "Tomasz Berkieta",
+   "balles": 1317.8,
+   "connus": 22,
+   "manquants": {
+    "itf men": 53,
+    "challenger": 3,
+    "davis cup": 1
+   },
+   "feuilles_recuperables_estimees": 6.8,
+   "balles_gagnees_estimees": 257.2,
+   "gain_relatif": 0.195
+  },
+  {
+   "nom": "Matisse Bobichon",
+   "balles": 1388.2,
+   "connus": 24,
+   "manquants": {
+    "itf men": 66,
+    "challenger": 3
+   },
+   "feuilles_recuperables_estimees": 6.7,
+   "balles_gagnees_estimees": 260.5,
+   "gain_relatif": 0.188
+  },
+  {
+   "nom": "Yusuke Kusuhara",
+   "balles": 567.7,
+   "connus": 12,
+   "manquants": {
+    "itf men": 27,
+    "challenger": 4,
+    "atp": 1
+   },
+   "feuilles_recuperables_estimees": 6.3,
+   "balles_gagnees_estimees": 241.5,
+   "gain_relatif": 0.425
+  },
+  {
+   "nom": "Benjamin Willwerth",
+   "balles": 777.6,
+   "connus": 10,
+   "manquants": {
+    "itf men": 47,
+    "challenger": 1,
+    "atp": 3,
+    "juniors": 17
+   },
+   "feuilles_recuperables_estimees": 6.2,
+   "balles_gagnees_estimees": 256.1,
+   "gain_relatif": 0.329
+  },
+  {
+   "nom": "Duncan Chan",
+   "balles": 1357.1,
+   "connus": 17,
+   "manquants": {
+    "itf men": 21,
+    "challenger": 5
+   },
+   "feuilles_recuperables_estimees": 6.1,
+   "balles_gagnees_estimees": 210.8,
+   "gain_relatif": 0.155
+  },
+  {
+   "nom": "Yaroslav Demin",
+   "balles": 1111.6,
+   "connus": 14,
+   "manquants": {
+    "itf men": 66,
+    "challenger": 2
+   },
+   "feuilles_recuperables_estimees": 5.7,
+   "balles_gagnees_estimees": 237.0,
+   "gain_relatif": 0.213
+  },
+  {
+   "nom": "Jonah Braswell",
+   "balles": 62.2,
+   "connus": 2,
+   "manquants": {
+    "itf men": 46,
+    "utr men": 3
+   },
+   "feuilles_recuperables_estimees": 5.7,
+   "balles_gagnees_estimees": 311.9,
+   "gain_relatif": 3.119
+  },
+  {
+   "nom": "Woobin Shin",
+   "balles": 610.2,
+   "connus": 10,
+   "manquants": {
+    "itf men": 64,
+    "challenger": 2
+   },
+   "feuilles_recuperables_estimees": 5.6,
+   "balles_gagnees_estimees": 159.0,
+   "gain_relatif": 0.261
+  },
+  {
+   "nom": "Linang Xiao",
+   "balles": 1263.9,
+   "connus": 17,
+   "manquants": {
+    "itf men": 60,
+    "challenger": 1,
+    "atp": 1
+   },
+   "feuilles_recuperables_estimees": 5.3,
+   "balles_gagnees_estimees": 167.2,
+   "gain_relatif": 0.132
+  },
+  {
+   "nom": "Sander Jong",
+   "balles": 1112.8,
+   "connus": 15,
+   "manquants": {
+    "itf men": 55,
+    "challenger": 2
+   },
+   "feuilles_recuperables_estimees": 5.1,
+   "balles_gagnees_estimees": 211.0,
+   "gain_relatif": 0.19
+  },
+  {
+   "nom": "Yuta Kikuchi",
+   "balles": 1191.0,
+   "connus": 25,
+   "manquants": {
+    "itf men": 51,
+    "challenger": 2
+   },
+   "feuilles_recuperables_estimees": 4.9,
+   "balles_gagnees_estimees": 201.7,
+   "gain_relatif": 0.169
+  },
+  {
+   "nom": "Millen Hurrion",
+   "balles": 1325.8,
+   "connus": 23,
+   "manquants": {
+    "itf men": 82
+   },
+   "feuilles_recuperables_estimees": 4.7,
+   "balles_gagnees_estimees": 198.8,
+   "gain_relatif": 0.15
+  },
+  {
+   "nom": "Tianhui Zhang",
+   "balles": 499.6,
+   "connus": 9,
+   "manquants": {
+    "itf men": 63,
+    "challenger": 1
+   },
+   "feuilles_recuperables_estimees": 4.6,
+   "balles_gagnees_estimees": 179.4,
+   "gain_relatif": 0.359
+  },
+  {
+   "nom": "Geun Jun Kim",
+   "balles": 77.6,
+   "connus": 1,
+   "manquants": {
+    "itf men": 72
+   },
+   "feuilles_recuperables_estimees": 4.2,
+   "balles_gagnees_estimees": 166.0,
+   "gain_relatif": 1.66
+  },
+  {
+   "nom": "Gavin Young",
+   "balles": 694.6,
+   "connus": 11,
+   "manquants": {
+    "itf men": 69
+   },
+   "feuilles_recuperables_estimees": 4.0,
+   "balles_gagnees_estimees": 136.7,
+   "gain_relatif": 0.197
+  },
+  {
+   "nom": "Egor Pleshivtsev",
+   "balles": 281.6,
+   "connus": 4,
+   "manquants": {
+    "itf men": 67
+   },
+   "feuilles_recuperables_estimees": 3.9,
+   "balles_gagnees_estimees": 184.2,
+   "gain_relatif": 0.654
+  },
+  {
+   "nom": "Martin Borisiouk",
+   "balles": 870.7,
+   "connus": 20,
+   "manquants": {
+    "itf men": 51,
+    "atp": 1
+   },
+   "feuilles_recuperables_estimees": 3.8,
+   "balles_gagnees_estimees": 120.3,
+   "gain_relatif": 0.138
+  },
+  {
+   "nom": "Xiaoyin Yang",
+   "balles": 103.7,
+   "connus": 2,
+   "manquants": {
+    "itf men": 66
+   },
+   "feuilles_recuperables_estimees": 3.8,
+   "balles_gagnees_estimees": 144.0,
+   "gain_relatif": 1.389
+  },
+  {
+   "nom": "Dong Ju Kim",
+   "balles": 413.3,
+   "connus": 7,
+   "manquants": {
+    "itf men": 64
+   },
+   "feuilles_recuperables_estimees": 3.7,
+   "balles_gagnees_estimees": 147.0,
+   "gain_relatif": 0.356
+  },
+  {
+   "nom": "Uisung Park",
+   "balles": 1188.9,
+   "connus": 20,
+   "manquants": {
+    "itf men": 26,
+    "atp": 1,
+    "challenger": 1
+   },
+   "feuilles_recuperables_estimees": 3.3,
+   "balles_gagnees_estimees": 133.8,
+   "gain_relatif": 0.113
+  },
+  {
+   "nom": "Jangjun Kim",
+   "balles": 324.4,
+   "connus": 6,
+   "manquants": {
+    "itf men": 23,
+    "juniors": 6,
+    "challenger": 2
+   },
+   "feuilles_recuperables_estimees": 3.3,
+   "balles_gagnees_estimees": 128.6,
+   "gain_relatif": 0.396
+  },
+  {
+   "nom": "Qian Sun",
+   "balles": 596.8,
+   "connus": 9,
+   "manquants": {
+    "itf men": 52
+   },
+   "feuilles_recuperables_estimees": 3.0,
+   "balles_gagnees_estimees": 140.2,
+   "gain_relatif": 0.235
+  },
+  {
+   "nom": "Taisei Ichikawa",
+   "balles": 1435.4,
+   "connus": 10,
+   "manquants": {
+    "itf men": 46
+   },
+   "feuilles_recuperables_estimees": 2.7,
+   "balles_gagnees_estimees": 143.9,
+   "gain_relatif": 0.1
+  },
+  {
+   "nom": "Timofei Derepasko",
+   "balles": 955.4,
+   "connus": 16,
+   "manquants": {
+    "itf men": 44
+   },
+   "feuilles_recuperables_estimees": 2.5,
+   "balles_gagnees_estimees": 128.4,
+   "gain_relatif": 0.134
+  },
+  {
+   "nom": "Bryce Nakashima",
+   "balles": 749.4,
+   "connus": 12,
+   "manquants": {
+    "itf men": 42
+   },
+   "feuilles_recuperables_estimees": 2.4,
+   "balles_gagnees_estimees": 93.0,
+   "gain_relatif": 0.124
+  },
+  {
+   "nom": "Mateo Del Pino",
+   "balles": 682.7,
+   "connus": 10,
+   "manquants": {
+    "itf men": 40
+   },
+   "feuilles_recuperables_estimees": 2.3,
+   "balles_gagnees_estimees": 111.4,
+   "gain_relatif": 0.163
+  },
+  {
+   "nom": "Alessandro Rubini",
+   "balles": 80.1,
+   "connus": 2,
+   "manquants": {
+    "challenger": 2,
+    "other": 1,
+    "itf men": 2,
+    "international": 3
+   },
+   "feuilles_recuperables_estimees": 2.1,
+   "balles_gagnees_estimees": 63.0,
+   "gain_relatif": 0.63
+  },
+  {
+   "nom": "Emilio Camacho",
+   "balles": 140.9,
+   "connus": 2,
+   "manquants": {
+    "challenger": 1,
+    "other": 5,
+    "juniors": 6,
+    "davis cup": 1,
+    "itf men": 1
+   },
+   "feuilles_recuperables_estimees": 1.9,
+   "balles_gagnees_estimees": 56.1,
+   "gain_relatif": 0.398
+  },
+  {
+   "nom": "Dingzheng Nima",
+   "balles": 42.8,
+   "connus": 1,
+   "manquants": {
+    "itf men": 32
+   },
+   "feuilles_recuperables_estimees": 1.8,
+   "balles_gagnees_estimees": 60.7,
+   "gain_relatif": 0.607
+  },
+  {
+   "nom": "Jesse Delaney",
+   "balles": 1169.2,
+   "connus": 13,
+   "manquants": {
+    "itf men": 28
+   },
+   "feuilles_recuperables_estimees": 1.6,
+   "balles_gagnees_estimees": 80.7,
+   "gain_relatif": 0.069
+  },
+  {
+   "nom": "Angel Veliz",
+   "balles": 163.5,
+   "connus": 3,
+   "manquants": {
+    "other": 1,
+    "itf men": 7,
+    "davis cup": 1
+   },
+   "feuilles_recuperables_estimees": 1.3,
+   "balles_gagnees_estimees": 74.2,
+   "gain_relatif": 0.454
+  },
+  {
+   "nom": "Yeonsu Jeong",
+   "balles": 179.2,
+   "connus": 2,
+   "manquants": {
+    "itf men": 17,
+    "juniors": 2
+   },
+   "feuilles_recuperables_estimees": 1.0,
+   "balles_gagnees_estimees": 34.8,
+   "gain_relatif": 0.194
+  },
+  {
+   "nom": "Federico Zeballos",
+   "balles": 1346.9,
+   "connus": 20,
+   "manquants": {
+    "challenger": 1
+   },
+   "feuilles_recuperables_estimees": 1.0,
+   "balles_gagnees_estimees": 34.2,
+   "gain_relatif": 0.025
+  },
+  {
+   "nom": "Lorenzo Claverie",
+   "balles": 1199.2,
+   "connus": 22,
+   "manquants": {
+    "itf men": 15
+   },
+   "feuilles_recuperables_estimees": 0.9,
+   "balles_gagnees_estimees": 24.7,
+   "gain_relatif": 0.021
+  },
+  {
+   "nom": "Mario Andre Galarraga",
+   "balles": 150.9,
+   "connus": 3,
+   "manquants": {
+    "itf men": 15
+   },
+   "feuilles_recuperables_estimees": 0.9,
+   "balles_gagnees_estimees": 45.5,
+   "gain_relatif": 0.302
+  },
+  {
+   "nom": "Jia Hu",
+   "balles": 145.0,
+   "connus": 3,
+   "manquants": {
+    "itf men": 8
+   },
+   "feuilles_recuperables_estimees": 0.5,
+   "balles_gagnees_estimees": 18.7,
+   "gain_relatif": 0.129
+  },
+  {
+   "nom": "Min Hyuk Cho",
+   "balles": 54.8,
+   "connus": 1,
+   "manquants": {},
+   "feuilles_recuperables_estimees": 0,
+   "balles_gagnees_estimees": 0,
+   "gain_relatif": 0.0
+  },
+  {
+   "nom": "Kaigaoge Kang",
+   "balles": 87.3,
+   "connus": 2,
+   "manquants": {
+    "juniors": 1
+   },
+   "feuilles_recuperables_estimees": 0.0,
+   "balles_gagnees_estimees": 0.0,
+   "gain_relatif": 0.0
+  },
+  {
+   "nom": "Tae Woo Kim",
+   "balles": 50.7,
+   "connus": 1,
+   "manquants": {},
+   "feuilles_recuperables_estimees": 0,
+   "balles_gagnees_estimees": 0,
+   "gain_relatif": 0.0
+  },
+  {
+   "nom": "Min Ho Ko",
+   "balles": 57.7,
+   "connus": 1,
+   "manquants": {},
+   "feuilles_recuperables_estimees": 0,
+   "balles_gagnees_estimees": 0,
+   "gain_relatif": 0.0
+  }
+ ]
+}

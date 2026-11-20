@@ -1,0 +1,263 @@
+name: Pronostic - test du modèle (deviner le vainqueur)
+
+# Le modèle indépendant DEVINE l'issue. Classement Elo tiré des résultats
+# (archive Sackmann jusqu'en juin 2026, puis nos résultats), moteur point par
+# point pour les sets. Chaque match est pronostiqué AVANT que son résultat ne
+# serve ; aucune cote ni donnée de marché n'entre dans les variantes.
+# Écrit simulateur/rapport_pronostic.json et simulateur/elo_etat.json.
+# 22/10/2026 — MATCH SIMULÉ : profils de service de chaque joueur
+# (simulateur/profils_service.json, lu ensuite par « Pronostics du jour ») et
+# test de la feuille de match simulée sur ATP/WTA 2024–2026
+# (simulateur/rapport_match_simule.json).
+# 22/10/2026 — FACTEURS DU MATCH (simulateur/facteurs.json) : forme récente et
+# fatigue, vitesse du court, gaucher/taille, points importants ; chacun appris
+# sur juin–août, jugé sur septembre →, gardé seulement s'il aide (règle fixée).
+on:
+  workflow_dispatch:
+  # 22/10/2026 — APPRENTISSAGE CONTINU : chaque lundi, tout est ré-appris sur les données de la semaine
+  # (Elo, profils, réglage de la simulation, facteurs sur les 6 dernières semaines, mélange simulation + Elo
+  # sur nos propres matchs joués), toujours avec les règles d'adoption fixées d'avance.
+  schedule:
+    - cron: '37 2 * * 1'
+
+permissions:
+  contents: write
+
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+
+concurrency:
+  group: simulateur
+  cancel-in-progress: false
+
+jobs:
+  pronostic:
+    runs-on: ubuntu-latest
+    timeout-minutes: 200
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          filter: blob:none
+          sparse-checkout: |
+            /simulateur/
+            /scripts/feuilles_match.py
+            /scripts/resultats_itf.py
+            /scripts/taille_depot.py
+            /resultats_itf/
+            /resultats_itf_femmes/
+            /scripts/closing_store.py
+            /scripts/coffre.py
+            /scripts/r2_io.py
+            /Tennis_Edge_Lab/books.py
+            /Tennis_Edge_Lab/bookmakers_sets_v5.py
+            /Tennis_Edge_Lab/clv_source.py
+            /Tennis_Edge_Lab/courbes_cotes.py
+            /Tennis_Edge_Lab/live/explorateur_pronostics.json.gz
+            /Tennis_Edge_Lab/live/pronostics_resultats.json
+            /historique/
+            /set_results.json
+            /clv_history/
+            /clv_history.jsonl
+            /h13_signal_log.jsonl
+            /h14_signal_log.jsonl
+            /h15_signal_log.jsonl
+            /h16_signal_log.jsonl
+            /h16b_signal_log.jsonl
+            /h17_signal_log.jsonl
+            /h18_signal_log.jsonl
+            /h19_signal_log.jsonl
+            /closing_lines.json
+            /closing_lines/
+            /feuilles/
+            /feuilles_points/
+            /parts/hist_derives_*
+            /scripts/marches_derives.py
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - name: Archive Sackmann (fichiers de matchs seulement)
+        run: |
+          set -euo pipefail
+          git clone --depth 1 --filter=blob:none --sparse https://github.com/Aneeshers/tennis-sackmann-archive.git /tmp/sackmann
+          cd /tmp/sackmann
+          git sparse-checkout set --no-cone 'atp_matches_20*.csv' 'atp_matches_qual_chall_20*.csv' 'wta_matches_20*.csv' 'wta_matches_qual_itf_20*.csv' \
+            'atp_players.csv' 'wta_players.csv' 'atp_rankings_20s.csv' 'atp_rankings_current.csv' 'wta_rankings_20s.csv' 'wta_rankings_current.csv'
+      - name: Match Charting Project (Jeff Sackmann, CC BY-NC-SA 4.0) — statistiques seulement
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          git clone --depth 1 --filter=blob:none --sparse https://github.com/JeffSackmann/tennis_MatchChartingProject.git /tmp/mcp
+          cd /tmp/mcp
+          git sparse-checkout set --no-cone 'charting-*-matches.csv' 'charting-*-stats-ServeBasics.csv' 'charting-*-stats-ReturnOutcomes.csv' 'charting-*-stats-Rally.csv'
+      - name: Test chronologique
+        run: python simulateur/backtest_pronostic.py /tmp/sackmann . --scores
+      - name: Profils peu documentés, récence et transitions (champion–challenger)
+        run: python simulateur/profils_robustes.py /tmp/sackmann . --max 2000
+      - name: Interactions service–retour horodatées (challenger)
+        run: python simulateur/styles_joueurs.py /tmp/sackmann . --max 2000
+      - name: Test de la feuille, ablation des familles et priors (avant l'heure)
+        run: python simulateur/backtest_match_simule.py /tmp/sackmann . --n=300 --max=2000
+      - name: Réglage du match simulé (aces, 1re balle, jeux) sur la variante retenue
+        run: python simulateur/reglage_match_simule.py /tmp/sackmann . --n=300 --max=1500
+      - name: Étude de la forme du jour (feuilles set par set)
+        run: python simulateur/etude_forme_du_jour.py .
+      - name: Export des profils avec les priors retenus (1re et 2e balle, retour)
+        run: python simulateur/profils_service.py /tmp/sackmann .
+      - name: Facteurs du match (forme, fatigue, court, gaucher/taille, points importants, styles, face-à-face, conditions, contexte, Match Charting)
+        run: python simulateur/facteurs.py /tmp/sackmann . /tmp/mcp
+      # 06/11/2026 : % EN DIRECT réévalué (forme du jour lue dans les points joués) — la dernière semaine complète jugée
+      # par circuit ; retrait après 2 semaines de suite moins bonnes, retour après 2 meilleures.
+      - name: Suivi du % en direct réévalué
+        continue-on-error: true
+        run: python simulateur/etude_live_reevaluation.py /tmp/sackmann . --suivi
+      # 04/11/2026 : recalage des statistiques annoncées (aces, doubles fautes, 1res balles, breaks) par circuit —
+      # appris avant la dernière semaine complète, jugé sur elle ; adopté après deux semaines gagnantes de suite.
+      - name: Recalage des statistiques annoncées
+        continue-on-error: true
+        run: python simulateur/recalage_stats.py .
+      # 04/11/2026 : chaque signal (forme du service, statut d'entrée, serveuses WTA, Elo service / retour) jugé
+      # SÉPARÉMENT sur ATP, WTA et Challenger ; adopté sur un circuit après deux semaines gagnantes (Telegram privé)
+      - name: Signaux par circuit (ATP, WTA, Challenger jugés séparément)
+        continue-on-error: true
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python simulateur/fantomes_circuits.py . --telegram
+      # 05/11/2026 : biais des prévisions annexes (stats, sets, lignes) sur 6 semaines → points de vigilance des fiches
+      - name: Prévisions annexes — biais de la semaine
+        continue-on-error: true
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python simulateur/biais_annexes.py . --telegram
+      # 04/11/2026 : fragilité revérifiée chaque semaine (favoris opposés, autres critères, note v3) — Telegram privé
+      - name: Fragilité — vérification de la semaine
+        continue-on-error: true
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python simulateur/surveillance_fragilite.py . --telegram
+      # 05/11/2026 : un seul message pour tout ce qui a été adopté directement (signaux, tie-breaks, recalage) — Telegram privé
+      - name: Adoptions directes — état de la semaine
+        continue-on-error: true
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python simulateur/tableau_adoptions.py . --telegram
+      - name: Apprentissage continu (mélange simulation + Elo appris sur nos matchs joués)
+        run: python simulateur/apprentissage_continu.py .
+      - name: Ablation appariée sur les mêmes pronostics figés
+        run: python simulateur/ablation.py . --bootstrap 2000
+      - name: Recalibrages challengers sur fenêtres futures disjointes
+        run: python simulateur/recalibrage.py --racine .
+      - name: Évaluation complète des sorties indépendantes
+        run: python simulateur/evaluation_sorties.py --racine .
+      - name: Validation empirique de la note de fiabilité
+        run: python simulateur/validation_fiabilite.py --racine .
+      - name: Surveillance de la dérive (4, 8 et 12 semaines)
+        run: python simulateur/surveillance_derive.py --racine .
+      - name: Recherche externe algorithme, marché et H13–H19 (sans réinjection)
+        run: python simulateur/recherche_externe.py --racine .
+      - name: Gouvernance champion–challenger
+        run: python simulateur/gouvernance.py --racine .
+      - name: Récapitulatif hebdomadaire de l’apprentissage
+        run: python simulateur/recap_apprentissage.py --racine .
+      - name: Taille du dépôt (alerte à 800 Mo)
+        if: always()
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python scripts/taille_depot.py
+      - name: Bilan de la semaine de l'algorithme (Telegram, canal privé)
+        if: always()
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          python simulateur/bilan_algo.py . || true
+          # 28/10/2026 : pistes de l'analyse après match (biais nets, ≥ 30 matchs) — questions, jamais des réglages
+          python simulateur/apres_match.py . --telegram || true
+      # 23/10/2026 : ROI interne aux cotes Pinnacle de clôture (règles R1/R2 fixées le 23/10) — Telegram privé
+      # seulement, rien n'est commité.
+      - name: ROI de l'algo (Telegram, canal privé)
+        if: always()
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+        run: |
+          python simulateur/roi_algo.py . --telegram
+          # 28/10/2026 : désaccords algo / marché (loupe, jamais une entrée du modèle) — Telegram privé + coffre
+          python simulateur/rapport_desaccords.py /tmp/sackmann . --telegram || echo '::warning::rapport des désaccords non fait'
+          # 28/10/2026 : le rapport JSON du ROI va au coffre privé (R2) et sort du dépôt public
+          python scripts/coffre.py push --groupe roi || true
+          python scripts/coffre.py retirer --groupe roi || true
+      # 29/10/2026 : nos lignes figées contre Pinnacle (nombre de sets, 2-0, total et handicap de jeux) — Telegram privé ;
+      # le rapport reste hors du dépôt (ETUDE_MARCHES_SORTIE). Les cotes ne servent qu'à comparer.
+      - name: Étude des marchés dérivés (Telegram, canal privé)
+        if: always()
+        continue-on-error: true
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          ETUDE_MARCHES_SORTIE: ${{ runner.temp }}/etude_marches_derives.json
+        run: python simulateur/etude_marches_derives.py . --telegram
+      # 30/10/2026 : quand l'algo s'écarte de Pinnacle, qui a raison ? Par circuit et tranche d'écart — Telegram privé,
+      # rapport hors du dépôt. Descriptif : rien ne change dans l'algo.
+      - name: Désaccords algo / Pinnacle (Telegram, canal privé)
+        if: always()
+        continue-on-error: true
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          SUIVI_DESACCORDS_SORTIE: ${{ runner.temp }}/suivi_desaccords_pinnacle.json
+        run: python simulateur/suivi_desaccords_pinnacle.py . --telegram
+      # 06/11/2026 (paquet 196) : l'algo apporte-t-il une information que la clôture n'a pas ? Règle fixée avant,
+      # par circuit — Telegram privé, rapport hors du dépôt. Rien ne change dans l'algo.
+      - name: Algo contre clôture (Telegram, canal privé)
+        if: always()
+        continue-on-error: true
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          ALGO_CLOTURE_SORTIE: ${{ runner.temp }}/rapport_algo_cloture.json
+        run: python simulateur/etude_algo_cloture.py . --telegram
+      - name: Publier
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- simulateur/rapport_pronostic.json simulateur/elo_etat.json \
+                     simulateur/profils_service.json simulateur/rapport_match_simule.json \
+                     simulateur/reglages_match_simule.json simulateur/rapport_forme_du_jour.json \
+                     simulateur/choix_simulation.json simulateur/facteurs.json simulateur/bilan_algo_etat.json \
+                     simulateur/rapport_ablation.json simulateur/rapport_evaluation_sorties.json                      simulateur/rapport_validation_fiabilite.json simulateur/rapport_surveillance_derive.json simulateur/rapport_profils_robustes.json simulateur/rapport_styles_joueurs.json simulateur/rapport_recalibrage.json                      simulateur/rapport_dependances_points.json simulateur/rapport_recherche_externe.json                      simulateur/rapport_gouvernance.json simulateur/gouvernance_etat.json \
+                     simulateur/recap_apprentissage.json simulateur/recap_apprentissage.md \
+                     Tennis_Edge_Lab/live/explorateur_pronostics.json.gz
+          if [ -f simulateur/journal_decisions.jsonl ]; then git add -- simulateur/journal_decisions.jsonl; fi
+          if [ -f simulateur/classements_sackmann.json ]; then git add -- simulateur/classements_sackmann.json; fi
+          if [ -f simulateur/pronostics_hors_echantillon.jsonl.gz ]; then git add -- simulateur/pronostics_hors_echantillon.jsonl.gz; fi
+          if [ -f simulateur/stabilite.json ]; then git add -- simulateur/stabilite.json; fi
+          if [ -f simulateur/recalage_stats.json ]; then git add -- simulateur/recalage_stats.json; fi
+          if [ -f simulateur/fantomes_circuits.json ]; then git add -- simulateur/fantomes_circuits.json; fi
+          if [ -f simulateur/surveillance_fragilite.json ]; then git add -- simulateur/surveillance_fragilite.json; fi
+          if [ -f simulateur/biais_annexes.json ]; then git add -- simulateur/biais_annexes.json; fi
+          if [ -f simulateur/live_reevaluation.json ]; then git add -- simulateur/live_reevaluation.json; fi
+          if git diff --cached --quiet; then echo 'Rien de nouveau.'; exit 0; fi
+          git commit -m 'Pronostic : test du modèle (vainqueur, sets)'
+          # fichiers écrits hors du checkout partiel (ex. live/joueurs_service.json.gz, contexte des
+          # facteurs) : ils ne sont pas publiés ici et gêneraient le rebase (mis de côté APRÈS le commit).
+          git stash push --include-untracked --quiet 2>/dev/null || true
+          for i in 1 2 3 4 5; do
+            # 22/10/2026 : -X theirs = en cas de conflit sur un fichier PRODUIT par ce run (ex.
+            # rapport_pronostic.json, réécrit aussi par « Pronostics du jour »), c'est la version de ce
+            # run qui est gardée. Avant, un seul conflit faisait perdre tout le run (48 min le 22/10).
+            git pull --rebase -X theirs origin main || { git rebase --abort || true; echo '::error::Conflit avec main'; exit 1; }
+            if git push origin HEAD:main; then exit 0; fi
+            sleep $((i * 10))
+          done
+          echo '::error::Push impossible après 5 essais'; exit 1

@@ -1,0 +1,418 @@
+{
+ "genere_le": "2026-11-19T08:21:05+00:00",
+ "paquet": 289,
+ "regle": "Circuit par circuit (ATP, WTA, Challenger). Correction z' = z·(1 + β·x), x = indice du duel service / retour connu avant le match. β appris sur 2018–2022, jugé une fois sur 2023 → juin 2026. Retenu si : ≥ 1 000 matchs jugés, gain de log loss ≥ 0,001, même sens sur les deux périodes (β réappris de même signe, gain positif sur 2018–2022). Erreur type, Brier et constat par quintile publiés sans décider. Rien en production par ce paquet.",
+ "indice": "x = ½(s_A + s_B) − ½(r_A + r_B) + 1 − 2m ; s, r = points de service / de retour gagnés sur 365 jours, rapprochés de la moyenne du circuit avec 300 points fictifs ; affiché en points de %",
+ "elo": "réglé comme la production (elo.de_production), mis à jour après chaque match ; compétitions par équipes exclues",
+ "base": {
+  "signaux": [
+   "changement_surface",
+   "retour_absence_court",
+   "retour_absence_long",
+   "age_vieux",
+   "age_jeune"
+  ],
+  "betas_2018_2022": {
+   "ATP": [
+    -0.2087,
+    -0.4921,
+    -1.1332,
+    -0.047,
+    0.0686
+   ],
+   "WTA": [
+    -0.1702,
+    -0.2908,
+    -0.8726,
+    -0.0386,
+    0.0311
+   ],
+   "CH": [
+    -0.189,
+    -0.2456,
+    -0.5714,
+    -0.0622,
+    0.0064
+   ]
+  }
+ },
+ "circuits": {
+  "ATP": {
+   "circuit": "ATP",
+   "beta_appris_2018_2022": -1.606,
+   "beta_reappris_2023_juin_2026": -1.824,
+   "indice_median_pts": -0.92,
+   "bornes_quintiles_pts": [
+    -3.36,
+    -1.65,
+    -0.16,
+    1.74
+   ],
+   "2018–2022": {
+    "matchs": 11601,
+    "gain": 0.0002,
+    "erreur_type": 0.00019,
+    "erreurs_types": 1.05,
+    "log_loss_base": 0.6001,
+    "log_loss": 0.5999,
+    "brier_base": 0.2073,
+    "brier": 0.20723
+   },
+   "2023 → juin 2026": {
+    "matchs": 9233,
+    "gain": 0.00021,
+    "erreur_type": 0.00019,
+    "erreurs_types": 1.1,
+    "log_loss_base": 0.59915,
+    "log_loss": 0.59894,
+    "brier_base": 0.2071,
+    "brier": 0.20702
+   },
+   "constat_par_quintile": {
+    "2018–2022": [
+     {
+      "quintile": 1,
+      "matchs": 2320,
+      "favori_annonce_pct": 66.5,
+      "favori_reel_pct": 64.7,
+      "outsider_annonce_pct": 33.5,
+      "outsider_reel_pct": 35.3
+     },
+     {
+      "quintile": 2,
+      "matchs": 2320,
+      "favori_annonce_pct": 68.2,
+      "favori_reel_pct": 69.3,
+      "outsider_annonce_pct": 31.8,
+      "outsider_reel_pct": 30.7
+     },
+     {
+      "quintile": 3,
+      "matchs": 2320,
+      "favori_annonce_pct": 68.2,
+      "favori_reel_pct": 67.8,
+      "outsider_annonce_pct": 31.8,
+      "outsider_reel_pct": 32.2
+     },
+     {
+      "quintile": 4,
+      "matchs": 2320,
+      "favori_annonce_pct": 68.2,
+      "favori_reel_pct": 66.5,
+      "outsider_annonce_pct": 31.8,
+      "outsider_reel_pct": 33.5
+     },
+     {
+      "quintile": 5,
+      "matchs": 2321,
+      "favori_annonce_pct": 68.2,
+      "favori_reel_pct": 65.1,
+      "outsider_annonce_pct": 31.8,
+      "outsider_reel_pct": 34.9
+     }
+    ],
+    "2023 → juin 2026": [
+     {
+      "quintile": 1,
+      "matchs": 1256,
+      "favori_annonce_pct": 66.2,
+      "favori_reel_pct": 66.9,
+      "outsider_annonce_pct": 33.8,
+      "outsider_reel_pct": 33.1
+     },
+     {
+      "quintile": 2,
+      "matchs": 1460,
+      "favori_annonce_pct": 67.9,
+      "favori_reel_pct": 67.7,
+      "outsider_annonce_pct": 32.1,
+      "outsider_reel_pct": 32.3
+     },
+     {
+      "quintile": 3,
+      "matchs": 1873,
+      "favori_annonce_pct": 68.3,
+      "favori_reel_pct": 66.4,
+      "outsider_annonce_pct": 31.7,
+      "outsider_reel_pct": 33.6
+     },
+     {
+      "quintile": 4,
+      "matchs": 2315,
+      "favori_annonce_pct": 68.5,
+      "favori_reel_pct": 66.6,
+      "outsider_annonce_pct": 31.5,
+      "outsider_reel_pct": 33.4
+     },
+     {
+      "quintile": 5,
+      "matchs": 2329,
+      "favori_annonce_pct": 68.2,
+      "favori_reel_pct": 66.2,
+      "outsider_annonce_pct": 31.8,
+      "outsider_reel_pct": 33.8
+     }
+    ]
+   },
+   "retenu": false,
+   "raisons": [
+    "gain sous 0,001"
+   ],
+   "passe_deux_erreurs_types": false
+  },
+  "WTA": {
+   "circuit": "WTA",
+   "beta_appris_2018_2022": -2.366,
+   "beta_reappris_2023_juin_2026": -0.697,
+   "indice_median_pts": 0.15,
+   "bornes_quintiles_pts": [
+    -1.86,
+    -0.44,
+    0.76,
+    2.19
+   ],
+   "2018–2022": {
+    "matchs": 10529,
+    "gain": 0.00021,
+    "erreur_type": 0.0002,
+    "erreurs_types": 1.08,
+    "log_loss_base": 0.59837,
+    "log_loss": 0.59816,
+    "brier_base": 0.20646,
+    "brier": 0.20638
+   },
+   "2023 → juin 2026": {
+    "matchs": 8837,
+    "gain": -0.00011,
+    "erreur_type": 0.00022,
+    "erreurs_types": -0.48,
+    "log_loss_base": 0.59275,
+    "log_loss": 0.59285,
+    "brier_base": 0.20441,
+    "brier": 0.20445
+   },
+   "constat_par_quintile": {
+    "2018–2022": [
+     {
+      "quintile": 1,
+      "matchs": 2105,
+      "favori_annonce_pct": 65.7,
+      "favori_reel_pct": 66.5,
+      "outsider_annonce_pct": 34.3,
+      "outsider_reel_pct": 33.5
+     },
+     {
+      "quintile": 2,
+      "matchs": 2106,
+      "favori_annonce_pct": 66.2,
+      "favori_reel_pct": 69.2,
+      "outsider_annonce_pct": 33.8,
+      "outsider_reel_pct": 30.8
+     },
+     {
+      "quintile": 3,
+      "matchs": 2106,
+      "favori_annonce_pct": 66.5,
+      "favori_reel_pct": 67.1,
+      "outsider_annonce_pct": 33.5,
+      "outsider_reel_pct": 32.9
+     },
+     {
+      "quintile": 4,
+      "matchs": 2106,
+      "favori_annonce_pct": 66.5,
+      "favori_reel_pct": 67.2,
+      "outsider_annonce_pct": 33.5,
+      "outsider_reel_pct": 32.8
+     },
+     {
+      "quintile": 5,
+      "matchs": 2106,
+      "favori_annonce_pct": 66.8,
+      "favori_reel_pct": 66.2,
+      "outsider_annonce_pct": 33.2,
+      "outsider_reel_pct": 33.8
+     }
+    ],
+    "2023 → juin 2026": [
+     {
+      "quintile": 1,
+      "matchs": 1963,
+      "favori_annonce_pct": 65.2,
+      "favori_reel_pct": 67.8,
+      "outsider_annonce_pct": 34.8,
+      "outsider_reel_pct": 32.2
+     },
+     {
+      "quintile": 2,
+      "matchs": 1665,
+      "favori_annonce_pct": 66.2,
+      "favori_reel_pct": 65.8,
+      "outsider_annonce_pct": 33.8,
+      "outsider_reel_pct": 34.2
+     },
+     {
+      "quintile": 3,
+      "matchs": 1667,
+      "favori_annonce_pct": 67.2,
+      "favori_reel_pct": 67.8,
+      "outsider_annonce_pct": 32.8,
+      "outsider_reel_pct": 32.2
+     },
+     {
+      "quintile": 4,
+      "matchs": 1712,
+      "favori_annonce_pct": 66.8,
+      "favori_reel_pct": 69.0,
+      "outsider_annonce_pct": 33.2,
+      "outsider_reel_pct": 31.0
+     },
+     {
+      "quintile": 5,
+      "matchs": 1830,
+      "favori_annonce_pct": 67.1,
+      "favori_reel_pct": 66.9,
+      "outsider_annonce_pct": 32.9,
+      "outsider_reel_pct": 33.1
+     }
+    ]
+   },
+   "retenu": false,
+   "raisons": [
+    "gain sous 0,001"
+   ],
+   "passe_deux_erreurs_types": false
+  },
+  "CH": {
+   "circuit": "Challenger",
+   "beta_appris_2018_2022": -0.762,
+   "beta_reappris_2023_juin_2026": -1.637,
+   "indice_median_pts": 0.04,
+   "bornes_quintiles_pts": [
+    -2.3,
+    -0.66,
+    0.75,
+    2.42
+   ],
+   "2018–2022": {
+    "matchs": 38074,
+    "gain": 3e-05,
+    "erreur_type": 4e-05,
+    "erreurs_types": 0.72,
+    "log_loss_base": 0.62356,
+    "log_loss": 0.62353,
+    "brier_base": 0.21737,
+    "brier": 0.21736
+   },
+   "2023 → juin 2026": {
+    "matchs": 37676,
+    "gain": 0.00011,
+    "erreur_type": 4e-05,
+    "erreurs_types": 2.55,
+    "log_loss_base": 0.62348,
+    "log_loss": 0.62336,
+    "brier_base": 0.21711,
+    "brier": 0.21706
+   },
+   "constat_par_quintile": {
+    "2018–2022": [
+     {
+      "quintile": 1,
+      "matchs": 7614,
+      "favori_annonce_pct": 65.5,
+      "favori_reel_pct": 65.4,
+      "outsider_annonce_pct": 34.5,
+      "outsider_reel_pct": 34.6
+     },
+     {
+      "quintile": 2,
+      "matchs": 7615,
+      "favori_annonce_pct": 65.7,
+      "favori_reel_pct": 64.7,
+      "outsider_annonce_pct": 34.3,
+      "outsider_reel_pct": 35.3
+     },
+     {
+      "quintile": 3,
+      "matchs": 7615,
+      "favori_annonce_pct": 65.9,
+      "favori_reel_pct": 64.9,
+      "outsider_annonce_pct": 34.1,
+      "outsider_reel_pct": 35.1
+     },
+     {
+      "quintile": 4,
+      "matchs": 7615,
+      "favori_annonce_pct": 65.5,
+      "favori_reel_pct": 65.1,
+      "outsider_annonce_pct": 34.5,
+      "outsider_reel_pct": 34.9
+     },
+     {
+      "quintile": 5,
+      "matchs": 7615,
+      "favori_annonce_pct": 65.5,
+      "favori_reel_pct": 64.1,
+      "outsider_annonce_pct": 34.5,
+      "outsider_reel_pct": 35.9
+     }
+    ],
+    "2023 → juin 2026": [
+     {
+      "quintile": 1,
+      "matchs": 8735,
+      "favori_annonce_pct": 65.3,
+      "favori_reel_pct": 65.6,
+      "outsider_annonce_pct": 34.7,
+      "outsider_reel_pct": 34.4
+     },
+     {
+      "quintile": 2,
+      "matchs": 7019,
+      "favori_annonce_pct": 66.3,
+      "favori_reel_pct": 66.2,
+      "outsider_annonce_pct": 33.7,
+      "outsider_reel_pct": 33.8
+     },
+     {
+      "quintile": 3,
+      "matchs": 6848,
+      "favori_annonce_pct": 66.2,
+      "favori_reel_pct": 65.6,
+      "outsider_annonce_pct": 33.8,
+      "outsider_reel_pct": 34.4
+     },
+     {
+      "quintile": 4,
+      "matchs": 7080,
+      "favori_annonce_pct": 66.5,
+      "favori_reel_pct": 65.4,
+      "outsider_annonce_pct": 33.5,
+      "outsider_reel_pct": 34.6
+     },
+     {
+      "quintile": 5,
+      "matchs": 7994,
+      "favori_annonce_pct": 65.7,
+      "favori_reel_pct": 63.5,
+      "outsider_annonce_pct": 34.3,
+      "outsider_reel_pct": 36.5
+     }
+    ]
+   },
+   "retenu": false,
+   "raisons": [
+    "gain sous 0,001"
+   ],
+   "passe_deux_erreurs_types": true
+  }
+ },
+ "en_production": false,
+ "entree_journal": {
+  "date": "2026-11-19",
+  "statut": "etude",
+  "paquet": 289,
+  "quoi": "DUELS DE SERVEURS : L'ÉCART DE NIVEAU COMPTE-T-IL MOINS QUAND LES DEUX JOUEURS GARDENT FACILEMENT LEUR SERVICE ? (paquet 289, étude de fiabilité). Le % de l'Elo traduit un écart de niveau en chances de victoire de la même façon pour tous les matchs. Dans un duel de serveurs, les sets se jouent sur un break ou un tie-break : l'outsider devrait gagner plus souvent qu'annoncé ; dans un duel de retourneurs, moins. Nouvelle étude simulateur/etude_pente_service.py : indice du duel connu avant le match (points de service et de retour gagnés par les deux joueurs sur 365 jours, rapprochés de la moyenne du circuit), et une pente de l'Elo qui dépend de cet indice. Règle écrite dans l'en-tête avant tout résultat, circuit par circuit : appris sur 2018–2022, jugé une seule fois sur 2023 → juin 2026 ; retenu si le gain de log loss atteint 0,001 sur au moins 1 000 matchs, dans le même sens sur les deux périodes. Elo réglé comme la production, mis à jour après chaque match. Rapport public : simulateur/rapport_pente_service.json (comptes seulement, aucun nom). RÉSULTAT : ATP : β -1,606 (réappris -1,824), 9233 matchs jugés, gain 0,00021 ± 0,00019, Brier 0,2071 → 0,20702 ; duels de serveurs (quintile haut) : outsider 33,8 % réels pour 31,8 % annoncés — non retenu (gain sous 0,001) ; WTA : β -2,366 (réappris -0,697), 8837 matchs jugés, gain -0,00011 ± 0,00022, Brier 0,20441 → 0,20445 ; duels de serveurs (quintile haut) : outsider 33,1 % réels pour 32,9 % annoncés — non retenu (gain sous 0,001) ; Challenger : β -0,762 (réappris -1,637), 37676 matchs jugés, gain 0,00011 ± 4e-05, Brier 0,21711 → 0,21706 ; duels de serveurs (quintile haut) : outsider 36,5 % réels pour 34,3 % annoncés — non retenu (gain sous 0,001). Aucun circuit retenu : l'écart de niveau garde le même poids quel que soit le duel ; la piste est close et ne sera pas rejouée. Le % de victoire ne change pas.",
+  "garde_fou": "Étude seule : rien n'entre dans l'algo. Un circuit retenu sera proposé dans un paquet suivant avec la règle de retrait cumulée (300 matchs, 2 erreurs types). Retrait de l'étude : supprimer simulateur/etude_pente_service.py, simulateur/journal_ajouts/paquet_289.json et .github/workflows/etude_pente_service.yml."
+ }
+}

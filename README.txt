@@ -1,0 +1,1 @@
+Correctif du conflit Git sur main. Installer avec Appliquer un paquet, fusionner, puis lancer Tennis Edge - Animation live fluide. Le workflow recupere main et reessaie en cas de push concurrent. Aucun autre fichier modifie.

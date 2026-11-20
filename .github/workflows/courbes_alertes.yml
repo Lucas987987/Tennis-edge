@@ -1,0 +1,441 @@
+name: Courbes live + alertes forward
+
+# CRÉÉ LE 05/09/2026 en découpant Capture Closing Lines.
+#
+# Contient tout le post-traitement qui occupait 85 % du run de capture :
+# 129 à 159 secondes de recalcul LOCAL, ZÉRO requête API. Il bloquait la
+# garde du Worker et plafonnait la capture des cotes à 5 minutes.
+#
+# Pourquoi il peut tourner moins souvent : ces scripts travaillent sur des
+# données DÉJÀ capturées et commitées. Les retarder de quelques minutes ne
+# fait rien perdre — alors qu'une cote captée 5 minutes trop tard est
+# perdue pour toujours.
+#
+# CADENCE. Déclenché par le worker Cloudflare (repository_dispatch
+# 'courbes_alertes') ou à la main. Le worker peut le planifier via
+# planifierCollecteur() avec cadenceMin ~10, exactement comme Polymarket et
+# Kalshi — la garde API évitera l'empilement de runs annulés.
+# Un cron GitHub serait inutile : mesuré le 04/09, ils ne sont pas délivrés.
+#
+# canal_public.py RESTE ICI et non dans le workflow rapide : il publie sur
+# un canal Telegram avec des abonnés et gagne à rester réactif, mais il
+# dépend de build_live_curves.py qui est ici. Le séparer imposerait de
+# reconstruire les courbes deux fois — 130 s dupliquées pour rien.
+# Si la réactivité du canal devient un sujet, c'est cette cadence qu'il
+# faut resserrer, pas la découpe qu'il faut défaire.
+
+on:
+  repository_dispatch:
+    types: [courbes_alertes]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  # Deux runs simultanés recalculeraient les mêmes courbes et se
+  # marcheraient dessus au commit. Contrairement à la capture, rien n'est
+  # perdu si un run est annulé : le suivant refera le même calcul sur des
+  # données plus fraîches.
+  group: courbes-alertes
+  cancel-in-progress: false
+
+env:
+  # Étape 4 (16/10/2026) : l'historique FIGÉ des courbes (parts/hist_*) est
+  # servi par R2 ; les lecteurs rapatrient ce qui manque (scripts/hist_r2.py).
+  R2_HIST_MATERIALIZE: '1'
+  # R2 (15/10/2026) — voir README_MIGRATION_R2.md. off | double | on ;
+  # sans variable de dépôt : double (git fait foi, R2 reçoit une copie).
+  R2_PRIMARY: ${{ vars.R2_PRIMARY || 'double' }}
+  ETAT_CHAUD: ${{ vars.ETAT_CHAUD || 'double' }}   # 04/11/2026 : fichiers chauds relayés par R2 (scripts/etat_chaud.py)
+  R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+  R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+  R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+  # 16/10/2026 : on | off — filtre des commits « champs volatils seuls ».
+  JSON_CHURN: ${{ vars.JSON_CHURN || 'on' }}
+
+jobs:
+  courbes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          filter: blob:none
+          sparse-checkout-cone-mode: false
+          # parts/hist_* est INDISPENSABLE ici : c'est ce que
+          # TRACK_CURVES=*_curves.jsonl fait lire à steam_alert et
+          # paper_journal via ov.iter_hist_lines(). Un sparse qui l'oubliait
+          # a vidé le track record en silence le 25/08 et fait retomber tous
+          # les seuils en « indicatif ». parts/live_* sert au rebuild.
+          sparse-checkout: |
+            /*
+            !/parts
+            /parts/live_*
+            /parts/hist_*
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+
+      # Étape 4 (16/10/2026) : historique FIGÉ des courbes servi par R2. Le
+      # cache (hors du dépôt, une clé par semaine ISO) évite de retélécharger
+      # ~450 Mo à chaque run ; il ne remplace jamais un fichier du checkout.
+      - name: Semaine ISO (clé du cache d'historique)
+        id: semaine_hist
+        run: echo "v=$(date -u +%G-W%V)" >> "$GITHUB_OUTPUT"
+      - name: Cache de l'historique figé
+        uses: actions/cache@v5
+        with:
+          path: ~/.cache/hist_r2
+          key: hist-r2-${{ steps.semaine_hist.outputs.v }}
+          restore-keys: |
+            hist-r2-
+      - name: R2 — historique des courbes
+        run: |
+          pip install --quiet boto3 || true
+          python scripts/hist_r2.py pull --cache ~/.cache/hist_r2 || true
+
+      - name: Cache de calibration (le gain principal)
+        # AJOUTÉ LE 05/09/2026. steam_alert.stats_avec_cache() a été écrit le
+        # 03/09 pour éviter de recharger l'historique complet — 43 s par
+        # appel, six appels par cycle (3 marchés x steam_alert + paper_journal).
+        # Il a un TTL de 60 min... mais calib_cache.json est dans .gitignore
+        # et n'existe donc QUE sur le runner, détruit à la fin du job.
+        # Chaque exécution repartait sur un cache FROID : le TTL n'a jamais
+        # été atteint une seule fois depuis sa création.
+        #
+        # Constaté dans le log du run 92055634625 : deux blocs de 52,8 s et
+        # 47,9 s juste après build_live_curves, soit ~100 s sur 129.
+        #
+        # actions/cache le fait survivre d'un run à l'autre sans le committer
+        # (il est régénérable, il n'a rien à faire dans l'historique git —
+        # qu'on vient justement de purger de 3,4 Go).
+        #
+        # La clé est unique par run, donc jamais touchée exactement : le
+        # cache est TOUJOURS réécrit en fin de job. restore-keys récupère le
+        # plus récent par préfixe. C'est le motif « rolling cache ».
+        # La fraîcheur reste gouvernée par le TTL applicatif de 60 min, qui
+        # lit les horodatages DANS le fichier : restaurer un cache trop vieux
+        # est sans danger, stats_avec_cache() le recalculera. Et un cache
+        # absent fait simplement retomber sur le comportement actuel.
+        uses: actions/cache@v5
+        with:
+          path: calib_cache.json
+          key: calib-${{ github.run_id }}
+          restore-keys: |
+            calib-
+
+      # RESTAURATION DES PARTITIONS ARCHIVEES.
+      #
+      # Ce workflow lance un script dont le resultat depend de
+      # l'historique COMPLET. Depuis que archive_curves sort les
+      # partitions de plus de 28 jours vers les releases curves-2026-*,
+      # elles ne sont plus dans le depot : sans cette etape, le job
+      # travaille sur un historique tronque SANS lever d'erreur.
+      #
+      # Constate le 02/10 sur book_index : 1 251 matchs au lieu de 1 863,
+      # et une reactivite devenue negative partout. Les chiffres
+      # changeaient sans que rien ne le signale.
+      #
+      # `|| true` : une panne de release ne doit pas bloquer le job.
+      # restore_curves interroge l'index ET les releases directement.
+      - name: Restaurer les partitions de courbes archivees
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python scripts/restore_curves.py || true
+
+      # R2 (15/10/2026) : en mode R2_PRIMARY=on, rapatrie dans parts/ les
+      # partitions (live) que git ne contient plus. No-op en double/off.
+      - name: R2 — rapatrier les partitions (live)
+        run: |
+          pip install --quiet boto3 || true
+          python scripts/r2_parts.py pull --kinds live || true
+
+      # 23/10/2026 — COFFRE PRIVÉ : journaux et états de H18, H19, H20 (canaux privés) rangés dans R2, plus
+      # dans le dépôt public. Rapatriés ici avant les scripts qui les prolongent (voir scripts/coffre.py).
+      # 04/11/2026 : cotes et matchs à venir les plus frais (relayés par R2 en mode ETAT_CHAUD=on) ; jamais republiés ici
+      - name: État chaud — rapatrier de R2
+        run: python scripts/etat_chaud.py pull || true
+
+      - name: Coffre privé — rapatrier (H18, H19, H20)
+        run: python scripts/coffre.py pull --groupe signaux || true
+
+      - name: Courbes live + alertes forward (0 requête API)
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_PUBLIC_CHAT_ID: ${{ secrets.TELEGRAM_PUBLIC_CHAT_ID }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          # Base des fiches joueurs. Non renseignee, lien_joueur.duo_html()
+          # rend le texte sans lien : les alertes partent inchangees.
+          FICHES_BASE: https://joueurs.tennis-edge.workers.dev
+        run: |
+          # MIGRATION AUTOMATIQUE (une seule fois) : si parts/ n'existe pas encore,
+          # on convertit les fichiers plats existants en partitions, puis on retire
+          # ces fichiers du suivi git (ils deviennent régénérables). Aucune donnée
+          # perdue : la migration est vérifiée point par point.
+          if [ ! -d parts ]; then
+            echo "--- migration initiale vers les partitions ---"
+            python scripts/curves_parts.py migrate || true
+            git rm --cached book_curves_live.jsonl set1_curves_live.jsonl set2_curves_live.jsonl 2>/dev/null || true
+          fi
+          # Les fichiers plats ne sont plus commités : on les reconstruit depuis
+          # les partitions append-only (parts/). Reconstruction identique au point près.
+          python scripts/curves_parts.py rebuild
+          python scripts/build_live_curves.py
+
+          # ══ ORDRE REVU LE 05/09/2026 : CE QUI ALERTE D'ABORD ══════════
+          # Tout ce qui suit coûte le même temps total, mais l'ORDRE décide
+          # de la latence du message. canal_public.py ne dépend que de
+          # build_live_curves : le passer en premier fait partir la
+          # publication vers ~15 s de run au lieu de ~120 s.
+          # Sur des paliers de 3 à 12 %, 100 secondes de moins sur un
+          # mouvement de cote, c'est du signal conservé pour les abonnés.
+          # Les journaux (paper_journal, results_bridge) sont de la
+          # comptabilité : ils peuvent attendre la fin du job, personne ne
+          # les lit en direct.
+
+          # Canal PUBLIC « Évolution des cotes » : messages d'information
+          # neutres (mouvements Pinnacle + juste prix + retards
+          # d'ajustement). 0 requête API. EN PREMIER, volontairement.
+          PALIERS="3,5,8,12" python scripts/canal_public.py || true
+
+          # TRACK_CURVES = historique riche pour calibrer les seuils par book (sinon "indicatif")
+          CURVES=book_curves_live.jsonl TRACK_CURVES=book_curves.jsonl MARKET=match python scripts/steam_alert.py || true
+          CURVES=set1_curves_live.jsonl TRACK_CURVES=set1_curves.jsonl MARKET=set1 python scripts/steam_alert.py || true
+          CURVES=set2_curves_live.jsonl TRACK_CURVES=set2_curves.jsonl MARKET=set2 python scripts/steam_alert.py || true
+
+          # Signal PRIVÉ de l'hypothèse gelée n°13 (bande de cote 2,00-3,00).
+          # Canal PRIVÉ uniquement : l'hypothèse n'est pas validée (ROI
+          # in-sample +13,7 %, IC95 [+0,3 ; +27,0], verdict attendu vers
+          # décembre 2026), et le recouvrement avec le canal public n'est que
+          # de 16 matchs sur 359 — ce serait un SECOND flux, pas une
+          # amélioration du premier. 0 requête API.
+          # h13_signal.py ne lit PAS TELEGRAM_PUBLIC_CHAT_ID, par construction.
+          python scripts/h13_signal.py || true
+
+          # LES SIX SIGNAUX CI-DESSOUS ONT ÉTÉ PERDUS et sont RÉTABLIS le
+          # 30/09/2026. Ce fichier ne lançait plus que h13_signal : aucune
+          # alerte H15/H16/H17 n'est partie depuis le 27/09, et H18 comme
+          # H16-B n'ont jamais tourné.
+          #
+          # ORDRE IMPORTANT : chacun lit l'état des précédents pour ne pas
+          # envoyer plusieurs messages sur le même match. Ils LOGUENT tout —
+          # la mesure doit être complète — mais n'envoient que si aucun
+          # signal ne les a précédés. Le champ `doublon` trace la distinction.
+
+          # Zone 2,50-3,20 — observation, non gelée.
+          python scripts/zone_signal.py || true
+
+          # H15 — bande de cote 2,40-3,10, gelée le 25/09.
+          python scripts/h15_signal.py || true
+
+          # H16 — favori net (pin_open < 1,80), gelée le 25/09.
+          python scripts/h16_signal.py || true
+
+          # H17 — écart d'entrée 0-3 %, gelée le 25/09. L'écart est CAUSAL
+          # (prix d'entrée vs Pinnacle à l'OUVERTURE), à ne pas confondre
+          # avec clv_vs_pin_pct qui utilise pin_close.
+          python scripts/h17_signal.py || true
+
+          # H18 — Favorite Steam Value, intersection stricte de H16 et H17,
+          # gelée le 27/09. Meilleure réplication et meilleure robustesse du
+          # dispositif.
+          python scripts/h18_signal.py || true
+
+          # H16-B — H16 privée des ultra-favoris (pin_open 1,30-1,80), gelée
+          # le 27/09. ATTENTION : ce retrait vaut pour H16 SEULE. Dans H18
+          # les ultra-favoris sont parmi les meilleurs. Ne pas transposer.
+          python scripts/h16b_signal.py || true
+
+          # H19 — valeur contre Pinnacle juste, gelée le 16/10 (règle lue dans
+          # Tennis_Edge_Lab/registry/gel_h19.json, empreinte vérifiée). Évaluée à
+          # l'instant de décision de chaque horizon (24 h, 6 h, 1 h, 10 min).
+          # Canal PRIVÉ. Le verdict officiel reste celui du Lab (courbes complètes).
+          python scripts/h19_signal.py || true
+
+          # H20 — outsider WTA soutenu par Pinnacle (cote 2-3,19, probabilité
+          # +3,15 à +20 pts depuis l'ouverture), gelée le 21/10 (règle lue dans
+          # Tennis_Edge_Lab/registry/gel_h20.json, empreinte vérifiée). Canal
+          # PRIVÉ. Verdict officiel : Tennis_Edge_Lab/h20.py (CLV, cible 100).
+          python scripts/h20_signal.py || true
+
+          # H14 — amplitude + timing (mouvement Pinnacle > 5 % à la détection,
+          # 8-24 h avant le match), gelée le 02/10. CANAL CRÉÉ LE 16/10/2026 :
+          # son échantillon EN DIRECT commence à ce déploiement. Lancé EN
+          # DERNIER : il recoupe toutes les autres et ne renvoie pas un match
+          # déjà envoyé (doublon journalisé, compté pour H14).
+          python scripts/h14_signal.py || true
+
+          # Onglet « Matchs en direct » du Lab (16/10/2026) : petit instantané
+          # (Pinnacle ouverture/courant, dernier prix par book, alertes du
+          # match) lu par le navigateur sur raw.githubusercontent.com. Mêmes
+          # courbes que les signaux ; réécrit seulement si le contenu change.
+          python scripts/direct_matchs.py . || true
+          # Signal EXPÉRIMENTAL (non validé) : book déjà ouvert avant Pinnacle,
+          # écart au moment où Pinnacle publie son 1er prix. Canal PRIVÉ
+          # uniquement (jamais le canal public) -- voir validation_report pour
+          # le suivi out-of-sample avant toute exploitation. 0 requête API.
+          CURVES=book_curves_live.jsonl python scripts/early_open_signal.py || true
+
+          # ── à partir d'ici : comptabilité, plus aucune alerte ──────────
+          # Journal forward : OUVRIR les signaux MAINTENANT, pendant que le match est
+          # encore à venir. Le pipeline nocturne (00:15) ne suffit pas : les moves
+          # naissent en journée, quelques heures avant les matchs — à 00:15 le signal
+          # n'existe pas encore, et le lendemain le match est passé (= journal vide).
+          # Dédup par id (uid|book|palier) -> pas de doublon d'un cycle à l'autre.
+          # 0 requête API (fichiers locaux). Le dénouement reste au pipeline nocturne.
+          CURVES=book_curves_live.jsonl TRACK_CURVES=book_curves.jsonl MARKET=match python scripts/paper_journal.py || true
+          CURVES=set1_curves_live.jsonl TRACK_CURVES=set1_curves.jsonl MARKET=set1 python scripts/paper_journal.py || true
+          CURVES=set2_curves_live.jsonl TRACK_CURVES=set2_curves.jsonl MARKET=set2 python scripts/paper_journal.py || true
+          # JOURNAL ALIGNÉ SUR LE CANAL.
+          # paper_journal.py ci-dessus enregistre selon les seuils ADAPTATIFS
+          # par book de steam_alert. canal_public, lui, publie sur des paliers
+          # FIXES (3/5/8/12) avec un écart >= GAP_MIN. Résultat mesuré le
+          # 24/08 : 68 matchs alertés sur le canal, 17 seulement dans le
+          # journal forward — un sous-ensemble à 25 %.
+          # Le track record ne mesurait donc PAS ce que reçoivent les abonnés,
+          # ce qui le rend inutilisable pour justifier quoi que ce soit.
+          # paper_journal_canal.py lit canal_public_log.jsonl : par
+          # construction, il ne peut plus diverger de la publication.
+          # Les DEUX tournent — les seuils adaptatifs restent une stratégie
+          # légitime, simplement différente. Deux fichiers, aucune confusion.
+          python scripts/results_bridge.py || true
+          python scripts/paper_journal_canal.py || true
+
+      # 23/10/2026 : la ligne « Cote Pinnacle » du Lab suit les cotes capturées (les pronostics complets ne
+      # sont recalculés que toutes les 2 h). 0 requête d'API, fichier écrit seulement si une cote a bougé.
+      - name: Cote Pinnacle du Lab (pronostics_marche.json)
+        if: always()
+        run: python simulateur/marche_du_lab.py . || true
+      # 23/10/2026 : alerte (canal privé) si pronostics, feuilles ou verdicts ne sont plus mis à jour.
+      - name: Santé de la chaîne (pronostics, feuilles, verdicts)
+        if: always()
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python scripts/sante_chaine.py . || true
+      - name: Écrire l'état (pour la planification par le Worker)
+        # planifierCollecteur() dans le Worker lit `last_run_at` de ce fichier
+        # pour espacer les runs. Même convention que
+        # polymarket_collector_state.json et kalshi_collector_state.json.
+        # Sans lui, minsDepuis vaudrait Infinity et la seule limite serait la
+        # garde API : ce job repartirait à chaque réveil du Worker, soit
+        # toutes les 3 minutes — exactement ce que la découpe cherche à
+        # éviter.
+        # Écrit APRÈS le calcul et AVANT le commit, pour être poussé avec.
+        if: always()
+        run: |
+          python3 - <<'PY'
+          import json, datetime
+          json.dump(
+              {'last_run_at': datetime.datetime.now(datetime.timezone.utc)
+                                      .isoformat(timespec='seconds')},
+              open('courbes_alertes_state.json', 'w'), indent=1)
+          PY
+          cat courbes_alertes_state.json
+
+      # R2 (15/10/2026) : UNE écriture par partition modifiée + une pour le
+      # manifeste, en double comme en on. Un échec n'arrête rien : la
+      # partition reste alors dans le commit git.
+      - name: R2 — envoyer les partitions (live)
+        if: always()
+        run: python scripts/r2_parts.py push --kinds live || true
+
+      # 23/10/2026 — renvoie au coffre les journaux H18, H19, H20, puis les sort du suivi git (seulement si le
+      # coffre en a une copie identique : jamais de perte). Le .gitignore les empêche d'y revenir.
+      - name: Coffre privé — envoyer et retirer du dépôt (H18, H19, H20)
+        if: always()
+        run: |
+          python scripts/coffre.py push --groupe signaux || true
+          python scripts/coffre.py retirer --groupe signaux || true
+
+      - name: Commit (robuste — même boucle de reprise que la capture)
+        run: |
+          # PANNE DU 16/08/2026 -- cause exacte, tracee par pipeline_status.
+          # Les .pyc sont SUIVIS par git (ajoutes avant le .gitignore, qui ne
+          # s'applique plus une fois un fichier suivi). capture_closing tourne
+          # toutes les 5-10 min avec "git add -A" et republie donc des .pyc
+          # neufs en continu. Quand un autre workflow tourne, il regenere les
+          # siens localement -> "git merge" ABANDONNE ("Your local changes to
+          # the following files would be overwritten") -> branche en retard ->
+          # push rejete en non-fast-forward. Resultat observe : 7 fichiers
+          # commites localement (dont 830 lignes de moves_detail_hist), jamais
+          # pousses. On efface donc les .pyc du disque avant toute action git.
+          find . -name '__pycache__' -type d -prune -exec rm -rf {} + 2>/dev/null || true
+          find . -name '*.pyc' -delete 2>/dev/null || true
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          # CORRIGÉ LE 27/08/2026 (audit §2.2/§2.3) : « git add -A » nu
+          # contredisait l'invariant de .gitattributes (« chaque workflow ne
+          # commite QUE ses propres partitions ») -- ce workflow, le plus
+          # fréquent (150x/jour), était le seul à ne pas le respecter.
+          # Exclusion par pathspec des partitions des collecteurs (jamais
+          # écrites ici), sans énumérer positivement chaque fichier que ce
+          # job produit (nombreux : capture_state, courbes live, journaux
+          # d'alertes, journal forward...).
+          git add -A -- ':!parts/pm_ticks_*' ':!parts/kx_ticks_*'
+          python scripts/etat_chaud.py garde --lecteur || true   # 04/11/2026 : copies rapatriées de R2, jamais republiées
+          echo "--- fichiers en attente de commit ---"
+          git status --short
+          # GARDE-FOU TAILLE (même principe que kalshi/polymarket).
+          # CORRIGÉ LE 27/08/2026 (audit v2 §K) : `git status --porcelain`
+          # + awk '{print $2}' casse sur une ligne de renommage
+          # (`R  ancien -> nouveau` -> $2 vaut "ancien", le mauvais chemin)
+          # et sur tout chemin contenant une espace. `git diff --cached
+          # --name-only` ne liste QUE ce qui est réellement indexé, un
+          # chemin par ligne, sans ce risque.
+          for f in $(git diff --cached --name-only); do
+            [ -f "$f" ] || continue
+            mo=$(du -m "$f" 2>/dev/null | cut -f1)
+            if [ -n "$mo" ] && [ "$mo" -ge 95 ]; then
+              echo "⛔ $f fait ${mo} Mo (mur GitHub 100 Mo) — ÉCARTÉ du commit."
+              git restore --staged -- "$f" 2>/dev/null || true
+            fi
+          done
+          # R2 (15/10/2026) : en mode R2_PRIMARY=on, retire du commit les
+          # partitions que R2 détient déjà À L'IDENTIQUE. Toute autre partition
+          # reste dans le commit (filet git : jamais de perte). No-op sinon.
+          python scripts/r2_parts.py gate || true
+          # 16/10/2026 : un JSON dont seuls les champs volatils (updated_at,
+          # generated_at, liquidity…) ont changé n'est pas committé, sauf si sa
+          # version git a plus de 6 h. Voir scripts/json_churn.py.
+          python scripts/json_churn.py gate || true
+          git diff --staged --quiet || git commit -m "Courbes live + alertes ($(date -u +%H:%MZ))"
+          # "merge" et non "rebase" : un rebase en conflit après un commit
+          # peut écarter ce commit en silence (avalé par "2>/dev/null ||
+          # true") -- exactement le bug qui a figé set_results.json pendant
+          # 1 semaine sur steam_pipeline.yml. Ce workflow tourne toutes les
+          # 5-10 minutes : le risque de collision avec un autre run est
+          # bien plus élevé ici qu'ailleurs.
+          # BOUCLE DE REPRISE AVEC FUSION DES CONFLITS JSON.
+          # Ce workflow tourne toutes les 5-10 min : deux exécutions se
+          # chevauchent régulièrement, et git tombe en conflit sur les JSON
+          # d'état (closing_lines, capture_state, matches_oddspapi...). Le run
+          # entier était alors perdu, y compris les partitions live qui,
+          # elles, avaient fusionné sans problème via merge=union.
+          # merge_json_state.py fusionne ces objets JSON clé par clé, sans rien
+          # perdre : closing_lines est un ACCUMULATEUR, prendre une version au
+          # hasard effacerait les matchs ajoutés par l'autre exécution.
+          attente=2
+          for essai in 1 2 3 4 5 6; do
+            git fetch origin main || true
+            if git merge origin/main --no-edit; then
+              :
+            else
+              echo "⚠️ conflit — tentative de fusion JSON (essai $essai)"
+              if python scripts/merge_json_state.py; then
+                git commit --no-edit || true
+              else
+                git merge --abort 2>/dev/null || true
+                sleep "$attente"; attente=$((attente*2))
+                continue
+              fi
+            fi
+            if git push; then echo "✅ PUSH OK"; exit 0; fi
+            sleep "$attente"; attente=$((attente*2))
+          done
+          echo "❌ PUSH ÉCHOUÉ après 6 tentatives (62 s cumulées) — commit local perdu avec le runner."
+          exit 1

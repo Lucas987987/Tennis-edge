@@ -1,0 +1,7 @@
+{
+ "date": "2026-11-20",
+ "statut": "etude",
+ "paquet": 301,
+ "quoi_debut": "NIVEAU DU MATCH : UN MÊME ÉCART D'ELO VAUT-IL LA MÊME CHOSE EN HAUT ET EN BAS DU CIRCUIT ? (paquet 301, étude de fiabilité). L'Elo ne regarde que l'écart entre les deux joueurs : 100 points donnent le même % entre deux joueurs du haut du classement qu'entre deux joueurs du bas. Les joueurs du haut sont plus réguliers et mieux connus ; en bas, l'outsider gagne peut-être plus souvent qu'annoncé. Nouvelle étude simulateur/etude_pente_niveau.py : indice du niveau du match connu avant le match (moyenne des deux Elo sur la surface, rapportée à la médiane 2018–2022 du circuit), et une pente de l'Elo qui dépend de cet indice. Règle écrite dans l'en-tête avant tout résultat, circuit par circuit : appris sur 2018–2022, jugé une seule fois sur 2023 → juin 2026 ; retenu si le gain de log loss atteint 0,001 sur au moins 1 000 matchs, dans le même sens sur les deux périodes. Elo réglé comme la production, mis à jour après chaque match. Rapport public : simulateur/rapport_pente_niveau.json (comptes seulement, aucun nom).",
+ "garde_fou": "Étude seule : rien n'entre dans l'algo. Un circuit retenu sera proposé dans un paquet suivant avec la règle de retrait cumulée (300 matchs, 2 erreurs types). Retrait de l'étude : supprimer simulateur/etude_pente_niveau.py, simulateur/journal_ajouts/paquet_301.json, simulateur/tests/test_etude_pente_niveau.py et .github/workflows/etude_pente_niveau.yml."
+}

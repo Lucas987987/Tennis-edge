@@ -1,0 +1,35 @@
+name: Tennis Edge - Analyse detaillee du match
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: te-analyse-detaillee-main
+  cancel-in-progress: false
+jobs:
+  appliquer:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: true
+      - name: Appliquer le bouton et l'analyse
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3 4 5; do
+            git fetch origin main
+            git reset --hard origin/main
+            python3 scripts/patch_analyse.py
+            git add algo/index.html
+            if git diff --cached --quiet; then
+              echo 'Deja installe'; exit 0
+            fi
+            git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'Ajouter analyse detaillee ecrite des matchs'
+            if git push origin HEAD:main; then exit 0; fi
+            sleep $((attempt * 3))
+          done
+          echo 'Echec de publication apres 5 essais' >&2
+          exit 1

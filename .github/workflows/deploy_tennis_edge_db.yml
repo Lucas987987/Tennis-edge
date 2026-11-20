@@ -1,0 +1,61 @@
+name: Déployer le worker tennis-edge-db
+
+# CRÉÉ LE 16/10/2026. Même principe que deploy_joueurs.yml : déposer
+# workers/tennis-edge-db/worker.js dans le dépôt suffit, ce workflow le met
+# en ligne puis vérifie que l'API répond.
+#
+# Secrets (déjà utilisés par deploy_joueurs.yml) :
+#   CLOUDFLARE_API_TOKEN   jeton « Edit Cloudflare Workers »
+#   CLOUDFLARE_ACCOUNT_ID  identifiant du compte Cloudflare
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'workers/tennis-edge-db/**'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-tennis-edge-db
+  cancel-in-progress: false
+
+jobs:
+  deployer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+          sparse-checkout: workers/tennis-edge-db
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # Un fichier tronqué ou mal collé ne part pas en ligne : la version
+      # actuelle reste en place.
+      - name: Vérifier la syntaxe
+        run: node --check workers/tennis-edge-db/worker.js
+
+      - name: Déployer sur Cloudflare
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: workers/tennis-edge-db
+          command: deploy
+
+      - name: Vérifier que l'API répond
+        run: |
+          sleep 5
+          url="https://tennis-edge-db.tennis-edge.workers.dev/api/hypotheses?v=${GITHUB_RUN_ID}"
+          code=$(curl -s -o api.json -w '%{http_code}' "$url")
+          echo "HTTP $code"
+          head -c 600 api.json || true
+          echo
+          test "$code" = "200"
+          python3 -c "import json; d=json.load(open('api.json')); print('JSON OK')"

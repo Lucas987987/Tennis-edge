@@ -1,0 +1,426 @@
+{
+ "schema_version": 1,
+ "genere_le": "2026-11-19T21:15:50Z",
+ "canaux": {
+  "MISER": {
+   "libelle": "🎯 MISER — steam, EV ≥ seuil vs Pinnacle juste (vainqueur du match)",
+   "source": "miser_signal_log.jsonl (messages envoyés) + ajouts de suivi_direct",
+   "regle": "première alerte de chaque match, au book et au prix du message ; relances non recomptées",
+   "debut": "2026-10-22",
+   "n_alertes": 47,
+   "n_matchs": 47,
+   "n_relances": 0,
+   "n_denoues": 40,
+   "bilan": {
+    "n": 40,
+    "gains": 16,
+    "taux": 40.0,
+    "seuil": 41.5,
+    "ecart": -1.5,
+    "ic95": [
+     26.3,
+     55.4
+    ],
+    "roi": -6.3,
+    "pnl": -2.5,
+    "cote_moyenne": 3.0,
+    "clv_moyen": 8.3,
+    "clv_pin_moyen": 8.3,
+    "clv_pin_ic95": [
+     5.5,
+     11.1
+    ],
+    "clv_pin_p": 0.0,
+    "clv_n": 46,
+    "clv_positif": 87.0,
+    "lead_moyen_h": 7.2,
+    "periode": "2026-10-22 -> 2026-11-19",
+    "verdict": "ne tranche pas",
+    "clv_mediane": 6.7,
+    "n_commencees": 46,
+    "n_sans_resultat": 6,
+    "sans_resultat_pct": 13.0,
+    "verrouillable": false,
+    "statut": "en attente de résultats (13,0 % sans résultat)"
+   },
+   "paris": {
+    "2026-10-22_valerio_aboian_matias_soto": {
+     "gagne": 1,
+     "pnl": 1.37,
+     "pin_close": 2.029,
+     "pin_close_adv": 1.819,
+     "clv_pin": 11.619,
+     "source_resultat": "feuille de match (TennisApi)"
+    },
+    "2026-10-23_flavio_cobolli_brandon_nakashima": {
+     "gagne": 1,
+     "pnl": 1.65,
+     "pin_close": 3.0,
+     "pin_close_adv": 1.446,
+     "clv_pin": -15.532,
+     "source_resultat": "feuille de match (TennisApi)"
+    },
+    "2026-10-25_juan_manuel_cerundolo_daniel_altmaier": {
+     "gagne": 0,
+     "pnl": -1.0,
+     "pin_close": 1.729,
+     "pin_close_adv": 2.18,
+     "clv_pin": 0.96,
+     "source_resultat": "feuille de match (TennisApi)"
+    },
+    "2026-10-26_alan_magadan_tristan_mccormick": {
+     "gagne": 0,
+     "pnl": -1.0,
+     "pin_close": 1.675,
+     "pin_close_adv": 2.18,
+     "clv_pin": 25.635,
+     "source_resultat": "feuille de match (TennisApi)"
+    },
+    "2026-10-26_arthur_fery_jacob_fearnley": {
+     "gagne": null,
+     "pnl": null,
+     "pin_close": 1.925,
+     "pin_close_adv": 1.961,
+     "clv_pin": -5.596,
+     "source_resultat": "inconnu"
+    },
+    "2026-10-26_han_shi_alevtina_ibragimova": {
+     "gagne": 0,
+     "pnl": -1.0,
+     "pin_close": 2.53,
+     "pin_close_adv": 1.578,
+     "clv_pin": 13.739,
+     "source_resultat": "feuille de match (TennisApi)"
+    },
+    "2026-10-26_ryan_nijboer_lorenzo_claverie": {
+     "gagne": 1,
+     "pnl": 2.95,
+     "pin_close": 2.95,
+     "pin_close_adv": 1.392,
+     "clv_pin": 20.345,
+     "source_resultat": "feuille de match (TennisApi)"
+    },
+    "2026-10-26_spencer_johnson_tomasz_berkieta": {
+     "gagne": 1,
+     "pnl": 2.5,
+     "pin_close": 3.21,
+     "pin_close_adv": 1.366,
+     "clv_pin": -0.218,
+     "source_resultat": "feuille de match (TennisApi)"
+    },
+    "2026-10-27_jerome_kym_arthur_rinderknech": {
+     "gagne": 0,
+     "pnl": -1.0,
+     "pin_close": 2.009,
+     "pin_close_adv": 1.884,
+     "clv_pin": 1.486,
+     "source_resultat": "feuille de match (TennisApi)"
+    },
+    "2026-10-29_claire_liu_katerina_siniakova": {
+     "gagne": null,
+     "pnl": null,
+     "pin_close": 2.53,
+     "pin_close_adv": 1.578,
+     "clv_pin": 4.26,
+     "source_resultat": "inconnu"
+    },
+    "2026-10-29_liam_draxl_daniil_ostapenkov": {
+     "gagne": null,
+     "pnl": null,
+     "pin_close": 3.71,
+     "pin_close_adv": 1.307,
+     "clv_pin": 5.346,
+     "source_resultat": "inconnu"
+    },
+    "2026-10-29_max_hans_rehberg_stefan_kozlov": {
+     "gagne": 0,
+     "pnl": -1.0,
+     "pin_close": 2.48,
+     "pin_close_adv": 1.584,
+     "clv_pin": 11.378,
+     "source_resultat": "feuille de match (TennisApi)"
+    },
+    "2026-10-29_mitchell_krueger_darwin_blanch": {
+     "gagne": 0,
+     "pnl": -1.0,
+     "pin_close": 3.73,
+     "pin_close_adv": 1.305,
+     "clv_pin": 10.959,
+     "source_resultat": "feuille de match (TennisApi)"
+    },
+    "2026-10-31_sebastian_baez_damir_dzumhur": {
+     "gagne": 0,
+     "pnl": -1.0,
+     "pin_close": 1.543,
+     "pin_close_adv": 2.56,
+     "clv_pin": 6.665,
+     "source_resultat": "feuille de match (TennisApi)"
+    },
+    "2026-10-31_yaroslav_demin_yu_hsiou_hsu": {
+     "gagne": 1,
+     "pnl": 1.37,
+     "pin_close": 2.26,
+     "pin_close_adv": 1.694,
+     "clv_pin": 0.708,
+     "source_resultat": "feuille de match (TennisApi)"
+    },
+    "2026-11-01_aidan_mayo_duncan_chan": {
+     "gagne": 0,
+     "pnl": -1.0,
+     "pin_close": 2.99,
+     "pin_close_adv": 1.384,
+     "clv_pin": -2.951,
+     "source_resultat": "feuille de match (TennisApi)"
+    },
+    "2026-11-01_faris_zakaria_niels_visker": {
+     "gagne": 1,
+     "pnl": 0.176,
+     "pin_close": 1.075,
+     "pin_close_adv": 8.039,
+     "clv_pin": 7.862,
+     "source_resultat": "feuille de match (TennisApi)"
+    },
+    "2026-11-01_leonardo_storck_franca_jose_pereira": {
+     "gagne": 1,
+     "pnl": 2.4,
+     "pin_close": 2.38,
+     "pin_close_adv": 1.606,
+     "clv_pin": 34.856,
+     "source_resultat": "feuille de match (TennisApi)"
+    },
+    "2026-11-01_mitchell_krueger_marcel_latak": {
+     "gagne": 0,
+     "pnl": -1.0,
+     "pin_close": 4.3,
+     "pin_close_adv": 1.213,
+     "clv_pin": 16.844,
+     "source_resultat": "feuille de match (TennisApi)"
+    },
+    "2026-11-02_carlos_maria_zarate_gonzalo_villanueva": {
+     "gagne": 0,
+     "pnl": -1.0,
+     "pin_close": 1.609,
+     "pin_close_adv": 2.37,
+     "clv_pin": 8.342,
+     "source_resultat": "feuille de match (TennisApi)"
+    },
+    "2026-11-02_jeline_vandromme_kyoka_okamura": {
+     "gagne": 0,
+     "pnl": -1.0,
+     "pin_close": 3.63,
+     "pin_close_adv": 1.326,
+     "clv_pin": 2.856,
+     "source_resultat": "feuille de match (TennisApi)"
+    },
+    "2026-11-02_juan_carlos_prado_angelo_pedro_boscardin_dias": {
+     "gagne": 0,
+     "pnl": -1.0,
+     "pin_close": 2.84,
+     "pin_close_adv": 1.467,
+     "clv_pin": 9.731,
+     "source_resultat": "feuille de match (TennisApi)"
+    },
+    "2026-11-03_filip_misolic_juan_pablo_varillas": {
+     "gagne": 0,
+     "pnl": -1.0,
+     "pin_close": 2.84,
+     "pin_close_adv": 1.456,
+     "clv_pin": -13.686,
+     "source_resultat": "feuille de match (TennisApi)"
+    },
+    "2026-11-03_james_mccabe_yanki_erel": {
+     "gagne": null,
+     "pnl": null,
+     "pin_close": 1.68,
+     "pin_close_adv": 2.28,
+     "clv_pin": 14.178,
+     "source_resultat": "inconnu"
+    },
+    "2026-11-03_keegan_smith_jake_delaney": {
+     "gagne": 0,
+     "pnl": -1.0,
+     "pin_close": 1.307,
+     "pin_close_adv": 3.71,
+     "clv_pin": 1.65,
+     "source_resultat": "feuille de match (TennisApi)"
+    },
+    "2026-11-04_gonzalo_bueno_eduardo_ribeiro": {
+     "gagne": 0,
+     "pnl": -1.0,
+     "pin_close": 2.28,
+     "pin_close_adv": 1.68,
+     "clv_pin": 5.104,
+     "source_resultat": "feuille de match (TennisApi)"
+    },
+    "2026-11-04_gustavo_heide_juan_carlos_prado_angelo": {
+     "gagne": 1,
+     "pnl": 1.5,
+     "pin_close": 2.25,
+     "pin_close_adv": 1.699,
+     "clv_pin": 6.7,
+     "source_resultat": "feuille de match (TennisApi)"
+    },
+    "2026-11-09_benjamin_kittay_adrien_gobat": {
+     "gagne": 0,
+     "pnl": -1.0,
+     "pin_close": 2.94,
+     "pin_close_adv": 1.421,
+     "clv_pin": 17.83,
+     "source_resultat": "feuille de match (TennisApi)"
+    },
+    "2026-11-09_mitchell_krueger_lui_maxted": {
+     "gagne": 0,
+     "pnl": -1.0,
+     "pin_close": 1.684,
+     "pin_close_adv": 2.16,
+     "clv_pin": 2.111,
+     "source_resultat": "feuille de match (TennisApi)"
+    },
+    "2026-11-10_braden_shick_andres_andrade": {
+     "gagne": null,
+     "pnl": null,
+     "pin_close": 2.12,
+     "pin_close_adv": 1.735,
+     "clv_pin": 22.769,
+     "source_resultat": "inconnu"
+    },
+    "2026-11-10_buvaysar_gadamauri_dusan_lajovic": {
+     "gagne": null,
+     "pnl": null,
+     "pin_close": 1.781,
+     "pin_close_adv": 2.12,
+     "clv_pin": 7.483,
+     "source_resultat": "inconnu"
+    },
+    "2026-11-10_enzo_aguiard_akira_santillan": {
+     "gagne": 1,
+     "pnl": 0.8,
+     "pin_close": 1.636,
+     "pin_close_adv": 2.32,
+     "clv_pin": 6.552,
+     "source_resultat": "feuille de match (TennisApi)"
+    },
+    "2026-11-10_juan_pablo_varillas_marcelo_tomas_barrios_vera": {
+     "gagne": 1,
+     "pnl": 2.0,
+     "pin_close": 2.54,
+     "pin_close_adv": 1.54,
+     "clv_pin": 10.842,
+     "source_resultat": "feuille de match (TennisApi)"
+    },
+    "2026-11-10_lui_maxted_hynek_barton": {
+     "gagne": 1,
+     "pnl": 0.8,
+     "pin_close": 1.662,
+     "pin_close_adv": 2.24,
+     "clv_pin": 4.303,
+     "source_resultat": "feuille de match (TennisApi)"
+    },
+    "2026-11-10_marvin_moeller_nikolai_barsukov": {
+     "gagne": 0,
+     "pnl": -1.0,
+     "pin_close": 2.75,
+     "pin_close_adv": 1.471,
+     "clv_pin": 18.478,
+     "source_resultat": "feuille de match (TennisApi)"
+    },
+    "2026-11-10_orel_kimhi_filip_jeff_planinsek": {
+     "gagne": 1,
+     "pnl": 0.39,
+     "pin_close": 1.284,
+     "pin_close_adv": 3.7,
+     "clv_pin": 5.756,
+     "source_resultat": "feuille de match (TennisApi)"
+    },
+    "2026-11-11_liam_draxl_pyotr_nesterov": {
+     "gagne": 1,
+     "pnl": 0.333,
+     "pin_close": 1.241,
+     "pin_close_adv": 4.21,
+     "clv_pin": 5.395,
+     "source_resultat": "feuille de match (TennisApi)"
+    },
+    "2026-11-15_adam_farag_cao_hoyoung_roh": {
+     "gagne": 0,
+     "pnl": -1.0,
+     "pin_close": 4.19,
+     "pin_close_adv": 1.222,
+     "clv_pin": 50.8,
+     "source_resultat": "feuille de match (TennisApi)"
+    },
+    "2026-11-15_cezar_2001_cretu_felix_alopaeus": {
+     "gagne": 0,
+     "pnl": -1.0,
+     "pin_close": 6.75,
+     "pin_close_adv": 1.11,
+     "clv_pin": 20.413,
+     "source_resultat": "feuille de match (TennisApi)"
+    },
+    "2026-11-15_hugo_grenier_florent_bax": {
+     "gagne": 0,
+     "pnl": -1.0,
+     "pin_close": 3.68,
+     "pin_close_adv": 1.295,
+     "clv_pin": -12.987,
+     "source_resultat": "feuille de match (TennisApi)"
+    },
+    "2026-11-15_zachary_viiala_samuel_heredia": {
+     "gagne": 1,
+     "pnl": 0.8,
+     "pin_close": 1.507,
+     "pin_close_adv": 2.55,
+     "clv_pin": 15.115,
+     "source_resultat": "feuille de match (TennisApi)"
+    },
+    "2026-11-16_luka_mikrut_michael_agwi": {
+     "gagne": 0,
+     "pnl": -1.0,
+     "pin_close": 3.17,
+     "pin_close_adv": 1.374,
+     "clv_pin": 1.264,
+     "source_resultat": "feuille de match (TennisApi)"
+    },
+    "2026-11-17_juan_carlos_prado_angelo_lautaro_midon": {
+     "gagne": 0,
+     "pnl": -1.0,
+     "pin_close": 2.05,
+     "pin_close_adv": 1.787,
+     "clv_pin": 4.237,
+     "source_resultat": "feuille de match (TennisApi)"
+    },
+    "2026-11-18_aidan_mchugh_shunsuke_mitsui": {
+     "gagne": 0,
+     "pnl": -1.0,
+     "pin_close": 2.34,
+     "pin_close_adv": 1.625,
+     "clv_pin": 9.087,
+     "source_resultat": "feuille de match (TennisApi)"
+    },
+    "2026-11-18_jason_kubler_philip_sekulic": {
+     "gagne": 1,
+     "pnl": 2.0,
+     "pin_close": 2.74,
+     "pin_close_adv": 1.476,
+     "clv_pin": 2.134,
+     "source_resultat": "feuille de match (TennisApi)"
+    },
+    "2026-11-19_ben_shelton_rafael_jodar": {
+     "gagne": 1,
+     "pnl": 0.43,
+     "pin_close": 1.321,
+     "pin_close_adv": 3.73,
+     "clv_pin": 6.89,
+     "source_resultat": "feuille de match (TennisApi)"
+    },
+    "2026-11-20_carlos_alcaraz_flavio_cobolli": {
+     "gagne": null,
+     "pnl": null,
+     "pin_close": null,
+     "pin_close_adv": null,
+     "clv_pin": null,
+     "source_resultat": "inconnu"
+    }
+   }
+  }
+ }
+}

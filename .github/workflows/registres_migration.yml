@@ -1,0 +1,84 @@
+name: Registres marchés — ajout seul (migration)
+
+# AJOUTÉ LE 16/10/2026. polymarket_markets.json (3,4 Mo) et kalshi_markets.json
+# (1,6 Mo) sont réécrits en entier à chaque run des collecteurs (~87 fois
+# par jour chacun). Ce workflow les convertit en registres EN AJOUT SEUL :
+#   registres_marches/<fournisseur>_base.jsonl       instantané, écrit une fois
+#   registres_marches/<fournisseur>_AAAA-MM-JJ.jsonl  marchés nouveaux du jour
+# Voir scripts/market_registry.py et docs/README_ETAPE3_STOCKAGE.md.
+#
+#   migrer            écrit l'instantané + vérifie (mêmes marchés, même ordre).
+#                     Relançable : ne rattrape que ce qui manque.
+#   verifier          contrôle seul, aucun commit.
+#   supprimer_ancien  (quelques jours plus tard) re-vérifie puis retire les
+#                     deux anciens JSON (ils restent dans l'historique git).
+#   annuler           RETOUR ARRIÈRE : réécrit les deux JSON depuis le
+#                     registre et retire registres_marches/.
+# Push NORMAL, jamais forcé.
+
+on:
+  workflow_dispatch:
+    inputs:
+      etape:
+        description: "migrer | verifier | supprimer_ancien | annuler"
+        type: choice
+        default: verifier
+        options:
+          - migrer
+          - verifier
+          - supprimer_ancien
+          - annuler
+
+permissions:
+  contents: write
+
+concurrency:
+  group: registres-migration
+  cancel-in-progress: false
+
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+
+jobs:
+  migration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          filter: blob:none
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /*
+            !/parts
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Étape ${{ inputs.etape }}
+        run: python scripts/market_registry.py ${{ inputs.etape }}
+
+      - name: Commit (push normal, jamais forcé)
+        if: inputs.etape != 'verifier'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A -- polymarket_markets.json kalshi_markets.json registres_marches/
+          git status --short
+          if git diff --staged --quiet; then echo "Rien à committer."; exit 0; fi
+          git commit -m "Registres marchés : ${{ inputs.etape }}"
+          attente=2
+          for essai in 1 2 3 4 5 6; do
+            git fetch origin main || true
+            if git merge origin/main --no-edit; then :; else
+              git merge --abort 2>/dev/null || true
+              echo "⚠️ conflit — nouvelle tentative ($essai)"
+              sleep "$attente"; attente=$((attente*2)); continue
+            fi
+            if git push origin HEAD:main; then echo "✅ PUSH OK"; exit 0; fi
+            sleep "$attente"; attente=$((attente*2))
+          done
+          echo "❌ push impossible — rien n'est perdu, relancer le workflow."
+          exit 1

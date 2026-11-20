@@ -1,0 +1,44 @@
+name: Sonde courbes (1 requête)
+
+# 16/10/2026 — vérifie, pour UNE requête RapidAPI, que l'API sert encore la
+# courbe historique d'un match passé (rattrapage des matchs de la pause).
+on:
+  workflow_dispatch:
+    inputs:
+      jour:
+        description: 'Jour du match (AAAA-MM-JJ)'
+        default: '2026-10-14'
+      book:
+        description: 'Book'
+        default: 'pinnacle'
+
+permissions:
+  contents: read
+
+env:
+  R2_PRIMARY: ${{ vars.R2_PRIMARY || 'double' }}
+  R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+  R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+  R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+
+jobs:
+  sonde:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          sparse-checkout: |
+            scripts
+            closing_lines.json
+            closing_lines
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - name: Une requête
+        env:
+          RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
+          JOUR: ${{ github.event.inputs.jour }}
+          BOOK: ${{ github.event.inputs.book }}
+        run: python scripts/sonde_courbes.py "$JOUR" "$BOOK"

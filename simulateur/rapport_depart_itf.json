@@ -1,0 +1,152 @@
+{
+ "candidats_2025_01_a_2025_09": {
+  "départ ITF 1150": {
+   "depart_itf": 1150.0,
+   "appr": {
+    "matchs": 8749,
+    "gain": 0.00182,
+    "erreur_type": 0.00018,
+    "erreurs_types": 9.89,
+    "log_loss_base": 0.62315,
+    "log_loss": 0.62133,
+    "brier_base": 0.21748,
+    "brier": 0.2167,
+    "favori_annonce_pct": 64.2,
+    "favori_reel_pct": 64.3
+   }
+  },
+  "départ ITF 1100": {
+   "depart_itf": 1100.0,
+   "appr": {
+    "matchs": 8749,
+    "gain": 0.0033,
+    "erreur_type": 0.00037,
+    "erreurs_types": 9.04,
+    "log_loss_base": 0.62315,
+    "log_loss": 0.61985,
+    "brier_base": 0.21748,
+    "brier": 0.21608,
+    "favori_annonce_pct": 64.2,
+    "favori_reel_pct": 64.3
+   }
+  },
+  "départ ITF 1050": {
+   "depart_itf": 1050.0,
+   "appr": {
+    "matchs": 8749,
+    "gain": 0.00447,
+    "erreur_type": 0.00055,
+    "erreurs_types": 8.19,
+    "log_loss_base": 0.62315,
+    "log_loss": 0.61868,
+    "brier_base": 0.21748,
+    "brier": 0.2156,
+    "favori_annonce_pct": 64.2,
+    "favori_reel_pct": 64.3
+   }
+  },
+  "départ ITF 1000": {
+   "depart_itf": 1000.0,
+   "appr": {
+    "matchs": 8749,
+    "gain": 0.00532,
+    "erreur_type": 0.00072,
+    "erreurs_types": 7.36,
+    "log_loss_base": 0.62315,
+    "log_loss": 0.61782,
+    "brier_base": 0.21748,
+    "brier": 0.21525,
+    "favori_annonce_pct": 64.2,
+    "favori_reel_pct": 64.3
+   }
+  },
+  "pente Challenger": {
+   "pente": 1.054,
+   "appr": {
+    "matchs": 8749,
+    "gain": 0.00015,
+    "erreur_type": 0.00018,
+    "erreurs_types": 0.82,
+    "log_loss_base": 0.62315,
+    "log_loss": 0.623,
+    "brier_base": 0.21748,
+    "brier": 0.21745,
+    "favori_annonce_pct": 64.2,
+    "favori_reel_pct": 64.3
+   }
+  }
+ },
+ "forme_choisie": "départ ITF 1000",
+ "reglage": {
+  "depart_itf": 1000.0
+ },
+ "challenger_2025_10_a_2026_06": {
+  "matchs": 7722,
+  "gain": 0.00569,
+  "erreur_type": 0.00074,
+  "erreurs_types": 7.7,
+  "log_loss_base": 0.59585,
+  "log_loss": 0.59017,
+  "brier_base": 0.20547,
+  "brier": 0.20304,
+  "favori_annonce_pct": 65.0,
+  "favori_reel_pct": 67.7
+ },
+ "atp_2025_10_a_2026_06": {
+  "matchs": 1636,
+  "gain": 0.0001,
+  "erreur_type": 0.00086,
+  "erreurs_types": 0.12,
+  "log_loss_base": 0.60068,
+  "log_loss": 0.60058,
+  "brier_base": 0.20753,
+  "brier": 0.20742,
+  "favori_annonce_pct": 66.5,
+  "favori_reel_pct": 67.6
+ },
+ "autres_candidats_sur_la_periode_jugee_pour_memoire": {
+  "départ ITF 1150": 0.00185,
+  "départ ITF 1100": 0.00342,
+  "départ ITF 1050": 0.00469,
+  "pente Challenger": 0.00112
+ },
+ "retenue": true,
+ "raisons": [],
+ "passe_deux_erreurs_types": true,
+ "genere_le": "2026-11-11T18:28:29+00:00",
+ "itf_hommes_dans_le_rejeu": 57230,
+ "regle": "forme choisie sur le Challenger du 01/01/2025 au 30/09/2025 (départ ITF hommes à 1150, 1100, 1050 ou 1000, ou pente unique), jugée une fois sur le Challenger du 01/10/2025 à juin 2026 : gain ≥ 0,001 sur ≥ 1 000 matchs, positif sur les deux périodes, ATP non dégradé de plus de 0,0005",
+ "pourquoi_ces_dates": "les résultats ITF hommes n'existent que depuis juin 2024 : 2018–2022 est impossible",
+ "elo": "réglé comme la production (elo.de_production), résultats ITF hommes compris, mis à jour après chaque match",
+ "controle_production": {
+  "fait_le": "2026-11-11",
+  "nos_matchs_tous_niveaux": {
+   "matchs": 2859,
+   "log_loss_avant": 0.6225,
+   "log_loss": 0.6205,
+   "brier": 0.2159
+  },
+  "nos_matchs_challenger": {
+   "matchs": 912,
+   "gain_log_loss": 0.00767,
+   "erreur_type": 0.00207,
+   "brier_avant": 0.21731,
+   "brier": 0.21407
+  },
+  "atp_wta_2024_2026": {
+   "matchs": 9277,
+   "log_loss_avant": 0.6064,
+   "log_loss": 0.6065
+  },
+  "verdict": "nos matchs ne font pas moins bien : mise en production"
+ },
+ "production": {
+  "depart": {
+   "ITFH": 1000.0
+  },
+  "ancien_depart": 1200.0,
+  "retrait": "le classement est rejoué à chaque passage avec l'ancien départ ; sur nos matchs Challenger depuis le 2026-11-12, dès 300 matchs, gain cumulé négatif de plus de 2 erreurs types → retour à 1200",
+  "suivi": "simulateur/rapport_pronostic.json, clé depart_itf_hommes"
+ },
+ "limite": "le choix tombe au bord de la grille (1000) : un départ plus bas n'a pas été essayé, la période jugée ayant servi ; à juger sur nos matchs à venir"
+}

@@ -1,0 +1,51 @@
+{
+ "ecrit_le": "2026-10-16",
+ "regle": {
+  "age_max_min": 30,
+  "amendement": "16/10/2026 avant toute donnée prospective : books = liste de la collecte des courbes (les 12 books jamais servis par l'API en tennis retirés)",
+  "books": [
+   "betfair-ex",
+   "bet365",
+   "1xbet",
+   "22bet",
+   "unibet",
+   "winamax.fr",
+   "unibet.fr",
+   "pmu",
+   "bwin",
+   "coolbet",
+   "betsson",
+   "betway",
+   "williamhill",
+   "888sport",
+   "leovegas",
+   "tipico",
+   "netbet",
+   "marathonbet",
+   "bet365.fr"
+  ],
+  "cible_n": 300,
+  "circuits": [
+   "ATP",
+   "WTA",
+   "Challenger",
+   "Grand Chelem"
+  ],
+  "code": "H19",
+  "ecart_max_pct": 8.0,
+  "ecart_min_pct": 2.0,
+  "gele_le": "2026-10-16",
+  "horizons": [
+   "24h",
+   "6h",
+   "1h",
+   "10m"
+  ],
+  "juge_sur": "matchs commençant après le 16/10/2026 (jour UTC du début > 2026-10-16)",
+  "mesure": "CLV contre la clôture Pinnacle sans marge (puissance), entrée nette de commission",
+  "nom": "Valeur contre Pinnacle juste",
+  "un_pari_par": "match et joueur, premier horizon qui remplit la règle",
+  "verdict": "VALIDÉE si IC95 de la CLV > 0 ; RÉFUTÉE si CLV moyenne < 0 ; sinon NON CONCLUANT ; rien avant la cible"
+ },
+ "sha256": "fe2214e7702b17e429ae44e8d89d96da787fa79a54e80b54d128f51243bd4026"
+}

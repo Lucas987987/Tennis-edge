@@ -1,0 +1,39 @@
+{
+ "ecrit_le": "2026-10-21",
+ "regle": {
+  "age_max_min": 30,
+  "ampleur_definition": "probabilité Pinnacle juste (puissance) à l'horizon − la même au premier point Pinnacle connu, en points ; positive = la cote du joueur a raccourci",
+  "ampleur_pts_max": 20.0,
+  "ampleur_pts_min": 3.15,
+  "cible_n": 100,
+  "circuits": [
+   "WTA"
+  ],
+  "code": "H20",
+  "contexte_avant_gel": "Explorateur, tous horizons : 319 lignes, CLV −0,4 % [−6,2 ; +5,4], ROI +40,7 %. Un pari par joueur (règle H20) : 124 décisions, CLV −3,6 % [−5,3 ; −1,9] (n=54), ROI +22,8 % (n=47). Le passé a servi à choisir la règle : aucune valeur de preuve.",
+  "cote_pin_max": 3.19,
+  "cote_pin_min": 2.0,
+  "entree": "jouable",
+  "entree_definition": "meilleur prix d'un book jouable hors Pinnacle (books.flags), cote de 30 min au plus à la décision, commission de bourse déduite — réglage de l'Explorateur ; sans prix jouable frais, la décision compte mais n'a pas de CLV",
+  "fenetres_pinnacle_min": {
+   "10m": 50,
+   "1h": 60,
+   "24h": 720,
+   "6h": 180
+  },
+  "gele_le": "2026-10-21",
+  "horizons": [
+   "24h",
+   "6h",
+   "1h",
+   "10m"
+  ],
+  "juge_sur": "décisions prises après le gel, matchs commençant à partir du 2026-10-22 (jour UTC)",
+  "mesure": "CLV contre la clôture Pinnacle sans marge (puissance), entrée nette de commission ; ROI secondaire",
+  "nom": "Outsider WTA soutenu par Pinnacle",
+  "origine": "filtre de l'Explorateur choisi par Lucas le 21/10/2026 (WTA, cote Pinnacle 2–3,19, mouvement 3,15–20 pts)",
+  "un_pari_par": "match et joueur, premier horizon qui remplit la règle",
+  "verdict": "VALIDÉE si IC95 de la CLV > 0 ; RÉFUTÉE si CLV moyenne < 0 ; sinon NON CONCLUANT ; rien avant la cible"
+ },
+ "sha256": "1c86cbba8e6e8368cc61068ff8e6fc4abf75d7f3f3a96f1332fd0274a42fcde5"
+}

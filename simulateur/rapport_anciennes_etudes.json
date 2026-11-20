@@ -1,0 +1,246 @@
+{
+ "genere_le": "2026-11-12T21:50:07+00:00",
+ "paquet": 247,
+ "statut": "etude",
+ "regle": "chaque étude relancée telle quelle, avec l'Elo réglé comme la production et mis à jour à chaque tour ; elle garde sa propre règle ; un positif devenu négatif est listé pour retrait (sauf décision du paquet 233), un négatif devenu positif est porté au fantôme ; Challenger non concluant",
+ "non_rejouees": {
+  "etude_prior_elo": "l'Elo n'y sert que de point de départ des profils ; non retenue ; à rejouer si la piste est reprise",
+  "etude_5_derniers_styles": "recherche, rien en production ; Elo déjà mis à jour après chaque match",
+  "etude_statistiques_styles": "recherche, rien en production ; Elo déjà mis à jour après chaque match",
+  "etude_live_reevaluation": "tourne en production (suivi du % en direct) : corrigée dans le code au paquet 247",
+  "loupe_descriptive_privee": "loupe descriptive privée, pas de verdict"
+ },
+ "etudes": {
+  "etude_classement_serie": {
+   "verdicts": 6,
+   "positifs_avant": 0,
+   "positifs_apres": 0,
+   "changements": [],
+   "minutes": 0.9
+  },
+  "etude_pistes_saison": {
+   "verdicts": 18,
+   "positifs_avant": 2,
+   "positifs_apres": 1,
+   "changements": [
+    {
+     "verdict": "circuits/ATP/fin_de_saison/seule/positive",
+     "avant": true,
+     "avec_l_elo_de_production": false,
+     "sens": "devenu négatif",
+     "suite": "sous-verdict ou comparaison descriptive : seul le verdict final de l'étude compte"
+    },
+    {
+     "verdict": "circuits/ATP/lucky_loser/seule/positive",
+     "avant": false,
+     "avec_l_elo_de_production": true,
+     "sens": "devenu positif",
+     "suite": "sous-verdict ou comparaison descriptive : seul le verdict final de l'étude compte"
+    },
+    {
+     "verdict": "circuits/CH/fin_de_saison/seule/positive",
+     "avant": true,
+     "avec_l_elo_de_production": false,
+     "sens": "devenu négatif",
+     "suite": "non concluant (Challenger : résultats ITF hommes absents de l'archive)"
+    }
+   ],
+   "minutes": 0.9
+  },
+  "etude_pistes_tournoi": {
+   "verdicts": 12,
+   "positifs_avant": 4,
+   "positifs_apres": 1,
+   "changements": [
+    {
+     "verdict": "circuits/ATP/montee_petits_tournois/seule/positive",
+     "avant": true,
+     "avec_l_elo_de_production": false,
+     "sens": "devenu négatif",
+     "suite": "sous-verdict ou comparaison descriptive : seul le verdict final de l'étude compte"
+    },
+    {
+     "verdict": "circuits/ATP/parcours_tournoi/adoptee",
+     "avant": true,
+     "avec_l_elo_de_production": false,
+     "sens": "devenu négatif",
+     "suite": "à retirer de la production si elle y est"
+    },
+    {
+     "verdict": "circuits/WTA/parcours_tournoi/seule/positive",
+     "avant": true,
+     "avec_l_elo_de_production": false,
+     "sens": "devenu négatif",
+     "suite": "sous-verdict ou comparaison descriptive : seul le verdict final de l'étude compte"
+    }
+   ],
+   "minutes": 0.9
+  },
+  "etude_profils_contexte": {
+   "verdicts": 9,
+   "positifs_avant": 5,
+   "positifs_apres": 1,
+   "changements": [
+    {
+     "verdict": "comparaison_sans_role/ATP/positif",
+     "avant": true,
+     "avec_l_elo_de_production": false,
+     "sens": "devenu négatif",
+     "suite": "sous-verdict ou comparaison descriptive : seul le verdict final de l'étude compte"
+    },
+    {
+     "verdict": "comparaison_sans_role/WTA/positif",
+     "avant": true,
+     "avec_l_elo_de_production": false,
+     "sens": "devenu négatif",
+     "suite": "sous-verdict ou comparaison descriptive : seul le verdict final de l'étude compte"
+    },
+    {
+     "verdict": "favori_outsider/ATP/positif",
+     "avant": true,
+     "avec_l_elo_de_production": false,
+     "sens": "devenu négatif",
+     "suite": "à retirer de la production si elle y est"
+    },
+    {
+     "verdict": "favori_outsider/CH/positif",
+     "avant": true,
+     "avec_l_elo_de_production": false,
+     "sens": "devenu négatif",
+     "suite": "non concluant (Challenger : résultats ITF hommes absents de l'archive)"
+    }
+   ],
+   "minutes": 0.7
+  },
+  "etude_bilans_contexte": {
+   "verdicts": 22,
+   "positifs_avant": 0,
+   "positifs_apres": 0,
+   "changements": [],
+   "minutes": 0.6
+  },
+  "etude_set_decisif": {
+   "verdicts": 6,
+   "positifs_avant": 0,
+   "positifs_apres": 0,
+   "changements": [],
+   "minutes": 0.4
+  },
+  "etude_tiebreaks_joueurs": {
+   "verdicts": 6,
+   "positifs_avant": 0,
+   "positifs_apres": 0,
+   "changements": [],
+   "minutes": 0.4
+  },
+  "etude_cpi": {
+   "verdicts": 4,
+   "positifs_avant": 0,
+   "positifs_apres": 0,
+   "changements": [],
+   "minutes": 1.1
+  },
+  "etude_duels_styles": {
+   "verdicts": 4,
+   "positifs_avant": 0,
+   "positifs_apres": 0,
+   "changements": [],
+   "minutes": 0.8
+  },
+  "etude_age": {
+   "verdicts": 3,
+   "positifs_avant": 3,
+   "positifs_apres": 3,
+   "changements": [],
+   "minutes": 0.8
+  },
+  "etude_retour_absence": {
+   "verdicts": 3,
+   "positifs_avant": 3,
+   "positifs_apres": 3,
+   "changements": [],
+   "minutes": 0.6
+  },
+  "etude_changement_surface": {
+   "verdicts": 3,
+   "positifs_avant": 3,
+   "positifs_apres": 3,
+   "changements": [],
+   "minutes": 0.5
+  },
+  "etude_signaux_combines": {
+   "verdicts": 3,
+   "positifs_avant": 3,
+   "positifs_apres": 3,
+   "changements": [],
+   "minutes": 0.8
+  }
+ },
+ "resume": {
+  "etude_classement_serie": {
+   "changements": 0,
+   "positifs": "0 → 0"
+  },
+  "etude_pistes_saison": {
+   "changements": 3,
+   "positifs": "2 → 1"
+  },
+  "etude_pistes_tournoi": {
+   "changements": 3,
+   "positifs": "4 → 1"
+  },
+  "etude_profils_contexte": {
+   "changements": 4,
+   "positifs": "5 → 1"
+  },
+  "etude_bilans_contexte": {
+   "changements": 0,
+   "positifs": "0 → 0"
+  },
+  "etude_set_decisif": {
+   "changements": 0,
+   "positifs": "0 → 0"
+  },
+  "etude_tiebreaks_joueurs": {
+   "changements": 0,
+   "positifs": "0 → 0"
+  },
+  "etude_cpi": {
+   "changements": 0,
+   "positifs": "0 → 0"
+  },
+  "etude_duels_styles": {
+   "changements": 0,
+   "positifs": "0 → 0"
+  },
+  "etude_age": {
+   "changements": 0,
+   "positifs": "3 → 3"
+  },
+  "etude_retour_absence": {
+   "changements": 0,
+   "positifs": "3 → 3"
+  },
+  "etude_changement_surface": {
+   "changements": 0,
+   "positifs": "3 → 3"
+  },
+  "etude_signaux_combines": {
+   "changements": 0,
+   "positifs": "3 → 3"
+  }
+ },
+ "en_production": {
+  "verification": "β combinés réellement lus par pronostics_du_jour.charger_betas_combines le 12/11/2026",
+  "parcours_tournoi_ATP": "devenu négatif ; n'est plus en production depuis le paquet 233 (configuration réapprise adoptée en ATP) : rien à retirer",
+  "favori_outsider_ATP": "devenu négatif ; n'est plus en production depuis le paquet 233 : rien à retirer",
+  "favori_outsider_WTA": "en production (configuration d'avant gardée en WTA) ; RESTE positif avec l'Elo de production (gain 0,0011 sur 11 243 matchs, β 1,90 contre 1,95)",
+  "signaux_combines": "les trois circuits restent positifs avec l'Elo de production (ATP 0,0047, WTA 0,0034, Challenger 0,0019)",
+  "serveuses_WTA": "base du fantôme confirmée : +2,05 points (z 3,0) sur 2018–2022 et +2,47 (z 3,3) sur 2023 → avec l'Elo de production, contre +2,22 et +2,91 ; le décalage figé (+2,55 points) est un peu fort, le fantôme reste jugé sur nos matchs"
+ },
+ "proches_du_seuil": {
+  "evolution_du_classement": "ln(classement il y a 3 mois / actuel) : gain 0,0009 (ATP), 0,0007 (WTA), 0,0009 (Challenger) avec l'Elo de production, contre 0,0001 à 0,0004 avec l'Elo figé ; sous le seuil de 0,001, non retenu ; à surveiller",
+  "bilan_par_niveau_WTA": "bilan brut par catégorie de tournoi : 0,0009, non retenu"
+ },
+ "conclusion": "aucun verdict final ne devient positif ; deux verdicts finaux deviennent négatifs (parcours dans le tournoi en ATP, favori / outsider en ATP), tous deux déjà hors production depuis le paquet 233 ; ce qui est en production venant de ces études reste justifié avec l'Elo de production ; le suivi du % en direct, qui tournait encore sur l'Elo sans réglage, est corrigé dans le code"
+}

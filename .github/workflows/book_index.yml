@@ -1,0 +1,125 @@
+name: Indice des opérateurs
+
+# ──────────────────────────────────────────────────────────────────────────
+# Publie chaque semaine un comparatif des opérateurs sur le tennis : marge,
+# réactivité, fréquence du meilleur prix.
+#
+# POURQUOI CE PRODUIT
+# Les tests ont établi que le CLV net est proche de zéro une fois la marge
+# retirée, et que cinq pistes d'anticipation sont fermées (Polymarket, Kalshi,
+# Elo, fatigue, momentum, limites). Il n'y a donc pas d'edge à vendre.
+# Mais les mêmes données répondent à une question plus utile au lecteur :
+# OÙ placer son pari plutôt que QUEL pari placer. Un opérateur à 4,75 % de
+# marge coûte deux fois moins cher qu'un à 9,13 %, et c'est vérifiable.
+#
+# Ne demande AUCUNE requête API : tout est calculé sur les courbes déjà
+# collectées. Le cron du lundi laisse le temps aux résultats du week-end
+# d'arriver.
+# ──────────────────────────────────────────────────────────────────────────
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Lundi 07:00 UTC, après la mise à jour Elo de 05:10.
+    - cron: '0 7 * * 1'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: book-index
+  cancel-in-progress: false
+
+env:
+  # Étape 4 (16/10/2026) : l'historique FIGÉ des courbes (parts/hist_*) est
+  # servi par R2 ; les lecteurs rapatrient ce qui manque (scripts/hist_r2.py).
+  R2_HIST_MATERIALIZE: '1'
+  # R2 (15/10/2026) — voir README_MIGRATION_R2.md. off | double | on ;
+  # sans variable de dépôt : double (git fait foi, R2 reçoit une copie).
+  R2_PRIMARY: ${{ vars.R2_PRIMARY || 'double' }}
+  R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+  R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+  R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+  PYTHONDONTWRITEBYTECODE: '1'
+  PYTHONUNBUFFERED: '1'
+
+jobs:
+  index:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          # fetch-depth 0 requis par le merge du commit ; filter blob:none
+          # évite de rapatrier les centaines de Mo de parts/ (les partitions
+          # nécessaires sont téléchargées à la demande).
+          fetch-depth: 0
+          filter: blob:none
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      # RESTAURATION DES PARTITIONS ARCHIVEES.
+      #
+      # Ce workflow lance un script dont le resultat depend de
+      # l'historique COMPLET. Depuis que archive_curves sort les
+      # partitions de plus de 28 jours vers les releases curves-2026-*,
+      # elles ne sont plus dans le depot : sans cette etape, le job
+      # travaille sur un historique tronque SANS lever d'erreur.
+      #
+      # Constate le 02/10 sur book_index : 1 251 matchs au lieu de 1 863,
+      # et une reactivite devenue negative partout. Les chiffres
+      # changeaient sans que rien ne le signale.
+      #
+      # `|| true` : une panne de release ne doit pas bloquer le job.
+      # restore_curves interroge l'index ET les releases directement.
+      - name: Restaurer les partitions de courbes archivees
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python scripts/restore_curves.py || true
+
+      - name: Construire l'indice
+        run: |
+          python scripts/curves_parts.py rebuild || true
+          python scripts/book_index.py
+          # Calibration + Brier par opérateur (réécrit le 25/08/2026 après la
+          # corruption du fichier d'origine). Non bloquant : une étude qui
+          # rate ne doit pas empêcher la publication du baromètre — mais
+          # l'échec reste VISIBLE dans les logs, jamais avalé sans trace.
+          python scripts/calibration_books.py || echo "⚠️ calibration_books en échec (non bloquant)"
+
+      - name: Commit
+        if: always()
+        run: |
+          find . -name '__pycache__' -type d -prune -exec rm -rf {} + 2>/dev/null || true
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          # Fichier par fichier : un git add en bloc échoue ENTIÈREMENT si un
+          # seul chemin manque, et n'ajoute alors rien (panne du 15/08/2026).
+          for f in book_index.json book_index.md calibration_books.md; do
+            [ -f "$f" ] && git add -- "$f" || echo "  (absent : $f)"
+          done
+          if git diff --staged --quiet; then
+            echo 'Rien à commit.'; exit 0
+          fi
+          git commit -m "Indice des opérateurs ($(date -u +%Y-%m-%d))"
+          attente=2
+          for essai in 1 2 3 4 5 6; do
+            git fetch origin main || true
+            if git merge origin/main --no-edit; then
+              if git push origin HEAD:main; then echo '✅ PUSH OK'; exit 0; fi
+            else
+              echo "⚠️ conflit — fusion JSON (essai $essai)"
+              if python scripts/merge_json_state.py; then
+                git commit --no-edit || true
+              else
+                git merge --abort 2>/dev/null || true
+              fi
+            fi
+            sleep "$attente"; attente=$((attente*2))
+          done
+          echo '❌ PUSH ÉCHOUÉ après 6 tentatives (62 s cumulées).'
+          exit 1

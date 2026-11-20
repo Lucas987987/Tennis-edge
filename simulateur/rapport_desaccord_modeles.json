@@ -1,0 +1,54 @@
+{
+ "regle": "positif si −0,001 de log loss au total et aucun circuit dégradé de plus de 0,001 (fixée avant)",
+ "matchs": 4821,
+ "juges": 3687,
+ "par_circuit": {
+  "TOUS": {
+   "matchs": 3687,
+   "desaccords": 1506,
+   "log_loss_algo": 0.60691,
+   "log_loss_corrige": 0.60766,
+   "gain": -0.00075,
+   "desaccords_algo_juste_pct": 63.5,
+   "desaccords_elo_juste_pct": 62.4,
+   "desaccords_sim_juste_pct": 60.3,
+   "desaccords_confiance_moyenne_pct": 62.6
+  },
+  "ATP": {
+   "matchs": 686,
+   "desaccords": 286,
+   "log_loss_algo": 0.61169,
+   "log_loss_corrige": 0.61227,
+   "gain": -0.00058,
+   "desaccords_algo_juste_pct": 61.2,
+   "desaccords_elo_juste_pct": 59.4,
+   "desaccords_sim_juste_pct": 61.9,
+   "desaccords_confiance_moyenne_pct": 62.9
+  },
+  "WTA": {
+   "matchs": 737,
+   "desaccords": 326,
+   "log_loss_algo": 0.58176,
+   "log_loss_corrige": 0.58066,
+   "gain": 0.0011,
+   "desaccords_algo_juste_pct": 64.1,
+   "desaccords_elo_juste_pct": 65.0,
+   "desaccords_sim_juste_pct": 55.8,
+   "desaccords_confiance_moyenne_pct": 62.4
+  },
+  "CH": {
+   "matchs": 2264,
+   "desaccords": 894,
+   "log_loss_algo": 0.61365,
+   "log_loss_corrige": 0.61506,
+   "gain": -0.00141,
+   "desaccords_algo_juste_pct": 64.0,
+   "desaccords_elo_juste_pct": 62.4,
+   "desaccords_sim_juste_pct": 61.4,
+   "desaccords_confiance_moyenne_pct": 62.6
+  }
+ },
+ "lambda_final": 1.095,
+ "positif": false,
+ "genere_le": "2026-11-04T11:17:54+00:00"
+}

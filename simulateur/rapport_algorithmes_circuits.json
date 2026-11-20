@@ -1,0 +1,3321 @@
+{
+  "schema": "algorithmes_circuits_v1",
+  "genere_le": "2026-10-27T18:03:06+00:00",
+  "source": "archive Jeff Sackmann, CC BY-NC-SA 4.0, usage non commercial et attribution requis",
+  "protocole": {
+    "n": 16000,
+    "n_decouverte": 4306,
+    "n_confirmation": 11694,
+    "coupure": "2025-01-01",
+    "groupes": {
+      "atp_wta": [
+        "ATP",
+        "WTA"
+      ],
+      "challenger_itf": [
+        "CH",
+        "ITF"
+      ]
+    },
+    "historiques_joueurs_partages": true,
+    "transitions_inter_circuits_conservees": true,
+    "separation": "coefficients et variables retenues seulement",
+    "selection": "2024 seulement ; confirmation 2025–2026 ; bootstrap par semaine ISO",
+    "bootstrap_semaines_iso": 2000,
+    "marche_utilise": false,
+    "activation_automatique": false
+  },
+  "algorithme_partage": {
+    "selection_decouverte": {
+      "candidats": {
+        "controle_local": {
+          "decouverte": {
+            "n": 4306,
+            "log_loss": 0.612238,
+            "brier": 0.212298,
+            "reussite_pct": 65.91
+          },
+          "gains_decouverte": {
+            "log_loss": 0.0,
+            "brier": 0.0,
+            "sens": "positif = apport du challenger"
+          },
+          "convergence": true
+        },
+        "elo:decroissance_730j": {
+          "decouverte": {
+            "n": 4306,
+            "log_loss": 0.619411,
+            "brier": 0.215545,
+            "reussite_pct": 65.03
+          },
+          "gains_decouverte": {
+            "log_loss": -0.007173,
+            "brier": -0.003246,
+            "sens": "positif = apport du challenger"
+          },
+          "convergence": true
+        },
+        "elo:adaptation_surface_125": {
+          "decouverte": {
+            "n": 4306,
+            "log_loss": 0.611596,
+            "brier": 0.212025,
+            "reussite_pct": 65.93
+          },
+          "gains_decouverte": {
+            "log_loss": 0.000642,
+            "brier": 0.000274,
+            "sens": "positif = apport du challenger"
+          },
+          "convergence": true
+        },
+        "elo:apprentissage_challenger_itf_110": {
+          "decouverte": {
+            "n": 4306,
+            "log_loss": 0.611947,
+            "brier": 0.212163,
+            "reussite_pct": 65.93
+          },
+          "gains_decouverte": {
+            "log_loss": 0.000291,
+            "brier": 0.000135,
+            "sens": "positif = apport du challenger"
+          },
+          "convergence": true
+        },
+        "elo:prior_nouveaux_1350": {
+          "decouverte": {
+            "n": 4306,
+            "log_loss": 0.613412,
+            "brier": 0.212805,
+            "reussite_pct": 65.72
+          },
+          "gains_decouverte": {
+            "log_loss": -0.001174,
+            "brier": -0.000506,
+            "sens": "positif = apport du challenger"
+          },
+          "convergence": true
+        },
+        "elo:transition_circuit_115": {
+          "decouverte": {
+            "n": 4306,
+            "log_loss": 0.611977,
+            "brier": 0.212197,
+            "reussite_pct": 66.05
+          },
+          "gains_decouverte": {
+            "log_loss": 0.000261,
+            "brier": 0.000102,
+            "sens": "positif = apport du challenger"
+          },
+          "convergence": true
+        },
+        "elo:format_bo5_110": {
+          "decouverte": {
+            "n": 4306,
+            "log_loss": 0.612276,
+            "brier": 0.212319,
+            "reussite_pct": 65.88
+          },
+          "gains_decouverte": {
+            "log_loss": -3.8e-05,
+            "brier": -2e-05,
+            "sens": "positif = apport du challenger"
+          },
+          "convergence": true
+        },
+        "famille:calendrier_fatigue_absence": {
+          "decouverte": {
+            "n": 4306,
+            "log_loss": 0.607041,
+            "brier": 0.210091,
+            "reussite_pct": 66.37
+          },
+          "gains_decouverte": {
+            "log_loss": 0.005197,
+            "brier": 0.002207,
+            "sens": "positif = apport du challenger"
+          },
+          "convergence": true
+        },
+        "famille:conditions_tournoi": {
+          "decouverte": {
+            "n": 4306,
+            "log_loss": 0.611514,
+            "brier": 0.212034,
+            "reussite_pct": 65.93
+          },
+          "gains_decouverte": {
+            "log_loss": 0.000724,
+            "brier": 0.000265,
+            "sens": "positif = apport du challenger"
+          },
+          "convergence": true
+        },
+        "famille:gauchers_et_h2h": {
+          "decouverte": {
+            "n": 4306,
+            "log_loss": 0.610918,
+            "brier": 0.211814,
+            "reussite_pct": 66.12
+          },
+          "gains_decouverte": {
+            "log_loss": 0.00132,
+            "brier": 0.000484,
+            "sens": "positif = apport du challenger"
+          },
+          "convergence": true
+        },
+        "famille:matchs_serres_pression": {
+          "decouverte": {
+            "n": 4306,
+            "log_loss": 0.609373,
+            "brier": 0.211077,
+            "reussite_pct": 66.19
+          },
+          "gains_decouverte": {
+            "log_loss": 0.002865,
+            "brier": 0.001221,
+            "sens": "positif = apport du challenger"
+          },
+          "convergence": true
+        },
+        "combinaison": {
+          "decouverte": {
+            "n": 4306,
+            "log_loss": 0.603007,
+            "brier": 0.208476,
+            "reussite_pct": 66.58
+          },
+          "gains_decouverte": {
+            "log_loss": 0.009231,
+            "brier": 0.003823,
+            "sens": "positif = apport du challenger"
+          },
+          "convergence": true
+        }
+      },
+      "elo_choisi_pour_combinaison": "adaptation_surface_125",
+      "composantes_eligibles": [
+        "calendrier_fatigue_absence",
+        "conditions_tournoi",
+        "gauchers_et_h2h",
+        "matchs_serres_pression",
+        "elo_dynamique"
+      ],
+      "variante_choisie_sur_decouverte": "combinaison",
+      "regle": "un seul candidat retenu par plus faible log loss sur 2024 ; coefficients ensuite figés"
+    },
+    "decouverte": {
+      "n": 4306,
+      "log_loss": 0.603007,
+      "brier": 0.208476,
+      "reussite_pct": 66.58
+    },
+    "confirmation": {
+      "n": 11694,
+      "log_loss": 0.579143,
+      "brier": 0.198568,
+      "reussite_pct": 68.86
+    },
+    "activation": false
+  },
+  "groupes": {
+    "atp_wta": {
+      "circuits": [
+        "ATP",
+        "WTA"
+      ],
+      "n_decouverte": 1272,
+      "n_confirmation": 1649,
+      "selection_decouverte": {
+        "candidats": {
+          "controle_local": {
+            "decouverte": {
+              "n": 1272,
+              "log_loss": 0.593584,
+              "brier": 0.205193,
+              "reussite_pct": 65.8
+            },
+            "gains_decouverte": {
+              "log_loss": 0.0,
+              "brier": 0.0,
+              "sens": "positif = apport du challenger"
+            },
+            "convergence": true
+          },
+          "elo:decroissance_730j": {
+            "decouverte": {
+              "n": 1272,
+              "log_loss": 0.596825,
+              "brier": 0.206576,
+              "reussite_pct": 65.8
+            },
+            "gains_decouverte": {
+              "log_loss": -0.003241,
+              "brier": -0.001383,
+              "sens": "positif = apport du challenger"
+            },
+            "convergence": true
+          },
+          "elo:adaptation_surface_125": {
+            "decouverte": {
+              "n": 1272,
+              "log_loss": 0.593411,
+              "brier": 0.205157,
+              "reussite_pct": 66.04
+            },
+            "gains_decouverte": {
+              "log_loss": 0.000173,
+              "brier": 3.6e-05,
+              "sens": "positif = apport du challenger"
+            },
+            "convergence": true
+          },
+          "elo:apprentissage_challenger_itf_110": {
+            "decouverte": {
+              "n": 1272,
+              "log_loss": 0.593486,
+              "brier": 0.205142,
+              "reussite_pct": 66.04
+            },
+            "gains_decouverte": {
+              "log_loss": 9.8e-05,
+              "brier": 5.1e-05,
+              "sens": "positif = apport du challenger"
+            },
+            "convergence": true
+          },
+          "elo:prior_nouveaux_1350": {
+            "decouverte": {
+              "n": 1272,
+              "log_loss": 0.59428,
+              "brier": 0.205438,
+              "reussite_pct": 65.57
+            },
+            "gains_decouverte": {
+              "log_loss": -0.000696,
+              "brier": -0.000245,
+              "sens": "positif = apport du challenger"
+            },
+            "convergence": true
+          },
+          "elo:transition_circuit_115": {
+            "decouverte": {
+              "n": 1272,
+              "log_loss": 0.593262,
+              "brier": 0.205094,
+              "reussite_pct": 65.96
+            },
+            "gains_decouverte": {
+              "log_loss": 0.000321,
+              "brier": 9.9e-05,
+              "sens": "positif = apport du challenger"
+            },
+            "convergence": true
+          },
+          "elo:format_bo5_110": {
+            "decouverte": {
+              "n": 1272,
+              "log_loss": 0.593683,
+              "brier": 0.20524,
+              "reussite_pct": 65.88
+            },
+            "gains_decouverte": {
+              "log_loss": -9.9e-05,
+              "brier": -4.7e-05,
+              "sens": "positif = apport du challenger"
+            },
+            "convergence": true
+          },
+          "famille:calendrier_fatigue_absence": {
+            "decouverte": {
+              "n": 1272,
+              "log_loss": 0.58934,
+              "brier": 0.203563,
+              "reussite_pct": 65.33
+            },
+            "gains_decouverte": {
+              "log_loss": 0.004244,
+              "brier": 0.001629,
+              "sens": "positif = apport du challenger"
+            },
+            "convergence": true
+          },
+          "famille:conditions_tournoi": {
+            "decouverte": {
+              "n": 1272,
+              "log_loss": 0.592677,
+              "brier": 0.204652,
+              "reussite_pct": 65.96
+            },
+            "gains_decouverte": {
+              "log_loss": 0.000907,
+              "brier": 0.000541,
+              "sens": "positif = apport du challenger"
+            },
+            "convergence": true
+          },
+          "famille:gauchers_et_h2h": {
+            "decouverte": {
+              "n": 1272,
+              "log_loss": 0.591221,
+              "brier": 0.204294,
+              "reussite_pct": 66.04
+            },
+            "gains_decouverte": {
+              "log_loss": 0.002363,
+              "brier": 0.000899,
+              "sens": "positif = apport du challenger"
+            },
+            "convergence": true
+          },
+          "famille:matchs_serres_pression": {
+            "decouverte": {
+              "n": 1272,
+              "log_loss": 0.591617,
+              "brier": 0.204429,
+              "reussite_pct": 66.19
+            },
+            "gains_decouverte": {
+              "log_loss": 0.001967,
+              "brier": 0.000764,
+              "sens": "positif = apport du challenger"
+            },
+            "convergence": true
+          },
+          "combinaison": {
+            "decouverte": {
+              "n": 1272,
+              "log_loss": 0.583276,
+              "brier": 0.20111,
+              "reussite_pct": 67.3
+            },
+            "gains_decouverte": {
+              "log_loss": 0.010308,
+              "brier": 0.004083,
+              "sens": "positif = apport du challenger"
+            },
+            "convergence": true
+          }
+        },
+        "elo_choisi_pour_combinaison": "transition_circuit_115",
+        "composantes_eligibles": [
+          "calendrier_fatigue_absence",
+          "conditions_tournoi",
+          "gauchers_et_h2h",
+          "matchs_serres_pression",
+          "elo_dynamique"
+        ],
+        "variante_choisie_sur_decouverte": "combinaison",
+        "regle": "un seul candidat retenu par plus faible log loss sur 2024 ; coefficients ensuite figés"
+      },
+      "separation_seule_vs_controle_partage": {
+        "decouverte": {
+          "controle": {
+            "n": 1272,
+            "log_loss": 0.594258,
+            "brier": 0.205477,
+            "reussite_pct": 65.72
+          },
+          "challenger": {
+            "n": 1272,
+            "log_loss": 0.593584,
+            "brier": 0.205193,
+            "reussite_pct": 65.8
+          },
+          "gains": {
+            "log_loss": 0.000674,
+            "brier": 0.000284,
+            "sens": "positif = apport du challenger"
+          }
+        },
+        "confirmation": {
+          "controle": {
+            "n": 1649,
+            "log_loss": 0.592402,
+            "brier": 0.204672,
+            "reussite_pct": 67.31
+          },
+          "challenger": {
+            "n": 1649,
+            "log_loss": 0.593563,
+            "brier": 0.205083,
+            "reussite_pct": 67.07
+          },
+          "gains": {
+            "log_loss": -0.001162,
+            "brier": -0.000411,
+            "sens": "positif = apport du challenger"
+          }
+        },
+        "ic95_bootstrap_semaine": {
+          "log_loss": {
+            "bas": -0.003374,
+            "haut": 0.000824
+          },
+          "brier": {
+            "bas": -0.001294,
+            "haut": 0.000373
+          }
+        },
+        "sous_groupes_confirmation": {
+          "global": {
+            "controle": {
+              "n": 1649,
+              "log_loss": 0.592402,
+              "brier": 0.204672,
+              "reussite_pct": 67.31
+            },
+            "challenger": {
+              "n": 1649,
+              "log_loss": 0.593563,
+              "brier": 0.205083,
+              "reussite_pct": 67.07
+            },
+            "gains": {
+              "log_loss": -0.001162,
+              "brier": -0.000411,
+              "sens": "positif = apport du challenger"
+            }
+          },
+          "circuit:ATP": {
+            "controle": {
+              "n": 815,
+              "log_loss": 0.587109,
+              "brier": 0.201979,
+              "reussite_pct": 67.98
+            },
+            "challenger": {
+              "n": 815,
+              "log_loss": 0.58629,
+              "brier": 0.201648,
+              "reussite_pct": 68.1
+            },
+            "gains": {
+              "log_loss": 0.000819,
+              "brier": 0.000331,
+              "sens": "positif = apport du challenger"
+            }
+          },
+          "circuit:WTA": {
+            "controle": {
+              "n": 834,
+              "log_loss": 0.597573,
+              "brier": 0.207303,
+              "reussite_pct": 66.67
+            },
+            "challenger": {
+              "n": 834,
+              "log_loss": 0.600671,
+              "brier": 0.208439,
+              "reussite_pct": 66.07
+            },
+            "gains": {
+              "log_loss": -0.003097,
+              "brier": -0.001135,
+              "sens": "positif = apport du challenger"
+            }
+          },
+          "surface:Hard": {
+            "controle": {
+              "n": 984,
+              "log_loss": 0.605988,
+              "brier": 0.210788,
+              "reussite_pct": 66.36
+            },
+            "challenger": {
+              "n": 984,
+              "log_loss": 0.607692,
+              "brier": 0.211449,
+              "reussite_pct": 65.75
+            },
+            "gains": {
+              "log_loss": -0.001704,
+              "brier": -0.00066,
+              "sens": "positif = apport du challenger"
+            }
+          },
+          "surface:Clay": {
+            "controle": {
+              "n": 535,
+              "log_loss": 0.582655,
+              "brier": 0.200451,
+              "reussite_pct": 67.48
+            },
+            "challenger": {
+              "n": 535,
+              "log_loss": 0.583118,
+              "brier": 0.200517,
+              "reussite_pct": 67.85
+            },
+            "gains": {
+              "log_loss": -0.000463,
+              "brier": -6.6e-05,
+              "sens": "positif = apport du challenger"
+            }
+          },
+          "surface:Grass": {
+            "controle": {
+              "n": 130,
+              "log_loss": 0.529675,
+              "brier": 0.175744,
+              "reussite_pct": 73.85
+            },
+            "challenger": {
+              "n": 130,
+              "log_loss": 0.529607,
+              "brier": 0.175685,
+              "reussite_pct": 73.85
+            },
+            "gains": {
+              "log_loss": 6.7e-05,
+              "brier": 5.9e-05,
+              "sens": "positif = apport du challenger"
+            }
+          },
+          "annee:2025": {
+            "controle": {
+              "n": 1136,
+              "log_loss": 0.598151,
+              "brier": 0.206832,
+              "reussite_pct": 67.08
+            },
+            "challenger": {
+              "n": 1136,
+              "log_loss": 0.599861,
+              "brier": 0.207412,
+              "reussite_pct": 66.73
+            },
+            "gains": {
+              "log_loss": -0.00171,
+              "brier": -0.00058,
+              "sens": "positif = apport du challenger"
+            }
+          },
+          "annee:2026": {
+            "controle": {
+              "n": 513,
+              "log_loss": 0.579671,
+              "brier": 0.199889,
+              "reussite_pct": 67.84
+            },
+            "challenger": {
+              "n": 513,
+              "log_loss": 0.579618,
+              "brier": 0.199925,
+              "reussite_pct": 67.84
+            },
+            "gains": {
+              "log_loss": 5.2e-05,
+              "brier": -3.6e-05,
+              "sens": "positif = apport du challenger"
+            }
+          },
+          "documentation:moins_500_balles": {
+            "controle": {
+              "n": 31,
+              "log_loss": 0.532234,
+              "brier": 0.173017,
+              "reussite_pct": 74.19
+            },
+            "challenger": {
+              "n": 31,
+              "log_loss": 0.605836,
+              "brier": 0.200612,
+              "reussite_pct": 70.97
+            },
+            "gains": {
+              "log_loss": -0.073602,
+              "brier": -0.027596,
+              "sens": "positif = apport du challenger"
+            }
+          },
+          "transition_surface": {
+            "controle": {
+              "n": 224,
+              "log_loss": 0.549246,
+              "brier": 0.186863,
+              "reussite_pct": 68.3
+            },
+            "challenger": {
+              "n": 224,
+              "log_loss": 0.548172,
+              "brier": 0.186636,
+              "reussite_pct": 68.75
+            },
+            "gains": {
+              "log_loss": 0.001074,
+              "brier": 0.000228,
+              "sens": "positif = apport du challenger"
+            }
+          },
+          "retour_absence_30j": {
+            "controle": {
+              "n": 195,
+              "log_loss": 0.603313,
+              "brier": 0.208991,
+              "reussite_pct": 65.64
+            },
+            "challenger": {
+              "n": 195,
+              "log_loss": 0.604418,
+              "brier": 0.20871,
+              "reussite_pct": 64.62
+            },
+            "gains": {
+              "log_loss": -0.001105,
+              "brier": 0.000282,
+              "sens": "positif = apport du challenger"
+            }
+          },
+          "format:bo5": {
+            "controle": {
+              "n": 126,
+              "log_loss": 0.5276,
+              "brier": 0.176379,
+              "reussite_pct": 74.6
+            },
+            "challenger": {
+              "n": 126,
+              "log_loss": 0.525843,
+              "brier": 0.17567,
+              "reussite_pct": 73.81
+            },
+            "gains": {
+              "log_loss": 0.001757,
+              "brier": 0.000708,
+              "sens": "positif = apport du challenger"
+            }
+          },
+          "defaite_favori_controle": {
+            "controle": {
+              "n": 539,
+              "log_loss": 1.059418,
+              "brier": 0.415364,
+              "reussite_pct": 0.0
+            },
+            "challenger": {
+              "n": 539,
+              "log_loss": 1.064988,
+              "brier": 0.417056,
+              "reussite_pct": 1.11
+            },
+            "gains": {
+              "log_loss": -0.00557,
+              "brier": -0.001692,
+              "sens": "positif = apport du challenger"
+            },
+            "definition": "issue contraire au favori du contrôle ; diagnostic descriptif seulement"
+          }
+        },
+        "controles_robustesse": {
+          "circuit:CH": {
+            "n": 0,
+            "ok": null,
+            "raison": "moins de 30 matchs"
+          },
+          "documentation:moins_500_balles": {
+            "n": 31,
+            "ok": false,
+            "gain_log_loss": -0.073602,
+            "gain_brier": -0.027596,
+            "tolerance": 0.001
+          },
+          "documentation:moins_10_matchs_elo": {
+            "n": 0,
+            "ok": null,
+            "raison": "moins de 30 matchs"
+          }
+        },
+        "apport_confirme": false,
+        "verdict": "apport non confirmé ; champion inchangé",
+        "activation": false
+      },
+      "algorithme_local_vs_controle_partage": {
+        "decouverte": {
+          "controle": {
+            "n": 1272,
+            "log_loss": 0.594258,
+            "brier": 0.205477,
+            "reussite_pct": 65.72
+          },
+          "challenger": {
+            "n": 1272,
+            "log_loss": 0.583276,
+            "brier": 0.20111,
+            "reussite_pct": 67.3
+          },
+          "gains": {
+            "log_loss": 0.010982,
+            "brier": 0.004367,
+            "sens": "positif = apport du challenger"
+          }
+        },
+        "confirmation": {
+          "controle": {
+            "n": 1649,
+            "log_loss": 0.592402,
+            "brier": 0.204672,
+            "reussite_pct": 67.31
+          },
+          "challenger": {
+            "n": 1649,
+            "log_loss": 0.594819,
+            "brier": 0.205352,
+            "reussite_pct": 67.19
+          },
+          "gains": {
+            "log_loss": -0.002417,
+            "brier": -0.00068,
+            "sens": "positif = apport du challenger"
+          }
+        },
+        "ic95_bootstrap_semaine": {
+          "log_loss": {
+            "bas": -0.010307,
+            "haut": 0.004963
+          },
+          "brier": {
+            "bas": -0.003848,
+            "haut": 0.002362
+          }
+        },
+        "sous_groupes_confirmation": {
+          "global": {
+            "controle": {
+              "n": 1649,
+              "log_loss": 0.592402,
+              "brier": 0.204672,
+              "reussite_pct": 67.31
+            },
+            "challenger": {
+              "n": 1649,
+              "log_loss": 0.594819,
+              "brier": 0.205352,
+              "reussite_pct": 67.19
+            },
+            "gains": {
+              "log_loss": -0.002417,
+              "brier": -0.00068,
+              "sens": "positif = apport du challenger"
+            }
+          },
+          "circuit:ATP": {
+            "controle": {
+              "n": 815,
+              "log_loss": 0.587109,
+              "brier": 0.201979,
+              "reussite_pct": 67.98
+            },
+            "challenger": {
+              "n": 815,
+              "log_loss": 0.577574,
+              "brier": 0.198051,
+              "reussite_pct": 68.83
+            },
+            "gains": {
+              "log_loss": 0.009535,
+              "brier": 0.003928,
+              "sens": "positif = apport du challenger"
+            }
+          },
+          "circuit:WTA": {
+            "controle": {
+              "n": 834,
+              "log_loss": 0.597573,
+              "brier": 0.207303,
+              "reussite_pct": 66.67
+            },
+            "challenger": {
+              "n": 834,
+              "log_loss": 0.611671,
+              "brier": 0.212486,
+              "reussite_pct": 65.59
+            },
+            "gains": {
+              "log_loss": -0.014098,
+              "brier": -0.005183,
+              "sens": "positif = apport du challenger"
+            }
+          },
+          "surface:Hard": {
+            "controle": {
+              "n": 984,
+              "log_loss": 0.605988,
+              "brier": 0.210788,
+              "reussite_pct": 66.36
+            },
+            "challenger": {
+              "n": 984,
+              "log_loss": 0.608855,
+              "brier": 0.211274,
+              "reussite_pct": 65.24
+            },
+            "gains": {
+              "log_loss": -0.002867,
+              "brier": -0.000485,
+              "sens": "positif = apport du challenger"
+            }
+          },
+          "surface:Clay": {
+            "controle": {
+              "n": 535,
+              "log_loss": 0.582655,
+              "brier": 0.200451,
+              "reussite_pct": 67.48
+            },
+            "challenger": {
+              "n": 535,
+              "log_loss": 0.587269,
+              "brier": 0.202623,
+              "reussite_pct": 68.41
+            },
+            "gains": {
+              "log_loss": -0.004614,
+              "brier": -0.002172,
+              "sens": "positif = apport du challenger"
+            }
+          },
+          "surface:Grass": {
+            "controle": {
+              "n": 130,
+              "log_loss": 0.529675,
+              "brier": 0.175744,
+              "reussite_pct": 73.85
+            },
+            "challenger": {
+              "n": 130,
+              "log_loss": 0.519653,
+              "brier": 0.171756,
+              "reussite_pct": 76.92
+            },
+            "gains": {
+              "log_loss": 0.010022,
+              "brier": 0.003988,
+              "sens": "positif = apport du challenger"
+            }
+          },
+          "annee:2025": {
+            "controle": {
+              "n": 1136,
+              "log_loss": 0.598151,
+              "brier": 0.206832,
+              "reussite_pct": 67.08
+            },
+            "challenger": {
+              "n": 1136,
+              "log_loss": 0.598857,
+              "brier": 0.206294,
+              "reussite_pct": 67.69
+            },
+            "gains": {
+              "log_loss": -0.000707,
+              "brier": 0.000537,
+              "sens": "positif = apport du challenger"
+            }
+          },
+          "annee:2026": {
+            "controle": {
+              "n": 513,
+              "log_loss": 0.579671,
+              "brier": 0.199889,
+              "reussite_pct": 67.84
+            },
+            "challenger": {
+              "n": 513,
+              "log_loss": 0.585876,
+              "brier": 0.203265,
+              "reussite_pct": 66.08
+            },
+            "gains": {
+              "log_loss": -0.006206,
+              "brier": -0.003376,
+              "sens": "positif = apport du challenger"
+            }
+          },
+          "documentation:moins_500_balles": {
+            "controle": {
+              "n": 31,
+              "log_loss": 0.532234,
+              "brier": 0.173017,
+              "reussite_pct": 74.19
+            },
+            "challenger": {
+              "n": 31,
+              "log_loss": 0.637135,
+              "brier": 0.203227,
+              "reussite_pct": 70.97
+            },
+            "gains": {
+              "log_loss": -0.104901,
+              "brier": -0.03021,
+              "sens": "positif = apport du challenger"
+            }
+          },
+          "transition_surface": {
+            "controle": {
+              "n": 224,
+              "log_loss": 0.549246,
+              "brier": 0.186863,
+              "reussite_pct": 68.3
+            },
+            "challenger": {
+              "n": 224,
+              "log_loss": 0.546063,
+              "brier": 0.184938,
+              "reussite_pct": 71.43
+            },
+            "gains": {
+              "log_loss": 0.003183,
+              "brier": 0.001925,
+              "sens": "positif = apport du challenger"
+            }
+          },
+          "retour_absence_30j": {
+            "controle": {
+              "n": 195,
+              "log_loss": 0.603313,
+              "brier": 0.208991,
+              "reussite_pct": 65.64
+            },
+            "challenger": {
+              "n": 195,
+              "log_loss": 0.59787,
+              "brier": 0.202548,
+              "reussite_pct": 67.18
+            },
+            "gains": {
+              "log_loss": 0.005443,
+              "brier": 0.006444,
+              "sens": "positif = apport du challenger"
+            }
+          },
+          "format:bo5": {
+            "controle": {
+              "n": 126,
+              "log_loss": 0.5276,
+              "brier": 0.176379,
+              "reussite_pct": 74.6
+            },
+            "challenger": {
+              "n": 126,
+              "log_loss": 0.499649,
+              "brier": 0.165762,
+              "reussite_pct": 75.4
+            },
+            "gains": {
+              "log_loss": 0.027951,
+              "brier": 0.010616,
+              "sens": "positif = apport du challenger"
+            }
+          },
+          "defaite_favori_controle": {
+            "controle": {
+              "n": 539,
+              "log_loss": 1.059418,
+              "brier": 0.415364,
+              "reussite_pct": 0.0
+            },
+            "challenger": {
+              "n": 539,
+              "log_loss": 1.064,
+              "brier": 0.41188,
+              "reussite_pct": 14.1
+            },
+            "gains": {
+              "log_loss": -0.004582,
+              "brier": 0.003484,
+              "sens": "positif = apport du challenger"
+            },
+            "definition": "issue contraire au favori du contrôle ; diagnostic descriptif seulement"
+          }
+        },
+        "controles_robustesse": {
+          "circuit:CH": {
+            "n": 0,
+            "ok": null,
+            "raison": "moins de 30 matchs"
+          },
+          "documentation:moins_500_balles": {
+            "n": 31,
+            "ok": false,
+            "gain_log_loss": -0.104901,
+            "gain_brier": -0.03021,
+            "tolerance": 0.001
+          },
+          "documentation:moins_10_matchs_elo": {
+            "n": 0,
+            "ok": null,
+            "raison": "moins de 30 matchs"
+          }
+        },
+        "apport_confirme": false,
+        "verdict": "apport non confirmé ; champion inchangé",
+        "activation": false
+      },
+      "algorithme_local_vs_algorithme_partage": {
+        "decouverte": {
+          "controle": {
+            "n": 1272,
+            "log_loss": 0.589974,
+            "brier": 0.204099,
+            "reussite_pct": 66.59
+          },
+          "challenger": {
+            "n": 1272,
+            "log_loss": 0.583276,
+            "brier": 0.20111,
+            "reussite_pct": 67.3
+          },
+          "gains": {
+            "log_loss": 0.006698,
+            "brier": 0.002989,
+            "sens": "positif = apport du challenger"
+          }
+        },
+        "confirmation": {
+          "controle": {
+            "n": 1649,
+            "log_loss": 0.590472,
+            "brier": 0.203739,
+            "reussite_pct": 67.43
+          },
+          "challenger": {
+            "n": 1649,
+            "log_loss": 0.594819,
+            "brier": 0.205352,
+            "reussite_pct": 67.19
+          },
+          "gains": {
+            "log_loss": -0.004347,
+            "brier": -0.001612,
+            "sens": "positif = apport du challenger"
+          }
+        },
+        "ic95_bootstrap_semaine": {
+          "log_loss": {
+            "bas": -0.010326,
+            "haut": 0.001654
+          },
+          "brier": {
+            "bas": -0.00412,
+            "haut": 0.00087
+          }
+        },
+        "sous_groupes_confirmation": {
+          "global": {
+            "controle": {
+              "n": 1649,
+              "log_loss": 0.590472,
+              "brier": 0.203739,
+              "reussite_pct": 67.43
+            },
+            "challenger": {
+              "n": 1649,
+              "log_loss": 0.594819,
+              "brier": 0.205352,
+              "reussite_pct": 67.19
+            },
+            "gains": {
+              "log_loss": -0.004347,
+              "brier": -0.001612,
+              "sens": "positif = apport du challenger"
+            }
+          },
+          "circuit:ATP": {
+            "controle": {
+              "n": 815,
+              "log_loss": 0.577591,
+              "brier": 0.198048,
+              "reussite_pct": 69.2
+            },
+            "challenger": {
+              "n": 815,
+              "log_loss": 0.577574,
+              "brier": 0.198051,
+              "reussite_pct": 68.83
+            },
+            "gains": {
+              "log_loss": 1.7e-05,
+              "brier": -2e-06,
+              "sens": "positif = apport du challenger"
+            }
+          },
+          "circuit:WTA": {
+            "controle": {
+              "n": 834,
+              "log_loss": 0.60306,
+              "brier": 0.2093,
+              "reussite_pct": 65.71
+            },
+            "challenger": {
+              "n": 834,
+              "log_loss": 0.611671,
+              "brier": 0.212486,
+              "reussite_pct": 65.59
+            },
+            "gains": {
+              "log_loss": -0.008611,
+              "brier": -0.003186,
+              "sens": "positif = apport du challenger"
+            }
+          },
+          "surface:Hard": {
+            "controle": {
+              "n": 984,
+              "log_loss": 0.601332,
+              "brier": 0.20857,
+              "reussite_pct": 66.16
+            },
+            "challenger": {
+              "n": 984,
+              "log_loss": 0.608855,
+              "brier": 0.211274,
+              "reussite_pct": 65.24
+            },
+            "gains": {
+              "log_loss": -0.007523,
+              "brier": -0.002704,
+              "sens": "positif = apport du challenger"
+            }
+          },
+          "surface:Clay": {
+            "controle": {
+              "n": 535,
+              "log_loss": 0.588774,
+              "brier": 0.20311,
+              "reussite_pct": 67.85
+            },
+            "challenger": {
+              "n": 535,
+              "log_loss": 0.587269,
+              "brier": 0.202623,
+              "reussite_pct": 68.41
+            },
+            "gains": {
+              "log_loss": 0.001505,
+              "brier": 0.000487,
+              "sens": "positif = apport du challenger"
+            }
+          },
+          "surface:Grass": {
+            "controle": {
+              "n": 130,
+              "log_loss": 0.515263,
+              "brier": 0.169768,
+              "reussite_pct": 75.38
+            },
+            "challenger": {
+              "n": 130,
+              "log_loss": 0.519653,
+              "brier": 0.171756,
+              "reussite_pct": 76.92
+            },
+            "gains": {
+              "log_loss": -0.00439,
+              "brier": -0.001988,
+              "sens": "positif = apport du challenger"
+            }
+          },
+          "annee:2025": {
+            "controle": {
+              "n": 1136,
+              "log_loss": 0.593557,
+              "brier": 0.20452,
+              "reussite_pct": 68.22
+            },
+            "challenger": {
+              "n": 1136,
+              "log_loss": 0.598857,
+              "brier": 0.206294,
+              "reussite_pct": 67.69
+            },
+            "gains": {
+              "log_loss": -0.005301,
+              "brier": -0.001774,
+              "sens": "positif = apport du challenger"
+            }
+          },
+          "annee:2026": {
+            "controle": {
+              "n": 513,
+              "log_loss": 0.583642,
+              "brier": 0.20201,
+              "reussite_pct": 65.69
+            },
+            "challenger": {
+              "n": 513,
+              "log_loss": 0.585876,
+              "brier": 0.203265,
+              "reussite_pct": 66.08
+            },
+            "gains": {
+              "log_loss": -0.002235,
+              "brier": -0.001255,
+              "sens": "positif = apport du challenger"
+            }
+          },
+          "documentation:moins_500_balles": {
+            "controle": {
+              "n": 31,
+              "log_loss": 0.55662,
+              "brier": 0.17754,
+              "reussite_pct": 77.42
+            },
+            "challenger": {
+              "n": 31,
+              "log_loss": 0.637135,
+              "brier": 0.203227,
+              "reussite_pct": 70.97
+            },
+            "gains": {
+              "log_loss": -0.080515,
+              "brier": -0.025687,
+              "sens": "positif = apport du challenger"
+            }
+          },
+          "transition_surface": {
+            "controle": {
+              "n": 224,
+              "log_loss": 0.551847,
+              "brier": 0.188008,
+              "reussite_pct": 70.98
+            },
+            "challenger": {
+              "n": 224,
+              "log_loss": 0.546063,
+              "brier": 0.184938,
+              "reussite_pct": 71.43
+            },
+            "gains": {
+              "log_loss": 0.005784,
+              "brier": 0.00307,
+              "sens": "positif = apport du challenger"
+            }
+          },
+          "retour_absence_30j": {
+            "controle": {
+              "n": 195,
+              "log_loss": 0.599862,
+              "brier": 0.206299,
+              "reussite_pct": 66.67
+            },
+            "challenger": {
+              "n": 195,
+              "log_loss": 0.59787,
+              "brier": 0.202548,
+              "reussite_pct": 67.18
+            },
+            "gains": {
+              "log_loss": 0.001992,
+              "brier": 0.003751,
+              "sens": "positif = apport du challenger"
+            }
+          },
+          "format:bo5": {
+            "controle": {
+              "n": 126,
+              "log_loss": 0.50444,
+              "brier": 0.166662,
+              "reussite_pct": 75.4
+            },
+            "challenger": {
+              "n": 126,
+              "log_loss": 0.499649,
+              "brier": 0.165762,
+              "reussite_pct": 75.4
+            },
+            "gains": {
+              "log_loss": 0.004791,
+              "brier": 0.0009,
+              "sens": "positif = apport du challenger"
+            }
+          },
+          "defaite_favori_controle": {
+            "controle": {
+              "n": 537,
+              "log_loss": 1.0734,
+              "brier": 0.420418,
+              "reussite_pct": 0.0
+            },
+            "challenger": {
+              "n": 537,
+              "log_loss": 1.085031,
+              "brier": 0.421877,
+              "reussite_pct": 9.87
+            },
+            "gains": {
+              "log_loss": -0.011631,
+              "brier": -0.001459,
+              "sens": "positif = apport du challenger"
+            },
+            "definition": "issue contraire au favori du contrôle ; diagnostic descriptif seulement"
+          }
+        },
+        "controles_robustesse": {
+          "circuit:CH": {
+            "n": 0,
+            "ok": null,
+            "raison": "moins de 30 matchs"
+          },
+          "documentation:moins_500_balles": {
+            "n": 31,
+            "ok": false,
+            "gain_log_loss": -0.080515,
+            "gain_brier": -0.025687,
+            "tolerance": 0.001
+          },
+          "documentation:moins_10_matchs_elo": {
+            "n": 0,
+            "ok": null,
+            "raison": "moins de 30 matchs"
+          }
+        },
+        "apport_confirme": false,
+        "verdict": "apport non confirmé ; champion inchangé",
+        "activation": false
+      },
+      "activation": false
+    },
+    "challenger_itf": {
+      "circuits": [
+        "CH",
+        "ITF"
+      ],
+      "n_decouverte": 3034,
+      "n_confirmation": 10045,
+      "selection_decouverte": {
+        "candidats": {
+          "controle_local": {
+            "decouverte": {
+              "n": 3034,
+              "log_loss": 0.61974,
+              "brier": 0.215145,
+              "reussite_pct": 66.08
+            },
+            "gains_decouverte": {
+              "log_loss": 0.0,
+              "brier": 0.0,
+              "sens": "positif = apport du challenger"
+            },
+            "convergence": true
+          },
+          "elo:decroissance_730j": {
+            "decouverte": {
+              "n": 3034,
+              "log_loss": 0.6285,
+              "brier": 0.219164,
+              "reussite_pct": 64.77
+            },
+            "gains_decouverte": {
+              "log_loss": -0.008761,
+              "brier": -0.004019,
+              "sens": "positif = apport du challenger"
+            },
+            "convergence": true
+          },
+          "elo:adaptation_surface_125": {
+            "decouverte": {
+              "n": 3034,
+              "log_loss": 0.618907,
+              "brier": 0.21478,
+              "reussite_pct": 65.95
+            },
+            "gains_decouverte": {
+              "log_loss": 0.000833,
+              "brier": 0.000365,
+              "sens": "positif = apport du challenger"
+            },
+            "convergence": true
+          },
+          "elo:apprentissage_challenger_itf_110": {
+            "decouverte": {
+              "n": 3034,
+              "log_loss": 0.619327,
+              "brier": 0.214984,
+              "reussite_pct": 65.99
+            },
+            "gains_decouverte": {
+              "log_loss": 0.000413,
+              "brier": 0.000161,
+              "sens": "positif = apport du challenger"
+            },
+            "convergence": true
+          },
+          "elo:prior_nouveaux_1350": {
+            "decouverte": {
+              "n": 3034,
+              "log_loss": 0.621107,
+              "brier": 0.215769,
+              "reussite_pct": 65.89
+            },
+            "gains_decouverte": {
+              "log_loss": -0.001368,
+              "brier": -0.000624,
+              "sens": "positif = apport du challenger"
+            },
+            "convergence": true
+          },
+          "elo:transition_circuit_115": {
+            "decouverte": {
+              "n": 3034,
+              "log_loss": 0.619515,
+              "brier": 0.215046,
+              "reussite_pct": 66.12
+            },
+            "gains_decouverte": {
+              "log_loss": 0.000225,
+              "brier": 9.9e-05,
+              "sens": "positif = apport du challenger"
+            },
+            "convergence": true
+          },
+          "elo:format_bo5_110": {
+            "decouverte": {
+              "n": 3034,
+              "log_loss": 0.619755,
+              "brier": 0.215151,
+              "reussite_pct": 66.05
+            },
+            "gains_decouverte": {
+              "log_loss": -1.5e-05,
+              "brier": -6e-06,
+              "sens": "positif = apport du challenger"
+            },
+            "convergence": true
+          },
+          "famille:calendrier_fatigue_absence": {
+            "decouverte": {
+              "n": 3034,
+              "log_loss": 0.611932,
+              "brier": 0.211752,
+              "reussite_pct": 66.18
+            },
+            "gains_decouverte": {
+              "log_loss": 0.007808,
+              "brier": 0.003393,
+              "sens": "positif = apport du challenger"
+            },
+            "convergence": true
+          },
+          "famille:conditions_tournoi": {
+            "decouverte": {
+              "n": 3034,
+              "log_loss": 0.618252,
+              "brier": 0.214609,
+              "reussite_pct": 66.02
+            },
+            "gains_decouverte": {
+              "log_loss": 0.001488,
+              "brier": 0.000537,
+              "sens": "positif = apport du challenger"
+            },
+            "convergence": true
+          },
+          "famille:gauchers_et_h2h": {
+            "decouverte": {
+              "n": 3034,
+              "log_loss": 0.618112,
+              "brier": 0.214502,
+              "reussite_pct": 66.58
+            },
+            "gains_decouverte": {
+              "log_loss": 0.001628,
+              "brier": 0.000643,
+              "sens": "positif = apport du challenger"
+            },
+            "convergence": true
+          },
+          "famille:matchs_serres_pression": {
+            "decouverte": {
+              "n": 3034,
+              "log_loss": 0.615804,
+              "brier": 0.213418,
+              "reussite_pct": 66.58
+            },
+            "gains_decouverte": {
+              "log_loss": 0.003936,
+              "brier": 0.001727,
+              "sens": "positif = apport du challenger"
+            },
+            "convergence": true
+          },
+          "combinaison": {
+            "decouverte": {
+              "n": 3034,
+              "log_loss": 0.607144,
+              "brier": 0.209841,
+              "reussite_pct": 66.64
+            },
+            "gains_decouverte": {
+              "log_loss": 0.012596,
+              "brier": 0.005304,
+              "sens": "positif = apport du challenger"
+            },
+            "convergence": true
+          }
+        },
+        "elo_choisi_pour_combinaison": "adaptation_surface_125",
+        "composantes_eligibles": [
+          "calendrier_fatigue_absence",
+          "conditions_tournoi",
+          "gauchers_et_h2h",
+          "matchs_serres_pression",
+          "elo_dynamique"
+        ],
+        "variante_choisie_sur_decouverte": "combinaison",
+        "regle": "un seul candidat retenu par plus faible log loss sur 2024 ; coefficients ensuite figés"
+      },
+      "separation_seule_vs_controle_partage": {
+        "decouverte": {
+          "controle": {
+            "n": 3034,
+            "log_loss": 0.619776,
+            "brier": 0.215158,
+            "reussite_pct": 65.99
+          },
+          "challenger": {
+            "n": 3034,
+            "log_loss": 0.61974,
+            "brier": 0.215145,
+            "reussite_pct": 66.08
+          },
+          "gains": {
+            "log_loss": 3.6e-05,
+            "brier": 1.3e-05,
+            "sens": "positif = apport du challenger"
+          }
+        },
+        "confirmation": {
+          "controle": {
+            "n": 10045,
+            "log_loss": 0.581477,
+            "brier": 0.1993,
+            "reussite_pct": 69.03
+          },
+          "challenger": {
+            "n": 10045,
+            "log_loss": 0.581125,
+            "brier": 0.199133,
+            "reussite_pct": 69.13
+          },
+          "gains": {
+            "log_loss": 0.000352,
+            "brier": 0.000167,
+            "sens": "positif = apport du challenger"
+          }
+        },
+        "ic95_bootstrap_semaine": {
+          "log_loss": {
+            "bas": 0.000137,
+            "haut": 0.000566
+          },
+          "brier": {
+            "bas": 7.1e-05,
+            "haut": 0.000261
+          }
+        },
+        "sous_groupes_confirmation": {
+          "global": {
+            "controle": {
+              "n": 10045,
+              "log_loss": 0.581477,
+              "brier": 0.1993,
+              "reussite_pct": 69.03
+            },
+            "challenger": {
+              "n": 10045,
+              "log_loss": 0.581125,
+              "brier": 0.199133,
+              "reussite_pct": 69.13
+            },
+            "gains": {
+              "log_loss": 0.000352,
+              "brier": 0.000167,
+              "sens": "positif = apport du challenger"
+            }
+          },
+          "circuit:CH": {
+            "controle": {
+              "n": 3630,
+              "log_loss": 0.623021,
+              "brier": 0.216748,
+              "reussite_pct": 65.98
+            },
+            "challenger": {
+              "n": 3630,
+              "log_loss": 0.622972,
+              "brier": 0.216728,
+              "reussite_pct": 66.12
+            },
+            "gains": {
+              "log_loss": 4.9e-05,
+              "brier": 2.1e-05,
+              "sens": "positif = apport du challenger"
+            }
+          },
+          "circuit:ITF": {
+            "controle": {
+              "n": 6415,
+              "log_loss": 0.557969,
+              "brier": 0.189427,
+              "reussite_pct": 70.76
+            },
+            "challenger": {
+              "n": 6415,
+              "log_loss": 0.557446,
+              "brier": 0.189177,
+              "reussite_pct": 70.83
+            },
+            "gains": {
+              "log_loss": 0.000523,
+              "brier": 0.00025,
+              "sens": "positif = apport du challenger"
+            }
+          },
+          "surface:Hard": {
+            "controle": {
+              "n": 5448,
+              "log_loss": 0.578889,
+              "brier": 0.19802,
+              "reussite_pct": 69.18
+            },
+            "challenger": {
+              "n": 5448,
+              "log_loss": 0.57847,
+              "brier": 0.197832,
+              "reussite_pct": 69.24
+            },
+            "gains": {
+              "log_loss": 0.000419,
+              "brier": 0.000188,
+              "sens": "positif = apport du challenger"
+            }
+          },
+          "surface:Clay": {
+            "controle": {
+              "n": 4361,
+              "log_loss": 0.58268,
+              "brier": 0.199966,
+              "reussite_pct": 69.16
+            },
+            "challenger": {
+              "n": 4361,
+              "log_loss": 0.582391,
+              "brier": 0.199817,
+              "reussite_pct": 69.34
+            },
+            "gains": {
+              "log_loss": 0.000289,
+              "brier": 0.000149,
+              "sens": "positif = apport du challenger"
+            }
+          },
+          "surface:Grass": {
+            "controle": {
+              "n": 236,
+              "log_loss": 0.61898,
+              "brier": 0.216544,
+              "reussite_pct": 63.14
+            },
+            "challenger": {
+              "n": 236,
+              "log_loss": 0.619038,
+              "brier": 0.216527,
+              "reussite_pct": 62.71
+            },
+            "gains": {
+              "log_loss": -5.9e-05,
+              "brier": 1.6e-05,
+              "sens": "positif = apport du challenger"
+            }
+          },
+          "annee:2025": {
+            "controle": {
+              "n": 6898,
+              "log_loss": 0.581888,
+              "brier": 0.199537,
+              "reussite_pct": 69.03
+            },
+            "challenger": {
+              "n": 6898,
+              "log_loss": 0.581544,
+              "brier": 0.199352,
+              "reussite_pct": 69.01
+            },
+            "gains": {
+              "log_loss": 0.000344,
+              "brier": 0.000185,
+              "sens": "positif = apport du challenger"
+            }
+          },
+          "annee:2026": {
+            "controle": {
+              "n": 3147,
+              "log_loss": 0.580576,
+              "brier": 0.198781,
+              "reussite_pct": 69.02
+            },
+            "challenger": {
+              "n": 3147,
+              "log_loss": 0.580208,
+              "brier": 0.198654,
+              "reussite_pct": 69.4
+            },
+            "gains": {
+              "log_loss": 0.000369,
+              "brier": 0.000127,
+              "sens": "positif = apport du challenger"
+            }
+          },
+          "documentation:moins_500_balles": {
+            "controle": {
+              "n": 3558,
+              "log_loss": 0.522697,
+              "brier": 0.174263,
+              "reussite_pct": 74.73
+            },
+            "challenger": {
+              "n": 3558,
+              "log_loss": 0.522385,
+              "brier": 0.174089,
+              "reussite_pct": 74.82
+            },
+            "gains": {
+              "log_loss": 0.000311,
+              "brier": 0.000174,
+              "sens": "positif = apport du challenger"
+            }
+          },
+          "documentation:moins_10_matchs_elo": {
+            "controle": {
+              "n": 1385,
+              "log_loss": 0.533418,
+              "brier": 0.178045,
+              "reussite_pct": 74.73
+            },
+            "challenger": {
+              "n": 1385,
+              "log_loss": 0.533011,
+              "brier": 0.177856,
+              "reussite_pct": 74.87
+            },
+            "gains": {
+              "log_loss": 0.000407,
+              "brier": 0.00019,
+              "sens": "positif = apport du challenger"
+            }
+          },
+          "transition_surface": {
+            "controle": {
+              "n": 2200,
+              "log_loss": 0.585,
+              "brier": 0.201469,
+              "reussite_pct": 68.5
+            },
+            "challenger": {
+              "n": 2200,
+              "log_loss": 0.584747,
+              "brier": 0.20136,
+              "reussite_pct": 68.73
+            },
+            "gains": {
+              "log_loss": 0.000253,
+              "brier": 0.000109,
+              "sens": "positif = apport du challenger"
+            }
+          },
+          "retour_absence_30j": {
+            "controle": {
+              "n": 3616,
+              "log_loss": 0.56106,
+              "brier": 0.190795,
+              "reussite_pct": 70.93
+            },
+            "challenger": {
+              "n": 3616,
+              "log_loss": 0.560726,
+              "brier": 0.190641,
+              "reussite_pct": 71.13
+            },
+            "gains": {
+              "log_loss": 0.000334,
+              "brier": 0.000154,
+              "sens": "positif = apport du challenger"
+            }
+          },
+          "defaite_favori_controle": {
+            "controle": {
+              "n": 3111,
+              "log_loss": 1.046964,
+              "brier": 0.409516,
+              "reussite_pct": 0.0
+            },
+            "challenger": {
+              "n": 3111,
+              "log_loss": 1.043134,
+              "brier": 0.408003,
+              "reussite_pct": 1.41
+            },
+            "gains": {
+              "log_loss": 0.00383,
+              "brier": 0.001514,
+              "sens": "positif = apport du challenger"
+            },
+            "definition": "issue contraire au favori du contrôle ; diagnostic descriptif seulement"
+          }
+        },
+        "controles_robustesse": {
+          "circuit:CH": {
+            "n": 3630,
+            "ok": true,
+            "gain_log_loss": 4.9e-05,
+            "gain_brier": 2.1e-05,
+            "tolerance": 0.001
+          },
+          "documentation:moins_500_balles": {
+            "n": 3558,
+            "ok": true,
+            "gain_log_loss": 0.000311,
+            "gain_brier": 0.000174,
+            "tolerance": 0.001
+          },
+          "documentation:moins_10_matchs_elo": {
+            "n": 1385,
+            "ok": true,
+            "gain_log_loss": 0.000407,
+            "gain_brier": 0.00019,
+            "tolerance": 0.001
+          }
+        },
+        "apport_confirme": false,
+        "verdict": "signal positif mais incertain ; champion inchangé",
+        "activation": false
+      },
+      "algorithme_local_vs_controle_partage": {
+        "decouverte": {
+          "controle": {
+            "n": 3034,
+            "log_loss": 0.619776,
+            "brier": 0.215158,
+            "reussite_pct": 65.99
+          },
+          "challenger": {
+            "n": 3034,
+            "log_loss": 0.607144,
+            "brier": 0.209841,
+            "reussite_pct": 66.64
+          },
+          "gains": {
+            "log_loss": 0.012632,
+            "brier": 0.005317,
+            "sens": "positif = apport du challenger"
+          }
+        },
+        "confirmation": {
+          "controle": {
+            "n": 10045,
+            "log_loss": 0.581477,
+            "brier": 0.1993,
+            "reussite_pct": 69.03
+          },
+          "challenger": {
+            "n": 10045,
+            "log_loss": 0.577947,
+            "brier": 0.198014,
+            "reussite_pct": 69.26
+          },
+          "gains": {
+            "log_loss": 0.00353,
+            "brier": 0.001286,
+            "sens": "positif = apport du challenger"
+          }
+        },
+        "ic95_bootstrap_semaine": {
+          "log_loss": {
+            "bas": -0.000645,
+            "haut": 0.007427
+          },
+          "brier": {
+            "bas": -0.000353,
+            "haut": 0.002842
+          }
+        },
+        "sous_groupes_confirmation": {
+          "global": {
+            "controle": {
+              "n": 10045,
+              "log_loss": 0.581477,
+              "brier": 0.1993,
+              "reussite_pct": 69.03
+            },
+            "challenger": {
+              "n": 10045,
+              "log_loss": 0.577947,
+              "brier": 0.198014,
+              "reussite_pct": 69.26
+            },
+            "gains": {
+              "log_loss": 0.00353,
+              "brier": 0.001286,
+              "sens": "positif = apport du challenger"
+            }
+          },
+          "circuit:CH": {
+            "controle": {
+              "n": 3630,
+              "log_loss": 0.623021,
+              "brier": 0.216748,
+              "reussite_pct": 65.98
+            },
+            "challenger": {
+              "n": 3630,
+              "log_loss": 0.623761,
+              "brier": 0.216646,
+              "reussite_pct": 66.06
+            },
+            "gains": {
+              "log_loss": -0.00074,
+              "brier": 0.000102,
+              "sens": "positif = apport du challenger"
+            }
+          },
+          "circuit:ITF": {
+            "controle": {
+              "n": 6415,
+              "log_loss": 0.557969,
+              "brier": 0.189427,
+              "reussite_pct": 70.76
+            },
+            "challenger": {
+              "n": 6415,
+              "log_loss": 0.552022,
+              "brier": 0.187471,
+              "reussite_pct": 71.07
+            },
+            "gains": {
+              "log_loss": 0.005947,
+              "brier": 0.001955,
+              "sens": "positif = apport du challenger"
+            }
+          },
+          "surface:Hard": {
+            "controle": {
+              "n": 5448,
+              "log_loss": 0.578889,
+              "brier": 0.19802,
+              "reussite_pct": 69.18
+            },
+            "challenger": {
+              "n": 5448,
+              "log_loss": 0.577294,
+              "brier": 0.197361,
+              "reussite_pct": 69.55
+            },
+            "gains": {
+              "log_loss": 0.001595,
+              "brier": 0.000659,
+              "sens": "positif = apport du challenger"
+            }
+          },
+          "surface:Clay": {
+            "controle": {
+              "n": 4361,
+              "log_loss": 0.58268,
+              "brier": 0.199966,
+              "reussite_pct": 69.16
+            },
+            "challenger": {
+              "n": 4361,
+              "log_loss": 0.577038,
+              "brier": 0.198067,
+              "reussite_pct": 69.04
+            },
+            "gains": {
+              "log_loss": 0.005643,
+              "brier": 0.0019,
+              "sens": "positif = apport du challenger"
+            }
+          },
+          "surface:Grass": {
+            "controle": {
+              "n": 236,
+              "log_loss": 0.61898,
+              "brier": 0.216544,
+              "reussite_pct": 63.14
+            },
+            "challenger": {
+              "n": 236,
+              "log_loss": 0.609807,
+              "brier": 0.212122,
+              "reussite_pct": 66.53
+            },
+            "gains": {
+              "log_loss": 0.009172,
+              "brier": 0.004422,
+              "sens": "positif = apport du challenger"
+            }
+          },
+          "annee:2025": {
+            "controle": {
+              "n": 6898,
+              "log_loss": 0.581888,
+              "brier": 0.199537,
+              "reussite_pct": 69.03
+            },
+            "challenger": {
+              "n": 6898,
+              "log_loss": 0.576985,
+              "brier": 0.197741,
+              "reussite_pct": 69.3
+            },
+            "gains": {
+              "log_loss": 0.004903,
+              "brier": 0.001796,
+              "sens": "positif = apport du challenger"
+            }
+          },
+          "annee:2026": {
+            "controle": {
+              "n": 3147,
+              "log_loss": 0.580576,
+              "brier": 0.198781,
+              "reussite_pct": 69.02
+            },
+            "challenger": {
+              "n": 3147,
+              "log_loss": 0.580054,
+              "brier": 0.198613,
+              "reussite_pct": 69.18
+            },
+            "gains": {
+              "log_loss": 0.000522,
+              "brier": 0.000168,
+              "sens": "positif = apport du challenger"
+            }
+          },
+          "documentation:moins_500_balles": {
+            "controle": {
+              "n": 3558,
+              "log_loss": 0.522697,
+              "brier": 0.174263,
+              "reussite_pct": 74.73
+            },
+            "challenger": {
+              "n": 3558,
+              "log_loss": 0.508422,
+              "brier": 0.168813,
+              "reussite_pct": 75.3
+            },
+            "gains": {
+              "log_loss": 0.014274,
+              "brier": 0.00545,
+              "sens": "positif = apport du challenger"
+            }
+          },
+          "documentation:moins_10_matchs_elo": {
+            "controle": {
+              "n": 1385,
+              "log_loss": 0.533418,
+              "brier": 0.178045,
+              "reussite_pct": 74.73
+            },
+            "challenger": {
+              "n": 1385,
+              "log_loss": 0.51475,
+              "brier": 0.170302,
+              "reussite_pct": 76.03
+            },
+            "gains": {
+              "log_loss": 0.018668,
+              "brier": 0.007743,
+              "sens": "positif = apport du challenger"
+            }
+          },
+          "transition_surface": {
+            "controle": {
+              "n": 2200,
+              "log_loss": 0.585,
+              "brier": 0.201469,
+              "reussite_pct": 68.5
+            },
+            "challenger": {
+              "n": 2200,
+              "log_loss": 0.578271,
+              "brier": 0.198738,
+              "reussite_pct": 69.0
+            },
+            "gains": {
+              "log_loss": 0.006728,
+              "brier": 0.002731,
+              "sens": "positif = apport du challenger"
+            }
+          },
+          "retour_absence_30j": {
+            "controle": {
+              "n": 3616,
+              "log_loss": 0.56106,
+              "brier": 0.190795,
+              "reussite_pct": 70.93
+            },
+            "challenger": {
+              "n": 3616,
+              "log_loss": 0.552664,
+              "brier": 0.187456,
+              "reussite_pct": 71.29
+            },
+            "gains": {
+              "log_loss": 0.008395,
+              "brier": 0.003339,
+              "sens": "positif = apport du challenger"
+            }
+          },
+          "defaite_favori_controle": {
+            "controle": {
+              "n": 3111,
+              "log_loss": 1.046964,
+              "brier": 0.409516,
+              "reussite_pct": 0.0
+            },
+            "challenger": {
+              "n": 3111,
+              "log_loss": 1.053248,
+              "brier": 0.406742,
+              "reussite_pct": 16.39
+            },
+            "gains": {
+              "log_loss": -0.006284,
+              "brier": 0.002774,
+              "sens": "positif = apport du challenger"
+            },
+            "definition": "issue contraire au favori du contrôle ; diagnostic descriptif seulement"
+          }
+        },
+        "controles_robustesse": {
+          "circuit:CH": {
+            "n": 3630,
+            "ok": true,
+            "gain_log_loss": -0.00074,
+            "gain_brier": 0.000102,
+            "tolerance": 0.001
+          },
+          "documentation:moins_500_balles": {
+            "n": 3558,
+            "ok": true,
+            "gain_log_loss": 0.014274,
+            "gain_brier": 0.00545,
+            "tolerance": 0.001
+          },
+          "documentation:moins_10_matchs_elo": {
+            "n": 1385,
+            "ok": true,
+            "gain_log_loss": 0.018668,
+            "gain_brier": 0.007743,
+            "tolerance": 0.001
+          }
+        },
+        "apport_confirme": false,
+        "verdict": "signal positif mais incertain ; champion inchangé",
+        "activation": false
+      },
+      "algorithme_local_vs_algorithme_partage": {
+        "decouverte": {
+          "controle": {
+            "n": 3034,
+            "log_loss": 0.608471,
+            "brier": 0.210311,
+            "reussite_pct": 66.58
+          },
+          "challenger": {
+            "n": 3034,
+            "log_loss": 0.607144,
+            "brier": 0.209841,
+            "reussite_pct": 66.64
+          },
+          "gains": {
+            "log_loss": 0.001327,
+            "brier": 0.000469,
+            "sens": "positif = apport du challenger"
+          }
+        },
+        "confirmation": {
+          "controle": {
+            "n": 10045,
+            "log_loss": 0.577283,
+            "brier": 0.197719,
+            "reussite_pct": 69.1
+          },
+          "challenger": {
+            "n": 10045,
+            "log_loss": 0.577947,
+            "brier": 0.198014,
+            "reussite_pct": 69.26
+          },
+          "gains": {
+            "log_loss": -0.000664,
+            "brier": -0.000296,
+            "sens": "positif = apport du challenger"
+          }
+        },
+        "ic95_bootstrap_semaine": {
+          "log_loss": {
+            "bas": -0.001906,
+            "haut": 0.000513
+          },
+          "brier": {
+            "bas": -0.0008,
+            "haut": 0.000204
+          }
+        },
+        "sous_groupes_confirmation": {
+          "global": {
+            "controle": {
+              "n": 10045,
+              "log_loss": 0.577283,
+              "brier": 0.197719,
+              "reussite_pct": 69.1
+            },
+            "challenger": {
+              "n": 10045,
+              "log_loss": 0.577947,
+              "brier": 0.198014,
+              "reussite_pct": 69.26
+            },
+            "gains": {
+              "log_loss": -0.000664,
+              "brier": -0.000296,
+              "sens": "positif = apport du challenger"
+            }
+          },
+          "circuit:CH": {
+            "controle": {
+              "n": 3630,
+              "log_loss": 0.622724,
+              "brier": 0.216177,
+              "reussite_pct": 66.09
+            },
+            "challenger": {
+              "n": 3630,
+              "log_loss": 0.623761,
+              "brier": 0.216646,
+              "reussite_pct": 66.06
+            },
+            "gains": {
+              "log_loss": -0.001038,
+              "brier": -0.000469,
+              "sens": "positif = apport du challenger"
+            }
+          },
+          "circuit:ITF": {
+            "controle": {
+              "n": 6415,
+              "log_loss": 0.551569,
+              "brier": 0.187274,
+              "reussite_pct": 70.8
+            },
+            "challenger": {
+              "n": 6415,
+              "log_loss": 0.552022,
+              "brier": 0.187471,
+              "reussite_pct": 71.07
+            },
+            "gains": {
+              "log_loss": -0.000452,
+              "brier": -0.000198,
+              "sens": "positif = apport du challenger"
+            }
+          },
+          "surface:Hard": {
+            "controle": {
+              "n": 5448,
+              "log_loss": 0.576421,
+              "brier": 0.19697,
+              "reussite_pct": 69.51
+            },
+            "challenger": {
+              "n": 5448,
+              "log_loss": 0.577294,
+              "brier": 0.197361,
+              "reussite_pct": 69.55
+            },
+            "gains": {
+              "log_loss": -0.000873,
+              "brier": -0.000391,
+              "sens": "positif = apport du challenger"
+            }
+          },
+          "surface:Clay": {
+            "controle": {
+              "n": 4361,
+              "log_loss": 0.576948,
+              "brier": 0.198011,
+              "reussite_pct": 68.81
+            },
+            "challenger": {
+              "n": 4361,
+              "log_loss": 0.577038,
+              "brier": 0.198067,
+              "reussite_pct": 69.04
+            },
+            "gains": {
+              "log_loss": -9e-05,
+              "brier": -5.6e-05,
+              "sens": "positif = apport du challenger"
+            }
+          },
+          "surface:Grass": {
+            "controle": {
+              "n": 236,
+              "log_loss": 0.603354,
+              "brier": 0.209609,
+              "reussite_pct": 64.83
+            },
+            "challenger": {
+              "n": 236,
+              "log_loss": 0.609807,
+              "brier": 0.212122,
+              "reussite_pct": 66.53
+            },
+            "gains": {
+              "log_loss": -0.006453,
+              "brier": -0.002513,
+              "sens": "positif = apport du challenger"
+            }
+          },
+          "annee:2025": {
+            "controle": {
+              "n": 6898,
+              "log_loss": 0.577117,
+              "brier": 0.19778,
+              "reussite_pct": 69.25
+            },
+            "challenger": {
+              "n": 6898,
+              "log_loss": 0.576985,
+              "brier": 0.197741,
+              "reussite_pct": 69.3
+            },
+            "gains": {
+              "log_loss": 0.000132,
+              "brier": 3.8e-05,
+              "sens": "positif = apport du challenger"
+            }
+          },
+          "annee:2026": {
+            "controle": {
+              "n": 3147,
+              "log_loss": 0.577647,
+              "brier": 0.197586,
+              "reussite_pct": 68.76
+            },
+            "challenger": {
+              "n": 3147,
+              "log_loss": 0.580054,
+              "brier": 0.198613,
+              "reussite_pct": 69.18
+            },
+            "gains": {
+              "log_loss": -0.002408,
+              "brier": -0.001028,
+              "sens": "positif = apport du challenger"
+            }
+          },
+          "documentation:moins_500_balles": {
+            "controle": {
+              "n": 3558,
+              "log_loss": 0.50954,
+              "brier": 0.169315,
+              "reussite_pct": 75.15
+            },
+            "challenger": {
+              "n": 3558,
+              "log_loss": 0.508422,
+              "brier": 0.168813,
+              "reussite_pct": 75.3
+            },
+            "gains": {
+              "log_loss": 0.001117,
+              "brier": 0.000502,
+              "sens": "positif = apport du challenger"
+            }
+          },
+          "documentation:moins_10_matchs_elo": {
+            "controle": {
+              "n": 1385,
+              "log_loss": 0.515477,
+              "brier": 0.17055,
+              "reussite_pct": 76.03
+            },
+            "challenger": {
+              "n": 1385,
+              "log_loss": 0.51475,
+              "brier": 0.170302,
+              "reussite_pct": 76.03
+            },
+            "gains": {
+              "log_loss": 0.000727,
+              "brier": 0.000248,
+              "sens": "positif = apport du challenger"
+            }
+          },
+          "transition_surface": {
+            "controle": {
+              "n": 2200,
+              "log_loss": 0.578985,
+              "brier": 0.198997,
+              "reussite_pct": 68.09
+            },
+            "challenger": {
+              "n": 2200,
+              "log_loss": 0.578271,
+              "brier": 0.198738,
+              "reussite_pct": 69.0
+            },
+            "gains": {
+              "log_loss": 0.000714,
+              "brier": 0.000259,
+              "sens": "positif = apport du challenger"
+            }
+          },
+          "retour_absence_30j": {
+            "controle": {
+              "n": 3616,
+              "log_loss": 0.552176,
+              "brier": 0.1873,
+              "reussite_pct": 71.05
+            },
+            "challenger": {
+              "n": 3616,
+              "log_loss": 0.552664,
+              "brier": 0.187456,
+              "reussite_pct": 71.29
+            },
+            "gains": {
+              "log_loss": -0.000488,
+              "brier": -0.000155,
+              "sens": "positif = apport du challenger"
+            }
+          },
+          "defaite_favori_controle": {
+            "controle": {
+              "n": 3104,
+              "log_loss": 1.089921,
+              "brier": 0.424888,
+              "reussite_pct": 0.0
+            },
+            "challenger": {
+              "n": 3104,
+              "log_loss": 1.089087,
+              "brier": 0.42421,
+              "reussite_pct": 5.06
+            },
+            "gains": {
+              "log_loss": 0.000834,
+              "brier": 0.000678,
+              "sens": "positif = apport du challenger"
+            },
+            "definition": "issue contraire au favori du contrôle ; diagnostic descriptif seulement"
+          }
+        },
+        "controles_robustesse": {
+          "circuit:CH": {
+            "n": 3630,
+            "ok": false,
+            "gain_log_loss": -0.001038,
+            "gain_brier": -0.000469,
+            "tolerance": 0.001
+          },
+          "documentation:moins_500_balles": {
+            "n": 3558,
+            "ok": true,
+            "gain_log_loss": 0.001117,
+            "gain_brier": 0.000502,
+            "tolerance": 0.001
+          },
+          "documentation:moins_10_matchs_elo": {
+            "n": 1385,
+            "ok": true,
+            "gain_log_loss": 0.000727,
+            "gain_brier": 0.000248,
+            "tolerance": 0.001
+          }
+        },
+        "apport_confirme": false,
+        "verdict": "apport non confirmé ; champion inchangé",
+        "activation": false
+      },
+      "activation": false
+    }
+  },
+  "deux_algorithmes_vs_controle_partage": {
+    "decouverte": {
+      "controle": {
+        "n": 4306,
+        "log_loss": 0.612238,
+        "brier": 0.212298,
+        "reussite_pct": 65.91
+      },
+      "challenger": {
+        "n": 4306,
+        "log_loss": 0.600093,
+        "brier": 0.207262,
+        "reussite_pct": 66.84
+      },
+      "gains": {
+        "log_loss": 0.012145,
+        "brier": 0.005036,
+        "sens": "positif = apport du challenger"
+      }
+    },
+    "confirmation": {
+      "controle": {
+        "n": 11694,
+        "log_loss": 0.583017,
+        "brier": 0.200058,
+        "reussite_pct": 68.79
+      },
+      "challenger": {
+        "n": 11694,
+        "log_loss": 0.580326,
+        "brier": 0.199049,
+        "reussite_pct": 68.97
+      },
+      "gains": {
+        "log_loss": 0.002692,
+        "brier": 0.001009,
+        "sens": "positif = apport du challenger"
+      }
+    },
+    "ic95_bootstrap_semaine": {
+      "log_loss": {
+        "bas": -0.001232,
+        "haut": 0.005938
+      },
+      "brier": {
+        "bas": -0.000571,
+        "haut": 0.002368
+      }
+    },
+    "sous_groupes_confirmation": {
+      "global": {
+        "controle": {
+          "n": 11694,
+          "log_loss": 0.583017,
+          "brier": 0.200058,
+          "reussite_pct": 68.79
+        },
+        "challenger": {
+          "n": 11694,
+          "log_loss": 0.580326,
+          "brier": 0.199049,
+          "reussite_pct": 68.97
+        },
+        "gains": {
+          "log_loss": 0.002692,
+          "brier": 0.001009,
+          "sens": "positif = apport du challenger"
+        }
+      },
+      "circuit:ATP": {
+        "controle": {
+          "n": 815,
+          "log_loss": 0.587109,
+          "brier": 0.201979,
+          "reussite_pct": 67.98
+        },
+        "challenger": {
+          "n": 815,
+          "log_loss": 0.577574,
+          "brier": 0.198051,
+          "reussite_pct": 68.83
+        },
+        "gains": {
+          "log_loss": 0.009535,
+          "brier": 0.003928,
+          "sens": "positif = apport du challenger"
+        }
+      },
+      "circuit:WTA": {
+        "controle": {
+          "n": 834,
+          "log_loss": 0.597573,
+          "brier": 0.207303,
+          "reussite_pct": 66.67
+        },
+        "challenger": {
+          "n": 834,
+          "log_loss": 0.611671,
+          "brier": 0.212486,
+          "reussite_pct": 65.59
+        },
+        "gains": {
+          "log_loss": -0.014098,
+          "brier": -0.005183,
+          "sens": "positif = apport du challenger"
+        }
+      },
+      "circuit:CH": {
+        "controle": {
+          "n": 3630,
+          "log_loss": 0.623021,
+          "brier": 0.216748,
+          "reussite_pct": 65.98
+        },
+        "challenger": {
+          "n": 3630,
+          "log_loss": 0.623761,
+          "brier": 0.216646,
+          "reussite_pct": 66.06
+        },
+        "gains": {
+          "log_loss": -0.00074,
+          "brier": 0.000102,
+          "sens": "positif = apport du challenger"
+        }
+      },
+      "circuit:ITF": {
+        "controle": {
+          "n": 6415,
+          "log_loss": 0.557969,
+          "brier": 0.189427,
+          "reussite_pct": 70.76
+        },
+        "challenger": {
+          "n": 6415,
+          "log_loss": 0.552022,
+          "brier": 0.187471,
+          "reussite_pct": 71.07
+        },
+        "gains": {
+          "log_loss": 0.005947,
+          "brier": 0.001955,
+          "sens": "positif = apport du challenger"
+        }
+      },
+      "surface:Hard": {
+        "controle": {
+          "n": 6432,
+          "log_loss": 0.583035,
+          "brier": 0.199973,
+          "reussite_pct": 68.75
+        },
+        "challenger": {
+          "n": 6432,
+          "log_loss": 0.582122,
+          "brier": 0.19949,
+          "reussite_pct": 68.89
+        },
+        "gains": {
+          "log_loss": 0.000913,
+          "brier": 0.000484,
+          "sens": "positif = apport du challenger"
+        }
+      },
+      "surface:Clay": {
+        "controle": {
+          "n": 4896,
+          "log_loss": 0.582677,
+          "brier": 0.200019,
+          "reussite_pct": 68.97
+        },
+        "challenger": {
+          "n": 4896,
+          "log_loss": 0.578156,
+          "brier": 0.198564,
+          "reussite_pct": 68.97
+        },
+        "gains": {
+          "log_loss": 0.004522,
+          "brier": 0.001455,
+          "sens": "positif = apport du challenger"
+        }
+      },
+      "surface:Grass": {
+        "controle": {
+          "n": 366,
+          "log_loss": 0.587259,
+          "brier": 0.202052,
+          "reussite_pct": 66.94
+        },
+        "challenger": {
+          "n": 366,
+          "log_loss": 0.577785,
+          "brier": 0.197784,
+          "reussite_pct": 70.22
+        },
+        "gains": {
+          "log_loss": 0.009474,
+          "brier": 0.004268,
+          "sens": "positif = apport du challenger"
+        }
+      },
+      "annee:2025": {
+        "controle": {
+          "n": 8034,
+          "log_loss": 0.584187,
+          "brier": 0.200568,
+          "reussite_pct": 68.76
+        },
+        "challenger": {
+          "n": 8034,
+          "log_loss": 0.580078,
+          "brier": 0.198951,
+          "reussite_pct": 69.07
+        },
+        "gains": {
+          "log_loss": 0.00411,
+          "brier": 0.001618,
+          "sens": "positif = apport du challenger"
+        }
+      },
+      "annee:2026": {
+        "controle": {
+          "n": 3660,
+          "log_loss": 0.580449,
+          "brier": 0.198937,
+          "reussite_pct": 68.85
+        },
+        "challenger": {
+          "n": 3660,
+          "log_loss": 0.58087,
+          "brier": 0.199265,
+          "reussite_pct": 68.74
+        },
+        "gains": {
+          "log_loss": -0.000421,
+          "brier": -0.000329,
+          "sens": "positif = apport du challenger"
+        }
+      },
+      "documentation:moins_500_balles": {
+        "controle": {
+          "n": 3589,
+          "log_loss": 0.522779,
+          "brier": 0.174252,
+          "reussite_pct": 74.73
+        },
+        "challenger": {
+          "n": 3589,
+          "log_loss": 0.509534,
+          "brier": 0.16911,
+          "reussite_pct": 75.26
+        },
+        "gains": {
+          "log_loss": 0.013245,
+          "brier": 0.005142,
+          "sens": "positif = apport du challenger"
+        }
+      },
+      "documentation:moins_10_matchs_elo": {
+        "controle": {
+          "n": 1391,
+          "log_loss": 0.531796,
+          "brier": 0.177388,
+          "reussite_pct": 74.84
+        },
+        "challenger": {
+          "n": 1391,
+          "log_loss": 0.512847,
+          "brier": 0.169603,
+          "reussite_pct": 76.13
+        },
+        "gains": {
+          "log_loss": 0.018949,
+          "brier": 0.007785,
+          "sens": "positif = apport du challenger"
+        }
+      },
+      "transition_surface": {
+        "controle": {
+          "n": 2424,
+          "log_loss": 0.581696,
+          "brier": 0.200119,
+          "reussite_pct": 68.48
+        },
+        "challenger": {
+          "n": 2424,
+          "log_loss": 0.575295,
+          "brier": 0.197463,
+          "reussite_pct": 69.22
+        },
+        "gains": {
+          "log_loss": 0.006401,
+          "brier": 0.002656,
+          "sens": "positif = apport du challenger"
+        }
+      },
+      "retour_absence_30j": {
+        "controle": {
+          "n": 3811,
+          "log_loss": 0.563222,
+          "brier": 0.191726,
+          "reussite_pct": 70.66
+        },
+        "challenger": {
+          "n": 3811,
+          "log_loss": 0.554978,
+          "brier": 0.188228,
+          "reussite_pct": 71.08
+        },
+        "gains": {
+          "log_loss": 0.008244,
+          "brier": 0.003498,
+          "sens": "positif = apport du challenger"
+        }
+      },
+      "format:bo5": {
+        "controle": {
+          "n": 129,
+          "log_loss": 0.535388,
+          "brier": 0.179938,
+          "reussite_pct": 73.64
+        },
+        "challenger": {
+          "n": 129,
+          "log_loss": 0.506477,
+          "brier": 0.168843,
+          "reussite_pct": 74.42
+        },
+        "gains": {
+          "log_loss": 0.028911,
+          "brier": 0.011095,
+          "sens": "positif = apport du challenger"
+        }
+      },
+      "defaite_favori_controle": {
+        "controle": {
+          "n": 3650,
+          "log_loss": 1.048803,
+          "brier": 0.41038,
+          "reussite_pct": 0.0
+        },
+        "challenger": {
+          "n": 3650,
+          "log_loss": 1.054836,
+          "brier": 0.407501,
+          "reussite_pct": 16.05
+        },
+        "gains": {
+          "log_loss": -0.006033,
+          "brier": 0.002879,
+          "sens": "positif = apport du challenger"
+        },
+        "definition": "issue contraire au favori du contrôle ; diagnostic descriptif seulement"
+      }
+    },
+    "controles_robustesse": {
+      "circuit:CH": {
+        "n": 3630,
+        "ok": true,
+        "gain_log_loss": -0.00074,
+        "gain_brier": 0.000102,
+        "tolerance": 0.001
+      },
+      "documentation:moins_500_balles": {
+        "n": 3589,
+        "ok": true,
+        "gain_log_loss": 0.013245,
+        "gain_brier": 0.005142,
+        "tolerance": 0.001
+      },
+      "documentation:moins_10_matchs_elo": {
+        "n": 1391,
+        "ok": true,
+        "gain_log_loss": 0.018949,
+        "gain_brier": 0.007785,
+        "tolerance": 0.001
+      }
+    },
+    "apport_confirme": false,
+    "verdict": "signal positif mais incertain ; champion inchangé",
+    "activation": false
+  },
+  "deux_algorithmes_vs_algorithme_partage": {
+    "decouverte": {
+      "controle": {
+        "n": 4306,
+        "log_loss": 0.603007,
+        "brier": 0.208476,
+        "reussite_pct": 66.58
+      },
+      "challenger": {
+        "n": 4306,
+        "log_loss": 0.600093,
+        "brier": 0.207262,
+        "reussite_pct": 66.84
+      },
+      "gains": {
+        "log_loss": 0.002914,
+        "brier": 0.001214,
+        "sens": "positif = apport du challenger"
+      }
+    },
+    "confirmation": {
+      "controle": {
+        "n": 11694,
+        "log_loss": 0.579143,
+        "brier": 0.198568,
+        "reussite_pct": 68.86
+      },
+      "challenger": {
+        "n": 11694,
+        "log_loss": 0.580326,
+        "brier": 0.199049,
+        "reussite_pct": 68.97
+      },
+      "gains": {
+        "log_loss": -0.001183,
+        "brier": -0.000481,
+        "sens": "positif = apport du challenger"
+      }
+    },
+    "ic95_bootstrap_semaine": {
+      "log_loss": {
+        "bas": -0.002582,
+        "haut": 0.000215
+      },
+      "brier": {
+        "bas": -0.001072,
+        "haut": 0.0001
+      }
+    },
+    "sous_groupes_confirmation": {
+      "global": {
+        "controle": {
+          "n": 11694,
+          "log_loss": 0.579143,
+          "brier": 0.198568,
+          "reussite_pct": 68.86
+        },
+        "challenger": {
+          "n": 11694,
+          "log_loss": 0.580326,
+          "brier": 0.199049,
+          "reussite_pct": 68.97
+        },
+        "gains": {
+          "log_loss": -0.001183,
+          "brier": -0.000481,
+          "sens": "positif = apport du challenger"
+        }
+      },
+      "circuit:ATP": {
+        "controle": {
+          "n": 815,
+          "log_loss": 0.577591,
+          "brier": 0.198048,
+          "reussite_pct": 69.2
+        },
+        "challenger": {
+          "n": 815,
+          "log_loss": 0.577574,
+          "brier": 0.198051,
+          "reussite_pct": 68.83
+        },
+        "gains": {
+          "log_loss": 1.7e-05,
+          "brier": -2e-06,
+          "sens": "positif = apport du challenger"
+        }
+      },
+      "circuit:WTA": {
+        "controle": {
+          "n": 834,
+          "log_loss": 0.60306,
+          "brier": 0.2093,
+          "reussite_pct": 65.71
+        },
+        "challenger": {
+          "n": 834,
+          "log_loss": 0.611671,
+          "brier": 0.212486,
+          "reussite_pct": 65.59
+        },
+        "gains": {
+          "log_loss": -0.008611,
+          "brier": -0.003186,
+          "sens": "positif = apport du challenger"
+        }
+      },
+      "circuit:CH": {
+        "controle": {
+          "n": 3630,
+          "log_loss": 0.622724,
+          "brier": 0.216177,
+          "reussite_pct": 66.09
+        },
+        "challenger": {
+          "n": 3630,
+          "log_loss": 0.623761,
+          "brier": 0.216646,
+          "reussite_pct": 66.06
+        },
+        "gains": {
+          "log_loss": -0.001038,
+          "brier": -0.000469,
+          "sens": "positif = apport du challenger"
+        }
+      },
+      "circuit:ITF": {
+        "controle": {
+          "n": 6415,
+          "log_loss": 0.551569,
+          "brier": 0.187274,
+          "reussite_pct": 70.8
+        },
+        "challenger": {
+          "n": 6415,
+          "log_loss": 0.552022,
+          "brier": 0.187471,
+          "reussite_pct": 71.07
+        },
+        "gains": {
+          "log_loss": -0.000452,
+          "brier": -0.000198,
+          "sens": "positif = apport du challenger"
+        }
+      },
+      "surface:Hard": {
+        "controle": {
+          "n": 6432,
+          "log_loss": 0.580232,
+          "brier": 0.198745,
+          "reussite_pct": 69.0
+        },
+        "challenger": {
+          "n": 6432,
+          "log_loss": 0.582122,
+          "brier": 0.19949,
+          "reussite_pct": 68.89
+        },
+        "gains": {
+          "log_loss": -0.00189,
+          "brier": -0.000745,
+          "sens": "positif = apport du challenger"
+        }
+      },
+      "surface:Clay": {
+        "controle": {
+          "n": 4896,
+          "log_loss": 0.57824,
+          "brier": 0.198568,
+          "reussite_pct": 68.71
+        },
+        "challenger": {
+          "n": 4896,
+          "log_loss": 0.578156,
+          "brier": 0.198564,
+          "reussite_pct": 68.97
+        },
+        "gains": {
+          "log_loss": 8.4e-05,
+          "brier": 3e-06,
+          "sens": "positif = apport du challenger"
+        }
+      },
+      "surface:Grass": {
+        "controle": {
+          "n": 366,
+          "log_loss": 0.572065,
+          "brier": 0.195458,
+          "reussite_pct": 68.58
+        },
+        "challenger": {
+          "n": 366,
+          "log_loss": 0.577785,
+          "brier": 0.197784,
+          "reussite_pct": 70.22
+        },
+        "gains": {
+          "log_loss": -0.00572,
+          "brier": -0.002326,
+          "sens": "positif = apport du challenger"
+        }
+      },
+      "annee:2025": {
+        "controle": {
+          "n": 8034,
+          "log_loss": 0.579441,
+          "brier": 0.198733,
+          "reussite_pct": 69.11
+        },
+        "challenger": {
+          "n": 8034,
+          "log_loss": 0.580078,
+          "brier": 0.198951,
+          "reussite_pct": 69.07
+        },
+        "gains": {
+          "log_loss": -0.000636,
+          "brier": -0.000218,
+          "sens": "positif = apport du challenger"
+        }
+      },
+      "annee:2026": {
+        "controle": {
+          "n": 3660,
+          "log_loss": 0.578487,
+          "brier": 0.198206,
+          "reussite_pct": 68.33
+        },
+        "challenger": {
+          "n": 3660,
+          "log_loss": 0.58087,
+          "brier": 0.199265,
+          "reussite_pct": 68.74
+        },
+        "gains": {
+          "log_loss": -0.002383,
+          "brier": -0.001059,
+          "sens": "positif = apport du challenger"
+        }
+      },
+      "documentation:moins_500_balles": {
+        "controle": {
+          "n": 3589,
+          "log_loss": 0.509946,
+          "brier": 0.169386,
+          "reussite_pct": 75.17
+        },
+        "challenger": {
+          "n": 3589,
+          "log_loss": 0.509534,
+          "brier": 0.16911,
+          "reussite_pct": 75.26
+        },
+        "gains": {
+          "log_loss": 0.000412,
+          "brier": 0.000276,
+          "sens": "positif = apport du challenger"
+        }
+      },
+      "documentation:moins_10_matchs_elo": {
+        "controle": {
+          "n": 1391,
+          "log_loss": 0.513664,
+          "brier": 0.169864,
+          "reussite_pct": 76.13
+        },
+        "challenger": {
+          "n": 1391,
+          "log_loss": 0.512847,
+          "brier": 0.169603,
+          "reussite_pct": 76.13
+        },
+        "gains": {
+          "log_loss": 0.000817,
+          "brier": 0.000261,
+          "sens": "positif = apport du challenger"
+        }
+      },
+      "transition_surface": {
+        "controle": {
+          "n": 2424,
+          "log_loss": 0.576477,
+          "brier": 0.197982,
+          "reussite_pct": 68.36
+        },
+        "challenger": {
+          "n": 2424,
+          "log_loss": 0.575295,
+          "brier": 0.197463,
+          "reussite_pct": 69.22
+        },
+        "gains": {
+          "log_loss": 0.001183,
+          "brier": 0.000519,
+          "sens": "positif = apport du challenger"
+        }
+      },
+      "retour_absence_30j": {
+        "controle": {
+          "n": 3811,
+          "log_loss": 0.554616,
+          "brier": 0.188272,
+          "reussite_pct": 70.82
+        },
+        "challenger": {
+          "n": 3811,
+          "log_loss": 0.554978,
+          "brier": 0.188228,
+          "reussite_pct": 71.08
+        },
+        "gains": {
+          "log_loss": -0.000361,
+          "brier": 4.4e-05,
+          "sens": "positif = apport du challenger"
+        }
+      },
+      "format:bo5": {
+        "controle": {
+          "n": 129,
+          "log_loss": 0.51192,
+          "brier": 0.170077,
+          "reussite_pct": 74.42
+        },
+        "challenger": {
+          "n": 129,
+          "log_loss": 0.506477,
+          "brier": 0.168843,
+          "reussite_pct": 74.42
+        },
+        "gains": {
+          "log_loss": 0.005443,
+          "brier": 0.001234,
+          "sens": "positif = apport du challenger"
+        }
+      },
+      "defaite_favori_controle": {
+        "controle": {
+          "n": 3641,
+          "log_loss": 1.087484,
+          "brier": 0.424229,
+          "reussite_pct": 0.0
+        },
+        "challenger": {
+          "n": 3641,
+          "log_loss": 1.088489,
+          "brier": 0.423866,
+          "reussite_pct": 5.77
+        },
+        "gains": {
+          "log_loss": -0.001005,
+          "brier": 0.000363,
+          "sens": "positif = apport du challenger"
+        },
+        "definition": "issue contraire au favori du contrôle ; diagnostic descriptif seulement"
+      }
+    },
+    "controles_robustesse": {
+      "circuit:CH": {
+        "n": 3630,
+        "ok": false,
+        "gain_log_loss": -0.001038,
+        "gain_brier": -0.000469,
+        "tolerance": 0.001
+      },
+      "documentation:moins_500_balles": {
+        "n": 3589,
+        "ok": true,
+        "gain_log_loss": 0.000412,
+        "gain_brier": 0.000276,
+        "tolerance": 0.001
+      },
+      "documentation:moins_10_matchs_elo": {
+        "n": 1391,
+        "ok": true,
+        "gain_log_loss": 0.000817,
+        "gain_brier": 0.000261,
+        "tolerance": 0.001
+      }
+    },
+    "apport_confirme": false,
+    "verdict": "apport non confirmé ; champion inchangé",
+    "activation": false
+  },
+  "champion_actif_modifie": false,
+  "duree_s": 167
+}

@@ -1,0 +1,144 @@
+{
+ "genere_le": "2026-11-11T09:23:42+00:00",
+ "regle": "— modèle : Var(d) = α + β · v, avec v = 1/(n_a + 5) + 1/(n_b + 5) (n = matchs déjà joués), α, β ≥ 0, ajusté par\n    moindres carrés sur 20 classes de v, sur 2018–2022 seulement ;\n  — jugé sur 2023 → juin 2026, circuit par circuit (ATP, WTA, Challenger) : la nouvelle part Elo est ADOPTÉE pour un\n    circuit si l'intervalle z_t ± 1,2816 · √(α + β v) contient z_h dans au moins 78 % des matchs (cible 80 %, tolérance\n    2 points) ET s'il est plus étroit en moyenne que l'intervalle actuel ; sinon le circuit garde la règle actuelle ;\n  — au moins 1 000 matchs jugés par circuit.",
+ "horizon_jours": 90,
+ "apprentissage": "2018–2022",
+ "jugement": "2023 → juin 2026",
+ "alpha": 0.24084,
+ "beta": 0.9656,
+ "matchs_apprentissage": 179191,
+ "classes_apprentissage": [
+  {
+   "v": 0.00913,
+   "var": 0.16341,
+   "n": 8959
+  },
+  {
+   "v": 0.01142,
+   "var": 0.18355,
+   "n": 8959
+  },
+  {
+   "v": 0.01343,
+   "var": 0.18884,
+   "n": 8959
+  },
+  {
+   "v": 0.01561,
+   "var": 0.19477,
+   "n": 8959
+  },
+  {
+   "v": 0.01815,
+   "var": 0.21248,
+   "n": 8959
+  },
+  {
+   "v": 0.02101,
+   "var": 0.23336,
+   "n": 8959
+  },
+  {
+   "v": 0.02435,
+   "var": 0.25754,
+   "n": 8959
+  },
+  {
+   "v": 0.02825,
+   "var": 0.28154,
+   "n": 8959
+  },
+  {
+   "v": 0.03287,
+   "var": 0.30555,
+   "n": 8959
+  },
+  {
+   "v": 0.03854,
+   "var": 0.32302,
+   "n": 8959
+  },
+  {
+   "v": 0.04546,
+   "var": 0.34141,
+   "n": 8959
+  },
+  {
+   "v": 0.0541,
+   "var": 0.34674,
+   "n": 8959
+  },
+  {
+   "v": 0.06494,
+   "var": 0.36381,
+   "n": 8959
+  },
+  {
+   "v": 0.07834,
+   "var": 0.39098,
+   "n": 8959
+  },
+  {
+   "v": 0.09546,
+   "var": 0.39613,
+   "n": 8959
+  },
+  {
+   "v": 0.11714,
+   "var": 0.39648,
+   "n": 8959
+  },
+  {
+   "v": 0.14464,
+   "var": 0.41381,
+   "n": 8959
+  },
+  {
+   "v": 0.17965,
+   "var": 0.39819,
+   "n": 8959
+  },
+  {
+   "v": 0.22235,
+   "var": 0.40925,
+   "n": 8959
+  },
+  {
+   "v": 0.31074,
+   "var": 0.48918,
+   "n": 8959
+  }
+ ],
+ "circuits": {
+  "ATP": {
+   "n": 9787,
+   "couverture_nouvelle_pct": 92.5,
+   "couverture_actuelle_pct": 82.8,
+   "demi_largeur_logit_nouvelle": 0.6469,
+   "demi_largeur_logit_actuelle": 0.5243,
+   "largeur_pts_a_60pct_nouvelle": 23.8,
+   "largeur_pts_a_60pct_actuelle": 19.1,
+   "adopte": false
+  },
+  "WTA": {
+   "n": 8934,
+   "couverture_nouvelle_pct": 92.9,
+   "couverture_actuelle_pct": 82.7,
+   "demi_largeur_logit_nouvelle": 0.6393,
+   "demi_largeur_logit_actuelle": 0.4756,
+   "largeur_pts_a_60pct_nouvelle": 23.6,
+   "largeur_pts_a_60pct_actuelle": 17.6,
+   "adopte": false
+  },
+  "CH": {
+   "n": 35784,
+   "couverture_nouvelle_pct": 86.6,
+   "couverture_actuelle_pct": 79.8,
+   "demi_largeur_logit_nouvelle": 0.6806,
+   "demi_largeur_logit_actuelle": 0.6857,
+   "largeur_pts_a_60pct_nouvelle": 25.0,
+   "largeur_pts_a_60pct_actuelle": 24.3,
+   "adopte": true
+  }
+ }
+}

@@ -1,0 +1,27 @@
+name: Tennis Edge Lab V6.5.3 - Source mapping
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source-mapping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Tests mapping
+        run: python3 -m unittest discover -s Tennis_Edge_Lab/tests -p test_v653.py -v
+      - name: Audit schema et horodatages
+        run: |
+          python3 Tennis_Edge_Lab/v65/source_mapping_v653.py \
+            --root . \
+            --snapshot Tennis_Edge_Lab/v65/selection_v64_frozen.json \
+            --output "$RUNNER_TEMP/v653_source_mapping.json"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: v653-source-mapping-${{ github.run_id }}
+          path: ${{ runner.temp }}/v653_source_mapping.json
+          retention-days: 30

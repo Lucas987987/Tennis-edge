@@ -1,0 +1,295 @@
+name: Lab - calcul quotidien (V6.6)
+
+# Remplace lab_autonomous.yml, lab_autonomous_auto_v63.yml, lab_incremental_v631.yml,
+# lab_economic_v64.yml et lab_prospective_v65.yml.
+# Une seule tâche lourde par jour, sans appel à l'API de cotes payante (fichiers du dépôt uniquement) :
+#   tests -> features avant signal -> scan V5/V6 (CLV Pinnacle) -> stabilité 16 ans
+#   -> suivi des 60 gels V6.3 -> propositions V6.6 (jamais gelées ici) -> suivi des gels V6.6
+#   -> commit UNIQUEMENT si un contenu a changé (pas seulement un horodatage).
+# Le déploiement horaire (pages.yml) recopie seulement ces JSON.
+
+on:
+  schedule:
+    - cron: '20 4 * * *'
+  workflow_dispatch:
+    inputs:
+      force_propositions:
+        description: Recalculer les propositions V6.6 même si la semaine est déjà publiée
+        type: boolean
+        required: false
+        default: false
+
+permissions:
+  contents: write
+
+# Même verrou que lab_gel.yml : jamais de gel pendant un calcul.
+concurrency:
+  group: lab-automatic-registry
+  cancel-in-progress: false
+
+env:
+  # Étape 4 (16/10/2026) : l'historique FIGÉ des courbes (parts/hist_*) est
+  # servi par R2 ; les lecteurs rapatrient ce qui manque (scripts/hist_r2.py).
+  R2_HIST_MATERIALIZE: '1'
+  # R2 (15/10/2026) — voir README_MIGRATION_R2.md. off | double | on ;
+  # sans variable de dépôt : double (git fait foi, R2 reçoit une copie).
+  R2_PRIMARY: ${{ vars.R2_PRIMARY || 'double' }}
+  R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+  R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+  R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+
+jobs:
+  quotidien:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+          filter: blob:none
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            .github/workflows/lab_quotidien.yml
+            .github/workflows/lab_gel.yml
+            .github/workflows/lab_v655_ingestion.yml
+            .github/workflows/pages.yml
+            Tennis_Edge_Lab
+            parts
+            historique
+            scripts/validation_report.py
+            scripts/oddspapi_v5.py
+            scripts/match_key.py
+            matches_oddspapi.json
+            moves_detail_hist.csv
+            moves_detail.csv
+            closing_lines.json
+            closing_lines
+            scripts/closing_store.py
+            resultats_derived.json
+            resultats_oddspapi.json
+            set_results.json
+            book_index.json
+            pipeline_status.json
+            canal_clv_detail.csv
+            paper_trades_canal.jsonl
+            paper_trades_match.jsonl
+            paper_canal_report.json
+            h13_signal_log.jsonl
+            h15_signal_log.jsonl
+            h16_signal_log.jsonl
+            h16b_signal_log.jsonl
+            h17_signal_log.jsonl
+            h18_signal_log.jsonl
+            h14_signal_log.jsonl
+            h19_signal_log.jsonl
+            miser_signal_log.jsonl
+            simulateur/table_sets.json
+            simulateur/notes_joueurs.json
+            verdicts_direct.json
+            suivi_direct
+            scripts/suivi_direct.py
+            scripts/journal_direct.py
+            canal_public_log.jsonl
+            odds_alerts_log.jsonl
+            clv_history
+            scripts/clv_store.py
+            scripts/r2_io.py
+            scripts/coffre.py
+            scripts/r2_parts.py
+            scripts/hist_r2.py
+            scripts/alerts_store.py
+            scripts/jsonl_parts.py
+            odds_alerts_log
+            clv_history.jsonl
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      # R2 (15/10/2026) : en mode R2_PRIMARY=on, rapatrie dans parts/ les
+      # partitions (all) que git ne contient plus. No-op en double/off.
+      - name: R2 — rapatrier les partitions (all)
+        run: |
+          python scripts/r2_parts.py pull --kinds all || true
+          python scripts/hist_r2.py pull || true   # étape 4 : historique figé (R2)
+          # 23/10/2026 : coffre privé — journal H19 (verdict de H19) ; H18 volontairement absent (publié sinon)
+          python scripts/coffre.py pull --groupe lab_entrees || true
+
+      - name: Tests (Python et interface)
+        run: |
+          set -e
+          python -m unittest discover -s Tennis_Edge_Lab/tests -v
+          for f in Tennis_Edge_Lab/tests/*_ui.js; do node --test "$f"; done
+
+      - name: Features avant signal et clôtures Pinnacle (mesure)
+        run: |
+          set -e
+          python Tennis_Edge_Lab/source_features.py .
+          python Tennis_Edge_Lab/historical_archive.py
+
+      - name: Scan V5/V6 - CLV Pinnacle, books jouables, cote de moins de 30 min
+        run: python Tennis_Edge_Lab/bookmakers_sets_v5.py .
+
+      - name: Stabilité sur 16 ans (tennis-data, clôture Pinnacle)
+        run: python Tennis_Edge_Lab/history_stability.py .
+
+      - name: Restaurer le cache V6.3.1 (facultatif et vérifié)
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ runner.temp }}/tennis-edge-incremental-v631
+          key: lab-v631-${{ runner.os }}-${{ hashFiles('Tennis_Edge_Lab/incremental_v631.py', 'Tennis_Edge_Lab/bookmakers_sets_v5.py', 'Tennis_Edge_Lab/books.py', 'Tennis_Edge_Lab/source_features.py', 'scripts/oddspapi_v5.py') }}-${{ github.run_id }}
+          restore-keys: |
+            lab-v631-${{ runner.os }}-${{ hashFiles('Tennis_Edge_Lab/incremental_v631.py', 'Tennis_Edge_Lab/bookmakers_sets_v5.py', 'Tennis_Edge_Lab/books.py', 'Tennis_Edge_Lab/source_features.py', 'scripts/oddspapi_v5.py') }}-
+
+      - name: Suivi des 60 gels V6.3 (règle d'origine, matchs futurs uniquement)
+        run: |
+          set -e
+          python Tennis_Edge_Lab/incremental_v631.py evaluate --root . \
+            --cache "$RUNNER_TEMP/tennis-edge-incremental-v631"
+          python Tennis_Edge_Lab/candidate_selection_v63.py verify --root .
+          python Tennis_Edge_Lab/candidate_registry_v62.py verify --root .
+
+      - name: Conserver le cache V6.3.1
+        if: success()
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ runner.temp }}/tennis-edge-incremental-v631
+          key: lab-v631-${{ runner.os }}-${{ hashFiles('Tennis_Edge_Lab/incremental_v631.py', 'Tennis_Edge_Lab/bookmakers_sets_v5.py', 'Tennis_Edge_Lab/books.py', 'Tennis_Edge_Lab/source_features.py', 'scripts/oddspapi_v5.py') }}-${{ github.run_id }}
+
+      - name: Propositions V6.6 (au plus 10 par semaine, jamais gelées ici)
+        env:
+          FORCE: ${{ inputs.force_propositions }}
+        run: |
+          set -e
+          if [ "${FORCE}" = "true" ]; then
+            python Tennis_Edge_Lab/selection_v66.py propose --root . --force
+          else
+            python Tennis_Edge_Lab/selection_v66.py propose --root .
+          fi
+          python Tennis_Edge_Lab/selection_v66.py verify --root .
+          python Tennis_Edge_Lab/selection_v66.py evaluate --root .
+
+      - name: Explorateur (jeux de données et suivi des gels Explorateur)
+        run: |
+          set -e
+          python Tennis_Edge_Lab/explorer_build.py .
+          # V6.9 : « Tous les matchs collectés » (historique figé rapatrié depuis R2 plus haut).
+          python Tennis_Edge_Lab/explorer_matchs.py .
+          python Tennis_Edge_Lab/explorer_gel.py verify --root .
+          python Tennis_Edge_Lab/explorer_gel.py evaluate --root .
+          # H20 (gelée le 21/10) : un pari par joueur, premier horizon, CLV Pinnacle.
+          python Tennis_Edge_Lab/h20.py .
+          python Tennis_Edge_Lab/profils.py .
+
+      - name: Réconciliation détections (suivi officiel) ↔ alertes envoyées ↔ Worker D1
+        run: |
+          set -e
+          # Capture publique en lecture seule ; une panne garde la capture précédente.
+          python Tennis_Edge_Lab/fetch_worker_snapshot.py "$RUNNER_TEMP/worker.json" || true
+          python - "$RUNNER_TEMP/worker.json" Tennis_Edge_Lab/live/worker_hypotheses_capture.json <<'PY'
+          import json, pathlib, shutil, sys
+          src, dst = pathlib.Path(sys.argv[1]), pathlib.Path(sys.argv[2])
+          ok = src.is_file() and json.loads(src.read_text(encoding='utf-8')).get('status') == 'ok'
+          if ok:
+              shutil.copyfile(src, dst)
+          print('Capture Worker :', 'nouvelle' if ok else ('précédente conservée' if dst.is_file() else 'aucune'))
+          PY
+          python Tennis_Edge_Lab/reconciliation.py . --worker Tennis_Edge_Lab/live/worker_hypotheses_capture.json
+
+      - name: Archiver l'audit exhaustif (90 jours, hors dépôt)
+        uses: actions/upload-artifact@v4
+        with:
+          name: tennis-edge-audit-v66-${{ github.run_id }}
+          retention-days: 90
+          if-no-files-found: warn
+          path: |
+            Tennis_Edge_Lab/live/archive/bookmakers_sets_v61/current/*.jsonl.gz
+            Tennis_Edge_Lab/live/archive/bookmakers_sets_v61/current/manifest.json
+
+      - name: Publier si un contenu a changé (jamais de force push)
+        run: |
+          set -euo pipefail
+          # Les gels existants ne sont jamais modifiés par la tâche quotidienne.
+          FROZEN=(
+            Tennis_Edge_Lab/registry/candidate_selection_v63.jsonl
+            Tennis_Edge_Lab/registry/candidate_watch_v62.jsonl
+            Tennis_Edge_Lab/registry/v62_evidence
+            Tennis_Edge_Lab/registry/gel_v66.jsonl
+            Tennis_Edge_Lab/registry/gel_explorateur.jsonl
+            Tennis_Edge_Lab/registry/candidates.jsonl
+            Tennis_Edge_Lab/registry/gel_h19.json
+            Tennis_Edge_Lab/registry/gel_h20.json
+          )
+          if ! git diff --quiet HEAD -- "${FROZEN[@]}" || \
+             [[ -n "$(git ls-files --others --exclude-standard -- "${FROZEN[@]}")" ]]; then
+            echo '::error::Un registre de gels a changé pendant le calcul quotidien : publication interdite.'
+            exit 1
+          fi
+          OUTPUTS=(
+            Tennis_Edge_Lab/live/bookmakers_sets.json
+            Tennis_Edge_Lab/live/bookmakers_sets_audit.json
+            Tennis_Edge_Lab/live/candidate_watch_v62_prospective.json
+            Tennis_Edge_Lab/live/history_stability.json
+            Tennis_Edge_Lab/live/propositions_v66.json
+            Tennis_Edge_Lab/live/gel_v66_prospective.json
+            Tennis_Edge_Lab/live/gel_explorateur_prospective.json
+            Tennis_Edge_Lab/live/profils_hypotheses.json
+            Tennis_Edge_Lab/live/reconciliation_hypotheses.json
+            Tennis_Edge_Lab/live/worker_hypotheses_capture.json
+            Tennis_Edge_Lab/cache/source_catalog.json
+            Tennis_Edge_Lab/cache/archive/index.json
+          )
+          # 23/10/2026 : verdicts H19 (valeur.json) et H20 (h20.json) → coffre privé, plus dans le dépôt public.
+          # 04/11/2026 : scripts/coffre.py ajouté au checkout — absent, push et retrait échouaient en silence (|| true) :
+          # valeur.json et h20.json restaient dans le dépôt public (version du 23/10) et le coffre n'était plus à jour.
+          python scripts/coffre.py push --groupe lab || true
+          python scripts/coffre.py retirer --groupe lab || true
+          # journal H19 rapatrié du coffre pour la lecture seulement : on rend la version git (pas de conflit avec
+          # le commit de « Courbes live + alertes » qui le retire du dépôt).
+          git checkout -- h19_signal_log.jsonl 2>/dev/null || true
+          # Un fichier qui ne diffère que par generated_at (ou équivalent) est restauré.
+          python Tennis_Edge_Lab/commit_guard.py --root . "${OUTPUTS[@]}"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          for f in "${OUTPUTS[@]}" \
+              Tennis_Edge_Lab/cache/parts_features_public.json.gz \
+              Tennis_Edge_Lab/live/propositions_v66_populations.json.gz \
+              Tennis_Edge_Lab/live/explorateur_alertes.json.gz \
+              Tennis_Edge_Lab/live/explorateur_histo.json.gz \
+              Tennis_Edge_Lab/live/explorateur_matchs.json.gz \
+              Tennis_Edge_Lab/live/explorateur_detections.json.gz \
+              Tennis_Edge_Lab/live/lectures_profils.json \
+              Tennis_Edge_Lab/live/delai_alertes.json \
+              Tennis_Edge_Lab/live/croisements.json \
+              Tennis_Edge_Lab/live/registre/*; do
+            if [ -f "$f" ]; then git add -- "$f"; fi
+          done
+          git diff --cached --check
+          if git diff --cached --quiet; then
+            echo 'Calcul quotidien : aucun contenu nouveau, aucun commit.'
+            exit 0
+          fi
+          git diff --cached --stat
+          git commit -m 'Lab V6.6 : rapports quotidiens (CLV Pinnacle, stabilité 16 ans, propositions)'
+          for i in 1 2 3 4 5; do
+            if ! git pull --rebase --autostash origin main; then
+              git rebase --abort || true
+              echo '::error::Conflit avec main : aucun gel ni rapport distant écrasé.'
+              exit 1
+            fi
+            if [[ -n "$(git ls-files -u)" ]]; then
+              echo '::error::Conflit après autostash : publication annulée.'
+              exit 1
+            fi
+            python Tennis_Edge_Lab/candidate_selection_v63.py verify --root .
+            python Tennis_Edge_Lab/candidate_registry_v62.py verify --root .
+            python Tennis_Edge_Lab/selection_v66.py verify --root .
+            python Tennis_Edge_Lab/explorer_gel.py verify --root .
+            if git push origin HEAD:main; then
+              echo '✅ Rapports quotidiens publiés.'
+              exit 0
+            fi
+            sleep $((i * 5))
+          done
+          echo '::error::Publication refusée après cinq tentatives.'
+          exit 1

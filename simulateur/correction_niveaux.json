@@ -1,0 +1,11 @@
+{
+ "paquet": 270,
+ "decision": "Lucas, 18/11/2026, après etude_niveaux_fiabilite.py (paquet 269)",
+ "regle_retrait": "Retirée automatiquement (retiree = true) par etude_niveaux_fiabilite.py si, sur au moins 100 matchs corrigés jugés, la log loss AVEC la correction dépasse celle SANS d'au moins 0,001.",
+ "corrections": {
+  "CH": {
+   "correct": {"pente": 1.142, "active_le": "2026-11-18", "retiree": false,
+               "origine": "pente apprise sur la 1re moitié (167 matchs), validée sur la 2de (167 matchs) : log loss −0,0026"}
+  }
+ }
+}

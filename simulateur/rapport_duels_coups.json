@@ -1,0 +1,167 @@
+{
+ "genere_le": "2026-11-12T22:46:14+00:00",
+ "paquet": 250,
+ "statut": "etude",
+ "regle": "par duel et par circuit : β appris sur les matchs concernés de 2018–2022, jugé sur 2023 → juin 2026 ; retenu si −0,001 de log loss sur au moins 1 000 matchs concernés et β de même signe sur les deux périodes ; base : Elo de production, pentes et signaux en place",
+ "source": "Match Charting Project (Jeff Sackmann et bénévoles, CC BY-NC-SA 4.0)",
+ "joueurs_releves": 1737,
+ "matchs_avec_deux_profils": {
+  "ATP": 6207,
+  "WTA": 3280
+ },
+ "moyennes_du_circuit": {
+  "m": {
+   "net": 0.6679,
+   "dr": 0.3308
+  },
+  "w": {
+   "net": 0.6678,
+   "dr": 0.3368
+  }
+ },
+ "duels": {
+  "filet": {
+   "ATP": {
+    "matchs": {
+     "2018–2022": 2483,
+     "2023 → juin 2026": 3724
+    },
+    "beta_2018_2022": -0.03,
+    "beta_2023": 0.079,
+    "gain": -0.00037,
+    "erreur_type": 0.00017,
+    "erreurs_types": -2.12,
+    "retenu": false,
+    "de_justesse": false
+   },
+   "WTA": {
+    "matchs": {
+     "2018–2022": 988,
+     "2023 → juin 2026": 2292
+    },
+    "beta_2018_2022": 0.047,
+    "beta_2023": -0.074,
+    "gain": -0.00101,
+    "erreur_type": 0.00047,
+    "erreurs_types": -2.15,
+    "retenu": false,
+    "de_justesse": false
+   }
+  },
+  "amorti": {
+   "ATP": {
+    "matchs": {
+     "2018–2022": 2483,
+     "2023 → juin 2026": 3724
+    },
+    "beta_2018_2022": 0.016,
+    "beta_2023": -0.013,
+    "gain": -0.0001,
+    "erreur_type": 0.00014,
+    "erreurs_types": -0.7,
+    "retenu": false,
+    "de_justesse": false
+   },
+   "WTA": {
+    "matchs": {
+     "2018–2022": 988,
+     "2023 → juin 2026": 2292
+    },
+    "beta_2018_2022": -0.058,
+    "beta_2023": 0.088,
+    "gain": -0.0009,
+    "erreur_type": 0.00046,
+    "erreurs_types": -1.95,
+    "retenu": false,
+    "de_justesse": false
+   }
+  },
+  "service_rapide": {
+   "ATP": {
+    "matchs": {
+     "2018–2022": 2483,
+     "2023 → juin 2026": 3724
+    },
+    "beta_2018_2022": 0.057,
+    "beta_2023": 0.077,
+    "gain": 0.00049,
+    "erreur_type": 0.00039,
+    "erreurs_types": 1.26,
+    "retenu": false,
+    "de_justesse": false
+   },
+   "WTA": {
+    "matchs": {
+     "2018–2022": 988,
+     "2023 → juin 2026": 2292
+    },
+    "beta_2018_2022": 0.052,
+    "beta_2023": 0.021,
+    "gain": -5e-05,
+    "erreur_type": 0.00052,
+    "erreurs_types": -0.1,
+    "retenu": false,
+    "de_justesse": false
+   }
+  },
+  "coups_gagnants": {
+   "ATP": {
+    "matchs": {
+     "2018–2022": 2483,
+     "2023 → juin 2026": 3724
+    },
+    "beta_2018_2022": -0.009,
+    "beta_2023": 0.037,
+    "gain": -7e-05,
+    "erreur_type": 7e-05,
+    "erreurs_types": -1.09,
+    "retenu": false,
+    "de_justesse": false
+   },
+   "WTA": {
+    "matchs": {
+     "2018–2022": 988,
+     "2023 → juin 2026": 2292
+    },
+    "beta_2018_2022": 0.007,
+    "beta_2023": 0.075,
+    "gain": 9e-05,
+    "erreur_type": 6e-05,
+    "erreurs_types": 1.43,
+    "retenu": false,
+    "de_justesse": false
+   }
+  },
+  "fautes_directes": {
+   "ATP": {
+    "matchs": {
+     "2018–2022": 2483,
+     "2023 → juin 2026": 3724
+    },
+    "beta_2018_2022": -0.005,
+    "beta_2023": -0.052,
+    "gain": 4e-05,
+    "erreur_type": 3e-05,
+    "erreurs_types": 1.31,
+    "retenu": false,
+    "de_justesse": false
+   },
+   "WTA": {
+    "matchs": {
+     "2018–2022": 988,
+     "2023 → juin 2026": 2292
+    },
+    "beta_2018_2022": -0.058,
+    "beta_2023": -0.004,
+    "gain": -0.0002,
+    "erreur_type": 0.00046,
+    "erreurs_types": -0.44,
+    "retenu": false,
+    "de_justesse": false
+   }
+  }
+ },
+ "retenus": [],
+ "deroulement": "trois passages, la règle inchangée : (1) variables en parts de points, β écrasés vers 0 par la crête — défaut technique ; (2) variables centrées-réduites : huit duels « retenus », mais par une FUITE — les lignes sont vues du vainqueur, retirer une moyenne ajoutait une constante « le vainqueur gagne » ; (3) variables seulement réduites, sans constante : c'est le résultat publié",
+ "conclusion": "aucun duel ne passe la règle : sur les matchs où les deux joueurs sont relevés (6 207 en ATP, 3 280 en WTA), le détail des coups n'ajoute rien à l'Elo, aux pentes et aux signaux en place ; le meilleur, service rapide en ATP, gagne 0,0005 ± 0,0004. Les duels restent une information descriptive"
+}

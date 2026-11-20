@@ -1,0 +1,51 @@
+name: Audit QA
+
+on:
+  schedule:
+    - cron: '23 6 * * *'        # 1×/jour le matin (minute 23 pour éviter la congestion)
+  workflow_dispatch:
+
+env:
+  # Étape 4 (16/10/2026) : l'historique FIGÉ des courbes (parts/hist_*) est
+  # servi par R2 ; les lecteurs rapatrient ce qui manque (scripts/hist_r2.py).
+  R2_HIST_MATERIALIZE: '1'
+  R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+  R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+  R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      # RESTAURATION DES PARTITIONS ARCHIVEES.
+      #
+      # Ce workflow lance un script dont le resultat depend de
+      # l'historique COMPLET. Depuis que archive_curves sort les
+      # partitions de plus de 28 jours vers les releases curves-2026-*,
+      # elles ne sont plus dans le depot : sans cette etape, le job
+      # travaille sur un historique tronque SANS lever d'erreur.
+      #
+      # Constate le 02/10 sur book_index : 1 251 matchs au lieu de 1 863,
+      # et une reactivite devenue negative partout. Les chiffres
+      # changeaient sans que rien ne le signale.
+      #
+      # `|| true` : une panne de release ne doit pas bloquer le job.
+      # restore_curves interroge l'index ET les releases directement.
+      - name: Restaurer les partitions de courbes archivees
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python scripts/restore_curves.py || true
+
+      - name: Run QA audit
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python scripts/audit_qa.py

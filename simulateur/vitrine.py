@@ -1,0 +1,1136 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+vitrine.py — les données du site public de l'algorithme (23/10/2026) : algo/donnees.json.
+
+Le site public (algo/index.html, en français et en anglais) montre :
+  — chaque match des prochaines heures en entier : % de victoire, cote juste (1 / %), sets, scores
+    probables, feuille prévue et scénario représentatif rejouable point par point ;
+  — le MATCH DU JOUR, toujours choisi séparément par sa règle fixe, sans influencer les autres simulations ;
+  — le BILAN PUBLIC : tous les matchs pronostiqués depuis le début du journal, sans tri, pertes comprises ;
+  — la CALIBRATION : ce que l'algo annonçait contre ce qui s'est passé (en direct, et rejoué hors échantillon).
+
+Préversion Plus : le détail complet (sets, scores, feuille, simulation) est publié pour TOUS les matchs afin
+de tester le catalogue et les parcours. Si une offre payante est activée plus tard, les éléments réservés
+devront être déplacés vers un service à accès contrôlé : un simple masquage visuel ne protégerait pas ce JSON.
+
+Rien d'autre ne sort : ni cote de bookmaker, ni signal d'alerte, ni canal privé. L'algo est une source
+indépendante : il ne regarde pas le marché, le site non plus.
+
+Règle du MATCH DU JOUR (fixée le 23/10/2026, avant toute publication) : parmi les matchs du jour (heure de
+Paris) pas encore commencés au premier passage, ATP et WTA d'abord (Challenger seulement s'il n'y a rien
+d'autre) ; l'affiche la plus forte = la plus grande somme des Elo des deux joueurs. Une fois choisi, le match
+du jour ne change plus de la journée. La confiance de l'algo n'entre JAMAIS dans le choix : sinon le bilan
+serait trié.
+
+Règle du BILAN (fixée le 23/10/2026) : chaque match ATP, WTA et Challenger du journal depuis le 21/10/2026
+(début du journal, premier pronostic jamais modifié), jugé sur le DERNIER pronostic affiché avant le début du
+match (à défaut, le premier). Abandons et forfaits exclus (ils ne jugent pas un pronostic).
+Usage : python simulateur/vitrine.py [racine]
+"""
+import datetime as dt
+import gzip
+import json
+import math
+import os
+import re
+import sys
+
+ICI = os.path.dirname(os.path.abspath(__file__))
+SORTIE = os.path.join('algo', 'donnees.json')
+DEBUT_BILAN = '2026-10-21'
+CIRCUITS = ('ATP', 'WTA', 'CH')
+VERSIONS = ('combinaison', 'simulation', 'stats')
+BACS = [i / 10 for i in range(11)]
+PARIS = dt.timezone(dt.timedelta(hours=2))          # remplacé par zoneinfo si disponible
+
+
+def _paris():
+    try:
+        from zoneinfo import ZoneInfo
+        return ZoneInfo('Europe/Paris')
+    except Exception:  # noqa: BLE001
+        return PARIS
+
+
+# joueur pas encore connu (« vainqueur du quart 1 ») : pas de pronostic public
+PROVISOIRE = re.compile(r'^(?:W|L)(?:QF|SF|F|R\d+|Q)\d*$|^(?:TBD|TBA|Qualifier)$', re.I)
+
+
+def connu(m):
+    return not (PROVISOIRE.match(str(m.get('home') or '').strip()) or PROVISOIRE.match(str(m.get('away') or '').strip()))
+
+
+def _lire(chemin, defaut=None):
+    try:
+        with open(chemin, encoding='utf-8') as f:
+            return json.load(f)
+    except (OSError, ValueError):
+        return defaut
+
+
+def version(m):
+    """Version affichée d'un pronostic : Simulation + Elo, sinon simulation, sinon Elo."""
+    for k in VERSIONS:
+        v = m.get(k)
+        if isinstance(v, dict) and v.get('p_home') is not None:
+            return k, v
+    return None, None
+
+
+def cote(p):
+    return round(1 / p, 2) if p and p > 0.001 else None
+
+
+def _utc(s):
+    d = dt.datetime.fromisoformat(str(s))
+    return d.replace(tzinfo=dt.timezone.utc) if d.tzinfo is None else d
+
+
+def jour_paris(s):
+    return _utc(s).astimezone(_paris()).date().isoformat()
+
+
+def elo_de(etat, cle):
+    j = ((etat or {}).get('joueurs') or {}).get(cle) or {}
+    return float(j.get('elo') or 1200.0)
+
+
+def choisir_match_du_jour(matchs, etat, maintenant, precedent=None):
+    """Règle fixe (voir l'en-tête). precedent : le choix déjà publié (gardé toute la journée)."""
+    jour = maintenant.astimezone(_paris()).date().isoformat()
+    if precedent and precedent.get('jour') == jour and any(m['uid'] == precedent.get('uid') for m in matchs):
+        return precedent
+    du_jour = [m for m in matchs if jour_paris(m['debut']) == jour and _utc(m['debut']) > maintenant
+               and m.get('circuit') in CIRCUITS and version(m)[1]]
+    if not du_jour:
+        return None
+    principal = [m for m in du_jour if m['circuit'] in ('ATP', 'WTA')]
+    pool = principal or du_jour
+    cles = lambda m: (m.get('cles') or [None, None])
+    m = max(pool, key=lambda x: (elo_de(etat, cles(x)[0]) + elo_de(etat, cles(x)[1]), x['uid']))
+    return {'jour': jour, 'uid': m['uid'],
+            'elo': [round(elo_de(etat, cles(m)[0])), round(elo_de(etat, cles(m)[1]))]}
+
+
+def _feuille_prevue(v):
+    f = ((v.get('match_simule') or {}).get('feuille')) or []
+    out = []
+    for j in f[:2]:
+        out.append({k: round((j.get(k) or {}).get('moy'), 1) for k in
+                    ('aces', 'doubles_fautes', 'breaks', 'premiere_pct', 'jeux_service_gagnes_pct')
+                    if isinstance(j.get(k), dict) and j[k].get('moy') is not None})
+    return out or None
+
+
+SALLE_STATS = None      # 12/11/2026 (paquet 238) : décalages « en salle / plein air » des statistiques annoncées (salle_stats.json)
+RECALAGE_STATS = None   # 04/11/2026 : recalage des statistiques annoncées (recalage_stats.py), seulement s'il est adopté
+
+
+def decaler_salle(c, salle, fp, fq, dec=None):
+    """12/11/2026 (paquet 238) — feuille prévue et fourchette décalées selon que le match se joue en salle (True) ou en
+    plein air (False) ; inchangées si on ne le sait pas (None) ou si rien n'est réglé pour ce circuit. Appliqué AVANT
+    le recalage appris en direct. Renvoie (fp, fq, appliqué ?, valeurs d'avant pour les statistiques touchées)."""
+    dec = SALLE_STATS if dec is None else dec
+    if not dec or not dec.get(c) or salle is None or not fp or not fq:
+        return fp, fq, False, None
+    import recalage_stats as RS
+    fp2, fq2, ok = RS.decaler_feuille(dec, c, bool(salle), fp, fq)
+    avant = [{k: [fp[i].get(k), (fq[i] or {}).get(k, [None, None])[0], (fq[i] or {}).get(k, [None, None])[1]] for k in dec[c]
+              if isinstance(fp[i].get(k), (int, float)) and (fq[i] or {}).get(k)} for i in range(min(len(fp), len(fq)))] if ok else None
+    return fp2, fq2, ok, avant
+
+
+def recaler_feuille(c, fp, fq, coefs=None):
+    """04/11/2026 — moyenne et fourchette 80 % recalées par circuit et statistique (recalage_stats.py) ; inchangées
+    tant que le recalage n'est pas adopté (deux semaines gagnantes de suite)."""
+    coefs = RECALAGE_STATS if coefs is None else coefs
+    if not coefs or not (coefs.get(c)):
+        return fp, fq
+    import recalage_stats as RS
+    fp2 = [dict(j) for j in fp] if fp else fp
+    fq2 = [dict(j) for j in fq] if fq else fq
+    for i in (0, 1):
+        for k, co in coefs[c].items():
+            m = fp2[i].get(k) if fp2 and len(fp2) > i else None
+            q = fq2[i].get(k) if fq2 and len(fq2) > i else None
+            if m is None or not q:
+                continue
+            m2, lo, hi = RS.recaler(co, k, float(m), float(q[0]), float(q[1]))
+            fp2[i][k] = m2
+            fq2[i][k] = [lo, hi]
+    return fp2, fq2
+
+
+CLES_PLUS = ('gagnes_1re_pct', 'gagnes_2e_pct', 'jeux_service_gagnes_pct', 'balles_break_obtenues', 'breaks',
+             'points_gagnes')
+
+
+def _feuille_plus(v):
+    """06/11/2026 (paquet 214) — [{clé: [moyenne, 10e centile, 90e centile]}] par joueur, des 20 000 simulations, pour
+    les statistiques que la feuille publiée ne montrait pas (points derrière la 1re et la 2e, jeux de service, balles
+    de break, points). Affichage du direct seulement : ni recalage, ni suivi après match."""
+    f = ((v.get('match_simule') or {}).get('feuille')) or []
+    out = []
+    for j in f[:2]:
+        d = {}
+        for k in CLES_PLUS:
+            x = j.get(k)
+            if isinstance(x, dict) and x.get('moy') is not None:
+                d[k] = [round(x['moy'], 1), (round(x['p10'], 1) if x.get('p10') is not None else None),
+                        (round(x['p90'], 1) if x.get('p90') is not None else None)]
+        out.append(d)
+    return out if len(out) == 2 and any(out) else None
+
+
+def _feuille_fourchette(v):
+    """29/10/2026 — fourchette 80 % (10e–90e centile des simulations) de chaque statistique annoncée, par joueur :
+    sert à mesurer après le match si ce qui est annoncé tient (apres_match.py)."""
+    f = ((v.get('match_simule') or {}).get('feuille')) or []
+    out = []
+    for j in f[:2]:
+        out.append({k: [j[k]['p10'], j[k]['p90']] for k in ('aces', 'doubles_fautes', 'breaks', 'premiere_pct')
+                    if isinstance(j.get(k), dict) and j[k].get('p10') is not None and j[k].get('p90') is not None})
+    return out if len(out) == 2 and any(out) else None
+
+
+def _scores_public(v):
+    """Classement exact en priorité ; les fréquences simulées restent séparées."""
+    exact = v.get('scores_exact') or {}
+    sim = v.get('match_simule') or {}
+    return (exact.get('scores') or v.get('scores_probables') or sim.get('scores') or [])[:3]
+
+
+BIAIS_ANNEXES = None     # 05/11/2026 : biais des prévisions annexes (biais_annexes.py), lu par construire()
+
+
+def type_de_match(m, p):
+    """05/11/2026 — étude etude_meilleurs_matchs.py (5 571 pronostics rejoués, deux périodes) :
+    « fiable » : Elo et simulation d'accord (même favori, moins de 10 points d'écart) et favori à 70 % ou plus — 77,7 %
+    de gagnants entre 70 et 80 %, 86,6 % au-delà, nos % s'y réalisent ; « fragile » : un critère de fragilité en vigueur
+    (favoris opposés : 52,8 %) ; « standard » : le reste."""
+    f = m.get('fiabilite') or {}
+    pe, ps = (m.get('stats') or {}).get('p_home'), (m.get('simulation') or {}).get('p_home')
+    if f.get('fragile_criteres') or (pe is not None and ps is not None and (pe >= .5) != (ps >= .5)):
+        return 'fragile'
+    if pe is not None and ps is not None and abs(pe - ps) < .10 and max(p, 1 - p) >= .70:
+        return 'fiable'
+    return 'standard'
+
+
+def ligne_match(m, complet):
+    k, v = version(m)
+    p = float(v['p_home'])
+    out = {'uid': m['uid'], 'debut': m['debut'], 'debut_utc': m.get('debut_utc'),
+           'horodatage': m.get('horodatage'), 'tournoi': m.get('tournoi'), 'circuit': m.get('circuit'),
+           'surface': m.get('surface'), 'meilleur_des': m.get('meilleur_des', 3),
+           'home': m['home'], 'away': m['away'], 'p_home': round(p, 3), 'version': k,
+           'fiabilite': m.get('fiabilite'), 'cotes_justes': [cote(p), cote(1 - p)], 'type_match': type_de_match(m, p)}
+    if BIAIS_ANNEXES:                           # 05/11/2026 : points de vigilance (erreurs probables des prévisions annexes)
+        import biais_annexes as BA
+        vg = BA.vigilance(BIAIS_ANNEXES, m.get('circuit'), m.get('matchs_joues'), recales=RECALAGE_STATS)
+        if vg:
+            out['vigilance'] = vg
+    if m.get('controle'):
+        out['controle'] = m['controle']             # 29/10/2026 : modèle fantôme (Elo d'avant les changements)
+    cb_ = m.get('combinaison') or {}
+    if cb_.get('p_elo') is not None and cb_.get('p_simulation') is not None:
+        # 29/10/2026 : les deux modèles avant mélange — suivi de leurs désaccords après le match (apres_match.py)
+        out['modeles'] = {'p_elo': round(float(cb_['p_elo']), 4), 'p_simulation': round(float(cb_['p_simulation']), 4)}
+    if m.get('activite'):
+        out['activite'] = m['activite']             # 29/10/2026 : activité récente des deux joueurs (activite.py)
+    if m.get('echanges'):
+        out['echanges'] = m['echanges']             # 30/10/2026 : longueur des échanges (echanges_joueur.py)
+    if m.get('entree'):
+        out['entree'] = m['entree']                 # 30/10/2026 : statut d'entrée (invité, qualifié, tête de série)
+    if m.get('forme_service'):
+        out['forme_service'] = m['forme_service']   # 29/10/2026 : service / retour du moment (forme_service.py)
+    if not complet:
+        out['simulation_disponible'] = False
+        return out
+    d = m.get('direct') or {}
+    sim = v.get('match_simule') or {}
+    exact = v.get('scores_exact') or {}
+    fp0, fq0, salle_ok, salle_avant = decaler_salle(m.get('circuit'), m.get('en_salle'), _feuille_prevue(v), _feuille_fourchette(v))
+    out.update({
+        'simulation_disponible': bool(d.get('a') and d.get('b') and sim.get('match_type')),
+        'sets': v.get('sets'),
+        'scores_probables': _scores_public(v),
+        'scores_source': 'exact' if exact else 'repli_ancien_format',
+        'distribution_scores': exact.get('distribution'),
+        'scores_simules': (sim.get('scores') or [])[:3],
+        'jeux_moyen': v.get('jeux_moyen'),
+        'tiebreak': v.get('tiebreak'),
+        'set1_home': v.get('set1_home'),
+        'feuille_prevue': recaler_feuille(m.get('circuit'), fp0, fq0)[0],
+        'feuille_fourchette': recaler_feuille(m.get('circuit'), fp0, fq0)[1],
+        # 12/11/2026 (paquet 238) : en salle ou en plein air (feuille du tournoi), et si le décalage a été appliqué
+        'en_salle': m.get('en_salle'), 'salle_appliquee': salle_ok, **({'salle_brut': salle_avant} if salle_ok else {}),
+        # 06/11/2026 (paquet 214) : les autres statistiques simulées, pour le duel des statistiques en direct
+        'feuille_plus': _feuille_plus(v),
+        # 04/11/2026 : valeurs avant recalage, gardées pour l'apprentissage (recalage_stats.py) une fois adopté
+        **({'feuille_prevue_brute': fp0, 'feuille_fourchette_brute': fq0}
+           if RECALAGE_STATS else {}),
+        'simulation': ({'a': round(d['a'], 4), 'b': round(d['b'], 4),
+                        'sets_gagnants': int(d.get('sets_gagnants') or (3 if m.get('meilleur_des') == 5 else 2)),
+                        'tb_final': int(d.get('tb_final') or 7), 'n': int(sim.get('n') or 0),
+                        'version': k, 'scenario': sim.get('match_type'),
+                        'stabilite_score': sim.get('stabilite_score')}
+                       if d.get('a') and d.get('b') else None),
+    })
+    return out
+
+
+def ajouter_styles_descriptifs(lignes, document):
+    """Ajoute seulement un descriptif par UID ; ne recalcule aucune sortie du modèle."""
+    styles = (document or {}).get('matchs') or {}
+    for ligne in lignes:
+        bloc = styles.get(ligne.get('uid'))
+        if bloc and bloc.get('descriptif_seulement') is True and len(bloc.get('joueurs') or []) == 2:
+            # Les résidus du challenger restent hors du document public.
+            ligne['styles_descriptifs'] = {'descriptif_seulement': True, 'joueurs': bloc['joueurs']}
+    return lignes
+
+
+def ajouter_rythme(lignes, document, alias=None):
+    """28/10/2026 — durée prévue et profils de rythme / longueur / régularité (profil_rythme.py). Descriptif."""
+    import elo as E
+    import profil_rythme as PR
+    profils = (document or {}).get('joueurs') or {}
+    bases = (document or {}).get('bases_log_secondes_par_point') or {}
+    refs = (document or {}).get('references_circuit') or {}
+    if not profils or not bases:
+        return lignes
+    alias = alias or {}
+    cle_c = lambda n: alias.get(E.cle(n), E.cle(n)) if n else None
+    champs = ('matchs', 'points_par_match', 'jeux_par_match', 'minutes_par_match', 'tiebreak_pct', 'trois_sets_pct',
+              'rythme_pct')
+    for ligne in lignes:
+        joueurs = []
+        for nom in (ligne.get('home'), ligne.get('away')):
+            pf = profils.get(cle_c(nom))
+            joueurs.append(dict({k: pf.get(k) for k in champs},
+                                regularite=(pf.get('regularite') or {}).get('niveau'),
+                                regularite_centile=(pf.get('regularite') or {}).get('centile')) if pf else None)
+        prev = PR.prevision(ligne, profils, bases, cle_c)
+        if prev or any(joueurs):
+            ligne['rythme'] = {'descriptif_seulement': True, 'prevision': prev, 'joueurs': joueurs,
+                               'reference': refs.get(ligne.get('circuit'))}     # repère du circuit (phrases du site)
+    return lignes
+
+
+def _repartir(total, poids):
+    """Entiers ≥ 0 de somme `total`, proportionnels à `poids` (plus forts restes)."""
+    tot = sum(poids)
+    if total <= 0 or tot <= 0:
+        return [0] * len(poids)
+    brut = [total * w / tot for w in poids]
+    ent = [int(x) for x in brut]
+    for i in sorted(range(len(poids)), key=lambda i: brut[i] - ent[i], reverse=True)[:total - sum(ent)]:
+        ent[i] += 1
+    return ent
+
+
+def taux_duel(c):
+    """12/11/2026 (paquet 251) — les parts qui décrivent un joueur dans les duels (None quand le dénominateur manque)."""
+    r = lambda a, b, f=1.0: round(f * c.get(a, 0) / c[b], 4) if c.get(b) else None  # noqa: E731
+    return {'filet_freq': r('montees', 'points_joues'), 'filet_reussite': r('montees_gagnees', 'montees'),
+            'filet_concede': r('adv_montees_gagnees', 'adv_montees'),
+            'amorti_freq': r('amortis_joues', 'points_joues'), 'amorti_reussite': r('amortis_reussis', 'amortis_joues'),
+            'amorti_concede': r('adv_amortis_reussis', 'adv_amortis_joues'),
+            'service_rapide': r('srv_rapides', 'srv_pts'), 'service_rapide_concede': r('adv_srv_rapides', 'adv_srv_pts'),
+            'gagnants': r('gagnants_provoques', 'points_joues'), 'fautes': r('fautes_directes', 'points_joues')}
+
+
+def moyennes_duel(doc):
+    """{'m' | 'w': parts du circuit} sur tous les joueurs relevés (sommes des comptes)."""
+    import collections
+    S = collections.defaultdict(collections.Counter)
+    for e in ((doc or {}).get('joueurs') or {}).values():
+        S[e.get('circuit')].update(e.get('comptes') or {})
+    return {g: taux_duel(v) for g, v in S.items() if g}
+
+
+def points_marques(ligne, doc, cle_c, moyennes=None):
+    """12/11/2026 (paquet 249) — tiroir « Points marqués » : total de points prévu par les simulations (feuille_plus),
+    aces et doubles fautes adverses de la feuille publiée, et, pour un joueur relevé au moins coups_joueurs.MIN_MATCHS
+    fois, le reste réparti selon ses habitudes (coups_joueurs.json). DESCRIPTIF : ne change pas le % de victoire."""
+    import coups_joueurs as CJ
+    fp, fpl = ligne.get('feuille_prevue') or [], ligne.get('feuille_plus') or []
+    if len(fp) < 2 or len(fpl) < 2 or not all((fpl[i] or {}).get('points_gagnes') for i in (0, 1)):
+        return None
+    J = (doc or {}).get('joueurs') or {}
+    tot = [int(round(fpl[i]['points_gagnes'][0])) for i in (0, 1)]
+    joueurs = []
+    for i, nom in enumerate((ligne.get('home'), ligne.get('away'))):
+        pg = fpl[i]['points_gagnes']
+        aces = int(round(fp[i].get('aces') or 0))
+        dfa = int(round(fp[1 - i].get('doubles_fautes') or 0))
+        reste = max(tot[i] - aces - dfa, 0)
+        j = {'total': tot[i], 'fourchette': [pg[1], pg[2]] if len(pg) > 2 else None, 'aces': aces,
+             'doubles_fautes_adverses': dfa, 'echange': reste, 'detail': None}
+        e = J.get(cle_c(nom)) if nom else None
+        if e and (e.get('matchs') or 0) >= CJ.MIN_MATCHS:
+            c = e['comptes']
+            autres = [k for k in CJ.CATEGORIES if k not in ('aces', 'doubles_fautes_adverses')]
+            n = _repartir(reste, [c.get(k, 0) for k in autres])
+            det = dict(zip(autres, n), aces=aces, doubles_fautes_adverses=dfa)
+            pj = tot[0] + tot[1]
+            mt = round(pj * c['montees'] / c['points_joues']) if c.get('points_joues') else None
+            mg = round(mt * c['montees_gagnees'] / c['montees']) if mt is not None and c.get('montees') else None
+            j.update(detail={k: det[k] for k in CJ.CATEGORIES}, montees=mt, montees_gagnees=mg, matchs_releves=e['matchs'])
+        else:
+            j['matchs_releves'] = (e or {}).get('matchs') or 0
+        joueurs.append(j)
+    out = {'descriptif_seulement': True, 'joueurs': joueurs, 'min_matchs': CJ.MIN_MATCHS}
+    # 12/11/2026 (paquet 251) : duel des coups, descriptif (études 250 et 251 : aucune valeur de prévision au-delà de l'algo)
+    E_ = [J.get(cle_c(n)) if n else None for n in (ligne.get('home'), ligne.get('away'))]
+    if all(j['detail'] for j in joueurs) and all(E_):
+        g = E_[0].get('circuit')
+        m = (moyennes if moyennes is not None else moyennes_duel(doc)).get(g)
+        if m and E_[1].get('circuit') == g:
+            out['duel'] = {'joueurs': [taux_duel(e['comptes']) for e in E_], 'circuit': m}
+    return out
+
+
+def ajouter_points_marques(lignes, doc, alias=None):
+    import elo as E
+    alias = alias or {}
+    cle_c = lambda n: alias.get(E.cle(n), E.cle(n)) if n else None  # noqa: E731
+    moy = moyennes_duel(doc)
+    for ligne in lignes:
+        try:
+            pm = points_marques(ligne, doc, cle_c, moy)
+        except Exception as e:  # noqa: BLE001 — un descriptif ne bloque jamais la page
+            print(f"::warning::points marqués non calculés ({ligne.get('uid')}) : {type(e).__name__}: {e}")
+            pm = None
+        if pm:
+            ligne['points_marques'] = pm
+    return lignes
+
+
+def bilan_lignes(racine, resultats):
+    """28/10/2026 : lignes figées avant le match (lignes_algo.journaliser) contre les scores réels."""
+    import lignes_algo as MD
+    scores = {}
+    for m in (resultats or {}).get('matchs') or []:
+        reel = m.get('reel') or {}
+        if reel.get('interrompu') or reel.get('score_invalide') or not reel.get('score'):
+            continue
+        try:
+            sets = [tuple(int(v.split('(')[0]) for v in s_.split('-')) for s_ in str(reel['score']).split()]
+        except ValueError:
+            continue
+        scores[m['uid']] = sets
+    return MD.bilan_lignes(racine, scores)
+
+
+def _juge(m):
+    """(p_home, gagnant) du pronostic jugé : dernier avant le match, sinon premier."""
+    for bloc in ('dernier', 'premier'):
+        b = m.get(bloc) or {}
+        for k in VERSIONS:
+            v = b.get(k)
+            if isinstance(v, dict) and v.get('p_home') is not None and v.get('vainqueur_juste') is not None:
+                return float(v['p_home']), k
+    return None, None
+
+
+def _mesures(points):
+    """points : [(p annoncée pour le vainqueur RÉEL… non : p_home, y_home)]."""
+    n = len(points)
+    if not n:
+        return None
+    eps = 1e-6
+    brier = sum((p - y) ** 2 for p, y in points) / n
+    ll = -sum(y * math.log(max(p, eps)) + (1 - y) * math.log(max(1 - p, eps)) for p, y in points) / n
+    ok = sum(1 for p, y in points if (p > 0.5) == (y == 1))
+    return {'n': n, 'vainqueurs': ok, 'pct': round(100 * ok / n, 1), 'brier': round(brier, 4),
+            'log_loss': round(ll, 4)}
+
+
+def calibration(points, n_min=20):
+    """Vu des DEUX joueurs : chaque match compte deux fois (p et 1 − p)."""
+    deux = []
+    for p, y in points:
+        deux += [(p, y), (1 - p, 1 - y)]
+    out = []
+    for lo, hi in zip(BACS, BACS[1:]):
+        s = [(p, y) for p, y in deux if lo <= p < hi or (hi == 1.0 and p == 1.0)]
+        if len(s) >= n_min:
+            out.append({'de': lo, 'a': hi, 'n': len(s), 'prevu': round(100 * sum(p for p, _ in s) / len(s), 1),
+                        'reel': round(100 * sum(y for _, y in s) / len(s), 1)})
+    return out
+
+
+def bilan(resultats, debut=DEBUT_BILAN, seulement=None):
+    lignes, points, par_c, par_jour = [], [], {}, {}
+    for m in (resultats or {}).get('matchs') or []:
+        if m.get('circuit') not in CIRCUITS or str(m.get('debut'))[:10] < debut or not connu(m):
+            continue
+        if seulement and not seulement(m):
+            continue
+        reel = m.get('reel') or {}
+        if reel.get('interrompu') or reel.get('gagnant') not in ('home', 'away'):
+            continue
+        p, k = _juge(m)
+        if p is None:
+            continue
+        y = 1 if reel['gagnant'] == 'home' else 0
+        points.append((p, y))
+        par_c.setdefault(m['circuit'], []).append((p, y))
+        par_jour.setdefault(jour_paris(m['debut']), []).append((p, y))
+        lignes.append({'uid': m.get('uid'), 'debut': m['debut'], 'tournoi': m.get('tournoi'), 'circuit': m['circuit'],
+                       'home': m['home'], 'away': m['away'], 'p_home': round(p, 3),
+                       'gagnant': reel['gagnant'], 'score': reel.get('score'), 'juste': (p > 0.5) == (y == 1),
+                       'fiabilite': m.get('fiabilite')})
+    lignes.sort(key=lambda x: x['debut'], reverse=True)
+    par_circuit = {}
+    for c, v in par_c.items():
+        jours_c = {}
+        for x in lignes:
+            if x['circuit'] == c:
+                y = 1 if x['gagnant'] == 'home' else 0
+                jours_c.setdefault(jour_paris(x['debut']), []).append((x['p_home'], y))
+        par_circuit[c] = dict(_mesures(v), courbe=_courbe(jours_c),
+                              derniers=[x for x in lignes if x['circuit'] == c][:40])
+    return {'depuis': debut, 'global': _mesures(points), 'par_circuit': par_circuit,
+            'calibration': calibration(points), 'courbe': _courbe(par_jour), 'derniers': lignes[:40]}
+
+
+COURBE_N_MIN = 10        # la courbe démarre quand 10 matchs sont jugés (avant : un pourcentage sur 3 matchs)
+
+
+def _courbe(par_jour):
+    """Taux de vainqueurs trouvés cumulé jour après jour (Europe/Paris)."""
+    cumul, out = [], []
+    for j in sorted(par_jour):
+        cumul += par_jour[j]
+        if len(cumul) >= COURBE_N_MIN:
+            mm = _mesures(cumul)
+            out.append({'jour': j, 'n': mm['n'], 'pct': mm['pct']})
+    return out
+
+
+def rejoue(racine):
+    """Calibration rejouée hors échantillon (entrainement_progressif.py : chaque semaine prédite avec un modèle
+    entraîné sur les semaines d'avant). Version Simulation + Elo."""
+    p = os.path.join(racine, 'simulateur', 'pronostics_hors_echantillon.jsonl.gz')
+    points, jours = [], []
+    try:
+        with gzip.open(p, 'rt', encoding='utf-8') as f:
+            for l in f:
+                r = json.loads(l)
+                if r.get('circuit') in CIRCUITS and r.get('p_algo') is not None:
+                    points.append((float(r['p_algo']), 1 if r['gagnant'] == 'home' else 0))
+                    jours.append(r['jour'])
+    except (OSError, ValueError):
+        return None
+    if not points:
+        return None
+    return {'du': min(jours), 'au': max(jours), 'global': _mesures(points), 'calibration': calibration(points)}
+
+
+NIVEAUX_FIABILITE = ('fragile', 'prudent', 'correct', 'solide')
+
+
+def perte_attendue(p):
+    """Log loss MOYENNE attendue si la probabilité annoncée p est juste (entropie) : un match à 55 % « coûte »
+    naturellement plus qu'un match à 85 %."""
+    p = min(max(p, 1e-6), 1 - 1e-6)
+    return -(p * math.log(p) + (1 - p) * math.log(1 - p))
+
+
+def par_niveau_fiabilite(matchs, cle='niveau'):
+    """29/10/2026 — par niveau de fiabilité : vainqueurs trouvés, confiance annoncée et PERTE EXCÉDENTAIRE (log loss
+    réelle − log loss attendue vu les probabilités annoncées). Comparer les niveaux sur le taux de vainqueurs trompe :
+    les notes hautes vont souvent à des matchs serrés. Perte excédentaire ≈ 0 : l'annonce tient ; > 0 : plus d'erreur
+    que prévu. Descriptif ; la règle de jugement de la note reste celle de rapport_validation_fiabilite.json."""
+    par = {}
+    for m in matchs:
+        reel = m.get('reel') or {}
+        niv = (m.get('fiabilite') or {}).get(cle)
+        if reel.get('interrompu') or reel.get('gagnant') not in ('home', 'away') or niv not in NIVEAUX_FIABILITE:
+            continue
+        p, _ = _juge(m)
+        if p is None:
+            continue
+        y = 1 if reel['gagnant'] == 'home' else 0
+        q = min(max(p if y else 1 - p, 1e-6), 1 - 1e-6)
+        par.setdefault(niv, []).append((max(p, 1 - p), (p >= .5) == (y == 1), -math.log(q), perte_attendue(p)))
+    out = {}
+    for niv in NIVEAUX_FIABILITE:
+        L = par.get(niv) or []
+        if L:
+            n = len(L)
+            out[niv] = {'n': n, 'vainqueurs_pct': round(100 * sum(x[1] for x in L) / n, 1),
+                        'confiance_pct': round(100 * sum(x[0] for x in L) / n, 1),
+                        'perte_excedentaire': round(sum(x[2] - x[3] for x in L) / n, 4),
+                        'conclusion_possible': n >= 30}
+    return out
+
+
+def validation_fiabilite(resultats):
+    """Cohorte strictement prospective de la fiabilité circuit.
+
+    Une note recalculée sur un match déjà journalisé ne le fait pas entrer dans
+    cette cohorte : la date du premier enregistrement doit elle aussi suivre
+    l'activation. Les probabilités et le bilan historique restent inchangés.
+    """
+    sys.path.insert(0, ICI)
+    from fiabilite import ACTIVE_LE, VERSION_FIABILITE
+
+    def eligible(m):
+        f = m.get('fiabilite') or {}
+        return (f.get('version_fiabilite') == VERSION_FIABILITE
+                and str(m.get('pronostique_le') or '')[:10] >= ACTIVE_LE)
+
+    out = bilan(resultats, debut=ACTIVE_LE, seulement=eligible)
+    out['par_niveau'] = par_niveau_fiabilite([m for m in resultats.get('matchs') or [] if eligible(m)])
+    # 29/10/2026 : note v2 (sans la calibration) en fantôme, jugée seulement à partir du 30/10
+    from fiabilite import ACTIVE_V2_LE, VERSION_V2
+    out['v2'] = {'version': VERSION_V2, 'depuis': ACTIVE_V2_LE, 'par_niveau': par_niveau_fiabilite(
+        [m for m in resultats.get('matchs') or [] if (m.get('fiabilite') or {}).get('version_v2') == VERSION_V2
+         and str(m.get('pronostique_le') or '')[:10] >= ACTIVE_V2_LE], 'niveau_v2')}
+    out.update({'version': VERSION_FIABILITE, 'depuis': ACTIVE_LE,
+                'regle': "Premiers pronostics enregistrés après activation, portant la version circuit_v1 ; aucun ancien match recalculé."})
+    return out
+
+
+def qualite_donnees(racine, resultats=None):
+    from qualite_donnees import auditer, couverture_pronostiques
+    doc = _lire(os.path.join(racine, 'simulateur', 'profils_service.json'), {}) or {}
+    out = auditer(doc)
+    if out is not None:
+        try:                                    # 29/10/2026 : joueurs actifs (30 derniers jours), le chiffre de tête
+            from qualite_donnees import actifs
+            out['actifs'] = actifs(doc, racine)
+        except Exception as e:  # noqa: BLE001
+            print(f"::warning::joueurs actifs non calculés : {type(e).__name__}: {e}")
+    if out is not None and resultats:
+        # 28/10/2026 : couverture des joueurs réellement pronostiqués (mêmes matchs que le tableau des scores)
+        matchs = [m for m in resultats.get('matchs') or [] if m.get('circuit') in CIRCUITS
+                  and str(m.get('debut'))[:10] >= DEBUT_BILAN and connu(m)]
+
+        def juge(m):
+            reel = m.get('reel') or {}
+            if reel.get('interrompu') or reel.get('gagnant') not in ('home', 'away'):
+                return None
+            p, _ = _juge(m)
+            return None if p is None else (p, 1 if reel['gagnant'] == 'home' else 0)
+        out['pronostiques'] = couverture_pronostiques(doc, matchs, juge)
+    return out
+
+
+STATS_TEST = ('aces', 'doubles_fautes', 'premiere_pct', 'breaks', 'gagnes_1re_pct', 'gagnes_2e_pct', 'jeux', 'total_jeux')
+
+
+def fiabilite_stats(racine, analyse=None):
+    """29/10/2026 — ce qui est annoncé contre ce qui se passe : en direct (nos matchs, apres_match.analyser) par circuit,
+    et le test sur matchs passés (rapport_match_simule.json, version ancrée sur l'Elo, la plus proche de la production).
+    Même règle de fiabilité pour les deux (apres_match.fiabilite_stat)."""
+    import apres_match as AM
+    g = (analyse or {}).get('groupes') or {}
+    direct = {k: {'matchs': v.get('matchs'), 'stats': v.get('stats') or {}, 'lignes': v.get('lignes') or {}}
+              for k, v in g.items() if isinstance(v, dict)}
+    test = None
+    R = _lire(os.path.join(racine, 'simulateur', 'rapport_match_simule.json'), {}) or {}
+    V = (R.get('versions') or {}).get('stats_seules') or {}
+    if V:
+        test = {'periode': R.get('periode'), 'matchs': R.get('matchs_simules'), 'stats': {}}
+        for k in STATS_TEST:
+            x = V.get(k) or {}
+            if x.get('couverture_80_pct') is None:
+                continue
+            n = int(x.get('n') or 0)
+            dans, sous, dessus = x['couverture_80_pct'], x.get('sous_p10_pct') or 0.0, x.get('au_dessus_p90_pct') or 0.0
+            pos = [0] * round(n * dans / 100) + [-1] * round(n * sous / 100) + [1] * round(n * dessus / 100)
+            fi = AM.fiabilite_stat(pos, [])['fiabilite'] if pos else 'rien'
+            test['stats'][k] = {'n': n, 'dans_fourchette_pct': dans, 'sous_pct': sous, 'dessus_pct': dessus,
+                                'erreur_moyenne': x.get('mae'), 'gain_vs_naif_pct': x.get('gain_vs_naif_pct'),
+                                'correlation': x.get('correlation'), 'fiabilite': fi}
+    # 11/11/2026 (paquet 225) : recalage case par case — variante en place et couverture depuis sa mise en place
+    try:
+        import recalage_stats as RS
+        recal = RS.etat_pour_le_site(racine)
+    except Exception as e:  # noqa: BLE001
+        print(f'::warning::état du recalage non lu : {type(e).__name__}: {e}')
+        recal = None
+    return {'en_direct': direct, 'test': test, 'recalage': recal}
+
+
+def desaccords(racine, analyse=None):
+    """29/10/2026 — quand l'Elo et la simulation ne désignent pas le même vainqueur : qui avait raison ? En direct (nos
+    matchs, apres_match) par circuit, et la référence sur les pronostics hors échantillon (entraînement semaine après
+    semaine, depuis juin). Descriptif : ce sont les arbres, jugés chaque semaine, qui apprennent quoi en faire."""
+    g = (analyse or {}).get('groupes') or {}
+    direct = {k: v['desaccord'] for k, v in g.items() if isinstance(v, dict) and v.get('desaccord')}
+    ref = {}
+    try:
+        with gzip.open(os.path.join(racine, 'simulateur', 'pronostics_hors_echantillon.jsonl.gz'), 'rt', encoding='utf-8') as f:
+            X = [json.loads(l) for l in f if l.strip()]
+    except (OSError, ValueError):
+        X = []
+    for c in ('TOUS',) + CIRCUITS:
+        L = [x for x in X if x.get('p_algo') is not None and (c == 'TOUS' or x.get('circuit') == c)]
+        D_ = [x for x in L if (x['p_elo'] >= .5) != (x['p_sim'] >= .5)]
+        if not D_:
+            continue
+        juste = lambda p, x: (p >= .5) == (x['gagnant'] == 'home')
+        A_ = [x for x in L if (x['p_elo'] >= .5) == (x['p_sim'] >= .5)]
+        ref[c] = {'matchs': len(L), 'desaccords': len(D_), 'part_pct': round(100 * len(D_) / len(L), 1),
+                  'elo_pct': round(100 * sum(juste(x['p_elo'], x) for x in D_) / len(D_), 1),
+                  'simulation_pct': round(100 * sum(juste(x['p_sim'], x) for x in D_) / len(D_), 1),
+                  'affiche_pct': round(100 * sum(juste(x['p_algo'], x) for x in D_) / len(D_), 1),
+                  'accord_pct': round(100 * sum(juste(x['p_algo'], x) for x in A_) / len(A_), 1) if A_ else None}
+    return {'en_direct': direct, 'reference': ref} if (direct or ref) else None
+
+
+def journal_changements(racine, analyse=None):
+    """29/10/2026 — journal des changements du modèle (simulateur/journal_changements.json) + comparaison en direct du
+    modèle fantôme (Elo en place contre Elo d'avant les changements, sur les mêmes matchs réels)."""
+    doc = _lire(os.path.join(racine, 'simulateur', 'journal_changements.json'), {}) or {}
+    if not doc:
+        return None
+    # 11/11/2026 (paquet 227) : le journal est PUBLIÉ sur le site. Une entrée de travail interne (champ « prive ») reste
+    # dans le fichier, lue par les outils privés, mais n'est jamais publiée ; le repère dit que le filtre est passé.
+    doc = dict(doc, changements=[c for c in doc.get('changements') or [] if not (isinstance(c, dict) and c.get('prive'))],
+               entrees_internes_masquees=True)
+    g = ((analyse or {}).get('groupes') or {})
+    doc['fantome'] = {k: v['fantome'] for k, v in g.items() if isinstance(v, dict) and v.get('fantome')}
+    # 29/10/2026 : un fantôme par changement (ITF hommes + femmes ensemble, ITF femmes seules, σ du Challenger)
+    T = g.get('TOUS') or {}
+    doc['fantomes'] = [dict(T[k], cle=k) for k in ('fantome', 'fantome_itf_femmes', 'fantome_sigma', 'fantome_forme_service', 'fantome_entree',
+                                                 'fantome_serveuses_wta', 'fantome_elo_service_retour',
+                                                 'fantome_forme_set', 'fantome_changement_surface',
+                                                 'fantome_retour_absence', 'fantome_age',
+                                                 'fantome_favori_outsider', 'fantome_favori_sous_estime',
+                                                 'fantome_tiebreak', 'fantome_documentation_faible', 'fantome_format_match',
+                                                 'fantome_grand_chelem', 'fantome_qualifs_grand_chelem') if T.get(k)]
+    return doc
+
+
+ABANDON_J = 90
+
+
+def ajouter_abandons(lignes, racine, maintenant=None):
+    """ligne['abandon_recent'] = [jours depuis le dernier abandon de home, de away] (≤ 90 jours, sinon None)."""
+    import elo as E
+    import feuilles as FE
+    dern = {}
+    for r in FE.lire(racine):
+        txt = str((r.get('statut') or {}).get('texte') or '').lower()
+        if 'retired' not in txt or r.get('vainqueur') not in (1, 2) or not r.get('jour'):
+            continue
+        perdant = r['away'] if r['vainqueur'] == 1 else r['home']
+        k = E.cle(perdant.get('nom'))
+        dern[k] = max(dern.get(k, ''), r['jour'])
+    for x in lignes:
+        try:
+            j0 = _utc(x.get('debut_utc') or x['debut']).date()
+        except (KeyError, TypeError, ValueError):
+            continue
+        v = []
+        for n in (x.get('home'), x.get('away')):
+            d = dern.get(E.cle(n))
+            jours = (j0 - dt.date.fromisoformat(d)).days if d else None
+            v.append(jours if jours is not None and 0 < jours <= ABANDON_J else None)
+        if any(v):
+            x['abandon_recent'] = v
+
+
+def ajouter_pays(lignes, racine, alias=None):
+    """04/11/2026 — ligne['pays'] = [code ISO alpha-3 de home, de away] (fiches TennisApi, la plus récente gagne) ;
+    sert au drapeau du post X. Absent si aucun des deux n'est connu."""
+    import elo as E
+    import feuilles as FE
+    alias = alias or {}
+    k = lambda n: alias.get(E.cle(n), E.cle(n)) if n else None
+    pays = {}
+    for r in sorted(FE.lire(racine), key=lambda r: r.get('jour') or ''):
+        for cote in ('home', 'away'):
+            j = r.get(cote) or {}
+            code = str(j.get('pays') or '').upper()
+            if j.get('nom') and len(code) == 3 and code.isalpha():
+                pays[k(j['nom'])] = code
+    for x in lignes:
+        v = [pays.get(k(x.get('home'))), pays.get(k(x.get('away')))]
+        if any(v):
+            x['pays'] = v
+
+
+ANNULES = ('walkover', 'canceled', 'cancelled', 'postponed')
+
+
+def retirer_annules(matchs, racine, maintenant):
+    """Matchs sans les forfaits / annulations / reports connus des feuilles TennisApi (jour du match ± 1)."""
+    try:
+        import feuilles as FE
+        depuis = (maintenant.date() - dt.timedelta(days=2)).isoformat()
+        fiches_ = FE.lire(racine, depuis=depuis)
+        idx = FE.Index(fiches_)
+    except Exception as e:  # noqa: BLE001
+        print(f'::warning::feuilles illisibles, forfaits non filtrés : {e}')
+        return dedoublonner_site(matchs)
+    try:
+        import controle_donnees as CD
+        idx_j = CD.ParJoueur(fiches_)
+    except Exception:  # noqa: BLE001
+        idx_j = None
+    out = []
+    for m in matchs:
+        try:
+            fi, _ = idx.trouver(str(m['debut'])[:10], m.get('home'), m.get('away'))
+        except Exception:  # noqa: BLE001
+            fi = None
+        txt = str(((fi or {}).get('statut') or {}).get('texte') or '').lower()
+        if txt in ANNULES:
+            print(f"Retiré de la liste du jour ({txt}) : {m.get('home')} – {m.get('away')}")
+            continue
+        # 18/11/2026 (paquet 272) : pas de feuille pour la paire, mais un des joueurs joue un AUTRE adversaire à ± 3 h
+        # de l'horaire annoncé (repêché, remplaçant) : le match annoncé n'aura pas lieu (ex. Carabelli – Meligeni Alves)
+        if fi is None and m.get('debut') and _remplace(m, idx_j):
+            print(f"Retiré de la liste du jour (adversaire remplacé) : {m.get('home')} – {m.get('away')}")
+            continue
+        out.append(m)
+    return dedoublonner_site(out)
+
+
+def _remplace(m, idx_j):
+    try:
+        return bool(idx_j and idx_j.remplace(m))
+    except Exception:  # noqa: BLE001
+        return False
+
+
+def dedoublonner_site(matchs):
+    """18/11/2026 (paquet 272) — un match reprogrammé (autre jour, autre uid) apparaissait deux fois : même paire à
+    moins de 48 h, on garde l'horaire le plus récent connu (le dernier publié par la source), sinon le plus tardif."""
+    import elo as E
+    def cle(m):                          # même circuit, même tournoi, mêmes joueurs (clés Elo, sinon les noms)
+        c = m.get('cles') or []
+        j = frozenset(c) if len(c) == 2 and all(c) else frozenset((E.cle(m.get('home') or ''), E.cle(m.get('away') or '')))
+        return (m.get('circuit'), str(m.get('tournoi') or '').lower(), j)
+    jeter = set()
+    G = {}
+    for m in matchs:
+        if m.get('home') and m.get('away') and m.get('debut'):
+            G.setdefault(cle(m), []).append(m)
+    for L in G.values():
+        if len(L) < 2:
+            continue
+        L = sorted(L, key=lambda m: (not m.get('commence_garde'), str(m.get('debut'))))
+        garde = L[-1]
+        for m in L[:-1]:
+            try:
+                proche = abs((_utc(garde['debut']) - _utc(m['debut'])).total_seconds()) < 48 * 3600
+            except (TypeError, ValueError):
+                proche = False
+            if proche:
+                jeter.add(id(m))
+                print(f"Doublon retiré (match reprogrammé) : {m.get('uid')} → {garde.get('uid')}")
+    return [m for m in matchs if id(m) not in jeter]
+
+
+GARDER_COMMENCES_H = 24
+
+
+def garder_commences(lignes, ancien_doc, maintenant, racine=None):
+    """06/11/2026 (paquet 209) — un match COMMENCÉ disparaît des pronostics du passage suivant (la source des matchs à
+    venir ne le donne plus) : Fritz – Alcaraz, en cours, n'était plus sur le site, ni ses scores en direct. On garde
+    donc, tel qu'il était affiché (le dernier % d'avant match), chaque match de la version précédente du site qui a
+    commencé depuis moins de 24 h (6 h jusqu'au paquet 217 ; 24 h pour garder les statistiques après le match) et que le nouveau passage n'a plus. Forfaits et annulations connus : retirés.
+    Marqué « commence_garde » : validation_vitrine.py ne lui demande pas le nombre de simulations du passage en cours
+    (il a été simulé, et contrôlé, au passage précédent)."""
+    vus = {l.get('uid') for l in lignes}
+    garde = [dict(l, commence_garde=True) for l in (ancien_doc or {}).get('matchs') or []
+             if l.get('uid') and l['uid'] not in vus and l.get('debut')
+             and maintenant - dt.timedelta(hours=GARDER_COMMENCES_H) < _utc(l['debut']) <= maintenant]
+    if garde and racine:
+        garde = retirer_annules(garde, racine, maintenant)
+    return dedoublonner_site(sorted(lignes + garde, key=lambda l: (str(l.get('debut')), str(l.get('uid')))))   # paquet 272
+
+
+def live_reevaluation(racine):
+    """06/11/2026 — σ de la forme du jour lue pendant le match, par circuit (0 = circuit retiré) : la page s'en sert
+    pour réévaluer le % en direct (simulateur/etude_live_reevaluation.py, suivi chaque semaine)."""
+    try:
+        with open(os.path.join(racine, 'simulateur', 'live_reevaluation.json'), encoding='utf-8') as f:
+            e = json.load(f)
+        return {'sigma': {c: (float(e['sigma'].get(c, 0.0)) if e['en_place'].get(c) else 0.0)
+                          for c in ('ATP', 'WTA', 'CH')}}
+    except (OSError, ValueError, KeyError, TypeError, AttributeError):
+        return {'sigma': {'ATP': 0.0, 'WTA': 0.0, 'CH': 0.0}}
+
+
+def construire(racine, maintenant=None):
+    maintenant = maintenant or dt.datetime.now(dt.timezone.utc)
+    global BIAIS_ANNEXES
+    BIAIS_ANNEXES = _lire(os.path.join(racine, 'simulateur', 'biais_annexes.json'), {}) or None
+    pron = _lire(os.path.join(racine, 'Tennis_Edge_Lab', 'live', 'pronostics.json'), {}) or {}
+    etat = _lire(os.path.join(racine, 'simulateur', 'elo_etat.json'), {})
+    sys.path.insert(0, ICI)
+    import elo as E
+    etat = E.migrer_etat(etat)
+    ancien_doc = _lire(os.path.join(racine, SORTIE), {}) or {}
+    precedent = ancien_doc.get('match_du_jour')
+    matchs = [m for m in pron.get('matchs') or [] if m.get('circuit') in CIRCUITS and version(m)[1] and connu(m)]
+    # 06/11/2026 (paquet 195) : un match ANNULÉ avant d'être joué (forfait, annulé, reporté d'après la feuille TennisApi)
+    # sort de la liste du jour — Berrettini – Alcaraz (forfait) restait affiché et dans les classements. Le choix du
+    # match du jour n'est pas modifié : il se fait, comme avant, parmi les matchs qui auront vraiment lieu.
+    matchs = retirer_annules(matchs, racine, maintenant)
+    mdj = choisir_match_du_jour(matchs, etat, maintenant, precedent)
+    # 05/11/2026 : le match du jour de la VEILLE, pour la carte bilan du matin (scripts/video_simulation.py --bilan)
+    veille = (precedent if precedent and (not mdj or precedent.get('jour') != mdj.get('jour'))
+              else ancien_doc.get('match_du_jour_veille'))
+    a_venir = sorted((m for m in matchs if _utc(m['debut']) > maintenant - dt.timedelta(hours=3)),
+                     key=lambda m: (m['debut'], m['uid']))
+    lignes = [ligne_match(m, complet=True) for m in a_venir]
+    # Bloc descriptif calculé hors du moteur de probabilité : simple fusion par UID.
+    styles_doc = _lire(os.path.join(racine, 'simulateur', 'styles_descriptifs.json'), {}) or {}
+    styles = styles_doc.get('matchs') or {}
+    ajouter_styles_descriptifs(lignes, styles_doc)
+    # 13/11/2026 (paquet 252) : style de jeu d'après les coups (styles_jeu.py, Match Charting Project) ; descriptif
+    jeu_doc = (_lire(os.path.join(racine, 'simulateur', 'styles_jeu.json'), {}) or {}).get('matchs') or {}
+    for ligne in lignes:
+        b_ = jeu_doc.get(ligne.get('uid'))
+        if b_ and b_.get('descriptif_seulement') is True and len(b_.get('joueurs') or []) == 2:
+            ligne['styles_jeu'] = b_
+    rythme_doc = _lire(os.path.join(racine, 'simulateur', 'profil_rythme.json'), {}) or {}
+    try:
+        import elo as E
+        alias = dict(E.migrer_etat(etat).get('alias') or {})
+    except Exception:
+        alias = {}
+    ajouter_rythme(lignes, rythme_doc, alias)
+    # 12/11/2026 (paquet 249) : points marqués et comment (coups_joueurs.json, Match Charting Project) ; descriptif
+    ajouter_points_marques(lignes, _lire(os.path.join(racine, 'simulateur', 'coups_joueurs.json'), {}) or {}, alias)
+    # 06/11/2026 (paquet 210) : séries, face-à-face, réussite par rapport aux chances (infos_avant_match.py) ; descriptif
+    avant = (_lire(os.path.join(racine, 'simulateur', 'infos_avant_match.json'), {}) or {}).get('matchs') or {}
+    for ligne in lignes:
+        if avant.get(ligne.get('uid')):
+            ligne['avant_match'] = avant[ligne['uid']]
+    # 04/11/2026 — vitesse du court (vitesse_courts.py : CPI officiel quand il existe, sinon estimé) ; information seule
+    vit_doc = _lire(os.path.join(racine, 'simulateur', 'vitesse_courts.json'), {}) or {}
+    if vit_doc.get('tournois'):
+        import vitesse_courts as VC
+        for ligne in lignes:
+            try:
+                v_ = VC.vitesse_du_match(vit_doc, ligne.get('circuit'), ligne.get('tournoi'),
+                                         dt.date.fromisoformat(str(ligne.get('debut'))[:10]))
+            except (ValueError, TypeError):
+                v_ = None
+            if v_:
+                ligne['vitesse_court'] = {k: v_.get(k) for k in ('cpi_estime', 'cpi_officiel', 'classe', 'annee', 'points')}
+                # 05/11/2026 : historique du tournoi pour le visuel (jauge + courbe des éditions)
+                h_ = VC.historique(vit_doc, ligne.get('circuit'), ligne.get('tournoi'), v_.get('annee'))
+                if len(h_) >= 2:
+                    ligne['vitesse_court']['historique'] = h_
+    # 28/10/2026 — lignes de paris calculées par l'algo (distribution exacte) et duel service ↔ retour
+    import lignes_algo as MD
+    duel = MD.Duel.charger(racine)
+    cle_c = lambda n: alias.get(E.cle(n), E.cle(n)) if n else None
+    try:                                    # 05/11/2026 : ligne tie-break corrigée sur les circuits où c'est adopté
+        import fantomes_circuits as FCI
+        tb_adopte = (FCI.lire(racine) or {}).get('tiebreak') or []
+    except Exception:  # noqa: BLE001
+        tb_adopte = []
+    for ligne in lignes:
+        mk = MD.lignes(ligne.get('distribution_scores'), ligne.get('p_home', 0.5), ligne.get('meilleur_des') or 3)
+        mk = MD.appliquer_tiebreak(mk, ligne.get('circuit'), tb_adopte)
+        if mk:
+            ligne['lignes_algo'] = mk
+        du = duel.match(cle_c(ligne.get('home')), cle_c(ligne.get('away')), ligne.get('circuit'), ligne.get('surface'))
+        if du:
+            ligne['duel'] = du
+    try:
+        MD.journaliser(lignes, racine, maintenant)
+    except OSError as e:
+        print(f'::warning::journal des lignes non écrit : {e}')
+    # 28/10/2026 — documentation des joueurs (balles de service effectives, comme la production)
+    try:
+        from qualite_donnees import balles_par_nom
+        b_de = balles_par_nom(_lire(os.path.join(racine, 'simulateur', 'profils_service.json'), {}) or {},
+                              [n for x in lignes for n in (x.get('home'), x.get('away'))])
+        for ligne in lignes:
+            ligne['documentation'] = [b_de(ligne.get('home')), b_de(ligne.get('away'))]
+    except Exception as e:  # noqa: BLE001
+        print(f'::warning::documentation des joueurs non calculée : {type(e).__name__}: {e}')
+    # 06/11/2026 (paquet 196) — fourchette à 80 % autour du % : incertitude sur le NIVEAU des joueurs (fourchette.py) ;
+    # information seule, le % ne change pas. Contrôle du 06/11 : la clôture Pinnacle tombe dedans 72 % du temps
+    # (760 matchs) et l'écart algo / clôture grandit avec la largeur (5,3 → 7,7 points du tiers étroit au tiers large).
+    try:
+        import fourchette as FO
+        mj = {m['uid']: m.get('matchs_joues') for m in a_venir}
+        for ligne in lignes:
+            s_ = ligne.get('simulation') or {}
+            fo = FO.fourchette(ligne.get('p_home'), s_.get('a'), s_.get('b'), ligne.get('documentation'),
+                               mj.get(ligne['uid']), s_.get('sets_gagnants') or 2, s_.get('tb_final'), graine=ligne['uid'])
+            if fo:
+                ligne['fourchette'] = list(fo)
+    except Exception as e:  # noqa: BLE001
+        print(f'::warning::fourchettes non calculées : {type(e).__name__}: {e}')
+    resultats = _lire(os.path.join(racine, 'Tennis_Edge_Lab', 'live', 'pronostics_resultats.json'), {})
+    # 28/10/2026 — fiches figées (premier et dernier pronostic avant le match), évolution, bilans après match
+    apres, analyse_am = {}, None
+    # 29/10/2026 — abandon récent (≤ 90 jours) : 3,1 % d'abandon au match suivant contre 1,5 % (19 502 joueurs-matchs)
+    try:
+        ajouter_abandons(lignes, racine)
+    except Exception as e:  # noqa: BLE001
+        print(f'::warning::abandons récents non calculés : {type(e).__name__}: {e}')
+    try:
+        ajouter_pays(lignes, racine, alias)
+    except Exception as e:  # noqa: BLE001
+        print(f'::warning::pays des joueurs non calculés : {type(e).__name__}: {e}')
+    # 07/11/2026 (paquet 216) — cartes des joueurs (note, six attributs, surfaces, identité) ; descriptif seulement
+    try:
+        import cartes_joueurs as CJ
+        CJ.ajouter_cartes(lignes, racine, etat)
+    except Exception as e:  # noqa: BLE001
+        print(f'::warning::cartes des joueurs non calculées : {type(e).__name__}: {e}')
+    # 11/11/2026 (paquet 220) — météo et conditions du lieu (tiroir de la fiche) ; dit ce qui entre dans le %
+    try:
+        import meteo_match as MM
+        MM.ajouter_meteo(lignes, racine)
+    except Exception as e:  # noqa: BLE001
+        print(f'::warning::météo des matchs non calculée : {type(e).__name__}: {e}')
+    try:
+        import apres_match as AM
+        facteurs_doc = _lire(os.path.join(racine, 'simulateur', 'facteurs.json'), {}) or {}
+        version_m = AM.version_modele(etat, facteurs_doc)
+        fiches = AM.figer(lignes, racine, maintenant, version_m)
+        for ligne in lignes:
+            ev = AM.evolution(fiches.get(ligne['uid']), ligne, version_m)
+            if ev:
+                ligne['evolution'] = ev
+        B = AM.bilans(racine, resultats)
+        apres = AM.pour_le_site(B, jours=3, maintenant=maintenant)
+        analyse_am = AM.analyser(B)
+        with open(os.path.join(racine, AM.SORTIE_ANALYSE), 'w', encoding='utf-8') as f:
+            json.dump(analyse_am, f, ensure_ascii=False, indent=1)
+    except Exception as e:  # noqa: BLE001
+        print(f'::warning::après-match non calculé : {type(e).__name__}: {e}')
+    lignes = garder_commences(lignes, ancien_doc, maintenant, racine)
+    return {'genere_le': maintenant.isoformat(timespec='seconds'), 'pronostics_du': pron.get('genere_le'),
+            'simulations': pron.get('simulations') or 20000, 'match_du_jour': mdj, 'match_du_jour_veille': veille,
+            'qualite_horodatages': pron.get('qualite_horodatages'),
+            'styles_descriptifs_source': ({'archive_jusqu_au': styles_doc.get('archive_jusqu_au'),
+                                           'feuilles_recentes': styles_doc.get('feuilles_recentes'),
+                                           'regle': styles_doc.get('regle')} if styles else None),
+            'matchs': lignes, 'bilan': bilan(resultats), 'apres_match': apres,
+            'controle_scenarios': controle_scenarios(racine),
+            'journal_changements': journal_changements(racine, analyse_am),
+            'bilan_lignes': bilan_lignes(racine, resultats),
+            'fiabilite_stats': fiabilite_stats(racine, analyse_am),
+            'desaccords': desaccords(racine, analyse_am),
+            'validation_fiabilite': validation_fiabilite(resultats),
+            'qualite_donnees': qualite_donnees(racine, resultats),
+            'rejoue': rejoue(racine),
+            'live_reevaluation': live_reevaluation(racine)}
+
+
+DISTRIBUTION_P_MIN = 0.001
+
+
+def questions(D_):
+    """05/11/2026 — « Demande à l'algo » : réponses calculées sur la distribution COMPLÈTE (avant compactage), pour
+    chaque joueur j (0 = home) : sans perdre de set, au moins un set, 1er set et match, plus de n jeux (n = 0…24),
+    victoire avec plus de n jeux d'écart (n = 0…15) ; pour le match : plus de n jeux (n = 12…45), au moins un tie-break."""
+    tot = sum(float(r['probabilite']) for r in D_ or [])
+    if not tot:
+        return None
+    out = {'j': [{'deux': 0.0, 'un_set': 0.0, 's1m': 0.0, 'jeux_j': [0.0] * 25, 'ecart': [0.0] * 16} for _ in (0, 1)],
+           'total': [0.0] * 34, 'total_debut': 12, 'tb': 0.0}
+    for r in D_:
+        q, sc, v = float(r['probabilite']) / tot, [tuple(x) for x in r['score']], r.get('vainqueur')
+        jeux = [sum(h[i] for h in sc) for i in (0, 1)]
+        if any(max(h) == 7 and min(h) == 6 for h in sc):
+            out['tb'] += q
+        for n in range(34):
+            if jeux[0] + jeux[1] > 12 + n:
+                out['total'][n] += q
+        for j in (0, 1):
+            o = out['j'][j]
+            sets_j = sum(h[j] > h[1 - j] for h in sc)
+            o['deux'] += q if v == j and sets_j == len(sc) else 0.0
+            o['un_set'] += q if sets_j >= 1 else 0.0
+            o['s1m'] += q if v == j and sc[0][j] > sc[0][1 - j] else 0.0
+            for n in range(25):
+                if jeux[j] > n:
+                    o['jeux_j'][n] += q
+            for n in range(16):
+                if v == j and jeux[j] - jeux[1 - j] > n:
+                    o['ecart'][n] += q
+    r4 = lambda x: round(x, 4)
+    for o in out['j']:
+        for k in ('deux', 'un_set', 's1m'):
+            o[k] = r4(o[k])
+        o['jeux_j'], o['ecart'] = [r4(x) for x in o['jeux_j']], [r4(x) for x in o['ecart']]
+    out['total'], out['tb'] = [r4(x) for x in out['total']], r4(out['tb'])
+    return out
+
+
+def scenarios(D_):
+    """11/11/2026 (paquet 221) — « Scénarios du match » : voir simulateur/scenarios_match.py (paquet 222)."""
+    import scenarios_match as SM
+    return SM.scenarios(D_)
+
+
+def controle_scenarios(racine):
+    """11/11/2026 (paquet 222) — contrôle des scénarios sur nos matchs réels (scenarios_match.controle), résumé."""
+    try:
+        import scenarios_match as SM
+        c = SM.controle(racine)
+    except Exception as e:  # noqa: BLE001
+        print(f'::warning::contrôle des scénarios non calculé : {type(e).__name__}: {e}')
+        return None
+    return {'matchs': c['matchs'], 'groupes': c['groupes']} if c.get('matchs') else None
+
+
+def compacter(doc, p_min=DISTRIBUTION_P_MIN):
+    """29/10/2026 — la distribution exacte compte ~1 470 scores par match (6,6 Mo sur 7,6 Mo pour le fichier) ; le site
+    n'en lit aucune ligne. Tout ce qui s'en sert (lignes de l'algo, rythme, fiches figées) tourne AVANT, sur la
+    distribution complète. On publie les scores à 0,1 % et plus, plus la masse restante (« distribution_reste ») :
+    la somme publiée reste exactement 1 (contrôlée par validation_vitrine)."""
+    for m in doc.get('matchs') or []:
+        D_ = m.get('distribution_scores')
+        if not D_:
+            continue
+        m['questions'] = questions(D_)          # 05/11/2026 : sur la distribution complète, avant de la couper
+        m['scenarios'] = scenarios(D_)          # 11/11/2026 (paquet 221) : les 6 issues regroupées
+        garde = [r for r in D_ if float(r['probabilite']) >= p_min] or D_[:1]
+        m['distribution_scores'] = garde
+        m['distribution_reste'] = round(1.0 - sum(float(r['probabilite']) for r in garde), 12)
+    return doc
+
+
+def main(argv):
+    racine = argv[1] if len(argv) > 1 else os.path.join(ICI, '..')
+    global RECALAGE_STATS
+    try:                                # 04/11/2026 : recalage des statistiques annoncées, s'il est adopté
+        import recalage_stats as RS
+        RECALAGE_STATS = RS.lire_coefs(racine)
+        global SALLE_STATS
+        SALLE_STATS = RS.decalages_salle(racine, RS.salle_retiree(racine)) or None
+    except Exception as e:  # noqa: BLE001
+        print(f'::warning::recalage des statistiques non lu : {type(e).__name__}: {e}')
+        RECALAGE_STATS = None
+    doc = construire(racine)
+    from validation_vitrine import valider
+    valider(doc, int(os.environ.get('SIMULATIONS', '20000')))
+    compacter(doc)
+    valider(doc, int(os.environ.get('SIMULATIONS', '20000')))
+    os.makedirs(os.path.join(racine, 'algo'), exist_ok=True)
+    destination = os.path.join(racine, SORTIE)
+    temporaire = destination + '.tmp'
+    with open(temporaire, 'w', encoding='utf-8') as f:
+        json.dump(doc, f, ensure_ascii=False, separators=(',', ':'))
+    os.replace(temporaire, destination)
+    b = (doc['bilan'] or {}).get('global') or {}
+    print(f"Site public : {len(doc['matchs'])} matchs · match du jour {(doc['match_du_jour'] or {}).get('uid')} · "
+          f"bilan {b.get('vainqueurs')}/{b.get('n')} ({b.get('pct')} %)")
+    return 0
+
+
+if __name__ == '__main__':
+    sys.exit(main(sys.argv))

@@ -1,0 +1,180 @@
+{
+ "pentes": {
+  "moins de 10": 1.279,
+  "10 à 29": 0.843,
+  "30 à 99": 0.882,
+  "100 et plus": 0.96
+ },
+ "par_tranche": {
+  "moins de 10": {
+   "pente_apprise": 1.279,
+   "pente_sur_2023": 1.236,
+   "2018–2022": {
+    "matchs": 5266,
+    "gain": 0.0046,
+    "erreur_type": 0.00135,
+    "erreurs_types": 3.41,
+    "log_loss_base": 0.57262,
+    "log_loss": 0.56802,
+    "brier_base": 0.19366,
+    "brier": 0.19149,
+    "favori_annonce_pct": 66.8,
+    "favori_reel_pct": 71.4
+   },
+   "2023 → juin 2026": {
+    "matchs": 5793,
+    "gain": 0.0033,
+    "erreur_type": 0.00126,
+    "erreurs_types": 2.61,
+    "log_loss_base": 0.57578,
+    "log_loss": 0.57247,
+    "brier_base": 0.19572,
+    "brier": 0.19439,
+    "favori_annonce_pct": 67.0,
+    "favori_reel_pct": 70.7
+   }
+  },
+  "10 à 29": {
+   "pente_apprise": 0.843,
+   "pente_sur_2023": 0.885,
+   "2018–2022": {
+    "matchs": 5772,
+    "gain": 0.00193,
+    "erreur_type": 0.00082,
+    "erreurs_types": 2.36,
+    "log_loss_base": 0.62422,
+    "log_loss": 0.62229,
+    "brier_base": 0.21781,
+    "brier": 0.21697,
+    "favori_annonce_pct": 67.5,
+    "favori_reel_pct": 64.9
+   },
+   "2023 → juin 2026": {
+    "matchs": 5937,
+    "gain": 0.0009,
+    "erreur_type": 0.00083,
+    "erreurs_types": 1.08,
+    "log_loss_base": 0.61498,
+    "log_loss": 0.61408,
+    "brier_base": 0.21278,
+    "brier": 0.21265,
+    "favori_annonce_pct": 67.7,
+    "favori_reel_pct": 66.4
+   }
+  },
+  "30 à 99": {
+   "pente_apprise": 0.882,
+   "pente_sur_2023": 0.875,
+   "2018–2022": {
+    "matchs": 11838,
+    "gain": 0.00085,
+    "erreur_type": 0.00038,
+    "erreurs_types": 2.24,
+    "log_loss_base": 0.63607,
+    "log_loss": 0.63522,
+    "brier_base": 0.2231,
+    "brier": 0.22273,
+    "favori_annonce_pct": 65.1,
+    "favori_reel_pct": 63.2
+   },
+   "2023 → juin 2026": {
+    "matchs": 12049,
+    "gain": 0.00098,
+    "erreur_type": 0.00039,
+    "erreurs_types": 2.52,
+    "log_loss_base": 0.63432,
+    "log_loss": 0.63334,
+    "brier_base": 0.22199,
+    "brier": 0.22165,
+    "favori_annonce_pct": 65.5,
+    "favori_reel_pct": 64.2
+   }
+  },
+  "100 et plus": {
+   "pente_apprise": 0.96,
+   "pente_sur_2023": 0.922,
+   "2018–2022": {
+    "matchs": 15198,
+    "gain": 8e-05,
+    "erreur_type": 0.0001,
+    "erreurs_types": 0.75,
+    "log_loss_base": 0.64194,
+    "log_loss": 0.64186,
+    "brier_base": 0.22553,
+    "brier": 0.2255,
+    "favori_annonce_pct": 63.3,
+    "favori_reel_pct": 62.9
+   },
+   "2023 → juin 2026": {
+    "matchs": 13897,
+    "gain": 0.00024,
+    "erreur_type": 0.00011,
+    "erreurs_types": 2.15,
+    "log_loss_base": 0.64264,
+    "log_loss": 0.6424,
+    "brier_base": 0.22569,
+    "brier": 0.22561,
+    "favori_annonce_pct": 63.7,
+    "favori_reel_pct": 63.0
+   }
+  }
+ },
+ "2018–2022": {
+  "matchs": 38074,
+  "gain": 0.00122,
+  "erreur_type": 0.00026,
+  "erreurs_types": 4.77,
+  "log_loss_base": 0.62784,
+  "log_loss": 0.62661,
+  "brier_base": 0.21919,
+  "brier": 0.21864,
+  "favori_annonce_pct": 65.0,
+  "favori_reel_pct": 64.5
+ },
+ "2023 → juin 2026": {
+  "matchs": 37676,
+  "gain": 0.00105,
+  "erreur_type": 0.00027,
+  "erreurs_types": 3.91,
+  "log_loss_base": 0.62534,
+  "log_loss": 0.62429,
+  "brier_base": 0.21786,
+  "brier": 0.2175,
+  "favori_annonce_pct": 65.4,
+  "favori_reel_pct": 65.1
+ },
+ "retenue": true,
+ "raisons": [],
+ "passe_deux_erreurs_types": true,
+ "genere_le": "2026-11-11T18:31:12+00:00",
+ "regle": "Challenger : une pente par tranche d'expérience du joueur le moins vu, apprise sur 2018–2022, jugée une fois sur 2023 → juin 2026 ; retenue si le gain sur tous les matchs jugés atteint 0,001 sur au moins 1 000 matchs et s'il est positif sur les deux périodes",
+ "elo": "réglé comme la production (elo.de_production), mis à jour après chaque match",
+ "limite": "l'archive n'a pas les résultats ITF hommes : un joueur y paraît moins vu qu'en production",
+ "controle_production": {
+  "fait_le": "2026-11-11",
+  "periode": "01/01/2025 → juin 2026",
+  "matchs": 16471,
+  "sans_itf_comme_l_etude": {
+   "gain_des_pentes": 0.00087,
+   "erreur_type": 0.00041
+  },
+  "avec_itf_comme_la_production": {
+   "gain_des_pentes": -0.00115,
+   "erreur_type": 0.00027,
+   "pente_propre_par_tranche": {
+    "moins de 10": 1.47,
+    "10 à 29": 1.08,
+    "30 à 99": 1.14,
+    "100 et plus": 1.11
+   },
+   "part_des_matchs_pct": {
+    "moins de 10": 2.7,
+    "10 à 29": 6.5,
+    "30 à 99": 35.6,
+    "100 et plus": 55.2
+   }
+  },
+  "verdict": "passe sur l'archive, échoue avec l'Elo de production : pas de mise en production"
+ },
+ "en_production": false
+}

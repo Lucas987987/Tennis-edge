@@ -1,0 +1,47 @@
+{
+ "paquet": 279,
+ "quoi": "Essai : Blender rend le court de tennis du site sur la machine gratuite de GitHub (sans carte graphique), Cycles sur le processeur puis EEVEE ; mesure des secondes par image et estimation pour une vidéo de 85 s à 25 images/s.",
+ "scene": {
+  "court_m": [
+   23.77,
+   10.97
+  ],
+  "spectateurs": 3000,
+  "joueurs": 2,
+  "ambiances": [
+   "nuit",
+   "jour"
+  ],
+  "plans": [
+   "vue télé",
+   "gros plan avec flou"
+  ],
+  "resolution": [
+   1080,
+   1350
+  ],
+  "echantillons_cycles": 24
+ },
+ "resultats": "dans le résumé du run « Essai — Blender pour la vidéo 3D » (temps seulement) ; images sur le Telegram privé",
+ "regle_decision": "Blender ne remplace le moteur du site pour la vidéo du jour que si une vidéo complète tient en moins de 3 h de machine par langue ET si l'image est jugée nettement meilleure ; sinon on garde le moteur du site (paquet 277).",
+ "note": "Aucun nom de joueur, aucune cote. Le % ne change pas.",
+ "essai_1": {
+  "date": "2026-11-18",
+  "blender": "4.2.3 LTS",
+  "processeurs": 4,
+  "resolution": [
+   1080,
+   1350
+  ],
+  "cycles_s_par_image": {
+   "nuit_tv": 40.58,
+   "nuit_gros_plan": 55.66,
+   "jour_tv": 37.2,
+   "moyenne": 44.5
+  },
+  "cycles_heures_par_video_85s_25ips": 26.3,
+  "eevee": "planté : libEGL.so.1 absent (bibliothèques apt non installées)",
+  "decision": "Cycles écarté par la règle (26,3 h contre 3 h au plus)."
+ },
+ "essai_2": "EEVEE avec l'OpenGL logiciel de Mesa (llvmpipe) dans un écran virtuel (xvfb), sur les trois plans."
+}

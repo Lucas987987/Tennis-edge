@@ -1,0 +1,196 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+archive_ticks.py — Sort les partitions de ticks de git SANS les perdre.
+
+POURQUOI CE SCRIPT (25/08/2026)
+96 % du dépôt est de la donnée, et pm_ticks/kx_ticks n'avaient AUCUNE
+rétention : compressés, jamais supprimés. Mesure du 25/08 : +115 Mo ajoutés en
+un seul jour (accélération depuis l'extension aux challengers). À ce rythme le
+dépôt franchit la recommandation GitHub de 1 Go en permanence et chaque
+checkout ralentit.
+
+PRINCIPE — archiver AVANT de supprimer, jamais l'inverse :
+  1. toute partition *.jsonl.gz de pm_ticks/kx_ticks plus vieille que
+     RETENTION_DAYS (défaut 7) est téléversée dans une GitHub Release mensuelle
+     (tag ticks-YYYY-MM ; limite GitHub : 2 Go PAR FICHIER, hors historique) ;
+  2. la suppression locale n'a lieu QUE si le téléversement a réussi ;
+  3. un seul échec de téléversement -> exit 1, le fichier reste dans git,
+     le workflow est ROUGE. Un échec silencieux est le pire mode de panne
+     de ce projet.
+
+Les .jsonl non compressés sont IGNORÉS : la compression appartient à
+cleanup_partitions ; on n'archive que des .gz dont l'intégrité a été vérifiée.
+
+Récupérer une archive :
+    gh release download ticks-2026-08 -p 'pm_ticks_2026-08-20*'
+
+Env : RETENTION_DAYS (déf 7), GH_TOKEN (injecté par le workflow),
+      DRY_RUN=1 pour lister sans rien téléverser ni supprimer.
+"""
+import datetime
+import glob
+import os
+import json
+import re
+import subprocess
+import sys
+
+RETENTION_DAYS = int(os.environ.get('RETENTION_DAYS', '7'))
+DRY_RUN = os.environ.get('DRY_RUN', '') == '1'
+MOTIFS = ('parts/pm_ticks_*.jsonl.gz', 'parts/kx_ticks_*.jsonl.gz')
+_DATE = re.compile(r'(\d{4}-\d{2}-\d{2})')
+
+
+def gh(*args):
+    """gh CLI ; renvoie (returncode, stdout+stderr)."""
+    r = subprocess.run(['gh'] + list(args), capture_output=True, text=True)
+    return r.returncode, (r.stdout + r.stderr).strip()
+
+
+def date_du_fichier(path):
+    m = _DATE.search(os.path.basename(path))
+    if not m:
+        return None
+    try:
+        return datetime.date.fromisoformat(m.group(1))
+    except ValueError:
+        return None
+
+
+def assurer_release(tag):
+    code, _ = gh('release', 'view', tag)
+    if code == 0:
+        return True
+    code, out = gh('release', 'create', tag,
+                   '--title', f'Archive ticks {tag[6:]}',
+                   '--notes', 'Partitions pm_ticks/kx_ticks sorties de git '
+                              'par scripts/archive_ticks.py. '
+                              'Récupération : gh release download ' + tag)
+    if code != 0:
+        print(f'  ❌ création de la release {tag} : {out[:200]}')
+    return code == 0
+
+
+INDEX = 'parts/ARCHIVE_INDEX.json'
+
+
+def _indexer(path, d, tag, octets):
+    """Trace CHAQUE partition sortie de git : sans cet index, les études
+    (charger_pm, pm_observations, pm_calibration_track) verraient leur fenêtre
+    se rétrécir à 7 jours SANS ERREUR — une lecture vide silencieuse de plus.
+    L'index leur permet d'imprimer « historique tronqué » avec le tag exact."""
+    try:
+        idx = json.load(open(INDEX, encoding='utf-8'))
+    except (OSError, ValueError):
+        idx = {'archives': []}
+    idx['archives'] = [a for a in idx.get('archives', [])
+                       if a.get('fichier') != os.path.basename(path)]
+    idx['archives'].append({'fichier': os.path.basename(path),
+                            'date': d.isoformat(), 'release': tag,
+                            'octets': octets,
+                            'archive_le': datetime.date.today().isoformat()})
+    idx['archives'].sort(key=lambda a: (a['date'], a['fichier']))
+    json.dump(idx, open(INDEX, 'w', encoding='utf-8'),
+              ensure_ascii=False, indent=1)
+
+
+def _mode_r2():
+    try:
+        import r2_io
+        return r2_io.mode()
+    except Exception:                           # noqa: BLE001
+        return 'off'
+
+
+def _retirer_si_dans_r2(candidats):
+    import r2_io
+    r2 = r2_io.client()
+    if r2 is None:
+        print('  ❌ R2_PRIMARY=on mais R2 indisponible : rien n\'est retiré.')
+        return 1
+    mans = {}
+    echecs, retires = 0, 0
+    for path, d in candidats:
+        nom = os.path.basename(path)
+        fam = r2_io.family_of(nom)
+        if fam is None:
+            continue
+        if fam not in mans:
+            mans[fam] = r2_io.load_manifest(r2, fam, use_cache=False)[0]
+        ent = mans[fam]['files'].get(nom)
+        taille = os.path.getsize(path)
+        complet = ent and (ent.get('sha256') == r2_io.file_sha256(path)
+                           or ent.get('size', 0) >= taille)
+        if not complet:
+            print(f'  ❌ {nom} : absent ou moins complet dans R2 — GARDÉ dans git.')
+            echecs += 1
+            continue
+        if DRY_RUN:
+            print(f'  [dry] {nom} ({taille/1e6:.1f} Mo) déjà dans R2 -> retiré de git')
+            continue
+        os.remove(path)
+        _indexer(path, d, 'r2:' + ent['key'], taille)
+        retires += 1
+        print(f'  ✅ {nom} ({taille/1e6:.1f} Mo) déjà dans R2 ({ent["lines"]} lignes) -> retiré de git')
+    print(f'Bilan R2 : {retires} retiré(s) de git, {echecs} gardé(s). {r2_io.ops_summary()}')
+    return 1 if echecs else 0
+
+
+def main():
+    cutoff = datetime.date.today() - datetime.timedelta(days=RETENTION_DAYS)
+    candidats = []
+    for motif in MOTIFS:
+        for p in sorted(glob.glob(motif)):
+            d = date_du_fichier(p)
+            if d and d < cutoff:
+                candidats.append((p, d))
+
+    print(f'Archivage ticks — rétention {RETENTION_DAYS} j, '
+          f'coupure < {cutoff}, {len(candidats)} fichier(s) candidat(s)'
+          + (' [DRY RUN]' if DRY_RUN else ''))
+    if not candidats:
+        print('  rien à archiver.')
+        return 0
+
+    # MODE R2 PRIMAIRE (15/10/2026) : R2 détient déjà ces partitions (écrites
+    # par les collecteurs, r2_parts.py push). Plus de release pour les ticks
+    # neufs : on vérifie seulement que R2 a une version au moins aussi
+    # complète que la copie git, puis on retire celle-ci du working tree.
+    if _mode_r2() == 'on':
+        return _retirer_si_dans_r2(candidats)
+
+    echecs, archives, octets = 0, 0, 0
+    releases_ok = set()
+    for path, d in candidats:
+        tag = f'ticks-{d.strftime("%Y-%m")}'
+        taille = os.path.getsize(path)
+        if DRY_RUN:
+            print(f'  [dry] {path} ({taille/1e6:.1f} Mo) -> {tag}')
+            continue
+        if tag not in releases_ok:
+            if not assurer_release(tag):
+                echecs += 1
+                continue
+            releases_ok.add(tag)
+        code, out = gh('release', 'upload', tag, path, '--clobber')
+        if code != 0:
+            print(f'  ❌ {path} -> {tag} : {out[:200]}')
+            echecs += 1
+            continue                      # le fichier RESTE dans git
+        os.remove(path)                   # suppression APRÈS succès seulement
+        _indexer(path, d, tag, taille)
+        archives += 1
+        octets += taille
+        print(f'  ✅ {path} ({taille/1e6:.1f} Mo) -> release {tag}, supprimé de git')
+
+    print(f'Bilan : {archives} archivé(s) ({octets/1e6:.0f} Mo sortis du '
+          f'working tree), {echecs} échec(s).')
+    if echecs:
+        print('  ⚠️ Les fichiers en échec restent dans git — run ROUGE volontaire.')
+        return 1
+    return 0
+
+
+if __name__ == '__main__':
+    sys.exit(main())

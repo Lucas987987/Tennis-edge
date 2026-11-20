@@ -1,0 +1,25 @@
+name: Tennis Edge - Cartes horizontales et radar LIVE
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  appliquer:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Modifier uniquement la presentation et le radar live
+        run: python scripts/patch_cartes_live.py
+      - name: Enregistrer les modifications
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add algo/index.html
+          if git diff --cached --quiet; then echo 'Aucune modification'; exit 0; fi
+          git commit -m 'Cartes joueurs horizontales et radar consultable pendant le live'
+          git push

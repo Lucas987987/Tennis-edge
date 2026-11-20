@@ -1,0 +1,109 @@
+name: R2 V6.4 Polymarket restore audit 2026-10-10
+
+run-name: R2 Polymarket restore 2026-10-10 #${{ github.run_id }}
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: r2-polymarket-restore-audit-20261010
+  cancel-in-progress: false
+
+jobs:
+  restore:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+          fetch-depth: 1
+          filter: blob:none
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /scripts/partitioned_store.py
+            /scripts/r2_partition_worker.py
+            /scripts/r2_restore_audit.py
+
+      - name: Fetch and validate pinned Git source
+        env:
+          EXPECTED_BLOB: 9ad14306d1a2219b19011f8d026b3faf18457776
+          EXPECTED_SHA256: 9f6c4966ae2b3fa7bfc7d2309ef42a11792b318a4f9c3b62a7238aa52aa79ff0
+          SOURCE_COMMIT: 094772f67f505c92c6884e22cce729f308e5a9f2
+        run: |
+          set -euo pipefail
+          [ "$GITHUB_REF" = "refs/heads/main" ] || {
+            echo "Restore workflow must be dispatched from main." >&2
+            exit 1
+          }
+          git fetch --filter=tree:0 --shallow-since="30 days ago" origin main
+          git rev-parse --verify "$SOURCE_COMMIT^{commit}" >/dev/null
+          git merge-base --is-ancestor "$SOURCE_COMMIT" FETCH_HEAD
+          actual=$(git rev-parse --verify "$SOURCE_COMMIT:parts/pm_ticks_2026-10-10.jsonl.gz")
+          [ "$actual" = "$EXPECTED_BLOB" ] || {
+            echo "pinned source commit does not contain the expected Git blob." >&2
+            exit 1
+          }
+          source_file="$RUNNER_TEMP/pm_ticks_2026-10-10.git-source.jsonl.gz"
+          git show "$SOURCE_COMMIT:parts/pm_ticks_2026-10-10.jsonl.gz" > "$source_file"
+          echo "$EXPECTED_SHA256  $source_file" | sha256sum --check --strict
+          echo "R2_RESTORE_GITREF=$SOURCE_COMMIT" >> "$GITHUB_ENV"
+          echo "R2_RESTORE_SOURCE=$source_file" >> "$GITHUB_ENV"
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Install R2 client
+        run: python -m pip install --disable-pip-version-check boto3
+
+      - name: Verify R2 objects against Git
+        env:
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+        run: |
+          set -euo pipefail
+          python scripts/r2_partition_worker.py --mode verify --git-ref "$R2_RESTORE_GITREF" \
+            --root parts/v64-archive --provider polymarket --day 2026-10-10 \
+            --blob 9ad14306d1a2219b19011f8d026b3faf18457776 \
+            --report-file r2-partition-verify-report.json
+
+      - name: Restore R2 data into runner temporary storage
+        env:
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          EXPECTED_SHA256: 9f6c4966ae2b3fa7bfc7d2309ef42a11792b318a4f9c3b62a7238aa52aa79ff0
+        run: |
+          set -euo pipefail
+          restore_dir=$(mktemp -d "$RUNNER_TEMP/r2-polymarket-restore.XXXXXX")
+          python scripts/r2_partition_worker.py --mode restore --git-ref "$R2_RESTORE_GITREF" \
+            --root parts/v64-archive --provider polymarket --day 2026-10-10 \
+            --blob 9ad14306d1a2219b19011f8d026b3faf18457776 \
+            --destination "$restore_dir" \
+            --report-file r2-partition-restore-worker-report.json
+          echo "$EXPECTED_SHA256  $restore_dir/pm_ticks_2026-10-10.jsonl.gz" | sha256sum --check --strict
+          cmp "$R2_RESTORE_SOURCE" "$restore_dir/pm_ticks_2026-10-10.jsonl.gz"
+          python scripts/r2_restore_audit.py \
+            --provider polymarket --day 2026-10-10 \
+            --blob 9ad14306d1a2219b19011f8d026b3faf18457776 \
+            --expected-lines 365208 --expected-unique 365201 \
+            --expected-duplicates 7 \
+            --source "$R2_RESTORE_SOURCE" \
+            --restored "$restore_dir/pm_ticks_2026-10-10.jsonl.gz" \
+            --verify-report r2-partition-verify-report.json \
+            --restore-report r2-partition-restore-worker-report.json \
+            --output r2-partition-restore-report.json
+
+      - name: Publish restore reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: r2-polymarket-restore-20261010-${{ github.run_id }}-${{ github.run_attempt }}
+          path: r2-partition-*-report.json
+          if-no-files-found: error
+          retention-days: 30

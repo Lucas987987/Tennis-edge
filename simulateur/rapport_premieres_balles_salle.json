@@ -1,0 +1,772 @@
+{
+ "genere_le": "2026-11-12T10:56:28+00:00",
+ "regle": "décalages « en salle » et « plein air » appris sur 2019–2022, jugés une fois sur 2023 → juin 2026 : retenu si le biais en salle baisse d'au moins moitié et si l'écart moyen ne monte pas, sur au moins 1 000 cas en salle",
+ "table": {
+  "fichier": "simulateur/tournois_en_salle.py",
+  "tournois_en_salle": {
+   "ATP": [
+    "Almaty",
+    "Antwerp",
+    "Astana",
+    "Athens",
+    "Basel",
+    "Belgrade",
+    "Brussels",
+    "Cologne 1",
+    "Cologne 2",
+    "Dallas",
+    "Florence",
+    "Gijon",
+    "Laver Cup",
+    "Marseille",
+    "Metz",
+    "Montpellier",
+    "Moscow",
+    "New York",
+    "Next Gen Finals",
+    "NextGen Finals",
+    "Nur-Sultan",
+    "Paris Masters",
+    "Rotterdam",
+    "Singapore",
+    "Sofia",
+    "St Petersburg",
+    "St. Petersburg",
+    "Stockholm",
+    "Tel Aviv",
+    "Tour Finals",
+    "Vienna"
+   ],
+   "WTA": [
+    "Budapest",
+    "Cluj Napoca",
+    "Cluj-Napoca",
+    "Cluj-Napoca 2",
+    "Courmayeur",
+    "Fort Worth Finals",
+    "Limoges",
+    "Linz",
+    "Luxembourg",
+    "Lyon",
+    "Moscow",
+    "Nur-Sultan",
+    "Ostrava",
+    "Riyadh Finals",
+    "Rouen",
+    "Shenzhen Finals",
+    "St. Petersburg",
+    "Stuttgart",
+    "Tallinn"
+   ]
+  },
+  "tournois_ecartes": {
+   "ATP": [
+    "Tokyo",
+    "Antalya"
+   ],
+   "WTA": [
+    "Zhuhai",
+    "Singapore",
+    "Tokyo",
+    "W50+H Macon",
+    "W35+H Tauste",
+    "W50+H Palma del Río"
+   ]
+  }
+ },
+ "circuits": {
+  "ATP": {
+   "aces": {
+    "decalages": {
+     "salle": -0.044,
+     "plein_air": -0.288
+    },
+    "apprentissage_2019_2022": {
+     "cas_en_salle": 1696,
+     "biais_en_salle": -0.052,
+     "cas_plein_air": 7210,
+     "biais_plein_air": -0.3,
+     "ecart_moyen": 2.8293
+    },
+    "jugement_avant": {
+     "cas_en_salle": 1240,
+     "biais_en_salle": 0.554,
+     "cas_plein_air": 7826,
+     "biais_plein_air": 0.052,
+     "ecart_moyen": 2.7437
+    },
+    "jugement_apres": {
+     "cas_en_salle": 1240,
+     "biais_en_salle": 0.598,
+     "cas_plein_air": 7826,
+     "biais_plein_air": 0.34,
+     "ecart_moyen": 2.7258
+    },
+    "biais_par_mois_2023": {
+     "1": {
+      "cas": 1042,
+      "avant": 0.62,
+      "apres": 0.9
+     },
+     "2": {
+      "cas": 1212,
+      "avant": 0.23,
+      "apres": 0.44
+     },
+     "3": {
+      "cas": 880,
+      "avant": -0.47,
+      "apres": -0.19
+     },
+     "4": {
+      "cas": 1048,
+      "avant": 0.08,
+      "apres": 0.37
+     },
+     "5": {
+      "cas": 938,
+      "avant": -0.13,
+      "apres": 0.16
+     },
+     "6": {
+      "cas": 630,
+      "avant": 0.38,
+      "apres": 0.67
+     },
+     "7": {
+      "cas": 1088,
+      "avant": 0.1,
+      "apres": 0.39
+     },
+     "8": {
+      "cas": 796,
+      "avant": -0.49,
+      "apres": -0.21
+     },
+     "9": {
+      "cas": 290,
+      "avant": 0.02,
+      "apres": 0.27
+     },
+     "10": {
+      "cas": 824,
+      "avant": 0.46,
+      "apres": 0.59
+     },
+     "11": {
+      "cas": 206,
+      "avant": 1.04,
+      "apres": 1.08
+     }
+    },
+    "retenu": false,
+    "raisons": [
+     "le biais en salle ne baisse pas de moitié"
+    ]
+   },
+   "doubles_fautes": {
+    "decalages": {
+     "salle": -0.485,
+     "plein_air": -0.079
+    },
+    "apprentissage_2019_2022": {
+     "cas_en_salle": 1696,
+     "biais_en_salle": -0.571,
+     "cas_plein_air": 7210,
+     "biais_plein_air": -0.083,
+     "ecart_moyen": 1.7
+    },
+    "jugement_avant": {
+     "cas_en_salle": 1240,
+     "biais_en_salle": -0.612,
+     "cas_plein_air": 7826,
+     "biais_plein_air": -0.035,
+     "ecart_moyen": 1.6103
+    },
+    "jugement_apres": {
+     "cas_en_salle": 1240,
+     "biais_en_salle": -0.127,
+     "cas_plein_air": 7826,
+     "biais_plein_air": 0.044,
+     "ecart_moyen": 1.5838
+    },
+    "biais_par_mois_2023": {
+     "1": {
+      "cas": 1042,
+      "avant": -0.28,
+      "apres": -0.18
+     },
+     "2": {
+      "cas": 1212,
+      "avant": -0.17,
+      "apres": 0.03
+     },
+     "3": {
+      "cas": 880,
+      "avant": -0.31,
+      "apres": -0.24
+     },
+     "4": {
+      "cas": 1048,
+      "avant": -0.19,
+      "apres": -0.11
+     },
+     "5": {
+      "cas": 938,
+      "avant": -0.17,
+      "apres": -0.09
+     },
+     "6": {
+      "cas": 630,
+      "avant": -0.09,
+      "apres": -0.02
+     },
+     "7": {
+      "cas": 1088,
+      "avant": 0.05,
+      "apres": 0.13
+     },
+     "8": {
+      "cas": 796,
+      "avant": 1.18,
+      "apres": 1.26
+     },
+     "9": {
+      "cas": 290,
+      "avant": -0.03,
+      "apres": 0.11
+     },
+     "10": {
+      "cas": 824,
+      "avant": -0.61,
+      "apres": -0.26
+     },
+     "11": {
+      "cas": 206,
+      "avant": -1.06,
+      "apres": -0.57
+     }
+    },
+    "retenu": true,
+    "raisons": []
+   },
+   "premiere_pct": {
+    "decalages": {
+     "salle": 1.22,
+     "plein_air": 0.024
+    },
+    "apprentissage_2019_2022": {
+     "cas_en_salle": 1696,
+     "biais_en_salle": 1.436,
+     "cas_plein_air": 7210,
+     "biais_plein_air": 0.025,
+     "ecart_moyen": 5.3356
+    },
+    "jugement_avant": {
+     "cas_en_salle": 1240,
+     "biais_en_salle": 1.83,
+     "cas_plein_air": 7826,
+     "biais_plein_air": -0.246,
+     "ecart_moyen": 5.4852
+    },
+    "jugement_apres": {
+     "cas_en_salle": 1240,
+     "biais_en_salle": 0.61,
+     "cas_plein_air": 7826,
+     "biais_plein_air": -0.27,
+     "ecart_moyen": 5.4627
+    },
+    "biais_par_mois_2023": {
+     "1": {
+      "cas": 1042,
+      "avant": 0.8,
+      "apres": 0.71
+     },
+     "2": {
+      "cas": 1212,
+      "avant": -0.05,
+      "apres": -0.42
+     },
+     "3": {
+      "cas": 880,
+      "avant": 0.31,
+      "apres": 0.29
+     },
+     "4": {
+      "cas": 1048,
+      "avant": 0.17,
+      "apres": 0.15
+     },
+     "5": {
+      "cas": 938,
+      "avant": -0.57,
+      "apres": -0.59
+     },
+     "6": {
+      "cas": 630,
+      "avant": 0.09,
+      "apres": 0.06
+     },
+     "7": {
+      "cas": 1088,
+      "avant": -0.47,
+      "apres": -0.49
+     },
+     "8": {
+      "cas": 796,
+      "avant": -3.61,
+      "apres": -3.64
+     },
+     "9": {
+      "cas": 290,
+      "avant": -0.43,
+      "apres": -0.64
+     },
+     "10": {
+      "cas": 824,
+      "avant": 2.27,
+      "apres": 1.45
+     },
+     "11": {
+      "cas": 206,
+      "avant": 4.22,
+      "apres": 3.0
+     }
+    },
+    "retenu": true,
+    "raisons": []
+   },
+   "breaks": {
+    "decalages": {
+     "salle": -0.081,
+     "plein_air": 0.015
+    },
+    "apprentissage_2019_2022": {
+     "cas_en_salle": 1696,
+     "biais_en_salle": -0.096,
+     "cas_plein_air": 7210,
+     "biais_plein_air": 0.016,
+     "ecart_moyen": 1.3398
+    },
+    "jugement_avant": {
+     "cas_en_salle": 1240,
+     "biais_en_salle": -0.37,
+     "cas_plein_air": 7826,
+     "biais_plein_air": -0.041,
+     "ecart_moyen": 1.2949
+    },
+    "jugement_apres": {
+     "cas_en_salle": 1240,
+     "biais_en_salle": -0.289,
+     "cas_plein_air": 7826,
+     "biais_plein_air": -0.056,
+     "ecart_moyen": 1.2935
+    },
+    "biais_par_mois_2023": {
+     "1": {
+      "cas": 1042,
+      "avant": -0.05,
+      "apres": -0.06
+     },
+     "2": {
+      "cas": 1212,
+      "avant": -0.1,
+      "apres": -0.09
+     },
+     "3": {
+      "cas": 880,
+      "avant": -0.07,
+      "apres": -0.09
+     },
+     "4": {
+      "cas": 1048,
+      "avant": -0.16,
+      "apres": -0.18
+     },
+     "5": {
+      "cas": 938,
+      "avant": 0.01,
+      "apres": -0.0
+     },
+     "6": {
+      "cas": 630,
+      "avant": -0.15,
+      "apres": -0.16
+     },
+     "7": {
+      "cas": 1088,
+      "avant": -0.05,
+      "apres": -0.07
+     },
+     "8": {
+      "cas": 796,
+      "avant": 0.27,
+      "apres": 0.26
+     },
+     "9": {
+      "cas": 290,
+      "avant": -0.06,
+      "apres": -0.06
+     },
+     "10": {
+      "cas": 824,
+      "avant": -0.26,
+      "apres": -0.21
+     },
+     "11": {
+      "cas": 206,
+      "avant": -0.65,
+      "apres": -0.57
+     }
+    },
+    "retenu": false,
+    "raisons": [
+     "le biais en salle ne baisse pas de moitié"
+    ]
+   }
+  },
+  "WTA": {
+   "aces": {
+    "decalages": {
+     "salle": 0.053,
+     "plein_air": -0.105
+    },
+    "apprentissage_2019_2022": {
+     "cas_en_salle": 796,
+     "biais_en_salle": 0.073,
+     "cas_plein_air": 7282,
+     "biais_plein_air": -0.11,
+     "ecart_moyen": 1.6976
+    },
+    "jugement_avant": {
+     "cas_en_salle": 496,
+     "biais_en_salle": 0.206,
+     "cas_plein_air": 8094,
+     "biais_plein_air": -0.099,
+     "ecart_moyen": 1.653
+    },
+    "jugement_apres": {
+     "cas_en_salle": 496,
+     "biais_en_salle": 0.153,
+     "cas_plein_air": 8094,
+     "biais_plein_air": 0.006,
+     "ecart_moyen": 1.6358
+    },
+    "biais_par_mois_2023": {
+     "1": {
+      "cas": 1148,
+      "avant": 0.03,
+      "apres": 0.13
+     },
+     "2": {
+      "cas": 914,
+      "avant": -0.2,
+      "apres": -0.13
+     },
+     "3": {
+      "cas": 892,
+      "avant": -0.24,
+      "apres": -0.13
+     },
+     "4": {
+      "cas": 772,
+      "avant": 0.44,
+      "apres": 0.51
+     },
+     "5": {
+      "cas": 980,
+      "avant": -0.25,
+      "apres": -0.15
+     },
+     "6": {
+      "cas": 650,
+      "avant": 0.13,
+      "apres": 0.24
+     },
+     "7": {
+      "cas": 878,
+      "avant": -0.32,
+      "apres": -0.21
+     },
+     "8": {
+      "cas": 880,
+      "avant": 0.13,
+      "apres": 0.23
+     },
+     "9": {
+      "cas": 616,
+      "avant": -0.36,
+      "apres": -0.25
+     },
+     "10": {
+      "cas": 710,
+      "avant": -0.27,
+      "apres": -0.18
+     }
+    },
+    "retenu": false,
+    "raisons": [
+     "moins de 1000 cas en salle jugés",
+     "le biais en salle ne baisse pas de moitié"
+    ]
+   },
+   "doubles_fautes": {
+    "decalages": {
+     "salle": -0.229,
+     "plein_air": -0.037
+    },
+    "apprentissage_2019_2022": {
+     "cas_en_salle": 796,
+     "biais_en_salle": -0.316,
+     "cas_plein_air": 7282,
+     "biais_plein_air": -0.039,
+     "ecart_moyen": 1.9359
+    },
+    "jugement_avant": {
+     "cas_en_salle": 496,
+     "biais_en_salle": -0.579,
+     "cas_plein_air": 8094,
+     "biais_plein_air": -0.045,
+     "ecart_moyen": 1.9105
+    },
+    "jugement_apres": {
+     "cas_en_salle": 496,
+     "biais_en_salle": -0.35,
+     "cas_plein_air": 8094,
+     "biais_plein_air": -0.008,
+     "ecart_moyen": 1.9027
+    },
+    "biais_par_mois_2023": {
+     "1": {
+      "cas": 1148,
+      "avant": -0.46,
+      "apres": -0.41
+     },
+     "2": {
+      "cas": 914,
+      "avant": -0.47,
+      "apres": -0.4
+     },
+     "3": {
+      "cas": 892,
+      "avant": -0.15,
+      "apres": -0.11
+     },
+     "4": {
+      "cas": 772,
+      "avant": -0.1,
+      "apres": -0.01
+     },
+     "5": {
+      "cas": 980,
+      "avant": -0.13,
+      "apres": -0.09
+     },
+     "6": {
+      "cas": 650,
+      "avant": 0.06,
+      "apres": 0.1
+     },
+     "7": {
+      "cas": 878,
+      "avant": 0.19,
+      "apres": 0.22
+     },
+     "8": {
+      "cas": 880,
+      "avant": 0.6,
+      "apres": 0.64
+     },
+     "9": {
+      "cas": 616,
+      "avant": 0.16,
+      "apres": 0.2
+     },
+     "10": {
+      "cas": 710,
+      "avant": -0.23,
+      "apres": -0.18
+     }
+    },
+    "retenu": false,
+    "raisons": [
+     "moins de 1000 cas en salle jugés",
+     "le biais en salle ne baisse pas de moitié"
+    ]
+   },
+   "premiere_pct": {
+    "decalages": {
+     "salle": 0.322,
+     "plein_air": -0.074
+    },
+    "apprentissage_2019_2022": {
+     "cas_en_salle": 796,
+     "biais_en_salle": 0.443,
+     "cas_plein_air": 7282,
+     "biais_plein_air": -0.077,
+     "ecart_moyen": 5.6782
+    },
+    "jugement_avant": {
+     "cas_en_salle": 496,
+     "biais_en_salle": 1.19,
+     "cas_plein_air": 8094,
+     "biais_plein_air": -0.038,
+     "ecart_moyen": 5.7097
+    },
+    "jugement_apres": {
+     "cas_en_salle": 496,
+     "biais_en_salle": 0.868,
+     "cas_plein_air": 8094,
+     "biais_plein_air": 0.036,
+     "ecart_moyen": 5.7079
+    },
+    "biais_par_mois_2023": {
+     "1": {
+      "cas": 1148,
+      "avant": 1.02,
+      "apres": 1.07
+     },
+     "2": {
+      "cas": 914,
+      "avant": 1.07,
+      "apres": 1.08
+     },
+     "3": {
+      "cas": 892,
+      "avant": -0.13,
+      "apres": -0.05
+     },
+     "4": {
+      "cas": 772,
+      "avant": -0.09,
+      "apres": -0.12
+     },
+     "5": {
+      "cas": 980,
+      "avant": 0.23,
+      "apres": 0.3
+     },
+     "6": {
+      "cas": 650,
+      "avant": 0.47,
+      "apres": 0.55
+     },
+     "7": {
+      "cas": 878,
+      "avant": -0.82,
+      "apres": -0.75
+     },
+     "8": {
+      "cas": 880,
+      "avant": -1.63,
+      "apres": -1.56
+     },
+     "9": {
+      "cas": 616,
+      "avant": -1.18,
+      "apres": -1.1
+     },
+     "10": {
+      "cas": 710,
+      "avant": 0.91,
+      "apres": 0.96
+     }
+    },
+    "retenu": false,
+    "raisons": [
+     "moins de 1000 cas en salle jugés",
+     "le biais en salle ne baisse pas de moitié"
+    ]
+   },
+   "breaks": {
+    "decalages": {
+     "salle": -0.098,
+     "plein_air": -0.037
+    },
+    "apprentissage_2019_2022": {
+     "cas_en_salle": 796,
+     "biais_en_salle": -0.135,
+     "cas_plein_air": 7282,
+     "biais_plein_air": -0.039,
+     "ecart_moyen": 1.5715
+    },
+    "jugement_avant": {
+     "cas_en_salle": 496,
+     "biais_en_salle": -0.282,
+     "cas_plein_air": 8094,
+     "biais_plein_air": -0.035,
+     "ecart_moyen": 1.5474
+    },
+    "jugement_apres": {
+     "cas_en_salle": 496,
+     "biais_en_salle": -0.184,
+     "cas_plein_air": 8094,
+     "biais_plein_air": 0.002,
+     "ecart_moyen": 1.5478
+    },
+    "biais_par_mois_2023": {
+     "1": {
+      "cas": 1148,
+      "avant": -0.05,
+      "apres": -0.01
+     },
+     "2": {
+      "cas": 914,
+      "avant": -0.14,
+      "apres": -0.09
+     },
+     "3": {
+      "cas": 892,
+      "avant": -0.12,
+      "apres": -0.09
+     },
+     "4": {
+      "cas": 772,
+      "avant": -0.21,
+      "apres": -0.15
+     },
+     "5": {
+      "cas": 980,
+      "avant": -0.01,
+      "apres": 0.02
+     },
+     "6": {
+      "cas": 650,
+      "avant": 0.01,
+      "apres": 0.05
+     },
+     "7": {
+      "cas": 878,
+      "avant": 0.05,
+      "apres": 0.08
+     },
+     "8": {
+      "cas": 880,
+      "avant": -0.02,
+      "apres": 0.02
+     },
+     "9": {
+      "cas": 616,
+      "avant": 0.01,
+      "apres": 0.05
+     },
+     "10": {
+      "cas": 710,
+      "avant": 0.06,
+      "apres": 0.1
+     }
+    },
+    "retenu": false,
+    "raisons": [
+     "moins de 1000 cas en salle jugés",
+     "le biais en salle ne baisse pas de moitié",
+     "l'écart moyen monte"
+    ]
+   }
+  }
+ },
+ "retenus": [
+  "ATP|doubles_fautes",
+  "ATP|premiere_pct"
+ ]
+}

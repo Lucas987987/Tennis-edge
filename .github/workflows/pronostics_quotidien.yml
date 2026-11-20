@@ -1,0 +1,195 @@
+name: Pronostics du jour
+
+# Pronostic indépendant de chaque match des 36 prochaines heures : Elo,
+# simulation pure et combinaison, sans cote ni mouvement de marché en entrée.
+# 1. le classement Elo est refait depuis tous les résultats (archive Sackmann,
+#    puis nos résultats et ceux de tennis-data) : backtest_pronostic.py ;
+# 2. pronostics_du_jour.py écrit Tennis_Edge_Lab/live/pronostics.json, ajoute le
+#    PREMIER pronostic de chaque match au journal (jamais modifié) et calcule le
+#    bilan (pronostics_bilan.json). 0 requête d'API.
+# Le classement complet (elo_etat.json) n'est pas commité ici (stockage) : il
+# est recalculé à chaque passage.
+# Chaque match est joué 20 000 fois point par point avec les
+# profils de service (simulateur/profils_service.json, produit par le workflow
+# « Pronostic - test du modèle ») : feuille de stats prévue et match type.
+# 22/10/2026 : les profils sont recalculés à chaque passage avec les feuilles
+# collectées (feuilles/, workflow « Feuilles de match ») ; non commités ici.
+on:
+  workflow_dispatch:
+  # 23/10/2026 : déclenché toutes les 2 h par le worker Cloudflare (tennis-edge-closing) ; le cron reste en filet.
+  repository_dispatch:
+    types: [pronostics_quotidien]
+  schedule:
+    # Toutes les 2 h pour pronostiquer les nouveaux matchs plus vite.
+    - cron: '23 */2 * * *'
+
+permissions:
+  contents: write
+
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+  # 23/10/2026 : coffre privé (pronostics.json complet, réservé) — scripts/coffre.py
+  ETAT_CHAUD: ${{ vars.ETAT_CHAUD || 'double' }}   # 04/11/2026 : fichiers chauds relayés par R2 (scripts/etat_chaud.py)
+  R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+  R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+  R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+
+concurrency:
+  group: pronostics
+  cancel-in-progress: false
+
+jobs:
+  pronostics:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          filter: blob:none
+          sparse-checkout: |
+            /simulateur/
+            /feuilles_points/
+            /scripts/feuilles_match.py
+            /scripts/lieux_tournois.py
+            /scripts/lieux_archive.py
+            /scripts/resultats_itf.py
+            /resultats_itf/
+            /resultats_itf_femmes/
+            /scripts/closing_store.py
+            /scripts/coffre.py
+            /scripts/r2_io.py
+            /scripts/etat_chaud.py
+            /scripts/merge_json_state.py
+            /Tennis_Edge_Lab/books.py
+            /Tennis_Edge_Lab/bookmakers_sets_v5.py
+            /Tennis_Edge_Lab/clv_source.py
+            /Tennis_Edge_Lab/courbes_cotes.py
+            /Tennis_Edge_Lab/live/
+            /historique/
+            /set_results.json
+            /clv_history/
+            /clv_history.jsonl
+            /closing_lines.json
+            /closing_lines/
+            /matches_oddspapi.json
+            /feuilles/
+            /algo/
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      # 04/11/2026 : matchs à venir et cotes de clôture les plus frais (relayés par R2 en mode ETAT_CHAUD=on)
+      - name: État chaud — rapatrier de R2
+        run: python scripts/etat_chaud.py pull closing_lines.json matches_oddspapi.json || true
+      - name: Tests de cohérence du simulateur indépendant
+        run: python -m unittest discover -s simulateur/tests -v
+      - name: Archive Sackmann (fichiers de matchs seulement)
+        run: |
+          set -euo pipefail
+          git clone --depth 1 --filter=blob:none --sparse https://github.com/Aneeshers/tennis-sackmann-archive.git /tmp/sackmann
+          cd /tmp/sackmann
+          git sparse-checkout set --no-cone 'atp_matches_20*.csv' 'atp_matches_qual_chall_20*.csv' 'wta_matches_20*.csv' 'wta_matches_qual_itf_20*.csv'
+      - name: Match Charting Project (Jeff Sackmann, CC BY-NC-SA 4.0) — statistiques seulement
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          git clone --depth 1 --filter=blob:none --sparse https://github.com/JeffSackmann/tennis_MatchChartingProject.git /tmp/mcp
+          cd /tmp/mcp
+          git sparse-checkout set --no-cone 'charting-*-matches.csv' 'charting-*-stats-ServeBasics.csv' 'charting-*-stats-ReturnOutcomes.csv' 'charting-*-stats-Rally.csv' \
+            'charting-*-stats-Overview.csv' 'charting-*-stats-ShotTypes.csv' 'charting-*-stats-NetPoints.csv'
+      - name: Classement (tous les résultats)
+        run: python simulateur/backtest_pronostic.py /tmp/sackmann .
+      - name: Profils de service (archive + feuilles collectées depuis)
+        run: python simulateur/profils_service.py /tmp/sackmann .
+      - name: Bilans descriptifs contre les styles service–retour
+        run: python simulateur/styles_descriptifs.py /tmp/sackmann .
+      # 12/11/2026 (paquet 249) : comment chaque joueur marque ses points (tiroir « Points marqués ») — descriptif
+      - name: Coups des joueurs (Match Charting Project)
+        continue-on-error: true
+        run: python simulateur/coups_joueurs.py /tmp/mcp .
+      # 13/11/2026 (paquet 252) : style de jeu d'après les coups et bilans contre chaque style — descriptif
+      - name: Styles de jeu (Match Charting Project)
+        continue-on-error: true
+        run: python simulateur/styles_jeu.py /tmp/sackmann . /tmp/mcp
+      # 04/11/2026 : vitesse de chaque tournoi sur l'échelle du CPI (officiel s'il est publié, sinon estimé) — information
+      - name: Vitesse des courts (CPI officiel ou estimé)
+        continue-on-error: true
+        run: python simulateur/vitesse_courts.py /tmp/sackmann .
+      # 28/10/2026 : rythme, longueur et régularité des joueurs (descriptif) → durée prévue sur la fiche
+      - name: Profils de rythme et de longueur
+        continue-on-error: true
+        run: python simulateur/profil_rythme.py /tmp/sackmann .
+      # À chaque passage : les nouveaux résultats de NOS pronostics figés réapprennent
+      # le mélange simulation + Elo. La règle existante exige 30 nouveaux matchs depuis
+      # le dernier jugement, un gain de log loss >= 0,001 et un Brier non dégradé.
+      - name: Apprentissage continu sur les nouveaux matchs résolus
+        run: python simulateur/apprentissage_continu.py .
+      - name: Gouvernance champion–challenger
+        run: python simulateur/gouvernance.py --racine .
+      - name: Récapitulatif de l’apprentissage
+        run: python simulateur/recap_apprentissage.py --racine .
+      - name: Pronostics des 36 prochaines heures
+        run: python simulateur/pronostics_du_jour.py .
+      # 06/11/2026 (paquet 210) : séries, face-à-face, réussite par rapport aux chances d'avant match (descriptif, fiche)
+      # 11/11/2026 (paquet 223) : lieu des tournois de l'archive (une fois par tournoi, Open-Meteo, gratuit) pour les
+      # bilans « dans ces conditions » des joueurs (pays, continent, altitude) — descriptif, jamais bloquant
+      - name: Lieux des tournois de l'archive
+        continue-on-error: true
+        timeout-minutes: 10
+        run: python scripts/lieux_archive.py /tmp/sackmann 250
+      - name: Infos d'avant match (séries, face-à-face, réussite)
+        continue-on-error: true
+        run: python simulateur/infos_avant_match.py /tmp/sackmann .
+      # 05/11/2026 : liste PRIVÉE des matchs du jour où l'algo contredit Pinnacle (loupe, jamais une entrée de l'algo) ;
+      # une fois par jour à partir de 7 h à Paris (repère dans le coffre R2) ; jamais bloquant
+      - name: Désaccords du jour (Telegram privé)
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python simulateur/desaccords_du_jour.py . --telegram || echo '::warning::désaccords du jour non envoyés'
+      # Préversion Plus : %, cote juste, détail complet et scénario représentatif de chaque match, match du jour,
+      # bilan public et calibration. Aucune cote de bookmaker, aucun signal privé.
+      - name: Site public de l'algo — génération et contrôle bloquants
+        run: |
+          set -euo pipefail
+          python simulateur/vitrine.py .
+          python simulateur/validation_vitrine.py .
+      - name: Publier
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git checkout -- simulateur/elo_etat.json 2>/dev/null || true
+          git checkout -- simulateur/profils_service.json 2>/dev/null || true
+          rm -f simulateur/facteurs_contexte.json
+          # 23/10/2026 : le pronostic complet du jour va au coffre privé (R2), plus dans le dépôt public
+          # 04/11/2026 : scripts/coffre.py et r2_io.py ajoutés au checkout — absents, l'envoi échouait en silence (|| true)
+          python scripts/coffre.py push --groupe pronostics || true
+          python scripts/coffre.py retirer --groupe pronostics || true
+          git add -- Tennis_Edge_Lab/live/pronostics_bilan.json \
+                     Tennis_Edge_Lab/live/joueurs_service.json.gz \
+                     Tennis_Edge_Lab/live/elo_service_retour.json \
+                     simulateur/pronostics_log.jsonl simulateur/rapport_pronostic.json \
+                     simulateur/choix_simulation.json simulateur/stabilite.json \
+                     simulateur/gouvernance_etat.json simulateur/rapport_gouvernance.json \
+                     simulateur/recap_apprentissage.json simulateur/recap_apprentissage.md \
+                     simulateur/journal_pronostics Tennis_Edge_Lab/live/pronostics_resultats.json \
+                     algo/donnees.json
+          # 28/10/2026 : analyse après match (descriptive, pour l'algo) — publiée si elle a été écrite
+          if [ -e simulateur/analyse_apres_match.json ]; then git add -- simulateur/analyse_apres_match.json; fi
+          if [ -e feuilles/lieux_archive.json ]; then git add -- feuilles/lieux_archive.json; fi
+          if git diff --cached --quiet; then echo 'Rien de nouveau.'; exit 0; fi
+          git commit -m "Pronostics du jour $(date -u +%FT%TZ)"
+          # fichiers écrits hors du checkout partiel (ex. live/joueurs_service.json.gz, contexte des
+          # facteurs) : ils ne sont pas publiés ici et gêneraient le rebase (mis de côté APRÈS le commit).
+          git stash push --include-untracked --quiet 2>/dev/null || true
+          for i in 1 2 3 4 5; do
+            # 22/10/2026 : -X theirs = en cas de conflit sur un fichier PRODUIT par ce run (ex.
+            # rapport_pronostic.json, réécrit aussi par « Pronostics du jour »), c'est la version de ce
+            # run qui est gardée. Avant, un seul conflit faisait perdre tout le run (48 min le 22/10).
+            git pull --rebase -X theirs origin main || { git rebase --abort || true; echo '::error::Conflit avec main'; exit 1; }
+            if git push origin HEAD:main; then exit 0; fi
+            sleep $((i * 10))
+          done
+          echo '::error::Push impossible après 5 essais'; exit 1

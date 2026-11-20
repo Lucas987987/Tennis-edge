@@ -1,0 +1,146 @@
+# Bytecode Python
+__pycache__/
+*.pyc
+
+# Fichiers plats de courbes live : RÉGÉNÉRÉS à chaque run par
+# scripts/curves_parts.py rebuild, à partir des partitions du dossier parts/.
+# Ne plus les commiter : ils étaient réécrits entièrement toutes les 8 minutes,
+# ce qui faisait exploser l'historique git (runs lents, file d'attente, échecs).
+book_curves_live.jsonl
+set1_curves_live.jsonl
+set2_curves_live.jsonl
+/*.zip
+
+# AJOUTÉ LE 29/08/2026 (validation externe) : filet pour le cas SIGKILL --
+# ov.ecriture_atomique()/ecriture_atomique_texte() nettoient le .tmp
+# résiduel via un bloc except en cas d'échec, mais un processus tué
+# brutalement (timeout GitHub Actions, OOM) ne laisse jamais ce bloc
+# s'exécuter. Sans cette règle, un .tmp orphelin serait embarqué par le
+# prochain `git add -A` -- exactement le même risque que celui que
+# l'écriture atomique corrige, un niveau plus bas.
+*.tmp
+
+# AJOUTÉ LE 03/09/2026 : cache de calibration (steam_alert.stats_avec_cache).
+# Régénérable à tout instant depuis les partitions, réécrit à chaque expiration
+# du TTL -- le committer gonflerait l'historique git à chaque cycle de capture
+# pour une donnée dérivée, exactement ce que la sentinelle de taille surveille.
+calib_cache.json
+*.zip
+
+# V6.4 data belongs in R2; never add local segments or retry journals to Git.
+/parts/v64/
+/parts/v64-pending/
+
+# AJOUTÉ LE 15/10/2026 (migration R2 / clv_history partitionné) :
+# fichiers temporaires de r2_io (écriture atomique) et sauvegardes .bak de
+# clean_clv_metrics / repair_curve_sides sur les partitions mensuelles.
+*.r2tmp
+clv_history/*.bak
+
+# AJOUTÉ LE 16/10/2026 : cache des champs volatils des registres de marchés
+# (liquidity, volume…) — reconstruit à chaque run, jamais committé.
+registres_marches/.volatil_*
+# >>> coffre privé (23/10/2026) — rangés dans R2 (prive/), jamais dans ce dépôt public : scripts/coffre.py
+/h18_signal_log.jsonl
+/h18_signal_state.json
+/h19_signal_log.jsonl
+/h19_signal_state.json
+/h20_signal_log.jsonl
+/h20_signal_state.json
+/Tennis_Edge_Lab/live/valeur.json
+/Tennis_Edge_Lab/live/h20.json
+/Tennis_Edge_Lab/live/pronostics.json
+/simulateur/rapport_roi_algo.json
+/simulateur/rapport_desaccords.json
+# <<< coffre privé
+
+# Bilans descriptifs régénérés à chaque run ; seule leur fusion dans algo/donnees.json est publiée.
+/simulateur/styles_descriptifs.json
+/simulateur/profil_rythme.json
+/simulateur/evolution_statistiques_joueurs.json
+
+# 29/10/2026 : Elo de référence du modèle fantôme, recalculé à chaque passage (jamais commité)
+simulateur/elo_etat_reference.json
+simulateur/elo_etat_sans_itf_femmes.json
+simulateur/suivi_desaccords_pinnacle.json
+
+# >>> hist_r2 : partitions historiques FIGÉES, servies par R2 (scripts/hist_r2.py) — ne pas éditer à la main
+/parts/hist_book_2026-06.jsonl.gz
+/parts/hist_book_2026-07.jsonl.gz
+/parts/hist_book_2026-08.jsonl.gz
+/parts/hist_book_2026-W33.jsonl.gz
+/parts/hist_book_2026-W33_2.jsonl.gz
+/parts/hist_book_2026-W33_3.jsonl.gz
+/parts/hist_book_2026-W34.jsonl.gz
+/parts/hist_book_2026-W34_2.jsonl.gz
+/parts/hist_book_2026-W34_3.jsonl.gz
+/parts/hist_book_2026-W35.jsonl.gz
+/parts/hist_book_2026-W35_2.jsonl.gz
+/parts/hist_book_2026-W35_3.jsonl.gz
+/parts/hist_book_2026-W36.jsonl.gz
+/parts/hist_book_2026-W36_2.jsonl.gz
+/parts/hist_book_2026-W36_3.jsonl.gz
+/parts/hist_book_2026-W37.jsonl.gz
+/parts/hist_book_2026-W37_2.jsonl.gz
+/parts/hist_book_2026-W37_3.jsonl.gz
+/parts/hist_book_2026-W37_4.jsonl.gz
+/parts/hist_book_2026-W38.jsonl.gz
+/parts/hist_book_2026-W39.jsonl.gz
+/parts/hist_book_2026-W39_3.jsonl.gz
+/parts/hist_book_2026-W40.jsonl.gz
+/parts/hist_book_2026-W40_2.jsonl.gz
+/parts/hist_book_2026-W40_3.jsonl.gz
+/parts/hist_book_2026-W41.jsonl.gz
+/parts/hist_book_2026-W41_2.jsonl.gz
+/parts/hist_book_2026-W41_3.jsonl.gz
+/parts/hist_book_2026-W42.jsonl.gz
+/parts/hist_book_2026-W42_2.jsonl.gz
+/parts/hist_book_2026-W43.jsonl.gz
+/parts/hist_book_2026-W43_2.jsonl.gz
+/parts/hist_book_2026-W43_3.jsonl.gz
+/parts/hist_book_2026-W43_4.jsonl.gz
+/parts/hist_book_2026-W44.jsonl.gz
+/parts/hist_book_2026-W44_2.jsonl.gz
+/parts/hist_book_2026-W44_3.jsonl.gz
+/parts/hist_book_2026-W45.jsonl.gz
+/parts/hist_book_2026-W46.jsonl
+/parts/hist_set1_2026-06.jsonl.gz
+/parts/hist_set1_2026-07.jsonl.gz
+/parts/hist_set1_2026-08.jsonl.gz
+/parts/hist_set1_2026-W33.jsonl.gz
+/parts/hist_set1_2026-W34.jsonl.gz
+/parts/hist_set1_2026-W35.jsonl.gz
+/parts/hist_set1_2026-W36.jsonl.gz
+/parts/hist_set1_2026-W37.jsonl
+/parts/hist_set1_2026-W37.jsonl.gz
+/parts/hist_set1_2026-W38.jsonl.gz
+/parts/hist_set1_2026-W39.jsonl.gz
+/parts/hist_set1_2026-W40.jsonl.gz
+/parts/hist_set1_2026-W41.jsonl.gz
+/parts/hist_set1_2026-W42.jsonl.gz
+/parts/hist_set1_2026-W43.jsonl.gz
+/parts/hist_set1_2026-W44.jsonl.gz
+/parts/hist_set1_2026-W44_2.jsonl
+/parts/hist_set1_2026-W45.jsonl.gz
+/parts/hist_set1_2026-W46.jsonl
+/parts/hist_set2_2026-06.jsonl.gz
+/parts/hist_set2_2026-07.jsonl.gz
+/parts/hist_set2_2026-08.jsonl.gz
+/parts/hist_set2_2026-W33.jsonl.gz
+/parts/hist_set2_2026-W34.jsonl.gz
+/parts/hist_set2_2026-W35.jsonl.gz
+/parts/hist_set2_2026-W36.jsonl.gz
+/parts/hist_set2_2026-W37.jsonl
+/parts/hist_set2_2026-W37.jsonl.gz
+/parts/hist_set2_2026-W38.jsonl.gz
+/parts/hist_set2_2026-W39.jsonl.gz
+/parts/hist_set2_2026-W40.jsonl.gz
+/parts/hist_set2_2026-W41.jsonl.gz
+/parts/hist_set2_2026-W42.jsonl.gz
+/parts/hist_set2_2026-W43.jsonl.gz
+/parts/hist_set2_2026-W43_2.jsonl.gz
+/parts/hist_set2_2026-W44.jsonl.gz
+/parts/hist_set2_2026-W44_2.jsonl
+/parts/hist_set2_2026-W45.jsonl.gz
+/parts/hist_set2_2026-W46.jsonl
+# <<< hist_r2

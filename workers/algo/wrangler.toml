@@ -1,0 +1,22 @@
+# Worker « algo » (23/10/2026) : site public de l'algorithme sous une adresse neutre
+# (https://algo.tennis-edge.workers.dev) + coffre privé du Lab (/prive/…, clé privée).
+# Déployé AUTOMATIQUEMENT par .github/workflows/deploy_algo.yml à chaque modification de ce dossier sur main.
+name = "algo"
+main = "worker.js"
+compatibility_date = "2025-01-01"
+workers_dev = true
+keep_vars = true
+
+# Coffre privé : le même bucket R2 que les partitions (scripts/r2_io.py, DEFAULT_BUCKET), préfixe prive/.
+[[r2_buckets]]
+binding = "COFFRE"
+bucket_name = "tennis-edge-courbes"
+
+# 06/11/2026 : plafond journalier des requêtes TennisApi pour les statistiques en direct (/live/stats).
+# Pour l'augmenter : changer le nombre ici (le déploiement suit tout seul).
+[vars]
+LIVE_STATS_PLAFOND = "6000"
+
+# 13/11/2026 (paquet 256) : requêtes TennisApi jamais utilisées par les scores en direct (/live), gardées pour la
+# collecte habituelle et la réserve des feuilles de match. La fraîcheur du direct (3 à 60 s) s'adapte au reste.
+LIVE_RESERVE = "3000"

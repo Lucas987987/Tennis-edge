@@ -1,0 +1,153 @@
+"""Pronostics du jour : variantes indépendantes du marché, journal figé et bilan
+sur les matchs joués. Les bookmakers des entrées de test doivent être ignorés."""
+import datetime as dt
+import json
+import os
+import shutil
+import sys
+import tempfile
+import unittest
+
+ICI = os.path.dirname(os.path.abspath(__file__))
+RACINE = os.path.join(ICI, '..')
+sys.path.insert(0, os.path.join(RACINE, 'simulateur'))
+import elo as E  # noqa: E402
+import pronostics_du_jour as P  # noqa: E402
+import backtest_pronostic as BP  # noqa: E402
+
+NOW = dt.datetime(2026, 10, 21, 20, 0)
+
+
+def match(h, a, heures, pin=None, tour='ATP Brussels'):
+    bk = [{'key': 'unibet', 'markets': [{'key': 'h2h', 'outcomes': [{'name': h, 'price': 1.8}, {'name': a, 'price': 2.0}]}]}]
+    if pin:
+        bk.append({'key': 'pinnacle', 'markets': [{'key': 'h2h', 'outcomes': [{'name': h, 'price': pin[0]}, {'name': a, 'price': pin[1]}]}]})
+    return {'commence_time': (NOW + dt.timedelta(hours=heures)).isoformat() + 'Z', 'home_team': h, 'away_team': a,
+            'sport_title': tour, 'bookmakers': bk}
+
+
+class Pronostics(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        d = self.d = self.tmp.name
+        os.makedirs(os.path.join(d, 'simulateur'))
+        os.makedirs(os.path.join(d, 'Tennis_Edge_Lab'))
+        shutil.copy(os.path.join(RACINE, 'Tennis_Edge_Lab', 'books.py'), os.path.join(d, 'Tennis_Edge_Lab', 'books.py'))
+        e = E.Elo()
+        for _ in range(30):
+            e.maj(E.cle('Arthur Fils'), E.cle('Hugo Gaston'), 'Hard')
+        noms = {E.cle('Arthur Fils'): 'Arthur Fils', E.cle('Hugo Gaston'): 'Hugo Gaston'}
+        json.dump({'dernier_match': '2026-10-20', 'surfaces_tournois': {'brussels': 'Hard'},
+                   'joueurs': e.exporter(noms)}, open(os.path.join(d, 'simulateur', 'elo_etat.json'), 'w'))
+        json.dump({'mu': {'ATP Hard': 0.6}, 'joueurs': {'1': {'nom': 'Arthur Fils', 'service': 0.2, 'retour': 0.05, 'points': 900}}},
+                  open(os.path.join(d, 'simulateur', 'notes_joueurs.json'), 'w'))
+        json.dump([match('Arthur Fils', 'Hugo Gaston', 3, pin=(1.30, 3.70)), match('A B', 'C D', 5),
+                   match('Trop Tard', 'Deja Joue', -1), match('Trop Loin', 'Plus Tard', 80)],     # 18/11 (paquet 269) : fenêtre de 72 h
+                  open(os.path.join(d, 'matches_oddspapi.json'), 'w'))
+        json.dump({}, open(os.path.join(d, 'set_results.json'), 'w'))
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def test_stats_sans_marche(self):
+        doc = P.construire(self.d, NOW)
+        self.assertEqual([m['home'] for m in doc['matchs']], ['Arthur Fils', 'A B'])     # ni commencé, ni au-delà de 72 h
+        m = doc['matchs'][0]
+        self.assertGreater(m['stats']['p_home'], 0.9)                                      # Elo : 30 victoires
+        self.assertNotIn('marche', m)                                                      # Pinnacle présent en entrée, mais ignoré
+        self.assertIsNone(m['combinaison'])                                                # profils service absents dans ce test
+        self.assertIsNone(m['simulation'])
+        v = m['stats']
+        self.assertAlmostEqual(sum(v['sets'].values()), 1.0, places=3)       # arrondis à 4 décimales
+        self.assertEqual(len(v['scores_probables']), 3)
+        for sc, pr in v['scores_probables']:
+            self.assertRegex(sc, r'^\d+-\d+( \d+-\d+){1,2}$')
+        self.assertGreater(v['remontee']['home'] + v['remontee']['away'], 0)
+        self.assertAlmostEqual(doc['matchs'][1]['stats']['p_home'], 0.5, delta=0.01)        # joueurs inconnus
+        self.assertEqual(m['style_connu'], [True, False])
+
+    def test_journal_une_fois_et_bilan(self):
+        doc = P.construire(self.d, NOW)
+        self.assertEqual(P.journaliser(self.d, doc), 2)
+        self.assertEqual(P.journaliser(self.d, P.construire(self.d, NOW)), 0)              # jamais réécrit
+        json.dump({'2026-10-21_arthur_fils_hugo_gaston': {'match': 'away', 'set1': 'away', 'set2': 'away'},
+                   '2026-10-22_c_d_a_b': {'match': 'home', 'set1': 'home', 'set2': 'away'}},
+                  open(os.path.join(self.d, 'set_results.json'), 'w'))
+        b = P.bilan(self.d, NOW + dt.timedelta(days=1))
+        self.assertEqual(b['joues_avec_resultat'], 2)
+        self.assertEqual(b['tous']['stats_seules']['reussite_pct'], 0.0 + 25.0)            # Fils perdu (0) + 50/50 (½) sur 2
+        self.assertNotIn('stats_plus_marche', b['tous'])
+        self.assertEqual(b['tous']['combinaison']['n'], 0)                                # pas de profils dans ce test
+        self.assertEqual(b['tous']['simulation']['n'], 0)
+
+    def test_simulation_plus_elo_et_calibration(self):
+        import profils_service as PS
+        json.dump(PS.Profils().exporter(dt.date(2026, 6, 2)), open(os.path.join(self.d, 'simulateur', 'profils_service.json'), 'w'))
+        json.dump({'composantes': 'profils', 'combinaison': {'adopte': True, 'poids': {'elo': 0.8, 'simulation': 0.3}}},
+                  open(os.path.join(self.d, 'simulateur', 'choix_simulation.json'), 'w'))
+        old = P.SIMULATIONS
+        P.SIMULATIONS = 200
+        try:
+            doc = P.construire(self.d, NOW)
+        finally:
+            P.SIMULATIONS = old
+        m = doc['matchs'][0]
+        c = m['combinaison']
+        z = 0.8 * BP.math.log(m['stats']['p_home'] / (1 - m['stats']['p_home'])) + 0.3 * BP.math.log(c['p_simulation'] / (1 - c['p_simulation']))
+        self.assertAlmostEqual(c['p_home'], 1 / (1 + BP.math.exp(-z)), delta=0.01)     # ancrage du moteur à 1 % près
+        self.assertEqual(c['match_simule']['n'], 200)
+        self.assertEqual(doc['combinaison'], {'elo': 0.8, 'simulation': 0.3, 'source': 'archive 2024–2026'})
+        import direct as D
+        d = m['direct']
+        self.assertEqual(d['version'], 'combinaison')
+        avant = 0.5 * (D.en_direct(d['a'], d['b'], [], 0, 0, True)['p_home'] + D.en_direct(d['a'], d['b'], [], 0, 0, False)['p_home'])
+        self.assertAlmostEqual(avant, c['p_home'], delta=0.01)                         # au 1er point : le % annoncé
+        self.assertEqual(len(doc['noeuds_forme']), 13)
+        P.journaliser(self.d, doc)
+        json.dump({'2026-10-21_arthur_fils_hugo_gaston': {'match': 'home', 'set1': 'home', 'set2': 'home'}},
+                  open(os.path.join(self.d, 'set_results.json'), 'w'))
+        b = P.bilan(self.d, NOW + dt.timedelta(days=1))
+        self.assertEqual(b['tous']['combinaison']['n'], 1)
+        self.assertEqual(b['tous']['combinaison']['reussite_pct'], 100.0)
+        self.assertTrue(b['calibration']['combinaison'])
+        self.assertIn('ATP', b['par_circuit'])
+
+    def test_noms_tennis_data(self):
+        noms = {E.cle(n): n for n in ['Alexander Bublik', 'Alex de Minaur', 'Wang Xinyu', 'Wang Xiyu',
+                                      'Giovanni Mpetshi Perricard', 'Adolfo Daniel Vallejo']}
+        idx = BP.index_td(noms)
+        self.assertEqual(BP.cle_tennis_data(idx, 'Bublik A.'), E.cle('Alexander Bublik'))
+        self.assertEqual(BP.cle_tennis_data(idx, 'De Minaur A.'), E.cle('Alex de Minaur'))
+        self.assertEqual(BP.cle_tennis_data(idx, 'Wang Xin.'), E.cle('Wang Xinyu'))      # initiales étendues
+        self.assertEqual(BP.cle_tennis_data(idx, 'Wang Xiy.'), E.cle('Wang Xiyu'))
+        self.assertIsNone(BP.cle_tennis_data(idx, 'Wang X.'))                           # ambigu : on ne relie pas
+        self.assertEqual(BP.cle_tennis_data(idx, 'Mpetshi G.'), E.cle('Giovanni Mpetshi Perricard'))
+        self.assertEqual(BP.cle_tennis_data(idx, 'Vallejo D.'), E.cle('Adolfo Daniel Vallejo'))
+
+    def test_nouveaux_joueurs_tennis_data(self):
+        """22/10/2026 : un nom inconnu partout devient un nouveau joueur ; un nom ambigu reste écarté."""
+        noms = {E.cle(n): n for n in ['Alexander Bublik', 'Wang Xinyu', 'Wang Xiyu']}
+        idx = BP.index_td(noms)
+        self.assertEqual(BP.lire_tennis_data(idx, 'Bublik A.')[1], 'relie')
+        self.assertEqual(BP.lire_tennis_data(idx, 'Wang X.')[1], 'ambigu')
+        self.assertEqual(BP.lire_tennis_data(idx, 'Inconnu Z.')[1], 'absent')
+        self.assertEqual(BP.cle_nouveau('Inconnu Z.', 'ATP'), 'td:ATP:inconnu:z')
+        self.assertEqual(BP.cle_nouveau('Fernandez L.A.', 'WTA'), 'td:WTA:fernandez:la')
+        d = dt.date(2026, 7, 1)
+        rows = [(d, 'Bublik A.', 'Inconnu Z.', 'ATP'), (d, 'Inconnu Z.', 'Bublik A.', 'ATP'),
+                (d, 'Bublik A.', 'Wang X.', 'ATP')]
+        sans = BP.rejouer([], [], rows, E.cle, idx, False)
+        avec = BP.rejouer([], [], rows, E.cle, idx, False, nouveaux=True)
+        self.assertEqual((sans['td'].get('ajoutes', 0), sans['td']['non_reconnus']), (0, 3))
+        self.assertEqual((avec['td']['ajoutes'], avec['td']['non_reconnus'], avec['td']['nouveaux_joueurs']), (2, 1, 1))
+        self.assertEqual(avec['elo'].matchs(E.cle('Alexander Bublik')), 2)
+        self.assertEqual(avec['noms']['td:ATP:inconnu:z'], 'Inconnu Z.')
+
+    def test_un_joueur_un_classement(self):
+        a = E.unifier({E.cle('Leylah Annie Fernandez'): 'Leylah Annie Fernandez', E.cle('Brandon Nakashima'): 'Brandon Nakashima'},
+                      ['Leylah Fernandez', 'Bradley Nakashima'])
+        self.assertEqual(a, {E.cle('Leylah Fernandez'): E.cle('Leylah Annie Fernandez')})
+
+
+if __name__ == '__main__':
+    unittest.main()

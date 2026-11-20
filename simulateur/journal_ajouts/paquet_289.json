@@ -1,0 +1,7 @@
+{
+ "date": "2026-11-19",
+ "statut": "etude",
+ "paquet": 289,
+ "quoi_debut": "DUELS DE SERVEURS : L'ÉCART DE NIVEAU COMPTE-T-IL MOINS QUAND LES DEUX JOUEURS GARDENT FACILEMENT LEUR SERVICE ? (paquet 289, étude de fiabilité). Le % de l'Elo traduit un écart de niveau en chances de victoire de la même façon pour tous les matchs. Dans un duel de serveurs, les sets se jouent sur un break ou un tie-break : l'outsider devrait gagner plus souvent qu'annoncé ; dans un duel de retourneurs, moins. Nouvelle étude simulateur/etude_pente_service.py : indice du duel connu avant le match (points de service et de retour gagnés par les deux joueurs sur 365 jours, rapprochés de la moyenne du circuit), et une pente de l'Elo qui dépend de cet indice. Règle écrite dans l'en-tête avant tout résultat, circuit par circuit : appris sur 2018–2022, jugé une seule fois sur 2023 → juin 2026 ; retenu si le gain de log loss atteint 0,001 sur au moins 1 000 matchs, dans le même sens sur les deux périodes. Elo réglé comme la production, mis à jour après chaque match. Rapport public : simulateur/rapport_pente_service.json (comptes seulement, aucun nom).",
+ "garde_fou": "Étude seule : rien n'entre dans l'algo. Un circuit retenu sera proposé dans un paquet suivant avec la règle de retrait cumulée (300 matchs, 2 erreurs types). Retrait de l'étude : supprimer simulateur/etude_pente_service.py, simulateur/journal_ajouts/paquet_289.json et .github/workflows/etude_pente_service.yml."
+}

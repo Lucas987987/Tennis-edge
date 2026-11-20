@@ -1,0 +1,386 @@
+{
+  "schema": "echanges_atp_wta_v1",
+  "activation": false,
+  "champion_actif_modifie": false,
+  "marche_utilise": false,
+  "n_decouverte_atp_wta_couvert": 1152,
+  "decouverte_dans_echantillon": {
+    "controle": {
+      "n": 1152,
+      "log_loss": 0.60143,
+      "brier": 0.208061,
+      "reussite_pct": 65.71
+    },
+    "mcp_existant": {
+      "n": 1152,
+      "log_loss": 0.600826,
+      "brier": 0.207738,
+      "reussite_pct": 66.15
+    },
+    "tranches_echanges": {
+      "n": 1152,
+      "log_loss": 0.598813,
+      "brier": 0.206951,
+      "reussite_pct": 66.32
+    },
+    "mcp_plus_tranches": {
+      "n": 1152,
+      "log_loss": 0.597651,
+      "brier": 0.206427,
+      "reussite_pct": 67.19
+    }
+  },
+  "gains_decouverte": {
+    "tranches_moins_controle": {
+      "log_loss": 0.002616,
+      "brier": 0.001109,
+      "sens": "positif = apport du challenger"
+    },
+    "combine_moins_controle": {
+      "log_loss": 0.003778,
+      "brier": 0.001633,
+      "sens": "positif = apport du challenger"
+    },
+    "combine_moins_mcp_existant": {
+      "log_loss": 0.003175,
+      "brier": 0.00131,
+      "sens": "positif = apport du challenger"
+    },
+    "combine_moins_tranches": {
+      "log_loss": 0.001162,
+      "brier": 0.000524,
+      "sens": "positif = apport du challenger"
+    }
+  },
+  "couverture_atp_wta": {
+    "n": 2921,
+    "deux_joueurs_couverts": 2653,
+    "couverture_pct": 90.83,
+    "avertissement": "relevés non aléatoires ; résultats limités aux matchs couverts"
+  },
+  "confirmation_future": {
+    "minimum_matchs": 1000,
+    "minimum_semaines_iso": 8,
+    "debut_apres": "2026-10-28T00:00:00+00:00",
+    "2025_2026_exclus": true
+  },
+  "limite_controle": "contrôle de recherche, pas le champion complet",
+  "diagnostic_historique_reutilise": {
+    "n": 1501,
+    "metriques": {
+      "controle": {
+        "n": 1501,
+        "log_loss": 0.594146,
+        "brier": 0.205471,
+        "reussite_pct": 66.56
+      },
+      "mcp_existant": {
+        "n": 1501,
+        "log_loss": 0.593152,
+        "brier": 0.204951,
+        "reussite_pct": 67.09
+      },
+      "tranches_echanges": {
+        "n": 1501,
+        "log_loss": 0.596695,
+        "brier": 0.206524,
+        "reussite_pct": 65.89
+      },
+      "mcp_plus_tranches": {
+        "n": 1501,
+        "log_loss": 0.595637,
+        "brier": 0.206026,
+        "reussite_pct": 66.09
+      }
+    },
+    "gains": {
+      "tranches_moins_controle": {
+        "log_loss": -0.002549,
+        "brier": -0.001053,
+        "sens": "positif = apport du challenger"
+      },
+      "combine_moins_controle": {
+        "log_loss": -0.001491,
+        "brier": -0.000555,
+        "sens": "positif = apport du challenger"
+      },
+      "combine_moins_mcp_existant": {
+        "log_loss": -0.002486,
+        "brier": -0.001075,
+        "sens": "positif = apport du challenger"
+      },
+      "combine_moins_tranches": {
+        "log_loss": 0.001058,
+        "brier": 0.000498,
+        "sens": "positif = apport du challenger"
+      }
+    },
+    "combine_contre_controle": {
+      "ic95_bootstrap_semaine": {
+        "log_loss": {
+          "bas": -0.005622,
+          "haut": 0.002456
+        },
+        "brier": {
+          "bas": -0.002387,
+          "haut": 0.001222
+        }
+      },
+      "sous_groupes": {
+        "global": {
+          "controle": {
+            "n": 1501,
+            "log_loss": 0.594146,
+            "brier": 0.205471,
+            "reussite_pct": 66.56
+          },
+          "challenger": {
+            "n": 1501,
+            "log_loss": 0.595637,
+            "brier": 0.206026,
+            "reussite_pct": 66.09
+          },
+          "gains": {
+            "log_loss": -0.001491,
+            "brier": -0.000555,
+            "sens": "positif = apport du challenger"
+          }
+        },
+        "circuit:ATP": {
+          "controle": {
+            "n": 770,
+            "log_loss": 0.588729,
+            "brier": 0.202815,
+            "reussite_pct": 67.14
+          },
+          "challenger": {
+            "n": 770,
+            "log_loss": 0.589455,
+            "brier": 0.202936,
+            "reussite_pct": 67.14
+          },
+          "gains": {
+            "log_loss": -0.000726,
+            "brier": -0.00012,
+            "sens": "positif = apport du challenger"
+          }
+        },
+        "circuit:WTA": {
+          "controle": {
+            "n": 731,
+            "log_loss": 0.599852,
+            "brier": 0.208267,
+            "reussite_pct": 65.94
+          },
+          "challenger": {
+            "n": 731,
+            "log_loss": 0.602149,
+            "brier": 0.209281,
+            "reussite_pct": 64.98
+          },
+          "gains": {
+            "log_loss": -0.002297,
+            "brier": -0.001014,
+            "sens": "positif = apport du challenger"
+          }
+        },
+        "surface:Hard": {
+          "controle": {
+            "n": 904,
+            "log_loss": 0.606772,
+            "brier": 0.211155,
+            "reussite_pct": 65.15
+          },
+          "challenger": {
+            "n": 904,
+            "log_loss": 0.605956,
+            "brier": 0.210651,
+            "reussite_pct": 64.38
+          },
+          "gains": {
+            "log_loss": 0.000816,
+            "brier": 0.000504,
+            "sens": "positif = apport du challenger"
+          }
+        },
+        "surface:Clay": {
+          "controle": {
+            "n": 473,
+            "log_loss": 0.584337,
+            "brier": 0.201328,
+            "reussite_pct": 67.02
+          },
+          "challenger": {
+            "n": 473,
+            "log_loss": 0.591429,
+            "brier": 0.20458,
+            "reussite_pct": 65.96
+          },
+          "gains": {
+            "log_loss": -0.007092,
+            "brier": -0.003251,
+            "sens": "positif = apport du challenger"
+          }
+        },
+        "surface:Grass": {
+          "controle": {
+            "n": 124,
+            "log_loss": 0.539518,
+            "brier": 0.17983,
+            "reussite_pct": 75.0
+          },
+          "challenger": {
+            "n": 124,
+            "log_loss": 0.536467,
+            "brier": 0.177823,
+            "reussite_pct": 79.03
+          },
+          "gains": {
+            "log_loss": 0.00305,
+            "brier": 0.002007,
+            "sens": "positif = apport du challenger"
+          }
+        },
+        "annee:2025": {
+          "controle": {
+            "n": 1012,
+            "log_loss": 0.599312,
+            "brier": 0.2074,
+            "reussite_pct": 66.7
+          },
+          "challenger": {
+            "n": 1012,
+            "log_loss": 0.600543,
+            "brier": 0.207904,
+            "reussite_pct": 66.21
+          },
+          "gains": {
+            "log_loss": -0.001231,
+            "brier": -0.000504,
+            "sens": "positif = apport du challenger"
+          }
+        },
+        "annee:2026": {
+          "controle": {
+            "n": 489,
+            "log_loss": 0.583455,
+            "brier": 0.201477,
+            "reussite_pct": 66.26
+          },
+          "challenger": {
+            "n": 489,
+            "log_loss": 0.585485,
+            "brier": 0.20214,
+            "reussite_pct": 65.85
+          },
+          "gains": {
+            "log_loss": -0.00203,
+            "brier": -0.000663,
+            "sens": "positif = apport du challenger"
+          }
+        },
+        "transition_surface": {
+          "controle": {
+            "n": 188,
+            "log_loss": 0.574511,
+            "brier": 0.19655,
+            "reussite_pct": 67.55
+          },
+          "challenger": {
+            "n": 188,
+            "log_loss": 0.574539,
+            "brier": 0.196645,
+            "reussite_pct": 70.21
+          },
+          "gains": {
+            "log_loss": -2.8e-05,
+            "brier": -9.6e-05,
+            "sens": "positif = apport du challenger"
+          }
+        },
+        "retour_absence_30j": {
+          "controle": {
+            "n": 161,
+            "log_loss": 0.598039,
+            "brier": 0.209524,
+            "reussite_pct": 60.25
+          },
+          "challenger": {
+            "n": 161,
+            "log_loss": 0.595839,
+            "brier": 0.208461,
+            "reussite_pct": 63.35
+          },
+          "gains": {
+            "log_loss": 0.0022,
+            "brier": 0.001063,
+            "sens": "positif = apport du challenger"
+          }
+        },
+        "format:bo5": {
+          "controle": {
+            "n": 117,
+            "log_loss": 0.505834,
+            "brier": 0.167758,
+            "reussite_pct": 73.5
+          },
+          "challenger": {
+            "n": 117,
+            "log_loss": 0.515261,
+            "brier": 0.171704,
+            "reussite_pct": 73.5
+          },
+          "gains": {
+            "log_loss": -0.009427,
+            "brier": -0.003946,
+            "sens": "positif = apport du challenger"
+          }
+        },
+        "defaite_favori_controle": {
+          "controle": {
+            "n": 502,
+            "log_loss": 1.033436,
+            "brier": 0.405325,
+            "reussite_pct": 0.0
+          },
+          "challenger": {
+            "n": 502,
+            "log_loss": 1.033692,
+            "brier": 0.404228,
+            "reussite_pct": 7.77
+          },
+          "gains": {
+            "log_loss": -0.000256,
+            "brier": 0.001097,
+            "sens": "positif = apport du challenger"
+          },
+          "definition": "issue contraire au favori du contrôle ; diagnostic descriptif seulement"
+        }
+      }
+    },
+    "combine_contre_mcp_existant": {
+      "ic95_bootstrap_semaine": {
+        "log_loss": {
+          "bas": -0.006647,
+          "haut": 0.00155
+        },
+        "brier": {
+          "bas": -0.002936,
+          "haut": 0.000684
+        }
+      }
+    },
+    "confirmation": false,
+    "avertissement": "Diagnostic historique réutilisé : ni confirmation prospective ni activation."
+  },
+  "genere_le": "2026-10-27T22:54:34+00:00",
+  "source": "Match Charting Project, Jeff Sackmann et contributeurs, CC BY-NC-SA 4.0 ; archive Sackmann, même licence",
+  "protocole": {
+    "orientation": "ordre alphabétique, indépendant du résultat",
+    "temporalite": "relevés strictement antérieurs ; résultats versés au changement de date",
+    "decouverte": "2024",
+    "diagnostic_reutilise": "2025–2026",
+    "marche_utilise": false,
+    "activation_automatique": false
+  }
+}

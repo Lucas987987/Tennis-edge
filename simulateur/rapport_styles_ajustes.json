@@ -1,0 +1,72 @@
+{
+  "schema": "styles_adverses_ajustes_v1",
+  "n_decouverte": 1760,
+  "controle_decouverte": {
+    "n": 1760,
+    "log_loss": 0.635646,
+    "brier": 0.222414,
+    "reussite_pct": 64.49
+  },
+  "challenger_decouverte": {
+    "n": 1760,
+    "log_loss": 0.635054,
+    "brier": 0.222145,
+    "reussite_pct": 64.66
+  },
+  "gains_decouverte_dans_echantillon": {
+    "log_loss": 0.000592,
+    "brier": 0.000269,
+    "sens": "positif = apport des styles"
+  },
+  "activation": false,
+  "champion_actif_modifie": false,
+  "marche_utilise": false,
+  "confirmation_future": {
+    "minimum_matchs": 1000,
+    "minimum_semaines_iso": 8,
+    "debut_apres": "2026-10-28T00:00:00+00:00",
+    "2025_2026_exclus": true
+  },
+  "diagnostic_historique_reutilise": {
+    "n": 4111,
+    "controle": {
+      "n": 4111,
+      "log_loss": 0.618418,
+      "brier": 0.215344,
+      "reussite_pct": 65.02
+    },
+    "challenger": {
+      "n": 4111,
+      "log_loss": 0.61876,
+      "brier": 0.215501,
+      "reussite_pct": 64.83
+    },
+    "gains": {
+      "log_loss": -0.000342,
+      "brier": -0.000157,
+      "sens": "positif = apport des styles"
+    },
+    "ic95_bootstrap_semaine": {
+      "log_loss": {
+        "bas": -0.001248,
+        "haut": 0.000541
+      },
+      "brier": {
+        "bas": -0.00058,
+        "haut": 0.00025
+      }
+    },
+    "confirmation": false,
+    "avertissement": "Période historique réutilisée : ni activation ni confirmation prospective."
+  },
+  "genere_le": "2026-10-27T22:02:36+00:00",
+  "controles": [
+    "Elo général et surface",
+    "service–retour pur",
+    "surface",
+    "circuit",
+    "documentation service et Elo"
+  ],
+  "source": "Archive Sackmann et feuilles pré-match, CC BY-NC-SA 4.0",
+  "regle": "résidus Elo figés avant chaque résultat ; aucune cote ; aucune activation automatique"
+}

@@ -1,0 +1,78 @@
+name: Alertes — partitionner odds_alerts_log (migration)
+
+# AJOUTÉ LE 16/10/2026 (étape 4). odds_alerts_log.jsonl est découpé en
+# odds_alerts_log/odds_alerts_log_AAAA-MM.jsonl (scripts/alerts_store.py),
+# même méthode que clv_history. Ordre des lignes identique, vérifié octet pour
+# octet. Étapes à lancer à la main, dans l'ordre :
+#   migrer            découpe + vérification, commit. L'ancien fichier reste
+#                     (sauvegarde) et n'est plus écrit. Relançable.
+#   verifier          contrôle seul.
+#   supprimer_ancien  (≥ 3 jours plus tard) retire l'ancien fichier.
+#   annuler           RETOUR ARRIÈRE : reconstitue l'ancien fichier.
+# Push NORMAL, jamais forcé.
+
+on:
+  workflow_dispatch:
+    inputs:
+      etape:
+        description: "migrer | verifier | supprimer_ancien | annuler"
+        type: choice
+        default: verifier
+        options:
+          - migrer
+          - verifier
+          - supprimer_ancien
+          - annuler
+
+permissions:
+  contents: write
+
+concurrency:
+  group: alertes-migration
+  cancel-in-progress: false
+
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+
+jobs:
+  migration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          filter: blob:none
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /*
+            !/parts
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Étape ${{ inputs.etape }}
+        run: python scripts/alerts_store.py ${{ inputs.etape }}
+
+      - name: Commit (push normal, jamais forcé)
+        if: inputs.etape != 'verifier'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A -- odds_alerts_log.jsonl odds_alerts_log/
+          git status --short
+          if git diff --staged --quiet; then echo "Rien à committer."; exit 0; fi
+          git commit -m "odds_alerts_log : ${{ inputs.etape }} (partitions mensuelles)"
+          attente=2
+          for essai in 1 2 3 4 5 6; do
+            git fetch origin main || true
+            if git merge origin/main --no-edit; then :; else
+              git merge --abort 2>/dev/null || true
+              sleep "$attente"; attente=$((attente*2)); continue
+            fi
+            if git push origin HEAD:main; then echo "✅ PUSH OK"; exit 0; fi
+            sleep "$attente"; attente=$((attente*2))
+          done
+          echo "❌ push impossible — relancer le workflow."
+          exit 1

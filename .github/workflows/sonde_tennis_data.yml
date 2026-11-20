@@ -1,0 +1,61 @@
+name: Sonde tennis-data
+
+# CRÉÉ LE 09/10/2026. Lancement MANUEL uniquement. Vérifie si les cotes
+# Pinnacle publiées par tennis-data.co.uk peuvent remonter l'historique des
+# fiches (détail : en-tête de scripts/sonde_tennis_data.py), et envoie le
+# résultat sur Telegram.
+#
+# LECTURE SEULE : ne commite rien, n'ajoute rien au dépôt.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sonde:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+          sparse-checkout: |
+            scripts/sonde_tennis_data.py
+            players_profile.json
+          sparse-checkout-cone-mode: false
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Installer openpyxl
+        run: pip install --quiet openpyxl
+
+      - name: Sonder
+        run: |
+          set -o pipefail
+          python scripts/sonde_tennis_data.py | tee sonde.txt
+
+      - name: Envoyer sur Telegram
+        if: always()
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          python - <<'PY'
+          import html, json, os, urllib.request
+          try:
+              t = open('sonde.txt', encoding='utf-8').read()
+          except OSError:
+              t = 'pas de sortie — voir le run'
+          texte = ('🔎 <b>Sonde tennis-data</b>\n'
+                   f'<pre>{html.escape(t[-3800:])}</pre>')
+          req = urllib.request.Request(
+              f'https://api.telegram.org/bot{os.environ["TELEGRAM_TOKEN"]}/sendMessage',
+              data=json.dumps({'chat_id': os.environ['TELEGRAM_CHAT_ID'],
+                               'text': texte, 'parse_mode': 'HTML'}).encode(),
+              headers={'Content-Type': 'application/json'})
+          print(urllib.request.urlopen(req, timeout=30).read()[:120])
+          PY

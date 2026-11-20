@@ -1,0 +1,69 @@
+name: Coffre — retirer les copies figées du dépôt public
+
+# AJOUTÉ LE 28/10/2026. À lancer UNE fois à la main (Actions → « Coffre — retirer les copies figées » → Run).
+# Trois fichiers privés sont restés suivis dans le dépôt public avec leur contenu du 23/10 :
+#   Tennis_Edge_Lab/live/valeur.json, Tennis_Edge_Lab/live/h20.json, Tennis_Edge_Lab/live/pronostics.json
+# (le coffre R2 en a une version plus récente, donc « retirer » ordinaire, qui exige une copie IDENTIQUE, les gardait).
+# Ici : retirés du suivi git seulement si le coffre en détient une version (aucune perte possible) ; le .gitignore
+# les empêche d'y revenir. L'historique git ancien reste en l'état (pas de réécriture, pas de push forcé).
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: coffre-retirer
+  cancel-in-progress: false
+
+jobs:
+  retirer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /scripts/coffre.py
+            /scripts/r2_io.py
+            /.gitignore
+            /Tennis_Edge_Lab/live/valeur.json
+            /Tennis_Edge_Lab/live/h20.json
+            /Tennis_Edge_Lab/live/pronostics.json
+            /h18_signal_log.jsonl
+            /h18_signal_state.json
+            /h19_signal_log.jsonl
+            /h19_signal_state.json
+            /h20_signal_log.jsonl
+            /h20_signal_state.json
+            /simulateur/rapport_roi_algo.json
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Retirer du suivi ce que le coffre détient
+        run: |
+          set -euo pipefail
+          if [ -z "${R2_ACCESS_KEY_ID}" ]; then echo '::error::R2 non configuré : rien retiré.'; exit 1; fi
+          for g in lab pronostics signaux roi; do
+            python scripts/coffre.py retirer --groupe "$g" --si-present
+          done
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          if git diff --cached --quiet; then echo 'Rien à retirer : tout est déjà au coffre seulement.'; exit 0; fi
+          git diff --cached --name-status
+          git commit -q -m 'Coffre : copies privées figées retirées du dépôt public'
+          for i in 1 2 3 4 5; do
+            git pull -q --rebase origin main || { git rebase --abort || true; echo '::error::Conflit avec main'; exit 1; }
+            if git push -q origin HEAD:main; then echo 'Poussé.'; exit 0; fi
+            sleep $((i * 10))
+          done
+          echo '::error::Push impossible après 5 essais'; exit 1

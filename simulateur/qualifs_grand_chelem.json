@@ -1,0 +1,10 @@
+{
+ "date": "2026-11-11",
+ "paquet": 232,
+ "quoi": "Pente appliquée à la part de l'Elo du %, en qualifications de Grand Chelem (etude_qualifs_grand_chelem.py, rapport_qualifs_grand_chelem.json).",
+ "pentes": {
+  "WTA": 1.247
+ },
+ "decision": "Femmes : pente 1.247 apprise sur 2018–2022, jugée une fois sur 2023 → juin 2026 : 1435 matchs, favori 67.9 % réels pour 63.2 % annoncés, gain 0.00473 ± 0.00174 (2.72 erreurs types), Brier 0.21047 → 0.20883 — passe la règle écrite à l'avance : EN PLACE. Hommes : rien à corriger dans l'archive (gain négatif) : REJETÉ, non appliqué.",
+ "retrait": "règle cumulée (fantomes_circuits.REGLE_CUMULEE) : retiré si, depuis l'adoption, sur au moins 300 matchs de qualifications concernés, le gain propre du signal est négatif d'au moins 2 erreurs types. Pour l'enlever à la main : vider « pentes »."
+}

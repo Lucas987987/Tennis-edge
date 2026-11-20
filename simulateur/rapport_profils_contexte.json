@@ -1,0 +1,109 @@
+{
+ "genere_le": "2026-11-04T21:14:15+00:00",
+ "regle": "par piste et par circuit : β appris 2016–2022, jugé 2023 → ; positif si −0,001 sur ≥ 300 matchs concernés et gain positif sur tous les matchs",
+ "contre_gaucher": {
+  "ATP": {
+   "appris_concernes": 4694,
+   "juges": 11595,
+   "juges_concernes": 2765,
+   "beta": 0.5805,
+   "log_loss_concernes_sans": 0.63085,
+   "log_loss_concernes_avec": 0.63114,
+   "gain_concernes": -0.00029,
+   "gain_tous": -6.9e-05,
+   "positif": false
+  },
+  "WTA": {
+   "appris_concernes": 2748,
+   "juges": 11235,
+   "juges_concernes": 2013,
+   "beta": 0.0539,
+   "log_loss_concernes_sans": 0.6164,
+   "log_loss_concernes_avec": 0.61643,
+   "gain_concernes": -3e-05,
+   "gain_tous": -6e-06,
+   "positif": false
+  },
+  "CH": {
+   "appris_concernes": 11564,
+   "juges": 36086,
+   "juges_concernes": 8839,
+   "beta": 0.4773,
+   "log_loss_concernes_sans": 0.64026,
+   "log_loss_concernes_avec": 0.6402,
+   "gain_concernes": 6e-05,
+   "gain_tous": 1.5e-05,
+   "positif": false
+  }
+ },
+ "favori_outsider": {
+  "ATP": {
+   "appris_concernes": 17573,
+   "juges": 11595,
+   "juges_concernes": 11595,
+   "beta": 2.2868,
+   "log_loss_concernes_sans": 0.61498,
+   "log_loss_concernes_avec": 0.61177,
+   "gain_concernes": 0.00321,
+   "gain_tous": 0.003212,
+   "positif": true
+  },
+  "WTA": {
+   "appris_concernes": 16711,
+   "juges": 11235,
+   "juges_concernes": 11235,
+   "beta": 1.9465,
+   "log_loss_concernes_sans": 0.59755,
+   "log_loss_concernes_avec": 0.59625,
+   "gain_concernes": 0.0013,
+   "gain_tous": 0.001301,
+   "positif": true
+  },
+  "CH": {
+   "appris_concernes": 46287,
+   "juges": 36086,
+   "juges_concernes": 36086,
+   "beta": 1.8818,
+   "log_loss_concernes_sans": 0.64047,
+   "log_loss_concernes_avec": 0.63907,
+   "gain_concernes": 0.0014,
+   "gain_tous": 0.0014,
+   "positif": true
+  }
+ },
+ "comparaison_sans_role": {
+  "ATP": {
+   "appris_concernes": 17573,
+   "juges": 11595,
+   "juges_concernes": 11595,
+   "beta": 2.4524,
+   "log_loss_concernes_sans": 0.61498,
+   "log_loss_concernes_avec": 0.61376,
+   "gain_concernes": 0.00122,
+   "gain_tous": 0.001223,
+   "positif": true
+  },
+  "WTA": {
+   "appris_concernes": 16711,
+   "juges": 11235,
+   "juges_concernes": 11235,
+   "beta": 2.6666,
+   "log_loss_concernes_sans": 0.59755,
+   "log_loss_concernes_avec": 0.59574,
+   "gain_concernes": 0.00181,
+   "gain_tous": 0.00181,
+   "positif": true
+  },
+  "CH": {
+   "appris_concernes": 46287,
+   "juges": 36086,
+   "juges_concernes": 36086,
+   "beta": 0.876,
+   "log_loss_concernes_sans": 0.64047,
+   "log_loss_concernes_avec": 0.64049,
+   "gain_concernes": -2e-05,
+   "gain_tous": -2e-05,
+   "positif": false
+  }
+ }
+}

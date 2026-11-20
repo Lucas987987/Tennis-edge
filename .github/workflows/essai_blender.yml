@@ -1,0 +1,119 @@
+name: Essai — Blender pour la vidéo 3D
+
+# AJOUTÉ LE 18/11/2026 (paquet 278, Lucas : « Installe blender »). Blender ne peut pas s'installer dans la session de
+# Claude (réseau fermé) : il s'installe ICI, sur la machine gratuite de GitHub (4 processeurs, pas de carte
+# graphique). L'essai rend notre court (nuit et jour, vue télé et gros plan flou derrière) avec Cycles sur le
+# processeur, puis tente EEVEE, et mesure les secondes par image. Le temps estimé pour une vidéo de 85 s à
+# 25 images/s apparaît dans le résumé du run ; les images partent sur le Telegram PRIVÉ (pas d'artefact : le dépôt
+# est public). 0 requête d'API, rien de commité.
+# Règle de décision, écrite avant l'essai : Blender ne remplace le moteur du site pour la vidéo du jour que si une
+# vidéo complète tient en moins de 3 h de machine par langue ET si l'image est jugée nettement meilleure par Lucas ;
+# sinon on garde le moteur du site (paquet 277) et ce workflow reste un essai manuel.
+# 18/11/2026 (paquet 279) — RÉSULTAT DU 1er ESSAI : Cycles 40,6 / 55,7 / 37,2 s par image (44,5 s en moyenne) → 26,3 h
+# par vidéo et par langue : Cycles est écarté par la règle (3 h). EEVEE a planté (libEGL.so.1 absent : apt sans mise à
+# jour de l'index). 2e essai : index apt à jour, Mesa (OpenGL logiciel llvmpipe) et écran virtuel xvfb ; Cycles ne
+# repasse que si on coche la case.
+
+on:
+  workflow_dispatch:
+    inputs:
+      echantillons:
+        description: "Cycles : échantillons par pixel (plus = plus propre et plus lent)"
+        required: false
+        default: '24'
+      cycles:
+        description: "Refaire aussi Cycles (déjà mesuré : 44,5 s par image)"
+        type: boolean
+        default: false
+      version:
+        description: "Version de Blender (série LTS 4.2)"
+        required: false
+        default: '4.2.3'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: essai-blender
+  cancel-in-progress: false
+
+jobs:
+  essai:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /scripts/blender_essai.py
+
+      - name: Installer Blender
+        run: |
+          set -euo pipefail
+          # bibliothèques système de Blender (souvent déjà là) : 6 min au plus, non bloquant
+          # 279 : l'index apt d'abord (sinon 404), puis Mesa (OpenGL logiciel) et l'écran virtuel pour EEVEE
+          timeout 240 sudo apt-get update -q || echo "::warning::index apt non mis à jour"
+          timeout 480 sudo apt-get install -y --no-install-recommends libxi6 libxxf86vm1 libxfixes3 libxrender1 libgl1 libsm6 libxkbcommon0 \
+            libegl1 libegl-mesa0 libgl1-mesa-dri libglx-mesa0 xvfb xauth \
+            || echo "::warning::bibliothèques apt incomplètes"
+          v="${{ inputs.version || '4.2.3' }}"; serie="${v%.*}"
+          for essai in "$v" "${serie}.0"; do
+            url="https://download.blender.org/release/Blender${serie}/blender-${essai}-linux-x64.tar.xz"
+            if curl -fsSL --retry 3 --max-time 600 -o blender.tar.xz "$url"; then echo "Téléchargé : $url"; break; fi
+          done
+          test -s blender.tar.xz
+          mkdir -p "$HOME/blender" && tar -xJf blender.tar.xz -C "$HOME/blender" --strip-components=1
+          "$HOME/blender/blender" -b --factory-startup --version | head -3
+
+      - name: Rendre avec Cycles (processeur)
+        if: inputs.cycles
+        run: |
+          "$HOME/blender/blender" -b --factory-startup -P scripts/blender_essai.py -- --sortie essai_blender --echantillons "${{ inputs.echantillons || '24' }}"
+
+      - name: Essayer EEVEE (peut échouer sans carte graphique)
+        continue-on-error: true
+        run: |
+          export LIBGL_ALWAYS_SOFTWARE=1 GALLIUM_DRIVER=llvmpipe LP_NUM_THREADS=4
+          timeout 2400 xvfb-run -a -s "-screen 0 1920x1080x24" "$HOME/blender/blender" -b --factory-startup --gpu-backend opengl \
+            -P scripts/blender_essai.py -- --sortie essai_blender --moteur eevee \
+            || echo "::warning::EEVEE ne tourne pas sur cette machine"
+
+      - name: Résumé (temps seulement)
+        if: always()
+        run: |
+          python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import json, os
+          print('## Essai Blender\n')
+          for f in ('temps.json', 'temps_eevee.json'):
+              p = os.path.join('essai_blender', f)
+              if not os.path.exists(p):
+                  print(f'- {f} : absent\n'); continue
+              d = json.load(open(p, encoding='utf-8'))
+              print(f"### {f} — Blender {d.get('blender')}, {d.get('processeurs')} processeurs, {d.get('resolution')}\n")
+              for r in d.get('rendus', []):
+                  print(f"- {r.get('ambiance')} / {r.get('plan')} / {r.get('moteur')} : " + (f"{r['secondes']} s" if 'secondes' in r else f"échec ({r.get('erreur', '')})"))
+              if 's_par_image' in d:
+                  print(f"\n**{d['s_par_image']} s par image → vidéo de 85 s à 25 i/s : {d['video_85s_25ips_heures']} h par langue**\n")
+          PY
+          cat "$GITHUB_STEP_SUMMARY"
+
+      - name: Envoyer les images sur le Telegram privé
+        if: always()
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          if [ -z "${TELEGRAM_TOKEN}" ] || [ -z "${TELEGRAM_CHAT_ID}" ]; then echo '::warning::Telegram non configuré'; exit 0; fi
+          for f in essai_blender/*.png; do
+            [ -f "$f" ] || continue
+            curl --fail-with-body -sS -o /dev/null -w "Telegram $(basename "$f") : HTTP %{http_code}\n" \
+              -F chat_id="${TELEGRAM_CHAT_ID}" -F caption="🧪 Essai Blender — $(basename "$f" .png)" \
+              -F document=@"$f" "https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendDocument" || echo "::warning::envoi $f"
+          done
+          for f in essai_blender/temps*.json; do
+            [ -f "$f" ] || continue
+            curl -sS -o /dev/null -F chat_id="${TELEGRAM_CHAT_ID}" -F caption="🧪 Essai Blender — temps" \
+              -F document=@"$f" "https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendDocument" || true
+          done

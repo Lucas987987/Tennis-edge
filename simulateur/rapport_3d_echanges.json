@@ -1,0 +1,33 @@
+{
+ "paquet": 275,
+ "quoi": "Réalisme des échanges du direct en 3D : trajectoires (pesanteur, air, effet), rebond selon la surface, prise de balle.",
+ "note": "Échanges illustratifs : ils ne changent pas le %.",
+ "par_surface": {
+  "Hard": {
+   "coups": 150,
+   "passent_le_filet_pct": 100,
+   "dans_le_court_pct": 100,
+   "marge_filet_mediane_m": 0.74,
+   "prise_hauteur_mediane_m": 1.11,
+   "prise_derriere_la_ligne_mediane_m": 1.44
+  },
+  "Clay": {
+   "coups": 150,
+   "passent_le_filet_pct": 100,
+   "dans_le_court_pct": 100,
+   "marge_filet_mediane_m": 0.77,
+   "prise_hauteur_mediane_m": 1.15,
+   "prise_derriere_la_ligne_mediane_m": 1.43
+  },
+  "Grass": {
+   "coups": 150,
+   "passent_le_filet_pct": 100,
+   "dans_le_court_pct": 100,
+   "marge_filet_mediane_m": 0.76,
+   "prise_hauteur_mediane_m": 0.93,
+   "prise_derriere_la_ligne_mediane_m": 1.43
+  }
+ },
+ "retrait_declenche": false,
+ "regle_retrait": "Moins de 97 % des coups au-dessus du filet, moins de 95 % dans le court, ou prise de balle médiane hors 0,8–1,6 m : retour au paquet 274."
+}

@@ -1,0 +1,10 @@
+TENNIS EDGE V11 - CORRECTIF DU RUN BLOQUÉ
+
+Diagnostic: les logs montrent que apt-get install blender téléchargeait 160+ paquets; le job a été annulé avant la conversion.
+
+Ce paquet remplace uniquement .github/workflows/v11_real_players_build.yml.
+Il utilise une image Docker Blender préinstallée, sans apt-get.
+
+Installation: Appliquer un paquet -> fusionner la PR -> Actions -> V11 - Préparer les vrais personnages 3D -> Run workflow.
+
+Attention: cette image Docker et la compatibilité du script de conversion ne sont pas encore validées par un run réel. Les licences de redistribution des personnages restent à confirmer avant publication.

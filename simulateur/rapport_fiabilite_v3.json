@@ -1,0 +1,229 @@
+{
+ "genere_le": "2026-11-04T21:34:19+00:00",
+ "definition": "note = 100 · min(a, 1/a), a = pente d'étalonnage de la case du match (1 = nos % sont la réalité)",
+ "regle": "remplace la note affichée si, sur 2023 →, le tiers haut a une pente plus proche de 1 ET une erreur d'étalonnage plus petite que le tiers bas, au global ET sur au moins 2 circuits sur 3",
+ "modele": {
+  "CH|0|1": {
+   "pente": 0.7744,
+   "matchs": 4002
+  },
+  "CH|1|1": {
+   "pente": 0.7739,
+   "matchs": 8662
+  },
+  "CH|0|2": {
+   "pente": 0.7238,
+   "matchs": 4988
+  },
+  "CH|2|2": {
+   "pente": 0.9264,
+   "matchs": 6682
+  },
+  "CH|2|1": {
+   "pente": 0.9139,
+   "matchs": 10368
+  },
+  "CH|1|2": {
+   "pente": 0.8046,
+   "matchs": 8623
+  },
+  "ATP|2|1": {
+   "pente": 0.9096,
+   "matchs": 5076
+  },
+  "WTA|2|2": {
+   "pente": 1.0602,
+   "matchs": 3157
+  },
+  "ATP|1|2": {
+   "pente": 0.8616,
+   "matchs": 898
+  },
+  "ATP|2|2": {
+   "pente": 0.848,
+   "matchs": 4993
+  },
+  "WTA|2|1": {
+   "pente": 1.0138,
+   "matchs": 6609
+  },
+  "WTA|1|2": {
+   "pente": 0.9994,
+   "matchs": 547
+  },
+  "ATP|1|1": {
+   "pente": 0.9564,
+   "matchs": 293
+  },
+  "WTA|1|1": {
+   "pente": 1.1288,
+   "matchs": 256
+  },
+  "ATP|3|1": {
+   "pente": 0.9637,
+   "matchs": 3473
+  },
+  "ATP|0|1": {
+   "pente": 0.8775,
+   "matchs": 73
+  },
+  "ATP|0|2": {
+   "pente": 0.8037,
+   "matchs": 247
+  },
+  "WTA|0|2": {
+   "pente": 1.0051,
+   "matchs": 97
+  },
+  "WTA|0|1": {
+   "pente": 1.0238,
+   "matchs": 70
+  },
+  "ATP|3|2": {
+   "pente": 0.9257,
+   "matchs": 2520
+  },
+  "WTA|3|1": {
+   "pente": 1.0329,
+   "matchs": 4752
+  },
+  "CH|3|2": {
+   "pente": 0.8592,
+   "matchs": 1191
+  },
+  "CH|3|1": {
+   "pente": 0.9658,
+   "matchs": 1771
+  },
+  "WTA|3|2": {
+   "pente": 1.1251,
+   "matchs": 1223
+  },
+  "_circuits": {
+   "CH": 0.818,
+   "ATP": 0.898,
+   "WTA": 1.0367
+  }
+ },
+ "betas_combines_2016_2022": {
+  "ATP": [
+   -0.1708,
+   -0.5322,
+   -0.8675,
+   -0.04,
+   0.0665,
+   1.5167
+  ],
+  "WTA": [
+   -0.1203,
+   -0.3938,
+   -1.0248,
+   -0.0335,
+   0.0265,
+   1.4668
+  ],
+  "CH": [
+   -0.2018,
+   -0.3111,
+   -0.5296,
+   -0.0493,
+   0.0583,
+   1.4499
+  ]
+ },
+ "jugement_2023": {
+  "tous": {
+   "bas": {
+    "matchs": 19638,
+    "notes": [
+     72,
+     80
+    ],
+    "pente_jugee": 0.7626,
+    "distance_a_1": 0.2374,
+    "erreur_etalonnage_pts": 3.14
+   },
+   "haut": {
+    "matchs": 19640,
+    "notes": [
+     93,
+     100
+    ],
+    "pente_jugee": 0.9839,
+    "distance_a_1": 0.0161,
+    "erreur_etalonnage_pts": 0.46
+   },
+   "tient": true
+  },
+  "ATP": {
+   "bas": {
+    "matchs": 3865,
+    "notes": [
+     80,
+     91
+    ],
+    "pente_jugee": 0.8782,
+    "distance_a_1": 0.1218,
+    "erreur_etalonnage_pts": 2.31
+   },
+   "haut": {
+    "matchs": 3865,
+    "notes": [
+     93,
+     96
+    ],
+    "pente_jugee": 0.9806,
+    "distance_a_1": 0.0194,
+    "erreur_etalonnage_pts": 1.44
+   },
+   "tient": true
+  },
+  "WTA": {
+   "bas": {
+    "matchs": 3745,
+    "notes": [
+     89,
+     97
+    ],
+    "pente_jugee": 1.0204,
+    "distance_a_1": 0.0204,
+    "erreur_etalonnage_pts": 1.46
+   },
+   "haut": {
+    "matchs": 3745,
+    "notes": [
+     97,
+     100
+    ],
+    "pente_jugee": 1.0825,
+    "distance_a_1": 0.0825,
+    "erreur_etalonnage_pts": 1.5
+   },
+   "tient": false
+  },
+  "CH": {
+   "bas": {
+    "matchs": 12028,
+    "notes": [
+     72,
+     77
+    ],
+    "pente_jugee": 0.7593,
+    "distance_a_1": 0.2407,
+    "erreur_etalonnage_pts": 3.14
+   },
+   "haut": {
+    "matchs": 12030,
+    "notes": [
+     91,
+     97
+    ],
+    "pente_jugee": 0.9224,
+    "distance_a_1": 0.0776,
+    "erreur_etalonnage_pts": 1.38
+   },
+   "tient": true
+  }
+ },
+ "adopte": true
+}

@@ -1,0 +1,29 @@
+name: Sonde classements au-delà du top 500 (12 requêtes)
+
+# 30/10/2026 — TennisApi peut-il donner les points des joueurs classés au-delà
+# de 500 ? Lecture seule, 12 requêtes au plus, rien n'est écrit.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sonde:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          sparse-checkout: |
+            scripts
+            simulateur/elo.py
+            feuilles
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - name: Sonde
+        env:
+          RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
+        run: python scripts/sonde_classements.py

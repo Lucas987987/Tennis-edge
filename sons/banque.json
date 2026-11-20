@@ -1,0 +1,68 @@
+{
+ "frappes": {
+  "taux": 48000,
+  "case_s": 0.3,
+  "n": 24,
+  "sources": [
+   "tennis-forehand",
+   "tennis-forehand-2",
+   "tennis-slices-1",
+   "tennis-slices-2",
+   "tennis-slices-4"
+  ]
+ },
+ "services": {
+  "taux": 48000,
+  "case_s": 0.3,
+  "n": 19,
+  "sources": [
+   "tennis-serve-2",
+   "tennis-serves-1",
+   "tennis-serves-3"
+  ]
+ },
+ "rebonds": {
+  "taux": 48000,
+  "case_s": 0.2,
+  "n": 20,
+  "sources": [
+   "tennis-bounce-ball-on-grass"
+  ]
+ },
+ "public_murmure": {
+  "taux": 24000,
+  "duree_s": 40.0,
+  "source": "141250__oroborosnz__cricket-sport",
+  "extrait_s": [
+   182.0,
+   222.0
+  ]
+ },
+ "public_applaudissements": {
+  "taux": 32000,
+  "duree_s": 13.39,
+  "source": "17737__thesandro__applaudissement",
+  "extrait_s": [
+   0.0,
+   13.39
+  ]
+ },
+ "public_ovation": {
+  "taux": 32000,
+  "duree_s": 15.0,
+  "source": "141250__oroborosnz__cricket-sport",
+  "extrait_s": [
+   103.3,
+   118.3
+  ]
+ },
+ "public_ovation2": {
+  "taux": 32000,
+  "duree_s": 15.0,
+  "source": "141250__oroborosnz__cricket-sport",
+  "extrait_s": [
+   3.6,
+   18.6
+  ]
+ }
+}

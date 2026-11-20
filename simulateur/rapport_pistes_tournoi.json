@@ -1,0 +1,156 @@
+{
+ "genere_le": "2026-11-04T21:32:26+00:00",
+ "regle": "par piste et par circuit : seule, −0,001 sur ≥ 300 matchs concernés et gain positif sur tous ; ET ajoutée au combiné, encore −0,001 sur tous les matchs jugés 2023 →",
+ "circuits": {
+  "ATP": {
+   "juges": 11595,
+   "log_loss_combine_6": 0.60732,
+   "montee_petits_tournois": {
+    "seule": {
+     "beta": 0.3347,
+     "concernes": 9125,
+     "gain_concernes": 0.00253,
+     "gain_tous": 0.001991,
+     "positive": true
+    },
+    "ajoutee_au_combine": {
+     "betas_7": [
+      -0.1454,
+      -0.5017,
+      -0.8363,
+      -0.0396,
+      0.0644,
+      1.2212,
+      0.1546
+     ],
+     "gain_en_plus": 0.00017,
+     "suffisant": false
+    },
+    "adoptee": false
+   },
+   "parcours_tournoi": {
+    "seule": {
+     "beta": 0.1707,
+     "concernes": 4279,
+     "gain_concernes": 0.00983,
+     "gain_tous": 0.003628,
+     "positive": true
+    },
+    "ajoutee_au_combine": {
+     "betas_7": [
+      -0.0926,
+      -0.4362,
+      -0.7866,
+      -0.0402,
+      0.0679,
+      1.0362,
+      0.1218
+     ],
+     "gain_en_plus": 0.00114,
+     "suffisant": true
+    },
+    "adoptee": true
+   }
+  },
+  "WTA": {
+   "juges": 11235,
+   "log_loss_combine_6": 0.59329,
+   "montee_petits_tournois": {
+    "seule": {
+     "beta": -0.0235,
+     "concernes": 8890,
+     "gain_concernes": -3e-05,
+     "gain_tous": -2.5e-05,
+     "positive": false
+    },
+    "ajoutee_au_combine": {
+     "betas_7": [
+      -0.1517,
+      -0.4301,
+      -1.0743,
+      -0.0335,
+      0.0321,
+      1.7094,
+      -0.1807
+     ],
+     "gain_en_plus": 4e-05,
+     "suffisant": false
+    },
+    "adoptee": false
+   },
+   "parcours_tournoi": {
+    "seule": {
+     "beta": 0.1081,
+     "concernes": 3771,
+     "gain_concernes": 0.00187,
+     "gain_tous": 0.000629,
+     "positive": true
+    },
+    "ajoutee_au_combine": {
+     "betas_7": [
+      -0.0679,
+      -0.3285,
+      -0.962,
+      -0.0337,
+      0.024,
+      1.2334,
+      0.0744
+     ],
+     "gain_en_plus": -1e-05,
+     "suffisant": false
+    },
+    "adoptee": false
+   }
+  },
+  "CH": {
+   "juges": 36086,
+   "log_loss_combine_6": 0.63657,
+   "montee_petits_tournois": {
+    "seule": {
+     "beta": 0.3478,
+     "concernes": 21341,
+     "gain_concernes": 0.00099,
+     "gain_tous": 0.000587,
+     "positive": false
+    },
+    "ajoutee_au_combine": {
+     "betas_7": [
+      -0.1981,
+      -0.309,
+      -0.5269,
+      -0.0479,
+      0.058,
+      1.354,
+      0.126
+     ],
+     "gain_en_plus": 0.00014,
+     "suffisant": false
+    },
+    "adoptee": false
+   },
+   "parcours_tournoi": {
+    "seule": {
+     "beta": 0.1644,
+     "concernes": 6545,
+     "gain_concernes": 0.00074,
+     "gain_tous": 0.000133,
+     "positive": false
+    },
+    "ajoutee_au_combine": {
+     "betas_7": [
+      -0.165,
+      -0.2795,
+      -0.5097,
+      -0.0488,
+      0.0572,
+      1.18,
+      0.1191
+     ],
+     "gain_en_plus": -4e-05,
+     "suffisant": false
+    },
+    "adoptee": false
+   }
+  }
+ }
+}

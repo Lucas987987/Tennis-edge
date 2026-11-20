@@ -1,0 +1,912 @@
+{
+ "genere_le": "2026-11-11",
+ "paquet": 227,
+ "objet": "Audit complet de l'algo : points faibles trouvés et, pour chaque étude à venir, sa règle ÉCRITE À L'AVANCE.",
+ "methode": {
+  "archive": "archive Sackmann rejouée avec l'Elo réglé comme la production ; SEULE la période d'avant 2023 a été regardée (2016–2022 ou 2018–2022 selon le constat) : la période de jugement 2023 → juin 2026 est intacte",
+  "direct": "727 pronostics figés du 28/10 au 11/11/2026 et 6 278 pronostics rejoués du 27/07 au 09/11/2026 : confirmation seulement, jamais une preuve",
+  "regle_generale": "apprendre sur 2018–2022, juger sur 2023 → juin 2026 ; retenu si la log loss gagne au moins 0,001 sur au moins 1 000 cas, dans le même sens sur les deux périodes, circuit par circuit ; l'erreur type du gain est publiée",
+  "condition_supplementaire_proposee": "gain d'au moins 2 erreurs types (à valider par Lucas avant le paquet 228)",
+  "lu": "144 entrées du journal, le code du pronostic, 57 études balayées, 1 037 tests lancés (1 034 réussis, 3 ignorés, 134 s)"
+ },
+ "constats": [
+  {
+   "id": "format_atp",
+   "section": 1,
+   "paquet_prevu": 228,
+   "titre": "ATP : l'Elo ne tient pas compte du format du match",
+   "ou": "simulateur/elo.py, proba() (lignes 112 à 117)",
+   "mesure_2018_2022": {
+    "atp_2_sets_gagnants": {
+     "matchs": 10045,
+     "favori_annonce_pct": 67.3,
+     "favori_reel_pct": 64.5,
+     "pente": 0.81,
+     "gain_si_corrige": 0.0027,
+     "erreur_type": 0.0008
+    },
+    "atp_3_sets_gagnants": {
+     "matchs": 2401,
+     "favori_annonce_pct": 71.0,
+     "favori_reel_pct": 74.0,
+     "pente": 1.21,
+     "gain_si_corrige": 0.0034,
+     "erreur_type": 0.0016
+    },
+    "pente_wta": 1.06,
+    "pente_challenger": 0.96
+   },
+   "impact_attendu": "ATP +0,002 à +0,003 de log loss",
+   "confiance": "assez haute",
+   "effort": "petit",
+   "regle": "une pente par format en ATP (p' = σ(pente · logit p)), apprise sur 2018–2022, jugée sur 2023 → juin 2026 ; retenue si le gain atteint 0,001 sur au moins 1 000 matchs DANS CHAQUE FORMAT, dans le même sens sur les deux périodes ; rien en WTA ni en Challenger"
+  },
+  {
+   "id": "elo_wta_et_depart",
+   "section": 8,
+   "paquet_prevu": 229,
+   "titre": "Vitesse de l'Elo en WTA ; note de départ des joueurs venus des petits niveaux",
+   "mesure_2018_2022_gain_log_loss": {
+    "vitesse_x1_1": {
+     "ATP": 0.0002,
+     "WTA": 0.001,
+     "CH": 0.0004
+    },
+    "vitesse_x1_25": {
+     "ATP": 0.0002,
+     "WTA": 0.0019,
+     "CH": 0.0003
+    },
+    "vitesse_x0_8": {
+     "ATP": -0.0014,
+     "WTA": -0.0031,
+     "CH": -0.0019
+    },
+    "depart_1300": {
+     "ATP": 0.0021,
+     "WTA": 0.0012,
+     "CH": -0.0001
+    },
+    "surface_0_2": {
+     "ATP": -0.001,
+     "WTA": -0.0005,
+     "CH": -0.0004
+    },
+    "surface_0_4": {
+     "ATP": 0.0,
+     "WTA": -0.0003,
+     "CH": -0.0001
+    },
+    "incertitude_2_5": {
+     "ATP": -0.0007,
+     "WTA": -0.0003,
+     "CH": 0.0001
+    },
+    "incertitude_10": {
+     "ATP": 0.0008,
+     "WTA": 0.0001,
+     "CH": -0.0006
+    },
+    "vitesse_x1_5_apres_60_jours_d_absence": {
+     "ATP": 0.0004,
+     "WTA": 0.0003,
+     "CH": 0.0002
+    },
+    "grand_chelem_sans_bonus": {
+     "ATP": 0.0,
+     "WTA": -0.0001,
+     "CH": 0.0
+    }
+   },
+   "note": "gains mesurés sur la période même où ils ont été cherchés : à confirmer hors échantillon",
+   "impact_attendu": "WTA +0,001 à +0,002",
+   "confiance": "moyenne à basse",
+   "effort": "petit",
+   "regle": "vitesse WTA dans la grille 1,0 · 1,1 · 1,25 · 1,4, choisie sur 2018–2022, jugée sur 2023 → ; puis, une fois le format ATP en place, départ dans la grille 1200 · 1250 · 1300 · 1350 ; retenu si le gain atteint 0,001 sur au moins 1 000 matchs du circuit, même sens sur les deux périodes, sans dégrader un autre circuit de plus de 0,0005"
+  },
+  {
+   "id": "joueurs_peu_vus",
+   "section": 3,
+   "paquet_prevu": 230,
+   "titre": "Joueurs peu vus : la forme de l'option incertitude de l'Elo",
+   "ou": "simulateur/elo.py lignes 115 et 116 ; simulateur/etude_documentation.py (pente 1,84 apprise sur 325 matchs, jugée sur 156, constat fait sur les deux périodes avant la règle)",
+   "mesure_2018_2022_challenger": [
+    {
+     "matchs_du_moins_vu": "moins de 10",
+     "matchs": 5266,
+     "favori_annonce_pct": 66.8,
+     "favori_reel_pct": 71.4,
+     "pente": 1.28
+    },
+    {
+     "matchs_du_moins_vu": "10 à 29",
+     "matchs": 5772,
+     "favori_annonce_pct": 67.5,
+     "favori_reel_pct": 64.9,
+     "pente": 0.84
+    },
+    {
+     "matchs_du_moins_vu": "30 à 99",
+     "matchs": 11838,
+     "favori_annonce_pct": 65.1,
+     "favori_reel_pct": 63.2,
+     "pente": 0.88
+    },
+    {
+     "matchs_du_moins_vu": "100 et plus",
+     "matchs": 15198,
+     "favori_annonce_pct": 63.3,
+     "favori_reel_pct": 62.9,
+     "pente": 0.96
+    }
+   ],
+   "limite": "ce rejeu n'a pas les résultats ITF hommes : les joueurs y paraissent moins vus qu'en production",
+   "impact_attendu": "Challenger +0,001",
+   "confiance": "moyenne",
+   "effort": "petit",
+   "regle": "une pente par tranche d'expérience du joueur le moins vu (moins de 10, 10 à 29, 30 à 99, 100 et plus), apprise sur 2018–2022, jugée sur 2023 → en Challenger ; retenue si le gain atteint 0,001 sur au moins 1 000 matchs, même sens sur les deux périodes ; elle remplace alors la pente de 1,84"
+  },
+  {
+   "id": "elo_des_etudes",
+   "section": 2,
+   "paquet_prevu": 231,
+   "titre": "Signaux appris contre un Elo qui n'est pas celui de la production",
+   "ou": "19 études créent un Elo sans réglage, dont 15 ne le mettent à jour qu'au changement de date (la date de l'archive est celle du début du tournoi : l'Elo reste figé pendant le tournoi) ; simulateur/pronostics_du_jour.py lignes 1177 et 1347 à 1362",
+   "mesure_2016_2022": {
+    "cout_de_l_elo_fige": {
+     "ATP": 0.0038,
+     "WTA": 0.0023,
+     "CH": 0.0037
+    },
+    "parcours_tournoi_gain_en_plus_du_combine": {
+     "etude": {
+      "ATP": 0.0015,
+      "WTA": 0.0007,
+      "CH": 0.001
+     },
+     "elo_de_production": {
+      "ATP": 0.0005,
+      "WTA": 0.0001,
+      "CH": 0.0
+     }
+    },
+    "parcours_tournoi_beta_atp": {
+     "etude": 0.122,
+     "elo_de_production": 0.065
+    },
+    "favori_outsider_avec_le_beta_en_place": {
+     "ATP": -0.0001,
+     "WTA": 0.0,
+     "CH": -0.0002
+    },
+    "favori_outsider_beta_reappris": {
+     "ATP": 0.61,
+     "WTA": 0.69,
+     "CH": 0.47
+    },
+    "surface_absence_age_ensemble": {
+     "ATP": 0.0043,
+     "WTA": 0.0024,
+     "CH": 0.0036
+    }
+   },
+   "direct": {
+    "matchs_touches": 351,
+    "sur": 727,
+    "deplacement_moyen_points": 3.9,
+    "plus_de_5_points": 99,
+    "gain": 0.0075,
+    "erreur_type": 0.0051
+   },
+   "tie_breaks_challenger": "etude_tiebreaks.py ligne 109 : même Elo sans réglage ; correction à rejuger",
+   "impact_attendu": "environ +0,0005 ; retire des écarts de 2 à 5 points sans information sur la moitié des matchs",
+   "confiance": "haute sur le diagnostic",
+   "effort": "petit",
+   "regle": "les sept β réappris ENSEMBLE sur l'Elo de production corrigé (paquets 228 à 230), 2018–2022, jugés sur 2023 → ; un signal reste sur un circuit seulement si le retirer coûte au moins 0,001 sur au moins 1 000 matchs concernés, même sens sur les deux périodes ; etude_tiebreaks.py rejouée avec cet Elo, règle inchangée",
+   "suite_paquet_247": "13 études relancées telles quelles avec l'Elo de production : aucun positif nouveau ; deux négatifs (ATP parcours, ATP favori / outsider) déjà hors production ; suivi du % en direct corrigé"
+  },
+  {
+   "id": "regle_hebdomadaire",
+   "section": 4,
+   "paquet_prevu": 232,
+   "titre": "Règle « deux semaines de suite » : fenêtres qui se chevauchent, seuil sous le bruit",
+   "ou": "entrainement_progressif.py lignes 35 et 515, facteurs.py lignes 80 à 86 (fenêtre de 42 jours : deux lundis partagent cinq semaines sur six) ; fantomes_circuits.py lignes 46 et 198 à 207 (30 matchs, seuil 0,001)",
+   "mesure": {
+    "ecart_type_par_match": 0.095,
+    "erreur_type_sur_30_matchs": 0.017,
+    "regles_rejugees_chaque_lundi": 166,
+    "retrait_a_tort_d_un_signal_qui_vaut_0_005": {
+     "30_matchs_par_semaine": {
+      "en_12_semaines_pct": 71,
+      "en_26_semaines_pct": 94
+     },
+     "60_matchs_par_semaine": {
+      "en_12_semaines_pct": 60,
+      "en_26_semaines_pct": 87
+     },
+     "170_matchs_par_semaine": {
+      "en_12_semaines_pct": 34,
+      "en_26_semaines_pct": 60
+     }
+    }
+   },
+   "impact_attendu": "aucun gain direct ; évite d'adopter ou de retirer au hasard",
+   "confiance": "haute",
+   "effort": "moyen",
+   "regle": "rejouer semaine par semaine, sur l'archive 2023 →, la règle en place et une règle cumulée (retrait si le gain depuis l'adoption est négatif de 2 erreurs types sur au moins 300 matchs ; entrée à +2 erreurs types sur des semaines qui ne se chevauchent pas), avec un signal connu bon (retour d'absence) et un signal tiré au hasard ; est gardée celle qui fait le moins d'erreurs sur les deux signaux"
+  },
+  {
+   "id": "statistiques_annoncees",
+   "section": 10,
+   "paquet_prevu": null,
+   "titre": "1res balles : cause trouvée à moitié ; fourchettes réglées sur trop peu de cas",
+   "mesure": {
+    "biais_du_profil_points": {
+     "ATP": 0.8,
+     "WTA": 0.3,
+     "CH": 0.15
+    },
+    "ecart_entre_les_deux_sources_challenger": {
+     "lignes": 414,
+     "points": 0.93,
+     "erreur_type": 0.07
+    },
+    "reste_inexplique_points": 2,
+    "cas_d_apprentissage_des_fourchettes": {
+     "ATP": 84,
+     "WTA": 70,
+     "CH": 182
+    }
+   },
+   "impact_attendu": "affichage seulement",
+   "confiance": "moyenne",
+   "effort": "moyen",
+   "regle": "décalages et largeurs appris sur l'archive rejouée (profil contre réel, par circuit et par statistique, 2018–2022), jugés sur 2023 → : couverture entre 78 et 82 % sur au moins 1 000 cas par case",
+   "suite_paquet_237": "le « reste inexpliqué » du biais des 1res balles n'est pas dans le profil : contre l'archive le modèle est juste. Il vient de la saison (salle en octobre-novembre) et de la source des feuilles en direct"
+  },
+  {
+   "id": "profils",
+   "section": 9,
+   "paquet_prevu": null,
+   "titre": "Profils service / retour un peu trop ramenés vers la moyenne",
+   "mesure_5_photos_2019_2022": {
+    "lignes": 127310,
+    "pente_aces": {
+     "ATP": 1.11,
+     "WTA": 1.22,
+     "CH": 1.17
+    },
+    "pente_1re_gagnee": {
+     "ATP": 1.11,
+     "WTA": 1.11,
+     "CH": 1.05
+    },
+    "challenger_serveur_sous_500_points": "pentes 1,22 à 1,31 (1 362 lignes)"
+   },
+   "impact_attendu": "presque nul sur le % ; aces mieux annoncés",
+   "confiance": "moyenne",
+   "effort": "moyen",
+   "regle": "une amplification par composante (aces, 1re gagnée, 2e gagnée), choisie sur 2018–2022, jugée sur 2023 → : meilleure vraisemblance des points sur les deux périodes, sans dégrader le vainqueur de plus de 0,001",
+   "suite_paquet_240": "jugé : la 1re balle dedans est trop marquée (k < 1), les points gagnés un peu trop ramenés vers la moyenne ; effet sur les statistiques annoncées petit ; aces ATP non retenus"
+  },
+  {
+   "id": "forme_du_jour",
+   "section": 6,
+   "paquet_prevu": 243,
+   "titre": "Forme du jour σ : dispersion un peu faible, pas d'asymétrie",
+   "mesure_2018_2022_wta_modele_simplifie": {
+    "matchs": 11225,
+    "favorite_plus_de_4_5_jeux_pct": {
+     "reel": 45.3,
+     "sigma_0_15": 44.3,
+     "sigma_0_25": 50.2
+    },
+    "outsider_plus_de_4_5_jeux_pct": {
+     "reel": 17.2,
+     "sigma_0_15": 16.0,
+     "sigma_0_25": 19.3
+    },
+    "trois_sets_pct": {
+     "reel": 33.8,
+     "sigma_0_15": 36.1,
+     "sigma_0_25": 28.1
+    }
+   },
+   "impact_attendu": "nul sur le % ; faible sur les distributions",
+   "confiance": "moyenne",
+   "effort": "moyen",
+   "regle": "grille σ de 0,15 à 0,22 par pas de 0,01, circuit par circuit, avec les vrais profils ; choisi sur 2018–2022, jugé sur 2023 → : au moins 0,005 de log loss sur l'écart de jeux exact, sans dégrader le score en sets de plus de 0,002, sur au moins 1 000 matchs ; la variante asymétrique est jugée dans la même étude, avec la même règle",
+   "fait": "paquet 243 : rien de retenu, σ en place gardé (meilleur gain 0,0023 en WTA, sous 0,005)"
+  },
+  {
+   "id": "poids_elo_simulation",
+   "section": 7,
+   "paquet_prevu": null,
+   "titre": "Poids Elo / simulation : rien à changer",
+   "mesure_pronostics_rejoues_depuis_le_21_09": {
+    "ATP": {
+     "matchs": 565,
+     "elo": 0.6175,
+     "simulation": 0.6091,
+     "melange_en_place": 0.6102,
+     "poids_du_circuit": 0.6121
+    },
+    "WTA": {
+     "matchs": 677,
+     "elo": 0.5925,
+     "simulation": 0.6024,
+     "melange_en_place": 0.5892,
+     "poids_du_circuit": 0.5998
+    },
+    "CH": {
+     "matchs": 1804,
+     "elo": 0.6154,
+     "simulation": 0.6214,
+     "melange_en_place": 0.6116,
+     "poids_du_circuit": 0.6117
+    }
+   },
+   "impact_attendu": "rien à gagner",
+   "confiance": "haute",
+   "effort": "aucun"
+  }
+ ],
+ "risques_sans_etude": [
+  {
+   "id": "journal_public",
+   "section": 12,
+   "fait_dans_le_paquet": 227,
+   "titre": "Le journal publié reprenait des entrées de travail interne",
+   "correctif": "champ « prive » (6 entrées), filtré par vitrine.journal_changements ; test étendu au journal publié"
+  },
+  {
+   "id": "parite_elo",
+   "section": 11,
+   "fait_dans_le_paquet": 227,
+   "titre": "Aucun test n'obligeait une étude à utiliser l'Elo de la production",
+   "correctif": "elo.de_production() ; tests/test_parite_elo.py refuse tout nouveau « Elo() » sans réglage dans une étude"
+  },
+  {
+   "id": "taille_du_depot",
+   "section": 5,
+   "fait_dans_le_paquet": null,
+   "titre": "Dépôt à 6,84 Go, 384 Mo bruts de plus par jour",
+   "mesure": {
+    "commits_en_24_h": 894,
+    "trois_fichiers_reecrits_11_a_14_fois_par_jour_mo": 216
+   },
+   "correctif": "passer ces trois fichiers par le stockage externe, n'en garder dans git qu'une photo par jour",
+   "suite_paquet_235": "le correctif écrit ici (« passer ces trois fichiers par le stockage externe ») reposait sur le classement brut : il n'est PAS appliqué tel quel. Mesure réelle ajoutée ; décision après la première lecture"
+  },
+  {
+   "id": "workflows_et_code_mort",
+   "section": 11,
+   "fait_dans_le_paquet": null,
+   "mesure": {
+    "workflows": 138,
+    "publient_sans_concurrency": 25,
+    "planifies_sans_delai": 13,
+    "tests_qui_ne_lisent_que_du_texte": 36,
+    "modules_jamais_cites_par_un_test": 33,
+    "fichiers_jamais_lances_ni_importes": 59
+   },
+   "titre": "Workflows fragiles, code jamais lancé"
+  }
+ ],
+ "sans_defaut_trouve": [
+  "aucune donnée postérieure au match dans l'apprentissage des études d'archive lues",
+  "aucun secret en clair dans le dépôt",
+  "suite de tests : aucune fonction sans vérification, aucun fichier du dépôt modifié par les tests"
+ ],
+ "hors_audit": [
+  "code JavaScript de la page et des workers",
+  "génération des vidéos",
+  "Arena",
+  "partie du Lab qui ne concerne pas l'algo",
+  "profils sur gazon",
+  "facteurs hebdomadaires non rejoués groupe par groupe",
+  "4 études non rejouées (recherche ou Elo déjà à jour) : voir rapport_anciennes_etudes.json"
+ ],
+ "suites": {
+  "228": "format du match en ATP : simulateur/rapport_format_match.json — CORRIGÉ au paquet 229 (Coupe Davis exclue du jugement) : 2 sets gagnants en place avec la pente 0,826 (gain 0,0016 ± 0,0008) ; 3 sets gagnants en attente",
+  "229": "vitesse de l'Elo en WTA et départ des petits niveaux : simulateur/rapport_vitesse_elo.json — les deux REJETÉS sur 2023 → juin 2026",
+  "230": "départ des joueurs vus d'abord en ITF hommes : simulateur/rapport_depart_itf.json — RETENU et en production (1000 au lieu de 1200 ; Challenger : gain 0,0057 ± 0,0007 sur 7 722 matchs jugés, 0,0077 ± 0,0021 sur nos 912 matchs) ; Grand Chelem en WTA et outsider en Challenger : simulateur/rapport_outsiders.json — non retenus ; joueurs peu vus en Challenger : simulateur/rapport_joueurs_peu_vus.json — passe sur l'archive, échoue avec l'Elo de production, pas en production",
+  "231": "pente Grand Chelem commune ATP + WTA (1,235) : simulateur/rapport_grand_chelem.json — en place PAR DÉCISION DE LUCAS, la règle écrite n'étant pas passée ; retrait par la règle cumulée. Départ des joueuses vues d'abord en ITF : simulateur/rapport_depart_itf_femmes.json — REJETÉ",
+  "232": "qualifications de Grand Chelem : format corrigé chez les hommes (2 sets gagnants) ; pente de l'Elo chez les femmes RETENUE et en place (1,247 ; gain 0,0047 ± 0,0017 sur 1 435 matchs jugés), rejetée chez les hommes : simulateur/rapport_qualifs_grand_chelem.json",
+  "233": "signaux par circuit réappris sur l'Elo de production : simulateur/rapport_signaux_reappris.json — ATP et Challenger adoptés (favori / outsider et parcours écartés, β réappris), WTA inchangée ; tie-breaks rejoués avec l'Elo de production : même verdict, décalage Challenger 0,1305",
+  "234": "règle « deux semaines de suite » contre règle cumulée : simulateur/rapport_regle_hebdomadaire.json — la règle cumulée fait moins d'erreurs (26 % de semaines dans le mauvais état contre 38 %) : en place pour tous les signaux par circuit",
+  "235": "taille du dépôt : scripts/croissance_depot.py mesure le coût réel dans git par fichier (le chiffre de l'audit, 384 Mo par jour, est un majorant ; la taille n'a monté que d'environ 57 Mo par jour). Aucun fichier déplacé : le correctif attend la première mesure",
+  "236": "balayage de 54 cases d'étalonnage sur les périodes d'apprentissage : simulateur/rapport_balayage_pistes.json — aucune n'atteint le seuil pour être portée au jugement ; rien en production",
+  "237": "statistiques annoncées rejouées sur l'archive : simulateur/rapport_statistiques_annoncees.json — le modèle n'a pas de biais d'ensemble contre l'archive ; onze cases sur douze réglées sur l'archive, deux seulement (WTA breaks et aces) passent le contrôle en direct et sont en place ; décalage saisonnier du % de 1res balles REJETÉ",
+  "238": "1res balles en salle : simulateur/rapport_premieres_balles_salle.json — RETENU en ATP (1res balles +1,22, doubles fautes −0,49 en salle) et en place via la surface des feuilles ; WTA trop peu de cas, Challenger non étudiable",
+  "239": "image pour X : encadré en haut et « duel équilibré » sous 10 points (paquet appliqué entre-temps, hors audit)",
+  "240": "profils service / retour : simulateur/rapport_profils_amplification.json — amplification par composante en place (statistiques seulement), 5 cases retirées d'emblée par la règle de retrait ; duel service / retour tiré des cartes",
+  "241": "règles du lundi sur 42 jours glissants : simulateur/rapport_regles_fenetres.json — règle cumulée retenue (9.4 % de semaines dans le mauvais état contre 12.7 %), en place pour les corrections de situation, nouveaux venus et arbres (circuits_regles.py)",
+  "242": "poids du mélange en règle cumulée : simulateur/rapport_poids_cumules.json — détail par match fourni aux cinq poids du lundi ; contrôle sans décision (aucun match compté deux fois, rien ne bouge à l'installation)",
+  "243": "forme du jour σ : simulateur/rapport_sigma_archive.json — 12 084 matchs de l'archive, grille 0,15 → 0,22 et variante asymétrique : rien ne passe la règle ; courbe plate entre 0,15 et 0,18, dégradée au-delà",
+  "244": "vidéo fidèle aux scénarios du post (demande de Lucas, hors audit) : match_simule.match_type choisit, à forme égale, le scénario le plus fréquent du favori ; 60 vidéos sur 123 ne l'étaient pas",
+  "245": "forme du jour σ du lundi : règle cumulée circuit par circuit (sigma_circuit.decider) — simulateur/rapport_sigma_cumule.json ; rien ne bouge à l'installation",
+  "246": "facteurs du lundi en règle cumulée à deux mesures (stabilite.decider_cumule_double) — simulateur/rapport_facteurs_cumules.json ; contrôle sans rejeu",
+  "247": "anciennes études avec l'Elo de production : simulateur/rapport_anciennes_etudes.json — aucun verdict final positif nouveau ; ce qui est en production reste justifié ; évolution du classement proche du seuil, à surveiller",
+  "248": "serveuses WTA en place par décision de Lucas (simulateur/serveuses_wta.json) : +2,24 points à 50 %, retrait par la règle cumulée",
+  "249": "tiroir « Points marqués » (demande de Lucas, descriptif) : simulateur/coups_joueurs.py (Match Charting Project), vitrine.points_marques, rendPointsMarques",
+  "250": "duels de coups (demande de Lucas) : simulateur/rapport_duels_coups.json — aucun des cinq duels ne passe la règle ; information descriptive seulement",
+  "251": "effets propres à chaque joueur contre un style d'adversaire : simulateur/rapport_profils_individuels.json — rien ; duel des coups descriptif dans le tiroir « Points marqués »",
+  "252": "styles de jeu d'après les coups (demande de Lucas, descriptif) : simulateur/styles_jeu.py ; étude simulateur/rapport_styles_jeu.json — rien ne passe",
+  "253": "paires de styles de jeu apprises circuit par circuit : toujours rien (simulateur/rapport_styles_jeu.json)",
+  "254": "forme des scores : garde-fou « aucun circuit qui perd » rétabli dans la règle cumulée (perdu au paquet 246)",
+  "255": "étude « par circuit » de ce qui restait commun : simulateur/rapport_par_circuit.json — Elo au moment du pronostic : rien ; poids du mélange archive : candidat ATP (à décider) ; modèle complet par circuit en fantôme"
+ },
+ "pistes_ajoutees_le_11_11": {
+  "regardé": "2018–2022 seulement, par-dessus l'Elo de production corrigé du format en ATP et les trois signaux solides (surface, absence, âge)",
+  "a_juger": [
+   {
+    "id": "elo_rapide_wta",
+    "paquet_prevu": 229,
+    "mesure_2018_2022": {
+     "WTA": {
+      "beta": 0.351,
+      "gain": 0.0023,
+      "erreur_type": 0.0006
+     },
+     "ATP": {
+      "beta": 0.169,
+      "gain": 0.0005,
+      "erreur_type": 0.0003
+     },
+     "CH": {
+      "beta": 0.067,
+      "gain": 0.0001,
+      "erreur_type": 0.0001
+     }
+    },
+    "regle": "même étude que la vitesse de l'Elo en WTA : la forme (vitesse dans la grille 1,0 · 1,1 · 1,25 · 1,4, ou Elo rapide à vitesse × 2,5 ajouté avec un β appris) est CHOISIE sur 2018–2022, puis jugée une seule fois sur 2023 → juin 2026 : au moins 0,001 sur au moins 1 000 matchs WTA, au moins 2 erreurs types, même sens sur les deux périodes"
+   },
+   {
+    "id": "grand_chelem_wta",
+    "paquet_prevu": null,
+    "mesure_2018_2022": {
+     "pente": 1.23,
+     "matchs": 2372,
+     "erreurs_types": 2.2
+    },
+    "regle": "à rejuger APRÈS l'étude de l'Elo WTA (un Elo plus rapide peut suffire) : pente propre aux Grands Chelems en WTA, apprise sur 2018–2022, jugée sur 2023 → ; au moins 0,001 sur au moins 1 000 matchs concernés, au moins 2 erreurs types, même sens"
+   }
+  ],
+  "sans_suite": [
+   {
+    "id": "abandon_au_match_precedent",
+    "gain_2018_2022": {
+     "ATP": 0.0,
+     "WTA": 0.0,
+     "CH": 0.0001
+    }
+   },
+   {
+    "id": "face_a_face",
+    "gain_2018_2022": {
+     "ATP": 0.0001,
+     "WTA": 0.0002,
+     "CH": 0.0
+    }
+   },
+   {
+    "id": "minutes_deja_jouees_dans_le_tournoi",
+    "gain_2018_2022": {
+     "ATP": 0.0,
+     "WTA": 0.0,
+     "CH": 0.0001
+    }
+   },
+   {
+    "id": "deja_reussi_dans_ce_tournoi",
+    "gain_2018_2022": {
+     "ATP": 0.0004,
+     "WTA": 0.0004,
+     "CH": 0.0002
+    }
+   },
+   {
+    "id": "tour_du_tableau",
+    "gain_2018_2022": {
+     "ATP": 0.0001,
+     "WTA": 0.0005,
+     "CH": 0.0005
+    }
+   }
+  ]
+ },
+ "correction_du_11_11": "Les mesures « ATP » de ce rapport (constats format_atp, elo_wta_et_depart, elo_des_etudes) comptaient la Coupe Davis, rangée avec l'ATP dans l'archive. Elle pèse 10 % des matchs en 2 sets gagnants et l'Elo y est très mal étalonné : les chiffres du circuit seul sont plus modestes (format : pente 0,826 au lieu de 0,815 ; départ à 1300 : gain disparu). Depuis le paquet 229, toute étude exclut les compétitions par équipes du jugement.",
+ "outsiders_le_11_11": {
+  "regardé": "2018–2022 seulement, matchs du circuit (sans compétitions par équipes), outsiders annoncés entre 15 et 45 % après les corrections en place",
+  "mesures": {
+   "ATP": {
+    "tous": {
+     "n": 8590,
+     "annonce_pct": 32.9,
+     "reel_pct": 31.5
+    },
+    "deux_premiers_tours_de_grand_chelem": {
+     "n": 1449,
+     "annonce_pct": 30.5,
+     "reel_pct": 26.9,
+     "erreurs_types": -3.0
+    }
+   },
+   "WTA": {
+    "tous": {
+     "n": 8035,
+     "annonce_pct": 32.4,
+     "reel_pct": 31.4
+    },
+    "deux_premiers_tours_de_grand_chelem": {
+     "n": 1541,
+     "annonce_pct": 30.7,
+     "reel_pct": 27.8,
+     "erreurs_types": -2.5
+    },
+    "en_recul": {
+     "n": 3945,
+     "annonce_pct": 29.8,
+     "reel_pct": 26.7,
+     "erreurs_types": -4.4,
+     "note": "même effet que l'Elo rapide, rejeté hors échantillon au paquet 229"
+    }
+   },
+   "CH": {
+    "tous": {
+     "n": 29030,
+     "annonce_pct": 32.9,
+     "reel_pct": 33.8,
+     "erreurs_types": 3.6
+    },
+    "en_progression": {
+     "n": 2831,
+     "annonce_pct": 36.8,
+     "reel_pct": 39.8,
+     "erreurs_types": 3.3
+    },
+    "jeune_contre_plus_age": {
+     "n": 2570,
+     "annonce_pct": 31.4,
+     "reel_pct": 33.7,
+     "erreurs_types": 2.5
+    },
+    "issu_des_qualifications": {
+     "n": 2513,
+     "annonce_pct": 32.0,
+     "reel_pct": 34.5,
+     "erreurs_types": 2.8
+    },
+    "invite": {
+     "n": 3911,
+     "annonce_pct": 29.8,
+     "reel_pct": 28.2,
+     "erreurs_types": -2.2
+    }
+   }
+  },
+  "a_juger": [
+   {
+    "id": "grand_chelem_wta",
+    "paquet_prevu": 230,
+    "regle": "la règle déjà écrite plus haut (pistes_ajoutees_le_11_11) s'applique telle quelle, l'étude de l'Elo WTA étant close"
+   },
+   {
+    "id": "outsider_challenger",
+    "paquet_prevu": 230,
+    "regle": "en Challenger, deux décalages (logit) vers l'outsider, appris ENSEMBLE sur 2018–2022 : (a) son Elo rapide (vitesse × 2,5) dépasse son Elo d'au moins 0,25 en logit ; (b) il sort des qualifications. Jugés une seule fois sur 2023 → juin 2026, sur les matchs concernés par l'un ou l'autre : gain d'au moins 0,001 sur au moins 1 000 matchs, même sens sur les deux périodes ; erreur type et Brier publiés"
+   }
+  ],
+  "sans_suite": [
+   "gaucher",
+   "face-à-face",
+   "vétéran",
+   "repêché",
+   "demies et finales",
+   "spécialiste de la surface",
+   "favori hors de forme"
+  ]
+ },
+ "paquet_230_le_11_11": {
+  "lecon": "avant toute mise en production, une étude faite sur l'archive est rejouée AVEC ce que le classement de production contient et que l'archive n'a pas (résultats ITF hommes, nos matchs) ; deux résultats ont changé de sens à ce contrôle (départ à 1350 au paquet 229, joueurs peu vus au paquet 230)",
+  "en_production": {
+   "id": "depart_itf_hommes",
+   "depart": 1000.0,
+   "ancien_depart": 1200.0,
+   "retrait": "sur nos matchs Challenger depuis le 12/11/2026, dès 300 matchs, gain cumulé négatif de plus de 2 erreurs types → retour à 1200"
+  },
+  "a_juger": [
+   {
+    "id": "depart_itf_hommes_plus_bas",
+    "paquet_prevu": null,
+    "regle": "1000 est le bord de la grille. Candidats : 950, 900, 850. RÈGLE ÉCRITE LE 11/11/2026, sans aucun essai : jugés contre 1000 sur nos matchs Challenger joués à partir du 12/11/2026 seulement (la période d'octobre 2025 à juin 2026 a déjà servi), quand il y en aura au moins 1 000 ; le plus bas des candidats qui gagne au moins 0,001 avec au moins 2 erreurs types, sans dégrader l'ATP de plus de 0,0005, remplace 1000 ; sinon rien ne change"
+   },
+   {
+    "id": "depart_itf_femmes",
+    "paquet_prevu": 231,
+    "regle": "même question chez les femmes, où l'archive a l'ITF depuis toujours : les joueuses vues d'abord en ITF partent de 1200. Forme (départ à 1150, 1100, 1050, 1000 ou 950) CHOISIE sur 2018–2022 sur les matchs WTA, jugée une seule fois sur 2023 → juin 2026 : au moins 0,001 sur au moins 1 000 matchs WTA, même sens sur les deux périodes ; puis contrôle sur le classement complet rejoué : nos matchs ne doivent pas faire moins bien",
+    "suite": "jugé au paquet 231 : rejeté (aucun départ plus bas ne fait mieux, sur aucune des deux périodes)"
+   },
+   {
+    "id": "grand_chelem",
+    "paquet_prevu": null,
+    "regle": "WTA jugé au paquet 230 : gain 0,0032 ± 0,0020, sous les 2 erreurs types de sa règle — non retenu. Les quatre pentes mesurées sont voisines (WTA 1,23 puis 1,21 ; ATP 1,24 puis 1,21). Une pente commune aux deux circuits n'était pas écrite à l'avance : elle ne peut plus être jugée sur 2023 → juin 2026. Elle le sera sur les Grands Chelems à venir (à surveiller), ou mise en place par décision de Lucas, dite comme telle",
+    "suite": "décision de Lucas le 11/11/2026 : pente commune 1,235 en place au paquet 231, suivie avec / sans"
+   },
+   {
+    "id": "outsider_en_progression_challenger",
+    "paquet_prevu": null,
+    "regle": "rejeté au paquet 230 comme correction (−0,0002 ± 0,0007), mais l'outsider en progression gagne plus qu'annoncé sur les deux périodes (39,8 % pour 36,8 %, puis 40,1 % pour 36,9 %). À rejuger une fois le départ ITF en place, qui change la note de ces joueurs : même règle, écrite au paquet 229"
+   }
+  ]
+ },
+ "paquet_231_le_11_11": {
+  "decision_de_lucas": {
+   "id": "grand_chelem",
+   "pente": 1.235,
+   "circuits": [
+    "ATP",
+    "WTA"
+   ],
+   "statut": "pas une étude qui passe sa règle ; chiffres de 2023 → juin 2026 publiés pour mémoire",
+   "retrait": "par circuit, dès 300 matchs de Grand Chelem suivis, gain propre négatif de plus de 2 erreurs types"
+  },
+  "a_verifier_au_premier_grand_chelem": "le signal ne s'applique que si le tour du match est connu (programme du jour) : au premier jour de l'Open d'Australie, vérifier que les matchs du tableau principal portent bien le signal",
+  "a_corriger": [
+   {
+    "id": "qualifications_grand_chelem",
+    "paquet_prevu": 232,
+    "constat": "nos matchs de qualifications de Grand Chelem portent le même nom de tournoi que le tableau principal (US Open 2026 : 224 matchs du 24 au 28/08). Conséquences : chez les hommes ils sont simulés et lus en 3 sets gagnants alors qu'ils se jouent en 2 ; ils reçoivent la vitesse Elo des Grands Chelems ; ils sont rangés avec l'ATP ou la WTA dans nos bilans alors que l'archive les range avec le Challenger ou l'ITF",
+    "regle": "correction de donnée, pas un réglage : le tour du programme du jour dit si le match est une qualification. Avant mise en production, le classement complet est rejoué avant / après : nos matchs ne doivent pas faire moins bien (tolérance 0,001)",
+    "suite": "fait au paquet 232 pour le format (2 sets gagnants chez les hommes, par le tour du programme du jour). Vérifié dans l'archive : les qualifications y ont bien le niveau Grand Chelem, la vitesse Elo est donc cohérente et n'est pas changée. Le rangement par circuit n'est pas changé : il toucherait le départ, les signaux et l'incertitude de ces matchs, ce qui demande une étude"
+   }
+  ],
+  "a_juger": [
+   {
+    "id": "elo_trop_prudent_en_qualifications_de_grand_chelem",
+    "paquet_prevu": null,
+    "mesure_nos_matchs_2026": {
+     "matchs": 280,
+     "favori_reel_pct": 68.2,
+     "favori_annonce_pct": 62.2
+    },
+    "regle": "vu sur 280 de nos matchs seulement : à surveiller. Dans l'archive ces matchs sont rangés avec le Challenger et l'ITF : pente propre aux qualifications de Grand Chelem apprise sur 2018–2022, jugée une fois sur 2023 → juin 2026, au moins 0,001 sur au moins 1 000 matchs, même sens, après la correction ci-dessus",
+    "suite": "jugé au paquet 232 : retenu chez les femmes, rejeté chez les hommes"
+   }
+  ]
+ },
+ "paquet_232_le_11_11": {
+  "en_production": [
+   {
+    "id": "format_qualifications_grand_chelem_hommes",
+    "nature": "correction de donnée"
+   },
+   {
+    "id": "pente_qualifications_grand_chelem_femmes",
+    "pente": 1.247,
+    "retrait": "dès 300 matchs de qualifications suivis, gain propre négatif de plus de 2 erreurs types"
+   }
+  ],
+  "a_surveiller": [
+   {
+    "id": "qualifications_grand_chelem_hommes_nos_matchs",
+    "mesure_nos_matchs_2026": {
+     "matchs": 171,
+     "favori_reel_pct": 73.1,
+     "favori_annonce_pct": 62.6
+    },
+    "regle": "l'archive ne montre rien, nos matchs si : pas de conclusion sur 171 matchs. Sera relu avec le départ ITF hommes plus bas (règle écrite au paquet 230), sur nos matchs à venir"
+   },
+   {
+    "id": "rangement_des_qualifications_par_circuit",
+    "regle": "nos qualifications de Grand Chelem sont rangées avec l'ATP et la WTA, l'archive avec le Challenger et l'ITF : les signaux par circuit appris sur l'archive ne les ont donc jamais vues sous ce nom. À étudier : mêmes signaux, appris sur 2018–2022, jugés sur les qualifications de 2023 → juin 2026, au moins 0,001 sur au moins 1 000 matchs"
+   }
+  ],
+  "hors_perimetre_signale": "scripts/scenarios.py, simulateur/marches_sets.py et Tennis_Edge_Lab/croisements.py lisent encore le format par le nom du tournoi : ils écartent ou traitent les qualifications masculines comme des matchs en 3 sets gagnants. Outils privés, non modifiés ici"
+ },
+ "paquet_233_le_12_11": {
+  "en_production": {
+   "ATP": {
+    "signaux": [
+     "changement_surface",
+     "age",
+     "retour_absence (en sursis)"
+    ],
+    "ecartes": [
+     "favori_outsider",
+     "parcours_tournoi"
+    ],
+    "gain_contre_avant": 0.00263,
+    "erreur_type": 0.00087
+   },
+   "CH": {
+    "signaux": [
+     "changement_surface",
+     "retour_absence",
+     "age"
+    ],
+    "ecartes": [
+     "favori_outsider",
+     "parcours_tournoi"
+    ],
+    "gain_contre_avant": 0.00022,
+    "erreur_type": 0.00028
+   },
+   "WTA": "inchangée : la configuration réapprise n'y fait pas mieux (−0,00064 ± 0,00067)"
+  },
+  "ecart_a_la_regle_a_valider_par_lucas": "retour d'absence en ATP : 757 matchs concernés sur la période jugée (règle : 1 000), mais le retirer coûte 0,022 ± 0,005 sur ces matchs. Gardé « en sursis ». Décidé après avoir vu le résultat. Pour appliquer la règle à la lettre : retirer « retour_absence » de signaux_en_sursis et de betas pour l'ATP dans rapport_signaux_reappris.json (gain ATP ramené de 0,0026 à 0,0006)",
+  "direct_pour_memoire": "audit, 727 pronostics figés du 28/10 au 11/11/2026 : retirer les décalages « favori / outsider » et « parcours » y gagnait 0,0075 ± 0,0051 sur 351 matchs touchés — confirmation seulement",
+  "a_juger": [
+   {
+    "id": "wta_favori_outsider_et_age",
+    "paquet_prevu": null,
+    "regle": "en WTA, la configuration d'avant reste en place alors que deux de ses signaux ne passent pas la règle contre l'Elo du site (âge : coût du retrait 0,0006 ± 0,0006 ; favori / outsider : 0,0001 ± 0,0004). À rejuger sur nos matchs WTA : configuration réapprise contre configuration en place, au moins 1 000 matchs joués à partir du 12/11/2026, la réapprise remplace si elle ne fait pas moins bien"
+   },
+   {
+    "id": "retour_absence_wta",
+    "paquet_prevu": null,
+    "regle": "808 matchs concernés, coût du retrait 0,016 ± 0,004 : même situation qu'en ATP ; rien ne change puisque la WTA garde sa configuration"
+   }
+  ],
+  "etudes_encore_sur_l_elo_sans_reglage": 18
+ },
+ "paquet_234_le_12_11": {
+  "en_production": "règle cumulée pour tous les signaux par circuit (fantomes_circuits.py) : retrait et entrée à 2 erreurs types sur au moins 300 matchs concernés, compteurs depuis le 12/11/2026",
+  "limite": "lente pour un signal rare : 300 matchs concernés demandent environ 40 semaines pour le retour d'absence en ATP",
+  "a_juger": [
+   {
+    "id": "regles_hebdomadaires_des_poids_et_des_facteurs",
+    "paquet_prevu": null,
+    "regle": "entrainement_progressif.py et facteurs.py rejugent encore chaque lundi sur des fenêtres de 42 jours qui se chevauchent (stabilite.py). Même étude à faire sur leurs séries : la règle en place contre une règle cumulée, un réglage connu bon et un réglage au hasard, part des semaines dans le mauvais état ; est gardée celle qui fait le moins d'erreurs",
+    "fait": "étude au paquet 241 ; poids au 242, forme du jour au 245, facteurs (groupes, modèle complet, forme des scores) au 246"
+   },
+   {
+    "id": "seuil_de_la_regle_cumulee",
+    "paquet_prevu": null,
+    "regle": "300 matchs et 2 erreurs types ont été fixés à l'audit et non cherchés. Une grille (150, 300, 600 matchs ; 1,5 · 2 · 2,5 erreurs types) ne pourra être jugée que sur d'autres signaux que ceux de l'étude : à surveiller, rien à changer"
+   }
+  ]
+ },
+ "paquet_235_le_12_11": {
+  "fait": "mesure du coût réel dans git, par famille de fichiers, dans le rapport quotidien (croissance_depot.json : octets_reels, top_reel)",
+  "a_decider_apres_la_premiere_mesure": [
+   "fichiers dont le coût réel dépasse 5 Mo par jour : les sortir de git (stockage externe, une photo par jour) ou réduire leur fréquence",
+   "fichiers compressés réécrits plusieurs fois par jour : les écrire en clair (git saura n'en garder que la différence) ou par tranches",
+   "historique déjà accumulé (6,84 Go) : seule la procédure « Dépôt neuf » (docs/README_DEPOT_NEUF.md) le reprend, sans push forcé"
+  ],
+  "regle": "un fichier n'est déplacé que si la mesure réelle, sur au moins 3 jours, lui attribue plus de 5 Mo par jour ; le gain attendu est écrit avant, la mesure d'après le confirme"
+ },
+ "paquet_236_le_12_11": {
+  "constat": "après les paquets 228 à 234, le % de victoire est étalonné sur tous les axes simples testables : niveau du tournoi, surface, saison, tour, expérience, entrée dans le tableau, charge de la semaine précédente (ATP et WTA sur 2018–2022 ; Challenger avec les résultats ITF hommes sur janvier–septembre 2025)",
+  "ce_qui_reste_a_gagner_sur_le_pourcentage": [
+   "départ ITF hommes plus bas (950, 900, 850) : règle écrite au paquet 230, jugé sur nos matchs Challenger à venir (1 000 matchs)",
+   "configuration des signaux en WTA : règle écrite au paquet 233, jugée sur nos matchs WTA à venir (1 000 matchs)",
+   "une information que l'Elo et les signaux n'ont pas (aucune n'est disponible dans l'archive aujourd'hui)"
+  ],
+  "a_ne_pas_refaire": "les 54 cases du rapport : mesurées sur la période d'apprentissage, sous le seuil même en majorant"
+ },
+ "paquet_237_le_12_11": {
+  "en_production": {
+   "cases_archive": [
+    "WTA|breaks",
+    "WTA|aces"
+   ],
+   "retrait": "dès 300 cas en direct depuis le 12/11/2026, couverture plus loin de 80 % que sans recalage de plus de 5 points"
+  },
+  "rejete": "décalage par mois du % de 1res balles (réduit le biais mensuel de 18 à 26 %, la règle demandait un tiers)",
+  "a_juger": [
+   {
+    "id": "premieres_balles_en_salle",
+    "paquet_prevu": null,
+    "regle": "le biais du % de 1res balles suit la saison (salle). L'archive ne dit pas si un tournoi se joue en salle. Si une table des tournois en salle est constituée (nom du tournoi → salle ou plein air, écrite sans regarder les résultats), décalage « en salle » appris sur 2019–2022, jugé une fois sur 2023 → juin 2026 : retenu si le biais en salle baisse d'au moins moitié et si l'écart moyen ne monte pas, sur au moins 1 000 cas",
+    "suite": "jugé au paquet 238 : retenu en ATP pour les 1res balles et les doubles fautes"
+   },
+   {
+    "id": "ecart_entre_sources_des_feuilles",
+    "paquet_prevu": null,
+    "regle": "mesurer, sur les matchs présents dans les deux sources, l'écart de % de 1res balles, d'aces et de doubles fautes entre les feuilles en direct et l'archive (au moins 300 matchs par circuit) : s'il est stable, il devient un décalage fixe de source, appliqué avant le recalage hebdomadaire",
+    "suite": "mesuré au paquet 238 : Challenger +0,93 ± 0,12 point de 1res balles en direct (211 matchs) ; pas de match commun ATP/WTA (l'archive s'arrête en juin 2026) ; reste corrigé par le recalage en direct"
+   }
+  ],
+  "lecon": "une statistique annoncée se règle contre la source qui sert à la juger : l'archive règle les largeurs, pas les décalages vus en direct"
+ },
+ "paquet_238_le_12_11": {
+  "en_production": {
+   "ATP|premiere_pct": {
+    "salle": 1.22,
+    "plein_air": 0.024
+   },
+   "ATP|doubles_fautes": {
+    "salle": -0.485,
+    "plein_air": -0.079
+   }
+  },
+  "retrait": "dès 300 cas en salle en direct depuis le 12/11/2026, écart moyen avec le décalage plus grand que sans → retiré",
+  "a_surveiller": "WTA en salle : +1,19 point sur 496 cas jugés, sous les 1 000 de la règle ; à rejuger quand l'archive aura assez de cas"
+ },
+ "paquet_240_le_12_11": {
+  "en_production": {
+   "amplification": {
+    "ATP": {
+     "f": 0.921,
+     "d": 1.075,
+     "w2j": 1.108
+    },
+    "WTA": {
+     "f": 0.956
+    },
+    "CH": {
+     "f": 0.912,
+     "a": 1.105,
+     "d": 1.028
+    }
+   },
+   "duel": "tiré des cartes des joueurs (profils ajustés, groupe ATP + Challenger ou WTA)"
+  },
+  "a_juger": [
+   {
+    "id": "aces_atp_en_direct",
+    "paquet_prevu": null,
+    "regle": "aces ATP sous-estimés de 0,9 en direct, pas sur l'archive : mesurer l'écart de source sur les matchs communs (comme pour les 1res balles au paquet 238) quand l'archive aura des matchs ATP communs avec nos feuilles ; d'ici là, le recalage en direct corrige"
+   }
+  ]
+ },
+ "paquet_241_le_12_11": {
+  "en_production": "stabilite.decider_cumule, appelé quand la règle fournit le détail par match (entrainement_progressif.ll_par_circuit)",
+  "pas_encore": [
+   "facteurs (vraisemblance des points, sans log loss) et règles du classement Elo (jugées sur tous nos matchs, pas sur une fenêtre)",
+   "réglages de la simulation et combinaison de l'archive : jugés sur une période fixe, la même chaque semaine — pas de chevauchement à corriger"
+  ],
+  "a_juger": [
+   {
+    "id": "poids_du_melange_en_cumule",
+    "paquet_prevu": 242,
+    "regle": "fournir le détail par match aux décisions des poids (backtest_match_simule.combinaison, entrainement_progressif.poids_circuit), puis même règle cumulée",
+    "fait": "paquet 242 (sauf la combinaison de l'archive, jugée sur une période fixe)"
+   }
+  ]
+ },
+ "paquet_242_le_12_11": {
+  "en_production": "entrainement_progressif.paires_match / pour_stabilite : combinaison_feuilles, poids_challenger, poids_ATP, poids_WTA, desaccord_wta passent à stabilite.decider_cumule",
+  "controle": {
+   "semaines_rejouees": 10,
+   "jours_comptes_deux_fois": {
+    "combinaison_feuilles": 0,
+    "poids_CH": 0,
+    "poids_ATP": 0,
+    "poids_WTA": 0
+   },
+   "etat_a_la_fin": {
+    "combinaison_feuilles": {
+     "regle_en_place": "pas adopté",
+     "regle_cumulee": "pas adopté"
+    },
+    "poids_CH": {
+     "regle_en_place": "pas adopté",
+     "regle_cumulee": "pas adopté"
+    },
+    "poids_ATP": {
+     "regle_en_place": "pas adopté",
+     "regle_cumulee": "pas adopté"
+    },
+    "poids_WTA": {
+     "regle_en_place": "pas adopté",
+     "regle_cumulee": "adopté"
+    }
+   }
+  },
+  "a_surveiller": [
+   "entrées sur une seule fenêtre à l'installation ou après un changement (vu au rejeu : WTA le 12/10, Challenger le 19/10)",
+   "retrait : règle d'avant si, à 1 000 matchs cumulés par poids, un poids gardé en place a un gain cumulé négatif"
+  ]
+ },
+ "paquet_243_le_12_11": {
+  "en_production": "rien",
+  "a_surveiller": [
+   "σ ≥ 0,22 choisi par le jugement du lundi (sigma_circuit.py) : contredit par l'archive (0,22 coûte 0,012 en Challenger, 0,024 en ATP sur l'écart de jeux)",
+   "κ au bord de sa grille (−0,2) en WTA et en Challenger, sans gain suffisant"
+  ],
+  "suite": "paquet 245 : le jugement du lundi passe à la règle cumulée, circuit par circuit"
+ }
+}

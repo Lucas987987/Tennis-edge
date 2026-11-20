@@ -1,0 +1,74 @@
+name: Sauvegarde du dépôt → R2
+
+# AJOUTÉ LE 29/10/2026. Le code et les données qui n'existaient qu'en un exemplaire sur GitHub (pronostics figés,
+# bilans après match, cotes de clôture, CLV, feuilles de match, résultats ITF…) sont copiés chaque semaine dans R2.
+# parts/ (ticks, courbes live) est déjà dans R2 : exclu. Aucun secret dans l'archive (le dépôt n'en contient pas).
+# Emplacements fixes réécrits à tour de rôle : 4 hebdomadaires + 3 mensuels, ~0,7 Go au plus. Détails :
+# scripts/sauvegarde_depot.py.
+# Restaurer : Cloudflare → R2 → sauvegardes/depot/, ou ce workflow avec action « telecharger » (artefact 7 jours).
+
+on:
+  schedule:
+    - cron: '41 3 * * 0'       # dimanche 03:41 UTC
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Action'
+        type: choice
+        options: [sauvegarder, lister, telecharger]
+        default: sauvegarder
+      emplacement:
+        description: 'Pour telecharger : hebdo-0 … hebdo-3, mensuel-0 … mensuel-2 (voir « lister »)'
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sauvegarde-depot
+  cancel-in-progress: false
+
+env:
+  R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+  R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+  R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+  PYTHONDONTWRITEBYTECODE: '1'
+
+jobs:
+  sauvegarde:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /*
+            !/parts/
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Sauvegarder / lister / télécharger
+        env:
+          ACTION: ${{ github.event.inputs.action || 'sauvegarder' }}
+          EMPLACEMENT: ${{ github.event.inputs.emplacement }}
+        run: |
+          set -euo pipefail
+          case "$ACTION" in
+            sauvegarder) python scripts/sauvegarde_depot.py sauvegarder . ;;
+            lister)      python scripts/sauvegarde_depot.py lister ;;
+            telecharger) python scripts/sauvegarde_depot.py telecharger "$EMPLACEMENT" "$RUNNER_TEMP/sauvegarde-$EMPLACEMENT.tar.gz" ;;
+          esac
+
+      - name: Archive téléchargée (artefact)
+        if: github.event.inputs.action == 'telecharger'
+        uses: actions/upload-artifact@v4
+        with:
+          name: sauvegarde-${{ github.event.inputs.emplacement }}
+          path: ${{ runner.temp }}/sauvegarde-*.tar.gz
+          retention-days: 7
+          compression-level: 0

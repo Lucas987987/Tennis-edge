@@ -1,0 +1,9 @@
+{
+ "paquet": 273,
+ "decision": "Lucas, 18/11/2026 : partie B de l'étude « par circuit » (paquet 255, simulateur/rapport_par_circuit.json)",
+ "regle_retrait": "simulateur/poids_circuit.py, chaque lundi : avec au moins 200 matchs jugés du circuit pronostiqués avec ces poids, si la log loss avec les poids du circuit dépasse celle avec les poids communs d'au moins 0,001, « retire » passe à true.",
+ "circuits": {
+  "ATP": {"elo": 0.7339, "simulation": 0.3036, "active_le": "2026-11-18", "retire": false,
+          "origine": "appris sur 2024 (2 475 matchs), jugés sur 2025 → janvier 2026 (2 259 matchs) : log loss +0,0014 ± 0,0006 contre les poids communs ; +0,0004 sur 2024"}
+ }
+}

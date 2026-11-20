@@ -1,0 +1,60 @@
+name: Déployer le worker joueurs
+
+# CRÉÉ LE 09/10/2026. Fin du copier-coller dans Cloudflare : déposer
+# workers/joueurs/worker-joueurs.js dans le dépôt suffit, ce workflow le met
+# en ligne sur https://joueurs.tennis-edge.workers.dev puis vérifie que la
+# page répond.
+#
+# Secrets (Settings -> Secrets and variables -> Actions) :
+#   CLOUDFLARE_API_TOKEN   jeton « Edit Cloudflare Workers »
+#   CLOUDFLARE_ACCOUNT_ID  identifiant du compte Cloudflare
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'workers/joueurs/**'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-joueurs
+  cancel-in-progress: false
+
+jobs:
+  deployer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+          sparse-checkout: workers/joueurs
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # Un fichier tronqué ou mal collé ne part pas en ligne : la page
+      # actuelle reste en place.
+      - name: Vérifier la syntaxe
+        run: node --check workers/joueurs/worker-joueurs.js
+
+      - name: Déployer sur Cloudflare
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: workers/joueurs
+          command: deploy
+
+      - name: Vérifier que la page répond
+        run: |
+          sleep 5
+          code=$(curl -s -o page.html -w '%{http_code}' "https://joueurs.tennis-edge.workers.dev/j?v=${GITHUB_RUN_ID}")
+          echo "HTTP $code"
+          grep -o '<h2>[^<]*</h2>' page.html | head -5 || true
+          test "$code" = "200"
+          grep -q 'Classement march' page.html

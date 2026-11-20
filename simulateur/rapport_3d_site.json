@@ -1,0 +1,77 @@
+{
+ "paquet": 296,
+ "version_3d": "v296",
+ "essais_de_chargement_des_modeles": 3,
+ "attentes_s": [
+  1.5,
+  4
+ ],
+ "modeles_publies_sur_pages": true,
+ "cache_worker": {
+  "reussite_s": 86400,
+  "absence_s": 0
+ },
+ "quoi": "Direct 3D du site : le fichier des modèles des personnages est publié avec la page ; une absence n'est plus gardée en cache.",
+ "note": "Affichage seulement : le % ne change pas. Aucun nom de joueur, aucune cote.",
+ "delai_max_par_essai_s": 25,
+ "cle_cache_worker": "?v=283",
+ "lumiere": {
+  "jour": "plein air, 8 h–18 h locales",
+  "nuit": "salle ou soir"
+ },
+ "camera_tv": {
+  "tangage_rad": 0.33,
+  "distance_m": 23.5
+ },
+ "replacement": "entre deux frappes, retour vers le milieu jusqu'à la frappe adverse",
+ "ramasseurs_du_fond": "aux coins du fond du court, hors du cadre de la caméra télé",
+ "poussiere_terre_battue": "9 grains clairs qui montent et s'effacent en 0,9 s",
+ "video": {
+  "definition": "échelle 0,67 (paquet 291 : retrait de l'échelle 1 du paquet 288, run de 65 min au-delà des 60 prévus)",
+  "camera_tv": {
+   "tangage_rad": 0.27,
+   "distance_m": 22.5,
+   "suit_la_balle": "de côté et un peu en profondeur"
+  },
+  "balle_de_match": "rejouée deux fois : du bout opposé, puis caméra basse derrière le gagnant du point",
+  "gros_plans": "un officiel posé entre la caméra et le joueur filmé n'est pas dessiné ; caméra du vainqueur côté intérieur du court",
+  "temps_de_rendu_local": "+55 % par image (0,37 s → 0,57 s) ; le run GitHub prenait 26 min pour une limite de 100",
+  "taille_max_telegram_octets": 48000000
+ },
+ "reflets": {
+  "surfaces": {
+   "dur": 0.2,
+   "moquette": 0.22
+  },
+  "terre_battue_et_gazon": "aucun",
+  "objets": "joueurs, officiels, balle",
+  "effacement": "s'efface sur 1,9 m sous le sol"
+ },
+ "ombre_de_contact": "tache douce sous chaque joueur",
+ "mise_au_point_video": "distance gardée dans l'image elle-même : le premier gros plan n'est plus flou",
+ "temps_de_rendu_local_290": "+12 % par image (reflets)",
+ "filet": "mailles carrées de 4,5 cm : un voile sombre régulier, sans rayures",
+ "eclair_d_impact": "0,12 s au contact de la raquette (frappes et services)",
+ "mains": {
+  "doigts": "bouts des doigts restés en place dans le fichier des modèles : ramenés dans le poing, de voisin en voisin (121 sommets par main chez l'homme, 131 chez la femme)",
+  "raquette": "le manche passe dans le poing (avant : au poignet)",
+  "front": "plus de rayures roses ou blanches entre peau et bandeau",
+  "bandeau_femmes": "remonté au-dessus des sourcils (1,705 m au repos au lieu de 1,668)",
+  "pouce": "replié contre le dessous des doigts, vers l'auriculaire (avant : tout droit hors du poing)"
+ },
+ "positions": {
+  "attente": "appuis larges, genoux fléchis (pieds posés au sol, calculés), buste penché, raquette devant tenue à deux mains, tête de raquette vers le filet",
+  "entre_les_points": "relâché : debout, raquette le long du corps, respiration et poids qui passe d'un pied à l'autre",
+  "passage": "0,6 s pour se mettre en place au début du point, 0,8 s pour se relâcher après",
+  "pas_chasses": "gardent la raquette devant, à deux mains"
+ },
+ "frappes": {
+  "lissage_pendant_la_frappe": "constante de temps 14 ms (avant 62 ms : raquette encore en préparation au contact)",
+  "hauteur": "balle basse : le joueur descend (genoux, buste) ; balle haute : il se grandit ; le reste par l'épaule",
+  "placement": "point de contact mesuré sur le modèle 3D pour chaque frappe (pose ajustée à la hauteur), décalage tourné avec le joueur",
+  "ecart_vertical_tamis_balle_m": {
+   "avant": "0,1 à 0,8 (tamis trop bas)",
+   "apres": "0 à 0,17"
+  }
+ }
+}

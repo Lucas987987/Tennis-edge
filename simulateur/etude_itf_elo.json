@@ -1,0 +1,109 @@
+{
+ "genere_le": "2026-11-16T16:10:56+00:00",
+ "couverture_itf": 1.0,
+ "regle": "Challenger : log loss −0,001 au moins avec l'ITF, ATP + WTA : pas plus de +0,0005 ; deux semaines de suite ; matchs jugés depuis le 01/01/2025 ; rien n'est jugé sous 95 % de jours collectés (fixée le 28/10/2026, avant tout résultat)",
+ "matchs_itf": 78854,
+ "joueurs_itf": 8404,
+ "challenger": {
+  "n": 23324,
+  "log_loss_sans": 0.628831,
+  "log_loss_avec": 0.609598,
+  "gain": 0.019233,
+  "vainqueurs_sans_pct": 64.8,
+  "vainqueurs_avec_pct": 65.9
+ },
+ "atp_wta": {
+  "n": 12549,
+  "log_loss_sans": 0.609185,
+  "log_loss_avec": 0.605716,
+  "gain": 0.003469,
+  "vainqueurs_sans_pct": 66.3,
+  "vainqueurs_avec_pct": 66.6
+ },
+ "descriptif": {
+  "challenger_peu_vus": {
+   "n": 9245,
+   "log_loss_sans": 0.607707,
+   "log_loss_avec": 0.565036,
+   "gain": 0.042671,
+   "vainqueurs_sans_pct": 67.2,
+   "vainqueurs_avec_pct": 70.1
+  },
+  "challenger_avec_joueur_itf": {
+   "n": 21471,
+   "log_loss_sans": 0.62524,
+   "log_loss_avec": 0.60452,
+   "gain": 0.02072,
+   "vainqueurs_sans_pct": 65.4,
+   "vainqueurs_avec_pct": 66.5
+  }
+ },
+ "verdict_semaine": true,
+ "statut": "en place",
+ "adopte": true,
+ "stabilite": {
+  "elo_resultats_itf": {
+   "adopte": false,
+   "semaine": "2026-W44",
+   "serie_avant": 0,
+   "serie": 1,
+   "gain": 0.01454
+  },
+  "elo_itf_production": {
+   "adopte": true,
+   "semaine": "2026-W47",
+   "serie_avant": 0,
+   "serie": 0,
+   "gain": 0.01923
+  },
+  "elo_itf_femmes": {
+   "adopte": false,
+   "semaine": "2026-W44",
+   "serie_avant": 0,
+   "serie": 1,
+   "gain": 0.0034
+  },
+  "elo_itf_femmes_production": {
+   "adopte": true,
+   "semaine": "2026-W47",
+   "serie_avant": 0,
+   "serie": 0,
+   "gain": 0.00343
+  }
+ },
+ "femmes": {
+  "couverture": 1.0,
+  "regle": "WTA après la fin de l'archive : log loss −0,001 au moins avec l'ITF femmes, ATP + Challenger pas plus de +0,0005 ; deux semaines de suite (fixée le 28/10/2026)",
+  "matchs_itf_femmes": 17354,
+  "wta": {
+   "n": 2246,
+   "log_loss_sans": 0.591347,
+   "log_loss_avec": 0.587917,
+   "gain": 0.00343,
+   "vainqueurs_sans_pct": 67.5,
+   "vainqueurs_avec_pct": 67.7
+  },
+  "atp_challenger": {
+   "n": 8128,
+   "log_loss_sans": 0.607739,
+   "log_loss_avec": 0.607739,
+   "gain": 0.0,
+   "vainqueurs_sans_pct": 66.3,
+   "vainqueurs_avec_pct": 66.3
+  },
+  "descriptif": {
+   "wta_peu_vues": {
+    "n": 172,
+    "log_loss_sans": 0.586124,
+    "log_loss_avec": 0.575697,
+    "gain": 0.010427,
+    "vainqueurs_sans_pct": 66.9,
+    "vainqueurs_avec_pct": 68.0
+   }
+  },
+  "verdict_semaine": true,
+  "statut": "en place",
+  "adopte": true,
+  "retire": false
+ }
+}

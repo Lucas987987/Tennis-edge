@@ -1,0 +1,366 @@
+{
+  "schema": "pression_v2",
+  "n_decouverte": 4306,
+  "decouverte_dans_echantillon": {
+    "controle": {
+      "n": 4306,
+      "log_loss": 0.612238,
+      "brier": 0.212298,
+      "reussite_pct": 65.91
+    },
+    "pression_v1": {
+      "n": 4306,
+      "log_loss": 0.609373,
+      "brier": 0.211077,
+      "reussite_pct": 66.19
+    },
+    "pression_v2": {
+      "n": 4306,
+      "log_loss": 0.611071,
+      "brier": 0.211808,
+      "reussite_pct": 66.07
+    }
+  },
+  "gains_decouverte": {
+    "v1_moins_controle": {
+      "log_loss": 0.002865,
+      "brier": 0.001221,
+      "sens": "positif = apport du second modèle"
+    },
+    "v2_moins_controle": {
+      "log_loss": 0.001167,
+      "brier": 0.00049,
+      "sens": "positif = apport du second modèle"
+    },
+    "v2_moins_v1": {
+      "log_loss": -0.001698,
+      "brier": -0.000731,
+      "sens": "positif = apport du second modèle"
+    }
+  },
+  "activation": false,
+  "champion_actif_modifie": false,
+  "marche_utilise": false,
+  "confirmation_future": {
+    "minimum_matchs": 1000,
+    "minimum_semaines_iso": 8,
+    "debut_apres": "2026-10-28T00:00:00+00:00",
+    "2025_2026_exclus": true,
+    "statut": "requise_avant_toute_activation"
+  },
+  "limite_controle": "contrôle de recherche Elo, service–retour, surface, circuit et documentation ; pas le champion complet",
+  "diagnostic_historique_reutilise": {
+    "n": 11694,
+    "metriques": {
+      "controle": {
+        "n": 11694,
+        "log_loss": 0.583017,
+        "brier": 0.200058,
+        "reussite_pct": 68.79
+      },
+      "pression_v1": {
+        "n": 11694,
+        "log_loss": 0.580839,
+        "brier": 0.19935,
+        "reussite_pct": 68.53
+      },
+      "pression_v2": {
+        "n": 11694,
+        "log_loss": 0.582569,
+        "brier": 0.199859,
+        "reussite_pct": 68.53
+      }
+    },
+    "gains": {
+      "v1_moins_controle": {
+        "log_loss": 0.002178,
+        "brier": 0.000708,
+        "sens": "positif = apport du second modèle"
+      },
+      "v2_moins_controle": {
+        "log_loss": 0.000448,
+        "brier": 0.000199,
+        "sens": "positif = apport du second modèle"
+      },
+      "v2_moins_v1": {
+        "log_loss": -0.00173,
+        "brier": -0.000509,
+        "sens": "positif = apport du second modèle"
+      }
+    },
+    "v2_contre_controle": {
+      "ic95_bootstrap_semaine": {
+        "log_loss": {
+          "bas": -0.000453,
+          "haut": 0.001348
+        },
+        "brier": {
+          "bas": -0.000204,
+          "haut": 0.0006
+        }
+      },
+      "sous_groupes": {
+        "global": {
+          "controle": {
+            "n": 11694,
+            "log_loss": 0.583017,
+            "brier": 0.200058,
+            "reussite_pct": 68.79
+          },
+          "challenger": {
+            "n": 11694,
+            "log_loss": 0.582569,
+            "brier": 0.199859,
+            "reussite_pct": 68.53
+          },
+          "gains": {
+            "log_loss": 0.000448,
+            "brier": 0.000199,
+            "sens": "positif = apport du second modèle"
+          }
+        },
+        "circuit:ATP": {
+          "controle": {
+            "n": 815,
+            "log_loss": 0.587109,
+            "brier": 0.201979,
+            "reussite_pct": 67.98
+          },
+          "challenger": {
+            "n": 815,
+            "log_loss": 0.585243,
+            "brier": 0.20107,
+            "reussite_pct": 67.73
+          },
+          "gains": {
+            "log_loss": 0.001866,
+            "brier": 0.000909,
+            "sens": "positif = apport du second modèle"
+          }
+        },
+        "circuit:WTA": {
+          "controle": {
+            "n": 834,
+            "log_loss": 0.597573,
+            "brier": 0.207303,
+            "reussite_pct": 66.67
+          },
+          "challenger": {
+            "n": 834,
+            "log_loss": 0.598243,
+            "brier": 0.207517,
+            "reussite_pct": 65.83
+          },
+          "gains": {
+            "log_loss": -0.00067,
+            "brier": -0.000214,
+            "sens": "positif = apport du second modèle"
+          }
+        },
+        "circuit:CH": {
+          "controle": {
+            "n": 3630,
+            "log_loss": 0.623021,
+            "brier": 0.216748,
+            "reussite_pct": 65.98
+          },
+          "challenger": {
+            "n": 3630,
+            "log_loss": 0.623405,
+            "brier": 0.216902,
+            "reussite_pct": 65.59
+          },
+          "gains": {
+            "log_loss": -0.000384,
+            "brier": -0.000154,
+            "sens": "positif = apport du second modèle"
+          }
+        },
+        "circuit:ITF": {
+          "controle": {
+            "n": 6415,
+            "log_loss": 0.557969,
+            "brier": 0.189427,
+            "reussite_pct": 70.76
+          },
+          "challenger": {
+            "n": 6415,
+            "log_loss": 0.557083,
+            "brier": 0.189066,
+            "reussite_pct": 70.65
+          },
+          "gains": {
+            "log_loss": 0.000886,
+            "brier": 0.000361,
+            "sens": "positif = apport du second modèle"
+          }
+        },
+        "surface:Hard": {
+          "controle": {
+            "n": 6432,
+            "log_loss": 0.583035,
+            "brier": 0.199973,
+            "reussite_pct": 68.75
+          },
+          "challenger": {
+            "n": 6432,
+            "log_loss": 0.582892,
+            "brier": 0.199902,
+            "reussite_pct": 68.59
+          },
+          "gains": {
+            "log_loss": 0.000143,
+            "brier": 7.1e-05,
+            "sens": "positif = apport du second modèle"
+          }
+        },
+        "surface:Clay": {
+          "controle": {
+            "n": 4896,
+            "log_loss": 0.582677,
+            "brier": 0.200019,
+            "reussite_pct": 68.97
+          },
+          "challenger": {
+            "n": 4896,
+            "log_loss": 0.582125,
+            "brier": 0.199784,
+            "reussite_pct": 68.55
+          },
+          "gains": {
+            "log_loss": 0.000552,
+            "brier": 0.000235,
+            "sens": "positif = apport du second modèle"
+          }
+        },
+        "surface:Grass": {
+          "controle": {
+            "n": 366,
+            "log_loss": 0.587259,
+            "brier": 0.202052,
+            "reussite_pct": 66.94
+          },
+          "challenger": {
+            "n": 366,
+            "log_loss": 0.582804,
+            "brier": 0.200104,
+            "reussite_pct": 67.21
+          },
+          "gains": {
+            "log_loss": 0.004455,
+            "brier": 0.001948,
+            "sens": "positif = apport du second modèle"
+          }
+        },
+        "annee:2025": {
+          "controle": {
+            "n": 8034,
+            "log_loss": 0.584187,
+            "brier": 0.200568,
+            "reussite_pct": 68.76
+          },
+          "challenger": {
+            "n": 8034,
+            "log_loss": 0.583285,
+            "brier": 0.200149,
+            "reussite_pct": 68.5
+          },
+          "gains": {
+            "log_loss": 0.000902,
+            "brier": 0.000419,
+            "sens": "positif = apport du second modèle"
+          }
+        },
+        "annee:2026": {
+          "controle": {
+            "n": 3660,
+            "log_loss": 0.580449,
+            "brier": 0.198937,
+            "reussite_pct": 68.85
+          },
+          "challenger": {
+            "n": 3660,
+            "log_loss": 0.580995,
+            "brier": 0.199224,
+            "reussite_pct": 68.61
+          },
+          "gains": {
+            "log_loss": -0.000546,
+            "brier": -0.000287,
+            "sens": "positif = apport du second modèle"
+          }
+        },
+        "documentation:moins_500_balles": {
+          "controle": {
+            "n": 3589,
+            "log_loss": 0.522779,
+            "brier": 0.174252,
+            "reussite_pct": 74.73
+          },
+          "challenger": {
+            "n": 3589,
+            "log_loss": 0.521596,
+            "brier": 0.173771,
+            "reussite_pct": 74.67
+          },
+          "gains": {
+            "log_loss": 0.001183,
+            "brier": 0.000481,
+            "sens": "positif = apport du second modèle"
+          }
+        },
+        "documentation:moins_10_matchs_elo": {
+          "controle": {
+            "n": 1391,
+            "log_loss": 0.531796,
+            "brier": 0.177388,
+            "reussite_pct": 74.84
+          },
+          "challenger": {
+            "n": 1391,
+            "log_loss": 0.530846,
+            "brier": 0.176986,
+            "reussite_pct": 75.2
+          },
+          "gains": {
+            "log_loss": 0.00095,
+            "brier": 0.000402,
+            "sens": "positif = apport du second modèle"
+          }
+        }
+      }
+    },
+    "v2_contre_v1": {
+      "ic95_bootstrap_semaine": {
+        "log_loss": {
+          "bas": -0.003223,
+          "haut": -0.000271
+        },
+        "brier": {
+          "bas": -0.001139,
+          "haut": 0.000125
+        }
+      }
+    },
+    "confirmation": false,
+    "avertissement": "Période historique déjà utilisée par la recherche : ni confirmation vierge ni activation."
+  },
+  "genere_le": "2026-10-27T22:37:12+00:00",
+  "source": "Archive Jeff Sackmann, CC BY-NC-SA 4.0, usage non commercial et attribution requis",
+  "protocole": {
+    "n": 16000,
+    "n_decouverte": 4306,
+    "n_diagnostic_reutilise": 11694,
+    "orientation": "ordre alphabétique des identifiants, indépendant du résultat",
+    "temporalite": "résultats versés au changement de date ; aucun résultat du même jour",
+    "controles": [
+      "Elo général et surface",
+      "service–retour pur",
+      "surface",
+      "circuit",
+      "documentation"
+    ],
+    "marche_utilise": false,
+    "activation_automatique": false
+  }
+}
