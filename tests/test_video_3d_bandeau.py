@@ -11,7 +11,7 @@ FILM = HTML[HTML.index('async function filmDuJour('):HTML.index('/* ────
 
 class Bandeau(unittest.TestCase):
     def test_memes_lignes_que_la_2d(self):
-        self.assertIn("const k = m.lignes_algo; if (!k) return [];", FILM)
+        self.assertIn("const k = m.lignes_algo; if (!k || RESUME) return [];", FILM)   # paquet 308 : pas de lignes dans le résumé d'un vrai match
         for cle in ("'total_plus_'", "'handicap_favori_'", "k.tie_break", "k.set_decisif"):
             self.assertIn(cle, FILM)
 
