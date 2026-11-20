@@ -1,0 +1,13 @@
+{
+ "paquet": 314,
+ "decision": "Lucas, 20/11/2026 (« Fais le paquet ») : mettre en place en Challenger les indices retenus par etude_hesitation.py (paquet 313) qui se calculent en production comme dans l'étude : l'écart de classement officiel et l'invitation (WC). L'expérience, retenue aussi, attend un compteur de matchs ATP/WTA/Challenger identique à celui de l'étude.",
+ "zone": [0.5, 0.6],
+ "regle_retrait": "simulateur/outsiders_ch.py, chaque lundi, signal par signal : avec au moins 200 matchs Challenger jugés où le signal a joué, si la log loss AVEC le décalage dépasse celle SANS d'au moins 0,001, « retire » passe à true.",
+ "signaux": {
+  "classement": {"beta": 0.0847, "active_le": "2026-11-21", "retire": false,
+                 "origine": "écart de classement log2(rang adversaire) − log2(rang favori), borné à ±4, favori entre 50 et 60 % ; appris ensemble avec l'invitation sur 2018–2022"},
+  "invitation": {"beta": -0.2563, "active_le": "2026-11-21", "retire": false,
+                 "origine": "favori invité (WC) et pas l'adversaire : +1 ; l'inverse : −1 ; favori entre 50 et 60 %"}
+ },
+ "jugement_archive": "ensemble, zone Challenger 2023 → juin 2026 : 15 082 matchs, gain de log loss 0,0028 (5,9 erreurs types), Brier de la zone 0,2464 → 0,2450"
+}

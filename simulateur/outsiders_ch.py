@@ -11,6 +11,8 @@ RÈGLE DE RETRAIT, FIXÉE AVANT TOUT RÉSULTAT (ne pas la modifier après coup),
 Challenger jugés (sans abandon ni forfait) où le signal a joué, log loss AVEC le décalage contre SANS ce décalage ;
 avec au moins 200 matchs, si la log loss AVEC dépasse celle SANS d'au moins 0,001, « retire » passe à true dans
 simulateur/outsiders_ch.json (lu à chaque passage des pronostics). Sous 200 matchs : « trop tôt ».
+20/11/2026 (paquet 314) : même règle, même suivi, pour les deux indices de la zone d'hésitation en Challenger
+(simulateur/hesitation_ch.json : classement, invitation ; décalages gardés dans fiabilite.outsiders).
 Usage : python simulateur/outsiders_ch.py [racine]
 """
 import datetime as dt
@@ -22,6 +24,8 @@ import sys
 ICI = os.path.dirname(os.path.abspath(__file__))
 N_MIN, PERTE, EPS = 200, 0.001, 1e-6
 CLES = {'favori_fatigue': 'outsider_favori_fatigue', 'outsider_mieux_classe': 'outsider_mieux_classe'}
+FICHIERS = {'outsiders_ch.json': CLES,                                                   # paquet 274
+            'hesitation_ch.json': {'classement': 'hesitation_classement', 'invitation': 'hesitation_invitation'}}  # paquet 314
 
 
 def _ll(p, y):
@@ -34,8 +38,9 @@ def _lg(p):
     return math.log(p / (1 - p))
 
 
-def suivi(racine):
-    chemin = os.path.join(racine, 'simulateur', 'outsiders_ch.json')
+def suivi(racine, fichier='outsiders_ch.json'):
+    cles = FICHIERS.get(fichier, CLES)
+    chemin = os.path.join(racine, 'simulateur', fichier)
     try:
         with open(chemin, encoding='utf-8') as f:
             doc = json.load(f)
@@ -48,7 +53,7 @@ def suivi(racine):
         R = []
     out, change = {}, False
     for nom, v in (doc.get('signaux') or {}).items():
-        cle = CLES.get(nom, nom)
+        cle = cles.get(nom, nom)
         avec, sans = [], []
         for m in R:
             o = ((m.get('fiabilite') or {}).get('outsiders')) or {}
@@ -75,8 +80,9 @@ def suivi(racine):
 
 if __name__ == '__main__':
     racine = sys.argv[1] if len(sys.argv) > 1 else os.path.join(ICI, '..')
-    r, nouveau = suivi(racine)
-    if nouveau:
-        with open(os.path.join(racine, 'simulateur', 'outsiders_ch.json'), 'w', encoding='utf-8') as f:
-            json.dump(nouveau, f, ensure_ascii=False, indent=1)
-    print(json.dumps(r, ensure_ascii=False))
+    for fichier in FICHIERS:
+        r, nouveau = suivi(racine, fichier)
+        if nouveau:
+            with open(os.path.join(racine, 'simulateur', fichier), 'w', encoding='utf-8') as f:
+                json.dump(nouveau, f, ensure_ascii=False, indent=1)
+        print(fichier, json.dumps(r, ensure_ascii=False))

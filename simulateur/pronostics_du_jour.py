@@ -290,6 +290,52 @@ def signaux_outsiders(c, p_base, h, a, tournoi, debut):
     return d
 
 
+# 20/11/2026 (paquet 314, DÉCISION DE LUCAS après etude_hesitation.py, paquet 313) — LÀ OÙ L'ALGO HÉSITE, en
+# CHALLENGER : quand le favori est entre 50 et 60 % (après les signaux en place), deux indices connus avant le match,
+# appris ensemble sur 2018–2022 et jugés sur 2023 → juin 2026 (15 082 matchs, gain 0,0028, 5,9 erreurs types) :
+#   classement : log2(rang de l'adversaire) − log2(rang du favori), borné à ±4 (classements TennisApi du programme) ;
+#   invitation : favori invité (WC) et pas l'adversaire : +1 ; l'inverse : −1.
+# Décalage (logit) vers le favori = β·indice (simulateur/hesitation_ch.json). Retrait automatique : outsiders_ch.py.
+HESITATION_CH = {}
+
+
+def charger_hesitation(racine):
+    try:
+        with open(os.path.join(racine, 'simulateur', 'hesitation_ch.json'), encoding='utf-8') as f:
+            doc = json.load(f)
+    except (OSError, ValueError):
+        return {}
+    return {k: float(v['beta']) for k, v in (doc.get('signaux') or {}).items()
+            if isinstance(v, dict) and v.get('beta') is not None and not v.get('retire')}
+
+
+def signaux_hesitation(c, p_home, h, a, debut):
+    """{signal: décalage logit vers home} des indices de la zone d'hésitation en place (Challenger seulement)."""
+    if c != 'CH' or not HESITATION_CH or p_home is None or p_home == 0.5:
+        return {}
+    pf = max(p_home, 1 - p_home)
+    if not (0.5 < pf < 0.6):
+        return {}
+    fav_home = p_home > 0.5
+    s = 1.0 if fav_home else -1.0
+    d = {}
+    if 'classement' in HESITATION_CH:
+        r = rangs_actuels_du_match(h, a, debut)
+        if r and all(isinstance(v, int) and v > 0 for v in r):
+            rf, ra = (r[0], r[1]) if fav_home else (r[1], r[0])
+            x = max(-4.0, min(4.0, math.log2(ra) - math.log2(rf)))
+            if x:
+                d['hesitation_classement'] = s * HESITATION_CH['classement'] * x
+    if 'invitation' in HESITATION_CH:
+        st = entree_du_match(h, a, debut)
+        if st:
+            wc = [1.0 if str(v or '').strip().upper() == 'WC' else 0.0 for v in st]
+            x = (wc[0] - wc[1]) if fav_home else (wc[1] - wc[0])
+            if x:
+                d['hesitation_invitation'] = s * HESITATION_CH['invitation'] * x
+    return d
+
+
 def poids_de(c):
     """Poids du mélange pour ce circuit : ceux du circuit s'ils sont en place, sinon les poids communs."""
     if not COMBINAISON:
@@ -1521,9 +1567,10 @@ def construire(racine, maintenant=None, uids=None, pentes_forcees=None):
     REGLAGES = charger_reglages(racine)
     CHOIX = charger_choix(racine)
     COMBINAISON = charger_combinaison(racine)
-    global POIDS_CIRCUIT, OUTSIDERS_CH, DERNIERS_MATCHS
+    global POIDS_CIRCUIT, OUTSIDERS_CH, DERNIERS_MATCHS, HESITATION_CH
     POIDS_CIRCUIT = charger_poids_circuit(racine) if COMBINAISON else {}
     OUTSIDERS_CH = charger_outsiders(racine)
+    HESITATION_CH = charger_hesitation(racine)
     try:
         _ald = dict(etat.get('alias') or {})
         DERNIERS_MATCHS = charger_derniers_matchs(racine, lambda n: _ald.get(E.cle(n), E.cle(n)) if n else None) if OUTSIDERS_CH else None
@@ -1671,6 +1718,12 @@ def construire(racine, maintenant=None, uids=None, pentes_forcees=None):
                 so_ = signaux_outsiders(c, p_base, h, a, x['tournoi'], x['debut'])      # paquet 274
                 if so_:
                     sh_ = dict(sh_ or {}, **so_)
+                # paquet 314 : zone d'hésitation, jugée sur le % après les signaux en place (comme dans l'étude)
+                qz_ = min(max(p_base, 1e-6), 1 - 1e-6)
+                sz_ = signaux_hesitation(c, sig(math.log(qz_ / (1 - qz_)) + sum((sh_ or {}).values())), h, a, x['debut'])
+                if sz_:
+                    sh_ = dict(sh_ or {}, **sz_)
+                    so_ = dict(so_ or {}, **sz_)          # gardés avec les décalages d'outsider (règle de retrait)
                 pf_ = (pentes_forcees or {}).get(uid)
                 if pf_:                     # 18/11/2026 (paquet 270) : correction du niveau de fiabilité, en dernier
                     q0_ = min(max(p_base, 1e-6), 1 - 1e-6)
