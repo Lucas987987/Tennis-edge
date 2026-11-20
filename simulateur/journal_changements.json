@@ -1515,6 +1515,13 @@
    "paquet": 314,
    "quoi": "ZONE D'HÉSITATION EN CHALLENGER (paquet 314, décision de Lucas après l'étude du paquet 313). Quand l'algo donne son favori entre 50 et 60 % en Challenger (après les signaux en place), deux indices connus avant le match corrigent le % : l'écart de classement officiel (favori mieux classé : un peu renforcé ; moins bien classé : un peu affaibli) et l'invitation (un favori invité est affaibli, un adversaire invité le renforce). Coefficients appris ensemble sur 2018–2022, jugés sur 2023 → juin 2026 : 15 082 matchs, gain de log loss 0,0028 (5,9 erreurs types), Brier de la zone 0,2464 → 0,2450. L'expérience, retenue aussi par l'étude, attend un compteur de matchs identique à celui de l'étude. Le site affiche l'indice appliqué (« match serré : écart de classement officiel », « match serré : joueur invité »).",
    "garde_fou": "Retrait automatique chaque lundi (simulateur/outsiders_ch.py), indice par indice : avec au moins 200 matchs Challenger jugés où l'indice a joué, si la log loss AVEC dépasse celle SANS d'au moins 0,001, il est retiré (simulateur/hesitation_ch.json). Retrait à la main : « retire » à true dans simulateur/hesitation_ch.json."
+  },
+  {
+   "date": "2026-11-20",
+   "statut": "production",
+   "paquet": 315,
+   "quoi": "ZONE D'HÉSITATION EN CHALLENGER : L'EXPÉRIENCE (paquet 315). Le troisième indice retenu par l'étude du paquet 313 entre dans l'algo : le joueur qui a déjà disputé plus de matchs ATP, WTA ou Challenger (depuis 2012) gagne un peu plus qu'annoncé quand le favori est entre 50 et 60 %. Le compteur est exactement celui de l'étude : archive jusqu'au 31/05/2026 (simulateur/experience_joueurs.json, fabriqué par simulateur/experience_joueurs.py), puis les matchs terminés des feuilles de match. Les trois indices (classement, invitation, expérience) prennent leurs coefficients appris ENSEMBLE sur 2018–2022, parce que classement et expérience se recoupent : jugés sur 2023 → juin 2026, 15 082 matchs, gain de log loss 0,0041 (7,5 erreurs types), Brier de la zone 0,2464 → 0,2444.",
+   "garde_fou": "Même retrait automatique, indice par indice, chaque lundi (simulateur/outsiders_ch.py → simulateur/hesitation_ch.json). Retrait à la main : « retire » à true pour « experience » dans simulateur/hesitation_ch.json ; remettre les coefficients du paquet 314 pour revenir à deux indices."
   }
  ]
 }

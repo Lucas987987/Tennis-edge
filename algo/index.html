@@ -1826,7 +1826,8 @@ function essentielListe(m){
                   outsider_favori_fatigue: L==='fr'?'favori sorti d’un match en 3 sets (outsider remonté)':'favourite coming off a three-setter (underdog raised)',
                   outsider_mieux_classe: L==='fr'?'outsider mieux classé que le favori (outsider remonté)':'underdog ranked higher than the favourite (underdog raised)',
                   hesitation_classement: L==='fr'?'match serré : écart de classement officiel':'close match: official ranking gap',
-                  hesitation_invitation: L==='fr'?'match serré : joueur invité (wild card)':'close match: wild-card entry' };
+                  hesitation_invitation: L==='fr'?'match serré : joueur invité (wild card)':'close match: wild-card entry',
+                  hesitation_experience: L==='fr'?'match serré : expérience du circuit':'close match: tour experience' };
     const circ = m.circuit === 'CH' ? 'Challenger' : m.circuit, ph = sgc.p_home_sans;
     L_.push({ sens:'info', txt: t('es_signaux', sgc.appliques.map(k=>lib[k]||k).join(', '), circ,
                                  `${court(ph >= .5 ? m.home : m.away)} ${pc0(Math.max(ph, 1-ph))}`) });

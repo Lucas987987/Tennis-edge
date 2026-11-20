@@ -25,7 +25,8 @@ ICI = os.path.dirname(os.path.abspath(__file__))
 N_MIN, PERTE, EPS = 200, 0.001, 1e-6
 CLES = {'favori_fatigue': 'outsider_favori_fatigue', 'outsider_mieux_classe': 'outsider_mieux_classe'}
 FICHIERS = {'outsiders_ch.json': CLES,                                                   # paquet 274
-            'hesitation_ch.json': {'classement': 'hesitation_classement', 'invitation': 'hesitation_invitation'}}  # paquet 314
+            'hesitation_ch.json': {'classement': 'hesitation_classement', 'invitation': 'hesitation_invitation',
+                                   'experience': 'hesitation_experience'}}  # paquet 314
 
 
 def _ll(p, y):
