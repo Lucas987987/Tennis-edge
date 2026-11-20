@@ -102,6 +102,19 @@ class Construire(unittest.TestCase):
         with self.assertRaises(ValueError):
             R.construire(str(self.preparer(self.feuille(sh=(7, 6), sa=(6, 0)), jeux)), UID)
 
+    def test_vraies_stats(self):
+        fe = self.feuille()
+        fe['stats'] = {'ALL': {'aces': [5, None, 1, None], 'doubleFaults': [2, None, 4, None], 'pointsTotal': [60, None, 40, None],
+                               'firstServeAccuracy': [30, 50, 27, 45], 'breakPointsScored': [3, None, 1, None],
+                               'breakPointsSaved': [2, 3, 4, 7]}}
+        r = R.construire(str(self.preparer(fe, match_6_0_6_0('H'))), UID)
+        self.assertEqual(r['stats'], {'aces': [5, 1], 'df': [2, 4], 'pts': [60, 40], 'prem': [60, 60], 'bb': [[3, 7], [1, 3]]})
+        fe2 = dict(fe, home={'nom': 'Cia Do'}, away={'nom': 'Ana Bo'})          # feuille dans l'autre sens
+        r2 = R.construire(str(self.preparer(fe2, match_6_0_6_0('H'))), UID)
+        self.assertEqual(r2['stats']['aces'], [1, 5])
+        self.assertEqual(r2['stats']['bb'], [[1, 3], [3, 7]])
+        self.assertIsNone(R.stats_reelles({}, 1))
+
     def test_main_ecrit_le_fichier(self):
         d = self.preparer(self.feuille(), match_6_0_6_0('H'))
         self.assertEqual(R.main(['x', UID, str(d)]), 0)
@@ -145,6 +158,13 @@ class Branchements(unittest.TestCase):
         self.assertNotIn('git push', self.wf)
         self.assertIn("'&resume=1' if a.resume", self.video)
         self.assertIn("'resume' if a.resume else 'simulation'", self.video)
+
+    def test_fin_et_matin(self):
+        self.assertIn('${RESUME && RESUME.stats ? statsReelles(RESUME.stats) : \'\'}', self.page)
+        self.assertGreaterEqual(self.page.count('r_st:{'), 2)
+        self.assertIn("cron: '12 6 * * *'", self.wf)
+        self.assertIn("match_du_jour_veille", self.wf)
+        self.assertIn('--uid "${{ steps.r.outputs.uid }}"', self.wf)
 
 
 if __name__ == '__main__':

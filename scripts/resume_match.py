@@ -84,6 +84,33 @@ def _jeu_complet(pts, decisif):
     return False
 
 
+def stats_reelles(fe, s):
+    """Les vraies statistiques du match (feuille TennisApi, match entier), dans l'ordre des joueurs du site :
+    aces, doubles fautes, % de 1res balles, balles de break converties [réussies, occasions], points gagnés.
+    None si la feuille n'en a pas. (Paquet 312 : affichées à la fin du résumé ; descriptif, le % ne change pas.)"""
+    st = (fe.get('stats') or {}).get('ALL') or {}
+    if not st:
+        return None
+    v = lambda k, i: (st.get(k) or [None] * 4)[i]
+    out = {}
+    for cle, k in (('aces', 'aces'), ('df', 'doubleFaults'), ('pts', 'pointsTotal')):
+        x = [v(k, 0), v(k, 2)]
+        if None not in x:
+            out[cle] = [int(x[0]), int(x[1])]
+    p = [v('firstServeAccuracy', 0), v('firstServeAccuracy', 1), v('firstServeAccuracy', 2), v('firstServeAccuracy', 3)]
+    if None not in p and p[1] and p[3]:
+        out['prem'] = [round(100 * p[0] / p[1]), round(100 * p[2] / p[3])]
+    # balles de break : réussies par le joueur, occasions = balles de break de l'adversaire (sauvées + perdues)
+    r0, r1, o1, o0 = v('breakPointsScored', 0), v('breakPointsScored', 2), v('breakPointsSaved', 3), v('breakPointsSaved', 1)
+    if None not in (r0, r1, o0, o1):
+        out['bb'] = [[int(r0), int(o1)], [int(r1), int(o0)]]
+    if not out:
+        return None
+    if s < 0:
+        out = {k: [x[1], x[0]] for k, x in out.items()}
+    return out
+
+
 def construire(racine, uid):
     """{trace, premier, sets, vainqueur, …} dans l'ordre des joueurs du site ; lève ValueError en cas de refus."""
     with open(os.path.join(racine, 'algo', 'donnees.json'), encoding='utf-8') as f:
@@ -132,7 +159,7 @@ def construire(racine, uid):
     vainqueur = (0 if v == 1 else 1) if s > 0 else (1 if v == 1 else 0)
     return {'uid': uid, 'trace': trace, 'premier': premier, 'sets': sets, 'vainqueur': vainqueur,
             'score': ' '.join(f'{a}-{b}' if vainqueur == 0 else f'{b}-{a}' for a, b in sets),
-            'points': len(trace), 'source': 'feuille et point par point TennisApi'}
+            'points': len(trace), 'stats': stats_reelles(fe, s), 'source': 'feuille et point par point TennisApi'}
 
 
 def main(argv):

@@ -340,6 +340,7 @@ body.video .film .g3d-cv{width:100cqw;height:var(--vue);aspect-ratio:auto;max-he
 .te-signe i{width:.62em;height:.62em;border-radius:50%;background:#D4FF3A;box-shadow:0 0 .6em #D4FF3A;flex:none}
 .film .te-signe{position:absolute;right:3cqw;top:calc(var(--haut) + var(--vue) - 7.2cqw);z-index:6;font-size:3.1cqw;background:rgba(7,6,26,.55);border:1px solid rgba(255,255,255,.12);border-radius:1.2cqw;padding:.8cqw 1.6cqw}
 .ca .te-signe{position:absolute;right:56px;top:12px;font-size:21px}
+.film .f3-fin:not([hidden]) ~ .te-signe{top:auto;bottom:3.4cqw;right:50%;transform:translateX(50%);background:rgba(7,6,26,.92)}   /* carte de fin : en bas, au centre */
 .film .f3-bug{position:absolute;left:4cqw;right:4cqw;top:calc(var(--haut) + var(--vue) + 2.4cqw);background:linear-gradient(180deg,rgba(14,10,36,.92),rgba(7,6,26,.92));border:1px solid rgba(255,255,255,.16);border-radius:2cqw;padding:1.2cqw 2cqw;box-shadow:0 1.5cqw 5cqw rgba(0,0,0,.45)}
 .film .f3-l{display:flex;align-items:center;gap:1.6cqw;font-weight:800;font-size:5cqw;line-height:1.35;border-left:1cqw solid var(--c);padding-left:2cqw}
 .film .f3-l + .f3-l{margin-top:.6cqw}
@@ -380,6 +381,10 @@ body.video .film .g3d-cv{width:100cqw;height:var(--vue);aspect-ratio:auto;max-he
 .film .f3-fin-lg{display:grid;grid-template-columns:1fr;gap:1.2cqw;width:100%;margin-top:1cqw}
 .film .f3-fin-lg div{display:flex;justify-content:space-between;font-weight:700;font-size:4cqw;padding:1.2cqw 2.4cqw;border-radius:1.2cqw;background:rgba(255,255,255,.06);color:#ABA3D6}
 .film .f3-fin-lg .oui{color:#D4FF3A}.film .f3-fin-lg b{color:#F4F1FF}
+.film .f3-fin-st{width:100%;margin-top:.5cqw}
+.film .f3-fin-st h4{margin:0 0 1cqw;font-weight:800;font-size:3.4cqw;letter-spacing:.08em;text-transform:uppercase;color:#ABA3D6}
+.film .f3-fin-st div{display:grid;grid-template-columns:1fr 2.2fr 1fr;align-items:center;font-weight:800;font-size:4.2cqw;padding:.9cqw 2cqw;border-radius:1.2cqw;background:rgba(30,24,66,.96);margin-top:.8cqw}
+.film .f3-fin-st span{font-weight:600;font-size:3.5cqw;color:#ABA3D6}.film .f3-fin-st .j0{color:#2EE6FF;text-align:left}.film .f3-fin-st .j1{color:#FF4FAE;text-align:right}
 .film .f3-fin-pied{font-weight:700;font-size:3.4cqw;color:#ABA3D6;margin-top:2cqw}
 .film .f3-pres{position:absolute;left:5cqw;right:5cqw;top:calc(var(--haut) + var(--vue) - 30cqw);padding:2.4cqw 3.4cqw;background:linear-gradient(90deg,rgba(7,6,26,.92),rgba(7,6,26,.55));border-left:1.4cqw solid #D4FF3A;border-radius:1cqw}
 .film .f3-pres-n{font-family:var(--disp);font-size:8.6cqw;color:var(--c);text-shadow:0 0 3cqw var(--c);text-transform:uppercase;line-height:1.1}
@@ -1024,6 +1029,7 @@ const T = {
   a_pied:n=>`Simulation point par point · une parmi ${fmt(n)}`,
   r_haut:'RÉSUMÉ · SCORE RÉEL', r_vs:'Match réel · résumé en 3D', r_pied:'Score réel point par point · échanges reconstitués en 3D',
   r_fin_p:(x,q)=>`Avant le match, l’algo donnait <b>${x}</b> gagnant à <b>${pc(q)}</b>.`,
+  r_st:{aces:'Aces', df:'Doubles fautes', prem:'1res balles', bb:'Balles de break', pts:'Points gagnés'}, r_st_t:'Les vraies stats du match',
   a_hook:n=>`favori de l'algo · ${fmt(n)} simulations, sans cote`, a_serre:'match très serré',
   a_ace:'ACE !', a_df:'DOUBLE FAUTE', a_aces:'Aces', a_dfs:'Doubles fautes', a_frappes:n=>`${n} frappes`,
   a_fin_stats:(a1,a2,e1,e2)=>`Aces dans ce match : <b>${a1} – ${a2}</b> (l'algo en prévoit ${e1} – ${e2}).`,
@@ -1079,13 +1085,13 @@ const T = {
   s_titre:'Le bilan de la semaine', s_du:(a,b)=>`du ${a} au ${b} · tous les matchs ATP, WTA et Challenger`, s_circ:'Circuit',
   s_justes:'Bons vainqueurs', s_annonce:'Annoncé', s_tous:'Tous', s_fav70:n=>`Favoris annoncés à 70 % ou plus (${n} matchs)`,
   s_fav70_v:(r,a)=>`ont gagné <b>${r}</b> · annoncé ${a}`, s_rates:'Plus gros ratés', s_rate:(m,f,p,sc)=>`${m} : ${f} annoncé à <b>${p} %</b>, battu ${sc}`,
-  s_exacts:n=>`Score exact = score n° 1 de l'algo : <b>${n}</b> match${n>1?'s':''}`, s_pied:'Rien n\'est trié : chaque match pronostiqué compte, gagné ou perdu · aucune cote',
+  s_exacts:n=>`Score exact = score n° 1 de l'algo : <b>${n}</b> match${n>1?'s':''}`, s_pied:'Rien n\'est trié : chaque match pronostiqué compte, gagné ou perdu · 100 % indépendant',
   b_titre:'Le bilan de l\'algo', b_ok:'Bon vainqueur', b_ko:'Raté', b_vainq:(x,q)=>`${x} gagne · l'algo lui donnait ${q}`,
   b_reel:'Score réel', b_video:'Scénario de la vidéo', b_exact:'score exact', b_sets:'Score en sets', b_sets_v:q=>`prévu à ${q}`,
-  b_stats:'Prévu → réel', b_pied:'Même bilan, gagné ou perdu · prévisions figées avant le match, aucune cote utilisée',
+  b_stats:'Prévu → réel', b_pied:'Même bilan, gagné ou perdu · prévisions figées avant le match, aucune donnée de bookmaker',
   b_attente:'Résultat pas encore disponible', b_aces_v:'Aces de la vidéo',
   c_titre:'Les stats de l\'algo', c_sets:'Score en sets', c_scores:'Scores les plus fréquents', c_feuille:'Feuille de match prévue',
-  c_pied:n=>`Simulé <b>${fmt(n)}</b> fois, point par point · aucune cote utilisée`, c_victoire:'de chances de gagner'
+  c_pied:n=>`Simulé <b>${fmt(n)}</b> fois, point par point · aucune donnée de bookmaker`, c_victoire:'de chances de gagner'
  },
  en:{
   marque:'tennis', html_lang:'en', th_auto:'Auto', th_clair:'Light', th_sombre:'Dark', tr_match:'The match', tr_stats:'Match statistics', tr_sets:'Set scores and likeliest scores', tr_ouvrir:'Open all', tr_replier:'Close all', tr_constats:n=>`${n} key points`,
@@ -1315,6 +1321,7 @@ const T = {
   a_pied:n=>`Point-by-point simulation · one of ${fmt(n)}`,
   r_haut:'RECAP · REAL SCORE', r_vs:'Real match · 3D recap', r_pied:'Real point-by-point score · rallies rebuilt in 3D',
   r_fin_p:(x,q)=>`Before the match, the algorithm gave <b>${x}</b> a <b>${pc(q)}</b> chance to win.`,
+  r_st:{aces:'Aces', df:'Double faults', prem:'1st serves in', bb:'Break points won', pts:'Total points won'}, r_st_t:'The real match stats',
   a_hook:n=>`algorithm's favourite · ${fmt(n)} simulations, no odds`, a_serre:'very tight match',
   a_ace:'ACE!', a_df:'DOUBLE FAULT', a_aces:'Aces', a_dfs:'Double faults', a_frappes:n=>`${n}-shot rally`,
   a_fin_stats:(a1,a2,e1,e2)=>`Aces in this match: <b>${a1} – ${a2}</b> (the algorithm expects ${e1} – ${e2}).`,
@@ -1370,13 +1377,13 @@ const T = {
   s_titre:'The week in review', s_du:(a,b)=>`${a} to ${b} · every ATP, WTA and Challenger match`, s_circ:'Tour',
   s_justes:'Right winner', s_annonce:'Forecast', s_tous:'All', s_fav70:n=>`Favourites forecast at 70% or more (${n} matches)`,
   s_fav70_v:(r,a)=>`won <b>${r}</b> · forecast ${a}`, s_rates:'Biggest misses', s_rate:(m,f,p,sc)=>`${m}: ${f} forecast at <b>${p}%</b>, lost ${sc}`,
-  s_exacts:n=>`Exact score = the algorithm's no. 1 score: <b>${n}</b> match${n>1?'es':''}`, s_pied:'Nothing is filtered: every forecast match counts, win or lose · no odds',
+  s_exacts:n=>`Exact score = the algorithm's no. 1 score: <b>${n}</b> match${n>1?'es':''}`, s_pied:'Nothing is filtered: every forecast match counts, win or lose · 100% independent',
   b_titre:'The algorithm\'s report', b_ok:'Right winner', b_ko:'Missed', b_vainq:(x,q)=>`${x} wins · the algorithm gave ${q}`,
   b_reel:'Final score', b_video:'Video scenario', b_exact:'exact score', b_sets:'Score in sets', b_sets_v:q=>`forecast at ${q}`,
-  b_stats:'Forecast → actual', b_pied:'Same report, win or lose · forecasts frozen before the match, no odds used',
+  b_stats:'Forecast → actual', b_pied:'Same report, win or lose · forecasts frozen before the match, no bookmaker data',
   b_attente:'Result not available yet', b_aces_v:'Video aces',
   c_titre:'The algorithm\'s numbers', c_sets:'Score in sets', c_scores:'Most frequent scores', c_feuille:'Expected match stats',
-  c_pied:n=>`Simulated <b>${fmt(n)}</b> times, point by point · no odds used`, c_victoire:'win chance'
+  c_pied:n=>`Simulated <b>${fmt(n)}</b> times, point by point · no bookmaker data`, c_victoire:'win chance'
  }
 };
 const Q = new URLSearchParams(location.search);
@@ -7112,15 +7119,20 @@ async function filmDuJour(V, m, son){
   legende(t('a_fin'), t('a_gagne', noms[w]), coul(w), 0);
   await z(RESUME ? 2200 : 3000);
   const fp = (m.scores_probables || []).find(x => x[0] === sc.score);
+  // paquet 312 : à la fin du résumé, les vraies stats du match (feuille TennisApi) — descriptif, le % ne change pas
+  const statsReelles = S => { const L_ = t('r_st'), v = (k, i) => k === 'prem' ? `${S[k][i]}${L === 'fr' ? '\u202f%' : '%'}` : k === 'bb' ? `${S[k][i][0]}/${S[k][i][1]}` : String(S[k][i]);
+    const lignes = ['aces', 'df', 'prem', 'bb', 'pts'].filter(k => S[k]).map(k => `<div><b class="j0">${v(k, 0)}</b><span>${esc(L_[k])}</span><b class="j1">${v(k, 1)}</b></div>`).join('');
+    return lignes ? `<div class="f3-fin-st"><h4>${esc(t('r_st_t'))}</h4>${lignes}</div>` : ''; };
   const fin = $('.f3-fin');
   fin.innerHTML = `<div class="f3-fin-t">${esc(t('a_fin'))}</div><div class="f3-fin-w" style="color:${coul(w)}">${esc(t('a_gagne', noms[w]))}</div>
     <div class="f3-fin-s">${esc(scoreTxt(F.final, w === 1))}</div><div class="f3-fin-p">${RESUME ? t('r_fin_p', esc(noms[fav]), Math.max(p, 1 - p) * 100) : t('a_fin_p', esc(noms[fav]), Math.max(p, 1 - p) * 100, nSim)}</div>
     ${!RESUME && fp && fp[1] != null ? `<div class="f3-fin-p">${t('a_fin_top', esc(sc.score), fp[1] * 100, nSim)}</div>` : ''}
+    ${RESUME && RESUME.stats ? statsReelles(RESUME.stats) : ''}
     ${LG.length ? `<div class="f3-fin-lg">${lignesFaites(F.final, true).map((c, i) => `<div class="${c}"><span>${c === 'oui' ? '✓' : '✗'} ${esc(LG[i].lib)}</span><b>${pc0(LG[i].p)}</b></div>`).join('')}</div>` : ''}
     <div class="f3-fin-pied">${esc(RESUME ? t('r_pied') : t('a_pied', nSim))}</div>`;
   $('.f3-cap').hidden = true; fin.hidden = false; son('fin', 0); son('musique_fin', 300, { duree: 5.2 });
   G3D.film.camera('stade', 5);
-  await z(RESUME ? 3600 : 4800);
+  await z(RESUME ? (RESUME.stats ? 5200 : 3600) : 4800);                              // résumé : le temps de lire les vraies stats
   window.__fini = true;
 }
 
