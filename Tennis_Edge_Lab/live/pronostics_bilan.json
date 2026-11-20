@@ -1,71 +1,492 @@
 {
- "genere_le": "2026-11-20T14:35:43Z",
+ "genere_le": "2026-11-20T16:40:47Z",
  "pronostiques": 2284,
- "joues_avec_resultat": 1,
+ "joues_avec_resultat": 99,
  "tous": {
   "combinaison": {
-   "n": 0
+   "n": 94,
+   "reussite_pct": 69.1,
+   "log_loss": 0.6428,
+   "score_sets_juste_pct": 47.9,
+   "n_sets": 94
   },
   "simulation": {
-   "n": 0
+   "n": 94,
+   "reussite_pct": 62.8,
+   "log_loss": 0.6357,
+   "score_sets_juste_pct": 43.6,
+   "n_sets": 94
   },
   "stats_seules": {
-   "n": 1,
-   "reussite_pct": 100.0,
-   "log_loss": 0.516,
-   "score_sets_juste_pct": 100.0,
-   "n_sets": 1
+   "n": 99,
+   "reussite_pct": 68.7,
+   "log_loss": 0.6442,
+   "score_sets_juste_pct": 46.5,
+   "n_sets": 99
   }
  },
  "7_derniers_jours": {
   "combinaison": {
-   "n": 0
+   "n": 20,
+   "reussite_pct": 70.0,
+   "log_loss": 0.6932,
+   "score_sets_juste_pct": 45.0,
+   "n_sets": 20
   },
   "simulation": {
-   "n": 0
+   "n": 20,
+   "reussite_pct": 65.0,
+   "log_loss": 0.58,
+   "score_sets_juste_pct": 40.0,
+   "n_sets": 20
   },
   "stats_seules": {
-   "n": 0
+   "n": 20,
+   "reussite_pct": 70.0,
+   "log_loss": 0.6388,
+   "score_sets_juste_pct": 45.0,
+   "n_sets": 20
   }
  },
  "calibration": {
-  "combinaison": [],
-  "simulation": [],
+  "combinaison": [
+   {
+    "tranche": "50–60 %",
+    "n": 38,
+    "prevu": 55.7,
+    "reel": 71.1
+   },
+   {
+    "tranche": "60–70 %",
+    "n": 29,
+    "prevu": 64.2,
+    "reel": 69.0
+   },
+   {
+    "tranche": "70–80 %",
+    "n": 14,
+    "prevu": 73.5,
+    "reel": 57.1
+   },
+   {
+    "tranche": "80–90 %",
+    "n": 8,
+    "prevu": 85.1,
+    "reel": 62.5
+   },
+   {
+    "tranche": "90–100 %",
+    "n": 5,
+    "prevu": 95.3,
+    "reel": 100.0
+   }
+  ],
+  "simulation": [
+   {
+    "tranche": "50–60 %",
+    "n": 34,
+    "prevu": 55.1,
+    "reel": 47.1
+   },
+   {
+    "tranche": "60–70 %",
+    "n": 33,
+    "prevu": 65.3,
+    "reel": 69.7
+   },
+   {
+    "tranche": "70–80 %",
+    "n": 20,
+    "prevu": 74.1,
+    "reel": 70.0
+   },
+   {
+    "tranche": "80–90 %",
+    "n": 4,
+    "prevu": 83.9,
+    "reel": 75.0
+   },
+   {
+    "tranche": "90–100 %",
+    "n": 3,
+    "prevu": 95.1,
+    "reel": 100.0
+   }
+  ],
   "stats_seules": [
    {
     "tranche": "50–60 %",
-    "n": 1,
-    "prevu": 59.7,
+    "n": 47,
+    "prevu": 55.3,
+    "reel": 72.3
+   },
+   {
+    "tranche": "60–70 %",
+    "n": 27,
+    "prevu": 64.5,
+    "reel": 63.0
+   },
+   {
+    "tranche": "70–80 %",
+    "n": 16,
+    "prevu": 74.5,
+    "reel": 62.5
+   },
+   {
+    "tranche": "80–90 %",
+    "n": 6,
+    "prevu": 84.6,
+    "reel": 66.7
+   },
+   {
+    "tranche": "90–100 %",
+    "n": 3,
+    "prevu": 94.5,
     "reel": 100.0
    }
   ]
  },
  "par_circuit": {
-  "WTA": {
+  "ATP": {
    "combinaison": {
-    "n": 0
+    "n": 16,
+    "reussite_pct": 81.2,
+    "log_loss": 0.5184,
+    "score_sets_juste_pct": 68.8,
+    "n_sets": 16
    },
    "simulation": {
-    "n": 0
+    "n": 16,
+    "reussite_pct": 81.2,
+    "log_loss": 0.5204,
+    "score_sets_juste_pct": 62.5,
+    "n_sets": 16
    },
    "stats_seules": {
-    "n": 1,
-    "reussite_pct": 100.0,
-    "log_loss": 0.516,
-    "score_sets_juste_pct": 100.0,
-    "n_sets": 1
+    "n": 17,
+    "reussite_pct": 82.4,
+    "log_loss": 0.562,
+    "score_sets_juste_pct": 58.8,
+    "n_sets": 17
+   }
+  },
+  "WTA": {
+   "combinaison": {
+    "n": 11,
+    "reussite_pct": 54.5,
+    "log_loss": 0.6887,
+    "score_sets_juste_pct": 27.3,
+    "n_sets": 11
+   },
+   "simulation": {
+    "n": 11,
+    "reussite_pct": 54.5,
+    "log_loss": 0.6698,
+    "score_sets_juste_pct": 27.3,
+    "n_sets": 11
+   },
+   "stats_seules": {
+    "n": 13,
+    "reussite_pct": 61.5,
+    "log_loss": 0.6854,
+    "score_sets_juste_pct": 30.8,
+    "n_sets": 13
+   }
+  },
+  "CH": {
+   "combinaison": {
+    "n": 67,
+    "reussite_pct": 68.7,
+    "log_loss": 0.665,
+    "score_sets_juste_pct": 46.3,
+    "n_sets": 67
+   },
+   "simulation": {
+    "n": 67,
+    "reussite_pct": 59.7,
+    "log_loss": 0.6577,
+    "score_sets_juste_pct": 41.8,
+    "n_sets": 67
+   },
+   "stats_seules": {
+    "n": 69,
+    "reussite_pct": 66.7,
+    "log_loss": 0.6567,
+    "score_sets_juste_pct": 46.4,
+    "n_sets": 69
    }
   }
  },
  "derniers": [
   {
-   "debut": "2026-10-22T02:30",
-   "home": "Ann Li",
-   "away": "Zeynep Sonmez",
+   "debut": "2026-11-09T15:00",
+   "home": "Mitchell Krueger",
+   "away": "Lui Maxted",
+   "gagnant": "away",
+   "combinaison": 0.4496,
+   "simulation": 0.7004,
+   "stats": 0.4008
+  },
+  {
+   "debut": "2026-11-10T00:00",
+   "home": "Enzo Aguiard",
+   "away": "Akira Santillan",
+   "gagnant": "away",
+   "combinaison": 0.477,
+   "simulation": 0.3502,
+   "stats": 0.4995
+  },
+  {
+   "debut": "2026-11-10T00:45",
+   "home": "Benjamin Kittay",
+   "away": "Adrien Gobat",
+   "gagnant": "away",
+   "combinaison": 0.1536,
+   "simulation": 0.4501,
+   "stats": 0.1049
+  },
+  {
+   "debut": "2026-11-10T03:00",
+   "home": "Zdenek Kolar",
+   "away": "Joao Lucas Reis Da Silva",
+   "gagnant": "away",
+   "combinaison": 0.3599,
+   "simulation": 0.319,
+   "stats": 0.3694
+  },
+  {
+   "debut": "2026-11-10T09:30",
+   "home": "Sebastian Baez",
+   "away": "Daniil Glinka",
    "gagnant": "home",
-   "combinaison": null,
-   "simulation": null,
-   "stats": 0.5969
+   "combinaison": 0.5568,
+   "simulation": 0.5161,
+   "stats": 0.5815
+  },
+  {
+   "debut": "2026-11-10T11:30",
+   "home": "Adrian Andreev",
+   "away": "Benjamin Pietri",
+   "gagnant": "home",
+   "combinaison": 0.5297,
+   "simulation": 0.4652,
+   "stats": 0.5423
+  },
+  {
+   "debut": "2026-11-10T15:00",
+   "home": "Ozan Baris",
+   "away": "Oliver Tarvet",
+   "gagnant": "home",
+   "combinaison": 0.1969,
+   "simulation": 0.2416,
+   "stats": 0.1791
+  },
+  {
+   "debut": "2026-11-10T15:00",
+   "home": "Lui Maxted",
+   "away": "Hynek Barton",
+   "gagnant": "home",
+   "combinaison": 0.5306,
+   "simulation": 0.3881,
+   "stats": 0.6051
+  },
+  {
+   "debut": "2026-11-10T15:00",
+   "home": "Orel Kimhi",
+   "away": "Filip Jeff Planinsek",
+   "gagnant": "away",
+   "combinaison": 0.3945,
+   "simulation": 0.5169,
+   "stats": 0.4733
+  },
+  {
+   "debut": "2026-11-11T15:00",
+   "home": "Liam Draxl",
+   "away": "Pyotr Nesterov",
+   "gagnant": "home",
+   "combinaison": 0.7183,
+   "simulation": 0.8355,
+   "stats": 0.6632
+  },
+  {
+   "debut": "2026-11-15T10:10",
+   "home": "Cezar (2001) Cretu",
+   "away": "Felix Alopaeus",
+   "gagnant": "home",
+   "combinaison": 0.9847,
+   "simulation": 0.7348,
+   "stats": 0.9171
+  },
+  {
+   "debut": "2026-11-15T11:20",
+   "home": "Hugo Grenier",
+   "away": "Florent Bax",
+   "gagnant": "home",
+   "combinaison": 0.6409,
+   "simulation": 0.756,
+   "stats": 0.5942
+  },
+  {
+   "debut": "2026-11-15T13:40",
+   "home": "Alejandro Moro Canas",
+   "away": "Robin Catry",
+   "gagnant": "away",
+   "combinaison": 0.7854,
+   "simulation": 0.5823,
+   "stats": 0.8439
+  },
+  {
+   "debut": "2026-11-15T16:00",
+   "home": "Adam Farag-Cao",
+   "away": "Hoyoung Roh",
+   "gagnant": "away",
+   "combinaison": 0.076,
+   "simulation": 0.5552,
+   "stats": 0.1462
+  },
+  {
+   "debut": "2026-11-15T18:20",
+   "home": "David Bakonyi",
+   "away": "Axel Nefve",
+   "gagnant": "home",
+   "combinaison": 0.2112,
+   "simulation": 0.6611,
+   "stats": 0.2938
+  },
+  {
+   "debut": "2026-11-15T19:30",
+   "home": "Nicholas Mekhael",
+   "away": "Keshav Chopra",
+   "gagnant": "away",
+   "combinaison": 0.0594,
+   "simulation": 0.3808,
+   "stats": 0.2011
+  },
+  {
+   "debut": "2026-11-16T00:00",
+   "home": "Maximilian Marterer",
+   "away": "Ben Jones",
+   "gagnant": "home",
+   "combinaison": 0.8682,
+   "simulation": 0.6846,
+   "stats": 0.8463
+  },
+  {
+   "debut": "2026-11-16T00:45",
+   "home": "Zachary Viiala",
+   "away": "Samuel Heredia",
+   "gagnant": "home",
+   "combinaison": 0.1008,
+   "simulation": 0.4353,
+   "stats": 0.4875
+  },
+  {
+   "debut": "2026-11-16T08:00",
+   "home": "Luka Mikrut",
+   "away": "Michael Agwi",
+   "gagnant": "home",
+   "combinaison": 0.7461,
+   "simulation": 0.7149,
+   "stats": 0.7553
+  },
+  {
+   "debut": "2026-11-17T16:00",
+   "home": "Quinn Vandecasteele",
+   "away": "Lui Maxted",
+   "gagnant": "away",
+   "combinaison": 0.2773,
+   "simulation": 0.3051,
+   "stats": 0.2467
+  },
+  {
+   "debut": "2026-11-17T16:30",
+   "home": "Juan Carlos Prado Angelo",
+   "away": "Lautaro Midon",
+   "gagnant": "home",
+   "combinaison": 0.4531,
+   "simulation": 0.4592,
+   "stats": 0.4314
+  },
+  {
+   "debut": "2026-11-17T17:40",
+   "home": "Genaro Alberto Olivieri",
+   "away": "Gonzalo Villanueva",
+   "gagnant": "home",
+   "combinaison": 0.5997,
+   "simulation": 0.5755,
+   "stats": 0.574
+  },
+  {
+   "debut": "2026-11-18T00:10",
+   "home": "Zachary Viiala",
+   "away": "Geoffrey Blancaneaux",
+   "gagnant": "away",
+   "combinaison": 0.2975,
+   "simulation": 0.5528,
+   "stats": 0.4197
+  },
+  {
+   "debut": "2026-11-18T00:30",
+   "home": "Jason Kubler",
+   "away": "Philip Sekulic",
+   "gagnant": "away",
+   "combinaison": 0.6935,
+   "simulation": 0.7929,
+   "stats": 0.734
+  },
+  {
+   "debut": "2026-11-18T02:00",
+   "home": "David Jorda Sanchis",
+   "away": "Yu Hsiou Hsu",
+   "gagnant": "away",
+   "combinaison": 0.312,
+   "simulation": 0.3,
+   "stats": 0.3392
+  },
+  {
+   "debut": "2026-11-18T16:00",
+   "home": "Spencer Johnson",
+   "away": "Raphael Perot",
+   "gagnant": "home",
+   "combinaison": 0.6007,
+   "simulation": 0.78,
+   "stats": 0.5019
+  },
+  {
+   "debut": "2026-11-18T18:20",
+   "home": "Aidan McHugh",
+   "away": "Shunsuke Mitsui",
+   "gagnant": "away",
+   "combinaison": 0.4109,
+   "simulation": 0.3688,
+   "stats": 0.4324
+  },
+  {
+   "debut": "2026-11-18T21:00",
+   "home": "Genaro Alberto Olivieri",
+   "away": "Tristan Boyer",
+   "gagnant": "away",
+   "combinaison": 0.3733,
+   "simulation": 0.3184,
+   "stats": 0.4052
+  },
+  {
+   "debut": "2026-11-19T10:30",
+   "home": "Ben Shelton",
+   "away": "Rafael Jodar",
+   "gagnant": "home",
+   "combinaison": 0.5188,
+   "simulation": 0.6109,
+   "stats": 0.5684
+  },
+  {
+   "debut": "2026-11-19T16:00",
+   "home": "Jordan Lee",
+   "away": "Andres Martin",
+   "gagnant": "home",
+   "combinaison": 0.1754,
+   "simulation": 0.4173,
+   "stats": 0.2905
   }
  ],
  "match_simule_contre_feuille": {
