@@ -360,6 +360,30 @@ def settle_trade(t, data, result_side):
 
 
 
+def cle_position(t):
+    """20/11/2026 (paquet 305/306) : une position = un match (uid), un book, un palier. L'id contient l'horaire annoncé
+    (clé canonique « …@début ») : quand un match est retardé de 10 en 10 minutes, chaque nouvel horaire ouvrait une
+    position de plus (37 fois le même pari sur un match WTA ; 117 positions en trop sur 286 au 19/11)."""
+    return (t.get('uid'), t.get('book'), t.get('palier'))
+
+
+def marquer_doublons(trades):
+    """Les positions en double gardent leurs données mais passent en DOUBLON (hors des bilans) ; la première ouverte
+    (ordre du fichier) reste. Renvoie le nombre de positions marquées ce cycle."""
+    vus, n = set(), 0
+    for t in trades.values():
+        if t.get('status') == 'DOUBLON':
+            continue
+        k = cle_position(t)
+        if k in vus:
+            t['statut_avant_doublon'] = t.get('status')
+            t['status'] = 'DOUBLON'
+            n += 1
+        else:
+            vus.add(k)
+    return n
+
+
 def summary(trades):
     settled = [t for t in trades.values() if t.get('status') == 'SETTLED']
     op = [t for t in trades.values() if t.get('status') == 'OPEN']
@@ -377,6 +401,17 @@ def summary(trades):
         roi = 100 * sum(pnls) / len(pnls)
         wr = 100 * sum(1 for t in settled if t.get('won')) / len([t for t in settled if 'won' in t])
         print(f"  RESULTAT REEL          : {len(pnls)} paris | ROI {roi:+.2f}% / mise | gagne {wr:.0f}%")
+    # AJOUTÉ LE 20/11/2026 (paquet 306) : même bilan à UNE position par match (la première ouverte) — plusieurs books
+    # sur un même match ne sont pas des paris indépendants.
+    un, vus = [], set()
+    for t in settled:
+        if t.get('uid') not in vus and 'pnl' in t:
+            vus.add(t.get('uid'))
+            un.append(t)
+    if un:
+        clv1 = [t['clv_pin'] for t in un if 'clv_pin' in t]
+        print(f"  UNE POSITION PAR MATCH : {len(un)} matchs | ROI {100 * sum(t['pnl'] for t in un) / len(un):+.2f}% / mise"
+              + (f" | CLV Pinnacle med {st.median(clv1):+.2f}" if clv1 else ""))
     # par book
     print("  -- par book (CLV book / ROI) --")
     for sb in sorted(set(t['book'] for t in settled)):
@@ -481,6 +516,9 @@ def main():
 
     # --- mode normal : forward ---
     trades = load_journal()
+    n_doublons = marquer_doublons(trades)
+    if n_doublons:
+        print(f"  {n_doublons} position(s) en double passée(s) en DOUBLON (même match, même book, même palier).")
     n_settled = 0
     n_reste_a_regler = 0
     n_abandonnes = 0
@@ -587,6 +625,7 @@ def main():
                                 tournament=b.get('_tour'), fixture_id=b.get('_fx'))
                            for u, b in upcoming.items()])
     _vus = set()
+    deja = {cle_position(t) for t in trades.values() if t.get('status') != 'DOUBLON'}
     for uid, bk in upcoming.items():
         _k = _idx.key_of(uid)
         if _k in _vus:
@@ -602,8 +641,9 @@ def main():
             continue
         # CORRIGÉ LE 27/08/2026 (audit §4.4) : _k au lieu de uid brut.
         tid = f"{_k}|{sig['book']}|{int(sig['thr']*100)}"
-        if tid in trades:
+        if tid in trades or (uid, sig['book'], int(sig['thr'] * 100)) in deja:
             continue
+        deja.add((uid, sig['book'], int(sig['thr'] * 100)))
         trades[tid] = {'id': tid, 'uid': uid, 'home': bk.get('_home'),
                        'away': bk.get('_away'), 'side': sig['side'], 'book': sig['book'],
                        'palier': int(sig['thr'] * 100), 'entry_odds': round(sig['odds'], 2),
