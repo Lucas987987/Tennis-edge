@@ -30,6 +30,7 @@ raquette placée à gauche ou à droite, réverbération de grande salle) et voi
 numpy/scipy, l'ancienne bande-son ; sans Piper, pas de voix.
 """
 import argparse
+import json
 import functools
 import http.server
 import os
@@ -253,8 +254,20 @@ def main(argv):
     ap.add_argument('--rendu', default='3d', choices=['3d', '2d'], help='3d : le stade (défaut) ; 2d : la borne d\'arcade')
     ap.add_argument('--ips', type=int, default=IPS, help='images par seconde (30 par défaut)')
     ap.add_argument('--sans-voix', action='store_true', help="vidéo 3D sans la voix de l'arbitre")
+    ap.add_argument('--resume', action='store_true',
+                    help="résumé 3D d'un match terminé (lit algo/resume_match.json, écrit par scripts/resume_match.py)")
     ap.add_argument('--sortie', default=os.path.join(RACINE, 'videos'))
     a = ap.parse_args(argv[1:])
+    if a.resume:                       # 20/11/2026 (paquet 308) : le vrai déroulé, en 3D seulement
+        try:
+            with open(os.path.join(RACINE, 'algo', 'resume_match.json'), encoding='utf-8') as f:
+                r = json.load(f)
+        except (OSError, ValueError):
+            r = {}
+        if not a.uid or r.get('uid') != a.uid:
+            print('Résumé : algo/resume_match.json absent ou d\'un autre match (lancer scripts/resume_match.py UID).')
+            return 3
+        a.rendu, a.seed = '3d', ''
     algo = os.path.join(RACINE, 'algo')
     if not os.path.exists(os.path.join(algo, 'donnees.json')):
         print('algo/donnees.json absent : lancer simulateur/vitrine.py d\'abord.')
@@ -291,12 +304,12 @@ def main(argv):
         return 0
     q = (f"video=1&lang={a.lang}&vitesse={a.vitesse}" + (f"&seed={a.seed}" if str(a.seed).strip() else '')
          + (f"&uid={a.uid}" if a.uid else '')
-         + ('&adresse=1' if a.adresse else '') + ('&rendu=3d' if a.rendu == '3d' else ''))
+         + ('&adresse=1' if a.adresse else '') + ('&rendu=3d' if a.rendu == '3d' else '') + ('&resume=1' if a.resume else ''))
     url = f"http://127.0.0.1:{srv.server_address[1]}/index.html?{q}"
     tmp = os.path.join(a.sortie, '_brut')
     os.makedirs(tmp, exist_ok=True)
     taille = FORMATS[a.format]
-    nom = f"simulation_{a.lang}{'' if a.format == '9x16' else '_' + a.format}.mp4"
+    nom = f"{'resume' if a.resume else 'simulation'}_{a.lang}{'' if a.format == '9x16' else '_' + a.format}.mp4"
     mp4 = os.path.join(a.sortie, nom)
     if a.capture == 'images':
         try:

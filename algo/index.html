@@ -1017,6 +1017,8 @@ const T = {
   a_fin_top:(sc,q,n)=>`Score représentatif, observé sur ${fmt(n)} simulations : <b>${sc}</b> (${pc(q)} des tirages).`,
   a_fin_p:(x,q,n)=>`Sur ${fmt(n)} simulations, <b>${x}</b> gagne <b>${pc(q)}</b> du temps.`,
   a_pied:n=>`Simulation point par point · une parmi ${fmt(n)}`,
+  r_haut:'RÉSUMÉ · SCORE RÉEL', r_vs:'Match réel · résumé en 3D', r_pied:'Score réel point par point · échanges reconstitués en 3D',
+  r_fin_p:(x,q)=>`Avant le match, l’algo donnait <b>${x}</b> gagnant à <b>${pc(q)}</b>.`,
   a_hook:n=>`favori de l'algo · ${fmt(n)} simulations, sans cote`, a_serre:'match très serré',
   a_ace:'ACE !', a_df:'DOUBLE FAUTE', a_aces:'Aces', a_dfs:'Doubles fautes', a_frappes:n=>`${n} frappes`,
   a_fin_stats:(a1,a2,e1,e2)=>`Aces dans ce match : <b>${a1} – ${a2}</b> (l'algo en prévoit ${e1} – ${e2}).`,
@@ -1306,6 +1308,8 @@ const T = {
   a_fin_top:(sc,q,n)=>`Representative score observed across ${fmt(n)} simulations: <b>${sc}</b> (${pc(q)} of runs).`,
   a_fin_p:(x,q,n)=>`Across ${fmt(n)} simulations, <b>${x}</b> wins <b>${pc(q)}</b> of the time.`,
   a_pied:n=>`Point-by-point simulation · one of ${fmt(n)}`,
+  r_haut:'RECAP · REAL SCORE', r_vs:'Real match · 3D recap', r_pied:'Real point-by-point score · rallies rebuilt in 3D',
+  r_fin_p:(x,q)=>`Before the match, the algorithm gave <b>${x}</b> a <b>${pc(q)}</b> chance to win.`,
   a_hook:n=>`algorithm's favourite · ${fmt(n)} simulations, no odds`, a_serre:'very tight match',
   a_ace:'ACE!', a_df:'DOUBLE FAULT', a_aces:'Aces', a_dfs:'Double faults', a_frappes:n=>`${n}-shot rally`,
   a_fin_stats:(a1,a2,e1,e2)=>`Aces in this match: <b>${a1} – ${a2}</b> (the algorithm expects ${e1} – ${e2}).`,
@@ -2029,13 +2033,14 @@ function postResultat(m, court_){
 const VIDEO_ICI = /workers\.dev$/.test(location.hostname);
 const CLE_VIDEO = 'te_cle_video';
 function lireCle(){ try { return localStorage.getItem(CLE_VIDEO) || ''; } catch(e){ return ''; } }
-async function lancerVideo(m){
-  const msg = document.getElementById('video-msg'), zone = document.getElementById('video-zone'), b = document.getElementById('b-video');
+// 20/11/2026 (paquet 308) — « Résumé 3D du match » : même chemin, mode « resume » (le vrai déroulé, match terminé).
+async function lancerVideo(m, mode){
+  const msg = document.getElementById('video-msg'), zone = document.getElementById('video-zone'), b = document.getElementById(mode === 'resume' ? 'b-resume' : 'b-video');
   const cle = lireCle();
   if (!cle){ zone.hidden = false; document.getElementById('video-cle').focus(); msg.textContent = 'Clé privée demandée une seule fois sur cet appareil.'; return; }
   b.disabled = true; msg.textContent = 'Lancement…';
   try {
-    const r = await fetch('/video', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Cle': cle }, body: JSON.stringify({ uid: m.uid }) });
+    const r = await fetch('/video', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Cle': cle }, body: JSON.stringify({ uid: m.uid, mode: mode === 'resume' ? 'resume' : 'simulation' }) });
     let o = {}; try { o = await r.json(); } catch(e){}
     msg.textContent = o.message || (r.ok ? 'Vidéo lancée.' : `Échec (HTTP ${r.status}).`);
     if (r.status === 401){ try { localStorage.removeItem(CLE_VIDEO); } catch(e){} zone.hidden = false; }
@@ -2044,12 +2049,14 @@ async function lancerVideo(m){
 }
 function brancherVideo(m){
   const b = document.getElementById('b-video'); if (!b) return;
-  b.onclick = () => lancerVideo(m);
+  let dernierMode = 'simulation';
+  b.onclick = () => { dernierMode = 'simulation'; lancerVideo(m, dernierMode); };
+  const br = document.getElementById('b-resume'); if (br) br.onclick = () => { dernierMode = 'resume'; lancerVideo(m, dernierMode); };
   document.getElementById('video-ok').onclick = () => {
     const v = document.getElementById('video-cle').value.trim(); if (!v) return;
     try { localStorage.setItem(CLE_VIDEO, v); } catch(e){}
     document.getElementById('video-zone').hidden = true; document.getElementById('video-cle').value = '';
-    lancerVideo(m);
+    lancerVideo(m, dernierMode);
   };
 }
 // 11/11/2026 (paquet 224) — ANALYSE COMPLÈTE pour X : tout ce que la fiche sait du match, en un texte à copier.
@@ -3054,7 +3061,7 @@ function rendMdj(){
         ${m.evolution && Math.abs(m.evolution.ecart_pts) >= 1 ? `<p class="evol">${esc(t('es_premier', pc0(m.evolution.premier_p_home), court(m.home), m.evolution.premier_le ? dateHeure(m.evolution.premier_le) : ''))}</p>` : ''}
         ${rendType(m)}<div class="te-fiab-incertitude">${rendFiabilite(m.fiabilite, true)}</div>
         ${rendCartes(m)}
-        <p style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn" id="b-post">📝 Générer le post X · avant match</button><button type="button" class="btn" id="b-analyse-x">🧾 Post X · analyse complète</button><button type="button" class="btn" id="b-analyse-detaillee" aria-expanded="false" aria-controls="te-analyse-detaillee">📊 ${L==='fr' ? 'Analyse détaillée' : 'Detailed analysis'}</button>${utc(m.debut).getTime() <= Date.now() ? '<button type="button" class="btn" id="b-post-res">🏁 Générer le post X · résultat</button>' : ''}${VIDEO_ICI ? '<button type="button" class="btn" id="b-video">🎬 Générer la vidéo</button>' : ''}</p>
+        <p style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn" id="b-post">📝 Générer le post X · avant match</button><button type="button" class="btn" id="b-analyse-x">🧾 Post X · analyse complète</button><button type="button" class="btn" id="b-analyse-detaillee" aria-expanded="false" aria-controls="te-analyse-detaillee">📊 ${L==='fr' ? 'Analyse détaillée' : 'Detailed analysis'}</button>${utc(m.debut).getTime() <= Date.now() ? '<button type="button" class="btn" id="b-post-res">🏁 Générer le post X · résultat</button>' : ''}${VIDEO_ICI ? '<button type="button" class="btn" id="b-video">🎬 Générer la vidéo</button>' : ''}${VIDEO_ICI && !/ITF/i.test(m.circuit || '') && utc(m.debut).getTime() <= Date.now() - 3 * 3600e3 ? '<button type="button" class="btn" id="b-resume">🎞️ Résumé 3D du match</button>' : ''}</p>
         <section id="te-analyse-detaillee" class="te-analyse-detaillee" hidden aria-live="polite"></section>
         <div id="video-zone" hidden style="margin-top:8px"><p class="ligne" style="gap:8px;justify-content:flex-start;flex-wrap:wrap;align-items:center"><input id="video-cle" type="password" autocomplete="off" placeholder="Clé privée" aria-label="Clé privée" style="flex:1;min-width:160px;background:rgba(var(--wv),.04);color:inherit;border:1px solid var(--line2);border-radius:999px;padding:9px 14px;font:inherit"><button type="button" class="btn" id="video-ok">Lancer</button></p></div>
         <p id="video-msg" class="aide" aria-live="polite"></p>
@@ -3900,6 +3907,11 @@ const G3D = (() => {
     gl.linkProgram(p); if (!gl.getProgramParameter(p, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(p));
     return p;
   }
+  // paquet 299 : export de la scène pour un rendu hors du navigateur (essai Blender sur carte graphique, à la main).
+  // Inactive pour les visiteurs : seul le film lancé avec ?export3d=1 garde une copie des maillages et des textures.
+  const CAPT = { actif: typeof location !== 'undefined' && /[?&]video=1(&|$)/.test(location.search) && /[?&]export3d=1(&|$)/.test(location.search),
+    n: 0, m: new Map(), nt: 0, tex: new Map(), image: null, fov: 0.6 };
+  const captM = (o, d) => { if (CAPT.actif) { o.__cid = ++CAPT.n; CAPT.m.set(o.__cid, d); } return o; };
   function maillage(g, inst) {
     const vao = gl.createVertexArray(); gl.bindVertexArray(vao);
     const buf = (loc, data, n) => { const b = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, b);
@@ -3917,7 +3929,7 @@ const G3D = (() => {
     } else { gl.vertexAttrib4f(4, 0, 0, 0, 1); gl.vertexAttrib3f(5, 1, 1, 1); }
     const ib = gl.createBuffer(); gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ib); gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint32Array(g.i), gl.STATIC_DRAW);
     gl.bindVertexArray(null);
-    return { vao, n: g.i.length, ni };
+    return captM({ vao, n: g.i.length, ni }, { p: g.p, n: g.n, c: g.c, u: g.u, b: g.b, w: g.w, i: g.i, inst: inst || null });
   }
   function texture(canvas, repeter, mip = true) {
     const t = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, t);
@@ -3928,6 +3940,7 @@ const G3D = (() => {
     else gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
     const ext = gl.getExtension('EXT_texture_filter_anisotropic');
     if (ext) gl.texParameterf(gl.TEXTURE_2D, ext.TEXTURE_MAX_ANISOTROPY_EXT, 8);
+    if (CAPT.actif) { t.__cid = ++CAPT.nt; CAPT.tex.set(t.__cid, { src: canvas, repeter: !!repeter }); }
     return t;
   }
   function toile(w, h, f) { const c = document.createElement('canvas'); c.width = w; c.height = h; f(c.getContext('2d'), w, h); return c; }
@@ -4569,7 +4582,10 @@ const G3D = (() => {
         const ib = gl.createBuffer(); gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ib);
         gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, q.i32 ? new Uint32Array(buf, B + q.idx, q.ni) : new Uint16Array(buf, B + q.idx, q.ni), gl.STATIC_DRAW);
         gl.bindVertexArray(null);
-        return { vao, n: q.ni, type: q.i32 ? gl.UNSIGNED_INT : gl.UNSIGNED_SHORT, tex: q.tex };
+        return captM({ vao, n: q.ni, type: q.i32 ? gl.UNSIGNED_INT : gl.UNSIGNED_SHORT, tex: q.tex }, CAPT.actif ? { p: pos, n: Float32Array.from(nor, v => Math.max(-1, v / 127)),
+          u: Float32Array.from(new Uint16Array(buf, B + q.uv, q.n * 2), v => v / 65535), b: new Uint8Array(buf, B + q.jnt, q.n * 4).slice(),
+          w: Float32Array.from(new Uint8Array(buf, B + q.wgt, q.n * 4), v => v / 255), cls: new Uint8Array(buf, B + q.cls, q.n).slice(),
+          i: q.i32 ? new Uint32Array(buf, B + q.idx, q.ni).slice() : new Uint16Array(buf, B + q.idx, q.ni).slice() } : null);
       };
       const mains = [J.os.noms.indexOf('hand_r'), J.os.noms.indexOf('hand_l')];
       for (const s in J.corps) MOD.corps[s] = { corps: prim(J.corps[s].corps, mains), yeux: prim(J.corps[s].yeux) };
@@ -5433,6 +5449,7 @@ const G3D = (() => {
     return projeter(w, h, eye, cible, cam.fov);
   }
   function projeter(w, h, eye, cible, fov) {
+    CAPT.fov = fov;
     const vp = M4.mul(M4.persp(fov, w / h, 0.5, 200), M4.look(eye, cible, [0, 1, 0]));
     const lc = [SOLEIL[0] * 40, SOLEIL[1] * 40, SOLEIL[2] * 40];
     const lvp = M4.mul(M4.ortho(-22, 22, -26, 26, 1, 100), M4.look(lc, [0, 0, 0], [0, 1, 0]));
@@ -5487,6 +5504,11 @@ const G3D = (() => {
         for (const c of [o.coiffe, o.sourcils]) { const H = MOD.cheveux[c]; if (H) dyn.push([H, M4.id(), false, o.skin, { tex: MOD.tex[H.tex], col: o.cheveux }]); }
       });
     }
+    if (CAPT.actif) CAPT.image = { t, tr: tReel, w, h, eye: [...eye], cible: [...visee], fov: CAPT.fov, foc: FILM.focale, jour: !!E.jour, surface: E.surface,
+      balle: b ? [b.x, b.y, b.z] : null, led: -(t * 0.06) % 1, ralenti: !!RAL.actif,
+      clap: RAL.actif ? 0 : cl(Math.exp(-(t - applaudir) * 0.7), 0, 1), debout: RAL.actif ? 0 : cl(Math.exp(-(t - applaudir) * 0.5), 0, 1) * (grandPoint ? 1 : 0),
+      dyn: dyn.map(([m, mat, tr, peau, opt]) => ({ m: m.__cid || 0, mat: Array.from(mat), tr: !!tr, os: peau ? Array.from(peau) : null,
+        tex: opt && opt.tex ? opt.tex.__cid || 0 : 0, tenue: opt && opt.tenue ? opt.tenue.map(c => [...c]) : null, col: opt && opt.col ? [...opt.col] : null })) };
     // 1) ombres
     gl.bindFramebuffer(gl.FRAMEBUFFER, smFbo); gl.viewport(0, 0, SM, SM); gl.clear(gl.DEPTH_BUFFER_BIT);
     gl.useProgram(progO); gl.uniformMatrix4fv(UO.uLVP, false, lvp); gl.enable(gl.DEPTH_TEST); gl.disable(gl.CULL_FACE);
@@ -5706,7 +5728,7 @@ const G3D = (() => {
     nuit: { fond: [0.06, 0.05, 0.16], ciel: [0.62, 0.64, 0.82], sol: [0.28, 0.26, 0.36], brume: [0.08, 0.07, 0.2], lum: [0.95, 0.912, 0.836] },
     jour: { fond: [0.53, 0.71, 0.92], ciel: [0.78, 0.86, 1.0], sol: [0.46, 0.42, 0.36], brume: [0.64, 0.76, 0.93], lum: [1.32, 1.24, 1.08] },
   };
-  const VERSION_3D = 'v296';
+  const VERSION_3D = 'v308';
   // ── LE FILM (paquet 276) : la vidéo du jour en 3D. La page choisit les moments forts du match simulé et les fait
   // jouer ici un par un ; public en panneaux et image un peu réduite (la vidéo est rendue sans carte graphique).
   const FILM = { actif: false, echelle: 1, son: null, cam: null, t: 0, focale: 0 };
@@ -5795,6 +5817,7 @@ const G3D = (() => {
     // ── la vidéo du jour en 3D (paquet 276)
     film: {
       demarrer(hote, m, r, o = {}) {
+        if (o.export3d) CAPT.actif = true;                                            // paquet 299 : essai de rendu hors navigateur
         FILM.actif = true; FILM.echelle = o.echelle || 0.67;   // paquet 291 : retrait du paquet 288 (run vidéo de 65 min) — échelle 0,67 FILM.son = o.son || null; QUALITE = 'haute';
         Object.assign(VUES.tv, { pitch: 0.27, dist: 22.5 }); Object.assign(cam, VUES.tv);              // cadre vertical : plus près
         if (!essaye) { essaye = true; try { ok = creer(); } catch (e) { ok = false; } }
@@ -5817,6 +5840,29 @@ const G3D = (() => {
         plans: PLANS.reduce((x, p) => Math.max(x, p.t1), 0), gestes: GESTE.reduce((x, g) => Math.max(x, g ? g.t0 + g.d : 0), 0) }; },
     },
     _modeles: () => MOD.etat,
+    // paquet 299 : la scène et la dernière image dessinée, pour l'essai de rendu Blender (scripts/film_export.py)
+    _export: {
+      actif: () => CAPT.actif,
+      image: () => CAPT.image,
+      scene() {
+        const obj = o => o && o.m ? { m: o.m.__cid || 0, col: o.col || null, alpha: o.alpha || 1, spec: o.spec ?? 0.2, emis: o.emis || 0, tex: o.tex ? o.tex.__cid || 0 : 0,
+          panneau: !!o.panneau, recoit: o.recoit !== false, ombre: !!o.ombre } : null;
+        const arb = !(MOD.etat === 'pret' && MATCH);
+        const A = AMBIANCES[E.jour ? 'jour' : 'nuit'];
+        return { fixes: scene.fixes.map(obj), transp: scene.transp.map(obj), public: obj(scene.public), led: obj(scene.led), ecran: obj(scene.ecran),
+          arbitre: arb ? [obj(scene.arbitre), obj(scene.officiels)].filter(Boolean) : [], balle: BALLE ? BALLE.__cid : 0, cordage: TX.cordage ? TX.cordage.__cid || 0 : 0,
+          soleil: [...SOLEIL], ambiance: { ciel: [...A.ciel], sol: [...A.sol], brume: [...A.brume], lum: [...A.lum], fond: [...A.fond] },
+          jour: !!E.jour, surface: E.surface, reflet: REFLET[E.surface] || 0, modeles: MOD.etat,
+          cadre: (r => [r.left, r.top, r.width, r.height])(cv.getBoundingClientRect()) };
+      },
+      maillage(id) { const d = CAPT.m.get(id); if (!d) return null; const L = x => x ? Array.from(x) : null;
+        return { p: L(d.p), n: L(d.n), c: L(d.c), u: L(d.u), b: L(d.b), w: L(d.w), i: L(d.i), cls: L(d.cls), inst: d.inst ? { pos: L(d.inst.pos), col: L(d.inst.col) } : null }; },
+      ids: () => [...CAPT.m.keys()],
+      texture(id) { const d = CAPT.tex.get(id); if (!d || !d.src) return null; const s = d.src, w = s.width, h = s.height; if (!w || !h) return null;
+        const c = document.createElement('canvas'); c.width = w; c.height = h; c.getContext('2d').drawImage(s, 0, 0);
+        return { png: c.toDataURL('image/png'), repeter: d.repeter, w, h }; },
+      textures: () => [...CAPT.tex.keys()],
+    },
     _phys: { viser, voler, coupPhysique, PHY, SURF_REBOND, hauteurFilet, styleCoup, laterale, seuilCourse, officiels: () => OFFICIELS, surface: s => { E.surface = s; } },
     _plans: PLANS, _gestes: GESTE, _son: SON, _scoreParle: scoreParle, _poseGeste: poseGeste,
     _cam: cam, _maj: maj, _etat: E, _J: J, _R: () => R, _poses: { poseAttente, poseRepos, poseCourse, poseCoupDroit, poseRevers, poseService, poseSlice, poseVolee },
@@ -6785,6 +6831,7 @@ window.addEventListener('hashchange',()=>{
 
 /* ───────────── mode vidéo (?video=1) : la borne seule, plein écran ─────────────
    La bande-son est faite après coup (scripts/sons.py) : chaque événement est noté ici avec son heure. */
+let RESUME = null;                                                            // paquet 308 : le vrai déroulé (résumé)
 function modeVideo(){
   document.body.classList.add('video');
   const id = Q.get('uid') || (D.match_du_jour && D.match_du_jour.uid);
@@ -6795,6 +6842,19 @@ function modeVideo(){
   const son = (type, delai, plus) => window.__sons.push({ t: Date.now() + (delai || 0), type, ...(plus || {}) });   // plus : {pan, texte} (vidéo 3D)
   // sans « seed » : le scénario représentatif réellement tiré ; avec : le tirage demandé
   const sd = Q.get('seed') ? Number(Q.get('seed')) : null;
+  // 20/11/2026 (paquet 308) — RÉSUMÉ 3D D'UN VRAI MATCH TERMINÉ (?resume=1) : scripts/resume_match.py écrit la suite
+  // RÉELLE des points (feuille et point par point TennisApi) dans resume_match.json ; le film du jour la rejoue avec
+  // le vrai score à l'écran, seuls les échanges sont reconstitués. 3D seulement, jamais d'ITF.
+  if (Q.get('resume') === '1'){
+    const vide = () => { V.innerHTML = '<p style="padding:10vw;color:#fff">—</p>'; window.__fini = true; };
+    if (/ITF/i.test(m.circuit || '') || typeof G3D === 'undefined' || !G3D.disponible()) return vide();
+    return fetch('resume_match.json', { cache: 'no-store' }).then(r => r.json()).then(R => {
+      if (!R || R.uid !== m.uid || !/^[01]+$/.test(R.trace || '') || !Array.isArray(R.sets)) return vide();
+      RESUME = R;
+      const sc0 = (m.simulation && m.simulation.scenario) || {};
+      return filmDuJour(V, { ...m, simulation: { ...m.simulation, scenario: { ...sc0, points: R.trace, premier_serveur: R.premier, score: R.score } } }, son);
+    }).catch(vide);
+  }
   // 18/11/2026 (paquet 276) — la vidéo en 3D : le match représentatif, ses moments forts rejoués dans le stade
   const sc = m.simulation && m.simulation.scenario;
   if (Q.get('rendu') === '3d' && sd == null && !/ITF/i.test(m.circuit || '') && sc && /^[01]+$/.test(sc.points || '')
@@ -6849,14 +6909,16 @@ async function filmDuJour(V, m, son){
   const p = m.p_home, M = Moteur(calibre(m.simulation, p)), sc = m.simulation.scenario, noms = [court(m.home), court(m.away)];
   const nSim = Math.max(1, Math.round(Number(m.simulation.n) || Number(D.simulations) || 0));
   const drap = [0,1].map(i => drapeau((m.pays||[])[i]) || '');
-  const F = momentsForts(M, sc.points, sc.premier_serveur || 0, Number(Q.get('moments') || 5));
+  const F = momentsForts(M, sc.points, sc.premier_serveur || 0, Number(Q.get('moments') || (RESUME ? 4 : 5)));   // résumé : 30–45 s
+  if (RESUME && JSON.stringify(F.final.histo) !== JSON.stringify(RESUME.sets)){                // règles du match non suivies : pas de résumé faux
+    V.innerHTML = '<p style="padding:10vw;color:#fff">—</p>'; window.__fini = true; return; }
   const w = F.final.vainqueur, fav = p >= .5 ? 0 : 1;
   const rDe = S => { const sets = [0,1].map(i => [...S.histo.map(x => x[i]), ...(S.fini ? [] : [S.jeux[i]])]);
     return { inverse: false, x: { serveur: M.serveur(S) === 0 ? 'home' : 'away', score_home: { sets: sets[0], point: affPts(S,0) }, score_away: { sets: sets[1], point: affPts(S,1) } } }; };
   window.__ambiance = 'stade';
   // 19/11/2026 (paquet 287) — comme la vidéo 2D : les 4 lignes de l'algo (ses seuls %), cochées dès que le match
   // simulé les atteint, une ligne de commentaire après chaque point, et le pied « une parmi 20 000 »
-  const LG = (() => { const k = m.lignes_algo; if (!k) return [];
+  const LG = (() => { const k = m.lignes_algo; if (!k || RESUME) return [];   // résumé (paquet 308) : un vrai match, pas de lignes
     const proche = pre => Object.keys(k).filter(x => x.startsWith(pre)).sort((a, b) => Math.abs(k[a] - .5) - Math.abs(k[b] - .5))[0];
     const out = [], tt = proche('total_plus_'), hh = proche('handicap_favori_'), fv = k.favori === 'home' ? 0 : 1, bo = m.meilleur_des || 3;
     if (tt) out.push({ cle: 'total', n: parseFloat(tt.slice(11)), p: k[tt], lib: t('lg_total', tt.slice(11).replace('.', L === 'fr' ? ',' : '.')) });
@@ -6874,15 +6936,15 @@ async function filmDuJour(V, m, son){
   };
   { const g = rng([...String(m.uid || '')].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 277)); Math.random = g; }   // mêmes échanges en FR et en EN
   V.innerHTML = `<div class="film"><div class="f3-hote"></div>
-    <div class="f3-haut"><span class="f3-tn">${esc(m.tournoi || '')}</span><span class="f3-sim">${esc(t('a_sim'))} <b>${esc(t('a_fois', nSim))}</b></span></div>
+    <div class="f3-haut"><span class="f3-tn">${esc(m.tournoi || '')}</span><span class="f3-sim">${RESUME ? `<b>${esc(t('r_haut'))}</b>` : `${esc(t('a_sim'))} <b>${esc(t('a_fois', nSim))}</b>`}</span></div>
     <div class="f3-cap" hidden><div class="f3-cap-t"></div><div class="f3-cap-s"></div></div>
     <div class="f3-bug" hidden></div>
     <div class="f3-bas"><div class="f3-lg"></div>
       <div class="f3-cartes">${LG.map((x, i) => `<div data-lg="${i}"><span>${esc(x.lib)}</span><b>${pc0(x.p)}</b></div>`).join('')}</div>
-      <div class="f3-pied">${esc(t('a_pied', nSim))}</div></div>
+      <div class="f3-pied">${esc(RESUME ? t('r_pied') : t('a_pied', nSim))}</div></div>
     <div class="f3-vs"><div class="f3-vs-tn">${esc(m.tournoi || '')}</div>
       ${[0,1].map(i => `<div class="f3-vs-j j${i}"><span class="f3-vs-n">${drap[i]} ${esc(noms[i])}</span><span class="f3-vs-p">${pc0(i ? 1 - p : p)}</span></div>${i ? '' : '<div class="f3-vs-x">VS</div>'}`).join('')}
-      <div class="f3-vs-l">${esc(t('f3_proba'))}</div><div class="f3-vs-s">${esc(t('f3_sim', nSim))}</div></div>
+      <div class="f3-vs-l">${esc(t('f3_proba'))}</div><div class="f3-vs-s">${esc(RESUME ? t('r_vs') : t('f3_sim', nSim))}</div></div>
     <div class="f3-pres" hidden></div><div class="f3-volet"></div><div class="f3-fin" hidden></div></div>`;
   const $ = s => V.querySelector(s), z = ms => dort(ms);
   const coul = i => i === 0 ? '#2EE6FF' : '#FF4FAE';
@@ -6930,7 +6992,8 @@ async function filmDuJour(V, m, son){
     el.style.setProperty('--c', c || '#D4FF3A'); el.hidden = false; el.classList.remove('on'); void el.offsetWidth; el.classList.add('on');
     if (ms) setTimeout(() => { el.hidden = true; }, ms); };
   const volet = () => { const v = $('.f3-volet'); v.classList.remove('on', 'fini'); void v.offsetWidth; v.classList.add('on'); son('volet'); setTimeout(() => v.classList.add('fini'), 650); };
-  if (!G3D.film.demarrer($('.f3-hote'), m, rDe(SC), { echelle: Number(Q.get('echelle') || 0.67), son: (type, ms, plus) => son(type, ms, plus) })){ window.__fini = true; return; }
+  if (Q.get('export3d') === '1') window.__G3D = G3D;                        // paquet 299 : essai de rendu hors navigateur (scripts/film_export.py)
+  if (!G3D.film.demarrer($('.f3-hote'), m, rDe(SC), { echelle: Number(Q.get('echelle') || 0.67), son: (type, ms, plus) => son(type, ms, plus), export3d: Q.get('export3d') === '1' })){ window.__fini = true; return; }
   // attendre les modèles des joueurs (fichier du site) et les polices
   for (let k = 0; k < 120 && !G3D.film.pret(); k++) await z(100);
   await Promise.race([(document.fonts && document.fonts.load ? document.fonts.load('40px Bungee') : Promise.resolve()), z(3000)]);
@@ -6942,10 +7005,10 @@ async function filmDuJour(V, m, son){
     G3D.film.camera('portrait', 2.2, i);
     const c = $('.f3-pres'); c.innerHTML = `<div class="f3-pres-n" style="--c:${coul(i)}">${drap[i]} ${esc(noms[i])}</div><div class="f3-pres-p"><b>${pc0(i ? 1 - p : p)}</b> ${esc(t('f3_proba'))}</div>`;
     c.hidden = false; c.classList.remove('on'); void c.offsetWidth; c.classList.add('on'); son('volet', 0);
-    await z(2100); c.hidden = true;
+    await z(RESUME ? 1200 : 2100); c.hidden = true;
   }
   G3D.film.camera('orbite', 2.8); $('.f3-vs').hidden = false; son('vs', 200);
-  await z(2600);
+  await z(RESUME ? 1600 : 2600);
   $('.f3-vs').classList.add('part'); volet(); await z(400); $('.f3-vs').classList.add('fini');
   G3D.film.camera(null); $('.f3-bug').hidden = false;
   // 2) les moments forts
@@ -6959,8 +7022,9 @@ async function filmDuJour(V, m, son){
     legende(titre, pour, x.e ? coul(x.e.h) : '#D4FF3A', 2000);
     if (x.e) son(x.e.k === 3 ? 'balle_match' : 'annonce', 150);
     son('voix', 450, { texte: arbitre.score(x.avant) });
-    G3D.film.point(m, rDe(x.avant), x.h, { coupe: true, grand: x.note >= 50 || dernier, rejouer: dernier,
-      prep: 1.9, minL: x.quoi === 'echange' ? 6 : 0, maxL: x.quoi === 'echange' ? 10 : 6, fin: dernier ? (Math.random() < 0.5 ? 'coup_droit' : 'revers') : undefined });
+    // résumé (30–45 s) : sans ralenti, échanges plus courts, plan large sauf sur la balle de match
+    G3D.film.point(m, rDe(x.avant), x.h, { coupe: true, grand: RESUME ? dernier : x.note >= 50 || dernier, rejouer: dernier && !RESUME,
+      prep: RESUME ? 1.2 : 1.9, minL: x.quoi === 'echange' ? (RESUME ? 5 : 6) : 0, maxL: x.quoi === 'echange' ? (RESUME ? 8 : 10) : RESUME ? 3 : 6, fin: dernier ? (Math.random() < 0.5 ? 'coup_droit' : 'revers') : undefined });
     await attendre(e => e.R, 4000);
     await attendre(e => !e.R, 30000);
     // le résultat du point
@@ -6982,17 +7046,17 @@ async function filmDuJour(V, m, son){
   G3D.film.score(m, rDe(F.final), true); bug(F.final, true);
   G3D.film.camera('heros', 4.2, w); son('ovation', 0);
   legende(t('a_fin'), t('a_gagne', noms[w]), coul(w), 0);
-  await z(3000);
+  await z(RESUME ? 2200 : 3000);
   const fp = (m.scores_probables || []).find(x => x[0] === sc.score);
   const fin = $('.f3-fin');
   fin.innerHTML = `<div class="f3-fin-t">${esc(t('a_fin'))}</div><div class="f3-fin-w" style="color:${coul(w)}">${esc(t('a_gagne', noms[w]))}</div>
-    <div class="f3-fin-s">${esc(scoreTxt(F.final, w === 1))}</div><div class="f3-fin-p">${t('a_fin_p', esc(noms[fav]), Math.max(p, 1 - p) * 100, nSim)}</div>
-    ${fp && fp[1] != null ? `<div class="f3-fin-p">${t('a_fin_top', esc(sc.score), fp[1] * 100, nSim)}</div>` : ''}
+    <div class="f3-fin-s">${esc(scoreTxt(F.final, w === 1))}</div><div class="f3-fin-p">${RESUME ? t('r_fin_p', esc(noms[fav]), Math.max(p, 1 - p) * 100) : t('a_fin_p', esc(noms[fav]), Math.max(p, 1 - p) * 100, nSim)}</div>
+    ${!RESUME && fp && fp[1] != null ? `<div class="f3-fin-p">${t('a_fin_top', esc(sc.score), fp[1] * 100, nSim)}</div>` : ''}
     ${LG.length ? `<div class="f3-fin-lg">${lignesFaites(F.final, true).map((c, i) => `<div class="${c}"><span>${c === 'oui' ? '✓' : '✗'} ${esc(LG[i].lib)}</span><b>${pc0(LG[i].p)}</b></div>`).join('')}</div>` : ''}
-    <div class="f3-fin-pied">${esc(t('a_pied', nSim))}</div>`;
+    <div class="f3-fin-pied">${esc(RESUME ? t('r_pied') : t('a_pied', nSim))}</div>`;
   $('.f3-cap').hidden = true; fin.hidden = false; son('fin', 0); son('musique_fin', 300, { duree: 5.2 });
   G3D.film.camera('stade', 5);
-  await z(4800);
+  await z(RESUME ? 3600 : 4800);
   window.__fini = true;
 }
 
