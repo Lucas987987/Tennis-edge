@@ -1,6 +1,6 @@
 {
- "paquet": 308,
- "version_3d": "v308",
+ "paquet": 309,
+ "version_3d": "v309",
  "essais_de_chargement_des_modeles": 3,
  "attentes_s": [
   1.5,
@@ -85,6 +85,17 @@
   "contenu": "le vrai vainqueur de chaque point, le vrai serveur et le vrai score ; échanges reconstitués",
   "refus": "ITF, abandon, feuille ou point par point manquant ou incomplet, score rejoué différent de la feuille",
   "lancement": "à la main, bouton de la fiche (3 h après le début du match)",
+  "note": "Affichage seulement : le % ne change pas."
+ },
+ "pas_des_joueurs": {
+  "quoi": "sous la vitesse de course, chaque pied est posé au sol (point fixe du court) ; quand le corps s'en éloigne, il se lève et se repose un peu en avant du mouvement",
+  "duree_d_un_pas_s": [
+   0.15,
+   0.24
+  ],
+  "pied_en_avant_max_m": 0.4,
+  "jambes": "cinématique inverse jusqu'au pied posé ; bassin qui descend un peu à chaque pas",
+  "gardent_leurs_jambes": "coups, service, course (mouvement capté)",
   "note": "Affichage seulement : le % ne change pas."
  }
 }
