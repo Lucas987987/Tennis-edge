@@ -9,6 +9,9 @@ name: Vidéo — résumé 3D d'un match terminé
 # (TELEGRAM_CHAT_ID) et nulle part ailleurs : pas d'artefact, rien de commité.
 # La feuille et le point par point arrivent quelques heures après la fin du match (feuilles_match.yml, toutes les 2 h),
 # parfois le lendemain : avant, le résumé est refusé et un message le dit sur le Telegram privé.
+# 20/11/2026 (paquet 312) : AUSSI CHAQUE MATIN à 06:12 UTC, le résumé du match du jour de LA VEILLE (match_du_jour_veille
+# du site), après la carte bilan de 05:37 (bilan_match_du_jour.yml) : les deux arrivent ensemble sur le Telegram privé.
+# Fin du résumé : les vraies stats du match (aces, doubles fautes, 1res balles, balles de break, points gagnés).
 # Retrait : supprimer ce fichier et scripts/resume_match.py, remettre algo/index.html, scripts/video_simulation.py et
 # workers/algo/worker.js du paquet 307.
 
@@ -16,8 +19,11 @@ on:
   workflow_dispatch:
     inputs:
       uid:
-        description: "Match terminé (uid du site)"
-        required: true
+        description: "Match terminé (uid du site ; vide = le match du jour de la veille)"
+        required: false
+        default: ''
+  schedule:
+    - cron: '12 6 * * *'
 
 permissions:
   contents: read
@@ -66,6 +72,9 @@ jobs:
           chemin, uid = 'algo/donnees.json', (os.environ.get('UID_DEMANDE') or '').strip()
           with open(chemin, encoding='utf-8') as f:
               d = json.load(f)
+          if not uid:                         # lancement du matin : le match du jour de la veille
+              uid = (d.get('match_du_jour_veille') or {}).get('uid') or ''
+              print('Match du jour de la veille :', uid or 'aucun')
           trouver = lambda doc: next((x for x in doc.get('matchs', []) if x.get('uid') == uid and x.get('simulation')), None)
           m = trouver(d)
           if not m:   # match publié mais pas encore commité dans main : recharger le catalogue public
@@ -84,11 +93,14 @@ jobs:
                   except Exception as e:
                       print('Catalogue public indisponible :', url, type(e).__name__)
           with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+              f.write(f"uid={uid}\n")
               f.write(f"titre={(m['home'] + ' – ' + m['away']) if m else uid}\n")
               f.write(f"tournoi={m['tournoi'] if m else ''}\n")
           PY
+          UID_MATCH="$(grep '^uid=' "$GITHUB_OUTPUT" | tail -n 1 | cut -d= -f2-)"
+          if [ -z "$UID_MATCH" ]; then echo "ok=0" >> "$GITHUB_OUTPUT"; echo "raison=Pas de match du jour la veille." >> "$GITHUB_OUTPUT"; exit 0; fi
           set +e
-          sortie="$(python scripts/resume_match.py "$UID_DEMANDE")"; code=$?
+          sortie="$(python scripts/resume_match.py "$UID_MATCH")"; code=$?
           set -e
           echo "$sortie"
           if [ "$code" = "0" ]; then
@@ -125,7 +137,7 @@ jobs:
         env:
           TE_SON_STADE: '1'
         run: |
-          python scripts/video_simulation.py --resume --lang "${{ matrix.lang }}" --uid "${{ inputs.uid }}" --rendu 3d --ips 25 --sortie videos
+          python scripts/video_simulation.py --resume --lang "${{ matrix.lang }}" --uid "${{ steps.r.outputs.uid }}" --rendu 3d --ips 25 --sortie videos
           ls -la videos
 
       - name: Envoyer sur le Telegram privé

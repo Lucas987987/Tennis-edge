@@ -1494,6 +1494,13 @@
    "paquet": 311,
    "quoi": "NOUVEAU NOM : GAME SET ALGO (paquet 311, décision de Lucas). Le site, la signature des vidéos et des cartes, et les textes des posts X générés passent de « Tennis Edge » à « Game Set Algo ». Le site a son propre nom de domaine, gamesetalgo.com (et www.gamesetalgo.com), relié au worker à chaque déploiement, certificat HTTPS compris ; l'ancienne adresse workers.dev reste en service. L'adresse n'apparaît toujours jamais dans les vidéos, sauf demande à la main.",
    "garde_fou": "Rien ne change dans l'algo ni dans les %. Test tests/test_nom_game_set_algo.py. Retrait : remettre algo/index.html et workers/algo/wrangler.toml du paquet 310 (puis retirer le domaine dans Workers → algo → Domaines)."
+  },
+  {
+   "date": "2026-11-20",
+   "statut": "production",
+   "paquet": 312,
+   "quoi": "RÉSUMÉ 3D : LES VRAIES STATS ET LE RENDEZ-VOUS DU MATIN (paquet 312). (1) À la fin du résumé d'un vrai match, les vraies stats tirées de la feuille TennisApi déjà stockée : aces, doubles fautes, % de 1res balles, balles de break converties, points gagnés (0 requête). (2) Chaque matin à 06:12 UTC, le résumé du match du jour de la veille part tout seul sur le Telegram privé, après la carte bilan de 05:37 ; s'il manque la feuille ou le point par point, un message le dit. (3) Pied des cartes stats, bilan et semaine : « aucune donnée de bookmaker » / « 100 % indépendant ».",
+   "garde_fou": "Descriptif : le % ne change pas. Tests tests/test_resume_match.py (stats dans le bon sens des joueurs, feuille inversée, lancement du matin). Retrait : remettre algo/index.html, scripts/resume_match.py et .github/workflows/video_resume.yml du paquet 311."
   }
  ]
 }
