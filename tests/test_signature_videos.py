@@ -11,7 +11,7 @@ class Signature(unittest.TestCase):
     def test_nom_seul(self):
         m = re.search(r"const SIGNE = '(.*?)';", HTML)
         self.assertIsNotNone(m)
-        self.assertIn('TENNIS EDGE', m.group(1))
+        self.assertIn('GAME SET ALGO', m.group(1))
         self.assertNotRegex(m.group(1).lower(), r'http|//|\.dev|\.io|\.com|workers|github')
 
     def test_partout(self):

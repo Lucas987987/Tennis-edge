@@ -6,9 +6,9 @@
 <meta name="theme-color" content="#0E0A24">
 <script>/* 07/11/2026 (paquet 217) — thème clair / sombre, appliqué avant l'affichage */(function(){try{var q=new URLSearchParams(location.search);if(q.get("video")||q.get("carte")||q.get("bilan")||q.get("semaine"))return;var v=localStorage.getItem("te_theme")||"dark";var d=v==="auto"?(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"):v;document.documentElement.setAttribute("data-theme",d==="light"?"light":"dark");}catch(e){}})();</script>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230E0A24'/%3E%3Ccircle cx='32' cy='32' r='20' fill='%23D4FF3A'/%3E%3Cpath d='M17 20c12 4 12 20 0 24M47 20c-12 4-12 20 0 24' fill='none' stroke='%230E0A24' stroke-width='3'/%3E%3C/svg%3E">
-<title>Tennis Edge — l'algo</title>
+<title>Game Set Algo — l'algo du tennis</title>
 <meta name="description" content="Chaque match de tennis simulé 20 000 fois par un algorithme indépendant des cotes : % de victoire, cote juste, et un bilan public, pertes comprises.">
-<meta property="og:title" content="Tennis Edge — l'algo">
+<meta property="og:title" content="Game Set Algo — l'algo du tennis">
 <meta property="og:description" content="Chaque match simulé 20 000 fois. % de victoire, cote juste, bilan public.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -678,9 +678,9 @@ body.carte #video{display:block;width:1080px;height:1350px}
 <div class="page">
 <div class="wrap">
   <header class="top">
-    <p class="logo"><span class="b" aria-hidden="true"></span>Tennis Edge <small data-t="marque"></small></p>
+    <p class="logo"><span class="b" aria-hidden="true"></span>Game Set Algo <small data-t="marque"></small></p>
     <div class="reglages">
-      <a class="arena-nav" href="https://lucas987987.github.io/Tennis-edge/arena/" title="Jouer gratuitement à Tennis Edge Arena">🏟️ Arena</a>
+      <a class="arena-nav" href="https://lucas987987.github.io/Tennis-edge/arena/" title="Jouer gratuitement à l'Arena">🏟️ Arena</a>
       <button type="button" class="ico" id="b-son" aria-pressed="false"></button>
       <div class="seg" role="group" aria-label="Langue / Language">
         <button type="button" data-lang="fr" aria-pressed="true">FR</button>
@@ -797,7 +797,7 @@ body.carte #video{display:block;width:1080px;height:1350px}
 /* ───────────── textes FR / EN ───────────── */
 const T = {
  fr:{
-  marque:"l'algo", html_lang:'fr', th_auto:'Auto', th_clair:'Clair', th_sombre:'Sombre', tr_match:'Le match', tr_stats:'Statistiques du match', tr_sets:'Score en sets et scores probables', tr_ouvrir:'Tout ouvrir', tr_replier:'Tout replier', tr_constats:n=>`${n} constats`,
+  marque:'tennis', html_lang:'fr', th_auto:'Auto', th_clair:'Clair', th_sombre:'Sombre', tr_match:'Le match', tr_stats:'Statistiques du match', tr_sets:'Score en sets et scores probables', tr_ouvrir:'Tout ouvrir', tr_replier:'Tout replier', tr_constats:n=>`${n} constats`,
   lede:"Chaque match est simulé 20 000 fois, point par point, par un algorithme qui ne regarde jamais les cotes. On publie son % de victoire, la cote juste qui va avec, et tous ses résultats — y compris quand il se trompe.",
   mdj_titre:'Le match du jour', mdj_sous:"Choisi par une règle fixe : la plus grosse affiche ATP/WTA du jour (somme des Elo), jamais selon la confiance de l'algo.",
   sim_titre:'Simulation du match', sim_sous:"Le détail complet et un scénario représentatif de cette affiche, calculés avec la même variante indépendante.",
@@ -1005,7 +1005,7 @@ const T = {
   pied_methode:"Méthode : simulation point par point à partir des statistiques de service et de retour de chaque joueur, combinée à un classement Elo par surface, apprise uniquement sur les matchs passés. L'algorithme n'utilise aucune cote de bookmaker.",
   pied_jeu:"Ce site ne donne pas de conseil de pari. Les paris sportifs sont interdits aux mineurs. Jouer comporte des risques : endettement, isolement, dépendance. Pour être aidé, appelez le 09 74 75 13 13 (appel non surtaxé).",
   maj:d=>`Pronostics mis à jour le ${dateHeure(d)}.`,
-  v_kicker:"L'algo a simulé ce match", v_fois:n=>`${fmt(n)} fois`, v_url:'algo.tennis-edge.workers.dev',
+  v_kicker:"L'algo a simulé ce match", v_fois:n=>`${fmt(n)} fois`, v_url:'gamesetalgo.com',
   v_fin:(w,s,n,p,x)=>`Cette simulation\u00a0: ${w} <span class="nw">${s}</span>.<br>Sur ${fmt(n)}\u00a0: ${x} gagne <span class="nw">${pc(p)}</span> du temps.`,
   set_s:'Set', jeu:'Jeu', jeu_decisif:'Jeu décisif',
   a_live:'EN DIRECT', a_sim:'SIMULATION', a_fois:n=>`×${fmt(n)}`, a_chance:'chance de gagner',
@@ -1088,7 +1088,7 @@ const T = {
   c_pied:n=>`Simulé <b>${fmt(n)}</b> fois, point par point · aucune cote utilisée`, c_victoire:'de chances de gagner'
  },
  en:{
-  marque:'the algorithm', html_lang:'en', th_auto:'Auto', th_clair:'Light', th_sombre:'Dark', tr_match:'The match', tr_stats:'Match statistics', tr_sets:'Set scores and likeliest scores', tr_ouvrir:'Open all', tr_replier:'Close all', tr_constats:n=>`${n} key points`,
+  marque:'tennis', html_lang:'en', th_auto:'Auto', th_clair:'Light', th_sombre:'Dark', tr_match:'The match', tr_stats:'Match statistics', tr_sets:'Set scores and likeliest scores', tr_ouvrir:'Open all', tr_replier:'Close all', tr_constats:n=>`${n} key points`,
   lede:"Every match is simulated 20,000 times, point by point, by an algorithm that never looks at the odds. We publish its win probability, the fair odds that go with it, and every result — including when it gets it wrong.",
   mdj_titre:'Match of the day', mdj_sous:"Picked by a fixed rule: the day's biggest ATP/WTA matchup (sum of Elo ratings), never by how confident the algorithm is.",
   sim_titre:'Match simulation', sim_sous:'The full breakdown and a representative scenario for this matchup, calculated with the same independent variant.',
@@ -1296,7 +1296,7 @@ const T = {
   pied_methode:'Method: point-by-point simulation from each player\'s serve and return statistics, combined with a surface-specific Elo rating, trained only on past matches. The algorithm uses no bookmaker odds.',
   pied_jeu:'This site gives no betting advice. Sports betting is for adults only. Gambling carries risks: debt, isolation, addiction. In France, call 09 74 75 13 13 for help.',
   maj:d=>`Predictions updated ${dateHeure(d)}.`,
-  v_kicker:'The algorithm simulated this match', v_fois:n=>`${fmt(n)} times`, v_url:'algo.tennis-edge.workers.dev',
+  v_kicker:'The algorithm simulated this match', v_fois:n=>`${fmt(n)} times`, v_url:'gamesetalgo.com',
   v_fin:(w,s,n,p,x)=>`This simulation: ${w} <span class="nw">${s}</span>.<br>Across ${fmt(n)}: ${x} wins <span class="nw">${pc(p)}</span> of the time.`,
   set_s:'Set', jeu:'Game', jeu_decisif:'Tiebreak',
   a_live:'LIVE', a_sim:'SIMULATION', a_fois:n=>`×${fmt(n)}`, a_chance:'win chance',
@@ -1891,7 +1891,7 @@ function postX(m, court_){
       return l.join('\n');
     }
     const L2 = [];
-    L2.push('🎾 NOUVEAU MATCH POUR NOTRE ALGORITHME TENNIS EDGE ! 🚀', '');
+    L2.push('🎾 NOUVEAU MATCH POUR NOTRE ALGORITHME GAME SET ALGO ! 🚀', '');
     L2.push(`🏟️ ${m.tournoi}`, '', `${nH(m.home)} 🆚 ${nA(m.away)}`, '');
     L2.push(`📅 ${date.charAt(0).toUpperCase()+date.slice(1)} – ${hr}`, '');
     L2.push(`🧠 ${nf} SIMULATIONS, POINT PAR POINT, SANS UTILISER LES COTES`, '');
@@ -2004,7 +2004,7 @@ function postResultat(m, court_){
                 stat('breaks', '💥 Breaks :', v => String(Math.round(v*10)/10).replace('.', ',')),
                 stat('premiere_pct', '⚡ Premières balles :', v => Math.round(v) + ' %', true)].filter(Boolean);
     const L2 = [];
-    L2.push(favGagne ? '🎾 NOUVELLE VICTOIRE POUR TENNIS EDGE ! 🚀✅' : '🎾 LE BILAN DU MATCH POUR TENNIS EDGE 🔬', '');
+    L2.push(favGagne ? '🎾 NOUVELLE VICTOIRE POUR GAME SET ALGO ! 🚀✅' : '🎾 LE BILAN DU MATCH POUR GAME SET ALGO 🔬', '');
     L2.push(`🏟️ ${m.tournoi}`, '', `${nH(m.home)} 🆚 ${nA(m.away)}`, '');
     L2.push(`🏆 VICTOIRE DE ${nomW.toUpperCase()} ! ${favGagne ? '✅' : '❌'}`, '');
     L2.push(`📊 Score final : ${R.score}`, '');
@@ -2085,7 +2085,7 @@ function analyseComplete(m, court_){
     const bloc = (...l) => { T.push(...l, ''); };
     // en-tête
     const lieu = mt ? [mt.ville, drapeau2(mt.code)].filter(Boolean).join(' ') : '';
-    T.push('🎾 ANALYSE COMPLÈTE · TENNIS EDGE 🧠', '');
+    T.push('🎾 ANALYSE COMPLÈTE · GAME SET ALGO 🧠', '');
     T.push(`🏟️ ${m.tournoi}${lieu ? ' · ' + lieu : ''}`, '');
     T.push(`${fH ? fH + ' ' : ''}${m.home} 🆚 ${m.away}${fA ? ' ' + fA : ''}`, '');
     T.push(`📅 ${date.charAt(0).toUpperCase()+date.slice(1)} – ${hr}`, '');
@@ -6496,8 +6496,8 @@ function ouvrirAnalyseDetaillee(m){
   const section=(titre,contenu)=>'<section class="te-analyse-part"><h4>'+safe(titre)+'</h4><p>'+contenu+'</p></section>';
   const h=m.home,a=m.away;
   let out='<h3>📊 '+tx('Analyse détaillée','Detailed analysis')+' · '+safe(h)+' / '+safe(a)+'</h3>';
-  out+='<p class="te-analyse-disclaimer">'+tx('Analyse descriptive générée à partir des données Tennis Edge. Les pourcentages sont des estimations, pas des certitudes. Les statistiques des cartes sont établies avant le match.',
-    'Descriptive analysis generated from Tennis Edge data. Percentages are estimates, not certainties. Card statistics are set before the match.')+'</p>';
+  out+='<p class="te-analyse-disclaimer">'+tx('Analyse descriptive générée à partir des données Game Set Algo. Les pourcentages sont des estimations, pas des certitudes. Les statistiques des cartes sont établies avant le match.',
+    'Descriptive analysis generated from Game Set Algo data. Percentages are estimates, not certainties. Card statistics are set before the match.')+'</p>';
   if(p!==null){
     const fav=p>=.5?h:a, fp=Math.max(p,q), ecart=Math.round(Math.abs(p-q)*100), perd=Math.round((1-fp)*100);
     out+=section(tx('Lecture du duel','Reading the matchup'),
@@ -7126,7 +7126,7 @@ async function filmDuJour(V, m, son){
 
 /* ───────────── carte de stats (?carte=1) : image 1080×1350 pour X, capturée par scripts/video_simulation.py ───────────── */
 // paquet 310 : la signature (le nom seul : jamais l'adresse du site dans les vidéos et les images pour X)
-const SIGNE = '<div class="te-signe" aria-hidden="true"><i></i>TENNIS EDGE</div>';
+const SIGNE = '<div class="te-signe" aria-hidden="true"><i></i>GAME SET ALGO</div>';   // paquet 311 : nouveau nom
 function modeCarte(){
   document.body.classList.add('carte');
   const id = Q.get('uid') || (D.match_du_jour && D.match_du_jour.uid);
