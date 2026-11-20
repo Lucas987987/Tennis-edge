@@ -6,6 +6,14 @@ main = "worker.js"
 compatibility_date = "2025-01-01"
 workers_dev = true
 keep_vars = true
+# 20/11/2026 (paquet 311) : le site sous son propre nom de domaine, gamesetalgo.com (acheté chez Cloudflare). Le domaine
+# est relié au worker à chaque déploiement (certificat HTTPS compris) ; l'adresse workers.dev reste en service.
+# Le jeton CLOUDFLARE_API_TOKEN doit avoir, pour la zone gamesetalgo.com : Zone · Lecture, DNS · Modifier,
+# Routes Workers · Modifier. Retrait : supprimer ces lignes (puis retirer le domaine dans Workers → algo → Domaines).
+routes = [
+  { pattern = "gamesetalgo.com", custom_domain = true },
+  { pattern = "www.gamesetalgo.com", custom_domain = true },
+]
 
 # Coffre privé : le même bucket R2 que les partitions (scripts/r2_io.py, DEFAULT_BUCKET), préfixe prive/.
 [[r2_buckets]]

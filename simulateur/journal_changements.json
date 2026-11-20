@@ -1487,6 +1487,13 @@
    "paquet": 310,
    "quoi": "SIGNATURE DES VIDÉOS ET DES CARTES (paquet 310, demande de Lucas). Un petit « TENNIS EDGE » (point vert et nom) en bas à droite de l'image du stade dans la vidéo 3D du jour et le résumé d'un vrai match, et en haut à droite des cartes stats, bilan et semaine : une image reprise ailleurs garde son origine. Le nom seul, jamais l'adresse du site.",
    "garde_fou": "Affichage seulement : le % ne change pas. Test tests/test_signature_videos.py (le nom seul, aucune adresse). Retrait : remettre algo/index.html du paquet 309."
+  },
+  {
+   "date": "2026-11-20",
+   "statut": "production",
+   "paquet": 311,
+   "quoi": "NOUVEAU NOM : GAME SET ALGO (paquet 311, décision de Lucas). Le site, la signature des vidéos et des cartes, et les textes des posts X générés passent de « Tennis Edge » à « Game Set Algo ». Le site a son propre nom de domaine, gamesetalgo.com (et www.gamesetalgo.com), relié au worker à chaque déploiement, certificat HTTPS compris ; l'ancienne adresse workers.dev reste en service. L'adresse n'apparaît toujours jamais dans les vidéos, sauf demande à la main.",
+   "garde_fou": "Rien ne change dans l'algo ni dans les %. Test tests/test_nom_game_set_algo.py. Retrait : remettre algo/index.html et workers/algo/wrangler.toml du paquet 310 (puis retirer le domaine dans Workers → algo → Domaines)."
   }
  ]
 }
