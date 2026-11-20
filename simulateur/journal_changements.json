@@ -1466,6 +1466,13 @@
    "paquet": 307,
    "quoi": "SUIVI GELÉ « UNE POSITION PAR MATCH » (paquet 307, décision de Lucas). Lue après coup le 20/11 (trois façons de compter, la meilleure retenue), cette lecture des journaux de suivi n'est jugée que sur des matchs neufs : règle écrite le 20/11/2026 à 15 h 30 UTC dans l'en-tête de scripts/suivi_une_par_match.py, avant tout match jugé. Matchs dont l'horaire est postérieur au gel, journal par journal (match, set 1), la première position ouverte de chaque match ; la CLV est la seule validation (borne basse de l'IC 95 % de la CLV médiane au-dessus de 0, rééchantillonnage par match) ; le ROI est publié avec son IC 95 %, à titre descriptif ; rien avant 30 matchs ; aucun conseil de mise. Bilan chaque lundi sur le Telegram privé (workflow « Suivi — une position par match »), rien dans le dépôt. À noter : les 75 matchs réglés du journal match datent tous d'avant le 21/10 ; les suivants attendaient leur résultat (corrigé au paquet 305).",
    "garde_fou": "Lecture seule des journaux, rien ne change dans les alertes ni dans l'algo. Retrait : supprimer .github/workflows/suivi_une_par_match.yml, scripts/suivi_une_par_match.py et tests/test_suivi_une_par_match.py."
+  },
+  {
+   "date": "2026-11-20",
+   "statut": "production",
+   "paquet": 308,
+   "quoi": "RÉSUMÉ 3D D'UN VRAI MATCH TERMINÉ (paquet 308, demande de Lucas : lancé à la main, 30–45 s, 4 à 6 points clés). Sur la fiche d'un match commencé depuis au moins 3 h (jamais ITF), le bouton « 🎞️ Résumé 3D du match » lance le workflow « Vidéo — résumé 3D d'un match terminé ». scripts/resume_match.py lit la feuille et le point par point TennisApi déjà stockés (0 requête) et écrit la suite réelle des points, le premier serveur et le vrai score ; la page (?video=1&resume=1) rejoue les moments forts de ce vrai déroulé dans le stade 3D, avec le vrai score à l'écran. Seuls les échanges (trajectoires, coups) sont reconstitués. Fin de vidéo : le vainqueur réel, puis le favori de l'algo avant le match et son %. Vidéos FR et EN sur le Telegram privé, sans l'adresse du site ; un refus (feuille pas encore arrivée, abandon, point par point incomplet) y est signalé.",
+   "garde_fou": "Affichage seulement : le % ne change pas, rien n'est commité. Refus si le score rejoué diffère de la feuille (jamais un faux score). Retrait : supprimer .github/workflows/video_resume.yml, scripts/resume_match.py et tests/test_resume_match.py, remettre algo/index.html, scripts/video_simulation.py et workers/algo/ du paquet 307."
   }
  ]
 }
