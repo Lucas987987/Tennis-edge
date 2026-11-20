@@ -160,6 +160,8 @@ def suivi_corrections(racine, M):
                 k = ((x['m'].get('fiabilite') or {}).get('correction_niveau')) or {}
                 if x['circuit'] != c or k.get('niveau') != n or k.get('p_home_avec_correction') is None:
                     continue
+                if k.get('source') not in (None, 'simulateur/correction_niveaux.json'):    # paquet 318 : pas les pentes des cases
+                    continue
                 y = (x['m'].get('reel') or {}).get('gagnant') == 'home'
                 for L, q in ((avec, k['p_home_avec_correction']), (sans, k['p_home_sans_correction'])):
                     q = min(max(float(q), EPS), 1 - EPS)
