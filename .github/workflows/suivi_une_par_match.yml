@@ -1,0 +1,35 @@
+name: Suivi — une position par match (gelé le 20/11/2026)
+
+# Paquet 307 (20/11/2026, décision de Lucas). Lecture « une position par match » des journaux de suivi match et set 1,
+# gelée le 20/11/2026 à 15 h 30 UTC : seuls les matchs postérieurs jugent. Règle dans l'en-tête de
+# scripts/suivi_une_par_match.py (CLV seule validation, rien avant 30 matchs, ROI descriptif). Bilan chaque lundi sur le
+# Telegram PRIVÉ ; rien n'est écrit dans le dépôt. 0 requête d'API.
+on:
+  schedule:
+    - cron: '23 8 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  suivi:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /paper_trades_match.jsonl
+            /paper_trades_set1.jsonl
+            /scripts/suivi_une_par_match.py
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - name: Bilan (Telegram privé)
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python scripts/suivi_une_par_match.py . --telegram

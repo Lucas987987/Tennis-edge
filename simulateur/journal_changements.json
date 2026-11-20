@@ -1459,6 +1459,13 @@
    "paquet": 306,
    "quoi": "QUALITÉ DES DONNÉES — POSITIONS EN DOUBLE DANS LES JOURNAUX DE SUIVI (paquet 306, décision de Lucas). Bug : l'identifiant d'une position contenait l'horaire annoncé ; quand un match est retardé de 10 en 10 minutes, chaque nouvel horaire ouvrait une position de plus (même match, même book, même palier : jusqu'à 37 fois sur un match WTA). Copie du 19/11 : 117 positions en double sur 286 dans le journal match, 45 sur 103 dans le journal set 1 ; le journal du canal n'est pas touché. Désormais : une position par match, par book et par palier, même si l'horaire bouge ; les doublons existants passent en statut DOUBLON (données gardées, hors des bilans, la première ouverte reste) ; le bilan affiche aussi la lecture « une position par match ». Effet sur le journal match (positions réglées au 19/11) : 167 → 102 positions sur les mêmes 75 matchs, CLV médiane +7,3 % → +7,1 %. Le ROI change beaucoup (les deux matchs les plus dupliqués étaient perdants) mais reste très incertain sur 75 matchs : la CLV reste la seule validation, rien n'est conclu.",
    "garde_fou": "Rien n'est effacé : les positions DOUBLON gardent leur statut d'avant (champ statut_avant_doublon). Retrait : remettre scripts/paper_journal.py d'avant ce paquet et remettre chaque DOUBLON à son statut_avant_doublon."
+  },
+  {
+   "date": "2026-11-20",
+   "statut": "etude",
+   "paquet": 307,
+   "quoi": "SUIVI GELÉ « UNE POSITION PAR MATCH » (paquet 307, décision de Lucas). Lue après coup le 20/11 (trois façons de compter, la meilleure retenue), cette lecture des journaux de suivi n'est jugée que sur des matchs neufs : règle écrite le 20/11/2026 à 15 h 30 UTC dans l'en-tête de scripts/suivi_une_par_match.py, avant tout match jugé. Matchs dont l'horaire est postérieur au gel, journal par journal (match, set 1), la première position ouverte de chaque match ; la CLV est la seule validation (borne basse de l'IC 95 % de la CLV médiane au-dessus de 0, rééchantillonnage par match) ; le ROI est publié avec son IC 95 %, à titre descriptif ; rien avant 30 matchs ; aucun conseil de mise. Bilan chaque lundi sur le Telegram privé (workflow « Suivi — une position par match »), rien dans le dépôt. À noter : les 75 matchs réglés du journal match datent tous d'avant le 21/10 ; les suivants attendaient leur résultat (corrigé au paquet 305).",
+   "garde_fou": "Lecture seule des journaux, rien ne change dans les alertes ni dans l'algo. Retrait : supprimer .github/workflows/suivi_une_par_match.yml, scripts/suivi_une_par_match.py et tests/test_suivi_une_par_match.py."
   }
  ]
 }
