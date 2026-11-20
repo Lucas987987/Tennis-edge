@@ -188,15 +188,18 @@ export async function video(req, env) {
     const reste = ECART_VIDEO_MS - (Date.now() - t);
     if (reste > 0) return rep(429, { ok: false, message: `Une vidéo est déjà en route : réessayer dans ${Math.ceil(reste / 60000)} min.` });
   }
-  const r = await fetch(`https://api.github.com/repos/${DEPOT}/actions/workflows/video_simulation.yml/dispatches`, {
+  // 20/11/2026 (paquet 308) : mode « resume » → workflow « Vidéo — résumé 3D d'un match terminé » (video_resume.yml)
+  const resume = corps.mode === 'resume';
+  const r = await fetch(`https://api.github.com/repos/${DEPOT}/actions/workflows/${resume ? 'video_resume.yml' : 'video_simulation.yml'}/dispatches`, {
     method: 'POST',
     headers: { Accept: 'application/vnd.github+json', Authorization: `Bearer ${env.GH_TOKEN}`,
                'X-GitHub-Api-Version': '2022-11-28', 'User-Agent': 'tennis-edge-algo', 'Content-Type': 'application/json' },
-    body: JSON.stringify({ ref: 'main', inputs: { uid, adresse: 'false', seed: '' } }),
+    body: JSON.stringify({ ref: 'main', inputs: resume ? { uid } : { uid, adresse: 'false', seed: '' } }),
   });
   if (r.status !== 204) return rep(502, { ok: false, message: `GitHub a refusé (HTTP ${r.status}).` });
   if (env.COFFRE) await env.COFFRE.put('prive/video_derniere_demande.json', JSON.stringify({ t: Date.now(), uid }));
-  return rep(202, { ok: true, message: 'Vidéo lancée : elle arrive sur ton Telegram privé dans 5 à 10 minutes.' });
+  return rep(202, { ok: true, message: resume ? 'Résumé lancé : il arrive sur ton Telegram privé dans 20 à 40 minutes.'
+                                              : 'Vidéo lancée : elle arrive sur ton Telegram privé dans 5 à 10 minutes.' });
 }
 
 // 4. SCORES EN DIRECT (06/11/2026, demande de Lucas) : GET /live → les matchs de simple en cours (TennisApi,

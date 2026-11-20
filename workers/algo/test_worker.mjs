@@ -80,6 +80,18 @@ test('vidéo : bonne clé → workflow vidéo lancé pour ce match, puis 3 minut
   assert.equal(appels.length, 1);
 });
 
+test('vidéo : mode « resume » → workflow du résumé 3D, seulement l’uid', async () => {
+  const appels = [], store = {};
+  const env2 = { ...env, GH_TOKEN: 'jeton', COFFRE: { get: async (k) => (k in store ? { text: async () => store[k] } : null),
+                                                     put: async (k, v) => { store[k] = v; } } };
+  globalThis.fetch = async (u, o) => { appels.push([u, JSON.parse(o.body)]); return new Response(null, { status: 204 }); };
+  const r = await worker.fetch(post({ uid: UID, mode: 'resume' }, { 'X-Cle': CLE }), env2);
+  assert.equal(r.status, 202);
+  assert.match(appels[0][0], /actions\/workflows\/video_resume\.yml\/dispatches$/);
+  assert.deepEqual(appels[0][1], { ref: 'main', inputs: { uid: UID } });
+  assert.match((await r.json()).message, /Résumé lancé/);
+});
+
 // 06/11/2026 — scores en direct
 import { compacterLive, live } from './worker.js';
 const EV = { id: 7, startTimestamp: 1793990000, tournament: { name: 'Paris', category: { name: 'ATP' } },
