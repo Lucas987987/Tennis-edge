@@ -1438,6 +1438,13 @@
    "paquet": 303,
    "quoi": "DÉPÔT NEUF — « geler » réparé (paquet 303). Le premier « geler » réel (20/11) a mis 142 workflows en pause puis s'est arrêté sur la publication Pages, un workflow automatique de GitHub (chemin dynamic/…) qui ne se met jamais en pause (HTTP 422) ; la liste des workflows gelés n'avait donc pas été mémorisée. Désormais : les workflows automatiques sont sautés (aussi dans la vérification de « copier ») ; une pause refusée n'arrête plus la boucle (la liste est mémorisée d'abord, l'erreur vient après) ; les 142 workflows gelés le 20/11 sont repris de docs/depot_neuf_geles.txt, pour que « degeler » les réactive tous dans le nouveau dépôt.",
    "garde_fou": "Aucun changement hors du workflow « Dépôt neuf ». Retrait : remettre .github/workflows/depot_neuf.yml et tests/test_depot_neuf.py d'avant ce paquet, supprimer docs/depot_neuf_geles.txt."
+  },
+  {
+   "date": "2026-11-20",
+   "statut": "rejete",
+   "paquet": 304,
+   "quoi": "OUTSIDERS QUI GAGNENT — DEUXIÈME VAGUE (paquet 304, décision de Lucas). Nouvelle étude simulateur/etude_outsiders_vague2.py, règle écrite avant (la même qu'au paquet 273 : appris sur 2018–2022, jugé une fois sur 2023 → juin 2026, circuit par circuit, au moins 1 000 matchs, gain ≥ 0,001 et ≥ 2 erreurs types, l'outsider au-dessus de l'annoncé sur les deux périodes). Base = l'algo actuel, y compris en Challenger les deux corrections du paquet 274. Trois situations nouvelles : favori chargé (au moins 8 matchs sur 21 jours, sur au moins 2 tournois), dynamiques opposées (sur 60 jours, l'Elo du favori baisse d'au moins 30 points et celui de l'outsider monte d'au moins 30), favori qui enchaîne (demi-finaliste ou mieux d'un autre tournoi dans les 14 jours, premier match ici). Aucune ne passe, sur aucun circuit. Le favori chargé gagne même un peu PLUS qu'annoncé (l'outsider : 30,0 % pour 31,2 % en Challenger sur 2 645 matchs) : jouer beaucoup va avec la forme, pas avec la fatigue, mais l'écart ne tient pas sur 2023 → juin 2026. Les dynamiques opposées concernent trop peu de matchs (174 en ATP sur 2023 → juin 2026). Rien ne change dans l'algo.",
+   "garde_fou": "Étude seulement, le % de victoire ne change pas. Retrait : supprimer simulateur/etude_outsiders_vague2.py, simulateur/rapport_outsiders_vague2.json et tests/test_outsiders_vague2.py."
   }
  ]
 }
