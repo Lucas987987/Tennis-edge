@@ -1529,6 +1529,13 @@
    "paquet": 316,
    "quoi": "ÉTUDE « LÀ OÙ L'ALGO HÉSITE » EN ATP ET WTA, AVEC LES STATS DE SERVICE ET DE RETOUR (paquet 316, décision de Lucas). Dans les matchs où l'algo donne son favori entre 50 et 60 %, quatre indices récents tirés des statistiques point par point de l'archive (sur 365 jours : % de points gagnés, au service, au retour ; tendance des 90 derniers jours) ont été jugés selon une règle écrite avant (apprendre sur 2018–2022, juger sur 2023 → juin 2026, gain ≥ 0,001 sur ≥ 1 000 matchs, ≥ 2 erreurs types, même sens sur les deux périodes). Aucun ne passe : l'Elo et les signaux en place contiennent déjà ce que disent le service et le retour. Le plus proche : la tendance en ATP (gain 0,0008, 2,6 erreurs types, même sens sur les deux périodes), sous le seuil de 0,001.",
    "garde_fou": "Étude seulement : rien ne change dans l'algo ni dans les %. Rapport public simulateur/rapport_hesitation_sr.json (aucun nom de joueur). Retrait : supprimer simulateur/etude_hesitation_sr.py, simulateur/rapport_hesitation_sr.json et tests/test_hesitation_sr.py."
+  },
+  {
+   "date": "2026-11-21",
+   "statut": "etude",
+   "paquet": 317,
+   "quoi": "ÉTUDE « CORRIGER LE % AVEC LA NOTE DE FIABILITÉ » (paquet 317, décision de Lucas). La note v3 est la pente d'étalonnage de la case du match, apprise sur 2016–2022 ; jusqu'ici elle ne changeait aucun %. Sur l'archive, appliquer cette pente au % (le rapprocher de 50 % quand la case est trop confiante) a été jugé sur 2023 → juin 2026 selon une règle écrite avant (gain ≥ 0,001 sur ≥ 1 000 matchs, ≥ 2 erreurs types, pente du même côté de 1 sur les deux périodes). Retenu en Challenger : sur tous les matchs (32 316, gain 0,0026, 6,0 erreurs types, Brier 0,2223 → 0,2216) et sur les seuls matchs « fragile » ou « prudent » (18 277, gain 0,0043, 5,8 erreurs types, Brier 0,2199 → 0,2187). Pas retenu en ATP (gain 0,0008, 1,9 erreur type) ni en WTA (pas de gain).",
+   "garde_fou": "Étude seulement : rien n'entre dans l'algo sans un paquet à part, avec sa règle de retrait. Rapport public simulateur/rapport_pente_cases.json. Retrait : supprimer simulateur/etude_pente_cases.py, simulateur/rapport_pente_cases.json et tests/test_pente_cases.py."
   }
  ]
 }
