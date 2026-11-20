@@ -1522,6 +1522,13 @@
    "paquet": 315,
    "quoi": "ZONE D'HÉSITATION EN CHALLENGER : L'EXPÉRIENCE (paquet 315). Le troisième indice retenu par l'étude du paquet 313 entre dans l'algo : le joueur qui a déjà disputé plus de matchs ATP, WTA ou Challenger (depuis 2012) gagne un peu plus qu'annoncé quand le favori est entre 50 et 60 %. Le compteur est exactement celui de l'étude : archive jusqu'au 31/05/2026 (simulateur/experience_joueurs.json, fabriqué par simulateur/experience_joueurs.py), puis les matchs terminés des feuilles de match. Les trois indices (classement, invitation, expérience) prennent leurs coefficients appris ENSEMBLE sur 2018–2022, parce que classement et expérience se recoupent : jugés sur 2023 → juin 2026, 15 082 matchs, gain de log loss 0,0041 (7,5 erreurs types), Brier de la zone 0,2464 → 0,2444.",
    "garde_fou": "Même retrait automatique, indice par indice, chaque lundi (simulateur/outsiders_ch.py → simulateur/hesitation_ch.json). Retrait à la main : « retire » à true pour « experience » dans simulateur/hesitation_ch.json ; remettre les coefficients du paquet 314 pour revenir à deux indices."
+  },
+  {
+   "date": "2026-11-20",
+   "statut": "etude",
+   "paquet": 316,
+   "quoi": "ÉTUDE « LÀ OÙ L'ALGO HÉSITE » EN ATP ET WTA, AVEC LES STATS DE SERVICE ET DE RETOUR (paquet 316, décision de Lucas). Dans les matchs où l'algo donne son favori entre 50 et 60 %, quatre indices récents tirés des statistiques point par point de l'archive (sur 365 jours : % de points gagnés, au service, au retour ; tendance des 90 derniers jours) ont été jugés selon une règle écrite avant (apprendre sur 2018–2022, juger sur 2023 → juin 2026, gain ≥ 0,001 sur ≥ 1 000 matchs, ≥ 2 erreurs types, même sens sur les deux périodes). Aucun ne passe : l'Elo et les signaux en place contiennent déjà ce que disent le service et le retour. Le plus proche : la tendance en ATP (gain 0,0008, 2,6 erreurs types, même sens sur les deux périodes), sous le seuil de 0,001.",
+   "garde_fou": "Étude seulement : rien ne change dans l'algo ni dans les %. Rapport public simulateur/rapport_hesitation_sr.json (aucun nom de joueur). Retrait : supprimer simulateur/etude_hesitation_sr.py, simulateur/rapport_hesitation_sr.json et tests/test_hesitation_sr.py."
   }
  ]
 }
