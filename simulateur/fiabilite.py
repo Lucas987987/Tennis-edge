@@ -63,6 +63,20 @@ def note_v3(match):
     import etude_fiabilite_v3 as V3
     sc = ((match.get('controle') or {}).get('signaux_circuit') or {}).get('decalages') or {}
     return V3.note_du_match(M, c, min(n), sum(sc.values()))
+def pente_v3(match):
+    """21/11/2026 (paquet 318) : la pente d'étalonnage a de la case du match (celle dont la note v3 est tirée), ou None."""
+    M = modele_v3()
+    c = match.get('circuit')
+    n = [x for x in (match.get('matchs_joues') or []) if x is not None]
+    if not M or c not in ('ATP', 'WTA', 'CH') or len(n) < 2:
+        return None
+    import etude_fiabilite_v3 as V3
+    sc = ((match.get('controle') or {}).get('signaux_circuit') or {}).get('decalages') or {}
+    m = M.get(V3.case(c, min(n), sum(sc.values())))
+    a = m['pente'] if m else (M.get('_circuits') or {}).get(c)
+    return float(a) if a else None
+
+
 # 29/10/2026 — NOTE V2 EN FANTÔME : la même note SANS la composante « calibration » (la plus liée à l'erreur, dans le
 # mauvais sens, sur les 79 premiers matchs notés). Calculée à côté, jamais affichée sur les matchs ; jugée seulement
 # sur les matchs pronostiqués à partir du 30/10 (les 79 qui l'ont suggérée n'en font pas partie), avec la même règle
