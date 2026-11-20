@@ -1,0 +1,124 @@
+{
+ "genere_le": "2026-11-20T23:30:25+00:00",
+ "paquet": 317,
+ "regle": "variante par variante et circuit par circuit : RETENUE si, sur les matchs corrigés de 2023 → juin 2026 : au moins 1 000 matchs ; gain de log loss ≥ 0,001 ; gain ≥ 2 erreurs types ; et la pente réapprise sur 2023 → juin 2026 sur ces mêmes matchs (avant correction) est du MÊME CÔTÉ DE 1 que la pente moyenne appliquée. Une variante retenue n'entre dans l'algo que par un paquet à part, avec sa règle de retrait. Rapport public : simulateur/rapport_pente_cases.json. Le % ne change pas.",
+ "seuil_notes_basses": 85,
+ "variantes": {
+  "toutes_les_cases": {
+   "ATP": {
+    "pente_moyenne_appliquee": 0.9079,
+    "pente_2023": 0.9074,
+    "2023 → juin 2026": {
+     "matchs": 10140,
+     "gain": 0.00077,
+     "erreur_type": 0.0004,
+     "erreurs_types": 1.91,
+     "log_loss_base": 0.60516,
+     "log_loss": 0.60439,
+     "brier_base": 0.20979,
+     "brier": 0.20949,
+     "favori_annonce_pct": 67.6,
+     "favori_reel_pct": 66.0
+    },
+    "retenue": false,
+    "raisons": [
+     "gain sous 0.001",
+     "gain sous 2 erreurs types"
+    ]
+   },
+   "WTA": {
+    "pente_moyenne_appliquee": 1.0446,
+    "pente_2023": 1.0501,
+    "2023 → juin 2026": {
+     "matchs": 9655,
+     "gain": 9e-05,
+     "erreur_type": 0.0002,
+     "erreurs_types": 0.43,
+     "log_loss_base": 0.59502,
+     "log_loss": 0.59494,
+     "brier_base": 0.20557,
+     "brier": 0.2056,
+     "favori_annonce_pct": 66.8,
+     "favori_reel_pct": 67.2
+    },
+    "retenue": false,
+    "raisons": [
+     "gain sous 0.001",
+     "gain sous 2 erreurs types"
+    ]
+   },
+   "CH": {
+    "pente_moyenne_appliquee": 0.8376,
+    "pente_2023": 0.8181,
+    "2023 → juin 2026": {
+     "matchs": 32316,
+     "gain": 0.00259,
+     "erreur_type": 0.00043,
+     "erreurs_types": 6.02,
+     "log_loss_base": 0.63594,
+     "log_loss": 0.63335,
+     "brier_base": 0.22231,
+     "brier": 0.22159,
+     "favori_annonce_pct": 65.8,
+     "favori_reel_pct": 64.0
+    },
+    "retenue": true,
+    "raisons": []
+   }
+  },
+  "notes_basses": {
+   "ATP": {
+    "pente_moyenne_appliquee": 0.8037,
+    "pente_2023": 0.7743,
+    "2023 → juin 2026": {
+     "matchs": 154,
+     "gain": 0.00747,
+     "erreur_type": 0.00835,
+     "erreurs_types": 0.89,
+     "log_loss_base": 0.54785,
+     "log_loss": 0.54039,
+     "brier_base": 0.18747,
+     "brier": 0.1845,
+     "favori_annonce_pct": 76.3,
+     "favori_reel_pct": 70.8
+    },
+    "retenue": false,
+    "raisons": [
+     "moins de 1000 matchs",
+     "gain sous 2 erreurs types"
+    ]
+   },
+   "WTA": {
+    "matchs": 0,
+    "retenue": false,
+    "raisons": [
+     "aucun match"
+    ]
+   },
+   "CH": {
+    "pente_moyenne_appliquee": 0.7748,
+    "pente_2023": 0.7749,
+    "2023 → juin 2026": {
+     "matchs": 18277,
+     "gain": 0.00427,
+     "erreur_type": 0.00074,
+     "erreurs_types": 5.79,
+     "log_loss_base": 0.63129,
+     "log_loss": 0.62702,
+     "brier_base": 0.21994,
+     "brier": 0.21874,
+     "favori_annonce_pct": 67.5,
+     "favori_reel_pct": 64.7
+    },
+    "retenue": true,
+    "raisons": []
+   }
+  }
+ },
+ "retenues": [
+  "toutes_les_cases · CH",
+  "notes_basses · CH"
+ ],
+ "conclusion": "retenues : toutes_les_cases · CH, notes_basses · CH",
+ "descriptif": "le % de victoire ne change pas"
+}
