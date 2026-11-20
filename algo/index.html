@@ -335,6 +335,11 @@ body.video .film .g3d-cv{width:100cqw;height:var(--vue);aspect-ratio:auto;max-he
 .film .f3-haut .f3-tn{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 .film .f3-haut span{background:rgba(7,6,26,.72);border:1px solid rgba(255,255,255,.14);border-radius:1.4cqw;padding:1cqw 2cqw;backdrop-filter:blur(4px)}
 .film .f3-sim b{color:#D4FF3A}
+/* paquet 310 : signature des vidéos et des cartes (le nom seul, jamais l'adresse du site) */
+.te-signe{display:inline-flex;align-items:center;gap:.45em;font-family:var(--disp);letter-spacing:.06em;color:#F4F1FF;opacity:.82;white-space:nowrap;pointer-events:none}
+.te-signe i{width:.62em;height:.62em;border-radius:50%;background:#D4FF3A;box-shadow:0 0 .6em #D4FF3A;flex:none}
+.film .te-signe{position:absolute;right:3cqw;top:calc(var(--haut) + var(--vue) - 7.2cqw);z-index:6;font-size:3.1cqw;background:rgba(7,6,26,.55);border:1px solid rgba(255,255,255,.12);border-radius:1.2cqw;padding:.8cqw 1.6cqw}
+.ca .te-signe{position:absolute;right:56px;top:12px;font-size:21px}
 .film .f3-bug{position:absolute;left:4cqw;right:4cqw;top:calc(var(--haut) + var(--vue) + 2.4cqw);background:linear-gradient(180deg,rgba(14,10,36,.92),rgba(7,6,26,.92));border:1px solid rgba(255,255,255,.16);border-radius:2cqw;padding:1.2cqw 2cqw;box-shadow:0 1.5cqw 5cqw rgba(0,0,0,.45)}
 .film .f3-l{display:flex;align-items:center;gap:1.6cqw;font-weight:800;font-size:5cqw;line-height:1.35;border-left:1cqw solid var(--c);padding-left:2cqw}
 .film .f3-l + .f3-l{margin-top:.6cqw}
@@ -5787,7 +5792,7 @@ const G3D = (() => {
     nuit: { fond: [0.06, 0.05, 0.16], ciel: [0.62, 0.64, 0.82], sol: [0.28, 0.26, 0.36], brume: [0.08, 0.07, 0.2], lum: [0.95, 0.912, 0.836] },
     jour: { fond: [0.53, 0.71, 0.92], ciel: [0.78, 0.86, 1.0], sol: [0.46, 0.42, 0.36], brume: [0.64, 0.76, 0.93], lum: [1.32, 1.24, 1.08] },
   };
-  const VERSION_3D = 'v309';
+  const VERSION_3D = 'v310';
   // ── LE FILM (paquet 276) : la vidéo du jour en 3D. La page choisit les moments forts du match simulé et les fait
   // jouer ici un par un ; public en panneaux et image un peu réduite (la vidéo est rendue sans carte graphique).
   const FILM = { actif: false, echelle: 1, son: null, cam: null, t: 0, focale: 0 };
@@ -7004,7 +7009,7 @@ async function filmDuJour(V, m, son){
     <div class="f3-vs"><div class="f3-vs-tn">${esc(m.tournoi || '')}</div>
       ${[0,1].map(i => `<div class="f3-vs-j j${i}"><span class="f3-vs-n">${drap[i]} ${esc(noms[i])}</span><span class="f3-vs-p">${pc0(i ? 1 - p : p)}</span></div>${i ? '' : '<div class="f3-vs-x">VS</div>'}`).join('')}
       <div class="f3-vs-l">${esc(t('f3_proba'))}</div><div class="f3-vs-s">${esc(RESUME ? t('r_vs') : t('f3_sim', nSim))}</div></div>
-    <div class="f3-pres" hidden></div><div class="f3-volet"></div><div class="f3-fin" hidden></div></div>`;
+    <div class="f3-pres" hidden></div><div class="f3-volet"></div><div class="f3-fin" hidden></div>${SIGNE}</div>`;
   const $ = s => V.querySelector(s), z = ms => dort(ms);
   const coul = i => i === 0 ? '#2EE6FF' : '#FF4FAE';
   if (innerHeight / innerWidth < 1.5) V.querySelector('.film').classList.add('compact');   // format 4:5 : pas la place des 4 lignes
@@ -7120,6 +7125,8 @@ async function filmDuJour(V, m, son){
 }
 
 /* ───────────── carte de stats (?carte=1) : image 1080×1350 pour X, capturée par scripts/video_simulation.py ───────────── */
+// paquet 310 : la signature (le nom seul : jamais l'adresse du site dans les vidéos et les images pour X)
+const SIGNE = '<div class="te-signe" aria-hidden="true"><i></i>TENNIS EDGE</div>';
 function modeCarte(){
   document.body.classList.add('carte');
   const id = Q.get('uid') || (D.match_du_jour && D.match_du_jour.uid);
@@ -7143,7 +7150,7 @@ function modeCarte(){
     <div class="tir"><i style="width:${(p*100).toFixed(1)}%"></i></div>
     <div class="blocs"><div class="bloc"><h2>${esc(t('c_sets'))}</h2>${sets}</div><div class="bloc"><h2>${esc(t('c_scores'))}</h2>${scores}</div></div>
     ${lignes ? `<div class="bloc" style="margin-top:20px"><h2>${esc(t('c_feuille'))}</h2><table><thead><tr><th></th><th class="a">${esc(n1)}</th><th class="b">${esc(n2)}</th></tr></thead><tbody>${lignes}</tbody></table></div>` : ''}
-    <div class="pied">${t('c_pied', D.simulations)}</div></div>`;
+    <div class="pied">${t('c_pied', D.simulations)}</div>${SIGNE}</div>`;
   Promise.race([(document.fonts && document.fonts.ready) || Promise.resolve(), dort(3000)]).then(()=>{ window.__fini = true; });
 }
 
@@ -7180,7 +7187,7 @@ function modeBilan(){
       <div class="fait"><div class="k">${esc(t('b_aces_v'))}</div><div class="v" style="font-size:34px">${va && fr ? `${va[0]} – ${va[1]} <small>→ ${fr[0].aces} – ${fr[1].aces}</small>` : '—'}</div></div>
     </div>
     ${lignes ? `<div class="bloc"><h2>${esc(t('b_stats'))}</h2><table><thead><tr><th></th><th class="a" colspan="2">${esc(n1)}</th><th class="b" colspan="2">${esc(n2)}</th></tr></thead><tbody>${lignes}</tbody></table></div>` : ''}
-    <div class="pied" style="margin-top:auto">${esc(t('b_pied'))}</div></div>`;
+    <div class="pied" style="margin-top:auto">${esc(t('b_pied'))}</div>${SIGNE}</div>`;
   window.__uid = id;
   Promise.race([(document.fonts && document.fonts.ready) || Promise.resolve(), dort(3000)]).then(()=>{ window.__fini = true; });
 }
@@ -7201,7 +7208,7 @@ function modeSemaine(){
       ${S.favoris_70 && S.favoris_70.matchs ? `<div class="bloc" style="margin-top:20px"><h2>${esc(t('s_fav70', S.favoris_70.matchs))}</h2><p class="liste">${t('s_fav70_v', pc(S.favoris_70.justes_pct), pc(S.favoris_70.annonce_pct))}</p></div>` : ''}
       ${(S.pires_rates||[]).length ? `<div class="bloc" style="margin-top:20px"><h2>❌ ${esc(t('s_rates'))}</h2><ul class="liste">${S.pires_rates.map(x=>`<li>${t('s_rate', esc(x.match), esc(x.favori), x.p, esc(x.score||''))}</li>`).join('')}</ul></div>` : ''}
       <div class="bloc" style="margin-top:20px"><p class="liste">🎯 ${t('s_exacts', S.scores_exacts || 0)}</p></div>
-      <div class="pied" style="margin-top:auto">${esc(t('s_pied'))}</div></div>`;
+      <div class="pied" style="margin-top:auto">${esc(t('s_pied'))}</div>${SIGNE}</div>`;
     Promise.race([(document.fonts && document.fonts.ready) || Promise.resolve(), dort(3000)]).then(()=>{ window.__fini = true; });
   }).catch(()=>{ window.__vide = true; window.__fini = true; });
 }
