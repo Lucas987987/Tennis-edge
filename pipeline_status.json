@@ -2,20 +2,20 @@
   "scripts_manquants": [],
   "closing_7j": {
     "jours": 3,
-    "n": 130,
-    "closing_pct": 100.0,
-    "t7_pct": 99.2,
-    "t3_pct": 94.6
+    "n": 127,
+    "closing_pct": 96.1,
+    "t7_pct": 95.3,
+    "t3_pct": 90.6
   },
   "closing_30j": {
     "jours": 30,
-    "n": 1622,
-    "closing_pct": 93.6,
-    "t7_pct": 88.9,
-    "t3_pct": 83.9
+    "n": 1615,
+    "closing_pct": 93.3,
+    "t7_pct": 88.5,
+    "t3_pct": 83.7
   },
-  "run_termine": "2026-11-20T08:29:49",
-  "run_demarre": "2026-11-12T16:21:43",
+  "run_termine": "2026-11-20T13:03:38",
+  "run_demarre": "2026-11-20T11:35:12",
   "verdict_global": "1 livrable(s) à vérifier",
   "livrables": [
     {
@@ -27,7 +27,7 @@
       "octets": 383193,
       "lignes": 3855,
       "ecrit_ce_run": true,
-      "modifie": "2026-11-20T07:40:16"
+      "modifie": "2026-11-20T12:22:38"
     },
     {
       "fichier": "resultats_derived.json",
@@ -38,7 +38,7 @@
       "octets": 1018777,
       "lignes": 3806,
       "ecrit_ce_run": true,
-      "modifie": "2026-11-20T07:22:37"
+      "modifie": "2026-11-20T12:04:37"
     },
     {
       "fichier": "paper_trades_match.jsonl",
@@ -49,7 +49,7 @@
       "octets": 150524,
       "lignes": 290,
       "ecrit_ce_run": true,
-      "modifie": "2026-11-20T07:47:32"
+      "modifie": "2026-11-20T12:29:12"
     },
     {
       "fichier": "paper_trades_set1.jsonl",
@@ -60,7 +60,7 @@
       "octets": 46846,
       "lignes": 103,
       "ecrit_ce_run": true,
-      "modifie": "2026-11-20T07:48:22"
+      "modifie": "2026-11-20T12:29:41"
     },
     {
       "fichier": "paper_trades_set2.jsonl",
@@ -71,7 +71,7 @@
       "octets": 0,
       "lignes": 0,
       "ecrit_ce_run": true,
-      "modifie": "2026-11-20T07:48:46"
+      "modifie": "2026-11-20T12:29:56"
     },
     {
       "fichier": "moves_detail.csv",
@@ -82,7 +82,7 @@
       "octets": 8113,
       "lignes": 48,
       "ecrit_ce_run": true,
-      "modifie": "2026-11-20T07:48:52"
+      "modifie": "2026-11-20T12:29:58"
     },
     {
       "fichier": "moves_detail_hist.csv",
@@ -93,7 +93,7 @@
       "octets": 498511,
       "lignes": 2945,
       "ecrit_ce_run": true,
-      "modifie": "2026-11-20T07:52:11"
+      "modifie": "2026-11-20T12:33:01"
     },
     {
       "fichier": "canal_clv_detail.csv",
@@ -104,7 +104,7 @@
       "octets": 113972,
       "lignes": 703,
       "ecrit_ce_run": true,
-      "modifie": "2026-11-20T08:26:59"
+      "modifie": "2026-11-20T13:01:18"
     },
     {
       "fichier": "canal_public_log.jsonl",
@@ -112,10 +112,10 @@
       "optionnel": false,
       "externe": true,
       "verdict": "✅ OK",
-      "octets": 353146,
-      "lignes": 689,
+      "octets": 353632,
+      "lignes": 690,
       "ecrit_ce_run": true,
-      "modifie": "2026-11-20T07:22:36"
+      "modifie": "2026-11-20T12:04:37"
     },
     {
       "fichier": "book_curves_live.jsonl",
@@ -123,14 +123,14 @@
       "optionnel": false,
       "externe": false,
       "verdict": "✅ OK",
-      "octets": 29631165,
-      "lignes": 3262,
+      "octets": 30449620,
+      "lignes": 3306,
       "ecrit_ce_run": true,
-      "modifie": "2026-11-20T07:23:09"
+      "modifie": "2026-11-20T12:05:26"
     }
   ],
   "partitions": {
-    "total_mo": 700.8,
+    "total_mo": 701.1,
     "zone_rouge": [],
     "n_partitions": 97,
     "vue_partielle": true
@@ -143,7 +143,7 @@
     "alerte": false
   },
   "clv_vs_median": {
-    "genere_le": "2026-11-20T08:19:50.031308+00:00",
+    "genere_le": "2026-11-20T12:56:26.653166+00:00",
     "n_moves_total": 2944,
     "n_cote_ambigu": 1,
     "n_incomplet": 427,
@@ -179,7 +179,7 @@
     "n_avertissements": 2,
     "alerte": false,
     "genere_le": "2026-11-19T13:35:50Z",
-    "age_heures": 18.9,
+    "age_heures": 23.5,
     "fraicheur_inconnue_ou_perimee": false
   },
   "repo_size": {
@@ -191,7 +191,7 @@
     "message": "SEUIL FRANCHI — ne PAS réécrire l'historique (force-push interdit). Poursuivre la migration R2 (README_MIGRATION_R2.md) ; « nouveau dépôt propre » à planifier plus tard, à froid.",
     "derniere_mesure_reussie_le": "2026-11-19T16:45:06.501865+00:00",
     "genere_le": "2026-11-19T16:45:06.501865+00:00",
-    "age_heures": 15.7,
+    "age_heures": 20.3,
     "fraicheur_inconnue_ou_perimee": false
   }
 }
