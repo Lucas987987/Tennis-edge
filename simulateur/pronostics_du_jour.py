@@ -297,6 +297,32 @@ def signaux_outsiders(c, p_base, h, a, tournoi, debut):
 #   invitation : favori invité (WC) et pas l'adversaire : +1 ; l'inverse : −1.
 # Décalage (logit) vers le favori = β·indice (simulateur/hesitation_ch.json). Retrait automatique : outsiders_ch.py.
 HESITATION_CH = {}
+EXPERIENCE = None     # 20/11/2026 (paquet 315) : {joueur: matchs ATP/WTA/Challenger joués}, compteur de l'étude
+
+
+def charger_experience(racine, cle):
+    """Le compteur de etude_hesitation.py : archive depuis 2012 (simulateur/experience_joueurs.json, jusqu'au
+    01/06/2026 exclu) + les matchs terminés des feuilles TennisApi depuis (ATP, WTA, Challenger), mêmes clés."""
+    import feuilles as FE_
+    try:
+        with open(os.path.join(racine, 'simulateur', 'experience_joueurs.json'), encoding='utf-8') as f:
+            doc = json.load(f)
+    except (OSError, ValueError):
+        return None
+    n = dict(doc.get('n') or {})
+    vus = set()
+    for r in FE_.lire(racine, depuis=doc.get('jusqu_au')):
+        if r.get('vainqueur') not in (1, 2) or FE_.circuit_de(r.get('categorie')) not in ('ATP', 'WTA', 'CH'):
+            continue
+        if r.get('id') in vus:
+            continue
+        vus.add(r.get('id'))
+        g, p = cle((r.get('home') or {}).get('nom')), cle((r.get('away') or {}).get('nom'))
+        if not g or not p or g == p:
+            continue
+        for j in (g, p):
+            n[j] = n.get(j, 0) + 1
+    return n
 
 
 def charger_hesitation(racine):
@@ -326,6 +352,11 @@ def signaux_hesitation(c, p_home, h, a, debut):
             x = max(-4.0, min(4.0, math.log2(ra) - math.log2(rf)))
             if x:
                 d['hesitation_classement'] = s * HESITATION_CH['classement'] * x
+    if 'experience' in HESITATION_CH and EXPERIENCE is not None:       # paquet 315
+        nh, na = EXPERIENCE.get(h, 0), EXPERIENCE.get(a, 0)
+        x = (math.log1p(nh) - math.log1p(na)) * (1.0 if fav_home else -1.0)
+        if x:
+            d['hesitation_experience'] = s * HESITATION_CH['experience'] * x
     if 'invitation' in HESITATION_CH:
         st = entree_du_match(h, a, debut)
         if st:
@@ -1571,6 +1602,14 @@ def construire(racine, maintenant=None, uids=None, pentes_forcees=None):
     POIDS_CIRCUIT = charger_poids_circuit(racine) if COMBINAISON else {}
     OUTSIDERS_CH = charger_outsiders(racine)
     HESITATION_CH = charger_hesitation(racine)
+    global EXPERIENCE
+    try:
+        _alx = dict(etat.get('alias') or {})
+        EXPERIENCE = charger_experience(racine, lambda n: _alx.get(E.cle(n), E.cle(n)) if n else None) \
+            if 'experience' in HESITATION_CH else None
+    except Exception as e_:  # noqa: BLE001
+        print(f"::warning::compteur d'expérience non chargé : {type(e_).__name__}: {e_}")
+        EXPERIENCE = None
     try:
         _ald = dict(etat.get('alias') or {})
         DERNIERS_MATCHS = charger_derniers_matchs(racine, lambda n: _ald.get(E.cle(n), E.cle(n)) if n else None) if OUTSIDERS_CH else None

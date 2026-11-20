@@ -1,4 +1,4 @@
-"""Paquet 314 : zone d'hésitation en Challenger (classement, invitation) et leur retrait."""
+"""Paquets 314–315 : zone d'hésitation en Challenger (classement, invitation, expérience) et leur retrait."""
 import datetime as dt
 import json
 import math
@@ -19,12 +19,13 @@ CLE = ('2026-11-21', 'a', 'b')
 
 class Signaux(unittest.TestCase):
     def setUp(self):
-        self.ancien = (P.HESITATION_CH, P.PROGRAMME)
+        self.ancien = (P.HESITATION_CH, P.PROGRAMME, P.EXPERIENCE)
         P.HESITATION_CH = {'classement': 0.0847, 'invitation': -0.2563}
+        P.EXPERIENCE = None
         P.PROGRAMME = {CLE: {'home': 'a', 'away': 'b', 'rangs_actuels': [100, 400], 'tetes': ['WC', None]}}
 
     def tearDown(self):
-        P.HESITATION_CH, P.PROGRAMME = self.ancien
+        P.HESITATION_CH, P.PROGRAMME, P.EXPERIENCE = self.ancien
 
     def test_favori_a_domicile(self):
         d = P.signaux_hesitation('CH', 0.56, 'a', 'b', DEBUT)
@@ -48,8 +49,34 @@ class Signaux(unittest.TestCase):
         P.PROGRAMME = {CLE: {'home': 'a', 'away': 'b', 'rangs_actuels': [1, 5000], 'tetes': [None, None]}}
         self.assertAlmostEqual(P.signaux_hesitation('CH', 0.56, 'a', 'b', DEBUT)['hesitation_classement'], 0.0847 * 4)
 
+    def test_experience(self):
+        P.HESITATION_CH = {'experience': 0.0526}
+        P.EXPERIENCE = {'a': 99, 'b': 9}
+        d = P.signaux_hesitation('CH', 0.56, 'a', 'b', DEBUT)                      # a favori et plus expérimenté
+        self.assertAlmostEqual(d['hesitation_experience'], 0.0526 * math.log(10))
+        d = P.signaux_hesitation('CH', 0.44, 'a', 'b', DEBUT)                      # b favori, moins expérimenté : vers a
+        self.assertAlmostEqual(d['hesitation_experience'], 0.0526 * math.log(10))
+        P.EXPERIENCE = None
+        self.assertEqual(P.signaux_hesitation('CH', 0.56, 'a', 'b', DEBUT), {})     # compteur absent : rien
+
+    def test_compteur_archive_plus_feuilles(self):
+        import gzip
+        with tempfile.TemporaryDirectory() as d:
+            os.makedirs(os.path.join(d, 'simulateur')); os.makedirs(os.path.join(d, 'feuilles'))
+            json.dump({'jusqu_au': '2026-06-01', 'n': {'a': 10}}, open(os.path.join(d, 'simulateur', 'experience_joueurs.json'), 'w'))
+            F = [{'id': 1, 'vainqueur': 1, 'categorie': 'Challenger', 'home': {'nom': 'A'}, 'away': {'nom': 'B'}},
+                 {'id': 1, 'vainqueur': 1, 'categorie': 'Challenger', 'home': {'nom': 'A'}, 'away': {'nom': 'B'}},   # doublon
+                 {'id': 2, 'vainqueur': 2, 'categorie': 'ITF Men', 'home': {'nom': 'A'}, 'away': {'nom': 'B'}},      # ITF : non
+                 {'id': 3, 'vainqueur': None, 'categorie': 'ATP', 'home': {'nom': 'A'}, 'away': {'nom': 'B'}}]       # pas fini
+            with gzip.open(os.path.join(d, 'feuilles', '2026-07-01.jsonl.gz'), 'wt') as f:
+                f.write(''.join(json.dumps(r) + '\n' for r in F))
+            with gzip.open(os.path.join(d, 'feuilles', '2026-05-31.jsonl.gz'), 'wt') as f:     # avant : déjà dans l'archive
+                f.write(json.dumps(F[0]) + '\n')
+            n = P.charger_experience(d, lambda x: x.lower() if x else None)
+            self.assertEqual(n, {'a': 11, 'b': 1})
+
     def test_fichier_en_place(self):
-        self.assertEqual(P.charger_hesitation(str(RACINE)), {'classement': 0.0847, 'invitation': -0.2563})
+        self.assertEqual(P.charger_hesitation(str(RACINE)), {'classement': 0.0447, 'invitation': -0.202, 'experience': 0.0526})
         src = (RACINE / 'simulateur' / 'pronostics_du_jour.py').read_text(encoding='utf-8')
         self.assertIn('HESITATION_CH = charger_hesitation(racine)', src)
         self.assertIn('so_ = dict(so_ or {}, **sz_)', src)                         # gardés pour la règle de retrait
@@ -80,6 +107,8 @@ class Retrait(unittest.TestCase):
         self.assertIn('simulateur/hesitation_ch.json', wf)
         html = (RACINE / 'algo' / 'index.html').read_text(encoding='utf-8')
         self.assertIn("hesitation_classement: L==='fr'?", html)
+        self.assertIn("hesitation_experience: L==='fr'?", html)
+        self.assertIn('experience', OC.FICHIERS['hesitation_ch.json'])
 
 
 if __name__ == '__main__':
