@@ -1501,6 +1501,13 @@
    "paquet": 312,
    "quoi": "RÉSUMÉ 3D : LES VRAIES STATS ET LE RENDEZ-VOUS DU MATIN (paquet 312). (1) À la fin du résumé d'un vrai match, les vraies stats tirées de la feuille TennisApi déjà stockée : aces, doubles fautes, % de 1res balles, balles de break converties, points gagnés (0 requête). (2) Chaque matin à 06:12 UTC, le résumé du match du jour de la veille part tout seul sur le Telegram privé, après la carte bilan de 05:37 ; s'il manque la feuille ou le point par point, un message le dit. (3) Pied des cartes stats, bilan et semaine : « aucune donnée de bookmaker » / « 100 % indépendant ».",
    "garde_fou": "Descriptif : le % ne change pas. Tests tests/test_resume_match.py (stats dans le bon sens des joueurs, feuille inversée, lancement du matin). Retrait : remettre algo/index.html, scripts/resume_match.py et .github/workflows/video_resume.yml du paquet 311."
+  },
+  {
+   "date": "2026-11-20",
+   "statut": "etude",
+   "paquet": 313,
+   "quoi": "ÉTUDE « LÀ OÙ L'ALGO HÉSITE » (paquet 313, décision de Lucas). Sur l'archive, dans les matchs où l'algo donne son favori entre 50 et 60 %, cinq indices connus avant le match ont été jugés circuit par circuit selon une règle écrite avant (apprendre sur 2018–2022, juger sur 2023 → juin 2026, gain ≥ 0,001 sur ≥ 1 000 matchs, ≥ 2 erreurs types, même sens sur les deux périodes). Retenus en Challenger seulement : l'écart de classement officiel (gain 0,0026, 7,1 erreurs types), l'expérience (matchs déjà joués ; gain 0,0033, 6,9 erreurs types) et l'invitation (favori invité moins fort qu'annoncé ; gain 0,0118 sur 1 767 matchs, 3,2 erreurs types). Ensemble, sur toute la zone Challenger (15 082 matchs, 40 % des Challengers) : gain 0,0041, Brier de la zone 0,2464 → 0,2444. Rien de retenu en ATP ni en WTA ; la qualification et le domicile ne passent nulle part.",
+   "garde_fou": "Étude seulement : rien n'entre dans l'algo sans un paquet à part, avec sa règle de retrait. Rapport public simulateur/rapport_hesitation.json (aucun nom de joueur). Retrait : supprimer simulateur/etude_hesitation.py, simulateur/rapport_hesitation.json et tests/test_hesitation.py."
   }
  ]
 }
