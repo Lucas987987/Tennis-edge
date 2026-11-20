@@ -1473,6 +1473,13 @@
    "paquet": 308,
    "quoi": "RÉSUMÉ 3D D'UN VRAI MATCH TERMINÉ (paquet 308, demande de Lucas : lancé à la main, 30–45 s, 4 à 6 points clés). Sur la fiche d'un match commencé depuis au moins 3 h (jamais ITF), le bouton « 🎞️ Résumé 3D du match » lance le workflow « Vidéo — résumé 3D d'un match terminé ». scripts/resume_match.py lit la feuille et le point par point TennisApi déjà stockés (0 requête) et écrit la suite réelle des points, le premier serveur et le vrai score ; la page (?video=1&resume=1) rejoue les moments forts de ce vrai déroulé dans le stade 3D, avec le vrai score à l'écran. Seuls les échanges (trajectoires, coups) sont reconstitués. Fin de vidéo : le vainqueur réel, puis le favori de l'algo avant le match et son %. Vidéos FR et EN sur le Telegram privé, sans l'adresse du site ; un refus (feuille pas encore arrivée, abandon, point par point incomplet) y est signalé.",
    "garde_fou": "Affichage seulement : le % ne change pas, rien n'est commité. Refus si le score rejoué diffère de la feuille (jamais un faux score). Retrait : supprimer .github/workflows/video_resume.yml, scripts/resume_match.py et tests/test_resume_match.py, remettre algo/index.html, scripts/video_simulation.py et workers/algo/ du paquet 307."
+  },
+  {
+   "date": "2026-11-20",
+   "statut": "production",
+   "paquet": 309,
+   "quoi": "LES PAS DES JOUEURS 3D (paquet 309, Lucas : « pas mal de replacements ou déplacements qui restent figés »). Sous la vitesse de course (replacement après une frappe, ajustement, demi-tour, retour à sa place), le joueur glissait dans sa position d'attente, pieds immobiles. Désormais chaque pied est posé au sol et ne glisse plus : quand le corps s'en éloigne, il se lève et se repose un peu en avant du mouvement (pas de 0,15 à 0,24 s, 40 cm devant au plus, un pied après l'autre), les jambes sont recalculées pour atteindre chaque pied, le bassin descend un peu à chaque pas et le poids passe sur le pied d'appui. Les coups, le service et la course (mouvement capté) gardent leurs jambes. Vaut pour le direct 3D du site, la vidéo du jour et le résumé.",
+   "garde_fou": "Affichage seulement : le % ne change pas. Test tests/test_direct_3d_pas.py (aucun pied posé ne glisse, jambe à moins de 3 cm du pied, des pas de côté, en reculant, en diagonale, vite et lentement, à l'arrêt les deux pieds à terre). Retrait : remettre algo/index.html du paquet 308."
   }
  ]
 }

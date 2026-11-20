@@ -4398,10 +4398,10 @@ const G3D = (() => {
     return (2 * s3 - 3 * s2 + 1) * ys[k] + (s3 - 2 * s2 + s) * h * m(k) + (-2 * s3 + 3 * s2) * ys[k + 1] + (s3 - s2) * h * m(k + 1);
   }
   // une jambe qui va de la hanche à un pied posé au sol (cheville en x, z ; repère du joueur) : angles de hanche et de genou
-  function jambe(p, s, pied) {
+  function jambe(p, s, pied, h = 0) {                                                  // h : pied levé de h mètres (paquet 309)
     const c = Math.cos(p.bassin[1]), sn = Math.sin(p.bassin[1]), Y = 0.98 - p.accroupi * 1.4;
     const dx = pied[0] - (p.lat || 0), dz = pied[1] - (p.avance || 0);
-    const v = [c * dx - sn * dz - s * 0.1, -0.05 - Y + 0.06, sn * dx + c * dz];          // dans le repère du bassin
+    const v = [c * dx - sn * dz - s * 0.1, -0.05 - Y + 0.06 + h, sn * dx + c * dz];      // dans le repère du bassin
     const D = cl(Math.hypot(v[0], v[1], v[2]), 0.35, 0.895);
     const ge = Math.acos(cl((D * D - 0.3956) / 0.4048, -1, 1)), ay = -0.44 - 0.46 * Math.cos(ge), az = -0.46 * Math.sin(ge);
     const th = Math.asin(cl(-v[0] / ay, -1, 1));
@@ -5089,6 +5089,7 @@ const G3D = (() => {
                  : (E.dernier ? 1 - cl((t - E.dernier.t) / 0.8, 0, 1) : 0);
     const base = wA >= 1 ? poseAttente(t) : wA <= 0 ? poseRepos(t) : melange(poseRepos(t), poseAttente(t), wA);
     let p = bouge ? melange(base, bouge, cl((v - 0.6) / 2, 0, 1)) : base;
+    p.ecart = lerp(0.155, 0.36, wA);                                                // paquet 309 : écart des pieds voulu (pas d'ajustement)
     if (!R || t > R.finT) {
       // entre les points : le serveur fait rebondir la balle, le relanceur se balance
       if (E.srv === i && v < 0.3 && !E.fini) { p.epG = [-0.5 + Math.abs(Math.sin(t * 4)) * 0.4, 0, -0.2]; p.coudeG = 0.6; p.accroupi = 0.05; p.tronc = [0.2, 0, 0]; }
@@ -5132,6 +5133,60 @@ const G3D = (() => {
     const cible = enJeu ? cl((v - seuilCourse(i)) / 1.2, 0, 1) : cl((v - 0.5) / 0.5, 0, 1);   // en jeu : on court (sinon pas chassés)
     L.w = lerp(L.w, cible, dt > 0 ? 1 - Math.exp(-dt * 10) : 1);
   }
+  // ── LES PAS (paquet 309, Lucas : « pas mal de replacements ou déplacements qui restent figés ») ─────────────────
+  // Sous la vitesse de course, le joueur glissait dans sa position d'attente, pieds immobiles. Désormais chaque pied est
+  // POSÉ au sol (point fixe du court) ; quand le corps s'en éloigne (replacement, ajustement, demi-tour, écart qui
+  // s'ouvre au début de l'échange), le pied se lève et va se reposer un peu en avant du mouvement, en 0,15 à 0,24 s,
+  // l'autre pied restant à terre. Les jambes sont recalculées pour atteindre chaque pied (cinématique inverse) ; le
+  // bassin descend un peu à chaque pas et le poids passe sur le pied d'appui. Les coups, le service et la course
+  // (mouvement capté) gardent leurs jambes ; les pas reprennent en douceur à la sortie.
+  const PAS = [null, null], POSE_PAS = [null, null];
+  function pasDe(i, t, dt, p, w) {
+    const j = J[i], c = Math.cos(j.cap), s = Math.sin(j.cap), v = Math.hypot(j.vx, j.vz);
+    const monde = (lx, lz) => ({ x: j.x + c * lx + s * lz, z: j.z - s * lx + c * lz });
+    const local = q => { const dx = q.x - j.x, dz = q.z - j.z; return [c * dx - s * dz, s * dx + c * dz]; };
+    const ec = p.ecart ?? 0.3, ideal = sd => monde(sd * ec, 0.02);
+    const lead = Math.min(0.3, 0.16 + 0.05 * v, 0.4 / Math.max(v, 0.01));               // le pied se pose un peu en avant du mouvement (40 cm au plus)
+    if (!PAS[i]) PAS[i] = { D: { ...ideal(-1), u: -1 }, G: { ...ideal(1), u: -1 }, dernier: -9 };
+    const P = PAS[i], pieds = [['D', -1], ['G', 1]];
+    for (const [k, sd] of pieds) {
+      const f = P[k], id = ideal(sd);
+      if (w < 0.02 || Math.hypot(f.x - id.x, f.z - id.z) > 1.4 || dt <= 0 || dt > 0.25) { f.x = id.x; f.z = id.z; f.u = -1; }   // pas de pas : on suit
+    }
+    if (w >= 0.02 && dt > 0) {
+      for (const [k, sd] of pieds) {                                                   // un pied en l'air avance vers sa cible
+        const f = P[k]; if (f.u < 0) continue;
+        f.u += dt / f.d; const id = ideal(sd), cx = id.x + j.vx * lead, cz = id.z + j.vz * lead;
+        if (f.u >= 1) { f.x = cx; f.z = cz; f.u = -1; continue; }
+        const r = dt / (f.d * Math.max(1e-3, 1 - f.u + dt / f.d));                      // atteint la cible (qui bouge) à la fin du pas
+        f.x += (cx - f.x) * cl(r, 0, 1); f.z += (cz - f.z) * cl(r, 0, 1);
+      }
+      // besoin d'un pas : en mouvement, le pied est resté DERRIÈRE (ou trop de côté) ; à l'arrêt, il est loin de sa place
+      const besoin = ([k, sd]) => { const f = P[k], id = ideal(sd), dx = f.x - id.x, dz = f.z - id.z, e = Math.hypot(dx, dz);
+        if (v <= 0.25) return { e, n: e > 0.07 ? e : 0, urgent: e > 0.4 };
+        const le = (dx * j.vx + dz * j.vz) / v, tr = Math.abs(dx * j.vz - dz * j.vx) / v;
+        return { e, n: Math.max(-le - 0.12, tr - 0.2, e - 0.75, 0), urgent: -le > 0.38 || e > 0.9 }; };
+      const enAir = pieds.filter(([k]) => P[k].u >= 0).length;
+      const cand = pieds.filter(([k]) => P[k].u < 0).map(x => [x, besoin(x)]).filter(x => x[1].n > 0).sort((a, b) => b[1].n - a[1].n)[0];
+      if (cand) {
+        const [[k], b] = cand, autre = pieds.find(([kk]) => kk !== k), ua = P[autre[0]].u;
+        const libre = (enAir === 0 || ua > 0.85) && t - P.dernier > 0.07;               // vite : un pied part quand l'autre se pose
+        if (libre || b.urgent) { const f = P[k]; f.u = 0; f.d = cl(0.24 - 0.03 * v, 0.15, 0.24); f.h = cl(0.05 + Math.min(b.e, 0.5) * 0.1, 0.05, 0.1); P.dernier = t; }
+      }
+    }
+    // les jambes vont aux pieds ; petit creux du bassin pendant chaque pas, poids sur le pied d'appui
+    let creux = 0, appui = 0;
+    for (const [k, sd] of pieds) { const f = P[k]; if (f.u >= 0) { const b = Math.sin(Math.PI * cl(f.u, 0, 1)); creux = Math.max(creux, b); appui -= sd * b; } }
+    const q = { ...p, accroupi: p.accroupi + 0.018 * creux * w, lat: (p.lat || 0) + 0.035 * appui * w };
+    for (const [k, sd] of pieds) {
+      const f = P[k], [lx, lz] = local(f), h = f.u >= 0 ? f.h * Math.sin(Math.PI * cl(f.u, 0, 1)) : 0;
+      const [ha, ge] = jambe(q, sd, [lx, lz], h), cle = sd < 0 ? 'D' : 'G';
+      p['hanche' + cle] = p['hanche' + cle].map((x, n) => lerp(x, ha[n], w));
+      p['genou' + cle] = lerp(p['genou' + cle], ge, w);
+      p['pied' + cle] = lerp(p['pied' + cle], f.u >= 0 ? -0.25 * Math.sin(Math.PI * cl(f.u, 0, 1)) : 0, w);
+    }
+    p.accroupi = q.accroupi; p.lat = q.lat;
+  }
   function poseLisse(i, t, dt) {
     majLoco(i, dt);
     const cible = poseDe(i, t), j = J[i], face = i === 0 ? 1 : -1;
@@ -5150,7 +5205,11 @@ const G3D = (() => {
     const p = LISSE[i], k = dt > 0 ? 1 - Math.exp(-dt * (cible.coup >= 0.5 && !cible.geste ? 70 : 16)) : 1;
     if (!p) return (LISSE[i] = cible);
     for (const c in cible) p[c] = Array.isArray(cible[c]) ? p[c].map((v, n) => lerp(v, cible[c][n], k)) : lerp(p[c] || 0, cible[c] || 0, k);
-    return p;
+    // paquet 309 : les pieds posés (pas d'ajustement), sauf pendant un coup, le service et la course captée
+    const wPas = (cible.geste ? 1 : 1 - cl(cible.coup || 0, 0, 1)) * (1 - cl(LOCO[i].w, 0, 1));
+    const sortie = { ...p, hancheD: [...p.hancheD], hancheG: [...p.hancheG] };
+    pasDe(i, t, dt, sortie, wPas);
+    return (POSE_PAS[i] = sortie);
   }
   // la balle tenue par le serveur entre les points (rebonds avant de servir)
   function balleEnMain(t) {
@@ -5728,7 +5787,7 @@ const G3D = (() => {
     nuit: { fond: [0.06, 0.05, 0.16], ciel: [0.62, 0.64, 0.82], sol: [0.28, 0.26, 0.36], brume: [0.08, 0.07, 0.2], lum: [0.95, 0.912, 0.836] },
     jour: { fond: [0.53, 0.71, 0.92], ciel: [0.78, 0.86, 1.0], sol: [0.46, 0.42, 0.36], brume: [0.64, 0.76, 0.93], lum: [1.32, 1.24, 1.08] },
   };
-  const VERSION_3D = 'v308';
+  const VERSION_3D = 'v309';
   // ── LE FILM (paquet 276) : la vidéo du jour en 3D. La page choisit les moments forts du match simulé et les fait
   // jouer ici un par un ; public en panneaux et image un peu réduite (la vidéo est rendue sans carte graphique).
   const FILM = { actif: false, echelle: 1, son: null, cam: null, t: 0, focale: 0 };
@@ -5865,7 +5924,7 @@ const G3D = (() => {
     },
     _phys: { viser, voler, coupPhysique, PHY, SURF_REBOND, hauteurFilet, styleCoup, laterale, seuilCourse, officiels: () => OFFICIELS, surface: s => { E.surface = s; } },
     _plans: PLANS, _gestes: GESTE, _son: SON, _scoreParle: scoreParle, _poseGeste: poseGeste,
-    _cam: cam, _maj: maj, _etat: E, _J: J, _R: () => R, _poses: { poseAttente, poseRepos, poseCourse, poseCoupDroit, poseRevers, poseService, poseSlice, poseVolee },
+    _cam: cam, _maj: maj, _etat: E, _J: J, _pas: () => ({ PAS, poses: POSE_PAS, os, loco: LOCO, pasDe }), _R: () => R, _poses: { poseAttente, poseRepos, poseCourse, poseCoupDroit, poseRevers, poseService, poseSlice, poseVolee },
   };
 })();
 // Vue du direct choisie par le visiteur (3D par défaut), gardée dans ce navigateur.
