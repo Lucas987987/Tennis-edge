@@ -1,6 +1,6 @@
 {
- "paquet": 310,
- "version_3d": "v310",
+ "paquet": 324,
+ "version_3d": "v324",
  "essais_de_chargement_des_modeles": 3,
  "attentes_s": [
   1.5,
@@ -102,5 +102,19 @@
   "texte": "TENNIS EDGE",
   "ou": "vidéo 3D (coin bas droit de l'image du stade), résumé, cartes stats, bilan et semaine",
   "adresse": "jamais"
+ },
+ "paquet_323": {
+  "demande": "Lucas, 21/11/2026 : améliorer les coups, la balle, la caméra et le décor",
+  "balle": "jamais plus petite qu'à 13 m de la caméra (facteur 1 à 2,6), traînée continue des 80 dernières millisecondes, petit halo, ombre au sol selon la hauteur",
+  "coups": "sillage de la tête de raquette quand elle dépasse 7 m/s (0,12 s)",
+  "camera": "film : 1er ralenti filmé par une caméra araignée à 5,2 m qui suit la balle du côté du gagnant",
+  "decor": "terre battue : traces de glissade et poussière sur les frappes prises en mouvement ; flashs dans les tribunes sur les grands points (nuit ou salle)",
+  "note": "Affichage seulement : le % ne change pas."
+ },
+ "paquet_324": {
+  "demande": "Lucas, 21/11/2026 : retravailler les gestes",
+  "coups": "coup droit et revers : rotation des épaules ×1,35 à la préparation (bassin inchangé), genoux +5 cm à l'armé, accompagnement ×1,25 à ×1,3 ; slice : épaules ×1,2 ; service : jambes plus fléchies au lancer et à l'armé",
+  "contact": "poses de frappe inchangées (u = 0,55 et 0,625) : le placement du joueur sur la balle ne bouge pas",
+  "note": "Affichage seulement : le % ne change pas."
  }
 }
