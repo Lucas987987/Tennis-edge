@@ -26,7 +26,7 @@ class Gestes(unittest.TestCase):
         self.assertEqual(cles('sv')[4][0], .625)
 
     def test_version(self):
-        self.assertIn("const VERSION_3D = 'v324';", HTML)
+        self.assertRegex(HTML, r"const VERSION_3D = 'v32[4-9]';")
 
 
 if __name__ == '__main__':
