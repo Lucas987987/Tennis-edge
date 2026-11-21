@@ -222,7 +222,7 @@ jobs:
           # 21/11/2026 (paquet 328) : site plus rapide et « pro ». site.json (l'essentiel, chargé d'abord) et site_plus.json
           # (bilan, journal, fiabilité, chargés ensuite) ; donnees.json reste publié (images et vidéos, secours de la page).
           if [ -f algo/donnees.json ]; then python3 scripts/site_leger.py algo/donnees.json _site/algo || echo "⚠️ site léger non construit : la page lira donnees.json"; fi
-          cp algo/editeur.json algo/partage.png algo/methode.html _site/algo/
+          cp algo/editeur.json algo/partage.png algo/methode.html algo/apropos.html _site/algo/
           if ls algo/polices/*.woff2 >/dev/null 2>&1; then
             mkdir -p _site/algo/polices && cp algo/polices/*.woff2 algo/polices/OFL.txt _site/algo/polices/
           else
