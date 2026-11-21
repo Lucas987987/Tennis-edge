@@ -1,14 +1,14 @@
 {
- "genere_le": "2026-11-19T16:46:43+00:00",
+ "genere_le": "2026-11-21T15:35:24+00:00",
  "paquet": 272,
  "fenetre_jours": 30,
  "regle": "résolu                 — présent dans Tennis_Edge_Lab/live/pronostics_resultats.json ;   adversaire fictif      — « R16P3 », « QF7 »… (vainqueur à venir ; filtré depuis le 04/11, restes du journal) ;   doublon reprogrammé    — même paire de joueurs sous un autre uid à moins de 48 h (match déplacé) : une seule fois                            dans les bilans, rien à réparer ;   abandon / forfait      — feuille TennisApi « Retired » / « Walkover » : volontairement non jugés ;   annulé ou reporté      — feuille « Canceled », « Postponed »… ;   feuille terminée non résolue — feuille « Ended » trouvée mais pas de résultat : DÉFAUT à corriger ;   adversaire remplacé    — pas de feuille pour la paire, mais un des joueurs a joué un autre adversaire à ± 3 h de                            l'horaire prévu (repêché, forfait remplacé) : le match annoncé n'a pas eu lieu ;   aucune feuille         — rien du tout : TROU DE COLLECTE (ou match pas encore relevé). Aussi : paires affichées deux fois sur le site (algo/donnees.json) et paires résolues deux fois (bilans faussés). ALERTE (Telegram privé) si, sur la veille, « aucune feuille » + « feuille terminée non résolue » dépassent 10 % des matchs réels (hors adversaires fictifs et doublons), ou si une paire est résolue deux fois.",
- "matchs": 2219,
+ "matchs": 2244,
  "causes": {
-  "résolu": 1482,
-  "adversaire fictif": 178,
-  "doublon reprogrammé": 402,
-  "abandon / forfait": 56,
+  "résolu": 1508,
+  "adversaire fictif": 176,
+  "doublon reprogrammé": 408,
+  "abandon / forfait": 51,
   "annulé ou reporté": 0,
   "feuille terminée non résolue": 0,
   "adversaire remplacé": 59,
@@ -16,62 +16,52 @@
  },
  "par_circuit": {
   "ATP": {
-   "résolu": 215,
-   "adversaire fictif": 46,
-   "doublon reprogrammé": 80,
-   "abandon / forfait": 9,
+   "résolu": 210,
+   "adversaire fictif": 45,
+   "doublon reprogrammé": 82,
+   "abandon / forfait": 7,
    "annulé ou reporté": 0,
    "feuille terminée non résolue": 0,
    "adversaire remplacé": 11,
    "aucune feuille": 6
   },
   "WTA": {
-   "résolu": 200,
+   "résolu": 193,
    "adversaire fictif": 37,
    "doublon reprogrammé": 46,
-   "abandon / forfait": 6,
+   "abandon / forfait": 5,
    "annulé ou reporté": 0,
    "feuille terminée non résolue": 0,
    "adversaire remplacé": 13,
    "aucune feuille": 10
   },
   "CH": {
-   "résolu": 1067,
-   "adversaire fictif": 95,
-   "doublon reprogrammé": 276,
-   "abandon / forfait": 41,
+   "résolu": 1105,
+   "adversaire fictif": 94,
+   "doublon reprogrammé": 280,
+   "abandon / forfait": 39,
    "annulé ou reporté": 0,
    "feuille terminée non résolue": 0,
    "adversaire remplacé": 35,
    "aucune feuille": 26
   }
  },
- "defauts_pct": 2.6,
+ "defauts_pct": 2.5,
  "veille": {
-  "jour": "2026-11-18",
+  "jour": "2026-11-20",
   "causes": {
-   "résolu": 38,
+   "résolu": 28,
    "adversaire fictif": 0,
-   "doublon reprogrammé": 12,
-   "abandon / forfait": 1,
+   "doublon reprogrammé": 2,
+   "abandon / forfait": 0,
    "annulé ou reporté": 0,
    "feuille terminée non résolue": 0,
-   "adversaire remplacé": 2,
+   "adversaire remplacé": 0,
    "aucune feuille": 0
   },
   "defauts_pct": 0.0
  },
  "par_jour": {
-  "2026-11-06": {
-   "matchs": 33,
-   "resolus": 31,
-   "defauts_pct": 0.0
-  },
-  "2026-11-07": {
-   "matchs": 24,
-   "resolus": 22,
-   "defauts_pct": 0.0
-  },
   "2026-11-08": {
    "matchs": 104,
    "resolus": 89,
@@ -128,13 +118,23 @@
    "defauts_pct": 0.0
   },
   "2026-11-19": {
-   "matchs": 10,
-   "resolus": 9,
+   "matchs": 40,
+   "resolus": 33,
+   "defauts_pct": 0.0
+  },
+  "2026-11-20": {
+   "matchs": 30,
+   "resolus": 28,
+   "defauts_pct": 0.0
+  },
+  "2026-11-21": {
+   "matchs": 5,
+   "resolus": 4,
    "defauts_pct": 0.0
   }
  },
  "paires_resolues_deux_fois": 0,
- "paires_en_double_sur_le_site": 0,
+ "paires_en_double_sur_le_site": 1,
  "alerte": [],
  "descriptif": "le % de victoire ne change pas"
 }
