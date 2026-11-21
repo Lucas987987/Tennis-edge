@@ -51,6 +51,7 @@ jobs:
             /simulateur/
             /feuilles_points/
             /scripts/feuilles_match.py
+            /scripts/matchs_tennisapi.py
             /scripts/lieux_tournois.py
             /scripts/lieux_archive.py
             /scripts/resultats_itf.py
@@ -82,6 +83,14 @@ jobs:
       # 04/11/2026 : matchs à venir et cotes de clôture les plus frais (relayés par R2 en mode ETAT_CHAUD=on)
       - name: État chaud — rapatrier de R2
         run: python scripts/etat_chaud.py pull closing_lines.json matches_oddspapi.json || true
+      # 21/11/2026 (paquet 321) : liste de secours des matchs à venir (TennisApi, ATP/WTA/Challenger, aucune cote),
+      # ajoutée aux matchs absents de matches_oddspapi.json ; ≈ 16 requêtes ; jamais bloquant
+      - name: Matchs à venir — liste de secours TennisApi
+        continue-on-error: true
+        timeout-minutes: 5
+        env:
+          RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
+        run: python scripts/matchs_tennisapi.py . || echo '::warning::liste de secours TennisApi non écrite'
       - name: Tests de cohérence du simulateur indépendant
         run: python -m unittest discover -s simulateur/tests -v
       - name: Archive Sackmann (fichiers de matchs seulement)
