@@ -1592,6 +1592,13 @@
    "paquet": 325,
    "quoi": "TOUTES LES PROJECTIONS (paquet 325, demande de Lucas). 1) Le bloc « Autres projections » des textes à copier reprend désormais tout ce que la simulation sait : l'outsider gagne au moins un set, le favori en sets secs, qui gagne le 1er set, la chance du favori s'il perd le 1er set, match en 3 (ou 5) sets, tie-break, écart de jeux (+1,5 et +3,5), trois lignes de jeux autour de 50 %, nombre de jeux le plus fréquent et sa fourchette, durée. 2) Nouvelle carte image 1080×1350 « Toutes les projections » (FR et EN), faite avec la vidéo du jour et envoyée sur le Telegram privé : grands chiffres, barres, couleur de chaque joueur, sans adresse du site. 3) Correction : les scénarios du match (sets nets, accrochés, 3 sets, remontée, 1er set) pouvaient être calculés sur une distribution de scores coupée — « 3 sets » vers 10 % pour un match annoncé à 35 % en 3 sets ; ils sont maintenant repesés sur le score en sets publié. Ce paquet reprend aussi les paquets 323 et 324 (3D), refusés par l'installateur parce qu'ils réintroduisaient le test d'un essai retiré (tests/test_essai_gpu.py).",
    "garde_fou": "Descriptif : rien ne change dans le % de victoire. Aucune cote, aucun conseil de pari. Une projection qui ne colle pas au score en sets n'est pas affichée. Retrait : revenir à algo/index.html, scripts/video_simulation.py, .github/workflows/video_simulation.yml et simulateur/scenarios_match.py du paquet 322."
+  },
+  {
+   "date": "2026-11-21",
+   "statut": "en_service",
+   "paquet": 326,
+   "quoi": "3D : MOUVEMENTS CAPTÉS MIXAMO (paquet 326, demande de Lucas, fichiers téléchargés par lui). Pendant l'échange, les déplacements de côté et en arrière sont de vrais pas chassés et une vraie course arrière (avant : jambes réglées à la main, effet de glisse) ; les bras restent en position d'attente, raquette devant. Entre les points, le relanceur respire et bouge comme un vrai joueur à l'arrêt (le serveur garde ses rebonds de balle). Après le point : poing serré, victoire bras levés, joie ; le perdant est déçu ou secoue la tête ; à la fin du match, victoire ou saut contre abattu ou applaudissements. L'arbitre assis bouge le haut du corps, la tête suit toujours la balle. Les coups restent ceux réglés à la main (Mixamo n'en a aucun). Moteur v326.",
+   "garde_fou": "Affichage seulement : le % ne change pas. Licence Mixamo respectée : mouvements convertis et intégrés au fichier des modèles ; aucun fichier .fbx dans le dépôt (un test le vérifie). Sans les mouvements chargés, l'ancien comportement reste. Retrait : reprendre algo/index.html et algo/modeles/joueurs3d.bin du paquet 325."
   }
  ]
 }

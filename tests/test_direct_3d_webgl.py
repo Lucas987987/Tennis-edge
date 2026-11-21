@@ -144,7 +144,7 @@ class MoteurWebGL(unittest.TestCase):
     def test_rien_ne_vient_d_ailleurs(self):
         for motif in ('http', 'import(', 'XMLHttpRequest', '.glb', 'new Image', 'src='):
             self.assertNotIn(motif, BLOC)
-        self.assertEqual(re.findall(r"fetch\('([^']*)'", BLOC), ['modeles/joueurs3d.bin?v=265'])   # seul fichier lu : sur le site
+        self.assertEqual(re.findall(r"fetch\('([^']*)'", BLOC), ['modeles/joueurs3d.bin?v=326'])   # seul fichier lu : sur le site
         for mot in ('marché', 'pinnacle'):
             self.assertNotIn(mot, BLOC.lower())
         self.assertIn('G3D.monter(h3, m, r, fini) && !T3D.monter(h3, m, r, fini)', HTML)   # repli sur la 3D simple
@@ -223,7 +223,7 @@ console.log(JSON.stringify({ ecart, fini, course }));
         self.assertLess(S['ecart'], 1e-3)                                                    # même transformation pour tous les os : rien ne se tord
         self.assertTrue(S['fini'])
         self.assertTrue(S['course'])                                                          # en course, mouvement capté + raquette en main
-        self.assertIn("fetch('modeles/joueurs3d.bin?v=265')", BLOC)
+        self.assertIn("fetch('modeles/joueurs3d.bin?v=326')", BLOC)
         self.assertIn("MOD.etat === 'pret'", BLOC)                                           # sinon, les joueurs dessinés par le code
         A = json.loads(subprocess.run(['node', '-e', r'''
 const fs = require('fs'), src = fs.readFileSync(process.argv[1], 'utf-8');
