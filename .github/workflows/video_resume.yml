@@ -137,7 +137,7 @@ jobs:
         env:
           TE_SON_STADE: '1'
         run: |
-          python scripts/video_simulation.py --resume --lang "${{ matrix.lang }}" --uid "${{ steps.r.outputs.uid }}" --rendu 3d --ips 25 --sortie videos
+          python scripts/video_simulation.py --resume --lang "${{ matrix.lang }}" --uid "${{ steps.r.outputs.uid }}" --rendu 3d --ips 25 --echelle 0.85 --sortie videos
           ls -la videos
 
       - name: Envoyer sur le Telegram privé
