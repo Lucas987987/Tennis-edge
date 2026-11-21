@@ -1557,6 +1557,13 @@
    "paquet": 320,
    "quoi": "CHERCHEUR AUTOMATIQUE (paquet 320, décision de Lucas). Chaque lundi, simulateur/chercheur.py balaie 89 pistes (pentes par circuit, niveau du tournoi, tour, surface, saison, format, expérience ; décalages pour l'écart de classement, le repos, la charge, gaucher contre droitier, domicile, qualifié, invité, expérience), circuit par circuit, sur le rejeu « comme en production » (résultats ITF hommes compris ; Challenger jugé seulement d'octobre 2025 à mai 2026). Seuil plus strict qu'une étude seule (3,3 erreurs types). Premier passage : 2 candidates, toutes deux en Challenger (pente sur terre battue, pente au 1er tour des qualifications), et un constat : en Challenger, la base devient trop prudente sur la période récente (pente 1,01 apprise, 1,16 constatée). Les 3 meilleures candidates partent sur le Telegram privé.",
    "garde_fou": "Rien n'entre dans l'algo : une candidate passe par une étude et un paquet à part, avec sa règle de retrait. Le chercheur s'arrête si les résultats ITF hommes manquent (sinon le Challenger ne serait pas comme en production). Retrait : supprimer .github/workflows/chercheur.yml, simulateur/chercheur.py, simulateur/rapport_chercheur.json et tests/test_chercheur.py."
+  },
+  {
+   "date": "2026-11-21",
+   "statut": "en_service",
+   "paquet": 321,
+   "quoi": "LISTE DE SECOURS DES MATCHS À VENIR (paquet 321). Le 21/11/2026, plus aucun match sur le site : la liste des matchs à venir ne venait que d'un seul fournisseur, et son flux s'est arrêté. L'algo n'a besoin que de la liste (qui joue, où, quand) : scripts/matchs_tennisapi.py la tire désormais aussi de TennisApi, déjà utilisé pour les feuilles de match (ATP, WTA, Challenger ; ni ITF, ni WTA 125, ni équipes, comme avant), à chaque passage des pronostics, environ 16 requêtes. matchs_a_venir y prend les matchs absents de la liste principale (même paire de joueurs à moins de 18 h = même match). Noms de tournoi au format habituel (« ATP Challenger Metz », « WTA Chennai ») : 60 tournois sur 62 des feuilles récentes ont leur surface reconnue ; pour les autres, le sol annoncé par TennisApi sert de secours.",
+   "garde_fou": "Aucune donnée de pari dans cette liste. Rien ne change dans le calcul des % : mêmes joueurs, même Elo, même surface. Jamais bloquant : sans clé, quota bas ou erreur, le fichier n'est pas écrit et tout se passe comme avant. Le fichier n'est pas publié (.gitignore). Retrait : supprimer l'étape « Matchs à venir — liste de secours TennisApi » de pronostics_quotidien.yml et scripts/matchs_tennisapi.py ; matchs_a_venir ignore alors l'absence du fichier."
   }
  ]
 }
