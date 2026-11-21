@@ -71,6 +71,11 @@ CORRECTIONS_NIVEAUX = 'simulateur/correction_niveaux.json'
 # correction par niveau (pente en dernier, avant la simulation) ; les matchs déjà corrigés par correction_niveaux.json
 # (Challenger « correct ») ne sont pas corrigés deux fois. Retrait automatique : simulateur/pente_cases.py.
 PENTE_CASES = 'simulateur/pente_cases.json'
+# 21/11/2026 (paquet 322, DÉCISION DE LUCAS après chercheur.py, paquet 320) : CHALLENGER SUR TERRE BATTUE, pente 1,065
+# (l'algo y était trop prudent ; jugé sur 3 037 matchs comme en production et vérifié sur 234 pronostics en direct).
+# Même mécanisme que la correction par niveau ; pas de double correction. Retrait automatique :
+# simulateur/corrections_chercheur.py (règle dans son en-tête).
+import corrections_chercheur as CC  # noqa: E402
 PLAFOND_MATCHS = int(os.environ.get('PLAFOND_MATCHS', '220'))
 LOG = 'simulateur/pronostics_log.jsonl'
 # 22/10/2026 — TOUT est enregistré pour l'analyse a posteriori :
@@ -1818,10 +1823,13 @@ def construire(racine, maintenant=None, uids=None, pentes_forcees=None):
                     sh_ = dict(sh_ or {}, **sz_)
                     so_ = dict(so_ or {}, **sz_)          # gardés avec les décalages d'outsider (règle de retrait)
                 pf_ = (pentes_forcees or {}).get(uid)
+                cpf_ = 'niveau_fiabilite'
+                if isinstance(pf_, (tuple, list)):          # paquet 322 : (pente, nom affiché), ex. terre_challenger
+                    pf_, cpf_ = pf_
                 if pf_:                     # 18/11/2026 (paquet 270) : correction du niveau de fiabilité, en dernier
                     q0_ = min(max(p_base, 1e-6), 1 - 1e-6)
                     L0_ = math.log(q0_ / (1 - q0_)) + sum((sh_ or {}).values())
-                    sh_ = dict(sh_ or {}, niveau_fiabilite=(float(pf_) - 1.0) * L0_)
+                    sh_ = dict(sh_ or {}, **{cpf_: (float(pf_) - 1.0) * L0_})
                 if sh_:
                     q_ = min(max(p_base, 1e-6), 1 - 1e-6)
                     p_new = sig(math.log(q_ / (1 - q_)) + sum(sh_.values()))
@@ -2523,9 +2531,18 @@ def appliquer_corrections_niveaux(racine, doc, maintenant, anciens_resultats, co
             if a and abs(a - 1) > 1e-3:
                 cases[m['uid']] = round(a, 4)
     viser.update(cases)
+    chercheur = {}                               # paquet 322 : corrections du chercheur, là où rien n'est déjà en place
+    corr = CC.actives(racine)
+    for m in doc['matchs']:
+        if m.get('combinaison') and m['uid'] not in viser:
+            a, ident = CC.pente_du_match(m, corr)
+            if a and abs(a - 1) > 1e-3:
+                chercheur[m['uid']] = ident
+                viser[m['uid']] = round(a, 4)
     if not viser:
         return 0
-    doc2 = (construire_ or construire)(racine, maintenant, uids=set(viser), pentes_forcees=viser)
+    forcees = {u: ((a, 'terre_challenger') if u in chercheur else a) for u, a in viser.items()}
+    doc2 = (construire_ or construire)(racine, maintenant, uids=set(viser), pentes_forcees=forcees)
     par_uid = {m['uid']: m for m in doc2['matchs']}
     for i, m in enumerate(doc['matchs']):
         m2 = par_uid.get(m['uid'])
@@ -2535,7 +2552,10 @@ def appliquer_corrections_niveaux(racine, doc, maintenant, anciens_resultats, co
         f['correction_niveau'] = {'pente': viser[m['uid']], 'niveau': f.get('niveau'), 'circuit': m.get('circuit'),
                                   'p_home_sans_correction': (m.get('combinaison') or {}).get('p_home'),
                                   'p_home_avec_correction': m2['combinaison'].get('p_home'),
-                                  'source': PENTE_CASES if m['uid'] in cases else CORRECTIONS_NIVEAUX}
+                                  'source': (CC.SOURCE if m['uid'] in chercheur else
+                                             PENTE_CASES if m['uid'] in cases else CORRECTIONS_NIVEAUX)}
+        if m['uid'] in chercheur:
+            f['correction_niveau']['correction'] = chercheur[m['uid']]
         m2['fiabilite'] = f
         m2['p_premier'] = m.get('p_premier')
         doc['matchs'][i] = m2
