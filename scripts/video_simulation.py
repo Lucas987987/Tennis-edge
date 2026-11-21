@@ -255,6 +255,7 @@ def main(argv):
     ap.add_argument('--format', default='9x16', choices=sorted(FORMATS), help='9x16 (défaut) ou 4x5 (fil de X)')
     ap.add_argument('--rendu', default='3d', choices=['3d', '2d'], help='3d : le stade (défaut) ; 2d : la borne d\'arcade')
     ap.add_argument('--ips', type=int, default=IPS, help='images par seconde (30 par défaut)')
+    ap.add_argument('--echelle', type=float, default=0.0, help="paquet 327 : définition de l'image 3D (0 = celle de la page)")
     ap.add_argument('--sans-voix', action='store_true', help="vidéo 3D sans la voix de l'arbitre")
     ap.add_argument('--resume', action='store_true',
                     help="résumé 3D d'un match terminé (lit algo/resume_match.json, écrit par scripts/resume_match.py)")
@@ -316,7 +317,8 @@ def main(argv):
         return 0
     q = (f"video=1&lang={a.lang}&vitesse={a.vitesse}" + (f"&seed={a.seed}" if str(a.seed).strip() else '')
          + (f"&uid={a.uid}" if a.uid else '')
-         + ('&adresse=1' if a.adresse else '') + ('&rendu=3d' if a.rendu == '3d' else '') + ('&resume=1' if a.resume else ''))
+         + ('&adresse=1' if a.adresse else '') + ('&rendu=3d' if a.rendu == '3d' else '') + ('&resume=1' if a.resume else '')
+         + (f"&echelle={a.echelle:g}" if a.echelle > 0 else ''))
     url = f"http://127.0.0.1:{srv.server_address[1]}/index.html?{q}"
     tmp = os.path.join(a.sortie, '_brut')
     os.makedirs(tmp, exist_ok=True)

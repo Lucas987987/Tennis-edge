@@ -1599,6 +1599,13 @@
    "paquet": 326,
    "quoi": "3D : MOUVEMENTS CAPTÉS MIXAMO (paquet 326, demande de Lucas, fichiers téléchargés par lui). Pendant l'échange, les déplacements de côté et en arrière sont de vrais pas chassés et une vraie course arrière (avant : jambes réglées à la main, effet de glisse) ; les bras restent en position d'attente, raquette devant. Entre les points, le relanceur respire et bouge comme un vrai joueur à l'arrêt (le serveur garde ses rebonds de balle). Après le point : poing serré, victoire bras levés, joie ; le perdant est déçu ou secoue la tête ; à la fin du match, victoire ou saut contre abattu ou applaudissements. L'arbitre assis bouge le haut du corps, la tête suit toujours la balle. Les coups restent ceux réglés à la main (Mixamo n'en a aucun). Moteur v326.",
    "garde_fou": "Affichage seulement : le % ne change pas. Licence Mixamo respectée : mouvements convertis et intégrés au fichier des modèles ; aucun fichier .fbx dans le dépôt (un test le vérifie). Sans les mouvements chargés, l'ancien comportement reste. Retrait : reprendre algo/index.html et algo/modeles/joueurs3d.bin du paquet 325."
+  },
+  {
+   "date": "2026-11-21",
+   "statut": "en_service",
+   "paquet": 327,
+   "quoi": "3D : OFFICIELS VIVANTS, TRANSITIONS, IMAGE PLUS NETTE (paquet 327, demande de Lucas). 1) Les juges de ligne assis et les ramasseurs bougent (attente captée, chacun à son rythme) au lieu d'être figés. 2) Transitions mesurées image par image sur 45 s de vidéo : le sens de course ne bascule plus en diagonale (0,12 s de confirmation), l'ancien pas s'efface en 0,2 s quand le joueur change de déplacement, les bras rejoignent la position d'attente en douceur, l'attente captée monte et s'efface au lieu d'être coupée net, et le service démarre en 0,3 s (le bras gauche sautait de 150° en une image). Résultat : sauts des jambes au-delà de 40° par image 21 → 5, du dos au-delà de 25° 16 → 6. 3) Vidéos du jour et résumés calculés à 0,85 au lieu de 0,67 (environ 23 % de temps de calcul en plus) ; « 1 » (pleine définition) au choix au lancement manuel. Moteur v327.",
+   "garde_fou": "Affichage seulement : le % ne change pas. Surveiller la durée du run vidéo (délai 100 min) ; en cas de dépassement, relancer avec 0.67. Retrait : reprendre algo/index.html, scripts/video_simulation.py et les deux workflows vidéo du paquet 326."
   }
  ]
 }
