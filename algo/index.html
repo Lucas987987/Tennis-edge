@@ -7,12 +7,22 @@
 <script>/* 07/11/2026 (paquet 217) — thème clair / sombre, appliqué avant l'affichage */(function(){try{var q=new URLSearchParams(location.search);if(q.get("video")||q.get("carte")||q.get("bilan")||q.get("semaine"))return;var v=localStorage.getItem("te_theme")||"dark";var d=v==="auto"?(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"):v;document.documentElement.setAttribute("data-theme",d==="light"?"light":"dark");}catch(e){}})();</script>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230E0A24'/%3E%3Ccircle cx='32' cy='32' r='20' fill='%23D4FF3A'/%3E%3Cpath d='M17 20c12 4 12 20 0 24M47 20c-12 4-12 20 0 24' fill='none' stroke='%230E0A24' stroke-width='3'/%3E%3C/svg%3E">
 <title>Game Set Algo — l'algo du tennis</title>
-<meta name="description" content="Chaque match de tennis simulé 20 000 fois par un algorithme indépendant des cotes : % de victoire, cote juste, et un bilan public, pertes comprises.">
+<meta name="description" content="Chaque match de tennis simulé 20 000 fois par un algorithme indépendant : % de victoire, scénarios, projections et un bilan public, pertes comprises.">
 <meta property="og:title" content="Game Set Algo — l'algo du tennis">
-<meta property="og:description" content="Chaque match simulé 20 000 fois. % de victoire, cote juste, bilan public.">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
+<meta property="og:description" content="Chaque match de tennis simulé 20 000 fois. % de victoire, projections et bilan public.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://gamesetalgo.com/partage.png">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<style>/* 21/11/2026 (paquet 328) : polices servies par le site lui-même (workflow « Polices du site ») — aucune requête
+   vers Google (adresse IP des visiteurs) ; tant qu'elles manquent, les polices de l'appareil prennent le relais */
+@font-face{font-family:"Bungee";font-weight:400;font-display:swap;src:url(polices/bungee-400.woff2) format("woff2")}
+@font-face{font-family:"Barlow";font-weight:400;font-display:swap;src:url(polices/barlow-400.woff2) format("woff2")}
+@font-face{font-family:"Barlow";font-weight:500;font-display:swap;src:url(polices/barlow-500.woff2) format("woff2")}
+@font-face{font-family:"Barlow";font-weight:600;font-display:swap;src:url(polices/barlow-600.woff2) format("woff2")}
+@font-face{font-family:"Barlow Condensed";font-weight:500;font-display:swap;src:url(polices/barlow-condensed-500.woff2) format("woff2")}
+@font-face{font-family:"Barlow Condensed";font-weight:600;font-display:swap;src:url(polices/barlow-condensed-600.woff2) format("woff2")}
+@font-face{font-family:"Barlow Condensed";font-weight:700;font-display:swap;src:url(polices/barlow-condensed-700.woff2) format("woff2")}</style>
 <style>
 /* Tennis Edge — l'algo · thème « arcade » (24/10/2026)
    Un seul thème, sombre, comme une borne d'arcade : fond violet nuit, néons cyan (joueur 1) et magenta
@@ -217,6 +227,14 @@ svg.curve{width:100%;height:auto;display:block}
 .plus .soon{display:inline-block;margin-top:12px}
 footer{color:var(--dim);font-size:.86rem;padding:22px 0 44px;border-top:1px solid var(--line);margin-top:44px}
 footer p{max-width:72ch}
+/* paquet 328 : textes légaux */
+.legal-liens a{color:var(--dim);text-decoration:underline;text-underline-offset:3px}
+.legal{position:fixed;inset:0;z-index:50;background:rgba(5,3,20,.72);display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:24px 12px}
+.legal[hidden]{display:none}
+.legal-boite{position:relative;max-width:760px;width:100%;background:var(--panel,#16123a);color:var(--ink);border:1px solid var(--line);border-radius:16px;padding:22px 22px 28px;line-height:1.55;font-size:.95rem}
+.legal-boite h2{font-family:var(--disp);font-weight:400;font-size:1.3rem;margin:0 0 12px}.legal-boite h3{font-size:1.02rem;margin:18px 0 6px}
+.legal-boite p,.legal-boite li{color:var(--ink);opacity:.92}.legal-boite .maj{color:var(--dim);font-size:.82rem}
+.legal-x{position:absolute;top:10px;right:12px;background:none;border:0;color:var(--ink);font-size:1.8rem;line-height:1;cursor:pointer}
 
 /* ── la borne d'arcade : même composant sur le site (dans .ecran-jeu) et dans la vidéo (plein écran 9:16) ──
    Toutes les tailles sont en cqw (largeur du conteneur) : la scène s'adapte à n'importe quelle largeur. */
@@ -805,7 +823,9 @@ body.carte #video{display:block;width:1080px;height:1350px}
     <p data-t="pied_methode"></p>
     <p data-t="pied_jeu"></p>
     <p id="maj"></p>
+    <p class="legal-liens"><a href="#mentions" data-t="lg_mentions"></a> · <a href="#confidentialite" data-t="lg_confid"></a> · <a href="#cgu" data-t="lg_cgu"></a></p>
   </footer>
+  <div id="legal" class="legal" hidden role="dialog" aria-modal="true"><div class="legal-boite"><button type="button" class="legal-x" aria-label="Fermer">×</button><div id="legal-txt"></div></div></div>
 </div>
 </div>
 
@@ -1023,6 +1043,7 @@ const T = {
   plus_items:['La feuille complète de chaque match : sets, scores probables, aces, breaks','La simulation rejouable pour chaque match','Plus tard : les alertes quand un nouveau match est pronostiqué'],
   plus_bientot:'Accès libre pendant la préversion · aucun paiement.',
   pied_methode:"Méthode : simulation point par point à partir des statistiques de service et de retour de chaque joueur, combinée à un classement Elo par surface, apprise uniquement sur les matchs passés. L'algorithme n'utilise aucune cote de bookmaker.",
+  lg_mentions:'Mentions légales', lg_confid:'Confidentialité', lg_cgu:"Conditions d'utilisation",
   pied_jeu:"Ce site ne donne pas de conseil de pari. Les paris sportifs sont interdits aux mineurs. Jouer comporte des risques : endettement, isolement, dépendance. Pour être aidé, appelez le 09 74 75 13 13 (appel non surtaxé).",
   maj:d=>`Pronostics mis à jour le ${dateHeure(d)}.`,
   v_kicker:"L'algo a simulé ce match", v_fois:n=>`${fmt(n)} fois`, v_url:'gamesetalgo.com',
@@ -1315,6 +1336,7 @@ const T = {
   plus_items:['The full breakdown of every match: sets, likely scores, aces, breaks','A replayable simulation for every match','Later: alerts when a new match is predicted'],
   plus_bientot:'Free access during the preview · no payment.',
   pied_methode:'Method: point-by-point simulation from each player\'s serve and return statistics, combined with a surface-specific Elo rating, trained only on past matches. The algorithm uses no bookmaker odds.',
+  lg_mentions:'Legal notice', lg_confid:'Privacy', lg_cgu:'Terms of use',
   pied_jeu:'This site gives no betting advice. Sports betting is for adults only. Gambling carries risks: debt, isolation, addiction. In France, call 09 74 75 13 13 for help.',
   maj:d=>`Predictions updated ${dateHeure(d)}.`,
   v_kicker:'The algorithm simulated this match', v_fois:n=>`${fmt(n)} times`, v_url:'gamesetalgo.com',
@@ -7095,6 +7117,69 @@ function ouvrirMatch(uid, aller=true){
   if (aller) document.getElementById('mdj').scrollIntoView({block:'start',behavior:MOINS_ANIM?'auto':'smooth'});
   return true;
 }
+// 21/11/2026 (paquet 328, Lucas : « faire pro ») — MENTIONS LÉGALES, CONFIDENTIALITÉ, CONDITIONS D'UTILISATION.
+// L'identité de l'éditeur vient de editeur.json (à remplir par Lucas sur GitHub) ; tant qu'elle est vide, le régime de
+// l'éditeur non professionnel s'applique (LCEN, art. 6-III-2 : identité communiquée à l'hébergeur). Avant toute offre
+// payante, editeur.json doit être rempli (nom, adresse, courriel, SIRET) et des conditions générales de vente publiées.
+let EDITEUR = null;
+function lireEditeur(){ return EDITEUR ? Promise.resolve(EDITEUR) : lireJson('editeur.json').then(e => (EDITEUR = e || {})).catch(() => (EDITEUR = {})); }
+function texteLegal(page, e){
+  const fr = L === 'fr', x = s => esc(String(s || '')), contact = e.email ? `<a href="mailto:${x(e.email)}">${x(e.email)}</a>` : (fr ? 'par message au compte X « Game Set Algo »' : 'by message to the "Game Set Algo" X account');
+  const maj = `<p class="maj">${fr ? 'Mis à jour le 21 novembre 2026.' : 'Updated 21 November 2026.'}</p>`;
+  const pro = !!(e.nom && e.adresse);
+  const editeur = pro ? `<p>${x(e.nom)}${e.statut ? ' — ' + x(e.statut) : ''}<br>${x(e.adresse)}${e.siret ? '<br>SIRET : ' + x(e.siret) : ''}<br>Contact${fr ? ' ' : ''}: ${contact}</p>`
+    : `<p>${fr ? "Site édité à titre non professionnel par un particulier. Conformément à l'article 6-III-2 de la loi n° 2004-575 du 21 juin 2004 pour la confiance dans l'économie numérique, ses coordonnées ont été communiquées à l'hébergeur." : 'Published on a non-professional basis by a private individual, whose details have been provided to the host (French law no. 2004-575, art. 6-III-2).'}<br>Contact${fr ? ' ' : ''}: ${contact}</p>`;
+  const heb = `<p>GitHub, Inc. (GitHub Pages), 88 Colin P. Kelly Jr. Street, San Francisco, CA 94107, ${fr ? 'États-Unis' : 'USA'}.<br>${fr ? 'Diffusion et sécurité :' : 'Delivery and security:'} Cloudflare, Inc., 101 Townsend Street, San Francisco, CA 94107, ${fr ? 'États-Unis' : 'USA'}.</p>`;
+  if (page === 'mentions') return fr ? `<h2>Mentions légales</h2>
+    <h3>Éditeur et directeur de la publication</h3>${editeur}<h3>Hébergement</h3>${heb}
+    <h3>Ce que propose le site</h3><p>Game Set Algo publie des analyses statistiques de matchs de tennis : chaque match est simulé point par point par un algorithme indépendant. Ce sont des probabilités, pas des certitudes : le site ne donne aucun conseil de pari et ne promet aucun gain. Le bilan publié comprend toutes les erreurs.</p>
+    <h3>Jeu responsable</h3><p>Les paris sportifs sont interdits aux mineurs. Jouer comporte des risques : endettement, isolement, dépendance. Pour être aidé : 09 74 75 13 13 (appel non surtaxé), joueurs-info-service.fr.</p>
+    <h3>Propriété intellectuelle</h3><p>Textes, analyses, graphiques, vidéos et code du site : © Game Set Algo, sauf mention contraire. Personnages 3D : Quaternius (CC0) ; mouvements captés : Mixamo (Adobe), intégrés au site ; polices Bungee et Barlow : licence SIL Open Font License. Toute reproduction des contenus du site sans autorisation est interdite.</p>
+    <h3>Données sportives</h3><p>Résultats et calendriers proviennent de sources publiques et de fournisseurs de données sportives ; ils peuvent comporter des erreurs ou des retards.</p>${maj}`
+    : `<h2>Legal notice</h2><h3>Publisher</h3>${editeur}<h3>Hosting</h3>${heb}
+    <h3>What the site offers</h3><p>Game Set Algo publishes statistical analyses of tennis matches, simulated point by point by an independent algorithm. These are probabilities, not certainties: no betting advice, no promise of winnings. The published record includes every miss.</p>
+    <h3>Responsible gambling</h3><p>Sports betting is for adults only. Gambling carries risks: debt, isolation, addiction. In France: 09 74 75 13 13.</p>
+    <h3>Intellectual property</h3><p>© Game Set Algo unless stated otherwise. 3D characters: Quaternius (CC0); motion data: Mixamo (Adobe), embedded; fonts: SIL Open Font License.</p>${maj}`;
+  if (page === 'confidentialite') return fr ? `<h2>Confidentialité</h2>
+    <p>En résumé : pas de compte, pas de cookie publicitaire, pas de mesure d'audience, aucun traceur d'un autre site.</p>
+    <h3>Ce qui reste sur votre appareil</h3><p>Vos réglages (langue, thème clair ou sombre, son, qualité de la 3D) sont gardés dans le stockage local de votre navigateur. Ils ne nous sont jamais envoyés ; vous pouvez les effacer en vidant les données du site dans votre navigateur.</p>
+    <h3>Journaux techniques</h3><p>Comme pour tout site, l'hébergeur (GitHub) et Cloudflare, qui achemine et protège le site, traitent techniquement votre adresse IP pour afficher les pages et bloquer les abus (intérêt légitime, durée fixée par leurs politiques). Ces sociétés sont établies aux États-Unis ; les transferts sont encadrés par les garanties prévues par le RGPD.</p>
+    <h3>Polices et contenus</h3><p>Les polices de caractères et les modèles 3D sont servis par le site lui-même : aucune requête n'est faite à Google ou à un autre tiers pendant votre visite. Les scores en direct passent par notre serveur, pas par votre navigateur.</p>
+    <h3>Vos droits</h3><p>Vous pouvez demander l'accès, la rectification ou l'effacement de données vous concernant, ou vous opposer à leur traitement : ${contact}. Vous pouvez aussi saisir la CNIL (cnil.fr).</p>${maj}`
+    : `<h2>Privacy</h2><p>No account, no advertising cookie, no analytics, no third-party tracker.</p>
+    <h3>Stored on your device</h3><p>Your settings (language, theme, sound, 3D quality) stay in your browser's local storage and are never sent to us.</p>
+    <h3>Technical logs</h3><p>Our host (GitHub) and Cloudflare process your IP address to serve and protect the site (legitimate interest). Transfers to the USA are covered by GDPR safeguards.</p>
+    <h3>Fonts and content</h3><p>Fonts and 3D models are served by the site itself: no request to Google or any other third party.</p>
+    <h3>Your rights</h3><p>Access, rectification, erasure, objection: ${contact}. You may also contact the CNIL (cnil.fr).</p>${maj}`;
+  return fr ? `<h2>Conditions d'utilisation</h2>
+    <h3>Objet</h3><p>Le site donne accès gratuitement à des analyses statistiques de tennis : probabilités de victoire, scénarios, projections, simulations en vidéo et bilan public.</p>
+    <h3>Pas de conseil de pari</h3><p>Les informations publiées sont des estimations statistiques, sans garantie de résultat. Elles ne constituent ni un conseil de pari ni une incitation à jouer. Vous restez seul responsable de l'usage que vous en faites.</p>
+    <h3>Disponibilité</h3><p>Le site est fourni tel quel ; il peut être interrompu, modifié ou comporter des erreurs, notamment dans les données sportives reçues de tiers.</p>
+    <h3>Propriété</h3><p>Les contenus du site ne peuvent pas être reproduits ou revendus sans autorisation. Partager un lien ou une image publiée sur nos comptes est bienvenu.</p>
+    <h3>Offre payante</h3><p>Aucune offre payante n'est ouverte aujourd'hui. Avant toute ouverture, des conditions générales de vente seront publiées ici (prix, durée, résiliation, droit de rétractation).</p>
+    <h3>Droit applicable</h3><p>Ces conditions relèvent du droit français.</p>${maj}`
+    : `<h2>Terms of use</h2><p>Free access to statistical tennis analyses. These are estimates without any guaranteed outcome; they are not betting advice. The site is provided as is. No paid offer is open today; terms of sale will be published before any opens. French law applies.</p>${maj}`;
+}
+function ouvrirLegal(){
+  const page = (location.hash || '').slice(1), box = document.getElementById('legal');
+  if (!box) return;
+  if (!['mentions', 'confidentialite', 'cgu'].includes(page)) { box.hidden = true; return; }
+  lireEditeur().then(e => { document.getElementById('legal-txt').innerHTML = texteLegal(page, e); box.hidden = false; box.scrollTop = 0; });
+}
+window.addEventListener('hashchange', ouvrirLegal);
+document.addEventListener('click', ev => {
+  const box = document.getElementById('legal'); if (!box || box.hidden) return;
+  if (ev.target.closest('.legal-x') || ev.target === box) { history.replaceState(null, '', location.pathname + location.search); box.hidden = true; }
+});
+document.addEventListener('keydown', ev => { const box = document.getElementById('legal'); if (ev.key === 'Escape' && box && !box.hidden) { history.replaceState(null, '', location.pathname + location.search); box.hidden = true; } });
+function chargerPlus(){                                              // paquet 328 : le bas de page, après l'affichage
+  if (!D || !D._plus) return;
+  lireJson(D._plus).then(p => {
+    Object.assign(D, p); delete D._plus;
+    const j = document.getElementById('journal'); if (j && j.closest('section')) j.closest('section').hidden = false;
+    rendBilan(); rendJournal(); rendSuivi(); rendCalib();
+  }).catch(() => {});
+}
 function rendTout(){
   rendTextes(); if (!D) return;
   rendMdj(); rendListe(); rendBilan(); rendFiabStats(); rendJournal(); rendSuivi(); rendQualite(); rendCalib();
@@ -7510,10 +7595,16 @@ function modeSemaine(){
 }
 
 rendTextes();
-fetch('donnees.json?v=' + Date.now()).then(r=>r.json()).then(d=>{
+// 21/11/2026 (paquet 328, Lucas : « vitesse ») — le visiteur reçoit site.json (sans ce que la page ne lit jamais), puis
+// site_plus.json (bilan détaillé, étalonnage, journal) juste après l'affichage ; vidéos et cartes gardent donnees.json.
+// Clé à la minute : deux visites rapprochées reprennent le fichier déjà reçu. Si site.json manque : donnees.json.
+const MODE_IMAGE = !!(Q.get('semaine') || Q.get('bilan') || Q.get('projections') || Q.get('carte') || Q.get('video'));
+const CLE_DONNEES = Math.floor(Date.now() / 60000);
+const lireJson = f => fetch(f + '?v=' + CLE_DONNEES).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); });
+(MODE_IMAGE ? lireJson('donnees.json') : lireJson('site.json').catch(() => lireJson('donnees.json'))).then(d=>{
   D = d;
   selectionId = matchDemande() || (D.match_du_jour && D.match_du_jour.uid);
-  if (Q.get('semaine')) modeSemaine(); else if (Q.get('bilan')) modeBilan(); else if (Q.get('projections')) modeProjections(); else if (Q.get('carte')) modeCarte(); else if (Q.get('video')) modeVideo(); else { rendTout(); demarrerLive(); }
+  if (Q.get('semaine')) modeSemaine(); else if (Q.get('bilan')) modeBilan(); else if (Q.get('projections')) modeProjections(); else if (Q.get('carte')) modeCarte(); else if (Q.get('video')) modeVideo(); else { rendTout(); demarrerLive(); chargerPlus(); ouvrirLegal(); }
 }).catch(()=>{ document.getElementById('mdj-zone').innerHTML = '<div class="panel empty">Données indisponibles / Data unavailable.</div>'; });
 })();
 </script>

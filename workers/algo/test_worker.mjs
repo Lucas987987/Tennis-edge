@@ -272,3 +272,35 @@ test('modèles 3D : relus sur la copie GitHub Pages du site, binaire, sinon 502'
   assert.equal((await worker.fetch(req('/modeles/joueurs3d.bin'), {})).status, 502);
   assert.equal((await worker.fetch(req('/modeles/autre.bin'), {})).status, 404);
 });
+
+// 21/11/2026 (paquet 328) — site « pro » : données allégées, mentions légales, aperçu, polices locales
+test('site léger : site.json, site_plus.json, editeur.json, partage.png et polices servis avec le bon type', async () => {
+  const vus = [];
+  globalThis.fetch = async (u) => { vus.push(String(u)); return new Response('x', { status: 200 }); };
+  const types = { '/site.json': 'application/json; charset=utf-8', '/site_plus.json': 'application/json; charset=utf-8',
+    '/editeur.json': 'application/json; charset=utf-8', '/partage.png': 'image/png', '/polices/barlow-400.woff2': 'font/woff2' };
+  for (const [c, t] of Object.entries(types)) {
+    const r = await worker.fetch(req(c), env);
+    assert.equal(r.status, 200, c);
+    assert.equal(r.headers.get('Content-Type'), t, c);
+  }
+  assert.ok(vus.includes('https://lucas987987.github.io/Tennis-edge/algo/polices/barlow-400.woff2'));
+  assert.match((await worker.fetch(req('/polices/barlow-400.woff2'), env)).headers.get('Cache-Control'), /max-age=604800/);
+  for (const c of ['/polices/a%2Fb.woff2', '/polices/x.ttf', '/polices/', '/algo/site.json']) assert.equal((await worker.fetch(req(c), env)).status, 404, c);
+});
+
+test('CSP : plus aucune police chez Google', async () => {
+  globalThis.fetch = async () => new Response('<!doctype html>ok', { status: 200 });
+  const csp = (await worker.fetch(req('/'), env)).headers.get('Content-Security-Policy');
+  assert.ok(!csp.includes('googleapis') && !csp.includes('gstatic'));
+  assert.match(csp, /font-src 'self'/);
+});
+
+test('modèles 3D : la version demandée par la page sert de clé de cache', async () => {
+  const vus = [];
+  globalThis.fetch = async (u) => { vus.push(String(u)); return new Response(new Uint8Array(200000), { status: 200, headers: { 'content-length': '200000', 'content-type': 'application/octet-stream' } }); };
+  await worker.fetch(req('/modeles/joueurs3d.bin?v=326'), {});
+  await worker.fetch(req('/modeles/joueurs3d.bin?v=abc'), {});
+  assert.ok(vus[0].endsWith('joueurs3d.bin?v=326'));
+  assert.ok(vus[1].endsWith('joueurs3d.bin?v=283'));
+});
