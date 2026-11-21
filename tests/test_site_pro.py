@@ -68,7 +68,7 @@ def test_editeur_vide_par_defaut_et_publie():
     e = json.loads((RACINE / 'algo/editeur.json').read_text(encoding='utf-8'))
     assert {'nom', 'statut', 'adresse', 'siret', 'email'} <= set(e)
     assert not any(e[k] for k in ('nom', 'adresse', 'siret', 'email')), 'jamais de données personnelles livrées par un paquet'
-    assert 'cp algo/editeur.json algo/partage.png _site/algo/' in PAGES
+    assert 'cp algo/editeur.json algo/partage.png algo/methode.html _site/algo/' in PAGES
     assert 'scripts/site_leger.py algo/donnees.json _site/algo' in PAGES
     assert re.search(r'^\s+scripts/site_leger\.py$', PAGES, re.M), 'le script doit être dans le sparse-checkout'
 
@@ -86,3 +86,29 @@ def test_apercu_des_liens_partages():
 def test_worker_sert_les_nouveaux_fichiers():
     for c in ("'/site.json'", "'/site_plus.json'", "'/editeur.json'", "'/partage.png'", "woff2: 'font/woff2'", "png: 'image/png'"):
         assert c in WORKER, c
+
+
+# 22/11/2026 (paquet 329) — page « Comment ça marche »
+METHODE = (RACINE / 'algo/methode.html').read_text(encoding='utf-8')
+
+
+def test_page_methode_publiee_servie_et_liee_depuis_l_accueil():
+    assert "'/comment-ca-marche': 'methode.html'" in WORKER and "'/methode.html': 'methode.html'" in WORKER
+    assert 'algo/methode.html _site/algo/' in PAGES
+    assert PAGE.count('href="methode.html"') == 2 and "cm_lien:" in PAGE and PAGE.count('cm_court:') == 2
+
+
+def test_page_methode_explique_la_regle_et_relit_seulement_le_bilan():
+    for mot in ('20 000', '2018–2022', '1 000 matchs', 'Elo', 'service', 'aucun conseil de pari', 'ITF', 'règle fixe', '09 74 75 13 13'):
+        assert mot in METHODE, mot
+    for mot in ('marché', 'Pinnacle', 'cote', 'market', 'odds', 'value', 'gamesetalgo.com/"'):
+        assert mot not in METHODE, mot
+    assert "lire('site_plus.json').catch(() => lire('donnees.json'))" in METHODE
+    assert 'fonts.googleapis' not in METHODE and METHODE.count('@font-face') == 7
+    assert '@@POLICES@@' not in METHODE and "%23D4FF3A'" in METHODE
+
+
+def test_editeur_professionnel_prevu():
+    e = json.loads((RACINE / 'algo/editeur.json').read_text(encoding='utf-8'))
+    assert e['tva_franchise'] is False and e['ape'] == '' and e['tva'] == ''
+    assert 'article 293 B du Code général des impôts' in PAGE and 'Code APE' in PAGE

@@ -1,8 +1,11 @@
 {
- "_aide": "Coordonnées de l'éditeur affichées dans les mentions légales. Tant que « nom » et « adresse » sont vides, le site s'affiche comme édité par un particulier à titre non professionnel (identité communiquée à l'hébergeur). À remplir AVANT toute offre payante : nom, statut (ex. « Entrepreneur individuel »), adresse, SIRET, courriel.",
+ "_aide": "Coordonnées de l'éditeur affichées dans les mentions légales. Tant que « nom » et « adresse » sont vides, le site s'affiche comme édité par un particulier à titre non professionnel (identité communiquée à l'hébergeur). À remplir AVANT toute offre payante : nom, statut (ex. « Entrepreneur individuel »), adresse, SIRET, code APE, courriel ; « tva_franchise » à true pour une micro-entreprise en franchise de TVA (sinon « tva » = numéro de TVA).",
  "nom": "",
  "statut": "",
  "adresse": "",
  "siret": "",
- "email": ""
+ "ape": "",
+ "email": "",
+ "tva_franchise": false,
+ "tva": ""
 }
