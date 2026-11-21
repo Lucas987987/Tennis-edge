@@ -33,7 +33,8 @@ class EnPlace(unittest.TestCase):
 
     def test_pente_appliquee_en_dernier(self):
         src = (RACINE / 'simulateur' / 'pronostics_du_jour.py').read_text(encoding='utf-8')
-        self.assertIn("sh_ = dict(sh_ or {}, niveau_fiabilite=(float(pf_) - 1.0) * L0_)", src)
+        self.assertIn("cpf_ = 'niveau_fiabilite'", src)                         # paquet 322 : nom affiché selon la source
+        self.assertIn("sh_ = dict(sh_ or {}, **{cpf_: (float(pf_) - 1.0) * L0_})", src)
         # logit final = pente × (logit de base + autres signaux) : un 65 % devient ≈ 67,0 %
         p, autres, k = 0.65, 0.0, 1.142
         L0 = _lg(p) + autres

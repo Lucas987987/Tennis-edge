@@ -57,7 +57,8 @@ class Regle(unittest.TestCase):
 
     def test_rien_dans_l_algo_et_workflow(self):
         prod = (RACINE / 'simulateur' / 'pronostics_du_jour.py').read_text(encoding='utf-8')
-        self.assertNotIn('chercheur', prod)
+        self.assertNotIn('import chercheur', prod)          # paquet 322 : seules les corrections décidées par Lucas
+        self.assertNotIn('chercheur.chercher', prod)        # (simulateur/corrections_chercheur.json) entrent dans le %
         wf = (RACINE / '.github' / 'workflows' / 'chercheur.yml').read_text(encoding='utf-8')
         for k in ('/resultats_itf/', '/scripts/resultats_itf.py', '--telegram', "cron: '41 5 * * 1'", 'TELEGRAM_CHAT_ID'):
             self.assertIn(k, wf)
