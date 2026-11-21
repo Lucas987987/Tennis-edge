@@ -1550,6 +1550,13 @@
    "paquet": 319,
    "quoi": "RETRAIT DE LA PENTE DES CASES EN CHALLENGER (paquet 319), le jour même. Contrôle sur le rejeu des Challengers COMME EN PRODUCTION (résultats ITF hommes dans l'Elo, 01/01/2025 → 31/05/2026, 15 745 matchs) : la correction du paquet 318 fait PIRE (log loss +0,0031, 6,8 erreurs types ; Brier 0,2116 → 0,2125). L'archive n'a pas les résultats ITF hommes : l'Elo des Challengers y paraît trop confiant, mais pas en production (pentes réelles 1,01 à 1,10 selon l'expérience). Même contrôle pour la zone d'hésitation (paquets 314–315) : même sens qu'à l'archive, gain plus faible (6 068 matchs, gain 0,0014, 1,7 erreur type) ; elle reste en place avec son retrait automatique. Désormais, toute correction Challenger apprise sur l'archive passe aussi ce contrôle avant d'entrer dans l'algo.",
    "garde_fou": "« retire » à true dans simulateur/pente_cases.json : plus aucun % n'est corrigé par la pente des cases ; le code reste, inactif. Contrôle reproductible : simulateur/verif_comme_en_production.py, rapport simulateur/rapport_verif_production.json."
+  },
+  {
+   "date": "2026-11-21",
+   "statut": "etude",
+   "paquet": 320,
+   "quoi": "CHERCHEUR AUTOMATIQUE (paquet 320, décision de Lucas). Chaque lundi, simulateur/chercheur.py balaie 89 pistes (pentes par circuit, niveau du tournoi, tour, surface, saison, format, expérience ; décalages pour l'écart de classement, le repos, la charge, gaucher contre droitier, domicile, qualifié, invité, expérience), circuit par circuit, sur le rejeu « comme en production » (résultats ITF hommes compris ; Challenger jugé seulement d'octobre 2025 à mai 2026). Seuil plus strict qu'une étude seule (3,3 erreurs types). Premier passage : 2 candidates, toutes deux en Challenger (pente sur terre battue, pente au 1er tour des qualifications), et un constat : en Challenger, la base devient trop prudente sur la période récente (pente 1,01 apprise, 1,16 constatée). Les 3 meilleures candidates partent sur le Telegram privé.",
+   "garde_fou": "Rien n'entre dans l'algo : une candidate passe par une étude et un paquet à part, avec sa règle de retrait. Le chercheur s'arrête si les résultats ITF hommes manquent (sinon le Challenger ne serait pas comme en production). Retrait : supprimer .github/workflows/chercheur.yml, simulateur/chercheur.py, simulateur/rapport_chercheur.json et tests/test_chercheur.py."
   }
  ]
 }
