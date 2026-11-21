@@ -36,10 +36,32 @@ CIRCUITS = ('ATP', 'WTA', 'CH')
 N_MIN, Z = 30, 1.96
 
 
-def scenarios(D_):
+def _cle_sets(sc):
+    return f"{sum(a > b for a, b in sc)}-{sum(a < b for a, b in sc)}"
+
+
+def scenarios(D_, sets=None):
+    """sets (paquet 325, 21/11/2026) : le score en sets publié ({'2-0': p, …}). Quand la distribution reçue n'est pas
+    complète (scores rares coupés : ce sont surtout des matchs en 3 sets, très dispersés), chaque score est repesé pour
+    que la masse de chaque score en sets soit celle publiée. Sans coupure, le poids ne change pas (même distribution).
+    Constaté le 21/11/2026 : « 3 sets » des scénarios autour de 10 % pour des matchs annoncés à 35 % en 3 sets."""
     tot = sum(float(r['probabilite']) for r in D_ or [])
     if not tot:
         return None
+    poids = None
+    if sets and tot < 0.999:
+        masse = {}
+        for r in D_:
+            sc = [tuple(x) for x in r['score']]
+            if sc:
+                masse[_cle_sets(sc)] = masse.get(_cle_sets(sc), 0.0) + float(r['probabilite'])
+        if all(masse.get(k, 0) > 0 for k, v in sets.items() if float(v or 0) > 0.001):
+            poids = {k: float(sets.get(k) or 0) / v for k, v in masse.items() if v > 0}
+    if poids:
+        D_ = [dict(r, probabilite=float(r['probabilite']) * poids.get(_cle_sets([tuple(x) for x in r['score']]), 0.0)) for r in D_]
+        tot = sum(float(r['probabilite']) for r in D_)
+        if not tot:
+            return None
     J = [{'net': 0.0, 'accroche': 0.0, 'long': 0.0, 'remontee': 0.0} for _ in (0, 1)]
     tb = sec = 0.0
     jeux = {}
