@@ -68,7 +68,7 @@ def test_editeur_vide_par_defaut_et_publie():
     e = json.loads((RACINE / 'algo/editeur.json').read_text(encoding='utf-8'))
     assert {'nom', 'statut', 'adresse', 'siret', 'email'} <= set(e)
     assert not any(e[k] for k in ('nom', 'adresse', 'siret', 'email')), 'jamais de données personnelles livrées par un paquet'
-    assert 'cp algo/editeur.json algo/partage.png algo/methode.html _site/algo/' in PAGES
+    assert 'cp algo/editeur.json algo/partage.png algo/methode.html algo/apropos.html _site/algo/' in PAGES
     assert 'scripts/site_leger.py algo/donnees.json _site/algo' in PAGES
     assert re.search(r'^\s+scripts/site_leger\.py$', PAGES, re.M), 'le script doit être dans le sparse-checkout'
 
@@ -94,7 +94,7 @@ METHODE = (RACINE / 'algo/methode.html').read_text(encoding='utf-8')
 
 def test_page_methode_publiee_servie_et_liee_depuis_l_accueil():
     assert "'/comment-ca-marche': 'methode.html'" in WORKER and "'/methode.html': 'methode.html'" in WORKER
-    assert 'algo/methode.html _site/algo/' in PAGES
+    assert 'algo/methode.html algo/apropos.html _site/algo/' in PAGES
     assert PAGE.count('href="methode.html"') == 2 and "cm_lien:" in PAGE and PAGE.count('cm_court:') == 2
 
 
@@ -112,3 +112,19 @@ def test_editeur_professionnel_prevu():
     e = json.loads((RACINE / 'algo/editeur.json').read_text(encoding='utf-8'))
     assert e['tva_franchise'] is False and e['ape'] == '' and e['tva'] == ''
     assert 'article 293 B du Code général des impôts' in PAGE and 'Code APE' in PAGE
+
+
+# 22/11/2026 (paquet 330) — page « Qui sommes-nous »
+APROPOS = (RACINE / 'algo/apropos.html').read_text(encoding='utf-8')
+
+
+def test_page_qui_sommes_nous():
+    assert "'/qui-sommes-nous': 'apropos.html'" in WORKER and "'/apropos.html': 'apropos.html'" in WORKER
+    assert 'href="apropos.html"' in PAGE and PAGE.count('qs_court:') == 2 and 'apropos.html${' in METHODE
+    for mot in ('projet indépendant', 'Aucun conseil de pari', 'ticket sûr', 'ITF', '09 74 75 13 13', 'methode.html'):
+        assert mot in APROPOS, mot
+    for mot in ('marché', 'Pinnacle', 'cote', 'market', 'odds', 'value', 'Lucas'):
+        assert mot not in APROPOS, mot
+    assert not re.search(r'[\w.-]+@[\w-]+\.\w+', APROPOS), 'aucune adresse en dur : elle vient de editeur.json'
+    assert "fetch('editeur.json" in APROPOS and 'esc(e.email)' in APROPOS
+    assert 'fonts.googleapis' not in APROPOS and APROPOS.count('@font-face') == 7

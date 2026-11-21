@@ -65,7 +65,7 @@ a{color:var(--p1)}
 <body>
 <div class="page" id="page"></div>
 <script>
-// 22/11/2026 (paquet 329, Lucas : « Comment ça marche ») — page qui explique la méthode et montre le bilan public.
+// 22/11/2026 (paquet 329) — page qui explique la méthode et montre le bilan public.
 // Rien ici ne calcule de % : la page relit seulement le bilan déjà publié (site_plus.json, sinon donnees.json).
 const Q = new URLSearchParams(location.search);
 let L = 'fr';
@@ -101,7 +101,7 @@ const T = {
         'Pas de pronostic sur les tournois ITF.',
         'Le match du jour est choisi par une règle fixe (la plus grosse affiche du jour), jamais selon la confiance de l’algo.'],
   cta: 'Voir les matchs du jour', jeu: 'Les paris sportifs sont interdits aux mineurs. Jouer comporte des risques : endettement, isolement, dépendance. Pour être aidé : 09 74 75 13 13 (appel non surtaxé).',
-  liens: ['Mentions légales', 'Confidentialité', 'Conditions d’utilisation']
+  liens: ['Mentions légales', 'Confidentialité', 'Conditions d’utilisation', 'Qui sommes-nous']
  },
  en: {
   titre: 'How it works — Game Set Algo', retour: '← Today’s matches',
@@ -127,7 +127,7 @@ const T = {
         'No forecasts on ITF events.',
         'The match of the day is picked by a fixed rule (the day’s biggest matchup), never by how confident the algorithm is.'],
   cta: 'See today’s matches', jeu: 'Sports betting is for adults only. Gambling carries risks: debt, isolation, addiction.',
-  liens: ['Legal notice', 'Privacy', 'Terms of use']
+  liens: ['Legal notice', 'Privacy', 'Terms of use', 'About']
  }
 }[L];
 const acc = './' + (L === 'en' ? '?lang=en' : '');
@@ -139,7 +139,7 @@ document.getElementById('page').innerHTML = `
  <h3>${T.bilan_t}</h3><div id="bilan"><p class="dim">${T.vide}</p></div>
  <h3>${T.non_t}</h3><ul class="non">${T.non.map(x => `<li>${x}</li>`).join('')}</ul>
  <a class="cta" href="${acc}">${T.cta} →</a>
- <footer><p>${T.jeu}</p><p><a href="${acc}#mentions">${T.liens[0]}</a> · <a href="${acc}#confidentialite">${T.liens[1]}</a> · <a href="${acc}#cgu">${T.liens[2]}</a></p></footer>`;
+ <footer><p>${T.jeu}</p><p><a href="apropos.html${L === 'en' ? '?lang=en' : ''}">${T.liens[3]}</a> · <a href="${acc}#mentions">${T.liens[0]}</a> · <a href="${acc}#confidentialite">${T.liens[1]}</a> · <a href="${acc}#cgu">${T.liens[2]}</a></p></footer>`;
 function rendBilan(b){
   const g = b && b.global, box = document.getElementById('bilan');
   if (!g || !g.n) { box.innerHTML = `<p class="dim">${T.erreur}</p>`; return; }

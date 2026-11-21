@@ -825,7 +825,7 @@ body.carte #video{display:block;width:1080px;height:1350px}
     <p data-t="pied_methode"></p>
     <p data-t="pied_jeu"></p>
     <p id="maj"></p>
-    <p class="legal-liens"><a href="methode.html" data-t="cm_court" class="lien-methode"></a> · <a href="#mentions" data-t="lg_mentions"></a> · <a href="#confidentialite" data-t="lg_confid"></a> · <a href="#cgu" data-t="lg_cgu"></a></p>
+    <p class="legal-liens"><a href="methode.html" data-t="cm_court" class="lien-methode"></a> · <a href="apropos.html" data-t="qs_court" class="lien-apropos"></a> · <a href="#mentions" data-t="lg_mentions"></a> · <a href="#confidentialite" data-t="lg_confid"></a> · <a href="#cgu" data-t="lg_cgu"></a></p>
   </footer>
   <div id="legal" class="legal" hidden role="dialog" aria-modal="true"><div class="legal-boite"><button type="button" class="legal-x" aria-label="Fermer">×</button><div id="legal-txt"></div></div></div>
 </div>
@@ -840,7 +840,7 @@ body.carte #video{display:block;width:1080px;height:1350px}
 const T = {
  fr:{
   marque:'tennis', html_lang:'fr', th_auto:'Auto', th_clair:'Clair', th_sombre:'Sombre', tr_match:'Le match', tr_stats:'Statistiques du match', tr_sets:'Score en sets et scores probables', tr_ouvrir:'Tout ouvrir', tr_replier:'Tout replier', tr_constats:n=>`${n} constats`,
-  cm_lien:'Comment l’algo calcule ses % →', cm_court:'Comment ça marche',
+  cm_lien:'Comment l’algo calcule ses % →', cm_court:'Comment ça marche', qs_court:'Qui sommes-nous',
   lede:"Chaque match est simulé 20 000 fois, point par point, par un algorithme qui ne regarde jamais les cotes. On publie son % de victoire, la cote juste qui va avec, et tous ses résultats — y compris quand il se trompe.",
   mdj_titre:'Le match du jour', mdj_sous:"Choisi par une règle fixe : la plus grosse affiche ATP/WTA du jour (somme des Elo), jamais selon la confiance de l'algo.",
   sim_titre:'Simulation du match', sim_sous:"Le détail complet et un scénario représentatif de cette affiche, calculés avec la même variante indépendante.",
@@ -1135,7 +1135,7 @@ const T = {
  en:{
   marque:'tennis', html_lang:'en', th_auto:'Auto', th_clair:'Light', th_sombre:'Dark', tr_match:'The match', tr_stats:'Match statistics', tr_sets:'Set scores and likeliest scores', tr_ouvrir:'Open all', tr_replier:'Close all', tr_constats:n=>`${n} key points`,
   lede:"Every match is simulated 20,000 times, point by point, by an algorithm that never looks at the odds. We publish its win probability, the fair odds that go with it, and every result — including when it gets it wrong.",
-  cm_lien:'How the algorithm gets its % →', cm_court:'How it works',
+  cm_lien:'How the algorithm gets its % →', cm_court:'How it works', qs_court:'About',
   mdj_titre:'Match of the day', mdj_sous:"Picked by a fixed rule: the day's biggest ATP/WTA matchup (sum of Elo ratings), never by how confident the algorithm is.",
   sim_titre:'Match simulation', sim_sous:'The full breakdown and a representative scenario for this matchup, calculated with the same independent variant.',
   retour_mdj:'Back to match of the day',
@@ -7172,7 +7172,7 @@ function ouvrirLegal(){
 }
 window.addEventListener('hashchange', ouvrirLegal);
 // 329 : la page « Comment ça marche » s'ouvre dans la langue choisie
-if (L === 'en') document.querySelectorAll('.lien-methode').forEach(a => { a.href = 'methode.html?lang=en'; });
+if (L === 'en') document.querySelectorAll('.lien-methode, .lien-apropos').forEach(a => { a.href = a.getAttribute('href') + '?lang=en'; });
 document.addEventListener('click', ev => {
   const box = document.getElementById('legal'); if (!box || box.hidden) return;
   if (ev.target.closest('.legal-x') || ev.target === box) { history.replaceState(null, '', location.pathname + location.search); box.hidden = true; }
