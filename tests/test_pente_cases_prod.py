@@ -12,6 +12,8 @@ import pronostics_du_jour as P  # noqa: E402
 import fiabilite as FI  # noqa: E402
 import pente_cases as PC  # noqa: E402
 
+_ACTIVES = P.pente_cases_actives
+
 
 def match(uid, c, niveau, n=(40, 400)):
     return {'uid': uid, 'circuit': c, 'combinaison': {'p_home': 0.7}, 'matchs_joues': list(n),
@@ -19,6 +21,9 @@ def match(uid, c, niveau, n=(40, 400)):
 
 
 class Production(unittest.TestCase):
+    def tearDown(self):
+        P.pente_cases_actives = _ACTIVES
+
     def test_pente_de_la_case(self):
         a = FI.pente_v3(match('x', 'CH', 'fragile'))
         self.assertIsNotNone(a)
@@ -26,9 +31,10 @@ class Production(unittest.TestCase):
         self.assertIsNone(FI.pente_v3(dict(match('x', 'CH', 'fragile'), matchs_joues=[None, 3])))
 
     def test_fichier_en_place(self):
-        self.assertEqual(P.pente_cases_actives(str(RACINE)), {'CH'})
+        self.assertEqual(P.pente_cases_actives(str(RACINE)), set())                  # paquet 319 : retirée (rejeu comme en production)
 
     def test_application(self):
+        P.pente_cases_actives = lambda racine: {'CH'}                                  # comme si elle était en place
         vus = {}
 
         def faux_construire(racine, maintenant, uids=None, pentes_forcees=None):
