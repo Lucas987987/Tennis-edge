@@ -1,0 +1,50 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""site_leger.py — version légère des données pour les visiteurs du site (21/11/2026, paquet 328, Lucas : « vitesse »).
+
+algo/donnees.json reste le fichier complet (vidéos, cartes, contrôles de la chaîne, fiches figées le lisent). Pour le
+visiteur, au moment de publier le site (workflow pages.yml) :
+  site.json      — ce que la page affiche en arrivant, sans les champs qu'elle ne lit jamais (distribution complète des
+                   scores exacts, feuilles « brutes », horodatages internes…) ;
+  site_plus.json — les blocs du bas de page (bilan détaillé, étalonnage, journal des changements, validation de la
+                   fiabilité), chargés juste après le premier affichage.
+La page lit site.json et, s'il manque, donnees.json : rien ne casse si ce script n'a pas tourné.
+Usage : python scripts/site_leger.py algo/donnees.json <dossier de sortie>
+"""
+import gzip
+import json
+import os
+import sys
+
+INUTILES_MATCH = ('distribution_scores', 'distribution_reste', 'feuille_prevue_brute', 'feuille_fourchette_brute',
+                  'horodatage', 'scores_simules', 'scores_source', 'salle_appliquee', 'commence_garde', 'salle_brut')
+INUTILES_HAUT = ('qualite_horodatages', 'styles_descriptifs_source', 'bilan_lignes')
+PLUS = ('bilan', 'journal_changements', 'validation_fiabilite')
+
+
+def decouper(doc):
+    site = {k: v for k, v in doc.items() if k not in INUTILES_HAUT and k not in PLUS}
+    site['matchs'] = [{k: v for k, v in m.items() if k not in INUTILES_MATCH} for m in doc.get('matchs') or []]
+    site['_plus'] = 'site_plus.json'
+    plus = {k: doc[k] for k in PLUS if k in doc}
+    return site, plus
+
+
+def main(argv):
+    src, dossier = argv[1], argv[2]
+    with open(src, encoding='utf-8') as f:
+        doc = json.load(f)
+    site, plus = decouper(doc)
+    os.makedirs(dossier, exist_ok=True)
+    for nom, d in (('site.json', site), ('site_plus.json', plus)):
+        b = json.dumps(d, ensure_ascii=False, separators=(',', ':')).encode('utf-8')
+        with open(os.path.join(dossier, nom), 'wb') as f:
+            f.write(b)
+        print(f"{nom} : {len(b) / 1e3:.0f} Ko ({len(gzip.compress(b)) / 1e3:.0f} Ko compressé)")
+    b = open(src, 'rb').read()
+    print(f"donnees.json : {len(b) / 1e3:.0f} Ko ({len(gzip.compress(b)) / 1e3:.0f} Ko compressé)")
+    return 0
+
+
+if __name__ == '__main__':
+    sys.exit(main(sys.argv))
