@@ -1472,6 +1472,8 @@ def matchs_a_venir(racine, maintenant, avec_couverture=False):
                     'horodatage': {'nature': 'debut_planifie', 'source': 'oddspapi.commence_time',
                                    'fuseau': 'UTC', 'interpole': False, 'fin_utc': None},
                     'home': h, 'away': a, 'tournoi': m.get('sport_title') or ''})
+    secours = matchs_secours(racine, maintenant, out)        # 21/11/2026 (paquet 321) : liste TennisApi en complément
+    out += secours['matchs']
     out.sort(key=lambda x: x['debut'])
     coupes = max(0, len(out) - PLAFOND_MATCHS)
     out = out[:PLAFOND_MATCHS]                                   # les plus lointains attendent le passage suivant
@@ -1480,8 +1482,52 @@ def matchs_a_venir(racine, maintenant, avec_couverture=False):
                   'matchs_dans_fenetre': len(out), 'horodatages_invalides': invalides,
                   'nature': 'débuts planifiés avec fuseau, pas heures de fin constatées',
                   'repli': 'aucun : un match sans horodatage valide est exclu des pronostics à venir',
-                  'interpolation': False, 'dates_de_fin_inventees': False}
+                  'interpolation': False, 'dates_de_fin_inventees': False,
+                  'secours_tennisapi': {k: v for k, v in secours.items() if k != 'matchs'}}
     return (out, couverture) if avec_couverture else out
+
+
+def _paire(h, a):
+    return frozenset((NR.slug(h), NR.slug(a)))
+
+
+def matchs_secours(racine, maintenant, deja, ecart_h=18):
+    """21/11/2026 (paquet 321) — matchs à venir de matchs_tennisapi.json (scripts/matchs_tennisapi.py) absents de la
+    liste principale : même paire de joueurs (dans un sens ou l'autre) à moins de ecart_h heures = même match.
+    Aucune cote ; la surface annoncée par TennisApi ne sert que si le nom du tournoi est inconnu."""
+    try:
+        with open(os.path.join(racine, 'matchs_tennisapi.json'), encoding='utf-8') as f:
+            L = json.load(f)
+    except (OSError, ValueError):
+        L = None
+    if not isinstance(L, list):
+        return {'matchs': [], 'present': False, 'n_source': 0, 'ajoutes': 0, 'doublons': 0}
+    connus = {}
+    for x in deja:
+        connus.setdefault(_paire(x['home'], x['away']), []).append(x['debut'])
+    out, doublons = [], 0
+    for m in L:
+        try:
+            debut_utc = CO.instant(str(m['commence_time']))
+        except (KeyError, TypeError, ValueError):
+            continue
+        debut = debut_utc.replace(tzinfo=None)
+        if not (maintenant < debut <= maintenant + dt.timedelta(hours=HORIZON_H)):
+            continue
+        h, a = m.get('home_team'), m.get('away_team')
+        if not h or not a or adversaire_fictif(h) or adversaire_fictif(a):
+            continue
+        p = _paire(h, a)
+        if any(abs((debut - d).total_seconds()) < ecart_h * 3600 for d in connus.get(p, [])):
+            doublons += 1
+            continue
+        connus.setdefault(p, []).append(debut)
+        out.append({'debut': debut, 'debut_utc': debut_utc.isoformat(),
+                    'horodatage': {'nature': 'debut_planifie', 'source': 'tennisapi.startTimestamp',
+                                   'fuseau': 'UTC', 'interpole': False, 'fin_utc': None},
+                    'home': h, 'away': a, 'tournoi': m.get('sport_title') or '',
+                    'surface_secours': m.get('surface_tennisapi')})
+    return {'matchs': out, 'present': True, 'n_source': len(L), 'ajoutes': len(out), 'doublons': doublons}
 
 
 def construire(racine, maintenant=None, uids=None, pentes_forcees=None):
@@ -1659,6 +1705,8 @@ def construire(racine, maintenant=None, uids=None, pentes_forcees=None):
             elo.presenter(h, etat['depart_bas'])
             elo.presenter(a, etat['depart_bas'])
         s = NR.surface_de(x['tournoi'], surf)
+        if s is None and x.get('surface_secours'):          # 21/11/2026 (paquet 321) : sol annoncé par TennisApi
+            s = FE.surface_de(x['surface_secours'])
         if s not in E.SURFACES:
             rejets.append({'home': x['home'], 'away': x['away'], 'tournoi': x['tournoi'], 'raison': 'surface_inconnue'})
             continue
