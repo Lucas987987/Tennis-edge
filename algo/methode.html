@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0E0A24">
+<title>Comment ça marche — Game Set Algo</title>
+<meta name="description" content="Comment Game Set Algo calcule ses % : deux modèles appris sur les matchs passés, 20 000 simulations point par point, des changements testés avant d'être gardés, et un bilan public de chaque pronostic.">
+<meta property="og:title" content="Comment ça marche — Game Set Algo">
+<meta property="og:description" content="Deux modèles, 20 000 simulations point par point, un bilan public de chaque pronostic.">
+<meta property="og:type" content="article">
+<meta property="og:image" content="https://gamesetalgo.com/partage.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230E0A24'/%3E%3Ccircle cx='32' cy='32' r='20' fill='%23D4FF3A'/%3E%3Cpath d='M17 20c12 4 12 20 0 24M47 20c-12 4-12 20 0 24' fill='none' stroke='%230E0A24' stroke-width='3'/%3E%3C/svg%3E">
+<style>
+@font-face{font-family:"Bungee";font-weight:400;font-display:swap;src:url(polices/bungee-400.woff2) format("woff2")}
+@font-face{font-family:"Barlow";font-weight:400;font-display:swap;src:url(polices/barlow-400.woff2) format("woff2")}
+@font-face{font-family:"Barlow";font-weight:500;font-display:swap;src:url(polices/barlow-500.woff2) format("woff2")}
+@font-face{font-family:"Barlow";font-weight:600;font-display:swap;src:url(polices/barlow-600.woff2) format("woff2")}
+@font-face{font-family:"Barlow Condensed";font-weight:500;font-display:swap;src:url(polices/barlow-condensed-500.woff2) format("woff2")}
+@font-face{font-family:"Barlow Condensed";font-weight:600;font-display:swap;src:url(polices/barlow-condensed-600.woff2) format("woff2")}
+@font-face{font-family:"Barlow Condensed";font-weight:700;font-display:swap;src:url(polices/barlow-condensed-700.woff2) format("woff2")}
+:root{--bg:#0E0A24;--bg2:#160F38;--panel:#1B1342;--line:rgba(255,255,255,.12);--ink:#F4F1FF;--dim:#ABA3D6;--p1:#2EE6FF;--p2:#FF4FAE;--ball:#D4FF3A;--ok:#45F0A0;
+  --disp:"Bungee","Russo One","Arial Black",Impact,sans-serif;--cond:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(180deg,var(--bg2),var(--bg) 420px) var(--bg);color:var(--ink);font:400 17px/1.6 "Barlow",system-ui,sans-serif}
+.page{max-width:760px;margin:0 auto;padding:22px 18px 60px}
+.haut{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:26px}
+.marque{font-family:var(--disp);font-size:1.05rem;color:var(--ink);text-decoration:none;letter-spacing:.02em}
+.marque b{color:var(--p1);font-weight:400}
+.retour{color:var(--dim);font-family:var(--cond);font-weight:600;text-decoration:none;font-size:1rem}
+h1{font-family:var(--disp);font-weight:400;font-size:clamp(1.7rem,6vw,2.5rem);line-height:1.15;margin:0 0 12px}
+h1 em{font-style:normal;color:var(--p1)}
+.chapo{color:var(--dim);font-size:1.08rem;margin:0 0 28px}
+.etape{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:18px 18px 16px 64px;margin:0 0 14px}
+.etape .n{position:absolute;left:16px;top:16px;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-family:var(--disp);font-size:.95rem;background:var(--bg);border:2px solid var(--p1);color:var(--p1)}
+.etape:nth-of-type(2n) .n{border-color:var(--p2);color:var(--p2)}
+h2{font-family:var(--cond);font-weight:700;font-size:1.35rem;margin:0 0 6px;letter-spacing:.01em}
+h3{font-family:var(--cond);font-weight:700;font-size:1.5rem;margin:34px 0 10px}
+p{margin:0 0 10px}
+.etape p:last-child{margin-bottom:0}
+.dim{color:var(--dim)}
+.chiffres{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:14px 0}
+@media(min-width:620px){.chiffres{grid-template-columns:repeat(4,1fr)}}
+.chiffre{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px}
+.chiffre b{display:block;font-family:var(--disp);font-weight:400;font-size:1.45rem;color:var(--ball);line-height:1.2}
+.chiffre span{font-family:var(--cond);font-weight:500;color:var(--dim);font-size:.95rem;line-height:1.25;display:block}
+.calib{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:14px 16px;margin:10px 0}
+.ligne{display:grid;grid-template-columns:84px 1fr 58px;gap:10px;align-items:center;font-family:var(--cond);font-weight:500;font-size:.98rem;margin:7px 0}
+.barres{position:relative;height:18px;background:rgba(255,255,255,.06);border-radius:9px;overflow:hidden}
+.barres i{position:absolute;left:0;top:0;bottom:0;background:var(--p1);opacity:.85;border-radius:9px}
+.barres u{position:absolute;top:-2px;bottom:-2px;width:3px;background:var(--ball);text-decoration:none}
+.legende{font-family:var(--cond);color:var(--dim);font-size:.95rem;margin-top:8px}
+.legende i{display:inline-block;width:14px;height:10px;background:var(--p1);border-radius:3px;vertical-align:middle;margin-right:4px}
+.legende u{display:inline-block;width:3px;height:14px;background:var(--ball);vertical-align:middle;margin:0 4px 0 12px}
+ul.non{list-style:none;padding:0;margin:0}
+ul.non li{padding:10px 0 10px 30px;border-bottom:1px solid var(--line);position:relative}
+ul.non li:before{content:"✕";position:absolute;left:4px;top:10px;color:var(--p2);font-weight:700}
+.cta{display:inline-block;margin-top:26px;background:var(--p1);color:var(--bg);font-family:var(--disp);font-size:.95rem;padding:12px 18px;border-radius:12px;text-decoration:none}
+footer{margin-top:40px;color:var(--dim);font-size:.9rem;border-top:1px solid var(--line);padding-top:16px}
+footer a{color:var(--dim)}
+a{color:var(--p1)}
+</style>
+</head>
+<body>
+<div class="page" id="page"></div>
+<script>
+// 22/11/2026 (paquet 329, Lucas : « Comment ça marche ») — page qui explique la méthode et montre le bilan public.
+// Rien ici ne calcule de % : la page relit seulement le bilan déjà publié (site_plus.json, sinon donnees.json).
+const Q = new URLSearchParams(location.search);
+let L = 'fr';
+try { L = Q.get('lang') || localStorage.getItem('te_lang') || ((navigator.language || 'fr').toLowerCase().startsWith('fr') ? 'fr' : 'en'); } catch (e) {}
+if (L !== 'en') L = 'fr';
+document.documentElement.lang = L;
+const loc = L === 'fr' ? 'fr-FR' : 'en-GB';
+const fmt = n => Number(n).toLocaleString(loc);
+const dec = (x, d) => Number(x).toLocaleString(loc, { minimumFractionDigits: d, maximumFractionDigits: d });
+const pc = x => dec(x, 1) + (L === 'fr' ? ' %' : '%');
+const T = {
+ fr: {
+  titre: 'Comment ça marche — Game Set Algo', retour: '← Les matchs du jour',
+  h1: 'Comment l’algo calcule <em>ses %</em>',
+  chapo: 'Pas de boule de cristal : deux modèles appris sur des dizaines de milliers de matchs passés, une simulation de chaque match point par point, et un bilan public de tout ce qui a été annoncé.',
+  etapes: [
+   ['Les données', 'Tous les matchs joués sur les circuits ATP, WTA et Challenger, avec la surface, le tournoi et le score. Pour chaque joueur : ses points gagnés au service et au retour, corrigés du niveau des adversaires qu’il a rencontrés.'],
+   ['Deux façons de mesurer le niveau', 'Un classement Elo par surface : battre un joueur fort rapporte plus que battre un joueur faible, et la terre battue, le dur et le gazon ont chacun leur note. À côté, un modèle service-retour : à quelle fréquence chacun gagne ses points quand il sert et quand il retourne.'],
+   ['20 000 matchs simulés, point par point', 'Le match est joué 20 000 fois par l’ordinateur, point après point, jeu après jeu, avec les vraies règles (jeux décisifs, format en 2 ou 3 sets gagnants). On compte : combien de fois chacun gagne, en combien de sets, quels scores reviennent le plus. C’est de là que viennent le % de victoire, les scénarios et les projections.'],
+   ['Un mélange appris, pas réglé à la main', 'Quand l’Elo et la simulation ne sont pas d’accord, la part de chacun a été apprise sur les matchs passés, circuit par circuit. Une fourchette indique en plus l’incertitude sur le niveau des joueurs : plus ils ont peu joué, plus elle est large.'],
+   ['Un changement doit faire ses preuves', 'Toute idée d’amélioration est apprise sur 2018–2022, puis jugée sur 2023 à aujourd’hui, des matchs qu’elle n’a jamais vus. Elle n’est gardée que si elle améliore la prévision sur au moins 1 000 matchs, dans le même sens sur les deux périodes. Ensuite elle reste suivie avec et sans elle, et retirée si son bilan devient négatif. Chaque changement est daté dans le journal public.'],
+   ['Tout est publié, y compris les erreurs', 'Chaque % est publié avant le match et ne bouge plus. Après le match, il est compté dans le bilan, qu’il soit juste ou faux. Rien n’est conclu sur une poignée de matchs : une série de 10 bons ou mauvais pronostics ne veut rien dire.']
+  ],
+  bilan_t: 'Le bilan, en direct', depuis: d => `Tous les pronostics publiés depuis le ${d}, matchs terminés.`,
+  c_n: 'pronostics jugés', c_pct: 'favori de l’algo vainqueur', c_brier: 'score de Brier (0 = parfait, 0,25 = pile ou face)', c_ll: 'log loss (plus bas = mieux)',
+  calib_t: 'Quand l’algo annonce 70 %, ça arrive combien de fois ?',
+  calib_p: 'C’est le vrai test d’un % : regrouper les matchs selon le % annoncé et regarder la part réellement gagnée. Si l’algo est honnête, les deux sont proches.',
+  ligne: (a, b) => `${a}–${b} %`, leg_prevu: 'annoncé (moyenne)', leg_reel: 'réellement gagné', n: n => `${fmt(n)} m.`,
+  vide: 'Le bilan se charge…', erreur: 'Bilan indisponible pour l’instant : il est aussi affiché en bas de la page des matchs.',
+  non_t: 'Ce que l’algo ne fait pas',
+  non: ['Il ne donne aucun conseil de pari et ne promet aucun gain : ce sont des probabilités, pas des certitudes.',
+        'Il ne s’appuie que sur les matchs joués : aucune donnée de paris n’entre dans le calcul.',
+        'Pas de pronostic sur les tournois ITF.',
+        'Le match du jour est choisi par une règle fixe (la plus grosse affiche du jour), jamais selon la confiance de l’algo.'],
+  cta: 'Voir les matchs du jour', jeu: 'Les paris sportifs sont interdits aux mineurs. Jouer comporte des risques : endettement, isolement, dépendance. Pour être aidé : 09 74 75 13 13 (appel non surtaxé).',
+  liens: ['Mentions légales', 'Confidentialité', 'Conditions d’utilisation']
+ },
+ en: {
+  titre: 'How it works — Game Set Algo', retour: '← Today’s matches',
+  h1: 'How the algorithm gets <em>its %</em>',
+  chapo: 'No crystal ball: two models trained on tens of thousands of past matches, a point-by-point simulation of every match, and a public record of everything ever published.',
+  etapes: [
+   ['The data', 'Every match on the ATP, WTA and Challenger tours, with surface, event and score. For each player: points won on serve and on return, adjusted for the level of the opponents faced.'],
+   ['Two ways to measure level', 'A surface-specific Elo rating: beating a strong player earns more than beating a weak one, and clay, hard and grass each get their own rating. Alongside it, a serve–return model: how often each player wins points when serving and when returning.'],
+   ['20,000 matches, point by point', 'The match is played 20,000 times by the computer, point after point, game after game, with the real rules (tie-breaks, best of 3 or 5). We count how often each player wins, in how many sets, and which scores come up most. That gives the win %, the scenarios and the projections.'],
+   ['A learned blend, not hand-tuned', 'When Elo and the simulation disagree, the weight of each was learned on past matches, tour by tour. A range also shows the uncertainty about the players’ level: the fewer matches they have played, the wider it is.'],
+   ['Every change has to prove itself', 'Any improvement is trained on 2018–2022, then judged on 2023 to today, matches it has never seen. It is kept only if it improves forecasts over at least 1,000 matches, in the same direction on both periods. It is then tracked with and without it, and removed if its record turns negative. Every change is dated in the public log.'],
+   ['Everything is published, misses included', 'Every % is published before the match and never changes. After the match it goes into the record, right or wrong. Nothing is concluded from a handful of matches: a run of 10 good or bad calls means nothing.']
+  ],
+  bilan_t: 'The record, live', depuis: d => `Every forecast published since ${d}, finished matches.`,
+  c_n: 'forecasts settled', c_pct: 'algorithm’s favourite won', c_brier: 'Brier score (0 = perfect, 0.25 = coin flip)', c_ll: 'log loss (lower = better)',
+  calib_t: 'When the algorithm says 70%, how often does it happen?',
+  calib_p: 'This is the real test of a %: group matches by the published % and look at the share actually won. If the algorithm is honest, the two are close.',
+  ligne: (a, b) => `${a}–${b}%`, leg_prevu: 'published (average)', leg_reel: 'actually won', n: n => `${fmt(n)} m.`,
+  vide: 'Loading the record…', erreur: 'Record unavailable for now: it is also shown at the bottom of the matches page.',
+  non_t: 'What the algorithm does not do',
+  non: ['No betting advice and no promise of winnings: these are probabilities, not certainties.',
+        'It relies only on matches played: no betting data goes into the calculation.',
+        'No forecasts on ITF events.',
+        'The match of the day is picked by a fixed rule (the day’s biggest matchup), never by how confident the algorithm is.'],
+  cta: 'See today’s matches', jeu: 'Sports betting is for adults only. Gambling carries risks: debt, isolation, addiction.',
+  liens: ['Legal notice', 'Privacy', 'Terms of use']
+ }
+}[L];
+const acc = './' + (L === 'en' ? '?lang=en' : '');
+document.title = T.titre;
+document.getElementById('page').innerHTML = `
+ <div class="haut"><a class="marque" href="${acc}">GAME SET <b>ALGO</b></a><a class="retour" href="${acc}">${T.retour}</a></div>
+ <h1>${T.h1}</h1><p class="chapo">${T.chapo}</p>
+ ${T.etapes.map((e, i) => `<section class="etape"><span class="n">${i + 1}</span><h2>${e[0]}</h2><p>${e[1]}</p></section>`).join('')}
+ <h3>${T.bilan_t}</h3><div id="bilan"><p class="dim">${T.vide}</p></div>
+ <h3>${T.non_t}</h3><ul class="non">${T.non.map(x => `<li>${x}</li>`).join('')}</ul>
+ <a class="cta" href="${acc}">${T.cta} →</a>
+ <footer><p>${T.jeu}</p><p><a href="${acc}#mentions">${T.liens[0]}</a> · <a href="${acc}#confidentialite">${T.liens[1]}</a> · <a href="${acc}#cgu">${T.liens[2]}</a></p></footer>`;
+function rendBilan(b){
+  const g = b && b.global, box = document.getElementById('bilan');
+  if (!g || !g.n) { box.innerHTML = `<p class="dim">${T.erreur}</p>`; return; }
+  const jour = b.depuis ? new Date(b.depuis + 'T12:00:00Z').toLocaleDateString(loc, { day: 'numeric', month: 'long', year: 'numeric' }) : '';
+  const lignes = (b.calibration || []).filter(c => c.n >= 30).map(c => `<div class="ligne"><span>${T.ligne(Math.round(c.de * 100), Math.round(c.a * 100))}</span>
+    <span class="barres"><i style="width:${Math.max(0, Math.min(100, +c.reel))}%"></i><u style="left:calc(${Math.max(0, Math.min(100, +c.prevu))}% - 1px)"></u></span>
+    <span class="dim">${pc(c.reel)}</span></div>`).join('');
+  box.innerHTML = `<p class="dim">${T.depuis(jour)}</p>
+    <div class="chiffres"><div class="chiffre"><b>${fmt(g.n)}</b><span>${T.c_n}</span></div><div class="chiffre"><b>${pc(g.pct)}</b><span>${T.c_pct}</span></div>
+    <div class="chiffre"><b>${dec(g.brier, 3)}</b><span>${T.c_brier}</span></div><div class="chiffre"><b>${dec(g.log_loss, 3)}</b><span>${T.c_ll}</span></div></div>
+    ${lignes ? `<div class="calib"><h2>${T.calib_t}</h2><p class="dim">${T.calib_p}</p>${lignes}
+    <div class="legende"><i></i>${T.leg_reel}<u></u>${T.leg_prevu}</div></div>` : ''}`;
+}
+const cle = Math.floor(Date.now() / 60000);
+const lire = f => fetch(f + '?v=' + cle).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); });
+lire('site_plus.json').catch(() => lire('donnees.json')).then(d => rendBilan(d.bilan)).catch(() => rendBilan(null));
+</script>
+</body>
+</html>

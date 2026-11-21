@@ -19,7 +19,9 @@ const LAB = 'https://lucas987987.github.io';
 export const PUBLICS = { '/': 'index.html', '/index.html': 'index.html', '/donnees.json': 'donnees.json',
   // 21/11/2026 (paquet 328) : site plus léger (site.json d'abord, site_plus.json ensuite), éditeur des mentions
   // légales, image d'aperçu des liens partagés et polices servies par le site lui-même (plus aucun appel à Google)
-  '/site.json': 'site.json', '/site_plus.json': 'site_plus.json', '/editeur.json': 'editeur.json', '/partage.png': 'partage.png' };
+  '/site.json': 'site.json', '/site_plus.json': 'site_plus.json', '/editeur.json': 'editeur.json', '/partage.png': 'partage.png',
+  // 22/11/2026 (paquet 329) : la page « Comment ça marche »
+  '/methode.html': 'methode.html', '/comment-ca-marche': 'methode.html' };
 export const POLICES = /^\/polices\/[a-z0-9-]{3,40}\.woff2$/;
 const TYPES = { json: 'application/json; charset=utf-8', html: 'text/html; charset=utf-8', png: 'image/png', woff2: 'font/woff2' };
 // DOIT correspondre à scripts/coffre.py (SERVIS)
