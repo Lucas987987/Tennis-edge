@@ -1,0 +1,73 @@
+name: Chercheur automatique (pistes d'amélioration)
+
+# 21/11/2026 — paquet 320. Chaque lundi, simulateur/chercheur.py balaie des familles de pistes (pentes et décalages,
+# circuit par circuit) sur le rejeu « comme en production » (résultats ITF hommes compris) et classe celles qui
+# amélioreraient les % sur des matchs jamais vus. Règle écrite dans son en-tête (seuil 3,3 erreurs types : beaucoup de
+# pistes testées à la fois). Les 3 meilleures candidates partent sur le Telegram PRIVÉ. Rien n'entre dans l'algo :
+# une candidate passe ensuite par une étude et un paquet à part. 0 requête d'API.
+on:
+  schedule:
+    - cron: '41 5 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+
+concurrency:
+  group: simulateur
+  cancel-in-progress: false
+
+jobs:
+  chercheur:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          filter: blob:none
+          sparse-checkout: |
+            /simulateur/
+            /resultats_itf/
+            /resultats_itf_femmes/
+            /scripts/resultats_itf.py
+            /feuilles/lieux_archive.json
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - name: Archive Sackmann (fichiers de matchs seulement)
+        run: |
+          set -euo pipefail
+          git clone --depth 1 --filter=blob:none --sparse https://github.com/Aneeshers/tennis-sackmann-archive.git /tmp/sackmann
+          cd /tmp/sackmann
+          git sparse-checkout set --no-cone 'atp_matches_20*.csv' 'atp_matches_qual_chall_20*.csv' 'wta_matches_20*.csv' 'wta_matches_qual_itf_20*.csv'
+      - name: Chercher
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          set -euo pipefail
+          python simulateur/chercheur.py /tmp/sackmann . --telegram | tee /tmp/chercheur.log
+          cp simulateur/rapport_chercheur.json /tmp/rapport_chercheur.json
+          echo '### Chercheur automatique' >> "$GITHUB_STEP_SUMMARY"
+          sed 's/^/    /' /tmp/chercheur.log >> "$GITHUB_STEP_SUMMARY"
+      - name: Publier le rapport (sans écraser le travail des autres)
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          for i in 1 2 3 4 5 6; do
+            git fetch -q origin main
+            git reset -q --hard origin/main
+            cp /tmp/rapport_chercheur.json simulateur/rapport_chercheur.json
+            git add -- simulateur/rapport_chercheur.json
+            if git diff --cached --quiet; then echo 'Rien de nouveau.'; exit 0; fi
+            git commit -q -m 'Chercheur automatique : rapport de la semaine'
+            if git push origin HEAD:main; then echo '✅ publié'; exit 0; fi
+            sleep $((i * 10))
+          done
+          echo '::error::Push impossible après 6 essais'; exit 1
