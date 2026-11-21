@@ -1536,6 +1536,13 @@
    "paquet": 317,
    "quoi": "ÉTUDE « CORRIGER LE % AVEC LA NOTE DE FIABILITÉ » (paquet 317, décision de Lucas). La note v3 est la pente d'étalonnage de la case du match, apprise sur 2016–2022 ; jusqu'ici elle ne changeait aucun %. Sur l'archive, appliquer cette pente au % (le rapprocher de 50 % quand la case est trop confiante) a été jugé sur 2023 → juin 2026 selon une règle écrite avant (gain ≥ 0,001 sur ≥ 1 000 matchs, ≥ 2 erreurs types, pente du même côté de 1 sur les deux périodes). Retenu en Challenger : sur tous les matchs (32 316, gain 0,0026, 6,0 erreurs types, Brier 0,2223 → 0,2216) et sur les seuls matchs « fragile » ou « prudent » (18 277, gain 0,0043, 5,8 erreurs types, Brier 0,2199 → 0,2187). Pas retenu en ATP (gain 0,0008, 1,9 erreur type) ni en WTA (pas de gain).",
    "garde_fou": "Étude seulement : rien n'entre dans l'algo sans un paquet à part, avec sa règle de retrait. Rapport public simulateur/rapport_pente_cases.json. Retrait : supprimer simulateur/etude_pente_cases.py, simulateur/rapport_pente_cases.json et tests/test_pente_cases.py."
+  },
+  {
+   "date": "2026-11-21",
+   "statut": "production",
+   "paquet": 318,
+   "quoi": "LE % ÉTALONNÉ SELON LA FIABILITÉ, EN CHALLENGER (paquet 318, décision de Lucas après l'étude du paquet 317). La note de fiabilité ne servait qu'à l'affichage ; en Challenger, elle corrige désormais le % : chaque match prend la pente d'étalonnage de sa case (circuit × expérience du moins connu × ampleur des corrections, apprise sur 2016–2022). Concrètement, les matchs « fragile » et « prudent », trop confiants, sont rapprochés de 50 %. Jugé sur 2023 → juin 2026 : 32 316 matchs, gain de log loss 0,0026 (6,0 erreurs types), Brier 0,2223 → 0,2216. Les matchs Challenger « correct », déjà corrigés depuis le paquet 270, ne le sont pas deux fois. ATP et WTA : rien ne change.",
+   "garde_fou": "Le niveau affiché reste celui du pronostic sans correction. Retrait automatique chaque lundi (simulateur/pente_cases.py) : avec au moins 200 matchs corrigés jugés, si la log loss AVEC la pente dépasse celle SANS d'au moins 0,001, la correction est retirée (simulateur/pente_cases.json). Retrait à la main : « retire » à true dans ce fichier."
   }
  ]
 }

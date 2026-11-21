@@ -1,0 +1,9 @@
+{
+ "paquet": 318,
+ "decision": "Lucas, 21/11/2026 (« Oui on met en place ») : appliquer en Challenger la pente d'étalonnage de la case de chaque match (note de fiabilité v3), retenue par etude_pente_cases.py (paquet 317), variante « tous les matchs ». Les matchs Challenger « correct », déjà corrigés par correction_niveaux.json, ne sont pas corrigés deux fois.",
+ "regle_retrait": "simulateur/pente_cases.py, chaque lundi, circuit par circuit : avec au moins 200 matchs corrigés jugés (sans abandon ni forfait), si la log loss AVEC la pente dépasse celle SANS d'au moins 0,001, « retire » passe à true.",
+ "circuits": {
+  "CH": {"active_le": "2026-11-21", "retire": false,
+         "origine": "2023 → juin 2026 : 32 316 matchs, pente moyenne appliquée 0,838, gain de log loss 0,0026 (6,0 erreurs types), Brier 0,2223 → 0,2216"}
+ }
+}

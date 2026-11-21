@@ -65,6 +65,12 @@ HORIZON_H = int(os.environ.get('HORIZON_H', '72'))
 # la correction (pas de boucle) ; la pente s'applique en dernier, avant la simulation, donc sets, scores et feuille
 # suivent. Retrait automatique par etude_niveaux_fiabilite.py (règle dans son en-tête).
 CORRECTIONS_NIVEAUX = 'simulateur/correction_niveaux.json'
+# 21/11/2026 (paquet 318, DÉCISION DE LUCAS après etude_pente_cases.py, paquet 317) : en CHALLENGER, chaque % est corrigé
+# par la pente d'étalonnage de sa case (celle de la note de fiabilité v3, apprise sur 2016–2022) : logit corrigé =
+# a · logit. Jugé sur 2023 → juin 2026 : 32 316 matchs, gain de log loss 0,0026 (6,0 erreurs types). Même mécanisme que la
+# correction par niveau (pente en dernier, avant la simulation) ; les matchs déjà corrigés par correction_niveaux.json
+# (Challenger « correct ») ne sont pas corrigés deux fois. Retrait automatique : simulateur/pente_cases.py.
+PENTE_CASES = 'simulateur/pente_cases.json'
 PLAFOND_MATCHS = int(os.environ.get('PLAFOND_MATCHS', '220'))
 LOG = 'simulateur/pronostics_log.jsonl'
 # 22/10/2026 — TOUT est enregistré pour l'analyse a posteriori :
@@ -2446,11 +2452,29 @@ def corrections_niveaux(racine):
     return out
 
 
+def pente_cases_actives(racine):
+    """Circuits où la pente des cases est en place (simulateur/pente_cases.json, sans « retire »)."""
+    try:
+        with open(os.path.join(racine, PENTE_CASES), encoding='utf-8') as f:
+            doc = json.load(f)
+    except (OSError, ValueError):
+        return set()
+    return {c for c, v in (doc.get('circuits') or {}).items() if isinstance(v, dict) and not v.get('retire')}
+
+
 def appliquer_corrections_niveaux(racine, doc, maintenant, anciens_resultats, construire_=None):
     """Refait les matchs concernés avec leur pente ; garde la fiabilité du pronostic SANS correction (paquet 270)."""
     C = corrections_niveaux(racine)
     viser = {m['uid']: C[m.get('circuit')][(m.get('fiabilite') or {}).get('niveau')] for m in doc['matchs']
              if m.get('combinaison') and (m.get('fiabilite') or {}).get('niveau') in C.get(m.get('circuit'), {})}
+    cases = {}                                   # paquet 318 : pente de la case, là où aucune correction n'est déjà en place
+    circuits_cases = pente_cases_actives(racine)
+    for m in doc['matchs']:
+        if m.get('circuit') in circuits_cases and m.get('combinaison') and m['uid'] not in viser:
+            a = FI.pente_v3(m)
+            if a and abs(a - 1) > 1e-3:
+                cases[m['uid']] = round(a, 4)
+    viser.update(cases)
     if not viser:
         return 0
     doc2 = (construire_ or construire)(racine, maintenant, uids=set(viser), pentes_forcees=viser)
@@ -2462,7 +2486,8 @@ def appliquer_corrections_niveaux(racine, doc, maintenant, anciens_resultats, co
         f = dict(m['fiabilite'])
         f['correction_niveau'] = {'pente': viser[m['uid']], 'niveau': f.get('niveau'), 'circuit': m.get('circuit'),
                                   'p_home_sans_correction': (m.get('combinaison') or {}).get('p_home'),
-                                  'p_home_avec_correction': m2['combinaison'].get('p_home'), 'source': CORRECTIONS_NIVEAUX}
+                                  'p_home_avec_correction': m2['combinaison'].get('p_home'),
+                                  'source': PENTE_CASES if m['uid'] in cases else CORRECTIONS_NIVEAUX}
         m2['fiabilite'] = f
         m2['p_premier'] = m.get('p_premier')
         doc['matchs'][i] = m2

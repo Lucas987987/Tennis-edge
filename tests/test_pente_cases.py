@@ -36,7 +36,7 @@ class Regle(unittest.TestCase):
 
     def test_rien_dans_l_algo(self):
         prod = (RACINE / 'simulateur' / 'pronostics_du_jour.py').read_text(encoding='utf-8')
-        self.assertNotIn('pente_cases', prod)
+        self.assertNotIn('import etude_pente_cases', prod)        # l'étude ne pilote rien : la mise en place passe par pente_cases.json
 
 
 if __name__ == '__main__':
