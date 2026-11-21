@@ -46,6 +46,11 @@ on:
         type: choice
         options: ['3d', '2d']
         default: '3d'
+      echelle:
+        description: "Netteté de l'image 3D (paquet 327) : 0.85 (défaut), 1 = pleine (run ~20 % plus long), 0.67 = l'ancienne"
+        type: choice
+        options: ['0.85', '1', '0.67']
+        default: '0.85'
   schedule:
     - cron: '5 7 * * *'
 
@@ -135,7 +140,7 @@ jobs:
         if: steps.mdj.outputs.ok == '1'
         run: |
           lang="${{ matrix.lang }}"
-          python scripts/video_simulation.py --lang "$lang" --uid "${{ inputs.uid }}" --seed "${{ inputs.seed }}" --format "${{ inputs.format || '9x16' }}" --rendu "${{ inputs.rendu || '3d' }}" --ips "${{ (inputs.rendu || '3d') == '3d' && '25' || '30' }}" ${{ inputs.adresse && '--adresse' || '' }} ${{ inputs.arbitre == false && '--sans-voix' || '' }} --sortie videos
+          python scripts/video_simulation.py --lang "$lang" --uid "${{ inputs.uid }}" --seed "${{ inputs.seed }}" --format "${{ inputs.format || '9x16' }}" --rendu "${{ inputs.rendu || '3d' }}" --ips "${{ (inputs.rendu || '3d') == '3d' && '25' || '30' }}" --echelle "${{ inputs.echelle || '0.85' }}" ${{ inputs.adresse && '--adresse' || '' }} ${{ inputs.arbitre == false && '--sans-voix' || '' }} --sortie videos
           # 24/10/2026 : carte de stats du match (PNG pour X, en réponse à la vidéo)
           python scripts/video_simulation.py --lang "$lang" --uid "${{ inputs.uid }}" --carte --sortie videos || echo "::warning::carte ${lang} non faite"
           # 21/11/2026 (paquet 325) : toutes les projections du match en une image

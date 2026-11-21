@@ -4729,7 +4729,7 @@ const G3D = (() => {
   function boucles(v, enJeu, i) {
     if (enJeu) { const s = cl((v - 5.4) / 2.8, 0, 1);
       // paquet 326 : de côté, pas chassés captés (Mixamo) ; en reculant, course arrière captée ; sinon footing / sprint
-      const dir = i === undefined ? null : directionCourse(i);
+      const dir = i === undefined ? null : { type: LOCO[i].dir || 'avant' };     // paquet 327 : sens stabilisé (majLoco)
       if (dir && dir.type !== 'avant' && MOD.clips && MOD.clips.MX_StrafeG) return dir.type === 'gauche' ? [['MX_StrafeG', 1]] : dir.type === 'droite' ? [['MX_StrafeD', 1]] : [['MX_Recul', 1]];
       return [['Jog_Fwd_Loop', 1 - s], ['Sprint_Loop', s]]; }
     const s = cl((v - 1.2) / 2.5, 0, 1); return [['Walk_Loop', 1 - s], ['Jog_Fwd_Loop', s]];
@@ -4751,9 +4751,12 @@ const G3D = (() => {
         else { const a = qd[c[0]] || (qd[c[0]] = m2q(delta(c[0]))), b = qd[c[1]] || (qd[c[1]] = m2q(delta(c[1]))); d = q2m(slerp(a, b, c[2])); }
         if (loco && loco.w > 0.01) {
           let qc = null, tot = 0;
-          for (const [nomC, wc] of loco.mix) { if (wc < 0.01) continue; const q = clipQ(nomC, loco.phase, k); if (!q) continue;
+          const pf = loco.prec ? loco.prec.f : 0;                                       // paquet 327 : ancien cycle qui s'efface
+          const tous = pf > 0 ? [...loco.mix.map(([n_, w_]) => [n_, w_ * (1 - pf), loco.phase]), ...loco.prec.mix.map(([n_, w_]) => [n_, w_ * pf, loco.prec.phase])]
+                              : loco.mix.map(([n_, w_]) => [n_, w_, loco.phase]);
+          for (const [nomC, wc, ph] of tous) { if (wc < 0.01) continue; const q = clipQ(nomC, ph, k); if (!q) continue;
             qc = qc ? slerp(qc, q, wc / (tot + wc)) : q; tot += wc; }
-          if (qc) { const wk = BRAS.has(nom) ? (loco.capte ? 0 : loco.w * (1 - (pose.coup || 0))) : loco.w;
+          if (qc) { const wk = BRAS.has(nom) ? loco.w * (1 - (pose.coup || 0)) * (loco.brasW ?? (loco.capte ? 0 : 1)) : loco.w;
             if (wk > 0.01) d = q2m(slerp(m2q(d), qc, wk)); }
         }
         const ov = loco && loco.ov;                                                      // paquet 326 : geste ou attente captés
@@ -4783,7 +4786,7 @@ const G3D = (() => {
     }
     // la raquette : orientation de ma main, posée dans la main droite du modèle
     let raquette = null;
-    const brasCapte = loco ? Math.max(loco.capte ? 0 : loco.w * (1 - (pose.coup || 0)), loco.ov && loco.ov.bras ? loco.ov.w : 0) : 0;
+    const brasCapte = loco ? Math.max(loco.w * (1 - (pose.coup || 0)) * (loco.brasW ?? (loco.capte ? 0 : 1)), loco.ov && loco.ov.bras ? loco.ov.w : 0) : 0;
     if (mien.raquette && brasCapte > 0.5) {                                             // prise « eastern » dans la paume
       const main = monde[O.noms.indexOf('hand_r')];
       raquette = M4.mul(main, PRISE);
@@ -5207,7 +5210,9 @@ const G3D = (() => {
       if (vol.qui !== i) continue;
       if (vol.type === 'service') {
         const u = cl((t - (vol.t - 1.25)) / 2.0, 0, 1);
-        if (t > vol.t - 1.25 && t < vol.t + 0.75) { const sv = poseService(u); sv.coup = 1; return sv; }
+        if (t > vol.t - 1.25 && t < vol.t + 0.75) { const sv = poseService(u);
+          // paquet 327 (transitions) : on entre dans le service en 0,3 s (avant : d'un coup, le bras gauche sautait de 150°)
+          const we = cl((t - (vol.t - 1.25)) / 0.3, 0, 1); sv.coup = we; return we >= 1 ? sv : Object.assign(melange(p, sv, lisse(we)), { coup: we }); }
       } else {
         const u = (t - vol.t) / 1.1 + 0.55;                                          // préparation 0,6 s, frappe, accompagnement 0,5 s
         if (u > 0 && u < 1) {
@@ -5228,19 +5233,26 @@ const G3D = (() => {
   // les points. ov = { nom, u, w, boucle, bras, jambes, tete } ; rien si les mouvements ne sont pas chargés.
   const GESTES_MX = { poing: ['MX_Poing', 2.4], joie: ['MX_Joie', 2.9], victoire: ['MX_Victoire', 3.4], saut: ['MX_Saut', 0.93],
     depit: ['MX_Decu', 2.6], rage: ['MX_Non', 1.8], abattu: ['MX_Abattu', 4.2], applaudit: ['MX_Applaudit', 3.5] };
-  function majCapte(i, t) {
+  function majCapte(i, t, dt) {
     const L = LOCO[i], j = J[i], v = Math.hypot(j.vx, j.vz); L.ov = null;
     if (!MOD.clips || !MOD.clips.MX_Idle) return;
     const G = GESTE[i];
+    let o = null;
     if (G && G.mx && t >= G.t0 && t < G.t0 + G.d) {
       const c = MOD.clips[G.mx], e = t - G.t0;
-      L.ov = { nom: G.mx, u: c.boucle ? e / c.dur : e / c.dur, w: cl(Math.min(e / 0.25, (G.d - e) / 0.35), 0, 1), boucle: !!c.boucle, bras: true, jambes: v < 0.6, tete: true };
-      return;
-    }
-    if (!R && v < 0.3 && !E.fini) {                                                 // entre les points, à l'arrêt
+      o = { nom: G.mx, u: e / c.dur, w: cl(Math.min(e / 0.25, (G.d - e) / 0.35), 0, 1), boucle: !!c.boucle, bras: true, jambes: v < 0.6, tete: true };
+    } else if (!R && v < 0.3 && !E.fini) {                                          // entre les points, à l'arrêt
       const sert = E.srv === i;                                                     // le serveur fait rebondir la balle : bras à lui
-      L.ov = { nom: 'MX_Idle', u: t / MOD.clips.MX_Idle.dur + i * 0.37, w: 0.85, boucle: true, bras: !sert, jambes: true, tete: false };
+      o = { nom: 'MX_Idle', u: t / MOD.clips.MX_Idle.dur + i * 0.37, w: 0.85, boucle: true, bras: !sert, jambes: true, tete: false };
     }
+    // paquet 327 (transitions) : l'attente captée monte et s'efface en douceur (avant : coupée net au début du point
+    // ou dès que le joueur bougeait) ; un geste garde sa propre montée et sa sortie
+    const P = L.ovP, k = dt > 0 ? 1 - Math.exp(-dt * 7) : 1;
+    if (o && o.nom !== 'MX_Idle') L.ovP = { ...o, wc: o.w };
+    else if (o) L.ovP = { ...o, wc: lerp(P && P.nom === o.nom ? P.wc : 0, o.w, k) };
+    else if (P && P.wc > 0.01 && P.nom === 'MX_Idle') { P.u = t / MOD.clips.MX_Idle.dur + i * 0.37; P.wc = lerp(P.wc, 0, k); }
+    else L.ovP = null;
+    if (L.ovP) L.ov = { ...L.ovP, w: L.ovP.wc };
   }
   // paquet 326 : sens de la course dans le repère du joueur (face au filet) : de côté, en arrière, ou en avant
   function directionCourse(i) {
@@ -5251,14 +5263,24 @@ const G3D = (() => {
   }
   function majLoco(i, dt) {
     const j = J[i], v = Math.hypot(j.vx, j.vz), L = LOCO[i], enJeu = !!R;
+    // paquet 327 (transitions) : le sens de course ne change qu'après 0,12 s (plus de va-et-vient en diagonale) ; au
+    // changement de type de pas, l'ancien cycle s'efface en 0,2 s pendant que le nouveau monte ; les bras passent en douceur
+    const cand = directionCourse(i).type;
+    if (cand === (L.dir || 'avant')) L.dirT = 0; else if ((L.dirT = (L.dirT || 0) + dt) > 0.12) { L.dir = cand; L.dirT = 0; }
     const mix = boucles(v, enJeu, i);
-    if (L.mix.length && L.mix[0][0] !== mix[0][0] && /^MX_|^Jog|^Sprint/.test(mix[0][0])) L.phase = 0;    // nouveau type de pas : cycle repris au début
+    if (L.mix.length && L.mix[0][0] !== mix[0][0] && /^MX_|^Jog|^Sprint/.test(mix[0][0])) {
+      if (L.w > 0.05) L.prec = { mix: L.mix, phase: L.phase, vit: L.vit || 0, f: 1 };
+      L.phase = 0;                                                                 // nouveau type de pas : cycle repris au début
+    }
+    if (L.prec) { L.prec.phase += dt * L.prec.vit; L.prec.f -= dt / 0.2; if (L.prec.f <= 0) L.prec = null; }
     L.mix = mix;
     L.capte = L.mix[0][0].startsWith('MX_');                                       // pas chassés / recul : les bras restent en attente
+    L.brasW = lerp(L.brasW ?? 1, L.capte ? 0 : 1, dt > 0 ? 1 - Math.exp(-dt * 8) : 1);
     let vc = 0, tot = 0; for (const [nom, w] of L.mix) { const c = MOD.clips && MOD.clips[nom]; if (c) { vc += w * c.vitesse; tot += w; } }
     vc = tot ? vc / tot : 1;
     const dur = (MOD.clips && MOD.clips[L.mix[0][0]] ? MOD.clips[L.mix[0][0]].dur : 1);
-    L.phase += dt * Math.max(v, 0.3) / Math.max(vc * dur, 0.3);                     // pas calés sur la vitesse : pas de glissade
+    L.vit = Math.max(v, 0.3) / Math.max(vc * dur, 0.3);
+    L.phase += dt * L.vit;                                                          // pas calés sur la vitesse : pas de glissade
     const cible = enJeu ? (L.capte ? cl((v - 0.7) / 0.8, 0, 1) : cl((v - seuilCourse(i)) / 1.2, 0, 1)) : cl((v - 0.5) / 0.5, 0, 1);   // en jeu : on court (sinon pas chassés)
     L.w = lerp(L.w, cible, dt > 0 ? 1 - Math.exp(-dt * 10) : 1);
   }
@@ -5569,6 +5591,22 @@ const G3D = (() => {
     });
     return OFF_POSES;
   }
+  // paquet 327 (Lucas : « officiels vivants ») — juges de ligne et ramasseurs bougent : attente captée (Mixamo) par-dessus
+  // leur pose, chacun à son rythme (décalé), recalculée 15 fois par seconde au plus. Juge assis : haut du corps, la tête
+  // garde sa ligne ; ramasseur debout : jambes, dos et tête, mains dans le dos ; accroupi : dos et tête, à peine.
+  let OFF_T = -1;
+  function officielsAnimes(t) {
+    const L = officielsPoses();
+    if (!MOD.clips || !MOD.clips.MX_Idle || !MOD.clips.MX_Assis || Math.abs(t - OFF_T) < 1 / 15) return L;
+    OFF_T = t;
+    OFFICIELS.forEach((o, k) => {
+      const ov = o.juge ? { nom: 'MX_Assis', u: t / MOD.clips.MX_Assis.dur + k * 0.31, w: 0.7, boucle: true, bras: true, jambes: false, tete: false }
+        : { nom: 'MX_Idle', u: t / MOD.clips.MX_Idle.dur + k * 0.23, w: o.acc ? 0.35 : 0.7, boucle: true, bras: false, jambes: !o.acc, tete: true };
+      const pose = o.juge ? poseJuge() : poseRamasseur(o.acc);
+      L[k].skin.set(osModele(o, pose, { w: 0, mix: [], ov }).skin);
+    });
+    return L;
+  }
 
   // ── caméra et rendu ───────────────────────────────────────────────────────────────────────────────────────
   const VUES = { tv: { yaw: 0, pitch: 0.33, dist: 23.5, fov: 0.62, suivre: true, real: true }, cote: { yaw: 0.95, pitch: 0.36, dist: 33, fov: 0.62, suivre: false, real: false }, haut: { yaw: Math.PI / 2, pitch: 1.3, dist: 38, fov: 0.62, suivre: false, real: false },
@@ -5707,7 +5745,7 @@ const G3D = (() => {
     const dyn = [];
     for (const i of [0, 1]) {
       const pose = poseLisse(i, t, dt);
-      majCapte(i, t);
+      majCapte(i, t, dt);
       if (MOD.etat === 'pret' && MATCH) {
         const A = ALLURE[i] || (ALLURE[i] = allure(MATCH, i)), { skin, raquette } = osModele(J[i], pose, LOCO[i], A.sexe), C = MOD.corps[A.sexe];
         noterSillage(i, t, raquette ? M4.pt(raquette, [0, 0.46, 0]) : null);
@@ -5724,7 +5762,7 @@ const G3D = (() => {
       const A = ALLURE_ARBITRE, { skin } = osModele(ARBITRE, pa, ovA), C = MOD.corps.H;
       dyn.push([C.corps, M4.id(), false, skin, { tex: MOD.tex[A.peau], tenue: A.tenue.map((c, k) => k === 7 ? [-1, -1, -1] : c) }], [C.yeux, M4.id(), false, skin, { tex: MOD.tex.yeux }]);
       for (const c of [A.coiffe, A.sourcils]) { const H = MOD.cheveux[c]; if (H) dyn.push([H, M4.id(), false, skin, { tex: MOD.tex[H.tex], col: A.cheveux }]); }
-      officielsPoses().forEach((o, k) => { if (masque(OFFICIELS[k].x, OFFICIELS[k].z)) return;
+      officielsAnimes(tReel).forEach((o, k) => { if (masque(OFFICIELS[k].x, OFFICIELS[k].z)) return;
         const Co = MOD.corps[o.sexe] || C;
         dyn.push([Co.corps, M4.id(), false, o.skin, { tex: MOD.tex[o.peau], tenue: o.tenue }], [Co.yeux, M4.id(), false, o.skin, { tex: MOD.tex.yeux }]);
         for (const c of [o.coiffe, o.sourcils]) { const H = MOD.cheveux[c]; if (H) dyn.push([H, M4.id(), false, o.skin, { tex: MOD.tex[H.tex], col: o.cheveux }]); }
@@ -6003,7 +6041,7 @@ const G3D = (() => {
     nuit: { fond: [0.06, 0.05, 0.16], ciel: [0.62, 0.64, 0.82], sol: [0.28, 0.26, 0.36], brume: [0.08, 0.07, 0.2], lum: [0.95, 0.912, 0.836] },
     jour: { fond: [0.53, 0.71, 0.92], ciel: [0.78, 0.86, 1.0], sol: [0.46, 0.42, 0.36], brume: [0.64, 0.76, 0.93], lum: [1.32, 1.24, 1.08] },
   };
-  const VERSION_3D = 'v326';
+  const VERSION_3D = 'v327';
   // ── LE FILM (paquet 276) : la vidéo du jour en 3D. La page choisit les moments forts du match simulé et les fait
   // jouer ici un par un ; public en panneaux et image un peu réduite (la vidéo est rendue sans carte graphique).
   const FILM = { actif: false, echelle: 1, son: null, cam: null, t: 0, focale: 0 };
