@@ -1,9 +1,14 @@
 {
- "paquet": 318,
+ "paquet": 319,
  "decision": "Lucas, 21/11/2026 (« Oui on met en place ») : appliquer en Challenger la pente d'étalonnage de la case de chaque match (note de fiabilité v3), retenue par etude_pente_cases.py (paquet 317), variante « tous les matchs ». Les matchs Challenger « correct », déjà corrigés par correction_niveaux.json, ne sont pas corrigés deux fois.",
  "regle_retrait": "simulateur/pente_cases.py, chaque lundi, circuit par circuit : avec au moins 200 matchs corrigés jugés (sans abandon ni forfait), si la log loss AVEC la pente dépasse celle SANS d'au moins 0,001, « retire » passe à true.",
  "circuits": {
-  "CH": {"active_le": "2026-11-21", "retire": false,
-         "origine": "2023 → juin 2026 : 32 316 matchs, pente moyenne appliquée 0,838, gain de log loss 0,0026 (6,0 erreurs types), Brier 0,2223 → 0,2216"}
+  "CH": {
+   "active_le": "2026-11-21",
+   "retire": true,
+   "origine": "2023 → juin 2026 : 32 316 matchs, pente moyenne appliquée 0,838, gain de log loss 0,0026 (6,0 erreurs types), Brier 0,2223 → 0,2216",
+   "retire_le": "2026-11-21",
+   "raison_du_retrait": "vérification sur le rejeu Challenger COMME EN PRODUCTION (résultats ITF hommes dans l'Elo, 01/01/2025 → 31/05/2026, 15 745 matchs) : la correction fait PIRE (log loss +0,0031, 6,8 erreurs types ; Brier 0,2116 → 0,2125). Dans l'archive, l'Elo des Challengers manque des résultats ITF hommes et paraît trop confiant ; en production il ne l'est pas (pentes 1,01 à 1,10 selon l'expérience)."
+  }
  }
 }
