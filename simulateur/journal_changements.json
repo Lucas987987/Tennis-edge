@@ -1606,6 +1606,13 @@
    "paquet": 327,
    "quoi": "3D : OFFICIELS VIVANTS, TRANSITIONS, IMAGE PLUS NETTE (paquet 327, demande de Lucas). 1) Les juges de ligne assis et les ramasseurs bougent (attente captée, chacun à son rythme) au lieu d'être figés. 2) Transitions mesurées image par image sur 45 s de vidéo : le sens de course ne bascule plus en diagonale (0,12 s de confirmation), l'ancien pas s'efface en 0,2 s quand le joueur change de déplacement, les bras rejoignent la position d'attente en douceur, l'attente captée monte et s'efface au lieu d'être coupée net, et le service démarre en 0,3 s (le bras gauche sautait de 150° en une image). Résultat : sauts des jambes au-delà de 40° par image 21 → 5, du dos au-delà de 25° 16 → 6. 3) Vidéos du jour et résumés calculés à 0,85 au lieu de 0,67 (environ 23 % de temps de calcul en plus) ; « 1 » (pleine définition) au choix au lancement manuel. Moteur v327.",
    "garde_fou": "Affichage seulement : le % ne change pas. Surveiller la durée du run vidéo (délai 100 min) ; en cas de dépassement, relancer avec 0.67. Retrait : reprendre algo/index.html, scripts/video_simulation.py et les deux workflows vidéo du paquet 326."
+  },
+  {
+   "date": "2026-11-21",
+   "statut": "en_service",
+   "paquet": 328,
+   "quoi": "SITE PLUS PRO ET PLUS RAPIDE (paquet 328, demande de Lucas). 1) Mentions légales, confidentialité et conditions d'utilisation, en bas de page (français et anglais) : éditeur, hébergeurs, aucun conseil de pari, jeu responsable, droits RGPD. Les coordonnées de l'éditeur se remplissent dans algo/editeur.json ; tant qu'il est vide, le site est présenté comme édité par un particulier. 2) Vitesse : la page charge d'abord l'essentiel (environ 400 Ko compressés au lieu de 750), puis le bilan détaillé et ce journal juste après. 3) Polices servies par le site lui-même : plus aucune requête vers Google pendant la visite. 4) Image d'aperçu quand un lien du site est partagé.",
+   "garde_fou": "Rien ne change dans les calculs ni dans les pourcentages. Si les fichiers allégés manquent, la page relit le fichier complet comme avant ; les images et vidéos lisent toujours le fichier complet."
   }
  ]
 }
