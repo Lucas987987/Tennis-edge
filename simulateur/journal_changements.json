@@ -1564,6 +1564,13 @@
    "paquet": 321,
    "quoi": "LISTE DE SECOURS DES MATCHS À VENIR (paquet 321). Le 21/11/2026, plus aucun match sur le site : la liste des matchs à venir ne venait que d'un seul fournisseur, et son flux s'est arrêté. L'algo n'a besoin que de la liste (qui joue, où, quand) : scripts/matchs_tennisapi.py la tire désormais aussi de TennisApi, déjà utilisé pour les feuilles de match (ATP, WTA, Challenger ; ni ITF, ni WTA 125, ni équipes, comme avant), à chaque passage des pronostics, environ 16 requêtes. matchs_a_venir y prend les matchs absents de la liste principale (même paire de joueurs à moins de 18 h = même match). Noms de tournoi au format habituel (« ATP Challenger Metz », « WTA Chennai ») : 60 tournois sur 62 des feuilles récentes ont leur surface reconnue ; pour les autres, le sol annoncé par TennisApi sert de secours.",
    "garde_fou": "Aucune donnée de pari dans cette liste. Rien ne change dans le calcul des % : mêmes joueurs, même Elo, même surface. Jamais bloquant : sans clé, quota bas ou erreur, le fichier n'est pas écrit et tout se passe comme avant. Le fichier n'est pas publié (.gitignore). Retrait : supprimer l'étape « Matchs à venir — liste de secours TennisApi » de pronostics_quotidien.yml et scripts/matchs_tennisapi.py ; matchs_a_venir ignore alors l'absence du fichier."
+  },
+  {
+   "date": "2026-11-21",
+   "statut": "en_service",
+   "paquet": 322,
+   "quoi": "CHALLENGER SUR TERRE BATTUE : % MOINS PRUDENT (paquet 322, décision de Lucas). Première piste du chercheur automatique mise en place. En Challenger sur terre, l'algo était trop prudent : le favori annoncé à 66,7 % gagnait 70,2 % du temps. Correction : pente 1,065 sur le % (logit × 1,065), appliquée en dernier comme la correction par niveau. Jugée comme en production sur 3 037 matchs (octobre 2025 → mai 2026) : log loss −0,0016, 4,1 erreurs types, même sens sur les deux périodes ; vérifiée sur 234 pronostics en direct que le chercheur n'avait jamais vus (27/10 → 19/11/2026) : même sens, log loss −0,0012. Sur dur elle aurait dégradé : elle reste limitée à la terre. Un match déjà corrigé par son niveau de fiabilité n'est pas corrigé deux fois. Sur le site : « Challenger sur terre battue (% moins prudent) ». Le chercheur part désormais de cette correction.",
+   "garde_fou": "Retrait automatique chaque lundi (simulateur/corrections_chercheur.py, règle écrite avant tout résultat) : sur au moins 200 matchs corrigés jugés, si la log loss avec la correction dépasse celle sans d'au moins 0,001, « retire » passe à true dans simulateur/corrections_chercheur.json. Retrait à la main : mettre « retire »: true. La piste du 1er tour de qualifications n'est pas mise en place (impossible à vérifier sur nos pronostics en direct)."
   }
  ]
 }

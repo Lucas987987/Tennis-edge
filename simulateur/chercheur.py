@@ -10,7 +10,8 @@ règle de retrait.
 REJEU « COMME EN PRODUCTION » : archive Sackmann + résultats ITF hommes (etude_depart_itf.matchs), Elo de production
 (départs en place), mêmes clés de joueurs que la production. BASE = ce que l'algo fait déjà et qu'on sait rejouer :
 Elo + changement de surface, retour d'absence, âge (β appris sur 2018–2022) ; en Challenger, en plus, les deux décalages
-d'outsider (paquet 274) et la zone d'hésitation (paquets 314–315). Le reste de la production (simulation, arbres) n'est
+d'outsider (paquet 274) et la zone d'hésitation (paquets 314–315) ; et les corrections du chercheur déjà en place
+(simulateur/corrections_chercheur.json, paquet 322). Le reste de la production (simulation, arbres) n'est
 pas rejoué : une piste retenue est une CANDIDATE, à confirmer avant toute mise en place.
 
 PÉRIODES (le piège des paquets 229, 230 et 318 : l'archive n'a les résultats ITF hommes que depuis juin 2024) :
@@ -54,6 +55,7 @@ import etude_outsiders_gagnants as EOG  # noqa: E402
 import etude_outsiders_vague2 as EV2  # noqa: E402
 import etude_hesitation as EH  # noqa: E402
 import etude_fiabilite_v3 as V3  # noqa: E402
+import corrections_chercheur as CC  # noqa: E402
 
 MIN_JUGES, MARGE, MIN_ERREURS_TYPES, MIN_CASE = 1000, 0.001, 3.3, 300
 PERIODES = {'ATP': ((dt.date(2018, 1, 1), dt.date(2023, 1, 1)), (dt.date(2023, 1, 1), dt.date(2026, 7, 1))),
@@ -137,6 +139,11 @@ def poser_base(rows, racine):
         zf, f, a, y = x
         dlt = sum(b * EH.indice(n, f, a) for n, b in HESITATION.items())
         r['zb'] += dlt if y else -dlt
+    corr = CC.actives(racine)                        # paquet 322 : les corrections du chercheur déjà en place
+    for r in rows:
+        a, _ = CC.pente_du_match({'circuit': r['c'], 'surface': r['surface']}, corr)
+        if a:
+            r['zb'] *= a
     return betas
 
 
@@ -277,7 +284,8 @@ def main(argv):
     doc = {'genere_le': dt.datetime.now(dt.timezone.utc).isoformat(timespec='seconds'), 'paquet': 320, 'regle': regle(),
            'periodes': {c: {'apprentissage': [str(a0), str(a1)], 'jugement': [str(j0), str(j1)]} for c, ((a0, a1), (j0, j1)) in PERIODES.items()},
            'base': {'signaux': 'surface, absence, âge', 'betas': betas,
-                    'challenger_en_plus': "décalages d'outsider (paquet 274), zone d'hésitation (paquets 314–315)"},
+                    'challenger_en_plus': "décalages d'outsider (paquet 274), zone d'hésitation (paquets 314–315)",
+                    'corrections_en_place': [f"{v['circuit']} {v['surface']} pente {v['pente']}" for v in CC.actives(racine)]},
            'pistes_testees': len(P), 'candidates': sum(p['candidate'] for p in P), 'pistes': P,
            'descriptif': 'le % de victoire ne change pas'}
     with open(SORTIE, 'w', encoding='utf-8') as f:
