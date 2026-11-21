@@ -1613,6 +1613,13 @@
    "paquet": 328,
    "quoi": "SITE PLUS PRO ET PLUS RAPIDE (paquet 328, demande de Lucas). 1) Mentions légales, confidentialité et conditions d'utilisation, en bas de page (français et anglais) : éditeur, hébergeurs, aucun conseil de pari, jeu responsable, droits RGPD. Les coordonnées de l'éditeur se remplissent dans algo/editeur.json ; tant qu'il est vide, le site est présenté comme édité par un particulier. 2) Vitesse : la page charge d'abord l'essentiel (environ 400 Ko compressés au lieu de 750), puis le bilan détaillé et ce journal juste après. 3) Polices servies par le site lui-même : plus aucune requête vers Google pendant la visite. 4) Image d'aperçu quand un lien du site est partagé.",
    "garde_fou": "Rien ne change dans les calculs ni dans les pourcentages. Si les fichiers allégés manquent, la page relit le fichier complet comme avant ; les images et vidéos lisent toujours le fichier complet."
+  },
+  {
+   "date": "2026-11-22",
+   "statut": "en_service",
+   "paquet": 329,
+   "quoi": "PAGE QUI EXPLIQUE LA MÉTHODE (paquet 329, demande de Lucas). Une page explique la méthode en six étapes : les données, l'Elo par surface et le modèle service-retour, les 20 000 simulations point par point, le mélange appris, la règle qu'un changement doit passer avant d'être gardé (appris sur 2018–2022, jugé sur 2023 à aujourd'hui, au moins 1 000 matchs, même sens sur les deux périodes), et le bilan public. Elle montre le bilan en direct : nombre de pronostics jugés, part de favoris vainqueurs, score de Brier, log loss, et la comparaison entre % annoncé et % réellement gagné. Lien sous le texte d'accueil et en bas de page. Les mentions légales prévoient aussi le code APE et la mention de TVA pour le jour où le site devient professionnel.",
+   "garde_fou": "La page ne calcule rien : elle relit le bilan déjà publié. Rien ne change dans les % ni dans le choix du match du jour."
   }
  ]
 }
