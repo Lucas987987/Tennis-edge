@@ -1,0 +1,2307 @@
+{
+ "genere_le": "2026-11-21T00:06:40+00:00",
+ "paquet": 320,
+ "regle": "piste par piste et CIRCUIT PAR CIRCUIT : le paramètre est appris sur la période d'apprentissage, puis jugé une seule fois sur la période de jugement. CANDIDATE si : au moins 1 000 matchs jugés concernés ; gain de log loss ≥ 0,001 ; gain ≥ 3,3 erreurs types (seuil plus strict que pour une étude seule, parce que le chercheur teste beaucoup de pistes à la fois) ; et le paramètre réappris sur la période de jugement va dans le MÊME SENS (pente du même côté de 1, décalage du même signe).",
+ "periodes": {
+  "ATP": {
+   "apprentissage": [
+    "2018-01-01",
+    "2023-01-01"
+   ],
+   "jugement": [
+    "2023-01-01",
+    "2026-07-01"
+   ]
+  },
+  "WTA": {
+   "apprentissage": [
+    "2018-01-01",
+    "2023-01-01"
+   ],
+   "jugement": [
+    "2023-01-01",
+    "2026-07-01"
+   ]
+  },
+  "CH": {
+   "apprentissage": [
+    "2025-01-01",
+    "2025-10-01"
+   ],
+   "jugement": [
+    "2025-10-01",
+    "2026-06-01"
+   ]
+  }
+ },
+ "base": {
+  "signaux": "surface, absence, âge",
+  "betas": {
+   "ATP": [
+    -0.2087,
+    -0.492,
+    -1.1333,
+    -0.0469,
+    0.0688
+   ],
+   "WTA": [
+    -0.1702,
+    -0.2908,
+    -0.8726,
+    -0.0386,
+    0.0311
+   ],
+   "CH": [
+    -0.189,
+    -0.2456,
+    -0.5714,
+    -0.0622,
+    0.0064
+   ]
+  },
+  "challenger_en_plus": "décalages d'outsider (paquet 274), zone d'hésitation (paquets 314–315)"
+ },
+ "pistes_testees": 89,
+ "candidates": 2,
+ "pistes": [
+  {
+   "famille": "tous les matchs",
+   "circuit": "CH",
+   "case": "tous",
+   "forme": "pente",
+   "parametre": 1.0109,
+   "parametre_jugement": 1.1551,
+   "jugement": {
+    "matchs": 7442,
+    "gain": 0.0002,
+    "erreur_type": 4e-05,
+    "erreurs_types": 4.64,
+    "log_loss_base": 0.58659,
+    "log_loss": 0.58639,
+    "brier_base": 0.20171,
+    "brier": 0.20165,
+    "favori_annonce_pct": 66.2,
+    "favori_reel_pct": 68.7
+   },
+   "candidate": false,
+   "raisons": [
+    "gain sous 0.001"
+   ]
+  },
+  {
+   "famille": "format",
+   "circuit": "CH",
+   "case": "3",
+   "forme": "pente",
+   "parametre": 1.0122,
+   "parametre_jugement": 1.1551,
+   "jugement": {
+    "matchs": 7442,
+    "gain": 0.00022,
+    "erreur_type": 5e-05,
+    "erreurs_types": 4.62,
+    "log_loss_base": 0.58659,
+    "log_loss": 0.58637,
+    "brier_base": 0.20171,
+    "brier": 0.20164,
+    "favori_annonce_pct": 66.2,
+    "favori_reel_pct": 68.7
+   },
+   "candidate": false,
+   "raisons": [
+    "gain sous 0.001"
+   ]
+  },
+  {
+   "famille": "niveau du tournoi",
+   "circuit": "CH",
+   "case": "C",
+   "forme": "pente",
+   "parametre": 1.0042,
+   "parametre_jugement": 1.1432,
+   "jugement": {
+    "matchs": 6781,
+    "gain": 7e-05,
+    "erreur_type": 2e-05,
+    "erreurs_types": 4.21,
+    "log_loss_base": 0.58602,
+    "log_loss": 0.58595,
+    "brier_base": 0.20137,
+    "brier": 0.20134,
+    "favori_annonce_pct": 66.5,
+    "favori_reel_pct": 68.8
+   },
+   "candidate": false,
+   "raisons": [
+    "gain sous 0.001"
+   ]
+  },
+  {
+   "famille": "surface",
+   "circuit": "CH",
+   "case": "Clay",
+   "forme": "pente",
+   "parametre": 1.065,
+   "parametre_jugement": 1.24,
+   "jugement": {
+    "matchs": 3037,
+    "gain": 0.00158,
+    "erreur_type": 0.00038,
+    "erreurs_types": 4.14,
+    "log_loss_base": 0.57156,
+    "log_loss": 0.56998,
+    "brier_base": 0.19553,
+    "brier": 0.19503,
+    "favori_annonce_pct": 66.7,
+    "favori_reel_pct": 70.2
+   },
+   "candidate": true,
+   "raisons": []
+  },
+  {
+   "famille": "tour",
+   "circuit": "CH",
+   "case": "qualifications, 1er tour",
+   "forme": "pente",
+   "parametre": 1.1182,
+   "parametre_jugement": 1.2427,
+   "jugement": {
+    "matchs": 1959,
+    "gain": 0.00336,
+    "erreur_type": 0.00097,
+    "erreurs_types": 3.47,
+    "log_loss_base": 0.51411,
+    "log_loss": 0.51075,
+    "brier_base": 0.17193,
+    "brier": 0.17109,
+    "favori_annonce_pct": 71.1,
+    "favori_reel_pct": 74.4
+   },
+   "candidate": true,
+   "raisons": []
+  },
+  {
+   "famille": "expérience du moins connu",
+   "circuit": "CH",
+   "case": "100 à 299",
+   "forme": "pente",
+   "parametre": 1.0332,
+   "parametre_jugement": 1.1977,
+   "jugement": {
+    "matchs": 4086,
+    "gain": 0.00053,
+    "erreur_type": 0.00015,
+    "erreurs_types": 3.42,
+    "log_loss_base": 0.62004,
+    "log_loss": 0.61951,
+    "brier_base": 0.21538,
+    "brier": 0.21515,
+    "favori_annonce_pct": 63.1,
+    "favori_reel_pct": 66.3
+   },
+   "candidate": false,
+   "raisons": [
+    "gain sous 0.001"
+   ]
+  },
+  {
+   "famille": "niveau du tournoi",
+   "circuit": "CH",
+   "case": "G",
+   "forme": "pente",
+   "parametre": 1.1095,
+   "parametre_jugement": 2.0958,
+   "jugement": {
+    "matchs": 109,
+    "gain": 0.00734,
+    "erreur_type": 0.00224,
+    "erreurs_types": 3.28,
+    "log_loss_base": 0.56286,
+    "log_loss": 0.55552,
+    "brier_base": 0.19006,
+    "brier": 0.18735,
+    "favori_annonce_pct": 63.1,
+    "favori_reel_pct": 73.4
+   },
+   "candidate": false,
+   "raisons": [
+    "moins de 1000 matchs jugés",
+    "gain sous 3.3 erreurs types"
+   ]
+  },
+  {
+   "famille": "saison",
+   "circuit": "CH",
+   "case": "janvier-février",
+   "forme": "pente",
+   "parametre": 1.0132,
+   "parametre_jugement": 1.1791,
+   "jugement": {
+    "matchs": 1982,
+    "gain": 0.00026,
+    "erreur_type": 0.0001,
+    "erreurs_types": 2.64,
+    "log_loss_base": 0.59086,
+    "log_loss": 0.59061,
+    "brier_base": 0.20341,
+    "brier": 0.20332,
+    "favori_annonce_pct": 65.6,
+    "favori_reel_pct": 68.3
+   },
+   "candidate": false,
+   "raisons": [
+    "gain sous 0.001",
+    "gain sous 3.3 erreurs types"
+   ]
+  },
+  {
+   "famille": "expérience",
+   "circuit": "CH",
+   "case": "matchs concernés",
+   "forme": "décalage",
+   "parametre": 0.0452,
+   "parametre_jugement": 0.0622,
+   "jugement": {
+    "matchs": 7404,
+    "gain": 0.00091,
+    "erreur_type": 0.00037,
+    "erreurs_types": 2.45,
+    "log_loss_base": 0.58609,
+    "log_loss": 0.58518,
+    "brier_base": 0.2015,
+    "brier": 0.20113,
+    "favori_annonce_pct": 66.2,
+    "favori_reel_pct": 68.8
+   },
+   "candidate": false,
+   "raisons": [
+    "gain sous 0.001",
+    "gain sous 3.3 erreurs types"
+   ]
+  },
+  {
+   "famille": "surface",
+   "circuit": "WTA",
+   "case": "Clay",
+   "forme": "pente",
+   "parametre": 1.15,
+   "parametre_jugement": 1.1939,
+   "jugement": {
+    "matchs": 2507,
+    "gain": 0.00211,
+    "erreur_type": 0.00096,
+    "erreurs_types": 2.19,
+    "log_loss_base": 0.58159,
+    "log_loss": 0.57947,
+    "brier_base": 0.1999,
+    "brier": 0.19944,
+    "favori_annonce_pct": 66.6,
+    "favori_reel_pct": 68.0
+   },
+   "candidate": false,
+   "raisons": [
+    "gain sous 3.3 erreurs types"
+   ]
+  },
+  {
+   "famille": "tour",
+   "circuit": "WTA",
+   "case": "64es",
+   "forme": "pente",
+   "parametre": 1.0477,
+   "parametre_jugement": 1.1569,
+   "jugement": {
+    "matchs": 1556,
+    "gain": 0.00089,
+    "erreur_type": 0.00042,
+    "erreurs_types": 2.11,
+    "log_loss_base": 0.56971,
+    "log_loss": 0.56883,
+    "brier_base": 0.19475,
+    "brier": 0.19456,
+    "favori_annonce_pct": 68.2,
+    "favori_reel_pct": 69.0
+   },
+   "candidate": false,
+   "raisons": [
+    "gain sous 0.001",
+    "gain sous 3.3 erreurs types"
+   ]
+  },
+  {
+   "famille": "expérience du moins connu",
+   "circuit": "CH",
+   "case": "30 à 99",
+   "forme": "pente",
+   "parametre": 1.0539,
+   "parametre_jugement": 1.137,
+   "jugement": {
+    "matchs": 2126,
+    "gain": 0.00091,
+    "erreur_type": 0.00043,
+    "erreurs_types": 2.11,
+    "log_loss_base": 0.55499,
+    "log_loss": 0.55407,
+    "brier_base": 0.18842,
+    "brier": 0.1882,
+    "favori_annonce_pct": 69.5,
+    "favori_reel_pct": 71.4
+   },
+   "candidate": false,
+   "raisons": [
+    "gain sous 0.001",
+    "gain sous 3.3 erreurs types"
+   ]
+  },
+  {
+   "famille": "tous les matchs",
+   "circuit": "WTA",
+   "case": "tous",
+   "forme": "pente",
+   "parametre": 1.0952,
+   "parametre_jugement": 1.108,
+   "jugement": {
+    "matchs": 8837,
+    "gain": 0.00071,
+    "erreur_type": 0.00034,
+    "erreurs_types": 2.08,
+    "log_loss_base": 0.59275,
+    "log_loss": 0.59204,
+    "brier_base": 0.20441,
+    "brier": 0.20425,
+    "favori_annonce_pct": 66.5,
+    "favori_reel_pct": 67.5
+   },
+   "candidate": false,
+   "raisons": [
+    "gain sous 0.001",
+    "gain sous 3.3 erreurs types"
+   ]
+  },
+  {
+   "famille": "niveau du tournoi",
+   "circuit": "WTA",
+   "case": "I",
+   "forme": "pente",
+   "parametre": 1.0679,
+   "parametre_jugement": 1.1542,
+   "jugement": {
+    "matchs": 2609,
+    "gain": 0.00084,
+    "erreur_type": 0.0004,
+    "erreurs_types": 2.08,
+    "log_loss_base": 0.60351,
+    "log_loss": 0.60267,
+    "brier_base": 0.20943,
+    "brier": 0.20921,
+    "favori_annonce_pct": 64.8,
+    "favori_reel_pct": 65.7
+   },
+   "candidate": false,
+   "raisons": [
+    "gain sous 0.001",
+    "gain sous 3.3 erreurs types"
+   ]
+  },
+  {
+   "famille": "format",
+   "circuit": "WTA",
+   "case": "3",
+   "forme": "pente",
+   "parametre": 1.0952,
+   "parametre_jugement": 1.108,
+   "jugement": {
+    "matchs": 8837,
+    "gain": 0.00071,
+    "erreur_type": 0.00034,
+    "erreurs_types": 2.08,
+    "log_loss_base": 0.59275,
+    "log_loss": 0.59204,
+    "brier_base": 0.20441,
+    "brier": 0.20425,
+    "favori_annonce_pct": 66.5,
+    "favori_reel_pct": 67.5
+   },
+   "candidate": false,
+   "raisons": [
+    "gain sous 0.001",
+    "gain sous 3.3 erreurs types"
+   ]
+  },
+  {
+   "famille": "niveau du tournoi",
+   "circuit": "ATP",
+   "case": "M",
+   "forme": "pente",
+   "parametre": 0.848,
+   "parametre_jugement": 0.8249,
+   "jugement": {
+    "matchs": 2500,
+    "gain": 0.00252,
+    "erreur_type": 0.00126,
+    "erreurs_types": 2.0,
+    "log_loss_base": 0.6202,
+    "log_loss": 0.61769,
+    "brier_base": 0.21598,
+    "brier": 0.21505,
+    "favori_annonce_pct": 68.0,
+    "favori_reel_pct": 65.3
+   },
+   "candidate": false,
+   "raisons": [
+    "gain sous 3.3 erreurs types"
+   ]
+  },
+  {
+   "famille": "niveau du tournoi",
+   "circuit": "ATP",
+   "case": "G",
+   "forme": "pente",
+   "parametre": 1.2378,
+   "parametre_jugement": 1.235,
+   "jugement": {
+    "matchs": 1700,
+    "gain": 0.00412,
+    "erreur_type": 0.00212,
+    "erreurs_types": 1.95,
+    "log_loss_base": 0.52747,
+    "log_loss": 0.52335,
+    "brier_base": 0.17669,
+    "brier": 0.17564,
+    "favori_annonce_pct": 70.4,
+    "favori_reel_pct": 72.2
+   },
+   "candidate": false,
+   "raisons": [
+    "gain sous 3.3 erreurs types"
+   ]
+  },
+  {
+   "famille": "écart de classement",
+   "circuit": "CH",
+   "case": "matchs concernés",
+   "forme": "décalage",
+   "parametre": 0.0391,
+   "parametre_jugement": 0.0725,
+   "jugement": {
+    "matchs": 7123,
+    "gain": 0.00037,
+    "erreur_type": 0.00019,
+    "erreurs_types": 1.88,
+    "log_loss_base": 0.59489,
+    "log_loss": 0.59453,
+    "brier_base": 0.20514,
+    "brier": 0.205,
+    "favori_annonce_pct": 65.7,
+    "favori_reel_pct": 68.0
+   },
+   "candidate": false,
+   "raisons": [
+    "gain sous 0.001",
+    "gain sous 3.3 erreurs types"
+   ]
+  },
+  {
+   "famille": "format",
+   "circuit": "ATP",
+   "case": "5",
+   "forme": "pente",
+   "parametre": 1.2349,
+   "parametre_jugement": 1.2258,
+   "jugement": {
+    "matchs": 1743,
+    "gain": 0.00378,
+    "erreur_type": 0.00206,
+    "erreurs_types": 1.84,
+    "log_loss_base": 0.53111,
+    "log_loss": 0.52733,
+    "brier_base": 0.1783,
+    "brier": 0.17739,
+    "favori_annonce_pct": 70.3,
+    "favori_reel_pct": 71.8
+   },
+   "candidate": false,
+   "raisons": [
+    "gain sous 3.3 erreurs types"
+   ]
+  },
+  {
+   "famille": "saison",
+   "circuit": "WTA",
+   "case": "juin-août",
+   "forme": "pente",
+   "parametre": 1.0338,
+   "parametre_jugement": 1.1156,
+   "jugement": {
+    "matchs": 2435,
+    "gain": 0.00042,
+    "erreur_type": 0.00023,
+    "erreurs_types": 1.78,
+    "log_loss_base": 0.59265,
+    "log_loss": 0.59224,
+    "brier_base": 0.20412,
+    "brier": 0.204,
+    "favori_annonce_pct": 66.5,
+    "favori_reel_pct": 67.6
+   },
+   "candidate": false,
+   "raisons": [
+    "gain sous 0.001",
+    "gain sous 3.3 erreurs types"
+   ]
+  },
+  {
+   "famille": "à domicile",
+   "circuit": "CH",
+   "case": "matchs concernés",
+   "forme": "décalage",
+   "parametre": 0.0712,
+   "parametre_jugement": 0.1131,
+   "jugement": {
+    "matchs": 2345,
+    "gain": 0.00112,
+    "erreur_type": 0.00065,
+    "erreurs_types": 1.72,
+    "log_loss_base": 0.569,
+    "log_loss": 0.56788,
+    "brier_base": 0.19492,
+    "brier": 0.19431,
+    "favori_annonce_pct": 68.6,
+    "favori_reel_pct": 69.5
+   },
+   "candidate": false,
+   "raisons": [
+    "gain sous 3.3 erreurs types"
+   ]
+  },
+  {
+   "famille": "qualifié",
+   "circuit": "ATP",
+   "case": "matchs concernés",
+   "forme": "décalage",
+   "parametre": 0.0987,
+   "parametre_jugement": 0.1242,
+   "jugement": {
+    "matchs": 2230,
+    "gain": 0.00153,
+    "erreur_type": 0.00095,
+    "erreurs_types": 1.61,
+    "log_loss_base": 0.59978,
+    "log_loss": 0.59825,
+    "brier_base": 0.20697,
+    "brier": 0.20635,
+    "favori_annonce_pct": 68.2,
+    "favori_reel_pct": 67.3
+   },
+   "candidate": false,
+   "raisons": [
+    "gain sous 3.3 erreurs types"
+   ]
+  },
+  {
+   "famille": "niveau du tournoi",
+   "circuit": "WTA",
+   "case": "G",
+   "forme": "pente",
+   "parametre": 1.2319,
+   "parametre_jugement": 1.2114,
+   "jugement": {
+    "matchs": 1742,
+    "gain": 0.00317,
+    "erreur_type": 0.00198,
+    "erreurs_types": 1.61,
+    "log_loss_base": 0.55104,
+    "log_loss": 0.54786,
+    "brier_base": 0.18632,
+    "brier": 0.18561,
+    "favori_annonce_pct": 69.2,
+    "favori_reel_pct": 71.7
+   },
+   "candidate": false,
+   "raisons": [
+    "gain sous 3.3 erreurs types"
+   ]
+  },
+  {
+   "famille": "expérience",
+   "circuit": "WTA",
+   "case": "matchs concernés",
+   "forme": "décalage",
+   "parametre": 0.0301,
+   "parametre_jugement": 0.0372,
+   "jugement": {
+    "matchs": 8778,
+    "gain": 0.00036,
+    "erreur_type": 0.00023,
+    "erreurs_types": 1.55,
+    "log_loss_base": 0.59294,
+    "log_loss": 0.59258,
+    "brier_base": 0.2045,
+    "brier": 0.2044,
+    "favori_annonce_pct": 66.5,
+    "favori_reel_pct": 67.4
+   },
+   "candidate": false,
+   "raisons": [
+    "gain sous 0.001",
+    "gain sous 3.3 erreurs types"
+   ]
+  },
+  {
+   "famille": "saison",
+   "circuit": "ATP",
+   "case": "juin-août",
+   "forme": "pente",
+   "parametre": 0.989,
+   "parametre_jugement": 0.9221,
+   "jugement": {
+    "matchs": 2483,
+    "gain": 0.00012,
+    "erreur_type": 8e-05,
+    "erreurs_types": 1.4,
+    "log_loss_base": 0.60703,
+    "log_loss": 0.60691,
+    "brier_base": 0.21088,
+    "brier": 0.21084,
+    "favori_annonce_pct": 67.4,
+    "favori_reel_pct": 66.0
+   },
+   "candidate": false,
+   "raisons": [
+    "gain sous 0.001",
+    "gain sous 3.3 erreurs types"
+   ]
+  },
+  {
+   "famille": "saison",
+   "circuit": "ATP",
+   "case": "septembre-décembre",
+   "forme": "pente",
+   "parametre": 0.9315,
+   "parametre_jugement": 0.8793,
+   "jugement": {
+    "matchs": 1522,
+    "gain": 0.00094,
+    "erreur_type": 0.0007,
+    "erreurs_types": 1.34,
+    "log_loss_base": 0.61271,
+    "log_loss": 0.61177,
+    "brier_base": 0.21279,
+    "brier": 0.21244,
+    "favori_annonce_pct": 68.0,
+    "favori_reel_pct": 65.8
+   },
+   "candidate": false,
+   "raisons": [
+    "gain sous 0.001",
+    "gain sous 3.3 erreurs types"
+   ]
+  },
+  {
+   "famille": "écart de classement",
+   "circuit": "WTA",
+   "case": "matchs concernés",
+   "forme": "décalage",
+   "parametre": 0.0155,
+   "parametre_jugement": 0.024,
+   "jugement": {
+    "matchs": 8780,
+    "gain": 0.00017,
+    "erreur_type": 0.00013,
+    "erreurs_types": 1.27,
+    "log_loss_base": 0.59271,
+    "log_loss": 0.59254,
+    "brier_base": 0.20441,
+    "brier": 0.20439,
+    "favori_annonce_pct": 66.4,
+    "favori_reel_pct": 67.4
+   },
+   "candidate": false,
+   "raisons": [
+    "gain sous 0.001",
+    "gain sous 3.3 erreurs types"
+   ]
+  },
+  {
+   "famille": "expérience du moins connu",
+   "circuit": "CH",
+   "case": "moins de 30",
+   "forme": "pente",
+   "parametre": 1.0083,
+   "parametre_jugement": 1.0919,
+   "jugement": {
+    "matchs": 688,
+    "gain": 0.00018,
+    "erreur_type": 0.00014,
+    "erreurs_types": 1.24,
+    "log_loss_base": 0.44915,
+    "log_loss": 0.44897,
+    "brier_base": 0.14592,
+    "brier": 0.1459,
+    "favori_annonce_pct": 78.3,
+    "favori_reel_pct": 78.2
+   },
+   "candidate": false,
+   "raisons": [
+    "moins de 1000 matchs jugés",
+    "gain sous 0.001",
+    "gain sous 3.3 erreurs types"
+   ]
+  },
+  {
+   "famille": "expérience du moins connu",
+   "circuit": "WTA",
+   "case": "300 et plus",
+   "forme": "pente",
+   "parametre": 1.1014,
+   "parametre_jugement": 1.0956,
+   "jugement": {
+    "matchs": 5175,
+    "gain": 0.00056,
+    "erreur_type": 0.00048,
+    "erreurs_types": 1.18,
+    "log_loss_base": 0.59607,
+    "log_loss": 0.5955,
+    "brier_base": 0.20584,
+    "brier": 0.20575,
+    "favori_annonce_pct": 66.3,
+    "favori_reel_pct": 67.3
+   },
+   "candidate": false,
+   "raisons": [
+    "gain sous 0.001",
+    "gain sous 3.3 erreurs types"
+   ]
+  },
+  {
+   "famille": "surface",
+   "circuit": "WTA",
+   "case": "Hard",
+   "forme": "pente",
+   "parametre": 1.0855,
+   "parametre_jugement": 1.0844,
+   "jugement": {
+    "matchs": 5448,
+    "gain": 0.00045,
+    "erreur_type": 0.0004,
+    "erreurs_types": 1.13,
+    "log_loss_base": 0.59537,
+    "log_loss": 0.59492,
+    "brier_base": 0.20551,
+    "brier": 0.20542,
+    "favori_annonce_pct": 66.5,
+    "favori_reel_pct": 67.5
+   },
+   "candidate": false,
+   "raisons": [
+    "gain sous 0.001",
+    "gain sous 3.3 erreurs types"
+   ]
+  },
+  {
+   "famille": "gaucher contre droitier",
+   "circuit": "WTA",
+   "case": "matchs concernés",
+   "forme": "décalage",
+   "parametre": -0.0538,
+   "parametre_jugement": -0.089,
+   "jugement": {
+    "matchs": 1464,
+    "gain": 0.00072,
+    "erreur_type": 0.00065,
+    "erreurs_types": 1.12,
+    "log_loss_base": 0.61364,
+    "log_loss": 0.61291,
+    "brier_base": 0.21344,
+    "brier": 0.21311,
+    "favori_annonce_pct": 65.0,
+    "favori_reel_pct": 64.9
+   },
+   "candidate": false,
+   "raisons": [
+    "gain sous 0.001",
+    "gain sous 3.3 erreurs types"
+   ]
+  },
+  {
+   "famille": "saison",
+   "circuit": "WTA",
+   "case": "mars-mai",
+   "forme": "pente",
+   "parametre": 1.1499,
+   "parametre_jugement": 1.1312,
+   "jugement": {
+    "matchs": 2726,
+    "gain": 0.00106,
+    "erreur_type": 0.00098,
+    "erreurs_types": 1.09,
+    "log_loss_base": 0.58564,
+    "log_loss": 0.58458,
+    "brier_base": 0.2014,
+    "brier": 0.20121,
+    "favori_annonce_pct": 66.9,
+    "favori_reel_pct": 68.2
+   },
+   "candidate": false,
+   "raisons": [
+    "gain sous 3.3 erreurs types"
+   ]
+  },
+  {
+   "famille": "tour",
+   "circuit": "CH",
+   "case": "8es",
+   "forme": "pente",
+   "parametre": 1.0519,
+   "parametre_jugement": 1.1233,
+   "jugement": {
+    "matchs": 1142,
+    "gain": 0.00051,
+    "erreur_type": 0.00048,
+    "erreurs_types": 1.06,
+    "log_loss_base": 0.61596,
+    "log_loss": 0.61545,
+    "brier_base": 0.21397,
+    "brier": 0.21379,
+    "favori_annonce_pct": 64.2,
+    "favori_reel_pct": 66.2
+   },
+   "candidate": false,
+   "raisons": [
+    "gain sous 0.001",
+    "gain sous 3.3 erreurs types"
+   ]
+  },
+  {
+   "famille": "jours de repos",
+   "circuit": "WTA",
+   "case": "matchs concernés",
+   "forme": "décalage",
+   "parametre": -0.0291,
+   "parametre_jugement": -0.0349,
+   "jugement": {
+    "matchs": 3536,
+    "gain": 0.00041,
+    "erreur_type": 0.0004,
+    "erreurs_types": 1.02,
+    "log_loss_base": 0.5739,
+    "log_loss": 0.57349,
+    "brier_base": 0.19661,
+    "brier": 0.19633,
+    "favori_annonce_pct": 67.8,
+    "favori_reel_pct": 68.9
+   },
+   "candidate": false,
+   "raisons": [
+    "gain sous 0.001",
+    "gain sous 3.3 erreurs types"
+   ]
+  },
+  {
+   "famille": "tour",
+   "circuit": "WTA",
+   "case": "32es ou poule",
+   "forme": "pente",
+   "parametre": 1.0961,
+   "parametre_jugement": 1.0975,
+   "jugement": {
+    "matchs": 2970,
+    "gain": 0.00061,
+    "erreur_type": 0.00061,
+    "erreurs_types": 1.0,
+    "log_loss_base": 0.58954,
+    "log_loss": 0.58894,
+    "brier_base": 0.20315,
+    "brier": 0.20302,
+    "favori_annonce_pct": 66.8,
+    "favori_reel_pct": 67.8
+   },
+   "candidate": false,
+   "raisons": [
+    "gain sous 0.001",
+    "gain sous 3.3 erreurs types"
+   ]
+  },
+  {
+   "famille": "tour",
+   "circuit": "WTA",
+   "case": "demies",
+   "forme": "pente",
+   "parametre": 0.969,
+   "parametre_jugement": 0.8229,
+   "jugement": {
+    "matchs": 385,
+    "gain": 0.00056,
+    "erreur_type": 0.00056,
+    "erreurs_types": 1.0,
+    "log_loss_base": 0.64907,
+    "log_loss": 0.64851,
+    "brier_base": 0.22807,
+    "brier": 0.22791,
+    "favori_annonce_pct": 64.4,
+    "favori_reel_pct": 63.1
+   },
+   "candidate": false,
+   "raisons": [
+    "moins de 1000 matchs jugés",
+    "gain sous 0.001",
+    "gain sous 3.3 erreurs types"
+   ]
+  },
+  {
+   "famille": "tour",
+   "circuit": "WTA",
+   "case": "1er tour (128)",
+   "forme": "pente",
+   "parametre": 1.3034,
+   "parametre_jugement": 1.2214,
+   "jugement": {
+    "matchs": 1514,
+    "gain": 0.00242,
+    "erreur_type": 0.00246,
+    "erreurs_types": 0.98,
+    "log_loss_base": 0.58259,
+    "log_loss": 0.58017,
+    "brier_base": 0.20013,
+    "brier": 0.19963,
+    "favori_annonce_pct": 66.2,
+    "favori_reel_pct": 68.6
+   },
+   "candidate": false,
+   "raisons": [
+    "gain sous 3.3 erreurs types"
+   ]
+  },
+  {
+   "famille": "expérience du moins connu",
+   "circuit": "WTA",
+   "case": "100 à 299",
+   "forme": "pente",
+   "parametre": 1.1058,
+   "parametre_jugement": 1.0999,
+   "jugement": {
+    "matchs": 3401,
+    "gain": 0.00061,
+    "erreur_type": 0.00062,
+    "erreurs_types": 0.98,
+    "log_loss_base": 0.59666,
+    "log_loss": 0.59605,
+    "brier_base": 0.20591,
+    "brier": 0.20576,
+    "favori_annonce_pct": 66.3,
+    "favori_reel_pct": 66.9
+   },
+   "candidate": false,
+   "raisons": [
+    "gain sous 0.001",
+    "gain sous 3.3 erreurs types"
+   ]
+  },
+  {
+   "famille": "format",
+   "circuit": "ATP",
+   "case": "3",
+   "forme": "pente",
+   "parametre": 0.8694,
+   "parametre_jugement": 0.9055,
+   "jugement": {
+    "matchs": 7490,
+    "gain": 0.00055,
+    "erreur_type": 0.00058,
+    "erreurs_types": 0.96,
+    "log_loss_base": 0.61474,
+    "log_loss": 0.61418,
+    "brier_base": 0.21375,
+    "brier": 0.21351,
+    "favori_annonce_pct": 67.0,
+    "favori_reel_pct": 65.6
+   },
+   "candidate": false,
+   "raisons": [
+    "gain sous 0.001",
+    "gain sous 3.3 erreurs types"
+   ]
+  },
+  {
+   "famille": "surface",
+   "circuit": "ATP",
+   "case": "Hard",
+   "forme": "pente",
+   "parametre": 0.9532,
+   "parametre_jugement": 0.9453,
+   "jugement": {
+    "matchs": 5221,
+    "gain": 0.00023,
+    "erreur_type": 0.00025,
+    "erreurs_types": 0.91,
+    "log_loss_base": 0.59801,
+    "log_loss": 0.59777,
+    "brier_base": 0.20663,
+    "brier": 0.20651,
+    "favori_annonce_pct": 68.3,
+    "favori_reel_pct": 67.1
+   },
+   "candidate": false,
+   "raisons": [
+    "gain sous 0.001",
+    "gain sous 3.3 erreurs types"
+   ]
+  },
+  {
+   "famille": "niveau du tournoi",
+   "circuit": "CH",
+   "case": "A",
+   "forme": "pente",
+   "parametre": 1.1006,
+   "parametre_jugement": 1.1916,
+   "jugement": {
+    "matchs": 336,
+    "gain": 0.00144,
+    "erreur_type": 0.00159,
+    "erreurs_types": 0.91,
+    "log_loss_base": 0.59056,
+    "log_loss": 0.58912,
+    "brier_base": 0.20496,
+    "brier": 0.20464,
+    "favori_annonce_pct": 65.1,
+    "favori_reel_pct": 66.7
+   },
+   "candidate": false,
+   "raisons": [
+    "moins de 1000 matchs jugés",
+    "gain sous 3.3 erreurs types"
+   ]
+  },
+  {
+   "famille": "jours de repos",
+   "circuit": "ATP",
+   "case": "matchs concernés",
+   "forme": "décalage",
+   "parametre": -0.0649,
+   "parametre_jugement": -0.051,
+   "jugement": {
+    "matchs": 3888,
+    "gain": 0.00071,
+    "erreur_type": 0.0008,
+    "erreurs_types": 0.88,
+    "log_loss_base": 0.5913,
+    "log_loss": 0.5906,
+    "brier_base": 0.20368,
+    "brier": 0.20343,
+    "favori_annonce_pct": 68.3,
+    "favori_reel_pct": 67.7
+   },
+   "candidate": false,
+   "raisons": [
+    "gain sous 0.001",
+    "gain sous 3.3 erreurs types"
+   ]
+  },
+  {
+   "famille": "gaucher contre droitier",
+   "circuit": "CH",
+   "case": "matchs concernés",
+   "forme": "décalage",
+   "parametre": 0.015,
+   "parametre_jugement": 0.0557,
+   "jugement": {
+    "matchs": 1415,
+    "gain": 0.00016,
+    "erreur_type": 0.00018,
+    "erreurs_types": 0.86,
+    "log_loss_base": 0.60246,
+    "log_loss": 0.6023,
+    "brier_base": 0.20829,
+    "brier": 0.20824,
+    "favori_annonce_pct": 65.0,
+    "favori_reel_pct": 66.4
+   },
+   "candidate": false,
+   "raisons": [
+    "gain sous 0.001",
+    "gain sous 3.3 erreurs types"
+   ]
+  },
+  {
+   "famille": "matchs sur 14 jours",
+   "circuit": "ATP",
+   "case": "matchs concernés",
+   "forme": "décalage",
+   "parametre": 0.1539,
+   "parametre_jugement": 0.1055,
+   "jugement": {
+    "matchs": 7575,
+    "gain": 0.00049,
+    "erreur_type": 0.00059,
+    "erreurs_types": 0.84,
+    "log_loss_base": 0.59396,
+    "log_loss": 0.59347,
+    "brier_base": 0.20487,
+    "brier": 0.2047,
+    "favori_annonce_pct": 67.8,
+    "favori_reel_pct": 67.4
+   },
+   "candidate": false,
+   "raisons": [
+    "gain sous 0.001",
+    "gain sous 3.3 erreurs types"
+   ]
+  },
+  {
+   "famille": "matchs sur 14 jours",
+   "circuit": "WTA",
+   "case": "matchs concernés",
+   "forme": "décalage",
+   "parametre": 0.095,
+   "parametre_jugement": 0.0767,
+   "jugement": {
+    "matchs": 7036,
+    "gain": 0.0003,
+    "erreur_type": 0.00036,
+    "erreurs_types": 0.81,
+    "log_loss_base": 0.59067,
+    "log_loss": 0.59037,
+    "brier_base": 0.20346,
+    "brier": 0.20326,
+    "favori_annonce_pct": 66.6,
+    "favori_reel_pct": 67.8
+   },
+   "candidate": false,
+   "raisons": [
+    "gain sous 0.001",
+    "gain sous 3.3 erreurs types"
+   ]
+  },
+  {
+   "famille": "expérience du moins connu",
+   "circuit": "ATP",
+   "case": "300 et plus",
+   "forme": "pente",
+   "parametre": 0.9754,
+   "parametre_jugement": 0.958,
+   "jugement": {
+    "matchs": 4147,
+    "gain": 0.00011,
+    "erreur_type": 0.00015,
+    "erreurs_types": 0.76,
+    "log_loss_base": 0.59585,
+    "log_loss": 0.59574,
+    "brier_base": 0.20553,
+    "brier": 0.20549,
+    "favori_annonce_pct": 68.2,
+    "favori_reel_pct": 67.0
+   },
+   "candidate": false,
+   "raisons": [
+    "gain sous 0.001",
+    "gain sous 3.3 erreurs types"
+   ]
+  },
+  {
+   "famille": "tour",
+   "circuit": "WTA",
+   "case": "8es",
+   "forme": "pente",
+   "parametre": 1.0736,
+   "parametre_jugement": 1.0862,
+   "jugement": {
+    "matchs": 1474,
+    "gain": 0.00045,
+    "erreur_type": 0.00065,
+    "erreurs_types": 0.69,
+    "log_loss_base": 0.5991,
+    "log_loss": 0.59865,
+    "brier_base": 0.20704,
+    "brier": 0.20696,
+    "favori_annonce_pct": 66.2,
+    "favori_reel_pct": 66.7
+   },
+   "candidate": false,
+   "raisons": [
+    "gain sous 0.001",
+    "gain sous 3.3 erreurs types"
+   ]
+  },
+  {
+   "famille": "invité",
+   "circuit": "CH",
+   "case": "matchs concernés",
+   "forme": "décalage",
+   "parametre": 0.0438,
+   "parametre_jugement": 0.0603,
+   "jugement": {
+    "matchs": 1305,
+    "gain": 0.0003,
+    "erreur_type": 0.0005,
+    "erreurs_types": 0.59,
+    "log_loss_base": 0.50879,
+    "log_loss": 0.5085,
+    "brier_base": 0.17031,
+    "brier": 0.1701,
+    "favori_annonce_pct": 74.8,
+    "favori_reel_pct": 74.8
+   },
+   "candidate": false,
+   "raisons": [
+    "gain sous 0.001",
+    "gain sous 3.3 erreurs types"
+   ]
+  },
+  {
+   "famille": "à domicile",
+   "circuit": "WTA",
+   "case": "matchs concernés",
+   "forme": "décalage",
+   "parametre": 0.0492,
+   "parametre_jugement": 0.0523,
+   "jugement": {
+    "matchs": 1618,
+    "gain": 0.00028,
+    "erreur_type": 0.00054,
+    "erreurs_types": 0.52,
+    "log_loss_base": 0.5724,
+    "log_loss": 0.57212,
+    "brier_base": 0.19612,
+    "brier": 0.19594,
+    "favori_annonce_pct": 68.1,
+    "favori_reel_pct": 68.7
+   },
+   "candidate": false,
+   "raisons": [
+    "gain sous 0.001",
+    "gain sous 3.3 erreurs types"
+   ]
+  },
+  {
+   "famille": "saison",
+   "circuit": "WTA",
+   "case": "janvier-février",
+   "forme": "pente",
+   "parametre": 1.1582,
+   "parametre_jugement": 1.1088,
+   "jugement": {
+    "matchs": 2130,
+    "gain": 0.00056,
+    "erreur_type": 0.00113,
+    "erreurs_types": 0.5,
+    "log_loss_base": 0.59837,
+    "log_loss": 0.5978,
+    "brier_base": 0.20698,
+    "brier": 0.20698,
+    "favori_annonce_pct": 65.9,
+    "favori_reel_pct": 66.6
+   },
+   "candidate": false,
+   "raisons": [
+    "gain sous 0.001",
+    "gain sous 3.3 erreurs types"
+   ]
+  },
+  {
+   "famille": "saison",
+   "circuit": "CH",
+   "case": "septembre-décembre",
+   "forme": "pente",
+   "parametre": 1.0538,
+   "parametre_jugement": 1.0503,
+   "jugement": {
+    "matchs": 2223,
+    "gain": 0.00017,
+    "erreur_type": 0.0004,
+    "erreurs_types": 0.41,
+    "log_loss_base": 0.59493,
+    "log_loss": 0.59476,
+    "brier_base": 0.2054,
+    "brier": 0.20538,
+    "favori_annonce_pct": 66.8,
+    "favori_reel_pct": 67.3
+   },
+   "candidate": false,
+   "raisons": [
+    "gain sous 0.001",
+    "gain sous 3.3 erreurs types"
+   ]
+  },
+  {
+   "famille": "niveau du tournoi",
+   "circuit": "WTA",
+   "case": "P",
+   "forme": "pente",
+   "parametre": 1.0539,
+   "parametre_jugement": 1.0512,
+   "jugement": {
+    "matchs": 1807,
+    "gain": 0.00015,
+    "erreur_type": 0.00043,
+    "erreurs_types": 0.36,
+    "log_loss_base": 0.61084,
+    "log_loss": 0.61069,
+    "brier_base": 0.21176,
+    "brier": 0.2117,
+    "favori_annonce_pct": 65.5,
+    "favori_reel_pct": 66.2
+   },
+   "candidate": false,
+   "raisons": [
+    "gain sous 0.001",
+    "gain sous 3.3 erreurs types"
+   ]
+  },
+  {
+   "famille": "saison",
+   "circuit": "WTA",
+   "case": "septembre-décembre",
+   "forme": "pente",
+   "parametre": 1.0617,
+   "parametre_jugement": 1.0546,
+   "jugement": {
+    "matchs": 1546,
+    "gain": 0.00019,
+    "erreur_type": 0.00055,
+    "erreurs_types": 0.34,
+    "log_loss_base": 0.5977,
+    "log_loss": 0.59751,
+    "brier_base": 0.20663,
+    "brier": 0.20661,
+    "favori_annonce_pct": 66.5,
+    "favori_reel_pct": 67.1
+   },
+   "candidate": false,
+   "raisons": [
+    "gain sous 0.001",
+    "gain sous 3.3 erreurs types"
+   ]
+  },
+  {
+   "famille": "tour",
+   "circuit": "ATP",
+   "case": "8es",
+   "forme": "pente",
+   "parametre": 0.8851,
+   "parametre_jugement": 0.9253,
+   "jugement": {
+    "matchs": 1655,
+    "gain": 0.00031,
+    "erreur_type": 0.00112,
+    "erreurs_types": 0.28,
+    "log_loss_base": 0.60274,
+    "log_loss": 0.60243,
+    "brier_base": 0.20851,
+    "brier": 0.20833,
+    "favori_annonce_pct": 68.1,
+    "favori_reel_pct": 66.3
+   },
+   "candidate": false,
+   "raisons": [
+    "gain sous 0.001",
+    "gain sous 3.3 erreurs types"
+   ]
+  },
+  {
+   "famille": "qualifié",
+   "circuit": "WTA",
+   "case": "matchs concernés",
+   "forme": "décalage",
+   "parametre": -0.003,
+   "parametre_jugement": -0.0139,
+   "jugement": {
+    "matchs": 2206,
+    "gain": 1e-05,
+    "erreur_type": 3e-05,
+    "erreurs_types": 0.27,
+    "log_loss_base": 0.57815,
+    "log_loss": 0.57814,
+    "brier_base": 0.1982,
+    "brier": 0.1982,
+    "favori_annonce_pct": 66.9,
+    "favori_reel_pct": 69.0
+   },
+   "candidate": false,
+   "raisons": [
+    "gain sous 0.001",
+    "gain sous 3.3 erreurs types"
+   ]
+  },
+  {
+   "famille": "tous les matchs",
+   "circuit": "ATP",
+   "case": "tous",
+   "forme": "pente",
+   "parametre": 0.9507,
+   "parametre_jugement": 0.97,
+   "jugement": {
+    "matchs": 9233,
+    "gain": 4e-05,
+    "erreur_type": 0.0002,
+    "erreurs_types": 0.2,
+    "log_loss_base": 0.59895,
+    "log_loss": 0.59891,
+    "brier_base": 0.20706,
+    "brier": 0.20701,
+    "favori_annonce_pct": 67.6,
+    "favori_reel_pct": 66.7
+   },
+   "candidate": false,
+   "raisons": [
+    "gain sous 0.001",
+    "gain sous 3.3 erreurs types"
+   ]
+  },
+  {
+   "famille": "tour",
+   "circuit": "ATP",
+   "case": "1er tour (128)",
+   "forme": "pente",
+   "parametre": 1.1353,
+   "parametre_jugement": 1.0781,
+   "jugement": {
+    "matchs": 1514,
+    "gain": 0.00018,
+    "erreur_type": 0.00115,
+    "erreurs_types": 0.16,
+    "log_loss_base": 0.59381,
+    "log_loss": 0.59362,
+    "brier_base": 0.20582,
+    "brier": 0.20602,
+    "favori_annonce_pct": 66.4,
+    "favori_reel_pct": 65.7
+   },
+   "candidate": false,
+   "raisons": [
+    "gain sous 0.001",
+    "gain sous 3.3 erreurs types"
+   ]
+  },
+  {
+   "famille": "matchs sur 14 jours",
+   "circuit": "CH",
+   "case": "matchs concernés",
+   "forme": "décalage",
+   "parametre": 0.1288,
+   "parametre_jugement": 0.0698,
+   "jugement": {
+    "matchs": 5931,
+    "gain": 8e-05,
+    "erreur_type": 0.00056,
+    "erreurs_types": 0.15,
+    "log_loss_base": 0.58508,
+    "log_loss": 0.585,
+    "brier_base": 0.20078,
+    "brier": 0.20082,
+    "favori_annonce_pct": 66.3,
+    "favori_reel_pct": 69.2
+   },
+   "candidate": false,
+   "raisons": [
+    "gain sous 0.001",
+    "gain sous 3.3 erreurs types"
+   ]
+  },
+  {
+   "famille": "qualifié",
+   "circuit": "CH",
+   "case": "matchs concernés",
+   "forme": "décalage",
+   "parametre": -0.1415,
+   "parametre_jugement": -0.0756,
+   "jugement": {
+    "matchs": 1314,
+    "gain": 0.00016,
+    "erreur_type": 0.00176,
+    "erreurs_types": 0.09,
+    "log_loss_base": 0.59092,
+    "log_loss": 0.59077,
+    "brier_base": 0.20264,
+    "brier": 0.20258,
+    "favori_annonce_pct": 67.0,
+    "favori_reel_pct": 68.5
+   },
+   "candidate": false,
+   "raisons": [
+    "gain sous 0.001",
+    "gain sous 3.3 erreurs types"
+   ]
+  },
+  {
+   "famille": "gaucher contre droitier",
+   "circuit": "ATP",
+   "case": "matchs concernés",
+   "forme": "décalage",
+   "parametre": 0.0044,
+   "parametre_jugement": 0.0056,
+   "jugement": {
+    "matchs": 2052,
+    "gain": 0.0,
+    "erreur_type": 4e-05,
+    "erreurs_types": 0.07,
+    "log_loss_base": 0.61336,
+    "log_loss": 0.61336,
+    "brier_base": 0.21264,
+    "brier": 0.21264,
+    "favori_annonce_pct": 66.7,
+    "favori_reel_pct": 67.0
+   },
+   "candidate": false,
+   "raisons": [
+    "gain sous 0.001",
+    "gain sous 3.3 erreurs types"
+   ]
+  },
+  {
+   "famille": "surface",
+   "circuit": "WTA",
+   "case": "Grass",
+   "forme": "pente",
+   "parametre": 1.0375,
+   "parametre_jugement": 1.0224,
+   "jugement": {
+    "matchs": 882,
+    "gain": 2e-05,
+    "erreur_type": 0.00045,
+    "erreurs_types": 0.04,
+    "log_loss_base": 0.60829,
+    "log_loss": 0.60828,
+    "brier_base": 0.21042,
+    "brier": 0.21041,
+    "favori_annonce_pct": 66.3,
+    "favori_reel_pct": 65.8
+   },
+   "candidate": false,
+   "raisons": [
+    "moins de 1000 matchs jugés",
+    "gain sous 0.001",
+    "gain sous 3.3 erreurs types"
+   ]
+  },
+  {
+   "famille": "écart de classement",
+   "circuit": "ATP",
+   "case": "matchs concernés",
+   "forme": "décalage",
+   "parametre": -0.0159,
+   "parametre_jugement": -0.0083,
+   "jugement": {
+    "matchs": 9207,
+    "gain": 0.0,
+    "erreur_type": 0.00013,
+    "erreurs_types": 0.03,
+    "log_loss_base": 0.59929,
+    "log_loss": 0.59929,
+    "brier_base": 0.20717,
+    "brier": 0.20716,
+    "favori_annonce_pct": 67.6,
+    "favori_reel_pct": 66.7
+   },
+   "candidate": false,
+   "raisons": [
+    "gain sous 0.001",
+    "gain sous 3.3 erreurs types"
+   ]
+  },
+  {
+   "famille": "surface",
+   "circuit": "ATP",
+   "case": "Grass",
+   "forme": "pente",
+   "parametre": 1.0018,
+   "parametre_jugement": 0.9941,
+   "jugement": {
+    "matchs": 921,
+    "gain": -0.0,
+    "erreur_type": 2e-05,
+    "erreurs_types": -0.08,
+    "log_loss_base": 0.59816,
+    "log_loss": 0.59816,
+    "brier_base": 0.20668,
+    "brier": 0.20668,
+    "favori_annonce_pct": 67.2,
+    "favori_reel_pct": 66.4
+   },
+   "candidate": false,
+   "raisons": [
+    "moins de 1000 matchs jugés",
+    "gain sous 0.001",
+    "gain sous 3.3 erreurs types",
+    "pas le même sens sur les deux périodes"
+   ]
+  },
+  {
+   "famille": "tour",
+   "circuit": "WTA",
+   "case": "quarts",
+   "forme": "pente",
+   "parametre": 0.9252,
+   "parametre_jugement": 0.9752,
+   "jugement": {
+    "matchs": 739,
+    "gain": -0.00011,
+    "erreur_type": 0.00094,
+    "erreurs_types": -0.11,
+    "log_loss_base": 0.62753,
+    "log_loss": 0.62764,
+    "brier_base": 0.21884,
+    "brier": 0.21893,
+    "favori_annonce_pct": 64.6,
+    "favori_reel_pct": 64.4
+   },
+   "candidate": false,
+   "raisons": [
+    "moins de 1000 matchs jugés",
+    "gain sous 0.001",
+    "gain sous 3.3 erreurs types"
+   ]
+  },
+  {
+   "famille": "expérience du moins connu",
+   "circuit": "ATP",
+   "case": "30 à 99",
+   "forme": "pente",
+   "parametre": 0.9409,
+   "parametre_jugement": 0.9892,
+   "jugement": {
+    "matchs": 506,
+    "gain": -0.00018,
+    "erreur_type": 0.00104,
+    "erreurs_types": -0.17,
+    "log_loss_base": 0.58693,
+    "log_loss": 0.58711,
+    "brier_base": 0.20162,
+    "brier": 0.20168,
+    "favori_annonce_pct": 68.7,
+    "favori_reel_pct": 67.4
+   },
+   "candidate": false,
+   "raisons": [
+    "moins de 1000 matchs jugés",
+    "gain sous 0.001",
+    "gain sous 3.3 erreurs types"
+   ]
+  },
+  {
+   "famille": "tour",
+   "circuit": "ATP",
+   "case": "demies",
+   "forme": "pente",
+   "parametre": 0.8306,
+   "parametre_jugement": 0.94,
+   "jugement": {
+    "matchs": 435,
+    "gain": -0.00062,
+    "erreur_type": 0.0029,
+    "erreurs_types": -0.22,
+    "log_loss_base": 0.61414,
+    "log_loss": 0.61477,
+    "brier_base": 0.21429,
+    "brier": 0.21411,
+    "favori_annonce_pct": 66.7,
+    "favori_reel_pct": 65.5
+   },
+   "candidate": false,
+   "raisons": [
+    "moins de 1000 matchs jugés",
+    "gain sous 0.001",
+    "gain sous 3.3 erreurs types"
+   ]
+  },
+  {
+   "famille": "niveau du tournoi",
+   "circuit": "ATP",
+   "case": "A",
+   "forme": "pente",
+   "parametre": 0.8756,
+   "parametre_jugement": 0.9459,
+   "jugement": {
+    "matchs": 4897,
+    "gain": -0.00015,
+    "erreur_type": 0.00065,
+    "erreurs_types": -0.23,
+    "log_loss_base": 0.61453,
+    "log_loss": 0.61468,
+    "brier_base": 0.21362,
+    "brier": 0.21364,
+    "favori_annonce_pct": 66.4,
+    "favori_reel_pct": 65.6
+   },
+   "candidate": false,
+   "raisons": [
+    "gain sous 0.001",
+    "gain sous 3.3 erreurs types"
+   ]
+  },
+  {
+   "famille": "expérience du moins connu",
+   "circuit": "ATP",
+   "case": "100 à 299",
+   "forme": "pente",
+   "parametre": 0.9271,
+   "parametre_jugement": 0.9723,
+   "jugement": {
+    "matchs": 4494,
+    "gain": -9e-05,
+    "erreur_type": 0.0004,
+    "erreurs_types": -0.23,
+    "log_loss_base": 0.60727,
+    "log_loss": 0.60736,
+    "brier_base": 0.21072,
+    "brier": 0.21069,
+    "favori_annonce_pct": 66.7,
+    "favori_reel_pct": 66.2
+   },
+   "candidate": false,
+   "raisons": [
+    "gain sous 0.001",
+    "gain sous 3.3 erreurs types"
+   ]
+  },
+  {
+   "famille": "invité",
+   "circuit": "ATP",
+   "case": "matchs concernés",
+   "forme": "décalage",
+   "parametre": 0.0772,
+   "parametre_jugement": -0.0021,
+   "jugement": {
+    "matchs": 1081,
+    "gain": -0.00062,
+    "erreur_type": 0.00105,
+    "erreurs_types": -0.59,
+    "log_loss_base": 0.58026,
+    "log_loss": 0.58088,
+    "brier_base": 0.19976,
+    "brier": 0.19992,
+    "favori_annonce_pct": 69.6,
+    "favori_reel_pct": 69.0
+   },
+   "candidate": false,
+   "raisons": [
+    "gain sous 0.001",
+    "gain sous 3.3 erreurs types",
+    "pas le même sens sur les deux périodes"
+   ]
+  },
+  {
+   "famille": "tour",
+   "circuit": "CH",
+   "case": "quarts",
+   "forme": "pente",
+   "parametre": 0.9309,
+   "parametre_jugement": 1.0633,
+   "jugement": {
+    "matchs": 578,
+    "gain": -0.00052,
+    "erreur_type": 0.00084,
+    "erreurs_types": -0.62,
+    "log_loss_base": 0.64379,
+    "log_loss": 0.64431,
+    "brier_base": 0.22575,
+    "brier": 0.22607,
+    "favori_annonce_pct": 61.7,
+    "favori_reel_pct": 63.7
+   },
+   "candidate": false,
+   "raisons": [
+    "moins de 1000 matchs jugés",
+    "gain sous 0.001",
+    "gain sous 3.3 erreurs types",
+    "pas le même sens sur les deux périodes"
+   ]
+  },
+  {
+   "famille": "tour",
+   "circuit": "ATP",
+   "case": "finale",
+   "forme": "pente",
+   "parametre": 0.9425,
+   "parametre_jugement": 1.0859,
+   "jugement": {
+    "matchs": 223,
+    "gain": -0.00075,
+    "erreur_type": 0.0012,
+    "erreurs_types": -0.63,
+    "log_loss_base": 0.61221,
+    "log_loss": 0.61296,
+    "brier_base": 0.21315,
+    "brier": 0.21328,
+    "favori_annonce_pct": 65.1,
+    "favori_reel_pct": 61.9
+   },
+   "candidate": false,
+   "raisons": [
+    "moins de 1000 matchs jugés",
+    "gain sous 0.001",
+    "gain sous 3.3 erreurs types",
+    "pas le même sens sur les deux périodes"
+   ]
+  },
+  {
+   "famille": "tour",
+   "circuit": "ATP",
+   "case": "quarts",
+   "forme": "pente",
+   "parametre": 0.8314,
+   "parametre_jugement": 0.9764,
+   "jugement": {
+    "matchs": 818,
+    "gain": -0.00155,
+    "erreur_type": 0.00231,
+    "erreurs_types": -0.67,
+    "log_loss_base": 0.6043,
+    "log_loss": 0.60585,
+    "brier_base": 0.20811,
+    "brier": 0.20885,
+    "favori_annonce_pct": 67.5,
+    "favori_reel_pct": 67.7
+   },
+   "candidate": false,
+   "raisons": [
+    "moins de 1000 matchs jugés",
+    "gain sous 0.001",
+    "gain sous 3.3 erreurs types"
+   ]
+  },
+  {
+   "famille": "tour",
+   "circuit": "ATP",
+   "case": "32es ou poule",
+   "forme": "pente",
+   "parametre": 0.9461,
+   "parametre_jugement": 1.0073,
+   "jugement": {
+    "matchs": 3104,
+    "gain": -0.00027,
+    "erreur_type": 0.00037,
+    "erreurs_types": -0.73,
+    "log_loss_base": 0.59569,
+    "log_loss": 0.59595,
+    "brier_base": 0.2053,
+    "brier": 0.2054,
+    "favori_annonce_pct": 67.4,
+    "favori_reel_pct": 67.7
+   },
+   "candidate": false,
+   "raisons": [
+    "gain sous 0.001",
+    "gain sous 3.3 erreurs types",
+    "pas le même sens sur les deux périodes"
+   ]
+  },
+  {
+   "famille": "à domicile",
+   "circuit": "ATP",
+   "case": "matchs concernés",
+   "forme": "décalage",
+   "parametre": 0.0901,
+   "parametre_jugement": 0.0047,
+   "jugement": {
+    "matchs": 1928,
+    "gain": -0.00073,
+    "erreur_type": 0.00092,
+    "erreurs_types": -0.79,
+    "log_loss_base": 0.58382,
+    "log_loss": 0.58455,
+    "brier_base": 0.20118,
+    "brier": 0.20143,
+    "favori_annonce_pct": 68.5,
+    "favori_reel_pct": 67.9
+   },
+   "candidate": false,
+   "raisons": [
+    "gain sous 0.001",
+    "gain sous 3.3 erreurs types"
+   ]
+  },
+  {
+   "famille": "saison",
+   "circuit": "ATP",
+   "case": "mars-mai",
+   "forme": "pente",
+   "parametre": 0.9113,
+   "parametre_jugement": 0.9965,
+   "jugement": {
+    "matchs": 3005,
+    "gain": -0.00055,
+    "erreur_type": 0.00062,
+    "erreurs_types": -0.88,
+    "log_loss_base": 0.59454,
+    "log_loss": 0.59509,
+    "brier_base": 0.20491,
+    "brier": 0.20506,
+    "favori_annonce_pct": 67.6,
+    "favori_reel_pct": 67.3
+   },
+   "candidate": false,
+   "raisons": [
+    "gain sous 0.001",
+    "gain sous 3.3 erreurs types"
+   ]
+  },
+  {
+   "famille": "surface",
+   "circuit": "ATP",
+   "case": "Clay",
+   "forme": "pente",
+   "parametre": 0.9259,
+   "parametre_jugement": 1.0113,
+   "jugement": {
+    "matchs": 3091,
+    "gain": -0.00049,
+    "erreur_type": 0.00048,
+    "erreurs_types": -1.01,
+    "log_loss_base": 0.60078,
+    "log_loss": 0.60127,
+    "brier_base": 0.20789,
+    "brier": 0.20802,
+    "favori_annonce_pct": 66.7,
+    "favori_reel_pct": 66.2
+   },
+   "candidate": false,
+   "raisons": [
+    "gain sous 0.001",
+    "gain sous 3.3 erreurs types",
+    "pas le même sens sur les deux périodes"
+   ]
+  },
+  {
+   "famille": "expérience",
+   "circuit": "ATP",
+   "case": "matchs concernés",
+   "forme": "décalage",
+   "parametre": -0.0193,
+   "parametre_jugement": 0.0195,
+   "jugement": {
+    "matchs": 9227,
+    "gain": -8e-05,
+    "erreur_type": 8e-05,
+    "erreurs_types": -1.08,
+    "log_loss_base": 0.59896,
+    "log_loss": 0.59905,
+    "brier_base": 0.20706,
+    "brier": 0.20709,
+    "favori_annonce_pct": 67.6,
+    "favori_reel_pct": 66.7
+   },
+   "candidate": false,
+   "raisons": [
+    "gain sous 0.001",
+    "gain sous 3.3 erreurs types",
+    "pas le même sens sur les deux périodes"
+   ]
+  },
+  {
+   "famille": "niveau du tournoi",
+   "circuit": "WTA",
+   "case": "PM",
+   "forme": "pente",
+   "parametre": 0.9306,
+   "parametre_jugement": 1.0268,
+   "jugement": {
+    "matchs": 2311,
+    "gain": -0.0006,
+    "erreur_type": 0.00052,
+    "erreurs_types": -1.14,
+    "log_loss_base": 0.59882,
+    "log_loss": 0.59942,
+    "brier_base": 0.20687,
+    "brier": 0.20701,
+    "favori_annonce_pct": 67.0,
+    "favori_reel_pct": 67.3
+   },
+   "candidate": false,
+   "raisons": [
+    "gain sous 0.001",
+    "gain sous 3.3 erreurs types",
+    "pas le même sens sur les deux périodes"
+   ]
+  },
+  {
+   "famille": "saison",
+   "circuit": "ATP",
+   "case": "janvier-février",
+   "forme": "pente",
+   "parametre": 0.9648,
+   "parametre_jugement": 1.0573,
+   "jugement": {
+    "matchs": 2223,
+    "gain": -0.00038,
+    "erreur_type": 0.00027,
+    "erreurs_types": -1.38,
+    "log_loss_base": 0.58647,
+    "log_loss": 0.58685,
+    "brier_base": 0.20176,
+    "brier": 0.20185,
+    "favori_annonce_pct": 67.7,
+    "favori_reel_pct": 67.5
+   },
+   "candidate": false,
+   "raisons": [
+    "gain sous 0.001",
+    "gain sous 3.3 erreurs types",
+    "pas le même sens sur les deux périodes"
+   ]
+  },
+  {
+   "famille": "tour",
+   "circuit": "CH",
+   "case": "32es ou poule",
+   "forme": "pente",
+   "parametre": 0.8959,
+   "parametre_jugement": 1.0288,
+   "jugement": {
+    "matchs": 2257,
+    "gain": -0.00113,
+    "erreur_type": 0.0008,
+    "erreurs_types": -1.41,
+    "log_loss_base": 0.60281,
+    "log_loss": 0.60394,
+    "brier_base": 0.20796,
+    "brier": 0.20846,
+    "favori_annonce_pct": 66.5,
+    "favori_reel_pct": 67.8
+   },
+   "candidate": false,
+   "raisons": [
+    "gain sous 0.001",
+    "gain sous 3.3 erreurs types",
+    "pas le même sens sur les deux périodes"
+   ]
+  },
+  {
+   "famille": "invité",
+   "circuit": "WTA",
+   "case": "matchs concernés",
+   "forme": "décalage",
+   "parametre": 0.0569,
+   "parametre_jugement": -0.0805,
+   "jugement": {
+    "matchs": 1092,
+    "gain": -0.00125,
+    "erreur_type": 0.00076,
+    "erreurs_types": -1.65,
+    "log_loss_base": 0.5725,
+    "log_loss": 0.57376,
+    "brier_base": 0.19581,
+    "brier": 0.19626,
+    "favori_annonce_pct": 68.1,
+    "favori_reel_pct": 69.2
+   },
+   "candidate": false,
+   "raisons": [
+    "gain sous 0.001",
+    "gain sous 3.3 erreurs types",
+    "pas le même sens sur les deux périodes"
+   ]
+  },
+  {
+   "famille": "tour",
+   "circuit": "ATP",
+   "case": "64es",
+   "forme": "pente",
+   "parametre": 1.0128,
+   "parametre_jugement": 0.869,
+   "jugement": {
+    "matchs": 1484,
+    "gain": -0.00032,
+    "erreur_type": 0.00014,
+    "erreurs_types": -2.25,
+    "log_loss_base": 0.59741,
+    "log_loss": 0.59772,
+    "brier_base": 0.20675,
+    "brier": 0.20687,
+    "favori_annonce_pct": 69.7,
+    "favori_reel_pct": 67.0
+   },
+   "candidate": false,
+   "raisons": [
+    "gain sous 0.001",
+    "gain sous 3.3 erreurs types",
+    "pas le même sens sur les deux périodes"
+   ]
+  },
+  {
+   "famille": "jours de repos",
+   "circuit": "CH",
+   "case": "matchs concernés",
+   "forme": "décalage",
+   "parametre": -0.0618,
+   "parametre_jugement": 0.036,
+   "jugement": {
+    "matchs": 2980,
+    "gain": -0.00184,
+    "erreur_type": 0.00076,
+    "erreurs_types": -2.41,
+    "log_loss_base": 0.55365,
+    "log_loss": 0.55548,
+    "brier_base": 0.1879,
+    "brier": 0.18873,
+    "favori_annonce_pct": 69.4,
+    "favori_reel_pct": 71.6
+   },
+   "candidate": false,
+   "raisons": [
+    "gain sous 0.001",
+    "gain sous 3.3 erreurs types",
+    "pas le même sens sur les deux périodes"
+   ]
+  },
+  {
+   "famille": "tour",
+   "circuit": "CH",
+   "case": "qualifications, 2e tour",
+   "forme": "pente",
+   "parametre": 0.9804,
+   "parametre_jugement": 1.2258,
+   "jugement": {
+    "matchs": 1055,
+    "gain": -0.00044,
+    "erreur_type": 0.00017,
+    "erreurs_types": -2.53,
+    "log_loss_base": 0.60815,
+    "log_loss": 0.60859,
+    "brier_base": 0.21098,
+    "brier": 0.21112,
+    "favori_annonce_pct": 63.8,
+    "favori_reel_pct": 66.1
+   },
+   "candidate": false,
+   "raisons": [
+    "gain sous 0.001",
+    "gain sous 3.3 erreurs types",
+    "pas le même sens sur les deux périodes"
+   ]
+  },
+  {
+   "famille": "expérience du moins connu",
+   "circuit": "CH",
+   "case": "300 et plus",
+   "forme": "pente",
+   "parametre": 0.6303,
+   "parametre_jugement": 1.1703,
+   "jugement": {
+    "matchs": 542,
+    "gain": -0.01081,
+    "erreur_type": 0.00428,
+    "erreurs_types": -2.53,
+    "log_loss_base": 0.63284,
+    "log_loss": 0.64366,
+    "brier_base": 0.22165,
+    "brier": 0.22609,
+    "favori_annonce_pct": 62.2,
+    "favori_reel_pct": 64.8
+   },
+   "candidate": false,
+   "raisons": [
+    "moins de 1000 matchs jugés",
+    "gain sous 0.001",
+    "gain sous 3.3 erreurs types",
+    "pas le même sens sur les deux périodes"
+   ]
+  },
+  {
+   "famille": "surface",
+   "circuit": "CH",
+   "case": "Hard",
+   "forme": "pente",
+   "parametre": 0.9522,
+   "parametre_jugement": 1.0982,
+   "jugement": {
+    "matchs": 4405,
+    "gain": -0.00072,
+    "erreur_type": 0.00025,
+    "erreurs_types": -2.91,
+    "log_loss_base": 0.59695,
+    "log_loss": 0.59766,
+    "brier_base": 0.20598,
+    "brier": 0.20623,
+    "favori_annonce_pct": 66.0,
+    "favori_reel_pct": 67.7
+   },
+   "candidate": false,
+   "raisons": [
+    "gain sous 0.001",
+    "gain sous 3.3 erreurs types",
+    "pas le même sens sur les deux périodes"
+   ]
+  },
+  {
+   "famille": "tour",
+   "circuit": "CH",
+   "case": "demies",
+   "forme": "pente",
+   "parametre": 0.8922,
+   "parametre_jugement": 1.5991,
+   "jugement": {
+    "matchs": 289,
+    "gain": -0.00447,
+    "erreur_type": 0.00148,
+    "erreurs_types": -3.02,
+    "log_loss_base": 0.6134,
+    "log_loss": 0.61787,
+    "brier_base": 0.21247,
+    "brier": 0.21429,
+    "favori_annonce_pct": 61.2,
+    "favori_reel_pct": 66.8
+   },
+   "candidate": false,
+   "raisons": [
+    "moins de 1000 matchs jugés",
+    "gain sous 0.001",
+    "gain sous 3.3 erreurs types",
+    "pas le même sens sur les deux périodes"
+   ]
+  },
+  {
+   "famille": "expérience du moins connu",
+   "circuit": "WTA",
+   "case": "30 à 99",
+   "forme": "pente",
+   "parametre": 0.9704,
+   "parametre_jugement": 1.5619,
+   "jugement": {
+    "matchs": 220,
+    "gain": -0.00232,
+    "erreur_type": 0.00059,
+    "erreurs_types": -3.92,
+    "log_loss_base": 0.48578,
+    "log_loss": 0.48809,
+    "brier_base": 0.15972,
+    "brier": 0.16038,
+    "favori_annonce_pct": 70.8,
+    "favori_reel_pct": 77.7
+   },
+   "candidate": false,
+   "raisons": [
+    "moins de 1000 matchs jugés",
+    "gain sous 0.001",
+    "gain sous 3.3 erreurs types",
+    "pas le même sens sur les deux périodes"
+   ]
+  },
+  {
+   "famille": "saison",
+   "circuit": "CH",
+   "case": "mars-mai",
+   "forme": "pente",
+   "parametre": 0.9699,
+   "parametre_jugement": 1.2234,
+   "jugement": {
+    "matchs": 3237,
+    "gain": -0.00084,
+    "erreur_type": 0.00017,
+    "erreurs_types": -4.9,
+    "log_loss_base": 0.57824,
+    "log_loss": 0.57909,
+    "brier_base": 0.19814,
+    "brier": 0.19843,
+    "favori_annonce_pct": 66.3,
+    "favori_reel_pct": 69.9
+   },
+   "candidate": false,
+   "raisons": [
+    "gain sous 0.001",
+    "gain sous 3.3 erreurs types",
+    "pas le même sens sur les deux périodes"
+   ]
+  }
+ ],
+ "descriptif": "le % de victoire ne change pas"
+}
