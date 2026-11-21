@@ -119,6 +119,7 @@ jobs:
             Tennis_Edge_Lab/live/archive/bookmakers_sets_v61/current
             Tennis_Edge_Lab/registry
             scripts/validation_report.py
+            scripts/site_leger.py
             set_results.json
             moves_detail_hist.csv
             moves_detail.csv
@@ -218,6 +219,15 @@ jobs:
           mkdir -p _site/algo
           cp algo/index.html _site/algo/ || echo "❌ MANQUANT : algo/index.html"
           cp algo/donnees.json _site/algo/ 2>/dev/null || echo "⚠️ algo/donnees.json absent (prochain passage des pronostics)"
+          # 21/11/2026 (paquet 328) : site plus rapide et « pro ». site.json (l'essentiel, chargé d'abord) et site_plus.json
+          # (bilan, journal, fiabilité, chargés ensuite) ; donnees.json reste publié (images et vidéos, secours de la page).
+          if [ -f algo/donnees.json ]; then python3 scripts/site_leger.py algo/donnees.json _site/algo || echo "⚠️ site léger non construit : la page lira donnees.json"; fi
+          cp algo/editeur.json algo/partage.png _site/algo/
+          if ls algo/polices/*.woff2 >/dev/null 2>&1; then
+            mkdir -p _site/algo/polices && cp algo/polices/*.woff2 algo/polices/OFL.txt _site/algo/polices/
+          else
+            echo "::warning::Polices absentes : lancer une fois le workflow « Polices du site »."
+          fi
           # 18/11/2026 (paquet 282) : les modèles 3D des personnages (joueurs, arbitre, juges de ligne, ramasseurs).
           # Ils n'avaient jamais été publiés : sur le site, le direct 3D restait en personnages simplifiés (les vidéos,
           # faites depuis le dépôt, les avaient). Échec explicite s'ils manquent.

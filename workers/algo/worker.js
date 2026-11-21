@@ -16,7 +16,12 @@
 
 const ORIGINE = 'https://lucas987987.github.io/Tennis-edge/algo/';
 const LAB = 'https://lucas987987.github.io';
-export const PUBLICS = { '/': 'index.html', '/index.html': 'index.html', '/donnees.json': 'donnees.json' };
+export const PUBLICS = { '/': 'index.html', '/index.html': 'index.html', '/donnees.json': 'donnees.json',
+  // 21/11/2026 (paquet 328) : site plus léger (site.json d'abord, site_plus.json ensuite), éditeur des mentions
+  // légales, image d'aperçu des liens partagés et polices servies par le site lui-même (plus aucun appel à Google)
+  '/site.json': 'site.json', '/site_plus.json': 'site_plus.json', '/editeur.json': 'editeur.json', '/partage.png': 'partage.png' };
+export const POLICES = /^\/polices\/[a-z0-9-]{3,40}\.woff2$/;
+const TYPES = { json: 'application/json; charset=utf-8', html: 'text/html; charset=utf-8', png: 'image/png', woff2: 'font/woff2' };
 // DOIT correspondre à scripts/coffre.py (SERVIS)
 export const PRIVES = new Set(['h18_signal_log.jsonl', 'h18_signal_state.json', 'h19_signal_log.jsonl',
   'h19_signal_state.json', 'h20_signal_log.jsonl', 'h20_signal_state.json', 'h20.json', 'pronostics.json',
@@ -28,8 +33,8 @@ const SECURITE = {
   'X-Frame-Options': 'DENY',
   'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
 };
-const CSP = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
-  + "font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'";
+const CSP = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; "
+  + "font-src 'self'; img-src 'self' data:; connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'";
 
 function egal(a, b) {
   // comparaison à temps constant (ne révèle pas, par la durée, combien de caractères sont justes)
@@ -57,12 +62,13 @@ export async function prive(req, env, nom) {
 }
 
 export async function publique(req, chemin) {
-  const f = PUBLICS[chemin];
+  const f = PUBLICS[chemin] || (POLICES.test(chemin) ? chemin.slice(1) : null);
   if (!f) return new Response('Page introuvable.', { status: 404, headers: SECURITE });
-  const r = await fetch(ORIGINE + f, { cf: { cacheTtl: 60, cacheEverything: true } });
-  if (!r.ok) return new Response('Indisponible, réessayer dans un instant.', { status: 502, headers: SECURITE });
-  const type = f.endsWith('.json') ? 'application/json; charset=utf-8' : 'text/html; charset=utf-8';
-  const h = { ...SECURITE, 'Content-Type': type, 'Cache-Control': 'public, max-age=60' };
+  const ext = f.split('.').pop(), fixe = ext === 'woff2' || ext === 'png';
+  const r = await fetch(ORIGINE + f, { cf: { cacheTtl: fixe ? 86400 : 60, cacheEverything: true } });
+  if (!r.ok) return new Response('Indisponible, réessayer dans un instant.', { status: r.status === 404 ? 404 : 502, headers: SECURITE });
+  const type = TYPES[ext] || 'text/html; charset=utf-8';
+  const h = { ...SECURITE, 'Content-Type': type, 'Cache-Control': fixe ? 'public, max-age=604800' : 'public, max-age=60' };
   if (type.startsWith('text/html')) h['Content-Security-Policy'] = CSP;
   return new Response(r.body, { headers: h });
 }
@@ -90,7 +96,9 @@ export async function modele(req, pathname) {
     // 18/11/2026 (paquet 282) : seules les réponses réussies sont gardées un jour ; une absence (404) n'est jamais
     // mise en cache, sinon le fichier enfin publié resterait invisible jusqu'au lendemain
     // 283 : « ?v=283 » change la clé du cache de Cloudflare, qui gardait l'ancienne réponse « absent » (404) jusqu'à un jour
-    const r = await fetch(ORIGINE + pathname.slice(1) + '?v=283', { cf: { cacheTtlByStatus: { '200-299': 86400, '404': 0, '500-599': 0 }, cacheEverything: true } });
+    // 328 : la version demandée par la page (« ?v=326 ») devient la clé du cache ; sans version, l'ancienne clé 283
+    const v = (new URL(req.url).search.match(/^\?v=(\d{1,6})$/) || [])[1] || '283';
+    const r = await fetch(ORIGINE + pathname.slice(1) + '?v=' + v, { cf: { cacheTtlByStatus: { '200-299': 86400, '404': 0, '500-599': 0 }, cacheEverything: true } });
     const n = Number(r.headers.get('content-length')) || 0;
     if (r.ok && !(n && n < cfg.min) && !(r.headers.get('content-type') || '').includes('text/html'))
       return new Response(req.method === 'HEAD' ? null : r.body, { headers: { ...SECURITE, 'Content-Type': cfg.type,

@@ -1,0 +1,74 @@
+# 21/11/2026 (paquet 328) — Polices du site, servies par le site lui-même (plus aucune requête vers Google pendant
+# la visite : plus rapide, et conforme au RGPD). Télécharge une fois Bungee, Barlow et Barlow Condensed (licence SIL
+# Open Font License) depuis le dépôt officiel google/fonts, garde seulement les caractères latins (français, anglais,
+# noms de joueurs accentués) et les enregistre en .woff2 dans algo/polices/ avec la licence.
+# Se lance tout seul quand ce fichier arrive dans le dépôt ; ne refait rien si les polices sont déjà là.
+name: Polices du site
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/polices.yml']
+  workflow_dispatch:
+    inputs:
+      refaire:
+        description: 'Refaire même si les polices existent déjà'
+        type: boolean
+        default: false
+permissions:
+  contents: write
+concurrency:
+  group: polices-du-site
+  cancel-in-progress: false
+jobs:
+  polices:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Télécharger et alléger les polices
+        env:
+          REFAIRE: ${{ inputs.refaire }}
+        run: |
+          set -euo pipefail
+          if ls algo/polices/*.woff2 >/dev/null 2>&1 && [ "${REFAIRE:-false}" != "true" ]; then echo "Polices déjà présentes."; exit 0; fi
+          pip install --quiet fonttools brotli
+          mkdir -p /tmp/ttf algo/polices
+          B=https://raw.githubusercontent.com/google/fonts/main/ofl
+          while read -r dossier fichier sortie; do
+            curl --fail --location --retry 3 --silent --show-error -o "/tmp/ttf/$fichier" "$B/$dossier/$fichier"
+            pyftsubset "/tmp/ttf/$fichier" --flavor=woff2 --layout-features='kern,liga,tnum,lnum' \
+              --unicodes='U+0000-00FF,U+0131,U+0152-0153,U+0160-0161,U+0178,U+017D-017E,U+0100-017F,U+02C6,U+02DA,U+02DC,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD' \
+              --output-file="algo/polices/$sortie"
+            test "$(wc -c < "algo/polices/$sortie")" -gt 5000
+          done <<'LISTE'
+          bungee Bungee-Regular.ttf bungee-400.woff2
+          barlow Barlow-Regular.ttf barlow-400.woff2
+          barlow Barlow-Medium.ttf barlow-500.woff2
+          barlow Barlow-SemiBold.ttf barlow-600.woff2
+          barlowcondensed BarlowCondensed-Medium.ttf barlow-condensed-500.woff2
+          barlowcondensed BarlowCondensed-SemiBold.ttf barlow-condensed-600.woff2
+          barlowcondensed BarlowCondensed-Bold.ttf barlow-condensed-700.woff2
+          LISTE
+          curl --fail --location --retry 3 --silent --show-error -o algo/polices/OFL.txt "$B/barlow/OFL.txt"
+          { echo; echo '--- Bungee ---'; curl --fail --location --retry 3 --silent --show-error "$B/bungee/OFL.txt"; } >> algo/polices/OFL.txt
+          ls -la algo/polices
+      - name: Enregistrer dans le dépôt
+        run: |
+          set -e
+          git config user.name tennis-edge-bot
+          git config user.email tennis-edge-bot@users.noreply.github.com
+          git add algo/polices
+          if git diff --cached --quiet; then echo "Rien à enregistrer."; exit 0; fi
+          git commit -m "Polices du site (Bungee, Barlow, Barlow Condensed — OFL), servies par le site"
+          for i in 1 2 3 4 5; do
+            if git push origin HEAD:main; then exit 0; fi
+            sleep 8
+            git pull --rebase origin main
+          done
+          exit 1
