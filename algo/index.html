@@ -4524,6 +4524,14 @@ const G3D = (() => {
     const g = Rf.gagnant, p = 1 - g, faute = ['fautes_directes_adverses', 'doubles_fautes_adverses'].includes(Rf.fin);
     GESTE[g] = grand ? { nom: 'joie', t0: t + 0.2, d: 2.3 } : Math.random() < 0.65 ? { nom: 'poing', t0: t + 0.25, d: 1.7 } : null;
     GESTE[p] = faute && Math.random() < 0.6 ? { nom: 'rage', t0: t + 0.2, d: 2.2 } : Math.random() < 0.7 ? { nom: 'depit', t0: t + 0.3, d: 1.9 } : null;
+    // paquet 326 : mouvements captés (Mixamo) — fin du match : victoire (ou saut) contre abattu (ou applaudissements) ;
+    // grand point : victoire ou joie ; sinon poing serré ; le perdant : déçu, ou « non » de la tête après une faute
+    if (MOD.clips && MOD.clips.MX_Poing) {
+      const fin = !!E.fini || !!Rf.fin_match;
+      const mx = (G, nom) => { if (!G && !fin) return null; const [clip, d] = GESTES_MX[nom]; return { nom: (G && G.nom) || 'joie', mx: clip, t0: (G ? G.t0 : t + 0.2), d }; };
+      if (GESTE[g] || fin) GESTE[g] = mx(GESTE[g] || { nom: 'joie', t0: t + 0.2 }, fin ? (Math.random() < 0.7 ? 'victoire' : 'saut') : grand ? (Math.random() < 0.5 ? 'victoire' : 'joie') : 'poing');
+      if (GESTE[p] || fin) GESTE[p] = mx(GESTE[p] || { nom: 'depit', t0: t + 0.3 }, fin ? (Math.random() < 0.5 ? 'abattu' : 'applaudit') : GESTE[p].nom === 'rage' ? 'rage' : 'depit');
+    }
   }
   // matrices de peau d'un joueur (os de la pose × inverse de la pose de repos) et place de la raquette
   function dessinerJoueur(P, j, pose) {
@@ -4624,7 +4632,7 @@ const G3D = (() => {
       // 18/11/2026 (paquet 281) : 3 essais (réseau mobile capricieux) au lieu d'un seul, sinon les joueurs, l'arbitre,
       // les juges de ligne et les ramasseurs restaient en version simplifiée jusqu'au rechargement de la page
       // 283 : chaque essai abandonne au bout de 25 s (sinon un téléchargement bloqué laissait « chargement… » sans fin)
-      let r = null; const URL_MOD = 'modeles/joueurs3d.bin?v=265', lire = o => (o ? fetch(URL_MOD, o) : fetch('modeles/joueurs3d.bin?v=265'));
+      let r = null; const URL_MOD = 'modeles/joueurs3d.bin?v=326', lire = o => (o ? fetch(URL_MOD, o) : fetch('modeles/joueurs3d.bin?v=326'));
       for (let essai = 0; essai < 3; essai++) {
         const stop = typeof AbortController !== 'undefined' ? new AbortController() : null, minuterie = stop && setTimeout(() => stop.abort(), 25000);
         try { r = await lire(stop || essai ? { ...(essai ? { cache: 'reload' } : {}), ...(stop ? { signal: stop.signal } : {}) } : undefined);
@@ -4697,14 +4705,33 @@ const G3D = (() => {
     const q = f => { const o = (f * 23 + k) * 4; return [c.Q[o] / 32767, c.Q[o + 1] / 32767, c.Q[o + 2] / 32767, c.Q[o + 3] / 32767]; };
     return slerp(q(f0), q(f1), u);
   }
+  // paquet 326 : mouvements Mixamo (gestes, attente, pas chassés, recul) — u de 0 à 1, sans boucler
+  function clipQu(nom, u, k, boucle) {
+    const c = MOD.clips && MOD.clips[nom]; if (!c) return null;
+    if (boucle) return clipQ(nom, u, k);
+    const x = cl(u, 0, 0.9999) * (c.nf - 1), f0 = Math.floor(x), f1 = Math.min(c.nf - 1, f0 + 1), w = x - f0;
+    const q = f => { const o = (f * 23 + k) * 4; return [c.Q[o] / 32767, c.Q[o + 1] / 32767, c.Q[o + 2] / 32767, c.Q[o + 3] / 32767]; };
+    return slerp(q(f0), q(f1), w);
+  }
+  function clipTu(nom, u, boucle) {
+    const c = MOD.clips && MOD.clips[nom]; if (!c) return 0;
+    if (boucle) return clipT(nom, u);
+    const x = cl(u, 0, 0.9999) * (c.nf - 1), f0 = Math.floor(x), f1 = Math.min(c.nf - 1, f0 + 1);
+    return lerp(c.T[f0 * 3 + 1], c.T[f1 * 3 + 1], x - f0);
+  }
+  const JAMBES = new Set(['thigh_l', 'calf_l', 'foot_l', 'ball_l', 'thigh_r', 'calf_r', 'foot_r', 'ball_r']), TETE = new Set(['neck_01', 'Head']);
   function clipT(nom, phase) {
     const c = MOD.clips && MOD.clips[nom]; if (!c) return 0;
     const x = ((phase % 1) + 1) % 1 * (c.nf - 1), f0 = Math.floor(x), f1 = Math.min(c.nf - 1, f0 + 1), u = x - f0;
     return lerp(c.T[f0 * 3 + 1], c.T[f1 * 3 + 1], u);
   }
   // mélange des boucles selon la vitesse : [nom, poids] ; même phase pour toutes (cycles de pas alignés)
-  function boucles(v, enJeu) {
-    if (enJeu) { const s = cl((v - 5.4) / 2.8, 0, 1); return [['Jog_Fwd_Loop', 1 - s], ['Sprint_Loop', s]]; }
+  function boucles(v, enJeu, i) {
+    if (enJeu) { const s = cl((v - 5.4) / 2.8, 0, 1);
+      // paquet 326 : de côté, pas chassés captés (Mixamo) ; en reculant, course arrière captée ; sinon footing / sprint
+      const dir = i === undefined ? null : directionCourse(i);
+      if (dir && dir.type !== 'avant' && MOD.clips && MOD.clips.MX_StrafeG) return dir.type === 'gauche' ? [['MX_StrafeG', 1]] : dir.type === 'droite' ? [['MX_StrafeD', 1]] : [['MX_Recul', 1]];
+      return [['Jog_Fwd_Loop', 1 - s], ['Sprint_Loop', s]]; }
     const s = cl((v - 1.2) / 2.5, 0, 1); return [['Walk_Loop', 1 - s], ['Jog_Fwd_Loop', s]];
   }
   function osModele(j, pose, loco, sexe) {
@@ -4726,8 +4753,13 @@ const G3D = (() => {
           let qc = null, tot = 0;
           for (const [nomC, wc] of loco.mix) { if (wc < 0.01) continue; const q = clipQ(nomC, loco.phase, k); if (!q) continue;
             qc = qc ? slerp(qc, q, wc / (tot + wc)) : q; tot += wc; }
-          if (qc) { const wk = BRAS.has(nom) ? loco.w * (1 - (pose.coup || 0)) : loco.w;
+          if (qc) { const wk = BRAS.has(nom) ? (loco.capte ? 0 : loco.w * (1 - (pose.coup || 0))) : loco.w;
             if (wk > 0.01) d = q2m(slerp(m2q(d), qc, wk)); }
+        }
+        const ov = loco && loco.ov;                                                      // paquet 326 : geste ou attente captés
+        if (ov && ov.w > 0.01) {
+          const wk = ov.w * (BRAS.has(nom) ? +ov.bras : JAMBES.has(nom) ? +ov.jambes : TETE.has(nom) ? +ov.tete : 1);
+          if (wk > 0.01) { const q = clipQu(ov.nom, ov.u, k, ov.boucle); if (q) d = q2m(slerp(m2q(d), q, wk)); }
         }
         rot = mul3(Y, mul3(d, O.reposMonde[k]));
       }
@@ -4739,6 +4771,8 @@ const G3D = (() => {
         if (loco && loco.w > 0.01) { let hc = 0, tot = 0;                             // … ou celle du mouvement capté
           for (const [nomC, wc] of loco.mix) { hc += wc * clipT(nomC, loco.phase); tot += wc; }
           hy = lerp(hy, O.rp[k][1] + (tot ? hc / tot : 0) * O.rp[k][1] / (MOD.clipsBassin || 0.917), loco.w); }
+        if (loco && loco.ov && loco.ov.jambes && loco.ov.w > 0.01)                    // paquet 326 : hauteur du bassin du geste capté
+          hy = lerp(hy, O.rp[k][1] + clipTu(loco.ov.nom, loco.ov.u, loco.ov.boucle) * O.rp[k][1] / (MOD.clipsBassin || 0.917), loco.ov.w);
         pos = M4.pt(place, [O.rp[k][0] + mien.M[0][12], hy + (pose.saut || 0), O.rp[k][2] + mien.M[0][14]]);
       }
       else { const P = monde[p]; pos = M4.pt(P, O.t[k]); }
@@ -4749,7 +4783,7 @@ const G3D = (() => {
     }
     // la raquette : orientation de ma main, posée dans la main droite du modèle
     let raquette = null;
-    const brasCapte = loco ? loco.w * (1 - (pose.coup || 0)) : 0;
+    const brasCapte = loco ? Math.max(loco.capte ? 0 : loco.w * (1 - (pose.coup || 0)), loco.ov && loco.ov.bras ? loco.ov.w : 0) : 0;
     if (mien.raquette && brasCapte > 0.5) {                                             // prise « eastern » dans la paume
       const main = monde[O.noms.indexOf('hand_r')];
       raquette = M4.mul(main, PRISE);
@@ -5011,7 +5045,7 @@ const G3D = (() => {
     }
     R = { vols, gagnant: g, fin, lancer: t0, debut: t0, finT: t + 1.2, annonce: false, J0: J.map(j => ({ x: j.x, z: j.z, cap: j.cap })),
           rebonds: vols.filter(v => v.b.y === 0 && v.type !== 'fin' && Math.abs(v.b.z) < HL + 3).map(v => ({ x: v.b.x, z: v.b.z, t: v.t + v.d, a: Math.atan2(v.b.x - v.a.x, v.b.z - v.a.z) })),
-          grand: P.grand };
+          grand: P.grand, fin_match: !!P.fin_match };                             // paquet 326 : dernier point du match
     if (FILM.actif) {
       FILM.dernier = { fin, frappes: vols.filter(v => v.qui >= 0).length };          // paquet 287 : pour la ligne de commentaire
       // plan de service : derrière le serveur pendant qu'il fait rebondir la balle, puis la vue télé au service
@@ -5189,15 +5223,43 @@ const G3D = (() => {
   }
   // poses lissées (pas d'à-coups), tête tournée vers la balle, pas d'ajustement quand l'adversaire frappe
   const LISSE = [null, null];
-  const LOCO = [{ phase: 0, w: 0, mix: [] }, { phase: 0, w: 0, mix: [] }];
+  const LOCO = [{ phase: 0, w: 0, mix: [], ov: null }, { phase: 0, w: 0, mix: [], ov: null }];
+  // paquet 326 (Lucas : « utiliser des mouvements de Mixamo ») — par-dessus ma pose : geste après le point, attente entre
+  // les points. ov = { nom, u, w, boucle, bras, jambes, tete } ; rien si les mouvements ne sont pas chargés.
+  const GESTES_MX = { poing: ['MX_Poing', 2.4], joie: ['MX_Joie', 2.9], victoire: ['MX_Victoire', 3.4], saut: ['MX_Saut', 0.93],
+    depit: ['MX_Decu', 2.6], rage: ['MX_Non', 1.8], abattu: ['MX_Abattu', 4.2], applaudit: ['MX_Applaudit', 3.5] };
+  function majCapte(i, t) {
+    const L = LOCO[i], j = J[i], v = Math.hypot(j.vx, j.vz); L.ov = null;
+    if (!MOD.clips || !MOD.clips.MX_Idle) return;
+    const G = GESTE[i];
+    if (G && G.mx && t >= G.t0 && t < G.t0 + G.d) {
+      const c = MOD.clips[G.mx], e = t - G.t0;
+      L.ov = { nom: G.mx, u: c.boucle ? e / c.dur : e / c.dur, w: cl(Math.min(e / 0.25, (G.d - e) / 0.35), 0, 1), boucle: !!c.boucle, bras: true, jambes: v < 0.6, tete: true };
+      return;
+    }
+    if (!R && v < 0.3 && !E.fini) {                                                 // entre les points, à l'arrêt
+      const sert = E.srv === i;                                                     // le serveur fait rebondir la balle : bras à lui
+      L.ov = { nom: 'MX_Idle', u: t / MOD.clips.MX_Idle.dur + i * 0.37, w: 0.85, boucle: true, bras: !sert, jambes: true, tete: false };
+    }
+  }
+  // paquet 326 : sens de la course dans le repère du joueur (face au filet) : de côté, en arrière, ou en avant
+  function directionCourse(i) {
+    const j = J[i], v = Math.hypot(j.vx, j.vz); if (v < 0.4) return { type: 'avant', v };
+    const c = Math.cos(j.cap), s = Math.sin(j.cap), lx = j.vx * c - j.vz * s, lz = j.vx * s + j.vz * c;   // + : vers sa gauche / devant lui
+    if (Math.abs(lx) >= Math.abs(lz)) return { type: lx > 0 ? 'gauche' : 'droite', v };
+    return { type: lz < 0 ? 'arriere' : 'avant', v };
+  }
   function majLoco(i, dt) {
     const j = J[i], v = Math.hypot(j.vx, j.vz), L = LOCO[i], enJeu = !!R;
-    L.mix = boucles(v, enJeu);
+    const mix = boucles(v, enJeu, i);
+    if (L.mix.length && L.mix[0][0] !== mix[0][0] && /^MX_|^Jog|^Sprint/.test(mix[0][0])) L.phase = 0;    // nouveau type de pas : cycle repris au début
+    L.mix = mix;
+    L.capte = L.mix[0][0].startsWith('MX_');                                       // pas chassés / recul : les bras restent en attente
     let vc = 0, tot = 0; for (const [nom, w] of L.mix) { const c = MOD.clips && MOD.clips[nom]; if (c) { vc += w * c.vitesse; tot += w; } }
     vc = tot ? vc / tot : 1;
     const dur = (MOD.clips && MOD.clips[L.mix[0][0]] ? MOD.clips[L.mix[0][0]].dur : 1);
     L.phase += dt * Math.max(v, 0.3) / Math.max(vc * dur, 0.3);                     // pas calés sur la vitesse : pas de glissade
-    const cible = enJeu ? cl((v - seuilCourse(i)) / 1.2, 0, 1) : cl((v - 0.5) / 0.5, 0, 1);   // en jeu : on court (sinon pas chassés)
+    const cible = enJeu ? (L.capte ? cl((v - 0.7) / 0.8, 0, 1) : cl((v - seuilCourse(i)) / 1.2, 0, 1)) : cl((v - 0.5) / 0.5, 0, 1);   // en jeu : on court (sinon pas chassés)
     L.w = lerp(L.w, cible, dt > 0 ? 1 - Math.exp(-dt * 10) : 1);
   }
   // ── LES PAS (paquet 309, Lucas : « pas mal de replacements ou déplacements qui restent figés ») ─────────────────
@@ -5645,6 +5707,7 @@ const G3D = (() => {
     const dyn = [];
     for (const i of [0, 1]) {
       const pose = poseLisse(i, t, dt);
+      majCapte(i, t);
       if (MOD.etat === 'pret' && MATCH) {
         const A = ALLURE[i] || (ALLURE[i] = allure(MATCH, i)), { skin, raquette } = osModele(J[i], pose, LOCO[i], A.sexe), C = MOD.corps[A.sexe];
         noterSillage(i, t, raquette ? M4.pt(raquette, [0, 0.46, 0]) : null);
@@ -5657,7 +5720,8 @@ const G3D = (() => {
     if (MOD.etat === 'pret' && MATCH) {
       const pa = poseArbitre(tReel, bv), k = dt > 0 ? 1 - Math.exp(-dt * 5) : 1;
       teteArbitre = lerp(teteArbitre, pa.tete[1], k); pa.tete[1] = teteArbitre;
-      const A = ALLURE_ARBITRE, { skin } = osModele(ARBITRE, pa, null), C = MOD.corps.H;
+      const ovA = MOD.clips && MOD.clips.MX_Assis ? { w: 0, mix: [], ov: { nom: 'MX_Assis', u: tReel / MOD.clips.MX_Assis.dur, w: 0.6, boucle: true, bras: true, jambes: false, tete: false } } : null;   // paquet 326
+      const A = ALLURE_ARBITRE, { skin } = osModele(ARBITRE, pa, ovA), C = MOD.corps.H;
       dyn.push([C.corps, M4.id(), false, skin, { tex: MOD.tex[A.peau], tenue: A.tenue.map((c, k) => k === 7 ? [-1, -1, -1] : c) }], [C.yeux, M4.id(), false, skin, { tex: MOD.tex.yeux }]);
       for (const c of [A.coiffe, A.sourcils]) { const H = MOD.cheveux[c]; if (H) dyn.push([H, M4.id(), false, skin, { tex: MOD.tex[H.tex], col: A.cheveux }]); }
       officielsPoses().forEach((o, k) => { if (masque(OFFICIELS[k].x, OFFICIELS[k].z)) return;
@@ -5939,7 +6003,7 @@ const G3D = (() => {
     nuit: { fond: [0.06, 0.05, 0.16], ciel: [0.62, 0.64, 0.82], sol: [0.28, 0.26, 0.36], brume: [0.08, 0.07, 0.2], lum: [0.95, 0.912, 0.836] },
     jour: { fond: [0.53, 0.71, 0.92], ciel: [0.78, 0.86, 1.0], sol: [0.46, 0.42, 0.36], brume: [0.64, 0.76, 0.93], lum: [1.32, 1.24, 1.08] },
   };
-  const VERSION_3D = 'v324';
+  const VERSION_3D = 'v326';
   // ── LE FILM (paquet 276) : la vidéo du jour en 3D. La page choisit les moments forts du match simulé et les fait
   // jouer ici un par un ; public en panneaux et image un peu réduite (la vidéo est rendue sans carte graphique).
   const FILM = { actif: false, echelle: 1, son: null, cam: null, t: 0, focale: 0 };
@@ -6043,7 +6107,7 @@ const G3D = (() => {
       point(m, rAvant, gagnant, o = {}) {
         E.avant = null; maj(m, rAvant, false); E.avant = null;
         if (o.coupe) J.forEach((j, i) => { const p = placesAttente(i); j.x = p.x; j.z = p.z; j.vx = j.vz = 0; delete j.capL; });
-        FILE.push({ gagnant, srv: E.srv, droite: E.droite, grand: !!o.grand, rejouer: !!o.rejouer, fin: o.fin, minL: o.minL, maxL: o.maxL, prep: o.prep });
+        FILE.push({ gagnant, srv: E.srv, droite: E.droite, grand: !!o.grand, rejouer: !!o.rejouer, fin: o.fin, minL: o.minL, maxL: o.maxL, prep: o.prep, fin_match: !!o.fin_match });
       },
       score(m, r, fini) { E.avant = null; maj(m, r, !!fini); E.avant = null; },
       camera(nom, d, i) { FILM.cam = nom ? { nom, d: d || 1, i: i || 0, t0: FILM.t } : null; },
@@ -7235,7 +7299,7 @@ async function filmDuJour(V, m, son){
     son('voix', 450, { texte: arbitre.score(x.avant) });
     // résumé (30–45 s) : sans ralenti, échanges plus courts, plan large sauf sur la balle de match
     G3D.film.point(m, rDe(x.avant), x.h, { coupe: true, grand: RESUME ? dernier : x.note >= 50 || dernier, rejouer: dernier && !RESUME,
-      prep: RESUME ? 1.2 : 1.9, minL: x.quoi === 'echange' ? (RESUME ? 5 : 6) : 0, maxL: x.quoi === 'echange' ? (RESUME ? 8 : 10) : RESUME ? 3 : 6, fin: dernier ? (Math.random() < 0.5 ? 'coup_droit' : 'revers') : undefined });
+      fin_match: dernier, prep: RESUME ? 1.2 : 1.9, minL: x.quoi === 'echange' ? (RESUME ? 5 : 6) : 0, maxL: x.quoi === 'echange' ? (RESUME ? 8 : 10) : RESUME ? 3 : 6, fin: dernier ? (Math.random() < 0.5 ? 'coup_droit' : 'revers') : undefined });
     await attendre(e => e.R, 4000);
     await attendre(e => !e.R, 30000);
     // le résultat du point
