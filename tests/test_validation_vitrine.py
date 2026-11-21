@@ -215,7 +215,7 @@ class WorkflowVideoTelegram(unittest.TestCase):
 
     def test_echec_telegram_ne_peut_plus_produire_un_run_vert(self):
         self.assertIn("Telegram non configuré : vidéos non envoyées.'; exit 1", self.yml)
-        self.assertEqual(self.yml.count('curl --fail-with-body'), 2)
+        self.assertEqual(self.yml.count('curl --fail-with-body'), 3)          # paquet 325 : + la carte des projections
         self.assertNotIn('|| echo "::warning::envoi Telegram', self.yml)
         self.assertNotIn('|| echo "::warning::carte Telegram', self.yml)
         # 05/11/2026 : avec ou sans le format 4:5 en option (paquet 178), la vidéo doit exister avant l'envoi

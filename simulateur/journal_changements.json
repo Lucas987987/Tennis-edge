@@ -1571,6 +1571,27 @@
    "paquet": 322,
    "quoi": "CHALLENGER SUR TERRE BATTUE : % MOINS PRUDENT (paquet 322, décision de Lucas). Première piste du chercheur automatique mise en place. En Challenger sur terre, l'algo était trop prudent : le favori annoncé à 66,7 % gagnait 70,2 % du temps. Correction : pente 1,065 sur le % (logit × 1,065), appliquée en dernier comme la correction par niveau. Jugée comme en production sur 3 037 matchs (octobre 2025 → mai 2026) : log loss −0,0016, 4,1 erreurs types, même sens sur les deux périodes ; vérifiée sur 234 pronostics en direct que le chercheur n'avait jamais vus (27/10 → 19/11/2026) : même sens, log loss −0,0012. Sur dur elle aurait dégradé : elle reste limitée à la terre. Un match déjà corrigé par son niveau de fiabilité n'est pas corrigé deux fois. Sur le site : « Challenger sur terre battue (% moins prudent) ». Le chercheur part désormais de cette correction.",
    "garde_fou": "Retrait automatique chaque lundi (simulateur/corrections_chercheur.py, règle écrite avant tout résultat) : sur au moins 200 matchs corrigés jugés, si la log loss avec la correction dépasse celle sans d'au moins 0,001, « retire » passe à true dans simulateur/corrections_chercheur.json. Retrait à la main : mettre « retire »: true. La piste du 1er tour de qualifications n'est pas mise en place (impossible à vérifier sur nos pronostics en direct)."
+  },
+  {
+   "date": "2026-11-21",
+   "statut": "en_service",
+   "paquet": 323,
+   "quoi": "3D : BALLE, COUPS, CAMÉRA, DÉCOR (paquet 323, demande de Lucas). Balle : vue de loin, elle n'est jamais plus petite qu'à 13 m de la caméra (on la suivait mal au fond du court sur un téléphone), traînée continue au lieu de pointillés, petit halo, et son ombre sur le court, qui dit sa hauteur. Coups : sillage de la tête de raquette pendant la frappe, quand elle dépasse 7 m/s. Caméra : dans la vidéo, le 1er ralenti est filmé par une caméra araignée suspendue à 5 m, qui glisse derrière la balle du côté du gagnant (avant : plan fixe du fond du court, joueurs minuscules). Décor : sur terre battue, traces de glissade et poussière sur les frappes prises en mouvement ; de nuit ou en salle, flashs d'appareils photo dans les tribunes sur les grands points, après le point et après son ralenti. Version du moteur : v323.",
+   "garde_fou": "Affichage seulement : le % ne change pas. Aucune adresse du site, aucun nom de bookmaker dans l'image. Le hasard des flashs est reproductible (même vidéo à chaque rendu). Retrait : revenir à algo/index.html du paquet 322."
+  },
+  {
+   "date": "2026-11-21",
+   "statut": "en_service",
+   "paquet": 324,
+   "quoi": "3D : GESTES RETRAVAILLÉS (paquet 324, demande de Lucas). Coup droit et revers : les épaules tournent nettement plus à la préparation pendant que le bassin reste en place (on voit la torsion), genoux plus fléchis à l'armé, accompagnement qui tourne plus loin. Slice : épaules plus tournées. Service : jambes plus fléchies au lancer et à l'armé. Les poses de frappe elles-mêmes ne bougent pas : le joueur se place toujours aussi juste sur la balle. Vérifié image par image sous trois angles (de face, de dos, de côté). Moteur v324.",
+   "garde_fou": "Affichage seulement : le % ne change pas. Retrait : revenir à algo/index.html du paquet 323."
+  },
+  {
+   "date": "2026-11-21",
+   "statut": "en_service",
+   "paquet": 325,
+   "quoi": "TOUTES LES PROJECTIONS (paquet 325, demande de Lucas). 1) Le bloc « Autres projections » des textes à copier reprend désormais tout ce que la simulation sait : l'outsider gagne au moins un set, le favori en sets secs, qui gagne le 1er set, la chance du favori s'il perd le 1er set, match en 3 (ou 5) sets, tie-break, écart de jeux (+1,5 et +3,5), trois lignes de jeux autour de 50 %, nombre de jeux le plus fréquent et sa fourchette, durée. 2) Nouvelle carte image 1080×1350 « Toutes les projections » (FR et EN), faite avec la vidéo du jour et envoyée sur le Telegram privé : grands chiffres, barres, couleur de chaque joueur, sans adresse du site. 3) Correction : les scénarios du match (sets nets, accrochés, 3 sets, remontée, 1er set) pouvaient être calculés sur une distribution de scores coupée — « 3 sets » vers 10 % pour un match annoncé à 35 % en 3 sets ; ils sont maintenant repesés sur le score en sets publié. Ce paquet reprend aussi les paquets 323 et 324 (3D), refusés par l'installateur parce qu'ils réintroduisaient le test d'un essai retiré (tests/test_essai_gpu.py).",
+   "garde_fou": "Descriptif : rien ne change dans le % de victoire. Aucune cote, aucun conseil de pari. Une projection qui ne colle pas au score en sets n'est pas affichée. Retrait : revenir à algo/index.html, scripts/video_simulation.py, .github/workflows/video_simulation.yml et simulateur/scenarios_match.py du paquet 322."
   }
  ]
 }

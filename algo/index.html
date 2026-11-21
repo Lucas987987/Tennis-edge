@@ -486,6 +486,21 @@ body.carte #video{display:block;width:1080px;height:1350px}
 .ca thead th{border-top:0;font-size:26px;text-align:right}
 .ca thead th.a{color:#2EE6FF} .ca thead th.b{color:#FF4FAE}
 .ca td{font-family:var(--cond);font-size:30px}
+/* paquet 325 : carte des projections */
+.ca.pr h1{margin:16px 0 2px}.ca .ca-a{color:#2EE6FF}.ca .ca-b{color:#FF4FAE}
+.ca.pr .tir{margin:12px 0 18px}
+.ca .pts{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:16px}
+.ca .pt{border-radius:20px;padding:12px 16px 14px;background:rgba(5,3,20,.55);border:3px solid rgba(var(--wv),.1)}
+.ca .pt .q{font-family:var(--disp);font-size:58px;line-height:1}
+.ca .pt .k{font-size:22px;color:#ABA3D6;margin-top:6px;line-height:1.2}.ca .pt .k b{color:#F4F1FF;font-weight:700}
+.ca .pt.a .q{color:#2EE6FF}.ca .pt.b .q{color:#FF4FAE}.ca .pt.n .q{color:#F4F1FF}.ca .pt.fort{border-color:rgba(212,255,58,.55);box-shadow:0 0 28px rgba(212,255,58,.18)}
+.ca.pr .blocs{margin-bottom:14px}.ca.pr .bloc{margin-bottom:14px}.ca.pr .bloc h2 small{font-weight:500;color:#ABA3D6;font-size:22px}
+.ca.pr .l{grid-template-columns:200px 1fr 80px;font-size:27px;margin:5px 0}.ca.pr .sc{font-size:28px;margin:6px 0}.ca .sc.du{margin-top:14px;padding-top:10px;border-top:2px solid rgba(var(--wv),.1)}
+.ca .pcs{display:flex;gap:10px}
+.ca .pc{position:relative;flex:1;border-radius:14px;padding:8px 6px;text-align:center;background:rgba(var(--wv),.05);overflow:hidden;font-family:var(--cond)}
+.ca .pc span{display:block;font-size:21px;color:#ABA3D6;position:relative}.ca .pc b{display:block;font-size:31px;position:relative}
+.ca .pc i{position:absolute;left:0;right:0;bottom:0;background:rgba(212,255,58,.16)}.ca .pc.ok b{color:#D4FF3A}
+.ca .pcs.a .pc i{background:rgba(46,230,255,.18)}.ca .pcs.b .pc i{background:rgba(255,79,174,.18)}
 .ca .pied{margin-top:auto;padding-top:14px;font-size:24px;color:#ABA3D6;text-align:center}
 .ca .pied b{color:#D4FF3A;font-family:var(--disp);font-weight:400}
 @media (prefers-reduced-motion: reduce){
@@ -1425,6 +1440,50 @@ function repondre(m, q, j, n){
 }
 // 11/11/2026 (paquet 221) — COMMENT LE MATCH PEUT TOURNER (vitrine.scenarios) : les 6 issues regroupées (somme 100 %),
 // au lieu d'une liste de scores exacts à 3-4 % chacun. Mêmes 20 000 simulations que le % : rien ne change dans le %.
+// 21/11/2026 (paquet 325, Lucas : « dans nos autres projections, on doit retrouver tout ce que l'on peut trouver ;
+// le % de chance que l'outsider gagne un set ») — TOUTES les projections d'un match, vues du favori de l'algo, pour le
+// texte à copier et la carte image. Rien de nouveau n'est calculé : tout vient de la simulation (sets, lignes de jeux,
+// scénarios, durée). Descriptif : le % de victoire ne change pas.
+function projectionsDe(m){
+  const p = m.p_home, fi = p >= .5 ? 0 : 1, S = m.sets || {}, k = m.lignes_algo || {}, bo5 = (k.meilleur_des || m.meilleur_des) === 5;
+  const v = (h, a) => S[fi === 0 ? `${h}-${a}` : `${a}-${h}`];
+  const sec = bo5 ? v(3, 0) : v(2, 0);
+  const o = { fi, bo5, pf: Math.max(p, 1 - p) };
+  if (sec != null) { o.fav_sec = sec; o.out_un_set = 1 - sec; }
+  const s1 = k.set1_home ?? m.set1_home; if (s1 != null) { o.set1_qui = s1 >= .5 ? 0 : 1; o.set1 = Math.max(s1, 1 - s1); }
+  if (k.set_decisif != null) o.decisif = k.set_decisif;
+  if (k.tie_break != null) o.tie_break = k.tie_break;
+  // scénarios gardés seulement s'ils collent au score en sets (avant le paquet 325, ils pouvaient être calculés sur une
+  // distribution coupée : « 3 sets » autour de 10 % pour un match annoncé à 35 % en 3 sets)
+  const J_ = m.scenarios && Array.isArray(m.scenarios.j) ? m.scenarios.j : null;
+  const coherent = J_ && k.set_decisif != null && Math.abs((J_[0].long || 0) + (J_[1].long || 0) - k.set_decisif) < 0.05;
+  if (coherent && J_[fi].si_set1_perdu != null) o.remontee_fav = J_[fi].si_set1_perdu;
+  const jx = coherent && m.scenarios.jeux; if (jx && jx.mediane != null) o.jeux = jx;
+  o.totaux = Object.keys(k).filter(x => /^total_plus_\d+\.5$/.test(x)).map(x => [parseFloat(x.slice(11)), k[x]]).sort((a, b) => a[0] - b[0]);
+  o.ecarts = Object.keys(k).filter(x => /^handicap_favori_\d+\.5$/.test(x)).map(x => [parseFloat(x.slice(16)), k[x]]).sort((a, b) => a[0] - b[0]);
+  const pv = m.rythme && m.rythme.prevision; if (pv && pv.minutes) o.duree = pv.minutes;
+  return o;
+}
+// les lignes du texte à copier (français) : N = noms courts [domicile, extérieur]
+function projectionsTexte(m, N, pct1, hm_){
+  const o = projectionsDe(m), fav = N[o.fi], out = N[1 - o.fi], L_ = [], v1 = x => String(x).replace('.', ',');
+  if (o.out_un_set != null) L_.push(`▪️ ${out} gagne au moins un set : ${pct1(o.out_un_set)}`);
+  if (o.fav_sec != null) L_.push(`▪️ ${fav} gagne en ${o.bo5 ? 'trois' : 'deux'} sets secs : ${pct1(o.fav_sec)}`);
+  if (o.set1 != null) L_.push(`▪️ ${N[o.set1_qui]} gagne le 1er set : ${pct1(o.set1)}`);
+  if (o.remontee_fav != null) L_.push(`▪️ Si ${fav} perd le 1er set, ${m.circuit === 'WTA' ? 'elle' : 'il'} gagne quand même : ${pct1(o.remontee_fav)}`);
+  if (o.decisif != null) L_.push(`▪️ Match en ${o.bo5 ? '5' : '3'} sets : ${pct1(o.decisif)}`);
+  if (o.tie_break != null) L_.push(`▪️ Au moins un tie-break : ${pct1(o.tie_break)}`);
+  for (const [x, q] of o.ecarts) if (x === 1.5 || x === 3.5) L_.push(`▪️ ${fav} gagne de plus de ${v1(x)} jeu${x > 1.5 ? 'x' : ''} : ${pct1(q)}`);
+  if (o.totaux.length) {
+    const c = o.totaux.reduce((a, b) => Math.abs(b[1] - .5) < Math.abs(a[1] - .5) ? b : a);
+    const i = o.totaux.indexOf(c);
+    const i0 = Math.max(0, Math.min(i - 1, o.totaux.length - 3));
+    for (const [x, q] of o.totaux.slice(i0, i0 + 3)) L_.push(`▪️ Plus de ${v1(x)} jeux : ${pct1(q)}`);
+  }
+  if (o.jeux) L_.push(`▪️ Nombre de jeux : ${o.jeux.mediane} le plus souvent (de ${o.jeux.p10} à ${o.jeux.p90}, 8 fois sur 10)`);
+  if (o.duree) L_.push(`▪️ Durée prévue : ${hm_(o.duree)}`);
+  return L_;
+}
 function scenariosListe(m){
   const S = m.scenarios; if (!S || !Array.isArray(S.j) || S.j.length !== 2) return null;
   const fr = L==='fr', N = [court(m.home), court(m.away)];
@@ -1923,13 +1982,7 @@ function postX(m, court_){
         if (f[0][c]!=null && f[1][c]!=null) L2.push(`${lib} : ${fm(f[0][c])} / ${fm(f[1][c])}`); });
       L2.push('');
     }
-    const proj = [];
-    if (k['handicap_favori_1.5'] != null) proj.push(`▪️ ${favC} gagne de plus de 1,5 jeu : ${pct1(k['handicap_favori_1.5'])}`);
-    if (k['total_plus_20.5'] != null) proj.push(`▪️ Plus de 20,5 jeux : ${pct1(k['total_plus_20.5'])}`);
-    if (k.set_decisif != null) proj.push(`▪️ Match en 3 sets : ${pct1(k.set_decisif)}`);
-    if (k.tie_break != null) proj.push(`▪️ Au moins un tie-break : ${pct1(k.tie_break)}`);
-    const pv = m.rythme && m.rythme.prevision;
-    if (pv && pv.minutes) proj.push(`▪️ Durée prévue : ${hm(pv.minutes)}`);
+    const proj = projectionsTexte(m, [H, A], pct1, hm);                 // paquet 325 : toutes les projections
     if (proj.length){ L2.push('📈 AUTRES PROJECTIONS', ...proj, ''); }
     if (principal) L2.push(`Scénario le plus fréquent : ${vainqDe(principal[0])} en ${principal[0]==='2-0'||principal[0]==='0-2' ? 'deux' : 'trois'} sets (${pct(principal[1])}).`, '');
     L2.push(`🎥 Un scénario simulé point par point parmi les ${nf} réalisés, en vidéo.`);
@@ -2148,13 +2201,7 @@ function analyseComplete(m, court_){
         if (f[0][c]!=null && f[1][c]!=null) l.push(`${lib} : ${fm(f[0][c])} / ${fm(f[1][c])}`); });
       bloc(...l);
     }
-    const proj = [];
-    if (k['handicap_favori_1.5'] != null) proj.push(`▪️ ${fav} gagne de plus de 1,5 jeu : ${pct1(k['handicap_favori_1.5'])}`);
-    if (k['total_plus_20.5'] != null) proj.push(`▪️ Plus de 20,5 jeux : ${pct1(k['total_plus_20.5'])}`);
-    if (k.set_decisif != null) proj.push(`▪️ Match en 3 sets : ${pct1(k.set_decisif)}`);
-    if (k.tie_break != null) proj.push(`▪️ Au moins un tie-break : ${pct1(k.tie_break)}`);
-    const pv = m.rythme && m.rythme.prevision;
-    if (pv && pv.minutes) proj.push(`▪️ Durée prévue : ${hm(pv.minutes)}`);
+    const proj = projectionsTexte(m, N, pct1, hm);                      // paquet 325 : toutes les projections
     if (proj.length) bloc('📊 AUTRES PROJECTIONS', ...proj);
     // styles
     if (!court_ && sd && Array.isArray(sd.joueurs)){
@@ -4107,6 +4154,7 @@ const G3D = (() => {
         pos.push(x, y, z, rnd(0.88, 1.05)); const tc = hex(tons[Math.floor(Math.random() * tons.length)]), om = 0.55 + 0.25 * Math.random(); col.push(tc[0] * om, tc[1] * om, tc[2] * om);
       }
     }
+    scene.sieges = pos;                                                                    // paquet 323 : flashs dans les tribunes
     scene.public = FILM.actif ? { m: maillage(panneauSpectateur(), { pos, col }), spec: 0.02, tex: texPublic(), panneau: true }
                               : { m: maillage(fig, { pos, col }), spec: 0.05 };
     // filet : poteaux, bande blanche, sangle centrale, mailles transparentes
@@ -4394,14 +4442,17 @@ const G3D = (() => {
   // (épaules à 90°, raquette qui tombe sous la balle, frappe devant, accompagnement par-dessus l'épaule gauche),
   // revers à deux mains, revers slicé (de haut en bas, bras gauche en balancier), volées, service (lancer, « trophée »,
   // armé dans le dos, frappe en extension, retombée dans le court). Les jambes sont posées au sol à chaque instant.
+  // 21/11/2026 (paquet 324, Lucas : « retravailler les gestes ») : épaules plus tournées à la préparation (×1,35, le bassin
+  // reste en place : on voit la torsion), genoux plus fléchis à l'armé (+5 cm), accompagnement qui tourne plus loin ;
+  // service : jambes plus fléchies au lancer et à l'armé. Le point de contact (u = 0,55) ne bouge pas.
   const CHAMPS_COUP = ['tronc', 'bassin', 'accroupi', 'lat', 'avance', 'epD', 'coudeD', 'poignetD', 'epG', 'coudeG', 'pd', 'pg'];
   const COUPS = {
-    cd: [[0,[.28,0,0],[0,0,0],.12,0,0,[.67,-.882,-.998],1.408,[-.251,0,1.902],[-.154,-1.044,-.511],1.202,[-.248,.086],[.248,.086]], [.3,[.2,-.9,.05],[0,-.5,0],.15,-.08,0,[-.612,.488,-.606],2.034,[-1.302,0,1.061],[-.235,.291,-.157],2.443,[-.42,-.05],[.22,.2]], [.47,[.22,-.9,.12],[0,-.4,0],.2,-.12,0,[.171,1.059,.165],1.768,[-.911,0,.305],[.103,1.136,-.288],2.163,[-.42,-.05],[.22,.2]], [.55,[.2,-.3,0],[0,.2,0],.12,-.02,.06,[-.245,-.042,-.483],1.077,[-1.29,0,1.116],[.566,1.601,.09],2.063,[-.42,-.05],[.22,.2]], [.68,[.15,.45,0],[0,.45,0],.09,.08,.08,[-.282,.45,-1.434],1.974,[-1.303,0,.997],[.779,1.601,.515],1.851,[-.42,-.05],[.22,.2]], [.82,[.15,.95,0],[0,.55,0],.09,.1,.06,[-.812,-1.033,.531],2.192,[.091,0,.215],[-.522,-1.602,-.424],2.138,[-.42,-.05],[.22,.2]], [1,[.28,.1,0],[0,.1,0],.12,0,0,[.618,-.61,-1.015],1.695,[-.312,0,1.904],[-.246,-1.232,-.578],1.231,[-.248,.086],[.248,.086]]],
-    rv: [[0,[.28,0,0],[0,0,0],.12,0,0,[.67,-.882,-.998],1.408,[-.251,0,1.902],[-1.049,-.99,0],.108,[-.248,.086],[.248,.086]], [.3,[.2,.9,0],[0,.6,0],.15,.08,0,[.614,-1.708,-1.153],1.887,[.583,0,1.94],[.091,-1.601,-.651],1.752,[-.15,.25],[.42,-.05]], [.47,[.22,.9,-.1],[0,.5,0],.2,.12,0,[.156,-.89,.251],1.415,[-1.23,0,-.184],[.144,-1.602,-.356],1.621,[-.15,.25],[.42,-.05]], [.55,[.2,.7,0],[0,-.1,0],.12,0,.08,[-.168,.497,.594],1.117,[-1.301,0,-1.083],[-.611,-1.464,-.623],.583,[-.15,.25],[.42,-.05]], [.68,[.15,-.45,0],[0,-.35,0],.09,-.06,.08,[.021,-.035,1.663],.967,[-1.31,0,-1.266],[-.807,-.26,-.632],2.508,[-.15,.25],[.42,-.05]], [.82,[.15,-.95,0],[0,-.45,0],.09,-.08,.06,[-.909,-.645,.029],2.325,[-.354,0,1.972],[-.756,-.893,.454],2.264,[-.15,.25],[.42,-.05]], [1,[.28,-.1,0],[0,0,0],.12,0,0,[.415,-.939,-1.041],1.561,[.294,0,1.902],[-.626,-1.186,-.361],.821,[-.248,.086],[.248,.086]]],
-    sl: [[0,[.28,0,0],[0,0,0],.12,0,0,[.67,-.882,-.998],1.408,[-.251,0,1.902],[-1.049,-.99,0],.108,[-.248,.086],[.248,.086]], [.35,[.2,.95,0],[0,.55,0],.14,.08,0,[.072,-1.638,-1.8],2.31,[-.489,0,.997],[-.306,-1.171,-.685],2.445,[-.12,.3],[.4,-.08]], [.55,[.25,.7,0],[0,.2,0],.2,.02,.1,[.412,-.921,-1.197],1.569,[-1.302,0,1.061],[-.265,1.601,.479],1.731,[-.12,.3],[.4,-.08]], [.75,[.25,.4,0],[0,.1,0],.17,-.02,.12,[-.328,-.33,-.526],1.615,[-1.235,0,.598],[-.637,1.601,-.138],.927,[-.12,.3],[.4,-.08]], [1,[.28,0,0],[0,0,0],.12,0,0,[.47,-.819,-1.025],1.618,[.137,0,1.902],[.906,1.369,.762],.049,[-.248,.086],[.248,.086]]],
+    cd: [[0,[.28,0,0],[0,0,0],.12,0,0,[.67,-.882,-.998],1.408,[-.251,0,1.902],[-.154,-1.044,-.511],1.202,[-.248,.086],[.248,.086]], [.3,[.2,-1.215,.05],[0,-.5,0],.2,-.08,0,[-.612,.488,-.606],2.034,[-1.302,0,1.061],[-.235,.291,-.157],2.443,[-.42,-.05],[.22,.2]], [.47,[.22,-1.215,.12],[0,-.4,0],.25,-.12,0,[.171,1.059,.165],1.768,[-.911,0,.305],[.103,1.136,-.288],2.163,[-.42,-.05],[.22,.2]], [.55,[.2,-.3,0],[0,.2,0],.12,-.02,.06,[-.245,-.042,-.483],1.077,[-1.29,0,1.116],[.566,1.601,.09],2.063,[-.42,-.05],[.22,.2]], [.68,[.15,.562,0],[0,.54,0],.09,.08,.08,[-.282,.45,-1.434],1.974,[-1.303,0,.997],[.779,1.601,.515],1.851,[-.42,-.05],[.22,.2]], [.82,[.15,1.235,0],[0,.715,0],.09,.1,.06,[-.812,-1.033,.531],2.192,[.091,0,.215],[-.522,-1.602,-.424],2.138,[-.42,-.05],[.22,.2]], [1,[.28,.1,0],[0,.1,0],.12,0,0,[.618,-.61,-1.015],1.695,[-.312,0,1.904],[-.246,-1.232,-.578],1.231,[-.248,.086],[.248,.086]]],
+    rv: [[0,[.28,0,0],[0,0,0],.12,0,0,[.67,-.882,-.998],1.408,[-.251,0,1.902],[-1.049,-.99,0],.108,[-.248,.086],[.248,.086]], [.3,[.2,1.215,0],[0,.6,0],.2,.08,0,[.614,-1.708,-1.153],1.887,[.583,0,1.94],[.091,-1.601,-.651],1.752,[-.15,.25],[.42,-.05]], [.47,[.22,1.215,-.1],[0,.5,0],.25,.12,0,[.156,-.89,.251],1.415,[-1.23,0,-.184],[.144,-1.602,-.356],1.621,[-.15,.25],[.42,-.05]], [.55,[.2,.7,0],[0,-.1,0],.12,0,.08,[-.168,.497,.594],1.117,[-1.301,0,-1.083],[-.611,-1.464,-.623],.583,[-.15,.25],[.42,-.05]], [.68,[.15,-.562,0],[0,-.42,0],.09,-.06,.08,[.021,-.035,1.663],.967,[-1.31,0,-1.266],[-.807,-.26,-.632],2.508,[-.15,.25],[.42,-.05]], [.82,[.15,-1.235,0],[0,-.585,0],.09,-.08,.06,[-.909,-.645,.029],2.325,[-.354,0,1.972],[-.756,-.893,.454],2.264,[-.15,.25],[.42,-.05]], [1,[.28,-.1,0],[0,0,0],.12,0,0,[.415,-.939,-1.041],1.561,[.294,0,1.902],[-.626,-1.186,-.361],.821,[-.248,.086],[.248,.086]]],
+    sl: [[0,[.28,0,0],[0,0,0],.12,0,0,[.67,-.882,-.998],1.408,[-.251,0,1.902],[-1.049,-.99,0],.108,[-.248,.086],[.248,.086]], [.35,[.2,1.14,0],[0,.55,0],.17,.08,0,[.072,-1.638,-1.8],2.31,[-.489,0,.997],[-.306,-1.171,-.685],2.445,[-.12,.3],[.4,-.08]], [.55,[.25,.7,0],[0,.2,0],.2,.02,.1,[.412,-.921,-1.197],1.569,[-1.302,0,1.061],[-.265,1.601,.479],1.731,[-.12,.3],[.4,-.08]], [.75,[.25,.4,0],[0,.1,0],.17,-.02,.12,[-.328,-.33,-.526],1.615,[-1.235,0,.598],[-.637,1.601,-.138],.927,[-.12,.3],[.4,-.08]], [1,[.28,0,0],[0,0,0],.12,0,0,[.47,-.819,-1.025],1.618,[.137,0,1.902],[.906,1.369,.762],.049,[-.248,.086],[.248,.086]]],
     vd: [[0,[.3,0,0],[0,0,0],.14,0,0,[.36,-.491,-1.234],1.815,[.751,0,1.902],[-.328,-1.07,-.587],1.507,[-.248,.086],[.248,.086]], [.4,[.3,-.35,0],[0,-.25,0],.17,-.05,.05,[-.005,-.085,-1.305],2.509,[1.31,0,1.784],[-.569,-.664,-.494],2.013,[-.3,.05],[.15,.35]], [.55,[.32,-.2,0],[0,-.1,0],.18,-.02,.1,[-.664,-.366,-.727],1.805,[-1.097,0,.657],[.693,-1.203,-.306],2.576,[-.3,.05],[.15,.35]], [.75,[.3,-.1,0],[0,0,0],.16,0,.1,[-.472,-.304,-.684],1.683,[-1.297,0,.596],[.864,-.916,-.561],2.515,[-.3,.05],[.15,.35]], [1,[.3,0,0],[0,0,0],.14,0,0,[.36,-.492,-1.234],1.815,[.751,0,1.902],[-.306,-1.102,-.629],1.507,[-.248,.086],[.248,.086]]],
     vr: [[0,[.3,0,0],[0,0,0],.14,0,0,[.36,-.491,-1.234],1.815,[.751,0,1.902],[-.812,-1.445,-.56],.808,[-.248,.086],[.248,.086]], [.4,[.3,.6,0],[0,.3,0],.17,.05,.05,[-.296,-1.609,-1.144],2.244,[1.307,0,1.908],[-.539,-1.604,-.481],2.512,[-.15,.35],[.3,.05]], [.55,[.32,.3,0],[0,.1,0],.18,.02,.1,[-.639,-.884,-.574],1.849,[-1.264,0,.365],[.086,1.604,-.106],2.074,[-.15,.35],[.3,.05]], [.75,[.3,.15,0],[0,0,0],.16,0,.1,[-.374,-1.475,-1.094],1.141,[-1.301,0,.802],[-.145,1.603,-.417],1.385,[-.15,.35],[.3,.05]], [1,[.3,0,0],[0,0,0],.14,0,0,[.36,-.491,-1.234],1.815,[.751,0,1.902],[-.817,-.891,-.03],.913,[-.248,.086],[.248,.086]]],
-    sv: [[0,[.1,-.2,0],[0,-1.3,0],.04,0,-.05,[-.21,.013,.434],.845,[-1.3,0,-1.411],[-.184,-.394,.118],1.117,[-.28,-.3],[.02,.18]], [.3,[-.05,-.25,.1],[0,-1.3,0],.1,0,.04,[-1.613,1.077,-.338],1.003,[-1.344,0,.067],[-2.915,-.295,-.276],.276,[-.28,-.3],[.02,.18]], [.5,[-.3,-.3,.3],[0,-1.3,0],.24,-.04,0,[-2.377,1.602,.69],1.433,[-1.014,0,.263],[-2.358,.084,-.577],.049,[-.28,-.3],[.02,.18]], [.58,[-.25,-.2,.2],[0,-1,0],.15,0,.04,[-2.49,.479,-.608],2.567,[-.109,0,1.955],[.262,.644,-1.804],2.386,[-.28,-.3],[.02,.18]], [.625,[.15,.3,.05],[0,-.5,0],.02,0,.12,[-2.831,.694,.29],.851,[-.747,0,-.144],[1.168,.115,-.724],1.804,[-.28,-.3],[.02,.18]], [.75,[.5,.3,0],[0,.1,0],.1,0,.12,[-.14,-.484,-.551],2.309,[-.312,0,.24],[.919,-1.602,-.032],1.801,[-.15,.15],[.02,.18]], [1,[.4,.5,0],[0,.3,0],.13,0,.05,[-.227,-.815,-.204],1.042,[-1.039,0,-.242],[.197,-1.57,-.748],1.492,[-.25,.3],[.2,.2]]],
+    sv: [[0,[.1,-.2,0],[0,-1.3,0],.04,0,-.05,[-.21,.013,.434],.845,[-1.3,0,-1.411],[-.184,-.394,.118],1.117,[-.28,-.3],[.02,.18]], [.3,[-.05,-.25,.1],[0,-1.3,0],.14,0,.04,[-1.613,1.077,-.338],1.003,[-1.344,0,.067],[-2.915,-.295,-.276],.276,[-.28,-.3],[.02,.18]], [.5,[-.3,-.3,.3],[0,-1.3,0],.28,-.04,0,[-2.377,1.602,.69],1.433,[-1.014,0,.263],[-2.358,.084,-.577],.049,[-.28,-.3],[.02,.18]], [.58,[-.25,-.2,.2],[0,-1,0],.15,0,.04,[-2.49,.479,-.608],2.567,[-.109,0,1.955],[.262,.644,-1.804],2.386,[-.28,-.3],[.02,.18]], [.625,[.15,.3,.05],[0,-.5,0],.02,0,.12,[-2.831,.694,.29],.851,[-.747,0,-.144],[1.168,.115,-.724],1.804,[-.28,-.3],[.02,.18]], [.75,[.5,.3,0],[0,.1,0],.1,0,.12,[-.14,-.484,-.551],2.309,[-.312,0,.24],[.919,-1.602,-.032],1.801,[-.15,.15],[.02,.18]], [1,[.4,.5,0],[0,.3,0],.13,0,.05,[-.227,-.815,-.204],1.042,[-1.039,0,-.242],[.197,-1.57,-.748],1.492,[-.25,.3],[.2,.2]]],
   };
   const CLES_COUPS = {};                                                               // clés → listes de nombres
   for (const [nom, K] of Object.entries(COUPS)) CLES_COUPS[nom] = { u: K.map(k => k[0]), v: K.map(k => k.slice(1).flat()) };
@@ -4728,7 +4779,7 @@ const G3D = (() => {
               avant: null, profils: [null, null], dernier: null, msg: null };
   const J = [{ x: 0, z: -HL - 0.8, vx: 0, vz: 0, cap: 0 }, { x: 0, z: HL + 0.8, vx: 0, vz: 0, cap: Math.PI }];
   const FILE = [];
-  const BALLE_VUE = { x: 0, z: 0 }; let grandPoint = false;
+  const BALLE_VUE = { x: 0, z: 0 }; let grandPoint = false, flashDepuis = -99;     // paquet 323 : flashs aussi après le ralenti
   let R = null, applaudir = -9;
   const CATS = ['aces', 'services_non_retournes', 'coup_droit', 'revers', 'filet', 'amorti', 'lob', 'fautes_provoquees', 'fautes_directes_adverses', 'doubles_fautes_adverses'];
   const DEFAUT = { aces: 6, services_non_retournes: 9, coup_droit: 17, revers: 9, filet: 6, amorti: 2, lob: 1, fautes_provoquees: 21, fautes_directes_adverses: 25, doubles_fautes_adverses: 3 };
@@ -5262,12 +5313,15 @@ const G3D = (() => {
     if (FILM.actif) RAL.base = Math.max(RAL.base, RAL.fin - (angle === 2 ? 2.6 : 3.4));   // film : les 3 dernières secondes du point
     const s = Math.random() < 0.5 ? -1 : 1;
     Object.assign(cam, { fov: 0.5, suivre: false, balle: true, cote: s, haut: rnd(1.4, 2.4) });
-    if (FILM.actif && angle === 1) { cam.balle = false; cam.inverse = true; }
+    // paquet 323 (Lucas : « améliorer la caméra ») : film — le 1er ralenti est filmé par une CAMÉRA ARAIGNÉE, suspendue à
+    // 5 m au-dessus du court, qui glisse derrière la balle du côté du gagnant du point (avant : plan fixe du fond du court)
+    if (FILM.actif && angle === 1) { cam.balle = false; cam.araignee = src.gagnant === 0 ? -1 : 1; delete FILM.ax; delete FILM.az; }
     if (FILM.actif && angle === 2) { cam.balle = false; delete cam.inverse; cam.dos2 = src.gagnant === 1 ? 1 : -1; }   // paquet 288 : 2e angle, bas, derrière le gagnant du point                      // film : ralenti vu de l'autre bout du court          // caméra basse, au bord du court
     delete cam.focus;
   }
   function finRalenti(t) {
     RAL.actif = false; R = null;
+    if (grandPoint && t !== undefined) flashDepuis = t;
     // paquet 288 : film — la balle de match est rejouée une 2e fois, caméra basse au bord du court qui suit la balle
     if (RAL.cam) { for (const k of Object.keys(cam)) delete cam[k]; Object.assign(cam, RAL.cam); RAL.cam = null; }
     if (FILM.actif && RAL.angle === 1 && RAL.src && RAL.src.grand && RAL.src.rejouer && !FILE.length && t !== undefined) RAL.prevu = { at: t, R: RAL.src, angle: 2 };
@@ -5518,6 +5572,10 @@ const G3D = (() => {
     if (cam.balle) eye = [cam.cote * 8.4, cam.haut, cl((cam.bz || 0) * 0.45, -7, 7)];
     if (cam.dos2) { const b = posBalle(t), x = b ? cl(b.x * 0.6, -3.5, 3.5) : 0, s = cam.dos2; FILM.rx = lerp(FILM.rx || 0, x, 0.07);
       FILM.focale = 0; return projeter(w, h, [FILM.rx * 0.5, 2.0, s * (HL + 7)], [FILM.rx, 0.9, -s * 3], 0.56); }
+    if (cam.araignee) { const b = posBalle(t), s = cam.araignee, bx = b ? b.x : 0, bz = b ? b.z : s * HL * 0.8;
+      FILM.ax = lerp(FILM.ax ?? bx, bx, 0.06); FILM.az = lerp(FILM.az ?? bz, bz, 0.045);
+      const ez = cl(FILM.az + s * 7.5, -HL - 7, HL + 7);
+      FILM.focale = 0; return projeter(w, h, [cl(FILM.ax * 0.7, -4, 4), 5.2, ez], [cl(FILM.ax, -5, 5), 0.6, FILM.az - s * 3], 0.62); }
     if (cam.inverse) { const b = posBalle(t), x = b ? cl(b.x * 0.5, -3, 3) : 0; FILM.rx = lerp(FILM.rx || 0, x, 0.06);
       return projeter(w, h, [FILM.rx * 0.6, 5.4, HL + 13], [FILM.rx, 0.4, -2.5], 0.6); }
     if (cam.vise) eye[1] = cible[1] + cam.dist * sp;           // ralenti : depuis le bord du court
@@ -5537,12 +5595,37 @@ const G3D = (() => {
     gl.uniform1i(U.uHabit, o.tenue ? 1 : 0); if (o.tenue) gl.uniform3fv(U.uTenue, o.tenue.flat());
     if (o.tex) { gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, o.tex); gl.uniform1i(U.uTex, 1); } else gl.uniform1i(U.uTex, 0);
   }
+  // paquet 323 : hasard reproductible (même image pour le même instant : la vidéo se refait à l'identique)
+  const hasard = n => { const x = Math.sin(n * 12.9898 + 78.233) * 43758.5453; return x - Math.floor(x); };
+  // paquet 323 : sillage de la tête de raquette — ses positions des 0,12 dernières secondes (temps du jeu ; remis à zéro
+  // quand le temps saute : ralenti, nouveau point)
+  const SILLAGE = [[], []];
+  function noterSillage(i, t, p) {
+    const S = SILLAGE[i], d = S.length ? S[S.length - 1] : null;
+    if (!p || (d && (t < d.t - 1e-4 || t - d.t > 0.25))) S.length = 0;
+    if (p && (!d || t > d.t + 1e-4 || !S.length)) S.push({ t, p });
+    while (S.length && t - S[0].t > 0.12) S.shift();
+  }
+  // paquet 323 : glissades sur terre battue — à chaque frappe de fond de court prise en mouvement (plus de 0,5 m/s)
+  const GLISSE = { R: null, vus: new Set(), marques: [] };
+  function noterGlissades(t) {
+    if (GLISSE.R !== R) { GLISSE.R = R; GLISSE.vus = new Set(); GLISSE.marques = []; }
+    if (!R || E.surface !== 'Clay') return;
+    R.vols.forEach((v, n) => {
+      if (!(v.qui >= 0) || v.type === 'service' || GLISSE.vus.has(n) || t < v.t - 0.06 || t > v.t + 0.2) return;
+      GLISSE.vus.add(n);
+      const j = J[v.qui], sp = Math.hypot(j.vx, j.vz);
+      if (sp < 0.5 || Math.abs(j.z) < 4.5) return;                                      // au filet : pas de glissade
+      GLISSE.marques.push({ x: j.x + j.vx / sp * 0.25, z: j.z + j.vz / sp * 0.25, a: Math.atan2(j.vx, j.vz), l: cl(0.35 + sp * 0.3, 0.45, 1.2), t });
+    });
+  }
   function dessiner(t, dt) {
     const w = cv.width, h = cv.height; if (!w || !h) return;
     if (surfaceFaite !== E.surface + (E.jour ? ':jour' : ':nuit')) construireDecor(E.surface);
     const tReel = t; [t, dt] = horloge(t, dt); FILM.t = t;
     avancer(t, dt);
     const bv = E.fini ? null : posBalle(t), b = bv || (R ? null : balleEnMain(t));
+    noterGlissades(t);
     if (cam.balle) { const c = bv || { x: (J[0].x + J[1].x) / 2, z: 0 }; cam.bx = lerp(cam.bx ?? c.x, c.x, 0.08); cam.bz = lerp(cam.bz ?? c.z, c.z, 0.08); }
     if (bv) { if (FILM.actif && TRACE.length) { const q = TRACE[TRACE.length - 1]; TRACE.push({ x: (q.x + bv.x) / 2, y: (q.y + bv.y) / 2, z: (q.z + bv.z) / 2 }); }
       TRACE.push(bv); while (TRACE.length > (FILM.actif ? 16 : 9)) TRACE.shift(); } else TRACE.length = 0;
@@ -5551,6 +5634,9 @@ const G3D = (() => {
     message(t, tReel);
     sonsDuPoint(t);
     const { vp, lvp, eye, cible: visee } = matrices(w, h, t);
+    // paquet 323 (Lucas : « améliorer la balle ») : vue de loin, la balle n'est jamais plus petite qu'à 13 m de la
+    // caméra (sur un téléphone, elle disparaissait au fond du court) ; en gros plan, sa vraie taille
+    const kB = b ? cl(0.14 * Math.hypot(b.x - eye[0], b.y - eye[1], b.z - eye[2]) * Math.tan((CAPT.fov || 0.6) / 2), 1, 2.6) : 1;
     // paquet 288 : film — un officiel posé entre la caméra (à moins de 8 m) et ce qu'elle filme n'est pas dessiné (gros plans masqués)
     const masque = (x, z) => { if (!FILM.actif) return false; const dx = visee[0] - eye[0], dz = visee[2] - eye[2], L2 = dx * dx + dz * dz; if (L2 < 1) return false;
       const u = ((x - eye[0]) * dx + (z - eye[2]) * dz) / L2; if (u <= 0 || u >= 0.9 || u * Math.sqrt(L2) > 8) return false;
@@ -5561,6 +5647,7 @@ const G3D = (() => {
       const pose = poseLisse(i, t, dt);
       if (MOD.etat === 'pret' && MATCH) {
         const A = ALLURE[i] || (ALLURE[i] = allure(MATCH, i)), { skin, raquette } = osModele(J[i], pose, LOCO[i], A.sexe), C = MOD.corps[A.sexe];
+        noterSillage(i, t, raquette ? M4.pt(raquette, [0, 0.46, 0]) : null);
         const tenue = A.tenue.map((c, k) => k === 7 && !A.bandeau ? [-1, -1, -1] : c);
         dyn.push([C.corps, M4.id(), false, skin, { tex: MOD.tex[A.peau], tenue }], [C.yeux, M4.id(), false, skin, { tex: MOD.tex.yeux }]);
         for (const c of [A.coiffe, A.sourcils]) { const H = MOD.cheveux[c]; if (H) dyn.push([H, M4.id(), false, skin, { tex: MOD.tex[H.tex], col: A.cheveux }]); }
@@ -5644,7 +5731,7 @@ const G3D = (() => {
       passe({ m, spec: opt ? 0.12 : 0.07, peau, recoit: !opt, rim: opt ? (FILM.actif ? 0.55 : 0.3) : 0, ...(opt || {}) }, mat);
       if (opt) gl.disable(gl.CULL_FACE);
     }
-    if (b) passe({ m: BALLE, spec: 0.5, emis: 0.35 }, M4.tr(b.x, b.y, b.z));
+    if (b) passe({ m: BALLE, spec: 0.5, emis: 0.5 }, chaine(M4.tr(b.x, b.y, b.z), M4.sc(kB, kB, kB)));
     // 3) transparents : mailles du filet, cordages — sans toucher à la 2e sortie (sa transparence garde la distance, paquet 277)
     if (post) gl.drawBuffers([gl.COLOR_ATTACHMENT0, gl.NONE]);
     gl.enable(gl.BLEND); gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ZERO, gl.ONE); gl.depthMask(false);   // l'alpha (distance) reste celui des opaques
@@ -5653,6 +5740,18 @@ const G3D = (() => {
     const tc = TX.contact || (TX.contact = texture(toile(64, 64, (c, w, h) => { const g = c.createRadialGradient(32, 32, 0, 32, 32, 32);
       g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(0.5, 'rgba(255,255,255,.45)'); g.addColorStop(1, 'rgba(255,255,255,0)'); c.fillStyle = g; c.fillRect(0, 0, w, h); }), false));
     for (const j of J) passe({ m: PLAQUE, tex: tc, col: [0, 0, 0], alpha: 0.4, spec: 0, recoit: false }, chaine(M4.tr(j.x, 0.006, j.z), M4.sc(1.0, 1, 0.8)));
+    // paquet 323 : l'ombre de la balle sur le court (plus nette et plus sombre quand la balle est basse) : on lit sa hauteur
+    if (b && b.y < 9) { const so = 0.13 * kB * (1 + 0.2 * b.y);
+      passe({ m: PLAQUE, tex: tc, col: [0, 0, 0], alpha: 0.6 * Math.exp(-b.y * 0.3), spec: 0, recoit: false }, chaine(M4.tr(b.x, 0.007, b.z), M4.sc(so, 1, so))); }
+    // paquet 323 (Lucas : « améliorer les coups ») : le sillage de la tête de raquette pendant la frappe (comme le flou
+    // d'une caméra de télévision) — seulement quand elle va vite (plus de 7 m/s : préparation, frappe, accompagnement)
+    for (const S of SILLAGE) for (let k = 1; k < S.length; k++) {
+      const a = S[k - 1], c = S[k], dd = Math.hypot(c.p[0] - a.p[0], c.p[1] - a.p[1], c.p[2] - a.p[2]), dtk = c.t - a.t;
+      if (dtk <= 0 || dd / dtk < 7) continue;
+      const f = cl(1 - (t - c.t) / 0.12, 0, 1), n = Math.min(24, Math.ceil(dd / 0.045));
+      for (let q = 0; q < n; q++) { const u = q / n, x = lerp(a.p[0], c.p[0], u), y = lerp(a.p[1], c.p[1], u), z = lerp(a.p[2], c.p[2], u), g = f * (0.55 + 0.45 * (k - 1 + u) / S.length);
+        passe({ m: BALLE, col: [1, 1, 1], alpha: 0.16 * g, emis: 0.3, spec: 0, recoit: false }, chaine(M4.tr(x, y, z), M4.sc(1.7, 1.7, 1.7))); }
+    }
     gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, TX.cordage);
     for (const [m, mat, tr] of dyn) if (tr) passe({ m, tex: TX.cordage, alpha: 0.8, spec: 0 }, mat);
     // paquet 292 : éclair bref au contact de la raquette (0,12 s), en lumière ajoutée
@@ -5666,7 +5765,44 @@ const G3D = (() => {
       }
       gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ZERO, gl.ONE);
     }
-    TRACE.forEach((p, k) => passe({ m: BALLE, alpha: 0.05 + 0.3 * k / TRACE.length, emis: 0.8, spec: 0, recoit: false }, chaine(M4.tr(p.x, p.y, p.z), M4.sc(0.8, 0.8, 0.8))));
+    // paquet 323 : traînée CONTINUE de la balle (ses positions des 80 dernières millisecondes, plus de pointillés) et petit
+    // halo autour d'elle, en lumière ajoutée : on la suit d'un bout à l'autre du court, même sur un petit écran
+    if (bv && R) {
+      gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE, gl.ZERO, gl.ONE);
+      for (let k = 1; k <= 40; k++) { const p = posBalle(t - k * 0.002); if (!p) break;
+        const f = 1 - k / 41, sk = kB * (0.35 + 0.6 * f);
+        passe({ m: BALLE, col: [0.9, 1, 0.45], alpha: 0.2 * f * f, emis: 0.9, spec: 0, recoit: false }, chaine(M4.tr(p.x, p.y, p.z), M4.sc(sk, sk, sk))); }
+      const kh = kB * 2.2;
+      passe({ m: BALLE, col: [0.85, 1, 0.35], alpha: 0.16, emis: 1.2, spec: 0, recoit: false }, chaine(M4.tr(bv.x, bv.y, bv.z), M4.sc(kh, kh, kh)));
+      gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ZERO, gl.ONE);
+    }
+    // paquet 323 (Lucas : « améliorer le décor ») : sur les grands points, de nuit ou en salle, des flashs d'appareils photo
+    // crépitent dans les tribunes pendant deux secondes et demie, après le point puis après son ralenti (jamais pendant)
+    const tf_ = t >= flashDepuis && t - flashDepuis < 2.5 ? flashDepuis : applaudir;
+    if (!E.jour && grandPoint && !RAL.actif && scene.sieges && scene.sieges.length && t >= tf_ && t - tf_ < 2.5) {
+      gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE, gl.ZERO, gl.ONE);
+      const P_ = scene.sieges, ns = P_.length / 4, cr = Math.floor(t * 18), fin_ = 1 - (t - tf_) / 2.5;
+      // tirés parmi les spectateurs DANS l'image (sinon, en gros plan, presque aucun flash ne tombe dans le cadre)
+      const voulu = Math.round(2 + 7 * fin_);
+      for (let k = 0, n_ = 0; k < 600 && n_ < voulu; k++) {
+        const q = Math.floor(hasard(cr * 613 + k * 31 + 5) * ns) * 4, x_ = P_[q], z_ = P_[q + 2], r_ = Math.hypot(x_, z_) || 1;   // un peu devant le spectateur
+        const X = x_ - x_ / r_ * 0.3, Y = P_[q + 1] + 0.72, Z = z_ - z_ / r_ * 0.3;
+        const cw = vp[3] * X + vp[7] * Y + vp[11] * Z + vp[15]; if (cw <= 0.5) continue;
+        if (Math.abs((vp[0] * X + vp[4] * Y + vp[8] * Z + vp[12]) / cw) > 0.95 || Math.abs((vp[1] * X + vp[5] * Y + vp[9] * Z + vp[13]) / cw) > 0.95) continue;
+        n_++; const kf = 1.4 + 0.04 * cw;                                                     // un peu plus gros au loin
+        passe({ m: BALLE, col: [1, 1, 1], alpha: 0.95, emis: 3, spec: 0, recoit: false }, chaine(M4.tr(X, Y, Z), M4.sc(kf, kf, kf))); }
+      gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ZERO, gl.ONE);
+    }
+    // paquet 323 : sur terre battue, le joueur glisse sur ses appuis en frappant : une trace allongée reste au sol tout le
+    // point, avec un nuage de poussière au départ de la glissade
+    if (E.surface === 'Clay') for (const g of GLISSE.marques) {
+      if (t < g.t) continue;
+      passe({ m: BALLE, col: [0.48, 0.2, 0.09], alpha: 0.5, spec: 0, recoit: false }, chaine(M4.tr(g.x, 0.0035, g.z), M4.ry(g.a), M4.sc(0.95, 0.03, g.l / 0.12)));
+      const age = t - g.t; if (age > 0.8) continue;
+      for (let k = 0; k < 6; k++) { const a = k * 1.05 + g.a, r = 0.05 + age * 0.35, f = 1 - age / 0.8;
+        passe({ m: BALLE, col: [0.93, 0.6, 0.42], alpha: 0.28 * f * f, emis: 0.45, spec: 0, recoit: false },
+          chaine(M4.tr(g.x + Math.cos(a) * r, 0.03 + age * 0.2, g.z + Math.sin(a) * r), M4.sc(0.8 + age * 3, 0.5 + age * 2.4, 0.8 + age * 3))); }
+    }
     // rebonds : marque au sol (terre battue) et petit nuage de poussière (terre battue, gazon)
     if (R && R.rebonds) for (const rb of R.rebonds) {
       if (t < rb.t) continue;
@@ -5803,7 +5939,7 @@ const G3D = (() => {
     nuit: { fond: [0.06, 0.05, 0.16], ciel: [0.62, 0.64, 0.82], sol: [0.28, 0.26, 0.36], brume: [0.08, 0.07, 0.2], lum: [0.95, 0.912, 0.836] },
     jour: { fond: [0.53, 0.71, 0.92], ciel: [0.78, 0.86, 1.0], sol: [0.46, 0.42, 0.36], brume: [0.64, 0.76, 0.93], lum: [1.32, 1.24, 1.08] },
   };
-  const VERSION_3D = 'v310';
+  const VERSION_3D = 'v324';
   // ── LE FILM (paquet 276) : la vidéo du jour en 3D. La page choisit les moments forts du match simulé et les fait
   // jouer ici un par un ; public en panneaux et image un peu réduite (la vidéo est rendue sans carte graphique).
   const FILM = { actif: false, echelle: 1, son: null, cam: null, t: 0, focale: 0 };
@@ -6868,7 +7004,7 @@ document.querySelectorAll('.seg button[data-lang]').forEach(b=>b.addEventListene
 let TH = 'dark'; try { TH = localStorage.getItem('te_theme') || 'dark'; } catch(e){}
 const MQ_SOMBRE = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
 function appliqueTheme(){
-  if (Q.get('video') || Q.get('carte') || Q.get('bilan') || Q.get('semaine')) return;
+  if (Q.get('video') || Q.get('carte') || Q.get('bilan') || Q.get('semaine') || Q.get('projections')) return;
   const sombre = TH === 'dark' || (TH === 'auto' && (!MQ_SOMBRE || MQ_SOMBRE.matches));
   document.documentElement.setAttribute('data-theme', sombre ? 'dark' : 'light');
   const mt = document.querySelector('meta[name="theme-color"]'); if (mt) mt.setAttribute('content', sombre ? '#0E0A24' : '#F4F2FB');
@@ -6899,7 +7035,7 @@ document.querySelectorAll('.circuits button').forEach(b=>b.addEventListener('cli
   circuit=b.dataset.circuit; nListe=30; rendTextes(); rendListe();
 }));
 window.addEventListener('hashchange',()=>{
-  if (!D || Q.get('carte') || Q.get('video') || Q.get('bilan') || Q.get('semaine')) return;
+  if (!D || Q.get('carte') || Q.get('video') || Q.get('bilan') || Q.get('semaine') || Q.get('projections')) return;
   selectionId = matchDemande() || (D.match_du_jour && D.match_du_jour.uid);
   rendMdj(); rendListe();
 });
@@ -7170,6 +7306,48 @@ function modeCarte(){
   Promise.race([(document.fonts && document.fonts.ready) || Promise.resolve(), dort(3000)]).then(()=>{ window.__fini = true; });
 }
 
+/* ───────────── carte des projections (?projections=1) : paquet 325 — toutes les projections du match en une image
+   1080×1350, lisible d'un coup d'œil (grands chiffres, barres, couleur de chaque joueur). Descriptif : le % ne change pas. */
+function modeProjections(){
+  document.body.classList.add('carte');
+  const id = Q.get('uid') || (D.match_du_jour && D.match_du_jour.uid);
+  const m = D.matchs.find(x=>x.uid===id && x.sets);
+  const V = document.getElementById('video');
+  if (!m){ V.innerHTML = '<p style="padding:60px;color:#fff">—</p>'; window.__vide = true; window.__fini = true; return; }
+  const fr = L === 'fr', T_ = (a, b) => fr ? a : b, p = m.p_home, n = [court(m.home), court(m.away)], o = projectionsDe(m);
+  const coul = i => i === 0 ? 'a' : i === 1 ? 'b' : 'n', fav = n[o.fi], out = n[1 - o.fi], v1 = x => fr ? String(x).replace('.', ',') : String(x);
+  const quand = utc(m.debut).toLocaleString(loc(), {weekday:'long', day:'numeric', month:'long', hour:'2-digit', minute:'2-digit', timeZone:'Europe/Paris'});
+  const tuile = (lib, q, i, fort) => q == null ? '' : `<div class="pt ${coul(i)}${fort ? ' fort' : ''}"><div class="q">${pc0(q)}</div><div class="k">${lib}</div></div>`;
+  const tuiles = [
+    tuile(T_(`<b>${esc(out)}</b> gagne au moins un set`, `<b>${esc(out)}</b> wins at least one set`), o.out_un_set, 1 - o.fi, true),
+    tuile(T_(`<b>${esc(fav)}</b> en ${o.bo5 ? 'trois' : 'deux'} sets secs`, `<b>${esc(fav)}</b> in straight sets`), o.fav_sec, o.fi),
+    tuile(T_(`<b>${esc(n[o.set1_qui])}</b> gagne le 1er set`, `<b>${esc(n[o.set1_qui])}</b> wins set 1`), o.set1, o.set1_qui),
+    tuile(T_(`Si <b>${esc(fav)}</b> perd le 1er set, ${m.circuit === 'WTA' ? 'elle' : 'il'} gagne quand même`, `If <b>${esc(fav)}</b> drops set 1, still wins`), o.remontee_fav, o.fi),
+    tuile(T_(`Match en ${o.bo5 ? '5' : '3'} sets`, `Goes to ${o.bo5 ? '5' : '3'} sets`), o.decisif, 2),
+    tuile(T_('Au moins un tie-break', 'At least one tie-break'), o.tie_break, 2)].join('');
+  const puces = (L_, lib) => L_.map(([x, q]) => `<div class="pc${q >= .5 ? ' ok' : ''}"><span>${lib(x)}</span><b>${pc0(q)}</b><i style="height:${(q*100).toFixed(0)}%"></i></div>`).join('');
+  const S = m.sets || {}, ordre = Object.keys(S).sort((x, y) => { const [a, b] = x.split('-').map(Number), [c, d] = y.split('-').map(Number); return (b - a) - (d - c); });
+  const sets = ordre.map(x => { const [h, a] = x.split('-').map(Number), w = h > a ? 0 : 1;
+    return `<div class="l ${w ? 'x' : ''}"><span>${esc(n[w])} ${Math.max(h, a)}-${Math.min(h, a)}</span><span class="t"><i style="width:${(S[x]*100).toFixed(1)}%"></i></span><span class="v">${pc0(S[x])}</span></div>`; }).join('');
+  const sc = (m.scores_probables||[]).slice(0,3).map(([x,q])=>`<div class="sc"><b>${esc(x)}</b><span>${dec(q*100,1)}${fr?' %':'%'}</span></div>`).join('');
+  V.innerHTML = `<div class="ca pr">
+    <div class="haut"><span>${esc(T_('TOUTES LES PROJECTIONS', 'ALL PROJECTIONS'))}</span><span><b>${esc(t('a_sim'))}</b> ${esc(t('a_fois', D.simulations))}</span></div>
+    <h1 style="font-size:${(n[0]+n[1]).length > 30 ? 40 : 50}px"><span class="ca-a">${esc(n[0])}</span> ${pc0(p)} – ${pc0(1-p)} <span class="ca-b">${esc(n[1])}</span></h1>
+    <p class="ctx">${esc(m.tournoi)} · ${esc(SURF[L][m.surface]||m.surface||'')} · ${esc(quand)}</p>
+    <div class="tir"><i style="width:${(p*100).toFixed(1)}%"></i></div>
+    <div class="pts">${tuiles}</div>
+    <div class="blocs"><div class="bloc"><h2>${esc(T_('Score en sets', 'Score in sets'))}</h2>${sets}</div>
+      <div class="bloc"><h2>${esc(T_('Scores exacts les plus fréquents', 'Most frequent exact scores'))}</h2>${sc}
+        ${o.duree ? `<div class="sc du"><span>${esc(T_('Durée prévue', 'Expected length'))}</span><b>${hm(o.duree)}</b></div>` : ''}</div></div>
+    ${o.totaux.length ? `<div class="bloc"><h2>${esc(T_('Nombre de jeux dans le match', 'Total games in the match'))}${o.jeux ? ` <small>${esc(T_(`· ${o.jeux.mediane} le plus souvent, de ${o.jeux.p10} à ${o.jeux.p90} 8 fois sur 10`, `· usually ${o.jeux.mediane}, ${o.jeux.p10} to ${o.jeux.p90} 8 times in 10`))}</small>` : ''}</h2>
+      <div class="pcs">${puces(o.totaux, x => T_('+ de ', 'over ') + v1(x))}</div></div>` : ''}
+    ${o.ecarts.length ? `<div class="bloc"><h2>${esc(T_(`${fav} gagne avec plus de… jeux d'écart`, `${fav} wins by more than… games`))}</h2>
+      <div class="pcs ${coul(o.fi)}">${puces(o.ecarts, x => '+' + v1(x))}</div></div>` : ''}
+    <div class="pied">${esc(T_('Tout vient des mêmes simulations point par point · ces projections ne changent pas le % de victoire', 'All from the same point-by-point simulations · these projections do not change the win %'))}</div>${SIGNE}</div>`;
+  window.__uid = m.uid;
+  Promise.race([(document.fonts && document.fonts.ready) || Promise.resolve(), dort(3000)]).then(()=>{ window.__fini = true; });
+}
+
 /* ───────────── carte bilan (?bilan=1) : prévu contre réel, capturée par scripts/video_simulation.py --bilan ─────────────
    05/11/2026 : même mise en forme gagné ou perdu (Lucas : « publier les résultats même lorsqu'ils sont négatifs »). */
 function modeBilan(){
@@ -7233,7 +7411,7 @@ rendTextes();
 fetch('donnees.json?v=' + Date.now()).then(r=>r.json()).then(d=>{
   D = d;
   selectionId = matchDemande() || (D.match_du_jour && D.match_du_jour.uid);
-  if (Q.get('semaine')) modeSemaine(); else if (Q.get('bilan')) modeBilan(); else if (Q.get('carte')) modeCarte(); else if (Q.get('video')) modeVideo(); else { rendTout(); demarrerLive(); }
+  if (Q.get('semaine')) modeSemaine(); else if (Q.get('bilan')) modeBilan(); else if (Q.get('projections')) modeProjections(); else if (Q.get('carte')) modeCarte(); else if (Q.get('video')) modeVideo(); else { rendTout(); demarrerLive(); }
 }).catch(()=>{ document.getElementById('mdj-zone').innerHTML = '<div class="panel empty">Données indisponibles / Data unavailable.</div>'; });
 })();
 </script>

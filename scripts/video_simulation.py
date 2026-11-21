@@ -15,6 +15,7 @@ de la machine. --capture ecran garde l'ancien enregistrement d'écran (repli).
 
 Usage : python scripts/video_simulation.py [--lang fr|en] [--uid UID] [--seed N] [--carte] [--sortie dossier]
 --carte : la carte de stats du match (PNG 1080×1350) au lieu de la vidéo.
+--projections : la carte de toutes les projections du match (PNG 1080×1350, paquet 325).
 La page est servie en local depuis algo/ (algo/donnees.json doit exister : simulateur/vitrine.py).
 
 18/11/2026 (paquet 276) — VIDÉO EN 3D (par défaut, --rendu 3d) : les moments forts du match représentatif joués
@@ -246,6 +247,7 @@ def main(argv):
     ap.add_argument('--muet', action='store_true', help='sans bande-son')
     ap.add_argument('--adresse', action='store_true', help="afficher l'adresse du site en fin de vidéo (non par défaut)")
     ap.add_argument('--carte', action='store_true', help='carte de stats (PNG) au lieu de la vidéo')
+    ap.add_argument('--projections', action='store_true', help='carte de toutes les projections du match (PNG, paquet 325)')
     ap.add_argument('--semaine', action='store_true', help='carte du bilan de la semaine (lit algo/semaine.json)')
     ap.add_argument('--bilan', action='store_true', help='carte bilan prévu / réel (PNG) du match du jour ou de la veille')
     ap.add_argument('--capture', default='images', choices=['images', 'ecran'],
@@ -291,6 +293,16 @@ def main(argv):
         finally:
             srv.shutdown()
         print(f"Bilan : {png} ({uid})" if uid else 'Bilan : résultat pas encore disponible')
+        return 0
+    if a.projections:                                  # 21/11/2026 (paquet 325) : toutes les projections en une image
+        os.makedirs(a.sortie, exist_ok=True)
+        png = os.path.join(a.sortie, f"projections_{a.lang}.png")
+        try:
+            uid = carte_bilan(f"http://127.0.0.1:{srv.server_address[1]}/index.html?projections=1&lang={a.lang}"
+                              + (f"&uid={a.uid}" if a.uid else ''), png)
+        finally:
+            srv.shutdown()
+        print(f"Projections : {png} ({uid})" if uid else 'Projections : pas de match simulé')
         return 0
     if a.carte:
         os.makedirs(a.sortie, exist_ok=True)
