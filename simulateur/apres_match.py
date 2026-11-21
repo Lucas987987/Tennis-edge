@@ -131,7 +131,7 @@ def fiche(ligne, maintenant, version):
 def _scenarios(ligne):
     try:
         import scenarios_match as SM
-        return ligne.get('scenarios') or SM.scenarios(ligne.get('distribution_scores'))
+        return ligne.get('scenarios') or SM.scenarios(ligne.get('distribution_scores'), ligne.get('sets'))
     except Exception:  # noqa: BLE001
         return None
 

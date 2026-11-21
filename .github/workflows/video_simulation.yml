@@ -138,6 +138,8 @@ jobs:
           python scripts/video_simulation.py --lang "$lang" --uid "${{ inputs.uid }}" --seed "${{ inputs.seed }}" --format "${{ inputs.format || '9x16' }}" --rendu "${{ inputs.rendu || '3d' }}" --ips "${{ (inputs.rendu || '3d') == '3d' && '25' || '30' }}" ${{ inputs.adresse && '--adresse' || '' }} ${{ inputs.arbitre == false && '--sans-voix' || '' }} --sortie videos
           # 24/10/2026 : carte de stats du match (PNG pour X, en réponse à la vidéo)
           python scripts/video_simulation.py --lang "$lang" --uid "${{ inputs.uid }}" --carte --sortie videos || echo "::warning::carte ${lang} non faite"
+          # 21/11/2026 (paquet 325) : toutes les projections du match en une image
+          python scripts/video_simulation.py --lang "$lang" --uid "${{ inputs.uid }}" --projections --sortie videos || echo "::warning::projections ${lang} non faites"
           ls -la videos
 
       - name: Envoyer sur le Telegram privé
@@ -161,6 +163,12 @@ jobs:
               curl --fail-with-body -sS -o /dev/null -w "Telegram carte ${lang} : HTTP %{http_code}\n" \
                 -F chat_id="${TELEGRAM_CHAT_ID}" -F caption="📊 Stats du match (${lang}) — à poster en réponse à la vidéo" \
                 -F photo=@"videos/stats_${lang}.png" \
+                "https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendPhoto"
+            fi
+            if [ -f "videos/projections_${lang}.png" ]; then
+              curl --fail-with-body -sS -o /dev/null -w "Telegram projections ${lang} : HTTP %{http_code}\n" \
+                -F chat_id="${TELEGRAM_CHAT_ID}" -F caption="📊 Toutes les projections (${lang}) — ${TITRE}" \
+                -F photo=@"videos/projections_${lang}.png" \
                 "https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendPhoto"
             fi
           done

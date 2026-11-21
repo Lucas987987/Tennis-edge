@@ -1070,10 +1070,10 @@ def questions(D_):
     return out
 
 
-def scenarios(D_):
+def scenarios(D_, sets=None):
     """11/11/2026 (paquet 221) — « Scénarios du match » : voir simulateur/scenarios_match.py (paquet 222)."""
     import scenarios_match as SM
-    return SM.scenarios(D_)
+    return SM.scenarios(D_, sets)
 
 
 def controle_scenarios(racine):
@@ -1097,7 +1097,7 @@ def compacter(doc, p_min=DISTRIBUTION_P_MIN):
         if not D_:
             continue
         m['questions'] = questions(D_)          # 05/11/2026 : sur la distribution complète, avant de la couper
-        m['scenarios'] = scenarios(D_)          # 11/11/2026 (paquet 221) : les 6 issues regroupées
+        m['scenarios'] = scenarios(D_, m.get('sets'))   # paquet 221 ; paquet 325 : cohérents avec le score en sets
         garde = [r for r in D_ if float(r['probabilite']) >= p_min] or D_[:1]
         m['distribution_scores'] = garde
         m['distribution_reste'] = round(1.0 - sum(float(r['probabilite']) for r in garde), 12)
