@@ -50,8 +50,8 @@ class Moteur(unittest.TestCase):
     def test_branchements(self):
         self.assertIn("fetch('modeles/joueurs3d.bin?v=326')", BLOC)                         # nouveau fichier : nouvelle clé de cache
         self.assertIn("return dir.type === 'gauche' ? [['MX_StrafeG', 1]] : dir.type === 'droite' ? [['MX_StrafeD', 1]] : [['MX_Recul', 1]];", BLOC)
-        self.assertIn("const wk = BRAS.has(nom) ? (loco.capte ? 0 : loco.w * (1 - (pose.coup || 0))) : loco.w;", BLOC)   # bras en attente
-        self.assertIn("L.ov = { nom: 'MX_Idle'", BLOC)
+        self.assertIn("(loco.brasW ?? (loco.capte ? 0 : 1))", BLOC)                       # bras en attente (paquet 327 : en douceur)
+        self.assertIn("o = { nom: 'MX_Idle'", BLOC)
         self.assertIn("bras: !sert", BLOC)                                                   # le serveur garde la balle en main
         self.assertIn("nom: 'MX_Assis'", BLOC)
         self.assertIn('fin_match: dernier', HTML)
