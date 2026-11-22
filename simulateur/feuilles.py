@@ -189,7 +189,9 @@ def en_match(r, jeux=None):
             'stats': ({'w': (det['w'][0], det['w'][2] + det['w'][3]), 'l': (det['l'][0], det['l'][2] + det['l'][3])} if det else None),
             'sets': sets, 'complet': complet, 'detail': det, 'tournoi': r.get('tournoi') or '',
             'tour': donnees.ORDRE_TOURS.get(str(r.get('tour') or '').upper(), 6), 'niveau': '', 'num': 0,
-            'source': 'tennisapi', 'id': r.get('id')}
+            'source': 'tennisapi', 'id': r.get('id'),
+            # 22/11/2026 (paquet 336) : type de court tel que donné par TennisApi (« Hardcourt indoor »…), pour les études
+            'sol_brut': r.get('surface') or ''}
 
 
 def charger(racine, depuis=None, jusqu_au=None):
