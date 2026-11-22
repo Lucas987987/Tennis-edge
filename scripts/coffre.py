@@ -27,7 +27,13 @@ ferment, lignes recalculées), pas seulement prolongés : l'union de lignes les 
         conflit réel, la version du coffre est gardée et un avertissement est affiché (rien n'est écrasé) ;
         un fichier qui n'a PAS été rapatrié dans ce run n'est jamais envoyé par-dessus le coffre ;
   rendre remet la version git des fichiers encore suivis (avant les opérations git d'un workflow qui n'a fait que lire).
-Usage : python scripts/coffre.py pull|push|retirer|rendre [--groupe signaux|lab|pronostics|suivi|tous]
+22/11/2026 (paquet 338, Lucas : cotes et cotes de clôture en privé, étape 1) — groupe « lab_sorties » : ce que le
+calcul quotidien du Lab écrit (CLV Pinnacle par book, stabilité, propositions, explorateur, registre, croisements,
+cache des cotes avant signal) ; groupe « lab_donnees » : l'instantané du Lab (data.js), reconstruit par pages.yml.
+Un seul rédacteur par fichier (lab_quotidien, ou pages) : envoi simple. Un motif « dossier/* » couvre un dossier
+entier (registre mensuel) ; ses fichiers ont une clé à part, prive/<dossier>/<nom>, pour qu'un index.json ne
+remplace jamais un autre index.json du coffre.
+Usage : python scripts/coffre.py pull|push|retirer|rendre [--groupe …] [--si-present]
 """
 import argparse
 import hashlib
@@ -61,17 +67,61 @@ GROUPES['roi'] = ['simulateur/rapport_roi_algo.json', 'simulateur/rapport_desacc
 GROUPES['suivi'] = ['paper_trades_match.jsonl', 'paper_trades_set1.jsonl', 'paper_trades_set2.jsonl',
                     'paper_trades_canal.jsonl', 'paper_canal_report.json', 'canal_clv_detail.csv', 'canal_clv_exclus.csv',
                     'canal_clv_detail_avant_correction_2026-09-13.csv', 'clv_vs_median_report.json']
-PROTEGES = {'suivi'}
+PROTEGES = {'suivi', 'lab_sorties', 'lab_donnees'}   # 338 : un fichier non rapatrié n'écrase jamais le coffre
 BASE = '.coffre_base'
 GROUPES['tous'] = [f for k in ('signaux', 'lab', 'pronostics') for f in GROUPES[k]]
 # 335 : ce que pages.yml rapatrie pour le Lab (servi ensuite seulement derrière la connexion)
 GROUPES['lab_site'] = ['Tennis_Edge_Lab/live/delai_alertes.json']
+# 338 : sorties du calcul quotidien du Lab (lab_quotidien.yml les écrit ; pages.yml et lab_gel.yml les lisent)
+_LIVE = 'Tennis_Edge_Lab/live/'
+GROUPES['lab_sorties'] = [_LIVE + n for n in (
+    'bookmakers_sets.json', 'bookmakers_sets_audit.json', 'candidate_watch_v62_prospective.json',
+    'history_stability.json', 'propositions_v66.json', 'propositions_v66_populations.json.gz', 'gel_v66_prospective.json',
+    'gel_explorateur_prospective.json', 'profils_hypotheses.json', 'reconciliation_hypotheses.json',
+    'worker_hypotheses_capture.json', 'explorateur_alertes.json.gz', 'explorateur_histo.json.gz',
+    'explorateur_matchs.json.gz', 'explorateur_detections.json.gz', 'lectures_profils.json', 'croisements.json')] + [
+    'Tennis_Edge_Lab/cache/parts_features.json', 'Tennis_Edge_Lab/cache/parts_features_public.json.gz',
+    _LIVE + 'registre/*']
+# 338 : instantané du Lab, reconstruit à chaque déploiement (pages.yml) ; la version précédente sert au contrôle
+# « plus de 40 % des observations ont disparu »
+GROUPES['lab_donnees'] = ['Tennis_Edge_Lab/data.js']
 # servis au Lab par le worker « algo » (nom de fichier seul, sans dossier)
 SERVIS = sorted({os.path.basename(f) for f in GROUPES['tous']})
 
 
+DOSSIERS = {_LIVE + 'registre': 'registre'}     # dossier entier au coffre → sous-préfixe propre
+
+
 def cle(chemin):
+    d = os.path.dirname(chemin)
+    if d in DOSSIERS:
+        return PREFIXE + DOSSIERS[d] + '/' + os.path.basename(chemin)
     return PREFIXE + os.path.basename(chemin)
+
+
+def _nom_base(f):
+    """Nom de la copie de base (.coffre_base/) : tiré de la clé, pour que deux index.json ne se confondent pas."""
+    return cle(f)[len(PREFIXE):].replace('/', '__')
+
+
+def developper(fichiers, r2=None):
+    """Remplace « dossier/* » par ses fichiers : ceux du coffre (si r2 est donné) et ceux présents en local."""
+    import glob
+    out = []
+    for f in fichiers:
+        if not f.endswith('/*'):
+            out.append(f)
+            continue
+        d = f[:-2]
+        noms = {os.path.basename(p) for p in glob.glob(os.path.join(d, '*')) if os.path.isfile(p)}
+        if r2 is not None and d in DOSSIERS:
+            pre = PREFIXE + DOSSIERS[d] + '/'
+            try:
+                noms |= {k[len(pre):] for k, _ in r2.list(pre) if k[len(pre):] and '/' not in k[len(pre):]}
+            except Exception as e:                       # liste indisponible : les fichiers locaux seulement
+                print(f"  coffre : liste de {pre} indisponible ({type(e).__name__})")
+        out += [os.path.join(d, n) for n in sorted(noms)]
+    return out
 
 
 def _sha(b):
@@ -135,7 +185,7 @@ def pull_protege(fichiers, r2, base=BASE):
             os.makedirs(os.path.dirname(f) or '.', exist_ok=True)
             r2_io._write_atomic(f, got[0])
         os.makedirs(base, exist_ok=True)
-        r2_io._write_atomic(os.path.join(base, os.path.basename(f)), got[0])
+        r2_io._write_atomic(os.path.join(base, _nom_base(f)), got[0])
         etats[f] = {'etag': got[1]}
         print(f"  coffre → {f} ({len(got[0])} octets)")
     _ecrire_etats(etats, base)
@@ -174,7 +224,7 @@ def push_protege(fichiers, r2, base=BASE):
                 print(f"  {f} : pas rapatrié dans ce run — jamais envoyé par-dessus le coffre")
             continue
         etag = etats[f].get('etag')
-        b = _lire(os.path.join(base, os.path.basename(f))) if etag else b''
+        b = _lire(os.path.join(base, _nom_base(f))) if etag else b''
         if etag and data == b:
             continue                                     # rien de changé dans ce run
         for _ in range(5):
@@ -269,12 +319,13 @@ def main(argv=None):
     a = ap.parse_args(argv)
     fichiers = GROUPES[a.groupe]
     if a.action == 'rendre':
-        rendre(fichiers)
+        rendre(developper(fichiers))
         return 0
     r2 = r2_io.client()
     if r2 is None:
         print('coffre : R2 indisponible — rien à faire (les fichiers restent tels quels).')
         return 0
+    fichiers = developper(fichiers, r2)
     if a.action == 'pull':
         (pull_protege if a.groupe in PROTEGES else pull)(fichiers, r2)
         return 0
