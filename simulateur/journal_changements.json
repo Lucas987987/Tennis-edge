@@ -1682,6 +1682,14 @@
    "quoi": "ITF POINT PAR POINT (paquet 337) : collecte du déroulé point par point des matchs ITF hommes joués par des joueurs qui jouent aussi en Challenger, sur les 24 derniers mois. Rangé dans historique/itf_points ; aucun script de l'algo ne le lit.",
    "garde_fou": "Arrêt sous 7 000 requêtes restantes du jour ; tournoi abandonné après 4 matchs sans déroulé ; jours complets jamais redemandés. Aucune utilisation avant une étude 2018–2022 / 2023→2026 circuit par circuit.",
    "prive": true
+  },
+  {
+   "date": "2026-11-22",
+   "statut": "outil",
+   "paquet": 338,
+   "quoi": "LAB AU COFFRE PRIVÉ (paquet 338) : les sorties du calcul quotidien du Lab qui contiennent des cotes (CLV Pinnacle par book, stabilité, propositions, explorateur, registre, croisements, cache des cotes avant signal) et l'instantané data.js passent au coffre R2 ; ils sortent du dépôt public au prochain calcul quotidien.",
+   "garde_fou": "Retrait du dépôt seulement si le coffre en détient une copie identique ; un fichier non rapatrié n'écrase jamais le coffre ; aucun changement de l'algo ni des pronostics.",
+   "prive": true
   }
  ]
 }
