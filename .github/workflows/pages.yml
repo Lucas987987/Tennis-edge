@@ -162,6 +162,9 @@ jobs:
           python scripts/coffre.py pull --groupe suivi || true
           # 335 : « le prix tient-il après l'alerte ? » — au coffre, plus dans le dépôt public
           python scripts/coffre.py pull --groupe lab_site || true
+          # 338 : sorties du Lab et instantané data.js (version précédente, pour le contrôle de baisse) au coffre
+          python scripts/coffre.py pull --groupe lab_sorties || true
+          python scripts/coffre.py pull --groupe lab_donnees || true
       - name: Reconstruire les données Tennis Edge Lab
         env:
           LAB_CHECK_PREVIOUS: '1'
@@ -176,6 +179,13 @@ jobs:
           assert manifest['row_count']>=200
           print('✅ Jeu vérifié:',manifest['row_count'],'observations, hash',manifest['dataset_sha256'][:12])
           PYCODE
+      # 338 : le nouvel instantané du Lab (cotes, CLV) part au coffre privé, jamais dans le dépôt
+      - name: Coffre privé — envoyer l'instantané du Lab
+        env:
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+        run: python scripts/coffre.py push --groupe lab_donnees || true
       - name: Recherche statistique autonome (lecture seule)
         run: |
           if python3 Tennis_Edge_Lab/autoresearch.py . && python3 -c "import json,pathlib; p=pathlib.Path('Tennis_Edge_Lab/live/research.json'); x=json.loads(p.read_text()); assert x['schema_version']==1 and x['row_counts']['settled_quality_ok']>=200 and len(x['frozen_hypotheses'])==7"; then

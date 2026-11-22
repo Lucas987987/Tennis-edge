@@ -116,6 +116,9 @@ jobs:
           python scripts/coffre.py pull --groupe lab_entrees || true
           # 22/11/2026 (paquet 334) : journaux de suivi et CLV du canal, au coffre privé (lecture seule)
           python scripts/coffre.py pull --groupe suivi || true
+          # 22/11/2026 (paquet 338) : sorties du Lab (CLV Pinnacle par book, explorateur, registre…) au coffre privé ;
+          # rapatriées AVANT le calcul (caches, gels suivis, registre mensuel prolongé)
+          python scripts/coffre.py pull --groupe lab_sorties || true
 
       - name: Tests (Python et interface)
         run: |
@@ -227,17 +230,8 @@ jobs:
             echo '::error::Un registre de gels a changé pendant le calcul quotidien : publication interdite.'
             exit 1
           fi
+          # 338 : les sorties qui contiennent des cotes partent au coffre (groupe lab_sorties), plus dans git
           OUTPUTS=(
-            Tennis_Edge_Lab/live/bookmakers_sets.json
-            Tennis_Edge_Lab/live/bookmakers_sets_audit.json
-            Tennis_Edge_Lab/live/candidate_watch_v62_prospective.json
-            Tennis_Edge_Lab/live/history_stability.json
-            Tennis_Edge_Lab/live/propositions_v66.json
-            Tennis_Edge_Lab/live/gel_v66_prospective.json
-            Tennis_Edge_Lab/live/gel_explorateur_prospective.json
-            Tennis_Edge_Lab/live/profils_hypotheses.json
-            Tennis_Edge_Lab/live/reconciliation_hypotheses.json
-            Tennis_Edge_Lab/live/worker_hypotheses_capture.json
             Tennis_Edge_Lab/cache/source_catalog.json
             Tennis_Edge_Lab/cache/archive/index.json
           )
@@ -246,6 +240,13 @@ jobs:
           # valeur.json et h20.json restaient dans le dépôt public (version du 23/10) et le coffre n'était plus à jour.
           python scripts/coffre.py push --groupe lab || true
           python scripts/coffre.py retirer --groupe lab || true
+          # 338 : sorties du Lab → coffre, puis retirées du dépôt public (seulement celles que le coffre détient à
+          # l'identique : jamais de perte). L'instantané data.js (reconstruit par pages.yml, qui l'envoie au coffre) et
+          # data.json (reconstruit à chaque déploiement) sortent aussi du dépôt.
+          python scripts/coffre.py push --groupe lab_sorties || true
+          python scripts/coffre.py retirer --groupe lab_sorties || true
+          python scripts/coffre.py retirer --groupe lab_donnees --si-present || true
+          git rm --cached --quiet --ignore-unmatch -- Tennis_Edge_Lab/data.json || true
           # journal H19 rapatrié du coffre pour la lecture seulement : on rend la version git (pas de conflit avec
           # le commit de « Courbes live + alertes » qui le retire du dépôt).
           git checkout -- h19_signal_log.jsonl 2>/dev/null || true
@@ -254,16 +255,8 @@ jobs:
           python Tennis_Edge_Lab/commit_guard.py --root . "${OUTPUTS[@]}"
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          for f in "${OUTPUTS[@]}" \
-              Tennis_Edge_Lab/cache/parts_features_public.json.gz \
-              Tennis_Edge_Lab/live/propositions_v66_populations.json.gz \
-              Tennis_Edge_Lab/live/explorateur_alertes.json.gz \
-              Tennis_Edge_Lab/live/explorateur_histo.json.gz \
-              Tennis_Edge_Lab/live/explorateur_matchs.json.gz \
-              Tennis_Edge_Lab/live/explorateur_detections.json.gz \
-              Tennis_Edge_Lab/live/lectures_profils.json \
-              Tennis_Edge_Lab/live/croisements.json \
-              Tennis_Edge_Lab/live/registre/*; do
+          # 338 : un fichier ignoré ferait échouer « git add » : seuls les fichiers encore suivis sont ajoutés ici
+          for f in "${OUTPUTS[@]}"; do
             if [ -f "$f" ]; then git add -- "$f"; fi
           done
           git diff --cached --check
