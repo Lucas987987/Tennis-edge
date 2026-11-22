@@ -72,7 +72,7 @@ jobs:
           RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
           FEUILLES_DOSSIER: historique/feuilles
           FEUILLES_BUDGET: ${{ github.event.inputs.budget || '3000' }}
-          FEUILLES_RESERVE: '7000'
+          FEUILLES_RESERVE: '9000'   # 361 : priorité au point par point ITF (réserve 7 000), voir itf_points.yml
           FEUILLES_DUREE: '0'
           FEUILLES_SANS_FORCER: '1'
           FEUILLES_RECENT_D_ABORD: '1'
@@ -85,7 +85,7 @@ jobs:
         env:
           RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
           FEUILLES_DOSSIER: historique/feuilles
-          FEUILLES_RESERVE: '7000'
+          FEUILLES_RESERVE: '9000'   # 361 : priorité au point par point ITF (réserve 7 000), voir itf_points.yml
           POINTS: ${{ github.event.inputs.points || '2000' }}
         run: if [ "$POINTS" != "0" ]; then python scripts/points_match.py "$POINTS"; fi
       - name: Bilan
