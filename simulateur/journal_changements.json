@@ -1756,6 +1756,28 @@
    "prive": true,
    "quoi": "RATTRAPAGE ATP/WTA ET POINT PAR POINT ITF LANCÉS PAR LE WORKER (paquet 347) : leurs crons GitHub ne sont pas partis le 22/11 (comme ceux d'avant, livrés en retard ou sautés). Le worker Cloudflare tennis-edge-closing les déclenche toutes les 8 h, comme les pronostics et les feuilles ; les crons restent en filet.",
    "garde_fou": "Jamais deux passages en même temps (garde API, plafond 150 et 120 min) ; chacun ne prend que le surplus du quota TennisApi (arrêt sous 7 000 requêtes restantes) ; désactivables par HISTORIQUE_ENABLED=0 et ITF_POINTS_ENABLED=0."
+  },
+  {
+   "date": "2026-11-22",
+   "statut": "outil",
+   "paquet": 348,
+   "prive": true,
+   "quoi": "FICHES JOUEURS PRIVÉES (paquet 348) : les fiches (construites sur les cotes) ne s'ouvrent plus qu'avec la clé privée, comme le Lab ; players_profile.json passe au coffre R2 et sort du dépôt public ; plus aucun lien vers les fiches dans les messages Telegram.",
+   "garde_fou": "Sans le secret CLE_PRIVEE ajouté au worker « joueurs », tout reste fermé ; pages jamais indexées ; retrait du dépôt seulement si le coffre a une copie identique."
+  },
+  {
+   "date": "2026-11-22",
+   "statut": "site",
+   "paquet": 348,
+   "quoi": "SCHÉMAS EN TÊTE DES TIROIRS, SUITE (paquet 348) : Météo et conditions en tuiles (chaleur, vent, humidité, air plus lourd ou plus léger) ; Duel service ↔ retour en barres face à face ; Styles de jeu ouvre sur une bande par joueur (son style, face à quel style, l'écart à l'attendu).",
+   "garde_fou": "Mêmes chiffres qu'avant, aucun nouveau calcul ; les textes restent sous les schémas ; rien ne change dans les pronostics."
+  },
+  {
+   "date": "2026-11-22",
+   "statut": "etude",
+   "paquet": 348,
+   "quoi": "SERVICE ANNONCÉ TROP BAS ? (paquet 348) : sur nos pronostics du 22/10 au 22/11, le % de points gagnés au service réel dépasse l'annoncé d'environ 1 point (ATP +1,0 ; WTA +0,7 ; Challenger +1,1), et le % de jeux de service gagnés de +2,3 points en Challenger. Test d'un décalage affiché, appris jusqu'au 22/11 et jugé seulement sur les matchs à partir du 23/11, chaque lundi.",
+   "garde_fou": "≥ 1 000 cas jugés par case, biais divisé au moins par deux, écart moyen qui ne monte pas, Holm sur 6 cases ; ne touche jamais le % de victoire ni les lignes de jeux ; rapport seulement."
   }
  ]
 }

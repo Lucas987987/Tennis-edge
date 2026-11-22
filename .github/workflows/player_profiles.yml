@@ -73,11 +73,24 @@ jobs:
       - name: Construire les fiches
         run: python scripts/build_profiles.py
 
+      # 22/11/2026 (paquet 348) : les fiches (construites sur les cotes) vont au coffre privé ; le worker « joueurs »
+      # les lit dans R2, derrière connexion. Sorties du dépôt public dès que le coffre en a une copie identique.
+      - name: Coffre privé — fiches joueurs
+        env:
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+        run: |
+          python scripts/coffre.py push --groupe profils || true
+          python scripts/coffre.py retirer --groupe profils || true
+
       - name: Commit
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add players_profile.json player_form.json
+          git add player_form.json
+          # 348 : players_profile.json est au coffre — ajouté seulement tant qu'il est encore suivi par git
+          if git ls-files --error-unmatch players_profile.json >/dev/null 2>&1; then git add players_profile.json; fi
           git diff --cached --quiet && { echo "fiches inchangees"; exit 0; }
           git commit -m "Fiches joueurs ($(date -u +%Y-%m-%d))"
           attente=2

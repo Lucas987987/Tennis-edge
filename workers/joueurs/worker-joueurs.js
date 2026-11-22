@@ -180,10 +180,18 @@ const FICHES = (() => {
     // n'apparait nulle part. Les variables restent prioritaires.
     const o = (env && env.GH_OWNER) || 'Lucas987987';
     const dep = (env && env.GH_REPO) || 'tennis-edge';
-    const r = await fetch(RAW(o, dep, 'players_profile.json'),
-      { cf: { cacheTtl: 900 } });
-    if (!r.ok) throw new Error(`players_profile.json : HTTP ${r.status}`);
-    const d = await r.json();
+    // 22/11/2026 (paquet 348) : les fiches sont au coffre privé (R2, clé « prive/players_profile.json ») ; GitHub
+    // seulement en repli, tant que le fichier y est encore.
+    let d = null;
+    if (env && env.COFFRE) {
+      const obj = await env.COFFRE.get('prive/players_profile.json');
+      if (obj) d = await obj.json();
+    }
+    if (d === null) {
+      const r = await fetch(RAW(o, dep, 'players_profile.json'), { cf: { cacheTtl: 900 } });
+      if (!r.ok) throw new Error(`players_profile.json : HTTP ${r.status}`);
+      d = await r.json();
+    }
     _cache = { t: Date.now(), d };
     return d;
   }
@@ -1117,9 +1125,82 @@ const FICHES = (() => {
 // raison du passage par `FICHES` : aucun nom ne fuit, donc aucune
 // collision possible avec les helpers deja definis la-bas.
 
+// 22/11/2026 (paquet 348, Lucas : fiches « privées derrière connexion ») — les fiches sont construites sur les cotes
+// (cote médiane, classement Pinnacle, prix en direct, cote de chaque match) : elles ne s'ouvrent plus qu'avec la clé
+// privée, comme le Lab. Même clé et même jeton que le worker « algo » (secret CLE_PRIVEE, à ajouter aussi à CE worker
+// dans Cloudflare) ; sans la clé configurée, tout reste fermé. Aucune page n'est indexée.
+const PRIVE = { 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer', 'X-Frame-Options': 'DENY',
+  'X-Robots-Tag': 'noindex, nofollow', 'Cache-Control': 'private, no-store' };
+const COOKIE_ACCES = 'te_acces';
+export function egalCle(a, b) {
+  const x = new TextEncoder().encode(String(a || '')), y = new TextEncoder().encode(String(b || ''));
+  let d = x.length ^ y.length;
+  for (let i = 0; i < Math.max(x.length, y.length); i++) d |= (x[i] || 0) ^ (y[i] || 0);
+  return d === 0;
+}
+async function jetonAcces(env) {
+  const k = await crypto.subtle.importKey('raw', new TextEncoder().encode(String(env.CLE_PRIVEE)), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+  const sig = new Uint8Array(await crypto.subtle.sign('HMAC', k, new TextEncoder().encode('acces-site-prive-v1')));
+  return btoa(String.fromCharCode(...sig)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+function cookieAcces(req) {
+  for (const p of (req.headers.get('Cookie') || '').split(';')) {
+    const i = p.indexOf('=');
+    if (i > 0 && p.slice(0, i).trim() === COOKIE_ACCES) return p.slice(i + 1).trim();
+  }
+  return '';
+}
+const cleOk = (env) => !!env && !!env.CLE_PRIVEE && String(env.CLE_PRIVEE).length >= 24;
+export async function autoriseFiches(req, env) {
+  if (!cleOk(env)) return false;
+  if (egalCle(req.headers.get('X-Cle'), env.CLE_PRIVEE)) return true;
+  const c = cookieAcces(req);
+  return !!c && egalCle(c, await jetonAcces(env));
+}
+function suiteFiches(s) {
+  return /^\/j(\/[A-Za-z0-9_\-.]*)*$/.test(s || '') && !String(s).includes('..') ? s : '/j';
+}
+function pageConnexionFiches(suite, erreur) {
+  const e = (x) => String(x).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  return `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex"><title>Accès privé</title><style>body{font:16px system-ui,sans-serif;background:#0e0a24;color:#f4f1ff;
+display:grid;place-items:center;min-height:100vh;margin:0}form{background:#1b1342;padding:24px;border-radius:16px;width:min(340px,90vw)}
+input,button{width:100%;box-sizing:border-box;font:inherit;padding:12px;border-radius:10px;border:1px solid #443a7a;margin-top:10px}
+input{background:#0e0a24;color:#f4f1ff}button{background:#2ee6ff;color:#0e0a24;font-weight:700;border:0}p{color:#ff4fae;margin:10px 0 0}</style></head>
+<body><form method="post" action="/connexion"><b>Accès privé</b><input type="hidden" name="suite" value="${e(suite)}">
+<input type="password" name="cle" autocomplete="current-password" placeholder="Clé" required autofocus>
+<button type="submit">Entrer</button>${erreur ? '<p>Clé refusée.</p>' : ''}</form></body></html>`;
+}
+export async function porte(request, env, url) {
+  const h = { ...PRIVE, 'Content-Type': 'text/html; charset=utf-8',
+    'Content-Security-Policy': "default-src 'none'; style-src 'unsafe-inline'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'" };
+  if (url.pathname === '/robots.txt') return new Response('User-agent: *\nDisallow: /\n', { headers: { ...PRIVE, 'Content-Type': 'text/plain' } });
+  if (url.pathname === '/deconnexion') return new Response(null, { status: 303, headers: { ...PRIVE, Location: '/connexion',
+    'Set-Cookie': `${COOKIE_ACCES}=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0` } });
+  if (url.pathname === '/connexion') {
+    if (!cleOk(env)) return new Response('Accès privé fermé (clé non configurée).', { status: 503, headers: h });
+    if (request.method === 'POST') {
+      let cle = '', suite = '/j';
+      try { const f = await request.formData(); cle = String(f.get('cle') || ''); suite = suiteFiches(String(f.get('suite') || '')); } catch (e) { /* vide */ }
+      if (!egalCle(cle, env.CLE_PRIVEE)) return new Response(pageConnexionFiches(suite, true), { status: 401, headers: h });
+      return new Response(null, { status: 303, headers: { ...PRIVE, Location: suite,
+        'Set-Cookie': `${COOKIE_ACCES}=${await jetonAcces(env)}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=31536000` } });
+    }
+    return new Response(pageConnexionFiches(suiteFiches(url.searchParams.get('suite')), false), { headers: h });
+  }
+  if (!(await autoriseFiches(request, env))) {
+    if (!cleOk(env)) return new Response('Accès privé fermé (clé non configurée).', { status: 503, headers: h });
+    return new Response(null, { status: 303, headers: { ...PRIVE,
+      Location: '/connexion?suite=' + encodeURIComponent(suiteFiches(url.pathname)) } });
+  }
+  return null;
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+    const g = await porte(request, env, url);           // 348 : rien ne passe sans la clé privée
+    if (g) return g;
     const r = await FICHES.route(url, env);
     if (r) return r;
     // Toute autre adresse retombe sur le classement plutot que sur un 404 :
