@@ -163,6 +163,10 @@ jobs:
       - name: Coffre privé — rapatrier (H18, H19, H20)
         run: python scripts/coffre.py pull --groupe signaux || true
 
+      # 22/11/2026 (paquet 334) : journaux de suivi (paper_trades_*) et CLV du canal, rangés au coffre privé (R2)
+      - name: Coffre privé — rapatrier (journaux de suivi)
+        run: python scripts/coffre.py pull --groupe suivi || true
+
       - name: Courbes live + alertes forward (0 requête API)
         env:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
@@ -351,6 +355,9 @@ jobs:
         run: |
           python scripts/coffre.py push --groupe signaux || true
           python scripts/coffre.py retirer --groupe signaux || true
+          # 334 : journaux de suivi — envoyés (fusion à trois voies si le coffre a bougé), puis sortis du dépôt public
+          python scripts/coffre.py push --groupe suivi || true
+          python scripts/coffre.py retirer --groupe suivi || true
 
       - name: Commit (robuste — même boucle de reprise que la capture)
         run: |

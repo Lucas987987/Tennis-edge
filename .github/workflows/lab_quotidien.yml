@@ -114,6 +114,8 @@ jobs:
           python scripts/hist_r2.py pull || true   # étape 4 : historique figé (R2)
           # 23/10/2026 : coffre privé — journal H19 (verdict de H19) ; H18 volontairement absent (publié sinon)
           python scripts/coffre.py pull --groupe lab_entrees || true
+          # 22/11/2026 (paquet 334) : journaux de suivi et CLV du canal, au coffre privé (lecture seule)
+          python scripts/coffre.py pull --groupe suivi || true
 
       - name: Tests (Python et interface)
         run: |
@@ -247,6 +249,7 @@ jobs:
           # journal H19 rapatrié du coffre pour la lecture seulement : on rend la version git (pas de conflit avec
           # le commit de « Courbes live + alertes » qui le retire du dépôt).
           git checkout -- h19_signal_log.jsonl 2>/dev/null || true
+          python scripts/coffre.py rendre --groupe suivi || true
           # Un fichier qui ne diffère que par generated_at (ou équivalent) est restauré.
           python Tennis_Edge_Lab/commit_guard.py --root . "${OUTPUTS[@]}"
           git config user.name 'github-actions[bot]'
