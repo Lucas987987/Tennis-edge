@@ -1,0 +1,230 @@
+{
+ "genere_le": "2026-11-22T12:39:09+00:00",
+ "regle": "δ commun au service des deux joueurs en Challenger, réancré sur la probabilité de victoire ; appris 2018–2022 (log loss des lignes « plus de 18,5 … 23,5 jeux ») ; retenu si la log loss baisse d'au moins 0,001 sur ≥ 1 000 matchs 2023 → 05/2026, baisse aussi sur les feuilles TennisApi, et si l'écart du % de points au service ne monte pas de plus de 1 %",
+ "delta_appris": -0.02,
+ "retenu": false,
+ "raison": "écart % points au service dégradé (archive) ; écart % points au service dégradé (feuilles)",
+ "apprentissage": {
+  "-0.02": {
+   "n": 3000,
+   "log_loss_lignes": 0.66494,
+   "ecart_pts_service": 7.003
+  },
+  "-0.015": {
+   "n": 3000,
+   "log_loss_lignes": 0.66533,
+   "ecart_pts_service": 6.895
+  },
+  "-0.01": {
+   "n": 3000,
+   "log_loss_lignes": 0.66591,
+   "ecart_pts_service": 6.813
+  },
+  "-0.005": {
+   "n": 3000,
+   "log_loss_lignes": 0.66667,
+   "ecart_pts_service": 6.757
+  },
+  "0.0": {
+   "n": 3000,
+   "log_loss_lignes": 0.66767,
+   "ecart_pts_service": 6.724
+  },
+  "0.005": {
+   "n": 3000,
+   "log_loss_lignes": 0.66892,
+   "ecart_pts_service": 6.713
+  },
+  "0.01": {
+   "n": 3000,
+   "log_loss_lignes": 0.67047,
+   "ecart_pts_service": 6.726
+  },
+  "0.015": {
+   "n": 3000,
+   "log_loss_lignes": 0.67234,
+   "ecart_pts_service": 6.763
+  },
+  "0.02": {
+   "n": 3000,
+   "log_loss_lignes": 0.67458,
+   "ecart_pts_service": 6.824
+  },
+  "0.025": {
+   "n": 3000,
+   "log_loss_lignes": 0.67724,
+   "ecart_pts_service": 6.907
+  },
+  "0.03": {
+   "n": 3000,
+   "log_loss_lignes": 0.68036,
+   "ecart_pts_service": 7.014
+  }
+ },
+ "jugement_archive": {
+  "-0.02": {
+   "n": 3000,
+   "log_loss_lignes": 0.66262,
+   "ecart_pts_service": 6.883
+  },
+  "0.0": {
+   "n": 3000,
+   "log_loss_lignes": 0.66564,
+   "ecart_pts_service": 6.584
+  }
+ },
+ "jugement_feuilles": {
+  "-0.02": {
+   "n": 3000,
+   "log_loss_lignes": 0.66342,
+   "ecart_pts_service": 7.195
+  },
+  "0.0": {
+   "n": 3000,
+   "log_loss_lignes": 0.66529,
+   "ecart_pts_service": 6.851
+  }
+ },
+ "matchs": {
+  "app": 37701,
+  "jug": 37327,
+  "feuilles": 6146
+ },
+ "diagnostic": {
+  "apprentissage": {
+   "n": 3000,
+   "service_prevu": 61.13,
+   "service_reel": 61.51,
+   "ecart_service": 0.38,
+   "jeux_prevus": 23.31,
+   "jeux_reels": 22.55,
+   "plus_20_5_prevu": 58.2,
+   "plus_20_5_reel": 54.1
+  },
+  "jugement_archive": {
+   "n": 3000,
+   "service_prevu": 61.01,
+   "service_reel": 61.41,
+   "ecart_service": 0.4,
+   "jeux_prevus": 23.26,
+   "jeux_reels": 22.46,
+   "plus_20_5_prevu": 57.8,
+   "plus_20_5_reel": 52.8
+  },
+  "feuilles": {
+   "n": 6146,
+   "service_prevu": 60.96,
+   "service_reel": 61.53,
+   "ecart_service": 0.57,
+   "jeux_prevus": 23.22,
+   "jeux_reels": 22.53,
+   "plus_20_5_prevu": 57.6,
+   "plus_20_5_reel": 53.0
+  },
+  "feuilles_par_mois": {
+   "2026-06": {
+    "n": 922,
+    "service_prevu": 60.27,
+    "service_reel": 60.72,
+    "ecart_service": 0.44,
+    "jeux_prevus": 23.15,
+    "jeux_reels": 22.77,
+    "plus_20_5_prevu": 57.2,
+    "plus_20_5_reel": 53.6
+   },
+   "2026-07": {
+    "n": 1102,
+    "service_prevu": 60.95,
+    "service_reel": 61.58,
+    "ecart_service": 0.63,
+    "jeux_prevus": 23.23,
+    "jeux_reels": 22.76,
+    "plus_20_5_prevu": 57.7,
+    "plus_20_5_reel": 54.2
+   },
+   "2026-08": {
+    "n": 959,
+    "service_prevu": 60.93,
+    "service_reel": 61.39,
+    "ecart_service": 0.46,
+    "jeux_prevus": 23.25,
+    "jeux_reels": 22.11,
+    "plus_20_5_prevu": 57.8,
+    "plus_20_5_reel": 50.7
+   },
+   "2026-09": {
+    "n": 1182,
+    "service_prevu": 60.99,
+    "service_reel": 61.53,
+    "ecart_service": 0.54,
+    "jeux_prevus": 23.17,
+    "jeux_reels": 22.45,
+    "plus_20_5_prevu": 57.2,
+    "plus_20_5_reel": 52.4
+   },
+   "2026-10": {
+    "n": 1041,
+    "service_prevu": 61.13,
+    "service_reel": 61.69,
+    "ecart_service": 0.56,
+    "jeux_prevus": 23.24,
+    "jeux_reels": 22.33,
+    "plus_20_5_prevu": 57.7,
+    "plus_20_5_reel": 51.5
+   },
+   "2026-11": {
+    "n": 940,
+    "service_prevu": 61.45,
+    "service_reel": 62.25,
+    "ecart_service": 0.8,
+    "jeux_prevus": 23.3,
+    "jeux_reels": 22.78,
+    "plus_20_5_prevu": 58.0,
+    "plus_20_5_reel": 55.9
+   }
+  },
+  "feuilles_par_court": {
+   "autre": {
+    "n": 261,
+    "service_prevu": 64.22,
+    "service_reel": 63.57,
+    "ecart_service": -0.66,
+    "jeux_prevus": 24.05,
+    "jeux_reels": 23.72,
+    "plus_20_5_prevu": 63.1,
+    "plus_20_5_reel": 59.8
+   },
+   "dur extérieur": {
+    "n": 2294,
+    "service_prevu": 62.1,
+    "service_reel": 62.48,
+    "ecart_service": 0.38,
+    "jeux_prevus": 23.43,
+    "jeux_reels": 22.75,
+    "plus_20_5_prevu": 58.9,
+    "plus_20_5_reel": 54.7
+   },
+   "dur intérieur": {
+    "n": 704,
+    "service_prevu": 62.17,
+    "service_reel": 63.73,
+    "ecart_service": 1.57,
+    "jeux_prevus": 23.42,
+    "jeux_reels": 22.82,
+    "plus_20_5_prevu": 58.8,
+    "plus_20_5_reel": 56.5
+   },
+   "terre": {
+    "n": 2887,
+    "service_prevu": 59.46,
+    "service_reel": 60.06,
+    "ecart_service": 0.6,
+    "jeux_prevus": 22.94,
+    "jeux_reels": 22.17,
+    "plus_20_5_prevu": 55.8,
+    "plus_20_5_reel": 50.2
+   }
+  }
+ },
+ "duree_s": 7298
+}
