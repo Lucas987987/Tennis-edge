@@ -11,6 +11,12 @@
 // 5. STATISTIQUES EN DIRECT : /live/stats?id= (voir plus bas).
 // 6. DÉROULÉ POINT PAR POINT EN DIRECT : /live/points?id= (voir plus bas).
 //
+// 7. SITE PRIVÉ (22/11/2026, paquet 334) : le Lab (/lab/…) et l'ancien tableau de bord (/tableau/…), autrefois publics
+//    sur GitHub Pages, sont lus dans R2 (prive/site/, envoyés par scripts/publier_r2.py) et servis SEULEMENT sur
+//    l'adresse workers.dev, jamais sur gamesetalgo.com, après connexion (/connexion, clé CLE_PRIVEE ; cookie de
+//    session signé, valable un an). Le site public est lui aussi lu dans R2 d'abord (site/algo/), GitHub Pages ne
+//    servant plus que de secours.
+//
 // Déployé par .github/workflows/deploy_algo.yml (secrets CLE_PRIVEE, GH_TOKEN et RAPIDAPI_KEY posés depuis les
 // secrets GitHub).
 
@@ -40,6 +46,17 @@ const SECURITE = {
 const CSP = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; "
   + "font-src 'self'; img-src 'self' data:; connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'";
 
+// 334 : lecture dans R2 (bucket du coffre) ; null si absent, vide ou en erreur (le secours GitHub Pages prend le relais)
+async function depuisR2(env, cle, min = 1) {
+  if (!env || !env.COFFRE) return null;
+  try {
+    const o = await env.COFFRE.get(cle);
+    if (!o) return null;
+    if (o.size !== undefined && o.size < min) { if (o.body && o.body.cancel) await o.body.cancel(); return null; }
+    return o;
+  } catch (e) { return null; }
+}
+
 function egal(a, b) {
   // comparaison à temps constant (ne révèle pas, par la durée, combien de caractères sont justes)
   const x = new TextEncoder().encode(String(a || '')), y = new TextEncoder().encode(String(b || ''));
@@ -65,16 +82,97 @@ export async function prive(req, env, nom) {
   return new Response(obj.body, { headers: { ...h, 'Content-Type': 'application/json; charset=utf-8' } });
 }
 
-export async function publique(req, chemin) {
+export async function publique(req, chemin, env) {
   const f = PUBLICS[chemin] || (POLICES.test(chemin) ? chemin.slice(1) : null);
   if (!f) return new Response('Page introuvable.', { status: 404, headers: SECURITE });
   const ext = f.split('.').pop(), fixe = ext === 'woff2' || ext === 'png';
-  const r = await fetch(ORIGINE + f, { cf: { cacheTtl: fixe ? 86400 : 60, cacheEverything: true } });
-  if (!r.ok) return new Response('Indisponible, réessayer dans un instant.', { status: r.status === 404 ? 404 : 502, headers: SECURITE });
   const type = TYPES[ext] || 'text/html; charset=utf-8';
   const h = { ...SECURITE, 'Content-Type': type, 'Cache-Control': fixe ? 'public, max-age=604800' : 'public, max-age=60' };
   if (type.startsWith('text/html')) h['Content-Security-Policy'] = CSP;
+  // 334 : R2 d'abord (site/algo/, publié par pages.yml), GitHub Pages en secours
+  const o = await depuisR2(env, 'site/algo/' + f);
+  if (o) return new Response(req.method === 'HEAD' ? null : o.body, { headers: h });
+  const r = await fetch(ORIGINE + f, { cf: { cacheTtl: fixe ? 86400 : 60, cacheEverything: true } });
+  if (!r.ok) return new Response('Indisponible, réessayer dans un instant.', { status: r.status === 404 ? 404 : 502, headers: SECURITE });
   return new Response(r.body, { headers: h });
+}
+
+// ------------------------------------------------------------------ 334 : site privé (Lab, tableau)
+export const MARQUES = new Set(['gamesetalgo.com', 'www.gamesetalgo.com']);
+const TYPES_PRIVES = { html: 'text/html; charset=utf-8', js: 'text/javascript; charset=utf-8', css: 'text/css; charset=utf-8',
+  json: 'application/json; charset=utf-8', csv: 'text/csv; charset=utf-8', txt: 'text/plain; charset=utf-8',
+  md: 'text/plain; charset=utf-8', svg: 'image/svg+xml', png: 'image/png', jpg: 'image/jpeg', ico: 'image/x-icon',
+  gz: 'application/gzip', webmanifest: 'application/manifest+json', woff2: 'font/woff2' };
+const ENTETES_PRIVES = { 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer', 'X-Frame-Options': 'SAMEORIGIN',
+  'X-Robots-Tag': 'noindex, nofollow', 'Cache-Control': 'private, no-store' };
+const COOKIE = 'te_acces';
+
+async function jeton(env) {
+  const k = await crypto.subtle.importKey('raw', new TextEncoder().encode(String(env.CLE_PRIVEE)), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+  const sig = new Uint8Array(await crypto.subtle.sign('HMAC', k, new TextEncoder().encode('acces-site-prive-v1')));
+  return btoa(String.fromCharCode(...sig)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+function lireCookie(req, nom) {
+  for (const p of (req.headers.get('Cookie') || '').split(';')) {
+    const i = p.indexOf('=');
+    if (i > 0 && p.slice(0, i).trim() === nom) return p.slice(i + 1).trim();
+  }
+  return '';
+}
+export async function autorise(req, env) {
+  if (!env.CLE_PRIVEE || String(env.CLE_PRIVEE).length < 24) return false;
+  if (egal(req.headers.get('X-Cle'), env.CLE_PRIVEE)) return true;
+  const c = lireCookie(req, COOKIE);
+  return !!c && egal(c, await jeton(env));
+}
+function suiteSure(s) {
+  return /^\/(lab|tableau)\/[A-Za-z0-9_\-./]*$/.test(s || '') && !String(s).includes('..') ? s : '/lab/';
+}
+function pageConnexion(suite, erreur) {
+  const e = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  return `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex"><title>Accès privé</title><style>body{font:16px system-ui,sans-serif;background:#0e0a24;color:#f4f1ff;
+display:grid;place-items:center;min-height:100vh;margin:0}form{background:#1b1342;padding:24px;border-radius:16px;width:min(340px,90vw)}
+input,button{width:100%;box-sizing:border-box;font:inherit;padding:12px;border-radius:10px;border:1px solid #443a7a;margin-top:10px}
+input{background:#0e0a24;color:#f4f1ff}button{background:#2ee6ff;color:#0e0a24;font-weight:700;border:0}p{color:#ff4fae;margin:10px 0 0}</style></head>
+<body><form method="post" action="/connexion"><b>Accès privé</b><input type="hidden" name="suite" value="${e(suite)}">
+<input type="password" name="cle" autocomplete="current-password" placeholder="Clé" required autofocus>
+<button type="submit">Entrer</button>${erreur ? '<p>Clé refusée.</p>' : ''}</form></body></html>`;
+}
+export async function connexion(req, env, url) {
+  const h = { ...ENTETES_PRIVES, 'Content-Type': 'text/html; charset=utf-8',
+    'Content-Security-Policy': "default-src 'none'; style-src 'unsafe-inline'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'" };
+  if (!env.CLE_PRIVEE || String(env.CLE_PRIVEE).length < 24) return new Response('Accès privé fermé (clé non configurée).', { status: 503, headers: h });
+  if (req.method === 'POST') {
+    let cle = '', suite = '/lab/';
+    try { const f = await req.formData(); cle = String(f.get('cle') || ''); suite = suiteSure(String(f.get('suite') || '')); } catch (e) { /* vide */ }
+    if (!egal(cle, env.CLE_PRIVEE)) return new Response(pageConnexion(suite, true), { status: 401, headers: h });
+    return new Response(null, { status: 303, headers: { ...ENTETES_PRIVES, Location: suite,
+      'Set-Cookie': `${COOKIE}=${await jeton(env)}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=31536000` } });
+  }
+  return new Response(pageConnexion(suiteSure(url.searchParams.get('suite')), false), { headers: h });
+}
+export async function sitePrive(req, env, url) {
+  const p = url.pathname;
+  if (p === '/deconnexion') return new Response(null, { status: 303, headers: { ...ENTETES_PRIVES, Location: '/connexion',
+    'Set-Cookie': `${COOKIE}=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0` } });
+  if (p === '/lab' || p === '/tableau') return new Response(null, { status: 301, headers: { ...ENTETES_PRIVES, Location: p + '/' } });
+  if (req.method !== 'GET' && req.method !== 'HEAD') return new Response(null, { status: 405, headers: ENTETES_PRIVES });
+  if (!(await autorise(req, env))) {
+    const nav = (req.headers.get('Accept') || '').includes('text/html');
+    return nav ? new Response(null, { status: 303, headers: { ...ENTETES_PRIVES, Location: '/connexion?suite=' + encodeURIComponent(p) } })
+      : new Response('Connexion requise.', { status: 401, headers: ENTETES_PRIVES });
+  }
+  let rel = p.startsWith('/lab/') ? 'Tennis_Edge_Lab/' + p.slice(5) : p.slice('/tableau/'.length);
+  if (rel === '' || rel.endsWith('/')) rel += 'index.html';
+  let nom;
+  try { nom = decodeURIComponent(rel); } catch (e) { return new Response('Inconnu.', { status: 404, headers: ENTETES_PRIVES }); }
+  if (nom.split('/').some(x => x === '..' || x === '.') || nom.includes('\\')) return new Response('Inconnu.', { status: 404, headers: ENTETES_PRIVES });
+  const o = await depuisR2(env, 'prive/site/' + nom, 0);
+  if (!o) return new Response('Absent.', { status: 404, headers: ENTETES_PRIVES });
+  const ext = nom.includes('.') ? nom.split('.').pop().toLowerCase() : '';
+  return new Response(req.method === 'HEAD' ? null : o.body,
+    { headers: { ...ENTETES_PRIVES, 'Content-Type': TYPES_PRIVES[ext] || 'application/octet-stream' } });
 }
 
 
@@ -93,9 +191,13 @@ export const VENDOR_3D = Object.freeze({
 // 13/11/2026 (paquet 264) : les modèles des joueurs 3D (CC0, préparés par scripts/modeles_joueurs.py), servis
 // depuis la copie GitHub Pages du site et rien d'autre ; gardés 1 jour (le nom de fichier change avec la version).
 export const MODELES = Object.freeze({ '/modeles/joueurs3d.bin': { type: 'application/octet-stream', min: 100000 } });
-export async function modele(req, pathname) {
+export async function modele(req, pathname, env) {
   const cfg = MODELES[pathname];
   if (req.method !== 'GET' && req.method !== 'HEAD') return new Response(null, { status: 405, headers: SECURITE });
+  // 334 : R2 d'abord (site/algo/modeles/…, publié par pages.yml ; toujours la dernière version publiée)
+  const o = await depuisR2(env, 'site/algo' + pathname, cfg.min);
+  if (o) return new Response(req.method === 'HEAD' ? null : o.body, { headers: { ...SECURITE, 'Content-Type': cfg.type,
+    'Cache-Control': 'public, max-age=86400', 'Cross-Origin-Resource-Policy': 'same-origin' } });
   try {
     // 18/11/2026 (paquet 282) : seules les réponses réussies sont gardées un jour ; une absence (404) n'est jamais
     // mise en cache, sinon le fichier enfin publié resterait invisible jusqu'au lendemain
@@ -120,11 +222,16 @@ async function vendorFetch(source, method = 'GET') {
   // Aucun cache forcé pour les erreurs Pages : un 404 ancien ne doit pas bloquer la correction.
   return fetch(source, { method, redirect: 'follow', headers: { Accept: '*/*' } });
 }
-export async function vendor3D(req, pathname) {
+export async function vendor3D(req, pathname, env) {
   const cfg = VENDOR_3D[pathname];
   if (!cfg) return new Response('Ressource inconnue.', { status: 404, headers: SECURITE });
   if (req.method !== 'GET' && req.method !== 'HEAD')
     return new Response(null, { status: 405, headers: SECURITE });
+  // 334 : R2 d'abord (site/algo/vendor/…, publié par pages.yml)
+  const o = await depuisR2(env, 'site/algo' + pathname, cfg.min);
+  if (o) return new Response(req.method === 'HEAD' ? null : o.body, { status: 200, headers: { ...SECURITE, 'Content-Type': cfg.type,
+    'Cache-Control': `public, max-age=${VENDOR_CACHE_SECONDS}`, 'Cross-Origin-Resource-Policy': 'same-origin',
+    'X-Tennis-3D-Source': 'r2', 'X-Tennis-3D-Version': '9.3' } });
   const attempts = [];
   for (const [i, source] of vendorSources(pathname).entries()) {
     try {
@@ -432,14 +539,20 @@ export default {
   async fetch(req, env) {
     const url = new URL(req.url);
     if (url.pathname === '/vendor/status') return vendorStatus(req);
-    if (url.pathname in VENDOR_3D) return vendor3D(req, url.pathname);
-    if (url.pathname in MODELES) return modele(req, url.pathname);
+    if (url.pathname in VENDOR_3D) return vendor3D(req, url.pathname, env);
+    if (url.pathname in MODELES) return modele(req, url.pathname, env);
     if (url.pathname === '/live/stats') return liveStats(req, env, url);
     if (url.pathname === '/live/points') return livePoints(req, env, url);
     if (url.pathname === '/live') return live(req, env);
     if (url.pathname === '/video') return video(req, env);
     if (url.pathname.startsWith('/prive/')) return prive(req, env, decodeURIComponent(url.pathname.slice(7)));
+    // 334 : site privé, seulement hors de gamesetalgo.com (adresse workers.dev)
+    if (!MARQUES.has(url.hostname)) {
+      if (url.pathname === '/connexion') return connexion(req, env, url);
+      if (url.pathname === '/deconnexion' || url.pathname === '/lab' || url.pathname === '/tableau'
+        || url.pathname.startsWith('/lab/') || url.pathname.startsWith('/tableau/')) return sitePrive(req, env, url);
+    }
     if (req.method !== 'GET' && req.method !== 'HEAD') return new Response(null, { status: 405, headers: SECURITE });
-    return publique(req, url.pathname);
+    return publique(req, url.pathname, env);
   },
 };

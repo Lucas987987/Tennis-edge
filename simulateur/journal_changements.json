@@ -1651,6 +1651,14 @@
    "paquet": 333,
    "quoi": "RATTRAPAGE DE L'HISTORIQUE ATP/WTA (paquet 333, demande de Lucas). Sonde du 22/11 : TennisApi a les statistiques et le point par point des matchs ATP et WTA dès 2019, mais les Challengers de l'historique seulement par endroits. Nouveau workflow « Historique ATP/WTA » : 3 passages par jour, feuilles puis point par point, du 31 mai 2026 en remontant jusqu'au 1er janvier 2018, rangés à part dans historique/. Les trois jours d'essai (2019-05-08, 2021-05-12, 2023-05-10) quittent feuilles/ pour historique/.",
    "garde_fou": "Aucun script de l'algo ne lit historique/ : les feuilles quotidiennes restent « les matchs après l'archive », rien ne change dans les %. Le rattrapage s'arrête dès qu'il reste 7 000 requêtes dans la journée (la collecte quotidienne et le direct gardent leur quota). Une étude qui utilisera l'historique sera jugée avec la règle d'audit."
+  },
+  {
+   "date": "2026-11-22",
+   "statut": "en_service",
+   "prive": true,
+   "paquet": 334,
+   "quoi": "BASCULE EN PRIVÉ, ÉTAPES 1 ET 2 (paquet 334, demande de Lucas). 1) Le site est servi par Cloudflare : pages.yml envoie _site dans le bucket R2 privé (algo/ et arena/ publics, tout le reste privé) et GitHub Pages ne publie plus que algo/ et arena/. Le Lab et l'ancien tableau de bord ne sont plus publics : ils se lisent sur algo.tennis-edge.workers.dev/lab/ et /tableau/ après connexion avec la clé privée (jamais sur gamesetalgo.com). Le site public est lu dans R2 d'abord, GitHub Pages en secours. 2) Les journaux de suivi (paper_trades_*), le CLV du canal et le rapport CLV contre la médiane passent au coffre privé R2 et sortent du dépôt public ; les workflows qui les écrivent ou les lisent les rapatrient, avec fusion à trois voies quand deux runs se croisent.",
+   "garde_fou": "Rien ne change dans les calculs ni dans les %. Si l'envoi à R2 échoue, GitHub Pages publie tout comme avant. Un fichier n'est retiré du dépôt que si le coffre en a une copie identique ; un run qui n'a pas rapatrié un fichier ne l'envoie jamais par-dessus le coffre ; en cas de conflit réel, la version du coffre est gardée. Limite : l'historique git garde les anciennes versions jusqu'au dépôt neuf (étape 3)."
   }
  ]
 }

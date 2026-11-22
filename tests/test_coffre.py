@@ -116,3 +116,87 @@ class GroupeRoiTests(unittest.TestCase):
         self.assertNotIn('git add -- simulateur/rapport_roi_algo.json', wf)
         self.assertNotIn(' simulateur/rapport_roi_algo.json ', wf.split('- name: Publier')[1])
         self.assertIn('coffre.py push --groupe roi', wf)
+
+
+class SuiviTests(unittest.TestCase):
+    """22/11/2026 (paquet 334) — journaux de suivi et CLV au coffre : fichiers RÉÉCRITS (positions qui se ferment),
+    donc fusion à trois voies, jamais d'union de lignes ; jamais d'envoi d'un fichier non rapatrié."""
+    F = 'paper_trades_match.jsonl'
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.cwd = os.getcwd()
+        os.chdir(self.tmp.name)
+        self.fake = FakeS3()
+        install(self.fake, 'double')
+        self.r2 = r2_io.client()
+
+    def tearDown(self):
+        os.chdir(self.cwd)
+        uninstall()
+        self.tmp.cleanup()
+
+    def test_premier_passage_cree_puis_reecriture_envoyee(self):
+        Path(self.F).write_text('{"id":1,"etat":"OPEN"}\n')
+        coffre.pull_protege([self.F], self.r2)                                    # coffre vide
+        self.assertEqual(coffre.push_protege([self.F], self.r2), 0)
+        self.assertEqual(self.fake.raw('prive/' + self.F), b'{"id":1,"etat":"OPEN"}\n')
+        coffre.pull_protege([self.F], self.r2)
+        Path(self.F).write_text('{"id":1,"etat":"CLOSED"}\n')                       # position fermée : ligne réécrite
+        coffre.push_protege([self.F], self.r2)
+        self.assertEqual(self.fake.raw('prive/' + self.F), b'{"id":1,"etat":"CLOSED"}\n', 'pas de doublon OPEN + CLOSED')
+
+    def test_deux_runs_qui_se_croisent_fusion_a_trois_voies(self):
+        self.fake.put_raw('prive/' + self.F, b'{"id":1,"etat":"OPEN"}\n{"id":2,"etat":"OPEN"}\n')
+        coffre.pull_protege([self.F], self.r2)
+        # un autre run ajoute une position pendant que celui-ci ferme la n°1
+        self.fake.put_raw('prive/' + self.F, b'{"id":1,"etat":"OPEN"}\n{"id":2,"etat":"OPEN"}\n{"id":3,"etat":"OPEN"}\n')
+        Path(self.F).write_text('{"id":1,"etat":"CLOSED"}\n{"id":2,"etat":"OPEN"}\n')
+        self.assertEqual(coffre.push_protege([self.F], self.r2), 0)
+        attendu = b'{"id":1,"etat":"CLOSED"}\n{"id":2,"etat":"OPEN"}\n{"id":3,"etat":"OPEN"}\n'
+        self.assertEqual(self.fake.raw('prive/' + self.F), attendu)
+        self.assertEqual(Path(self.F).read_bytes(), attendu)
+
+    def test_conflit_reel_garde_le_coffre(self):
+        self.fake.put_raw('prive/' + self.F, b'{"id":1,"etat":"OPEN"}\n')
+        coffre.pull_protege([self.F], self.r2)
+        self.fake.put_raw('prive/' + self.F, b'{"id":1,"etat":"WIN"}\n')
+        Path(self.F).write_text('{"id":1,"etat":"LOSS"}\n')
+        self.assertEqual(coffre.push_protege([self.F], self.r2), 1)
+        self.assertEqual(self.fake.raw('prive/' + self.F), b'{"id":1,"etat":"WIN"}\n')
+
+    def test_fichier_non_rapatrie_jamais_envoye(self):
+        self.fake.put_raw('prive/' + self.F, b'{"id":1}\n{"id":2}\n')
+        Path(self.F).write_text('{"id":9}\n')                                      # run qui n'a pas fait de pull
+        coffre.push_protege([self.F], self.r2)
+        self.assertEqual(self.fake.raw('prive/' + self.F), b'{"id":1}\n{"id":2}\n')
+
+    def test_rendre_remet_la_version_git(self):
+        git('init', '-q')
+        Path(self.F).write_text('git\n')
+        git('add', '.')
+        git('commit', '-qm', 'x')
+        Path(self.F).write_text('coffre\n')
+        coffre.rendre([self.F, 'canal_clv_detail.csv'])
+        self.assertEqual(Path(self.F).read_text(), 'git\n')
+
+    def test_groupe_ignore_par_git_et_branche_dans_les_workflows(self):
+        gi = (REPO / '.gitignore').read_text()
+        for f in coffre.GROUPES['suivi']:
+            self.assertIn('/' + f + '\n', gi, f)
+        self.assertIn('/.coffre_base/\n', gi)
+        wf = lambda n: (REPO / '.github' / 'workflows' / n).read_text()
+        self.assertIn('coffre.py push --groupe suivi', wf('courbes_alertes.yml'))
+        self.assertIn('coffre.py retirer --groupe suivi', wf('courbes_alertes.yml'))
+        self.assertIn('coffre.py push --groupe suivi', wf('steam_pipeline.yml'))
+        for n in ('courbes_alertes.yml', 'steam_pipeline.yml', 'lab_quotidien.yml', 'pages.yml', 'suivi_une_par_match.yml'):
+            self.assertIn('coffre.py pull --groupe suivi', wf(n), n)
+        # aucune commande « git add » ne nomme encore un fichier du groupe (ignoré : l'ajout échouerait)
+        import re
+        for p in (REPO / '.github' / 'workflows').glob('*.yml'):
+            for bloc in re.findall(r'git add[^\n]*(?:\\\n[^\n]*)*', p.read_text()):
+                for f in coffre.GROUPES['suivi']:
+                    self.assertNotIn(f, bloc, f"{p.name} : {f}")
+        loop = wf('steam_pipeline.yml').split('for f in set_results.json set_results_feuilles.json')[1].split('; do')[0]
+        for f in coffre.GROUPES['suivi']:
+            self.assertNotIn(f, loop, f)
