@@ -1778,6 +1778,13 @@
    "paquet": 348,
    "quoi": "SERVICE ANNONCÉ TROP BAS ? (paquet 348) : sur nos pronostics du 22/10 au 22/11, le % de points gagnés au service réel dépasse l'annoncé d'environ 1 point (ATP +1,0 ; WTA +0,7 ; Challenger +1,1), et le % de jeux de service gagnés de +2,3 points en Challenger. Test d'un décalage affiché, appris jusqu'au 22/11 et jugé seulement sur les matchs à partir du 23/11, chaque lundi.",
    "garde_fou": "≥ 1 000 cas jugés par case, biais divisé au moins par deux, écart moyen qui ne monte pas, Holm sur 6 cases ; ne touche jamais le % de victoire ni les lignes de jeux ; rapport seulement."
+  },
+  {
+   "date": "2026-11-22",
+   "statut": "en_service",
+   "paquet": 349,
+   "quoi": "Matchs des feuilles collectées : le nom du tour (« Qualification Round 1 », « Round of 32 », « Quarterfinals »…) est maintenant traduit en ordre de tour. Avant, tous recevaient le même tour, d'où un ordre approximatif entre deux matchs d'un même jour dans les rejeux et les études.",
+   "garde_fou": "Ne change que l'ordre des matchs d'une même journée dans les rejeux ; le % affiché du jour n'en dépend pas. Un nom de tour inconnu garde l'ancienne valeur. Test tests/test_tours_feuilles.py."
   }
  ]
 }
