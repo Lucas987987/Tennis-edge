@@ -53,6 +53,19 @@ jobs:
           RESULTS: resultats_derived.json
         run: python scripts/calibration_buckets.py
 
+      # 22/11/2026 (paquet 352) — COTES EN PRIVÉ, ÉTAPE 4 : calibration_buckets_report.json envoyé(s) au coffre à chaque passage ; en mode
+      # ETAT_CHAUD=prive, sorti(s) du dépôt public (scripts/cotes_privees.py). Des nombres seulement dans le journal.
+      - name: Cotes privées — envoyer (calibration, paquet 352)
+        if: always()
+        env:
+          ETAT_CHAUD: ${{ vars.ETAT_CHAUD || 'double' }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+        run: |
+          python3 scripts/cotes_privees.py push --groupe calibration || true
+          python3 scripts/cotes_privees.py retirer --groupe calibration || true
+
       - name: Commit and push report
         run: |
           # PANNE DU 16/08/2026 -- cause exacte, tracee par pipeline_status.
@@ -69,7 +82,7 @@ jobs:
           find . -name '*.pyc' -delete 2>/dev/null || true
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          [ -f calibration_buckets_report.json ] && git add -- calibration_buckets_report.json
+          if [ -f calibration_buckets_report.json ] && ! git check-ignore -q -- calibration_buckets_report.json; then git add -- calibration_buckets_report.json; fi   # 352
           git diff --staged --quiet || git commit -m "📊 Calibration par tranche de cote $(date -u +%Y-%m-%dT%H:%MZ)"
           # BOUCLE DE REPRISE AVEC FUSION DES CONFLITS JSON.
           # Ce workflow tourne toutes les 5-10 min : deux exécutions se
