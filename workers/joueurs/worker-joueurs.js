@@ -207,10 +207,19 @@ const FICHES = (() => {
     const dep = (env && env.GH_REPO) || 'tennis-edge';
     const par = new Map();
     try {
-      const r = await fetch(RAW(o, dep, 'matches_oddspapi.json'),
-        { cf: { cacheTtl: 300 } });
-      if (r.ok) {
-        const j = await r.json();
+      // 22/11/2026 (paquet 346) — COTES EN PRIVÉ : matches_oddspapi.json quitte le dépôt public ; il se lit dans R2
+      // (copie relayée par la capture, clé « chaud/matches_oddspapi.json ») quand le Worker y est relié (binding
+      // COFFRE), sinon sur GitHub comme avant (tant que le fichier y est).
+      let j = null;
+      if (env && env.COFFRE) {
+        const obj = await env.COFFRE.get('chaud/matches_oddspapi.json');
+        if (obj) j = await obj.json();
+      }
+      if (j === null) {
+        const r = await fetch(RAW(o, dep, 'matches_oddspapi.json'), { cf: { cacheTtl: 300 } });
+        if (r.ok) j = await r.json();
+      }
+      if (j !== null) {
         const liste = Array.isArray(j) ? j : (j && j.matches) || [];
         for (const m of liste) {
           const t = Date.parse(m.commence_time || '');

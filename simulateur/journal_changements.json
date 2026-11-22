@@ -1740,6 +1740,14 @@
    "prive": true,
    "quoi": "COTES EN PRIVÉ, ÉTAPE 2 (paquet 345) : journaux et états des canaux d'alertes (canal public, MISER, H13 à H17, zone) et verdicts en direct (verdicts_direct, suivi_canaux, verdicts_geles) passent au coffre R2 et sortent du dépôt public. L'ancienne page publique des hypothèses (tennis-edge-db) est fermée : les verdicts se lisent dans le Lab.",
    "garde_fou": "États rapatriés avant les alertes (aucune alerte renvoyée) ; fusion à trois voies si deux workflows écrivent ; retrait du dépôt seulement si le coffre a une copie identique ; un fichier au coffre non rapatrié n'est plus une alerte de pipeline_status."
+  },
+  {
+   "date": "2026-11-22",
+   "statut": "outil",
+   "paquet": 346,
+   "prive": true,
+   "quoi": "COTES EN PRIVÉ, ÉTAPE 3 (paquet 346) : closing_lines.json, matches_oddspapi.json, live_odds.json et les archives mensuelles des clôtures peuvent quitter le dépôt public. Interrupteur : variable de dépôt ETAT_CHAUD=prive. Les 35 workflows qui lisent ces fichiers les rapatrient de R2 au début ; la capture les sort du suivi git ; les archives partent au coffre à chaque passage dès maintenant. Le worker des fiches joueurs lit les matchs à venir dans R2.",
+   "garde_fou": "Rien ne change tant que ETAT_CHAUD n'est pas « prive » ; retrait du dépôt seulement si R2 en a une copie ; retour arrière : ETAT_CHAUD=on, la capture republie ce qui manque ; fichiers exclus de git sur chaque runner en mode prive (jamais republiés par un git add -A)."
   }
  ]
 }
