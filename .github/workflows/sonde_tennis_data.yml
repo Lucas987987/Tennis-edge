@@ -23,6 +23,8 @@ jobs:
           fetch-depth: 1
           sparse-checkout: |
             scripts/sonde_tennis_data.py
+            scripts/coffre.py
+            scripts/r2_io.py
             players_profile.json
           sparse-checkout-cone-mode: false
 
@@ -37,6 +39,14 @@ jobs:
         run: |
           set -o pipefail
           python scripts/sonde_tennis_data.py | tee sonde.txt
+
+      # 22/11/2026 (paquet 348) : fiches joueurs au coffre privé — rapatriées (lecture seule)
+      - name: Coffre privé — rapatrier les fiches joueurs
+        env:
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+        run: python scripts/coffre.py pull --groupe profils || true
 
       - name: Envoyer sur Telegram
         if: always()
