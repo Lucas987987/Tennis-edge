@@ -49,7 +49,8 @@ header.top{flex-wrap:wrap}.reglages{flex-wrap:wrap;justify-content:flex-end}
 .fiche>.tiroir{border:1px solid var(--line);border-radius:var(--r-lg);background:linear-gradient(180deg,var(--panel),var(--bg2))}
 .tiroir>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:10px;padding:13px 16px;min-height:48px}
 .tiroir>summary::-webkit-details-marker{display:none}
-.tiroir>summary .tt{font-family:var(--disp);font-size:1rem;flex:none}
+.tiroir>summary .tt{font-family:var(--disp);font-size:1rem;flex:0 1 auto;min-width:0;overflow-wrap:anywhere}  /* 358 : un titre long (« Feuille de match prévue (moyenne des 20 000 simulations) ») débordait : page plus large que l'écran */
+.tiroir>summary .ti{min-width:4.5em}
 .tiroir>summary .ti{flex:1;text-align:right;color:var(--dim);font-size:.82rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .tiroir>summary .tc{color:var(--dim);transition:transform .15s;margin-left:auto}.tiroir>summary .ti+.tc{margin-left:0}
 .tiroir[open]>summary .tc{transform:rotate(90deg)}
@@ -185,6 +186,7 @@ svg.curve{width:100%;height:auto;display:block}
 .calib th:first-child,.calib td:first-child{text-align:left}
 .calib thead th{border-top:0;color:var(--dim);font-weight:500;font-size:.9rem}
 .calib td b{color:var(--ball)}
+@media (max-width:360px){.calib th,.calib td{padding:8px 6px;font-size:.86rem}}  /* 358 : plus de débordement sur petit écran */
 .suivi{padding:18px}
 .suivi .statut{display:flex;align-items:baseline;justify-content:space-between;gap:16px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:14px}
 .suivi .statut strong{font-family:var(--cond);font-size:2rem;font-weight:600;color:var(--ball);font-variant-numeric:tabular-nums}
@@ -630,6 +632,9 @@ body.carte #video{display:block;width:1080px;height:1350px}
 .am-j{display:grid;grid-template-columns:1fr 1fr;gap:10px}.am-j>div{background:rgba(var(--wv),.04);border-radius:12px;padding:10px}
 .am-se{display:flex;align-items:baseline;gap:6px;margin-top:4px}.am-se b{font-family:var(--cond);font-weight:700;font-size:1.9rem;line-height:1;font-variant-numeric:tabular-nums}.am-se.v b{color:var(--ok)}.am-se.d b{color:var(--ko)}.am-se span{font-size:.8rem;color:var(--dim)}.am-chs{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}.am-ch{font-size:.72rem;padding:2px 7px;border-radius:999px;background:rgba(var(--wv),.07);color:var(--dim)}
 .fm-l .bb>span{position:relative}.fm-l .bb u{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink);opacity:.85;border-radius:1px;text-decoration:none}.ry-mir{padding:2px 16px 4px}.ry-rythmes{display:flex;justify-content:space-between;gap:8px;margin:10px 0 2px;flex-wrap:wrap}.ry-pas{font-size:.8rem;padding:3px 9px;border-radius:999px;background:rgba(var(--wv),.06)}.ry-pas.a{color:var(--p1)}.ry-pas.b{color:var(--p2)}.ry-pas i{font-style:normal;margin-right:5px}.ry-det{margin:6px 16px 0}.cj-cond .ry-det{margin:8px 0 0}.ry-det>summary{cursor:pointer;color:var(--dim);font-size:.85rem;padding:6px 0}
+.sd-vis{display:grid;gap:12px;margin:4px 0 6px}.sd-j{display:grid;gap:6px}.sd-n{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 8px}.sd-n span{font-weight:700}.sd-n .a{color:var(--p1)}.sd-n .b{color:var(--p2)}.sd-n small{color:var(--dim);font-size:.78rem}.sd-r{display:grid;grid-template-columns:86px 1fr 62px;gap:8px;align-items:center}.sd-l{font-size:.8rem;line-height:1.15}.sd-l small{display:block;color:var(--dim);font-size:.7rem}.sd-axe{position:relative;height:14px;border-radius:7px;background:rgba(var(--wv),.06)}.sd-axe .ic{position:absolute;top:3px;bottom:3px;border-radius:4px;background:rgba(var(--wv),.16)}.sd-axe u{position:absolute;top:-2px;bottom:-2px;width:2px;margin-left:-1px;background:var(--ink);border-radius:1px;text-decoration:none}.sd-axe b{position:absolute;top:50%;width:12px;height:12px;margin:-6px 0 0 -6px;border-radius:50%;border:2px solid var(--bg)}.sd-axe b.c1{background:var(--p1)}.sd-axe b.c2{background:var(--p2)}.sd-axe b.pale{opacity:.45}.sd-v{text-align:right;font-family:var(--cond);font-weight:700;font-size:1.05rem;font-variant-numeric:tabular-nums;line-height:1.05}.sd-v small{display:block;font-family:inherit;font-size:.72rem;font-weight:600;color:var(--dim)}.sd-v.plus small{color:var(--ok)}.sd-v.moins small{color:var(--ko)}.sd-v.dim{color:var(--dim)}.sd-ax{display:flex;justify-content:space-between;margin:-4px 70px 0 94px;color:var(--dim);font-size:.68rem}.sd-leg{color:var(--dim);font-size:.74rem;margin:0}.sd-det{margin:6px 0 0}.styles-descriptifs .sd-det .styles-joueurs{margin-top:8px}
+.du-c{display:grid;gap:6px;margin:4px 0 10px}.du-c>div{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:.86rem;padding:6px 10px;border-radius:9px;background:rgba(var(--wv),.04)}.du-c .pm-chip{margin:0;white-space:nowrap}.du-p100{padding:0}.es-plus{margin:-8px 16px 14px}.es-plus ul{padding:6px 0 0!important}.sc-tu{grid-template-columns:repeat(3,minmax(0,1fr));padding:4px 0 10px}.sc-tu .es-t b{font-size:1.3rem}
+.s1-vis{display:grid;gap:10px;margin:8px 0 4px}.s1-n{font-weight:700;margin-bottom:2px}.s1-r{display:grid;grid-template-columns:96px 1fr 46px;gap:8px;align-items:center;margin:3px 0}.s1-l{font-size:.8rem}.s1-axe{position:relative;height:12px;border-radius:6px;background:rgba(var(--wv),.06)}.s1-axe u{position:absolute;top:-3px;bottom:-3px;width:2px;margin-left:-1px;background:var(--ink);border-radius:1px;text-decoration:none;opacity:.85}.s1-axe b,.s1-axe em{position:absolute;top:50%;width:12px;height:12px;margin:-6px 0 0 -6px;border-radius:50%}.s1-axe b.c1{background:var(--p1)}.s1-axe b.c2{background:var(--p2)}.s1-axe em{background:var(--bg);border:2px solid}.s1-axe em.c1{border-color:var(--p1)}.s1-axe em.c2{border-color:var(--p2)}.s1-v{text-align:right;font-family:var(--cond);font-weight:700;font-variant-numeric:tabular-nums}.s1-v.c1{color:var(--p1)}.s1-v.c2{color:var(--p2)}.s1-ax{display:flex;justify-content:space-between;margin:-4px 54px 0 104px;color:var(--dim);font-size:.68rem}
 .cj-vis{display:grid;gap:10px;margin:10px 0 4px}.cj-leg{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:.8rem;align-items:center}.cj-leg .a{color:var(--p1);font-weight:600}.cj-leg .b{color:var(--p2);font-weight:600}.cj-sens{color:var(--dim);font-size:.72rem;flex-basis:100%}.cj-r{display:grid;gap:3px}.cj-l{font-size:.85rem}.cj-b{display:grid;grid-template-columns:1fr 92px;gap:8px;align-items:center}.cj-axe{position:relative;height:9px;border-radius:5px;background:rgba(var(--wv),.06)}.cj-axe s{position:absolute;left:50%;top:-3px;bottom:-3px;width:1px;background:var(--dim)}.cj-axe i{position:absolute;top:0;bottom:0;border-radius:4px}.cj-axe i.c1{background:var(--p1)}.cj-axe i.c2{background:var(--p2)}.cj-axe i.pale{opacity:.35}.mt-det{margin:4px 16px 0}.cj-b em{font-style:normal;font-size:.75rem;color:var(--dim);font-variant-numeric:tabular-nums;white-space:nowrap}.cj-b em.ok{color:var(--ok);font-weight:700}.cj-b em.ko{color:var(--ko);font-weight:700}
 .am-j .nm{font-weight:600}.am-j .nm.a{color:var(--p1)}.am-j .nm.b{color:var(--p2)}.am-j p{margin:4px 0 0;font-size:.83rem}
 .am-h2h{margin-top:12px}.am-h2h .bil{font-family:var(--disp);font-size:1.3rem;text-align:center}
@@ -638,7 +643,7 @@ body.carte #video{display:block;width:1080px;height:1350px}
 .live-stats .prevu{display:block;white-space:nowrap;font-size:.72rem;color:var(--dim);font-weight:400}.live-stats .hors{color:var(--ko);font-weight:700}
 .live-stats table.sheet td,.live-stats table.sheet th{padding:7px 10px;vertical-align:top}.live-stats .styles-note{margin:8px 10px 10px}.badge.peu{background:rgba(255,107,134,.16);color:var(--ko)}
 .res li.avec-am{grid-template-columns:1.8em 1fr auto}.res li .am{grid-column:1/-1}.am summary{cursor:pointer;font-weight:600;font-size:.88rem;color:var(--ball);min-height:36px;display:flex;align-items:center}.am h4{margin:10px 0 4px;font-size:.88rem}.am-t{font-size:.85rem;width:100%}.am-t td{vertical-align:top}.am-t th,.am-t td:first-child{text-align:left}.am-t td+td{text-align:right}.am-ok{color:var(--ok)}.am-ko{color:var(--ko)}.am .d{color:var(--dim);font-size:.8rem}
-.jc{list-style:none;margin:0;padding:0}.jc li{display:grid;grid-template-columns:auto 1fr;gap:10px;padding:10px 16px;border-top:1px solid var(--line);font-size:.9rem;align-items:start}.jc .d{color:var(--dim);font-size:.82rem}.jc-st{font-size:.72rem;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap;margin-top:2px}.jc-st.production{background:rgba(69,240,160,.16);color:var(--ok)}.jc-st.candidat{background:rgba(212,255,58,.14);color:var(--ball)}.jc-st.rejete{background:rgba(var(--wv),.07);color:var(--dim)}.jc-fan{margin:0;padding:12px 16px;font-size:.9rem}.jc-fans{margin:0 0 6px;padding:0 16px 0 34px;font-size:.88rem;line-height:1.45}.jc-fans li{margin:0 0 6px}
+.jc{list-style:none;margin:0;padding:0}.jc li{display:grid;grid-template-columns:auto 1fr;gap:10px;padding:10px 16px;border-top:1px solid var(--line);font-size:.9rem;align-items:start}.jc .d{color:var(--dim);font-size:.82rem}.jc-st{font-size:.72rem;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap;margin-top:2px}.jc-st.production{background:rgba(69,240,160,.16);color:var(--ok)}.jc-st.candidat{background:rgba(212,255,58,.14);color:var(--ball)}.jc-st.rejete{background:rgba(var(--wv),.07);color:var(--dim)}.jc-st.en_service{background:rgba(69,240,160,.16);color:var(--ok)}.jc-st.etude,.jc-st.essai{background:rgba(212,255,58,.14);color:var(--ball)}.jc-st.site,.jc-st.outil,.jc-st.collecte,.jc-st.abandon,.jc-st.retrait,.jc-st.retire{background:rgba(var(--wv),.07);color:var(--dim)}.jc li>span:last-child{min-width:0;overflow-wrap:anywhere}.jc-fan{margin:0;padding:12px 16px;font-size:.9rem}.jc-fans{margin:0 0 6px;padding:0 16px 0 34px;font-size:.88rem;line-height:1.45}.jc-fans li{margin:0 0 6px}
 /* 06/11/2026 (paquet 213) — ÉCRAN LARGE, UNE SEULE COLONNE D'INFORMATIONS : la simulation et l'en-tête du match
    côte à côte en haut, puis TOUT le reste de la fiche sur toute la largeur (la colonne de gauche n'est plus vide).
    Mobile inchangé (sous 820 px, tout s'empile comme avant). */
@@ -927,7 +932,7 @@ const T = {
   ds_direct:'Sur nos matchs', ds_vide:'Pas encore de désaccord jugé sur nos matchs (suivi depuis le 29 octobre).',
   ds_ref:'Pronostics hors échantillon depuis juin', ds_ref_txt:(p,a)=>`désaccord sur ${dec(p,0)} % des matchs ; quand ils sont d’accord, l’algo trouve ${dec(a,1)} % des vainqueurs`,
   jc_titre:'Journal des changements', jc_sous:'Ce qui a changé dans l’algo, quand, et ce que chaque changement a gagné au test. Les changements rejetés restent visibles.',
-  jc_production:'en production', jc_candidat:'candidat', jc_rejete:'rejeté', jc_decision:'mis en production par décision, sous garde-fou',
+  jc_production:'en production', jc_candidat:'candidat', jc_rejete:'rejeté', jc_en_service:'en service', jc_etude:'étude', jc_site:'site', jc_outil:'outil', jc_collecte:'collecte', jc_essai:'essai', jc_abandon:'abandonné', jc_retrait:'retiré', jc_retire:'retiré', jc_decision:'mis en production par décision, sous garde-fou',
   jc_fantome:'En direct :', jc_fantome_v:(n,a,b,g,ok)=>`sur ${fmt(n)} matchs réels, l’Elo en place fait ${dec(a,4)} de log loss contre ${dec(b,4)} pour l’Elo d’avant les changements (${g>=0?'gain':'perte'} ${dec(Math.abs(g),4)})${ok?'':' — moins de 30 matchs : rien à conclure'}.`,
   jc_fantome_vide:'En direct : la comparaison avec l’Elo d’avant les changements démarre ; elle s’affichera dès les premiers matchs joués.',
   jc_f_fantome:'Résultats ITF dans l’Elo (hommes et femmes)', jc_f_fantome_itf_femmes:'Résultats ITF femmes seuls (matchs WTA)',
@@ -1222,7 +1227,7 @@ const T = {
   ds_direct:'On our matches', ds_vide:'No judged disagreement on our matches yet (tracked since 29 October).',
   ds_ref:'Out-of-sample forecasts since June', ds_ref_txt:(p,a)=>`disagreement on ${dec(p,0)}% of matches; when they agree, the model calls ${dec(a,1)}% of winners`,
   jc_titre:'Change log', jc_sous:'What changed in the model, when, and what each change gained in testing. Rejected changes stay listed.',
-  jc_production:'live', jc_candidat:'candidate', jc_rejete:'rejected', jc_decision:'put live by decision, under a safeguard',
+  jc_production:'live', jc_candidat:'candidate', jc_rejete:'rejected', jc_en_service:'live', jc_etude:'study', jc_site:'site', jc_outil:'tool', jc_collecte:'data', jc_essai:'trial', jc_abandon:'dropped', jc_retrait:'withdrawn', jc_retire:'withdrawn', jc_decision:'put live by decision, under a safeguard',
   jc_fantome:'Live:', jc_fantome_v:(n,a,b,g,ok)=>`on ${fmt(n)} real matches, the current Elo scores ${dec(a,4)} log loss vs ${dec(b,4)} for the pre-change Elo (${g>=0?'gain':'loss'} ${dec(Math.abs(g),4)})${ok?'':' — under 30 matches: no conclusion'}.`,
   jc_fantome_vide:'Live: the comparison with the pre-change Elo is starting; it will show once matches are played.',
   jc_f_fantome:'ITF results in the Elo (men and women)', jc_f_fantome_itf_femmes:'Women’s ITF results only (WTA matches)',
@@ -1568,9 +1573,18 @@ function rendApresSet1(m){
       <tbody><tr><th>${esc(fr?'1er set gagné':'Wins 1st set')}</th><td><b>${pc0(o.si_set1_gagne)}</b></td><td>${cel(h && h.gagne)}</td>${C ? `<td>${pc0(C.gagne)}</td>` : ''}</tr>
       <tr><th>${esc(fr?'1er set perdu':'Loses 1st set')}</th><td><b>${pc0(o.si_set1_perdu)}</b></td><td>${cel(h && h.perdu)}</td>${C ? `<td>${pc0(C.perdu)}</td>` : ''}</tr></tbody></table>`;
   };
+  // 22/11/2026 (paquet 357) : sur un axe 0–100 %, rond plein = ce match, rond creux = ses 24 mois (8 matchs au moins),
+  // trait = moyenne du circuit ; le tableau reste sous « Tous les chiffres »
+  const X = v => Math.max(0, Math.min(100, 100 * v)).toFixed(1);
+  const axe = (i, ce, h, c, lib) => ce == null ? '' : `<div class="s1-r"><span class="s1-l">${esc(lib)}</span><span class="s1-axe">${c != null ? `<u style="left:${X(c)}%"></u>` : ''}${h && h[1] >= 8 ? `<em class="c${i+1}" style="left:${X(h[0]/h[1])}%" title="${esc(`${pc0(h[0]/h[1])} · ${fmt(h[1])} ${fr?'matchs':'matches'}`)}"></em>` : ''}<b class="c${i+1}" style="left:${X(ce)}%"></b></span><span class="s1-v c${i+1}">${pc0(ce)}</span></div>`;
+  const vis = [0,1].map(i => { const o = S.j[i] || {}, h = ((A[i ? 'away' : 'home'] || {}).apres_set1) || {};
+    if (o.si_set1_gagne == null) return '';
+    return `<div class="s1-j"><div class="s1-n" style="color:var(--p${i+1})">${esc(court(i ? m.away : m.home))}</div>${axe(i, o.si_set1_gagne, h.gagne, C && C.gagne, fr?'1er set gagné':'Wins 1st set')}${axe(i, o.si_set1_perdu, h.perdu, C && C.perdu, fr?'1er set perdu':'Loses 1st set')}</div>`; }).join('');
   return `<div class="s1"><h4>${esc(fr?'Après le 1er set':'After the 1st set')}</h4>
     <p class="styles-note" style="margin-top:0">${esc(fr?'Chance de gagner le match selon l’issue du 1er set : pour ce match (les simulations), dans ses matchs des 24 derniers mois, et en moyenne sur le circuit.':'Chance of winning the match depending on the 1st set: in this match (the simulations), in their matches of the last 24 months, and on average on the tour.')}</p>
-    ${bloc(0)}${bloc(1)}
+    <div class="s1-vis">${vis}<div class="s1-ax" aria-hidden="true"><span>0 %</span><span>50 %</span><span>100 %</span></div>
+    <p class="sd-leg">${esc(fr ? `● ce match · ○ ses 24 mois · | moyenne ${C ? (C.circuit==='CH'?'Challenger':C.circuit) : 'du circuit'}` : `● this match · ○ last 24 months · | ${C ? (C.circuit==='CH'?'Challenger':C.circuit) : 'tour'} average`)}</p></div>
+    <details class="ry-det" style="margin:4px 0 0"><summary>${esc(fr?'Tous les chiffres':'All figures')}</summary>${bloc(0)}${bloc(1)}</details>
     <p class="styles-note">${esc(fr?'L’historique est descriptif : nos études ont montré qu’il ne prédit pas mieux que le niveau des joueurs, il ne change donc pas le %. Moins de 8 matchs : non affiché.':'History is descriptive: our studies showed it does not predict better than the players’ level, so it does not change the %. Fewer than 8 matches: not shown.')}</p></div>`;
 }
 function rendScenarios(m, sc){
@@ -1589,7 +1603,11 @@ function rendScenarios(m, sc){
   return `<div class="panel scen"><h3>${esc(fr?'Scénarios du match':'Match scenarios')}</h3>
     <div class="sc-barre" aria-hidden="true">${barre}</div>
     <ul class="sc-l">${lignes}</ul>
-    <dl class="sc-r">${reperes.map(([k,v])=>`<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join('')}</dl>
+    <div class="es-tuiles sc-tu">${[
+      [fr?'Au moins un tie-break':'At least one tie-break', pc0(S.tiebreak), ''],
+      [fr?'Un set à 6-0 ou 6-1':'A set at 6-0 or 6-1', pc0(S.set_sec), ''],
+      J.mediane != null ? [fr?'Jeux dans le match':'Games in the match', String(J.mediane), fr ? `${J.p10} à ${J.p90} dans 8 cas sur 10` : `${J.p10} to ${J.p90} 8 times out of 10`] : null
+    ].filter(Boolean).map(([k,v,e])=>`<div class="es-t"><small>${esc(k)}</small><b>${esc(v)}</b>${e ? `<em>${esc(e)}</em>` : ''}</div>`).join('')}</div>
     ${rendApresSet1(m)}
     ${sc ? `<details class="sc-ex"><summary>${esc(fr?'Scores exacts les plus probables':'Likeliest exact scores')}</summary><div class="bars">${sc}</div><p class="styles-note">${esc(fr?'Chaque score exact reste rare, même le plus probable : c’est pourquoi les scénarios ci-dessus les regroupent.':'Each exact score stays rare, even the likeliest: that is why the scenarios above group them.')}</p></details>` : ''}
     ${rendControleScenarios(m)}
@@ -1989,7 +2007,10 @@ function feuilleMiroir(f, m){
 }
 function rendEssentiel(m){
   const L_ = essentielListe(m);
-  return `<div class="panel essentiel"><h3>${esc(t('es_titre'))}</h3>${tuilesEssentiel(m)}<ul>${L_.map(x=>`<li class="${x.sens}">${esc(x.txt)}</li>`).join('')}</ul></div>` + rendVigilance(m);
+  // 22/11/2026 (paquet 357) : 4 constats visibles, les suivants sous un repli (l'ordre ne change pas)
+  const li = x => `<li class="${x.sens}">${esc(x.txt)}</li>`, VIS = 4;
+  const reste = L_.length > VIS + 1 ? `<details class="ry-det es-plus"><summary>${esc(L==='fr' ? `${L_.length - VIS} autres constats` : `${L_.length - VIS} more findings`)}</summary><ul>${L_.slice(VIS).map(li).join('')}</ul></details>` : '';
+  return `<div class="panel essentiel"><h3>${esc(t('es_titre'))}</h3>${tuilesEssentiel(m)}<ul>${(reste ? L_.slice(0, VIS) : L_).map(li).join('')}</ul>${reste}</div>` + rendVigilance(m);
 }
 // 05/11/2026 — points de vigilance : où nos prévisions annexes se trompent sur ce circuit (biais_annexes.py, 6 semaines)
 // 341 — Points de vigilance : pour chaque statistique, de combien le réel a dépassé (ou manqué) nos prévisions, sur un
@@ -2507,25 +2528,31 @@ function rendPointsMarques(m){
     const sc = (a, b) => (a==null || b==null) ? null : a + b;
     const L_ = [];
     [0,1].forEach(i=>{ const a = T[i], b = T[1-i];
-      L_.push(`<p>${puce(sc(a.filet_reussite-C.filet_reussite, b.filet_concede-C.filet_concede), i, .04)}${esc(fr
+      L_.push({titre: fr ? `Filet · ${N[i]} à l’attaque` : `Net · ${N[i]} attacking`, puce: puce(sc(a.filet_reussite-C.filet_reussite, b.filet_concede-C.filet_concede), i, .04), txt: (fr
         ? `Filet : ${N[i]} monte sur ${q(a.filet_freq)} des points (circuit ${q(C.filet_freq)}) et y gagne ${q(a.filet_reussite)} ; face au filet, ${N[1-i]} laisse ${q(b.filet_concede)} (circuit ${q(C.filet_concede)}).`
-        : `Net: ${N[i]} comes in on ${q(a.filet_freq)} of points (tour ${q(C.filet_freq)}) and wins ${q(a.filet_reussite)}; facing the net, ${N[1-i]} gives up ${q(b.filet_concede)} (tour ${q(C.filet_concede)}).`)}</p>`);
+        : `Net: ${N[i]} comes in on ${q(a.filet_freq)} of points (tour ${q(C.filet_freq)}) and wins ${q(a.filet_reussite)}; facing the net, ${N[1-i]} gives up ${q(b.filet_concede)} (tour ${q(C.filet_concede)}).`)});
     });
     [0,1].forEach(i=>{ const a = T[i], b = T[1-i];
-      L_.push(`<p>${puce(sc(a.service_rapide-C.service_rapide, b.service_rapide_concede-C.service_rapide_concede), i, .03)}${esc(fr
+      L_.push({titre: fr ? `Service rapide · ${N[i]} à l’attaque` : `Quick serve · ${N[i]} attacking`, puce: puce(sc(a.service_rapide-C.service_rapide, b.service_rapide_concede-C.service_rapide_concede), i, .03), txt: (fr
         ? `Service rapide : ${N[i]} gagne ${q(a.service_rapide)} de ses points de service en 3 frappes ou moins (circuit ${q(C.service_rapide)}) ; au retour, ${N[1-i]} en concède ${q(b.service_rapide_concede)} (circuit ${q(C.service_rapide_concede)}).`
-        : `Quick serve: ${N[i]} wins ${q(a.service_rapide)} of serve points in 3 shots or fewer (tour ${q(C.service_rapide)}); returning, ${N[1-i]} concedes ${q(b.service_rapide_concede)} (tour ${q(C.service_rapide_concede)}).`)}</p>`);
+        : `Quick serve: ${N[i]} wins ${q(a.service_rapide)} of serve points in 3 shots or fewer (tour ${q(C.service_rapide)}); returning, ${N[1-i]} concedes ${q(b.service_rapide_concede)} (tour ${q(C.service_rapide_concede)}).`)});
     });
     [0,1].forEach(i=>{ const a = T[i], b = T[1-i];
       if (!a.amorti_freq || a.amorti_freq < C.amorti_freq) return;          // seulement pour qui joue l'amorti plus que la moyenne
-      L_.push(`<p>${puce(sc(a.amorti_reussite-C.amorti_reussite, b.amorti_concede-C.amorti_concede), i, .06)}${esc(fr
+      L_.push({titre: fr ? `Amorti · ${N[i]} à l’attaque` : `Drop shot · ${N[i]} attacking`, puce: puce(sc(a.amorti_reussite-C.amorti_reussite, b.amorti_concede-C.amorti_concede), i, .06), txt: (fr
         ? `Amorti : ${N[i]} en joue ${c100(a.amorti_freq)} pour 100 points (circuit ${c100(C.amorti_freq)}), réussis ${q(a.amorti_reussite)} ; contre ${N[1-i]}, les amortis réussissent ${q(b.amorti_concede)} (circuit ${q(C.amorti_concede)}).`
-        : `Drop shot: ${N[i]} plays ${c100(a.amorti_freq)} per 100 points (tour ${c100(C.amorti_freq)}), ${q(a.amorti_reussite)} successful; against ${N[1-i]}, drop shots succeed ${q(b.amorti_concede)} (tour ${q(C.amorti_concede)}).`)}</p>`);
+        : `Drop shot: ${N[i]} plays ${c100(a.amorti_freq)} per 100 points (tour ${c100(C.amorti_freq)}), ${q(a.amorti_reussite)} successful; against ${N[1-i]}, drop shots succeed ${q(b.amorti_concede)} (tour ${q(C.amorti_concede)}).`)});
     });
-    L_.push(`<p>${esc(fr
-      ? `Pour 100 points joués : ${N[0]} ${c100(T[0].gagnants)} coups gagnants ou fautes provoquées et ${c100(T[0].fautes)} fautes directes ; ${N[1]} ${c100(T[1].gagnants)} et ${c100(T[1].fautes)} (circuit ${c100(C.gagnants)} et ${c100(C.fautes)}).`
-      : `Per 100 points played: ${N[0]} ${c100(T[0].gagnants)} winners or forced errors and ${c100(T[0].fautes)} unforced errors; ${N[1]} ${c100(T[1].gagnants)} and ${c100(T[1].fautes)} (tour ${c100(C.gagnants)} and ${c100(C.fautes)}).`)}</p>`);
-    duel = `<div class="pm-du"><div class="pm-h" style="margin-top:0">${esc(fr?'Duel des coups':'Shot matchup')}</div>${L_.join('')}
+    // 22/11/2026 (paquet 357) : une ligne par duel (qui attaque, verdict), les phrases chiffrées sous « Tous les chiffres »,
+    // et pour 100 points joués des barres face à face avec le repère du circuit
+    const P100 = miroirLignes([
+      {lib: fr ? 'Coups gagnants ou fautes provoquées (pour 100 points)' : 'Winners or forced errors (per 100 points)', v: [100*T[0].gagnants, 100*T[1].gagnants], txt: [c100(T[0].gagnants), c100(T[1].gagnants)], ref: C.gagnants == null ? null : 100*C.gagnants},
+      {lib: fr ? 'Fautes directes (pour 100 points)' : 'Unforced errors (per 100 points)', v: [100*T[0].fautes, 100*T[1].fautes], txt: [c100(T[0].fautes), c100(T[1].fautes)], ref: C.fautes == null ? null : 100*C.fautes}]
+      .filter(x => x.v.every(v => v != null && isFinite(v))));
+    duel = `<div class="pm-du"><div class="pm-h" style="margin-top:0">${esc(fr?'Duel des coups':'Shot matchup')}</div>
+      <div class="du-c">${L_.map(x => `<div><span>${esc(x.titre)}</span>${x.puce}</div>`).join('')}</div>
+      ${P100 ? `<div class="fm du-p100">${P100}<p class="fm-note">${esc(fr ? 'Trait fin : la moyenne du circuit.' : 'Thin tick: the tour average.')}</p></div>` : ''}
+      <details class="ry-det" style="margin:4px 0 0"><summary>${esc(fr?'Tous les chiffres':'All figures')}</summary>${L_.map(x => `<p>${x.puce}${esc(x.txt)}</p>`).join('')}</details>
       <p><small>${esc(fr?"Habitudes de chaque joueur sur ses matchs relevés. Nos études n'y trouvent pas d'avantage qui prédise le vainqueur au-delà de l'algo, ni pour l'ensemble des joueurs, ni joueur par joueur : c'est une description, elle ne change pas le %."
                        :"Each player's habits over charted matches. Our studies find no edge here that predicts the winner beyond the algorithm, neither across players nor player by player: a description only, it does not change the %.")}</small></p></div>`;
   }
@@ -3183,6 +3210,29 @@ function rendDerniersStyle(b,titre){
     return `<li><span class="issue ${win?'v':'d'}" role="img" aria-label="${esc(t(win?'styles_victoire':'styles_defaite'))}">${L==='fr'?(win?'V':'D'):(win?'W':'L')}</span><span><b>${esc(r.adversaire)}</b><small>${esc(jourCourt(r.date))} · ${esc(r.tournoi||'')}${typeof r.attendu_pct==='number'?` · ${esc(t('styles_att_match',r.attendu_pct))}`:''}</small></span><span class="score">${esc(r.score||'—')}</span></li>`;
   }).join('')}</ul></details>`;
 }
+// 22/11/2026 (paquet 356, Lucas : « Tiroirs du site ») — BILANS CONTRE LE STYLE EN UN SCHÉMA : pour chaque joueur, une
+// ligne « toutes surfaces » et une ligne « surface du match » sur un axe commun aux deux joueurs : bande = fourchette
+// probable, trait = victoires attendues vu ses adversaires, rond = victoires réelles (en couleur seulement si l'écart
+// est net, même règle que verdictStyle). Le détail (phrases, statistiques, derniers matchs) passe sous un repli.
+function schemaStyles(J, m, libStyle, libAdv){
+  const fr = L==='fr', S_ = SURF[L][m.surface]||m.surface||'';
+  const B = []; J.forEach(j => [j.global, j.surface].forEach(b => { if (b && b.n && typeof b.attendu_pct === 'number') B.push(b); }));
+  if (!B.length) return '';
+  const vals = B.flatMap(b => [b.pct, b.attendu_pct, ...(Array.isArray(b.ic95) ? b.ic95 : [])]).filter(v => typeof v === 'number');
+  const lo = Math.max(0, Math.floor((Math.min(...vals) - 4) / 10) * 10), hi = Math.min(100, Math.ceil((Math.max(...vals) + 4) / 10) * 10);
+  const X = v => Math.max(0, Math.min(100, (v - lo) / (hi - lo) * 100)).toFixed(1);
+  const ligne = (b, lib, i) => {
+    if (!b || !b.n || typeof b.attendu_pct !== 'number') return `<div class="sd-r"><span class="sd-l">${esc(lib)}</span><span class="sd-axe vide"></span><span class="sd-v dim">—</span></div>`;
+    const v = verdictStyle(b), ic = Array.isArray(b.ic95) ? b.ic95 : null, e = b.ecart_pts || 0;
+    return `<div class="sd-r" title="${esc(t('styles_vn', b.victoires, b.n))}"><span class="sd-l">${esc(lib)}<small>${esc(fr ? `${fmt(b.n)} matchs` : `${fmt(b.n)} matches`)}</small></span>
+      <span class="sd-axe">${ic ? `<i class="ic" style="left:${X(ic[0])}%;width:${(X(ic[1]) - X(ic[0])).toFixed(1)}%"></i>` : ''}<u style="left:${X(b.attendu_pct)}%"></u><b class="${v && v.net ? (i ? 'c2' : 'c1') : 'pale ' + (i ? 'c2' : 'c1')}" style="left:${X(b.pct)}%"></b></span>
+      <span class="sd-v ${v ? v.sens : ''}">${esc(pc0(b.pct / 100))}<small>${esc(`${e > 0 ? '+' : e < 0 ? '−' : ''}${dec(Math.abs(e), 1)} pts`)}</small></span></div>`;
+  };
+  const tete = (j, i) => `<div class="sd-n"><span class="${i ? 'b' : 'a'}">${esc(court(i ? m.away : m.home))}</span><small>${esc([libStyle(j), libAdv(j) ? (fr ? `contre ${libAdv(j)}` : `vs ${libAdv(j)}`) : ''].filter(Boolean).join(' · '))}</small></div>`;
+  return `<div class="sd-vis">${J.map((j, i) => `<div class="sd-j">${tete(j, i)}${ligne(j.global, t('styles_global'), i)}${ligne(j.surface, S_ ? (fr ? `Sur ${S_}` : `On ${S_}`) : t('styles_surface', S_), i)}</div>`).join('')}
+    <div class="sd-ax" aria-hidden="true"><span>${lo} %</span><span>${Math.round((lo + hi) / 2)} %</span><span>${hi} %</span></div>
+    <p class="sd-leg">${esc(fr ? '● victoires réelles · | attendues vu ses adversaires · bande : fourchette probable. Rond pâle : écart dans le bruit.' : '● actual wins · | expected given the opponents · band: likely range. Faded dot: gap within noise.')}</p></div>`;
+}
 // 13/11/2026 (paquet 252) — STYLES DE JEU d'après les coups : étiquettes de chacun et bilan contre le style de jeu de
 // l'adversaire (même présentation que le duel des styles). Descriptif : ne change pas le %.
 // 348 — Styles de jeu : en tête, une bande par joueur (son style, face à quel style, et l'écart à l'attendu qui compte).
@@ -3194,7 +3244,7 @@ function bandeStyles(sj, m){
     const e = g.ecart_pts;
     return `<div class="sj-b"><div class="n ${i?'b':'a'}">${esc(court(i ? m.away : m.home))}</div><div class="st">${esc(styleLib(j.style[0]))}</div>
       ${adv ? `<small>${esc(fr ? `face aux ${styleLibPluriel(adv)}` : `against ${styleLibPluriel(adv)}`)}</small>` : ''}
-      ${e != null && g.n ? `<small><span class="ec ${e >= 5 ? 'up' : e <= -5 ? 'down' : ''}">${esc(`${e > 0 ? '+' : e < 0 ? '−' : ''}${dec(Math.abs(e),1)} pts`)}</span> ${esc(fr ? `vs attendu · ${g.n} matchs` : `vs expected · ${g.n} matches`)}</small>` : ''}</div>`;
+      </div>`;   // 356 : l'écart à l'attendu est dans le schéma juste dessous
   }).join('');
   return b ? `<div class="sj-bande">${b}</div>` : '';
 }
@@ -3213,7 +3263,9 @@ function rendStylesJeu(m){
     </section>`; }).join('');
   return `<div class="panel styles-descriptifs styles-jeu"><h3>${esc(fr?'Styles de jeu':'Playing styles')}</h3><p class="styles-intro">${esc(fr
     ? "Comment chacun gagne ses points dans l'échange, d'après ses matchs relevés coup par coup (Match Charting Project), face à la moyenne du circuit. Le chiffre qui compte est l'écart à l'attendu. Descriptif : nos études n'y trouvent pas d'effet sur le vainqueur au-delà de l'algo, il ne change pas le %."
-    : "How each player wins points in rallies, from charted matches (Match Charting Project), against the tour average. What counts is the gap to the expected rate. Descriptive: our studies find no effect on the winner beyond the algorithm; it does not change the %.")}</p>${bandeStyles(sj,m)}<div class="styles-joueurs">${joueurs}</div></div>`;
+    : "How each player wins points in rallies, from charted matches (Match Charting Project), against the tour average. What counts is the gap to the expected rate. Descriptive: our studies find no effect on the winner beyond the algorithm; it does not change the %.")}</p>${bandeStyles(sj,m)}
+    ${schemaStyles(sj.joueurs, m, () => '', () => '')}
+    <details class="ry-det sd-det"><summary>${esc(fr?'Détail par joueur':'Detail by player')}</summary><div class="styles-joueurs">${joueurs}</div></details></div>`;
 }
 function rendStylesDescriptifs(sd,m){
   if (!sd || sd.descriptif_seulement !== true || !Array.isArray(sd.joueurs) || sd.joueurs.length!==2) return '';
@@ -3229,7 +3281,10 @@ function rendStylesDescriptifs(sd,m){
   </section>`).join('');
   const okX = sd.joueurs.every(j=>j.global && j.global.n && j.global.attendu_pct!=null);
   const bx = okX ? `<button type="button" class="btn-x" data-x="${esc(m.uid)}">${esc(t('x_bouton'))}</button>` : '';
-  return `<div class="panel styles-descriptifs"><h3>${esc(t('styles_titre'))}</h3><p class="styles-intro">${esc(t('styles_sous'))}</p><div class="styles-joueurs">${joueurs}</div>${bx}</div>`;
+  const fr = L==='fr';
+  return `<div class="panel styles-descriptifs"><h3>${esc(t('styles_titre'))}</h3><p class="styles-intro">${esc(t('styles_sous'))}</p>
+    ${schemaStyles(sd.joueurs, m, j => styleLib(j.style), j => j.style_adverse ? styleLib(j.style_adverse) : '')}
+    <details class="ry-det sd-det"><summary>${esc(fr?'Détail, statistiques et derniers matchs':'Detail, statistics and recent matches')}</summary><div class="styles-joueurs">${joueurs}</div></details>${bx}</div>`;
 }
 // 29/10/2026 — IMAGE POUR X : le duel des styles en PNG 1080×1350 (dessiné ici, sans bibliothèque), couleur selon
 // l'ÉCART À L'ATTENDU (pas le % brut), « échantillon faible » sous 30 matchs, aucune adresse ni nom de site.
@@ -7326,8 +7381,29 @@ function rendJournal(){
   const fan = FS_.length ? `<p class="jc-fan"><b>${esc(t('jc_fantome'))}</b></p><ul class="jc-fans">${FS_.map(F=>
       `<li><b>${esc(t('jc_f_'+F.cle))}</b> — ${esc(t(F.cle==='fantome_forme_service'?'jc_fv_fs':'jc_fv', F.matchs, F.log_loss_elo_en_place, F.log_loss_elo_reference, F.gain, F.conclusion_possible))}</li>`).join('')}</ul>`
                 : `<p class="jc-fan">${esc(t('jc_fantome_vide'))}</p>`;
-  const li = J.changements.map(c=>`<li><span class="jc-st ${esc(c.statut)}">${esc(t('jc_'+c.statut))}</span>
-    <span><b>${esc(c.titre)}</b><br><span class="d">${esc(dateLong(c.date))}${c.decision?' · '+esc(t('jc_decision')):''} — ${esc(c.mesure)}${c.garde_fou?' · '+esc(c.garde_fou):''}</span></span></li>`).join('');
+  // 22/11/2026 (paquet 358) — BUG CORRIGÉ : depuis le 05/11, les entrées s'écrivent « quoi » (+ « garde_fou ») et non
+  // « titre » + « mesure » : le site affichait un titre VIDE pour 177 entrées sur 250, et aucun libellé pour les statuts
+  // « en service », « étude », « site »… Le titre est maintenant tiré de « quoi » (avant le premier « : »), le plus
+  // récent d'abord.
+  const NOMS = {atp:'ATP', wta:'WTA', itf:'ITF', cpi:'CPI', clv:'CLV', elo:'Elo', ch:'CH', x:'X', r2:'R2', '3d':'3D', lab:'Lab',
+    mixamo:'Mixamo', tennisapi:'TennisApi', telegram:'Telegram', challenger:'Challenger', lucas:'Lucas'};
+  const ACR = new RegExp('(^|[^\\p{L}\\p{N}])(' + Object.keys(NOMS).join('|') + ')(?![\\p{L}\\p{N}])', 'giu');
+  const phrase = x => x === x.toLocaleUpperCase('fr') && /\p{Lu}{4}/u.test(x)
+    ? (y => y.charAt(0).toLocaleUpperCase('fr') + y.slice(1))(x.toLocaleLowerCase('fr').replace(ACR, (_, a, w) => a + NOMS[w.toLowerCase()])) : x;
+  const tete = c => {
+    if (c.titre) return [c.titre, c.mesure || ''];
+    const q = String(c.quoi || '');
+    const p_ = q.match(/^([\s\S]{3,140}?)\s*\((?:paquet|package)\s*\d+[^)]*\)\s*[.:]\s*([\s\S]+)$/i);   // « TITRE (paquet N, …). texte »
+    if (p_) return [phrase(p_[1].trim()), p_[2]];
+    const m = q.match(/^([\s\S]{4,120}?)\s:\s([\s\S]+)$/);                                                  // « Titre : texte »
+    if (!m) return [q, ''];
+    const ti = m[1].replace(/\s*\((?:paquet|package)\s*\d+[^)]*\)/gi, '').trim(), k = ti.indexOf(',');
+    return [k > 0 ? phrase(ti.slice(0, k)) + ti.slice(k) : phrase(ti), m[2]];
+  };
+  const ord = J.changements.map((c, i) => [c, i]).sort((a, b) => String(b[0].date || '').localeCompare(String(a[0].date || '')) || b[1] - a[1]).map(x => x[0]);
+  const li = ord.map(c=>{ const [ti, de] = tete(c), st = String(c.statut || '');
+    return `<li>${st ? `<span class="jc-st ${esc(st.normalize('NFD').replace(/[\u0300-\u036f]/g,''))}">${esc(t('jc_'+st.normalize('NFD').replace(/[\u0300-\u036f]/g,'')) || st)}</span>` : '<span></span>'}
+    <span><b>${esc(ti)}</b><br><span class="d">${esc(dateLong(c.date))}${c.decision?' · '+esc(t('jc_decision')):''}${de ? ' — '+esc(de) : ''}${c.garde_fou?' · '+esc(c.garde_fou):''}</span></span></li>`; }).join('');
   // 18/11/2026 (paquet 271) : replié par défaut ; reste ouvert si le visiteur l'a ouvert
   const ouvert = !!el.querySelector('details.jc-pli[open]');
   el.innerHTML = `<details class="jc-pli"${ouvert?' open':''}><summary>${esc(L==='fr' ? `Voir le journal (${J.changements.length} changements)` : `Show the log (${J.changements.length} changes)`)}</summary>${fan}<ul class="jc">${li}</ul><p class="aide" style="padding:0 16px 14px">${esc(J.regle||'')}</p></details>`;
