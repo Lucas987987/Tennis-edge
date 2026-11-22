@@ -52,3 +52,14 @@ def test_pas_de_cote_dans_les_schemas():
         for mot in ('cote', 'odds', 'marché', 'pinnacle'):
             assert mot not in bloc, (f, mot)
     assert 'aucune cote utilisée' not in PAGE and 'no odds used' not in PAGE
+
+
+def test_schemas_348():
+    for f in ('function meteoTuiles(mt)', 'function duelVis(d, N)', 'function bandeStyles(sj, m)'):
+        assert f in PAGE, f
+    assert '${meteoTuiles(mt)}' in PAGE and '${duelVis(d,N)}' in PAGE and '${bandeStyles(sj,m)}' in PAGE
+    for f in ('function meteoTuiles', 'function duelVis', 'function bandeStyles'):
+        j = PAGE.index(f)
+        bloc = PAGE[j:PAGE.index('\nfunction ', j + 10)].lower()
+        for mot in ('cote', 'odds', 'marché', 'pinnacle'):
+            assert mot not in bloc, (f, mot)
