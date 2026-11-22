@@ -158,7 +158,10 @@ jobs:
           R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
           R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
           R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
-        run: python scripts/coffre.py pull --groupe suivi || true
+        run: |
+          python scripts/coffre.py pull --groupe suivi || true
+          # 335 : « le prix tient-il après l'alerte ? » — au coffre, plus dans le dépôt public
+          python scripts/coffre.py pull --groupe lab_site || true
       - name: Reconstruire les données Tennis Edge Lab
         env:
           LAB_CHECK_PREVIOUS: '1'
