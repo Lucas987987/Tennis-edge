@@ -84,3 +84,12 @@ def test_workflow_et_worker():
     assert 'types: [controle_prive]' in y and 'contents: read' in y and 'python3 scripts/controle_prive.py' in y
     w = open(os.path.join(RACINE, 'workers', 'tennis-edge-closing', 'worker.js'), encoding='utf-8').read()
     assert "workflowFile: 'controle_prive.yml'" in w and "evenement: 'controle_prive'" in w
+
+
+def test_pas_encore_au_coffre_mais_dans_git_avertit(monkeypatch):
+    # 355 : le jour de la bascule, un fichier encore dans git et pas encore envoyé : avertissement, pas une panne
+    monkeypatch.setattr(CPV, 'suivis', lambda c: {'moves_detail_hist.csv'})
+    r2 = FauxR2({'chaud/closing_lines.json': (10, 1), **_site()})
+    d = CPV.controler(r2, 'prive', INV)
+    assert 'moves_detail_hist.csv' not in {p['fichier'] for p in d['problemes']}
+    assert 'moves_detail_hist.csv' in {p['fichier'] for p in d['avertissements']}

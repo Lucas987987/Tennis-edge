@@ -12,6 +12,8 @@ scripts/etat_chaud.py). Ce contrôle vérifie, une fois par jour, sans rien modi
 
 Ne modifie rien. Le journal d'Actions (public) n'affiche que des nombres et des NOMS DE FICHIERS (déjà
 écrits dans le code public), jamais un contenu. Le rapport complet part au coffre (prive/controle_prive.json).
+Un fichier pas encore au coffre mais toujours dans git n'est qu'un avertissement (paquet 355) : rien n'est perdu, son
+rédacteur l'enverra au prochain passage (cas normal le jour de la bascule).
 CODE DE SORTIE : en mode « prive », 1 si un problème est trouvé (le run devient rouge) ; dans les autres modes, les
 problèmes sont des avertissements (le coffre se remplit au fil des passages des rédacteurs) et le code reste 0.
 Usage : python scripts/controle_prive.py
@@ -103,7 +105,10 @@ def controler(r2, m, inv=None):
              'octets': t[0] if t else 0, 'age_h': round(t[1], 1) if t and t[1] is not None else None,
              'dans_git': f in dans_git}
         seuil = FRAICHEUR_H.get(f)
-        if not L['au_coffre'] and (seuil is not None or L['dans_git']):
+        if not L['au_coffre'] and L['dans_git']:
+            # 355 : encore dans git, pas encore au coffre : rien n'est perdu, le rédacteur l'enverra à son prochain passage
+            L['etat'] = 'pas encore au coffre (encore dans git)'
+        elif not L['au_coffre'] and seuil is not None:
             L['etat'] = 'absent du coffre'
         elif not L['au_coffre']:
             L['etat'] = 'jamais créé'          # journal optionnel ou fichier pas encore produit : pas une panne
@@ -118,7 +123,8 @@ def controler(r2, m, inv=None):
             # hors « prive », tout est avertissement (le coffre se remplit au passage de chaque rédacteur) ; en « prive »,
             # un fichier sans rédacteur régulier (rapport lancé à la main, fichier figé) encore dans git attend le
             # prochain passage de son workflow : avertissement aussi
-            grave = m == 'prive' and (seuil is not None or L['etat'] != 'encore dans le dépôt public')
+            grave = m == 'prive' and L['etat'] != 'pas encore au coffre (encore dans git)' \
+                and (seuil is not None or L['etat'] != 'encore dans le dépôt public')
             (problemes if grave else avert).append(L)
     site = []
     for n in CP.SITE_DIRECT:
