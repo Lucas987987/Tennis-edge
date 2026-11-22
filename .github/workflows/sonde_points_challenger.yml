@@ -1,0 +1,58 @@
+name: Sonde - point par point Challenger et ITF (paquet 336)
+
+# 22/11/2026 — paquet 336, demande de Lucas (« plus de données en Challenger »). Le point par point de TennisApi
+# peut-il remplacer les statistiques qui manquent (Challengers de l'historique, ITF) ? Voir l'en-tête de
+# scripts/sonde_points_challenger.py. ~100 requêtes TennisApi, arrêt sous 6 000 restantes ; rien n'est commité :
+# comptes dans le journal du run, détail dans l'artefact sonde_points_challenger.
+on:
+  push:
+    branches: [main]
+    paths: ['scripts/sonde_points_challenger.py']
+  workflow_dispatch:
+    inputs:
+      jours:
+        description: 'Jours testés (AAAA-MM-JJ, séparés par des virgules ; 8 au plus)'
+        default: '2019-05-08,2021-05-12,2023-05-10,2025-05-14,2026-11-18'
+      par:
+        description: 'Matchs demandés par catégorie et par jour (20 au plus)'
+        default: '8'
+
+permissions:
+  contents: read
+
+jobs:
+  sonde:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          sparse-checkout: |
+            scripts/feuilles_match.py
+            scripts/points_match.py
+            scripts/sonde_points_challenger.py
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - name: Archive Sackmann (Challengers, pour comparer)
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          git clone -q --depth 1 --filter=blob:none --sparse https://github.com/Aneeshers/tennis-sackmann-archive.git /tmp/sackmann
+          cd /tmp/sackmann
+          git sparse-checkout set --no-cone 'atp_matches_qual_chall_20*.csv'
+      - name: Sonde
+        env:
+          RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
+          JOURS: ${{ github.event.inputs.jours || '2019-05-08,2021-05-12,2023-05-10,2025-05-14,2026-11-18' }}
+          PAR: ${{ github.event.inputs.par || '8' }}
+        run: python scripts/sonde_points_challenger.py --jours "$JOURS" --par "$PAR" --sackmann /tmp/sackmann
+      - name: Rapport
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sonde_points_challenger
+          path: sonde_points_challenger.json
+          if-no-files-found: warn
+          retention-days: 14
