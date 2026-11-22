@@ -33,3 +33,22 @@ def test_rien_charge_d_ailleurs():
     b = bloc()
     assert re.search(r"fetch\(new URL\(u, location\.href\)\)", b)
     assert 'http' not in b.replace('http://www.w3.org', '')
+
+
+def test_schemas_des_tiroirs_341():
+    for f in ('function tuilesEssentiel(m)', 'function feuilleMiroir(f, m)', 'function visAvantMatch(A, m)',
+              'function visVigilance(V, stat, lig)', 'function courbeTotaux(k)', 'function barreDuree(pv, m)'):
+        assert f in PAGE, f
+    assert '${tuilesEssentiel(m)}<ul>' in PAGE and '${feuilleMiroir(f, m)}' in PAGE and '${visAvantMatch(A,m)}' in PAGE
+    assert '${courbeTotaux(k)}' in PAGE and '${barreDuree(pv, m)}' in PAGE and '${visVigilance(V, stat, lig)}' in PAGE
+
+
+def test_pas_de_cote_dans_les_schemas():
+    i = PAGE.index('function feuilleMiroir(f, m)')
+    for f in ('function tuilesEssentiel(m)', 'function visVigilance', 'function courbeTotaux', 'function barreDuree',
+              'function visAvantMatch'):
+        j = PAGE.index(f)
+        bloc = PAGE[j:PAGE.index('\nfunction ', j + 10)].lower()
+        for mot in ('cote', 'odds', 'marché', 'pinnacle'):
+            assert mot not in bloc, (f, mot)
+    assert 'aucune cote utilisée' not in PAGE and 'no odds used' not in PAGE
