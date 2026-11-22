@@ -1831,6 +1831,13 @@
    "prive": true,
    "quoi": "CONTRÔLE DE LA BASCULE PRIVÉE (paquet 353) : chaque jour (workflow controle_prive.yml, lancé aussi par le worker), vérifie sans rien modifier que chacun des 83 fichiers privés a une copie au coffre R2, que ceux qui ont un rédacteur régulier y sont frais, qu'en mode ETAT_CHAUD=prive plus aucun n'est dans le dépôt public, et que l'onglet Direct du Lab a ses copies. Rapport complet au coffre (prive/controle_prive.json).",
    "garde_fou": "Lecture seule. Journal : des nombres et des noms de fichiers, jamais un contenu. Rouge seulement en mode « prive » ; ailleurs, des avertissements. Interrupteur du worker : CONTROLE_PRIVE_ENABLED=0."
+  },
+  {
+   "date": "2026-11-22",
+   "statut": "site",
+   "paquet": 354,
+   "quoi": "TIROIRS EN SCHÉMAS (paquet 354) : « Durée et rythme » montre ses chiffres en barres face à face (même échelle des deux côtés, repère d'un joueur type du circuit pour les tie-breaks et les matchs en 3 sets) et le rythme de chaque joueur en pastille ; « Bilans dans ces conditions » devient une barre par joueur et par condition, de part et d'autre de « comme d'habitude » ; « Forme et face-à-face » affiche la série en cours en gros chiffre. Les tableaux complets restent sous « Tous les chiffres ».",
+   "garde_fou": "Affichage seulement : mêmes chiffres qu'avant, aucun ne change le %. Écarts dans le bruit en couleur pâle."
   }
  ]
 }
