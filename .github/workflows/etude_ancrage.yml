@@ -5,6 +5,9 @@ name: Étude - ancrage et nombre de jeux (paquet 342)
 # reconstruit. Chaque lundi, le jugement grandit ; rien n'est conclu avant 1 000 matchs jugés par circuit.
 # N'écrit que simulateur/rapport_ancrage.json : rien ne change dans les pronostics. 0 requête d'API.
 on:
+  # 22/11/2026 (paquet 350) : relancé par le worker Cloudflare tennis-edge-closing si le cron du lundi saute
+  repository_dispatch:
+    types: [etude_ancrage]
   schedule:
     - cron: '23 5 * * 1'
   workflow_dispatch:
@@ -31,6 +34,7 @@ jobs:
           sparse-checkout: |
             /simulateur/
             /Tennis_Edge_Lab/live/pronostics_resultats.json
+            /feuilles/
           sparse-checkout-cone-mode: false
       - uses: actions/setup-python@v6
         with:
@@ -50,6 +54,14 @@ jobs:
           cp simulateur/rapport_recalage_service.json /tmp/rapport_recalage_service.json
           echo '### Recalage affiché du service (paquet 348)' >> "$GITHUB_STEP_SUMMARY"
           sed 's/^/    /' /tmp/recalage_service.log >> "$GITHUB_STEP_SUMMARY"
+      # 22/11/2026 (paquet 350) : Challenger, favori annoncé 50–60 % (règle dans l'en-tête de etude_ch_50_60.py)
+      - name: Challenger 50–60 % trop confiant ? (jugé à partir du 23/11/2026)
+        run: |
+          set -euo pipefail
+          python simulateur/etude_ch_50_60.py . | tee /tmp/ch_50_60.log
+          cp simulateur/rapport_ch_50_60.json /tmp/rapport_ch_50_60.json
+          echo '### Challenger, favori 50–60 % (paquet 350)' >> "$GITHUB_STEP_SUMMARY"
+          sed 's/^/    /' /tmp/ch_50_60.log >> "$GITHUB_STEP_SUMMARY"
       - name: Publier le rapport (sans écraser le travail des autres)
         run: |
           set -euo pipefail
@@ -60,7 +72,8 @@ jobs:
             git reset -q --hard origin/main
             cp /tmp/rapport_ancrage.json simulateur/rapport_ancrage.json
             cp /tmp/rapport_recalage_service.json simulateur/rapport_recalage_service.json
-            git add -- simulateur/rapport_ancrage.json simulateur/rapport_recalage_service.json
+            cp /tmp/rapport_ch_50_60.json simulateur/rapport_ch_50_60.json
+            git add -- simulateur/rapport_ancrage.json simulateur/rapport_recalage_service.json simulateur/rapport_ch_50_60.json
             if git diff --cached --quiet; then echo 'Rien de nouveau.'; exit 0; fi
             git commit -q -m 'Étude 342 : ancrage et nombre de jeux (rapport)'
             if git push origin HEAD:main; then echo '✅ publié'; exit 0; fi
