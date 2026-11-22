@@ -1,7 +1,7 @@
 {
   "schema": "recap_apprentissage_v1",
   "semaine": "2026-W47",
-  "genere_le": "2026-11-22T10:41:36+00:00",
+  "genere_le": "2026-11-22T12:43:48+00:00",
   "statut": "a_verifier",
   "lecture_seule": true,
   "modifie_apprentissage": false,
@@ -33,7 +33,7 @@
     },
     "gouvernance": {
       "disponible": true,
-      "genere_le": "2026-11-22T10:41:36.684243+00:00"
+      "genere_le": "2026-11-22T12:43:48.007569+00:00"
     }
   },
   "sources_manquantes": [],
@@ -95,32 +95,14 @@
     "population": "évaluation des facteurs, distincte des seuls pronostics directs récents"
   },
   "apprentissage_continu": {
-    "n": 1506,
+    "n": 1514,
     "minimum_n": 400,
-    "adopte": true,
-    "raison": "sur les 31 matchs joués les plus récents : poids appris sur nos matchs 0.6409 contre poids de l'archive 0.6438 (Elo seul 0.6534) ; marge exigée 0.001 et Brier non dégradé",
-    "poids": {
-      "elo": 0.7049,
-      "simulation": 0.4522
-    },
-    "poids_appris": {
-      "elo": 0.717,
-      "simulation": 0.4444
-    },
-    "jugement": {
-      "n": 31,
-      "depuis": "2026-11-21T11:00",
-      "jusqua": "2026-11-22T04:30",
-      "log_loss_continu": 0.64088,
-      "log_loss_poids_archive": 0.64376,
-      "log_loss_elo_seul": 0.65344,
-      "brier_continu": 0.21592,
-      "brier_poids_archive": 0.21955,
-      "brier_elo_seul": 0.22396,
-      "gain_log_loss": 0.002881,
-      "marge_requise": 0.001
-    },
-    "statut": "adopte",
+    "adopte": false,
+    "raison": "en attente : 4 nouveaux matchs depuis le dernier jugement (il en faut 30)",
+    "poids": null,
+    "poids_appris": null,
+    "jugement": {},
+    "statut": "non_adopte",
     "population": "premiers pronostics figés avec simulation et Elo, résultats ultérieurs"
   },
   "performance_recente": {
@@ -211,33 +193,17 @@
   "champion": {
     "statut_gouvernance": "a_verifier",
     "initialisation": false,
-    "empreinte_avant": "010cf461202f51ed72cf76cb02495155e5f38aa42b01b7dc0a755af849ef94b1",
-    "empreinte_apres": "ab8cd945028d7188d84878b2122d22425017b4e9ba0d614665e10f203e29bf76",
+    "empreinte_avant": "ab8cd945028d7188d84878b2122d22425017b4e9ba0d614665e10f203e29bf76",
+    "empreinte_apres": "e72581353eb6969ec738df48031a4f0fe0cb21992bc55bf7f2d5433d821b0c83",
     "modifie_cette_semaine": true,
-    "promotions_demande_es": [
-      "combinaison_continue"
-    ],
-    "promotions_retenues": [
-      "combinaison_continue"
-    ],
+    "promotions_demande_es": [],
+    "promotions_retenues": [],
     "promotions_differees": [],
     "periodes": {
       "juge_jusqua": "2026-11-22T04:30",
-      "jugement_courant": {
-        "n": 31,
-        "depuis": "2026-11-21T11:00",
-        "jusqua": "2026-11-22T04:30",
-        "log_loss_continu": 0.64088,
-        "log_loss_poids_archive": 0.64376,
-        "log_loss_elo_seul": 0.65344,
-        "brier_continu": 0.21592,
-        "brier_poids_archive": 0.21955,
-        "brier_elo_seul": 0.22396,
-        "gain_log_loss": 0.002881,
-        "marge_requise": 0.001
-      },
+      "jugement_courant": {},
       "minimum_nouveaux_matchs": 30,
-      "n_nouveaux": 31,
+      "n_nouveaux": null,
       "ok": true,
       "problemes": []
     },

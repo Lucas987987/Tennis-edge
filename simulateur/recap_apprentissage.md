@@ -1,6 +1,6 @@
 # Récapitulatif de l’apprentissage — 2026-W47
 
-Généré le 2026-11-22T10:41:36+00:00 · état **a_verifier**.
+Généré le 2026-11-22T12:43:48+00:00 · état **a_verifier**.
 
 > Lecture seule des rapports hebdomadaires. Les populations restent séparées ; aucune adoption nouvelle n’est déclenchée par ce document et aucun gain de ROI n’est déduit.
 
@@ -8,7 +8,7 @@ Généré le 2026-11-22T10:41:36+00:00 · état **a_verifier**.
 
 - **Facteurs adoptés** : Adversaires communs, Conditions, Contexte du tournoi, dotation, Durée, Face-à-face, Forme et fatigue, Matchup, Morphologie, Points importants, Pression, Profil de réaction, Styles, Vitesse du court, voyage.
 - **Candidats encore en attente** : Blessure.
-- **Apprentissage sur nos propres pronostics** : adopte — 1506/400 matchs documentés ; sur les 31 matchs joués les plus récents : poids appris sur nos matchs 0.6409 contre poids de l'archive 0.6438 (Elo seul 0.6534) ; marge exigée 0.001 et Brier non dégradé
+- **Apprentissage sur nos propres pronostics** : non_adopte — 1514/400 matchs documentés ; en attente : 4 nouveaux matchs depuis le dernier jugement (il en faut 30)
 - **Pronostics récents évalués** : 1244 matchs ; exactitude de la combinaison 65.76 %.
 - **Dérive** : accumulation ; 0 alerte(s).
 - **Champion modifié cette semaine** : oui.
@@ -54,10 +54,10 @@ Direct : **1248** pronostics sur **5** semaine(s). Rejoué : **6263** pronostics
 ## Gouvernance, dérive et champion
 
 - **Gouvernance** : a_verifier.
-- **Promotions retenues** : combinaison_continue.
+- **Promotions retenues** : aucune.
 - **Promotions différées** : aucune.
 - **Dérive** : accumulation, sur 1244 matchs ; alertes : aucune.
-- **Empreinte du champion** : `ab8cd945028d7188d84878b2122d22425017b4e9ba0d614665e10f203e29bf76`.
+- **Empreinte du champion** : `e72581353eb6969ec738df48031a4f0fe0cb21992bc55bf7f2d5433d821b0c83`.
 - **Sources manquantes** : aucune.
 
 Ce récapitulatif décrit l’apprentissage et ses contrôles. Il ne constitue ni une preuve prospective supplémentaire ni une promesse d’amélioration future des vainqueurs, des scores ou du ROI.
