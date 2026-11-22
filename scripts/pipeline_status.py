@@ -145,6 +145,18 @@ def _age_interne_h(path):
     return None
 
 
+def _au_coffre():
+    """Fichiers rangés au coffre privé (scripts/coffre.py), vide si le module manque."""
+    try:
+        import importlib.util
+        spec = importlib.util.spec_from_file_location('coffre', os.path.join(os.path.dirname(os.path.abspath(__file__)), 'coffre.py'))
+        m = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(m)
+        return {f for g, L in m.GROUPES.items() for f in L}
+    except Exception:
+        return set()
+
+
 def inspect(started):
     rows = []
     for art in ARTIFACTS:
@@ -154,7 +166,12 @@ def inspect(started):
         r = {'fichier': path, 'libellé': label,
              'optionnel': 'optionnel' in drapeaux, 'externe': externe}
         if not os.path.exists(path):
-            r.update(verdict='❌ ABSENT', octets=0, lignes=0, ecrit_ce_run=False)
+            # 22/11/2026 (paquet 345) : un fichier rangé au coffre privé (R2) n'est rapatrié que par les workflows qui
+            # le lisent ; ailleurs son absence est normale — ni panne ni alerte (son rédacteur le surveille)
+            if path in _au_coffre():
+                r.update(verdict='🔒 AU COFFRE (non rapatrié ici)', octets=0, lignes=0, ecrit_ce_run=False, optionnel=True)
+            else:
+                r.update(verdict='❌ ABSENT', octets=0, lignes=0, ecrit_ce_run=False)
             rows.append(r); continue
         size = os.path.getsize(path)
         mtime = datetime.datetime.utcfromtimestamp(os.path.getmtime(path))

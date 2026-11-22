@@ -1725,6 +1725,21 @@
    "paquet": 343,
    "quoi": "PISTE SALLE (paquet 343), ATP, WTA et Challenger : en salle, les serveurs gagnent bien plus de points que prévu (environ +0,4 à +1,0 point, contre −0,4 à 0 en plein air), mais la vitesse mesurée dans l'édition en cours, déjà utilisée, en rattrape presque tout dès le 2e tour. Ajouter « en salle » au service : gain de log loss par point de 0,00001 à 0,00002, sous le seuil de 0,001. NON RETENU, rien ne change.",
    "garde_fou": "ATP/WTA appris 2018–2022 et jugés 2023 → mai 2026 ; Challenger appris juin → septembre 2026 et jugé depuis octobre sur les feuilles (pas d'information « en salle » dans l'archive) ; Holm sur 3 circuits ; rapport seulement."
+  },
+  {
+   "date": "2026-11-22",
+   "statut": "etude",
+   "paquet": 344,
+   "quoi": "SALLE ET NOMBRE DE JEUX (paquet 344) : nouvelle variante de l'étude du lundi (etude_ancrage.py). En salle, le service des deux joueurs est relevé puis réancré sur le même %, et l'on mesure les lignes « plus de X jeux » sur nos vrais pronostics. Appris jusqu'au 22/11/2026, jugé seulement sur les matchs à partir du 23/11/2026. Le journal des pronostics garde désormais « en salle ».",
+   "garde_fou": "Le % de victoire ne change jamais ; ≥ 1 000 matchs jugés dont ≥ 300 en salle, gain ≥ 0,001, même sens, service pas dégradé, Holm sur ses 3 circuits ; rapport seulement."
+  },
+  {
+   "date": "2026-11-22",
+   "statut": "outil",
+   "paquet": 345,
+   "prive": true,
+   "quoi": "COTES EN PRIVÉ, ÉTAPE 2 (paquet 345) : journaux et états des canaux d'alertes (canal public, MISER, H13 à H17, zone) et verdicts en direct (verdicts_direct, suivi_canaux, verdicts_geles) passent au coffre R2 et sortent du dépôt public. L'ancienne page publique des hypothèses (tennis-edge-db) est fermée : les verdicts se lisent dans le Lab.",
+   "garde_fou": "États rapatriés avant les alertes (aucune alerte renvoyée) ; fusion à trois voies si deux workflows écrivent ; retrait du dépôt seulement si le coffre a une copie identique ; un fichier au coffre non rapatrié n'est plus une alerte de pipeline_status."
   }
  ]
 }
