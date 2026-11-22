@@ -270,9 +270,21 @@
       const r0 = by[c][delais[0]] || {};
       return `<tr><td>${esc(c)}</td><td>${nf(r0.n, 0)}</td><td>${sg(r0.clv_au_prix_alerte, 2)}</td>${delais.map(d => `<td>${cell(by[c][d])}</td>`).join('')}<td>${sg((by[c][5] || {}).clv_meilleur_book, 2)}</td></tr>`;
     }).join('');
+    // 22/11/2026 (paquet 335) : canal public, MISER et découpage ATP / WTA / Challenger, lecture à +5 min
+    const src = D.alertes_par_source ? Object.entries(D.alertes_par_source).map(([k, v]) => `${esc(k)} ${nf(v, 0)}`).join(' · ') : '';
+    const PC = D.par_circuit || [];
+    const byC = {};
+    for (const r of PC) ((byC[r.hypothese] = byC[r.hypothese] || {})[r.circuit] = byC[r.hypothese][r.circuit] || {})[r.delai_min] = r;
+    const circs = ['ATP', 'WTA', 'Challenger'];
+    const lect = r => (r && r.lecture ? `<span class="detail">${esc(r.lecture)}</span>` : '');
+    const cellC = r => (r ? `${nf(r.n, 0)} · ${sg(r.clv_au_prix_disponible, 2)}${lect(r)}` : '—');
+    const codesC = Object.keys(byC).sort((a, b) => (a === 'toutes') - (b === 'toutes') || a.localeCompare(b));
+    const rowsC = codesC.map(c => `<tr><td>${esc(c)}</td>${circs.map(k => `<td>${cellC((byC[c][k] || {})[5])}</td>`).join('')}</tr>`).join('');
     return `<details class="rg-eval"><summary>Le prix tient-il après l'alerte ?</summary>
-      <p class="mini">${nf(D.alertes_envoyees, 0)} alertes envoyées (H13 à H19) ; ${nf(D.sans_courbe_du_book, 0)} sans courbe du book alerté (matchs pas encore récupérés). Pour chaque délai après l'envoi : part des alertes où le book paie encore au moins le prix du message, et CLV au prix alors disponible (clôture Pinnacle sans marge). Dernière colonne : CLV au meilleur prix tous books confondus, 5 min après.</p>
+      <p class="mini">${nf(D.alertes_envoyees, 0)} alertes envoyées (H13 à H19)${src ? ` ; sources : ${src}` : ''} ; ${nf(D.sans_courbe_du_book, 0)} sans courbe du book alerté (matchs pas encore récupérés). CANAL = chaque book en retard annoncé par le canal public ; CANAL FR = les mêmes, books à licence française. Pour chaque délai après l'envoi : part des alertes où le book paie encore au moins le prix du message, et CLV au prix alors disponible (clôture Pinnacle sans marge). Dernière colonne : CLV au meilleur prix tous books confondus, 5 min après.</p>
       <div class="table-wrap rg-table"><table><thead><tr><th>Hypothèse</th><th>Alertes</th><th>CLV message</th>${delais.map(d => `<th>+${d} min</th>`).join('')}<th>Meilleur book à +5 min</th></tr></thead><tbody>${rows}</tbody></table></div>
+      ${rowsC ? `<h5>Par circuit, 5 min après l'alerte</h5><p class="mini">Alertes · CLV au prix encore disponible. ${esc(D.regle_lecture || '')}.</p>
+      <div class="table-wrap rg-table"><table><thead><tr><th>Hypothèse</th>${circs.map(k => `<th>${k}</th>`).join('')}</tr></thead><tbody>${rowsC}</tbody></table></div>` : ''}
     </details>`;
   }
 

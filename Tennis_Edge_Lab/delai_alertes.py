@@ -11,6 +11,18 @@ et on regarde son prix 0, 2, 5, 10 et 30 minutes après l'envoi :
 
 C'est la CLV que Lucas obtient vraiment s'il parie 2, 5 ou 10 minutes après le
 message. Lecture seule ; écrit Tennis_Edge_Lab/live/delai_alertes.json.
+
+22/11/2026 (paquet 335, Lucas : « test prix encore là sur le canal, découpage ATP / WTA / Challenger pour toutes les
+hypothèses ») :
+  — CANAL : chaque book en retard annoncé par le canal public (canal_public_log.jsonl, champ « retards »), une fois par
+    (match, joueur, book), books jouables seulement ; « CANAL FR » : les mêmes, books à licence française seulement ;
+  — MISER : chaque alerte MISER (miser_signal_log.jsonl, marché du match, relances exclues) ;
+  — par_circuit : chaque hypothèse (et le canal) découpée ATP / WTA / Challenger (tournoi de l'alerte, sinon celui de
+    la cote Pinnacle), avec une lecture à +5 min : « tient » si la CLV au prix encore disponible est positive avec son
+    intervalle à 95 % au-dessus de 0, « ne tient pas » si l'intervalle est sous 0, « incertain » sinon ;
+    rien n'est lu sous 30 alertes (« trop tôt »). Le circuit le plus fort n'est pas choisi après coup : les trois sont
+    toujours affichés côte à côte.
+Les alertes du canal et de MISER restent comptées à part (« toutes » = H13 à H19, comme avant).
 """
 from __future__ import annotations
 
@@ -19,12 +31,16 @@ import datetime as dt
 import importlib.util
 import json
 import pathlib
+import re
 import sys
 
 LAB = pathlib.Path(__file__).resolve().parent
 OUTPUT = "Tennis_Edge_Lab/live/delai_alertes.json"
 CODES = ("H13", "H14", "H15", "H16", "H16B", "H17", "H18", "H19")
 DELAIS = (0, 2, 5, 10, 30)
+DELAI_LECTURE = 5
+N_MIN = 30
+CIRCUITS = ("ATP", "WTA", "Challenger")
 
 
 def _load(name):
@@ -75,12 +91,87 @@ def lire_alertes(root):
                 continue
             vus.add(key)
             out.append({"code": code, "uid": r["uid"], "joueur": r.get("joueur"), "book": str(r["book"]).lower(),
-                        "cote": float(r["cote"]), "t": t})
+                        "cote": float(r["cote"]), "t": t, "tournoi": r.get("tournoi") or ""})
     return out
 
 
+def circuit(*textes):
+    """ATP / WTA / Challenger / ITF / inconnu, d'après le tournoi ou la catégorie (premier texte parlant)."""
+    for t in textes:
+        v = f" {str(t or '').lower()} "
+        if "challenger" in v:
+            return "Challenger"
+        if "itf" in v:
+            return "ITF"
+        if " wta" in v or re.search(r"\bwomen", v):
+            return "WTA"
+        if " atp" in v or re.search(r"\bmen\b", v):
+            return "ATP"
+    return "inconnu"
+
+
+def lire_canal(root):
+    """Canal public : un « pari » par (match, joueur, book en retard annoncé), books jouables seulement."""
+    path = pathlib.Path(root) / "canal_public_log.jsonl"
+    out, vus = [], set()
+    if not path.is_file():
+        return out
+    for line in path.read_text(encoding="utf-8").splitlines():
+        try:
+            r = json.loads(line)
+        except ValueError:
+            continue
+        t = _ts(r.get("t"))
+        if t is None or not r.get("uid") or not r.get("joueur"):
+            continue
+        for ret in r.get("retards") or []:
+            try:
+                book, cote = str(ret[0]).lower(), float(ret[1])
+            except (TypeError, ValueError, IndexError):
+                continue
+            fl = books.flags(book)
+            if not fl["jouable"] or cote <= 1:
+                continue
+            key = (r["uid"], r["joueur"], books.canonical(book))
+            if key in vus:
+                continue
+            vus.add(key)
+            out.append({"code": "CANAL", "uid": r["uid"], "joueur": r["joueur"], "book": book, "cote": cote, "t": t,
+                        "tournoi": r.get("tournoi") or r.get("categorie") or ""})
+    return out
+
+
+def lire_miser(root):
+    """Canal MISER : première alerte de chaque (match, joueur), marché du match, relances exclues."""
+    path = pathlib.Path(root) / "miser_signal_log.jsonl"
+    out, vus = [], set()
+    if not path.is_file():
+        return out
+    for line in path.read_text(encoding="utf-8").splitlines():
+        try:
+            r = json.loads(line)
+        except ValueError:
+            continue
+        if r.get("relance") or (r.get("marche") or "match") != "match":
+            continue
+        t = _ts(r.get("signale_le"))
+        if t is None or not r.get("uid") or not r.get("book") or not r.get("cote"):
+            continue
+        key = (r["uid"], r.get("joueur"))
+        if key in vus:
+            continue
+        vus.add(key)
+        out.append({"code": "MISER", "uid": r["uid"], "joueur": r.get("joueur"), "book": str(r["book"]).lower(),
+                    "cote": float(r["cote"]), "t": t, "tournoi": r.get("tournoi") or ""})
+    return out
+
+
+def toutes_alertes(root):
+    return lire_alertes(root) + lire_canal(root) + lire_miser(root)
+
+
 def alert_uids(root):
-    return {a["uid"] for a in lire_alertes(root)}
+    return {a["uid"] for a in toutes_alertes(root)}
 
 
 def _at(serie, t):
@@ -118,6 +209,8 @@ def mesurer(alertes, records, series_books):
         fair = books.fair_close(cl_s[1], cl_o[1]) if cl_s and cl_o else None
         serie = sb[a["book"]][side]
         eff0 = books.effective_odds(a["book"], a["cote"])
+        circ = circuit(a.get("tournoi"), pin.get("tournament"))
+        fr = books.flags(a["book"])["jouable_fr"]
         for d in DELAIS:
             t = a["t"] + dt.timedelta(minutes=d)
             if t >= start:
@@ -136,7 +229,7 @@ def mesurer(alertes, records, series_books):
                     if ailleurs is None or e > ailleurs[1]:
                         ailleurs = (b, e)
             meilleur = max(eff, ailleurs[1]) if ailleurs else eff
-            lignes.append({"code": a["code"], "delai": d, "date": a["t"].date().isoformat(),
+            lignes.append({"code": a["code"], "delai": d, "date": a["t"].date().isoformat(), "circuit": circ, "fr": fr,
                            "tient": eff >= eff0 - 1e-9, "variation_pct": 100 * (eff / eff0 - 1),
                            "clv": 100 * (eff / fair - 1) if fair else None,
                            "clv_meilleur": 100 * (meilleur / fair - 1) if fair else None,
@@ -144,12 +237,61 @@ def mesurer(alertes, records, series_books):
     return lignes, sans_courbe
 
 
+def _ligne(g):
+    n = len(g)
+    clv = dp.cluster_summary([x["clv"] for x in g], [x["date"] for x in g])
+    clv_m = dp.cluster_summary([x["clv_meilleur"] for x in g], [x["date"] for x in g])
+    clv_a = dp.cluster_summary([x["clv_alerte"] for x in g], [x["date"] for x in g])
+    return {"n": n, "prix_tenu": sum(x["tient"] for x in g) / n,
+            "variation_moyenne_pct": sum(x["variation_pct"] for x in g) / n,
+            "clv_au_prix_disponible": clv["mean"], "clv_ic95": clv["ci"],
+            "clv_meilleur_book": clv_m["mean"], "clv_au_prix_alerte": clv_a["mean"]}
+
+
+def lecture(r):
+    """Lecture à +5 min (règle écrite avant de regarder) : rien sous 30 alertes."""
+    if not r or r["n"] < N_MIN:
+        return "trop tôt (n < 30)"
+    ci = r.get("clv_ic95")
+    if not ci or r.get("clv_au_prix_disponible") is None:
+        return "incertain"
+    if ci[0] > 0:
+        return "tient"
+    if ci[1] < 0:
+        return "ne tient pas"
+    return "incertain"
+
+
+def par_circuit(lignes):
+    """(hypothèse, circuit) × délai, H13 à H19 réunies sous « toutes », et la lecture à +5 min."""
+    groupes = collections.defaultdict(list)
+    for l in lignes:
+        if l["circuit"] not in CIRCUITS:
+            continue
+        groupes[(l["code"], l["circuit"], l["delai"])].append(l)
+        if l["code"].startswith("H"):
+            groupes[("toutes", l["circuit"], l["delai"])].append(l)
+        if l["code"] == "CANAL" and l["fr"]:
+            groupes[("CANAL FR", l["circuit"], l["delai"])].append(l)
+    out = []
+    ordre = lambda k: (k[0] == "toutes", k[0], CIRCUITS.index(k[1]), k[2])
+    for (code, circ, d), g in sorted(groupes.items(), key=lambda kv: ordre(kv[0])):
+        r = dict(_ligne(g), hypothese=code, circuit=circ, delai_min=d)
+        if d == DELAI_LECTURE:
+            r["lecture"] = lecture(r)
+        out.append(r)
+    return out
+
+
 def resume(lignes):
     out = []
     groupes = collections.defaultdict(list)
     for l in lignes:
         groupes[(l["code"], l["delai"])].append(l)
-        groupes[("toutes", l["delai"])].append(l)
+        if l["code"].startswith("H"):
+            groupes[("toutes", l["delai"])].append(l)
+        if l["code"] == "CANAL" and l.get("fr"):
+            groupes[("CANAL FR", l["delai"])].append(l)
     for (code, d), g in sorted(groupes.items(), key=lambda kv: (kv[0][0] == "toutes", kv[0][0], kv[0][1])):
         n = len(g)
         clv = dp.cluster_summary([x["clv"] for x in g], [x["date"] for x in g])
@@ -160,16 +302,22 @@ def resume(lignes):
                     "variation_moyenne_pct": sum(x["variation_pct"] for x in g) / n,
                     "clv_au_prix_disponible": clv["mean"], "clv_ic95": clv["ci"],
                     "clv_meilleur_book": clv_m["mean"], "clv_au_prix_alerte": clv_a["mean"]})
+        if d == DELAI_LECTURE:
+            out[-1]["lecture"] = lecture(out[-1])
     return out
 
 
 def build(sink):
-    alertes = lire_alertes(sink["root"])
+    alertes = toutes_alertes(sink["root"])
     lignes, sans = mesurer(alertes, sink["records"], sink.get("series_books") or {})
+    n_code = collections.Counter(a["code"] for a in alertes)
     return {"schema_version": 1,
             "generated_at": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
-            "alertes_envoyees": len(alertes), "sans_courbe_du_book": sans,
-            "delais_min": list(DELAIS), "resume": resume(lignes),
+            "alertes_envoyees": sum(v for k, v in n_code.items() if k.startswith("H")), "sans_courbe_du_book": sans,
+            "alertes_par_source": dict(sorted(n_code.items())),
+            "delais_min": list(DELAIS), "resume": resume(lignes), "par_circuit": par_circuit(lignes),
+            "regle_lecture": f"à +{DELAI_LECTURE} min : « tient » si l'IC 95 % de la CLV au prix disponible est au-dessus de 0, "
+                             f"« ne tient pas » s'il est en dessous, « incertain » sinon ; rien sous {N_MIN} alertes",
             "notes": {"prix": "prix NET (commission déduite) du book alerté, dernier changement de cote avant l'instant",
                       "clv": "contre la clôture Pinnacle sans marge (méthode puissance)",
                       "meilleur": "meilleur prix entre le book alerté et les autres books jouables au même instant"}}
@@ -188,9 +336,7 @@ def run(sink):
     except (OSError, ValueError):
         pass
     path.write_text(json.dumps(doc, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
-    t = {(r["hypothese"], r["delai_min"]): r for r in doc["resume"]}
-    a = t.get(("toutes", 5))
-    print(f"Délai alertes : {doc['alertes_envoyees']} alertes envoyées, {doc['sans_courbe_du_book']} sans courbe du book"
-          + (f" ; à +5 min, prix tenu {100 * a['prix_tenu']:.0f} %, CLV {a['clv_au_prix_disponible']:+.2f} %"
-             if a and a["clv_au_prix_disponible"] is not None else ""))
+    # 335 : les journaux des runs sont publics — seulement des comptes, jamais de CLV ni de prix
+    print(f"Délai alertes : {doc['alertes_envoyees']} alertes H, sources {doc['alertes_par_source']}, "
+          f"{doc['sans_courbe_du_book']} sans courbe du book ; détail dans le Lab (privé)")
     return doc

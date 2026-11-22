@@ -1659,6 +1659,14 @@
    "paquet": 334,
    "quoi": "BASCULE EN PRIVÉ, ÉTAPES 1 ET 2 (paquet 334, demande de Lucas). 1) Le site est servi par Cloudflare : pages.yml envoie _site dans le bucket R2 privé (algo/ et arena/ publics, tout le reste privé) et GitHub Pages ne publie plus que algo/ et arena/. Le Lab et l'ancien tableau de bord ne sont plus publics : ils se lisent sur algo.tennis-edge.workers.dev/lab/ et /tableau/ après connexion avec la clé privée (jamais sur gamesetalgo.com). Le site public est lu dans R2 d'abord, GitHub Pages en secours. 2) Les journaux de suivi (paper_trades_*), le CLV du canal et le rapport CLV contre la médiane passent au coffre privé R2 et sortent du dépôt public ; les workflows qui les écrivent ou les lisent les rapatrient, avec fusion à trois voies quand deux runs se croisent.",
    "garde_fou": "Rien ne change dans les calculs ni dans les %. Si l'envoi à R2 échoue, GitHub Pages publie tout comme avant. Un fichier n'est retiré du dépôt que si le coffre en a une copie identique ; un run qui n'a pas rapatrié un fichier ne l'envoie jamais par-dessus le coffre ; en cas de conflit réel, la version du coffre est gardée. Limite : l'historique git garde les anciennes versions jusqu'au dépôt neuf (étape 3)."
+  },
+  {
+   "date": "2026-11-22",
+   "statut": "en_service",
+   "prive": true,
+   "paquet": 335,
+   "quoi": "LE PRIX EST-IL ENCORE LÀ ? CANAL PUBLIC ET MISER, ET LECTURE PAR CIRCUIT (paquet 335, demande de Lucas). L'étude du Lab « le prix tient-il après l'alerte ? » couvre maintenant chaque book en retard annoncé par le canal public (et à part ceux à licence française) et les alertes MISER : prix du book 0, 2, 5, 10 et 30 minutes après l'alerte, et CLV au prix encore disponible. Chaque hypothèse, le canal et MISER sont lus ATP / WTA / Challenger, aussi dans les verdicts en direct et le récap Telegram privé. Règle écrite avant de regarder : les trois circuits toujours affichés côte à côte, rien sous 30 alertes, CLV corrigée de Holm sur toutes les cases lues ; à +5 min, « tient » seulement si l'intervalle à 95 % est au-dessus de 0. Le fichier de l'étude passe au coffre privé.",
+   "garde_fou": "Lecture seule : aucune alerte, aucun seuil, aucun canal ne change. Aucun circuit n'est choisi après coup. Les journaux des runs n'affichent que des comptes, jamais de CLV."
   }
  ]
 }

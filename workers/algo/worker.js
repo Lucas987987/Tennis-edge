@@ -35,7 +35,7 @@ const TYPES = { json: 'application/json; charset=utf-8', html: 'text/html; chars
 // DOIT correspondre à scripts/coffre.py (SERVIS)
 export const PRIVES = new Set(['h18_signal_log.jsonl', 'h18_signal_state.json', 'h19_signal_log.jsonl',
   'h19_signal_state.json', 'h20_signal_log.jsonl', 'h20_signal_state.json', 'h20.json', 'pronostics.json',
-  'valeur.json']);
+  'valeur.json', 'delai_alertes.json']);
 
 const SECURITE = {
   'X-Content-Type-Options': 'nosniff',
