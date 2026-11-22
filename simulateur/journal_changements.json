@@ -1823,6 +1823,14 @@
    "prive": true,
    "quoi": "COTES EN PRIVÉ, ÉTAPE 4 (paquet 352) : kalshi_lead_obs.jsonl, courbes_absences.json, value_candidates.jsonl, book_lag_report.json, calibration_buckets_report.json, early_open_log.jsonl, direct_matchs.json et cinq fichiers figés (games_markets, economic_v64, selection_v64_frozen, rapports d'écart à la clôture) rejoignent le coffre R2, un groupe par rédacteur. Envoyés à chaque passage dès maintenant ; sortis du dépôt public en mode ETAT_CHAUD=prive. Les workflows fréquents ne rapatrient plus que ce qu'ils lisent. L'onglet Direct du Lab lit ses fichiers dans le site privé (copies envoyées par « Courbes live + alertes ») avant GitHub.",
    "garde_fou": "Même interrupteur et même retour arrière que les étapes 3 et 3b. Retrait seulement si le coffre a une copie. Les registres de gels du Lab restent publics (leur date dans git prouve qu'ils précèdent les résultats). Fichiers figés envoyés tels quels, avant tout calcul."
+  },
+  {
+   "date": "2026-11-22",
+   "statut": "outil",
+   "paquet": 353,
+   "prive": true,
+   "quoi": "CONTRÔLE DE LA BASCULE PRIVÉE (paquet 353) : chaque jour (workflow controle_prive.yml, lancé aussi par le worker), vérifie sans rien modifier que chacun des 83 fichiers privés a une copie au coffre R2, que ceux qui ont un rédacteur régulier y sont frais, qu'en mode ETAT_CHAUD=prive plus aucun n'est dans le dépôt public, et que l'onglet Direct du Lab a ses copies. Rapport complet au coffre (prive/controle_prive.json).",
+   "garde_fou": "Lecture seule. Journal : des nombres et des noms de fichiers, jamais un contenu. Rouge seulement en mode « prive » ; ailleurs, des avertissements. Interrupteur du worker : CONTROLE_PRIVE_ENABLED=0."
   }
  ]
 }
