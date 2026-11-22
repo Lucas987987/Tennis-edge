@@ -1,47 +1,47 @@
 {
  "schema_version": 1,
- "genere_le": "2026-11-20T15:19:18Z",
+ "genere_le": "2026-11-22T07:26:48Z",
  "canaux": {
   "MISER": {
    "libelle": "🎯 MISER — steam, EV ≥ seuil vs Pinnacle juste (vainqueur du match)",
    "source": "miser_signal_log.jsonl (messages envoyés) + ajouts de suivi_direct",
    "regle": "première alerte de chaque match, au book et au prix du message ; relances non recomptées",
    "debut": "2026-10-22",
-   "n_alertes": 47,
-   "n_matchs": 47,
+   "n_alertes": 48,
+   "n_matchs": 48,
    "n_relances": 0,
-   "n_denoues": 41,
+   "n_denoues": 42,
    "bilan": {
-    "n": 41,
+    "n": 42,
     "gains": 16,
-    "taux": 39.0,
-    "seuil": 40.9,
-    "ecart": -1.9,
+    "taux": 38.1,
+    "seuil": 41.0,
+    "ecart": -2.9,
     "ic95": [
-     25.7,
-     54.3
+     25.0,
+     53.2
     ],
-    "roi": -8.6,
-    "pnl": -3.5,
-    "cote_moyenne": 3.09,
-    "clv_moyen": 8.3,
-    "clv_pin_moyen": 8.3,
+    "roi": -10.8,
+    "pnl": -4.5,
+    "cote_moyenne": 3.06,
+    "clv_moyen": 8.2,
+    "clv_pin_moyen": 8.2,
     "clv_pin_ic95": [
-     5.5,
-     11.1
+     5.6,
+     10.9
     ],
     "clv_pin_p": 0.0,
-    "clv_n": 46,
-    "clv_positif": 87.0,
-    "lead_moyen_h": 7.5,
-    "periode": "2026-10-22 -> 2026-11-19",
+    "clv_n": 48,
+    "clv_positif": 87.5,
+    "lead_moyen_h": 7.4,
+    "periode": "2026-10-22 -> 2026-11-21",
     "verdict": "ne tranche pas",
     "clv_mediane": 6.7,
-    "n_commencees": 47,
+    "n_commencees": 48,
     "n_sans_resultat": 6,
-    "sans_resultat_pct": 12.8,
+    "sans_resultat_pct": 12.5,
     "verrouillable": false,
-    "statut": "en attente de résultats (12,8 % sans résultat)"
+    "statut": "en attente de résultats (12,5 % sans résultat)"
    },
    "paris": {
     "2026-10-22_valerio_aboian_matias_soto": {
@@ -415,9 +415,17 @@
     "2026-11-20_carlos_alcaraz_flavio_cobolli": {
      "gagne": 0,
      "pnl": -1.0,
-     "pin_close": null,
-     "pin_close_adv": null,
-     "clv_pin": null,
+     "pin_close": 5.71,
+     "pin_close_adv": 1.178,
+     "clv_pin": 3.255,
+     "source_resultat": "set_results (uid)"
+    },
+    "2026-11-22_sebastian_gorzny_omar_jasika": {
+     "gagne": 0,
+     "pnl": -1.0,
+     "pin_close": 1.917,
+     "pin_close_adv": 1.9,
+     "clv_pin": 10.47,
      "source_resultat": "feuille de match (TennisApi)"
     }
    }
