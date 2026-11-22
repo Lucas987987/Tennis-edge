@@ -1635,6 +1635,14 @@
    "paquet": 331,
    "quoi": "SONDE MATCHSTAT (paquet 331, outil interne). Workflow manuel « Sonde Matchstat » : vérifie, en 12 requêtes au plus, si l'historique de Matchstat donne les statistiques de match d'un Challenger, d'un match ATP et d'un match WTA passés, les compare à Sackmann, teste le point par point et estime le nombre de requêtes pour récupérer 2018–2025. But : une source de données utilisable commercialement avant toute offre payante (l'archive Sackmann est en licence non commerciale).",
    "garde_fou": "Lecture seule : rien n'est commité, rien ne change dans l'algo ni sur le site. Arrêt si le quota restant passe sous 30 requêtes ; la clé n'est jamais affichée."
+  },
+  {
+   "date": "2026-11-22",
+   "statut": "en_service",
+   "prive": true,
+   "paquet": 332,
+   "quoi": "SONDE MATCHSTAT CORRIGÉE (paquet 332, outil interne). Premier passage : la liste « fixtures » ne donne que les matchs à venir (0 match pour les jours passés) et la formule gratuite n'offre que 50 requêtes par mois. La sonde part maintenant de deux tournois connus (un Challenger, un tournoi WTA) : 2 requêtes par tournoi, 6 au plus.",
+   "garde_fou": "Lecture seule, rien n'est commité ; arrêt sous 30 requêtes restantes."
   }
  ]
 }
