@@ -79,7 +79,7 @@ class Rangement(unittest.TestCase):
 class Workflow(unittest.TestCase):
     def test_garde_fous(self):
         w = open(os.path.join(RACINE, '.github/workflows/historique_feuilles.yml'), encoding='utf-8').read()
-        for x in ("FEUILLES_DOSSIER: historique/feuilles", "FEUILLES_RESERVE: '7000'", "FEUILLES_DUREE: '0'",
+        for x in ("FEUILLES_DOSSIER: historique/feuilles", "FEUILLES_RESERVE: '9000'", "FEUILLES_DUREE: '0'",
                   "FEUILLES_SANS_FORCER: '1'", "FEUILLES_RECENT_D_ABORD: '1'", '"atp,wta"', "2018-01-01", "2026-05-31",
                   'historique_feuilles.py --ranger', 'group: historique-feuilles', 'git push origin HEAD:main'):
             self.assertIn(x, w)
