@@ -193,7 +193,8 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           # Base des fiches joueurs. Non renseignee, lien_joueur.duo_html()
           # rend le texte sans lien : les alertes partent inchangees.
-          FICHES_BASE: https://joueurs.tennis-edge.workers.dev
+          # 22/11/2026 (paquet 348) : fiches privées (derrière connexion) — aucun lien dans les alertes
+          FICHES_BASE: ''
         run: |
           # MIGRATION AUTOMATIQUE (une seule fois) : si parts/ n'existe pas encore,
           # on convertit les fichiers plats existants en partitions, puis on retire

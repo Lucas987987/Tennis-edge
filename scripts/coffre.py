@@ -97,6 +97,9 @@ GROUPES['canaux'] = ['canal_public_log.jsonl', 'canal_public_state.json', 'miser
 # courbes_alertes (steam_alert.py : suivi_canaux.json ; validation_report.py : verdicts_geles.json) ; lus par le Lab,
 # les scripts d'alertes (bilan en direct) et l'observateur externe
 GROUPES['verdicts'] = ['verdicts_direct.json', 'suivi_canaux.json', 'verdicts_geles.json']
+# 22/11/2026 (paquet 348) — fiches joueurs (cotes médianes, classement Pinnacle, cote de chaque match) : écrites par
+# player_profiles.yml, lues par le worker « joueurs » (R2, derrière connexion) et deux études
+GROUPES['profils'] = ['players_profile.json']
 PROTEGES |= {'canaux', 'verdicts'}   # deux rédacteurs possibles, et des états à ne jamais écraser par une copie périmée
 # servis au Lab par le worker « algo » (nom de fichier seul, sans dossier)
 SERVIS = sorted({os.path.basename(f) for f in GROUPES['tous']})

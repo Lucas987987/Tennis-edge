@@ -24,7 +24,7 @@ de cote » sont donc parties avec des noms non cliquables, sans erreur.
 Une adresse par défaut ici couvre tous les workflows d'un coup, y
 compris ceux qu'on ajoutera.
 
-    FICHES_BASE absente  -> adresse par défaut
+    FICHES_BASE absente  -> aucun lien depuis le 22/11/2026 (paquet 348 : fiches privées, derrière connexion)
     FICHES_BASE=""       -> aucun lien, texte d'avant au caractère près
     FICHES_BASE=<autre>  -> cette adresse
 
@@ -77,7 +77,8 @@ def _base():
     au code). La distinction entre « absente » et « vide » est voulue."""
     v = os.environ.get('FICHES_BASE')
     if v is None:
-        v = DEFAUT
+        # 22/11/2026 (paquet 348) : les fiches sont privées (connexion) — plus de lien par défaut dans les messages
+        v = ''
     return v.strip().rstrip('/')
 
 
@@ -217,7 +218,7 @@ if __name__ == '__main__':
 
     os.environ.pop('FICHES_BASE', None)
     defaut = duo_html('Aryna Sabalenka', 'Linda Noskova')
-    assert DEFAUT + '/j/' in defaut, defaut
+    assert defaut == nu, defaut          # 348 : fiches privées, plus de lien par défaut
     print('sans FICHES_BASE :', defaut)
 
     os.environ['FICHES_BASE'] = 'https://exemple.workers.dev/'
