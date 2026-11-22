@@ -198,7 +198,7 @@ svg.curve{width:100%;height:auto;display:block}
 .fiab-detail dl{display:grid;grid-template-columns:1fr auto;gap:6px 12px;margin:6px 0}.fiab-detail dd{margin:0;text-align:right;font-variant-numeric:tabular-nums;color:var(--ink)}
 .styles-descriptifs{padding:16px}
 .styles-descriptifs h3{margin:0;font-size:1rem}.styles-intro{margin:4px 0 14px;color:var(--dim);font-size:.88rem;max-width:72ch}
-.styles-joueurs{display:grid;gap:16px}.btn-x{margin:16px 0 2px;width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--line2);background:rgba(212,255,58,.1);color:var(--ink);font:600 .95rem Barlow,system-ui,sans-serif;cursor:pointer}.btn-x:disabled{opacity:.5}.style-joueur{min-width:0;border-top:1px solid var(--line);padding-top:12px}
+.styles-joueurs{display:grid;gap:16px}.btn-x{margin:16px 0 2px;width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--line2);background:rgba(212,255,58,.1);color:var(--ink);font:600 .95rem Barlow,system-ui,sans-serif;cursor:pointer}.btn-x:disabled{opacity:.5}.xt-barre{margin:0;padding:4px 16px 16px;display:flex;justify-content:flex-end}.btn-xt{min-height:40px;padding:8px 14px;border-radius:999px;border:1px solid var(--line2);background:none;color:var(--dim);font:600 .85rem Barlow,system-ui,sans-serif;cursor:pointer}.btn-xt:disabled{opacity:.5}.style-joueur{min-width:0;border-top:1px solid var(--line);padding-top:12px}
 .style-tete{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap}.style-tete h4{margin:0;font-size:1rem}.style-etiquette{font-family:var(--cond);font-weight:600;color:var(--ball)}
 .style-contre{margin:3px 0 10px;color:var(--dim);font-size:.88rem}.style-chiffres{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .style-chiffre{min-width:0;border-top:1px solid var(--line);padding-top:8px}.style-chiffre>span{display:block;color:var(--dim);font-size:.82rem}.style-chiffre strong{display:block;font-family:var(--cond);font-size:1.8rem;line-height:1.2;font-variant-numeric:tabular-nums}
@@ -908,6 +908,7 @@ const T = {
         tie_break:'Au moins un tie-break', set_decisif:'Set décisif', set1_home:'1er set au joueur 1'},
   fs_f:{fiable:'fiable', trop_etroite:'fourchette trop étroite', trop_large:'fourchette trop large', penche_haut:'réel souvent au-dessous', penche_bas:'réel souvent au-dessus', surestime:'annonce trop haut', sous_estime:'annonce trop bas', rien:'rien à conclure'},
   fs_total:k=>`Plus de ${k} jeux`, fs_hcp:k=>`Favori gagne de plus de ${k} jeux`,
+  xt_bouton:'Image pour X', xt_attente:'Image en préparation…', xt_echec:'Image impossible sur ce navigateur',
   x_bouton:'Image pour X (duel des styles)', x_contre:'contre', x_face:'face aux', x_tous:'Tous terrains', x_sur:s=>`Sur ${s}`,
   x_vict:(v,n)=>`${v} victoire${v>1?'s':''} sur ${n}`, x_attendu:'attendu', x_comme:'comme attendu', x_faible:'échantillon faible',
   x_derniers:'Derniers matchs contre ce style', x_v:'V', x_d:'D',
@@ -1202,6 +1203,7 @@ const T = {
         tie_break:'At least one tie-break', set_decisif:'Deciding set', set1_home:'1st set to player 1'},
   fs_f:{fiable:'reliable', trop_etroite:'range too narrow', trop_large:'range too wide', penche_haut:'actual often below', penche_bas:'actual often above', surestime:'announces too high', sous_estime:'announces too low', rien:'no conclusion'},
   fs_total:k=>`Over ${k} games`, fs_hcp:k=>`Favourite wins by more than ${k} games`,
+  xt_bouton:'Image for X', xt_attente:'Preparing image…', xt_echec:'Image not available in this browser',
   x_bouton:'Image for X (style duel)', x_contre:'vs', x_face:'against', x_tous:'All surfaces', x_sur:s=>`On ${s}`,
   x_vict:(v,n)=>`${v} win${v>1?'s':''} out of ${n}`, x_attendu:'expected', x_comme:'as expected', x_faible:'small sample',
   x_derniers:'Last matches against this style', x_v:'W', x_d:'L',
@@ -3111,6 +3113,96 @@ document.addEventListener('click', e=>{
   const m = (D.matchs||[]).find(x=>x.uid===b.dataset.x); if (!m) return;
   b.disabled = true; imageX(m).finally(()=>{ b.disabled = false; });
 });
+// 22/11/2026 (paquet 339, Lucas : « pour chaque tiroir, la possibilité de faire une image X ») — IMAGE DE CHAQUE TIROIR :
+// le tiroir TEL QU'IL EST AFFICHÉ (ce qui est déplié dedans y est, ce qui est replié n'y est pas), sous un en-tête
+// « joueurs · tournoi · surface · date · titre du tiroir », PNG 1080 px de large. Toujours sombre (comme les autres
+// images X), jamais l'adresse ni le nom du site, aucun lien. Sans bibliothèque : la page est redessinée dans un SVG
+// (foreignObject) avec ses propres feuilles de style et ses polices intégrées.
+const XT = { css: null };
+async function versDataUrl(blob){ return new Promise((ok, ko) => { const r = new FileReader(); r.onload = () => ok(r.result); r.onerror = ko; r.readAsDataURL(blob); }); }
+async function cssPourImage(){
+  if (XT.css) return XT.css;
+  let css = '';
+  for (const sh of document.styleSheets){ try { for (const r of sh.cssRules) css += r.cssText + '\n'; } catch(e){} }
+  const urls = [...new Set([...css.matchAll(/url\(\s*["']?([^)"']+\.woff2)["']?\s*\)/g)].map(x => x[1]))];
+  for (const u of urls){
+    try { const du = await versDataUrl(await (await fetch(new URL(u, location.href))).blob()); css = css.split(u).join(du); } catch(e){}
+  }
+  XT.css = css.split(']]>').join(']] >');
+  return XT.css;
+}
+function enTeteXT(m, titre){
+  const d = new Date(m.debut_utc || m.debut), S_ = SURF[L][m.surface] || m.surface || '';
+  return `<div class="xt-tete"><p class="xt-ctx">${esc([m.tournoi, S_].filter(Boolean).join(' · '))}<span>${esc(d.toLocaleDateString(loc(),{day:'2-digit',month:'2-digit'}))}</span></p>
+    <p class="xt-noms"><b class="a">${esc(court(m.home))}</b> <span>${esc(t('x_contre'))}</span> <b class="b">${esc(court(m.away))}</b></p>
+    <p class="xt-titre">${esc(titre)}</p></div>`;
+}
+const XT_CSS = `.xt-img{width:540px;padding:22px 18px 18px;box-sizing:border-box;background:radial-gradient(700px 420px at 50% -120px,#3A1F8F 0%,rgba(58,31,143,0) 70%),#0E0A24;color:#F4F1FF;font-family:Barlow,system-ui,sans-serif;line-height:1.5;
+  --bg:#0E0A24;--bg2:#160F38;--panel:#1B1342;--wv:255,255,255;--line:rgba(255,255,255,.12);--line2:rgba(255,255,255,.2);--ink:#F4F1FF;--dim:#ABA3D6;--p1:#2EE6FF;--p2:#FF4FAE;--ball:#D4FF3A;--ok:#45F0A0;--ko:#FF6B86}
+.xt-img .xt-tete{padding:0 4px 14px}.xt-img .xt-tete p{margin:0}.xt-img .xt-ctx{display:flex;justify-content:space-between;color:#ABA3D6;font-size:.85rem}
+.xt-img .xt-noms{font-family:var(--cond);font-weight:700;font-size:2rem;line-height:1.15;margin-top:6px!important}.xt-img .xt-noms .a{color:#2EE6FF}.xt-img .xt-noms .b{color:#FF4FAE}.xt-img .xt-noms span{font-family:Barlow,sans-serif;font-weight:400;font-size:1.1rem;color:#ABA3D6}
+.xt-img .xt-titre{font-family:var(--disp);font-size:1rem;color:#D4FF3A;margin-top:10px!important}
+.xt-img .fiche>.tiroir{border:1px solid rgba(255,255,255,.12);border-radius:18px;background:linear-gradient(180deg,#1B1342,#160F38)}
+.xt-img .tiroir>summary{display:none}.xt-img .tiroir{padding-top:14px}`;
+async function imageTiroir(det, m){
+  const titre = (det.querySelector(':scope > summary .tt') || {}).textContent || '';
+  const css = await cssPourImage();
+  const hote = document.createElement('div');
+  hote.setAttribute('aria-hidden', 'true');
+  hote.style.cssText = 'position:fixed;left:-20000px;top:0;width:540px;pointer-events:none';
+  hote.innerHTML = `<style>${XT_CSS}</style><div class="xt-img">${enTeteXT(m, titre)}<div class="fiche"></div></div>`;
+  const copie = det.cloneNode(true); copie.open = true; copie.setAttribute('open', '');
+  hote.querySelector('.fiche').appendChild(copie);
+  // ce qui ne se lit pas sur une image : boutons, liens (jamais d'adresse), toiles remplacées par leur dessin
+  copie.querySelectorAll('button, .xt-barre, script').forEach(x => x.remove());
+  // un sous-tiroir replié n'y figure pas (sur une image, son titre seul ne dirait rien)
+  [...copie.querySelectorAll('details')].forEach(x => { if (x !== copie && !x.open) x.remove(); });
+  copie.querySelectorAll('a').forEach(a => { const sp = document.createElement('span'); sp.innerHTML = a.innerHTML; sp.className = a.className; a.replaceWith(sp); });
+  const src = det.querySelectorAll('canvas'), dst = copie.querySelectorAll('canvas');
+  dst.forEach((cv, i) => { const o = src[i]; if (!o) { cv.remove(); return; } const im = document.createElement('img');
+    try { im.src = o.toDataURL('image/png'); } catch(e){ cv.remove(); return; } im.style.width = (o.clientWidth || o.width) + 'px'; im.style.height = (o.clientHeight || o.height) + 'px'; cv.replaceWith(im); });
+  const so = det.querySelectorAll('input, select, textarea'), sd_ = copie.querySelectorAll('input, select, textarea');
+  sd_.forEach((x, i) => { const o = so[i]; if (!o) return; if (x.tagName === 'SELECT') [...x.options].forEach((op, k) => { if (k === o.selectedIndex) op.setAttribute('selected', ''); else op.removeAttribute('selected'); });
+    else if (x.type === 'checkbox' || x.type === 'radio') { if (o.checked) x.setAttribute('checked', ''); else x.removeAttribute('checked'); } else x.setAttribute('value', o.value); });
+  copie.querySelectorAll('[id]').forEach(x => x.removeAttribute('id'));
+  document.body.appendChild(hote);
+  try {
+    const W = 540, H = Math.ceil(hote.firstElementChild.nextElementSibling.getBoundingClientRect().height);
+    const xhtml = new XMLSerializer().serializeToString(hote.querySelector('.xt-img'))
+      .replace(/gamesetalgo\.[a-z]+/gi, '');                      // jamais l'adresse du site sur une image X
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}"><style><![CDATA[${css}\n${XT_CSS}]]></style>`
+      + `<foreignObject x="0" y="0" width="${W}" height="${H}">${xhtml}</foreignObject></svg>`;
+    const im = new Image(); im.decoding = 'sync';
+    im.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+    await im.decode();
+    const ech = Math.min(2, 8000 / H), c = document.createElement('canvas');
+    c.width = Math.round(W * ech); c.height = Math.round(H * ech);
+    const g = c.getContext('2d'); g.scale(ech, ech); g.drawImage(im, 0, 0);
+    const blob = await new Promise(r => c.toBlob(r, 'image/png'));
+    if (!blob) throw new Error('png');
+    const cle = String(det.dataset.cle || 'tiroir').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40);
+    await partagerPng(blob, `${cle}-${m.uid}.png`);
+  } finally { hote.remove(); }
+}
+async function partagerPng(blob, nomF){
+  const file = new File([blob], nomF, {type:'image/png'});
+  if (navigator.canShare && navigator.canShare({files:[file]})) { try { await navigator.share({files:[file]}); return; } catch(e){ if (e && e.name === 'AbortError') return; } }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = nomF; document.body.appendChild(a); a.click();
+  setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 2000);
+}
+function boutonXTiroir(det){
+  if (det.querySelector(':scope > .xt-barre')) return;
+  const p = document.createElement('p'); p.className = 'xt-barre';
+  p.innerHTML = `<button type="button" class="btn-xt">${esc(t('xt_bouton'))}</button>`;
+  det.appendChild(p);
+}
+document.addEventListener('click', e=>{
+  const b = e.target.closest && e.target.closest('.btn-xt'); if (!b) return;
+  const det = b.closest('details.tiroir'), m = XT.match; if (!det || !m) return;
+  const lib = b.textContent; b.disabled = true; b.textContent = t('xt_attente');
+  imageTiroir(det, m).catch(err => { console.warn('image tiroir', err); b.textContent = t('xt_echec'); setTimeout(() => { b.textContent = lib; }, 2500); })
+    .finally(() => { b.disabled = false; if (b.textContent === t('xt_attente')) b.textContent = lib; });
+});
 function rendMdj(){
   const zone = document.getElementById('mdj-zone');
   if (borne) { borne.stop(); borne = null; }
@@ -3209,6 +3301,7 @@ function rendMdj(){
 const TIROIRS = {};
 function tiroirsFiche(m){
   const f = document.querySelector('.fiche'); if (!f) return;
+  XT.match = m;
   const enveloppe = (el, cle, titre, indice) => {
     const d = document.createElement('details'); d.className = 'tiroir'; d.dataset.cle = cle;
     d.open = cle in TIROIRS ? TIROIRS[cle] : (cle === 'match' || cle === 'stats');
@@ -3216,6 +3309,7 @@ function tiroirsFiche(m){
     sm.innerHTML = `<span class="tt">${esc(titre)}</span>${indice ? `<span class="ti">${esc(indice)}</span>` : ''}<span class="tc" aria-hidden="true">▸</span>`;
     d.appendChild(sm); el.parentNode.insertBefore(d, el); d.appendChild(el);
     d.addEventListener('toggle', () => { TIROIRS[cle] = d.open; majBoutonTiroirs(); });
+    boutonXTiroir(d);   // 339 : une image X par tiroir
     return d;
   };
   const faits = {};
