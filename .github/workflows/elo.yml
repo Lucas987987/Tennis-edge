@@ -62,6 +62,17 @@ jobs:
         with:
           python-version: '3.11'
 
+      # 22/11/2026 (paquet 346) — COTES EN PRIVÉ : en mode ETAT_CHAUD=prive, closing_lines, matches_oddspapi,
+      # live_odds et les archives de clôtures ne sont plus dans le dépôt public ; rapatriés ici depuis R2 (lecture).
+      # Dans les autres modes, rien ne change (seul ce qui manquerait au dépôt est rapatrié).
+      - name: Cotes privées — rapatrier (paquet 346)
+        env:
+          ETAT_CHAUD: ${{ vars.ETAT_CHAUD || 'double' }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+        run: python3 scripts/cotes_privees.py pull || true
+
       # urllib de la bibliothèque standard : aucune dépendance à installer.
       - name: Récupérer les Elo publiés
         run: python scripts/elo_fetch.py || echo "⚠️ récupération échouée — le modèle tournera sans référence"
