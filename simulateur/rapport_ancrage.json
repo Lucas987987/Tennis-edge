@@ -1,0 +1,426 @@
+{
+ "genere_le": "2026-11-22T13:34:26+00:00",
+ "regle": "δ + κ·|écart| ajouté au service des deux joueurs puis réancrage sur le même % (deux variantes jugées à part) ; appris avant le 08/11/2026, jugé ensuite une fois ≥ 1 000 matchs par circuit ; retenu si gain ≥ 0,001 (lignes « plus de L jeux »), même sens, service pas dégradé de plus de 1 %, Holm sur les 6 cases ; rapport seulement",
+ "matchs": 1515,
+ "cases": {
+  "ATP|ECART": {
+   "n_app": 163,
+   "n_jug": 44,
+   "parametre_appris": 0.4,
+   "log_loss_app": {
+    "-0.2": 0.61067,
+    "-0.1": 0.60752,
+    "-0.05": 0.60603,
+    "0.0": 0.60463,
+    "0.05": 0.60331,
+    "0.1": 0.60212,
+    "0.2": 0.60012,
+    "0.3": 0.59877,
+    "0.4": 0.59822
+   },
+   "gain_app": 0.00641,
+   "gain_jug": -0.01775,
+   "mae_service_jug": {
+    "production": 5.95,
+    "appris": 5.897,
+    "n": 44
+   },
+   "jeux_par_tranche": {
+    "production": {
+     "50-60": {
+      "n": 17,
+      "jeux_prevus_moins_reels": 1.85
+     },
+     "60-70": {
+      "n": 11,
+      "jeux_prevus_moins_reels": 0.44
+     },
+     "70-80": {
+      "n": 13,
+      "jeux_prevus_moins_reels": 0.69
+     },
+     "80-90": {
+      "n": 1,
+      "jeux_prevus_moins_reels": 5.9
+     },
+     "90-100": {
+      "n": 2,
+      "jeux_prevus_moins_reels": 3.28
+     }
+    },
+    "appris": {
+     "50-60": {
+      "n": 17,
+      "jeux_prevus_moins_reels": 2.01
+     },
+     "60-70": {
+      "n": 11,
+      "jeux_prevus_moins_reels": 0.85
+     },
+     "70-80": {
+      "n": 13,
+      "jeux_prevus_moins_reels": 1.52
+     },
+     "80-90": {
+      "n": 1,
+      "jeux_prevus_moins_reels": 7.05
+     },
+     "90-100": {
+      "n": 2,
+      "jeux_prevus_moins_reels": 4.66
+     }
+    }
+   },
+   "jeux_moyens": {
+    "reels": 22.93,
+    "production": 24.25,
+    "appris": 24.74
+   },
+   "retenu": false,
+   "raison": "pas encore jugeable : 44 matchs jugés sur 1000 (rien n'est conclu)"
+  },
+  "ATP|NIVEAU": {
+   "n_app": 163,
+   "n_jug": 44,
+   "parametre_appris": 0.05,
+   "log_loss_app": {
+    "-0.1": 0.61345,
+    "-0.05": 0.60834,
+    "0.0": 0.60463,
+    "0.05": 0.6028,
+    "0.1": 0.60337,
+    "0.15": 0.60685,
+    "0.2": 0.61374
+   },
+   "gain_app": 0.00182,
+   "gain_jug": -0.00731,
+   "mae_service_jug": {
+    "production": 5.95,
+    "appris": 5.832,
+    "n": 44
+   },
+   "jeux_par_tranche": {
+    "production": {
+     "50-60": {
+      "n": 17,
+      "jeux_prevus_moins_reels": 1.85
+     },
+     "60-70": {
+      "n": 11,
+      "jeux_prevus_moins_reels": 0.44
+     },
+     "70-80": {
+      "n": 13,
+      "jeux_prevus_moins_reels": 0.69
+     },
+     "80-90": {
+      "n": 1,
+      "jeux_prevus_moins_reels": 5.9
+     },
+     "90-100": {
+      "n": 2,
+      "jeux_prevus_moins_reels": 3.28
+     }
+    },
+    "appris": {
+     "50-60": {
+      "n": 17,
+      "jeux_prevus_moins_reels": 2.19
+     },
+     "60-70": {
+      "n": 11,
+      "jeux_prevus_moins_reels": 0.77
+     },
+     "70-80": {
+      "n": 13,
+      "jeux_prevus_moins_reels": 1.02
+     },
+     "80-90": {
+      "n": 1,
+      "jeux_prevus_moins_reels": 6.17
+     },
+     "90-100": {
+      "n": 2,
+      "jeux_prevus_moins_reels": 3.52
+     }
+    }
+   },
+   "jeux_moyens": {
+    "reels": 22.93,
+    "production": 24.25,
+    "appris": 24.57
+   },
+   "retenu": false,
+   "raison": "pas encore jugeable : 44 matchs jugés sur 1000 (rien n'est conclu)"
+  },
+  "WTA|ECART": {
+   "n_app": 176,
+   "n_jug": 17,
+   "parametre_appris": -0.2,
+   "log_loss_app": {
+    "-0.2": 0.66791,
+    "-0.1": 0.6681,
+    "-0.05": 0.66823,
+    "0.0": 0.66839,
+    "0.05": 0.66858,
+    "0.1": 0.66881,
+    "0.2": 0.6694,
+    "0.3": 0.67025,
+    "0.4": 0.67141
+   },
+   "gain_app": 0.00048,
+   "gain_jug": 0.00059,
+   "mae_service_jug": {
+    "production": 7.031,
+    "appris": 6.908,
+    "n": 17
+   },
+   "jeux_par_tranche": {
+    "production": {
+     "50-60": {
+      "n": 7,
+      "jeux_prevus_moins_reels": 0.89
+     },
+     "60-70": {
+      "n": 8,
+      "jeux_prevus_moins_reels": 1.68
+     },
+     "70-80": {
+      "n": 2,
+      "jeux_prevus_moins_reels": 2.18
+     }
+    },
+    "appris": {
+     "50-60": {
+      "n": 7,
+      "jeux_prevus_moins_reels": 0.85
+     },
+     "60-70": {
+      "n": 8,
+      "jeux_prevus_moins_reels": 1.57
+     },
+     "70-80": {
+      "n": 2,
+      "jeux_prevus_moins_reels": 2.02
+     }
+    }
+   },
+   "jeux_moyens": {
+    "reels": 21.47,
+    "production": 22.88,
+    "appris": 22.8
+   },
+   "retenu": false,
+   "raison": "pas encore jugeable : 17 matchs jugés sur 1000 (rien n'est conclu)"
+  },
+  "WTA|NIVEAU": {
+   "n_app": 176,
+   "n_jug": 17,
+   "parametre_appris": -0.1,
+   "log_loss_app": {
+    "-0.1": 0.66697,
+    "-0.05": 0.66748,
+    "0.0": 0.66839,
+    "0.05": 0.66989,
+    "0.1": 0.67222,
+    "0.15": 0.67566,
+    "0.2": 0.68055
+   },
+   "gain_app": 0.00142,
+   "gain_jug": 0.00535,
+   "mae_service_jug": {
+    "production": 7.031,
+    "appris": 6.602,
+    "n": 17
+   },
+   "jeux_par_tranche": {
+    "production": {
+     "50-60": {
+      "n": 7,
+      "jeux_prevus_moins_reels": 0.89
+     },
+     "60-70": {
+      "n": 8,
+      "jeux_prevus_moins_reels": 1.68
+     },
+     "70-80": {
+      "n": 2,
+      "jeux_prevus_moins_reels": 2.18
+     }
+    },
+    "appris": {
+     "50-60": {
+      "n": 7,
+      "jeux_prevus_moins_reels": 0.58
+     },
+     "60-70": {
+      "n": 8,
+      "jeux_prevus_moins_reels": 1.39
+     },
+     "70-80": {
+      "n": 2,
+      "jeux_prevus_moins_reels": 1.91
+     }
+    }
+   },
+   "jeux_moyens": {
+    "reels": 21.47,
+    "production": 22.88,
+    "appris": 22.59
+   },
+   "retenu": false,
+   "raison": "pas encore jugeable : 17 matchs jugés sur 1000 (rien n'est conclu)"
+  },
+  "CH|ECART": {
+   "n_app": 460,
+   "n_jug": 655,
+   "parametre_appris": -0.1,
+   "log_loss_app": {
+    "-0.2": 0.64654,
+    "-0.1": 0.6464,
+    "-0.05": 0.64643,
+    "0.0": 0.64653,
+    "0.05": 0.64672,
+    "0.1": 0.64699,
+    "0.2": 0.64785,
+    "0.3": 0.64921,
+    "0.4": 0.65116
+   },
+   "gain_app": 0.00013,
+   "gain_jug": -0.00261,
+   "mae_service_jug": {
+    "production": 6.335,
+    "appris": 6.474,
+    "n": 649
+   },
+   "jeux_par_tranche": {
+    "production": {
+     "50-60": {
+      "n": 246,
+      "jeux_prevus_moins_reels": -0.81
+     },
+     "60-70": {
+      "n": 176,
+      "jeux_prevus_moins_reels": -0.03
+     },
+     "70-80": {
+      "n": 116,
+      "jeux_prevus_moins_reels": -1.2
+     },
+     "80-90": {
+      "n": 62,
+      "jeux_prevus_moins_reels": -0.37
+     },
+     "90-100": {
+      "n": 55,
+      "jeux_prevus_moins_reels": -1.56
+     }
+    },
+    "appris": {
+     "50-60": {
+      "n": 246,
+      "jeux_prevus_moins_reels": -0.84
+     },
+     "60-70": {
+      "n": 176,
+      "jeux_prevus_moins_reels": -0.13
+     },
+     "70-80": {
+      "n": 116,
+      "jeux_prevus_moins_reels": -1.36
+     },
+     "80-90": {
+      "n": 62,
+      "jeux_prevus_moins_reels": -0.62
+     },
+     "90-100": {
+      "n": 55,
+      "jeux_prevus_moins_reels": -1.89
+     }
+    }
+   },
+   "jeux_moyens": {
+    "reels": 22.86,
+    "production": 22.17,
+    "appris": 22.05
+   },
+   "retenu": false,
+   "raison": "pas encore jugeable : 655 matchs jugés sur 1000 (rien n'est conclu)"
+  },
+  "CH|NIVEAU": {
+   "n_app": 460,
+   "n_jug": 655,
+   "parametre_appris": 0.0,
+   "log_loss_app": {
+    "-0.1": 0.64913,
+    "-0.05": 0.6474,
+    "0.0": 0.64653,
+    "0.05": 0.64688,
+    "0.1": 0.64887,
+    "0.15": 0.65297,
+    "0.2": 0.65967
+   },
+   "gain_app": 0.0,
+   "gain_jug": 0.0,
+   "mae_service_jug": {
+    "production": 6.335,
+    "appris": 6.335,
+    "n": 649
+   },
+   "jeux_par_tranche": {
+    "production": {
+     "50-60": {
+      "n": 246,
+      "jeux_prevus_moins_reels": -0.81
+     },
+     "60-70": {
+      "n": 176,
+      "jeux_prevus_moins_reels": -0.03
+     },
+     "70-80": {
+      "n": 116,
+      "jeux_prevus_moins_reels": -1.2
+     },
+     "80-90": {
+      "n": 62,
+      "jeux_prevus_moins_reels": -0.37
+     },
+     "90-100": {
+      "n": 55,
+      "jeux_prevus_moins_reels": -1.56
+     }
+    },
+    "appris": {
+     "50-60": {
+      "n": 246,
+      "jeux_prevus_moins_reels": -0.81
+     },
+     "60-70": {
+      "n": 176,
+      "jeux_prevus_moins_reels": -0.03
+     },
+     "70-80": {
+      "n": 116,
+      "jeux_prevus_moins_reels": -1.2
+     },
+     "80-90": {
+      "n": 62,
+      "jeux_prevus_moins_reels": -0.37
+     },
+     "90-100": {
+      "n": 55,
+      "jeux_prevus_moins_reels": -1.56
+     }
+    }
+   },
+   "jeux_moyens": {
+    "reels": 22.86,
+    "production": 22.17,
+    "appris": 22.17
+   },
+   "retenu": false,
+   "raison": "pas encore jugeable : 655 matchs jugés sur 1000 (rien n'est conclu)"
+  }
+ },
+ "duree_s": 869
+}
