@@ -119,6 +119,9 @@ jobs:
           # 22/11/2026 (paquet 338) : sorties du Lab (CLV Pinnacle par book, explorateur, registre…) au coffre privé ;
           # rapatriées AVANT le calcul (caches, gels suivis, registre mensuel prolongé)
           python scripts/coffre.py pull --groupe lab_sorties || true
+          # 345 : canaux d'alertes et verdicts en direct (lecture seule)
+          python scripts/coffre.py pull --groupe canaux || true
+          python scripts/coffre.py pull --groupe verdicts || true
 
       - name: Tests (Python et interface)
         run: |
@@ -251,6 +254,8 @@ jobs:
           # le commit de « Courbes live + alertes » qui le retire du dépôt).
           git checkout -- h19_signal_log.jsonl 2>/dev/null || true
           python scripts/coffre.py rendre --groupe suivi || true
+          python scripts/coffre.py rendre --groupe canaux || true      # 345 : lus seulement ici
+          python scripts/coffre.py rendre --groupe verdicts || true
           # Un fichier qui ne diffère que par generated_at (ou équivalent) est restauré.
           python Tennis_Edge_Lab/commit_guard.py --root . "${OUTPUTS[@]}"
           git config user.name 'github-actions[bot]'

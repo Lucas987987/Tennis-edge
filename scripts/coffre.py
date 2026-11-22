@@ -85,6 +85,19 @@ GROUPES['lab_sorties'] = [_LIVE + n for n in (
 # 338 : instantané du Lab, reconstruit à chaque déploiement (pages.yml) ; la version précédente sert au contrôle
 # « plus de 40 % des observations ont disparu »
 GROUPES['lab_donnees'] = ['Tennis_Edge_Lab/data.js']
+# 22/11/2026 (paquet 345, cotes en privé, étape 2) — journaux et états des canaux d'alertes (canal public, MISER, H13 à
+# H17, zone) : écrits par courbes_alertes.yml ; lus par steam_pipeline (verdicts en direct), lab_quotidien, pages
+# (instantané du Lab) et pronostic (recherche externe)
+GROUPES['canaux'] = ['canal_public_log.jsonl', 'canal_public_state.json', 'miser_signal_log.jsonl',
+                     'h13_signal_log.jsonl', 'h13_signal_state.json', 'h14_signal_log.jsonl', 'h14_signal_state.json',
+                     'h15_signal_log.jsonl', 'h15_signal_state.json', 'h16_signal_log.jsonl', 'h16_signal_state.json',
+                     'h16b_signal_log.jsonl', 'h16b_signal_state.json', 'h17_signal_log.jsonl', 'h17_signal_state.json',
+                     'zone_signal_log.jsonl', 'zone_signal_state.json']
+# 345 — verdicts (CLV contre la clôture) : écrits par steam_pipeline (suivi_direct.py, validation_report.py) et par
+# courbes_alertes (steam_alert.py : suivi_canaux.json ; validation_report.py : verdicts_geles.json) ; lus par le Lab,
+# les scripts d'alertes (bilan en direct) et l'observateur externe
+GROUPES['verdicts'] = ['verdicts_direct.json', 'suivi_canaux.json', 'verdicts_geles.json']
+PROTEGES |= {'canaux', 'verdicts'}   # deux rédacteurs possibles, et des états à ne jamais écraser par une copie périmée
 # servis au Lab par le worker « algo » (nom de fichier seul, sans dossier)
 SERVIS = sorted({os.path.basename(f) for f in GROUPES['tous']})
 

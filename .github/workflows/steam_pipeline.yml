@@ -132,6 +132,12 @@ jobs:
       - name: Coffre privé — rapatrier (journaux de suivi)
         run: python scripts/coffre.py pull --groupe suivi || true
 
+      # 22/11/2026 (paquet 345) : canaux d'alertes (lecture) et verdicts en direct (écrits ici) au coffre privé
+      - name: Coffre privé — rapatrier (canaux et verdicts)
+        run: |
+          python scripts/coffre.py pull --groupe canaux || true
+          python scripts/coffre.py pull --groupe verdicts || true
+
       # Les fichiers plats *_curves_live.jsonl sont dans .gitignore : ils ne
       # sont PAS dans le checkout, ils sont reconstruits depuis parts/live_*.jsonl.
       # Sans cette étape, TOUS les scripts ci-dessous lisaient un fichier absent
@@ -398,6 +404,10 @@ jobs:
         run: |
           python scripts/coffre.py push --groupe suivi || true
           python scripts/coffre.py rendre --groupe suivi || true
+          # 345 : verdicts envoyés au coffre (courbes_alertes les sort du dépôt) ; canaux lus seulement : version git remise
+          python scripts/coffre.py push --groupe verdicts || true
+          python scripts/coffre.py rendre --groupe verdicts || true
+          python scripts/coffre.py rendre --groupe canaux || true
 
       - name: Commit résultats + journaux
         if: always()
@@ -438,8 +448,9 @@ jobs:
                    moves_detail.csv moves_detail_hist.csv \
                    barometre_hebdo.md barometre_mensuel.md \
                    pipeline_status.json pipeline_status.md \
-                   verdicts_geles.json q3_status.json \
-                   verdicts_direct.json suivi_direct/resultats.json suivi_canaux.json; do
+                   q3_status.json suivi_direct/resultats.json; do
+            # 345 : verdicts_geles.json, verdicts_direct.json et suivi_canaux.json sont au coffre privé (étape
+            # précédente) : retirés de cette liste (un fichier ignoré ferait échouer « git add »)
             # CORRIGÉ LE 27/08/2026 (audit v2 §B) : verdicts_geles.json
             # n'était committé par AUCUN workflow -- le mécanisme de lecture
             # unique par hypothèse (audit 1, §3.3) ne servait donc à rien :
