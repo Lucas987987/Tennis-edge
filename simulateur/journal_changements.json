@@ -1807,6 +1807,14 @@
    "prive": true,
    "quoi": "Les études du lundi (ancrage, salle, service, Challenger 50–60 %, chercheur et contrôle de ses pistes) sont relancées par le worker si le cron du lundi saute (dernier passage de plus de 7 jours).",
    "garde_fou": "Interrupteur ETUDES_ENABLED=0 ; 0 requête d'API ; un run en cours n'est jamais doublé."
+  },
+  {
+   "date": "2026-11-22",
+   "statut": "outil",
+   "paquet": 351,
+   "prive": true,
+   "quoi": "COTES EN PRIVÉ, ÉTAPE 3b (paquet 351) : moves_detail.csv, moves_detail_hist.csv, moves_detail_live.csv, suivi_direct/resultats.json et resultats_oddspapi.json rejoignent le coffre R2 (groupes « mouvements » et « resultats_reglement »). Leurs rédacteurs (steam_pipeline, fetch_results_settlement) les y envoient à chaque passage dès maintenant ; en mode ETAT_CHAUD=prive, ils sortent du dépôt public. 10 workflows lecteurs de plus les rapatrient au début ; l'observateur externe lit l'âge de la copie du coffre quand le fichier n'est plus dans git.",
+   "garde_fou": "Même interrupteur et même retour arrière que l'étape 3 (ETAT_CHAUD=on : rapatriés puis republiés). Retrait du dépôt seulement si le coffre en a une copie. Hors « prive », un lecteur ne rapatrie jamais une copie par-dessus celle du dépôt. Journaux d'Actions : des nombres seulement."
   }
  ]
 }
