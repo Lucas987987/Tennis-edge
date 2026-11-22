@@ -7,6 +7,9 @@ name: ITF point par point (joueurs de Challenger)
 # dès qu'il reste 7 000 requêtes ; 2 500 au plus par passage, 3 passages par jour. Un jour complet n'est jamais
 # redemandé. Le journal du run n'affiche que des comptes.
 on:
+  # 22/11/2026 (paquet 347) : lancé par le worker Cloudflare tennis-edge-closing (les crons restent en filet)
+  repository_dispatch:
+    types: [itf_points]
   schedule:
     - cron: '47 4 * * *'
     - cron: '47 12 * * *'

@@ -1748,6 +1748,14 @@
    "prive": true,
    "quoi": "COTES EN PRIVÉ, ÉTAPE 3 (paquet 346) : closing_lines.json, matches_oddspapi.json, live_odds.json et les archives mensuelles des clôtures peuvent quitter le dépôt public. Interrupteur : variable de dépôt ETAT_CHAUD=prive. Les 35 workflows qui lisent ces fichiers les rapatrient de R2 au début ; la capture les sort du suivi git ; les archives partent au coffre à chaque passage dès maintenant. Le worker des fiches joueurs lit les matchs à venir dans R2.",
    "garde_fou": "Rien ne change tant que ETAT_CHAUD n'est pas « prive » ; retrait du dépôt seulement si R2 en a une copie ; retour arrière : ETAT_CHAUD=on, la capture republie ce qui manque ; fichiers exclus de git sur chaque runner en mode prive (jamais republiés par un git add -A)."
+  },
+  {
+   "date": "2026-11-22",
+   "statut": "outil",
+   "paquet": 347,
+   "prive": true,
+   "quoi": "RATTRAPAGE ATP/WTA ET POINT PAR POINT ITF LANCÉS PAR LE WORKER (paquet 347) : leurs crons GitHub ne sont pas partis le 22/11 (comme ceux d'avant, livrés en retard ou sautés). Le worker Cloudflare tennis-edge-closing les déclenche toutes les 8 h, comme les pronostics et les feuilles ; les crons restent en filet.",
+   "garde_fou": "Jamais deux passages en même temps (garde API, plafond 150 et 120 min) ; chacun ne prend que le surplus du quota TennisApi (arrêt sous 7 000 requêtes restantes) ; désactivables par HISTORIQUE_ENABLED=0 et ITF_POINTS_ENABLED=0."
   }
  ]
 }

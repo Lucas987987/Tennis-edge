@@ -15,6 +15,9 @@ name: Historique ATP/WTA (TennisApi, rattrapage)
 # plus chacun. Les jours les plus récents d'abord ; un jour complet n'est jamais redemandé ; quand tout est fait, les
 # passages ne font plus qu'une vérification (0 requête de feuille). Durée estimée : 2 à 3 semaines.
 on:
+  # 22/11/2026 (paquet 347) : lancé par le worker Cloudflare tennis-edge-closing (les crons ci-dessous restent en filet)
+  repository_dispatch:
+    types: [historique_feuilles]
   schedule:
     - cron: '17 1 * * *'
     - cron: '17 9 * * *'
