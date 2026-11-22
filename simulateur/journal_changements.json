@@ -1674,6 +1674,14 @@
    "paquet": 336,
    "quoi": "SERVICE EN CHALLENGER ET PLUS DE DONNÉES (paquet 336, demande de Lucas). 1) Étude : nos « Points de vigilance » montrent qu'en Challenger les points gagnés au service et les totaux de jeux sont prévus un peu trop bas. Un décalage commun du service des deux joueurs est appris sur 2018–2022 et jugé sur 2023 → mai 2026 et sur nos feuilles depuis juin 2026 (règle écrite dans l'en-tête de simulateur/etude_service_challenger.py). Le même passage mesure d'où vient l'écart : par période, par mois et par type de court (dur intérieur, dur extérieur, terre). Même si la règle passe, rien ne s'applique avant un contrôle « comme en production » : le rejeu de l'étude n'a pas les facteurs du match que la production ajoute, et une première lecture montre que le moteur seul prévoit des matchs un peu trop longs alors que la production les prévoit trop courts. 2) Sonde : le déroulé point par point peut-il remplacer les statistiques qui manquent pour les Challengers de l'historique et les tournois ITF ?",
    "garde_fou": "Rien ne change sur le site : l'étude mesure et propose, la production exige en plus le contrôle « comme en production ». Le % de victoire, le Brier et le choix du match du jour ne bougent pas ; la simulation pure, qui entre dans le mélange, n'est jamais décalée."
+  },
+  {
+   "date": "2026-11-22",
+   "statut": "collecte",
+   "paquet": 337,
+   "quoi": "ITF POINT PAR POINT (paquet 337) : collecte du déroulé point par point des matchs ITF hommes joués par des joueurs qui jouent aussi en Challenger, sur les 24 derniers mois. Rangé dans historique/itf_points ; aucun script de l'algo ne le lit.",
+   "garde_fou": "Arrêt sous 7 000 requêtes restantes du jour ; tournoi abandonné après 4 matchs sans déroulé ; jours complets jamais redemandés. Aucune utilisation avant une étude 2018–2022 / 2023→2026 circuit par circuit.",
+   "prive": true
   }
  ]
 }
