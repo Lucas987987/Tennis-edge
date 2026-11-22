@@ -168,6 +168,22 @@ def lire(racine, depuis=None, jusqu_au=None):
     return out
 
 
+# 22/11/2026 (paquet 349) — NOMS DE TOURS TENNISAPI. Les feuilles donnent « Qualification Round 1 », « Round of 32 »,
+# « Quarterfinals »… et non les codes de l'archive (Q1, R32, QF…) : jusqu'ici TOUS les matchs des feuilles recevaient le
+# tour par défaut (6), d'où un ordre faux entre deux matchs du même jour (deux tours de qualifications le même jour,
+# par exemple). Traduction vers les codes de donnees.ORDRE_TOURS ; un nom inconnu garde le défaut d'avant (6).
+TOURS_TENNISAPI = {'qualification round 1': 'Q1', 'qualification round 2': 'Q2', 'qualification round 3': 'Q3',
+                   'qualification final': 'Q2', 'qualifications': 'Q1', 'round of 128': 'R128', 'round of 64': 'R64',
+                   'round of 32': 'R32', 'round of 16': 'R16', 'round robin': 'RR', 'quarterfinals': 'QF',
+                   'quarterfinal': 'QF', 'semifinals': 'SF', 'semifinal': 'SF', 'final': 'F', '3rd place': 'BR'}
+
+
+def ordre_tour(nom):
+    s = str(nom or '').strip()
+    code = TOURS_TENNISAPI.get(s.lower(), s.upper())
+    return donnees.ORDRE_TOURS.get(code, 6)
+
+
 def en_match(r, jeux=None):
     """Fiche -> match au format donnees.charger() (gagnant/perdant = clés E.cle), ou None.
     jeux : point par point du match (05/11/2026), pour corriger balles de break, breaks et jeux de service."""
@@ -188,7 +204,7 @@ def en_match(r, jeux=None):
             'gagnant': E.cle(g.get('nom')), 'perdant': E.cle(p.get('nom')), 'nom_g': g.get('nom') or '', 'nom_p': p.get('nom') or '',
             'stats': ({'w': (det['w'][0], det['w'][2] + det['w'][3]), 'l': (det['l'][0], det['l'][2] + det['l'][3])} if det else None),
             'sets': sets, 'complet': complet, 'detail': det, 'tournoi': r.get('tournoi') or '',
-            'tour': donnees.ORDRE_TOURS.get(str(r.get('tour') or '').upper(), 6), 'niveau': '', 'num': 0,
+            'tour': ordre_tour(r.get('tour')), 'niveau': '', 'num': 0,
             'source': 'tennisapi', 'id': r.get('id'),
             # 22/11/2026 (paquet 336) : type de court tel que donné par TennisApi (« Hardcourt indoor »…), pour les études
             'sol_brut': r.get('surface') or ''}
