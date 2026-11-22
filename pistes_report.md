@@ -1,4 +1,4 @@
-# Pistes exploratoires — rapport du 2026-11-15
+# Pistes exploratoires — rapport du 2026-11-22
 
 ```
 ==============================================================
@@ -86,7 +86,7 @@ CONFIRMATION PINNACLE — hypothèse ouverture précoce
 (exploratoire, protocole gelé le 2026-08-26 — voir frozen_pistes.json ;
  n<30 = suivi sans conclusion ; témoin = population concernée)
 ==============================================================
-  132 signaux POSTÉRIEURS au gel (les 62 signaux du 13-26/08 ayant servi à formuler le protocole sont exclus).
+  147 signaux POSTÉRIEURS au gel (les 62 signaux du 13-26/08 ayant servi à formuler le protocole sont exclus).
   72 signaux appariés (Pinnacle + book, fenêtre 60min)
     Pinnacle CONFIRME (>= 0.5pt en 60min)      n=  9 — sous 30, suivi sans verdict
     Pinnacle ne confirme pas                   n= 63 | CLV médian  +12.3% | refermeture 87% (IC95 77-93%)
@@ -98,12 +98,7 @@ SIZING OMBRE — la note de fiabilité mérite-t-elle une mise ?
 (exploratoire, protocole gelé le 2026-08-26 — voir frozen_pistes.json ;
  n<30 = suivi sans conclusion ; témoin = population concernée)
 ==============================================================
-  74 paris dénoués avec note de fiabilité (score journalisé depuis le 2026-08-26).
-  Mise plate (référence) : ROI +4.6% [IC95 -25.4, +34.7]
-  Mise variable (note)   : ROI +4.6% [IC95 -25.4, +34.7]
-  Détail par note :
-    score +0 : n=  3 | ROI  +80.7%
-    score +1 : n= 71 | ROI   +1.4%
-  IC95 recouvrants -> pas encore de différence démontrée. La mise plate reste la référence.
+  0 paris dénoués avec note de fiabilité (score journalisé depuis le 2026-08-26).
+  TROP TÔT (<30) — aucun verdict. La note continue de se journaliser à chaque pari sans rien piloter.
 
 ```
