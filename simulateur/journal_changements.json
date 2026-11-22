@@ -1690,6 +1690,13 @@
    "quoi": "LAB AU COFFRE PRIVÉ (paquet 338) : les sorties du calcul quotidien du Lab qui contiennent des cotes (CLV Pinnacle par book, stabilité, propositions, explorateur, registre, croisements, cache des cotes avant signal) et l'instantané data.js passent au coffre R2 ; ils sortent du dépôt public au prochain calcul quotidien.",
    "garde_fou": "Retrait du dépôt seulement si le coffre en détient une copie identique ; un fichier non rapatrié n'écrase jamais le coffre ; aucun changement de l'algo ni des pronostics.",
    "prive": true
+  },
+  {
+   "date": "2026-11-22",
+   "statut": "site",
+   "paquet": 339,
+   "quoi": "IMAGE X POUR CHAQUE TIROIR (paquet 339) : chaque tiroir de la fiche d'un match a son bouton « Image pour X ». L'image reprend le tiroir tel qu'il est affiché (ce qui est déplié dedans y figure), sous les noms des joueurs, le tournoi, la surface et la date, en 1080 px de large et toujours sur fond sombre.",
+   "garde_fou": "Aucune adresse ni lien sur l'image ; un sous-tiroir replié n'y figure pas ; rien ne change dans les pronostics."
   }
  ]
 }
