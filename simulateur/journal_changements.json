@@ -1815,6 +1815,14 @@
    "prive": true,
    "quoi": "COTES EN PRIVÉ, ÉTAPE 3b (paquet 351) : moves_detail.csv, moves_detail_hist.csv, moves_detail_live.csv, suivi_direct/resultats.json et resultats_oddspapi.json rejoignent le coffre R2 (groupes « mouvements » et « resultats_reglement »). Leurs rédacteurs (steam_pipeline, fetch_results_settlement) les y envoient à chaque passage dès maintenant ; en mode ETAT_CHAUD=prive, ils sortent du dépôt public. 10 workflows lecteurs de plus les rapatrient au début ; l'observateur externe lit l'âge de la copie du coffre quand le fichier n'est plus dans git.",
    "garde_fou": "Même interrupteur et même retour arrière que l'étape 3 (ETAT_CHAUD=on : rapatriés puis republiés). Retrait du dépôt seulement si le coffre en a une copie. Hors « prive », un lecteur ne rapatrie jamais une copie par-dessus celle du dépôt. Journaux d'Actions : des nombres seulement."
+  },
+  {
+   "date": "2026-11-22",
+   "statut": "outil",
+   "paquet": 352,
+   "prive": true,
+   "quoi": "COTES EN PRIVÉ, ÉTAPE 4 (paquet 352) : kalshi_lead_obs.jsonl, courbes_absences.json, value_candidates.jsonl, book_lag_report.json, calibration_buckets_report.json, early_open_log.jsonl, direct_matchs.json et cinq fichiers figés (games_markets, economic_v64, selection_v64_frozen, rapports d'écart à la clôture) rejoignent le coffre R2, un groupe par rédacteur. Envoyés à chaque passage dès maintenant ; sortis du dépôt public en mode ETAT_CHAUD=prive. Les workflows fréquents ne rapatrient plus que ce qu'ils lisent. L'onglet Direct du Lab lit ses fichiers dans le site privé (copies envoyées par « Courbes live + alertes ») avant GitHub.",
+   "garde_fou": "Même interrupteur et même retour arrière que les étapes 3 et 3b. Retrait seulement si le coffre a une copie. Les registres de gels du Lab restent publics (leur date dans git prouve qu'ils précèdent les résultats). Fichiers figés envoyés tels quels, avant tout calcul."
   }
  ]
 }

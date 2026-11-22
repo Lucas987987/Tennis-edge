@@ -92,7 +92,7 @@ jobs:
           R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
           R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
           R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
-        run: python3 scripts/cotes_privees.py pull || true
+        run: python3 scripts/cotes_privees.py pull --entiers aucun || true  # 352 : seulement ce que ce workflow lit
 
       # 04/11/2026 — TAILLE DU DÉPÔT : closing_lines, matches_oddspapi, live_odds et les états d'alertes étaient
       # republiés dans git à chaque passage (~470/jour). En mode ETAT_CHAUD=on, R2 les relaie d'un passage à
