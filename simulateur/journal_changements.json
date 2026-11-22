@@ -1627,6 +1627,14 @@
    "paquet": 330,
    "quoi": "PAGE « QUI SOMMES-NOUS » (paquet 330, demande de Lucas). Qui fait le site (un projet indépendant né en France), pourquoi (chaque % publié avant le match et un bilan public, erreurs comprises), quatre principes (indépendant, transparent, prudent, responsable) et ce qu'on ne verra jamais ici : ticket sûr, captures de gains, taux de réussite trié, pression pour jouer. Liens en bas de page et depuis la page qui explique la méthode.",
    "garde_fou": "Page de présentation seulement : rien ne change dans les calculs. Aucune donnée personnelle ; le contact vient de algo/editeur.json."
+  },
+  {
+   "date": "2026-11-22",
+   "statut": "en_service",
+   "prive": true,
+   "paquet": 331,
+   "quoi": "SONDE MATCHSTAT (paquet 331, outil interne). Workflow manuel « Sonde Matchstat » : vérifie, en 12 requêtes au plus, si l'historique de Matchstat donne les statistiques de match d'un Challenger, d'un match ATP et d'un match WTA passés, les compare à Sackmann, teste le point par point et estime le nombre de requêtes pour récupérer 2018–2025. But : une source de données utilisable commercialement avant toute offre payante (l'archive Sackmann est en licence non commerciale).",
+   "garde_fou": "Lecture seule : rien n'est commité, rien ne change dans l'algo ni sur le site. Arrêt si le quota restant passe sous 30 requêtes ; la clé n'est jamais affichée."
   }
  ]
 }
