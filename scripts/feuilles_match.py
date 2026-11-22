@@ -45,6 +45,13 @@ DOSSIER = os.environ.get('FEUILLES_DOSSIER', 'feuilles')
 BUDGET = int(os.environ.get('FEUILLES_BUDGET', '4000'))
 RESERVE = int(os.environ.get('FEUILLES_RESERVE', '1500'))
 PAUSE = float(os.environ.get('FEUILLES_PAUSE', '0.2'))
+# 22/11/2026 (paquet 333, rattrapage de l'historique ATP/WTA 2018 → mai 2026) : réglages du rattrapage, sans effet sur
+# la collecte quotidienne. FEUILLES_DUREE=0 : pas de requête de détail par match pour la durée (durees_matchs.py la
+# reprend plus tard, ~5 requêtes par jour) ; FEUILLES_SANS_FORCER=1 : les jours déjà complets restent sautés même
+# avec des catégories demandées ; FEUILLES_RECENT_D_ABORD=1 : les jours les plus récents d'abord.
+DUREE = os.environ.get('FEUILLES_DUREE', '1') != '0'
+SANS_FORCER = os.environ.get('FEUILLES_SANS_FORCER') == '1'
+RECENT_D_ABORD = os.environ.get('FEUILLES_RECENT_D_ABORD') == '1'
 # 22/10/2026 : ITF retiré — aucun pari n'y est joué, et TennisApi n'y a presque jamais de statistiques
 # (≈ 600 feuilles sur 9 300). Encore demandable à la main : catégories = itf men,itf women.
 # 30/10/2026 : + Coupe Davis et Billie Jean King Cup (simples seulement, est_simple) — ces matchs manquaient à l'Elo et à
@@ -370,7 +377,7 @@ def collecter_jour(c, jour, voulues=CATEGORIES, aujourd_hui=None, dossier=DOSSIE
         # 28/10/2026 — DURÉE : une requête de détail par match terminé avec feuille (ATP, WTA, Challenger ; pas
         # d'ITF), une seule tentative. ~85 requêtes par jour pour un quota quotidien d'environ 15 000.
         for r in recs.values():
-            if (r.get('stats') and not r.get('duree_min') and (r.get('duree_essai') or 0) < DUREE_ESSAIS_MAX
+            if (DUREE and r.get('stats') and not r.get('duree_min') and (r.get('duree_essai') or 0) < DUREE_ESSAIS_MAX
                     and 'itf' not in norm(r.get('categorie'))):
                 code, doc = c.get(f"/api/tennis/event/{r['id']}")
                 r['duree_essai'] = (r.get('duree_essai') or 0) + 1      # au plus 3 tentatives par match
@@ -427,7 +434,11 @@ def main(argv):
     fin = argv[2] if len(argv) > 2 and argv[2] else auj.isoformat()
     voulues = tuple(norm(x) for x in argv[3].split(',')) if len(argv) > 3 and argv[3].strip() else CATEGORIES
     etat = lire_etat(DOSSIER)
-    jours = jours_a_traiter(debut, fin, etat, forcer=len(argv) > 3 and bool(argv[3].strip()))
+    jours = jours_a_traiter(debut, fin, etat, forcer=len(argv) > 3 and bool(argv[3].strip()) and not SANS_FORCER)
+    if RECENT_D_ABORD:
+        jours.reverse()
+    if not jours:
+        print(f"Rien à faire : tous les jours de {debut} à {fin} sont complets.")
     c = Client(cle)
     print(f"Feuilles de match : {debut} → {fin} · {len(jours)} jour(s) à traiter · catégories {', '.join(voulues)} · "
           f"budget {c.budget} requêtes, réserve {c.reserve}")
