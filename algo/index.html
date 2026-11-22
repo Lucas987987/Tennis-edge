@@ -630,6 +630,7 @@ body.carte #video{display:block;width:1080px;height:1350px}
 .am-j{display:grid;grid-template-columns:1fr 1fr;gap:10px}.am-j>div{background:rgba(var(--wv),.04);border-radius:12px;padding:10px}
 .am-se{display:flex;align-items:baseline;gap:6px;margin-top:4px}.am-se b{font-family:var(--cond);font-weight:700;font-size:1.9rem;line-height:1;font-variant-numeric:tabular-nums}.am-se.v b{color:var(--ok)}.am-se.d b{color:var(--ko)}.am-se span{font-size:.8rem;color:var(--dim)}.am-chs{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}.am-ch{font-size:.72rem;padding:2px 7px;border-radius:999px;background:rgba(var(--wv),.07);color:var(--dim)}
 .fm-l .bb>span{position:relative}.fm-l .bb u{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink);opacity:.85;border-radius:1px;text-decoration:none}.ry-mir{padding:2px 16px 4px}.ry-rythmes{display:flex;justify-content:space-between;gap:8px;margin:10px 0 2px;flex-wrap:wrap}.ry-pas{font-size:.8rem;padding:3px 9px;border-radius:999px;background:rgba(var(--wv),.06)}.ry-pas.a{color:var(--p1)}.ry-pas.b{color:var(--p2)}.ry-pas i{font-style:normal;margin-right:5px}.ry-det{margin:6px 16px 0}.cj-cond .ry-det{margin:8px 0 0}.ry-det>summary{cursor:pointer;color:var(--dim);font-size:.85rem;padding:6px 0}
+.sd-vis{display:grid;gap:12px;margin:4px 0 6px}.sd-j{display:grid;gap:6px}.sd-n{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 8px}.sd-n span{font-weight:700}.sd-n .a{color:var(--p1)}.sd-n .b{color:var(--p2)}.sd-n small{color:var(--dim);font-size:.78rem}.sd-r{display:grid;grid-template-columns:86px 1fr 62px;gap:8px;align-items:center}.sd-l{font-size:.8rem;line-height:1.15}.sd-l small{display:block;color:var(--dim);font-size:.7rem}.sd-axe{position:relative;height:14px;border-radius:7px;background:rgba(var(--wv),.06)}.sd-axe .ic{position:absolute;top:3px;bottom:3px;border-radius:4px;background:rgba(var(--wv),.16)}.sd-axe u{position:absolute;top:-2px;bottom:-2px;width:2px;margin-left:-1px;background:var(--ink);border-radius:1px;text-decoration:none}.sd-axe b{position:absolute;top:50%;width:12px;height:12px;margin:-6px 0 0 -6px;border-radius:50%;border:2px solid var(--bg)}.sd-axe b.c1{background:var(--p1)}.sd-axe b.c2{background:var(--p2)}.sd-axe b.pale{opacity:.45}.sd-v{text-align:right;font-family:var(--cond);font-weight:700;font-size:1.05rem;font-variant-numeric:tabular-nums;line-height:1.05}.sd-v small{display:block;font-family:inherit;font-size:.72rem;font-weight:600;color:var(--dim)}.sd-v.plus small{color:var(--ok)}.sd-v.moins small{color:var(--ko)}.sd-v.dim{color:var(--dim)}.sd-ax{display:flex;justify-content:space-between;margin:-4px 70px 0 94px;color:var(--dim);font-size:.68rem}.sd-leg{color:var(--dim);font-size:.74rem;margin:0}.sd-det{margin:6px 0 0}.styles-descriptifs .sd-det .styles-joueurs{margin-top:8px}
 .cj-vis{display:grid;gap:10px;margin:10px 0 4px}.cj-leg{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:.8rem;align-items:center}.cj-leg .a{color:var(--p1);font-weight:600}.cj-leg .b{color:var(--p2);font-weight:600}.cj-sens{color:var(--dim);font-size:.72rem;flex-basis:100%}.cj-r{display:grid;gap:3px}.cj-l{font-size:.85rem}.cj-b{display:grid;grid-template-columns:1fr 92px;gap:8px;align-items:center}.cj-axe{position:relative;height:9px;border-radius:5px;background:rgba(var(--wv),.06)}.cj-axe s{position:absolute;left:50%;top:-3px;bottom:-3px;width:1px;background:var(--dim)}.cj-axe i{position:absolute;top:0;bottom:0;border-radius:4px}.cj-axe i.c1{background:var(--p1)}.cj-axe i.c2{background:var(--p2)}.cj-axe i.pale{opacity:.35}.mt-det{margin:4px 16px 0}.cj-b em{font-style:normal;font-size:.75rem;color:var(--dim);font-variant-numeric:tabular-nums;white-space:nowrap}.cj-b em.ok{color:var(--ok);font-weight:700}.cj-b em.ko{color:var(--ko);font-weight:700}
 .am-j .nm{font-weight:600}.am-j .nm.a{color:var(--p1)}.am-j .nm.b{color:var(--p2)}.am-j p{margin:4px 0 0;font-size:.83rem}
 .am-h2h{margin-top:12px}.am-h2h .bil{font-family:var(--disp);font-size:1.3rem;text-align:center}
@@ -3183,6 +3184,29 @@ function rendDerniersStyle(b,titre){
     return `<li><span class="issue ${win?'v':'d'}" role="img" aria-label="${esc(t(win?'styles_victoire':'styles_defaite'))}">${L==='fr'?(win?'V':'D'):(win?'W':'L')}</span><span><b>${esc(r.adversaire)}</b><small>${esc(jourCourt(r.date))} · ${esc(r.tournoi||'')}${typeof r.attendu_pct==='number'?` · ${esc(t('styles_att_match',r.attendu_pct))}`:''}</small></span><span class="score">${esc(r.score||'—')}</span></li>`;
   }).join('')}</ul></details>`;
 }
+// 22/11/2026 (paquet 356, Lucas : « Tiroirs du site ») — BILANS CONTRE LE STYLE EN UN SCHÉMA : pour chaque joueur, une
+// ligne « toutes surfaces » et une ligne « surface du match » sur un axe commun aux deux joueurs : bande = fourchette
+// probable, trait = victoires attendues vu ses adversaires, rond = victoires réelles (en couleur seulement si l'écart
+// est net, même règle que verdictStyle). Le détail (phrases, statistiques, derniers matchs) passe sous un repli.
+function schemaStyles(J, m, libStyle, libAdv){
+  const fr = L==='fr', S_ = SURF[L][m.surface]||m.surface||'';
+  const B = []; J.forEach(j => [j.global, j.surface].forEach(b => { if (b && b.n && typeof b.attendu_pct === 'number') B.push(b); }));
+  if (!B.length) return '';
+  const vals = B.flatMap(b => [b.pct, b.attendu_pct, ...(Array.isArray(b.ic95) ? b.ic95 : [])]).filter(v => typeof v === 'number');
+  const lo = Math.max(0, Math.floor((Math.min(...vals) - 4) / 10) * 10), hi = Math.min(100, Math.ceil((Math.max(...vals) + 4) / 10) * 10);
+  const X = v => Math.max(0, Math.min(100, (v - lo) / (hi - lo) * 100)).toFixed(1);
+  const ligne = (b, lib, i) => {
+    if (!b || !b.n || typeof b.attendu_pct !== 'number') return `<div class="sd-r"><span class="sd-l">${esc(lib)}</span><span class="sd-axe vide"></span><span class="sd-v dim">—</span></div>`;
+    const v = verdictStyle(b), ic = Array.isArray(b.ic95) ? b.ic95 : null, e = b.ecart_pts || 0;
+    return `<div class="sd-r" title="${esc(t('styles_vn', b.victoires, b.n))}"><span class="sd-l">${esc(lib)}<small>${esc(fr ? `${fmt(b.n)} matchs` : `${fmt(b.n)} matches`)}</small></span>
+      <span class="sd-axe">${ic ? `<i class="ic" style="left:${X(ic[0])}%;width:${(X(ic[1]) - X(ic[0])).toFixed(1)}%"></i>` : ''}<u style="left:${X(b.attendu_pct)}%"></u><b class="${v && v.net ? (i ? 'c2' : 'c1') : 'pale ' + (i ? 'c2' : 'c1')}" style="left:${X(b.pct)}%"></b></span>
+      <span class="sd-v ${v ? v.sens : ''}">${esc(pc0(b.pct / 100))}<small>${esc(`${e > 0 ? '+' : e < 0 ? '−' : ''}${dec(Math.abs(e), 1)} pts`)}</small></span></div>`;
+  };
+  const tete = (j, i) => `<div class="sd-n"><span class="${i ? 'b' : 'a'}">${esc(court(i ? m.away : m.home))}</span><small>${esc([libStyle(j), libAdv(j) ? (fr ? `contre ${libAdv(j)}` : `vs ${libAdv(j)}`) : ''].filter(Boolean).join(' · '))}</small></div>`;
+  return `<div class="sd-vis">${J.map((j, i) => `<div class="sd-j">${tete(j, i)}${ligne(j.global, t('styles_global'), i)}${ligne(j.surface, S_ ? (fr ? `Sur ${S_}` : `On ${S_}`) : t('styles_surface', S_), i)}</div>`).join('')}
+    <div class="sd-ax" aria-hidden="true"><span>${lo} %</span><span>${Math.round((lo + hi) / 2)} %</span><span>${hi} %</span></div>
+    <p class="sd-leg">${esc(fr ? '● victoires réelles · | attendues vu ses adversaires · bande : fourchette probable. Rond pâle : écart dans le bruit.' : '● actual wins · | expected given the opponents · band: likely range. Faded dot: gap within noise.')}</p></div>`;
+}
 // 13/11/2026 (paquet 252) — STYLES DE JEU d'après les coups : étiquettes de chacun et bilan contre le style de jeu de
 // l'adversaire (même présentation que le duel des styles). Descriptif : ne change pas le %.
 // 348 — Styles de jeu : en tête, une bande par joueur (son style, face à quel style, et l'écart à l'attendu qui compte).
@@ -3194,7 +3218,7 @@ function bandeStyles(sj, m){
     const e = g.ecart_pts;
     return `<div class="sj-b"><div class="n ${i?'b':'a'}">${esc(court(i ? m.away : m.home))}</div><div class="st">${esc(styleLib(j.style[0]))}</div>
       ${adv ? `<small>${esc(fr ? `face aux ${styleLibPluriel(adv)}` : `against ${styleLibPluriel(adv)}`)}</small>` : ''}
-      ${e != null && g.n ? `<small><span class="ec ${e >= 5 ? 'up' : e <= -5 ? 'down' : ''}">${esc(`${e > 0 ? '+' : e < 0 ? '−' : ''}${dec(Math.abs(e),1)} pts`)}</span> ${esc(fr ? `vs attendu · ${g.n} matchs` : `vs expected · ${g.n} matches`)}</small>` : ''}</div>`;
+      </div>`;   // 356 : l'écart à l'attendu est dans le schéma juste dessous
   }).join('');
   return b ? `<div class="sj-bande">${b}</div>` : '';
 }
@@ -3213,7 +3237,9 @@ function rendStylesJeu(m){
     </section>`; }).join('');
   return `<div class="panel styles-descriptifs styles-jeu"><h3>${esc(fr?'Styles de jeu':'Playing styles')}</h3><p class="styles-intro">${esc(fr
     ? "Comment chacun gagne ses points dans l'échange, d'après ses matchs relevés coup par coup (Match Charting Project), face à la moyenne du circuit. Le chiffre qui compte est l'écart à l'attendu. Descriptif : nos études n'y trouvent pas d'effet sur le vainqueur au-delà de l'algo, il ne change pas le %."
-    : "How each player wins points in rallies, from charted matches (Match Charting Project), against the tour average. What counts is the gap to the expected rate. Descriptive: our studies find no effect on the winner beyond the algorithm; it does not change the %.")}</p>${bandeStyles(sj,m)}<div class="styles-joueurs">${joueurs}</div></div>`;
+    : "How each player wins points in rallies, from charted matches (Match Charting Project), against the tour average. What counts is the gap to the expected rate. Descriptive: our studies find no effect on the winner beyond the algorithm; it does not change the %.")}</p>${bandeStyles(sj,m)}
+    ${schemaStyles(sj.joueurs, m, () => '', () => '')}
+    <details class="ry-det sd-det"><summary>${esc(fr?'Détail par joueur':'Detail by player')}</summary><div class="styles-joueurs">${joueurs}</div></details></div>`;
 }
 function rendStylesDescriptifs(sd,m){
   if (!sd || sd.descriptif_seulement !== true || !Array.isArray(sd.joueurs) || sd.joueurs.length!==2) return '';
@@ -3229,7 +3255,10 @@ function rendStylesDescriptifs(sd,m){
   </section>`).join('');
   const okX = sd.joueurs.every(j=>j.global && j.global.n && j.global.attendu_pct!=null);
   const bx = okX ? `<button type="button" class="btn-x" data-x="${esc(m.uid)}">${esc(t('x_bouton'))}</button>` : '';
-  return `<div class="panel styles-descriptifs"><h3>${esc(t('styles_titre'))}</h3><p class="styles-intro">${esc(t('styles_sous'))}</p><div class="styles-joueurs">${joueurs}</div>${bx}</div>`;
+  const fr = L==='fr';
+  return `<div class="panel styles-descriptifs"><h3>${esc(t('styles_titre'))}</h3><p class="styles-intro">${esc(t('styles_sous'))}</p>
+    ${schemaStyles(sd.joueurs, m, j => styleLib(j.style), j => j.style_adverse ? styleLib(j.style_adverse) : '')}
+    <details class="ry-det sd-det"><summary>${esc(fr?'Détail, statistiques et derniers matchs':'Detail, statistics and recent matches')}</summary><div class="styles-joueurs">${joueurs}</div></details>${bx}</div>`;
 }
 // 29/10/2026 — IMAGE POUR X : le duel des styles en PNG 1080×1350 (dessiné ici, sans bibliothèque), couleur selon
 // l'ÉCART À L'ATTENDU (pas le % brut), « échantillon faible » sous 30 matchs, aucune adresse ni nom de site.
