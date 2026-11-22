@@ -1865,8 +1865,15 @@
    "date": "2026-11-22",
    "statut": "site",
    "paquet": 358,
-   "quoi": "SITE : JOURNAL ET PETITS ÉCRANS (paquet 358) : depuis le 05/11, la plupart des entrées de ce journal s'affichaient sans titre (elles n'étaient plus écrites dans le format que la page lisait) ; chacune a maintenant son titre, son statut (en service, étude, site…) et le journal se lit du plus récent au plus ancien. Un titre de tiroir trop long rendait aussi la page plus large que l'écran du téléphone (défilement de côté) : corrigé, vérifié de 320 à 412 pixels de large.",
+   "quoi": "SITE : JOURNAL ET PETITS ÉCRANS (paquet 358) : depuis le 05/11, la plupart des entrées de ce journal s'affichaient sans titre (elles n'étaient plus écrites dans le format que la page lisait) ; chacune a maintenant son titre, son statut (en service, étude, site…) et le journal se lit du plus récent au plus ancien. Un titre de tiroir trop long rendait aussi la page plus large que l'écran du téléphone (défilement de côté) : corrigé, vérifié de 320 à 412 pixels de large, en français et en anglais, sur les trois pages (paquet 359 : un tableau replié de la version anglaise débordait encore à 320 pixels).",
    "garde_fou": "Affichage seulement. Test tests/test_site_journal_affichage.py."
+  },
+  {
+   "date": "2026-11-22",
+   "statut": "collecte",
+   "paquet": 360,
+   "quoi": "COUVERTURE ITF DES JOUEURS DE CHALLENGER (paquet 360) : après chaque passage de la collecte ITF point par point, un bilan dit, pour les Challengers des 30 derniers jours, combien de matchs ITF avec déroulé on a pour chaque joueur avant son match et combien de points de service ils ajoutent. C'est la question à trancher avant toute étude sur des profils de service enrichis par l'ITF.",
+   "garde_fou": "Des comptes seulement, rien ne change dans l'algo. Une étude éventuelle aura sa règle écrite avant de regarder les résultats."
   }
  ]
 }

@@ -40,6 +40,7 @@ jobs:
             /scripts/feuilles_match.py
             /scripts/points_match.py
             /scripts/itf_points.py
+            /scripts/bilan_itf.py
             /feuilles/
             /historique/itf_points/
           sparse-checkout-cone-mode: false
@@ -53,6 +54,12 @@ jobs:
           FEUILLES_BUDGET: ${{ github.event.inputs.budget || '2500' }}
           FEUILLES_RESERVE: '7000'
         run: python scripts/itf_points.py
+      # 22/11/2026 (paquet 360) : couverture pour nos joueurs de Challenger (des comptes seulement), aussi en résumé du run
+      - name: Couverture des joueurs de Challenger
+        if: always()
+        run: |
+          python scripts/bilan_itf.py 30 | tee /tmp/bilan_itf.log || true
+          { echo '### Couverture ITF point par point'; sed 's/^/    /' /tmp/bilan_itf.log; } >> "$GITHUB_STEP_SUMMARY"
       - name: Publier (même après une interruption)
         if: always()
         run: |
