@@ -1846,6 +1846,27 @@
    "prive": true,
    "quoi": "CORRECTIF DE LA BASCULE PRIVÉE (paquet 355), trouvé par le premier contrôle (paquet 353) : en mode ETAT_CHAUD=prive, la capture sortait closing_lines.json, matches_oddspapi.json et live_odds.json du suivi git, puis l'étape « garde » d'etat_chaud.py les y remettait juste avant le commit : ils restaient publics. La garde ne touche plus un fichier que l'index ne suit plus. Le contrôle distingue aussi « pas encore au coffre mais encore dans git » (avertissement : le rédacteur l'enverra à son prochain passage) de « absent du coffre et hors de git » (panne).",
    "garde_fou": "Hors mode « prive », rien ne change (les fichiers restent suivis, la garde agit comme avant). Test tests/test_garde_retrait.py."
+  },
+  {
+   "date": "2026-11-22",
+   "statut": "site",
+   "paquet": 356,
+   "quoi": "STYLES EN UN SCHÉMA (paquet 356) : « Bilans contre le style adverse » et « Styles de jeu » s'ouvrent sur un seul schéma — pour chaque joueur, une ligne toutes surfaces et une ligne sur la surface du match, avec les victoires réelles (rond), attendues vu ses adversaires (trait) et la fourchette probable (bande), sur un axe commun aux deux joueurs. Les phrases, statistiques et derniers matchs passent sous un repli.",
+   "garde_fou": "Affichage seulement : mêmes chiffres, même règle « net » qu'avant (attendu hors de la fourchette, 30 matchs au moins) ; rond pâle sinon. Ne change pas le %."
+  },
+  {
+   "date": "2026-11-22",
+   "statut": "site",
+   "paquet": 357,
+   "quoi": "TIROIRS EN SCHÉMAS, SUITE (paquet 357) : « Duel des coups » tient en une ligne par duel (qui attaque, verdict) et en barres face à face pour 100 points joués, avec la moyenne du circuit ; « Après le 1er set » devient un axe par joueur (ce match, ses 24 mois, moyenne du circuit) ; les repères des scénarios passent en tuiles ; « L'essentiel » montre 4 constats, les autres sous un repli.",
+   "garde_fou": "Affichage seulement : mêmes chiffres, phrases et tableaux complets sous « Tous les chiffres ». Ne change pas le %."
+  },
+  {
+   "date": "2026-11-22",
+   "statut": "site",
+   "paquet": 358,
+   "quoi": "SITE : JOURNAL ET PETITS ÉCRANS (paquet 358) : depuis le 05/11, la plupart des entrées de ce journal s'affichaient sans titre (elles n'étaient plus écrites dans le format que la page lisait) ; chacune a maintenant son titre, son statut (en service, étude, site…) et le journal se lit du plus récent au plus ancien. Un titre de tiroir trop long rendait aussi la page plus large que l'écran du téléphone (défilement de côté) : corrigé, vérifié de 320 à 412 pixels de large.",
+   "garde_fou": "Affichage seulement. Test tests/test_site_journal_affichage.py."
   }
  ]
 }
