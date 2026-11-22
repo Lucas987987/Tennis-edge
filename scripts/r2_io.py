@@ -266,8 +266,15 @@ class MiniS3:
     def head_object(self, Bucket, Key):
         _, headers, _ = self._request("HEAD", self._url(Bucket, Key))
         low = {k.lower(): v for k, v in headers.items()}
-        return {"ContentLength": int(low.get("content-length", 0)),
-                "ETag": low.get("etag", "")}
+        out = {"ContentLength": int(low.get("content-length", 0)),
+               "ETag": low.get("etag", "")}
+        if low.get("last-modified"):                 # 351 : fraîcheur d'un fichier du coffre (observateur)
+            from email.utils import parsedate_to_datetime
+            try:
+                out["LastModified"] = parsedate_to_datetime(low["last-modified"])
+            except (TypeError, ValueError):
+                pass
+        return out
 
     def get_object(self, Bucket, Key):
         import io

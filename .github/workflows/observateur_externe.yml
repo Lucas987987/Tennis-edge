@@ -112,7 +112,22 @@ jobs:
           # set_results.json (alimente le journal forward), un couvre
           # polymarket_studies.yml séparément.
           verifier "pipeline_status.md"
-          verifier "moves_detail_hist.csv"
+          # 22/11/2026 (paquet 351) : en mode ETAT_CHAUD=prive, moves_detail_hist.csv n'est plus dans git (coffre
+          # privé, R2) : sa fraîcheur est alors l'âge de la copie du coffre (steam_pipeline l'y envoie à chaque passage)
+          if git ls-files --error-unmatch moves_detail_hist.csv >/dev/null 2>&1; then
+            verifier "moves_detail_hist.csv"
+          else
+            age_h=$(python3 scripts/cotes_privees.py age moves_detail_hist.csv 2>/dev/null || true)
+            if [ -z "$age_h" ]; then
+              echo "❌ moves_detail_hist.csv : ni dans git ni lisible au coffre"
+              ECHECS=$((ECHECS+1))
+            elif [ "$age_h" -gt "$SEUIL_H" ]; then
+              echo "❌ moves_detail_hist.csv (coffre) : dernier envoi il y a ${age_h}h (seuil ${SEUIL_H}h)"
+              ECHECS=$((ECHECS+1))
+            else
+              echo "✅ moves_detail_hist.csv (coffre) : dernier envoi il y a ${age_h}h"
+            fi
+          fi
           verifier "set_results.json"
           verifier "polymarket_studies_report.md"
           # 22/11/2026 (paquet 345) : verdicts_geles.json est au coffre privé (R2) — rapatrié avant le contrôle
