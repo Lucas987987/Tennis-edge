@@ -1,5 +1,7 @@
-name: Sonde Matchstat (historique, 12 requêtes)
+name: Sonde Matchstat (historique, 6 requêtes)
 
+# 22/11/2026 (paquet 331, corrigé en 331b : la liste « fixtures » ne donne que les matchs à venir, la sonde part
+# maintenant des tournois connus de tournois_ids.json — 2 requêtes par échantillon, 6 au plus)
 # 22/11/2026 (paquet 331) — l'historique de Matchstat peut-il remplacer l'archive Sackmann (licence non
 # commerciale) avant une offre payante ? Statistiques de match d'un Challenger, d'un match ATP et d'un match WTA
 # passés, comparées à Sackmann ; point par point ; nombre de requêtes pour tout récupérer 2018–2025 face au
@@ -9,8 +11,8 @@ on:
   workflow_dispatch:
     inputs:
       budget:
-        description: 'Requêtes au plus (12 conseillé, 40 maximum)'
-        default: '12'
+        description: 'Requêtes au plus (6 conseillé, 40 maximum) — la formule gratuite n’en donne que 50 par mois'
+        default: '6'
       chemins:
         description: 'Facultatif : chemins exacts de la documentation à essayer (point par point…), 3 max, séparés par des virgules ; {tour} {tid} {p1} {p2} {mid} sont remplacés'
         default: ''
@@ -28,6 +30,7 @@ jobs:
           sparse-checkout: |
             scripts/sonde_stats.py
             scripts/sonde_matchstat.py
+            tournois_ids.json
           sparse-checkout-cone-mode: false
       - uses: actions/setup-python@v6
         with:
@@ -44,7 +47,7 @@ jobs:
           RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
           BUDGET: ${{ github.event.inputs.budget }}
           CHEMINS: ${{ github.event.inputs.chemins }}
-        run: python scripts/sonde_matchstat.py --budget "${BUDGET:-12}" --sackmann /tmp/sackmann --chemins "$CHEMINS"
+        run: python scripts/sonde_matchstat.py --budget "${BUDGET:-6}" --sackmann /tmp/sackmann --chemins "$CHEMINS"
       - name: Rapport
         if: always()
         uses: actions/upload-artifact@v4
