@@ -1838,6 +1838,14 @@
    "paquet": 354,
    "quoi": "TIROIRS EN SCHÉMAS (paquet 354) : « Durée et rythme » montre ses chiffres en barres face à face (même échelle des deux côtés, repère d'un joueur type du circuit pour les tie-breaks et les matchs en 3 sets) et le rythme de chaque joueur en pastille ; « Bilans dans ces conditions » devient une barre par joueur et par condition, de part et d'autre de « comme d'habitude » ; « Forme et face-à-face » affiche la série en cours en gros chiffre. Les tableaux complets restent sous « Tous les chiffres ».",
    "garde_fou": "Affichage seulement : mêmes chiffres qu'avant, aucun ne change le %. Écarts dans le bruit en couleur pâle."
+  },
+  {
+   "date": "2026-11-22",
+   "statut": "outil",
+   "paquet": 355,
+   "prive": true,
+   "quoi": "CORRECTIF DE LA BASCULE PRIVÉE (paquet 355), trouvé par le premier contrôle (paquet 353) : en mode ETAT_CHAUD=prive, la capture sortait closing_lines.json, matches_oddspapi.json et live_odds.json du suivi git, puis l'étape « garde » d'etat_chaud.py les y remettait juste avant le commit : ils restaient publics. La garde ne touche plus un fichier que l'index ne suit plus. Le contrôle distingue aussi « pas encore au coffre mais encore dans git » (avertissement : le rédacteur l'enverra à son prochain passage) de « absent du coffre et hors de git » (panne).",
+   "garde_fou": "Hors mode « prive », rien ne change (les fichiers restent suivis, la garde agit comme avant). Test tests/test_garde_retrait.py."
   }
  ]
 }
