@@ -10,3 +10,8 @@ workers_dev = true
 # Garde les variables réglées dans le tableau de bord (GH_OWNER, GH_REPO
 # s'il y en a) au lieu de les effacer à chaque déploiement.
 keep_vars = true
+
+# 22/11/2026 (paquet 346) — cotes en privé : les matchs à venir (matches_oddspapi.json) se lisent dans R2
+[[r2_buckets]]
+binding = "COFFRE"
+bucket_name = "tennis-edge-courbes"

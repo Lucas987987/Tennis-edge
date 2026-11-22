@@ -27,6 +27,9 @@ FRAÎCHEUR : chaud/etat.json garde l'empreinte git des dernières versions envoy
 l'une d'elles est « connue » (R2 a plus récent) ; sinon elle vient d'un écrivain hors relais (réparation manuelle) :
 accumulateur → union (la copie git gagne en cas d'égalité), photo → copie git gardée. Rien ne se perd.
 
+22/11/2026 (paquet 346) — QUATRIÈME MODE « prive » : comme « on », mais git ne reçoit plus jamais de photo (même la
+capture est traitée en lecteur par garde) ; les fichiers sortent du dépôt public (scripts/cotes_privees.py).
+
 Usage : python scripts/etat_chaud.py pull | push | garde [--lecteur] [fichier …]   (sans fichier : les cinq)
 """
 import hashlib
@@ -52,7 +55,7 @@ ETAGS = os.path.join(os.environ.get('RUNNER_TEMP') or '/tmp', 'etat_chaud_etags.
 
 def mode(environ=None):
     m = str((environ if environ is not None else os.environ).get('ETAT_CHAUD', 'double')).strip().lower()
-    return m if m in ('off', 'double', 'on') else 'double'
+    return m if m in ('off', 'double', 'on', 'prive') else 'double'
 
 
 def empreinte(data):
@@ -222,7 +225,7 @@ def main(argv):
     import r2_io
     r2 = r2_io.client(quiet=True)
     if action == 'pull':
-        if m != 'on' or r2 is None:
+        if m not in ('on', 'prive') or r2 is None:
             print(f"État chaud : pull ignoré (mode {m}{'' if r2 else ', R2 absent'})")
             return 0
         print(f'État chaud : copies locales → {pull(r2, noms) or "R2 vide (copies git gardées)"}')
@@ -232,10 +235,11 @@ def main(argv):
             return 0
         print(f"État chaud : envoyés à R2 → {push(r2, noms, ecraser=(m == 'double'))}")
     elif action == 'garde':
-        if m != 'on' or r2 is None:
+        if m not in ('on', 'prive') or r2 is None:
             print(f'État chaud : garde inactive (mode {m}) — git publie comme avant')
             return 0
-        lecteur = '--lecteur' in argv
+        # 22/11/2026 (paquet 346) : en « prive », git ne reçoit plus aucune photo, même de la capture
+        lecteur = '--lecteur' in argv or m == 'prive'
         print(f"État chaud : retenus hors du commit → {garde(noms, lecteur=lecteur) or 'aucun'}"
               f"{' (lecteur)' if lecteur else f' (photo git toutes les {int(INTERVALLE_MIN)} min)'}")
     else:
