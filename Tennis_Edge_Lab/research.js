@@ -41,6 +41,10 @@ function renderMatches(){if(!matchData)return;let arr=filtered.slice(page*pagesi
  $('pageIndicator').textContent=`${page+1}/${Math.max(1,Math.ceil(filtered.length/pagesize))}`;
  $('previous').disabled=page===0;$('next').disabled=(page+1)*pagesize>=filtered.length;}
 for (const b of document.querySelectorAll('.tab'))b.addEventListener('click',()=>{document.querySelectorAll('.tab').forEach(el=>el.classList.toggle('selected',el===b));document.querySelectorAll('.view').forEach(el=>el.classList.toggle('hidden',el.id!==b.dataset.tab))});
+// 22/11/2026 (paquet 362) : le dernier onglet ouvert est retenu (ce navigateur seulement) ; un onglet d'archive rouvre
+// le repli « Archives ». Un clic simulé, pour que les onglets qui chargent leurs données au clic les chargent.
+for (const b of document.querySelectorAll('.tab'))b.addEventListener('click',()=>{try{localStorage.setItem('lab_onglet',b.dataset.tab)}catch(e){}const d=b.closest('details.tabs-archives');if(d)d.open=true});
+(()=>{let k=null;try{k=localStorage.getItem('lab_onglet')}catch(e){}const b=k&&document.querySelector(`.tab[data-tab="${CSS.escape(k)}"]`);if(b&&!b.classList.contains('selected'))b.click()})();
 $('search').addEventListener('input',applySearch);$('filterStatus').addEventListener('change',applySearch);
 $('previous').addEventListener('click',()=>{if(page>0){page--;renderMatches()}});$('next').addEventListener('click',()=>{if((page+1)*pagesize<filtered.length){page++;renderMatches()}});
 (async()=>{try{[research,matchData]=await Promise.all([fetchJSON('./live/research.json'),fetchJSON('./live/matches_index.json')]);if(research.schema_version!==1||matchData.schema_version!==1||!Array.isArray(matchData.matches))throw Error('Format des données invalide');
