@@ -105,6 +105,16 @@ GROUPES['profils'] = ['players_profile.json']
 # source de cotes, écrits par fetch_results_settlement seul. Un seul rédacteur par groupe : envoi simple.
 GROUPES['mouvements'] = ['moves_detail.csv', 'moves_detail_hist.csv', 'moves_detail_live.csv', 'suivi_direct/resultats.json']
 GROUPES['resultats_reglement'] = ['resultats_oddspapi.json']
+# 22/11/2026 (paquet 352) — cotes en privé, étape 4 : un groupe par rédacteur (envoi simple, un seul rédacteur chacun)
+GROUPES['kalshi'] = ['kalshi_lead_obs.jsonl']                          # polymarket_studies (journal permanent, 13e hyp.)
+GROUPES['courbes_absences'] = ['courbes_absences.json']                # fetch_book_curves
+GROUPES['value'] = ['value_candidates.jsonl']                          # value_journal
+GROUPES['book_lag'] = ['book_lag_report.json']                         # book_lag
+GROUPES['calibration'] = ['calibration_buckets_report.json']           # calibration_buckets
+GROUPES['direct'] = ['early_open_log.jsonl', 'direct_matchs.json']     # courbes_alertes
+# fichiers figés (plus aucun rédacteur) : envoyés tels quels et retirés par lab_quotidien
+GROUPES['figes'] = ['games_markets.json', 'Tennis_Edge_Lab/live/economic_v64.json', 'Tennis_Edge_Lab/v65/selection_v64_frozen.json',
+                    'simulateur/rapport_ecart_pinnacle.json', 'simulateur/rapport_ecart_cloture.json']
 PROTEGES |= {'canaux', 'verdicts'}   # deux rédacteurs possibles, et des états à ne jamais écraser par une copie périmée
 # servis au Lab par le worker « algo » (nom de fichier seul, sans dossier)
 SERVIS = sorted({os.path.basename(f) for f in GROUPES['tous']})

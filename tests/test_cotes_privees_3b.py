@@ -38,11 +38,11 @@ def _wf(n):
 
 
 def test_groupes_cles_et_exclusions():
-    assert sorted(CP.entiers()) == sorted(ENTIERS)
+    assert set(ENTIERS) <= set(CP.entiers()) and sorted(CP.entiers('mouvements') + CP.entiers('resultats_reglement')) == sorted(ENTIERS)
     assert C.cle('suivi_direct/resultats.json') == 'prive/suivi_direct/resultats.json'   # jamais confondu
     assert C.cle('moves_detail_hist.csv') == 'prive/moves_detail_hist.csv'
     for f in ENTIERS:
-        assert '/' + f in CP.EXCLUSIONS
+        assert '/' + f in CP.exclusions()
     assert 'mouvements' not in C.PROTEGES and 'resultats_reglement' not in C.PROTEGES      # un seul rédacteur
 
 

@@ -258,6 +258,7 @@
     return h && seg ? `${h[1]}/${seg}` : 'Lucas987987/Tennis-edge';
   };
   const RAW = f => `https://raw.githubusercontent.com/${repo()}/main/${f}`;
+  const PRIV = f => `./direct/${f}`;
   async function getJson(urls) {
     for (const u of urls) {
       try { const r = await fetch(`${u}?t=${Date.now()}`, { cache: 'no-store' }); if (r.ok) return await r.json(); } catch { /* suivant */ }
@@ -279,9 +280,11 @@
   }
   async function refresh() {
     const [doc, live, meta] = await Promise.all([
-      getJson([RAW('direct_matchs.json'), '../direct_matchs.json']),
-      getJson([RAW('live_odds.json'), '../live_odds.json']),
-      getJson([RAW('matches_oddspapi_meta.json'), '../matches_oddspapi_meta.json'])]);
+      // 22/11/2026 (paquet 352) : copies privées du site du Lab d'abord (courbes_alertes les y envoie à chaque
+      // passage) ; GitHub ensuite, tant que le dépôt public les a encore (retour arrière)
+      getJson([PRIV('direct_matchs.json'), RAW('direct_matchs.json'), '../direct_matchs.json']),
+      getJson([PRIV('live_odds.json'), RAW('live_odds.json'), '../live_odds.json']),
+      getJson([PRIV('matches_oddspapi_meta.json'), RAW('matches_oddspapi_meta.json'), '../matches_oddspapi_meta.json'])]);
     if (doc) { state.doc = mergeLiveOdds(doc, live, meta && meta.last_write); state.liveAt = meta && meta.last_write ? meta.last_write + (/Z|[+-]\d\d:\d\d$/.test(meta.last_write) ? '' : 'Z') : null; state.panels.clear(); }
     render();
   }

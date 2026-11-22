@@ -104,6 +104,9 @@ jobs:
             scripts/cotes_privees.py
             scripts/etat_chaud.py
             scripts/merge_json_state.py
+            games_markets.json
+            simulateur/rapport_ecart_pinnacle.json
+            simulateur/rapport_ecart_cloture.json
 
       - uses: actions/setup-python@v6
         with:
@@ -119,6 +122,16 @@ jobs:
           R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
           R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
         run: python3 scripts/cotes_privees.py pull || true
+
+      # 22/11/2026 (paquet 352) — COTES EN PRIVÉ, ÉTAPE 4 : fichiers figés (games_markets, economic_v64,
+      # selection_v64_frozen, rapports d'écart à la clôture) envoyés au coffre TELS QUELS, avant tout calcul.
+      - name: Cotes privées — envoyer les fichiers figés (paquet 352)
+        env:
+          ETAT_CHAUD: ${{ vars.ETAT_CHAUD || 'double' }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+        run: python3 scripts/cotes_privees.py push --groupe figes || true
 
       # R2 (15/10/2026) : en mode R2_PRIMARY=on, rapatrie dans parts/ les
       # partitions (all) que git ne contient plus. No-op en double/off.
@@ -229,6 +242,8 @@ jobs:
             Tennis_Edge_Lab/live/archive/bookmakers_sets_v61/current/manifest.json
 
       - name: Publier si un contenu a changé (jamais de force push)
+        env:
+          ETAT_CHAUD: ${{ vars.ETAT_CHAUD || 'double' }}   # 352 : retrait des fichiers figés en mode « prive »
         run: |
           set -euo pipefail
           # Les gels existants ne sont jamais modifiés par la tâche quotidienne.
@@ -263,6 +278,8 @@ jobs:
           python scripts/coffre.py push --groupe lab_sorties || true
           python scripts/coffre.py retirer --groupe lab_sorties || true
           python scripts/coffre.py retirer --groupe lab_donnees --si-present || true
+          # 352 : fichiers figés sortis du dépôt public en mode ETAT_CHAUD=prive (le coffre en a une copie)
+          python3 scripts/cotes_privees.py retirer --groupe figes || true
           git rm --cached --quiet --ignore-unmatch -- Tennis_Edge_Lab/data.json || true
           # journal H19 rapatrié du coffre pour la lecture seulement : on rend la version git (pas de conflit avec
           # le commit de « Courbes live + alertes » qui le retire du dépôt).
