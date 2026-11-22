@@ -1,0 +1,67 @@
+name: ITF point par point (joueurs de Challenger)
+
+# 22/11/2026 (paquet 337, demande de Lucas : « plus de données en Challenger ») — déroulé point par point des matchs
+# ITF hommes où joue au moins un joueur de Challenger, des 24 derniers mois, les plus récents d'abord (voir l'en-tête
+# de scripts/itf_points.py). Rangé à part dans historique/itf_points/ : aucun script de l'algo ne le lit.
+# QUOTA TennisApi (15 000 par jour, partagé avec le direct, la collecte quotidienne et l'historique ATP/WTA) : arrêt
+# dès qu'il reste 7 000 requêtes ; 2 500 au plus par passage, 3 passages par jour. Un jour complet n'est jamais
+# redemandé. Le journal du run n'affiche que des comptes.
+on:
+  schedule:
+    - cron: '47 4 * * *'
+    - cron: '47 12 * * *'
+    - cron: '47 18 * * *'
+  workflow_dispatch:
+    inputs:
+      budget:
+        description: 'Requêtes au plus pour ce passage'
+        default: '2500'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: itf-points
+  cancel-in-progress: false
+
+jobs:
+  itf:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+          filter: blob:none
+          sparse-checkout: |
+            /scripts/feuilles_match.py
+            /scripts/points_match.py
+            /scripts/itf_points.py
+            /feuilles/
+            /historique/itf_points/
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - name: Point par point ITF (récents d'abord)
+        timeout-minutes: 75
+        env:
+          RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
+          FEUILLES_BUDGET: ${{ github.event.inputs.budget || '2500' }}
+          FEUILLES_RESERVE: '7000'
+        run: python scripts/itf_points.py
+      - name: Publier (même après une interruption)
+        if: always()
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A -- historique/itf_points
+          if git diff --cached --quiet; then echo 'Rien de nouveau.'; exit 0; fi
+          git commit -q -m "ITF point par point $(date -u +%FT%TZ)"
+          for i in 1 2 3 4 5; do
+            git pull --rebase origin main || { git rebase --abort || true; echo '::error::Conflit avec main'; exit 1; }
+            if git push origin HEAD:main; then exit 0; fi
+            sleep $((i * 10))
+          done
+          echo '::error::Push impossible après 5 essais'; exit 1
