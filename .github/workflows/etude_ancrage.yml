@@ -1,0 +1,60 @@
+name: Étude - ancrage et nombre de jeux (paquet 342)
+
+# 22/11/2026 — paquet 342 : l'ancrage sur le % affiché déforme-t-il le nombre de jeux ? Règle écrite dans l'en-tête de
+# simulateur/etude_ancrage.py. Données : nos propres pronostics figés (journal) et leurs résultats, rien de
+# reconstruit. Chaque lundi, le jugement grandit ; rien n'est conclu avant 1 000 matchs jugés par circuit.
+# N'écrit que simulateur/rapport_ancrage.json : rien ne change dans les pronostics. 0 requête d'API.
+on:
+  schedule:
+    - cron: '23 5 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+
+concurrency:
+  group: simulateur
+  cancel-in-progress: false
+
+jobs:
+  etude:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+          filter: blob:none
+          sparse-checkout: |
+            /simulateur/
+            /Tennis_Edge_Lab/live/pronostics_resultats.json
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - name: Apprendre avant le 08/11/2026, juger ensuite (ATP, WTA, Challenger)
+        run: |
+          set -euo pipefail
+          python simulateur/etude_ancrage.py . | tee /tmp/ancrage.log
+          cp simulateur/rapport_ancrage.json /tmp/rapport_ancrage.json
+          echo '### Ancrage et nombre de jeux (paquet 342)' >> "$GITHUB_STEP_SUMMARY"
+          sed 's/^/    /' /tmp/ancrage.log >> "$GITHUB_STEP_SUMMARY"
+      - name: Publier le rapport (sans écraser le travail des autres)
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          for i in 1 2 3 4 5 6; do
+            git fetch -q origin main
+            git reset -q --hard origin/main
+            cp /tmp/rapport_ancrage.json simulateur/rapport_ancrage.json
+            git add -- simulateur/rapport_ancrage.json
+            if git diff --cached --quiet; then echo 'Rien de nouveau.'; exit 0; fi
+            git commit -q -m 'Étude 342 : ancrage et nombre de jeux (rapport)'
+            if git push origin HEAD:main; then echo '✅ publié'; exit 0; fi
+            sleep $((i * 10))
+          done
+          echo '::error::Push impossible après 6 essais'; exit 1
