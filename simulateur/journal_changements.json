@@ -1643,6 +1643,14 @@
    "paquet": 332,
    "quoi": "SONDE MATCHSTAT CORRIGÉE (paquet 332, outil interne). Premier passage : la liste « fixtures » ne donne que les matchs à venir (0 match pour les jours passés) et la formule gratuite n'offre que 50 requêtes par mois. La sonde part maintenant de deux tournois connus (un Challenger, un tournoi WTA) : 2 requêtes par tournoi, 6 au plus.",
    "garde_fou": "Lecture seule, rien n'est commité ; arrêt sous 30 requêtes restantes."
+  },
+  {
+   "date": "2026-11-22",
+   "statut": "en_service",
+   "prive": true,
+   "paquet": 333,
+   "quoi": "RATTRAPAGE DE L'HISTORIQUE ATP/WTA (paquet 333, demande de Lucas). Sonde du 22/11 : TennisApi a les statistiques et le point par point des matchs ATP et WTA dès 2019, mais les Challengers de l'historique seulement par endroits. Nouveau workflow « Historique ATP/WTA » : 3 passages par jour, feuilles puis point par point, du 31 mai 2026 en remontant jusqu'au 1er janvier 2018, rangés à part dans historique/. Les trois jours d'essai (2019-05-08, 2021-05-12, 2023-05-10) quittent feuilles/ pour historique/.",
+   "garde_fou": "Aucun script de l'algo ne lit historique/ : les feuilles quotidiennes restent « les matchs après l'archive », rien ne change dans les %. Le rattrapage s'arrête dès qu'il reste 7 000 requêtes dans la journée (la collecte quotidienne et le direct gardent leur quota). Une étude qui utilisera l'historique sera jugée avec la règle d'audit."
   }
  ]
 }

@@ -1,0 +1,105 @@
+name: Historique ATP/WTA (TennisApi, rattrapage)
+
+# 22/11/2026 (paquet 333, demande de Lucas) — rattrapage des feuilles de match ATP et WTA du 1er janvier 2018 au
+# 31 mai 2026 (les feuilles quotidiennes commencent le 1er juin 2026), puis de leur point par point.
+# Sonde du 22/11 : ATP et WTA ont leurs statistiques et leur point par point dès 2019 ; les Challengers de l'historique
+# seulement par endroits (0 sur 5 tournois en 2019, 2 sur 2 en 2021, 0 sur 4 en 2023) : ils ne sont pas demandés.
+#
+# RANGEMENT À PART : historique/feuilles/ et historique/feuilles_points/. Aucun script de l'algo ne lit ce dossier :
+# les feuilles quotidiennes (feuilles/) restent « les matchs après l'archive ». Une étude qui s'en servira sera jugée
+# avec la règle d'audit habituelle.
+#
+# QUOTA : TennisApi Pro, 15 000 requêtes par jour, partagées avec le direct du site et la collecte quotidienne.
+# Le rattrapage s'arrête dès qu'il reste 7 000 requêtes (la collecte quotidienne s'arrête à 1 500, son point par point
+# à 6 000) : il ne prend que le surplus. 3 passages par jour, 3 000 requêtes de feuilles + 2 000 de point par point au
+# plus chacun. Les jours les plus récents d'abord ; un jour complet n'est jamais redemandé ; quand tout est fait, les
+# passages ne font plus qu'une vérification (0 requête de feuille). Durée estimée : 2 à 3 semaines.
+on:
+  schedule:
+    - cron: '17 1 * * *'
+    - cron: '17 9 * * *'
+    - cron: '17 21 * * *'
+  workflow_dispatch:
+    inputs:
+      debut:
+        description: 'Premier jour (défaut 2018-01-01)'
+        default: '2018-01-01'
+      fin:
+        description: 'Dernier jour (défaut 2026-05-31)'
+        default: '2026-05-31'
+      budget:
+        description: 'Requêtes de feuilles au plus pour ce passage'
+        default: '3000'
+      points:
+        description: 'Requêtes de point par point au plus (0 = rien)'
+        default: '2000'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: historique-feuilles
+  cancel-in-progress: false
+
+jobs:
+  historique:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+          filter: blob:none
+          sparse-checkout: |
+            /scripts/feuilles_match.py
+            /scripts/points_match.py
+            /scripts/historique_feuilles.py
+            /feuilles/
+            /feuilles_points/
+            /historique/
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - name: Ranger les jours d'avant juin 2026 trouvés dans feuilles/ (une seule fois, 0 requête)
+        run: python scripts/historique_feuilles.py --ranger
+      - name: Feuilles ATP et WTA (les plus récentes d'abord)
+        timeout-minutes: 60
+        env:
+          RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
+          FEUILLES_DOSSIER: historique/feuilles
+          FEUILLES_BUDGET: ${{ github.event.inputs.budget || '3000' }}
+          FEUILLES_RESERVE: '7000'
+          FEUILLES_DUREE: '0'
+          FEUILLES_SANS_FORCER: '1'
+          FEUILLES_RECENT_D_ABORD: '1'
+          DEBUT: ${{ github.event.inputs.debut || '2018-01-01' }}
+          FIN: ${{ github.event.inputs.fin || '2026-05-31' }}
+        run: python scripts/feuilles_match.py "$DEBUT" "$FIN" "atp,wta"
+      - name: Point par point de l'historique (les plus récents d'abord)
+        if: always()
+        timeout-minutes: 45
+        env:
+          RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
+          FEUILLES_DOSSIER: historique/feuilles
+          FEUILLES_RESERVE: '7000'
+          POINTS: ${{ github.event.inputs.points || '2000' }}
+        run: if [ "$POINTS" != "0" ]; then python scripts/points_match.py "$POINTS"; fi
+      - name: Bilan
+        if: always()
+        run: python scripts/historique_feuilles.py --bilan
+      - name: Publier (même après une interruption)
+        if: always()
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A -- historique feuilles feuilles_points
+          if git diff --cached --quiet; then echo 'Rien de nouveau.'; exit 0; fi
+          git commit -q -m "Historique ATP/WTA $(date -u +%FT%TZ)"
+          for i in 1 2 3 4 5; do
+            git pull --rebase origin main || { git rebase --abort || true; echo '::error::Conflit avec main'; exit 1; }
+            if git push origin HEAD:main; then exit 0; fi
+            sleep $((i * 10))
+          done
+          echo '::error::Push impossible après 5 essais'; exit 1
