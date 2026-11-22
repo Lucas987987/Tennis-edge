@@ -1718,6 +1718,13 @@
    "paquet": 342,
    "quoi": "ANCRAGE ET NOMBRE DE JEUX (paquet 342), ATP, WTA et Challenger, sur nos propres pronostics figés : faut-il relever le service des deux joueurs quand l'ancrage les écarte, ou partout ? Appris avant le 08/11, jugé ensuite. Pas encore jugeable (Challenger : 655 matchs jugés sur 1 000) ; l'étude se refait chaque lundi.",
    "garde_fou": "Le % de victoire ne change jamais (réancrage) ; rien n'est conclu avant 1 000 matchs jugés par circuit ; gain ≥ 0,001, même sens sur les deux périodes, Holm sur 6 cases ; rapport seulement."
+  },
+  {
+   "date": "2026-11-22",
+   "statut": "etude",
+   "paquet": 343,
+   "quoi": "PISTE SALLE (paquet 343), ATP, WTA et Challenger : en salle, les serveurs gagnent bien plus de points que prévu (environ +0,4 à +1,0 point, contre −0,4 à 0 en plein air), mais la vitesse mesurée dans l'édition en cours, déjà utilisée, en rattrape presque tout dès le 2e tour. Ajouter « en salle » au service : gain de log loss par point de 0,00001 à 0,00002, sous le seuil de 0,001. NON RETENU, rien ne change.",
+   "garde_fou": "ATP/WTA appris 2018–2022 et jugés 2023 → mai 2026 ; Challenger appris juin → septembre 2026 et jugé depuis octobre sur les feuilles (pas d'information « en salle » dans l'archive) ; Holm sur 3 circuits ; rapport seulement."
   }
  ]
 }

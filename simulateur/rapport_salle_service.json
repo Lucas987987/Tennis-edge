@@ -1,0 +1,144 @@
+{
+ "genere_le": "2026-11-22T14:24:00+00:00",
+ "regle": "log loss par point au service ; ATP/WTA appris 2018–2022, jugés 2023 → mai 2026 ; Challenger appris juin → septembre 2026, jugé depuis octobre (feuilles) ; retenu si gain ≥ 0,001 sur ≥ 1 000 matchs jugés dont ≥ 300 en salle, même sens, Holm sur 3 circuits ; rapport seulement",
+ "diagnostic": {
+  "ATP": {
+   "apprentissage": {
+    "plein_air": {
+     "matchs": 9850,
+     "ecart_service_pts": -0.35
+    },
+    "salle": {
+     "matchs": 2041,
+     "ecart_service_pts": 0.38
+    }
+   },
+   "jugement": {
+    "plein_air": {
+     "matchs": 9612,
+     "ecart_service_pts": -0.36
+    },
+    "salle": {
+     "matchs": 1563,
+     "ecart_service_pts": 0.99
+    }
+   }
+  },
+  "WTA": {
+   "apprentissage": {
+    "plein_air": {
+     "matchs": 10275,
+     "ecart_service_pts": -0.22
+    },
+    "salle": {
+     "matchs": 932,
+     "ecart_service_pts": 0.56
+    }
+   },
+   "jugement": {
+    "plein_air": {
+     "matchs": 10127,
+     "ecart_service_pts": -0.36
+    },
+    "salle": {
+     "matchs": 533,
+     "ecart_service_pts": 0.6
+    }
+   }
+  },
+  "CH": {
+   "apprentissage": {
+    "plein_air": {
+     "matchs": 4046,
+     "ecart_service_pts": 0.18
+    },
+    "salle": {
+     "matchs": 122,
+     "ecart_service_pts": 1.28
+    }
+   },
+   "jugement": {
+    "salle": {
+     "matchs": 631,
+     "ecart_service_pts": 0.89
+    },
+    "plein_air": {
+     "matchs": 1346,
+     "ecart_service_pts": -0.03
+    }
+   }
+  }
+ },
+ "cases": {
+  "ATP": {
+   "n_app": 11891,
+   "n_jug": 9307,
+   "n_jug_salle": 1244,
+   "coefs": {
+    "COURS": [
+     -0.0051,
+     0.8111
+    ],
+    "SALLE": [
+     -0.009,
+     0.775,
+     0.0241
+    ]
+   },
+   "salle_en_points_de_service": 0.57,
+   "gain_app": 1e-05,
+   "gain_jug": 2e-05,
+   "p_jug": 1.8333919159318935e-05,
+   "significatif_holm": true,
+   "retenu": false,
+   "raison": "gain jugé 2e-05 < 0.001"
+  },
+  "WTA": {
+   "n_app": 11207,
+   "n_jug": 8548,
+   "n_jug_salle": 485,
+   "coefs": {
+    "COURS": [
+     -0.0038,
+     0.6397
+    ],
+    "SALLE": [
+     -0.0063,
+     0.6108,
+     0.0272
+    ]
+   },
+   "salle_en_points_de_service": 0.64,
+   "gain_app": 1e-05,
+   "gain_jug": 1e-05,
+   "p_jug": 0.044070076073668085,
+   "significatif_holm": false,
+   "retenu": false,
+   "raison": "gain jugé 1e-05 < 0.001 ; non significatif après Holm"
+  },
+  "CH": {
+   "n_app": 4168,
+   "n_jug": 1977,
+   "n_jug_salle": 631,
+   "coefs": {
+    "COURS": [
+     0.0066,
+     0.9555
+    ],
+    "SALLE": [
+     0.0062,
+     0.9446,
+     0.018
+    ]
+   },
+   "salle_en_points_de_service": 0.42,
+   "gain_app": 0.0,
+   "gain_jug": 1e-05,
+   "p_jug": 0.19646822800464073,
+   "significatif_holm": false,
+   "retenu": false,
+   "raison": "gain jugé 1e-05 < 0.001 ; pas le même sens sur les deux périodes ; non significatif après Holm"
+  }
+ },
+ "duree_s": 24
+}
