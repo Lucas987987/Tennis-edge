@@ -44,7 +44,9 @@ GROUPES = {
     'signaux': ['h18_signal_log.jsonl', 'h18_signal_state.json', 'h19_signal_log.jsonl', 'h19_signal_state.json',
                 'h20_signal_log.jsonl', 'h20_signal_state.json'],
     # écrits par lab_quotidien.yml (verdicts des canaux privés)
-    'lab': ['Tennis_Edge_Lab/live/valeur.json', 'Tennis_Edge_Lab/live/h20.json'],
+    'lab': ['Tennis_Edge_Lab/live/valeur.json', 'Tennis_Edge_Lab/live/h20.json',
+            # 22/11/2026 (paquet 335) : « le prix tient-il après l'alerte ? » (CLV du canal par circuit) — privé
+            'Tennis_Edge_Lab/live/delai_alertes.json'],
     # écrit par pronostics_quotidien.yml (pronostic complet du jour : réservé)
     'pronostics': ['Tennis_Edge_Lab/live/pronostics.json'],
 }
@@ -62,6 +64,8 @@ GROUPES['suivi'] = ['paper_trades_match.jsonl', 'paper_trades_set1.jsonl', 'pape
 PROTEGES = {'suivi'}
 BASE = '.coffre_base'
 GROUPES['tous'] = [f for k in ('signaux', 'lab', 'pronostics') for f in GROUPES[k]]
+# 335 : ce que pages.yml rapatrie pour le Lab (servi ensuite seulement derrière la connexion)
+GROUPES['lab_site'] = ['Tennis_Edge_Lab/live/delai_alertes.json']
 # servis au Lab par le worker « algo » (nom de fichier seul, sans dossier)
 SERVIS = sorted({os.path.basename(f) for f in GROUPES['tous']})
 

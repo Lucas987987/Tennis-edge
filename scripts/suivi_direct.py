@@ -354,6 +354,59 @@ def bloc(paris, clv_items=None):
     }
 
 
+# 22/11/2026 (paquet 335, Lucas : « certaines hypothèses sont bonnes en fonction des circuits ») — chaque hypothèse
+# est aussi lue ATP / WTA / Challenger. Règle écrite avant de regarder : les trois circuits sont toujours affichés côte à
+# côte (aucun choisi après coup) ; un circuit n'est lu qu'à partir de 30 détections avec clôture ; la CLV est corrigée
+# de Holm sur TOUTES les cases (hypothèse × circuit) lues, puisqu'on regarde 3 fois plus de cases.
+CIRCUITS = ('ATP', 'WTA', 'Challenger')
+N_CIRCUIT = 30
+
+
+def circuit(tournoi):
+    v = f" {str(tournoi or '').lower()} "
+    if 'challenger' in v:
+        return 'Challenger'
+    if 'itf' in v:
+        return 'ITF'
+    if ' wta' in v or re.search(r'\bwomen', v):
+        return 'WTA'
+    if ' atp' in v or re.search(r'\bmen\b', v):
+        return 'ATP'
+    return 'inconnu'
+
+
+def par_circuit(paris, clv_all):
+    """paris et clv_all portent le circuit : un bloc par circuit."""
+    out = {}
+    for c in CIRCUITS:
+        pc = [p for p in paris if p.get('circuit') == c]
+        cc = [(v, j) for v, j, k in clv_all if k == c]
+        b = bloc(pc, cc)
+        b['lu'] = (b.get('clv_n') or 0) >= N_CIRCUIT
+        out[c] = b
+    return out
+
+
+def holm_circuits(blocs):
+    """blocs : [dict par_circuit] ; p de Holm sur toutes les cases lues, puis lecture de la CLV."""
+    cases = [b for pc in blocs for b in pc.values() if b.get('lu') and b.get('clv_pin_p') is not None]
+    cases.sort(key=lambda b: b['clv_pin_p'])
+    m, prec = len(cases), 0.0
+    for i, b in enumerate(cases):
+        prec = max(prec, min(1.0, (m - i) * b['clv_pin_p']))
+        b['clv_p_holm'] = round(prec, 4)
+    for pc in blocs:
+        for b in pc.values():
+            if not b.get('lu'):
+                b['lecture'] = f"trop tôt (moins de {N_CIRCUIT} clôtures)"
+            elif b.get('clv_p_holm') is not None and b['clv_p_holm'] < 0.05:
+                b['lecture'] = 'CLV positive (Holm)'
+            elif b.get('clv_pin_ic95') and b['clv_pin_ic95'][1] < 0:
+                b['lecture'] = 'CLV négative'
+            else:
+                b['lecture'] = 'ne tranche pas'
+
+
 def garde(lignes, n_denouees, now):
     """GARDE DE VERROUILLAGE (16/10/2026, approuvée par Lucas).
 
@@ -401,13 +454,15 @@ def verdicts(root=ROOT, vr=None, ajouts=None, maintenant=None):
                 n_dbl += 1
             else:
                 n_ech += 1
-            clv_all.append((a['clv_pin'], str(r.get('detecte_le') or r.get('signale_le'))[:10]))
+            circ = circuit(r.get('tournoi'))
+            clv_all.append((a['clv_pin'], str(r.get('detecte_le') or r.get('signale_le'))[:10], circ))
             if a['denoue']:
                 paris.append({'cote': float(r['cote']), 'book': books.normalize(r.get('book')),
                               'gagne': a['gagne'], 'pnl': a['pnl'], 'clv_pin': a['clv_pin'],
                               'jour': str(r.get('detecte_le') or r.get('signale_le'))[:10],
-                              'lead_min': r.get('lead_min')})
-        o = bloc(paris, clv_all)
+                              'lead_min': r.get('lead_min'), 'circuit': circ})
+        o = bloc(paris, [(v, j) for v, j, _ in clv_all])
+        o['par_circuit'] = par_circuit(paris, clv_all)
         o.update({'n_detectees': len(d['lignes']), 'n_envoyees': n_env, 'n_doublons': n_dbl,
                   'n_non_envoyees_autres': n_ech, 'n_denouees': len(paris)})
         o.update(garde(d['lignes'], len(paris), now))
@@ -453,6 +508,7 @@ def verdicts(root=ROOT, vr=None, ajouts=None, maintenant=None):
             'controle_reconstruction': controle,
             'statut': o['statut'],
         })
+    holm_circuits([h['out_of_sample']['par_circuit'] for h in hyps])
     doc = {'schema_version': 1, 'genere_le': now.isoformat(timespec='seconds').replace('+00:00', 'Z'),
            'source': 'h*_signal_log.jsonl (décision) + suivi_direct/resultats.json (ajouts)',
            'regles_de_comptage': [
@@ -497,12 +553,16 @@ def canal_miser(root, ajouts, maintenant=None):
         a = ajouts.pour(dict(r, _side=r.get('side')))
         jour = str(r.get('signale_le'))[:10]
         table[r['uid']] = {k: a[k] for k in ('gagne', 'pnl', 'pin_close', 'pin_close_adv', 'clv_pin', 'source_resultat')}
-        clv_all.append((a['clv_pin'], jour))
+        circ = circuit(r.get('tournoi'))
+        clv_all.append((a['clv_pin'], jour, circ))
         if a['denoue']:
             paris.append({'cote': float(r['cote']), 'book': books.normalize(r.get('book')), 'gagne': a['gagne'],
-                          'pnl': a['pnl'], 'clv_pin': a['clv_pin'], 'jour': jour, 'lead_min': r.get('lead_min')})
-    b = bloc(paris, clv_all)
-    vals = sorted(c for c, _ in clv_all if c is not None)
+                          'pnl': a['pnl'], 'clv_pin': a['clv_pin'], 'jour': jour, 'lead_min': r.get('lead_min'),
+                          'circuit': circ})
+    b = bloc(paris, [(v, j) for v, j, _ in clv_all])
+    b['par_circuit'] = par_circuit(paris, clv_all)          # 335 : ATP / WTA / Challenger
+    holm_circuits([b['par_circuit']])
+    vals = sorted(c for c, _, _ in clv_all if c is not None)
     b['clv_mediane'] = r1(vals[len(vals) // 2] if len(vals) % 2 else (vals[len(vals) // 2 - 1] + vals[len(vals) // 2]) / 2) if vals else None
     b.update(garde(lignes, len(paris), now))
     return {'schema_version': 1, 'genere_le': now.isoformat(timespec='seconds').replace('+00:00', 'Z'),
