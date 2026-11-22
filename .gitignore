@@ -52,6 +52,17 @@ registres_marches/.volatil_*
 /Tennis_Edge_Lab/live/pronostics.json
 /simulateur/rapport_roi_algo.json
 /simulateur/rapport_desaccords.json
+# 22/11/2026 (paquet 334) : journaux de suivi et CLV (groupe « suivi » de scripts/coffre.py) + copies de base du coffre
+/paper_trades_match.jsonl
+/paper_trades_set1.jsonl
+/paper_trades_set2.jsonl
+/paper_trades_canal.jsonl
+/paper_canal_report.json
+/canal_clv_detail.csv
+/canal_clv_exclus.csv
+/canal_clv_detail_avant_correction_2026-09-13.csv
+/clv_vs_median_report.json
+/.coffre_base/
 # <<< coffre privé
 
 # Bilans descriptifs régénérés à chaque run ; seule leur fusion dans algo/donnees.json est publiée.

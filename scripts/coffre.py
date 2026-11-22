@@ -18,7 +18,16 @@ Le site public n'en reçoit rien ; Lucas les lit dans le Lab par le worker « al
 
 Limite assumée : l'historique git (versions passées de ces fichiers) reste lisible — le réécrire demanderait un
 push forcé, exclu sur ce dépôt.
-Usage : python scripts/coffre.py pull|push|retirer [--groupe signaux|lab|pronostics|tous]
+22/11/2026 (paquet 334, Lucas : « basculer un maximum de choses en privé ») — groupe « suivi » : les journaux de suivi
+(paper_trades_*), le CLV du canal et le rapport CLV contre la médiane. Ces fichiers sont RÉÉCRITS (positions qui se
+ferment, lignes recalculées), pas seulement prolongés : l'union de lignes les abîmerait. Pour ce groupe (PROTEGES) :
+  pull  garde une copie de base (.coffre_base/) et son ETag ;
+  push  n'écrit que si le coffre n'a pas bougé depuis le pull (If-Match) ; s'il a bougé, fusion à trois voies
+        (git merge-file : base, la nôtre, celle du coffre), comme le faisait git entre deux workflows ; en cas de
+        conflit réel, la version du coffre est gardée et un avertissement est affiché (rien n'est écrasé) ;
+        un fichier qui n'a PAS été rapatrié dans ce run n'est jamais envoyé par-dessus le coffre ;
+  rendre remet la version git des fichiers encore suivis (avant les opérations git d'un workflow qui n'a fait que lire).
+Usage : python scripts/coffre.py pull|push|retirer|rendre [--groupe signaux|lab|pronostics|suivi|tous]
 """
 import argparse
 import hashlib
@@ -44,6 +53,14 @@ GROUPES = {
 GROUPES['lab_entrees'] = ['h19_signal_log.jsonl']
 # 28/10/2026 : rapport ROI (règles R1/R2) — interne, jamais dans le dépôt public ; écrit par pronostic.yml
 GROUPES['roi'] = ['simulateur/rapport_roi_algo.json', 'simulateur/rapport_desaccords.json']
+# 22/11/2026 (paquet 334) : journaux de suivi et CLV — écrits par courbes_alertes.yml (paper_trades_*) et
+# steam_pipeline.yml (paper_trades_*, canal_clv_*, clv_vs_median_report) ; lus par le Lab, pages.yml, lab_quotidien,
+# suivi_une_par_match, video_resume, polymarket_studies, freeze_thresholds
+GROUPES['suivi'] = ['paper_trades_match.jsonl', 'paper_trades_set1.jsonl', 'paper_trades_set2.jsonl',
+                    'paper_trades_canal.jsonl', 'paper_canal_report.json', 'canal_clv_detail.csv', 'canal_clv_exclus.csv',
+                    'canal_clv_detail_avant_correction_2026-09-13.csv', 'clv_vs_median_report.json']
+PROTEGES = {'suivi'}
+BASE = '.coffre_base'
 GROUPES['tous'] = [f for k in ('signaux', 'lab', 'pronostics') for f in GROUPES[k]]
 # servis au Lab par le worker « algo » (nom de fichier seul, sans dossier)
 SERVIS = sorted({os.path.basename(f) for f in GROUPES['tous']})
@@ -83,6 +100,112 @@ def pull(fichiers, r2):
             os.makedirs(os.path.dirname(f) or '.', exist_ok=True)
             r2_io._write_atomic(f, got[0])
         print(f"  coffre → {f} ({len(got[0])} octets)")
+
+
+def _etats(base=BASE):
+    try:
+        import json
+        with open(os.path.join(base, 'etags.json'), encoding='utf-8') as f:
+            return json.load(f)
+    except (OSError, ValueError):
+        return {}
+
+
+def _ecrire_etats(etats, base=BASE):
+    import json
+    os.makedirs(base, exist_ok=True)
+    with open(os.path.join(base, 'etags.json'), 'w', encoding='utf-8') as f:
+        json.dump(etats, f, ensure_ascii=False, indent=1, sort_keys=True)
+
+
+def pull_protege(fichiers, r2, base=BASE):
+    """Comme pull, en gardant la base (contenu + ETag) pour la fusion du push."""
+    etats = _etats(base)
+    for f in fichiers:
+        got = r2.get_with_etag(cle(f))
+        if got is None:
+            etats[f] = {'etag': None}
+            print(f"  coffre : {f} absent — copie locale gardée{' (absente aussi)' if _lire(f) is None else ''}")
+            continue
+        if _lire(f) != got[0]:
+            os.makedirs(os.path.dirname(f) or '.', exist_ok=True)
+            r2_io._write_atomic(f, got[0])
+        os.makedirs(base, exist_ok=True)
+        r2_io._write_atomic(os.path.join(base, os.path.basename(f)), got[0])
+        etats[f] = {'etag': got[1]}
+        print(f"  coffre → {f} ({len(got[0])} octets)")
+    _ecrire_etats(etats, base)
+
+
+def fusion3(notre, base, leur):
+    """Fusion à trois voies (git merge-file). (octets fusionnés, True) ou (None, False) en cas de conflit."""
+    import tempfile
+    with tempfile.TemporaryDirectory() as d:
+        chemins = []
+        for nom, b in (('notre', notre), ('base', base), ('leur', leur)):
+            p = os.path.join(d, nom)
+            with open(p, 'wb') as fh:
+                fh.write(b)
+            chemins.append(p)
+        r = subprocess.run(['git', 'merge-file', '-p', *chemins], capture_output=True)
+        if r.returncode != 0:
+            return None, False
+        return r.stdout, True
+
+
+def push_protege(fichiers, r2, base=BASE):
+    etats, echecs = _etats(base), 0
+    for f in fichiers:
+        data = _lire(f)
+        if data is None:
+            continue
+        if f not in etats:
+            if r2.get_with_etag(cle(f)) is None:
+                try:
+                    r2.put(cle(f), data, create_only=True, content_type='application/json')
+                    print(f"  {f} → coffre (création, {len(data)} octets)")
+                except r2_io.PreconditionFailed:
+                    print(f"::warning::{f} : créé entre-temps par un autre run — non envoyé")
+            else:
+                print(f"  {f} : pas rapatrié dans ce run — jamais envoyé par-dessus le coffre")
+            continue
+        etag = etats[f].get('etag')
+        b = _lire(os.path.join(base, os.path.basename(f))) if etag else b''
+        if etag and data == b:
+            continue                                     # rien de changé dans ce run
+        for _ in range(5):
+            try:
+                if etag:
+                    r2.put(cle(f), data, if_match=etag, content_type='application/json')
+                else:
+                    r2.put(cle(f), data, create_only=True, content_type='application/json')
+                r2_io._write_atomic(f, data)
+                print(f"  {f} → coffre ({len(data)} octets)")
+                break
+            except r2_io.PreconditionFailed:
+                got = r2.get_with_etag(cle(f))
+                if got is None:
+                    etag, b = None, b''
+                    continue
+                fus, ok = fusion3(data, b or b'', got[0])
+                if not ok:
+                    echecs += 1
+                    print(f"::warning::{f} : modifié en même temps par un autre run, fusion impossible — la version du "
+                          f"coffre est gardée, celle de ce run est perdue pour ce fichier")
+                    break
+                data, b, etag = fus, got[0], got[1]
+        else:
+            echecs += 1
+            print(f"::warning::{f} : envoi au coffre impossible (conflits répétés) — reste local")
+    return echecs
+
+
+def rendre(fichiers):
+    """Remet la version git des fichiers encore suivis (un workflow qui n'a fait que lire, avant ses opérations git)."""
+    suivis = subprocess.run(['git', 'ls-files', '--', *fichiers], capture_output=True, text=True).stdout.split()
+    if suivis:
+        subprocess.run(['git', 'checkout', '--', *suivis], check=False)
+        print(f"  coffre : {len(suivis)} fichier(s) remis dans leur version git (lecture seule)")
 
 
 def push(fichiers, r2):
@@ -135,21 +258,24 @@ def retirer(fichiers, r2, si_present=False):
 
 def main(argv=None):
     ap = argparse.ArgumentParser()
-    ap.add_argument('action', choices=['pull', 'push', 'retirer'])
+    ap.add_argument('action', choices=['pull', 'push', 'retirer', 'rendre'])
     ap.add_argument('--groupe', default='tous', choices=sorted(GROUPES))
     ap.add_argument('--si-present', action='store_true',
                     help="retirer : aussi quand le coffre a une autre version (copie git figée et périmée)")
     a = ap.parse_args(argv)
+    fichiers = GROUPES[a.groupe]
+    if a.action == 'rendre':
+        rendre(fichiers)
+        return 0
     r2 = r2_io.client()
     if r2 is None:
         print('coffre : R2 indisponible — rien à faire (les fichiers restent tels quels).')
         return 0
-    fichiers = GROUPES[a.groupe]
     if a.action == 'pull':
-        pull(fichiers, r2)
+        (pull_protege if a.groupe in PROTEGES else pull)(fichiers, r2)
         return 0
     if a.action == 'push':
-        return 1 if push(fichiers, r2) else 0
+        return 1 if (push_protege if a.groupe in PROTEGES else push)(fichiers, r2) else 0
     retirer(fichiers, r2, si_present=a.si_present)
     return 0
 

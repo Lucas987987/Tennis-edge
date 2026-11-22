@@ -1,5 +1,15 @@
 # .github/workflows/pages.yml
 # Publication GitHub Pages Tennis Edge (incluant Arena V1.9.2)
+#
+# 22/11/2026 (paquet 334, Lucas : « basculer un maximum de choses en privé ») — le dépôt est public et Pages publiait
+# TOUT _site à tout le monde, Lab compris (CLV, journaux de suivi, recherches) et l'ancien tableau de bord avec ses
+# fichiers de cotes. Désormais :
+#   1. _site est construit comme avant ;
+#   2. il part dans le bucket R2 privé (scripts/publier_r2.py) : algo/ et arena/ sous site/ (public), tout le reste
+#      sous prive/site/ — servi par le worker « algo » : le site public sur gamesetalgo.com, le Lab et le tableau sur
+#      algo.tennis-edge.workers.dev/lab/ et /tableau/ SEULEMENT après connexion avec la clé privée ;
+#   3. GitHub Pages ne garde que algo/ (secours du worker) et arena/ (jeu public). Si l'envoi à R2 échoue, Pages garde
+#      tout, comme avant : le Lab n'est jamais perdu.
 name: Deploy Pages
 on:
   push:
@@ -120,6 +130,9 @@ jobs:
             Tennis_Edge_Lab/registry
             scripts/validation_report.py
             scripts/site_leger.py
+            scripts/publier_r2.py
+            scripts/r2_io.py
+            scripts/coffre.py
             set_results.json
             moves_detail_hist.csv
             moves_detail.csv
@@ -139,6 +152,13 @@ jobs:
             h16_signal_log.jsonl
             h16b_signal_log.jsonl
             h17_signal_log.jsonl
+      # 22/11/2026 (paquet 334) : journaux de suivi et CLV du canal, au coffre privé (R2), lus par le Lab
+      - name: Coffre privé — rapatrier (journaux de suivi, lecture seule)
+        env:
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+        run: python scripts/coffre.py pull --groupe suivi || true
       - name: Reconstruire les données Tennis Edge Lab
         env:
           LAB_CHECK_PREVIOUS: '1'
@@ -193,8 +213,22 @@ jobs:
           test "$(wc -c < algo/vendor/Soldier.glb)" -gt 10000
           file algo/vendor/Soldier.glb
           du -h algo/vendor/*
+      - name: Version précédente des données du Lab (R2, sinon GitHub Pages)
+        id: precedent
+        env:
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+        run: |
+          python scripts/publier_r2.py telecharger --prefixe prive/site/Tennis_Edge_Lab/live/ --vers /tmp/lab_precedent || true
+          if ls /tmp/lab_precedent/*.json >/dev/null 2>&1; then
+            echo "base=file:///tmp/lab_precedent" >> "$GITHUB_OUTPUT"
+          else
+            echo "base=https://${GITHUB_REPOSITORY_OWNER}.github.io/${{ github.event.repository.name }}/Tennis_Edge_Lab/live" >> "$GITHUB_OUTPUT"
+          fi
       - name: Construire _site
         env:
+          LAB_PRECEDENT: ${{ steps.precedent.outputs.base }}
           GITHUB_EVENT_REPO_NAME: ${{ github.event.repository.name }}
           DAILY_RUN_AT: ${{ steps.daily.outputs.at }}
         run: |
@@ -268,7 +302,7 @@ jobs:
             cp "Tennis_Edge_Lab/$f" "_site/Tennis_Edge_Lab/$f"
           done
           python Tennis_Edge_Lab/publish_guard.py --root . --site _site \
-            --previous-base "https://${GITHUB_REPOSITORY_OWNER}.github.io/${GITHUB_EVENT_REPO_NAME}/Tennis_Edge_Lab/live" \
+            --previous-base "${LAB_PRECEDENT}" \
             --daily-run-at "${DAILY_RUN_AT}"
           for x in explorateur_alertes explorateur_histo explorateur_matchs explorateur_detections; do
             if [ -f "Tennis_Edge_Lab/live/$x.json.gz" ]; then
@@ -290,9 +324,29 @@ jobs:
           echo "--- contenu publié ---"
           du -sh _site
           ls -la _site
+      - name: Envoyer le site à Cloudflare R2 (public et privé)
+        id: r2
+        continue-on-error: true
+        env:
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+        run: python scripts/publier_r2.py envoyer --site _site
+      - name: Ne garder sur GitHub Pages que le site public (algo/ et arena/)
+        if: steps.r2.outcome == 'success'
+        run: |
+          set -e
+          mkdir -p _pages
+          touch _pages/.nojekyll
+          cp -R _site/algo _pages/
+          cp -R _site/arena _pages/
+          echo "Pages : $(find _pages -type f | wc -l) fichiers publics (le Lab et le tableau sont servis par Cloudflare)."
+      - name: Avertir si R2 a échoué (Pages garde tout, comme avant)
+        if: steps.r2.outcome != 'success'
+        run: echo "::warning::Envoi à R2 impossible ce passage — GitHub Pages publie encore tout le site."
       - uses: actions/configure-pages@v6
       - uses: actions/upload-pages-artifact@v5
         with:
-          path: _site
+          path: ${{ steps.r2.outcome == 'success' && '_pages' || '_site' }}
       - id: deployment
         uses: actions/deploy-pages@v5

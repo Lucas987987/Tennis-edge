@@ -25,9 +25,18 @@ jobs:
             /paper_trades_match.jsonl
             /paper_trades_set1.jsonl
             /scripts/suivi_une_par_match.py
+            /scripts/coffre.py
+            /scripts/r2_io.py
       - uses: actions/setup-python@v6
         with:
           python-version: '3.11'
+      # 22/11/2026 (paquet 334) : les journaux de suivi sont au coffre privé (R2), plus dans le dépôt public
+      - name: Coffre privé — rapatrier (journaux de suivi, lecture seule)
+        env:
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+        run: python scripts/coffre.py pull --groupe suivi || true
       - name: Bilan (Telegram privé)
         env:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
