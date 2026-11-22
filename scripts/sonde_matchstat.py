@@ -75,6 +75,42 @@ def joueurs(m):
     return tuple(out)
 
 
+def tous_les_matchs(doc):
+    """Tous les objets « match » d'une réponse (les résultats d'un tournoi sont rangés par tour)."""
+    out = []
+
+    def voir(x):
+        if isinstance(x, dict):
+            j = joueurs(x)
+            if (j[0] and j[2]) or 'match_winner' in x:
+                out.append(x)
+                return
+            for v in x.values():
+                voir(v)
+        elif isinstance(x, list):
+            for v in x:
+                voir(v)
+    voir(doc)
+    return out or matchs_de(doc)
+
+
+def echantillons_connus(fichier='tournois_ids.json', annee=None):
+    """Un Challenger et un tournoi WTA (hors ITF) parmi les tournois en cours ou récents déjà connus."""
+    try:
+        d = json.load(open(fichier, encoding='utf-8'))
+    except (OSError, ValueError):
+        return ()
+    annee = str(annee or dt.date.today().year)
+    T = [(k, v) for k, v in d.items() if isinstance(v, dict) and v.get('id') and v.get('tour')]
+    ch = next(((k, v) for k, v in T if v['tour'] == 'atp' and 'challenger' in k.lower()), None)
+    wta = next(((k, v) for k, v in T if v['tour'] == 'wta' and not re.search(r'\bitf\b|\bw\d{2,3}\b', k, re.I)), None)
+    pr = next(((k, v) for k, v in T if v['tour'] == 'atp' and 'challenger' not in k.lower()), None)
+    out = []
+    for (k, v), quoi in ((ch, 'challenger'), (wta or pr, 'principal')):
+        out.append((v['tour'], annee, quoi, v['id'], k))
+    return tuple(out) if ch or wta or pr else ()
+
+
 def tournoi_de(m):
     t = m.get('tournament') if isinstance(m.get('tournament'), dict) else {}
     return t.get('id') or m.get('tournamentId') or m.get('tournament_id'), (t.get('name') or m.get('tournamentName') or '')
@@ -116,7 +152,8 @@ def valeurs_stats(stats):
 
 
 # ------------------------------------------------------------------ Sackmann (comparaison et volumes)
-def charger_sackmann(dossier, annees=range(2018, 2026)):
+def charger_sackmann(dossier, annees=None):
+    annees = annees or range(2018, dt.date.today().year + 1)
     lignes = []
     if not dossier or not os.path.isdir(dossier):
         return lignes
@@ -136,6 +173,8 @@ def volumes(lignes):
     v = collections.defaultdict(lambda: {'matchs': 0, 'tournois': set(), 'avec_stats': 0})
     for r in lignes:
         f, niv = r['_fichier'], r.get('tourney_level', '')
+        if f[-8:-4] > '2025':
+            continue
         if f.startswith('atp_matches_qual_chall'):
             if niv != 'C':
                 continue
@@ -181,41 +220,49 @@ def comparer(vals, ligne, j1_gagnant):
 
 
 # ------------------------------------------------------------------ la sonde
-def sonder(cle, budget=12, sackmann=None, chemins=(), ouvrir=None, echantillons=ECHANTILLONS):
+def sonder(cle, budget=6, sackmann=None, chemins=(), ouvrir=None, echantillons=None):
+    echantillons = echantillons or echantillons_connus() or ECHANTILLONS
     c = Client(HOTE, cle, ouvrir, max_req=budget)
     S = charger_sackmann(sackmann)
     rep = {'genere_le': dt.datetime.now(dt.timezone.utc).isoformat(timespec='seconds'), 'budget': budget,
            'reserve_quota': RESERVE, 'echantillons': [], 'chemin_stats': None, 'stats_dans_resultats_tournoi': False,
            'point_par_point': None}
-    for tour, jour, quoi in echantillons:
+    for ech in echantillons:
         if not peut(c):
             break
+        tour, jour, quoi = ech[:3]
         e = {'circuit': tour, 'jour': jour, 'cherche': quoi}
         rep['echantillons'].append(e)
-        fin = (dt.date.fromisoformat(jour) + dt.timedelta(days=1)).isoformat()
-        code, doc = c.get(f"/tennis/v2/{tour}/fixtures/{jour}/{fin}?include=tournament&filter=PlayerGroup:singles&pageSize=100&pageNo=1")
-        e['matchs_du_jour'] = len(matchs_de(doc)) if code == 200 else 0
-        e['code_liste'] = code
-        M = matchs_de(doc) if code == 200 else []
-        if quoi == 'challenger':
-            M = [m for m in M if re.search(r'challenger', tournoi_de(m)[1] + ' ' + texte(m), re.I)] or M
+        if len(ech) > 3:
+            # 331b : un tournoi connu (tournois_ids.json). La liste « fixtures » ne donne que les matchs à venir :
+            # au premier essai, elle a répondu 200 avec 0 match pour les jours passés (3 requêtes perdues).
+            m, tid, tnom = {}, ech[3], ech[4] if len(ech) > 4 else ''
         else:
-            M = [m for m in M if not re.search(r'challenger|\bitf\b|\bw\d{2,3}\b|\bm\d{2}\b', tournoi_de(m)[1], re.I)] or M
-        if not M:
-            continue
-        m = M[0]
-        tid, tnom = tournoi_de(m)
+            fin = (dt.date.fromisoformat(jour) + dt.timedelta(days=1)).isoformat()
+            code, doc = c.get(f"/tennis/v2/{tour}/fixtures/{jour}/{fin}?include=tournament&filter=PlayerGroup:singles&pageSize=100&pageNo=1")
+            e['matchs_du_jour'] = len(matchs_de(doc)) if code == 200 else 0
+            e['code_liste'] = code
+            M = matchs_de(doc) if code == 200 else []
+            if quoi == 'challenger':
+                M = [m for m in M if re.search(r'challenger', tournoi_de(m)[1] + ' ' + texte(m), re.I)] or M
+            else:
+                M = [m for m in M if not re.search(r'challenger|\bitf\b|\bw\d{2,3}\b|\bm\d{2}\b', tournoi_de(m)[1], re.I)] or M
+            if not M:
+                continue
+            m = M[0]
+            tid, tnom = tournoi_de(m)
         e['tournoi'] = tnom
-        e['stats_dans_la_liste'] = len(stats_trouvees(m))
+        e['stats_dans_la_liste'] = len(stats_trouvees(m)) if m else None
         # 1) résultats du tournoi : les statistiques y sont-elles ?
         R = []
         if tid and peut(c):
             code, doc = c.get(f"/tennis/v2/{tour}/tournament/results/{tid}")
-            R = [x for x in matchs_de(doc)] if code == 200 else []
+            R = [x for x in tous_les_matchs(doc)] if code == 200 else []
             e['resultats_tournoi'] = {'code': code, 'matchs': len(R), 'stats': len(stats_trouvees(R[:3]))}
             if e['resultats_tournoi']['stats']:
                 rep['stats_dans_resultats_tournoi'] = True
-        cible = next((x for x in R if joueurs(x)[0] and joueurs(x)[2]), m)
+        cible = next((x for x in R if joueurs(x)[0] and joueurs(x)[2] and x.get('match_winner')), None) \
+            or next((x for x in R if joueurs(x)[0] and joueurs(x)[2]), m)
         p1, n1, p2, n2 = joueurs(cible)
         e['match'] = f"{n1} – {n2}"
         stats = stats_trouvees(cible) if e.get('resultats_tournoi', {}).get('stats') else []
@@ -282,7 +329,7 @@ def conclure(rep):
 
 def main(argv):
     a = argparse.ArgumentParser()
-    a.add_argument('--budget', type=int, default=12)
+    a.add_argument('--budget', type=int, default=6)
     a.add_argument('--sackmann', default='')
     a.add_argument('--chemins', default='')
     o = a.parse_args(argv[1:])
