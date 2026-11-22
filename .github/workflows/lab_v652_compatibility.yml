@@ -12,6 +12,15 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+      # 22/11/2026 (paquet 352) — COTES EN PRIVÉ, ÉTAPE 4 : en mode ETAT_CHAUD=prive, les fichiers de cotes ne sont
+      # plus dans le dépôt public ; rapatriés ici depuis R2 (lecture). Dans les autres modes, rien ne change.
+      - name: Cotes privées — rapatrier (paquet 352)
+        env:
+          ETAT_CHAUD: ${{ vars.ETAT_CHAUD || 'double' }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+        run: python3 scripts/cotes_privees.py pull --entiers figes || true
       - name: Tests de non attribution
         run: python3 -m unittest discover -s Tennis_Edge_Lab/tests -p test_v652.py -v
       - name: Diagnostic lecture seule

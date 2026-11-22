@@ -41,6 +41,19 @@ jobs:
 
       - name: Calcul des candidats value + jointure CLV
         run: python scripts/value_journal.py
+      # 22/11/2026 (paquet 352) — COTES EN PRIVÉ, ÉTAPE 4 : value_candidates.jsonl envoyé(s) au coffre à chaque passage ; en mode
+      # ETAT_CHAUD=prive, sorti(s) du dépôt public (scripts/cotes_privees.py). Des nombres seulement dans le journal.
+      - name: Cotes privées — envoyer (value, paquet 352)
+        if: always()
+        env:
+          ETAT_CHAUD: ${{ vars.ETAT_CHAUD || 'double' }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+        run: |
+          python3 scripts/cotes_privees.py push --groupe value || true
+          python3 scripts/cotes_privees.py retirer --groupe value || true
+
       - name: Commit
         run: |
           # PANNE DU 16/08/2026 -- cause exacte, tracee par pipeline_status.
@@ -60,7 +73,7 @@ jobs:
           # ORDRE CORRIGÉ (même problème que money_flow.yml) : commit d'abord,
           # synchro ensuite -- pas l'inverse.
           for f in value_candidates.jsonl value_clv_report.json; do
-            [ -f "$f" ] && git add -- "$f"
+            if [ -f "$f" ] && ! git check-ignore -q -- "$f"; then git add -- "$f"; fi   # 352 : jamais un fichier au coffre
           done
           git diff --staged --quiet || git commit -m "value journal $(date -u +%FT%TZ)"
           # BOUCLE DE REPRISE AVEC FUSION DES CONFLITS JSON.

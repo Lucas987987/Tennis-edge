@@ -90,7 +90,7 @@ jobs:
           R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
           R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
           R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
-        run: python3 scripts/cotes_privees.py pull || true
+        run: python3 scripts/cotes_privees.py pull --entiers mouvements || true  # 352 : seulement ce que ce workflow lit
 
       # 04/11/2026 : matchs à venir et cotes de clôture les plus frais (relayés par R2 en mode ETAT_CHAUD=on)
       - name: État chaud — rapatrier de R2

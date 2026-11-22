@@ -27,11 +27,21 @@ dépôt (pull, même hors « prive ») et le republie — rien n'est perdu.
   le mode ; en « prive », il les sort du dépôt (retirer --groupe …). Hors « prive », un lecteur ne rapatrie que ce
   qui n'est NI sur le disque NI suivi par git (retour arrière) : jamais une copie par-dessus celle du dépôt.
   age FICHIER : âge en heures de la copie du coffre (observateur externe, quand le fichier n'est plus dans git).
+22/11/2026 (paquet 352, Lucas : « Étape 4 : le reste en privé ») — mêmes règles, un groupe par rédacteur :
+  kalshi (polymarket_studies), courbes_absences (fetch_book_curves), value (value_journal), book_lag (book_lag),
+  calibration (calibration_buckets), direct (courbes_alertes : early_open_log.jsonl, direct_matchs.json) et figes
+  (fichiers sans rédacteur — games_markets, economic_v64, selection_v64_frozen, rapports d'écart à la clôture —
+  envoyés tels quels et retirés par lab_quotidien). Les registres de gels du Lab restent publics : leur date dans git
+  prouve qu'ils ont été écrits avant les résultats.
+  pull --entiers G1,G2 | aucun : les workflows fréquents ne rapatrient que ce qu'ils lisent (défaut : tout).
+  site : courbes_alertes envoie direct_matchs.json, live_odds.json et matches_oddspapi_meta.json au site privé du Lab
+         (prive/site/Tennis_Edge_Lab/direct/), que l'onglet Direct lit avant GitHub.
 
 Sans secrets R2 : tout est ignoré, rien ne casse. Jamais de nom de fichier ni de cote dans les journaux d'Actions :
 des nombres seulement.
 
-Usage : python scripts/cotes_privees.py pull | push [--groupe G] | retirer [--groupe G] | age FICHIER
+Usage : python scripts/cotes_privees.py pull [--entiers G,…|aucun] | push [--groupe G] | retirer [--groupe G]
+                                       | age FICHIER | site
   pull     lecteurs et écrivains, au début : en « prive », tout ; sinon, seulement ce qui MANQUE dans le dépôt
            (retour arrière). En « prive », les fichiers sont aussi exclus de git sur ce runner (.git/info/exclude),
            pour qu'un « git add -A » ne les republie jamais.
@@ -48,7 +58,10 @@ sys.path.insert(0, ICI)
 
 CHAUDS = ('closing_lines.json', 'matches_oddspapi.json', 'live_odds.json')
 DOSSIER = 'closing_lines'
-GROUPES_ENTIERS = ('mouvements', 'resultats_reglement')     # 351 : groupes de coffre.py
+GROUPES_ENTIERS = ('mouvements', 'resultats_reglement',      # 351 : groupes de coffre.py
+                   'kalshi', 'courbes_absences', 'value', 'book_lag', 'calibration', 'direct', 'figes')   # 352
+SITE_DIRECT = ('direct_matchs.json', 'live_odds.json', 'matches_oddspapi_meta.json')
+PREFIXE_SITE_DIRECT = 'prive/site/Tennis_Edge_Lab/direct/'
 EXCLUSIONS = ['/closing_lines.json', '/matches_oddspapi.json', '/live_odds.json', '/closing_lines/',
               '/moves_detail.csv', '/moves_detail_hist.csv', '/moves_detail_live.csv', '/suivi_direct/resultats.json',
               '/resultats_oddspapi.json']
@@ -64,6 +77,15 @@ def suivis(chemins):
     return set(r.stdout.split()) if r.returncode == 0 else set()
 
 
+def exclusions():
+    """Motifs exclus de git en mode « prive » : chauds, archives et tous les fichiers entiers des groupes."""
+    out = list(EXCLUSIONS)
+    for f in entiers():
+        if '/' + f not in out:
+            out.append('/' + f)
+    return out
+
+
 def exclure(racine='.'):
     """Ajoute les fichiers de cotes à .git/info/exclude (propre à ce runner, jamais publié)."""
     p = os.path.join(racine, '.git', 'info', 'exclude')
@@ -73,7 +95,7 @@ def exclure(racine='.'):
         deja = open(p, encoding='utf-8').read().splitlines()
     except OSError:
         deja = []
-    manque = [e for e in EXCLUSIONS if e not in deja]
+    manque = [e for e in exclusions() if e not in deja]
     if manque:
         with open(p, 'a', encoding='utf-8') as f:
             f.write('\n# cotes au coffre privé (scripts/cotes_privees.py)\n' + '\n'.join(manque) + '\n')
@@ -85,9 +107,10 @@ def _coffre():
     return C
 
 
-def entiers(groupe=None):
+def entiers(groupe=None, groupes=None):
     C = _coffre()
-    return [f for g in ((groupe,) if groupe else GROUPES_ENTIERS) for f in C.GROUPES[g]]
+    gs = (groupe,) if groupe else (tuple(groupes) if groupes is not None else GROUPES_ENTIERS)
+    return [f for g in gs for f in C.GROUPES[g]]
 
 
 def _muet(fn, *a):
@@ -98,10 +121,11 @@ def _muet(fn, *a):
         return fn(*a)
 
 
-def pull_entiers(r2, m, racine='.'):
-    """Nombre de fichiers entiers rapatriés. « prive » : tous ; sinon ceux ni sur le disque ni suivis par git."""
+def pull_entiers(r2, m, racine='.', groupes=None):
+    """Nombre de fichiers entiers rapatriés. « prive » : tous ; sinon ceux ni sur le disque ni suivis par git.
+    groupes : seulement ceux-là (None : tous)."""
     C = _coffre()
-    fichiers = entiers()
+    fichiers = entiers(groupes=groupes)
     if m != 'prive':
         dans_git = suivis(fichiers)
         fichiers = [f for f in fichiers if f not in dans_git and not os.path.exists(os.path.join(racine, f))]
@@ -149,6 +173,41 @@ def retirer_entiers(r2, groupe):
     return len(fichiers) - len(suivis(fichiers))
 
 
+def site_direct(r2, racine='.'):
+    """(envoyés, inchangés) — copies de l'onglet Direct du Lab dans le site privé (servi après connexion)."""
+    envoyes = inchanges = 0
+    for n in SITE_DIRECT:
+        p = os.path.join(racine, n)
+        if not os.path.exists(p):
+            continue
+        data = open(p, 'rb').read()
+        if not data:
+            continue
+        got = r2.get_with_etag(PREFIXE_SITE_DIRECT + n)
+        if got is not None and got[0] == data:
+            inchanges += 1
+            continue
+        try:
+            r2.put(PREFIXE_SITE_DIRECT + n, data, content_type='application/json; charset=utf-8')
+            envoyes += 1
+        except Exception:  # noqa: BLE001
+            pass
+    return envoyes, inchanges
+
+
+def _groupes_arg(argv):
+    """--entiers G1,G2 | aucun → tuple (None si absent). Valeur inconnue : ValueError."""
+    if '--entiers' not in argv[:-1]:
+        return None
+    v = argv[argv.index('--entiers') + 1].strip()
+    if v == 'aucun':
+        return ()
+    gs = tuple(g for g in v.split(',') if g)
+    if not gs or any(g not in GROUPES_ENTIERS for g in gs):
+        raise ValueError(v)
+    return gs
+
+
 def age_h(r2, f):
     """Âge en heures de la copie du coffre, ou None."""
     import datetime as dt
@@ -191,7 +250,12 @@ def retirer(r2):
 def main(argv):
     action = argv[1] if len(argv) > 1 else ''
     groupe = argv[argv.index('--groupe') + 1] if '--groupe' in argv[:-1] else None
-    if action not in ('pull', 'push', 'retirer', 'age') or (groupe is not None and groupe not in GROUPES_ENTIERS) \
+    try:
+        groupes = _groupes_arg(argv)
+    except ValueError:
+        print(__doc__)
+        return 2
+    if action not in ('pull', 'push', 'retirer', 'age', 'site') or (groupe is not None and groupe not in GROUPES_ENTIERS) \
             or (action == 'age' and len(argv) < 3):
         print(__doc__)
         return 2
@@ -212,8 +276,11 @@ def main(argv):
         return 0
     if action == 'pull':
         n_c, n_a = pull(r2, m)
-        n_e = pull_entiers(r2, m)
+        n_e = pull_entiers(r2, m, groupes=groupes)
         print(f'Cotes privées (mode {m}) : {n_c} fichier(s) chaud(s), {n_a} archive(s), {n_e} fichier(s) entier(s) rapatriés')
+    elif action == 'site':
+        n, i = site_direct(r2)
+        print(f'Cotes privées : {n} fichier(s) envoyés au site privé du Lab ({i} inchangé(s))')
     elif action == 'push' and groupe:
         n, echecs = push_entiers(r2, groupe)
         print(f'Cotes privées : {n} fichier(s) envoyés au coffre ({echecs} échec(s))')
