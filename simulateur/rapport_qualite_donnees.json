@@ -1,13 +1,13 @@
 {
- "genere_le": "2026-11-21T15:35:24+00:00",
+ "genere_le": "2026-11-22T15:38:45+00:00",
  "paquet": 272,
  "fenetre_jours": 30,
  "regle": "résolu                 — présent dans Tennis_Edge_Lab/live/pronostics_resultats.json ;   adversaire fictif      — « R16P3 », « QF7 »… (vainqueur à venir ; filtré depuis le 04/11, restes du journal) ;   doublon reprogrammé    — même paire de joueurs sous un autre uid à moins de 48 h (match déplacé) : une seule fois                            dans les bilans, rien à réparer ;   abandon / forfait      — feuille TennisApi « Retired » / « Walkover » : volontairement non jugés ;   annulé ou reporté      — feuille « Canceled », « Postponed »… ;   feuille terminée non résolue — feuille « Ended » trouvée mais pas de résultat : DÉFAUT à corriger ;   adversaire remplacé    — pas de feuille pour la paire, mais un des joueurs a joué un autre adversaire à ± 3 h de                            l'horaire prévu (repêché, forfait remplacé) : le match annoncé n'a pas eu lieu ;   aucune feuille         — rien du tout : TROU DE COLLECTE (ou match pas encore relevé). Aussi : paires affichées deux fois sur le site (algo/donnees.json) et paires résolues deux fois (bilans faussés). ALERTE (Telegram privé) si, sur la veille, « aucune feuille » + « feuille terminée non résolue » dépassent 10 % des matchs réels (hors adversaires fictifs et doublons), ou si une paire est résolue deux fois.",
- "matchs": 2244,
+ "matchs": 2211,
  "causes": {
-  "résolu": 1508,
-  "adversaire fictif": 176,
-  "doublon reprogrammé": 408,
+  "résolu": 1499,
+  "adversaire fictif": 153,
+  "doublon reprogrammé": 407,
   "abandon / forfait": 51,
   "annulé ou reporté": 0,
   "feuille terminée non résolue": 0,
@@ -16,8 +16,8 @@
  },
  "par_circuit": {
   "ATP": {
-   "résolu": 210,
-   "adversaire fictif": 45,
+   "résolu": 202,
+   "adversaire fictif": 38,
    "doublon reprogrammé": 82,
    "abandon / forfait": 7,
    "annulé ou reporté": 0,
@@ -26,8 +26,8 @@
    "aucune feuille": 6
   },
   "WTA": {
-   "résolu": 193,
-   "adversaire fictif": 37,
+   "résolu": 185,
+   "adversaire fictif": 32,
    "doublon reprogrammé": 46,
    "abandon / forfait": 5,
    "annulé ou reporté": 0,
@@ -36,9 +36,9 @@
    "aucune feuille": 10
   },
   "CH": {
-   "résolu": 1105,
-   "adversaire fictif": 94,
-   "doublon reprogrammé": 280,
+   "résolu": 1112,
+   "adversaire fictif": 83,
+   "doublon reprogrammé": 279,
    "abandon / forfait": 39,
    "annulé ou reporté": 0,
    "feuille terminée non résolue": 0,
@@ -48,12 +48,12 @@
  },
  "defauts_pct": 2.5,
  "veille": {
-  "jour": "2026-11-20",
+  "jour": "2026-11-21",
   "causes": {
-   "résolu": 28,
+   "résolu": 18,
    "adversaire fictif": 0,
-   "doublon reprogrammé": 2,
-   "abandon / forfait": 0,
+   "doublon reprogrammé": 0,
+   "abandon / forfait": 1,
    "annulé ou reporté": 0,
    "feuille terminée non résolue": 0,
    "adversaire remplacé": 0,
@@ -62,11 +62,6 @@
   "defauts_pct": 0.0
  },
  "par_jour": {
-  "2026-11-08": {
-   "matchs": 104,
-   "resolus": 89,
-   "defauts_pct": 0.0
-  },
   "2026-11-09": {
    "matchs": 128,
    "resolus": 72,
@@ -128,8 +123,13 @@
    "defauts_pct": 0.0
   },
   "2026-11-21": {
-   "matchs": 5,
-   "resolus": 4,
+   "matchs": 19,
+   "resolus": 18,
+   "defauts_pct": 0.0
+  },
+  "2026-11-22": {
+   "matchs": 18,
+   "resolus": 17,
    "defauts_pct": 0.0
   }
  },
