@@ -1,0 +1,67 @@
+name: Étude - vitesse des courts et dérive du service (paquet 340)
+
+# 22/11/2026 — paquet 340, demande de Lucas (« les courts sont de plus en plus rapides chaque année », « pour tous les
+# circuits »). Règle écrite dans l'en-tête de simulateur/etude_vitesse_derive.py. Lancement à la main seulement (le
+# rapport du paquet a déjà été calculé ; à relancer quand l'archive ou les feuilles auront grandi). 0 requête d'API.
+# N'écrit que simulateur/rapport_vitesse_derive.json : rien ne change dans les pronostics.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+
+concurrency:
+  group: simulateur
+  cancel-in-progress: false
+
+jobs:
+  etude:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+          filter: blob:none
+          sparse-checkout: |
+            /simulateur/
+            /feuilles/
+            /feuilles_points/
+            /scripts/closing_store.py
+            /Tennis_Edge_Lab/books.py
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - name: Archive Sackmann (fichiers de matchs seulement)
+        run: |
+          set -euo pipefail
+          git clone --depth 1 --filter=blob:none --sparse https://github.com/Aneeshers/tennis-sackmann-archive.git /tmp/sackmann
+          cd /tmp/sackmann
+          git sparse-checkout set --no-cone 'atp_matches_20*.csv' 'atp_matches_qual_chall_20*.csv' 'wta_matches_20*.csv' 'wta_matches_qual_itf_20*.csv'
+      - name: Apprendre sur 2018–2022, juger sur 2023 → mai 2026 (ATP, WTA, Challenger)
+        run: |
+          set -euo pipefail
+          python simulateur/etude_vitesse_derive.py /tmp/sackmann . | tee /tmp/vitesse.log
+          cp simulateur/rapport_vitesse_derive.json /tmp/rapport_vitesse_derive.json
+          echo '### Vitesse des courts et dérive (paquet 340)' >> "$GITHUB_STEP_SUMMARY"
+          sed 's/^/    /' /tmp/vitesse.log >> "$GITHUB_STEP_SUMMARY"
+      - name: Publier le rapport (sans écraser le travail des autres)
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          for i in 1 2 3 4 5 6; do
+            git fetch -q origin main
+            git reset -q --hard origin/main
+            cp /tmp/rapport_vitesse_derive.json simulateur/rapport_vitesse_derive.json
+            git add -- simulateur/rapport_vitesse_derive.json
+            if git diff --cached --quiet; then echo 'Rien de nouveau.'; exit 0; fi
+            git commit -q -m 'Étude 340 : vitesse des courts et dérive (rapport)'
+            if git push origin HEAD:main; then echo '✅ publié'; exit 0; fi
+            sleep $((i * 10))
+          done
+          echo '::error::Push impossible après 6 essais'; exit 1
