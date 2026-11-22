@@ -1785,6 +1785,28 @@
    "paquet": 349,
    "quoi": "Matchs des feuilles collectées : le nom du tour (« Qualification Round 1 », « Round of 32 », « Quarterfinals »…) est maintenant traduit en ordre de tour. Avant, tous recevaient le même tour, d'où un ordre approximatif entre deux matchs d'un même jour dans les rejeux et les études.",
    "garde_fou": "Ne change que l'ordre des matchs d'une même journée dans les rejeux ; le % affiché du jour n'en dépend pas. Un nom de tour inconnu garde l'ancienne valeur. Test tests/test_tours_feuilles.py."
+  },
+  {
+   "date": "2026-11-22",
+   "statut": "etude",
+   "paquet": 350,
+   "quoi": "PISTES DU CHERCHEUR CONTRÔLÉES EN DIRECT (paquet 350) : chaque semaine, juste après le chercheur, chaque piste candidate est rejouée sur nos vrais pronostics (dernier % figé avant le match, jamais vu par le chercheur). « Qualifications, 1er tour » en Challenger (pente 1,118) : non confirmée sur 241 matchs (pente 0,96 en direct, log loss 0,5374 → 0,5394) ; elle n'est pas adoptée.",
+   "garde_fou": "En attente sous 200 matchs ; confirmée seulement si la log loss baisse ET si la pente apprise en direct va dans le même sens. Une piste confirmée reste une proposition : rien ne change dans les % sans un paquet à part. Rapport : simulateur/rapport_controle_candidates.json."
+  },
+  {
+   "date": "2026-11-22",
+   "statut": "etude",
+   "paquet": 350,
+   "quoi": "CHALLENGER, FAVORI ANNONCÉ ENTRE 50 ET 60 % (paquet 350) : sur nos pronostics du 22/10 au 22/11, il gagne 51,4 % des matchs pour 54,8 % annoncés (424 matchs, pas significatif). Étude ouverte : faut-il, dans cette tranche seulement, rapprocher le % de 50 % ? Réglage appris jusqu'au 22/11, jugé sur les matchs à partir du 23/11.",
+   "garde_fou": "Règle écrite avant le premier match jugé : au moins 1 000 matchs jugés, gain de log loss ≥ 0,001, même sens sur les deux périodes, gain significatif. Avant : « pas encore jugeable ». Le % affiché ne change pas. Rapport : simulateur/rapport_ch_50_60.json."
+  },
+  {
+   "date": "2026-11-22",
+   "statut": "outil",
+   "paquet": 350,
+   "prive": true,
+   "quoi": "Les études du lundi (ancrage, salle, service, Challenger 50–60 %, chercheur et contrôle de ses pistes) sont relancées par le worker si le cron du lundi saute (dernier passage de plus de 7 jours).",
+   "garde_fou": "Interrupteur ETUDES_ENABLED=0 ; 0 requête d'API ; un run en cours n'est jamais doublé."
   }
  ]
 }
