@@ -186,6 +186,19 @@ def message_direct(doc, controle_h13=None):
             L.append(f"écart {o['ecart']:+.1f} pts · ROI {o['roi']:+.1f} % · CLV Pinnacle "
                      + (f"{clv:+.1f} %" if clv is not None else "—")
                      + (" · <i>n &lt; 30</i>" if o['n'] < 30 else ""))
+        # 22/11/2026 (paquet 335) : la même hypothèse lue ATP / WTA / Challenger (CLV, Holm sur toutes les cases)
+        pc = o.get('par_circuit') or {}
+        if pc:
+            morceaux = []
+            for c, court in (('ATP', 'ATP'), ('WTA', 'WTA'), ('Challenger', 'CH')):
+                b = pc.get(c) or {}
+                if not b.get('clv_n'):
+                    continue
+                marque = ' ✅' if b.get('lecture') == 'CLV positive (Holm)' else (' ❌' if b.get('lecture') == 'CLV négative' else '')
+                clv = b.get('clv_pin_moyen')
+                morceaux.append(f"{court} {clv:+.1f} % ({b['clv_n']}){marque}" if clv is not None else f"{court} — ({b['clv_n']})")
+            if morceaux:
+                L.append("par circuit (CLV) : " + " · ".join(morceaux))
         if o.get('verrouillable') is False:
             L.append(f"⏳ {o.get('statut')} — aucun verdict tant que les résultats manquent")
         if not o.get('n') and h['code'] == 'H14':
@@ -193,7 +206,8 @@ def message_direct(doc, controle_h13=None):
     if controle_h13:
         L.append(f"\n<i>Contrôle H13 (reconstruction, ne juge pas) : {controle_h13['k']}/{controle_h13['n']} · "
                  f"ROI {100 * controle_h13['roi']:+.1f} %</i>")
-    L.append("\n<i>Aucune hypothèse validée. Verdicts : validation_report (Holm, n ≥ 100). Ne pas diffuser.</i>")
+    L.append("\n<i>Par circuit : ✅ CLV positive après correction de Holm sur toutes les cases, ❌ CLV négative, rien sous 30 "
+             "clôtures. Aucune hypothèse validée. Verdicts : validation_report (Holm, n ≥ 100). Ne pas diffuser.</i>")
     return '\n'.join(L)
 
 
