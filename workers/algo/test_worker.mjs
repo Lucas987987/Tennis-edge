@@ -304,3 +304,77 @@ test('modèles 3D : la version demandée par la page sert de clé de cache', asy
   assert.ok(vus[0].endsWith('joueurs3d.bin?v=326'));
   assert.ok(vus[1].endsWith('joueurs3d.bin?v=283'));
 });
+
+// 22/11/2026 (paquet 334) — site servi par R2 d'abord ; Lab et tableau privés, seulement sur workers.dev
+const R2 = { 'site/algo/index.html': '<!doctype html>depuis-r2', 'prive/site/Tennis_Edge_Lab/index.html': '<!doctype html>lab-prive',
+  'prive/site/Tennis_Edge_Lab/live/data.json': '{"clv":1}', 'prive/site/index.html': '<!doctype html>tableau',
+  'site/algo/modeles/joueurs3d.bin': 'x'.repeat(200000) };
+const envR2 = { CLE_PRIVEE: CLE, COFFRE: { get: async (k) => (k in R2 ? { body: R2[k], size: R2[k].length } : null) } };
+const surMarque = (chemin, h = {}, method = 'GET', body) => new Request('https://gamesetalgo.com' + chemin, { method, headers: h, body });
+const surDev = (chemin, h = {}, method = 'GET', body) => new Request('https://algo.tennis-edge.workers.dev' + chemin, { method, headers: h, body });
+
+test('334 : la page publique vient de R2, GitHub Pages seulement en secours', async () => {
+  let appels = 0;
+  globalThis.fetch = async () => { appels++; return new Response('<!doctype html>pages', { status: 200 }); };
+  const r = await worker.fetch(surMarque('/'), envR2);
+  assert.equal(await r.text(), '<!doctype html>depuis-r2');
+  assert.equal(appels, 0);
+  assert.match(r.headers.get('Content-Security-Policy'), /default-src 'self'/);
+  const s = await worker.fetch(surMarque('/methode.html'), envR2);
+  assert.equal(await s.text(), '<!doctype html>pages');
+  assert.equal(appels, 1);
+  const m = await worker.fetch(surMarque('/modeles/joueurs3d.bin?v=326'), envR2);
+  assert.equal(m.status, 200);
+  assert.equal(appels, 1, 'modèle 3D lu dans R2');
+});
+
+test('334 : Lab et tableau introuvables sur gamesetalgo.com, même avec la clé', async () => {
+  globalThis.fetch = async () => new Response('absent', { status: 404 });
+  for (const c of ['/lab/', '/lab/index.html', '/tableau/', '/connexion']) {
+    const r = await worker.fetch(surMarque(c, { 'X-Cle': CLE }), envR2);
+    assert.equal(r.status, 404, c);
+    assert.ok(!(await r.text()).includes('lab-prive'));
+  }
+});
+
+test('334 : sans connexion, le Lab renvoie vers /connexion et ne livre rien', async () => {
+  const r = await worker.fetch(surDev('/lab/', { Accept: 'text/html' }), envR2);
+  assert.equal(r.status, 303);
+  assert.equal(r.headers.get('Location'), '/connexion?suite=%2Flab%2F');
+  const j = await worker.fetch(surDev('/lab/live/data.json'), envR2);
+  assert.equal(j.status, 401);
+  assert.ok(!(await j.text()).includes('clv'));
+  const faux = await worker.fetch(surDev('/lab/', { Cookie: 'te_acces=faux' }), envR2);
+  assert.equal(faux.status, 401);
+});
+
+test('334 : connexion avec la clé → cookie de session, puis Lab et tableau servis, jamais en cache', async () => {
+  const mauvais = await worker.fetch(surDev('/connexion', { 'Content-Type': 'application/x-www-form-urlencoded' }, 'POST', 'cle=mauvaise&suite=%2Flab%2F'), envR2);
+  assert.equal(mauvais.status, 401);
+  assert.equal(mauvais.headers.get('Set-Cookie'), null);
+  const ok = await worker.fetch(surDev('/connexion', { 'Content-Type': 'application/x-www-form-urlencoded' }, 'POST', `cle=${CLE}&suite=%2Flab%2F`), envR2);
+  assert.equal(ok.status, 303);
+  assert.equal(ok.headers.get('Location'), '/lab/');
+  const cookie = ok.headers.get('Set-Cookie');
+  assert.match(cookie, /^te_acces=[A-Za-z0-9_-]{20,}; Path=\/; HttpOnly; Secure; SameSite=Lax/);
+  assert.ok(!cookie.includes(CLE), 'la clé elle-même ne part jamais dans le cookie');
+  const c = { Cookie: cookie.split(';')[0] };
+  const lab = await worker.fetch(surDev('/lab/', c), envR2);
+  assert.equal(await lab.text(), '<!doctype html>lab-prive');
+  assert.equal(lab.headers.get('Cache-Control'), 'private, no-store');
+  assert.equal(lab.headers.get('X-Robots-Tag'), 'noindex, nofollow');
+  const d = await worker.fetch(surDev('/lab/live/data.json', c), envR2);
+  assert.equal(d.headers.get('Content-Type'), 'application/json; charset=utf-8');
+  assert.equal(await (await worker.fetch(surDev('/tableau/', c), envR2)).text(), '<!doctype html>tableau');
+  const autre = await worker.fetch(surDev('/connexion', { 'Content-Type': 'application/x-www-form-urlencoded' }, 'POST', `cle=${CLE}&suite=https%3A%2F%2Fexemple.com`), envR2);
+  assert.equal(autre.headers.get('Location'), '/lab/', 'jamais de redirection vers un autre site');
+  const sortie = await worker.fetch(surDev('/deconnexion', c), envR2);
+  assert.match(sortie.headers.get('Set-Cookie'), /Max-Age=0/);
+});
+
+test('334 : pas de sortie du dossier privé', async () => {
+  for (const c of ['/lab/%2e%2e/x', '/lab/a/%2E%2E/%2E%2E/prive/h19_signal_log.jsonl']) {
+    const r = await worker.fetch(surDev(c, { 'X-Cle': CLE }), envR2);
+    assert.ok([404, 400].includes(r.status), c + ' ' + r.status);
+  }
+});
