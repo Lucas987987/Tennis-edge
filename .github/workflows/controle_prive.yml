@@ -1,0 +1,49 @@
+name: Contrôle de la bascule privée (paquet 353)
+
+# 22/11/2026 — paquet 353 (Lucas : « Contrôle de la bascule privée »). Chaque jour, vérifie sans rien modifier que
+# chaque fichier privé a une copie au coffre R2, que les fichiers à rédacteur régulier y sont frais, qu'en mode
+# ETAT_CHAUD=prive plus aucun n'est dans le dépôt public, et que l'onglet Direct du Lab a ses copies. Règles dans
+# l'en-tête de scripts/controle_prive.py. Journal : des nombres et des noms de fichiers, jamais un contenu.
+# En mode « prive », un problème rend le run rouge ; dans les autres modes, ce sont des avertissements.
+on:
+  # lancé aussi par le worker Cloudflare tennis-edge-closing (les crons GitHub de ce dépôt sautent parfois)
+  repository_dispatch:
+    types: [controle_prive]
+  schedule:
+    - cron: '47 9 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+
+jobs:
+  controle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+          filter: blob:none
+          sparse-checkout: |
+            /scripts/
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - name: Contrôler
+        env:
+          ETAT_CHAUD: ${{ vars.ETAT_CHAUD || 'double' }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+        run: |
+          code=0
+          python3 scripts/controle_prive.py > /tmp/controle.log 2>&1 || code=$?
+          cat /tmp/controle.log
+          echo '### Contrôle de la bascule privée' >> "$GITHUB_STEP_SUMMARY"
+          sed 's/^/    /' /tmp/controle.log >> "$GITHUB_STEP_SUMMARY"
+          exit "$code"

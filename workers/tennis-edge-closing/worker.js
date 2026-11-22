@@ -266,7 +266,9 @@ export const PLAFOND_PAR_WORKFLOW = { 'capture_closing.yml': 6, 'courbes_alertes
   // 22/11/2026 (paquet 347) : rattrapage ATP/WTA (timeout 120 min) et point par point ITF (timeout 90 min)
   'historique_feuilles.yml': 150, 'itf_points.yml': 120,
   // 22/11/2026 (paquet 350) : études de la semaine (timeouts 90 et 120 min)
-  'etude_ancrage.yml': 120, 'chercheur.yml': 150 };
+  'etude_ancrage.yml': 120, 'chercheur.yml': 150,
+  // 22/11/2026 (paquet 353) : contrôle de la bascule privée (timeout 10 min)
+  'controle_prive.yml': 30 };
 const ACTIFS = new Set(['queued', 'in_progress', 'waiting', 'requested', 'pending']);
 const _gardeCache = new Map();
 
@@ -562,6 +564,12 @@ async function run(env) {
       workflowFile: 'etude_ancrage.yml', periodeMin: 10080 });
     await planifierPeriodique({ owner, repo, token, ts, messages, nom: 'Chercheur', evenement: 'chercheur',
       workflowFile: 'chercheur.yml', periodeMin: 10080 });
+  }
+  // 22/11/2026 (paquet 353) — contrôle quotidien de la bascule privée (coffre complet, frais, hors du dépôt public).
+  // 0 requête d'API. Désactivable : CONTROLE_PRIVE_ENABLED=0.
+  if ((env.CONTROLE_PRIVE_ENABLED || '1') !== '0') {
+    await planifierPeriodique({ owner, repo, token, ts, messages, nom: 'Contrôle privé', evenement: 'controle_prive',
+      workflowFile: 'controle_prive.yml', periodeMin: 1440 });
   }
 
   return messages.join('\n');
