@@ -264,7 +264,9 @@ export const PLAFOND_PAR_WORKFLOW = { 'capture_closing.yml': 6, 'courbes_alertes
   // 23/10/2026 : workflows planifiés par période (planifierPeriodique) — plafond au-delà de leur timeout
   'pronostics_quotidien.yml': 60, 'feuilles_match.yml': 360,
   // 22/11/2026 (paquet 347) : rattrapage ATP/WTA (timeout 120 min) et point par point ITF (timeout 90 min)
-  'historique_feuilles.yml': 150, 'itf_points.yml': 120 };
+  'historique_feuilles.yml': 150, 'itf_points.yml': 120,
+  // 22/11/2026 (paquet 350) : études de la semaine (timeouts 90 et 120 min)
+  'etude_ancrage.yml': 120, 'chercheur.yml': 150 };
 const ACTIFS = new Set(['queued', 'in_progress', 'waiting', 'requested', 'pending']);
 const _gardeCache = new Map();
 
@@ -551,6 +553,15 @@ async function run(env) {
   if ((env.ITF_POINTS_ENABLED || '1') !== '0') {
     await planifierPeriodique({ owner, repo, token, ts, messages, nom: 'ITF points', evenement: 'itf_points',
       workflowFile: 'itf_points.yml', periodeMin: Math.max(120, Number(env.ITF_POINTS_PERIODE_MIN) || 480) });
+  }
+  // 22/11/2026 (paquet 350) — études de la semaine (verdicts du lundi : ancrage, salle, recalage du service, Challenger
+  // 50–60 %, chercheur et contrôle de ses candidates en direct) : le cron du lundi peut sauter, le worker relance si le
+  // dernier passage a plus de 7 jours. 0 requête d'API. Désactivable : ETUDES_ENABLED=0.
+  if ((env.ETUDES_ENABLED || '1') !== '0') {
+    await planifierPeriodique({ owner, repo, token, ts, messages, nom: 'Études (ancrage)', evenement: 'etude_ancrage',
+      workflowFile: 'etude_ancrage.yml', periodeMin: 10080 });
+    await planifierPeriodique({ owner, repo, token, ts, messages, nom: 'Chercheur', evenement: 'chercheur',
+      workflowFile: 'chercheur.yml', periodeMin: 10080 });
   }
 
   return messages.join('\n');

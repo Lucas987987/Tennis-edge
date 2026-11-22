@@ -6,6 +6,9 @@ name: Chercheur automatique (pistes d'amélioration)
 # pistes testées à la fois). Les 3 meilleures candidates partent sur le Telegram PRIVÉ. Rien n'entre dans l'algo :
 # une candidate passe ensuite par une étude et un paquet à part. 0 requête d'API.
 on:
+  # 22/11/2026 (paquet 350) : relancé par le worker Cloudflare tennis-edge-closing si le cron du lundi saute
+  repository_dispatch:
+    types: [chercheur]
   schedule:
     - cron: '41 5 * * 1'
   workflow_dispatch:
@@ -34,7 +37,8 @@ jobs:
             /resultats_itf/
             /resultats_itf_femmes/
             /scripts/resultats_itf.py
-            /feuilles/lieux_archive.json
+            /feuilles/
+            /Tennis_Edge_Lab/live/pronostics_resultats.json
           sparse-checkout-cone-mode: false
       - uses: actions/setup-python@v6
         with:
@@ -55,6 +59,15 @@ jobs:
           cp simulateur/rapport_chercheur.json /tmp/rapport_chercheur.json
           echo '### Chercheur automatique' >> "$GITHUB_STEP_SUMMARY"
           sed 's/^/    /' /tmp/chercheur.log >> "$GITHUB_STEP_SUMMARY"
+      # 22/11/2026 (paquet 350) : chaque candidate contrôlée sur nos pronostics en direct (règle dans l'en-tête de
+      # simulateur/controle_candidates.py). Rien ne change dans les pronostics.
+      - name: Contrôler les candidates sur nos pronostics en direct
+        run: |
+          set -euo pipefail
+          python simulateur/controle_candidates.py . | tee /tmp/controle.log
+          cp simulateur/rapport_controle_candidates.json /tmp/rapport_controle_candidates.json
+          echo '### Candidates contrôlées en direct (paquet 350)' >> "$GITHUB_STEP_SUMMARY"
+          sed 's/^/    /' /tmp/controle.log >> "$GITHUB_STEP_SUMMARY"
       - name: Publier le rapport (sans écraser le travail des autres)
         run: |
           set -euo pipefail
@@ -64,7 +77,8 @@ jobs:
             git fetch -q origin main
             git reset -q --hard origin/main
             cp /tmp/rapport_chercheur.json simulateur/rapport_chercheur.json
-            git add -- simulateur/rapport_chercheur.json
+            cp /tmp/rapport_controle_candidates.json simulateur/rapport_controle_candidates.json
+            git add -- simulateur/rapport_chercheur.json simulateur/rapport_controle_candidates.json
             if git diff --cached --quiet; then echo 'Rien de nouveau.'; exit 0; fi
             git commit -q -m 'Chercheur automatique : rapport de la semaine'
             if git push origin HEAD:main; then echo '✅ publié'; exit 0; fi

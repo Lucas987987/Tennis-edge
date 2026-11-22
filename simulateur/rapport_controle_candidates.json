@@ -1,0 +1,34 @@
+{
+ "genere_le": "2026-11-22T18:28:51+00:00",
+ "paquet": 350,
+ "rapport_chercheur_du": "2026-11-21T00:06:40+00:00",
+ "regle": "Pentes des familles tous / format / surface / saison / tour, contrôlées sur nos pronostics en direct (dernier % figé avant le début, sans abandon ni forfait) ; en attente sous 200 matchs ; confirmée si la log loss baisse avec la pente du chercheur et si la pente apprise sur le direct est du même côté de 1 ; sinon non confirmée. Rien ne change dans les pronostics.",
+ "matchs_direct": 1517,
+ "matchs_avec_tour": 1466,
+ "candidates": [
+  {
+   "famille": "surface",
+   "circuit": "CH",
+   "case": "Clay",
+   "forme": "pente",
+   "parametre": 1.065,
+   "verdict": "déjà en service (suivie par sa règle de retrait)"
+  },
+  {
+   "famille": "tour",
+   "circuit": "CH",
+   "case": "qualifications, 1er tour",
+   "forme": "pente",
+   "parametre": 1.1182,
+   "matchs_direct": 241,
+   "log_loss_production": 0.53737,
+   "log_loss_avec_candidate": 0.5394,
+   "gain": -0.00203,
+   "erreur_type": 0.00333,
+   "pente_direct": 0.96,
+   "favori_annonce_pct": 72.0,
+   "favori_reel_pct": 70.5,
+   "verdict": "non confirmée"
+  }
+ ]
+}
