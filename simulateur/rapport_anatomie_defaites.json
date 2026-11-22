@@ -1,10 +1,10 @@
 {
- "genere_le": "2026-11-18T09:14:04+00:00",
+ "genere_le": "2026-11-22T18:41:37+00:00",
  "paquet": 268,
  "definition": "A = joueur donné gagnant par l'algo au premier pronostic ; critères connus avant le match",
  "regle": "un critère est « à étudier sur l'archive » si, avec au moins 30 matchs sur chacune des deux   moitiés chronologiques, A y réussit moins que prévu de plus de 1,96 erreur type sur les DEUX moitiés. Ce n'est pas un   filtre : un critère ne sert à éviter une défaite qu'après la règle de l'archive (apprendre 2018–2022, juger   2023 → juin 2026, log loss ≥ 0,001 sur ≥ 1 000 cas, même sens, circuit par circuit). Descriptif : le % ne change pas.",
  "descriptif": "le % de victoire ne change pas",
- "matchs": 1130,
+ "matchs": 1290,
  "par_niveau": {
   "ATP": {
    "fragile": {
@@ -20,16 +20,16 @@
     "ecart_pts": -17.9
    },
    "correct": {
-    "n": 107,
-    "reussite_reelle_pct": 64.5,
-    "reussite_annoncee_pct": 66.2,
-    "ecart_pts": -1.7
+    "n": 108,
+    "reussite_reelle_pct": 64.8,
+    "reussite_annoncee_pct": 66.1,
+    "ecart_pts": -1.3
    },
    "solide": {
-    "n": 28,
-    "reussite_reelle_pct": 71.4,
-    "reussite_annoncee_pct": 64.4,
-    "ecart_pts": 7.0
+    "n": 35,
+    "reussite_reelle_pct": 77.1,
+    "reussite_annoncee_pct": 65.5,
+    "ecart_pts": 11.7
    }
   },
   "WTA": {
@@ -60,64 +60,64 @@
   },
   "CH": {
    "fragile": {
-    "n": 195,
-    "reussite_reelle_pct": 64.1,
-    "reussite_annoncee_pct": 67.6,
-    "ecart_pts": -3.5
+    "n": 264,
+    "reussite_reelle_pct": 65.5,
+    "reussite_annoncee_pct": 69.1,
+    "ecart_pts": -3.6
    },
    "prudent": {
-    "n": 165,
-    "reussite_reelle_pct": 68.5,
-    "reussite_annoncee_pct": 70.8,
-    "ecart_pts": -2.3
+    "n": 207,
+    "reussite_reelle_pct": 69.6,
+    "reussite_annoncee_pct": 70.6,
+    "ecart_pts": -1.0
    },
    "correct": {
-    "n": 334,
-    "reussite_reelle_pct": 66.2,
-    "reussite_annoncee_pct": 64.5,
-    "ecart_pts": 1.7
+    "n": 361,
+    "reussite_reelle_pct": 66.5,
+    "reussite_annoncee_pct": 64.6,
+    "ecart_pts": 1.9
    },
    "solide": {
-    "n": 164,
-    "reussite_reelle_pct": 64.6,
-    "reussite_annoncee_pct": 64.4,
-    "ecart_pts": 0.2
+    "n": 178,
+    "reussite_reelle_pct": 64.0,
+    "reussite_annoncee_pct": 64.6,
+    "ecart_pts": -0.5
    }
   },
   "tous": {
    "fragile": {
-    "n": 202,
-    "reussite_reelle_pct": 63.4,
-    "reussite_annoncee_pct": 67.1,
-    "ecart_pts": -3.7
+    "n": 271,
+    "reussite_reelle_pct": 64.9,
+    "reussite_annoncee_pct": 68.8,
+    "ecart_pts": -3.8
    },
    "prudent": {
-    "n": 179,
-    "reussite_reelle_pct": 68.7,
-    "reussite_annoncee_pct": 71.6,
-    "ecart_pts": -2.9
+    "n": 221,
+    "reussite_reelle_pct": 69.7,
+    "reussite_annoncee_pct": 71.3,
+    "ecart_pts": -1.6
    },
    "correct": {
-    "n": 513,
-    "reussite_reelle_pct": 66.3,
+    "n": 541,
+    "reussite_reelle_pct": 66.5,
     "reussite_annoncee_pct": 65.2,
-    "ecart_pts": 1.1
+    "ecart_pts": 1.3
    },
    "solide": {
-    "n": 236,
-    "reussite_reelle_pct": 65.7,
-    "reussite_annoncee_pct": 63.5,
-    "ecart_pts": 2.2
+    "n": 257,
+    "reussite_reelle_pct": 66.1,
+    "reussite_annoncee_pct": 63.8,
+    "ecart_pts": 2.3
    }
   }
  },
  "anatomie": {
   "ATP": {
    "ensemble": {
-    "n": 149,
-    "reussite_reelle_pct": 65.1,
+    "n": 157,
+    "reussite_reelle_pct": 66.9,
     "reussite_annoncee_pct": 66.4,
-    "ecart_pts": -1.3
+    "ecart_pts": 0.5
    },
    "criteres": {
     "Elo et simulation en désaccord sur le vainqueur": {
@@ -132,23 +132,23 @@
      "verdict": "trop tôt"
     },
     "matchs similaires plus pessimistes pour A (≥ 3 points)": {
-     "n": 66,
-     "reussite_reelle_pct": 65.2,
+     "n": 67,
+     "reussite_reelle_pct": 65.7,
      "reussite_annoncee_pct": 65.2,
-     "ecart_pts": -0.1,
+     "ecart_pts": 0.5,
      "moities_ecart_pts": [
       -2.5,
-      2.3
+      3.4
      ],
      "verdict": "rien à signaler"
     },
     "niveau : correct": {
-     "n": 107,
-     "reussite_reelle_pct": 64.5,
-     "reussite_annoncee_pct": 66.2,
-     "ecart_pts": -1.7,
+     "n": 108,
+     "reussite_reelle_pct": 64.8,
+     "reussite_annoncee_pct": 66.1,
+     "ecart_pts": -1.3,
      "moities_ecart_pts": [
-      -1.1,
+      -0.3,
       -2.3
      ],
      "verdict": "rien à signaler"
@@ -176,79 +176,79 @@
      "verdict": "trop tôt"
     },
     "niveau : solide": {
-     "n": 28,
-     "reussite_reelle_pct": 71.4,
-     "reussite_annoncee_pct": 64.4,
-     "ecart_pts": 7.0,
+     "n": 35,
+     "reussite_reelle_pct": 77.1,
+     "reussite_annoncee_pct": 65.5,
+     "ecart_pts": 11.7,
      "moities_ecart_pts": [
-      -1.4,
-      15.4
+      -5.3,
+      27.7
      ],
      "verdict": "trop tôt"
     },
     "score instable": {
-     "n": 61,
-     "reussite_reelle_pct": 72.1,
-     "reussite_annoncee_pct": 64.3,
-     "ecart_pts": 7.9,
+     "n": 67,
+     "reussite_reelle_pct": 74.6,
+     "reussite_annoncee_pct": 64.7,
+     "ecart_pts": 10.0,
      "moities_ecart_pts": [
-      9.2,
-      6.6
+      8.8,
+      11.1
      ],
      "verdict": "rien à signaler"
     },
     "surface : Hard": {
-     "n": 149,
-     "reussite_reelle_pct": 65.1,
+     "n": 157,
+     "reussite_reelle_pct": 66.9,
      "reussite_annoncee_pct": 66.4,
-     "ecart_pts": -1.3,
+     "ecart_pts": 0.5,
      "moities_ecart_pts": [
-      -2.3,
-      -0.3
+      -3.1,
+      4.0
      ],
      "verdict": "rien à signaler"
     },
     "tranche : 58–70 %": {
-     "n": 51,
-     "reussite_reelle_pct": 56.9,
-     "reussite_annoncee_pct": 63.5,
-     "ecart_pts": -6.7,
+     "n": 55,
+     "reussite_reelle_pct": 60.0,
+     "reussite_annoncee_pct": 63.4,
+     "ecart_pts": -3.4,
      "moities_ecart_pts": [
-      -7.6,
-      -5.8
+      -11.7,
+      4.6
      ],
      "verdict": "trop tôt"
     },
     "tranche : 70–80 %": {
-     "n": 30,
-     "reussite_reelle_pct": 76.7,
+     "n": 32,
+     "reussite_reelle_pct": 78.1,
      "reussite_annoncee_pct": 74.6,
-     "ecart_pts": 2.1,
+     "ecart_pts": 3.6,
      "moities_ecart_pts": [
-      -1.9,
-      6.1
+      -0.0,
+      7.2
      ],
      "verdict": "trop tôt"
     },
     "tranche : 80 % et plus": {
-     "n": 23,
-     "reussite_reelle_pct": 82.6,
-     "reussite_annoncee_pct": 85.6,
-     "ecart_pts": -3.0,
+     "n": 24,
+     "reussite_reelle_pct": 83.3,
+     "reussite_annoncee_pct": 85.7,
+     "ecart_pts": -2.4,
      "moities_ecart_pts": [
-      -3.5,
-      -2.4
+      -10.0,
+      5.2
      ],
      "verdict": "trop tôt"
     },
     "tranche : moins de 58 %": {
-     "n": 45,
-     "reussite_reelle_pct": 57.8,
-     "reussite_annoncee_pct": 54.3,
-     "ecart_pts": 3.5,
+     "n": 46,
+     "reussite_reelle_pct": 58.7,
+     "reussite_annoncee_pct": 54.2,
+     "ecart_pts": 4.5,
      "moities_ecart_pts": [
-      4.7,
-      2.3
+      2.2,
+      6.7
      ],
      "verdict": "trop tôt"
     },
@@ -275,15 +275,15 @@
      "verdict": "trop tôt"
     },
     "écart Elo / simulation ≥ 10 points": {
-     "n": 58,
-     "reussite_reelle_pct": 63.8,
-     "reussite_annoncee_pct": 68.0,
-     "ecart_pts": -4.2,
+     "n": 60,
+     "reussite_reelle_pct": 65.0,
+     "reussite_annoncee_pct": 67.8,
+     "ecart_pts": -2.8,
      "moities_ecart_pts": [
-      -8.4,
-      0.0
+      -6.5,
+      0.9
      ],
-     "verdict": "trop tôt"
+     "verdict": "rien à signaler"
     }
    }
   },
@@ -464,185 +464,185 @@
   },
   "CH": {
    "ensemble": {
-    "n": 858,
-    "reussite_reelle_pct": 65.9,
-    "reussite_annoncee_pct": 66.4,
-    "ecart_pts": -0.5
+    "n": 1010,
+    "reussite_reelle_pct": 66.4,
+    "reussite_annoncee_pct": 67.0,
+    "ecart_pts": -0.6
    },
    "criteres": {
     "Elo et simulation en désaccord sur le vainqueur": {
-     "n": 164,
-     "reussite_reelle_pct": 54.3,
-     "reussite_annoncee_pct": 57.5,
-     "ecart_pts": -3.2,
+     "n": 194,
+     "reussite_reelle_pct": 54.1,
+     "reussite_annoncee_pct": 57.9,
+     "ecart_pts": -3.8,
      "moities_ecart_pts": [
-      -6.6,
-      0.2
+      -7.2,
+      -0.4
      ],
      "verdict": "rien à signaler"
     },
     "matchs similaires plus pessimistes pour A (≥ 3 points)": {
-     "n": 130,
-     "reussite_reelle_pct": 64.6,
-     "reussite_annoncee_pct": 63.8,
-     "ecart_pts": 0.8,
+     "n": 152,
+     "reussite_reelle_pct": 63.8,
+     "reussite_annoncee_pct": 63.5,
+     "ecart_pts": 0.3,
      "moities_ecart_pts": [
-      6.0,
-      -4.5
+      3.0,
+      -2.3
      ],
      "verdict": "rien à signaler"
     },
     "niveau : correct": {
-     "n": 334,
-     "reussite_reelle_pct": 66.2,
-     "reussite_annoncee_pct": 64.5,
-     "ecart_pts": 1.7,
+     "n": 361,
+     "reussite_reelle_pct": 66.5,
+     "reussite_annoncee_pct": 64.6,
+     "ecart_pts": 1.9,
      "moities_ecart_pts": [
-      0.2,
-      3.2
+      0.3,
+      3.4
      ],
      "verdict": "rien à signaler"
     },
     "niveau : fragile": {
-     "n": 195,
-     "reussite_reelle_pct": 64.1,
-     "reussite_annoncee_pct": 67.6,
-     "ecart_pts": -3.5,
+     "n": 264,
+     "reussite_reelle_pct": 65.5,
+     "reussite_annoncee_pct": 69.1,
+     "ecart_pts": -3.6,
      "moities_ecart_pts": [
-      -3.1,
-      -3.8
+      -3.0,
+      -4.2
      ],
      "verdict": "rien à signaler"
     },
     "niveau : prudent": {
-     "n": 165,
-     "reussite_reelle_pct": 68.5,
-     "reussite_annoncee_pct": 70.8,
-     "ecart_pts": -2.3,
+     "n": 207,
+     "reussite_reelle_pct": 69.6,
+     "reussite_annoncee_pct": 70.6,
+     "ecart_pts": -1.0,
      "moities_ecart_pts": [
-      2.1,
-      -6.6
+      0.4,
+      -2.4
      ],
      "verdict": "rien à signaler"
     },
     "niveau : solide": {
-     "n": 164,
-     "reussite_reelle_pct": 64.6,
-     "reussite_annoncee_pct": 64.4,
-     "ecart_pts": 0.2,
+     "n": 178,
+     "reussite_reelle_pct": 64.0,
+     "reussite_annoncee_pct": 64.6,
+     "ecart_pts": -0.5,
      "moities_ecart_pts": [
-      -0.6,
-      1.1
+      0.9,
+      -2.0
      ],
      "verdict": "rien à signaler"
     },
     "score instable": {
-     "n": 262,
-     "reussite_reelle_pct": 71.0,
-     "reussite_annoncee_pct": 67.8,
-     "ecart_pts": 3.2,
+     "n": 311,
+     "reussite_reelle_pct": 71.7,
+     "reussite_annoncee_pct": 67.9,
+     "ecart_pts": 3.8,
      "moities_ecart_pts": [
-      4.0,
-      2.5
+      4.3,
+      3.3
      ],
      "verdict": "rien à signaler"
     },
     "surface : Clay": {
-     "n": 230,
-     "reussite_reelle_pct": 66.5,
-     "reussite_annoncee_pct": 66.3,
-     "ecart_pts": 0.2,
+     "n": 244,
+     "reussite_reelle_pct": 67.6,
+     "reussite_annoncee_pct": 66.0,
+     "ecart_pts": 1.6,
      "moities_ecart_pts": [
-      1.5,
-      -1.0
+      1.6,
+      1.7
      ],
      "verdict": "rien à signaler"
     },
     "surface : Hard": {
-     "n": 628,
-     "reussite_reelle_pct": 65.6,
-     "reussite_annoncee_pct": 66.4,
-     "ecart_pts": -0.8,
+     "n": 766,
+     "reussite_reelle_pct": 66.1,
+     "reussite_annoncee_pct": 67.4,
+     "ecart_pts": -1.3,
      "moities_ecart_pts": [
-      -0.2,
-      -1.4
+      0.5,
+      -3.1
      ],
      "verdict": "rien à signaler"
     },
     "tranche : 58–70 %": {
-     "n": 301,
-     "reussite_reelle_pct": 65.8,
-     "reussite_annoncee_pct": 63.6,
-     "ecart_pts": 2.2,
+     "n": 358,
+     "reussite_reelle_pct": 65.4,
+     "reussite_annoncee_pct": 63.7,
+     "ecart_pts": 1.7,
      "moities_ecart_pts": [
-      3.8,
-      0.7
+      3.0,
+      0.4
      ],
      "verdict": "rien à signaler"
     },
     "tranche : 70–80 %": {
-     "n": 159,
-     "reussite_reelle_pct": 73.0,
+     "n": 182,
+     "reussite_reelle_pct": 74.2,
      "reussite_annoncee_pct": 74.4,
-     "ecart_pts": -1.5,
+     "ecart_pts": -0.3,
      "moities_ecart_pts": [
       1.3,
-      -4.3
+      -1.8
      ],
      "verdict": "rien à signaler"
     },
     "tranche : 80 % et plus": {
-     "n": 130,
-     "reussite_reelle_pct": 90.8,
-     "reussite_annoncee_pct": 88.8,
-     "ecart_pts": 1.9,
+     "n": 170,
+     "reussite_reelle_pct": 90.0,
+     "reussite_annoncee_pct": 89.3,
+     "ecart_pts": 0.7,
      "moities_ecart_pts": [
-      3.4,
-      0.5
+      3.6,
+      -2.2
      ],
      "verdict": "rien à signaler"
     },
     "tranche : moins de 58 %": {
-     "n": 268,
-     "reussite_reelle_pct": 49.6,
-     "reussite_annoncee_pct": 53.8,
+     "n": 300,
+     "reussite_reelle_pct": 49.7,
+     "reussite_annoncee_pct": 53.9,
      "ecart_pts": -4.2,
      "moities_ecart_pts": [
-      -5.4,
-      -3.0
+      -5.9,
+      -2.5
      ],
      "verdict": "rien à signaler"
     },
     "un joueur à moins de 30 matchs": {
-     "n": 87,
-     "reussite_reelle_pct": 74.7,
-     "reussite_annoncee_pct": 81.0,
-     "ecart_pts": -6.3,
+     "n": 100,
+     "reussite_reelle_pct": 75.0,
+     "reussite_annoncee_pct": 82.3,
+     "ecart_pts": -7.3,
      "moities_ecart_pts": [
-      -4.5,
-      -8.0
+      -1.3,
+      -13.4
      ],
      "verdict": "rien à signaler"
     },
     "un joueur à moins de 60 matchs": {
-     "n": 174,
-     "reussite_reelle_pct": 73.0,
-     "reussite_annoncee_pct": 76.1,
-     "ecart_pts": -3.1,
+     "n": 210,
+     "reussite_reelle_pct": 74.3,
+     "reussite_annoncee_pct": 77.8,
+     "ecart_pts": -3.5,
      "moities_ecart_pts": [
-      -1.9,
-      -4.3
+      -0.9,
+      -6.0
      ],
      "verdict": "rien à signaler"
     },
     "écart Elo / simulation ≥ 10 points": {
-     "n": 346,
-     "reussite_reelle_pct": 67.1,
-     "reussite_annoncee_pct": 66.6,
-     "ecart_pts": 0.4,
+     "n": 403,
+     "reussite_reelle_pct": 67.5,
+     "reussite_annoncee_pct": 67.4,
+     "ecart_pts": 0.0,
      "moities_ecart_pts": [
-      0.3,
-      0.5
+      0.4,
+      -0.3
      ],
      "verdict": "rien à signaler"
     }
@@ -650,185 +650,185 @@
   },
   "tous": {
    "ensemble": {
-    "n": 1130,
-    "reussite_reelle_pct": 66.0,
-    "reussite_annoncee_pct": 66.2,
-    "ecart_pts": -0.2
+    "n": 1290,
+    "reussite_reelle_pct": 66.7,
+    "reussite_annoncee_pct": 66.7,
+    "ecart_pts": -0.1
    },
    "criteres": {
     "Elo et simulation en désaccord sur le vainqueur": {
-     "n": 195,
-     "reussite_reelle_pct": 52.3,
-     "reussite_annoncee_pct": 57.0,
-     "ecart_pts": -4.7,
+     "n": 225,
+     "reussite_reelle_pct": 52.4,
+     "reussite_annoncee_pct": 57.5,
+     "ecart_pts": -5.0,
      "moities_ecart_pts": [
-      -7.6,
-      -1.8
+      -8.8,
+      -1.3
      ],
      "verdict": "rien à signaler"
     },
     "matchs similaires plus pessimistes pour A (≥ 3 points)": {
-     "n": 221,
-     "reussite_reelle_pct": 65.6,
-     "reussite_annoncee_pct": 64.5,
-     "ecart_pts": 1.1,
+     "n": 244,
+     "reussite_reelle_pct": 65.2,
+     "reussite_annoncee_pct": 64.2,
+     "ecart_pts": 0.9,
      "moities_ecart_pts": [
-      4.5,
-      -2.4
+      2.2,
+      -0.4
      ],
      "verdict": "rien à signaler"
     },
     "niveau : correct": {
-     "n": 513,
-     "reussite_reelle_pct": 66.3,
+     "n": 541,
+     "reussite_reelle_pct": 66.5,
      "reussite_annoncee_pct": 65.2,
-     "ecart_pts": 1.1,
+     "ecart_pts": 1.3,
      "moities_ecart_pts": [
-      -0.3,
-      2.5
+      -0.6,
+      3.3
      ],
      "verdict": "rien à signaler"
     },
     "niveau : fragile": {
-     "n": 202,
-     "reussite_reelle_pct": 63.4,
-     "reussite_annoncee_pct": 67.1,
-     "ecart_pts": -3.7,
+     "n": 271,
+     "reussite_reelle_pct": 64.9,
+     "reussite_annoncee_pct": 68.8,
+     "ecart_pts": -3.8,
      "moities_ecart_pts": [
-      -3.1,
-      -4.4
+      -3.4,
+      -4.2
      ],
      "verdict": "rien à signaler"
     },
     "niveau : prudent": {
-     "n": 179,
-     "reussite_reelle_pct": 68.7,
-     "reussite_annoncee_pct": 71.6,
-     "ecart_pts": -2.9,
+     "n": 221,
+     "reussite_reelle_pct": 69.7,
+     "reussite_annoncee_pct": 71.3,
+     "ecart_pts": -1.6,
      "moities_ecart_pts": [
-      1.0,
-      -6.7
+      0.5,
+      -3.7
      ],
      "verdict": "rien à signaler"
     },
     "niveau : solide": {
-     "n": 236,
-     "reussite_reelle_pct": 65.7,
-     "reussite_annoncee_pct": 63.5,
-     "ecart_pts": 2.2,
+     "n": 257,
+     "reussite_reelle_pct": 66.1,
+     "reussite_annoncee_pct": 63.8,
+     "ecart_pts": 2.3,
      "moities_ecart_pts": [
-      3.3,
-      1.0
+      2.2,
+      2.4
      ],
      "verdict": "rien à signaler"
     },
     "score instable": {
-     "n": 350,
-     "reussite_reelle_pct": 69.7,
-     "reussite_annoncee_pct": 67.0,
-     "ecart_pts": 2.7,
+     "n": 405,
+     "reussite_reelle_pct": 70.9,
+     "reussite_annoncee_pct": 67.2,
+     "ecart_pts": 3.6,
      "moities_ecart_pts": [
-      1.1,
-      4.3
+      1.7,
+      5.5
      ],
      "verdict": "rien à signaler"
     },
     "surface : Clay": {
-     "n": 230,
-     "reussite_reelle_pct": 66.5,
-     "reussite_annoncee_pct": 66.3,
-     "ecart_pts": 0.2,
+     "n": 244,
+     "reussite_reelle_pct": 67.6,
+     "reussite_annoncee_pct": 66.0,
+     "ecart_pts": 1.6,
      "moities_ecart_pts": [
-      1.5,
-      -1.0
-     ],
-     "verdict": "rien à signaler"
-    },
-    "surface : Hard": {
-     "n": 900,
-     "reussite_reelle_pct": 65.9,
-     "reussite_annoncee_pct": 66.2,
-     "ecart_pts": -0.3,
-     "moities_ecart_pts": [
-      -0.1,
-      -0.5
-     ],
-     "verdict": "rien à signaler"
-    },
-    "tranche : 58–70 %": {
-     "n": 407,
-     "reussite_reelle_pct": 64.6,
-     "reussite_annoncee_pct": 63.5,
-     "ecart_pts": 1.1,
-     "moities_ecart_pts": [
-      -0.1,
-      2.3
-     ],
-     "verdict": "rien à signaler"
-    },
-    "tranche : 70–80 %": {
-     "n": 209,
-     "reussite_reelle_pct": 73.7,
-     "reussite_annoncee_pct": 74.5,
-     "ecart_pts": -0.8,
-     "moities_ecart_pts": [
-      3.2,
-      -4.8
-     ],
-     "verdict": "rien à signaler"
-    },
-    "tranche : 80 % et plus": {
-     "n": 165,
-     "reussite_reelle_pct": 90.3,
-     "reussite_annoncee_pct": 88.3,
-     "ecart_pts": 2.0,
-     "moities_ecart_pts": [
-      2.2,
+      1.6,
       1.7
      ],
      "verdict": "rien à signaler"
     },
+    "surface : Hard": {
+     "n": 1046,
+     "reussite_reelle_pct": 66.4,
+     "reussite_annoncee_pct": 66.9,
+     "ecart_pts": -0.4,
+     "moities_ecart_pts": [
+      0.2,
+      -1.1
+     ],
+     "verdict": "rien à signaler"
+    },
+    "tranche : 58–70 %": {
+     "n": 468,
+     "reussite_reelle_pct": 64.7,
+     "reussite_annoncee_pct": 63.6,
+     "ecart_pts": 1.2,
+     "moities_ecart_pts": [
+      0.6,
+      1.8
+     ],
+     "verdict": "rien à signaler"
+    },
+    "tranche : 70–80 %": {
+     "n": 234,
+     "reussite_reelle_pct": 74.8,
+     "reussite_annoncee_pct": 74.5,
+     "ecart_pts": 0.3,
+     "moities_ecart_pts": [
+      1.4,
+      -0.7
+     ],
+     "verdict": "rien à signaler"
+    },
+    "tranche : 80 % et plus": {
+     "n": 206,
+     "reussite_reelle_pct": 89.8,
+     "reussite_annoncee_pct": 88.8,
+     "ecart_pts": 1.0,
+     "moities_ecart_pts": [
+      3.4,
+      -1.5
+     ],
+     "verdict": "rien à signaler"
+    },
     "tranche : moins de 58 %": {
-     "n": 349,
+     "n": 382,
      "reussite_reelle_pct": 51.6,
      "reussite_annoncee_pct": 53.9,
      "ecart_pts": -2.3,
      "moities_ecart_pts": [
-      -2.1,
-      -2.5
+      -2.0,
+      -2.7
      ],
      "verdict": "rien à signaler"
     },
     "un joueur à moins de 30 matchs": {
-     "n": 97,
-     "reussite_reelle_pct": 74.2,
-     "reussite_annoncee_pct": 80.3,
-     "ecart_pts": -6.1,
+     "n": 110,
+     "reussite_reelle_pct": 74.5,
+     "reussite_annoncee_pct": 81.6,
+     "ecart_pts": -7.1,
      "moities_ecart_pts": [
-      -3.4,
-      -8.8
+      -0.9,
+      -13.2
      ],
      "verdict": "rien à signaler"
     },
     "un joueur à moins de 60 matchs": {
-     "n": 193,
-     "reussite_reelle_pct": 71.5,
-     "reussite_annoncee_pct": 75.6,
-     "ecart_pts": -4.1,
+     "n": 229,
+     "reussite_reelle_pct": 72.9,
+     "reussite_annoncee_pct": 77.2,
+     "ecart_pts": -4.2,
      "moities_ecart_pts": [
-      -4.7,
-      -3.4
+      -2.3,
+      -6.2
      ],
      "verdict": "rien à signaler"
     },
     "écart Elo / simulation ≥ 10 points": {
-     "n": 446,
-     "reussite_reelle_pct": 66.1,
-     "reussite_annoncee_pct": 66.6,
-     "ecart_pts": -0.4,
+     "n": 505,
+     "reussite_reelle_pct": 66.7,
+     "reussite_annoncee_pct": 67.2,
+     "ecart_pts": -0.5,
      "moities_ecart_pts": [
-      -1.3,
-      0.5
+      -1.7,
+      0.7
      ],
      "verdict": "rien à signaler"
     }
